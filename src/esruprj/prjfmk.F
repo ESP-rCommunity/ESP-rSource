@@ -3401,10 +3401,15 @@ C << revise to offer selection of day types to apply new periods >>
 C << should be a menu which pairs the current user labels and types
 C << with the option to add another slot (label:type).
 
+C Check to see what the current units for for the selected
+C type and echo which type the user selected (easily forgotten)
           CALL EASKABCD('New casual gain of which type?',' ',
      &      lodlabel(icomp,1),lodlabel(icomp,2),lodlabel(icomp,3),
      &      'Cancel',ICGTS,nbhelp)
           if (ICGTS.eq.4) goto 5  ! cancel request
+          write(outs,'(3a)') 'Requested a new ',
+     &      lodlabel(icomp,icgts),' period. Please supply details...'
+          call edisp(iuout,outs)
           IQ=0
           if(.NOT.browse)call checkcascount(icomp)
           call EASKABC('Add period for one or all day types',
@@ -3435,13 +3440,24 @@ C For all day types.
               ENDIF
  619        CONTINUE
             IF(ITRK.EQ.0)THEN
+
+C Ask about units prior to calling EDCASGN.
+              igu=1
+              CALL EASKABCD('For new gains the typical units will be',
+     &          'Confirm: ','Watts','Watts/m2','objects/m2 (Not avl)',
+     &          'Square meters per object',IGU,nbhelp)
+              if(IGU.eq.1.or.IGU.eq.3)then
+                continue
+              else
+                ICGTS= (-1*ICGTS)  ! invert the selection
+              endif
               IDT=-1
               IPER=0
               silent=.false.
               izs=0
               izf=24
               call EDCASGN(ICOMP,ICGTS,IDT,IPER,silent,izs,izf)
-C              write(6,*) '619 icgts',icgts,idt,iper,izs,izf
+              write(6,*) '619 icgts',icgts,idt,iper,izs,izf
             ENDIF
           ELSE
             IDT=IQ
@@ -3454,20 +3470,28 @@ C              write(6,*) '619 icgts',icgts,idt,iper,izs,izf
               if(loadcount(icomp,ICGTS,IDT).eq.0)then
 
 C If there are no loads using this slot make a default one for the whole
-C day and then a (suggested) 8-18 period within. This would require some
-C later sorting to split the initial period ;-(  Can we do something about
-C this ??
+C day and then a (suggested) 8-18 period within. Ask about units prior
+C to calling EDCASGN.
+                igu=1
+                CALL EASKABCD('For new gains the typical units will be',
+     &            'Confirm: ','Watts','Watts/m2','objects/m2 (Not avl)',
+     &            'Square meters per object',IGU,nbhelp)
+                if(IGU.eq.1.or.IGU.eq.3)then
+                  continue
+                else
+                  ICGTS= (-1*ICGTS)  ! invert the selection
+                endif
                 silent=.true.
                 izs=0
                 izf=24
                 call EDCASGN(ICOMP,ICGTS,IDT,IPER,silent,izs,izf)
-C                write(6,*) '619+ icgts',icgts,idt,iper,izs,izf
+                write(6,*) '619+ icgts',icgts,idt,iper,izs,izf
               endif
               silent=.false.
               izs=8
               izf=18
               call EDCASGN(ICOMP,ICGTS,IDT,IPER,silent,izs,izf)
-C              write(6,*) '619++ icgts',icgts,idt,iper,izs,izf
+              write(6,*) '619++ icgts',icgts,idt,iper,izs,izf
             ENDIF
           ENDIF
           sorted=.false.
@@ -3653,7 +3677,7 @@ C Edit casual gain identified by KEYIND.
         izs=0
         izf=0
         call EDCASGN(ICOMP,ICGTX,IDT,IPER,silent,izs,izf)
-C        write(6,*) '619+++ icgtx',icgtx,idt,iper,izs,izf
+        write(6,*) '619+++ icgtx',icgtx,idt,iper,izs,izf
         sorted=.false.
         modopr=.true.
       endif
@@ -3879,6 +3903,7 @@ C  IDT day type (=-1 then all day types)
 C  IPER period (=0 then new)
 C  silent true if no user interaction requested.
 C If silent is true then use icgs & icgf parameters.
+C << pass in unit as well >>
 
       subroutine EDCASGN(ICOMP,ICGTX,IDT,IPER,silent,icgsX,icgfX)
 #include "building.h"
@@ -3986,7 +4011,7 @@ C Warn user if the zone base area is still zero.
 C Ask for sensible and latent gain.
 C Can be specified as: W, W/obj, W/m^2, m^2/obj
       IGU=1
-C      write(6,*) 'icgux before dialog is ',icguX
+      write(6,*) 'icgux before dialog is ',icguX
       if(icguX.eq.0)then
         msg='Gain to be specified (currently Watts)'
       elseif(icguX.eq.1)then
@@ -5529,7 +5554,7 @@ C initcasday21 does initial setup of one or more casual day types.
       INTEGER NBDAYTYPE,NBCALDAYS,ICALENDER,IDTY
       common/calena/calename,calentag(MDTY),calendayname(MDTY)
       CHARACTER CALENAME*32,CALENTAG*12,CALENDAYNAME*32
-      INTEGER ILN,islot,nbper
+      INTEGER ILN,islot,nbper,igu
       dimension iper(24),iperf(24)
       character OUTS*12,LOUTS*24,VOUTS*50
       character typstr*14
@@ -5556,6 +5581,7 @@ C For help messages
 C Type to go with this casual gain.
       idno=islot+1
       isw=0
+      igu=1  ! assume watts as unit
       call MENUATOL('  ','Available types',
      &  'a -        not yet defined W & W/m2',
      &  'b people   basic occupant W & m2/p',
@@ -5569,34 +5595,68 @@ C Type to go with this casual gain.
      &  'j ALDryer H3K clothes dryers',
      &  ' ',' ',isw,idno,nbhelp)
       if(isw.eq.1)then
+        igu=1
+        rf=0.5 ; cf=0.5 
         continue  ! ?? what to do here
       elseif(isw.eq.2)then
         caskeytype(icomp,islot)='people      '
         rf=0.6; cf=0.4  ! CIBSE Guide A 6.3
+        CALL EASKABCD('For people gains the typical units will be',
+     &    'Confirm: ','Watts','not applicable','not applicable',
+     &    'Square meters per object',IGU,nbhelp)
       elseif(isw.eq.3)then
         caskeytype(icomp,islot)='lighting    '
         rf=0.3; cf=0.7  ! CIBSE Table A6.5
+        CALL EASKABCD('For lighiting gains the typical unit will be',
+     &    'Confirm: ','Watts','Watts per square meter',
+     &    'not applicable','not applicable',IGU,nbhelp)
       elseif(isw.eq.4)then
         caskeytype(icomp,islot)='equipment   '
         rf=0.4 ; cf=0.6 
+        CALL EASKABCD('For equipment gains the typical unit will be',
+     &    'Confirm: ','Watts','Watts per square meter',
+     &    'not applicable','not applicable',IGU,nbhelp)
       elseif(isw.eq.5)then
         caskeytype(icomp,islot)='other       '  
         rf=0.5 ; cf=0.5 
+        CALL EASKABCD('For other gains the typical unit will be',
+     &    'Confirm: ','Watts','Watts per square meter',
+     &    'not applicable','not applicable',IGU,nbhelp)
       elseif(isw.eq.6)then
         caskeytype(icomp,islot)='net_utilities'  
         rf=0.5 ; cf=0.5 
-      elseif(isw.eq.7)then
+        CALL EASKABCD(
+     &    'For network utilities the typical unit will be',
+     &    'Confirm: ','Watts','Watts per square meter',
+     &    'not applicable','not applicable',IGU,nbhelp)
+       elseif(isw.eq.7)then
         caskeytype(icomp,islot)='ALOtherElectric'  
         rf=0.4 ; cf=0.6 
+        CALL EASKABCD(
+     &    'For appliances other electric the typical unit will be',
+     &    'Confirm: ','Watts','Watts per square meter',
+     &    'not applicable','not applicable',IGU,nbhelp)
       elseif(isw.eq.8)then
         caskeytype(icomp,islot)='ALStoveNG   '  
         rf=0.5 ; cf=0.5 
+        CALL EASKABCD(
+     &    'For appliance stove natural gas the typical unit will be',
+     &    'Confirm: ','Watts','Watts per square meter',
+     &    'not applicable','not applicable',IGU,nbhelp)
       elseif(isw.eq.9)then
         caskeytype(icomp,islot)='ALStoveElectric'  
         rf=0.4 ; cf=0.6 
+        CALL EASKABCD(
+     &    'For appliance stove electric the typical unit will be',
+     &    'Confirm: ','Watts','Watts per square meter',
+     &    'not applicable','not applicable',IGU,nbhelp)
       elseif(isw.eq.10)then
         caskeytype(icomp,islot)='ALDryer     '  
         rf=0.5 ; cf=0.5 
+        CALL EASKABCD(
+     &    'For appliance dryer the typical unit will be',
+     &    'Confirm: ','Watts','Watts per square meter',
+     &    'not applicable','not applicable',IGU,nbhelp)
       endif
       lodslot(icomp,islot)=islot; lodatr1(icomp,islot)=0;
       lodatr2(icomp,islot)=0
@@ -5608,7 +5668,7 @@ C Type to go with this casual gain.
         WRITE(VOUTS,'(4A)')'Number of ',TYPSTR,' periods on ',
      &     OUTS(1:ILN)
         CALL EASKI(nbper,VOUTS,'Confirm:',0,'F',24,'F',1,
-     &    'no. CG periods',IER,nbhelp)
+     &    'number of CG periods',IER,nbhelp)
 
 C Get user to specify the start times for occup periods if non-zero.
 C Increment ipcount for each new period.
@@ -5626,8 +5686,24 @@ C Increment ipcount for each new period.
             CONC(IDTY,ipcount) = cf
             ICGT(IDTY,ipcount) = islot  ! set to the current slot
 
-C << ?? do we want to ask for perferred unit for each type ?? >>
-            ICGUnit(IDTY,ipcount) = 0
+C Assigne perferred unit for each type and period. Also impose overload
+C of the ICGT (for now) until ICGUnit is fully implemented.
+            if(igu.eq.1)then
+              ICGUnit(IDTY,ipcount) = 0
+            elseif(igu.eq.2)then
+              if(isw.eq.1)then
+                ICGT(IDTY,ipcount) = (-1*islot)  ! set negative current slot
+                ICGUnit(IDTY,ipcount) = 2        ! patch for people
+              else
+                ICGT(IDTY,ipcount) = (-1*islot)  ! set negative current slot
+                ICGUnit(IDTY,ipcount) = 1        ! true W/m2
+              endif
+            elseif(igu.eq.3)then
+              ICGUnit(IDTY,ipcount) = 0        ! not yet implemented use W
+            elseif(igu.eq.4)then
+              ICGT(IDTY,ipcount) = (-1*islot)  ! set negative current slot
+              ICGUnit(IDTY,ipcount) = 2        ! m2/person
+            endif
   71      continue
         endif
         NCAS(IDTY)=NCAS(IDTY)+nbper
