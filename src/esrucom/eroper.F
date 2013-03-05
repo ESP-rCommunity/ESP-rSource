@@ -2427,8 +2427,8 @@ C Electrical data flag and elctrical data.
       end
 
 C ********************* PROCESSOLDCAS *********************
-C PROCESSOLDCAS: Processes gains in an old format operations file.
-C Passed the zone index.
+C PROCESSOLDCAS: Processes gains in an old format operations file to remove
+C overlaps. Passed the zone index.
       SUBROUTINE PROCESSOLDCAS(ICOMP,ITRC,ITRU)
 #include "building.h"
 #include "geometry.h"
@@ -2468,13 +2468,15 @@ C RADCA total radiant casual W for the zone at each hour and gain type
 C CONCA total conv casual W for the zone at each hour and gain type
 C RADFAC implied radiant fraction RADCA/CMGSA
 C CONFAC implied convective fraction CONCA/CMGSA
-C ICGTYP the casual gain type (negative index to be depreciated).
+C ICGTYP the casual gain slot (negative index to be depreciated).
+C ICGUn the units of the current period (not yet fully implemented)
 C PERSN keeps track of the original number of people/m2.
       real CMGSA,CMGLA,RADCA,CONCA,RADFAC,CONFAC,PERSN
       integer ICGTYP,LNCAS
       dimension CMGSA(MC,MGTY),CMGLA(MC,MGTY),RADCA(MC,MGTY)
       dimension CONCA(MC,MGTY),RADFAC(MC,MGTY),CONFAC(MC,MGTY)
       dimension ICGTYP(MC,MGTY),PERSN(MC,MGTY),LNCAS(MDTY)
+C      dimension ICGUn(MC,MGTY)
 
 C Logical for testing whether there is any difference in casual gains.
       logical bCMGSA,bCMGLA,bRADCA,bCONCA,bRADFAC,bCONFAC
@@ -2520,7 +2522,7 @@ C or based on area (casual gain type negative) or if mixed +-.
 C Zero derived gains in the temporary array and set the type as per
 C the call to checkcascount.
 
-C << overloading of ICGT below >>
+C << overloading of ICGT below review logic in loadmixed >>
       do 130 IP=1,MC
         do 120 IG=1,MGTY
           CMGSA(IP,IG)=0.0
@@ -2535,8 +2537,10 @@ C << overloading of ICGT below >>
             if(ip.ge.ISTARTHR.and.ip.le.IFINISHR)then
               if(loadmixed(icomp,ig,IDTY).eq.2)then
                 ICGTYP(IP,IG)= (-1)*IG
+C                ICGUn(IP,IG) = ?
               else
                 ICGTYP(IP,IG)= IG
+C                ICGUn(IP,IG) = ?
               endif
             endif
  609      CONTINUE
@@ -2736,11 +2740,18 @@ C << overloading of ICGT >>
               endif
             endif
 
-C Assign values. If a new period with zero sensible then set
+C Assign common block values. If a new period with zero sensible then set
 C the radiant convective split based on its type.
 
-C << overloading of ICGT here >>
+C << overloading of ICGT here also a place to set ICGUNIT later try to avoid overload >>
             ICGT(IDT,NCASwk) = ICGTYP(IP,ITYP)
+            if(ICGT(IDT,NCASwk).gt.0)then
+              ICGUnit(IDT,NCASwk)=0
+            elseif(ICGT(IDT,NCASwk).eq.-1)then
+              ICGUnit(IDT,NCASwk)=2
+            elseif(ICGT(IDT,NCASwk).lt.-1)then
+              ICGUnit(IDT,NCASwk)=1
+            endif
             NCAS(IDT) = NCASwk
             ICGS(IDT,NCASwk) = ihst
             ICGF(IDT,NCASwk) = ihcg

@@ -3179,7 +3179,7 @@ C Loop for each casual gain.
         M=M+1
         CALL EMKEY(M-MHEAD,KEY,IER)
 C Debug
-C        write(6,*) 'icgunit is',idtyp,l,ICGUnit(IDTYP,L),ICGT(IDTYP,L)
+        write(6,*) 'icgunit is',idtyp,l,ICGUnit(IDTYP,L),ICGT(IDTYP,L)
         if(ICGUnit(IDTYP,L).eq.0)then
           jicgt=iabs(ICGT(IDTYP,L))
           if (IELF(ICOMP).EQ.1) then
@@ -3332,7 +3332,8 @@ C number of periods might have changed, rebuild the menus.
         sorted=.true.
         modopr=.true.
 
-C If different period, update the menu length.
+C If different period, update the menu length and also need to update
+C the menu strings.
         if(ILLEN(IDTYP).ne.NCAS(IDTYP))
      &  call edisp(iuout,'Periods have changed.')
         ILEN=NCAS(IDTYP)
@@ -3396,14 +3397,14 @@ C Add delete copy period or import full set of casual gains.
 
 C Add new casual gain period.
 
-C << revise to support more casual gain types >>
+C << revise to support other than three casual gain slots >>
 C << revise to offer selection of day types to apply new periods >>
 C << should be a menu which pairs the current user labels and types
 C << with the option to add another slot (label:type).
 
 C Check to see what the current units for for the selected
 C type and echo which type the user selected (easily forgotten)
-          CALL EASKABCD('New casual gain of which type?',' ',
+          CALL EASKABCD('New casual period for...','Confirm:',
      &      lodlabel(icomp,1),lodlabel(icomp,2),lodlabel(icomp,3),
      &      'Cancel',ICGTS,nbhelp)
           if (ICGTS.eq.4) goto 5  ! cancel request
@@ -3441,23 +3442,29 @@ C For all day types.
  619        CONTINUE
             IF(ITRK.EQ.0)THEN
 
-C Ask about units prior to calling EDCASGN.
-              igu=1
+C Ask about units prior to calling EDCASGN and reset icgts & icgus if required.
+              igu=1; icgus=0
               CALL EASKABCD('For new gains the typical units will be',
-     &          'Confirm: ','Watts','Watts/m2','objects/m2 (Not avl)',
+     &          'Confirm: ','Watts','Watts/m2','objects/m2->Watts',
      &          'Square meters per object',IGU,nbhelp)
-              if(IGU.eq.1.or.IGU.eq.3)then
-                continue
-              else
-                ICGTS= (-1*ICGTS)  ! invert the selection
+              if(IGU.eq.1)then
+                icgus=0
+              elseif(IGU.eq.2)then
+                icgus=1
+                ICGTS= (-1*ICGTS)  ! invert the selection slot index
+              elseif(IGU.eq.3)then
+                icgus=0    ! not yet available so use Watts
+              elseif(IGU.eq.4)then
+                icgus=2
+                ICGTS= (-1*ICGTS)  ! invert the selection slot index
               endif
               IDT=-1
               IPER=0
               silent=.false.
               izs=0
               izf=24
-              call EDCASGN(ICOMP,ICGTS,IDT,IPER,silent,izs,izf)
-              write(6,*) '619 icgts',icgts,idt,iper,izs,izf
+              call EDCASGN(ICOMP,ICGTS,icgus,IDT,IPER,silent,izs,izf)
+              write(6,*) '619 icgts',icgts,icgus,idt,iper,izs,izf
             ENDIF
           ELSE
             IDT=IQ
@@ -3474,24 +3481,30 @@ C day and then a (suggested) 8-18 period within. Ask about units prior
 C to calling EDCASGN.
                 igu=1
                 CALL EASKABCD('For new gains the typical units will be',
-     &            'Confirm: ','Watts','Watts/m2','objects/m2 (Not avl)',
+     &            'Confirm: ','Watts','Watts/m2','objects/m2->Watts',
      &            'Square meters per object',IGU,nbhelp)
-                if(IGU.eq.1.or.IGU.eq.3)then
-                  continue
-                else
-                  ICGTS= (-1*ICGTS)  ! invert the selection
+                if(IGU.eq.1)then
+                  icgus=0
+                elseif(IGU.eq.2)then
+                  icgus=1
+                  ICGTS= (-1*ICGTS)  ! invert the selection slot index
+                elseif(IGU.eq.3)then
+                  icgus=0    ! not yet available so use Watts
+                elseif(IGU.eq.4)then
+                  icgus=2
+                  ICGTS= (-1*ICGTS)  ! invert the selection slot index
                 endif
                 silent=.true.
                 izs=0
                 izf=24
-                call EDCASGN(ICOMP,ICGTS,IDT,IPER,silent,izs,izf)
-                write(6,*) '619+ icgts',icgts,idt,iper,izs,izf
+                call EDCASGN(ICOMP,ICGTS,icgus,IDT,IPER,silent,izs,izf)
+                write(6,*) '619+ icgts',icgts,icgus,idt,iper,izs,izf
               endif
               silent=.false.
               izs=8
               izf=18
-              call EDCASGN(ICOMP,ICGTS,IDT,IPER,silent,izs,izf)
-              write(6,*) '619++ icgts',icgts,idt,iper,izs,izf
+              call EDCASGN(ICOMP,ICGTS,icgus,IDT,IPER,silent,izs,izf)
+              write(6,*) '619++ icgts',icgts,icgus,idt,iper,izs,izf
             ENDIF
           ENDIF
           sorted=.false.
@@ -3673,11 +3686,12 @@ C Edit casual gain identified by KEYIND.
         IDT=IDTYP
         IPER=I
         ICGTX=ICGT(IDT,IPER)
+        ICGUX=ICGUnit(IDT,IPER)
         silent=.false.
         izs=0
         izf=0
-        call EDCASGN(ICOMP,ICGTX,IDT,IPER,silent,izs,izf)
-        write(6,*) '619+++ icgtx',icgtx,idt,iper,izs,izf
+        call EDCASGN(ICOMP,ICGTX,ICGUX,IDT,IPER,silent,izs,izf)
+        write(6,*) '619+++ icgtx',icgtx,icgux,idt,iper,izs,izf
         sorted=.false.
         modopr=.true.
       endif
@@ -3896,16 +3910,20 @@ C Instanciate the casual gain commons with data from the profile.
 
 
 C ********************* EDCASGN *********************
-C EDCASGN - edit casual gain data for one period.
+C EDCASGN - edit casual gain data for one period. After user input
+C the local parameters are copied into common blocks via a call to CPYCASTI.
+
 C  ICOMP zone number
-C  ICGTX casual gain type index (?? overload )
+C  ICGTX casual gain slot index (still overloaded )
+C  ICGUX units 0=W 1=W/m2 2=m2/person
 C  IDT day type (=-1 then all day types)
 C  IPER period (=0 then new)
 C  silent true if no user interaction requested.
 C If silent is true then use icgs & icgf parameters.
-C << pass in unit as well >>
 
-      subroutine EDCASGN(ICOMP,ICGTX,IDT,IPER,silent,icgsX,icgfX)
+C << pass in the type string as well >>
+
+      subroutine EDCASGN(ICOMP,ICGTX,ICGUX,IDT,IPER,silent,icgsX,icgfX)
 #include "building.h"
 #include "geometry.h"
 #include "schedule.h"
@@ -3952,13 +3970,6 @@ C << place to use ip3ver and *type >>
         else
           RADCX=0.5; CONCX=0.5
         endif
-        if(icgtX.gt.0)then
-          icguX=0   ! set unit from overloaded gain type
-        elseif(icgtX.eq.-1)then
-          icguX=2
-        elseif(icgtX.lt.-1)then
-          icguX=1
-        endif
         IPFX=0
         IPHASX=1
         PFX=0.0
@@ -3966,14 +3977,6 @@ C << place to use ip3ver and *type >>
         BVOLTX=0.0
       ELSEIF(IDT.GT.0)THEN
 
-C Find unit from overload of icgtX.
-        if(icgtX.gt.0)then
-          icguX=0   ! set unit from overloaded gain type
-        elseif(icgtX.eq.-1)then
-          icguX=2
-        elseif(icgtX.lt.-1)then
-          icguX=1
-        endif
         call CPYCASIT(icomp,idt,iper,icgtX,icguX,icgsX,icgfX,cmgsX,
      &    cmglX,radcX,concX,ipfX,iphasX,pfX,pwrX,bvoltX)
       endif
@@ -4020,20 +4023,19 @@ C Can be specified as: W, W/obj, W/m^2, m^2/obj
         msg='Gain to be specified (currently m2/person)'
       endif
       CALL EASKABCD(msg,'Confirm: ','Watts',
-     &   'Watts per square meter','Watts per object',
+     &   'Watts per square meter','Watts per object->Watts',
      &   'Square meters per object',IGU,nbhelp)
 
 C Common portion of help message for detailed dialogs.
       if (IGU.eq.1) then
 
 C Gain as W - require gain only. If existing is in W/m2 then multiply
-C up to get W and revised icgtx to be positive.
+C up to get W and revise icgtx to be positive and set icgux.
  20     if (ICGTX.lt.-1) then
           write (HOLD,'(2f8.1,a)') CMGSX*zb,CMGLX*zb,'  '
         else
           write (HOLD,'(2f8.1,a)') CMGSX,CMGLX,'  '
         endif
-        icguX=0   ! mark as Watts
         call EASKS(HOLD,'Sensible and latent gain (W):',
      &    ' ',24,'0.   0. ','casual gn info',IER,nbhelp)
         if(ier.eq.-3) goto 10  ! user canceled
@@ -4041,13 +4043,14 @@ C up to get W and revised icgtx to be positive.
         call EGETWR(HOLD,K,XSEN,0.,100000.0,'W','sensible gain',IER)
         call EGETWR(HOLD,K,XLATGN,0.,100000.0,'W','latent gain',IER)
         if (IER.ne.0) goto 20
-        if (ICGTX.lt.0) ICGTX=ICGTX*(-1)
+        if (ICGTX.lt.0) ICGTX=ICGTX*(-1)  ! reset to positive
+        icguX=0   ! mark as Watts
         CMGSX=XSEN
         CMGLX=XLATGN
       elseif (IGU.eq.2) then
 
 C Gain as W/m^2 - require gain per square meter. If original was in
-C W divide by base area to present value. 
+C W divide by base area to reset value. 
         if (ICGTX.gt.0) then
           write (HOLD,'(2f8.1,a)') CMGSX/zb,CMGLX/zb,'  '
         else
@@ -4078,12 +4081,13 @@ C W divide by base area to present value.
 
       elseif (IGU.eq.3) then
 
-C Gain as W/object - require no of objects and gain per object. If
-C user cancels go back to initial question.
+C Gain as W/object - require number of objects and gain per object. If
+C user cancels go back to initial question otherwise user input is converted
+C into equivalent Watts.
 C << an actual cancel option not yet implemented >>
         NOBJ=1
  40     CALL EASKI(NOBJ,' ','Number of objects (e.g. lamps)?',
-     &    0,'W',100,'W',1,'no. objects',IERI,nbhelp)
+     &    0,'W',100,'W',1,'number of objects',IERI,nbhelp)
         if(ieri.eq.0)then
           continue
         elseif(ieri.eq.-3)then
@@ -4093,7 +4097,11 @@ C << an actual cancel option not yet implemented >>
         endif
 
 C Display value is current sensible and latent divided by the number
-C of objects given above.
+C of objects given above. Use the user values to derive equivalent
+C Watts and reset both icgtx and icgux to the equivalent Watts.
+
+C << later find a way to actually hold the number of objects >>
+
         write (HOLD,'(2f8.1,a)') CMGSX/real(NOBJ),CMGLX/real(NOBJ),'  '
         call EASKS(HOLD,'Object sensible and latent gain (W):',
      &          ' ',24,'  0.   0. ','casual gn info',IER,nbhelp)
@@ -4116,7 +4124,8 @@ C Gain as m^2/object - floor area of an object and gain per object.
 C If user cancels go back to initial question. For the particular
 C case of people the current logic converts into W using 95W & 45W.
 C If occupants and a zero entered this is interpreted as no people
-C for this timestep.
+C for this timestep.  For gains other than people convert the users
+C data back into W/m2.
         NOBJ=1
  50     if (ICGTX.eq.-1) then
           FLA=CMGSX  ! assumes occupants already in m2/p
@@ -4130,13 +4139,12 @@ C for this timestep.
         if(IERI.eq.0)then
           FLA=XFLA
 
-C << overloaded icgt >>
           if (iabs(ICGTX).eq.1) then
 
 C If dealing with occupants treat this as a special case which assumes
 C that each person is 95W sensible and 45W latent.
-            ICGTX=-1
-            icguX=2   ! mark as m2/person
+            ICGTX=-1   ! overload slot
+            icguX=2    ! mark as m2/person
             CMGSX=FLA  ! Set sensible to the m^2 per person entered
             CMGLX=0.   ! Why is CMGLX set to zero?
             call eclose(FLA,0.00,0.001,close)
@@ -4160,7 +4168,7 @@ C            write(6,*) 'xx ',icgtx,cmgsx,cmglx,vs,vl
             call EGETWR(HOLD,K,XSEN,0.,50.0,'W','sensible gain',IER)
             call EGETWR(HOLD,K,XLATGN,0.,50.0,'W','latent gain',IER)
             if (IER.ne.0) goto 50
-            if (ICGTX.gt.1) ICGTX=ICGTX*(-1)
+            if (ICGTX.gt.1) ICGTX=ICGTX*(-1)  ! overload
             CMGSX=XSEN*zb/FLA
             CMGLX=XLATGN*zb/FLA
             write(outs,'(a,f9.1,a,f9.1)') 'Sensible W/m2 now ',CMGSX,
@@ -4212,7 +4220,7 @@ C Electrical details.
 C Get the electrical details of the load from the user
  80       pft=PFX
           call EASKR(pft,' ','Load power factor?',
-     &           0.0,'F',1.0,'F',1.0,'power factor',IER,nbhelp)
+     &      0.0,'F',1.0,'F',1.0,'power factor',IER,nbhelp)
           if (IER.ne.0) goto 80
 
           call ECLOSE(pft,1.0,0.0001,CLOSE)
@@ -4243,7 +4251,7 @@ C Get the electrical details of the load from the user
 
  100      bvoltt=BVOLTX
           call EASKR(bvoltt,' ','Operational voltage?',
-     &          0.0,'-',10000.0,'-',220.0,'op voltage',IER,nbhelp)
+     &      0.0,'-',10000.0,'-',220.0,'op voltage',IER,nbhelp)
           if (IER.ne.0) goto 100
 
  110      IPHAST=IPHASX
@@ -5609,19 +5617,19 @@ C Type to go with this casual gain.
         rf=0.3; cf=0.7  ! CIBSE Table A6.5
         CALL EASKABCD('For lighiting gains the typical unit will be',
      &    'Confirm: ','Watts','Watts per square meter',
-     &    'not applicable','not applicable',IGU,nbhelp)
+     &    'object/m2->Watts','not applicable',IGU,nbhelp)
       elseif(isw.eq.4)then
         caskeytype(icomp,islot)='equipment   '
         rf=0.4 ; cf=0.6 
         CALL EASKABCD('For equipment gains the typical unit will be',
      &    'Confirm: ','Watts','Watts per square meter',
-     &    'not applicable','not applicable',IGU,nbhelp)
+     &    'objects/m2->Watts','not applicable',IGU,nbhelp)
       elseif(isw.eq.5)then
         caskeytype(icomp,islot)='other       '  
         rf=0.5 ; cf=0.5 
         CALL EASKABCD('For other gains the typical unit will be',
      &    'Confirm: ','Watts','Watts per square meter',
-     &    'not applicable','not applicable',IGU,nbhelp)
+     &    'object/m2->Watts','not applicable',IGU,nbhelp)
       elseif(isw.eq.6)then
         caskeytype(icomp,islot)='net_utilities'  
         rf=0.5 ; cf=0.5 
