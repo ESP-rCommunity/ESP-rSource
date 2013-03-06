@@ -53,7 +53,7 @@ C
 C - fSurface_convective_gain: Interface allowing retrevial of convective
 C       gains from plant components to specified surface
 C
-C - fSurface_convective_gain: Interface allowing retrevial of radiant
+C - fSurface_radiant_gain: Interface allowing retrevial of radiant
 C       gains from plant components to specified surface
 C
 C - fLayer_embedded_gain: interface allowing retrevial of embedded
@@ -540,7 +540,11 @@ C--------------------------------------------------------------------
      &                 * fNode_injection_fraction
 
                   enddo
-     
+
+c       write(*,*)'inventory: iZone=',iZone,', iSurface=',iSurface,
+c     &  ', iNode=',iNode,', fraction=',fNode_injection_fraction,
+c     &  ': fGain_value=',fLayer_Gains(iZone,iSurface,iNode,iFuture)
+
                endif
 
             else
@@ -582,8 +586,8 @@ C...........Containment index incorrectly assigned.
             bFatal_Error = .true.
             write (cMsg, '(A,I2,A,I2,A,I2,A)' )
      &              ' Zone #', iZone,
-     &              ' Surface #', iSurface,
-     &              ' Node #', iNode, ' are invalid.'
+     &              ', Surface #', iSurface,
+     &              ', Node #', iNode, ' are invalid.'
             goto 999
          endif
 
@@ -597,7 +601,6 @@ C........Action type not supported.
          write (cMsg, '(A,I2,A)' )
      &              'Passed action (', iAction, ') is not supported'
          goto 999
-
       endif             
 
 C----------------------------------------------------------------------
@@ -1143,7 +1146,7 @@ C INPUTS:
 C
 C   iZone: Zone index
 C   iSurface: Surface index
-C   inODE: Layer index
+C   iNode: Layer index ((?? naming not helpful ...))
 C
 C
 C OUTPUTS:
@@ -1204,9 +1207,13 @@ C-------------------------------------------------------------------
      &                iConductive,
      &                iTimeRow,
      &                cContext   )
-      
+
+c       write(*,*)'pzgi: iZone=',iZone,', iSurface=',iSurface,
+c     &  ', iNode=',iNode,
+c     &  ': fGain_value=',fGain_Value
+
       fNode_embedded_gain = fGain_Value
-      
+
       return
       end
 
