@@ -3085,11 +3085,11 @@ C << this common should be re-sized 7 -> MGTY >>
      &  loadm2count(mcom,MGTY,MDTY),loadmixed(mcom,MGTY,MDTY)
       logical browse,ok,silent,dok,XST
       logical sorted,modopr
-      integer ICGTS,IW  ! for radio buttons
+      integer ICGTS,IW  ! casual slot for radio buttons
       integer MVERT,IVERT ! max items and current menu item
 
       CHARACTER vert(35)*36,outs*124,KEY*1,sfile*72,snpfile*72
-      character typstr*14
+      character typstr*14,caskeyt*16
       character title*28
 
 C iwatt (8 char) = 'W-W' for absolute W values preserves value
@@ -3173,7 +3173,8 @@ C Loop through the items until the page to be displayed. M is the
 C current menu line index. Build up text strings for the menu. 
       M=MHEAD
 
-C Loop for each casual gain.
+C Loop for each casual gain to make up menu entries (taking into 
+C account ICGUnit and IELF attributes.
       DO 10 L=1,NCAS(IDTYP)
         IF(L.GE.IST.AND.(L.LE.(IST+MIFULL)))THEN
         M=M+1
@@ -3341,7 +3342,7 @@ C the menu strings.
 
       ELSEIF(IVERT.EQ.(MVERT-4))THEN
 
-C Offer gain types to scale. User can cancel request.
+C Offer gain slots to scale. User can cancel request.
 C << revise to support more casual gain slots >>
         ICGTS=1
         CALL EASKATOG('Apply scaling factor to which casual gain?',
@@ -3408,9 +3409,11 @@ C type and echo which type the user selected (easily forgotten)
      &      lodlabel(icomp,1),lodlabel(icomp,2),lodlabel(icomp,3),
      &      'Cancel',ICGTS,nbhelp)
           if (ICGTS.eq.4) goto 5  ! cancel request
-          write(outs,'(3a)') 'Requested a new ',
-     &      lodlabel(icomp,icgts),' period. Please supply details...'
+          write(outs,'(5a)') 'Requested a new ',
+     &      lodlabel(icomp,icgts),' ',caskeytype(icomp,icgts),
+     &      ' period. Please supply details...'
           call edisp(iuout,outs)
+          caskeyt=caskeytype(icomp,icgts)  ! remember key word
           IQ=0
           if(.NOT.browse)call checkcascount(icomp)
           call EASKABC('Add period for one or all day types',
@@ -3463,8 +3466,10 @@ C Ask about units prior to calling EDCASGN and reset icgts & icgus if required.
               silent=.false.
               izs=0
               izf=24
-              call EDCASGN(ICOMP,ICGTS,icgus,IDT,IPER,silent,izs,izf)
-              write(6,*) '619 icgts',icgts,icgus,idt,iper,izs,izf
+              call EDCASGN(ICOMP,ICGTS,icgus,caskeyt,IDT,IPER,silent,
+     &          izs,izf)
+              write(6,*) '619 icgts',icgts,icgus,caskeyt,idt,iper,
+     &          izs,izf
             ENDIF
           ELSE
             IDT=IQ
@@ -3497,14 +3502,18 @@ C to calling EDCASGN.
                 silent=.true.
                 izs=0
                 izf=24
-                call EDCASGN(ICOMP,ICGTS,icgus,IDT,IPER,silent,izs,izf)
-                write(6,*) '619+ icgts',icgts,icgus,idt,iper,izs,izf
+                call EDCASGN(ICOMP,ICGTS,icgus,caskeyt,IDT,IPER,
+     &            silent,izs,izf)
+                write(6,*) '619+ icgts',icgts,icgus,caskeyt,idt,
+     &            iper,izs,izf
               endif
               silent=.false.
               izs=8
               izf=18
-              call EDCASGN(ICOMP,ICGTS,icgus,IDT,IPER,silent,izs,izf)
-              write(6,*) '619++ icgts',icgts,icgus,idt,iper,izs,izf
+              call EDCASGN(ICOMP,ICGTS,icgus,caskeyt,IDT,IPER,
+     &          silent,izs,izf)
+              write(6,*) '619++ icgts',icgts,icgus,caskeyt,idt,iper,
+     &          izs,izf
             ENDIF
           ENDIF
           sorted=.false.
@@ -3609,63 +3618,71 @@ C Remind users to check their data.
 
       ELSEIF(IVERT.EQ.(MVERT-6))THEN
 
-C Provide a bit of editing space (12 char) for the  char string.
-C For each of the << hardcoded >> 3 slots ask for user label and
-C confirmation of the type of gain.
+C Provide a bit of editing space (12 char) for the  char string. For
+C each of the slots ask for user label and confirmation of the type of gain.
+        write(6,*) 'EDCASG lodslot ',icomp,':',
+     &    (lodslot(icomp,iph),iph=1,7)
+
+C << offer option to add another gain label if <3 >>
         helptopic='operations_casual_labels'
         call gethelptext(helpinsub,helptopic,nbhelp)
         dok=.false.
-        call askok(' ','Change casual gain labels & types?',OK,dok,3)
-        if (OK) then 
-          DO islot=1,3
-            write(outs,'(a,i1,2a)') 'Label for gains in slot ',islot,
-     &        ' & type ',caskeytype(icomp,islot)
-            write(TYPSTR,'(2a)') lodlabel(icomp,islot),'  '
-            call easks(TYPSTR,outs,' ',12,
-     &        lodlabel(icomp,islot),'Gain label',IER,2)
-            write(lodlabel(icomp,islot),'(a)') TYPSTR(1:12)
+        islot=1
+        CALL EASKATOG('Edit user label and type for...',
+     &     ' ',lodlabel(icomp,1),lodlabel(icomp,2),lodlabel(icomp,3),
+     &     'Add another (NA)','Cancel',' ',' ',islot,nbhelp)
+        if (islot.eq.5) goto 5  ! cancel requested
+        if (islot.eq.4)then
+          call edisp(iuout,'Sorry facility not yet available.')
+          continue   ! not yet available
+        else
+          write(outs,'(a,i1,2a)') 'Label for gains in slot ',islot,
+     &      ' & type ',caskeytype(icomp,islot)
+          write(TYPSTR,'(2a)') lodlabel(icomp,islot),'  '
+          call easks(TYPSTR,outs,' ',12,
+     &      lodlabel(icomp,islot),'Gain label',IER,2)
+          write(lodlabel(icomp,islot),'(a)') TYPSTR(1:12)
 
 C Type to go with this casual gain.
-            idno=islot
-            isw=0
-            call MENUATOL('  ','Available types',
-     &        'a -        not yet defined W & W/m2',
-     &        'b people   basic occupant W & m2/p',
-     &        'c lighting basic lighting W & W/m2',
-     &        'd equipment basic small power W & W/m2',
-     &        'e other    non-specific gains W & W/m2',
-     &        'f net_utilities as legacy icgtyp = 5',
-     &        'g ALOtherElectric H3K other appliances',
-     &        'h ALStoveNG H3K natural gas stoves',
-     &        'i ALStoveElectric H3K electrical stoves',
-     &        'j ALDryer H3K clothes dryers',
-     &        ' ',' ',isw,idno,nbhelp)
-            if(isw.eq.1)then
-              caskeytype(icomp,islot)='-           '
-            elseif(isw.eq.2)then
-              caskeytype(icomp,islot)='people      '
-            elseif(isw.eq.3)then
-              caskeytype(icomp,islot)='lighting    '
-            elseif(isw.eq.4)then
-              caskeytype(icomp,islot)='equipment   '
-            elseif(isw.eq.5)then
-              caskeytype(icomp,islot)='other       '  
-            elseif(isw.eq.6)then
-              caskeytype(icomp,islot)='net_utilities'  
-            elseif(isw.eq.7)then
-              caskeytype(icomp,islot)='ALOtherElectric'  
-            elseif(isw.eq.8)then
-              caskeytype(icomp,islot)='ALStoveNG   '  
-            elseif(isw.eq.9)then
-              caskeytype(icomp,islot)='ALStoveElectric'  
-            elseif(isw.eq.10)then
-              caskeytype(icomp,islot)='ALDryer     '  
-            endif
-            lodslot(icomp,islot)=islot; lodatr1(icomp,islot)=0;
-            lodatr2(icomp,islot)=0
-            ip3ver(icomp)=21  ! upgrade file to remember types
-            modopr=.true.
-          ENDDO  ! of islot
+          idno=islot
+          isw=0
+          call MENUATOL('  ','Available types',
+     &      'a -        not yet defined W & W/m2',
+     &      'b people   basic occupant W & m2/p',
+     &      'c lighting basic lighting W & W/m2',
+     &      'd equipment basic small power W & W/m2',
+     &      'e other    non-specific gains W & W/m2',
+     &      'f net_utilities as legacy icgtyp = 5',
+     &      'g ALOtherElectric H3K other appliances',
+     &      'h ALStoveNG H3K natural gas stoves',
+     &      'i ALStoveElectric H3K electrical stoves',
+     &      'j ALDryer H3K clothes dryers',
+     &      ' ',' ',isw,idno,nbhelp)
+          if(isw.eq.1)then
+            caskeytype(icomp,islot)='-           '
+          elseif(isw.eq.2)then
+            caskeytype(icomp,islot)='people      '
+          elseif(isw.eq.3)then
+            caskeytype(icomp,islot)='lighting    '
+          elseif(isw.eq.4)then
+            caskeytype(icomp,islot)='equipment   '
+          elseif(isw.eq.5)then
+            caskeytype(icomp,islot)='other       '  
+          elseif(isw.eq.6)then
+            caskeytype(icomp,islot)='net_utilities'  
+          elseif(isw.eq.7)then
+            caskeytype(icomp,islot)='ALOtherElectric'  
+          elseif(isw.eq.8)then
+            caskeytype(icomp,islot)='ALStoveNG   '  
+          elseif(isw.eq.9)then
+            caskeytype(icomp,islot)='ALStoveElectric'  
+          elseif(isw.eq.10)then
+            caskeytype(icomp,islot)='ALDryer     '  
+          endif
+          lodslot(icomp,islot)=islot; lodatr1(icomp,islot)=0;
+          lodatr2(icomp,islot)=0
+          ip3ver(icomp)=21  ! upgrade file to remember types
+          modopr=.true.
           goto 5
         endif
 
@@ -3681,17 +3698,21 @@ C If there are enough items allow paging control via EKPAGE.
 
       ELSEIF(IVERT.GT.MHEAD.AND.IVERT.LT.(MVERT-MCTL+1))THEN
 
-C Edit casual gain identified by KEYIND.
+C Edit casual gain identified by KEYIND. Set local variables to pass to
+C edcasgn (commons are updated within edcasgn if the user makes changes).
         CALL KEYIND(MVERT,IVERT,I,IO)
         IDT=IDTYP
         IPER=I
         ICGTX=ICGT(IDT,IPER)
         ICGUX=ICGUnit(IDT,IPER)
+        caskeyt=caskeytype(icomp,iabs(icgtx))
         silent=.false.
         izs=0
         izf=0
-        call EDCASGN(ICOMP,ICGTX,ICGUX,IDT,IPER,silent,izs,izf)
-        write(6,*) '619+++ icgtx',icgtx,icgux,idt,iper,izs,izf
+        call EDCASGN(ICOMP,ICGTX,ICGUX,caskeyt,IDT,IPER,silent,
+     &    izs,izf)
+        write(6,*) '619+++ icgtx',icgtx,icgux,caskeyt,idt,iper,
+     &    izs,izf
         sorted=.false.
         modopr=.true.
       endif
@@ -3760,13 +3781,9 @@ C << revise for more loads >>
       write(ll2,'(a)') lodlabel(icomp,2)
       write(ll3,'(a)') lodlabel(icomp,3)
 
+C Initial assumptions.
       ICGTX=1
-      PS=0.
-      PL=0.
-      RAD=0.5
-      CON=0.5
-      IPPFT=0
-      IPPF=0
+      PS=0.0; PL=0.; RAD=0.5; CON=0.5; IPPFT=0; IPPF=0
 
 C Scan the event profiles file into common blocks.
       lndbp=lnblnk(standarddbpath)
@@ -3836,11 +3853,7 @@ C << and small power can be entered in terms of W/m2.
         CALL ASKOK('Include electrical data with this profile?',
      &    '(see help)',OK,dok,nbhelp)
         IF(.NOT.OK) THEN
-          PPF=0.0
-          IPPF=0
-          PBVOLT=0.0
-          IPPHAS=1
-          PE=0.0
+          PPF=0.0; IPPF=0; PBVOLT=0.0;  IPPHAS=1; PE=0.0
         ELSE
           CALL EASKR(PPF,' ','Power factor? [0-1] ? ',
      &      0.,'F',1.,'F',0.8,'Power factor ',IER,nbhelp)
@@ -3849,11 +3862,7 @@ C << and small power can be entered in terms of W/m2.
      &      '(see help) ',-1,'F',1,'F',0,'casual gain lagging',IERI,
      &      nbhelp) 
           if(ieri.eq.-3)then
-            PPF=0.0
-            IPPF=0
-            PBVOLT=0.0
-            IPPHAS=1
-            PE=0.0
+            PPF=0.0; IPPF=0;  PBVOLT=0.0; IPPHAS=1; PE=0.0
             goto 42
           else
             ippf=ippft
@@ -3872,11 +3881,7 @@ C << and small power can be entered in terms of W/m2.
           CALL EASKI(IPPHAST,'Supply phase 1-3 or 4 ?','(see help)',
      &       1,'F',4,'F',1,'casual gain phase',IERI,6) 
           if(ieri.eq.-3)then
-            PPF=0.0
-            IPPF=0
-            PBVOLT=0.0
-            IPPHAS=1
-            PE=0.0
+            PPF=0.0; IPPF=0; PBVOLT=0.0; IPPHAS=1; PE=0.0
           else
             ipphas=ipphast
           endif            
@@ -3916,20 +3921,21 @@ C the local parameters are copied into common blocks via a call to CPYCASTI.
 C  ICOMP zone number
 C  ICGTX casual gain slot index (still overloaded )
 C  ICGUX units 0=W 1=W/m2 2=m2/person
+C  caskeyt  gain type key word
 C  IDT day type (=-1 then all day types)
 C  IPER period (=0 then new)
 C  silent true if no user interaction requested.
 C If silent is true then use icgs & icgf parameters.
 
-C << pass in the type string as well >>
-
-      subroutine EDCASGN(ICOMP,ICGTX,ICGUX,IDT,IPER,silent,icgsX,icgfX)
+      subroutine EDCASGN(ICOMP,ICGTX,ICGUX,caskeyt,IDT,IPER,silent,
+     &  icgsX,icgfX)
 #include "building.h"
 #include "geometry.h"
 #include "schedule.h"
 
 C Passed parameters
-      integer ICOMP,ICGTX,IDT,IPER,icgsX,icgfX
+      integer ICOMP,ICGTX,ICGUX,IDT,IPER,icgsX,icgfX
+      character caskeyt*16 ! key word
 
       COMMON/OUTIN/IUOUT,IUIN
       common/caleni/nbdaytype,nbcaldays(MDTY),icalender(365)
@@ -3946,7 +3952,6 @@ C Electrical data flag and elctrical data.
       integer ipft,IPHAST  ! for local editing.
       real pft,pwrt,bvoltt,xfla,zb   ! for local editing.
       integer IALL
-      integer icguX  ! unit derived from icgt overload ??
       
 C For help messages
       character helpinsub*24 ! subroutine name
@@ -3955,19 +3960,28 @@ C For help messages
 
       helpinsub='EDCASGN'  ! set for subroutine
 
-C If new period then set defaults otherwise get data from common.
-
-C << place to use ip3ver and *type >>
+C If new period then set defaults based on the key word, otherwise 
+C get data from common.
       if (IPER.eq.0) then
         CMGSX=0.
         CMGLX=0.
-        if(icgtX.eq.1)then
+        if(caskeyt(1:6).eq.'people')then
           RADCX=0.6; CONCX=0.4
-        elseif(icgtX.eq.2)then
+        elseif(caskeyt(1:8).eq.'lighting')then
           RADCX=0.3; CONCX=0.7
-        elseif(icgtX.eq.3)then
+        elseif(caskeyt(1:9).eq.'equipment')then
           RADCX=0.4; CONCX=0.6
-        else
+        elseif(caskeyt(1:5).eq.'other')then
+          RADCX=0.5; CONCX=0.5
+        elseif(caskeyt(1:13).eq.'net_utilities')then
+          RADCX=0.5; CONCX=0.5
+        elseif(caskeyt(1:15).eq.'ALOtherElectric')then
+          RADCX=0.5; CONCX=0.5
+        elseif(caskeyt(1:9).eq.'ALStoveNG')then
+          RADCX=0.5; CONCX=0.5
+        elseif(caskeyt(1:15).eq.'ALStoveElectric')then
+          RADCX=0.5; CONCX=0.5
+        elseif(caskeyt(1:7).eq.'ALDryer')then
           RADCX=0.5; CONCX=0.5
         endif
         IPFX=0
@@ -3977,6 +3991,7 @@ C << place to use ip3ver and *type >>
         BVOLTX=0.0
       ELSEIF(IDT.GT.0)THEN
 
+C << cpycasit also needs caskeyt >>
         call CPYCASIT(icomp,idt,iper,icgtX,icguX,icgsX,icgfX,cmgsX,
      &    cmglX,radcX,concX,ipfX,iphasX,pfX,pwrX,bvoltX)
       endif
@@ -4029,9 +4044,10 @@ C Can be specified as: W, W/obj, W/m^2, m^2/obj
 C Common portion of help message for detailed dialogs.
       if (IGU.eq.1) then
 
-C Gain as W - require gain only. If existing is in W/m2 then multiply
+C User requests gain as W - require gain only. If existing is in W/m2 then multiply
 C up to get W and revise icgtx to be positive and set icgux.
- 20     if (ICGTX.lt.-1) then
+ 20     if (icguX.eq.1) then
+          call edisp(iuout,'Converting from W/m2 to Watts')
           write (HOLD,'(2f8.1,a)') CMGSX*zb,CMGLX*zb,'  '
         else
           write (HOLD,'(2f8.1,a)') CMGSX,CMGLX,'  '
@@ -4049,9 +4065,10 @@ C up to get W and revise icgtx to be positive and set icgux.
         CMGLX=XLATGN
       elseif (IGU.eq.2) then
 
-C Gain as W/m^2 - require gain per square meter. If original was in
+C User requests gain as W/m^2 - require gain per square meter. If original was in
 C W divide by base area to reset value. 
-        if (ICGTX.gt.0) then
+        if (icguX.eq.0) then
+          call edisp(iuout,'Converting from Watts -> W/m2...')
           write (HOLD,'(2f8.1,a)') CMGSX/zb,CMGLX/zb,'  '
         else
           write (HOLD,'(2f8.1,a)') CMGSX,CMGLX,'  '
@@ -4063,7 +4080,7 @@ C W divide by base area to reset value.
         call EGETWR(HOLD,K,XSEN,0.,50.0,'W','sensible gain',IER)
         call EGETWR(HOLD,K,XLATGN,0.,50.0,'W','latent gain',IER)
         if (IER.ne.0) goto 30
-        if (ICGTX.eq.1) then
+        if(caskeyt(1:6).eq.'people')then
           CMGSX=XSEN*zb   ! occupants so convert back to W
           CMGLX=XLATGN*zb
           icguX=0   ! mark as Watts
@@ -4127,7 +4144,7 @@ C If occupants and a zero entered this is interpreted as no people
 C for this timestep.  For gains other than people convert the users
 C data back into W/m2.
         NOBJ=1
- 50     if (ICGTX.eq.-1) then
+ 50     if(caskeyt(1:6).eq.'people')then
           FLA=CMGSX  ! assumes occupants already in m2/p
         else
           FLA=10.
@@ -4139,7 +4156,7 @@ C data back into W/m2.
         if(IERI.eq.0)then
           FLA=XFLA
 
-          if (iabs(ICGTX).eq.1) then
+          if(caskeyt(1:6).eq.'people')then
 
 C If dealing with occupants treat this as a special case which assumes
 C that each person is 95W sensible and 45W latent.
@@ -4158,7 +4175,7 @@ C that each person is 95W sensible and 45W latent.
      &          'W & latent to ',VL,'W.'
             endif
             call edisp(iuout,outs)
-C            write(6,*) 'xx ',icgtx,cmgsx,cmglx,vs,vl
+            write(6,*) 'xx ',icgtx,cmgsx,cmglx,vs,vl
           else
             write (HOLD,'(2f8.1,a)') CMGSX/(zb/FLA),
      &                               CMGLX/(zb/FLA),'  '
@@ -4185,10 +4202,8 @@ C            write(6,*) 'xx ',icgtx,cmgsx,cmglx,vs,vl
         goto 10  ! user hit the cancel button
       endif
 
-C Ask for rad/ conv split.
-
-C << take into account which gain type when setting intial values >>
-
+C Ask for rad/ conv split. radcs and concs will already have been set
+C based on the key word.
  70   write (HOLD,'(2f7.3,a)') RADCX,CONCX,'  '
       helptopic='operations_lighting_data'
       call gethelptext(helpinsub,helptopic,nbhelp)
@@ -4280,7 +4295,7 @@ C If idt=-1 then do for all day types
         IDT=1
       ENDIF
 
-C Start insertion of casual gain.
+C Start insertion of casual gain. Loop until slot matches.
  113  if (IDT.gt.0) then
         IF(IPER.EQ.0)THEN
           NCG=NCAS(IDT)
@@ -4290,7 +4305,7 @@ C Start insertion of casual gain.
             if(iabs(ICGT(IDT,I)).le.iabs(ICGTX))then
               if(ICGS(IDT,I).lt.ICGSX)then
                 ILPER=I+1
-              elseif(ICGS(IDT,I).eq.ICGSX)then!.and.ICGF(IDT,I).gt.ICGFX)then
+              elseif(ICGS(IDT,I).eq.ICGSX)then !.and.ICGF(IDT,I).gt.ICGFX)then
                 ILPER=I
               endif
             endif
@@ -4305,8 +4320,8 @@ C Start insertion of casual gain.
 C Now update common blocks. Loop backwards from INC to ILPER.
         do 300 IX=INC,ILPER,-1
           if (IX.eq.ILPER) then
-C            write(6,*) 'cpycasit ',icomp,idt,ix,icgtX,icguX,icgsX,
-C     &        icgfX,cmgsX,cmglX,radcX,concX
+            write(6,*) 'cpycasit ',icomp,idt,ix,icgtX,icguX,icgsX,
+     &        icgfX,cmgsX,cmglX,radcX,concX
             call CPYCASTI(icomp,idt,ix,icgtX,icguX,icgsX,icgfX,cmgsX,
      &        cmglX,radcX,concX,ipfX,iphasX,pfX,pwrX,bvoltX)
           else

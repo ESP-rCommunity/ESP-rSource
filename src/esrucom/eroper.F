@@ -39,7 +39,7 @@ C CPYCASIT   Copy one casual period jx to backup variables for zone icomp
 C            and daytype idaytype. 
 C CPYCASTI   Copy from backup variables to casual period jx for zone icomp 
 C            and daytype idaytype. 
-C PROCESSOLDCAS: Processes gains in an old format operations file.
+C PROCESSOLDCAS: Processes casual gains to remove overlaps in periods.
 C PRECOMP    Calculates the apparent and reactive rectangular component
 C            of a power comsuming load.
 C checksort  Does a quick check of casual gains for sorted state.
@@ -2447,9 +2447,9 @@ C Commons for electrical data
       INTEGER NEL,IPF,IPHAS,istarthr,ifinishr,ip
       REAL PF,PWR,BVOLT
 
-C loadcount(zone,gaintype,daytype) - nb of each gain type (whether
+C loadcount(zone,gaintype,daytype) - number of each gain type (whether
 C   absolute or W/m2). Up to MGTY casual gain types are supported.
-C loadm2count(zone,gaintype,daytype) - nb of each m2 gain types.
+C loadm2count(zone,gaintype,daytype) - number of each m2 gain types.
 C loadmixed(zone,gaintype,daytype) - if zero then nothing, if one
 C   then all non-zero are absolute, if two then all (non-zero) are in
 C   W/m2 or person/m2, if three then non-zero are mixed.
