@@ -118,9 +118,9 @@ MODULE h3kmodule
          rvBuildingAllZonesEnvelopeAllComponentsNetFlux, rvBuildingAllZonesThermalLoadsHeatingTotal, &
          rvBuildingAllZonesThermalLoadsCoolingTotal, rvBuildingAllZonesThermalLoadsNet, &
          rvBuildingAllZonesInternalGainsTotal, rvBuildingAllZonesInternalGainsUseful, &
-         rvBuildingAllZonesInternalGainsAdverse, rvBuildingAllZonesEnergyBalanceNet, rvTemperature, &
+         rvBuildingAllZonesInternalGainsAdverse, rvBuildingAllZonesEnergyBalanceNet, &
          rvBuildingZoneLightFrac, rvBuildingZoneLightingzoneIllum, &
-         rvBuildingZoneDGP, rvBuildingZoneUGR, &
+         rvBuildingZoneDGP, rvBuildingZoneUGR, rvIntSurfTemperature, &
          rvExtSurfTemperature, rvPlantContainmentFlux, rvHCi, rvICORI, rvHCe, rvICORE, rvPRT, rvHRi, rvAmbRT, &
          rvExtSurfTotRad,rvExtSurfRadIncAng,rvExtSurfSolAzi,rvExtSurfSolElev, &
          rvClimateSolarDiffuseHorizontalRadiation, rvClimateSolarDirectNormalRadiation, &
@@ -992,11 +992,11 @@ CONTAINS
       rvBuildingZoneUGR%Description = 'Zone sensor unified glare ratio'
       Call AddVariable(rvBuildingZoneUGR)
 
-      rvTemperature%VariableName = 'bui/*/s*/temp_inside'
-      rvTemperature%MetaType = 'units'
-      rvTemperature%VariableType = '(oC)'
-      rvTemperature%Description = 'Temperature on zone inside face'
-      Call AddVariable(rvTemperature)
+      rvIntSurfTemperature%VariableName = 'bui/*/s*/temp_inside'
+      rvIntSurfTemperature%MetaType = 'units'
+      rvIntSurfTemperature%VariableType = '(oC)'
+      rvIntSurfTemperature%Description = 'Temperature on zone inside face'
+      Call AddVariable(rvIntSurfTemperature)
 
       rvExtSurfTemperature%VariableName = 'bui/*/s*/temp_outside'
       rvExtSurfTemperature%MetaType = 'units'

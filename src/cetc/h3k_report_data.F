@@ -419,7 +419,6 @@ C      REAL TMA                  ! Mean air point temperature (oC)
       DIMENSION TS(MS)  ! surface temperatures for current zone (for resultant temp calc)
       
       INTEGER iSurface,iNode,iViewSurface,iLtz,iSur  ! Counters
-      integer iH3K_NameLen ! length of name root
 
       real SBC                              ! Stephan-Boltzmann constant
       parameter ( SBC=56.7E-9 )
@@ -429,18 +428,8 @@ C.....CFC
        integer nd_blnd,nd_cav,nd_ext ! dummy variables for node bookkeeping
 
 C.....DECLARATIONS for H3Kreporting object
-      CHARACTER*2   cZone_Chars, cSurf_Chars, cNode_Chars
+      CHARACTER*2   cSurf_Chars, cNode_Chars
 
-C .... String declarations for base output names. The names may *not* include the separator !
-C .... Preferably, this string-allocation would be put in a header file so that it could easily be
-C .... used wherever h3k output is defined.
-      character*3 cBuildingName ! root name for "building"
-      character*3 cZoneName ! root name for "zone"
-      character*5 cAllZonesName ! root name for data output concerning all zones
-      character*1 cSurfaceRootName ! root name for "surface"
-      character*1 cNodeRootName ! root name for "node"
-      character*1 cSep ! The separator
-      character*1 cOne ! generic 1-character string
       character*2 cTwo ! generic 2-character string
 
 C new lamarche stuff:
@@ -636,24 +625,6 @@ C----------------------------------------------------------------------
       real PSat01 ! Function returns the saturation vapour pressure at temperature T
       
 C----------------------------------------------------------------------
-C      Root Names
-C----------------------------------------------------------------------
-      cSep='/'
-      cBuildingName='bui'
-
-C.....Pad zone index to 'XX'
-      if ( iZone .gt. 9 ) then
-         write (cZone_Chars,'(I2)') iZone
-      else
-        write (cZone_Chars,'(A,I1)') '0', iZone
-      endif
-      
-      cZoneName='z' // cZone_Chars
-      cAllZonesName='all_z'
-      cSurfaceRootName='s'
-      cNodeRootName='n'
-
-C----------------------------------------------------------------------
 C.....Set Performance indicators on first pass.  This is used to jump
 C.....over sections of code where no h3koutput is requested.
 C.....hierarchical relationship zone,surface,node
@@ -730,12 +701,6 @@ C----------------------------------------------------------------------
       endif reset_building_totals
 
 
-C.....Pad zone index to 'XX'
-      if ( iZone .gt. 9 ) then
-         write (cZone_Chars,'(I2)') iZone
-      else
-        write (cZone_Chars,'(A,I1)') '0', iZone
-      endif
 C------------------------- current day type ---------------------------
       IDAY=IDYP
       IF(IHRF.EQ.1)IDAY=IDYP+1
@@ -998,9 +963,6 @@ C-----------------------------------------------------------------------
 
           case ( iBCExternal )
 
-
-
-
 C...........Above-grade heat loss
             call AddToReport(
      &       rvHeatFluxAboveGradeNet%identifier,
@@ -1212,12 +1174,6 @@ C.............get solar incidence angle on surface and total solar (dir + diff)
 
 
          endif
-C node temperature for node "nndc" is zero for whatever reasons ... (???)
-C         call add_to_xml_reporting (
-C     &          tfc(iZone,iSurface,nndc(iZone,iSurface)),
-C     &          H3K_rep_Name(1:iH3K_NameLen) // '/tfc/inside',
-C     &          'units', '(oC)',
-C     &          'Node temperature on internal surface' )
 
       enddo zone_surface_loop
 
@@ -1398,12 +1354,6 @@ C.....
 C.....Any changes to this code should be made within
 C.....the H3Kreports demarcaration comments
 C.....Set format depending on number of zones
-
-C.......Create base name for zone data output
-c        H3K_rep_NAME = cBuildingName  
-c     &              // cSep // zname(iZone)(1:lnzname(iZone))
-
-        iH3K_NameLen = 3+1+lnzname(iZone)
 
 C---------------------*****---------------------------------------------
 C       Report heating and cooling setpoints if zone is controlled
@@ -1672,14 +1622,8 @@ C.....Lighting zone illuminance
       endif
 
 C.....Zone Resultant TEMPERATURE
-c      do 22 iSur=1,NZSUR(iZone)
-c         TS(iSur)=TFS(iZone,iSur)
-c 22   continue
-
-c      call MORESL(iZone,TFA(iZone),TS,YDUM,NZSUR(iZone),TRESL)
-c The moresl code (necessary due to different common usage in res ...
-
-C Sum product of surface temperatures and areas (i.e. area weighted surface temp).
+c     Copy moresl code (necessary due to different common usage in res ...
+C     Sum product of surface temperatures and areas (i.e. area weighted surface temp).
       ZPROD=0.
       allsurf=0.
       DO 23 iSur=1,NZSUR(iZone)
@@ -1688,7 +1632,7 @@ C Sum product of surface temperatures and areas (i.e. area weighted surface temp
  23   CONTINUE
 
       TRESL=0.5*TFA(iZone)+0.5*(ZPROD/allsurf)
-C End moresl code
+C     End moresl code
 
       call AddToReport (
      &         rvAirPointResultantTemperature%Identifier,
@@ -2037,10 +1981,6 @@ C-----------------------------------------------------------------------
 
       report_whole_building: if ( iZone == ncomp ) then
 
-C.......Create base name for whole building data output
-c        H3K_rep_NAME = cBuildingName//cSep//cAllZonesName
-c        iH3K_NameLen=lnblnk(H3K_rep_NAME)
-
 C.......Total heating
       call AddToReport(
      &         rvBuildingAllZonesSuppliedEnergyHeating%Identifier,
@@ -2247,32 +2187,25 @@ C.......below should also make use of.
             write(cSurf_Chars, '(A,I1)') '0', iSurface
          endif
 
-C.......Create base name for surface values output
-c        H3K_rep_NAME = cBuildingName  
-c     &              // cSep // zname(iZone)(1:lnzname(iZone))
-c     &              // cSep // cSurfaceRootName // cSurf_Chars
-
-C.......Set report variable name length
-c        iH3K_NameLen = 3+1+lnzname(iZone)+1+1+2
-
-C........Surface temperature
+C........Internal Surface temperature
 C........->Report data
          call AddToReport(
-     &      rvTemperature%Identifier,
+     &      rvIntSurfTemperature%Identifier,
      &      tfs(iZone,iSurface),
      &      zname(iZone)(1:lnzname(iZone)),
      &      cSurf_Chars)
 
 C........External facing surfaces -> Surface temperature
-         if (IE(iZone,iSurface) .eq. 0) THEN ! the surface faces external
+C << see lines 1162 - 1181 !! >>
+c         if (IE(iZone,iSurface) .eq. 0) THEN ! the surface faces external
 
 C........->Report data
-            call AddToReport (
-     &         rvExtSurfTemperature%Identifier,
-     &         TFC(iZone,iSurface,1),
-     &         zname(iZone)(1:lnzname(iZone)),
-     &         cSurf_Chars)
-         Endif ! if ie = 0
+c            call AddToReport (
+c     &         rvExtSurfTemperature%Identifier,
+c     &         TFC(iZone,iSurface,1),
+c     &         zname(iZone)(1:lnzname(iZone)),
+c     &         cSurf_Chars)
+c         Endif ! if ie = 0
 
 C........Radiant heat injection associated with plant containment.
 C........->Report data
@@ -2378,8 +2311,10 @@ C......Include only if h3k reports on building/zone_*/surf_*/node_* variables
          if (lIncl_Node) then
 c        Unless the <dump_all_data> is set to true or you request 
 c        one of these node values then the loop will be bypassed.
+C        Omit iNode = 1 as this is the external surface temperature
+C        and reported on elsewhere.
 
-          do iNode = 1, (nndc (iZone, iSurface )-1)
+          do iNode = 2, (nndc (iZone, iSurface )-1)
              if ( iNode .gt. 9 ) then
                write(cNode_Chars, '(I2)')  iNode
              else
@@ -2460,7 +2395,6 @@ C.....Sky temperature and cloud cover
 C.....DECLARATIONS for H3Kreporting object
 
       character*3   cClimateName
-      integer       iH3K_NameLen
 
       INTEGER LNBLNK
 
@@ -2589,12 +2523,10 @@ C.....Declare passed variables
       integer  nsinc            ! number of timesteps that have lapsed since
                                 ! simulation start
 C.....Local variables
-      character*3 cBuildingName ! "Building" name for data output
       real    temp_day          ! Temporary vbls used to calculate day
       real    real_day
       integer idyp_adjust
       integer iCurrent_year, iStart_year
-      integer iH3K_NameLen
       integer IDTY, IDAY        ! index for current day type, current day
 
 C.....References
@@ -2602,13 +2534,6 @@ C.....References
                                 ! a string
       integer h3k_month         ! function returning index of current month when
                                 ! passed the current day (1.0->365.999...)
-
-C.....Set time data output base name
-      cBuildingName='bui'
-
-C.......Set base name for time data output
-c      H3K_rep_NAME = cBuildingName
-c      iH3K_NameLen=lnblnk(H3K_rep_NAME)
 
 C------------------------- current day type ---------------------------
       IDAY=IDYP
@@ -2834,14 +2759,6 @@ C.......Get the plant component reference number
 C === output (additional) node data if available
         if (NAPDAT(ii).gt.0) then
           do ll = 1, NAPDAT(ii)
-C...........Build node name
-c            if(ll<10)then  ! First nine nodes.
-c              iNodeNumLen = 1
-c              write(AddData_Num, '(I1)') ll
-c            else           ! This presumes that ... whatever
-c              iNodeNumLen = 2
-c              write(AddData_Num, '(I2)') ll
-c            endif
 
             call AddToReport(
      &           rvPlantCompAdditionalData%Identifier,
@@ -3047,9 +2964,7 @@ C....................Connection is to hydrogen.
                   else
 C....................Connection is solid. No flow rate.
 
-
                   endif
-
 
                endif
 
@@ -4055,8 +3970,6 @@ C*******************************************************************************
 #include "building.h"
 #include "net_flow.h"
 C.....ESP-r commons
-C      COMMON/AFN/IAIRN,LAPROB,ICAAS(MCOM)
-C      CHARACTER LAPROB*72
 
       COMMON/MFLOW1/NNOD,NCMP,NCNN
 C Network size
@@ -4228,16 +4141,6 @@ c	! contaminant concentration from flow network *******************************
      &            NDNAM(ii)(1:NDNAM_len),
      &            CONTMNAM(jj)(1:LNBLNK(CONTMNAM(jj))))
 
-c         write(H3K_rep_NAME,'(A,A,A)')
-c     &              Node_Name(1:lnNodeName),
-c     &              '/conc/',
-c     &              CONTMNAM(jj)(1:LNBLNK(CONTMNAM(jj)))
-c
-c         call add_to_xml_reporting (
-c     &              CCONC(ii,jj),
-c     &              H3K_rep_NAME,
-c     &              'units', 'kg/kg',
-c     &              'mfn node contaminant concentration' )
        enddo
 
 C........Only use positive side of connections
@@ -4457,10 +4360,6 @@ C     Data common for additional plant component descriptive data
       character*30 AddDataDesc
       character*15 AddDataUnit
       character*20 AddDataLabel
-
-c      data AddDataDesc  / MPCOM * MPCRES * " " /
-c      data AddDataUnit  / MPCOM * MPCRES * " " /
-c      data AddDataLabel / MPCOM * MPCRES * " " /
 
       AddDataDesc(2,1) = "Vap. addition flow rate (kg/s)"
       AddDataUnit(2,1) = "(kg/s)"
@@ -4889,10 +4788,10 @@ c      data AddDataLabel / MPCOM * MPCRES * " " /
       AddDataUnit(62,7) = "(-)"
       AddDataLabel(62,7) = "7"
 
-      AddDataDesc(63,1) = "Minimum floor temperature (C) "
-      AddDataUnit(63,1) = "(C)"
+      AddDataDesc(63,1) = 'Minimum floor temperature (C) '
+      AddDataUnit(63,1) = '(C)'
       AddDataLabel(63,1) = "MinFloorTemp"
-      AddDataDesc(63,2) = "Maximum floor temperature (C) "
+      AddDataDesc(63,2) = 'Maximum floor temperature (C) '
       AddDataUnit(63,2) = "(C)"
       AddDataLabel(63,2) = "MaxFloorTemp"
       AddDataDesc(63,3) = "Supply power (Watts)          "
