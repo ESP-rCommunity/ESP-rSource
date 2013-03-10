@@ -891,13 +891,11 @@ C used in the current model.
  
       if(actflatfile(1:1).eq.'W')then
 C Compose help message
-        H(1) ='The number of day types defined in the operations file'
-        H(2) ='from outside the current model definitiion should be '
-        H(3) ='the same as the number of day types defined in the '
-        H(4) ='current model. If this is not the case then the data '
-        H(5) ='imported may corrupt the operations file in the current '
-        H(6) ='model.'
-        CALL PHELPD('Warning',6,'-',0,0,IER)
+        H(1) ='After importing schedules from another file please'
+        H(2) ='carefully review the contents of the updated zone '
+        H(3) ='operation file. The import and/or conversion may have'
+        H(4) ='been incomplete or the units confused. '
+        CALL PHELPD('Warning',4,'-',0,0,IER)
         call askok(' ','Import data?',OK,dok,3)
       elseif(actflatfile(1:1).eq.'-')then
         ok=.true.
@@ -1336,18 +1334,12 @@ C Error messages.
       END
 
 C ******************** ZSCHEDHINT 
-C ZSCHEDHINT scans documentation in an operation file and reports on
-C it so a user can decide if they want to use it. It is written to
-C not alter any common blocks.
+C ZSCHEDHINT displays contents of an operation file and reports on
+C it so a user can decide if they want to use it. It has no impact
+C on data structures of the model.
 C IUO is the file unit to use
 C FILE (variable width char) is the name of the file to scan.
 
-C << it would be useful to use this subroutine to discover the
-C << number of calendar day types assumed in the file and return
-C << this information.
-C << what about just showing the raw contents of the file (all or
-C << the first couple of dozen lines) so that the user can notice
-C << the number of day types?
       SUBROUTINE ZSCHEDHINT(IUO,FILE,IER)
 #include "building.h"
 #include "espriou.h"
@@ -1364,41 +1356,23 @@ C Error subroutine and error details for dll mode.
       common/dllerr/dllsubr,dllmesg
 
 C Local variables (to protect info in common blovks)
-      CHARACTER oprdescc*248,ventdescc*248
-      CHARACTER ctlstrc*24,outstr*124,outs*124
+      CHARACTER outs*124
       CHARACTER*(*) FILE
-      character dllsubr*12,dllmesg*124,WORD*20,loutstr*248
-      character dstmp*24,h*72
+      character dllsubr*12,dllmesg*124
+      character h*72
       character louts*248
-      logical havehi,dll,ok,dok
-      integer nacc,ndty
-
-      dimension nacc(mdty)
+      logical dll,ok,dok
+      integer ndty
+      character longtfile*144
 
       dok=.true.
-      IELFC=0
 
-C Initialise number of day types assuming that it matches that
-C used in the current model.
-      NDTY=nbdaytype
-
-C Compose help message
-      H(1) ='The number of day types defined in the operations file'
-      H(2) ='from outside the current model definitiion should be '
-      H(3) ='the same as the number of day types defined in the current'
-      H(4) ='model. If this is not the case then the data imported may'
-      H(5) ='corrupt the operations file in the current model.'
-      CALL PHELPD('Warning',5,'-',0,0,IER)
-      call askok(' ','View file contents?',OK,dok,5)
-      if(.not.ok)return
-      CALL EASKI(ndty,'Number of calendar day types (see help)',
-     &      'Confirm:',0,'F',mdty,'F',3,'day types',IER,5) 
-
-C Check if running in dll mode.
+C List out the file contents and then ask the user for agreement
+C and for the number of day types. First check if running in dll mode.
       call isadll(dll)
 
 C Initialise project data file.
- 43   CALL EFOPSEQ(IUO,FILE,1,IER)
+      CALL EFOPSEQ(IUO,FILE,1,IER)
       IF(IER.NE.0)THEN
         write(louts,'(3a)') 'Operations file ',
      &    FILE(1:lnblnk(FILE)),' could not be opened.'
@@ -1413,192 +1387,39 @@ C Initialise project data file.
           RETURN
         endif
       ENDIF
+
+C Display the contents of the file to the text feedback.
+      call edisp(iuout,
+     &  '---start of file-------------------------------------')
       write(currentfile,'(a)') FILE(1:lnblnk(FILE))
+      write(longtfile,'(a)') file
+      CALL LISTAS(IUO,longtfile,IER)
 
-C Read lines from file, discarding comments. Look for header on
-C newer files. Older files will begin with a description. To allow for
-C description with spaces copy directly from OUTSTR rather than parsing
-C it into words.  
-      CALL STRIPC(IUO,OUTSTR,0,ND,1,'oper name or header',IER)
-      if(outstr(1:11).eq.'*Operations')then
-        if(outstr(13:15).eq.'1.0')then
-          ip3verc=1
-          call edisp(iuout,' Source file version 1.0')
-        elseif(outstr(13:15).eq.'2.0')then
-          ip3verc=2
-          call edisp(iuout,' Source file version 2.0')
-        elseif(outstr(13:15).eq.'2.1')then
-          ip3verc=21
-          call edisp(iuout,' Source file version 2.1')
-        elseif(outstr(13:15).eq.'3.0')then
-          ip3verc=30
-          call edisp(iuout,' Source file version 3.0')
-        endif
-        CALL STRIPC(IUO,OUTSTR,0,ND,1,'header',IER)
-        K=0
-        CALL EGETW(OUTSTR,K,WORD,'W','header tags',IER)
-        if(WORD(1:5).eq.'*Date'.or.WORD(1:5).eq.'*date')then
-          CALL EGETRM(OUTSTR,K,dstmp,'W','date stamp',IER)
-        endif
-        if(ip3verc.lt.21)then
-          CALL LSTRIPC(IUO,LOUTSTR,0,ND,1,'oper notes',IER)
-          oprdescc=LOUTSTR
-          ventdescc=LOUTSTR
-        elseif(ip3verc.eq.21)then
-          CALL LSTRIPC(IUO,LOUTSTR,0,ND,1,'oper notes',IER)
-          ventdescc=LOUTSTR
-        elseif(ip3verc.gt.21)then
-          CALL LSTRIPC(IUO,LOUTSTR,0,ND,1,'oper *air_schedules',IER)
-          if(loutstr(1:14).eq.'*air_schedules')then
-            CALL LSTRIPC(IUO,LOUTSTR,0,ND,1,'air sched notes',IER)
-            ventdescc=LOUTSTR
-          else
-            ventdescc=LOUTSTR  ! set to same as oprdesc
-          endif
-        endif
-      else
-        write(oprdescc,'(a)') OUTSTR(1:lnblnk(OUTSTR))
-      endif
-      call edisp(iuout,' Source scheduled air notes:')
-      call edisp248(iuout,ventdescc,80)
+C Initialise number of day types assuming that it matches that
+C used in the current model.
+      NDTY=nbdaytype
 
-C Thermostatic control data. If 4th item then
-      if(ip3verc.le.21)then
-        havehi = .false.
-        CALL STRIPC(IUO,OUTSTR,99,ND,1,'Thmst control',IER)
-        K=0
-        CALL EGETWI(OUTSTR,K,ITCTLC,-14,4,'W','opr cntl',IER)
-        if(nd.eq.4)havehi=.true.
-
-C Generate a brief descrition and proceed acording to control type.
-        IY=ITCTLC
-        if(IY.eq.-14)then
-          ctlstrc='infil only: wind speed  '
-        elseif(IY.eq.-13)then
-          ctlstrc='infil only: ext db temp '
-        elseif(IY.eq.-12)then
-          ctlstrc='infil only: adj zone tmp'
-        elseif(IY.eq.-11)then
-          ctlstrc='infil only: zone temp   '
-        elseif(IY.eq.-4)then
-          ctlstrc='vent only: wind speed   '
-        elseif(IY.eq.-3)then
-          ctlstrc='vent only: ext db temp  '
-        elseif(IY.eq.-2)then
-          ctlstrc='vent only: adj zone temp'
-        elseif(IY.eq.-1)then
-          ctlstrc='vent only: zone temp    '
-        elseif(IY.eq.4)then
-          ctlstrc='infil & vent: wind speed'
-        elseif(IY.eq.3)then
-          ctlstrc='infil & vent: ext db T  '
-        elseif(IY.eq.2)then
-          ctlstrc='infil & vent: adj zone T'
-        elseif(IY.eq.1)then
-          ctlstrc='infil & vent: zone T    '
-        elseif(IY.eq.0)then
-          ctlstrc='no control of air flow  '
-          write(outs,'(a,a)') ' Control: ',ctlstrc
-          call edisp(iuout,outs) 
-          goto 22
-        else
-          ctlstrc='unknown flow control   '
-        endif
-        write(outs,'(a,a)') ' Control: ',ctlstrc
-        call edisp(iuout,outs) 
-
-C Skip past the flow control details.
-        CALL STRIPC(IUO,OUTSTR,0,ND,1,'Lower flow details',IER)
-
-        CALL STRIPC(IUO,OUTSTR,0,ND,1,'Mid flow details',IER)
-        if(havehi)then
-          CALL STRIPC(IUO,OUTSTR,0,ND,1,'High flow details',IER)
-        endif
-
-C Air change information.
- 22     DO 400 IDTY=1,NDTY
-          CALL STRIPC(IUO,OUTSTR,99,ND,1,'flow periods',IER)
-          if(ND.ne.1)then
-            write(outs,'(2a,i2)') 'The source operation file may',
-     &        ' assume more calendar day types ',ndty
-            call edisp(iuout,outs)
-            write(outs,'(a,i2,a)') 'than is used in the model',
-     &        nbdaytype,' please check before importing.'
-            call edisp(iuout,outs)
-          endif
-          K=0
-          CALL EGETWI(OUTSTR,K,NACC(idty),0,MA,'W','periods',IER)
-          IF(NACC(idty).EQ.0)goto 4
-          DO 10 I=1,NACC(idty)
-            CALL STRIPC(IUO,OUTSTR,99,ND,1,'Period flow details',IER)
-            if(ND.ne.6)then
-              write(outs,'(2a,i2)') 'The source operation file may',
-     &          ' assume fewer calendar day types ',ndty
-              call edisp(iuout,outs)
-              ndty=ndty-1    ! decrement and try again
-              write(outs,'(a,i2,a,i2,a)') 'than is used in the model',
-     &          nbdaytype,' trying',ndty,'....'
-              call edisp(iuout,outs)
-              CALL ERPFREE(IUO,ISTAT)
-              goto 43
-            endif
-  10      CONTINUE
-  4       WRITE(outs,'(A,2I3)')
-     &  ' Number of air flow periods in day type no. ',idty,NACC(idty)
-          call edisp(iuout,outs)
- 400    CONTINUE
-
-      elseif(ip3verc.ge.30)then
-
-C This logic for scanning newer files still to be done.
-
-      endif
-
-C For ip3ver = 21 read section about casual types.
-      if(ip3verc.ge.21)then
-        CALL LSTRIPC(IUO,LOUTSTR,0,ND,1,'start of casual',IER)
-        if(loutstr(1:7).eq.'*casual')then
-          CALL LSTRIPC(IUO,LOUTSTR,0,ND,1,'oper casual notes',IER)
-          oprdescc=LOUTSTR
-        else
-          oprdescc=LOUTSTR
-        endif
-
-C Read scratch variables for *type.
-        islot=0
-  42    CALL STRIPC(IUO,OUTSTR,0,ND,1,'*type or *end_type',IER)
-        if(outstr(1:5).eq.'*type')then
-          islot=islot+1   ! increment the casual gain slot
-          goto 42   ! read another line
-        elseif(outstr(1:9).eq.'*end_type')then
-          continue   ! we are done with this section
-        endif
-      endif
-      call edisp(iuout,' Source casual notes:')
-      call edisp248(iuout,oprdescc,80)
-
-C Casual gains.
-      DO 500 IDTY=1,NDTY      
-        CALL STRIPC(IUO,OUTSTR,0,ND,1,' gain periods',IER)
-        K=0
-        CALL EGETWI(OUTSTR,K,NCASC,0,MC,'W',' periods',IER)
-        IF(NCASC.EQ.0)goto 5
-        DO 40 I=1,NCASC
-          CALL STRIPC(IUO,OUTSTR,99,ND,1,'Period gain detl',IER)
-
-C Check if electrical data has also been saved.
-          if(ND.eq.12)IELFC=1
-   40   CONTINUE
-    5   WRITE(outs,'(A,I3,A,I3)')' Number of casual gains in day type ',
-     &  IDTY,' = ',NCASC
-        call edisp(iuout,outs)
-        if(IELFC.eq.1)call edisp(iuout,
-     &    'Electrical data has been defined for some periods.')
- 500  CONTINUE
-
-      if(ip3verc.eq.0) call edisp(iuout,
-     &    'Operations file is an out of date format.')
+C Compose help message
+      h(1)='Review the contents of the file. If the schedule is ok'
+      h(2)='then proceed. If you say no the you will be returned to'
+      h(3)='the menu for another selection. '
+      h(4)=' '
+      h(5)='If the file has fewer day types than used by the model'
+      h(6)='type in the value matching the file. If it has more day'
+      h(7)='types the import may fail. '
+      call edisp(iuout,
+     &  '---end of file------------------------------------- ')
       call edisp(iuout,' ')
+      write(outs,'(a,i2,a)') 'PLEASE NOTE: the current model assumes',
+     &  nbdaytype,' day types in the year.'
+      call edisp(iuout,outs)
+      call edisp(iuout,
+     &  'Review the contents listed to see if it matches. You will')
+      call edisp(iuout,'be asked for the day types in the file.')
+      call askok(' ','Continue with the import?',OK,dok,7)
+      if(.not.ok)return
+      CALL EASKI(ndty,'Number of calendar day types (see help)',
+     &      'Confirm:',0,'F',mdty,'F',4,'day types',IER,5) 
 
 C Now free project data file.
       CALL ERPFREE(IUO,ISTAT)

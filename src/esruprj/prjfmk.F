@@ -83,7 +83,7 @@ C updated when the user exits).
 
       CHARACTER tcname*248
       CHARACTER ITEM(14)*33,choices(11)*32,LTMP*72,GFILE*72
-      character sfile*72,snpfile*72,fs*1,outs*124
+      character sfile*72,snpfile*72,fs*1,outs*124,louts*248
       character priorname*72
       integer lnprior,lnoprf
       character act*8,iwatt*8,afact*8,iflow*8,vflow*8
@@ -118,9 +118,6 @@ C just write operations file
         ICOMP=IVER
         if(cfgok.and.(.NOT.browse))then
           CALL EMKOPER(IUO,LPROJ(ICOMP),ICOMP,IER)
-C Debug.
-C          write(6,*) 'f lodslot ',icomp,':',
-C     &      (lodslot(icomp,iph),iph=1,7)
           IF(IER.LT.0)THEN
             call edisp(iuout,
      &        'Problem saving current operations to the new file.')
@@ -182,13 +179,13 @@ C Operations file not known, allow user to give name or browse.
         call gethelptext(helpinsub,helptopic,nbhelp)
         iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
         if(iglib.eq.2)then
-          CALL EASKSCMD(LTMP,' ','Confirm zone operations file:',
+          CALL EASKSCMD(LTMP,'Zone operation file name','Confirm:',
      &      'browse another',clkok,72,GFILE,'operations file',ISER,
      &       nbhelp)
           if(clkok)iclkok=1   ! notice browse button
           if(iser.eq.-3)iclkok=2  ! notice cancel button
         else
-          CALL EASKS2CMD(LTMP,' ','Confirm zone operations file:',
+          CALL EASKS2CMD(LTMP,'Zone operation file name','Confirm:',
      &      'browse another','cancel',iclkok,72,GFILE,
      &      'operations file',IER,nbhelp)
         endif
@@ -227,9 +224,7 @@ C            write(6,*) 'the snpfile is ',snpfile(1:lnblnk(snpfile))
           lnoprf=lnblnk(LTMP)
         endif
 
-C Display a bit of information about this browsed file.
-
-C << add dialog with user to see if they want to use this file >>
+C Display contents of this browsed file.
         IUO=IFIL+1
         call FINDFIL(LTMP,XST)
         IF(XST) call ZSCHEDHINT(IUO,LTMP,IER)
@@ -439,6 +434,7 @@ C Section dealing with importing air flows from whatever source.
           if(igu.eq.4.or.igu.eq.7)then
 
 C Warn the user that the selection list is going to come up twice.
+C << this seems overly complex, try to just as for file once >>
             call edisp(iuout,
      &        'You will be asked to select the source zone twice. The')
             call edisp(iuout,
@@ -464,7 +460,7 @@ C flows are to preserve ach or volume of flow.
               goto 38
             endif
 
-C Display a bit of information about this browsed file.
+C Display contents  this browsed file.
             IUO=IFIL+1
             write(LTMP,'(a)') LPROJ(isource)
             call FINDFIL(LTMP,XST)
@@ -491,10 +487,8 @@ C of the distribution and let the user select one.
               call browsefilelist('b','pat','opr',sfile,snpfile,nfile,
      &          iier)
               if(snpfile(1:2).ne.'  ')then
-C Debug.
-C            write(6,*) 'the browsed file is ',sfile(1:lnblnk(sfile))
-C            write(6,*) 'the snpfile is ',snpfile(1:lnblnk(snpfile))
-
+                write(louts,*) 'you selected ',sfile(1:lnblnk(sfile))
+                call edisp248(iuout,louts,100)
                 isource=0
               else
 
@@ -503,7 +497,7 @@ C Nothing selected treat this as a return state.
                 goto 19
               endif
 
-C Display a bit of information about this browsed file.
+C Display contents of this browsed file.
               IUO=IFIL+1
               call FINDFIL(sfile,XST)
               if(XST)then
@@ -532,6 +526,9 @@ C Only ask these questions if the source file exists.
           if(infv.eq.1) iflow='ach-ach '
           if(infv.eq.2) iflow='vol-vol '
           if(infv.eq.3) goto 5
+
+C << probably dangerious to import ventilation data unless we ask what
+C << zone in the model is the source
           if(ivopt.eq.1)then
             CALL EASKABC(' ','Ventilation import:','preserve ac/h',
      &       'preserve volume flow rate','cancel',ivntv,nbhelp)
@@ -565,13 +562,17 @@ C          call initcasday(ier)
         elseif(igu.eq.3.or.igu.eq.4.or.igu.eq.6.or.igu.eq.7)then
           if(igu.eq.4.or.igu.eq.7)then
             call edisp(iuout,
-     &    'You are being asked for the casual gains source zone.')
+     &      'You are being asked for the casual gains source zone.')
           endif
 
           if(igu.eq.3.or.igu.eq.4)then
 
 C If igu is 3 or 4 import casual gains from another zone.
 C Ask which zone, then confirm whether absolute W values are to be scaled.
+            if(isource.ne.0)then
+              write(outs,*) 'Previous zone selected was ',zname(isource)
+              call edisp(iuout,outs)
+            endif
  39         isource=0
             izdef=0
             call askzone(isource,izdef,'Casual gains from which zone?',
@@ -585,7 +586,7 @@ C Ask which zone, then confirm whether absolute W values are to be scaled.
               goto 39
             endif
 
-C Display a bit of information about this browsed file.
+C Display contents of this other zone file.
             IUO=IFIL+1
             write(LTMP,'(a)') LPROJ(isource)
             call FINDFIL(LTMP,XST)
@@ -613,10 +614,8 @@ C user select one.
               call browsefilelist('b','pat','opr',sfile,snpfile,nfile,
      &          iier)
               if(snpfile(1:2).ne.'  ')then
-C Debug.
-C            write(6,*) 'the browsed file is ',sfile(1:lnblnk(sfile))
-C            write(6,*) 'the snpfile is ',snpfile(1:lnblnk(snpfile))
-
+                write(louts,*) 'you selected ',sfile(1:lnblnk(sfile))
+                call edisp248(iuout,louts,100)
                 isource=0
               else
 
@@ -625,7 +624,7 @@ C Nothing selected treat this as a return state.
                 goto 19
               endif
 
-C Display a bit of information about this browsed file.
+C Display contents of this browsed file.
               IUO=IFIL+1
               call FINDFIL(sfile,XST)
               if(XST)then
@@ -1144,7 +1143,7 @@ C      integer lnblnk  ! function definition
       INTEGER NBDAYTYPE,NBCALDAYS,ICALENDER
 
       character vert(35)*33,KEY*1,title*33
-      character LTMP*72
+      character LTMP*72,louts*248
       character afact*8,iflow*8,vflow*8,outs*124,sfile*72,snpfile*72
       logical XST,closezero,closeone,closetwo
       integer KSTR(MDTY),ix,iy
@@ -1331,7 +1330,7 @@ C flows are to preserve ac/h or volume of flow.
               goto 38
             endif
 
-C Display a bit of information about this browsed file.
+C Display contents of the other zone file.
             IUO=IFIL+1
             write(LTMP,'(a)') LPROJ(isource)
             call FINDFIL(LTMP,XST)
@@ -1357,10 +1356,8 @@ C File browse from patterns.
               call browsefilelist('b','pat','opr',sfile,snpfile,nfile,
      &          iier)
               if(snpfile(1:2).ne.'  ')then
-C Debug.
-C            write(6,*) 'the browsed file is ',sfile(1:lnblnk(sfile))
-C            write(6,*) 'the snpfile is ',snpfile(1:lnblnk(snpfile))
-
+                write(louts,*) 'you selected ',sfile(1:lnblnk(sfile))
+                call edisp248(iuout,louts,100)
                 isource=0
               else
 
@@ -1369,7 +1366,7 @@ C Nothing selected treat this as a return state.
                 goto 5
               endif
 
-C Display a bit of information about this browsed file.
+C Display contents of this browsed file.
               IUO=IFIL+1
               call FINDFIL(sfile,XST)
               if(XST)then
@@ -1509,7 +1506,7 @@ C of one signals m3/h and a value of 2 signals m3/s.
       INTEGER NBDAYTYPE,NBCALDAYS,ICALENDER
 
       character vert(35)*33,KEY*1,title*33
-      character LTMP*72
+      character LTMP*72,louts*248
       character afact*8,iflow*8,vflow*8,outs*124,sfile*72,snpfile*72
       logical XST,closezero,closeone,closetwo
       integer KSTR(MDTY)
@@ -1638,13 +1635,14 @@ C List current.
         call VENTINF(ICOMP,IUOUT)
       elseif (IVERT.EQ.(MVERT-3)) then
 
-C Add delete copy period or import from another zone.
+C Add delete copy period or import air schedules from another zone or from a
+C file in the pattern folder.
         helptopic='air_flow_period_copy'
         call gethelptext(helpinsub,helptopic,nbhelp)
         IW=1
-        CALL EASKATOG(' ','Options (see help):',
+        CALL EASKATOG(' ','Options (see help): ',
      &    'add period','delete period','copy period',
-     &    'import from other zone','import pattern','cancel',' ',
+     &    'import from other zone','import from pattern','cancel',' ',
      &    IW,nbhelp)
 
 C Add period
@@ -1706,7 +1704,7 @@ C flows are to preserve ac/h or volume of flow.
               goto 38
             endif
 
-C Display a bit of information about this browsed file.
+C Display contents of this other zone file.
             IUO=IFIL+1
             write(LTMP,'(a)') LPROJ(isource)
             call FINDFIL(LTMP,XST)
@@ -1720,7 +1718,7 @@ C Display a bit of information about this browsed file.
             sfile=' '
           elseif(iw.eq.5)then
 
-C File browse from patterns.
+C File browse from patterns folder.
             sfile=' '
             snpfile=' '
             call edisp(iuout,' ')
@@ -1732,10 +1730,8 @@ C File browse from patterns.
               call browsefilelist('b','pat','opr',sfile,snpfile,nfile,
      &          iier)
               if(snpfile(1:2).ne.'  ')then
-C Debug.
-C            write(6,*) 'the browsed file is ',sfile(1:lnblnk(sfile))
-C            write(6,*) 'the snpfile is ',snpfile(1:lnblnk(snpfile))
-
+                write(louts,*) 'you selected ',sfile(1:lnblnk(sfile))
+                call edisp248(iuout,louts,100)
                 isource=0
               else
 
@@ -1744,7 +1740,7 @@ C Nothing selected treat this as a return state.
                 goto 5
               endif
 
-C Display a bit of information about this browsed file.
+C Display contents of this browsed file.
               IUO=IFIL+1
               call FINDFIL(sfile,XST)
               if(XST)then
@@ -3090,7 +3086,7 @@ C << this common should be re-sized 7 -> MGTY >>
 
       CHARACTER vert(35)*36,outs*124,KEY*1,sfile*72,snpfile*72
       character typstr*14,caskeyt*16
-      character title*28
+      character title*28,louts*248
 
 C iwatt (8 char) = 'W-W' for absolute W values preserves value
 C   e.g. 123W in source zone is also 123W in destination zone.
@@ -3390,10 +3386,10 @@ C Loop through each day type and gain and factor matching values.
 
 C Add delete copy period or import full set of casual gains.
         IW=1
-        CALL EASKATOG('Casual gain period options:','(see help)',
+        CALL EASKATOG('Casual gain period options:(see help)','  ',
      &    'add period','delete period','copy period',
-     &    'import from other zone','import pattern ','cancel',' ',
-     &    IW,nbhelp)
+     &    'import from other zone','import from pattern ','cancel',
+     &    ' ',IW,nbhelp)
         if (IW.EQ.1) then 
 
 C Add new casual gain period.
@@ -3568,11 +3564,8 @@ C File browsing from pattern folder.
               call browsefilelist('b','pat','opr',sfile,snpfile,nfile,
      &          iier)
               if(snpfile(1:2).ne.'  ')then
-
-C Debug.
-C            write(6,*) 'the browsed file is ',sfile(1:lnblnk(sfile))
-C            write(6,*) 'the snpfile is ',snpfile(1:lnblnk(snpfile))
-
+                write(louts,*) 'you selected ',sfile(1:lnblnk(sfile))
+                call edisp248(iuout,louts,100)
                 isource=0
               else
 
@@ -3581,7 +3574,7 @@ C Nothing selected treat this as a return state.
                 goto 5
               endif
 
-C Display a bit of information about this browsed file.
+C Display contents of this browsed file.
               IUO=IFIL+1
               call FINDFIL(sfile,XST)
               if(XST)then
@@ -3600,8 +3593,9 @@ C Nothing selected treat this as a return state.
           endif
 
 C User should only get to this point if there is a source file to use.
-          CALL EASKABC('Casual import:',' ','preserve absolute W',
-     &       'convert abs W for base area','continue',ivntv,nbhelp)
+          CALL EASKABC('Casual import:',' ','preserve Watts or W/m2',
+     &      'adjust Watts for different base area','cancel import',
+     &      ivntv,nbhelp)
           if(ivntv.eq.1) iwatt='W-W    '
           if(ivntv.eq.2) iwatt='W-m2-W '
           if(ivntv.eq.3) goto 5
@@ -3623,17 +3617,21 @@ C each of the slots ask for user label and confirmation of the type of gain.
         write(6,*) 'EDCASG lodslot ',icomp,':',
      &    (lodslot(icomp,iph),iph=1,7)
 
-C << offer option to add another gain label if <3 >>
+C << add logic to set easkatog dialogs depending on the current state
+C << of the model. Option to add another gain label still to be implemented >>
         helptopic='operations_casual_labels'
         call gethelptext(helpinsub,helptopic,nbhelp)
         dok=.false.
         islot=1
-        CALL EASKATOG('Edit user label and type for...',
-     &     ' ',lodlabel(icomp,1),lodlabel(icomp,2),lodlabel(icomp,3),
-     &     'Add another (NA)','Cancel',' ',' ',islot,nbhelp)
-        if (islot.eq.5) goto 5  ! cancel requested
-        if (islot.eq.4)then
-          call edisp(iuout,'Sorry facility not yet available.')
+        CALL EASKATOG('Edit user label and type for...',' ',
+     &     lodlabel(icomp,1),lodlabel(icomp,2),lodlabel(icomp,3),
+     &     '??','Add another (NA)','Cancel',' ',islot,nbhelp)
+        if (islot.eq.6) goto 5  ! cancel requested
+        if (islot.eq.5)then
+          call edisp(iuout,'Sorry adding facility not yet available.')
+          continue   ! not yet available
+        elseif (islot.eq.4)then
+          call edisp(iuout,'Sorry 4th slot not yet available.')
           continue   ! not yet available
         else
           write(outs,'(a,i1,2a)') 'Label for gains in slot ',islot,
