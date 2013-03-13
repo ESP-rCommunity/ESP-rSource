@@ -596,7 +596,7 @@ C IUN, ISTAT, MODE, and IXIST;  FNARG is the file name.
         SUBROUTINE FPOPEN(IUN,ISTAT,MODE,IXIST,FNARG)
         CHARACTER*(*) FNARG
         LOGICAL        XST
-	logical unixok
+        logical unixok
 
         lfn=max(1,LNBLNK(fnarg))
 
@@ -724,8 +724,8 @@ C       >0      (LENG  ) words per record, ff BINARY   records
 C IUN,ISTAT, and IXIST are the same as standard conventions.
         SUBROUTINE FPRAND(IUN,ISTAT,LENG,IXIST,FNARG)
         CHARACTER*(*) FNARG
-	logical unixok
-	
+        logical unixok
+
         lfn = lnblnk(FNARG)
 
         call isunix(unixok)
@@ -1634,9 +1634,9 @@ C Declare local variables
       LOGICAL :: unixok
       CHARACTER :: fs,bs,a1
       CHARACTER(72) :: path
-	  CHARACTER(12) :: tp, tp1
-	  CHARACTER(124):: outs
-	  INTEGER :: LN,LNS,I,LT,ios,iuin,iuout,pos
+      CHARACTER(12) :: tp, tp1
+      CHARACTER(124):: outs
+      INTEGER :: LN,LNS,I,LT,ios,iuin,iuout,pos
 C Common blocks
       COMMON/OUTIN/IUOUT,IUIN
       common/rpath/path
@@ -1645,7 +1645,7 @@ C Define path and file name lengths and check operating system.
       LN=max(1,lnblnk(path))
       LNS=max(1,lnblnk(sfile))
       call isunix(unixok)
-	
+
 C Set folder separator (fs) to \ or / and the folders to ignore as required.
       fs = char(47)
       bs = char(92)
@@ -1718,8 +1718,8 @@ C Limit feedback text length to fit within outs text buffer.
           write(outs,*)
      &      'addpath: warning found unix path changing to windows.'
           call edisp(iuout,outs)
-	      LNS=lnblnk(sfile)
-	      if(LNS.gt.112) LNS=112
+          LNS=lnblnk(sfile)
+          if(LNS.gt.112) LNS=112
           write(outs,*) 'addpath: ',sfile(1:LNS)
           call edisp(iuout,outs)
         endif
@@ -3878,11 +3878,11 @@ C Find out the number of separate words/string groupings.
       if(IOS.eq.2)then
         write(outs,*) 'STRIPC: permission error writing warning re: '
         call edisp(iuout,outs)
-	call edisp(iuout,outstr(1:72))
+        call edisp(iuout,outstr(1:72))
       else
         write(outs,*) 'STRIPC: error writing warning re: '
         call edisp(iuout,outs)
-	call edisp(iuout,outstr(1:72))
+        call edisp(iuout,outstr(1:72))
       endif
 
       END
@@ -3985,11 +3985,11 @@ C Find out the number of separate words/string groupings.
       if(IOS.eq.2)then
         write(outs,*) 'LSTRIPC: permission error writing warning re: '
         call edisp(iuout,outs)
-	call edisp(iuout,outstr(1:72))
+        call edisp(iuout,outstr(1:72))
       else
         write(outs,*) 'LSTRIPC: error writing warning re: '
         call edisp(iuout,outs)
-	call edisp(iuout,outstr(1:72))
+        call edisp(iuout,outstr(1:72))
       endif
       return
 
@@ -4096,11 +4096,11 @@ C Find out the number of separate words/string groupings.
       if(IOS.eq.2)then
         write(outs,*) 'LSTRIPC4: permission error writing warning re: '
         call edisp(iuout,outs)
-	call edisp(iuout,outstr(1:72))
+        call edisp(iuout,outstr(1:72))
       else
         write(outs,*) 'LSTRIPC4: error writing warning re: '
         call edisp(iuout,outs)
-	call edisp(iuout,outstr(1:72))
+        call edisp(iuout,outstr(1:72))
       endif
       return
 
@@ -4213,11 +4213,11 @@ C Find out the number of separate words/string groupings.
       if(IOS.eq.2)then
         write(outs,*) 'LSTRIPC4: permission error writing warning re: '
         call edisp(iuout,outs)
-	call edisp(iuout,outstr(1:72))
+        call edisp(iuout,outstr(1:72))
       else
         write(outs,*) 'LSTRIPC4: error writing warning re: '
         call edisp(iuout,outs)
-	call edisp(iuout,outstr(1:72))
+        call edisp(iuout,outstr(1:72))
       endif
       return
 
@@ -4948,11 +4948,11 @@ C Copy WORD from STRING, character by character until separator found.
       if(IOS.eq.2)then
         write(outs,*) 'EGETW: permission error writing warning re: '
         call edisp(iuout,outs)
-	call edisp(iuout,STRING(1:LNM))
+        call edisp(iuout,STRING(1:LNM))
       else
         write(outs,*) 'EGETW: error writing warning re: '
         call edisp(iuout,outs)
-	call edisp(iuout,STRING(1:LNM))
+        call edisp(iuout,STRING(1:LNM))
       endif
       return
 
@@ -5040,11 +5040,11 @@ C comma is found.
       if(IOS.eq.2)then
         write(outs,*) 'EGETP: permission error writing warning re: '
         call edisp(iuout,outs)
-	call edisp(iuout,STRING(1:LNM))
+        call edisp(iuout,STRING(1:LNM))
       else
         write(outs,*) 'EGETP: error writing warning re: '
         call edisp(iuout,outs)
-	call edisp(iuout,STRING(1:LNM))
+        call edisp(iuout,STRING(1:LNM))
       endif
       return
 
@@ -5167,11 +5167,11 @@ C cut out the intial quote when writing phrase.
       if(IOS.eq.2)then
         write(outs,*) 'EGETDQ: permission error writing warning re: '
         call edisp(iuout,outs)
-	call edisp(iuout,STRING(1:LNM))
+        call edisp(iuout,STRING(1:LNM))
       else
         write(outs,*) 'EGETDQ: error writing warning re: '
         call edisp(iuout,outs)
-	call edisp(iuout,STRING(1:LNM))
+        call edisp(iuout,STRING(1:LNM))
       endif
       return
 
@@ -5307,11 +5307,11 @@ C Check IV against minimum and respond based on ACT.
       if(IOS.eq.2)then
         write(outs,*) 'EGETWI: permission error writing warning re: '
         call edisp(iuout,outs)
-	call edisp(iuout,STRING(1:LNM))
+        call edisp(iuout,STRING(1:LNM))
       else
         write(outs,*) 'EGETWI: error writing warning re: '
         call edisp(iuout,outs)
-	call edisp(iuout,STRING(1:LNM))
+        call edisp(iuout,STRING(1:LNM))
       endif
       return
 
@@ -5450,11 +5450,11 @@ C Check RV against minimum and respond based on RACT.
       if(IOS.eq.2)then
         write(outs,*) 'EGETWR: permission error writing warning re: '
         call edisp(iuout,outs)
-	call edisp(iuout,STRING(1:LNM))
+        call edisp(iuout,STRING(1:LNM))
       else
         write(outs,*) 'EGETWR: error writing warning re: '
         call edisp(iuout,outs)
-	call edisp(iuout,STRING(1:LNM))
+        call edisp(iuout,STRING(1:LNM))
       endif
       return
 

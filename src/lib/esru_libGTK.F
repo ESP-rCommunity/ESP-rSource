@@ -137,7 +137,7 @@ C If in graphic mode use graphic faciltiies to edit the number.
 
         LN1=max(1,lnblnk(PROMP1))
         LN2=max(1,lnblnk(PROMP2))
-	if((LN1+LN2+1).lt.144)then
+        if((LN1+LN2+1).lt.144)then
           if(LN1.eq.1)then
             write(prompt,'(a)') PROMP2(1:LN2)
           else
@@ -826,7 +826,7 @@ C If in terminal type 8 use dialogue box.
         lmmod=mmod
         LN1=max(1,lnblnk(PROMP1))
         LN2=max(1,lnblnk(PROMP2))
-	if((LN1+LN2+1).lt.144)then
+        if((LN1+LN2+1).lt.144)then
           if(LN1.eq.1)then
             write(prompt,'(a)') PROMP2(1:LN2)
           else
@@ -1056,7 +1056,7 @@ C If in terminal type 8 use dialogue box.
         lmmod=mmod
         LN1=max(1,lnblnk(PROMP1))
         LN2=max(1,lnblnk(PROMP2))
-	if((LN1+LN2+1).lt.144)then
+        if((LN1+LN2+1).lt.144)then
           if(LN1.eq.1)then
             write(prompt,'(a)') PROMP2(1:LN2)
           else
@@ -1260,7 +1260,7 @@ C For graphic version use the standard GTK widget as does easks.
         lmmod=mmod
         LN1=max(1,lnblnk(PROMP1))
         LN2=max(1,lnblnk(PROMP2))
-	if((LN1+LN2+1).lt.144)then
+        if((LN1+LN2+1).lt.144)then
           if(LN1.eq.1)then
             write(prompt,'(a)') PROMP2(1:LN2)
           else
@@ -1489,7 +1489,7 @@ C If in terminal type 8 use dialogue box.
         lmmod=mmod
         LN1=max(1,lnblnk(PROMP1))
         LN2=max(1,lnblnk(PROMP2))
-	if((LN1+LN2+1).lt.144)then
+        if((LN1+LN2+1).lt.144)then
           if(LN1.eq.1)then
             write(prompt,'(a)') PROMP2(1:LN2)
           else
@@ -1678,7 +1678,7 @@ C If in terminal type 8 use dialogue box.
         lmmod=mmod
         LN1=max(1,lnblnk(PROMP1))
         LN2=max(1,lnblnk(PROMP2))
-	if((LN1+LN2+1).lt.144)then
+        if((LN1+LN2+1).lt.144)then
           if(LN1.eq.1)then
             write(prompt,'(a)') PROMP2(1:LN2)
           else
@@ -1860,7 +1860,7 @@ C If in terminal type 8 use dialogue box.
         call dupphelp(newnbhelp)
         LN1=max(1,lnblnk(PROMP1))
         LN2=max(1,lnblnk(PROMP2))
-	if((LN1+LN2+1).lt.144)then
+        if((LN1+LN2+1).lt.144)then
           if(LN1.eq.1)then
             write(prompt,'(a)') PROMP2(1:LN2)
           else
@@ -2583,7 +2583,7 @@ C Querry yes or no or default. Concat MSG1 & MSG2 together for prompt.
   19    continue
         LN1=max(1,lnblnk(MSG1))
         LN2=max(1,lnblnk(MSG2))
-	if((LN1+LN2+1).lt.144)then
+        if((LN1+LN2+1).lt.144)then
           if(LN1.eq.1)then
             write(prompt,'(a)') MSG2(1:LN2)
           else
@@ -2621,7 +2621,7 @@ C Querry yes or no or default. Concat MSG1 & MSG2 together for prompt.
           optc='  '
           call espabcbox(prompt,opta,optb,optc,optd,opte,optf,optg,IW)
         endif
-	
+
 C Debug.
 C        write(6,*) 'espabcbox selected iw ',iw,opta,optb,optc
 
@@ -2759,7 +2759,7 @@ C of help supplied and then provide the prompt again.
 C Querry which one.
   19    LN1=max(1,lnblnk(MSG1))
         LN2=max(1,lnblnk(MSG2))
-	if((LN1+LN2+1).lt.144)then
+        if((LN1+LN2+1).lt.144)then
           if(LN1.eq.1)then
             write(prompt,'(a)') MSG2(1:LN2)
           else
@@ -2937,7 +2937,7 @@ C of help supplied and then provide the prompt again.
 C Querry which one.
   19    LN1=max(1,lnblnk(MSG1))
         LN2=max(1,lnblnk(MSG2))
-	if((LN1+LN2+1).lt.144)then
+        if((LN1+LN2+1).lt.144)then
           if(LN1.eq.1)then
             write(prompt,'(a)') MSG2(1:LN2)
           else
@@ -3470,7 +3470,7 @@ C Single line prompt.
 C If warning mode then clear continuebox after use clicks continue.
           LN1=max(1,LNBLNK(MSG1))
           LN2=max(1,LNBLNK(MSG2))
-	  if((LN1+LN2+1).lt.144)then
+          if((LN1+LN2+1).lt.144)then
             if(LN1.eq.1)then
               write(prompt,'(a)') MSG2(1:LN2)
             else
@@ -3612,7 +3612,7 @@ C Single line prompt.
 C If warning mode then clear continuebox after use clicks continue.
           LN1=max(1,LNBLNK(MSG1))
           LN2=max(1,LNBLNK(MSG2))
-	  if((LN1+LN2+1).lt.144)then
+          if((LN1+LN2+1).lt.144)then
             if(LN1.eq.1)then
               write(prompt,'(a)') MSG2(1:LN2)
             else

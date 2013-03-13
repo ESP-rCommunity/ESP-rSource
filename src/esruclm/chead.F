@@ -73,7 +73,6 @@ C Setup and pass in parameters to win3d.
           iigl=igl; iigr=igr; iigt=igt; iigb=igb; iigw=igw; iigwh=igwh
           CALL win3d(iimenu,iiw1,iiw2,iiw3,iiw4,
      &      iigl,iigr,iigt,iigb,iigw,iigwh)
-C          CALL win3d(menuchw,10,22,6,3,igl,igr,igt,igb,igw,igwh)
           igl=int(iigl); igr=int(iigr); igt=int(iigt); igb=int(iigb)
           igw=int(iigw); igwh=int(iigwh)
         elseif(iglib.eq.2)then
@@ -179,19 +178,16 @@ C Setup and pass in parameters to win3d.
               iigl=igl; iigr=igr; iigt=igt; iigb=igb;iigw=igw;iigwh=igwh
               CALL win3d(iimenu,iiw1,iiw2,iiw3,iiw4,
      &          iigl,iigr,iigt,iigb,iigw,iigwh)
-C              CALL win3d(menuchw,10,20,6,3,igl,igr,igt,igb,igw,igwh)
             elseif(onleft.eq.1)then
               iiw1=6; iiw2=20; iiw3=6; iiw4=3; iimenu=menuchw
               iigl=igl; iigr=igr; iigt=igt; iigb=igb;iigw=igw;iigwh=igwh
               CALL win3d(iimenu,iiw1,iiw2,iiw3,iiw4,
      &          iigl,iigr,iigt,iigb,iigw,iigwh)
-C              CALL win3d(menuchw,6,20,6,3,igl,igr,igt,igb,igw,igwh)
             elseif(onleft.eq.0)then
               iiw1=3; iiw2=20; iiw3=6; iiw4=3; iimenu=menuchw
               iigl=igl; iigr=igr; iigt=igt; iigb=igb;iigw=igw;iigwh=igwh
               CALL win3d(iimenu,iiw1,iiw2,iiw3,iiw4,
      &          iigl,iigr,iigt,iigb,iigw,iigwh)
-C              CALL win3d(menuchw,3,20,6,3,igl,igr,igt,igb,igw,igwh)
             endif
             igl=int(iigl); igr=int(iigr); igt=int(iigt); igb=int(iigb)
             igw=int(iigw); igwh=int(iigwh)
@@ -201,19 +197,16 @@ C              CALL win3d(menuchw,3,20,6,3,igl,igr,igt,igb,igw,igwh)
               iigl=igl; iigr=igr; iigt=igt;iigb=igb;iigw=igw;iigwh=igwh
               CALL win3d(iimenu,iiw1,iiw2,iiw3,iiw4,
      &          iigl,iigr,iigt,iigb,iigw,iigwh)
-C              CALL win3d(menuchw,10,16,6,3,igl,igr,igt,igb,igw,igwh)
             elseif(onleft.eq.1)then
               iiw1=6; iiw2=16; iiw3=6; iiw4=3; iimenu=menuchw
               iigl=igl; iigr=igr; iigt=igt;iigb=igb;iigw=igw;iigwh=igwh
               CALL win3d(iimenu,iiw1,iiw2,iiw3,iiw4,
      &          iigl,iigr,iigt,iigb,iigw,iigwh)
-C              CALL win3d(menuchw,6,16,6,3,igl,igr,igt,igb,igw,igwh)
             elseif(onleft.eq.0)then
               iiw1=3; iiw2=16; iiw3=6; iiw4=3; iimenu=menuchw
               iigl=igl; iigr=igr; iigt=igt;iigb=igb;iigw=igw;iigwh=igwh
               CALL win3d(iimenu,iiw1,iiw2,iiw3,iiw4,
      &          iigl,iigr,iigt,iigb,iigw,iigwh)
-C              CALL win3d(menuchw,3,16,6,3,igl,igr,igt,igb,igw,igwh)
             endif
             igl=int(iigl); igr=int(iigr); igt=int(iigt); igb=int(iigb)
             igw=int(iigw); igwh=int(iigwh)
@@ -223,19 +216,16 @@ C              CALL win3d(menuchw,3,16,6,3,igl,igr,igt,igb,igw,igwh)
               iigl=igl; iigr=igr; iigt=igt; iigb=igb;iigw=igw;iigwh=igwh
               CALL win3d(iimenu,iiw1,iiw2,iiw3,iiw4,
      &          iigl,iigr,iigt,iigb,iigw,iigwh)
-C              CALL win3d(menuchw,10,12,6,3,igl,igr,igt,igb,igw,igwh)
             elseif(onleft.eq.1)then
               iiw1=6; iiw2=16; iiw3=6; iiw4=3; iimenu=menuchw
               iigl=igl; iigr=igr; iigt=igt;iigb=igb;iigw=igw;iigwh=igwh
               CALL win3d(iimenu,iiw1,iiw2,iiw3,iiw4,
      &          iigl,iigr,iigt,iigb,iigw,iigwh)
-C              CALL win3d(menuchw,6,12,6,3,igl,igr,igt,igb,igw,igwh)
             elseif(onleft.eq.0)then
               iiw1=3; iiw2=16; iiw3=6; iiw4=3; iimenu=menuchw
               iigl=igl; iigr=igr; iigt=igt;iigb=igb;iigw=igw;iigwh=igwh
               CALL win3d(iimenu,iiw1,iiw2,iiw3,iiw4,
      &          iigl,iigr,iigt,iigb,iigw,iigwh)
-C              CALL win3d(menuchw,3,12,6,3,igl,igr,igt,igb,igw,igwh)
             endif
             igl=int(iigl); igr=int(iigr); igt=int(iigt); igb=int(iigb)
             igw=int(iigw); igwh=int(iigwh)
@@ -245,19 +235,16 @@ C              CALL win3d(menuchw,3,12,6,3,igl,igr,igt,igb,igw,igwh)
               iigl=igl; iigr=igr; iigt=igt; iigb=igb;iigw=igw;iigwh=igwh
               CALL win3d(iimenu,iiw1,iiw2,iiw3,iiw4,
      &          iigl,iigr,iigt,iigb,iigw,iigwh)
-C              CALL win3d(menuchw,10,6,6,3,igl,igr,igt,igb,igw,igwh)
             elseif(onleft.eq.1)then
               iiw1=6; iiw2=6; iiw3=6; iiw4=3; iimenu=menuchw
               iigl=igl; iigr=igr; iigt=igt; iigb=igb;iigw=igw;iigwh=igwh
               CALL win3d(iimenu,iiw1,iiw2,iiw3,iiw4,
      &          iigl,iigr,iigt,iigb,iigw,iigwh)
-C              CALL win3d(menuchw,6,6,6,3,igl,igr,igt,igb,igw,igwh)
             elseif(onleft.eq.0)then
               iiw1=3; iiw2=6; iiw3=6; iiw4=3; iimenu=menuchw
               iigl=igl; iigr=igr; iigt=igt;iigb=igb;iigw=igw;iigwh=igwh
               CALL win3d(iimenu,iiw1,iiw2,iiw3,iiw4,
      &          iigl,iigr,iigt,iigb,iigw,iigwh)
-C              CALL win3d(menuchw,3,6,6,3,igl,igr,igt,igb,igw,igwh)
             endif
             igl=int(iigl); igr=int(iigr); igt=int(iigt); igb=int(iigb)
             igw=int(iigw); igwh=int(iigwh)
