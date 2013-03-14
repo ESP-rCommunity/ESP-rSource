@@ -1,4 +1,4 @@
-C This file is part of the ESP-r system.	
+C This file is part of the ESP-r system.
 C Copyright CANMET Energy Technology Centre 
 C Natural Resources Canada, Government of Canada
 C 2004. Please Contact Ian Beausoliel-Morrison for details 
@@ -40,11 +40,11 @@ c  BACKUP_LOAD     determine the remaining space load to be supplied by a
 c                  baseboard/hydronic/plenum heater backup system when the 
 c                  primary system does not have enough capacity to meet the
 c                  load
-c       ASHP_FURNACE_PLF
+c  ASHP_FURNACE_PLF
 c                  determine the part-load factor of the air-source heat pump and
 c                  the fossil fuel backup heat source when operating together to
 c                  meet the load
-c       SYS_SOL    solve a system of linear equation for the unknowns using the 
+c  SYS_SOL         solve a system of linear equation for the unknowns using the 
 c                  back substitution method
 c *********************************************************************
 c *********************************************************************
@@ -852,14 +852,14 @@ c furnace type is induced draft or condensing, then the total number of
 c unknowns is 6. For all other furnace types it is 7
 
 c In the following formulation, the following nomenclature is adopted:
-c 	x(1)	plfhp
-c	x(2)	plrhp
-c	x(4)	plfb
-c	x(5)	plrb
-c	x(5)	heat_eir_fplr (energy-input ratio of the heat pump)
-c	x(6)	t (on-time fraction of the heat pump)
-c	x(7)	hir (energy-input ratio of the furnace. This is needed only
-c		     for induced draft and condensing furnaces)
+c   x(1)  plfhp
+c   x(2)  plrhp
+c   x(4)  plfb
+c   x(5)  plrb
+c   x(5)  heat_eir_fplr (energy-input ratio of the heat pump)
+c   x(6)  t (on-time fraction of the heat pump)
+c   x(7)  hir (energy-input ratio of the furnace. This is needed only
+c         for induced draft and condensing furnaces)
 
 c Logical variable to flag when a soluation is reached 
       non_convergence = .true.
@@ -1063,20 +1063,20 @@ c Initial Creation Date: July 25th 2000
 c Copyright 2000: NRCan Buildings Group
 c
 c Subroutine to solve a system of m linear equations in m unknowns of the form
-c 		jj y = f
+c            jj y = f
 c using the back substitution method
 c
-c References:	Numerical Analysis, 3rd Edition
-c		Richard L. Burden
-c		J. Douglas Faires
+c References:  Numerical Analysis, 3rd Edition
+c              Richard L. Burden
+c              J. Douglas Faires
 c
 c INPUTS:
-c	jj	coefficient matrix of the system jj y = f
-c	f	constant matrix of the system jj y = f
-c	m	total number of equations and unknowns in the system
+c  jj    coefficient matrix of the system jj y = f
+c  f     constant matrix of the system jj y = f
+c  m     total number of equations and unknowns in the system
 
 c OUTPUTS:
-c	y	solution matrix
+c  y  solution matrix
 c **********************************************************************
       SUBROUTINE SYS_SOL(jj,f,y,m)
 
@@ -1168,19 +1168,19 @@ c Subroutine to update heating capacity of appropriate control function
 c associated with heat pump in heating mode 
 
 c INPUTS:
-c	isys		hvac system number
-c	sensible_heating_cap
+c  isys       hvac system number
+c  sensible_heating_cap
 c                       sensible heating capacity of equipment
-c	HVAC_INPUT_DATA	HVAC input data common
+c  HVAC_INPUT_DATA  HVAC input data common
 
 c OUTPUTS:
-c	cont_fun_heat_cap
-c			new heating capacity for hvac system isys. This 
-c			new heating capacity is used later to update the
-c			maximum heating capacity of the control function
-c			associated with hvac system isys. 
-c	hvac_timestep_parameters	
-c                       common for updated capacity of control function
+c  cont_fun_heat_cap
+c     new heating capacity for hvac system isys. This 
+c     new heating capacity is used later to update the
+c     maximum heating capacity of the control function
+c     associated with hvac system isys. 
+c   hvac_timestep_parameters
+c     common for updated capacity of control function
 c **********************************************************************
       SUBROUTINE SET_CONT_FUNC_HEAT_CAP(isys,sensible_heating_cap)
 

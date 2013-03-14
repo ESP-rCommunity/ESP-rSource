@@ -46,12 +46,12 @@ C OUTPUTS:
 C Input data saved to the following modules:
 C GCEP_INPUT     the main inputs for the GCEP model
 C *********************************************************************
-	SUBROUTINE GCEPINPUT
+      SUBROUTINE GCEPINPUT
 
 C Use module for GCEP data
 C     USE GCEP_INPUT
 
-	IMPLICIT NONE
+      IMPLICIT NONE
 #include "gcep_parameters.h"
 #include "gcep_common.h"
       COMMON/FILEP/IFIL
@@ -121,11 +121,11 @@ C  These variables are found in the GCEP input file
 
 C  INPUTS:
 C Ground properties
-C       K_s             ground thermal conductivity	[W/mK]
-C       Alpha_s	        ground thermal difusivity [m^2/day]
+C       K_s             ground thermal conductivity [W/mK]
+C       Alpha_s         ground thermal difusivity [m^2/day]
 C       Rho_s           ground density [Kg/m^2]
 C Grout properties
-C       K_g             grout thermal conductivity	[W/mK]
+C       K_g             grout thermal conductivity [W/mK]
 C Borehole dimensions
 C       D_bore          diameter [m]
 C       Deapth_bore     length [m]
@@ -143,19 +143,19 @@ C               4=4 tubes (2U) Tubes in contact at the center of the borehole
 C               5=4 tubes (2U) Tubes midway between borehole center and wall
 C               6=4 tubes (2U) Tubes in contact with borehole wall (max distance)
 C Tubes dimensions (choice)
-C       TypeTubes	[1..12]	 		OD(cm)	ID(cm)
-C		1	¾"		SDR-11		2.67	2.18
-C		2	1"		SDR-11		3.34	2.73
-C		3	1­"		SDR-11		4.22	3.45
-C		4	25 mm	        SDR-11		2.50	2.04
-C		5	32 mm	        SDR-11		3.20	2.60
-C		6	40 mm	        SDR-11		4.00	3.26
-C		7	¾"		SDR-135		2.67	2.27
-C		8	1"		SDR-135		3.34	2.85
-C		9	1­"		SDR-135		4.22	3.59
-C		10	25 mm	        SDR-135		2.50	2.04
-C		11	32 mm	        SDR-135		3.20	2.62
-C		12	40 mm	        SDR-135		4.00	3.40
+C       TypeTubes  [1..12]        OD(cm) ID(cm)
+C       1       ¾"      SDR-11    2.67   2.18
+C       2       1"      SDR-11    3.34   2.73
+C       3       1­"     SDR-11    4.22   3.45
+C       4       25 mm   SDR-11    2.50   2.04
+C       5       32 mm   SDR-11    3.20   2.60
+C       6       40 mm   SDR-11    4.00   3.26
+C       7       ¾"      SDR-135   2.67   2.27
+C       8       1"      SDR-135   3.34   2.85
+C       9       1­"     SDR-135   4.22   3.59
+C      10       25 mm   SDR-135   2.50   2.04
+C      11       32 mm   SDR-135   3.20   2.62
+C      12       40 mm   SDR-135   4.00   3.40
 C Tube properties (k=conductivity)
 C       K_t            Tubes thermal conductivity [W/m—C]
 C Fluid property (k=conductivity, rho=density, Cp=specific heat, Mu=dynamic viscosity)
@@ -175,7 +175,7 @@ C  This subroutine reads in the above variables and makes them available
 C  for the simulation in the module GCEP_INPUT.
 C ************************************************************************
       SUBROUTINE GCEP_VARIABLE_READ(IUNIT)
-	
+
 C Initiates reading of global variables (common for all)
 C      USE GCEP_INPUT
        IMPLICIT NONE
@@ -250,7 +250,7 @@ c***********************Boreholes Layout***********************
       IF ( IER .eq. 0 ) THEN
         CALL STRIPC(IUNIT,OUTSTR,0,ND,1,'GCEP bore layout',IER)
       ENDIF
-c Read the number of boreholes in X direction	[1..+inf[
+c Read the number of boreholes in X direction [1..+inf[
       IF ( IER .eq. 0 ) THEN
          K = 0
          CALL MSG_EGETWI(OUTSTR,K,ival,1,100000,'F','N_bor_x',IUOUT,IER)
