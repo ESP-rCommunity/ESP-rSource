@@ -1,6 +1,6 @@
 # operations of main_second defined in: 
 # ../zones/main_second-with-E-gain.opr
-nil_operations
+0.433 ach infil vent from zone 1 and E-gain in the 5th slot
 # control(no control of air flow  ), low mid & high setpoints 
    0     0.000     0.000     0.000
      1   # no Weekday flow periods
