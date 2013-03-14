@@ -1119,8 +1119,8 @@ C.....Interface to extended BCL01
 
 
 C ******************** BCL01_extended
-C Basic controller with symplistic free-cooling capabilities.      
-C
+C Basic controller with symplistic free-cooling capabilities available
+C as an option.
       SUBROUTINE BCL01_extended(IER,bFreeCool)
       implicit none 
           
@@ -1203,7 +1203,7 @@ C control.
       real QHB, QCB, Qmst
       logical bMasterFreeCoolFlag
       
-C Freecooling algorithm
+C Freecooling algorithm.
       real fQFreeCool         ! cooling achieved by ventilation
       logical bFreeCoolActive ! flag for free cooling active. 
       real fFreeCoolTemp      ! Threshold at which free-cooling 
@@ -1228,24 +1228,22 @@ C Heating and cooling setpoint (oC)
       logical dll,CLOSERH
 
       
-C Local variables for control algorithm
-      real CSP ! Cooling set point (oC) 
-      real HSP ! Heating set point (oC) 
+C Local variables for control algorithm.
+      real CSP ! Cooling set point (deg.C) 
+      real HSP ! Heating set point (deg.C) 
       
-      integer iPlt ! Unknown flag
+      integer iPlt ! Set IPLT to 1 for heating, 2 in case of cooling
 
       real TCont ! Control temperature (oC)
       real TCtl, TiTm
       
-C Plant heat transfer: 
+C Environmental control heat transfer: 
       real Q
-      real QCM
-      real QCN
-      real QHM
-      real QHN
+      real QCM  ! max cooling capacity (W)
+      real QCN  ! min cooling capacity (W)
+      real QHM  ! max heating capacity (W)
+      real QHN  ! min heating capacity (W)
       real QMN, QMX ! min & max heat transfer (W)
-      
-      real QQ       !?
       
       logical bQBySurf   ! Flag indicating Q is per unit surface area 
       
@@ -1272,7 +1270,7 @@ C Check to see if running in dll mode.
 C Fatal error test.
       IF(BMISCD(ICF,IDTYP,IPER,1).LT.6.)GOTO 99
 
-C Trace output
+C Trace output.
       IF(ITC.GT.0.AND.NSINC.GE.ITC.AND.NSINC.LE.ITCF.AND.
      &   ITRACE(41).NE.0) then
         if (IBSN(ICF,1).GT.0.and.IBAN(ICF,1).eq.0) then
@@ -1297,7 +1295,7 @@ C Trace output
       QFUT=0.
       TFUT=TNP
 
-C Added for slave controller...
+C Added for slave controller.
       Qmst(ICF)=QFUT
 
 C Determine sensed temperature.
@@ -1305,13 +1303,6 @@ C Determine sensed temperature.
       if(ier.eq.2)then
         return
       endif
-
-C QHM = max heating capacity (W)
-C QHN = min heating capacity (W)
-C QCM = max cooling capacity (W)
-C QCN = min cooling capacity (W)
-C HSP = heating set point temp. (deg.C)
-C CSP = cooling set point temp. (deg.C)
 
 C The variable keeping track of the cooling/heating capacities of the 
 C hvac system for ideal hvac modeling is set to zero at the beginning 
@@ -1327,10 +1318,10 @@ C Set maximum heating capacity:
         QHM=BMISCD(ICF,IDTYP,IPER,2)       
       endif
 
-C Set minimum heating capacity
+C Set minimum heating capacity.
       QHN=BMISCD(ICF,IDTYP,IPER,3)
 
-C Set maximum cooling capacity:
+C Set maximum cooling capacity.
       if(cont_fun_cool_cap(IICOMP).gt.0.
      &  .and. 
      &  .not. bFreeCool )then
@@ -1339,13 +1330,13 @@ C Set maximum cooling capacity:
         QCM = -BMISCD(ICF,IDTYP,IPER,4)
       endif
 
-C Set minimum cooling capacity
+C Set minimum cooling capacity.
       QCN=-BMISCD(ICF,IDTYP,IPER,5)
       
       HSP=BMISCD(ICF,IDTYP,IPER,6)
       CSP=BMISCD(ICF,IDTYP,IPER,7)
 
-C Save heating/cooling setpoints
+C Save heating/cooling setpoints.
       fHeatSetpoint(iicomp) = HSP
       fCoolSetpoint(iicomp) = CSP
 
@@ -1363,7 +1354,7 @@ C Setpoints must be between 10oC and 30oC for passive solar computations
       if ( fCoolSetpoint(iicomp).lt.10.0 .or.
      &     fCoolSetpoint(iicomp).gt.30.0 ) bZoneCooled(iicomp) = .false.
 
-C Capacity must be greater than 1 W for passive solar computations
+C Capacity must be greater than 1 W for passive solar computations.
        if (  QHM .lt. 1.0 )  bZoneHeated(iicomp) = .false.
        if (  ABS(QCM) .lt. 1.0 )  bZoneCooled(iicomp) = .false.
 
@@ -1376,14 +1367,14 @@ C as a master control.
 C Get temperature threshold for free-cooling estimates. Free cooling 
 C is available if the sum of the outdoor temperature (TF) and the 
 C free-cooling threshold (fFreeCoolTemp) is less than the zone 
-C temperature (TFA(iComp)) 
+C temperature (TFA(iComp)). 
       if ( bFreeCool ) then 
-		fFreeCoolTemp=BMISCD(ICF,IDTYP,IPER,8)
+        fFreeCoolTemp=BMISCD(ICF,IDTYP,IPER,8)
 C Note that free cooling temperature must be greater than zero 
-C to ensure that mass-balance calculation is stable. 		
-		fFreeCoolTemp = max( fFreeCoolTemp, 0.1 )
-	  endif 
-	  
+C to ensure that mass-balance calculation is stable.
+        fFreeCoolTemp = max( fFreeCoolTemp, 0.1 )
+      endif 
+  
       
 C Determine if a RH is to be controlled. If this is the case store the set point
 C for the zone and set the RH control flag. The control action takes place in 
@@ -1422,7 +1413,7 @@ C heating and cooling set points appropriately.
 c          WRITE(*,*)'Current status ',TFA(IICOMP),GFA(IICOMP)
 c          WRITE(*,*)'Current RH',RHC
 C If moisture content above that for the target RH then implement
-C cooling (change cooling and heating set points)
+C cooling (change cooling and heating set points).
           IF(RHC.GT.RHSPTU(IICOMP))THEN
 c            WRITE(*,*)'Target RH',RHSPTU(IICOMP)       
 c            WRITE(*,*)'RH too high ... heating'
@@ -1431,10 +1422,10 @@ C Initiate the iterative temperature
 c            TITM=TFA(IICOMP)
              TITM=TCTL
         
-C Set the target RH 
+C Set the target RH.
             RHT=RHSPTU(IICOMP)
 
-C Calculate the RH at this temperature
+C Calculate the RH at this temperature.
             ITER=1
   404       RHI=PCRH2(TITM,GFA(IICOMP),PATMOS)
 c            WRITE(*,*)'New Iteration RH ...',RHI             
@@ -1493,7 +1484,10 @@ c              WRITE(*,*)'New heating and cooling set point',HSP,CSP
         IRHCT(IICOMP)=0
       ENDIF
 
-C Check if control is required and return if setpoints are met.  	  
+C Check if control is required and return if setpoints are met.
+
+C << however if standby losses are enabled then alternative logic
+C << is required to inject the standby losses.    
       IF(TCTL.LE.CSP.AND.TCTL.GE.HSP)RETURN
 
 c      WRITE(*,*)'Controlling zone to...',HSP,CSP,TCTL,TNP    
@@ -1517,43 +1511,41 @@ C Set point is the dew point temperature of the zone.
 
 C Check zone temperature and determine if heating or cooling functions 
 C should be invoked.
-
       HeatOrCool: if ( TCTL > CSP ) THEN 
       
-        IPLT=2
+        IPLT=2     ! Indicate cooling mode
         QMX=QCM    ! Note that cooling is negative!
         QMN=QCN
-        TCont=CSP
+        TCont=CSP  ! Use the cooling setpoint
       
       else 
         
-        IPLT=1
+        IPLT=1     ! Indicate heating mode
         QMX=QHM      
         QMN=QHN
-        TCont=HSP
+        TCont=HSP  ! Use the heating setpoint
             
       endif HeatOrCool
 
-C Determine required plant capacity 
+C Determine required plant capacity.
 
       Q=(BB3-BB1*TCont)/BB2
 
 C Is heat flux determined according to surface area?
       
       if ( IBAN(ICF,1).EQ.IICOMP.AND.IBAN(ICF,2).GT.0) then 
-	    ! Yes
-        bQBySurf = .true. 
+
+        bQBySurf = .true.  ! Yes
         ISUR=IBAN(ICF,2)
       
-      else 
-		! No.
+      else   ! No.
         bQBySurf = .false.   
         
       endif 
       
       
 C If necessary, multiply heat flux by surface area to convert 
-C from W/m^2 to W 
+C from W/m^2 to W.
 
       if ( bQBySurf ) then 
       
@@ -1607,23 +1599,23 @@ C No free cooling.
 C Do we have enough heating/cooling capacity? 
         if ( fQTotal > 0. ) then
           
-          if ( fQTotal > QMX ) fQTotal = QMX
-          if ( fQTotal < QMN ) fQTotal = QMN
+          if ( fQTotal > QMX ) fQTotal = QMX   ! constrain to maximum
+          if ( fQTotal < QMN ) fQTotal = QMN   ! constrain to minimum
 
         else 
      
-          if ( fQTotal < QMX ) fQTotal = QMX
-          if ( fQTotal > QMN ) fQTotal = QMN
+          if ( fQTotal < QMX ) fQTotal = QMX   ! constrain to maximum
+          if ( fQTotal > QMN ) fQTotal = QMN   ! constrain to minimum
 
         endif 
       
       endif 
 
-C Save free-cooling for reporting later
+C Save free-cooling for reporting later.
       fFreeCoolDelivered(IICOMP) = fQFreeCool * (-1.0)      
       
       
-C Possibly convert back to W/m^2 if needed       
+C Possibly convert back to W/m^2 if needed.      
 
       if ( bQBySurf ) then 
       
@@ -1652,7 +1644,7 @@ c      WRITE(*,*)'Heating/cooling flux and set points',QFUT,HSP,CSP
       IF(IBAN(ICF,1).EQ.-2)CALL MZRCPL(IICOMP,BB1,BB2,BB3,TCONT,0.05,
      &IPLT,QMX,QMN,TFUT,QFUT)
      
-C Set QFUT for use by slave controller
+C Set QFUT for use by slave controller.
       Qmst(ICF)=Q
       bMasterFreeCoolFlag(ICF)=bFreeCoolActive
       
