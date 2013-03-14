@@ -30,10 +30,11 @@ C     rmfil    miscel descriptions
 C     glzfil   Radiance glazing file
 
 
-      common/rad1a/aglzfil,cfcfil
-      character*72 aglzfil,cfcfil
-C     aglzfil  Radiance alternative glazing data set file (?)
-C     cfcfil   Radiance CFC data file name
+      common/rad1a/aglzfil,cfcfil,glroptfil
+      character*72 aglzfil,cfcfil,glroptfil
+C     aglzfil   Radiance alternative glazing data set file (?)
+C     cfcfil    Radiance CFC data file name
+C     glroptfil Radiance CFC glare coupling options file
 
       common/e2rq/indrcb,itrack,imgqua,detlvl,llvar,penumb
       integer indrcb,itrack

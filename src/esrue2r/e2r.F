@@ -233,8 +233,9 @@ C Set defaults.
       rmfil='UNKNOWN'
       rmmfil='UNKNOWN'
       glzfil='UNKNOWN'
-      aglzfil='UNKNOWN'
-      cfcfil='UNKNOWN'
+      aglzfil='UNKNOWN' ! could this be 'NONE'?
+      cfcfil='NONE'
+      glroptfil='NONE'
       iglzty=1
       indone=.false.
       rskyfil='UNKNOWN'
@@ -1434,7 +1435,7 @@ C Check if tmc control found.
  10   continue
 
 C Now do "the same" for CFC ...
-C Actually, this code is used to populate CFC commonst "in any case",
+C Actually, this code is used to populate CFC commons "in any case",
 C no matter if CFCs are controlled or not. There may be a better place
 C for this code.
 c << code addition 16 May 2012 ...

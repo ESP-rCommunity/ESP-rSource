@@ -43,6 +43,8 @@ C   CFCDetailedBlind   Writes detailed blind generation (genblinds)
 C
 C   CFCCreateBRTDfun   Create detailed glazing model (BRTDfunc) for 
 C                      a CFC glazing description. -- dummy --
+C
+C   CFCGlareOptFil     Writes radiance options used by glare calcs
 
 
 C ********************************************************************
@@ -722,7 +724,7 @@ C       it overlaps the glazing area. Typically, such an overlap will be
 C       in the range of 30 to 50 millimeters either side.
 C -------------------------------------------------------------------
 
-        dy=0.05   ! [m] slat overstand; set fixed value, for now
+        dy=0.1    ! [m] slat overstand; set fixed value, for now
         sd=1.2*sw ! [m] slat distance from CFC
 
 C       Establish cfc_width, cfc_height and transform (x0,y0,z0 for blind)
@@ -735,7 +737,7 @@ C       Establish cfc_width, cfc_height and transform (x0,y0,z0 for blind)
         endif
 
         vb_width=cfc_width+2.*dy ! the blind is wider than the glazing!
-        vb_height=cfc_height
+        vb_height=cfc_height + sp ! make sure that the top is covered (?)
 
 c       if (??) then ! ?? is there a CFC-setting for this??
 c          write(curvature,'(a)')' -r ' ! slats curved downward (standard)
@@ -745,7 +747,7 @@ c       endif
 
 C
         ! calculate number of slats necessary to cover height
-        nslats=ceiling(vb_height/sp) !+1
+        nslats=ceiling(vb_height/sp) ! + 1
 
         ! rescale Venetian blind width and height to multiples of
         ! slat width
@@ -1138,4 +1140,98 @@ c      write(6,*) ZMIN,ZMAX,XYMAX
       return
       END
 
+
+C ********************************************************************
+C                         -- CFCGlareOptFil --
+C
+C Write rad options file for glare calcs.
+C
+C Created by: Achim Geissler
+C Initial Creation: March 2013
+C
+C Call parameters
+C
+C Return values
+C   None (?)   >> writes Radiance options to file 'glroptfil'
+C
+C ********************************************************************
+      subroutine CFCGlareOptFil(init)
+
+      IMPLICIT NONE
+#include "building.h"
+#include "geometry.h"
+#include "CFC_common.h"
+#include "e2r_common.h"
+
+C Parameters
+      integer init
+
+C Commons
+      COMMON/FILEP/IFIL
+      integer IFIL
+
+C Local variables
+      integer ISTAT,ITA1
+      character tfile*72
+
+C Function definitions
+      integer lnblnk
+
+C The actual code
+      ITA1 = IFIL+6
+
+cx      write(*,*)' ** not implemented! **'
+cx      return
+
+C The -PP is used for memory sharing on a single host running multiple
+C processes. If you have a machine with 4 cores then you will need to
+C start 4 copies of rpiece. So with something like the following:
+
+C rpiece -x 800 -y 800 -X 2 -Y 2 -F my_syncfile.sync <rpict options
+C including -PP my_persistfile.pp> -o myimage.unf myscene.oct
+
+C this command line would need to be run 4 times in order to get the 4
+C processes up and running
+
+C This would result in an image split into a 2 by 2 grid and spread out
+C over 4 processes. The memory including the scene would be shared among
+C the 4 processes, thus reducing the memory footprint.
+
+
+      write(glroptfil,'(2a)')cfcfil(1:lnblnk(cfcfil)-4),'_glr.opt'
+
+      write(tfile,'(a,a)')runpath(1:lnrp),glroptfil(1:lnblnk(glroptfil))
+      call FPOPEN(ITA1,ISTAT,1,3,tfile)
+
+      if (init.eq.1) then
+C       Low (fast) settings (LHH)
+        WRITE(ITA1,'(6a)') ' -x 512 -y 512 ',
+     &                    '-dp 256 -ar 523 -ds 0 -dt .2 ',
+     &                    '-dc .25 -dr 0 -sj 0 -st .5 ',
+     &                    '-ab 0 -aa .2 -ad 1024 -as 0 ',
+     &                    '-av 0.01 0.01 0.01 ',
+     &                    '-lr 6 -lw 1e-2 '
+      elseif (init.eq.2) then
+C       High (slow) settings
+        WRITE(ITA1,'(6a)') ' -x 1024 -y 1024 ',
+     &                    '-dp 512 -ar 523 -ms 0.092 -ds .3 -dt .1 ',
+     &                    '-dc .5 -dr 1 -sj .7 -ss 1 -st .1 ',
+     &                    '-ab 2 -aa .15 -ad 800 -as 128 ',
+     &                    '-av 0.01 0.01 0.01 ',
+     &                    '-lr 8 -lw 1e-4 -ps 6 -pt .08 '
+      elseif (init.eq.3) then
+C       Very high (extremely slow) settings (a-values from Reinhart / Wienold)
+        WRITE(ITA1,'(6a)') ' -x 1024 -y 1024 ',
+     &                    '-dp 512 -ar 523 -ms 0.092 -ds .3 -dt .1 ',
+     &                    '-dc .5 -dr 1 -sj .7 -ss 1 -st .1 ',
+     &                    '-ab 2 -aa .15 -ad 800 -as 128 ',
+     &                    '-av 0.01 0.01 0.01 ',
+     &                    '-lr 8 -lw 1e-4 -ps 6 -pt .08 '
+      endif
+
+C     Close file
+      CALL ERPFREE(ITA1,ISTAT)
+
+      return
+      end
 

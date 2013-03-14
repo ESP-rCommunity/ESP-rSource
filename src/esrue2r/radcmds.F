@@ -382,15 +382,34 @@ C
 C          Viewdirection: ???
 cx         1. Create picture (name: zone, scene, time stamp?)
 C # create .hdr
-          write(doitl,'(12a)') 'cd ',runpath(1:lnrp),
+C The -PP is used for memory sharing on a single host running multiple
+C processes. If you have a machine with 4 cores then you will need to
+C start 4 copies of rpiece. So with something like the following:
+
+C rpiece -x 800 -y 800 -X 2 -Y 2 -F my_syncfile.sync <rpict options
+C including -PP my_persistfile.pp> -o myimage.unf myscene.oct
+
+C this command line would need to be run 4 times in order to get the 4
+C processes up and running
+
+C This would result in an image split into a 2 by 2 grid and spread out
+C over 4 processes. The memory including the scene would be shared among
+C the 4 processes, thus reducing the memory footprint.
+
+           call CFCGlareOptFil(1)
+
+           write(doitl,'(12a)') 'cd ',runpath(1:lnrp),
      &       '; rpict -t 0 -vta',
      &       ' -vp 1.8 1.8 1.350',
      &       ' -vd  1.0000 -0.0000 -0.0000',
      &       ' -vu 0 0 1 -vh 180.0 -vv 180.0',
-     &       ' -x 512 -y 512',
-     &       ' @',optnfil(1:lnblnk(optnfil)),
+     &       ' @',glroptfil(1:lnblnk(glroptfil)),
      &       ' ',octfil(1:lnblnk(octfil)),
      &       ' > tmpfile.unf'
+
+c     &       ' @',optnfil(1:lnblnk(optnfil)),
+c     &       ' ',octfil(1:lnblnk(octfil)),
+c     &       ' > tmpfile.unf'
 
           call runit(doitl,'-')
 
