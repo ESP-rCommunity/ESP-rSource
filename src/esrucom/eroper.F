@@ -529,8 +529,8 @@ C If negative the unit is m2/p for occupants and W/m2 otherwise.
 C Ip3ver 21+ will already have scanned *type lines. and the lodslot
 C value will be the same as iabs(ICGT).
           if(ND.eq.7.or.ND.eq.12)then
-            CALL EGETWI(OUTSTR,K,IREADER,-3,5,'W',
-     &        'verloaded gain type',IER)
+            CALL EGETWI(OUTSTR,K,IREADER,-3,7,'W',
+     &        'overloaded gain type',IER)
             ICGT(IDTY,I)=IREADER
             ipslot=iabs(ireader)  ! get equivalent of lodslot
             if(ip3ver(icomp).lt.21)then

@@ -25,17 +25,18 @@ C.....Named constants for fuel types
 
 C.....Supported end-uses
       integer iNumUses
-      parameter ( iNumUses = 7 )
+      parameter ( iNumUses = 8 )
       integer iUseSpaceHeat, iUseSpaceCool, iUseDHW,
      &        iUseLights, iUseEquipment, iUseUncatagorized,
-     &        iUseHRV
+     &        iUseHRV, iCHREM_AL
       parameter ( iUseSpaceHeat     = 1,
      &            iUseSpaceCool     = 2,
      &            iUseDHW           = 3,
      &            iUseLights        = 4,
      &            iUseEquipment     = 5,
      &            iUseUncatagorized = 6,
-     &            iUseHRV           = 7)
+     &            iUseHRV           = 7,
+     &            iCHREM_AL         = 8 ) ! CHREM appliances and lighting
 
 C.....Number of "components" in ESP-r that report data to OffsiteUtilities
       integer iNumOffsiteUtilComp
@@ -244,3 +245,9 @@ C.....Ventilation/HRV
       data cUseDesc(iUseHRV) /'ventilation'/
       data iUseDescLen(iUseHRV) /11/
 
+C.....CHREM appliances and lighting
+      data cUseName(iCHREM_AL) /'CHREM_AL'/
+      data iUseNameLen(iCHREM_AL) /8/
+
+      data cUseDesc(iCHREM_AL) /'CHREM_AL'/
+      data iUseDescLen(iCHREM_AL) /8/

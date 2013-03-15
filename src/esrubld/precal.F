@@ -306,7 +306,13 @@ C may have a different value defined for the above variables
 
       character outs*124
 
+!	This is the conversion used to go from AC/h (from *.opr file) to W/K (effective conductivity)
       A=0.33*VOL(ICOMP)
+!	A = (1006 J/kgK * 1.177 kg/m^3 / 3600 s/h) * (m^3/AC)
+!	First term on RHS in brackets is 0.33 Wh/Km^3
+!	Second term on RHS in brackets is Zone_Volume m^3/AC
+!	This results A = 0.33 * Vol with units of (Wh per Kelvin Air-Change)
+!	The file reads in AC/h and when it is multiplied by A results in W/K
 
 C << what about temporal zone infil and vent? should this require a return? >>
       NDTY=NBDAYTYPE
@@ -431,15 +437,17 @@ C           l = 3 -> sensible load (fraction of non-hvac elec load
 C           l = 4 -> latent load (fraction of non-hvac elec load
 C           l = 5 -> radiative feaction (0->1)
 C           l = 6 -> convective fraction (0->1)
+C           l = 7 -> casual gain slot (1-7)
 C
 C - Alex Feb. 20 2004
       COMMON/CasCou/iNumb_Gain_coupling(MCOM,MDTY),
-     &     Coupling_gain_info(MCOM,MDTY,MC,6)
+     &     Coupling_gain_info(MCOM,MDTY,MC,7)
       INTEGER iNumb_Gain_coupling,index
       REAL Coupling_Gain_info
       real PERSN  ! number of persons per m^2
       character outs*124
       logical close
+      integer ityp   ! casual gain slot
 
       REAL PQ,PR,PA
 
@@ -496,42 +504,57 @@ C Zero derived gains.
 
 C Take gains and process them into the simulation common block.
 C NOTE: support for additional casual gains types added:
-C - if abs(ICGT(IDAY,I)) = 5, or caskeytype = 'net_utilities' then the
-C   casual gain is coupled to electric load and electric_net_utilities
-C   and electric_net_utilities is called to characterize
-C   the casual gain.
-C Alex, Feb 20, 2004.
+C - if caskeytype = 'net_utilities' then the casual gain is coupled 
+C   to electric load and electric_net_utilities and electric_net_utilities
+C   is called to characterize the casual gain. If the casual gain is
+C   taged with 'ALOtherElectric' or 'ALStoveNG' or 'ALDryer' then also
+C   fill in the Coupling_gain_info array.
 
+      ! Do for each day type
       do 300 iday=1,nbdaytype
+      ! Check that there is casual gains for the day type
       if (NCAS(iday).gt.0) then
-C.....Start counter for electric->casual gain couplings
+      ! Start counter for electric->casual gain couplings
       ingc = 0
+          
+      ! Loop over each casual gain for the day type checking
+      ! for a matching caskeytype. Generate and print message
+      ! if running in verbose mode.
       do 210 I=1,NCAS(iday)
         ITYP=abs(ICGT(IDAY,I))
         if(caskeytype(icomp,ityp)(1:13).eq.'net_utilities'.or.
-     &     ityp.eq.5)then
-          write(outs,*) 'found a net_utilities ',iday,i,ityp,
+     &     caskeytype(icomp,ityp)(1:15).eq.'ALOtherElectric'.or.
+     &     caskeytype(icomp,ityp)(1:9).eq.'ALStoveNG'.or.
+     &     caskeytype(icomp,ityp)(1:15).eq.'ALStoveElectric'.or.
+     &     caskeytype(icomp,ityp)(1:7).eq.'ALDryer')then
+          write(outs,*) 'found a coupling ',iday,i,ityp,
      &      caskeytype(icomp,ityp)
           if (itrc.gt.1) call edisp(iuout,outs)
         endif
         IT1=ICGS(IDAY,I)
         IT2=ICGF(IDAY,I)
 
-C If the caskeytype is net_utilities or the slot is 5 do electrical coupling.
+C If the caskeytype matches something we are looking for do coupling.
         if(caskeytype(icomp,ityp)(1:13).eq.'net_utilities'.or.
-     &     ityp.eq.5)then
+     &     caskeytype(icomp,ityp)(1:15).eq.'ALOtherElectric'.or.
+     &     caskeytype(icomp,ityp)(1:9).eq.'ALStoveNG'.or.
+     &     caskeytype(icomp,ityp)(1:15).eq.'ALStoveElectric'.or.
+     &     caskeytype(icomp,ityp)(1:7).eq.'ALDryer')then
            ingc = ingc + 1 !Increment counter 
+              
+           ! Store the information for the coupling.
            Coupling_gain_info(ICOMP,IDAY,ingc,1) = real(IT1)    !start hour
            Coupling_gain_info(ICOMP,IDAY,ingc,2) = real(IT2)    !End hour
            Coupling_gain_info(ICOMP,IDAY,ingc,3) = CMGS(IDAY,I) !Sensible load coefficient
            Coupling_gain_info(ICOMP,IDAY,ingc,4) = CMGL(IDAY,I) !Latent load coefficient
            Coupling_gain_info(ICOMP,IDAY,ingc,5) = RADC(IDAY,I) !Radiant fraction
            Coupling_gain_info(ICOMP,IDAY,ingc,6) = CONC(IDAY,I) !Convective fraction
+           Coupling_gain_info(ICOMP,IDAY,ingc,7) = ityp         ! Casual gain slot
 
 C Latent load couplings are presently not supported. Check for coupling
 C in specifications, and if found (i) warn user & (ii) set to zero.
            if( Coupling_gain_info(ICOMP,IDAY,ingc,4) .gt.0. ) then 
-              Coupling_gain_info(ICOMP,IDAY,ingc,4) =  0.      
+             Coupling_gain_info(ICOMP,IDAY,ingc,4) =  0.      
              call edisp(itu,' ')
              write(outs,'(A)') 'WARNING: MZCASG in precal.F'
              call edisp(itu,outs)
@@ -647,14 +670,16 @@ C Debug
         iNumb_gain_coupling(icomp,iday)=INGC
  210  continue   ! loop of casual gains in the day
 
+      iNumb_gain_coupling(icomp,iday)=INGC
+
 C If no gains defined then set one null period.
       do 211 IG=1,MGTY
         if (NCGPER(ICOMP,IDAY,IG).eq.0) then
           NCGPER(ICOMP,IDAY,IG)=1
         endif
  211  continue
-      endif
- 300  continue  ! loop of day types
+      endif     ! are there casual gins defined
+ 300  continue  ! loop back to next day type
 
 C Trace output ?
       if (ITRACE(12).EQ.1.AND.IZNTRC(ICOMP).EQ.1) then
