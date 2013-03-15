@@ -4597,7 +4597,7 @@ C Trace output
 
 C ******************** CMP39C ********************
 
-C CMP39C generates for plant component IPCOMP with plant db code 240 ie.
+C CMP39C generates for plant component IPCOMP with plant db code 390 ie.
 C 1 node (ISV=20) WCH pump with mass flow control
 C matrix equation coefficients COUT (in order: self-coupling, cross-
 C coupling, and present-time coefficients) for energy balance (ISTATS=1),
@@ -4611,9 +4611,11 @@ C            3 Overall efficiency (-)
 C     CDATA: 1 Mass flow rate (kg/s)
 
       SUBROUTINE CMP39C(IPCOMP,COUT,ISTATS)
+      use h3kmodule
 #include "plant.h"
 #include "building.h"
 #include "net_flow.h"
+#include "OffsiteUtilitiesPublic.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/TC/ITC,ICNT
@@ -4648,6 +4650,9 @@ C     CDATA: 1 Mass flow rate (kg/s)
       COMMON/PCRES/QDATA(MPCOM),PCAOUT(MPCOM,MPCRES),napdat(mpcom)
       REAL QDATA,PCAOUT
       INTEGER napdat
+
+      common/pcnam/pcname(mpcom)       ! Plant component names
+      character*15 pcname
 
 C Electrical details for specified plant components
       common/elpcp/NPEL,PFP(mpcom),IPFP(mpcom),PWRP(mpcom),
@@ -4705,8 +4710,17 @@ C In case of mfs E is based on flow rate, pressure *rise*, and efficiency
          CALL EMACH(IPCOMP,IEMODEL,PWRP(IPCOMP),PQ,PA)
          PWRQ=PQ
 
+C Pass power consumption to Site Utilities facility
+         fSUFuelEnergyUse( iElectricity, iUseUncatagorized) = ABS(E)
+         call StorePltCompEnergyUse ( IPCOMP, fSUFuelEnergyUse )
+
+C Report power consumption
+         call AddToReport(rvPltWCHPumpEInput%Identifier,
+     &         ABS(E),
+     &         pcname(ipcomp)(1:iPltNameLen(ipcomp)))
+
 C Now Q is made up of all inefficiencies
-         Q=E
+         Q=(1.-BDATA(IPCOMP,3))*E
 
 C Establish heat capacity of component mass CM (J/K) and
 C fluid heat capacity rate(s) C (W/K), ie. SUM(mass flow * specific heat)
@@ -4772,6 +4786,19 @@ C 2nd phase mass (ie. "vapour") balance coefficients
          COUT(2)=0.
          COUT(3)=0.
       END IF
+
+C---------------------------------------------------------------------------------
+C Determine the convective and radiative split and call the routine that stores
+C these heat transfer rates for subsequent injection into the zone energy
+C balances. 'iConvective' and 'iRadiant' are parameters defined in plant.h.
+C For Now: Assume radiative / convective split of 50/50
+C This approach assumes all loss  Q = (1. - Eff)*E is directly injected into 
+C containment; UA given for component has no influence ...
+C---------------------------------------------------------------------------------
+      heat_to_room_conv = Q * 0.5
+      heat_to_room_rad  = Q * ( 1. - 0.5 )
+      CALL STORE_PLT_GAIN (IPCOMP, heat_to_room_conv, iConvective)
+      CALL STORE_PLT_GAIN (IPCOMP, heat_to_room_rad, iRadiant)
 
 C Trace output
       IF(ITC.GT.0.AND.NSINC.GE.ITC.AND.NSINC.LE.ITCF.AND.

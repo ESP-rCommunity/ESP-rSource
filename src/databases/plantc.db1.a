@@ -6359,12 +6359,12 @@ signal set point                                                          0.
  BDATA variables:
     1 Rated total absorbed power (W)
       Value =    150.00        Range (Min Max):     150.00        150.00
-    2 Rated mass flow rate (m^3/s)
+    2 Rated mass flow rate (kg/s)
       Value =   0.30000E-03    Range (Min Max):    0.30000E-03   0.30000E-03
     3 Overall efficiency (-)
       Value =   0.70000        Range (Min Max):    0.70000       0.70000
  CDATA variables:
-    1  Water mass flow rate (m^3/s)
+    1  Water mass flow rate (kg/s)
 
  Number of additional output parameters:     2
  Additional output variables:
