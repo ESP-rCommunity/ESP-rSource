@@ -5,29 +5,29 @@ C compiled as pure Fortran.
 C If the parameter of the C function change the matching subroutine
 C in this source file should be adapted to match.
 
-C	sizeint         :- passess window size & position
-C	win3d	:- opens a viewing box taking into account menu
-C                  width and dialogue box.
-C	win3dclr	:- clear viewing box.
-C	winfnt(n)	:- changes the font (4 different sizes 0,1,2,3)
-C	opensetup	:- place environment button on screen.
-C	viewtext	:- displays a line of text within the viewing
-C                          box with size and location parameters
-C	feedbox	:- open feedback background box
-C	opengdisp	:- opens a scrolling text display area.
-C	etplot	:- general line plotting.
-C	axiscale 	:- determines scaling parameters for horizontal
-C                          and vertical axis.
-C	linescale	:- stores scaling parameters for lines.
-C	dinterval	:- determins the tic interval for an axis as well
-C                          as the number of decimal places.
-C	vrtaxis	:- draws a vertical axis with tic marks and labels.
-C	horaxis	:- draws a horizontal axis with tic marks and labels.
-C	captut	:- tutorial indicator
-C	captextf	:- text feedback capture
-C	captexgf	:- graphic feedback capture
-C	updcapt	:- notify for capture button
-C	capexall	:- save whole display images
+C  sizeint     :- passess window size & position
+C  win3d       :- opens a viewing box taking into account menu
+C                 width and dialogue box.
+C  win3dclr    :- clear viewing box.
+C  winfnt(n)   :- changes the font (4 different sizes 0,1,2,3)
+C  opensetup   :- place environment button on screen.
+C  viewtext    :- displays a line of text within the viewing
+C                 box with size and location parameters
+C  feedbox     :- open feedback background box
+C  opengdisp   :- opens a scrolling text display area.
+C  etplot      :- general line plotting.
+C  axiscale    :- determines scaling parameters for horizontal
+C                 and vertical axis.
+C  linescale   :- stores scaling parameters for lines.
+C  dinterval   :- determins the tic interval for an axis as well
+C                 as the number of decimal places.
+C  vrtaxis     :- draws a vertical axis with tic marks and labels.
+C  horaxis     :- draws a horizontal axis with tic marks and labels.
+C  captut      :- tutorial indicator
+C  captextf    :- text feedback capture
+C  captexgf    :- graphic feedback capture
+C  updcapt     :- notify for capture button
+C  capexall    :- save whole display images
 
 C ************
 

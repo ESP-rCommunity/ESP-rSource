@@ -60,7 +60,7 @@ C If NDAYT=0 set data to all day types
    10 CONTINUE
       WRITE(outs,*) ' MZGCTL: global control '
       call edisp(iuout,outs)
-      WRITE(outs,*) '	      no valid day type for year-day ',IDAY
+      WRITE(outs,*) '      no valid day type for year-day ',IDAY
       call edisp(iuout,outs)
       call edisp(iuout,
      &       ' MZGCTL: cannot locate appropriate day type')
@@ -889,11 +889,11 @@ C Get logical action with next control loop
             ISTF=0
           ENDIF
         ELSEIF(IACT.EQ.1.AND.ICLP.GT.1)THEN ! AND (only check from 2nd control loop onwards)
-	  IF(ISTE.EQ.1.AND.ISTF.EQ.1)THEN
-	    ISTF=1
-	  ELSE
-	    ISTF=0
-	  ENDIF
+          IF(ISTE.EQ.1.AND.ISTF.EQ.1)THEN
+            ISTF=1
+          ELSE
+            ISTF=0
+          ENDIF
         ELSEIF(IACT.EQ.5)THEN ! MAX (only used for flow)
           SIGNT=MAX(SIGNT,SIGN)
         ELSEIF(IACT.EQ.6)THEN ! MIN (only used for flow)

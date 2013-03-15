@@ -828,13 +828,11 @@ C Setup and pass in parameters to win3d.
             iigl=igl; iigr=igr; iigt=igt; iigb=igb; iigw=igw;iigwh=igwh
             CALL win3d(iimenu,iiw1,iiw2,iiw3,iiw4,
      &        iigl,iigr,iigt,iigb,iigw,iigwh)
-C            call win3d(menuchw,3,16,5,3,igl,igr,igt,igb,igw,igwh)
           else
             iiw1=9; iiw2=16; iiw3=5; iiw4=3; iimenu=menuchw
             iigl=igl; iigr=igr; iigt=igt; iigb=igb; iigw=igw;iigwh=igwh
             CALL win3d(iimenu,iiw1,iiw2,iiw3,iiw4,
      &        iigl,iigr,iigt,iigb,iigw,iigwh)
-C            call win3d(menuchw,9,16,5,3,igl,igr,igt,igb,igw,igwh)
           endif
         elseif(onright.eq.1)then
           if(onleft.eq.0)then
@@ -842,13 +840,11 @@ C            call win3d(menuchw,9,16,5,3,igl,igr,igt,igb,igw,igwh)
             iigl=igl; iigr=igr; iigt=igt; iigb=igb; iigw=igw;iigwh=igwh
             CALL win3d(iimenu,iiw1,iiw2,iiw3,iiw4,
      &        iigl,iigr,iigt,iigb,iigw,iigwh)
-C            call win3d(menuchw,3,26,5,3,igl,igr,igt,igb,igw,igwh)
           else
             iiw1=9; iiw2=26; iiw3=5; iiw4=3; iimenu=menuchw
             iigl=igl; iigr=igr; iigt=igt; iigb=igb; iigw=igw;iigwh=igwh
             CALL win3d(iimenu,iiw1,iiw2,iiw3,iiw4,
      &        iigl,iigr,iigt,iigb,iigw,iigwh)
-C            call win3d(menuchw,9,26,5,3,igl,igr,igt,igb,igw,igwh)
           endif
         elseif(onright.eq.2)then
           if(onleft.eq.0)then
@@ -856,13 +852,11 @@ C            call win3d(menuchw,9,26,5,3,igl,igr,igt,igb,igw,igwh)
             iigl=igl; iigr=igr; iigt=igt; iigb=igb; iigw=igw;iigwh=igwh
             CALL win3d(iimenu,iiw1,iiw2,iiw3,iiw4,
      &        iigl,iigr,iigt,iigb,iigw,iigwh)
-C            call win3d(menuchw,3,31,5,3,igl,igr,igt,igb,igw,igwh)
           else
             iiw1=9; iiw2=31; iiw3=5; iiw4=3; iimenu=menuchw
             iigl=igl; iigr=igr; iigt=igt; iigb=igb; iigw=igw;iigwh=igwh
             CALL win3d(iimenu,iiw1,iiw2,iiw3,iiw4,
      &        iigl,iigr,iigt,iigb,iigw,iigwh)
-C            call win3d(menuchw,9,31,5,3,igl,igr,igt,igb,igw,igwh)
           endif
         endif
         igl=int(iigl); igr=int(iigr); igt=int(iigt); igb=int(iigb)

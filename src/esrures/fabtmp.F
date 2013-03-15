@@ -428,7 +428,6 @@ C Setup and pass in parameters to win3d.
           iigl=igl; iigr=igr; iigt=igt; iigb=igb; iigw=igw; iigwh=igwh
           CALL win3d(iimenu,iiw1,iiw2,iiw3,iiw4,
      &      iigl,iigr,iigt,iigb,iigw,iigwh)
-C          call win3d(menuchw,9,24,8,3,igl,igr,igt,igb,igw,igwh)
           igl=int(iigl); igr=int(iigr); igt=int(iigt); igb=int(iigb)
           igw=int(iigw); igwh=int(iigwh)
         elseif(act.eq.'s')then
@@ -437,7 +436,6 @@ C          call win3d(menuchw,9,24,8,3,igl,igr,igt,igb,igw,igwh)
           iigl=igl; iigr=igr; iigt=igt; iigb=igb; iigw=igw; iigwh=igwh
           CALL win3d(iimenu,iiw1,iiw2,iiw3,iiw4,
      &      iigl,iigr,iigt,iigb,iigw,iigwh)
-C          call win3d(menuchw,9,24,8,3,igl,igr,igt,igb,igw,igwh)
           igl=int(iigl); igr=int(iigr); igt=int(iigt); igb=int(iigb)
           igw=int(iigw); igwh=int(iigwh)
         endif

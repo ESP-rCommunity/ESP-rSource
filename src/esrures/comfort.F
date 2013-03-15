@@ -63,6 +63,8 @@ C Pre calculated data (filtered).
      &    RDFAVE(MCOM,3,MZRL),RDTFMAX(MCOM,3,MZRL),RDTFMIN(MCOM,3,MZRL)
 
       COMMON/GET2/XDUM(MTS),XDUM1(MTS),GVAL(MTS)
+      COMMON/IGETFLG/IOCUPF,ialstused,IROC
+
 
       DIMENSION ID(12),OP(MS),TS(MS),TSO(MS),QV(MS),ITEMS(14)
       character doit*248,tmode*8
@@ -159,6 +161,7 @@ C << revise for additional casual gain types >>
         CALL EASKATOG('Which casual gain represents occupancy:',' ',
      &      'Always occupied',ll1,ll2,ll3,'time',' ',' ',IOT,nbhelp)
         if (IOT.gt.1.and.IOT.lt.5) then
+          iocupf=1      
           iocut=IOT-1
         elseif(IOT.eq.1)then
           iocut=0

@@ -6,7 +6,7 @@ C supproted.
       IMPLICIT NONE
 
       COMMON/OUTIN/IUOUT,IUIN
-      INTEGER	IUOUT,IUIN
+      INTEGER  IUOUT,IUIN
       CHARACTER*124 cMSG
       
       integer lnblnk

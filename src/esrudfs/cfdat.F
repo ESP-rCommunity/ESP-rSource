@@ -1515,8 +1515,13 @@ C INICNT - Initialize some constant parameters.
      1            TURBIN,ALAMDA,PRTE,PRED
       COMMON/CONST/GREAT,SMALL,GRAV
 
+C On most computers SMALL at 1.E-20 is not an issue. However the
+C gridding process requires 3 small numbers to be multiplied and
+C this can cause problems. If CFD grid visualisation fails try
+C altering SMALL to 1.E-12.
       GREAT=1.E+20
-      SMALL=1.E-20
+      SMALL=1.E-20   ! standard
+C      SMALL=1.E-12  ! alternative
       GRAV=9.81
 
 C Fluid properties.

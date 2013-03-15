@@ -20,88 +20,88 @@ C License along with ESP-r. If not, write to the Free
 C Software Foundation, Inc., 59 Temple Place, Suite 330,
 C Boston, MA 02111-1307 USA.
 c This file contains the following routines:
-c	ASHP_COOLING	  Model performance of air source heat pump in
-c			  cooling mode. Same subrotuine is used to model
-c                         ground-source heat pumps.
-C       OUTDOOR_AIR_PROPERTIES
-c                         Determine properties of outdoor air for the time step
-c       RETURN_AIR_PROPERTIES
-c                         Determine properties of return air from zones
-c	ASHPC_COIL_INLET  Determines inlet conditions to cooling coil
-c                         accounting for effect of outdoor air
-c	RET_AIR_TEMP	  Determines average temperature of return air
-c			  from zones served by cooling system
-c       RET_AIR_TEMP_OA_MIX
-c                         Determines temperature of mixed air made up of
-c                         return air flow and outdoor air flow
-c	RET_AIR_HUM_RATIO Determines average humidity ratio of return air
-c       RET_AIR_HUM_RATIO_OA_MIX
-c                         Determines average humidity ratio of mixed made up
-c                         of return air flow and outdoor air flow
-c	ENTH_MOIST_AIR	  Determines enthalpy of air given temperature and
-c			  humidity ratio
-c	SPEC_HEAT_AIR	  Determines specific heat of air given humidity
-c			  ratio
-c	ATM_PRESSURE	  Determines atmospheric pressure given site altitude
-c	DENSITY_AIR	  Determines density of dry air given site altitude
-c			  temperature and humidity ratio
-c	PAR_PRES_AIR	  Determines partial pressure of air given humidity
-c                         ratio and total pressure
-c	HUM_RATIO_OA	  Determines humidity ratio of outdoor air given
-c			  temperature, relative humidity, and site altitude
-c	ASHPC_CAP	  Determines total cooling capacity of air source
-c			  heat pump at current outdoor temperature and inlet
-c                         wet-bulb temperature to coil
-c	ASHPC_CAP_FLOW_CORR
-c			  Correction of total cooling capacity of heat
-c			  pump for effect of flow rate if different from that
-c                         at rating conditions
-c	BYPASS_FACTOR	  Determines coil bypass factor at operating flow
-c			  rate
-c	SENS_HEAT_RATIO	  Determines coil sensible heat ratio
-c	ASHPC_COP	  Determines heat pump cooling mode COP at current
-c                         outdoor temperature and inlet wet-bulb temperature
-c                         to coil
-c	ASHPC_COP_FLOW_CORR
-c			  Correction of heat pump cooling mode COP for the
-c			  effect of flow rate
-c	ASHP_PLF_OFFCYC_CORR
-c			  Correction of part load factor of heat pump for
-c			  effect of off cycle power consumption
-c	ASHP_ENERGY	  Determines energy consumption of compressor and
-c                         outdoor fan for time step given part load ratio,
-c                         part load factor, capacity, cop, and time step
-c	TIME_INTERVAL	  Determines duration of time step given number of time
-c			  steps per hour
-c       ZONE_MASS_FLOW_RATE
-c                         Determines supply air mass flow rate from HVAC system
-c                         to each of the zones served by the system
-c	COIL_MOIST_BAL	  Determines cooling coil contribution toward the
-c			  moisture balance of the zones served by hvac system
-c       SET_CONT_FUNC_COOL_CAP
-c                         Set the sensible cooling capacity of the control
-c                         function associated with the cooling system
-c       WET_BULB_DRY_COIL Determines the highest wet-bulb inlet coil temperature
-c                         leading to dry coil conditions
-c       HEATPC_ECONOMIZER_TEMP
-c                         Simulate performance of temperature based economizer
-c                         cycle
-c       HEATPC_ECONOMIZER_ENTH
-c                         Simulate performance of enthalpy based economizer cycle
-C       ASHPC_PLR_PLF_LATENTLOAD
-c                         Determine part-load ratio, part-load factor, and latent
-c                         load of equipment for the time step
-c       SET_TOTALCOOLINGCAP_SHR
-c                         Calls appropriate routines to determine total cooling
-c                         capacity and sensible heat ratio of coil
-c       SET_COP           Calls appropriate routines to determine equipment COP
-c       HUMRATIO_MOISTBAL Determines equivalent humidity ratio with coil inlet
-c                         conditions set to return air conditions
-c       ASHP_COOLING_ZONE_CONTROL
-c                         Set the timestep variable flow rate and zone capacity
-c                         fractions based on the number of zones that are calling
-c                         for cooling IF zone control is ON.
-c       ACSYSTEM_OUTPUT   Evaluate output variables associated with AC system
+c  ASHP_COOLING      Model performance of air source heat pump in
+c                    cooling mode. Same subrotuine is used to model
+c                    ground-source heat pumps.
+C  OUTDOOR_AIR_PROPERTIES
+c                    Determine properties of outdoor air for the time step
+c  RETURN_AIR_PROPERTIES
+c                    Determine properties of return air from zones
+c  ASHPC_COIL_INLET  Determines inlet conditions to cooling coil
+c                    accounting for effect of outdoor air
+c  RET_AIR_TEMP      Determines average temperature of return air
+c                    from zones served by cooling system
+c  RET_AIR_TEMP_OA_MIX
+c                    Determines temperature of mixed air made up of
+c                    return air flow and outdoor air flow
+c  RET_AIR_HUM_RATIO Determines average humidity ratio of return air
+c  RET_AIR_HUM_RATIO_OA_MIX
+c                    Determines average humidity ratio of mixed made up
+c                    of return air flow and outdoor air flow
+c  ENTH_MOIST_AIR    Determines enthalpy of air given temperature and
+c                    humidity ratio
+c  SPEC_HEAT_AIR     Determines specific heat of air given humidity
+c                    ratio
+c  ATM_PRESSURE      Determines atmospheric pressure given site altitude
+c  DENSITY_AIR       Determines density of dry air given site altitude
+c                    temperature and humidity ratio
+c  PAR_PRES_AIR      Determines partial pressure of air given humidity
+c                    ratio and total pressure
+c  HUM_RATIO_OA      Determines humidity ratio of outdoor air given
+c                    temperature, relative humidity, and site altitude
+c  ASHPC_CAP         Determines total cooling capacity of air source
+c                    heat pump at current outdoor temperature and inlet
+c                    wet-bulb temperature to coil
+c  ASHPC_CAP_FLOW_CORR
+c                    Correction of total cooling capacity of heat
+c                    pump for effect of flow rate if different from that
+c                    at rating conditions
+c  BYPASS_FACTOR     Determines coil bypass factor at operating flow
+c                    rate
+c  SENS_HEAT_RATIO   Determines coil sensible heat ratio
+c  ASHPC_COP         Determines heat pump cooling mode COP at current
+c                    outdoor temperature and inlet wet-bulb temperature
+c                    to coil
+c  ASHPC_COP_FLOW_CORR
+c                    Correction of heat pump cooling mode COP for the
+c                    effect of flow rate
+c  ASHP_PLF_OFFCYC_CORR
+c                    Correction of part load factor of heat pump for
+c                    effect of off cycle power consumption
+c  ASHP_ENERGY       Determines energy consumption of compressor and
+c                    outdoor fan for time step given part load ratio,
+c                    part load factor, capacity, cop, and time step
+c  TIME_INTERVAL     Determines duration of time step given number of time
+c                    steps per hour
+c  ZONE_MASS_FLOW_RATE
+c                    Determines supply air mass flow rate from HVAC system
+c                    to each of the zones served by the system
+c  COIL_MOIST_BAL    Determines cooling coil contribution toward the
+c                    moisture balance of the zones served by hvac system
+c  SET_CONT_FUNC_COOL_CAP
+c                    Set the sensible cooling capacity of the control
+c                    function associated with the cooling system
+c  WET_BULB_DRY_COIL Determines the highest wet-bulb inlet coil temperature
+c                    leading to dry coil conditions
+c  HEATPC_ECONOMIZER_TEMP
+c                    Simulate performance of temperature based economizer
+c                    cycle
+c  HEATPC_ECONOMIZER_ENTH
+c                    Simulate performance of enthalpy based economizer cycle
+C  ASHPC_PLR_PLF_LATENTLOAD
+c                    Determine part-load ratio, part-load factor, and latent
+c                    load of equipment for the time step
+c  SET_TOTALCOOLINGCAP_SHR
+c                    Calls appropriate routines to determine total cooling
+c                    capacity and sensible heat ratio of coil
+c  SET_COP           Calls appropriate routines to determine equipment COP
+c  HUMRATIO_MOISTBAL Determines equivalent humidity ratio with coil inlet
+c                    conditions set to return air conditions
+c  ASHP_COOLING_ZONE_CONTROL
+c                    Set the timestep variable flow rate and zone capacity
+c                    fractions based on the number of zones that are calling
+c                    for cooling IF zone control is ON.
+c  ACSYSTEM_OUTPUT   Evaluate output variables associated with AC system
 c *********************************************************************
 c *********************************************************************
 c ASHP_COOLING
@@ -114,47 +114,47 @@ c Subroutine to estimate energy consumption of an air-source heat pump
 c when used in cooling mode. This includes estimates for compressor and
 c outdoor condenser fan
 c References:
-c		1) "Air-source cooling mode model for implementation in
-c		    HOT3000", Kamel Haddad, NRCan Internal Report,
-c		    February 20th 2001
+c  1) "Air-source cooling mode model for implementation in
+c    HOT3000", Kamel Haddad, NRCan Internal Report,
+c    February 20th 2001
 
-c		2) "Modifications to the HOT2000 cooling subroutine",
-c		    Chris Barringer, NRCan Report No. ES/ESC-87-93,
-c		    July 31st 1987
+c  2) "Modifications to the HOT2000 cooling subroutine",
+c    Chris Barringer, NRCan Report No. ES/ESC-87-93,
+c    July 31st 1987
 
-c		3) "DOE-2 Supplement Manual", University of California
-c		    Berkley, CA, January 1994
+c  3) "DOE-2 Supplement Manual", University of California
+c    Berkley, CA, January 1994
 
-c		4) "Air-source heat pump heating load model for
-c		    implementation in HOT3000", NRCan Internal Report
+c  4) "Air-source heat pump heating load model for
+c    implementation in HOT3000", NRCan Internal Report
 
-c		5) "Part-load curves for use in DOE-2", Prepared for the
-c		    Lawrence Berkley Lab, CDH Energy Corporation,
-c		    Cazenovia N.Y.
+c  5) "Part-load curves for use in DOE-2", Prepared for the
+c    Lawrence Berkley Lab, CDH Energy Corporation,
+c    Cazenovia N.Y.
 
 c INPUTS:
-c	isys		number of hvac system
-c	sensible_cooling_load
-c			total sensible cooling load for zones served
-c                       by hvac system isys
+c       isys  number of hvac system
+c       sensible_cooling_load
+c       total sensible cooling load for zones served
+c       by hvac system isys
 c       cooling_vent_yes
 c                       variable indicating whether there is cooling load or ventilation load
 c                       hvac system
-c	PERS		time step common
-c	HVAC_INPUT_DATA	common for HVAC input data
-c	HEAT_PUMP_INPUT_DATA
-c			common for heat pump input data
-c	GSHP_DAILY	common for ground-source heat pump data
-c	GCEP_INPUT	common for ground-source heat pump data
-c			(Ecole Polytechnique model)
+c      PERS             time step common
+c      HVAC_INPUT_DATA  common for HVAC input data
+c      HEAT_PUMP_INPUT_DATA
+c                       common for heat pump input data
+c      GSHP_DAILY       common for ground-source heat pump data
+c      GCEP_INPUT       common for ground-source heat pump data
+c                       (Ecole Polytechnique model)
 c       simtim          common for simulation days, hours, etc ...
 c       hvac_timestep_parameters
 c                       common for several time step HVAC parameters
 
 c OUTPUTS:
-c	sys_energy	total energy consumption of heat pump (compressor
+c       sys_energy      total energy consumption of heat pump (compressor
 c                       and outdoor condenser fan)
-c	plr_heat_pump	part load ratio of heat pump
+c       plr_heat_pump   part load ratio of heat pump
 c       plf_heat_pump   part load factor of heat pump
 c **********************************************************************
       SUBROUTINE ASHP_COOLING(isys,sensible_cooling_load,
@@ -216,12 +216,12 @@ c Local variables
      &ASHP_ENERGY,zone_mass_flow(mcom),small, cap_correction_factor
 
 c Following moist air states are defined:
-c	state 1		condition of return air from conditioned zones
-c	state 2		condition of air entering cooling coil
-c	state 3		apparatus dew point
-c	state 4		condition at exit of heat exchanger
-c	state 5		used to define sensible process through cooling
-c			coil
+c   state 1  condition of return air from conditioned zones
+c   state 2  condition of air entering cooling coil
+c   state 3  apparatus dew point
+c   state 4  condition at exit of heat exchanger
+c   state 5  used to define sensible process through cooling
+c            coil
 
 c Small real number to check for values close to 0.
       small = 1.0e-6
@@ -658,20 +658,20 @@ c Subroutine to determine inlet conditions (temperature and humidity
 c ratio) to cooling coil of a heat pump
 
 c INPUTS:
-c	isys		number of hvac system
-c	temp		temperature of return air
-c	hum_ratio	humidity ratio of return air
-c	temp_inlet	actual inlet temp to cooling coil
-c	hum_ratio_inlet	actual humidity ratio at the coil inlet
-c	density		density of return air
-c	specific_heat	specific heat of return air
-c	hvac_data	common for hvac systems data
-c	CLIMI		weather data common
-c	HVAC_INPUT_DATA	HVAC input data common
+c  isys       number of hvac system
+c  temp       temperature of return air
+c  hum_ratio  humidity ratio of return air
+c  temp_inlet actual inlet temp to cooling coil
+c  hum_ratio_inlet  actual humidity ratio at the coil inlet
+c  density   density of return air
+c  specific_heat  specific heat of return air
+c  hvac_data common for hvac systems data
+c  CLIMI     weather data common
+c  HVAC_INPUT_DATA  HVAC input data common
 
 c OUTPUTS:
-c	temp_inlet	temperature of air entering cooling coil
-c	hum_ratio_inlet	humidity ratio of air entering cooling coil
+c  temp_inlet       temperature of air entering cooling coil
+c  hum_ratio_inlet  humidity ratio of air entering cooling coil
 c **********************************************************************
       SUBROUTINE ASHPC_COIL_INLET(isys,temp,hum_ratio,temp_inlet,
      &                 hum_ratio_inlet,density,specific_heat)
@@ -732,13 +732,13 @@ c Subroutine to determine average temperature of return air based on
 c temperatures of air in the different zones served by hvac system
 
 c INPUTS:
-c	isys		number of hvac system
-c	pvala		present temperature and sensible load common
-c       fvala           future temperature and sensible load common
-c	HVAC_INPUT_DATA	HVAC input data common
+c  isys    number of hvac system
+c  pvala   present temperature and sensible load common
+c  fvala   future temperature and sensible load common
+c  HVAC_INPUT_DATA  HVAC input data common
 
 c OUTPUTS:
-c	RET_AIR_TEMP	temperature of return air
+c  RET_AIR_TEMP  temperature of return air
 c **********************************************************************
       REAL FUNCTION RET_AIR_TEMP(isys)
 
@@ -802,7 +802,7 @@ c                      outdoor air flow rate
 c       flow_rate      total air flow rate
 
 c OUTPUTS:
-c	RET_AIR_TEMP_OA_MIX
+c  RET_AIR_TEMP_OA_MIX
 c                      temperature of mixed air
 c **********************************************************************
       REAL FUNCTION RET_AIR_TEMP_OA_MIX(tdb1,cp1,den1,tout_avg,
@@ -837,14 +837,14 @@ c Subroutine to determine average humidity ratio of return air
 c from zones served by hvac system
 
 c INPUTS:
-c	isys		number of hvac system
-c	pvalg		present time step humidity ratio common
-c       fvalg           future time step humidity ratio common
-c	HVAC_INPUT_DATA	HVAC input data common
+c  isys    number of hvac system
+c  pvalg   present time step humidity ratio common
+c  fvalg   future time step humidity ratio common
+c  HVAC_INPUT_DATA  HVAC input data common
 
 c OUTPUTS:
-c	RET_AIR_HUM_RATIO
-c			humidity ratio of air mixture
+c  RET_AIR_HUM_RATIO
+c     humidity ratio of air mixture
 c **********************************************************************
       REAL FUNCTION RET_AIR_HUM_RATIO(isys)
 
@@ -907,8 +907,8 @@ c                       outdoor air flow rate
 c       flow_rate       total air flow rate
 
 c OUTPUTS:
-c	RET_AIR_HUM_RATIO_OA_MIX
-c			humidity ratio of mixed air
+c  RET_AIR_HUM_RATIO_OA_MIX
+c     humidity ratio of mixed air
 c **********************************************************************
       REAL FUNCTION RET_AIR_HUM_RATIO_OA_MIX(den1,w1,
      &            den_out,wout,outdoor_air_flow,flow_rate)
@@ -939,11 +939,11 @@ c Copyright 2000: NRCan Buildings Group
 c Subroutine to determine the enthalpy of moist air
 
 c INPUTS:
-c	temp		air temperature
-c	hum_ratio	humidity ratio of air mixture
+c  temp       air temperature
+c  hum_ratio  humidity ratio of air mixture
 
 c OUTPUTS:
-c	ENTH_MOIST_AIR	enthalpy of moist air
+c  ENTH_MOIST_AIR  enthalpy of moist air
 c **********************************************************************
       REAL FUNCTION ENTH_MOIST_AIR(temp,hum_ratio)
 
@@ -969,10 +969,10 @@ c Copyright 2000: NRCan Buildings Group
 c Subroutine to determine the specific heat of moist air
 
 c INPUTS:
-c	hum_ratio	humidity ratio of air mixture
+c  hum_ratio  humidity ratio of air mixture
 
 c OUTPUTS:
-c	SPEC_HEAT_AIR	specific heat of moist air
+c  SPEC_HEAT_AIR  specific heat of moist air
 c **********************************************************************
       REAL FUNCTION SPEC_HEAT_AIR(hum_ratio)
 
@@ -998,10 +998,10 @@ c Subroutine to determine atmospheric pressure for a given
 c site altitude
 c
 c INPUTS:
-c	altitude	site altitude
+c  altitude  site altitude
 
 c OUTPUTS:
-c	ATM_PRESSURE	atmospheric pressure
+c  ATM_PRESSURE  atmospheric pressure
 c **********************************************************************
       REAL FUNCTION ATM_PRESSURE(altitude)
 
@@ -1027,12 +1027,12 @@ c Copyright 2000: NRCan Buildings Group
 c Subroutine to determine density of air
 
 c INPUTS:
-c	altitude	site altitude
-c	temp		temperature
-c	hum_ratio	humidity ratio
+c  altitude   site altitude
+c  temp       temperature
+c  hum_ratio  humidity ratio
 
 c OUTPUTS:
-c	DENSITY_AIR	density of air
+c  DENSITY_AIR  density of air
 c **********************************************************************
       REAL FUNCTION DENSITY_AIR(temp,hum_ratio,altitude)
 
@@ -1068,11 +1068,11 @@ c Subroutine to determine partial pressure of air in moist air
 c mixture
 
 c INPUTS:
-c	hum_ratio	humidity ratio
-c	tot_pressure	total pressure
+c  hum_ratio     humidity ratio
+c  tot_pressure  total pressure
 
 c OUTPUTS:
-c	PAR_PRES_AIR	partial pressure of air
+c  PAR_PRES_AIR  partial pressure of air
 c ********************************************************************
       REAL FUNCTION PAR_PRES_AIR(hum_ratio,tot_pressure)
 
@@ -1097,12 +1097,12 @@ c Copyright 2000: NRCan Buildings Group
 c Subroutine to determine humidity ratio of outdoor air
 
 c INPUTS:
-c	temp		outdoor air temperature
-c	rel_hum		outdoor air relative humidity
-c	altitude	site altitude
+c  temp     outdoor air temperature
+c  rel_hum  outdoor air relative humidity
+c  altitude site altitude
 
 c OUTPUTS:
-c	HUM_RATIO_OA	outdoor air humidity ratio
+c  HUM_RATIO_OA  outdoor air humidity ratio
 c **********************************************************************
       REAL FUNCTION HUM_RATIO_OA(temp,rel_hum,altitude)
 
@@ -1141,15 +1141,15 @@ c Subroutine to determine total cooling capacity of heat pump from capacity
 c at rating conditions
 
 c INPUTS:
-c	ss_cap		steady state capacity at rating conditions
-c	twb 		wet-bulb temperature
-c	tout		outdoor dry-bulb temperature
-c	flow_rate	operating flow rate of heat pump
-c	flow_rate_r	flow rate at rating conditions
-c	ifan_operation	mode of operation of circulation fan
+c  ss_cap     steady state capacity at rating conditions
+c  twb        wet-bulb temperature
+c  tout       outdoor dry-bulb temperature
+c  flow_rate  operating flow rate of heat pump
+c  flow_rate_r  flow rate at rating conditions
+c  ifan_operation  mode of operation of circulation fan
 
 c OUTPUTS:
-c	ASHPC_CAP	cooling capacity of heat pump
+c  ASHPC_CAP  cooling capacity of heat pump
 c **********************************************************************
       REAL FUNCTION ASHPC_CAP(ss_cap,twb,tout,flow_rate,flow_rate_r,
      &                        ifan_operation)
@@ -1204,13 +1204,13 @@ c Copyright 2000: NRCan Buildings Group
 c Subroutine to correct cooling capacity for the effect of flow rate
 
 c INPUTS:
-c	cooling_cap	cooling capacity of heat pump
-c	flow_rate	operating flow rate of heat pump
-c	flow_rate_r	flow rate at rating conditions
+c  cooling_cap     cooling capacity of heat pump
+c  flow_rate       operating flow rate of heat pump
+c  flow_rate_r     flow rate at rating conditions
 
 c OUTPUTS:
-c	cooling_cap
-c			capacity corrected for the effect of air flow
+c   cooling_cap
+c     capacity corrected for the effect of air flow
 c *********************************************************************
       SUBROUTINE ASHPC_CAP_FLOW_CORR(cooling_cap,flow_rate,
      &                               flow_rate_r)
@@ -1248,12 +1248,12 @@ c Copyright 2000: NRCan Buildings Group
 c Function to determine coil bypass factor at actual operating conditions
 
 c INPUTS:
-c	flow_rate	actual system flow rate
-c	flow_rate_r	flow rate at rating conditions
-c	bfr		bypass factor at rating conditions
+c  flow_rate     actual system flow rate
+c  flow_rate_r   flow rate at rating conditions
+c  bfr           bypass factor at rating conditions
 
 c OUTPUTS:
-c	BYPASS_FACTOR	coil bypass factor at operating conditions
+c   BYPASS_FACTOR  coil bypass factor at operating conditions
 c **********************************************************************
       REAL FUNCTION BYPASS_FACTOR(flow_rate,flow_rate_r,bfr)
 
@@ -1285,16 +1285,16 @@ c Copyright 2000: NRCan Buildings Group
 c Function to determine the sensible heat ratio of coil
 
 c INPUTS:
-c	ss_cap		steady-state cooling capacity
-c	flow_rate	actual system flow rate
-c	tdb2		temperature entering coil
-c	w2 		humidity ratio entering coil
-c	den1		density return air
-c	bf		bypass factor of coil
-c	patm2		atmospheric pressure in mbar
+c   ss_cap      steady-state cooling capacity
+c  flow_rate    actual system flow rate
+c  tdb2         temperature entering coil
+c  w2           humidity ratio entering coil
+c  den1         density return air
+c  bf           bypass factor of coil
+c  patm2        atmospheric pressure in mbar
 
 c OUTPUTS:
-c	SENS_HEAT_RATIO	coil sensible heat ratio
+c   SENS_HEAT_RATIO  coil sensible heat ratio
 c **********************************************************************
       REAL FUNCTION SENS_HEAT_RATIO(ss_cap,flow_rate,tdb2,w2,den1,
      &bf,patm2,w4)
@@ -1308,12 +1308,12 @@ c Local variables
       REAL h2,ENTH_MOIST_AIR,h4,h3,h3kJ,tdb3,TSATH0,w3,tdb4,h5
 
 c Following moist air states are defined:
-c	state 1		condition of return air from conditioned zones
-c	state 2		condition of air entering cooling coil
-c	state 3		apparatus dew point
-c	state 4		condition at exit of heat exchanger
-c	state 5		used to define sensible process through cooling
-c			coil
+c  state 1     condition of return air from conditioned zones
+c  state 2     condition of air entering cooling coil
+c  state 3     apparatus dew point
+c  state 4     condition at exit of heat exchanger
+c  state 5     used to define sensible process through cooling
+c              coil
 
 c Set enthalpy of air entering coil h2
       h2 = ENTH_MOIST_AIR(tdb2,w2)
@@ -1359,15 +1359,15 @@ c
 c Function to determine air-source heat pump COP in the cooling mode
 
 c INPUTS:
-c	ss_cop		steady-state cooling COP at rating conditions
-c	twb		wet-bulb of air entering coil
-c	tout		outdoor dry-bulb temperature
-c	flow_rate	operating flow rate
-c	flow_rate_r	flow rate at rating conditions
-c	ifan_operation	mode of operation of circulation fan
+c  ss_cop       steady-state cooling COP at rating conditions
+c  twb          wet-bulb of air entering coil
+c  tout         outdoor dry-bulb temperature
+c  flow_rate    operating flow rate
+c  flow_rate_r  flow rate at rating conditions
+c  ifan_operation  mode of operation of circulation fan
 
 c OUTPUTS:
-c	ASHPC_COP	cooling COP at operating conditions
+c  ASHPC_COP  cooling COP at operating conditions
 c **********************************************************************
       REAL FUNCTION ASHPC_COP(ss_cop,twb,tout,flow_rate,flow_rate_r,
      &                        ifan_operation)
@@ -1421,13 +1421,13 @@ c Subroutine to correct cooling mode air-source heat pump COP for effect
 c of air flow
 
 c INPUTS:
-C	cop		cooling COP of air-source heat pump
-c	flow_rate	operating flow rate
-c	flow_rate_r	flow rate at rating conditions
+C  cop          cooling COP of air-source heat pump
+c  flow_rate    operating flow rate
+c  flow_rate_r  flow rate at rating conditions
 
 c OUTPUTS:
-c	cop		cooling COP at operating conditions corrected
-c			for volume flow rate
+c  cop   cooling COP at operating conditions corrected
+c        for volume flow rate
 c **********************************************************************
       SUBROUTINE ASHPC_COP_FLOW_CORR(cop,flow_rate,flow_rate_r)
 
@@ -1467,17 +1467,17 @@ c Function to correct air source heat pump power for off cycle power
 c consumption
 
 c references:
-c	      1)  Air-Source Heat Pump Model for Implementation in H3k
-c	          H3k model documentation, Kamel Haddad, June 10 2000
+c      1)  Air-Source Heat Pump Model for Implementation in H3k
+c          H3k model documentation, Kamel Haddad, June 10 2000
 
 c INPUTS:
-c	isys_type	type of ashp equipment
-c	plr_heat_pump	part load ratio of air-source heat pump
-c       plf_heat_pump	part load factor of heat pump
+c  isys_type      type of ashp equipment
+c  plr_heat_pump  part load ratio of air-source heat pump
+c  plf_heat_pump  part load factor of heat pump
 
 c OUTPUTS:
-c	ASHP_PLF_OFF_CYCLE_CORR
-c			part load factor corrected for off-cycle power
+c  ASHP_PLF_OFF_CYCLE_CORR
+c    part load factor corrected for off-cycle power
 c **********************************************************************
       REAL FUNCTION ASHP_PLF_OFFCYC_CORR(isys_type,plr_heat_pump,
      &plf_heat_pump)
@@ -1524,13 +1524,13 @@ c Copyright 2000: NRCan Buildings Group
 c Function to determine energy consumption of air source heat pump
 
 c INPUTS:
-c	cap		total cooling capacity of heat pump
-c	plr_heat_pump	part load ratio of air-source heat pump
-c       plf_heat_pump	part load factor of heat pump
-c	time_step	time step of simulation
+c  cap             total cooling capacity of heat pump
+c  plr_heat_pump   part load ratio of air-source heat pump
+c  plf_heat_pump   part load factor of heat pump
+c  time_step       time step of simulation
 
 c OUTPUTS:
-c	ASHP_ENERGY	heat pump energy consumption for the time step
+c  ASHP_ENERGY  heat pump energy consumption for the time step
 c **********************************************************************
       REAL FUNCTION ASHP_ENERGY(cap,cop,plr_heat_pump,
      &plf_heat_pump,time_step)
@@ -1558,10 +1558,10 @@ c Copyright 2000: NRCan Buildings Group
 c Function to determine time step of simulation
 
 c INPUTS:
-c	ntstep		number of time steps per hour for simulation
+c  ntstep   number of time steps per hour for simulation
 
 c OUTPUTS:
-c	TIME_INTERVAL	heat pump energy consumption for the time step
+c  TIME_INTERVAL  heat pump energy consumption for the time step
 c **********************************************************************
       REAL FUNCTION TIME_INTERVAL(ntstep)
 
@@ -1587,12 +1587,12 @@ c Subroutine to determine mass flow rate for each of the zones served by
 c hvac isys
 
 c INPUTS:
-c	isys		hvac system number
-c	density		return air density
-c	HVAC_INPUT_DATA	HVAC input data common
+c  isys     hvac system number
+c  density  return air density
+c  HVAC_INPUT_DATA  HVAC input data common
 
 c OUTPUTS:
-c	zone_mass_flow	hvac mass flow rate to the individual zones
+c  zone_mass_flow  hvac mass flow rate to the individual zones
 c **********************************************************************
       SUBROUTINE ZONE_MASS_FLOW_RATE(isys,density,zone_mass_flow)
 
@@ -1633,19 +1633,19 @@ c Subroutine to determine contribution of coil cooling toward moisture
 c balance of zones served by hvac system
 
 c INPUTS:
-c	isys		hvac system number
-c	plr		part-load ratio of hvac system
-c	out_hum_ratio	humidity ratio at exit of coil
-c	zone_mass_flow	mass flow rates to each of zones served hvac
-c			system
-c	ntstep		number of time steps per hour
-c       fvalg           future time step space humidity ratio common
-c	HVAC_INPUT_DATA	HVAC input data common
+c  isys        hvac system number
+c  plr         part-load ratio of hvac system
+c  out_hum_ratio  humidity ratio at exit of coil
+c  zone_mass_flow  mass flow rates to each of zones served hvac
+c                  system
+c  ntstep          number of time steps per hour
+c  fvalg           future time step space humidity ratio common
+c HVAC_INPUT_DATA  HVAC input data common
 
 c OUTPUTS:
-c	hvac_timestep_parameters
-c                       common for coil parameters affecting zone moisture
-c			balance
+c hvac_timestep_parameters
+c                 common for coil parameters affecting zone moisture
+c                 balance
 c **********************************************************************
       SUBROUTINE COIL_MOIST_BAL(isys,plr,out_hum_ratio,zone_mass_flow,
      &                          ntstep)
@@ -1700,24 +1700,24 @@ c Subroutine to update cooling capacity of appropriate control function
 c associated with cooling equipment
 
 c INPUTS:
-c	isys		hvac system number
-c	sensible_cooling_cap
-c                       sensible cooling capacity of equipment
-c       icooling_type   type of cooling (conventional or economizer)
-c       ieconomizer_control
-c                       economizer control type (temperature based or
-c                       enthalpy based and integrated or non-integrated)
-c       economizer_cooling_max
-c                       maximum cooling capacity available from economizer
-c	HVAC_INPUT_DATA	HVAC input data common
+c  isys            hvac system number
+c  sensible_cooling_cap
+c                  sensible cooling capacity of equipment
+c  icooling_type   type of cooling (conventional or economizer)
+c  ieconomizer_control
+c                  economizer control type (temperature based or
+c                  enthalpy based and integrated or non-integrated)
+c  economizer_cooling_max
+c                  maximum cooling capacity available from economizer
+c  HVAC_INPUT_DATA HVAC input data common
 
 c OUTPUTS:
-c	cont_fun_cool_cap
-c			new cooling capacity for hvac system isys. This
-c			new cooling capacity is used later to update the
-c			maximum cooling capacity of the control function
-c			associated with hvac system isys.
-c	hvac_timestep_parameters
+c  cont_fun_cool_cap
+c      new cooling capacity for hvac system isys. This
+c      new cooling capacity is used later to update the
+c      maximum cooling capacity of the control function
+c      associated with hvac system isys.
+c   hvac_timestep_parameters
 c                       common for updated capacity of control function
 c **********************************************************************
       SUBROUTINE
@@ -1811,26 +1811,26 @@ c Function to determine the highest wet-bulb temperature leading to dry
 c coil conditions for a certain inlet dry-bulb temperature to the coil
 
 c INPUTS:
-c	ss_capacity	Steady-state cooling capacity of coil at ARI rating
-c			conditions (W)
+c  ss_capacity        Steady-state cooling capacity of coil at ARI rating
+c                     conditions (W)
 c     cap_correction_factor
-c                       Capacity correction factor of unit.
+c                     Capacity correction factor of unit.
 c                       1. controller is ideal
 c                       < 1 controller is on/off type.
-c	tout		Outdoor dry-bulb temperature (Deg C)
-c	temp_inlet	Inlet dry-bulb temperature to the coil (Deg C)
-c	actual_flow_rate
-c			actual air flow rate through cooling coil (m3/s)
-c	flow_rate_ref	air flow rate at rating test (m3/s)
-c	ifan_operation	mode of operation of circulation fan
-c	bypass_factor	actual bypass factor of cooling coil
-c	pressure	total pressure inside space (mbar)
-c	site_altitude	altitude of building site (m)
+c  tout               Outdoor dry-bulb temperature (Deg C)
+c  temp_inlet         Inlet dry-bulb temperature to the coil (Deg C)
+c  actual_flow_rate
+c                     actual air flow rate through cooling coil (m3/s)
+c  flow_rate_ref      air flow rate at rating test (m3/s)
+c  ifan_operation     mode of operation of circulation fan
+c  bypass_factor      actual bypass factor of cooling coil
+c  pressure           total pressure inside space (mbar)
+c  site_altitude      altitude of building site (m)
 
 c OUTPUTS:
-c	WET_BULB_DRY_COIL
-c			Maximum wet-bulb temperature leading to dry coil
-c			conditions for inlet dry-bulb temperature (Deg C)
+c  WET_BULB_DRY_COIL
+c    Maximum wet-bulb temperature leading to dry coil
+c    conditions for inlet dry-bulb temperature (Deg C)
 c **********************************************************************
       REAL FUNCTION WET_BULB_DRY_COIL(ss_capacity,cap_correction_factor,
      &               tout,temp_inlet,
@@ -2393,19 +2393,19 @@ c position and power of the circulation fan, and the sensible heat ratio
 c of the coil
 
 c INPUTS:
-c       isys            Number associated with HVAC system
-c	sensible_cooling_load
-c                       Sensible cooling load imposed on cooling unit
-c       ifan_operation  Operation of indoor circulation fan (auto or
-c                       continuous)
-c       shr             Sensible heat ratio of coil
-c       fan_power_auto  Power of circulation fan in auto mode
-c       ss_cooling_cap  Steady-state cooling capacity
+c   isys            Number associated with HVAC system
+c   sensible_cooling_load
+c                   Sensible cooling load imposed on cooling unit
+c   ifan_operation  Operation of indoor circulation fan (auto or
+c                   continuous)
+c   shr             Sensible heat ratio of coil
+c   fan_power_auto  Power of circulation fan in auto mode
+c   ss_cooling_cap  Steady-state cooling capacity
 
 c OUTPUTS:
-c	plr_heat_pump   Part-load ratio of unit
-c       plf_heat_pump   Part-load factor of unit
-c       rlatent_load    Latent load of unit
+c  plr_heat_pump   Part-load ratio of unit
+c  plf_heat_pump   Part-load factor of unit
+c  rlatent_load    Latent load of unit
 c **********************************************************************
       SUBROUTINE ASHPC_PLR_PLF_LATENTLOAD(isys,sensible_cooling_load,
      &           plr_heat_pump,plf_heat_pump,ifan_operation_local,
@@ -2550,7 +2550,7 @@ c                       tdb2
 c       tout            Outdoor temperature
 
 c OUTPUTS:
-c	ss_cooling_cap  Equipment cooling capacity corrected for actual
+c  ss_cooling_cap  Equipment cooling capacity corrected for actual
 c                       operating conditions
 c       GSHP_HP_mode and GCEP_HP_mode
 c                       Mode of operation for ground-source heat pump
@@ -2679,10 +2679,10 @@ c                       tdb2
 c       tout            Outdoor dry-bulb temperature
 
 c OUTPUTS:
-c	cop             Equipment COP corrected for actual operating conditions
-c       GSHP_HP_mode and GCEP_HP_mode
-c                       Mode of operation for ground-source heat pump system.
-c                       Cooling mode in this case
+c  cop             Equipment COP corrected for actual operating conditions
+c  GSHP_HP_mode and GCEP_HP_mode
+c                  Mode of operation for ground-source heat pump system.
+c                  Cooling mode in this case
 c **********************************************************************
       SUBROUTINE SET_COP(ihvac_type,GSHP_HP_mode,ss_cop,EWT,
      &       cop,total_cooling_load,GCEP_EWT,GCEP_HP_mode,
@@ -2806,25 +2806,25 @@ c require cooling, the capacity fraction for that zone is set to 0 which
 c effectively cuts off flow to that zone.
 
 c References:
-c		1) "Implementation of Zone Control Heating/Cooling into
-c               ESP-r's idealized HVAC model", Bart Lomanowski,
-c               NRCan Internal Report, TBD (work in progress)
+c  1) "Implementation of Zone Control Heating/Cooling into
+c      ESP-r's idealized HVAC model", Bart Lomanowski,
+c      NRCan Internal Report, TBD (work in progress)
 
 
 c INPUTS:
-c	isys		number of hvac system
-c	HVAC_INPUT_DATA	common for HVAC input data
-c     simtim          common for simulation days, hours, etc ...
+c  isys      number of hvac system
+c  HVAC_INPUT_DATA  common for HVAC input data
+c     simtim        common for simulation days, hours, etc ...
 c     hvac_timestep_parameters
-c                       common for several time step HVAC parameters
+c                   common for several time step HVAC parameters
 
 c OUTPUTS:
-c	sys_zone_cap_frac
-c                       zone capacity fraction
+c  sys_zone_cap_frac
+c             zone capacity fraction
 c
-c	flow_rate   	flow rate [m3/s]
+c  flow_rate  flow rate [m3/s]
 c
-c     fan_power         circulation fan power [W]
+c  fan_power  circulation fan power [W]
 c
 c **********************************************************************
       SUBROUTINE ASHP_COOLING_ZONE_CONTROL(isys)

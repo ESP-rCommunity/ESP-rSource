@@ -1234,8 +1234,8 @@ C.....model
 
 C.....Local Variables
       integer tank_node_num      ! node number for tank
-      integer lnblnk
-      character(lnblnk(pcname(iComponentIndex))) hold_name    ! temporary variable for string manipulation
+      integer lnblnk             ! function
+      character*24 hold_name     ! temporary buffer for pcname
 C.....Calculated values
       real tank_jacket_heat_loss    ! losses to environment from tank (W)
 
@@ -1243,7 +1243,7 @@ C.....Plant network node number for water tank
       tank_node_num = NPCDAT(iComponentIndex,9)
 
 C.....Get component name
-      hold_name = pcname(iComponentIndex)
+      write(hold_name,'(a)') pcname(iComponentIndex)
      &               (1:lnblnk(pcname(iComponentIndex)))
 
 C....set name for total heat transfer

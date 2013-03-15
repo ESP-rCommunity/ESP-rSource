@@ -62,20 +62,20 @@ C Future values common block.
 
       COMMON/FVALA/TFA(MCOM),QFA(MCOM)
 C     Zone Temp.
-      REAL TFA,QFA
+      REAL  TFA,QFA
 
 C Climate 
       COMMON/CLIMI/QFP,QFF,TP,TF,QDP,QDF,VP,VF,DP,DF,HP,HF
-      REAL QFP,QFF,TP
+      REAL  QFP,QFF,TP
 C     Ambiant Temperature at Future Timestep.
-      REAL TF,QDP,QDF,VP,VF,DP,DF,HP,HF 
+      REAL  TF,QDP,QDF,VP,VF,DP,DF,HP,HF 
 
 C Common block required for getting AC Setpoint
        COMMON/PSTSOL/ICF,IDTYP,IPER,BB1,BB2,BB3,IICOMP,TNP,QFUT,TFUT
-       INTEGER ICF,IDTYP,IPER
-       REAL BB1,BB2,BB3
-       INTEGER IICOMP
-       REAL TNP,QFUT,TFUT
+       INTEGER  ICF,IDTYP,IPER
+       REAL  BB1,BB2,BB3
+       INTEGER  IICOMP
+       REAL  TNP,QFUT,TFUT
 
 C Common block for the window model.           
       COMMON/WindowControl/
@@ -159,11 +159,11 @@ C     *******************************************************************
 #include "building.h"
 C     Debug Common Blocks.
       COMMON/CLIMI/QFP,QFF,TP,TF,QDP,QDF,VP,VF,DP,DF,HP,HF
-      REAL	QFP,QFF
+      REAL  QFP,QFF
 C     Present and future timestep.
-      REAL	TP,TF,QDP,QDF,VP
+      REAL  TP,TF,QDP,QDF,VP
 C Wind velocity (m/s).
-      REAL	VF,DP,DF,HP,HF      
+      REAL  VF,DP,DF,HP,HF      
 
       COMMON/PERS/ISD1,ISM1,ISD2,ISM2,ISDS,ISDF,NTSTEP
       INTEGER ISD1,ISM1,ISD2,ISM2,ISDS,ISDF,NTSTEP
@@ -171,7 +171,7 @@ C Wind velocity (m/s).
 
 
       COMMON/SIMTIM/IHRP,IHRF,IDYP,IDYF,IDWP,IDWF,NSINC,ITS
-      INTEGER	IHRP,IHRF,IDYP,IDYF,IDWP,IDWF,NSINC,ITS
+      INTEGER  IHRP,IHRF,IDYP,IDYF,IDWP,IDWF,NSINC,ITS
 
       INTEGER IDAYN
       INTEGER IMONTH
@@ -181,12 +181,12 @@ C Future values common block.
 
       COMMON/FVALA/TFA(MCOM),QFA(MCOM)
 C     Zone Temp.
-      REAL	TFA,QFA
+      REAL  TFA,QFA
 
 C     Present Values.
       COMMON/PVALA/TPA(MCOM),QPA(MCOM)
 C     Zone Temp
-      REAL	TPA,QPA
+      REAL  TPA,QPA
 
 
 
