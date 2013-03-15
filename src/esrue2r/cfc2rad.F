@@ -1216,15 +1216,15 @@ C       High (slow) settings
         WRITE(ITA1,'(6a)') ' -x 1024 -y 1024 ',
      &                    '-dp 512 -ar 523 -ms 0.092 -ds .3 -dt .1 ',
      &                    '-dc .5 -dr 1 -sj .7 -ss 1 -st .1 ',
-     &                    '-ab 2 -aa .15 -ad 800 -as 128 ',
+     &                    '-ab 2 -aa .15 -ad 800 -as 20 ',
      &                    '-av 0.01 0.01 0.01 ',
      &                    '-lr 8 -lw 1e-4 -ps 6 -pt .08 '
       elseif (init.eq.3) then
 C       Very high (extremely slow) settings (a-values from Reinhart / Wienold)
         WRITE(ITA1,'(6a)') ' -x 1024 -y 1024 ',
-     &                    '-dp 512 -ar 523 -ms 0.092 -ds .3 -dt .1 ',
+     &                    '-dp 512 -ar 523 -ms 0.092 -ds .3 -dt 0 ',
      &                    '-dc .5 -dr 1 -sj .7 -ss 1 -st .1 ',
-     &                    '-ab 2 -aa .15 -ad 800 -as 128 ',
+     &                    '-ab 5 -aa .1 -ad 1000 -as 20 -ar 300',
      &                    '-av 0.01 0.01 0.01 ',
      &                    '-lr 8 -lw 1e-4 -ps 6 -pt .08 '
       endif
