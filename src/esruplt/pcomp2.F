@@ -745,6 +745,11 @@ C and then present-time coefficient (ie. right hand side)
      &             -ALPHA*UA*PCNTMF(IPCOMP)
      &             -(1.-ALPHA)*PUAP(INOD1)*PCNTMP(IPCOMP)
 
+
+C Establish "containment loss" data
+c         QDATA(IPCOMP)=UA*(alpha*(csvf(inod1,1)-pcntmp(ipcomp))+
+c     &                (1.-alpha)*(csvp(inod1,1)-pcntmp(ipcomp)))
+
 C Store heat loss to containment (??)
 c        CALL STORE_PLT_GAIN (IPCOMP, heat_to_room_cond, iConductive)
 c        CALL STORE_PLT_GAIN (IPCOMP, heat_to_room_conv, iConvective)
@@ -2534,6 +2539,10 @@ C Store "environment" variables future values
 
 C Establish "containment loss" data
          QDATA(IPCOMP)=0.
+c         presentTemp=0.5*(csvp(inod1,1)+csvp(inod2,1))
+c         futureTemp =0.5*(csvf(inod1,1)+csvf(inod2,1))
+c         QDATA(IPCOMP)=UA*(alpha*(futureTemp-pcntmp(ipcomp))+
+c     &                (1.-alpha)*(presentTemp-pcntmp(ipcomp)))
 
 C Establish additional output variables
          QCOIL=H*(CSVF(INOD2,1)-CSVF(INOD1,1))
@@ -4719,7 +4728,8 @@ C Report power consumption
      &         ABS(E),
      &         pcname(ipcomp)(1:iPltNameLen(ipcomp)))
 
-C Now Q is made up of all inefficiencies
+C Now Q (heat loss due to electric power consumption) is made up of
+C all inefficiencies
          Q=(1.-BDATA(IPCOMP,3))*E
 
 C Establish heat capacity of component mass CM (J/K) and
@@ -4756,6 +4766,11 @@ C and then present-time coefficient (ie. right hand side)
      &             -ALPHA*UA*PCNTMF(IPCOMP)
      &             -(1.-ALPHA)*PUAP(INOD1)*PCNTMP(IPCOMP)
      &             -ALPHA*Q-(1.-ALPHA)*PCQP(INOD1)
+
+C Establish "containment loss" data due to temperature difference
+C between component and containment. Add this to Q
+         Q = Q + UA*(alpha*(csvf(inod1,1)-pcntmp(ipcomp))+
+     &                (1.-alpha)*(csvp(inod1,1)-pcntmp(ipcomp)))
 
 C Store "environment" variables future values
          PUAF(INOD1)=UA
@@ -6658,7 +6673,7 @@ C heat in approximately the same manner
      &            PCNTMP(IPCOMP)
      &           -ALPHA*UA*PCNTMF(IPCOMP)-(1.-ALPHA)*UA*PCNTMP(IPCOMP)
 
-	COUT(6)=(1.-ALPHA)*(-PCDATP(IPCOMP,2)-UA)*
+        COUT(6)=(1.-ALPHA)*(-PCDATP(IPCOMP,2)-UA)*
      &           (0.5*CSVP(INOD1,1)+0.5*CSVP(INOD2,1))
      &  	 +((1.-ALPHA)*(UA+PCDATP(IPCOMP,2))
      &  	 -CM/TIMSEC)*(0.5*CSVP(INOD2,1)+0.5*CSVP(INOD1,1))-
@@ -6671,6 +6686,10 @@ C Store "environment" variables future values
 
 C Establish "containment loss" data
         QDATA(IPCOMP)=0.
+c        presentTemp=0.5*(csvp(inod1,1)+csvp(inod2,1))
+c        futureTemp =0.5*(csvf(inod1,1)+csvf(inod2,1))
+c        QDATA(IPCOMP)=UA*(alpha*(futureTemp-pcntmp(ipcomp))+
+c     &                (1.-alpha)*(presentTemp-pcntmp(ipcomp)))
 
 C If boiler is off set its efficiency to zero
         IF(IONOFF.EQ.0)effGross=0.
