@@ -72,7 +72,7 @@ C Pre calculated data (filtered).
       CHARACTER*25 DESC(12)
       character outs*124,TSTR*24,ZN*12
       character xfile*144,ITEMS*25,tg*1,delim*1,act*1
-      character*8 ll1,ll2,ll3
+      character*12 ll1,ll2,ll3
       logical ok,dok,concat,unixok
       integer IOT  ! for radio button
       integer NITMS,INO ! max items and current menu item
@@ -152,9 +152,9 @@ C Set representative casual gain and then search all zones and build
 C up hash list of zone:time:occupancy.
 
 C << revise for additional casual gain types >>
-        write(ll1,'(1x,a6,1x)') lodlabel(IZONE,1)
-        write(ll2,'(1x,a6,1x)') lodlabel(IZONE,2)
-        write(ll3,'(1x,a6,1x)') lodlabel(IZONE,3)
+        write(ll1,'(a)') lodlabel(IZONE,1)
+        write(ll2,'(a)') lodlabel(IZONE,2)
+        write(ll3,'(a)') lodlabel(IZONE,3)
         helptopic='res_comfort_occupied'
         call gethelptext(helpinsub,helptopic,nbhelp)
         IOT=1
@@ -304,9 +304,9 @@ C Casual gain type.  Ask user which constitutes occupancy.
 
 C << revise for additional casual gain types >>
         call edisp(iuout,' ')
-        write(ll1,'(1x,a6,1x)') lodlabel(IZONE,1)
-        write(ll2,'(1x,a6,1x)') lodlabel(IZONE,2)
-        write(ll3,'(1x,a6,1x)') lodlabel(IZONE,3)
+        write(ll1,'(a)') lodlabel(IZONE,1)
+        write(ll2,'(a)') lodlabel(IZONE,2)
+        write(ll3,'(a)') lodlabel(IZONE,3)
         helptopic='res_comfort_occupancy'
         call gethelptext(helpinsub,helptopic,nbhelp)
         IOT=1

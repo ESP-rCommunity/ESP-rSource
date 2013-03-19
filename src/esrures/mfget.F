@@ -167,7 +167,7 @@ C air flow reporting.
       CHARACTER outs*124,pifltog*4,lpifl*72
       CHARACTER NDNAM*12,PROMPT1*72,PROMPT2*72,CONTMNAM*12
       character graftitle*64,grlbl*24,t64*64,t24*24
-      character ll1*8,ll2*8,ll3*8
+      character ll1*12,ll2*12,ll3*12
       character zn*12
 
       DIMENSION ICPK(MCNN),INPK(MNOD),INPKT(MNOD),INPKT2(MNOD)
@@ -748,9 +748,9 @@ C Labels for loads, use first zones labels as examples. If time
 C based set iocut=-1, if always occup set iocut=0.
 
 C << revise for additional casual gain types >>
-            write(ll1,'(1x,a6,1x)') lodlabel(1,1)
-            write(ll2,'(1x,a6,1x)') lodlabel(1,2)
-            write(ll3,'(1x,a6,1x)') lodlabel(1,3)
+            write(ll1,'(a)') lodlabel(1,1)
+            write(ll2,'(a)') lodlabel(1,2)
+            write(ll3,'(a)') lodlabel(1,3)
             call edisp(iuout,' ')
             helptopic='res_casual_gain_type'
             call gethelptext(helpinsub,helptopic,nbhelp)

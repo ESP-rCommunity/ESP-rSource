@@ -2432,7 +2432,6 @@ C in XFA YFA ZFA.
       else
         CALL ETRANFRAME(ITRC,ICOMP,IS,N,XX,YY,ZZ,FRW,XFA,YFA,ZFA,
      &    iwedge,IER)
-        write(6,*) 'orig & after edges ',n,iwedge
         loop=N  ! reset to match polygon edges
         loop=iwedge  ! reset to match polygon edges
 C << trap non-zero ier value >>

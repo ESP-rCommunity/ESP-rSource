@@ -1,8 +1,8 @@
-*Operations 2.0
-*date Mon Mar 19 14:48:34 2012  # latest file modification 
+*Operations 2.1
+*date Thu Dec 27 13:55:49 2012  # latest file modification 
 # operations of lower defined in: 
 # ../zones/lower.opr
-nothing happens in this zone in terms of occupants lights and small power. There is 1 ach infiltration.
+There is 1 ach infiltration.
 # control(no control of air flow  ), low mid & high setpoints 
    0     0.000     0.000     0.000
      1   # number of flow periods in day type: weekdays    
@@ -14,20 +14,25 @@ nothing happens in this zone in terms of occupants lights and small power. There
      1   # number of flow periods in day type: sunday      
 # start, stop, infil, ventil, source, data
    0, 24,    1.000    0.000    0    0.000
+*casual
+nothing happens in this zone in terms of occupants lights and small power.
+# casual user-label type-key-word slot attributes
+*type Occupt       people            1  0  0
+*type Lights       lighting          2  0  0
+*type Equipt       equipment         3  0  0
+*end_type 
      3   # number of casual gains in day type: weekdays    
-# type, start, stop, sens, latent, rad_frac, conv_frac
-    1,   0,  24,      0.0,      0.0, 0.500, 0.500
-    2,   0,  24,      0.0,      0.0, 0.500, 0.500
-    3,   0,  24,      0.0,      0.0, 0.500, 0.500
+# slot, period, sensible, latent, rad_frac, conv_frac
+   1,   0,  24,      0.0,      0.0,  0.500,  0.500
+   2,   0,  24,      0.0,      0.0,  0.500,  0.500
+   3,   0,  24,      0.0,      0.0,  0.500,  0.500
      3   # number of casual gains in day type: saturday    
-# type, start, stop, sens, latent, rad_frac, conv_frac
-    1,   0,  24,      0.0,      0.0, 0.500, 0.500
-    2,   0,  24,      0.0,      0.0, 0.500, 0.500
-    3,   0,  24,      0.0,      0.0, 0.500, 0.500
+# slot, period, sensible, latent, rad_frac, conv_frac
+   1,   0,  24,      0.0,      0.0,  0.500,  0.500
+   2,   0,  24,      0.0,      0.0,  0.500,  0.500
+   3,   0,  24,      0.0,      0.0,  0.500,  0.500
      3   # number of casual gains in day type: sunday      
-# type, start, stop, sens, latent, rad_frac, conv_frac
-    1,   0,  24,      0.0,      0.0, 0.500, 0.500
-    2,   0,  24,      0.0,      0.0, 0.500, 0.500
-    3,   0,  24,      0.0,      0.0, 0.500, 0.500
-# Labels for gain types 
- Occupt Lights Equipt
+# slot, period, sensible, latent, rad_frac, conv_frac
+   1,   0,  24,      0.0,      0.0,  0.500,  0.500
+   2,   0,  24,      0.0,      0.0,  0.500,  0.500
+   3,   0,  24,      0.0,      0.0,  0.500,  0.500
