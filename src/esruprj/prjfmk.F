@@ -91,6 +91,7 @@ C updated when the user exits).
       LOGICAL OK,DOK,XST,MODOPR,browse,unixok,needtoask,clkok
       integer iglib   ! if 1 then X11, if 2 then GTK, if 3 then text only.
       integer NIGU,IGU,NITEMS,INO ! max items and current menu item
+      integer islot   ! used when defining from scratch
       
 C For help messages
       character helpinsub*24 ! subroutine name
@@ -555,7 +556,8 @@ C << test calling initcasday21 >>
           call gethelptext(helpinsub,helptopic,nbhelp)
           CALL PHELPD('operation setup',nbhelp,'-',0,0,IER)
 C          call initcasday(ier)
-          call initcasday21(icomp,ier)
+          islot=0  ! first time use of initcasday21
+          call initcasday21(icomp,islot,ier)
 
           MODOPR=.true.
           sorted=.true.
@@ -661,7 +663,7 @@ C Remind users to check their data.
       ENDIF
 
 C Debug.
-C      write(6,*) '663 prjfmk lodslot ',(lodslot(icomp,iph),iph=1,7)
+      write(6,*) '663 prjfmk lodslot ',(lodslot(icomp,iph),iph=1,7)
 
 C Display different options depending on the version of the file.
 C If ip3ver is < 21 then there is a single string for both air
@@ -3087,6 +3089,7 @@ C << this common should be re-sized 7 -> MGTY >>
       CHARACTER vert(35)*36,outs*124,KEY*1,sfile*72,snpfile*72
       character typstr*14,caskeyt*16
       character title*28,louts*248
+      character*12 ll1,ll2,ll3,ll4
 
 C iwatt (8 char) = 'W-W' for absolute W values preserves value
 C   e.g. 123W in source zone is also 123W in destination zone.
@@ -3338,14 +3341,18 @@ C the menu strings.
 
       ELSEIF(IVERT.EQ.(MVERT-4))THEN
 
-C Offer gain slots to scale. User can cancel request.
-C << revise to support more casual gain slots >>
+C Offer casual gains to scale. User can cancel request.
+        ll1='-'; ll2='-'; ll3='-'; ll4='-'
+        if(lodslot(icomp,1).gt.0) write(ll1,'(a)') lodlabel(icomp,1)
+        if(lodslot(icomp,2).gt.0) write(ll2,'(a)') lodlabel(icomp,2)
+        if(lodslot(icomp,3).gt.0) write(ll3,'(a)') lodlabel(icomp,3)
+        if(lodslot(icomp,4).gt.0) write(ll4,'(a)') lodlabel(icomp,4)
         ICGTS=1
         CALL EASKATOG('Apply scaling factor to which casual gain?',
-     &     ' ',lodlabel(icomp,1),lodlabel(icomp,2),lodlabel(icomp,3),
-     &     'All gains','Cancel',' ',' ',ICGTS,nbhelp)
-        if (ICGTS.eq.5) goto 5  ! cancel requested
-        if (ICGTS.ne.4)then
+     &     ' ',ll1,ll2,ll3,ll4,
+     &     'All gains','Cancel ',' ',ICGTS,nbhelp)
+        if (ICGTS.eq.6) goto 5  ! cancel requested
+        if (ICGTS.ne.5)then
            write (outs,'(3a)') 'Scale ',lodlabel(icomp,ICGTS),
      &                         ' gain for day type: '
            call edisp(iuout,outs)
@@ -3393,18 +3400,21 @@ C Add delete copy period or import full set of casual gains.
         if (IW.EQ.1) then 
 
 C Add new casual gain period.
+          ll1='-'; ll2='-'; ll3='-'; ll4='-'
+          if(lodslot(icomp,1).gt.0) write(ll1,'(a)') lodlabel(icomp,1)
+          if(lodslot(icomp,2).gt.0) write(ll2,'(a)') lodlabel(icomp,2)
+          if(lodslot(icomp,3).gt.0) write(ll3,'(a)') lodlabel(icomp,3)
+          if(lodslot(icomp,4).gt.0) write(ll4,'(a)') lodlabel(icomp,4)
 
-C << revise to support other than three casual gain slots >>
 C << revise to offer selection of day types to apply new periods >>
 C << should be a menu which pairs the current user labels and types
 C << with the option to add another slot (label:type).
 
 C Check to see what the current units for for the selected
 C type and echo which type the user selected (easily forgotten)
-          CALL EASKABCD('New casual period for...','Confirm:',
-     &      lodlabel(icomp,1),lodlabel(icomp,2),lodlabel(icomp,3),
-     &      'Cancel',ICGTS,nbhelp)
-          if (ICGTS.eq.4) goto 5  ! cancel request
+          CALL EASKATOG('New casual period for...','Confirm:',
+     &      ll1,ll2,ll3,ll4,'Cancel',' ',' ',ICGTS,nbhelp)
+          if (ICGTS.eq.5) goto 5  ! cancel request
           write(outs,'(5a)') 'Requested a new ',
      &      lodlabel(icomp,icgts),' ',caskeytype(icomp,icgts),
      &      ' period. Please supply details...'
@@ -3612,24 +3622,34 @@ C Remind users to check their data.
 
       ELSEIF(IVERT.EQ.(MVERT-6))THEN
 
-C Provide a bit of editing space (12 char) for the  char string. For
-C each of the slots ask for user label and confirmation of the type of gain.
-        write(6,*) 'EDCASG lodslot ',icomp,':',
-     &    (lodslot(icomp,iph),iph=1,7)
-
-C << add logic to set easkatog dialogs depending on the current state
-C << of the model. Option to add another gain label still to be implemented >>
+C Provide editing space (12 char) for the  char string. For identified slot
+C ask for user label and confirmation of the type of gain. Use a dash if
+C a slot has not been used yet.
+C        write(6,*) 'EDCASG lodslot ',icomp,':',
+C     &    (lodslot(icomp,iph),iph=1,7)
+        ll1='-'; ll2='-'; ll3='-'; ll4='-'
+        if(lodslot(icomp,1).gt.0) write(ll1,'(a)') lodlabel(icomp,1)
+        if(lodslot(icomp,2).gt.0) write(ll2,'(a)') lodlabel(icomp,2)
+        if(lodslot(icomp,3).gt.0) write(ll3,'(a)') lodlabel(icomp,3)
+        if(lodslot(icomp,4).gt.0) write(ll4,'(a)') lodlabel(icomp,4)
         helptopic='operations_casual_labels'
         call gethelptext(helpinsub,helptopic,nbhelp)
         dok=.false.
         islot=1
         CALL EASKATOG('Edit user label and type for...',' ',
-     &     lodlabel(icomp,1),lodlabel(icomp,2),lodlabel(icomp,3),
-     &     '??','Add another (NA)','Cancel',' ',islot,nbhelp)
+     &     ll1,ll2,ll3,ll4,'Add another','Cancel',' ',islot,nbhelp)
         if (islot.eq.6) goto 5  ! cancel requested
         if (islot.eq.5)then
-          call edisp(iuout,'Sorry adding facility not yet available.')
-          continue   ! not yet available
+
+C Assign the next available slot.
+C          if(lodslot(icomp,4).eq.0) islot=4
+          if(lodslot(icomp,3).eq.0) islot=3
+          if(lodslot(icomp,2).eq.0) islot=2
+          if(lodslot(icomp,1).eq.0) islot=1
+          call initcasday21(icomp,islot,ier)
+          ip3ver(icomp)=21  ! upgrade file to remember types
+          modopr=.true.
+          goto 5
         elseif (islot.eq.4)then
           call edisp(iuout,'Sorry 4th slot not yet available.')
           continue   ! not yet available
@@ -3750,7 +3770,7 @@ C Profile database commons via profile.h.
       DIMENSION  DESC(MGIT),IPRVAL(MGIT)
       CHARACTER*40 DESC
       CHARACTER hold*40
-      character*12 ll1,ll2,ll3
+      character*12 ll1,ll2,ll3,ll4
       character lltmp*144
       character fs*1  ! file separator
       logical OK,DOK
@@ -3774,10 +3794,11 @@ C Set folder separator (fs) to \ or / as required.
       endif
 
 C Labels for loads.
-C << revise for more loads >>
-      write(ll1,'(a)') lodlabel(icomp,1)
-      write(ll2,'(a)') lodlabel(icomp,2)
-      write(ll3,'(a)') lodlabel(icomp,3)
+      ll1='-'; ll2='-'; ll3='-'; ll4='-'
+      if(lodslot(icomp,1).gt.0) write(ll1,'(a)') lodlabel(icomp,1)
+      if(lodslot(icomp,2).gt.0) write(ll2,'(a)') lodlabel(icomp,2)
+      if(lodslot(icomp,3).gt.0) write(ll3,'(a)') lodlabel(icomp,3)
+      if(lodslot(icomp,4).gt.0) write(ll4,'(a)') lodlabel(icomp,4)
 
 C Initial assumptions.
       ICGTX=1
@@ -3819,9 +3840,8 @@ C Present a list of profiles to select from.
 
       INDEX=IPRVAL(1)
 
-C Identify nature of casual gain.
-C << revise for more casual slots >>
-      CALL EASKABC(' ','Which casual gain: ',ll1,ll2,ll3,ICGTX,
+C Identify which casual gain.
+      CALL EASKABCD(' ','Which casual gain: ',ll1,ll2,ll3,ll4,ICGTX,
      &  nbhelp)
 
  100  WRITE(HOLD,'(2f9.0,2f8.2,a)')PS,PL,RAD,CON,'  '
@@ -4858,9 +4878,6 @@ C Save the destination operation file.
      &    'in destination operation data or file name...','-')
       endif
       CALL EMKOPER(IUO,LPROJ(idest),idest,IER)
-C Debug
-C      write(6,*) 'e lodslot ',icomp,':',
-C     &  (lodslot(icomp,iph),iph=1,7)
       CALL EMKCFG('s',ier)
       if(act(1:1).eq.'-')then
         call usrmsg(
@@ -5344,40 +5361,42 @@ C Title and labels.
       iupdown=-4
       CALL etplot(gx,gy,iupdown,isym)
 
-C << Hard coded casual gain types revise >>
+C For each of the currently used slots draw legend. << change 3 >>
       do 300 I=1,3
-        lnlb=lnblnk(lodlabel(ICOMP,I))
-        write(outs,'(2a)') lodlabel(ICOMP,I)(1:lnlb),' sensible'
-        IY=igt-(12*I)-18
-        iid1=igl+20; iid2=IY;
-        call wstxpt(iid1,iid2,outs)
-        write(outs,'(2a)') lodlabel(ICOMP,I)(1:lnlb),' latent'
-        iid1=igr-100; iid2=IY;
-        call wstxpt(iid1,iid2,outs)
-        if (COLOK)then
-          iicol=i
-          call winscl('z',iicol)
-        endif
-        iid1=igl+120; iid2=IY-4;
-        call pixel2u(iid1,iid2,gx,gy)
-        iupdown=0
-        isym=0
-        CALL etplot(gx,gy,iupdown,isym)
-        iid1=igl+180; iid2=IY-4;
-        call pixel2u(iid1,iid2,gx,gy)
-        iupdown=1
-        CALL etplot(gx,gy,iupdown,isym)
-        iid1=igr-120; iid2=IY-4;
-        call pixel2u(iid1,iid2,gx,gy)
-        iupdown=0
-        CALL etplot(gx,gy,iupdown,isym)
-        iid1=igr-180; iid2=IY-4;
-        call pixel2u(iid1,iid2,gx,gy)
-        iupdown=-4
-        CALL etplot(gx,gy,iupdown,isym)
-        if (COLOK)then
-          iicol=0
-          call winscl('-',iicol)
+        if(lodslot(icomp,i).gt.0)then
+          lnlb=lnblnk(lodlabel(ICOMP,I))
+          write(outs,'(2a)') lodlabel(ICOMP,I)(1:lnlb),' sensible'
+          IY=igt-(12*I)-18
+          iid1=igl+20; iid2=IY;
+          call wstxpt(iid1,iid2,outs)
+          write(outs,'(2a)') lodlabel(ICOMP,I)(1:lnlb),' latent'
+          iid1=igr-100; iid2=IY;
+          call wstxpt(iid1,iid2,outs)
+          if (COLOK)then
+            iicol=i
+            call winscl('z',iicol)
+          endif
+          iid1=igl+120; iid2=IY-4;
+          call pixel2u(iid1,iid2,gx,gy)
+          iupdown=0
+          isym=0
+          CALL etplot(gx,gy,iupdown,isym)
+          iid1=igl+180; iid2=IY-4;
+          call pixel2u(iid1,iid2,gx,gy)
+          iupdown=1
+          CALL etplot(gx,gy,iupdown,isym)
+          iid1=igr-120; iid2=IY-4;
+          call pixel2u(iid1,iid2,gx,gy)
+          iupdown=0
+          CALL etplot(gx,gy,iupdown,isym)
+          iid1=igr-180; iid2=IY-4;
+          call pixel2u(iid1,iid2,gx,gy)
+          iupdown=-4
+          CALL etplot(gx,gy,iupdown,isym)
+          if (COLOK)then
+            iicol=0
+            call winscl('-',iicol)
+          endif
         endif
  300  continue
 
@@ -5563,24 +5582,29 @@ C Increment ipcount for each new period.
       end
 
 C ******* initcasday21
-C initcasday21 does initial setup of one or more casual day types. 
-      subroutine initcasday21(icomp,ier)
+C initcasday21 does initial setup of one or more casual day types or
+C adds a new casual gain and periods to an existing regime.
+      subroutine initcasday21(icomp,islot,ier)
 
 #include "building.h"
 #include "schedule.h"
       
       integer lnblnk  ! function definition
+      integer icomp   ! which zone
+      integer islot   ! zero to performe initial setup otherwise add one
+      integer ier     ! error state
 
       common/caleni/nbdaytype,nbcaldays(MDTY),icalender(365)
       INTEGER NBDAYTYPE,NBCALDAYS,ICALENDER,IDTY
       common/calena/calename,calentag(MDTY),calendayname(MDTY)
       CHARACTER CALENAME*32,CALENTAG*12,CALENDAYNAME*32
-      INTEGER ILN,islot,nbper,igu
+      INTEGER ILN,nbper,igu
       dimension iper(24),iperf(24)
       character OUTS*12,LOUTS*24,VOUTS*50
       character typstr*14
       real rf,cf
       logical ok,dok
+      logical firsttime
       
 C For help messages
       character helpinsub*24 ! subroutine name
@@ -5591,15 +5615,19 @@ C For help messages
       helptopic='operations_initial'
       call gethelptext(helpinsub,helptopic,nbhelp)
 
-      islot=0
+      if(islot.eq.0)then
+        firsttime=.true.
+      else
+        firsttime=.false.
+      endif
  42   typstr='  '
-      islot=islot+1
+      if(firsttime) islot=islot+1
       call easks(TYPSTR,
      &  'User label for new casual gain <= 12 characters ','  ',14,
      &  'object',' Gain label',IER,nbhelp)
       write(lodlabel(icomp,islot),'(a)') TYPSTR(1:12)
 
-C Type to go with this casual gain.
+C Explific type to go with this casual gain.
       idno=islot+1
       isw=0
       igu=1  ! assume watts as unit
@@ -5682,6 +5710,15 @@ C Type to go with this casual gain.
       lodslot(icomp,islot)=islot; lodatr1(icomp,islot)=0;
       lodatr2(icomp,islot)=0
 
+C If adding to existing zone operation file ask user if they want to
+C create periods for each day type.
+      if(.NOT.firsttime)then
+        DOK=.false.
+        CALL ASKOK('Also define periods in each day type?',
+     &    '  ',OK,DOK,nbhelp)
+        if(.NOT.ok) return
+      endif
+
       DO 600 IDTY=1,NBDAYTYPE  
         nbper=1
         OUTS=CALENTAG(IDTY)
@@ -5729,11 +5766,25 @@ C of the ICGT (for now) until ICGUnit is fully implemented.
         endif
         NCAS(IDTY)=NCAS(IDTY)+nbper
  600  CONTINUE
-      DOK=.false.
-      CALL ASKOK('Define another casual gain label/type/periods?',
-     &  '  ',OK,DOK,nbhelp)
-      if(ok) goto 42   ! loop again
-      return
+
+C Check if user wants to defin another casual gain. Revise the limit once
+C res can deal with 4 filled slots.
+      if(.NOT.firsttime)then
+        return   ! task completed
+      else
+        if(islot.ge.3)then
+          call usrmsg(
+     &       'Three slots have been defined. This is the current',
+     &       'limit. You next task is to define magnitudes.','W')
+          return
+        else
+          DOK=.false.
+          CALL ASKOK('Define another casual gain label/type/periods?',
+     &      '  ',OK,DOK,nbhelp)
+          if(ok) goto 42   ! loop again
+          return
+        endif
+      endif
       end
 
 C ******* initcasper
@@ -5789,7 +5840,7 @@ C Make up an editing string for the start of each period.
    60 CONTINUE
       write(msg,'(3a)') 'Start time for each ',
      &  label(1:lnblnk(label)),' period.'
-      CALL EASKS(CSTR,' ',msg,72,' 0  5  6  8 ','time starts',
+      CALL EASKS(CSTR,msg,'Confirm:',72,' 0  5  6  8 ','time starts',
      &  IER,nbhelp)
 
 C Extract the start timings and then sort out the finishes.

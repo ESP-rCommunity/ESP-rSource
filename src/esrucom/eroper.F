@@ -630,7 +630,9 @@ C for ip3ver < 21. Loop to see the magintude of icgt already referenced.
 C For older files now assume there are always at least 3 different labels.
 C Test that the number of labels matches what was found when
 C reading the period lines.
-      if(irange.lt.3) irange=3
+      if(ip3ver(icomp).lt.21)then
+        if(irange.lt.3) irange=3
+      endif
 C Debug.
 C      write(6,*) 'casual gain read range is ',irange
 
