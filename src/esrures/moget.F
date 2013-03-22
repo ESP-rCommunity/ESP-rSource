@@ -475,7 +475,7 @@ C MRT Sensors.
       CHARACTER ITEMC(25)*24
       character xfile*144,tg*1,delim*1
       character SUFFIX*8
-      character ll1*8,ll2*8,ll3*8
+      character ll1*12,ll2*12,ll3*12
       CHARACTER outs*124,pifltog*4,lpifl*72
       CHARACTER ZSDES*28,ZSDESC*20,ZSDESS*16
       character graftitle*64,grlbl*24,t64*64,t24*24
@@ -3223,9 +3223,9 @@ C Labels for loads, use first zones labels as examples. If time
 C based set iocut=-1, if always occup set iocut=0.
 
 C << revise for additional casual gain types >>
-            write(ll1,'(1x,a6,1x)') lodlabel(NZNO(1),1)
-            write(ll2,'(1x,a6,1x)') lodlabel(NZNO(1),2)
-            write(ll3,'(1x,a6,1x)') lodlabel(NZNO(1),3)
+            write(ll1,'(a)') lodlabel(NZNO(1),1)
+            write(ll2,'(a)') lodlabel(NZNO(1),2)
+            write(ll3,'(a)') lodlabel(NZNO(1),3)
             call edisp(iuout,' ')
             helptopic='which_casual_gain_type'
             call gethelptext(helpinsub,helptopic,nbhelp)

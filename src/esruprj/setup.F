@@ -117,8 +117,6 @@ C Display of time of day.
       if(igupgrade.eq.0)then
         ITEMS1(11)='l upgrade files >> no change                  '
       elseif(igupgrade.eq.1)then
-        ITEMS1(11)='l upgrade files >> save legacy format         '
-      elseif(igupgrade.eq.2)then
         ITEMS1(11)='l upgrade files >> save current format        '
       endif
       ITEMS1(12)  ='* test button (esp-r meta file scan)          '
@@ -379,17 +377,15 @@ C Toggle trace/feedback level.
 
 C Toggle file format upgrade opinion.
         igupgrade=igupgrade+1
-        IF(igupgrade.GT.2)ITRC=0
-        if(igupgrade.eq.2)then
+        IF(igupgrade.GT.1)ITRC=0
+        if(igupgrade.eq.1)then
           helptopic='setup_date_format'
           call gethelptext(helpinsub,helptopic,nbhelp)
-          CALL EASKABC('Geometric upgrade options',' :',
-     &      'scan & update all zones','tell me what is out of date',
-     &      'cancel',IUW,nbhelp)
+          CALL EASKAB('Upgrade options',' :',
+     &      'scan & update all zones','cancel',IUW,nbhelp)
           if(iuw.eq.1)then
             call mupdate(ier)
-          elseif(iuw.eq.2)then
-            call usrmsg('this function to be written','...','W')
+            igupgrade=0
           endif
         endif
       ELSEIF(INO1.EQ.12)THEN

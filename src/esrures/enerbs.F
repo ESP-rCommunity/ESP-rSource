@@ -140,29 +140,29 @@ C MOSCS1 provides I/O for heating/cooling breakdown for surfaces.
 
       DIMENSION IUSERD(MCOM,2)
 
-      CHARACTER*18 LABELS(16)
-      CHARACTER*9 TITLE1(16)
+      CHARACTER*24 LABELS(16)
+      CHARACTER*15 TITLE1(16)
       character outs*124
 
 C Initial labels using user defined labels if available.
 
 C << revise for additional casual gain types >>
-      LABELS(1) =' Conductive flux  '
-      LABELS(2) =' Convective flux  '
-      LABELS(3) =' Longwave rad int '
-      LABELS(4) =' LW rad ext >bldg '
-      LABELS(5) =' LW rad ext >sky  '
-      LABELS(6) =' LW rad ext >grnd '
-      LABELS(7) =' Shortwave rad.   '
-      write(LABELS(8),'(1x,a,a)')lodlabel(izone,1),' casual gn'
-      write(LABELS(9),'(1x,a,a)')lodlabel(izone,2),' casual gn'
-      write(LABELS(10),'(1x,a,a)')lodlabel(izone,3),' casual gn'
-      LABELS(11)=' Controled casual '
-      LABELS(12)=' N/A              '
-      LABELS(13)=' N/A              '
-      LABELS(14)=' Heat stored      '
-      LABELS(15)=' Plant            '
-      LABELS(16)=' Totals           '
+      LABELS(1) =' Conductive flux        '
+      LABELS(2) =' Convective flux        '
+      LABELS(3) =' Longwave rad inside    '
+      LABELS(4) =' Longwave rad buildings '
+      LABELS(5) =' Longwave rad sky       '
+      LABELS(6) =' Longwave rad ground    '
+      LABELS(7) =' Shortwave radiation    '
+      write(LABELS(8),'(a,a)') ' Casual ',lodlabel(izone,1)
+      write(LABELS(9),'(a,a)') ' Casual ',lodlabel(izone,2)
+      write(LABELS(10),'(a,a)')' Casual ',lodlabel(izone,3)
+      LABELS(11)=' Controled casual gn    '
+      LABELS(12)=' N/A                    '
+      LABELS(13)=' N/A                    '
+      LABELS(14)=' Heat stored            '
+      LABELS(15)=' Plant                  '
+      LABELS(16)=' Totals                 '
       TITLE1(1)='|Cond flx'
       TITLE1(2)='|Conv flx'
       TITLE1(3)='|LW rad  '
@@ -220,8 +220,8 @@ C Output results.
         CALL EDISP(itru,outs)
   150 CONTINUE
 
-   86 FORMAT(A9,6F11.2)
-   87 FORMAT(A9,8X,'--         --         --         --         --',
+   86 FORMAT(A,6F11.2)
+   87 FORMAT(A,8X,'--         --         --         --         --',
      &             '       --')
 
 C Totals: use VAL2(I,7): I=1-6: gain/loss for heating ,cooling, off.
@@ -256,28 +256,28 @@ C CALLS: MOSSUM MOFADJ    CALLED BY: MOSCAS
 
       DIMENSION IUSERD(MCOM,2)
 
-      CHARACTER*18 LABELS(16)
+      CHARACTER*24 LABELS(16)
       character outs*124
 
 C Initial labels, 8-13 will be overwritten if user labels are available.
 
 C << revise for additional casual gain types >>
-      LABELS(1)=' Conductive flux  '
-      LABELS(2)=' Convective flux  '
-      LABELS(3)=' Longwave rad int '
-      LABELS(4)=' LW rad ext >bldg '
-      LABELS(5)=' LW rad ext >sky  '
-      LABELS(6)=' LW rad ext >grnd '
-      LABELS(7)=' Shortwave rad.   '
-      write(LABELS(8),'(1x,a,a)')lodlabel(izone,1),' casual gn'
-      write(LABELS(9),'(1x,a,a)')lodlabel(izone,2),' casual gn'
-      write(LABELS(10),'(1x,a,a)')lodlabel(izone,3),' casual gn'
-      LABELS(11)=' Controled casual '
-      LABELS(12)=' N/A              '
-      LABELS(13)=' N/A              '
-      LABELS(14)=' Heat stored      '
-      LABELS(15)=' Plant            '
-      LABELS(16)=' Totals           '
+      LABELS(1)=' Conductive flux        '
+      LABELS(2)=' Convective flux        '
+      LABELS(3)=' Longwave rad inside    '
+      LABELS(4)=' Longwave rad buildings '
+      LABELS(5)=' Longwave rad sky       '
+      LABELS(6)=' Longwave rad ground    '
+      LABELS(7)=' Shortwave radiation    '
+      write(LABELS(8),'(a,a)') ' Casual ',lodlabel(izone,1)
+      write(LABELS(9),'(a,a)') ' Casual ',lodlabel(izone,2)
+      write(LABELS(10),'(a,a)')' Casual ',lodlabel(izone,3)
+      LABELS(11)=' Controled casual gn   '
+      LABELS(12)=' N/A                   '
+      LABELS(13)=' N/A                   '
+      LABELS(14)=' Heat stored           '
+      LABELS(15)=' Plant                 '
+      LABELS(16)=' Totals                '
 
 C VALS storage locations described in MOSSUM.
 
@@ -289,21 +289,21 @@ C Print breakdown headings: gain/loss.
       IF(IE.EQ.0)THEN
         CALL EDISP(itru,' ')   
         if(IZC.eq.0)then     
-          WRITE(outs,'(24X,2a,6x,a)')' Facing ',zname(izone),
+          WRITE(outs,'(30X,2a,6x,a)')' Facing ',zname(izone),
      &      'Facing outside'
         else
-          WRITE(outs,'(24X,2a,6x,a)')' Facing ',zname(izone),'Facing ',
+          WRITE(outs,'(30X,2a,6x,a)')' Facing ',zname(izone),'Facing ',
      &      zname(IZC)
         endif
         CALL EDISP(itru,outs)        
-        WRITE(outs,'(24X,A)')
+        WRITE(outs,'(30X,A)')
      &  ' Gain       Loss          Gain       Loss'
         CALL EDISP(itru,outs)        
       ELSE
         CALL EDISP(itru,' ')        
-        WRITE(outs,'(24X,2A)')' Facing ',zname(izone)
+        WRITE(outs,'(30X,2A)')' Facing ',zname(izone)
         CALL EDISP(itru,outs)        
-        WRITE(outs,'(24X,A)')' Gain       Loss'
+        WRITE(outs,'(30X,A)')' Gain       Loss'
         CALL EDISP(itru,outs)        
       ENDIF
 
@@ -364,11 +364,11 @@ C Skip over the unused items 12 and 13.
 
       ENDIF
 
-   81 FORMAT(A18,4F12.2)
-   82 FORMAT(A18,2F12.2)
-   83 FORMAT(A18,8X,' --         --  ',2F12.2)
-   84 FORMAT(A18,2F12.2,8X,' --          --  ')
-   86 FORMAT(A18,8X,' --         -- ')
+   81 FORMAT(A,4F12.2)
+   82 FORMAT(A,2F12.2)
+   83 FORMAT(A,8X,' --         --  ',2F12.2)
+   84 FORMAT(A,2F12.2,8X,' --          --  ')
+   86 FORMAT(A24,8X,' --         -- ')
 
 C Totals: sum inside gain into QGINS, inside loss into QLINS,
 C outside gain into QGOUT, and outside loss into QLOUT.

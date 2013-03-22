@@ -443,12 +443,15 @@ C - Alex Feb. 20 2004
 
       REAL PQ,PR,PA
 
+C << Note: the simulator only deals with geometry of GEN type >>
+C << so this logic could be simpler >>
 C If zone is of type 'GEN' and casual gains are specified
 C relative to the floor area, then we need to ask user for
 C planes which comprise the floor.
       IF(CTYPE(icomp)(1:3).EQ.'GEN')THEN
 
 C Establish if floor area needs be specified.
+C << overloaded ICGT here >>
         INDEX=0
         DO 400 IDTY=1,NBDAYTYPE
           IF(INDEX.EQ.1)GOTO 400
@@ -468,7 +471,7 @@ C Floor area is required, if trace level is verbose echo the base area.
           if (itrc.gt.1) call edisp(iuout,outs)
         endif
       else
-        FLOORA(ICOMP)=SNA(ICOMP,NSUR)
+        FLOORA(ICOMP)=SNA(ICOMP,NSUR)  ! assume last surface in zone
       ENDIF
 
 C Zero derived gains.
@@ -497,6 +500,9 @@ C - if ICGTYP = 5, casual gain is coupled to electric load
 C   and electric_net_utilities is called to characterize
 C   the casual gain.
 C Alex, Feb 20, 2004.
+
+C << overloaded ICGT here >>
+C << for 5 caskeytype is 'net_utilities' >>
       do 300 iday=1,nbdaytype
       if (NCAS(iday).gt.0) then
 C.....Start counter for electric->casual gain couplings

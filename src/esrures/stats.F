@@ -2079,7 +2079,7 @@ C << file does not need to be scanned to get the surface emissivity.
       COMMON/ZONPIK/NZ,NZNO(MCOM)
 
       CHARACTER PDESCR*60,SDESCR*44,CSTR*25
-      CHARACTER*13 LABELS(13)
+      CHARACTER*18 LABELS(13)
       CHARACTER*5 LABSurf(2)
       character outs*124,act*1,prompt*124
       CHARACTER RSNAME*40
@@ -2163,12 +2163,12 @@ C Read geometry and construction files and setup labels.
 
 C Update labels to match the current zone.
 C << revise for additional casual gains >>
-        write(LABELS(1),'(1x,a,4x)')lodlabel(izone,1)
-        write(LABELS(2),'(1x,a,4x)')lodlabel(izone,1)
-        write(LABELS(3),'(1x,a,4x)')lodlabel(izone,2)
-        write(LABELS(4),'(1x,a,4x)')lodlabel(izone,2)
-        write(LABELS(5),'(1x,a,4x)')lodlabel(izone,3)
-        write(LABELS(6),'(1x,a,4x)')lodlabel(izone,3)
+        write(LABELS(1),'(1x,a)')lodlabel(izone,1)
+        write(LABELS(2),'(1x,a)')lodlabel(izone,1)
+        write(LABELS(3),'(1x,a)')lodlabel(izone,2)
+        write(LABELS(4),'(1x,a)')lodlabel(izone,2)
+        write(LABELS(5),'(1x,a)')lodlabel(izone,3)
+        write(LABELS(6),'(1x,a)')lodlabel(izone,3)
         write(LABELS(7),'(2a)')' Ctl ',lodlabel(izone,1)
         write(LABELS(8),'(2a)')' Ctl ',lodlabel(izone,1)
         write(LABELS(9),'(2a)')' Ctl ',lodlabel(izone,2)
@@ -2381,7 +2381,7 @@ C Update IR.
           IF(IR.EQ.11)IRL=9
           IF(IR.EQ.12)IRL=11
 
-          write(outs,126)LABELS(IRL)(1:11),TOTCG,VAL2(IR-6,1),
+          write(outs,126)LABELS(IRL)(1:12),TOTCG,VAL2(IR-6,1),
      &                   TOR,LABSurf(1),CE,CI,CG
           call edisp(itru,outs)
           write(outs,127) TR, LABSurf(2),CTE,CTI,CTG
@@ -2444,11 +2444,11 @@ C Output general header information.
 
 C Print the data and labels for uncontrolled casual gains.
         write(outs,'(2a)')
-     &    ' Gains     |   Total   | Convective|    Radiative  | ',
+     &    ' Gains      |   Total   | Convective|    Radiative  | ',
      &    '       Radiant by connection type'
         call edisp(itru,outs)
         write(outs,'(2a)')
-     &    ' type      | (Con+Rad) | part (air)|     on surf   | ',
+     &    ' type       | (Con+Rad) | part (air)|     on surf   | ',
      &    '    external    internal     ground '
         call edisp(itru,outs)
         DO 520 IIR=7,IRLC
@@ -2458,7 +2458,7 @@ C Print the data and labels for uncontrolled casual gains.
           IF(IIR.EQ.10)IRL=7
           IF(IIR.EQ.11)IRL=9
           IF(IIR.EQ.12)IRL=11
-          write(outs,226)LABELS(IRL)(1:11),ST(IIR-6,1),ST(IIR-6,2),
+          write(outs,226)LABELS(IRL)(1:12),ST(IIR-6,1),ST(IIR-6,2),
      &      ST(IIR-6,3),LABSurf(1),ST(IIR-6,4),ST(IIR-6,5),ST(IIR-6,6)
           call edisp(itru,outs)
 
