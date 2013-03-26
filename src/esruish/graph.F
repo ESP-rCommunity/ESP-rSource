@@ -74,12 +74,14 @@ C For help messages
 
       iunit=ifil
 
-C Ask user for the surface to focus on.
+C Ask user for the surface to focus on.If nothing selected
+C ask user what to do.
     2 call pickssur(icomp,np,'L',iva,ier)
       if(np.eq.0)then
-        goto 1
+        goto 1    ! ask user whether to continue
       else
         is=iva(1)
+        if(is.eq.0) goto 1   ! ask user whether to continue
       endif
 
 C Find connection and number of edges and then retrieve the
