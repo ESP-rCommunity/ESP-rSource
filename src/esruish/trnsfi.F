@@ -368,6 +368,7 @@ C instead of obstruction block surface vertices.
 
       character ZSDES*28,ZSDESC*20,ZSDESS*16
       character outs*124
+      integer lnzsn
       logical tok
 
 C If verbose trace requested enable writing.

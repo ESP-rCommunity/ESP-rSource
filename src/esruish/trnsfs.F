@@ -51,6 +51,8 @@ C coordinate system for use in 'point'.
 
       dimension yft(mv)
       character outs*124
+      character ZSDES*28,ZSDESC*20,ZSDESS*16
+      integer lnzsn
       logical tok
 
 C If trace requested enable writing.
@@ -140,10 +142,13 @@ C Transformed y value should be close to zero; warn if not.
 C Trace output.
       if(tok)then
         icc=izstocn(izone,is)
+        call zsid(izone,is,ZSDES,ZSDESC,ZSDESS)
+        lnzsn=lnblnk(ZSDES)
         call edisp(icout,' ')
-        write(outs,9996)is,pazi(is),pelv(is),ptilt(is)
- 9996   format('*** TRNSF1: Surface ',i2,': PAZI= ',f5.1,'; PELV= ',
-     &         f5.1,'; PTILT= ',f5.1)
+         write(outs,'(3a,i3,a,f5.1,a,f5.1,a,f5.1)')
+     &     '*** TRNSF1: Surface ',zsdes(1:lnzsn),' (',is,
+     &     ') PAZI= ',pazi(is),'; PELV= ',pelv(is),'; PTILT= ',
+     &     ptilt(is)
         call edisp(icout,outs)
         call edisp(icout,' ')
         call edisp(icout,'Axis translations & rotations:')
@@ -347,7 +352,17 @@ C the plane of the target surface. The projected points are specified
 C relative to the local face coordinate system. The y-coordinate is
 C left unprojected but in the new coordinate system.
 
-      subroutine trnsf3(ihr,ibn,ibs)
+      subroutine trnsf3(ihr,izone,ibn,ibs,iztsur,iskypatch)
+#include "building.h"
+#include "geometry.h"
+
+C Parameters
+      integer ihr    ! hour of the day
+      integer izone  ! current zone
+      integer ibn    ! obstruction index
+      integer ibs    ! index of obstruction face
+      integer iztsur ! target surface in zone
+      integer iskypatch ! which sky patch we are dealing with
 
       common/tracech/icout
       common/obs/xc(8),yc(8),zc(8)
@@ -357,7 +372,9 @@ C left unprojected but in the new coordinate system.
       common/proj/xp(4),yp(4),zp(4)
 
       dimension ivorder(6,4)
-      character outs*124
+      character ZSDES*28,ZSDESC*20,ZSDESS*16
+      character outs*124,msg*15
+      integer lnzsn
       logical tok
 
 C Anticlockwise ordered vertices of the 6 obstruction block surfaces
@@ -425,12 +442,21 @@ C Tranform and project z.
          zp(i)=yt(i)*ta2/ca1*xmult+zt(i)
    10 continue
 
-C Trace output.
+C Trace output. Include context for the calculation.
       if(tok)then
         call edisp(icout,' ')
-        write(outs,9999)ibn,ibs,ihr
- 9999   format('*** TRNSF3: projection of obstruction ',i2,
-     &         ', on surface ',i2,', at hour ',i2,'.')
+        call zsid(izone,iztsur,ZSDES,ZSDESC,ZSDESS)
+        lnzsn=lnblnk(zsdes)
+        if(iskypatch.eq.1)then
+          msg=' for direct rad'
+        else
+          msg=' for sky patch '
+        endif
+        write(outs,'(3a,i2,a,i2,3a,i2,a,i2,a,i3)')
+     &    '*** TRNSF3: projection of obstruction ',
+     &    blockname(izone,ibn)(1:lnblockname(izone,ibn)),' (',ibn,
+     &    ') face (',ibs,') on surface ',ZSDES(1:lnzsn),' (',iztsur,
+     &    ') at hour ',ihr,msg,iskypatch
         call edisp(icout,outs)
         call edisp(icout,
      &    'X,Y,Z coordinates:   X`,Y`,Z` coords:  XP,YP,ZP  coords:')
