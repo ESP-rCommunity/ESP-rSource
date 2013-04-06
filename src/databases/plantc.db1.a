@@ -6360,7 +6360,7 @@ signal set point                                                          0.
     1 Rated total absorbed power (W)
       Value =    150.00        Range (Min Max):     150.00        150.00
     2 Rated mass flow rate (kg/s)
-      Value =   0.30000E-03    Range (Min Max):    0.30000E-03   0.30000E-03
+      Value =   0.30000E-01    Range (Min Max):    0.30000E-02   0.30000E-00
     3 Overall efficiency (-)
       Value =   0.70000        Range (Min Max):    0.70000       0.70000
  CDATA variables:
@@ -6375,7 +6375,7 @@ signal set point                                                          0.
 General flow inducer component      dP= a0+Sai(m/rho)^i
 Type : 310    Init suppl dat :   7    Tot suppl dat :   7    No. of conns :   0
 fluid type (1=air, 2=water)                                           2.0000
-lower polynomial validity limit (m^3/s)                              0.10000
+lower polynomial validity limit (m^3/s)                              0.00010
 upper polynomial validity limit (m^3/s)                              0.40000
 fit coefficient a0 (Pa/(m^3/s)^0)                                    0.50000
 fit coefficient a1 (Pa/(m^3/s)^1)                                    0.60000

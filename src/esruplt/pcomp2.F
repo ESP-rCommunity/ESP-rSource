@@ -4768,9 +4768,10 @@ C and then present-time coefficient (ie. right hand side)
      &             -ALPHA*Q-(1.-ALPHA)*PCQP(INOD1)
 
 C Establish "containment loss" data due to temperature difference
-C between component and containment. Add this to Q
-         Q = Q + UA*(alpha*(csvf(inod1,1)-pcntmp(ipcomp))+
-     &                (1.-alpha)*(csvp(inod1,1)-pcntmp(ipcomp)))
+C between component and containment. Component temperature takes
+C electrical loss Q from above into account ... (???)
+c         Q = UA*(alpha*(csvf(inod1,1)-pcntmf(ipcomp))+
+c     &                (1.-alpha)*(csvp(inod1,1)-pcntmp(ipcomp)))
 
 C Store "environment" variables future values
          PUAF(INOD1)=UA
@@ -4779,9 +4780,9 @@ C Store "environment" variables future values
          PCQF(INOD1)=Q
 
 C Save plant additional output data.
-          napdat(ipcomp)=2
-          pcaout(ipcomp,1)=pwrp(ipcomp)
-          pcaout(ipcomp,2)=pwrq
+         napdat(ipcomp)=2
+         pcaout(ipcomp,1)=pwrp(ipcomp)
+         pcaout(ipcomp,2)=pwrq
 
 C 1st phase mass (ie. water) balance coefficients
 C Note that if fluid mass flow solver active, source of mass zeroised
