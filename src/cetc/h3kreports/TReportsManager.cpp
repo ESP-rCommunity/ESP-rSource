@@ -658,7 +658,7 @@ extern "C"
 
    /* ********************************************************************
    ** Method:   set_report_simulation_info
-   ** Purpose:  Called by the fortran code to pass the a simulation
+   ** Purpose:  Called by the fortran code to pass the simulation
    **           information
    ** Params:   iStartday - start day in a 365 day year format
    **                        (example:  Feb 1st --> 32) **no leap year **
@@ -680,7 +680,7 @@ extern "C"
 
    /* ********************************************************************
    ** Method:   set_report_variable()
-   ** Purpose:  Called by the fortran code to pass the a Report Variable
+   ** Purpose:  Called by the fortran code to pass a Report Variable
    **             definition, id, description, to the C++ containers
    ** Params:     sVariableName -  The Unique xml path location to where the data is to be stored.
                   sMetaName -  The metatag to be added. (usually 'units' is used)
@@ -886,19 +886,12 @@ TReportsManager::TReportsManager(  )
 
    //remove the out.csv and out.db3 on init since the save_to_disk
    //option will append to file and database as the simulation runs
-   if (bUseResFilenameRoot) {
-       remove(sCSVFileName.c_str()); // name does not seem to be set at this point ...
-                                     // needs to be moved ... where to (5 May '12)?
-   } else {
-       remove("out.csv");
-   }
-
+   remove("out.csv");
    remove("out.db3");
 
    ParseConfigFile("input.xml"); //default input file
 
    SetFlags();                   //set config flags & defaults
-
 
 }
 
@@ -1088,7 +1081,7 @@ void TReportsManager::AddToVariableInfoList(int id,const char* sVarName, const c
 ** Scope:    public
 ** Purpose:  Populate meta variable data
 ** Note:     ** avoid the use of this method where possible ** this method
-**           is not as efficient as declaring the varaible descriptor
+**           is not as efficient as declaring the variable descriptor
 **           in the h3kmodule.f90
 ** Params:   int id - identifier for the variable
 **           sDelimiter - the wild char (makes up the map key with id)
@@ -1414,6 +1407,12 @@ void TReportsManager::GenerateOutput(){
    TXMLAdapter XMLAdapter;
    DBManager *objDBManager;
    int i;
+
+   /* Remove old .csv file -- moved here from "TReportsManager" constructor, 
+      seems to work! 2013/04/07 */
+   if (bUseResFilenameRoot) {
+     remove(sCSVFileName.c_str());
+   }
 
    //Loop through all collection variables
    i = 0;
