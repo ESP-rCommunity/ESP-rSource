@@ -15,6 +15,7 @@ C---- Include commons
 
       INCLUDE "stratified_tank.h"
       INCLUDE "NCHE.h"
+      INCLUDE "plant.h"
 
 C---- Initialize variables in the STRATIFIED_TANK common
 
@@ -41,6 +42,13 @@ C---- Initialize variables in the NCHE common
      &     fTank_Height/MAX_NCHE*0./
      &     iStrat_tank_CompIndex/MAX_NCHE*0/
      &     iStrat_tank_number/MAX_NCHE*0/
+
+C----  Initialize vars for radiant floor 
+      COMMON/RadFloor/RadFloor_active, NRadFloor, IRadFloor
+      LOGICAL RadFloor_active
+      INTEGER NRadFloor
+      INTEGER IRadFloor(MPCOM)
+      data RadFloor_active/.false./,NRadFloor/0.0/,IRadFloor/MPCOM*0.0/
 
 C---- End of common
 
