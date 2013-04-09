@@ -4,7 +4,7 @@
 # or binary databases) into linux format. Should be run in the project
 # root folder (i.e. above cfg zones etc.)
 
-echo "FIRST: export any local materials db to ascii format"
+echo "FIRST: backup your Windows model"
 echo "SECOND: Make a copy of the model (i.e. cp -r model model_conv)"
 echo "   (substitute your own folder names for model and model_conv)"
 echo "THIRD: cd to model_conv root directory (above cfg zones etc.)" 
@@ -20,9 +20,9 @@ echo "The script searches for backslashes and converts them to "
 echo "forward slashes. It also looks for c:\Esru and replaces it with  "
 echo "/usr/esru.  If you want a different folder edit the script"
 echo "  "
-echo "This script should work on OSX." 
+echo "This script should work on OSX or Linux." 
 echo "  " 
-echo "usage example: ./Dos_model_to_OSX" 
+echo "usage example: ./dos_model_to_linux" 
 echo "current model is in $PWD " 
 set x="y"
 echo "Proceed (y/n) ?"
