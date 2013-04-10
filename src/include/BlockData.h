@@ -44,11 +44,13 @@ C---- Initialize variables in the NCHE common
      &     iStrat_tank_number/MAX_NCHE*0/
 
 C----  Initialize vars for radiant floor 
-      COMMON/RadFloor/RadFloor_active, NRadFloor, IRadFloor
+      COMMON/RadFloor/RadFloor_active, NRadFloor, IRadFloor, 
+     &                InitRadFloor
       LOGICAL RadFloor_active
       INTEGER NRadFloor
-      INTEGER IRadFloor(MPCOM)
-      data RadFloor_active/.false./,NRadFloor/0.0/,IRadFloor/MPCOM*0.0/
+      INTEGER IRadFloor(MPCOM), InitRadFloor(MPCOM)
+      data RadFloor_active/.false./,NRadFloor/0.0/,IRadFloor/MPCOM*0.0/,
+     &      InitRadFloor/MPCOM*0.0/
 
 C---- End of common
 
