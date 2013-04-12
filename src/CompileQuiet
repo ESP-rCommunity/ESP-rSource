@@ -1,2 +1,11 @@
 #!/bin/bash
-./Install $1 --xml --X11 --no_dbs --no_training --extra-debug --gcc4 --silent
+
+architecture=`uname -s`      # computer type e.g. Linux Darwin SunOS
+
+debug=""
+
+if [ "$architecture" != "CYGWIN_NT-6.1" ]; then
+   debug="--extra-debug";
+fi
+
+./Install $1 --xml --X11 --no_dbs --no_training $debug --gcc4 --silent

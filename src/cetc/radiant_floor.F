@@ -52,11 +52,12 @@ C
      &     ICONDX(MPCOM,MNODEC,MPCONC)
 C     Flag indicating if radiant floor is active, number of radiant 
 C      floors into model, vector with the indirect reference of plant component which is a radiant floor
-      COMMON/RadFloor/RadFloor_active, NRadFloor, IRadFloor
+      COMMON/RadFloor/RadFloor_active, NRadFloor, IRadFloor,
+     &                InitRadFloor
 
       LOGICAL RadFloor_active
       INTEGER NRadFloor
-      INTEGER IRadFloor(MPCOM)
+      INTEGER IRadFloor(MPCOM),InitRadFloor(MPCOM)
 
 
 C     Trace output
@@ -238,11 +239,12 @@ C logical value to assess if the zone has a coupled zone
       character outs*124
 C----------------------------------------------------------------------
 C     Flag indicating if radiant floor is active, number of radiant floors, indirect index for radiant_floor component
-      COMMON/RadFloor/RadFloor_active, NRadFloor, IRadFloor
+      COMMON/RadFloor/RadFloor_active, NRadFloor, IRadFloor,
+     &                InitRadFloor
 
       LOGICAL RadFloor_active
       INTEGER NRadFloor
-      INTEGER IRadFloor(MPCOM)
+      INTEGER IRadFloor(MPCOM),InitRadFloor(MPCOM)
       INTEGER irf
 C----------------------------------------------------------------------
 C     Trace output
@@ -398,7 +400,12 @@ C     find the component radiant floor number of component
 
 C--------------------------------------------------------------------------------------
 C     INITIALIZE VARIABLES BEFORE SIMULATION
-      IF( (ptimep .LE. 1.) .AND. (IDYP .LE. ISS) ) THEN
+c      IF( (ptimep .LE. 1.) .AND. (IDYP .LE. ISS) ) THEN
+C     Initialize only before energy solution
+      if (InitRadFloor(irf).eq.0 .and. ISTATS.eq.1) then
+
+C     Set the initialization flag
+         InitRadFloor(irf)=1
 
 C     Circuit average temperature difference (Tfluid - Tpipe) at the present time
          TetaMp(irf) = 0.
@@ -739,7 +746,8 @@ C number of zones and number of constructions in model
       integer ncomp,ncon
 
 C     Flag indicating if radiant floor is active.
-      COMMON/RadFloor/RadFloor_active, NRadFloor, IRadFloor
+      COMMON/RadFloor/RadFloor_active, NRadFloor, IRadFloor,
+     &                InitRadFloor
 
 C     data for storage
       INTEGER Nmax, Iz, Is, J, I
@@ -771,7 +779,7 @@ C.....Passed variable
 
       LOGICAL RadFloor_active
       INTEGER NRadFloor
-      INTEGER IRadFloor(MPCOM)
+      INTEGER IRadFloor(MPCOM),InitRadFloor(MPCOM)
       INTEGER irf
 
 C     If radiant floor is active, transport future data to present data
