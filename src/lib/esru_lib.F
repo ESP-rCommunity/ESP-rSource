@@ -1856,16 +1856,14 @@ C   1  write(6,*) 'c2fstr: error writing: ',cstr
 C      return
       end
 
-C ******* termode
-C termode: given an index `mode` return a terminal text string.
-      SUBROUTINE termode(mode,tmode)
+
+C ******* terminalmode
+C terminalmode: given an index `mode` return a terminal text string.
+C this would be called based on the fortran setting of mode in prj.
+      SUBROUTINE terminalmode(mode,tmode)
       CHARACTER*(*) tmode
 
-#ifdef OSI
       integer mode          ! passed from tchild
-#else
-      integer*8 mode          ! passed from tchild
-#endif
 
       tmode = ' '
       if(mode.eq.-1)then

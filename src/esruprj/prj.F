@@ -71,6 +71,8 @@ C IEEE callback (Solaris)
 
       common/initv/initvt,EYEMI(3),VIEWMI(3),ANGI
       common/SPAD/MMOD,LIMIT,LIMTTY
+      integer childterminal  ! picks up mmod from starting of prj
+      common/childt/childterminal
       common/OUTIN/IUOUT,IUIN
       integer ifs,itfs,imfs
       common/GFONT/IFS,ITFS,IMFS
@@ -264,6 +266,7 @@ C focus and actions arguments).
       issave=2
       isavgh=0
       NSIGFIG=3
+      childterminal=MODL  ! remember so that child processes can run the same
 
 C Initial assumptions about common data files (prior to configuration file scan
 C that the default common data files will be defined explicitly).
@@ -1476,6 +1479,8 @@ C to include the path and create a string to drive the modules.
       common/OUTIN/IUOUT,IUIN
       common/FILEP/IFIL
       common/appw/iappw,iappx,iappy
+      integer childterminal  ! picks up mmod from starting of prj
+      common/childt/childterminal
       COMMON/PREC7/ITCNST
       COMMON/C6/INDCFG
       COMMON/AFN/IAIRN,LAPROB,ICAAS(MCOM)
@@ -1524,12 +1529,6 @@ C dd is character array for selecting simulation parameter sets.
 
       integer isstupt,isbnstept,ispnstept,issavet  ! for local editing
       integer MITEM,INO,ic,IRT ! max items and current menu item
-
-#ifdef OSI
-      integer ICPMOD     ! passed from tchild
-#else
-      integer*8 ICPMOD     ! passed from tchild
-#endif
 
 C For help messages
       character helpinsub*24 ! subroutine name
@@ -1731,8 +1730,7 @@ C Invoke simulator for the case of a simulation parameter set.
 C Setup chile process for the type of terminal.
           call tstamp('>','PRJ: beginning simulation with param set.')
           doit = ' '
-          call tchild(ICPMOD)
-          call termode(ICPMOD,tmode)
+          call terminalmode(childterminal,tmode)
           call isunix(unixok)
           if(unixok)then
             call addpath(LCFGF,longtfile,concat)
@@ -1793,8 +1791,7 @@ C Debug.
 C Invoke simulator for the case without a simulation parameter set.
           call tstamp('>','PRJ: beginning simulation')
           doit = ' '
-          call tchild(ICPMOD)
-          call termode(ICPMOD,tmode)
+          call terminalmode(childterminal,tmode)
           call isunix(unixok)
           if(unixok)then
             call addpath(LCFGF,longtfile,concat)
@@ -1855,8 +1852,7 @@ C Debug.
 C Execute mfs.
           call tstamp('>','PRJ: beginning mfs')
           doit = ' '
-          call tchild(ICPMOD)
-          call termode(ICPMOD,tmode)
+          call terminalmode(childterminal,tmode)
 
 C If prj initial size is a % of default pass this on to child with
 C an offset from prj start position.
@@ -1875,8 +1871,7 @@ C          call usrmsg('Beginning flow only assessment via',doit,'-')
 C Execute dfs.
           call tstamp('>','PRJ: beginning dfs')
           doit = ' '
-          call tchild(ICPMOD)
-          call termode(ICPMOD,tmode)
+          call terminalmode(childterminal,tmode)
 
 C If prj initial size is a % of default pass this on to child with
 C an offset from prj start position.
@@ -1914,8 +1909,7 @@ C If browsing pass this information to e2r.
 
         call tstamp('>','PRJ: beginning e2r')
         doit = ' '
-        call tchild(ICPMOD)
-        call termode(ICPMOD,tmode)
+        call terminalmode(childterminal,tmode)
         call isunix(unixok)
         if(unixok)then
           call addpath(LCFGF,longtfile,concat)
@@ -2370,6 +2364,8 @@ C to include the path and create a string to drive the modules.
       common/OUTIN/IUOUT,IUIN
       common/FILEP/IFIL
       common/appw/iappw,iappx,iappy
+      integer childterminal  ! picks up mmod from starting of prj
+      common/childt/childterminal
       common/IPVF/lipvdatf
       common/exporttg/xfile,tg,delim
       
@@ -2427,12 +2423,6 @@ C the first array index is base and 2nd is variant, 3rd diff
       dimension anu_tot_m2(3),anu_tot_bld(3)
       dimension anu_ht_cap_m2(3),anu_ht_cap_bld(3)
       dimension anu_cl_cap_m2(3),anu_cl_cap_bld(3)
-#ifdef OSI
-      integer ICPMOD     ! passed from tchild
-#else
-      integer*8 ICPMOD     ! passed from tchild
-#endif
-
 
       helpinsub='ipvactions'  ! set for subroutine
       ibasefile=11
@@ -2519,8 +2509,7 @@ C Run the simulations.
      &    'cancel',isauto,nbhelp)
         call tstamp('>','PRJ: beginning IPV simulations.')
         doit = ' '
-        call tchild(ICPMOD)
-        call termode(ICPMOD,tmode)
+        call terminalmode(childterminal,tmode)
         if(isauto.eq.1)then
           aut=' default'
         elseif(isauto.eq.2)then
@@ -2605,8 +2594,7 @@ C Extract performance report from the standard results files.
      &    isauto,nbhelp)
         call tstamp('>','PRJ: beginning IPV recovery.')
         doit = ' '
-        call tchild(ICPMOD)
-        call termode(ICPMOD,tmode)
+        call terminalmode(childterminal,tmode)
         if(isauto.eq.1)then
           aut=' default'
         elseif(isauto.eq.2)then
@@ -4268,6 +4256,8 @@ C Path to model and command line file (if any).
       common/FILEP/IFIL
       common/IPVF/lipvdatf
       common/pophelp/h(60)
+      integer childterminal  ! picks up mmod from starting of prj
+      common/childt/childterminal
 
       common/spflres/sblres(MSPS),sflres(MSPS),splres(MSPS),
      &  smstres(MSPS),selres(MSPS),sipvres
@@ -4301,11 +4291,6 @@ C ivalsg keeps track of whether a geometry file has alread been copied.
       logical newgeo  ! to use for testing if new/old geometry file.
       logical updatetitle ! if true the edit IPV titles.
       integer IW  ! for radio button
-#ifdef OSI
-      integer ICPMOD     ! passed from tchild
-#else
-      integer*8 ICPMOD     ! passed from tchild
-#endif
 
 C Set folder separator (fs) to \ or / as required.
       call isunix(unixok)
@@ -5326,8 +5311,7 @@ C into commons and then written out again
      &        ' ',NNAME
           endif
           LAPROB=NNAME
-          call tchild(ICPMOD)
-          call termode(ICPMOD,tmode)
+          call terminalmode(childterminal,tmode)
 C          CALL USRMSG('Copying flow network via:',doit,'-')
           call runit(doit,tmode)
           CALL EFOPSEQ(IUM,LAPROB,1,IER)

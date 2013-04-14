@@ -1447,6 +1447,7 @@ C or passed into clm module).
       CHARACTER CLMLOC*30,outs*124,tab*1,outs248*248
       character LCMDFL*144,clmdb*144,L144*144,lltmp*144
       character fs*1
+      character actreturn*1  ! users preference
 
 C For help messages
       character helpinsub*24   ! subroutine name
@@ -1497,7 +1498,7 @@ C weather file.
           endif
           call usrmsg('Please select a weather set from the ',
      &                'list provided... ','-')
-          call rdblist(IUF,clmdb,ier)
+          call rdblist(IUF,clmdb,actreturn,ier)
           if(ier.ne.0)then
             write(LCMDFL,'(a)') DCLIM(1:lnblnk(DCLIM))
             rescan=.true.

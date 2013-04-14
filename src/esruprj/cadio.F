@@ -36,6 +36,8 @@ C exportcad: controls model export facilities.
 
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       common/OUTIN/IUOUT,IUIN
+      integer childterminal  ! picks up mmod from starting of prj
+      common/childt/childterminal
 
       common/rpath/path
       common/appw/iappw,iappx,iappy
@@ -80,10 +82,8 @@ C Passed parameters for cfgtogg
 
 #ifdef OSI
       integer iside,isize,ifont     ! passed to viewtext
-      integer ICPMOD     ! passed from tchild
 #else
       integer*8 iside,isize,ifont     ! passed to viewtext
-      integer*8 ICPMOD   ! passed from tchild
 #endif
 
 C For help messages
@@ -303,8 +303,7 @@ C If browsing pass this information to e2r.
           endif
           call tstamp('>','PRJ: export to RADIANCE')
           doit = ' '
-          call tchild(ICPMOD)
-          call termode(ICPMOD,tmode)
+          call terminalmode(childterminal,tmode)
           if(unixok)then
             call addpath(LCFGF,longtfile,concat)
           else

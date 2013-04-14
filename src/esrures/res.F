@@ -73,6 +73,9 @@ C default file names for databases
       COMMON/GFONT/IFS,ITFS,IMFS
       common/appw/iappw,iappx,iappy
       integer menuchw,igl,igr,igt,igb,igw,igwh
+      integer childterminal  ! picks up mmod from starting of prj
+      common/childt/childterminal
+
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
       COMMON/OUTPCH/ICOUT

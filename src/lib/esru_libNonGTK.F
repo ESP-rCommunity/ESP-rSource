@@ -3806,11 +3806,9 @@ C ITPPSW current view - perspective/plan/south/west
       integer MVERT,IVERT  ! max items and current menu item
 
 #ifdef OSI
-      integer ICPMOD          ! passed from tchild
       integer iappr,iappt,iappb ! for use with findrtb
       integer iapprp,iapptp,iappbp ! for local offsets
 #else
-      integer*8 ICPMOD          ! passed from tchild
       integer*8 iappr,iappt,iappb ! for use with findrtb
       integer*8 iapprp,iapptp,iappbp ! for local offsets
 #endif
@@ -4231,10 +4229,10 @@ C Get file name.
 
 C Get logical name of child process terminal type, expand model
 C name to include the path (if applicable) and create a string to
-C drive viewer.
+C drive viewer.  No point in using viewer in text mode so force
+C tmode as 'graphic'
           doit = ' '
-          call tchild(ICPMOD)
-          call termode(ICPMOD,tmode)
+          tmode='graph'
           if(iw.eq.1)then
             call addpath(LFIL,longtfile,concat)
           else

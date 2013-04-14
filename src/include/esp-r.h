@@ -117,7 +117,6 @@ void  askint_(char *q1, long int *reply,long int *ier,int lenq1);
 void  askdialog248_(char *q1,char *reply,long int *ier,int lenq1,int lenrep);
 
 /* Shared functions in esru.c */
-void  tchild_(long int* state);
 void  Timer(int msec);
 void  pausems_(long int* msec);
 void  pauses_(long int* is);

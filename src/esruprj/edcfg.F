@@ -64,6 +64,8 @@ C Function definition
       INTEGER :: iuout,iuin
       common/appw/iappw,iappx,iappy
       INTEGER :: iappw,iappx,iappy
+      integer childterminal  ! picks up mmod from starting of prj
+      common/childt/childterminal
       common/gzonpik/izgfoc,nzg,nznog(mcom)
       INTEGER :: izgfoc,nzg,nznog
       COMMON/RAY2/ITDSP,ITBND,ITEPT,ITZNM,ITSNM,ITVNO,ITORG,ITSNR,
@@ -180,10 +182,8 @@ C Function definition
 
 #ifdef OSI
       integer iside,isize,ifont     ! passed to viewtext
-      integer ICPMOD                ! passed from tchild
 #else
       integer*8 iside,isize,ifont   ! passed to viewtext
-      integer*8 ICPMOD              ! passed from tchild
 #endif
 
 C HVAC
@@ -1159,8 +1159,7 @@ C << update this logic to use a default name based on the root name >>
 
         call tstamp('>','PRJ: beginning res')
         doit = ' '
-        call tchild(ICPMOD)
-        call termode(ICPMOD,tmode)
+        call terminalmode(childterminal,tmode)
 
 C However we got to this point, if Windows based look for spaces
 C and or forward slashes.
@@ -1238,6 +1237,8 @@ C output, IER=0 indicates no error.
       common/FILEP/IFIL
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       common/OUTIN/IUOUT,IUIN
+      integer childterminal  ! picks up mmod from starting of prj
+      common/childt/childterminal
       common/gzonpik/izgfoc,nzg,nznog(mcom)
       common/RAY2/ITDSP,ITBND,ITEPT,ITZNM,ITSNM,ITVNO,ITORG,ITSNR,
      &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS,ITPPSW
@@ -1330,10 +1331,8 @@ C Passed parameters for cfgtogg
 
 #ifdef OSI
       integer iside,isize,ifont     ! passed to viewtext
-      integer ICPMOD     ! passed from tchild
 #else
       integer*8 iside,isize,ifont     ! passed to viewtext
-      integer*8 ICPMOD     ! passed from tchild
 #endif
 
 C For help messages
@@ -3198,8 +3197,7 @@ C Confirm file names.
      &    OK,dok,nbhelp)
         IF(OK)then
           doit=' '
-          CALL TCHILD(ICPMOD)
-          CALL TERMODE(ICPMOD,TMODE)
+          call terminalmode(childterminal,tmode)
           CALL ADDPATH(LCFGF,longtfile,CONCAT)
           call tstamp('>','PRJ: edit adaptive gridding')
           if(iappw.gt.0.and.iappw.le.200)then
@@ -4046,6 +4044,8 @@ C << it would be clearer if all model I/O happened there >>
       common/OUTIN/IUOUT,IUIN
       common/FILEP/IFIL
       common/appw/iappw,iappx,iappy
+      integer childterminal  ! picks up mmod from starting of prj
+      common/childt/childterminal
       common/user/browse
       character path*72
       common/rpath/path
@@ -4056,11 +4056,6 @@ C << it would be clearer if all model I/O happened there >>
       character fs*1
       character longtfile*144,longtfiledos*144,L144*144,lltmp*144
       character brw*8   ! to signal model is being browsed
-#ifdef OSI
-      integer ICPMOD     ! passed from tchild
-#else
-      integer*8 ICPMOD     ! passed from tchild
-#endif
 
 C For help messages
       character helpinsub*24 ! subroutine name
@@ -4148,8 +4143,7 @@ C Tell user about the new file.
 C Get logical name of child process terminal type and create a
 C string to drive VIEWER.
           doit = ' '
-          call tchild(ICPMOD)
-          call termode(ICPMOD,tmode)
+          call terminalmode(childterminal,tmode)
           if(iappw.gt.0.and.iappw.le.200)then
             write(doit,'(3a,3i4,3a)') 'viewer -mode ',tmode,
      &        ' -s ',iappw,iappx+25,iappy+20,' -file ',
@@ -4211,8 +4205,7 @@ C rcf name OK, therefore save cfg file and start e2r.
 C Get logical name of terminal type, expand model name
 C to include the path and create a string to drive e2r.
         doit = ' '
-        call tchild(ICPMOD)
-        call termode(ICPMOD,tmode)
+        call terminalmode(childterminal,tmode)
         call addpath(LCFGF,longtfile,concat)
 
 C If prj initial size is a % of default, pass this on to child with

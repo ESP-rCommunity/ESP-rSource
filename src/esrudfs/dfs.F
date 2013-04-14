@@ -48,6 +48,8 @@ C if these are 0 then use default values.
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
       common/appcols/mdispl,nifgrey,ncset,ngset,nzonec
       common/appw/iappw,iappx,iappy
+      integer childterminal  ! picks up mmod from starting of prj
+      common/childt/childterminal
       integer ifs,itfs,imfs
       COMMON/GFONT/IFS,ITFS,IMFS
       common/RAY2/ITDSP,ITBND,ITEPT,ITZNM,ITSNM,ITVNO,ITORG,ITSNR,
@@ -125,12 +127,10 @@ C For help messages
                          ! because default message will be created
 
 #ifdef OSI
-      integer ICPMOD     ! passed from tchild
       integer iigl,iigr,iigt,iigb,iigw,iigwh
       integer iiw1,iiw2,iiw3,iiw4,iimenu
       integer iicapture,iiazi    ! to pass to updcapt updazi
 #else
-      integer*8 ICPMOD     ! passed from tchild
       integer*8 iigl,iigr,iigt,iigb,iigw,iigwh
       integer*8 iiw1,iiw2,iiw3,iiw4,iimenu
       integer*8 iicapture,iiazi    ! to pass to updcapt updazi
@@ -197,6 +197,7 @@ C Temporary cfd file unit.
       IMFS=1
       path='./'
       call parpsf(MODL,iappw,iappx,iappy,inf)
+      childterminal=MODL  ! remember so that child processes can run the same
 
 C Set folder separator (fs) to \ or / as required.
       call isunix(unixok)
@@ -654,8 +655,7 @@ C to include the path and create a string to drive xten.
             goto 20
           ELSE
             doit = '  '
-            call tchild(ICPMOD)
-            call termode(ICPMOD,tmode)
+            call terminalmode(childterminal,tmode)
             call addpath(RESFL,longtfile,concat)
             write(doit,'(3a)') 'xten ',longtfile(:lnblnk(longtfile)),
      &        ' & '
@@ -671,8 +671,7 @@ C Execute PHOTON.
 C Get logical name of terminal type, expand problem name
 C to include the path and create a string to drive PHOTON.
           doit = '  '
-          call tchild(ICPMOD)
-          call termode(ICPMOD,tmode)
+          call terminalmode(childterminal,tmode)
           call addpath(RESFL,longtfile,concat)
           write(doit,'(3a)') 'runpho ',
      &      longtfile(:lnblnk(longtfile)),' & '
@@ -737,8 +736,7 @@ C Assemble matlab file 'startup.m'.
 
 C Execute MATLAB with startup.m file (the MATLAB default).
           doit = '  '
-          call tchild(ICPMOD)
-          call termode(ICPMOD,tmode)
+          call terminalmode(childterminal,tmode)
           call addpath(RESFL,longtfile,concat)
           write(doit,'(3a)') '/usr/esru/bin/matlab ',
      &      longtfile(:lnblnk(longtfile)),' & '

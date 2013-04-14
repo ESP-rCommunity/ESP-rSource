@@ -83,11 +83,6 @@ C ************
       return
       end
 
-      subroutine tchild(icterm)
-      icterm = -1
-      return
-      end
-
       subroutine winfin
       return
       end

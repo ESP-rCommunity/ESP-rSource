@@ -50,6 +50,8 @@ C #include "espriou.h"
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/OUTPCH/ICOUT
+      integer childterminal  ! picks up mmod from starting of prj
+      common/childt/childterminal
 
       COMMON/SIMPIK/ISIM,ISTADD,ID1,IM1,ID2,IM2,ISDS,ISDF,NTS,ISAVE
       common/exporttg/xfile,tg,delim
@@ -74,12 +76,6 @@ C Pre calculated data (filtered).
       logical ok,dok,concat,unixok
       integer IOT  ! for radio button
       integer NITMS,INO ! max items and current menu item
-
-#ifdef OSI
-      integer ICPMOD     ! passed from tchild
-#else
-      integer*8 ICPMOD     ! passed from tchild
-#endif
 
 C For help messages
       character helpinsub*24   ! subroutine name
@@ -335,8 +331,7 @@ C to include the path and create a string to drive ish.
           write(zn,'(A)') zname(IZONE)
           call tstamp('>','RES: start mft')
           doit = ' '
-          call tchild(ICPMOD)
-          call termode(ICPMOD,tmode)
+          call terminalmode(childterminal,tmode)
           if(unixok)then
             call addpath(LCFGF,longtfile,concat)
           else
