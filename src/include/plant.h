@@ -42,13 +42,13 @@ CHOWEND
 C Maximum number of plant matrix coefficients for a component model
       PARAMETER (MPCOE=50)
 C Maximum number of plant components in overall system
-      PARAMETER (MPCOM=120)
+      PARAMETER (MPCOM=105)
 C Maximum number of plant component inter-connections
-      PARAMETER (MPCON=150)
+      PARAMETER (MPCON=120)
 C Maximum number of plant component inter-connections per plant node
       PARAMETER (MPCONC=4)
 C Maximum number of plant nodes in overall system
-      PARAMETER (MPNODE=200)
+      PARAMETER (MPNODE=140)
 C Maximum number of plant component state variable types
       PARAMETER (MPVAR=4)
 C Record length of plant results binary file.
