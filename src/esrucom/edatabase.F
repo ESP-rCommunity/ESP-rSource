@@ -1096,12 +1096,11 @@ C OPAQ.
           write(SOPT,'(a)') mlcoptical(ifoc)(1:12)
           IF(ITRC.NE.0)CALL EROPTDB(1,itru,SOPT,GDESCR,IER)
         endif
-      elseif (mlctype(IFOC)(1:4).NE.'OPAQ'.AND.
-     &        mlctype(IFOC)(1:4).EQ.'CFC ') then
+      elseif (mlctype(IFOC)(1:4).EQ.'CFC ') then
 C We will need to loop through all zones, probably, as a MLC of type CFC
 C can be used for different actual glazing properties on a zone for zone
 C base (?)
-      IF (ITRC.NE.0) then 
+      IF (ITRC.NE.0) then
       do 16, iZone=1,ncomp
         if (icfc(iZone).eq.1) then
           XST=.false.
@@ -1115,7 +1114,7 @@ C          Read construction file
           ENDIF
           do 17, iSurf=1,nzsur(iZone)
             if ( (icfcfl(iZone,iSurf).gt.0).and.
-     &           (mlcname(iZone)(1:12).eq.
+     &           (mlcname(IFOC)(1:12).eq.
      &            SSMLCN(izstocn(iZone,iSurf))(1:12))) then
               icfctp=icfcfl(iZone,iSurf)  ! cfc type ... should be correlated with current mlc
               LayNo=ncfc_el(iZone,icfctp) ! number of layers of current type
@@ -1127,7 +1126,7 @@ C           Write for current zone / surface
      &        'In zone: ',zname(iZone)(1:lnzname(iZone)),
      &        ', for surface: ',
      &          SSMLCN(izstocn(iZone,iSurf))(1:imlcnlength),
-     &        ' the CFC Approx. ISO 6946 U-value (horiz) is ',
+     &        ' the CFC Approx. EN 673 U-value (vert. pos.) is ',
      &        CFC_ISO_Uvalue(iZone,icfctp),' W/(m2 K)' ! this would be *very* nice ...
               call edisp(itru,OUTSTR)
 C             Layer data
@@ -1180,14 +1179,16 @@ C             Write out non-gas layer data (sequence order should be as in LBNL 
               write(outstr,'(a)') ' '
               call edisp(itru,outstr)
 
+              if (im_CFCfileversion(iZone).eq.2) then
 C             Report on Radiance coupling settings
 C             << translation of "T" / "F" in "explicit" / "simple"
 C                etc. would be preferable ...
-              write(outstr,'(2a,L2,a,L2)')
+                write(outstr,'(2a,L2,a,L2)')
      &             'Radiance coupling flags are ',
      &             'blind: ',ExplicitVB(iZone,icfctp),', glass: ',
      &             BRTDfunc(iZone,icfctp)
-              call edisp(itru,outstr)
+                call edisp(itru,outstr)
+              endif
 
               write(outstr,'(a)') ' '
               call edisp(itru,outstr)
