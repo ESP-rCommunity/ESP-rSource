@@ -10,6 +10,8 @@ C
 C---------------------------------------------------------------------------------
 
 C Flag (manually set for now) for calculation of ground and sky diffuse components
+C 0 ... original mode w/o sky / ground diffuse components
+C 1 ... enhanced mode w/ sky / ground diffuse components
       integer i_ground_sky_diff_calc
       parameter ( i_ground_sky_diff_calc = 1 )
 
