@@ -3438,10 +3438,13 @@ C if it has been sorted and notify user.
                   call edisp(iuout,outs)
                 elseif(ip3ver(L).eq.1)then
                   WRITE(VERT(M),'(a1,1x,a12,a)')KEY,zname(L),
-     &              ' (defined)'
+     &              ' (defined v1)'
                 elseif(ip3ver(L).eq.2)then
                   WRITE(VERT(M),'(a1,1x,a12,a)')KEY,zname(L),
-     &              ' (defined)'
+     &              ' (defined v2)'
+                elseif(ip3ver(L).gt.2)then
+                  WRITE(VERT(M),'(a1,1x,a12,a)')KEY,zname(L),
+     &              ' (defined v2+)'
                 endif
               else
                 WRITE(VERT(M),'(a1,1x,a12,a)')KEY,zname(L),

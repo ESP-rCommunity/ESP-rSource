@@ -1,5 +1,5 @@
 *Operations 1.0
-*date Thu Mar 16 13:00:35 2006  # latest file modification 
+*date Sat Mar  9 08:10:44 2013  # latest file modification 
 # operations of dining defined in: 
 # ../zones/school_dining_240.opr
 School dining room with peak 200 children and 40 staff 12h-13h and 10 staff 9h-12h and 13h-15h, (90W sens/staff, 67.4W sens/student, 50W latent/staff 37.5W latent/student), fresh air 8/s/person based on 1100m^3 volume, Lights 10W/m2
@@ -18,6 +18,9 @@ School dining room with peak 200 children and 40 staff 12h-13h and 10 staff 9h-1
      1   # no Sunday flow periods 
 # Sun: start, stop, infil, ventil, source, data
    0, 24,    0.200    0.000    0    0.000
+     1   # no holiday flow periods 
+# Hol: start, stop, infil, ventil, source, data
+   0, 24,    0.200    0.000    0    0.000
      8   # no Weekday casual gains 
 # Wkd: type, start, stop, sens, latent, rad_frac, conv_frac
     1,   0,   9,      0.0,      0.0, 0.500, 0.500
@@ -30,5 +33,6 @@ School dining room with peak 200 children and 40 staff 12h-13h and 10 staff 9h-1
    -2,  15,  24,      0.0,      0.0, 0.500, 0.500
      0   # no Saturday casual gains 
      0   # no Sunday casual gains 
+     0   # no holiday casual gains 
 # Labels for gain types 
  Occupt Lights Equipt
