@@ -1174,14 +1174,24 @@ C naout (number of additional output data) is returned.
       subroutine dbdat(ipc,irec,nnode,naout)
 #include "plant.h"
 #include "esprdbfile.h"
+#include "gencompDB.h"
+#include "gencompDB_common.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
       common/ntype/isv(mpcom,mnodec)
       common/adopdesc/adopdsc(mpcom,15)
+      COMMON/C9plus/UCdbNam(MPCOM),CdbCat(MPCOM),CDBDesc(MPCOM)
+      COMMON/PCRES/QDATA(MPCOM),PCAOUT(MPCOM,MPCRES),napdat(mpcom)
+
+
+C Common for new format component database
+      COMMON/NCDBFORM/ICDBF
+
       LOGICAL OK,dok,unixok
-      CHARACTER PZDESC*25,cdate*16,buffer*80,adopdsc*30
-      character fs*1
+      CHARACTER PZDESC*25,cdate*16,buffer*80,adopdsc*30,
+     &UCDBNam*16, CdbCat*32, CDBDesc*72, argstr*12
+      character h*72,fs*1
       integer lndbp   ! for length of standard database path
       character lltmp*144  ! to re-create plant database file name with path
 
@@ -1199,6 +1209,10 @@ C Set folder separator (fs) to \ or / as required.
       else
         fs = char(92)
       endif
+
+C !icdbf should have already been set - so no need to open file again.
+
+      if (icdbf.eq.0)then
 
 C If unit for plant component db not yet set, do it.
       if(ipcdb.eq.0)ipcdb=ifil+11
@@ -1240,14 +1254,13 @@ C Old file, so check header.
       iorec = 1
       READ (ipcdb,REC=IOREC,IOSTAT=ISTAT,ERR=99999) PZDESC
       IF (PZDESC .NE. ' PLANT COMPONENT DATABASE') then
-         ok=.false.
-         dok=.false.
-         helptopic='res_plant_db_not'
-         call gethelptext(helpinsub,helptopic,nbhelp)
-         CALL ASKOK(' Not a plant database file.',
-     &               ' Try another file? ',OK,dok,nbhelp)
-         CALL USRMSG(' ',' ','-')
-         if(ok) goto 100
+
+C Attempt to open the file as a new format cdb (ASCII) file. 
+          ok=.false.
+          dok=.false.
+          CALL ASKOK('Error occurred on opening data base file',
+     &              ' Try again?',OK,dok,nbhelp)
+          if(ok) goto 100
       endif
 
       read(ipcdb,rec=irec,iostat=istat,err=99999)
@@ -1267,6 +1280,17 @@ C Read additional output description and type
           irec=irec+1
           read(ipcdb,REC=IREC,IOSTAT=ISTAT,ERR=99999)adopdsc(ipc,i)
   160   continue
+      endif
+
+      endif
+c Read the additional plant output data data from the new format database.
+      if(icdbf.eq.1)then
+        argstr='parameters'
+        call CDBGetItemData(' ',' ',UCdbNam(IPC),argstr)
+        argstr='detailed'
+        CALL CDB2Plant(IPC,argstr)
+        nnode=s_NNODE
+        naout=NAPDAT(IPC)
       endif
 
       return

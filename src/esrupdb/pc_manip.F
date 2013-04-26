@@ -141,11 +141,11 @@ C Build menu list options.
         zitem(4) ='c In alphabetical order   '
         zitem(5) ='d In user defined order   '
         zitem(6) ='e Unordered (as in file)  '
-        zitem(7) ='  ------------------------'
-        zitem(8) ='f Summary of entries      '
-        zitem(9) ='  ------------------------'
-        zitem(10)='? Help                    '
-        zitem(11)='- Exit                    '
+        zitem(7) ='f Export to new format '
+        zitem(8) ='g Summary of entries   '
+        zitem(9) ='  ---------------------'
+        zitem(10)='? Help                 '
+        zitem(11)='- Return to main menu  '
 
 C Display menu and interpret pick.
   110   if(IUCHAN.ne.IUOUT)then
@@ -302,6 +302,52 @@ C Output unordered.
   810     CONTINUE
           if(iuchan.eq.(ifil+1)) mmod=lastmmod
           GOTO 110
+        elseif(mnupik.eq.7)then
+
+C Export to new format.
+          CALL EPAGE
+
+C Write out the new header
+          write(iuchan,'(a)')'# ----Domain------'
+          write(iuchan,'(a)')'*Icons 1.2'
+          write(iuchan,'(a)')'*Domain,PLNDB  # domain of icons'
+          write(iuchan,'(a)')'*Attribute_cnn   # attributes and data'
+          write(iuchan,'(a)')
+     &'*thermal,intg,-,-,1,0,99,user,plant connection type'
+          write(iuchan,'(a)')
+     &'*thermal,real,-,-,0.0,-9.0,9.0,user,diversion ratio'
+          write(iuchan,'(a)')
+     &'*thermal,real,-,-,0.0,-9.0,9.0,user,supplimentary data 1'
+          write(iuchan,'(a)')
+     &'*thermal,real,-,-,0.0,-9.0,9.0,user,supplimentary data 2'
+          write(iuchan,'(a)')
+     &'*thermal,real,-,-,0.0,-9.0,9.0,user,connection start height'
+          write(iuchan,'(a)')
+     &'*thermal,real,-,-,0.0,-9.0,9.0,user,connection end height'
+          write(iuchan,'(a)')'*End_cnn_attribute'
+          write(iuchan,'(a)')'*Attribute_global   # attributes and data'
+C    No global attributes needed for plant
+          write(iuchan,'(a)')'*End_global_attribute'
+          write(iuchan,'(a)')'# ----Category------'
+          write(iuchan,'(a)')
+     &'*Category,comps,gen components # category tag and menu entry'
+          DO 815 I = 1, NPC
+            CALL PCGET (I)
+            IF (INDXPC .GT. 0) THEN
+              CALL EPAGE
+              CALL PCEXP (IUCHAN)
+              IF (IUCHAN .EQ. IUOUT)  then
+                dok=.true.
+                CALL ASKOK(' ',' Continue ?',OK,dok,nbhelp)
+                IF(.NOT.OK) goto 110
+              endif
+            ENDIF
+  815     CONTINUE
+          write(iuchan,'(a)')'*End_category'  
+          write(iuchan,'(a)')'*End_domain'
+          write(iuchan,'(a)')'*End_icons'     
+          GOTO 110
+
         elseif(mnupik.eq.8)then
 
 C Output summary.

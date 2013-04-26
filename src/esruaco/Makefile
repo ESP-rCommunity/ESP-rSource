@@ -1,5 +1,6 @@
 SRCdir = `pwd`/..
 BLDdir = $(SRCdir)/esrubld
+CDBdir = $(SRCdir)/esrucdb
 COMdir = $(SRCdir)/esrucom
 MFSdir = $(SRCdir)/esrumfs
 MRTdir = $(SRCdir)/esrumrt
@@ -19,7 +20,7 @@ MODULE_OBJECTS = h3kmodule.o startup.o aim2_module.o
 
 OBJECTS = aco.o acocalc.o acoesp.o arrow.o ascii_mat.o \
 	basesimp.o basesimp_inputs.o bscoeff.o bscoeff_extended.o \
-	c2fdum.o common3dv.o  \
+ 	c2fdum.o common3dv.o CDBPlugins.o CDBCommon.o CDBExplore.o \
 	cread3dv.o ctlexp.o ctread.o dossupport.o e3dviews.o econstr.o edatabase.o \
 	edcondb.o egeometry.o emfnetw.o enetmisc.o eroper.o esru_misc.o \
 	esystem.o filelist.o item.o mfcdat.o nwkrewr.o pltcfg.o readaco.o \
@@ -55,6 +56,15 @@ bscoeff_extended.F:
 c2fdum.F:
 	rm -f c2fdum.F
 	ln -s $(COMdir)/c2fdum.F .
+CDBPlugins.F:
+	rm -f CDBPlugins.F
+	ln -s $(CDBdir)/CDBPlugins.F .
+CDBCommon.F:
+	rm -f CDBCommon.F
+	ln -s $(CDBdir)/CDBCommon.F .
+CDBExplore.F:
+	rm -f CDBExplore.F
+	ln -s $(CDBdir)/CDBExplore.F .
 common3dv.F:
 	rm -f common3dv.F
 	ln -s $(COMdir)/common3dv.F .
@@ -150,7 +160,7 @@ install:
 clean:
 	rm -f core $(PROG) $(PROG).exe $(OBJECTS) $(MODULE_OBJECTS) $(MODULES) \
 	aim2_module.F arrow.F ascii_mat.F blcond.F basesimp.F basesimp_inputs.F \
-	bscoeff.F bscoeff_extended.F c2fdum.F common3dv.F cread3dv.F ctlexp.F ctread.F dossupport.F \
+	bscoeff.F bscoeff_extended.F c2fdum.F CDBPlugins.F CDBCommon.F CDBExplore.F common3dv.F cread3dv.F ctlexp.F ctread.F dossupport.F \
 	e3dviews.F ecasctl.F econstr.F edcon.F edcondb.F edatabase.F egeometry.F egtgeom.F \
 	emfnetw.F enetmisc.F enetrewr.F emkcfg.F eroper.F esru_misc.F esystem.F filelist.F \
 	inside.F item.F mfcdat.F nwkrewr.F pltcfg.F readTrnsys.F rwipv.F rwsbem.F \

@@ -2,7 +2,7 @@
 # (see README file before installing).
 SRCdir=`pwd`
 
-PROGRAMS = aco bps c2e clm dbm dfs e2r ecnv eco grd harmonizer ish mfs \
+PROGRAMS = aco bps c2e cdb clm dbm dfs e2r ecnv eco grd harmonizer ish mfs \
 	   mld mrt net pdb prj res run vew stats
 
 allX11: libX11 $(PROGRAMS)
@@ -58,6 +58,8 @@ dfs:
 	cd $(SRCdir)/esrudfs; $(MAKE)
 c2e: 
 	cd $(SRCdir)/esruc2e; $(MAKE)
+cdb: 
+	cd $(SRCdir)/esrucdb; $(MAKE)
 clm: 
 	cd $(SRCdir)/esruclm; $(MAKE)
 e2r: 
@@ -103,6 +105,7 @@ clean:
 	cd $(SRCdir)/esrudbm; $(MAKE) clean
 	cd $(SRCdir)/esrudfs; $(MAKE) clean
 	cd $(SRCdir)/esruc2e; $(MAKE) clean
+	cd $(SRCdir)/esrucdb; $(MAKE) clean
 	cd $(SRCdir)/esruclm; $(MAKE) clean
 	cd $(SRCdir)/esrue2r; $(MAKE) clean
 	cd $(SRCdir)/esrucnv; $(MAKE) clean
@@ -130,6 +133,7 @@ strip:
 	cd $(SRCdir)/esrudbm; $(MAKE) strip
 	cd $(SRCdir)/esrudfs; $(MAKE) strip
 	cd $(SRCdir)/esruc2e; $(MAKE) strip
+	cd $(SRCdir)/esrucdb; $(MAKE) strip
 	cd $(SRCdir)/esruclm; $(MAKE) strip
 	cd $(SRCdir)/esrue2r; $(MAKE) strip
 	cd $(SRCdir)/esrucnv; $(MAKE) strip
@@ -155,6 +159,7 @@ InstBins:
 	cd $(SRCdir)/esrudbm; $(MAKE) ESPBinDir=${ESPBinDir} EXE=${EXE} install
 	cd $(SRCdir)/esrudfs; $(MAKE) ESPBinDir=${ESPBinDir} EXE=${EXE} install
 	cd $(SRCdir)/esruc2e; $(MAKE) ESPBinDir=${ESPBinDir} EXE=${EXE} install
+	cd $(SRCdir)/esrucdb; $(MAKE) ESPBinDir=${ESPBinDir} EXE=${EXE} install
 	cd $(SRCdir)/esruclm; $(MAKE) ESPBinDir=${ESPBinDir} EXE=${EXE} install
 	cd $(SRCdir)/esrue2r; $(MAKE) ESPBinDir=${ESPBinDir} EXE=${EXE} install
 	cd $(SRCdir)/esrucnv; $(MAKE) ESPBinDir=${ESPBinDir} EXE=${EXE} install
