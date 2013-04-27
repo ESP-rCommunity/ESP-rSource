@@ -7354,4 +7354,51 @@ control period finish hour                                            0.0000
 open(1) shut(0) outside period                                        0.0000
 index for the sensed property                                         0.0000
 signal set point                                                      0.0000
+ 
+---------------------------------------------------------------------
+  PLANT COMPONENT                                           No :    112
 
+ Component Description
+    Generic type     : WCH 3-port valve
+    Description      : WCH 3-port valve; 3 node model; flow divert control
+    Insertion date   : 11 Mar 92 20:44
+    Type: Single component                    Component code :    730
+
+ Nodal Scheme Description
+    Number of nodes  :   3      No of nonzero matrix elements :      5
+    Matrix positions :   1,   4,   5,   7,   9,
+    Node connections :   1,  -1,  -1,
+    Variable type    :  20,  20,  20,
+
+ Miscellaneous Data
+    Adata items   :   3    Bdata items   :   0    Cdata items   :   1
+ ADATA variables:
+    1 Component total mass (kg)
+      Value =    1.0000        Range (Min Max):     1.0000        1.0000
+    2 Mass weighted average specific heat (J/kgK)
+      Value =    500.00        Range (Min Max):     500.00        500.00
+    3 UA modulus (W/K)
+      Value =    3.5000        Range (Min Max):     3.5000        3.5000
+ CDATA variables:
+    1  Fraction of flow directed to primary output port (-)
+
+ Number of additional output parameters:     1
+ Additional output variables:
+    1  Valve position                Type :    3
+
+ Mass flow components data
+General flow conduit component      m = rho.f(D,A,L,k,SCi)
+Type : 210    Init suppl dat :   6    Tot suppl dat :  13    No. of conns :   0
+fluid type (1=air, 2=water)                                           2.0000
+conduit hydraulic diameter (m)                                       0.10000
+cross-sectional area (m^2)                                           0.12500E-01
+conduit length (m)                                                   0.50000
+absolute wall roughness (m)                                          0.60000E-03
+sum of local dynamic loss factors (-)                                0.50000
+control flag                                                          0.
+control period day type                                               0.
+control period start hour                                             0.
+control period finish hour                                            0.
+open(1) shut(0) outside period                                        0.
+index for the sensed property                                         0.
+signal set point                                                      0.

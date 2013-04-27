@@ -57,6 +57,7 @@ C QLAT   - latent load for present (1) and future (2) time step.
 #include "power.h"
 #include "dhw_parameters.h"
 #include "dhw_common.h"
+#include "OffsiteUtilitiesPublic.h"
 #include "e2r_common.h"
 
       common/tc/itc,icnt
@@ -124,10 +125,11 @@ C           l = 3 -> sensible load (fraction of non-hvac elec load
 C           l = 4 -> latent load (fraction of non-hvac elec load
 C           l = 5 -> radiative feaction (0->1)
 C           l = 6 -> convective fraction (0->1)
+C           l = 7 -> casual gain slot
 C
 C - Alex Feb. 20 2004
       COMMON/CasCou/iNumb_Gain_coupling(MCOM,MDTY),
-     &     Coupling_gain_info(MCOM,MDTY,MC,6)
+     &     Coupling_gain_info(MCOM,MDTY,MC,7)
 
 C Common to store casual/radiative gain injections 
 C on a zone-by-zone basis. Note: the latent gain 
@@ -205,7 +207,9 @@ C Common for CFC - Radiance coupling initialisation control
       logical traceok,closea
       REAL PEZON,QEZON
       
-C Declation of heat gain from h3k models
+C Declation of heat gain from h3k models.
+c      REAL H3K_HeatGainsFromModels(ICOMP)
+      REAL H3KGains
 C     Number of electric-load->gain couplings per zone,
       INTEGER iNumb_Gain_coupling
 C     Data fro each coupling
@@ -214,7 +218,19 @@ C     HOT3000 storage arrays
       REAL Cas_Rad_dat, Cas_Con_dat, Cas_Lat_dat
 C     Function returning gains from ideal hot water tank
       real fIdealDHWGain
+      REAL W_Heat_nonHVAC ! Heat for the particular casual gain
+      Real W_NG_nonHVAC   ! Natural gas for the particular casual gain
 
+      REAL Total_NG ! Total Natural gas for the zone from the casual gains
+
+      Integer iGainSlot ! recovered from Coupling_gain_info(icomp,iDay,ii,7)
+      
+!     Variables for Access to the Boundary Condition Data
+      Real fConvert_current_TS_to_DAY ! returns day (float)
+      Real fGet_BC_data_by_name ! return the data for the timestep
+      Integer iInterp_method ! 1 = step-wise; 2 = linear
+      Character cContext*124 ! string to print on BCD failure
+      Character cBCD_col*248
       
       
 C     Flag indicating that function Elec_Net_Load_Calc(?) should 
@@ -227,7 +243,7 @@ C.....Named constants for timerows
       integer iFuture
       parameter (iFuture=2) 
       common/wkdtyp/idwe1,idwe2,wkd1,wkd2
-      integer imonth_iter !current month at simulation time (to accumulate monthly results)
+      integer imonth_iter !looping variable for months 1 - 12
       integer idayn  
       logical closer
 
@@ -395,6 +411,7 @@ C Equipment is an arbitrary choice for this aggregate data.
 C Data in temporal database (convective, radiant, latent for 3 separate
 C slots i.e. 9 columns of gains). Also instanciate the future value of
 C each casual gain so that it can be used within MZLS3.
+C << any need for ICGUnit?  Probably always is W. >>
         IFOC=ICASUAL3(icomp)
         CALL RCTDFB(itrc,btimef,VAL,ISD,IFOC,IER)
         QCASC(2)=VAL(ISD)+VAL(ISD+3)+VAL(ISD+6)
@@ -846,20 +863,68 @@ C           l = 3 -> sensible load (fraction of non-hvac elec load)
 C           l = 4 -> latent load (fraction of non-hvac elec load)
 C           l = 5 -> radiative feaction (0->1)
 C           l = 6 -> convective fraction (0->1)
+C           l = 7 -> casual gain slot (1-7)
 C
 C Initialize total electric load - related gains
+      Total_NG = 0. ! (W)
       Total_elec_CON_gain = 0. ! (W) 
       Total_elec_RAD_gain = 0. ! (W)
       DO ii = 1, iNumb_Gain_coupling(icomp,iDay)
 C Check to see if the future  building time is between the start hour and            
-C the end hour of the gain
+C the end hour of the gain.
         start_hour = Coupling_gain_info(icomp,iDay,ii,1) ! start hour 0-24)
         stop_hour  = Coupling_gain_info(icomp,iDay,ii,2) ! end hour (0-24)
         if ( ( btimef .gt. start_hour ) 
      &          .and. ( btimef .le. stop_hour ) )then
-C gain applies to future time. Get total non-hvac electric load (W_elec_nonHVAC, W)
-          W_electric_nonHVAC =  Elec_Net_Load_Calc(occupant_load) ! W
-C get data for gain coupling:
+C Gain applies to future time. Get total non-hvac electric load (W_elec_nonHVAC, W)
+C Set the BCD interpolation method and generate a context message.
+          iInterp_method = 1 ! 1 = step-wise; 2 = linear
+          write (cContext,*) "Determining the AL profile for type ",
+     &          Coupling_gain_info(icomp,iDay,ii,7)
+
+          iGainSlot = nint(Coupling_gain_info(icomp,iDay,ii,7))
+
+C Test for case of non_HVAC_electrical loads and then for tagged appliance
+C loads that may have been encountered in the zone operation file. Use calls
+C to fGet_BC_data_by_name to recover data in boundary conditions file.
+          if(caskeytype(icomp,iGainSlot)(1:13).eq.'net_utilities')then
+
+            W_electric_nonHVAC =  Elec_Net_Load_Calc(occupant_load) ! W
+          elseif(caskeytype(icomp,iGainSlot)(1:15).eq.
+     &           'ALOtherElectric')then
+            cBCD_col = "ALOtherElectric"
+            W_heat_nonHVAC = fGet_BC_data_by_name( ! heat gain only (no NG)
+     &        cBCD_col,
+     &        fConvert_current_TS_to_DAY(),
+     &        iInterp_method,
+     &        cContext)
+          elseif(caskeytype(icomp,iGainSlot)(1:9).eq.'ALStoveNG')then
+            cBCD_col = "ALStoveNG"
+            W_heat_nonHVAC = fGet_BC_data_by_name( ! heat gain (from elec or NG)
+     &        cBCD_col,
+     &        fConvert_current_TS_to_DAY(),
+     &        iInterp_method,
+     &        cContext)
+            ! For a NG stove, set the NG equal to the heat gain
+            W_NG_nonHVAC = W_heat_nonHVAC
+          elseif(caskeytype(icomp,iGainSlot)(1:15).eq.
+     &           'ALStoveElectric')then
+            cBCD_col = "ALStoveElectric"
+            W_heat_nonHVAC = fGet_BC_data_by_name( ! heat gain (from elec or NG)
+     &        cBCD_col,
+     &        fConvert_current_TS_to_DAY(),
+     &        iInterp_method,
+     &        cContext)
+          elseif(caskeytype(icomp,iGainSlot)(1:7).eq.'ALDryer')then
+            cBCD_col = "AL-Dryer"
+            W_NG_nonHVAC = fGet_BC_data_by_name( ! Natural gas only
+     &        cBCD_col,
+     &        fConvert_current_TS_to_DAY(),
+     &        iInterp_method,
+     &        cContext)
+          endif
+
+C Get data for gain coupling.
           Sens_load_fraction = 
      &             Coupling_gain_info(icomp,iDay,ii,3) ! (0->1)
           radiant_load_fraction =  
@@ -876,6 +941,10 @@ C Radiative casual gains (W)
      &             + sens_load_fraction 
      &             * radiant_load_fraction 
      &             * W_electric_nonHVAC
+C Accumulate NG consumption (W)
+          Total_NG = Total_NG 
+     &             + sens_load_fraction 
+     &             * W_NG_nonHVAC 
 
         endif          
       ENDDO
@@ -2697,7 +2766,8 @@ C if ACTIVE=0. then no matching casual gain/occupants.
 C Determine which day of the week (6=Sat, 7=Sun ,other weekday ot other
 C day types if defined using calendar function and set IGC
 C (gain to control) to that reqested in the casual gain control
-C file. Assumes 3 day types are standard. If matching gain(s) set ACTIVE=1.0.
+C file. Assumes 3 day types are standard but checks status of NBDAYTYPE
+C and uses ICALENDER if required. If matching gain(s) set ACTIVE=1.0.
       IF(NBDAYTYPE.LE.3)THEN
         IDTY=1
         IF(IDWP.EQ.6)IDTY=2

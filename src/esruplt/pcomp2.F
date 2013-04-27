@@ -51,7 +51,8 @@ C  CMP46C   2 node (ISV=20) WCH advanced modulating boiler model
 C  CMP50C   1 node (ISV=29) WCH thermostatic radiator valve
 C  CMP51C   1 node (ISV=29)     mechanical room thermostat
 C  CMP52C   1 node (ISV=29) WCH thermostatic radiator valve (sensor only)
-c  CMP79C   1 node (ISV=20) WCH stochastic hot water draw
+C  CMP73C   3 node (ISV=20) WCH 3-port valve
+C  CMP79C   1 node (ISV=20) WCH stochastic hot water draw
 C  CMP90C   2 node (ISV>19)     air & water temperature source
 C  CMP91C   2 node (ISV>19)     imaginary building-like plant load
 C                               acting on heat and mass balances
@@ -72,7 +73,7 @@ C     BDATA: none
 C     CDATA: 1 Heating duty (W)
 C
       SUBROUTINE CMP20C(IPCOMP,COUT,ISTATS)
-      use h3kmodule
+       use h3kmodule
 #include "plant.h"
 #include "building.h"
 
@@ -970,7 +971,7 @@ C            3 Overall efficiency (-)
 C     CDATA: 1 Volume flow rate (m^3/s)
 
       SUBROUTINE CMP24C(IPCOMP,COUT,ISTATS)
-      use h3kmodule
+       use h3kmodule
 #include "plant.h"
 #include "building.h"
 #include "net_flow.h"
@@ -5618,7 +5619,7 @@ C and will require modification if PID-type control is to be applied. The model 
 C water outlet temperature and ambient temperature compensation can be applied [linear model]
 
       SUBROUTINE CMP45C(IPCOMP,COUT,ISTATS)
-      use h3kmodule
+       use h3kmodule
       implicit none
 #include "plant.h"
 #include "building.h"
@@ -7359,11 +7360,262 @@ C Trace output
       RETURN
       END
 
+C ******************** CMP73C ********************
+C CMP73C generates for plant component IPCOMP with plant db code 730 ie.
+C 3 node (ISV>20) WCH 3-port valve. This model supercedes CMP29C, which is
+C now depreciated;
+C matrix equation coefficients COUT (in order: self-coupling, cross-
+C coupling, and present-time coefficients) for energy balance (ISTATS=1),
+C 1st phase mass balance (ISTATS=2), or 2nd phase mass (ISTATS=3)
+C     ADATA: 1 Component total mass (kg)
+C            2 Mass weighted average specific heat (J/kgK)
+C            3 Component UA modulus (for heat loss to environment) (W/K)
+C
+C     CDATA: 1 Valve position (0-1)
+C 
+C This valve model has three nodes: 
+C 1 - inlet
+C 2 - primary outlet
+C 3 - secondary outlet
+C The input flow rate m_1 is distributed between the two nodes as follows: 
+C node 2 m_2 = a x m_1
+C node 3 m_3 = (1-a) x m_1
+
+      SUBROUTINE CMP73C(IPCOMP,COUT,ISTATS)
+
+       use h3kmodule
+      implicit none
+#include "plant.h"
+#include "building.h"
+
+      COMMON/OUTIN/IUOUT,IUIN
+      COMMON/TC/ITC,ICNT
+      COMMON/TRACE/ITCF,ITRACE(MTRACE),IZNTRC(MCOM),ITU
+
+      COMMON/SIMTIM/IHRP,IHRF,IDYP,IDYF,IDWP,IDWF,NSINC,ITS
+      COMMON/PCTIME/TIMSEC
+      COMMON/PCTC/TC(MPCOM)
+
+      COMMON/PCEQU/IMPEXP,RATIMP
+
+      COMMON/C9/NPCOMP,NCI(MPCOM),CDATA(MPCOM,MMISCD)
+      COMMON/C10/NPCON,IPC1(MPCON),IPN1(MPCON),IPCT(MPCON),
+     &           IPC2(MPCON),IPN2(MPCON),PCONDR(MPCON),PCONSD(MPCON,2)
+      COMMON/C12PS/NPCDAT(MPCOM,9),IPOFS1(MCOEFG),IPOFS2(MCOEFG,MPVAR)
+      COMMON/PDBDT/ADATA(MPCOM,MADATA),BDATA(MPCOM,MBDATA)
+      COMMON/PCVAL/CSVF(MPNODE,MPVAR),CSVP(MPNODE,MPVAR)
+      COMMON/PCVAR/PCTF(MPCON),PCRF(MPCON),PUAF(MPNODE),PCQF(MPNODE),
+     &             PCNTMF(MPCOM),
+     &             PCTP(MPCON),PCRP(MPCON),PUAP(MPNODE),PCQP(MPNODE),
+     &             PCNTMP(MPCOM)
+      COMMON/PCOND/CONVAR(MPCON,MCONVR),ICONTP(MPCON),
+     &             ICONDX(MPCOM,MNODEC,MPCONC)
+      COMMON/PCRES/QDATA(MPCOM),PCAOUT(MPCOM,MPCRES),napdat(mpcom)
+      COMMON/PCDAT/PCDATF(MPCOM,MPCDAT),PCDATP(MPCOM,MPCDAT)
+
+      REAL UA,CM,C1,V_POS,SMALL
+     
+      INTEGER IMPEXP,IPCOMP
+
+      integer iuout,iuin,itc,icnt,ITCF,ITRACE,IZNTRC,ITU,IHRP,IHRF,
+     &IDYP,IDYF,IDWP,IDWF,NSINC,ITS,NPCOMP,ICONTP,ISTATS
+      integer ICONDX,ICON1,INOD1,INOD2,INOD3,IPN1,IPN2,IPC1,IPC2,NPCON,
+     &IPCT,NPCDAT,NAPDAT,NCI,IPOFS1,IPOFS2,IX1,NITMS,I
+
+      real RATIMP,TC,TIMSEC,PCONDR,PCONSD,ADATA,BDATA,CDATA,CSVF,CSVP
+      real PCTF,PCRF,PUAF,PCQF,PCNTMF,PCTP,PCRP,PUAP,PCQP,PCNTMP,CONVAR
+      real PCDATF,PCDATP,ALPHA,QDATA,PCAOUT,SHTFLD
+
+
+      PARAMETER (SMALL=1.0E-15)
+      REAL COUT(MPCOE)
+      LOGICAL CLOSEA
+
+
+C Trace output
+      IF(ITC.GT.0.AND.NSINC.GE.ITC.AND.NSINC.LE.ITCF.AND.
+     &   ITRACE(37).NE.0) WRITE(ITU,*) ' Entering subroutine CMP73C'
+
+C Initialize pointers to inter-connection(s) ICON, and node(s) INOD
+
+C 1 connection
+      ICON1=ICONDX(IPCOMP,1,1)
+
+C 3 - nodes 1) water inlet 2) primary outlet m_out1=(a X m_in) 2) secondary outlet m_out2=(1-a) x m_in
+      INOD1=NPCDAT(IPCOMP,9)
+      INOD2=NPCDAT(IPCOMP,9)+1
+      INOD3=NPCDAT(IPCOMP,9)+2
+
+C Check the specified valve position
+      V_POS=CDATA(IPCOMP,1)
+      IF(V_POS.LT.0.OR.V_POS.GT.1.)THEN
+        V_POS=0.
+        WRITE(IUOUT,*)
+     &' WARNING:CMP73C a 3-port valve control setting <0 or >1'
+        WRITE(IUOUT,*)
+     &' has been detected. Resetting to valve position to zero.'
+      ENDIF
+
+C Generate coefficients for the energy balance equation
+      IF(ISTATS.EQ.1) THEN
+
+C First initialize UA modulus (for calculation of containment heat loss),
+C if there is no containment then zero the UA value.
+         UA=ADATA(IPCOMP,3)
+         CALL ECLOSE(PCNTMF(IPCOMP),-99.00,0.001,CLOSEA)
+         IF(CLOSEA) UA=0.
+
+C Establish heat capacity of component mass CM (J/K) and
+C fluid heat capacity rate(s) C (W/K), ie. SUM(mass flow * specific heat)
+         CM=ADATA(IPCOMP,1)*ADATA(IPCOMP,2)
+         C1=PCONDR(ICON1)*CONVAR(ICON1,2)*SHTFLD(3,CONVAR(ICON1,1))
+
+C Store inter-node fluid capacity rates (W/K).
+C Node 2
+         PCDATF(IPCOMP,2)=C1*V_POS
+
+C Node 3
+         PCDATF(IPCOMP,3)=C1*(1.-V_POS)
+
+C Calculate current component time-constant TC
+         TC(IPCOMP)=CM/AMAX1(SMALL,(UA+C1))
+
+C Set up implicit/explicit weighting factor ALPHA (1 = fully implicit)
+         IF(IMPEXP.EQ.1) THEN
+            ALPHA=1.
+         ELSE IF(IMPEXP.EQ.2) THEN
+            ALPHA=RATIMP
+         ELSE IF(IMPEXP.EQ.3) THEN
+            IF(TIMSEC.GT.0.63*TC(IPCOMP)) THEN
+               ALPHA=1.
+            ELSE
+               ALPHA=RATIMP
+            END IF
+         ELSE IF(IMPEXP.EQ.4) THEN
+            CM=0.
+            ALPHA=1.
+         END IF
+
+C Establish matrix equation self-and cross-coupling coefficients
+C matrix order as follows
+C   A  B  C | X     RHS
+C   1  0  0 | 6      7
+C   2  3  0 | 0    = 8
+C   4  0  5 | 0      9
+
+C Self-coupling coefficients.
+C Inlet node 1
+         COUT(1)=ALPHA*(-C1)-CM/(3.*TIMSEC) 
+
+C Primary outlet 2
+         COUT(2)=ALPHA*PCDATF(IPCOMP,2)
+         COUT(3)=ALPHA*(-PCDATF(IPCOMP,2)-(UA/2.))-CM/(3.*TIMSEC)
+
+C Secondary outlet node 3
+         COUT(4)=ALPHA*PCDATF(IPCOMP,3)
+         COUT(5)=ALPHA*(-PCDATF(IPCOMP,3)-(UA/2.))-CM/(3.*TIMSEC)
+
+C Cross coupling coefficient
+C Node 1
+         COUT(6)=ALPHA*C1 
+
+
+C 'Known coefficients' present-time coefficient (ie. right hand side
+C Node 1.
+         COUT(7)=(((1.-ALPHA)*(PCRP(ICON1)))
+     &-CM/(3.*TIMSEC))*CSVP(INOD1,1)
+     &-(1.-ALPHA)*(PCRP(ICON1))*PCTP(ICON1)
+
+
+C Node 2. 
+         COUT(8)=(((1.-ALPHA)*(PCDATP(IPCOMP,2)+(UA/2.)))
+     &           -CM/(3.*TIMSEC))*CSVP(INOD2,1)
+     &           -(1.-ALPHA)*(PCDATP(IPCOMP,2))*CSVP(INOD1,1)
+     &           -(ALPHA)*(UA/2.)*PCNTMF(IPCOMP)
+     &           -(1.-ALPHA)*PUAP(INOD2)*PCNTMP(IPCOMP)
+
+C Node 3.
+         COUT(9)=(((1.-ALPHA)*(PCDATP(IPCOMP,3)+(UA/2.)))
+     &           -CM/(3.*TIMSEC))*CSVP(INOD3,1)
+     &           -(1.-ALPHA)*(PCDATP(IPCOMP,3))*CSVP(INOD1,1)
+     &           -(ALPHA)*(UA/2.)*PCNTMF(IPCOMP)
+     &           -(1.-ALPHA)*PUAP(INOD3)*PCNTMP(IPCOMP)
+
+C Store "environment" variables future values.
+         PUAF(INOD2)=UA/2.
+         PUAF(INOD3)=UA/2.
+         
+C 1st phase mass (ie. dry air) balance coefficients
+      ELSE IF(ISTATS.EQ.2) THEN
+         COUT(1)=1.
+         COUT(2)=-V_POS
+         COUT(3)=1.
+         COUT(4)=-(1.-V_POS)
+         COUT(5)=1.
+         COUT(6)=-PCONDR(ICON1)
+         COUT(7)=0.
+         COUT(8)=0.
+         COUT(9)=0.
+         COUT(10)=0.
+
+C 2nd phase mass (ie. vapour) balance coefficients.
+      ELSE IF(ISTATS.EQ.3) THEN
+         COUT(1)=1.
+         COUT(2)=0.
+         COUT(3)=1.
+         COUT(4)=0.
+         COUT(5)=1.
+         COUT(6)=0.
+         COUT(7)=0.
+         COUT(8)=0.
+         COUT(9)=0.
+         COUT(10)=0.
+      END IF
+
+C Establish additional output variables
+      NAPDAT(IPCOMP)=1
+
+C Valve position
+      PCAOUT(IPCOMP,1)=CDATA(IPCOMP,1)
+
+C Trace output
+      IF(ITC.GT.0.AND.NSINC.GE.ITC.AND.NSINC.LE.ITCF.AND.
+     &   ITRACE(37).NE.0) THEN
+         WRITE(ITU,*) ' Component      ',IPCOMP,':'
+         WRITE(ITU,*) ' 3 node (ISV>21) WCH 3-port valve'
+         WRITE(ITU,*) ' Matrix node(s) ',INOD1,INOD2,INOD3
+         WRITE(ITU,*) ' Connection(s)  ',ICON1
+         IF(ISTATS.EQ.1) THEN
+            WRITE(ITU,*) ' CM     = ',CM,' (J/K)'
+            WRITE(ITU,*) ' C1     = ',C1,' (W/K)'
+            WRITE(ITU,*) ' V_POS  = ',V_POS,' (0-1)'
+            WRITE(ITU,*) ' TC     = ',TC(IPCOMP),' (s)'
+            WRITE(ITU,*) ' ALPHA  = ',ALPHA,' (-)'
+            WRITE(ITU,*) ' UA     = ',UA,' (W/K)'
+            WRITE(ITU,*) ' PCNTMF = ',PCNTMF(IPCOMP),' (C)'
+         END IF
+         WRITE(ITU,*) ' Matrix coefficients for ISTATS = ',ISTATS
+         NITMS=9
+         WRITE(ITU,*) (COUT(I),I=1,NITMS)
+         IF(ITU.EQ.IUOUT) THEN
+            IX1=(IPCOMP/4)*4
+            IF(IX1.EQ.IPCOMP.OR.IPCOMP.EQ.NPCOMP) call epagew
+         END IF
+      END IF
+
+      IF(ITC.GT.0.AND.NSINC.GE.ITC.AND.NSINC.LE.ITCF.AND.
+     &   ITRACE(37).NE.0) then
+        WRITE(ITU,*) ' Leaving subroutine CMP73C trace'
+      ENDIF
+
+      RETURN
+      END
+
 C --------------------------------- CMP79C -----------------------------------
 C CMP79C (DHWdraw) calculates an instantaneous hot water draw based on a
 C probabilistic model. For each simulation time step the model calculates
 C a hot water draw V in l/s. This flow is then passed into the model coefficient
-C generator. The models is (loosely) based on the work of Jordan and Vajen in IEA SHC Annex26.
+C generator. The model is (loosely) based on the work of Jordan and Vajen in IEA SHC Annex26.
 C
 C The draw calculation is based on the user supplying a nominal daily draw (litres).
 C The user also needs to define the typical % of the total draw consumed in up to
