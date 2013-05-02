@@ -2697,7 +2697,11 @@ C If a gap then ask for gap resistance, recover resistance if newer matereials f
             if(matopaq(matarrayindex)(1:1).eq.'g'.or.
      &         matopaq(matarrayindex)(1:1).eq.'h'.or.
      &         matarrayindex.eq.0)then
-              guessthick=matdbthick(matarrayindex)
+              if(matarrayindex.eq.0)then
+                guessthick=0.1
+              else
+                guessthick=matdbthick(matarrayindex)
+              endif
               if(closemat2)then
                 DRAIR(IFOC,ILN,1)=matgapares(matarrayindex,1)
                 DRAIR(IFOC,ILN,2)=matgapares(matarrayindex,2)
@@ -2742,7 +2746,9 @@ C Not a gap so set DRAIR to something and set default thickness.
               DRAIR(IFOC,ILN,1)=0.17
               DRAIR(IFOC,ILN,2)=0.17
               DRAIR(IFOC,ILN,3)=0.17
-              if(matarrayindex.gt.0)then
+              if(matarrayindex.eq.0)then
+                guessthick=0.1
+              else
                 guessthick=matdbthick(matarrayindex)
               endif
             ENDIF
@@ -3070,7 +3076,11 @@ C If a gap then ask for gap resistance, recover resistance if newer matereials f
         if(matopaq(matarrayindex)(1:1).eq.'g'.or.
      &     matopaq(matarrayindex)(1:1).eq.'h'.or.
      &     matarrayindex.eq.0)then
-          guessthick=matdbthick(matarrayindex)
+          if(matarrayindex.eq.0)then
+            guessthick=0.1
+          else
+            guessthick=matdbthick(matarrayindex)
+          endif
           if(closemat2)then
             DRAIR(IFOC,ILED-8,1)=matgapares(matarrayindex,1)
             DRAIR(IFOC,ILED-8,2)=matgapares(matarrayindex,2)
@@ -3122,7 +3132,11 @@ C material attribute is a [g] and might have gap R values.
           DRAIR(IFOC,ILED-8,1)=0.0
           DRAIR(IFOC,ILED-8,2)=0.0
           DRAIR(IFOC,ILED-8,3)=0.0
-          guessthick=matdbthick(matarrayindex)
+          if(matarrayindex.eq.0)then
+            guessthick=0.1
+          else
+            guessthick=matdbthick(matarrayindex)
+          endif
           write(outs,'(a,f6.1,a)') 
      &      'Material selected has a thickness of ',guessthick,'mm.'
           call edisp(iuout,outs)

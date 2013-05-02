@@ -705,11 +705,11 @@ C configuration file when exiting.
             lipvdatf=ltmp
             call FINDFIL(lipvdatf,XST)
             IF(XST)then
-	      ipvact='ipv'
+              ipvact='ipv'
               call ripvdat(ifil+1,lipvdatf,ipvact,ier)
               call ipvdat('-')
             else
-	      ipvact='ipv'
+              ipvact='ipv'
               call ipvdat('i')
               call mkipvdat(ifil+1,lipvdatf,ipvact)
               call ipvdat('-') 
@@ -719,7 +719,7 @@ C configuration file when exiting.
             goto 142
           endif
         else
-	
+
 C IPV data is held within the configurtion file. Reset the file
 C name (since it is not used). If nipvassmt is still zero then
 C nothing has been created yet so initialise and save to the
@@ -2303,7 +2303,7 @@ C Help text for this menu.
 
 C ********** calenmanage **************
 C Calenmanage sets up and manages a calendar for ESP-r. Currently
-C up to 10 day types (MDTY) can be defined and one may be assigned to
+C up to 15 day types (MDTY) can be defined and one may be assigned to
 C each of the 365 days of the year.
 C calename (char*32) is the overall name of this calendar (e.g. `UK standard`)
 C calentag (char*12) is a tag for each day type (e.g. `autumn_wkd`)
@@ -2320,10 +2320,12 @@ C model cfg file if a change is made.
       implicit none
 #include "epara.h"
 #include "building.h"
+#include "model.h"
 #include "esprdbfile.h"
 #include "espriou.h"  
 C espriou.h for climatelist file name.
 C #include "control.h"
+#include "schedule.h"
 
 #include "seasons.h"
 C seasons.h provides typper and typsea
@@ -2345,14 +2347,22 @@ C Parameters passed
       character calename*32,calentag*12,calendayname*32
       common/caleni/nbdaytype,nbcaldays(MDTY),icalender(365)
       integer nbdaytype,nbcaldays,icalender
+      common/cctlnm/ctldoc,lctlf
+      character ctldoc*248,lctlf*72
+      integer ncomp,ncon
+      COMMON/C1/NCOMP,NCON
+
+C Local variables.
       integer MVERT,IVERT,mcvert,icvert ! max items and current menu item
       integer ib,ld,l,idayloop,loop ! index for looping
       integer ijd,idayn,idwk,idt,idtt,imthn,ixd   ! for counting days
       integer idno,istjandwk,ISDS,ISDF   ! for counting days
       integer ifoc,ifrq,ihdt,m,mj,ij,mm,loopst,ix,io,isw,ipact,irt ! for position
       integer ictlf  ! for control domain and file unit
-      integer ieri   ! for error states
-      integer iuf    ! additional file unit
+      integer ieri,istat   ! for error states
+      integer iuf,iuo      ! additional file units
+      integer itrc,itru    ! feedback verbosity
+      integer icomp
       integer ipatday1,ipatday2,ipatday3,ipatday4,ipatday5,ipatday6  ! remember what the new day types are
       integer idol,idaynum,idtyy,idwknum,imthnum  ! for determining day of week
       logical ok,dok,xst
@@ -2409,36 +2419,20 @@ C If user requested initial calendar. Setup initial 4 day types (wk sat sun holi
         if(nbdaytype.le.3)then
           calename='standard weekday Sat Sun hol'
           nbdaytype=4
-          nbcaldays(1)=0
-          calentag(1)='weekdays'
+          nbcaldays(1)=0; calentag(1)='weekdays'
           calendayname(1)='weekdays (all year)'
-          nbcaldays(2)=0
-          calentag(2)='saturday'
+          nbcaldays(2)=0; calentag(2)='saturday'
           calendayname(2)='Saturdays (all year)'
-          nbcaldays(3)=0
-          calentag(3)='sunday'
+          nbcaldays(3)=0; calentag(3)='sunday'
           calendayname(3)='Sundays (all year)'
           calentag(4)='holiday'
-          calendayname(4)='holiday'
-          nbcaldays(4)=0
-          calentag(5)='-'
-          calendayname(5)='-'
-          nbcaldays(5)=0
-          calentag(6)='-'
-          calendayname(6)='-'
-          nbcaldays(6)=0
-          calentag(7)='-'
-          calendayname(7)='-'
-          nbcaldays(7)=0
-          calendayname(8)='-'
-          calentag(8)='-'
-          nbcaldays(8)=0
-          calentag(9)='-'
-          calendayname(9)='-'
-          nbcaldays(9)=0
-          calentag(10)='-'
-          calendayname(10)='-'
-          nbcaldays(10)=0
+          nbcaldays(4)=0; calendayname(4)='holiday'
+          nbcaldays(5)=0; calentag(5)='-'; calendayname(5)='-'
+          nbcaldays(6)=0; calentag(6)='-'; calendayname(6)='-'
+          nbcaldays(7)=0; calentag(7)='-'; calendayname(7)='-'
+          nbcaldays(8)=0; calentag(8)='-'; calendayname(8)='-'
+          nbcaldays(9)=0; calentag(9)='-'; calendayname(9)='-'
+          nbcaldays(10)=0; calentag(10)='-'; calendayname(10)='-'
           do 42 ijd=1,365
 
 C Assume 1 Jan is a holiday (users can change this later).
@@ -2930,6 +2924,41 @@ C Edit calendar day tag and name.
               calendayname(ifoc)=tcalendayn
               modify=.true.
             endif
+          endif
+
+C Write out the control file with the current calendar names and
+C also re-write the zone operation files to reflect the new
+C calendar names.
+          if(modify)then
+            ICTLF=IFIL+1; itrc=0     ! set to silent read
+            CALL ERPFREE(ICTLF,ISTAT)
+            call FINDFIL(LCTLF,XST)
+            if(XST)then
+              call edisp(iuout,
+     &          ' Updating control to reflect new daytype name...')
+              CALL EZCTLR(ICTLF,ITRC,IUOUT,IER)
+              CALL CTLWRT(ICTLF,IER)
+            endif
+            call edisp(iuout,
+     &      ' Updating zone schedules to reflect new daytype name...')
+
+C For every zone in the model do the following...
+            DO 100 ICOMP=1,NCOMP
+
+C Check if operations file exists and read it.
+              INQUIRE (FILE=LPROJ(ICOMP),EXIST=XST)
+              IF(XST)THEN
+                IUO=IFIL+1
+                CALL ERPFREE(IUO,ISTAT)
+                itru=iuout
+                CALL EROPER(ITRC,ITRU,IUO,ICOMP,IER)
+
+C Write zone operations file and update to current format.
+                ip3ver(icomp)=21
+                CALL EMKOPER(IUO,LPROJ(ICOMP),ICOMP,IER)
+              ENDIF
+ 100        CONTINUE
+            call usrmsg('  ','  ','-')
           endif
           goto 73
         else

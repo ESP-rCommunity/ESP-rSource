@@ -133,7 +133,7 @@ C prec17 common is described in geometry.h.
       integer iissmlci  ! index for other side mlc
       integer icob    ! for passing to clickon facility
       integer itrcl   ! local trace on first entry to zone
-      integer lnssmlc,lnmlcn
+      integer lnssmlc,lnmlcn,lnsym
 
 C For help messages
       character helpinsub*24 ! subroutine name
@@ -429,8 +429,9 @@ C Use ssmlcindex to get MLC index for this surface.
               iissmlci=ii
             elseif(mlcsymetric(ii)(1:12).EQ.'NONSYMMETRIC')then
 
-C If the current construction is nonsymmetric then it should not be
-C used for a partition (and db does not have a linked MLC - inform the user.
+C If the current construction is nonsymmetric but is linked to
+C the key phrase NONSYMMETRIC rather than a specific MLC name
+C then it should not be used for a partition - inform the user.
               write(outs,'(5a)') 'Surface ',SN(1:lnblnk(SN)),
      &          ' has a nonsymmetric construction ',
      &          SSMLCN(ioc)(1:lnblnk(SSMLCN(ioc))),'.'
@@ -442,13 +443,17 @@ C used for a partition (and db does not have a linked MLC - inform the user.
               updoth=.false.
               iissmlci=matsymindex(ii)   ! returned value
             else
+
+C We have a non-symmetric MLC which does point to a reversed version
+C so check to see if the name of the other MLC matches mlcsymetric.
+              lnsym=lnblnk(mlcsymetric(ii))
               if(SSMLCN(icoth)(1:4).eq.'UNKN')then
                 TOSMLCN=mlcsymetric(ii)
                 write(TOOPT,'(a)') mlcoptical(ii)
                 updoth=.true.
               elseif(SSMLCN(icoth)(1:lnssmlc).eq.
-     &               mlcname(ii)(1:lnmlcn))then
-                continue
+     &               mlcsymetric(ii)(1:lnsym))then
+                updoth=.false.
               else
                 TOSMLCN=mlcsymetric(ii)
                 write(TOOPT,'(a)') mlcoptical(ii)
@@ -456,11 +461,15 @@ C used for a partition (and db does not have a linked MLC - inform the user.
               endif
               iissmlci=matsymindex(ii)   ! returned value
             endif
+
+C A difference was discovered, report this.
             if(updoth)then
               CALL ESCZONE(ICOMP)
-              write(outs,'(3a)') 
+              lnicoth=lnblnk(SSMLCN(icoth))
+              write(outs,'(6a)') 
      &          'Updating `other side` composition of ',
-     &           SN(1:lnblnk(SN)),'...'
+     &           SN(1:lnblnk(SN)),' from ',SSMLCN(icoth)(1:lnicoth),
+     &          ' > ',TOSMLCN
               call edisp(iuout,outs)
               call georead(IFIL+2,LGEOM(IC2(ioc)),IC2(ioc),0,iuout,IER)
 
@@ -2959,8 +2968,8 @@ C faces another zone, get the other surface connection index.
 
 C Echo back to the user additional information about the surface.
 C start with the vertices associated with the surface.
-      write(message,'(2a)') ' Vertices (X Y Z) used by ',
-     &  SNAME(ICOMP,IS)
+      write(SN,'(a12)') SNAME(ICOMP,IS)
+      write(message,'(2a)') ' Vertices (X Y Z) used by ',SN
       call edisp(iuout,message)
       NV=NVER(IS)
 
@@ -2994,8 +3003,8 @@ C See if an even or odd number of items in list.
 
 C Now tell the user the edge list for the surface. This write
 C statement should be kept up to date with MV changes.
-      write(message,'(2a)') ' Vertices associated with ',
-     &  SNAME(ICOMP,IS)
+      write(SN,'(a12)') SNAME(ICOMP,IS)
+      write(message,'(2a)') ' Vertices associated with ',SN
       call edisp(iuout,message)
       WRITE(t248,'(42I4)')(JVN(is,j),J=1,nv)
       call edisp248(iuout,t248,90)
@@ -3413,8 +3422,8 @@ C a zone construction file report its common block information, otherwise
 C if SMLCN matches something in the constructions database then use
 C that reporting mechanism.
         ioc=IZSTOCN(ICOMP,is)
+        write(SN,'(a12)') SSNAME(ioc)
         if(SSMLCN(ioc)(1:4).ne.'UNKN')then
-          write(SN,'(a12)') SSNAME(ioc)
 
 C << TODO - test if date of zone construction file is older than the
 C << geometry file and if so do not use CONINF.
@@ -3522,10 +3531,20 @@ C used for a partition (and db does not have a linked MLC - inform the user.
                 call edisp(iuout,
      &            'Please check that one construction has inverted')
                 call edisp(iuout,
-     &            'layers or revise the Constructions database.')
-                updoth=.false.
-                iissmlci=matsymindex(ii)  ! use returned value
+     &            'layers or revise the common constructions.')
+                if(SSMLCN(icoth)(1:4).eq.'UNKN')then
+                  TOSMLCN= mlcname(ii)  ! replace UNKNOWN
+                  iissmlci=ssmlcindex(ioc)
+                  updoth=.true.
+                else
+                  TOSMLCN= SSMLCN(icoth)
+                  iissmlci=ssmlcindex(icoth)  ! leave it alone
+                  updoth=.false.
+                endif
               else
+
+C We have a non-symmetric MLC which does point to a reversed version
+C so check to see if the name of the other MLC matches mlcsymetric.
                 if(SSMLCN(icoth)(1:4).eq.'UNKN')then
                   TOSMLCN= mlcsymetric(ii)
                   write(TOOPT,'(a)') mlcoptical(ii)
@@ -3546,9 +3565,11 @@ C used for a partition (and db does not have a linked MLC - inform the user.
 C First backup the current zones data before reading in the other
 C zone.
                 CALL ESCZONE(ICOMP)
-                write(outs,'(3a)') 
+                lnicoth=lnblnk(SSMLCN(icoth))
+                write(outs,'(6a)') 
      &            'Updating `other side` composition of ',
-     &            SN(1:lnblnk(SN)),'...'
+     &            SN(1:lnblnk(SN)),' from ',SSMLCN(icoth)(1:lnicoth),
+     &            ' > ',TOSMLCN
                 call edisp(iuout,outs)
                 call eclose(gversion(IC2(ioc)),1.1,0.01,newgeo)
                 if(newgeo)then
@@ -3891,6 +3912,7 @@ C used for a partition if db does not have a linked MLC - inform the user.
                     call edisp(iuout,outs)
                     call edisp(iuout,
      &  'Please check attributes and/or revise the Cconstructions db.')
+                    TOSMLCN= mlcsymetric(ii)
                     iissmlci=matsymindex(ii)  ! use returned value 
                   else
                     if(SSMLCN(icoth)(1:4).eq.'UNKN')then
@@ -4194,9 +4216,13 @@ C used for a partition if db does not have a linked MLC - inform the user.
      &                SSMLCN(icoth)(1:12),' (which may not match).'
                     call edisp(iuout,outs)
                     call edisp(iuout,
-     &  'Please check attributes and/or revise the Cconstructions db.')
-                    iissmlci=matsymindex(ii)  ! use returned value 
+     &  'Please check attributes and/or revise common constructions.')
+                    TOSMLCN= SSMLCN(icoth)
+                    iissmlci=ssmlcindex(icoth)  ! leave it alone
                   else
+
+C We have a non-symmetric MLC which does point to a reversed version
+C so check to see if the name of the other MLC matches mlcsymetric.
                     ii=ssmlcindex(ic)
                     if(SSMLCN(icoth)(1:4).eq.'UNKN')then
                       TOSMLCN= mlcsymetric(ii)
@@ -4232,6 +4258,7 @@ C At this point the other zone surface attributes are known.
 
         ENDIF
         MODGEO=.TRUE.
+        write(6,*) 'tosmlcn is ',iissmlci,' ',tosmlcn
 
 C Finally update the system configuration file if not browsing.
         if(cfgok.and.(.NOT.browse))then
@@ -4251,8 +4278,10 @@ C in the zone pointed to by IC2, update SOTHER (of index IE2 in the
 C other zone) and write out that zones geometry.
           if(updoth)then
             CALL ESCZONE(ICOMP)
-            write(outs,'(3a)') 'Updating `other side` composition of ',
-     &        SN(1:lnblnk(SN)),'...'
+            lnicoth=lnblnk(SSMLCN(icoth))
+            write(outs,'(6a)')'Updating `other side` composition of ',
+     &        SN(1:lnblnk(SN)),' from ',SSMLCN(icoth)(1:lnicoth),
+     &        ' > ',TOSMLCN
             call edisp(iuout,outs)
             call eclose(gversion(IC2(IC)),1.1,0.01,newgeo)
             if(newgeo)then
@@ -6044,7 +6073,7 @@ C Surface (ivj) vertex list has been updated. Go on to next surface.
         
 C Find close vertices.
           CALL EASKABC(' ','Options:','find close vertices',
-     &          'find closest to a vertex','cancel',INVT,nbhelp)
+     &      'find closest to a vertex','cancel',INVT,nbhelp)
           if(INVT.eq.1)then
             call edisp(itru,'Scanning for vertices within 50mm...')
             do 102 iwhich1=1,NTV
@@ -6867,7 +6896,6 @@ C Strings for surface attributes to pass to insrec.
       integer icmpall  ! to signal request to compare all names
       integer ibopt    ! to specify which mass origin option
       integer mnulen,iwhich2   ! multi column lines
-      integer itrul  ! local trace
       logical greyok,odd   ! for display of vertex info
       
 #ifdef OSI

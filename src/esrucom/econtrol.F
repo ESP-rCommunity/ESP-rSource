@@ -592,9 +592,8 @@ C Reporting:
         IF(ITRC.GE.1)THEN
           CALL EDISP(ITRU,' For building control')
           CALL EDISP(ITRU,' the following day types have been defined')
-          DO 78 IDTY=1,NBDAYTYPE
-            call edisp(ITRU,CALENTAG(idty))
- 78       CONTINUE
+          write(outstr,'(20a)') (CALENTAG(idty),idty=1,NBDAYTYPE)
+          call edisp(ITRU,outstr)
         ENDIF
 
         nn=nbcdt(ii)  ! a zero says use all day types
@@ -861,9 +860,8 @@ C Reporting:
         IF(ITRC.GE.1)THEN
           CALL EDISP(ITRU,' For plant control')
           CALL EDISP(ITRU,' the following day types have been defined')
-          DO 378 IDTY=1,NBDAYTYPE
-            call edisp(ITRU,CALENTAG(idty))
- 378       CONTINUE
+          write(outstr,'(20a)') (CALENTAG(idty),idty=1,NBDAYTYPE)
+          call edisp(ITRU,outstr)
         ENDIF
 
         nn=npcdt(ii)  ! a zero says use all day types
@@ -1096,9 +1094,8 @@ C Reporting:
           call edisp(itru,'  ')
           CALL EDISP(ITRU,' For mass flow network control')
           CALL EDISP(ITRU,' The following day types have been defined')
-          DO 788 IDTY=1,NBDAYTYPE
-            call edisp(ITRU,CALENTAG(idty))
- 788       CONTINUE
+          write(outstr,'(20a)') (CALENTAG(idty),idty=1,NBDAYTYPE)
+          call edisp(ITRU,outstr)
         ENDIF
 
         nn=nfcdt(ii)  ! a zero says use all day types
@@ -1346,9 +1343,8 @@ C Reporting:
           call edisp(itru,'  ')
           CALL EDISP(ITRU,' For electrical control')
           CALL EDISP(ITRU,' The following day types have been defined')
-          DO 578 IDTY=1,NBDAYTYPE
-            call edisp(ITRU,CALENTAG(idty))
- 578      CONTINUE
+          write(outstr,'(20a)') (CALENTAG(idty),idty=1,NBDAYTYPE)
+          call edisp(ITRU,outstr)
         ENDIF
 
         nn=necdt(ii)  ! a zero says use all day types
@@ -1514,9 +1510,8 @@ C Reporting:
         IF(ITRC.GE.1)THEN
           CALL EDISP(ITRU,' For global control')
           CALL EDISP(ITRU,' The following day types have been defined')
-          DO 478 IDTY=1,NBDAYTYPE
-            call edisp(ITRU,CALENTAG(idty))
- 478      CONTINUE
+          write(outstr,'(20a)') (CALENTAG(idty),idty=1,NBDAYTYPE)
+          call edisp(ITRU,outstr)
         ENDIF
 
         nn=ngcdt(ii)  ! a zero says use all day types
@@ -1679,11 +1674,10 @@ C Day types.
 
 C Reporting:
         IF(ITRC.GE.1)THEN
-          CALL EDISP(ITRU,' For global control')
+          CALL EDISP(ITRU,' For optical control')
           CALL EDISP(ITRU,' The following day types have been defined')
-          DO 678 IDTY=1,NBDAYTYPE
-            call edisp(ITRU,CALENTAG(idty))
- 678      CONTINUE
+          write(outstr,'(20a)') (CALENTAG(idty),idty=1,NBDAYTYPE)
+          call edisp(ITRU,outstr)
         ENDIF
 
         nn=nocdt(ii)  ! a zero says use all day types
