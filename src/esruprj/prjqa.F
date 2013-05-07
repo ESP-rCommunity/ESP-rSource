@@ -1602,7 +1602,7 @@ C List control data.
         endif
         WRITE(outs,'(a)')'Control description: '
         call edisp(itu,outs)
-        call edisp248(itu,ctldoc,72)
+        call edisp248(itu,ctldoc,80)
 
         if(NCF.gt.0)then
           call edisp(itu,' ')

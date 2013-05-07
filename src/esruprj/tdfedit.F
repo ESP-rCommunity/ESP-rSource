@@ -892,6 +892,7 @@ C record structures can be accommodated.
 
 C If there are tabular items, loop through each step until within
 C one minute of the given time and then get the data and write.
+C Take into account NTSPH when dealing with tollerance below.
       IF(NITDF.gt.0)THEN
         WRITE(iafil,'(a)',IOSTAT=ios,ERR=103)'*data'
         found=.FALSE.
@@ -904,12 +905,16 @@ C one minute of the given time and then get the data and write.
             call edisp(iuout,outs)
           endif
           if(.NOT.found)then
-            call eclose(RDOTY,TIMEJD,0.0006,CLOSE)
+            if(NTSPH.le.6)then
+              call eclose(RDOTY,TIMEJD,0.0006,close)
+            else
+              call eclose(RDOTY,TIMEJD,0.00034,close)
+            endif
             if(CLOSE)then
               ITREC=IP+49
               CALL ERTABU(ITRC,ITREC,IER)
               CALL ESTIME(NTSPH,1,ITIME,DESCRH,DESCRD,TIMER)
-              write(outs,'(a,F10.4,3a)') 'Extracting data for ',
+              write(outs,'(a,F10.6,3a)') 'Extracting data for ',
      &          RDOTY,' (@ ',DESCRH,')'
               if(ITRC.gt.1)call edisp(iuout,outs)
               CALL EWTABA(ITREC,RDOTY,iafil,IER)
@@ -927,7 +932,7 @@ C Write subsequent records if requested.
               ITREC=IP+49
               CALL ERTABU(ITRC,ITREC,IER)
               CALL ESTIME(NTSPH,1,ITIME,DESCRH,DESCRD,TIMER)
-              write(outs,'(a,F4.0,3a)') 'Extracting data for ',
+              write(outs,'(a,F10.6,3a)') 'Extracting data for ',
      &          RDOTY,' (@ ',DESCRH,')'
               if(ITRC.gt.1)call edisp(iuout,outs)
               CALL EWTABA(ITREC,RDOTY,iafil,IER)

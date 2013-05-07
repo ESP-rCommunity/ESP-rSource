@@ -59,8 +59,8 @@ C current timestep in the day, rdoty is the julian day fraction.
 C << Implement this check for within the simulation period as
 C << a separate call made during the input section.
       IP=(ID-ISDS)*NTS*24+IJ
-      RDOTY=ID+(time/24.)
-      WRITE(OUTS,'(A,2I4,2F8.3)')' ID IP time RDOTY',
+      RDOTY=REAL(ID)+(time/24.)
+      WRITE(OUTS,'(A,2I4,2F10.6)')' ID IP time RDOTY',
      &             ID,IP,time,RDOTY
       IF(ITRC.GT.1)CALL EDISP(IUOUT,OUTS)
 

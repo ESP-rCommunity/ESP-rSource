@@ -1473,8 +1473,8 @@ C cooling should be presented as absolute value.
      &            abs(edput(2,j)),edput(3,j),edput(4,j),edput(5,j),
      &            edput(6,j)
               else
-                RDOTY=FLOAT(IDAY)+(ATIME/24.)
-                write(outs,'(F10.4,6F12.1)')RDOTY,edput(1,j),
+                RDOTY=REAL(IDAY)+(ATIME/24.)
+                write(outs,'(F12.6,6F12.1)')RDOTY,edput(1,j),
      &            abs(edput(2,j)),edput(3,j),edput(4,j),edput(5,j),
      &            edput(6,j)
               endif
@@ -1581,8 +1581,8 @@ C                 ipvhr=ipvhr+1
      &            edput(2,j),edput(3,j),edput(4,j),edput(5,j),
      &            edput(6,j),edput(7,j),pvdayhr(ipvhr)/pvfla
                 else
-                  RDOTY=FLOAT(IDAY)+(ATIME/24.)
-                  write(outs,'(F10.4,7F12.3)') RDOTY,
+                  RDOTY=REAL(IDAY)+(ATIME/24.)
+                  write(outs,'(F12.6,7F12.3)') RDOTY,
      &            edput(2,j),edput(3,j),edput(4,j),edput(5,j),
      &            edput(6,j),edput(7,j),pvdayhr(ipvhr)/pvfla
                 endif
@@ -1607,8 +1607,8 @@ C                 ipvhr=ipvhr+1
      &              edput(2,j),edput(3,j),edput(4,j),edput(5,j),
      &              edput(6,j),edput(7,j)
                 else
-                  RDOTY=FLOAT(IDAY)+(ATIME/24.)
-                  write(outs,'(F10.4,6F12.3)') RDOTY,
+                  RDOTY=REAL(IDAY)+(ATIME/24.)
+                  write(outs,'(F12.6,6F12.3)') RDOTY,
      &              edput(2,j),edput(3,j),edput(4,j),edput(5,j),
      &              edput(6,j),edput(7,j)
                 endif
