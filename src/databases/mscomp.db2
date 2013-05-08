@@ -12,7 +12,7 @@
 *SPMDB
 *CATEGORY
 # The categories of special components currently supported in the database
-# categories 1-4 are reserved for building integrated renewables all other
+# categories 1-5 are reserved for building integrated renewables all other
 # categories are for active materials
 8
 crystalline PV model
@@ -419,6 +419,40 @@ to calculate d as a function of the wind incidence angle.
 0.2       Default turbulence intensity (-)
 *TEXT
 This wind turbine model is developed from that described in
+"Development of building integrated wind turbines" by Grant, Danecker
+and Nicholson.  The generated power (W) is calculated based on the 
+following formula: 
+
+P=Cp(1/2).rho.A.V^3
+
+Where Cp is the power velocity coefficient, A is the swept area 
+area, and V is the free stream velocity of the wind or the rated
+wind speed if V is greater than the rated wind speed. 
+
+*ENDTEXT
+*END
+*SPECMATL
+*IDDATA
+    5     6
+*DESC
+5kw_wind_turbine
+*SPECDATA 
+11
+14.0      Height of the turbine inlet (m)
+22.75     Turbine cross sectional area (m^2)
+0.4       Power velocity coefficient (-)
+3.0       Cut-in wind speed (m/s)
+12.0      Rated wind speed (m/s)
+1.0       Number of turbines (-)
+1.0       Location (1-urban,2-suburban,3-open)
+14.0      Reference height (m)
+0.0       Wind speed statistics (ON/OFF)
+0.0       Wind speed/turbulence profile (ON/OFF)
+0.2       Default turbulence intensity (-)
+*TEXT
+This wind turbine model approximates a 5kW R9000 3 blade self
+regulating turbine 5.5m rotor diameter (Evancewind.com data).
+Performance model developed from that described in
 "Development of building integrated wind turbines" by Grant, Danecker
 and Nicholson.  The generated power (W) is calculated based on the 
 following formula: 

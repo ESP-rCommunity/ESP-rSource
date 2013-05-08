@@ -142,11 +142,11 @@ C Display active material components (ispmtyp above 50).
         DO 10 L=1,ILEN
           IF(L.GE.IST.AND.(L.LE.(IST+MIFULL)))THEN
             IF(ISPMTYP(L,1).GT.50)THEN
-c              WRITE(*,*) 'type ', ISPMTYP(L,1) 
+C              WRITE(*,*) 'type ', ISPMTYP(L,1) 
               M=M+1
               NSPMTYP1=NSPMTYP1+1
               ITKEY(NSPMTYP1)=L
-c              WRITE(*,*) NSPMTYP1,ITKEY(NSPMTYP1)
+C              WRITE(*,*) NSPMTYP1,ITKEY(NSPMTYP1)
               CALL EMKEY(L,KEY,IER)
               WRITE(VERT(M),14)KEY,L,spmlabel(L),ispmloc(L,1),
      &        ispmloc(L,2),ispmloc(L,3)
@@ -436,9 +436,11 @@ C or embedded renewables (categories 1-50).
         IMS=5
         IME=NIT+4
       ELSE
-        NIT=4
+
+C The renewables are in the initial 5 categories.
+        NIT=5
         IMS=1
-        IME=4
+        IME=5
       ENDIF
       J=1
       DO 19 I=IMS,IME
