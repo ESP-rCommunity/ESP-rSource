@@ -4098,7 +4098,7 @@ C          ITREC=IP+49
             call aelist(ipos,icolumns,COLUMNWRITE,
      &        iarraycount,delim,louts,loutln,itrunc)
             if(ipos.eq.1) then
-              WRITE(iafil,'(F8.4,2a)',IOSTAT=ios,ERR=101) RDOTY,',',
+              WRITE(iafil,'(F10.6,2a)',IOSTAT=ios,ERR=101) RDOTY,',',
      &          louts(1:loutln)
             else
               WRITE(iafil,'(1x,a)',
@@ -4709,7 +4709,7 @@ C          ITREC=IP+49
           call aelist(ipos,icolumns,COLUMNWRITE,
      &      iarraycount,delim,louts,loutln,itrunc)
           if(ipos.eq.1) then
-            WRITE(iafil,'(F8.4,2a)',IOSTAT=ios,ERR=101) RDOTY,',',
+            WRITE(iafil,'(F10.6,2a)',IOSTAT=ios,ERR=101) RDOTY,',',
      &        louts(1:loutln)
           else
             WRITE(iafil,'(1x,a)',

@@ -30,7 +30,7 @@ C MOTABL produces tabular output for a 24 hour period.
       SUBROUTINE MOTABL
 #include "building.h"
 #include "net_flow.h"
-#include "esprdbfile.h"
+C #include "esprdbfile.h"
 C esprdbfile.h supplies the following:
 C default file names for databases
 C      COMMON/SPAD/MMOD,LIMIT,LIMTTY
@@ -42,7 +42,7 @@ C      COMMON/OUTPCH/ICOUT
 C      COMMON/PERO/IOD1,IOM1,IOH1,IOD2,IOM2,IOH2,IODS,IODF,NOUT,IAV
 C      COMMON/ZONPIK/NZ,NZNO(MCOM)
 
-C ihflag = 0 write 13h30, ihflag = 1 write 0.5625
+C ihflag = 0 write 13h30, ihflag = 1 write 0.5625, = 2 write yyyy-mm-dd 13:30:00
 C idhflg = 0 no day demarcations, idhflg = 1 write demarcation
 C          between tabular reporting days.
 C ilflag = 0 tabular labels on multi-lines, ilflag = 1 on one line.
@@ -94,6 +94,8 @@ C Default value for GRTOOL file = 0 (off), day hash marks off.
         ITEM(11)='* time >> 10h30        '
       elseif(IHFLAG.eq.1)then
         ITEM(11)='* time >> 0.4375       '
+      elseif(IHFLAG.eq.2)then
+        ITEM(11)='* time >>mm-dd 10:30:00'
       endif
       if(ILFLAG.eq.0)then
         ITEM(12)='* labels >> multiline  '
@@ -150,13 +152,16 @@ C Network flow tabular output.
 
 C Toggle time format and day separators.
         IHFLAG=IHFLAG+1
-        if(IHFLAG.GT.1)IHFLAG=0
+        if(IHFLAG.GT.2)IHFLAG=0
         if(IHFLAG.eq.0)then
           call edisp(iuout,' ')
-          call edisp(iuout,'standard display time = 10h30 set ')
+          call edisp(iuout,'setting standard display time = 10h30')
         elseif(IHFLAG.eq.1)then
           call edisp(iuout,' ')
-          call edisp(iuout,'3rd party graphing time = day fraction set')
+          call edisp(iuout,'setting time = day.fraction 10.5000')
+        elseif(IHFLAG.eq.2)then
+          call edisp(iuout,' ')
+          call edisp(iuout,'setting time = yyyy-mm-dd hh:mm:ss')
         endif
         CALL EASKAB('Include mark between days when ',
      &              'displaying or writing data :','no','yes',
@@ -322,8 +327,8 @@ C Write general header information (skip if IPV mode).
         CALL HDDATE(PDESCR)
         CALL HDSTEP(SDESCR)
         
-C If requested or writing to file start lines with a '#'.
-        if (IHFLAG.eq.1.or.ixopen.eq.1) then
+C If julian or 13:30:00 requested or writing to file start lines with a '#'.
+        if (IHFLAG.eq.1.or.IHFLAG.eq.2.or.ixopen.eq.1) then
           call edisp(itru,'# Timestep performance metrics.')
           lsn1=MIN0(lnblnk(RFILE),42)
           if(NSIM.gt.1)then
@@ -416,7 +421,7 @@ C   don't do this if printing to file.
               outs248='     '  ! clear for 248 buffer
               outs1800='     '  ! clear for 1800 buffer
             else
-              if (IHFLAG.eq.1.and.ixopen.eq.1) then
+              if ((IHFLAG.eq.1.or.IHFLAG.eq.2).and.ixopen.eq.1) then
                 if (delim.eq.'X') then
                   outs248='*time'
                   outs1800='*time'
@@ -424,7 +429,7 @@ C   don't do this if printing to file.
                   outs248='#Time'
                   outs1800='#Time'
                 endif
-              elseif (IHFLAG.eq.1.and.ixopen.eq.0) then
+              elseif ((IHFLAG.eq.1.or.IHFLAG.eq.2).and.ixopen.eq.0)then
                 if (delim.eq.'X') then
                   outs248='*time'
                   outs1800='*time'
@@ -473,11 +478,21 @@ C  tablabel (ie) to be printed (if to screen).
 C If writing to file remove blanks from label (up to 28 char with
 C a bit more for the units) lets assume average is 24 char which
 C says that ~33 labels can be written in the 800 char width. If data
-C relates to surfaces then labels take up more space.
+C relates to surfaces then labels take up more space. If there is
+C a delimeter being used in the data columns also apply this in
+C the generation of the heading of text file.
                 if (ixopen.eq.1) then
                   call SDELIM(TABLABEL(IL),t28,'N',IW)
-                  write(outs248(K:KE),'(3a)') ',',
-     &              t28(1:lnblnk(t28)),unit
+                  if(delim.eq.'-'.or.delim.eq.'S')then
+                    write(outs248(K:KE),'(3a)') ' ',
+     &                t28(1:lnblnk(t28)),unit
+                  elseif(delim.eq.'C')then
+                    write(outs248(K:KE),'(3a)') ',',
+     &                t28(1:lnblnk(t28)),unit
+                  elseif(delim.eq.'T')then
+                    write(outs248(K:KE),'(3a)') CHAR(9),
+     &                t28(1:lnblnk(t28)),unit
+                  endif
                   K=K+lnblnk(t28)+lnblnk(unit)+1
                 else
                   if (ir.lt.4) then
@@ -489,12 +504,20 @@ C relates to surfaces then labels take up more space.
                 endif
               endif
 
-C For writing to file also fill the 800 char buffer
+C For writing to file also fill the 800 char buffer.
               if(KE4.le.1800)then
                 if (ixopen.eq.1) then
                   call SDELIM(TABLABEL(IL),t28,'N',IW)
-                  write(outs1800(K4:KE4),'(3a)') ',',
-     &              t28(1:lnblnk(t28)),unit
+                  if(delim.eq.'-'.or.delim.eq.'S')then
+                    write(outs1800(K4:KE4),'(3a)') ' ',
+     &                t28(1:lnblnk(t28)),unit
+                  elseif(delim.eq.'C')then
+                    write(outs1800(K4:KE4),'(3a)') ',',
+     &                t28(1:lnblnk(t28)),unit
+                  elseif(delim.eq.'T')then
+                    write(outs1800(K4:KE4),'(3a)') CHAR(9),
+     &                t28(1:lnblnk(t28)),unit
+                  endif
                   K4=K4+lnblnk(t28)+lnblnk(unit)+1
                 else
                   if (ir.lt.4) then
@@ -580,17 +603,36 @@ C Display data. Create both data strings for this timestep.
               write (outs1800,'(a5)') LTIME
               K=6
             endif
-          else
+          elseif (IHFLAG.eq.1) then
             if(ipvform.eq.3)then
               call SJTIME(J,LJTIME)
               write (outs248,'(3a)') sq,LJTIME,sq
               write (outs1800,'(3a)') sq,LJTIME,sq
               K=11
             else
-              RDOTY=FLOAT(IDAY)+(ATIME/24.)
-              write (outs248,'(f10.4)') RDOTY
-              write (outs1800,'(f10.4)') RDOTY
+              RDOTY=REAL(IDAY)+(ATIME/24.)
+              write (outs248,'(f11.6)') RDOTY
+              write (outs1800,'(f11.6)') RDOTY
               K=11
+            endif
+          elseif (IHFLAG.eq.2) then
+
+C Write in format that spreadsheets understand as time.
+            call edayr(IDAY,ID,IM)
+            if(ipvform.eq.3)then
+              call SJTIME(J,LJTIME)
+              write (outs248,'(a,i4,a,i2.2,a,i2.2,3a)') 
+     &          sq,IYEAR,'-',IM,'-',ID,' ',LJTIME,sq
+              write (outs1800,'(a,i4,a,i2.2,a,i2.2,3a)')
+     &          sq,IYEAR,'-',IM,'-',ID,' ',LJTIME,sq
+              K=22
+            else
+              call SJTIME(J,LJTIME)
+              write (outs248,'(i4,a,i2.2,a,i2.2,2a)') 
+     &          IYEAR,'-',IM,'-',ID,' ',LJTIME
+              write (outs1800,'(i4,a,i2.2,a,i2.2,2a)')
+     &          IYEAR,'-',IM,'-',ID,' ',LJTIME
+              K=20
             endif
           endif
 
@@ -661,9 +703,14 @@ C Assume fully occupied.
 
 C If delimiter set to alternative then process text before writing.
 C If using X delimeter (tagged data) then set the delimeter to a comma.
+C If IHFLAG is 2 then the initial 19 or 21 characters will be a time
+C stamp that needs the 11th character to be a literal space.
               dg=delim
               if (delim.eq.'X') dg='C'
               call SDELIM(outs1800,outs1800d,dg,IW)
+              if(IHFLAG.eq.2) then
+                write(outs1800d(11:11),'(1a)') ' '
+              endif
               lnb=lnblnk(outs1800d)   ! write directly to file
               write(itru,'(A)',iostat=ios,err=1) outs1800d(1:lnb)
             endif

@@ -725,9 +725,11 @@ C Setup menu items.
         ITEM(26)='= Set axis scale'
       else
         if(IHFLAG.eq.0)then
-          ITEM(26)='* Time >> 10h30   '
+          ITEM(26)='* Time >> 10h30         '
         elseif(IHFLAG.eq.1)then
-          ITEM(26)='* Time >> 0.4375  '
+          ITEM(26)='* Time >> 0.4375        '
+        elseif(IHFLAG.eq.2)then
+          ITEM(26)='* Time >> mm-dd 10:30:00'
         endif
 
 C << place ILFLAG here to define tabular labels >>
@@ -3306,13 +3308,16 @@ C Redraw graph (if applicable).
 
 C Toggle time format and day separators.
           IHFLAG=IHFLAG+1
-          if(IHFLAG.GT.1)IHFLAG=0
+          if(IHFLAG.GT.2)IHFLAG=0
           if(IHFLAG.eq.0)then
             call edisp(iuout,' ')
-            call edisp(iuout,'standard display time = 10h30 set ')
+            call edisp(iuout,'setting time = 10h30')
           elseif(IHFLAG.eq.1)then
             call edisp(iuout,' ')
-            call edisp(iuout,'3rd party graphing time=day fraction set')
+            call edisp(iuout,'setting time=day fraction 10.5000')
+          elseif(IHFLAG.eq.2)then
+            call edisp(iuout,' ')
+            call edisp(iuout,'setting time = yyyy-mm-dd hh:mm:ss')
           endif
           helptopic='export_hash_separator'
           call gethelptext(helpinsub,helptopic,nbhelp)
@@ -3532,10 +3537,11 @@ C Check at least one zone selected.
       endif
 
 C Reset local zone and surface selections, NSEL is total number selected.
+      loop=1
       do loop=1,MCON
         IZNSEL(loop)=0
         ISFSEL(loop)=0
-      end do
+      enddo
       NSEL=0
 
 C Copy data for multi zones, surfaces and nodes. In the

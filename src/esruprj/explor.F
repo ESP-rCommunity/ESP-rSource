@@ -252,7 +252,7 @@ C If tabular reserve first display column for period which is a
 C string or julian day fraction depending on the user selected format.
           CDAY=AINT(FLOAT(IP)/FLOAT(NTSPH*24))
           ITIME=IP-(INT(CDAY)*NTSPH*24)
-          RDOTY=itdbdoy+INT(CDAY)+(ITIME/(FLOAT(NTSPH)*24.))
+          RDOTY=real(itdbdoy)+CDAY+(real(ITIME)/(real(NTSPH)*24.))
           CALL ESTIME(NTSPH,1,ITIME,DESCRH,DESCRD,TIMER)
           IF(IFTIME.EQ.0)THEN
             WRITE(IPD(M),'(A1,1X,A5,1X,A54)') KEY,DESCRH,CSTR(1:54)
@@ -595,8 +595,8 @@ C Read the timestep data for the period selected.
           WRITE(outs,'(A,A5)')  ' Current time: ',DESCRD
           WRITE(TPROMP,'(A,A,A5)') TDFDES(IFOC,ISFLDS),' @ ',DESCRD
         ELSEIF(IFTIME.EQ.2)THEN
-          WRITE(outs,'(A,F8.4)')' Current time: ',RDOTY
-          WRITE(TPROMP,'(A,A,F8.4)') TDFDES(IFOC,ISFLDS),' @ ',RDOTY
+          WRITE(outs,'(A,F10.6)')' Current time: ',RDOTY
+          WRITE(TPROMP,'(A,A,F10.6)') TDFDES(IFOC,ISFLDS),' @ ',RDOTY
         ENDIF
         call edisp(iuout,outs)
         call edisp(iuout,TPROMP)

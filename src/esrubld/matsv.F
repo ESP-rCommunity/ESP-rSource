@@ -2066,7 +2066,10 @@ C Mixed injection -
       call edisp(itu,outs)
 
  9998 return
-   14 call edisp(iuout,' mzpst1: problem with flux assignments.')
+   14 write(outs,'(a,4i3)')
+     &  'mzpst1: problem with flux assignments zn icf ian1 ian2 ',
+     &  icomp,icf,ian1,ian2
+      call edisp(iuout,outs)
       call epwait
       stop
 

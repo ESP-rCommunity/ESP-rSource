@@ -1709,9 +1709,11 @@ C NN is overloaded - zero follows the calendar day types, otherwise
 C non-zero signals the control uses dates-of-validity.
       if(nn.eq.0)then
         call edisp(itru,' The following day types are defined:')
-        DO 30 ID=1,NBDAYTYPE
-          call edisp(itru,calentag(id))
- 30     CONTINUE
+        write(outs,'(20a)') (CALENTAG(idty),idty=1,NBDAYTYPE)
+        call edisp(itru,outs)
+C        DO 30 ID=1,NBDAYTYPE
+C          call edisp(itru,calentag(id))
+C 30     CONTINUE
       else
         write(outs,'(a,i2,a)') 'There have been ',nn,
      &    ' periods of validity defined during the year.'
