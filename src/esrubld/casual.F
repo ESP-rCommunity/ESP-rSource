@@ -239,6 +239,7 @@ C.....Named constants for timerows
       integer idayn  
       logical closer
       logical OK,DOK
+      logical bInStartup  ! logical function returning true if in startup period
 
 C Trace output ?
       traceok = .true.
@@ -727,20 +728,26 @@ C First find total number of simulation period timesteps including start-up peri
       else
 
 C Data in zone operations file. For each casual gain type set gain for current period.
-C Check if ipausecas is non-zero for this zone. If so pop-up a dialog for the user and
-C if they agree call eroper and MZCASG for this zone to refresh common CASGNS.
+C Check if ipausecas is non-zero for this zone and we are after the startup period.
+C If so pop-up a dialog for the user and if they agree call eroper and MZCASG for this 
+C zone to refresh common CASGNS. (Note this probably does not yet alter infiltration or
+C ventilation values in the zone).
         if(ipausecas(icomp).eq.1)then
-          CALL DAYCLK(IDYP,BTIMEF,iuout)
-          write(outs,'(3a)') 'For zone ',zname(icomp),
-     &      ' rescan operation file.'
-          DOK=.false.
-          CALL ASKOK(OUTS,'Confirm?',OK,DOK,nbhelp)
-          if(ok)then
-            iunit=ifil+1
-            iitrc=1
-            CALL EROPER(IITRC,ITU,IUNIT,icomp,IER)
-            CALL MZCASG(icomp)
-            write(6,*) 'called eroper & mzcasg for ',icomp,btimef
+          if (bInStartup())then
+            continue
+          else
+            CALL DAYCLK(IDYP,BTIMEF,iuout)
+            write(outs,'(4a)') 'For ',zname(icomp),
+     &        ' rescan operation file: ',LPROJ(icomp)(1:36)
+            DOK=.false.
+            CALL ASKOK(OUTS,'Confirm?',OK,DOK,nbhelp)
+            if(ok)then
+              iunit=ifil+1
+              iitrc=1
+              CALL EROPER(IITRC,ITU,IUNIT,icomp,IER)
+              CALL MZCASG(icomp)
+              write(6,*) 'called eroper & mzcasg for ',icomp,btimef
+            endif
           endif
         endif
         do 10 IGN=1,MGTY
