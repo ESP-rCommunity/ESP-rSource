@@ -152,6 +152,10 @@ C ICGCTL - pointer to controlled gain type.
       common/CASGNSE/ELQ(MCOM,MDTY,MGTY,MGPER,MPHAS),
      &               ELR(MCOM,MDTY,MGTY,MGPER,MPHAS)
 
+C Instruction to pause assessment to allow rescan of a zone operation file.
+      integer ipausecas   ! zero no pause non-zero pause 
+      common/pausecas/ipausecas(MCOM)
+
 C Variables used in trace.
       common/CASGNTRC/QP(MCOM,2,MC,MPHAS),RP(MCOM,2,MC,MPHAS)
 
@@ -234,6 +238,7 @@ C.....Named constants for timerows
       integer imonth_iter !looping variable for months 1 - 12
       integer idayn  
       logical closer
+      logical OK,DOK
 
 C Trace output ?
       traceok = .true.
@@ -347,7 +352,7 @@ C Update SHOCC-calculated equipment loads.
 C Use data from one of three sources.
 C NB tdf and time step file should have electrical data added to the 
 C definition.
-C << adapt to work with other gain type >>
+
       if(ICASUAL(icomp).ne.0)then
 
 C Data in temporal database (aggregate convective, radiant and
@@ -721,8 +726,23 @@ C First find total number of simulation period timesteps including start-up peri
         endif
       else
 
-C Data in zone operations file.
-C For each casual gain type set gain for current period.
+C Data in zone operations file. For each casual gain type set gain for current period.
+C Check if ipausecas is non-zero for this zone. If so pop-up a dialog for the user and
+C if they agree call eroper and MZCASG for this zone to refresh common CASGNS.
+        if(ipausecas(icomp).eq.1)then
+          CALL DAYCLK(IDYP,BTIMEF,iuout)
+          write(outs,'(3a)') 'For zone ',zname(icomp),
+     &      ' rescan operation file.'
+          DOK=.false.
+          CALL ASKOK(OUTS,'Confirm?',OK,DOK,nbhelp)
+          if(ok)then
+            iunit=ifil+1
+            iitrc=1
+            CALL EROPER(IITRC,ITU,IUNIT,icomp,IER)
+            CALL MZCASG(icomp)
+            write(6,*) 'called eroper & mzcasg for ',icomp,btimef
+          endif
+        endif
         do 10 IGN=1,MGTY
 
 C First initialize SHOCC commons to -1, i.e. assume no SHOCC-calulated loads

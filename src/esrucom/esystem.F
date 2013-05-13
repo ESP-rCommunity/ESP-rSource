@@ -267,6 +267,10 @@ C DBZN (15 char) name of the zone or control etc it is associated with.
 C DBSN (15 char) name of the surface within the associated zone.
        COMMON/TDFFLG0/DBTAG(MIT),DBTASK(MIT),DBZN(MIT),DBSN(MIT)
 
+C Instruction to pause assessment to allow rescan of a zone operation file.
+      integer ipausecas   ! zero no pause non-zero pause 
+      common/pausecas/ipausecas(MCOM)
+
 C Configuration control.
 C ctldoc (248 char) - Overall control notes. If equal to 'none'
 C                   then no control is imposed.
@@ -665,8 +669,9 @@ C Wind-generated electricity
       iWndSupp = 0
       LWndSupp =' '
 
-C Clear zone related files.
+C Clear zone related files. << patch for clearing ipausecas >>
       do 43 i=1,MCOM
+        ipausecas(i)=0  ! unmark pause to re-scan zone operation file
         continue
    43 continue
 
@@ -2382,6 +2387,11 @@ C Zone file names.
           IF(IER.NE.0) GOTO 1
         elseif(WORD(1:4).eq.'*opr')then
           LPROJ(icomp)=text(1:72)
+        elseif(WORD(1:9).eq.'*pausecas')then
+
+C << Patch for flag to pause assessment at each timestep to allow
+C << for a zone casual gain to be adapted. No impact if tag missing.
+          ipausecas(icomp)=1
         elseif(WORD(1:4).eq.'*geo')then
           LGEOM(icomp)=text(1:72)
         elseif(WORD(1:4).eq.'*con')then
