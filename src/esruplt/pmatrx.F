@@ -186,7 +186,7 @@ C False.
       INTEGER     ZZ(4)
       CHARACTER*5 A(MPNODE,MPNODE)
       character*68 dumstr
-      character outs*124, argstr*12
+      character outs*124, argstr*12, domstr*16, catstr*16
 
 C Suggested improvement:
 C Initialize PP transport delay flag to FALSE. If the subroutine
@@ -216,7 +216,9 @@ C First zeroize ADATA
       argstr=' '
       IF(ICDBF.GT.0)THEN
         argstr='parameters'
-        CALL CDBGetItemData('-','-',UCdbNam(IPCOMP),argstr)
+        domstr='-'
+        catstr='-'
+        CALL CDBGetItemData(domstr,catstr,UCdbNam(IPCOMP),argstr)
         IF(NPI(IPCOMP).GT.0)THEN
           argstr='light'
           CALL CDB2Plant(IPCOMP,argstr)

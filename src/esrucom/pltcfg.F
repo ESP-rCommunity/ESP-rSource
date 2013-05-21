@@ -363,7 +363,7 @@ C Get all of the components parameters
 c          write(*,*) 'translating ',UCdbNam(IPCOMP)            
           CALL CDB2Plant(IPCOMP,argstr)
           NPCDAT(iPComp,8)=s_NNODE
-          ICODE=s_ICODE
+c          ICODE=s_ICODE
           NNODE=s_NNODE
           NMATX=s_NMATX
           NMISC=s_MISCD
@@ -721,7 +721,7 @@ C  in the database. In this case, reading file can be avoided here.
             ELSE
 
 C Get all of the components parameters
-              IPC=CNTDAT(ICONT,1)
+              IPC=NINT(CNTDAT(ICONT,1))
               argstr='parameters'
               domain_s='-'; category_s='-'
               CALL CDBGetItemData(domain_s,category_s,UCdbNam(IPC),

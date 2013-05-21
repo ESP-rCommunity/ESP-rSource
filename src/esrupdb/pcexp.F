@@ -26,7 +26,7 @@ C Formatted output of a complete plant component entry.  The channel
 C used for output is passed as an argument.
 
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
-      common/OUTIN/IUOUT,IUIN
+
       common/FILEP/IFIL
 
       common/PCDATA/ZGTYPE, ZCDATE, ZCDESC
@@ -46,16 +46,6 @@ C Mass flow components data
 
 C     common/translate_id/xlate_id_tag
 
-C TRNSYS types data
-      common/trnsys/ntypes,ittype(MXTSYS),ntadat(MXTSYS),ntbdat(MXTSYS),
-     &              ntcdat(MXTSYS),ntapot(MXTSYS),ntmisc(MXTSYS),
-     &              tdtdsc(MXTSYS,maxmsc),tdatms(MXTSYS,maxmsc),
-     &              trange(MXTSYS,maxmsc,2),tadods(MXTSYS,mxaout),
-     &              ntaotp(MXTSYS,mxaout),ittpcm(MXTSYS,maxcon),
-     &              itsdcm(MXTSYS,maxcon),itsdcn(MXTSYS,maxcon),
-     &              tsupcm(MXTSYS,maxcon,maxflw),
-     &              tmfsds(MXTSYS,maxcon,maxflw),
-     &              tltpcm(MXTSYS,maxcon),itsdif(MXTSYS,maxcon)
 
       CHARACTER*40 ZGTYPE
       CHARACTER*16 ZCDATE
@@ -71,8 +61,8 @@ C TRNSYS types data
         if(ichan.eq.(ifil+1)) mmod=-1
 
 C Note xlate_id_tag has not initial value
-        xlate_id_tag=xlate_id_tag+1
-        xlate_id_tag2=xlate_id_tag+1000
+c        xlate_id_tag=xlate_id_tag+1
+        xlate_id_tag2=icode+1000
 
 C Output header
         call edisp(ichan,'#')
