@@ -1039,8 +1039,8 @@ C Solar radiation axis, include dashed line and symbol.
           endif
           call wstxpt(igr,igt-22,'S.Rad')
           call wstxpt(igr,igt-10,'W/m^2')
-          iiw1=igt-40; iis2=igr+35; iiw3=igt-40;iiw4=5
-          call edash(iigr,iiw1,iiw2,iiw3,iiw4)
+          iigr=igr; iiw1=igt-40; iis2=igr+35; iiw3=igt-40;iiw4=5
+          call edash(iigr,iiw1,iis2,iiw3,iiw4)
           call esymbol(igr+22,igt-40,9,0)
           if(IFS.ne.IMFS)call winfnt(IMFS)
           if(colok)then
