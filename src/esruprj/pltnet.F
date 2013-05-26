@@ -483,7 +483,7 @@ C **CDB affected
 #include "epara.h"
 #include "plant.h"
 #include "gencompDB.h"
-#include "gencompDB_common.h"
+c#include "gencompDB_common.h"
 
       COMMON/C9/NPCOMP,NCI(MPCOM),CDATA(MPCOM,MMISCD)
       COMMON/C9plus/UCdbNam(MPCOM),CdbCat(MPCOM),CDBDesc(MPCOM)
@@ -1290,7 +1290,7 @@ C Common for new format component database
       integer lndbp   ! for length of standard database path
       character lltmp*144  ! to re-create plant database file name with path
       CHARACTER scantype*8
-      character domain_s*16,category_s*16
+c      character domain_s*16,category_s*16
 
       integer iglib   ! if 1 then X11, if 2 then GTK, if 3 then text only.
       integer icdbf   !0 if old format, 1 if new format.
@@ -1409,7 +1409,8 @@ C Old file, so check header.
          IF (PZDESC .NE. ' PLANT COMPONENT DATABASE') then
 C Attempt to open the file as a new format cdb (ASCII) file. 
             IERcdb=0
-            CALL CDBScanDataBase(ipcdb,lltmp,'open',IERcdb)
+            scantype='open'
+            CALL CDBScanDataBase(ipcdb,lltmp,scantype,IERcdb)
             IF(IERcdb.gt.0) THEN
               ok=.false.
               dok=.true.

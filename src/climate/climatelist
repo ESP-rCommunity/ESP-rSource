@@ -195,6 +195,47 @@ Winter season is Mon-30-Oct - Sun-31-Dec
 Typical winter week begins Mon-20-Nov
 *help_end
 *item
+*name	Aswan EGY 624140
+*aide	EGY Aswan was sourced from US DoE site number 624140
+*dbfl	/usr/esru/esp-r/climate/EGY_Aswan
+*avail	ONLINE
+*winter_s  1  1 22  3 21 12 31 12 # seasons Wed-01-Jan--Sat-22-Mar & Sun-21-Dec--Wed-31-Dec
+*spring_s 23  3 21  6 21  9 20 12 # seasons Sun-23-Mar--Sat-21-Jun & Sun-21-Sep--Sat-20-Dec
+*summer_s 22  6 20  9 # summer season Sun-22-Jun--Sat-20-Sep
+*winter_t  5  3 11  3 21 12 27 12 # typical Wed-05-Mar--Tue-11-Mar & Sun-21-Dec--Sat-27-Dec
+*spring_t 20  4 26  4 19 10 25 10 # typical Sun-20-Apr--Sat-26-Apr & Sun-19-Oct--Sat-25-Oct
+*summer_t  3  8  9  8 # typical summer Sun-03-Aug--Sat-09-Aug
+*help_start
+Weather is Aswan Aswan EGY 624140
+ Location: 23.97N  2.78E : 1986
+ Month    Minimum  Time          Maximum  Time         Mean
+ Jan      3.8 @ 8h00 Tue-14       29.5 @16h00 Thu-02    15.9
+ Feb      8.3 @ 7h00 Fri-21       28.3 @16h00 Tue-18    16.1
+ Mar      3.0 @ 2h00 Fri-07       37.0 @16h00 Mon-31    22.1
+ Apr     12.1 @ 9h00 Fri-04       42.8 @14h00 Fri-18    27.6
+ May     17.8 @ 6h00 Mon-12       42.2 @14h00 Tue-27    31.1
+ Jun     21.2 @ 6h00 Fri-06       45.2 @17h00 Mon-30    33.4
+ Jul     25.2 @ 6h00 Sat-12       47.5 @16h00 Wed-02    34.8
+ Aug     24.0 @ 7h00 Thu-28       45.0 @16h00 Sat-16    34.1
+ Sep     23.0 @ 6h00 Thu-18       42.8 @14h00 Mon-08    32.0
+ Oct     16.9 @ 7h00 Fri-24       39.0 @16h00 Wed-15    28.3
+ Nov      4.0 @ 8h00 Sat-29       34.0 @18h00 Sat-01    21.6
+ Dec      3.0 @ 3h00 Sat-27       28.5 @16h00 Wed-24    17.0
+ Annual   3.0 @ 2h00 Fri-07-Mar   47.5 @16h00 Wed-02-Jul    26.2
+Seasons based on traditional fixed dates based on solar elevation.
+ ---Seasons & typical periods---
+Winter season is Wed-01-Jan - Sat-22-Mar
+Typical winter week begins Wed-05-Mar
+Spring season is Sun-23-Mar - Sat-21-Jun
+Typical spring week begins Sun-20-Apr
+Summer season is Sun-22-Jun - Sat-20-Sep
+Typical summer week begins Sun-03-Aug
+Autumn season is Sun-21-Sep - Sat-20-Dec
+Typical autumn week begins Sun-19-Oct
+Winter season is Sun-21-Dec - Wed-31-Dec
+Typical winter week begins Sun-21-Dec
+*help_end
+*item
 *name	Baltimore MD USA iwec 724060
 *aide	Baltimore MD USA iwec 724060 was sourced from DoE web site Sep 2005
 *dbfl	/usr/esru/esp-r/climate/USA_MD_Baltimore_iwec
@@ -547,6 +588,46 @@ Autumn season is Mon 20 Aug - Sun 28 Oct
 Typical autumn week begins Mon  3 Sep
 Winter season is Mon 29 Oct - Mon 31 Dec
 Typical winter week begins Mon 19 Nov
+*help_end
+*item
+*name	CAIRO - EGY
+*aide	CAIRO - EGY was sourced from US DoE
+*dbfl	/usr/esru/esp-r/climate/EGY_Cairo
+*avail	ONLINE
+*winter_s  1  1 20  3 21 12 31 12 # seasons Fri-01-Jan--Sun-20-Mar & Wed-21-Dec--Sat-31-Dec
+*spring_s 21  3 20  6 23  9 20 12 # seasons Mon-21-Mar--Mon-20-Jun & Fri-23-Sep--Tue-20-Dec
+*summer_s 21  6 22  9 # summer season Tue-21-Jun--Thu-22-Sep
+*winter_t  4  3 10  3 21 12 27 12 # typical Fri-04-Mar--Thu-10-Mar & Wed-21-Dec--Tue-27-Dec
+*spring_t 25  4  1  5 25 11  1 12 # typical Mon-25-Apr--Sun-01-May & Fri-25-Nov--Thu-01-Dec
+*summer_t 12  7 18  7 # typical summer Tue-12-Jul--Mon-18-Jul
+*help_start
+Weather is CAIRO - EGY
+ Location: 30.13N  1.40E : 1988
+ Month    Minimum  Time          Maximum  Time         Mean
+ Jan      7.0 @ 4h00 Wed-20       23.0 @15h00 Sun-31    14.0
+ Feb      8.0 @ 6h00 Sat-20       26.0 @15h00 Tue-16    14.5
+ Mar      9.0 @ 5h00 Tue-08       28.9 @14h00 Sat-19    16.6
+ Apr     11.0 @ 5h00 Sun-03       39.4 @14h00 Wed-27    21.8
+ May     13.0 @ 6h00 Mon-02       41.3 @14h00 Fri-27    24.7
+ Jun     17.7 @ 6h00 Wed-01       43.0 @16h00 Tue-07    28.0
+ Jul     21.0 @ 9h00 Sat-23       36.1 @14h00 Thu-07    28.2
+ Aug     21.0 @ 5h00 Wed-10       38.0 @12h00 Sat-20    27.9
+ Sep     18.4 @ 5h00 Sat-24       37.0 @13h00 Sat-17    26.5
+ Oct     16.0 @ 6h00 Fri-21       34.2 @14h00 Fri-14    23.8
+ Nov      8.5 @ 5h00 Thu-17       28.2 @14h00 Mon-28    19.0
+ Dec      8.8 @ 5h00 Sat-24       23.0 @15h00 Sun-11    15.3
+ Annual   7.0 @ 4h00 Wed-20-Jan   43.0 @16h00 Tue-07-Jun    21.7
+ ---Seasons & typical periods---
+Winter season is Fri-01-Jan - Sun-20-Mar
+Typical winter week begins Fri-04-Mar
+Spring season is Mon-21-Mar - Mon-20-Jun
+Typical spring week begins Mon-25-Apr
+Summer season is Tue-21-Jun - Thu-22-Sep
+Typical summer week begins Tue-12-Jul
+Autumn season is Fri-23-Sep - Tue-20-Dec
+Typical autumn week begins Fri-25-Nov
+Winter season is Wed-21-Dec - Sat-31-Dec
+Typical winter week begins Wed-21-Dec
 *help_end
 *item
 *name	Calgary Intl AB CAN

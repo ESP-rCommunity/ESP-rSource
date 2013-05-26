@@ -117,6 +117,7 @@ C Name of current application
 
       integer iglib   ! if 1 then X11, if 2 then GTK, if 3 then text only.
       integer NITMS,INO,INOt,INO1,INO2  ! max items and current menu item
+      integer itplots
 
 C For help messages
       character helpinsub*24 ! subroutine name
@@ -760,7 +761,8 @@ C For stand-alone: only one file is written (current timestep)!
 
 C Write TecPlot file for each timestep.
 C For stand-alone: only one file is written (current timestep)!
-          call TECPLOTEND(1)
+          itplots=1
+          call TECPLOTEND(itplots)
         ELSEIF(INO1.EQ.6)THEN
 
 C Visualise flow.

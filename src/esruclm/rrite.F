@@ -18,6 +18,10 @@ C License along with ESP-r. If not, write to the Free
 C Software Foundation, Inc., 59 Temple Place, Suite 330,
 C Boston, MA 02111-1307 USA.
 
+C Subroutines in this file:
+C  RRITE: allows one day of hourly values to be edited
+C  SITEDIT: edits site related data in a weather file.
+
 C ************ RRITE
 C 'RRITE' allows one day of hourly values (of the 6 weather
 C parameters to be edtied by the user and merged into the
@@ -267,8 +271,8 @@ C Determine the weather data location.
       T30=CLMLOC
       helptopic='what_is_descr'
       call gethelptext(helpinsub,helptopic,nbhelp)
-      CALL EASKS(T30,' ',' Weather site name ? ',
-     &    30,'North_Pole','weather site. ',IER,nbhelp)
+      CALL EASKS(T30,'Weather site name (up to 30 char)','Confirm:',
+     &  30,'North_Pole','weather site. ',IER,nbhelp)
       if(T30(1:2).ne.'  ') CLMLOC=T30
       IREC=367
       WRITE(IFIL,REC=IREC,IOSTAT=ISTAT,ERR=1000)CLMLOC
