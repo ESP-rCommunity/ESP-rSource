@@ -2155,7 +2155,8 @@ C Null controller.
           cm(1)=0.0
         elseif(IBCLAW(II,JJ,KK).eq.19)then
 
-C Ideal multi-sensor ON/OFF heating/cooling controller.
+C Ideal multi-sensor ON/OFF heating/cooling controller. The logic of this
+C controler is implemented in bcfunc.F in subroutine BCL19.
           helptopic='sys_bctl_multi_sensor'
           call gethelptext(helpinsub,helptopic,nbhelp)
  243      WRITE(HOLD,'(4f8.0)')cm(2),cm(3),cm(4),cm(5)
@@ -2201,7 +2202,9 @@ C If no cooling capacity then set cooling set point to 100C.
      &     ' No. Aux Sen')
             write(outs,'(1F9.2)')cm(8)
             call edisp(iuout,outs)
-            
+
+C << check what kinds of sensors can actually be used here - probably should
+C << only select which zone and set the other values to zero.
             I8=INT(cm(8))
             DO 140 L=1,I8              
               ndx=8+6*(L-1)
@@ -2236,6 +2239,9 @@ C Auxiliary sensor details,
 
 C Collect up the current information and generate a descriptive
 C string to remind the user.
+
+C << again check if we really could use anything other than another
+C << air node to sense.
             icsn(1)=nint(cm(ndx))
             icsn(2)=nint(cm(ndx+1))
             icsn(3)=nint(cm(ndx+2))
@@ -2268,6 +2274,9 @@ C string to remind the user.
             CALL EASKR(cm(ndx+5),' ',' Aux sensor cooling set-point ?',
      &        0.,'F',0.,'-',0.,' Aux sensor cooling set-point',
      &        IER,nbhelp)
+
+C << probably a good place to re-iterate what the user said... >>
+
 141       continue
  
         elseif(IBCLAW(II,JJ,KK).eq.20)then

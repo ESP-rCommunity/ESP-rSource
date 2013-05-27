@@ -241,8 +241,8 @@ C Conflation options.
      &    'thermal only','adaptive thermal','air-flow',
      &    'cancel','  ','  ',IWO,nbhelp)
         if(IWO.le.2)IFCFD(izone)=IWO-1
-	if(IWO.eq.3)IFCFD(izone)=4
-	if(IWO.eq.4)IFCFD(izone)=5
+        if(IWO.eq.3)IFCFD(izone)=4
+        if(IWO.eq.4)IFCFD(izone)=5
       ELSEIF(INO.EQ.5)THEN 
 
 C Geometry and Gridding
@@ -1529,7 +1529,8 @@ C #include "geometry.h"
 
       character ITEM(MNVLS+8)*40
       character KEY*1,t24*24
-      character VOLNAME*12,VCsurf*12,t12*12,NAMES(MNVLS)*12
+      character VOLNAME*12,VCsurf*12,t12*12,d12*12
+      character NAMES(MNVLS)*12
       logical origin,xgrid,ygrid,zgrid,zegrid,ortho
       logical MODIFY,MODLEN,MODBND
 
@@ -1685,6 +1686,7 @@ C to be refreshed.
           CALL USRMSG(' Define origin of CFD domain ',
      &         ' and grid axes first ','W')
         endif
+
       elseif (INO.eq.(NITMS-3)) then
 
 C Add a new/ delete a boundary definition.
@@ -1706,8 +1708,15 @@ C Set up some defaults and call relavent editing routine.
               JVCELLS(NVOL(ICFD),ICFD,I)=0
               KVCELLS(NVOL(ICFD),ICFD,I)=0
  20         continue
-            write (t12,'(a,i3)') 'Open',NVOL(ICFD)
-            call st2file(t12,VOLNAME(NVOL(ICFD),ICFD))
+            write (t12,'(a,i3.3)') 'Open',NVOL(ICFD)
+            d12='  '
+            call EASKS(t12,'Opening name?','  ',12,d12,'open name',
+     &        IER,nbhelp)
+            if (IER.eq.0) then
+              call st2name(t12,d12)
+              VOLNAME(NVOL(ICFD),ICFD)=d12
+            endif
+C            call st2file(t12,VOLNAME(NVOL(ICFD),ICFD))
             VCsurf(NVOL(ICFD),ICFD)='  '
             VOLTemp(NVOL(ICFD),ICFD)=20.
             call EDAIRO(NVOL(ICFD),IER)
@@ -1720,8 +1729,15 @@ C Set up some defaults and call relavent editing routine.
               JVCELLS(NVOL(ICFD),ICFD,I)=0
               KVCELLS(NVOL(ICFD),ICFD,I)=0
  21         continue
-            write (t12,'(a,i3)') 'Wall',NVOL(ICFD)
-            call st2file(t12,VOLNAME(NVOL(ICFD),ICFD))
+            write (t12,'(a,i3.3)') 'Wall',NVOL(ICFD)
+            d12='  '
+            call EASKS(t12,'Solid surface name?','  ',12,d12,
+     &        'solid name',IER,nbhelp)
+            if (IER.eq.0) then
+              call st2name(t12,d12)
+              VOLNAME(NVOL(ICFD),ICFD)=d12
+            endif
+C            call st2file(t12,VOLNAME(NVOL(ICFD),ICFD))
             VCsurf(NVOL(ICFD),ICFD)='  '
             call EDSLDB(IZONE,NVOL(ICFD),IER)
           elseif (INB.eq.3) then
@@ -1733,8 +1749,15 @@ C Set up some defaults and call relavent editing routine.
               JVCELLS(NVOL(ICFD),ICFD,I)=0
               KVCELLS(NVOL(ICFD),ICFD,I)=0
  22         continue
-            write (t12,'(a,i3)') 'Source',NVOL(ICFD)
-            call st2file(t12,VOLNAME(NVOL(ICFD),ICFD))
+            write (t12,'(a,i3.3)') 'Source',NVOL(ICFD)
+            d12='  '
+            call EASKS(t12,'Source name?','  ',12,d12,'source name',
+     &        IER,nbhelp)
+            if (IER.eq.0) then
+              call st2name(t12,d12)
+              VOLNAME(NVOL(ICFD),ICFD)=d12
+            endif
+C            call st2file(t12,VOLNAME(NVOL(ICFD),ICFD))
             VCsurf(NVOL(ICFD),ICFD)='  '
             call EDSRC(NVOL(ICFD),IER)
           elseif (INB.eq.4) then
@@ -1746,8 +1769,15 @@ C Set up some defaults and call relavent editing routine.
               JVCELLS(NVOL(ICFD),ICFD,I)=0
               KVCELLS(NVOL(ICFD),ICFD,I)=0
  23         continue
-            write (t12,'(a,i3)') 'Block',NVOL(ICFD)
-            call st2file(t12,VOLNAME(NVOL(ICFD),ICFD))
+            write (t12,'(a,i3.3)') 'Block',NVOL(ICFD)
+            d12='  '
+            call EASKS(t12,'Blockage name?','  ',12,d12,'block name',
+     &        IER,nbhelp)
+            if (IER.eq.0) then
+              call st2name(t12,d12)
+              VOLNAME(NVOL(ICFD),ICFD)=d12
+            endif
+C            call st2file(t12,VOLNAME(NVOL(ICFD),ICFD))
             VCsurf(NVOL(ICFD),ICFD)='  '
             call EDBLK(NVOL(ICFD),IER)
           endif
@@ -2134,7 +2164,7 @@ C IER=0 indicates no error.
      &          VOLArea(MNVLS,MNZ),VOLPres(MNVLS,MNZ),
      &          VOLPol(MCTM,MNVLS,MNZ)
 
-      character ITMSS(12)*50
+      character ITMSS(12)*40
       character face*6,ltmp*16,t12*12,d12*12
       character VOLNAME*12, VCsurf*12
       CHARACTER t20*20
@@ -2230,7 +2260,37 @@ C Create a menu showing definitions for different conflation schemes.
       elseif (IVTYPE(ISB,ICFD).eq.4) then
         write(ITMSS(8),'(a,a)')'e Conflated to surface: ',
      &                                              VCsurf(ISB,ICFD)
-        write(ITMSS(9),'(a,i4)')'f Handshaking: ',IVConfl(ISB,ICFD)
+        ivcfl=IVConfl(ISB,ICFD)
+        if(ivcfl.eq.0)then
+          write(ITMSS(9),'(a)')'f Handshaking: not yet defined'
+        elseif(ivcfl.eq.1)then
+          write(ITMSS(9),'(a)')'f Handshaking: One-way log-law CFD'
+        elseif(ivcfl.eq.3)then
+          write(ITMSS(9),'(a)')'f Handshaking: One-way Yuan    CFD'
+        elseif(ivcfl.eq.4)then
+          write(ITMSS(9),'(a)')'f Handshaking: One-way Yuan   BSim'
+        elseif(ivcfl.eq.5)then
+          write(ITMSS(9),'(a)')'f Handshaking: One-way Yuan CFD avg'
+        elseif(ivcfl.eq.6)then
+          write(ITMSS(9),'(a)')'f Handshaking: One-way log-law BSim'
+        elseif(ivcfl.eq.7)then
+          write(ITMSS(9),'(a)')'f Handshaking: One-way log-law CFD avg'
+        elseif(ivcfl.eq.8)then
+          write(ITMSS(9),'(a)')'f Handshaking: One-way log-law CFD loc'
+        elseif(ivcfl.eq.9)then
+          write(ITMSS(9),'(a)')'f Handshaking: Two-way log-law CFD'
+        elseif(ivcfl.eq.11)then
+          write(ITMSS(9),'(a)')'f Handshaking: Two-way Yuan CFD'
+        elseif(ivcfl.eq.12)then
+          write(ITMSS(9),'(a)')'f Handshaking: Two-way Yuan CFD loc'
+        elseif(ivcfl.eq.13)then
+          write(ITMSS(9),'(a)')'f Handshaking: Two-way log-law CFD'
+        elseif(ivcfl.eq.14)then
+          write(ITMSS(9),'(a)')'f Handshaking: Two-way log-law local'
+        else
+          write(ITMSS(9),'(a,i4)')'f Handshaking: UNKNOWN type',ivcfl
+        endif
+C        write(ITMSS(9),'(a,i4)')'f Handshaking: ',IVConfl(ISB,ICFD)
       endif
       ITMSS(10) =' -----------------------------'
       ITMSS(11)='? Help'
@@ -3030,7 +3090,7 @@ C Check if new blockage.
       endif
 
 
-C Generate text for location index
+C Generate text for location index. (not yet used in the interface)
  5    FACE='  '
       if (IVOLF(ISB,ICFD).eq.1) then
         FACE='West'
@@ -3162,31 +3222,31 @@ C Return if not k-e or MIT.
         IER=1
         return
       endif
-      ITMSS(1)= ' Direction   Wall fns  HTCs  Qsurf  Tref'
+      ITMSS(1)= ' Direction  Wall  fns  HTCs  Qsurf           Tref'
       if (ITURB(ICFD).eq.1) then
-        ITMSS(2)= 'a One-way log-law  n/a   CFD  n/a'
+        ITMSS(2)= 'a One-way log-law n/a  CFD   n/a'
         IHSID(2)=1
-        ITMSS(3)= 'b One-way Yuan  n/a  CFD  n/a'
+        ITMSS(3)= 'b One-way Yuan    n/a  CFD   n/a'
         IHSID(3)=3
-        ITMSS(4)= 'c One-way Yuan  n/a  A*HC*(Tsurf-Tref)  BSim '
+        ITMSS(4)= 'c One-way Yuan    n/a  A*HC*(Tsurf-Tref) BSim '
         IHSID(4)=4
-        ITMSS(5)= 'd One-way Yuan  n/a  A*HC*(Tsurf-Tref)  CFD average'
+        ITMSS(5)= 'd One-way Yuan    n/a A*HC*(Tsurf-Tref) CFD average'
         IHSID(5)=5
-        ITMSS(6)= 'e One-way log-law  n/a  A*HC*(Tsurf-Tref)  BSim'
+        ITMSS(6)= 'e One-way log-law n/a A*HC*(Tsurf-Tref) BSim'
         IHSID(6)=6
-        ITMSS(7)= 'f One-way log-law n/a  A*HC*(Tsurf-Tref) CFD average'
+        ITMSS(7)= 'f One-way log-law n/a A*HC*(Tsurf-Tref) CFD average'
         IHSID(7)=7
-        ITMSS(8)= 'g One-way log-law local  A*HC*(Tsurf-Tref) CFD local'
+        ITMSS(8)= 'g One-way log-law local A*HC*(Tsurf-Tref) CFD local'
         IHSID(8)=8
-        ITMSS(9)= 'h Two-way log-law   n/a CFD n/a'
+        ITMSS(9)= 'h Two-way log-law n/a  CFD    n/a'
         IHSID(9)=9
-        ITMSS(10)='i Two-way Yuan   n/a CFD n/a'
+        ITMSS(10)='i Two-way Yuan    n/a  CFD    n/a'
         IHSID(10)=11
-        ITMSS(11)='j Two-way Yuan   local  A*HC*(Tsurf-Tref) CFD local'
+        ITMSS(11)='j Two-way Yuan   local A*HC*(Tsurf-Tref) CFD local'
         IHSID(11)=12
-        ITMSS(12)='k Two-way log-law  n/a CFD n/a'
+        ITMSS(12)='k Two-way log-law n/a  CFD    n/a'
         IHSID(12)=13
-        ITMSS(12)='l Two-way log-law  local A*HC*(Tsurf-Tp) local'
+        ITMSS(12)='l Two-way log-law local A*HC*(Tsurf-Tp)      local'
         IHSID(12)=14
         NITMS=12
       else

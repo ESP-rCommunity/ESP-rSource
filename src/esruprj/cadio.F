@@ -1537,7 +1537,7 @@ C The string buffer doit and option used for tar command.
       character curdir*84
       character LAPROB*72
       CHARACTER*72 LGDCVS,LGDCNC,LGDNDC,LGDNDD,LGDTAQ,LGRD1D,LNLTHP
-      character tp*32,tr*32
+      character tp*42,tr*32
       character ctldoc*248,LCTLF*72,LGrdSt*72
       character GTGEOM*72,lipvdatf*72
       character fs*1
@@ -1561,6 +1561,7 @@ C      character WORDS*32
 
       INTEGER :: lc,j,iw,iuf,iunit,ito,istat,ipid,img,ifold,i,ier
       INTEGER :: iaccess,icerr,ios,lcd,llf,lr,ltp,ltr
+      integer iwds,lniwd,lniwd1
 
       iunit=ifil+1
       patdot=.false.
@@ -1683,12 +1684,15 @@ C the root name check for rootname/cfg folders.
         endif
       elseif(path(1:2).eq.'./')then
         call GETTOKENS(curdir,IW,WORDS)
-        if(IW.gt.0)then
+        iwds=iw   ! remember how many words
+        if(iwds.gt.0)then
 
 C Find out how many characters are in the two folders above where we
 C are now so this can be subtracted from curdir for testing.
-          write(LF,'(3a)') WORDS(IW-1)(1:lnblnk(WORDS(IW-1))),
-     &            fs,WORDS(IW)(1:lnblnk(WORDS(IW)))
+          lniwd1=lnblnk(WORDS(iwds-1))
+          lniwd=lnblnk(WORDS(iwds))
+          write(LF,'(3a)') WORDS(iwds-1)(1:lniwd1),
+     &            fs,WORDS(iwds)(1:lniwd)
           llf=lnblnk(LF)
           write(LF,'(a)') curdir(1:lcd-llf)
 
@@ -1701,10 +1705,12 @@ C Debug.
           ifold=-1
           call ckaccess(ifold,iaccess,icerr,LF)
           if(ifold.eq.1.and.icerr.eq.0)then
-            write(tp,'(3a)') WORDS(IW-1)(1:lnblnk(WORDS(IW-1))),
-     &            fs,WORDS(IW)(1:lnblnk(WORDS(IW)))
+            lniwd1=lnblnk(WORDS(iwds-1))
+            lniwd=lnblnk(WORDS(iwds))
+            write(tp,'(3a)') WORDS(iwds-1)(1:lniwd1),
+     &            fs,WORDS(iwds)(1:lniwd)
             ltp=lnblnk(tp)
-            write(tr,'(a)') WORDS(IW-1)(1:lnblnk(WORDS(IW-1)))
+            write(tr,'(a)') WORDS(iwds-1)(1:lniwd1)
             ltr=lnblnk(tr)
             patdot=.true.
             goto 98
@@ -1724,11 +1730,13 @@ C cfg is appended to the curdir and this is a true path. If so then
 C will do a cd ../ before the tar command and so cfgroot can be included
 C in the tp name.
         call GETTOKENS(curdir,IW,WORDS)
-        if(IW.gt.0)then
+        iwds=iw   ! remember how many words
+        if(iwds.gt.0)then
 
 C Find out how many characters are in the folder above where we
 C are now so this can be subtracted from curdir for testing.
-          write(LF,'(a)') WORDS(IW)(1:lnblnk(WORDS(IW)))
+          lniwd=lnblnk(WORDS(iwds))
+          write(LF,'(a)') WORDS(iwds)(1:lniwd)
           llf=lnblnk(LF)
           write(LF,'(a)') curdir(1:lcd-llf)
 
@@ -1742,9 +1750,9 @@ C Debug.
           call ckaccess(ifold,iaccess,icerr,LF)
           if(ifold.eq.1.and.icerr.eq.0)then
             patcfg=.true.
-            write(tp,'(3a)') WORDS(IW)(1:lnblnk(WORDS(IW))),fs,'cfg'
+            write(tp,'(3a)') WORDS(iwds)(1:lniwd),fs,'cfg'
             ltp=lnblnk(tp)
-            write(tr,'(a)') WORDS(IW)(1:lnblnk(WORDS(IW)))
+            write(tr,'(a)') WORDS(iwds)(1:lniwd)
             ltr=lnblnk(tr)
             goto 98
           else
@@ -1761,13 +1769,14 @@ C is one level above the cfg folder.
 C There is no such folder so check the full path to find out which folder
 C is one level above the cfg folder.
         call GETTOKENS(path,IW,WORDS)
-        if(IW.gt.0)then
-          do 95 ito=1,IW
+        iwds=iw   ! remember how many words
+        if(iwds.gt.0)then
+          do 95 ito=1,iwds
+            lniwd=lnblnk(WORDS(ito-1))
             if(WORDS(ito)(1:3).eq.'cfg'.and.ito.gt.1)then
-              write(tp,'(3a)') WORDS(ito-1)(1:lnblnk(WORDS(ito-1))),
-     &          fs,'cfg'
+              write(tp,'(3a)') WORDS(ito-1)(1:lniwd),fs,'cfg'
               ltp=lnblnk(tp)
-              write(tr,'(a)') WORDS(ito-1)(1:lnblnk(WORDS(ito-1)))
+              write(tr,'(a)') WORDS(ito-1)(1:lniwd)
               ltr=lnblnk(tr)
             endif
   95      continue
@@ -1823,6 +1832,9 @@ C local (if ipath* value is 1).
           call wtarentry(iunit,pathome,tr,ltr,tp,ltp,LFL)
         endif
   41  continue
+
+C Write model contents file if it exists.
+C << to be done >>
 
 C Write control file if it exists.
       if(LCTLF(1:4).eq.'UNKN'.or.LCTLF(1:2).eq.'  ')then
