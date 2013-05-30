@@ -1638,6 +1638,7 @@ C Parameters
 
       integer ncomp,ncon
       common/c1/ncomp,ncon
+      integer icascf
       common/cctl/icascf(mcom)
 
       common/calena/calename,calentag(MDTY),calendayname(MDTY)

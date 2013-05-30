@@ -100,6 +100,7 @@ C *********************************************************************
 
       common/simtim/ihrp,ihrf,idyp,idyf,idwp,idwf,nsinc,its
       common/pers/isd1,ism1,isd2,ism2,isds,isdf,ntstep
+      integer icascf
       common/cctl/icascf(mcom)
       COMMON/GRND110/GRNDSP
 
@@ -378,6 +379,7 @@ C from the corresponding surface equation.
       common/coeadj/a1,a2,a3,a4
       common/conadj/wa(ms,mn,6)
 
+      integer icascf
       common/cctl/icascf(mcom)
 
       COMMON/GR1D01/NNDS,NNDZ(MCOM),NNDC(MCOM,MS),NNDL(MCOM,MS,ME)
@@ -504,6 +506,7 @@ C  equation and the control node coefficient introduced if appropriate.
       common/cadj2/b1,b2,b3,b4
       common/conadj/wa(ms,mn,6)
 
+      integer icascf
       common/cctl/icascf(mcom)
 
       COMMON/GR1D01/NNDS,NNDZ(MCOM),NNDC(MCOM,MS),NNDL(MCOM,MS,ME)
@@ -759,6 +762,7 @@ C                            is zero.
       common/prec9/nconst(mcom),nelts(mcom,ms),ngaps(mcom,ms),
      &             npgap(mcom,ms,mgp)
 
+      integer icascf
       common/cctl/icascf(mcom)
 
       common/simtim/ihrp,ihrf,idyp,idyf,idwp,idwf,nsinc,its
@@ -874,6 +878,7 @@ C                           and coefficient 4 is introduced.
       common/outin/iuout,iuin
 
       common/tc/itc,icnt
+      integer icascf
       common/cctl/icascf(mcom)
 
       common/prec9/nconst(mcom),nelts(mcom,ms),ngaps(mcom,ms),
@@ -1258,6 +1263,7 @@ C substitution completed.
       common/prec9/nconst(mcom),nelts(mcom,ms),ngaps(mcom,ms),
      &             npgap(mcom,ms,mgp)
 
+      integer icascf
       common/cctl/icascf(mcom)
 
       character outs*144
@@ -1469,6 +1475,7 @@ C N5 relates to the control term
       common/prec9/nconst(mcom),nelts(mcom,ms),ngaps(mcom,ms),
      &             npgap(mcom,ms,mgp)
 
+      integer icascf
       common/cctl/icascf(mcom)
 
       character outs*144
@@ -1741,7 +1748,8 @@ C temperatures.
 
       common/fvalc/tfc(mcom,ms,mn),qfc(mcom)
       common/fvals/tfs(mcom,ms),qfs(mcom)
-      
+
+      integer icascf
       common/cctl/icascf(mcom)
 
       COMMON/GR1D01/NNDS,NNDZ(MCOM),NNDC(MCOM,MS),NNDL(MCOM,MS,ME)
@@ -1811,6 +1819,7 @@ C defined.
       common/fvalc/tfc(mcom,ms,mn),qfc(mcom)
       common/fvals/tfs(mcom,ms),qfs(mcom)
 
+      integer icascf
       common/cctl/icascf(mcom)
 
       common/pstflg/icflg1(mcf),icflg2(mcf)

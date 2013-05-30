@@ -22,7 +22,6 @@ C The file edatabase.f is a collection of support facilities for
 C reading and reporting ESP-r databases and contains the following:
 
 C  ERMLDB:  Read an ASCII composite db and return data via block MLC.
-C  parsemlcdesc: Parse the DESC string from the MLC common block
 C  matchmlcdesc: parse string (DES) and see if it matches a MLC
 C  ETMLDB:  Provides reporting on current description of a composite.
 C  ETMLDBU returns U value of construction based on contents of common MLC.
@@ -62,7 +61,7 @@ C espriou.h provides currentfile.
 
       CHARACTER OUTSTR*124,NAM*72,H*72,outs*124
       CHARACTER RSTR*124
-      CHARACTER WORD*20,MLCN*12,OTF*4,OPT*12,MLCSYM*12
+      CHARACTER WORD*20,MLCN*12
       character DES*48   ! the contents of line with MLC attributes
       character lworking*144,fs*1
 
@@ -186,27 +185,21 @@ C Anything after number of layers is the description (which is overloaded
 C to include information on optical properties and either the name
 C of a MLC with inverted layers or the keywords SYMMETRIC or NONSYMMERTIC).
         CALL EGETRM(OUTSTR,K,RSTR,'W','layer description',IER)
-        DESC(I)=RSTR(1:LNBLNK(RSTR))   ! mark for deletion
         DES=RSTR(1:LNBLNK(RSTR))
         IF(IER.NE.0)GOTO 99
 
-C Parse the DES string into string tokens.
-
-C << when references to DESC removed this structure can be removed. >>
-        call parsemlcdesc(DESC(I),MLCN,OTF,OPT,MLCSYM,isymindex)
-
-C Also fill the MLC common blocks.
+C Parse the DES string into string tokens. Also fill the MLC common blocks.
         mlcoptical(I)=' '
         mlcsymetric(I)=' '
         matsymindex(I)=0   ! not yet known 
         mlccatindex(I)= 1  ! only one class for now  
-        WRITE(MLCN,'(A)')DESC(I)(1:12)
-        WRITE(mlcname(I),'(A)')DESC(I)(1:12)
-        WRITE(mlcdoc(I),'(2A)')DESC(I)(1:12),' is a ...'
-        WRITE(mlctype(I),'(A)') DESC(I)(15:18)
+        WRITE(MLCN,'(A)')DES(1:12)
+        WRITE(mlcname(I),'(A)')DES(1:12)
+        WRITE(mlcdoc(I),'(2A)')DES(1:12),' is a ...'
+        WRITE(mlctype(I),'(A)') DES(15:18)
         IF(mlctype(I).EQ.'  ') mlctype(I)='OPAQ'
         IF(mlctype(I)(1:4).NE.'OPAQ'.AND.mlctype(I)(1:4).NE.'CFC ')THEN
-          WRITE(mlcoptical(I),'(A)') DESC(I)(21:32)
+          WRITE(mlcoptical(I),'(A)') DES(21:32)
           IF(mlcoptical(I)(1:2).EQ.'  ') mlcoptical(I)='UNKNOWN'
         ELSEIF(mlctype(I)(1:4).EQ.'CFC ')THEN
           mlcoptical(I)='USE GSLedit'
@@ -215,9 +208,9 @@ C Also fill the MLC common blocks.
         ENDIF
 
 C Read tag for name of inverted version or symmetry if the length of the
-C DESC string could hold the tag, otherwise set mlcsymetric to a blank.
-        if(lnblnk(DESC(I)).gt.35)then
-          WRITE(mlcsymetric(I),'(A)') DESC(I)(35:46)
+C DES string could hold the tag, otherwise set mlcsymetric to a blank.
+        if(lnblnk(DES).gt.35)then
+          WRITE(mlcsymetric(I),'(A)') DES(35:46)
         else
           mlcsymetric(I)='  '
           matsymindex(I)=0   ! signal not applicable     
@@ -466,14 +459,12 @@ C If all values are still 0.0 then not an actual material.
 
 C Now that layers have been scanned we can check to see if they
 C are symmetric or not. If the symmetric tag has not yet been 
-C set check and set MLCSYM and mlcsymetric.
+C set check and set mlcsymetric.
         if(mlcsymetric(I)(1:2).EQ.'  ')then
           call ismlcsymmetric(i,layermatch)
           if(layermatch)then
-            MLCSYM='SYMMETRIC   '
             mlcsymetric(I)='SYMMETRIC   '
           else
-            MLCSYM='NONSYMMETRIC'
             mlcsymetric(I)='NONSYMMETRIC'
           endif
         elseif(mlcsymetric(I)(1:9).EQ.'SYMMETRIC')then
@@ -481,11 +472,6 @@ C set check and set MLCSYM and mlcsymetric.
         elseif(mlcsymetric(I)(1:12).EQ.'NONSYMMETRIC')then
           continue
         endif
-
-C Update the DESC array with revised values of MLCSYM.
-C << mark for deletion  >>
-        WRITE(DESC(I),89)MLCN,OTF,OPT,MLCSYM
-   89   FORMAT(A12,2X,A4,2X,A12,2x,A12)
 
 C Earlier scanning of the construction data base might
 C not have required checking the contents of the materials
@@ -500,7 +486,6 @@ C many of these instances. If there are
 
 C Look for index for mlcsymetric in all the items in the file.
       do i=1,nmlc
-        isymindex=0  ! assume no matching MLC
         lnsym=lnblnk(mlcsymetric(I))         
         do 5 ii=1,nmlc
           lnmlcn=lnblnk(mlcname(ii))
@@ -541,59 +526,6 @@ C the wrong format.
 
       END
 
-C ******* parsemlcdesc
-C Parse the DESC string from the MLC common block returning text for
-C MLCN (its name) ,OTF (whether OPAQ/TRAN/CFC) ,OPT (optical name) ,MLCSYM
-C tag for symmetry. Where values are missing or unknown setup defaults.
-C If isymindex is non-zero it is index of MLC for symmetric MLC.
-
-C << logic below is based on fixed column positions, this should move
-C << to free form so that MLC, optical and mlcsym names can be up to 
-C << 32 char (eventually with spaces).
-
-      subroutine parsemlcdesc(DES,MLCN,OTF,OPT,MLCSYM,isymindex)
-#include "building.h"
-#include "esprdbfile.h"
-#include "material.h"
-      
-      integer lnblnk  ! function definition
-
-      character DES*48,MLCN*12,OTF*4,OPT*12,MLCSYM*12
-
-C Clear parameters to be returned and then copy from DES.
-      OPT=' '
-      MLCSYM=' '
-      WRITE(MLCN,'(A)')DES(1:12)
-      WRITE(OTF,'(A)') DES(15:18)
-      IF(OTF(1:2).EQ.'  ')OTF='OPAQ'
-      IF(OTF(1:4).NE.'OPAQ'.AND.OTF(1:4).NE.'CFC ')THEN
-        WRITE(OPT,'(A)') DES(21:32)
-        IF(OPT.EQ.' ')OPT='UNKNOWN'
-      ELSEIF(OTF(1:4).EQ.'CFC ')THEN
-        OPT='USE GSLedit'
-      ELSE
-        OPT='OPAQUE'
-      ENDIF
-
-C Read tag for name of inverted version or symmetry if the length of the
-C DESC string could hold the tag, otherwise set MLCSYM to a blank. Also
-C check the MLC index of MLCSYM so that can be returned.
-      if(lnblnk(DES).gt.35)then
-        WRITE(MLCSYM,'(A)') DES(35:46)
-
-C Look for index for MLCSYM in the current MLC database.
-        isymindex=0  ! assume no matching MLC          
-        do 5 ii=1,nmlc
-          if(MLCSYM(1:12).eq.DESC(ii)(1:12)) then
-            isymindex=ii   ! remember MLC index     
-          endif
-  5     continue
-      else
-        MLCSYM='  '
-        isymindex=0   ! signal not applicable     
-      endif
-      return
-      end
 
 C ******* matchmlcdesc
 C matchmlcdesc parse string (DES) and see if it matches a MLC

@@ -2181,20 +2181,21 @@ C in M3/hr for the zone.
             ocuplat=totocup*latentfrac
             lnact=lnblnk(roomactname(ireadactivityindex))
             if(lnact.gt.32) lnact=32
-            write(outs,'(2A,I3,1X,2A,f5.1,a,f6.1,a,f5.2,a,
-     &        f6.0,a,f5.2,a,f5.0,a,f5.2,a)') 
+            write(outs248,'(2A,I3,1X,2A,f5.1,a,f7.1,a,f5.2,a,
+     &        f6.0,a,f5.2,a,f6.0,a,f5.2,a)') 
      &        zname(iz)(1:lnb),' uses ',ireadactivityindex,
      &        roomactname(ireadactivityindex)(1:lnact),' : ',
-     &        nbpeople,' occ & makeup ',freshairhr,' m3/h ',
-     &        freshairchanges,' ach & occ sen ',ocupsens,'W ',
+     &        nbpeople,' occupants & makeup air ',freshairhr,' m3/h ',
+     &        freshairchanges,' ach & occupant sen ',ocupsens,'W ',
      &        ocupsens/ZBASEA(IZ),'W/m2 lat ',ocuplat,'W ',
      &        ocuplat/ZBASEA(IZ),'W/m2.'
+            call edisp248(itu,outs248,100)
           else
             write(outs,'(6A)') 'Zone ',zname(iz)(1:lnb),
      &        ' is linked to ',' 0',' 0',
      &        ' activity number 0 (undefined activity)'
+            call edisp(itu,outs)
           endif
-          call edisp(itu,outs)
  105    continue
       elseif(act.eq.'a'.or.act.eq.'l')then
 
@@ -3445,6 +3446,7 @@ C Need to write TDF info in the cfg file. Use next common(s) for this.
       COMMON/HDAT/IHREC(MIT)
 
       common/sctl/tcps,ictyp,iclaw,cm(misc)
+      integer icascf
       common/cctl/icascf(mcom)
       common/cctlnm/ctldoc,lctlf
       character ctldoc*248,LCTLF*72
@@ -4178,6 +4180,7 @@ C Need to write TDF info in the cfg file. Use next common(s) for this.
       COMMON/HDAT/IHREC(MIT)
 
       common/sctl/tcps,ictyp,iclaw,cm(misc)
+      integer icascf
       common/cctl/icascf(mcom)
       common/cctlnm/ctldoc,lctlf
       character ctldoc*248,LCTLF*72

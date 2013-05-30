@@ -440,6 +440,7 @@ C *********************************************************************
       COMMON/COE35/ZAUGEP,ZAUGIP,ZAUGEF,ZAUGIF,QWCP,XX1,ZGIPM,ZGIFM
       COMMON/COE39/CVIP,CVVP,CVIF,CVVF,QVNP,XX3,CVVPM,CVVFM
 
+      integer icascf
       COMMON/CCTL/ICASCF(MCOM)
 
       COMMON/SETUQ/QPLTP(MCOM),QPLTF(MCOM),CONV(MCOM)
@@ -730,6 +731,7 @@ C *********************************************************************
 #include "control.h"
 
       COMMON/OUTIN/IUOUT,IUIN
+      integer icascf
       COMMON/CCTL/ICASCF(MCOM)
 
       COMMON/GR3D122/W3T(MNOD3T)
@@ -888,6 +890,7 @@ C *********************************************************************
       common/caleni/nbdaytype,nbcaldays(MDTY),icalender(365)
       INTEGER NBDAYTYPE,NBCALDAYS,ICALENDER,NIN
 
+      integer icascf
       common/cctl/icascf(mcom)
 
       common/pstflg/icflg1(mcf),icflg2(mcf)
@@ -1049,6 +1052,7 @@ C *********************************************************************
 #include "control.h"
 
       COMMON/FVALA/TFA(MCOM),QFA(MCOM)
+      integer icascf
       COMMON/CCTL/ICASCF(MCOM)
       COMMON/GR3D131/IAIR,IPLT,IPRT,IAVL,NZMCF
       COMMON/GR3D132/T3F(MNOD3)

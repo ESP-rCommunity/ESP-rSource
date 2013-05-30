@@ -307,6 +307,9 @@ C Initial assumption is no SHOCC files.
       lipvdatf='UNKNOWN'
       bdmds='UNKNOWN'
       dmdsdesc='no dispersed demands notes (yet)'
+
+C << Consider clearing the calendar plus dependencies in
+C << control and operations which rely on daytypes.
       idwe1=6
       idwe2=7
       wkd1='Saturday'
@@ -580,6 +583,8 @@ C Clear SHOCC zone information as well.
         lnzdesc(IX)=0
         zname(IX)=' '
         lnzname(IX)=0
+
+C << consider clearing the P3N commons >>
         LPROJ(IX)='UNKNOWN'
         LGEOM(IX)='UNKNOWN'
         LTHRM(IX)='UNKNOWN'

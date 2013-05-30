@@ -1252,6 +1252,7 @@ C output, IER=0 indicates no error.
       common/user/browse
       common/appw/iappw,iappx,iappy
       common/cctlnm/ctldoc,lctlf
+      integer icascf
       common/cctl/icascf(mcom)
 
       common/GR3D100/BLDG3D,ZONE3D(MCOM)

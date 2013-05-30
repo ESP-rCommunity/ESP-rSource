@@ -57,6 +57,7 @@ C                             data for validity.
 
       integer ncomp,ncon
       common/c1/ncomp,ncon
+      integer icascf
       common/cctl/icascf(mcom)
       common/cctlnm/ctldoc,lctlf
       common/fctl4/iasocc(MCF,mcmp),nfsup(MCF)

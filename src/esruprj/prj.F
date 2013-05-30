@@ -166,7 +166,7 @@ C      character outs248*248
       character*10 wkd1, wkd2
       character CMDCFG*72,CMDCLM*72,CMDCLMN*72,CMDNOTE*64,CMDRES*72
       character CMDLBL*12,CMDLNAM*80
-      CHARACTER cpth*48,cmdn*48,topt*72
+      CHARACTER topt*72
       character t32*32,DFILE*72,DCNN*72
       character bidirfile*72,bidirname*12
       CHARACTER dinstpath*60,dirpath*72
@@ -552,17 +552,19 @@ C then set inact.
 
 C Climate db is on channel IFIL (NB when not in use other binary
 C databases may make use of this unit temporarily).
-      ICLIM=IFIL
+      ICLIM=IFIL; ipathclim=0
       LCLIM=DCLIM
 
       write(LAPRES,'(a)') DAPRES(1:lnblnk(DAPRES))
 
-C Common constructions on channel IFIL+3.
-      IFMUL=IFIL+3
+C Common constructions on channel IFIL+3. Default file assumed with
+C full path.
+      IFMUL=IFIL+3; ipathmul=0
       write(LFMUL,'(a)') DFMUL(1:lnblnk(DFMUL))
 
-C Common Materials on channel IFIL+4.
-      IFMAT=IFIL+4
+C Common Materials on channel IFIL+4. Default file assumed with
+C full path.
+      IFMAT=IFIL+4; ipathmat=0
       write(LFMAT,'(a)') DFCON(1:lnblnk(DFCON))
 
 C System configuration file on channel IFIL+5. 
@@ -576,11 +578,17 @@ C Optical and rarely used common files on channel IFIL+6.
 
 C Set optical, mould event profiles etc. to default file names.
       write(LOPTDB,'(a)') DOPTDB(1:lnblnk(DOPTDB))
+      ipathoptdb=0
       write(lfmould,'(a)') dmdbnam(1:lnblnk(dmdbnam))
+      ipathmould=0
       write(LPRFDB,'(a)') DPRFDB(1:lnblnk(DPRFDB))
+      ipathprodb=0
       write(LPCDB,'(a)') DPCDB(1:lnblnk(DPCDB))
+      ipathpcdb=0
       write(MCMPDBFL,'(a)') DMCMPDBFL(1:lnblnk(DMCMPDBFL))
+      ipathmsc=0
       write(LSBEM,'(a)')  DSBEM(1:lnblnk(DSBEM))  ! assign default SBEM db
+      ipathsbem=0
 
 C Temporal information on channel IFIL+7.
       IUTDF=IFIL+7
@@ -672,17 +680,17 @@ C Scan control file if one exists.
             if(XST)then
               CALL EZCTLR(ICTLF,0,IUOUT,IER)
             endif
-	    
+    
 C Now implement the transform based on data passed in command line
 C for all the zones in the model. NOTE: in the next line set the
 C value of silent = .false if you want to interact with the transform
 C or rotation.
 C            silent= .false.
             silent= .true.
-	    inpic=NCOMP
+            inpic=NCOMP
             nzg=NCOMP
-	    do 29 iz=1,inpic
-	      ivals(iz)=iz
+            do 29 iz=1,inpic
+              ivals(iz)=iz
               nznog(iz)=iz
   29        continue
   
@@ -701,7 +709,7 @@ C Perform either the transform or rotation or generate QA report.
  2491         CONTINUE
               QUIET=.FALSE.
 
-	    endif
+            endif
             if(silent)then 
               call usrmsg(
      &          'Processing of transform:rotate:QA complete.',
@@ -1750,13 +1758,13 @@ C If browsing pass this information to bps and if the user
 C has set the trace level above one add a -v optin to the
 C command line.
           if(browse)then
-	    if(itrc.gt.1)then
+            if(itrc.gt.1)then
               brw = ' -v -b yes'
             else
               brw = ' -b yes'
             endif
           else
-	    if(itrc.gt.1)then
+            if(itrc.gt.1)then
               brw = ' -v -b no '
             else
               brw = ' -b no '
@@ -1807,13 +1815,13 @@ C Debug the patched file name.
 
 C If browsing pass this information to bps.
           if(browse)then
-	    if(itrc.gt.1)then
+            if(itrc.gt.1)then
               brw = ' -v -b yes'
             else
               brw = ' -b yes'
             endif
           else
-	    if(itrc.gt.1)then
+            if(itrc.gt.1)then
               brw = ' -v -b no '
             else
               brw = ' -b no '
@@ -1891,13 +1899,13 @@ C if Unix or Windows setup the appropriate path.
 
 C If browsing pass this information to e2r.
         if(browse)then
-	  if(itrc.gt.1)then
+          if(itrc.gt.1)then
             brw = ' -v -b yes'
           else
             brw = ' -b yes'
           endif
         else
-	  if(itrc.gt.1)then
+          if(itrc.gt.1)then
             brw = ' -v -b no '
           else
             brw = ' -b no '
@@ -1967,7 +1975,7 @@ C IPV description held in a separate file.
 C Scan the IPV description before asking user choice.
             call FINDFIL(lipvdatf,XST)
             IF(XST)then
-	      ipvaction='ipv'
+              ipvaction='ipv'
               call ripvdat(ifil+1,lipvdatf,ipvaction,ier)
             else
               call usrmsg('IPV definition not found.',lipvdatf,'W')
@@ -1984,7 +1992,7 @@ C Scan the IPV description before asking user choice.
             ID=3   ! remember existing state
           endif
         else
-	
+
 C There may be ipv data held in the configuration file.
           if(nipvassmt.eq.0)then
             DOK=.false.
@@ -2003,7 +2011,7 @@ C There may be ipv data held in the configuration file.
               INO=-4
               GOTO 3
             endif
-            ID=3   ! remember existing state	   
+            ID=3   ! remember existing state   
           endif
         endif
 
@@ -2477,7 +2485,7 @@ C for legacy model cfg files.
         else
           call FINDFIL(lipvdatf,XST)
           IF(XST)then
-	    ipvaction='ipv'
+            ipvaction='ipv'
             call ripvdat(ifil+1,lipvdatf,ipvaction,ier)
             if(ier.ne.0)then
               CALL PHELPD('IPV message',nbhelp,'-',0,0,IER)
@@ -2493,7 +2501,7 @@ C for legacy model cfg files.
 C IPV data could be internal to cfg file.
         if(nipvassmt.eq.0)then
           CALL PHELPD('IPV message',nbhelp,'-',0,0,IER)
-          return	
+          return
         else
           continue
         endif
@@ -4915,7 +4923,7 @@ C If there is an IPV file also update it.
             call edisp(IUOUT,
      &        '* IPV file has been updated to match climate.')
             call edisp(IUOUT,'Please update the IPV titles.')
-	    ipvaction='ipv'
+            ipvaction='ipv'
             CALL RIPVDAT(IFIL+1,LIPVDATF,ipvaction,IER)
             EXT='.ipv'
             CALL FNCNGR(LIPVDATF,APE,EXT,NNAME)
@@ -4932,15 +4940,15 @@ C          CALL USRMSG('Copying IPV file via:',doit,'-')
             LIPVDATF=NNAME
             updatetitle=.true.
           else
-	    updatetitle=.false.   ! nothing to do
-	  endif
+            updatetitle=.false.   ! nothing to do
+          endif
         else
           if(nipvassmt.eq.0)then
-	    updatetitle=.false.   ! nothing to do
+            updatetitle=.false.   ! nothing to do
           else
             updatetitle=.true.
           endif
-	endif
+        endif
 
 C Update the titles.
         if(updatetitle)then
@@ -5234,7 +5242,7 @@ C variant integrated performance view
           call FINDFIL(lipvdatf,XST)
           call isunix(unixok)
           IF(XST)THEN
-	    ipvaction='ipv'
+            ipvaction='ipv'
             CALL RIPVDAT(IFIL+1,LIPVDATF,ipvaction,IER)
             CALL FNCNGR(LIPVDATF,APE,EXT,NNAME)
             if(unixok)then
@@ -5250,15 +5258,15 @@ C          CALL USRMSG('Copying file via:',doit,'-')
             LIPVDATF=NNAME
             updatetitle=.true.
           else
-	    updatetitle=.false.   ! nothing to do
-	  endif
+            updatetitle=.false.   ! nothing to do
+          endif
         else
           if(nipvassmt.eq.0)then
-	    updatetitle=.false.   ! nothing to do
+            updatetitle=.false.   ! nothing to do
           else
             updatetitle=.true.
           endif
-	endif
+        endif
 
 C Update the titles.
         if(updatetitle)then
@@ -5494,7 +5502,7 @@ C Check length of cfgroot string. Figure out how to include the
 C whole of ape in the root name, even if this requires removing
 C some characters from the middle of the string buffer.
         irootlen=LNBLNK(CFGROOT)
-	iapelin=lnblnk(ape)
+        iapelin=lnblnk(ape)
         IF(irootlen.GT.(32-iapelin))THEN
           irootlen=32-iapelin
         ENDIF

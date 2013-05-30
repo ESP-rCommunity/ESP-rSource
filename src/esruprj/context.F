@@ -1127,6 +1127,7 @@ C TDF related.
       COMMON/TDFFLG0/DBTAG(MIT),DBTASK(MIT),DBZN(MIT),DBSN(MIT)
 
       common/sctl/tcps,ictyp,iclaw,cm(misc)
+      integer icascf
       common/cctl/icascf(mcom)
       integer iairn,icaas
       character LAPROB*72

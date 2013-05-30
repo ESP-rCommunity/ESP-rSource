@@ -325,6 +325,7 @@ C espriou.h provides currentfile.
       integer ncomp,ncon
       common/c1/ncomp,ncon
       common/cctlnm/ctldoc,lctlf
+      integer icascf
       common/cctl/icascf(mcom)
       COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
       common/fctl4/iasocc(MCF,MCMP),nfsup(MCF)
@@ -2135,6 +2136,7 @@ C and CFCCTL
 #include "net_flow.h"
 #include "control.h"
 
+      integer icascf
       common/cctl/icascf(mcom)
 
 c      COMMON/idrhctl1/rhspt(MCOM),irhct(MCOM)
@@ -2330,9 +2332,14 @@ C Actuator.
           WRITE(SSTR,'(a,i2,3a)')'plant component ',IBAN(II,2),' in ',
      &      zn(1:lnblnk(zn)),'.'
         ELSEIF(IBAN(II,1).EQ.-2)THEN
-          write(zn,'(a)') zname(IBAN(II,2))
-          WRITE(SSTR,'(3a)')'mixed convective/radiant flux in ',
-     &      zn(1:lnblnk(zn)),'.'
+          if(IBAN(II,2).gt.0)then
+            write(zn,'(a)') zname(IBAN(II,2))
+            WRITE(SSTR,'(3a)')'mixed convective/radiant flux in ',
+     &        zn(1:lnblnk(zn)),'.'
+          else
+            WRITE(SSTR,'(2a)')'mixed convective/radiant flux in ',
+     &        'the current zone.'
+          endif
         ENDIF
         IF(IBSN(II,1).EQ.-99)THEN
           WRITE(SSTR,75)IBAN(II,1),IBAN(II,2),IBAN(II,3)
@@ -4403,6 +4410,7 @@ C control loops for legality.
 #include "control.h"
 
       common/OUTIN/IUOUT,IUIN
+      integer icascf
       common/cctl/icascf(mcom)
       integer ncomp,ncon
       common/c1/ncomp,ncon

@@ -526,6 +526,7 @@ C until the glitches have been sorted.
       COMMON/T4/EMISI(MS),EMISE(MS),ABSI(MS),ABSE(MS)
 C      common/recver/izver,ipver,iever
 
+      integer icascf
       COMMON/CCTL/ICASCF(MCOM)
       COMMON/GET1/VAL1(MZS,MTS),VAL2(MZS,MTS),VAL3(MZRL,MTS)
       COMMON/GET2/XDUM(MTS),XDUM1(MTS),GVAL(MTS)

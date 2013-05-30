@@ -93,15 +93,12 @@ C To record equivalence between IPR and materials arrays.
 C The construction database includes text after the thickness of each layer
 C which is based on the name and documentation of the material from the
 C materials database. To assist in recovering materials for which there is
-C no legacy index (-99) this text is used.  This array is filled when the
-C MLC database is scanned and should be updated when new materials are selected.
-C The string buffer DESC is included in MLCTXT so that MLC is all data.
-
-C << todo increase DESC buffer to 124 char >>
+C no legacy index (-1) this text is used.
       character LAYDESC*124  ! first 124 char of layer text
-      character DESC*48 ! string which holds 12 char name, 4 char opaque tag, 
-                        ! 12 char optical tag and SYMMETRIC or NONSYMMETRIC tag
-      common/MLCTXT/LAYDESC(MMLC,ME),DESC(MMLC)
+C      character DESC*48 ! string which holds 12 char name, 4 char opaque tag, 
+C                        ! 12 char optical tag and SYMMETRIC or NONSYMMETRIC tag
+C      common/MLCTXT/LAYDESC(MMLC,ME),DESC(MMLC)
+      common/MLCTXT/LAYDESC(MMLC,ME)
 
 C Constructions header common blocks:
       integer mlcver      ! version of the database 0 and 1 with verbose names

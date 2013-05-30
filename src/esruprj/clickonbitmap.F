@@ -63,6 +63,7 @@ C Where ESP-r was installed (as recorded when it was compiled).
       COMMON/GTFIL/GTGEOM
       COMMON/GT5/GSNAME(MGRT),GMLCN(MGRT)
       common/cctlnm/ctldoc,lctlf
+      integer icascf
       common/cctl/icascf(mcom)
 
       DIMENSION ITEMS(21)

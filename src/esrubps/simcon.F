@@ -2544,6 +2544,7 @@ C if itru=33 then works as a header to the trace.
       COMMON/RESLIB/RFILE,PFILE,MSTRFILE,LAFRES
 
       common/cctlnm/ctldoc,lctlf
+      integer icascf
       common/cctl/icascf(mcom)
 
       character*72 lafres,lctlf,rfile
