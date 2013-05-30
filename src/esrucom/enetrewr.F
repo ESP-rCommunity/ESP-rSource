@@ -1195,15 +1195,16 @@ C Write out the base power value (VA) for the network
       WRITE(IEUNIT,'(2X,F10.2)') ENODBASEP
 
 C Write out the phase angle for each phase of for the network 
-      WRITE(IEUNIT,'(A)') '* phase angles (each phase)'
+      WRITE(IEUNIT,'(A)') '* phase angles (for each phase)'
       WRITE(IEUNIT,'(10(2X,F8.2))') (PHASEANG(IPH),IPH=1,MPHAS)
 
 C Write out the node details
       WRITE(IEUNIT,'(A)') '# List and details of nodes in the network'
       WRITE(IEUNIT,'(A)') '* nodes'
       WRITE(IEUNIT,'(2X,I3)') NENOD
-      WRITE(OUTS,'(A)')
-     &'# No.    Node name   Phase type   Phase Node type    Base volt'
+      WRITE(OUTS,'(2A)')
+     &'# Index  Node name   Phase type   Phase Node type         ',
+     &'Base volt'
       WRITE(IEUNIT,'(A)') OUTS(1:LNBLNK(OUTS))
       DO 10  INODE=1,NENOD
 
@@ -1238,13 +1239,18 @@ C Write the field marker
       WRITE(IEUNIT,'(A)')'* hybrid components'
       WRITE(IEUNIT,'(2X,I3)') NHYBCOM
 
-C Write out individual component details
+C Write out individual component details.
       DO 20 IHYB=1,NHYBCOM
         OUTS=' '
-        WRITE(OUTS(1:60),'(A)')
-     &'# No. comp. type   comp. name      phase type  connects node'
-        WRITE(OUTS(61:83),'(A)')'(s)  location   '
+        WRITE(OUTS,'(2A)')
+     &'# Component          Component     Phase         Connects to ',
+     &'nodes    location   '
         WRITE(IEUNIT,'(A)') OUTS(1:LNBLNK(OUTS))
+        WRITE(OUTS,'(2A)')
+     &'# Index  type        name          type          pha1 pha2 pha3',
+     &'       data   '
+        WRITE(IEUNIT,'(A)') OUTS(1:LNBLNK(OUTS))
+C          1  spmaterial    PV_ws         1-phase         2    0    0     1    0    0
 
 C Determine the correct string for the hybrid component type.
         IF(HYCOMTYP(IHYB).EQ.1) THEN
@@ -1282,7 +1288,7 @@ C Write out the node connections for hybrid plant components
 
         WRITE(IEUNIT,'(A)')'# description:'
         WRITE(IEUNIT,'(2X,A)') HYDESC(IHYB)(1:LNBLNK(HYDESC(IHYB)))
-        WRITE(IEUNIT,'(A)')'# No. of additional data items:'
+        WRITE(IEUNIT,'(A)')'# Number of additional data items:'
         WRITE(IEUNIT,'(2X,I3)') NHYBDAT(IHYB)
         IF(NHYBDAT(IHYB).GT.0) THEN
           IF(NHYBDAT(IHYB).LE.INC+1) THEN
@@ -1329,7 +1335,7 @@ C Write out the power only component data
         WRITE(IEUNIT,'(2X,A)') 
      &POWCOMDESC(IPWC)(1:LNBLNK(POWCOMDESC(IPWC)))
 
-        WRITE(IEUNIT,'(A)')'# no. of additional data items:'
+        WRITE(IEUNIT,'(A)')'# Number of additional data items:'
         WRITE(IEUNIT,'(2X,2(I3,2X))') NPOWCDAT(IPWC),NPOWCDATS(IPWC)
         IF(NPOWCDAT(IPWC).GT.0) THEN
           OUTS=' '
@@ -1378,8 +1384,9 @@ C Write out the connecting component data
       WRITE(IEUNIT,'(2X,I3)') NCONECOM
       DO 40 ICNC=1,NCONECOM
         OUTS=' '
-        WRITE(OUTS,'(A)')
-     &'# No.  i.d. Comp. name    Phase type  '
+        WRITE(OUTS,'(A)') '# Index db  Component     Phase '
+        WRITE(IEUNIT,'(A)') OUTS(1:LNBLNK(OUTS))
+        WRITE(OUTS,'(A)') '#       ref name          type  '
         WRITE(IEUNIT,'(A)') OUTS(1:LNBLNK(OUTS))
         OUTS=' '
         WRITE(OUTS,1117)CONECOMNO(ICNC),CONECOMID(ICNC),
@@ -1391,7 +1398,7 @@ C Write out the connecting component data
         WRITE(IEUNIT,'(2X,A)')
      &CONECOMDESC(ICNC)(1:LNBLNK(CONECOMDESC(ICNC)))
 
-        WRITE(IEUNIT,'(A)')'# No. of additional data items:'
+        WRITE(IEUNIT,'(A)')'# Number of additional data items:'
         WRITE(IEUNIT,'(2X,I3)') NCONECOMDAT(ICNC)
         IF(NCONECOMDAT(ICNC).GT.0) THEN
           OUTS=' '
@@ -1419,16 +1426,19 @@ C Write out the connecting component data
 
 C Write out the connections information
       WRITE(IEUNIT,'(A)')
-     &'# connections between nodes in the network '
+     &'# Connections between nodes in the network '
       WRITE(IEUNIT,'(A)') '* connections'
       WRITE(IEUNIT,'(2X,I3)') NECON
 
       IF(NECON.GT.0) THEN
         OUTS=' '
-        WRITE(OUTS(1:37),'(A)')
-     &'# No. Conn. type  Phase.   Conn. com.'
-        WRITE(OUTS(38:68),'(A)')  
-     &'    Start nodes       End nodes'
+        WRITE(OUTS,'(2A)')
+     &'# Connection        Phases  Connection  Start nodes   ',
+     7'    End nodes'
+        WRITE(IEUNIT,'(A)') OUTS(1:LNBLNK(OUTS))
+        WRITE(OUTS,'(2A)')
+     &'# Index type        1 2 3   component   pha1 pha2 pha3',
+     &'    pha1 pha2 pha3'
         WRITE(IEUNIT,'(A)') OUTS(1:LNBLNK(OUTS))
         DO 50 ICON=1,NECON
           OUTS=' '
