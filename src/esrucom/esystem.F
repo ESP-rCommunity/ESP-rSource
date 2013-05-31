@@ -774,8 +774,7 @@ C embedded in the configuration file.
         CALL EGETW(OUTSTR,K,WORD,'W','header tags',IFLAG)
         IF(IFLAG.NE.0)goto 1
         if(WORD(1:5).eq.'*Date'.or.WORD(1:5).eq.'*date')then
-          CALL EGETRM(OUTSTR,K,ectime,'W','date stamp',IER)
-          IF(IER.NE.0)goto 1
+          CALL EGETRM(OUTSTR,K,ectime,'W','date stamp',IER)  ! missing date stamp not fatal
           goto 34
         elseif(WORD(1:5).eq.'*root')then
           CALL EGETRM(OUTSTR,K,cfgroot,'W','root name',IER)

@@ -198,6 +198,7 @@ C are more than 3 day types.
         IF(IER.NE.0) goto 1002
         if(WORD(1:5).eq.'*Date'.or.WORD(1:5).eq.'*date')then
           CALL EGETRM(OUTSTR,K,dstmp,'W','date stamp',IER)
+          if(IER.ne.0) IER=0  ! missing date stamp not fatal
         endif
 
 C If ip3ver(icomp) is less than 21 then read the combined
@@ -956,6 +957,7 @@ C it into words.
         IF(IER.NE.0) goto 1002
         if(WORD(1:5).eq.'*Date'.or.WORD(1:5).eq.'*date')then
           CALL EGETRM(OUTSTR,K,dstmp,'W','date stamp',IER)
+          if(IER.ne.0) IER=0  ! missing date stamp not fatal
         endif
         if(ip3verc.lt.21)then
           CALL LSTRIPC(IUO,LOUTSTR,0,ND,1,'oper notes',IER)
