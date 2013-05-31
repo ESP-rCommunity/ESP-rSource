@@ -1306,9 +1306,6 @@ C Electrical details for specified plant components
       common/elpcp/NPEL,PFP(mpcom),IPFP(mpcom),PWRP(mpcom),
      &BVOLTP(mpcom),IPHP(mpcom)
 
-C Common for new format component database
-      COMMON/NCDBFORM/ICDBF 
-
       character pcdesc*80
 
 C Initialise number of selected components variable.

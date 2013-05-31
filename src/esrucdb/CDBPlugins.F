@@ -118,8 +118,7 @@ C             new non-zero elements.
 #include "building.h"
 
       COMMON/C9/NPCOMP,NCI(MPCOM),CDATA(MPCOM,MMISCD)
-      COMMON/C12PS/NPCDAT(MPCOM,9),IPOFS1(MCOEFG),IPOFS2(MCOEFG,MPVAR)
-      COMMON/C13PS/NPMCOE,NPNOD,NPMTYP
+ 
       COMMON/C14PS/NDCON(MPCOM,MNODEC),ISV(MPCOM,MNODEC)
 
       COMMON/PDBDT/ADATA(MPCOM,MADATA),BDATA(MPCOM,MBDATA)
@@ -254,7 +253,7 @@ C Special for TRNSYS component
 C For a trnsys component, read its data from a data file.
 C Note that in plant database, the trnsys has dummy values only.
       ELSEIF(S_MENUATR(IDAT)(1:14).EQ.'component code')THEN
-        iend=lnblnk(UCdbNam(IPCOMP))
+c        iend=lnblnk(UCdbNam(IPCOMP))
         IF(UCdbNam(IPCOMP)(1:2).EQ.'TR')THEN
           Is_TRNSYS(IPCOMP)=.TRUE.
           LOCCON=s_NMATX+NXT

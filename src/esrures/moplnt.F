@@ -1191,7 +1191,7 @@ C Common for new format component database
       LOGICAL OK,dok,unixok
       CHARACTER PZDESC*25,cdate*16,buffer*80,adopdsc*30,
      &UCDBNam*16, CdbCat*32, CDBDesc*72, argstr*12
-      character h*72,fs*1
+      character fs*1
       integer lndbp   ! for length of standard database path
       character lltmp*144  ! to re-create plant database file name with path
 

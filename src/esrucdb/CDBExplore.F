@@ -55,7 +55,7 @@ C IML - maximum level that can be viewed.
 
       LOGICAL EDITABLE,EDITABLE2,OK,DOK
 
- 200  IF(NBDOMAIN.gt.0)THEN 
+      IF(NBDOMAIN.gt.0)THEN 
         ILEN=NBDOMAIN
       ELSE
         ILEN=1
@@ -195,7 +195,7 @@ C ***********************************************************************
       LOGICAL EDITABLE,EDITABLE2,OK,DOK
 
       ID_S=ID
-  200 IF(NBCAT(ID).gt.0)THEN 
+      IF(NBCAT(ID).gt.0)THEN 
         ILEN=NBCAT(ID_S)
       ELSE
         ILEN=1
@@ -337,7 +337,7 @@ C ***********************************************************************
 
       ID_S=ID
       IC_S=IC
-  200 IF(NBCAT(ID_S).gt.0)THEN 
+      IF(NBCAT(ID_S).gt.0)THEN 
         ILEN=NBITEM(ID_S,IC_S)
       ELSE
         ILEN=1
@@ -654,8 +654,8 @@ C ***********************************************************************
 
       INTEGER ICMP_S,IER,IP,IMOUT,NICITEM
 
-      LOGICAL EDIT1,EDITABLE2,STATIC,OK,DOK,STAT
-
+      LOGICAL EDIT1,STATIC,OK,DOK,STAT
+c      LOGICAL EDITABLE2
 C Identify the number of data categories
       ICMP_S=ICMP
       SETSTR=SET
@@ -786,13 +786,13 @@ C First check for menu choices unnafected by the variable menu length.
 C Return the name of the selected domain category. 
         IF(ICHOSE.GT.0.AND.ICHOSE.LE.ILEN)THEN
           IP=ICHOSE
-          EDITABLE2=EDIT1
+c          EDITABLE2=EDIT1
           IF(IML.GT.5)THEN
 C          CALL CDBParamEdit()
           ENDIF
           GOTO 110
         ELSE
-          IPS=0
+c          IPS=0
         ENDIF
 
       ELSEIF(IMOUT.EQ.NICITEM)then
