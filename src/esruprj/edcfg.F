@@ -1253,6 +1253,7 @@ C output, IER=0 indicates no error.
       common/user/browse
       common/appw/iappw,iappx,iappy
       common/cctlnm/ctldoc,lctlf
+      integer icascf
       common/cctl/icascf(mcom)
 
       common/GR3D100/BLDG3D,ZONE3D(MCOM)
@@ -3865,12 +3866,14 @@ C Scan for matching MLC for surfaces.
 C Find the index of the MLC which matches each surface.
           DO 9994 I=1,NZSUR(icomp)
             icn1=izstocn(icomp,i)
-            ssmlcindex(icn1)=0  ! assume no matching MLC          
-            do 5 ii=1,nmlc
-              if(SSMLCN(icn1)(1:12).eq.mlcname(ii)(1:12)) then
-                ssmlcindex(icn1)=ii   ! remember MLC index     
-              endif
-  5         continue
+            if(icn1.ge.1)then
+              ssmlcindex(icn1)=0  ! assume no matching MLC          
+              do 5 ii=1,nmlc
+                if(SSMLCN(icn1)(1:12).eq.mlcname(ii)(1:12)) then
+                  ssmlcindex(icn1)=ii   ! remember MLC index     
+                endif
+  5           continue
+            endif
  9994     continue
  30     continue
 

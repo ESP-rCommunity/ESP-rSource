@@ -57,7 +57,7 @@ C      floors into model, vector with the indirect reference of plant component 
 
       LOGICAL RadFloor_active
       INTEGER NRadFloor
-      INTEGER IRadFloor(MPCOM),InitRadFloor(MPCOM)
+      INTEGER IRadFloor(MPCOM), InitRadFloor(MPCOM)
 
 
 C     Trace output
@@ -227,7 +227,7 @@ C     (found in ESRUPLT/PMATRX.F)to store present time values of some variables
       REAL    COUT(MPCOE), J11, J12, J21, J22
       
       COMMON/GR1D01/NNDS,NNDZ(MCOM),NNDC(MCOM,MS),NNDL(MCOM,MS,ME)
-      
+
 C Common used for saving  flux in coupled zones/surfaces
       common/Zone_Couplings/ bCoupled_Zone (MCOM,MS),
      &                       iCoupled_Zone (MCOM,MS),
@@ -244,7 +244,7 @@ C     Flag indicating if radiant floor is active, number of radiant floors, indi
 
       LOGICAL RadFloor_active
       INTEGER NRadFloor
-      INTEGER IRadFloor(MPCOM),InitRadFloor(MPCOM)
+      INTEGER IRadFloor(MPCOM), InitRadFloor(MPCOM)
       INTEGER irf
 C----------------------------------------------------------------------
 C     Trace output
@@ -400,12 +400,13 @@ C     find the component radiant floor number of component
 
 C--------------------------------------------------------------------------------------
 C     INITIALIZE VARIABLES BEFORE SIMULATION
-c      IF( (ptimep .LE. 1.) .AND. (IDYP .LE. ISS) ) THEN
-C     Initialize only before energy solution
-      if (InitRadFloor(irf).eq.0 .and. ISTATS.eq.1) then
+C     initialize only before energy solution     
 
-C     Set the initialization flag
-         InitRadFloor(irf)=1
+      IF (InitRadFloor(irf) .EQ. 0 .AND. ISTATS .EQ. 1) THEN
+
+
+C set the initialization flag
+         InitRadFloor(irf) = 1     
 
 C     Circuit average temperature difference (Tfluid - Tpipe) at the present time
          TetaMp(irf) = 0.
@@ -779,7 +780,7 @@ C.....Passed variable
 
       LOGICAL RadFloor_active
       INTEGER NRadFloor
-      INTEGER IRadFloor(MPCOM),InitRadFloor(MPCOM)
+      INTEGER IRadFloor(MPCOM), InitRadFloor(MPCOM)
       INTEGER irf
 
 C     If radiant floor is active, transport future data to present data

@@ -113,6 +113,10 @@ C yet defined.
         call findwhichdbpath('opt',lworking,ier)
         lworking=MCMPDBFL
         call findwhichdbpath('msc',lworking,ier)
+        lworking=lfmould
+        call findwhichdbpath('mld',lworking,ier)
+        lworking=LCLIM
+        call findwhichdbpath('clm',lworking,ier)
       endif
  
     3 INO=-4
@@ -3342,7 +3346,7 @@ C Calendar.
       common/caleni/nbdaytype,nbcaldays(MDTY),icalender(365)
       INTEGER :: icalender,nbcaldays,nbdaytype
 
-      CHARACTER DFILE*72,LLASCI*144,lltmp*144,ltmp*96,lguess*144
+      CHARACTER DFILE*72,LLASCI*144,ltmp*96,lguess*144
       character longtfile*144,longtafile*144,longtfiledos*144
       character message*48,longtmp*144
       CHARACTER DOIT*248,ldoit*300
@@ -3352,7 +3356,6 @@ C Calendar.
       character dinstpath*60,path*72
       character dirpath*72
       CHARACTER*72 NNAME
-      character gdef*72          ! fall back file name
       dimension ICLM(24,6)
       integer llt  ! length of string buffer
       integer ier
@@ -3997,28 +4000,33 @@ C Saturday Sunday. It loops through each Julian day and if the model
 C calendar day type is one of the initial 3 it checks that the model weekday
 C is the same as a Julian weekday. Any calendar day types beyond 3 are 
 C retained. If no calendar was defined in the model then it should do the
-C work silently. (Same logic as in esystem.F) 
+C work silently. (Same logic as in esystem.F). If more than 4 day types
+C do not bother with this check.
             ICREPORT=0
-            DO 123 IDOL=1,365
-              IF(ICALENDER(IDOL).LE.3)THEN
-                CALL EDAYR(IDOL,IDAYNUM,IMTHNUM)
-                CALL EWEEKD(IDAYNUM,IMTHNUM,IYEAR,IDWKNUM)
-                IF(IDWKNUM.LT.6)THEN
-                  IDTYY=1 ! WEEKDAY
-                ELSEIF(IDWKNUM.EQ.6)THEN
-                  IDTYY=2 ! SATURDAY
-                ELSEIF(IDWKNUM.EQ.7)THEN
-                  IDTYY=3 ! SUNDAY
+            if(nbdaytype.gt.4)then
+              continue
+            else
+              DO 123 IDOL=1,365
+                IF(ICALENDER(IDOL).LE.3)THEN
+                  CALL EDAYR(IDOL,IDAYNUM,IMTHNUM)
+                  CALL EWEEKD(IDAYNUM,IMTHNUM,IYEAR,IDWKNUM)
+                  IF(IDWKNUM.LT.6)THEN
+                    IDTYY=1 ! WEEKDAY
+                  ELSEIF(IDWKNUM.EQ.6)THEN
+                    IDTYY=2 ! SATURDAY
+                  ELSEIF(IDWKNUM.EQ.7)THEN
+                    IDTYY=3 ! SUNDAY
+                  ENDIF
+                  IF(ICALENDER(IDOL).EQ.0)THEN
+                    ICALENDER(IDOL)=IDTYY  ! update the model calendar
+                    ICREPORT=2             ! do it silently
+                  ELSEIF(ICALENDER(IDOL).NE.IDTYY)THEN
+                    ICALENDER(IDOL)=IDTYY  ! update the model calendar
+                    ICREPORT=1
+                  ENDIF
                 ENDIF
-                IF(ICALENDER(IDOL).EQ.0)THEN
-                  ICALENDER(IDOL)=IDTYY  ! update the model calendar
-                  ICREPORT=2             ! do it silently
-                ELSEIF(ICALENDER(IDOL).NE.IDTYY)THEN
-                  ICALENDER(IDOL)=IDTYY  ! update the model calendar
-                  ICREPORT=1
-                ENDIF
-              ENDIF
- 123        CONTINUE
+ 123          CONTINUE
+            endif
             if(ICREPORT.EQ.1)then
               CALL EDISP(IUOUT,'  ')
               CALL EDISP(IUOUT,
@@ -4789,7 +4797,7 @@ C Passed parameters:
 
 C Local variables:
       character defaultfile*144  ! default file name
-      character sourcemsg*48     ! dialog for source dialog
+C      character sourcemsg*48     ! dialog for source dialog
       character ending*12         ! end of file name
       character gdef*72          ! fall back file name
       logical clkok
@@ -4832,7 +4840,7 @@ C Setup assumptions based on topic.
       lndbp=lnblnk(standarddbpath)
       if(topic(1:3).eq.'mat')then
         defaultfile=dfcon     ! default standard file
-        sourcemsg='Material properties file (in common).'   ! dialog
+C        sourcemsg='Material properties file (in common).'   ! dialog
         ending='.materialdb'  ! file ending
         if(ipathmat.eq.0.or.ipathmat.eq.1)then
           write(lguess,'(a)') LFMAT(1:lnblnk(LFMAT)) ! suggested name
@@ -4842,7 +4850,7 @@ C Setup assumptions based on topic.
         endif
       elseif(topic(1:3).eq.'mlc')then
         defaultfile=dfmul
-        sourcemsg='Constructions file (in common).'
+C        sourcemsg='Constructions file (in common).'
         ending='.constrdb'
         if(ipathmul.eq.0.or.ipathmul.eq.1)then
           lguess=LFMUL  ! use as is
@@ -4852,7 +4860,7 @@ C Setup assumptions based on topic.
         endif
       elseif(topic(1:3).eq.'opt')then
         defaultfile=doptdb
-        sourcemsg='Optical properties file (in common).'
+C        sourcemsg='Optical properties file (in common).'
         ending='.opticdb'
         if(ipathoptdb.eq.0.or.ipathoptdb.eq.1)then
           lguess=LOPTDB  ! use as is
@@ -4862,7 +4870,7 @@ C Setup assumptions based on topic.
         endif
       elseif(topic(1:3).eq.'pdb')then
         defaultfile=DPCDB
-        sourcemsg='Plant components file (in common).'
+C        sourcemsg='Plant components file (in common).'
         ending='.plantdb'
         if(ipathpcdb.eq.0.or.ipathpcdb.eq.1)then
           lguess=LPCDB
@@ -4872,7 +4880,7 @@ C Setup assumptions based on topic.
         endif
       elseif(topic(1:3).eq.'prs')then
         defaultfile=DAPRES
-        sourcemsg='Pressure coefficients file (in common).'
+C        sourcemsg='Pressure coefficients file (in common).'
         ending='.pressuredb'
         if(ipathapres.eq.0.or.ipathapres.eq.1)then
           lguess=LPCDB
@@ -4882,7 +4890,7 @@ C Setup assumptions based on topic.
         endif
       elseif(topic(1:3).eq.'msc')then
         defaultfile=DMCMPDBFL
-        sourcemsg='Active components file (in common).'
+C        sourcemsg='Active components file (in common).'
         ending='.miscdb'
         if(ipathmsc.eq.0.or.ipathmsc.eq.1)then
           lguess=MCMPDBFL
@@ -4892,7 +4900,7 @@ C Setup assumptions based on topic.
         endif
       elseif(topic(1:3).eq.'mld')then
         defaultfile=dmdbnam
-        sourcemsg='Mould isopleths file (in common).'
+C        sourcemsg='Mould isopleths file (in common).'
         ending='.moulddta'
         if(ipathmsc.eq.0.or.ipathmsc.eq.1)then
           lguess=lfmould
@@ -4902,7 +4910,7 @@ C Setup assumptions based on topic.
         endif
       elseif(topic(1:3).eq.'pro')then
         defaultfile=DPRFDB
-        sourcemsg='Event profile file (in common).'
+C        sourcemsg='Event profile file (in common).'
         ending='.eventdb.a'
         if(ipathprodb.eq.0.or.ipathprodb.eq.1)then
           lguess=LPRFDB
@@ -4912,7 +4920,7 @@ C Setup assumptions based on topic.
         endif
       elseif(topic(1:3).eq.'clm')then
         defaultfile=DCLIM
-        sourcemsg='Weather file (in common).'
+C        sourcemsg='Weather file (in common).'
         if(ipathclim.eq.0.or.ipathclim.eq.1)then
           lguess=LCLIM
         elseif(ipathclim.eq.2)then

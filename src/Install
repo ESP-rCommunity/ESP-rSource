@@ -2051,7 +2051,7 @@ if [ "${LinkDB}" = "yes" ]; then
   echo "*evn ${DBInstDir}/databases/profiles.db2.a" >> ${ESPdir}/default
   echo "*pdb ${DBInstDir}/databases/plantc.db1" >> ${ESPdir}/default
   echo "*ecdb ${DBInstDir}/databases/elcomp.db1" >> ${ESPdir}/default
-  echo "*mcdb ${DBInstDir}/databases/mscomp.db1" >> ${ESPdir}/default
+  echo "*mcdb ${DBInstDir}/databases/mscomp.db2" >> ${ESPdir}/default
   echo "*icdb ${DBInstDir}/databases/icons.db1" >> ${ESPdir}/default
   echo "*mldb ${DBInstDir}/databases/mould.db1" >> ${ESPdir}/default
   echo "*sbem ${DBInstDir}/databases/SBEM.db1" >> ${ESPdir}/default
@@ -2398,7 +2398,7 @@ echo " Installing standard databases. This may take some time."
 
    cd ${SRCdir}/databases
    echo -n "   - Copying ASCII databases..."
-   cp components.db1 ccht_mlc.db multicon.db1 multicon.db2 multicon.db3 multicon.db4 north_american.constrdb optics.db1 optics.db2 optics.db3 ccht-optics.db1 mould.db1 pressc.db1 mscomp.db1 *.desc ${DESTdir}/esp-r/databases
+   cp components.db1 ccht_mlc.db multicon.db1 multicon.db2 multicon.db3 multicon.db4 north_american.constrdb optics.db1 optics.db2 optics.db3 ccht-optics.db1 mould.db1 pressc.db1 mscomp.db1 mscomp.db2 *.desc ${DESTdir}/esp-r/databases
    echo " Done."
 
 fi

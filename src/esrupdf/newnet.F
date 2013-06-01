@@ -2537,6 +2537,7 @@ C D - delete
 
       common /pcdat/ nnodes(mpcom), isv(mpcom,mnodec), 
      &               ndcon(mpcom,mnodec)
+      integer icascf
       common/cctl/icascf(mcom)
 C Common for the building plant lin
       COMMON/BPLINKG/NBPLINK,IBPLINKID(MCF),IPCLINK1(MCF),

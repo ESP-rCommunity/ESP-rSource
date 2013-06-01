@@ -5379,7 +5379,7 @@ C Find out overall length and build 1D array iva.
       do 42 i=1,nbsur
         icc=izstocn(icomp,lstsf(icomp,i))
         if(icc.eq.0)then
-          write(msg,'(a,i2,a,i2,a)') 'Surface list item ',i,
+          write(msg,'(a,i2,a,i2,a)') 'Base surface list item ',i,
      &      ' in zone ',icomp,' not found.'
           call usrmsg(msg,'Check your model.','W')
           ierr=1

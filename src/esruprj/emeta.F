@@ -448,6 +448,7 @@ C Parameters
       COMMON/C24/IZSTOCN(MCOM,MS)
       common/user/browse
       common/cctlnm/ctldoc,lctlf
+      integer icascf
       common/cctl/icascf(mcom)
 
 C Where ESP-r was installed (as recorded when it was compiled).
@@ -694,7 +695,7 @@ C mark anunknownmlc so construction files are not created.
           else
             willneedtmc=.true.
           endif
-        if(imatch.eq.0) then
+          if(imatch.eq.0) then
             anunknownmlc=.true.   ! mark that one MLC is unknown
           endif
         elseif(metaver.eq.1)then
@@ -706,12 +707,9 @@ C section of the construction attributes.
 C If we do not have a match it might be because we are referencing a local
 C database (which does not yet exist because it has not been copied from
 C the original model. In this case << ? >>
-          call edisp(iuout,'Warning: no matching MLC defined!')
-          SOTF(icc)='UNKNOWN'
+            call edisp(iuout,'Warning: no matching MLC defined!')
+            SOTF(icc)='UNKNOWN'
             anunknownmlc=.true.   ! mark that one MLC is unknown
-        else
-          if(DESC(imatch)(15:18).EQ.'OPAQ')then
-            SOTF(icc)='OPAQUE'
           else
             if(mlctype(imatch)(1:4).EQ.'OPAQ')then
               SOTF(icc)='OPAQUE'
@@ -720,7 +718,6 @@ C the original model. In this case << ? >>
               willneedtmc=.true.
             endif
           endif
-        endif
         endif
         SPARENT(icc)='-'
         SUSE(icc,1)='-'
@@ -1219,8 +1216,8 @@ C IPV description via ipvdata.h.
       common/cctlnm/ctldoc,lctlf
       character LCTLF*72,CTLDOC*248
 
-      common/cctl/icascf(mcom)
       integer icascf
+      common/cctl/icascf(mcom)
 
 C XMLMETRICS are the metrics that could be included in the input.xml
 C in case the flag: <dump_all_data> is false

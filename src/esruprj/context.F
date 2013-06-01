@@ -491,28 +491,33 @@ C saturday sunday. It loops through each Julian day and if the model
 C calendar day type is one of the standard 3 it checks that the model weekday
 C is the same as a Julian weekday. Any calendar day types beyond 3 are 
 C retained. If no calendar was defined in the model then it should do the
-C work silently. (Same logic as in esystem.F) 
+C work silently. (Same logic as in esystem.F). If there are more than 4
+C day types in the calendar the user probably has defined their own scheme.
           ICREPORT=0
-          DO 123 IDOL=1,365
-            IF(ICALENDER(IDOL).LE.3)THEN
-              CALL EDAYR(IDOL,IDAYNUM,IMTHNUM)
-              CALL EWEEKD(IDAYNUM,IMTHNUM,IYEAR,IDWKNUM)
-              IF(IDWKNUM.LT.6)THEN
-                IDTYY=1 ! WEEKDAY
-              ELSEIF(IDWKNUM.EQ.6)THEN
-                IDTYY=2 ! SATURDAY
-              ELSEIF(IDWKNUM.EQ.7)THEN
-                IDTYY=3 ! SUNDAY
+          if(nbdaytype.gt.4)then
+            continue
+          else
+            DO 123 IDOL=1,365
+              IF(ICALENDER(IDOL).LE.3)THEN
+                CALL EDAYR(IDOL,IDAYNUM,IMTHNUM)
+                CALL EWEEKD(IDAYNUM,IMTHNUM,IYEAR,IDWKNUM)
+                IF(IDWKNUM.LT.6)THEN
+                  IDTYY=1 ! WEEKDAY
+                ELSEIF(IDWKNUM.EQ.6)THEN
+                  IDTYY=2 ! SATURDAY
+                ELSEIF(IDWKNUM.EQ.7)THEN
+                  IDTYY=3 ! SUNDAY
+                ENDIF
+                IF(ICALENDER(IDOL).EQ.0)THEN
+                  ICALENDER(IDOL)=IDTYY  ! update the model calendar
+                  ICREPORT=2             ! do it silently
+                ELSEIF(ICALENDER(IDOL).NE.IDTYY)THEN
+                  ICALENDER(IDOL)=IDTYY  ! update the model calendar
+                  ICREPORT=1
+                ENDIF
               ENDIF
-              IF(ICALENDER(IDOL).EQ.0)THEN
-                ICALENDER(IDOL)=IDTYY  ! update the model calendar
-                ICREPORT=2             ! do it silently
-              ELSEIF(ICALENDER(IDOL).NE.IDTYY)THEN
-                ICALENDER(IDOL)=IDTYY  ! update the model calendar
-                ICREPORT=1
-              ENDIF
-            ENDIF
- 123      CONTINUE
+ 123        CONTINUE
+          endif
           if(ICREPORT.EQ.1)then
             CALL EDISP(IUOUT,'  ')
             CALL EDISP(IUOUT,
@@ -1123,6 +1128,7 @@ C TDF related.
       COMMON/TDFFLG0/DBTAG(MIT),DBTASK(MIT),DBZN(MIT),DBSN(MIT)
 
       common/sctl/tcps,ictyp,iclaw,cm(misc)
+      integer icascf
       common/cctl/icascf(mcom)
       integer iairn,icaas
       character LAPROB*72

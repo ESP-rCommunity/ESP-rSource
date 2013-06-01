@@ -458,6 +458,7 @@ c solved simultaneously at the current simulation time-step.
 
       COMMON/PVALA/TPA(MCOM),QPA(MCOM)
 
+      integer icascf
       COMMON/CCTL/ICASCF(MCOM)
       COMMON/CONEQN/W(MS,MNM,5)
       COMMON/ZONEQN/E(MEQ,MTR)

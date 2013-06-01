@@ -1323,6 +1323,7 @@ C typical day with free float outside of occupied period.
 #include "geometry.h"
 #include "espriou.h"
       COMMON/FILEP/IFIL
+      integer icascf
       common/cctl/icascf(mcom)
       common/cctlnm/ctldoc,lctlf
 
