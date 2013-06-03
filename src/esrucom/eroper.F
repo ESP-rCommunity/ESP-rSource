@@ -1892,7 +1892,7 @@ C Electrical data flag and elctrical data.
      &    ' Period Sensible  Latent  Radiant  Convec   p.f +/- ',
      &    ' Power Voltage Phase'
         call edisp(itru,outs)
-        write(outs,'(3a)')'          No.               ',
+        write(outs,'(3a)')'          No.                       ',
      &    ' Hours  Magn.(W) Magn.(W) Frac     Frac     (-) (-) ',
      &    '   (W)    (V) (rgb)'
         call edisp(itru,outs)
