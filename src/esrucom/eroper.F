@@ -1150,10 +1150,12 @@ C Read scratch variables for *type.
      &      'casual gain atribute 2',IER)
           goto 42   ! read another line
         elseif(outstr(1:9).eq.'*end_type')then
-          WRITE(6,*) 'lodlabelc ',lodlabelc
-          WRITE(6,*) 'caskeytypec ',caskeytypec
-          WRITE(6,*) 'lodslotc ',lodslotc
-          WRITE(6,*) 'lodatr1c ',lodatr1c
+
+C Debug.
+C          WRITE(6,*) 'lodlabelc ',lodlabelc
+C          WRITE(6,*) 'caskeytypec ',caskeytypec
+C          WRITE(6,*) 'lodslotc ',lodslotc
+C          WRITE(6,*) 'lodatr1c ',lodatr1c
           continue   ! we are done with this section
         endif
       endif
@@ -1207,8 +1209,10 @@ C << still to be done for ip3ver >21 >>
             ICGTC(IDTY,I)=1 ! assume slot one if unspecified
             ICGUnitC(IDTY,I)=1
           endif
-          write(6,*) ' ERZSCHED ',idty,i,ir,ICGTC(IDTY,I),
-     &      ICGUnitC(IDTY,I)
+
+C Debug.
+C          write(6,*) ' ERZSCHED ',idty,i,ir,ICGTC(IDTY,I),
+C     &      ICGUnitC(IDTY,I)
 
           CALL EGETWI(OUTSTR,K,IR,0,24,'W',' gain st',IER)
           ICGSC(IDTY,I)=IR
@@ -1600,9 +1604,9 @@ C Check the range of icgt, remember in irange and use for looping.
       if(irange.lt.3) irange=3
 
 C Debug.
-      write(6,*) 'casual gain range is ',irange
-      write(6,*) 'EMKOPER lodslot ',icomp,':',
-     &  (lodslot(icomp,iph),iph=1,7)
+C      write(6,*) 'casual gain range is ',irange
+C      write(6,*) 'EMKOPER lodslot ',icomp,':',
+C     &  (lodslot(icomp,iph),iph=1,7)
 
       if(ip3ver(icomp).ge.21)then
 
