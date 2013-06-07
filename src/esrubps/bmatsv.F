@@ -50,6 +50,12 @@ C HOT3000: Fuel cell.
 #include "lookup_data.h"
 #include "control.h"
 #include "roam.h"
+#include "power.h"
+#include "OffsiteUtilitiesPublic.h"
+#include "OffsiteUtilitiesPrivate.h"
+#include "qrun.h"
+#include "h3k_report_data.h"
+#include "hvac_parameters.h"
 
       integer lnblnk  ! function definition
 
@@ -94,6 +100,7 @@ C Time-step controller data.
       common/ts3/itsv(msch)
       common/ts4/itsitr(msch),itrpas
       COMMON/TS6/idysv,ihrsv,irwcou,tsclaw,rewnd,nsncv1,nsncv2,pasone
+
 
 C itsplt if set then transfer of mass flow
 C results is required.
@@ -259,6 +266,10 @@ C Indicies of start, end, current & future indicies
 C BASESIMP.
       common/bsmtdef/iBSIMP(MCOM),LBSIMP(MCOM)
       character LBSIMP*72
+
+C Quick-run info
+      integer iOldSeasonIndex     !- Flags for tracking changes between seasons.
+      save iOldSeasonIndex
 
 C Flag for whether there is basesimp file
       logical bsm_flag
@@ -446,10 +457,24 @@ C of the assumed starting conditions.
       inhs=0
       inhsi=0
 
+C If quick run method is requested, set the start date and end date of the
+C simulation to span all periods of interest (all of the best weeks).
+        if ( iQuick_run .eq. 1 ) then
+          iOldSeasonIndex = 0
+          iss = iFirst_day_num - itcnst
+          isf = iLast_day_num
+          nhs = ( iLast_day_num - iFirst_day_num + 1 + itcnst )*24
+
+        endif
+
+
 C Has the start day been converted from a post-new year
 C day to a pre-new year day.
-      IF(ISS.LT.1)THEN
-        iss=365-itcnst+isds
+        IF(ISS.LT.1)THEN
+          iss=365-itcnst+isds
+        if ( iQuick_run .eq. 1 ) then
+          iss = 365 - itcnst + iFirst_day_num
+        endif
         isf=isf+365
         issny=1
 
@@ -474,6 +499,14 @@ C End year: (this data is not used at present)
 
       endif
 
+C Set the variable bSimThisDay (introduced for quick run method)
+C if a quick run is not requested.
+      if ( iQuick_run .ne. 1 ) then
+        quickrun_markdays_loop: do iCount = iss, isf
+             bSimThisDay(iCount) = .true.
+        enddo quickrun_markdays_loop
+      endif
+
 C H3Kreporting object - save the frequency of
 C building timesteps. Note: simulations with
 C different timesteps for multiple domains are
@@ -482,6 +515,15 @@ C.....H3Kreports.(timesteps).start.................
 C.....Minutes per timetep (building domain)
 C.....-> set name
       if ( isH3KEnabled() )  then
+
+C.....->Set flags indicating if h3kreports should (re)initialize
+        bFirst_call_bld = .true.
+        do 88 i = 1, max_sys
+          bFirst_call_hvac(i) = .true.
+88       continue
+        bFirst_call_fan = .true.
+        bFirst_call_hrv = .true.
+        bFirst_call_dhw = .true.
         WRITE(H3K_rep_NAME,'(A)')'minutes_per_step'
         WRITE(H3K_rep_VALUE,'(f7.3)') 60./real(ntstep)
 C.....-> update meta-data
@@ -740,11 +782,45 @@ C Initialize ground temperature profile parameters
 C Start simulation day-loop.
 C (i =curr day, iss = sim start day, isf = finish day)
       do 10 i=iss,isf
+      
+C debug (begin)
+C           print*, 'i = ', i, 'SimthisDay = ', bSimThisDay(i)
+C debug (end)
+
+        seasonal_run_test: if ( bSimThisDay(i) ) then
+
+
+
+C Get seasonal info
+        quick_run_init: if ( iQuick_run == 1 ) then
+
+          iThisSeason = iSeasonIndex(i)
+
+          if ( iOldSeasonIndex /= iThisSeason .and.
+     &         iThisSeason /= 0 ) then
+
+
+            call ReportNewSeason( iThisSeason,
+     &                           fHtgMultiplier(iThisSeason),
+     &                           fClgMultiplier(iThisSeason),
+     &                           fGenMultiplier(iThisSeason)  )
+
+
+            iOldSeasonIndex = iThisSeason
+
+C debug (begin)
+C             print*, 'iThisSeason = ', iThisSeason
+C             print*, 'iOldSeasonIndex = ', iOldSeasonIndex
+C debug (end)
+
+          endif
+        endif quick_run_init
+
 
 C For multi-year simulaitons, determine the current
 C and future time row years, and the incidies of these
 C years with respect to the multi-year climate databases
-        if ( bMY_sim_enabled ) then
+        MY_sim_initialize: if ( bMY_sim_enabled ) then
 C Years
           iMY_current_year = iMY_Start_year + int(float(i-1)/365.0)
           iMY_future_year = iMY_Start_year + int(float(i)/365.0)
@@ -773,7 +849,7 @@ C indicies to the first/last records in the database.
         else
           iYear_p = iYear
           iYear_f = iYear
-        endif
+        endif MY_sim_initialize
 
 C For type 6 time-step controller, loop until saved day,
         if(irew.and.i.lt.idysv)goto 10
@@ -1066,6 +1142,11 @@ C H3Kreports: send simulation time to reporting object
      &          btimep, btimef, ihrp, ihrf, idyp, idyf, its, ntstep,
      &          nsinc )
             endif
+
+C Fuel costs: reset monthly fuel consumption.            
+            if ( bIncFuelCostCalcs ) then
+                  call ResetSumFuelUseArray()
+            end if
 
 C Output current simulation increment if trace on.
             if(itc.gt.0.and.nsinc.ge.itc.and.nsinc.le.itcf.and.
@@ -1642,16 +1723,23 @@ C.....Check to see present time is close to midnight
             endif
 
 C.....Update reports.
-!            if ( bInStartup() ) then
-!              iStartupFlag = 1
-!              iStartupFlag = 0
-!           endif
+            if ( bInStartup() .or. ( iStart_flag(i) .eq. 1 ) ) then
+              iStartupFlag = 1
+            else
+              iStartupFlag = 0
+            endif
 
 C << NOTE: dummy call REP_UPDATE only has 3 parameters >>
-            call ReportNextTimeStep(nsinc,btimep,myday,bInStartup())
+            call ReportNextTimeStep(nsinc,btimep,myday,iStartupFlag,
+     &                              iQuick_run)
 !            call REP_UPDATE(nsinc,btimep,myday, iStartupFlag) ! <- store logged data
 
    30     continue
+
+C debug (begin)
+C          print*, 'i = ', i, 'iStartupFlag = ', iStartupFlag
+C debug (end)
+
 
 C Hour step now complete.
           if(itsct.eq.2.and.iagain.eq.1)goto 27
@@ -1754,6 +1842,8 @@ C GSHP system is defined.
        if(igshp.eq.1) then
          call GSHPSIM
        endif
+
+       endif seasonal_run_test
 
 C Day loop now complete.
    10 continue

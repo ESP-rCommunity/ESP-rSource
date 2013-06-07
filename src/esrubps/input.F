@@ -312,6 +312,9 @@ C igcep = 1 there is a gcep file; igcep = 0 no gcep file.
       common/gcepinfo/igcep
       INTEGER :: igcep
 
+C Function determining if HOT3000 features enabled.
+      logical bH3KExtentionsActive
+      
 C Flag to enable inter-domain iteration 
       common / Plt_Elec_Net / bInter_domain_iteration
       logical bInter_domain_iteration
@@ -423,9 +426,12 @@ C Unless error occured, initiate computation/setting-up of:
             dok=.false.
             helptopic='model_cfg_warning'
             call gethelptext(helpinsub,helptopic,nbhelp)
-            CALL ASKOK(' The model scan was not clean. Do you want',
+            ! Don't ask to rescan model if running in HOT3000 mode
+            if ( .not. bH3KExtentionsActive() )then
+              CALL ASKOK(' The model scan was not clean. Do you want',
      &        'to rescan the model? (see help)',OK,dok,nbhelp)
-            if(OK)goto 42
+              if(OK)goto 42
+            endif
           endif
         endif
       else

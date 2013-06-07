@@ -21,7 +21,8 @@ OBJECTS = basesimp.o basesimp_inputs.o b2e.o bscoeff.o bscoeff_extended.o \
 	CDBPlugins.o CDBCommon.o CDBExplore.o\
 	c2fdum.o clispline.o ctlwrt.o ctread.o daproc.o econtrol.o egeometry.o \
 	emfnetw.o emkcfg.o eroper.o esru_misc.o esystem.o filelist.o initalc.o item.o mfcdat.o \
-	nwkrewr.o pltcfg.o readTrnsys.o rwipv.o rwsbem.o simcomis.o sort.o tdfile.o
+	nwkrewr.o pltcfg.o readTrnsys.o rwipv.o rwsbem.o simcomis.o sort.o tdfile.o \
+    azalt.o qrun.o
 
 MODULES = aim2.mod aim2_calcdata.mod aim2_h2k_dummy.mod aim2_inputdata.mod start_up.mod \
           parse_command_line.mod h3kmodule.mod
@@ -119,6 +120,12 @@ startup.F:
 tdfile.F:
 	rm -f tdfile.F
 	ln -s $(COMdir)/tdfile.F .
+azalt.F:
+	rm -f azalt.F
+	ln -s $(COMdir)/azalt.F .
+qrun.F:
+	rm -f qrun.F
+	ln -s $(COMdir)/qrun.F .
 h3kmodule.f90:
 	rm -f h3kmodule.f90
 	ln -s $(CETCdir)/h3kmodule.f90 .
@@ -135,5 +142,4 @@ clean:
 	CDBPlugins.F CDBCommon.F CDBExplore.F \
 	c2fdum.F ctlwrt.F ctread.F econtrol.F egeometry.F emfnetw.F emkcfg.F esru_misc.F \
 	eroper.F esystem.F filelist.F initalc.F item.F mfcdat.F nwkrewr.F pltcfg.F sort.F startup.F tdfile.F \
-	readTrnsys.F rwipv.F rwsbem.F h3kmodule.f90
-
+	readTrnsys.F rwipv.F rwsbem.F azalt.F qrun.F h3kmodule.f90

@@ -1295,6 +1295,7 @@ C geometry.h provides commons G0/G1/G2/G4/G5/prec2/prec17/precz/c20/GS5/GS6.
 
 C espriou.h provides currentfile.
 #include "espriou.h"
+
       
       integer lnblnk  ! function definition
 
@@ -1537,6 +1538,7 @@ C Check if it matches the syntax of older geometry file format.
           ZDESC(ICOMP)=phrase
           lnzdesc(ICOMP)=lnblnk(phrase)  ! update the length of this string.
         ENDIF
+        zoneLabel(icomp) = WORD(1:32)
         IF(IFLAG.NE.0)GOTO 1002
 
 C If we have reached this position then it is an older geometry

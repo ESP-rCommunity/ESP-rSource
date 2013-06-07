@@ -159,6 +159,10 @@ C areas which are of general interest to many subroutines.
       character zname*12  ! the zone name
       character zdesc*64  ! zone notes
       COMMON/precz/zname(MCOM),zdesc(MCOM)
+      
+c Long zone name for H3K reports
+      common/H3KSTORE_ZONE/zoneLabel(MCOM)
+      CHARACTER zoneLabel*32      
 
       integer lnzname,lnzdesc ! length of zname and zdesc strings
       common/preczln/lnzname(MCOM),lnzdesc(MCOM)

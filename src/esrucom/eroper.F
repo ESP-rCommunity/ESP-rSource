@@ -52,6 +52,74 @@ C EROPER reads zone schedules from a user-constructed datafile.
 
 C Common block variables are:
 
+C oprdesc      - operation notes (248 char)
+
+C ITCTL        - Thermostatic control index :
+C                    control on zone coupled air temperature
+C                    control on zone air temperature
+C                  0 no control
+C                    control on zone air temperature and infiltration
+C                    control on zone coupled air and infiltration
+C TLO, TUP,    - setpoint for low, upper and high
+C THI
+C ACIL, ACVL,  - low level (i.e. if below a setpoint) for control.
+C IVL, TAL     
+C ACIU, ACVU,  - mid level (i.e. if above a setpoint) 1st stage options
+C IVU, TAU       for control.
+C ACIH, ACVH,  - high level (2nd stage options) for control.
+C IVH, TAH
+
+C NAC          - number of distinct air change periods during day type
+C                IDTY
+
+C IACS,IACF    - start and finish hours of each of the above air change
+
+C ACI          - natural infiltration air changes/hour for each period
+C                relating to daytypes above respectively.
+
+C ACV          - additional incoming air changes/hour for each period
+C                relating to daytypes above respectively.
+
+C IPT          - the additional incoming air (corresponding to ACV) 
+C                can either be at constant temperature -
+C                changing, if required, between each period - or set
+C                at the time-dependent temperature of some coupled
+C                zone. The IPT? variable controls this, where:
+C                 IPT?=0 signifies a constant temperature will be specified
+C                 IPT?=N (N>0) signifies that incoming air is at the
+C                        time-dependent temperature of zone N.
+
+C TA           - correspond to IPT?=0 and define the temperature of the
+C                incoming air for each period above respectively.
+
+C NCAS         - number of casual gains during each daytype
+
+C ICGT         - Casual gain type:
+C                 1. Occupancy
+C                 2. Lights
+C                 3. Equipment
+C                 4. User controllable gain (not fully utilised as yet)
+C                -1. Occupancy as floor area per person
+C                -2. Lights in w/m^2 per floor area
+C                -3. Equipment in w/m^2 per floor area
+C
+C               Extra types for use with HOT3000 central and zonal base loads:
+C                 Type 1 with bH3KExtentionsActive: BCD-App (Appliances - linked with BCD file)
+C                 Type 2 with bH3KExtentionsActive: BCD-Lights (Lights linked with BCD file)
+C                 Type 3 with bH3KExtentionsActive: BCD-OElec (Other Electrical linked with BCD file)
+C                 Type 4 with bH3KExtentionsActive: BCD-Occ (Occupants linked with BCD file)
+
+
+
+C ICGS,ICGF    - start and finish hours of each of the above casual gain
+C                periods
+
+C CMGS,CMGL,   - sensible and latent magnitude (in Watts) of
+C                each casual gain
+
+C RADC,CONC,   - radiant and convective portions (proportion
+C                of 1) of each casual gain
+
 C pf           - power factor of electrical load.
 C ipf          - nature of load lagging (reactive), leading (capacative),
 C                or unity (pure resistive).
@@ -69,6 +137,7 @@ C Maximum number of casual gain periods (MC) set in building.h
       include "schedule.h"
       include "espriou.h"
 
+#include "bc_data.h"
 C espriou.h provides currentfile.
 #include "CFC_common.h"
       
@@ -103,6 +172,22 @@ C `roomfan` future linked to flow component
       character caskeytypeper*16  ! for future use with ip3ver 30
       common/p3typekey/caskeytypeper(MDTY,MC)
 
+C----------------------------------------------------------------------
+C Common for data associated with HOT3000 central and zonal Base Loads.
+C - Bart, Aug 28 2010
+      common / H3K_BL_data / iH3K_Base_Loads(MCOM),
+     &                       iBCD_column(MCOM,MDTY,MC),
+     &                       fBL_fraction(MCOM,MDTY,MC),
+     &                       nGain_types(MCOM,MDTY),
+     &                       iGain_type(MCOM,MDTY,MC)
+
+      integer iH3K_Base_Loads, iBCD_column, nGain_types, iGain_type
+      real fBL_fraction
+C----------------------------------------------------------------------
+
+C Function determining if HOT3000 features enabled.
+      logical bH3KExtentionsActive
+
 C Common block P2UNIT defines the units for infiltration and ventilation
 C for each zone and day type. The default value of zero is the same as
 C the (implied) unit in the version (ip3ver 0, 1, 2). A value of
@@ -128,11 +213,12 @@ C Error subroutine and error details for dll mode.
       integer ijk,ireader
       integer lsn  ! length of currentfile
       real reader
-      integer irange,icur  ! for looping
+      integer irange,icur  ! for looping    
       
       ijk=0
       ireader=0
       reader=0.0
+      iH3K_Base_Loads(icomp) = 0
 
 C Check if running in dll mode.
       call isadll(dll)
@@ -529,21 +615,46 @@ C Casual gains for different day types.
         K=0
         CALL EGETWI(OUTSTR,K,IREADER,0,MC,'W','gain periods',IER)
         NCAS(IDTY)=IREADER
+        nGain_types(ICOMP, IDTY) = IREADER     ! used for HOT3000 base loads 
         IF(NCAS(IDTY).EQ.0)goto 600
         DO 40 I=1,NCAS(IDTY)
           CALL STRIPC(IUO,OUTSTR,99,ND,1,'Period gain detail',IER)
           K=0
 
-C If there are 7 or 12 items on the line then the first item will be
+C If there are 7, 9 or 12 items on the line then the first item will be
 C an overloaded casual gain index. The units implied depend on the value
 C of ip3ver. For ip3ver <21 a positive ICGT implies the unit is Watts. 
 C If negative the unit is m2/p for occupants and W/m2 otherwise. 
 C Ip3ver 21+ will already have scanned *type lines. and the lodslot
 C value will be the same as iabs(ICGT).
-          if(ND.eq.7.or.ND.eq.12)then
+          if(ND.eq.7.or.ND.eq.9.or.ND.eq.12)then
             CALL EGETWI(OUTSTR,K,IREADER,-3,7,'W',
      &        'overloaded gain type',IER)
             ICGT(IDTY,I)=IREADER
+            iGain_type(ICOMP, IDTY,I) = IREADER ! used for HOT3000 base loads            
+            
+            ipslot=iabs(ireader)  ! get equivalent of lodslot
+            if(ip3ver(icomp).lt.21)then
+              if(ireader.gt.0)then
+                ICGUnit(IDTY,I)=0
+              elseif(ireader.eq.-1)then
+                ICGUnit(IDTY,I)=2
+              else
+                ICGUnit(IDTY,I)=1
+              endif
+            elseif(ip3ver(icomp).eq.21)then
+              if(ireader.gt.0)then
+                ICGUnit(IDTY,I)=0
+              elseif(ireader.lt.0)then
+                if(caskeytype(icomp,ipslot)(1:6).eq.'people')then
+                  ICGUnit(IDTY,I)=2
+                else
+                  ICGUnit(IDTY,I)=1
+                endif
+              endif
+            else
+C << still to be done for ip3ver >21 >>
+            endif
             ipslot=iabs(ireader)  ! get equivalent of lodslot
             if(ip3ver(icomp).lt.21)then
               if(ireader.gt.0)then
@@ -570,22 +681,73 @@ C << still to be done for ip3ver >21 >>
             ICGT(IDTY,I)=1    ! assume slot one if unspecified
             ICGUnit(IDTY,I)=0 ! assume unit is W
           endif
+          
 C Debug.
 C          write(6,*) 'eroper 552 ',idty,i,ireader,ICGT(IDTY,I),
 C     &      ICGUnit(IDTY,I)
 
-          CALL EGETWI(OUTSTR,K,IREADER,0,24,'W','gain st',IER)
-          ICGS(IDTY,I)=IREADER
-          CALL EGETWI(OUTSTR,K,IREADER,0,24,'W','gain fn',IER)
-          ICGF(IDTY,I)=IREADER
-          CALL EGETWR(OUTSTR,K,READER,0.,0.,'-','gain sens',IER)
-          CMGS(IDTY,I)=READER
-          CALL EGETWR(OUTSTR,K,READER,0.,0.,'-','gain latent',IER)
-          CMGL(IDTY,I)=READER
-          CALL EGETWR(OUTSTR,K,READER,0.,1.,'W','gain rad fr',IER)
-          RADC(IDTY,I)=READER
-          CALL EGETWR(OUTSTR,K,READER,0.,1.,'W','gain conv fr',IER)
-          CONC(IDTY,I)=READER
+          ! Added support of HOT3000 Base Loads BC data file linkage with
+          ! operations file.
+          if(ND.eq.9 .and. bH3KExtentionsActive())then 
+            ! two additional data are read in: BCD column
+            ! index and Base Load fraction
+
+          ! Make sure that BCD file has been defined. If not, display
+          ! error message and stop.
+            if ( .not. bBC_data_defined ) then
+              ! Display error message and stop.
+              write(outs,'(a,I2, a)') 
+     &         ' Error: Operations file for zone ',
+     &         icomp, ' expects BC data file which does not exist.'
+              call edisp(iuout,outs)
+              stop 'Fatal Error'
+            endif
+
+          ! set flag for HOT3000 Base Loads
+            iH3K_Base_Loads(icomp) = 1
+
+            CALL EGETWI(OUTSTR,K,IREADER,1,100,'W','BCD column',IER)
+            iBCD_column(ICOMP,IDTY,I) = IREADER
+            CALL EGETWR(OUTSTR,K,READER,0.,1.,'W','BL fraction',IER)
+            fBL_fraction(ICOMP,IDTY,I)=READER
+            CALL EGETWI(OUTSTR,K,IREADER,0,24,'W','gain st',IER)
+            ICGS(IDTY,I)=IREADER
+            CALL EGETWI(OUTSTR,K,IREADER,0,24,'W','gain fn',IER)
+            ICGF(IDTY,I)=IREADER
+
+          ! When BCD data is used with the HOT3000 base loads facility,
+          ! set CMGS and CMGL to sensible and latent fractions to account
+          ! for any base load that does not translate 100% into a 
+          ! internal heat gain (e.g., dishwasher or dryer) 
+            CALL EGETWR(OUTSTR,K,READER,0.,1.,'W','gain sens',IER)
+            CMGS(IDTY,I)=READER
+            CALL EGETWR(OUTSTR,K,READER,0.,1.,'W','gain latent',IER)
+            CMGL(IDTY,I)=READER
+
+            CALL EGETWR(OUTSTR,K,READER,0.,1.,'W','gain rad fr',IER)
+            RADC(IDTY,I)=READER
+            CALL EGETWR(OUTSTR,K,READER,0.,1.,'W','gain conv fr',IER)
+            CONC(IDTY,I)=READER
+
+          else ! default read sequence
+C Debug.
+C          write(6,*) 'eroper 552 ',idty,i,ireader,ICGT(IDTY,I),
+C     &      ICGUnit(IDTY,I)
+
+            CALL EGETWI(OUTSTR,K,IREADER,0,24,'W','gain st',IER)
+            ICGS(IDTY,I)=IREADER
+            CALL EGETWI(OUTSTR,K,IREADER,0,24,'W','gain fn',IER)
+            ICGF(IDTY,I)=IREADER
+            CALL EGETWR(OUTSTR,K,READER,0.,0.,'-','gain sens',IER)
+            CMGS(IDTY,I)=READER
+            CALL EGETWR(OUTSTR,K,READER,0.,0.,'-','gain latent',IER)
+            CMGL(IDTY,I)=READER
+            CALL EGETWR(OUTSTR,K,READER,0.,1.,'W','gain rad fr',IER)
+            RADC(IDTY,I)=READER
+            CALL EGETWR(OUTSTR,K,READER,0.,1.,'W','gain conv fr',IER)
+            CONC(IDTY,I)=READER
+          end if
+
           IF(ICGS(IDTY,I).GT.ICGF(IDTY,I))then
 
 C Found a period out of order, warn user and carry on.
@@ -642,9 +804,10 @@ C for ip3ver < 21. Loop to see the magintude of icgt already referenced.
 C For older files now assume there are always at least 3 different labels.
 C Test that the number of labels matches what was found when
 C reading the period lines.
-      if(ip3ver(icomp).lt.21)then
+      if(ip3ver(icomp).lt.21 .and.(.not.bH3KExtentionsActive()))then
         if(irange.lt.3) irange=3
       endif
+
 C Debug.
 C      write(6,*) 'casual gain read range is ',irange
 

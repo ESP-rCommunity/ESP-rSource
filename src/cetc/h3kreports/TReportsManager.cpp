@@ -735,6 +735,37 @@ extern "C"
 
 
    /* ********************************************************************
+   ** Method:   set_var_additional_info()
+   ** Purpose:  Called by the Fortran code to sets extra flags for
+   **           identifying variables.  This is only used by quickrun at the
+   **           moment
+   ** Params:   iIdentifier - variable identifier number
+   **           iPropertyNum - hardcoded between fortran and c++ property
+   **                         number, see table below
+   **           bValue - value to set
+   ** Returns:  N/A
+   ** Author:   Claude Lamarche
+   ** Mod Date:2012-02-03
+   **
+   **    Property Table **
+   **    ___________________
+   **   | 1   |   scale_htg |
+   **   | 2   |   scale_clg |
+   **   | 3   |   scale_gen |
+   **    -------------------
+   ** ***************************************************************** */
+   void set_var_additional_info__(int *iIdentifier,int *iPropertyNum,bool *bValue)
+   {
+      TReportsManager::Instance()->SetVarAdditionalInfo(*iIdentifier,*iPropertyNum,*bValue);
+   }
+   void set_var_additional_info_(int *iIdentifier,int *iPropertyNum,bool *bValue)
+   {
+      set_var_additional_info__(iIdentifier,iPropertyNum,bValue);
+   }
+
+
+
+   /* ********************************************************************
    ** Method:   generate_output()
    ** Purpose:  Called by the fortran code to start the report generation
    ** Scope:    Public
@@ -792,16 +823,43 @@ extern "C"
    ** Returns:  N/A
    ** Author:   Claude Lamarche
    ** Mod Date: 2011-07-14
+   ** Mod Date: 2013-13-16 - added iQrun to function parameters
    ** ***************************************************************** */
-   void report_next_time_step__(int *iStep,int *iHour,int *iDay,int *iStartup)
+   void report_next_time_step__(int *iStep,int *iHour,int *iDay,int *iStartup, int *iQrun)
    {
       //Call ReportManager routine to store the time step data
-      TReportsManager::Instance()->AddToTimeStepList((*iStartup)?true:false, *iStep, *iDay, *iHour);
+      TReportsManager::Instance()->AddToTimeStepList((*iStartup)?true:false, *iStep, *iDay, *iHour, *iQrun);
    }
    //dummy routine, calls the __
-   void report_next_time_step_(int *iStep,int *iHour,int *iDay,int *iStartup)
+   void report_next_time_step_(int *iStep,int *iHour,int *iDay,int *iStartup, int *iQrun)
    {
-      report_next_time_step__(iStep,iHour,iDay,iStartup);
+      report_next_time_step__(iStep,iHour,iDay,iStartup, iQrun);
+   }
+
+
+   /* ********************************************************************
+   ** Method:   report_new_season()
+   ** Purpose:  Called by the fortran code to indicate the start of
+   **           a new season, used for QuickRun mode only
+   ** Scope:    Public
+   ** Params:   iSeason_index  - season index
+   **           fHtgMultiplier - Htg Multiplier for season
+   **           fClgMultiplier - Clg Multiplier for season
+   **           fGenMultiplier - Gen Multiplier for season
+   ** Returns:  N/A
+   ** Author:   Claude Lamarche
+   ** Mod Date: 2012-02-03
+   ** ***************************************************************** */
+   void report_new_season__(int* iSeason_index, float* fHtgMultiplier,
+                        float* fClgMultiplier, float* fGenMultiplier )
+   {
+      TReportsManager::Instance()->AddNewSeason(*iSeason_index,*fHtgMultiplier,
+                                                *fClgMultiplier, *fGenMultiplier);
+   }
+   void report_new_season_(int* iSeason_index, float* fHtgMultiplier,
+                        float* fClgMultiplier, float* fGenMultiplier )
+   {
+      report_new_season__(iSeason_index,fHtgMultiplier,fClgMultiplier,fGenMultiplier);
    }
 
 
@@ -877,10 +935,12 @@ TReportsManager::TReportsManager(  )
    m_iTimeStepPerHour = 0; //set by bps
    m_lOutputStepCount = 0;
    m_iStartMonthIndex = 0;
+   m_iStartSeasonIndex = 0;
    m_lSaveToDisk = 0; //set by input.xml
    m_AnnualBinStepCount = 0;
    m_iYearCount = 0;
    bReports_Enabled = false;
+   m_bSeasonalRun = false;
    bUseResFilenameRoot = false;
 
 
@@ -959,10 +1019,15 @@ void TReportsManager::SetSimulationInfo(int iStartDay,int iEndDay,int iTimeStep)
 **           Monthly, this is where you would control this.
 ** Author:   Claude Lamarche
 ** Mod Date: 2011-07-14
+** Mod Date: 2013-03-16 - added iQrun to function parameters
 ** ***************************************************************** */
-void TReportsManager::AddToTimeStepList(bool bStartup, int iStep, int iDay, int iHour){
+void TReportsManager::AddToTimeStepList(bool bStartup, int iStep, int iDay, int iHour, int iQrun){
    struct stTimeStep ts;
    static bool bOutofStartup = false;
+   static bool bLastSimulationStarted = false;
+   bool bSimulationStarted = !bStartup;
+   int iBinIndex;
+
    ReportDataMap::iterator itDataMap;
    int iModulus;
 
@@ -990,7 +1055,6 @@ void TReportsManager::AddToTimeStepList(bool bStartup, int iStep, int iDay, int 
    ts.Day = iDay;
    ts.Hour = iHour;
 
-
    //A year change is indicate by the iDay being smaller then the last one sent
    if(m_TimeStepList.size() > 0)
    {
@@ -1001,8 +1065,44 @@ void TReportsManager::AddToTimeStepList(bool bStartup, int iStep, int iDay, int 
       }
    }
 
+   //For quick run mode, check for a change in the stargup flag.
+   //Simulation either left startup mode or re-entered.
+   if (iQrun == 1)
+   {
+        if(bReportStartup && bLastSimulationStarted == false)
+        {
+            for(itDataMap = m_ReportDataList.begin(); itDataMap != m_ReportDataList.end(); itDataMap++)
+            {
+                itDataMap->second.SetSimulationStarted(true);
+            }
+            bLastSimulationStarted = true;
+        }
+        else if(bLastSimulationStarted != bSimulationStarted)
+        {
+            for(itDataMap = m_ReportDataList.begin(); itDataMap != m_ReportDataList.end(); itDataMap++)
+            {
+                itDataMap->second.SetSimulationStarted(bSimulationStarted);
+            }
+            bLastSimulationStarted = bSimulationStarted;
+        }
+    }
+    else // otherwise, execute only once when the simulation first exits startup
+    {
+        if(!bStartup || bReportStartup)
+        {
+            if(!bOutofStartup)
+            {
+                //Set the report variable that have already been initiated to simulation started true
+                for(itDataMap = m_ReportDataList.begin(); itDataMap != m_ReportDataList.end(); itDataMap++)
+                {
+                    itDataMap->second.SetSimulationStarted(true);
+                }
+                bOutofStartup = true;
+            }
+        }        
+    }
 
-   //once out of startup mode it never returns
+   //an active step
    if(!bStartup || bReportStartup)
    {
       //Increment Active Step Counter
@@ -1011,33 +1111,28 @@ void TReportsManager::AddToTimeStepList(bool bStartup, int iStep, int iDay, int 
       if (m_lActiveSteps == 1){
          m_iActualStartDay = iDay;
          m_iStartMonthIndex = GetMonthIndex(iDay + (m_iYearCount*365));
-      }
-
+         m_iStartSeasonIndex = m_iCurrentSeasonIndex;
+      }     
+      
       //Store the current Time Step's month index;, ignore startup steps.
       m_iCurrentMonthIndex = GetMonthIndex(iDay + (m_iYearCount*365));
 
-      //Code will be executed only once, when the simulation first exits startup.
-      if(!bOutofStartup)
-      {
-         //Set the report variable that have already been initiated to simulation started true
-         for(itDataMap = m_ReportDataList.begin(); itDataMap != m_ReportDataList.end(); itDataMap++)
-         {
-            itDataMap->second.SetSimulationStarted(true);
-         }
-
-         bOutofStartup = true;
-      }
    }
+   
+   //Store the Bin data's total time step count
+   if(m_bSeasonalRun)
+      iBinIndex = m_iCurrentSeasonIndex -m_iStartSeasonIndex;
+   else
+      iBinIndex = m_iCurrentMonthIndex -m_iStartMonthIndex;
 
-   //Store the Monthly Bin data's total time step count
-   while(m_BinStepCount.size() < m_iCurrentMonthIndex -m_iStartMonthIndex +1)
+   while(m_BinStepCount.size() < iBinIndex +1)
    {
       m_BinStepCount.push_back(0); //creates bin if it does not exist
    }
 
    if(bReportStartup || !bStartup)
    {
-      m_BinStepCount.back() = m_BinStepCount[m_iCurrentMonthIndex- m_iStartMonthIndex] + 1;
+      m_BinStepCount.back() = m_BinStepCount[iBinIndex] + 1;
 
       //Store the annual bin data's total time step count
       m_AnnualBinStepCount++;
@@ -1070,6 +1165,7 @@ void TReportsManager::AddToVariableInfoList(int id,const char* sVarName, const c
    rv.MetaType = sMetaType;
    rv.MetaValue = sMetaValue;
    rv.Description = sDescription;
+   rv.Multiplier = MULT_NONE;
 
    //insert the value to the map object
    m_VariableInfoList.insert(make_pair(id,rv));
@@ -1150,12 +1246,13 @@ bool TReportsManager::IsReportDetailWildSet(int id, const char* sDelimiter)
 ** ***************************************************************** */
 void TReportsManager::AddToReportDataList(int id, const char* sDelimiter, float fValue){
    ReportDataMap::iterator it;
-   VariableInfoMap::iterator itInfoMap;
+   VariableInfoMap::const_iterator itInfoMap;
+   int iBinIndex;
+
 
    //Find if it exits
    it = m_ReportDataList.find(stMapKey(id,string(sDelimiter)));
    if(it == m_ReportDataList.end()){
-      
       //create and retrieve the new member
       m_ReportDataList.insert(make_pair(stMapKey(id,string(sDelimiter)),TReportData(!m_bStartUp)));
       it = m_ReportDataList.find(stMapKey(id,string(sDelimiter)));
@@ -1178,7 +1275,6 @@ void TReportsManager::AddToReportDataList(int id, const char* sDelimiter, float 
       //populate some startup information that is found in the VariableInfo dictionary
       itInfoMap = m_VariableInfoList.find(id);
       if(itInfoMap != m_VariableInfoList.end()){
-         
 
          //Create the fully qualified variable name
          GetVariableName(itInfoMap->second.VarName,sDelimiter,it->second.sVarName);
@@ -1221,12 +1317,53 @@ void TReportsManager::AddToReportDataList(int id, const char* sDelimiter, float 
    }
    #endif
 
+   //Choose the bin index Monthly or Seasonal
+   if(m_bSeasonalRun)
+      iBinIndex = m_iCurrentSeasonIndex - m_iStartSeasonIndex;
+   else
+      iBinIndex = m_iCurrentMonthIndex-m_iStartMonthIndex;
+
    //Push the value to the storage bins,
    if(bReportStartup)
-      it->second.AddValue(m_lCurrentStep-m_lOutputStepCount,m_iCurrentMonthIndex-m_iStartMonthIndex,fValue);
+      it->second.AddValue(m_lCurrentStep-m_lOutputStepCount,iBinIndex,fValue);
    else
-      it->second.AddValue(m_lActiveSteps-m_lOutputStepCount,m_iCurrentMonthIndex-m_iStartMonthIndex,fValue);
+      it->second.AddValue(m_lActiveSteps-m_lOutputStepCount,iBinIndex,fValue);
+}
 
+
+/* ********************************************************************
+** Method:   AddNewSeason
+** Scope:    public
+** Purpose:  Called by the fortran code for Quick run calculations, this
+**           method captures and stores the season multipliers
+** Params:   iSeason_index - season index
+**           fHtgMultiplier - Htg multiplier
+**           fClgMultiplier - Clg multiplier
+**           fGenMultiplier - Gen multiplier
+** Returns:  N/A
+** Author:   Claude Lamarche
+** Mod Date: 2012-02-07
+** ***************************************************************** */
+void TReportsManager::AddNewSeason(int iSeason_index,float fHtgMultiplier,float fClgMultiplier, float fGenMultiplier)
+{
+   ReportDataMap::iterator itDataMap;
+
+   //calling this method indicates the run is Quickrun
+   m_bSeasonalRun = true;
+
+   //Store index
+   m_iCurrentSeasonIndex = iSeason_index;
+
+   //Size the vector, will only pass there once
+   if(m_SeasonMultipliersList.size() <  12)
+   {
+      m_SeasonMultipliersList.resize(12);
+   }
+
+    // store seasonal multiplication factors (remember, c arrays start at zero!
+   m_SeasonMultipliersList[iSeason_index-1].Htg = fHtgMultiplier;
+   m_SeasonMultipliersList[iSeason_index-1].Clg = fClgMultiplier;
+   m_SeasonMultipliersList[iSeason_index-1].Gen = fGenMultiplier;
 }
 
 /*
@@ -1247,6 +1384,37 @@ void TReportsManager::setCSVFileName(const std::string& sFileName){
       sCSVFileName="out.csv";
     }
 }
+
+/* ********************************************************************
+** Method:   SetVarAdditionalInfo
+** Scope:    public
+** Purpose:  Called by the fortran code, this add a property flag for
+**           a variable.  Only used for quickrun for now.
+** Params:   iIdentifier - variable number identifier
+**           iPropertyNum
+**           bValue - ignore for now, only called when true
+** Returns:  N/A
+** Author:   Claude Lamarche
+** Mod Date: 2012-02-07
+**    Property Table **
+   **    ___________________
+   **   | 1   |   scale_htg |
+   **   | 2   |   scale_clg |
+   **   | 3   |   scale_gen |
+   **    -------------------
+** ***************************************************************** */
+void TReportsManager::SetVarAdditionalInfo(int iIdentifier,int iPropertyNum,bool bValue)
+{
+   VariableInfoMap::iterator itInfoMap;
+
+   itInfoMap = m_VariableInfoList.find(iIdentifier);
+   if(itInfoMap != m_VariableInfoList.end())
+   {
+      //found the variable to update, update the multiplier
+      itInfoMap->second.Multiplier = iPropertyNum;
+   }
+}
+
 
 /* ********************************************************************
 ** Method:   GetVariableName
@@ -1328,6 +1496,7 @@ int TReportsManager::GetMonthIndex(int iDay)
    return i+(iNumberYears*12);
 }
 
+
 /* ********************************************************************
 ** Method:   IsVariableEnable
 ** Scope:    public
@@ -1350,6 +1519,7 @@ bool TReportsManager::IsVariableEnable(int iVarIdentifier)
 //   }
 
    return true; // bReturn;
+
 }
 
 
@@ -1386,6 +1556,7 @@ bool TReportsManager::IsVariableEnable(const char* cPattern)
 //   }
 //
 //   return bReturn;
+
 }
 
 
@@ -1406,7 +1577,7 @@ void TReportsManager::GenerateOutput(){
    stSortedMapKeyRef sortedMapKeylist[m_ReportDataList.size()];
    TXMLAdapter XMLAdapter;
    DBManager *objDBManager;
-   int i;
+   int i, iBinIndex;
 
    /* Remove old .csv file -- moved here from "TReportsManager" constructor, 
       seems to work! 2013/04/07 */
@@ -1416,13 +1587,26 @@ void TReportsManager::GenerateOutput(){
 
    //Loop through all collection variables
    i = 0;
+
+   //Choose the bin index Monthly or Seasonal
+   if(m_bSeasonalRun)
+      iBinIndex = m_iCurrentSeasonIndex-m_iStartSeasonIndex;
+   else
+      iBinIndex = m_iCurrentMonthIndex-m_iStartMonthIndex;
+
+
    for(it = m_ReportDataList.begin();it != m_ReportDataList.end(); it++)
    {
       //level out the steps and month containers, same size
       if(bReportStartup)
-         it->second.Finalize(m_lCurrentStep,m_iCurrentMonthIndex-m_iStartMonthIndex, m_lOutputStepCount);
+      {
+         it->second.Finalize(m_lCurrentStep,iBinIndex, m_lOutputStepCount);
+      }
       else
-         it->second.Finalize(m_lActiveSteps,m_iCurrentMonthIndex-m_iStartMonthIndex, m_lOutputStepCount);
+      {
+         it->second.Finalize(m_lActiveSteps,iBinIndex, m_lOutputStepCount);
+      }
+
 
       //Kludge: for performance reasons, we'll sort by the pointers to the variable
       //        name definitions and store pointer to MapKey object from the
@@ -1621,9 +1805,9 @@ void TReportsManager::OutputSQLiteData(DBManager *objDBManager)
    string sIntegratedUnits;
    const char *sMetaValue;
    long lStep,lVariableID;
-   int i,j, iVariableDescID;
-   bool bIntegratedUnit,bIsWatt;
-   double dTotal;
+   int i,j, iVariableDescID, iMultiplierFlag;
+   bool bIntegratedUnit,bIsWatt, bScaleOK;
+   double dTotal, dAnnualTotal, dScaleFactor;
 
    //Populate the common variable descriptors
    for(itInfoMap = m_VariableInfoList.begin(); itInfoMap != m_VariableInfoList.end(); itInfoMap++)
@@ -1728,10 +1912,18 @@ void TReportsManager::OutputSQLiteData(DBManager *objDBManager)
             ptrBin = itDataMap->second.GetNextLogBin();
             while(ptrBin != NULL)
             {
-               objDBManager->addBinData(lVariableID,i,(int)m_BinStepCount[i],(int)ptrBin->ActiveTimesteps(),
+               if(!m_bSeasonalRun)
+               {
+                  objDBManager->addBinData(lVariableID,i,(int)m_BinStepCount[i],(int)ptrBin->ActiveTimesteps(),
                                               ptrBin->Sum(), ptrBin->Max(), ptrBin->Min(), ptrBin->ActiveAverage(),
-                                              ptrBin->TotalAverage(m_BinStepCount[i]),1);
-
+                                              ptrBin->TotalAverage(m_BinStepCount[i]),BIN_MONTH_TYPE);
+               }
+               else
+               {
+                  objDBManager->addBinData(lVariableID,i,(int)m_BinStepCount[i],(int)ptrBin->ActiveTimesteps(),
+                                              ptrBin->Sum(), ptrBin->Max(), ptrBin->Min(), ptrBin->ActiveAverage(),
+                                              ptrBin->TotalAverage(m_BinStepCount[i]),BIN_SEASONAL_TYPE);
+               }
 
                //Get next
                ptrBin = itDataMap->second.GetNextLogBin();
@@ -1743,7 +1935,7 @@ void TReportsManager::OutputSQLiteData(DBManager *objDBManager)
             ptrBin = itDataMap->second.GetAnnualBin();
             objDBManager->addBinData(lVariableID,0,(int)m_AnnualBinStepCount,(int)ptrBin->ActiveTimesteps(),
                                               ptrBin->Sum(), ptrBin->Max(), ptrBin->Min(), ptrBin->ActiveAverage(),
-                                              ptrBin->TotalAverage(m_AnnualBinStepCount),0);
+                                              ptrBin->TotalAverage(m_AnnualBinStepCount),BIN_ANNUAL_TYPE);
 
 
             //send the integrated data
@@ -1751,17 +1943,17 @@ void TReportsManager::OutputSQLiteData(DBManager *objDBManager)
             bIntegratedUnit = false;
             bIsWatt = false;
 
-            //Get the metavalue, information in a different location when
+            //Get the metavalue
+            itInfoMap = m_VariableInfoList.find(itDataMap->first.identifier);
+            sMetaValue = itInfoMap->second.MetaValue;
+            iMultiplierFlag = itInfoMap->second.Multiplier; //relevant for QuickRun mode
+            //information in a different location when
             //add_to_report_details is used. usually - false
             if(itDataMap->second.IsVariableDescriptionWild())
             {
                sMetaValue = itDataMap->second.getVariableMetaValue().c_str();
             }
-            else
-            {
-               itInfoMap = m_VariableInfoList.find(itDataMap->first.identifier);
-               sMetaValue = itInfoMap->second.MetaValue;
-            }
+
 
             //set the integrated types
             if(strcmp(sMetaValue,"(W)")==0)
@@ -1795,38 +1987,97 @@ void TReportsManager::OutputSQLiteData(DBManager *objDBManager)
                sIntegratedUnits = "tonne";
                bIntegratedUnit = true;
             }
+            else if(strcmp(sMetaValue,"($/s)")==0)
+            {
+               sIntegratedUnits = "$";
+               bIntegratedUnit = true;
+            }
 
             if(bIntegratedUnit)
             {
-               i = 0;
-
-               //Integrate monthly bin data
-               itDataMap->second.GetNextLogBinReset();
-               ptrBin = itDataMap->second.GetNextLogBin();
-               while(ptrBin != NULL)
+               if(!m_bSeasonalRun)
                {
-                  //for W->J, convert result calculated in GJ
+                  i = 0;
+                  //Integrate monthly bin data
+                  itDataMap->second.GetNextLogBinReset();
+                  ptrBin = itDataMap->second.GetNextLogBin();
+                  while(ptrBin != NULL)
+                  {
+                     //for W->J, convert result calculated in GJ
+                     if (bIsWatt)
+                        dTotal = (ptrBin->Sum() * m_fMinutePerTimeStep * 60. ) / 1e09;
+                     else
+                        dTotal = ptrBin->Sum() * m_fMinutePerTimeStep * 60.;
+
+
+                     objDBManager->addIntegratedData(lVariableID,i,sIntegratedUnits.c_str(),dTotal, BIN_MONTH_TYPE);
+
+                     //Get Next bin
+                     ptrBin = itDataMap->second.GetNextLogBin();
+                     i++;
+                  }
+
+                  //Integrated annual bin data
+                  ptrBin = itDataMap->second.GetAnnualBin();
                   if (bIsWatt)
                      dTotal = (ptrBin->Sum() * m_fMinutePerTimeStep * 60. ) / 1.e09;
                   else
                      dTotal = ptrBin->Sum() * m_fMinutePerTimeStep * 60.;
 
-
-                  objDBManager->addIntegratedData(lVariableID,i,sIntegratedUnits.c_str(),dTotal, BIN_MONTH_TYPE);
-
-                  //Get Next bin
-                  ptrBin = itDataMap->second.GetNextLogBin();
-                  i++;
+                  objDBManager->addIntegratedData(lVariableID,0,sIntegratedUnits.c_str(),dTotal, BIN_ANNUAL_TYPE);
                }
-
-               //Integrated annual bin data
-               ptrBin = itDataMap->second.GetAnnualBin();
-               if (bIsWatt)
-                  dTotal = (ptrBin->Sum() * m_fMinutePerTimeStep * 60. ) / 1.e09;
                else
-                  dTotal = ptrBin->Sum() * m_fMinutePerTimeStep * 60.;
+               {
+                  //Integrated seasonal bin data
+                  bScaleOK = false;
+                  dAnnualTotal = 0.;
+                  i = 0;
 
-               objDBManager->addIntegratedData(lVariableID,0,sIntegratedUnits.c_str(),dTotal, BIN_ANNUAL_TYPE);
+                  if(iMultiplierFlag != MULT_NONE)
+                  {
+                     bScaleOK = true;
+
+                     itDataMap->second.GetNextLogBinReset();
+                     ptrBin = itDataMap->second.GetNextLogBin();
+                     while(ptrBin != NULL)
+                     {
+                        switch(iMultiplierFlag)
+                        {
+                           case MULT_HTG:
+                              dScaleFactor =  m_SeasonMultipliersList[i].Htg;
+                              break;
+                           case MULT_CLG:
+                              dScaleFactor = m_SeasonMultipliersList[i].Clg;
+                              break;
+                           case MULT_GEN:
+                              dScaleFactor = m_SeasonMultipliersList[i].Gen;
+                              break;
+                           default:
+                              dScaleFactor = 1.0;
+                        }
+
+                        //for W->J, convert result calculated in GJ
+                        if (bIsWatt)
+                           dTotal = (ptrBin->Sum() * m_fMinutePerTimeStep * 60. * dScaleFactor) / 1e09;
+                        else
+                           dTotal = ptrBin->Sum() * m_fMinutePerTimeStep * 60. * dScaleFactor;
+
+                        dAnnualTotal += dTotal;
+
+                        objDBManager->addIntegratedData(lVariableID,i,sIntegratedUnits.c_str(),dTotal, BIN_SEASONAL_TYPE);
+
+                        //Get Next bin
+                        ptrBin = itDataMap->second.GetNextLogBin();
+                        i++;
+                     }
+                  }
+
+                  if(bScaleOK)
+                  {
+                     //annual calculated seaonal data
+                     objDBManager->addIntegratedData(lVariableID,0,sIntegratedUnits.c_str(),dAnnualTotal, BIN_ANNUAL_TYPE);
+                  }
+               }
             }
          }
       }
@@ -1912,7 +2163,10 @@ void TReportsManager::OutputXMLData(const char *sFileName, stSortedMapKeyRef sor
    vector<TXMLNode> nextNodeVector;
    string sIntegratedUnits;
    int i,j;
-   double dTotal;
+   double dTotal,dAnnualTotal;
+   int iMultiplierFlag;
+   double dScaleFactor;
+   bool bScaleOK;
 
    //Get some of the input configs
    if(m_params["hierarchy"].empty() || m_params["hierarchy"] == "tree")
@@ -1975,19 +2229,18 @@ void TReportsManager::OutputXMLData(const char *sFileName, stSortedMapKeyRef sor
 
             //START add description
             //Fetch the description for this node in the case it's overwritten by the
+            itInfoMap = m_VariableInfoList.find(itDataMap->first.identifier);
+            sMetaType = itInfoMap->second.MetaType;
+            sMetaValue= itInfoMap->second.MetaValue;
+            sDescription = itInfoMap->second.Description;
+            iMultiplierFlag = itInfoMap->second.Multiplier; //relevant data when Quick run mode is on
+
             //add_to_report_details routines fetch from a different store.
             if(itDataMap->second.IsVariableDescriptionWild())
             {
                sMetaValue = itDataMap->second.getVariableMetaValue().c_str();
                sMetaType = itDataMap->second.getVariableMetaType().c_str();
                sDescription = itDataMap->second.getVariableDescription().c_str();
-            }
-            else
-            {
-               itInfoMap = m_VariableInfoList.find(itDataMap->first.identifier);
-               sMetaType = itInfoMap->second.MetaType;
-               sMetaValue= itInfoMap->second.MetaValue;
-               sDescription = itInfoMap->second.Description;
             }
 
             //Add to XML
@@ -2002,9 +2255,13 @@ void TReportsManager::OutputXMLData(const char *sFileName, stSortedMapKeyRef sor
             ptrBin = itDataMap->second.GetNextLogBin();
             while(ptrBin != NULL)
             {
-
                currentNode = objXMLdoc.AddNode(tokenNode,"binned_data","");
-               objXMLdoc.AddAttribute(currentNode, "type", "monthly");
+
+               if(m_bSeasonalRun)
+                  objXMLdoc.AddAttribute(currentNode, "type", "seasonal");
+               else
+                  objXMLdoc.AddAttribute(currentNode, "type", "monthly");
+
                objXMLdoc.AddNode(currentNode, "index", StringValue(sTemp,i));
                objXMLdoc.AddNode(currentNode, "steps", StringValue(sTemp,(int)m_BinStepCount[i]));
                objXMLdoc.AddNode(currentNode, "active_steps", StringValue(sTemp,(int)ptrBin->ActiveTimesteps()));
@@ -2076,41 +2333,110 @@ void TReportsManager::OutputXMLData(const char *sFileName, stSortedMapKeyRef sor
                sIntegratedUnits = "tonne";
                bIntegratedUnit = true;
             }
+            else if(strcmp(sMetaValue,"($/s)")==0)
+            {
+               sIntegratedUnits = "$";
+               bIntegratedUnit = true;
+            }
 
             if(bIntegratedUnit)
             {
-               integratedNode = objXMLdoc.AddNode(tokenNode, "integrated_data", "");
-               objXMLdoc.AddAttribute(integratedNode,"units",sIntegratedUnits.c_str());
-
-               //Integrate monthly bin data
-               i = 0;
-               itDataMap->second.GetNextLogBinReset();
-               ptrBin = itDataMap->second.GetNextLogBin();
-               while(ptrBin != NULL)
+               //Integrate bin data
+               if(!m_bSeasonalRun)
                {
-                  //for W->J, convert result calculated in GJ
+                  integratedNode = objXMLdoc.AddNode(tokenNode, "integrated_data", "");
+                  objXMLdoc.AddAttribute(integratedNode,"units",sIntegratedUnits.c_str());
+
+                  //Monthly bins
+                  i = 0;
+                  itDataMap->second.GetNextLogBinReset();
+                  ptrBin = itDataMap->second.GetNextLogBin();
+                  while(ptrBin != NULL)
+                  {
+                     //for W->J, convert result calculated in GJ
+                     if (bIsWatt)
+                        dTotal = (ptrBin->Sum() * m_fMinutePerTimeStep * 60. ) / 1e09;
+                     else
+                        dTotal = ptrBin->Sum() * m_fMinutePerTimeStep * 60.;
+
+                     currentNode = objXMLdoc.AddNode(integratedNode,"bin",StringValue(sTemp,dTotal));
+                     objXMLdoc.AddAttribute(currentNode, "number", StringValue(sTemp,i));
+                     if(m_bSeasonalRun)
+                        objXMLdoc.AddAttribute(currentNode, "type", "seasonal");
+                     else
+                        objXMLdoc.AddAttribute(currentNode, "type", "monthly");
+
+                     //Get Next bin
+                     ptrBin = itDataMap->second.GetNextLogBin();
+                     i++;
+                  }
+
+                  // And integrate annual data
+                  ptrBin = itDataMap->second.GetAnnualBin();
                   if (bIsWatt)
                      dTotal = (ptrBin->Sum() * m_fMinutePerTimeStep * 60. ) / 1e09;
                   else
                      dTotal = ptrBin->Sum() * m_fMinutePerTimeStep * 60.;
-
                   currentNode = objXMLdoc.AddNode(integratedNode,"bin",StringValue(sTemp,dTotal));
-                  objXMLdoc.AddAttribute(currentNode, "number", StringValue(sTemp,i));
-                  objXMLdoc.AddAttribute(currentNode, "type", "monthly");
-
-                  //Get Next bin
-                  ptrBin = itDataMap->second.GetNextLogBin();
-                  i++;
+                  objXMLdoc.AddAttribute(currentNode, "type", "annual");
                }
-
-               // And integrate annual data
-               ptrBin = itDataMap->second.GetAnnualBin();
-               if (bIsWatt)
-                  dTotal = (ptrBin->Sum() * m_fMinutePerTimeStep * 60. ) / 1e09;
                else
-                  dTotal = ptrBin->Sum() * m_fMinutePerTimeStep * 60.;
-               currentNode = objXMLdoc.AddNode(integratedNode,"bin",StringValue(sTemp,dTotal));
-               objXMLdoc.AddAttribute(currentNode, "type", "annual");
+               {
+                  //seasonal bins
+                  bScaleOK = false;
+                  dAnnualTotal = 0.;
+                  i = 0;
+
+                  //C.L. if not specified with seasonal mult don't display integrated_data
+                  if(iMultiplierFlag != MULT_NONE)
+                  {
+                     bScaleOK = true;
+                     integratedNode = objXMLdoc.AddNode(tokenNode, "integrated_data", "");
+                     objXMLdoc.AddAttribute(integratedNode,"units",sIntegratedUnits.c_str());
+
+                     itDataMap->second.GetNextLogBinReset();
+                     ptrBin = itDataMap->second.GetNextLogBin();
+                     while(ptrBin != NULL)
+                     {
+                        switch(iMultiplierFlag)
+                        {
+                           case MULT_HTG:
+                              dScaleFactor =  m_SeasonMultipliersList[i].Htg;
+                              break;
+                           case MULT_CLG:
+                              dScaleFactor = m_SeasonMultipliersList[i].Clg;
+                              break;
+                           case MULT_GEN:
+                              dScaleFactor = m_SeasonMultipliersList[i].Gen;
+                              break;
+                           default:
+                              dScaleFactor = 1.0;
+                        }
+
+
+                        dTotal = ptrBin->Sum() * m_fMinutePerTimeStep * 60. *  dScaleFactor;
+
+                        if(strcmp(sMetaValue,"(W)")==0){dTotal = dTotal / 1e09;}
+                        dAnnualTotal = dAnnualTotal + dTotal;
+
+                        currentNode = objXMLdoc.AddNode(integratedNode, "bin", StringValue(sTemp,dTotal));
+                        objXMLdoc.AddAttribute(currentNode, "number", StringValue(sTemp,i));
+                        objXMLdoc.AddAttribute(currentNode, "type", "seasonal");
+                        objXMLdoc.AddAttribute(currentNode, "scale", StringValue(sTemp,(float)dScaleFactor));
+
+                        //Get Next bin
+                        ptrBin = itDataMap->second.GetNextLogBin();
+                        i++;
+                     }
+                  }
+                  //C.L. 2012-02-22 - if bScaleOK is false we should not display the annual integrated bin since its not calculated.
+                  // And integrate annual data
+                  if(bScaleOK)
+                  {
+                     currentNode = objXMLdoc.AddNode(integratedNode,"bin",StringValue(sTemp,dAnnualTotal));
+                     objXMLdoc.AddAttribute(currentNode, "type", "annual");
+                  }
+               }
             }
             //END Custom manipulation: Integrate mass/energy flow
          }
@@ -2489,8 +2815,6 @@ void TReportsManager::OutputDictionary(const char* sFileName, stSortedMapKeyRef 
 {
    VariableInfoMap::const_iterator itInfoMap;
    ReportDataMap::iterator itDataMap;
-
-   
    const char *sMetaValue, *sDescription, *sVarName;
    FILE *pFile;
 
@@ -2542,6 +2866,7 @@ void TReportsManager::OutputDictionary(const char* sFileName, stSortedMapKeyRef 
                  sVarName,
                  itInfoMap->second.Description, 
                  itInfoMap->second.MetaValue);
+
 
          //Get next ReportData Map iterator
          if(bSortOutput)
@@ -3081,7 +3406,6 @@ unsigned char TReportsManager::GetOutputType(const char* search_text){
          for(it = m_nodes.begin(); it != m_nodes.end(); it++)
          {
             sStr = *it;
-            
             if(Cwildcard_engine.wildcardfit(sStr.c_str(),search_text) == 1)
             {
                cOutputType = cOutputType | OUT_LOG;
@@ -3133,6 +3457,3 @@ void TReportsManager::Cleanup(){
 
    return;
 }
-
-
-

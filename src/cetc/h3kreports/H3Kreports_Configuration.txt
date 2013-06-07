@@ -31,8 +31,8 @@ ESP-r's existing 'res' program.  During the simulation, routines in
 ESP-r pass data to H3Kreports. Upon the completion of the simulation,
 H3Kreports outputs the stored data in a variety of different formats.
 
-
 REQUIREMENTS
+
 ================================
 
 H3Kreports requires the libxml2 library. The libxslt library is not
@@ -170,7 +170,6 @@ configuration options include:
                plant/Fan_3/power/net_power
 
                plant/Fan_*/power/*        (wildcard matching, matches above)
-
    <output_dictionary>
 
      - Instructs H3Kreports to output a list in ascii format of variables
@@ -184,7 +183,7 @@ configuration options include:
        engine to jump over sections of code if a specified set of variables
        are not part of the data output.  Example of this include all
        zones, surfaces and nodes variables.
-
+       
    <report_startup_period_data>
 
      - Instructs H3Kreports to output data collected during the simulation
@@ -359,7 +358,6 @@ Step 2: Call the routine your code.
          --> cVariableType: overwrites the %VariableType
          --> cDescription: overwrite the %Description
 
-
 H3Kreports MEMORY FOOTPRINT
 ===========================
 
@@ -374,6 +372,15 @@ too large.  There is also a built in trigger that will turn on
 save_to_disk if the number of timesteps exceeds a certain number.
 See the save_to_disk option for additional information.
 
+       _____________________            _________________
+      | VariableDescriptors |          |   TimeSteps     |
+      |---------------------|          |-----------------|
+      | ID           (INT)  |          | ID       (INT)  |
+      | MetaName    (TEXT)  |          | HOUR     (INT)  |
+      | MetaType    (TEXT)  |          | DAY      (INT)  |
+      | MetaValue   (TEXT)  |          | Startup  (INT)  |
+      | Description (TEXT)  |          |_________________|
+      |_____________________|
 
 DATABASE STRUCTURE
 ===========================
@@ -438,6 +445,7 @@ Diagram below is a visual representation of the database model.
                      | Description (TEXT) |
                      |____________________|
 
+- TimeSteps: store all the timesteps of a the simulation. 
 
 Data Dictionary (summary)
 -------------------------
@@ -487,5 +495,3 @@ Notes:
       WHERE V.name like 'building/zone_%/envelope/ceilings/heat_loss'
          AND TS.day = 31
       GROUP BY V.Name;
-
-

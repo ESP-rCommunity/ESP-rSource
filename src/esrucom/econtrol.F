@@ -669,7 +669,7 @@ C Reporting:
   42          continue
               IF(IER.NE.0)GOTO 99
             ENDIF
-
+			
 C Set building-side function generator flag.
             if(ibsn(ii,1).eq.-6)then
                bfngn=.true.
@@ -4462,6 +4462,7 @@ C control loops for legality.
 #include "plant.h"
 #include "net_flow.h"
 #include "control.h"
+#include "blc25_open_windows.h"
 
       common/OUTIN/IUOUT,IUIN
       integer icascf
@@ -4519,14 +4520,13 @@ C Check for minimum allowable free cooling delta T
           ll = nbcdp(ii,jj)
           do kk = 1, ll
             if ( ibclaw(ii, jj, kk) .eq. 27) then
-                if( bmiscd(II,JJ,KK,8) .lt. 2.0 )then
+                if( bmiscd(II,JJ,KK,8) .lt. fMinDelTFreeCool )then
                     goto 1011
                 end if
             end if 
           end do
         end do
       end do
-
 
 C Set up data for building control function ii.
       isn1=ibsn(ii,1)

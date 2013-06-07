@@ -32,7 +32,7 @@ C simulaton period to be appropriately set in terms of the inherent
 C characteristics of the chosen climatic collection.
 
       SUBROUTINE CLMSYN
-      COMMON/CLMVAR/VNAME(6)
+      COMMON/CCLMVAR/VNAME(6)
       COMMON/RADTYP/IDNGH
       COMMON/OUTIN/IUOUT,IUIN
 
@@ -504,7 +504,7 @@ C      6 RELATIVE HUMIDITY
       COMMON/PERC/ID1,IM1,IT1,ID2,IM2,IT2,IDS,IDF,INEW
       COMMON/DAYSF/KDS,KDF
       common/exporttgi/ixopen,ixloc,ixunit
-      COMMON/CLMVAR/VNAME(6)
+      COMMON/CCLMVAR/VNAME(6)
 
       DIMENSION XJ(MT),XLO(MT),XHI(MT)
       DIMENSION XMAXI(MT),XMINI(MT),XMEANI(MT),X2I(MT)

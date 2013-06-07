@@ -36,7 +36,7 @@ OBJECTS = runesp.o arrow.o ascii_mat.o \
 	MultiYear_climate.o net2pdf.o newnet.o nwkrewr.o \
 	pltcfg.o pltnet.o prescoef.o prjdmds.o prjfmk.o prjqa.o \
 	psychro.o rcdblist.o readTrnsys.o rwipv.o rwroam.o rwsbem.o sort.o \
-	 tdfedit.o tdfile.o tdgraph.o
+	 tdfedit.o tdfile.o tdgraph.o qrun.o
 
 MODULES = aim2.mod aim2_calcdata.mod aim2_h2K_dummy.mod aim2_inputdata.mod start_up.mod \
 	parse_command_line.mod h3kmodule.mod
@@ -311,6 +311,9 @@ tdgraph.F:
 tdfedit.F:
 	rm -f tdfedit.F
 	ln -s $(PRJdir)/tdfedit.F .
+qrun.F:
+	rm -f qrun.F
+	ln -s $(COMdir)/qrun.F .
 aim2_module.F:
 	rm -f aim2_module.F
 	ln -s $(BLDdir)/aim2_module.F .
@@ -341,6 +344,4 @@ clean:
 	mfnmsc.F mfrlst.F mksbem.F MultiYear_climate.F net2pdf.F newnet.F nwkrewr.F \
 	pltcfg.F pltnet.F prescoef.F prjdmds.F prjfmk.F prjqa.F psychro.F rcdblist.F \
 	rwipv.F rwroam.F rwsbem.F readTrnsys.F sort.F startup.F tdfedit.F tdfile.F tdgraph.F \
-	editCFC.F 
-
-
+	editCFC.F qrun.F

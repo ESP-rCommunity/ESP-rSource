@@ -18,11 +18,13 @@ MODULE h3kmodule
 
 
    !Public subroutines and functions
-   public :: ReportNextTimeStep, SetReportParameter, &
+   public :: ReportNextTimeStep, ReportNewSeason, SetReportParameter, &
              isH3KEnabled, UpdateH3kSimInfo, UpdateH3kReport, &
              GenerateOutput, UpdateConfigFile, SetReportConfig, &
              GetReportConfig, ReportToggleConfig, GetReportList, &
-             isReportingInstalled, SetReportEnable, IsH3kVarEnabled
+             isReportingInstalled, SetReportEnable, IsH3kVarEnabled, &
+             SetAdditionalValues
+
 
    !Function overloading interface to push a value to the TReportsManager
    INTERFACE AddToReport
@@ -103,7 +105,7 @@ MODULE h3kmodule
          rvInsolationAdverse, rvInternalGainsTotal, rvInternalGainsUseful, &
          rvInternalGainsAdverse, rvBuildingAllZonesSuppliedEnergyHeating, &
          rvBuildingAllZonesSuppliedEnergyCooling, rvBuildingAllZonesSuppliedEnergyNetFlux, &
-         rvFreeCoolingDelivered , rvNodeTemp
+         rvFreeCoolingDelivered , rvNodeTemp, rvBldZnLightPow, rvBldZnEquipPow, rvFreeCoolCtlFlag
    Type(ReportVariable) :: rvBuildingAllZonesInsolationTotal, rvBuildingAllZonesInsolationUseful, &
          rvBuildingAllZonesInsolationAdverse, rvBuildingAllZonesEnvelopeWindowsHeatLoss, &
          rvBuildingAllZonesEnvelopeWallsHeatLoss, rvBuildingAllZonesEnvelopeFloorsHeatLoss, &
@@ -119,6 +121,7 @@ MODULE h3kmodule
          rvBuildingAllZonesThermalLoadsCoolingTotal, rvBuildingAllZonesThermalLoadsNet, &
          rvBuildingAllZonesInternalGainsTotal, rvBuildingAllZonesInternalGainsUseful, &
          rvBuildingAllZonesInternalGainsAdverse, rvBuildingAllZonesEnergyBalanceNet, &
+         rvBldAllZonesLightPowTtl, rvBldAllZonesEquipPowTtl, &
          rvBuildingZoneLightFrac, rvBuildingZoneLightingzoneIllum, &
          rvBuildingZoneDGP, rvBuildingZoneUGR, rvIntSurfTemperature, &
          rvExtSurfTemperature, rvPlantContainmentFlux, rvHCi, rvICORI, rvHCe, rvICORE, rvPRT, rvHRi, rvAmbRT, &
@@ -132,7 +135,7 @@ MODULE h3kmodule
    Type(ReportVariable) :: rvBuildingTimePresent, rvBuildingTimeFuture,rvBuildingHourPresent, &
          rvBuildingHourFuture,rvBuildingDayNumberPresent, rvBuildingDayNumberFuture,&
          rvBuildingYearPresent,rvBuildingYearFuture, rvBuildingDayPresent,rvBuildingMonth, &
-         rvBuildingDayFuture, rvBuildingTimeStep
+         rvBuildingDayFuture, rvBuildingTimeStep, rvBldSeason
    Type(ReportVariable) :: rvPlantCompNodeTemperature, rvPlantCompNodeFirstPhaseFlow, &
          rvPlantCompNodeSecondPhaseFlow,rvPlantCompNodeHydrogenFlow,rvPlantCompNodeConnectTemperature, &
          rvPlantCompNodeConnectWaterFlow,rvPlantCompNodeConnectHydrogenFlow, &
@@ -148,7 +151,7 @@ MODULE h3kmodule
          rvElecNetHybridComponentFlux, rvElecNetPowerOnlyComponents, &
          rvMfnTotalNodeFlowRate,rvMfnTotalNodeVolFlowRate,rvMfnTotalNodeTemp, &
          rvMfnConnectPressureDrop, rvMfnConnectFlowRate,rvMfnConnectVeloc, &
-         rvMfnContamCon,rvMfnConnectCTLpos
+         rvMfnContamCon, rvZoneLabel, rvMfnConnectCTLpos
 
    !Used by ComplexFenestration.F
    Type(ReportVariable) :: rvCFCUvalueISO,rvCFCUvalueActual,rvCFCRgap, &
@@ -167,7 +170,11 @@ MODULE h3kmodule
          rvTFuelAllEndEnergyContSoftWood,rvTFuelAllEndEnergyContPellets, &
          rvTFuelQty,rvTFuelQtyElec,rvTFuelQtyNatGas,rvTFuelQtyOil,rvTFuelQtyProp, &
          rvTFuelQtyMixWood,rvTFuelQtyHardWood,rvTFuelQtySoftWood,rvTFuelQtyPellets, &
-         rvTEnergyQty
+         rvTFuelCstAllEnd, rvTFuelCstAllEndPropane, rvTFuelCstAllEndOil, rvTFuelCstAllEndNaturalGas,  &
+         rvTFuelCstAllEndElectricity, rvTFuelCstAllEndMixedWood, rvTFuelCstAllEndHardWood, &
+         rvTFuelCstAllEndSoftWood, rvTFuelCstAllEndWoodPellet, &
+         rvTFuelCstMixWood, rvTFuelCstHardWood, rvTFuelCstSoftWood, rvTFuelCstPellets, &
+         rvTFuelCst, rvTFuelCstElec, rvTFuelCstNatGas, rvTFuelCstOil, rvTFuelCstProp, rvTEnergyQty
 
    !Used by Solar.F
    Type(ReportVariable) :: rvBuildingGroundReflectivity,rvClimateSnownDepth
@@ -307,6 +314,7 @@ MODULE h3kmodule
          rvPltHvacThrmOutHeat,rvPltHvacFuelEnCool,rvPltHvacPrtCool,rvPltHvacThrmCool, &
          rvPltHvacFuelEnTtl,rvPltHvacCoilCoolSns,rvPltHvacCoilCoolLtnt, &
          rvPltHvacCoilCoolTtl,rvPltHvacCrcFuelEnIn,rvPltHvacCrcFElecAmnt, &
+         rvPltHvacComFuelAmntHeat, rvPltHvacComFuelAmntCool, rvPltHvacComFlAmntAux, &         
          rvPltHvacCrcHeatTrn
 
    !Used by ashp_cooling.F
@@ -384,6 +392,12 @@ CONTAINS
       Call AddVariable(rvPlantPumpElec)
 
       !Used by h3k_report_data.F
+      rvZoneLabel%VariableName = 'bui/*/zone_label/*'
+      rvZoneLabel%MetaType = 'units'
+      rvZoneLabel%VariableType = '(-)'
+      rvZoneLabel%Description = 'Zone label'
+      Call AddVariable(rvZoneLabel)
+      
       rvHeatFluxRadiationShortwave%VariableName = 'bui/*/s*/heat_flux/radiation/shortwave'
       rvHeatFluxRadiationShortwave%MetaType = 'units'
       rvHeatFluxRadiationShortwave%VariableType = '(W)'
@@ -755,6 +769,19 @@ CONTAINS
       rvInternalGainsAdverse%VariableType = '(W)'
       rvInternalGainsAdverse%Description = 'Internal heat gains (convective + radiant) that increase cooling loads'
       Call AddVariable(rvInternalGainsAdverse )
+      
+      rvBldZnLightPow%VariableName = 'building/zone_*/lighting_power'
+      rvBldZnLightPow%MetaType = 'units'
+      rvBldZnLightPow%VariableType = '(W)'
+      rvBldZnLightPow%Description = 'Lighting power'
+      Call AddVariable(rvBldZnLightPow )
+
+      rvBldZnEquipPow%VariableName = 'bui/*/equipment_power'
+      rvBldZnEquipPow%MetaType = 'units'
+      rvBldZnEquipPow%VariableType = '(W)'
+      rvBldZnEquipPow%Description = 'Equipment power'
+      Call AddVariable(rvBldZnEquipPow )
+
 
       rvBuildingAllZonesSuppliedEnergyHeating%VariableName = 'bui/all_z/supplied_energy/heating'
       rvBuildingAllZonesSuppliedEnergyHeating%MetaType = 'units'
@@ -772,8 +799,14 @@ CONTAINS
       rvBuildingAllZonesFreeCooling%MetaType = 'units'
       rvBuildingAllZonesFreeCooling%VariableType = '(W)'
       rvBuildingAllZonesFreeCooling%Description = 'Free cooling used in building (all zones).'
-      Call AddVariable(rvBuildingAllZonesSuppliedEnergyCooling )      
-      
+      Call AddVariable(rvBuildingAllZonesSuppliedEnergyCooling )        
+
+      rvFreeCoolCtlFlag%VariableName = 'bui/*/free_cooling_ctl_flag'
+      rvFreeCoolCtlFlag%MetaType = 'units'
+      rvFreeCoolCtlFlag%VariableType = '(-)'
+      rvFreeCoolCtlFlag%Description = 'Free cooling control flag'
+      Call AddVariable(rvFreeCoolCtlFlag )
+	  
       rvBuildingAllZonesSuppliedEnergyNetFlux%VariableName = 'bui/all_z/supplied_energy/net_flux'
       rvBuildingAllZonesSuppliedEnergyNetFlux%MetaType = 'units'
       rvBuildingAllZonesSuppliedEnergyNetFlux%VariableType = '(W)'
@@ -961,6 +994,18 @@ CONTAINS
       rvBuildingAllZonesInternalGainsAdverse%Description = 'Sensible heat transfer from occupants, ' // &
             'lights and equipment that increase cooling loads (all zones).'
       Call AddVariable(rvBuildingAllZonesInternalGainsAdverse)
+
+      rvBldAllZonesLightPowTtl%VariableName = 'bui/all_z/lighting_power/total'
+      rvBldAllZonesLightPowTtl%MetaType = 'units'
+      rvBldAllZonesLightPowTtl%VariableType = '(W)'
+      rvBldAllZonesLightPowTtl%Description = 'Power consumption of lights (all zones).'
+      Call AddVariable(rvBldAllZonesLightPowTtl)
+
+      rvBldAllZonesEquipPowTtl%VariableName = 'bui/all_z/equipment_power/total'
+      rvBldAllZonesEquipPowTtl%MetaType = 'units'
+      rvBldAllZonesEquipPowTtl%VariableType = '(W)'
+      rvBldAllZonesEquipPowTtl%Description = 'Power consumption of equipment (all zones).'
+      Call AddVariable(rvBldAllZonesEquipPowTtl)
 
       rvBuildingAllZonesEnergyBalanceNet%VariableName = 'bui/all_z/energy_balance/net'
       rvBuildingAllZonesEnergyBalanceNet%MetaType = 'units'
@@ -1237,6 +1282,12 @@ CONTAINS
       rvBuildingTimeStep%VariableType = '(-)'
       rvBuildingTimeStep%Description = 'Time step #'
       Call AddVariable(rvBuildingTimeStep)
+      
+      rvBldSeason%VariableName = 'building/season'
+      rvBldSeason%MetaType = 'units'
+      rvBldSeason%VariableType = '(-)'
+      rvBldSeason%Description = 'Current season in simulation (Quick-run mode)'
+      Call AddVariable(rvBldSeason)
 
       rvPlantCompNodeTemperature%VariableName = 'plt/*/node_*/temperature'
       rvPlantCompNodeTemperature%MetaType = 'units'
@@ -1611,12 +1662,24 @@ CONTAINS
       rvTFuelAllEndQty%VariableType = '*** Not defined ***'
       rvTFuelAllEndQty%Description = 'Total amount of fuel used on site'
       Call AddVariable(rvTFuelAllEndQty)
+      
+      rvTFuelCstAllEnd%VariableName = 'total_fuel_cost/*/all_end_uses/quantity'
+      rvTFuelCstAllEnd%MetaType = 'units'
+      rvTFuelCstAllEnd%VariableType = '($/s)'
+      rvTFuelCstAllEnd%Description = 'Total cost of ##Undefined## used on site'
+      Call AddVariable(rvTFuelCstAllEnd)
 
       rvTFuelAllEndQtyElectricity%VariableName = 'total_fuel_use/electricity/all_end_uses/quantity'
       rvTFuelAllEndQtyElectricity%MetaType = 'units'
       rvTFuelAllEndQtyElectricity%VariableType = '(kWh/s)'
       rvTFuelAllEndQtyElectricity%Description = 'Total amount of electricity used on site.'
       Call AddVariable(rvTFuelAllEndQtyElectricity)
+      
+      rvTFuelCstAllEndElectricity%VariableName = 'total_fuel_cost/electricity/all_end_uses/quantity'
+      rvTFuelCstAllEndElectricity%MetaType = 'units'
+      rvTFuelCstAllEndElectricity%VariableType = '($/s)'
+      rvTFuelCstAllEndElectricity%Description = 'Total cost of electricity used on site.'
+      Call AddVariable(rvTFuelCstAllEndElectricity)
 
       rvTFuelAllEndQtyNaturalGas%VariableName = 'total_fuel_use/natural_gas/all_end_uses/quantity'
       rvTFuelAllEndQtyNaturalGas%MetaType = 'units'
@@ -1624,17 +1687,35 @@ CONTAINS
       rvTFuelAllEndQtyNaturalGas%Description = 'Total amount of natural gas used on site.'
       Call AddVariable(rvTFuelAllEndQtyNaturalGas)
 
+      rvTFuelCstAllEndNaturalGas%VariableName = 'total_fuel_cost/natural_gas/all_end_uses/quantity'
+      rvTFuelCstAllEndNaturalGas%MetaType = 'units'
+      rvTFuelCstAllEndNaturalGas%VariableType = '($/s)'
+      rvTFuelCstAllEndNaturalGas%Description = 'Total cost of natural gas used on site.'
+      Call AddVariable(rvTFuelCstAllEndNaturalGas)
+      
       rvTFuelAllEndQtyOil%VariableName = 'total_fuel_use/oil/all_end_uses/quantity'
       rvTFuelAllEndQtyOil%MetaType = 'units'
       rvTFuelAllEndQtyOil%VariableType = '(l/s)'
       rvTFuelAllEndQtyOil%Description = 'Total amount of oil used on site.'
       Call AddVariable(rvTFuelAllEndQtyOil)
 
+      rvTFuelCstAllEndOil%VariableName = 'total_fuel_cost/oil/all_end_uses/quantity'
+      rvTFuelCstAllEndOil%MetaType = 'units'
+      rvTFuelCstAllEndOil%VariableType = '($/s)'
+      rvTFuelCstAllEndOil%Description = 'Total cost of oil used on site.'
+      Call AddVariable(rvTFuelCstAllEndOil)
+
       rvTFuelAllEndQtyPropane%VariableName = 'total_fuel_use/propane/all_end_uses/quantity'
       rvTFuelAllEndQtyPropane%MetaType = 'units'
       rvTFuelAllEndQtyPropane%VariableType = '(m3/s)'
       rvTFuelAllEndQtyPropane%Description = 'Total amount of propane used on site.'
       Call AddVariable(rvTFuelAllEndQtyPropane)
+      
+      rvTFuelCstAllEndPropane%VariableName = 'total_fuel_cost/propane/all_end_uses/quantity'
+      rvTFuelCstAllEndPropane%MetaType = 'units'
+      rvTFuelCstAllEndPropane%VariableType = '($/s)'
+      rvTFuelCstAllEndPropane%Description = 'Total cost of propane used on site.'
+      Call AddVariable(rvTFuelCstAllEndPropane)
 
       rvTFuelAllEndQtyMixedWood%VariableName = 'total_fuel_use/mixed_wood/all_end_uses/quantity'
       rvTFuelAllEndQtyMixedWood%MetaType = 'units'
@@ -1642,11 +1723,23 @@ CONTAINS
       rvTFuelAllEndQtyMixedWood%Description = 'Total amount of mixed wood used on site.'
       Call AddVariable(rvTFuelAllEndQtyMixedWood)
 
+      rvTFuelCstAllEndMixedWood%VariableName = 'total_fuel_cost/mixed_wood/all_end_uses/quantity'
+      rvTFuelCstAllEndMixedWood%MetaType = 'units'
+      rvTFuelCstAllEndMixedWood%VariableType = '($/s)'
+      rvTFuelCstAllEndMixedWood%Description = 'Total cost of mixed wood used on site.'
+      Call AddVariable(rvTFuelCstAllEndMixedWood)
+      
       rvTFuelAllEndQtyHardWood%VariableName = 'total_fuel_use/hard_wood/all_end_uses/quantity'
       rvTFuelAllEndQtyHardWood%MetaType = 'units'
       rvTFuelAllEndQtyHardWood%VariableType = '(tonne/s)'
       rvTFuelAllEndQtyHardWood%Description = 'Total amount of hard wood used on site.'
       Call AddVariable(rvTFuelAllEndQtyHardWood)
+
+      rvTFuelCstAllEndHardWood%VariableName = 'total_fuel_cost/hard_wood/all_end_uses/quantity'
+      rvTFuelCstAllEndHardWood%MetaType = 'units'
+      rvTFuelCstAllEndHardWood%VariableType = '($/s)'
+      rvTFuelCstAllEndHardWood%Description = 'Total cost of hard wood used on site.'
+      Call AddVariable(rvTFuelCstAllEndHardWood)
 
       rvTFuelAllEndQtySoftWood%VariableName = 'total_fuel_use/soft_wood/all_end_uses/quantity'
       rvTFuelAllEndQtySoftWood%MetaType = 'units'
@@ -1654,17 +1747,35 @@ CONTAINS
       rvTFuelAllEndQtySoftWood%Description = 'Total amount of soft wood used on site.'
       Call AddVariable(rvTFuelAllEndQtySoftWood)
 
+      rvTFuelCstAllEndSoftWood%VariableName = 'total_fuel_cost/soft_wood/all_end_uses/quantity'
+      rvTFuelCstAllEndSoftWood%MetaType = 'units'
+      rvTFuelCstAllEndSoftWood%VariableType = '($/s)'
+      rvTFuelCstAllEndSoftWood%Description = 'Total cost of soft wood used on site.'
+      Call AddVariable(rvTFuelCstAllEndSoftWood)
+      
       rvTFuelAllEndQtyWoodPellet%VariableName = 'total_fuel_use/wood_pellets/all_end_uses/quantity'
       rvTFuelAllEndQtyWoodPellet%MetaType = 'units'
       rvTFuelAllEndQtyWoodPellet%VariableType = '(tonne/s)'
       rvTFuelAllEndQtyWoodPellet%Description = 'Total amount of wood pellets used on site.'
       Call AddVariable(rvTFuelAllEndQtyWoodPellet)
 
+      rvTFuelCstAllEndWoodPellet%VariableName = 'total_fuel_cost/wood_pellets/all_end_uses/quantity'
+      rvTFuelCstAllEndWoodPellet%MetaType = 'units'
+      rvTFuelCstAllEndWoodPellet%VariableType = '($/s)'
+      rvTFuelCstAllEndWoodPellet%Description = 'Total cost of wood pellets used on site.'
+      Call AddVariable(rvTFuelCstAllEndWoodPellet)
+      
       rvTFuelQty%VariableName = 'total_fuel_use/*/*/quantity'
       rvTFuelQty%MetaType = 'units'
       rvTFuelQty%VariableType = '*** Type not defined ***'
       rvTFuelQty%Description = '*** Description not defined ***'
       Call AddVariable(rvTFuelQty)
+
+      rvTFuelCst%VariableName = 'total_fuel_cost/*/*/quantity'
+      rvTFuelCst%MetaType = 'units'
+      rvTFuelCst%VariableType = '*** Type not defined ***'
+      rvTFuelCst%Description = '*** Description not defined ***'
+      Call AddVariable(rvTFuelCst)
 
       rvTEnergyQty%VariableName = 'total_fuel_use/test/*/*/energy_content'
       rvTEnergyQty%MetaType = 'units'
@@ -1672,13 +1783,18 @@ CONTAINS
       rvTEnergyQty%Description = 'Energy content of fuel used on site'
       Call AddVariable(rvTEnergyQty)      
       
-      
-      !Claude - the following 8 variable's description differs from the original reporting
+      !Claude - the following 16 variable's description differs from the original reporting
       rvTFuelQtyElec%VariableName = 'total_fuel_use/electricity/*/quantity'
       rvTFuelQtyElec%MetaType = 'units'
       rvTFuelQtyElec%VariableType = '(kWh/s)'
       rvTFuelQtyElec%Description = 'Total amount of electricity used.'
       Call AddVariable(rvTFuelQtyElec)
+
+      rvTFuelCstElec%VariableName = 'total_fuel_cost/electricity/*/quantity'
+      rvTFuelCstElec%MetaType = 'units'
+      rvTFuelCstElec%VariableType = '($/s)'
+      rvTFuelCstElec%Description = 'Total cost of electricity used.'
+      Call AddVariable(rvTFuelCstElec)
 
       rvTFuelQtyNatGas%VariableName = 'total_fuel_use/natural_gas/*/quantity'
       rvTFuelQtyNatGas%MetaType = 'units'
@@ -1686,11 +1802,23 @@ CONTAINS
       rvTFuelQtyNatGas%Description = 'Total amount of natural gas used.'
       Call AddVariable(rvTFuelQtyNatGas)
 
+      rvTFuelCstNatGas%VariableName = 'total_fuel_cost/natural_gas/*/quantity'
+      rvTFuelCstNatGas%MetaType = 'units'
+      rvTFuelCstNatGas%VariableType = '($/s)'
+      rvTFuelCstNatGas%Description = 'Total cost of natural gas used.'
+      Call AddVariable(rvTFuelCstNatGas)
+
       rvTFuelQtyOil%VariableName = 'total_fuel_use/oil/*/quantity'
       rvTFuelQtyOil%MetaType = 'units'
       rvTFuelQtyOil%VariableType = '(l/s)'
       rvTFuelQtyOil%Description = 'Total amount of oil used.'
       Call AddVariable(rvTFuelQtyOil)
+
+      rvTFuelCstOil%VariableName = 'total_fuel_cost/oil/*/quantity'
+      rvTFuelCstOil%MetaType = 'units'
+      rvTFuelCstOil%VariableType = '($/s)'
+      rvTFuelCstOil%Description = 'Total cost of oil used.'
+      Call AddVariable(rvTFuelCstOil)
 
       rvTFuelQtyProp%VariableName = 'total_fuel_use/propane/*/quantity'
       rvTFuelQtyProp%MetaType = 'units'
@@ -1698,11 +1826,23 @@ CONTAINS
       rvTFuelQtyProp%Description = 'Total amount of propane used.'
       Call AddVariable(rvTFuelQtyProp)
 
+      rvTFuelCstProp%VariableName = 'total_fuel_cost/propane/*/quantity'
+      rvTFuelCstProp%MetaType = 'units'
+      rvTFuelCstProp%VariableType = '($/s)'
+      rvTFuelCstProp%Description = 'Total cost of propane used.'
+      Call AddVariable(rvTFuelCstProp)
+
       rvTFuelQtyMixWood%VariableName = 'total_fuel_use/mixed_wood/*/quantity'
       rvTFuelQtyMixWood%MetaType = 'units'
       rvTFuelQtyMixWood%VariableType = '(tonne/s)'
       rvTFuelQtyMixWood%Description = 'Total amount of mixed wood used.'
       Call AddVariable(rvTFuelQtyMixWood)
+
+      rvTFuelCstMixWood%VariableName = 'total_fuel_cost/mixed_wood/*/quantity'
+      rvTFuelCstMixWood%MetaType = 'units'
+      rvTFuelCstMixWood%VariableType = '($/s)'
+      rvTFuelCstMixWood%Description = 'Total cost of mixed wood used.'
+      Call AddVariable(rvTFuelCstMixWood)
 
       rvTFuelQtyHardWood%VariableName = 'total_fuel_use/hard_wood/*/quantity'
       rvTFuelQtyHardWood%MetaType = 'units'
@@ -1710,11 +1850,23 @@ CONTAINS
       rvTFuelQtyHardWood%Description = 'Total amount of hard wood used.'
       Call AddVariable(rvTFuelQtyHardWood)
 
+      rvTFuelCstHardWood%VariableName = 'total_fuel_cost/hard_wood/*/quantity'
+      rvTFuelCstHardWood%MetaType = 'units'
+      rvTFuelCstHardWood%VariableType = '($/s)'
+      rvTFuelCstHardWood%Description = 'Total cost of hard wood used.'
+      Call AddVariable(rvTFuelCstHardWood)
+
       rvTFuelQtySoftWood%VariableName = 'total_fuel_use/soft_wood/*/quantity'
       rvTFuelQtySoftWood%MetaType = 'units'
       rvTFuelQtySoftWood%VariableType = '(tonne/s)'
       rvTFuelQtySoftWood%Description = 'Total amount of soft wood used.'
       Call AddVariable(rvTFuelQtySoftWood)
+
+      rvTFuelCstSoftWood%VariableName = 'total_fuel_cost/soft_wood/*/quantity'
+      rvTFuelCstSoftWood%MetaType = 'units'
+      rvTFuelCstSoftWood%VariableType = '($/s)'
+      rvTFuelCstSoftWood%Description = 'Total cost of soft wood used.'
+      Call AddVariable(rvTFuelCstSoftWood)
 
       rvTFuelQtyPellets%VariableName = 'total_fuel_use/wood_pellets/*/quantity'
       rvTFuelQtyPellets%MetaType = 'units'
@@ -1722,6 +1874,11 @@ CONTAINS
       rvTFuelQtyPellets%Description = 'Total amount of wood pellets used.'
       Call AddVariable(rvTFuelQtyPellets)
 
+      rvTFuelCstPellets%VariableName = 'total_fuel_cost/wood_pellets/*/quantity'
+      rvTFuelCstPellets%MetaType = 'units'
+      rvTFuelCstPellets%VariableType = '($/s)'
+      rvTFuelCstPellets%Description = 'Total cost of wood pellets used.'
+      Call AddVariable(rvTFuelCstPellets)
 
       !Used by Solar.F
       rvBuildingGroundReflectivity%VariableName = 'bui/Ground_Reflectivity'
@@ -3495,6 +3652,24 @@ CONTAINS
       rvPltHvacComFuelAmnt%VariableType = '*'
       rvPltHvacComFuelAmnt%Description = '*'
       Call AddVariable(rvPltHvacComFuelAmnt)
+      
+      rvPltHvacComFuelAmntHeat%VariableName = 'plant/ideal_hvac_models/component_*/fuel_use/*/amount/heating'
+      rvPltHvacComFuelAmntHeat%MetaType = '*'
+      rvPltHvacComFuelAmntHeat%VariableType = '*'
+      rvPltHvacComFuelAmntHeat%Description = '*'
+      Call AddVariable(rvPltHvacComFuelAmntHeat)
+
+      rvPltHvacComFuelAmntCool%VariableName = 'plt/ideal_hvac_models/component_*/fuel_use/*/amount/cooling'
+      rvPltHvacComFuelAmntCool%MetaType = '*'
+      rvPltHvacComFuelAmntCool%VariableType = '*'
+      rvPltHvacComFuelAmntCool%Description = '*'
+      Call AddVariable(rvPltHvacComFuelAmntCool)
+
+      rvPltHvacComFlAmntAux%VariableName = 'plt/ideal_hvac_models/component_*/fuel_use/*/amount/auxiliaries'
+      rvPltHvacComFlAmntAux%MetaType = '*'
+      rvPltHvacComFlAmntAux%VariableType = '*'
+      rvPltHvacComFlAmntAux%Description = '*'
+      Call AddVariable(rvPltHvacComFlAmntAux)
 
       rvPltHvacFuelEnPilot%VariableName = 'plt/ideal_hvac_models/component_*/fuel_use/energy_input/pilot'
       rvPltHvacFuelEnPilot%MetaType = '*'
@@ -4495,20 +4670,54 @@ CONTAINS
    ! Params:   iStep    - current step number
    !           iHour    - the step's hour
    !           iDay     - the step's day
-   !           bStartup - 1/0 if the step is in startup mode or not
+   !           iStartup - 1/0 if the step is in startup mode or not
    ! Returns:  N/A
    ! Author:   Claude Lamarche
-   ! Mod Date: 2011-07-04
+   ! Mod Date: 2012-02-21 - change method to access int for startup Qrun
+   ! Mod Data: 2013-03-16 - added iQuick_run to function parameters
    ! ********************************************************************
-   Subroutine ReportNextTimeStep(iStep,rTime,iDay,bStartup)
+   Subroutine ReportNextTimeStep(iStep,rTime,iDay,iStartup, iQrun)
       integer, intent(in) :: iStep
       real, intent(in) :: rTime
       integer, intent(in) :: iDay
-      logical, intent(in) :: bStartup
+      integer, intent(in) :: iStartup
+      integer, intent(in) :: iQrun
+      logical :: bStartup
+
 
       !Call c++
       if (isH3KEnabled()) then
-         call report_next_time_step(iStep,int(rTime),iDay,bStartup)
+         if(iStartup == 1) then
+            bStartup = .true.
+         else
+            bStartup = .false.
+         end if
+
+         call report_next_time_step(iStep,int(rTime),iDay,bStartup, iQrun)
+      endif
+   End Subroutine
+
+
+   ! ********************************************************************
+   ! Subroutine: ReportNextSeason
+   ! Purpose:  Wrapper to the C++ call report_new_season, this routine,
+   !           used with QuickRun mode, indicates that a new season has
+   !           begun.
+   ! Params:   iSeason        - Seasons Index
+   !           fHtgMultiplier - the HTG multiplier to use for that season
+   !           fClgMultiplier - the CLG multiplier to use for that season
+   !           fGenMultiplier - the GEN multiplier to use for that season
+   ! Returns:  N/A
+   ! Author:   Claude Lamarche
+   ! Mod Date: 2012-02-03
+   ! ********************************************************************
+   Subroutine ReportNewSeason(iSeason, fHtgMultiplier, fClgMultiplier,fGenMultiplier)
+      integer, intent(in) :: iSeason
+      real, intent(in) :: fHtgMultiplier,fClgMultiplier,fGenMultiplier
+
+      !Call c++
+      if (isH3KEnabled()) then
+         call report_new_season(iSeason, fHtgMultiplier, fClgMultiplier,fGenMultiplier)
       endif
    End Subroutine
 
@@ -4706,6 +4915,39 @@ CONTAINS
       ReportToggleConfig = lRtn
    End Function ReportToggleConfig
 
+   ! ********************************************************************
+   ! Function: SetAdditionalValues
+   ! Purpose:  Wrapper to the c++ call set_additional_flag, method that
+   !           sets extra flags for identifying variables
+   ! Params:   iIdentifier  - ReportVariable Identifier
+   !           iPropertyNum - Hardcoded number identifying a property
+   !                          same numbers will be found if c++
+   !           bValue       - the value to pass
+   ! Returns:  N/A
+   ! Author:   Claude Lamarche
+   ! Mod Date: 2012-02-03
+   ! Note:     For now these are hardcoded constants numbers found in both
+   !           Fortran at C++ but if needs be in the future these constants
+   !           could be shared (only one instance created) and method could
+   !           be overloaded to send different value types (similar to
+   !           AddToReport).
+   !
+   ! ** Property Table **
+   !  ___________________
+   ! | 1   |   scale_htg |
+   ! | 2   |   scale_clg |
+   ! | 3   |   scale_gen |
+   !  -------------------
+   ! ********************************************************************
+   Subroutine SetAdditionalValues(iIdentifier, iPropertyNum, bValue)
+      integer,intent(in) :: iIdentifier, iPropertyNum
+      logical, intent(in) :: bValue
+
+      !call the c+
+      if (isH3KEnabled()) then
+         call set_var_additional_info(iIdentifier,iPropertyNum,bValue)
+      endif
+   End Subroutine
 
    ! ********************************************************************
    ! ***** NEEDS MORE TESTING METHOD DISABLE AT THE MOMENT ******

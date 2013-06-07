@@ -21,7 +21,7 @@ PROG = prj$(EXE)
 
 MODULE_OBJECTS = h3kmodule.o startup.o aim2_module.o aim2_inputs.o
 
-OBJECTS = prj.o anlytc.o arrow.o ascii_mat.o basesimp.o \
+OBJECTS = prj.o anlytc.o arrow.o ascii_mat.o azalt.o basesimp.o \
 	  basesimp_inputs.o blcond.o bnlthp.o bpfcom.o bpfcontrl.o bscoeff.o bscoeff_extended.o \
 	  bsimsel.o c2fdum.o cadio.o cfdat.o cfdrw.o cfg3dv.o cfgmsc.o cfgrid.o cgd.o \
 	  clickonbitmap.o common3dv.o commonclm.o context.o ctlexp.o ctlwrt.o ctprob.o \
@@ -39,7 +39,7 @@ OBJECTS = prj.o anlytc.o arrow.o ascii_mat.o basesimp.o \
 	  prjdmds.o prjfmk.o prjqa.o psychro.o rcdblist.o read3dv.o readTrnsys.o \
 	  rwipv.o rwroam.o rwsbem.o sendd.o sendflt.o senrwl.o sensa.o \
 	  setup.o sort.o spmisc.o stndrds.o tdfedit.o tdfile.o tdgraph.o \
-	  hvacinput.o \
+	  hvacinput.o qrun.o \
 	  PltDummy.o
 
 MODULES = aim2.mod aim2_calcdata.mod aim2_h2k_dummy.mod aim2_inputdata.mod aim2_inputs.mod \
@@ -57,6 +57,9 @@ arrow.F:
 ascii_mat.F:
 	rm -f ascii_mat.F
 	ln -s $(COMdir)/ascii_mat.F .
+azalt.F:
+	rm -f azalt.F
+	ln -s $(COMdir)/azalt.F .
 basesimp.F:
 	rm -f basesimp.F
 	ln -s $(BLDdir)/basesimp.F .
@@ -265,6 +268,12 @@ readTrnsys.F:
 h3kmodule.f90:
 	rm -f h3kmodule.f90
 	ln -s $(CETCdir)/h3kmodule.f90 .
+h3kmodule.f90:
+	rm -f h3kmodule.f90
+	ln -s $(CETCdir)/h3kmodule.f90 .
+qrun.F:
+	rm -f qrun.F
+	ln -s $(COMdir)/qrun.F
 
 strip:
 	@if [ -f $(PROG) ]; then strip $(PROG); fi
@@ -274,7 +283,7 @@ install:
 
 clean:
 	rm -f core $(PROG) $(PROG).exe $(MODULE_OBJECTS) $(OBJECTS) $(MODULES) \
-	anlytc.F aim2_module.F arrow.F ascii_mat.F basesimp.F bscoeff.F bscoeff_extended.F \
+	anlytc.F aim2_module.F arrow.F ascii_mat.F azalt.F basesimp.F bscoeff.F bscoeff_extended.F \
 	bsimsel.F c2fdum.F cfdat.F cfdrw.F cfgmsc.F \
 	cfgrid.F cgd.F common3dv.F commonclm.F ctlexp.F ctprob.F ctread.F DG_controller_menu.F \
 	CDBPlugins.F CDBCommon.F CDBExplore.F \
@@ -284,6 +293,6 @@ clean:
 	hvacinput.F item.F mcdbscn.F mfcdat.F mfelst.F mfnmsc.F mfrlst.F MultiYear_climate.F mvalid.F \
 	net2pdf.F newnet.F nwkrewr.F plelevvc.F pltcfg.F psychro.F rcdblist.F rwipv.F rwroam.F \
 	rwsbem.F senrwl.F sort.F spmisc.F stndrds.F startup.F tdfile.F  \
-	readTrnsys.F PltDummy.F h3kmodule.f90
+	readTrnsys.F PltDummy.F qrun.F h3kmodule.f90
 
 
