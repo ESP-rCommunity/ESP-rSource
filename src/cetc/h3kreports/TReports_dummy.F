@@ -127,16 +127,32 @@
       return
       end
 !.....
-      subroutine report_next_time_step(iStep, iTime, iDay, bStartup)
+      subroutine report_next_time_step(iStep, iTime, iDay, bStartup, 
+     &iQrun)
       integer, intent(in) :: iStep
       real, intent(in) :: iTime
       integer, intent(in) :: iDay
+      integer, intent(in) :: iQrun
       logical, intent(in) :: bStartup
+      return
+      end
+!.....
+      subroutine report_new_season(iSeason, fHtgMultiplier,
+     & fClgMultiplier,fGenMultiplier)
+      integer, intent(in) :: iSeason
+      real, intent(in) :: fHtgMultiplier,fClgMultiplier,fGenMultiplier
       return
       end
 !.....
       subroutine rep_Update_Config(cVariable,cValue)
       character(len=*), intent(in)::cVariable,cValue
+      return
+      end
+!.....
+      subroutine set_var_additional_info(iIdentifier,
+     & iPropertyNum,bValue)
+      integer,intent(in) :: iIdentifier, iPropertyNum
+      logical, intent(in) :: bValue
       return
       end
 !.....

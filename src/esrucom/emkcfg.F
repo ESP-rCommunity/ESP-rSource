@@ -58,6 +58,7 @@ C ICLIM,LCLIM (for climate file)
 #include "UserSimulationToggles.h"
 #include "schedule.h"
 #include "dhw_common.h"
+#include "qrun.h"
 
       INTEGER, PARAMETER :: MSTMC=20
       
@@ -713,6 +714,15 @@ C Diffuse shading flag.
      &    iexcludediff_flag,'  # diffuse shading is excluded'
       endif      
       
+C Flag for quick run method	  
+      if(iQuick_run.eq.0)then
+        WRITE(IFCFG,'(A,i2,A)',IOSTAT=IOS,ERR=2) '*quick_run  ',
+     &    iQuick_run,'  # no'
+      else
+        WRITE(IFCFG,'(A,i2,A)',IOSTAT=IOS,ERR=2) '*quick_run  ',
+     &    iQuick_run,'  # yes'
+      endif	  
+	  
 C SHOCC: library file.
       IF ( bSHOCCed ) then
          WRITE(IFCFG,'(3A)',IOSTAT=IOS,ERR=2) '*shl  ',

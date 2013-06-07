@@ -1614,7 +1614,7 @@ C Do we have enough heating/cooling capacity?
 C Save free-cooling for reporting later.
       fFreeCoolDelivered(IICOMP) = fQFreeCool * (-1.0)      
       
-      
+ 
 C Possibly convert back to W/m^2 if needed.      
 
       if ( bQBySurf ) then 
@@ -1632,10 +1632,9 @@ C Recompute resultant temperature.
       TFUT=(BB3-BB2*Q)/BB1
       
       
-C Save future time-row plant injection. If free cooling 
-C is active, plant does not inject any heating/cooling. 
+C Save future time-row plant injection.  
       if ( bFreeCoolActive ) then   
-        QFut = 0.      
+        QFut = fQFreeCool      
       else       
         QFUT = Q      
       endif 
@@ -5717,11 +5716,10 @@ C Check for free cooling in master zone (are windows open?)
         Tslv = fCoolSetpoint(iicomp) 
         
         fFreeCoolDelivered(IICOMP) = (-1.0)*(BB3-BB1*Tslv)/BB2 
+        bFreeCoolCtl(iicomp) = .true.      
 
         if( fFreeCoolDelivered(IICOMP) < 0. )  
-     &      fFreeCoolDelivered(IICOMP) = 0. 
- 
-        QFUT = 0. 
+     &      fFreeCoolDelivered(IICOMP) = 0.  
 
 C.......Compute the 'conductivity' achieved by free cooling to 
 C.......append to zone mass-balance solution on next timestep. 
@@ -5733,6 +5731,8 @@ C
         fCondFreeCool(IICOMP) = (fFreeCoolDelivered(IICOMP)
      &                         / ( TFA(IICOMP) - TF))
  
+		QFUT = -1.0 * fFreeCoolDelivered(IICOMP)
+
 C.......Determine temperatures in slave zone
         Tslv=(BB3-BB2*fFreeCoolDelivered(IICOMP)*(-1.0))/BB1        
 

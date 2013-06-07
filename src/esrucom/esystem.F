@@ -184,10 +184,11 @@ C espriou.h provides currentfile and defdbfl.
       include "seasons.h"
       include "schedule.h"
       include "UserSimulationToggles.h"
+      include "qrun.h"      
 
 
       INTEGER, PARAMETER :: MSTMC=20
-     
+
       integer lnblnk  ! function definition
 
 C Parameters
@@ -490,8 +491,15 @@ C 'simulation toggles' menu.
 C iSlr_half_hr_flg value = 0 :hour-centered; =1 : half-hour centered.
       common/CWEC_SOL/iSlr_half_hr_flg
       integer iSlr_half_hr_flg,idty
+      
+
       INTEGER IRNCMD,IRNCMF
       INTEGER ICREPORT,IDOL,IDAYNUM,IMTHNUM,IDWKNUM,IDTYY
+      INTEGER iCount, jCount      !- counters
+      INTEGER iTemp_day_beg, iTemp_day_end, iTemp_start, iTemp_end   !- temporary variables
+      INTEGER iStart_beg, iStart_end                   !- temporary variables
+      INTEGER iPrevious_day_end, iPrevious_season      !- temporary variables
+      LOGICAL bDayFound, bSpanNewYear
 
       integer iexcludediff_flag
       common/excludediff/iexcludediff_flag
@@ -555,6 +563,9 @@ C Simulation parameters
 #else
       integer*8 iincomp,iincon  ! to pass nb zones connections to c code
 #endif
+
+C Quick run locals
+      integer iSeason, iCurrDay, iShift
       
       REAL :: gva
       DIMENSION GVA(12),IVA(99),namez(mcom),namen(mcom)
@@ -623,6 +634,9 @@ C Set flag indicating that solar radiation data is hour-centered (default)
 C Variable will be reset if 'slr_half_hr' included in .cfg
       iSlr_half_hr_flg = 0
 
+C Initialize flag for quick run simulation (default is 'no')    
+      iQuick_run = 0 
+ 
 C Initialise NCM data read flags
       IRNCMD=0
       IRNCMF=0
@@ -1376,6 +1390,13 @@ C Solar radiation (half hour data) flag.
         call egetwi(loutstr,k,iexcludediff_flag,0,1,'W',
      &    'exclude diff shad flag',IER)
 
+      elseif(WORD(1:10).eq.'*quick_run') then
+
+C Flag for quick run method
+        call egetwi(loutstr,k,iWeekLength,0,365,'W',
+     &    'quick run method',IER)  
+        if (iWeekLength > 0) iQuick_run = 1
+
       elseif(WORD(1:4).eq.'*vew')then
         CALL EGETWR(LOUTSTR,K,EYEMI(1),0.,0.,'-','X cord',IER)
         CALL EGETWR(LOUTSTR,K,EYEMI(2),0.,0.,'-','Y cord',IER)
@@ -1659,12 +1680,12 @@ C call ripvdat for data within the cfg file.
           CALL ERPFREE(IUTDF,ISTAT)
           call FINDFIL(lipvdatf,XST)
           if(XST)then
-	    ipvact='ipv'
+      ipvact='ipv'
             call ripvdat(IUTDF,lipvdatf,ipvact,ier)
             CALL ERPFREE(IUTDF,ISTAT)
           endif
         elseif(ND.ge.3)then
-	
+  
 C The IPV data line needs to be scanned prior to calling ripvdat
 C for the rest of the data.
           K=0
@@ -2025,12 +2046,13 @@ C Read references to TDF id's, and then the related tasks and zones.
         endif
         ITEMSTD=M
         CALL ERPFREE(IUTDF,ISTAT)
-        
+    
+      
       elseif(WORD(1:4).eq.'*sps' .or. WORD(1:6).eq. '*mysps')then
       
 C Check for simulation setup data and save level.
         CALL EGETWI(LOUTSTR,K,nsset,1,MSPS,'W','no. of sets',IER)
-        CALL EGETWI(LOUTSTR,K,isstup,0,300,'W','startup',IER)
+        CALL EGETWI(LOUTSTR,K,isstup,0,300,'W','startup',IER)    
         CALL EGETWI(LOUTSTR,K,isbnstep,1,60,'W','zone_ts',IER)
         CALL EGETWI(LOUTSTR,K,ispnstep,0,100,'W','plant_ts',IER)
         CALL EGETWI(LOUTSTR,K,issave,0,6,'W','save_lv',IER)
@@ -2069,6 +2091,7 @@ C Set flag indicating if set describes a multi-year period
      &      CALL EGETWI(OUTSTR,K,iMY_Period_end_years(iss),
      &                 1800,2100,'W','end year',IER)
 
+          
 C Opportunity for improvenemt: Should error trap duplicate
 C (ie ambigious) set names
           CALL EGETRM(OUTSTR,K,spfdescr(iss),'W','set name',IER)
@@ -2096,6 +2119,87 @@ C (ie ambigious) set names
           goto 334
  333    continue
 
+
+C If a quick run is requested    
+        quick_run: if ( iQuick_run .eq. 1 ) then
+
+C Call to subroutine that finds best week for each season and heating and cooling multipliers      
+          call Find_season_parameters()
+
+  
+C Initialise flag for loop below
+          do iCount = 1, 750
+             bSimThisDay(iCount)  = .false.
+             iSeasonIndex(iCount) = 0
+             iStart_flag = 0
+          enddo
+
+C Find first and last day that spans the periods of interest for 'quick run' simulation  
+          iFirst_day_num = iSeasonWeekStart(1)   !- initialize first day number
+          iLast_day_num = iSeasonWeekEnd(iNumberOfSeasons)      !- initialize last day number
+                    
+
+          if ( iLast_day_num < iFirst_day_num ) then
+             iLast_day_num = iLast_day_num + 365
+          endif
+
+           
+       
+          bSpanNewYear = .false.       !-initialize               
+
+          season_loop: do iSeason = 1, iNumberOfSeasons
+            iTemp_day_beg = iSeasonWeekStart(iSeason)
+            iTemp_day_end = iSeasonWeekEnd(iSeason)
+            
+            iPrevious_season = iSeason - 1
+            iPrevious_day_end = iSeasonWeekEnd(iPrevious_season)
+ 
+         
+            if ( iTemp_day_beg < iPrevious_day_end ) then         
+                iTemp_day_beg = iTemp_day_beg + 365
+                iTemp_day_end = iTemp_day_end + 365
+            endif
+            
+C Take into account startup period
+
+            iStart_beg = iTemp_day_beg - isstup
+
+            if ( iStart_beg .lt. 1 ) then
+               bSpanNewYear = .true.
+               iStart_beg = 365 - isstup + iTemp_day_beg
+            endif    
+                       
+            iStart_end = iStart_beg + isstup - 1
+
+            
+            iShift = 0
+            if ( bSpanNewYear ) iShift = iStart_end   
+                    
+            do iCount = iStart_beg, iStart_end
+              iStart_flag(iCount) = 1
+              bSimThisDay(iCount) = .true.
+              iSeasonIndex(iCount) = 0
+            enddo 
+            
+            iDay = iTemp_day_beg
+            iCurrDay = iDay
+            
+            flag_days: do while ( iDay .le. iTemp_day_end ) 
+
+
+              bSimThisDay(iCurrDay+iShift)  = .true. 
+              iSeasonIndex(iCurrDay+iShift) = iSeason
+              
+              iDay = iDay + 1
+              iCurrDay = iCurrDay + 1
+            
+            enddo flag_days
+            
+          enddo season_loop
+
+           
+        endif quick_run  
+ 
       elseif(WORD(1:8).eq.'*end_sps' .or.
      &       WORD(1:12).eq.'*end_my_sets' )then
         goto 44
@@ -2253,6 +2357,9 @@ C Store profile in array.
           DO 27 jMon=1,12
             eGrdTp(jMon)=getVal(jMon)
   27      CONTINUE
+   
+ 
+  
         elseif(WORD(1:4).eq.'*cvs')then
 
 C 3D ground control volumes file.
