@@ -2793,8 +2793,12 @@ C assign (next line only) back the negative values as they were before the sorti
                 CALL ECLOSE(sorting(ixreturn),cmlocal(ixmatch*2),0.01,
      &               bNumsAreEqual)
                 if(bNumsAreEqual)then
-                  CALL ECLOSE(sorting(ixreturn),sorting(ixreturn-1),
-     &               0.01,bNumsAreEqual)                  
+                  if (ixreturn.gt.1) then
+                    CALL ECLOSE(sorting(ixreturn),sorting(ixreturn-1),
+     &                 0.01,bNumsAreEqual)
+                  else
+                    bNumsAreEqual=0 ! ?? hack, ag@130610
+                  endif
                   if(bNumsAreEqual)then
                     write(outs,'(a,F7.1,a)')' set-point: ',
      &                  cmlocal(ixmatch*2),' was found more than once.'
@@ -2818,8 +2822,12 @@ C sortmerge will merge sorting and bsorting back together
                 CALL ECLOSE(bsorting(ixreturn),cmlocal(ixmatch*2),0.01,
      &               bNumsAreEqual)
                 if(bNumsAreEqual)then
-                  CALL ECLOSE(bsorting(ixreturn),bsorting(ixreturn-1),
-     &                 0.01,bNumsAreEqual)                
+                  if (ixreturn.gt.1) then
+                    CALL ECLOSE(bsorting(ixreturn),bsorting(ixreturn-1),
+     &                   0.01,bNumsAreEqual)                
+                  else
+                    bNumsAreEqual=0 ! ?? hack, ag@130610
+                  endif
                   if(bNumsAreEqual)then
                     write(outs,'(a,F7.1,a)')' set-point: ',
      &                  cmlocal(ixmatch*2),' was found more than once.'
