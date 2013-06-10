@@ -5036,8 +5036,9 @@ C Loop through the next day.
 C Clear and setup plot area.
       CALL startbuffer()
 
-C Setup and pass in parameters to win3d.
-      iiw1=10; iiw2=10; iiw3=8; iiw4=3; iimenu=menuchw
+C Setup and pass in parameters to win3d. Offset 11 char on left,
+C 13 char on right, 8 lines on top and 3 below the graphs.
+      iiw1=11; iiw2=13; iiw3=8; iiw4=3; iimenu=menuchw
       iigl=igl; iigr=igr; iigt=igt; iigb=igb; iigw=igw; iigwh=igwh
       CALL win3d(iimenu,iiw1,iiw2,iiw3,iiw4,
      &  iigl,iigr,iigt,iigb,iigw,iigwh)
@@ -5069,7 +5070,7 @@ C Re-set scale for gain (W) axis.
       CALL axiscale(ipltwd,igheight,plxmin,plxmax,YMIN,YMAX,
      &  xsc,ysc,sca,xadd,yadd)
 
-C Scale and draw first day type requested
+C Scale and draw first day type requested.
       CALL horaxis(plxmin,plxmax,iigl,iigr,iigb,xadd,xsc,0,
      &  'Time (hrs)')
       call vrtaxis(YMIN,YMAX,iigl,iigb,iigt,yadd,ysc,0,0,'Gain (W)')
@@ -5081,7 +5082,7 @@ C Scale and draw first day type requested
       CALL etplot(plxmax,YMAX,iupdown,isym)
       CALL etplot(plxmin,YMAX,iupdown,isym)
 
-C Scale and draw second day type requested
+C Scale and draw second day type requested.
       CALL horaxis(plxmin,plxmax,iglsat,iigr,iigb,xadd,XSC,0,' ')
       call linescale(iglsat,xadd,xsc,iigb,yadd,ysc)
       iupdown=0
@@ -5092,7 +5093,7 @@ C Scale and draw second day type requested
       CALL etplot(plxmin,YMAX,iupdown,isym)
       CALL etplot(plxmin,YMIM,iupdown,isym)
 
-C Scale and draw third day type requested
+C Scale and draw third day type requested.
       CALL horaxis(plxmin,plxmax,iglsun,iigr,iigb,xadd,XSC,0,' ')
       call linescale(iglsun,xadd,xsc,iigb,yadd,ysc)
       iupdown=0
@@ -5183,7 +5184,7 @@ C Plot curves.
         CALL etplot(XFN,CGAINTL(IHR+1),iupdown,isym)
  70   continue
 
-C second (focus) day type requested
+C Second (focus) day type requested.
       call linescale(iglsat,xadd,xsc,iigb,yadd,ysc)
       do 150 IP=1,7
         do 155 IHR=1,25
@@ -5260,7 +5261,7 @@ C Plot curves.
         CALL etplot(XFN,CGAINTL(IHR+1),iupdown,isym)
  170  continue
 
-C third (subsequent) day type requested
+C Third (subsequent) day type requested.
       call linescale(iglsun,xadd,xsc,iigb,yadd,ysc)
       do 250 IP=1,7
         do 255 IHR=1,25

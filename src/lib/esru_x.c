@@ -1780,11 +1780,10 @@ this enables the size of the scroll bar to be set*/
 
 /* **************  Open a 3D viewing box *************** */
 /*
- Passed the character width of the main control menu, the number of
- lines of text to leave at the bottom for a dialogue box, the width of
- the left, right inside margins in terms of number of characters
- with the butn_fnt font and the top and bottom inside margins in terms
- of lines of characters.
+ Passed the character width of the main control menu (menu_char), 
+ the width of the left (cl), right (cr) inside margins in terms of
+ number of characters with the butn_fnt font and the top (ct)and bottom
+ (cb)inside margins in terms of lines of characters.
  Returns the pixel coord of the viewing box left, right, top, bottom as well
  as its overall pixel width & height.
  dbx1 is the outer box (including axes) and viewbx is the image area.
@@ -6384,15 +6383,17 @@ void labelstr(n,val,WticC,sstr)
   return;
 } /* labelstr */
 
-/* ************** VRTAXS *********************** */
+/* ************** VRTAXIS *********************** */
 /*
- Construct and draw a vertical axis via WW where: YMN,YMX are the data
+ Construct and draw a vertical axis via where: YMN,YMX are the data
  minimum & maximum values, offl & offb are the pixel coords of the
  lower start of the axis.  SCA is the scaling factor and Yadd
  is a data offset to adjust plotting for various data ranges.
  Mode = 1 for time axis, Mode = 0 for other data display types.
  Side = 0 lables and tic on left, Side = 1 labels and tic on right.
- msg is the axis label and mlen is it's length (passed from f77).
+ msg is the axis label and mlen is it's length (passed from fortran).
+ TODO: pass in character offset for axis rather than assuming a
+       fixed value.
 */
 
 void vrtaxis_(ymn,ymx,offl,offb,offt,yadd,sca,mode,side,msg,mlen)
@@ -6518,14 +6519,16 @@ void vrtaxis_(ymn,ymx,offl,offb,offt,yadd,sca,mode,side,msg,mlen)
   XDrawLine(theDisp,win,theGC,ix1,iy1,ix,iy);
 
 /*
- Print out the axis label on left or right.
- Looping through each character in the string
- and placing in a buffer for printing.
+ Print out the axis label on left or right.  Loop through each
+ character in the string and placing in a buffer for printing.
+ If label on right ensure a bit of space between characters and
+ the right edge of box to allow for image capture. If on right
+ offset by 3 characters.
 */
   if (sid == 0) {
-      ix = dbx1.b_left+10;
+      ix = dbx1.b_left + (2 *f_width);
   } else {
-      ix = dbx1.b_right - (2 * f_width);
+      ix = dbx1.b_right - (3 * f_width);
   }
   mid = oft + ((ofb - oft)/2);
   iy = mid - (vertadj * ilen);
