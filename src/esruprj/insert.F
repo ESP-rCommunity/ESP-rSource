@@ -39,7 +39,7 @@ C as in deletion of an entire zone.
 C ISCOPT signals how to treat the copy of a surface as follows:
 C   iscopt = 0 offer editing box and option to click on mouse for vertices
 C   iscopt = 1 use the mouse click directly to specify vertices
-C   iscopt = 2 offer copy of local (in the same zone) surfaces 
+C   iscopt = 2 offer copy of local (in the same zone) surfaces
 
 C << what about including common zndata in this manipulation? >>
 
@@ -2430,8 +2430,11 @@ C in XFA YFA ZFA.
       if(IRT.eq.1.or.IRT.eq.2.or.IRT.eq.3)then
         CALL ETRANSW(ITRC,ITRU,N,XX,YY,ZZ,0.00,XO1,ZO1,XW,ZH,XA,YA,ZA)
       else
-        CALL ETRANFRAME(ITRC,ICOMP,IS,N,XX,YY,ZZ,FRW,XFA,YFA,ZFA,
-     &    iwedge,IER)
+
+C In the case of inserting a frame pass in the number of parent surface
+C edges (N) and coords in XX YY ZZ and frame width FRW and get back array
+C XFA YFA ZFA as well as the number of edges.
+        CALL ETRANFRAME(ITRC,N,XX,YY,ZZ,FRW,XFA,YFA,ZFA,iwedge,IER)
         loop=N  ! reset to match polygon edges
         loop=iwedge  ! reset to match polygon edges
 C << trap non-zero ier value >>
