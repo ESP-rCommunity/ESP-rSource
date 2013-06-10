@@ -868,6 +868,7 @@ C there is room for two axis on the right.
 C Cast values back depending on machine type.
         igl=int(iigl); igr=int(iigr); igt=int(iigt); igb=int(iigb)
         igw=int(iigw); igwh=int(iigwh)
+        call startbuffer
       ENDIF
 
       lsn1=MIN0(lnblnk(RFILE),24)
