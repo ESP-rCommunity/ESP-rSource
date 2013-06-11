@@ -1451,7 +1451,7 @@ C Setup and pass in parameters to win3d.
         call startbuffer()
       ENDIF
 
-      lsn1=MIN0(lnblnk(LAFRES),22)
+      lsn1=MIN0(lnblnk(LAFRES),32)
       if(NSIM.gt.1)then
         WRITE(ETEXT,'(3A,I4,2A)')'Lib: ',LAFRES(1:lsn1),' Set:',ISIM,
      &    ': ',RSNAME(ISIM)(1:lnblnk(RSNAME(ISIM)))

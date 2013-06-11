@@ -422,11 +422,11 @@ C Axis 4 only active or not.
       endif
 
 C Debug.
-      write(6,*) ' igx values ',igx
-      write(6,*) ' yaxset ',YAXSET
-      write(6,*) ' igl igr igw igwh ',igl,igr,igw,igwh
-      write(6,*) ' fonts ifs itfs  & imfs & iglib ',IFS,ITFS,IMFS,iglib
-      write(6,*) ' onright ',oneonright,twoonrighta,twoonrightb
+C      write(6,*) ' igx values ',igx
+C      write(6,*) ' yaxset ',YAXSET
+C      write(6,*) ' igl igr igw igwh ',igl,igr,igw,igwh
+C      write(6,*) ' fonts ifs itfs  & imfs & iglib ',IFS,ITFS,IMFS,iglib
+C      write(6,*) ' onright ',oneonright,twoonrighta,twoonrightb
 
       if(IROC.eq.0)then
         ALABEL(1)='Temp: DegC'
@@ -871,7 +871,7 @@ C Cast values back depending on machine type.
         call startbuffer
       ENDIF
 
-      lsn1=MIN0(lnblnk(RFILE),24)
+      lsn1=MIN0(lnblnk(RFILE),42)
       if(NSIM.gt.1)then
         WRITE(ETEXT,'(3A,I4,2A)')'Lib: ',RFILE(1:lsn1),' Set:',ISIM,
      &    ': ',RSNAME(ISIM)(1:lnblnk(RSNAME(ISIM)))
