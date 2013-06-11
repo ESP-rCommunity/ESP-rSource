@@ -5978,9 +5978,15 @@ C and the third can be 0
         CALL EPMENSV
         call epkmlc(iwhich,'Construction to control?',' ',ierr)
         CALL EPMENRC
-        ian1=-5
-        ian2=iwhich
-        ian3=0
+        if(iwhich.ne.0)then
+          ian1=-5
+          ian2=iwhich
+          ian3=0
+        else
+          ian1=0
+          ian2=0
+          ian3=0
+        endif
       elseif(ivert.eq.1.and.(icfoc.eq.6))then
 C Complex Fenestration      
 C       ian1 = actuator type (0 - shade ON/OFF, 1 - slat angle, 2- both (for schedule)

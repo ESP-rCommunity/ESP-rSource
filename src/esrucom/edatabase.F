@@ -1164,9 +1164,9 @@ C in the materials database.
       H(1)='This information will be written into a zone construc-'
       H(2)='tion file according to the types of multilayer'
       H(3)='construction used by each surface.'
-      H(4)='Note that the trace level influences the amount of'
-      H(5)='detail in this display and you may wish to reset the'
-      H(6)='trace level to see additional information.'
+      H(4)='If you want to unreference a construction and reset'
+      H(5)='it to UNKNOWN select the initial item in the list.'
+      H(6)=' '
       H(7)=' '
       H(8)='For Controls of bidirectional data only: '
       H(9)='Select the construction for which the controls and the '
@@ -1177,22 +1177,29 @@ C in the materials database.
       H(14)='loop will be used if this mistake is made by the users. '
 
 C Present list based on the name and type of the MLC.
+      WRITE(COMPS(1),'(A)')'UNKNOWN (at this time) '
       DO 66 IWW=1,NMLC
         lnmlcn=lnblnk(mlcname(iww))
-        WRITE(COMPS(IWW),'(3A)')mlcname(IWW)(1:lnmlcn),' ',
+        WRITE(COMPS(IWW+1),'(3A)')mlcname(IWW)(1:lnmlcn),' ',
      &    mlctype(IWW)
    66 CONTINUE
       IX=1
       CALL EPICKS(IX,IVAL,PROMPT1,PROMPT2,
-     &  33,NMLC,COMPS,'composites',IER,14)
+     &  33,NMLC,COMPS,'Construction composites',IER,14)
 
       IF(IX.EQ.0)RETURN
       ISEL=IVAL(1)
-      CALL ETMLDB(2,iuout,ISEL,imerr)
-      call edisp(iuout,
+      if(ISEL.eq.1)then
+        call edisp(iuout,'UNKNOWN MLC selected')
+        ISEL=0
+        return
+      else
+        ISEL=ISEL-1
+        CALL ETMLDB(2,iuout,ISEL,imerr)
+        call edisp(iuout,
      & ' ISO 6946 U value assumes: Rso=0.04 & Rsi=0.13 (m**2deg.C/W)')
-      RETURN
-
+        RETURN
+      endif
       END
 
 

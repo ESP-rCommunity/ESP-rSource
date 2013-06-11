@@ -1456,6 +1456,9 @@ C Note: this logic only picks up the first 12 char of construction.
             WRITE(BLOCKMAT(icomp,IB),'(A)') mlcname(ISEL)(1:12)
             LNBLOCKMAT(icomp,IB)=lnblnk(BLOCKMAT(icomp,IB))
             MODIFY=.TRUE.
+          else
+            WRITE(BLOCKMAT(icomp,ib),'(A)') 'UNKNOWN'
+            LNBLOCKMAT(icomp,ib)=7
           endif
           IF(IER.EQ.1)THEN
             CALL USRMSG(' ',
@@ -1700,6 +1703,9 @@ C Note: this logic only picks up the first 12 char of construction.
             WRITE(BLOCKMAT(icomp,IB),'(A)') mlcname(ISEL)(1:12)
             LNBLOCKMAT(icomp,IB)=lnblnk(BLOCKMAT(icomp,IB))
             MODIFY=.TRUE.
+          else
+            WRITE(BLOCKMAT(icomp,ib),'(A)') 'UNKNOWN'
+            LNBLOCKMAT(icomp,ib)=7
           endif
           IF(IER.EQ.1)THEN
             CALL USRMSG(' ',

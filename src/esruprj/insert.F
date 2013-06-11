@@ -2118,7 +2118,7 @@ C  #include "model.h"
 #include "esprdbfile.h"
 #include "material.h"
 
-      integer lnblnk  ! function definition
+C      integer lnblnk  ! function definition
 
 C Parameters
       integer itrc,itru  ! tracel level and reporting unit
@@ -2586,6 +2586,9 @@ C If in silent mode assign construction otherwise select.
           IF(mlctype(ISEL)(1:4).NE.'OPAQ')SOTF(NSUR)='TRAN'
           IF(mlctype(ISEL)(1:4).EQ.'OPAQ')SOTF(NSUR)='OPAQUE'
           IF(mlctype(ISEL)(1:4).EQ.'CFC ')SOTF(NSUR)='CFC '
+        else
+          WRITE(SMLCN(NSUR),'(A)') 'UNKNOWN'
+          SOTF(NSUR)='OPAQUE'
         endif
       endif
 
