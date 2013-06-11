@@ -1293,11 +1293,16 @@ case $SQLite_support in
 esac
 
 #-------------- LDFLAGS ------------------------
-# What does this do, and how does it differ from platform-specific
-# flags set in 'fDefType'?
+# Directives for the link-loader (ld). The reduce-memory-overheads
+# speeds up linking greatly if machine memory is limited and has
+# little impact otherwise.
 case $platform in
-   mingw)    LD_FLAGS="-DMINGW";;
-   *)        LD_FLAGS="";;
+   mingw)    LD_FLAGS="-DMINGW -Wl,--reduce-memory-overheads";;
+   mac)      LD_FLAGS="";;
+   *)  case $machine in
+      armv6l) LD_FLAGS="-Wl,--reduce-memory-overheads";;
+      *)      LD_FLAGS="-Wl,--reduce-memory-overheads";;
+      esac;;
 esac
     if [ "$enable_cosim" == "yes" ] ; then
        LD_FLAGS="-DMINGW -shared";
