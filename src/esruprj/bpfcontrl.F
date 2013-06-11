@@ -5456,6 +5456,7 @@ C Senses sol-air temperature.
 
 C Senses incident solar radiation on a surface.
 C Ask for the specific zone.
+        isn1=-4 ! copied from CFC ...
         CALL EPMENSV
         idef=0
         call askzone(isn1,idef,
@@ -5464,13 +5465,14 @@ C Ask for the specific zone.
         CALL EPMENRC
         SELECT=.TRUE.
         CALL EPMENSV
-        call EASKSUR(isn1,isn2,'-','Available surfaces.',' ',IER)
+        call EASKSUR(isn2,isn3,'-','Available surfaces.',' ',IER)
+c        call EASKSUR(isn1,isn2,'-','Available surfaces.',' ',IER)
         CALL EPMENRC
 
 C<<<<<need to confirm isn2 because it will need to be assigned to >>>>>>>>>>>
 C<<<<<<<<<<the outside face of the surface >>>>>>>>>>>>>>>>>>
-        isn3=0
-        nsup=0
+c        isn3=0
+        nsup=0 ! ? whats this?
       elseif(ivert.eq.10.and.icfoc.eq.6)then
       
 C Senses incident solar radiation on an external CFC surface. 

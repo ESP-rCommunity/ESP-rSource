@@ -1523,7 +1523,17 @@ C Fill plant commons with recovered data.
 
 C Find absolute record in dbase for component
 C and read associated data.
+
       irec=itmloc(npref(ipc),1)
+
+C Check that plant database is actually open and that itmloc is not zero. 
+      if(irec.eq.0)then 
+ 
+C Open database and extract the plant database pointers. 
+        call opnpdb(2)  
+        irec=itmloc(npref(ipc),1) 
+      endif 
+
       read(ipcdb,rec=irec,iostat=istat,err=99999)
      &    idum1,icode(ipc),zcdate,nnode,nmatx,nmisc
       npi(ipc)=nmisc

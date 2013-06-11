@@ -4344,6 +4344,21 @@ C<<< Cancel also the next 6?
 C<<<< Until here
 
           ENDIF
+C ===== insertion ag@130611 
+! Trying to sens rad on ext. surface for optical control ...
+        ELSEIF(icsn(1).EQ.-4)THEN
+          write(zn,'(a)') zname(icsn(2))
+          if(icsn(3).gt.0)then
+            icc=IZSTOCN(icsn(2),icsn(3))
+            write(sn,'(a)') SSNAME(icc)
+          else
+            sn='-'
+          endif
+          WRITE(SSTR,'(5a)')  'senses incident sol rad on ',
+     &    sn(1:lnblnk(sn)),' in ',zn(1:lnblnk(zn)),'.'
+          WRITE(SSTRB,'(5a)')  'senses sol rad on ',sn(1:lnblnk(sn)),
+     &        ' in ',zn(1:lnblnk(zn)),'.'
+C ==== end insertion ag@130611          
         ELSEIF(icsn(1).EQ.-7)THEN
           SSTR='senses radiation at outside of surface.'
           SSTRB='senses incident rad.'
