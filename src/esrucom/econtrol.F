@@ -4526,7 +4526,7 @@ C 'i' appears to serve no purpose in this code.
       ii=i
       if(m.eq.2)goto 3
       if(m.eq.3)goto 22
-      if(m.eq.4)goto 32
+      if(m.eq.4)goto 32 ! optical control
 
 C Check for minimum allowable free cooling delta T
       do ii = 1, NCF
@@ -4595,6 +4595,7 @@ c set up data for optical control function ii.
       ian1=ioan(ii,1)
       ian2=ioan(ii,2)
       ian3=ioan(ii,3)
+      if (isn1.eq.-4) goto 321 ! sens radiation on external surface, ag@130611
 
 C isn1 has been tested, therefore use its value to test isn2 & isn3.
     4 is=isn1+6
@@ -4629,6 +4630,12 @@ C Check to see if sensed node exists
 
 C Sensor located externally.
     7 if(isn2.lt.0.or.isn2.gt.7)goto 1002
+      goto 9
+
+C Optical Sensor located on external surface.
+C isn2 is zone number, isn3 is surface number
+  321 if (isn2.lt.0.or.isn2.gt.ncomp) goto 1001
+      if (isn3.lt.0.or.isn3.gt.nzsur(isn2)) goto 1002
       goto 9
 
 C Sensor in the zone to which it is assigned.

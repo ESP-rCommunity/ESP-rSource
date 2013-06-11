@@ -4261,20 +4261,19 @@ C Allow max 6 setpoints and datasets to be used for the moment.
                       ISET=1
                     endif
 
+                  elseif(iosn(1,1).eq.-4) then
+
 C Sense incident solar radiation on a surface
-C Find out first which surface
-                  elseif(iosn(1,1).eq.icomp.and.iosn(1,2).eq.
-     &                   ISURFNumber)then
 
 C Calculate now radiation on the surface (as in MZSLGN)
-C First calculate the shading factor on the surface
+C First calculate the shading factor on the sensor surface
 C Using the same calculation for POO and POFF as in MZSLGN
-                    if(ISHD(icomp).eq.0.or.ISHD(icomp).EQ.2)then
+                    if(ISHD(iosn(1,2)).eq.0.or.ISHD(iosn(1,2)).EQ.2)then
                       shd_po_fctr_ctl=0.0
                       shd_pof_fctr_ctl=0.0
                     else
-                      shd_po_fctr_ctl=PO(ICOMP,ISURFNumber,IHRF)
-                      shd_pof_fctr_ctl=POF(ICOMP,ISURFNumber,IHRF)
+                      shd_po_fctr_ctl=PO(iosn(1,2),iosn(1,3),IHRF)
+                      shd_pof_fctr_ctl=POF(iosn(1,2),iosn(1,3),IHRF)
                     endif
                     rad_on_surf=SRADDO*(1.-shd_po_fctr_ctl)
      &                         +SRADF*(1.-shd_pof_fctr_ctl)
