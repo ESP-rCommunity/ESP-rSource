@@ -4054,6 +4054,7 @@ C only controls related to bidirectional data. In the future, all
 C existing and new controls should be added here.
 
       SUBROUTINE MZSCTL(ICOMP,ISURFNumber,SRADDO,SRADF,ISET)
+      use h3kmodule
 #include "building.h"
 #include "geometry.h"
 #include "net_flow.h"
@@ -4115,6 +4116,7 @@ C Daylight coeff specific
 C Definitions for daylight coefficient patch altitude:
       data alt/6.,18.,30.,42.,54.,66.,78.,90./
 
+      CHARACTER*2 cSurface
       character outs*124
       character ctl_constrdb_name*72 !to match the name of the controlled construction (from db)
                                      !with the name of the construction of the study
@@ -4540,5 +4542,20 @@ C End of all the bidirectional control options
       else
         ISET=1
       endif
+
+C Pass time step bidirectional set used for XML output.
+C.......Pad surface / construction index to 'XX'
+      if ( ISURFNumber .gt. 9 ) then
+        write (cSurface,'(I2)') ISURFNumber
+      else
+        write (cSurface,'(A,I1)') '0', ISURFNumber
+      endif
+
+      call AddToReport(
+     &      rvBiDirectionalSet%Identifier,
+     &      real(iset),
+     &      zname(icomp)(1:lnzname(icomp)),
+     &      cSurface)
+
       return
       END

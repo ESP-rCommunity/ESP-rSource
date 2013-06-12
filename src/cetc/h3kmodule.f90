@@ -177,7 +177,7 @@ MODULE h3kmodule
          rvTFuelCst, rvTFuelCstElec, rvTFuelCstNatGas, rvTFuelCstOil, rvTFuelCstProp, rvTEnergyQty
 
    !Used by Solar.F
-   Type(ReportVariable) :: rvBuildingGroundReflectivity,rvClimateSnownDepth
+   Type(ReportVariable) :: rvBuildingGroundReflectivity,rvClimateSnownDepth,rvBiDirectionalSet
 
    !Used by water_tanks.F
    Type(ReportVariable) :: rvPltSDHWSumDHWTankFuel,rvPltSDHWSumDHWTankElec,rvPltWaterTemp, &
@@ -1892,6 +1892,12 @@ CONTAINS
       rvClimateSnownDepth%VariableType = 'cm'
       rvClimateSnownDepth%Description = 'Depth of the snow on the ground'
       Call AddVariable(rvClimateSnownDepth)
+
+      rvBiDirectionalSet%VariableName = 'bui/*/s*/bidir_set'
+      rvBiDirectionalSet%MetaType = 'units'
+      rvBiDirectionalSet%VariableType = '(-)'
+      rvBiDirectionalSet%Description = 'bi-directional data set used this time step'
+      Call AddVariable(rvBiDirectionalSet)
 
 
       !Used by water_tanks.F
