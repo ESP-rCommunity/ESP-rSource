@@ -1137,7 +1137,7 @@ C IER=0 OK, IER=1 problem.
       COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
       LOGICAL        CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
 
-      DIMENSION IVAL(MMLC),COMPS(MMLC)
+      DIMENSION IVAL(MMLC+1),COMPS(MMLC+1)
       CHARACTER*(*) PROMPT1,PROMPT2
       CHARACTER H*72,COMPS*33
 
@@ -1185,7 +1185,7 @@ C Present list based on the name and type of the MLC.
    66 CONTINUE
       IX=1
       CALL EPICKS(IX,IVAL,PROMPT1,PROMPT2,
-     &  33,NMLC,COMPS,'Construction composites',IER,14)
+     &  33,NMLC+1,COMPS,'Construction composites',IER,14)
 
       IF(IX.EQ.0)RETURN
       ISEL=IVAL(1)
