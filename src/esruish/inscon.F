@@ -568,7 +568,7 @@ C Convert source surface grid point coordinates back to global
 C coordinates before initiating projection.
                      call transp(iccisrc,xf,yf,zf,xop(m,n),
      &                 zop(m,n),xgp,ygp,zgp)
-                     call trnsf3i(ihr,intsur,ipass,xgp,ygp,zgp)
+                     call trnsf3i(ihr,icomp,intsur,ipass,xgp,ygp,zgp)
                      ipass=1
                      if(yp.lt.0.0)goto 110
 
@@ -867,6 +867,10 @@ C Sort based on total hits on surface (i.e. icountt).
            endif
    41    continue
    40 continue
+
+C Debug.
+C      write(6,*) 'zone tmc hour ',icomp,ii,jj,'ihit is ',ihit
+C      write(6,*) 'ins is ',ins
 
 C Set insolated planes to zero if there are no hits, i.e. total shading.
       if(ihit.eq.0)then
