@@ -3106,11 +3106,13 @@ C control type.
           cm(2)=180.0      ! shade ON setpoint [W/m2]
           cm(3)=100.0      ! shade OFF setpoint [W/m2]
         elseif(ictyp.eq.4)then ! senses solar radiation, actuates slat angle
-          cm(1)=4.0
+          cm(1)=6.0
           cm(2)=180.0      ! slats closed setpoint [W/m2]
-          cm(3)=100.0      ! slats open setpoint [W/m2]
-          cm(4)=75.0       ! closed slat angle [deg]
-          cm(5)=0.0        ! open slat angle [deg]        
+          cm(3)=100.0      ! slats open setpoint [W/m2] ¦ slats closed slat angle
+          cm(4)=75.0       ! closed slat angle [deg] ¦slats P1 setpoint
+          cm(5)=0.0        ! open slat angle [deg] ¦ slats P1 slat angle       
+          cm(6)=350.0      ! slats P2 setpoint [W/m2]        
+          cm(7)=75.0       ! slats P2 slat angle [deg]        
         elseif(ictyp.eq.5)then ! senses wind speed, actuates shade ON/OFF
           cm(1)=2.0
           cm(2)=10.0       ! shade ON setpoint [m/s]
@@ -6192,7 +6194,9 @@ C if isn1.eq.-3 then no supplemental.
 
       elseif(ivert.eq.2.and.(icfoc.eq.6))then
 C Complex Fenestration      
-C       ian1 = actuator type (0 - shade ON/OFF, 1 - slat angle 2- both (for schedule) )
+C       ian1 = actuator type (0=shade ON/OFF, 1=slat angle 2=both (for schedule) 
+C                             3=choose between up, down pos1, down pos2 and down pos3, 
+C                             4=cut-off, 5=slat angle and wind max, 6=cut-off and wind max)
 C       ian2 = zone index
 C       ian3 = CFC type index for selected zone
 
@@ -6226,7 +6230,9 @@ C Check that slat-type shade exists for selected CFC type.
         
       elseif(ivert.eq.3.and.(icfoc.eq.6))then
       
-C       ian1 = actuator type (0 - shade ON/OFF, 1 - slat angle 2- both (for schedule) )
+C       ian1 = actuator type (0=shade ON/OFF, 1=slat angle 2=both (for schedule) 
+C                             3=choose between up, down pos1, down pos2 and down pos3, 
+C                             4=cut-off, 5=slat angle and wind max, 6=cut-off and wind max)
 C       ian2 = zone index
 C       ian3 = CFC type index for selected zone
 
@@ -8189,9 +8195,11 @@ C---------if ndaytypes is 0 we have weekday, saturday, sunday types. Set daytype
           do 20 idaytype=1, ndaytypes
             do 30 iperiod=1, nCFCdayctlperiods(ictlfun,idaytype)
         
-              iact1 = iCFCactuator(ictlfun,1)           ! 0=shade ON/OFF, 1=slat angle, 2=both (for schedule
-              iact2 = iCFCactuator(ictlfun,2)           ! zone index
-              iact3 = iCFCactuator(ictlfun,3)           ! CFC type
+              iact1 = iCFCactuator(ictlfun,1)       ! 0=shade ON/OFF, 1=slat angle, 2=both (for schedule
+                                                    ! 3=choose between up, down pos1, down pos2 and down pos3, 
+                                                    ! 4=cut-off, 5=slat angle and wind max, 6=cut-off and wind max
+              iact2 = iCFCactuator(ictlfun,2)       ! zone index
+              iact3 = iCFCactuator(ictlfun,3)       ! CFC type
 
               isen1 = iCFCsensor(ictlfun,1)
               isen2 = iCFCsensor(ictlfun,2)

@@ -4498,10 +4498,10 @@ C      real slat_angleX
       integer isen1, isen2, isen3   ! sensor details
       integer ictype                ! control type
       integer ischedule_shdstateONorOFF
-      real shdONsetpoint
+      real shdONsetpoint,shdP1setpoint,shdP2setpoint
       real shdOFFsetpoint
-      real shdONslatPOSITION, shdINTslatPOSITION
-      real shdOFFslatPOSITION
+      real shdONslatPOSITION,shdINTslatPOSITION,shdP1slatPOSITION
+      real shdOFFslatPOSITION,shdP2slatPOSITION
       real schedule_slat_angle,cutoff,windvelmax
       real temp               ! temperature [C] control parameter - can be dbt, dbt/mrt, sol-air
       real solrad             ! solar radiation [W/m2] control parameter - can be diff hor, dir norm, total incident on surface
@@ -4610,7 +4610,8 @@ C -------------------------------------------------------------------
 C Determine actuator type and copy control data to working variables
 C -------------------------------------------------------------------
 
-  12      iact1 = iCFCactuator(ictlfun,1)           ! 0=shade ON/OFF, 1=slat angle, 2=both (for schedule), 3=??, 
+  12      iact1 = iCFCactuator(ictlfun,1)           ! 0=shade ON/OFF, 1=slat angle, 2=both (for schedule), 
+                                                    ! 3=choose between up, down pos1, down pos2 and down pos3, 
                                                     ! 4=cut-off, 5=slat angle and wind max, 6=cut-off and wind max
           iact2 = iCFCactuator(ictlfun,2)           ! zone index
           iact3 = iCFCactuator(ictlfun,3)           ! CFC type
@@ -4632,14 +4633,16 @@ C Schedule
         ischedule_shdstateONorOFF = 
      &  INT(CFCmiscdata(ictlfun,idaytype,iperiod,2))
         schedule_slat_angle = CFCmiscdata(ictlfun,idaytype,iperiod,3)
-C Actuator controls slat angle of slat-type shade layer between 3 choices
+
       elseif(iact1.eq.3)then
-        shdONsetpoint = CFCmiscdata(ictlfun,idaytype,iperiod,2)
-        shdOFFsetpoint = CFCmiscdata(ictlfun,idaytype,iperiod,3)
-        shdONslatPOSITION = CFCmiscdata(ictlfun,idaytype,iperiod,4)
-        shdINTslatPOSITION = CFCmiscdata(ictlfun,idaytype,iperiod,5) 
-        shdOFFslatPOSITION = CFCmiscdata(ictlfun,idaytype,iperiod,6)
-cx        NABS=2 ! we have two alternative blind states here (for Radiance coupling) ...  !!HACK!!
+C Actuator controls slat angle of slat-type shade layer between 3 choices
+        shdONsetpoint = CFCmiscdata(ictlfun,idaytype,iperiod,2)       ! above this, blind is down and in ON position
+        shdONslatPOSITION = CFCmiscdata(ictlfun,idaytype,iperiod,3)
+        shdP1setpoint = CFCmiscdata(ictlfun,idaytype,iperiod,4)       ! above this, blind is in P1
+        shdP1slatPOSITION = CFCmiscdata(ictlfun,idaytype,iperiod,5)
+        shdP2setpoint = CFCmiscdata(ictlfun,idaytype,iperiod,6)       ! above this, blind is in P2        
+        shdP2slatPOSITION = CFCmiscdata(ictlfun,idaytype,iperiod,7)
+
       elseif (iact1.eq.4) then
 C       Set points with which "blind down" or not is decided
         shdONsetpoint = CFCmiscdata(ictlfun,idaytype,iperiod,2)
@@ -4736,6 +4739,25 @@ C Determine appropriate temperature parameter to use
           ELSEIF(ictype.eq.3.or.ictype.eq.4)then             ! senses solar radiation
 
 C Perform actual control of shade ON/OFF and slat angle here.
+            if (iact1.eq.3) then
+C           on-off with intermediate angle control
+
+              if(solrad.gt.shdP2setpoint)then
+                vb_phiNew(iact2,iact3) = shdP2slatPOSITION    ! set new slag angle
+                i_shd(iact2,iact3)     = 3                    ! shade state ON, max angle
+              elseif(solrad.gt.shdP1setpoint)then
+                vb_phiNew(iact2,iact3) = shdP1slatPOSITION    ! set new slag angle
+                i_shd(iact2,iact3)     = 2                    ! shade state ON, intermediate angle     
+              elseif(solrad.gt.shdONsetpoint)then
+                vb_phiNew(iact2,iact3) = shdONslatPOSITION    ! set new slag angle
+                i_shd(iact2,iact3)     = 1                    ! shade state ON, min angle     
+              else
+                vb_phiNew(iact2,iact3) = vb_phi(iact2,iact3)  ! default slag angle
+                i_shd(iact2,iact3)     = 0                    ! shade state OFF
+              endif
+                
+            else ! iact 0,1,4,5 or 6
+
             if(solrad.gt.shdONsetpoint)then
               if(iact1.eq.0)then
                 vb_phiNew(iact2,iact3) = vb_phi(iact2,iact3)  ! default slat angle
@@ -4743,10 +4765,7 @@ C Perform actual control of shade ON/OFF and slat angle here.
               elseif(iact1.eq.1.or.iact1.eq.5)then
                 vb_phiNew(iact2,iact3) = shdONslatPOSITION    ! set new slag angle
                 i_shd(iact2,iact3)     = 1                    ! shade state ON
-C             on-off with intermediate angle control
-              elseif(iact1.eq.3)then
-                vb_phiNew(iact2,iact3) = shdONslatPOSITION    ! set new slag angle
-                i_shd(iact2,iact3)     = 3                    ! shade state ON, "closed"
+
 C             cut-off angle control
               elseif(iact1.eq.4.or.iact1.eq.6)then
                 vb_phiNew(iact2,iact3) = funCutOffAngle(1,
@@ -4761,13 +4780,10 @@ cx                i_shd(iact2,iact3)     = 1                  ! is set in funCut
                 i_shd(iact2,iact3)     = 0                    ! shade state OFF
               elseif(iact1.eq.1.or.iact1.eq.5)then
                 vb_phiNew(iact2,iact3) = vb_phi(iact2,iact3)  ! default slag angle
-                i_shd(iact2,iact3)     = 0                    ! shade state OFF     
-C             on-off with intermediate angle control
-              elseif(iact1.eq.3)then
-                vb_phiNew(iact2,iact3) = shdOFFslatPOSITION   ! set new slag angle
-                i_shd(iact2,iact3)     = 1                    ! shade state ON, but "open"
-C             cut-off angle control
+                i_shd(iact2,iact3)     = 0                    ! shade state OFF
+
               elseif(iact1.eq.4.or.iact1.eq.6)then
+C             cut-off angle control
                 vb_phiNew(iact2,iact3) = vb_phi(iact2,iact3)  ! default slat angle
                 i_shd(iact2,iact3)     = 0                    ! shade state OFF
               endif
@@ -4779,10 +4795,7 @@ C             cut-off angle control
               elseif(iact1.eq.1.or.iact1.eq.5)then
                 vb_phiNew(iact2,iact3) = shdOFFslatPOSITION   ! set "off" slag angle, usually 0 deg
                 i_shd(iact2,iact3)     = 1                    ! shade state ON     
-C             on-off with intermediate angle control
-              elseif (iact1.eq.3) then
-                vb_phiNew(iact2,iact3) = shdINTslatPOSITION   ! set new slag angle
-                i_shd(iact2,iact3)     = 2                    ! shade state ON, intermediate angle     
+
 C             cut-off angle control
               elseif(iact1.eq.4.or.iact1.eq.6)then
                 vb_phiNew(iact2,iact3) = funCutOffAngle(1,
@@ -4801,6 +4814,8 @@ C           solar radiation if wind velocity set point is exceeded
               endif
             endif
 
+            endif ! iact1.eq.3
+            
           ELSEIF(ictype.eq.5)then       ! senses wind speed, actuates shade ON/OFF
       
             if(isen1.eq.-3.and.isen2.eq.2)then
