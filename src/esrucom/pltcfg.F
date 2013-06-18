@@ -420,7 +420,7 @@ C CDB affected!
      &        pcname(ipcomp)(1:lo),' (',IPCOMP,') code ',
      &        NPCDAT(IPCOMP,1),', db reference ',UCDBNam(IPCOMP)
           ELSE
-            WRITE(OUTS,'(3a,i2,a,i2,a,i2)')' Component: ',
+            WRITE(OUTS,'(3a,i2,a,i2,a,i3)')' Component: ',
      &        pcname(ipcomp)(1:lo),' (',IPCOMP,') code ',
      &        NPCDAT(IPCOMP,1),', db reference ',NPREF(IPCOMP)
           ENDIF
