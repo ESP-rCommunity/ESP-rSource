@@ -1,4 +1,4 @@
-# primitives construction db defined in constr.db1.a
+# materials db defined in constr.db1.a
    15    #  number of classifications
 # class|no materials|description
 # for each item index|description| conduc. density. specific ht, emis. abs. diffusion res.
