@@ -818,7 +818,7 @@ C using similar logic tree to mowlin.
         endif
 
 C Debug.
-        write(6,*) ' nb of right axis is currently ',onright,onleft
+C        write(6,*) ' nb of right axis is currently ',onright,onleft
 
 C Set standard fornt width so that space around graph is correct.
         call winfnt(imfs)
