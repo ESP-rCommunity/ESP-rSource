@@ -808,6 +808,8 @@ C default file names for databases
 
       COMMON/OUTIN/IUOUT,IUIN
       common/FILEP/IFIL
+      integer childterminal  ! picks up mmod from starting of prj
+      common/childt/childterminal
       common/pophelp/h(60)
       common/AFN/IAIRN,LAPROB,ICAAS(MCOM)
       COMMON/MFLWPR/NPRE,FPRE(MPOS,MPRD)
@@ -826,11 +828,6 @@ C default file names for databases
       dimension xl(MPCP),zl(MPCP),ior(MPCP),isut(5),inum(5)
       logical ok,dok
       integer iglib  ! are we running X11 or GTK
-#ifdef OSI
-      integer ICPMOD     ! passed from tchild
-#else
-      integer*8 ICPMOD     ! passed from tchild
-#endif
 
 C Parameters to see whether for a surface a coordinate set has been 
 C defined
@@ -1291,8 +1288,7 @@ C Run CPCALC.
       CALL USRMSG('ESP-r will now run CpCalc. Please check in',
      & ' the text window for progress and error messages','W')
       doit = 'c2e'
-      call tchild(ICPMOD)
-      call termode(ICPMOD,tmode)
+      call terminalmode(childterminal,tmode)
       call runit(doit,tmode)
 
 C Save data to file.

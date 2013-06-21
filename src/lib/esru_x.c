@@ -7,7 +7,6 @@ intialisation and graphics, using ww. The routines are :-
 	sizehwxy	:- passess window size, w/h ratio & position
 	setpause_(n)	:- set length of pause
 	jwinint		:- initialise X window and check fonts
-	tchild_(cterm)  :- return child process terminal info.
 	winclr		:- clears screen
 	winfin		:- closes ww window
 	winlod(name,ix,iy)
@@ -1075,13 +1074,6 @@ long int *ifs,*itfs,*imfs;
  return;
 }
 
-/* *************** return child process terminal info. *************** */
-void tchild_(cterm)
-long int *cterm;           /* child terminal type  */
-{
-  *cterm = child_ter;
-  return;
-}
 
 /* *************** Release display. *************** */
 void winfin_()

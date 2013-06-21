@@ -1859,6 +1859,8 @@ C     = 'in '  interactive new
       integer lnblnk  ! function definition
 
       common/OUTIN/IUOUT,IUIN
+      integer childterminal  ! picks up mmod from starting of prj
+      common/childt/childterminal
       
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
@@ -1868,11 +1870,6 @@ C     = 'in '  interactive new
       character TMODE*8,outs*248,DOIT*248
       character act*3  ! the parameter passed
       logical XST,concat,unixok
-#ifdef OSI
-      integer ICPMOD     ! passed from tchild
-#else
-      integer*8 ICPMOD     ! passed from tchild
-#endif
 
 C Check if Unix-based or DOS based.
       call isunix(unixok)
@@ -1894,8 +1891,7 @@ C Check if file exists and get local zone name for feedback.
 
 C Clear command and setup terminal type.
       doit = ' '
-      call tchild(ICPMOD)
-      call termode(ICPMOD,tmode)
+      call terminalmode(childterminal,tmode)
 
 C Setup file name depending on the machine type.
       if(unixok)then

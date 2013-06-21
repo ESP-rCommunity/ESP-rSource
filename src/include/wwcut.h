@@ -89,7 +89,6 @@ void	clrgscale_();
 void	setzscale_();
 void	foundcolour_(long int* md,long int* nic,long int* ncs,long int* ngs,long int* nzc);
 void	userfonts_(long int* ifs,long int* itfs,long int* imfs);
-void	tchild_(long int* state);
 void	winfin_();
 void	winclr_();
 void	windcl_(int* n, int* ir, int* ig, int* ib);

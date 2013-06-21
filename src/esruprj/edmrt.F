@@ -37,6 +37,8 @@ C will have been defined prior to calling edmrt.
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/OUTIN/IUOUT,IUIN
       common/user/browse
+      integer childterminal  ! picks up mmod from starting of prj
+      common/childt/childterminal
 
       integer IZSTOCN
       COMMON/C24/IZSTOCN(MCOM,MS)
@@ -82,10 +84,8 @@ C Passed parameters for cfgtogg
 
 #ifdef OSI
       integer iside,isize,ifont     ! passed to viewtext
-      integer ICPMOD                ! passed from tchild
 #else
       integer*8 iside,isize,ifont   ! passed to viewtext
-      integer*8 ICPMOD              ! passed from tchild
 #endif
 
 C For help messages
@@ -187,8 +187,7 @@ C Otherwise commission an explicit calculation.
 C Get logical name of terminal type, expand model name
 C to include the path and create a string to drive espvwf module.
           doit = ' '
-          call tchild(ICPMOD)
-          call termode(ICPMOD,tmode)
+          call terminalmode(childterminal,tmode)
           if(unixok)then
             call addpath(LCFGF,longtfile,concat)
           else
@@ -532,8 +531,7 @@ C << Rewrite logic to use G7 common blocks rather than call zinfo. >>
 C Get logical name of terminal type, expand model name
 C to include the path and create a string to drive espvwf.
           doit = ' '
-          call tchild(ICPMOD)
-          call termode(ICPMOD,tmode)
+          call terminalmode(childterminal,tmode)
           if(unixok)then
             call addpath(LCFGF,longtfile,concat)
           else
