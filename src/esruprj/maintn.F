@@ -47,7 +47,7 @@ C IER=0 OK, IER=1 problem.
       LOGICAL FOUND
 
       CHARACTER OUTS*124,msgl2*48,TTAG*12
-      CHARACTER GMENUS*16,GTYPES*8
+      CHARACTER GMENUS*24,GTYPES*8
       CHARACTER GAIDE*36,GHELP*72,GDHDRT*72,GMH*32
 
 C For help messages
@@ -105,7 +105,7 @@ C The additional columns will fit within the current scratch file.
       endif
 
       TTYPE(IFOC)=GTYPES(IFG)
-      TMENU(IFOC)=GMENUS(IFG)
+      write(TMENU(IFOC),'(a)') GMENUS(IFG)
 
 C Ask for the name of this new entry.
       TAG(IFOC)='Undefined'

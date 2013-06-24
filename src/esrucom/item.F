@@ -32,8 +32,8 @@ C IER=0 OK, IER=1 problem.
       COMMON/TDFGH2/GTYPES(25),GMENUS(25)
       DIMENSION ISGGT(28),IVAL(28)
       LOGICAL FOUND
-      CHARACTER GMENUS*16,GTYPES*8
-      CHARACTER KEY*1,ISGGT*30,FOCUS*8
+      CHARACTER GMENUS*24,GTYPES*8
+      CHARACTER KEY*1,ISGGT*36,FOCUS*8
       integer nitms,INO ! max items and current menu item
 
 C Read the generic descriptions to see what is available.
@@ -94,7 +94,7 @@ C In the case of FOCUS='ALL' IFOC is not used.
 
 C Related to generic items. See __ for details.
 C  GTYPES(): 8 char generic type tag for type of processing and info.
-C  GMENUS(): 16 char descriptive text for use in selection menus.
+C  GMENUS(): 24 char descriptive text for use in selection menus.
       COMMON/TDFGH1/NITEMS
       COMMON/TDFGH2/GTYPES(25),GMENUS(25)
 
@@ -121,7 +121,7 @@ C       GMH='2,1,0,0,1,0,-999.0'
       COMMON/TDFG5/GMF(MBITS),MGMA(MBITS)
       COMMON/TDFG6/IALT(MBITS)
 
-      CHARACTER GMENUS*16,GTYPES*8
+      CHARACTER GMENUS*24,GTYPES*8
       CHARACTER GAIDE*36,GHELP*72,GDHDRT*72,GMH*32
       CHARACTER GMF*32,MGMA*32
       CHARACTER FOCUS*8,WORD*20
@@ -130,55 +130,59 @@ C       GMH='2,1,0,0,1,0,-999.0'
 C Pick up the arrays used for displaying current generic items.
       NITEMS=25
       GTYPES(1) ='ALLCLMT'
-      GMENUS(1) ='Climate data:  '
+      GMENUS(1) ='Climate data (all six):'
       GTYPES(2) ='CASUALT'
-      GMENUS(2) ='Casual gain(W):'
+      GMENUS(2) ='Casual sum of OccLtEq: '
       GTYPES(3) ='ZIVENTT'
-      GMENUS(3) ='Zone infl_vent:'
+      GMENUS(3) ='Zone infil & vent rate:'
       GTYPES(4) ='RAIRVLT'
-      GMENUS(4) ='Air (room) vel:'
+      GMENUS(4) ='Room air velocity (NA):'  ! not yet implemented
       GTYPES(5) ='SETPTTT'
-      GMENUS(5) ='Set point temp:'
+      GMENUS(5) ='Control set point T:   '
       GTYPES(6) ='CTLSTAT'
-      GMENUS(6) ='Control state: '
+      GMENUS(6) ='Control state (NotAv): '  ! not yet implemented
       GTYPES(7) ='SKYLUXT'
-      GMENUS(7) ='Sky lux       :'
+      GMENUS(7) ='Sky lux (Not Avail):   '
       GTYPES(8) ='DBTEXTT'
-      GMENUS(8) ='Extn Dry Blb T:'
+      GMENUS(8) ='External Dry Bulb T:   '
       GTYPES(9) ='WINDVLT'
-      GMENUS(9) ='Wind velocity :'
+      GMENUS(9) ='Wind velocity :        '
       GTYPES(10)='WINDDRT'
-      GMENUS(10)='Wind direction:'
+      GMENUS(10)='Wind direction:        '
       GTYPES(11)='RELHUMT'
-      GMENUS(11)='Ext Rel humid :'
+      GMENUS(11)='External rel humidity :'
       GTYPES(12)='DIFHSLT'
-      GMENUS(12)='Diff horz sol: '
+      GMENUS(12)='Diffuse horiz solar:   '
       GTYPES(13)='GLOHSLT'
-      GMENUS(13)='Global H solar:'
+      GMENUS(13)='Global horiz solar:    '
       GTYPES(14)='DIRSOLT'
-      GMENUS(14)='Direct N solar:'
+      GMENUS(14)='Direct normal solar:   '
       GTYPES(15)='SKYTMPT'
-      GMENUS(15)='Sky temp:      '
+      GMENUS(15)='Sky temp (NA):         '
       GTYPES(16)='GLOVRTT'
-      GMENUS(16)='Global V solar:'
+      GMENUS(16)='Global Vert solar (NA):'  ! does not seem to be used
       GTYPES(17)='OBJROTT'
-      GMENUS(17)='Object rotate: '
+      GMENUS(17)='Object rotate:         '
       GTYPES(18)='CASUAL3T'
-      GMENUS(18)='Casual OccLtEq:'
+      GMENUS(18)='Casual separate OccLtEq'
       GTYPES(19)='ACTIVITY'
-      GMENUS(19)='Activity Type: '
+      GMENUS(19)='Activity Type:         '
       GTYPES(20)='BIDIRSET'
-      GMENUS(20)='Optical set:   '       
+      GMENUS(20)='Optical bi-direc set:  '       
       GTYPES(21)='VERTSOL'
-      GMENUS(21)='Vertical solar:'     
+      GMENUS(21)='Vertical solar @ surf: '     
       GTYPES(22)='HTCLSETP'
-      GMENUS(22)='H&C set points:'     
+      GMENUS(22)='Heat & Cool set points:'
+
+C DBTZNM is not used by the simulator, res will graph/list it.  
       GTYPES(23)='DBTZNM'
-      GMENUS(23)='Msr Dry Bulb T:'
+      GMENUS(23)='Zone db T (to display):'
+
+C SURTM is not used by the simulator, res will graph/list it.
       GTYPES(24)='SURTM'
-      GMENUS(24)='Msr surface T: '
+      GMENUS(24)='Surface T (to display):'
       GTYPES(25)='NODPRESS'
-      GMENUS(25)='Node Press Pa: '
+      GMENUS(25)='Flow node press Pa:    '
 
 C If not looking for a specific item then return.
       IF(FOCUS(1:7).EQ.'ALLCLMT')THEN
@@ -320,8 +324,8 @@ C Lumped zone casual loads -  in tabular format.
 C << ? what about an attribute to tag which casual gain type this
 C << relates to? (so other gains assumed to come from operation files?)
         GAIDE   ='Casual gains '
-        GHELP(1)='Casual gains are in the form of sensible conv W, '
-        GHELP(2)='sensible radiant W, laten W.'
+        GHELP(1)='Casual gains are lumped together in the form of '
+        GHELP(2)='sensible conv W, sensible radiant W, and latent W.'
         GMH='2,3,0,0,3,0,-999.0'
         GDHDRT(1)='   time  |       sensible      | latent'
         GDHDRT(2)='   of day| convective  radiant |       ' 
@@ -341,7 +345,7 @@ C Data for separate zone casual loads occup/lights/small power.
         GAIDE   ='Casual gains OccLtgEqp'
         GHELP(1)='Casual gains are in the form of sensible conv W, '
         GHELP(2)='sensible radiant W, laten W for occupants, lighting'
-        GHELP(3)='and small power'
+        GHELP(3)='and small power separately.'
         GMH='3,9,0,0,9,0,-999.0'
         write(GDHDRT(1),'(a)')
      &   ' time  |     ocupant     |    lights       |   small power   '
@@ -511,9 +515,9 @@ C Control state: one data item.
       ELSEIF(FOCUS(1:7).EQ.'VERTSOL')THEN
 
 C Control state: one data item.
-        GAIDE   ='Vertical solar radiationi in W/m2'
-        GHELP(1)='Global solar radiation data for a facade.'
-        GHELP(2)='Values in Watts/m^2'
+        GAIDE   ='Vertical solar radiation in W/m2'
+        GHELP(1)='Global solar radiation data for surfaces in the'
+        GHELP(2)='facade. Values in Watts/m^2'
         GMH='2,1,0,0,1,0,999.9'
         GDHDRT(1)='   time  | vertical solar  '
         GDHDRT(2)='   of day| radiation       '
@@ -527,8 +531,8 @@ C Control state: one data item.
 C Control state: two data item.
         GAIDE   ='Heating & Cooling setp. (degC)'
         GHELP(1)='Assign Heating and cooling set-points in'
-        GHELP(2)='different columns (degC). Ideal control'
-        GHELP(3)='is used for this (BCL23)'        
+        GHELP(2)='two columns (degC). Ideal control (BCL23)'
+        GHELP(3)='uses this information for its setpoints.'        
         GMH='3,2,0,0,2,0,-999.9'
         GDHDRT(1)='   time  | Heating   |  Cooling   '
         GDHDRT(2)='   of day| set-point |  set-point '
@@ -543,8 +547,8 @@ C Control state: two data item.
 
 C Measured zone air temperature: one data item.
         GAIDE   ='Measured zone DB temp '
-        GHELP(1)='Zone dry bulb temperature deg C. This type used for'
-        GHELP(2)='measurements and to display.'
+        GHELP(1)='Zone dry bulb temperature degree C measurements to'
+        GHELP(2)='to display in res for comparison with predictions.'
         GMH='2,1,0,0,1,0,-999.0'
         GDHDRT(1)='   time  | meas zone db'
         GDHDRT(2)='   of day| temperature '
@@ -555,10 +559,10 @@ C Measured zone air temperature: one data item.
         
       ELSEIF(FOCUS(1:5).EQ.'SURTM')THEN
 
-C Measured surface temperature: one data item.
+C Measured surface temperature (for reporting in res): one data item.
         GAIDE   ='Measured surface temp '
-        GHELP(1)='Zone surf temperature deg C. This type used for'
-        GHELP(2)='measurements and to display.'
+        GHELP(1)='Zone surf temperature degree C measurements to'
+        GHELP(2)='to display in res for comparison with predictions.'
         GMH='2,1,0,0,1,0,-999.0'
         GDHDRT(1)='   time  | meas surface'
         GDHDRT(2)='   of day| temperature '
@@ -569,7 +573,7 @@ C Measured surface temperature: one data item.
 
       ELSEIF(FOCUS(1:8).EQ.'NODPRESS')THEN
 
-C Measured node pressure: one data item.
+C Measured node pressure (for reporting in res): one data item.
         GAIDE   ='Measured flow node pressure Pa'
         GHELP(1)='Fluid flow network node pressure (Pa)'
         GHELP(2)='measured data'

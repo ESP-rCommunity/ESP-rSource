@@ -622,7 +622,7 @@ C First write out data into a temporary file for checking.
 C Replace calculated values by measured values from tdf file
 C Use the ratio of direct/diffuse as calculated to divide
 C the measured values into direct and diffuse components.
-C Temporal (TDF) vertical solar radiation data
+C Temporal (TDF) vertical solar radiation data.
           if(IVERSOL(icomp,isrf).ne.0)then
             IFOC=IVERSOL(icomp,isrf)
             CALL RCTDFB(itrc,btimef,VAL,ISD,IFOC,IER)
