@@ -329,7 +329,7 @@ C Status of multi-year climate database
       integer ier, irep
       
       REAL :: clmloc
-      INTEGER :: i,iaprob,iglib,irec,istat,itru,iua,llt,nclass
+      INTEGER :: i,iaprob,iglib,irec,istat,iua,llt,nclass
 
 C For help messages
       character helpinsub*24   ! subroutine name
@@ -866,11 +866,11 @@ C Open and scan the bidirectional data file if it exists.
         iua=IAPROB
         call erbiwin(iuout,iua,bidirfile,ier)
         if(ier.eq.0)then
-          call edisp(itru,'The bi-directional data was sucessfully')
-          call edisp(itru,'scanned.')
+          call edisp(iuout,'The bi-directional data was sucessfully')
+          call edisp(iuout,'scanned.')
         else
-          call edisp(itru,'There was a problem reading the bi-')
-          call edisp(itru,'directional data.')
+          call edisp(iuout,'There was a problem reading the bi-')
+          call edisp(iuout,'directional data.')
         endif
       ENDIF
 
