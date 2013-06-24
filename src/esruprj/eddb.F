@@ -1438,6 +1438,8 @@ C     if blank then no file name change implied.
 
       common/OUTIN/IUOUT,IUIN
       common/appw/iappw,iappx,iappy
+      integer childterminal  ! picks up mmod from starting of prj
+      common/childt/childterminal
       common/rpath/path
       common/deflt4/dinstpath
 
@@ -1458,12 +1460,6 @@ C Local strings for user selections dependent on graphic library.
       logical unixok  ! to check for path file separators
       integer iglib  ! for detecting GTK or X11
       logical allowbrowse ! to be done
-      
-#ifdef OSI
-      integer ICPMOD     ! passed from tchild
-#else
-      integer*8 ICPMOD     ! passed from tchild
-#endif
 
 C For help messages
       character helpinsub*24 ! subroutine name
@@ -1887,8 +1883,7 @@ C otherwise edit the data. Pay attention to the implied path.
 C Get logical name of child process terminal type and create a string to drive pdb.
         call tstamp('>','PRJ: start pdb')
         doit = ' '
-        call tchild(ICPMOD)
-        call termode(ICPMOD,tmode)
+        call terminalmode(childterminal,tmode)
         if(iappw.gt.0.and.iappw.le.200)then
           write(doit,'(3a,3i4,3a)') 'pdb -mode ',tmode,
      &      ' -s ',iappw,iappx+10,iappy+40,' -file ',
@@ -3330,6 +3325,8 @@ C espriou.h provides currentfile.
 
       common/FILEP/IFIL
       common/OUTIN/IUOUT,IUIN
+      integer childterminal  ! picks up mmod from starting of prj
+      common/childt/childterminal
       
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
@@ -3355,6 +3352,7 @@ C Calendar.
       LOGICAL OK,concat,COPYDEF,MODDB,XST,DOK,UNIXOK
       character dinstpath*60,path*72
       character dirpath*72
+      character actreturn*1  ! users preference
       CHARACTER*72 NNAME
       dimension ICLM(24,6)
       integer llt  ! length of string buffer
@@ -3362,12 +3360,6 @@ C Calendar.
       integer icreport  ! to signal that calendar has been updated.
       integer IDOL,IDAYNUM,IMTHNUM,IDWKNUM,IDTYY  ! for correcting calendar
       logical closelat,closelong,clkok,usercreatednew,spawn
-      
-#ifdef OSI
-      integer ICPMOD     ! passed from tchild
-#else
-      integer*8 ICPMOD     ! passed from tchild
-#endif
 
 C For help messages
       character helpinsub*24 ! subroutine name
@@ -3481,8 +3473,7 @@ C << update to deal with dos paths >>
 
         call tstamp('>','PRJ: start clm')
         doit = ' '
-        call tchild(ICPMOD)
-        call termode(ICPMOD,tmode)
+        call terminalmode(childterminal,tmode)
         if(ipathclim.eq.0.or.ipathclim.eq.1)then
           call addpath(llclmdb,longtfile,concat)
         elseif(ipathclim.eq.2)then
@@ -3506,7 +3497,7 @@ C use a file dialog (X11) or browser (GTK) to go looking for it.
         iuf=IFIL+1
         INQUIRE (FILE=cdblfil,EXIST=XST)
         if(XST)then
-          call rdblist(IUF,longtfile,ier)
+          call rdblist(IUF,longtfile,actreturn,ier)
           if(ier.eq.0)then
             if(longtfile(1:12).eq.'USER_DEFINED')then
 
@@ -3556,8 +3547,18 @@ C Assign weather file name based on its location via findwhichdbpath.
         IF(XST)THEN
           if (spawn) then
 C If file exists and user wants to browse then scan the file and
-C use the editing facility.
-          goto 44
+C use the editing facility. If user does not want to start clm jump
+C straight to the code that checks for differences in model and the
+C weather file locations.
+          if(actreturn(1:1).eq.'u')then
+            goto 44    ! start of clm module
+          elseif(actreturn(1:1).eq.'s')then
+            moddb=.true.
+            goto 43    ! skip clm do check for site information
+          else
+            moddb=.true.
+            goto 44    ! start clm module
+          endif
           endif
         else
           call usrmsg('No weather to browse/edit.',
@@ -4061,8 +4062,10 @@ C weather file exists.
       if(ier.eq.0)then
         call tstamp('>','PRJ: start clm')
         doit = ' '
-        call tchild(ICPMOD)
-        call termode(ICPMOD,tmode)
+        call terminalmode(childterminal,tmode)
+
+C Debug.
+        write(6,*) childterminal,' ',tmode,ipathclim
         if(ipathclim.eq.0.or.ipathclim.eq.1)then
           call addpath(llclmdb,longtfile,concat)
         elseif(ipathclim.eq.2)then
@@ -4448,6 +4451,8 @@ C is via a text editor.
       common/FILEP/IFIL
       common/OUTIN/IUOUT,IUIN
       common/appw/iappw,iappx,iappy
+      integer childterminal  ! picks up mmod from starting of prj
+      common/childt/childterminal
 
       common/texted/tedlbl,teditor
       character tedlbl*20,teditor*20
@@ -4467,11 +4472,6 @@ C Local strings for user selections dependent on graphic library.
       integer lndbp   ! for length of standard path
       logical allowbrowse  ! future feature
       logical unixok  ! to check for path file separators
-#ifdef OSI
-      integer ICPMOD     ! passed from tchild
-#else
-      integer*8 ICPMOD     ! passed from tchild
-#endif
 
 C For help messages
       character helpinsub*24 ! subroutine name
@@ -4659,8 +4659,7 @@ C reflect it is local.
 
 C Start the mould utility.
         doit = ' '
-        call tchild(ICPMOD)
-        call termode(ICPMOD,tmode)
+        call terminalmode(childterminal,tmode)
         if(iappw.gt.0.and.iappw.le.200)then
           write(doit,'(3a,3i4,3a)') 'mld -mode ',tmode,
      &      ' -s ',iappw,iappx+10,iappy+40,' -file ',

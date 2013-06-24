@@ -7939,16 +7939,13 @@ C building as described in SBEM - EPBD documents
 #include "model.h"
       COMMON/OUTIN/IUOUT,IUIN
       INTEGER IUOUT,IUIN
+      integer childterminal  ! picks up mmod from starting of prj
+      common/childt/childterminal
 
       INTEGER IER,LNBLNK,IMODE
       CHARACTER AUT*12,DOIT*248,LONGTFILE*144,LONGTFILEDOS*144
       character OUTS*248,TMODE*8
       LOGICAL CONCAT,UNIXOK
-#ifdef OSI
-      integer ICPMOD     ! passed from tchild
-#else
-      integer*8 ICPMOD     ! passed from tchild
-#endif
 
 C First run simulation
       IF(IMODE.EQ.1)THEN      ! simulating stripped building
@@ -7996,8 +7993,7 @@ C on to child with an offset from prj start position.
      &    'stripped ',aut
         tmode='graph'
         call edisp248(iuout,doit,100)
-        call tchild(ICPMOD)   ! find out if in text or graphic mode
-        call termode(ICPMOD,tmode)
+        call terminalmode(childterminal,tmode)
       endif
 
 C Run simulation with a message to the user before and after.

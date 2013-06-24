@@ -1858,16 +1858,14 @@ C   1  write(6,*) 'c2fstr: error writing: ',cstr
 C      return
       end
 
-C ******* termode
-C termode: given an index `mode` return a terminal text string.
-      SUBROUTINE termode(mode,tmode)
+
+C ******* terminalmode
+C terminalmode: given an index `mode` return a terminal text string.
+C this would be called based on the fortran setting of mode in prj.
+      SUBROUTINE terminalmode(mode,tmode)
       CHARACTER*(*) tmode
 
-#ifdef OSI
       integer mode          ! passed from tchild
-#else
-      integer*8 mode          ! passed from tchild
-#endif
 
       tmode = ' '
       if(mode.eq.-1)then
@@ -6422,18 +6420,29 @@ C Used to isolate code from system details.
       common/OUTIN/IUOUT,IUIN
 
       integer time
+      integer lnblnk
+      integer lns
       character date_str*24
       character ectime*24
 
-C Unix date function.
+C Unix date function. If date_str blank assign a timestamp.
       ictime=time()
       write(date_str,'(A)',iostat=ios,err=1) ectime(ictime)
+      lns=lnblnk(date_str)
+      if(lns.gt.20)then
+        continue
+      else
+        date_str='Mon Feb 11 16:42:00 2013'
+      endif
       return
 
+C If an error detected assign a timestamp.
    1  if(IOS.eq.2)then
         call edisp(iuout,'dstamp: permission error getting time.')
+        date_str='Mon Feb 11 16:42:00 2013'
       else
-        call edisp(iuout,'dstamp: error getting time.')
+        call edisp(iuout,'dstamp: error getting time, using fixed date')
+        date_str='Mon Feb 11 16:42:00 2013'
       endif
       return
       end

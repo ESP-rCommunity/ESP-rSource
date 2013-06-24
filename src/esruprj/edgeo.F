@@ -393,6 +393,7 @@ C construction on the other side. Logic is the same as in EDSURA.
             icoth=IZSTOCN(IC2(ioc),IE2(ioc))
           else
             showother=.false.
+            icoth=0  ! not a partition
           endif
 
 C Report on any duplicate surface names.
@@ -985,6 +986,9 @@ C Present list of surfaces and allow user to select up to all of them.
             CALL EPICKS(INPICK,IVALS,' ',' ',32,NSUR,ITEMSS,
      &          'Surface name    use',IER,nbhelp)
           endif
+
+C For each of the selected surfaces get its connection, decide if
+C it is a partition and then process based on value of IRT.
           do 11 i=1,inpick
             iss = ivals(i)
             ioc=IZSTOCN(ICOMP,iss)
@@ -1077,6 +1081,9 @@ C attribute and see if the surface in the adjacent zone is made of
 C an equivalent construction. If the current construction is
 C symmetric then expect to find the same construction name and if
 C the name does not match or is UNKN get user to confirm change.
+
+C This logic should also included in subroutine serchrpl. So the
+C global search and replace acts the same way.
               write(SN,'(a12)')SSNAME(ioc)
               if(showother.and.icoth.ne.0.and.ssmlcindex(ioc).ne.0)then
                 ii=ssmlcindex(ioc)
@@ -2964,6 +2971,7 @@ C faces another zone, get the other surface connection index.
         icoth=IZSTOCN(IC2(ioc),IE2(ioc))
       else
         showother=.false.
+        icoth=0
       endif
 
 C Echo back to the user additional information about the surface.
