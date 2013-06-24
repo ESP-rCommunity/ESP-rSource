@@ -2104,7 +2104,7 @@ C and absorbed fluxes in each CFC layer.Here, the transmitted component is actua
 C the reflected component on the inside surface since the source is from the
 C inside.
                 iSolVis=0
-                call solar_multilayer(0,icomp,ks,icfcfl(icomp,ks),
+                call solar_multilayer(i_direct,icomp,ks,icfctp,
      &          temp1,temp2,temp3,X1,iSolVis,TRANSBB_SYS,TRANSD_SYS,
      &          REFL_SYS,AbsSol)
 
@@ -2186,7 +2186,7 @@ C and absorbed fluxes in each CFC layer.Here, the transmitted component is actua
 C the reflected component on the inside surface since the source is from the
 C inside.
                 iSolVis=0
-                call solar_multilayer(0,icomp,k,icfcfl(icomp,k),
+                call solar_multilayer(i_direct,icomp,k,icfctp,
      &           temp1,temp2,temp3,X2,iSolVis,TRANSBB_SYS,TRANSD_SYS,
      &           REFL_SYS,AbsSol)
 
@@ -2275,7 +2275,7 @@ C and absorbed fluxes in each CFC layer.Here, the transmitted component is actua
 C the reflected component on the inside surface since the source is from the
 C inside.
              iSolVis=0
-             call solar_multilayer(0,icomp,i,icfcfl(icomp,i),
+             call solar_multilayer(i_direct,icomp,i,icfctp,
      &        temp1,temp2,temp3,RDIFR,iSolVis,TRANSBB_SYS,TRANSD_SYS,
      &        REFL_SYS,AbsSol)
 

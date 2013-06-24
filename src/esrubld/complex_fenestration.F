@@ -1162,7 +1162,7 @@ C Calculate beam DIRECT NORMAL incidence transmittance and reflectance
 C for reference glass based on extinction coefficient and refractive
 C index.
           TAU_A = EXP(-1.*KL)
-          RPERP=((N2-1.)/(N2+1.))**2.
+          RPERP=((N2-1.)/(N2+1.))**2
           TclearDN=TAU_A*(1.-RPERP)*(1.-RPERP)
      &             /(1.-(RPERP*RPERP*TAU_A*TAU_A))
           RclearDN=RPERP*(1.+(TAU_A*TclearDN))
@@ -1177,8 +1177,8 @@ C reference glass based on extinction coefficient and refractive index
 C using Snell's law, Fresnel equations.
             THETA2 = ASIN((SIN(THETA1))/N2)
             TAU_A = EXP(-1.0*KL/COS(THETA2))
-            RPERP = ((SIN(THETA2-THETA1))/(SIN(THETA2+THETA1)))**2.
-            RPARL = ((TAN(THETA2-THETA1))/(TAN(THETA2+THETA1)))**2.
+            RPERP = ((SIN(THETA2-THETA1))/(SIN(THETA2+THETA1)))**2
+            RPARL = ((TAN(THETA2-THETA1))/(TAN(THETA2+THETA1)))**2
             TAUPERP = (TAU_A*(1.0-RPERP)*(1.0-RPERP))/
      &                 (1.0-(RPERP*RPERP*TAU_A*TAU_A))
             TAUPARL = (TAU_A*(1.0-RPARL)*(1.0-RPARL))/
@@ -1224,8 +1224,8 @@ C index.
           THETA1 = 51.*r
           THETA2 = ASIN((SIN(THETA1))/N2)
           TAU_A = EXP(-1.0*KL/COS(THETA2))
-          RPERP = ((SIN(THETA2-THETA1))/(SIN(THETA2+THETA1)))**2.
-          RPARL = ((TAN(THETA2-THETA1))/(TAN(THETA2+THETA1)))**2.
+          RPERP = ((SIN(THETA2-THETA1))/(SIN(THETA2+THETA1)))**2
+          RPARL = ((TAN(THETA2-THETA1))/(TAN(THETA2+THETA1)))**2
           TAUPERP = (TAU_A*(1.0-RPERP)*(1.0-RPERP))/
      &              (1.0-(RPERP*RPERP*TAU_A*TAU_A))
           TAUPARL = (TAU_A*(1.0-RPARL)*(1.0-RPARL))/
@@ -1283,8 +1283,8 @@ C If shade is retracted set solar transmittance to 1 and skip to next layer
             if (isolvis.eq.0) then ! solar
               SolTFbb(icomp,isurf,icfctp,i)=0.99999999
               SolTBbb(icomp,isurf,icfctp,i)=0.99999999
-              SolRFbb(icomp,isurf,icfctp,i)=0.0
-              SolRBbb(icomp,isurf,icfctp,i)=0.0
+c              SolRFbb(icomp,isurf,icfctp,i)=0.0
+c              SolRBbb(icomp,isurf,icfctp,i)=0.0
               SolTFbd(icomp,isurf,icfctp,i)=0.0
               SolTBbd(icomp,isurf,icfctp,i)=0.0
               SolRFbd(icomp,isurf,icfctp,i)=0.0
@@ -1296,8 +1296,8 @@ C If shade is retracted set solar transmittance to 1 and skip to next layer
             else
               VisTFbb(icomp,isurf,icfctp,i)=0.99999999
               VisTBbb(icomp,isurf,icfctp,i)=0.99999999
-              VisRFbb(icomp,isurf,icfctp,i)=0.0
-              VisRBbb(icomp,isurf,icfctp,i)=0.0
+c              VisRFbb(icomp,isurf,icfctp,i)=0.0
+c              VisRBbb(icomp,isurf,icfctp,i)=0.0
               VisTFbd(icomp,isurf,icfctp,i)=0.0
               VisTBbd(icomp,isurf,icfctp,i)=0.0
               VisRFbd(icomp,isurf,icfctp,i)=0.0
@@ -1334,8 +1334,9 @@ C If shade is retracted set solar transmittance to 1 and skip to next layer
                 VisRBgrddd(icomp,isurf,icfctp,i)=0.0
               endif
             endif ! ground / sky
+            goto 100 ! jump to next "element" (layer)
 
-          else ! continue as usual
+          else ! shade not retracted, continue as usual
 
 C           Set beam-beam reflectances to zero
             if (isolvis.eq.0) then ! solar
@@ -1586,7 +1587,7 @@ C             properties and assign to commonss
               endif
 
             endif ! slat considered flat
-          endif !  i_shd() .eq. 0 
+          endif !  i_shd() .eq. 0 / else (i.e. shade down)
 
         elseif(itype.eq.0)then ! gas filled cavity
 C       Set gas gap properties to 0 except for bb and dd transmission, set to 1. 
@@ -1880,7 +1881,7 @@ C ********************************************************************
 
       LayNo=ncfc_el(icomp,icfctp)
 
-C Initialise return values to zero
+C Initialise return values to zero (not done in development_branch)
       TRANSBB_SYS = 0.0
       TRANSBD_SYS = 0.0
       TRANSDD_SYS = 0.0
@@ -1891,7 +1892,7 @@ C Initialise return values to zero
         AbsSol(i)=0.0
       enddo
 
-C If no radiation, opt out
+C If no radiation, opt out (not done in development_branch)
       if (GBM.le.0. .and. GDF.le.0.) then
         return
       endif
@@ -2035,7 +2036,7 @@ c?          elseif(icalc_mode.eq.i_ground) then
         AbsSol(i)=SS(i)
       ENDDO
 
-      IF (GBM.lt.0.001) THEN
+      IF (GBM.lt.0.01) THEN
         GBM=0.0     ! reset back to zero (???)
       ENDIF
 
@@ -2081,18 +2082,18 @@ C      integer ihrp,ihrf,idyp,idyf,idwp,idwf,nsinc,its
       real thrmli
       COMMON/FVALC/TFC(MCOM,MS,MN),QFC(MCOM)
       real TFC,QFC
-      COMMON/FVALS/TFS(MCOM,MS),QFS(MCOM)
-      real TFS,QFS
+c      COMMON/FVALS/TFS(MCOM,MS),QFS(MCOM)
+c      real TFS,QFS
       COMMON/GR1D01/NNDS,NNDZ(MCOM),NNDC(MCOM,MS),NNDL(MCOM,MS,ME)
       integer nnds,nndz,nndc,nndl
       COMMON/ADJC/IE(MCOM,MS),ATP(MCOM,MS),ATF(MCOM,MS),ARP(MCOM,MS),
      &ARF(MCOM,MS)
       integer ie
       real atp,atf,arp,arf
-      COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
-      integer ic1,ie1,ict,ic2,ie2
-      COMMON/PVALA/TPA(MCOM),QPA(MCOM)
-      REAL TPA, QPA
+c      COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
+c      integer ic1,ie1,ict,ic2,ie2
+c      COMMON/PVALA/TPA(MCOM),QPA(MCOM)
+c      REAL TPA, QPA
       COMMON/FVALA/TFA(MCOM),QFA(MCOM)
       real tfa,qfa
       COMMON/PREC1/SNA(MCOM,MS)
@@ -2454,7 +2455,7 @@ C 'W' time-dependent coefficients in MZSETU require [W/m^2].
               endif
             endif ! "i"
 
-C Save future terms
+C Save future terms.
           nn=nndc(icomp,isur)
           do 37 j=1,nn
             qcfc_cvF(icomp,isur,j)=qcfc_cv(icomp,isur,j,2)
@@ -2571,7 +2572,7 @@ C Calculate Rayleigh number (= Gr*Pr)
       if (i_hconv.eq.0) then
 C Calculate Nusselt number (Shewen, Hollands and Raithby 1996)
         Nu=SQRT(1.+((0.0665*Ra**(0.33333))/
-     &          (1.+(9000./Ra)**1.4))**(2.0))
+     &          (1.+(9000./Ra)**1.4))**(2))
 
       elseif (i_hconv.eq.1) then
 C ***  Nusselt number acc. to EN 673:1996 ***
@@ -4221,6 +4222,8 @@ C ********************************************************************
 
       COMMON/PVANG/fInc_angle(MS)
       real fInc_angle
+
+C      common/CFCsolarS => moved to CFC_common.h
 
       integer i,j,k,l,nn,nc,ne,icfctp,icomp,ivblayr
 
