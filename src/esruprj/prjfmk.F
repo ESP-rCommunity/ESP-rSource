@@ -242,8 +242,6 @@ C Display contents of this browsed file.
 
 C If the file name has changed then remember this in cfg file.
 C Debug.
-C      write(6,*) lnprior,' ',priorname(1:lnprior)
-C      write(6,*) lnoprf,' ',ltmp(1:lnoprf)
       if(priorname(1:lnprior).eq.ltmp(1:lnoprf))then
         continue  ! name is the same
       else
@@ -253,9 +251,6 @@ C      write(6,*) lnoprf,' ',ltmp(1:lnoprf)
         call usrmsg('Updating model to reflect changes',
      &        'in zone operations file name...done.','-')
       endif
-
-C Debug.
-C      write(6,*) 'lproj is ',lproj(icomp)
 
   5   MODOPR=.FALSE.
  
@@ -405,9 +400,6 @@ C Write file and return.
      &        'in zone operations data or file name...','-')
             LPROJ(ICOMP)=LTMP
             CALL EMKOPER(IUO,LPROJ(ICOMP),ICOMP,IER)
-C Debug
-C            write(6,*) 'g lodslot ',icomp,':',
-C     &        (lodslot(icomp,iph),iph=1,7)
             CALL EMKCFG('-',ier)
             call usrmsg(
      &        'Updating model to reflect changes',
@@ -550,7 +542,6 @@ C We have all of the directives, do the import.
 
 C Each of these leaves the user to define the casual gains manually.
 C The from scratch should intially be version 2.1
-C << test calling initcasday21 >>
           ip3ver(icomp)=21
           helptopic='operations_synopsys'
           call gethelptext(helpinsub,helptopic,nbhelp)
@@ -662,9 +653,6 @@ C Remind users to check their data.
       
       ENDIF
 
-C Debug.
-      write(6,*) '663 prjfmk lodslot ',(lodslot(icomp,iph),iph=1,7)
-
 C Display different options depending on the version of the file.
 C If ip3ver is < 21 then there is a single string for both air
 C and casual descriptions.
@@ -721,9 +709,6 @@ C Sort the gains and then update the file and mark MODOPR.
               IUO=IFIL+1
               CALL EMKOPER(IUO,LPROJ(ICOMP),ICOMP,IER)
               MODOPR=.false.
-C Debug
-C              write(6,*) 'a lodslot ',icomp,':',
-C     &          (lodslot(icomp,iph),iph=1,7)
             endif
           endif
         endif
@@ -738,9 +723,6 @@ C     &          (lodslot(icomp,iph),iph=1,7)
 C So save the changes to the file and then exit.
           IUO=IFIL+1
           CALL EMKOPER(IUO,LPROJ(ICOMP),ICOMP,IER)
-C Debug
-C          write(6,*) 'b lodslot ',icomp,':',
-C     &      (lodslot(icomp,iph),iph=1,7)
         endif
         RETURN
 
@@ -815,9 +797,6 @@ C Save current information into a descriptive file
 C and rewrite the system configuration file if not browsing.
         if(cfgok.and.(.NOT.browse))then
    11     CALL EMKOPER(IUO,LPROJ(ICOMP),ICOMP,IER)
-C Debug
-C          write(6,*) 'c lodslot ',icomp,':',
-C     &       (lodslot(icomp,iph),iph=1,7)
           IF(IER.LT.0)THEN
             DOK=.true.
             helptopic='operations_save_error'
@@ -2540,9 +2519,6 @@ C Save the destination operation file.
      &  'Updating model to reflect changes in destination',
      &  'operations data or file name...','-')
       CALL EMKOPER(IUO,LPROJ(idest),idest,IER)
-C Debug
-C      write(6,*) 'd lodslot ',icomp,':',
-C     &  (lodslot(icomp,iph),iph=1,7)
       CALL EMKCFG('-',ier)
       call usrmsg(
      &  'Updating model to reflect changes in destination',
@@ -3178,8 +3154,6 @@ C account ICGUnit and IELF attributes.
         IF(L.GE.IST.AND.(L.LE.(IST+MIFULL)))THEN
         M=M+1
         CALL EMKEY(M-MHEAD,KEY,IER)
-C Debug
-        write(6,*) 'icgunit is',idtyp,l,ICGUnit(IDTYP,L),ICGT(IDTYP,L)
         if(ICGUnit(IDTYP,L).eq.0)then
           jicgt=iabs(ICGT(IDTYP,L))
           if (IELF(ICOMP).EQ.1) then
@@ -3474,8 +3448,6 @@ C Ask about units prior to calling EDCASGN and reset icgts & icgus if required.
               izf=24
               call EDCASGN(ICOMP,ICGTS,icgus,caskeyt,IDT,IPER,silent,
      &          izs,izf)
-              write(6,*) '619 icgts',icgts,icgus,caskeyt,idt,iper,
-     &          izs,izf
             ENDIF
           ELSE
             IDT=IQ
@@ -3510,16 +3482,12 @@ C to calling EDCASGN.
                 izf=24
                 call EDCASGN(ICOMP,ICGTS,icgus,caskeyt,IDT,IPER,
      &            silent,izs,izf)
-                write(6,*) '619+ icgts',icgts,icgus,caskeyt,idt,
-     &            iper,izs,izf
               endif
               silent=.false.
               izs=8
               izf=18
               call EDCASGN(ICOMP,ICGTS,icgus,caskeyt,IDT,IPER,
      &          silent,izs,izf)
-              write(6,*) '619++ icgts',icgts,icgus,caskeyt,idt,iper,
-     &          izs,izf
             ENDIF
           ENDIF
           sorted=.false.
@@ -3625,8 +3593,6 @@ C Remind users to check their data.
 C Provide editing space (12 char) for the  char string. For identified slot
 C ask for user label and confirmation of the type of gain. Use a dash if
 C a slot has not been used yet.
-C        write(6,*) 'EDCASG lodslot ',icomp,':',
-C     &    (lodslot(icomp,iph),iph=1,7)
         ll1='-'; ll2='-'; ll3='-'; ll4='-'
         if(lodslot(icomp,1).gt.0) write(ll1,'(a)') lodlabel(icomp,1)
         if(lodslot(icomp,2).gt.0) write(ll2,'(a)') lodlabel(icomp,2)
@@ -3729,8 +3695,6 @@ C edcasgn (commons are updated within edcasgn if the user makes changes).
         izf=0
         call EDCASGN(ICOMP,ICGTX,ICGUX,caskeyt,IDT,IPER,silent,
      &    izs,izf)
-        write(6,*) '619+++ icgtx',icgtx,icgux,caskeyt,idt,iper,
-     &    izs,izf
         sorted=.false.
         modopr=.true.
       endif
@@ -4047,7 +4011,6 @@ C Warn user if the zone base area is still zero.
 C Ask for sensible and latent gain.
 C Can be specified as: W, W/obj, W/m^2, m^2/obj
       IGU=1
-      write(6,*) 'icgux before dialog is ',icguX
       if(icguX.eq.0)then
         msg='Gain to be specified (currently Watts)'
       elseif(icguX.eq.1)then
@@ -4193,7 +4156,6 @@ C that each person is 95W sensible and 45W latent.
      &          'W & latent to ',VL,'W.'
             endif
             call edisp(iuout,outs)
-            write(6,*) 'xx ',icgtx,cmgsx,cmglx,vs,vl
           else
             write (HOLD,'(2f8.1,a)') CMGSX/(zb/FLA),
      &                               CMGLX/(zb/FLA),'  '
@@ -4338,8 +4300,6 @@ C Start insertion of casual gain. Loop until slot matches.
 C Now update common blocks. Loop backwards from INC to ILPER.
         do 300 IX=INC,ILPER,-1
           if (IX.eq.ILPER) then
-            write(6,*) 'cpycasit ',icomp,idt,ix,icgtX,icguX,icgsX,
-     &        icgfX,cmgsX,cmglX,radcX,concX
             call CPYCASTI(icomp,idt,ix,icgtX,icguX,icgsX,icgfX,cmgsX,
      &        cmglX,radcX,concX,ipfX,iphasX,pfX,pwrX,bvoltX)
           else
@@ -4982,10 +4942,6 @@ C Loop through the focus day.
         CGNL=0.
         do 22 J=1,NCAS(JDAY)
           if (I.gt.ICGS(JDAY,J).and.I.le.ICGF(JDAY,J)) then
-
-C Debug.
-C            write(6,*) 'icgunit iday j',ICGUnit(JDAY,J),jday,j,
-C     &        CMGS(JDAY,J)
             if (ICGUnit(JDAY,J).eq.2) then
               if (CMGS(JDAY,J).gt.0.0) then
                 CGNS=CGNS+(ZBASEA(ICOMP)/CMGS(JDAY,J))*95.0
@@ -4994,7 +4950,6 @@ C     &        CMGS(JDAY,J)
                 CGNS=0.0
                 CGNL=0.0
               endif
-C              write(6,*) CGNS,CGNL
             elseif (ICGUnit(JDAY,J).eq.1) then
               CGNS=CGNS+CMGS(JDAY,J)*ZBASEA(ICOMP)
               CGNL=CGNL+CMGL(JDAY,J)*ZBASEA(ICOMP)
@@ -5525,9 +5480,6 @@ C For help messages
         CALL EGETWI(HOLD,K,nbocper,0,24,'F','occupant periods',IER)
         CALL EGETWI(HOLD,K,nbltper,0,24,'F','light periods',IER)
         CALL EGETWI(HOLD,K,nbspper,0,24,'F','small power periods',IER)
-
-C Debug.
-C        write(6,*) 'occup light sm pwr per ',nbocper,nbltper,hbspper
 
 C Get user to specify the start times for occup periods if non-zero.
 C Increment ipcount for each new period.
