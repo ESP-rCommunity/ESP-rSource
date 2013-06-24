@@ -1,7 +1,7 @@
 Synopsis
  
 Synopsis of the model room with wall supply and extract, flow also driven by
-buoyancy defined in sunroom.cfg generated on Fri Aug 24 15:22:05 2012. Notes
+buoyancy defined in sunroom.cfg generated on Sun Jun 23 20:25:02 2013. Notes
 associated with the model are in sunroom.notes
  
 The model is located at latitude   45.00 with a longitude difference of   0.00
@@ -48,6 +48,7 @@ constant heating setpoint, no cooling
  
 Zones control includes  1 functions.
 20 degC heating with 2.1kW capacity, no cooling
+Details of control loops referenced in the model:
  
  The sensor for function  1 senses the temperature of the current zone.
  The actuator for function  1 is air point of the current zone
@@ -74,9 +75,9 @@ ID Zone         Volume|          Surface
  area of 61.8m^2 & approx floor area of 12.0m^2
  sunroom describes the only zone in the problem
  There is 61.800m2 of exposed surface area, 37.800m2 of which is vertical.
- Outside walls are 386.67 % of floor area & avg U of 0.261 & UA of 12.122
- Flat roof is 100.00 % of floor area & avg U of 0.264 & UA of 3.1682
- Glazing is 28.333 % of floor & 8.9947 % facade with avg U of 2.811 & UA of 9.5562
+ Outside walls are 386.67 % of floor area & average U of 0.261 & UA of 12.122
+ Flat roof is 100.00 % of floor area & average U of 0.264 & UA of 3.1682
+ Glazing is 28.333 % of floor & 8.9947 % facade with average U of 2.811 & UA of 9.5562
  
  A summary of the surfaces in sunroom( 1) follows:
  
@@ -114,8 +115,8 @@ Notes:
 there is 1.1 ach infiltration all hours and all days with no occup or
 lights or small power.
  
-Daytype   Gain Type    Period Sensible  Latent     Radiant    Convec
-          No.  label   Hours  Magn.(W)  Magn.(W)   Fraction   Fraction
+Daytype   Gain Label     Type    Unit Period Sensible  Latent     Radiant    Convec
+          No.                          Hours Magn.(W)  Magn.(W)   Fraction   Fraction
  
  ____________________________________________________________
  
@@ -124,21 +125,21 @@ Daytype   Gain Type    Period Sensible  Latent     Radiant    Convec
  In contact with ground 0.00m2.
  There is 61.800m2 of outside surface area, 37.800m2 of which is vertical.
  
- Outside walls are 386.67 % of floor area & avg U of 0.261 & UA of 12.122 & max MLC thickness 0.252
- Flat roof is 100.00 % of floor area & avg U of 0.264 & UA of 3.1682
- Glazing is 28.333 % of floor & 8.9947 % facade with avg U of 2.811 & UA of 9.5562
+ Outside walls are 386.67 % of floor area & average U of 0.261 & UA of 12.122 & max MLC thickness 0.252
+ Flat roof is 100.00 % of floor area & average U of 0.264 & UA of 3.1682
+ Glazing is 28.333 % of floor & 8.9947 % facade with average U of 2.811 & UA of 9.5562
  
  ____________________________________________________________
  Multi-layer constructions used:
  
  Details of transparent construction: d_glz with DCF7671_06nb optics and overall thickness  0.024
  
- Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
-      |db  |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
- Ext   242    6.0     0.760  2710.   837. 0.83 0.05 19200.  0.01 plate glass : Plate glass with placeholder single layer optics
-    2    0   12.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
- Int   242    6.0     0.760  2710.   837. 0.83 0.05 19200.  0.01 plate glass : Plate glass with placeholder single layer optics
- ISO 6946 U values (horiz/upward/downward heat flow)=  2.811  3.069  2.527 (partition)  2.243
+ Layer|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
+      |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
+ Ext     6.0     0.760  2710.   837. 0.83 0.05 19200.  0.01 plate glass : Plate glass with placeholder single layer optics
+    2   12.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
+ Int     6.0     0.760  2710.   837. 0.83 0.05 19200.  0.01 plate glass : Plate glass with placeholder single layer optics
+ ISO 6946 U values (horizontal/upward/downward heat flow)=  2.811  3.069  2.527 (partition)  2.243
  
 Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  2.73
  External surface admittance Y=  2.81  w=  0.63 decrement factor f=  0.67  phi=  0.31 surface factor f=  0.67  phi=  0.31
@@ -156,12 +157,12 @@ Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  2.73
  
  Details of opaque construction: typical_wall and overall thickness  0.252
  
- Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
-      |db  |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
- Ext     4  100.0     0.960  2000.   650. 0.90 0.93    25.  0.10 outer leaf brick : Outer leaf brick
-    2  211  139.0     0.040   250.   840. 0.90 0.30     4.  3.48 glasswool : Glasswool (generic)
- Int   107   13.0     0.190   950.   840. 0.91 0.50    11.  0.07 gypsum plasterboard : Gypsum plasterboard (generic)
- ISO 6946 U values (horiz/upward/downward heat flow)=  0.262  0.264  0.259 (partition)  0.256
+ Layer|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
+      |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
+ Ext   100.0     0.960  2000.   650. 0.90 0.93    25.  0.10 outer leaf brick : Outer leaf brick
+    2  139.0     0.040   250.   840. 0.90 0.30     4.  3.48 glasswool : Glasswool (generic)
+ Int    13.0     0.190   950.   840. 0.91 0.50    11.  0.07 gypsum plasterboard : Gypsum plasterboard (generic)
+ ISO 6946 U values (horizontal/upward/downward heat flow)=  0.262  0.264  0.259 (partition)  0.256
  
 Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  0.26
  External surface admittance Y=  1.26  w=  3.84 decrement factor f=  0.93  phi=  0.53 surface factor f=  0.93  phi=  0.53
