@@ -57,12 +57,15 @@ C For help messages
 
       helpinsub='ITINSRT'  ! set for subroutine
 
-C Now choose one of the generic types to create at the insertion point.
-C Copy over default information into instance commons.
+C Choose one of the generic types to create at the insertion point (ifoc).
+C Copy over default information into instance commons. IFG is the index
+C within the TDFGH2 common blocks for the temporal type and menu string.
       IFG=0
   78  call EBRSTAB(IFG,IER)
       IF(IFG.EQ.0)RETURN
 
+C Use GENDAT to place into common blocks TDFG1 TDFG2 TDFG3 TDFG5 data for
+C the type GTYPES(IFG) at position IFOC.
       FOUND=.FALSE.
       CALL GENDAT(GTYPES(IFG),IFOC,FOUND,IER)
       IF(.NOT.FOUND)THEN

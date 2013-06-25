@@ -22,8 +22,9 @@ C EBRSTAB: searches the item defs for tabular generic choices.
 C GENDAT:  holds cases of generic data.
 
 C ************* EBRSTAB 
-C EBRSITM searches the item definition and produces a menu of generic 
-C TABULAR choices available and returns its index INO.
+C EBRSITM searches the item definition and produces a menu of temporal 
+C type choices available and returns its index as IFG.  It uses a call
+C to subroutine gendat to populate the TDFGH2 common blocks.
 C IER=0 OK, IER=1 problem.
       SUBROUTINE EBRSTAB(IFG,IER)
       character h*72
@@ -41,11 +42,11 @@ C Read the generic descriptions to see what is available.
       FOCUS='ALL'
       FOUND=.false.
       CALL GENDAT(FOCUS,0,FOUND,IER)
-      M=1
+      M=1     ! for the title of the list
       DO 3 IT=1,NITEMS
         M=M+1
         CALL EMKEY(M,KEY,IER)
-        IVAL(M)=IT
+        IVAL(M)=IT   ! remember mapping between item and menu position
         WRITE(ISGGT(M),72)KEY,GMENUS(IT),GTYPES(IT)
    72   FORMAT(A1,1X,A,1x,A)
     3 CONTINUE
@@ -60,15 +61,15 @@ C Instanciateh() strings for this menu.
 C Make a menu of available generic items.
       INO=-2
    14 nitms=m+2
-      CALL EMENU('Available TAB types',ISGGT,nitms,INO)
+      CALL EMENU('Available temporal types',ISGGT,nitms,INO)
       IF(INO.EQ.M+2)THEN
-        INO=0
+        IFG=0     ! signal nothing selected
         RETURN
       ELSEIF(INO.EQ.M+1)THEN
 
 C Help text...
       ELSEIF(INO.GE.2.AND.INO.LE.M+1)THEN
-        IFG=IVAL(INO)
+        IFG=IVAL(INO)   ! decode menu position back to item
 
 C Debug.
 C        write(6,*) 'picked ',ifg,ino
