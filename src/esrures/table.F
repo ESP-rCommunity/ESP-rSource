@@ -855,7 +855,7 @@ C Set header text.
       CALL HDDATE(PDESCR)
       CALL HDSTEP(SDESCR)
       call edisp(itru,' ')
-      lsn1=MIN0(lnblnk(RFILE),22)
+      lsn1=MIN0(lnblnk(RFILE),42)
       if(NSIM.gt.1)then
         WRITE(outs,'(3A,I4,2A)')'Lib: ',RFILE(1:lsn1),' Set:',ISIM,
      &    ': ',RSNAME(ISIM)(1:lnblnk(RSNAME(ISIM)))

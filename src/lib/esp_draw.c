@@ -2262,7 +2262,9 @@ void etlabel_(msg,x,y,ipos,size,len)
  is a data offset to adjust plotting for various data ranges.
  Mode = 1 for time axis, Mode = 0 for other data display types.
  Side = 0 lables and tic on left, Side = 1 labels and tic on right.
- msg is the axis label and mlen is it's length (passed from f77).
+ msg is the axis label and mlen is it's length (passed from fortran).
+ TODO: pass in character offset for axis rather than assuming a
+       fixed value.
 */
 
 void vrtaxis_(ymn,ymx,offl,offb,offt,yadd,sca,mode,side,msg,mlen)
@@ -2404,14 +2406,16 @@ void vrtaxis_(ymn,ymx,offl,offb,offt,yadd,sca,mode,side,msg,mlen)
   gdk_draw_line(gr_image,gc,ix1,iy1,ix,iy);
 
 /*
- Print out the axis label on left or right.
- Looping through each character in the string
- and placing in a buffer for printing.
+ Print out the axis label on left or right. Loop through each
+ character in the string and placing in a buffer for printing.
+ If label on right ensure a bit of space between characters and
+ the right edge of box to allow for image capture. If on right
+ offset by 3 characters.
 */
   if (sid == 0) {
-      ix = b_left+10;
+      ix = b_left + (2 *f_width);
   } else {
-      ix = b_right - (2 * f_width);
+      ix = b_right - (3 * f_width);
   }
   mid = oft + ((ofb - oft)/2);
   iy = mid - (vertadj * ilen);

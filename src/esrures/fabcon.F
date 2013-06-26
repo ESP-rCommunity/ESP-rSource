@@ -221,7 +221,7 @@ C Setup and pass in parameters to win3d.
         igw=int(iigw); igwh=int(iigwh)
       ENDIF
 
-      lsn1=MIN0(lnblnk(RFILE),22)
+      lsn1=MIN0(lnblnk(RFILE),32)
       if(NSIM.gt.1)then
         WRITE(ETEXT,'(3A,I4,A,A)')'Lib: ',RFILE(1:lsn1),' Set:',ISIM,
      &    ': ',RSNAME(ISIM)(1:lnblnk(RSNAME(ISIM)))
