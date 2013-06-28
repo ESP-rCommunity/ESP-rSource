@@ -3226,7 +3226,7 @@ C account ICGUnit and IELF attributes.
         M=M+1
         CALL EMKEY(M-MHEAD,KEY,IER)
 C Debug
-        write(6,*) 'icgunit is',idtyp,l,ICGUnit(IDTYP,L),ICGT(IDTYP,L)
+C        write(6,*) 'icgunit is',idtyp,l,ICGUnit(IDTYP,L),ICGT(IDTYP,L)
         if(ICGUnit(IDTYP,L).eq.0)then
           jicgt=iabs(ICGT(IDTYP,L))
           if (IELF(ICOMP).EQ.1) then
