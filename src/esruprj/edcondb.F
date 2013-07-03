@@ -32,6 +32,7 @@ C ELISTMAT: Controls display and editing of materials commons.
 C If ACTION = 'M' then include editing if ACTION = '-' only
 C allow choice.
       SUBROUTINE ELISTMAT(iwhich,chgdb,ACTION,imatarrayindex,IER)
+#include "epara.h"
 #include "building.h"
 #include "esprdbfile.h"
 #include "material.h"
@@ -52,7 +53,7 @@ C Parameters
 C CLSDES (30 char) is an array for menu items listing each class.
 C CLSSEL (36 char) is an array for menu items for the selected class.
       character CLSSEL*36,CLSDES*32
-      DIMENSION CLSDES(30),CLSSEL(30),ICLSSEL(30)
+      DIMENSION CLSDES(36),CLSSEL(30),ICLSSEL(30)
       character PDBM*76
       DIMENSION PDBM(37)    ! the menu array
       integer iwhicharray   ! for each item in menu point back to array
@@ -68,6 +69,7 @@ C CLSSEL (36 char) is an array for menu items for the selected class.
       real per1,per2   ! percentages of material for non-homogeneous layer
       integer iwhich2  ! 2nd material array index
       integer idb,idb2 ! the two legacy indices selected
+      integer listc    ! for looping through classes
       integer NCO,ICO,NITMS,INO,IW  ! max items and current menu item
 
 C For help messages
@@ -106,22 +108,36 @@ C Check that the material db is not empty.
       endif
       call usrmsg('  ','  ','-')   ! clear editing box.
 
-C Setup for menu.
+C Initialise material category menu size variables based on window size. 
+      MHEAD=1
+      MCTL=5
+      ILEN=matcats
+      IPACT=CREATE
+      CALL EKPAGE(IPACT)
+
 C Gather the names of the various classes and present this list.
-  40  ICO=-1
+  40  ICO=-3
+      ILEN=matcats
       CLSDES(1)=  '  Description         No. Items'
-      M=1
-      DO 44 I=1,matcats
-        write(CLSSEL(I),'(A)') matcatname(I)(1:32)
-        IF(matcatitems(I).GT.0)THEN
+      M=MHEAD
+      DO 44 L=1,ILEN
+        IF(L.GE.IST.AND.(L.LE.(IST+MIFULL)))THEN
+          write(CLSSEL(L),'(A)') matcatname(L)(1:32)
           M=M+1
-          CALL EMKEY(M-1,KEY,IER)
-          WRITE(CLSDES(M),'(A1,1X,A,1X,I2)')KEY,matcatname(I)(1:26),
-     &      matcatitems(I)
+          CALL EMKEY(L,KEY,IER)
+          WRITE(CLSDES(M),'(A1,1X,A,1X,I2)')KEY,matcatname(L)(1:26),
+     &      matcatitems(L)
         ENDIF
    44 CONTINUE
 
-      CLSDES(M+1)=  '  __________________________  '
+C If a long list include page facility text.      
+      IF(IPFLG.EQ.0)THEN  
+        CLSDES(M+1)='  ____________________________ '
+      ELSE
+        WRITE(CLSDES(M+1),15)IPM,MPM 
+   15   FORMAT   ('0 page: ',I2,' of ',I2,' ------ ')
+      ENDIF
+C      CLSDES(M+1)=  '  __________________________  '
       if(ACTION.eq.'M'.or.ACTION.eq.'m')then
         CLSDES(M+2)='+ manage classifications      '
         CLSDES(M+3)='! list database entries       '
@@ -133,7 +149,9 @@ C Gather the names of the various classes and present this list.
       endif
       CLSDES(M+4)=  '? help                        '
       CLSDES(M+5)=  '- exit                        '
-      NCO=M+5
+
+C Number of actual items displayed.
+      NCO=M+MCTL
       ICO=-2
 
 C Help text for this menu.
@@ -233,8 +251,8 @@ C If user canceled the listing the reset unit to iuout and loop back.
           call edisp(itu, LFMAT)
         endif
         call edisp(itu,' ')
-        do 42 list=1,INPIC
-          IC=ICLSSEL(list)
+        do 42 listc=1,INPIC
+          IC=ICLSSEL(listc)
           IF(matcatitems(IC).GT.0)THEN
             WRITE(outs,'(3a,i2,a)')' Classification: ',
      &        matcatname(IC)(1:lnblnk(matcatname(IC))),' (',IC,')'
@@ -364,15 +382,31 @@ C indices.
         endif
         goto 40
 
+      ELSEIF(ICO.eq.(NCO-4))THEN
+
+C If there are enough items allow paging control via EKPAGE.
+        IF(IPFLG.EQ.1)THEN
+          IPACT=EDIT
+          CALL EKPAGE(IPACT)
+        ENDIF
+        GOTO 40    ! user paged so refresh
+
       ELSEIF(ICO.GT.1.AND.ICO.LT.(NCO-4))THEN
         
 C This is the secondary menu focused on a single material class. Loop through 
 C data for this classification for viewing and/or manipulation.
-        IC=ICO-1
+C Edit categpru identified by KEYIND.
+        CALL KEYIND(NCO,ICO,IC,IO)
+C        IC=ICO-1
         IF(matcatitems(IC).EQ.0)THEN
          CALL USRMSG(' No items in this classification.',' ','W')
          GOTO 40
         ENDIF
+
+C Echo documentation for classification when changing focus.
+        call edisp(iuout,' ')
+        call edisp248(iuout,matcatdoc(IC),100)
+        call edisp(iuout,' ')
 
 C Generate menu strings for materials in the class.
     3   PDBM(1)= ' Units: Conductivity W/(m deg.C), Density kg/m**3'
@@ -683,9 +717,12 @@ C and then resetn MODDB and chgdb if mod is true.
           ELSEIF(IW.EQ.3)THEN
 
 C Derive non-homogeneous properties from two solid materials.
-C Copy info from first existing material.  
+C Copy info from first existing material (save & recover the
+C state of the menu when doing this).  
             CALL USRMSG(' ','Select first material?','-')
+            CALL EPMENSV
             call allmat(imatarrayindex,ier)
+            CALL EPMENRC
             if(imatarrayindex.gt.0)then
               IWHICH=imatarrayindex
             else
@@ -710,8 +747,12 @@ C Copy info from first existing material.
      &        matname(IWHICH)(1:lnblnk(matname(IWHICH)))
             call edisp(iuout,outs)
 
+C Copy info from second existing material (save & recover the
+C state of the menu when doing this).  
             CALL USRMSG(' ','Select second material?','-')
+            CALL EPMENSV
             call allmat(imatarrayindex,ier)
+            CALL EPMENRC
             if(imatarrayindex.gt.0)then
               IWHICH2=imatarrayindex
             else
