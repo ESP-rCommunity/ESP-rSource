@@ -869,6 +869,7 @@ C Remind user of current surface boundary attributes.
           if(IRT.eq.2)then
             CALL EPKMLC(ISEL,'Select one of the constructions',
      &        'or exit.',IER)
+
           elseif(IRT.eq.3)then
             SALT(1)='exterior                   '
             SALT(2)='similar to current         '
@@ -1057,6 +1058,14 @@ C Reset all line widths to normal and redraw (if last surface in list).
                 MODGEO=.TRUE.
                 CALL ADJVIEW(IER)
               endif
+            elseif(IRT.eq.2.and.ISEL.EQ.0)then
+
+C User selected the UNKNOWN MLC, reset variables.
+              WRITE(SMLCN(ISS),'(A)') 'UNKNOWN'
+              WRITE(SSMLCN(ioc),'(A)') 'UNKNOWN'
+              SOTF(ISS)='OPAQUE'
+              SSOTF(ioc)=SOTF(iss)
+              ssmlcindex(ioc)=0
             elseif(IRT.eq.2.and.ISEL.GT.0)then
 
 C Associate mlc with each selected surface.
@@ -3622,6 +3631,17 @@ C when it is re-freshed.
                 updoth=.false.
               endif
             endif
+          else
+
+C User selected UNKNOWN MLC so update arrays.
+            ioc=IZSTOCN(ICOMP,is)
+            WRITE(SMLCN(IS),'(A)') 'UNKNOWN'
+            SSMLCN(ioc)=SMLCN(is)
+            SOTF(IS)='OPAQUE'
+            SSOTF(ioc)=SOTF(is)
+            ssmlcindex(ioc)=0
+            MODGEO=.TRUE.
+
           endif
           IF(IER.EQ.1)THEN
             CALL USRMSG(' ','A problem was encountered.','W')
@@ -7859,6 +7879,9 @@ C Find the optical name.
               WRITE(OPT,'(A)') mlcoptical(ISEL)(1:12)
               IF(OPT.EQ.' ')OPT='UNKNOWN'
             ENDIF
+          else
+            WRITE(constr,'(A)') 'UNKNOWN'
+            OPT='OPAQUE'
           endif
 
 C Instanciate the new surface via call addmass with all of the parameters.

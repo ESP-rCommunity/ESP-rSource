@@ -39,6 +39,7 @@ C menu (72 char) brief title of model
 #include "building.h"
 #include "model.h"
 #include "site.h"
+#include "esprdbfile.h"
 #include "espriou.h"
 C espriou.h provides currentfile and MFFOLD.
       
@@ -101,8 +102,10 @@ C Passed in parameters.
       integer iyeart    ! for local editing
       integer iglib  ! for detecting GTK or X11
       integer lnmp,lncr,lnod ! for with of mpath, cfgroot, odir strings
+      integer itrcc   ! for silently rescanning new cfg file
       character tcname*248   ! for editing image notes
       character WORDS(12)*32,testw*32
+      character MODE*4
 
 C For help messages
       character helpinsub*24 ! subroutine name
@@ -686,7 +689,7 @@ C Provide a listing of the current contents of the ../images folder.
           imgfmt(noimg)=iformat
           imgfoc(noimg)=ifocus
 
-C Edit operation description if newer file.
+C Edit image description if newer configuration file.
           if(icfgv.gt.3)then
             tcname=imgdoc(noimg)
             CALL EASKS248(tcname,' ','Image notes:',
@@ -733,6 +736,9 @@ C initial set of days.
         else
           iyear=iyeart
           call calenmanage('i',ier)
+
+C Comment out printing of initial calendar as it can cause a crash
+C on some 64bit computers.
 C          loop=8
 C          loopst=1
 C          call calenprint(iuout,'t',iyear,loopst,loop)
@@ -764,6 +770,18 @@ C Open core of databases if not already done so.
      &               'or Optical Properties db. Please check.','W')
             ier = 0
           endif
+        endif
+
+C If initial registration re-read the newly created model cfg
+C file so that any explicit file paths for databases can get
+C recognised as *std items and then written out in *std format.
+        if(act(1:1).eq.'i')then
+          itrcc=0
+          MODE='ALL '
+          IUF=IPRODB   ! assign second file unit to the events db unit
+          CALL ERSYS(LCFGF,IFCFG,IUF,MODE,itrcc,IER)
+          call pausems(100)
+          CALL EMKCFG('-',IER)
         endif
         return
       endif

@@ -1,4 +1,4 @@
-* Shading and insolation data in db 620.shd                                                                 
+* Shading and insolation data in db zones/620.shd                                                           
   1  8 # zone index & number of surfaces
 * month: `Jan`
 24 hour external surface shading

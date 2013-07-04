@@ -3789,6 +3789,8 @@ C Otherwise allow a choice to switch to a different level.
           itrc=IW-1
         endif
         call edisp(iuout,'  ')  ! echo blank line in case of warning
+
+C At this point read in an existing model cfg file.
         MODE='ALL '
         IUF=IPRODB   ! assign second file unit to the events db unit
         CALL ERSYS(LCFGF,IFCFG,IUF,MODE,itrc,IER)
@@ -3938,6 +3940,8 @@ C Scan the model topology and report on any problems encountered.
         MODIFY=.TRUE.
         MODLEN=.TRUE.
       ELSE
+
+C Model configuration file not found. Confirm with user.
         helptopic='cfg_not_found'
         call gethelptext(helpinsub,helptopic,nbhelp)
         WRITE(OUTSTR,'(A,2X,A)')' Could not find',LCFGF

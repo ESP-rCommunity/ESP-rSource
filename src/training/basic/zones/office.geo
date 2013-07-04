@@ -1,5 +1,5 @@
 *Geometry 1.1,GEN,office # tag version, format, zone name
-*date Thu Aug 23 19:26:19 2007  # latest file modification 
+*date Sun Jun 23 11:52:56 2013  # latest file modification 
 office describes a...
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,1.00000,5.00000,0.00000  #   1
@@ -30,7 +30,7 @@ office describes a...
 *edges,4,13,14,15,16  #  8
 # 
 # surf attributes:
-#  surf name, surf position VERT/CIIL/FLOR/SLOP/UNKN
+#  surf name, surf position VERT/CEIL/FLOR/SLOP/UNKN
 #  child of (surface name), useage (pair of tags) 
 #  construction name, optical name
 #  boundary condition tag followed by two data items
@@ -41,7 +41,7 @@ office describes a...
 *surf,Ceiling,CEIL,-,-,-,ceiling,OPAQUE,ANOTHER,03,02  #   5 ||< Ceiling_o:roof_space
 *surf,Floor,FLOR,-,-,-,floor_1,OPAQUE,GROUND,01,00  #   6 ||< ground profile  1
 *surf,door_a,VERT,part_a,-,-,door,OPAQUE,ANOTHER,01,12  #   7 ||< door_a:reception
-*surf,west_glz,VERT,West_w,-,-,d_glz,DCF7671_06nb,EXTERIOR,0,0  #   8 ||< external
+*surf,west_glz,VERT,West_w,-,-,dbl_glz,DCF7671_06nb,EXTERIOR,0,0  #   8 ||< external
 # 
 *insol,3,0,0,0  # default insolation distribution
 # 

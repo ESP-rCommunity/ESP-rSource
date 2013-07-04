@@ -2642,6 +2642,9 @@ C          S12='blk_'
           IF(ISEL.GT.0)then
             WRITE(BLOCKMAT(IC,nbo),'(A)') mlcname(ISEL)(1:12)
             LNBLOCKMAT(IC,nbo)=lnblnk(BLOCKMAT(IC,nbo))
+          else
+            WRITE(BLOCKMAT(IC,nbo),'(A)') 'UNKNOWN'
+            LNBLOCKMAT(IC,nbo)=7
           endif
           XOB(IC,nbo)=tpx1; YOB(IC,nbo)=tpy1; ZOB(IC,nbo)=Z1
           DXOB(IC,nbo)=twid; DYOB(IC,nbo)=tdepth; DZOB(IC,nbo)=Z2

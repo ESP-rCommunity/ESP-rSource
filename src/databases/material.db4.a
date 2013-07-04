@@ -7,11 +7,12 @@
 # Materials have the following attributes:
 #  conductivity (W/(m-K), density (kg/m**3) specific heat (J/(kg-K)
 #  emissivity out (-) emissivity in (-)#   absorptivity out (-) absorptivity in (-)
-#  diffusion rest (?) default thickness (mm)
+#  diffusion resistance (MNs g^-1m^-1)
+#  default thickness (mm)
 #  flag [-] legacy [o] opaque [t] transparent
-#       [g] gas layer [h] gas layer (should be changed to g type)
+#       [g] gas or air gap
 #  
-# Transparent material attributes:
+# Transparent material additonal attributes:
 #  longwave tran (-) solar direct tran (-) solar reflec out (-) solar refled in (-)
 #  visable tran (-) visable reflec out (-) visable reflec in (-) colour rendering (-)
 #  
@@ -87,7 +88,7 @@ Category ( 2) Concrete includes a mix of concrete types from heavy weight to lig
 *item,Concrete med density (1800), 40, 2,Blockwork (UK code)
 1.130,1800.000,1008.000,0.900,0.900,0.700,0.700,13.000,100.0,-
 # class index |nb items|description (32 char)
-*class, 3,10,Metal
+*class, 3,11,Metal
 Category ( 3) Metal has a range of metals, some are the same but are painted differently. Based on data traditionally distributed with ESP-r.
 *item,copper, 41, 3,Copper
 200.000,8900.000,418.000,0.720,0.720,0.650,0.650,19200.000,5.0,-
@@ -109,6 +110,8 @@ Category ( 3) Metal has a range of metals, some are the same but are painted dif
 210.000,2700.000,880.000,0.050,0.050,0.050,0.050,19200.000,5.0,-
 *item,steelSheedSBEM, 51, 3,Steel sheed SBEM
 60.000,7800.000,502.000,0.120,0.120,0.200,0.200,19200.000,1.0,-
+*item,synthetic_magnetite, 52, 3,Synthetic magnetite bricks Fe3O4 used in electric storage heatersr
+3.500,5000.000,1000.000,0.800,0.800,0.800,0.800,19200.000,100.0,-
 # class index |nb items|description (32 char)
 *class, 4,23,Wood
 Category ( 4) Wood holds a range of wood types. Based on data traditionally distributed with ESP-r.
@@ -180,7 +183,7 @@ Category ( 5) Stone includes building stone and gravels. Based on data tradition
 *item,lime cement mortar, 90, 5,lime cement mortar from IBO PassivHaus
 0.800,1800.000,1120.000,0.900,0.900,0.600,0.600,75.000,10.0,-
 # class index |nb items|description (32 char)
-*class, 6,14,Plaster
+*class, 6,15,Plaster
 Category ( 6) Plaster includes both tranditional plaster and gypsum plaster boards. Based on data traditionally distributed with ESP-r.
 *item,dense plaster,101, 6,Dense plaster
 0.500,1300.000,1000.000,0.910,0.910,0.500,0.500,11.000,12.5,-
@@ -210,6 +213,8 @@ Category ( 6) Plaster includes both tranditional plaster and gypsum plaster boar
 0.700,1400.000,920.000,0.910,0.910,0.700,0.700,10.000,12.0,-
 *item,lime cement plaster,114, 6,lime cement plaster from IBO PassivHaus
 0.800,1800.000,1100.000,0.910,0.910,0.700,0.700,75.000,12.0,-
+*item,gypsum_fibreboard,115, 6,Fermacell gypsum fibreboard IBR report 3001-100 gypsum + 18% paper fibre compressed and kiln cured. Kiwa K25203-02
+0.360,1150.000,1000.000,0.910,0.910,0.220,0.220,310.000,20.0,-
 # class index |nb items|description (32 char)
 *class, 7,12,Screeds and renders
 Category ( 7) Screeds are products typically used horizontally and renders are used on walls. Based on data traditionally distributed with ESP-r.
@@ -252,9 +257,9 @@ Category ( 8) Tiles includes both floor tiles, ceiling tiles and roof tile. Base
 0.300,1600.000,2000.000,0.940,0.940,0.820,0.820,1000.000,6.0,-
 *item,cork tile,146, 8,Cork tile
 0.080,530.000,1800.000,0.900,0.900,0.600,0.600,58.000,6.0,-
-*item,asphalt,147, 8,Asphalt/asbestos based tile
+*item,asphalt tile,147, 8,Asphalt/asbestos based tile
 0.550,1900.000,837.000,0.900,0.900,0.700,0.700,150.000,6.0,-
-*item,plastic tile,148, 8,P.V.C./asbestos
+*item,P.V.C./asbestos tile,148, 8,P.V.C./asbestos
 0.850,2000.000,837.000,0.900,0.900,0.600,0.600,1000.000,6.0,-
 *item,tile bedding,149, 8,Tile bedding/grout
 1.400,2100.000,650.000,0.900,0.900,0.600,0.600,25.000,6.0,-
@@ -357,7 +362,7 @@ Category (11) Insulation materials (1) is an initial tranche of loose, batt and 
 0.040,105.000,1800.000,0.900,0.900,0.600,0.600,15.000,100.0,-
 *item,straw thatch,218,11,Straw thatch
 0.070,240.000,180.000,0.900,0.900,0.500,0.500,3.000,100.0,-
-*item,Thermalite,219,11,Thermalite turbo block heidelbergcement.com
+*item,Thermalite turbo block,219,11,Thermalite turbo block heidelbergcement.com
 0.110,470.000,1050.000,0.900,0.900,0.650,0.650,10.000,100.0,-
 *item,XPS CO2 foamed,220,11,XPS extruded polystyrene foamed with Co2 from IBO PassivHaus
 0.040,38.000,1450.000,0.900,0.900,0.300,0.300,350.000,100.0,-
@@ -467,7 +472,7 @@ Category (15) Insulation materials (2) is a second tranche of loose, batt and fo
 0.050,12.000,1000.000,0.900,0.900,0.700,0.700,30.000,50.0,-
 *item,Mineral wool batt 100mm,294,15,Insulation (Mineral wool batt default 100mm)
 0.040,25.000,1000.000,0.900,0.900,0.700,0.700,30.000,100.0,-
-*item,Min wool quilt 60 mm,295,15,Insulation (Min wool quilt default 60 mm)
+*item,Min wool quilt 60mm,295,15,Insulation (Min wool quilt default 60 mm)
 0.040,12.000,1030.000,0.900,0.900,0.700,0.700,30.000,60.0,-
 *item,PUR,296,15,notional floor UK material
 0.026,12.000,1030.000,0.900,0.900,0.700,0.700,30.000,60.0,-
@@ -496,11 +501,11 @@ Category (16) Board is similar to plaster and wood. Based on data traditionally 
 0.044,11.000,1500.000,0.900,0.900,0.650,0.650,20.000,5.0,-
 # class index |nb items|description (32 char)
 *class,17, 3,Sheathing
-Category (17) Sheathing is similar to the wood category. Based on data traditionally distributed with ESP-r.
+Category (17) Sheathing is similar to the wood category. It also includes a test air gap layer. Based on data traditionally distributed with ESP-r.
 *item,sheating std,321,17,regular density sheathing
 0.055,290.000,1300.000,0.900,0.900,0.900,0.900,10.000,100.0,-
 *item,air 12mm,322,17,place holder for testing an air material type for isbem
-0.055,290.000,1300.000,0.900,0.900,0.900,0.900,10.000,12.0,g,0.02496,0.000080,0.00001761,0.00000005,1.2320,-0.00430,0.000000,0.000000,1008.000,0.000000
+0.055,290.000,1300.000,0.900,0.900,0.900,0.900,10.000,12.0,g
 *item,virtual_loft_space,323,17,for notional building loft space air 12mm)
 0.130,290.000,1300.000,0.900,0.900,0.900,0.900,10.000,39.0,-
 # class index |nb items|description (32 char)
