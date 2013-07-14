@@ -1,5 +1,5 @@
 # composite construction db defined in ../dbs/multicon.db
-# based on primitive construction db /usr/esru/esp-r/databases/constr.db1
+# based on primitive construction db /usr/esru/esp-r/databases/constr.db1.a
    14     # no of composites 
 # layers  description   optics 
     1    Floor         OPAQ  OPAQUE              
