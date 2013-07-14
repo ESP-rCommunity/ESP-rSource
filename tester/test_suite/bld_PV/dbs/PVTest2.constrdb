@@ -1,5 +1,5 @@
 # composite construction db defined in ../dbs/PVTest2.constrdb
-# based on materials db north_american.materialdb
+# based on materials db north_american.materialdb.a
    27     # no of composites 
 # layers  description   optics name   symmetry tag
     4    extern_wall   OPAQ  OPAQUE        NONSYMMETRIC  
