@@ -130,14 +130,28 @@ C Significant figure reporting limit (NSIGFIG).
       character path*72,outs248*248
       character*144 lworking ! for processing the path of LSBEM
       character fs*1
-      character act*16 ! c is csv file s is summary file
+      character act*16 ! B is std BAM log file C compact log filecsv file
+      character actd*1 ! B is std BAM log file C compact log filecsv file
       character datea*24
 
       character cVnum*16      ! returned from ESPrVersionNum
       character pagestitle*42 ! for banner title via epages call
       LOGICAL unixok
-      character actbld*50   ! building type for activity in ID order
-      common/charact/actbld(0:700)
+
+      real juliand       ! returned julian day and fraction
+      real secondsinday  ! seconds per day
+      real secondsinhour ! seconds per hour
+      real secondsin5min ! seconds per 5 minutes
+      real accumulatedsec ! seconds up to the current hour
+      real hourdayfrac   ! fraction of the julian day at each hour start
+      dimension hourdayfrac(0:23)
+      real fiveminfrac   ! fraction of the julian day for 5 minutes
+      real oneminfrac    ! fraction of the julian day for 1 minute
+
+C Data for selected timestep for each sensor
+      real bamtmp,bamlight,bamhumidity,bampir,bamaudio
+      dimension bamtmp(12),bamlight(12),bamhumidity(12),bampir(12)
+      dimension bamaudio(12)
 
 C Initial assumptions.
       call ezero
@@ -148,6 +162,9 @@ C Initial assumptions.
       LIMIT =24
       IFIL=10
       NSIGFIG=3
+      secondsinday = 86400.0
+      secondsinhour= 3600.0
+      secondsin5min= 300.0
 
 C Get command line parameters (MODL= text or graphic), inf = the BAM log file,
 C act = ? or ?, temporal_file = is the ASCII temporal file.
@@ -223,33 +240,43 @@ C Take command line file name to INTER and use as initial survey file.
 
 C Clear common blocks. <<  ?? >>
 
-C Open the csv file, discover the period it represents and the different
-C BAM sensors it includes.
-C << to be done >>
+C Setup fractions of the day related to each hour for
+C testing against. Also get the day fraction increment
+C for 5 minutes.
+      accumulatedsec=0.0
+      hourdayfrac(0)=0.0
+      do ij=1,23
+        accumulatedsec=accumulatedsec+secondsinhour
+        hourdayfrac(ij)=accumulatedsec/secondsinday
+      enddo
+      fiveminfrac=secondsin5min/secondsinday
+      oneminfrac=60.0/secondsinday
+
+      actd='B'
       datea='2013-06-21 20:24:53.518'
-      call bamdatetojulian(datea,act,juliand)
+      call bamdatetojulian(datea,actd,juliand)
       write(6,*) datea,' ',juliand
 
       datea='2013-06-21 20:24:59.446'
-      call bamdatetojulian(datea,act,juliand)
+      call bamdatetojulian(datea,actd,juliand)
       write(6,*) datea,' ',juliand
 
       datea='2013-06-21 20:29:53.413'
-      call bamdatetojulian(datea,act,juliand)
+      call bamdatetojulian(datea,actd,juliand)
       write(6,*) datea,' ',juliand
 
 C Call the survey subroutines, the main controlling routine with the 
-C filename argument.  C for csv files, S for summary files,
-C G for csv files to a global list.
-      if(act(1:1).eq.'c'.or.act(1:1).eq.'C'.or.act(1:1).eq.'-')then
-        write(6,*) 'tobe done...',INTER
-      elseif(act(1:1).eq.'s'.or.act(1:1).eq.'S')then
+C filename argument.  B for BAM standard csv files, C for compact 
+C log files.
+      if(act(1:1).eq.'b'.or.act(1:1).eq.'B'.or.act(1:1).eq.'-')then
+        write(6,*) 'tobe done...bB',INTER
+      elseif(act(1:1).eq.'c'.or.act(1:1).eq.'C')then
 
 C << subroutine in planning >>
-        write(6,*) 'tobe done...',INTER
+        write(6,*) 'tobe done...cC',INTER
 
-      elseif(act(1:1).eq.'g'.or.act(1:1).eq.'G')then
-        write(6,*) 'tobe done...',INTER
+      elseif(act(1:1).eq.'-')then
+        write(6,*) 'done...',INTER
       endif
 
       END
@@ -259,19 +286,21 @@ C << subroutine in planning >>
 C Parse command lines.
 
 C *********
-C << Issue: each csv file implies a possibly unique set of calendar day
-C << types - and a model must have one calendar rather than lots of
-C << calendars.
+C Logic needed to scan standard BAM log files...
+C Log file is for one hour. It tends to start with 2013-01-30 00:00:04.402
+C and ends with 2013-01-30 00:59:59.324. Older (v4 files) will send data-as
+C collected, (v5 files) will send 30 seconds worth in a burst.
 
-C << Task is to scan all of the profile summaries and determine
-C << the number of unique day types for the whole collection of
-C << profiles and then apply this back to the summaries. It would be
-C << great if minimal editing or file manipulation was required.
+C To collect at 5 minute intervals we should have an idea of 'when'
+C we are looking for next and using bamdatetojulian to get timestamp.
+C Also we need arrays to hold values for up to a dozen BAM sensors.
 
-C << Could there be a directory scan from within stats that located
-C << all of the csv files, scanned each one in turn and produced
-C << ONE summary file. That way we could do lots of manipulations
-C << in memory and write out an aggregate.
+C The order that sensor data is collected is not fixed so also need
+C to keep track of which bamtmp array matches which BAM sensor ID.
+
+C Logic for writing an ASCII temporal file (header and/or contents)...
+
+
 
 C << the internal array sizes would need to accommodate the full set
 C << of csv files - that would be huge...
@@ -295,33 +324,6 @@ C   -> pointer to julian day as well as activity pattern number
 C  (a unique pattern many be used by many activities - do I need
 C   an array for this?)
 
-C  when there are no more in the list 
-C write out each unique pattern found globally
-C figure out the patterns (global) associated with each activity and
-C write out the pattern index for each of 365 days for the activity
-
-C the consolidated set of day types - we are looking for when the
-C index (1st 2nd or 3rd for that csv) changes. 
-C  1 1 1 1 1 1 1 1 1 2 1 1 1 1 1 1 1  act 1 (total of 2 day types)
-C  1 1 1 2 1 1 1 1 1 1 1 1 3 1 1 1 1  act 2 (total of 3 day types)
-C  1 1 1 1 1 1 1 2 2 2 1 1 3 3 3 1 1  act 3 (total of 3 day types)
-
-C one 4th day for act 1 we need to have an alt day type which is
-C the same as pattern 1 (could be nb of patterns for that activity plus
-C this index so the revised layout for act 1 & 2 might be...
-C  1 1 1 3 1 1 1 3 3 4 1 1 3 1 1 1 1  act 1 (1st revision)
-C  1 1 1 2 1 1 1 1 1 1 1 1 3 1 1 1 1  act 2 (total of 3 day types)
-
-C If we try and take into account act 3 then
-C  1 1 1 3 1 1 1 3 3 4 1 1 3 5 5 1 1  act 1 (2nd revision 5=3=1  4=2)
-C  1 1 1 2 1 1 1 4 4 4 1 1 6 4 4 1 1  act 2 (1st revision 4=1 6=3)
-C  1 1 1 1 1 1 1 2 2 2 1 1 3 3 3 1 1  act 3 (total of 3 day types)
-
-C imagine doing an activity 4, the pattern becomes ever more complicated
-C as we work back and revise the earlier activities.
-
-C BUT, if we go with the global indicies on each julidan day what
-C does that do for us? Would that yield something that might work?
 
 C ********* partfa (equivalent to partf with an action parameter)
 C partfa allows terminal, file and action arguments
@@ -1394,10 +1396,9 @@ C        write(6,*) 'findwhichdbpath ipath is ',ipathmsc
 C ****** bamdatetojulian
 C bamdatetojulian is passed date string (from BAM log) and returns a 
 C julian day and fraction juliand.
-C act is requested action '?' is ??
-
-C The date format expected is: 2013-06-28 16:15:26.662
-C << logic needs to be worked out for this >>
+C act is requested action 'B' is for BAM log timing format
+C   which is: 2013-06-28 16:15:26.662
+C << what other kind of date stamp to decode? >>
 
       subroutine bamdatetojulian(datea,act,juliand)
       common/OUTIN/IUOUT,IUIN
