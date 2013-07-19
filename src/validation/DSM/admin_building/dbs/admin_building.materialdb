@@ -1,7 +1,7 @@
 *Materials 1.1
 *date,Sat Jun 23 12:15:16 2011
 # materials database defined in kings_gate.materialdb
-*doc,ESP-r Materials based on scan of a legacy ASCII materials database constr.db3 with required materials for UK code complience. Additional infomation and documentation uses standard assumptions which should be updated as required.
+*doc,ESP-r Materials based on scan of a legacy ASCII materials constr.db3.a with required materials for UK code complience. Additional infomation and documentation uses standard assumptions which should be updated as required.
 18  # number of classifications
 #  
 # Materials have the following attributes:
