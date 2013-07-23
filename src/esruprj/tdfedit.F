@@ -752,7 +752,7 @@ C Define the beginning and ending dates for the TDF file.
         call gethelptext(helpinsub,helptopic,nbhelp)
         if(foc.eq.'init')CALL PHELPD('setup period',nbhelp,'-',0,0,IER)
         CALL EASKI(itdyear,' ',' What is the year?',
-     &             1900,'W',2010,'W',2000,'tdf year',IER,nbhelp)
+     &             1900,'W',2020,'W',2000,'tdf year',IER,nbhelp)
 
         CALL EASKPER('Period:',itdbdoy,itdedoy,IFDAY,IER)
 

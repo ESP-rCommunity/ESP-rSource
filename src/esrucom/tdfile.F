@@ -139,7 +139,7 @@ C Search instances in temporal file to find match(s).
                       if(DBTASK(ITD1)(1:6).eq.'DBTZNM')
      &                  IDBTZNM(itd3)=itd4   ! measured zn dbT
 
-C Bidirectional data are assigned per surface
+C Bidirectional data are assigned per surface.
                       if(DBTASK(ITD1)(1:8).eq.'BIDIRSET')then
                         DO 75 IS=1,NZSUR(itd3)
                           if(DBSN(itd1)(1:12).eq.
@@ -149,7 +149,7 @@ C Bidirectional data are assigned per surface
   75                    continue
                       endif
 
-C Vertical solar radiation data are assigned per surface
+C Vertical solar radiation data (used in solar.F) are assigned per surface.
                       if(DBTASK(ITD1)(1:7).eq.'VERTSOL')then
                         DO 975 IS=1,NZSUR(itd3)
                           if(DBSN(itd1)(1:12).eq.
@@ -159,7 +159,8 @@ C Vertical solar radiation data are assigned per surface
  975                    continue
                       endif
 
-C Measured surface temperature data are assigned per surface
+C Measured surface temperature data to display in res are assigned
+C per surface.
                       if(DBTASK(ITD1)(1:5).eq.'SURTM')then
                         DO 976 IS=1,NZSUR(itd3)
                           if(DBSN(itd1)(1:12).eq.
@@ -335,8 +336,8 @@ C in the tdf file.
      &            ' temporal index ',IFOC,' referenced.'
               IF(ITRC.GE.1)CALL EDISP(iuout,OUTS)
   4         continue
-            WRITE(OUTS,'(A,8I2)')' Simul tags:',IALLCLM,IDBTEXT,IWINDVL,
-     &        IWINDDR,IRELHUM,IDIFHSL,IDIRSOL,IGLOHSL
+            WRITE(OUTS,'(A,9I2)')' Simul tags:',IALLCLM,IDBTEXT,IWINDVL,
+     &        IWINDDR,IRELHUM,IDIFHSL,IDIRSOL,IGLOHSL,IGLOVRT
             IF(ITRC.GE.1)CALL EDISP(iuout,outs)
             IF(ITRC.GE.1)CALL EDISP(iuout,' ')
           endif

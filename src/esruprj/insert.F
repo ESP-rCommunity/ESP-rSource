@@ -2404,12 +2404,13 @@ C and the area will not be correct for other surface shapes.
 
       elseif (IRT.eq.4)then
 
-C Ask for frame width in m.
+C Ask for frame width in m. Logic for frame width could check the
+C size and minimum dimensions < not yet done >. 
         hold=' '
         helptopic='opening_percent_overview'
         call gethelptext(helpinsub,helptopic,nbhelp)
         CALL EASKR(FRW,'Frame width (m).','  ',
-     &    0.001,'F',0.2,'F',40.0,'frame width',IER,nbhelp)
+     &    0.001,'F',0.3,'F',40.0,'frame width',IER,nbhelp)
 
       endif
 
