@@ -19,10 +19,6 @@ C Software Foundation, Inc., 59 Temple Place, Suite 330,
 C Boston, MA 02111-1307 USA.
 
 C bamstats     - the main controlling routine.
-C SURVEYCSV    - scanning occupancy csv file to separate text summary files
-C actsumscan   - Reads activity pattern summary file. Work in progress.
-C GLOBALCSV    - Reads concatinated activity csv file to generate one text
-C                summary file.
 C partfa - allows terminal, file and action arguments to be passed.
 
 C ****************************************** csvstats ***************************************
@@ -126,9 +122,9 @@ C Path to problem and command line file (if any).
 C Significant figure reporting limit (NSIGFIG).
       common/SFIG/NSIGFIG
 
-      CHARACTER INTER*144,INF*144
-      character path*72,outs248*248
-      character*144 lworking ! for processing the path of LSBEM
+      CHARACTER INTER*144,INF*144,LFOUT*144
+      character path*72
+      character outs*123,outs248*248,loutstr*1000,WORD*24
       character fs*1
       character act*16 ! B is std BAM log file C compact log filecsv file
       character actd*1 ! B is std BAM log file C compact log filecsv file
@@ -136,9 +132,13 @@ C Significant figure reporting limit (NSIGFIG).
 
       character cVnum*16      ! returned from ESPrVersionNum
       character pagestitle*42 ! for banner title via epages call
-      LOGICAL unixok
+      logical unixok
+      logical closetofive  ! true if we near a 5 minute mark
+      logical closetohour  ! true if we are near an hour mark
+      logical alreadywritten ! set true when we have written out values at timeslot
+                             ! need to figure out how to reset
 
-      real juliand       ! returned julian day and fraction
+      real juliand,julianfrac  ! returned julian day and fraction of day
       real secondsinday  ! seconds per day
       real secondsinhour ! seconds per hour
       real secondsin5min ! seconds per 5 minutes
@@ -147,8 +147,24 @@ C Significant figure reporting limit (NSIGFIG).
       dimension hourdayfrac(0:23)
       real fiveminfrac   ! fraction of the julian day for 5 minutes
       real oneminfrac    ! fraction of the julian day for 1 minute
+      real tensecfrac    ! within 10 seconds
+      real nowis         ! use with 5 minute incrementing test
+      integer k,nd       ! for looping
 
-C Data for selected timestep for each sensor
+C Local variables for reading raw BAM sensor data in the log file.
+      integer isen,idum,iseq,ipacketsleft,irdbt,irlight,irrh
+      real lux,lexponent ! for RH calculation
+      real thehouris  ! the csv file starts at hour
+      logical nearstartofhour ! if file started near hour mark
+
+C Mapping between the sensor index and array of (up to) a dozen sensors.
+      integer mapsentoarray
+      dimension mapsentoarray(12)
+      logical foundit  ! for establishing link between sensor index and mapsentoarray
+      integer howmany  ! number of sensors found
+      integer howmanynow ! counter for if we got all sensor data at this time
+
+C Data for selected timestep for each sensor.
       real bamtmp,bamlight,bamhumidity,bampir,bamaudio
       dimension bamtmp(12),bamlight(12),bamhumidity(12),bampir(12)
       dimension bamaudio(12)
@@ -162,12 +178,20 @@ C Initial assumptions.
       LIMIT =24
       IFIL=10
       NSIGFIG=3
+      INTER=' '
+
+C Clear mapping array.
+      do ij=1,12
+        mapsentoarray(ij)=0
+      enddo
+
+C Setup constants.
       secondsinday = 86400.0
       secondsinhour= 3600.0
       secondsin5min= 300.0
 
 C Get command line parameters (MODL= text or graphic), inf = the BAM log file,
-C act = ? or ?, temporal_file = is the ASCII temporal file.
+C act = b or B (standard file) or c C for compact.
       call partfa(MODL,inf,act)
 
 C Set folder separator (fs) to \ or / as required.
@@ -236,6 +260,8 @@ C Take command line file name to INTER and use as initial survey file.
         INTER=inf
         write(OUTS248,'(A,A)')' the input file is: ',INTER
         CALL EDISP248(IUOUT,OUTS248,80)
+        write(outs,'(a,a)') 'command line action is ',act
+        call edisp(iuout,outs)
       endif
 
 C Clear common blocks. <<  ?? >>
@@ -251,25 +277,244 @@ C for 5 minutes.
       enddo
       fiveminfrac=secondsin5min/secondsinday
       oneminfrac=60.0/secondsinday
+      tensecfrac=10.0/secondsinday
+      write(6,*) hourdayfrac
 
       actd='B'
       datea='2013-06-21 20:24:53.518'
-      call bamdatetojulian(datea,actd,juliand)
-      write(6,*) datea,' ',juliand
+      call bamdatetojulian(datea,actd,juliand,julianfrac)
+      write(6,*) datea,' ',juliand,' ',julianfrac
 
       datea='2013-06-21 20:24:59.446'
-      call bamdatetojulian(datea,actd,juliand)
-      write(6,*) datea,' ',juliand
+      call bamdatetojulian(datea,actd,juliand,julianfrac)
+      write(6,*) datea,' ',juliand,' ',julianfrac
 
       datea='2013-06-21 20:29:53.413'
-      call bamdatetojulian(datea,actd,juliand)
-      write(6,*) datea,' ',juliand
+      call bamdatetojulian(datea,actd,juliand,julianfrac)
+      write(6,*) datea,' ',juliand,' ',julianfrac
 
 C Call the survey subroutines, the main controlling routine with the 
 C filename argument.  B for BAM standard csv files, C for compact 
 C log files.
       if(act(1:1).eq.'b'.or.act(1:1).eq.'B'.or.act(1:1).eq.'-')then
-        write(6,*) 'tobe done...bB',INTER
+
+C Assume csv file is on IFIL.
+        IUNIT=IFIL
+        IUF=IFIL+1
+        CALL EFOPSEQ(IUNIT,INTER,1,IER)
+        if(ier.ne.0)then
+          call usrmsg(' Problem opening...',INTER,'W')
+          stop
+        endif
+
+C Make up an output file with a .text ending matching the input file name.
+        lnb=lnblnk(INTER)
+        lnd=lnb-3
+        if(INTER(lnd:lnb).eq.'.csv')then
+          WRITE(LFOUT,'(2a)') INTER(1:lnd),'text'
+        else
+          WRITE(LFOUT,'(2a)') INTER(1:lnb),'text'
+        endif
+
+C Debug.
+        write(6,*) 'reporting to > ',LFOUT(1:lnblnk(LFOUT))
+        CALL EFOPSEQ(IUF,LFOUT,4,IER)
+        if(ier.eq.0)then
+          continue
+        else
+          call usrmsg(' Problem opening...',LFOUT,'W')
+          stop
+        endif
+        write(6,*) 'working in progress...bB',INTER
+
+C Discover how many different sensors are included. Read the first 24 lines.
+        howmany=0      ! start with no sensors
+        thehouris=0.0  ! clear assumption about when the csv file time starts
+        nearstartofhour = .false.
+        do ij=1,24
+          call stripc1k(IUNIT,loutstr,0,ND,1,'log line',IER)
+          K=0
+          CALL EGETW(loutstr,K,WORD,'W','TEDDI token',IFLAG)
+          CALL EGETW(loutstr,K,WORD,'W','ignore time number',IFLAG)
+          CALL EGETP(loutstr,K,datea,'W','YYYY-MM-DD hh:mm:ss.f',IFLAG)
+
+C Typically log files only cover an hour. See which hour this is by checking
+C the timing of the 2nd line of the csv file. Note: if the initial lines do
+C not begin near the start of an hour then try alternative logic.
+          if(ij.eq.2)then
+            actd='B'
+            call bamdatetojulian(datea,actd,juliand,julianfrac)
+            do ih=0,23
+              closetohour=.false.
+              call ECLOSE(julianfrac,hourdayfrac(ih),oneminfrac,
+     &          closetohour)
+              if(closetohour)then
+                write(6,*) 'csv file is for hour ',ih,julianfrac
+                thehouris=julianfrac
+                nearstartofhour=.true.
+              endif
+            enddo
+            if(nearstartofhour)then
+              continue
+            else
+
+C See if julianfrac between known hour fractions.
+              do ih=0,22
+                if(julianfrac.gt.hourdayfrac(ih).and.
+     &             julianfrac.lt.hourdayfrac(ih+1))then
+                  thehouris=hourdayfrac(ih)
+                  write(6,*) 'csv file is for hour ',ih,thehouris
+                endif
+              enddo
+            endif
+          endif
+
+          CALL EGETWI(loutstr,K,isen,0,200,'W','sensor index',IFLAG)
+
+C Has sensor id (isen) been mentioned? If so set foundit true.
+          foundit=.false.
+          do ik=1,12
+            if(mapsentoarray(ik).eq.isen)then
+               foundit=.true.
+            endif
+          enddo
+          if(foundit)then
+            continue
+          else
+
+C Did not find it so set the first open slot of mapsentoarray
+            mapsentoarray(howmany+1)=isen
+            howmany=howmany+1
+            foundit=.true.
+          endif
+        enddo
+        write(6,*) howmany,mapsentoarray
+        rewind(IUNIT)   ! go back to the start of the csv file
+
+C First test is to see if we can identify lines in the log file that match specific
+C times and print out the information.
+
+C We want the 3rd token on the line. Also remember the sequence number so that if
+C the next read is the same then it can be skipped.
+        lastseq=0
+        howmanynow=0
+ 42     call stripc1k(IUNIT,loutstr,0,ND,1,'log line',IER)
+        if(IER.ne.0)then
+
+C Debug.
+          write(6,*) 'stripc end of file ',ier
+          CALL ERPFREE(IUNIT,ISTAT)
+          stop
+        endif
+        K=0
+        CALL EGETW(loutstr,K,WORD,'W','TEDDI token',IFLAG)
+        CALL EGETW(loutstr,K,WORD,'W','ignore time number',IFLAG)
+        CALL EGETP(loutstr,K,datea,'W','YYYY-MM-DD hh:mm:ss.fff',IFLAG)
+C Debug.
+C        write(6,*) '1st tokens ',WORD,' ',datea
+        CALL EGETWI(loutstr,K,isen,0,200,'W','sensor index',IFLAG)
+        CALL EGETWI(loutstr,K,idum,4,5,'W','version',IFLAG)
+        CALL EGETWI(loutstr,K,idum,0,24,'W','pir packets',IFLAG)
+        CALL EGETWI(loutstr,K,iseq,0,100000,'W',
+     &    'sequence number',IFLAG)
+        if(iseq.eq.lastseq)then
+          write(6,*) 'Duplicate sequence ',iseq
+          goto 42
+        else
+          lastseq=iseq
+        endif
+
+        CALL EGETWI(loutstr,K,ipacketsleft,0,250,'W',
+     &    'nb of packets left',IER)
+        if(ipacketsleft.gt.10)then
+          write(6,*) 'to many packets left ',ipacketsleft
+          goto 42
+        endif
+
+C Convert raw BAM data to dbt using calibration info.
+        CALL EGETWI(loutstr,K,irdbt,0,40000,'W','raw temperature',IER)
+        dbt= (0.01185055 * real(irdbt)) - 438.169086
+
+C Convert BAM light to lux.
+        CALL EGETWI(loutstr,K,irlight,0,1000,'W','raw light',IER)
+        if(irlight.gt.850)then
+          lux = 285.0
+        else
+          lexponent = real(irlight) * 0.0080849;
+          lux = 0.202549 * exp(lexponent)
+        endif
+
+        CALL EGETWI(loutstr,K,idum,0,1000,'W','battery',IER)
+
+C Convert raw BAM data to RH via calibration info.
+        CALL EGETWI(loutstr,K,irrh,0,40000,'W','raw humidity',IER)
+        rhl = (49.6 * log(real(irrh))) - 397.19
+        actd='B'
+        call bamdatetojulian(datea,actd,juliand,julianfrac)
+
+C Are we close to the hour mark or one of the five minut marks.
+        closetohour=.false.
+        closetofive=.false.
+        nowis=thehouris
+        call ECLOSE(julianfrac,thehouris,tensecfrac,closetohour)
+        if(closetohour)then
+          write(6,*) 'closetohour ',closetohour,thehouris,datea
+          goto 43
+        endif
+
+C See if it is within 10 seconds of one of the 5 minute slots.
+        do ifive=1,12
+          nowis=nowis+fiveminfrac
+          call ECLOSE(julianfrac,nowis,tensecfrac,closetofive)
+          if(closetofive)then
+            write(6,*) 'closetofive ',closetofive,nowis,ifive,datea
+            goto 43
+          endif
+        enddo
+
+C If we are not near a desired time go and read another line.
+  43    if(closetohour.or.closetofive)then
+          continue
+        else
+          goto 42
+        endif
+
+C Stuff into the arrays if close to the desired time. And we need to ensure
+C that we have collected data from all of the sensors before we skip forward in time.
+C The following logic results in two passes of sensors near the timestep.
+        do ij=1,howmany
+          iwhich=mapsentoarray(ij)
+          if(isen.eq.iwhich)then
+            bamtmp(ij)=dbt
+            bamlight(ij)=lux
+            bamhumidity(ij)=rhl
+            howmanynow=howmanynow+1  ! got another of the sensors
+            write(IUF,*) datea,' ',juliand,' * ',isen,dbt,rhl,lux,
+     &        howmanynow
+            goto 44
+          endif
+        enddo
+  44    continue
+
+C If all sensors captured and remembered we do not need to check for several more minutes.
+C So read lines equivalent to 3x the number of sensors.
+        if(howmanynow.ge.howmany)then
+          do ij=1,howmany*3
+            call stripc1k(IUNIT,loutstr,0,ND,1,'skip lines',IER)
+            if(IER.ne.0)then
+
+C Debug.
+              write(6,*) 'stripc end of file ',ier
+              CALL ERPFREE(IUNIT,ISTAT)
+              stop
+            endif
+          enddo
+          howmanynow=0  ! reset
+        endif
+        goto 42
+
+C << to be done >>
+
       elseif(act(1:1).eq.'c'.or.act(1:1).eq.'C')then
 
 C << subroutine in planning >>
@@ -493,7 +738,7 @@ C Where validation tests are kept.
       logical localdot,unixok,dll
 
       character*(*) LFDEF
-      CHARACTER OUTSTR*124,WORD*20
+      CHARACTER OUTSTR*124,WORD*20,loutstr*248
       character outs*124,outs248*248
       character fmttag*4,fmtexe*20,cadlbl*20,cadexe*20,cadfmt*4
       character replbl*20,repexe*20
@@ -1373,9 +1618,9 @@ C        write(6,*) 'findwhichdbpath ipath is ',ipathpcdb
 C      elseif(topic(1:3).eq.'prs')then
 C        write(6,*) lapres
 C        write(6,*) 'findwhichdbpath ipath is ',ipathapres
-      elseif(topic(1:3).eq.'sbm')then
-        write(6,*) lsbem
-        write(6,*) 'findwhichdbpath ipath is ',ipathsbem
+C      elseif(topic(1:3).eq.'sbm')then
+C        write(6,*) lsbem
+C        write(6,*) 'findwhichdbpath ipath is ',ipathsbem
 C      elseif(topic(1:3).eq.'mat')then
 C        write(6,*) LFMAT
 C        write(6,*) 'findwhichdbpath ipath is ',ipathmat
@@ -1400,10 +1645,9 @@ C act is requested action 'B' is for BAM log timing format
 C   which is: 2013-06-28 16:15:26.662
 C << what other kind of date stamp to decode? >>
 
-      subroutine bamdatetojulian(datea,act,juliand)
+      subroutine bamdatetojulian(datea,act,juliand,julianfrac)
       common/OUTIN/IUOUT,IUIN
       character datea*24,act*1,datetest*24,word*12
-      character wyear*4,wmonth*2,wday*2,whr*2,wmin*2,wsec*6
 
 C Setup indices to hold the day of the week (1-7), the month
 C (1-12), the day of the month (1-31), the hour of the day (1-24), the
@@ -1411,7 +1655,7 @@ C minute of the hour (1-60) second of minute and the year.
       integer imon,idom,ihrod,imohr,isomn,iyears,ijday
       real secofhr
       real totalsecs
-      real juliand
+      real juliand,julianfrac
       real fiveminseconds  ! seconds in 5 minutes
       real seconds
 
@@ -1421,13 +1665,15 @@ C minute of the hour (1-60) second of minute and the year.
       read(word(1:4),*,IOSTAT=IOS,ERR=1002) iyears
       read(word(6:7),*,IOSTAT=IOS,ERR=1003) imon
       read(word(9:10),*,IOSTAT=IOS,ERR=1003) idom
-      write(6,*) iyears,' ',imon,' ',idom
+C Debug.
+C      write(6,*) iyears,' ',imon,' ',idom
 
       CALL EGETW(datetest,K,WORD,'W','hh:mm:ss.fff',IFLAG)
       read(word(1:2),*,IOSTAT=IOS,ERR=1002) ihrod
       read(word(4:5),*,IOSTAT=IOS,ERR=1003) imohr
       read(word(7:12),*,IOSTAT=IOS,ERR=1003) secofhr
-      write(6,*) ihrod,' ',imohr,' ',secofhr
+C Debug.
+C      write(6,*) ihrod,' ',imohr,' ',secofhr
       
 C Find the julian day for the current year month and day.
       CALL EDAY(IDOM,IMON,IJDAY)
@@ -1437,11 +1683,10 @@ C There are 86400 seconds in a day. Divding the total seconds up to the
 C moment of the datetest by 86400 yields the fraction of the day.
       totalsecs=secofhr+(real(imohr)*60.0)+ (real(ihrod)*3600.0)
       juliand=real(ijday)+(totalsecs/86400.0)
-      write(6,*) totalsecs,' ',juliand
+      julianfrac=(totalsecs/86400.0)
+C Debug.
+C      write(6,*) totalsecs,' ',juliand,' ',julianfrac
       fiveminseconds =300.0/86400.0
-      write(6,*) 'tollerance- ',juliand-(0.5*fiveminseconds)
-      write(6,*) 'tollerance+ ',juliand+(0.5*fiveminseconds)
-      
       
       return
 
