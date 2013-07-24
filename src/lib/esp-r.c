@@ -39,7 +39,7 @@ extern FILE *wwc;
 extern int  wwc_ok;   /* from esru_util.c */
 extern int  wwc_macro;   /* from esru_util.c */
 
-GdkColor cscale[49], zscale[100], gscale[49];
+GdkColor cscale[49], zscale[100], gscale[85];
 long int ncscale;   /* number of assigned colours in colour scale */
 long int ngscale;   /* number of assigned colours in grey scale */
 long int ngr;       /* number of assigned interface colours */
@@ -75,12 +75,11 @@ gint f_height;
 gint f_width;
 
 char cappl[5];	/* f77 application name */
-/* char cfgroot[25];	f77 project root name    */
+/* char cfgroot[32];	f77 project root name    */
 /* char path[73];	f77 project path    */
 /* char upath[73];	f77 users path    */
 /* char imgpth[25];	f77 relative path to images    */
 /* char docpth[25];	f77 relative path to documents    */
-/* char tmppth[25];	f77 relative path to scratch folder    */
 char capt_wf_exe[73];	/* command to execute for capture wire frame */
 char capt_tf_file[73];	/* file for text feedback buffer dump */
 char capt_all_exe[73];	/* command for capture all of display */
@@ -211,7 +210,7 @@ static gboolean configure_event( GtkWidget *widget,
                      0, 0, 0, 0,
 		     widget->allocation.width, widget->allocation.height);
                      */
-/* debug fprintf(stderr,"configure_event widget %d %d \n",widget->allocation.width,widget->allocation.height); */
+// fprintf(stderr,"configure_event widget %d %d \n",widget->allocation.width,widget->allocation.height);
 
   return TRUE;
 }
@@ -313,40 +312,40 @@ GtkWidget *create_text( void )
 #else
      pfd = pango_font_description_from_string("Serif,Medium 8");
 #endif
-     /* g_print("create_text configure font medium 8\n");   debug */
+     // g_print("create_text configure font medium 8\n");
    } else if (disp_fnt == 1 ) {
 #ifdef SUN
      pfd = pango_font_description_from_string("Courier,Medium 10");
 #else
      pfd = pango_font_description_from_string("Serif,Medium 10");
 #endif
-     /* g_print("create_text configure font medium 10\n");  debug */
+     // g_print("create_text configure font medium 10\n");
    } else if (disp_fnt == 2 ) {
 #ifdef SUN
      pfd = pango_font_description_from_string("Courier,Medium 12");
 #else
      pfd = pango_font_description_from_string("Serif,Medium 12");
 #endif
-     /* g_printf("create_text configure font medium 12\n");  debug */
+     // g_printf("create_text configure font medium 12\n");
    } else if (disp_fnt == 3 ) {
 #ifdef SUN
      pfd = pango_font_description_from_string("Courier,Medium 14");
 #else
      pfd = pango_font_description_from_string("Serif,Medium 14");
 #endif
-     /* g_print("create_text configure font medium 14\n");  debug */
+     // g_print("create_text configure font medium 14\n");
    } else if (disp_fnt == 4 ) {
      pfd = pango_font_description_from_string("Courier,Medium 8");
-     /* g_print("create_text configure courier medium 8\n");  debug */
+     // g_print("create_text configure courier medium 8\n");
    } else if (disp_fnt == 5 ) {
      pfd = pango_font_description_from_string("Courier,Medium 10");
-     /* g_print("create_text configure courier medium 10\n");  debug */
+     // g_print("create_text configure courier medium 10\n");
    } else if (disp_fnt == 6 ) {
      pfd = pango_font_description_from_string("Courier,Medium 12");
-     /* g_print("create_text configure courier medium 12\n");  debug */
+     // g_print("create_text configure courier medium 12\n");
    } else if (disp_fnt == 7 ) {
      pfd = pango_font_description_from_string("Courier,Medium 14");
-     /* g_print("create_text configure courier medium 14\n");  debug */
+     // g_print("create_text configure courier medium 14\n");
    }
    gtk_widget_modify_font(text, pfd);
    pango_font_description_free(pfd);
@@ -587,7 +586,7 @@ void graphic_feedback_reset ( void)
      f_height = font_calculations_array[serif_small].f_height;   // pre-calculated value of f_height is read from the array
      f_width  = font_calculations_array[serif_small].f_width;    // pre-calculated value of f_width  is read from the array
 #endif
-/*     g_print("viewtext graphic font medium 8\n");  debug */
+     // g_print("viewtext graphic font medium 8\n");
  } else if (butn_fnt == 1 ) {
 #ifdef SUN
      pfd = pango_font_description_from_string("Courier,Medium 10");
@@ -598,7 +597,7 @@ void graphic_feedback_reset ( void)
      f_height = font_calculations_array[serif_medium].f_height;
      f_width  = font_calculations_array[serif_medium].f_width;
 #endif
-/*     g_print("viewtext graphic font medium 10\n");  debug */
+     // g_print("viewtext graphic font medium 10\n");
  } else if (butn_fnt == 2 ) {
 #ifdef SUN
      pfd = pango_font_description_from_string("Courier,Medium 12");
@@ -609,7 +608,7 @@ void graphic_feedback_reset ( void)
      f_height = font_calculations_array[serif_large].f_height;
      f_width  = font_calculations_array[serif_large].f_width;
 #endif
-/*    g_print("viewtext graphic font medium 12\n");  debug */
+    // g_print("viewtext graphic font medium 12\n");
  } else if (butn_fnt == 3 ) {
 #ifdef SUN
      pfd = pango_font_description_from_string("Courier,Medium 14");
@@ -620,38 +619,38 @@ void graphic_feedback_reset ( void)
      f_height = font_calculations_array[serif_largest].f_height;
      f_width  = font_calculations_array[serif_largest].f_width;
 #endif
-     /* fprintf(stderr,"re-configure graphic font medium 10\n"); debug */
+     // fprintf(stderr,"re-configure graphic font medium 10\n");
    } else if (butn_fnt == 4 ) {
      pfd = pango_font_description_from_string("Courier,Medium 8");
      f_height = font_calculations_array[courier_small].f_height;
      f_width  = font_calculations_array[courier_small].f_width;
 
-     /* fprintf(stderr,"re-configure graphic font medium 12\n"); debug */
+     // fprintf(stderr,"re-configure graphic font medium 12\n");
    }else if (butn_fnt == 5 ) {
      pfd = pango_font_description_from_string("Courier,Medium 10");
      f_height = font_calculations_array[courier_medium].f_height;
      f_width  = font_calculations_array[courier_medium].f_width;
 
-     /* fprintf(stderr,"re-configure graphic font medium 10\n"); debug */
+     // fprintf(stderr,"re-configure graphic font medium 10\n");
    } else if (butn_fnt == 6 ) {
      pfd = pango_font_description_from_string("Courier,Medium 12");
      f_height = font_calculations_array[courier_large].f_height;
      f_width  = font_calculations_array[courier_large].f_width;
 
-     /* fprintf(stderr,"re-configure graphic font medium 12\n"); debug */
+     // fprintf(stderr,"re-configure graphic font medium 12\n");
    }else if (butn_fnt == 7 ) {
      pfd = pango_font_description_from_string("Courier,Medium 14");
      f_height = font_calculations_array[courier_largest].f_height;
      f_width  = font_calculations_array[courier_largest].f_width;
 
-     /* fprintf(stderr,"re-configure graphic font medium 10\n"); debug */
+     // fprintf(stderr,"re-configure graphic font medium 10\n");
    }
    gtk_widget_modify_font(graphic, pfd);	/* << ?? >> */
 
    pango_font_description_free(pfd);
 
    gdk_drawable_get_size(graphic->window,&g_width,&g_height);
-   /* fprintf(stderr,"graphic font height width is %d %d gr_w %d gr_h %d\n", f_height,f_width,g_width,g_height);  debug */
+   // fprintf(stderr,"graphic font height width is %d %d gr_w %d gr_h %d\n", f_height,f_width,g_width,g_height);
    b_top = (long int) (0 + (f_height * c3dct));	/* pixel @ top    */
    b_bottom = (long int) (g_height - 9 - (f_height * c3dcb));	/* pixel @ bottom */
    b_left = (long int) (0 + 9 + (f_width * c3dcl));	/* pixel @ left   */
@@ -2211,22 +2210,26 @@ void clrcscale_() {
   return;
 }
 
-/* ********* setgscale_() setgscale_() grey scale (49 or 24 steps) ******* */
+/* ********* setgscale_() setgscale_() grey scale (84 or 42 steps) ******* */
 /* Called with no parameters, sets global variable ngscale. The local
    variable gscaleok is not used (yet). */
 void setgscale_() {
 
 /* Color named arrays taken from esru_x.c */
   char *gscalestr[] = {
-  "grey97","grey95","grey93","grey91","grey89","grey87","grey85","grey83","grey81",
-  "grey79","grey77","grey75","grey73","grey71","grey69","grey67","grey65","grey63","grey61",
-  "grey59","grey57","grey55","grey53","grey51","grey49","grey47","grey45","grey43","grey41",
-  "grey39","grey37","grey35","grey33","grey31","grey29","grey27","grey25","grey23","grey21",
-  "grey19","grey17","grey15","grey13","grey11","grey9","grey7","grey5","grey3","grey1"};
+  "grey97","grey96","grey95","grey94","grey93","grey92","grey91","grey90",
+  "grey89","grey88","grey87","grey86","grey85","grey84","grey83","grey82","grey81","grey80",
+  "grey79","grey78","grey77","grey76","grey75","grey74","grey73","grey72","grey71","grey70",
+  "grey69","grey68","grey67","grey66","grey65","grey64","grey63","grey62","grey61","grey60",
+  "grey59","grey58","grey57","grey56","grey55","grey54","grey53","grey52","grey51","grey50",
+  "grey49","grey48","grey47","grey46","grey45","grey44","grey43","grey42","grey41","grey40",
+  "grey39","grey38","grey37","grey36","grey35","grey34","grey33","grey32","grey31","grey30",
+  "grey29","grey28","grey27","grey26","grey25","grey24","grey23","grey22","grey21","grey20",
+  "grey19","grey18","grey17","grey16","grey15","grey14","grey13","grey12" };
   gint ic,ih;
-  gboolean gscaleok[49];
+  gboolean gscaleok[85];
 /* assign grey scale to gscale array. */
-  for (ic=0; ic<48; ic++) {
+  for (ic=0; ic<84; ic++) {
     if (gdk_color_parse(gscalestr[ic],&gscale[ic])==1) {
       if (gdk_colormap_alloc_color(cmap,&gscale[ic],FALSE,TRUE)==1) {
         ngscale=ngscale+1;
@@ -2241,12 +2244,12 @@ void setgscale_() {
     }
   }
 /* Some colours not allocated attempt half of the colours. Begin by freeing initial allocated set. */
-  if ( ngscale <= 47 ) {
+  if ( ngscale <= 83 ) {
     gdk_colormap_free_colors(cmap,&gscale[0],(gint) ngscale);
     // fprintf(stderr,"Trying reduced grey set\n");
     ngscale = 0;
     ih = -1;
-    for (ic=0; ic<24; ic++) {
+    for (ic=0; ic<40; ic++) {
       ih = ih + 2;
       if (gdk_color_parse(gscalestr[ih],&gscale[ic])==1) {
         if (gdk_colormap_alloc_color(cmap,&gscale[ic],FALSE,TRUE)==1) {
@@ -2451,7 +2454,7 @@ void win3d_(menu_char,cl,cr,ct,cb,vl,vr,vt,vb,gw,gh)
      f_height = font_calculations_array[serif_small].f_height;   // pre-calculated value of f_height is read from the array
      f_width  = font_calculations_array[serif_small].f_width;    // pre-calculated value of f_width  is read from the array
 #endif
-/*     g_print("viewtext graphic font medium 8\n");  debug */
+     // g_print("viewtext graphic font medium 8\n");
  } else if (butn_fnt == 1 ) {
 #ifdef SUN
      pfd = pango_font_description_from_string("Courier,Medium 10");
@@ -2462,7 +2465,7 @@ void win3d_(menu_char,cl,cr,ct,cb,vl,vr,vt,vb,gw,gh)
      f_height = font_calculations_array[serif_medium].f_height;
      f_width  = font_calculations_array[serif_medium].f_width;
 #endif
-/*     g_print("viewtext graphic font medium 10\n");  debug */
+     // g_print("viewtext graphic font medium 10\n");
  } else if (butn_fnt == 2 ) {
 #ifdef SUN
      pfd = pango_font_description_from_string("Courier,Medium 12");
@@ -2473,7 +2476,7 @@ void win3d_(menu_char,cl,cr,ct,cb,vl,vr,vt,vb,gw,gh)
      f_height = font_calculations_array[serif_large].f_height;
      f_width  = font_calculations_array[serif_large].f_width;
 #endif
-/*    g_print("viewtext graphic font medium 12\n");  debug */
+     // g_print("viewtext graphic font medium 12\n");
  } else if (butn_fnt == 3 ) {
 #ifdef SUN
      pfd = pango_font_description_from_string("Courier,Medium 14");
@@ -2484,7 +2487,7 @@ void win3d_(menu_char,cl,cr,ct,cb,vl,vr,vt,vb,gw,gh)
      f_height = font_calculations_array[serif_largest].f_height;
      f_width  = font_calculations_array[serif_largest].f_width;
 #endif
-   // fprintf(stderr,"refresh graphic font medium 10\n");
+     // fprintf(stderr,"refresh graphic font medium 10\n");
  } else if (butn_fnt == 4 ) {
    pfd = pango_font_description_from_string("Courier,Medium 8");
    f_height = font_calculations_array[courier_small].f_height;

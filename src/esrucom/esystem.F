@@ -184,10 +184,11 @@ C espriou.h provides currentfile and defdbfl.
       include "seasons.h"
       include "schedule.h"
       include "UserSimulationToggles.h"
+      include "qrun.h"      
 
 
       INTEGER, PARAMETER :: MSTMC=20
-     
+
       integer lnblnk  ! function definition
 
 C Parameters
@@ -237,13 +238,6 @@ C NZSUR is the number of surfaces in each zone (from geometry.h).
 C NZTV is the number of vertices in each zone (from geometry.h).
 C VCOORD, NZNVER & NZJVN (from geometry.h)
 
-C IFCFG is the file unit for the model configuration file.
-C cfgroot (24 char) root name for the model (used when generating
-C   system files.
-C LCFGF (72 char) model configuration file name.
-      common/C21/IFCFG,cfgroot,LCFGF
-      INTEGER :: IFCFG
-
 C IFPNF is the unit for the plant network file.
 C LPNF (72 char) plant network file name.
       COMMON/C23/IFPNF,LPNF
@@ -279,9 +273,6 @@ C ctldoc (248 char) - Overall control notes. If equal to 'none'
 C                   then no control is imposed.
 C lctlf (72 char) - model control file name.
       common/cctlnm/ctldoc,lctlf
-
-C LPRJLG (72 char) model log file.
-      COMMON/LLOG/LPRJLG
 
 C Images in the model.
 C  imgfmt (4 char) gives the format of each image associated with
@@ -375,13 +366,11 @@ C Assume: Mon=1, Tue=2, Wed=3, Thu=4, Fri=5, Sat=6, Sun=7
 C Uncertainty analysis common.
       COMMON/UA1/LUALF,LCNG(MNCNG),LLOC(MNIL)
 
-C IPV data is from ipvdata.h.
+C IPV data is from ipvdata.h. If within cfg file then the file
+C name is replaced with 'internal'.
       common/IPVF/lipvdatf
 
-C Anchor data.
-      common/anchora/NALOC,ALOC(20),ALOCLBL(20),ALOCTYP(20)
-      common/anchorb/IALOC(20),lstanchr(20,60)
-      INTEGER :: ialoc,lstanchr,naloc
+C Anchor data in model.h.
 
 C Contaminant flow model commons
       COMMON/CONTM0/NCONTM,NOCNTM,CONTMNAM(MCONTM)
@@ -502,8 +491,15 @@ C 'simulation toggles' menu.
 C iSlr_half_hr_flg value = 0 :hour-centered; =1 : half-hour centered.
       common/CWEC_SOL/iSlr_half_hr_flg
       integer iSlr_half_hr_flg,idty
+      
+
       INTEGER IRNCMD,IRNCMF
       INTEGER ICREPORT,IDOL,IDAYNUM,IMTHNUM,IDWKNUM,IDTYY
+      INTEGER iCount, jCount      !- counters
+      INTEGER iTemp_day_beg, iTemp_day_end, iTemp_start, iTemp_end   !- temporary variables
+      INTEGER iStart_beg, iStart_end                   !- temporary variables
+      INTEGER iPrevious_day_end, iPrevious_season      !- temporary variables
+      LOGICAL bDayFound, bSpanNewYear
 
       integer iexcludediff_flag
       common/excludediff/iexcludediff_flag
@@ -516,11 +512,11 @@ C Simulation parameters
       LOGICAL INTHPS,INTHPZ,IGR1D,GRND3D
       LOGICAL XST,OK,DOK,IGDCVS,IGDCNC,IGDNDC,IGDTAQ,cnnok
       LOGICAL OK3DCVS,OK3DCNC,OK3DNDC,OK3DTAQ
+      logical foundmould,foundsbem
       CHARACTER*72 LGDCVS,LGDCNC,LGDNDC,LGDNDD,LGDTAQ,LGRD1D,LNLTHP
       CHARACTER loutstr*248,OUTSTR*124,OUTS*124,text*124,t117*117,h*72
       CHARACTER LCFD*72
       CHARACTER*72 LAPROB,LPNF
-      character LPRJLG*72
       character lworking*144
       CHARACTER*72 L3DCVS,L3DCNC,L3DNDC,L3DTAQ,LMOIST,LGrdSt
       CHARACTER WORD*20,NODID*12,CXSTR*78
@@ -531,14 +527,14 @@ C Simulation parameters
       character GTGEOM*72
       CHARACTER ectime*24,wkd1*10,wkd2*10,naco*40,type*4
       character*10 wkday(7)
-      character LUALF*72,LCNG*15,LLOC*15,cfgroot*24,LCFGF*72
-      CHARACTER NDNAM*12,ALOC*12,ALOCLBL*12,ALOCTYP*4
+      character LUALF*72,LCNG*15,LLOC*15
+      CHARACTER NDNAM*12
       character sblres*72,sflres*72,splres*72,smstres*72,sipvres*72
       character hvacfile*72,LBSIMP*72,LFClds*72
       character gshpfile*72
       character gcepfile*72
       character dllsubr*12,dllmesg*124
-      character limgpth*24,ldocpth*24,ltmppth*24,lcfgroot*24,lpath*72
+      character limgpth*24,ldocpth*24,lcfgroot*32,lpath*72
       character path*72,lupath*72
       character namez*12,namen*12
       CHARACTER*72 NWKNAM,NWKDSC,NWKFLNAM
@@ -567,9 +563,12 @@ C Simulation parameters
 #else
       integer*8 iincomp,iincon  ! to pass nb zones connections to c code
 #endif
+
+C Quick run locals
+      integer iSeason, iCurrDay, iShift
       
       REAL :: gva
-      DIMENSION GVA(12),IVA(60),namez(mcom),namen(mcom)
+      DIMENSION GVA(12),IVA(99),namez(mcom),namen(mcom)
       INTEGER, dimension(mcon) :: IRVC
       INTEGER, dimension(365) :: IRCC
       data wkday/'Monday', 'Tuesday','Wednesday', 'Thursday',
@@ -582,6 +581,7 @@ C Flags & storage for parsing *sim-toggle tags
       character*248 cLnWords(124)
 C Function references used to parse *sim-toggle tags.      
       real fCtoR_err 
+      integer iCtoI_err
       logical bStringsMatch
      
       newgeo=.false.  ! assume older format geometry.
@@ -590,10 +590,14 @@ C Check if running in dll mode.
       call isadll(dll)
       itru=iuout   ! set trace unit to use in subroutine calls
       iflag=0      ! initial value
+      foundmould=.false.; foundsbem=.false.
 
 C Initalizing starting point for parsing simulation presets (*sps)
       iSet_start = 1
 
+C Initialize values for plant convergence criteria
+      call InitPltSolnParams() 
+      
 C Initialize flag for boundary condition data 
       bBC_data_defined = .false.
 
@@ -610,7 +614,7 @@ C Note: escdef must come after scan of .esprc file.
       write(LPCDB,'(a)')  DPCDB(1:lnblnk(DPCDB))
       write(LSBEM,'(a)')  DSBEM(1:lnblnk(DSBEM))  ! assign default SBEM db
       write(MCMPDBFL,'(a)') DMCMPDBFL(1:lnblnk(DMCMPDBFL))
-
+      write(lfmould,'(a)') dmdbnam(1:lnblnk(dmdbnam))
 
 C Clear the model common blocks.
       call clrprb
@@ -618,6 +622,8 @@ C Clear the model common blocks.
 C Initialize simulation toggle flags 
       bUserGAM = .false.       
       bUserSolar = .false. 
+      bUserPltSolvConfig = .false. 
+      
       
       LUALF='UNKNOWN'
       bidirfile='UNKNOWN'
@@ -628,6 +634,9 @@ C Set flag indicating that solar radiation data is hour-centered (default)
 C Variable will be reset if 'slr_half_hr' included in .cfg
       iSlr_half_hr_flg = 0
 
+C Initialize flag for quick run simulation (default is 'no')    
+      iQuick_run = 0 
+ 
 C Initialise NCM data read flags
       IRNCMD=0
       IRNCMF=0
@@ -694,19 +703,25 @@ C Initialize the indices.
       ANGI=40.
       initvt=0
 
-C Set day types to default of 3 (weekday/saturday/sunday) and calendar
-C day type tags to default as well. These 3 day types cannot be deleted
-C and more day types if defined will be stored in CALENTAG(4) onwards.
-C this can be modified later. [The IF clause may not be necessary]
+C Older files may not have a *list section for the calendar and
+C to support compatibility with legacy assumption of 3 day types
+C set nbdaytype = 3 but instanciate the calendar variables for
+C weekday/saturday/sunday/holiday and calendar day type tags. Newer
+C cfg files will have a *list section and thus update nbdaytype.
+C The initial day types cannot (??) be deleted and more day types if 
+C defined will be stored in CALENTAG(5) onwards.
+C this can be modified later.
       IF(NBDAYTYPE.LT.3)THEN
         nbdaytype=3
       ENDIF
       CALENTAG(1)='weekday'
       CALENTAG(2)='saturday'
       CALENTAG(3)='sunday'
+      CALENTAG(4)='holiday'
       CALENDAYNAME(1)='generic weekday'
       CALENDAYNAME(2)='generic saturday'
       CALENDAYNAME(3)='generic sunday'
+      CALENDAYNAME(4)='generic holiday'
 
 C Open the configuration file, return if not found otherwise set
 C currentfile to the configuration file.
@@ -732,21 +747,21 @@ C If FILE > 4 char it might have a .cfg attached, otherwise add.
       lcfgl=lcfgr-3
       if(lcfgr.gt.4)then
         if(FILE(lcfgl:lcfgr).eq.'.cfg')then
-          if(lcfgl.gt.24)then
-            write(cfgroot,'(a)',iostat=ios,err=99) FILE(1:24)
+          if(lcfgl.gt.32)then
+            write(cfgroot,'(a)',iostat=ios,err=99) FILE(1:32)
           else
             write(cfgroot,'(a)',iostat=ios,err=99) FILE(1:lcfgl-1)
           endif
         else
-          if(lcfgr.gt.24)then
-            write(cfgroot,'(a)',iostat=ios,err=99) FILE(1:24)
+          if(lcfgr.gt.32)then
+            write(cfgroot,'(a)',iostat=ios,err=99) FILE(1:32)
           else
             write(cfgroot,'(a)',iostat=ios,err=99) FILE(1:lcfgr)
           endif
         endif
       else
-        if(lcfgr.gt.24)then
-          write(cfgroot,'(a)',iostat=ios,err=99) FILE(1:24)
+        if(lcfgr.gt.32)then
+          write(cfgroot,'(a)',iostat=ios,err=99) FILE(1:32)
         else
           write(cfgroot,'(a)',iostat=ios,err=99) FILE(1:lcfgr)
         endif
@@ -768,8 +783,7 @@ C embedded in the configuration file.
         CALL EGETW(OUTSTR,K,WORD,'W','header tags',IFLAG)
         IF(IFLAG.NE.0)goto 1
         if(WORD(1:5).eq.'*Date'.or.WORD(1:5).eq.'*date')then
-          CALL EGETRM(OUTSTR,K,ectime,'W','date stamp',IER)
-          IF(IER.NE.0)goto 1
+          CALL EGETRM(OUTSTR,K,ectime,'W','date stamp',IER)  ! missing date stamp not fatal
           goto 34
         elseif(WORD(1:5).eq.'*root')then
           CALL EGETRM(OUTSTR,K,cfgroot,'W','root name',IER)
@@ -795,9 +809,7 @@ C embedded in the configuration file.
           CALL EGETRM(OUTSTR,K,imgpth,'W','path to img',IER)
           IF(IER.NE.0)goto 1
           goto 34
-        elseif(WORD(1:7).eq.'*tmppth')then
-          CALL EGETRM(OUTSTR,K,tmppth,'W','path to scratch',IER)
-          IF(IER.NE.0)goto 1
+        elseif(WORD(1:7).eq.'*tmppth')then  ! do not bother with this folder name
           goto 34
         elseif(WORD(1:7).eq.'*docpth')then
           CALL EGETRM(OUTSTR,K,docpth,'W','path to documents',IER)
@@ -914,7 +926,7 @@ C If '* CONFIGURATION' found then read in the databases.
         endif
       endif
 
-C Read databases until '* PROJ LOG' found.  If starts with *std
+C Read common data until '* PROJ LOG' found.  If starts with *std
 C then set the whichdbpath variable to signal that it is in
 C the standard location. If tag does not start with *std then
 C check the intial portion of the file name to see if it is
@@ -935,6 +947,7 @@ C so LSTRIPC and LOUTSTR are used.
 C Process the file name following *prm and depending on its path
 C set the LFMAT common block string via call to findwhichdbpath.
         call findwhichdbpath('mat',lworking,ier)
+
       elseif(WORD(1:4).eq.'*mat')then
         CALL EGETRM(LOUTSTR,K,lworking,'W','material db',IER)
 
@@ -954,6 +967,7 @@ C set the LFMUL common block string via call to findwhichdbpath.
       elseif(WORD(1:7).eq.'*stdmlc')then
         CALL EGETRM(LOUTSTR,K,LFMUL,'W','multilayer db',IER)
         ipathmul=2  ! standard folder for MLC database
+
       elseif(WORD(1:4).eq.'*opt')then
         CALL EGETRM(LOUTSTR,K,lworking,'W','optical db',IER)
 
@@ -963,6 +977,7 @@ C set the LOPTDB common block string via call to findwhichdbpath.
       elseif(WORD(1:7).eq.'*stdopt')then
         ipathoptdb=2  ! standard folder for optical database
         CALL EGETRM(LOUTSTR,K,LOPTDB,'W','optical db',IER)
+
       elseif(WORD(1:4).eq.'*prs')then
         CALL EGETRM(LOUTSTR,K,lworking,'W','pressure db',IER)
 
@@ -972,6 +987,7 @@ C set the lapres common block string via call to findwhichdbpath.
       elseif(WORD(1:7).eq.'*stdprs')then
         ipathapres=2  ! standard folder for pressure coef database
         CALL EGETRM(LOUTSTR,K,LAPRES,'W','pressure db',IER)
+
       elseif(WORD(1:4).eq.'*evn')then
         CALL EGETRM(LOUTSTR,K,lworking,'W','profiles db',IER)
 
@@ -982,14 +998,29 @@ C set the LPRFDB common block string via call to findwhichdbpath.
         CALL EGETRM(LOUTSTR,K,LPRFDB,'W','profile db',IER)
         ipathprodb=2  ! standard folder for profiles database
 
+      elseif(WORD(1:6).eq.'*mould')then
+        CALL EGETRM(LOUTSTR,K,lworking,'W','mould isopleths',IER)
+
+C Process the file name folloing *mld and depending on its path
+C set the lfmould common block string via call to findwhichdbpath.
+        call findwhichdbpath('mld',lworking,ier)
+        foundmould=.true.
+      elseif(WORD(1:9).eq.'*stdmould')then
+        ipathmould=2  ! standard folder for mould isopleths
+        CALL EGETRM(LOUTSTR,K,lfmould,'W','mould isopleths',IER)
+        foundmould=.true.
       elseif(WORD(1:4).eq.'*clm')then
+        CALL EGETRM(LOUTSTR,K,lworking,'W','weather file',IER)
 
-C << to be done - introduce *stdclm to signal standard location >>
-
-C Read name of standard climate file and set a flag indicating
-C that a single-year climate database has been defined
-        CALL EGETRM(LOUTSTR,K,LCLIM,'W','climate db',IER)
+C Read name of standard weather file and set a flag indicating
+C that a single-year climate weather has been defined.
+        call findwhichdbpath('clm',lworking,ier)
         bSY_climate_defined = .true.        
+      elseif(WORD(1:7).eq.'*stdclm')then
+        ipathclim=2  ! standard folder for weather
+        CALL EGETRM(LOUTSTR,K,lclim,'W','weather file',IER)
+        bSY_climate_defined = .true.
+        
       elseif(WORD(1:6).eq.'*myclm') then
 
 C Read multi-year climate database and set flag indicating hat a muli-year
@@ -1034,6 +1065,7 @@ C set the LSBEM common block string via call to findwhichdbpath.
         call findwhichdbpath('sbm',lworking,ier)
         ISBEM=1
         IRNCMD=1
+        foundsbem=.true.
 
       elseif(WORD(1:8).eq.'*stdsbem')then
 
@@ -1042,9 +1074,13 @@ C SBEM database file in standard location.
         CALL EGETRM(LOUTSTR,K,LSBEM,'W','standard SBEM db',IER)
         ISBEM=1
         IRNCMD=1
+        foundsbem=.true.
 
       elseif(WORD(1:4).eq.'*ctl')then
         CALL EGETRM(LOUTSTR,K,LCTLF,'W','config control',IER)
+
+      elseif(WORD(1:9).eq.'*contents')then
+        CALL EGETRM(LOUTSTR,K,lmodelqa,'W','model contents',IER)
 
       elseif(WORD(1:5).eq.'*gref')then
 
@@ -1347,11 +1383,18 @@ C Solar radiation (half hour data) flag.
         call egetwi(loutstr,k,iSlr_half_hr_flg,0,1,'W',
      &    'solar half-hour flag',IER)
 
-      elseif(WORD(1:17).eq.'*exlude_diff_shad')then
+      elseif(WORD(1:18).eq.'*exclude_diff_shad')then
 
 C Solar radiation (half hour data) flag.
         call egetwi(loutstr,k,iexcludediff_flag,0,1,'W',
      &    'exclude diff shad flag',IER)
+
+      elseif(WORD(1:10).eq.'*quick_run') then
+
+C Flag for quick run method
+        call egetwi(loutstr,k,iWeekLength,0,365,'W',
+     &    'quick run method',IER)  
+        if (iWeekLength > 0) iQuick_run = 1
 
       elseif(WORD(1:4).eq.'*vew')then
         CALL EGETWR(LOUTSTR,K,EYEMI(1),0.,0.,'-','X cord',IER)
@@ -1379,6 +1422,12 @@ C There is a calendar of day types defined read its name.
           goto 443
         elseif(WORD(1:5).eq.'*list')then
           K=6
+
+C For each day of the year read from the 365 indicies into the
+C icalender array.
+C << how about allowing 1 day type - that would be the case
+C << for a hosptal that was used 365 days a year.
+
           CALL EGETWI(OUTSTR,K,NBDAYTYPE,3,MDTY,'W','day types',IER)
           CALL EGETWIA(IUC,IRCC,365,0,10,'W','calendar day types',IER)
           DO 118 KV=1,365
@@ -1530,29 +1579,44 @@ C Read and store the comments into the HELP array for later display.
       elseif(WORD(1:5).eq.'*year')then
         CALL EGETWI(LOUTSTR,K,IYEAR,1900,2020,'W','year',IER)
 
-C Perform check that calendar day types correspond with simulation year
-C If more than three day types are declared then retain those day types
-C otherwise overwrite 
+C Perform check that calendar day types correspond with simulation year.
+C The logic below assumes that the first three day types are still weekday
+C saturday sunday. It loops through each Julian day and if the model
+C calendar day type is one of the standard 3 it checks that the model weekday
+C is the same as a Julian weekday. Any calendar day types beyond 3 are 
+C retained. If no calendar was defined in the model then it should do the
+C work silently. Howevere, if there are more than 4 day types then the
+C user might have setup a calendar that should not be overwritten.
         ICREPORT=0
-        DO 123 IDOL=1,365
-          IF(ICALENDER(IDOL).LE.3)THEN
-            CALL EDAYR(IDOL,IDAYNUM,IMTHNUM)
-            CALL EWEEKD(IDAYNUM,IMTHNUM,IYEAR,IDWKNUM)
-            IF(IDWKNUM.LT.6)THEN
-              IDTYY=1 ! WEEKDAY
-            ELSEIF(IDWKNUM.EQ.6)THEN
-              IDTYY=2 ! SATURDAY
-            ELSEIF(IDWKNUM.EQ.7)THEN
-              IDTYY=3 ! SUNDAY
+        if(nbdaytype.gt.4)then
+          continue
+        else
+          DO 123 IDOL=1,365
+            IF(ICALENDER(IDOL).LE.3)THEN
+              CALL EDAYR(IDOL,IDAYNUM,IMTHNUM)
+              CALL EWEEKD(IDAYNUM,IMTHNUM,IYEAR,IDWKNUM)
+              IF(IDWKNUM.LT.6)THEN
+                IDTYY=1 ! WEEKDAY
+              ELSEIF(IDWKNUM.EQ.6)THEN
+                IDTYY=2 ! SATURDAY
+              ELSEIF(IDWKNUM.EQ.7)THEN
+                IDTYY=3 ! SUNDAY
+              ENDIF
+              IF(ICALENDER(IDOL).EQ.0)THEN
+                ICALENDER(IDOL)=IDTYY  ! update the model calendar
+                ICREPORT=2             ! do it silently
+              ELSEIF(ICALENDER(IDOL).NE.IDTYY)THEN
+                ICALENDER(IDOL)=IDTYY  ! update the model calendar
+                ICREPORT=1
+              ENDIF
             ENDIF
-            IF(ICALENDER(IDOL).NE.IDTYY)THEN
-              ICALENDER(IDOL)=IDTYY
-              ICREPORT=1
-            ENDIF
-          ENDIF
- 123    CONTINUE
-        IF(ICREPORT.EQ.1)CALL EDISP(IUOUT,
-     &    'Simulation year and calendar mismatch rectified')
+ 123      CONTINUE
+        endif
+        if(ICREPORT.EQ.1)then
+          CALL EDISP(IUOUT,'  ')
+          CALL EDISP(IUOUT,
+     &      'Simulation year and calendar mismatch rectified')
+        endif
       elseif(WORD(1:5).eq.'*img ')then
 
 C An image file. If this is a version 4 file then there will be
@@ -1615,12 +1679,12 @@ C call ripvdat for data within the cfg file.
           CALL ERPFREE(IUTDF,ISTAT)
           call FINDFIL(lipvdatf,XST)
           if(XST)then
-	    ipvact='ipv'
+      ipvact='ipv'
             call ripvdat(IUTDF,lipvdatf,ipvact,ier)
             CALL ERPFREE(IUTDF,ISTAT)
           endif
         elseif(ND.ge.3)then
-	
+  
 C The IPV data line needs to be scanned prior to calling ripvdat
 C for the rest of the data.
           K=0
@@ -1632,9 +1696,11 @@ C for the rest of the data.
           else
             ipvsimu='------'
           endif
-	  ipvact='cfg'
-          call ripvdat(iuc,FILE,ipvact,ier)	
-	endif
+          lipvdatf='internal'  ! reset file name to the keyword internal
+          ipvact='cfg'
+          call ripvdat(iuc,FILE,ipvact,ier)
+        endif
+
       elseif(WORD(1:5).eq.'*dmds')then
 
 C Building fans/pumps/DHW demands file.
@@ -1691,8 +1757,8 @@ C Non-linear thermophysical properties configuration file.
 C Simulation presets: Optionally parameters normally hidden in the password-
 C protected simulation toggles directory.
       elseif ( loutstr(1:11).eq. '*sim-toggle' ) then
-        
-C Count number of words on this line. Should be three:
+ 
+C Count number of words on this line. Should be three:         
 C         *sim-toggle KEYWORD VALUE    
         iWordCount = iEGetArrW ( loutstr, cLnWords )
         
@@ -1715,10 +1781,97 @@ C Token describes flag for solar processing
      &       bStringsMatch(cLnWords(2),'bld-solar-processing')) then 
      
              bUserSolar = .true. 
+             iUserSolar = -1 
              
-             if ( bStringsMatch(cLnWords(3),'enabled' )) iUserSolar = 0
-             if ( bStringsMatch(cLnWords(3),'disabled')) iUserSolar = 1
-                          
+             ParseSolarTag: 
+     &       if ( bStringsMatch(cLnWords(3),'enabled' )) then 
+     
+               iUserSolar = 0
+
+             elseif ( bStringsMatch(cLnWords(3),'disabled')) then
+             
+               iUserSolar = 1
+               
+             else 
+               
+               bError = .true.
+               
+             endif ParseSolarTag
+             
+          elseif ( 
+     &       bStringsMatch(cLnWords(2),'plt-max-iterations')) then 
+          
+             bUserPltSolvConfig = .true. 
+             
+             iUserMAXITP = iCtoI_err( cLnWords(3),
+     &                           'Max plant iterations',
+     &                           bError ) 
+             if ( iUserMAXITP  < 0. ) bError = .true. 
+      
+             
+             
+          elseif ( 
+     &       bStringsMatch(cLnWords(2),'plt-clt-max-iterations')) then 
+          
+             bUserPltSolvConfig = .true.    
+             
+             iUserITRCLP = iCtoI_err( cLnWords(3),
+     &                                'Max plant control iterations',
+     &                                bError ) 
+             if ( iUserITRCLP  < 0. ) bError = .true. 
+                   
+
+          elseif ( 
+     &       bStringsMatch(cLnWords(2),'plt-max-error-relative')) then 
+          
+             bUserPltSolvConfig = .true.               
+             
+             fUserPERREL = fCtoR_err( cLnWords(3),
+     &                           'Plant soln max relative error (-) ',
+     &                           bError ) 
+             if ( fUserPERREL  < 0. ) bError = .true.              
+             
+          elseif ( 
+     &       bStringsMatch(cLnWords(2),'plt-max-error-temp')) then 
+          
+             bUserPltSolvConfig = .true.             
+             
+             fUserPERTMP = fCtoR_err( cLnWords(3),
+     &                         'Plant soln max temperature error (oC) ',
+     &                           bError ) 
+             if ( fUserPERTMP < 0. ) bError = .true. 
+
+          elseif ( 
+     &       bStringsMatch(cLnWords(2),'plt-max-error-flux')) then 
+
+             bUserPltSolvConfig = .true. 
+
+             fUserPERFLX = fCtoR_err( cLnWords(3),
+     &                         'Plant soln max heat flux error (W) ',
+     &                           bError ) 
+             if ( fUserPERFLX < 0. ) bError = .true.              
+     
+          elseif ( 
+     &       bStringsMatch(cLnWords(2),'plt-max-error-flow')) then 
+
+             bUserPltSolvConfig = .true.  
+
+             fUserPERMFL = fCtoR_err( cLnWords(3),
+     &                         'Plant soln max mass flow error (kg/s) ',
+     &                         bError ) 
+             if ( fUserPERTMP < 0. ) bError = .true.              
+     
+          elseif ( 
+     &       bStringsMatch(cLnWords(2),'plt-max-error-H2-flow')) then  
+     
+             bUserPltSolvConfig = .true.             
+          
+             fUserH2iterTol= fCtoR_err( cLnWords(3),
+     &                     'Plant soln max H2 mass flow error (kg/s) ',
+     &                         bError ) 
+             if ( fUserH2iterTol < 0. ) bError = .true.
+                        
+                       
           endif MatchKeywords
         
         endif RightWordCount
@@ -1892,12 +2045,13 @@ C Read references to TDF id's, and then the related tasks and zones.
         endif
         ITEMSTD=M
         CALL ERPFREE(IUTDF,ISTAT)
-        
+    
+      
       elseif(WORD(1:4).eq.'*sps' .or. WORD(1:6).eq. '*mysps')then
       
 C Check for simulation setup data and save level.
         CALL EGETWI(LOUTSTR,K,nsset,1,MSPS,'W','no. of sets',IER)
-        CALL EGETWI(LOUTSTR,K,isstup,0,300,'W','startup',IER)
+        CALL EGETWI(LOUTSTR,K,isstup,0,300,'W','startup',IER)    
         CALL EGETWI(LOUTSTR,K,isbnstep,1,60,'W','zone_ts',IER)
         CALL EGETWI(LOUTSTR,K,ispnstep,0,100,'W','plant_ts',IER)
         CALL EGETWI(LOUTSTR,K,issave,0,6,'W','save_lv',IER)
@@ -1936,6 +2090,7 @@ C Set flag indicating if set describes a multi-year period
      &      CALL EGETWI(OUTSTR,K,iMY_Period_end_years(iss),
      &                 1800,2100,'W','end year',IER)
 
+          
 C Opportunity for improvenemt: Should error trap duplicate
 C (ie ambigious) set names
           CALL EGETRM(OUTSTR,K,spfdescr(iss),'W','set name',IER)
@@ -1963,6 +2118,87 @@ C (ie ambigious) set names
           goto 334
  333    continue
 
+
+C If a quick run is requested    
+        quick_run: if ( iQuick_run .eq. 1 ) then
+
+C Call to subroutine that finds best week for each season and heating and cooling multipliers      
+          call Find_season_parameters()
+
+  
+C Initialise flag for loop below
+          do iCount = 1, 750
+             bSimThisDay(iCount)  = .false.
+             iSeasonIndex(iCount) = 0
+             iStart_flag = 0
+          enddo
+
+C Find first and last day that spans the periods of interest for 'quick run' simulation  
+          iFirst_day_num = iSeasonWeekStart(1)   !- initialize first day number
+          iLast_day_num = iSeasonWeekEnd(iNumberOfSeasons)      !- initialize last day number
+                    
+
+          if ( iLast_day_num < iFirst_day_num ) then
+             iLast_day_num = iLast_day_num + 365
+          endif
+
+           
+       
+          bSpanNewYear = .false.       !-initialize               
+
+          season_loop: do iSeason = 1, iNumberOfSeasons
+            iTemp_day_beg = iSeasonWeekStart(iSeason)
+            iTemp_day_end = iSeasonWeekEnd(iSeason)
+            
+            iPrevious_season = iSeason - 1
+            iPrevious_day_end = iSeasonWeekEnd(iPrevious_season)
+ 
+         
+            if ( iTemp_day_beg < iPrevious_day_end ) then         
+                iTemp_day_beg = iTemp_day_beg + 365
+                iTemp_day_end = iTemp_day_end + 365
+            endif
+            
+C Take into account startup period
+
+            iStart_beg = iTemp_day_beg - isstup
+
+            if ( iStart_beg .lt. 1 ) then
+               bSpanNewYear = .true.
+               iStart_beg = 365 - isstup + iTemp_day_beg
+            endif    
+                       
+            iStart_end = iStart_beg + isstup - 1
+
+            
+            iShift = 0
+            if ( bSpanNewYear ) iShift = iStart_end   
+                    
+            do iCount = iStart_beg, iStart_end
+              iStart_flag(iCount) = 1
+              bSimThisDay(iCount) = .true.
+              iSeasonIndex(iCount) = 0
+            enddo 
+            
+            iDay = iTemp_day_beg
+            iCurrDay = iDay
+            
+            flag_days: do while ( iDay .le. iTemp_day_end ) 
+
+
+              bSimThisDay(iCurrDay+iShift)  = .true. 
+              iSeasonIndex(iCurrDay+iShift) = iSeason
+              
+              iDay = iDay + 1
+              iCurrDay = iCurrDay + 1
+            
+            enddo flag_days
+            
+          enddo season_loop
+
+           
+        endif quick_run  
+ 
       elseif(WORD(1:8).eq.'*end_sps' .or.
      &       WORD(1:12).eq.'*end_my_sets' )then
         goto 44
@@ -2026,8 +2262,8 @@ C Next tokens relate to simulationist address.
       elseif(loutstr(1:10).eq.'* PROJ LOG')then
 
 C Project log file, read and then go on to fabric/plant description.
-        CALL STRIPC(IUC,OUTSTR,0,ND,1,'project log file',IER)
-        LPRJLG=OUTSTR(1:LNBLNK(OUTSTR))
+        CALL STRIPC(IUC,LOUTSTR,0,ND,1,'project log file',IER)
+        write(lmodellog,'(a)') LOUTSTR(1:LNBLNK(LOUTSTR))
         goto 45
         
       
@@ -2049,11 +2285,12 @@ C Project log file, read and then go on to fabric/plant description.
 
       else
 
-        call edisp ( iuout, 'Unknown entry in .cfg file:' )
-        call edisp ( iuout, outstr )
+        call edisp(iuout,'Unknown entry in .cfg file:')
+        call edisp(iuout, WORD)
+        call edisp248(iuout,loutstr,90)
         
-          ier=1
-          return
+        ier=1
+        return
       endif
 
 C Loop back for next database file.
@@ -2077,26 +2314,25 @@ C automatically and should not be modified through project manager
       IF(INOTI.EQ.1.AND.ITRC.NE.4)THEN
         IWARN=1
         OUTS=
-     &  'This is a UK NCM notional model and should not be modified'
+     &  'This is a UK NCM notional model and should not be modified.'
       ELSEIF(INOTI.EQ.2.AND.ITRC.NE.4)THEN
         IWARN=1
         OUTS=
-     &  'This is a UK NCM reference model and should not be modified'
+     &  'This is a UK NCM reference model and should not be modified.'
       ELSEIF(INOTI.EQ.3.AND.ITRC.NE.4)THEN
         IWARN=1
         OUTS=
-     &  'This is a UK NCM typical model and should not be modified'
+     &  'This is a UK NCM typical model and should not be modified.'
       ELSEIF(INOTI.EQ.4.AND.ITRC.NE.4)THEN
         IWARN=1
         OUTS=
-     &  'This is a UK NCM stripped model and should not be modified'
+     &  'This is a UK NCM stripped model and should not be modified.'
       ELSEIF(ISBEM.EQ.2.AND.INOTI.EQ.0.AND.ITRC.NE.4)THEN
         continue  ! this model is original which includes NCM file.
       ENDIF
       IF(IWARN.EQ.1.AND..NOT.AUTOOK)THEN
          call askok(OUTS,
-     &   'using project manager are you sure you want to continue',
-     &   OK,dok,10)
+     &   'Are you sure you want to continue?',OK,dok,10)
          IF(.NOT.OK)STOP
       ENDIF
 
@@ -2120,6 +2356,9 @@ C Store profile in array.
           DO 27 jMon=1,12
             eGrdTp(jMon)=getVal(jMon)
   27      CONTINUE
+   
+ 
+  
         elseif(WORD(1:4).eq.'*cvs')then
 
 C 3D ground control volumes file.
@@ -2186,6 +2425,22 @@ C If ground information was read in but still registration level then exit.
       if(INDCFG.EQ.0)then
         CALL ERPFREE(IUC,ISTAT)
         RETURN
+      endif
+
+C If mould database tag was not found instanciate it.
+      if(foundmould)then
+        continue
+      else
+        call findwhichdbpath('mld',dmdbnam,ier)
+      endif
+
+C If SBEM database tag was not found instanciate it.
+      if(foundsbem)then
+        continue
+      else
+        call findwhichdbpath('sbm',DSBEM,ier)
+        ISBEM=1
+        IRNCMD=1
       endif
 
 C Number of building zones.
@@ -2804,11 +3059,11 @@ C it is probably the index indicating flow.
           else
             write(ALOCTYP(ia),'(a4)') 'UNKN'
           endif
-          CALL EGETWI(OUTSTR,K,IALOC(ia),0,60,'F','anc link',IER)
+          CALL EGETWI(OUTSTR,K,IALOC(ia),0,99,'F','anchor link',IER)
           IRVA=IALOC(ia)
 
 C Scan next line for links.
-          CALL EGETWIA(IUC,IVA,IRVA,0,0,'-','assoc links',IER)
+          CALL EGETWIA(IUC,IVA,IRVA,0,0,'-','anchor assoc links',IER)
           DO 345 LC=1,IALOC(ia)
             lstanchr(ia,LC)=IVA(LC)
  345      continue
@@ -3110,16 +3365,15 @@ C Pass information about the current model to the C interface.
       lupath=upath
       limgpth=imgpth
       ldocpth=docpth
-      ltmppth=tmppth
       iincomp=ncomp
       iincon=ncon
       if(browse)then
         ibrowse=1
-        call curproject(lcfgroot,lpath,lupath,limgpth,ldocpth,ltmppth,
+        call curproject(lcfgroot,lpath,lupath,limgpth,ldocpth,
      &    ibrowse,iincomp,iincon)
       else
         ibrowse=0
-        call curproject(lcfgroot,lpath,lupath,limgpth,ldocpth,ltmppth,
+        call curproject(lcfgroot,lpath,lupath,limgpth,ldocpth,
      &    ibrowse,iincomp,iincon)
       endif
       RETURN
@@ -3203,6 +3457,7 @@ C system configuration file.
 
 C Get lat:long description.
       call sitell2s(sitelat,sitelongdif,sdesc)
+      CALL EDISP(ITRU,'  ')  ! echo blank line before site info
       WRITE(OUTSTR,'(3a)')' Site location: ',sdesc,
      &  ' of local meridian.'
       CALL EDISP(ITRU,OUTSTR)
@@ -3378,11 +3633,10 @@ C **************** conninanchor
 C conninanchor returns true if a connection is included within
 C a particular anchor list and matches a valid anchor use.
       subroutine conninanchor(icnn,ianc,type,ok,ier)
+#include "building.h"
+#include "model.h"
 
-      common/anchora/NALOC,ALOC(20),ALOCLBL(20),ALOCTYP(20)
-      common/anchorb/IALOC(20),lstanchr(20,60)
-
-      character ALOC*12,ALOCLBL*12,ALOCTYP*4,outs*124,type*4,msgl2*48
+      character outs*124,type*4,msgl2*48
       logical found,ok
 
 C Check if ianc is a known anchor and then if there is a list.
@@ -3430,8 +3684,9 @@ C Depending on which database (the parameter topic) the
 C common block file string and whichdbpath variable is updated.
 C topic =  'opt' for optics, 'pdb' for plant component templates
 C       =  'prs' for pressure coef, 'sbm' for UK SBEM database,
-C       =  'mat' for materials database, 'evn' for profiles database
-C       =  'mul' for MLC database, 'msc' for miscellaneous components
+C       =  'mat' for common materials, 'evn' for event profiles
+C       =  'mul' for common constructions, 'msc' for active components
+C       =  'mld' for mould isopleths, 'clm' for weather
       subroutine findwhichdbpath(topic,file,ier)
       implicit none
 #include "esprdbfile.h"
@@ -3442,12 +3697,13 @@ C       =  'mul' for MLC database, 'msc' for miscellaneous components
 C Currently works with optical and plant template database.
       character*(*) file
       character topic*3 ! identify which type of database
-      integer lndbp   ! for length of standard database path
+      integer lndbp,lnclmp ! length of standard database weather paths
       integer lnwkg   ! for length of working file name
       logical unixok  ! to check for database path file separators
 
-C Set OS and check that standarddbpath has been set.
+C Set OS and check that standarddbpath standardweatherpath have been set.
       lndbp=lnblnk(standarddbpath)
+      lnclmp=lnblnk(standardclmpath)
       lnwkg=lnblnk(file)
       if(lndbp.lt.1.or.lnwkg.lt.1)then
         ier=2
@@ -3457,34 +3713,42 @@ C Set OS and check that standarddbpath has been set.
       
       if(unixok)then
         if(file(1:7).eq.'../dbs/')then
+
+C Local model dbs folder.
           if(topic(1:3).eq.'opt')then
-            ipathoptdb=1  ! local folder for optical database
+            ipathoptdb=1  ! local folder for common optics
             write(LOPTDB,'(a)') file(1:lnwkg) ! assign directly
           elseif(topic(1:3).eq.'pdb')then
             ipathpcdb=1  ! local folder for plant database
             write(LPCDB,'(a)') file(1:lnwkg) ! assign directly
           elseif(topic(1:3).eq.'prs')then
-            ipathapres=1  ! local folder for pressure database
+            ipathapres=1  ! local folder for pressure distributions
             write(lapres,'(a)') file(1:lnwkg) ! assign directly
           elseif(topic(1:3).eq.'sbm')then
             ipathsbem=1  ! local folder for UK SBEM database
             write(lsbem,'(a)') file(1:lnwkg) ! assign directly
           elseif(topic(1:3).eq.'mat')then
-            ipathmat=1  ! local folder for materials database
+            ipathmat=1  ! local folder for common materials
             write(LFMAT,'(a)') file(1:lnwkg) ! assign directly
           elseif(topic(1:3).eq.'evn')then
-            ipathprodb=1  ! local folder for profiles database
+            ipathprodb=1  ! local folder for event profiles
             write(LPRFDB,'(a)') file(1:lnwkg) ! assign directly
           elseif(topic(1:3).eq.'mul')then
-            ipathmul=1  ! local folder for MLC database
+            ipathmul=1  ! local folder for common constructions
             write(LFMUL,'(a)') file(1:lnwkg) ! assign directly
           elseif(topic(1:3).eq.'msc')then
-            ipathmsc=1  ! local folder for miscel comp database
+            ipathmsc=1  ! local folder for active components
             write(MCMPDBFL,'(a)') file(1:lnwkg) ! assign directly
+          elseif(topic(1:3).eq.'mld')then
+            ipathmould=1  ! local folder for mould isopleths
+            write(lfmould,'(a)') file(1:lnwkg) ! assign directly
+          elseif(topic(1:3).eq.'clm')then
+            ipathclim=1  ! local folder for weather
+            write(LCLIM,'(a)') file(1:lnwkg) ! assign directly
           endif
         elseif(file(1:lndbp).eq.standarddbpath(1:lndbp))then
 
-C The initial part of the path matches so only save the file name w/o path.
+C The initial part of database path matches so save the file name w/o path.
           if(topic(1:3).eq.'opt')then
             ipathoptdb=2
             write(LOPTDB,'(a)') file(lndbp+2:lnwkg)  ! without path
@@ -3509,6 +3773,19 @@ C The initial part of the path matches so only save the file name w/o path.
           elseif(topic(1:3).eq.'msc')then
             ipathmsc=2
             write(MCMPDBFL,'(a)') file(lndbp+2:lnwkg) ! without path
+          elseif(topic(1:3).eq.'mld')then
+            ipathmould=2
+            write(lfmould,'(a)') file(lndbp+2:lnwkg) ! without path
+          elseif(topic(1:3).eq.'clm')then
+            ipathclim=2
+            write(LCLIM,'(a)') file(lndbp+2:lnwkg) ! without path
+          endif
+        elseif(file(1:lnclmp).eq.standardclmpath(1:lnclmp))then
+
+C The initial part of the weather path matches save the file name w/o path.
+          if(topic(1:3).eq.'clm')then
+            ipathclim=2
+            write(LCLIM,'(a)') file(lnclmp+2:lnwkg) ! without path
           endif
         else
           if(topic(1:3).eq.'opt')then
@@ -3535,6 +3812,12 @@ C The initial part of the path matches so only save the file name w/o path.
           elseif(topic(1:3).eq.'msc')then
             ipathmsc=0
             write(MCMPDBFL,'(a)') file(1:lnwkg) ! assign directly
+          elseif(topic(1:3).eq.'mld')then
+            ipathmould=0  ! local folder for mould isopleths
+            write(lfmould,'(a)') file(1:lnwkg) ! assign directly
+          elseif(topic(1:3).eq.'clm')then
+            ipathclim=0
+            write(LCLIM,'(a)') file(1:lnwkg) ! assign directly
           endif
         endif
       else
@@ -3561,8 +3844,14 @@ C The initial part of the path matches so only save the file name w/o path.
             ipathmul=1  ! local folder for MLC database
             write(LFMUL,'(a)') file(1:lnwkg) ! assign directly
           elseif(topic(1:3).eq.'msc')then
-            ipathmsc=1  ! local folder for miscel comp database
+            ipathmsc=1  ! local folder for active components
             write(MCMPDBFL,'(a)') file(1:lnwkg) ! assign directly
+          elseif(topic(1:3).eq.'mld')then
+            ipathmould=1  ! local folder for mould isopleths
+            write(lfmould,'(a)') file(1:lnwkg) ! assign directly
+          elseif(topic(1:3).eq.'clm')then
+            ipathclim=1  ! local folder for weather
+            write(LCLIM,'(a)') file(1:lnwkg) ! assign directly
           endif
         elseif(file(1:lndbp).eq.standarddbpath(1:lndbp))then
           if(topic(1:3).eq.'opt')then
@@ -3589,6 +3878,17 @@ C The initial part of the path matches so only save the file name w/o path.
           elseif(topic(1:3).eq.'msc')then
             ipathmsc=2
             write(MCMPDBFL,'(a)') file(lndbp+2:lnwkg) ! without path
+          elseif(topic(1:3).eq.'mld')then
+            ipathmould=2
+            write(lfmould,'(a)') file(lndbp+2:lnwkg) ! without path
+          elseif(topic(1:3).eq.'clm')then
+            ipathclim=2
+            write(LCLIM,'(a)') file(lndbp+2:lnwkg) ! without path
+          endif
+        elseif(file(1:lnclmp).eq.standardclmpath(1:lnclmp))then
+          if(topic(1:3).eq.'clm')then
+            ipathclim=2
+            write(LCLIM,'(a)') file(lnclmp+2:lnwkg) ! without path
           endif
         else
           if(topic(1:3).eq.'opt')then
@@ -3615,6 +3915,12 @@ C The initial part of the path matches so only save the file name w/o path.
           elseif(topic(1:3).eq.'msc')then
             ipathmsc=0
             write(MCMPDBFL,'(a)') file(1:lnwkg) ! assign directly
+          elseif(topic(1:3).eq.'mld')then
+            ipathmould=0
+            write(lfmould,'(a)') file(1:lnwkg) ! assign directly
+          elseif(topic(1:3).eq.'clm')then
+            ipathclim=0
+            write(LCLIM,'(a)') file(1:lnwkg) ! assign directly
           endif
         endif
       endif
@@ -3649,3 +3955,45 @@ C      endif
 
       return
       end
+
+
+C Rotine that merely intializes plant solution convergence criteria 
+      subroutine InitPltSolnParams()
+      implicit none 
+      include "plant.h" 
+      include "UserSimulationToggles.h"
+      
+      
+C Plant matrix solver convergence criteria.      
+      COMMON/PITER/MAXITP,PERREL,PERTMP,PERFLX,PERMFL,itrclp,
+     &             ICSV(MPNODE,MPVAR),CSVI(MPNODE,MPVAR)
+
+      integer MAXITP, itrclp, ICSV
+      real PERREL, PERTMP, PERFLX, PERMFL, CSVI
+     
+C Tolerance for iteration of hydrogen flow matrix
+      common/PITER_H2/fH2_iteration_tolerance
+      real fH2_iteration_tolerance
+      
+C Initialise plant side iteration parameters
+      MAXITP=100
+      PERREL=.01
+      PERTMP=1.
+      PERFLX=10.
+      PERMFL=.0005  
+      itrclp=maxitp
+
+C Hydrogen flow iteration tolerance
+      fH2_iteration_tolerance = PERMFL * 1.0E-03 
+      
+      
+      iUserMAXITP    = MAXITP 
+      iUserITRCLP    = itrclp
+      fUserPERREL    = PERREL 
+      fUserPERTMP    = PERTMP 
+      fUserPERFLX    = PERFLX 
+      fUserPERMFL    = PERMFL       
+      fUserH2iterTol = fH2_iteration_tolerance    
+      
+      return 
+      end 

@@ -1,6 +1,7 @@
 SRCdir = `pwd`/..
 BLDdir = $(SRCdir)/esrubld
 COMdir = $(SRCdir)/esrucom
+CDBdir = $(SRCdir)/esrucdb
 DFSdir = $(SRCdir)/esrudfs
 MFSdir = $(SRCdir)/esrumfs
 PFSdir = $(SRCdir)/esrupfs
@@ -8,12 +9,17 @@ PLTdir = $(SRCdir)/esruplt
 PRJdir = $(SRCdir)/esruprj
 CETCdir = $(SRCdir)/cetc
 SHCdir = $(SRCdir)/shocc
+COSIMdir = $(SRCdir)/co-sim
 LIBdir = $(SRCdir)/lib
 PROG = bps$(EXE)
+DLL = bps".dll"
 
 .SUFFIXES: .o .F
 .F.o:
-	$(MFC) $(FFLAGS) -c $<
+	$(MFC) $(FFLAGS) -c -fcray-pointer $<
+
+%.o : %.f90
+	$(MCC) $(FFLAGS) -c $<
 
 %.o : %.cpp
 	$(MCPL) $(CFLAGS) -c $<
@@ -21,13 +27,14 @@ PROG = bps$(EXE)
 %.o : %.c
 	$(MCC) $(CFLAGS) -c $<
 
-MODULE_OBJECTS = startup.o aim2_module.o aim2_timestep.o
+MODULE_OBJECTS = h3kmodule.o startup.o aim2_module.o aim2_timestep.o TCC.o
 
 BPS_OBJECTS = bps.o adaptconf1.o adaptconf2.o adjb.o adjp.o ascii_mat.o \
 	  bcfunc.o bctlf.o blibsv.o bmatsu.o bmatsv.o basesimp.o basesimp_inputs.o bscoeff.o bscoeff_extended.o \
 	  bndarybl.o bndaryl.o bndaryt.o bsim2cfd.o btherm.o c2fdum.o casual.o cfcalc.o \
+	  CDBPlugins.o CDBCommon.o \
 	  cfconv.o cfdat.o cfdrw.o cfgrid.o cfmgerb.o cfutil.o chkconvg.o chtmst.o \
-	  climi.o cntmnt.o conc.o convect1.o convect2.o ctread.o dayfac.o drylink.o ecasctl.o \
+	  climi.o cntmnt.o conc.o convect1.o convect2.o ctread.o dayfac.o drylink.o dossupport.o ecasctl.o \
 	  econstr.o econtrol.o edatabase.o egeometry.o egrid.o emfnetw.o emoist.o \
 	  enetbound.o enetmath.o enetmisc.o enetpost.o enetrewr.o enetsetu.o \
 	  enetsolv.o eroper.o esgrid.o esru_misc.o esystem.o filelist.o g3dfac.o \
@@ -41,14 +48,14 @@ BPS_OBJECTS = bps.o adaptconf1.o adaptconf2.o adjb.o adjp.o ascii_mat.o \
 	  spmatl.o spmisc.o stofunc.o subsys.o tdfile.o tdrecbps.o trstyp.o \
 	  tscon.o utilf.o MechVentIN.o CentralVentSys.o \
 	  hvacinput.o hvacsim.o furnace.o init_hvac_var.o fan.o ashp.o \
-	  ashp_cooling.o baseboard.o hvac_output.o h3koutput.o h3kstore.o\
+	  ashp_cooling.o baseboard.o hvac_output.o h3koutput.o h3kstore.o \
 	  FC_components.o FC_functions.o gshpinput.o gshpsim.o \
 	  GCEPinput.o GCEP_load.o GCEP_SIM.o GCEP_MLAiterate.o GCEPtground.o GCEPInit.o\
-	  water_tanks.o h3k_utils.o SetDllParms.o AIMS.o TAC.o\
-	  WaterProperties.o DG_controller.o elec_net_utilities.o window_control.o  \
+	  water_tanks.o h3k_utils.o SetDllParms.o AIMS.o TAC.o \
+	  WaterProperties.o DG_controller.o elec_net_utilities.o window_control.o \
 	  PEM_FC_pt1.o PEM_FC_pt2.o powoc_calc.o h3k_report_data.o radiant_floor.o DHW_module.o \
 	  h3k_plant_postprocess.o h2_matrix_library.o h2_components.o Annex42_combustion_CHP.o \
-	  chemical_properties.o h2_comps.o compressed_cylinder.o Hydrogen_PEMFC.o  \
+	  chemical_properties.o h2_comps.o compressed_cylinder.o Hydrogen_PEMFC.o \
 	  Hydrogen_MH_store.o enet_state_variable_manipulate.o Hydrogen_demand_controller.o \
 	  MultiYear_climate.o CETC_BATTERY.o wind_turbine_profile_model.o \
 	  plt_zone_gain_coupling.o cetc_cogen.o BC_data.o plt_bc_components.o Hydrogen_appliances.o \
@@ -56,12 +63,27 @@ BPS_OBJECTS = bps.o adaptconf1.o adaptconf2.o adjb.o adjp.o ascii_mat.o \
 	  solar_collectors.o ground_temp_mains.o Lookup_data.o readTrnsys.o trnsys_wrapper.o trnsys_lib.o \
 	  tank_intank_hx.o mains_temp_draw_profiles.o stratified_tank.o SiteUtilities.o RE-H2-ctl.o \
 	  ncm_overheating.o complex_fenestration.o editCFC.o NCHE.o stratified_tank_1HX.o stratified_tank_2HX.o \
-	  AirFlowModelRoutines.o Res_elec_Ctl.o PCM_stratified_tank.o  
+	  AirFlowModelRoutines.o Res_elec_Ctl.o harmonizer_timing.o qrun.o azalt.o \
+	  PCM_stratified_tank.o 
 
-MODULES = aim2.mod aim2_calcdata.mod aim2_h2k_dummy.mod aim2_inputdata.mod aim2_timestep.mod start_up.mod parse_command_line.mod
+MODULES = aim2.mod aim2_calcdata.mod aim2_h2k_dummy.mod aim2_inputdata.mod aim2_timestep.mod start_up.mod parse_command_line.mod \
+          h3kmodule.f90
+PREBPS_OBJECTS = ESPrTrnsysData.o harmonizer_dummy.o
 
 $(PROG): $(MODULE_OBJECTS) $(BPS_OBJECTS)
 	$(MFC) $(LD_FLAGS) -o $(PROG) $(FFLAGS) $(MODULE_OBJECTS) $(BPS_OBJECTS) $(ULIBS) $(F_to_C_flags)
+PREBPSDLL_OBJECTS = ESPrTrnsysData.o harmonizer.o
+
+MODULES = aim2.mod aim2_calcdata.mod aim2_h2k_dummy.mod aim2_inputdata.mod aim2_timestep.mod \
+	parse_command_line.mod start_up.mod win32interface.mod dll_functions.mod tcc.mod cosimdatatypes.mod \
+	h3kmodule.mod
+
+theEXE:  $(PREBPS_OBJECTS) $(MODULE_OBJECTS) $(BPS_OBJECTS)
+	$(MFC) $(LD_FLAGS) -o $(PROG) $(FFLAGS) $(PREBPS_OBJECTS) $(MODULE_OBJECTS) $(BPS_OBJECTS) $(ULIBS) $(F_to_C_flags)
+
+theDLL:  $(PREBPSDLL_OBJECTS) $(MODULE_OBJECTS) $(BPS_OBJECTS)
+	$(MFC) $(LD_FLAGS) -o $(DLL) $(FFLAGS) $(PREBPSDLL_OBJECTS) $(MODULE_OBJECTS) $(BPS_OBJECTS) $(ULIBS) $(F_to_C_flags)
+
 
 adaptconf1.F:
 	rm -f adaptconf1.F
@@ -120,6 +142,12 @@ btherm.F:
 c2fdum.F:
 	rm -f c2fdum.F
 	ln -s $(COMdir)/c2fdum.F .
+CDBPlugins.F:
+	rm -f CDBPlugins.F
+	ln -s $(CDBdir)/CDBPlugins.F .
+CDBCommon.F:
+	rm -f CDBCommon.F
+	ln -s $(CDBdir)/CDBCommon.F .
 casual.F:
 	rm -f casual.F
 	ln -s $(BLDdir)/casual.F .
@@ -171,6 +199,9 @@ ctread.F:
 dayfac.F:
 	rm -f dayfac.F
 	ln -s $(BLDdir)/dayfac.F .
+dossupport.F:
+	rm -f dossupport.F
+	ln -s $(COMdir)/dossupport.F .
 drylink.F:
 	rm -f drylink.F
 	ln -s $(BLDdir)/drylink.F .
@@ -471,6 +502,9 @@ h3kstore.F:
 h3koutput.F:
 	rm -f h3koutput.F
 	ln -s $(CETCdir)/h3koutput.F .
+h3kmodule.f90:
+	rm -f h3kmodule.f90
+	ln -s $(CETCdir)/h3kmodule.f90 .
 FC_components.F:
 	rm -f FC_components.F
 	ln -s $(CETCdir)/FC_components.F .
@@ -613,6 +647,13 @@ shocc_dummy.c:
 	rm -f shocc_dummy.c
 	ln -s $(SHCdir)/shocc_dummy.c .
 
+qrun.F:
+	rm -f qrun.F
+	ln -s $(COMdir)/qrun.F
+azalt.F:
+	rm -f azalt.F
+	ln -s $(COMdir)/azalt.F
+
 ##Unused 'time-out' code.
 ##timeout.cpp:
 ##	rm -f timeout.cpp
@@ -671,34 +712,51 @@ stratified_tank_2HX.F:
 AirFlowModelRoutines.F:
 	rm -f AirFlowModelRoutines.F
 	ln -s $(BLDdir)/AirFlowModelRoutines.F .
+TCC.F:
+	rm -f TCC.F
+	ln -s $(COSIMdir)/TCC.F .
+harmonizer.F:
+	rm -f harmonizer.F
+	ln -s $(COSIMdir)/harmonizer.F.
+harmonizer_timing.F:
+	rm -f harmonizer_timing.F
+	ln -s $(COSIMdir)/harmonizer_timing.F .
+harmonizer_dummy.F:
+	rm -f harmonizer_dummy.F
+	ln -s $(COSIMdir)/harmonizer_dummy.F .
+ESPrTrnsysData.F:
+	rm -f ESPrTrnsysData.F
+	ln -s $(COSIMdir)/ESPrTrnsysData.F .
 PCM_stratified_tank.F:
 	rm -f PCM_stratified_tank.F
 	ln -s $(PLTdir)/PCM_stratified_tank.F .  
 
 strip:
 	@if [ -f $(PROG) ]; then strip $(PROG); fi
+	@if [ -f $(DLL) ]; then strip $(DLL); fi
 
 install:
 	@if [ -f $(PROG) ]; then cp $(PROG) $(ESPBinDir); fi
-
+	@if [ -f $(DLL) ]; then cp $(DLL) $(ESPBinDir); fi
 
 clean:
-	rm -f core $(PROG) $(PROG).exe $(MODULE_OBJECTS) $(BPS_OBJECTS) $(MODULES) \
+	rm -f core $(PROG) $(PROG).exe $(DLL) $(PROG).dll $(PREBPS_OBJECTS) $(PREBPSDLL_OBJECTS) $(MODULE_OBJECTS) $(BPS_OBJECTS) $(MODULES) \
 	adaptconf1.F adaptconf2.F adjb.F adjp.F aim2_module.F aim2_timestep.F \
 	ascii_mat.F ashp.F ashp_cooling.F baseboard.F basesimp.F basesimp_inputs.F bcfunc.F bctlf.F \
 	blibsv.F bmatsu.F bndaryl.F bndarybl.F bndaryt.F bscoeff.F bscoeff_extended.F \
 	bsim2cfd.F btherm.F c2fdum.F casual.F CentralVentSys.F \
+	CDBPlugins.F CDBCommon.F \
 	CETC_BATTERY.F cetc_cogen.F compressed_cylinder.F ConfigureH3kReports.F \
 	ConfigureH3kReports.o cfcalc.F cfconv.F cfdat.F cfdrw.F cfgrid.F cfmgerb.F \
 	cfutil.F chemical_properties.F \
 	chkconvg.F chtmst.F climi.F cntmnt.F conc.F convect1.F convect2.F ctread.F dayfac.F \
-	drylink.F ecasctl.F econstr.F econtrol.F edatabase.F egeometry.F \
+	dossupport.F drylink.F ecasctl.F econstr.F econtrol.F edatabase.F egeometry.F \
 	egrid.F emfnetw.F emoist.F enetbound.F enetmath.F enetmisc.F enetpost.F \
-	enetrewr.F enetsetu.F enetsolv.F enet_state_variable_manipulate.F eroper.F esgrid.F \
+	enetrewr.F enetsetu.F enetsolv.F enet_state_variable_manipulate.F eroper.F esgrid.F ESPrTrnsysData.F \
 	esru_misc.F esystem.F fan.F filelist.F furnace.F g3dfac.F g3dfnc.F g3dmtx.F gcfunc.F gsdmtx.F \
-	gshpinput.F gshpsim.F h2_components.F h2_comps.F h2_matrix_library.F h3koutput.F \
-	h3kstore.F hvacinput.F hvac_output.F hvacsim.F Hydrogen_appliances.F \
-	Hydrogen_demand_controller.F Hydrogen_MH_store.F Hydrogen_PEMFC.F \
+	gshpinput.F gshpsim.F h2_components.F h2_comps.F h2_matrix_library.F h3koutput.F ESPrTrnsysData.F \
+	h3kstore.F hvacinput.F hvac_output.F hvacsim.F Hydrogen_appliances.F TCC.F harmonizer.F harmonizer_timing.F \
+	Hydrogen_demand_controller.F Hydrogen_MH_store.F Hydrogen_PEMFC.F harmonizer_dummy.F \
 	inital.F initalc.F initalp.F item.F lisolv.F locmage.F matsv.F MechVentIN.F mfbndr.F \
 	mfcdat.F mfcntl.F mfmach.F mfmode.F mfsbld.F mfsbps.F mfsplt.F \
 	mfutil.F mitzero.F moistr.F monitor.F montrb.F mstmsc.F MultiYear_climate.F mzmrx5.F \
@@ -719,4 +777,5 @@ clean:
 	ground_temp_mains.F readTrnsys.F trnsys_wrapper.F trnsys_lib.F \
 	tank_intank_hx.F mains_temp_draw_profiles.F stratified_tank.F \
 	complex_fenestration.F editCFC.F NCHE.F stratified_tank_1HX.F stratified_tank_2HX.F \
-	AirFlowModelRoutines.F Res_elec_Ctl.F PCM_stratified_tank.F
+	AirFlowModelRoutines.F Res_elec_Ctl.F h3kmodule.f90 qrun.F azalt.F \
+	PCM_stratified_tank.F

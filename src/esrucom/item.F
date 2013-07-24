@@ -89,13 +89,14 @@ C FOCUS is the generic type string, IFOC is the instance array.
 C In the case of FOCUS='ALL' IFOC is not used. 
       SUBROUTINE GENDAT(FOCUS,IFOC,FOUND,IER)
 #include "building.h"
+#include "net_flow.h"
 #include "tdf2.h"
 
 C Related to generic items. See __ for details.
 C  GTYPES(): 8 char generic type tag for type of processing and info.
 C  GMENUS(): 16 char descriptive text for use in selection menus.
       COMMON/TDFGH1/NITEMS
-      COMMON/TDFGH2/GTYPES(25),GMENUS(25)
+      COMMON/TDFGH2/GTYPES(26),GMENUS(26)
 
 C Related to generic ITEMS.
 C  GAIDE: 40 char description of the generic item.
@@ -127,7 +128,7 @@ C       GMH='2,1,0,0,1,0,-999.0'
       LOGICAL FOUND
 
 C Pick up the arrays used for displaying current generic items.
-      NITEMS=25
+      NITEMS=26
       GTYPES(1) ='ALLCLMT'
       GMENUS(1) ='Climate data:  '
       GTYPES(2) ='CASUALT'
@@ -176,8 +177,10 @@ C Pick up the arrays used for displaying current generic items.
       GMENUS(23)='Msr Dry Bulb T:'
       GTYPES(24)='SURTM'
       GMENUS(24)='Msr surface T: '
-      GTYPES(25)='ILLUM'
-      GMENUS(25)='Illuminance at sensors '
+      GTYPES(25)='NODPRESS'
+      GMENUS(25)='Node Press Pa: '
+      GTYPES(26)='ILLUM'
+      GMENUS(26)='Illuminance at sensors '
 
 
 C If not looking for a specific item then return.
@@ -582,6 +585,20 @@ C Measured surface temperature: one data item.
         MGMA(1)='Meas surf temperature (C): '
         FOUND=.TRUE.
 
+      ELSEIF(FOCUS(1:8).EQ.'NODPRESS')THEN
+
+C Measured node pressure: one data item.
+        GAIDE   ='Measured flow node pressure Pa'
+        GHELP(1)='Fluid flow network node pressure (Pa)'
+        GHELP(2)='measured data'
+        GMH='2,1,0,0,1,0,-999.0'
+        GDHDRT(1)='   time  | measured node'
+        GDHDRT(2)='   of day| pressure '
+        GDHDRT(3)='Meas Node Pressure:'
+        GMF(1)='REAL,1,0.0,-50.0,50.0'
+        MGMA(1)='Measured node press(Pa): '
+        FOUND=.TRUE.
+
       ELSEIF(FOCUS(1:4).EQ.'ALL ')THEN
         RETURN
 
@@ -647,6 +664,7 @@ C ******* EXGMAT
 C Extract text alternatives from gmat in the string array salt.
       subroutine exgmat(ia,SALT,ier)
 #include "building.h"
+#include "net_flow.h"
 #include "tdf2.h"
       integer iCountWords
 

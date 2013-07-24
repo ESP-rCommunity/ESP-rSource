@@ -35,6 +35,8 @@ C Boston, MA 02111-1307 USA.
      &,imdur0(mould),i1max(mould),i0max(mould),imup(mould),
      &imdn(mould)
       common/iopnmld/iopmld
+      common/mdbase/mdbnam
+      character mdbnam*72
 
       common/OUTIN/IUOUT,IUIN
       common/SHOUT/ICOUT
@@ -53,6 +55,7 @@ C Path to problem and command line file (if any).
       common/rcmd/LCMDFL
 
 C Defaults.
+      character*96 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF
       common/DEFLT2/DFCFG,DFCTL,DEFRLB,DAFRES,DAPROB,DPNF
 
 C Name of current application
@@ -60,11 +63,14 @@ C Name of current application
       
       character cAppName*12
 
-      character*72 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF
       character*29 ITEM(10)
       character LCMDFL*144,inf*144,mldnam*48
       character path*72
       character species*64, grow*1, head*29,fs*1
+
+      character cVnum*16      ! returned from ESPrVersionNum
+      character pagestitle*42 ! for banner title via epages call
+
       logical unixok
 
 #ifdef OSI
@@ -148,8 +154,14 @@ C Set initial font sizes (IMFS is for graphs, IFS is for dialog & text feedback)
         LIMTTY=16
         LIMIT =16
       ENDIF
+
+C Find the current ESP-r version number and add it to application title.
+      call ESPrVersionNum(cVnum)
+      write(pagestitle,'(2a)') 'ESP-r Mould Analysis ',
+     &  cVnum(1:lnblnk(cVnum))
+
       CALL EPAGES(MMOD,IUIN,IUOUT,iappwi,iapphi,iappx,iappy,menuchw,
-     &'ESP-r Mould Analysis: enquiries to esru@strath.ac.uk')
+     &  pagestitle)
 
 C Open the text display box equal to LIMTTY if MMOD = 8.
       IF(MMOD.EQ.8)THEN
@@ -159,7 +171,6 @@ C Setup and pass in parameters to win3d.
         iigl=igl; iigr=igr; iigt=igt; iigb=igb; iigw=igw; iigwh=igwh
         CALL win3d(iimenu,iiw1,iiw2,iiw3,iiw4,
      &    iigl,iigr,iigt,iigb,iigw,iigwh)
-C        CALL win3d(menuchw,12,12,4,3,igl,igr,igt,igb,igw,igwh)
         igl=int(iigl); igr=int(iigr); igt=int(iigt); igb=int(iigb)
         igw=int(iigw); igwh=int(iigwh)
         iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
@@ -175,6 +186,15 @@ C        CALL win3d(menuchw,12,12,4,3,igl,igr,igt,igb,igw,igwh)
         call foundcolour(mdispl,nifgrey,ncset,ngset,nzonec)
         call startbuffer()
       ENDIF
+
+C Take `c' command line file name, convert to fortran string LCMDFL.
+      if(inf(1:2).ne.'  '.and.inf(1:4).ne.'UNKN')then
+        LCMDFL=inf
+        write(mdbnam,'(a)') inf(1:lnblnk(inf))
+      else
+        LCMDFL='UNKNOWN'
+        mdbnam='UNKNOWN'
+      endif
 
 C Set additional output units to stdout. Then redirect warning
 C messages to stderr in case of rule script program control.

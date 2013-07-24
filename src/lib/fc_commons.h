@@ -3,6 +3,8 @@
    *** Note: definitions must be in _exactly_ the same order as in the
    ***  fortran code. In the code below the struct have been renamed
    ***  slightly so they are disconnected from the fortran commons.
+   *** Works ok for 32 bit computers in acting as a bridge between common
+   *** blocks and c struct. On some 64 bit computers it is not robust.
 
    MCOM must equal the value set in building.h <<can this be done automatically??>>
 */

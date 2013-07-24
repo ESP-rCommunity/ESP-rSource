@@ -27,9 +27,9 @@ C     Created on: June 2009
 C     Copyright:  CETC 2009
 C-----------------------------------------------------------------------
 C     ABSTRACT:
-C     Establishes for a stratified tank with 1 immersed HX whether the 
-C     correct number of control variables have been specified, whether 
-C     the number of water connections is correct and whether the 
+C     Establishes for a stratified tank with 1 immersed HX whether the
+C     correct number of control variables have been specified, whether
+C     the number of water connections is correct and whether the
 C     connections are to the correct fluid type.
 C
 C=======================================================================
@@ -39,7 +39,7 @@ C=======================================================================
 C---- Set implicit to none to force declaration of all variables
 
       IMPLICIT NONE
-      
+
 C---- Include statements
 
 #include "plant.h"
@@ -48,15 +48,15 @@ C---- Include statements
 C---- Arguments
 
       INTEGER IPCOMP
-      
+
 C---- Common blocks
 
       COMMON/OUTIN/IUOUT,IUIN
       INTEGER IUOUT,IUIN
-      
+
       COMMON/TC/ITC,ICNT
       INTEGER ITC,ICNT
-      
+
       COMMON/TRACE/ITCF,ITRACE(MTRACE),IZNTRC(MCOM),ITU
       INTEGER ITCF,ITRACE,IZNTRC,ITU
 
@@ -81,17 +81,17 @@ C---- Common blocks
 C---- Stratified tank common
 
 #include "stratified_tank.h"
-      
-C---- Local variables      
+
+C---- Local variables
 
       INTEGER NITMS
       INTEGER I,J,K
       INTEGER NCITM,NCONS
       INTEGER IPCON,IPCONC
       LOGICAL CLOSEA
-      LOGICAL ERROR_FLAG         
+      LOGICAL ERROR_FLAG
       INTEGER NNODES            ! Number of nodes of stratified tank
-                                
+
       REAL HTANK                ! Tank height (m)
       REAL HIN1                 ! Height of inlet 1 (m)
       REAL HOUT1                ! Height of outlet 1 (m)
@@ -535,8 +535,8 @@ C---- Assign PCM grid and position data
 
 
 C---- Normal return
- 
-      RETURN    
+
+      RETURN
       END
 
 C===================== stratified_tank_1hx_coeff_gen ===================
@@ -545,18 +545,18 @@ C     Created on: June 2009
 C     Copyright:  CETC 2009
 C-----------------------------------------------------------------------
 C     ABSTRACT:
-C     This is the ESP-r coefficient generator for the stratified tank 
+C     This is the ESP-r coefficient generator for the stratified tank
 C     with 1 immersed HX
 C     The model is based on an input/output approach, i.e. it calculates
-C     temperatures at the two outlet nodes given temperatures and 
-C     flowrates at the two inlet nodes. 
+C     temperatures at the two outlet nodes given temperatures and
+C     flowrates at the two inlet nodes.
 C
 C References:
 
 C See model description in separate document, DEVELOPMENT OF A STRATIFIED
-C TANK MODEL WITH IMMERSED HEAT EXCHANGERS IN ESP-R: MODEL SUMMARY, 
+C TANK MODEL WITH IMMERSED HEAT EXCHANGERS IN ESP-R: MODEL SUMMARY,
 C by Didier Thevenard (June 2009)
-C Available from CANMET Energy Technology Centre, Natural Resources 
+C Available from CANMET Energy Technology Centre, Natural Resources
 C Canada, Government of Canada
 
 C=======================================================================
@@ -607,7 +607,7 @@ C---- ESP-r Common blocks
      &             ICONDX(MPCOM,MNODEC,MPCONC)
       REAL CONVAR
       INTEGER ICONTP,ICONDX
-      
+
       COMMON/PITER/MAXITP,PERREL,PERTMP,PERFLX,PERMFL,itrclp,
      &             ICSV(MPNODE,MPVAR),CSVI(MPNODE,MPVAR)
       INTEGER MAXITP,ITRCLP,ICSV
@@ -705,7 +705,7 @@ C=======================================================================
          COUT(7)=0.
          COUT(8)=0.
 
-      ENDIF 
+      ENDIF
 
 C-----------------------------------------------------------------------
 C     End of calculation
@@ -741,12 +741,12 @@ C     Copyright:  CETC 2009
 C-----------------------------------------------------------------------
 C     ABSTRACT:
 C     This is a wrapper around the subroutine that calculates
-C     the temperatures in the stratified tank. The wrapper is called 
+C     the temperatures in the stratified tank. The wrapper is called
 C     by the ESP-r coefficient generator
 C
 C=======================================================================
       SUBROUTINE stratified_tank_1hx_wrapper(IPCOMP,TOUT1,TOUTHX1,TOUT2)
-
+      use h3kmodule
 C---- Set implicit to none to force declaration of all variables
 
       IMPLICIT NONE
@@ -812,8 +812,8 @@ C---- Arguments
 
 C---- Local variables
 
-      LOGICAL CLOSEA,CLOSEB,CLOSEC,CLOSED     
-                                ! Auxiliary variable 
+      LOGICAL CLOSEA,CLOSEB,CLOSEC,CLOSED
+                                ! Auxiliary variable
       REAL AUX                  ! Auxiliary variable
       REAL HIN1                 ! Height of inlet 1 [m]
       REAL HOUT1                ! Height of outlet 1 [m]
@@ -912,11 +912,11 @@ C---- Initialise component parameters from the database information
       HOUT1 = ADATA(IPCOMP,5)     ! Height of outlet 1
       U     = ADATA(IPCOMP,6)     ! Tank heat loss coefficient
       K_DESTRAT = ADATA(IPCOMP,7) ! Additional destratification coefficient
-      NNODES = INT(ADATA(IPCOMP,8))   
+      NNODES = INT(ADATA(IPCOMP,8))
                                   ! Number of nodes
-      NSTEPS = INT(ADATA(IPCOMP,9))   
+      NSTEPS = INT(ADATA(IPCOMP,9))
                                   ! Number of internal time steps per sim. t.s.
-      TBOIL  = ADATA(IPCOMP,11)   ! Boiling temperature of tank fluid 
+      TBOIL  = ADATA(IPCOMP,11)   ! Boiling temperature of tank fluid
       HINHX1 = ADATA(IPCOMP,12)   ! Height of inlet of HX1 (m)
       HOUTHX1 = ADATA(IPCOMP,13)  ! Height of inlet of HX1 (m)
       DINHX1 = ADATA(IPCOMP,14)   ! Internal diameter of HX1 (m)
@@ -955,7 +955,7 @@ C---- Initialize pointers to inter-connection(s) ICON, and node(s) INOD.
       ICON2=ICONDX(IPCOMP,2,1)
 
 C---- Identify variables
-C     HX mass flow rate is sum of water and secondary fluid mass flow rates 
+C     HX mass flow rate is sum of water and secondary fluid mass flow rates
 C     (secondary fluid is for glycol)
 
       TIN1=CONVAR(ICON1,1)
@@ -975,7 +975,7 @@ C---- Calculate mass percentage of glycol in HX fluid
       ENDIF
 
 C---- Check that tank fluid does not have glycol
-C     Enabling the tank to be filled with glycol would not be difficult to implement, 
+C     Enabling the tank to be filled with glycol would not be difficult to implement,
 C     however this is not done for now as such systems are probably very infrequent
       CALL ECLOSE(CONVAR(ICON1,3),0.0,1.0e-15,CLOSED)
       IF (.NOT.CLOSED) THEN
@@ -1009,7 +1009,7 @@ C     temperatures have to be transfered to past tank temperatures
       ENDIF
 
 C---- Identify number of stratified tank in common stratified_tank.h
-    
+
       I_STANK = 0
       DO 10 I=1,N_STANK
         IF (IPCOMP .EQ. IPCOMP_STANK(I)) THEN
@@ -1055,17 +1055,17 @@ C---- If tank contains PCM cylinders subtract their volume
       DUMMY=0.
       CALL stratified_tank_calc(VOL, H, P,
      &  HIN1, 0., HOUT1, 0.5*H, U, K_DESTRAT, NSTEPS, NNODES,
-     &  HASHX1, 
+     &  HASHX1,
      &  HINHX1, HOUTHX1, DINHX1, DOUTHX1, DCOILHX1, PITCHHX1, KHX1,
-     &  HASHX2, 
+     &  HASHX2,
      &  DUMMY, DUMMY, DUMMY, DUMMY, DUMMY, DUMMY, DUMMY,
      &  TIMSEC, TIN1, TIN2, MDOT1, MDOT2, TCONT, CP, K,
      &  RHO, TBOIL, TP_STANK(1,I_STANK),
      &  TINHX1, MDOTHX1, GLYCOLHX1,
-     &  DUMMY, DUMMY, DUMMY, 
-     &  TOUT1, TOUT2, TAVGF_STANK(I_STANK), TOUTHX1, TOUTHX2, 
+     &  DUMMY, DUMMY, DUMMY,
+     &  TOUT1, TOUT2, TAVGF_STANK(I_STANK), TOUTHX1, TOUTHX2,
      &  QLOSS, QIMMERSED_HX,
-     &  STEPCOUNT, MIXCOUNT, NSECAVG, 
+     &  STEPCOUNT, MIXCOUNT, NSECAVG,
      &  TF_STANK(1,I_STANK),IER,
      &  HPCM_MOD(1,I_STANK),TPCM_MOD(1,I_STANK),
      &  Axb(1,I_STANK),Ax(1,I_STANK),Ay(1,I_STANK),
@@ -1083,7 +1083,7 @@ C---- Check error code
         WRITE(ITU,*) 'Aborting simulation'
         STOP
       ENDIF
-     
+
 C---- Additional outputs
 
       NAPDAT(IPCOMP) = 6
@@ -1095,13 +1095,9 @@ C---- Additional outputs
       PCAOUT(IPCOMP,6) = QIMMERSED_HX
 
 C---- XML output
-
-      call add_to_xml_reporting(
-     &   TAVGF_STANK(I_STANK),
-     &   'plant/' // pcname(ipcomp)(1:iPltNameLen(ipcomp))
-     &    //'/misc_data/average_temperature',
-     &   'units','(C)',
-     &   'Stratified tank : Average temperature')
+      call AddToReport(rvPltAvgTemp%Identifier,
+     &      TAVGF_STANK(I_STANK),
+     &      pcname(ipcomp)(1:iPltNameLen(ipcomp)))
 
 C---- Trace output
 

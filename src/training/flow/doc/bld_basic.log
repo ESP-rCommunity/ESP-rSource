@@ -1,0 +1,66 @@
+Notes on basic 3 zone building:
+
+This set of files is an example of a basic multi-zone
+building  representation.  There are several variant
+configurations in this directory which add in additional
+assessment details.
+
+The problem comprises the following files.
+
+    file                       description
+____________________________________________________________
+cfg/bld_mech_ven.cfg     Basic 3 zone model with mechanical network flow
+cfg/bld_basic.cfg        problem configuration file defining a basic
+                         3 zone model.
+ctl/bld_basic.ctl        configuration control file defining convective
+                         heating and ideal control for zones 1 & 2.
+
+zones/reception.opr      zone schedules.
+zones/office.opr
+zones/roof_space.opr
+
+zones/reception.geo      zone geometry.
+zones/office.geo
+zones/roof_space.geo
+
+zones/reception.con      zone constructions.
+zones/office.con
+zones/roof_space.con
+
+zones/reception.tmc      zone TMC files.
+zones/office.tmc        
+
+_________
+IPV reports include in winter.txt, spring.txt and summer.txt.
+ 
+Databases associated with the model:
+ standard pressure distr: pressc.db1
+ standard materials     : material.db3.a
+ standard constructions : multicon.db3
+ plant components       : ../dbs/plantf.db1
+ standard event profiles: profiles.db1.a
+ standard optical prop  : optics.db2
+ UK NCM data            : /usr/esru/esp-r/databases/SBEM.db1
+ 
+ ____________________________________________________________
+  
+The model is located at latitude   51.70 with a longitude difference of  -0.50
+from the local time meridian. The year used in simulations is 1967 and
+weekends occur on Saturday and Sunday.
+The site exposure is typical urban site and the ground reflectance is 0.20.
+ 
+ ____________________________________________________________
+ 
+ID Zone         Volume|          Surface
+   Name         m^3   | No. Opaque  Transp  ~Floor
+ 1 reception     144.0  14   182.0    10.0    48.0  reception describes a...
+ 2 office         48.0   8    77.5     2.5    16.0  office describes a...
+ 3 roof_space     49.5   7   180.3     0.0    81.0  roof_space describes a...
+   all           242.   29    440.     13.    145.
+ 
+Simulations to be undertaken:
+____simulations ( 3)____________days descrip___
+winter Mon-06-Feb to Sun-12-Feb   7 bld_mech winter run
+trans  Mon-17-Apr to Sun-23-Apr   7 bld_mech transition run
+summer Tue-11-Jul to Mon-17-Jul   7 bld_mech summer run
+ 

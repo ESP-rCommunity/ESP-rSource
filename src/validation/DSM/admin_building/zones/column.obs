@@ -1,0 +1,22 @@
+# site obstruction file defined in ../zones/column.obs
+# associated with zone geometry file ../zones/column.geo
+ 0. 0.   # dummy values for site position
+   15    # no obstruction blocks
+# origin X Y Z, width, depth, height, rot ang, opac descr, cons
+-0.200 -0.600 47.950 0.200 0.200 15.440 0.000 1.00 sol_va door # block 1
+2.200 0.200 47.950 0.200 0.200 15.440 0.000 1.00 sol_vb door # block 2
+4.600 0.800 47.950 0.200 0.200 15.440 0.000 1.00 sol_vc door # block 3
+7.000 1.400 47.950 0.200 0.200 15.440 0.000 1.00 sol_vd door # block 4
+9.600 2.000 47.950 0.200 0.200 15.440 0.000 1.00 sol_ve door # block 5
+12.000 2.800 47.950 0.200 0.200 15.440 0.000 1.00 sol_vf door # block 6
+14.400 3.400 47.950 0.200 0.200 15.440 0.000 1.00 sol_vg door # block 7
+16.800 4.000 47.950 0.200 0.200 15.440 0.000 1.00 sol_vh door # block 8
+19.200 4.600 47.950 0.200 0.200 15.440 0.000 1.00 sol_vi door # block 9
+21.600 5.200 47.950 0.200 0.200 15.440 0.000 1.00 sol_vj door # block 10
+24.000 5.800 47.950 0.200 0.200 15.440 0.000 1.00 sol_vk door # block 11
+26.400 6.400 47.950 0.200 0.200 15.440 0.000 1.00 sol_vl door # block 12
+28.800 7.200 47.950 0.400 0.200 15.440 0.000 1.00 sol_vm door # block 13
+31.200 7.800 47.950 0.200 0.200 15.440 0.000 1.00 sol_vn door # block 14
+33.800 8.400 47.950 0.200 0.200 15.440 0.000 1.00 sol_vo door # block 15
+# grid surf X surf Z
+   120   120

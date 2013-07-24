@@ -92,6 +92,14 @@ C select one and then edit/list details.  Setup for multi-page menu.
       IPACT=CREATE
       CALL EKPAGE(IPACT)
 
+C Remind the user if they are working with a common data file.
+      if(ipathoptdb.eq.0.or.ipathoptdb.eq.1)then
+        continue
+      else
+        call usrmsg('You are currently working with a common optical',
+     &    'data file. Take care if you make changes!','W')
+      endif
+
 C Initial menu entry setup.
    3  ILEN=nopt
 C      INO=-3
@@ -662,7 +670,6 @@ C Setup and pass in parameters to win3d.
         iigl=igl; iigr=igr; iigt=igt; iigb=igb; iigw=igw; iigwh=igwh
         CALL win3d(iimenu,iiw1,iiw2,iiw3,iiw4,
      &    iigl,iigr,iigt,iigb,iigw,iigwh)
-C        call win3d(menuchw,12,30,5,3,igl,igr,igt,igb,igw,igwh)
         igl=int(iigl); igr=int(iigr); igt=int(iigt); igb=int(iigb)
         igw=int(iigw); igwh=int(iigwh)
         igwid=igw
@@ -1093,7 +1100,7 @@ C the name of the Window report file.
      &        snpfile(1:lnblnk(snpfile))
 
 C Debug.
-            write(6,*) fname
+C            write(6,*) fname
 
           else
 
@@ -1483,7 +1490,7 @@ C actual data seems to start at column 38 (and after a :)
       elseif(outstr(1:22).eq.'--- Split solar factor')then
         continue  ! not yet used
       elseif(outstr(1:41).eq.
-     &  ' solar direct transmittance   	         :')then
+     &  ' solar direct transmittance              :')then
         continue  ! not yet used
       elseif(outstr(1:42).eq.
      &  ' solar factor convective                 :')then

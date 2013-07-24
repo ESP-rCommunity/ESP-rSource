@@ -27,9 +27,9 @@ C     Created on: April 2007
 C     Copyright:  CETC 2007
 C-----------------------------------------------------------------------
 C     ABSTRACT:
-C     Establishes for a stratified tank whether the correct 
-C     number of control variables have been specified, whether the 
-C     number of water connections is correct and whether the connections 
+C     Establishes for a stratified tank whether the correct
+C     number of control variables have been specified, whether the
+C     number of water connections is correct and whether the connections
 C     are to the correct fluid type.
 C
 C=======================================================================
@@ -39,7 +39,7 @@ C=======================================================================
 C---- Set implicit to none to force declaration of all variables
 
       IMPLICIT NONE
-      
+
 C---- Include statements
 
       INCLUDE "plant.h"
@@ -48,15 +48,15 @@ C---- Include statements
 C---- Arguments
 
       INTEGER IPCOMP
-      
+
 C---- Common blocks
 
       COMMON/OUTIN/IUOUT,IUIN
       INTEGER IUOUT,IUIN
-      
+
       COMMON/TC/ITC,ICNT
       INTEGER ITC,ICNT
-      
+
       COMMON/TRACE/ITCF,ITRACE(MTRACE),IZNTRC(MCOM),ITU
       INTEGER ITCF,ITRACE,IZNTRC,ITU
 
@@ -81,8 +81,8 @@ C---- Common blocks
 C---- Stratified tank common
 
       INCLUDE "stratified_tank.h"
-      
-C---- Local variables      
+
+C---- Local variables
 
       INTEGER NITMS
 C      INTEGER I
@@ -90,9 +90,9 @@ C      INTEGER I
       INTEGER NCITM,NCONS
       INTEGER IPCON,IPCONC
       LOGICAL CLOSEA
-      LOGICAL ERROR_FLAG         
+      LOGICAL ERROR_FLAG
       INTEGER NNODES            ! Number of nodes of stratified tank
-                                
+
       REAL HTANK                ! Tank height (m)
       REAL HIN1                 ! Height of inlet 1 (m)
       REAL HOUT1                ! Height of outlet 1 (m)
@@ -227,8 +227,8 @@ C---- block, then set the node temperatures to their initial value
       TAVGF_STANK(N_STANK) = TINIT
 
 C---- Normal return
- 
-      RETURN    
+
+      RETURN
       END
 
 C===================== stratified_tank_coeff_gen =======================
@@ -239,14 +239,14 @@ C-----------------------------------------------------------------------
 C     ABSTRACT:
 C     This is the ESP-r coefficient generator for the stratified tank.
 C     The model is based on an input/output approach, i.e. it calculates
-C     temperatures at the two outlet nodes given temperatures and 
-C     flowrates at the two inlet nodes. 
+C     temperatures at the two outlet nodes given temperatures and
+C     flowrates at the two inlet nodes.
 C
 C References:
 
 C See model description in separate document, DEVELOPMENT OF A STRATIFIED
 C TANK MODEL IN ESP-R: MODEL SUMMARY, by Didier Thevenard (April 2007)
-C Available from CANMET Energy Technology Centre, Natural Resources 
+C Available from CANMET Energy Technology Centre, Natural Resources
 C Canada, Government of Canada
 
 C=======================================================================
@@ -297,7 +297,7 @@ C---- ESP-r Common blocks
      &             ICONDX(MPCOM,MNODEC,MPCONC)
       REAL CONVAR
       INTEGER ICONTP,ICONDX
-      
+
       COMMON/PITER/MAXITP,PERREL,PERTMP,PERFLX,PERMFL,itrclp,
      &             ICSV(MPNODE,MPVAR),CSVI(MPNODE,MPVAR)
       INTEGER MAXITP,ITRCLP,ICSV
@@ -340,7 +340,7 @@ C---- Mark temperature of nodes for iteration
         CSVI(INOD2,1)=CSVF(INOD2,1)
 
 C---- Call wrapper of TRNSYS-like function to calculate temperature of tank outlets
-      
+
         CALL stratified_tank_wrapper(IPCOMP,TOUT1,TOUT2)
 
 C Establish matrix equation self-coupling coefficients,
@@ -379,7 +379,7 @@ C=======================================================================
          COUT(5)=0.
          COUT(6)=0.
 
-      ENDIF 
+      ENDIF
 
 C-----------------------------------------------------------------------
 C     End of calculation
@@ -414,12 +414,12 @@ C     Copyright:  CETC 2007
 C-----------------------------------------------------------------------
 C     ABSTRACT:
 C     This is a wrapper around the subroutine that calculates
-C     the temperatures in the stratified tank. The wrapper is called 
+C     the temperatures in the stratified tank. The wrapper is called
 C     by the ESP-r coefficient generator
 C
 C=======================================================================
       SUBROUTINE stratified_tank_wrapper(IPCOMP,TOUT1,TOUT2)
-
+      use h3kmodule
 C---- Set implicit to none to force declaration of all variables
 
       IMPLICIT NONE
@@ -484,7 +484,7 @@ C---- Arguments
 C---- Local variables
 
       LOGICAL CLOSEA,CLOSEB,CLOSEC,CLOSED
-                                ! Auxiliary variables 
+                                ! Auxiliary variables
       REAL HIN1                 ! Height of inlet 1 [m]
       REAL HOUT1                ! Height of outlet 1 [m]
       REAL HIN2                 ! Height of inlet 2 [m]
@@ -548,11 +548,11 @@ C---- Initialise component parameters from the database information
       HOUT2 = ADATA(IPCOMP,7)     ! Height of outlet 2
       U     = ADATA(IPCOMP,8)     ! Tank heat loss coefficient
       K_DESTRAT = ADATA(IPCOMP,9) ! Additional destratification coefficient
-      NNODES = INT(ADATA(IPCOMP,10))   
+      NNODES = INT(ADATA(IPCOMP,10))
                                   ! Number of nodes
-      NSTEPS = INT(ADATA(IPCOMP,11))   
+      NSTEPS = INT(ADATA(IPCOMP,11))
                                   ! Number of internal time steps per sim. t.s.
-      TBOIL  = ADATA(IPCOMP,13)   ! Boiling temperature of tank fluid 
+      TBOIL  = ADATA(IPCOMP,13)   ! Boiling temperature of tank fluid
 
 C---- Initialize pointers to inter-connection(s) ICON, and node(s) INOD.
 
@@ -567,7 +567,7 @@ C---- Identify variables
       MDOT2=PCONDR(ICON2)*CONVAR(ICON2,2)
 
 C---- Check that tank fluid does not have glycol
-C     Enabling the tank to be filled with glycol would not be difficult to implement, 
+C     Enabling the tank to be filled with glycol would not be difficult to implement,
 C     however this is not done for now as such systems are probably very infrequent
       CALL ECLOSE(CONVAR(ICON1,3),0.0,1.0e-15,CLOSEC)
       CALL ECLOSE(CONVAR(ICON2,3),0.0,1.0e-15,CLOSED)
@@ -600,7 +600,7 @@ C     temperatures have to be transfered to past tank temperatures
       ENDIF
 
 C---- Identify number of stratified tank in common stratified_tank.h
-    
+
       I_STANK = 0
       DO 10 I=1,N_STANK
         IF (IPCOMP .EQ. IPCOMP_STANK(I)) THEN
@@ -626,17 +626,17 @@ C---- Call stratified tank function
       DUMMY=0.
       CALL stratified_tank_calc(VOL, H, P, 
      &  HIN1, HIN2, HOUT1, HOUT2, U, K_DESTRAT, NSTEPS, NNODES,
-     &  HASHX1, 
+     &  HASHX1,
      &  DUMMY, DUMMY, DUMMY, DUMMY, DUMMY, DUMMY, DUMMY,
-     &  HASHX2, 
+     &  HASHX2,
      &  DUMMY, DUMMY, DUMMY, DUMMY, DUMMY, DUMMY, DUMMY,
      &  TIMSEC, TIN1, TIN2, MDOT1, MDOT2, TCONT, CP, K,
      &  RHO, TBOIL, TP_STANK(1,I_STANK),
-     &  DUMMY, DUMMY, DUMMY, 
-     &  DUMMY, DUMMY, DUMMY, 
-     &  TOUT1, TOUT2, TAVGF_STANK(I_STANK), DUMMY, DUMMY, 
+     &  DUMMY, DUMMY, DUMMY,
+     &  DUMMY, DUMMY, DUMMY,
+     &  TOUT1, TOUT2, TAVGF_STANK(I_STANK), DUMMY, DUMMY,
      &  QLOSS, QIMMERSED_HX,
-     &  STEPCOUNT, MIXCOUNT, NSECAVG, 
+     &  STEPCOUNT, MIXCOUNT, NSECAVG,
      &  TF_STANK(1,I_STANK),IER)
 
 C---- Check error code
@@ -647,7 +647,7 @@ C---- Check error code
         WRITE(ITU,*) 'Aborting simulation'
         STOP
       ENDIF
-     
+
 C---- Additional outputs
 
       NAPDAT(IPCOMP) = 5
@@ -658,13 +658,9 @@ C---- Additional outputs
       PCAOUT(IPCOMP,5) = NSECAVG
 
 C---- XML output
-
-      call add_to_xml_reporting(
-     &   TAVGF_STANK(I_STANK),
-     &   'plant/' // pcname(ipcomp)(1:iPltNameLen(ipcomp))
-     &    //'/misc_data/average_temperature',
-     &   'units','(C)',
-     &   'Stratified tank : Average temperature')
+      call AddToReport(rvPltAvgTemp%Identifier,
+     &      TAVGF_STANK(I_STANK),
+     &       pcname(ipcomp)(1:iPltNameLen(ipcomp)))
 
 C---- Trace output
 
@@ -693,7 +689,7 @@ C-----------------------------------------------------------------------
 C     ABSTRACT:
 C     This function calculates the conductivity of water in the range
 C     0 to 140 �C
-C     
+C
 C     REFERENCE
 C
 C     Fitted from data in:
@@ -708,7 +704,7 @@ C     KWATER    REAL           thermal conductivity of water, W/m/K
 C=======================================================================
 
       FUNCTION KWATER(T)
-      
+
 C-----------------------------------------------------------------------
 C     Declarations
 C-----------------------------------------------------------------------
@@ -721,7 +717,7 @@ C---- Arguments
 
       REAL T
       REAL KWATER
-      
+
 C---- Local variables
 
       REAL TK                  ! temperature in Kelvins
@@ -736,21 +732,21 @@ C-----------------------------------------------------------------------
       IF (TK .LT. 273.15) TK = 273.15
       IF (TK .GT. 430.0)  TK = 430.0
       KWATER=(-0.0068*TK*TK + 5.51*TK - 427)/1000.
-     
+
 C-----------------------------------------------------------------------
 C     Normal end of function
 C-----------------------------------------------------------------------
 
       RETURN
       END
-     
+
 C===================== GetArrayAverage =================================
 C     Created by: Didier Thevenard
 C     Created on: April 2007
 C     Copyright:  CETC 2007
 C-----------------------------------------------------------------------
 C     ABSTRACT:
-C     This function calculates the average of an array between two 
+C     This function calculates the average of an array between two
 C     indices
 C
 C     INPUT
@@ -763,7 +759,7 @@ C     GetArrayAverage   REAL   average of array between imin and imax
 C=======================================================================
 
       FUNCTION GetArrayAverage(x,imin,imax)
-      
+
 C-----------------------------------------------------------------------
 C     Declarations
 C-----------------------------------------------------------------------
@@ -778,7 +774,7 @@ C---- Arguments
       INTEGER imin
       INTEGER imax
       REAL GetArrayAverage
-      
+
 C---- Local variables
 
       REAL xavg
@@ -791,19 +787,19 @@ C-----------------------------------------------------------------------
       xavg = 0.
       DO 10 i=imin,imax,1
         xavg = xavg + x(i)
-   10 CONTINUE     
+   10 CONTINUE
       IF (imax .GE. imin)
      &  xavg = xavg / (imax - imin + 1)
-     
+
       GetArrayAverage = xavg
-      
+
 C-----------------------------------------------------------------------
 C     Normal end of function
 C-----------------------------------------------------------------------
 
       RETURN
       END
-     
+
 C===================== Bound ===========================================
 C     Created by: Didier Thevenard
 C     Created on: April 2007
@@ -813,7 +809,7 @@ C     ABSTRACT:
 C     This function bounds a value by a minimum and a maximum
 C
 C     INPUT
-C     x         INTEGER        value to bound  
+C     x         INTEGER        value to bound
 C     xmin      INTEGER        lower bound
 C     xmax      INTEGER        upper bound
 C
@@ -822,7 +818,7 @@ C     Bound     INTEGER        value bound by xmin and xmax
 C=======================================================================
 
       FUNCTION Bound(x,xmin,xmax)
-      
+
 C-----------------------------------------------------------------------
 C     Declarations
 C-----------------------------------------------------------------------
@@ -837,7 +833,7 @@ C---- Arguments
       INTEGER xmin
       INTEGER xmax
       INTEGER Bound
-      
+
 C-----------------------------------------------------------------------
 C     Body
 C-----------------------------------------------------------------------
@@ -875,9 +871,9 @@ C        Diag[i]    contains element[i][i]   of the matrix
 C        SupDiag[i] contains element[i][i+1] of the matrix
 C
 C=======================================================================
-   
+
       SUBROUTINE SolveTridiag(Size,SubDiag,Diag,SupDiag,V,IER)
-      
+
 C-----------------------------------------------------------------------
 C     Declarations
 C-----------------------------------------------------------------------
@@ -888,11 +884,11 @@ C---- Set implicit to none to force declaration of all variables
 
 C---- Arguments
 
-      INTEGER Size                ! size of matrix 
-      REAL SubDiag(*)             ! sub-diagonal of matrix 
-      REAL Diag(*)                ! diagonal of matrix 
-      REAL SupDiag(*)             ! super-diagonal of matrix 
-      REAL V(*)                   ! input: right-hand side; output: solution 
+      INTEGER Size                ! size of matrix
+      REAL SubDiag(*)             ! sub-diagonal of matrix
+      REAL Diag(*)                ! diagonal of matrix
+      REAL SupDiag(*)             ! super-diagonal of matrix
+      REAL V(*)                   ! input: right-hand side; output: solution
       INTEGER IER                 ! error code (0 = all OK)
 
 C---- Local variables
@@ -905,25 +901,25 @@ C---- Initialize error code
 
       IER = 0
 
-C---- Check arguments 
+C---- Check arguments
 
       if (Size .LE. 0) then
         IER = -1
         return
       endif
 
-      
+
 C-----------------------------------------------------------------------
-C---- Forward substitution 
+C---- Forward substitution
 C---- This eliminates the sub-diagonal
-C---- During the forward substitution, diagonal elements are normalized to 1. 
-C---- This prevents problems of coefficients becoming extremely large even 
-C---- in well-conditioned systems 
-C---- As a consequence, diagonal elements from previous rows do not appear 
-C---- in formulae, since they are equal to 1 
+C---- During the forward substitution, diagonal elements are normalized to 1.
+C---- This prevents problems of coefficients becoming extremely large even
+C---- in well-conditioned systems
+C---- As a consequence, diagonal elements from previous rows do not appear
+C---- in formulae, since they are equal to 1
 C-----------------------------------------------------------------------
 
-C---- Take care of first row. After this, Diag(1) is assumed to be 1 
+C---- Take care of first row. After this, Diag(1) is assumed to be 1
       if (abs(Diag(1)) .LT. TOL) then
         IER = 1
         return
@@ -939,15 +935,15 @@ C---- Loop on rows
 C---- Eliminate. The complete formulae are:
 C       Diag(row) = Diag(row)*Diag(row-1)-SubDiag(row)*SupDiag(row-1)
 C       SupDiag(row) = SupDiag(row) * Diag(row-1)
-C       V(row) = V(row)*Diag(row-1)-SubDiag(row)*V(row-1) 
+C       V(row) = V(row)*Diag(row-1)-SubDiag(row)*V(row-1)
 C     The formulae get simplified because the diagonal up to the previous
 C     step is assumed to be normalized to 1
 
         Diag(row) = Diag(row) - SubDiag(row)*SupDiag(row-1)
         V(row) = V(row) - SubDiag(row)*V(row-1)
 
-C---- Normalize diagonal to 1 
-C---- After this, Diag(row) is assumed to be 1 
+C---- Normalize diagonal to 1
+C---- After this, Diag(row) is assumed to be 1
 
         if (abs(Diag(row)) < TOL) then
           IER = row
@@ -959,11 +955,11 @@ C---- After this, Diag(row) is assumed to be 1
   110 continue
 
 C-----------------------------------------------------------------------
-C---- Backward substitution 
+C---- Backward substitution
 C---- The complete formulae used are:
 C----   V(Size) /= Diag(Size)
 C----   V(row) = (V(row)-SupDiag(row)*V(row+1))/Diag(row)
-C---- but they get simplified since the diagonal is 1 
+C---- but they get simplified since the diagonal is 1
 C-----------------------------------------------------------------------
 
       do 120 row=Size-1,1,-1
@@ -989,13 +985,13 @@ C     This function calculates the temperature profile and the outlet
 C     temperature of a stratified tank
 C
 C=======================================================================
-   
-      SUBROUTINE stratified_tank_calc(Volume, Height, 
-     &  DefPerimeter,HIn0, HIn1, HOut0, HOut1, U, k_destrat, NSteps, 
-     &  NNodes,HasHX0, 
-     &  HInHX0, HOutHX0, DinHX0, DoutHX0, DcoilHX0, PitchHX0, kHX0, 
-     &  HasHX1, 
-     &  HInHX1, HOutHX1, DinHX1, DoutHX1, DcoilHX1, PitchHX1, kHX1, 
+
+      SUBROUTINE stratified_tank_calc(Volume, Height, DefPerimeter,
+     &  HIn0, HIn1, HOut0, HOut1, U, k_destrat, NSteps, NNodes,
+     &  HasHX0,
+     &  HInHX0, HOutHX0, DinHX0, DoutHX0, DcoilHX0, PitchHX0, kHX0,
+     &  HasHX1,
+     &  HInHX1, HOutHX1, DinHX1, DoutHX1, DcoilHX1, PitchHX1, kHX1,
      &  dt, TIn0, TIn1, Mdot0, Mdot1, Text, Cp, k, Rho, TBoil, TPast,
      &  TInHX0, MdotHX0, GlycolFracHX0,
      &  TInHX1, MdotHX1, GlycolFracHX1,
@@ -1015,7 +1011,7 @@ C---- Set implicit to none to force declaration of all variables
       IMPLICIT NONE
 
 C---- Parameters
-      
+
 C     MAXNNODES is the maximum number of nodes in a stratified tank
       INTEGER MAX_NNODES
       PARAMETER(MAX_NNODES=100)
@@ -1042,7 +1038,7 @@ C     Input: tank parameters
       REAL    HOut1           ! height of outlet 1 (m)
       REAL    U               ! tank heat loss coefficient (W/m2/C)
       REAL    k_destrat       ! destratification conductivity (W/m/K)
-      INTEGER NSteps          ! number of internal time steps per 
+      INTEGER NSteps          ! number of internal time steps per
                               ! simulation time step
       INTEGER NNodes          ! number of nodes
 
@@ -1056,7 +1052,7 @@ C     Input: parameters of first immersed HX (HX0)
       REAL    DcoilHX0        ! diameter of HX0 coil (m)
       REAL    PitchHX0        ! pitch of HX0 coil (vertical distance from one loop to the next) (m)
       REAL    kHX0            ! thermal conductivity of coil material (W/m/K)
-       
+
 C     Input: parameters of second immersed HX (HX1)
 
       LOGICAL HasHX1          ! .TRUE. if second immersed heat exchanger (HX1) present
@@ -1067,7 +1063,7 @@ C     Input: parameters of second immersed HX (HX1)
       REAL    DcoilHX1        ! diameter of HX1 coil (m)
       REAL    PitchHX1        ! pitch of HX1 coil (vertical distance from one loop to the next) (m)
       REAL    kHX1            ! thermal conductivity of coil material (W/m/K)
-       
+
 C     Input: tank variables
 
       REAL    dt              ! simulation time step (s)
@@ -1080,7 +1076,7 @@ C     Input: tank variables
       REAL    k               ! heat conductivity of fluid (W/m/C)
       REAL    Rho             ! fluid density (kg/m3)
       REAL    TBoil           ! boiling temperature of fluid (C)
-      REAL    TPast(MAX_NNODES)! temperature of tank (C) at end of 
+      REAL    TPast(MAX_NNODES)! temperature of tank (C) at end of
                               ! previous time step
 
 C     Input: first immersed heat exchanger (HX0)
@@ -1088,13 +1084,13 @@ C     Input: first immersed heat exchanger (HX0)
       REAL    TInHX0          ! inlet temperature of HX0 (C)
       REAL    MdotHX0         ! flow rate through HX0 (kg/s)
       REAL    GlycolFracHX0   ! percentage of glycol in HX0 (0-100%)
-  
+
 C     Input: second immersed heat exchanger (HX1)
 
       REAL    TInHX1          ! inlet temperature of HX1 (C)
       REAL    MdotHX1         ! flow rate through HX1 (kg/s)
       REAL    GlycolFracHX1   ! percentage of glycol in HX1 (0-100%)
-  
+
 C     Output: variables and counters
 
       REAL    TOut0           ! average outlet temperature 0 over time step (C)
@@ -1105,7 +1101,7 @@ C     Output: variables and counters
       REAL    QLoss           ! average heat loss to exterior over time step (W)
       REAL    QImmersedHX     ! average heat gain from immersed HXs, if any (W)
       INTEGER StepCount       ! number of internal integration steps
-      INTEGER MixCount        ! number of times mixing algorithm called within 
+      INTEGER MixCount        ! number of times mixing algorithm called within
                               ! time step
       INTEGER NSecAvg         ! average number of mixed sections
       REAL    T(MAX_NNODES)   ! temperature of tank (C) at end of time step
@@ -1129,16 +1125,16 @@ C---- Local variables
       INTEGER NOut0            ! number of node corresponding to outlet 0
       INTEGER NOut1            ! number of node corresponding to outlet 1
       REAL NodeHeight          ! distance between nodes
-      REAL Mdot(MAX_NNODES)    ! flow rate at each node (value i is from node i 
+      REAL Mdot(MAX_NNODES)    ! flow rate at each node (value i is from node i
                                ! to node i+1)
       REAL SubDiag(MAX_NNODES) ! sub-diagonal terms fo balance equation
       REAL Diag(MAX_NNODES)    ! diagonal terms fo balance equation
       REAL SupDiag(MAX_NNODES) ! super-diagonal terms fo balance equation
-      REAL Tstep(MAX_NNODES)   ! temperature of nodes at end of internal 
+      REAL Tstep(MAX_NNODES)   ! temperature of nodes at end of internal
                                ! time step
-      REAL Tstep_prev(MAX_NNODES) ! temperature of nodes at beginning of internal 
+      REAL Tstep_prev(MAX_NNODES) ! temperature of nodes at beginning of internal
                                   ! time step
-      REAL Tsec(MAX_NNODES)    ! temperature of sections (C) 
+      REAL Tsec(MAX_NNODES)    ! temperature of sections (C)
       REAL QHX(MAX_NNODES)     ! energy transferred from immersed HXs (J)
       INTEGER Secbot(MAX_NNODES)  ! bottom node of a mixed section of the tank
       INTEGER Sectop(MAX_NNODES)  ! top node of a mixed section of the tank
@@ -1164,7 +1160,7 @@ C     0.0 = Euler explicit, order 1, conditionally stable
 C     0.5 = Crank-Nicholson, order 2, unconditionally stable
 C     1.0 = Euler implicit, order 1, unconditionally stable
       REAL ALPHA
-     
+
 
       REAL QPCM(MAX_NNODES)       ! exchanged heat between PCM cylinders and water [W]
       LOGICAL HasPCM
@@ -1283,7 +1279,7 @@ C---- Zero energy transferred from immersed HX
       QImmersedHX = 0.
 
 C---- Calculate flow rates at all nodes
-C---- Mdot(i) contains the flow from node i to i+1. It is positive 
+C---- Mdot(i) contains the flow from node i to i+1. It is positive
 C---- if going up and negative if going down
 
       if (NIn0 .LT. NOut0) then   ! inlet lower than outlet
@@ -1360,7 +1356,7 @@ C---- Zero mixing counter
 
 C---- If boiling occurs, limit inlet temperatures to boiling
 C     temperatures and transfer corresponding energy to losses
-C---- The actual limiting of TIn0 and TIn1 to TBoil occurs in 
+C---- The actual limiting of TIn0 and TIn1 to TBoil occurs in
 C     the calculation of the right-hand side
 
       if (TIn0 .GT. TBoil .AND. Mdot0 .GT. 0.) then
@@ -1377,7 +1373,7 @@ C     the calculation of the right-hand side
 
 C---- Define the parameter of the Crank-Nicholson integration scheme
 C     according to the presence of immersed heat exchangers. If none
-C     is present, the full CN scheme (alpha = 0.5) may be used, 
+C     is present, the full CN scheme (alpha = 0.5) may be used,
 C     otherwise an explicit scheme has to be used (alpha = 0)
 
       if (HasHX0 .OR. HasHX1) then
@@ -1403,8 +1399,8 @@ C---- The loop starts here and ends at label 900
 
 C-----------------------------------------------------------------------
 C---- CALCULATE CONTRIBUTION FROM IMMERSED HEAT EXCHANGERS AND PCM MODULES  
-C     The calculation is done only once per internal time step, since it 
-C     depends only on the temperatures in the tank at the end of the 
+C     The calculation is done only once per internal time step, since it
+C     depends only on the temperatures in the tank at the end of the
 C     previous internal time step
 C     When the calculation is done, the tank is considered unmixed. The
 C     heat transfer from the immersed HX, QHX, and from the immersed PCM   
@@ -1419,17 +1415,17 @@ C----     Zero heat transfer array
   115     continue
 
 
-          if (HasHX0) 
-     &      call immersed_HX_calc(NodeHeight, CrossArea, 
-     &        HInHX0, HOutHX0, DinHX0, DoutHX0, 
-     &        DcoilHX0, PitchHX0, kHX0, 
+          if (HasHX0)
+     &      call immersed_HX_calc(NodeHeight, CrossArea,
+     &        HInHX0, HOutHX0, DinHX0, DoutHX0,
+     &        DcoilHX0, PitchHX0, kHX0,
      &        Tstep_prev, Mdot, NNodes,
      &        TInHX0, MdotHX0, GlycolFracHX0, TOutHX0step, QHX)
 
-          if (HasHX1) 
-     &      call immersed_HX_calc(NodeHeight, CrossArea, 
-     &        HInHX1, HOutHX1, DinHX1, DoutHX1, 
-     &        DcoilHX1, PitchHX1, kHX1, 
+          if (HasHX1)
+     &      call immersed_HX_calc(NodeHeight, CrossArea,
+     &        HInHX1, HOutHX1, DinHX1, DoutHX1,
+     &        DcoilHX1, PitchHX1, kHX1,
      &        Tstep_prev, Mdot, NNodes,
      &        TInHX1, MdotHX1, GlycolFracHX1, TOutHX1step, QHX)
 
@@ -1455,8 +1451,8 @@ C----     Zero heat transfer array
 C-----------------------------------------------------------------------
 C---- SECTION TEMPERATURE CALCULATION ALGORITHM
 C-----------------------------------------------------------------------
-C     At the beginning of this section, Tsec is used for the right-hand 
-C     side. After the system is solved, it becomes the temperatures of 
+C     At the beginning of this section, Tsec is used for the right-hand
+C     side. After the system is solved, it becomes the temperatures of
 C     the sections
 C-----------------------------------------------------------------------
 
@@ -1467,7 +1463,7 @@ C---- Zero all coefficients
           Diag(i) = 0.
           SupDiag(i) = 0.
           Tsec(i) = 0.
-  120   continue       
+  120   continue
 
 C---- Loop over sections
 
@@ -1481,7 +1477,7 @@ C---- Calculate bottom and top node of this section, and number of nodes
 
 C---- Calculate auxiliary quantities
 
-          kA_dz = (k+k_destrat)*CrossArea/NodeHeight 
+          kA_dz = (k+k_destrat)*CrossArea/NodeHeight
           MCp_dt = Volume*Rho/NNodes*Cp/ts*NNodesSec
           UAs = U*NodeHeight*Perimeter*NNodesSec
           if (ibot .EQ. 1)      UAs = UAs + U*CrossArea
@@ -1498,7 +1494,7 @@ C---- i.e. fill coefficient (i-1,i) for current section
      &        SubDiag(i) = SubDiag(i) - ALPHA*Mdot(ibot-1)*Cp
           endif
 
-C---- Left hand side, diagonal element of matrix 
+C---- Left hand side, diagonal element of matrix
 C---- i.e. fill coefficient (i,i) for current section
           Diag(i) = MCp_dt + ALPHA*UAs
 C---- Terms corresponding to flows from this section to neighbouring sections
@@ -1508,7 +1504,7 @@ C---- Terms corresponding to flows from this section to neighbouring sections
           if (ibot .GT. 1 ) then
             if ( Mdot(ibot-1) .LT. 0)
      &        Diag(i) = Diag(i) - ALPHA*Mdot(ibot-1)*Cp
-          endif 
+          endif
 C---- Terms corresponding to flows from this node to outlets
           if (ibot .LE. NOut0 .AND. NOut0 .LE. itop)
      &      Diag(i) = Diag(i) +  ALPHA*Mdot0*Cp
@@ -1534,7 +1530,7 @@ C---- Calculate temperature of section at beginning of time step
           Ti = GetArrayAverage(Tstep_prev, ibot, itop)
 
 C------- Terms always present, whatever the integration method
-C---- Heat capacitance term 
+C---- Heat capacitance term
           Tsec(i) = Tsec(i) + MCp_dt*Ti
 
 C---- Flows to this section from inlets
@@ -1544,17 +1540,17 @@ C---- Flows to this section from inlets
      &      Tsec(i) = Tsec(i) + Mdot1*Cp*AMIN1(TIn1,TBoil)
 
 C------- Terms calculated at beginning of time step
-C----    (these terms are eliminated if Euler implicit (ALPHA=1) 
+C----    (these terms are eliminated if Euler implicit (ALPHA=1)
 C----    is chosen)
 
 C---- Heat loss term, beginning of time step
-          Tsec(i) = Tsec(i) 
+          Tsec(i) = Tsec(i)
      &      + (1.-ALPHA)*U*NodeHeight*Perimeter*NNodesSec*(Text-Ti)
           if (ibot .EQ. 1)              ! bottom of tank
-     &      Tsec(i) = Tsec(i) 
+     &      Tsec(i) = Tsec(i)
      &      + (1.-ALPHA)*U*CrossArea*(Text-Tstep_prev(1))
           if (itop .EQ. NNodes)         ! top of tank
-     &      Tsec(i) = Tsec(i) 
+     &      Tsec(i) = Tsec(i)
      &      + (1.-ALPHA)*U*CrossArea*(Text-Tstep_prev(NNodes))
 
 C---- Transfer from immersed HX and PCM modules
@@ -1564,21 +1560,21 @@ C---- Transfer from immersed HX and PCM modules
 
 C---- Conduction term to lower section, beginning of time step
           if (ibot .GT. 1)
-     &      Tsec(i) = Tsec(i) 
+     &      Tsec(i) = Tsec(i)
      &        + (1.-ALPHA)*kA_dz*(Tstep_prev(ibot-1)-Tstep_prev(ibot))
 
 C---- Conduction term to upper section, beginning of time step
           if (itop .LT. NNodes)
-     &      Tsec(i) = Tsec(i) 
+     &      Tsec(i) = Tsec(i)
      &        + (1.-ALPHA)*kA_dz*(Tstep_prev(itop+1)-Tstep_prev(itop))
 
 C---- Flow from or to lower section, beginning of time step
           if (ibot .GT. 1) then
             if (Mdot(ibot-1) .LT. 0.) then
-              Tsec(i) = Tsec(i) 
+              Tsec(i) = Tsec(i)
      &          + (1.-ALPHA)*Mdot(ibot-1)*Cp*Tstep_prev(ibot)
             else
-              Tsec(i) = Tsec(i) 
+              Tsec(i) = Tsec(i)
      &          + (1.-ALPHA)*Mdot(ibot-1)*Cp*Tstep_prev(ibot-1)
             endif
           endif
@@ -1586,10 +1582,10 @@ C---- Flow from or to lower section, beginning of time step
 C---- Flow from or to upper section, beginning of time step
           if (itop .LT. NNodes) then
             if (Mdot(itop) .GT. 0.) then
-              Tsec(i) = Tsec(i) 
+              Tsec(i) = Tsec(i)
      &          - (1.-ALPHA)*Mdot(itop)*Cp*Tstep_prev(itop)
             else
-              Tsec(i) = Tsec(i) 
+              Tsec(i) = Tsec(i)
      &          - (1.-ALPHA)*Mdot(itop)*Cp*Tstep_prev(itop+1)
             endif
           endif
@@ -1601,15 +1597,15 @@ C---- Flows from this section to outlets, beginning of time step
      &      Tsec(i) = Tsec(i) - (1.-ALPHA)*Mdot1*Cp*Tstep_prev(NOut1)
 
 C------- Terms calculated at end of time step
-C----    (these terms are eliminated if Euler explicit (ALPHA=0) 
+C----    (these terms are eliminated if Euler explicit (ALPHA=0)
 C----    is chosen)
 
 C---- Heat loss term, end of time step
           Tsec(i) = Tsec(i) + ALPHA*UAs*Text
-          
-C---- End of loop on sections          
+
+C---- End of loop on sections
   130   continue
-    
+
 
 C---- Solve system
 C---- Note: if Euler explicit is chosen, solution is trivial as all non-diagonal terms
@@ -1667,7 +1663,7 @@ C---- Update number of nodes in section i and remove sections i+1 to j-1
               Secbot(m) = Secbot(n)
               Sectop(m) = Sectop(n)
   260       continue
-      
+
 C---- Update number of sections
             NSec = NSec + i + 1 - j
 
@@ -1698,9 +1694,9 @@ C---- Update running total of average values of outlet temperatures over the tim
 C---- (use the same averaging coefficients as the integration algorithm, so that
 C---- energy balance equation is satisfied)
 
-        TOut0 = TOut0 
+        TOut0 = TOut0
      &     + ALPHA*Tstep(NOut0) + (1.-ALPHA)*Tstep_prev(NOut0)
-        TOut1 = TOut1 
+        TOut1 = TOut1
      &     + ALPHA*Tstep(NOut1) + (1.-ALPHA)*Tstep_prev(NOut1)
 
 C---- Update running total of losses to the environment
@@ -1710,8 +1706,8 @@ C---- energy balance equation is satisfied)
         QLoss_step = 0.
         UAs = U*NodeHeight*Perimeter
         do 610 i=1,NNodes,1
-          QLoss_step = QLoss_step 
-     &      + UAs*(ALPHA*Tstep(i)+(1.-ALPHA)*Tstep_prev(i)-Text)           
+          QLoss_step = QLoss_step
+     &      + UAs*(ALPHA*Tstep(i)+(1.-ALPHA)*Tstep_prev(i)-Text)
   610   continue
         QLoss_step = QLoss_step + U*CrossArea*
      &    (ALPHA*Tstep(1) +(1.-ALPHA)*Tstep_prev(1)
@@ -1734,11 +1730,11 @@ C---- Advance variables
   620   continue
 
 C---- Update running total of sections
-       
+
         NSecAvg = NSecAvg+NSec
 
 C---- Mark tank as unmixed for next step
- 
+
         NSec = NNodes
         do 630 i=1,NNodes,1
           Secbot(i) = i
@@ -1764,7 +1760,7 @@ C---- Calculate outlet temperatures
       TOut1 = TOut1/StepCount
 
 C---- Calculate outlet temperatures of immersed HXs, if present
-      
+
       if (HasHX0) TOutHX0 = TOutHX0/StepCount
       if (HasHX1) TOutHX1 = TOutHX1/StepCount
 
@@ -1773,7 +1769,7 @@ C---- Calculate average temperature
       TAvg = GetArrayAverage(T,1,NNodes)
 
 C---- Calculate average heat loss and energy transferred from immersed HX
- 
+
       QLoss = QLoss / dt
       QImmersedHX = QImmersedHX / dt
 
@@ -1785,11 +1781,11 @@ C---- normal return
 
       return
       end
- 
+
 
 C===================== immersed_HX_calc ============================
 C     Created by: Didier Thevenard
-C     Created on: June 2009   
+C     Created on: June 2009
 C     Copyright:  CETC 2009
 C-----------------------------------------------------------------------
 C     ABSTRACT:
@@ -1797,13 +1793,13 @@ C     This function calculates the heat transfer between an immersed
 C     HX and the tank fluid for all nodes in the tank
 C
 C     References:
-C     Hemisphere (1990). Hemisphere Handbook of Heat Exchanger Design, G.F. Hewitt, 
+C     Hemisphere (1990). Hemisphere Handbook of Heat Exchanger Design, G.F. Hewitt,
 C       coordinating Editor. Hemisphere Publishing Corp. Section 2.5.14, 'Helically
 C       coiled tubes of circular cross sections'.
-C     Incropera FP and DeWitt DP (1990) Fundamentals of heat and mass transfer, third edition. 
+C     Incropera FP and DeWitt DP (1990) Fundamentals of heat and mass transfer, third edition.
 C       John Wiley & Sons.
 C     Kreith F and Bohn MS (2001) Principles of heat transfer, sixth edition. Brooks/Cole.
-C     Liu W, Davidson JH, Kulacki FA and Mantell SC (2003) Natural convection from a horizontal 
+C     Liu W, Davidson JH, Kulacki FA and Mantell SC (2003) Natural convection from a horizontal
 C       tube heat exchanger immersed in a tilted enclosure. J. Solar Energy Eng. 125, 67-75
 C
 C=======================================================================
@@ -1821,7 +1817,7 @@ C---- Set implicit to none to force declaration of all variables
       IMPLICIT NONE
 
 C---- Parameters
-      
+
 C     MAXNNODES is the maximum number of nodes in a stratified tank
       INTEGER MAX_NNODES
       PARAMETER(MAX_NNODES=100)
@@ -1851,12 +1847,12 @@ C     Input: HX parameters (normally don't change from one call to the next)
       REAL    DcoilHX      ! diameter of HX coil (m)
       REAL    PitchHX      ! pitch of HX coil (vertical distance from one loop to the next) (m)
       REAL    kHX          ! thermal conductivity of coil material (W/m/K)
-       
+
 C     Input: tank variables  (change from one call to the next)
 
-      REAL Tstep_prev(MAX_NNODES) ! temperature of nodes at beginning of internal 
+      REAL Tstep_prev(MAX_NNODES) ! temperature of nodes at beginning of internal
                                   ! time step (C)
-      REAL    Mdot(MAX_NNODES)! flow rate at each node (value i is from node i 
+      REAL    Mdot(MAX_NNODES)! flow rate at each node (value i is from node i
                            ! to node i+1) (kg/s)
       INTEGER NNodes       ! number of nodes in tank
 
@@ -1917,7 +1913,7 @@ C     Heat transfer coefficients between HX fluid and tank fluid
 C     Thermophysical properties of tank fluid
       REAL    mu_s         ! dynamic viscosity [Pa�s or kg/m/s]
       REAL    Cp_s         ! specific heat [J/g/K]
-      REAL    beta_s       ! coefficient of volumetric thermal expansion [1/K] 
+      REAL    beta_s       ! coefficient of volumetric thermal expansion [1/K]
       REAL    k_s          ! thermal conductivity [W/m/K]
       REAL    rho_s        ! density [kg/m3]
       REAL    mu_wall_s    ! dynamic viscosity at outside wall temperature [Pa�s/m or kg/m/s]
@@ -1934,12 +1930,12 @@ C     Heat transfer in tank outside HX
       REAL    Nu_m         ! Nusselt number associated with mixed convection []
       REAL    V            ! velocity of fluid in tank node [m/s]
       REAL    Re_s         ! Reynolds number in tank node []
-      REAL    C            ! auxiliary coefficient 
+      REAL    C            ! auxiliary coefficient
       REAL    n            ! auxiliary exponent for Nusselt number calculation
       REAL    NTU          ! NTU of segment of HX
       REAL    eps          ! effectiveness of segment of HX
 C     Coil characteristics
-      REAL    L            ! length of coil within current node [m] 
+      REAL    L            ! length of coil within current node [m]
       REAL    Htop         ! height of top of the HX [m]
       REAL    Hbot         ! height of bottom of the HX [m]
       REAL    Hhx          ! height of the HX that is contained within current node [m]
@@ -1959,7 +1955,7 @@ C     Preparatory work
 C-----------------------------------------------------------------------
 
 C---- There is no flow: nothing to do
-      CALL ECLOSE(MdotHX,0.0,1.0E-15,CLOSEA) 
+      CALL ECLOSE(MdotHX,0.0,1.0E-15,CLOSEA)
       if (CLOSEA) then
         TOutHX = TInHX
         RETURN
@@ -1982,7 +1978,7 @@ C=======================================================================
 C
 C-----------------------------------------------------------------------
 C       Progress from the inlet to the outlet of the HX, dividing the HX in segments, each
-C       segment corresponding to a node of the tank. 
+C       segment corresponding to a node of the tank.
 C         THXin is the inlet temperature of fluid in the segment of the HX
 C         THXout is the outlet temperature of fluid in the segment of the HX
 C         THX is the 'average' temperature of fluid in the segment of the HX (based on the LMTD)
@@ -1992,7 +1988,7 @@ C         1. Start by assuming THX = THXin
 C         2. Calculate the heat transfer coefficient between the HX segment and the fluid
 C         3. Calculate the HX segment outlet temperature THXout
 C         4. Calculate the LMTD and THX
-C         5. Go to step 2 
+C         5. Go to step 2
 C       Convergence is obtained when THXout does not vary more than the specified threshold.
 C-----------------------------------------------------------------------
 
@@ -2000,14 +1996,14 @@ C---- Tolerance on HX temperature calculation for just one segment
 C     This is the tolerance on the HX temperature calculation, divided by the number of segments
       THX_tol = tol/(abs(NOutHX-NInHX)+1)
 
-C---- The loop proceeds up or down depending upon the relative positions of 
+C---- The loop proceeds up or down depending upon the relative positions of
 C     the inlet and the outlet
       if (NOutHX >= NInHX) then
         NStepHX = 1
       else
         NStepHX = -1
       endif
-  
+
 C---- Start of the loop
 
       THXout = TInHX
@@ -2032,7 +2028,7 @@ C----   Iterate on calculation of THX
 C       Initial guess is THX = THXout = THXin
         THX = THXin
         THXout_last = Ts                          ! forces first pass in loop
-      
+
 C----   Iterative loop
         iter = 0
         do while (abs(THXout_last-THXout)>THX_tol .AND. iter<MAXITER)
@@ -2040,7 +2036,7 @@ C----   Iterative loop
           THXout_last = THXout
 
 C================= Inside of coil ===============
-        
+
 C----     Fluid properties of HX liquid are determined at THX
           mu = glycol_water_viscosity(GlycolFracHX,THX)
           Cp = glycol_water_cp(GlycolFracHX,THX)
@@ -2048,11 +2044,11 @@ C----     Fluid properties of HX liquid are determined at THX
           mu_wall_i = glycol_water_viscosity(GlycolFracHX,Twall_i)
           Cp_wall_i = glycol_water_cp(GlycolFracHX,Twall_i)
           k_wall_i = glycol_water_cond(GlycolFracHX,Twall_i)
-        
+
 C----     Calculate non-dimensional numbers
           Pr = mu*Cp/k
           Pr_wall_i = mu_wall_i*Cp_wall_i/k_wall_i
-        
+
 C----     Calculate Reynolds number
           Re = MdotHX*4./(PI*DinHX*mu)
 C----     Check if Reynolds number is above transition to turbulence
@@ -2085,16 +2081,16 @@ C           Hemisphere (1990) eq. 12 and 13
           endif
 C----     Convert Nu into thermal conductance, expressed per unit length of coil
           U_int = Nu*k/DinHX
-        
-        
+
+
 C================= Conduction of heat through wall of coil ===============
 C         Kreith and Bohn, 2001, eq. 2.39
-        
-          U_wall = 2*PI*kHX/log(DoutHX/DinHX)  
-        
-        
+
+          U_wall = 2*PI*kHX/log(DoutHX/DinHX)
+
+
 C================= Outside of coil ===============
-        
+
 C----     Thermophysical properties of tank liquid for that node
           mu_s = glycol_water_viscosity(0.,Ts)
           beta_s = glycol_water_thermexp(0.,Ts)
@@ -2106,16 +2102,16 @@ C----     Thermophysical properties of tank liquid for that node
           k_wall_s = glycol_water_cond(0.,Twall_o)
           Pr_s = mu_s*Cp_s/k_s
           Pr_wall_s = mu_wall_s*Cp_wall_s/k_wall_s
-        
+
 C----     Natural convection
-C         The length scale to use for Ra is the distance that a fluid particle travels 
+C         The length scale to use for Ra is the distance that a fluid particle travels
 C         in the boundary layer on the body, or PI�D/2. See Liu, 2003
           Daux = PI*DoutHX/2
           DeltaT = abs(Ts-Twall_o)
           Ra = abs(9.81*beta_s*Daux**3.*DeltaT
      &      /(mu_s/rho_s)/(k_s/rho_s/Cp_s))
           Nu_n = 0.52*Ra**0.25
-        
+
 C----     Forced convection
 C         Zhukauskas correlation. In Incropera & DeWitt (1990) eq. 7.56
           V = Mdot(i)/rho_s/CrossArea
@@ -2126,7 +2122,7 @@ C         Zhukauskas correlation. In Incropera & DeWitt (1990) eq. 7.56
           else if (Re_s < 1000) then
             C = 0.51
             m = 0.5
-          else 
+          else
             C = 0.26
             m = 0.6
           endif
@@ -2135,27 +2131,27 @@ C         Zhukauskas correlation. In Incropera & DeWitt (1990) eq. 7.56
           else
             n = 0.36
           endif
-          Nu_f = C * (Re_s**m) * (Pr_s**n) 
+          Nu_f = C * (Re_s**m) * (Pr_s**n)
      &         * ((Pr_s/Pr_wall_s)**0.25)
-        
+
 C----     Mixed convection
 C         Incropera & DeWitt (1990), eq. 9.64
           Nu_m = ((Nu_n ** 3.) + (Nu_f ** 3.)) ** (1./3.)
-        
+
 C----     Calculate thermal conductance, U_ext
-          U_ext = Nu_m*k/DoutHX 
-        
+          U_ext = Nu_m*k/DoutHX
+
 C======== Calculate heat transfer from HX fluid to tank ===============================
 C----     Calculate total conductance, per unit length of coil
-C         For safety, check U_int and U_ext. Experience shows that U_ext may be zero 
+C         For safety, check U_int and U_ext. Experience shows that U_ext may be zero
 C         in very rare circumstances
           U = 1./(1./U_int + 1./U_wall + 1./U_ext)
           Htop = max(HInHX, HOutHX)
           Hbot = min(HInHX, HOutHX)
-          Hhx = min(i*NodeHeight, Htop) 
+          Hhx = min(i*NodeHeight, Htop)
      &        - max((i-1)*NodeHeight, Hbot)
           if (PitchHX > 0.) then
-            L = PI*DcurvHX*Hhx/PitchHX 
+            L = PI*DcurvHX*Hhx/PitchHX
           else
             L = PI*DcurvHX               ! case of flat loop
           endif
@@ -2163,14 +2159,14 @@ C----     For NTU, see Incropera & DeWitt (1990), ch. 11
 C         eps is limited to 99.5% to avoid rare numerical problems, i.e. THXout = Ts
 C         which then leads to Nu_n = 0 and U_ext = 0 at the next iteration
           NTU = U*DinHX*PI*L/MdotHX/Cp_avg
-          eps = min(1.-exp(-NTU), 0.995)  
+          eps = min(1.-exp(-NTU), 0.995)
           THXout = THXin - eps*(THXin-Ts)
-                   
+
 C----     Calculate LMTD, new THX
 C         Note that LMTD = (DeltaTHXin-DeltaTHXout)/log(DeltaTHXin/DeltaTHXout)
 C         with DeltaTHXin = (THXin - Ts)
 C         and  DeltaTHXout = (THXout - Ts)
-C         which is simplified using the expression for THXout above 
+C         which is simplified using the expression for THXout above
           LMTD = -eps/log(1-eps)*(THXin-Ts)
           THX = Ts + LMTD             ! this is the average HX fluid temperature
 
@@ -2180,24 +2176,24 @@ C----     Update inside and outside wall temperatures, for next iteration
 
 C----     End of iterative loop
         end do
-        if (iter >= MAXITER) 
+        if (iter >= MAXITER)
      &    write(6,*) 'Warning - no convergence in immersed_HX_calc'
 
 C----   Convergence has been reached for this node. Update QHX(i)
-       
-        QHX(i) = QHX(i) + MdotHX*Cp_avg*(THXin-THXout)   
+
+        QHX(i) = QHX(i) + MdotHX*Cp_avg*(THXin-THXout)
 
 C----   Go to next segment of HX
 
   900 CONTINUE
-     
-C---- Update running total of temperature of HX outlet (will be used to calculate 
+
+C---- Update running total of temperature of HX outlet (will be used to calculate
 C     average of temperature over the step)
 
       TOutHX = THXout
 
 C---- Normal return
-     
+
       return
       end
 

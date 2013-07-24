@@ -177,7 +177,7 @@ C.....Plant component connection data
       integer icondx(mpcom,mnodec,mpconc) ! pointer to connections for each
                                           ! component/node
 
-C.....Common containing plant componet mass diversion ratios 
+C.....Common containing plant componet mass diversion ratios
       common/c10/npcon,ipc1(mpcon),ipn1(mpcon),ipct(mpcon),ipc2(mpcon),
      &            ipn2(mpcon),pcondr(mpcon),pconsd(mpcon,2)
       integer npcon           ! number of inter-component connections
@@ -193,7 +193,7 @@ C.....Common containing plant componet mass diversion ratios
                               !    node for each plant component inter-connection
       real    pconsd          ! supplementary data for plant component inter-
                               !    connection
-                                          
+
 C.....Time
       common/pers/isd1,ism1,isd2,ism2,isds,isdf,ntstep
       integer isd1              ! not used in current context
@@ -270,7 +270,7 @@ C.....Cylinder parameters
 
       real fEffective_C        ! Effective heat capacitance of
                                !    cylinder and contents
-                                                                   
+
 
 C.....State variables & other data
       real fCyl_Temp_P          ! Present time-row temperature (oC)
@@ -301,7 +301,7 @@ C.....State variables & other data
                                 !   on present time row (kmol/s)
       real fH_absorbed_dNdt_F   ! Rate of change in kmol of absorbed hydrogen
                                 !   on future time row (kmol/s)
-                                                          
+
       real fH_absorbed_kmol_MIN ! Amount of absorbed hydrogen corresponding
                                 !   to minimum operating pressure (kmol)
       real fH_absorbed_kmol_MAX ! Amount of absorbed hydrogen corresponding
@@ -339,7 +339,7 @@ C.....State variables & other data
                                 !     hydrogen (kmol/s)
 
       real fQ_absorbtion_J_P    ! Heat released during absorbtion (J), present
-                                !     time row                                 
+                                !     time row
       real fQ_absorbtion_J_F    ! Heat released during absorbtion (J), future
                                 !     time row
 
@@ -353,7 +353,7 @@ C.....State variables & other data
                                 !    future time row (J)
 
       real fQ_heat_loss_P       ! Present time row heat loss to surroundings (J)
-                                                                                             
+
 C.....Connection properties (hydrogen connection)
       real fH2_Conn_Cv_P        ! Specific heat of incomming hydrogen
                                 !   at present time-row system averaged
@@ -374,14 +374,14 @@ C.....Connection properties (hydrogen connection)
                                 !    hydrogen flow (J) on present time row.
       real fH2_Conn_dU_F        ! Internal energy change occuring in incomming
                                 !    hydrogen flow (J) on present time row.
-                                                                                        
-                                
+
+
 C.....Connection properties (water connection)
       logical bH2O_connected    ! Flag indicating that cooling
-                                !    water connectione exists.    
+                                !    water connectione exists.
       logical bNo_H2O_flow      ! Flag indicating no cooling water is
                                 !    flowing the cylinder
-      
+
       real fH2O_node_temp_P     ! Present water node temperature (oC)
       real fH2O_node_temp_F     ! Future water node temperature (oC)
 
@@ -393,13 +393,13 @@ C.....Connection properties (water connection)
                                 !   temperature (J/kg oC)
       real fH2O_Conn_Temp_P     ! Present time-row water connection temperature (oC)
       real fH2O_Conn_Temp_F     ! Future time-row water connection temperaturte (oC)
-      
+
       real fH2O_Conn_Flow_P     ! Present time row Water connection mass flow rate(kg/s)
       real fH2O_Conn_Flow_F     ! Future time row Water connection mass flow rate (kg/s)
 
       real fQ_cooling_water_P   ! Present time row heat transfer to cooling water (J)
       real fQ_cooling_water_F   ! Future time row heat transfer to cooling water (J)
-      
+
 C.....Ambient conditions
       real fAmb_Temp_P          ! Ambient present temperature (oC)
       real fAmb_Temp_F          ! Ambient future temperature (oC)
@@ -496,12 +496,12 @@ C-----------------------------------------------------------------------
 C        Enable hydrogen flow support for MH component
 C-----------------------------------------------------------------------
          h2flowsupport ( iComponent ) = .true.
-         
+
 C----------------------------------------------------------------------
 C        Dump sample PCT and discharge profiles for debugging /
 C        validation.
 C----------------------------------------------------------------------
-         
+
          if ( bDebug ) then
 
             call MH_debug_PCT ( iComponent )
@@ -510,7 +510,7 @@ C----------------------------------------------------------------------
 
       endif
 
-      
+
 C-------------------------------------------------------------------------------
 C     Get timestep duration:
 C
@@ -575,13 +575,13 @@ C.....    as a pointer.
 
 C----------------------------------------------------------------------
 C     Does H2O connection exist?
-C----------------------------------------------------------------------     
+C----------------------------------------------------------------------
       if ( iH2O_connection .gt. 0 ) then
-C........Connection exists --- set flag      
+C........Connection exists --- set flag
          bH2O_connected = .true.
       else
          bH2O_connected = .false.
-      endif 
+      endif
 
 C.....Future time row hydrogen connection temperature (oC)
       fH2_Conn_Temp_F  = ConVar ( iH2_connection, iPropTemp )
@@ -590,8 +590,8 @@ C.....Future time row hydrogen connection mass flow rate (kg/s)
       fH2_Conn_Flow_kgs  =  ConVar ( iH2_connection, iPropH2Flow )
      &        * pcondr( iH2_connection )
 
-C.....Collect cooling water properties if connection exists       
-      if ( bH2O_connected ) then 
+C.....Collect cooling water properties if connection exists
+      if ( bH2O_connected ) then
 
 C........Future time row water connection temperature (oC)
          fH2O_Conn_Temp_F = ConVar ( iH2O_connection, iPropTemp )
@@ -604,12 +604,12 @@ C........No connection exists --- set connection properties to zero.
          fH2O_Conn_Temp_F = 0.0
          fH2O_Conn_Flow_F = 0.0
          fMH_Heat_XFer_UA ( iComponent ) = 0.0
-                  
-      endif 
+
+      endif
 
 C.....Check if cooling water is flowing through cylinder
       call eclose ( fH2O_Conn_Flow_F, 0.0, 1.0E-06, bNo_H2O_flow )
-      
+
 C----------------------------------------------------------------------
 C     Collect present & future time-row plant containment temperatures.
 C
@@ -631,7 +631,7 @@ C........Containment has not been defined --- set UA value to zero.
 C----------------------------------------------------------------------
 C     Collect temperatue state variables from present-row time blocks
 C----------------------------------------------------------------------
-      
+
 C.....Hydride cylinder temperatures
       fCyl_Temp_P = CSVp( iH2_node, iPropTemp )        ! (oC)
       fCyl_Temp_F = CSVf( iH2_node, iPropTemp )        ! (oC)
@@ -672,19 +672,19 @@ C----------------------------------------------------------------------
 C........Free & absorbed hydrogen
          fH2_free_kmol_P     = PCDatP ( iComponent, 1 ) ! (kmol)
          fH2_free_kmol_F     = PCDatF ( iComponent, 1 ) ! (kmol)
-         
+
          fH_absorbed_kmol_P  = PCDatP ( iComponent, 2 ) ! (kmol)
          fH_absorbed_kmol_F  = PCDatF ( iComponent, 2 ) ! (kmol)
-         
+
 C........Cylinder pressure
          fCyl_Press_P        = PCDatP ( iComponent, 3 ) ! (Pa)
          fCyl_Press_F        = PCDatF ( iComponent, 3 ) ! (Pa)
-         
-C........Rate of change in absorbed hydrogen         
+
+C........Rate of change in absorbed hydrogen
          fH_absorbed_dNdt_P  = PCDatP ( iComponent, 4 ) ! (kmol/s)
          fH_absorbed_dNdt_F  = PCDatF ( iComponent, 4 ) ! (kmol/s)
-         
-C........Charging rate         
+
+C........Charging rate
          fCyl_H2_charge_P    = PCDatP ( iComponent, 5 ) ! (kmol/s)
          fCyl_H2_charge_F    = PCDatF ( iComponent, 5 ) ! (kmol/s)
 
@@ -693,8 +693,8 @@ C........Discharging rate
          fCyl_H2_discharge_F = PCDatP ( iComponent, 6 ) ! (kmol/s)
 
 
-         
-         if ( bH2O_connected ) then 
+
+         if ( bH2O_connected ) then
 C...........Cooling water connection flow rate
             fH2O_Conn_Flow_P    = PCDatP ( iComponent, 7 ) ! (kg/s)
 
@@ -703,13 +703,13 @@ C...........Cooling water connection temperature
          else
             fH2O_Conn_Flow_P = 0.0
             fH2O_Conn_Temp_P = 0.0
-         endif 
+         endif
 
-C........Hydrogen connection temperature 
+C........Hydrogen connection temperature
          fH2_Conn_Temp_P     = PCDatP ( iComponent, 9 ) ! (K)
 
       endif
-      
+
 C----------------------------------------------------------------------
 C     MODEL TOPOLOGY:
 C
@@ -771,7 +771,7 @@ C........cross coupling coefficients
             fCoefficients(6) =  -1.0 * pcondr ( iH2O_connection )
          else
             fCoefficients(6) = 0.0
-         endif 
+         endif
 C........RHS vector
          fCoefficients(7) =  0.0
          fCoefficients(8) =  0.0
@@ -808,7 +808,7 @@ C        time rows --- use averate of inlet and outlet tempertatures
 C        to determine Cv.
 C
 C        function ShtFld (X, Y) returns the heat capacity of fluid X
-C        at temperature Y in J/kg oC. 
+C        at temperature Y in J/kg oC.
 C
 C        X=1 -> air, X=2 -> vapor, X=3 -> liq. water
 C
@@ -818,10 +818,10 @@ C.....Present time row
       fH2O_Conn_Cv_P =  SHtFld ( 3,
      &     0.5 * (fH2O_Conn_Temp_P + fH2O_node_Temp_P) ) ! J/kg K
 
-C.....Future time row       
+C.....Future time row
       fH2O_Conn_Cv_F =  SHtFld ( 3,
      &     0.5 * (fH2O_Conn_Temp_F + fH2O_node_Temp_F) ) ! J/kg K
-      
+
 C-------------------------------------------------------------------------
 C        Collect constant-volume specific heats at present & future
 C        temperatures (J/kg K)
@@ -845,7 +845,7 @@ C........Generated by chemical_properties.F
      &     fEval_Compound_Cv ( iHydrogen, fCyl_Temp_F + fC_to_K )
 
 C........Clear context buffer to prevent erroneous error messages
-         cContext = ' '         
+         cContext = ' '
 
 C----------------------------------------------------------------------
 C        Determine the internal energy change associated as
@@ -857,11 +857,11 @@ C              * ( inlet temperature - cylinder temperature )
 C
 C----------------------------------------------------------------------
 
-C........Present time row         
+C........Present time row
          fH2_Conn_dU_P = fCyl_H2_charge_P / fMM_hydrogen
      &        * fH2_Conn_Cv_P * ( fH2_Conn_Temp_P - fCyl_Temp_P )
 
-! C........Future time row 
+! C........Future time row
 !          fH2_Conn_dU_F = fCyl_H2_charge_F / fMM_hydrogen
 !      &        * fH2_Conn_Cv_P * ( fH2_Conn_Temp_P - fCyl_Temp_P )
 
@@ -878,12 +878,12 @@ C        when one kmol of *hydrogen gas* (ie H2) is absorbed.
 C
 C-----------------------------------------------------------------------
 
-C........Present time row 
+C........Present time row
          fQ_absorbtion_J_P = fH_absorbed_dNdt_P / 2.0
      &       * fMH_Eval_Q_reaction
-     &              ( iComponent, fCyl_Press_P, fCyl_Press_P + fC_to_K ) 
+     &              ( iComponent, fCyl_Press_P, fCyl_Press_P + fC_to_K )
 
-C........Future time row 
+C........Future time row
          fQ_absorbtion_J_F = fH_absorbed_dNdt_F / 2.0
      &       * fMH_Eval_Q_reaction
      &              ( iComponent, fCyl_Press_F, fCyl_Press_F + fC_to_K )
@@ -892,17 +892,17 @@ C----------------------------------------------------------------------
 C        Evaluate flow work associated with charging/discharging
 C        cylinder.
 C
-C        flow work = pressure * volumetric flow 
+C        flow work = pressure * volumetric flow
 C
 C                  = molar flow * Univ. Gas Const. * temperature (ideal gas)
 C
 C----------------------------------------------------------------------
 
-C........Present time row charging          
+C........Present time row charging
          fH2_Conn_FlowWork_P = fCyl_H2_charge_P
      &         * fR_Universal * ( fH2_Conn_Temp_P + fC_to_K )  ! (J)
 
-C........Future time row charging              
+C........Future time row charging
          fH2_Conn_FlowWork_F = fCyl_H2_charge_F
      &         * fR_Universal * ( fH2_Conn_Temp_F + fC_to_K )  ! (J)
 
@@ -920,7 +920,7 @@ C
 C           Q_cooling = mass flow
 C                * specific heat ( outlet temp - inlet temp )
 C
-C----------------------------------------------------------------------     
+C----------------------------------------------------------------------
 
 C........Present time row
          fQ_cooling_water_P = fH2O_Conn_Flow_P * fH2O_Conn_Cv_P
@@ -930,12 +930,12 @@ C----------------------------------------------------------------------
 C        Determine present-time row heat losses
 C
 C           q loss = hA * ( hydride temp - ambient temp )
-C       
+C
 C----------------------------------------------------------------------
 
 C........Present time row
-         fQ_heat_loss_P = fMH_cyl_wall_hA ( iComponent ) 
-     &          * ( fCyl_Temp_P - fAmb_Temp_P ) 
+         fQ_heat_loss_P = fMH_cyl_wall_hA ( iComponent )
+     &          * ( fCyl_Temp_P - fAmb_Temp_P )
 
 
 
@@ -954,13 +954,13 @@ C........Ensure denominator will not be zero!
      &        + fH2O_Conn_Flow_P * fH2O_Conn_Cv_P
      &        + fMH_cyl_wall_hA ( iComponent )
      &      ), 0.0, 1.0E-03, bNums_Are_Close )
-         
+
          if ( bNums_Are_Close ) then
-C...........Time constant is arbitrarly large:             
-     
+C...........Time constant is arbitrarly large:
+
             fCyl_Time_Constant = 10.0 * fTS_duration
-         
-         else 
+
+         else
             fCyl_Time_Constant =
      &       (  fH2_free_kmol_P * fCyl_H2_Cv_P
      &        + fH_absorbed_kmol_P * fMH_hydride_C ( iComponent )
@@ -973,7 +973,7 @@ C...........Time constant is arbitrarly large:
      &        + fMH_cyl_wall_hA ( iComponent )
      &      )
 
-         endif 
+         endif
 C........Save time constant in ESRU commonblock (why?)
          TC(iComponent) = fCyl_Time_Constant
 
@@ -1035,7 +1035,7 @@ C                                       + mols M  * Cv M )_{t}
 C                     + alpha       * (   mols H2 * Cv H2
 C                                       + mols MH * Cv MH
 C                                       + mols M  * Cv M )_{t+dt}
-C 
+C
 C                     + Cyl mass * Cyl specific heat
 C
 C        See Equation 119, Ferguson 2005
@@ -1065,12 +1065,12 @@ C...........be determined.
      &             )
      &      + fMH_cyl_mass_kg ( iComponent )
      &          * fMH_cyl_wall_C ( iComponent )
-  
-         
-         endif 
 
 
-         
+         endif
+
+
+
 C-------------------------------------------------------------------------
 C        Hydrogen metal-hydride storage thermal balance matrix:
 C
@@ -1102,7 +1102,7 @@ C        b = alpha * future cooling water flow rate
 C                   * future cooling water heat capacity
 C
 C-------------------------------------------------------------------------
-         fCoefficients(2) = 
+         fCoefficients(2) =
      &        fSoln_alpha * fH2O_Conn_Flow_F * fH2O_Conn_Cv_F
 
 C-------------------------------------------------------------------------
@@ -1118,7 +1118,7 @@ C        set cooling water node temperature to system temperature.
 C-------------------------------------------------------------------------
          if ( bNo_H2O_flow ) then
             fCoefficients (3) = -1.0
-         else 
+         else
             fCoefficients (3) =
      &         exp (
      &              - 1.0 * fMH_Heat_XFer_UA ( iComponent )
@@ -1127,12 +1127,12 @@ C-------------------------------------------------------------------------
 
 C-------------------------------------------------------------------------
 C        Fourth coefficient: d
-C         
+C
 C        d = 1.0
 C
 C-------------------------------------------------------------------------
          fCoefficients (4) = 1.0
-         
+
 C-------------------------------------------------------------------------
 C        fifth coefficent: e
 C
@@ -1141,18 +1141,18 @@ C
 C-------------------------------------------------------------------------
          fCoefficients (5) =
      &      -1.0 * fSoln_alpha
-     &           * ( fCyl_H2_charge_F * fH2_Conn_Cv_F ) 
+     &           * ( fCyl_H2_charge_F * fH2_Conn_Cv_F )
 
 C-------------------------------------------------------------------------
 C        Sixth coefficient: f
 C
 C                   /    - heat exchanger UA coefficient     \
-C        f = - exp | --------------------------------------  | 
+C        f = - exp | --------------------------------------  |
 C                  \  Cooling water heat capacity flow rate /
 C
 C        Note: if there is no cooling water flowing through the cylinder,
 C        set cooling water node temperature to system temperature.
-C-------------------------------------------------------------------------      
+C-------------------------------------------------------------------------
          if ( bNo_H2O_flow ) then
             fCoefficients (6) = 0.0
          else
@@ -1161,7 +1161,7 @@ C-------------------------------------------------------------------------
      &              - 1.0 * fMH_Heat_XFer_UA ( iComponent )
      &             / ( fH2O_Conn_Flow_F * fH2O_Conn_Cv_F ) )
          endif
-         
+
 C-------------------------------------------------------------------------
 C        seventh coefficient: R1
 C
@@ -1195,7 +1195,7 @@ C            they must be evaluated using absolute temperature values,
 C            and since ESP-r's plant matrix temperature state variables
 C            are all formatted in celcius, these terms must be included
 C            in the present-time & known coefficient.
-C 
+C
 C        (b) The future time row cooling water inlet temperature does
 C            appear future time row cooling water solution vector.
 C            However, ESP-r does not allow specification of cross
@@ -1208,7 +1208,7 @@ C-------------------------------------------------------------------------
             iCount_a = 7
          else
             iCount_a = 6
-         endif 
+         endif
          fCoefficients (iCount_A) =
      &       fEffective_C / fTS_duration * fCyl_Temp_P
      &
@@ -1220,7 +1220,7 @@ C-------------------------------------------------------------------------
      &               - fQ_heat_loss_P
      &               - fQ_cooling_water_P
      &            )
-     & 
+     &
      &     +  fSoln_alpha
      &          * (    fH2_Conn_FlowWork_F
      &               - fH2_Disc_FlowWork_F
@@ -1237,13 +1237,13 @@ C        R2 = 0
 C
 C----------------------------------------------------------------------
          iCount_A = iCount_a + 1
-      
+
          fCoefficients(iCount_A) = 0.0
 
 !          do iCount_A = 1, 8
 !             print*, iCount_a, fCoefficients(iCount_a)
 !          enddo
-         
+
 C----------------------------------------------------------------------
 C        Report thermal data
 C----------------------------------------------------------------------
@@ -1252,14 +1252,14 @@ C----------------------------------------------------------------------
          fMH_Report_Charge_FWork ( iComponent ) = fH2_Conn_FlowWork_F
          fMH_Report_Disch_FWork  ( iComponent ) = fH2_Disc_FlowWork_F
 
-   
-         
+
+
 
       elseif ( iPlant_Matrix .eq. iPropH2Flow ) then
 !          if ( nsinc .ge. 60 ) then
 !             print*, 'this is it!', fH2_Conn_Flow_kgs
 !          endif
-      
+
 C----------------------------------------------------------------------
 C        The following code implements a crude mass balance model
 C        for a metal hydride storage system. A call to a more
@@ -1335,7 +1335,7 @@ C            read by the hydrogen demand controller
 C
 C        The controller describes the hydrogen requirements in kg/s,
 C        which must be converted into kmol/s for use in the MH model.
-C----------------------------------------------------------------------         
+C----------------------------------------------------------------------
 
          fCyl_H2_demand_EXP = CDATA ( iComponent, 1 ) / fMM_hydrogen ! (kmol/s)
 
@@ -1344,7 +1344,7 @@ C----------------------------------------------------------------------
 C........Total demand
          fCyl_H2_demand_SUM = fCyl_H2_demand_EXP + fCyl_H2_demand_IMP ! (kmol/s)
 
-         
+
 
 
 C----------------------------------------------------------------------
@@ -1398,11 +1398,11 @@ C...........rate of change in kmols of absorbed hydrogen
 
 C...........Charge rate cannot be less than zero.
             if ( fCyl_H2_charge_F .lt. 0.0 ) fCyl_H2_charge_F = 0.0
-           
+
 C...........Calculate vent rate: incomming connection flow
 C...........less charge rate
 
-            fCyl_H2_vent = 
+            fCyl_H2_vent =
      &            + fH2_Conn_Flow_kgs / fMM_Hydrogen
      &            - abs(fCyl_dH2_kmol_s)
      &            - fCyl_H2_discharge_F
@@ -1485,7 +1485,7 @@ C...........Calculate future time row mols of absorbed hydrogen
             fH_absorbed_kmol_F = fH_absorbed_kmol_P
      &       + 2.0 * fTS_duration
      &             * ( fCyl_H2_charge_F - fCyl_H2_discharge_F )
-                        
+
 
          endif
 
@@ -1500,8 +1500,8 @@ C        Calculate rate of change in kmols of absorbed hydrogen
 C        (needed by thermal model)
 C----------------------------------------------------------------------
          fH_absorbed_dNdt_F = ( fH_absorbed_kmol_F
-     &         - fH_absorbed_kmol_P ) / fTS_duration 
-     
+     &         - fH_absorbed_kmol_P ) / fTS_duration
+
 C----------------------------------------------------------------------
 C        Calculate pressure at future time row, using subordinate
 C        routine fEval_Langmuir_P.
@@ -1531,11 +1531,11 @@ C     &     fCyl_H2_demand,
 C     &     fTS_duration,
 C     &     fH2_free_kmol_F,
 C     &     fH_absorbed_kmol_F,
-C     &     fCyl_Press_F 
+C     &     fCyl_Press_F
 C     &     )
 C
 C----------------------------------------------------------------------
-         
+
 C----------------------------------------------------------------------
 C        Calculate total amount of hydrogen delivered through
 C        implicitly-modelled connections
@@ -1545,23 +1545,23 @@ C----------------------------------------------------------------------
 C...........Explicit demand cannot be met. Set implicit supply to
 C...........zero
             fH2_plt_IMP_supply_TOTAL( iComponent ) = 0.0
-            
+
             fH2_plt_EXP_supply_TOTAL( iComponent ) =
      &             fCyl_H2_discharge_F
-         
+
          else
 
 C...........Explicit demand can be met, and at least some of
 C...........the implicit demand can be met.
-            
+
             fH2_plt_EXP_supply_TOTAL ( iComponent )
      &         = fCyl_H2_demand_EXP
-            
+
             fH2_plt_IMP_supply_TOTAL (iComponent )
      &         = fCyl_H2_discharge_F
      &          - fH2_plt_EXP_supply_TOTAL ( iComponent )
-     
-         endif 
+
+         endif
 
 
 C----------------------------------------------------------------------
@@ -1584,7 +1584,7 @@ C........cross coupling coefficients
          if ( bH2O_connected ) fCoefficients(6) =  -1.0
 
 C........RHS vector
-         if ( bH2O_connected ) then 
+         if ( bH2O_connected ) then
             fCoefficients(7) =  fH2_plt_EXP_supply_TOTAL ( iComponent )
          else
             fCoefficients(6) =  fH2_plt_EXP_supply_TOTAL ( iComponent )
@@ -1604,7 +1604,7 @@ C----------------------------------------------------------------------
          PCDatF ( iComponent, 7) = fH2O_Conn_Flow_F    ! (kg/s)
          PCDatF ( iComponent, 8) = fH2O_Conn_Temp_F    ! (oC)
          PCDatF ( iComponent, 9) = fH2_Conn_Temp_F     ! (oC)
-                  
+
 C-----------------------------------------------------------------------
 C     Save hydrogen flow reporting data
 C-----------------------------------------------------------------------
@@ -1646,7 +1646,7 @@ C----------------------------------------------------------------------
 C     Passed argument
 C----------------------------------------------------------------------
       integer iComponent       ! Index of component in plant net.
-      
+
 C----------------------------------------------------------------------
 C     ESP-r commons
 C----------------------------------------------------------------------
@@ -1678,8 +1678,8 @@ C----------------------------------------------------------------------
 
       integer iWarning
       integer iFatal
-      integer iReset 
-      
+      integer iReset
+
       parameter (iWarning=1, iReset=2, iFatal=3)
 C----------------------------------------------------------------------
 C     Referneces
@@ -1690,19 +1690,19 @@ C----------------------------------------------------------------------
       logical bValue_LT_Max       ! Function checking if  value <  max
 
       bFatal_error = .false.
-      
+
 C----------------------------------------------------------------------
 C     Collect inputs.
 C----------------------------------------------------------------------
 
-C.....Cylinder wall mass: 
+C.....Cylinder wall mass:
       fMH_cyl_mass_kg         (iComponent) = AData ( iComponent,  1) ! (kg)
 C.....Cylinder wall specific heat
       fMH_cyl_wall_C          (iComponent) = AData ( iComponent,  2) ! (J/kg oC)
 C.....Cylinder wall heat loss coefficient
       fMH_cyl_wall_hA         (iComponent) = AData ( iComponent,  3) ! (W/oC)
-C.....Cooling water heat transfer coefficient                           
-      fMH_Heat_XFer_UA        (iComponent) = AData ( iComponent,  4) ! (W/oC)                                
+C.....Cooling water heat transfer coefficient
+      fMH_Heat_XFer_UA        (iComponent) = AData ( iComponent,  4) ! (W/oC)
 C.....Cylinder free volume
       fMH_free_volume         (iComponent) = AData ( iComponent,  5) ! (m3)
 C.....Maximum operating pressure
@@ -1733,7 +1733,7 @@ C----------------------------------------------------------------------
 C     Error Trapping
 C----------------------------------------------------------------------
       cContext = 'Metal Hydride storage model'
-      
+
 C.....Cylinder mass cannot be less than zero
       cMsg = 'Cylinder wall mass is out of range'
       bDummy = bValue_GE_Min (
@@ -1764,14 +1764,14 @@ C.....Cooling water heat transfer coefficient cannot be less than zero
      &       iComponent, 4, iReset )
 
 
-C.....Cylinder free volume: no error trappin at present 
+C.....Cylinder free volume: no error trappin at present
       cMsg = 'Cylinder free volume is out of range'
       bDummy = bValue_GT_Min (
      &       fMH_free_volume ( iComponent ),
      &       0.0,
      &       cContext,cMsg,
      &       iComponent, 5, iReset )
-         
+
 C.....Minimum operating pressure
       cMsg = 'Cylinder minimum operating pressure is out of range'
       bDummy = bValue_GT_Min (
@@ -1787,11 +1787,11 @@ C.....Maximum operating pressure
      &       fMH_Pressure_MIN ( iComponent ),
      &       cContext,cMsg,
      &       iComponent, 6, iFatal ) ) then
-       
+
          bFatal_error = .true.
-         
-      endif 
-         
+
+      endif
+
 C.....Initial operating pressure
       cMsg = 'Cylinder initial pressure is out of range'
       bDummy = bValue_GT_Min (
@@ -1804,7 +1804,7 @@ C.....Initial operating pressure
      &       fMH_Pressure_MAX ( iComponent),
      &       cContext,cMsg,
      &       iComponent, 8, iReset )
-     
+
 C.....kmols of alloy
       cMsg = 'amount (kmols) of alloy is out of range'
       bDummy = bValue_GT_Min (
@@ -1820,7 +1820,7 @@ C.....Alloy specific heat cannot be less than zero
      &       0.0,
      &       cContext,cMsg,
      &       iComponent, 10, iReset )
-     
+
 C.....Hydride specific heat cannot be less than zero
       cMsg = 'Hydride specific heat is out of range'
       bDummy = bValue_GE_Min (
@@ -1862,11 +1862,11 @@ C.....Transitional concentration must be between 0 & max
 
 C-------------------------------------------------------------------------
 C     Has a fatal error occured?
-C-------------------------------------------------------------------------      
+C-------------------------------------------------------------------------
       if ( bFatal_error ) then
          write (itu,*) 'Metal Hydride storage model: Fatal error!'
          stop
-      endif 
+      endif
 C-------------------------------------------------------------------------
 C     Convert pressures to Pa
 C-------------------------------------------------------------------------
@@ -1876,7 +1876,7 @@ C-------------------------------------------------------------------------
      &                                            * 101.32E03        ! (Pa)
       fMH_Pressure_MIN (iComponent) = fMH_Pressure_MIN (iComponent)
      &                                            * 101.32E03        ! (Pa)
-     
+
       return
       end
 
@@ -2007,9 +2007,9 @@ C.....Inputs
       real fH_absorbed_kmol_P   ! mols of hydrogen absorbed in the
                                 !     alloy on present time row (kmol)
 
-      real fTemperature_P       ! Cylinder temperature on present 
+      real fTemperature_P       ! Cylinder temperature on present
                                 !     time row (K)
-      real fTemperature_F       ! Cylinder temperature on future 
+      real fTemperature_F       ! Cylinder temperature on future
                                 !     time row (K)
 
       real fH2_Conn_Mass_Flow   ! Rate at which hydrogen enters
@@ -2037,7 +2037,7 @@ C.....Subsolution parameters
 
       integer iSubSol_TS        ! sub-simulation timestep counter
 
-      integer iNum_SubSol_TS    ! number of sub-simulation timesteps. 
+      integer iNum_SubSol_TS    ! number of sub-simulation timesteps.
 
       real fSubSol_TS           ! sub-simulation time-step duration (s)
 
@@ -2046,7 +2046,7 @@ C.....Subsolution parameters
       real fPressure_P          ! present time row pressure (Pa)
 
       logical bPress_HiLo       ! flag indicating that pressure is outside
-                                !     limits. 
+                                !     limits.
 
 
 C.....Results from DEs
@@ -2058,37 +2058,37 @@ C.....Results from DEs
                                 !     the cylinder (kmol/s)
       real fPressure_dPdt       ! Rate of change in the cylinder
                                 !     pressure (Pa/s)
-      real fConc_dCdt           ! Rate of change in concentration 
+      real fConc_dCdt           ! Rate of change in concentration
                                 !     (mol/mol s)
 
       real fConc_dCdt_P         ! Rate of change in concentration at
                                 !     start of timestep (mol/mol s)
 
-      real fPressure_dPdt_P     ! Dimensionless Rate of change in 
+      real fPressure_dPdt_P     ! Dimensionless Rate of change in
                                 !     the cylinder pressure (1/s)
 
-      real fH2_free_dNdt_P      ! Dimensionless rate of change in the 
-                                !     mols of free hydrogen (H2) in the
-                                !     cylinder (1/s) 
-
-      real fH_absorbed_dNdt_P   ! Maximum rate of change in the 
-                                !     mols of free hydrogen (H2) in the
-                                !     cylinder (1/s) 
-
-      real fH2_free_dNdt_MAX    ! Maximum rate of change in the 
+      real fH2_free_dNdt_P      ! Dimensionless rate of change in the
                                 !     mols of free hydrogen (H2) in the
                                 !     cylinder (1/s)
-      
-      real fH_abs_dNdt_MAX      ! Maximum  rate of change in the 
+
+      real fH_absorbed_dNdt_P   ! Maximum rate of change in the
                                 !     mols of free hydrogen (H2) in the
                                 !     cylinder (1/s)
-      real fPressure_dPdt_MAX   ! Maximum Rate of change in 
+
+      real fH2_free_dNdt_MAX    ! Maximum rate of change in the
+                                !     mols of free hydrogen (H2) in the
+                                !     cylinder (1/s)
+
+      real fH_abs_dNdt_MAX      ! Maximum  rate of change in the
+                                !     mols of free hydrogen (H2) in the
+                                !     cylinder (1/s)
+      real fPressure_dPdt_MAX   ! Maximum Rate of change in
                                 !     the cylinder pressure (Pa/s)
 
-      real fRateChange_P        ! Maximum dimensionless rate of 
+      real fRateChange_P        ! Maximum dimensionless rate of
                                 !     change at start of timestep
 
-      real fRateChange_MAX      ! Maximum dimensionless rate of 
+      real fRateChange_MAX      ! Maximum dimensionless rate of
                                 !     encountered in sub-simulation loop
 
 C.....Parameters used to characterize dimensionless rates of change
@@ -2098,25 +2098,25 @@ C.....Parameters used to characterize dimensionless rates of change
                                  !    transition (kmol)
       real fH_absorbed_kmol_char ! Absorbed hydrogen at undercharge
                                  !    -> plateau transition (kmol)
- 
 
-C.....Runge Kutta working variables  
+
+C.....Runge Kutta working variables
       real fRK_temperature
       real fRK_H2_free_kmol
-      real fRK_H_abs_kmol 
+      real fRK_H_abs_kmol
 
 C.....Runge-Kutta integration intermediate results
-      real fRK_H2_free_dN_1   
+      real fRK_H2_free_dN_1
       real fRK_H2_free_dN_2
-      real fRK_H2_free_dN_3 
+      real fRK_H2_free_dN_3
       real fRK_H2_free_dN_4
       real fRK_H2_free_dN_avg
       real fRK_H2_free_dN_next
 
-      real fRK_H_abs_dN_1  
-      real fRK_H_abs_dN_2  
-      real fRK_H_abs_dN_3  
-      real fRK_H_abs_dN_4  
+      real fRK_H_abs_dN_1
+      real fRK_H_abs_dN_2
+      real fRK_H_abs_dN_3
+      real fRK_H_abs_dN_4
       real fRK_H_abs_dN_avg
       real fRK_H_abs_dN_next
 
@@ -2143,17 +2143,17 @@ C.....Misc flags.
       logical bNums_are_close   ! flag for close to zero comparisons
 
       logical bTS_too_big       ! flag indicating subsolution timestep
-                                !     is too big. 
+                                !     is too big.
 
       integer iIter_count
 
-      logical bSol_Diverged     ! Flag indicating that runge-kutta 
+      logical bSol_Diverged     ! Flag indicating that runge-kutta
                                 !     integration is diverging.
 
 C-----------------------------------------------------------------------
 C     Named constants
 C-----------------------------------------------------------------------
-      real fMaxChange           ! max change in state variables per 
+      real fMaxChange           ! max change in state variables per
                                 !    sub-simulation timestep (1/s)
       parameter (fMaxChange = 0.1)
 
@@ -2161,16 +2161,16 @@ C-----------------------------------------------------------------------
 C-----------------------------------------------------------------------
 C     References
 C-----------------------------------------------------------------------
-      real fMH_Eval_RateChange  ! Function determining max rate of 
+      real fMH_Eval_RateChange  ! Function determining max rate of
                                 !     change in state variables.
 
 C-----------------------------------------------------------------------
 C     Calculate linearized rate of change in tank temperature
 C
-C 
+C
 C       dT    Future temp - present temp
 C       --  = ---------------------------
-C       dt         TS duration 
+C       dt         TS duration
 C
 C-----------------------------------------------------------------------
       fTemp_dTdt = ( fTemperature_F - fTemperature_P ) / fTS_duration
@@ -2178,10 +2178,10 @@ C-----------------------------------------------------------------------
 C-----------------------------------------------------------------------
 C     Determine free & absorbed hydrogen and 'switch' pressure at
 C     transition from undercharged to plateau stages, using subordinate
-C     function MH_Eval_Langmuir_TRANS. These parameters will be 
-C     used to characterize the dimensionless rates of change in 
+C     function MH_Eval_Langmuir_TRANS. These parameters will be
+C     used to characterize the dimensionless rates of change in
 C     key state variables in the sub-simulation loop. Note: use
-C     average of present and future temperatures to determine 
+C     average of present and future temperatures to determine
 C     conditions at 'switch' point.
 C-----------------------------------------------------------------------
       call MH_Eval_Langmuir_TRANS (
@@ -2192,10 +2192,10 @@ C-----------------------------------------------------------------------
      &     fH_absorbed_kmol_char )
 
 C-----------------------------------------------------------------------
-C     Determine the rate of change in concentration at start of 
-C     simulation. 
+C     Determine the rate of change in concentration at start of
+C     simulation.
 C-----------------------------------------------------------------------
-      
+
       call MH_Eval_PCT_DEs (
      &      iComponent,
      &      fH2_free_kmol_P,
@@ -2213,7 +2213,7 @@ C-----------------------------------------------------------------------
 
 C-----------------------------------------------------------------------
 C        Determine dimensionless rates of change in absorbed & free
-C        hydrogen, and pressure. 
+C        hydrogen, and pressure.
 C-----------------------------------------------------------------------
          fH2_free_dNdt_P    = abs(fH2_free_dNdt)    / fH2_free_kmol_char
          fH_absorbed_dNdt_P = abs(fH_absorbed_dNdt)
@@ -2230,17 +2230,17 @@ C
 C       -> guesstimate the sub-simulation timestep required to produce
 C          a maximum 5% change in concentration.
 C       -> Simulate storage tank over simulation timestep
-C       -> compare maximum change in concentration with 5% limit, and 
+C       -> compare maximum change in concentration with 5% limit, and
 C          repeat if necessary
 C------------------------------------------------------------------------
 
-      bTS_too_big = .true. 
+      bTS_too_big = .true.
       iIter_Count = 0
       do while ( bTS_too_big .and. iIter_count .lt.10  )
 
          iIter_count = iIter_count + 1
 C-----------------------------------------------------------------------
-C        Estimate the subsolution timestep that will produce a 5% change 
+C        Estimate the subsolution timestep that will produce a 5% change
 C        in the concentration of absorbed hydrogen.
 C-----------------------------------------------------------------------
 
@@ -2249,13 +2249,13 @@ C........Is change in concentration close to zero?
 
          if ( bNums_are_close ) then
 
-C...........Concentration will not change on this timestep. Even so, 
-C...........solve state equation set at least once. 
+C...........Concentration will not change on this timestep. Even so,
+C...........solve state equation set at least once.
 
             fSubSol_TS = fTS_duration
             iNum_SubSol_TS = 1
-            
-         else 
+
+         else
 
 C-----------------------------------------------------------------------
 C           Determine appropriate resolution
@@ -2271,7 +2271,7 @@ C-----------------------------------------------------------------------
 C...........Calculate # of timesteps required.
             iNum_SubSol_TS = int ( fTS_duration / fSubSol_TS ) + 1
 
-         end if 
+         end if
 
 C........Recalculate time resolution to ensure that future time-row results
 C........coincide with sub-simulation results.
@@ -2290,46 +2290,46 @@ C........Runge-kutta working variables
 C-----------------------------------------------------------------------
 C        Begin sub-simulation loop.
 C-----------------------------------------------------------------------
-         do iSubSol_TS = 1, iNum_SubSol_TS 
-      
-C------------------------------------------------------------------------
-C           Determine temperature @ sub-simulaton timestep: 
-C           (assume linear changes in temperature)
-C------------------------------------------------------------------------  
-            fRK_Temperature = fTemperature_P
-     &           + float( iSubSol_TS - 1 ) / iNum_SubSol_TS * fTemp_dTdt  
+         do iSubSol_TS = 1, iNum_SubSol_TS
 
 C------------------------------------------------------------------------
-C           Initiate Runge-Kutta solution. For each sub-simulation 
+C           Determine temperature @ sub-simulaton timestep:
+C           (assume linear changes in temperature)
+C------------------------------------------------------------------------
+            fRK_Temperature = fTemperature_P
+     &           + float( iSubSol_TS - 1 ) / iNum_SubSol_TS * fTemp_dTdt
+
+C------------------------------------------------------------------------
+C           Initiate Runge-Kutta solution. For each sub-simulation
 C           time-step (i) :
 C
 C                                         | dY |
 C             k1 = (time step duration) * | -- |
 C                                         | dt | (Y = Yi)
-C     
+C
 C                                         | dY |
 C             k2 = (time step duration) * | -- |
 C                                         | dt | (Y = Yi + k1/2)
-C     
+C
 C                                         | dY |
 C             k3 = (time step duration) * | -- |
 C                                         | dt | (Y = Yi + k2/2)
-C     
+C
 C                                         | dY |
 C             k4 = (time step duration) * | -- |
 C                                         | dt | (Y = Yi + k3)
-C     
+C
 C                         k1   k2   k3   k4
 C             Yi+1 = Yi + -- + -- + -- + --
 C                         6.   3.   3.   6.
-C     
+C
 C           Where Y = # of free mols of hydrogen, number of absorbed
 C                     mols of hydrogen
-C     
+C
 C           The value of dY/dt is calculated using subroutine
-C           MH_Eval_PCT_DEs, which returns the rate of change in 
+C           MH_Eval_PCT_DEs, which returns the rate of change in
 C           the nunber of free and absorbed mols of hydrogen,
-C     
+C
 C------------------------------------------------------------------------
 
 C------------------------------------------------------------------------
@@ -2350,11 +2350,11 @@ C------------------------------------------------------------------------
      &           fConc_dCdt,
      &           fPressure_dPdt )
 
-           
+
 C-----------------------------------------------------------------------
 C           Integrate results over time slice. Note: there's no need
 C           to integrate the amounts of free and absorbed hydrogen,
-C           and pressure ---  we're only interested in their's rate 
+C           and pressure ---  we're only interested in their's rate
 C           of change at present.
 C-----------------------------------------------------------------------
             fRK_H2_free_dN_1 = fH2_free_dNdt    * fSubSol_TS   ! (kmols)
@@ -2371,23 +2371,23 @@ C-----------------------------------------------------------------------
      &           fH2_free_kmol_char,
      &           fH_absorbed_kmol_char,
      &           fPressure_char,
-     &           fRateChange_MAX )  
+     &           fRateChange_MAX )
 
 
 
 C-----------------------------------------------------------------------
 C           Set rates of change for next 1/2 TS approximation. If
-C           pressure is outside cylinder operating bounds, set 
-C           rate of change in free hydrogen to zero. This will 
-C           encourage convergence. 
+C           pressure is outside cylinder operating bounds, set
+C           rate of change in free hydrogen to zero. This will
+C           encourage convergence.
 C-----------------------------------------------------------------------
-            fRK_H_abs_dN_next = fRK_H_abs_dN_1 
+            fRK_H_abs_dN_next = fRK_H_abs_dN_1
             fRK_H2_free_dN_next = fRK_H2_free_dN_1
 
 
 C------------------------------------------------------------------------
-C           Evaluate differential equations at sub-simulation time step 
-C           i + 1/2 
+C           Evaluate differential equations at sub-simulation time step
+C           i + 1/2
 C------------------------------------------------------------------------
             call MH_Eval_PCT_DEs (
      &           iComponent,
@@ -2403,7 +2403,7 @@ C------------------------------------------------------------------------
      &           fH_absorbed_dNdt,
      &           fConc_dCdt,
      &           fPressure_dPdt )
-            
+
 
 
 C-----------------------------------------------------------------------
@@ -2425,18 +2425,18 @@ C-----------------------------------------------------------------------
      &           fH2_free_kmol_char,
      &           fH_absorbed_kmol_char,
      &           fPressure_char,
-     &           fRateChange_MAX )  
+     &           fRateChange_MAX )
 
 C-----------------------------------------------------------------------
 C           Set rates of change for next 1/2 TS approximation. If
-C           pressure is outside cylinder operating bounds, set 
-C           rate of change in free hydrogen to zero. This will 
-C           encourage convergence. 
+C           pressure is outside cylinder operating bounds, set
+C           rate of change in free hydrogen to zero. This will
+C           encourage convergence.
 C-----------------------------------------------------------------------
             fRK_H_abs_dN_next = fRK_H_abs_dN_2
             fRK_H2_free_dN_next = fRK_H2_free_dN_2
 
-c$$$            if ( bPress_HiLo ) then 
+c$$$            if ( bPress_HiLo ) then
 c$$$               fRK_H2_free_dN_next = 0.0
 c$$$            else
 c$$$               fRK_H2_free_dN_next = fRK_H2_free_dN_2
@@ -2445,8 +2445,8 @@ c$$$            endif
 
 
 C------------------------------------------------------------------------
-C           Evaluate differential equations at sub-simulation time step 
-C           i + 1/2 
+C           Evaluate differential equations at sub-simulation time step
+C           i + 1/2
 C------------------------------------------------------------------------
             call MH_Eval_PCT_DEs (
      &           iComponent,
@@ -2462,7 +2462,7 @@ C------------------------------------------------------------------------
      &           fH_absorbed_dNdt,
      &           fConc_dCdt,
      &           fPressure_dPdt )
-            
+
 C-----------------------------------------------------------------------
 C           Integrate results over time slice. Note: there's no need
 C           to integrate the concentration of absorbed hydrogen ---
@@ -2482,18 +2482,18 @@ C-----------------------------------------------------------------------
      &           fH2_free_kmol_char,
      &           fH_absorbed_kmol_char,
      &           fPressure_char,
-     &           fRateChange_MAX )  
+     &           fRateChange_MAX )
 
 C-----------------------------------------------------------------------
 C           Set rates of change for next 1/2 TS approximation. If
-C           pressure is outside cylinder operating bounds, set 
-C           rate of change in free hydrogen to zero. This will 
-C           encourage convergence. 
+C           pressure is outside cylinder operating bounds, set
+C           rate of change in free hydrogen to zero. This will
+C           encourage convergence.
 C-----------------------------------------------------------------------
             fRK_H_abs_dN_next = fRK_H_abs_dN_3
             fRK_H2_free_dN_next = fRK_H2_free_dN_3
 
-c$$$            if ( bPress_HiLo ) then 
+c$$$            if ( bPress_HiLo ) then
 c$$$               fRK_H2_free_dN_next = 0.0
 c$$$            else
 c$$$               fRK_H2_free_dN_next = fRK_H2_free_dN_3
@@ -2501,7 +2501,7 @@ c$$$            endif
 
 
 C------------------------------------------------------------------------
-C           Evaluate differential equations at sub-simulation time step 
+C           Evaluate differential equations at sub-simulation time step
 C           i + 1
 C------------------------------------------------------------------------
             call MH_Eval_PCT_DEs (
@@ -2510,7 +2510,7 @@ C------------------------------------------------------------------------
      &           fRK_H_abs_kmol   +  fRK_H_abs_dN_next   ,
      &           fH2_Conn_Mass_Flow,
      &           fH2_Demand,
-     &           fRK_Temperature + fTemp_dTdt * fSubSol_TS, 
+     &           fRK_Temperature + fTemp_dTdt * fSubSol_TS,
      &           fTemp_dTdt,
      &           fSubSol_TS,
      &           fPressure_P,
@@ -2518,7 +2518,7 @@ C------------------------------------------------------------------------
      &           fH_absorbed_dNdt,
      &           fConc_dCdt,
      &           fPressure_dPdt )
-            
+
 C-----------------------------------------------------------------------
 C           Integrate results over time slice. Note: there's no need
 C           to integrate the concentration of absorbed hydrogen ---
@@ -2538,40 +2538,40 @@ C-----------------------------------------------------------------------
      &           fH2_free_kmol_char,
      &           fH_absorbed_kmol_char,
      &           fPressure_char,
-     &           fRateChange_MAX )                                             
+     &           fRateChange_MAX )
 
 C------------------------------------------------------------------------
-C           Average results over time-slice. Note: segment midpoints 
+C           Average results over time-slice. Note: segment midpoints
 C           2 & 3 have twice the weight as end points 1 & 4
 C------------------------------------------------------------------------
-            fRK_H2_free_dN_avg = 
-     &           fRK_H2_free_dN_1 / 6.0 
+            fRK_H2_free_dN_avg =
+     &           fRK_H2_free_dN_1 / 6.0
      &         + fRK_H2_free_dN_2 / 3.0
-     &         + fRK_H2_free_dN_3 / 3.0 
+     &         + fRK_H2_free_dN_3 / 3.0
      &         + fRK_H2_free_dN_4 / 6.0
 
-            fRK_H_abs_dN_avg = 
-     &           fRK_H_abs_dN_1 / 6.0 
+            fRK_H_abs_dN_avg =
+     &           fRK_H_abs_dN_1 / 6.0
      &         + fRK_H_abs_dN_2 / 3.0
-     &         + fRK_H_abs_dN_3 / 3.0 
+     &         + fRK_H_abs_dN_3 / 3.0
      &         + fRK_H_abs_dN_4 / 6.0
 
-            fRK_H2_free_dNdt_avg = 
-     &           fRK_H2_free_dNdt_1 / 6.0 
+            fRK_H2_free_dNdt_avg =
+     &           fRK_H2_free_dNdt_1 / 6.0
      &         + fRK_H2_free_dNdt_2 / 3.0
-     &         + fRK_H2_free_dNdt_3 / 3.0 
+     &         + fRK_H2_free_dNdt_3 / 3.0
      &         + fRK_H2_free_dNdt_4 / 6.0
 
-            fRK_H_abs_dNdt_avg = 
-     &           fRK_H_abs_dNdt_1 / 6.0 
+            fRK_H_abs_dNdt_avg =
+     &           fRK_H_abs_dNdt_1 / 6.0
      &         + fRK_H_abs_dNdt_2 / 3.0
-     &         + fRK_H_abs_dNdt_3 / 3.0 
+     &         + fRK_H_abs_dNdt_3 / 3.0
      &         + fRK_H_abs_dNdt_4 / 6.0
 
-            fRK_Press_dPdt_avg = 
-     &           fRK_Press_dPdt_1 / 6.0 
+            fRK_Press_dPdt_avg =
+     &           fRK_Press_dPdt_1 / 6.0
      &         + fRK_Press_dPdt_2 / 3.0
-     &         + fRK_Press_dPdt_3 / 3.0 
+     &         + fRK_Press_dPdt_3 / 3.0
      &         + fRK_Press_dPdt_4 / 6.0
 
 C------------------------------------------------------------------------
@@ -2580,10 +2580,10 @@ C------------------------------------------------------------------------
             fRK_H2_free_kmol = fRK_H2_free_kmol + fRK_H2_free_dN_avg ! (kmol)
             fRK_H_abs_kmol   = fRK_H_abs_kmol   + fRK_H_abs_dN_avg   ! (kmol)
 
-         enddo 
+         enddo
 
-C----------------------------------------------------------------------- 
-C           Evaluate dimensionless rates of change and compare to 
+C-----------------------------------------------------------------------
+C           Evaluate dimensionless rates of change and compare to
 C           current maximum. Update maximum if necessary
 C-----------------------------------------------------------------------
 c$$$            fRateChange_MAX = fMH_Eval_RateChange(
@@ -2599,33 +2599,33 @@ c$$$     &           fRateChange_MAX )
 
 C-----------------------------------------------------------------------
 C        Check and see if the differential equations reported a
-C        rate of change in concentration larger than that used 
+C        rate of change in concentration larger than that used
 C        to calculate the subsolution timestep.
 C-----------------------------------------------------------------------
 
          if ( fRateChange_MAX * fSubSol_TS .gt. fMaxChange ) then
 
-C...........Greater time resolution is required. 
+C...........Greater time resolution is required.
             fRateChange_P = fRateChange_MAX * 1.5
 
-         else 
+         else
 
-C...........Time resolution is adequate. Kill subsimulation loop 
+C...........Time resolution is adequate. Kill subsimulation loop
             bTS_too_big = .false.
 
-         endif 
+         endif
 
-      enddo 
+      enddo
 
 C-----------------------------------------------------------------------
 C     Update future time-row variables
 C-----------------------------------------------------------------------
       fH2_free_kmol_F    = fRK_H2_free_kmol
-      fH_absorbed_kmol_F = fRK_H_abs_kmol 
+      fH_absorbed_kmol_F = fRK_H_abs_kmol
 
 C-----------------------------------------------------------------------
-C     Call function MH_Eval_PCT_DEs one more time to characterize 
-C     pressure at future time row 
+C     Call function MH_Eval_PCT_DEs one more time to characterize
+C     pressure at future time row
 C-----------------------------------------------------------------------
 
       call MH_Eval_PCT_DEs (
@@ -2634,7 +2634,7 @@ C-----------------------------------------------------------------------
      &      fH_absorbed_kmol_F,
      &      fH2_Conn_Mass_Flow,
      &      fH2_Demand,
-     &      fTemperature_P + fTemp_dTdt * fTS_duration, 
+     &      fTemperature_P + fTemp_dTdt * fTS_duration,
      &      fTemp_dTdt,
      &      fSubSol_TS,
      &      fPressure_F,
@@ -2644,7 +2644,7 @@ C-----------------------------------------------------------------------
      &      fPressure_dPdt )
 
       return
-      end 
+      end
 
 C----------------- MH_Eval_PCT_DEs -------------------------------------
 C
@@ -2688,7 +2688,7 @@ C
 C  - fH_absorbed_dNdt: Rate of change in the number of absorbed mols of
 C         hydrogen (H) in the cylinder (kmol/s)
 C
-C  - fConc_dCdt: Rate of change in the concentration in the cylinder 
+C  - fConc_dCdt: Rate of change in the concentration in the cylinder
 C         ( mol / mol s)
 C
 C  - fPressure_dPdt: Rate of change in the cylinder pressure (Pa/s)
@@ -2742,7 +2742,7 @@ C.....Outputs
       real fH_absorbed_dNdt     ! Rate of change in the number of
                                 !     absorbed mols of hydrogen (H) in
                                 !     the cylinder (kmol/s)
-      real fConc_dCdt           ! Rate of change in concentration 
+      real fConc_dCdt           ! Rate of change in concentration
                                 !     (mol/mol s)
       real fPressure_dPdt       ! Rate of change in the cylinder
                                 !     pressure (Pa/s)
@@ -2752,9 +2752,9 @@ C     Local variables
 C----------------------------------------------------------------------
       real fConcentration       ! Concentration of absorbed hydrogen
                                 !     ( mol H / mol alloy )
-      real fConc_Equilibrium    ! Concentration of absorbed hydrogen 
+      real fConc_Equilibrium    ! Concentration of absorbed hydrogen
                                 !     under equilibrium conditions
-                                !     ( mol H / mol alloy ) 
+                                !     ( mol H / mol alloy )
       real fH2_charge_rate      ! Rate at which hydrogen is admitted
                                 !     into the tank (kmol/s)
       real fH2_discharge_rate   ! Rate at which hydrogen is delivered
@@ -2826,7 +2826,7 @@ C     Determine rate of change in concentration:
 C
 C       dC
 C       --  = mass transfer coeff. * ( Equilibrium conc. - conc. )
-C       dt 
+C       dt
 C
 C     See Equation 94, Ferguson 2005.
 C----------------------------------------------------------------------
@@ -2890,22 +2890,22 @@ C----------------------------------------------------------------------
 C----------------- fMH_Eval_Q_reaction --------------------------------
 C
 C This function evaluates the heat of reaction associated with
-C the absorbtion of hydrogen at a given pressure and temperature. 
+C the absorbtion of hydrogen at a given pressure and temperature.
 C
 C Inputs:
 C
 C   -  iComponent: index of component in plant network
-C   -  fTemperature: Temperature inside cylinder (K) 
+C   -  fTemperature: Temperature inside cylinder (K)
 C   -  fPressure: pressure inside the cylinder (Pa)
 C
-C Outputs: 
+C Outputs:
 C   -  fMH_Eval_Q_reaction: Heat released during absorbtion
 C         of hydrogen (J/kmol H2 absorbed)
 C
 C-----------------------------------------------------------------------
       real function fMH_Eval_Q_reaction (
      &    iComponent,
-     &    fPressure, 
+     &    fPressure,
      &    fTemperature )
       implicit none
 #include "plant.h"
@@ -2922,7 +2922,7 @@ C-----------------------------------------------------------------------
       real fPress_TRAN           ! Pressure corresponding to transition
                                  !    from undercharge to plateau region (Pa)
       real fDummy1, fDummy2      ! Dummy arguements.
-                                 
+
 C-----------------------------------------------------------------------
 C     Use function MH_Eval_Langmuir_TRANS to determine transitional
 C     pressure. Note: we're not presently interested in procedure
@@ -2934,12 +2934,12 @@ C-----------------------------------------------------------------------
      &     fPress_TRAN,
      &     fDummy1,
      &     fDummy2 )
-                  
+
 C-----------------------------------------------------------------------
 C     Calculate enthalpy of absorbtion:
 C-----------------------------------------------------------------------
       if ( fPressure .lt. fPress_TRAN ) then
-      
+
 C-----------------------------------------------------------------------
 C        System is in undercharge region --- enthalpy of absorption is
 C        constant. See Equation 6, Jiang et al. 2004.
@@ -2958,23 +2958,23 @@ C
 C
 C        See Equation 6, Jiang et al 2004.
 C
-C-----------------------------------------------------------------------      
+C-----------------------------------------------------------------------
          fMH_Eval_Q_reaction = 2.0 * ( fMH_PCT_param_dH2 ( iComponent )
      &      +  (   fMH_PCT_param_dH1 ( iComponent )
      &           - fMH_PCT_param_dH1 ( iComponent ) )
      &         * fPress_TRAN ** 0.5 / fPressure ** 0.5 )
 
       endif
-      
+
       return
-      end 
+      end
 
 C----------------- fMH_Eval_RateChange ---------------------------------
 C
 C This function evaluates the maximum dimensionless rate of change
 C occuring in the:
 C    a) # mols of absorbed hydrogen
-C    b) # mols of free hydrogen 
+C    b) # mols of free hydrogen
 C    c) pressure.
 C
 C It then compares this value with the previous maximum and returns
@@ -2990,7 +2990,7 @@ C   -  fH_absorbed_kmol_P: absorbed hydrogen (kmol)
 C   -  fPressure_P: Pressure in the cylinder (Pa)
 C   -  fRateChange_MAX: Previous value of maximum rate of change (1/s)
 C
-C Outputs: 
+C Outputs:
 C   -  fRateChange_MAX: New value of maximum rate of change. (1/s)
 C
 C-----------------------------------------------------------------------
@@ -3002,10 +3002,10 @@ C-----------------------------------------------------------------------
      &     fH_absorbed_kmol_P,
      &     fPressure_P,
      &     fRateChange_MAX )
-      implicit none 
+      implicit none
 
 C-----------------------------------------------------------------------
-C     Passed arguements 
+C     Passed arguements
 C-----------------------------------------------------------------------
       real fH2_free_dNdt        ! Rate of change in free hydrogen (kmol/s)
       real fH_absorbed_dNdt     ! Rate of change in absorbed hydrogen (kmol/s)
@@ -3014,9 +3014,9 @@ C-----------------------------------------------------------------------
       real fH_absorbed_kmol_P   ! absorbed hydrogen (kmol)
       real fPressure_P          ! Pressure in the cylinder (Pa)
       real fRateChange_MAX      ! Previous value of maximum rate of change (1/s)
-  
+
 C-----------------------------------------------------------------------
-C     Local variables 
+C     Local variables
 C-----------------------------------------------------------------------
       real fH2_free_dNdt_P      ! dimensionless rates of change
       real fH_absorbed_dNdt_P   !
@@ -3024,12 +3024,12 @@ C-----------------------------------------------------------------------
 
 C-----------------------------------------------------------------------
 C     Determine dimensionless rates of change in absorbed & free
-C     hydrogen, and pressure, and compare to maximum value 
+C     hydrogen, and pressure, and compare to maximum value
 C     encountered thus far. Update maximum, if necessary.
 C-----------------------------------------------------------------------
 
       fH2_free_dNdt_P    = abs( fH2_free_dNdt )
-     &     / fH2_free_kmol_P 
+     &     / fH2_free_kmol_P
 
       fH_absorbed_dNdt_P = abs( fH_absorbed_dNdt )
      &     / fH_absorbed_kmol_P
@@ -3039,12 +3039,12 @@ C-----------------------------------------------------------------------
 
       if ( amax1 ( fH2_free_dNdt_P, fH_absorbed_dNdt_P)
      &     .gt. fRateChange_MAX ) then
-         
+
          fMH_Eval_RateChange  =
      &        amax1 (
      &        fH2_free_dNdt_P,
      &        fH_absorbed_dNdt_P )
-         
+
 
 !          print*, '       -> updating maximum:'
 !          print*, '          nfree:',fH2_free_dNdt_P,'=',
@@ -3053,19 +3053,19 @@ C-----------------------------------------------------------------------
 !      &        abs( fH_absorbed_dNdt ),'/',fH_absorbed_kmol_P
 !          print*, '          press:',fPressure_dPdt_P,'=',
 !      &        abs( fPressure_dPdt  ),'/',fPressure_P
-      else 
+      else
 
-         fMH_Eval_RateChange = fRateChange_MAX 
+         fMH_Eval_RateChange = fRateChange_MAX
 
-      endif 
+      endif
 
-      return 
-      end 
+      return
+      end
 
 
 C----------------- fMH_Eval_Langmuir_C -------------------------------
 C
-C This function evaluates the concentration of 
+C This function evaluates the concentration of
 C hydride ( hydrogen + alloy ) mols inside a metal hydride
 C storage container. It uses the Langmuir PCT isotherm
 C correlation proposed by Jiang et. al (2004)
@@ -3077,16 +3077,16 @@ C  - fTemperature: Temperature inside cylinder (K)
 C
 C Outputs:
 C
-C  - fMH_Eval_PCT_C: Concentration inside the cylinder 
+C  - fMH_Eval_PCT_C: Concentration inside the cylinder
 C       ( mols hydride / mols alloy + mols hydride )
 C
 C----------------------------------------------------------------------
 
       real function fMH_Eval_Langmuir_C(
-     &     iComponent, 
+     &     iComponent,
      &     fPressure,
      &     fTemperature )
-      implicit none 
+      implicit none
 
 #include "plant.h"
 #include "Hydrogen_MH_store.h"
@@ -3100,22 +3100,22 @@ C----------------------------------------------------------------------
       real fPressure            ! pressure inside cylinder (kPa)
       real fTemperature         ! temperature inside cylinder (K)
 C----------------------------------------------------------------------
-C     Local variables 
+C     Local variables
 C----------------------------------------------------------------------
       real fPress_TRAN          ! Switch pressure (kPa)
       real fB1, fB2             ! correlation coefficients
       real fDummy1,fDummy2      ! dummy variables
-       
+
 
 C----------------------------------------------------------------------
 C     Calculate 'switch' presssure at which cylinder transitions from
 C     undercharged to plateau regions.
 C
 C     Use subordinate procedure MH_Eval_Langmuir_TRANS, and note
-C     that the last two outputs from this procedure are not needed 
+C     that the last two outputs from this procedure are not needed
 C     in this context.
 C----------------------------------------------------------------------
-      call MH_Eval_Langmuir_TRANS 
+      call MH_Eval_Langmuir_TRANS
      &     ( iComponent,fTemperature,fPress_TRAN,fDummy1, fDummy2 )
 
 
@@ -3142,7 +3142,7 @@ C
 C             (Cs) [ 1 + b1 * Ps^(1/2)]        P^(1/2)
 C        C =  -------------------------  x  --------------
 C                    Ps^(1/2)               1 + b1 P^(1/2)
-C                    
+C
 C
 C
 C        where: Cs is the concentration of absorbed hydrogen at
@@ -3151,7 +3151,7 @@ C
 C
 C        See Equation 90, Ferguson 2005.
 C----------------------------------------------------------------------
-         fMH_Eval_Langmuir_C = 
+         fMH_Eval_Langmuir_C =
      &         fMH_concentration_TRANS ( iComponent )
      &     * ( 1.0 + fB1 * fPress_TRAN ** 0.5 )
      &     / ( fPress_TRAN ** 0.5 )
@@ -3191,12 +3191,12 @@ C
 C        See Equation 90, Ferguson 2005.
 C----------------------------------------------------------------------
 
-         fMH_Eval_Langmuir_C = 
-     &        fMH_concentration_TRANS ( iComponent ) 
+         fMH_Eval_Langmuir_C =
+     &        fMH_concentration_TRANS ( iComponent )
      &      + fB2 * ( fMH_concentration_MAX ( iComponent )
      &                 - fMH_concentration_TRANS ( iComponent ) )
      &      * ( fPressure ** 0.5 - fPress_TRAN ** 0.5 )
-     &            / ( 1.0 + fB2 
+     &            / ( 1.0 + fB2
      &                 * ( fPressure ** 0.5 - fPress_TRAN ** 0.5 ) )  ! (mol/mol)
 
 
@@ -3402,9 +3402,9 @@ C----------------------------------------------------------------------
 C----------------- MH_Eval_Langmuir_TRANS ---------------------------
 C
 C This function determines, for a given temperature,
-C the hydride storage's transition pressure / and the number of 
+C the hydride storage's transition pressure / and the number of
 C free & absorbed mols of hydrogen under these conditions. The PCT
-C model is based on the Langmuir isotherm correlations proposed 
+C model is based on the Langmuir isotherm correlations proposed
 C by Jiang et. al (2004)
 C
 C Inputs:
@@ -3415,7 +3415,7 @@ C Outputs:
 C
 C  - fPress_TRANS: pressure at transition point,
 C  - fH2_Free_kmol_TRANS: free hydrogen at transition point (kmol)
-C  - fH_abs_kmol_TRANS: absorbed mols of hydrogen at transition point 
+C  - fH_abs_kmol_TRANS: absorbed mols of hydrogen at transition point
 C        (kmol)
 C
 C----------------------------------------------------------------------
@@ -3448,7 +3448,7 @@ C
 C     Ps = exp [ Do + dH_s / ( universal gas constant * temperature ) ]
 C
 C     See Equation 95, Ferguson 2005. Note: both dH & R are defined
-C     in J/kmok K. 
+C     in J/kmok K.
 C----------------------------------------------------------------------
       fPress_TRAN = exp ( fMH_PCT_param_Do ( iComponent )
      &        + fMH_PCT_param_dHs ( iComponent )
@@ -3468,7 +3468,7 @@ C----------------------------------------------------------------------
      &     / fR_Universal / fTemperature ! (kmol)
 
 C----------------------------------------------------------------------
-C     Determine the number of mols of absorbed hydrogen 
+C     Determine the number of mols of absorbed hydrogen
 C
 C       H N abs = (concentration) * (kmol of alloy)
 C
@@ -3496,13 +3496,14 @@ C  None.
 C
 C----------------------------------------------------------------------
       subroutine MH_hydride_PostPro(iComponent, iStatus)
+      use h3kmodule
       implicit none
 #include "plant.h"
 #include "chemical_properties.h"
 #include "Hydrogen_MH_store.h"
 #include "CETC_definitions.h"
 
-C External functions.     
+C External functions.
       integer lnblnk
 
 C Passed arguements
@@ -3543,19 +3544,11 @@ C.....Misc. plant component data.
 C----------------------------------------------------------------------
 C     Local variables
 C----------------------------------------------------------------------
-      character*128 H3Kname       ! holding variable
-      character*128 char_temp     ! holding variable
-      integer iLength,iNameLength ! Length of strings
 
 C.....Connection indicies:
-      integer iH2O_connection, iH2_connection 
+      integer iH2O_connection, iH2_connection
 
       integer iH2O_node, iH2_node
- 
-      
-C.....Arrays storing locations of output variables
-      integer iStorage_index(mpcom)
-      save iStorage_index
 
 C.....Molar mass of hydrogen (kg/kmol)
       real fMM_Hydrogen
@@ -3568,10 +3561,11 @@ C.....Heat transfer to cooling water (W)
       real fQ_cooling
 
 C.....Cooling water average temperature (oC)
-      real fTemp_Cooling_avg          
+      real fTemp_Cooling_avg
 
-                        
-      
+C.....pcname lenght used for reporting
+      integer pcname_len
+
 C----------------------------------------------------------------------
 C     References
 C----------------------------------------------------------------------
@@ -3583,41 +3577,27 @@ C----------------------------------------------------------------------
       real shtfld               ! Function returning the heat capacity
                                 !   of water
       real H3K_Connect_property ! Function returning properties of a
-                                !   connection   
-                                
+                                !   connection
+
+
+
       if ( iStatus .eq. iInitialize ) then
-C----------------------------------------------------------------------
-C        Initialize reports
-C----------------------------------------------------------------------
-C........Get component name and length
-         write(char_temp,'(A,A,A)')
-     &      'plant/',
-     &      pcname(iComponent)
-     &               (1:lnblnk(pcname(iComponent))),
-     &      '/misc_data'
-         call h3k_StoreString(char_temp,
-     &                        iStorage_index(iComponent),
-     &                        iLength)
+
 C........Get hydrogen molar mass
          fMM_Hydrogen = fEval_Compound_MM ( iHydrogen )
 
 
       else
 
-C----------------------------------------------------------------------
-C        Recover Component name
-C----------------------------------------------------------------------
-         call h3k_RecoverString(iStorage_index(iComponent),
-     &                       char_temp, iNameLength)
 
 C........Get water connection index
          iH2_connection  = iCondX ( iComponent, 1, 1 )
          iH2O_connection = iCondX ( iComponent, 2, 1 )
-         
+
 C........H2O node index
          iH2_node  = NPCDAT ( iComponent, 9 )
          iH2O_node = NPCDAT ( iComponent, 9 ) + 1
-         
+
 C----------------------------------------------------------------------
 C        Calculate rate of heat transfer to cooling water
 C----------------------------------------------------------------------
@@ -3642,218 +3622,114 @@ C........Use temperature rise in cooling water (Q=mCdT)
          else
 
             fQ_cooling = 0.0
-         
+
          endif
-         
+
 C----------------------------------------------------------------------
 C        Calculate rate of heat loss to ambient
-C----------------------------------------------------------------------     
+C----------------------------------------------------------------------
 C........Q = hA ( T - T_amb )
          fQ_loss = fMH_cyl_wall_hA ( iComponent ) *
      &       (  csvf ( iH2_node, 1)
      &         -fMH_Report_Containment_TEMP ( iComponent ) )
-     
+
+         pcname_len = lnblnk(pcname(iComponent))
 C-----------------------------------------------
 C........Output data: future time-row free hydrogen (kmol)
-         write(H3Kname,'(A,A)')
-     &     char_temp(1:iNameLength),
-     &     '/hydrogen/free/kmol'
-         call add_to_xml_reporting(
+         call AddToReport(rvPltHydroFreeKMol%Identifier,
      &      fMH_Report_H2_free_kmol(iComponent) ,
-     &      H3Kname,
-     &      'units', '(kmol)',
-     &      'Amount of hydrogen (H2) in gaseous form in cylinder'
-     &      )
+     &      pcname(iComponent)(1:pcname_len))
 
 C-----------------------------------------------
 C........Output data: future time-row free hydrogen (kg)
-         write(H3Kname,'(A,A)')
-     &     char_temp(1:iNameLength),
-     &     '/hydrogen/free/kg'
-         call add_to_xml_reporting(
+         call AddToReport(rvPltHydroFreeKg%Identifier,
      &      fMH_Report_H2_free_kmol(iComponent) * fMM_Hydrogen,
-     &      H3Kname,
-     &      'units', '(kg)',
-     &      'Amount of hydrogen (H2) in gaseous form in cylinder'
-     &      )
+     &      pcname(iComponent)(1:pcname_len))
 
 C-----------------------------------------------
 C........Output data: future time-row absorbed hydrogen (kmol)
-         write(H3Kname,'(A,A)')
-     &     char_temp(1:iNameLength),
-     &     '/hydrogen/absorbed/kmol'
-         call add_to_xml_reporting(
+         call AddToReport(rvPltHydroAbsorbedKmol%Identifier,
      &      fMH_Report_H_abs_kmol(iComponent) ,
-     &      H3Kname,
-     &      'units', '(kmol)',
-     &      'Amount of hydrogen (H) absorbed in cylinder'
-     &      )
+     &      pcname(iComponent)(1:pcname_len))
 
 C-----------------------------------------------
 C........Output data: future time-row absorbed hydrogen (kg)
-         write(H3Kname,'(A,A)')
-     &     char_temp(1:iNameLength),
-     &     '/hydrogen/absorbed/kg'
-         call add_to_xml_reporting(
+         call AddToReport(rvPltHydroAbsorbedKg%Identifier,
      &      fMH_Report_H_abs_kmol(iComponent) * fMM_Hydrogen,
-     &      H3Kname,
-     &      'units', '(kg)',
-     &      'Amount of hydrogen (H) absorbed in cylinder'
-     &      )
+     &      pcname(iComponent)(1:pcname_len))
 
 C-----------------------------------------------
 C........Output data: future time-row hydrogen vent rate
-         write(H3Kname,'(A,A)')
-     &     char_temp(1:iNameLength),
-     &     '/hydrogen/vent/kmol'
-         call add_to_xml_reporting(
+         call AddToReport(rvPltHydroVentKmol%Identifier,
      &      fMH_Report_H2_vent(iComponent),
-     &      H3Kname,
-     &      'units', '(kmol/s)',
-     &      'Rate at which hydrogen is vented from cylinder'
-     &      )
+     &      pcname(iComponent)(1:pcname_len))
 
 C-----------------------------------------------
 C........Output data: future time-row hydrogen charge rate
-         write(H3Kname,'(A,A)')
-     &     char_temp(1:iNameLength),
-     &     '/hydrogen/charge/kmol'
-         call add_to_xml_reporting(
+         call AddToReport(rvPltHydroChargeKmol%Identifier,
      &      fMH_Report_H2_charge(iComponent),
-     &      H3Kname,
-     &      'units', '(kmol/s)',
-     &      'Rate at which hydrogen is charged to cylinder'
-     &      )
+     &      pcname(iComponent)(1:pcname_len))
 
 C-----------------------------------------------
 C........Output data: future time-row hydrogen discharge rate
-         write(H3Kname,'(A,A)')
-     &     char_temp(1:iNameLength),
-     &     '/hydrogen/discharge/kmol'
-         call add_to_xml_reporting(
+         call AddToReport(rvPltHydroDisKmol%Identifier,
      &      fMH_Report_H2_discharge(iComponent),
-     &      H3Kname,
-     &      'units', '(kmol/s)',
-     &      'Rate at which hydrogen is discharged from cylinder'
-     &      )
+     &      pcname(iComponent)(1:pcname_len))
 
 C-----------------------------------------------
 C........Output data: future time-row pressure
-         write(H3Kname,'(A,A)')
-     &     char_temp(1:iNameLength),
-     &     '/pressure'
-         call add_to_xml_reporting(
+         call AddToReport(rvPltCylPressure%Identifier,
      &      fMH_Report_Pressure(iComponent) / 1000.,
-     &      H3Kname,
-     &      'units', '(kPa)',
-     &      'Cylinder pressure'
-     &      )
-
-C-----------------------------------------------
-C........Output data: future time-row pressure
-         write(H3Kname,'(A,A)')
-     &     char_temp(1:iNameLength),
-     &     '/pressure'
-         call add_to_xml_reporting(
-     &      fMH_Report_Pressure(iComponent) / 1000.,
-     &      H3Kname,
-     &      'units', '(kPa)',
-     &      'Cylinder pressure'
-     &      )
+     &      pcname(iComponent)(1:pcname_len))
 
 C-----------------------------------------------
 C........Output data: Explicit hydrogen demand
-         write(H3Kname,'(A,A)')
-     &     char_temp(1:iNameLength),
-     &     '/demand/explicit'
-         call add_to_xml_reporting(
+         call AddToReport(rvPltDemandExpl%Identifier,
      &      fMH_Report_Demand_EXP ( iComponent ),
-     &      H3Kname,
-     &      'units', '(kmol/s)',
-     &      'Hydrogen requirements of components in plant network'
-     &      )
+     &      pcname(iComponent)(1:pcname_len))
+
 C-----------------------------------------------
 C........Output data: Implicit hydrogen demand
-         write(H3Kname,'(A,A)')
-     &     char_temp(1:iNameLength),
-     &     '/demand/implicit'
-         call add_to_xml_reporting(
+         call AddToReport(rvPltDemandImpl%Identifier,
      &      fMH_Report_Demand_IMP(iComponent),
-     &      H3Kname,
-     &      'units', '(kmol/s)',
-     &      'Hydrogen requirements of devices not necessarly contained '
-     &      // 'within the plant network'
-     &      )
+     &      pcname(iComponent)(1:pcname_len))
 
-     
 C-----------------------------------------------
 C........Output data: Heat transfer to cooling water
-         write(H3Kname,'(A,A)')
-     &     char_temp(1:iNameLength),
-     &     '/heat_recovery'
-         call add_to_xml_reporting(
+         call AddToReport(rvPltHRecovery%Identifier,
      &      fQ_cooling,
-     &      H3Kname,
-     &      'units', '(W)',
-     &      'Heat transferred to cooling water (+ive is transfer'
-     &      // ' from MH unit to water)')
+     &      pcname(iComponent)(1:pcname_len))
 
-     
 C-----------------------------------------------
 C........Output data: Heat loss
-         write(H3Kname,'(A,A)')
-     &     char_temp(1:iNameLength),
-     &     '/heat_loss'
-         call add_to_xml_reporting(
+         call AddToReport(rvPltHLoss%Identifier,
      &      fQ_loss,
-     &      H3Kname,
-     &      'units', '(W)',
-     &      'Heat lost to surroundings')
+     &      pcname(iComponent)(1:pcname_len))
 
 C-----------------------------------------------
 C........Output data: Heat production (absorbtion)
-         write(H3Kname,'(A,A)')
-     &     char_temp(1:iNameLength),
-     &     '/heat_of_reaction'
-         call add_to_xml_reporting(
+         call AddToReport(rvPltHReaction%Identifier,
      &      fMH_Report_Q_absorbtion(iComponent),
-     &      H3Kname,
-     &      'units', '(W)',
-     &      'Heat generated during absorption of hydrogen')
-     
+     &      pcname(iComponent)(1:pcname_len))
+
 C-----------------------------------------------
 C........Output data: Containment temperature
-         write(H3Kname,'(A,A)')
-     &     char_temp(1:iNameLength),
-     &     '/containment_temperature'
-         call add_to_xml_reporting(
+         call AddToReport(rvPltContainTemp%Identifier,
      &      fMH_Report_Containment_TEMP(iComponent),
-     &      H3Kname,
-     &      'units', '(oC)',
-     &      'Temperature of containing zone')
+     &      pcname(iComponent)(1:pcname_len))
 
 C-----------------------------------------------
 C........Flow work associated with charging
-         write(H3Kname,'(A,A)')
-     &     char_temp(1:iNameLength),
-     &     '/h2_connection/flow_work'
-         call add_to_xml_reporting(
+         call AddToReport(rvPltH2ConnFlowWork%Identifier,
      &      fMH_Report_Charge_FWork(iComponent),
-     &      H3Kname,
-     &      'units', '(W)',
-     &      'Flow work associated with charging tank')
+     &      pcname(iComponent)(1:pcname_len))
 
 C-----------------------------------------------
 C........Flow work associated with charging
-         write(H3Kname,'(A,A)')
-     &     char_temp(1:iNameLength),
-     &     '/h2_discharge/flow_work'
-         call add_to_xml_reporting(
+         call AddToReport(rvPltH2DiscFlowWork%Identifier,
      &      fMH_Report_Disch_FWork(iComponent),
-     &      H3Kname,
-     &      'units', '(W)',
-     &      'Flow work assocaited with discharging tank')
-                   
+     &      pcname(iComponent)(1:pcname_len))
+
       endif
 
       return
@@ -3861,17 +3737,17 @@ C........Flow work associated with charging
 
 C--------------- fMH_Debug_PCT -----------------------------------------
 C
-C     This is a debugging procedure that outputs PCT isotherms for the 
+C     This is a debugging procedure that outputs PCT isotherms for the
 C     metal-hydride model. It is not called during normal simulation.
 C
 C-----------------------------------------------------------------------
       subroutine MH_debug_PCT ( iComponent )
-      implicit none 
+      implicit none
 #include "plant.h"
 #include "Hydrogen_MH_store.h"
 #include "chemical_properties.h"
 
-      integer iComponent 
+      integer iComponent
 C-----------------------------------------------------------------------
 C     Debugging variables
 C-----------------------------------------------------------------------
@@ -3888,7 +3764,7 @@ C-----------------------------------------------------------------------
       real fDebug_dNabs_dT
       real fDebug_dPdT
       real fDebug_dTdt
-      real fDebug_Vol_flow 
+      real fDebug_Vol_flow
 
       real fDebug_C_results (11)
 
@@ -3907,7 +3783,7 @@ C.....reference
 
 
 C----------------------------------------------------------------------
-C     Model parms: If this section of the code is uncommented, 
+C     Model parms: If this section of the code is uncommented,
 C     the model will produce the PCT isotherms & discharge profiles
 C     published by Gadre et al. 2003.
 C----------------------------------------------------------------------
@@ -3915,7 +3791,7 @@ C----------------------------------------------------------------------
 
 c$$$      fMH_kmols_alloy ( iComponent ) = 0.357723
 c$$$
-c$$$      fMH_free_volume ( iComponent ) = 0.0041 
+c$$$      fMH_free_volume ( iComponent ) = 0.0041
 c$$$
 c$$$      fMH_concentration_TRANS ( iComponent ) = 0.125
 c$$$      fMH_concentration_MAX ( iComponent )   = 0.984
@@ -3924,7 +3800,7 @@ c$$$
 c$$$      fMH_pressure_MAX ( iComponent )  = 80.0  * 101.32 * 1.0E03
 c$$$
 c$$$      fMH_pressure_MIN ( iComponent )  = 1.0   * 101.32 * 1.0E03
-c$$$ 
+c$$$
 c$$$      fMH_pressure_INIT ( iComponent ) = 0.001 * 101.32 * 1.0E03
 c$$$
 c$$$      fMH_PCT_param_b1o ( iComponent ) =  2.36E-06
@@ -3940,34 +3816,34 @@ c$$$      fMH_PCT_param_Kc  ( iComponent ) =  8.14E-03
 
 C----------------------------------------------------------------------
 C     The following code will produce a set of PCT
-C     isotherms that can be used when evaluating the model. The 
+C     isotherms that can be used when evaluating the model. The
 C     results should agree with Figure 4 from Gadre et. al 2004.
 C----------------------------------------------------------------------
-     
-      
+
+
 C.....Open file, and check that no errors were encountered
-      open ( unit=93, File='PCT.csv', STATUS='unknown', 
+      open ( unit=93, File='PCT.csv', STATUS='unknown',
      &     IOSTAT=iErr)
       if ( iErr .ne. 0 ) then
          print *, ' H2_MH_balance: Could not open file PCT.csv ',
      &        'for writing. PCT curves will not be written out. '
       else
-         
-C........Header row 
+
+C........Header row
          write(93,*) ',273,283,293,303,313,323,333,343,353,363,373'
 
-         do iCount_a = 0, 9999 
+         do iCount_a = 0, 9999
 C           Calculate pressure
-            fDebug_Press = 1.0 
+            fDebug_Press = 1.0
      &           + ( fMH_Pressure_MAX ( iComponent ) - 1.0 )
-     &           * float( iCount_a )/ 9999.0 
+     &           * float( iCount_a )/ 9999.0
 
             do iCount_b = 1, 11
-C..............Calculate temerature                
-               fDebug_temp = 263.15 + float (iCount_b) * 10. 
+C..............Calculate temerature
+               fDebug_temp = 263.15 + float (iCount_b) * 10.
 
 C..............Determine concentraton at temperature, pressure
-               fDebug_C_results (iCount_b) = 
+               fDebug_C_results (iCount_b) =
      &              fMH_Eval_Langmuir_C(
      &              iComponent,
      &              fDebug_Press,
@@ -3975,7 +3851,7 @@ C..............Determine concentraton at temperature, pressure
 
             enddo
 
-C...........Output            
+C...........Output
             write(93,10) fDebug_press / 1000.0, ',',
      &           fDebug_C_results (1),',',
      &           fDebug_C_results (2),',',
@@ -3993,7 +3869,7 @@ C...........Output
 
          close ( unit = 93 )
 
-      endif 
+      endif
 
 
 
@@ -4011,10 +3887,10 @@ C.....Initialize parameters
       fDebug_dt   = 60.0        ! s
 
 C.....Calculate timesteps req'd for 16 hours:
-      iDebug_TS_Count = int(16.*3600./fDebug_dt) 
+      iDebug_TS_Count = int(16.*3600./fDebug_dt)
 
 C.....Open file, and check that no errors were encountered
-      open ( unit=93, File='MH_discharge.csv', STATUS='unknown', 
+      open ( unit=93, File='MH_discharge.csv', STATUS='unknown',
      &     IOSTAT=iErr)
       if ( iErr .ne. 0 ) then
          print *, ' H2_MH_balance: Could not open file ',
@@ -4022,7 +3898,7 @@ C.....Open file, and check that no errors were encountered
      &        'curves will not be written out. '
       else
 
-         
+
 C........Header rows
          write(93,*) ',Pressure,,,,,,,,Concentration'
          write(93,*) ',05,10,15,20,25,30,35,40,'
@@ -4031,36 +3907,36 @@ C........Header rows
 
          do iCount_a = 1, 8
 
-C...........Characterize discharge @ 5-40 SLPM, in increments  
+C...........Characterize discharge @ 5-40 SLPM, in increments
 C...........of 5 SLPM.
 
-C...........STP volumetric flow 
-            fDebug_Vol_flow = float (iCount_a ) * 5.0  / 60.0 / 1000.0 ! (m3/s) 
+C...........STP volumetric flow
+            fDebug_Vol_flow = float (iCount_a ) * 5.0  / 60.0 / 1000.0 ! (m3/s)
 
-C...........mass flow 
-            fDebug_Discharge = 101.32 * fDebug_Vol_flow / 
+C...........mass flow
+            fDebug_Discharge = 101.32 * fDebug_Vol_flow /
      &           ( fR_universal / 1000.) / 273.15
 
 
-C...........Collect initial conditions:         
+C...........Collect initial conditions:
 
 C...........Pressure -> 25 atm
             fDebug_press = 25.0 * 101.32 * 1.0E03 ! (Pa)
-            
+
 
             call MH_Eval_initial_conditions(
      &           iComponent,
-     &           fDebug_press, 
-     &           fDebug_temp, 
+     &           fDebug_press,
+     &           fDebug_temp,
      &           fDebug_Nfree_P,
      &           fDebug_Nabs_P    )
 
 
-C...........Set initial conditions             
+C...........Set initial conditions
             fDebug_DisTime(1)= 0.
             fDebug_DisP_results (1,iCount_a) = fDebug_press
      &           / 101.32 /1.0E03
-            fDebug_DisC_results (1,iCount_a) = 
+            fDebug_DisC_results (1,iCount_a) =
      &          fDebug_Nabs_P / fMH_kmols_alloy ( iComponent )
 
 C...........Characterize system over 16 hours
@@ -4083,39 +3959,39 @@ C...........Characterize system over 16 hours
 
 C..............Calculate time (hrs)
                if ( iCount_a .eq. 1 ) then
-                  fDebug_DisTime ( iCount_b) =  
+                  fDebug_DisTime ( iCount_b) =
      &                 float ( iCount_b ) * fDebug_dt / 3600.0
                endif
 
 C..............Save results
-               fDebug_DisP_results (iCount_b+1, iCount_a) 
+               fDebug_DisP_results (iCount_b+1, iCount_a)
      &            = fDebug_Press_F / 101.32 /1.0E03
                fDebug_DisC_results (iCount_b+1, iCount_a) =
      &              fDebug_Nabs_F / fMH_kmols_alloy ( iComponent )
 
 C..............Time-row transport
-! 
+!
 !                print*, '      -> mols      ', fDebug_Nfree_P +
 !      &              fDebug_Nabs_P / 2.0
 !                print*, '      -> mol change', fDebug_Nfree_F
-!      &              + fDebug_Nabs_F / 2.0 
+!      &              + fDebug_Nabs_F / 2.0
 !      &              - fDebug_Nfree_P - fDebug_Nabs_P/ 2.0
 !                print*, '      -> mols flow ',
 !      &              ( fDebug_Nfree_F + fDebug_Nabs_F/ 2.0
 !      &              - fDebug_Nfree_P -fDebug_Nabs_P/ 2.0)
 !      &              / fDebug_dt
-! 
-!  
+!
+!
                fDebug_Nfree_P =  fDebug_Nfree_F
                fDebug_Nabs_P  =  fDebug_Nabs_F
-              
+
 
 
             enddo
 
          enddo
 
-C........Dump results to file 
+C........Dump results to file
          do iCount_b =  1, iDebug_TS_count
 
             write ( 93, 11 )
@@ -4141,12 +4017,12 @@ C........Dump results to file
 
          close ( unit = 93 )
 
-      endif 
+      endif
 
 
  10   FORMAT (
      &     F9.2,A,
-     &     F9.7,A, 
+     &     F9.7,A,
      &     F9.7,A,
      &     F9.7,A,
      &     F9.7,A,

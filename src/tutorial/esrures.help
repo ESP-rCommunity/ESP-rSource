@@ -173,8 +173,8 @@
 *subroutine ENRFILT
 *item ENRFILT res_data_entry_onoff
 'Clicking on a data entity shown on this menu will'
-'toggle it to "ON" or "OFF". In the "ON" state the'
-'entity will be shown on the graph. In the "OFF" '
+'toggle it to [ON] or [OFF]. In the [ON] state the'
+'entity will be shown on the graph. In the [OFF] '
 'the entity is not graphed.'
 *enditem
         CALL PHELPD(HEAD,4,'-',0,0,IER)
@@ -995,6 +995,13 @@ C        CALL EASKABC('Data display options:',outs,
 '  comma separator (for excel)'
 '  tab separator (for excel)'
 '  tagged - marked up data'
+'  '
+'Also you can alter the reporting units for heating and cooling'
+'sensible and latent from kW or kWhr to W or Whr to reflect the'
+'range of values presented.  The Units choice is available for'
+'both tabular listings and graphs.'
+'Note: that surface energy balance values are always reported in 
+'W or Whr (even if the toggle is set to kW or kWhr.'
 *enditem
           CALL EASKATOG('Delimeter to use between columns of data:',' ',
 *item GOMENU res_graph_title_edit

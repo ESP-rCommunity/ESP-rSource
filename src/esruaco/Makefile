@@ -1,5 +1,6 @@
 SRCdir = `pwd`/..
 BLDdir = $(SRCdir)/esrubld
+CDBdir = $(SRCdir)/esrucdb
 COMdir = $(SRCdir)/esrucom
 MFSdir = $(SRCdir)/esrumfs
 MRTdir = $(SRCdir)/esrumrt
@@ -12,18 +13,21 @@ PROG= aco$(EXE)
 .F.o:
 	$(MFC) $(FFLAGS) -c $<
 
-MODULE_OBJECTS = startup.o aim2_module.o
+%.o : %.f90
+	$(MCC) $(FFLAGS) -c $<
 
-OBJECTS = aco.o acocalc.o acoesp.o arrow.o ascii_mat.o \
+MODULE_OBJECTS = h3kmodule.o startup.o aim2_module.o
+
+OBJECTS = aco.o acocalc.o acoesp.o arrow.o ascii_mat.o azalt.o\
 	basesimp.o basesimp_inputs.o bscoeff.o bscoeff_extended.o \
- c2fdum.o common3dv.o  \
+ 	c2fdum.o common3dv.o CDBPlugins.o CDBCommon.o CDBExplore.o \
 	cread3dv.o ctlexp.o ctread.o dossupport.o e3dviews.o econstr.o edatabase.o \
 	edcondb.o egeometry.o emfnetw.o enetmisc.o eroper.o esru_misc.o \
 	esystem.o filelist.o item.o mfcdat.o nwkrewr.o pltcfg.o readaco.o \
-	readBCF.o readTrnsys.o rwipv.o rwsbem.o sort.o  tdfile.o
+	readBCF.o readTrnsys.o rwipv.o rwsbem.o sort.o  tdfile.o qrun.o
 
-MODULES = aim2.mod aim2_calcdata.mod aim2_h2K_dummy.mod aim2_inputdata.mod start_up.mod \
-	parse_command_line.mod
+MODULES = aim2.mod aim2_calcdata.mod aim2_h2k_dummy.mod aim2_inputdata.mod start_up.mod \
+	parse_command_line.mod h3kmodule.mod
 
 $(PROG): $(MODULE_OBJECTS) $(OBJECTS)
 	$(MFC) $(LD_FLAGS) -o  $(PROG) $(FFLAGS) $(MODULE_OBJECTS) $(OBJECTS) $(ULIBS) $(F_to_C_flags)
@@ -52,6 +56,15 @@ bscoeff_extended.F:
 c2fdum.F:
 	rm -f c2fdum.F
 	ln -s $(COMdir)/c2fdum.F .
+CDBPlugins.F:
+	rm -f CDBPlugins.F
+	ln -s $(CDBdir)/CDBPlugins.F .
+CDBCommon.F:
+	rm -f CDBCommon.F
+	ln -s $(CDBdir)/CDBCommon.F .
+CDBExplore.F:
+	rm -f CDBExplore.F
+	ln -s $(CDBdir)/CDBExplore.F .
 common3dv.F:
 	rm -f common3dv.F
 	ln -s $(COMdir)/common3dv.F .
@@ -133,6 +146,15 @@ startup.F:
 tdfile.F:
 	rm -f tdfile.F
 	ln -s $(COMdir)/tdfile.F .
+azalt.F:
+	rm -f azalt.F
+	ln -s $(COMdir)/azalt.F .
+qrun.F:
+	rm -f qrun.F
+	ln -s $(COMdir)/qrun.F .
+h3kmodule.f90:
+	rm -f h3kmodule.f90
+	ln -s $(CETCdir)/h3kmodule.f90 .
 
 strip:
 	@if [ -f $(PROG) ]; then strip $(PROG); fi
@@ -144,8 +166,8 @@ install:
 clean:
 	rm -f core $(PROG) $(PROG).exe $(OBJECTS) $(MODULE_OBJECTS) $(MODULES) \
 	aim2_module.F arrow.F ascii_mat.F blcond.F basesimp.F basesimp_inputs.F \
-	bscoeff.F bscoeff_extended.F c2fdum.F common3dv.F cread3dv.F ctlexp.F ctread.F dossupport.F \
+	bscoeff.F bscoeff_extended.F c2fdum.F CDBPlugins.F CDBCommon.F CDBExplore.F common3dv.F cread3dv.F ctlexp.F ctread.F dossupport.F \
 	e3dviews.F ecasctl.F econstr.F edcon.F edcondb.F edatabase.F egeometry.F egtgeom.F \
 	emfnetw.F enetmisc.F enetrewr.F emkcfg.F eroper.F esru_misc.F esystem.F filelist.F \
 	inside.F item.F mfcdat.F nwkrewr.F pltcfg.F readTrnsys.F rwipv.F rwsbem.F \
-	sort.F startup.F tdfile.F
+	sort.F startup.F tdfile.F h3kmodule.f90 qrun.F azalt.f

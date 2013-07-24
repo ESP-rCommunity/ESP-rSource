@@ -2,7 +2,7 @@ c Declare integer variables in parameter file hvac.h
 
 c Maximum number of hvac systems that can be declared in the .hvac file
       INTEGER max_sys
-      parameter (max_sys = 5)
+      parameter (max_sys = 25)
 
 C Named constants for system types
       integer iSysFurnace, iSysBoiler, iSysBaseboard, iSysIMS_P10,

@@ -699,6 +699,8 @@ C simulation related information. It is passed npc the
 C number of plant components used in the network.
 C If user cancels file browse set ier to -3.
       subroutine opnplt(npc,imode,ier)
+#include "building.h"
+#include "model.h"
 #include "plant.h"
 #include "esprdbfile.h"
 C esprdbfile.h supplies the following:
@@ -735,20 +737,23 @@ C the best-guess of file names (but with full path).
       
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
-      common/C21/IFCFG,cfgroot,LCFGF
       COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
 
 C Defaults.
+      character*96 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF
       COMMON/DEFLT2/DFCFG,DFCTL,DEFRLB,DAFRES,DAPROB,DPNF
-      character*72 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF
 
+      character xfile*144,tg*1,delim*1
+      common/exporttg/xfile,tg,delim
 
-      character DFILE*72,LTMP*144,outs*124,louts*248
+      character DFILE*72,LTMP*144
+      character outs*124,louts*248
       character lctlf*72,ctldoc*248,scname*12,MODE*4
-      character firstbit*72,secondbit*72,path*72,LCFGF*72,cfgroot*24
+      character firstbit*72,secondbit*72,path*72
       character longtmp*144
       logical XST,ok,dok
       logical CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
+      integer nsim  ! number of simulations
 
 C For help messages
       character helpinsub*24   ! subroutine name
@@ -770,15 +775,6 @@ C For help messages
         else
           ltmp=' '
         endif
-
-C Assume default plants results name (*.plr) taken from zone results
-C name (*.res). Use the same style as in MFOUTP.
-C	lrf=lnblnk(LTMP)
-C	lrf3=lrf-3
-C	lrf4=lrf-4
-C	if(LTMP(lrf3:lrf).eq.'.res')then
-C	  write(LTMP,'(2a)') LTMP(1:lrf4),'.plr'
-C	endif
 
         llt=lnblnk(ltmp)
         helptopic='res_plant_res_file'
@@ -814,22 +810,28 @@ C name with the full path.
       endif
       IER=0
 
-      INQUIRE (FILE=LTMP,EXIST=XST)
+      INQUIRE (FILE=ltmp,EXIST=XST)
       IF(XST)THEN
 
 C Set record length of library file.
+        CALL ERPFREE(iunitp,ISTAT)
         nprl = nprecl
-        OPEN (iunitp,FILE=LTMP(1:lnblnk(LTMP)),ACCESS='DIRECT',
-     &    RECL=nprl*4,FORM='UNFORMATTED',STATUS='OLD',IOSTAT=ISTAT)
-          write(outs,'(A,I3)')' Opening file with record length',nprl
+        call EFOPRAN(iunitp,ltmp,nprl,1,IER)
+        if(ier.eq.0) then
+          write(outs,'(A,I3)')
+     &     ' Opened plant results with record length',nprl
           call edisp(iuout,outs)
+        else
+          call edisp(iuout,'Unable to open plant results')
+        endif
       ELSE
 
-C Try again ?
+C Try again? Note: because of space limits only echo the start of
+C the plant file name.
         dok=.false.
         helptopic='plant_res_file_not'
         call gethelptext(helpinsub,helptopic,nbhelp)
-        write(outs,'(2a)') ' Could not find ',LTMP(1:lnblnk(LTMP))
+        write(outs,'(2a)') ' Could not find ',LTMP(1:72)
         CALL ASKOK(outs,' Do you want to try again?',OK,dok,nbhelp)
         IF(.NOT.OK) return
         goto  6
@@ -878,7 +880,7 @@ C scan it in at this point. Read the 2nd item on record 32 to get location.
 C Debug.
 C        write(6,*) 'opnplt: newer plant ',iftype
 
-	IPLIB=2
+        IPLIB=2
         IREC=32
         READ(IUNITp,REC=IREC,IOSTAT=ISTAT,ERR=1000)iftype,ireccfg
 
@@ -891,7 +893,7 @@ C        write(6,*) 'opnplt: the jump for cfg ',ireccfg
         READ(IUNITp,REC=IREC,IOSTAT=ISTAT,ERR=1000) secondbit
         lnfb=lnblnk(firstbit)
         lnsb=lnblnk(secondbit)
-	write(longtmp,'(2a)') firstbit(1:lnfb),secondbit(1:lnsb)
+        write(longtmp,'(2a)') firstbit(1:lnfb),secondbit(1:lnsb)
 
 C Debug.
 C        write(6,*) longtmp
@@ -920,6 +922,10 @@ C this information.
               CALL EROPER(0,iuout,IAPROB,izone,IER)
   43        CONTINUE
           endif
+
+C Set the default export file name based on model root name.
+          write(xfile,'(2a)') cfgroot(1:lnblnk(cfgroot)),'.csv'
+
         ELSE
 
 C Not found, might be in a remote folder.  Warn user first.
@@ -1001,10 +1007,10 @@ C Read climate file name.
         READ(IUNITp,REC=IREC,IOSTAT=ISTAT,ERR=1000) secondbit
         lnfb=lnblnk(firstbit)
         lnsb=lnblnk(secondbit)
-	write(LCLIM,'(2a)') firstbit(1:lnfb),secondbit(1:lnsb)
+        write(LCLIM,'(2a)') firstbit(1:lnfb),secondbit(1:lnsb)
 
 C Debug.
-C        write(6,*) LCLIM
+C        write(6,*) 'plant lclim is ',LCLIM
 
       endif
 
@@ -1057,7 +1063,7 @@ C Read plant component file name (long or short)
         IREC=IREC+1
         READ(IUNITp,REC=IREC,IOSTAT=ISTAT,ERR=1000) firstbit
         lnfb=lnblnk(firstbit)
-	write(Lpcdb,'(a)') firstbit(1:lnfb)
+        write(Lpcdb,'(a)') firstbit(1:lnfb)
 
 C Debug.
 C        write(6,*) Lpcdb
@@ -1069,7 +1075,7 @@ C        write(6,*) Lpcdb
         READ(IUNITp,REC=IREC,IOSTAT=ISTAT,ERR=1000) secondbit
         lnfb=lnblnk(firstbit)
         lnsb=lnblnk(secondbit)
-	write(Lpcdb,'(2a)') firstbit(1:lnfb),secondbit(1:lnsb)
+        write(Lpcdb,'(2a)') firstbit(1:lnfb),secondbit(1:lnsb)
 
 C Debug.
 C        write(6,*) Lpcdb
@@ -1089,7 +1095,7 @@ C        write(6,*) ' irec at  cfg file name ',irec
         READ(IUNITp,REC=IREC,IOSTAT=ISTAT,ERR=1000) secondbit
         lnfb=lnblnk(firstbit)
         lnsb=lnblnk(secondbit)
-	write(longtmp,'(2a)') firstbit(1:lnfb),secondbit(1:lnsb)
+        write(longtmp,'(2a)') firstbit(1:lnfb),secondbit(1:lnsb)
 
 C Debug.
 C        write(6,*) longtmp
@@ -1168,13 +1174,23 @@ C naout (number of additional output data) is returned.
       subroutine dbdat(ipc,irec,nnode,naout)
 #include "plant.h"
 #include "esprdbfile.h"
+#include "gencompDB.h"
+#include "gencompDB_common.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
       common/ntype/isv(mpcom,mnodec)
       common/adopdesc/adopdsc(mpcom,15)
+      COMMON/C9plus/UCdbNam(MPCOM),CdbCat(MPCOM),CDBDesc(MPCOM)
+      COMMON/PCRES/QDATA(MPCOM),PCAOUT(MPCOM,MPCRES),napdat(mpcom)
+
+
+C Common for new format component database
+      COMMON/NCDBFORM/ICDBF
+
       LOGICAL OK,dok,unixok
-      CHARACTER PZDESC*25,cdate*16,buffer*80,adopdsc*30
+      CHARACTER PZDESC*25,cdate*16,buffer*80,adopdsc*30,
+     &UCDBNam*16, CdbCat*32, CDBDesc*72, argstr*12
       character fs*1
       integer lndbp   ! for length of standard database path
       character lltmp*144  ! to re-create plant database file name with path
@@ -1193,6 +1209,10 @@ C Set folder separator (fs) to \ or / as required.
       else
         fs = char(92)
       endif
+
+C !icdbf should have already been set - so no need to open file again.
+
+      if (icdbf.eq.0)then
 
 C If unit for plant component db not yet set, do it.
       if(ipcdb.eq.0)ipcdb=ifil+11
@@ -1234,14 +1254,13 @@ C Old file, so check header.
       iorec = 1
       READ (ipcdb,REC=IOREC,IOSTAT=ISTAT,ERR=99999) PZDESC
       IF (PZDESC .NE. ' PLANT COMPONENT DATABASE') then
-         ok=.false.
-         dok=.false.
-         helptopic='res_plant_db_not'
-         call gethelptext(helpinsub,helptopic,nbhelp)
-         CALL ASKOK(' Not a plant database file.',
-     &               ' Try another file? ',OK,dok,nbhelp)
-         CALL USRMSG(' ',' ','-')
-         if(ok) goto 100
+
+C Attempt to open the file as a new format cdb (ASCII) file. 
+          ok=.false.
+          dok=.false.
+          CALL ASKOK('Error occurred on opening data base file',
+     &              ' Try again?',OK,dok,nbhelp)
+          if(ok) goto 100
       endif
 
       read(ipcdb,rec=irec,iostat=istat,err=99999)
@@ -1261,6 +1280,17 @@ C Read additional output description and type
           irec=irec+1
           read(ipcdb,REC=IREC,IOSTAT=ISTAT,ERR=99999)adopdsc(ipc,i)
   160   continue
+      endif
+
+      endif
+c Read the additional plant output data data from the new format database.
+      if(icdbf.eq.1)then
+        argstr='parameters'
+        call CDBGetItemData(' ',' ',UCdbNam(IPC),argstr)
+        argstr='detailed'
+        CALL CDB2Plant(IPC,argstr)
+        nnode=s_NNODE
+        naout=NAPDAT(IPC)
       endif
 
       return
@@ -1414,7 +1444,7 @@ C act='p' iget parameters already set.
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/GRAF1/YMAX(5),YMIN(5),YAXSET(5),ADDLIN,horaxisdiv
       COMMON/GRAF2/YSC(5),Yadd(5),TSC,Xadd,IGX(5),ILR(5),DT
-      common/grextras/graftitle,grlbl(5),ngrlbl,lblpx(5),lblpy(5)
+      common/grextras/graftitle,grlbl(10),ngrlbl,lblpx(10),lblpy(10)
 
       COMMON/PPERS/IPSD1,IPSM1,IPSD2,IPSM2,IPSDS,IPSDF,NPTS,ipsav
       COMMON/SIMPIK/ISIM,ISTADD,ID1,IM1,ID2,IM2,ISDS,ISDF,NTS,ISAVE
@@ -2070,7 +2100,6 @@ C Setup and pass in parameters to win3d.
           iigl=igl; iigr=igr; iigt=igt; iigb=igb; iigw=igw; iigwh=igwh
           CALL win3d(iimenu,iiw1,iiw2,iiw3,iiw4,
      &      iigl,iigr,iigt,iigb,iigw,iigwh)
-C          call win3d(menuchw,9,30,4,3,igl,igr,igt,igb,igw,igwh)
           igl=int(iigl); igr=int(iigr); igt=int(iigt); igb=int(iigb)
           igw=int(iigw); igwh=int(iigwh)
           call startbuffer()
@@ -2737,7 +2766,6 @@ C Setup and pass in parameters to win3d.
               iigl=igl; iigr=igr;iigt=igt;iigb=igb;iigw=igw;iigwh=igwh
               CALL win3d(iimenu,iiw1,iiw2,iiw3,iiw4,
      &          iigl,iigr,iigt,iigb,iigw,iigwh)
-C              call win3d(menuchw,9,30,4,3,igl,igr,igt,igb,igw,igwh)
               igl=int(iigl); igr=int(iigr);igt=int(iigt);igb=int(iigb)
               igw=int(iigw); igwh=int(iigwh)
               call startbuffer()

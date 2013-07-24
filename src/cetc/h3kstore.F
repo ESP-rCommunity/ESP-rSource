@@ -1,12 +1,12 @@
 C This file is part of the ESP-r system.
-C Copyright CANMET Energy Technology Centre 
+C Copyright CANMET Energy Technology Centre
 C Natural Resources Canada, Government of Canada
-C 2004. Please Contact Ian Beausoliel-Morrison for details 
+C 2004. Please Contact Ian Beausoliel-Morrison for details
 C concerning licensing.
 
 C ESP-r is free software.  You can redistribute it and/or
 C modify it under the terms of the GNU General Public
-C License as published by the Free Software Foundation 
+C License as published by the Free Software Foundation
 C (version 2 or later).
 
 C ESP-r is distributed in the hope that it will be useful
@@ -528,11 +528,11 @@ c     Common for the number of time steps per hour
       REAL frac_hour,PLR,upper,lower,fhours,iPLR
       INTEGER isystem,iPercent
 c     This IF ensures start-up is over.
-      if ( isystem == 0 ) then 
+      if ( isystem == 0 ) then
         fhours = 0
       else
         fhours = total_num_of_hours(isystem)
-      endif 
+      endif
       CALL EDAY(ISD1,ISM1,IODS)
       CALL EDAY(ISD2,ISM2,IODF)
       if (idyp.ge.IODS.and.idyp.le.IODF) then
@@ -628,7 +628,7 @@ c     This IF ensures that it is past start-up.
       CALL EDAYR(idyp,IDAYN,IMTHN)
       if (idyp.ge.IODS.and.idyp.le.IODF) then
 c     This Gets the current month from the day of year variable (idyp)
-C     NOTE: these equations were changed to multiply the heat 
+C     NOTE: these equations were changed to multiply the heat
 C     gains by 3600 seconds/hour, as opposed to 360 seconds/hour
          Solar_From_Extern_Monthly(iZoneNumber,IMTHN) =
      &        Solar_From_Extern_Monthly(iZoneNumber,IMTHN)
@@ -716,7 +716,7 @@ C     ndbph is number of data blocks/hr for monitor function.
       COMMON/SETUQ/QPLTP,QPLTF,CONV
         REAL    QPLTP(MCOM),QPLTF(MCOM),CONV(MCOM)
 
- 
+
 C     Commons for summary of solar (for results library)
       common/solsum/q1adjz,q1outs,q2adjz,q2lost,q2tmc,
      &     q2wall,q2rem,q2cfc
@@ -725,8 +725,8 @@ C     Commons for summary of solar (for results library)
         REAL q2tmc(2),q2wall(2),q2rem(2),q2cfc(2)
 
 
-      COMMON/CCTL/ICASCF
-      INTEGER ICASCF(MCOM)
+      COMMON/CCTL/ICASCF(MCOM)
+      INTEGER ICASCF
 
 
       COMMON/RHCTLDAT/ZLLDF,ZLLDP
@@ -858,15 +858,15 @@ C Local Variables
 
 
 C--------------------------------------------------------------------
-C     Note: this code, which is intended to to calculate the the 
-C     radiant and convective casual gains based on the total casual gain 
-C     reported by ESP-r and the zone floor area, has been commented out 
+C     Note: this code, which is intended to to calculate the the
+C     radiant and convective casual gains based on the total casual gain
+C     reported by ESP-r and the zone floor area, has been commented out
 C     because it makes no sense.  Instead, the data contained in the
 C     Cas_Rad_dat and Cas_Con_dat arrays are used, as these contain the
 C     the actual casual gain heat injections used when characterizing the
-C     zones. 
+C     zones.
 C
-C     - Alex, Feb 24 2004. 
+C     - Alex, Feb 24 2004.
 C
 C     QCASR=QCASRT(icomp)*(zonetotsurfacearea(ICOMP))/2.0
 C     QCASC=QCASCT/2.0
@@ -1232,7 +1232,7 @@ c     If past 1am then use 0.0
       fCurrentTimestepHour = PTIMEF + fafter_midnight
 c     Store timestep values for next timestep
 c     Ian Suggestion to check for decimal precision.
-      
+
       CALL ECLOSE(fCurrentTimestepHour,1.0,1.0e-5,bPrevTSTOL)
       IF( fCurrentTimestepHour .ge. 24. .or.
      &     fCurrentTimestepHour .eq. 1..and.bPrevTSTOL )THEN
@@ -1249,24 +1249,24 @@ c     If passes new years eve.Ensure it is Jan 1st Not Dec 32nd.
          IDAYN = 1
          IMTHN = 1
       ENDIF
-c     Store the elec 
+c     Store the elec
 c     values for the next timestep.
 
       fCurrentTS_q_total_elec        = q_total_elec
       fCurrentTS_q_nonHVAC_elec      = q_nonHVAC_elec
       fCurrentTS_q_HVAC_elec         = q_HVAC_elec
       fCurrentTS_q_net_elec          = q_net_elec
-      fCurrentTS_q_par_elec          = q_par_elec  
+      fCurrentTS_q_par_elec          = q_par_elec
       fCurrentTS_eta_fc              = eta_fc
-      fCurrentTS_FC_Vdot_fuel_STP    = FC_Vdot_fuel_STP 
-      fCurrentTS_Vdot_air_STP        = Vdot_air_STP  
-      fCurrentTS_stoichs             = stoichs     
-      fCurrentTS_Vdot_liqwater       = Vdot_liqwater 
+      fCurrentTS_FC_Vdot_fuel_STP    = FC_Vdot_fuel_STP
+      fCurrentTS_Vdot_air_STP        = Vdot_air_STP
+      fCurrentTS_stoichs             = stoichs
+      fCurrentTS_Vdot_liqwater       = Vdot_liqwater
       fCurrentTS_Vdot_exh_STP        = Vdot_exh_STP
-      fCurrentTS_T_exh               = T_exh      
-      fCurrentTS_T_exit              = T_exit     
-      fCurrentTS_Twater_enter        = Twater_enter 
-      fCurrentTS_UA_exh              = UA_exh     
+      fCurrentTS_T_exh               = T_exh
+      fCurrentTS_T_exit              = T_exit
+      fCurrentTS_Twater_enter        = Twater_enter
+      fCurrentTS_UA_exh              = UA_exh
       fCurrentTimeStepNumber         = ptimef
       fCurrentTimestepHour           = PTIMEF + fafter_midnight
       iCurrentTimestepMonth          = IMTHN
@@ -1274,16 +1274,16 @@ c     values for the next timestep.
       RETURN
       END
 
-      
-      
-      
+
+
+
 c*****************************************************************
 c     H3KSTORE_H3KSTORE_FuelCell_Elec_Tank
 c     Store FC Elec Water Tank data.
 c     Created by: Phylroy A. Lopez
 c     Initial Creation Date:  October 23th 2001
 c     Copyright 2000: NRCan Buildings Group
-c     ********************************************************************     
+c     ********************************************************************
       SUBROUTINE H3KSTORE_FuelCell_Elec_Tank(
      &     q_EL_element,        ! element power
      &     q_EL_capture_future, ! element -> water
@@ -1334,12 +1334,12 @@ c     Mirror the values in the H3KSTORE_FC_DATA module for next timestep
 
       RETURN
       END
-      
 
-      
+
+
 c*****************************************************************
 c     H3KSTORE_H3KSTORE_FuelCell_FOSSIL_TANK
-c     Store FC Natural Gas Tank data and optionally outputs data in Timestep format to 
+c     Store FC Natural Gas Tank data and optionally outputs data in Timestep format to
 C     a file through a  call to 'FC_Timestep_out'.
 c     Created by: Phylroy A. Lopez
 c     Initial Creation Date:  October 23th 2001
@@ -1365,14 +1365,14 @@ c     ********************************************************************
 #include "h3kstore_parameters.h"
 #include "h3kstore_common.h"
       REAL    f_FF_Vdot_fuel_STP
-      REAL    q_FF_capture_future                                   
-      REAL    T_FF_node1_future      
-      REAL    f_FF_T_1a_present                                       
-      REAL    f_FF_First_Connection 
+      REAL    q_FF_capture_future
+      REAL    T_FF_node1_future
+      REAL    f_FF_T_1a_present
+      REAL    f_FF_First_Connection
       REAL    f_FF_T_1b_present
-      REAL    f_FF_Second_Connection 
+      REAL    f_FF_Second_Connection
       REAL    T_FF_makeup_future
-      REAL    f_FF_DHW_draw_future                       
+      REAL    f_FF_DHW_draw_future
       REAL    UA_FF_Tank       ! Tank UA
       REAL    T_FF_Room_future ! Room temperature predicted for future.
       REAL    f_FF_heatdump
@@ -1395,16 +1395,16 @@ c     ********************************************************************
 
       RETURN
       END
-      
-      
+
+
 c*****************************************************************
 c     H3KSTORE_H3KSTORE_FuelCell
-c     Store FC load data and optionally outputs data in Timestep format to 
+c     Store FC load data and optionally outputs data in Timestep format to
 C     a file through a  call to 'FC_Timestep_out'.
 c     Created by: Phylroy A. Lopez
 c     Initial Creation Date:  October 23th 2001
 c     Copyright 2000: NRCan Buildings Group
-c     ********************************************************************      
+c     ********************************************************************
       SUBROUTINE H3KSTORE_Zone_Temp_Averages(iZone,fZone_Temp)
            IMPLICIT NONE
 #include "building.h"
@@ -1420,7 +1420,7 @@ c     ********************************************************************
       IF( .not.bInStartUp() )then
          CALL EDAYR(idyp,IDAYN,iMonth)
 
-         fSummed_Zone_Temps(iZone,iMonth) = 
+         fSummed_Zone_Temps(iZone,iMonth) =
      &        fSummed_Zone_Temps(iZone,iMonth) + fZone_Temp
 
       ENDIF
@@ -1430,21 +1430,21 @@ c     ********************************************************************
 
 c*****************************************************************
 c H3KSTORE_PLANT_ELEC
-c Stores the Sum of the Pump and Fan Electrical Energy 
-C from the Explicit Plant 
+c Stores the Sum of the Pump and Fan Electrical Energy
+C from the Explicit Plant
 c
 c Created by: Julia Purdy
 c Initial Creation Date:  February 25, 2002
 c Copyright 2000: NRCan Buildings Group
 
-c This routine gathers the electrical energy used by the 
+c This routine gathers the electrical energy used by the
 c explicit plant pump and fan components
 
 c INPUTS:
 c  imonth              Month of Simulation
 C  pump_IPCOMP         component number for first pump modelled, if applicable
 C  pump_IPCOMP2        component number for second pump modelled, if applicable
-C  fan_IPCOMP          component number for first fan modelled, if applicable 
+C  fan_IPCOMP          component number for first fan modelled, if applicable
 
 c SIDE-EFFECTS:
 c  fPlant_Fan_Elec(imonth)  monthly fan electrical energy, stored in h3kstore_module.
@@ -1463,7 +1463,7 @@ c  fPreviousTS_Plant_Pump_Elec1  real power consumption of the first pump, if ap
 c                                for the previous timestep, in W.
 c  fPreviousTS_Plant_Pump_Elec2  real power consumption of the second pump, if applicable,
 c                                for the previous timestep, in W
- 
+
 
 
       SUBROUTINE H3KSTORE_PLANT_ELEC
@@ -1494,7 +1494,7 @@ c Variable to see if plant matrix values have converged and the ptimestep has in
        LOGICAL  bPltCon
 
 C Common block used for Plant Additional Outputs (PCAOUT)
-C MPCOM       maximum number of plant components in configuration (set to 50 in plant.h) 
+C MPCOM       maximum number of plant components in configuration (set to 50 in plant.h)
 C MPCRES      maximum number of additional plant component outputs (set to 15 in plant.h)
 C IPCOMP      index number of the component under consideration
 C NPCDAT(?,4) plant component model type number for component ? (equals NPCDAT(?,3)/10)
@@ -1518,7 +1518,7 @@ C NPCDAT(?,4) plant component model type number for component ? (equals NPCDAT(?
       INTEGER  IDAYN,iMonth,I
 
 C These two real variables are only used in this subroutine to sum up the plant
-C pump and fan electrical loads.  
+C pump and fan electrical loads.
       REAL    fTS_Plant_Pump_Elec
       REAL    fTs_Plant_Fan_Elec
 
@@ -1529,8 +1529,8 @@ C      LOGICAL  bPltCon               !Variable to see if plant matrix values ha
                                        !converged and the ptimestep has incremented
 
 C  Now get the current variable values..
-      
-C  Initialize the pump electrical power variable. 
+
+C  Initialize the pump electrical power variable.
         fTS_Plant_Pump_Elec = 0.0
 C  Initialize the fan electrical power variable.
         fTS_Plant_Fan_Elec = 0.0
@@ -1543,24 +1543,24 @@ C the absolute value of the explicit plant variables will be used.
 
 C The real power draw [PCAOUT(pump_IPCOMP(?),1)] for the current time-step is taken as the
 C value for the most recent plant matrix iteration (could be the previous time-step).
-C `FCctl_pumps' is the total power draw of the pumps defined in the plant network. This variable is used 
+C `FCctl_pumps' is the total power draw of the pumps defined in the plant network. This variable is used
 C by the fuel cell controller to determine the electrical demand of the HVAC system.
 
-        IF (Num_pumps .ne. 0) THEN  
+        IF (Num_pumps .ne. 0) THEN
 C Sum the power consumption of all the pumps.
            DO I=1,Num_pumps
-              fTS_Plant_Pump_Elec  = fTS_Plant_Pump_Elec + 
+              fTS_Plant_Pump_Elec  = fTS_Plant_Pump_Elec +
      &                               (-1 * PCAOUT(pump_IPCOMP(I),1))
            END DO
 
            FCctl_pumps = fTS_Plant_Pump_Elec
         END IF
-        
+
 
 C Set the pump electrical draw at the current timestep
         fCurrentTS_Plant_Pump_Elec = fTS_Plant_Pump_Elec
 
-C If a fan has been defined in the plant load network, the timestep real fan power - 
+C If a fan has been defined in the plant load network, the timestep real fan power -
 C PCAOUT(fan_IPCOMP(?),1) will be taken as the value for the previous plant iteration (see above).
 C `FCctl_fans' is the total power draw of the fans defined in the plant network.
 C This variable is used by the fuel cell controller to determine the electrical demand of
@@ -1585,24 +1585,24 @@ c If the last time step is not the same as the next time step and not in start u
            CALL EDAYR(idyp,IDAYN,imonth)
 
 c If fans have been specified in the explicit plant model then Num_fans is not zero, then
-c sum up the monthly electrical energy and store in array (defined in 
-c h3kstore_module.F). 
+c sum up the monthly electrical energy and store in array (defined in
+c h3kstore_module.F).
               IF (Num_fans .ne. 0) THEN
                 fPlant_Fan_Elec(imonth) = fPlant_Fan_Elec(imonth) +
      &                                   (fCurrentTS_Plant_Fan_Elec
      &                                  / REAL(NTSTPP)/ REAL(NTSTEP))
               END IF
-    
 
-c If a pump has been specified in the explicit plant model, 
-c sum up the monthly electrical energy and store in array (defined in 
-c h3kstore_module.F):      
+
+c If a pump has been specified in the explicit plant model,
+c sum up the monthly electrical energy and store in array (defined in
+c h3kstore_module.F):
               IF (Num_pumps .ne. 0) THEN
                 fPlant_Pump_Elec(imonth) =  fPlant_Pump_Elec(imonth) +
-     &                                     (fCurrentTS_Plant_Pump_Elec           
+     &                                     (fCurrentTS_Plant_Pump_Elec
      &                                    / REAL(NTSTPP)/ REAL(NTSTEP))
               END IF
-        
+
         ENDIF
 
       RETURN
@@ -1615,20 +1615,20 @@ c h3kstore_module.F):
 
 c*****************************************************************
 c     H3KSTORE_H3KSTORE_Plant_TimeSteps
-c     Store FC load data and optionally outputs data in Timestep format to 
+c     Store FC load data and optionally outputs data in Timestep format to
 C     a file through a  call to 'FC_Timestep_out'.
 c     Created by: Phylroy A. Lopez
 c     Initial Creation Date:  October 23th 2001
 c     Copyright 2000: NRCan Buildings Group
 C NOTE:
-C     The plant solver contains information that is ouputted via the FCTS 
-C     files. 
-C     There are some values that are solve in the current timestep when the 
+C     The plant solver contains information that is ouputted via the FCTS
+C     files.
+C     There are some values that are solve in the current timestep when the
 c     matrix converges and some variables before convergence. This routine
 C     manages the data required for the current and previous timesteps.
 
 c     ********************************************************************
-      SUBROUTINE H3KSTORE_Plant_TimeSteps() 
+      SUBROUTINE H3KSTORE_Plant_TimeSteps()
 
            IMPLICIT NONE
 #include "building.h"
@@ -1638,14 +1638,14 @@ c     ********************************************************************
 #include "SOFC.h"
 
       common/simtim/ihrp,ihrf,idyp,idyf,idwp,idwf,nsinc,its
-      COMMON/PERS/ISD1,ISM1,ISD2,ISM2,ISDS,ISDF,NTSTEP 
+      COMMON/PERS/ISD1,ISM1,ISD2,ISM2,ISDS,ISDF,NTSTEP
       common/ptime/ptimep,ptimef
       COMMON/PCTSTP/NTSTPP
 c     Variable to see if plant matrix values have converged and the ptimestep has incremented
       COMMON/pltcon/bPltCon, LastTSTP
       REAL      LastTSTP
 
-      INTEGER   ihrp,ihrf,idyp,idyf,idwp,idwf,nsinc,its  
+      INTEGER   ihrp,ihrf,idyp,idyf,idwp,idwf,nsinc,its
       INTEGER   ISD1,ISM1,ISD2,ISM2,ISDS,ISDF,NTSTEP
       INTEGER   IDAYN,IMTHN
       INTEGER   NTSTPP
@@ -1654,32 +1654,32 @@ c     Variable to see if plant matrix values have converged and the ptimestep ha
       LOGICAL   bPltCon        !Variable to see if plant matrix values have converged and the ptimestep has incremented
       REAL      fafter_midnight
       INTEGER   iNext_day
-      LOGICAL   bPrevTSTOL     
+      LOGICAL   bPrevTSTOL
 
 C     If not in start up
 
 c     Get the real previous timestep data. The Martix solutions for certain coeeficients are taken from previous and current TS data values.
-c     For example the heat exchange from the exhaust to the water (Previous)  is the difference of the 
-c     current Temperature of the exhaust and the Water entry temprature multiplied by the previous UA of the exhaust. 
+c     For example the heat exchange from the exhaust to the water (Previous)  is the difference of the
+c     current Temperature of the exhaust and the Water entry temprature multiplied by the previous UA of the exhaust.
 
 C     Fuel_cell itself
 
-         fPreviousTS_fHeatToWater        =  
+         fPreviousTS_fHeatToWater        =
      &        fPreviousTS_UA_exh
-     &        * ( fCurrentTS_T_exh - fCurrentTS_Twater_enter ) 
+     &        * ( fCurrentTS_T_exh - fCurrentTS_Twater_enter )
 
 C     Fossil Fuel Water Tank
 
-         fPreviousTS_f_FF_Jacketlosses = 
+         fPreviousTS_f_FF_Jacketlosses =
      &        fPreviousTS_UA_FF_Tank
      &        * ( fCurrentTS_T_FF_node1_fut
      &        - fPreviousTS_T_FF_Room_fut )
 
 C     Electric Water Tank
 
-         fPreviousTS_f_EL_Jacketlosses = 
+         fPreviousTS_f_EL_Jacketlosses =
      &        fPreviousTS_UA_EL_Tank
-     &        * ( fCurrentTS_T_EL_Node1_fut 
+     &        * ( fCurrentTS_T_EL_Node1_fut
      &        - fPreviousTS_T_EL_Room_fut )
 
 
@@ -1690,13 +1690,13 @@ C     Handle output if not in start-up
 c     Call routine to bin monthly values
          CALL H3KSTORE_Plnt_TS_Sum_Monthly
 c     Call FC timestep output routine to output timestep data. If flagged to do so in input
-c     file. 
-         If (FC_timeStep_output == FC_timeStep_output_yes) then 
+c     file.
+         If (FC_timeStep_output == FC_timeStep_output_yes) then
             CALL FC_Timestep_Out()
          ENDIF
       ENDIF
 
-C Calculations for this timerow are complete. Copy current time row data 
+C Calculations for this timerow are complete. Copy current time row data
 C to previous time-row.
       Call H3Kstore_timerow_transport()
 
@@ -1706,7 +1706,7 @@ C to previous time-row.
 
 c*****************************************************************
 c     H3KSTORE_H3KSTORE_FuelCell
-c     Store FC load data and optionally outputs data in Timestep format to 
+c     Store FC load data and optionally outputs data in Timestep format to
 C     a file through a  call to 'FC_Timestep_out'.
 c     Created by: Phylroy A. Lopez
 c     Initial Creation Date:  October 23th 2001
@@ -1721,11 +1721,11 @@ c     ********************************************************************
 #include "h3kstore_common.h"
 #include "SOFC.h"
       common/simtim/ihrp,ihrf,idyp,idyf,idwp,idwf,nsinc,its
-      COMMON/PERS/ISD1,ISM1,ISD2,ISM2,ISDS,ISDF,NTSTEP 
+      COMMON/PERS/ISD1,ISM1,ISD2,ISM2,ISDS,ISDF,NTSTEP
       common/ptime/ptimep,ptimef
       COMMON/PCTSTP/NTSTPP
 
-      INTEGER   ihrp,ihrf,idyp,idyf,idwp,idwf,nsinc,its  
+      INTEGER   ihrp,ihrf,idyp,idyf,idwp,idwf,nsinc,its
       INTEGER   ISD1,ISM1,ISD2,ISM2,ISDS,ISDF,NTSTEP
       INTEGER   IDAYN,IMTHN
       INTEGER   NTSTPP
@@ -1734,68 +1734,68 @@ c     ********************************************************************
       CALL EDAYR(idyp,IDAYN,IMTHN)
 c     Add previous timestep values to the monthly bin numbers for...
 c     Energy produed by FC
-      fH3KSTORE_FC_q_net_elec(IMTHN) = fH3KSTORE_FC_q_net_elec(IMTHN) 
-     &     +  fPreviousTS_q_net_elec 
+      fH3KSTORE_FC_q_net_elec(IMTHN) = fH3KSTORE_FC_q_net_elec(IMTHN)
+     &     +  fPreviousTS_q_net_elec
      &     / REAL(NTSTPP)/REAL(NTSTEP)
-   
+
 c     Energy demand on FC
-      fH3KSTORE_FC_q_total(IMTHN) = 
+      fH3KSTORE_FC_q_total(IMTHN) =
      &     fH3KSTORE_FC_q_total(IMTHN)
      &     + fPreviousTS_q_total_elec
      &     / REAL(NTSTPP)/ REAL(NTSTEP)
 
 c     Energy Para on FC
-      fH3KSTORE_FC_q_par_elec(IMTHN) = 
+      fH3KSTORE_FC_q_par_elec(IMTHN) =
      &     fH3KSTORE_FC_q_par_elec(IMTHN)
-     &     +fPreviousTS_q_par_elec 
+     &     +fPreviousTS_q_par_elec
      &     / REAL(NTSTPP)/ REAL(NTSTEP)
 c     Volume of fuel used
-      fH3KSTORE_FC_Vdot_fuel_STP(IMTHN) 
-     &     = fH3KSTORE_FC_Vdot_fuel_STP(IMTHN) 
-     &     + fPreviousTS_FC_Vdot_fuel_STP !(L/min) 
+      fH3KSTORE_FC_Vdot_fuel_STP(IMTHN)
+     &     = fH3KSTORE_FC_Vdot_fuel_STP(IMTHN)
+     &     + fPreviousTS_FC_Vdot_fuel_STP !(L/min)
      &     *60./ REAL(NTSTPP)/ REAL(NTSTEP) !Convert to litres
-c     FC efficiency running average. 
-      fH3KSTORE_FC_eta_fc(IMTHN) = 
-     &     fH3KSTORE_FC_eta_fc(IMTHN) 
-     &     + fPreviousTS_eta_fc 
+c     FC efficiency running average.
+      fH3KSTORE_FC_eta_fc(IMTHN) =
+     &     fH3KSTORE_FC_eta_fc(IMTHN)
+     &     + fPreviousTS_eta_fc
       IF (fPreviousTS_eta_fc.gt.0.0) THEN
          iNumberTimeStepsFC_Active(IMTHN)=
      &        iNumberTimeStepsFC_Active(IMTHN)+1
       ENDIF
-      
+
 c     Electric Water Heater
 c     Electric element energy (KW-h)
-      fH3KSTORE_EL_q_element(IMTHN) = 
-     &     fH3KSTORE_EL_q_element(IMTHN) 
+      fH3KSTORE_EL_q_element(IMTHN) =
+     &     fH3KSTORE_EL_q_element(IMTHN)
      &     + fPreviousTS_q_EL_element
      &     / REAL(NTSTPP)/REAL(NTSTEP)
 c     Electric Tank temperature (oC) (note: this uses the current TS value)
-      fH3KSTORE_EL_T_Node1_future(IMTHN) = 
+      fH3KSTORE_EL_T_Node1_future(IMTHN) =
      &     fH3KSTORE_EL_T_Node1_future(IMTHN)
      &     + fCurrentTS_T_EL_Node1_fut
 c     Natural Gas Water Heater
 c     Natural Gas Fuel Litres used.(L)
-      fH3KSTORE_FF_Vdot_fuel_STP(IMTHN) = 
-     &     fH3KSTORE_FF_Vdot_fuel_STP(IMTHN) 
+      fH3KSTORE_FF_Vdot_fuel_STP(IMTHN) =
+     &     fH3KSTORE_FF_Vdot_fuel_STP(IMTHN)
      &     + fPreviousTS_f_FF_Vdot_fuel_STP
      &     *60.0/ REAL(NTSTPP)/REAL(NTSTEP)
-c     Natural Gas Tank Temperature(oC)(Note this uses the current TS value) 
-      fH3KSTORE_FF_T_node1_future(IMTHN) = 
+c     Natural Gas Tank Temperature(oC)(Note this uses the current TS value)
+      fH3KSTORE_FF_T_node1_future(IMTHN) =
      &     fH3KSTORE_FF_T_node1_future(IMTHN)
      &     + fCurrentTS_T_FF_node1_fut
 
 c     NON HVAC Energy demand on FC
-      fH3KSTORE_FC_q_nonHVAC_el(IMTHN) = 
+      fH3KSTORE_FC_q_nonHVAC_el(IMTHN) =
      &     fH3KSTORE_FC_q_nonHVAC_el(IMTHN)
      &     + fPreviousTS_q_nonHVAC_elec
      &     / REAL(NTSTPP)/ REAL(NTSTEP)
 
 c     HVAC Energy demand on FC
-      fH3KSTORE_FC_q_HVAC_elec(IMTHN) = 
+      fH3KSTORE_FC_q_HVAC_elec(IMTHN) =
      &     fH3KSTORE_FC_q_HVAC_elec(IMTHN)
      &     + fPreviousTS_q_HVAC_elec
      &     / REAL(NTSTPP)/ REAL(NTSTEP)
-      
+
       RETURN
       END
 c*****************************************************************
@@ -1805,13 +1805,13 @@ c     Created by: Alex Ferguson
 c     Initial Creation Date:  July 13, 2004
 c     Copyright 2004: NRCan Buildings Group
 C
-C     This file contains a simple routine that transports CETC HVAC 
+C     This file contains a simple routine that transports CETC HVAC
 C     data from future time-row variables to present time-row variables
 c********************************************************************
 
       SUBROUTINE H3Kstore_timerow_transport()
 
-      IMPLICIT NONE 
+      IMPLICIT NONE
 
 #include "building.h"
 #include "hvac_parameters.h"
@@ -1820,11 +1820,11 @@ c********************************************************************
 #include "SOFC.h"
 #include "cogen_tanks.h"
 
-C.....Time 
+C.....Time
       fPreviousTimestepHour          = fCurrentTimestepHour
       ipreviousTimestepDay           = iCurrentTimestepDay
       iPreviousTimeStepMonth         = iCurrentTimeStepMonth
-     
+
 C.....Electric hot water tank
       fPreviousTS_q_EL_element       = fCurrentTS_q_EL_element
       fPreviousTS_q_EL_capture_fut   = fCurrentTS_q_EL_capture_fut
@@ -1840,22 +1840,22 @@ C.....Electric hot water tank
       fPreviousTS_f_EL_heatdump      = fCurrentTS_f_EL_heatdump
 
 C.....Fossil Fuel hot water tank
-      fPreviousTS_f_FF_Vdot_fuel_STP = fCurrentTS_f_FF_Vdot_fuel_STP     
-      fPreviousTS_q_FF_capture_fut   = fCurrentTS_q_FF_capture_fut      
-      fPreviousTS_T_FF_node1_fut     = fCurrentTS_T_FF_node1_fut        
+      fPreviousTS_f_FF_Vdot_fuel_STP = fCurrentTS_f_FF_Vdot_fuel_STP
+      fPreviousTS_q_FF_capture_fut   = fCurrentTS_q_FF_capture_fut
+      fPreviousTS_T_FF_node1_fut     = fCurrentTS_T_FF_node1_fut
       fPreviousTS_f_FF_T_1a_present  = fCurrentTS_f_FF_T_1a_present
       fPreviousTS_f_FF_First_Conn    = fCurrentTS_f_FF_First_Conn
-      fPreviousTS_f_FF_T_1b_present  = fCurrentTS_f_FF_T_1b_present    
-      fPreviousTS_f_FF_Second_Conn   = fCurrentTS_f_FF_Second_Conn      
-      fPreviousTS_T_FF_makeup_fut    = fCurrentTS_T_FF_makeup_fut     
-      fPreviousTS_f_FF_DHW_draw_fut  = fCurrentTS_f_FF_DHW_draw_fut    
+      fPreviousTS_f_FF_T_1b_present  = fCurrentTS_f_FF_T_1b_present
+      fPreviousTS_f_FF_Second_Conn   = fCurrentTS_f_FF_Second_Conn
+      fPreviousTS_T_FF_makeup_fut    = fCurrentTS_T_FF_makeup_fut
+      fPreviousTS_f_FF_DHW_draw_fut  = fCurrentTS_f_FF_DHW_draw_fut
       fPreviousTS_UA_FF_Tank         = fCurrentTS_UA_FF_Tank
       fPreviousTS_T_FF_Room_fut      = fCurrentTS_T_FF_Room_fut
-      fPreviousTS_f_FF_heatdump      = fCurrentTS_f_FF_heatdump     
+      fPreviousTS_f_FF_heatdump      = fCurrentTS_f_FF_heatdump
 
 C.....Water tank connection data (in cogen_tanks.h)
-      mdot_conn1a_present = mdot_conn1a_future 
-      mdot_conn1b_present = mdot_conn1b_future 
+      mdot_conn1a_present = mdot_conn1a_future
+      mdot_conn1b_present = mdot_conn1b_future
       q_heatdump_present = q_heatdump_future
 
 C.....Pump and fan data
@@ -1867,20 +1867,20 @@ C.....Fuel cell data
       fPreviousTS_q_nonHVAC_elec      = fCurrentTS_q_nonHVAC_elec
       fPreviousTS_q_HVAC_elec         = fCurrentTS_q_HVAC_elec
       fPreviousTS_q_net_elec          = fCurrentTS_q_net_elec
-      fPreviousTS_q_par_elec          = fCurrentTS_q_par_elec  
+      fPreviousTS_q_par_elec          = fCurrentTS_q_par_elec
       fPreviousTS_eta_fc              = fCurrentTS_eta_fc
-      fPreviousTS_FC_Vdot_fuel_STP    = fCurrentTS_FC_Vdot_fuel_STP 
-      fPreviousTS_Vdot_air_STP        = fCurrentTS_Vdot_air_STP  
-      fPreviousTS_stoichs             = fCurrentTS_stoichs     
-      fPreviousTS_Vdot_liqwater       = fCurrentTS_Vdot_liqwater 
+      fPreviousTS_FC_Vdot_fuel_STP    = fCurrentTS_FC_Vdot_fuel_STP
+      fPreviousTS_Vdot_air_STP        = fCurrentTS_Vdot_air_STP
+      fPreviousTS_stoichs             = fCurrentTS_stoichs
+      fPreviousTS_Vdot_liqwater       = fCurrentTS_Vdot_liqwater
       fPreviousTS_Vdot_exh_STP        = fCurrentTS_Vdot_exh_STP
-      fPreviousTS_T_exh               = fCurrentTS_T_exh      
-      fPreviousTS_T_exit              = fCurrentTS_T_exit     
-      fPreviousTS_Twater_enter        = fCurrentTS_Twater_enter 
-      fPreviousTS_UA_exh              = fCurrentTS_UA_exh     
+      fPreviousTS_T_exh               = fCurrentTS_T_exh
+      fPreviousTS_T_exit              = fCurrentTS_T_exit
+      fPreviousTS_Twater_enter        = fCurrentTS_Twater_enter
+      fPreviousTS_UA_exh              = fCurrentTS_UA_exh
       fPreviousTimeStepNumber         = fCurrentTimeStepNumber
       fPreviousTimestepHour           = fCurrentTimestepHour
-      iPreviousTimestepMonth          = iCurrentTimestepMonth 
+      iPreviousTimestepMonth          = iCurrentTimestepMonth
       iPreviousTimestepDay            = iCurrentTimestepDay
 
 
@@ -1890,14 +1890,14 @@ C.....Fuel cell data
 
 c*****************************************************************
 c H3KSTORE_SDHW
-c Stores energy consumption sums for output for solar DHW system 
+c Stores energy consumption sums for output for solar DHW system
 c
 c Created by: Kamel Haddad
 c Initial Creation Date:  April 26th, 2006
 c Copyright 2000: NRCan Buildings Group
 
       SUBROUTINE H3KSTORE_SDHW
-
+      use h3kmodule
       IMPLICIT NONE
 
 #include "building.h"
@@ -1925,7 +1925,7 @@ c Variable to see if plant matrix values have converged and the ptimestep has in
        LOGICAL  bPltCon
 
 C Common block used for Plant Additional Outputs (PCAOUT)
-C MPCOM       maximum number of plant components in configuration (set to 50 in plant.h) 
+C MPCOM       maximum number of plant components in configuration (set to 50 in plant.h)
 C MPCRES      maximum number of additional plant component outputs (set to 15 in plant.h)
 C IPCOMP      index number of the component under consideration
 C NPCDAT(?,4) plant component model type number for component ? (equals NPCDAT(?,3)/10)
@@ -1939,14 +1939,14 @@ C NPCDAT(?,4) plant component model type number for component ? (equals NPCDAT(?
       INTEGER  IDAYN,iMonth,I
 
 C This real variable is only used in this subroutine to sum up the plant
-C pump electrical loads. 
+C pump electrical loads.
       REAL fTS_Plant_Pump_Elec
 
       LOGICAL  bInStartup            !Function to see if still in start up mode.
 
 C  Now get the current variable values..
-      
-C  Initialize the pump electrical power variable. 
+
+C  Initialize the pump electrical power variable.
       fTS_Plant_Pump_Elec = 0.0
 
 C Determine plant component numbers within the plant network for the pumps within
@@ -1956,49 +1956,46 @@ C the solar DHW system
 C The real power draw [PCAOUT(pump_IPCOMP(?),1)] for the current time-step is taken as the
 C value for the most recent plant matrix iteration
 
-      IF (Num_pumps .ne. 0) THEN  
+      IF (Num_pumps .ne. 0) THEN
 C Sum the power consumption of all the pumps.
          DO I=1,Num_pumps
-            fTS_Plant_Pump_Elec  = fTS_Plant_Pump_Elec + 
+            fTS_Plant_Pump_Elec  = fTS_Plant_Pump_Elec +
      &                               (-1 * PCAOUT(pump_IPCOMP(I),1))
          END DO
 
 C.....add to XML ouput
-      call add_to_xml_reporting(
-     &        fTS_Plant_Pump_Elec,
-     &        'plant/SDHW_summary/pump_elec',
-     &        'units', '(W)',
-     &        'SDHW system: Electric consumption of the all pumps' )
+      Call AddToReport(rvPltSDHWSumPmpElec%Identifier,
+     &        fTS_Plant_Pump_Elec)
       END IF
-        
+
 C The plant matrix converged the previous solver iteration. Therefore, save the results.
 c If the last time step is not the same as the next time step and not in start up
       IF( bPltCon .and. .not.bInStartUp() )then
          CALL EDAYR(idyp,IDAYN,imonth)
 
-c If a pump has been specified in the explicit plant model, 
+c If a pump has been specified in the explicit plant model,
 c sum up the monthly electrical energy and store in array
          IF (Num_pumps .ne. 0) THEN
-           fH3KSTORE_SDHW_Pump_Elec(imonth) =  
-     &     fH3KSTORE_SDHW_Pump_Elec(imonth) + (fTS_Plant_Pump_Elec           
+           fH3KSTORE_SDHW_Pump_Elec(imonth) =
+     &     fH3KSTORE_SDHW_Pump_Elec(imonth) + (fTS_Plant_Pump_Elec
      &     / REAL(NTSTPP)/ REAL(NTSTEP))
          END IF
 
 c Sum up electricity consumption of electric storage tank
          fH3KSTORE_SDHW_dhwtank_elec(imonth) =
-     &   fH3KSTORE_SDHW_dhwtank_elec(imonth) + 
-     &   fSDHW_TSTank_Elec_watts / REAL(NTSTPP)/ REAL(NTSTEP)      
+     &   fH3KSTORE_SDHW_dhwtank_elec(imonth) +
+     &   fSDHW_TSTank_Elec_watts / REAL(NTSTPP)/ REAL(NTSTEP)
 
 c Sum up fuel consumption of fuel-fired storage tank
          fH3KSTORE_SDHW_dhwtank_fuel(imonth) =
-     &   fH3KSTORE_SDHW_dhwtank_fuel(imonth) + 
-     &   fSDHW_TSTank_fuel_watts / REAL(NTSTPP)/ REAL(NTSTEP)          
+     &   fH3KSTORE_SDHW_dhwtank_fuel(imonth) +
+     &   fSDHW_TSTank_fuel_watts / REAL(NTSTPP)/ REAL(NTSTEP)
 
 c Sum up net heat gain to collector
-         fH3KSTORE_SDHW_coll_solar_gain(imonth) = 
+         fH3KSTORE_SDHW_coll_solar_gain(imonth) =
      &   fH3KSTORE_SDHW_coll_solar_gain(imonth) +
-     &   fSDHW_TScoll_netheatgain_watts 
-     &   / REAL(NTSTPP)/ REAL(NTSTEP) 
+     &   fSDHW_TScoll_netheatgain_watts
+     &   / REAL(NTSTPP)/ REAL(NTSTEP)
       ENDIF
 
       RETURN

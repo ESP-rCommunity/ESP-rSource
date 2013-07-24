@@ -66,6 +66,7 @@ C Mass flow network.
       COMMON/AFN/IAIRN,LAPROB,ICAAS(MCOM)
 
 C Defaults.
+      character*96 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF
       common/DEFLT2/DFCFG,DFCTL,DEFRLB,DAFRES,DAPROB,DPNF
 
 C Plant network.
@@ -102,7 +103,6 @@ C Common controlling format of plant network file
       character*20 simtyp(3)
       character lpnam*72,laprob*72,LPNF*72
 
-      character*72 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF
       dimension ival(mpcom)
       CHARACTER*44 ITEM(28)
       CHARACTER H*72,outs*124,ltmp*72,pcname*15, lctlf*72,ctldoc*248
@@ -165,13 +165,14 @@ C Read in the configuration file.
           call pltcfg(IFPNF,iupdb,iuout,0) 
         ENDIF
         close(IFPNF) 
-      endif  
+      else
+
+C If this is a new file then open plant component data base.
+        call opnpdb(1)
+        CALL USRMSG(' ',' ','-')
+      endif
 
       if(lctlf(1:3).NE.'UNK'.AND.lctlf(1:2).NE.'  ') CALL SCANBPLINK
-
-C Open plant component data base.
-      call opnpdb(1)
-      CALL USRMSG(' ',' ','-')
 
 C Read components data from database
       if(iedit.eq.1) then
@@ -207,7 +208,7 @@ C Initialise the plant fluid linkage (initially none)
 C Let the user pick a menu item.
    10 ino=-5
 
-      write(item(1),'(a,a)')'a Problem name :',LPNF(1:20) 
+      write(item(1),'(a,a)')'a Network name :',LPNF(1:20) 
       write(item(2),'(a,1x,a20)') 'b Simulation type :',
      &       simtyp(npmtyp)(1:20)  
       write(item(3),'(a,1x,a20)') 'c Project title   :',lpnam(1:20) 
@@ -565,28 +566,43 @@ C   tadata(?,2..n) - value of each parameter.
       subroutine pcdefn
 
 #include "plant.h"
+#include "gencompDB.h"
+#include "gencompDB_common.h"
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/C9/NPCOMP,NCI(MPCOM),CDATA(MPCOM,MMISCD)
+      COMMON/C9plus/UCdbNam(MPCOM),CdbCat(MPCOM),CDBDesc(MPCOM)
+
       common /pcddsc/ pcdesc(maxpc), npref(mpcom)
       COMMON/PCPAR/NPI(MPCOM), TADATA(MPCOM,MADATA)
       common /datdsc/ mscdsc(madata), cvrdsc(mconvr)
       common/pophelp/h(60)
       common/pcnam/pcname(mpcom)
 
-      DIMENSION  ival(mpcom)
+C Common for new format component database
+      COMMON/NCDBFORM/ICDBF
+
+      DIMENSION  ival(mpcom), iloc(3)
       LOGICAL OK,dok
       character*68 mscdsc, cvrdsc
-      character pcname*15,txt*68,H*72,pcdesc*80,str*15,outs*124
+      character pcname*15,txt*68,H*72,pcdesc*80,str*15,outs*124,
+     &UCDBNam*16, CdbCat*32, CDBDesc*72
 
 C Now display the menu.
       str=' '
-      call showpc(ix,ival)
+
+C *** PDB affected
+      call showpc(ix,ival,iloc)
       if (ix.eq.0) return
       if(ix.gt.0) then   
         npcomp=npcomp+1
 
 C Initialise component entry in dbase.
-        npref(npcomp)=ival(1)  
+        IF(ICDBF.EQ.1)THEN
+          UCDBNam(npcomp)=itemtag(ILOC(1),ILOC(2),ILOC(3))
+        ELSE
+          npref(npcomp)=ival(1) 
+        ENDIF
+C Record component entry in new format database. 
      
 C Read component name for current problem.
         h(1)='You can designate a meaningful name for the'
@@ -1520,7 +1536,7 @@ C showpc lets user select component parameter to change.
 C ix is zero if nothing selecte, one if one selected.
 C ival is an array of components. ival(1) is updated to be
 C      the component selected.
-      subroutine showpc(ix,ival)
+      subroutine showpc(ix,ival,iloc)
    
 #include "plant.h"
       common/pophelp/h(60)
@@ -1528,18 +1544,42 @@ C      the component selected.
       common /pcddsc/ pcdesc(maxpc), npref(mpcom)
       common/pcsort/icode(maxpc)
 
+C Common for new format component database
+      COMMON/NCDBFORM/ICDBF
+
 C Temporary arrays to hold 'grouped components.
       character*70 wchdesc(maxpc),ahudesc(maxpc),ppdesc(maxpc),
      &othdesc(maxpc),tmpdesc(maxpc)
       character*80 pcdesc
-      dimension ival(mpcom),item(7)
+      dimension ival(mpcom),item(7),iloc(3)
       dimension ndbahu(maxpc),ndbwch(maxpc),ndbpp(maxpc),ndboth(maxpc)
       CHARACTER H*72, item*28, head*28
       integer nitms,ino ! max items and current menu item
+      Logical editable
 
+      if (icdbf.gt.0)then
+        IX=0
+        editable=.false.
+        ID=0
+        call CDBDomainExplore(EDITABLE,ID,1,IER)
+        ILOC(1)=ID
+        IF(ID.EQ.0) return
+        IDc=ID
+        IC=0
+        call CDBCategoryExplore(EDITABLE,IDc,IC,1,IER)
+        ILOC(2)=IC
+        IF(IC.EQ.0) return
+        ICc=IC
+        IT=0
+        call CDBItemExplore(EDITABLE,IDc,ICc,IT,1,IER)
+        ILOC(3)=IT
+        IF(IT.NE.0) IX=1
+        return
+      endif
 C Fill the array pcdesc with the database component infornation
       call descpc
 
+C *** PDB affected!
 C Fill the subarrays with relevant component descriptions.
       nahu=0
       nwch=0
@@ -2083,8 +2123,8 @@ C Reset electrical flag for component to 'off'
       end
 
 C ****************CONTLYR**************************************************
-C CONTLYR allows the user to select a layer in a construction
-C of a particular zone surface as a containment for or to embed a plant component.
+C CONTLYR allows the user to select a layer in a construction of a
+C particular zone surface as a containment for or to embed a plant component.
 C The routine presents a list of surface layers.
 
       subroutine CONTLYR(IZ,IS,IND)
@@ -2119,11 +2159,7 @@ C with ier=1.
 
 C Check composite name of surface with composite name in MLC common.
       imatch=0
-      do 5 i=1,nmlc
-        if(SMLCN(is)(1:12).eq.DESC(i)(1:12)) then
-          imatch=i          
-        endif
-  5   continue
+      call matchmlcdesc(SMLCN(is),imatch)
       if(imatch.eq.0) then
          call edisp(iuout,'Error: probably no MLC defined!')
          return
@@ -2134,7 +2170,7 @@ C Write menu displaying a list of layer names
       footer=3
       write(item(1),'(a,a)') 'a surface name: ',SNAME(iz,is)
       write(item(2),'(a,i2)')'b number of layers: ',LAYERS(imatch)
-      write(item(3),'(a,a)') 'c MLC name: ',DESC(imatch)(1:12)
+      write(item(3),'(a,a)') 'c MLC name: ',mlcname(imatch)(1:12)
       item(4)='  ----------------------------'
       do 10 j=1,LAYERS(imatch)
 
@@ -2145,15 +2181,12 @@ C If an air layer include the R values in the display.
 C And if matarrayindex is zero then reestablish NAM.
           if(matarrayindex.eq.0)then
             NAM='AIR'
+            PNAM(j)='Air gap'
           else
             write(NAM,'(a)') matname(matarrayindex)(1:32)
+            PNAM(j)=NAM(1:20)
           endif
         endif
-        IF(IPR(imatch,j).EQ.0)THEN
-          PNAM(j)='Air gap'
-        ELSE
-          PNAM(j)=NAM(1:20)
-        ENDIF 
         write(item(header+j),'(a,i2,1x,a12)')' Layer: ',j,PNAM(j)
         ndisp=header+j
   10  continue
@@ -2504,6 +2537,7 @@ C D - delete
 
       common /pcdat/ nnodes(mpcom), isv(mpcom,mnodec), 
      &               ndcon(mpcom,mnodec)
+      integer icascf
       common/cctl/icascf(mcom)
 C Common for the building plant lin
       COMMON/BPLINKG/NBPLINK,IBPLINKID(MCF),IPCLINK1(MCF),

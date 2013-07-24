@@ -1,0 +1,34 @@
+Zone 		Floor 	Occupa*	 Vent**	Vol	Infil*** Total
+		Area m2		 m3/s	m3	m3/s
+				 *****		*****
+office_e_0  	240	51.7(52) 0.491	672	0.093	0.584
+office_w_0  	240	51.7(52) 0.491	672	0.093	0.584
+office_e_1  	246	53.0(52) 0.491	689	0.096	0.587
+office_w_1  	246	53.0(52) 0.491	689	0.096	0.587
+office_e_3  	246	53.0(52) 0.491	689	0.096	0.587
+office_w_3  	246	53.0(52) 0.491	689	0.096	0.587
+entry_core  	 52	 2.8 (3) 0.028	218	0.030	0.058
+core_two    	 48	 2.6 (3) 0.028	185	0.026	0.054
+core_three  	108	 5.8 (6) 0.057	416	0.058	0.115
+core_top    	 48 	 2.6 (3) 0.028	134	0.019	0.047
+office_2_nor	125	26.9(27) 0.255	350	0.049	0.304
+office_2_sth	125	26.9(27) 0.255	350	0.049	0.304
+office_e2e  	 65	14.0(14) 0.132	182	0.025	0.157
+office_w2w   	 65	14.0(14) 0.132	182	0.025	0.157
+passage_2   	 52      2.8 (3) 0.028	146	0.020	0.048
+				 *****		*****
+
+ceiling_1   	312
+ceiling_2   	492
+ceiling_3   	406
+roof        	599
+mix_return  
+mix_supply  
+
+
+* occupancy in offices = 1 person /  4.64m^2
+  other occupancy      = 1 person / 18.58m^2
+  occupancies in parenthesis is the value actually used.  
+
+** ventilation is supplied at 0.00944m^3/s (per person)
+*** infiltration is @ 0.5ach

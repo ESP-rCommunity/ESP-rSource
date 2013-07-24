@@ -20,7 +20,7 @@ C Boston, MA 02111-1307 USA.
 
 C This subroutine draws a window with a simplified version of
 C the standard  psychrometric chart. Similar to code in
-C esrures/psychart.F - revised to for plotting climate data.
+C esrures/psychart.F - revised to for plotting weather data.
       SUBROUTINE PSYCHART
       PARAMETER (MT=24)
 
@@ -83,7 +83,7 @@ C Colours used are nb 15 = grey40, nb 17 =grey60.
       if(ncset.gt.24)cscaleok=.true.
 
 C Scale the axes of the chart (initial values) - look at range
-C of ambient temperature from current climate period.
+C of ambient temperature from current weather period.
       CALL CLMXMN
       Xmin=YMIN(2)
       Xmax=YMAX(2)
@@ -104,16 +104,16 @@ C      write(6,*)'x x ',xmin,xmax,enthmax,enthminx,enthminy,enthmaxy
       ACLONG=ABS(CLONG)
       IF(CLONG.LT.0.0.AND.CLAT.GE.0.0)then
         WRITE(ETEXT,102)CLMLOC,ACLAT,ACLONG,IYEAR
- 102    FORMAT(' Climate analysis:',1X,A30,':',F6.2,'N',F6.2,'W :',I5)
+ 102    FORMAT(' Weather analysis:',1X,A30,':',F6.2,'N',F6.2,'W :',I5)
       elseif(CLONG.GE.0.0.AND.CLAT.LT.0.0)then
         WRITE(ETEXT,103)CLMLOC,ACLAT,ACLONG,IYEAR
- 103    FORMAT(' Climate analysis:',1X,A30,':',F6.2,'S',F6.2,'E :',I5)
+ 103    FORMAT(' Weather analysis:',1X,A30,':',F6.2,'S',F6.2,'E :',I5)
       elseif(CLONG.LT.0.0.AND.CLAT.LT.0.0)then
         WRITE(ETEXT,104)CLMLOC,ACLAT,ACLONG,IYEAR
- 104    FORMAT(' Climate analysis:',1X,A30,':',F6.2,'S',F6.2,'W :',I5)
+ 104    FORMAT(' Weather analysis:',1X,A30,':',F6.2,'S',F6.2,'W :',I5)
       else
         WRITE(ETEXT,101)CLMLOC,ACLAT,ACLONG,IYEAR
- 101    FORMAT(' Climate analysis:',1X,A30,':',F6.2,'N',F6.2,'E :',I5)
+ 101    FORMAT(' Weather analysis:',1X,A30,':',F6.2,'N',F6.2,'E :',I5)
       endif
       GTEXT=ETEXT
       iside=1
@@ -166,7 +166,7 @@ C the plotting. rhrange is the RH range, trange is the dbT range.
         trange=YMAX(2)-YMIN(2)
         DO 31 J=IDS,IDF
 
-C Read values of the climate for this day.
+C Read values of the weather for this day.
           ID=J
           CALL CLMGET(ID)
           KS=1
@@ -283,13 +283,11 @@ C Setup and pass in parameters to win3d.
           iigl=igl; iigr=igr; iigt=igt; iigb=igb; iigw=igw; iigwh=igwh
           CALL win3d(iimenu,iiw1,iiw2,iiw3,iiw4,
      &      iigl,iigr,iigt,iigb,iigw,iigwh)
-C          CALL win3d(menuchw,10,22,4,3,igl,igr,igt,igb,igw,igwh)
         elseif(iglib.eq.2)then
           iiw1=9; iiw2=20; iiw3=5; iiw4=3; iimenu=menuchw
           iigl=igl; iigr=igr; iigt=igt; iigb=igb; iigw=igw; iigwh=igwh
           CALL win3d(iimenu,iiw1,iiw2,iiw3,iiw4,
      &      iigl,iigr,iigt,iigb,iigw,iigwh)
-C          CALL win3d(menuchw,9,20,5,3,igl,igr,igt,igb,igw,igwh)
         endif
         igl=int(iigl); igr=int(iigr); igt=int(iigt); igb=int(iigb)
         igw=int(iigw); igwh=int(iigwh)
@@ -362,7 +360,6 @@ C Setup and pass in parameters to win3d.
         iigl=igl; iigr=igr; iigt=igt; iigb=igb; iigw=igw; iigwh=igwh
         CALL win3d(iimenu,iiw1,iiw2,iiw3,iiw4,
      &    iigl,iigr,iigt,iigb,iigw,iigwh)
-C        call win3d(menuchw,10,15,5,3,igl,igr,igt,igb,igw,igwh)
         igl=int(iigl); igr=int(iigr); igt=int(iigt); igb=int(iigb)
         igw=int(iigw); igwh=int(iigwh)
         igwid=igw
@@ -372,7 +369,6 @@ C        call win3d(menuchw,10,15,5,3,igl,igr,igt,igb,igw,igwh)
         iigl=igl; iigr=igr; iigt=igt; iigb=igb; iigw=igw; iigwh=igwh
         CALL win3d(iimenu,iiw1,iiw2,iiw3,iiw4,
      &    iigl,iigr,iigt,iigb,iigw,iigwh)
-C        CALL win3d(menuchw,10,8,4,3,igl,igr,igt,igb,igw,igwh)
         igl=int(iigl); igr=int(iigr); igt=int(iigt); igb=int(iigb)
         igw=int(iigw); igwh=int(iigwh)
         igwid=igw

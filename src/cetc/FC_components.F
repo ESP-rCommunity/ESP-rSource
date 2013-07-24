@@ -1,12 +1,12 @@
 C This file is part of the ESP-r system.
-C Copyright CANMET Energy Technology Centre 
+C Copyright CANMET Energy Technology Centre
 C Natural Resources Canada, Government of Canada
-C 2004. Please Contact Ian Beausoliel-Morrison for details 
+C 2004. Please Contact Ian Beausoliel-Morrison for details
 C concerning licensing.
 
 C ESP-r is free software.  You can redistribute it and/or
 C modify it under the terms of the GNU General Public
-C License as published by the Free Software Foundation 
+C License as published by the Free Software Foundation
 C (version 2 or later).
 
 C ESP-r is distributed in the hope that it will be useful
@@ -33,7 +33,7 @@ C                             cell controller for the current time-step.
 C   FC_eloads_manage          Determines how much load the fuel cell controller demands
 C                             from the fuel cell for the current time-step.
 C   FC_thermal_priority_type1 Controller for type 1 thermal priority control.
-C   FC_pump_fan_comp_number   Associates any pumps and fans with their respective 
+C   FC_pump_fan_comp_number   Associates any pumps and fans with their respective
 c                             component number - IPCOMP
 C   H2_appliance_coeff_gen    Coefficient generator for fuel burning appliance model
 C   app_load_data_process     Process fuel burning appliance load profile data file
@@ -65,7 +65,7 @@ C it assigns user-input data to module variables, it performs time-invariant
 C calculations, and it checks the integrity of the user-specified electric
 C loads data file.
 
-C This subroutine was modified to permit two connections to node 3 so that 
+C This subroutine was modified to permit two connections to node 3 so that
 C the SOFC plant component could be connected to two heat sinks. This variation of
 C the original model is used to investigate the coupling of a SOFC to an
 C adsorption storage unit for seasonal heat storage and to a hot water tank. To
@@ -102,7 +102,7 @@ C    LHV_C2H6   ditto
 C    LHV_C3H8   ditto
 C    iFClds     Flag indicating whether a non-HVAC elec loads input file has been
 C               specified (1 = yes)
- 
+
 C OUTPUTS:
 C    fuel_molefrac_N2    fuel molar fractions (in MODULE FC_FLUIDS)
 C    fuel_molefrac_CO2   ditto
@@ -144,10 +144,10 @@ C ------------------------------------------------------------------------------
 #include "building.h"
 
       COMMON/OUTIN/IUOUT,IUIN
-      INTEGER	IUOUT,IUIN
+      INTEGER  IUOUT,IUIN
 
       COMMON/TC/ITC,ICNT
-      INTEGER	ITC,ICNT
+      INTEGER  ITC,ICNT
 
       COMMON/TRACE/ITCF,ITRACE,IZNTRC,ITU
       INTEGER ITCF,ITRACE(MTRACE),IZNTRC(MCOM),ITU
@@ -157,20 +157,20 @@ C ------------------------------------------------------------------------------
       REAL CDATA(MPCOM,MMISCD)
 
       COMMON/PDBDT/ADATA,BDATA
-      REAL	ADATA(MPCOM,MADATA),BDATA(MPCOM,MBDATA)
+      REAL  ADATA(MPCOM,MADATA),BDATA(MPCOM,MBDATA)
 
       COMMON/PCOND/CONVAR,ICONTP,ICONDX
-      REAL	CONVAR(MPCON,MCONVR)
-      INTEGER	ICONTP(MPCON),ICONDX(MPCOM,MNODEC,MPCONC)
+      REAL  CONVAR(MPCON,MCONVR)
+      INTEGER  ICONTP(MPCON),ICONDX(MPCOM,MNODEC,MPCONC)
 
-      COMMON/C12PS/NPCDAT,IPOFS1,IPOFS2 
+      COMMON/C12PS/NPCDAT,IPOFS1,IPOFS2
       INTEGER NPCDAT(MPCOM,9),IPOFS1(MCOEFG),IPOFS2(MCOEFG,MPVAR)
 
       common/Fcell/iFClds,LFClds
       INTEGER iFClds
       CHARACTER LFClds*72
 
-C.....Flag to enable inter-domain iteration 
+C.....Flag to enable inter-domain iteration
       common / Plt_Elec_Net / bInter_domain_iteration
       logical bInter_domain_iteration
 
@@ -182,7 +182,7 @@ C-------------------------------------------------------------------------------
       INTEGER j
       INTEGER iComponent_code
       LOGICAL mistake,CLOSE
-   
+
 C---------------------------------------------------------------------------------
 C Initialize variables. These were formerly initialized in MODULEs prior to the
 C conversion of the code to enable compilation with g77.
@@ -315,7 +315,7 @@ C-----and two connections to node 3 if component code =112.
       elseif ( iComponent_code .eq. 112 ) then
          DO IPCONC=3,MPCONC
            IF( ICONDX(IPCOMP,3,IPCONC) /= 0 ) mistake=.true.
-         END DO 
+         END DO
       endif
 C-----Write error message if the number of connections to the nodes are incorrect.
       IF(mistake)THEN
@@ -467,10 +467,10 @@ C-------------------------------------------------------------------------------
 C---------------------------------------------------------------------------------
 C Assign user-specified control method for fuel cell.
 C - Modification:
-C   The uppel limit of the valid control variables has been changed from 3 to 
-C   4 to permit an external control scheme to be applied to the fuel cell 
+C   The uppel limit of the valid control variables has been changed from 3 to
+C   4 to permit an external control scheme to be applied to the fuel cell
 C   system
-C       
+C
 C   Modified by: Alex Ferguson on April 14, 2003.
 C---------------------------------------------------------------------------------
       FC_control = ADATA(IPCOMP,24)
@@ -502,7 +502,7 @@ C-------------------------------------------------------------------------------
 C Process user-specified electrical loads data. Determine data type and convert
 C from ASCII file to binary-format for direct access during simulation.
 C
-C Modification: Only process loads if an external controller is NOT present. 
+C Modification: Only process loads if an external controller is NOT present.
 C               Otherwise, leave everything up to external controller.
 C
 C Modified by: Alex Ferguson on April 14, 2003.
@@ -516,21 +516,21 @@ C-------------------------------------------------------------------------------
       ENDIF
 
 C---------------------------------------------------------------------------------
-C Specify which plant network component (IPCOMP) is associated with the pumps or 
-C fans. This is required to account for the pump and fan electrical energy in the 
+C Specify which plant network component (IPCOMP) is associated with the pumps or
+C fans. This is required to account for the pump and fan electrical energy in the
 C plant results output.
 C
-C Modification: Only manage HVAC loads if external controller is NOT present. 
+C Modification: Only manage HVAC loads if external controller is NOT present.
 C               Otherwise, leave everything up to external controller.
 C
 C Modified by: Alex Ferguson on April 14, 2003.
 C---------------------------------------------------------------------------------
-      IF (.NOT.(FC_control==4)) THEN     
+      IF (.NOT.(FC_control==4)) THEN
          CALL FC_pump_fan_comp_number
       ENDIF
 
 C---------------------------------------------------------------------------------
-C     Set flag for inter-domain iteration 
+C     Set flag for inter-domain iteration
 C---------------------------------------------------------------------------------
       bInter_domain_iteration = .true.
 
@@ -563,7 +563,7 @@ C   Node 2 represents the gas within the exhaust-to-water heat exchanger.
 C   Node 3 represents the water within and the solid portion of the exhaust-to-water
 C          heat exchanger.
 
-C This subroutine was modified to permit two connections to node 3 so that 
+C This subroutine was modified to permit two connections to node 3 so that
 C the SOFC plant component could be connected to two heat sinks. This variation of
 C the original model is used to investigate the coupling of a SOFC to an
 C adsorption storage unit for seasonal heat storage and to a hot water tank. To
@@ -639,22 +639,22 @@ C ------------------------------------------------------------------------------
 
 
       COMMON/OUTIN/IUOUT,IUIN
-      INTEGER	IUOUT,IUIN
+      INTEGER  IUOUT,IUIN
 
       COMMON/TC/ITC,ICNT
-      INTEGER	ITC,ICNT
+      INTEGER  ITC,ICNT
 
       COMMON/TRACE/ITCF,ITRACE,IZNTRC,ITU
       INTEGER ITCF,ITRACE(MTRACE),IZNTRC(MCOM),ITU
 
       COMMON/SIMTIM/IHRP,IHRF,IDYP,IDYF,IDWP,IDWF,NSINC,ITS
-      INTEGER	IHRP,IHRF,IDYP,IDYF,IDWP,IDWF,NSINC,ITS
+      INTEGER  IHRP,IHRF,IDYP,IDYF,IDWP,IDWF,NSINC,ITS
 
       COMMON/BTIME/BTIMEP,BTIMEF
-      REAL	BTIMEP,BTIMEF
+      REAL  BTIMEP,BTIMEF
 
       COMMON/PTIME/PTIMEP,PTIMEF
-      REAL	PTIMEP,PTIMEF
+      REAL  PTIMEP,PTIMEF
 
       COMMON/PITER/MAXITP,PERREL,PERTMP,PERFLX,PERMFL,itrclp,
      &             ICSV,CSVI
@@ -666,35 +666,35 @@ C ------------------------------------------------------------------------------
       REAL CDATA(MPCOM,MMISCD)
 
       COMMON/C10/NPCON,IPC1,IPN1,IPCT,IPC2,IPN2,PCONDR,PCONSD
-      INTEGER	NPCON,IPC1(MPCON),IPN1(MPCON),IPCT(MPCON)
-      INTEGER	IPC2(MPCON),IPN2(MPCON)
-      REAL	PCONDR(MPCON),PCONSD(MPCON,2)
+      INTEGER  NPCON,IPC1(MPCON),IPN1(MPCON),IPCT(MPCON)
+      INTEGER  IPC2(MPCON),IPN2(MPCON)
+      REAL     PCONDR(MPCON),PCONSD(MPCON,2)
 
-      COMMON/C12PS/NPCDAT,IPOFS1,IPOFS2 
+      COMMON/C12PS/NPCDAT,IPOFS1,IPOFS2
       INTEGER NPCDAT(MPCOM,9),IPOFS1(MCOEFG),IPOFS2(MCOEFG,MPVAR)
 
       COMMON/PCVAL/CSVF,CSVP
       REAL CSVF(MPNODE,MPVAR),CSVP(MPNODE,MPVAR)
 
       COMMON/PCVAR/PCTF,PCRF,PUAF,PCQF,PCNTMF,PCTP,PCRP,PUAP,PCQP,PCNTMP
-      REAL	PCTF(MPCON),PCRF(MPCON),PUAF(MPNODE),PCQF(MPNODE)
-      REAL	PCNTMF(MPCOM),PCTP(MPCON),PCRP(MPCON),PUAP(MPNODE)
-      REAL	PCQP(MPNODE),PCNTMP(MPCOM)
+      REAL  PCTF(MPCON),PCRF(MPCON),PUAF(MPNODE),PCQF(MPNODE)
+      REAL  PCNTMF(MPCOM),PCTP(MPCON),PCRP(MPCON),PUAP(MPNODE)
+      REAL  PCQP(MPNODE),PCNTMP(MPCOM)
 
       COMMON/PCOND/CONVAR,ICONTP,ICONDX
-      REAL	CONVAR(MPCON,MCONVR)
-      INTEGER	ICONTP(MPCON),ICONDX(MPCOM,MNODEC,MPCONC)
+      REAL  CONVAR(MPCON,MCONVR)
+      INTEGER  ICONTP(MPCON),ICONDX(MPCOM,MNODEC,MPCONC)
 
       COMMON/PCRES/QDATA(MPCOM),PCAOUT(MPCOM,MPCRES),napdat(mpcom)
       REAL QDATA,PCAOUT
       INTEGER napdat
 
       common/elpcp/
-     &     NPEL,                ! number of "electrified" plant components 
+     &     NPEL,                ! number of "electrified" plant components
      &     PFP,          ! power factor of componet i (0->1)
      &     IPFP,         ! integer indicating if power factor lags (-1) or leads (+1)
      &     PWRP,         ! real power consumption of component (generation is -ive)
-     &     BVOLTP,       ! opertional voltage of component 
+     &     BVOLTP,       ! opertional voltage of component
      &     IPHP          ! phase component is connected to -> dummy variable
       INTEGER NPEL,IPFP(mpcom),IPHP(mpcom)
       REAL PFP(mpcom),PWRP(mpcom),BVOLTP(mpcom)
@@ -784,7 +784,7 @@ C    INOD1          global matrix node number for fuel cell component node 1
 C    INOD2          global matrix node number for fuel cell component node 2
 C    INOD3          global matrix node number for fuel cell component node 3
 C    ICON3          connection number to node 3 (water in heat exchanger)
-C    ICON3b         number of 2nd connection to node 3 represents connection to 
+C    ICON3b         number of 2nd connection to node 3 represents connection to
 C                   adsorber (node 1 of adsorption storage unit model), if applicable
 C---------------------------------------------------------------------------------
       INOD1 = NPCDAT(IPCOMP,9)
@@ -888,7 +888,7 @@ C-------------------------------------------------------------------------------
         eta_fc = eta_0 + eta_1*q_net_elec_kW + eta_2*q_net_elec_kW**2.
         IF( eta_fc <= 0. .or. eta_fc > 1. )THEN
           WRITE(IUOUT,*) ' FC_coeff_generator: FC elec eff =',eta_fc
-          WRITE(IUOUT,*) ' This is unrealistic. Adjust n0, n1, n2.' 
+          WRITE(IUOUT,*) ' This is unrealistic. Adjust n0, n1, n2.'
           STOP ' FC_coeff_generator: unresolvable error'
         ENDIF
 
@@ -904,7 +904,7 @@ C-------------------------------------------------------------------------------
         IF( q_par_elec < 0. .or. q_par_elec > 5000. )THEN
           WRITE(IUOUT,*) ' FC_coeff_generator: FC parasitic elec'
           WRITE(IUOUT,*) ' losses = ',q_par_elec,' W'
-          WRITE(IUOUT,*) ' This is unrealistic. Adjust p0, p1, p2, p3.' 
+          WRITE(IUOUT,*) ' This is unrealistic. Adjust p0, p1, p2, p3.'
           STOP ' FC_coeff_generator: unresolvable error'
         ENDIF
 
@@ -986,8 +986,8 @@ C-------Excess air (stoichs).
         stoichs = ( m_dot_air_kmol*air_molefrac_O2 ) / m_dot_O2_stoich
 C-------Warn user if air flow not within expected range.
 C-------Modification:
-C-------The air stoicheometry is pretty sensitive to changes in operating point and can 
-C-------produce 100's of error messages over the course of the simulation. Therefore, 
+C-------The air stoicheometry is pretty sensitive to changes in operating point and can
+C-------produce 100's of error messages over the course of the simulation. Therefore,
 C-------only report that the stiochiometry is outside expected range if it has changed
 C-------by 10%. (Modified by Alex Ferguson, May 12, 2003)
         IF(stoichs<2. .or. stoichs>8.)THEN
@@ -997,17 +997,17 @@ C----------Check that Air_sto_error != 0
              IF(ABS(1-(stoichs/Air_Sto_error))>0.1) THEN
 C---------------Error has changed by 10%. Warn user
                 WRITE(IUOUT,*) ' FC_coeff_generator: stoichs = ',stoichs
-                WRITE(IUOUT,*) ' This is outside expected range.' 
+                WRITE(IUOUT,*) ' This is outside expected range.'
 C---------------Update stored Stoichiometry error
                 Air_Sto_error = stoichs
              ELSE
 C------------Error has not changed significantly. Do nothing.
              ENDIF
           ELSE
-C------------Air_sto_error has not been defined, or is zero. Stoich 
+C------------Air_sto_error has not been defined, or is zero. Stoich
 C------------is outside expected range, so warn user.
              WRITE(IUOUT,*) ' FC_coeff_generator: stoichs = ',stoichs
-             WRITE(IUOUT,*) ' This is outside expected range.' 
+             WRITE(IUOUT,*) ' This is outside expected range.'
 C------------Update stored Stoichiometry error.
              Air_Sto_error = stoichs
           ENDIF
@@ -1046,7 +1046,7 @@ C-------------------------------------------------------------------------------
         Vdot_liqwater = liq_0 + liq_1*Vdot_fuel_STP
      &                + liq_2*Vdot_fuel_STP**2.
         T_water = PCNTMF(IPCOMP) ! Already confirmed above that containment defined.
-C-------Check if water temperaure is greater than 0 oC (the plant containment may 
+C-------Check if water temperaure is greater than 0 oC (the plant containment may
 C-------not be heated). If not, use 0 oC.
         if( T_water .gt. 0.0 ) then
            DEN_liqwater = RHOFLD(3,T_water)
@@ -1109,7 +1109,7 @@ C and standard Litres/min `Vdot_exh_STP' (Beausoleil-Morrison eq 30).
 C Then determine the mole fractions of the exhaust gas constituents
 C (Beausoleil-Morrison eq 23).
 C---------------------------------------------------------------------------------
-        m_dot_exh_kmol = m_dot_N2_exh_kmol 
+        m_dot_exh_kmol = m_dot_N2_exh_kmol
      &                 + m_dot_Ar_exh_kmol
      &                 + m_dot_O2_exh_kmol
      &                 + m_dot_CO2_exh_kmol
@@ -1198,7 +1198,7 @@ C-------------------------------------------------------------------------------
 C Calculate the enthalpy (kJ/kmol) of the gases exiting the heat exchanger
 C (i.e. at node 2). The function H_gas returns the relative enthalpy
 C of each fuel constituent in kJ/kmol. Evaluate the enthalpies at the temperature
-C solved the previous time-step. 
+C solved the previous time-step.
 C If the fuel cell has been idle and has just switched on, T_exit is not evaluated
 C at the previous time-step value, since this would be the room air temperature.
 C Rather, T_exit is set to a "typical" value. This approach improves the stability
@@ -1270,7 +1270,7 @@ C and the second connection is to the adsorption storage unit.
      &                              * SHTFLD(3,Twater_enter_adsorber)
                             !may need to use other function for pressurized loop?
 
-C The entering water is either from the water tank or from the 
+C The entering water is either from the water tank or from the
 C adsorption storage unit (adsorber node 1). The latter occurs if the storage unit
 C is in the charging phase only.
 
@@ -1286,7 +1286,7 @@ C is in the charging phase only.
             endif
 
         endif
-        
+
 C---------------------------------------------------------------------------------
 C Ensure that the value of `UA_exh' is realistic. Otherwise, the temperatures
 C calculated for the gas and water exiting the heat exchanger will be unrealistic.
@@ -1308,7 +1308,7 @@ C-------------------------------------------------------------------------------
      &             / (T_exh - Twater_enter)
         IF( UA_exh > UA_exh_max )THEN
           WRITE(IUOUT,*) ' FC_coeff_generator: UA value of heat = '
-          WRITE(IUOUT,*) ' exchanger unrealistic. Adjust q0, q1, q2.' 
+          WRITE(IUOUT,*) ' exchanger unrealistic. Adjust q0, q1, q2.'
           STOP ' FC_coeff_generator: unresolvable error'
         ENDIF
 
@@ -1386,10 +1386,10 @@ C-------Node 3 energy balance
         endif
 
 C---------------------------------------------------------------------------------
-C       Store heat leakage for injection into containing zone 
+C       Store heat leakage for injection into containing zone
 C---------------------------------------------------------------------------------
         call store_plt_gain ( IPCOMP, q_heatleak, iConvective)
-        
+
 C*********************************************************************************
 C Beginning of energy balance for when fuel cell is off **************************
 C*********************************************************************************
@@ -1460,11 +1460,11 @@ C-------Set additional outputs to appropriate values for inoperative fuel cell.
      &                 CONVAR(ICON3,1)   ! temp of water entering heat exchanger from tank(oC)
             Twater_enter_adsorber=
      &                 CONVAR(ICON3b,1)  ! temp of water entering heat exchanger from adsorber (oC)
-        endif       
+        endif
 
 C---------------------------------------------------------------------------------
 C       Set heat leakage for injection into containing zone to zero.
-C       '1' indicates that gain is convective. 
+C       '1' indicates that gain is convective.
 C---------------------------------------------------------------------------------
         call store_plt_gain ( IPCOMP, 0.0, 1)
 
@@ -1539,12 +1539,12 @@ C--------Node 3: no balance required so make flow zero.
          endif
       END IF
 
-      
+
 C---------------------------------------------------------------------------------
 C Electrical network related operations - for ISTATS == 1 only!
 C 1. Save real power output in electrical network common block variable
 C 2. Call subroutine EMACH to (i) calculate the reactive component of the power
-C    produced by the network, and (ii) save this data in the electrical 
+C    produced by the network, and (ii) save this data in the electrical
 C    network common block
 C
 C Modified by Alex Ferguson, Jan 09, 2004.
@@ -1552,7 +1552,7 @@ C-------------------------------------------------------------------------------
       IF (ISTATS .EQ. 1) THEN
          pwrp(ipcomp) = q_net_elec ! Real power output (W), generation is +ive...
          IEMODEL=1              ! Flag indicating which power calculation will be performed
-         CALL EMACH( 
+         CALL EMACH(
      &        IPCOMP,           ! Component number (input)
      &        IEMODEL,          ! power calculation flag (input)
      &        pwrp(ipcomp),     ! Real power (input, W)
@@ -1586,7 +1586,7 @@ C-------------------------------------------------------------------------------
 
       if ( iComponent_code .eq. 80 ) then
          PCAOUT(IPCOMP,15) = UA_exh*(T_exh-Twater_enter) ! heat exchange to water (W)
-      elseif ( iComponent_code .eq. 112) then   
+      elseif ( iComponent_code .eq. 112) then
          PCAOUT(IPCOMP,15) = UA_exh*(T_exh-
      &             Twater_enter_tank)*beta1 +            ! heat exchange to water (W)
      &                    UA_exh*(T_exh-
@@ -1637,9 +1637,9 @@ C-------------------------------------------------------------------------------
      &        T_exit_previous,
      &        Twater_enter_previous,
      &        UA_exh )
-C Call to subroutine to sum plant pump and fan electrical power. 
+C Call to subroutine to sum plant pump and fan electrical power.
         IF(.NOT.(FC_control==4)) THEN
-           CALL H3KSTORE_PLANT_ELEC     
+           CALL H3KSTORE_PLANT_ELEC
         ENDIF
       END IF
 
@@ -1657,7 +1657,7 @@ C-------------------------------------------------------------------------------
            WRITE(ITU,*) ' Connection data:'
            WRITE(ITU,*) '  - Temp.      = ', Twater_enter,' (oC)'
            WRITE(ITU,*) '  - Heat cap.  = ', mdotCp_water,' (oC)'
-        elseif ( iComponent_code .eq. 112) then  
+        elseif ( iComponent_code .eq. 112) then
            WRITE(ITU,*) '  - Temp.      = ', Twater_enter_tank,' (oC)'
            WRITE(ITU,*) '  - Heat cap.  = ', mdotCp_water_tank,' W/K'
            WRITE(ITU,*) '  - Temp       = ', Twater_enter_adsorber,
@@ -1682,9 +1682,9 @@ C-------------------------------------------------------------------------------
         WRITE(ITU,*) ' Matrix coefficients for ISTATS = ',ISTATS
         if ( iComponent_code .eq. 80 ) then
            WRITE(ITU,*) (COUT(I),I=1,9)
-        elseif ( iComponent_code .eq. 112) then  
+        elseif ( iComponent_code .eq. 112) then
            WRITE(ITU,*) (COUT(I),I=1,10)
-        endif 
+        endif
 
         IF(ITU==IUOUT) THEN  ! trace output going to screen, not file
           itemp=(IPCOMP/4)*4
@@ -1731,14 +1731,14 @@ C ------------------------------------------------------------------------------
 #include "SOFC.h"
 
       COMMON/FILEP/IFIL
-      INTEGER	IFIL
+      INTEGER  IFIL
 
       common/Fcell/iFClds,LFClds
       INTEGER iFClds
       CHARACTER LFClds*72
 
       COMMON/OUTIN/IUOUT,IUIN
-      INTEGER	IUOUT,IUIN
+      INTEGER  IUOUT,IUIN
 
 C---------------------------------------------------------------------------------
 C Declare local variables.
@@ -1856,14 +1856,14 @@ C-------------------------------------------------------------------------------
       IFCloads =  IFIL+30
       CALL ERPFREE(IFCloads,ISTAT)
       INQUIRE (UNIT=IFCloads,EXIST=fc_loads_exists) ! check if file exists
-      IF (fc_loads_exists ) then 
+      IF (fc_loads_exists ) then
          CALL EFDELET(IFCloads,ISTAT) ! Delete file if it exists
       endif
       SELECT CASE (FC_lds_input)
         CASE(FC_lds_annual)
           CALL FPRAND(IFCloads,ISTAT,FC_lds_per_rec_annual,3,
      &                'FCloads.tmp')  ! File may exist if prev. simulation was
-                                      ! interrupted 
+                                      ! interrupted
         CASE(FC_lds_daily)
           CALL FPRAND(IFCloads,ISTAT,FC_lds_per_rec_daily,3,
      &                'FCloads.tmp')
@@ -1977,7 +1977,7 @@ C    FCctl_ashp_compressor Power draw of heat pump compressor and condenser fan 
 C                          source heat pump in heating mode), W
 C                          (in MODULE FC_ctl_h3khvacloads)
 C    FCctl_ashp_circfan    Power draw of air source heat pump (heating) circulating fan.
-C                          This variable also contains the power draw of the backup system 
+C                          This variable also contains the power draw of the backup system
 C                          circulating fan, if applicable, W (im MODULE FC_ctl_h3khvacloads).
 C                          (in MODULE FC_ctl_h3khvacloads).
 C    FCctl_gshp_pump       Power draw of pump that circulates fluid from the ground loop
@@ -2008,7 +2008,7 @@ C-------------------------------------------------------------------------------
 C     ESP-r commons
 C-------------------------------------------------------------------------------
       COMMON/OUTIN/IUOUT,IUIN           ! Number for default output and input screens
-      INTEGER	IUOUT,IUIN    
+      INTEGER  IUOUT,IUIN
 
       COMMON/PDBDT/ADATA(MPCOM,MADATA),BDATA(MPCOM,MBDATA)
       REAL    ADATA                     !-array containing component data
@@ -2070,7 +2070,7 @@ C Care has to be taken when the simulation crosses over the New Year: the load f
 C midnight December 31 is set using the data at 0h00 on January 1.
 C---------------------------------------------------------------------------------
         CASE(FC_lds_annual)
-C---------Have we just crossed over midnight? 
+C---------Have we just crossed over midnight?
           CALL ECLOSE(BTIMEP,24.0,0.0001,CLOSE)
           IF( CLOSE .and. PTIMEF<=1. )THEN
             after_midnight = 24
@@ -2134,7 +2134,7 @@ C-------------------------------------------------------------------------------
       END SELECT
 
 C-----Update non HVAC loads for time step
-      q_nonHVAC_elec = q_nonHVAC_elec 
+      q_nonHVAC_elec = q_nonHVAC_elec
 
 C-----If the updated non HVAC load is less than 0., then set to 0. and
 C-----issue warning to user
@@ -2144,7 +2144,7 @@ C-----issue warning to user
         WRITE(IUOUT,*) 'from .lp files is greater than total electrical'
         WRITE(IUOUT,*) 'load from .fcl file on day ',IDYP,' and hour',
      &  BTIMEP
-      ENDIF    
+      ENDIF
 
 C=================================================================================
 C Non-HVAC loads have been determined. Now determine loads from HVAC equipment.
@@ -2242,11 +2242,11 @@ C-------------------------------------------------------------------------------
 
 C---------------------------------------------------------------------------------
 C Modification: Additional case added to support external controller.
-C               In this case, the fuel cell's electric output is determined by an 
+C               In this case, the fuel cell's electric output is determined by an
 C               external controller. We just need to determine if the signal sent
-C               by the external controller is within the fuel cell's operating 
+C               by the external controller is within the fuel cell's operating
 C               range. (Same code as FC_ctl_elec_priority case)
-C 
+C
 C Modified by Alex Ferguson on April 14, 2003.
 C---------------------------------------------------------------------------------
         CASE(FC_ctl_ext)
@@ -2308,7 +2308,7 @@ C                      operation (in MODULE FC_controls)
 C
 C OUTPUTS:
 C    q_net_elec          net electrical output (W) from fuel cell
-C 
+C
 C--------------------------------------------------------------------------------------------
 
       SUBROUTINE FC_thermal_priority_type1
@@ -2320,28 +2320,28 @@ C-------------------------------------------------------------------------------
 #include "h3kstore_parameters.h"
 #include "h3kstore_common.h"
       COMMON/OUTIN/IUOUT,IUIN
-      INTEGER	IUOUT,IUIN
+      INTEGER  IUOUT,IUIN
 
       COMMON/TC/ITC,ICNT
-      INTEGER	ITC,ICNT
+      INTEGER  ITC,ICNT
 
       COMMON/TRACE/ITCF,ITRACE,IZNTRC,ITU
       INTEGER ITCF,ITRACE(MTRACE),IZNTRC(MCOM),ITU
 
       COMMON/PCTIME/TIMSEC
-      REAL	TIMSEC
+      REAL  TIMSEC
 
       common/pltcon/bpltcon,LastTSTP
       logical bpltcon  ! Boolean indicating whether plant domain has converged.
-      real LastTStp ! not used 
+      real LastTStp ! not used
       common/pers/isd1,ism1,isd2,ism2,isds,isdf,ntstep
       INTEGER isd1,ism1,isd2,ism2,isds,isdf,ntstep
 
       COMMON/PCTSTP/NTSTPP
-      INTEGER	NTSTPP
+      INTEGER  NTSTPP
 
       COMMON/SIMTIM/IHRP,IHRF,IDYP,IDYF,IDWP,IDWF,NSINC,ITS
-      INTEGER	IHRP,IHRF,IDYP,IDYF,IDWP,IDWF,NSINC,ITS
+      INTEGER  IHRP,IHRF,IDYP,IDYF,IDWP,IDWF,NSINC,ITS
 
 
 C---------------------------------------------------------------------------------
@@ -2374,7 +2374,7 @@ C the same point in time as the previous call to this subroutine. In that case,
 C do not alter the fuel cell's operation.
 C---------------------------------------------------------------------------------
       IF(bpltcon) THEN
-         
+
 C---------------------------------------------------------------------------------
 C Plant domain converged previous iteration. Therefore, we have just stepped
 C forward in time. Add previous time-step's converged solution to the running
@@ -2399,7 +2399,7 @@ C---------Vectors fully populated: drop oldest item from each vector.
             FC_net_elec(i)             = FC_net_elec(i+1)
           END DO
 C---------Now add one new item to end of each vector.
-          FC_tank_energy_capture(FC_avg_steps) = 
+          FC_tank_energy_capture(FC_avg_steps) =
      &                             fPreviousTS_q_FF_capture_fut * TIMSEC ! Either gas-fired or
      &                           + fPreviousTS_q_EL_capture_fut * TIMSEC ! elec value will be zero.
           FC_heatX_energy_capture(FC_avg_steps) =
@@ -2412,10 +2412,10 @@ C---------Now add one new item to end of each vector.
         ELSE
 C---------Still in ramp-up period: add one more item to each vector.
           FC_tank_energy_capture( FC_avg_steps_rampup+1 ) =
-     &                             fPreviousTS_q_FF_capture_fut * TIMSEC     
+     &                             fPreviousTS_q_FF_capture_fut * TIMSEC
      &                           + fPreviousTS_q_EL_capture_fut * TIMSEC
           FC_heatX_energy_capture( FC_avg_steps_rampup+1 ) =
-     &                             fPreviousTS_fHeatToWater * TIMSEC    
+     &                             fPreviousTS_fHeatToWater * TIMSEC
           FC_tank_temp( FC_avg_steps_rampup+1 ) =
      &                                        fPreviousTS_T_FF_node1_fut
      &                                      + fPreviousTS_T_EL_Node1_fut
@@ -2424,7 +2424,7 @@ C---------Still in ramp-up period: add one more item to each vector.
           FC_avg_steps_rampup = FC_avg_steps_rampup + 1
           num_items = FC_avg_steps_rampup
         END IF
-        
+
 C---------------------------------------------------------------------------------
 C Calculate the average quantities over the averaging period. Only update the
 C averages if the plant domain converged following the previous iteration
@@ -2445,7 +2445,7 @@ C-------------------------------------------------------------------------------
         FC_tank_temp_avg            = total3 / float(num_items)
         FC_net_elec_avg             = total4 / float(num_items)
 
-       
+
 C---------------------------------------------------------------------------------
 C Now control the fuel cell based on the calculated average quantities and
 C instantaneous quantities.
@@ -2529,16 +2529,16 @@ C-------Save fuel cell's operating point for next time-step.
         q_net_elec_previous = q_net_elec
 
 
-        IF(ITC>0 .AND. NSINC>=ITC .AND.NSINC<=ITCF 
+        IF(ITC>0 .AND. NSINC>=ITC .AND.NSINC<=ITCF
      &       .AND.ITRACE(37)/=0)THEN
            WRITE(ITU,*) ' Fuel cell thermal controller data:'
            WRITE(ITU,*) '    -- Plant converged: ', bpltcon
 c           WRITE(ITU,*) '    -- operating strategy ', iOS
            WRITE(ITU,*) '    -- Tank T  : ', FC_tank_temp(num_items)
-           WRITE(ITU,*) '    -- burner Q: ', FC_tank_energy_capture_avg 
-           WRITE(ITU,*) '    -- FC Q    : ', FC_heatX_energy_capture_avg 
-           WRITE(ITU,*) '    -- Tank T  : ', FC_tank_temp_avg           
-           WRITE(ITU,*) '    -- FC out v: ', FC_net_elec_avg            
+           WRITE(ITU,*) '    -- burner Q: ', FC_tank_energy_capture_avg
+           WRITE(ITU,*) '    -- FC Q    : ', FC_heatX_energy_capture_avg
+           WRITE(ITU,*) '    -- Tank T  : ', FC_tank_temp_avg
+           WRITE(ITU,*) '    -- FC out v: ', FC_net_elec_avg
            WRITE(ITU,*) '    -- FC out p: ', q_net_elec_previous
            WRITE(ITU,*) '    -- FC out n: ', q_net_elec
         ENDIF
@@ -2570,17 +2570,17 @@ C Copyright CETC 2001
 
 C This subroutine associates any pumps and fans with their respective component number - IPCOMP,
 C which is dependent on the user-generated model. This subroutine is called once at the beginning
-C of the simulation and is required to account for the pump and fan electrical energy in 
+C of the simulation and is required to account for the pump and fan electrical energy in
 C the HOT3000 outputs.
 
 
 C INPUTS:
 C    NPCDAT              the number of plant components in the user defined model
-C    IPCOMP              index number of the component under consideration 
+C    IPCOMP              index number of the component under consideration
 
 C OUTPUTS:
 C    pump_IPCOMP         array holds component number for first pump modelled, if applicable
-C    fan_IPCOMP          component number for first fan modelled, if applicable 
+C    fan_IPCOMP          component number for first fan modelled, if applicable
 C--------------------------------------------------------------------------------------------
 
       SUBROUTINE FC_pump_fan_comp_number
@@ -2592,7 +2592,7 @@ C-------------------------------------------------------------------------------
 #include "h3kstore_common.h"
 
 C Common blocks used for Plant Additional Outputs (PCAOUT)
-C MPCOM       maximum number of plant components in configuration (set to 50 in plant.h) 
+C MPCOM       maximum number of plant components in configuration (set to 50 in plant.h)
 C MPCRES      maximum number of additional plant component outputs (set to 15 in plant.h)
 C IPCOMP      index number of the component under consideration
 C NPCDAT(?,4) plant component model type number for component ? (equal to NPCDAT(?,3)/10)
@@ -2600,7 +2600,7 @@ C NPCDAT(?,4) plant component model type number for component ? (equal to NPCDAT
       REAL QDATA,PCAOUT
       INTEGER napdat
 
-      COMMON/C12PS/NPCDAT,IPOFS1,IPOFS2 
+      COMMON/C12PS/NPCDAT,IPOFS1,IPOFS2
       INTEGER NPCDAT(MPCOM,9),IPOFS1(MCOEFG),IPOFS2(MCOEFG,MPVAR)
 
       COMMON/C9/NPCOMP,NCI,CDATA
@@ -2617,26 +2617,26 @@ C Inititalize component-specific numbers to zero
 C Maximum size of arrays holding the fan and pump component numbers is 50.
            DO J = 1, 50
               fan_IPCOMP(J)  = 0
-              pump_IPCOMP(J) = 0 
+              pump_IPCOMP(J) = 0
            END DO
 
-c Cycle through all of the specified plant components, where 
-c NPCOMP is the number of plant components simulated.  
-           DO I=1, NPCOMP 
+c Cycle through all of the specified plant components, where
+c NPCOMP is the number of plant components simulated.
+           DO I=1, NPCOMP
 
 c Count the number of fans specified in the plant network.
 C If a fan has been specified in the explicit plant model (NPCDAT(I, 4) == 3), then
 c save the component number NPCOMP (where the fan is located) in the fan-specific
 C component number array.
               IF (NPCDAT(I, 4) == 3) THEN
-                Num_fans = Num_fans + 1 
-                fan_IPCOMP(Num_fans) = I  
-              END IF     
+                Num_fans = Num_fans + 1
+                fan_IPCOMP(Num_fans) = I
+              END IF
 
 C Count the number of pumps specified in the plant network.
-c If a pump has been specified in the explicit plant model (NPCDAT(I, 4) == 24 or 
+c If a pump has been specified in the explicit plant model (NPCDAT(I, 4) == 24 or
 C NPCDAT(I, 4) = 117), then save the component number NPCOMP (where the pump
-C is located) to the pump-specific component number array.     
+C is located) to the pump-specific component number array.
               IF (NPCDAT(I, 4) == 24 .or. NPCDAT(I, 4) == 117) THEN
                 Num_pumps = Num_pumps + 1
                 pump_IPCOMP(Num_pumps) = I
@@ -2657,26 +2657,26 @@ C Initial Creation Date: June 24, 2004
 C
 C Copyright CETC 2004
 C
-C This subroutine transfers miscellaneous (non-state-variable) data from the fuel cell 
-C model to the h3kreports object. The relevant data is stored in the fc_calculated 
-C commonblock, and trasnported using the rep_set_meta / rep_report routines.
+C This subroutine transfers miscellaneous (non-state-variable) data from the fuel cell
+C model to the h3kreports object. The relevant data is stored in the fc_calculated
+C commonblock, and transported using the h3kmodule's AddToReport routines.
 C
 C--------------------------------------------------------------------------------------------
 
       Subroutine FC_data_transport(iComponentIndex)
-
-      implicit none 
+      use h3kmodule
+      implicit none
 #include "plant.h"
-#include "SOFC.h"     
+#include "SOFC.h"
 
-C.....Passed variables 
+C.....Passed variables
       integer iComponentIndex   ! index of FC in plant component network
 
 C.....ESP-r Commons
       common/pcnam/pcname(mpcom)        ! Plant component names
       character*15 pcname
 
-      COMMON/C12PS/NPCDAT,IPOFS1,IPOFS2 
+      COMMON/C12PS/NPCDAT,IPOFS1,IPOFS2
       INTEGER NPCDAT(MPCOM,9),IPOFS1(MCOEFG),IPOFS2(MCOEFG,MPVAR)
 
       COMMON/Stgdata/iCharge_signal,iDischarge_signal
@@ -2685,20 +2685,19 @@ C.....ESP-r Commons
 
 
 C.....Local Variables
-      CHARACTER*128 H3K_rep_NAME ! H3Kreporting object
-      character*128 root_name    ! root name of component node 
       character*128 hold_name    ! temporary variable for string manipulation
       logical bClose             ! flag for close-to-zero comparison
+      integer hold_len           ! The lenght of the hold name
 
 C.....References
       real  H3K_connect_property ! function returning data for a given connection
 
 C.....Named constants
-      integer iTemperature      ! named constant for temperature properity 
+      integer iTemperature      ! named constant for temperature properity
       integer i1st_flow         ! named constant for first phase flow properity
-      integer i2nd_flow    ! named constant for second phase flow properity      
+      integer i2nd_flow    ! named constant for second phase flow properity
       parameter ( iTemperature     = 1,
-     &            i1st_flow        = 2, 
+     &            i1st_flow        = 2,
      &            i2nd_flow        = 3)
 
 C.....State variables
@@ -2707,7 +2706,7 @@ C CSVP(MPNODE,MPVAR)   ! Plant present state variables
       common/PCVAL/CSVF(MPNODE,MPVAR),CSVP(MPNODE,MPVAR)
       real CSVF, CSVP
 
-C.....Plant component present/future variables 
+C.....Plant component present/future variables
       common/pcvar/pctf(mpcon),pcrf(mpcon),puaf(mpnode),pcqf(mpnode),
      & pcntmf(mpcom),pctp(mpcon),pcrp(mpcon),puap(mpnode),
      & pcqp(mpnode),pcntmp(mpcom)
@@ -2728,7 +2727,7 @@ C------------------------------------------------------------------------
      &     iCharge_signal .eq. 1 ) then       ! for fuel cell coupled with adsorption storage unit
          Twater_recent = h3k_connect_property(icon3b,iTemperature)
       else
-         TWater_recent =  h3k_connect_property(icon3,iTemperature) 
+         TWater_recent =  h3k_connect_property(icon3,iTemperature)
       endif
 
 
@@ -2736,15 +2735,11 @@ C.....Set future connection temperature, for incommoming water connection
       pctf(icon3) = TWater_recent ! oC
 
 C.....Get component name
-      hold_name = pcname(iComponentIndex) 
-C.....Format string as: 'plant/NAME/misc_data'
-      WRITE(root_name,'(A,A,A)') 
-     &     'plant/',
-     &     hold_name(1:lnblnk(hold_name)),
-     &     '/misc_data'
-     
+      hold_name = pcname(iComponentIndex)
+      hold_len = lnblnk(hold_name)
+
 C.....H3Kreports.(HIGH_TEMP_FC).start......................
-C.....The following code is used to trasnport data to 
+C.....The following code is used to trasnport data to
 C.....the H3K reporting object
 C.....
 C.....Any changes to this code should be made within
@@ -2753,366 +2748,114 @@ C.....the H3Kreports demarcaration comments
 C.....Calculations required for H3K reports:
 C.....
 C.....Fuel cell balance of plant electrical efficiency
-C..... 
+C.....
 
 C.....Total electrical demand
-C.....-> set name
-      WRITE(H3K_rep_NAME,'(A,A)') 
-     &     root_name(1:lnblnk(root_name)), '/Q_electric_demand'
-C.....-> update meta-data
-      call REP_SET_META(
-     &     H3K_rep_NAME(1:LNBLNK(H3K_rep_NAME)),
-     &     'units',
-     &     '(W)'
-     &     )
-      call REP_SET_META(
-     &     H3K_rep_NAME(1:LNBLNK(H3K_rep_NAME)),
-     &     'WattsToGJ',
-     &     ' '
-     &     )
-C.....-> update data 
-      call REP_REPORT(
-     &     q_total_elec,
-     &     H3K_rep_NAME(1:LNBLNK(H3K_rep_NAME))
-     &     )
+      call AddToReport(rvPltQElecDemand%Identifier,
+     &      q_total_elec,
+     &      hold_name(1:hold_len))
 
 C.....Net electrical output
-C.....-> set name
-      WRITE(H3K_rep_NAME,'(A,A)') 
-     &     root_name(1:lnblnk(root_name)), '/Q_electric_net'
-C.....-> update meta-data
-      call REP_SET_META(
-     &     H3K_rep_NAME(1:LNBLNK(H3K_rep_NAME)),
-     &     'units',
-     &     '(W)'
-     &     )
-      call REP_SET_META(
-     &     H3K_rep_NAME(1:LNBLNK(H3K_rep_NAME)),
-     &     'WattsToGJ',
-     &     ' '
-     &     )
-C.....-> update data 
-      call REP_REPORT(
-     &     q_net_elec,
-     &     H3K_rep_NAME(1:LNBLNK(H3K_rep_NAME))
-     &     )
+      call AddToReport(rvPltQElecNet%Identifier,
+     &      q_net_elec,
+     &      hold_name(1:hold_len))
 
 C.....Parasitic electrical losses
-C.....-> set name
-      WRITE(H3K_rep_NAME,'(A,A)') 
-     &     root_name(1:lnblnk(root_name)), '/Q_electric_parasitic'
-C.....-> update meta-data
-      call REP_SET_META(
-     &     H3K_rep_NAME(1:LNBLNK(H3K_rep_NAME)),
-     &     'units',
-     &     '(W)'
-     &     )
-      call REP_SET_META(
-     &     H3K_rep_NAME(1:LNBLNK(H3K_rep_NAME)),
-     &     'WattsToGJ',
-     &     ' '
-     &     )
-C.....-> update data 
-      call REP_REPORT(
-     &     q_par_elec,
-     &     H3K_rep_NAME(1:LNBLNK(H3K_rep_NAME))
-     &     )
+      call AddToReport(rvPltQElecParasitic%Identifier,
+     &      q_par_elec,
+     &      hold_name(1:hold_len))
 
-C.....Net thermal output 
-C.....-> set name
-      WRITE(H3K_rep_NAME,'(A,A)') 
-     &     root_name(1:lnblnk(root_name)), '/Q_thermal_net'
-C.....-> update meta-data
-      call REP_SET_META(
-     &     H3K_rep_NAME(1:LNBLNK(H3K_rep_NAME)),
-     &     'units',
-     &     '(W)'
-     &     )
-      call REP_SET_META(
-     &     H3K_rep_NAME(1:LNBLNK(H3K_rep_NAME)),
-     &     'WattsToGJ',
-     &     ' '
-     &     )
-C.....-> update data 
-      call REP_REPORT(
-     &     UA_exh*(T_exh_recent-Twater_recent),
-     &     H3K_rep_NAME(1:LNBLNK(H3K_rep_NAME))
-     &     )        
+C.....Net thermal output
+      call AddToReport(rvPltQThermalNet%Identifier,
+     &      UA_exh*(T_exh_recent-Twater_recent),
+     &      hold_name(1:hold_len))
 
-C.....Fuel HHV 
-C.....-> set name
-      WRITE(H3K_rep_NAME,'(A,A)') 
-     &     root_name(1:lnblnk(root_name)), '/Fuel_HHV'
-C.....-> update meta-data
-      call REP_SET_META(
-     &     H3K_rep_NAME(1:LNBLNK(H3K_rep_NAME)),
-     &     'units',
-     &     '(W)'
-     &     )
-      call REP_SET_META(
-     &     H3K_rep_NAME(1:LNBLNK(H3K_rep_NAME)),
-     &     'WattsToGJ',
-     &     ' '
-     &     )
-C.....-> update data 
-      call REP_REPORT(
-     &     phi_source,
-     &     H3K_rep_NAME(1:LNBLNK(H3K_rep_NAME))
-     &     )        
+C.....Fuel HHV
+      call AddToReport(rvPltFuelHHV%Identifier,
+     &      phi_source,
+     &      hold_name(1:hold_len))
 
 
-C.....Electrical Efficiency - fuel cell 
-C.....-> set name
-      WRITE(H3K_rep_NAME,'(A,A)') 
-     &     root_name(1:lnblnk(root_name)), '/Electric_efficiency_FC'
-C.....-> update meta-data
-      call REP_SET_META(
-     &     H3K_rep_NAME(1:LNBLNK(H3K_rep_NAME)),
-     &     'units',
-     &     '(%)'
-     &     )
-C.....-> update data 
-      call REP_REPORT(
-     &     eta_fc*100.,
-     &     H3K_rep_NAME(1:LNBLNK(H3K_rep_NAME))
-     &     )
-
+C.....Electrical Efficiency - fuel cell
+      call AddToReport(rvPltElecEffFC%Identifier,
+     &      eta_fc*100.,
+     &      hold_name(1:hold_len))
 
 C.....Electrical efficiency - fuel cell + Balance of plant
-C.....-> set name ~ only report if phi_source is non-zero
+C.....-> only report if phi_source is non-zero
       call eclose (phi_source, 0.0, 0.1, bClose)
       if (.not. bClose) then
-         WRITE(H3K_rep_NAME,'(A,A)') 
-     &     root_name(1:lnblnk(root_name)), '/Electric_efficiency_BOP'
-C.....-> update meta-data
-         call REP_SET_META(
-     &        H3K_rep_NAME(1:LNBLNK(H3K_rep_NAME)),
-     &        'units',
-     &        '(%)'
-     &        )
-C.....-> update data 
-         call REP_REPORT(
-     &        q_net_elec / phi_source *100.,
-     &        H3K_rep_NAME(1:LNBLNK(H3K_rep_NAME))
-     &        )
+
+         call AddToReport(rvPltElecEffBOP%Identifier,
+     &      q_net_elec / phi_source *100.,
+     &      hold_name(1:hold_len))
       endif
 
 
 C.....Thermal efficiency ~ only report if phi_source is non-zero
-C.....-> set name
       if (.not. bClose) then
-         WRITE(H3K_rep_NAME,'(A,A)') 
-     &      root_name(1:lnblnk(root_name)), '/Cogeneration_efficiency'
-C.....-> update meta-data
-         call REP_SET_META(
-     &        H3K_rep_NAME(1:LNBLNK(H3K_rep_NAME)),
-     &        'units',
-     &        '(%)'
-     &        )
-C.....-> update data 
-         call REP_REPORT(
-     &        (q_net_elec + UA_exh*(T_exh_recent-Twater_recent) ) 
-     &        / phi_source * 100.,
-     &        H3K_rep_NAME(1:LNBLNK(H3K_rep_NAME))
-     &        )
+         call AddToReport(rvPltCogEff%Identifier,
+     &        (q_net_elec + UA_exh*(T_exh_recent-Twater_recent) )
+     &            / phi_source * 100.,
+     &      hold_name(1:hold_len))
       endif
 
 C.....Fuel Flow
-C.....-> set name
-      WRITE(H3K_rep_NAME,'(A,A)') 
-     &     root_name(1:lnblnk(root_name)), '/fuel_flow/mass'
-C.....-> update meta-data
-      call REP_SET_META(
-     &     H3K_rep_NAME(1:LNBLNK(H3K_rep_NAME)),
-     &     'units',
-     &     '(kg/s)'
-     &     )
-      call REP_SET_META(
-     &     H3K_rep_NAME(1:LNBLNK(H3K_rep_NAME)),
-     &     'KgPerStoKg',
-     &     ' '
-     &     )
-C.....-> update data 
-      call REP_REPORT(
-     &     m_dot_fuel_kg,
-     &     H3K_rep_NAME(1:LNBLNK(H3K_rep_NAME))
-     &     )
+      call AddToReport(rvPltFuelFlowMass%Identifier,
+     &        m_dot_fuel_kg,
+     &      hold_name(1:hold_len))
 
 C.....Fuel Flow - slpm
-C.....-> set name
-      WRITE(H3K_rep_NAME,'(A,A)') 
-     &     root_name(1:lnblnk(root_name)), '/fuel_flow/volume'
-C.....-> update meta-data
-      call REP_SET_META(
-     &     H3K_rep_NAME(1:LNBLNK(H3K_rep_NAME)),
-     &     'units',
-     &     '(slpm)'
-     &     )
-C.....-> update data 
-      call REP_REPORT(
-     &     Vdot_fuel_STP,
-     &     H3K_rep_NAME(1:LNBLNK(H3K_rep_NAME))
-     &     )
+      call AddToReport(rvPltFuelFlowVol%Identifier,
+     &        Vdot_fuel_STP,
+     &      hold_name(1:hold_len))
 
 C.....Air Flow - mass
-C.....-> set name
-      WRITE(H3K_rep_NAME,'(A,A)') 
-     &     root_name(1:lnblnk(root_name)), '/air_flow/mass'
-C.....-> update meta-data
-      call REP_SET_META(
-     &     H3K_rep_NAME(1:LNBLNK(H3K_rep_NAME)),
-     &     'units',
-     &     '(kg/s)'
-     &     )
-      call REP_SET_META(
-     &     H3K_rep_NAME(1:LNBLNK(H3K_rep_NAME)),
-     &     'KgPerStoKg',
-     &     ' '
-     &     )
-C.....-> update data 
-      call REP_REPORT(
-     &     m_dot_air_kg,
-     &     H3K_rep_NAME(1:LNBLNK(H3K_rep_NAME))
-     &     )
-
+      call AddToReport(rvPltAirFlowMass%Identifier,
+     &        m_dot_air_kg,
+     &      hold_name(1:hold_len))
 
 C.....Air Flow - volume
-C.....-> set name
-      WRITE(H3K_rep_NAME,'(A,A)') 
-     &     root_name(1:lnblnk(root_name)), '/air_flow/volume'
-C.....-> update meta-data
-      call REP_SET_META(
-     &     H3K_rep_NAME(1:LNBLNK(H3K_rep_NAME)),
-     &     'units',
-     &     '(slpm)'
-     &     )
-C.....-> update data 
-      call REP_REPORT(
-     &     Vdot_air_STP,
-     &     H3K_rep_NAME(1:LNBLNK(H3K_rep_NAME))
-     &     )
-
+      call AddToReport(rvPltAirFlowVol%Identifier,
+     &        Vdot_air_STP,
+     &      hold_name(1:hold_len))
 
 C.....Air Flow - stoicheometry
-C.....-> set name
-      WRITE(H3K_rep_NAME,'(A,A)') 
-     &     root_name(1:lnblnk(root_name)), '/air_flow/stoicheometry'
-C.....-> update meta-data
-      call REP_SET_META(
-     &     H3K_rep_NAME(1:LNBLNK(H3K_rep_NAME)),
-     &     'units',
-     &     '(-)'
-     &     )
-C.....-> update data 
-      call REP_REPORT(
-     &     stoichs,
-     &     H3K_rep_NAME(1:LNBLNK(H3K_rep_NAME))
-     &     )
+      call AddToReport(rvPltAirFlowStoi%Identifier,
+     &        stoichs,
+     &      hold_name(1:hold_len))
 
 
 C.....water Flow - volume
-C.....-> set name
-      WRITE(H3K_rep_NAME,'(A,A)') 
-     &     root_name(1:lnblnk(root_name)), '/water_flow/volume'
-C.....-> update meta-data
-      call REP_SET_META(
-     &     H3K_rep_NAME(1:LNBLNK(H3K_rep_NAME)),
-     &     'units',
-     &     '(slpm)'
-     &     )
-C.....-> update data 
-      call REP_REPORT(
-     &     Vdot_liqwater,
-     &     H3K_rep_NAME(1:LNBLNK(H3K_rep_NAME))
-     &     )
-
+      call AddToReport(rvPltWaterFlowVol%Identifier,
+     &        Vdot_liqwater,
+     &      hold_name(1:hold_len))
 
 C.....Exhaust Gas - mass flow
-C.....-> set name
-      WRITE(H3K_rep_NAME,'(A,A)') 
-     &     root_name(1:lnblnk(root_name)), '/exhaust_flow/mass'
-C.....-> update meta-data
-      call REP_SET_META(
-     &     H3K_rep_NAME(1:LNBLNK(H3K_rep_NAME)),
-     &     'units',
-     &     '(kg/s)'
-     &     )
-      call REP_SET_META(
-     &     H3K_rep_NAME(1:LNBLNK(H3K_rep_NAME)),
-     &     'KgPerStoKg',
-     &     ' '
-     &     )
-C.....-> update data 
-      call REP_REPORT(
-     &     m_dot_exh_kg,
-     &     H3K_rep_NAME(1:LNBLNK(H3K_rep_NAME))
-     &     )
+      call AddToReport(rvPltExhaustFlowMass%Identifier,
+     &        m_dot_exh_kg,
+     &      hold_name(1:hold_len))
 
 
 C.....Exhaust Gas - volumetric flow
-C.....-> set name
-      WRITE(H3K_rep_NAME,'(A,A)') 
-     &     root_name(1:lnblnk(root_name)), '/exhaust_flow/volume'
-C.....-> update meta-data
-      call REP_SET_META(
-     &     H3K_rep_NAME(1:LNBLNK(H3K_rep_NAME)),
-     &     'units',
-     &     '(slpm)'
-     &     )
-C.....-> update data 
-      call REP_REPORT(
-     &     Vdot_exh_STP,
-     &     H3K_rep_NAME(1:LNBLNK(H3K_rep_NAME))
-     &     )
+      call AddToReport(rvPltExhaustFlowVol%Identifier,
+     &        Vdot_exh_STP,
+     &      hold_name(1:hold_len))
 
 C.....Exhaust Gas - temperature
-C.....-> set name
-      WRITE(H3K_rep_NAME,'(A,A)') 
-     &     root_name(1:lnblnk(root_name)), '/exhaust_flow/temperature'
-C.....-> update meta-data
-      call REP_SET_META(
-     &     H3K_rep_NAME(1:LNBLNK(H3K_rep_NAME)),
-     &     'units',
-     &     '(oC)'
-     &     )
-C.....-> update data 
-      call REP_REPORT(
-     &     T_exh_recent,
-     &     H3K_rep_NAME(1:LNBLNK(H3K_rep_NAME))
-     &     )
+      call AddToReport(rvPltExhaustFlowTemp%Identifier,
+     &        T_exh_recent,
+     &      hold_name(1:hold_len))
 
 C.....Heat exchanger exit temperature
-C.....-> set name
-      WRITE(H3K_rep_NAME,'(A,A)') 
-     &     root_name(1:lnblnk(root_name)), 
-     &     '/heat_exchanger/exit_temperature'
-C.....-> update meta-data
-      call REP_SET_META(
-     &     H3K_rep_NAME(1:LNBLNK(H3K_rep_NAME)),
-     &     'units',
-     &     '(oC)'
-     &     )
-C.....-> update data 
-      call REP_REPORT(
-     &     T_exit_recent,
-     &     H3K_rep_NAME(1:LNBLNK(H3K_rep_NAME))
-     &     )
+      call AddToReport(rvPltHExchgExitTemp%Identifier,
+     &        T_exit_recent,
+     &      hold_name(1:hold_len))
 
 C.....Heat exchanger heat transfer coefficient
-C.....-> set name
-      WRITE(H3K_rep_NAME,'(A,A)') 
-     &     root_name(1:lnblnk(root_name)), '/heat_exchanger/UA_value'
-C.....-> update meta-data
-      call REP_SET_META(
-     &     H3K_rep_NAME(1:LNBLNK(H3K_rep_NAME)),
-     &     'units',
-     &     '(Watts/oC)'
-     &     )
-C.....-> update data 
-      call REP_REPORT(
-     &     UA_exh,
-     &     H3K_rep_NAME(1:LNBLNK(H3K_rep_NAME))
-     &     )
+      call AddToReport(rvPltHExchgUAVal%Identifier,
+     &        UA_exh,
+     &      hold_name(1:hold_len))
 
 
 C.....H3Kreports.(HIGH_TEMP_FC).end........................

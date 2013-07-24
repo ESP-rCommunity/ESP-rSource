@@ -91,7 +91,7 @@ C
 C Inputs:
 C
 C  iComponent       - index of component in plant network
-C  iPlant_Matrix    - index of plant component matrix to be solved 
+C  iPlant_Matrix    - index of plant component matrix to be solved
 C
 C Outputs
 C
@@ -103,6 +103,7 @@ C----------------------------------------------------------------------
      &            iComponent,
      &            fCoefficients,
      &            iPlant_Matrix )
+      use h3kmodule
       implicit none
 #include "building.h"
 #include "plant.h"
@@ -117,7 +118,7 @@ C     Passed arguements
 C----------------------------------------------------------------------
       integer iComponent        ! pointer to component in plant network
       real fCoefficients(mpcoe) ! plant matrix coefficints
-      integer iPlant_Matrix     ! index of plant matrix to be solved 
+      integer iPlant_Matrix     ! index of plant matrix to be solved
 C----------------------------------------------------------------------
 C     ESP-r commons
 C----------------------------------------------------------------------
@@ -219,8 +220,8 @@ C.....Miscellaneous plant data
       real puap(mpnode)
       real pcqp(mpnode)
       real pcntmp(mpcom)
-      
-C.....Common containing plant componet mass diversion ratios 
+
+C.....Common containing plant componet mass diversion ratios
       common/c10/npcon,ipc1(mpcon),ipn1(mpcon),ipct(mpcon),ipc2(mpcon),
      &            ipn2(mpcon),pcondr(mpcon),pconsd(mpcon,2)
       integer npcon           ! number of inter-component connections
@@ -378,7 +379,7 @@ C.....Operating mode parameters
       real fOP_target            ! Operating point requested by high-level
                                  !     controller.
 
-                                       
+
       real fOP_time_P            ! time spent in the current operating mode,
       real fOP_time_F            ! at beginning & end of timestep
       real fOP_time
@@ -649,7 +650,7 @@ C.....Get hydrogen temperature and mass flow rate
       fH2_Conn_Temp_F = convar ( iH2_Conn_Index, iPropTemp )     ! oC
       fH2_Conn_Flow_F = convar ( iH2_Conn_Index, iPropH2Flow )
      &            * pcondr( iH2_Conn_Index )  ! kg/s
-      
+
 C.....Get cooling water temperature & mass flow rate
       fWater_Conn_Temp_F = convar ( iWater_Conn_Index, iPropTemp )     ! oC
       fWater_Conn_Flow_F = convar ( iWater_Conn_Index, iProp1stFlow )
@@ -816,7 +817,7 @@ C........cross coupling coefficients
 C........RHS vector
          fCoefficients(7) =  0.0
          fCoefficients(8) =  0.0
-      
+
       else
 C-------------------------------------------------------------------------
 C        High-level control interfaces:
@@ -836,7 +837,7 @@ C........ -> Flag indicating which control interface is in use:
 C........ -> Control signal
          fControl_signal = CData ( iComponent, 2 )
 
-C........Testing & debugging code       
+C........Testing & debugging code
 !          if ( nsinc .le. 20 ) then
 !             iControl_method = iEngine_deactivated
 !          elseif ( nsinc .lt. 40 ) then
@@ -1106,7 +1107,7 @@ C...........Assign present time row value to operating time
 
 
 C...........Save future time row operating time value
-            fOP_time_F = fOP_time   
+            fOP_time_F = fOP_time
 
 C----------------------------------------------------------------------------
 C           Calculate the minimum fuel requirement for all four
@@ -1291,12 +1292,12 @@ C-------------------------------------------------------------------------
 C              Fuel flow is insufficient & system fault has occured.
 C              Was system previously in normal operation?
 C-------------------------------------------------------------------------
-               
+
                if ( iSystem_Status .eq. iStatus_normal  ) then
 
 C.................Flag system fuel fault, and attempt to switch system
 C.................into cool-down/inoperative modes.
-                  
+
                   iSystem_Status = iStatus_Fuel_Fault
 
                else
@@ -1313,7 +1314,7 @@ C.................'inert' (no electrical / thermal output )
                   fCurrent_TS_Average    = 0.0   ! (A)
 
                   iOperating_mode_F = iOP_inoperative
-                  
+
                   fOP_time_F = fTS_duration
 
 C.................Exit loop
@@ -1359,30 +1360,30 @@ C........Self coupling coefficients
          fCoefficients(2) =  0.0
          fCoefficients(3) =  0.0
 
-         if ( bNo_cooling_water ) then 
+         if ( bNo_cooling_water ) then
             fCoefficients(4) =  1.0
          else
-            fCoefficients(4) =  fWater_conn_Cp_F 
-         endif 
+            fCoefficients(4) =  fWater_conn_Cp_F
+         endif
 C........cross coupling coefficients
          fCoefficients(5) = -1.0
          if ( bNo_cooling_water ) then
-            fCoefficients(6) = -1.0 
-         else 
+            fCoefficients(6) = -1.0
+         else
             fCoefficients(6) = -1.0 * fWater_conn_Cp_F
-         endif 
+         endif
 C........RHS vector
          fCoefficients(7) =  0.0
          if ( bNo_cooling_water ) then
             fCoefficients(8) =  0.0
-         else 
+         else
             fCoefficients(8) =  fHeat_TS_average
-         endif 
+         endif
 
 C-------------------------------------------------------------------------
 C        Save DC power output (W, generation is +ive...), and
 C        AC power consumption (W, load is -ive...)
-C        use function EMACH to transport data to electrical domain. 
+C        use function EMACH to transport data to electrical domain.
 C-------------------------------------------------------------------------
 C         pwrp(iComponent) = fDC_Power_TS_average
 C         IEMODEL=1              ! Flag indicating which power calculation
@@ -1403,12 +1404,12 @@ C     &        PA_dummy)         ! Overall power (output, W)
      &         fDC_Power_TS_average,
      &         fAC_Power_TS_average,
      &         PA_dummy )
-          
+
 
 
 C-------------------------------------------------------------------------
 C        Save stack operational voltage in esp-r common block
-C-------------------------------------------------------------------------     
+C-------------------------------------------------------------------------
          bVoltP (iComponent) = fNorm_OP_Stack_Voltage         ! (V)
 C-------------------------------------------------------------------------
 C        Calculate stack accumulated operating time
@@ -1511,7 +1512,7 @@ C........Hydrogen flow rate
 C........Heating value of hydrogen flow
          fReport_Hydrogen_LHV ( iComponent ) =
      &                 fH2_Conn_Flow_F * fH2_heating_value            ! (W)
-         
+
 C........Hydrogen flow rate requested by unit to meet demands
          fReport_Hydrogen_demand ( iComponent ) =
      &                 fDesired_Fuel_Flow_TSavg ! (kg/s)
@@ -1559,14 +1560,8 @@ C-------------------------------------------------------------------------
 C        Additional outputs dumped when 'debugging'
 C-------------------------------------------------------------------------
          if ( bDebug ) then
-
-             call add_to_xml_reporting(
-     &                fH2_heating_value,
-     &                'debug/H2_PEMFC/H2/LHV',
-     &                'units', '(J/kg)',
-     &                'Heating value of hydrogen')
-
-
+             call AddToReport(rvDebugH2LHV%Identifier,
+     &            fH2_heating_value)
          endif
 
       endif
@@ -1727,9 +1722,9 @@ C.....Fuel heating value flow rate.
      &          fCorr_Range_LHV_MAX( iComponent )
 
       else
-      
+
         fCOPY_Fuel_LHV_Flow = fFuel_LHV_Flow
-    
+
       endif
 
 
@@ -2417,12 +2412,13 @@ C-----------------------------------------------------------------------
 
       subroutine H2_PEMFC_H3Kreports_module (
      &                 iComponent, iStatus, iModel_Type )
+      use h3kmodule
       implicit none
 #include "plant.h"
 #include "cetc_cogen.h"
 #include "Hydrogen_PEMFC.h"
 
-C External functions.     
+C External functions.
       integer lnblnk
 
 C Passed arguements
@@ -2436,20 +2432,8 @@ C.....ESP-r commons necessary for reporting
       character*15, pcname
 
 C.....Local variables
-      character*128 H3Kname       ! holding variable
-      character*128 char_temp     ! holding variable
-      integer iLength,iNameLength ! Length of strings
-
-      integer iUnit_Status_flag   ! flag indicating unit status
-
       logical bNums_are_close     ! result of close to zero comparisons
-
-C.....Arrays storing locations of output variables
-      integer iStorage_index(mpcom)
-
-
-C.....Save storage arrays
-      save iStorage_index
+      integer pcname_len          ! the lenght of pcname
 
 C.....Named constants:
 C.....  -> reporting module status
@@ -2466,256 +2450,119 @@ C.....  -> Stirling engine status (more flags to come?)
 
       if ( iStatus .eq. iInitialize ) then
 C----------------------------------------------------------------------
-C        Initialize reports
+C        Initialize reports - depreciated
 C----------------------------------------------------------------------
-C........Get component name and length
-         write(char_temp,'(A,A,A)')
-     &      'plant/',
-     &      pcname(iComponent)
-     &               (1:lnblnk(pcname(iComponent))),
-     &      '/misc_data'
-         call h3k_StoreString(char_temp,
-     &                        iStorage_index(iComponent),
-     &                        iLength)
 
       else
 C----------------------------------------------------------------------
 C        Report data
 C----------------------------------------------------------------------
-C........Recover component name
-         call h3k_RecoverString(iStorage_index(iComponent),
-     &                       char_temp, iNameLength)
-
-
 C----------------------------------------------------------------------
 C        Check if efficiencies can be reported: is fuel flow non-zero?
 C----------------------------------------------------------------------
          call eclose ( fReport_Hydrogen_flow ( iComponent),
      &                 0.0, 1.0E-07, bNums_are_close )
+         pcname_len = lnblnk(pcname(iComponent))
          if ( .not. bNums_are_close ) then
 
 C...........Fuel Flow is non-zero: efficiencies can be calculated.
 
 C...........Time-step averaged electric efficiency
-            write(H3Kname,'(A,A)')
-     &         char_temp(1:iNameLength),
-     &         '/average/efficiency/electric'
-            call add_to_xml_reporting(
-     &         fReport_Stack_Eff_Elec_TS_avg(iComponent),
-     &         H3Kname,
-     &         'units', '(-)',
-     &         'Hydrogen PEMFC: time step-averaged electric efficiency'
-     &      )
+            call AddToReport(rvPltAvrEffElec%Identifier,
+     &            fReport_Stack_Eff_Elec_TS_avg(iComponent),
+     &            pcname(iComponent)(1:pcname_len))
 
 C...........Time-step averaged thermal efficiency
-            write(H3Kname,'(A,A)')
-     &         char_temp(1:iNameLength),
-     &         '/average/efficiency/thermal'
-            call add_to_xml_reporting(
-     &         fReport_Stack_Eff_Ther_TS_avg(iComponent),
-     &         H3Kname,
-     &         'units', '(-)',
-     &         'Hydrogen PEMFC: time step-averaged thermal efficiency'
-     &      )
+            call AddToReport(rvPltAvrEffThermal%Identifier,
+     &            fReport_Stack_Eff_Ther_TS_avg(iComponent),
+     &            pcname(iComponent)(1:pcname_len))
 
 C...........Time-step averaged cogeneration efficiency
-            write(H3Kname,'(A,A)')
-     &         char_temp(1:iNameLength),
-     &         '/average/efficiency/cogeneration'
-            call add_to_xml_reporting(
-     &         fReport_Stack_Eff_Cogen_TS_avg(iComponent),
-     &         H3Kname,
-     &         'units', '(-)',
-     &         'Hydrogen PEMFC: time step-averaged cogeneration '
-     &         // 'efficiency'  )
+            call AddToReport(rvPltAvrEffCogen%Identifier,
+     &            fReport_Stack_Eff_Cogen_TS_avg(iComponent),
+     &            pcname(iComponent)(1:pcname_len))
 
          endif
 
 C........Hydrogen supply flow rate
-         write(H3Kname,'(A,A)')
-     &      char_temp(1:iNameLength),
-     &      '/hydrogen/supply/mass_flow_rate'
-
-         call add_to_xml_reporting(
-     &      fReport_Hydrogen_flow(iComponent),
-     &      H3Kname,
-     &      'units', '(kg/s)',
-     &      'Hydrogen PEMFC: mass flow rate of supplied hydrogen '
-     &      )
+         call AddToReport(rvPltHydroSupMassFlowRate%Identifier,
+     &            fReport_Hydrogen_flow(iComponent),
+     &            pcname(iComponent)(1:pcname_len))
 
 C........Hydrogen supply LHV
-         write(H3Kname,'(A,A)')
-     &      char_temp(1:iNameLength),
-     &      '/hydrogen/supply/LHV_flow_rate'
-
-         call add_to_xml_reporting(
-     &      fReport_Hydrogen_LHV(iComponent),
-     &      H3Kname,
-     &      'units', '(W)',
-     &      'Hydrogen PEMFC: LHV flow rate of supplied hydrogen '
-     &      )
+         call AddToReport(rvPltHydroSupLHVFlowRate%Identifier,
+     &            fReport_Hydrogen_LHV(iComponent),
+     &            pcname(iComponent)(1:pcname_len))
 
 C........Hydrogen demand flow rate
-         write(H3Kname,'(A,A)')
-     &      char_temp(1:iNameLength),
-     &      '/hydrogen/demand/mass_flow_rate'
-
-         call add_to_xml_reporting(
-     &      fReport_Hydrogen_demand(iComponent),
-     &      H3Kname,
-     &      'units', '(kg/s)',
-     &      'Hydrogen PEMFC: hydrogen mass flow rate requested '
-     &      // 'by unit')
+         call AddToReport(rvPltHydroDemMassFlowRate%Identifier,
+     &            fReport_Hydrogen_demand(iComponent),
+     &            pcname(iComponent)(1:pcname_len))
 
 C........Hydrogen demand LHV
-         write(H3Kname,'(A,A)')
-     &      char_temp(1:iNameLength),
-     &      '/hydrogen/demand/LHV_flow_rate'
-
-         call add_to_xml_reporting(
-     &      fReport_Hydrogen_demand_LHV(iComponent),
-     &      H3Kname,
-     &      'units', '(W)',
-     &      'Hydrogen PEMFC: LHV flow rate hydrogen requested '
-     &      // ' by unit')
-
+         call AddToReport(rvPltHydroDemLHVFlowRate%Identifier,
+     &            fReport_Hydrogen_demand_LHV(iComponent),
+     &            pcname(iComponent)(1:pcname_len))
 
 C........Stack voltage
-         write(H3Kname,'(A,A)')
-     &      char_temp(1:iNameLength),
-     &      '/stack/voltage'
-
-         call add_to_xml_reporting(
-     &      fReport_Stack_Voltage(iComponent),
-     &      H3Kname,
-     &      'units', '(V)',
-     &      'Hydrogen PEMFC: Stack operating voltage'
-     &      )
+         call AddToReport(rvPltStackVolt%Identifier,
+     &            fReport_Stack_Voltage(iComponent),
+     &            pcname(iComponent)(1:pcname_len))
 
 C........Stack current
-         write(H3Kname,'(A,A)')
-     &      char_temp(1:iNameLength),
-     &      '/stack/current'
-
-         call add_to_xml_reporting(
-     &      fReport_Stack_Current_TS_avg(iComponent),
-     &      H3Kname,
-     &      'units', '(amps)',
-     &      'Hydrogen PEMFC: Stack current, averaged over time step'
-     &      )
+         call AddToReport(rvPltStackCurrent%Identifier,
+     &            fReport_Stack_Current_TS_avg(iComponent),
+     &            pcname(iComponent)(1:pcname_len))
 
 C........AC power usage (-ive ->O)
-         write(H3Kname,'(A,A)')
-     &      char_temp(1:iNameLength),
-     &      '/average/power/AC'
-
-         call add_to_xml_reporting(
-     &      fReport_AC_Power_TS_avg(iComponent),
-     &      H3Kname,
-     &      'units', '(W)',
-     &      'Hydrogen PEMFC: AC power generation, averaged over'
-     &      // ' time step')
+         call AddToReport(rvPltAvgPowAC%Identifier,
+     &            fReport_AC_Power_TS_avg(iComponent),
+     &            pcname(iComponent)(1:pcname_len))
 
 C........DC power generation ( +ive O->)
-         write(H3Kname,'(A,A)')
-     &      char_temp(1:iNameLength),
-     &      '/average/power/DC'
-
-         call add_to_xml_reporting(
-     &      fReport_DC_Power_TS_avg(iComponent),
-     &      H3Kname,
-     &      'units', '(W)',
-     &      'Hydrogen PEMFC: DC power generation, averaged over'
-     &      // ' time step')
+         call AddToReport(rvPltAvrPowDC%Identifier,
+     &            fReport_DC_Power_TS_avg(iComponent),
+     &            pcname(iComponent)(1:pcname_len))
 
 C........Heat production
-         write(H3Kname,'(A,A)')
-     &      char_temp(1:iNameLength),
-     &      '/average/heat_output'
-
-         call add_to_xml_reporting(
-     &      fReport_heat_TS_avg(iComponent),
-     &      H3Kname,
-     &      'units', '(W)',
-     &      'Hydrogen PEMFC: thermal output, averaged over time step')
+         call AddToReport(rvPltAvgHOutput%Identifier,
+     &            fReport_heat_TS_avg(iComponent),
+     &            pcname(iComponent)(1:pcname_len))
 
 C........Skin losses
-         write(H3Kname,'(A,A)')
-     &      char_temp(1:iNameLength),
-     &      '/average/skin_losses'
-
-         call add_to_xml_reporting(
-     &      fReport_Skin_Losses_TS_avg(iComponent),
-     &      H3Kname,
-     &      'units', '(W)',
-     &      'Hydrogen PEMFC: skin losses, averaged over timestep')
+         call AddToReport(rvPltAvgSkinLoss%Identifier,
+     &            fReport_Skin_Losses_TS_avg(iComponent),
+     &            pcname(iComponent)(1:pcname_len))
 
 C.......Control scheme
-         write(H3Kname,'(A,A)')
-     &      char_temp(1:iNameLength),
-     &      '/control/scheme'
-
-         call add_to_xml_reporting(
-     &      float ( iReport_Control_method (iComponent) ),
-     &      H3Kname,
-     &      'units', '(-)',
-     &      'Hydrogen PEMFC: control scheme')
+         call AddToReport(rvPltCtrlScheme%Identifier,
+     &            float ( iReport_Control_method (iComponent) ),
+     &            pcname(iComponent)(1:pcname_len))
 
 C........Control signal
-         write(H3Kname,'(A,A)')
-     &      char_temp(1:iNameLength),
-     &      '/control/signal'
-
-         call add_to_xml_reporting(
-     &      fReport_Control_signal (iComponent) ,
-     &      H3Kname,
-     &      'units', '(-)',
-     &      'Hydrogen PEMFC: signal from external controller')
+         call AddToReport(rvPltCtrlSignal%Identifier,
+     &            fReport_Control_signal (iComponent) ,
+     &            pcname(iComponent)(1:pcname_len))
 
 C........Time spent in standby
-         write(H3Kname,'(A,A)')
-     &      char_temp(1:iNameLength),
-     &      '/operating_mode/standby'
-
-         call add_to_xml_reporting(
-     &      fReport_TS_modes (iComponent, iOP_inoperative),
-     &      H3Kname,
-     &      'units', '(s)',
-     &      'Hydrogen PEMFC: time spent in standby')
+         call AddToReport(rvPltOperModeStandBy%Identifier,
+     &            fReport_TS_modes (iComponent, iOP_inoperative),
+     &            pcname(iComponent)(1:pcname_len))
 
 C........Time spent in startup
-         write(H3Kname,'(A,A)')
-     &      char_temp(1:iNameLength),
-     &      '/operating_mode/startup'
-
-         call add_to_xml_reporting(
-     &      fReport_TS_modes (iComponent, iOP_startup),
-     &      H3Kname,
-     &      'units', '(s)',
-     &      'Hydrogen PEMFC: time spent in startup')
+         call AddToReport(rvPltOperModeStartup%Identifier,
+     &            fReport_TS_modes (iComponent, iOP_startup),
+     &            pcname(iComponent)(1:pcname_len))
 
 C........Time spent in normal operation
-         write(H3Kname,'(A,A)')
-     &      char_temp(1:iNameLength),
-     &      '/operating_mode/normal_operation'
-
-         call add_to_xml_reporting(
-     &      fReport_TS_modes (iComponent, iOP_normal_operation),
-     &      H3Kname,
-     &      'units', '(s)',
-     &      'Hydrogen PEMFC: time spent in normal operation')
+         call AddToReport(rvPltOperModeNormOp%Identifier,
+     &            fReport_TS_modes (iComponent, iOP_normal_operation),
+     &            pcname(iComponent)(1:pcname_len))
 
 C........Time spent in standby
-         write(H3Kname,'(A,A)')
-     &      char_temp(1:iNameLength),
-     &      '/operating_mode/cool_down'
-
-         call add_to_xml_reporting(
-     &      fReport_TS_modes (iComponent, iOP_shutdown),
-     &      H3Kname,
-     &      'units', '(s)',
-     &      'Hydrogen PEMFC: time spent in cool down')
-
+         call AddToReport(rvPltOperModeCoolDown%Identifier,
+     &            fReport_TS_modes (iComponent, iOP_shutdown),
+     &            pcname(iComponent)(1:pcname_len))
 
       endif
 

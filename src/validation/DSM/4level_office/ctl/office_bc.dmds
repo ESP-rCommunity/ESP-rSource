@@ -1,0 +1,16 @@
+# project demands defined in: 
+# ../ctl/office_bc.dmds
+Fans only (8h00-18h00 weekdays)  # description
+     1   # no Weekday demands 
+# Wkd: type, start, stop, sens, latent, rad_frac, conv_frac
+    4,   8,  18,   6000.000,      0.000, 0.500, 0.500
+     1   # no Saturday demands 
+# Sat: type, start, stop, sens, latent, rad_frac, conv_frac
+    4,   8,  18,    500.000,      0.000, 0.500, 0.500
+     1   # no Sunday demands 
+# Sun: type, start, stop, sens, latent, rad_frac, conv_frac
+    4,   8,  18,    500.000,      0.000, 0.500, 0.500
+# Labels for demand types 
+ Occup  Lights SmPowr Fans   Pumps  Lifts  DHW   
+# Areas associated with demand types 
+       1.00       1.00       1.00       1.00       1.00       1.00       1.00

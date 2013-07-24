@@ -1,13 +1,13 @@
 
 C This file is part of the ESP-r system.
-C Copyright CANMET Energy Technology Centre 
+C Copyright CANMET Energy Technology Centre
 C Natural Resources Canada, Government of Canada
-C 2004. Please Contact Ian Beausoliel-Morrison for details 
+C 2004. Please Contact Ian Beausoliel-Morrison for details
 C concerning licensing.
 
 C ESP-r is free software.  You can redistribute it and/or
 C modify it under the terms of the GNU General Public
-C License as published by the Free Software Foundation 
+C License as published by the Free Software Foundation
 C (version 2 or later).
 
 C ESP-r is distributed in the hope that it will be useful
@@ -37,7 +37,7 @@ C     Copyright: CETC
 C
 C     This subroutine is the static template for the component model of
 C     a 3 node electrolyser.The electrolyser is represented with 3 nodes.
-C     The first node encompasses the electrolyser stack, the second 
+C     The first node encompasses the electrolyser stack, the second
 C     encompasses the cooling water heat exchanger and the third node
 C     encompasses the heating element to increase the feed water to the
 C     stack inlet temperature.
@@ -91,17 +91,17 @@ C-------------------------------------------------------------------------------
      &     isv(mpcom,mnodec)    ! node state & supported simulation types
       integer ndcon, isv
 
-C.....Common storing status of plant initialization. 
+C.....Common storing status of plant initialization.
       common / plant_initialization / bInitialized
       logical bInitialized(mpcom)
 
-C Logical array indicating if plant components have support for 4th, 
+C Logical array indicating if plant components have support for 4th,
 C hydrogen matrix
-      common  / H2_lib / 
-     &     h2FlowSupport      
+      common  / H2_lib /
+     &     h2FlowSupport
       logical h2FlowSupport(mpcom)
 
-C.....Flag to enable inter-domain iteration 
+C.....Flag to enable inter-domain iteration
       common / Plt_Elec_Net / bInter_domain_iteration
       logical bInter_domain_iteration
 
@@ -139,8 +139,8 @@ C-------------------------------------------------------------------------------
 C-----------------------------------------------------------------------------------
 C Check the ISV variable for node 1 and set hydrogen flow support flag to true.
 C The ISV_convert subroutine is used to break up the ISV value into two variables:
-C 
-C SIMtype -> the first digit of ISV, describes the types of simulations the 
+C
+C SIMtype -> the first digit of ISV, describes the types of simulations the
 C            node can be used in.
 C
 C state -> the second digit of ISV, describes the type of matter that the node
@@ -168,7 +168,7 @@ C Variables used:
 C    MPCONC           the maximum allowable connections to a node (from plant.h).
 C    ICONDX(i,j,k)    the connection number for the k'th connection to the j'th node
 C                     of component i. It is used as a pointer.
-C    bMistake         flag indicating whether there are connection errors. 
+C    bMistake         flag indicating whether there are connection errors.
 C                     (true means there are errors)
 C------------------------------------------------------------------------------------
 
@@ -178,30 +178,30 @@ C There should be one receiving connection to node 2 (the cooling water heat exc
 
         iConnection = ICONDX(IPCOMP,2,1)         !-connection index to node 2
 
-        if ( iConnection .EQ. 0 ) bMistake = .true.     
+        if ( iConnection .EQ. 0 ) bMistake = .true.
 
         DO i = 2, MPCONC
 
            iConnection =  ICONDX(IPCOMP,2,i)
-           if ( iConnection .NE. 0 ) bMistake = .true.   
+           if ( iConnection .NE. 0 ) bMistake = .true.
 
         ENDDO
 
 
-        if ( bMistake ) then     
+        if ( bMistake ) then
 
            WRITE(IUOUT,*) ' H2_electrolyser_static_temp: incorrect'
            WRITE(IUOUT,*) ' number of connections for component ',IPCOMP
            STOP ' H2_electrolyser_static_temp: unresolvable error'
 
-        endif  
+        endif
 
 
 
 C-------------------------------------------------------------------------------------
 C Check that the connection to node 2 is of the correct type. Should be water type (20)
 C Variables used
-C ICONTP(i) holds the state variable index ISV of the sending node for 
+C ICONTP(i) holds the state variable index ISV of the sending node for
 C           the connection i
 C  ISV      defines nodal fluid type & coefficient generator model capabilities:
 C            ISV=0,10,20 node represents water + ....
@@ -216,7 +216,7 @@ C-------------------------------------------------------------------------------
         iConnection = ICONDX(IPCOMP,2,1)
 
         if ( ICONTP(iConnection) .NE. 20 ) then
-           
+
              WRITE(IUOUT,*) ' H2 electrolyser_static_temp: incorrect'
              WRITE(IUOUT,*) ' conn type to node 2 for component', IPCOMP
              STOP ' H2 electrolyser_static_temp: unresolvable error'
@@ -229,7 +229,7 @@ C-------------------------------------------------------------------------------
 C Set initialization flag to false. Flag used in coefficient generator to
 C do perform time-invariant operations at first time-step only.
 C------------------------------------------------------------------------------------
- 
+
          bInitialized(IPCOMP) = .false.
 
 
@@ -237,7 +237,7 @@ C-------------------------------------------------------------------------------
 C Set flag for inter-domain iteration.
 C------------------------------------------------------------------------------------
 
-         bInter_domain_iteration = .true. 
+         bInter_domain_iteration = .true.
 
 
 
@@ -252,24 +252,25 @@ C     Created by: Maria Mottillo
 C     Created on: February 3, 2005
 C     Copyright: CETC
 C
-C 
+C
 C     This subroutine creates a set of ESP-r plant matrix coefficients for
 C     an electrolyser. The electrolyser is represented with 3 nodes.
-C     The first node encompasses the electrolyser stack, the second 
+C     The first node encompasses the electrolyser stack, the second
 C     encompasses the cooling water heat exchanger and the third node
 C     encompasses the heating element to increase the feed water to the
 C     stack inlet temperature.
 C
-C 
+C
 C     REFERENCES:
 C
-C     NRCan 2005. 'Design of an electrolyser component model',Internal Document, 
+C     NRCan 2005. 'Design of an electrolyser component model',Internal Document,
 C     Original draft December 21, 2004.
-C 
+C
 C*******************************************************************************
 
 
           SUBROUTINE H2_electrolyser_coeff_gen( IPCOMP, COUT, ISTATS)
+          use h3kmodule
           IMPLICIT NONE
 
 #include "plant.h"
@@ -277,7 +278,7 @@ C*******************************************************************************
 #include "chemical_properties.h"
 
 
-C External functions.     
+C External functions.
       integer lnblnk
 
 C-------------------------------------------------------------------------------
@@ -306,7 +307,7 @@ C-------------------------------------------------------------------------------
 
        COMMON/TRACE/ITCF,ITRACE(MTRACE),IZNTRC(MCOM),ITU
        INTEGER ITCF            !-building-side time increment
-                               !-to end trace output 
+                               !-to end trace output
        INTEGER ITRACE          !-trace call index
        INTEGER IZNTRC          !-zone trace index
        INTEGER ITU             !-trace output unit number
@@ -329,7 +330,7 @@ C-------------------------------------------------------------------------------
                                !-for plant solution
        REAL    PERREL          !-maximum allowed relative error
                                !-for plant solution
-       REAL    PERTMP          !-maximum allowed absolute error 
+       REAL    PERTMP          !-maximum allowed absolute error
                                !-temperature for plant solution (K)
        REAL    PERMFL          !-maximum allowed absolute error
                                !-mass flow rate for plant solution (kg/s)
@@ -354,7 +355,7 @@ C-------------------------------------------------------------------------------
        INTEGER IPC1            !-component number defining the receiving
                                !-component
        INTEGER IPN1            !-node number defining the receiving component
-       INTEGER IPCT            !-plant component inter-connection type 
+       INTEGER IPCT            !-plant component inter-connection type
        INTEGER IPC2            !-component number defining the sending
                                !-component
        INTEGER IPN2            !-node number defining the sending component
@@ -392,7 +393,7 @@ C-------------------------------------------------------------------------------
      &              PCQP(MPNODE),PCNTMP(MPCOM)
        REAL    PCTF            !-future value of sending node temperature
                                !-for plant connection
-       REAL    PCRF            !-future value of heat capacity rate for plant 
+       REAL    PCRF            !-future value of heat capacity rate for plant
                                !-connection
        REAL    PUAF            !-future value of plant node's UA value
        REAL    PCQF            !-future value of plant node heat addition/extraction
@@ -422,28 +423,28 @@ C-------------------------------------------------------------------------------
        REAL    TIMSEC          !-length of time increment (second)
 
 
-       COMMON/pltcon/bpltcon,lastTStp   
+       COMMON/pltcon/bpltcon,lastTStp
        LOGICAL bpltcon                  !-logical variable indicating if plant domain
        REAL    lastTStp                 !-converged in previous iteration
 
 
        COMMON/ELPCP/NPEL,PFP,IPFP,PWRP,BVOLTP, IPHP
-       INTEGER  npel                 ! number of "electrified" plant components 
+       INTEGER  npel                 ! number of "electrified" plant components
        REAL     pfp(mpcom)           ! power factor of componet i (0->1)
        INTEGER  ipfp(mpcom)          ! integer indicating if power factor lags (-1) or leads (+1)
        REAL     pwrp(mpcom)          ! real power consumption of component (generation is -ive)
-       REAL     bvoltp(mpcom)        ! opertional voltage of component 
+       REAL     bvoltp(mpcom)        ! opertional voltage of component
        INTEGER  iphp(mpcom)          ! phase component is connected to -> dummy variable
 
-C.....Additional data 
+C.....Additional data
       common/pcdat/
-     &     pcdatf(mpcom,mpcdat), 
-     &     pcdatp(mpcom,mpcdat)  
+     &     pcdatf(mpcom,mpcdat),
+     &     pcdatp(mpcom,mpcdat)
       real pcdatf                ! component additional data (future)
       real pcdatp                ! component additional data (present)
 
 
-C.....Common storing status of plant initialization. 
+C.....Common storing status of plant initialization.
       common / plant_initialization / bInitialized
       logical bInitialized(mpcom)
 
@@ -477,10 +478,10 @@ C------------------------------------------------------------------------------
        REAL      fMaxStackPower   !- maximum power demand of electrolyser stack (W)
                                   !- if mode of operation is constant current (1) then this is the
                                   !- power demand of stack. if mode of operation is variable current (2)
-                                  !- then this is the maximum capacity of the stack.   
+                                  !- then this is the maximum capacity of the stack.
 
        REAL      fStackPower      !- power consumed by electrolyser stack (W)
- 
+
        REAL      fO2CoeffA0       !- O2 production rate coefficient A0 (mol/s)
        REAL      fO2CoeffA1       !- O2 production rate coefficient A1 (-)
        REAL      fO2CoeffA2       !- O2 production rate coefficient A2 (s/mol)
@@ -510,7 +511,7 @@ C------------------------------------------------------------------------------
        REAL      fHRCoeffG5       !- heat recovery coefficient G5 (Ws/kg)
        REAL      fHRCoeffG6       !- heat recovery coefficient G6 (Ws^2/kg^2)
        REAL      fHRCoeffG7       !- heat recovery coefficient G7 (W/oC)
-       REAL      fHRCoeffG8       !- heat recovery coefficient G8 (W/oC^2) 
+       REAL      fHRCoeffG8       !- heat recovery coefficient G8 (W/oC^2)
 
        INTEGER   iTempFlag        !- flag to indicate if feed water temperature
                                   !- is set to a constant value (flag .ne. 1) or if it
@@ -528,14 +529,14 @@ C------------------------------------------------------------------------------
        INTEGER   iOpMode          !- mode of operation of electrolyzer: 1 = constant current;
                                   !- 2 = variable current
 
-       INTEGer   iFeedWaterHtg    !- flag indicating if feed water is heated with electric 
+       INTEGer   iFeedWaterHtg    !- flag indicating if feed water is heated with electric
                                   !- resistance heating (0=no, 1=yes)
 
        INTEGER   iNumADATAItems   !- number of ADATA items for this plant component
 
 
        INTEGER   iNode1, iNode2, iNode3 !- indices to nodes in overall plant matrix
-       INTEGER   iConn2a                !- index to connection to node 2 
+       INTEGER   iConn2a                !- index to connection to node 2
 
        REAL      fTemp_node1      !- temperature of node 1 (oC)
        REAL      fTemp_node2      !- temperature of node 2 (oC)
@@ -577,7 +578,7 @@ C------------------------------------------------------------------------------
                                      !- node 2 (kg/s)
        REAL      fTemp_con2a         !- temperature of cooling water entering
                                      !- node 3 (oC)
-       REAL      fCpCW               !- specific heat of cooling water entering 
+       REAL      fCpCW               !- specific heat of cooling water entering
                                      !- nod 2 (J/kgC)
        REAL      fQcool              !- heat transfer from node 1 (stack) to node
                                      !- 2 (cooling water), calculated based on previous
@@ -603,8 +604,8 @@ C------------------------------------------------------------------------------
                                      !- heat calculations (oC)
        PARAMETER( fTemp_ref = 25. )
        REAL      fCpH2               !- specific heat of hydrogen gas (J/molC)
-       REAL      fCpO2               !- specific heat of oxygen gas (J/molC)       
- 
+       REAL      fCpO2               !- specific heat of oxygen gas (J/molC)
+
        REAL      SHTFLD              !- function evaluates specific heat (J/kgC)
        REAL      fCpInlet            !- specific heat of water supplied to node 3 (J/kgC)
 
@@ -618,10 +619,10 @@ C------------------------------------------------------------------------------
        REAL      fOperatingSignal    !- operating signal (on/off) from control data
                                      !- a value of 1 means the unit is on, 0 means off
        REAL      fOnSignal           !- named constant
-       PARAMETER( fOnSignal  = 1. ) 
+       PARAMETER( fOnSignal  = 1. )
        LOGICAL   bOn                 !- flag set to true if electrolyser is on according
                                      !- to control data
-      
+
        REAL      fStandbySignal      !- standby mode signal from control data
                                      !- standby signal only applies when the electrolyser is off
                                      !- a value of 1 means the unit is on standby, 0 means the
@@ -636,7 +637,7 @@ C------------------------------------------------------------------------------
        INTEGER   iemodel             !- flag used for electrical calculations for plant component
 
        REAL      fPA_dummy           !- dummy variable holding total power (real + reactive)
-                                     !- of plant component; not used but necessary for call to 
+                                     !- of plant component; not used but necessary for call to
                                      !- EMACH (subroutine output)
 
        REAL      fQgen_present       !- Internal heat generated by electrolyser (W) at
@@ -650,9 +651,7 @@ C------------------------------------------------------------------------------
 
 
 C......Variables used for XML output
-       CHARACTER*128 H3K_rep_NAME    ! H3Kreporting object name
-       character*128 root_name       ! root name of component node 
-       character*128 hold_name       ! temporary variable for string manipulation
+       INTEGER Name_Length           ! temporary varaible's length
 
 C.....Functions
       real fEval_Compound_HV      ! Function returning the heating
@@ -741,7 +740,7 @@ C..........Operating mode of electrolyser (1=Constant current, 2= Variable curre
 C..........Flag indicating if water fed to electrolyzer is heated
            iFeedWaterHtg    = int(ADATA( IPCOMP, 40 ))
 
-C..........Auxiliary DC power coefficients 
+C..........Auxiliary DC power coefficients
            fAuxDCPowerCoeffW0 = ADATA( IPCOMP, 41 )
            fAuxDCPowerCoeffW1 = ADATA( IPCOMP, 42 )
 
@@ -766,7 +765,7 @@ C component 'i'. It equals -99 if no containment is defined.
 
 
 C Determine the inlet temperature of the water fed to node 3. The variable
-C iTempFlag indicates whether the inlet temperature should be set to a constant 
+C iTempFlag indicates whether the inlet temperature should be set to a constant
 C value (iTempFlag .NE. 1) or to the containment temperature (iTempFlag = 1).
 C if iTempFlag  is not equal to 1, then fTempInlet is a model input
 C stored in the variable fTempInlet.
@@ -787,7 +786,7 @@ C-------------------------------------------------------------------------------
            iNumADATAItems = 42
 
 C------------------------------------------------------------------------------------
-C Write out ADATA if there is a trace output. 
+C Write out ADATA if there is a trace output.
 C------------------------------------------------------------------------------------
 
            if ( ITC.GT.0 .AND. ITRACE(35).NE.0 ) then  !-trace output requested for plant components
@@ -801,7 +800,7 @@ C-------------------------------------------------------------------------------
                 itemp = (IPCOMP/5)*5
                 if ( itemp.EQ.IPCOMP .OR. IPCOMP.EQ.NPCOMP) then
                     CALL EPAGEW            !-write 5 lines at a time
-                endif          
+                endif
              endif
 
            endif
@@ -816,7 +815,7 @@ C Obtain HHV of H2 and molar mass of H2, O2 and H2O
 
            fH2_HHV = fEval_Compound_HV ( iHydrogen, iHHV ) / 1000.    ! J/mol
 
-           fH2_MolWeight = fEval_Compound_MM ( iHydrogen ) / 1000.    ! kg/mol          
+           fH2_MolWeight = fEval_Compound_MM ( iHydrogen ) / 1000.    ! kg/mol
 
            fO2_MolWeight = fEval_Compound_MM ( iOxygen ) / 1000.      ! kg/mol
 
@@ -855,7 +854,7 @@ C-------------------------------------------------------------------------------
 
 C-----------------------------------------------------------------------------------
 C Obtain control data and set appropriate flags
-C----------------------------------------------------------------------------------- 
+C-----------------------------------------------------------------------------------
 
 C first control data item is for operating signal (on/off)
 
@@ -901,7 +900,7 @@ C the electrolyzer will turn into a PEM, inducing a negitive hydrogen flow and
 C causing chaos in downstream components!
 C
 C This implementation merits additional thought --- a control signal of zero
-C implies standby mode, which may necessitate setting the bStandby flag to 
+C implies standby mode, which may necessitate setting the bStandby flag to
 C true (above).
 
        if ( fControlSignal < 0.0 ) fControlSignal = 0.0
@@ -916,7 +915,7 @@ C the operation state of the electrolyzer at present and future time rows.
 
 
 C------------------------------------------------------------------------------------
-C Mark the temperatures of the first and second node for iteration. Mark the 
+C Mark the temperatures of the first and second node for iteration. Mark the
 C hydrogen flow rate for the first node for iteration.
 C Variables used:
 C    ICSV(i,j) flag indicating that node `i' is marked for iteration for state
@@ -924,7 +923,7 @@ C              variable `j'; j=1 for temperature, j=2 for 1st phase mass flow,
 C              j=3 for 2nd phase mass flow, j=4 for hydrogen flow
 C    CSVI(i,j) initial value for judging whether iteration required. Same
 C              indices as ICSV.
-C    CSVF(i,j) future time-row solution variable for plant. Same indices 
+C    CSVF(i,j) future time-row solution variable for plant. Same indices
 C     .        as ICSV.
 C------------------------------------------------------------------------------------
 
@@ -932,13 +931,13 @@ C-------------------------------------------------------------------------------
          ICSV(iNode2,1) = 1
          ICSV(iNode1,4) = 1
 
-         CSVI(iNode1,1) = CSVF(iNode1,1) 
+         CSVI(iNode1,1) = CSVF(iNode1,1)
          CSVI(iNode2,1) = CSVF(iNode2,1)
          CSVI(iNode1,4) = CSVF(iNode1,4)
 
 
 C------------------------------------------------------------------------------------
-C Establish the temperature of node 1 (stack) and  node 2 (cooling water h/x) from 
+C Establish the temperature of node 1 (stack) and  node 2 (cooling water h/x) from
 C the previous timestep.
 C Variables used:
 C    CSVF(i,j)      future time-row solution variable for node i and state variable
@@ -969,14 +968,14 @@ C-------------------------------------------------------------------------------
 C Determine power consumed by stack.
 C------------------------------------------------------------------------------------
 
-       if ( iOpMode .eq. 2 ) then     
+       if ( iOpMode .eq. 2 ) then
 
 C Electrolyzer operates at variable current (power).
 
           if ( fControlSignal .le. fMaxStackPower ) then
 
 C Available power less than maximum capacity of electrolyzer
- 
+
                fStackPower = fControlSignal
 
           else
@@ -1036,12 +1035,12 @@ C-------------------------------------------------------------------------------
        elseif ( .not.bOn .and. bStandby ) then         !- unit is not operating, in standby mode
 
           fDCElecDemand = fMinPower
-          fACElecDemand = 0. 
+          fACElecDemand = 0.
 
        elseif ( .not.bOn .AND. .not.bStandby ) then    !- unit is off
 
           fDCElecDemand = 0.
-          fACElecDemand = 0.          
+          fACElecDemand = 0.
 
        endif
 
@@ -1051,7 +1050,7 @@ C-------------------------------------------------------------------------------
 
 C------------------------------------------------------------------------------
 C Save DC and AC electrical demand of electrolyser  in electric network hybrid
-C components power generation/use array. 
+C components power generation/use array.
 C------------------------------------------------------------------------------
 
 C Assign flag for calculation
@@ -1081,11 +1080,11 @@ C-----------------------------------------------------------------------------
           if ( bOn ) fPresentTime = fPresentTime + TIMSEC            !-sec
 
        endif
-                                     
+
 
 C Determine electrical efficiency of electrolyser
 
-       fElecEfficiency = fEffCoeffE0 +  
+       fElecEfficiency = fEffCoeffE0 +
      &                   fEffCoeffE1 * fStackPower +
      &                   fEffCoeffE2 * fStackPower**2 +
      &                   fEffCoeffE3 * fTemp_node1 +
@@ -1206,11 +1205,11 @@ C T; j=1 for dry air, j=2 for water vapour and j=3 for water.
 C Determine the energy required to heat the inlet water to the electrolyser
 C stack operating temperature.
 
-       fQheat = fH2OTotalFlow_kgs * fCpInlet * 
+       fQheat = fH2OTotalFlow_kgs * fCpInlet *
      &             ( fTemp_node3 - fTempInlet )       !- W
 
 
-C If fQheat is zero, feed water is not heated.     
+C If fQheat is zero, feed water is not heated.
        call eclose ( fQheat, 0., 0.001, close)
        if ( close ) then
          fQheat = 0.
@@ -1219,7 +1218,7 @@ C If fQheat is zero, feed water is not heated.
 C Determine internal heat generated by electrolyser at present time-step
           fQgen_present = fQgenCoeffF0 +
      &               fQgenCoeffF1 * fTotalElecDemand +
-     &               fQgenCoeffF2 * fTotalElecDemand**2 + 
+     &               fQgenCoeffF2 * fTotalElecDemand**2 +
      &               fQgenCoeffF3 * fTemp_node1 +
      &               fQgenCoeffF4 * fTemp_node1**2 +
      &               fQgenCoeffF5 * ( fPresentTime - fInitAge )
@@ -1261,7 +1260,7 @@ C...........Node 1 energy balance
      &                   fH2OTotalFlow_mols * fH2OEnthalpy +
      &                   fQgenCoeffF0 +
      &                   fQgenCoeffF1 * fTotalElecDemand +
-     &                   fQgenCoeffF2 * fTotalElecDemand**2 + 
+     &                   fQgenCoeffF2 * fTotalElecDemand**2 +
      &                   fQgenCoeffF5 * ( fPresentTime - fInitAge ) +
      &                   fOverallHamb * fSurfArea * fTambient +
      &                   fH2NetFlow_mols * fCpH2 * fTemp_ref -
@@ -1282,12 +1281,12 @@ C...........Node 3 energy balance: temperature known
                COUT(4) = 1.
                COUT(8) = fTemp_node3
 
- 
-           else                  !- unit is off 
+
+           else                  !- unit is off
 
 
 C...........Node 1 energy balance
-               if ( bStandby ) then   !- unit is in standby mode              
+               if ( bStandby ) then   !- unit is in standby mode
 
                   COUT(1) = fOverallHamb * fSurfArea
                   COUT(6) = fMinPower + fOverallHamb * fSurfArea *
@@ -1306,7 +1305,7 @@ C...........Node 2 energy balance: no heat transfer from node 1 to node 2.
                COUT(5) = -1.
                COUT(7) = 0.           !- should this be set to dummy value, other than 0?
 
-C...........Node 3 energy balance: 
+C...........Node 3 energy balance:
 
                COUT(4) = 1.
                COUT(8) = 0.           !- should this be set to dummy value, other than 0?
@@ -1425,233 +1424,90 @@ C-------------------------------------------------------------------------------
 C XML output
 C----------------------------------------------------------------------------------------
 
-C.....Get component name
-      hold_name = pcname(IPCOMP) 
-C.....Format string as: 'plant/NAME/misc_data'
+C.....Get component name's length
+       name_length = lnblnk(pcname(IPCOMP))
 
-       WRITE(root_name,'(A,A,A)') 
-     &     'plant/',
-     &     hold_name(1:lnblnk(hold_name)),
-     &     '/misc_data'
-
-       WRITE(H3K_rep_NAME,'(A,A)') 
-     &     root_name(1:lnblnk(root_name)), '/operating_signal'
-
-       call add_to_xml_reporting(
-     &                   fOperatingSignal,
-     &                   H3K_rep_name,
-     &                   'units',
-     &                   '(-)',
-     &                   'Electrolyzer operating signal (on/off)' )
+       Call AddToReport(rvPltOprtSgn%Identifier,
+     &         fOperatingSignal,
+     &         pcname(IPCOMP)(1:name_length))
 
 
-       WRITE(H3K_rep_NAME,'(A,A)') 
-     &     root_name(1:lnblnk(root_name)), '/standby_signal'
+      Call AddToReport(rvPltStndSgn%Identifier,
+     &         fStandbySignal,
+     &         pcname(IPCOMP)(1:name_length))
 
-       call add_to_xml_reporting(
-     &                   fStandbySignal,
-     &                   H3K_rep_name,
-     &                   'units',
-     &                   '(-)',
-     &                   'Electrolyzer standby signal (on/off)' )
+      Call AddToReport(rvPltCtrlSgnEltrzr%Identifier,
+     &         fControlSignal,
+     &         pcname(IPCOMP)(1:name_length))
 
+      Call AddToReport(rvPltTtlAuxPow%Identifier,
+     &         fPowerAux,
+     &         pcname(IPCOMP)(1:name_length))
 
-       WRITE(H3K_rep_NAME,'(A,A)') 
-     &     root_name(1:lnblnk(root_name)), '/control_signal'
+      Call AddToReport(rvPltDCAuxPow%Identifier,
+     &         fDCPowerAux,
+     &         pcname(IPCOMP)(1:name_length))
 
-       call add_to_xml_reporting(
-     &                   fControlSignal,
-     &                   H3K_rep_name,
-     &                   'units',
-     &                   '(W)',
-     &                   'Power available for input to electrolyzer ' )
+      Call AddToReport(rvPltACAuxPow%Identifier,
+     &         fACPowerAux,
+     &         pcname(IPCOMP)(1:name_length))
 
+      Call AddToReport(rvPltStckPow%Identifier,
+     &         fStackPower,
+     &         pcname(IPCOMP)(1:name_length))
 
+      Call AddToReport(rvPltMxStckPow%Identifier,
+     &         fMaxStackPower,
+     &         pcname(IPCOMP)(1:name_length))
 
-       WRITE(H3K_rep_NAME,'(A,A)') 
-     &     root_name(1:lnblnk(root_name)), '/total_aux_power'
+      Call AddToReport(rvPltOpMode%Identifier,
+     &         real(iOpMode),
+     &         pcname(IPCOMP)(1:name_length))
 
-       call add_to_xml_reporting(
-     &                   fPowerAux,
-     &                   H3K_rep_name,
-     &                   'units',
-     &                   '(W)',
-     &                   'Total power consumed by auxiliary equipment' )
+      Call AddToReport(rvPltDCPowDmd%Identifier,
+     &         fDCElecDemand,
+     &         pcname(IPCOMP)(1:name_length))
 
-      WRITE(H3K_rep_NAME,'(A,A)') 
-     &     root_name(1:lnblnk(root_name)), '/DC_aux_power'
+      Call AddToReport(rvPltACPowDmd%Identifier,
+     &         fACElecDemand,
+     &         pcname(IPCOMP)(1:name_length))
 
-       call add_to_xml_reporting(
-     &                   fDCPowerAux,
-     &                   H3K_rep_name,
-     &                   'units',
-     &                   '(W)',
-     &                   'DC power consumed by auxiliary equipment' )
+      Call AddToReport(rvPltElecEffEltrzr%Identifier,
+     &         fElecEfficiency,
+     &         pcname(IPCOMP)(1:name_length))
 
-      WRITE(H3K_rep_NAME,'(A,A)') 
-     &     root_name(1:lnblnk(root_name)), '/AC_aux_power'
+      Call AddToReport(rvPltH2FlwKgs%Identifier,
+     &         fH2NetFlow_kgs,
+     &         pcname(IPCOMP)(1:name_length))
 
-       call add_to_xml_reporting(
-     &                   fACPowerAux,
-     &                   H3K_rep_name,
-     &                   'units',
-     &                   '(W)',
-     &                   'AC power consumed by auxiliary equipment' )
+      Call AddToReport(rvPlt02FlwKgs%Identifier,
+     &         fO2NetFlow_kgs,
+     &         pcname(IPCOMP)(1:name_length))
 
+      Call AddToReport(rvPltH20FlwKgs%Identifier,
+     &         fH2OTotalFlow_kgs,
+     &         pcname(IPCOMP)(1:name_length))
 
+      Call AddToReport(rvPltQIntPrst%Identifier,
+     &         fQgen_present,
+     &         pcname(IPCOMP)(1:name_length))
 
-       WRITE(H3K_rep_NAME,'(A,A)') 
-     &     root_name(1:lnblnk(root_name)), '/stack_power'
+      Call AddToReport(rvPltQlssPrst%Identifier,
+     &         fQloss_present,
+     &         pcname(IPCOMP)(1:name_length))
 
-       call add_to_xml_reporting(
-     &                   fStackPower,
-     &                   H3K_rep_name,
-     &                   'units',
-     &                   '(W)',
-     &                   'Power consumed by electrolyzer stack' )
+      Call AddToReport(rvPltQCoolPrst%Identifier,
+     &         fQcool,
+     &         pcname(IPCOMP)(1:name_length))
 
-       WRITE(H3K_rep_NAME,'(A,A)') 
-     &     root_name(1:lnblnk(root_name)), '/max_stack_power'
+      Call AddToReport(rvPltQInltWtrHtg%Identifier,
+     &         fQheat,
+     &         pcname(IPCOMP)(1:name_length))
 
-       call add_to_xml_reporting(
-     &                   fMaxStackPower,
-     &                   H3K_rep_name,
-     &                   'units',
-     &                   '(W)',
-     &                   'Maximum power input to electrolyzer stack' )
+      Call AddToReport(rvPltTnltWtr%Identifier,
+     &         fTempInlet,
+     &         pcname(IPCOMP)(1:name_length))
 
-
-       WRITE(H3K_rep_NAME,'(A,A)') 
-     &     root_name(1:lnblnk(root_name)), '/op_mode'
-
-       call add_to_xml_reporting(
-     &                   real(iOpMode),
-     &                   H3K_rep_name,
-     &                   'units',
-     &                   '(-)',
-     &                   'Operating mode of electrolyzer' )
-
-
-
-       WRITE(H3K_rep_NAME,'(A,A)') 
-     &     root_name(1:lnblnk(root_name)), '/DC_power_demand'
-
-       call add_to_xml_reporting(
-     &                   fDCElecDemand,
-     &                   H3K_rep_name,
-     &                   'units',
-     &                   '(W)',
-     &                   'DC power demand of electrolyzer' )
-
-
-       WRITE(H3K_rep_NAME,'(A,A)') 
-     &     root_name(1:lnblnk(root_name)), '/AC_power_demand'
-
-       call add_to_xml_reporting(
-     &                   fACElecDemand,
-     &                   H3K_rep_name,
-     &                   'units',
-     &                   '(W)',
-     &                   'AC power demand of electrolyzer' )
-
-
-       WRITE(H3K_rep_NAME,'(A,A)') 
-     &     root_name(1:lnblnk(root_name)), '/elec_efficiency'
-
-       call add_to_xml_reporting(
-     &                   fElecEfficiency,
-     &                   H3K_rep_name,
-     &                   'units',
-     &                   '(-)',
-     &                   'Electrical efficiency of electrolyzer' )
-
-
-       WRITE(H3K_rep_NAME,'(A,A)') 
-     &     root_name(1:lnblnk(root_name)), '/H2_flow_kgs'
-
-       call add_to_xml_reporting(
-     &                   fH2NetFlow_kgs,
-     &                   H3K_rep_name,
-     &                   'units',
-     &                   '(kg/s)',
-     &                   'Net production rate of H2' )
-
-
-       WRITE(H3K_rep_NAME,'(A,A)') 
-     &     root_name(1:lnblnk(root_name)), '/O2_flow_kgs'
-
-       call add_to_xml_reporting(
-     &                   fO2NetFlow_kgs,
-     &                   H3K_rep_name,
-     &                   'units',
-     &                   '(kg/s)',
-     &                   'Net production rate of O2' )
-
-
-       WRITE(H3K_rep_NAME,'(A,A)') 
-     &     root_name(1:lnblnk(root_name)), '/H2O_flow_kgs'
-
-       call add_to_xml_reporting(
-     &                   fH2OTotalFlow_kgs,
-     &                   H3K_rep_name,
-     &                   'units',
-     &                   '(kg/s)',
-     &                   'Net consumption rate of H2O' )
-
-
-       WRITE(H3K_rep_NAME,'(A,A)') 
-     &     root_name(1:lnblnk(root_name)), '/Qinternal_present'
-
-       call add_to_xml_reporting(
-     &                   fQgen_present,
-     &                   H3K_rep_name,
-     &                   'units',
-     &                   '(W)',
-     &                   'Internal heat generated by electrolyser' )
-
-
-       WRITE(H3K_rep_NAME,'(A,A)') 
-     &     root_name(1:lnblnk(root_name)), '/Qloss_present'
-
-       call add_to_xml_reporting(
-     &                   fQloss_present,
-     &                   H3K_rep_name,
-     &                   'units',
-     &                   '(W)',
-     &                   'Ambient heat loss' )
-
-
-       WRITE(H3K_rep_NAME,'(A,A)') 
-     &     root_name(1:lnblnk(root_name)), '/Qcool_present'
-
-       call add_to_xml_reporting(
-     &                   fQcool,
-     &                   H3K_rep_name,
-     &                   'units',
-     &                   '(W)',
-     &                   'Heat transfer to cooling water' )
-
-
-       WRITE(H3K_rep_NAME,'(A,A)') 
-     &     root_name(1:lnblnk(root_name)), '/Qinlet_water_htg'
-
-       call add_to_xml_reporting(
-     &                   fQheat,
-     &                   H3K_rep_name,
-     &                   'units',
-     &                   '(W)',
-     &                   'Energy required to heat inlet water' )
-
-
-       WRITE(H3K_rep_NAME,'(A,A)') 
-     &     root_name(1:lnblnk(root_name)), '/Tinlet_water'
-
-       call add_to_xml_reporting(
-     &                   fTempInlet,
-     &                   H3K_rep_name,
-     &                   'units',
-     &                   '(C)',
-     &                   'Temperature of inlet water' )
 
        RETURN
        END
@@ -1663,8 +1519,8 @@ C*******************************************************************************
 
 
 C****************************************Function H2OLiquidEnthalpy*******************************
-C 
-C This function determines the enthalpy of liquid water using a correlation to a reference 
+C
+C This function determines the enthalpy of liquid water using a correlation to a reference
 C temperature. Specifically, the Shomate equation provided on the National Institute of
 C Standards and Technology (NIST) website is used. The Shomate equation is valid
 C for temperatures in the range 25-227 oC.
@@ -1688,8 +1544,8 @@ C-------------------------------------------------------------------------------
        REAL   fTemp_K  !- temperature (K)
        REAL   ftau     !- T(K)/1000
        REAL   fCoeffA, fCoeffB, fCoeffC, fCoeffD, fCoeffE     !- coefficients of Shomate equation
-       REAL   fCoeffF, fCoeffH                              
-       
+       REAL   fCoeffF, fCoeffH
+
        PARAMETER( fCoeffA = -203.6060,
      &            fCoeffB = 1523.290,
      &            fCoeffC = -3196.413,
@@ -1732,7 +1588,7 @@ C error message if temperature is outside valid range
      &           fCoeffC / 3. * ftau**3 +
      &           fCoeffD / 4. * ftau**4 -
      &           fCoeffE / ftau +
-     &           fCoeffF - fCoeffH      
+     &           fCoeffF - fCoeffH
 
 
        H2OLiquidEnthalpy = fDeltaH + fHref         !- kJ/mol
@@ -1747,8 +1603,8 @@ C*******************************************************************************
 
 
 C*************************************FUNCTION H2GasEnthalpy**************************************
-C 
-C This function determines the enthalpy of hydrogen gas using a correlation to a reference 
+C
+C This function determines the enthalpy of hydrogen gas using a correlation to a reference
 C temperature. Specifically, the Shomate equation provided on the National Institute of
 C Standards and Technology (NIST) website is used. The Shomate equation is valid
 C for temperatures in the range 25-5727 oC.
@@ -1773,7 +1629,7 @@ C-------------------------------------------------------------------------------
        REAL   ftau     !- T(K)/1000
        REAL   fCoeffA1, fCoeffB1, fCoeffC1, fCoeffD1, fCoeffE1   !- coefficients of Shomate equation
        REAL   fCoeffF1, fCoeffH1                                 !- valid in the temperature range
-                                                                 !- 25-727 oC   
+                                                                 !- 25-727 oC
        PARAMETER( fCoeffA1 = 33.066178,
      &            fCoeffB1 = -11.363417,
      &            fCoeffC1 = 11.432816,
@@ -1784,7 +1640,7 @@ C-------------------------------------------------------------------------------
 
        REAL   fCoeffA2, fCoeffB2, fCoeffC2, fCoeffD2, fCoeffE2   !- coefficients of Shomate equation
        REAL   fCoeffF2, fCoeffH2                                 !- valid in the temperature range
-                                                                 !- 728-2227 oC   
+                                                                 !- 728-2227 oC
        PARAMETER( fCoeffA2 = 18.563083,
      &            fCoeffB2 = 12.257357,
      &            fCoeffC2 = -2.859786,
@@ -1796,7 +1652,7 @@ C-------------------------------------------------------------------------------
 
        REAL   fCoeffA3, fCoeffB3, fCoeffC3, fCoeffD3, fCoeffE3   !- coefficients of Shomate equation
        REAL   fCoeffF3, fCoeffH3                                 !- valid in the temperature range
-                                                                 !- 2228-5727 oC   
+                                                                 !- 2228-5727 oC
        PARAMETER( fCoeffA3 = 43.413560,
      &            fCoeffB3 = -4.293079,
      &            fCoeffC3 = 1.272428,
@@ -1865,7 +1721,7 @@ C-------------------------------------------------------------------------------
 
           WRITE(IUOUT,*) 'temperature outside valid range'
           STOP 'FUNCTION H2GasEnthalpy: unresolvable error'
-      
+
        endif
 
 
@@ -1878,8 +1734,8 @@ C-------------------------------------------------------------------------------
 C************************************************************************************************
 
 C*************************************FUNCTION O2GasEnthalpy*************************************
-C 
-C This function determines the enthalpy of oxygen gas using a correlation to a reference 
+C
+C This function determines the enthalpy of oxygen gas using a correlation to a reference
 C temperature. Specifically, the Shomate equation provided on the National Institute of
 C Standards and Technology (NIST) website is used. The Shomate equation is valid
 C for temperatures in the range 25-5727 oC.
@@ -1903,8 +1759,8 @@ C-------------------------------------------------------------------------------
        REAL   fTemp_K  !- temperature (K)
        REAL   ftau     !- T(K)/1000
        REAL   fCoeffA, fCoeffB, fCoeffC, fCoeffD, fCoeffE     !- coefficients of Shomate equation
-       REAL   fCoeffF, fCoeffH                              
-       
+       REAL   fCoeffF, fCoeffH
+
        PARAMETER( fCoeffA = 29.65900,
      &            fCoeffB = 6.137261,
      &            fCoeffC = -1.186521,
@@ -1947,7 +1803,7 @@ C error message if temperature is outside valid range
      &           fCoeffC / 3. * ftau**3 +
      &           fCoeffD / 4. * ftau**4 -
      &           fCoeffE / ftau +
-     &           fCoeffF - fCoeffH      
+     &           fCoeffF - fCoeffH
 
 
        O2GasEnthalpy = fDeltaH + fHref         !- kJ/mol

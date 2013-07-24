@@ -26,9 +26,9 @@ c Copyright 2001: NRCan Buildings Group
 c Created October 4, 2001
 c Edited: BB Oct 4, 15, Nov 2
 c ---
-     
-c 
-      
+
+c
+
       Implicit None
 #include "Ventilation_Data.h"
       Integer iComp
@@ -69,7 +69,7 @@ c Created August  15, 2001
 c Edited: BB Aug 15, 16, 17, Oct 4, 10, 12, 23, 25, Nov 1, 2
 c ---
 
-     
+
 c ---
       USE AIM2_InputData, ONLY:AIM2_ref_zone,AIM2_CrawlSpace_zone,
      &            AIM2_attic_zone,AIM2_num_zones_infil,AIM2_zone_infil
@@ -103,12 +103,12 @@ c     Implicit None
       real fTempTol
       parameter ( fTempTol = 0.5 )
 
-     
+
       save J, iFun, i, iCycle
       save T, HLR, DeltaT, ZoneFraction
       save Msg
       save ExitNOW
-     
+
       Data iCycle / 9990 /
 
 
@@ -170,17 +170,17 @@ c in proportion to each room's volume
          ZoneFraction = 0.
 c
 C Check to ensure memory has been allocated
-	 IF (ALLOCATED(AIM2_zone_infil)) THEN
+         IF (ALLOCATED(AIM2_zone_infil)) THEN
            Do j = 1, AIM2_num_zones_infil
               If ( AIM2_zone_infil(j) .eq. iComp ) Then
                  ZoneFraction = VOL(iComp) / AIM2_house_vol
                  Exit
               Endif
            End Do
-	 ELSE
+         ELSE
           CALL EDISP(IUOUT,
      &          ' Warning: array AIM2_zone_infil not allocated')
-	 END IF
+         END IF
 c
 c --- Air heat loss rate for zone
 c
@@ -271,10 +271,12 @@ C This is used by the fuel cell controller to determine the house's total
 C electrical demand during each time-step in the plant domain.
 
 c
+      use h3kmodule
       Implicit None
 #include "Ventilation_Data.h"
 #include "SOFC.h"
 #include "OffsiteUtilitiesPublic.h"
+#include "h3k_report_data.h"
 
       Integer iFun
       Real T
@@ -305,7 +307,7 @@ c ---
 C Used in the xml reporting structure
 C      real fH3KSumEnergyUseElec(iNumUses)        ! Energy consumption assoc. w/ electricuty (W)
 
-     
+
 c
       If ( iFun .eq. 0 ) Then ! HRV INITIALIZATION
 c
@@ -485,26 +487,19 @@ c
             TotalPower = 0.
          Endif
 
-         call add_to_xml_reporting(
-     &
-     &       TotalPower,
-     &
-     &      'plant/ideal_hvac_models/HRV/elec_load',
-     &
-     &      'units',
-     &
-     &       '(W)',
-     &
-     &      'Idealized HVAC models: '
-     &      // 'Amount of '
-     &      // ' electricity '
-     &      // ' used by '
-     &      // ' Ventilation/HRV '
-     &      // ' system'
-     &
-     &      )
-
-
+         ! Set flag allowing h3kreports to scale this data for seasonal 
+           ! reporting purposes.
+           if ( bFirst_call_hrv  )
+     &       call SetAdditionalValues(
+     &         rvPltHvacHRVElecLd%Identifier,
+     &         3,
+     &         .true.)         
+         
+         Call AddToReport(rvPltHvacHRVElecLd%Identifier,
+     &       TotalPower)        
+         
+        bFirst_call_hrv = .false.     
+     
 C Store aggregate electricity use for reporting in Site Utility facilitity.
       fSUFuelEnergyUse( iElectricity,iUseHRV )
      &                   = TotalPower
@@ -615,10 +610,10 @@ c
       Integer i, j, Duct
       Real HLcoef(3,4)
 c ---
-     
+
       Save Fleak, Diam, L, HTC, AvVel, CnstDD,  j, Duct
       Save HLcoef
-     
+
 c ---
 c  Flexible                           * V    const    * R    Cl
       Data (HLcoef(1,j), j = 1, 4) / 0.095,  1.000,  0.950,  3. /
@@ -711,7 +706,7 @@ c This routine gathers the energy used by the HRV systems
 
 c INPUTS:
 c OUTPUTS:
-c	None. Sums up Monthly HRV energy in H3KSTORE_DATA module
+c  None. Sums up Monthly HRV energy in H3KSTORE_DATA module
 
       SUBROUTINE H3KSTORE_HRV_DATA()
            IMPLICIT NONE
@@ -737,7 +732,7 @@ c This IF ensures start-up is over.
 
 c Sum up monthly energies
 
-     
+
          fHRV_Elec_Energy(imonth) =
      &     fHRV_Elec_Energy(imonth) + TotalPower * 3600./REAL(NTSTEP) !(Watts)
 

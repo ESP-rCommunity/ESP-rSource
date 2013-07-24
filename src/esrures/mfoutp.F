@@ -50,7 +50,7 @@ C act='p' iget parameters already set.
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/GRAF1/YMAX(5),YMIN(5),YAXSET(5),ADDLIN,horaxisdiv
       COMMON/GRAF2/YSC(5),Yadd(5),TSC,Xadd,IGX(5),ILR(5),DT
-      common/grextras/graftitle,grlbl(5),ngrlbl,lblpx(5),lblpy(5)
+      common/grextras/graftitle,grlbl(10),ngrlbl,lblpx(10),lblpy(10)
 
       COMMON/SIMPIK/ISIM,ISTADD,ID1,IM1,ID2,IM2,ISDS,ISDF,NTS,ISAVE
       COMMON/PERO/IOD1,IOM1,IOH1,IOD2,IOM2,IOH2,IODS,IODF,NOUT,IAV
@@ -64,8 +64,8 @@ C act='p' iget parameters already set.
       COMMON/ABSRESLIB/RFILEABS,PFILEABS,MSTRFILEABS,LAFRESABS
 
 C Defaults.
+      character*96 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF
       COMMON/DEFLT2/DFCFG,DFCTL,DEFRLB,DAFRES,DAPROB,DPNF
-      character*72 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF
 
 C ihflag = 0 write 13h30, ihflag = 1 write 0.5625
 C idhflg = 0 no day demarcations, idhflg = 1 write demarcation
@@ -94,7 +94,7 @@ C Simulator parameters.
       COMMON/FREQS1/ICBIN(MF),ITOTAL
 
       dimension Yold(MZS), TIMEold(MZS)
-      character TLABEL*60,trange*20,tranged*20,t28*28,t10*10,dg*1
+      character TLABEL*60,trange*20,tranged*20,t28*28,dg*1
       character outs*124,outs248*248
       character outs800*800,outs800d*800  ! really long string buffers
       character ALABEL(5)*12,t20*20,act*1
@@ -113,6 +113,8 @@ C Simulator parameters.
       integer YAXSET,ADDLIN,horaxisdiv
       integer iglib
       integer lnb,lsn1
+      integer k,k4,ke,ke4  ! used for string positions
+      integer lke,lket28        ! length of label and packed label
 
       logical colok,ok,dok
       LOGICAL spfileok,perok,tstepok,saveok,autook,exitok,startupok
@@ -565,18 +567,20 @@ C don't do this if printing to file.
 
           K=6   ! initial value for 248 buffer
           K4=6  ! initial value for 800 buffer
-          KE=0
-          KE4=0
+          KE=0  ! end of string value for 248 buffer
+          KE4=0 ! end of string value for 800 buffer
 
 C For those dumping to a spreadsheet file write out labels on a single line.
           do 20 IL=1,NMFGET
             lke=LNGLMFLABEL(IL)  ! longer lable length
+            call SDELIM(GLMFLABEL(IL),t28,'N',IW)
+            lket28=lnblnk(t28)   ! length of packed label
             if(ILFLAG.eq.0)then
               KE=K+11   ! short label
               KE4=K4+11   ! short label
             else
-              KE=K+lke+1
-              KE4=K4+lke+1
+              KE=K+lke+1       ! set new end to reflect label
+              KE4=K4+lket28+1  ! set new end to reflect packed label
             endif
             if(KE.le.248)then
               if(ILFLAG.eq.0)then
@@ -606,12 +610,23 @@ C For longer labels use the current delimiter.
               endif
             endif
 
-C For writing to file also fill the 800 char buffer, removing spaces.
+C For writing to file also fill the 800 char buffer, remove spaces.
+C If short labels write up to 10 characters, otherwise write the
+C packed string.
             if(KE4.le.800)then
               if (ixopen.eq.1) then
-                call SDELIM(GLMFLABEL(IL),t28,'N',IW)
-                write(outs800(K4:KE4),'(2a)') ' ',t28(1:lnblnk(t28))
-                K4=K4+lnblnk(t28)+1
+                if(ILFLAG.eq.0)then
+                  if(lket28.gt.10)then
+                    write(outs800(K4:KE4),'(2a)') ' ',t28(1:10)
+                    K4=K4+11        ! next start point
+                  else
+                    write(outs800(K4:KE4),'(2a)') ' ',t28(1:lket28)
+                    K4=K4+lket28+1  ! next start point
+                  endif
+                else
+                  write(outs800(K4:KE4),'(2a)') ' ',t28(1:lket28)
+                  K4=K4+lket28+1    ! next start point
+                endif
               endif
             endif
  20       continue
@@ -645,7 +660,8 @@ C demarcations are omitted.
             endif
           endif
 
-C If multi-line labels then write out the 2nd line.
+C If multi-line labels then write out the 2nd line. Do not bother if
+C writing to a file and using short labels.
           if(ILFLAG.eq.0)then
             if (IDHFLG.eq.1) then
               outs248='#    '
@@ -666,9 +682,9 @@ C If multi-line labels then write out the 2nd line.
               endif
  225        continue
             if (IDAY.eq.IODS)then
-              call edisp(itru,outs248)
+              if(irows.eq.2) call edisp(itru,outs248) ! 2nd row requested
             else
-              if (IDHFLG.eq.1)call edisp(itru,outs248)
+              if (IDHFLG.eq.1.and.irows.eq.2) call edisp(itru,outs248)
             endif
           endif
 
@@ -1367,7 +1383,7 @@ C Give feedback to user on selected entities.
         IN=NODNE(ICPK(I))
         IC=ITPCON(ICPK(I))
         if(unixok)then
-	  write(outs,'(5a)') NDNAM(IP),'->',NDNAM(IN),' via ',
+          write(outs,'(5a)') NDNAM(IP),'->',NDNAM(IN),' via ',
      &      CMNAM(IC)
           call edisp(iuout,outs)
         endif
@@ -1388,11 +1404,10 @@ C to graphical result display of network flows.
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
-      COMMON/AFN/IAIRN,LAPROB,ICAAS(MCOM)
       COMMON/RESLIB/RFILE,PFILE,MSTRFILE,LAFRES
       COMMON/SETNAM/RSNAME(MNRS)
       COMMON/SIMPKA/NSIM
-      common/grextras/graftitle,grlbl(5),ngrlbl,lblpx(5),lblpy(5)
+      common/grextras/graftitle,grlbl(10),ngrlbl,lblpx(10),lblpy(10)
 
       COMMON/SIMPIK/ISIM,ISTADD,ID1,IM1,ID2,IM2,ISDS,ISDF,NTS,ISAVE
 
@@ -1431,13 +1446,12 @@ C Setup and pass in parameters to win3d.
         iigl=igl; iigr=igr; iigt=igt; iigb=igb; iigw=igw; iigwh=igwh
         CALL win3d(iimenu,iiw1,iiw2,iiw3,iiw4,
      &    iigl,iigr,iigt,iigb,iigw,iigwh)
-C        call win3d(menuchw,9,30,4,3,igl,igr,igt,igb,igw,igwh)
         igl=int(iigl); igr=int(iigr); igt=int(iigt); igb=int(iigb)
         igw=int(iigw); igwh=int(iigwh)
         call startbuffer()
       ENDIF
 
-      lsn1=MIN0(lnblnk(LAFRES),22)
+      lsn1=MIN0(lnblnk(LAFRES),32)
       if(NSIM.gt.1)then
         WRITE(ETEXT,'(3A,I4,2A)')'Lib: ',LAFRES(1:lsn1),' Set:',ISIM,
      &    ': ',RSNAME(ISIM)(1:lnblnk(RSNAME(ISIM)))

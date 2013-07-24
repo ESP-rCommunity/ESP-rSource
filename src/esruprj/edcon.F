@@ -166,7 +166,11 @@ C geometry facility first.
       ig=0
       DO 11 I=1,NZSUR(icomp)
         icn1=izstocn(icomp,i)
-        if(SSMLCN(icn1)(1:4).EQ.'UNKN')ig=ig+1
+        if(icn1.eq.0)then
+          ig=ig+1
+        else
+          if(SSMLCN(icn1)(1:4).EQ.'UNKN')ig=ig+1
+        endif
   11  CONTINUE
       if(ig.gt.3)then
         helptopic='many_not_attributed'
@@ -270,25 +274,32 @@ C If in quiet mode: the file should exist => error if we are here.
 
 C Having done so check to see if there are any transparent surfaces.
 C If surface attribute other than OPAQUE reset ITMCFL otherwise reconcile mismatches!
-C Do not check for UK NCM notional model
+C Do not check for UK NCM models.
       TFOUND=.FALSE.
       DO 60 IS=1,NZSUR(icomp)
         icn1=izstocn(icomp,is)
-        IF((SSOTF(icn1)(1:4).EQ.'OPAQ').AND.ITMCFL(ICOMP,IS).ne.0.
-     &    and.inoti.ne.1)then
-          write(outs,'(A,A)')SSNAME(icn1),' is opaque.'
-          dok=.true.
-          helptopic='confirm_surf_opaque'
-          call gethelptext(helpinsub,helptopic,nbhelp)
-          CALL ASKOK(outs,'Confirm surface is opaque?',
-     &      OK,DOK,nbhelp)
-          if(OK)then
-            ITMCFL(ICOMP,IS)=0
-            SSOTF(icn1)='OPAQUE'
+
+C Debug.
+C        write(6,*) icn1,SSOTF(icn1),ITMCFL(ICOMP,IS),inoti
+
+        IF((SSOTF(icn1)(1:4).EQ.'OPAQ').AND.ITMCFL(ICOMP,IS).ne.0)then
+          if(inoti.eq.0)then
+            write(outs,'(A,A)')SSNAME(icn1),' is opaque.'
+            dok=.true.
+            helptopic='confirm_surf_opaque'
+            call gethelptext(helpinsub,helptopic,nbhelp)
+            CALL ASKOK(outs,'Confirm surface is opaque?',
+     &        OK,DOK,nbhelp)
+            if(OK)then
+              ITMCFL(ICOMP,IS)=0
+              SSOTF(icn1)='OPAQUE'
+            endif
+          else
+            continue
           endif
         endif
         IF(SSOTF(icn1)(1:4).NE.'OPAQ'.AND.
-     &            SSOTF(icn1)(1:4).NE.'CFC ')TFOUND=.TRUE.
+     &     SSOTF(icn1)(1:4).NE.'CFC ')TFOUND=.TRUE.
         IF(ITMCFL(ICOMP,IS).GT.0)TFOUND=.TRUE.
   60  CONTINUE
       IF(.NOT.TFOUND)THEN
@@ -711,7 +722,7 @@ C esprdbfile.h supplies the following:
 C LFMAT,IFMAT,LFMUL,IFMUL (for materials and constructions database)
 #include "material.h"
 
-      integer lnblnk  ! function definition
+C      integer lnblnk  ! function definition
 
 C Parameters
       integer itru   ! unit for reporting
@@ -739,8 +750,8 @@ C Material properties.
 
       LOGICAL closemat1,closemat2
 
-      DIMENSION ISD(19)
-      CHARACTER NAM*72,ISD*46
+      DIMENSION ISD(25)
+      CHARACTER ISD*56
       CHARACTER KEY*1,HOLD*48,TOPTIC*12,optic*12
       integer ISDN,INODA ! max items and current menu item
 
@@ -769,42 +780,41 @@ C with ier=1.
 C Setup text for menu.
    12 INODA=-3
       icn1=izstocn(icomp,isur)
-   13 write(ISD(1),'(A,A)') '  Surface name    : ',SSNAME(icn1)
+   13 write(ISD(1),'(A,A)') '  surface name    : ',SSNAME(icn1)
       if(SSOTF(icn1)(1:4).eq.'OPAQ'.or.
      &   SSOTF(icn1)(1:4).eq.'TRAN'.or.
      &   SSOTF(icn1)(1:4).eq.'CFC ')then
-        write(ISD(2),'(A,A)') 'a Surface type    : ',SSOTF(icn1)(1:12)
+        write(ISD(2),'(A,A)') 'a surface type    : ',SSOTF(icn1)(1:12)
       else
         WRITE(ISD(2),'(A,A)') 'a optical set name: ',SSOTF(icn1)(1:12)
       endif
-      write(ISD(3),'(A,A)') 'b Construction    : ',SSMLCN(icn1)(1:12)
+      write(ISD(3),'(A,A)') 'b construction    : ',SSMLCN(icn1)(1:12)
       if(ITMCFL(ICOMP,ISUR).GT.0)then
         optic=TOPTIC(ICOMP,ITMCFL(ICOMP,ISUR))
-        write(ISD(4),'(2A)')'  Optical property: ',optic
+        write(ISD(4),'(2A)')'  optical property: ',optic
       else
         optic=' - '
-        write(ISD(4),'(2A)')'  Optical property: ',optic
+        write(ISD(4),'(2A)')'  optical property: ',optic
       endif
       ISD(5)='  ______________________________________ '
 
 C Surface properties.
       WRITE(ISD(6),22)EMISI(ISUR),EMISE(ISUR)
-   22 FORMAT('c Emissivity int face: ',F5.3,' ext face: ',F5.3)
+   22 FORMAT('c emissivity   inside face: ',F5.3,' other face: ',F5.3)
       WRITE(ISD(7),23)ABSI(ISUR),ABSE(ISUR)
-   23 FORMAT('d Absorp.    int face: ',F5.3,' ext face: ',F5.3)
+   23 FORMAT('d absorptivity inside face: ',F5.3,' other face: ',F5.3)
       ISD(8)='  ______________________________________ '
       M=8
 
 C Find composite which matches.
       ICF=-1
-      lstr=lnblnk(SSMLCN(icn1))
       if(ssmlcindex(icn1).ne.0) ICF=ssmlcindex(icn1)
 
 C For each layer.
       M=M+1
-      ISD(M)=' lyr|Mat|Thick|Conduc-|Density|Specific|Air  '
+      ISD(M)=' lyr|Material     |Thick|Conduc-|Density|Specific|Air  '
       M=M+1
-      ISD(M)='    |db |metre|tivity |       |heat    |gap R'
+      ISD(M)='    |name         |metre|tivity |       |heat    |gap R'
       DO 45 IE=1,NE(ISUR)
         M=M+1
         CALL EMKEY(M,KEY,IER)
@@ -813,39 +823,29 @@ C For each layer.
 C Multilayer construction has not been defined.
           WRITE(ISD(M),346)KEY,IE,THK(ISUR,IE),CON(ISUR,IE),
      &                     DEN(ISUR,IE),SHT(ISUR,IE)
- 346      FORMAT(A1,I4,' --',F6.3,3F8.2)
+ 346      FORMAT(A1,I4,'  --   ',F6.3,3F8.2)
         ELSE
-          IF(IPR(ICF,IE).NE.0)THEN
-            matarrayindex=IPRMAT(ICF,IE)   ! which legacy index
-            if(matarrayindex.ge.0)then
-	      if(matopaq(matarrayindex)(1:1).eq.'g'.or.
-     &           matopaq(matarrayindex)(1:1).eq.'h')then
 
-C Find air gap resistance for this layer.
-                DO 148 IGG=1,NAIRG(ISUR)
-                  IF(IPAIRG(ISUR,IGG).EQ.IE)R=RAIRG(ISUR,IGG)
-                  WRITE(ISD(M),48)KEY,IE,IPR(ICF,IE),THK(ISUR,IE),
-     &              CON(ISUR,IE),DEN(ISUR,IE),SHT(ISUR,IE),R
- 148            CONTINUE
-              else
-                WRITE(ISD(M),46)KEY,IE,IPR(ICF,IE),THK(ISUR,IE),
-     &            CON(ISUR,IE),DEN(ISUR,IE),SHT(ISUR,IE)
-  46            FORMAT(A1,I3,I4,F6.3,3F8.2)
-              endif
-            else
-              WRITE(ISD(M),'(a1,i3,a)')KEY,IE,
-     &          ' confused material reference'
-            endif
-          ELSE
+          matarrayindex=IPRMAT(ICF,IE)   ! which materials array index
+          if(matopaq(matarrayindex)(1:1).eq.'g'.or.
+     &       matopaq(matarrayindex)(1:1).eq.'h'.or.
+     &       matarrayindex.eq.0)then
 
-C Find air gap resistance for this layer.
-            DO 47 IGG=1,NAIRG(ISUR)
+C Find air gap resistance for this layer. 
+            DO IGG=1,NAIRG(ISUR)
               IF(IPAIRG(ISUR,IGG).EQ.IE)R=RAIRG(ISUR,IGG)
-              WRITE(ISD(M),48)KEY,IE,IPR(ICF,IE),THK(ISUR,IE),
-     &                        CON(ISUR,IE),DEN(ISUR,IE),SHT(ISUR,IE),R
-  48          FORMAT(A1,I3,I4,F6.3,3F8.2,F6.2)
-  47        CONTINUE
-          ENDIF
+              WRITE(ISD(M),48)KEY,IE,' gap          ',
+     &          THK(ISUR,IE),CON(ISUR,IE),DEN(ISUR,IE),SHT(ISUR,IE),R
+  48          FORMAT(A1,I3,A,F6.3,3F8.2,F6.2)
+            ENDDO
+          elseif(matarrayindex.lt.0)then
+            WRITE(ISD(M),'(a1,i3,a)')KEY,IE,
+     &        ' confused material reference'
+          else
+            WRITE(ISD(M),46)KEY,IE,matname(matarrayindex)(1:12),
+     &        THK(ISUR,IE),CON(ISUR,IE),DEN(ISUR,IE),SHT(ISUR,IE)
+  46        FORMAT(A1,I3,1x,a,1x,F6.3,3F8.2)
+          endif
         ENDIF
   45  CONTINUE
       M=M+1
@@ -865,7 +865,7 @@ C Help text for this menu.
       call gethelptext(helpinsub,helptopic,nbhelp)
 
 C Menu control.
-      CALL EMENU('Surface Attributes',ISD,ISDN,INODA)
+      CALL EMENU('Surface construction attributes',ISD,ISDN,INODA)
       IF(INODA.EQ.ISDN)THEN
         RETURN
       ELSEIF(INODA.EQ.0)THEN
@@ -929,61 +929,73 @@ C the OPAQUE/TRANSPARENT flag as well.
           RETURN
         ENDIF
         IF(IC.GT.0)THEN
-          WRITE(SSMLCN(icn1),'(A)')DESC(IC)(1:12)
+          WRITE(SSMLCN(icn1),'(A)') mlcname(IC)(1:12)
           ssmlcindex(icn1)=IC   ! update array
-          if(DESC(IC)(15:18).EQ.'TRAN')then
+          if(mlctype(IC)(1:4).EQ.'TRAN')then
             SSOTF(icn1)='TRAN'
           endif
-          if(DESC(IC)(15:18).EQ.'OPAQ')then
+          if(mlctype(IC)(1:4).EQ.'OPAQ')then
             SSOTF(icn1)='OPAQUE'
             ITMCFL(ICOMP,ISUR)=0
           endif
-          if(DESC(IC)(15:18).EQ.'CFC ')then
+          if(mlctype(IC)(1:4).EQ.'CFC ')then
             SSOTF(icn1)='CFC '
             ITMCFL(ICOMP,ISUR)=0
           endif
         ELSE
+
+C User selected UNKNOWN so reset variables
+          WRITE(SSMLCN(icn1),'(A)') 'UNKNOWN'
+          ssmlcindex(icn1)=0   ! update array
+          SSOTF(icn1)='OPAQUE'
+          ITMCFL(ICOMP,ISUR)=0
           GOTO 12
         ENDIF
 
-C Put the composite db info into common, reset number of air
+C Put the construction common file info into common blocks, reset number of air
 C gaps in preparation of scan.
         MODCON=.TRUE.
         NAIRG(ISUR)=0
         NE(ISUR)=LAYERS(IC)
 
-C Gather information about each layer. Read in the materials db info.
+C Gather information about each layer via materials data structures.
         DO 223, IL=1,LAYERS(IC)
-          matarrayindex=IPRMAT(IC,IL)   ! which legacy index
-          if(matarrayindex.ge.0)then
+          matarrayindex=IPRMAT(IC,IL)   ! which materials array index
 
 C And if matarrayindex is zero then resetn dbcon dbden dbsht.
-            if(matarrayindex.eq.0)then
-              DBCON=0.0; DBDEN=0.0; DBSHT=0.0
-              E=0.99; A=0.99
-              NAM='AIR'
-            else
-              DBCON=matdbcon(matarrayindex)
-              DBDEN=matdbden(matarrayindex)
-              DBSHT=matdbsht(matarrayindex)
-              E=matdbine(matarrayindex)
-              A=matdbina(matarrayindex)
-              write(NAM,'(a)') matname(matarrayindex)(1:32)
-            endif
+          if(matopaq(matarrayindex)(1:1).eq.'g'.or.
+     &       matopaq(matarrayindex)(1:1).eq.'h'.or.
+     &       matarrayindex.eq.0)then
+            DBCON=0.0; DBDEN=0.0; DBSHT=0.0
+            E=0.99; A=0.99
 
-C If g or h air gap and version 1.2 then assign DRAIR
-	    if(matopaq(matarrayindex)(1:1).eq.'g'.or.
-     &         matopaq(matarrayindex)(1:1).eq.'h')then
-              if(closemat2)then
-                DRAIR(IC,IL,1)=matgapares(matarrayindex,1)
-                DRAIR(IC,IL,2)=matgapares(matarrayindex,2)
-                DRAIR(IC,IL,3)=matgapares(matarrayindex,3)
-              endif
+C Update array NAIRG.
+            if(NAIRG(ISUR)+1.gt.MGP)then
+              call usrmsg(
+     &          'As defined, this composite contains more air gaps',
+     &          ' then allowed - please change your description','W')
+            else
+              NAIRG(ISUR)=NAIRG(ISUR)+1
+              IPAIRG(ISUR,NAIRG(ISUR))=IL
+              IF(SSVFC(icn1)(1:4).EQ.'VERT')THEN
+                 RAIRG(ISUR,NAIRG(ISUR))=DRAIR(IC,IL,1)
+              ELSEIF(SSVFC(icn1)(1:4).EQ.'FLOR'.OR.
+     &               SSVFC(icn1)(1:4).EQ.'CEIL')THEN
+                 RAIRG(ISUR,NAIRG(ISUR))=DRAIR(IC,IL,2)
+              ELSE
+                 RAIRG(ISUR,NAIRG(ISUR))=DRAIR(IC,IL,3)
+              ENDIF
             endif
-          else
+          elseif(matarrayindex.lt.0)then
             call edisp(iuout,
-     &        'One layer material ref is confused or duplicate name.')
+     &  'One material reference is confused or has a duplicate name.')
             goto 12
+          else
+            DBCON=matdbcon(matarrayindex)
+            DBDEN=matdbden(matarrayindex)
+            DBSHT=matdbsht(matarrayindex)
+            E=matdbine(matarrayindex)
+            A=matdbina(matarrayindex)
           endif
           IF(IER.EQ.1)RETURN
 
@@ -997,49 +1009,7 @@ C Assign surface properties.
           IF(IL.EQ.LAYERS(IC))EMISI(ISUR)=E
           IF(IL.EQ.LAYERS(IC))ABSI(ISUR)=A
           IF(IL.EQ.1)         ABSE(ISUR)=A
-          IF(IPR(IC,IL).EQ.0)THEN
 
-C Keep track of the air gaps in the composite, these variables may
-C eventually be redundant. Based on the orientation of the surface
-C assign an appropriate U value to each air gap encountered.
-            if(NAIRG(ISUR)+1.gt.MGP)then
-              call usrmsg(
-     &        ' As defined, this composite contains more air gaps',
-     &        ' then allowed - please change your description','W')
-            else
-              NAIRG(ISUR)=NAIRG(ISUR)+1
-              IPAIRG(ISUR,NAIRG(ISUR))=IL
-              IF(SSVFC(icn1)(1:4).EQ.'VERT')THEN
-                RAIRG(ISUR,NAIRG(ISUR))=DRAIR(IC,IL,1)
-              ELSEIF(SSVFC(icn1)(1:4).EQ.'FLOR'.OR.
-     &               SSVFC(icn1)(1:4).EQ.'CEIL')THEN
-                RAIRG(ISUR,NAIRG(ISUR))=DRAIR(IC,IL,2)
-              ELSE
-                RAIRG(ISUR,NAIRG(ISUR))=DRAIR(IC,IL,3)
-              ENDIF
-            endif
-          ELSE
-            matarrayindex=IPRMAT(IC,IL)   ! which legacy index
-	    if(matopaq(matarrayindex)(1:1).eq.'g'.or.
-     &         matopaq(matarrayindex)(1:1).eq.'h')then
-              if(NAIRG(ISUR)+1.gt.MGP)then
-                call usrmsg(
-     &           'As defined, this composite contains more air gaps',
-     &           ' then allowed - please change your description','W')
-              else
-                NAIRG(ISUR)=NAIRG(ISUR)+1
-                IPAIRG(ISUR,NAIRG(ISUR))=IL
-                IF(SSVFC(icn1)(1:4).EQ.'VERT')THEN
-                   RAIRG(ISUR,NAIRG(ISUR))=DRAIR(IC,IL,1)
-                ELSEIF(SSVFC(icn1)(1:4).EQ.'FLOR'.OR.
-     &                 SSVFC(icn1)(1:4).EQ.'CEIL')THEN
-                   RAIRG(ISUR,NAIRG(ISUR))=DRAIR(IC,IL,2)
-                ELSE
-                   RAIRG(ISUR,NAIRG(ISUR))=DRAIR(IC,IL,3)
-                ENDIF
-              endif
-            endif
-          ENDIF
   223   CONTINUE
         MODGEO=.TRUE.
       ELSEIF(INODA.EQ.6)THEN
@@ -1139,7 +1109,6 @@ C Material properties.
       logical closemat1,closemat2
 
       CHARACTER outs*124
-      CHARACTER NAM*72
 
 C Assume no window optical properties asked for.
       IER=0
@@ -1181,10 +1150,12 @@ C with ier=1.
 
  244  DO 10 IS=1,NZSUR(icomp)
         ioc=IZSTOCN(ICOMP,is)
+        if(ioc.eq.0)then
+          goto 244  ! An unknown surface in the master list. << what to do? >>
+        endif
 
-C Take the composite name associated with this surface and find the
-C equivalent composite db.  If composite name is UNKN then must ask
-C the user to select one.
+C Take the construction name associated with this surface and find the
+C equivalent MLC in the array. If name is UNKN then ask user to select.
 
 C << The logic for dealing with TRAN/OPAQ needs to be updated! >>
         NAIRG(IS)=0
@@ -1193,22 +1164,22 @@ C << The logic for dealing with TRAN/OPAQ needs to be updated! >>
      &                         ' is unknown.'
           CALL EPKMLC(ISEL,outs,'Please select one...',IER)
           IF(ISEL.GT.0)THEN
-            WRITE(SSMLCN(ioc),'(A)')DESC(ISEL)(1:12)
+            WRITE(SSMLCN(ioc),'(A)') mlcname(ISEL)(1:12)
             ssmlcindex(ioc)=ISEL  ! update other surf index
-            if(DESC(ISEL)(15:18).EQ.'TRAN')then
+            if(mlctype(ISEL)(1:4).EQ.'TRAN')then
               SSOTF(ioc)='TRAN'
               ITMCFL(ICOMP,IS)=1
             endif
-            if(DESC(ISEL)(15:18).EQ.'OPAQ')then
+            if(mlctype(ISEL)(1:4).EQ.'OPAQ')then
               SSOTF(ioc)='OPAQUE'
               ITMCFL(ICOMP,IS)=0
             endif
-            if(DESC(ISEL)(15:18).EQ.'CFC ')then
+            if(mlctype(ISEL)(1:4).EQ.'CFC ')then
               SSOTF(ioc)='CFC '
               ITMCFL(ICOMP,IS)=0
             endif
 
-C Remember this change by saving the file.....
+C Remember this change by saving the file.
             MODGEO=.TRUE.
             MODCON=.TRUE.
           ELSE
@@ -1231,57 +1202,25 @@ C the material was not found and must be asked for.
         MODCON=.TRUE.
         NE(IS)=LAYERS(IC)
 
-C Gather information about each layer. Read in the materials db info.
+C Gather information about each layer. Read in the materials info.
         DO 23, IL=1,LAYERS(IC)
-          matarrayindex=IPRMAT(IC,IL)   ! which array index
-          if(matarrayindex.ge.0)then
+          matarrayindex=IPRMAT(IC,IL)   ! which materials array index
 
 C And if matarrayindex is zero then resetn dbcon dbden dbsht.
-            if(matarrayindex.eq.0)then
-              DBCON=0.0; DBDEN=0.0; DBSHT=0.0
-              E=0.99; A=0.99
-              NAM='AIR'
-            else
-              DBCON=matdbcon(matarrayindex)
-              DBDEN=matdbden(matarrayindex)
-              DBSHT=matdbsht(matarrayindex)
-              E=matdbine(matarrayindex)
-              A=matdbina(matarrayindex)
-              write(NAM,'(a)') matname(matarrayindex)(1:32)
-            endif
+          if(matopaq(matarrayindex)(1:1).eq.'g'.or.
+     &       matopaq(matarrayindex)(1:1).eq.'h'.or.
+     &       matarrayindex.eq.0)then
+            DBCON=0.0; DBDEN=0.0; DBSHT=0.0
+            E=0.99; A=0.99
 
-C If g or h air gap and version 1.2 then assign DRAIR
-            if(matarrayindex.eq.0)then
-              continue
-	    elseif(matopaq(matarrayindex)(1:1).eq.'g'.or.
-     &             matopaq(matarrayindex)(1:1).eq.'h')then
-              if(closemat2)then
-                DRAIR(IC,IL,1)=matgapares(matarrayindex,1)
-                DRAIR(IC,IL,2)=matgapares(matarrayindex,2)
-                DRAIR(IC,IL,3)=matgapares(matarrayindex,3)
-              endif
-            endif
-          endif
+C Debug            write(6,*) 'EDZCON',ic,il,DRAIR(IC,IL,1),
+C     &        DRAIR(IC,IL,2),DRAIR(IC,IL,3)
 
-          CON(IS,IL)=DBCON
-          DEN(IS,IL)=DBDEN
-          SHT(IS,IL)=DBSHT
-          THK(IS,IL)=DTHK(IC,IL)
-
-C Assign surface properties.
-          IF(IL.EQ.1)         EMISE(IS)=E
-          IF(IL.EQ.LAYERS(IC))EMISI(IS)=E
-          IF(IL.EQ.LAYERS(IC))ABSI(IS)=A
-          IF(IL.EQ.1)         ABSE(IS)=A
-          IF(IPR(IC,IL).EQ.0)THEN
-
-C Keep track of the air gaps in the composite, these variables may
-C eventually be redundant. Based on the orientation of the surface
-C assign an appropriate U value to each air gap encountered.
+C Deal with air gap resistance if layer is a gap.
             if(NAIRG(IS)+1.gt.MGP)then
               call usrmsg(
-     &          ' As defined, this composite contains more air gaps',
-     &          ' then allowed - please change your description','W')
+     &          'This construction contains more air gaps than',
+     &          'allowed - please change your description','W')
             else
               NAIRG(IS)=NAIRG(IS)+1
               IPAIRG(IS,NAIRG(IS))=IL
@@ -1294,28 +1233,29 @@ C assign an appropriate U value to each air gap encountered.
                 RAIRG(IS,NAIRG(IS))=DRAIR(IC,IL,3)
               ENDIF
             endif
-          ELSE
-            matarrayindex=IPRMAT(IC,IL)   ! which legacy index
-	    if(matopaq(matarrayindex)(1:1).eq.'g'.or.
-     &         matopaq(matarrayindex)(1:1).eq.'h')then
-              if(NAIRG(IS)+1.gt.MGP)then
-                call usrmsg(
-     &            'This construction contains more air gaps than',
-     &            'allowed - please change your description','W')
-              else
-                NAIRG(IS)=NAIRG(IS)+1
-                IPAIRG(IS,NAIRG(IS))=IL
-                IF(SSVFC(ioc)(1:4).EQ.'VERT')THEN
-                  RAIRG(IS,NAIRG(IS))=DRAIR(IC,IL,1)
-                ELSEIF(SSVFC(ioc)(1:4).EQ.'FLOR'.OR.
-     &                 SSVFC(ioc)(1:4).EQ.'CEIL')THEN
-                  RAIRG(IS,NAIRG(IS))=DRAIR(IC,IL,2)
-                ELSE
-                  RAIRG(IS,NAIRG(IS))=DRAIR(IC,IL,3)
-                ENDIF
-              endif
-            endif
-          ENDIF
+          elseif(matarrayindex.lt.0)then
+            DBCON=0.0; DBDEN=0.0; DBSHT=0.0
+            E=0.99; A=0.99
+            continue  ! can't deal with a confused material
+          else
+            DBCON=matdbcon(matarrayindex)
+            DBDEN=matdbden(matarrayindex)
+            DBSHT=matdbsht(matarrayindex)
+            E=matdbine(matarrayindex)
+            A=matdbina(matarrayindex)
+          endif
+
+          CON(IS,IL)=DBCON
+          DEN(IS,IL)=DBDEN
+          SHT(IS,IL)=DBSHT
+          THK(IS,IL)=DTHK(IC,IL)
+
+C Assign surface properties.
+          IF(IL.EQ.1)         EMISE(IS)=E
+          IF(IL.EQ.LAYERS(IC))EMISI(IS)=E
+          IF(IL.EQ.LAYERS(IC))ABSI(IS)=A
+          IF(IL.EQ.1)         ABSE(IS)=A
+
    23   CONTINUE
 
 C Assume no default windows.
@@ -1564,7 +1504,7 @@ C a display of the current data.
       IF(NTMC.GT.0)GOTO 90
 
 C Loop through each surface and if not opaque get its composite
-C description (DESC) and remember its index ICF, otherwise set ITMCFL
+C description (mlcname) and remember its index ICF, otherwise set ITMCFL
 C to 0.
       lastopt='  '
       DO 10 IS=1,NZSUR(icomp)
@@ -1584,7 +1524,7 @@ C Use ssmlcindex to get matching MLC index
           CALL EPKMLC(ISEL,'From the available composites please',
      &      outs,IER)
           IF(ISEL.GT.0)THEN
-            WRITE(SSMLCN(icn1),'(A12)')DESC(ISEL)(1:12)
+            WRITE(SSMLCN(icn1),'(A12)') mlcname(ISEL)(1:12)
             ssmlcindex(icn1)=ISEL   ! update array
             ICF=ISEL
           ELSE
@@ -1597,8 +1537,8 @@ C an associated set of optical properties. If no equivalent set of
 C optical properties then the user will have to supply this manually.
         helptopic='constr_attribute_checks'
         call gethelptext(helpinsub,helptopic,nbhelp)
-        WRITE(outs,'(A12,A)') DESC(ICF)(1:12),' is not transparent!'
-        IF(DESC(ICF)(15:18).EQ.'OPAQ')THEN
+        WRITE(outs,'(A12,A)') mlcname(ICF)(1:12),' is not transparent!'
+        IF(mlctype(ICF)(1:4).EQ.'OPAQ')THEN
           CALL EASKAB(outs,' do you want to:','switch to opaque',
      &    'select a transparent material',IWB,nbhelp)
           if(IWB.eq.1)then
@@ -1606,27 +1546,31 @@ C optical properties then the user will have to supply this manually.
 C Switch back to opaque construction.
             CALL EPKMLC(ISEL,'Which OPAQUE construction?',' ',IER)
             if(ISEL.GT.0)then
-              WRITE(SSMLCN(icn1),'(A12)')DESC(ISEL)(1:12)
+              WRITE(SSMLCN(icn1),'(A12)') mlcname(ISEL)(1:12)
               ssmlcindex(icn1)=ISEL   ! update array
               ICF=ISEL
               ITMCFL(ICOMP,IS)=0
               SSOTF(icn1)='OPAQUE'
               OPT='OPAQUE'
               goto 10
+            else
+              return
             endif
           elseif(IWB.eq.2)then
             CALL EPKMLC(ISEL,'Which TRANSPARENT construction?',
      &        ' ',IER)
             if(ISEL.GT.0)then
-              WRITE(SSMLCN(icn1),'(A12)')DESC(ISEL)(1:12)
+              WRITE(SSMLCN(icn1),'(A12)') mlcname(ISEL)(1:12)
               ssmlcindex(icn1)=ISEL   ! update array
               ICF=ISEL
+            else
+              return
             endif
           endif
         ENDIF
 
 C Check to see if this new construction has a known set of opticals.
-        WRITE(OPT,'(A)') DESC(ICF)(21:32)
+        WRITE(OPT,'(A)') mlcoptical(ICF)(1:12)
         IF(OPT(1:2).EQ.'  '.OR.OPT(1:7).EQ.'UNKNOWN'.OR.
      &     OPT(1:6).EQ.'OPAQUE')THEN
           WRITE(outs,'(1X,A12,A)')SSMLCN(icn1),
@@ -1747,7 +1691,7 @@ C Display of current information...
           elseif(NBCTT(ICOMP,KK,I).eq.3)then
             msg=' sensing daylight coeff.'
           elseif(NBCTT(ICOMP,KK,I).eq.4)then
-            msg=' Lightswitch2002.'
+            msg=' Lightswitch (not available)'
           elseif(NBCTT(ICOMP,KK,I).eq.-99)then
             msg=' sensing time only'
           endif
@@ -1866,33 +1810,41 @@ C For each control period get the appropriate replacement properties.
           N3=NBCTT(ICOMP,ICP,IT)
           IRT=1
           if(n3.eq.-99)then
-            call EASKATOG('Controlled on:','(currently time)',
+            call EASKATOG('Controlled on: (currently time)','Confirm',
      &      'time','incident radiation','ambient temp.','zone temp.',
-     &      'lux level','LtSwitch','cancel',IRT,nbhelp)
+     &      'lux level','LtSwitch (not avail)','cancel',IRT,nbhelp)
           elseif(n3.eq.0)then
-            call EASKATOG('Controlled on:','(currently radiation)',
+            call EASKATOG('Controlled on: (currently radiation)',
+     &      'Confirm',
      &      'time','incident radiation','ambient temp.','zone temp.',
-     &      'lux level','LtSwitch','cancel',IRT,nbhelp)
+     &      'lux level','LtSwitch (not avail)','cancel',IRT,nbhelp)
           elseif(n3.eq.1)then
-            call EASKATOG('Controlled on:','(currently ambient temp.)',
+            call EASKATOG(
+     &      'Controlled on:(currently ambient temperature)','Confirm',
      &      'time','incident radiation','ambient temp.','zone temp.',
-     &      'lux level','LtSwitch','cancel',IRT,nbhelp)
+     &      'lux level','LtSwitch (not avail)','cancel',IRT,nbhelp)
           elseif(n3.eq.2)then
-            call EASKATOG('Controlled on:','(currently zone temp.)',
+            call EASKATOG(
+     &      'Controlled on: (currently zone temperature)','Confirm',
      &      'time','incident radiation','ambient temp.','zone temp.',
-     &      'lux level','LtSwitch','cancel',IRT,nbhelp)
+     &      'lux level','LtSwitch (not avail)','cancel',IRT,nbhelp)
           elseif(n3.eq.3)then
-            call EASKATOG('Controlled on:','(currently daylight coef)',
+            call EASKATOG(
+     &      'Controlled on: (currently daylight coefficients)',
+     &      'Confirm',
      &      'time','incident radiation','ambient temp.','zone temp.',
-     &      'lux level','LtSwitch','cancel',IRT,nbhelp)
+     &      'lux level','LtSwitch (not avail)','cancel',IRT,nbhelp)
           elseif(n3.eq.4)then
-            call EASKATOG('Controlled on:','(currently Lightswitch)',
-     &      'time','incident radiation','ambient temp.','zone temp.',
-     &      'lux level','LtSwitch','cancel',IRT,nbhelp)
+            call usrmsg('Currently link to Lightswitch 2002 is not',
+     &        'available. Please select something else.','W')
+C            call EASKATOG('Controlled on:','(currently Lightswitch)',
+C     &      'time','incident radiation','ambient temp.','zone temp.',
+C     &      'lux level','LtSwitch','cancel',IRT,nbhelp)
           else
-            call EASKATOG('Controlled on:','(currently undefined)',
+            call EASKATOG('Controlled on: (currently undefined)',
+     &      'Confirm',
      &      'time','incident radiation','ambient temp.','zone temp.',
-     &      'lux level','LtSwitch','cancel',IRT,nbhelp)
+     &      'lux level','LtSwitch (not avail)','cancel',IRT,nbhelp)
           endif
           if(irt.eq.1)then
             NBCTT(ICOMP,ICP,IT)= -99
@@ -1923,13 +1875,13 @@ C For each control period get the appropriate replacement properties.
             BACTPT(ICOMP,ICP,IT)=VAL
           elseif(irt.eq.6)then
 
-C << Do not know what sort of question is to be asked here! >>
-            NBCTT(ICOMP,ICP,IT)= 4
-            VAL=BACTPT(ICOMP,ICP,IT)
-            CALL EASKR(VAL,' ','Lightswitch lux set point?',
-     &        0.00,'W',1000.0,'W',0.0,'LtSw illum. set point',
-     &        IER,nbhelp)
-            BACTPT(ICOMP,ICP,IT)=VAL
+C << ESP-r to Lightswitch is not currently implemented >>
+C            NBCTT(ICOMP,ICP,IT)= 4
+C            VAL=BACTPT(ICOMP,ICP,IT)
+C            CALL EASKR(VAL,' ','Lightswitch lux set point?',
+C     &        0.00,'W',1000.0,'W',0.0,'LtSw illum. set point',
+C     &        IER,nbhelp)
+C            BACTPT(ICOMP,ICP,IT)=VAL
           elseif(irt.eq.7)then
             return
           ENDIF
@@ -1958,7 +1910,7 @@ C << todo: consider how to react to a cancel request within eoptks
 
 
 C Error messages.
-  98  CALL USRMSG('A problem was encountered reading the Ooptical',
+  98  CALL USRMSG('A problem was encountered reading the Optical',
      &   'Properties db, or a property set was not located.','W')
       IER=1
       GOTO 200
@@ -2116,17 +2068,17 @@ c homogeneous layer. Locate if the MLC database item is used.
           RES=0.
           CAP=0.
           DO 45 il=1,LAYERS(ic)
-            matarrayindex=IPRMAT(IC,IL)   ! which array index
-            if(matarrayindex.ge.0)then
+            matarrayindex=IPRMAT(IC,IL)   ! which materials array index
 
-C And if matarrayindex is zero then resetn dbcon dbden dbsht.
-              if(matarrayindex.eq.0)then
-                DBCON=0.0; DBDEN=0.0; DBSHT=0.0
-              elseif(matarrayindex.gt.0)then
-                DBCON=matdbcon(matarrayindex)
-                DBDEN=matdbden(matarrayindex)
-                DBSHT=matdbsht(matarrayindex)
-              endif
+C And if matarrayindex is zero or matopaq g or h then resetn dbcon dbden dbsht.
+            if(matopaq(matarrayindex)(1:1).eq.'g'.or.
+     &         matopaq(matarrayindex)(1:1).eq.'h'.or.
+     &         matarrayindex.eq.0)then
+              DBCON=0.0; DBDEN=0.0; DBSHT=0.0
+            elseif(matarrayindex.gt.0)then
+              DBCON=matdbcon(matarrayindex)
+              DBDEN=matdbden(matarrayindex)
+              DBSHT=matdbsht(matarrayindex)
             endif
 
 C Get properties for outer layer.
@@ -2138,8 +2090,11 @@ C Get properties for outer layer.
             endif
 
 C If an air gap, recalculate overall resistance.
-            if(IPR(ic,il).eq.0)then
-             RES=RES+((DRAIR(ic,il,1)+DRAIR(ic,il,2)+DRAIR(ic,il,3))/3.)
+            if(matopaq(matarrayindex)(1:1).eq.'g'.or.
+     &         matopaq(matarrayindex)(1:1).eq.'h'.or.
+     &         matarrayindex.eq.0)then
+              RES=RES+((DRAIR(ic,il,1)+DRAIR(ic,il,2)+
+     &            DRAIR(ic,il,3))/3.)
             else
               TD=DBCON/(DBDEN*DBSHT)
               IF(IC.GT.1)RES=RES+DTHK(ic,il)/DBCON
@@ -2168,12 +2123,12 @@ c time constant.
       write(outs,'(A,G12.4)')' Maximum thermal diffusivity is',TDM
       call edisp(iuout,outs)
       write(outs,'(3A,i3,A,i3)')' Associated MLC is ',
-     &  DESC(istd)(1:12),' (',istd,') Layer',IE
+     &  mlcname(istd)(1:12),' (',istd,') Layer',IE
       call edisp(iuout,outs)
       write(outs,'(A,G12.4,A)')' Maximum time constant is',TCM,' secs.'
       call edisp(iuout,outs)
       write(outs,'(A,A)')' Associated MLC construction is',
-     &  DESC(ISTC)(1:12)
+     &  mlcname(ISTC)(1:12)
       call edisp(iuout,outs)
       write(outs,'(A,I3,A)')' Simulation start-up is',ITCNST,' days.'
       call edisp(iuout,outs)

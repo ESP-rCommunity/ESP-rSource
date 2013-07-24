@@ -1,21 +1,36 @@
 *Operations 1.0
-*date Mon Aug  1 11:33:03 2005  # latest file modification 
+*date Wed Oct 17 09:50:52 2012  # latest file modification 
 # operations of manager_a defined in: 
-# ../zones/manager.opr
-The office has one occupant during office hours, lighting at 10W/m2 and one computer in the room. 
+# ../zones/manager_a.opr
+manager a has some diversity of occupancy  lights at 10W/m2 and small power on weekdays at 5W/m2
 # control(no control of air flow  ), low mid & high setpoints 
    0     0.000     0.000     0.000
-     1   # no Weekday flow periods
-# Wkd: start, stop, infil, ventil, source, data
+     1   # number of flow periods in day type: weekdays    
+# start, stop, infil, ventil, source, data
    0, 24,    0.330    0.000    0    0.000
-     1   # no Saturday flow periods
-# Sat: start, stop, infil, ventil, source, data
+     1   # number of flow periods in day type: saturday    
+# start, stop, infil, ventil, source, data
    0, 24,    0.330    0.000    0    0.000
-     1   # no Sunday flow periods 
-# Sun: start, stop, infil, ventil, source, data
+     1   # number of flow periods in day type: sunday      
+# start, stop, infil, ventil, source, data
    0, 24,    0.330    0.000    0    0.000
-     7   # no Weekday casual gains 
-# Wkd: type, start, stop, sens, latent, rad_frac, conv_frac
+    13   # number of casual gains in day type: weekdays    
+# type, start, stop, sens, latent, rad_frac, conv_frac
+    1,   0,   7,      0.0,      0.0, 0.500, 0.500
+    1,   7,   8,     20.0,     10.0, 0.600, 0.400
+    1,   8,   9,     60.0,     30.0, 0.600, 0.400
+    1,   9,  12,    100.0,     50.0, 0.600, 0.400
+    1,  12,  14,     65.0,     32.5, 0.600, 0.400
+    1,  14,  17,    100.0,     50.0, 0.600, 0.400
+    1,  17,  24,      0.0,      0.0, 0.500, 0.500
+   -2,   0,   8,      0.0,      0.0, 0.500, 0.500
+   -2,   8,  18,     10.0,      0.0, 0.300, 0.700
+   -2,  18,  24,      0.0,      0.0, 0.500, 0.500
+   -3,   0,   8,      0.0,      0.0, 0.500, 0.500
+   -3,   8,  18,      5.0,      0.0, 0.400, 0.600
+   -3,  18,  24,      0.0,      0.0, 0.500, 0.500
+    11   # number of casual gains in day type: saturday    
+# type, start, stop, sens, latent, rad_frac, conv_frac
     1,   0,   7,      0.0,      0.0, 0.500, 0.500
     1,   7,   8,     20.0,     10.0, 0.500, 0.500
     1,   8,   9,     60.0,     30.0, 0.500, 0.500
@@ -23,15 +38,13 @@ The office has one occupant during office hours, lighting at 10W/m2 and one comp
     1,  12,  14,     65.0,     32.5, 0.500, 0.500
     1,  14,  17,    100.0,     50.0, 0.500, 0.500
     1,  17,  24,      0.0,      0.0, 0.500, 0.500
-     7   # no Saturday casual gains 
-# Sat: type, start, stop, sens, latent, rad_frac, conv_frac
-    1,   0,   7,      0.0,      0.0, 0.500, 0.500
-    1,   7,   8,     20.0,     10.0, 0.500, 0.500
-    1,   8,   9,     60.0,     30.0, 0.500, 0.500
-    1,   9,  12,    100.0,     50.0, 0.500, 0.500
-    1,  12,  14,     65.0,     32.5, 0.500, 0.500
-    1,  14,  17,    100.0,     50.0, 0.500, 0.500
-    1,  17,  24,      0.0,      0.0, 0.500, 0.500
-     0   # no Sunday casual gains 
+   -2,   0,   8,      0.0,      0.0, 0.500, 0.500
+   -2,   8,  12,     10.0,      0.0, 0.300, 0.700
+   -2,  12,  24,      0.0,      0.0, 0.500, 0.500
+   -3,   0,  24,      0.0,      0.0, 0.500, 0.500
+     2   # number of casual gains in day type: sunday      
+# type, start, stop, sens, latent, rad_frac, conv_frac
+   -2,   0,  24,      0.0,      0.0, 0.500, 0.500
+   -3,   0,  24,      0.0,      0.0, 0.500, 0.500
 # Labels for gain types 
  Occupt Lights Equipt

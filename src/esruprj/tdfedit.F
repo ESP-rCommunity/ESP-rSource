@@ -5,7 +5,7 @@ C Strathclyde, Glasgow Scotland, 2001-6.
 C ESP-r is free software.  You can redistribute it and/or
 C modify it under the terms of the GNU General Public
 C License as published by the Free Software Foundation 
-C (version 2 orlater).
+C (version 2 or later).
 
 C ESP-r is distributed in the hope that it will be useful
 C but WITHOUT ANY WARRANTY; without even the implied
@@ -32,6 +32,7 @@ C TDFUPD: updates TDF file from an exchange file.
 #include "building.h"
 #include "model.h"
 #include "epara.h"
+#include "net_flow.h"
 #include "tdf2.h"
       
       integer lnblnk  ! function definition
@@ -48,10 +49,8 @@ C CREATE,PREV,NEXT,EDIT,LIST,NONE
       common/tdaid/tdaide(2)
       COMMON/GDPER/igbdoy,igedoy
 
-      character cfgroot*24,LCFGF*72
-      common/C21/IFCFG,cfgroot,LCFGF
-
 C Related to inport and export files.
+      CHARACTER LIMP*96,LEXP*96
       COMMON/TDFIO/LIMP,IUIMP,ITIMP,LEXP,IUEXP,ITEXP
 
 C Logical flags for file openings.
@@ -61,10 +60,10 @@ C Logical flags for file openings.
       logical FOUND,XST,unixok,silent
 
       DIMENSION ITEM(30),ikeybk(30),itemsel(MIT),itemval(MIT)
-      CHARACTER LIMP*72,LEXP*72,tdaide*72
-      character afil*72,tfile*72,TTAG*12
+      CHARACTER tdaide*72
+      character afil*96,tfile*96,TTAG*12
       CHARACTER LTMPFL*72
-      CHARACTER ITEM*50,itemsel*50,KEY*1,FOCUS*8,DFILE*72
+      CHARACTER ITEM*50,itemsel*50,KEY*1,FOCUS*8,DFILE*96
       CHARACTER PERST1*14,PERST2*44,PERST3*44
       character path*72,outs*124,fs*1
       character act*16,actf*72,action*16,msgl2*124
@@ -74,10 +73,12 @@ C Logical flags for file openings.
       integer numberofzones ! to pass to updwire rather than ncomp
       integer iigl,iigr,iigt,iigb,iigw,iigwh
       integer iiw1,iiw2,iiw3,iiw4,iimenu
+      integer iicapture,iiazi    ! to pass to updcapt updazi
 #else
       integer*8 numberofzones
       integer*8 iigl,iigr,iigt,iigb,iigw,iigwh
       integer*8 iiw1,iiw2,iiw3,iiw4,iimenu
+      integer*8 iicapture,iiazi    ! to pass to updcapt updazi
 #endif
       integer IRE  ! for radio button
       integer MITEM,INO ! max items and current menu item
@@ -140,7 +141,6 @@ C Setup and pass in parameters to win3d.
           iigl=igl; iigr=igr; iigt=igt; iigb=igb; iigw=igw; iigwh=igwh
           CALL win3d(iimenu,iiw1,iiw2,iiw3,iiw4,
      &      iigl,iigr,iigt,iigb,iigw,iigwh)
-C          CALL win3d(menuchw,9,12,7,3,igl,igr,igt,igb,igw,igwh)
           igl=int(iigl); igr=int(iigr); igt=int(iigt); igb=int(iigb)
           igw=int(iigw); igwh=int(iigwh)
           call opencpw
@@ -356,9 +356,9 @@ C accompanied by refresh of the gereric arrays GTYPES,GMENUS
         helptopic='tdf_file_name'
         call gethelptext(helpinsub,helptopic,nbhelp)
         DFILE='tdf.dba'
-        tfile=LTDFA
+        write(tfile,'(a)') LTDFA(1:lnblnk(LTDFA))
         CALL EASKS(tfile,' Temporal file name? ',
-     &   ' ',72,DFILE,'TDF file name',IER,nbhelp)
+     &   ' ',96,DFILE,'TDF file name',IER,nbhelp)
 
 C Check if the file exists and if it does use supplyandcheck
 C to see if it is binary (make an ascii version) or ascii (make
@@ -474,7 +474,6 @@ C Setup and pass in parameters to win3d.
           iigl=igl; iigr=igr; iigt=igt; iigb=igb; iigw=igw; iigwh=igwh
           CALL win3d(iimenu,iiw1,iiw2,iiw3,iiw4,
      &      iigl,iigr,iigt,iigb,iigw,iigwh)
-C          CALL win3d(menuchw,4,1,1,3,igl,igr,igt,igb,igw,igwh)
           igl=int(iigl); igr=int(iigr); igt=int(iigt); igb=int(iigb)
           igw=int(iigw); igwh=int(iigwh)
           if(iglib.eq.1)then
@@ -482,8 +481,9 @@ C          CALL win3d(menuchw,4,1,1,3,igl,igr,igt,igb,igw,igwh)
             call opensetup
             numberofzones=0
             call updwire(numberofzones)  ! pass local integer
-            call updcapt(1)
-            call updazi(1)
+            iicapture=1; iiazi=1
+            call updcapt(iicapture)
+            call updazi(iiazi)
           elseif(iglib.eq.2)then
             continue
           endif
@@ -545,7 +545,7 @@ C            write(6,*) 'compacting from ',nuwpr,' to ',itnwpr
         elseif(ire.eq.3)then
           afil='  '
           CALL EASKS(afil,' Ascii export file name? ',' ',
-     &      72,LEXP,'ascii export',IER,nbhelp)
+     &      96,LEXP,'ascii export',IER,nbhelp)
           call ewtdfa(itrc,afil,IUEXP,0,ier)
         elseif(ire.eq.4)then
           write(outs,'(a,i4,a)')'Currently there are ',NTSPH,' ts/h. '
@@ -561,7 +561,7 @@ C            write(6,*) 'compacting from ',nuwpr,' to ',itnwpr
           CALL EASKI(incr,' Number of steps to recover ',' ? ',
      &      1,'F',100,'F',1,'steps to recover',IER,nbhelp)
           CALL EASKS(afil,' Ascii export file name? ',' ',
-     &      72,LEXP,'ascii export',IER,nbhelp)
+     &      96,LEXP,'ascii export',IER,nbhelp)
           msgl2='  '
           call USRMSG('Extracting from file...',msgl2,'-')
           call extracts(itrc,afil,IUEXP,TIMEJD,incr,ier)
@@ -689,6 +689,7 @@ C ************** CLRTABC
 C CLRTABC clears temporal commons TDFFH, tdset, tdaid,GDPER.
       SUBROUTINE CLRTABC
 #include "building.h"
+#include "net_flow.h"
 #include "tdf2.h"
       common/tdaid/tdaide(2)
       COMMON/GDPER/igbdoy,igedoy
@@ -726,6 +727,7 @@ C glbset: Global questions about TDF file. Foc is the topic.
 C If foc='init' do initial setup. 
       subroutine glbset(foc)
 #include "building.h"
+#include "net_flow.h"
 #include "tdf2.h"
 
       COMMON/TRC/ITRC
@@ -809,6 +811,7 @@ C IER=0 OK, IER=1 problem.
 C This facility supports the esp-r module b2e. 
       SUBROUTINE extracts(ITRC,AFIL,IAFIL,TIMEJD,incr,IER)
 #include "building.h"
+#include "net_flow.h"
 #include "tdf2.h"
 
       COMMON/OUTIN/IUOUT,IUIN
@@ -889,6 +892,7 @@ C record structures can be accommodated.
 
 C If there are tabular items, loop through each step until within
 C one minute of the given time and then get the data and write.
+C Take into account NTSPH when dealing with tollerance below.
       IF(NITDF.gt.0)THEN
         WRITE(iafil,'(a)',IOSTAT=ios,ERR=103)'*data'
         found=.FALSE.
@@ -901,12 +905,16 @@ C one minute of the given time and then get the data and write.
             call edisp(iuout,outs)
           endif
           if(.NOT.found)then
-            call eclose(RDOTY,TIMEJD,0.0006,CLOSE)
+            if(NTSPH.le.6)then
+              call eclose(RDOTY,TIMEJD,0.0006,close)
+            else
+              call eclose(RDOTY,TIMEJD,0.00034,close)
+            endif
             if(CLOSE)then
               ITREC=IP+49
               CALL ERTABU(ITRC,ITREC,IER)
               CALL ESTIME(NTSPH,1,ITIME,DESCRH,DESCRD,TIMER)
-              write(outs,'(a,F10.4,3a)') 'Extracting data for ',
+              write(outs,'(a,F10.6,3a)') 'Extracting data for ',
      &          RDOTY,' (@ ',DESCRH,')'
               if(ITRC.gt.1)call edisp(iuout,outs)
               CALL EWTABA(ITREC,RDOTY,iafil,IER)
@@ -924,7 +932,7 @@ C Write subsequent records if requested.
               ITREC=IP+49
               CALL ERTABU(ITRC,ITREC,IER)
               CALL ESTIME(NTSPH,1,ITIME,DESCRH,DESCRD,TIMER)
-              write(outs,'(a,F4.0,3a)') 'Extracting data for ',
+              write(outs,'(a,F10.6,3a)') 'Extracting data for ',
      &          RDOTY,' (@ ',DESCRH,')'
               if(ITRC.gt.1)call edisp(iuout,outs)
               CALL EWTABA(ITREC,RDOTY,iafil,IER)
@@ -963,12 +971,12 @@ C data preference menu. This source used to be found in esrutdf/setup.F
       SUBROUTINE SETUPTDF(IER)
 
       COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
+      CHARACTER LIMP*96,LEXP*96
       COMMON/TDFIO/LIMP,IUIMP,ITIMP,LEXP,IUEXP,ITEXP
       LOGICAL XST
 
       DIMENSION SETUPM(7)
-      CHARACTER*72 LIMP,LEXP
-      CHARACTER SETUPM*50,DFILE*72,tfile*72
+      CHARACTER SETUPM*50,DFILE*96,tfile*96
       integer NITMS,ISETUP ! max items and current menu item
 
 C For help messages
@@ -1040,10 +1048,12 @@ C Define a standard import file name & format for use by other parts of TDF.
         ITIMP=IWM-1
 
         DFILE='data.imp'
-        tfile=LIMP
+        write(tfile,'(a)') LIMP(1:lnblnk(LIMP))
         CALL EASKS(tfile,' Import file name? ',
-     &   ' ',72,DFILE,'import file name',IER,nbhelp)
-        if(tfile(1:2).ne.'  ')LIMP=tfile
+     &   ' ',96,DFILE,'import file name',IER,nbhelp)
+        if(tfile(1:2).ne.'  ')then
+          write(LIMP,'(a)') tfile(1:lnblnk(tfile))
+        endif
         IF(ITIMP.EQ.1)THEN
           CALL ERPFREE(IUIMP,ISTAT)
           call findfil(LIMP,XST)
@@ -1062,10 +1072,12 @@ C of TDF.  Ask for the type then see if it exists.
      &       0,'F',3,'F',1,'export format',IER,nbhelp)
 
         DFILE='data.exp'
-        tfile=LEXP
+        write(tfile,'(a)') LEXP(1:lnblnk(LEXP))
         CALL EASKS(tfile,' Export file name? ',
-     &   ' ',72,DFILE,'export file name',IER,nbhelp)
-        if(tfile(1:2).ne.'  ')LEXP=tfile
+     &   ' ',96,DFILE,'export file name',IER,nbhelp)
+        if(tfile(1:2).ne.'  ')then
+          write(LEXP,'(a)') tfile(1:lnblnk(tfile))
+        endif
 
         IF(ITEXP.EQ.1)THEN
           CALL ERPFREE(IUEXP,ISTAT)

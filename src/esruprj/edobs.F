@@ -350,13 +350,14 @@ C Offset is thickness + 5mm, block other dimension is 10mm.
           OWID=0.01
 
 C Material to associate with the reveal.
+C << extend string mat at some point to 32 char >>
           CALL EPMENSV
           CALL EPKMLC(ISEL,
      &      'Select an OPAQUE construction from the list to',
      &      'associate with the reveal for visualisation purposes.',IER)
           CALL EPMENRC
           IF(ISEL.GT.0)then
-            WRITE(mat,'(A12)')DESC(ISEL)(1:12)
+            WRITE(mat,'(A12)') mlcname(ISEL)(1:12)
           else
             mat='NONE'
           endif
@@ -1452,9 +1453,12 @@ C Note: this logic only picks up the first 12 char of construction.
      &      'associate with the block for visualisation purposes.',IER)
           CALL EPMENRC
           IF(ISEL.GT.0)then
-            WRITE(BLOCKMAT(icomp,IB),'(A)')DESC(ISEL)(1:12)
+            WRITE(BLOCKMAT(icomp,IB),'(A)') mlcname(ISEL)(1:12)
             LNBLOCKMAT(icomp,IB)=lnblnk(BLOCKMAT(icomp,IB))
             MODIFY=.TRUE.
+          else
+            WRITE(BLOCKMAT(icomp,ib),'(A)') 'UNKNOWN'
+            LNBLOCKMAT(icomp,ib)=7
           endif
           IF(IER.EQ.1)THEN
             CALL USRMSG(' ',
@@ -1696,9 +1700,12 @@ C Note: this logic only picks up the first 12 char of construction.
      &      'associate with the block for visualisation purposes.',IER)
           CALL EPMENRC
           IF(ISEL.GT.0)then
-            WRITE(BLOCKMAT(icomp,IB),'(A)')DESC(ISEL)(1:12)
+            WRITE(BLOCKMAT(icomp,IB),'(A)') mlcname(ISEL)(1:12)
             LNBLOCKMAT(icomp,IB)=lnblnk(BLOCKMAT(icomp,IB))
             MODIFY=.TRUE.
+          else
+            WRITE(BLOCKMAT(icomp,ib),'(A)') 'UNKNOWN'
+            LNBLOCKMAT(icomp,ib)=7
           endif
           IF(IER.EQ.1)THEN
             CALL USRMSG(' ',

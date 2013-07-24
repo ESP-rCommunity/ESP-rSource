@@ -1,5 +1,5 @@
 *connections for office_sum
-*Date Thu Jul 29 16:26:41 2010
+*Date Fri Aug 24 15:18:12 2012
     225   # number of connections
    1   1   0   0   0  #    1 west_cor in corid_1 is External
    1   2   3   8   6  #    2 door in corid_1 >|< door in Unit_e

@@ -7,7 +7,6 @@ intialisation and graphics, using ww. The routines are :-
 	sizehwxy	:- passess window size, w/h ratio & position
 	setpause_(n)	:- set length of pause
 	jwinint		:- initialise X window and check fonts
-	tchild_(cterm)  :- return child process terminal info.
 	winclr		:- clears screen
 	winfin		:- closes ww window
 	winlod(name,ix,iy)
@@ -81,7 +80,7 @@ intialisation and graphics, using ww. The routines are :-
 	labelstr(n,val,WticC,sstr)
                         :- generates an appropriate label for the value
                            passed.  INTERNAL.
-	opensetup_()    :- place environment button on screen.
+	opensetup_()    :- place font button on screen.
 	opencpw_()      :- place copyright button on screen.
 	aux_menu()
                         :-  test for mouse click in other portions of the screen.
@@ -212,6 +211,7 @@ static unsigned char logo_bits[] = {
 /* external definitions in the Fortran code */
 extern gnwkquery_();
 extern wirepk_();
+extern profgrdump_();
 extern cpwpk_();
 extern chgazi_();     /* in esrucom/common3dv.F */
 extern chgelev_();    /* in esrucom/common3dv.F */
@@ -258,7 +258,7 @@ static unsigned int dispDEEP;
 /* indicies used for various colours */
 static unsigned long fg, bg, bd, bw, white, black, infofg, infobg;
 static unsigned long gmenuhl, gpopfr, gfeedfr, ginvert, gmodbg, grey50, grey43;
-static unsigned long cscale[49], zscale[29], gscale[29];
+static unsigned long cscale[49], zscale[100], gscale[85];
 
 char *getenv ();
 
@@ -286,7 +286,7 @@ static int f_baseline,f_lbearing;	/* num pixels under baseline and from origin t
 static box	dbx1, viewbx, msgbx, askbx, disp, scroll, scrollbar;
 static box      scrollv, scrollbarv,scrollh, scrollbarh;
 static box	fbb, setup, cpw; /* feedback box background, setup, copyright */
-static box	wire, capture, captext ;	/* wireframe ctl & capture text button */
+static box	wire, capture, captext ;	/* wireframe ctl, capture graphics & capture text button */
 static box	azi,aziplus,aziminus;	/* buttons for view azimuth changes */
 static box	elev,elevplus,elevminus;	/* buttons for view elevation changes */
 static box     altb,altc,querb,defb,okb;	/* boxes for alts,query help, default, confirm */
@@ -297,7 +297,7 @@ static box	mouse,mouse1,mouse2,mouse3;	/* box for mouse button help */
 static char mseb1h[10],mseb2h[10],mseb3h[10]; /* mouse help strings */
 static int aziplus_left,aziminus_left,azi_left,elevplus_left,elevminus_left,elev_left; /* left of azi&elev boxes */
 static int b_setup, l_setup, b_cpw, l_cpw;	/* ll of setup, copyright boxs */
-static int wire_left,captext_left;	/* left of wire frame and capture control box */
+static int wire_left,capture_left,captext_left;	/* left of wire frame and capture control box */
 static long int ocfgz,ocfgn,ocfgc,ocfgdfn; /* persistant toggles for problem type boxes */
 static long int iiocfgz,iiocfgn,iiocfgc,iiocfgdfn; /* persistant toggles for problem type images */
 static int dbx1_avail = 0;      /* flag for existance of graphic display box */
@@ -333,7 +333,7 @@ static int asklprompt; /* left position of prompt text */
 
 static char help_list[HELP_LIST_LEN][73];	/* character arrays to hold help to be displayed
 				   by functions which include help */
-static char edisp_list[EDISP_LIST_LEN][125];	/* character arrays for edisp buffer */
+static char edisp_list[EDISP_LIST_LEN][145];	/* character arrays for edisp buffer */
 static char edit_list[PROFMA_LEN][96];	/* character arrays to be edited in fprofma_ */
 static char display_list[PROFMA_LEN][125];	/* character arrays used within fprofma_ */
 static int edisp_index = 0;	/* current position in edisp past list */
@@ -348,12 +348,11 @@ static int m_width = 0;		/* current menu max line length */
 static int m_lines = 0;		/* current number of active menu lines */
 
 static char cappl[5];	/* f77 application name */
-/* static char cfgroot[25];	f77 project root name    */
+/* static char cfgroot[33];	f77 project root name    */
 /* static char path[73];	f77 project path    */
 /* static char upath[73];	f77 users path    */
 /* static char imgpth[25];	f77 relative path to images    */
 /* static char docpth[25];	f77 relative path to documents    */
-/* static char tmppth[25];	f77 relative path to scratch folder    */
 static int browse;	/* if = 0 then user owns, if = 1 user browsing */
 
 /* flag for network graphics routines*/
@@ -372,19 +371,20 @@ static int ter = -1;            /* terminal type passed on initial call (set ini
                             system execution calls.  */
 static int child_ter = -1;      /* child process terminal type  */
 
-static char *envmenu[] = { "menus    : tiny       ",
+static char *envmenu[] = { 
+                    "menu     : tiny       ",
                     "         : small      ",
                     "         : medium     ",
                     "         : large      ",
-                    "text feedback: tiny   ",
+                    "feedback : tiny       ",
                     "         : small      ",
                     "         : medium     ",
                     "         : large      ",
-                    "dialog/editing: tiny  ",
+                    "dialog   : tiny       ",
                     "         : small      ",
                     "         : medium     ",
                     "         : large      ",
-                    "adjust after resize   ", 0 };
+                    "dismiss               ", 0 };
 
 /* general menu to appear in network graphics mode second mouse button */
 static char *netgm2menucd[] = { "functions: zoom IN  ",
@@ -432,11 +432,17 @@ static char font_0[60], font_1[60], font_2[60], font_3[60], font_4[60], font_5[6
 /* info about root Xwindow */
 static int xrt_width, xrt_height;  /* same as xsh.width and xsh.height */
 static char *bgstr,  *whitestr, *blackstr; /* init default colors */
-static char *zscalestr[] = { /* colour names from rgb.txt to represent zone colours */
-  "red","MidnightBlue","peru","ForestGreen","khaki","turquoise","magenta","firebrick",
-  "DarkCyan","khaki3","RoyalBlue","tomato","OliveDrab","PaleGreen","orange","grey40",
-  "coral2","grey60","maroon4","gold3","PowderBlue","sienna","azure4","grey20",
-  "grey50","NavyBlue","DarkGreen","gold","grey80" };
+static char *zscalestr[] = { /* 100 colour names from rgb.txt to represent zone colours */
+    "red","MidnightBlue","peru","ForestGreen","khaki","grey14","turquoise","magenta","gold4","firebrick",
+    "DarkCyan","khaki3","grey25","RoyalBlue","tomato","grey34","OliveDrab","PaleGreen","orange","grey40",
+    "coral2","tan4","SeaGreen","grey60","maroon4","gold3","grey46","PowderBlue","sienna","azure4","grey20","burlywood2",
+    "grey50","khaki2","NavyBlue","sienna3","DarkGreen","gold","magenta3","grey80","turquoise2","gold1","tomato3",
+    "grey70","orange3","grey37","maroon1","grey19","tan2","green3",
+    "red","MidnightBlue","peru","ForestGreen","khaki","grey14","turquoise","magenta","gold4","firebrick",
+    "DarkCyan","khaki3","grey25","RoyalBlue","tomato","grey34","OliveDrab","PaleGreen","orange","grey40",
+    "coral2","tan4","SeaGreen","grey60","maroon4","gold3","grey46","PowderBlue","sienna","azure4","grey20","burlywood2",
+    "grey50","khaki2","NavyBlue","sienna3","DarkGreen","gold","magenta3","grey80","turquoise2","gold1","tomato3",
+    "grey70","orange3","grey37","maroon1","grey19","tan2","green3" };
 static char *cscalestr[] = { /* colour scale RGB HEX values (to represent 49 steps of temperature) */
   "#FF0000","#FF1500","#FF2B00","#FF4000","#FF5500","#FF6A00","#FF8000","#FF9500","#FFAA00","#FFBF00",
   "#FFD500","#FFEA00","#FFFF00","#EAFF00","#D5FF00","#BFFF00","#AAFF00","#95FF00","#80FF00","#6AFF00",
@@ -447,10 +453,17 @@ static char *cscalestr[] = { /* colour scale RGB HEX values (to represent 49 ste
 static char *gintstr[] = {
   "grey96","grey94","grey92","grey86","grey64","grey50",
   "grey95","grey93","grey91","grey85","grey63","grey49","grey43" };
+/* 86 strings to set greay scale for zones if zscalestr allocation fails. */
 static char *gscalestr[] = {
-  "grey97","grey94","grey91","grey88","grey85","grey82","grey79","grey76","grey73","grey70",
-  "grey67","grey64","grey61","grey58","grey55","grey52","grey49","grey46","grey43","grey40",
-  "grey37","grey34","grey31","grey28","grey25","grey22","grey19","grey16","grey14" };
+  "grey97","grey96","grey95","grey94","grey93","grey92","grey91","grey90",
+  "grey89","grey88","grey87","grey86","grey85","grey84","grey83","grey82","grey81","grey80",
+  "grey79","grey78","grey77","grey76","grey75","grey74","grey73","grey72","grey71","grey70",
+  "grey69","grey68","grey67","grey66","grey65","grey64","grey63","grey62","grey61","grey60",
+  "grey59","grey58","grey57","grey56","grey55","grey54","grey53","grey52","grey51","grey50",
+  "grey49","grey48","grey47","grey46","grey45","grey44","grey43","grey42","grey41","grey40",
+  "grey39","grey38","grey37","grey36","grey35","grey34","grey33","grey32","grey31","grey30",
+  "grey29","grey28","grey27","grey26","grey25","grey24","grey23","grey22","grey21","grey20",
+  "grey19","grey18","grey17","grey16","grey15","grey14","grey13","grey12" };
 static long int ncscale = 0; /* number of assigned colours in colour scale */
 static long int ngscale = 0; /* number of assigned colours in grey scale */
 static long int ngr = 0; /* number of assigned interface colours */
@@ -553,19 +566,19 @@ if((fst_3 = XLoadQueryFont(theDisp,font_3)) == NULL) {
   exit(1);
 }
 /* a few variable width fonts, if fail drop back to fixed width */
-strncpy(font_4,"-*-helvetica-medium-r-*-*-10-*-*-*-*-*-*-*",42);
+strncpy(font_4,  "-*-helvetica-medium-r-*-*-10-*-*-*-*-*-*-*",42);
 if((fst_4 = XLoadQueryFont(theDisp,font_4)) == NULL) {
   fprintf(stderr,"display %s doesn't know font %s ...\n",DisplayString(theDisp),font_4);
-  strncpy(font_4,"6x12",4);
+  strncpy(font_4,"6x12                                      ",42);
   if((fst_4 = XLoadQueryFont(theDisp,font_4)) == NULL) {
     fprintf(stderr,"2nd choice font %s has not been found so quitting.\n",font_4);
     exit(1);
   }
 }
-strncpy(font_5,"-*-helvetica-medium-r-*-*-12-*-*-*-*-*-*-*",42);
+strncpy(font_5,  "-*-helvetica-medium-r-*-*-12-*-*-*-*-*-*-*",42);
 if((fst_5 = XLoadQueryFont(theDisp,font_5)) == NULL) {
   fprintf(stderr,"display %s doesn't know font %s ...\n",DisplayString(theDisp),font_5);
-  strncpy(font_5,"6x13",4);
+  strncpy(font_5,"6x13                                      ",42);
   if((fst_5 = XLoadQueryFont(theDisp,font_5)) == NULL) {
     fprintf(stderr,"2nd choice font %s has not been found so quitting.\n",font_5);
     exit(1);
@@ -863,12 +876,12 @@ void clrcscale_() {
   return;
 }
 
-/* ********* grey scale (29 or 12 steps) ******* */
+/* ********* grey scale (84 or 42 steps) ******* */
 void setgscale_() {
   int ic,ih;
   XColor ecdef;
 /* assign grey scale to gscale (hex) array. */
-  for (ic=0; ic<28; ic++) {
+  for (ic=0; ic<84; ic++) {
     if (XParseColor(theDisp,theCmap,gscalestr[ic],&ecdef) && XAllocColor(theDisp,theCmap,&ecdef)) {
         gscale[ic] = ecdef.pixel;
         ngscale=ngscale+1;
@@ -879,14 +892,14 @@ void setgscale_() {
   }
 /* Some colours not allocated attempt half of the colours. Begin by freeing initial allocated set. */
 /* debug fprintf(stderr,"Created greys %ld\n",ngscale); */
-  if ( ngscale <= 27 ) {
+  if ( ngscale <= 83 ) {
     for (ic=0; ic<ngscale; ic++) {
       if( gscale[ic] >= 1 ) XFreeColors(theDisp,theCmap,&gscale[ic],1,0L);
     }
     fprintf(stderr,"Trying reduced grey set\n");
     ngscale = 0;
     ih = -1;
-    for (ic=0; ic<12; ic++) {
+    for (ic=0; ic<40; ic++) {
       ih = ih + 2;
       if (XParseColor(theDisp,theCmap,gscalestr[ih],&ecdef) && XAllocColor(theDisp,theCmap,&ecdef)) {
          gscale[ic] = ecdef.pixel;
@@ -910,12 +923,12 @@ void clrgscale_() {
   return;
 }
 
-/* ********* zone colour scale (29 steps) ******* */
+/* ********* zone colour scale (81 steps) ******* */
 void setzscale_() {
   int ic;
   XColor ecdef, sdef;
 /* assign colours (zscale names) for zone graphing. */
-  for (ic=0; ic<28; ic++) {
+  for (ic=0; ic<99; ic++) {
     if (XLookupColor(theDisp,theCmap,zscalestr[ic],&ecdef,&sdef) && XAllocColor(theDisp,theCmap,&ecdef)) {
       zscale[ic] = ecdef.pixel;
       izc = izc + 1;
@@ -1061,13 +1074,6 @@ long int *ifs,*itfs,*imfs;
  return;
 }
 
-/* *************** return child process terminal info. *************** */
-void tchild_(cterm)
-long int *cterm;           /* child terminal type  */
-{
-  *cterm = child_ter;
-  return;
-}
 
 /* *************** Release display. *************** */
 void winfin_()
@@ -1743,6 +1749,7 @@ this enables the size of the scroll bar to be set*/
   if(iq>0){
 /* get vertical scroll bar parameters*/
   height=scrollv.b_bottom-scrollv.b_top-2;
+  if(height<5) height=5;
   if(tv>pv&&pv>0.0){
     height=(int)((float)height*pv);
   }
@@ -1755,6 +1762,7 @@ this enables the size of the scroll bar to be set*/
 
 /*get horizontal scroll bar parameters*/
   height=scrollh.b_right-scrollh.b_left-2;
+  if(height<5) height=5;
   if(th>ph&&ph>0.0){
     height=(int)((float)height*ph);
   }
@@ -1772,11 +1780,10 @@ this enables the size of the scroll bar to be set*/
 
 /* **************  Open a 3D viewing box *************** */
 /*
- Passed the character width of the main control menu, the number of
- lines of text to leave at the bottom for a dialogue box, the width of
- the left, right inside margins in terms of number of characters
- with the butn_fnt font and the top and bottom inside margins in terms
- of lines of characters.
+ Passed the character width of the main control menu (menu_char), 
+ the width of the left (cl), right (cr) inside margins in terms of
+ number of characters with the butn_fnt font and the top (ct)and bottom
+ (cb)inside margins in terms of lines of characters.
  Returns the pixel coord of the viewing box left, right, top, bottom as well
  as its overall pixel width & height.
  dbx1 is the outer box (including axes) and viewbx is the image area.
@@ -2605,6 +2612,8 @@ void doitbox(box dobox,char* msg,int msglen,int asklen,long int* sav_font,long i
     azi = dobox;
   } else if (strncmp(topic, "elev", 4) == 0) {
     elev = dobox;
+  } else if (strncmp(topic, "capture", 7) == 0) {
+    capture = dobox;
   } else if (strncmp(topic, "captext", 7) == 0) {
     captext = dobox;
   } else if (strncmp(topic, "setup", 5) == 0) {
@@ -2631,6 +2640,12 @@ void doitbox(box dobox,char* msg,int msglen,int asklen,long int* sav_font,long i
       Timer(200);
     } else if (strncmp(topic, "elev", 4) == 0) {
       Timer(200);
+    } else if (strncmp(topic, "capture", 7) == 0) {
+/*
+ * Deal with user selection of capture pop-up memu. The tasks will be done
+ * based on information external to the application (in the user's .esprc file).
+ */
+        profgrdump_(); /* use subroutine in esrsu_cut_lib.f to invoke graphics capture */
     } else if (strncmp(topic, "captext", 7) == 0) {
         proftxdump_();	/* use subroutine in esru_cut_lib.f to process text buffer. */
     } else if (strncmp(topic, "setup", 5) == 0) {
@@ -2696,8 +2711,8 @@ void doitbox(box dobox,char* msg,int msglen,int asklen,long int* sav_font,long i
            new = 3;
            if(butn_fnt != new) { butn_fnt = new; refreshenv_(); }
            break;
-         case 13:
-           refreshenv_();   break;
+         case 12:
+           break;
          default: break;
        }
     } else if (strncmp(topic, "copyright", 9) == 0) {
@@ -5019,14 +5034,15 @@ void opengdisp_(menu_char,displ_l,dialogue_l,gdw,gdh)
 
 /* sort out boxs along the horizontal line between graphics and text feedback boxes */
   winfnt_(&small_fnt);
-  wire_left = disp.b_right - (f_width * 14);
-  captext_left = disp.b_right - (f_width * 24);
-  aziplus_left = disp.b_right - (f_width * 28);
-  aziminus_left = disp.b_right - (f_width * 31);
-  azi_left = disp.b_right - (f_width * 36);
-  elevplus_left = disp.b_right - (f_width * 40);
-  elevminus_left = disp.b_right - (f_width * 43);
-  elev_left = disp.b_right - (f_width * 49);
+  wire_left = disp.b_right - (f_width * 26);
+  capture_left = disp.b_right - (f_width * 8);
+  captext_left = disp.b_right - (f_width * 8);
+  elevplus_left = disp.b_right - (f_width * 30);
+  elevminus_left = disp.b_right - (f_width * 33);
+  elev_left = disp.b_right - (f_width * 44);
+  aziplus_left = disp.b_right - (f_width * 48);
+  aziminus_left = disp.b_right - (f_width * 51);
+  azi_left = disp.b_right - (f_width * 60);
   udh = f_height + 2;
 
   winfnt_(&disp_fnt);	/* Reload the text display font. */
@@ -5050,7 +5066,7 @@ void opengdisp_(menu_char,displ_l,dialogue_l,gdw,gdh)
 /* create the updown box */
  updown_text.b_bottom = disp.b_top -2;
  updown_text.b_top = updown_text.b_bottom - udh;
- updown_text.b_left = disp.b_left + (disp.b_right - disp.b_left)/4;
+ updown_text.b_left =  disp.b_right - (f_width * 67);
  updown_text.b_right = updown_text.b_left + 30;
  xt = updown_text.b_left+10;         /* points for arrows */
  xb = updown_text.b_left+20;        /* points for arrows */
@@ -5068,8 +5084,10 @@ void opengdisp_(menu_char,displ_l,dialogue_l,gdw,gdh)
    doitbox(wire,"image control",13,14,&saved_font,&small_fnt,&bottom,&left,"wire",'-');
  }
 
-/* include capture text button */
+/* include capture button to left of image control button */
  if(capture_avail >= 1) {
+   bottom = disp.b_top; left = capture_left;
+   doitbox(capture,"capture",7,8,&saved_font,&small_fnt,&bottom,&left,"capture",'-');
    bottom = fbb.b_bottom; left = captext_left;
    doitbox(capture,"capture",7,8,&saved_font,&small_fnt,&bottom,&left,"captext",'-');
  }
@@ -5083,7 +5101,7 @@ void opengdisp_(menu_char,displ_l,dialogue_l,gdw,gdh)
    dosymbox(aziminus,2,&saved_font,&small_fnt,&bottom,&left,"aziminus",'-');
 
    bottom = disp.b_top; left = azi_left;
-   doitbox(azi,"azi",3,4,&saved_font,&small_fnt,&bottom,&left,"azi",'-');
+   doitbox(azi,"azimuth",7,8,&saved_font,&small_fnt,&bottom,&left,"azi",'-');
 
    bottom = disp.b_top; left = elevplus_left;
    dosymbox(elevplus,2,&saved_font,&small_fnt,&bottom,&left,"elevplus",'-');
@@ -5092,7 +5110,7 @@ void opengdisp_(menu_char,displ_l,dialogue_l,gdw,gdh)
    dosymbox(elevminus,2,&saved_font,&small_fnt,&bottom,&left,"elevminus",'-');
 
    bottom = disp.b_top; left = elev_left;
-   doitbox(elev,"elev",4,5,&saved_font,&small_fnt,&bottom,&left,"elev",'-');
+   doitbox(elev,"elevation",9,10,&saved_font,&small_fnt,&bottom,&left,"elev",'-');
  }
 
   xbox(disp,fg,white,BMCLEAR |BMEDGES);      /* draw outer box with edges  */
@@ -5117,12 +5135,12 @@ void disptext()
   int iy,lm1,i,len;
   long int saved_font;
   int j,jstart; 	/* variables for text feedback redisplay */
-  char msg2[125];
+  char msg2[145];
 
   saved_font = current_font;   /* save existing font  */
   if (disp_fnt != saved_font) winfnt_(&disp_fnt);
 
-  len = 124; /* max char width to print */
+  len = 144; /* max char width to print */
   disp_lines = (int) ((disp.b_bottom - disp.b_top) / (f_height+1));
   if (disp_lines != tfb_limtty) {
     tfb_line = tfb_line - tfb_limtty + disp_lines;
@@ -5163,7 +5181,7 @@ void egdisp_(msg,line,len)
   long int *line;             	 /* position indicator */
 {
   int i;		 /* local string length */
-  char msg2[125];
+  char msg2[145];
 
   if( len <= 1 )return; /* don`t bother if no characters */
 
@@ -5183,7 +5201,7 @@ void egdisp_(msg,line,len)
     strncpy(edisp_list[edisp_index],msg,len);	/* copy to static array */
   } else {
     for ( i = 0; i < EDISP_LIST_LEN-1; i++ ) {
-      strncpy(edisp_list[i],edisp_list[i+1],124);	/* shift array up */
+      strncpy(edisp_list[i],edisp_list[i+1],144);	/* shift array up */
     }
     strncpy(edisp_list[EDISP_LIST_LEN-1],msg,len);   /* copy to static array */
   }
@@ -6365,15 +6383,17 @@ void labelstr(n,val,WticC,sstr)
   return;
 } /* labelstr */
 
-/* ************** VRTAXS *********************** */
+/* ************** VRTAXIS *********************** */
 /*
- Construct and draw a vertical axis via WW where: YMN,YMX are the data
+ Construct and draw a vertical axis via where: YMN,YMX are the data
  minimum & maximum values, offl & offb are the pixel coords of the
  lower start of the axis.  SCA is the scaling factor and Yadd
  is a data offset to adjust plotting for various data ranges.
  Mode = 1 for time axis, Mode = 0 for other data display types.
  Side = 0 lables and tic on left, Side = 1 labels and tic on right.
- msg is the axis label and mlen is it's length (passed from f77).
+ msg is the axis label and mlen is it's length (passed from fortran).
+ TODO: pass in character offset for axis rather than assuming a
+       fixed value.
 */
 
 void vrtaxis_(ymn,ymx,offl,offb,offt,yadd,sca,mode,side,msg,mlen)
@@ -6499,14 +6519,16 @@ void vrtaxis_(ymn,ymx,offl,offb,offt,yadd,sca,mode,side,msg,mlen)
   XDrawLine(theDisp,win,theGC,ix1,iy1,ix,iy);
 
 /*
- Print out the axis label on left or right.
- Looping through each character in the string
- and placing in a buffer for printing.
+ Print out the axis label on left or right.  Loop through each
+ character in the string and placing in a buffer for printing.
+ If label on right ensure a bit of space between characters and
+ the right edge of box to allow for image capture. If on right
+ offset by 3 characters.
 */
   if (sid == 0) {
-      ix = dbx1.b_left+10;
+      ix = dbx1.b_left + (2 *f_width);
   } else {
-      ix = dbx1.b_right - (2 * f_width);
+      ix = dbx1.b_right - (3 * f_width);
   }
   mid = oft + ((ofb - oft)/2);
   iy = mid - (vertadj * ilen);
@@ -7238,13 +7260,14 @@ int aux_menu(event)  XEvent *event; {
 /* update left position of boxes along horizontal bar */
    saved_font = menu_fnt;
    if (saved_font != small_fnt) winfnt_(&small_fnt);
-   wire_left = disp.b_right - (f_width * 14);
-   aziplus_left = disp.b_right - (f_width * 28);
-   aziminus_left = disp.b_right - (f_width * 31);
-   azi_left = disp.b_right - (f_width * 36);
-   elevplus_left = disp.b_right - (f_width * 40);
-   elevminus_left = disp.b_right - (f_width * 43);
-   elev_left = disp.b_right - (f_width * 49);
+   wire_left = disp.b_right - (f_width * 26);
+   capture_left = disp.b_right - (f_width * 8);
+   elevplus_left = disp.b_right - (f_width * 30);
+   elevminus_left = disp.b_right - (f_width * 33);
+   elev_left = disp.b_right - (f_width * 44);
+   aziplus_left = disp.b_right - (f_width * 48);
+   aziminus_left = disp.b_right - (f_width * 51);
+   azi_left = disp.b_right - (f_width * 60);
    if (saved_font != small_fnt) winfnt_(&saved_font);  /* restore std font */
 
 /* debug  fprintf(stderr,"aux_menu event type %d\n",event->type);  */
@@ -7674,7 +7697,12 @@ point*/
 /* selected wire frame control */
         saved_font = menu_fnt; bottom = disp.b_top; left = wire_left;
         doitbox(wire,"image control",13,14,&saved_font,&small_fnt,&bottom,&left,"wire",'!');
+      } else if(capture_avail >= 1 && xboxinside(capture,x,y)) {
 
+/* capture image button */
+        saved_font = current_font; bottom = disp.b_top; left = capture_left;
+        doitbox(capture,"capture",7,8,&saved_font,&small_fnt,&bottom,&left,"capture",'!');
+        but_rlse = 1;
       } else if(capture_avail >= 1 && xboxinside(captext,x,y)) {
 
 /* capture text button */
@@ -7687,26 +7715,30 @@ point*/
 /* selected azimuth +  control */
         saved_font = current_font; bottom = disp.b_top; left = aziplus_left;
         dosymbox(aziplus,2,&saved_font,&small_fnt,&bottom,&left,"aziplus",'!');
+        refreshenv_();  // to esure that current domains are re-drawn
       } else if (azi_avail >=1 && xboxinside(aziminus,x,y)) {
 
 /* selected azimuth -  control */
         saved_font = current_font; bottom = disp.b_top; left = aziminus_left;
         dosymbox(aziminus,2,&saved_font,&small_fnt,&bottom,&left,"aziminus",'!');
+        refreshenv_();  // to esure that current domains are re-drawn
       } else if (azi_avail >=1 && xboxinside(elevplus,x,y)) {
 
 /* selected elev +  control */
         saved_font = current_font; bottom = disp.b_top; left = elevplus_left;
         dosymbox(elevplus,2,&saved_font,&small_fnt,&bottom,&left,"elevplus",'!');
+        refreshenv_();  // to esure that current domains are re-drawn
       } else if (azi_avail >=1 && xboxinside(elevminus,x,y)) {
 
 /* selected elev -  control */
         saved_font = current_font; bottom = disp.b_top; left = elevminus_left;
         dosymbox(elevminus,2,&saved_font,&small_fnt,&bottom,&left,"elevminus",'!');
+        refreshenv_();  // to esure that current domains are re-drawn
       } else if (setup_avail == 1 && xboxinside(setup,x,y)) {
 
 /* selected setup display */
         saved_font = current_font; bottom = b_setup; left = l_setup;
-        doitbox(setup,"window   ",9,10,&saved_font,&butn_fnt,&bottom,&left,"setup",'!');
+        doitbox(setup,"fonts    ",9,10,&saved_font,&butn_fnt,&bottom,&left,"setup",'!');
       } else if (cpw_avail >=1 && xboxinside(cpw,x,y)) {
 
 /* selected copyright */
@@ -7973,18 +8005,18 @@ void opencfg_(cfg_type,icfgz,icfgn,icfgc,icfgdfn,iicfgz,iicfgn,iicfgc,iicfgdfn)
 
   bh = f_height+2;	/* box height is font height +2 */
   hdl = viewbx.b_right - (f_width * 19);
-  XDrawString(theDisp,win,theGC,hdl,viewbx.b_top+bh-4,"Active definitions",18);
+  XDrawString(theDisp,win,theGC,hdl,viewbx.b_top+bh-1,"Active definitions",18);
   if (cfg_boxs == 0){	/* registration level  */
     cfgz.b_top = viewbx.b_top + bh;    cfgz.b_bottom = cfgz.b_top + bh;
-    cfgz.b_right = viewbx.b_right - 2; cfgz.b_left = cfgz.b_right - (f_width * 15);
+    cfgz.b_right = viewbx.b_right - 2; cfgz.b_left = cfgz.b_right - (f_width * 14);
     xbox(cfgz,fg,white, BMCLEAR | BMEDGES);
-    XDrawString(theDisp,win,theGC,cfgz.b_left+4,cfgz.b_bottom-2,"registration ",13);
+    XDrawString(theDisp,win,theGC,cfgz.b_left+4,cfgz.b_bottom-2,"registration",12);
   } else {
     if (oocfgz == 1) {	/* zones */
-      cfgz.b_top = viewbx.b_top + bh;    cfgz.b_bottom = cfgz.b_top + bh;
-      cfgz.b_right = viewbx.b_right - 2; cfgz.b_left = cfgz.b_right - (f_width * 15);
+      cfgz.b_top = viewbx.b_top + bh +2;    cfgz.b_bottom = cfgz.b_top + bh;
+      cfgz.b_right = viewbx.b_right - 2; cfgz.b_left = cfgz.b_right - (f_width * 13);
       xbox(cfgz,fg,white, BMCLEAR | BMEDGES);
-      XDrawString(theDisp,win,theGC,cfgz.b_left+4,cfgz.b_bottom-2,"zones        ",13);
+      XDrawString(theDisp,win,theGC,cfgz.b_left+4,cfgz.b_bottom-2,"zones      ",11);
       if (iiocfgz >= 1) {	/* zones images */
         eyex = cfgz.b_right - 14;
         eyey = cfgz.b_bottom - (f_height/2);
@@ -7992,10 +8024,10 @@ void opencfg_(cfg_type,icfgz,icfgn,icfgc,icfgdfn,iicfgz,iicfgn,iicfgc,iicfgdfn)
       }
     }
     if (oocfgn == 1) {	/* network */
-      cfgn.b_top   = viewbx.b_top +bh +bh +4;   cfgn.b_bottom = cfgn.b_top + bh;
-      cfgn.b_right = viewbx.b_right - 2; cfgn.b_left = cfgn.b_right - (f_width * 15);
+      cfgn.b_top   = viewbx.b_top +bh +bh +6;   cfgn.b_bottom = cfgn.b_top + bh;
+      cfgn.b_right = viewbx.b_right - 2; cfgn.b_left = cfgn.b_right - (f_width * 13);
       xbox(cfgn,fg,white, BMCLEAR | BMEDGES);
-      XDrawString(theDisp,win,theGC,cfgn.b_left+4,cfgn.b_bottom-2,"networks     ",13);
+      XDrawString(theDisp,win,theGC,cfgn.b_left+4,cfgn.b_bottom-2,"networks   ",11);
       if (iiocfgn >= 1) {	/* network images */
         eyex = cfgn.b_right - 14;
         eyey = cfgn.b_bottom - (f_height/2);
@@ -8003,10 +8035,10 @@ void opencfg_(cfg_type,icfgz,icfgn,icfgc,icfgdfn,iicfgz,iicfgn,iicfgc,iicfgdfn)
       }
     }
     if (oocfgc == 1) {	/* control */
-      cfgc.b_top   = viewbx.b_top + (3 * bh) +8;   cfgc.b_bottom = cfgc.b_top + bh;
-      cfgc.b_right = viewbx.b_right - 2; cfgc.b_left = cfgc.b_right - (f_width * 15);
+      cfgc.b_top   = viewbx.b_top + (3 * bh) +10;   cfgc.b_bottom = cfgc.b_top + bh;
+      cfgc.b_right = viewbx.b_right - 2; cfgc.b_left = cfgc.b_right - (f_width * 13);
       xbox(cfgc,fg,white, BMCLEAR | BMEDGES);   /* draw the controls box */
-      XDrawString(theDisp,win,theGC,cfgc.b_left+4,cfgc.b_bottom-2,"controls     ",13);
+      XDrawString(theDisp,win,theGC,cfgc.b_left+4,cfgc.b_bottom-2,"controls   ",11);
       if (iiocfgc >= 1) {	/* network images */
         eyex = cfgc.b_right - 14;
         eyey = cfgc.b_bottom - (f_height/2);
@@ -8014,10 +8046,10 @@ void opencfg_(cfg_type,icfgz,icfgn,icfgc,icfgdfn,iicfgz,iicfgn,iicfgc,iicfgdfn)
       }
     }
     if (oocfgdfn == 1) {	/* domain flow */
-      cfgdfn.b_top   = viewbx.b_top + (4 * bh) +12;   cfgdfn.b_bottom = cfgdfn.b_top + bh;
-      cfgdfn.b_right = viewbx.b_right - 2; cfgdfn.b_left = cfgdfn.b_right - (f_width * 15);
+      cfgdfn.b_top   = viewbx.b_top + (4 * bh) +14;   cfgdfn.b_bottom = cfgdfn.b_top + bh;
+      cfgdfn.b_right = viewbx.b_right - 2; cfgdfn.b_left = cfgdfn.b_right - (f_width * 13);
       xbox(cfgdfn,fg,white, BMCLEAR | BMEDGES);
-      XDrawString(theDisp,win,theGC,cfgdfn.b_left+4,cfgdfn.b_bottom-2,"domain flow  ",13);
+      XDrawString(theDisp,win,theGC,cfgdfn.b_left+4,cfgdfn.b_bottom-2,"domain flow",11);
       if (iiocfgdfn >= 1) {	/* network images */
         eyex = cfgdfn.b_right - 14;
         eyey = cfgdfn.b_bottom - (f_height/2);
@@ -8044,7 +8076,7 @@ void opensetup_()
  if (dialogue_lines != 0) { b_setup = msgbx.b_top -24; } else { b_setup = xrt_height -34; }
 
  bottom = b_setup; left = l_setup;
- doitbox(setup,"window   ",9,10,&saved_font,&butn_fnt,&bottom,&left,"setup",'-');
+ doitbox(setup,"fonts    ",9,10,&saved_font,&butn_fnt,&bottom,&left,"setup",'-');
  return;
 } /* opensetup */
 
@@ -8066,7 +8098,7 @@ void updwire_(avail)
     wire_avail = *avail;         /* tell the world it is available */
   }
   return;
-} /* openwire_ */
+} /* updwire_ */
 
 
 /* ******  Notify level for capture button ********** */
@@ -8078,6 +8110,8 @@ void updcapt_(avail)
 
   if(capture_avail == 0 && *avail >= 0) {	/* probably first time in */
     saved_font = current_font;
+    bottom = disp.b_top; left = capture_left;
+    doitbox(capture,"capture",7,8,&saved_font,&small_fnt,&bottom,&left,"capture",'-');
     bottom = fbb.b_bottom; left = captext_left;
     doitbox(capture,"capture",7,8,&saved_font,&small_fnt,&bottom,&left,"captext",'-');
     capture_avail = *avail;         /* tell the world it is available */
@@ -8097,14 +8131,15 @@ void updazi_(avail)
   if(azi_avail == 0 && *avail >= 0) {	/* probably first time in */
     saved_font = current_font;
     if (saved_font != small_fnt) winfnt_(&small_fnt);
-    wire_left = disp.b_right - (f_width * 14);
-    captext_left = disp.b_right - (f_width * 24);
-    aziplus_left = disp.b_right - (f_width * 28);
-    aziminus_left = disp.b_right - (f_width * 31);
-    azi_left = disp.b_right - (f_width * 36);
-    elevplus_left = disp.b_right - (f_width * 40);
-    elevminus_left = disp.b_right - (f_width * 43);
-    elev_left = disp.b_right - (f_width * 49);
+    wire_left = disp.b_right - (f_width * 26);
+    capture_left = disp.b_right - (f_width * 8);
+    captext_left = disp.b_right - (f_width * 8);
+    elevplus_left = disp.b_right - (f_width * 30);
+    elevminus_left = disp.b_right - (f_width * 33);
+    elev_left = disp.b_right - (f_width * 44);
+    aziplus_left = disp.b_right - (f_width * 48);
+    aziminus_left = disp.b_right - (f_width * 51);
+    azi_left = disp.b_right - (f_width * 60);
     if (saved_font != small_fnt) winfnt_(&saved_font);  /* restore std font */
 
     bottom = disp.b_top; left = aziplus_left;
@@ -8114,7 +8149,7 @@ void updazi_(avail)
     dosymbox(aziminus,2,&saved_font,&small_fnt,&bottom,&left,"aziminus",'-');
 
     bottom = disp.b_top; left = azi_left;
-    doitbox(azi,"azi",3,4,&saved_font,&small_fnt,&bottom,&left,"azi",'-');
+    doitbox(azi,"azimuth",7,8,&saved_font,&small_fnt,&bottom,&left,"azi",'-');
 
     bottom = disp.b_top; left = elevplus_left;
     dosymbox(elevplus,2,&saved_font,&small_fnt,&bottom,&left,"elevplus",'-');
@@ -8123,13 +8158,14 @@ void updazi_(avail)
     dosymbox(elevminus,2,&saved_font,&small_fnt,&bottom,&left,"elevminus",'-');
 
     bottom = disp.b_top; left = elev_left;
-    doitbox(elev,"elev",4,5,&saved_font,&small_fnt,&bottom,&left,"elev",'-');
+    doitbox(elev,"elevation",9,10,&saved_font,&small_fnt,&bottom,&left,"elev",'-');
 
     if (saved_font != small_fnt) winfnt_(&saved_font);  /* restore std font */
     azi_avail = *avail;         /* tell the world it is available */
   } else {
     azi_avail = *avail;         /* tell the world it is available */
   }
+
   return;
 } /* updazi_ */
 

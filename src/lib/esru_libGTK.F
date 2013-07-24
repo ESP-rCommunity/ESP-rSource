@@ -137,7 +137,7 @@ C If in graphic mode use graphic faciltiies to edit the number.
 
         LN1=max(1,lnblnk(PROMP1))
         LN2=max(1,lnblnk(PROMP2))
-	if((LN1+LN2+1).lt.144)then
+        if((LN1+LN2+1).lt.144)then
           if(LN1.eq.1)then
             write(prompt,'(a)') PROMP2(1:LN2)
           else
@@ -826,7 +826,7 @@ C If in terminal type 8 use dialogue box.
         lmmod=mmod
         LN1=max(1,lnblnk(PROMP1))
         LN2=max(1,lnblnk(PROMP2))
-	if((LN1+LN2+1).lt.144)then
+        if((LN1+LN2+1).lt.144)then
           if(LN1.eq.1)then
             write(prompt,'(a)') PROMP2(1:LN2)
           else
@@ -1056,7 +1056,7 @@ C If in terminal type 8 use dialogue box.
         lmmod=mmod
         LN1=max(1,lnblnk(PROMP1))
         LN2=max(1,lnblnk(PROMP2))
-	if((LN1+LN2+1).lt.144)then
+        if((LN1+LN2+1).lt.144)then
           if(LN1.eq.1)then
             write(prompt,'(a)') PROMP2(1:LN2)
           else
@@ -1260,7 +1260,7 @@ C For graphic version use the standard GTK widget as does easks.
         lmmod=mmod
         LN1=max(1,lnblnk(PROMP1))
         LN2=max(1,lnblnk(PROMP2))
-	if((LN1+LN2+1).lt.144)then
+        if((LN1+LN2+1).lt.144)then
           if(LN1.eq.1)then
             write(prompt,'(a)') PROMP2(1:LN2)
           else
@@ -1489,7 +1489,7 @@ C If in terminal type 8 use dialogue box.
         lmmod=mmod
         LN1=max(1,lnblnk(PROMP1))
         LN2=max(1,lnblnk(PROMP2))
-	if((LN1+LN2+1).lt.144)then
+        if((LN1+LN2+1).lt.144)then
           if(LN1.eq.1)then
             write(prompt,'(a)') PROMP2(1:LN2)
           else
@@ -1678,7 +1678,7 @@ C If in terminal type 8 use dialogue box.
         lmmod=mmod
         LN1=max(1,lnblnk(PROMP1))
         LN2=max(1,lnblnk(PROMP2))
-	if((LN1+LN2+1).lt.144)then
+        if((LN1+LN2+1).lt.144)then
           if(LN1.eq.1)then
             write(prompt,'(a)') PROMP2(1:LN2)
           else
@@ -1860,7 +1860,7 @@ C If in terminal type 8 use dialogue box.
         call dupphelp(newnbhelp)
         LN1=max(1,lnblnk(PROMP1))
         LN2=max(1,lnblnk(PROMP2))
-	if((LN1+LN2+1).lt.144)then
+        if((LN1+LN2+1).lt.144)then
           if(LN1.eq.1)then
             write(prompt,'(a)') PROMP2(1:LN2)
           else
@@ -2583,7 +2583,7 @@ C Querry yes or no or default. Concat MSG1 & MSG2 together for prompt.
   19    continue
         LN1=max(1,lnblnk(MSG1))
         LN2=max(1,lnblnk(MSG2))
-	if((LN1+LN2+1).lt.144)then
+        if((LN1+LN2+1).lt.144)then
           if(LN1.eq.1)then
             write(prompt,'(a)') MSG2(1:LN2)
           else
@@ -2621,7 +2621,7 @@ C Querry yes or no or default. Concat MSG1 & MSG2 together for prompt.
           optc='  '
           call espabcbox(prompt,opta,optb,optc,optd,opte,optf,optg,IW)
         endif
-	
+
 C Debug.
 C        write(6,*) 'espabcbox selected iw ',iw,opta,optb,optc
 
@@ -2759,7 +2759,7 @@ C of help supplied and then provide the prompt again.
 C Querry which one.
   19    LN1=max(1,lnblnk(MSG1))
         LN2=max(1,lnblnk(MSG2))
-	if((LN1+LN2+1).lt.144)then
+        if((LN1+LN2+1).lt.144)then
           if(LN1.eq.1)then
             write(prompt,'(a)') MSG2(1:LN2)
           else
@@ -2937,7 +2937,7 @@ C of help supplied and then provide the prompt again.
 C Querry which one.
   19    LN1=max(1,lnblnk(MSG1))
         LN2=max(1,lnblnk(MSG2))
-	if((LN1+LN2+1).lt.144)then
+        if((LN1+LN2+1).lt.144)then
           if(LN1.eq.1)then
             write(prompt,'(a)') MSG2(1:LN2)
           else
@@ -3104,23 +3104,23 @@ C limtty is the initial request for text feedback height (in lines)
       CHARACTER*5 MM
 
 c If MMOD set to valid index, assume it, dont ask.
-      MM=' '
-  10  IF(MM.EQ.'-6   '.OR.MODEL.EQ.-6)THEN
+      MM='     '
+  10  IF(MM(1:5).EQ.'-6   '.OR.MODEL.EQ.-6)THEN
         MMOD=-6
         LIMTTY=24
         LIMIT=24
         RETURN
-      ELSEIF(MM.EQ.'-2   '.OR.MODEL.EQ.-2)THEN
+      ELSEIF(MM(1:5).EQ.'-2   '.OR.MODEL.EQ.-2)THEN
         MMOD=-2
         LIMTTY=24
         LIMIT=24
         RETURN
-      ELSEIF(MM.EQ.'-1   '.OR.MODEL.EQ.-1)THEN
+      ELSEIF(MM(1:5).EQ.'-1   '.OR.MODEL.EQ.-1)THEN
         MMOD=-1
         LIMTTY=24
         LIMIT=24
         RETURN
-      ELSEIF(MM.eq.'8    '.OR.MODEL.EQ.8)THEN
+      ELSEIF(MM(1:5).eq.'8    '.OR.MODEL.EQ.8)THEN
         MMOD = 8
         write(HEAD,'(a)') TITLE
 
@@ -3148,8 +3148,8 @@ C Open the dialogue box and begin message.
  200    FORMAT(' Terminal mode (? gives options): ')
         READ(IIN,101,ERR=500,IOSTAT=IOS)MM
  101    FORMAT(A5)
-        IF(MM.EQ.'-6   '.OR.MM.EQ.'-2   '.OR.
-     &     MM.EQ.'-1   '.OR.MM.EQ.'8    ')THEN
+        IF(MM(1:5).EQ.'-6   '.OR.MM(1:5).EQ.'-2   '.OR.
+     &     MM(1:5).EQ.'-1   '.OR.MM(1:5).EQ.'8    ')THEN
           goto 10
         ELSEIF(MM(1:1).EQ.'?')THEN
           WRITE(IOUT,102)
@@ -3470,7 +3470,7 @@ C Single line prompt.
 C If warning mode then clear continuebox after use clicks continue.
           LN1=max(1,LNBLNK(MSG1))
           LN2=max(1,LNBLNK(MSG2))
-	  if((LN1+LN2+1).lt.144)then
+          if((LN1+LN2+1).lt.144)then
             if(LN1.eq.1)then
               write(prompt,'(a)') MSG2(1:LN2)
             else
@@ -3612,7 +3612,7 @@ C Single line prompt.
 C If warning mode then clear continuebox after use clicks continue.
           LN1=max(1,LNBLNK(MSG1))
           LN2=max(1,LNBLNK(MSG2))
-	  if((LN1+LN2+1).lt.144)then
+          if((LN1+LN2+1).lt.144)then
             if(LN1.eq.1)then
               write(prompt,'(a)') MSG2(1:LN2)
             else
@@ -3664,10 +3664,10 @@ C treatment as a scrolling window.
       SUBROUTINE EDISP(ITRU,MSG)
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/OUTIN/IUOUT,IUIN
-      common/textbuf/dispbuf(360)
-      common/textbufl/indexbuf,lnbuf(360)
+      common/textbuf/dispbuf(500)
+      common/textbufl/indexbuf,lnbuf(500)
       CHARACTER*(*) MSG
-      CHARACTER WWMSG*124,dispbuf*124
+      CHARACTER WWMSG*144,dispbuf*144
       logical unixok
 
 C Temporarily set ICOUT.
@@ -3676,17 +3676,17 @@ C Temporarily set ICOUT.
 C Create matching string to pass to wwlib.c and hold in dispbuf.
 C Use logic similar to that in egdisp.
       lnm=max0(1,lnblnk(MSG))
-      lcc = MIN0(lnm,124)
+      lcc = MIN0(lnm,144)
       if(lcc.eq.0) lcc=1
       write(WWMSG,'(a)',iostat=ios,err=1)MSG(1:lcc)
 
-      if(indexbuf.lt.360)then
+      if(indexbuf.lt.500)then
         indexbuf=indexbuf+1
         lnbuf(indexbuf)=lcc
         dispbuf(indexbuf)='  '
         write(dispbuf(indexbuf),'(a)') MSG(1:lcc)
       else
-        do 42 i=1,359
+        do 42 i=1,499
           dispbuf(i)=dispbuf(i+1)
           lnbuf(i)=lnbuf(i+1)
   42    continue
@@ -3699,11 +3699,11 @@ C Use logic similar to that in egdisp.
 C If trace channel etc then just write to file.
         WRITE(ITRU,'(A)',iostat=ios,err=1)MSG(1:lnm)
       ELSEIF(MMOD.EQ.8.AND.ITRU.EQ.IUOUT)THEN
-          LINE=LIMTTY-LIMIT
-          LIMIT=LIMIT-1
-          if (LIMIT.lt.1) LIMIT=1
-          call espad(limit,limtty,line)
-          CALL inserttext(WWMSG)
+        LINE=LIMTTY-LIMIT
+        LIMIT=LIMIT-1
+        if (LIMIT.lt.1) LIMIT=1
+        call espad(limit,limtty,line)
+        CALL inserttext(WWMSG)
       ELSEIF(MMOD.EQ.-6)THEN
 
 C Write this to error channel if user specified channel = ICOUT
@@ -3754,19 +3754,171 @@ C ****** write current text buffer to an appropraite file
 
 C Path to model and command line file (if any).
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
+      common/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
       common/rpath/path
       common/pophelp/h(60)
-      common/C21/IFCFG,cfgroot,LCFGF
-      common/textbuf/dispbuf(360)
-      common/textbufl/indexbuf,lnbuf(360)
 
-      DIMENSION sstr(1),list(4),iswidth(1),listact(4),dh(60)
-      character path*72,h*72,tfile*60,uname*24,fs*1
-      character sstr*60,title*18,ltypes*4,list*17,cfgroot*24
-      character LCFGF*72,dispbuf*124,dh*72
+      logical browse
+      common/user/browse
+      common/textbuf/dispbuf(500)
+      common/textbufl/indexbuf,lnbuf(500)
+
+      character path*72,h*72,uname*24,fs*1
+      character sstr*144,title*18,ltypes*4
+      character lltmp*144
+      character dispbuf*144,outs*124
       logical unixok,there
       integer ltf  ! position of last character in string.
+      integer iw   ! for user selection
+
+C Set folder separator (fs) to \ or / as required.
+      call isunix(unixok)
+      if(unixok)then
+        fs = char(47)
+      else
+        fs = char(92)
+      endif
+      uname=' '
+      sstr=' '
+      call usrname(uname)
+
+C There are several location options to present to the user
+C depending on whether we are working in the model folder or
+C remotely, including the users home folder. Also take into
+C account whether we are browsing the model or own it.
+  11  if(browse)then
+
+C If browsing the model the output file should be dumped to
+C the users home folder (a place we know we can write to).
+        h(1)='The text displayed in the feedback area is'
+        h(2)='held in a buffer which can be written to a'
+        h(3)='file. As you are browsing the model the'
+        h(4)='file is placed in you HOME folder.'
+        h(5)='The file name can be edited. Complete edit'
+        h(6)='with Carriage Return or OK.'
+        nhelp=6
+        LNU=max(1,lnblnk(upath))
+        if(cfgroot(1:2).eq.'  ')then
+          LN=max(1,lnblnk(uname))
+          write(sstr,'(4a)') upath(1:LNU),fs,uname(1:LN),'.txt'
+        else
+          LN=max(1,lnblnk(cfgroot))
+          write(sstr,'(4a)') upath(1:LNU),fs,cfgroot(1:LN),'.txt'
+        endif
+        call edisp(iuout,'  ')  ! echo a black line
+      else
+        h(1)='The text displayed in the feedback area is '
+        h(2)='held in a buffer which can be written to a '
+        h(3)='file in one of several locations (your HOME folder'
+        h(4)='in the model folder). You have the option to'
+        h(5)='adapt the name of the file. Complete edit '
+        h(6)='with Carriage Return.                      '
+        nhelp=6
+        iw=0
+        if(path.ne.'./'.and.path.ne.' ')then
+          call edisp(iuout,'  ')  ! echo a black line
+          write(outs,'(A,A)') 'The current path is: ',path
+          call edisp(iuout,outs)
+          CALL EASKABC('You are working in a remote model folder.',
+     &      'Options:','use remote model folder','use local folder',
+     &      'cancel',IW,nhelp)
+          if(iw.eq.1)then
+            LN=max(1,lnblnk(cfgroot))
+            write(sstr,'(4a)') path(1:lnblnk(path)),fs,
+     &        cfgroot(1:LN),'.txt'
+          elseif(iw.eq.2)then
+            LN=max(1,lnblnk(cfgroot))
+            write(sstr,'(3a)') './',cfgroot(1:LN),'.txt'
+          elseif(iw.eq.3)then
+            return
+          endif
+        else
+          LN=max(1,lnblnk(cfgroot))
+          write(sstr,'(3a)') './',cfgroot(1:LN),'.txt'
+        endif
+      endif
+
+C The X11 version will be returning only the name of the
+C file, while the GTK version will be returning the
+C name with the full path. sstr is the suggested name and
+C lltmp is the file name returned by the user selection.
+      lltmp='  '
+      CALL EASKXORGTKF(sstr,'Export file name?',' ',
+     &    'textbuffer.txt',lltmp,'buffer file',IER,nhelp)
+
+C If user request jump back and re-display the menu.
+      if(ier.eq.-3)then
+        return  ! cancel detected, return.
+      endif
+      if(ier.ne.0.or.lltmp(1:2).eq.'  ')then
+        goto 11
+      endif
+
+C Attempt to write out file.
+      ltf=max(1,LNBLNK(lltmp))
+      iuf=ifil+1
+      there=.false.
+      INQUIRE(FILE=lltmp(1:ltf),EXIST=there)
+      if(there)then
+        close(iuf)
+        open(iuf,file=lltmp(1:ltf),position='APPEND',
+     &    status='UNKNOWN',err=1)
+      else
+        close(iuf)
+        open(iuf,file=lltmp,status='UNKNOWN',err=1)
+      endif
+      if(indexbuf.gt.1)then
+        do 42 i=1,indexbuf
+          write(iuf,'(a)',iostat=ios,err=2) dispbuf(i)(1:lnbuf(i))
+  42    continue
+      endif
+      close(iuf)
+      return
+
+   1  if(IOS.eq.2)then
+        call usrmsg('Permissions open/write dump file...',lltmp,'W')
+      else
+        call usrmsg('Could not open/write dump file...',lltmp,'W')
+      endif
+      return
+   2  if(IOS.eq.2)then
+        call usrmsg('Permissions for append to dump file...',lltmp,'W')
+      else
+        call usrmsg('Could not append to dump file...',lltmp,'W')
+      endif
+      return
+
+      end
+
+C ****** invoke graphics capture proforma
+
+      subroutine profgrdump()
+#include "building.h"
+#include "model.h"
+
+C Path to model and command line file (if any).
+      COMMON/SPAD/MMOD,LIMIT,LIMTTY
+      common/OUTIN/IUOUT,IUIN
+      common/rpath/path
+      common/pophelp/h(60)
+
+C Indicator of possible focus zone.
+      logical browse
+      common/user/browse
+
+C Graphic capture, window dump: label, command.
+      character gprlbl*20,gprcmd*48
+      common/gprint/gprlbl,gprcmd
+
+      character path*72,h*72,uname*24,fs*1
+      character sstr*144
+      character lltmp*144,outs*124
+      character gcmd*144
+      integer ltf  ! position of last character in string.
+      integer iw   ! for user selection
+
+      logical unixok
 
       if(MMOD.ne.8)return
 
@@ -3778,108 +3930,98 @@ C Set folder separator (fs) to \ or / as required.
         fs = char(92)
       endif
       uname=' '
+      sstr=' '
       call usrname(uname)
 
-      h(1)='The text displayed in the feedback area is '
-      h(2)='held in a buffer which can be written to a '
-      h(3)='file either overwriting or appending the   '
-      h(4)='text in the file (tick only one box).      '
-      h(5)='The file name can be edited. Complete edit '
-      h(6)='with Carriage Return.                       '
-      nhelp=6
-      CALL PHELPW(NHELP,IHW,IER)
-      call dupphelp(NHELP)
-      tfile='  '
-      LNU=max(1,lnblnk(upath))
-      if(cfgroot(1:2).eq.'  ')then
-        LN=max(1,lnblnk(uname))
-        write(sstr(1),'(4a)') upath(1:LNU),fs,uname(1:LN),'_text'
-      else
-        LN=max(1,lnblnk(cfgroot))
-        write(sstr(1),'(4a)') upath(1:LNU),fs,cfgroot(1:LN),'_text'
-      endif
-      iswidth(1)=60
-      title='Export text buffer'
-      ltypes='ltte'
-      list(1)='options:         '
-      list(2)='write/create file'
-      list(3)='append to file   '
-      list(4)='file:            '
-      listact(1) = 0
-      listact(2) = 1
-      listact(3) = 0
-      listact(4) = 0
-      impx = 0
-      impy = 0
-      impcwth = 67
-      nstr = 1
-      nlist = 4
-  43  call fprofma(sstr,nstr,title,list,nlist,ltypes,impx,impy,impcwth,
-     &    iswidth,listact,ino,nhelp)
+C There are several location options to present to the user
+C depending on whether we are working in the model folder or
+C remotely, including the users home folder. Also take into
+C account whether we are browsing the model or own it.
+  11  if(browse)then
 
-C Debug
-C      write(6,*)listact,'  ',ino
-
-      if(ino.eq.-1)then
-
-C If no action return.
-        return
-      elseif(ino.eq.(nlist+1))then
-
-C If signaled ok then attempt to write out file.
-C        write(6,*)sstr(1)
-
-        tfile=sstr(1)
-        ltf=max(1,LNBLNK(tfile))
-        iuf=ifil+1
-        there=.false.
-        INQUIRE(FILE=tfile(1:ltf),EXIST=there)
-        if(there)then
-          close(iuf)
-          open(iuf,file=tfile(1:ltf),position='APPEND',
-     &      status='UNKNOWN',err=1)
+        h(1)='This button invokes a 3rd party application (typically'
+        h(2)='the [import] tool from ImageMagic) to capture a portion'
+        h(3)='of the screen. The application used is defined via the'
+        h(4)='esprc file in the ESP-r distribution of in a .esprc'
+        h(5)='file in your HOME folder.'
+        h(6)=' '
+        h(7)='The extension in the file name sets the type of image'
+        h(8)='and can be one of the following: gif jpg tiff. Because'
+        h(9)='you are browsing the model the default location for the'
+        h(10)='image file will be in your HOME folder.'
+        nhelp=10
+        LNU=max(1,lnblnk(upath))
+        if(cfgroot(1:2).eq.'  ')then
+          LN=max(1,lnblnk(uname))
+          write(sstr,'(4a)') upath(1:LNU),fs,uname(1:LN),'.gif'
         else
-          close(iuf)
-          open(iuf,file=tfile,status='UNKNOWN',err=1)
+          LN=max(1,lnblnk(cfgroot))
+          write(sstr,'(4a)') upath(1:LNU),fs,cfgroot(1:LN),'.gif'
         endif
-        if(indexbuf.gt.1)then
-          do 42 i=1,indexbuf
-            write(iuf,'(a)',iostat=ios,err=2) dispbuf(i)(1:lnbuf(i))
-  42      continue
+        call edisp(iuout,'  ')  ! echo a black line
+      else
+        h(1)='This button invokes a 3rd party application (typically'
+        h(2)='the [import] tool from ImageMagic) to capture a portion'
+        h(3)='of the screen. The application used is defined via the'
+        h(4)='esprc file in the ESP-r distribution of in a .esprc'
+        h(5)='file in your HOME folder.'
+        h(6)=' '
+        h(7)='The extension in the file name sets the type of image'
+        h(8)='and can be one of the following: gif jpg tiff.'
+        h(9)=' '
+        h(10)='There are a number of possible locations for the file'
+        h(11)='to be written. '
+        nhelp=11
+        iw=0
+        if(path.ne.'./'.and.path.ne.' ')then
+          call edisp(iuout,'  ')  ! echo a black line
+          write(outs,'(A,A)') 'The current path is: ',path
+          call edisp(iuout,outs)
+          CALL EASKABC('You are working in a remote model folder.',
+     &      'Options:','use remote model folder','use local folder',
+     &      'cancel',IW,nhelp)
+          if(iw.eq.1)then
+            LN=max(1,lnblnk(cfgroot))
+            write(sstr,'(4a)') path(1:lnblnk(path)),fs,
+     &        cfgroot(1:LN),'.gif'
+          elseif(iw.eq.2)then
+            LN=max(1,lnblnk(cfgroot))
+            write(sstr,'(3a)') './',cfgroot(1:LN),'.gif'
+          elseif(iw.eq.3)then
+            return
+          endif
+        else
+          LN=max(1,lnblnk(cfgroot))
+          write(sstr,'(3a)') './',cfgroot(1:LN),'.gif'
         endif
-        close(iuf)
-        return
-      elseif(ino.eq.1)then
+      endif
 
-C If user has switched from create to append update display (reset
-C impx impy before recalling fprofma.
-        if(listact(2).eq.1)listact(3)=0
-        impx = 0
-        impy = 0
-        goto 43
-      elseif(ino.eq.2)then
-        if(listact(3).eq.1)listact(2)=0
-        impx = 0
-        impy = 0
-        goto 43
-      else
-        impx = 0
-        impy = 0
-        goto 43
-      endif
-      return
+C The X11 version will be returning only the name of the
+C file, while the GTK version will be returning the
+C name with the full path. sstr is the suggested name and
+C lltmp is the file name returned by the user selection.
+      lltmp='  '
+      CALL EASKXORGTKF(sstr,'Export image file name?',' ',
+     &    'currentview.gif',lltmp,'image file',IER,nhelp)
 
-   1  if(IOS.eq.2)then
-        call usrmsg('Permissions open/write dump file...',tfile,'W')
-      else
-        call usrmsg('Could not open/write dump file...',tfile,'W')
+C If user request jump back and re-display the menu.
+      if(ier.eq.-3)then
+        return  ! cancel detected, return.
       endif
-      return
-   2  if(IOS.eq.2)then
-        call usrmsg('Permissions for append to dump file...',tfile,'W')
-      else
-        call usrmsg('Could not append to dump file...',tfile,'W')
+      if(ier.ne.0.or.lltmp(1:2).eq.'  ')then
+        goto 11
       endif
+
+      ltf=max(1,LNBLNK(lltmp))
+      LN=max(1,lnblnk(gprcmd))
+      write(gcmd,'(3a)') gprcmd(1:LN),' ',lltmp(1:ltf)
+
+C Invoke the application named in gprcmd with the file name.
+
+C << todo figure out how to determine if gprcmd is installed >>
+
+      call runit(gcmd,'-')
+
       return
 
       end
@@ -4242,7 +4384,7 @@ C EVSET provides a dummy setup environment for wire frame view.
 
 
 C ********* dummy subroutines and functions to match what is found
-C in esru_fc.f
+C in esru_fc.F.  May need to include explicit typing in some subroutines.
 
 C opencpw place copyright button on screen
       subroutine opencpw

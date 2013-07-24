@@ -1,0 +1,41 @@
+Project notes for 3_windows.cfg
+Description: Three offices with different window representations.
+In folder: 3_window
+By: sesg
+Date: Sun Aug 11 16:40:50 2002
+For: 
+Project reference: 
+Notes: 
+_____________________________
+
+This model includes several variants
+
+3_windows.cfg is three zone model without a flow network
+   (so that one can be added during a workshop)
+
+3_windows_do6.cfg is the model which uses a graphic network
+   file. Note: graphical networks are work in progress and
+   needs further testing.
+
+3_windows_do.cfg is the model which uses a text-based network
+   file derived fom a graphic network file (equivalent to the
+   legacy file)
+
+3_windows_legacy.cfg is the model which uses a text-based
+   network flow file.
+
+The flow network includes one room with an air flow opening, a
+second room with an upper and lower opening (e.g. sash window)
+and a third room with a window based on a bi-directional flow
+component (low wind speed with an inside/outside temperature
+difference can result in flows).
+ 
+Databases associated with the models:
+ pressure distributions : pressc.db1
+ materials              : /usr/esru/esp-r/databases/material.db3.a
+ constructions          : ../dbs/office_vent_constr.db2
+ plant components       : plantc.db1
+ event profiles         : /usr/esru/esp-r/databases/profiles.db1.a
+ optical properties     : optics.db1
+ 
+ 

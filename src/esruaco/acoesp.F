@@ -79,7 +79,7 @@ C Otherwise select the zones from a list of zone names.
  7      helptopic='aco_zones_to_inclue'
         call gethelptext(helpinsub,helptopic,nbhelp)
         INPIC = NCOMP 
-        CALL EPICKS(INPIC,IVALZ,' ',' Which zones to include:',
+        CALL EPICKS(INPIC,IVALZ,' ','Which zones to include:',
      &    12,NCOMP,ZNAME,'Zone(s) list',IDerr,nbhelp)
 
 C Check for errors (if => exit sub).
@@ -248,6 +248,7 @@ C HeightCo (Real) : Height [m] of the constructions, for LCA calculation.
 
       SUBROUTINE CompoList
 #include "building.h"
+#include "geometry.h"
 #include "esprdbfile.h"
 #include "material.h"
 
@@ -1099,7 +1100,6 @@ C Setup and pass in parameters to win3d.
         iigl=igl; iigr=igr; iigt=igt; iigb=igb; iigw=igw; iigwh=igwh
         CALL win3d(iimenu,iiw1,iiw2,iiw3,iiw4,
      &    iigl,iigr,iigt,iigb,iigw,iigwh)
-C        Call win3d(menuchw,15,15,5,5,igl,igr,igt,igb,igw,igwh)
         igl=int(iigl); igr=int(iigr); igt=int(iigt); igb=int(iigb)
         igw=int(iigw); igwh=int(iigwh)
         do 20 I=1,MNbAbs

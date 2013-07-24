@@ -40,7 +40,7 @@ C First copy any existing help into dh array.
       H(1)='This module is part of the ESP-r system. Copyright'
       H(2)='resides with the member organisations of the ESP-r'
       H(3)='development consortium as listed at:'
-      H(4)='http://www.esru.strath.ac.uk/Programs/ESP-r_central.htm'
+      H(4)='http://www.esru.strath.ac.uk/Programs/ESP-r_central.htm.'
       H(5)=' '
       H(6)='ESP-r is free software. You can redistribute it and/or'
       H(7)='modify it under the terms of the GNU General Public'
@@ -708,7 +708,8 @@ C Local variables.
       integer lno          ! length of outstr
       integer K            ! position
       integer trywhich     ! if one then primary help file if two use secondary
-      character helpfil*72 ! the help file to load
+
+      character helpfil*96 ! the help file to load
       dimension folder(4),lnf(4)  ! up to 3 subsequent folders to look in and their lengths
       character folder*8   ! the source folder for the application
       integer lnf

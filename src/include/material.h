@@ -2,7 +2,7 @@ C This header relates to materials data structures in ESP-r. It is
 C dependant on building.h and should follow building.h and esprdbfile.h so that
 C parameters will have been defined.
 
-C Materials common blocks:
+C Materials header common blocks:
       real matver         ! version of the database 1.1 basic 1.2 has gap resistances
       integer matcats     ! number of categories
       integer matdbitems  ! number of items (overall) in database
@@ -11,7 +11,7 @@ C Materials common blocks:
       common/matheader/matver,matcats,matdbitems,matcatitems(MGCL),
      &  origmatwasbin
 
-
+C Materials category commons
       character matdbdate*24 ! date stamp for the database
       character matdbdoc*248 ! documentation for the materials database
       character matcatname*32 ! identity/name of category
@@ -26,13 +26,14 @@ C Otherwise it is a user supplied short phrase (spaces are allowed).
       character matname*32 ! name for material
       character matdoc*248 ! documentation (initially filled with the 72 char from
                            ! the older name of the material.
-C The variable matopaq indicates whether the material
-C was opaque/transparent and/or a gas (various types).
+C The variable matopaq indicates whether the material was opaque/transparent
+C and/or a gas (various types). Set lower range to -1 so that the older
+C convention of zero meaning air and confused materials do not result in
+C out-of-bounds seg-fault.
 C 'o' is opaque, 't' is transparent, '-' imported from legacy
-C 'g' is gas (data+temp correction), 'h' is gas (data at 4 temps)
-C 'a' is air (fixed resistances (not yet available))
+C 'g' is a gap resistance layer, 'h' depreciated gas
       character matopaq*1  ! tag for opaque/transparent/gas
-      common/matnamearray/matname(MGIT),matdoc(MGIT),matopaq(MGIT)
+      common/matnamearray/matname(MGIT),matdoc(MGIT),matopaq(-1:MGIT)
 
 C Data for each material:
       integer matlegindex  ! is the original material index
@@ -50,7 +51,7 @@ C assumptions for each face.
       real matdbine       ! is the inside face long wave emissivity (-)
       real matdbouta      ! is the outside face short wave absorbtivity (-)
       real matdbina       ! is the inside face short wave absorbtivity (-)
-      real matdbdrv       ! is the diffusion resistance (?)
+      real matdbdrv       ! is the diffusion resistance (MNs g^-1m^-1)'
       real matdbthick     ! default thickness (mm) for item (useful where
                            ! there are standard thickness of products
       common/matdatarray/matlegindex(MGIT),matcatindex(MGIT),
@@ -58,25 +59,13 @@ C assumptions for each face.
      &  matdbine(MGIT),matdbouta(MGIT),matdbina(MGIT),matdbdrv(MGIT),
      &  matdbthick(MGIT)
 
-C For air gaps WIS supplies some additional data.
-      real matgapcnd  !  gap conduction at -10C 0C 10C 20C
-      real matvisco   !  gap viscosity at -10C 0C 10C 20C
-      real matgapden  !  gap density at -10C 0C 10C 20C
-      real matprandtl ! prandtl number and extra field for T correct
-
-C UK EPBD method uses the matgapsht 1st array index for the value and
-C the 2nd array index for T derivitive.
-      real matgapsht  ! gap specific heat and T correct.
+C For air gaps WIS additional data (ignored if found).
+C If there are values after the tag then these might be air gap resistances.
       real matgapares ! air gap resistance (i.e. DRAIR) 1=vert 2=floor/ceil 3=other
-      common/matgaparray/matgapcnd(MGIT,4),matvisco(MGIT,4),
-     &  matgapden(MGIT,4),matprandtl(MGIT,2),matgapsht(MGIT,2),
-     &  matgapares(MGIT,3)
+      common/matgaparray/matgapares(MGIT,3)
 
-C So called 'G-value' calculations require the sorts of single layer optical
-C properties which ESP-r does not current hold. Also the lack of this data
-C makes it difficult to work with optical tools such as WIS
-C Based on WIS single layer data the following data could be held based
-C on the assumtion that the default thickness was used by the construction:
+C 'G-value' calculations require single layer optical properties
+C (dependant on thickness vis-a-vis matdbthick). 
       real matirtran     ! IR transmittance
       real matsoldrtrn   ! solar direct transmittance
       real matsoldrotrfl ! outer solar direct reflectance
@@ -104,13 +93,41 @@ C To record equivalence between IPR and materials arrays.
 C The construction database includes text after the thickness of each layer
 C which is based on the name and documentation of the material from the
 C materials database. To assist in recovering materials for which there is
-C no legacy index (-99) this text is used.  This array is filled when the
-C MLC database is scanned and should be updated when new materials are selected.
-C The string buffer DESC is included in MLCTXT so that MLC is all data.
+C no legacy index (-1) this text is used.
       character LAYDESC*124  ! first 124 char of layer text
-      character DESC*48 ! string which holds 12 char name, 4 char opaque tag, 
-                        ! 12 char optical tag and SYMMETRIC or NONSYMMETRIC tag
-      common/MLCTXT/LAYDESC(MMLC,ME),DESC(MMLC)
+C      character DESC*48 ! string which holds 12 char name, 4 char opaque tag, 
+C                        ! 12 char optical tag and SYMMETRIC or NONSYMMETRIC tag
+C      common/MLCTXT/LAYDESC(MMLC,ME),DESC(MMLC)
+      common/MLCTXT/LAYDESC(MMLC,ME)
+
+C Constructions header common blocks:
+      integer mlcver      ! version of the database 0 and 1 with verbose names
+      integer mlccats     ! number of categories
+      integer mlcdbitems  ! number of items (overall) in database (replaces NMLC)
+      integer mlccatitems ! number of items in each category
+      common/mlcheader/mlcver,mlccats,mlcdbitems,mlccatitems(MGCL)
+
+C Constructions categories
+      character mlcdbdate*24 ! date stamp for the constructions file
+      character mlcdbdoc*248 ! documentation for the constructions file
+      character mlccatname*32 ! identity/name of category
+      character mlccatdoc*248  ! documentation for the category
+      common/mlcheadertxt/mlcdbdate,mlcdbdoc,mlccatname(MGCL),
+     &  mlccatdoc(MGCL)
+
+C Data structures for verbose names and documentation associated with MLC
+      character mlcname*32     ! name of MLC
+      character mlcdoc*248     ! documentation
+      character mlctype*4      ! type (OPAQ | TRAN | CFC)
+      character mlcoptical*32  ! associated optical properties name
+      character mlcsymetric*32 ! associated name of reversed MLC or key words
+                               ! SYMMETRIC or NONSYMMERTIC
+      common/mlcnamearray/mlcname(MMLC),mlcdoc(MMLC),mlctype(MMLC),
+     &  mlcoptical(MMLC),mlcsymetric(MMLC)
+
+      integer mlccatindex  ! is pointer to index of the MLC category
+      integer matsymindex  ! pointer to index of reversed MLC
+      common/mlcdatarray/mlccatindex(MMLC),matsymindex(MMLC)
 
 C Data structures associated with multi-layer constructions and their
 C references to materials (index within materials database).

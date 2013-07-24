@@ -36,7 +36,7 @@ C espriou.h provides currentfile.
       common/pophelp/h(60)
       common/FILEP/IFIL
       common/vldlst/vldlbl,vldfl
-      character vldlbl*20,vldfl*72
+      character vldlbl*20,vldfl*96
 
 C name is array of string holding *name from the file.
 C inl2ngr is a pointer from the menu item back to the group index.
@@ -47,7 +47,7 @@ C gh() is array of help entries.
       dimension group(15),gitem(20)
       dimension inl2ngr(50)
       character gitem*44,outstr*124,word*20
-      character exfil*72,group*42,tgroup*42,key*1
+      character exfil*96,group*42,tgroup*42,key*1
       character H*72,separ*42
       logical XST
       integer irpt  ! for radio button

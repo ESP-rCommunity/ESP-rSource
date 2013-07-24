@@ -53,19 +53,18 @@ C Use geometry for common g0/g1/g2/g4/g5/g6/g7/prec16/precz/c20.
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
-      common/C21/IFCFG,cfgroot,LCFGF
       integer IZSTOCN
       COMMON/C24/IZSTOCN(MCOM,MS)
       common/user/browse
       common/cctlnm/ctldoc,lctlf
+      integer icascf
       common/cctl/icascf(mcom)
 
       DIMENSION XX(MS),YY(MS)
       CHARACTER HOLD*32
-      character MODE*4,fs*1,LCFGF*72
+      character MODE*4,fs*1
       CHARACTER OUTSTR*124,ZN*12,outs*124
       character ctldoc*248,LCTLF*72,zd*64,DFILE*72,CFILE*72,OFILE*72
-      character cfgroot*24
       LOGICAL OK,dok,browse,OKC,XST,unixok
       logical newgeo  ! to use for testing if new/old geometry file.
       real DX1,DY1,DZ1  ! to avoid name clash with geometry.h
@@ -382,6 +381,7 @@ C in the new geometry files is established.
               itrc=0
               MODE='ALL '
               IAPROB=IPRODB
+              call edisp(iuout,'  ')  ! echo blank line in case of warnings
               CALL ERSYS(LCFGF,IFCFG,IAPROB,MODE,itrc,IER)
             endif
             return
@@ -515,6 +515,7 @@ C NEWZONE controls the creation of a new zone. IER=0 OK.
       integer IZSTOCN
       COMMON/C24/IZSTOCN(MCOM,MS)
       common/cctlnm/ctldoc,lctlf
+      integer icascf
       common/cctl/icascf(mcom)
 
       CHARACTER*72 LTMP,DFILE
@@ -744,7 +745,7 @@ C Update the connection based data structures.
 C Find the index of the MLC which matches this surface.
           ssmlcindex(iccc)=0  ! assume no matching MLC          
           do 5 ii=1,nmlc
-            if(SSMLCN(iccc)(1:12).eq.DESC(ii)(1:12)) then
+            if(SSMLCN(iccc)(1:12).eq.mlcname(ii)(1:12)) then
               ssmlcindex(iccc)=ii   ! remember MLC index     
             endif
   5       continue
@@ -966,6 +967,7 @@ C DELZONE systematicly removes a thermal zone.
 #include "CFC_common.h"
 C espriou.h provides currentfile.
 #include "control.h"
+#include "schedule.h"
 #include "prj3dv.h"
       
       integer lnblnk  ! function definition
@@ -976,26 +978,14 @@ C espriou.h provides currentfile.
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
-      common/C21/IFCFG,cfgroot,LCFGF
       integer IZSTOCN
       COMMON/C24/IZSTOCN(MCOM,MS)
 
-      COMMON/P2N/NAC(MDTY),IACS(MDTY,MA),IACF(MDTY,MA),ACI(MDTY,MA),
-     &ACV(MDTY,MA),IPT(MDTY,MA),TA(MDTY,MA)
-      INTEGER NAC,IACS,IACF,IPT
-      REAL ACI,ACV,TA
       common/caleni/nbdaytype,nbcaldays(MDTY),icalender(365)
       INTEGER NBDAYTYPE,NBCALDAYS,ICALENDER
-      COMMON/P2CTL/ITCTL(MCOM),TLO(MCOM),TUP(MCOM),THI(MCOM),ACIL(MCOM),
-     &             ACVL(MCOM),IVL(MCOM),TAL(MCOM),ACIU(MCOM),ACVU(MCOM),
-     &             IVU(MCOM),TAU(MCOM),ACIH(MCOM),ACVH(MCOM),
-     &             IVH(MCOM),TAH(MCOM)
-
-C Anchor data.
-      common/anchora/NALOC,ALOC(20),ALOCLBL(20),ALOCTYP(20)
-      common/anchorb/IALOC(20),lstanchr(20,60)
 
       common/cctlnm/ctldoc,lctlf
+      integer icascf
       common/cctl/icascf(mcom)
       common/user/browse
       COMMON/PRECTC/ITMCFL(MCOM,MS),TMCT(MCOM,MTMC,5),
@@ -1007,11 +997,9 @@ C Anchor data.
       LOGICAL DOK,OK,XST,changed,OKC,OKM,modopr,browse
       logical newgeo  ! to use for testing if new/old geometry file.
 
-      CHARACTER LAPROB*72,LCFGF*72
-      CHARACTER cfgroot*24
+      CHARACTER LAPROB*72
       CHARACTER ctldoc*248,LCTLF*72,outs*124
       character ltmp*72,NDNAM*12
-      character ALOC*12,ALOCLBL*12,ALOCTYP*4
       character OUTSTR*124
 
 C For help messages
@@ -1361,7 +1349,7 @@ C Disconnect high range alternative ventilation if pointing to focus.
           ACVH(IX)=0.0
         endif
 
-C Air flows
+C Air flows for each day type.
         DO 400 IDTY=1,NBDAYTYPE
           IF(NAC(IDTY).GT.0)THEN
             DO 10 I=1,NAC(IDTY)
@@ -1870,23 +1858,18 @@ C     = 'in '  interactive new
       
       integer lnblnk  ! function definition
 
-      common/C21/IFCFG,cfgroot,LCFGF
       common/OUTIN/IUOUT,IUIN
+      integer childterminal  ! picks up mmod from starting of prj
+      common/childt/childterminal
       
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
       common/appw/iappw,iappx,iappy
 
-      character LCFGF*72
       CHARACTER ZN*12,longtfile*144,longtfiledos*144
-      character TMODE*8,outs*248,DOIT*248,CFGROOT*24
+      character TMODE*8,outs*248,DOIT*248
       character act*3  ! the parameter passed
       logical XST,concat,unixok
-#ifdef OSI
-      integer ICPMOD     ! passed from tchild
-#else
-      integer*8 ICPMOD     ! passed from tchild
-#endif
 
 C Check if Unix-based or DOS based.
       call isunix(unixok)
@@ -1908,8 +1891,7 @@ C Check if file exists and get local zone name for feedback.
 
 C Clear command and setup terminal type.
       doit = ' '
-      call tchild(ICPMOD)
-      call termode(ICPMOD,tmode)
+      call terminalmode(childterminal,tmode)
 
 C Setup file name depending on the machine type.
       if(unixok)then

@@ -31,12 +31,12 @@ c Copyright 2000: NRCan Buildings Group
 c Subroutine to initialize variables associated with HVAC modeling
 
 c INPUTS:
-c	UNDER_HEAT_COOL_HOURS
-c			common for number of hours zones are under 
-c			heated or cooled
-c	hvac_timestep_parameters
-c			common for time step hvac parameters
-c	output_acsystem	common for air-conditioning model output
+c  UNDER_HEAT_COOL_HOURS
+c     common for number of hours zones are under 
+c     heated or cooled
+c  hvac_timestep_parameters
+c     common for time step hvac parameters
+c  output_acsystem  common for air-conditioning model output
 c *********************************************************************
       SUBROUTINE ZERO_HVAC_VAR
 

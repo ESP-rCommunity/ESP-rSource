@@ -62,6 +62,9 @@ C Name of current application
       CHARACTER INTER*144,INF*144
       character path*72,outs248*248
       character fs*1
+
+      character cVnum*16      ! returned from ESPrVersionNum
+      character pagestitle*42 ! for banner title via epages call
       LOGICAL unixok
 
 #ifdef OSI
@@ -149,8 +152,15 @@ C Set pixels high to iappw and pixels wide to factor in monitor size.
         LIMTTY=16
         LIMIT =16
       ENDIF
+
+C Find the current ESP-r version number and add it to application title.
+      call ESPrVersionNum(cVnum)
+      write(pagestitle,'(2a)') 'ESP-r BEMS link ',
+     &  cVnum(1:lnblnk(cVnum))
+
       CALL EPAGES(MMOD,IUIN,IUOUT,iappwi,iapphi,iappx,iappy,menuchw,
-     &'ESP-r BEMS link: enquiries to esru@strath.ac.uk')
+     &  pagestitle)
+
       IF(MMOD.EQ.-6)then
         ICOUT=0
       else
@@ -165,7 +175,6 @@ C Setup and pass in parameters to win3d.
         iigl=igl; iigr=igr; iigt=igt; iigb=igb; iigw=igw; iigwh=igwh
         CALL win3d(iimenu,iiw1,iiw2,iiw3,iiw4,
      &    iigl,iigr,iigt,iigb,iigw,iigwh)
-C        CALL win3d(menuchw,10,30,4,3,igl,igr,igt,igb,igw,igwh)
         igl=int(iigl); igr=int(iigr); igt=int(iigt); igb=int(iigb)
         igw=int(iigw); igwh=int(iigwh)
         iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
@@ -367,6 +376,38 @@ C Depending on computer type set integer size of passed parameters.
 
       SUBROUTINE PLELEV(direc)
       CHARACTER direc*1
+      return
+      end
+
+C << copy from edatabase.F >>
+C ******* matchmlcdesc
+C matchmlcdesc parse string (DES) and see if it matches a MLC
+C item - if so return its MLC index. DES might be from SMLCN or some 
+C other source.
+      subroutine matchmlcdesc(DES,imlcindex)
+#include "building.h"
+#include "esprdbfile.h"
+#include "material.h"
+
+C Passed parameters DES length is flexable.
+      character*(*) DES
+      integer imlcindex
+
+C Local variable.
+      character MLCN*32
+      integer ii,lnmlcn,lndesc
+
+C Look for index for MLCN in the current constructions file.
+      imlcindex=0  ! assume no matching MLC          
+      lnmlcn=lnblnk(DES)
+      WRITE(MLCN,'(A)')DES
+      if(MLCN(1:4).eq.'UNKN') return
+      do ii=1,nmlc
+        lndesc=lnblnk(mlcname(ii))
+        if(MLCN(1:lnmlcn).eq.mlcname(ii)(1:lndesc)) then
+          imlcindex=ii   ! remember MLC index     
+        endif
+      end do
       return
       end
 

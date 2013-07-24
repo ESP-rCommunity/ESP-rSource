@@ -173,8 +173,7 @@ C If reading an air gap allow 0.0 properties.
             if(J.eq.IPAIRG(I,1).or.J.eq.IPAIRG(I,2).or.
      &         J.eq.IPAIRG(I,3).or.J.eq.IPAIRG(I,4).or.
      &         J.EQ.IPAIRG(I,5).or.J.eq.IPAIRG(I,6).or.
-     &         J.EQ.IPAIRG(I,7).OR.J.EQ.IPAIRG(I,8).OR.
-     &         J.EQ.IPAIRG(I,9).OR.J.EQ.IPAIRG(I,10))then
+     &         J.EQ.IPAIRG(I,7).OR.J.EQ.IPAIRG(I,8))then
               CALL EGETWR(OUTSTR,K,CON(I,J),0.,CONCH,'W','conductivity',
      &          IER)
               CALL EGETWR(OUTSTR,K,DEN(I,J),0.0,DENCH,'W','density',IER)
@@ -540,14 +539,11 @@ C Jump if not all requied and not the focus surface.
         if(isur.ne.0.and.isur.ne.i)goto 9994
         sn=SSNAME(icn1)
 
-C << possible place to use ssmlcindex >>
+C Find matching MLC index in ii and assign to imatch array.
         imatch(i)=0
         RT(I)=0.
-        do 5 ii=1,nmlc
-          if(SSMLCN(icn1)(1:12).eq.DESC(ii)(1:12)) then
-            imatch(i)=ii          
-          endif
-  5     continue
+        call matchmlcdesc(SSMLCN(icn1),ii)
+        imatch(i)=ii          
         if(imatch(i).eq.0) then
           call edisp(iuout,'Warning: no matching MLC defined!')
           OPT(i)='UNKNOWN'
@@ -564,17 +560,9 @@ C Get the air gap contribution to U value for reporting.
  9990       CONTINUE
           ENDIF
         else
-          IF(SSOTF(icn1)(1:4).NE.'OPAQ'.AND.
-     &      SSOTF(icn1)(1:4).NE.'CFC ')THEN
-           WRITE(OPT(i),'(A)') DESC(imatch(i))(21:32)
-           IF(OPT(i).EQ.' ')OPT(i)='UNKNOWN'
-          ELSEIF(SSOTF(icn1)(1:4).EQ.'OPAQ')THEN
-            OPT(i)='OPAQUE'
-          ELSEIF(SSOTF(icn1)(1:4).EQ.'CFC ')THEN
-            OPT(i)='USE GSLedit'
-          ELSE
-            OPT(I)='OPAQ'
-          ENDIF
+
+C Set local optical name from material.h commons.
+          WRITE(OPT(i),'(A)') mlcoptical(imatch(i))(1:12)
           NELT=NE(I)
 
 C For each layer recover the name of material. For non-airgap layers
@@ -732,7 +720,8 @@ c               NBCTT=1 ; ambient temperature sensed,
 c               NBCTT=2 ; internal air temperature sensed,
 c               NBCTT=3 ; daylight coeff. sensor lux maintainance
 C                         by linear optical property variation,
-C               NBCTT=4 ; SHOCC control (Lightswitch2002 manual control)
+C               NBCTT=4 ; SHOCC control (Lightswitch2002 manual
+C                         control is currently not available)
 C               NBCTT=-99; time based control (force alternative optics).
 c BACTPT  - actuation point of blind. Value of sensed variable
 c         must exceed this value for blind to operate. Setting

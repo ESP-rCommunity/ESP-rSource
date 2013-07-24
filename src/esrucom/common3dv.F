@@ -830,6 +830,9 @@ C Passed parameter.
       
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/GB1/XB(12),YB(12),ZB(12),JVNB(6,4)
+      integer ncub,ivfok
+      real XOC,YOC,ZOC,DXC,DYC,DZC,CANG
+      character CUBN*6
       COMMON/MRTC/NCUB,XOC(MCUB),YOC(MCUB),ZOC(MCUB),DXC(MCUB),
      &            DYC(MCUB),DZC(MCUB),CANG(MCUB),IVFOK(MCUB),CUBN(MCUB)
 
@@ -845,7 +848,7 @@ C Local arrays.
       integer*8 iix,iiy,iixlast,iiylast,iid2
 #endif     
 
-      CHARACTER temp*7,CUBN*6
+      CHARACTER temp*7
 
 C If not in graphic mode return.
       if(MMOD.lt.8)return
@@ -973,7 +976,7 @@ C Local arrays.
       DIMENSION  BX(MPL),BY(MPL),BZ(MPL),IBNXT(MPL)
       DIMENSION  SBBOX(3,2),COG1(3),COG2(3),COG3(3)
 
-      CHARACTER GMLCN*12, GSNAME*6,stemp*7
+      CHARACTER GMLCN*32, GSNAME*6,stemp*7
 
 C Local variables to pass to edline.
 #ifdef OSI
@@ -1280,7 +1283,7 @@ C Passed parameters.
 C Use JGVNT for ground surfaces and JVNZ to hold inverted order for zone.
       DIMENSION IVALS(MCOM),JGVNT(MGRT,8),JVNZ(MS,MV)
       CHARACTER H*72
-      CHARACTER GMLCN*12,GSNAME*6,outs*124
+      CHARACTER GMLCN*32,GSNAME*6,outs*124
 
       IER=0
       IUF=IFIL+1

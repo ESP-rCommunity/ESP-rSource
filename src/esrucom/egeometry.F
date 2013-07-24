@@ -102,7 +102,7 @@ C espriou.h provides current file.
 #include "espriou.h"
       
       integer lnblnk  ! function definition
-
+      integer ISN
       COMMON/OUTIN/IUOUT,IUIN
 
 C Include ishdirc common in legacy file read so that some inference
@@ -141,15 +141,28 @@ C Error subroutine and error details for dll mode.
       CHARACTER tmpvfc*4,tmpsot*32,tother*15
       character ZN*12,phrase*64,outs*124,outs2*124
       character dllsubr*12,dllmesg*124
-      character OTF*4,OPT*12 ! for use with parsemlcdesc
+      character OPT*32 ! for use with surface attributes
       logical dll,checkbase
       logical havec24
       real XO1,YO1,ZO1,DX1,DY1,DZ1 ! to prevent name clash with geometry.h
       integer lsn   ! length of currentfile
       integer iflag ! for read errors
 
+
+      
+C Variables used in parsing of space-separated geo files      
+      character*248 cLnWords(124)! Array containing contents of a line
+      integer iEGetArrW          ! Returns space-separated contents of 
+                                 !   a line as an array
+      integer iWordCount         ! Number of words on a line.
+      
+      integer iCtoI_err          ! Function parsing a string and returning an integer
+      logical bParseError
+      logical bH3KExtentionsActive
+ 
       IER=0    ! initial values of read state
       iflag=0
+     
       ZN=' '
       phrase=' '
       checkbase=.false.
@@ -524,7 +537,7 @@ C 1st item - surface number ISN,
 C 2nd item - 12 char name SNAME()
 C 3rd item is a string (32 char) indicating whether the surface is
 C     OPAQ/OPAQAUE (opaque) TRAN/optical set name or CFC. 
-C 4th item SOTF() is a string (4 char) indicating whether the surface 
+C 4th item is a string (4 char) indicating whether the surface 
 C     is to be counted as a FLOR (floor), VERT (wall), CEIL (ceiling).
 C 5th item is the name of the construction ( 32 char).
 C 6th item is a 24*3 char string indicating the environment faced by the
@@ -560,29 +573,105 @@ C End of file sensed, however this is not an error at this point.
         ENDIF
         IF(IER.EQ.1)goto 1001
 
+        
+C Read surface attributes. Format depends on whether HOT3000 exensions 
+C are active (check bH3KExtentionsActive()).       
+
+        SurfFormat1: if ( .not. bH3KExtentionsActive() ) then 
+
+C Assume that line is in fixed-format, and that attributes are defined 
+C according to this convention:         
 C Read in the various attributes as in the following line.  With this
 C method both construction and surface names can have blanks.
 C        1         2         3         4         5         6         7
 C23456789012345678901234567890123456789012345678901234567890123456789012
 C 1, Surf-1        OPAQ  VERT  UNKN         EXTERIOR       
-        K=0
-        CALL EGETWI(loutstr,K,ISN,1,NSUR,'F','surface no',IER)
-        IF(IER.NE.0)GOTO 44
+          K=0
+          CALL EGETWI(loutstr,K,ISN,1,NSUR,'F','surface no',IER)
+          IF(IER.NE.0)GOTO 44        
+        
+C Recover Surface name        
+          SNAME(ICOMP,ISN)=loutstr(6:17)
+        
+C Recover specified optics
+          write(tmpsot,'(a)') loutstr(20:23)        
+        
+C Interpret positional portion of the string.
+          tmpvfc=loutstr(26:29)        
+   
+C Interpret the construction name.
+          write(SMLCN(ISN),'(a)') loutstr(32:43)   
+        
+C Recover "to-other' parameter:         
+          write(tother,'(a)') loutstr(45:59)
+        
+        else 
+C Space-separated format (Used by HOT3000)   
+C Read surface attibutes. iEGetArrW returns the contents of a line 
+C as an array of comma, tab or space-sparated variables. [The old 
+C approach of using a space-sensitive format is too inflexible and 
+C error prone. Obstensibly, it was used to permit spaces in surface
+C and consturction names, but it defies convention elsewhere in ESP-r. 
+C A (much) better approach would escape characters such as commas and 
+C spaces, as is done in the rest of the computing world.
+
+          iWordCount = iEGetArrW ( loutstr, cLnWords )
+        
+C Line should contain a number, name, and four keywords ( e.g. OPAQ, 
+C VERT, UNKN, EXTERIOR )        svn
+          read_attribute: if ( iWordCount .ne. 6 ) then 
+            write (outs, '(A,I2,A)')
+     &        'Could not intrepret attributes for surface', I, '.'
+              call edisp(itru,outs)
+              IER = 1
+          else        
+
+C Read surface number from iWordCount 
+
+            ISN = iCtoI_err ( cLnWords(1), 
+     &                        "Surface position in .geo file",
+     &                         bParseError ) 
+            if (bParseError) IER = 1
+
+C Recover Surface name
+            SNAME(ICOMP,ISN) = cLnWords(2)(1:12)            
+
+C Recover optics specification
+            tmpsot = cLnWords(3)(1:4)          
+          
+C Interpret positional portion of the string.
+            tmpvfc=cLnWords(4)(1:4)          
+            
+C Interpret the construction name.
+            SMLCN(ISN) = cLnWords(5)(1:32)            
+        
+C Recover "to-other' parameter:         
+            tother = cLnWords(6)(1:15)
+        
+          endif read_attribute
+        
+        endif SurfFormat1
+        
+C Now we've parsed the line. Process and error-trap the contents
 
 C The value of I and ISN should be the same. If not warn.
         if(I.ne.ISN)then
-          if(ITRC.ne.0) call edisp(itru,
-     &      'Disagreement between surface index and position in list.')
+           if(ITRC.ne.0) call edisp(itru,
+     &       'Disagreement between surface index and position in list.')
         endif
 
-        SNAME(ICOMP,ISN)=loutstr(6:17)
+C Process surface name. If using H3K format use cLnWords otherwise
+C instanciate ssname with SNAME.
         if(havec24)then
           icn=izstocn(icomp,isn)
-          ssname(icn)=loutstr(6:17)
+          if ( .not. bH3KExtentionsActive() ) then
+            ssname(icn) = SNAME(ICOMP,ISN)
+          else
+            ssname(icn) = cLnWords(2)(1:12)
+          endif
         endif
 
-C Interpret positional portion of the string.
-        tmpvfc=loutstr(26:29)
+C Process positional attribute
         IF(tmpvfc.EQ.'VERT'.OR.tmpvfc.EQ.'SLOP')then
           write(SVFC(ISN),'(a)') tmpvfc
           if(havec24) write(SSVFC(icn),'(a)') tmpvfc
@@ -596,32 +685,29 @@ C Interpret positional portion of the string.
           izsfloor(icomp)=ISN ! identify as a floor
         ENDIF
 
-C Interpret the construction name.
-        write(SMLCN(ISN),'(a)') loutstr(32:43)
 
-C Check if there is a matching MLC name and which one it is.
+C Check if there is a matching MLC name for given construction and which one it is.
         ICF=-1
         if(NMLC.gt.0)then                
           lstr=lnblnk(SMLCN(ISN))
           DO 20 IC=1,NMLC
-            if(lstr.lt.12)then
-              IF(DESC(IC)(1:lstr).EQ.SMLCN(ISN)(1:lstr))ICF=IC
-            else
-              IF(DESC(IC)(1:12).EQ.SMLCN(ISN)(1:12))ICF=IC
-            endif
+            lnmlc=lnblnk(mlcname(ic))
+            if(mlcname(ic)(1:lnmlc).EQ.SMLCN(ISN)(1:lstr))ICF=IC
   20      CONTINUE
         endif
+        
         if(havec24)then
-          write(SSMLCN(icn),'(a)') loutstr(32:43)
+          write(SSMLCN(icn),'(a)') SMLCN(ISN)
           if(ICF.gt.0)then
             ssthick(icn)=THKMLC(icf)
 
           endif
         endif
 
+C << this block of code to be updated to use material.h commons >>
+
 C Now that we know the construction try and work out the optics.
-        write(tmpsot,'(a)') loutstr(20:23)
-        if(tmpsot(1:4).eq.'OPAQ')then
+        TMPSOT_Value: if(tmpsot(1:4).eq.'OPAQ')then
           write(SOTF(ISN),'(a)') 'OPAQUE'  ! write OPAQUE
           if(havec24) write(SSOTF(icn),'(a)') 'OPAQUE' 
         elseif(tmpsot(1:4).eq.'CFC ')then
@@ -632,17 +718,9 @@ C Now that we know the construction try and work out the optics.
 C We need to find the name of the optical set for the construction.
 C If there is a matching MLC entry attempt to discover
 C the name of the optical property. Otherwise leave SOFT as TRAN
-          if(NMLC.gt.0)then                
-            if(ICF.gt.0)then
-              OPT=' '
-              WRITE(OTF,'(A)') DESC(ICF)(15:18)
-              IF(OTF.EQ.' ')OTF='OPAQ'
-              IF(OTF(1:4).NE.'OPAQ'.AND.OTF(1:4).NE.'CFC ')THEN
-                WRITE(OPT,'(A)') DESC(ICF)(21:32)
-                IF(OPT.EQ.' ')OPT='UNKNOWN'
-              ELSE
-                OPT='OPAQUE'
-              ENDIF
+          NMLC_GT_0: if(NMLC.gt.0)then                
+            ICF_GT_0: if(ICF.gt.0)then
+              write(OPT,'(a)') mlcoptical(ICF)
 
             else
 
@@ -668,18 +746,19 @@ C  keyword.]
               
               endif user_specd_TRAN
               
-            endif
+            endif ICF_GT_0
+            
             write(SOTF(ISN),'(a)') OPT
             if(havec24) write(SSOTF(icn),'(a)') OPT
           else
             write(SOTF(ISN),'(a)') 'TRAN'
             if(havec24) write(SSOTF(icn),'(a)') 'TRAN'
-          endif
-        endif
+          endif NMLC_GT_0
+        endif TMPSOT_Value
 C Depending on what the 'other' column is file the SOTHER array.
 C Note when scanning an older file we will not yet know the
 C C3 based information and so sother(2) and sother(3) are placeholders.
-        write(tother,'(a)') loutstr(45:59)
+        
         if(tother(1:7).eq.'UNKNOWN')then
           write(sother(isn,1),'(a)') 'UNKNOWN'
           write(sother(isn,2),'(a)') '0'
@@ -807,6 +886,7 @@ C Child/parent unknown in legacy file so write place holder.
         if(havec24)then
           write(ssparent(icn),'(a)') '-'
         endif
+
    42 CONTINUE
 
 C Check if base area has been defined.
@@ -1215,6 +1295,7 @@ C geometry.h provides commons G0/G1/G2/G4/G5/prec2/prec17/precz/c20/GS5/GS6.
 
 C espriou.h provides currentfile.
 #include "espriou.h"
+
       
       integer lnblnk  ! function definition
 
@@ -1349,8 +1430,7 @@ C GS7/GS8 are defined in geometry.h
       character ZN*12,phrase*64,outs*124,outs2*124
       character dllsubr*12,dllmesg*124,loutstr*248
       character dstmp*24
-      character OTF*4,OPT*12 ! for use with parsemlcdesc
-      character MLCN*12      ! local string for comparison
+      character OPT*32 ! for use with optical attributes
       logical dll,checkbase
       logical havec24
       logical optcorrected   ! set to true if optics corrected
@@ -1458,6 +1538,7 @@ C Check if it matches the syntax of older geometry file format.
           ZDESC(ICOMP)=phrase
           lnzdesc(ICOMP)=lnblnk(phrase)  ! update the length of this string.
         ENDIF
+        zoneLabel(icomp) = WORD(1:32)
         IF(IFLAG.NE.0)GOTO 1002
 
 C If we have reached this position then it is an older geometry
@@ -1648,7 +1729,7 @@ C (3) child of (name of surface, otherwise a -)
 C (4-5) useage: a pair of tags for code complience and to assist with air
 C  flow network creation. A full description is at the top of this source
 C  file.
-C (6) construction name (from MLC database, (tbd allow spaces))
+C (6) construction name (from MLC database)
 C (7) optical name (OPAQUE or the name of the optical set name, (tbd allow spaces))
 C (8-10) boundary condition (including indices from cnn file):
 C   ANOTHER, i index of zone, j index of surface in that zone
@@ -1707,13 +1788,8 @@ C Because many names may start similarly, check against actual widths.
             if(NMLC.gt.0)then                
               lstrs=lnblnk(SMLCN(NS))  ! surface attribute length
               DO 20 IC=1,NMLC
-                WRITE(MLCN,'(A)')DESC(IC)(1:12)  ! the first 12 char of desc
-                lstrd=lnblnk(MLCN)    ! mlc name length
-                if(lstrs.le.12)then
-                  IF(DESC(IC)(1:lstrd).EQ.SMLCN(NS)(1:lstrs))ICF=IC
-                else
-                  IF(DESC(IC)(1:12).EQ.SMLCN(NS)(1:12))ICF=IC
-                endif
+                lstrd=lnblnk(mlcname(ic))
+                if(mlcname(ic)(1:lstrd).EQ.SMLCN(NS)(1:lstrs))ICF=IC
   20          CONTINUE
             endif
 
@@ -1741,18 +1817,9 @@ C If the construction database has been scanned then attempt to discover
 C the name of the optical property. Otherwise leave SOFT as TRAN
               if(NMLC.gt.0)then
 
-C Use logic similar to parsemlcdesc to find the optical name within
-C the constructions database.
+C Find the optical name within the common constructions file.
                 if(ICF.gt.0)then
-                  OPT=' '
-                  WRITE(OTF,'(A)') DESC(ICF)(15:18)
-                  IF(OTF.EQ.' ')OTF='OPAQ'
-                  IF(OTF(1:4).NE.'OPAQ'.AND.OTF(1:4).NE.'CFC ')THEN
-                    WRITE(OPT,'(A)') DESC(ICF)(21:32)
-                    IF(OPT.EQ.' ')OPT='UNKNOWN'
-                  ELSE
-                    OPT='OPAQUE'
-                  ENDIF
+                  write(OPT,'(a)') mlcoptical(ICF)
                 else
                   OPT='OPAQUE'
                 endif
@@ -1769,7 +1836,7 @@ C with the construction (TRAN is an ok mis-match).
                     else
 		      write(outs,*) 'Optics ',WORD(1:lnow),
      &                ' in geo file does not match optics of the MLC ',
-     &                  DESC(ICF)(1:12),' ',OPT(1:lno)
+     &                  mlcname(ICF)(1:12),' ',OPT(1:lno)
                       call edisp(iuout,outs)
                       optcorrected=.true.
                     endif
@@ -2557,28 +2624,41 @@ C Surface list. Write as a packed list comma separated.
 
 C Based on the current contents of SOTHER(I,1) create a buffer SO
 C to write out.
-        lso=lnblnk(SSOTHER(icc,1))
-        lso2=lnblnk(SSOTHER(icc,2))
-        lso3=lnblnk(SSOTHER(icc,3))
-        lsml=lnblnk(SSMLCN(icc))
-        lspa=lnblnk(SSPARENT(icc))
-        lsna=lnblnk(SSNAME(icc))
-        lsot=lnblnk(SSOTF(icc))
-        loth=lnblnk(OTHSTR)
+        if(icc.gt.0)then
+          lso=lnblnk(SSOTHER(icc,1))
+          lso2=lnblnk(SSOTHER(icc,2))
+          lso3=lnblnk(SSOTHER(icc,3))
+          lsml=lnblnk(SSMLCN(icc))
+          lspa=lnblnk(SSPARENT(icc))
+          lsna=lnblnk(SSNAME(icc))
+          lsot=lnblnk(SSOTF(icc))
+          loth=lnblnk(OTHSTR)
 
 C Traps for possible blank strings if data structure corrupted.
-        if(SSVFC(icc)(1:4).eq.'    ') SSVFC(icc)='UNKN'
-        if(SSOTF(icc)(1:4).eq.'    ') SSOTF(icc)='UNKN'
-        if(SSPARENT(icc)(1:2).eq.'  ') SSPARENT(icc)='-'
-        WRITE(outs,'(20a)',IOSTAT=ios,ERR=13) '*surf ',
-     &    SSNAME(icc)(1:lsna),' ',SSVFC(icc),' ',
-     &    SSPARENT(icc)(1:lspa),' ',SSUSE(icc,1),' ',SSUSE(icc,2),
-     &    ' ',SSMLCN(icc)(1:lsml),' ',SSOTF(icc)(1:lsot),' ',
-     &    SSOTHER(icc,1)(1:lso),' ',SSOTHER(icc,2)(1:lso2),
-     &    ' ',SSOTHER(icc,3)(1:lso3)
-        call SDELIM(outs,outsd,'C',IW)
-        write(ifilg,'(2a,i3,2a)',IOSTAT=IOS,ERR=13) 
-     &    outsd(1:lnblnk(outsd)),'  # ',I,' ',OTHSTR(1:loth)
+          if(SSVFC(icc)(1:4).eq.'    ') SSVFC(icc)='UNKN'
+          if(SSOTF(icc)(1:4).eq.'    ') SSOTF(icc)='UNKN'
+          if(SSPARENT(icc)(1:2).eq.'  ') SSPARENT(icc)='-'
+          WRITE(outs,'(20a)',IOSTAT=ios,ERR=13) '*surf ',
+     &      SSNAME(icc)(1:lsna),' ',SSVFC(icc),' ',
+     &      SSPARENT(icc)(1:lspa),' ',SSUSE(icc,1),' ',SSUSE(icc,2),
+     &      ' ',SSMLCN(icc)(1:lsml),' ',SSOTF(icc)(1:lsot),' ',
+     &      SSOTHER(icc,1)(1:lso),' ',SSOTHER(icc,2)(1:lso2),
+     &      ' ',SSOTHER(icc,3)(1:lso3)
+          call SDELIM(outs,outsd,'C',IW)
+          write(ifilg,'(2a,i3,2a)',IOSTAT=IOS,ERR=13) 
+     &      outsd(1:lnblnk(outsd)),'  # ',I,' ',OTHSTR(1:loth)
+        else
+
+C There was an array fault so write out a placeholder surface. As
+C there might be more than one fault make name unique.
+
+C Debug.
+C          write(6,'(a,2i2,a)',IOSTAT=ios,ERR=13) '*surf,fault',i,
+C     &      ',UNKN,-,-,-,UNKN,OPAQUE,EXTERIOR,0,0'
+
+          write(ifilg,'(a,2i2,a)',IOSTAT=ios,ERR=13) '*surf,fault',i,
+     &      ',UNKN,-,-,-,UNKN,OPAQUE,EXTERIOR,0,0'
+        endif
   102 CONTINUE
 
 C Default insolation distribution as packed string.
@@ -3837,6 +3917,7 @@ C << could it use ?? instead of G1? >>
       LOGICAL CLOSE,closeaz,closeel
       CHARACTER outs*124
       integer lln   ! length of surface name
+      real distance,ofby
 
 C ZGUPDATE assumes that the zone geometry file has been read prior to
 C its invocation and that the read of the model configuration file has
@@ -3846,6 +3927,7 @@ C Set area summations to zero & consider each surface of the zone in turn.
       ier=0
       PI = 4.0 * ATAN(1.0)
       R=PI/180.
+
       DO 10 I=1,NZSUR(icomp)
 
 C Recover the connection associated with this zone and surface.
@@ -3903,7 +3985,9 @@ C Compute perimeter of the surface.
           jj=JVN(i,ii)
           kk=JVN(i,ii+1)
           vdis=0.0
-          vdis= crowxyz(x(jj),y(jj),z(jj),x(kk),y(kk),z(kk))
+          if(jj.gt.0.and.kk.gt.0)then
+            vdis= crowxyz(x(jj),y(jj),z(jj),x(kk),y(kk),z(kk))
+          endif
           SSPERIM(icc)=SSPERIM(icc)+vdis
   42    continue
 
@@ -3911,30 +3995,55 @@ C Link back to start vertex.
         jj=JVN(i,NVER(i))
         kk=JVN(i,1)
         vdis=0.0
-        vdis= crowxyz(x(jj),y(jj),z(jj),x(kk),y(kk),z(kk))
+        if(jj.gt.0.and.kk.gt.0)then
+          vdis= crowxyz(x(jj),y(jj),z(jj),x(kk),y(kk),z(kk))
+        endif
         SSPERIM(icc)=SSPERIM(icc)+vdis
 
 
-C Derive the equation of the polygon.
+C Derive the equation of the polygon, if problems generating the
+C equation echo warnings.
         DO 60 KK=1,NVER(i)
           XX(KK) = X(JVN(I,KK))
           YY(KK) = Y(JVN(I,KK))
           ZZ(KK) = Z(JVN(I,KK))
    60   CONTINUE
         N = NVER(i)
+        ierr=0
         call PLEQN(XX,YY,ZZ,N,CG,EQN,IERR)
+	lln=lnblnk(ssname(icc)) 
+	if(ierr.ne.0.and.itrc.gt.0)then
+          if(ierr.eq.1)then
+	    write(outs,'(5a)') ' Surface ',ssname(icc)(1:lln),
+     &        ' in ',zname(icomp)(1:lnzname(icomp)),
+     &        ' not enough points for plneqn.'
+          elseif(ierr.eq.-1)then
+	    write(outs,'(5a)') ' Surface ',ssname(icc)(1:lln),
+     &        ' in ',zname(icomp)(1:lnzname(icomp)),
+     &        ' issue with unit vector in plneqn.'
+          else
+	    write(outs,'(5a)') ' Surface ',ssname(icc)(1:lln),
+     &        ' in ',zname(icomp)(1:lnzname(icomp)),
+     &        ' issue in plneqn.'
+          endif
+          call edisp(iuout,outs)
+        endif
 
 C See if any points are out of the plane. Note a point that is
 C only a few mm off of the line can result in a warp which is
 C reported as a larger number.
-        iwhich=0
         ofby=0.0
+        DO 64 KK=1,NVER(i)
+          distance = EQN(1)*XX(KK) + EQN(2)*YY(KK) + EQN(3)*ZZ(KK)
+     &      - EQN(4)
+          if(distance.gt.ofby) ofby=distance
+  64    continue
 	lln=lnblnk(ssname(icc)) 
-	call CHECKWARP(1,iuout,i,N,XX,YY,ZZ,iwhich,ofby,ivoff)
-	if(ivoff.gt.0.and.ofby.gt.0.01)then
-	  write(outs,'(5a)') ' Surface ',ssname(icc)(1:lln),' in ',
-     &      zname(icomp)(1:lnzname(icomp)),
-     &      ' is probably warped. Please check via surface transforms.'
+	if(ofby.gt.0.01.and.itrc.gt.0)then
+	  write(outs,'(5a,F6.4,a)') ' Surface ',ssname(icc)(1:lln),
+     &      ' in ',zname(icomp)(1:lnzname(icomp)),
+     &      ' is warped by ',ofby,
+     &      'm. Please check via surface transforms.'
           call edisp(iuout,outs)
         endif
 
@@ -5264,16 +5373,23 @@ C and length is its maximum length.
       COMMON/C24/IZSTOCN(MCOM,MS)
       
       dimension lstsf(mcom,ms),iva(ms)
-      CHARACTER sdescr*80,sn*12
+      CHARACTER sdescr*80,sn*12,msg*124
       logical unixok
 
 C Find out overall length and build 1D array iva.
       length=0
       do 42 i=1,nbsur
         icc=izstocn(icomp,lstsf(icomp,i))
-        iva(i)=lstsf(icomp,i)
-        lna=lnblnk(SSNAME(icc))
-        length=length+lna+1
+        if(icc.eq.0)then
+          write(msg,'(a,i2,a,i2,a)') 'Base surface list item ',i,
+     &      ' in zone ',icomp,' not found.'
+          call usrmsg(msg,'Check your model.','W')
+          ierr=1
+        else
+          iva(i)=lstsf(icomp,i)
+          lna=lnblnk(SSNAME(icc))
+          length=length+lna+1
+        endif
   42  continue
       if(length.lt.80)then
 
@@ -5283,26 +5399,32 @@ C Write out a packed string (space separated) of each surface name.
         ixl=0
         do 43 i=1,nbsur
           ico=izstocn(icomp,lstsf(icomp,i))
-          sn=SSNAME(ico)
-          lna=max(1,lnblnk(sn))
-          if(lna.eq.1)then
-            ixl=ix
-          else
-            ixl=ix+(lna-1)
-          endif
-          write(sdescr(ix:ixl),'(a)',iostat=ios,err=1)sn(1:lna)
-          if(i.lt.nbsur)then
-            write(sdescr(ixl+1:ixl+1),'(a)') ' '
-            ix=ix+lna+1
-          else
-            ix=ix+lna+1
+          if(ico.ne.0)then
+            sn=SSNAME(ico)
+            lna=max(1,lnblnk(sn))
+            if(lna.eq.1)then
+              ixl=ix
+            else
+              ixl=ix+(lna-1)
+            endif
+            write(sdescr(ix:ixl),'(a)',iostat=ios,err=1)sn(1:lna)
+            if(i.lt.nbsur)then
+              write(sdescr(ixl+1:ixl+1),'(a)') ' '
+              ix=ix+lna+1
+            else
+              ix=ix+lna+1
+            endif
           endif
   43    continue
         return
       else
         if(nbsur.eq.1)then
           ic1=izstocn(icomp,lstsf(icomp,1))
-          WRITE(SDESCR,'(A)',iostat=ios,err=1) SSNAME(ic1)
+          if(ic1.ne.0)then
+            WRITE(SDESCR,'(A)',iostat=ios,err=1) SSNAME(ic1)
+          else
+            WRITE(SDESCR,'(A)',iostat=ios,err=1) 'unknown surf'
+          endif
         elseif(nbsur.gt.1)THEN
 
 C Write indices into one packed string sdescr (i.e. truncate).

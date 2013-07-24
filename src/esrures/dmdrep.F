@@ -18,11 +18,22 @@ C License along with ESP-r. If not, write to the Free
 C Software Foundation, Inc., 59 Temple Place, Suite 330,
 C Boston, MA 02111-1307 USA.
 
-C Routines which deal with non-specific project demands (fans/lifts/etc.).
+C Routines which deal with dispersed demands (fans/lifts/etc.).
+
+C  ERBDMD reads model dispersed demand profiles for fans, pumps, DHW etc.
+
+C  DMDSTOT retrieves max, min, totals & average for dispersed demands.
+
+C  DDMDS reconstructs one day's values of each dispersed demands.
+ 
+C  DMDTYP works out the demand types 1-7 (MGTY) at each time step.
+
 
 C ******************** ERBDMD
-C Similar prjdmds.F except do not bother to set idmdinc.
-C ERBDMD reads project level demand profiles for fans, pumps, DHW etc.
+C Similar prjdmds.F except do not bother to set idmdinc or report of contents.
+C ERBDMD reads model dispersed demand profiles for fans, pumps, DHW etc.
+
+C << Note: why not just use ERBDMD in prjdmds.F? >>
 
       SUBROUTINE ERBDMD(ITRC,IUO,IER)
 #include "building.h"
@@ -39,6 +50,7 @@ C espriou.h provides currentfile.
 C Calendar commons.
       common/calena/calename,calentag(MDTY),calendayname(MDTY)
       common/caleni/nbdaytype,nbcaldays(MDTY),icalender(365)
+      INTEGER :: icalender,nbcaldays,nbdaytype
 
 C Error subroutine and error details for dll mode.
       common/dllerr/dllsubr,dllmesg
@@ -181,7 +193,7 @@ C If radiant plus convective is over unity warn.
 
 C Check to see if demand labels have been added to the end of the file.
 C << if more than 7 types then consider alt logic >>
-    8 CALL STRIPC(IUO,OUTSTR,99,ND,1,'Type labels',IERV)
+    8 CALL STRIPC(IUO,OUTSTR,99,ND,1,'Dispersed type labels',IERV)
       IF(ND.NE.7.OR.IERV.ne.0) THEN
         goto 1001
       ELSE
@@ -194,35 +206,38 @@ C << if more than 7 types then consider alt logic >>
 
 C Check for areas associated with each demand label.
 C << revise for something other than 7 types >>
-      CALL STRIPC(IUO,OUTSTR,99,ND,1,'Type areas',IERV)
+      CALL STRIPC(IUO,OUTSTR,99,ND,1,'Dispersed type areas',IERV)
       IF(ND.NE.7.OR.IERV.ne.0) THEN
         goto 1001
       ELSE
         K=0
         DO 1233 ITYP=1,MGTY
           CALL EGETWR(OUTSTR,K,dmdfla(ITYP),0.,99999.,'W',
-     &         'type area',IER) 
+     &      'dispersed demand type area',IER) 
  1233   CONTINUE
       ENDIF      
 
  1235 CONTINUE    ! jump back point if types were not found.
 
-C Distributed demands reporting if requested.
-      if(ITRC.GE.1)call BDMDINF(iuout,IER)
+C Distributed demands reporting not in esrures version.
+C      if(ITRC.GE.1)call BDMDINF(iuout,IER)
 
 C Now free project data file.
       CALL ERPFREE(IUO,ISTAT)
       RETURN
 
+C << Occup is a silly name for a dispersed demand - who cares if
+C << there are people not in a zone?
+
 C Error messages.
  1001 call usrmsg(' ',' No type names found ...supplying defaults.','-')
-      blodlabel(1)='Occup '
+      blodlabel(1)='Other '
       blodlabel(2)='Lights'
-      blodlabel(3)='SmPowr'      
+      blodlabel(3)='SmallPower'      
       blodlabel(4)='Fans  '
       blodlabel(5)='Pumps '
       blodlabel(6)='Lifts '      
-      blodlabel(7)='DHW   '      
+      blodlabel(7)='DomesticHW'      
       goto 1235
 
  1002 write(outs,'(3a)') 'ERBDMD: conversion error in...',
@@ -245,62 +260,11 @@ C Error messages.
 
       END
 
-C ****************** BDMDINF (same as in prjdmds.F)
-C BDMDINF provides an English description of non-specific project demands
-C from common block data.
-      SUBROUTINE BDMDINF(ITRU,ier)
-
-#include "building.h"
-#include "schedule.h"
-      
-      integer lnblnk  ! function definition
-
-C Calendar commons.
-      common/calena/calename,calentag(MDTY),calendayname(MDTY)
-      common/caleni/nbdaytype,nbcaldays(MDTY),icalender(365)
-
-      CHARACTER outs*124
-      character calename*32,calentag*12,calendayname*32
-
-      call edisp(itru,' ')
-      call edisp(itru,'Notes: ')
-      call edisp248(itru,dmdsdesc,72)
-
-      do 30 idt=1,nbdaytype
-        ldt=lnblnk(calentag(idt))
-        WRITE(outs,'(3A,I3)')' No. ',calentag(idt)(1:ldt),' demands =',
-     &    NBCAS(idt)
-        call edisp(itru,outs)
-        IF(NBCAS(idt).GT.0)THEN
-          call edisp(itru,
-     &  ' Gain Type Start Finish Sensible  Latent    Radiant   Convec')
-          call edisp(itru,
-     &  '           Hour  Hour   Magn. (W) Magn. (W) Frac      Frac')
-          DO 1270 I=1,NBCAS(idt)
-            if(IBCGT(idt,i).gt.0)then
-              WRITE(outs,5360)I,blodlabel(IABS(IBCGT(idt,I))),'W  ',
-     &          IBCGS(idt,I),IBCGF(idt,I),CBMGS(idt,I),CBMGL(idt,I),
-     &          BRADC(idt,I),BCONC(idt,I)
-            else
-              WRITE(outs,5360)I,blodlabel(IABS(IBCGT(idt,I))),'Wm2',
-     &          IBCGS(idt,I),IBCGF(idt,I),CBMGS(idt,I),CBMGL(idt,I),
-     &          BRADC(idt,I),BCONC(idt,I)
-            endif
-            call edisp(itru,outs)
-1270      CONTINUE
-        ENDIF
-        call edisp(itru,' ')
-  30  continue
-
-5360  FORMAT(I4,1x,A6,A3,I5,I3,F9.1,F9.1,F11.2,F11.2)
-
-      RETURN
-      END
 
 C ******************** DMDSTOT ********************
-C DMDSTOT retrieves max, min and totals (XMXUM & XMINSUM are distributed 
-C totals while DMAX & DMIN are diversified totals) for non-specific 
-C demands. 
+C DMDSTOT retrieves max, min, totals and average for dispersed
+C demands (not associated with specific zones) for the currently
+C selected period. 
 
       SUBROUTINE DMDSTOT(XMAX,XMIN,XTOT,XAVE)
 #include "building.h"
@@ -310,14 +274,17 @@ C demands.
 
       COMMON/GET1/VAL1(MZS,MTS),VAL2(MZS,MTS),VAL3(MZRL,MTS)
 
-      dimension XMAX(MGTY),XMIN(MGTY),XTOT(MGTY),XAVE(MGTY),NX(MGTY)
+C The parameters returned.
+      dimension XMAX(MGTY),XMIN(MGTY),XTOT(MGTY),XAVE(MGTY)
+
+      dimension NX(MGTY)
       character prompts*52,prompte*52
 
       prompts=' Scanning non-specific demands...'
       prompte=' Scanning non-specific demands...done.'
 
 C Setup parameters and call DDMDS for each output day to get required data.
-C DDMDS recovers the data in VAL? (and averages output if required.)
+C DDMDS recovers the data in VAL3 positions 15-21 (and averages output if required.)
       do 5 I=1,MGTY
         XMAX(I)=-1.E+10
         XMIN(I)=1.E+10
@@ -331,8 +298,8 @@ C DDMDS recovers the data in VAL? (and averages output if required.)
 C Get days worth of data.
         call DDMDS(IDAY)
 
-C Add values in VAL2 to the correct bins. IX in range of 15-21 so
-C offset is 14
+C Add values in VAL3 to the correct bins. IX in range of 15-21 so
+C offset from the gain type is 14 within the VAL3 array.
         do 400 I=1,MGTY
           IX=I+14
           NDTS=24*NTS
@@ -363,12 +330,11 @@ C Calculate averages.
 
 C ******************** DDMDS ********************
 
-C DDMDS reconstructs one day's values of each of 
-C the project demands.
+C DDMDS reconstructs one day's values of each of dispersed demands.
 C To save space VAL3(15,I) to VAL3(21,I) are used for temporary storage.
 C The method used shifts information from the demands file into the
 C equivalent of bps timestep averaging.
-C VAL3(15,?) holds occupant demands.
+C VAL3(15,?) holds other demands.
 C VAL3(16,?) holds lighting demands.
 C VAL3(17,?) holds small power demands.
 C VAL3(18,?) holds fans demands.
@@ -387,13 +353,8 @@ C VAL3(21,?) holds DHW demands.
       IEND=24*NTS
 
 C Initialise 'present values'.
-      pddt1=0.0
-      pddt2=0.0
-      pddt3=0.0
-      pddt4=0.0
-      pddt5=0.0
-      pddt6=0.0
-      pddt7=0.0
+      pddt1=0.0; pddt2=0.0; pddt3=0.0; pddt4=0.0
+      pddt5=0.0; pddt6=0.0; pddt7=0.0
 
 C Note that the demand at the first timestep of the day is dependent
 C on the demand at the last timestep of the previous day.    
@@ -401,28 +362,18 @@ C If IDAY is equal to the first day of the simulation then there is no
 C previous day so assume DUCCT?= current day.
       IF(IDAY.EQ.IODS.AND.IDAY.EQ.ISDS)THEN
         CALL DMDTYP(IDAY,IEND,hddt1,hddt2,hddt3,hddt4,hddt5,
-     &  hddt6,hddt7)
-        Dhddt1=hddt1
-        Dhddt2=hddt1
-        Dhddt3=hddt1
-        Dhddt4=hddt1
-        Dhddt5=hddt1
-        Dhddt6=hddt1
-        Dhddt7=hddt1
+     &    hddt6,hddt7)
+        Dhddt1=hddt1; Dhddt2=hddt1; Dhddt3=hddt1; Dhddt4=hddt1
+        Dhddt5=hddt1; Dhddt6=hddt1; Dhddt7=hddt1
       ELSEIF(IDAY.EQ.IODS.AND.IDAY.GT.ISDS)THEN
 
 C Need to get the last timestep of the previous day to have the last 
 C timestep for interpolation before recovering the demands
 C for the day in question.
         CALL DMDTYP(IDAY-1,IEND,hddt1,hddt2,hddt3,hddt4,hddt5,
-     &  hddt6,hddt7)
-        Dhddt1=hddt1
-        Dhddt2=hddt1
-        Dhddt3=hddt1
-        Dhddt4=hddt1
-        Dhddt5=hddt1
-        Dhddt6=hddt1
-        Dhddt7=hddt1
+     &    hddt6,hddt7)
+        Dhddt1=hddt1; Dhddt2=hddt1; Dhddt3=hddt1; Dhddt4=hddt1
+        Dhddt5=hddt1; Dhddt6=hddt1; Dhddt7=hddt1
       ELSEIF(IDAY.GT.IODS)THEN
 
 C Subsequent recovery day - information on previous day has already
@@ -454,30 +405,19 @@ C that of the last of the previous day.
         ENDIF
 
 C Shift future to present.
-        Pddt1=hddt1
-        Pddt2=hddt2
-        Pddt3=hddt3
-        Pddt4=hddt4
-        Pddt5=hddt5
-        Pddt6=hddt6
-        Pddt7=hddt7
+        Pddt1=hddt1; Pddt2=hddt2; Pddt3=hddt3; Pddt4=hddt4
+        Pddt5=hddt5; Pddt6=hddt6; Pddt7=hddt7
    50 CONTINUE
 
 C Save the last timestep for use the next day.
-      Dhddt1=hddt1
-      Dhddt2=hddt2
-      Dhddt3=hddt3
-      Dhddt4=hddt4
-      Dhddt5=hddt5
-      Dhddt6=hddt6
-      Dhddt7=hddt7
+      Dhddt1=hddt1; Dhddt2=hddt2; Dhddt3=hddt3; Dhddt4=hddt4
+      Dhddt5=hddt5; Dhddt6=hddt6; Dhddt7=hddt7
       RETURN
       END
 
 C ******************** DMDTYP ********************
 
-C DMDTYP is a generic routine to work out the
-C demand types 1-7 (MGTY) at each time step.
+C DMDTYP work out the demand types 1-7 (MGTY) at each time step.
 C Given the information in common block bl3data returns:
 C hddt1,hddt2,hddt3,hddt4,hddt5,hddt6,hddt7
 C However, because of the averaging in bps, the beginning and ending

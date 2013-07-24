@@ -20,7 +20,7 @@ C Boston, MA 02111-1307 USA.
 
 C CLMSEQ identifies days and hours within the user-specified period that
 C contain values with a range of values and reports the occurrances. The
-C climate values to be scanned are passed via the IP parameter:
+C weather data values to be scanned are passed via the IP parameter:
 C   EXTERNAL AIR TEMPERATURE (IP = 2),
 C  DIRECT NORMAL SOLAR RADIATION (IP = 3),
 C  DIFFUSE HORIZONTAL SOLAR RADIATION (IP = 1),
@@ -32,7 +32,7 @@ C This facility allows 'cold' or 'hot' or 'nice' days to be located.
       PARAMETER (MT=24)
 
 C Passed parameters:
-      integer IP  ! which climate variable
+      integer IP  ! which weather variable
       real XL     ! lower range
       real XU     ! upper range
       integer nbdays    ! returned number of days meeting criteria
@@ -87,7 +87,7 @@ C If output to file alter the edisp unit number.
       XXU=XU
       DO 10 I=IDS,IDF   ! days of the current user period
 
-C Read climate data for this day.
+C Read weather data for this day.
         ID=I
         CALL CLMGET(ID)
         JS=1

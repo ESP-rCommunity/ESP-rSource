@@ -73,7 +73,7 @@ C NZJVN : topology of vertices associated with each connection (via geometry.h).
       DIMENSION  CG(3),VN(3),ipoints(6,2)
 
       CHARACTER temp*16,DESCRC*25,stemp*13,temp20*21
-      CHARACTER MLCN*12,t13*13
+      CHARACTER t13*13
 
 C Local variables to pass to edline and axiscale.
 #ifdef OSI
@@ -115,7 +115,6 @@ C Setup and pass in parameters to win3d.
       iigl=igl; iigr=igr; iigt=igt; iigb=igb; iigw=igw; iigwh=igwh
       CALL win3d(iimenu,iiw1,iiw2,iiw3,iiw4,
      &  iigl,iigr,iigt,iigb,iigw,iigwh)
-C      CALL win3d(menuchw,4,1,1,3,igl,igr,igt,igb,igw,igwh)
       igl=int(iigl); igr=int(iigr); igt=int(iigt); igb=int(iigb)
       igw=int(iigw); igwh=int(iigwh)
       igwid=igw
@@ -324,8 +323,7 @@ C Set line style for this surface. linsty=2 is double width line.
 C Check for hilights. ITHLS=1 is composition, ITHLS=2 trn:opq,
 C ITHLS = 3 partial attributes
         if(ITHLS.eq.1.and.ITHLZ.gt.0)then
-          WRITE(MLCN,'(A12)')DESC(ITHLZ)(1:12)
-          if(MLCN(1:12).eq.SSMLCN(ICC)(1:12))then
+          if(mlcname(ITHLZ)(1:12).eq.SSMLCN(ICC)(1:12))then
             IPEN= -305
           else
             IPEN= 1

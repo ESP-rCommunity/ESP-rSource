@@ -90,11 +90,14 @@ C For help messages
 
 C Open the mould database.
       if(iopmld.eq.0) then
-        mdbnam=dmdbnam
+        lnmdb=lnblnk(mdbnam)
+        if(mdbnam(1:4).eq.'UNKN'.or.mdbnam(1:2).eq.'  ')then
+          write(mdbnam,'(a)') dmdbnam(1:lnblnk(dmdbnam))
+        endif
         helptopic='mould_database_name'
         call gethelptext(helpinsub,helptopic,nbhelp)
-        call easks(mdbnam,'Mould database filename ?',' ',72,dmdbnam,
-     &  'mould dbnam',IER,nbhelp)
+        call easks(mdbnam,'Mould isopleth filename ?',' ',72,dmdbnam,
+     &    'mould isopleths',IER,nbhelp)
       endif
       imfil=ifil+1
       call efopseq(imfil,mdbnam,1,IER)

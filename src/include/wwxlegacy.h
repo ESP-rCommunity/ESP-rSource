@@ -11,10 +11,10 @@
 /* #endif */
 
 #ifndef TRUE
-#define TRUE		1
-#define FALSE		0
+#define TRUE  1
+#define FALSE 0
 #endif /* TRUE */
-# define NULLPTR(x)	((x *)0)	/* null (coerced) */
+# define NULLPTR(x) ((x *)0)  /* null (coerced) */
 
 typedef unsigned char byte;
 
@@ -110,8 +110,9 @@ void	wwcsetstart_();
 void	wwcsetend_();
 void	ckaccess_(long int* folder,long int* laccess,long int* lerr,char* fname,int len);
 void	getfilelist_(char* folder,char* act,char* flist,long int nwflist[],long int* nflist,int lenfolder,int lenact,int lenflist);
-void	curproject_(char* fcfgroot,char* fpath,char* fupath,char* fimgpth,char* fdocpth,char* ftmppth,long int* ibrowse,
-        long int* iincomp,long int* iincon,int len_root,int len_fpath,int len_fupath,int len_fimgpth,int len_fdocpth,int len_ftmppth);
+void	getfileslist_(char* folder,char* act,long int* nflist,int lenfolder,int lenact);
+void	curproject_(char* fcfgroot,char* fpath,char* fupath,char* fimgpth,char* fdocpth,long int* ibrowse,
+        long int* iincomp,long int* iincon,int len_root,int len_fpath,int len_fupath,int len_fimgpth,int len_fdocpth);
 void    curviews_(float* EVX,float* EVY,float* EVZ,float* VX,float* VY,float* VZ,float* EAN,long int* JITZNM,long int* JITSNM,
         long int* JITVNO,long int* JITOBS,long int* JITSNR,long int* JITGRD,long int* JITORG,float* DIS,long int* JITBND,
         long int* JITDSP,long int* JITHLS,long int* JITHLZ,long int* JITPPSW);

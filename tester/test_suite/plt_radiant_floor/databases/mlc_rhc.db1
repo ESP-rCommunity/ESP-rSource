@@ -1,5 +1,5 @@
 # composite construction db defined in ../databases/mlc_rhc.db1
-# based on materials db ../databases/constr.db2
+# based on materials db ../databases/constr.db2.a
    15     # no of composites 
 # layers  description   optics 
     5    extern_wall   OPAQ  OPAQUE              
@@ -51,7 +51,7 @@
     2    roof          OPAQ  OPAQUE              
 # db ref  thick   db name & air gap R 
   162    0.0050  Roofing felt
-   72    0.0130  Plywood
+   72    0.0130  Plywood 700d
 # layers  description   optics 
     6    grnd_floor    OPAQ  OPAQUE              
 # db ref  thick   db name & air gap R 

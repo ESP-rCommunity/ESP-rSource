@@ -131,7 +131,6 @@ C IEEE callback (Solaris)
       
       integer ncomp,ncon
       common/c1/ncomp,ncon
-      common/c21/ifcfg,cfgroot,lcfgf
 
 C Path to model and command line file (if any).
       common/rpath/path
@@ -147,6 +146,7 @@ C Project journal on/off, unit number, cmd, file name.
       common/journopt/journio,iuj,journcmd,jfile
 
 C Defaults.
+      character*96 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF
       common/deflt2/dfcfg,dfctl,defrlb,dafres,daprob,dpnf
       
 C Significant figure reporting limit.
@@ -158,17 +158,19 @@ C Name of current application.
 
       dimension month(12),items(24),isadd(12),ishd(12),iavdec(12)
       character*72 lname,tbase
-      character*72 lcfgf
       character items*26,cAppName*12
       character month*3,outs*124,outs248*248,etext*70,ltmp*144
       character descrh*5,descrd*5,inf*144,lcmdfl*144
-      character path*72,cfgroot*24,outstr*124
+      character path*72,outstr*124
       character inz*16,inzone*16,zn*12,pact*16,paction*16
       character ascif*72,pascif*72
-      character*72 dfcfg,dfctl,defrlb,daprob,dafres,dpnf
       character journcmd*20,jfile*72,uname*24,fs*1,cjfile*72
       character xfile*144,tg*1,delim*1,mode*4
       character exportfile*72 ! for ascii shading file
+
+      character cVnum*16      ! returned from ESPrVersionNum
+      character pagestitle*42 ! for banner title via epages call
+
       logical silent,unixok,there,context,existing
       logical modify,modlen,modbnd,xst
       logical ok,dok,cfgok,mldbok,matdbok,ctlok,optkok
@@ -187,11 +189,13 @@ C Name of current application.
       integer numberofzones ! to pass to updwire rather than ncomp
       integer iigl,iigr,iigt,iigb,iigw,iigwh
       integer iiw1,iiw2,iiw3,iiw4,iimenu
+      integer iicapture,iiazi    ! to pass to updcapt updazi
 #else
       integer*8 iside,isize,ifont     ! passed to viewtext
       integer*8 numberofzones
       integer*8 iigl,iigr,iigt,iigb,iigw,iigwh
       integer*8 iiw1,iiw2,iiw3,iiw4,iimenu
+      integer*8 iicapture,iiazi    ! to pass to updcapt updazi
 #endif
 
 C For help messages
@@ -345,8 +349,14 @@ C feedback).
          limtty=16
          limit =16
       endif
+
+C Find the current ESP-r version number and add it to application title.
+      call ESPrVersionNum(cVnum)
+      write(pagestitle,'(2a)') 'ESP-r Shading & Insolation ',
+     &  cVnum(1:lnblnk(cVnum))
+
       call epages(mmod,iuin,iuout,iappwi,iapphi,iappx,iappy,menuchw,
-     &'ESP-r Shading & Insolation: enquiries to esru@strath.ac.uk')
+     &  pagestitle)
 
 C Open the text display box equal to limtty if mmod = 8.
       if(mmod.eq.8)then
@@ -354,7 +364,6 @@ C Open the text display box equal to limtty if mmod = 8.
         iigl=igl; iigr=igr; iigt=igt; iigb=igb; iigw=igw; iigwh=igwh
         CALL win3d(iimenu,iiw1,iiw2,iiw3,iiw4,
      &    iigl,iigr,iigt,iigb,iigw,iigwh)
-C        call win3d(menuchw,2,1,1,3,igl,igr,igt,igb,igw,igwh)
         igl=int(iigl); igr=int(iigr); igt=int(iigt); igb=int(iigb)
         igw=int(iigw); igwh=int(iigwh)
         iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
@@ -363,8 +372,9 @@ C        call win3d(menuchw,2,1,1,3,igl,igr,igt,igb,igw,igwh)
           call opensetup
           numberofzones=0
           call updwire(numberofzones)  ! pass local integer
-          call updcapt(1)
-          call updazi(1)
+          iicapture=1; iiazi=1
+          call updcapt(iicapture)
+          call updazi(iiazi)
         endif
         call setzscale()
         mdispl=0
@@ -377,6 +387,66 @@ C        call win3d(menuchw,2,1,1,3,igl,igr,igt,igb,igw,igwh)
       endif
       if(mmod.ne.-6)icout=iuout
 
+C Because ish can be started up in several modes delay echo
+C of the version & scan of the esprc file until after the
+C input parameters have been determined.
+
+C Take command line action parameter. If paction = 'recalculate' then
+C after the configuration is read in, do a standard annual calculation
+C and pause so user can view results. If paction = 'update_silent' then
+C do standard annual calculation and exit when completed. 
+C If paction= useupdate_silent then import existing ascii file if
+C available otherwise do standard annual calculation. If paction
+C is 'asci2bin' then create an empty binary and then import ascii
+C data and then exit. If paction is 'bin2asci' then scan the binary
+C and then call the ascii export facility and exit.
+      if(pact(1:1).ne.' ')then
+         paction=pact
+         write(outs,'(2a)')'Ish: the input action is: ',paction
+         call tstamp('>',outs)
+         if(paction(1:11).eq.'recalculate')then
+           write(outs,'(2a)')' the action is: ',paction
+           call edisp(iuout,outs)
+           user_recalc=.true.
+         elseif(paction(1:13).eq.'update_silent')then
+           silent=.true.
+         elseif(paction(1:16).eq.'useupdate_silent')then
+           silent=.true.
+         elseif(paction(1:8).eq.'asci2bin')then
+           write(ascif,'(a)') pascif(1:lnblnk(pascif))
+            if(ascif(1:4).eq.'UNKN')then
+              call edisp(iuout,'ish: the action file is unknown!')
+              call pauses(1)
+              call epagend
+              stop
+            endif
+            silent=.true.
+         elseif(paction(1:8).eq.'bin2asci')then
+           write(ascif,'(a)') pascif(1:lnblnk(pascif))
+            if(ascif(1:4).eq.'UNKN')then
+              call edisp(iuout,'ish: the action file is unknown!')
+              call pauses(1)
+              call epagend
+              stop
+            endif
+            silent=.true.
+         else
+            paction='INTERACTIVE'
+            call tstamp('>','Ish: interactive mode')
+            silent=.false.
+         endif
+      else
+         paction='INTERACTIVE'
+         silent=.false.
+      endif
+      
+      if(.NOT.silent)then
+      
+C Not in silent recalculation mode so present application version
+C information.
+        CALL ESPrVersion("summary",cAppName,IUOUT)
+      endif 
+
 C Find the user's home folder then get user's custom settings.
       call usrhome(upath)
       if(unixok)then
@@ -384,7 +454,11 @@ C Find the user's home folder then get user's custom settings.
       else
          write(esprc,'(3a)') upath(1:lnblnk(upath)),fs,'esprc'
       endif
-      call scesprc(esprc,iuf,0,ier)
+      if(.NOT.silent)then
+        call scesprc(esprc,iuf,1,ier)
+      else
+        call scesprc(esprc,iuf,-1,ier)
+      endif
 
 C If there is a journal active, set up to add to itl. First get
 C the journal file from the user's home folder. All subsequent
@@ -420,6 +494,7 @@ C Scan the defaults file for default configuration.
 C Take command line file name as initial configuration file.
       if(inf(1:2).ne.'  '.and.inf(1:4).ne.'UNKN')then
          lcmdfl=inf
+         call edisp(iuout,'  ')  ! echo blank line
          write(outs248,'(2a)')'Input file is: ',lcmdfl
          if(pact(1:13).eq.'update_silent'.or.
      &      pact(1:16).eq.'useupdate_silent')then
@@ -440,6 +515,7 @@ C on a single zone.
      &      pact(1:16).eq.'useupdate_silent')then
            continue
          else
+           call edisp(iuout,'  ')  ! echo blank line
            call edisp(iuout,outs)
          endif
          write(outs,'(2a)')'Ish: the input zone is: ',inzone
@@ -448,62 +524,6 @@ C on a single zone.
          inzone='ALL'
          call tstamp('>','Ish: no focus zone')
       endif
-
-C Take command line action parameter. If paction = 'recalculate' then
-C after the configuration is read in, do a standard annual calculation
-C and pause so user can view results. If paction = 'update_silent' then
-C do standard annual calculation and exit when completed. 
-C If paction= useupdate_silent then import existing ascii file if
-C available otherwise do standard annual calculation. If paction
-C is 'asci2bin' then create an empty binary and then import ascii
-C data and then exit. If paction is 'bin2asci' then scan the binary
-C and then call the ascii export facility and exit.
-      if(pact(1:1).ne.' ')then
-         paction=pact
-         write(outs,'(2a)')'Ish: the input action is: ',paction
-         call tstamp('>',outs)
-         if(paction(1:11).eq.'recalculate')then
-            write(outs,'(2a)')' the action is: ',paction
-            call edisp(iuout,outs)
-            user_recalc=.true.
-         elseif(paction(1:13).eq.'update_silent')then
-            silent=.true.
-         elseif(paction(1:16).eq.'useupdate_silent')then
-            silent=.true.
-         elseif(paction(1:8).eq.'asci2bin')then
-	    write(ascif,'(a)') pascif(1:lnblnk(pascif))
-            if(ascif(1:4).eq.'UNKN')then
-              call edisp(iuout,'ish: the action file is unknown!')
-              call pauses(1)
-              call epagend
-              stop
-            endif
-            silent=.true.
-         elseif(paction(1:8).eq.'bin2asci')then
-	    write(ascif,'(a)') pascif(1:lnblnk(pascif))
-            if(ascif(1:4).eq.'UNKN')then
-              call edisp(iuout,'ish: the action file is unknown!')
-              call pauses(1)
-              call epagend
-              stop
-            endif
-            silent=.true.
-         else
-            paction='INTERACTIVE'
-            call tstamp('>','Ish: interactive mode')
-            silent=.false.
-         endif
-      else
-         paction='INTERACTIVE'
-         silent=.false.
-      endif
-      
-      if(.NOT.silent)then
-      
-C Not in silent recalculation mode so present application version
-C information.
-        CALL ESPrVersion("summary",cAppName,IUOUT)
-      endif 
 
       ical=0
       multic=0
@@ -546,7 +566,7 @@ C Open core of databases if not already done so.
      &               'or Optical Properties db.','W')
               endif
             endif
-	    
+    
             if(paction(1:13).eq.'update_silent'.or.
      &         paction(1:16).eq.'useupdate_silent')then
               continue
@@ -591,7 +611,6 @@ C A new binary file was created from an existing ascii so
 C the requested useupdate_silent task has been completed.
                  loaded_existing=.true.
                  if(paction(1:16).eq.'useupdate_silent')then
-C                   call pauses(1)
                    call epagend
                    stop
                  endif
@@ -785,7 +804,9 @@ C Proceed with shading and then insolation calculations.
                  call edisp(iuout,outs)
                endif
             else
-               call edisp(iuout,
+
+C If in graphic mode remind user, otherwise be silent.
+               if(mmod.eq.8) call edisp(iuout,
      &           'No obstructions, calculating insolation.')
             endif
             icstat=0
@@ -1177,7 +1198,7 @@ C in the zone transitional shading file or from common blocks).
      &        1,'F',12,'F',1,'month number',ier,nbhelp)
             if(ier.ne.0)goto 201
             call eday(iavdec(mon),mon,iyd)
-	    
+    
 C If there is a transitional shading file then use it when composing
 C the synopsis. If not found (i.e. if binary file is based on reading
 C an ascii shading file) then use an alternative approach.
@@ -1198,7 +1219,7 @@ C shading file.
               call edisp(iuout,outs)
               call retrv1(icomp)
               call shsynp(icomp)
-	       
+       
             else
 
 C Shading synopsis is based on common block information.
@@ -1318,7 +1339,7 @@ C source surfaces.
             call inscon(icomp,icstat,'-')
             changed_existing=.true.  ! so we know to update ASCII on exit
          else
-            call usrmsg(
+           call usrmsg(
      &       'No Zone Shading & Insolation db! Use Project Manager',
      &       'to specify one for this zone or choose another zone.',
      &       'W')
@@ -1574,8 +1595,10 @@ C Get name of obstruction file.
          continue   ! any obstructions are in the geometry file.
       elseif(iobs(icomp).eq.0)then
          if(silent)then
-            call edisp(iuout,
-     &             'No obstructions so only compute insolation.')
+
+C If silent then only print this if running in graphic mode.
+            if(mmod.eq.8) call edisp(iuout,
+     &        'No obstructions so only compute insolation.')
          else
             helptopic='obs_not_associated'
             call gethelptext(helpinsub,helptopic,nbhelp)
@@ -1624,7 +1647,7 @@ C or if the user requested a file conversion.
            elseif(paction(1:8).eq.'asci2bin')then
              continue
            else
-	     write(exportfile,'(2a)') 
+             write(exportfile,'(2a)') 
      &         lshad(icomp)(1:lnblnk(lshad(icomp))),'a'
              call findfil(exportfile,xst)
              if(xst)then
@@ -1762,8 +1785,8 @@ C Depending on location check existance.
           elseif(IER.eq.2)then
             MLDBOK=.FALSE.
           endif
-	  goto 138    ! if silent and no materials jump to optics
-	endif
+          goto 138    ! if silent and no materials jump to optics
+        endif
         IF(IER.eq.1)then
           write(outs248,'(3a)') 
      &    ' Problems with materials used by Constructions db',

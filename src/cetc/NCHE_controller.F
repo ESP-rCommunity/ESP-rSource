@@ -27,11 +27,11 @@ c controller model:
 C 
 C   - NCHE_controller:          Controller routine for side-arm solar domestic hot water systems
 C                               Currently does the following:
-C                                   - Determines hot and cold storage temperatures
-c								    - calculates the natural convection flow rate based on the
-C								      system configuration and the densities in the other
-C								      system components
-C                                   - Manages the flowrate of the associated pump as required
+C                               - Determines hot and cold storage temperatures
+c                               - calculates the natural convection flow rate based on the
+C                                 system configuration and the densities in the other
+C                                 system components
+C                               - Manages the flowrate of the associated pump as required
 C
 C   - NCHE_thermal_XXX:         Routine containing XXX control algorithm for thermal
 C                               load control:
@@ -43,14 +43,14 @@ C                               text file, if requested. Intended mostly for deb
 C                               use.
 C
 C   Notes: These files describe a controller that will calculate the natural convection
-C		   heat exchanger (NCHE) as used in a solar domestic hot water (SDHW) system.
+C   heat exchanger (NCHE) as used in a solar domestic hot water (SDHW) system.
 C
 C************************************************************************************
 
 C************************************************************************************
 C************************** NCHE_controller *****************************************
 C
-C Created by: Julia Purdy	
+C Created by: Julia Purdy
 C Initial Creation Date: October 20, 2005.
 C Copyright CETC 2005
 C
@@ -295,7 +295,7 @@ C-------------------------------------------------------------------------------
          TAC_cooling_signal  = 0
          TAC_heatdump_signal = 0
 C---------------------------------------------------------------------------------
-C	 Set flag for time step output file 
+C        Set flag for time step output file 
 C---------------------------------------------------------------------------------
          file_open = .false.
       endif
@@ -2135,8 +2135,8 @@ C-------------------------------------------------------------------------------
 C        Initialize arrays to zero (probably not necessary, depending on the flags
 C        used at compliation)
 C---------------------------------------------------------------------------------
-	if( HWT_n_time_int .gt. 0 ) then
-         do ii = 1, HWT_n_time_int	
+        if( HWT_n_time_int .gt. 0 ) then
+         do ii = 1, HWT_n_time_int
             HWT_INT_DATA(ii) = 0.
          ENDDO
         endif

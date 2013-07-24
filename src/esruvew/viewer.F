@@ -29,6 +29,9 @@ C Name of current application
       character outs*124,inf*144,path*72,LCMDFL*144,fs*1
       character outs248*248
 
+      character cVnum*16      ! returned from ESPrVersionNum
+      character pagestitle*42 ! for banner title via epages call
+
 #ifdef OSI
       integer iigl,iigr,iigt,iigb,iigw,iigwh
       integer iiw1,iiw2,iiw3,iiw4,iimenu
@@ -122,8 +125,14 @@ C Set initial font sizes (IMFS is for graphs, IFS is for dialog & text feedback)
         LIMTTY=16
         LIMIT =16
       ENDIF
+
+C Find the current ESP-r version number and add it to application title.
+      call ESPrVersionNum(cVnum)
+      write(pagestitle,'(2a)') 'ESP-r Viewing Facility ',
+     &  cVnum(1:lnblnk(cVnum))
+
       CALL EPAGES(MMOD,IUIN,IUOUT,iappwi,iapphi,iappx,iappy,menuchw,
-     &  'ESP-r Viewing Facility: enquiries to esru@strath.ac.uk')
+     &  pagestitle)
 
 C Open the text display box equal to LIMTTY if MMOD = 8.
       IF(MMOD.EQ.8)THEN
@@ -133,7 +142,6 @@ C Setup and pass in parameters to win3d.
         iigl=igl; iigr=igr; iigt=igt; iigb=igb; iigw=igw; iigwh=igwh
         CALL win3d(iimenu,iiw1,iiw2,iiw3,iiw4,
      &    iigl,iigr,iigt,iigb,iigw,iigwh)
-C        CALL win3d(menuchw,1,1,1,1,igl,igr,igt,igb,igw,igwh)
         igl=int(iigl); igr=int(iigr); igt=int(iigt); igb=int(iigb)
         igw=int(iigw); igwh=int(iigwh)
         iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
@@ -151,6 +159,7 @@ C        CALL win3d(menuchw,1,1,1,1,igl,igr,igt,igb,igw,igwh)
       ENDIF
 
       CALL ESPrVersion("summary",cAppName,IUOUT)
+      call edisp(iuout,'  ')  ! echo blank line
       call edisp(iuout,' Max no of:  points  surfaces  edges  bodies ')
       write(outs,'(11x,I8,I9,I8,I8)')MPT,MSF,MED,MBB
       call edisp(iuout,outs)
@@ -158,9 +167,11 @@ C        CALL win3d(menuchw,1,1,1,1,igl,igr,igt,igb,igw,igwh)
 C Take command line file name as initail viewer file.
       if(inf(1:2).ne.'  '.and.inf(1:4).ne.'UNKN')then
         LCMDFL=inf
-        write(outs248,'(a,a)')' the input file is: ',LCMDFL
+        call edisp(iuout,'  ')  ! echo blank line
+        write(outs248,'(a,a)')'The input file is: ',LCMDFL
         call edisp248(iuout,outs248,80)
       else
+        call edisp(iuout,'  ')  ! echo blank line
         LCMDFL=' '
       endif
 

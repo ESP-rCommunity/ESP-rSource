@@ -966,10 +966,11 @@ C to graphical result display.
       COMMON/ZONPIK/NZ,NZNO(MCOM)
       COMMON/RESLIB/RFILE,PFILE,MSTRFILE,LAFRES
 
-      CHARACTER ETEXT*72
+      CHARACTER ETEXT*82
       character rfile*72,PFILE*72,MSTRFILE*72,LAFRES*72
       CHARACTER PDESCR*60,SDESCR*44,VITEM*24,HITEM*24
       CHARACTER outsd*80,outsd1*81
+      integer lsn1
 
       integer iglib   ! if 1 then X11, if 2 then GTK, if 3 then text only.
 #ifdef OSI
@@ -999,13 +1000,13 @@ C Setup and pass in parameters to win3d.
         iigl=igl; iigr=igr; iigt=igt; iigb=igb; iigw=igw; iigwh=igwh
         CALL win3d(iimenu,iiw1,iiw2,iiw3,iiw4,
      &    iigl,iigr,iigt,iigb,iigw,iigwh)
-C        call win3d(menuchw,10,8,5,3,igl,igr,igt,igb,igw,igwh)
         igl=int(iigl); igr=int(iigr); igt=int(iigt); igb=int(iigb)
         igw=int(iigw); igwh=int(iigwh)
         call startbuffer()
       ENDIF
 
-      WRITE(ETEXT,'(1X,A44,A,A22)')SDESCR,' Lib:',RFILE(1:22)
+      lsn1=MIN0(lnblnk(RFILE),42)
+      WRITE(ETEXT,'(1X,A,A,A)')SDESCR,' Lib:',RFILE(1:lsn1)
       iside=1
       isize=0
       ifont=1

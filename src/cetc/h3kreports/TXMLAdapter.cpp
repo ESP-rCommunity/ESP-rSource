@@ -3,6 +3,7 @@
 #include <iostream>
 #include <fstream>
 #include <sstream>
+#include <string.h>
 
 #include <libxml/parserInternals.h>
 
@@ -21,18 +22,17 @@ TXMLAdapter::TXMLAdapter(string filePath)
         ifstream Input_file_test;
 
         // Test if input file exists.
-
-
-        Input_file_test.open( filePath.c_str(), ifstream::in );
+        Input_file_test.open(filePath.c_str(), ifstream::in );
         Input_file_test.close();
 
         if (  Input_file_test.fail() ){
-
            m_document = NULL;
 
         }else{
-
             m_document = xmlParseFile(filePath.c_str());
+            if(!xmlFree)
+                xmlMemGet(&xmlFree,&xmlMalloc,&xmlRealloc,NULL);
+
             // Is file valid?
             if (m_document == NULL ){
                cerr << "\n H3KReports: configuration file ("<<filePath<<") does\n"
@@ -41,7 +41,6 @@ TXMLAdapter::TXMLAdapter(string filePath)
                     <<   " or perhaps build a new one using the menu option. \n\n";
 
             }else{
-
                 if (xmlStrcmp(RootNode()->name, (const xmlChar *) "configuration")) {
                     fprintf(stderr,"input.xml document of the wrong type, root node != configuration");
                     xmlFreeDoc(m_document);
@@ -54,7 +53,7 @@ TXMLAdapter::TXMLAdapter(string filePath)
 TXMLAdapter::TXMLAdapter()
 {
         m_document = xmlNewDoc(BAD_CAST "1.0");
-        
+
         if (m_document == NULL ) {
                 cerr << "Document not created." << endl;
                 return;
@@ -68,12 +67,12 @@ void TXMLAdapter::SetStylesheet(std::string path)
         xmlAddPrevSibling(xmlDocGetRootElement(m_document),  pi);
 }
 
-TXMLNode TXMLAdapter::AddNode(TXMLNode parent, std::string name, std::string value)
+TXMLNode TXMLAdapter::AddNode(TXMLNode parent, const char *name, const char *value)
 {
         TXMLNode newNode;
         if(parent == NULL) //new root node
         {
-                newNode = xmlNewNode(NULL, BAD_CAST name.c_str());
+                newNode = xmlNewNode(NULL, BAD_CAST name);
                 xmlDocSetRootElement(m_document, newNode);
         }
         else
@@ -83,32 +82,32 @@ TXMLNode TXMLAdapter::AddNode(TXMLNode parent, std::string name, std::string val
                 * of root_node node.
                 */
 
-	  //If this node has no content of its own..ensure a NULL is passed. 
-	  if (value =="")
-	    {
-	      newNode = xmlNewChild(parent, NULL, BAD_CAST name.c_str(),
-				    NULL);
-	    }
-	  else
-	    {
-	      newNode = xmlNewChild(parent, NULL, BAD_CAST name.c_str(),
-				    BAD_CAST value.c_str()); 
-	      
-	    }
+      //If this node has no content of its own..ensure a NULL is passed.
+      if (strlen(value) == 0)
+        {
+          newNode = xmlNewChild(parent, NULL, BAD_CAST name,
+                    NULL);
         }
-        
+      else
+        {
+          newNode = xmlNewChild(parent, NULL, BAD_CAST name,
+                    BAD_CAST value);
+
+        }
+        }
+
         return newNode;
 }
 
-void TXMLAdapter::AddAttribute(TXMLNode node, std::string name, std::string value)
+void TXMLAdapter::AddAttribute(TXMLNode node, const char *name, const char *value)
 {
-        xmlNewProp(node, BAD_CAST name.c_str(), BAD_CAST value.c_str());
+        xmlNewProp(node, BAD_CAST name, BAD_CAST value);
 }
 
-void TXMLAdapter::WriteToFile(std::string filePath)
+void TXMLAdapter::WriteToFile(const char *filePath)
 {
-  
-        xmlSaveFormatFileEnc(filePath.c_str(), m_document, "UTF-8", 1);
+
+        xmlSaveFormatFileEnc(filePath, m_document, "UTF-8", 1);
 }
 
 
@@ -127,9 +126,9 @@ std::string TXMLAdapter::GetFirstNodeValue(std::string nodeName, TXMLNode parent
 
         std::vector<string> names;
         std::string result;
-        
+
         GetNodeValues(nodeName, parentNode, names);
-        
+
         if(names.size() > 0){ result=names[0]; }
         else{ result=string(); }
 
@@ -138,13 +137,13 @@ std::string TXMLAdapter::GetFirstNodeValue(std::string nodeName, TXMLNode parent
 
 void TXMLAdapter::GetNodeValues(const std::string nodeName, TXMLNode parentNode, vector<string> &names)
 {
-        
+
         xmlChar *key;
         xmlNodePtr cur  = RootNode();
         cur = cur->children;
         while (cur != NULL) {
                  if ((xmlStrEqual(cur->name, (const xmlChar *) nodeName.c_str()))) {
-                         key = xmlNodeListGetString(m_document, cur->xmlChildrenNode, 1);                         
+                         key = xmlNodeListGetString(m_document, cur->xmlChildrenNode, 1);
                          if ( (const char*)key != NULL ){
                            names.push_back((const char*)key);
                          }
@@ -152,11 +151,71 @@ void TXMLAdapter::GetNodeValues(const std::string nodeName, TXMLNode parentNode,
                  }
                  cur = cur->next;
         }
-        
+
         return;
 }
 
-std::vector<TXMLNode> TXMLAdapter::GetChildren(TXMLNode node, std::string name)
+void TXMLAdapter::GetNodeValuesSet(const std::string nodeName, TXMLNode parentNode, set<string> &names)
+{
+   xmlChar *key;
+   xmlNodePtr cur  = RootNode();
+   cur = cur->children;
+   while (cur != NULL) {
+      if ((xmlStrEqual(cur->name, (const xmlChar *) nodeName.c_str()))) {
+             key = xmlNodeListGetString(m_document, cur->xmlChildrenNode, 1);
+             if ( (const char*)key != NULL ){
+               names.insert((const char*)key);
+             }
+             xmlFree(key);
+      }
+
+      cur = cur->next;
+   }
+
+
+
+   return;
+}
+
+/* ********************************************************************
+** Method:   GetFirstAttributeValue
+** Scope:    public
+** Purpose:  Return the attribute of a specified node, only the first
+**           occurance of the node will be evaluated.
+** Params:   nodeName - the name of the xml node
+**           attributeName - the name of the desired attribute
+** Returns:  string - the attribute value
+** Author:   Claude Lamarche
+** Mod Date: 2011-08-19
+** ***************************************************************** */
+std::string TXMLAdapter::GetFirstAttributeValue(const char* nodeName, const char* attributeName)
+{
+   std::string result = "";
+   xmlNodePtr cur  = RootNode();
+   xmlChar *attrib;
+
+
+   cur = cur->children;
+   while (cur != NULL) {
+      //if found the node
+        if ((!xmlStrcmp(cur->name, (const xmlChar *)nodeName))) {
+        attrib = xmlGetProp(cur, (const xmlChar *)attributeName);
+            if((const char*)attrib != NULL)
+            {
+            result = (const char *)attrib;
+            }
+
+            xmlFree(attrib);
+            break;
+        }
+        cur = cur->next;
+   }
+
+   return result;
+}
+
+
+std::vector<TXMLNode> TXMLAdapter::GetChildren(TXMLNode node, const char *name)
 {
    xmlNodePtr child = node->children;
    if(!child)
@@ -165,22 +224,25 @@ std::vector<TXMLNode> TXMLAdapter::GetChildren(TXMLNode node, std::string name)
    vector<TXMLNode> children;
    do
    {
-           if(name.empty() || name == (const char*)child->name)
-                   children.push_back(child);
+
+      if(strlen(name) == 0 || strcmp(name,(const char*)child->name) == 0)
+         children.push_back(child);
+     //if(name.empty() || name == (const char*)child->name)
+     //    children.push_back(child);
    }
    while((child = child->next));
-   
+
    return children;
 }
 
-void TXMLAdapter::Log() 
+void TXMLAdapter::Log()
 {
         m_currentNode = xmlDocGetRootElement(m_document);
         cout << m_currentNode->name << endl;
         m_currentNode = m_currentNode->xmlChildrenNode;
         while (m_currentNode != NULL) {
                 cout << m_currentNode->name << endl;
-        
+
                 m_currentNode = m_currentNode->next;
         }
 }
@@ -188,16 +250,16 @@ void TXMLAdapter::Log()
 
 
 
-///Write Transformed XML 
-void TXMLAdapter::WriteTransformedXML(std::string  sXMLFile, 
+///Write Transformed XML
+void TXMLAdapter::WriteTransformedXML(const char* sXMLFile,
                                       map<std::string,std::string> m_Stylesheets)
-{       
+{
 
-#ifdef XSL  
-  
+#ifdef XSL
+
   //Pointer to stylsheet
   xsltStylesheetPtr cur = NULL;
-  
+
   //input xml placeholder.
   xmlDocPtr doc;
 
@@ -216,12 +278,14 @@ void TXMLAdapter::WriteTransformedXML(std::string  sXMLFile,
       if ( sheet->second != "none" ){
 
         //set oringinal xml input file to doc.
-        doc = xmlParseFile(sXMLFile.c_str());
+        doc = xmlParseFile(sXMLFile);
+        if(!xmlFree)
+            xmlMemGet(&xmlFree,&xmlMalloc,&xmlRealloc,NULL);
 
-        // Open transform destination file 
+        // Open transform destination file
         outfile = fopen(sheet->second.c_str(),"w");
-      
-        //get stylsheet into cur.    
+
+        //get stylsheet into cur.
         cur = xsltParseStylesheetFile((const xmlChar *)sheet->first.c_str());
         // Apply transform
         doc = xsltApplyStylesheet(cur, doc  , NULL);
@@ -241,8 +305,8 @@ void TXMLAdapter::WriteTransformedXML(std::string  sXMLFile,
     }
 
 
-  
-#endif 
-  
+
+#endif
+
 }
 

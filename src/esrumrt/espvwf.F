@@ -53,6 +53,9 @@ C IEEE callback (Solaris)
       COMMON/FIL/IOFIL,IFPOL
       COMMON/FATRIB/ATR
 
+      integer ncub,ivfok
+      real XOC,YOC,ZOC,DXC,DYC,DZC,CANG
+      character CUBN*6
       COMMON/MRTC/NCUB,XOC(MCUB),YOC(MCUB),ZOC(MCUB),DXC(MCUB),
      &            DYC(MCUB),DZC(MCUB),CANG(MCUB),IVFOK(MCUB),CUBN(MCUB)
       COMMON/MRT2/GEOLOAD,MRTLOAD
@@ -83,12 +86,12 @@ C Indicator of possible focus zone.
       
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
-      common/C21/IFCFG,cfgroot,LCFGF
 
 C Project journal on/off, unit number, cmd, file name.
       common/journopt/journio,iuj,journcmd,jfile
 
 C Defaults.
+      character*96 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF
       COMMON/DEFLT2/DFCFG,DFCTL,DEFRLB,DAFRES,DAPROB,DPNF
       
 C Significant figure reporting limit (NSIGFIG).
@@ -110,25 +113,30 @@ C Name of current application
       LOGICAL GEOLOAD,MRTLOAD,tmrt,temperr,ATR,context
       LOGICAL MODIFY,MODLEN,MODBND,XST,unixok,there
       character outs*124,outs248*248,MODE*4
-      CHARACTER OUTSTR*124,CUBN*6,ITEM*29
-      CHARACTER DFILE*72,inf*144,LCMDFL*144,LCFGF*72
+      CHARACTER OUTSTR*124,ITEM*29
+      CHARACTER DFILE*72,inf*144,LCMDFL*144
       CHARACTER VFILE*72,ZN*12,LTMP*72,L144*144,LTMPFL*72
-      character*72 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF
-      character path*72,cfgroot*24
+      character path*72
       character journcmd*20,jfile*72,uname*24
       character inz*16,inzone*16,fs*1,cjfile*72
+
+      character cVnum*16      ! returned from ESPrVersionNum
+      character pagestitle*42 ! for banner title via epages call
 
       integer iglib   ! if 1 then X11, if 2 then GTK, if 3 then text only.
 #ifdef OSI
       integer numberofzones ! to pass to updwire rather than ncomp
       integer iigl,iigr,iigt,iigb,iigw,iigwh
       integer iiw1,iiw2,iiw3,iiw4,iimenu
+      integer iicapture,iiazi    ! to pass to updcapt updazi
 #else
       integer*8 numberofzones
       integer*8 iigl,iigr,iigt,iigb,iigw,iigwh
       integer*8 iiw1,iiw2,iiw3,iiw4,iimenu
+      integer*8 iicapture,iiazi    ! to pass to updcapt updazi
 #endif
       integer NITEMS,INO ! max items and current menu item
+      integer IGFACTold,NPATCHold ! local vars to remember grid/patch settings
 
 C For help messages
       character helpinsub*24 ! subroutine name
@@ -294,8 +302,14 @@ C Set initial font sizes (IMFS is for graphs, IFS is for dialog & text feedback)
         LIMTTY=16
         LIMIT =16
       ENDIF
+
+C Find the current ESP-r version number and add it to application title.
+      call ESPrVersionNum(cVnum)
+      write(pagestitle,'(2a)') 'ESP-r View Factors ',
+     &  cVnum(1:lnblnk(cVnum))
+
       CALL EPAGES(MMOD,IUIN,IUOUT,iappwi,iapphi,iappx,iappy,menuchw,
-     &'ESP-r View Factors: enquiries to esru@strath.ac.uk')
+     &  pagestitle)
 
 C Open the text display box equal to LIMTTY if MMOD = 8.
 C If starting as a reduced percentage of default then widen the
@@ -307,7 +321,6 @@ C Setup and pass in parameters to win3d.
         iigl=igl; iigr=igr; iigt=igt; iigb=igb; iigw=igw; iigwh=igwh
         CALL win3d(iimenu,iiw1,iiw2,iiw3,iiw4,
      &    iigl,iigr,iigt,iigb,iigw,iigwh)
-C        CALL win3d(menuchw,4,2,2,3,igl,igr,igt,igb,igw,igwh)
         igl=int(iigl); igr=int(iigr); igt=int(iigt); igb=int(iigb)
         igw=int(iigw); igwh=int(iigwh)
         iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
@@ -316,8 +329,9 @@ C        CALL win3d(menuchw,4,2,2,3,igl,igr,igt,igb,igw,igwh)
           call opensetup
           numberofzones=0
           call updwire(numberofzones)  ! pass local integer
-          call updcapt(1)
-          call updazi(1)
+          iicapture=1; iiazi=1
+          call updcapt(iicapture)
+          call updazi(iiazi)
         endif
         call setzscale()
         mdispl=0
@@ -334,7 +348,6 @@ C     &    mdispl,nifgrey,ncset,ngset,nzonec
 
       ENDIF
       CALL ESPrVersion("summary",cAppName,IUOUT)
-      call edisp(iuout,' ')
 
 C Find the user's home folder then get user's custom settings.
       call usrhome(upath)
@@ -384,11 +397,12 @@ C Take command line file name as configuration file.
         LCMDFL='  '
       endif
 
-C Take command line zone name and
-C determine if focus should be to a single zone.
+C Take command line zone name and determine if the focus should
+C be to a single zone or ALL zones (e.g. not yet specified).
       if(inz(1:1).ne.' ')then
-        inzone=inz
-        write(outs,'(a,a)')' the input zone is: ',inzone
+        write(inzone,'(a)') inz
+        call edisp(iuout,'  ') ! echo a blank line
+        write(outs,'(a,a)')'The input zone is: ',inzone
         call edisp(iuout,outs)
         call tstamp('>',outs)
       else
@@ -487,10 +501,12 @@ C then remove it before opening a new scratch file.
 
 C If inzone = All display an image of the model. If inzone is either
 C a string which matches a zone name or is an index then focus on
-C that zone.  If inzone = UNKNOWN or the index 0 present a list.
+C that zone and update string ZN.  If inzone = UNKNOWN or the 
+C index 0 present a list.
           call zindex(inzone,index)
           if(index.gt.0)then
             ic = index
+            write(ZN,'(a)') zname(ic)
             goto 42
           endif
         endif
@@ -659,7 +675,7 @@ c Change npatch.
         helptopic='patch_subdivision'
         call gethelptext(helpinsub,helptopic,nbhelp)
         CALL EASKI(NP,' ',' New value ? ',
-     &    1,'F',MPATCH/4,'F',1,'patch subdivision',IER,nbhelp)
+     &    1,'F',MPATCH/4,'F',10,'patch subdivision',IER,nbhelp)
         NPATCH=4*NP
         call tstamp('>','VWF: updated patch subdivision')
       ELSEIF(INO.EQ.9)THEN
@@ -704,13 +720,15 @@ C of rectangular body.
         NGRID = 0
         NTRPOL = 0
         IER=0
+        IGFACTold=IGFACT
+        NPATCHold=NPATCH
         call tstamp('>','VWF: enter mrt calcs')
         call EDMRTC(ITRC,IUOUT,ICOMP,IER)
         call tstamp('>','VWF: exit mrt calcs')
 
 C Reset grid and patch after return from MRT sensor calculations.
-        IGFACT = 10
-        NPATCH=40
+        IGFACT=IGFACTold
+        NPATCH=NPATCHold
       ELSEIF(INO.EQ.12)THEN
 
 C Toggle trace level.

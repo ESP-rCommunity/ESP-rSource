@@ -326,7 +326,7 @@ C-------------------------------------------------------------------------------
          TAC_cooling_signal  = 0
          TAC_heatdump_signal = 0
 C---------------------------------------------------------------------------------
-C	 Set flag for time step output file 
+C        Set flag for time step output file 
 C---------------------------------------------------------------------------------
          file_open = .false.
       endif
@@ -2171,8 +2171,8 @@ C-------------------------------------------------------------------------------
 C        Initialize arrays to zero (probably not necessary, depending on the flags
 C        used at compliation)
 C---------------------------------------------------------------------------------
-	if( HWT_n_time_int .gt. 0 ) then
-         do ii = 1, HWT_n_time_int	
+        if( HWT_n_time_int .gt. 0 ) then
+         do ii = 1, HWT_n_time_int
             HWT_INT_DATA(ii) = 0.
          ENDDO
         endif

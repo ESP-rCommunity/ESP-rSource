@@ -1,12 +1,12 @@
 C This file is part of the ESP-r system.
-C Copyright CANMET Energy Technology Centre 
+C Copyright CANMET Energy Technology Centre
 C Natural Resources Canada, Government of Canada
-C 2004. Please Contact Ian Beausoliel-Morrison for details 
+C 2004. Please Contact Ian Beausoliel-Morrison for details
 C concerning licensing.
 
 C ESP-r is free software.  You can redistribute it and/or
 C modify it under the terms of the GNU General Public
-C License as published by the Free Software Foundation 
+C License as published by the Free Software Foundation
 C (version 2 or later).
 
 C ESP-r is distributed in the hope that it will be useful
@@ -32,7 +32,7 @@ C
 C   Frank Kreith and Mark S. Bohn. Principles of Heat Transfer. 4th Edition. Harper and Row
 C   Publishers Inc. 1986.
 C
-C   Haddad, K. "Tank with submerged heat exchanger model for ESP-r". CETC Internal Report. 
+C   Haddad, K. "Tank with submerged heat exchanger model for ESP-r". CETC Internal Report.
 C   February 2006.
 C
 C   Ajele, O.J., 1995, "Natural Convection Heat Transfer from Enclosed Healical Coils", Ph.D.
@@ -48,15 +48,15 @@ C Created by: Kamel Haddad
 C Initial Creation Date: February 17th, 2006
 C Copyright CETC 2006
 
-C This subroutine is the coefficient generator for a water storage tank with a submerged heat 
+C This subroutine is the coefficient generator for a water storage tank with a submerged heat
 C exchanger. The tank is reprented by node 1 and the heat exchanger is node 2. Heat transfer
 C between the tube fluid and the tank fluid is accomplished by natural convection on the outside
-C of the tube walls. 
+C of the tube walls.
 
 C INPUTS:
 C     IPCOMP     Component number within the user defined plant component network
 C     ISTATS     Flag indicating whether energy balance or water mass balance is sought
-C     ICONDX     ESP-r common variable holding number for plant network connections associated 
+C     ICONDX     ESP-r common variable holding number for plant network connections associated
 C                with component
 C     NPCDAT     ESP-r common variable holding node numbers for plant components within plant
 C                network
@@ -75,7 +75,7 @@ C                Specific heat of tube water and solids
 C     ADATA(IPCOMP,5)
 C                UA-value to the environment of the tank
 C     ADATA(IPCOMP,6)
-C                Total length of tube 
+C                Total length of tube
 C     ADATA(IPCOMP,7)
 C                Inside tube diameter
 C     ADATA(IPCOMP,8)
@@ -84,22 +84,22 @@ C     ADATA(IPCOMP,9)
 C                Tube wall thermal conductivity
 C     ADATA(IPCOMP,10)
 C                Type of coil
-C                =1 use correlations for free convection for horizontal tubes to estimate 
-C                heat transfer on the tank side. Use correlations for straight pipe with 
+C                =1 use correlations for free convection for horizontal tubes to estimate
+C                heat transfer on the tank side. Use correlations for straight pipe with
 C                forced convection flow
 C                =? add more cases in the future
-C     CSVP       ESP-r common variable for present time state variables for nodes in plant 
+C     CSVP       ESP-r common variable for present time state variables for nodes in plant
 C                network
 C     CSVF       ESP-r common variable for future time state variables for nodes in plant network
 C     CONVAR     ESP-r common variable for state variables of plant node incoming flows
 C     PCONDR     ESP-r common variable for fraction of flows from incoming connections for node
 C                that are actually delivered to node in question
-C     IMPEXP     ESP-r state variable equation indicating type of explicit/implicit finite 
+C     IMPEXP     ESP-r state variable equation indicating type of explicit/implicit finite
 C                difference equation weighting to be used
-C     RATIMP     ESP-r common varialbe for user specified weighting for explicit/implicit 
+C     RATIMP     ESP-r common varialbe for user specified weighting for explicit/implicit
 C                weighting to be used for finite difference solution
 C     TIMSEC     ESP-r common variable for plant time step in seconds
-C     PCRP       ESP-r common variable for mass flow rate specific heat product for a certain 
+C     PCRP       ESP-r common variable for mass flow rate specific heat product for a certain
 C                node connection for present time step
 C     PCTP       ESP-r common variable for temperature for a certain node connection for present
 C                time step
@@ -114,7 +114,7 @@ C     COUT       List of matrix coefficients for tank and in tank heat exchanger
 C     PCOUT(1)   Total heat transfer between heat exchanger node and tank node
 C     PCOUT(2)   Heat transfer coefficient on the tube side of heat exchanger
 C     PCOUT(3)   Heat transfer coefficient on the tank side
-C     PCOUT(4)   Total heat transfer coefficient based on the inside heat transfer area of the 
+C     PCOUT(4)   Total heat transfer coefficient based on the inside heat transfer area of the
 C                tube
 C -------------------------------------------------------------------------------------------
       SUBROUTINE tank_intank_hx_coeff_gen(IPCOMP,COUT,ISTATS)
@@ -129,7 +129,7 @@ C----------------------------------------------------------------------
       REAL COUT(MPCOE)      ! Array for matrix coefficients for component
       INTEGER ISTATS        ! Flag indicating type of coefficients to be
                             ! generated (=1: energy balance; =2 1st phase
-                            ! water mass blance; =3 2nd phase vapour mass 
+                            ! water mass blance; =3 2nd phase vapour mass
                             ! balance)
 
 C----------------------------------------------------------------------
@@ -148,7 +148,7 @@ C-----Plant component connection data
      &             ICONDX(MPCOM,MNODEC,MPCONC)
       REAL CONVAR    ! States variables for connections
       INTEGER ICONTP ! Type of each connection
-      INTEGER ICONDX ! Pointer to connections for each 
+      INTEGER ICONDX ! Pointer to connections for each
                      ! component node
 
 C-----Network and control data
@@ -160,26 +160,26 @@ C-----Network and control data
 C-----Plant iteration data
       COMMON/PITER/MAXITP,PERREL,PERTMP,PERFLX,PERMFL,itrclp,
      &             ICSV(MPNODE,MPVAR),CSVI(MPNODE,MPVAR)
-      INTEGER MAXITP            
-      INTEGER ITRCLP            
+      INTEGER MAXITP
+      INTEGER ITRCLP
       INTEGER ICSV              ! flag marking nodes for iteration
-      REAL PERREL               
-      REAL PERTMP               
-      REAL PERFLX               
-      REAL PERMFL               
+      REAL PERREL
+      REAL PERTMP
+      REAL PERFLX
+      REAL PERMFL
       REAL CSVI                 ! 'initial' values of state variables
                                 ! at start of iteration
 
 C-----Simulation time steps
       COMMON/SIMTIM/IHRP,IHRF,IDYP,IDYF,IDWP,IDWF,NSINC,ITS
-      INTEGER ihrp              
-      INTEGER ihrf              
-      INTEGER idyp              
-      INTEGER idyf              
-      INTEGER idwp              
-      INTEGER idwf              
+      INTEGER ihrp
+      INTEGER ihrf
+      INTEGER idyp
+      INTEGER idyf
+      INTEGER idwp
+      INTEGER idwf
       INTEGER nsinc             ! time step number
-      INTEGER its               
+      INTEGER its
 
 C-----Common for implicit/explcit handling of plant equations
       COMMON/PCEQU/IMPEXP,RATIMP
@@ -211,7 +211,7 @@ C-----of energy balance equations
      &             PCTP(MPCON),PCRP(MPCON),PUAP(MPNODE),PCQP(MPNODE),
      &             PCNTMP(MPCOM)
       REAL PCTF                 ! Future temperature of sending node
-      REAL PCRF                 ! Future time row product of incoming 
+      REAL PCRF                 ! Future time row product of incoming
                                 ! flow mass flow x specific heat
       REAL PUAF                 ! Future time row UA value for node to the
                                 ! surrounding environment
@@ -219,7 +219,7 @@ C-----of energy balance equations
       REAL PCNTMF               ! Future time row for containment temperature
                                 ! for node
       REAL PCTP                 ! Present time row temperature of sending node
-      REAL PCRP                 ! Present time row product of incoming 
+      REAL PCRP                 ! Present time row product of incoming
                                 ! flow mass flow x specific heat
       REAL PUAP                 ! Present time row UA value for node to the
                                 ! surrounding environment
@@ -251,12 +251,12 @@ C----------------------------------------------------------------------
       REAL glycol_water_density    ! Function for density of glycol-water mixture
       REAL glycol_water_viscosity  ! Function for viscosity of glycol-water mixture
       REAL glycol_water_tboil      ! Function for boiling temperature of glycol-water mixture
-      REAL glycol_water_tfreeze    ! Function for freezing point temperature of glycol-water mixture 
+      REAL glycol_water_tfreeze    ! Function for freezing point temperature of glycol-water mixture
       REAL glycol_water_cond       ! Function for thermal conductivity of glycol
-      REAL glycol_water_cp         ! Function for glycol-water specific heat 
+      REAL glycol_water_cp         ! Function for glycol-water specific heat
       REAL glycol_vol_fraction_find ! Function for finding volume fraction of glycol inside
-                                   ! water-glycol mixture   
-      
+                                   ! water-glycol mixture
+
 C----------------------------------------------------------------------
 C     Local variables and commons
 C----------------------------------------------------------------------
@@ -268,7 +268,7 @@ C----------------------------------------------------------------------
       INTEGER intank_hx_node_conn  ! Connection number for in-tank HX
       INTEGER intank_hx_node_num   ! Node number for in-tank HX node
       REAL tank_mass               ! Mass of the tank water and solids
-      REAL tank_specific_heat      ! Average specific heat of tank 
+      REAL tank_specific_heat      ! Average specific heat of tank
                                    ! water and solids
       REAL tube_mass               ! Mass of the tube water and solids
       REAL tube_specific_heat      ! Specific heat of tube water and solids
@@ -287,7 +287,7 @@ C----------------------------------------------------------------------
       REAL tube_inlet_temp         ! Tube inlet temperature
       REAL tube_exit_temp          ! Tube exit temperature
       REAL tube_mean_temp          ! Tube mean temperature
-      REAL A                       ! Constant A in tank side heat transfer coeff equation      
+      REAL A                       ! Constant A in tank side heat transfer coeff equation
       REAL gravity_const           ! Acceleration of gravity
       REAL tank_side_ho            ! Tank side heat transfer coefficient
       REAL tube_side_mass_flowrate ! Tube side mass flow rate
@@ -296,7 +296,7 @@ C----------------------------------------------------------------------
       REAL tube_side_hi            ! Tube side heat transfer coefficient
       REAL tube_fluid_prandtl      ! Tube side fluid Prandtl Number
       REAL tube_fluid_cp           ! Tube side fluid specific heat
-      LOGICAL close                ! Logical variable used to check how close a number is 
+      LOGICAL close                ! Logical variable used to check how close a number is
                                    ! to another number
       REAL tube_wall_Rvalue        ! Thermal resistance of tube wall
       REAL intank_coil_total_Uvalue ! Total U value of the in tank HX
@@ -313,8 +313,8 @@ C----------------------------------------------------------------------
       REAL tank_mdot_cp_product    ! Mass flow rate and specific heat product of incoming
                                    ! flow
       REAL alpha                   ! Weighting factor for implicit/explcit handling of plant
-                                   ! equations   
-      REAL small                   ! small real value 
+                                   ! equations
+      REAL small                   ! small real value
       REAL fluid_temp_diff         ! temperature difference between tank fluid
                                    ! and tube fluid
       REAL tank_mdot_cp_present    ! Tank node mass flow rate and cp product for incoming flow
@@ -332,16 +332,16 @@ C----------------------------------------------------------------------
       INTEGER I                    ! Counter
       REAL tube_fluid_thermal_cond ! Tube fluid thermal conductivity
       REAL tank_inflow_cp          ! Tank incoming flow cp value
-      INTEGER IX1                 
+      INTEGER IX1
       REAL tank_time_constant      ! Time constant of tank node
       REAL tube_time_constant      ! Time constant of tube node
-      REAL tube_glycol_mass_fraction    
+      REAL tube_glycol_mass_fraction
                                    ! Glycol mass fraction in HX incoming flow
       REAL tboil                   ! Boiling temperature of glycol-water mixture
       REAL tfreeze                 ! Freezing temperature of glycol-water mixture
       REAL tube_temp               ! Mean fluid temperature inside tube accounting for lower and upper
                                    ! bounds
-      REAL tube_glycol_vol_fraction     
+      REAL tube_glycol_vol_fraction
                                    ! Volume fraction of glycol inside water-glycol mixture
       REAL coil_dia                ! Diameter of helical coil
       REAL tube_radius             ! Radius of coil tube
@@ -366,7 +366,7 @@ C----------------------------------------------------------------------
                                    ! between fluids inside tube and tank
       REAL delta_temp_heat_trans   ! Temperature difference used for heat transfer calculations
       REAL hx_eff                  ! Effectivenss of HX
-      REAL tank_side_mass_flowrate ! Mass flow rate on tank side 
+      REAL tank_side_mass_flowrate ! Mass flow rate on tank side
       REAL tank_glycol_mass_fraction
                                    ! Mass fraction of the glycol on tank side
       REAL tank_glycol_vol_fraction
@@ -374,7 +374,7 @@ C----------------------------------------------------------------------
 
 C ----Trace output
       IF(ITC.GT.0.AND.NSINC.GE.ITC.AND.NSINC.LE.ITCF.AND.
-     &   ITRACE(37).NE.0) WRITE(ITU,*) 
+     &   ITRACE(37).NE.0) WRITE(ITU,*)
      &   ' Entering subroutine tank_intank_hx_coeff_gen'
 
 C ----Small real value
@@ -384,13 +384,13 @@ C-----Acceleration of gravity
       gravity_const = 9.8
 
 C ----Initialize pointers to the 2 connections to the tank node and in-tank
-C ----heat exchanger node. Tank node is node 1 and tube node is node 2. 
+C ----heat exchanger node. Tank node is node 1 and tube node is node 2.
       tank_node_conn = ICONDX(IPCOMP,1,1)
       intank_hx_node_conn = ICONDX(IPCOMP,2,1)
       tank_node_num = NPCDAT(IPCOMP,9)
       intank_hx_node_num = NPCDAT(IPCOMP,9) + 1
 
-C ----Heat transfer from in-tank HX is based on temperatures so mark 1st and 
+C ----Heat transfer from in-tank HX is based on temperatures so mark 1st and
 C ----2nd nodal temps and flows for iteration.
       ICSV(tank_node_num,1) = 1
       CSVI(tank_node_num,1) = CSVF(tank_node_num,1)
@@ -399,11 +399,11 @@ C ----2nd nodal temps and flows for iteration.
       ICSV(tank_node_num,2) = 1
       CSVI(tank_node_num,2) = CSVF(tank_node_num,2)
       ICSV(intank_hx_node_num,2) = 1
-      CSVI(intank_hx_node_num,2) = CSVF(intank_hx_node_num,2) 
+      CSVI(intank_hx_node_num,2) = CSVF(intank_hx_node_num,2)
       ICSV(tank_node_num,3) = 1
       CSVI(tank_node_num,3) = CSVF(tank_node_num,3)
       ICSV(intank_hx_node_num,3) = 1
-      CSVI(intank_hx_node_num,3) = CSVF(intank_hx_node_num,3) 
+      CSVI(intank_hx_node_num,3) = CSVF(intank_hx_node_num,3)
 
 C ----Component variables
 
@@ -417,8 +417,8 @@ C ----Specific heat of tube water and solids
       tube_specific_heat = ADATA(IPCOMP,4)
 C ----UA-value to the environment of the tank
       tank_UAvalue = ADATA(IPCOMP,5)
-C ----Total length of tube 
-      tube_total_length = ADATA(IPCOMP,6)      
+C ----Total length of tube
+      tube_total_length = ADATA(IPCOMP,6)
 C ----Inside tube diameter
       tube_in_dia = ADATA(IPCOMP,7)
 C ----Tube outside diameter
@@ -444,19 +444,19 @@ C ----Make sure that containment is specified for tank
       ENDIF
 
 C ----Generate coefficients for energy balance equation
-      IF(ISTATS.EQ.1) THEN 
+      IF(ISTATS.EQ.1) THEN
 
 
 C ------Thermal resistance of tube wall
-        tube_wall_Rvalue = tube_in_dia * 
-     &                log(tube_out_dia / tube_in_dia) / 
+        tube_wall_Rvalue = tube_in_dia *
+     &                log(tube_out_dia / tube_in_dia) /
      &                (2 * tube_wall_thermal_cond)
 
 C ------Tank fluid properties
 
 C ------Tank side mass flow rate: sum of water and secondary fluid
 C ------mass flow rates such as glycol
-        tank_side_mass_flowrate = PCONDR(tank_node_conn) * 
+        tank_side_mass_flowrate = PCONDR(tank_node_conn) *
      &                            (CONVAR(tank_node_conn,2) +
      &                             CONVAR(tank_node_conn,3))
 
@@ -469,7 +469,7 @@ C ------Temperature of fluid inside tank (Deg C)
         tank_fluid_temp_degC = CSVF(tank_node_num,1)
 
 C-------Estimate volume fraction of glycol on tank side based on mass fraction
-        tank_glycol_vol_fraction = 
+        tank_glycol_vol_fraction =
      &  glycol_vol_fraction_find(tank_glycol_mass_fraction,
      &                           tank_fluid_temp_degC)
 
@@ -484,41 +484,41 @@ C ------Temperature of fluid inside tank (Deg K)
         tank_fluid_temp_degK = tank_fluid_temp_degC + 273.15
 
 C ------Density of fluid inside tank
-        tank_fluid_density = 
+        tank_fluid_density =
      &  glycol_water_density(tank_glycol_vol_fraction,
      &  tank_fluid_temp_degC)
 C ------Specifc heat of fluid inside tank
         tank_fluid_cp =
      &  glycol_water_cp(tank_glycol_vol_fraction,tank_fluid_temp_degC)
 C ------Coefficient of thermal expansion of fluid inside tank
-        tank_fluid_beta = 1 / tank_fluid_temp_degK       
+        tank_fluid_beta = 1 / tank_fluid_temp_degK
 C ------Thermal conductivity
-        tank_fluid_thermal_cond = 
+        tank_fluid_thermal_cond =
      &  glycol_water_cond(tank_glycol_vol_fraction,tank_fluid_temp_degC)
 C ------Dynamic viscosity of fluid inside tank
-        tank_fluid_vis = 
+        tank_fluid_vis =
      &  glycol_water_viscosity(tank_glycol_vol_fraction,
      &  tank_fluid_temp_degC)
 C ------Tank fluid Prandtl Number
-        tank_fluid_prandtl = 
+        tank_fluid_prandtl =
      &      tank_fluid_vis * tank_fluid_cp / tank_fluid_thermal_cond
 C -----Tank fluid kinematic viscosity
-        tank_fluid_dyn_vis = tank_fluid_vis / tank_fluid_density   
+        tank_fluid_dyn_vis = tank_fluid_vis / tank_fluid_density
 
 C ------Tube fluid properties
 
 C ------Tube side mass flow rate: sum of water and secondary fluid
 C ------mass flow rates such as glycol
-        tube_side_mass_flowrate = PCONDR(intank_hx_node_conn) * 
+        tube_side_mass_flowrate = PCONDR(intank_hx_node_conn) *
      &                            (CONVAR(intank_hx_node_conn,2) +
      &                             CONVAR(intank_hx_node_conn,3))
 
 C ------Set mass fraction of glycol in incoming flow to HX. This is a %
 C ------as glycol-water mixture properties function use % for volume fraction
-        tube_glycol_mass_fraction = 
+        tube_glycol_mass_fraction =
      &                         100 * CONVAR(intank_hx_node_conn,3) /
      &                         (tube_side_mass_flowrate + small)
-     
+
 C-------Check first that there is flow through the tube
         CALL ECLOSE(tube_side_mass_flowrate,0.0,0.0001,CLOSE)
 
@@ -526,7 +526,7 @@ C-------If there is flow, then set tube inlet fluid temperature to
 C-------temperature of the incoming flow
         IF(.NOT.CLOSE) THEN
           tube_inlet_temp = CONVAR(intank_hx_node_conn,1)
-C-------In the case there is no flow, fluid inlet temperature is 
+C-------In the case there is no flow, fluid inlet temperature is
 C-------set to the same as exit temperature
         ELSEIF(CLOSE) THEN
           tube_inlet_temp = CSVF(intank_hx_node_num,1)
@@ -535,11 +535,11 @@ C-------set to the same as exit temperature
 C-------Temperature of fluid leaving tube
         tube_exit_temp = CSVF(intank_hx_node_num,1)
 
-C-------Mean tube side fluid temperature 
+C-------Mean tube side fluid temperature
         tube_mean_temp = 0.5 * (tube_inlet_temp + tube_exit_temp)
-      
+
 C-------Estimate volume fraction of glycol based on mass fraction
-        tube_glycol_vol_fraction = 
+        tube_glycol_vol_fraction =
      &  glycol_vol_fraction_find(tube_glycol_mass_fraction,
      &  tube_mean_temp)
 
@@ -548,24 +548,24 @@ C-------Boiling point of glycol-water mixture
 
 C-------Freezing point of glycol-water mixture
         tfreeze = glycol_water_tfreeze(tube_glycol_vol_fraction)
-      
+
 C-------Set value for mean temperature inside tube using lower and upper bounds
         tube_temp = AMAX1(tfreeze,AMIN1(tboil,tube_mean_temp))
-      
+
 C ------Density of fluid inside tubes based on mean fluid temperature
-        tube_fluid_density = 
+        tube_fluid_density =
      &  glycol_water_density(tube_glycol_vol_fraction,tube_temp)
 
 C ------Dynamic viscosity of fluid on tube side
-        tube_fluid_vis = 
-     &  glycol_water_viscosity(tube_glycol_vol_fraction,tube_temp)      
+        tube_fluid_vis =
+     &  glycol_water_viscosity(tube_glycol_vol_fraction,tube_temp)
 
 C ------Thermal conductivity of tube side fluid
-        tube_fluid_thermal_cond = 
+        tube_fluid_thermal_cond =
      &  glycol_water_cond(tube_glycol_vol_fraction,tube_temp)
-    
+
 C ------Specific heat of tube side fluid at mean temperature
-        tube_fluid_cp = 
+        tube_fluid_cp =
      &  glycol_water_cp(tube_glycol_vol_fraction,tube_temp)
 
 C ------Prandtl Number of fluid inside tubes
@@ -574,10 +574,10 @@ C ------Prandtl Number of fluid inside tubes
 
 C -----Set fluid mean temperature based on steady-state solution of heat
 C -----transfer between tube and tank fluids
-       tube_mean_temp_heat_trans = tank_fluid_temp_degC + 
+       tube_mean_temp_heat_trans = tank_fluid_temp_degC +
      & tube_side_mass_flowrate * tube_fluid_cp * (tube_inlet_temp -
      & tank_fluid_temp_degC) * (1. - exp(-intank_coil_total_Uvalue *
-     & (3.14159 * tube_in_dia) * tube_total_length / 
+     & (3.14159 * tube_in_dia) * tube_total_length /
      & (tube_side_mass_flowrate * tube_fluid_cp + small))) /
      & (intank_coil_total_Uvalue * (3.14159 * tube_in_dia) *
      &  tube_total_length + small)
@@ -593,14 +593,14 @@ C heat transfer between the tube and tank fluids. In this case the tube exit
 C fluid temperature can be greater than tank fluid temperature when tube fluid
 C is being heated. Similarily the tube fluid exit temperature can be less than
 C tank fluid temperature when tube fluid is being cooled. Both of these
-C conditions are not physically possible. 
-C The following conditionals are intended to capture these situations when they 
-C happen.  
+C conditions are not physically possible.
+C The following conditionals are intended to capture these situations when they
+C happen.
 C------------------------------------------------------------------------
 
 C------Check whether tank temperature is greater than tube exit temperature
 C -----when tube fluid is cooled. If this is the case, issue message
-C      diff = tank_fluid_temp_degC - tube_exit_temp 
+C      diff = tank_fluid_temp_degC - tube_exit_temp
 C      IF((tube_inlet_temp.GT.tank_fluid_temp_degC).AND.
 C     &  (diff.GT.0.1).AND.(BPLTCON)) THEN
 C        WRITE(IUOUT,*) ' tank_intank_hx_coeff_gen: '
@@ -614,7 +614,7 @@ C      ENDIF
 
 C------Check whether tank temperature is less than tube exit temperature
 C -----when tube fluid is heated. If this is the case, issue message
-C      diff = tube_exit_temp - tank_fluid_temp_degC 
+C      diff = tube_exit_temp - tank_fluid_temp_degC
 C      IF((tube_inlet_temp.LT.tank_fluid_temp_degC).AND.
 C     &  (diff.GT.0.1).AND.(BPLTCON)) THEN
 C        WRITE(IUOUT,*) ' tank_intank_hx_coeff_gen: '
@@ -639,25 +639,25 @@ C ------If there is no flow through the tube, then use tube_mean_temp
 C ------This is needed because expression used for tube_mean_temp_heat_trans
 C ------will always give a temperature diffence of 0. when there is no flow
         ELSEIF(close) THEN
-          delta_temp_heat_trans = abs(tube_mean_temp - 
+          delta_temp_heat_trans = abs(tube_mean_temp -
      &                              tank_fluid_temp_degC)
         ENDIF
 
-C -----Depending on the type of the coil, use different tank side and 
+C -----Depending on the type of the coil, use different tank side and
 C -----tube side heat transfer coefficient correlations:
-C      type_coil = 1    correlation for natural convection for horizontal 
+C      type_coil = 1    correlation for natural convection for horizontal
 C                       tube for tank side
-C                       correlation for forced convection for straight pipe 
+C                       correlation for forced convection for straight pipe
 C                       for tube side
         IF(type_coil.eq.1) THEN
 
 C --------Constant A in tank-side heat transfer coeff equation
           A = gravity_const * tank_fluid_beta * tank_fluid_cp *
-     &        tank_fluid_density**2 / 
+     &        tank_fluid_density**2 /
      &        (tank_fluid_vis * tank_fluid_thermal_cond)
 
 C --------Tank side heat transfer coeff
-          tank_side_ho = 0.53 * tank_fluid_thermal_cond * 
+          tank_side_ho = 0.53 * tank_fluid_thermal_cond *
      &    A**0.25 * delta_temp_heat_trans**0.25 / tube_out_dia**0.25
 
 C --------Helical coil
@@ -670,31 +670,31 @@ C --------paper by Allen 1998
           coil_out_dia = coil_dia + tube_out_dia
           equiv_dia = sqrt(coil_out_dia**2 - coil_in_dia**2)
           cross_sec_area = 3.14159 * (shell_dia**2 - equiv_dia**2) / 4.
-          coil_hyd_dia = 4. * cross_sec_area * coil_height / wetted_area 
-          rayleigh_number = tank_fluid_beta * gravity_const * 
+          coil_hyd_dia = 4. * cross_sec_area * coil_height / wetted_area
+          rayleigh_number = tank_fluid_beta * gravity_const *
      &           delta_temp_heat_trans *
-     &           coil_hyd_dia**3 * tank_fluid_Prandtl * 
-     &           coil_height / (tank_fluid_dyn_vis**2 * 
+     &           coil_hyd_dia**3 * tank_fluid_Prandtl *
+     &           coil_height / (tank_fluid_dyn_vis**2 *
      &           tube_total_length)
-          tank_side_ho = 0.182 * rayleigh_number**0.394 * 
+          tank_side_ho = 0.182 * rayleigh_number**0.394 *
      &                   tank_fluid_thermal_cond / coil_hyd_dia
 
 C --------In the case that the Rayleigh number is less than 2e3 and greater than 2e7
-C --------Then issue warning indicating that correlation is being used outside of 
+C --------Then issue warning indicating that correlation is being used outside of
 C --------intended range
-            IF((rayleigh_number.LT.2e3).OR.(rayleigh_number.GT.2E7)) 
+            IF((rayleigh_number.LT.2e3).OR.(rayleigh_number.GT.2E7))
      &      THEN
 C        WRITE(IUOUT,*) ' tank_intank_hx_coeff_gen: '
 C        WRITE(IUOUT,*) ' Rayleigh Number = ', rayleigh_number
-C        WRITE(IUOUT,*) ' Rayleigh Number for natural convection flow' 
+C        WRITE(IUOUT,*) ' Rayleigh Number for natural convection flow'
 C        WRITE(IUOUT,*) ' outside of coil is outside of range for'
 C        WRITE(IUOUT,*) ' Nusselt Number correlation'
-            ENDIF 
-      
+            ENDIF
+
         ENDIF
-        
+
 C ------Reynold's number for flow inside pipe
-        reynolds_number = 4. * tube_side_mass_flowrate / 
+        reynolds_number = 4. * tube_side_mass_flowrate /
      &               (3.14159 * tube_in_dia * tube_fluid_vis)
 
 C ------In the case there is flow through the tubes
@@ -702,13 +702,13 @@ C ------In the case there is flow through the tubes
 
 C --------In case of straight tube
           IF(type_coil.EQ.1) THEN
-       
-C ----------If the Reynolds Number is less than 2300, flow is laminar and 
-C ----------Nusselt number is constant = 3.66 for constant wall temperature 
+
+C ----------If the Reynolds Number is less than 2300, flow is laminar and
+C ----------Nusselt number is constant = 3.66 for constant wall temperature
 C ----------boundary condition
             IF(reynolds_number.LE.2300.) THEN
 
-              tube_side_hi = 3.66 * tube_fluid_thermal_cond / 
+              tube_side_hi = 3.66 * tube_fluid_thermal_cond /
      &                       tube_in_dia
 
 C ----------If Reynolds Number > 2300., then assume turbulent flow and use the Dittus-
@@ -718,16 +718,16 @@ C ----------Boelter equation
 C ------------If the fluid inside the tubes is being heated
               IF(tube_exit_temp.LE.tank_fluid_temp_degC) THEN
 
-                tube_side_hi = 0.023 * reynolds_number**0.8 * 
-     &                         tube_fluid_prandtl**0.4 * 
+                tube_side_hi = 0.023 * reynolds_number**0.8 *
+     &                         tube_fluid_prandtl**0.4 *
      &                         tube_fluid_thermal_cond / tube_in_dia
 
 C ------------If the fluid inside the tubes is being cooled
               ELSEIF(tube_exit_temp.GT.tank_fluid_temp_degC) THEN
 
-                tube_side_hi = 0.023 * reynolds_number**0.8 * 
-     &                         tube_fluid_prandtl**0.3 * 
-     &                         tube_fluid_thermal_cond / tube_in_dia              
+                tube_side_hi = 0.023 * reynolds_number**0.8 *
+     &                         tube_fluid_prandtl**0.3 *
+     &                         tube_fluid_thermal_cond / tube_in_dia
 
               ENDIF
 
@@ -741,36 +741,36 @@ C ----------Tube radius
 C ----------Helix radius
             coil_radius = coil_dia / 2.
 C ----------Dean Number
-            dean_number = reynolds_number * 
+            dean_number = reynolds_number *
      &                    (tube_radius / coil_radius)**0.5
 C ----------Critical reynolds number for transition from laminar to turbulent flow
 C ----------This is based on equation 2.7.4 in thesis by Ajele 1995
-            critical_reynolds = 
+            critical_reynolds =
      &         2100. * (1. + 12. * (tube_radius / coil_radius)**0.5)
 C ----------Check whether there is a turbulent flow inside the tube. If it is
-C ----------then issue warning to indicate that flow is turbulent when 
+C ----------then issue warning to indicate that flow is turbulent when
 C ----------correlation used is for laminar flow
             IF(reynolds_number.GT.critical_reynolds) THEN
-C        WRITE(IUOUT,*) ' tank_intank_hx_coeff_gen:' 
+C        WRITE(IUOUT,*) ' tank_intank_hx_coeff_gen:'
 C        WRITE(IUOUT,*) ' Reynolds Number = ',reynolds_number
 C        WRITE(IUOUT,*) ' Critical Reynolds Number = ',critical_reynolds
 C        WRITE(IUOUT,*) ' Flow inside tube is turbulent. Heat transfer'
 C        WRITE(IUOUT,*) ' correlation used is for laminar flow '
             ENDIF
-C ----------Calculate Nusselt number inside tube based on equation 2.7.8 in Thesis 
+C ----------Calculate Nusselt number inside tube based on equation 2.7.8 in Thesis
 C ----------by Ajele
             X3 = (1. + 1342. / (dean_number**2 * tube_fluid_prandtl))**2
             X4 = 1. + 1.15 / tube_fluid_prandtl
-            tube_side_hi = ((4.364 + 4.636 / X3)**3 + 
+            tube_side_hi = ((4.364 + 4.636 / X3)**3 +
      &                       1.816 * (dean_number / X4)**1.5)**0.333 *
      &                       tube_fluid_thermal_cond / tube_in_dia
 
           ENDIF
 
-C ------In the case there is no flow through the tubes          
+C ------In the case there is no flow through the tubes
         ELSEIF(close) THEN
 
-C --------In this case the inside heat transfer coefficient is based on 
+C --------In this case the inside heat transfer coefficient is based on
 C --------conduction heat trasnfer
           tube_side_hi = 2 * tube_fluid_thermal_cond / tube_in_dia
 
@@ -784,23 +784,23 @@ C-------area of tube available for heat transfer
      &                    tube_wall_Rvalue + 1. / (tank_side_ho+small))
 
 C ------Effectiveness of HX
-        hx_eff = 1. - exp(-intank_coil_total_Uvalue * 
+        hx_eff = 1. - exp(-intank_coil_total_Uvalue *
      &        (3.14159 * tube_out_dia) * tube_total_length /
      &        (tube_side_mass_flowrate * tube_fluid_cp + small))
 
 C ------Total heat transfer between tube fluid and tank fluid
 C ------If there is flow through tubes use effectiveness relation
 C ------to find heat transfer
-       IF(.NOT.close) THEN          
-           total_heat_transfer = hx_eff * tube_side_mass_flowrate * 
+       IF(.NOT.close) THEN
+           total_heat_transfer = hx_eff * tube_side_mass_flowrate *
      &                          tube_fluid_cp * (tube_inlet_temp -
      &                          tank_fluid_temp_degC)
 
-C ----When there is no flow through the tubes, use tube_mean_temp to find 
+C ----When there is no flow through the tubes, use tube_mean_temp to find
 C ----heat transfer
         ELSEIF(close) THEN
-          total_heat_transfer = intank_coil_total_Uvalue * 3.14159 * 
-     &                          tube_in_dia * tube_total_length * 
+          total_heat_transfer = intank_coil_total_Uvalue * 3.14159 *
+     &                          tube_in_dia * tube_total_length *
      &                         (tube_mean_temp - tank_fluid_temp_degC)
         ENDIF
 
@@ -814,7 +814,7 @@ C ------Temperature of incoming flow to the tank
         tank_inflow_temp = CONVAR(tank_node_conn,1)
 
 C ------Specific heat of incoming flow to the tank
-        tank_inflow_cp = 
+        tank_inflow_cp =
      &  glycol_water_cp(tank_glycol_vol_fraction,tank_inflow_temp)
 
 C ------Mass flow rate and specific heat product of tank node incoming flow
@@ -825,31 +825,31 @@ C ------Tube inlet flow specific heat
      &                                   tube_inlet_temp)
 
 C ------Mass flow rate and specific heat product of tube side incoming flow
-        tube_mdot_cp_product = tube_side_mass_flowrate * 
+        tube_mdot_cp_product = tube_side_mass_flowrate *
      &                         tube_inflow_cp
 
-C ------Difference in temperature between tube side fluid and tank side 
-C ------fluid. Used in the definition of the component time-constant. 
+C ------Difference in temperature between tube side fluid and tank side
+C ------fluid. Used in the definition of the component time-constant.
 C ------"small" is added to avoid division by 0. later in the time constant
 C ------equation.
-        fluid_temp_diff = 
-     &  AMAX1(abs(tank_fluid_temp_degC - 
+        fluid_temp_diff =
+     &  AMAX1(abs(tank_fluid_temp_degC -
      &        tube_mean_temp_heat_trans),small)
 
 C ------Time constant of component taken as the max of the two time constants
 C ------for the tube side and the tank side
 
 C ------Tank node time constant
-        tank_time_constant = 
-     &  tank_mass_cp_product / AMAX1(small,(tank_mdot_cp_product + 
-     &  abs(total_heat_transfer) / fluid_temp_diff + 
+        tank_time_constant =
+     &  tank_mass_cp_product / AMAX1(small,(tank_mdot_cp_product +
+     &  abs(total_heat_transfer) / fluid_temp_diff +
      &  tank_UAvalue))
 
 C ------Tube node time constant
-        tube_time_constant = 
+        tube_time_constant =
      &  tube_mass_cp_product / AMAX1(small,(tube_mdot_cp_product +
      &  abs(total_heat_transfer) / fluid_temp_diff))
-        
+
 C ------Time constant for component
         TC(IPCOMP) = AMAX1(tank_time_constant,tube_time_constant)
 
@@ -879,7 +879,7 @@ C ------Establish matrix equation self-coupling coefficient for tank node
      &            tank_mass_cp_product / TIMSEC
 
 C ------Establish matrix equation self-coupling couefficient for tube node
-        COUT(2) = -ALPHA * tube_mdot_cp_product - 
+        COUT(2) = -ALPHA * tube_mdot_cp_product -
      &            tube_mass_cp_product / TIMSEC
 
 C ------Matrix cross-coupling coefficient for tank node
@@ -888,7 +888,7 @@ C ------Matrix cross-coupling coefficient for tank node
 C ------Matrix cross coupling coefficient for tube node
         COUT(4) = ALPHA * tube_mdot_cp_product
 
-C ------Tank node mass flow rate and specific heat product for 
+C ------Tank node mass flow rate and specific heat product for
 C ------present time step
         tank_mdot_cp_present = PCRP(tank_node_conn)
 
@@ -908,17 +908,17 @@ C ------Heat transfer between tank node and HX node present value
         heat_transfer_present = PCQP(tank_node_num)
 
 C ------Establish present and known coefficients for tank node
-        COUT(5) = 
-     &       ((1. - ALPHA) * (tank_mdot_cp_present + tank_UAvalue) - 
+        COUT(5) =
+     &       ((1. - ALPHA) * (tank_mdot_cp_present + tank_UAvalue) -
      &       tank_mass_cp_product / TIMSEC) * tank_fluid_temp_present
-     &       - (1. - ALPHA) * tank_mdot_cp_present * 
+     &       - (1. - ALPHA) * tank_mdot_cp_present *
      &       tank_inflow_temp_present
      &       - (1. - ALPHA) * tank_UAvalue * cont_temp_present
      &       - ALPHA * tank_UAvalue * cont_temp
      &       - ALPHA * total_heat_transfer
-     &       - (1. - ALPHA) * heat_transfer_present    
+     &       - (1. - ALPHA) * heat_transfer_present
 
-C ------Tube node mass flow rate and specific heat product for 
+C ------Tube node mass flow rate and specific heat product for
 C ------present time step
         tube_mdot_cp_present = PCRP(intank_hx_node_conn)
 
@@ -929,10 +929,10 @@ C ------Tube present temperature of incoming flow
         tube_inflow_temp_present = PCTP(intank_hx_node_conn)
 
 C ------Establish present and known coefficients for coil node
-        COUT(6) = ((1. - ALPHA) * tube_mdot_cp_present - 
-     &            tube_mass_cp_product / TIMSEC) * 
+        COUT(6) = ((1. - ALPHA) * tube_mdot_cp_present -
+     &            tube_mass_cp_product / TIMSEC) *
      &            tube_fluid_temp_present
-     &            - (1. - ALPHA) * tube_mdot_cp_present * 
+     &            - (1. - ALPHA) * tube_mdot_cp_present *
      &            tube_inflow_temp_present
      &            + ALPHA * (total_heat_transfer)
      &            + (1. - ALPHA) * (heat_transfer_present)
@@ -1016,13 +1016,13 @@ C ----Trace.
      &                     tube_mdot_cp_product,' (W/K)'
             WRITE(ITU,*) ' TC = ', TC(IPCOMP), '(s)'
             WRITE(ITU,*) ' ALPHA = ', ALPHA,'(-)'
-            WRITE(ITU,*) ' Tank ho = ', 
+            WRITE(ITU,*) ' Tank ho = ',
      &                     tank_side_ho,'(W/m2-K)'
             WRITE(ITU,*) ' Tube hi = ',
      &                     tube_side_hi,'(W/m2-K)'
             WRITE(ITU,*) ' Total Ui = ',
      &                     intank_coil_total_Uvalue,
-     &                     '(W/m2-K)' 
+     &                     '(W/m2-K)'
             WRITE(ITU,*) ' Tube wall R-value = ',
      &      tube_wall_Rvalue,'(m2-K/W)'
          END IF
@@ -1035,7 +1035,7 @@ C ----Trace.
          END IF
          WRITE(ITU,*) ' Leaving sub tank_intank_hx_coeff_gen'
       END IF
-      
+
       RETURN
       END
 
@@ -1051,7 +1051,7 @@ C type for the component for tank-intank heat exchanger component
 C INPUTS:
 C     IPCOMP     Component number within the user defined plant component network
 C     NCI        ESP-r common variable for number of controlled variable for component
-C     ICONDX     ESP-r common variable holding number for plant network connections associated 
+C     ICONDX     ESP-r common variable holding number for plant network connections associated
 C                with component
 C     ICONTP     ESP-r common variable for type of fluid for connections
 C     NPCDAT     ESP-r common variable holding node numbers for plant components within plant
@@ -1100,7 +1100,7 @@ C-----Plant component connection data
      &             ICONDX(MPCOM,MNODEC,MPCONC)
       REAL CONVAR    ! States variables for connections
       INTEGER ICONTP ! Type of each connection
-      INTEGER ICONDX ! Pointer to connections for each 
+      INTEGER ICONDX ! Pointer to connections for each
                      ! component node
 
 C----------------------------------------------------------------------
@@ -1113,7 +1113,7 @@ C----------------------------------------------------------------------
                      ! component
       INTEGER IPCON2 ! Second connection to second node of component
       INTEGER IX1,IPCONC
- 
+
 C-----Trace output
       IF(ITC.GT.0.AND.ITRACE(35).NE.0) THEN
       WRITE(ITU,*) ' Component ',IPCOMP,' pre-simulation data for a:'
@@ -1184,17 +1184,17 @@ C Initial Creation Date: March 15, 2006
 C
 C Copyright CETC 2006
 C
-C This subroutine transfers data from the water storage tank with in-tank heat exchanger model 
+C This subroutine transfers data from the water storage tank with in-tank heat exchanger model
 C to the h3kreports object.
 C--------------------------------------------------------------------------------------------
 
       Subroutine tank_intank_hx_H3Kreports_module(iComponentIndex)
-
-      implicit none 
+      use h3kmodule
+      implicit none
 
 #include "plant.h"
 
-C.....Passed variables 
+C.....Passed variables
       integer iComponentIndex   ! index of tank with in-tank HX in plant component
                                 ! network
 C.....ESP-r Commons
@@ -1206,7 +1206,7 @@ C.....ESP-r Commons
      &     CSVP(MPNODE,MPVAR)   ! Plant present state variables
       real CSVF, CSVP
 
-C.....Plant component present/future variables 
+C.....Plant component present/future variables
 c      common/pcvar/pctf(mpcon),pcrf(mpcon),puaf(mpnode),pcqf(mpnode),
 c     & pcntmf(mpcom),pctp(mpcon),pcrp(mpcon),puap(mpnode),
 c     & pcqp(mpnode),pcntmp(mpcom)
@@ -1231,89 +1231,54 @@ C.....model
       real intank_coil_total_Uvalue
                                  ! total U-value between inside and outside of coil
       real  cont_temp            ! surrounding temperature
-      
+
 C.....Local Variables
-      CHARACTER*128 H3K_rep_NAME ! H3Kreporting object
-      character*128 root_name    ! root name of component node
-      character*128 hold_name    ! temporary variable for string manipulation
       integer tank_node_num      ! node number for tank
-      integer lnblnk
- 
-C.....Calculated values 
+      integer lnblnk             ! function
+      character*24 hold_name     ! temporary buffer for pcname
+C.....Calculated values
       real tank_jacket_heat_loss    ! losses to environment from tank (W)
 
 C.....Plant network node number for water tank
       tank_node_num = NPCDAT(iComponentIndex,9)
 
 C.....Get component name
-      hold_name = pcname(iComponentIndex) 
-
-C.....Format string as: 'plant/NAME/misc_data'
-      WRITE(root_name,'(A,A,A)') 
-     &     'plant/',
-     &     hold_name(1:lnblnk(hold_name)),
-     &     '/misc_data'
+      write(hold_name,'(a)') pcname(iComponentIndex)
+     &               (1:lnblnk(pcname(iComponentIndex)))
 
 C....set name for total heat transfer
-      WRITE(H3K_rep_NAME,'(A,A)') 
-     &     root_name(1:lnblnk(root_name)), 
-     &     '/total_heat_transfer'
-
 C....add to XML reporting
-      call add_to_xml_reporting(
-     &     total_heat_transfer,
-     &     H3K_rep_NAME,
-     &     'units', 'W',
-     &     'Heat transfer from coil to tank water' )
+      call AddToReport(rvPltTHeatTrans%Identifier,
+     &      total_heat_transfer,
+     &      hold_name)
 
 C....Heat loss from tank to surroundings
-      tank_jacket_heat_loss = tank_UAvalue * 
+      tank_jacket_heat_loss = tank_UAvalue *
      &     (csvf(tank_node_num,1) - cont_temp)
 
 C.....set name for tank jacket loss
-      WRITE(H3K_rep_NAME,'(A,A)') 
-     &     root_name(1:lnblnk(root_name)), '/tank_jacket_heat_loss'
-
 C.....add to XML reporting facility
-      call add_to_xml_reporting(
-     &     tank_jacket_heat_loss,
-     &     H3K_rep_NAME,
-     &     'units', 'W',
-     &     'Tank heat loss to surroundings' )
+      call AddToReport(rvPltTHeatTransJacketHeatLoss%Identifier,
+     &      tank_jacket_heat_loss,
+     &      hold_name)
 
 C.....set name for tube side heat transfer coefficient
-      WRITE(H3K_rep_NAME,'(A,A)') 
-     &     root_name(1:lnblnk(root_name)), '/tube_side_hi'
-
 C.....add to XML reporting facility
-      call add_to_xml_reporting(
-     &     tube_side_hi,
-     &     H3K_rep_NAME,
-     &     'units', 'W/m2-K',
-     &     'Inside coil heat transfer coeff' )
+      call AddToReport(rvPltTHeatTransTubeSideHi%Identifier,
+     &      tube_side_hi,
+     &      hold_name)
 
 C.....set name for tank side heat transfer coefficient
-      WRITE(H3K_rep_NAME,'(A,A)') 
-     &     root_name(1:lnblnk(root_name)), '/tank_side_ho'
-
 C.....add to XML reporting facility
-      call add_to_xml_reporting(
-     &     tank_side_ho,
-     &     H3K_rep_NAME,
-     &     'units', 'W/m2-K',
-     &     'Inside coil heat transfer coeff' )
+      call AddToReport(rvPltTHeatTransTankSideHo%Identifier,
+     &      tank_side_ho,
+     &      hold_name)
 
 C.....set name for tank side heat transfer coefficient
-      WRITE(H3K_rep_NAME,'(A,A)') 
-     &     root_name(1:lnblnk(root_name)), 
-     &     '/intank_coil_total_Uvalue'
-
 C.....add to XML reporting facility
-      call add_to_xml_reporting(
-     &     intank_coil_total_Uvalue,
-     &     H3K_rep_NAME,
-     &     'units', 'W/m2-K',
-     &     'coil total heat transfer coeff' )
+      call AddToReport(rvPltTHeatTransIntankCoilTUValue%Identifier,
+     &      intank_coil_total_Uvalue,
+     &      hold_name)
 
-      return 
+      return
       end

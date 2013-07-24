@@ -44,6 +44,7 @@ C results library as well.
       SUBROUTINE MZLIBF
 #include "building.h"
 #include "model.h"
+#include "geometry.h"
 #include "cfd.h"
 #include "plant.h"
 #include "power.h"
@@ -54,13 +55,13 @@ C results library as well.
 
       integer ncomp,ncon
       common/c1/ncomp,ncon
+      integer indcfg
       COMMON/C6/INDCFG
-      common/C21/IFCFG,cfgroot,LCFGF
       common/reclen/nzrl,nprl,nerl
 
 C Versions of results libraries.
       common/recver/izver,ipver,iever
-      common/rpath/path
+C      common/rpath/path
       common/user/browse
       COMMON/RESLIB/RFILE,PFILE,MSTRFILE,LAFRES
       COMMON/AFN/IAIRN,LAPROB,ICAAS(MCOM)
@@ -87,15 +88,17 @@ C Active domain common.
 
       COMMON/SPFL/spfileok,perok,tstepok,saveok,autook,exitok,startupok
 
-      character outs*124,ltmp*72,path*72,longtfile*144
-      character cfgroot*24,LCFGF*72
+      character outs*124,ltmp*72,longtfile*144
+C      character path*72
       character*72 LAPROB,ENTFLNAM,ERESLIB,CFRESF
       character RFILE*72,PFILE*72,MSTRFILE*72,LAFRES*72
       dimension iflg(MCOM)
 
-      logical OK,dok,MSTROK,MSTRZN,remote,unixok,browse
+      logical OK,dok,MSTROK,MSTRZN,remote,browse
+C      logical unixok
       LOGICAL spfileok,perok,tstepok,saveok,autook,exitok,startupok
       logical CFDOK,concat
+      integer nsim  ! number of simulations
 
       integer ier
 
@@ -171,6 +174,31 @@ C the user will be asked to confirm the results file name (and path)
         ENDIF
       ENDIF
 
+C Note: the initial assumption of the record width of the zone results 
+C file is based on nzrl equal to MZRL (defined in building.h as MCOM+12
+C if MCOM>MS with a minimum width of 40 to allow for file names to be
+C held and air gap data to be written). Some records are written with 
+C values for all current zones, some are for all surfaces in the zone 
+C plus up to 12 other values. One set of records in MZLS1 is 5*MGP width 
+C which is currently 40.
+      iminwid=40
+      iswid=0
+      DO 150 I = 1,NCOMP
+        if(NZSUR(I).gt.iswid) iswid=NZSUR(I)
+ 150  continue
+      if(ncomp.gt.iminwid)iminwid=ncomp
+      if(iswid+12.gt.iminwid)iminwid=iswid+12
+
+C Debug.
+C      write(6,*)'nzrl iswid ncomp iswid+12 minwid ',nzrl,iswid,ncomp,
+C     &  iswid+12,iminwid
+      if(iminwid.ne.nzrl)then
+        write(outs,*)'Resetting results file record width to ',iminwid
+        call edisp(iuout,outs)
+        nzrl=iminwid
+        call pauses(1)   ! pause
+      endif
+
 C If remote path then use EFOPRAN otherwise FPRAND.
       RFILE=LTMP
       if(iw.eq.1)then
@@ -206,7 +234,8 @@ C      write(doit,'(a)') 'mysqladmin -u iain -pxx CREATE fred'
 C      write(6,*) doit
 C      call runit(doit,'-')
 
-c Does this library contain results ?
+c Does this zone library contain results? If a new file
+C it will fail reading nsim and jump to 7.
       IREC=1
       READ(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=7)NSIM
 
@@ -253,12 +282,9 @@ c Delete all simulations by setting NSIM=0.
         IREC=1
         NSIM=0
 
-C izver is the version flag for building results: 
-C   izver=1 tells res that the results files have associated descriptive strings.
-C   izver=2 tells res that aggregate inside and outside face convective transfer 
-C     is included in zone info. 
-C   izver=3 total exterior transparent and floor areas saved for each zone
-C   izver<4 does not include explicit conv/rad/latent gain fields for each casual gain type.
+C izver is the version flag for building results. Set at 4 since
+C Feb 2008. Earlier (depreciated) versions did not include explicit
+C casual gains and required re-scanning of zone operation files.
         izver=4
         WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)NSIM,nzrl,izver
       endif
@@ -394,7 +420,8 @@ C If remote path then use EFOPRAN otherwise FPRAND.
         call tstamp('>',PFILE)
       endif
 
-c Does this library contain results ?
+C Does this plant library contain results? If a new file
+C it will fail reading nsim and jump to 107.
       IREC=1
       READ(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=107)NSIM
 
@@ -419,10 +446,10 @@ c Response according to number of existing results sets.
 
 c Determine if design data has been changed.
         dok=.false.
-        helptopic='preserve_data_with_change'
+        helptopic='preserve_data_change'
         call gethelptext(helpinsub,helptopic,nbhelp)
-        CALL ASKOK(' Is the current model different in any way from',
-     &  ' the model of the stored results (see help)?',OK,dok,nbhelp)
+        CALL ASKOK('Is the current model different in any way from',
+     &  'the model of the stored results (see help)?',OK,dok,nbhelp)
         if(.NOT.OK)goto 17
         GOTO 100
       else
@@ -430,7 +457,7 @@ c Determine if design data has been changed.
 c Delete all simulations by setting NSIM=0.
         IREC=1
         NSIM=0
-        WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)NSIM,nzrl
+        WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)NSIM
       endif
 
 c Write header block information to plant library.
@@ -505,7 +532,7 @@ C Write the moisture result library header.
 
 C Assign a library for the power flow results, and open on IFIL+21. 
 
-  127 if( ientxist.gt.0 .and. 
+      if( ientxist.gt.0 .and. 
      &     ( .not. autook .or. 
      &     (isave .ne. 0 .and. isave .ne. 5) ) )then
    11   LTMP=ERESLIB
@@ -615,15 +642,16 @@ C Error handling
       call edisp(iuout,outs)
       goto 17
 
-C Error on read of library - reset and initialize.
+C Error on read of zone library - reset and initialize.
    7  IREC=1
       NSIM=0
       WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)NSIM,nzrl,izver
       goto 8
 
+C Error on read of plant library - reset and initialize.
  107  IREC=1
       NSIM=0
-      WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)NSIM,nzrl
+      WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)NSIM
       goto 108
 
       END
@@ -646,7 +674,7 @@ C        as 2 if in some other location.
       
       integer lnblnk  ! function definition
 
-      COMMON/OUTIN/IUOUT,IUIN
+C      COMMON/OUTIN/IUOUT,IUIN
       character topic*2,LFILE*72
       character ltmp*72,ltpath*72,filen*72
       logical unixok,remote
@@ -828,13 +856,15 @@ c IN THE OVERWRITING OF THESE RESULTS.
       SUBROUTINE MZSAVE(ISIMN1,ISIMN2)
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
+      integer indcfg
       COMMON/C6/INDCFG
       common/reclen/nzrl,nprl,nerl
       common/recver/izver,ipver,iever
 
       character outs*124
+      integer nsim  ! number of simulations in libary
 
-      IF(INDCFG.EQ.2)goto 3
+      IF(INDCFG.EQ.2)goto 3   ! plant only
       IUNIT=IFIL+2
 
 C READ NUMBER OF SIMULATIONS CURRENTLY HELD WITHIN SOLUTION FILE.
@@ -844,17 +874,20 @@ C READ NUMBER OF SIMULATIONS CURRENTLY HELD WITHIN SOLUTION FILE.
 C INCREMENT BY 1.
       NSIM=NSIM+1
 
-C WRITE THIS TO SOLUTION FILE.
+C Update the zone library file.
       WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)NSIM,nzrl,izver
-      ISIMN1=NSIM
+      ISIMN1=NSIM  ! pass this back
+
+C For plant results or building + plant results update the first
+C record of the plant results file.
     3 IF(INDCFG.EQ.1)goto 2
 
       IUNIT=IFIL+3
       IREC=1
       READ(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)NSIM
       NSIM=NSIM+1
-      WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)NSIM,nzrl
-      ISIMN2=NSIM
+      WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)NSIM
+      ISIMN2=NSIM  ! pass this back
 
     2 RETURN
 

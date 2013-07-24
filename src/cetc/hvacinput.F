@@ -21,27 +21,27 @@ C Software Foundation, Inc., 59 Temple Place, Suite 330,
 C Boston, MA 02111-1307 USA.
 
 c The file contains the following routines:
-c	HVACINPUT  control reading the hvac data from the hvac input file
-c 		   and set the size of the indoor circulation fan if not
-c		   specified
-c 	FURNACE_INPUT
-c		   read data for furnace system
-c       BASEBOARD_INPUT
-c  		   read data for Baseboards/Hydronics/Plenum Heaters
-c	ASHP_INPUT read data for air-source heat pump system
-c       ASHP_INPUT_VERSION1_2
-C                  read input data for air-source heat pump system for
-c                  version 1.2 and older of file hvacinput.F
-c	FURNACE_COEFF
-c		  set the furnace coeff for the part-load performance
-c  ASHP_COEFF      set the correlation coeff for the part-load performance of 
-c                  the air-source heat pump
+c  HVACINPUT   control reading the hvac data from the hvac input file
+c              and set the size of the indoor circulation fan if not
+c              specified
+c  FURNACE_INPUT
+c              read data for furnace system
+c  BASEBOARD_INPUT
+c              read data for Baseboards/Hydronics/Plenum Heaters
+c  ASHP_INPUT  read data for air-source heat pump system
+c  ASHP_INPUT_VERSION1_2
+C              read input data for air-source heat pump system for
+c              version 1.2 and older of file hvacinput.F
+c  FURNACE_COEFF
+c            set the furnace coeff for the part-load performance
+c  ASHP_COEFF  set the correlation coeff for the part-load performance of 
+c              the air-source heat pump
 c
 c This file contains the folowing functions:
-c	FAN_SIZE	determines the size of the indoor circulation fan
-c	SYS_FLOW_RATE     Sets value for system flow rate if not specified in 
-c			  HVAC input file
-c	BYPASS_FACTOR_R	  Determines coil bypass factor at rating conditions
+c  FAN_SIZE          determines the size of the indoor circulation fan
+c  SYS_FLOW_RATE     Sets value for system flow rate if not specified in 
+c                    HVAC input file
+c  BYPASS_FACTOR_R   Determines coil bypass factor at rating conditions
 c
 c *********************************************************************
 c *********************************************************************
@@ -59,11 +59,11 @@ c hvac_data. It is called only once when the problem is read in and is
 c used in susequent time step simulations.
 
 c INPUTS:
-c	hvacfile	name of hvac data file
-c       hvac.h          include file for hvac parameters
+c  hvacfile      name of hvac data file
+c  hvac.h        include file for hvac parameters
 c OUTPUTS:
-c 	HVAC_INPUT_DATA
-C			common for HVAC system input data
+c   HVAC_INPUT_DATA
+C      common for HVAC system input data
 c *********************************************************************
       SUBROUTINE HVACINPUT(hvacfile)
 
@@ -108,18 +108,18 @@ c Read site altitude
 
 c Read the following information about each of the hvac systems:
 
-c   ihvac_type(i)	indicates the system type (furnace, heat pump,
-c              		air conditioner, etc ...)
+c   ihvac_type(i)  indicates the system type (furnace, heat pump,
+c                  air conditioner, etc ...)
 c                       =1 furnace
 c                       =7 air-source heat pump
 c                       =8 ground-source heat pump
 c                       =9 ground-source heat pump (Ecole Polytechnique, GCEP)
-c   ipriority(i) 	indicates whether the system is a primary heating
-c			source or a backup system
-c			=1 primary system
-c			=2 backup system
+c   ipriority(i)   indicates whether the system is a primary heating
+c                  source or a backup system
+c                       =1 primary system
+c                       =2 backup system
 c                               
-c   num_sys_zones(i)	total number of zones served by an HVAC system
+c   num_sys_zones(i)  total number of zones served by an HVAC system
 
 C Initialize linking flags to zero
       init_links: do i = 1, num_hvac_sys
@@ -218,12 +218,12 @@ c Subroutine called by HVACINPUT to read data from hvac input file for
 c a furnace system.
 
 c INPUTS:
-c       i 		system number associated with furnace system
+c       i   system number associated with furnace system
 
 c OUTPUTS:
-c	hvac.h  	file for hvac hvac parameters
-c	FURNACE_INPUT_DATA
-c			common for furnace data
+c  hvac.h  file for hvac hvac parameters
+c  FURNACE_INPUT_DATA
+c     common for furnace data
 c *********************************************************************
       SUBROUTINE FURNACE_INPUT(i)
 
@@ -272,29 +272,29 @@ c performance curve for the furnace. The coefficients for the part-load
 c performance are specified in subroutine FURNACE_COEFF in file furnace.F
 
 c Read the variation of the HVAC system type isys_type
-c 	=1 advanced air tight wood stove
-c 	=2 catalytic converter
-c 	=3 flame retention head
-c  	=4 flue vent damper
-c 	=5 spark-ignition
-c	=6 spark ignition and vent damper
-c 	=7 continuous pilot
-c 	=8 condensing furnace
-c	=9 direct vent non condensing
-c  	=10 induced draft
-c 	=11 mid efficiency
-c 	=12 electric forced-air
-c	=13 wood furnace
-c	=14 oil furnace
+c   =1 advanced air tight wood stove
+c   =2 catalytic converter
+c   =3 flame retention head
+c   =4 flue vent damper
+c   =5 spark-ignition
+c   =6 spark ignition and vent damper
+c   =7 continuous pilot
+c   =8 condensing furnace
+c   =9 direct vent non condensing
+c   =10 induced draft
+c   =11 mid efficiency
+c   =12 electric forced-air
+c   =13 wood furnace
+c   =14 oil furnace
       CALL EGETWI(OUTSTR,K,ival,1,14,'F',
      &'hvac input: isys_type',IER)
       isys_type(i) = ival
 c Read the fuel type used by the HVAC system ifuel_type
-c 	=1 electric can have isys_types = {12}
-c 	=2 natural gas can have isys_types = {5,6,7,8,10}
-c 	=3 oil can have isys_types = {3,4,8,9,11,14}
-c	=4 propane can have isys_types = {5,6,7,8,10}
-c 	=5 wood can have isys_types = {1,2,13}
+c   =1 electric can have isys_types = {12}
+c   =2 natural gas can have isys_types = {5,6,7,8,10}
+c   =3 oil can have isys_types = {3,4,8,9,11,14}
+c   =4 propane can have isys_types = {5,6,7,8,10}
+c   =5 wood can have isys_types = {1,2,13}
       CALL EGETWI(OUTSTR,K,ival,1,5,'F',
      &'hvac input: ifuel_type',IER)
       ifuel_type(i) = ival
@@ -411,8 +411,8 @@ c Read the steady-state efficiency of the equipment ss_efficiency
 c Read the circulation fan operation status ifan_operation. If the
 c furnace is a backup system, the mode of operation of the fan is the
 c same as that for the primary system
-c	=0 no fan associated with hvac system
-c	=1 fan in auto mode
+c  =0 no fan associated with hvac system
+c  =1 fan in auto mode
 c       =2 fan in continous mode
       CALL EGETWI(OUTSTR,K,ival,0,2,'F',
      &'hvac input: ifan_operation',IER)
@@ -461,15 +461,15 @@ c Subroutine called by HVACINPUT to read data from hvac input file for
 c air-source heat pump and ground source heat pump system.
 
 c INPUTS:
-c       i 		system number associated with air-source heat
-c 			pump system
+c       i    system number associated with air-source heat
+c            pump system
 c       hvac.h          include file for hvac parameters
 
 c OUTPUTS:
-c	HVAC_INPUT_DATA
-c			common for HVAC input data
-c	HEAT_PUMP_INPUT_DATA
-c			common for heat pump input data
+c  HVAC_INPUT_DATA
+c     common for HVAC input data
+c  HEAT_PUMP_INPUT_DATA
+c     common for heat pump input data
 c *********************************************************************
       SUBROUTINE ASHP_INPUT(i)
 
@@ -548,16 +548,16 @@ c In case we have input data associated with version 1.3 of file
 c hvacinput
       if(version1_3_flag) then     
 c Read heat pump function.
-c	=1 heating
-c	=2 cooling
+c  =1 heating
+c  =2 cooling
         CALL EGETWI(OUTSTR,K,ival,1,2,'F',
      &  'hvac input: iunit_function',IER)
         iunit_function(i) = ival
 
 c Read the type of air-source heat pump considered isys_type(i)
-c	=1 Typical unit
-c	=2 Good unit
-c	=3 Poor unit
+c  =1 Typical unit
+c  =2 Good unit
+c  =3 Poor unit
 C GSHP: begin
 C As a GSHP system will have a different part load ratio than these typical
 C systems, a new system type is defined for GSHP systems.
@@ -658,8 +658,8 @@ c Read the circulation fan operation status ifan_operation. The
 c fan operation is the same as that for the backup system except 
 c when the backup is baseboard/hydronic/plenum heater. In this case
 c the backup can operate with no fan when the heat pump has a fan
-c	=0 no fan associated with hvac system
-c	=1 fan in auto mode
+c  =0 no fan associated with hvac system
+c  =1 fan in auto mode
 c       =2 fan in continous mode
         CALL EGETWI(OUTSTR,K,ival,0,2,'F',
      &  'hvac input: ifan_operation',IER)
@@ -742,9 +742,9 @@ c When the unit is in the heating mode
         if(iunit_function(i).eq.1) then
 c Read the type of temperature control in the heating mode 
 c (balance point; restricted; unrestricted)
-c	=1 balance point control
-c	=2 restricted control
-c	=3 unrestricted control
+c  =1 balance point control
+c  =2 restricted control
+c  =3 unrestricted control
           CALL EGETWI(OUTSTR,K,ival,1,3,'F',
      &    'hvac input: itemp_control',IER)
           itemp_control(i) = ival
@@ -754,9 +754,9 @@ c control option is restricted
      &    'hvac input: cutoff_temp',IER)
           cutoff_temp(i) = val
 c Read the backup heat source
-c	=1 Furnace
-c	=2 Boiler
-c	=3 Baseboards/Hydronic/Plenum Heaters
+c  =1 Furnace
+c  =2 Boiler
+c  =3 Baseboards/Hydronic/Plenum Heaters
           CALL EGETWI(OUTSTR,K,ival,1,3,'F',
      &    'hvac input: ibackup_heat',IER)
           ibackup_heat(i) = ival
@@ -782,8 +782,8 @@ c Preserve legacy file format.
             time_constant(i) = val
           endif
 c Read the cooling type (conventional, economizer, ventilation)
-c	=1 conventional
-c	=2 economizer
+c  =1 conventional
+c  =2 economizer
           CALL EGETWI(OUTSTR,K,ival,1,2,'F',
      &  'hvac input: icooling_type',IER)
           icooling_type(i) = ival
@@ -1001,17 +1001,17 @@ c routine is called to read input data for version earlier than 1.3 of file
 c hvacinput.F
 
 c INPUTS:
-c       i 		system number associated with air-source heat
-c 			pump system
+c       i   system number associated with air-source heat
+c           pump system
 c       OUTSTR          data string read in subroutine ASHP_INPUT
 c       hvac.h          include file for hvac parameters
 c       building.h      include file for building parameters
 
 c OUTPUTS:
-c	HVAC_INPUT_DATA
-c			common for HVAC input data
-c	HEAT_PUMP_INPUT_DATA
-c			common for heat pump input data
+c  HVAC_INPUT_DATA
+c    common for HVAC input data
+c  HEAT_PUMP_INPUT_DATA
+c    common for heat pump input data
 c *********************************************************************
       SUBROUTINE ASHP_INPUT_VERSION1_2(i,OUTSTR)
 
@@ -1048,16 +1048,16 @@ c Other local variables
       k = 0
 
 c Read heat pump function.
-c	=1 heating
-c	=2 cooling
+c  =1 heating
+c  =2 cooling
       CALL EGETWI(OUTSTR,K,ival,1,2,'F',
      &'hvac input: iunit_function',IER)
       iunit_function(i) = ival
 
 c Read the type of air-source heat pump considered isys_type(i)
-c	=1 Typical unit
-c	=2 Good unit
-c	=3 Poor unit
+c  =1 Typical unit
+c  =2 Good unit
+c  =3 Poor unit
 C GSHP: begin
 C As a GSHP system will have a different part load ratio than these typical
 C systems, a new system type is defined for GSHP systems.
@@ -1141,8 +1141,8 @@ c Read the circulation fan operation status ifan_operation. The
 c fan operation is the same as that for the backup system except 
 c when the backup is baseboard/hydronic/plenum heater. In this case
 c the backup can operate with no fan when the heat pump has a fan
-c	=0 no fan associated with hvac system
-c	=1 fan in auto mode
+c  =0 no fan associated with hvac system
+c  =1 fan in auto mode
 c       =2 fan in continous mode
       CALL EGETWI(OUTSTR,K,ival,0,2,'F',
      &'hvac input: ifan_operation',IER)
@@ -1163,9 +1163,9 @@ c When the unit is in the heating mode
       if(iunit_function(i).eq.1) then
 c Read the type of temperature control in the heating mode 
 c (balance point; restricted; unrestricted)
-c	=1 balance point control
-c	=2 restricted control
-c	=3 unrestricted control
+c  =1 balance point control
+c  =2 restricted control
+c  =3 unrestricted control
         CALL EGETWI(OUTSTR,K,ival,1,3,'F',
      &  'hvac input: itemp_control',IER)
         itemp_control(i) = ival
@@ -1175,9 +1175,9 @@ c control option is restricted
      &  'hvac input: cutoff_temp',IER)
         cutoff_temp(i) = val
 c Read the backup heat source
-c	=1 Furnace
-c	=2 Boiler
-c	=3 Baseboards/Hydronic/Plenum Heaters
+c  =1 Furnace
+c  =2 Boiler
+c  =3 Baseboards/Hydronic/Plenum Heaters
         CALL EGETWI(OUTSTR,K,ival,1,3,'F',
      &  'hvac input: ibackup_heat',IER)
         ibackup_heat(i) = ival
@@ -1194,9 +1194,9 @@ c Read Sensible Heat Factor in the cooling mode at ARI rating conditions.
      &  'hvac input: shrr',IER)
         shrr(i) = val   
 c Read the cooling type (conventional, economizer, ventilation)
-c	=1 conventional
-c	=2 economizer
-c	=3 ventilation
+c  =1 conventional
+c  =2 economizer
+c  =3 ventilation
         CALL EGETWI(OUTSTR,K,ival,1,3,'F',
      &  'hvac input: icooling_type',IER)
         icooling_type(i) = ival
@@ -1205,8 +1205,8 @@ c Read ventilation flow rate
      &  'hvac input: vent_flow_rate',IER)
         dummy = val   
 c Read control option for economizer
-c	=1 temperature control
-c	=2 enthalpy control
+c  =1 temperature control
+c  =2 enthalpy control
         CALL EGETWI(OUTSTR,K,ival,1,2,'F',
      &  'hvac input: ieconomizer_type',IER)
         idummy = ival
@@ -1261,14 +1261,14 @@ c Subroutine called by HVACINPUT to read data from hvac input file for
 c a baseboard/hydronic/plenum heater system
 
 c INPUTS:
-c       i 		system number associated with baseboard system
+c       i   system number associated with baseboard system
 c       hvac.h          include file for hvac parameters
 
 c OUTPUTS:
-c	HVAC_INPUT_DATA
-c			common for hvac input data
-c	FURNACE_INPUT_DATA
-c			common for furnace input data
+c  HVAC_INPUT_DATA
+c    common for hvac input data
+c  FURNACE_INPUT_DATA
+c    common for furnace input data
 c *********************************************************************
       SUBROUTINE BASEBOARD_INPUT(i)
 
@@ -1328,8 +1328,8 @@ c system is a backup, this is the same as that for the primary system
 c except when the primary system has a fan and the baseboard has no fan.
 c In this case, ifan_operation can be 0 here and 1 or 2 for the primary
 c system
-c	=0 no fan associated with hvac system
-c	=1 fan in auto mode
+c  =0 no fan associated with hvac system
+c  =1 fan in auto mode
 c       =2 fan in continous mode
       CALL EGETWI(OUTSTR,K,ival,0,2,'F',
      &'hvac input: ifan_operation',IER)
@@ -1354,13 +1354,13 @@ c Subroutine to determine coil bypass factor at rating conditions
 c from performance data at rating conditions
 
 c INPUTS:
-c	isys		number of hvac system
-c	HVAC_INPUT_DATA	HVAC input data common
-c	HEAT_PUMP_INPUT_DATA
-c			heat pump input data common
-	
+c  isys   number of hvac system
+c  HVAC_INPUT_DATA  HVAC input data common
+c  HEAT_PUMP_INPUT_DATA
+c         heat pump input data common
+ 
 c OUTPUTS:
-c	bfr		bypass factor at rating conditions
+c  bfr   bypass factor at rating conditions
 c **********************************************************************
       SUBROUTINE BYPASS_FACTOR_R(isys)
 
@@ -1385,12 +1385,12 @@ c Local Variables
       INTEGER iuout,iuin
 
 c Following moist air states are defined:
-c	state 1		condition of return air from conditioned zones
-c	state 2		condition of air entering cooling coil
-c	state 3		apparatus dew point
-c	state 4		condition at exit of heat exchanger
-c	state 5		used to define sensible process through cooling
-c			coil
+c  state 1   condition of return air from conditioned zones
+c  state 2   condition of air entering cooling coil
+c  state 3   apparatus dew point
+c  state 4   condition at exit of heat exchanger
+c  state 5   used to define sensible process through cooling
+c            coil
 
 c Inlet temperature of air at rating conditions
       tdb1r = 26.7
@@ -1470,19 +1470,19 @@ c
 c Subroutine to set the correlation coefficients of an air-source heat pump
 
 c References:
-c             "Part load curves for use in DOE-2"
-c              Prepared for the Lawrence Berkley Laboratory by
-c              Hugh Henderson, CDH Energy Corp, Cazenovia, NY
+c      "Part load curves for use in DOE-2"
+c      Prepared for the Lawrence Berkley Laboratory by
+c      Hugh Henderson, CDH Energy Corp, Cazenovia, NY
 
-c       Air-Source Heat Pump Model for Implementation in H3k
-c       H3k model documentation, Kamel Haddad, June 10 2000
+c      Air-Source Heat Pump Model for Implementation in H3k
+c      H3k model documentation, Kamel Haddad, June 10 2000
 
 c INPUTS:
 c isys number of HVAC system
 c   HEAT_PUMP_INPUT_DATA
-c	common for heat pump input data
+c      common for heat pump input data
 c   HVAC_INPUT_DATA
-c	common for HVAC input data
+c      common for HVAC input data
 
 c OUTPUTS:
 c       ahp,bhp,chp,dhp coefficients for the part-load performance
@@ -1544,24 +1544,24 @@ c Subroutine to determine the correlation coefficients for the part-load
 c performance of the furnace
 
 c References:
-c		"Further developments to the HOT2000 subroutine - Part B:
-c              	furnace an heat pump models", prepared for Energy Mines 
-c             	and Resource Canada, Energy Efficiency Division. 
-c              	Submitted by C. Barringer. Report No. ET-91-045
+c   "Further developments to the HOT2000 subroutine - Part B:
+c   furnace an heat pump models", prepared for Energy Mines 
+c   and Resource Canada, Energy Efficiency Division. 
+c   Submitted by C. Barringer. Report No. ET-91-045
 
-c             	"Part load curves for use in DOE-2"
-c              	Prepared for the Lawrence Berkley Laboratory by
-c              	Hugh Henderson, CDH Energy Corp, Cazenovia, NY
+c   "Part load curves for use in DOE-2"
+c   Prepared for the Lawrence Berkley Laboratory by
+c   Hugh Henderson, CDH Energy Corp, Cazenovia, NY
 
 c INPUTS:
-c	isys		number for hvac system
-c	isys_type	type of furnace
-c	FURNACE_INPUT_DATA
-c			common for furnace specific input data
+c  isys      number for hvac system
+c  isys_type type of furnace
+c  FURNACE_INPUT_DATA
+c     common for furnace specific input data
 
 c OUTPUTS:
-c       af,bf,cf,df	part-load performance factors stored in common
-c			FURNACE_INPUT_DATA
+c       af,bf,cf,df  part-load performance factors stored in common
+c                    FURNACE_INPUT_DATA
 c ************************************************************************
       SUBROUTINE FURNACE_COEFF(isys,isys_type)
       
@@ -1589,28 +1589,28 @@ c is a 3rd oder polynomial with coefficients af, bf, cf, and df.
 
 c The fuel types associated with each of the values of the paramater 
 c ifuel_type are: 
-c 	=1 electric
-c 	=2 natural gas
-c 	=3 oil
-c	=4 propane
-c 	=5 wood
+c   =1 electric
+c   =2 natural gas
+c   =3 oil
+c   =4 propane
+c   =5 wood
 
 c The furnace types associated with each of the values of parameter
 c isys_type are:
-c 	=1 advanced air tight wood stove
-c 	=2 catalytic converter
-c 	=3 flame retention head
-c  	=4 flue vent damper
-c 	=5 spark-ignition
-c	=6 spark ignition and vent damper
-c 	=7 continuous pilot
-c 	=8 condensing furnace
-c	=9 direct vent non condensing
-c  	=10 induced draft
-c 	=11 mid efficiency
-c 	=12 electric forced-air
-c	=13 wood furnace
-c	=14 oil furnace
+c   =1 advanced air tight wood stove
+c   =2 catalytic converter
+c   =3 flame retention head
+c   =4 flue vent damper
+c   =5 spark-ignition
+c   =6 spark ignition and vent damper
+c   =7 continuous pilot
+c   =8 condensing furnace
+c   =9 direct vent non condensing
+c   =10 induced draft
+c   =11 mid efficiency
+c   =12 electric forced-air
+c   =13 wood furnace
+c   =14 oil furnace
 
 
 c** Electric (type =1) can have systypes = 12**
@@ -1684,8 +1684,8 @@ c For oil furnace
         elseif(isys_type.eq.14) then
           af(isys) = 1.005
           bf(isys) = 0.0093
-	endif
-	
+        endif
+
 c** Propane (type =4) can have sys_types = 5,6,7,8,10**
 c For propane furnaces
       elseif(ifuel_type(isys).eq.4) then
@@ -1749,28 +1749,28 @@ c
 c Function to determine the size of the indoor circulation fan associated
 c with the hvac system
 
-c References:	
-c		"Further developments to the HOT2000 subroutine - Part B:
-c               furnace an heat pump models", prepared for Energy Mines 
-c               and Resource Canada, Energy Efficiency Division. 
-c               Submitted by C. Barringer. Report No. ET-91-045
+c References:
+c    "Further developments to the HOT2000 subroutine - Part B:
+c    furnace an heat pump models", prepared for Energy Mines 
+c    and Resource Canada, Energy Efficiency Division. 
+c    Submitted by C. Barringer. Report No. ET-91-045
 
-c		Furnace Model for Implementation in H3K
-c		H3K model documentation,
-c		Kamel Haddad, April 5th 2000
+c   Furnace Model for Implementation in H3K
+c   H3K model documentation,
+c   Kamel Haddad, April 5th 2000
 
-c		Air-Source Heat Pump Model for Implementation in H3k
-c		H3k model documentation, Kamel Haddad, June 10 2000
+c   Air-Source Heat Pump Model for Implementation in H3k
+c   H3k model documentation, Kamel Haddad, June 10 2000
 
 
 c INPUTS:
-c	isys		number for hvac system
-c	HVAC_INPUT_DATA	common for HVAC input data
-c	HEAT_PUMP_INPUT_DATA
-c			common for heat pump input data
-c	
+c  isys      number for hvac system
+c  HVAC_INPUT_DATA  common for HVAC input data
+c  HEAT_PUMP_INPUT_DATA
+c     common for heat pump input data
+c
 c OUTPUTS:
-c       FAN_SIZE	size of the indoor circulation fan in W
+c       FAN_SIZE  size of the indoor circulation fan in W
 c **********************************************************************
       REAL FUNCTION FAN_SIZE(isys)
 
@@ -1873,11 +1873,11 @@ c Subroutine to determine the flow rate for hvac system if there is
 c no value specified in the input file
 c
 c INPUTS:
-c	isys		number of hvac system
-c	HVAC_INPUT_DATA	HVAC input data common
-	
+c  isys     number of hvac system
+c  HVAC_INPUT_DATA  HVAC input data common
+
 c OUTPUTS:
-c	SYS_FLOW_RATE	system flow rate  [m3/s]
+c  SYS_FLOW_RATE  system flow rate  [m3/s]
 c *********************************************************************
       REAL FUNCTION SYS_FLOW_RATE(isys)
 

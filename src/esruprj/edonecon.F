@@ -200,10 +200,12 @@ C Editing of items.
       elseif(iart.eq.3)then 
         modcfg=.true.
         ICT(IFOC)=2
+        VAL=real(IC2(IFOC))
         CALL EASKR(VAL,' ',' Constant temperature ? ',
      &    -99.,'F',700.,'F',20.,'adjacent temperature',IER,nbhelp)
         IC2(IFOC)=INT(VAL)
 
+        VAL=real(IE2(IFOC))
         CALL EASKR(VAL,' ',
      &    ' Constant radiation source (Watts) ? ',
      &    0.0,'W',99999.,'W',0.0,'adjacent radiation source',

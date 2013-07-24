@@ -1,0 +1,500 @@
+Synopsis
+ 
+Synopsis of the model CCHT house in ESP-r link to electrical via v2.1 5 *types
+defined in ccht-elec-gain-into-zone2.15.cfg generated on Thu Mar 14 09:32:07
+2013. Notes associated with the model are in ccht_basic.log
+ 
+The model is located at latitude   50.00 with a longitude difference of   0.00
+from the local time meridian. The year used in simulations is 1999 and
+weekends occur on Saturday and Sunday.
+The site exposure is isolated rural site site and the ground reflectance is
+0.20.
+ 
+ 
+Simulationist name: not yet defined
+Simulationist telephone: not yet defined
+Simulationist address: not yet defined
+Simulationist city: not yet defined
+Simulationist postcode: not yet defined
+ 
+The climate is: Ottawa Intl ON CAN and is held in: can_ottawa with hour
+centred solar data.
+ standard annual weather: can_ottawa
+Calculated ground temp at 0.5m depth
+-7.3239 -8.6098 -6.3292 -2.7603 6.5748 13.779 18.638 20.117 17.597 12.004 4.5294 -2.4058
+Calculated ground temp at 1.0m depth
+-5.5667 -7.3286 -5.7900 -2.8690 5.3395 12.038 16.869 18.802 17.103 12.437 5.7987 -0.66126
+Calculated ground temp at 2.0m depth
+-2.5922 -4.8835 -4.4157 -2.5199 3.7264 9.3732 13.890 16.314 15.797 12.626 7.4760 2.0155
+Calculated ground temp at 4.0m depth
+1.3245 -1.0252 -1.5390 -0.82819 2.7073 6.5116 9.9991 12.427 12.995 11.620 8.5955 4.9014
+ 
+An Integrated Performance View is incomplete or missing.
+ 
+Databases associated with the model:
+ standard pressure distr: pressc.db1
+ standard materials     : ccht_material.ascii
+ standard constructions : ccht_constr.db1
+ standard plant comp    : plantc.db1
+ standard event profiles: profiles.db1.a
+ standard optical prop  : ccht-optics.db1
+ standard UK NCM data   : SBEM.db1
+ standard mould isopleth: mould.db1
+ 
+ ____________________________________________________________
+ 
+The model includes ideal controls as follows:
+Control description:
+control for CCHT house
+ 
+Zones control includes  2 functions.
+no descrip
+Details of control loops referenced in the model:
+ 
+ The sensor for function  1 senses the temperature of the current zone.
+ The actuator for function  1 is air point of the current zone
+There have been  1 periods of validity defined during the year.
+ Control is valid Fri-01-Jan to Fri-31-Dec, 1999 with  1 periods.
+ Per|Start|Sensing  |Actuating  | Control law description
+   1  0.00 db temp   > flux      free floating
+ 
+ The sensor for function  2 senses the temperature of the current zone.
+ The actuator for function  2 is air point of the current zone
+There have been  1 periods of validity defined during the year.
+ Control is valid Fri-01-Jan to Fri-31-Dec, 1999 with  3 periods.
+ Per|Start|Sensing  |Actuating  | Control law description
+   1  0.00 db temp   > flux      basic control: max heating capacity 20000.0W min
+heating capacity 0.0W max cooling capacity 0.0W min cooling capacity 0.0W. Heating
+setpoint 18.00C cooling setpoint 100.00C.
+   2  8.00 db temp   > flux      basic control: max heating capacity 20000.0W min
+heating capacity 0.0W max cooling capacity 0.0W min cooling capacity 0.0W. Heating
+setpoint 21.00C cooling setpoint 100.00C.
+   3 20.00 db temp   > flux      basic control: max heating capacity 20000.0W min
+heating capacity 0.0W max cooling capacity 0.0W min cooling capacity 0.0W. Heating
+setpoint 18.00C cooling setpoint 100.00C.
+ 
+ Zone to contol loop linkages:
+ zone ( 1) basement     << control  1
+ zone ( 2) main_second  << control  2
+ zone ( 3) roof         << control  1
+ zone ( 4) garage       << control  1
+ 
+ ____________________________________________________________
+ 
+ID Zone         Volume|          Surface
+   Name         m^3   | No. Opaque  Transp  ~Floor
+ 1 basement      281.8   8   342.6     0.0   108.4  simplified basement elevation
+ 2 main_second   688.2  18   535.8    22.5   108.4  simplified elevation of main and second floors
+ 3 roof          205.7  10   331.2     0.0   142.7  roof describes the two-level roof of the house
+ 4 garage        114.9   7   151.2     0.0    38.0  garage describes the garage with slab on grade floor, exterior s
+   all          1290.   43   1361.     23.    397.
+ 
+ 
+ Zone basement ( 1) is composed of 8 surfaces and 12 vertices.
+ It encloses a volume of 282.m^3 of space, with a total surface
+ area of 343.m^2 & approx floor area of 108.m^2
+ simplified basement elevation
+ Ground contact is 216.12 % of floor area & average U of 1.259 & perimeter 0.00
+ 
+ A summary of the surfaces in basement( 1) follows:
+ 
+ Sur| Area  |Azim|Elev| surface    | geometry | construction |environment
+    | m^2   |deg |deg | name       |type |loca| name         |other side
+  1  31.2    180.   0. Surf-1       OPAQUE VERT foundation_  ||< ground profile  1
+  2  17.7     90.   0. Surf-2       OPAQUE VERT foundation_  ||< ground profile  1
+  3  12.9      0.   0. Surf-5       OPAQUE VERT foundation_  ||< ground profile  1
+  4  31.7    270.   0. Surf-6       OPAQUE VERT foundation_  ||< ground profile  1
+  5  108.      0.  90. to_upstairs  OPAQUE CEIL floors_r     ||< floor:main_second
+  6  108.      0. -90. floor_slab   OPAQUE FLOR slab_floor   ||< ground profile  1
+  7  14.1     90.   0. Surf-7       OPAQUE VERT foundation_  ||< ground profile  1
+  8  18.3      0.   0. Surf-8       OPAQUE VERT foundation_  ||< ground profile  1
+ 
+ 
+ All surfaces will receive diffuse insolation (if shading not calculated).
+ No shading analysis requested.
+ No insolation analysis requested.
+ 
+ NOTE: Some surface boundary attributions did not match the
+ master connections list. A topology update may be required.
+ 
+ Air schedule notes:
+nil_operations
+ Control: no control of air flow
+ 
+Scheduled air infiltration and ventilation:
+Daytype    Period     Infiltration     Ventilation     From Source
+           id Hours   Rate ac/h m3/s   Rate ac/h m3/s  Zone DegC
+weekday    1  0 - 24    0.30  0.0235    0.00  0.0000   0     0.00
+saturday   1  0 - 24    0.30  0.0235    0.00  0.0000   0     0.00
+sunday     1  0 - 24    0.30  0.0235    0.00  0.0000   0     0.00
+ 
+Notes:
+nil_operations
+ 
+Daytype   Gain Label     Type    Unit Period Sensible  Latent     Radiant    Convec
+          No.                          Hours Magn.(W)  Magn.(W)   Fraction   Fraction
+ 
+ ____________________________________________________________
+ 
+ Zone main_second ( 2) is composed of 18 surfaces and 50 vertices.
+ It encloses a volume of 688.m^3 of space, with a total surface
+ area of 558.m^2 & approx floor area of 108.m^2
+ simplified elevation of main and second floors
+ There is 227.91m2 of exposed surface area, 227.91m2 of which is vertical.
+ Outside walls are 189.52 % of floor area & average U of 0.244 & UA of 50.124
+ Glazing is 20.782 % of floor & 9.8820 % facade with average U of 1.927 & UA of 43.403
+ 
+ A summary of the surfaces in main_second( 2) follows:
+ 
+ Sur| Area  |Azim|Elev| surface    | geometry | construction |environment
+    | m^2   |deg |deg | name       |type |loca| name         |other side
+  1  64.3    180.   0. Surf-1       OPAQUE VERT ccht_wall    ||< external
+  2  39.3     90.   0. Surf-2       OPAQUE VERT ccht_wall    ||< external
+  3  42.4    360.   0. Surf-3       OPAQUE VERT ccht_wall    ||< external
+  4  59.3    270.   0. Surf-4       OPAQUE VERT ccht_wall    ||< external
+  5  146.      0.  90. ceiling      OPAQUE CEIL ceiling      ||< ceiling:roof
+  6  108.      0. -90. floor        OPAQUE FLOR floors       ||< to_upstairs:basement
+  7  0.994     0.   0. W5           ccht-w VERT ccht_window  ||< external
+  8  1.16      0.   0. W6           ccht-w VERT ccht_window  ||< external
+  9  4.47     90.   0. W1           ccht-w VERT ccht_window  ||< external
+ 10  3.99     90.   0. W2           ccht-w VERT ccht_window  ||< external
+ 11  2.78     90.   0. W4           ccht-w VERT ccht_window  ||< external
+ 12  3.00    270.   0. W9           ccht-w VERT ccht_window  ||< external
+ 13  2.27    270.   0. W12          ccht-w VERT ccht_window  ||< external
+ 14  1.56    180.   0. W13          ccht-w VERT ccht_window  ||< external
+ 15  2.31    270.   0. W10_11       ccht-w VERT ccht_window  ||< external
+ 16  21.2      0.   0. garage_in    OPAQUE VERT ccht_wall    ||< main_share:garage
+ 17  16.3     90.   0. garage_back  OPAQUE VERT ccht_wall    ||< garage_back:garage
+ 18  38.0      0. -90. garage_ceil  OPAQUE FLOR exp_flr      ||< garage_ceiln:garage
+ 
+ 
+ All surfaces will receive diffuse insolation (if shading not calculated).
+ No shading analysis requested.
+ No insolation analysis requested.
+ 
+ 
+ 
+ 
+ Air schedule notes:
+Infiltration set at 0.43 all hours of all days and ventilation from
+zone 1
+ Control: no control of air flow
+ 
+Scheduled air infiltration and ventilation:
+Daytype    Period     Infiltration     Ventilation     From Source
+           id Hours   Rate ac/h m3/s   Rate ac/h m3/s  Zone DegC
+weekday    1  0 - 24    0.43  0.0828    2.62  0.5001   1     0.00
+saturday   1  0 - 24    0.43  0.0828    2.62  0.5001   1     0.00
+sunday     1  0 - 24    0.43  0.0828    2.62  0.5001   1     0.00
+ 
+Notes:
+Shows use of many type entries with net_utilities 5th in list. Points
+to electric gains via E-gain (net_utilit)
+ 
+Daytype   Gain Label     Type    Unit Period Sensible  Latent     Radiant    Convec
+          No.                          Hours Magn.(W)  Magn.(W)   Fraction   Fraction
+weekday     1 E-gain     net_utilitW    0-24      0.8      0.0       0.00       1.00
+saturday    1 E-gain     net_utilitW    0-24      0.8      0.0       0.00       1.00
+sunday      1 E-gain     net_utilitW    0-24      0.8      0.0       0.00       1.00
+ 
+ ____________________________________________________________
+ 
+ Zone roof ( 3) is composed of 10 surfaces and 13 vertices.
+ It encloses a volume of 206.m^3 of space, with a total surface
+ area of 331.m^2 & approx floor area of 143.m^2
+ roof describes the two-level roof of the house
+ There is 184.77m2 of exposed surface area, 8.1500m2 of which is vertical.
+ Outside walls are 5.7121 % of floor area & average U of 3.932 & UA of 32.043
+ Sloped roof is 123.79 % of floor area & average U of 4.457 & UA of 787.26
+ 
+ A summary of the surfaces in roof( 3) follows:
+ 
+ Sur| Area  |Azim|Elev| surface    | geometry | construction |environment
+    | m^2   |deg |deg | name       |type |loca| name         |other side
+  1  31.8    270.  56. roof1_back   OPAQUE SLOP asphalt      ||< external
+  2  22.8     90.  64. roof1_frnt   OPAQUE SLOP asphalt      ||< external
+  3  32.8    181.  51. roof1_side   OPAQUE SLOP asphalt      ||< external
+  4  8.15     90.  -0. roof1_vert   OPAQUE VERT asphalt      ||< external
+  5  23.4      0.  50. roof2_vert   OPAQUE SLOP asphalt      ||< external
+  6  19.3    270.  67. roof2_back   OPAQUE SLOP asphalt      ||< external
+  7  19.3     90.  67. roof2_front  OPAQUE SLOP asphalt      ||< external
+  8  18.4    358.  50. roof_1_2     OPAQUE SLOP asphalt      ||< external
+  9  8.92    180.  48. roof1_tri    OPAQUE SLOP asphalt      ||< external
+ 10  146.      0. -90. ceiling      OPAQUE FLOR ceiling_r    ||< ceiling:main_second
+ 
+ 
+ All surfaces will receive diffuse insolation (if shading not calculated).
+ No shading analysis requested.
+ No insolation analysis requested.
+ 
+ 
+ Air schedule notes:
+nil_operations
+ Control: no control of air flow
+ 
+Scheduled air infiltration and ventilation:
+Daytype    Period     Infiltration     Ventilation     From Source
+           id Hours   Rate ac/h m3/s   Rate ac/h m3/s  Zone DegC
+ 
+Notes:
+nil_operations
+ 
+Daytype   Gain Label     Type    Unit Period Sensible  Latent     Radiant    Convec
+          No.                          Hours Magn.(W)  Magn.(W)   Fraction   Fraction
+ 
+ ____________________________________________________________
+ 
+ Zone garage ( 4) is composed of 7 surfaces and 12 vertices.
+ It encloses a volume of 115.m^3 of space, with a total surface
+ area of 151.m^2 & approx floor area of 38.0m^2
+ garage describes the garage with slab on grade floor, exterior s
+ There is 37.569m2 of exposed surface area, 37.569m2 of which is vertical.
+ Outside walls are 98.787 % of floor area & average U of 0.440 & UA of 16.512
+ Ground contact is 100.01 % of floor area & average U of 1.208 & perimeter 12.440
+ 
+ A summary of the surfaces in garage( 4) follows:
+ 
+ Sur| Area  |Azim|Elev| surface    | geometry | construction |environment
+    | m^2   |deg |deg | name       |type |loca| name         |other side
+  1  21.2    180.   0. main_share   OPAQUE VERT ccht_wall_r  ||< garage_in:main_second
+  2  6.58     90.   0. front_garage OPAQUE VERT ccht_wall    ||< external
+  3  21.2      0.   0. side_wall    OPAQUE VERT ccht_wall    ||< external
+  4  16.3    270.   0. garage_back  OPAQUE VERT ccht_wall_r  ||< garage_back:main_second
+  5  38.0      0.  90. garage_ceiln OPAQUE CEIL exp_flr_r    ||< garage_ceil:main_second
+  6  38.0      0. -90. slab-on-grad OPAQUE FLOR slab_floor   ||< ground profile  1
+  7  9.76     90.   0. garage_door  OPAQUE VERT ext_doors    ||< external
+ 
+ 
+ All surfaces will receive diffuse insolation (if shading not calculated).
+ No shading analysis requested.
+ No insolation analysis requested.
+ 
+ NOTE: Some surface boundary attributions did not match the
+ master connections list. A topology update may be required.
+ 
+ Air schedule notes:
+nil_operations
+ Control: no control of air flow
+ 
+Scheduled air infiltration and ventilation:
+Daytype    Period     Infiltration     Ventilation     From Source
+           id Hours   Rate ac/h m3/s   Rate ac/h m3/s  Zone DegC
+ 
+Notes:
+nil_operations
+ 
+Daytype   Gain Label     Type    Unit Period Sensible  Latent     Radiant    Convec
+          No.                          Hours Magn.(W)  Magn.(W)   Fraction   Fraction
+ 
+ ____________________________________________________________
+ 
+ Project floor area is 397.45m2, wall area is 251.10m2, window area is 22.522m2.
+ Sloped roof area is 176.62m2, flat roof area is 0.00m2, skylight area is 0.00m2.
+ In contact with ground 272.24m2.
+ There is 450.24m2 of outside surface area, 273.62m2 of which is vertical.
+ 
+ Outside walls are 63.178 % of floor area & average U of 0.393 & UA of 98.679 & max MLC thickness 0.288
+ Sloped roof is 44.438 % of floor area & average U of 4.457 & UA of 787.26
+ Glazing is 5.6665 % of floor & 8.2308 % facade with average U of 1.927 & UA of 43.403
+ Ground contact is 68.497 % of floor area & average U of 1.252 & perimeter 12.440 & max MLC thickness 0.250
+ CIBSE ground beta!43.768 dt 1.546 Ufleft 0.022 Ufright 4.499 Uf 0.097 R extra @ virtual layer 9.503
+ 
+ ____________________________________________________________
+ Multi-layer constructions used:
+ 
+ Details of opaque construction: ccht_wall linked to ccht_wall_r & with overall thickness  0.288
+ 
+ Layer|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
+      |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
+ Ext   100.0     0.960  2000.   650. 0.90 0.93    25.  0.10 Outer leaf brick : Outer leaf brick
+    2   25.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
+    3   11.0     0.150   800.  2093. 0.91 0.65    96.  0.07 Chipboard : Chipboard
+    4  140.0     0.040    16.   840. 0.90 0.65    30.  3.50 Glass Fibre Quilt : Glass Fibre Quilt
+ Int    12.0     0.150   700.  1420. 0.90 0.65   576.  0.08 Plywood 700d : Plywood 700d
+ ISO 6946 U values (horizontal/upward/downward heat flow)=  0.244  0.246  0.242 (partition)  0.239
+ 
+Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  0.24
+ External surface admittance Y=  0.91  w=  4.43 decrement factor f=  0.96  phi=  0.40 surface factor f=  0.96  phi=  0.40
+ Partition admittance Y=  1.05  w=  4.72 surface factor f=  0.97  phi=  0.47
+ Total area of ccht_wall is    270.76
+ 
+ Details of transparent construction: ccht_window with ccht-win optics and overall thickness  0.019
+ 
+ Layer|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
+      |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
+ Ext     3.0     0.760  2710.   837. 0.83 0.05 19200.  0.00 Plate glass : Plate glass with placeholder single layer optics
+    2   13.0     0.000     0.     0. 0.99 0.99     1.  0.34 air  0.34 0.34 0.34
+ Int     3.0     0.760  2710.   837. 0.83 0.05 19200.  0.00 Plate glass : Plate glass with placeholder single layer optics
+ ISO 6946 U values (horizontal/upward/downward heat flow)=  1.927  2.045  1.789 (partition)  1.642
+ 
+Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  1.89
+ External surface admittance Y=  1.93  w=  0.59 decrement factor f=  0.77  phi=  0.18 surface factor f=  0.77  phi=  0.18
+ Partition admittance Y=  0.44  w=  5.81 surface factor f=  1.00  phi=  0.20
+ 
+ data from Kamel's spreadsheet: with id of: ccht-win
+ with 3 layers [including air gaps] and visible trn: 0.89
+ Direct transmission @ 0, 40, 55, 70, 80 deg
+   0.624 0.602 0.544 0.385 0.186
+ Layer| absorption @ 0, 40, 55, 70, 80 deg
+    1  0.095 0.105 0.115 0.129 0.135
+    2  0.001 0.001 0.001 0.001 0.001
+    3  0.135 0.137 0.130 0.109 0.064
+ Total area of ccht_window is     22.52
+ 
+ Details of opaque construction: slab_floor and overall thickness  0.250
+ 
+ Layer|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
+      |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
+    1  250.0     0.380  1200.   653. 0.90 0.65     6.  0.66 Light mix : Light mix
+ ISO 6946 U values (horizontal/upward/downward heat flow)=  1.208  1.253  1.152 (partition)  1.089
+ 
+Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  1.19
+ External surface admittance Y=  3.22  w=  1.99 decrement factor f=  0.69  phi=  1.08 surface factor f=  0.69  phi=  1.08
+ Partition admittance Y=  3.67  w=  2.45 surface factor f=  0.70  phi=  1.48
+ Total area of slab_floor is    146.40
+ 
+ Details of opaque construction: foundation_ and overall thickness  0.214
+ 
+ Layer|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
+      |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
+ Ext   200.0     0.380  1200.   653. 0.90 0.65     6.  0.53 Light mix : Light mix
+ Int    13.5     0.190   950.   840. 0.91 0.50    11.  0.07 Gypsum plasterboard : Gypsum plasterboard
+ ISO 6946 U values (horizontal/upward/downward heat flow)=  1.303  1.356  1.239 (partition)  1.166
+ 
+Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  1.29
+ External surface admittance Y=  2.92  w=  1.89 decrement factor f=  0.71  phi=  0.90 surface factor f=  0.71  phi=  0.90
+ Partition admittance Y=  3.34  w=  2.68 surface factor f=  0.74  phi=  1.36
+ Total area of foundation_ is    125.84
+ 
+ Details of opaque construction: ceiling linked to ceiling_r & with overall thickness  0.288
+ 
+ Layer|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
+      |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
+ Ext    12.7     0.190   950.   840. 0.91 0.50    11.  0.07 Gypsum plasterboard : Gypsum plasterboard
+    2  250.0     0.110   480.  1050. 0.90 0.65    10.  2.27 Thermalite turbo block : Thermalite turbo block
+ Int    25.0     0.150   700.  1420. 0.90 0.65   576.  0.17 Plywood 700d : Plywood 700d
+ ISO 6946 U values (horizontal/upward/downward heat flow)=  0.374  0.378  0.368 (partition)  0.362
+ 
+Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  0.37
+ External surface admittance Y=  2.29  w=  2.74 decrement factor f=  0.81  phi=  0.85 surface factor f=  0.81  phi=  0.85
+ Partition admittance Y=  2.35  w=  2.65 surface factor f=  0.80  phi=  0.86
+ Total area of ceiling is    146.40
+ 
+ Details of opaque construction: ccht_wall_r linked to ccht_wall & with overall thickness  0.288
+ 
+ Layer|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
+      |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
+ Ext    12.0     0.150   700.  1420. 0.90 0.65   576.  0.08 Plywood 700d : Plywood 700d
+    2  140.0     0.040    16.   840. 0.90 0.65    30.  3.50 Glass Fibre Quilt : Glass Fibre Quilt
+    3   11.0     0.150   800.  2093. 0.91 0.65    96.  0.07 Chipboard : Chipboard
+    4   25.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
+ Int   100.0     0.960  2000.   650. 0.90 0.93    25.  0.10 Outer leaf brick : Outer leaf brick
+ ISO 6946 U values (horizontal/upward/downward heat flow)=  0.244  0.246  0.242 (partition)  0.239
+ 
+Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  0.24
+ External surface admittance Y=  5.24  w=  2.08 decrement factor f=  0.57  phi=  2.35 surface factor f=  0.57  phi=  2.35
+ Partition admittance Y=  5.31  w=  2.15 surface factor f=  0.57  phi=  2.43
+ Total area of ccht_wall_r is     37.57
+ 
+ Details of opaque construction: floors linked to floors_r & with overall thickness  0.157
+ 
+ Layer|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
+      |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
+ Ext    15.0     0.060   160.  2500. 0.90 0.65    10.  0.25 Synthetic carpet : Synthetic carpet
+    2   25.0     0.140   600.  1210. 0.91 0.65    14.  0.18 Flooring : Flooring
+    3  100.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
+ Int    17.0     0.150   560.  2500. 0.90 0.65   576.  0.11 Plywood : Plywood
+ ISO 6946 U values (horizontal/upward/downward heat flow)=  1.134  1.174  1.085 (partition)  1.029
+ 
+Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  1.12
+ External surface admittance Y=  1.98  w=  2.64 decrement factor f=  0.83  phi=  0.70 surface factor f=  0.83  phi=  0.70
+ Partition admittance Y=  1.94  w=  4.69 surface factor f=  0.95  phi=  0.89
+ Total area of floors is    108.37
+ 
+ Details of opaque construction: floors_r linked to floors & with overall thickness  0.157
+ 
+ Layer|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
+      |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
+ Ext    17.0     0.150   560.  2500. 0.90 0.65   576.  0.11 Plywood : Plywood
+    2  100.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
+    3   25.0     0.140   600.  1210. 0.91 0.65    14.  0.18 Flooring : Flooring
+ Int    15.0     0.060   160.  2500. 0.90 0.65    10.  0.25 Synthetic carpet : Synthetic carpet
+ ISO 6946 U values (horizontal/upward/downward heat flow)=  1.134  1.174  1.085 (partition)  1.029
+ 
+Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  1.12
+ External surface admittance Y=  1.38  w=  1.51 decrement factor f=  0.85  phi=  0.29 surface factor f=  0.85  phi=  0.29
+ Partition admittance Y=  1.12  w=  4.75 surface factor f=  0.97  phi=  0.50
+ Total area of floors_r is    108.37
+ 
+ Details of opaque construction: ext_doors and overall thickness  0.035
+ 
+ Layer|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
+      |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
+ Ext     5.0    40.000  7800.   502. 0.82 0.45 19200.  0.00 light steel door : light steel door
+    2   25.0     0.030    30.   837. 0.90 0.50    90.  0.83 Polyurethane foam board : Polyurethane foam board
+ Int     5.0    40.000  7800.   502. 0.82 0.45 19200.  0.00 light steel door : light steel door
+ ISO 6946 U values (horizontal/upward/downward heat flow)=  0.996  1.027  0.958 (partition)  0.914
+ 
+Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  0.99
+ External surface admittance Y=  1.59  w=  2.90 decrement factor f=  0.87  phi=  0.58 surface factor f=  0.87  phi=  0.58
+ Partition admittance Y=  1.34  w=  5.40 surface factor f=  0.99  phi=  0.62
+ Total area of ext_doors is      9.76
+ 
+ Details of opaque construction: asphalt and overall thickness  0.017
+ 
+ Layer|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
+      |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
+ Ext     5.0     1.150  2325.   837. 0.90 0.90 19200.  0.00 Asphalt mastic roofing : Asphalt mastic roofing
+ Int    12.0     0.150   700.  1420. 0.90 0.65   576.  0.08 Plywood 700d : Plywood 700d
+ ISO 6946 U values (horizontal/upward/downward heat flow)=  3.932  4.457  3.397 (partition)  2.904
+ 
+Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  3.78
+ External surface admittance Y=  3.80  w=  0.18 decrement factor f=  0.55  phi=  0.15 surface factor f=  0.55  phi=  0.15
+ Partition admittance Y=  0.51  w=  5.74 surface factor f=  1.00  phi=  0.23
+ Total area of asphalt is    184.77
+ 
+ Details of opaque construction: ceiling_r linked to ceiling & with overall thickness  0.288
+ 
+ Layer|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
+      |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
+ Ext    25.0     0.150   700.  1420. 0.90 0.65   576.  0.17 Plywood 700d : Plywood 700d
+    2  250.0     0.110   480.  1050. 0.90 0.65    10.  2.27 Thermalite turbo block : Thermalite turbo block
+ Int    12.7     0.190   950.   840. 0.91 0.50    11.  0.07 Gypsum plasterboard : Gypsum plasterboard
+ ISO 6946 U values (horizontal/upward/downward heat flow)=  0.374  0.378  0.368 (partition)  0.362
+ 
+Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  0.37
+ External surface admittance Y=  1.97  w=  2.72 decrement factor f=  0.84  phi=  0.71 surface factor f=  0.84  phi=  0.71
+ Partition admittance Y=  2.03  w=  2.61 surface factor f=  0.83  phi=  0.72
+ Total area of ceiling_r is    146.40
+ 
+ Details of opaque construction: exp_flr linked to exp_flr_r & with overall thickness  0.297
+ 
+ Layer|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
+      |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
+ Ext    15.0     0.060   160.  2500. 0.90 0.65    10.  0.25 Synthetic carpet : Synthetic carpet
+    2   25.0     0.140   600.  1210. 0.91 0.65    14.  0.18 Flooring : Flooring
+    3  140.0     0.040    16.   840. 0.90 0.65    30.  3.50 Glass Fibre Quilt : Glass Fibre Quilt
+    4  100.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
+ Int    17.0     0.150   560.  2500. 0.90 0.65   576.  0.11 Plywood : Plywood
+ ISO 6946 U values (horizontal/upward/downward heat flow)=  0.228  0.230  0.226 (partition)  0.224
+ 
+Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  0.23
+ External surface admittance Y=  1.66  w=  4.47 decrement factor f=  0.94  phi=  0.75 surface factor f=  0.94  phi=  0.75
+ Partition admittance Y=  1.76  w=  4.83 surface factor f=  0.96  phi=  0.81
+ Total area of exp_flr is     38.03
+ 
+ Details of opaque construction: exp_flr_r linked to exp_flr & with overall thickness  0.297
+ 
+ Layer|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
+      |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
+ Ext    17.0     0.150   560.  2500. 0.90 0.65   576.  0.11 Plywood : Plywood
+    2  100.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
+    3  140.0     0.040    16.   840. 0.90 0.65    30.  3.50 Glass Fibre Quilt : Glass Fibre Quilt
+    4   25.0     0.140   600.  1210. 0.91 0.65    14.  0.18 Flooring : Flooring
+ Int    15.0     0.060   160.  2500. 0.90 0.65    10.  0.25 Synthetic carpet : Synthetic carpet
+ ISO 6946 U values (horizontal/upward/downward heat flow)=  0.228  0.230  0.226 (partition)  0.224
+ 
+Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  0.23
+ External surface admittance Y=  1.41  w=  3.54 decrement factor f=  0.91  phi=  0.57 surface factor f=  0.91  phi=  0.57
+ Partition admittance Y=  1.47  w=  4.03 surface factor f=  0.93  phi=  0.63
+ Total area of exp_flr_r is     38.03

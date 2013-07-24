@@ -58,7 +58,6 @@ C ESP-r commons.
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
       COMMON/C6/INDCFG
-      common/C21/IFCFG,cfgroot,LCFGF
 
 C Significant figure reporting limit (NSIGFIG).
       common/SFIG/NSIGFIG
@@ -88,10 +87,9 @@ C Name of current application
       character path*72
       character upgcfg*72
 
-      character cfgroot*24,MODE*4
+      character MODE*4
       character buffer*144
 
-      CHARACTER LCFGF*72
       character htmlfile*72
       character outs*248
       logical unixok
@@ -453,7 +451,7 @@ C to be scanned.
             endif
   27      continue
           call edisp(iuout,'end of cfg file without finding *building')
-	else
+         else
           call mksyshd(filname2,ier)
         endif
       elseif(oformat(1:5).eq.'click')then
@@ -1063,8 +1061,6 @@ C << MUST be updated to reflect ipath and longer database names >>
 
       COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
       COMMON/C6/INDCFG
-      common/C21/IFCFG,cfgroot,LCFGF
-      COMMON/LLOG/LPRJLG
 
       common/cctlnm/ctldoc,lctlf
 
@@ -1096,9 +1092,8 @@ C SHOCCshzFile - path to SHOCC .shz file for each SHOCC'd zone
       logical bSHOCCed,bZoneSHOCCed
       character SHOCCshlFile*72,SHOCCshzFile*72
 
-      CHARACTER LCFGF*72
-      CHARACTER LPRJLG*72,LOUT*72
-      CHARACTER CTLDOC*248,LCTLF*72,cfgroot*24
+      CHARACTER LOUT*72
+      CHARACTER CTLDOC*248,LCTLF*72
       character indxcmt*24
 
       character dstmp*24
@@ -1133,8 +1128,6 @@ C Comment for configuration index (upgrade registration level).
      &  '  # path to radiance files'
       WRITE(ioout,'(3a)',IOSTAT=IOS,ERR=3) '*imgpth ',imgpth,
      &  '  # path to project images'
-      WRITE(ioout,'(3a)',IOSTAT=IOS,ERR=3) '*tmppth ',tmppth,
-     &  '  # path to project scratch folder'
       WRITE(ioout,'(3a)',IOSTAT=IOS,ERR=3) '*docpth ',docpth,
      &  '  # path to project documents'
       WRITE(ioout,'(3a)',IOSTAT=IOS,ERR=3) '*dbspth ',dbspth,
@@ -1190,7 +1183,22 @@ C Write based on current ipath* state.
         WRITE(ioout,'(2A)',IOSTAT=IOS,ERR=3) '*stdevn  ',
      &      LPRFDB(1:lnblnk(LPRFDB))
       endif
-      WRITE(ioout,'(A,A)') '*clm  ',LCLIM(1:lnblnk(LCLIM))
+      if(ipathmould.eq.0.or.ipathmould.eq.1)then
+        WRITE(ioout,'(3A)',IOSTAT=IOS,ERR=3) '*mould  ',
+     &    lfmould(1:lnblnk(lfmould)),' # mould isopleths'
+      elseif(ipathmould.eq.2)then
+        WRITE(ioout,'(3A)',IOSTAT=IOS,ERR=3) '*stdmould  ',
+     &    lfmould(1:lnblnk(lfmould)),' # mould isopleths'
+      endif
+
+      if(ipathclim.eq.0.or.ipathclim.eq.1)then
+        WRITE(ioout,'(2A)',IOSTAT=IOS,ERR=2) '*clm  ',
+     &      LCLIM(1:lnblnk(LCLIM))
+      elseif(ipathclim.eq.2)then
+        WRITE(ioout,'(2A)',IOSTAT=IOS,ERR=2) '*stdclm  ',
+     &      LCLIM(1:lnblnk(LCLIM))
+      endif
+C      WRITE(ioout,'(A,A)') '*clm  ',LCLIM(1:lnblnk(LCLIM))
       if(ipathpcdb.eq.0.or.ipathpcdb.eq.1)then
         WRITE(ioout,'(2A)',IOSTAT=IOS,ERR=3) '*pdb  ',
      &      LPCDB(1:lnblnk(LPCDB))
@@ -1221,10 +1229,28 @@ C (if ground reflectivity model 3)
       IF(groundreflmodel.EQ.3) WRITE(ioout,'(A,A)',IOSTAT=IOS,ERR=2) 
      &  '*sndf ',SNFNAM(1:lnblnk(SNFNAM))
 
-      if(lnblnk(lctlf).eq.0.or.lctlf(1:7).eq.'UNKNOWN')then
+C Write control file if known.
+      if(lnblnk(lctlf).eq.0)then
+        continue
+      elseif(lctlf(1:7).eq.'UNKNOWN')then
+        continue
+      elseif(lctlf(1:2).eq.'  ')then
         continue
       else
-        WRITE(ioout,'(a,a)') '*ctl  ',LCTLF(1:lnblnk(LCTLF))
+        WRITE(IFCFG,'(2a)',IOSTAT=IOS,ERR=2) '*ctl  ',
+     &    LCTLF(1:lnblnk(LCTLF))
+      endif
+
+C Write model contents file if known.
+      if(lnblnk(lmodelqa).eq.0)then
+        continue
+      elseif(lmodelqa(1:7).eq.'UNKNOWN')then
+        continue
+      elseif(lmodelqa(1:2).eq.'  ')then
+        continue
+      else
+        WRITE(IFCFG,'(a,a)',IOSTAT=IOS,ERR=2) '*contents ',
+     &    lmodelqa(1:lnblnk(lmodelqa))
       endif
 
       WRITE(ioout,'(a,I4,a)',IOSTAT=IOS,ERR=2) '*year  ',
@@ -1262,7 +1288,7 @@ C Write primary energy conversions if these have been set.
      &    phwco2,phwnox,phwsox,' # dhw emissions CO2,NOX,SOX'
       endif
       write(ioout,'(a)')'* PROJ LOG'
-      WRITE(ioout,'(A)')LPRJLG(1:lnblnk(LPRJLG))
+      WRITE(ioout,'(A)')lmodellog(1:lnblnk(lmodellog))
       write(ioout,'(a)')'* Building'
       WRITE(ioout,'(A)')modeltitle(1:lnblnk(modeltitle))
       return

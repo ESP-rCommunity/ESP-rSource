@@ -566,10 +566,12 @@ C relative to the original site coordinate system.
 
 C Project obstruction block surface, form intersection with plane
 C of target surface if necessary, then determine if target surface
-C is shaded (and summate related opacities).
+C is shaded (and summate related opacities). Pass in index of the
+C zone, target surface and the current patch to help document the
+C trace report.
                  do 60 ibs=1,6
-                   call trnsf3(ihour,ibn,ibs)
-                   call decomp(ibn,ibs,itsur)
+                   call trnsf3(ihour,icomp,ibn,ibs,itsur,ip)
+                   call decomp(icomp,ibn,ibs,itsur)
                    call shdtst(icomp,itsur,opob(icomp,ibn))
    60            continue 
    50          continue         ! obstruction block loop
@@ -625,25 +627,25 @@ C Output calculation progress report.
                if(indcom.eq.4)goto 30
                indcom=indcom+1
                if(paction(1:13).ne.'update_silent')then
-                  call usrmsg(outs,' complete','P')
+                  call usrmsg(outs,' complete','-')
                endif
             elseif(calcom.ge.0.75)then
                if(indcom.eq.3)goto 30
                indcom=indcom+1
                if(paction(1:13).ne.'update_silent')then
-                  call usrmsg(outs,' 75% complete','P')
+                  call usrmsg(outs,' 75% complete','-')
                endif
             elseif(calcom.ge.0.50)then
                if(indcom.eq.2)goto 30
                indcom=indcom+1
                if(paction(1:13).ne.'update_silent')then
-                  call usrmsg(outs,' 50% complete','P')
+                  call usrmsg(outs,' 50% complete','-')
                endif
             elseif(calcom.ge.0.25)then
                if(indcom.eq.1)goto 30
                indcom=indcom+1
                if(paction(1:13).ne.'update_silent')then
-                  call usrmsg(outs,' 25% complete','P')
+                  call usrmsg(outs,' 25% complete','-')
                endif
             endif
 
@@ -657,7 +659,9 @@ C **********  DECOMP **********
 C If a projected surface crosses the target plane the intersection
 C points are located and a modified shadow polygon produced.
 
-      subroutine decomp(ibn,ibs,itsur)
+      subroutine decomp(izone,ibn,ibs,itsur)
+#include "building.h"
+#include "geometry.h"
 
       common/tracech/icout
       common/transform/xt(4),yt(4),zt(4)
@@ -665,8 +669,10 @@ C points are located and a modified shadow polygon produced.
       common/shad2/ishd,npoint,xs(5),zs(5)
 
       character case*40,outs*124
+      character ZSDES*28,ZSDESC*20,ZSDESS*16
       logical tok
       dimension ipc(4)
+      integer lnzsn
 
       tok=.false.
       if(icout.eq.33)tok=.true.
@@ -849,9 +855,13 @@ C Tell shdtst to abandon shadow polygon.
 C Trace output.
    1  if(tok)then
         call edisp(icout,' ')
-        write(outs,9998)itsur,ibn,ibs
- 9998   format('*** DECOMP: Target surface ',i2,
-     &       '; obstruction block ',i2,', surface ',i2,'.')
+        call zsid(izone,itsur,ZSDES,ZSDESC,ZSDESS)
+        lnzsn=lnblnk(zsdes)
+        write(outs,'(3a,i2,3a,i2,a,i1,a)')
+     &    '*** DECOMP: Target surface ',zsdes(1:lnzsn),' (',itsur,
+     &    ') obstruction ',
+     &    blockname(izone,ibn)(1:lnblockname(izone,ibn)),' (',ibn,
+     &    ') face ',ibs,'.'
         call edisp(icout,outs)
         call edisp(icout,case)
         if(iscnt.ne.0)then

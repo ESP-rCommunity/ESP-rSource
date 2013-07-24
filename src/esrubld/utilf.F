@@ -56,15 +56,15 @@ C MZHCFV reads the convection regime file.
       DIMENSION HIV(MS),HEV(MS)
 
 C NHCFP(ICOMP) is the number of control time intervals.
-C Variables used for `type 1' control:
+C Variables used for `type 1' fixed coefficients control:
 C    HCFVI(i,j,k): interior HTC for zone `i', surface `j', time interval `k'.
 C    HCFVE(i,j,k): exterior HTC for zone `i', surface `j', time interval `k'.
-C Variables used for `type 2' control:
+C Variables used for `type 2' fixed correlations control:
 C    IcIuse(i,j,k): correlation-equation index for interior of zone `i',
 C                   surface `j', time interval `k'.
 C    IcEuse(i,j,k): correlation-equation index for exterior of zone `i',
 C                   surface `j', time interval `k'.
-C Variables used for `type 3' control:
+C Variables used for `type 3' adaptive control:
 C    icnvKY(i,j,k): index for zone `i', surface `j', time interval `k'.
 C    II: counter used for the icnvKY() index array.
 C    CVdat(II,jj): data items (`jj') for index `II':
@@ -72,7 +72,7 @@ C       jj=1:   control law for interior surface
 C       jj=2-4: data items associated with control law for interior
 C       jj=5:   control law for exterior surface
 C       jj=6-8: data items associated with control law for exterior
-C Variables used for `type 4' control:
+C Variables used for `type 4' CEN coefficients control:
 C   CENLOC(i,k,jj) hc values for zone 'i', time interval 'k':
 C       jj=1 index of a floor surface
 C       jj=2 index of a ceiling surface
@@ -491,9 +491,9 @@ C range check).
 
 C User specifies the correlation to use for each surface.
 C Read in the correlation indices.
-          CALL EGETWIA(iunit,IHCIA,NS,0,90,'W',
+          CALL EGETWIA(iunit,IHCIA,NS,-1,99,'W',
      &      'inside face hc cor',IER)
-          CALL EGETWIA(iunit,IHCEA,NS,0,90,'W',
+          CALL EGETWIA(iunit,IHCEA,NS,-1,99,'W',
      &     'other face hc cor',IER)
           DO 115 KV=1,NS
             IcIuse(ICOMP,KV,I)=IHCIA(KV)

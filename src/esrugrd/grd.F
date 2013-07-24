@@ -63,7 +63,6 @@ C LFMAT,IFMAT,LFMUL,IFMUL (for materials and constructions database)
       
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
-      common/C21/IFCFG,cfgroot,LCFGF
 
 C Path to problem
       common/rpath/path
@@ -87,20 +86,25 @@ C Name of current application
       LOGICAL MODIFY,MODBND,MODLEN,XST,GRDOK
 
       DIMENSION ITEM(11)
-      CHARACTER LFILE*72,LCFGF*72
+      CHARACTER LFILE*72
       CHARACTER OUTSTR*124,ITEM*24,path*72,inf*144,LCMDFL*144
-      character cfgroot*24,outs248*248,L144*144
+      character outs248*248,L144*144
       character inz*16,inzone*16,outs*124,MODE*4
+
+      character cVnum*16      ! returned from ESPrVersionNum
+      character pagestitle*44 ! for banner title via epages call
 
       integer iglib   ! if 1 then X11, if 2 then GTK, if 3 then text only.
 #ifdef OSI
       integer numberofzones ! to pass to updwire rather than ncomp
       integer iigl,iigr,iigt,iigb,iigw,iigwh
       integer iiw1,iiw2,iiw3,iiw4,iimenu
+      integer iicapture,iiazi    ! to pass to updcapt updazi
 #else
       integer*8 numberofzones
       integer*8 iigl,iigr,iigt,iigb,iigw,iigwh
       integer*8 iiw1,iiw2,iiw3,iiw4,iimenu
+      integer*8 iicapture,iiazi    ! to pass to updcapt updazi
 #endif
       integer MITEM,INO ! max items and current menu item
 
@@ -214,8 +218,14 @@ C Set initial font sizes (IMFS is for graphs, IFS is for dialog & text feedback)
         LIMTTY=16
         LIMIT =16
       ENDIF
+
+C Find the current ESP-r version number and add it to application title.
+      call ESPrVersionNum(cVnum)
+      write(pagestitle,'(2a)') 'ESP-r Construction Gridding ',
+     &  cVnum(1:lnblnk(cVnum))
+
       CALL EPAGES(MMOD,IUIN,IUOUT,iappwi,iapphi,iappx,iappy,menuchw,
-     &'ESP-r Construction Gridding: enquiries to esru@strath.ac.uk')
+     &  pagestitle)
 
 C Open the text display box equal to LIMTTY if MMOD = 8.
       IF(MMOD.EQ.8)THEN
@@ -225,7 +235,6 @@ C Setup and pass in parameters to win3d.
         iigl=igl; iigr=igr; iigt=igt; iigb=igb; iigw=igw; iigwh=igwh
         CALL win3d(iimenu,iiw1,iiw2,iiw3,iiw4,
      &    iigl,iigr,iigt,iigb,iigw,iigwh)
-C        CALL win3d(menuchw,3,2,2,3,igl,igr,igt,igb,igw,igwh)
         igl=int(iigl); igr=int(iigr); igt=int(iigt); igb=int(iigb)
         igw=int(iigw); igwh=int(iigwh)
         iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
@@ -234,8 +243,9 @@ C        CALL win3d(menuchw,3,2,2,3,igl,igr,igt,igb,igw,igwh)
           call opensetup
           numberofzones=0
           call updwire(numberofzones)  ! pass local integer
-          call updcapt(1)
-          call updazi(1)
+          iicapture=1; iiazi=1
+          call updcapt(iicapture)
+          call updazi(iiazi)
         endif
         call setzscale()
         mdispl=0
@@ -262,7 +272,8 @@ C after scan of .esprc file.
 C Take command line file name as initial configuration file.
       if(inf(1:2).ne.'  '.and.inf(1:4).ne.'UNKN')then
         LCMDFL=inf
-        write(outs248,'(a,a)')' the input file is: ',LCMDFL
+        call edisp(iuout,'  ')  ! echo blank line
+        write(outs248,'(a,a)')'The input file is: ',LCMDFL
         call edisp248(iuout,outs248,80)
       else
         LCMDFL='  '
@@ -272,7 +283,8 @@ C Take command line zone name and
 C determine if focus should be to a single zone.
       if(inz(1:1).ne.' ')then
         inzone=inz
-        write(outstr,'(a,a)')' the input zone is: ',inzone
+        call edisp(iuout,'  ')  ! echo blank line
+        write(outstr,'(a,a)')'The input zone is: ',inzone
         call edisp(iuout,outstr)
       else
         inzone='ALL'
