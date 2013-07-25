@@ -150,6 +150,7 @@ C Significant figure reporting limit (NSIGFIG).
       real tensecfrac    ! within 10 seconds
       real twentysecfrac ! within 20 seconds
       real nowis         ! use with 5 minute incrementing test
+      real thejulianis   ! to remember current time
       integer k,nd       ! for looping
 
 C Local variables for reading raw BAM sensor data in the log file.
@@ -163,8 +164,8 @@ C Local variables for reading raw BAM sensor data in the log file.
 
 C Mapping between the sensor index and array of (up to) a dozen sensors.
       integer icurrentsenarray ! which part of the array to work with
-      integer mapsentoarray
-      dimension mapsentoarray(12)
+      integer mapsentoarray,mapsent
+      dimension mapsentoarray(12),mapsent(12)
       logical foundit  ! for establishing link between sensor index and mapsentoarray
       integer howmany  ! number of sensors found
       integer howmanynow ! counter for if we got all sensor data at this time
@@ -186,7 +187,7 @@ C Initial assumptions.
       INTER=' '
 
 C Clear mapping array.
-      icurrentsenarray=0; iseq=0
+      icurrentsenarray=0; iseq=0; thejulianis=0.0
       do ij=1,12
         mapsentoarray(ij)=0
       enddo
@@ -348,6 +349,10 @@ C Discover how many different sensors are included. Read the first 50 lines.
 C Typically log files only cover an hour. See which hour this is by checking
 C the timing of the 2nd line of the csv file. Note: if the initial lines do
 C not begin near the start of an hour then try alternative logic.
+
+C << To be done....
+C << If the log file is for multiple hours this needs to be detected!
+
           if(ij.eq.2)then
             actd='B'
             call bamdatetojulian(datea,actd,juliand,julianfrac)
@@ -356,8 +361,11 @@ C not begin near the start of an hour then try alternative logic.
               call ECLOSE(julianfrac,hourdayfrac(ih),oneminfrac,
      &          closetohour)
               if(closetohour)then
-                write(6,*) 'csv file is for hour ',ih,julianfrac
-                thehouris=julianfrac
+C                thehouris=julianfrac  ! remember fraction
+                thehouris=hourdayfrac(ih)  ! remember fraction
+                thejulanis=juliand    ! remenber julian
+                write(6,*) 'csv file is for hour ',ih,julianfrac,
+     &            thehouris
                 nearstartofhour=.true.
               endif
             enddo
@@ -396,6 +404,12 @@ C Did not find it so set the first open slot of mapsentoarray
           endif
         enddo
         write(6,*) 'how many sensors found ',howmany,mapsentoarray
+
+C Sort the array (increasing).
+        KFLAG=1
+        call SORTI(mapsentoarray,mapsent,howmany,KFLAG)
+        write(6,*) 'after sort ',howmany,mapsentoarray
+
 
         rewind(IUNIT)   ! go back to the start of the csv file
 
@@ -439,15 +453,16 @@ C Find where in the data arrays to save current info.
         CALL EGETWI(loutstr,K,idum,0,24,'W','pir packets',IFLAG)
         CALL EGETWI(loutstr,K,iseq,0,0,'-','sequence number',IFLAG)
         if(iseq.eq.lastseq(icurrentsenarray))then
-          write(6,*) 'Duplicate sequence ',iseq,' for ',isen,' @ ',datea
+C Debug
+C          write(6,*) 'Duplicate sequence ',iseq,' for ',isen,' @ ',datea
           goto 42
         else
           lastseq(icurrentsenarray)=iseq
         endif
 
+C If there are more than 10 packets left ignore and read again.
         CALL EGETWI(loutstr,K,ipacketsleft,0,0,'-','nb packet lft',IER)
         if(ipacketsleft.gt.10)then
-C          write(6,*) 'to many packets left ',ipacketsleft,' @ ',datea
           goto 42
         endif
 
@@ -466,7 +481,23 @@ C Convert timestep to julian.
         actd='B'
         call bamdatetojulian(datea,actd,juliand,julianfrac)
 
-C Are we close to the hour mark or one of the five minute marks?
+C Test if we have moved on to a subsequent hour. Use a one minute
+C tollerance. Only do the test for the first sensor.
+        if(icurrentsenarray.le.2)then
+          do ih=0,23
+            nearstartofhour=.false.
+            call ECLOSE(julianfrac,hourdayfrac(ih),oneminfrac,
+     &        nearstartofhour)
+            if(nearstartofhour)then 
+              thehouris=hourdayfrac(ih)
+              write(6,*) 'csv file is NOW for hour ',ih,julianfrac,
+     &          thehouris
+            endif
+          enddo
+        endif
+
+C Are we close to hour mark or one of the five minute marks? Use
+C a 10 sec tollerance for version 4 and 20 sec for version 5.
         closetohour=.false.
         closetofive=.false.
         nowis=thehouris
@@ -476,7 +507,9 @@ C Are we close to the hour mark or one of the five minute marks?
           call ECLOSE(julianfrac,thehouris,twentysecfrac,closetohour)
         endif 
         if(closetohour)then
-          write(6,*) 'closetohour ',closetohour,thehouris,datea
+          thejulanis=juliand    ! remenber julian
+          write(6,*) 'closetohour ',closetohour,thehouris,datea,
+     &      thejulianis
           goto 43
         endif
 
@@ -490,6 +523,7 @@ C See if it is within 10 or 20 seconds of one of the 5 minute slots.
           endif
           if(closetofive)then
             write(6,*) 'closetofive ',closetofive,nowis,ifive,datea
+            thejulianis=juliand   ! also remember julian
             goto 43
           endif
         enddo
@@ -502,10 +536,10 @@ C If we are not near a desired time go and read another line.
         endif
 
 C Stuff into the arrays if close to the desired time. And we need to ensure
-C that we have collected data from all of the sensors before we skip forward in time.
+C that we have collected data from all of the sensors before we dump the data.
 C The following logic results in two passes of sensors near the timestep.
 
-C Convert raw BAM data to dbt, RH lux using calibration info.
+C Convert raw BAM data to dbt, RH lux using ESRU calibration info.
         dbt= (0.01185055 * real(irdbt)) - 438.169086
         bamtmp(icurrentsenarray)=dbt
         if(irlight.gt.850)then
@@ -517,23 +551,39 @@ C Convert raw BAM data to dbt, RH lux using calibration info.
         bamlight(icurrentsenarray)=lux
         rhl = (49.6 * log(real(irrh))) - 397.19
         bamhumidity(icurrentsenarray)=rhl
-        howmanynow=howmanynow+1  ! got another of the sensors
-        write(IUF,*) datea,' ',juliand,' * ',isen,dbt,rhl,lux,
-     &    howmanynow
+        howmanynow=howmanynow+1  ! got another sensor instance
 
-C If all sensors captured and remembered we do not need to check for several more minutes.
-C So read lines equivalent to 3x the number of sensors.
-        if(howmanynow.gt.howmany*2)then
-C          do ij=1,howmany*3
-C            call stripc1k(IUNIT,loutstr,0,ND,1,'skip lines',IER)
-C            if(IER.ne.0)then
+C Unsorted write (e.g. in the order of original log file.
+C        write(IUF,*) datea,' ',juliand,' * ',isen,dbt,rhl,lux,
+C     &    howmanynow
 
-C Debug.
-C              write(6,*) 'stripc end of file ',ier
-C              CALL ERPFREE(IUNIT,ISTAT)
-C              stop
-C            endif
-C          enddo
+C If all sensors likely to have been captured dump out the data
+C in sorted order (timestamp the same for each). This ensures
+C that the bam arrays have been filled. Note: if data for a sensor
+C is not found the last known value in the bam array would be 
+C written. Example, if the sensor over-temperature.
+
+C NOTE: for some log files we need to read quite a few extra
+C lines in order to ensure we have captured all of the sensors
+C In others we only slightly more than howmany.
+
+C        if(howmanynow.gt.howmany*2)then
+        if(howmanynow.gt.howmany+2)then
+          do ij=1,howmany
+            if(closetohour)then
+              write(IUF,*) datea,' ',thejulianis,' -',
+     &          mapsentoarray(ij),
+     &          bamtmp(ij),bamhumidity(ij),bamlight(ij)
+            elseif(closetofive)then
+              write(IUF,*) datea,' ',thejulianis,' =',
+     &          mapsentoarray(ij),
+     &          bamtmp(ij),bamhumidity(ij),bamlight(ij)
+            else
+              write(IUF,*) datea,' ',thejulianis,' +',
+     &          mapsentoarray(ij),
+     &          bamtmp(ij),bamhumidity(ij),bamlight(ij)
+            endif
+          enddo
           howmanynow=0  ! reset
         endif
         goto 42

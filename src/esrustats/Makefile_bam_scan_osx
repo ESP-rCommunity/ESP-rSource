@@ -9,8 +9,8 @@ MCPL=g++
 MFC=gfortran
 CFLAGS=-I../include -I../shocc -I/usr/local/include -I../ -I/usr/include -DLIN -g -fno-automatic -DGCC4
 FFLAGS=-I../include -I../shocc -I/usr/local/include -DLIN -DX11 -g -fno-automatic -DGCC4 
-LD_FLAGS=-Wl,--reduce-memory-overheads
-ULIBS=-L/home/jon/Src/cvsdude/jwh/src/lib
+LD_FLAGS=-Wl
+ULIBS=-L/Users/jon/Src/cvsdude/Jon_Hand/src/lib
 
 .SUFFIXES: .o .F
 .F.o:
