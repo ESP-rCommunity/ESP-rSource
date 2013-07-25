@@ -148,11 +148,12 @@ C Significant figure reporting limit (NSIGFIG).
       real fiveminfrac   ! fraction of the julian day for 5 minutes
       real oneminfrac    ! fraction of the julian day for 1 minute
       real tensecfrac    ! within 10 seconds
+      real twentysecfrac ! within 20 seconds
       real nowis         ! use with 5 minute incrementing test
       integer k,nd       ! for looping
 
 C Local variables for reading raw BAM sensor data in the log file.
-      integer isen,idum,ipacketsleft,irdbt,irlight,irrh
+      integer isen,idum,iver,ipacketsleft,irdbt,irlight,irrh
       real lux,lexponent ! for RH calculation
       real thehouris  ! the csv file starts at hour
       logical nearstartofhour ! if file started near hour mark
@@ -283,6 +284,7 @@ C for 5 minutes.
       fiveminfrac=secondsin5min/secondsinday
       oneminfrac=60.0/secondsinday
       tensecfrac=10.0/secondsinday
+      twentysecfrac=20.0/secondsinday
       write(6,*) hourdayfrac
 
       actd='B'
@@ -332,11 +334,11 @@ C Debug.
         endif
         write(6,*) 'working in progress...bB',INTER
 
-C Discover how many different sensors are included. Read the first 24 lines.
+C Discover how many different sensors are included. Read the first 50 lines.
         howmany=0      ! start with no sensors
         thehouris=0.0  ! clear assumption about when the csv file time starts
         nearstartofhour = .false.
-        do ij=1,24
+        do ij=1,50
           call stripc1k(IUNIT,loutstr,0,ND,1,'log line',IER)
           K=0
           CALL EGETW(loutstr,K,WORD,'W','TEDDI token',IFLAG)
@@ -393,7 +395,8 @@ C Did not find it so set the first open slot of mapsentoarray
             foundit=.true.
           endif
         enddo
-        write(6,*) howmany,mapsentoarray
+        write(6,*) 'how many sensors found ',howmany,mapsentoarray
+
         rewind(IUNIT)   ! go back to the start of the csv file
 
 C First test is to see if we can identify lines in the log file that match specific
@@ -432,18 +435,17 @@ C Find where in the data arrays to save current info.
           goto 42
         endif
 
-        CALL EGETWI(loutstr,K,idum,4,5,'W','version',IFLAG)
+        CALL EGETWI(loutstr,K,iver,4,5,'W','version',IFLAG)
         CALL EGETWI(loutstr,K,idum,0,24,'W','pir packets',IFLAG)
-        CALL EGETWI(loutstr,K,iseq,0,100000,'W','sequence number',IFLAG)
+        CALL EGETWI(loutstr,K,iseq,0,0,'-','sequence number',IFLAG)
         if(iseq.eq.lastseq(icurrentsenarray))then
-          write(6,*) 'Duplicate sequence ',iseq,' @ ',datea
+          write(6,*) 'Duplicate sequence ',iseq,' for ',isen,' @ ',datea
           goto 42
         else
           lastseq(icurrentsenarray)=iseq
         endif
 
-        CALL EGETWI(loutstr,K,ipacketsleft,0,300,'W',
-     &    'nb of packets left',IER)
+        CALL EGETWI(loutstr,K,ipacketsleft,0,0,'-','nb packet lft',IER)
         if(ipacketsleft.gt.10)then
 C          write(6,*) 'to many packets left ',ipacketsleft,' @ ',datea
           goto 42
@@ -455,7 +457,7 @@ C Get raw BAM dbt data.
 C Get BAM light data.
         CALL EGETWI(loutstr,K,irlight,0,1000,'W','raw light',IER)
 
-        CALL EGETWI(loutstr,K,idum,0,1000,'W','battery',IER)
+        CALL EGETWI(loutstr,K,idum,0,1000,'-','battery',IER)
 
 C Get raw BAM RH data.
         CALL EGETWI(loutstr,K,irrh,0,40000,'W','raw humidity',IER)
@@ -468,16 +470,24 @@ C Are we close to the hour mark or one of the five minute marks?
         closetohour=.false.
         closetofive=.false.
         nowis=thehouris
-        call ECLOSE(julianfrac,thehouris,tensecfrac,closetohour)
+        if(iver.eq.4)then
+          call ECLOSE(julianfrac,thehouris,tensecfrac,closetohour)
+        elseif(iver.eq.5)then
+          call ECLOSE(julianfrac,thehouris,twentysecfrac,closetohour)
+        endif 
         if(closetohour)then
           write(6,*) 'closetohour ',closetohour,thehouris,datea
           goto 43
         endif
 
-C See if it is within 10 seconds of one of the 5 minute slots.
+C See if it is within 10 or 20 seconds of one of the 5 minute slots.
         do ifive=1,12
           nowis=nowis+fiveminfrac
-          call ECLOSE(julianfrac,nowis,tensecfrac,closetofive)
+          if(iver.eq.4)then
+            call ECLOSE(julianfrac,nowis,tensecfrac,closetofive)
+          else
+            call ECLOSE(julianfrac,nowis,twentysecfrac,closetofive)
+          endif
           if(closetofive)then
             write(6,*) 'closetofive ',closetofive,nowis,ifive,datea
             goto 43
@@ -513,17 +523,17 @@ C Convert raw BAM data to dbt, RH lux using calibration info.
 
 C If all sensors captured and remembered we do not need to check for several more minutes.
 C So read lines equivalent to 3x the number of sensors.
-        if(howmanynow.ge.howmany)then
-          do ij=1,howmany*3
-            call stripc1k(IUNIT,loutstr,0,ND,1,'skip lines',IER)
-            if(IER.ne.0)then
+        if(howmanynow.gt.howmany*2)then
+C          do ij=1,howmany*3
+C            call stripc1k(IUNIT,loutstr,0,ND,1,'skip lines',IER)
+C            if(IER.ne.0)then
 
 C Debug.
-              write(6,*) 'stripc end of file ',ier
-              CALL ERPFREE(IUNIT,ISTAT)
-              stop
-            endif
-          enddo
+C              write(6,*) 'stripc end of file ',ier
+C              CALL ERPFREE(IUNIT,ISTAT)
+C              stop
+C            endif
+C          enddo
           howmanynow=0  ! reset
         endif
         goto 42
