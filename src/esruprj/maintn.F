@@ -40,14 +40,14 @@ C IER=0 OK, IER=1 problem.
 #include "net_flow.h"
 #include "tdf2.h"
       COMMON/OUTIN/IUOUT,IUIN
-      COMMON/TDFGH2/GTYPES(25),GMENUS(25)
+      COMMON/TDFGH2/GTYPES(24),GMENUS(24)
       COMMON/TDFG1/GAIDE,GHELP(MHEL),GDHDRT(3),GMH
       common/TDFADDC/iadcols,deftabu(9)
       COMMON/HDAT/IHREC(MIT)
       LOGICAL FOUND
 
       CHARACTER OUTS*124,msgl2*48,TTAG*12
-      CHARACTER GMENUS*16,GTYPES*8
+      CHARACTER GMENUS*24,GTYPES*8
       CHARACTER GAIDE*36,GHELP*72,GDHDRT*72,GMH*32
 
 C For help messages
@@ -57,12 +57,15 @@ C For help messages
 
       helpinsub='ITINSRT'  ! set for subroutine
 
-C Now choose one of the generic types to create at the insertion point.
-C Copy over default information into instance commons.
+C Choose one of the generic types to create at the insertion point (ifoc).
+C Copy over default information into instance commons. IFG is the index
+C within the TDFGH2 common blocks for the temporal type and menu string.
       IFG=0
   78  call EBRSTAB(IFG,IER)
       IF(IFG.EQ.0)RETURN
 
+C Use GENDAT to place into common blocks TDFG1 TDFG2 TDFG3 TDFG5 data for
+C the type GTYPES(IFG) at position IFOC.
       FOUND=.FALSE.
       CALL GENDAT(GTYPES(IFG),IFOC,FOUND,IER)
       IF(.NOT.FOUND)THEN
@@ -105,7 +108,7 @@ C The additional columns will fit within the current scratch file.
       endif
 
       TTYPE(IFOC)=GTYPES(IFG)
-      TMENU(IFOC)=GMENUS(IFG)
+      write(TMENU(IFOC),'(a)') GMENUS(IFG)
 
 C Ask for the name of this new entry.
       TAG(IFOC)='Undefined'

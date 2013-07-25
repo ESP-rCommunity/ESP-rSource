@@ -261,7 +261,7 @@ C Call the menu of choices (this also sets some default options).
         ISET=ISIM
         CALL HDDATE(PDESCR)
         CALL HDSTEP(SDESCR)
-        lsn1=MIN0(lnblnk(RFILE),22)
+        lsn1=MIN0(lnblnk(RFILE),42)
         if(NSIM.gt.1)then
         write(outs,'(3A,I4,2A)')'Lib: ',RFILE(1:lsn1),' Set:',ISIM,
      &    ': ',RSNAME(ISIM)(1:lnblnk(RSNAME(ISIM)))
@@ -379,7 +379,7 @@ C Call the menu of choices (this also sets some default options).
         ISET=ISIM
         CALL HDDATE(PDESCR)
         CALL HDSTEP(SDESCR)
-        lsn1=MIN0(lnblnk(RFILE),22)
+        lsn1=MIN0(lnblnk(RFILE),42)
         if(NSIM.gt.1)then
         write(outs,'(3A,I4,2A)')'Lib: ',RFILE(1:lsn1),' Set:',ISIM,
      &    ': ',RSNAME(ISIM)(1:lnblnk(RSNAME(ISIM)))
@@ -446,7 +446,7 @@ C scanning data. Call MOSURC for each selected zone in turn.
         ISET=ISIM
         CALL HDDATE(PDESCR)
         CALL HDSTEP(SDESCR)
-        lsn1=MIN0(lnblnk(RFILE),22)
+        lsn1=MIN0(lnblnk(RFILE),42)
         if(NSIM.gt.1)then
         write(outs,'(3A,I4,2A)')'Lib: ',RFILE(1:lsn1),' Set:',ISIM,
      &    ': ',RSNAME(ISIM)(1:lnblnk(RSNAME(ISIM)))
@@ -976,7 +976,7 @@ C At each step here need to check if default space delimiter has been
 C changed.
       CALL HDDATE(PDESCR)
       CALL HDSTEP(SDESCR)
-      lsn1=MIN0(lnblnk(RFILE),22)
+      lsn1=MIN0(lnblnk(RFILE),42)
       
 C Write tag line if tagged output requested otherwise write a line
 C separator between reports.
@@ -1263,6 +1263,8 @@ C standard.
 
 C Get common precz from geometry.h
 #include "geometry.h"
+
+      integer lnblnk
       
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/OUTPCH/ICOUT
@@ -1290,6 +1292,7 @@ C Get common precz from geometry.h
       dimension YMAX(MZS), YMIN(MZS), YTOT(MZS), YTOTSD(MZS)
       dimension YAVE(MZS), NY(MZS)
       dimension CENMAX(9), CENMIN(9), CENAVE(9)
+      integer lsn1
 
       character outs*124,act*1
       character prompt*124
@@ -1422,11 +1425,12 @@ C Now display the calculated data.
       call edisp(itru,'  ')
       CALL HDDATE(PDESCR)
       CALL HDSTEP(SDESCR)
+      lsn1=MIN0(lnblnk(RFILE),42)
       if (NS.lt.2) then
-        write (outs,'(1X,A44,A5,A22,A5,A22)')
-     &            SDESCR,' Lib:',RFILE(1:22),' Set:',RSNAME(ISIM)(1:22)
+        write (outs,'(1X,5A)')
+     &    SDESCR,' Lib:',RFILE(1:lsn1),' Set:',RSNAME(ISIM)(1:22)
       else
-        write (outs,'(1X,A44,A5,A22)') SDESCR,' Lib:',RFILE(1:22)
+        write (outs,'(1X,3A)') SDESCR,' Lib:',RFILE(1:lsn1)
       endif
       call edisp(itru,outs)
       write (outs,'(a)') SLABEL(NGET)
@@ -1463,6 +1467,8 @@ C act='p' iget parameters already set.
 
       SUBROUTINE MOSQHR(act,iabove,tval)
 #include "building.h"
+
+      integer lnblnk
       
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/OUTPCH/ICOUT
@@ -1496,6 +1502,7 @@ C act='p' iget parameters already set.
       dimension YMAX(MZS), YMIN(MZS), YTOT(MZS)
       dimension YAVE(MZS), NY(MZS),NYABOVE(MZS),NYBELOW(MZS)
       dimension TMAX(MZS), TMIN(MZS)
+      integer lsn1
 
 C For help messages
       character helpinsub*24   ! subroutine name
@@ -1658,8 +1665,9 @@ C changed.
       call edisp(itru,'  ')
       CALL HDDATE(PDESCR)
       CALL HDSTEP(SDESCR)
+      lsn1=MIN0(lnblnk(RFILE),42)
       WRITE(outs,'(3A,I4,2A)')
-     &             'Lib: ',RFILE(1:22),' Set:',ISIM,': ',RSNAME(ISIM)
+     &  'Lib: ',RFILE(1:lsn1),' Set:',ISIM,': ',RSNAME(ISIM)
       call edisp(itru,outs)
       WRITE(outs,'(A)')PDESCR
       call edisp(itru,outs)
@@ -1920,7 +1928,7 @@ C Energy requirements.
       if(act(1:1).ne.'i') then
         CALL HDDATE(PDESCR)
         CALL HDSTEP(SDESCR)
-        lsn1=MIN0(lnblnk(RFILE),22)
+        lsn1=MIN0(lnblnk(RFILE),42)
         if(NSIM.gt.1)then
           write(outs,'(3A,I4,2A)')'Lib: ',RFILE(1:lsn1),' Set:',ISIM,
      &      ': ',RSNAME(ISIM)(1:lnblnk(RSNAME(ISIM)))
@@ -2126,7 +2134,7 @@ C Energy requirements.
       ISET=ISIM
       CALL HDDATE(PDESCR)
       CALL HDSTEP(SDESCR)
-      lsn1=MIN0(lnblnk(RFILE),22)
+      lsn1=MIN0(lnblnk(RFILE),42)
       if(NSIM.gt.1)then
         write(outs,'(3A,I4,2A)')'Lib: ',RFILE(1:lsn1),' Set:',ISIM,
      &    ': ',RSNAME(ISIM)(1:lnblnk(RSNAME(ISIM)))

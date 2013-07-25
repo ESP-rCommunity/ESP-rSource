@@ -8,7 +8,7 @@
      2,     0  #  5 Ceiling      ceiling     
      8,     0  #  6 Floor        floor_1     
      1,     0  #  7 door_a       door        
-     3,     1  #  8 west_glz     d_glz       
+     3,     1  #  8 west_glz     dbl_glz     
 # air gap position & resistance for surface  1
   2,   0.170,
 # air gap position & resistance for surface  2

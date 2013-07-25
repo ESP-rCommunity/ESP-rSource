@@ -808,6 +808,7 @@ C corresponding to graphical result display.
       character rfile*72,PFILE*72,MSTRFILE*72,LAFRES*72
       character outsd*80,outsd1*81,RSNAME*40
       logical zlist
+      integer lsn1
 
       integer iglib   ! if 1 then X11, if 2 then GTK, if 3 then text only.
 #ifdef OSI
@@ -852,7 +853,7 @@ C If output to file alter the edisp unit number.
       CALL HDDATE(PDESCR)
       CALL HDSTEP(SDESCR)
 
-      lsn1=MIN0(lnblnk(RFILE),22)
+      lsn1=MIN0(lnblnk(RFILE),32)
       if(NSIM.gt.1)then
         WRITE(ETEXT,'(3A,I4,2A)')'Lib: ',RFILE(1:lsn1),' Set:',ISIM,
      &    ': ',RSNAME(ISIM)(1:lnblnk(RSNAME(ISIM)))

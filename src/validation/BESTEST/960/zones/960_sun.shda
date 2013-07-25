@@ -1,4 +1,4 @@
-* Shading and insolation data in db 960_sun.shd                                                             
+* Shading and insolation data in db zones/960_sun.shd                                                       
   2  8 # zone index & number of surfaces
 * month: `Jan`
 24 hour external surface shading

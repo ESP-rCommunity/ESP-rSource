@@ -1507,6 +1507,7 @@ C Compact the list by moving all the items in common MLC up one.
           CALL EPMENSV
           call epkmlc(iwhich,'Delete which construction?',' ',ierr)
           CALL EPMENRC
+          if(iwhich.eq.0) goto 2
           dok=.false.
           CALL ASKOK(' ',' Are you sure? ',OK,dok,1)
           IF(.NOT.OK)GOTO 2
@@ -1576,6 +1577,7 @@ C << for mlcver=1 there is no need for ipr >>
           CALL EPMENSV
           call epkmlc(iwhich,'Copy which construction?',' ',ierr)
           CALL EPMENRC
+          if(iwhich.eq.0) goto 3
           moddb = .true.
           chgdb=.true.
           NMLC=NMLC+1
@@ -1642,6 +1644,7 @@ C there is room in the database copy data to a new item.
           call epkmlc(iwhich,
      &      'Make inverted version of which construction?',' ',ierr)
           CALL EPMENRC
+          if(iwhich.eq.0) goto 3
           moddb = .true.
           chgdb=.true.
           NMLC=NMLC+1
@@ -1758,6 +1761,7 @@ C First check if mlc is transparent
         CALL EPMENSV
         call epkmlc(iwh,'g-value for which construction?',' ',ierr)
         CALL EPMENRC
+        if(iwh.eq.0) goto 3
         moddb = .true.
         chgdb=.true.
         THCON=CLAMDA(IWH)
@@ -2974,6 +2978,7 @@ C Allow linking to inverted construction.
           if(OK)then
             call epkmlc(iwhich,
      &        'Link with which `inverted` construction?',' ',ierr)
+            if(iwhich.eq.0) goto 3
             if(LAYERS(IFOC).eq.LAYERS(iwhich))then
 
 C Update current MLC then find matching MLC and copy data associated

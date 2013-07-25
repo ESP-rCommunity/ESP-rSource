@@ -1997,7 +1997,7 @@ C Update the control file and link the control loop to the correct zone.
             DBSN(ITE)='ALL'
           elseif(TTYPE(it)(1:8).eq.'BIDIRSET')then
 
-C Depending on the type of data, ask for associated surface 
+C Depending on the type of data, ask for associated surface.
             IC=-1
  352        izdef=0
             call askzone(ic,izdef,
@@ -2011,11 +2011,11 @@ C Depending on the type of data, ask for associated surface
             write(DBSN(ITE),'(a)') sname(IC,ISUR)(1:12)
           elseif(TTYPE(it)(1:7).eq.'VERTSOL')then
 
-C Depending on the type of data, ask for associated surface 
+C Depending on the type of data, ask for associated zone & surface.
             IC=-1
  353        izdef=0
             call askzone(ic,izdef,
-     &        ' Related zone where vertical solar data apply?',
+     &        'Related zone where vertical solar data apply?',
      &        'Related zone','-','zone to assign solar data.',ier)
             IF(IC.EQ.0.OR.IC.EQ.-1)GOTO 353
             write(DBZN(ITE),'(a)') zname(IC)(1:12)
@@ -2025,20 +2025,25 @@ C Depending on the type of data, ask for associated surface
             write(DBSN(ITE),'(a)') sname(IC,ISUR)(1:12)
           elseif(TTYPE(it)(1:6).eq.'DBTZNM')then
 
-C Measured db T (probably associated with a zone).
+C Measured db T (associated with a zone to allow reporting). Note: the simulator
+C will not use these values only for reporting in res.
             IC=-1
  354        izdef=0
-            call askzone(ic,izdef,' Related zone for measured db T?',
-     &      'Related zone','-','Measured db T for which zone?',ier)
+            call askzone(ic,izdef,
+     &        'Zone for measured db T to display in res?',
+     &        'Related zone','-','Measured db T for which zone?',ier)
             IF(IC.EQ.0.OR.IC.EQ.-1)GOTO 354
             write(DBZN(ITE),'(a)') zname(IC)(1:12)
             DBSN(ITE)='ALL' 
           elseif(TTYPE(it)(1:5).eq.'SURTM')then
 
-C Measured surface T (associated with a zone and up to 6 surfaces).
+C Measured surface T (associated with a zone and up to 6 surfaces to allow
+C the values to be reported). Note: the simulator will not use these values
+C only for reporting in res.
             IC=-1
  355        izdef=0
-            call askzone(ic,izdef,'Related zone for measured surf T?',
+            call askzone(ic,izdef,
+     &        'Zone for measured surf T to display in res?',
      &        'Related zone','-',
      &        'Measured surface T within which zone?',ier)
             IF(IC.EQ.0.OR.IC.EQ.-1)GOTO 355

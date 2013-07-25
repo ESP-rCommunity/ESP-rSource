@@ -743,7 +743,8 @@ C     if blank then no file name change implied.
       common/FILEP/IFIL
       common/OUTIN/IUOUT,IUIN
 
-      common/rpath/path
+C      common/rpath/path
+C      character path*72
 
 C Default ESP-r distribution path.
       common/deflt4/dinstpath
@@ -765,7 +766,7 @@ C Default ESP-r distribution path.
       CHARACTER APP*4
 C      CHARACTER outs248*248
       LOGICAL OK,XST,DOK,concat
-      character dinstpath*60,path*72
+      character dinstpath*60
 
 C Local strings for user selections dependent on graphic library.
       integer lndbp   ! for length of standard path
@@ -862,7 +863,8 @@ C If standard file then offer the following choices (incl /):
      &    'f binary >> ascii export','g ascii >> binary',
      &    'h create new materials',' ',' ',' ',' ',
      &    isw,idno,nbhelp)
-        copydef=.false.
+        if(isw.eq.4)copydef=.true.
+        if(isw.eq.5)copydef=.false.
       elseif(longtfile(1:ldirpath-1).eq.dirpath(1:ldirpath-1))then
 
 C If standard file then offer the following choices (without /):
@@ -876,7 +878,8 @@ C If standard file then offer the following choices (without /):
      &    'f binary >> ascii export','g ascii >> binary',
      &    'h create new materials',' ',' ',' ',' ',
      &    isw,idno,nbhelp)
-        copydef=.false.
+        if(isw.eq.4)copydef=.true.
+        if(isw.eq.5)copydef=.false.
       else
 
 C If db exists locally toggle whether the user is asked to copy the
@@ -1553,7 +1556,8 @@ C If standard file then offer the following choices (incl /):
      &    'f components >> ascii export','g ascii >> components',
      &    'h create new plant components',' ',' ',' ',' ',
      &    isw,idno,nbhelp)
-        copydef=.false.
+        if(isw.eq.4)copydef=.true.
+        if(isw.eq.5)copydef=.false.
       elseif(longtfile(1:ldirpath-1).eq.dirpath(1:ldirpath-1))then
 
 C If standard file then offer the following choices (without /):
@@ -1567,7 +1571,8 @@ C If standard file then offer the following choices (without /):
      &    'f components >> ascii export','g ascii >> components',
      &    'h create new plant components',' ',' ',' ',' ',
      &    isw,idno,nbhelp)
-        copydef=.false.
+        if(isw.eq.4)copydef=.true.
+        if(isw.eq.5)copydef=.false.
       else
 
 C If db exists locally toggle whether the user is asked to copy the
@@ -1929,7 +1934,8 @@ C << introduce concept of types of profiles
 
       common/FILEP/IFIL
       common/OUTIN/IUOUT,IUIN
-      common/rpath/path
+C      common/rpath/path
+C      character path*72
       common/deflt4/dinstpath
 
       CHARACTER LTMP*72,lltmp*144,lprev*144
@@ -1939,7 +1945,7 @@ C << introduce concept of types of profiles
       CHARACTER OUTS*124
       CHARACTER OUTS248*248
       LOGICAL CLKOK,OK,COPYDEF,MODDB,XST,DOK,concat
-      character dinstpath*60,path*72,dirpath*72
+      character dinstpath*60,dirpath*72
 
 C Local strings for user selections dependent on graphic library.
       character optf*28
@@ -2044,7 +2050,8 @@ C If standard file then offer the following choices (incl /):
      &    'e copy file from common to model',optf,
      &    'g create new event profile',' ',' ',' ',' ',' ',
      &    isw,idno,nbhelp)
-        copydef=.false.
+        if(isw.eq.4)copydef=.true.
+        if(isw.eq.5.or.isw.eq.6)copydef=.false.
       elseif(longtfile(1:ldirpath-1).eq.dirpath(1:ldirpath-1))then
 
 C If standard file then offer the following choices (without /):
@@ -2057,7 +2064,8 @@ C If standard file then offer the following choices (without /):
      &    'e copy file from common to model',optf,
      &    'g create new event profile',' ',' ',' ',' ',' ',
      &    isw,idno,nbhelp)
-        copydef=.false.
+        if(isw.eq.4)copydef=.true.
+        if(isw.eq.5.or.isw.eq.6)copydef=.false.
       else
 
 C If db exists locally toggle whether the user is asked to copy the
@@ -2284,7 +2292,8 @@ C warn the user when attempting to update that file.
       integer lnblnk  ! function definition
 
       common/OUTIN/IUOUT,IUIN
-      common/rpath/path
+C      common/rpath/path
+C      character path*72
 
 C Default esp-r distribution path.
       common/deflt4/dinstpath
@@ -2299,7 +2308,7 @@ C Default esp-r distribution path.
       CHARACTER fs*1,APP*4
 C      CHARACTER outs248*248
       LOGICAL OK,XST,DOK
-      character dinstpath*60,path*72,dirpath*72
+      character dinstpath*60,dirpath*72
 
 C Local strings for user selections dependent on graphic library.
       character optf*28
@@ -2407,7 +2416,8 @@ C If standard file then offer the following choices (incl /):
      &    'e copy file from common to model',optf,
      &    'g create new constructions',' ',' ',' ',' ',' ',
      &    isw,idno,nbhelp)
-        copydef=.false.
+        if(isw.eq.4)copydef=.true.
+        if(isw.eq.5.or.isw.eq.6)copydef=.false.
       elseif(longtfile(1:ldirpath-1).eq.dirpath(1:ldirpath-1))then
 
 C If standard file then offer the following choices (without /):
@@ -2420,7 +2430,8 @@ C If standard file then offer the following choices (without /):
      &    'e copy file from common to model',optf,
      &    'g create new constructions',' ',' ',' ',' ',' ',
      &    isw,idno,nbhelp)
-        copydef=.false.
+        if(isw.eq.4)copydef=.true.
+        if(isw.eq.5.or.isw.eq.6)copydef=.false.
       else
 
 C If db exists locally toggle whether the user is asked to copy the
@@ -2637,7 +2648,8 @@ C This facility offers browsing for GTK version.
 #include "model.h"
 #include "esprdbfile.h"
       common/OUTIN/IUOUT,IUIN
-      common/rpath/path
+C      common/rpath/path
+C      character path*72
       common/deflt4/dinstpath
       COMMON/GOPT/DG(5),HG(5),UVAL,VTRN,NTL,AB(ME,5),RF(ME),SRF,SAB
 
@@ -2650,7 +2662,7 @@ C      CHARACTER outs248*248
       character GTYPE*12,GDESCR*36,SOPT*12
       LOGICAL CLKOK,OK,COPYDEF,MODDB,XST,DOK
       logical CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,concat
-      character dinstpath*60,path*72,dirpath*72
+      character dinstpath*60,dirpath*72
 
 C Local strings for user selections dependent on graphic library.
       character optf*28
@@ -2753,7 +2765,8 @@ C If standard file then offer the following choices (incl /):
      &    'e copy file from common to model',optf,
      &    'g create new optics',' ',' ',' ',' ',' ',
      &    isw,idno,nbhelp)
-        copydef=.false.
+        if(isw.eq.4)copydef=.true.
+        if(isw.eq.5.or.isw.eq.6)copydef=.false.
       elseif(longtfile(1:ldirpath-1).eq.dirpath(1:ldirpath-1))then
 
 C If standard file then offer the following choices (without /):
@@ -2766,7 +2779,8 @@ C If standard file then offer the following choices (without /):
      &    'e copy file from common to model',optf,
      &    'g create new optics',' ',' ',' ',' ',' ',
      &    isw,idno,nbhelp)
-        copydef=.false.
+        if(isw.eq.4)copydef=.true.
+        if(isw.eq.5.or.isw.eq.6)copydef=.false.
       else
 
 C If db exists locally toggle whether the user is asked to copy the
@@ -2973,7 +2987,8 @@ C for all interfaces.
 
       common/FILEP/IFIL
       common/OUTIN/IUOUT,IUIN
-      common/rpath/path
+C      common/rpath/path
+C      character path*72
       common/deflt4/dinstpath
 
       COMMON/MFLWPR/NPRE,FPRE(MPOS,MPRD)
@@ -2986,7 +3001,7 @@ C for all interfaces.
 C      CHARACTER outs248*248
 
       LOGICAL CLKOK,OK,COPYDEF,MODDB,XST,DOK,concat
-      character dinstpath*60,path*72,dirpath*72
+      character dinstpath*60,dirpath*72
       character OUTSTR*124      ! string buffer for data read
       character t144*144        ! for passing to erprcdb
 
@@ -3095,7 +3110,8 @@ C If standard file then offer the following choices (incl /):
      &    'e copy file from common to model',optf,
      &    'g create new coefficients',' ',' ',' ',' ',' ',
      &    isw,idno,nbhelp)
-        copydef=.false.
+        if(isw.eq.4)copydef=.true.
+        if(isw.eq.5.or.isw.eq.6)copydef=.false.
       elseif(longtfile(1:ldirpath-1).eq.dirpath(1:ldirpath-1))then
 
 C If standard file then offer the following choices (without /):
@@ -3108,7 +3124,8 @@ C If standard file then offer the following choices (without /):
      &    'e copy file from common to model',optf,
      &    'g create new coefficients',' ',' ',' ',' ',' ',
      &    isw,idno,nbhelp)
-        copydef=.false.
+        if(isw.eq.4)copydef=.true.
+        if(isw.eq.5.or.isw.eq.6)copydef=.false.
       else
 
 C If db exists locally toggle whether the user is asked to copy the
@@ -4145,7 +4162,8 @@ C is via a text editor.
       common/texted/tedlbl,teditor
       character tedlbl*20,teditor*20
 
-      common/rpath/path
+C      common/rpath/path
+C      character path*72
       common/deflt4/dinstpath
 
       CHARACTER lltmp*144,lprev*144
@@ -4153,7 +4171,7 @@ C is via a text editor.
       CHARACTER DOIT*300,fs*1,APP*4
 C      CHARACTER outs248*248
       LOGICAL OK,COPYDEF,MODDB,XST,DOK,concat
-      character dinstpath*60,path*72,dirpath*72
+      character dinstpath*60,dirpath*72
       character tmode*8
 
 C Local strings for user selections dependent on graphic library.
@@ -4261,7 +4279,8 @@ C If standard file then offer the following choices (incl /):
      &    'e copy file from common to model',optf,
      &    'g create new components',' ',' ',' ',' ',' ',
      &    isw,idno,nbhelp)
-        copydef=.false.
+        if(isw.eq.4)copydef=.true.
+        if(isw.eq.5.or.isw.eq.6)copydef=.false.
       elseif(longtfile(1:ldirpath-1).eq.dirpath(1:ldirpath-1))then
 
 C If standard file then offer the following choices (without /):
@@ -4274,7 +4293,8 @@ C If standard file then offer the following choices (without /):
      &    'e copy file from common to model',optf,
      &    'g create new components',' ',' ',' ',' ',' ',
      &    isw,idno,nbhelp)
-        copydef=.false.
+        if(isw.eq.4)copydef=.true.
+        if(isw.eq.5.or.isw.eq.6)copydef=.false.
       else
 
 C If db exists locally toggle whether the user is asked to copy the
@@ -4457,7 +4477,8 @@ C is via a text editor.
       common/texted/tedlbl,teditor
       character tedlbl*20,teditor*20
 
-      common/rpath/path
+C      common/rpath/path
+C      character path*72
       common/deflt4/dinstpath
 
       CHARACTER lltmp*144,lprev*144
@@ -4465,7 +4486,7 @@ C is via a text editor.
       CHARACTER DOIT*300,fs*1,APP*4
       CHARACTER outs248*248
       LOGICAL OK,COPYDEF,MODDB,XST,DOK,concat
-      character dinstpath*60,path*72,dirpath*72
+      character dinstpath*60,dirpath*72
       character tmode*8
 
 C Local strings for user selections dependent on graphic library.
@@ -4560,7 +4581,8 @@ C If standard file then offer the following choices (incl /):
      &    'e copy file from common to model','f invoke mould utility',
      &    'g create new isopleths',' ',' ',' ',' ',' ',
      &    isw,idno,nbhelp)
-        copydef=.false.
+        if(isw.eq.4)copydef=.true.
+        if(isw.eq.5)copydef=.false.
       elseif(longtfile(1:ldirpath-1).eq.dirpath(1:ldirpath-1))then
 
 C If standard file then offer the following choices (without /):
@@ -4573,7 +4595,8 @@ C If standard file then offer the following choices (without /):
      &    'e copy file from common to model','f invoke mould utility',
      &    'g create new isopleths',' ',' ',' ',' ',' ',
      &    isw,idno,nbhelp)
-        copydef=.false.
+        if(isw.eq.4)copydef=.true.
+        if(isw.eq.5)copydef=.false.
       else
 
 C If db exists locally toggle whether the user is asked to copy the
@@ -5020,6 +5043,13 @@ C        endif
       else
         write(LTMP,'(4a)') dbspth(1:lnblnk(dbspth)),fs,
      &    cfgroot(1:lr),ending(1:lnblnk(ending))
+      endif
+
+C Echo the suggested name of the destination file.
+      if(copydef)then
+        write(outs248,'(2a)') 'The suggested destination file is:',
+     &    LTMP(1:lnblnk(LTMP))
+        call edisp248(iuout,outs248,100)
       endif
 
 C Confirm name of model file.

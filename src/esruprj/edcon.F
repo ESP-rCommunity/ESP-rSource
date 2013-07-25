@@ -722,7 +722,7 @@ C esprdbfile.h supplies the following:
 C LFMAT,IFMAT,LFMUL,IFMUL (for materials and constructions database)
 #include "material.h"
 
-      integer lnblnk  ! function definition
+C      integer lnblnk  ! function definition
 
 C Parameters
       integer itru   ! unit for reporting
@@ -943,6 +943,12 @@ C the OPAQUE/TRANSPARENT flag as well.
             ITMCFL(ICOMP,ISUR)=0
           endif
         ELSE
+
+C User selected UNKNOWN so reset variables
+          WRITE(SSMLCN(icn1),'(A)') 'UNKNOWN'
+          ssmlcindex(icn1)=0   ! update array
+          SSOTF(icn1)='OPAQUE'
+          ITMCFL(ICOMP,ISUR)=0
           GOTO 12
         ENDIF
 
@@ -1148,9 +1154,8 @@ C with ier=1.
           goto 244  ! An unknown surface in the master list. << what to do? >>
         endif
 
-C Take the composite name associated with this surface and find the
-C equivalent composite db.  If composite name is UNKN then must ask
-C the user to select one.
+C Take the construction name associated with this surface and find the
+C equivalent MLC in the array. If name is UNKN then ask user to select.
 
 C << The logic for dealing with TRAN/OPAQ needs to be updated! >>
         NAIRG(IS)=0
@@ -1174,7 +1179,7 @@ C << The logic for dealing with TRAN/OPAQ needs to be updated! >>
               ITMCFL(ICOMP,IS)=0
             endif
 
-C Remember this change by saving the file.....
+C Remember this change by saving the file.
             MODGEO=.TRUE.
             MODCON=.TRUE.
           ELSE
@@ -1552,6 +1557,8 @@ C Switch back to opaque construction.
               SSOTF(icn1)='OPAQUE'
               OPT='OPAQUE'
               goto 10
+            else
+              return
             endif
           elseif(IWB.eq.2)then
             CALL EPKMLC(ISEL,'Which TRANSPARENT construction?',
@@ -1560,6 +1567,8 @@ C Switch back to opaque construction.
               WRITE(SSMLCN(icn1),'(A12)') mlcname(ISEL)(1:12)
               ssmlcindex(icn1)=ISEL   ! update array
               ICF=ISEL
+            else
+              return
             endif
           endif
         ENDIF

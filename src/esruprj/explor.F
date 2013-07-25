@@ -95,7 +95,7 @@ C Explicit use of pophelp required because of dynamic generation.
       logical changed,clkok,textalt,edited,XST
       character*35 ITEMS(9)      
       CHARACTER DFILE*96,tfile*96
-      CHARACTER OUTSTR*124
+      CHARACTER LOUTSTR*1000
       integer IPDL,INODA,nitms,INO  ! max items and current menu item
 
 #ifdef OSI
@@ -504,22 +504,22 @@ C Import data - open the import file and read them.
 
           DO 80 IP=IPS,NDBSTP
             ITREC=IP+49
-            CALL STRIPC(IUNIT,OUTSTR,0,ND,1,'import raw data',IER)
+            CALL STRIPC1K(IUNIT,LOUTSTR,0,ND,1,'import raw data',IER)
             IF(IER.NE.0)GOTO 103
 
 C Read value, associate with proper column and check if it changes
 C the minimum/maximum of that column.
             K=0
             VAL=0.
-            CALL EGETWR(OUTSTR,K,VAL,0.,0.,'-','imp data',IER)
-            CALL EGETWR(OUTSTR,K,VAL,0.,0.,'-','imp data',IER)
+            CALL EGETWR(LOUTSTR,K,VAL,0.,0.,'-','imp data',IER)
+            CALL EGETWR(LOUTSTR,K,VAL,0.,0.,'-','imp data',IER)
             TABU(ITCOL(IFOC,12))=VAL
             if(TABU(ITCOL(IFOC,12)).lt.TABUMN(ITCOL(IFOC,12)))
      &        TABUMN(ITCOL(IFOC,12))=TABU(ITCOL(IFOC,12))
             if(TABU(ITCOL(IFOC,12)).gt.TABUMX(ITCOL(IFOC,12)))
      &        TABUMX(ITCOL(IFOC,12))=TABU(ITCOL(IFOC,12))
 
-            CALL EGETWR(OUTSTR,K,VAL,0.,0.,'-','imp data',
+            CALL EGETWR(LOUTSTR,K,VAL,0.,0.,'-','imp data',
      &                  IER)
             TABU(ITCOL(IFOC,13))=VAL
             if(TABU(ITCOL(IFOC,13)).lt.TABUMN(ITCOL(IFOC,13)))
@@ -527,7 +527,7 @@ C the minimum/maximum of that column.
             if(TABU(ITCOL(IFOC,13)).gt.TABUMX(ITCOL(IFOC,13)))
      &        TABUMX(ITCOL(IFOC,13))=TABU(ITCOL(IFOC,13))
 
-            CALL EGETWR(OUTSTR,K,VAL,0.,0.,'-','imp data',
+            CALL EGETWR(LOUTSTR,K,VAL,0.,0.,'-','imp data',
      &                  IER)
             TABU(ITCOL(IFOC,14))=VAL
             if(TABU(ITCOL(IFOC,14)).lt.TABUMN(ITCOL(IFOC,14)))
@@ -535,14 +535,14 @@ C the minimum/maximum of that column.
             if(TABU(ITCOL(IFOC,14)).gt.TABUMX(ITCOL(IFOC,14)))
      &        TABUMX(ITCOL(IFOC,14))=TABU(ITCOL(IFOC,14))
                     
-            CALL EGETWR(OUTSTR,K,VAL,0.,0.,'-','imp data',IER)
+            CALL EGETWR(LOUTSTR,K,VAL,0.,0.,'-','imp data',IER)
             TABU(ITCOL(IFOC,15))=INT(VAL)
             if(TABU(ITCOL(IFOC,15)).lt.TABUMN(ITCOL(IFOC,15)))
      &        TABUMN(ITCOL(IFOC,15))=TABU(ITCOL(IFOC,15))
             if(TABU(ITCOL(IFOC,15)).gt.TABUMX(ITCOL(IFOC,15)))
      &        TABUMX(ITCOL(IFOC,15))=TABU(ITCOL(IFOC,15))
 
-            CALL EGETWR(OUTSTR,K,VAL,0.,0.,'-','imp data',IER)
+            CALL EGETWR(LOUTSTR,K,VAL,0.,0.,'-','imp data',IER)
             TABU(ITCOL(IFOC,16))=INT(VAL)
             if(TABU(ITCOL(IFOC,16)).lt.TABUMN(ITCOL(IFOC,16)))
      &        TABUMN(ITCOL(IFOC,16))=TABU(ITCOL(IFOC,16))

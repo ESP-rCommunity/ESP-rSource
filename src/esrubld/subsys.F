@@ -1136,6 +1136,7 @@ C                 external temperature (for use in MZLS3).
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
 
+C TDF commons are in tdf2.h
 
       COMMON/PREC5N/CVIN(MDTY,MCOM,MT),CVVN(MDTY,MCOM,MT),
      &ICCN(MDTY,MCOM,MT),TIAN(MDTY,MCOM,MT)

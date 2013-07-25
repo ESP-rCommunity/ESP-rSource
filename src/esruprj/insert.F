@@ -39,7 +39,7 @@ C as in deletion of an entire zone.
 C ISCOPT signals how to treat the copy of a surface as follows:
 C   iscopt = 0 offer editing box and option to click on mouse for vertices
 C   iscopt = 1 use the mouse click directly to specify vertices
-C   iscopt = 2 offer copy of local (in the same zone) surfaces 
+C   iscopt = 2 offer copy of local (in the same zone) surfaces
 
 C << what about including common zndata in this manipulation? >>
 
@@ -2118,7 +2118,7 @@ C  #include "model.h"
 #include "esprdbfile.h"
 #include "material.h"
 
-      integer lnblnk  ! function definition
+C      integer lnblnk  ! function definition
 
 C Parameters
       integer itrc,itru  ! tracel level and reporting unit
@@ -2404,12 +2404,13 @@ C and the area will not be correct for other surface shapes.
 
       elseif (IRT.eq.4)then
 
-C Ask for frame width in m.
+C Ask for frame width in m. Logic for frame width could check the
+C size and minimum dimensions < not yet done >. 
         hold=' '
         helptopic='opening_percent_overview'
         call gethelptext(helpinsub,helptopic,nbhelp)
         CALL EASKR(FRW,'Frame width (m).','  ',
-     &    0.001,'F',0.2,'F',40.0,'frame width',IER,nbhelp)
+     &    0.001,'F',0.3,'F',40.0,'frame width',IER,nbhelp)
 
       endif
 
@@ -2430,8 +2431,11 @@ C in XFA YFA ZFA.
       if(IRT.eq.1.or.IRT.eq.2.or.IRT.eq.3)then
         CALL ETRANSW(ITRC,ITRU,N,XX,YY,ZZ,0.00,XO1,ZO1,XW,ZH,XA,YA,ZA)
       else
-        CALL ETRANFRAME(ITRC,ICOMP,IS,N,XX,YY,ZZ,FRW,XFA,YFA,ZFA,
-     &    iwedge,IER)
+
+C In the case of inserting a frame pass in the number of parent surface
+C edges (N) and coords in XX YY ZZ and frame width FRW and get back array
+C XFA YFA ZFA as well as the number of edges.
+        CALL ETRANFRAME(ITRC,N,XX,YY,ZZ,FRW,XFA,YFA,ZFA,iwedge,IER)
         loop=N  ! reset to match polygon edges
         loop=iwedge  ! reset to match polygon edges
 C << trap non-zero ier value >>
@@ -2583,6 +2587,9 @@ C If in silent mode assign construction otherwise select.
           IF(mlctype(ISEL)(1:4).NE.'OPAQ')SOTF(NSUR)='TRAN'
           IF(mlctype(ISEL)(1:4).EQ.'OPAQ')SOTF(NSUR)='OPAQUE'
           IF(mlctype(ISEL)(1:4).EQ.'CFC ')SOTF(NSUR)='CFC '
+        else
+          WRITE(SMLCN(NSUR),'(A)') 'UNKNOWN'
+          SOTF(NSUR)='OPAQUE'
         endif
       endif
 

@@ -214,13 +214,13 @@ C act='p' iget parameters already set.
       integer threerighta ! nearest if miscel plus two axis on right
       integer threerightb ! farthest if miscel plus two axis on right
 #ifdef OSI
-      integer igx  ! see array above
+      integer igx,iigx  ! see array above
       integer igwid,igheight  ! for use with axiscale
       integer iupdown,isym,iid1,iid2   ! passed to etplot
       integer iicol
       integer iigl,iigr,iigt,iigb,iigw,iigwh
 #else
-      integer*8 igx  ! see array above
+      integer*8 igx,iigx  ! see array above
       integer*8 igwid,igheight  ! for use with axiscale
       integer*8 iupdown,isym,iid1,iid2   ! passed to etplot
       integer*8 iicol
@@ -360,16 +360,17 @@ C Draw axis.where:
 C  igx(1) is the left vertical axis.
 C  igx(2) is the `Load W` vertical axis.
 C  igx(3) is the `Int W/m^2' vertical axis
-C  igx(4) is the `Miscel vertical axis which is placed in the centre.
+C  igx(4) is the `Miscel vertical axis if placed in the centre.
 C  igx(5) does not have a label and is not part of the do 100 loop.
-C Set local values of offset from right end of horiz axis. Note: in 
-C the GTK version the values probably should be adjusted to fit the
+C Set local values of vertical axis offset (in pixels) from right
+C end of horiz (in pixels) axis.
+C Note: in the GTK version the values probably should be adjusted to fit the
 C current label font.
-      oneonright=110
-      twoonrighta=85
-      twoonrightb=135
-      threerighta=80
-      threerightb=135
+      oneonright=110   ! was 110
+      twoonrighta=115   ! was 85
+      twoonrightb=175  ! was 135
+      threerighta=110   ! was 80
+      threerightb=170  ! was 135
 
 C moghed uses similar YAXSET logic to know how many right axis to draw.
       call MOGHED
@@ -501,13 +502,14 @@ C draw vertical axis.
           call dinterval(TSTART-1.0,TFINSH,DT,NDEC,1)
           igwid=igw
           igheight=igwh
+          iigx=int(igx(I))
           call axiscale(igwid,igheight,TSTART-1.0,TFINSH,YMIN(I),
      &                  YMAX(I),TSC,YSC(I),sca,Xadd,Yadd(I))
           if (ILR(I).eq.0) then
-            call vrtaxis(YMIN(I),YMAX(I),igx(I),iigb,iigt,Yadd(I),
+            call vrtaxis(YMIN(I),YMAX(I),iigx,iigb,iigt,Yadd(I),
      &                             YSC(I),0,ilr(I),ALABEL(I))
           else
-            call vrtaxis(YMIN(I),YMAX(I),igx(I),iigb,iigt,Yadd(I),
+            call vrtaxis(YMIN(I),YMAX(I),iigx,iigb,iigt,Yadd(I),
      &                             YSC(I),0,ilr(I),'  ')
             iid1=igx(I); iid2=igt-5;
             call wstxpt(iid1,iid2,ALABEL(I))
@@ -816,7 +818,7 @@ C using similar logic tree to mowlin.
         endif
 
 C Debug.
-C        write(6,*) ' nb of right axis is currently ',onright
+C        write(6,*) ' nb of right axis is currently ',onright,onleft
 
 C Set standard fornt width so that space around graph is correct.
         call winfnt(imfs)
@@ -836,35 +838,40 @@ C Setup and pass in parameters to win3d.
           endif
         elseif(onright.eq.1)then
           if(onleft.eq.0)then
-            iiw1=3; iiw2=26; iiw3=5; iiw4=3; iimenu=menuchw
+            iiw1=3; iiw2=28; iiw3=5; iiw4=3; iimenu=menuchw
             iigl=igl; iigr=igr; iigt=igt; iigb=igb; iigw=igw;iigwh=igwh
             CALL win3d(iimenu,iiw1,iiw2,iiw3,iiw4,
      &        iigl,iigr,iigt,iigb,iigw,iigwh)
           else
-            iiw1=9; iiw2=26; iiw3=5; iiw4=3; iimenu=menuchw
+            iiw1=9; iiw2=28; iiw3=5; iiw4=3; iimenu=menuchw
             iigl=igl; iigr=igr; iigt=igt; iigb=igb; iigw=igw;iigwh=igwh
             CALL win3d(iimenu,iiw1,iiw2,iiw3,iiw4,
      &        iigl,iigr,iigt,iigb,iigw,iigwh)
           endif
         elseif(onright.eq.2)then
+
+C Set the right termination of the horizontal axis to 37 char in so that
+C there is room for two axis on the right.
           if(onleft.eq.0)then
-            iiw1=3; iiw2=31; iiw3=5; iiw4=3; iimenu=menuchw
+            iiw1=3; iiw2=37; iiw3=5; iiw4=3; iimenu=menuchw
             iigl=igl; iigr=igr; iigt=igt; iigb=igb; iigw=igw;iigwh=igwh
             CALL win3d(iimenu,iiw1,iiw2,iiw3,iiw4,
      &        iigl,iigr,iigt,iigb,iigw,iigwh)
           else
-            iiw1=9; iiw2=31; iiw3=5; iiw4=3; iimenu=menuchw
+            iiw1=9; iiw2=37; iiw3=5; iiw4=3; iimenu=menuchw
             iigl=igl; iigr=igr; iigt=igt; iigb=igb; iigw=igw;iigwh=igwh
             CALL win3d(iimenu,iiw1,iiw2,iiw3,iiw4,
      &        iigl,iigr,iigt,iigb,iigw,iigwh)
           endif
         endif
+
+C Cast values back depending on machine type.
         igl=int(iigl); igr=int(iigr); igt=int(iigt); igb=int(iigb)
         igw=int(iigw); igwh=int(iigwh)
-        call startbuffer()
+        call startbuffer
       ENDIF
 
-      lsn1=MIN0(lnblnk(RFILE),22)
+      lsn1=MIN0(lnblnk(RFILE),42)
       if(NSIM.gt.1)then
         WRITE(ETEXT,'(3A,I4,2A)')'Lib: ',RFILE(1:lsn1),' Set:',ISIM,
      &    ': ',RSNAME(ISIM)(1:lnblnk(RSNAME(ISIM)))

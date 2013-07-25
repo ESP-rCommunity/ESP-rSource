@@ -1992,7 +1992,8 @@ C the Z point by OFFSET.
 C ********************* ETRANFRAME
 C ETRANFRAME used when creating an fixed width frame into a surface. It
 C is assumed that an initial polygon of N edges will result in a frame
-C polygon of N edges.
+C polygon of N edges, however nwvert is returned with the actual number
+C of vertices.
 
 C STEP 1 - Find equation of surface (EQN(4)) via PLEQN and get centre
 C          Centre of Gravity (VP(3))
@@ -2005,13 +2006,10 @@ C          'origin'?
 C STEP 6 - Apply reverse transformation to Window/Door co-ordinates via
 C          ORTTRN to give vertices in global co-ords.
 
-      SUBROUTINE ETRANFRAME(ITRC,IZONE,ISURF,N,X,Y,Z,FRW,XXF,YYF,ZZF,
-     &  nwvert,IER)
+      SUBROUTINE ETRANFRAME(ITRC,N,X,Y,Z,FRW,XXF,YYF,ZZF,nwvert,IER)
 #include "building.h"
 
 C Passed parameters:
-      integer IZONE  ! current zone
-      integer ISURF  ! parent surface
       integer N     ! number of edges in the parent polygon
       real X,Y,Z    ! array of coordinates of parent polygon
       DIMENSION  X(MV),Y(MV),Z(MV)

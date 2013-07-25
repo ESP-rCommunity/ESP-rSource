@@ -1,7 +1,7 @@
 *Materials 1.1
 *date,Sat Jun 23 12:15:16 2011
 # materials database defined in material.db3.a
-*doc,ESP-r Materials based on scan of a legacy ASCII materials database constr.db3 with required materials for UK code complience. Additional infomation and documentation uses standard assumptions which should be updated as required.
+*doc,ESP-r Materials based on scan of a legacy ASCII materials constr.db3.a with required materials for UK code complience. Additional infomation and documentation uses standard assumptions which should be updated as required.
 19  # number of classifications
 #  
 # Materials have the following attributes:
@@ -88,7 +88,7 @@ Category ( 2) Concrete includes a mix of concrete types from heavy weight to lig
 *item,Concrete med density (1800), 40, 2,Blockwork (UK code)
 1.130,1800.000,1008.000,0.900,0.900,0.700,0.700,13.000,100.0,-
 # class index |nb items|description (32 char)
-*class, 3,11,Metal
+*class, 3,12,Metal
 Category ( 3) Metal has a range of metals, some are the same but are painted differently. Based on data traditionally distributed with ESP-r.
 *item,copper, 41, 3,Copper
 200.000,8900.000,418.000,0.720,0.720,0.650,0.650,19200.000,5.0,-
@@ -110,7 +110,9 @@ Category ( 3) Metal has a range of metals, some are the same but are painted dif
 210.000,2700.000,880.000,0.050,0.050,0.050,0.050,19200.000,5.0,-
 *item,steelSheedSBEM, 51, 3,Steel sheed SBEM
 60.000,7800.000,502.000,0.120,0.120,0.200,0.200,19200.000,1.0,-
-*item,black coated aluminium, 51, 3,note note
+*item,synthetic_magnetite, 52, 3,Synthetic magnetite bricks Fe3O4 used in electric storage heatersr
+3.500,5000.000,1000.000,0.800,0.800,0.800,0.800,19200.000,100.0,-
+*item,black coated aluminium, 53, 3,note note
 210.000,2700.000,880.000,0.950,0.950,0.980,0.980,19200.000,2.0,-
 # class index |nb items|description (32 char)
 *class, 4,23,Wood
@@ -183,7 +185,7 @@ Category ( 5) Stone includes building stone and gravels. Based on data tradition
 *item,lime cement mortar, 90, 5,lime cement mortar from IBO PassivHaus
 0.800,1800.000,1120.000,0.900,0.900,0.600,0.600,75.000,10.0,-
 # class index |nb items|description (32 char)
-*class, 6,14,Plaster
+*class, 6,15,Plaster
 Category ( 6) Plaster includes both tranditional plaster and gypsum plaster boards. Based on data traditionally distributed with ESP-r.
 *item,dense plaster,101, 6,Dense plaster
 0.500,1300.000,1000.000,0.910,0.910,0.500,0.500,11.000,12.5,-
@@ -213,6 +215,8 @@ Category ( 6) Plaster includes both tranditional plaster and gypsum plaster boar
 0.700,1400.000,920.000,0.910,0.910,0.700,0.700,10.000,12.0,-
 *item,lime cement plaster,114, 6,lime cement plaster from IBO PassivHaus
 0.800,1800.000,1100.000,0.910,0.910,0.700,0.700,75.000,12.0,-
+*item,gypsum_fibreboard,115, 6,Fermacell gypsum fibreboard IBR report 3001-100 gypsum + 18% paper fibre compressed and kiln cured. Kiwa K25203-02
+0.360,1150.000,1000.000,0.910,0.910,0.220,0.220,310.000,20.0,-
 # class index |nb items|description (32 char)
 *class, 7,12,Screeds and renders
 Category ( 7) Screeds are products typically used horizontally and renders are used on walls. Based on data traditionally distributed with ESP-r.
@@ -503,7 +507,7 @@ Category (17) Sheathing is similar to the wood category. It also includes a test
 *item,sheating std,321,17,regular density sheathing
 0.055,290.000,1300.000,0.900,0.900,0.900,0.900,10.000,100.0,-
 *item,air 12mm,322,17,place holder for testing an air material type for isbem
-0.055,290.000,1300.000,0.900,0.900,0.900,0.900,10.000,12.0,g,0.02496,0.000080,0.00001761,0.00000005,1.2320,-0.00430,0.000000,0.000000,1008.000,0.000000
+0.055,290.000,1300.000,0.900,0.900,0.900,0.900,10.000,12.0,g
 *item,virtual_loft_space,323,17,for notional building loft space air 12mm)
 0.130,290.000,1300.000,0.900,0.900,0.900,0.900,10.000,39.0,-
 # class index |nb items|description (32 char)
@@ -512,15 +516,15 @@ Category (18) holds the implied air material with a legacy index of zero.
 *item,air gap,  0,18,Air layer with default properties assumed for legacy treatment of air (index zero).
 0.000,0.000,0.000,0.990,0.990,0.990,0.990,1.000,25.0,-
 *item,Void 400mm,-99,18,Void 400mm
-0.000,0.000,0.000,0.990,0.990,0.990,0.990,1.000,25.0,g,0.00000,0.000000,0.00000000,0.00000000,0.0000,0.00000,0.000000,0.000000,0.000,0.000000
+0.000,0.000,0.000,0.990,0.990,0.990,0.990,1.000,25.0,g
 *item,Loft space,-99,18,Loft space (R=0.2)
-0.000,0.000,0.000,0.990,0.990,0.990,0.990,1.000,200.0,h,0.00000,0.00000,0.00000,0.00000,0.00000000,0.00000000,0.00000000,0.00000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000
+0.000,0.000,0.000,0.990,0.990,0.990,0.990,1.000,200.0,g
 *item,Air layer 25 mm wall,-99,18,Battens
-0.140,0.000,0.000,0.990,0.990,0.990,0.990,1.000,22.0,h,0.00000,0.00000,0.00000,0.00000,0.00000000,0.00000000,0.00000000,0.00000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000
+0.140,0.000,0.000,0.990,0.990,0.990,0.990,1.000,22.0,g
 *item,Air layer 50mm wall,-99,18,Air cavity
-0.140,0.000,0.000,0.990,0.990,0.990,0.990,1.000,50.0,h,0.00000,0.00000,0.00000,0.00000,0.00000000,0.00000000,0.00000000,0.00000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000
+0.140,0.000,0.000,0.990,0.990,0.990,0.990,1.000,50.0,g
 *item,Argon 16 mm,-99,18,Argon 16 mm
-0.020,1.700,519.000,0.990,0.990,0.990,0.990,1.000,16.0,g,0.00000,0.000000,0.00000000,0.00000000,0.0000,0.00000,0.000000,0.000000,0.000,0.000000
+0.020,1.700,519.000,0.990,0.990,0.990,0.990,1.000,16.0,g
 # class index |nb items|description (32 char)
 *class,19, 2,SpecialMaterials
 Category (19) SpecialMaterials includes materials that do not fit in any of the other categories.
