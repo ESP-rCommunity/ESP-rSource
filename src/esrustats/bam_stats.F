@@ -21,7 +21,7 @@ C Boston, MA 02111-1307 USA.
 C bamstats     - the main controlling routine.
 C partfa - allows terminal, file and action arguments to be passed.
 
-C ****************************************** csvstats ***************************************
+C ****************************************** bamstats ***************************************
 C bamstats.F is the main routine which scans standard or compressed BAM log files to create
 C a file fit for using as an import to temporal file. 
 C Use -act to say whether it is a std or compact BAM log file.
@@ -152,12 +152,16 @@ C Significant figure reporting limit (NSIGFIG).
       integer k,nd       ! for looping
 
 C Local variables for reading raw BAM sensor data in the log file.
-      integer isen,idum,iseq,ipacketsleft,irdbt,irlight,irrh
+      integer isen,idum,ipacketsleft,irdbt,irlight,irrh
       real lux,lexponent ! for RH calculation
       real thehouris  ! the csv file starts at hour
       logical nearstartofhour ! if file started near hour mark
+      integer lastseq,iseq    ! sequence number current and prior
+      dimension lastseq(12)
+
 
 C Mapping between the sensor index and array of (up to) a dozen sensors.
+      integer icurrentsenarray ! which part of the array to work with
       integer mapsentoarray
       dimension mapsentoarray(12)
       logical foundit  ! for establishing link between sensor index and mapsentoarray
@@ -181,6 +185,7 @@ C Initial assumptions.
       INTER=' '
 
 C Clear mapping array.
+      icurrentsenarray=0; iseq=0
       do ij=1,12
         mapsentoarray(ij)=0
       enddo
@@ -413,46 +418,53 @@ C Debug.
 C Debug.
 C        write(6,*) '1st tokens ',WORD,' ',datea
         CALL EGETWI(loutstr,K,isen,0,200,'W','sensor index',IFLAG)
+
+C Find where in the data arrays to save current info.
+        icurrentsenarray=0  ! clear
+        do ij=1,howmany
+          iwhich=mapsentoarray(ij)
+          if(isen.eq.iwhich)then
+            icurrentsenarray=ij  ! which part of the data arrays
+          endif
+        enddo
+        if(icurrentsenarray.eq.0)then
+          write(6,*) 'unknown sensor index ',isen,' @ ',datea
+          goto 42
+        endif
+
         CALL EGETWI(loutstr,K,idum,4,5,'W','version',IFLAG)
         CALL EGETWI(loutstr,K,idum,0,24,'W','pir packets',IFLAG)
-        CALL EGETWI(loutstr,K,iseq,0,100000,'W',
-     &    'sequence number',IFLAG)
-        if(iseq.eq.lastseq)then
-          write(6,*) 'Duplicate sequence ',iseq
+        CALL EGETWI(loutstr,K,iseq,0,100000,'W','sequence number',IFLAG)
+        if(iseq.eq.lastseq(icurrentsenarray))then
+          write(6,*) 'Duplicate sequence ',iseq,' @ ',datea
           goto 42
         else
-          lastseq=iseq
+          lastseq(icurrentsenarray)=iseq
         endif
 
-        CALL EGETWI(loutstr,K,ipacketsleft,0,250,'W',
+        CALL EGETWI(loutstr,K,ipacketsleft,0,300,'W',
      &    'nb of packets left',IER)
         if(ipacketsleft.gt.10)then
-          write(6,*) 'to many packets left ',ipacketsleft
+C          write(6,*) 'to many packets left ',ipacketsleft,' @ ',datea
           goto 42
         endif
 
-C Convert raw BAM data to dbt using calibration info.
+C Get raw BAM dbt data.
         CALL EGETWI(loutstr,K,irdbt,0,40000,'W','raw temperature',IER)
-        dbt= (0.01185055 * real(irdbt)) - 438.169086
 
-C Convert BAM light to lux.
+C Get BAM light data.
         CALL EGETWI(loutstr,K,irlight,0,1000,'W','raw light',IER)
-        if(irlight.gt.850)then
-          lux = 285.0
-        else
-          lexponent = real(irlight) * 0.0080849;
-          lux = 0.202549 * exp(lexponent)
-        endif
 
         CALL EGETWI(loutstr,K,idum,0,1000,'W','battery',IER)
 
-C Convert raw BAM data to RH via calibration info.
+C Get raw BAM RH data.
         CALL EGETWI(loutstr,K,irrh,0,40000,'W','raw humidity',IER)
-        rhl = (49.6 * log(real(irrh))) - 397.19
+
+C Convert timestep to julian.
         actd='B'
         call bamdatetojulian(datea,actd,juliand,julianfrac)
 
-C Are we close to the hour mark or one of the five minut marks.
+C Are we close to the hour mark or one of the five minute marks?
         closetohour=.false.
         closetofive=.false.
         nowis=thehouris
@@ -482,19 +494,22 @@ C If we are not near a desired time go and read another line.
 C Stuff into the arrays if close to the desired time. And we need to ensure
 C that we have collected data from all of the sensors before we skip forward in time.
 C The following logic results in two passes of sensors near the timestep.
-        do ij=1,howmany
-          iwhich=mapsentoarray(ij)
-          if(isen.eq.iwhich)then
-            bamtmp(ij)=dbt
-            bamlight(ij)=lux
-            bamhumidity(ij)=rhl
-            howmanynow=howmanynow+1  ! got another of the sensors
-            write(IUF,*) datea,' ',juliand,' * ',isen,dbt,rhl,lux,
-     &        howmanynow
-            goto 44
-          endif
-        enddo
-  44    continue
+
+C Convert raw BAM data to dbt, RH lux using calibration info.
+        dbt= (0.01185055 * real(irdbt)) - 438.169086
+        bamtmp(icurrentsenarray)=dbt
+        if(irlight.gt.850)then
+          lux = 285.0
+        else
+          lexponent = real(irlight) * 0.0080849;
+          lux = 0.202549 * exp(lexponent)
+        endif
+        bamlight(icurrentsenarray)=lux
+        rhl = (49.6 * log(real(irrh))) - 397.19
+        bamhumidity(icurrentsenarray)=rhl
+        howmanynow=howmanynow+1  ! got another of the sensors
+        write(IUF,*) datea,' ',juliand,' * ',isen,dbt,rhl,lux,
+     &    howmanynow
 
 C If all sensors captured and remembered we do not need to check for several more minutes.
 C So read lines equivalent to 3x the number of sensors.
@@ -513,7 +528,7 @@ C Debug.
         endif
         goto 42
 
-C << to be done >>
+C << additional logic ?? >>
 
       elseif(act(1:1).eq.'c'.or.act(1:1).eq.'C')then
 
