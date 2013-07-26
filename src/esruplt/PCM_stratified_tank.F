@@ -9,6 +9,50 @@ C     new arrey in order to correspond to the PCM axial discretization.
 C     According to the user choice to adopt an explicit or implicit 
 C     method, it calls the respective subroutines.
 C
+C References:
+C
+C See model description in separate document:
+C Development of a stratified tank storage component for ESP-r with 
+C embedded phase change material modules - Roberta Padovan, Marco Manzan
+C Proceedings of the Institution of Mechanical Engineers, Part A: 
+C Journal of Power and Energy, Special Issue Article, 0(0) 1–9, 2012
+C
+C     o = node                                                  |
+C                                                     <--rp(j)-->
+C                                                               |
+C             <dr/2>         <---dr--->                    <dr/2>
+C             ____________________________ _ ___________________|__
+C             |    |         |         |         |         |    |  
+C             |    |         |         |         |         |    |
+C    i=NY     o    |    o    |    o    |         |    o    |    o
+C             |k=NY| Ay(j)   |         |         |         |    |
+C             |____|___v_____|_________|__ _ ______________|____|__
+C             |    |         |         |         |         |    |
+C             |    |         |         |         |         |    |
+C    i=NY-1   o    |    o    |    o    |         |    o    |    o
+C      Axb(i)>|    |       ->|         |         |         |    |
+C             |____|______/__|_________|__ _ ____|_________|____|__
+C             |    |     /   |         |         |         |    |
+C                    Ax(i,j)=Ax(k)
+C    _____ _ _____ _ _____ _ _____ _ _____ _ _____ _ _____ _ _____ _ _____
+C    _____ _ _____ _ _____ _ _____ _ _____ _ _____ _ _____ _ _____ _ _____
+C
+C             |____|_________|_________|__ _ ____|_________|____|__
+C             |    |         |         |         |         |    |        ^
+C             |    |         |         |         |         |    |        |
+C    i=2      o    |    o    |    o    |         |    o    |    o    HeightNode
+C             |    |         |         |         |         |    |        |
+C             |____|_________|_________|__ _ ____|_________|____|__      v       
+C             |    |         |         |         |         |    |
+C    i=1      o    |    o    |    o    |         |    o    |    o
+C             |k=1 | k=NY+1  |         |         |         |    |
+C             |____|_________|_________|__ _ ____|_________|____|__
+C                                                               |
+C                                                               |<-cyl. axis
+C
+C
+C               j=1     j=2      j=3       ...     j=NX-1   j=NX
+C
 C======================================================================
 
       SUBROUTINE Immersed_PCM(ts,nX,nY,nNodes,nPCMbot,nPCMtop,
@@ -20,56 +64,56 @@ C======================================================================
      &                       method,e,Mdot,
      &                       H,CrossArea,QPCM)
 
+      IMPLICIT NONE
 
       INTEGER mX, mY, mXmY, mPCMsec, max_nNodes
       PARAMETER (mX=100, mY=100, mXmY=1000, mPCMsec=100, 
      &           max_nNodes=100)
 
 C-----COUNTERS
-      INTEGER i            ! axial direction counter [-]
+      INTEGER i            ! axial direction counter (-)
 
 C-----SPACE DISCRETIZATION and GEOMETRY
-      INTEGER nX           ! number of cells in radial direction [-]
-      INTEGER nY           ! number of cells in axial direction [-]
+      INTEGER nX           ! number of cells in radial direction (-)
+      INTEGER nY           ! number of cells in axial direction (-)
       REAL dr              ! grid dimension in radial direction
-      REAL ts              ! time step [s]
-      REAL V(nY,nX)        ! cells volumes [m^3]
-      REAL Ax(nY,nX-1)     ! CV faces in radial direction (east-west) [m^2]
+      REAL ts              ! time step (s)
+      REAL V(nY,nX)        ! cells volumes (m^3)
+      REAL Ax(nY,nX-1)     ! CV faces in radial direction (east-west) (m^2)
       REAL Axb(nY)         ! border face of external CV, in contact with DHW
-      REAL Ay(nX)          ! CV faces in axial direction  (north-south) [m^2]
+      REAL Ay(nX)          ! CV faces in axial direction  (north-south) (m^2)
 
 C-----PCM CHARACTERISTICS
-      REAL rhos            ! density of solid [kg/m^3]
-      REAL rhol            ! density of liquid [kg/m^3]
-      REAL cs              ! specific heat of solid [J/(kg K)]
-      REAL cl              ! specific heat of liquid [J/(kg K)]
-      REAL heatLat         ! latent heat [J/kg]
-      REAL cndcts          ! conductivity into solid [W/(m K)]
-      REAL cndctl          ! conductivity into liquid [W/(m K)]
-      REAL Tmi             ! melting temperature  [°C]
-      INTEGER method       ! time integration method [-]
-      REAL e               ! half phase change range [°C]
-      REAL TMP(nY,nX)      ! cylinder cells temperature [°C]                          
+      REAL rhos            ! density of solid (kg/m^3)
+      REAL rhol            ! density of liquid (kg/m^3)
+      REAL cs              ! specific heat of solid (J/(kg K))
+      REAL cl              ! specific heat of liquid (J/(kg K))
+      REAL heatLat         ! latent heat (J/kg)
+      REAL cndcts          ! conductivity into solid (W/(m K))
+      REAL cndctl          ! conductivity into liquid (W/(m K))
+      REAL Tmi             ! melting temperature  (°C)
+      INTEGER method       ! time integration method (-)
+      REAL e               ! half phase change range (°C)
+      REAL TMP(nY,nX)      ! cylinder cells temperature (°C)                          
       REAL H(nY,nX)        ! cylinder cells enthalpy                                   
       REAL Tm              ! scaling temperature 
 
 C-----TANK CHARACTERISTICS
-      REAL alphaLat        ! convection coefficient for cylinder lateral surface [W/(m^2 K)]
-      REAL alphaTop        ! convection coefficient for cylinder top surface [W/(m^2 K)]
-      REAL alphaBot        ! convection coefficient for cylinder bottom surface [W/(m^2 K)]
+      REAL alphaLat        ! convection coefficient for cylinder lateral surface (W/(m^2 K))
+      REAL alphaTop        ! convection coefficient for cylinder top surface (W/(m^2 K))
+      REAL alphaBot        ! convection coefficient for cylinder bottom surface (W/(m^2 K))
 
       INTEGER nNodes       ! number of nodes what the PCM tank is divided into
 
-      REAL hPCMcyl         ! PCM cylinder height [m]
-      REAL dPCMcyl         ! PCM cylinder diameter [m]
-      REAL hPCMbot         ! Position of the cylinder bottom [m]
-      REAL hPCMtop         ! Position of the cylinder top [m]
+      REAL hPCMcyl         ! PCM cylinder height (m)
+      REAL dPCMcyl         ! PCM cylinder diameter (m)
+      REAL hPCMbot         ! Position of the cylinder bottom (m)
+      REAL hPCMtop         ! Position of the cylinder top (m)
 
       INTEGER nPCMbot      ! tank layer corresponding to the lower cylinder node
                            ! tank layer where the cylinder bottom is located in
       INTEGER nPCMtop      ! tank layer corresponding to the higher cylinder node
                            ! tank layer where the cylinder top is located in
-      INTEGER nPCMhalf     ! tank layer corresponding to PCM half height
       REAL heightNode      ! tank CV height
       REAL dPCMnode(nY-1)  ! distance among nodes - bottom, generic, top          
       REAL Tbound(mY)      ! tank layer temperature in contact with each PCM section
@@ -84,11 +128,10 @@ C-----TANK CHARACTERISTICS
                            ! top surface is in contact with
       REAL Mdot(nNodes)    ! flow rate at each node (value i is from node i 
                            ! to node i+1)
-C-----OTHER
-      REAL QPCM(nNodes)    ! haet transfer from immersed PCM [J]
-      INTEGER IC           ! tank time step counter
+      REAL CrossArea       ! cross-sectional area of tank (m^2)
 
-      SAVE IC
+C-----OTHER
+      REAL QPCM(nNodes)    ! haet transfer from immersed PCM (J)
 
 
       Tm = 0.
@@ -140,43 +183,6 @@ C-----Select the method to solve the problem
      &                   H(1,1),CrossArea,QPCM(1))
       ENDIF
 
-      nPCMhalf = INT((nPCMbot+nPCMtop)/2)            !Tank layer corresponding to PCM half height
-
-      IC = IC + 1 
-
-C-----Print to an output file the following data have been calculated 
-C     for all PCM time steps
-      OPEN(UNIT=93,FILE='CellsTempFromRoutine.dat', 
-     &                           FORM='FORMATTED', STATUS='UNKNOWN',
-     &                           ACCESS='APPEND')
-      write(93,"(I10,24E18.8)") IC,                                     !1st column: istant 
-     &                        Tstep_prev(1)+Tmi,                        !2nd column: tank previous temperature at the 1st layer (tank bottom)
-     &                        Tstep_prev(INT(nNodes/4))+Tmi,            !3rd column: tank previous temperature at the layer situated at 1/4 of tank height
-     &                        Tstep_prev(INT(nNodes/2))+Tmi,            !4th column: tank previous temperature at the layer situated at 1/2 of tank height
-     &                        Tstep_prev(nPCMbot)+Tmi,                  !5th column: tank previous temperature at the PCM bottom layer
-     &                        Tstep_prev(INT((nPCMbot+nPCMtop)/2))+Tmi, !6th column: tank previous temperature at the PCM half height layer
-     &                        Tstep_prev(nPCMtop)+Tmi,                  !7th column: tank previous temperature at the PCM top layer   
-     &                        Tstep_prev(nNodes)+Tmi,                   !8th column: tank previous temperature at the top layer (tank top) 
-     &                        QPCM(nPCMbot),                            !9th column: heat flux exchanged between PCM module and tank water at PCM bottom layer
-     &                        QPCM(nPCMbot+1),                          !10th column: heat flux exchanged between PCM module and tank water layer at one layer heigher
-     &                        QPCM(nPCMhalf),                           !11th column: heat flux exchanged between PCM module and tank water layer corresponding to PCM half height
-     &                        QPCM(nPCMtop-1),                          !12th column: heat flux exchanged between PCM module and tank water at PCM to -1 layer
-     &                        QPCM(nPCMtop),                            !13th column: heat flux exchanged between PCM module and tank water at PCM top layer
-     &                        alphaLat,                                 !14th column: convection coefficient at lateral surface
-     &                        alphaTop,                                 !15th column: convection coefficient at top surface
-     &                        alphaBot,                                 !16th column: convection coefficient at bottom surface 
-     &                        TMP(1,1)+Tmi,                             !17th column: PCM temperature at bottom layer for the border cell
-     &                        TMP(1,INT(nX/2))+Tmi,                     !18th column: PCM temperature at bottom layer for an intermediate cell 
-     &                        TMP(1,nX)+Tmi,                            !19th column: PCM temperature at bottom layer for the inner cell  
-     &                        TMP(INT(nY/2),1)+Tmi,                     !20h column: PCM temperature at intermediate layer for the border cell
-     &                        TMP(INT(nY/2),INT(nX/2))+Tmi,             !21th column: PCM temperature at intermediate layer for an intermediate cell 
-     &                        TMP(INT(nY/2),nX)+Tmi,                    !22th column: PCM temperature at intermediate layer for the inner cell 
-     &                        TMP(nY,1)+Tmi,                            !23th column: PCM temperature at top layer for the border cell 
-     &                        TMP(nY,INT(nX/2))+Tmi,                    !24th column: PCM temperature at top layer for an intermediate cell 
-     &                        TMP(nY,nX)+Tmi                            !25th column: PCM temperature at top layer for the inner cell  
-      CLOSE(93)
-
-
       RETURN
       END
 
@@ -218,6 +224,7 @@ C======================================================================
      &                       method,e,Mdot,
      &                       H,CrossArea,QPCM)
 
+      IMPLICIT NONE
 
       INTEGER mX, mY, mXmY, mPCMsec, max_nNodes
       REAL pi
@@ -226,64 +233,69 @@ C======================================================================
       PARAMETER (pi=3.1415926535897932385) 
 
 C-----COUNTERS
-      REAL dt              ! time step [s]
-      REAL ts              ! time step [s]
-      INTEGER i            ! radial direction counter [-]
-      INTEGER j            ! axial direction counter [-]
-      INTEGER k            ! cell counter [-]
+      REAL dt              ! time step (s)
+      REAL ts              ! time step (s)
+      INTEGER i            ! radial direction counter (-)
+      INTEGER j            ! axial direction counter (-)
+      INTEGER k            ! cell counter (-)
 
 C-----SPACE DISCRETIZATION and GEOMETRY
-      INTEGER nX           ! number of cells in radial direction [-]
-      INTEGER nY           ! number of cells in axial direction [-]
+      INTEGER nX           ! number of cells in radial direction (-)
+      INTEGER nY           ! number of cells in axial direction (-)
       INTEGER nXnY         ! number of total cells
       INTEGER nNodes       ! number of nodes what the PCM tank is divided into
       INTEGER nPCMbot      ! tank node corresponding to the lower cylinder node
                            ! tank node where the cylinder bottom is located in
       INTEGER nPCMtop      ! tank node corresponding to the higher cylinder node
                            ! tank node where the cylinder top is located in
-      REAL hPCMcyl         ! cylinder height [m]
-      REAL dPCMcyl         ! PCM cylinders diameter [m]
+      REAL hPCMcyl         ! cylinder height (m)
+      REAL dPCMcyl         ! PCM cylinders diameter (m)
       REAL dr              ! grid dimension in radial direction
-      REAL dPCMnode(nY-1)  ! spatial step, cell height = distance among nodes [m]   
-      REAL V(nY,nX)        ! cells volumes [m^3]
-      REAL Ax(nY,nX-1)     ! CV faces in radial direction (east-west) [m^2]
-      REAL Axb(nY)         ! border face of external CV, in contact with DHW [m^2]
-      REAL Ay(nX)          ! CV faces in axial direction  (north-south) [m^2]
+      REAL dPCMnode(nY-1)  ! spatial step, cell height = distance among nodes (m)   
+      REAL V(nY,nX)        ! cells volumes (m^3)
+      REAL Ax(nY,nX-1)     ! CV faces in radial direction (east-west) (m^2)
+      REAL Axb(nY)         ! border face of external CV, in contact with DHW (m^2)
+      REAL Ay(nX)          ! CV faces in axial direction  (north-south) (m^2)
 
 C-----TANK CHARACTERISTICS
-      REAL alphaLat        ! convection coefficient [W/(m^2 K)]
-      REAL alphaTop        ! convection coefficient for cylinder top surface [W/(m^2 K)]
-      REAL alphaBot        ! convection coefficient for cylinder bottom surface [W/(m^2 K)]
+      REAL alphaLat        ! convection coefficient (W/(m^2 K))
+      REAL alphaTop        ! convection coefficient for cylinder top surface (W/(m^2 K))
+      REAL alphaBot        ! convection coefficient for cylinder bottom surface (W/(m^2 K))
       REAL Tbound(nY)      ! DHW layer temperature in contact with each PCM section - 
-C                            boundary condition
+                           ! boundary condition
+      REAL Tbot            ! DHW temp at the layer what the PCM cylinder 
+                           ! bottom surface is in contact with (°C)
+      REAL Ttop            ! DHW temp at the layer what the PCM cylinder 
+                           ! top surface is in contact with (°C)
       REAL Mdot(nNodes)    ! flow rate at each node (value i is from node i to node i+1)
-      REAL CrossArea
+      REAL CrossArea       ! cross-sectional area of tank (m^2)
+
 
 C-----PCM CHARACTERISTICS
-      REAL cndcts          ! conductivity into solid [W/(m K)]
-      REAL cndctl          ! conductivity into liquid [W/(m K)]
-      REAL cndctx(mY,mX-1) ! conductivity on CV faces in radial direction [W/(m K)]
-      REAL cndcty(mY-1,mX) ! conductivity on CV faces in axial direction [W/(m K)]
-      REAL cndctP(mY,mX)   ! conductivity on CV node [W/(m K)]
-      REAL TMP(nY,nX)      ! cylinder cells temperature [°C]
+      REAL cndcts          ! conductivity into solid (W/(m K))
+      REAL cndctl          ! conductivity into liquid (W/(m K))
+      REAL cndctx(mY,mX-1) ! conductivity on CV faces in radial direction (W/(m K))
+      REAL cndcty(mY-1,mX) ! conductivity on CV faces in axial direction (W/(m K))
+      REAL cndctP(mY,mX)   ! conductivity on CV node (W/(m K))
+      REAL TMP(nY,nX)      ! cylinder cells temperature (°C)
       REAL H(nY,nX)        ! cylinder cells enthalpy
-      REAL heatLat         ! latent heat [J/kg]
-      REAL rhos            ! density [kg/m^3]
-      REAL rhol            ! density [kg/m^3]
-      REAL rho(mY,mX)      ! density on CV node [kg/m^3]
-      REAL cs              ! specific heat of solid [J/(kg K)]
-      REAL cl              ! specific heat of liquid [J/(kg K)]
-      REAL Tmi             ! melting temperature  [°C]
+      REAL heatLat         ! latent heat (J/kg)
+      REAL rhos            ! density (kg/m^3)
+      REAL rhol            ! density (kg/m^3)
+      REAL rho(mY,mX)      ! density on CV node (kg/m^3)
+      REAL cs              ! specific heat of solid (J/(kg K))
+      REAL cl              ! specific heat of liquid (J/(kg K))
+      REAL Tmi             ! melting temperature  (°C)
       REAL Tm              ! scaling temperature
 
 C-----OTHER
-      REAL QPCM(max_nNodes)! haet transfer from immersed PCM [J]
+      REAL QPCM(max_nNodes)! haet transfer from immersed PCM (J)
 
       INTEGER nstpcm       ! number of pcm inner time steps for tank timesteps, 
 C                            to verify explicit condition
       INTEGER istpcm       ! iteration value for internal pcm time step
-      SAVE IC
-      INTEGER method       ! time integration method [-]
+      INTEGER IER          ! error indicator
+      INTEGER method       ! time integration method (-)
       REAL eps             ! constant to calculate conductivity at cells faces
       REAL coeffx(mY,mX)   ! = cndctx(?,?)*Ax(?,?)/dr  
                            ! coefficient calculated for all east and west faces between cells;
@@ -297,11 +309,10 @@ C                            to verify explicit condition
                            ! coefficient for convective thermal exchange at top border cells
       REAL convBot(mX)     ! = alphaBot*Ay(?) 
                            ! coefficient for convective thermal exchange at bottom border cells
-      INTEGER IC           ! tank time step counter
 
 
 C-----VALUES FOR IMPLICIT METHOD 
-      REAL e
+      REAL e               ! half phase change range (°C)
       REAL CA (mY,mX)      ! apparent specific heat 
       REAL Tmatrix(mXmY,mXmY) 
                            ! temperature coefficients matrix to solve the 
@@ -329,14 +340,15 @@ C-----VALUES FOR IMPLICIT METHOD
                            ! = +/- 1 depending on whether the number of row interchanges 
                            ! was even or odd
       INTEGER MAXIT        ! variable for LU decomposition
+      INTEGER n            ! number of iteration
 
-
+      LOGICAL CLOSE
 
 
       nXnY = nX*nY
 
 
-      eps = 1E-5
+      eps = 2E-5
 
 
       dt = ts
@@ -400,9 +412,14 @@ C       to axis (towards the east)
         DO j = 1, nX-1
           DO i= 1, nY
 C           conducibility at east face of cell
-            cndctx(i,j) = cndctP(i,j)+
-     &                    (TMP(i,j+1)*(cndctP(i,j+1)-cndctP(i,j)))/
-     &                    (TMP(i,j+1)-TMP(i,j)+eps)
+            call eclose(TMP(i,j+1),TMP(i,j), 0.0001, CLOSE)
+            IF (CLOSE) THEN
+              cndctx(i,j) = cndctP(i,j)
+            ELSE      
+              cndctx(i,j) = cndctP(i,j)+
+     &                      (TMP(i,j+1)*(cndctP(i,j+1)-cndctP(i,j)))/
+     &                      (TMP(i,j+1)-TMP(i,j)+eps)
+            ENDIF
             coeffx(i,j) = cndctx(i,j)*Ax(i,j)/dr 
           ENDDO
         ENDDO
@@ -413,9 +430,14 @@ C       to top (towards the north)
           DO j = 1, nX
             DO i= 1, nY-1
 C             conducibility at north face of cell
-              cndcty(i,j) = cndctP(i,j)+
-     &                      (TMP(i+1,j)*(cndctP(i+1,j)-cndctP(i,j)))/
-     &                      (TMP(i+1,j)-TMP(i,j)+eps)
+              call eclose(TMP(i+1,j),TMP(i,j), 0.0001, CLOSE)
+              IF (CLOSE) THEN
+                cndcty(i,j) = cndctP(i,j)
+              ELSE      
+                cndcty(i,j) = cndctP(i,j)+
+     &                        (TMP(i+1,j)*(cndctP(i+1,j)-cndctP(i,j)))/
+     &                        (TMP(i+1,j)-TMP(i,j)+eps)
+              ENDIF
               coeffy(i,j) = cndcty(i,j)*Ay(j)/dPCMnode(i)
             ENDDO
           ENDDO
@@ -672,7 +694,6 @@ C     water for each layer where the PCM is located in. It solves the
 C     problem using the explicit Euler method.
 C     Simplification hypothesis:
 C       - PCM modules are considered cylindrical
-C       - top and bottom are adiabatic surfaces
 C       - no convection inside the modules
 C       - no subcooling phenomena considered
 C     
@@ -692,6 +713,7 @@ C======================================================================
      &                      method,e,Mdot,
      &                      H,CrossArea,QPCM)
 
+      IMPLICIT NONE
 
       INTEGER max_nNodes,mX,mY,mXmY,mPCMsec
       REAL pi
@@ -700,68 +722,73 @@ C======================================================================
       PARAMETER (pi=3.1415926535897932385)
 
 C-----COUNTERS
-      REAL dt              ! time step [s]
-      REAL ts              ! time step [s]
-      INTEGER i            ! radial direction counter [-]
-      INTEGER j            ! axial direction counter [-]
-      INTEGER k            ! cell counter [-]
+      REAL dt              ! time step (s)
+      REAL ts              ! time step (s)
+      INTEGER i            ! radial direction counter (-)
+      INTEGER j            ! axial direction counter (-)
+      INTEGER k            ! cell counter (-)
 
 C-----SPACE DISCRETIZATION and GEOMETRY
-      INTEGER nX           ! number of cells in radial direction [-]
-      INTEGER nY           ! number of cells in axial direction [-]
+      INTEGER nX           ! number of cells in radial direction (-)
+      INTEGER nY           ! number of cells in axial direction (-)
+      INTEGER nXnY         ! number of total cells
       INTEGER nNodes       ! number of nodes what the PCM tank is divided into
       INTEGER nPCMbot      ! tank node corresponding to the lower cylinder node
                            ! tank node where the cylinder bottom is located in
       INTEGER nPCMtop      ! tank node corresponding to the higher cylinder node
                            ! tank node where the cylinder top is located in
-      REAL dPCMcyl         ! PCM cylinders diameter [m]
-      REAL hPCMcyl         ! cylinder height [m]
+      REAL dPCMcyl         ! PCM cylinders diameter (m)
+      REAL hPCMcyl         ! cylinder height (m)
       REAL dr              ! grid dimension in radial direction
-      REAL dPCMnode(nY-1)  ! spatial step, cell height = distance among nodes [m]   
-      REAL V(nY,nX)        ! cells volumes [m^3]
-      REAL Ax(nY,nX-1)     ! CV faces in radial direction (east-west) [m^2]
+      REAL dPCMnode(nY-1)  ! spatial step, cell height = distance among nodes (m)   
+      REAL V(nY,nX)        ! cells volumes (m^3)
+      REAL Ax(nY,nX-1)     ! CV faces in radial direction (east-west) (m^2)
       REAL Axb(nY)         ! border face of external CV, in contact with DHW
-      REAL Ay(nX)          ! CV faces in axial direction  (north-south) [m^2]
+      REAL Ay(nX)          ! CV faces in axial direction  (north-south) (m^2)
 
 C-----TANK CHARACTERISTICS
-      REAL alphaLat           ! convection coefficient [W/(m^2 K)]
-      REAL alphaTop        ! convection coefficient for cylinder top surface [W/(m^2 K)]
-      REAL alphaBot        ! convection coefficient for cylinder bottom surface [W/(m^2 K)]
+      REAL alphaLat        ! convection coefficient (W/(m^2 K))
+      REAL alphaTop        ! convection coefficient for cylinder top surface (W/(m^2 K))
+      REAL alphaBot        ! convection coefficient for cylinder bottom surface (W/(m^2 K))
       REAL Tbound(nY)      ! DHW layer temperature in contact with each PCM section - 
                            ! boundary condition
+      REAL Tbot            ! DHW temp at the layer what the PCM cylinder 
+                           ! bottom surface is in contact with (°C)
+      REAL Ttop            ! DHW temp at the layer what the PCM cylinder 
+                           ! top surface is in contact with (°C)
       REAL Mdot(nNodes)    ! flow rate at each node (value i is from node i to node i+1) 
-      REAL CrossArea
+      REAL CrossArea       ! cross-sectional area of tank (m^2)
 
 C-----PCM CHARACTERISTICS
-      REAL cndcts          ! conductivity into solid [W/(m K)]
-      REAL cndctl          ! conductivity into liquid [W/(m K)]
-      REAL cndctx(mY,mX-1) ! conductivity on CV faces in radial direction [W/(m K)]
-      REAL cndcty(mY-1,mX) ! conductivity on CV faces in axial direction [W/(m K)]
-      REAL cndctP(mY,mX)   ! conductivity on CV's node [W/(m K)]
-      REAL TMP(nY,nX)      ! cylinder cells temperature [°C]
+      REAL cndcts          ! conductivity into solid (W/(m K))
+      REAL cndctl          ! conductivity into liquid (W/(m K))
+      REAL cndctx(mY,mX-1) ! conductivity on CV faces in radial direction (W/(m K))
+      REAL cndcty(mY-1,mX) ! conductivity on CV faces in axial direction (W/(m K))
+      REAL cndctP(mY,mX)   ! conductivity on CV's node (W/(m K))
+      REAL TMP(nY,nX)      ! cylinder cells temperature (°C)
       REAL H(nY,nX)        ! cylinder cells enthalpy
-      REAL heatLat         ! latent heat [J/kg]
-      REAL rhos            ! density into solid [kg/m^3]
-      REAL rhol            ! density into liquid [kg/m^3]
-      REAL rho(mY,mX)      ! density on CV's node [kg/m^3]
-      REAL cs              ! specific heat of solid [J/(kg K)]
-      REAL cl              ! specific heat of liquid [J/(kg K)]
-      REAL Tmi             ! melting temperature  [°C]
+      REAL heatLat         ! latent heat (J/kg)
+      REAL rhos            ! density into solid (kg/m^3)
+      REAL rhol            ! density into liquid (kg/m^3)
+      REAL rho(mY,mX)      ! density on CV's node (kg/m^3)
+      REAL cs              ! specific heat of solid (J/(kg K))
+      REAL cl              ! specific heat of liquid (J/(kg K))
+      REAL Tmi             ! melting temperature  (°C)
       REAL Tm              ! scaling temperature
-
+      REAL e               ! half phase change range (°C)
 
 
 C-----VALUES FOR EXPLICIT METHOD CONVERGENCE CRITERION
-      REAL dts             ! time step for solid phase [s]
-      REAL dtl             ! time step for liquid phase [s] 
+      REAL dts             ! time step for solid phase (s)
+      REAL dtl             ! time step for liquid phase (s) 
 
 
 C-----OTHER
-      REAL QPCM(max_nNodes)! haet transfer from immersed PCM [J]
+      REAL QPCM(max_nNodes)! haet transfer from immersed PCM (J)
       INTEGER nstpcm       ! number of pcm inner time steps for tank timesteps, 
                            ! to verify explicit condition
       INTEGER istpcm       ! iteration value for internal pcm time step
-      INTEGER method       ! time integration method [-]
+      INTEGER method       ! time integration method (-)
       REAL eps             ! constant to calculate conductivity at cells faces
       REAL coeffx(mY,mX)   ! = cndctx(?,?)*Ax(?,?)/dr  
                            ! coefficient calculated for all east and west faces between cells;
@@ -777,10 +804,11 @@ C-----OTHER
                            ! coefficient for convective thermal exchange at bottom border cells
       REAL acc(mY,mX)      ! = rho(?,?)*V(?,?)/dt  
                            ! coefficient calculated for all cells; accumulation term 
-      INTEGER N            ! variable for LU decomposition
+
+      LOGICAL CLOSE
 
 
-      eps=1e-5
+      eps=2e-5
 
 
 
@@ -799,7 +827,7 @@ C     cylindrical simmetry
 C-----Round up internal time step so that there is an integral number 
 C     of time steps within the system time step
 C     The 0.5 is to make sure that the rounding is made upwards
-      nstpcm = NINT(0.499999+ts/dt)
+      nstpcm = INT(0.499999+ts/dt)
       dt = ts/nstpcm
 
 
@@ -870,9 +898,14 @@ C       to axis (towards the east)
         DO j = 1, nX-1
           DO i= 1, nY
 C           conducibility at east face of cell
-            cndctx(i,j) = cndctP(i,j)+
+            call eclose(TMP(i,j+1),TMP(i,j), 0.0001, CLOSE)
+            IF (CLOSE) THEN
+              cndctx(i,j) = cndctP(i,j)
+            ELSE      
+              cndctx(i,j) = cndctP(i,j)+
      &                    (TMP(i,j+1)*(cndctP(i,j+1)-cndctP(i,j)))/
      &                    (TMP(i,j+1)-TMP(i,j)+eps)
+            ENDIF
             coeffx(i,j) = cndctx(i,j)*Ax(i,j)/dr
           ENDDO
         ENDDO
@@ -882,10 +915,15 @@ C       to top (towards the north)
         IF(NY.NE.1)THEN
           DO j = 1, nX
             DO i= 1, nY-1
+              call eclose(TMP(i+1,j),TMP(i,j), 0.0001, CLOSE)
+              IF (CLOSE) THEN
+                cndcty(i,j) = cndctP(i,j)
+              ELSE 
 C             conducibility at north face of cell
-              cndcty(i,j) = cndctP(i,j)+
-     &                      (TMP(i+1,j)*(cndctP(i+1,j)-cndctP(i,j)))/
-     &                      (TMP(i+1,j)-TMP(i,j)+eps)
+                cndcty(i,j) = cndctP(i,j)+
+     &                        (TMP(i+1,j)*(cndctP(i+1,j)-cndctP(i,j)))/
+     &                        (TMP(i+1,j)-TMP(i,j)+eps)
+              ENDIF
               coeffy(i,j) = cndcty(i,j)*Ay(j)/dPCMnode(i)
             ENDDO
           ENDDO
@@ -923,12 +961,12 @@ C-------Calculate enthalpy for each cell
           CALL Enthalpy2D(acc(1,1),coeffx(1,1),coeffy(1,1),Tbound(1),
      &                   Ttop,Tbot,TMP(1,1),H(1,1),
      &                   convLat(1),convTop(1),convBot(1),
-     &                   nX,nY,nXnY,n)
+     &                   nX,nY,nXnY)
         ELSE
           CALL Enthalpy1D(acc(1,1),coeffx(1,1),
      &                   Tbound(1),Ttop,Tbot,TMP(1,1),H(1,1),
      &                   convLat(1),convTop(1),convBot(1),
-     &                   nX,nY,nXnY,n)
+     &                   nX,nY,nXnY)
         ENDIF
 
 
@@ -940,13 +978,19 @@ C-------Calculate TMP for each cell
           DO i=1,nY
 	    IF (H(i,j).LT.(cs*Tm)) THEN
               TMP(i,j) = h(i,j)/cs
-	    ELSEIF (H(i,j).GE.(cs*Tm).AND.h(i,j).LT.cs*       
+C             to avoid the risk of underflow 
+              CALL ECLOSE(TMP(i,j),Tm,1.0E-7,CLOSE)
+              IF (CLOSE) TMP(i,j) = Tm
+            ELSEIF (H(i,j).GE.(cs*Tm).AND.h(i,j).LT.cs*       
      &                  Tm+heatLat) THEN
               TMP(i,j) = Tm
 	    ELSE 
               TMP(i,j) = (H(i,j)-(cs-cl)*Tm-heatLat)/cl
-	    ENDIF
-	  ENDDO
+C             to avoid the risk of underflow 
+              CALL ECLOSE(TMP(i,j),Tm,1.0E-5,CLOSE)
+              IF (CLOSE) TMP(i,j) = Tm
+            ENDIF
+          ENDDO
         ENDDO
 
 
@@ -981,9 +1025,6 @@ C-----PCM module lateral surface
       DO i=1,nY
           QPCM(i+nPCMbot-1) = QPCM(i+nPCMbot-1)/ts
       ENDDO
-C-----PCM module bottom and top surface
-      QPCM(nPCMbot) = QPCM(nPCMbot)/ts
-      QPCM(nPCMtop) = QPCM(nPCMtop)/ts
 
 
 
@@ -1023,7 +1064,10 @@ C======================================================================
      &      CrossArea,Mdot,TMP)
 
 
+      IMPLICIT NONE
  
+      INTEGER max_nNodes,mX,mY,mXmY,mPCMsec
+      REAL pi
       PARAMETER (max_nNodes=100)
       PARAMETER (mX=100, mY=100, mXmY=1000, mPCMsec=100)
       PARAMETER (pi=3.1415926535897932385) 
@@ -1031,83 +1075,83 @@ C======================================================================
 
       REAL dt
       INTEGER i,j,k
-      REAL TMP(nY,nX)      ! cylinder cells temperature [°C]
+      REAL TMP(nY,nX)      ! cylinder cells temperature (°C)
 
 
-      REAL CrossArea       ! cross area of tank [m^2]
+      REAL CrossArea       ! cross-sectional area of tank (m^2)
       REAL Volume          ! tank volume
       REAL Tmi
 
 C---- Calculation on the lateral cylinder surface:
-      REAL Tbound(nY)      ! DHW layer temperature around PCM [°C]
-      REAL TWATmed         ! DHW average temperature at PCM lateral surface [°C]
-      REAL TPCMmedLat      ! PCM average temperature on cylinder lateral border cells [°C]
-      REAL TWMfilmLat      ! non scaled mean film temperature for lateral cylinder surface [°C]
-      REAL TsPCMLat        ! non scaled PCM wall mean temperature [°C]
-      REAL k_waterLat      ! water conductivity [W/(m*K)]
-      REAL rho_waterLat    ! water density [kg/m^3]
+      REAL Tbound(nY)      ! DHW layer temperature around PCM (°C)
+      REAL TWATmed         ! DHW average temperature at PCM lateral surface (°C)
+      REAL TPCMmedLat      ! PCM average temperature on cylinder lateral border cells (°C)
+      REAL TWMfilmLat      ! non scaled mean film temperature for lateral cylinder surface (°C)
+      REAL TsPCMLat        ! non scaled PCM wall mean temperature (°C)
+      REAL k_waterLat      ! water conductivity (W/(m*K))
+      REAL rho_waterLat    ! water density (kg/m^3)
       REAL BetaLat         ! water expansion coefficient 
-      REAL gBeta_nLat      ! water g*beta/ni^2 coeff [1/(m^3*K)]
-      REAL muLat           ! dynamic viscosity [kg/(m*s)]
-      REAL Cp_waterLat     ! specific heat ow water [J/(kg*K)]
-      REAL PrLat           ! Prandtl number []
-      REAL k_wallLat       ! water conductivity at wall temperature [W/(m*K)]
-      REAL mu_wallLat      ! dynamic viscosity at wall temperature [kg/(m*s)]
-      REAL Cp_wallLat      ! specific heat ow water at wall temperature [J/(kg*K)]
-      REAL Pr_wallLat      ! Prandtl number at wall temperature []
-      REAL GrLat           ! Grashof number for vertical flat surface []
-      REAL alphaLat           ! convection coefficient on PCM vertical surface [W/(m^2 K)]
+      REAL gBeta_nLat      ! water g*beta/ni^2 coeff (1/(m^3*K))
+      REAL muLat           ! dynamic viscosity (kg/(m*s))
+      REAL Cp_waterLat     ! specific heat ow water (J/(kg*K))
+      REAL PrLat           ! Prandtl number (-)
+      REAL k_wallLat       ! water conductivity at wall temperature (W/(m*K))
+      REAL mu_wallLat      ! dynamic viscosity at wall temperature (kg/(m*s))
+      REAL Cp_wallLat      ! specific heat of water at wall temperature (J/(kg*K))
+      REAL Pr_wallLat      ! Prandtl number at wall temperature (-)
+      REAL GrLat           ! Grashof number for vertical flat surface (-)
+      REAL alphaLat        ! convection coefficient on PCM vertical surface (W/(m^2 K))
 
 C---- Calculation on the top cylinder surface:
       REAL Ttop            ! DHW temp at the layer what the PCM cylinder 
-                           ! top surface is in contact with [°C]
-      REAL TPCMmedTop      ! PCM average temperature on cylinder top border cells [°C]
-      REAL TWMfilmTop      ! non scaled mean film temperature for top cylinder surface [°C] 
-      REAL TsPCMTop        ! non scaled PCM wall mean temperature [°C]
-      REAL k_waterTop      ! water conductivity [W/(m*K)]
-      REAL rho_waterTop    ! water density [kg/m^3]
+                           ! top surface is in contact with (°C)
+      REAL TPCMmedTop      ! PCM average temperature on cylinder top border cells (°C)
+      REAL TWMfilmTop      ! non scaled mean film temperature for top cylinder surface (°C) 
+      REAL TsPCMTop        ! non scaled PCM wall mean temperature (°C)
+      REAL k_waterTop      ! water conductivity (W/(m*K))
+      REAL rho_waterTop    ! water density (kg/m^3)
       REAL BetaTop         ! water expansion coefficient 
-      REAL gBeta_nTop      ! water g*beta/ni^2 coeff [1/(m^3*K)]
-      REAL muTop           ! dynamic viscosity [kg/(m*s)]
-      REAL Cp_waterTop     ! specific heat ow water [J/(kg*K)]
-      REAL PrTop           ! Prandtl number []
-      REAL k_wallTop       ! water conductivity at wall temperature [W/(m*K)]
-      REAL mu_wallTop      ! dynamic viscosity at wall temperature [kg/(m*s)]
-      REAL Cp_wallTop      ! specific heat ow water at wall temperature [J/(kg*K)]
-      REAL Pr_wallTop      ! Prandtl number at wall temperature []
-      REAL GrTop           ! Grashof number for horizontal (top) flat surface []
-      REAL alphaTop        ! convection coefficient on PCM top (horizontal) surface [W/(m^2 K)]
+      REAL gBeta_nTop      ! water g*beta/ni^2 coeff (1/(m^3*K))
+      REAL muTop           ! dynamic viscosity (kg/(m*s))
+      REAL Cp_waterTop     ! specific heat of water (J/(kg*K))
+      REAL PrTop           ! Prandtl number (-)
+      REAL k_wallTop       ! water conductivity at wall temperature (W/(m*K))
+      REAL mu_wallTop      ! dynamic viscosity at wall temperature (kg/(m*s))
+      REAL Cp_wallTop      ! specific heat ow water at wall temperature (J/(kg*K))
+      REAL Pr_wallTop      ! Prandtl number at wall temperature (-)
+      REAL GrTop           ! Grashof number for horizontal (top) flat surface (-)
+      REAL alphaTop        ! convection coefficient on PCM top (horizontal) surface (W/(m^2 K))
 
 C---- Calculation on the bottom cylinder surface 
       REAL Tbot            ! DHW temp at the layer what the PCM cylinder 
-                           ! bottom surface is in contact with [°C]
-      REAL TPCMmedBot      ! PCM average temperature on cylinder top border cells [°C]
-      REAL TWMfilmBot      ! non scaled mean film temperature for bottom cylinder surface [°C] 
-      REAL TsPCMBot        ! non scaled PCM wall mean temperature [°C]
-      REAL k_waterBot      ! water conductivity [W/(m*K)]
-      REAL rho_waterBot    ! water density [kg/m^3] 
+                           ! bottom surface is in contact with (°C)
+      REAL TPCMmedBot      ! PCM average temperature on cylinder top border cells (°C)
+      REAL TWMfilmBot      ! non scaled mean film temperature for bottom cylinder surface (°C) 
+      REAL TsPCMBot        ! non scaled PCM wall mean temperature (°C)
+      REAL k_waterBot      ! water conductivity (W/(m*K))
+      REAL rho_waterBot    ! water density (kg/m^3) 
       REAL BetaBot         ! water expansion coefficient 
-      REAL gBeta_nBot      ! water g*beta/ni^2 coeff [1/(m^3*K)]
-      REAL muBot           ! dynamic viscosity [kg/(m*s)]
-      REAL Cp_waterBot     ! specific heat ow water [J/(kg*K)]
-      REAL PrBot           ! Prandtl number []
-      REAL k_wallBot       ! water conductivity at wall temperature [W/(m*K)]
-      REAL mu_wallBot      ! dynamic viscosity at wall temperature [kg/(m*s)]
-      REAL Cp_wallBot      ! specific heat ow water at wall temperature [J/(kg*K)]
-      REAL Pr_wallBot      ! Prandtl number at wall temperature []
-      REAL GrBot           ! Grashof number for horizontal (bottom) flat surface []
-      REAL alphaBot        ! convection coefficient on PCM bottom (horizontal) surface [W/(m^2 K)]
+      REAL gBeta_nBot      ! water g*beta/ni^2 coeff (1/(m^3*K))
+      REAL muBot           ! dynamic viscosity (kg/(m*s))
+      REAL Cp_waterBot     ! specific heat of water (J/(kg*K))
+      REAL PrBot           ! Prandtl number (-)
+      REAL k_wallBot       ! water conductivity at wall temperature (W/(m*K))
+      REAL mu_wallBot      ! dynamic viscosity at wall temperature (kg/(m*s))
+      REAL Cp_wallBot      ! specific heat ow water at wall temperature (J/(kg*K))
+      REAL Pr_wallBot      ! Prandtl number at wall temperature (-)
+      REAL GrBot           ! Grashof number for horizontal (bottom) flat surface (-)
+      REAL alphaBot        ! convection coefficient on PCM bottom (horizontal) surface (W/(m^2 K))
 
 
 
-      REAL Vel             ! velocity of fluid in tank node [m/s]
+      REAL Vel             ! velocity of fluid in tank node (m/s)
       REAL Mdot(nNodes)    ! flow rate at each node (value i is from node i
-                           ! to node i+1) [kg/s]
-      REAL Mdot_med        ! average flow rate at cylinder border [kg/s] 
+                           ! to node i+1) (kg/s)
+      REAL Mdot_med        ! average flow rate at cylinder border (kg/s) 
  
 
 
-
+      REAL Pr
 
       REAL RaLat           ! Rayleigh coefficient for lateral (vertical) flat surface
       REAL RaTop           ! Rayleigh coefficient for top (horizontal) flat surface
@@ -1116,28 +1160,31 @@ C---- Calculation on the bottom cylinder surface
       REAL Nu_fLat         ! Nusselt number for forced convection (only for lateral flat surface)
       REAL NuLat           ! Nusselt number for mixed convection for lateral (vertical) flat surface
       REAL NuTop           ! Nusselt number for natural convection for top (horizontal) flat surface
+      REAL NuBot           ! Nusselt number for natural convection for bottom (horizontal) flat surface
       REAL Re
 
       REAL C               ! auxiliary coefficient for Nusselt number calculation
       REAL n,m             ! auxiliary exponent for Nusselt number calculation
-      INTEGER nX           ! number of cells in radial direction [-]
-      INTEGER nY           ! number of cells in axial direction [-]
+      INTEGER nX           ! number of cells in radial direction (-)
+      INTEGER nY           ! number of cells in axial direction (-)
+      INTEGER nNodes       ! number of nodes what the PCM tank is divided into
+      INTEGER NPCM         ! number of PCM modules
       INTEGER nPCMbot      ! tank node corresponding to the lower cylinder node
                            ! tank node where the cylinder bottom is located in
       INTEGER nPCMtop      ! tank node corresponding to the higher cylinder node
                            ! tank node where the cylinder top is located in
-      REAL hPCMcyl         ! PCM cylinder height [m]
-      REAL dPCMcyl         ! PCM cylinder diameter [m]
+      REAL hPCMcyl         ! PCM cylinder height (m)
+      REAL dPCMcyl         ! PCM cylinder diameter (m)
       REAL geomRatio       ! Characteristic lenght for the top/bottom cylinder surface
 
 
 C---- Functions
       INTEGER Bound                ! Bound a number by two others
-      REAL glycol_water_density    ! Function for density of glycol-water mixture [kg/m3]
-      REAL glycol_water_viscosity  ! Function for dynamic viscosity of glycol-water mixture [Pa s]
-      REAL glycol_water_cond       ! Function for thermal conductivity of glycol [W/m/K]
-      REAL glycol_water_cp         ! Function for specific heat or glycol-water [J/kg/K]
-      REAL glycol_water_thermexp   ! Function for coefficient of thermal expansion of glycol-water [1/K]
+      REAL glycol_water_density    ! Function for density of glycol-water mixture (kg/m3)
+      REAL glycol_water_viscosity  ! Function for dynamic viscosity of glycol-water mixture (Pa s)
+      REAL glycol_water_cond       ! Function for thermal conductivity of glycol (W/m/K)
+      REAL glycol_water_cp         ! Function for specific heat or glycol-water (J/kg/K)
+      REAL glycol_water_thermexp   ! Function for coefficient of thermal expansion of glycol-water (1/K)
 
 
 
@@ -1186,7 +1233,7 @@ C-----Calculation next to the lateral cylinder surface
       k_waterLat = glycol_water_cond(0.,TWMfilmLat)
       muLat = glycol_water_viscosity(0.,TWMfilmLat)
       Cp_waterLat = glycol_water_cp(0.,TWMfilmLat)
-      gBeta_nLat = BetaLat * rho_waterLat**2/muLat**2
+      gBeta_nLat = 9.81 * BetaLat * rho_waterLat**2/muLat**2
       PrLat = Cp_waterLat * muLat / k_waterLat
 
 C-----Calculation next to the top cylinder surface
@@ -1194,20 +1241,20 @@ C-----Calculation next to the top cylinder surface
       BetaTop = glycol_water_thermexp(0.,TWMfilmTop)
       rho_waterTop = glycol_water_density(0., TWMfilmTop)
       k_waterTop = glycol_water_cond(0.,TWMfilmTop)
-      mu = glycol_water_viscosity(0.,TWMfilmTop)
+      muTop = glycol_water_viscosity(0.,TWMfilmTop)
       Cp_waterTop = glycol_water_cp(0.,TWMfilmTop)
-      gBeta_nTop = BetaTop * rho_waterTop**2/mu**2
-      PrTop = Cp_waterTop * mu / k_waterTop
+      gBeta_nTop = 9.81 * BetaTop * rho_waterTop**2/muTop**2
+      PrTop = Cp_waterTop * muTop / k_waterTop
 
 C-----Calculation next to the bottom cylinder surface
       TWMfilmBot = (Ttop + TPCMmedTop )*0.5 + Tmi
       BetaBot = glycol_water_thermexp(0.,TWMfilmBot)
       rho_waterBot = glycol_water_density(0., TWMfilmBot)
       k_waterBot = glycol_water_cond(0.,TWMfilmBot)
-      mu = glycol_water_viscosity(0.,TWMfilmBot)
+      muBot = glycol_water_viscosity(0.,TWMfilmBot)
       Cp_waterBot = glycol_water_cp(0.,TWMfilmBot)
-      gBeta_nBot = BetaBot * rho_waterBot**2/mu**2
-      PrBot = Cp_waterBot * mu / k_waterBot
+      gBeta_nBot = 9.81 * BetaBot * rho_waterBot**2/muBot**2
+      PrBot = Cp_waterBot * muBot / k_waterBot
 
 
 
@@ -1249,7 +1296,7 @@ C-----Natural convection on the lateral cylinder surface
       GrLat = ABS(gBeta_nLat*(TWATmed-TPCMmedLat)*hPCMcyl**3)
       RaLat = GrLat * PrLat
       Nu_nLat = (0.825+(0.387*RaLat**(1./6.))/(1.+(0.492*
-     &          Pr**(9./16.)))**(8./27.))**2.     
+     &          PrLat**(9./16.)))**(8./27.))**2.     
 
 C-----Natural convection on the top cylinder surface
       GrTop = ABS(gBeta_nTop*(Ttop-TPCMmedTop)*geomRatio**3)
@@ -1329,12 +1376,17 @@ C======================================================================
      &                          convLat,convTop,convBot,
      &                          nX,nY,nXnY,n)
 
+      IMPLICIT NONE
 
       INTEGER mX,mY,mXmY
       PARAMETER (mX=100,mY=100,mXmY=1000)
 
-      INTEGER nX           ! number of cells in radial direction [-]
-      INTEGER nY           ! number of cells in axial direction [-]
+      INTEGER i            ! radial direction counter (-)
+      INTEGER j            ! axial direction counter (-)
+      INTEGER k            ! cell counter (-)
+      INTEGER n            ! number of iteration (for debug)
+      INTEGER nX           ! number of cells in radial direction (-)
+      INTEGER nY           ! number of cells in axial direction (-)
       INTEGER nXnY         ! number of total cells
       REAL Tmatrix(mXmY,mXmY) 
                            ! temperature matrix coefficients
@@ -1532,12 +1584,17 @@ C======================================================================
      &                       Tmatrix,convLat,convTop,convBot,
      &                       nX,nY,nXnY,n,T_SCn,T_EASTn,T_WESTn)
 
+      IMPLICIT NONE
 
       INTEGER mX,mY,mXmY
       PARAMETER (mX=100,mY=100,mXmY=1000)
 
-      INTEGER nX           ! number of cells in radial direction [-]
-      INTEGER nY           ! number of cells in axial direction [-]
+      INTEGER i            ! radial direction counter (-)
+      INTEGER j            ! axial direction counter (-)
+      INTEGER k            ! cell counter (-)
+      INTEGER n            ! number of iteration (for debug)
+      INTEGER nX           ! number of cells in radial direction (-)
+      INTEGER nY           ! number of cells in axial direction (-)
       INTEGER nXnY         ! number of total cells
       REAL Tmatrix(mXmY,mXmY) 
                            ! temperature matrix coefficients
@@ -1647,11 +1704,16 @@ C======================================================================
      &                   convLat,convTop,convBot,
      &                   nX,nY,nXnY,acc,rho_V_dt,RHS)
 
+      IMPLICIT NONE
+
       INTEGER mX,mY,mXmY
       PARAMETER (mX=100,mY=100,mXmY=1000)
 
-      INTEGER nX           ! number of cells in radial direction [-]
-      INTEGER nY           ! number of cells in axial direction [-]
+      INTEGER i            ! radial direction counter (-)
+      INTEGER j            ! axial direction counter (-)
+      INTEGER k            ! cell counter (-)
+      INTEGER nX           ! number of cells in radial direction (-)
+      INTEGER nY           ! number of cells in axial direction (-)
       INTEGER nXnY         ! number of total cells
       REAL coeffx(mY,mX)   ! = cndctx(?,?)*Ax(?,?)/dr  
                            ! coefficient calculated for all east and west faces between cells;
@@ -1754,12 +1816,16 @@ C======================================================================
      &                              convLat,convTop,convBot,
      &                              nX,nY,nXnY,rho_V_dt)
 
+      IMPLICIT NONE
 
       INTEGER mX,mY,mXmY
       PARAMETER (mX=100,mY=100,mXmY=1000)
 
-      INTEGER nX           ! number of cells in radial direction [-]
-      INTEGER nY           ! number of cells in axial direction [-]
+      INTEGER i            ! radial direction counter (-)
+      INTEGER j            ! axial direction counter (-)
+      INTEGER k            ! cell counter (-)
+      INTEGER nX           ! number of cells in radial direction (-)
+      INTEGER nY           ! number of cells in axial direction (-)
       INTEGER nXnY         ! number of total cells
       REAL coeffx(mY,mX)   ! = cndctx(?,?)*Ax(?,?)/dr  
                            ! coefficient calculated for all east and west faces between cells;
@@ -1899,12 +1965,16 @@ C======================================================================
      &                              convLat,convTop,convBot,
      &                              nX,nY,nXnY,rho_V_dt)
 
+      IMPLICIT NONE
 
       INTEGER mX,mY,mXmY
       PARAMETER (mX=100,mY=100,mXmY=1000)
 
-      INTEGER nX           ! number of cells in radial direction [-]
-      INTEGER nY           ! number of cells in axial direction [-]
+      INTEGER i            ! radial direction counter (-)
+      INTEGER j            ! axial direction counter (-)
+      INTEGER k            ! cell counter (-)
+      INTEGER nX           ! number of cells in radial direction (-)
+      INTEGER nY           ! number of cells in axial direction (-)
       INTEGER nXnY         ! number of total cells
       REAL coeffx(mY,mX)   ! = cndctx(?,?)*Ax(?,?)/dr  
                            ! coefficient calculated for all east and west faces between cells;
@@ -1984,12 +2054,16 @@ C======================================================================
      &                          nX,nY,nXnY,
      &                          rho_V_dt,R)
 
+      IMPLICIT NONE
 
       INTEGER mX,mY,mXmY
       PARAMETER (mX=100,mY=100,mXmY=1000)
 
-      INTEGER nX           ! number of cells in radial direction [-]
-      INTEGER nY           ! number of cells in axial direction [-]
+      INTEGER i            ! radial direction counter (-)
+      INTEGER j            ! axial direction counter (-)
+      INTEGER k            ! cell counter (-)
+      INTEGER nX           ! number of cells in radial direction (-)
+      INTEGER nY           ! number of cells in axial direction (-)
       INTEGER nXnY         ! number of total cells
       REAL coeffx(mY,mX)   ! = cndctx(?,?)*Ax(?,?)/dr  
                            ! coefficient calculated for all east and west faces between cells;
@@ -2131,12 +2205,16 @@ C======================================================================
      &                     nX,nY,nXnY,
      &                     rho_V_dt,R)
 
+      IMPLICIT NONE
 
       INTEGER mX,mY,mXmY
       PARAMETER (mX=100,mY=100,mXmY=1000)
 
-      INTEGER nX           ! number of cells in radial direction [-]
-      INTEGER nY           ! number of cells in axial direction [-]
+      INTEGER i            ! radial direction counter (-)
+      INTEGER j            ! axial direction counter (-)
+      INTEGER k            ! cell counter (-)
+      INTEGER nX           ! number of cells in radial direction (-)
+      INTEGER nY           ! number of cells in axial direction (-)
       INTEGER nXnY         ! number of total cells
       REAL coeffx(mY,mX)   ! = cndctx(?,?)*Ax(?,?)/dr  
                            ! coefficient calculated for all east and west faces between cells;
@@ -2212,14 +2290,19 @@ C======================================================================
       SUBROUTINE Enthalpy2D(acc,coeffx,coeffy,
      &                   Tbound,Ttop,Tbot,TMP,H,
      &                   convLat,convTop,convBot,
-     &                   nX,nY,nXnY,n)
+     &                   nX,nY,nXnY)
+
+      IMPLICIT NONE
 
       INTEGER mX,mY,mXmY
       PARAMETER (mX=100,mY=100,mXmY=1000)
 
-
-      INTEGER nX           ! number of cells in radial direction [-]
-      INTEGER nY           ! number of cells in axial direction [-]
+      LOGICAL CLOSE        ! if true, TMP(i,j) will be set to 0.0
+      INTEGER i            ! radial direction counter (-)
+      INTEGER j            ! axial direction counter (-)
+      INTEGER k            ! cell counter (-)
+      INTEGER nX           ! number of cells in radial direction (-)
+      INTEGER nY           ! number of cells in axial direction (-)
       INTEGER nXnY         ! number of total cells
       REAL coeffx(mY,mX)   ! = cndctx(?,?)*Ax(?,?)/dr  
                            ! coefficient calculated for all east and west faces between cells;
@@ -2241,22 +2324,20 @@ C======================================================================
                            ! bottom surface is in contact with
       REAL Ttop            ! DHW temp at the layer what the PCM cylinder 
                            ! top surface is in contact with
-      REAL TMP(nY,nX)      ! cylinder cells temperature [°C]
+      REAL TMP(nY,nX)      ! cylinder cells temperature (°C)
       REAL H(nY,nX)        ! cylinder cells enthalpy
 
 
 
 
 
-C---- For a cylynder with more than one layer in axial direction 
-C---- Cylynder top and bottom are adiabatic surfaces                                                                  |
 
 C-----BOTTOM:
       i=1
 C     BOTTOM OUTERMOST
       j=1
-      H(i,j) = (acc(i,j)*H(i,j)-
-     &         (convLat(i)+                  !west,self-coupling
+      H(i,j) = H(i,j)-
+     &         ((convLat(i)+                  !west,self-coupling
      &         coeffx(i,j)+                  !east,self-coupling
      &         convBot(j)+                   !south,self-coupling
      &         coeffy(i,j))                  !north,self-coupling
@@ -2268,8 +2349,8 @@ C     BOTTOM OUTERMOST
      &         /acc(i,j)
 C     GENERAL BOTTOM
       DO j=2,nX-1
-        H(i,j) = (acc(i,j)*H(i,j)-                    
-     &           (coeffx(i,j-1)+             !west,self-coupling
+        H(i,j) = H(i,j)-                    
+     &           ((coeffx(i,j-1)+             !west,self-coupling
      &           coeffx(i,j)+                !east,self-coupling
      &           convBot(j)+                 !south,self-coupling
      &           coeffy(i,j))                !north,self-coupling
@@ -2282,8 +2363,8 @@ C     GENERAL BOTTOM
       ENDDO
 C     BOTTOM INNERMOST
       j=nX
-      H(i,j) = (acc(i,j)*H(i,j)-
-     &         (coeffx(i,j-1)+               !west,self-coupling
+      H(i,j) = H(i,j)-
+     &         ((coeffx(i,j-1)+               !west,self-coupling
      &         convBot(j)+                   !south,self-coupling
      &         coeffy(i,j))                  !north,self-coupling
      &         *TMP(i,j)+ 
@@ -2295,8 +2376,8 @@ C-----TOP:
       i=nY
 C     TOP OUTERMOST
       j=1
-      H(i,j) = (acc(i,j)*H(i,j)-
-     &         (convLat(i)+                  !west,self-coupling
+      H(i,j) = H(i,j)-
+     &         ((convLat(i)+                  !west,self-coupling
      &         coeffx(i,j)+                  !east,self-coupling
      &         coeffy(i-1,j)+                !south,self-coupling
      &         convTop(j))                   !north,self-coupling
@@ -2308,8 +2389,8 @@ C     TOP OUTERMOST
      &         /acc(i,j)
 C     GENERAL TOP
       DO j=2,nX-1
-        H(i,j) = (acc(i,j)*H(i,j)-                        
-     &           (coeffx(i,j-1)+             !west,self-coupling
+        H(i,j) = H(i,j)-                        
+     &           ((coeffx(i,j-1)+             !west,self-coupling
      &           coeffx(i,j)+                !east,self-coupling
      &           coeffy(i-1,j)+              !south,self-coupling
      &           convTop(j))                 !north,self-coupling
@@ -2322,8 +2403,8 @@ C     GENERAL TOP
       ENDDO
 C     TOP INNERMOST
       j=nX
-      H(i,j) = (acc(i,j)*H(i,j)-
-     &         (coeffx(i,j-1)+               !west,self-coupling
+      H(i,j) = H(i,j)-
+     &         ((coeffx(i,j-1)+               !west,self-coupling
      &         coeffy(i-1,j)+                !south,self-coupling
      &         convTop(j))                   !north,self-coupling
      &         *TMP(i,j)+ 
@@ -2335,8 +2416,8 @@ C     TOP INNERMOST
 C-------OUTERMOST:
         j=1
         DO i=2,nY-1
-          H(i,j) = (acc(i,j)*H(i,j)-
-     &             (convLat(i)+                !west,self-coupling
+          H(i,j) = H(i,j)-
+     &             ((convLat(i)+                !west,self-coupling
      &             coeffx(i,j)+                !east,self-coupling
      &             coeffy(i-1,j)+              !south,self-coupling
      &             coeffy(i,j))                !north,self-coupling
@@ -2350,8 +2431,8 @@ C-------OUTERMOST:
 C-------INNERMOST:
         j=nX
         DO i=2,nY-1
-          H(i,j) = (acc(i,j)*H(i,j)-
-     &             (coeffx(i,j-1)+             !west,self-coupling
+          H(i,j) = H(i,j)-
+     &             ((coeffx(i,j-1)+             !west,self-coupling
      &             coeffy(i-1,j)+              !south,self-coupling
      &             coeffy(i,j))                !north,self-coupling
      &             *TMP(i,j)+                                    
@@ -2363,8 +2444,8 @@ C-------INNERMOST:
 C-------GENERAL CELL
         DO j=2,nX-1 !generic cells in radial direction
           DO i=2,nY-1 !generic cells in axial direction
-            H(i,j) = (acc(i,j)*H(i,j)-
-     &               (coeffx(i,j-1)+           !west,self-coupling
+            H(i,j) = H(i,j)-
+     &               ((coeffx(i,j-1)+           !west,self-coupling
      &               coeffx(i,j)+              !east,self-coupling
      &               coeffy(i-1,j)+            !south,self-coupling
      &               coeffy(i,j))              !north,self-coupling
@@ -2403,15 +2484,18 @@ C======================================================================
       SUBROUTINE Enthalpy1D(acc,coeffx,
      &                   Tbound,Ttop,Tbot,TMP,H,
      &                   convLat,convTop,convBot,
-     &                   nX,nY,nXnY,n)
+     &                   nX,nY,nXnY)
 
+      IMPLICIT NONE
 
       INTEGER mX,mY,mXmY
       PARAMETER (mX=100,mY=100,mXmY=1000)
 
-
-      INTEGER nX           ! number of cells in radial direction [-]
-      INTEGER nY           ! number of cells in axial direction [-]
+      INTEGER i            ! radial direction counter (-)
+      INTEGER j            ! axial direction counter (-)
+      INTEGER k            ! cell counter (-)
+      INTEGER nX           ! number of cells in radial direction (-)
+      INTEGER nY           ! number of cells in axial direction (-)
       INTEGER nXnY         ! number of total cells
       REAL coeffx(mY,mX)   ! = cndctx(?,?)*Ax(?,?)/dr  
                            ! coefficient calculated for all east and west faces between cells;
@@ -2430,7 +2514,7 @@ C======================================================================
                            ! bottom surface is in contact with
       REAL Ttop            ! DHW temp at the layer what the PCM cylinder 
                            ! top surface is in contact with
-      REAL TMP(nY,nX)      ! cylinder cells temperature [°C]
+      REAL TMP(nY,nX)      ! cylinder cells temperature (°C)
       REAL H(nY,nX)        ! cylinder cells enthalpy
 
 

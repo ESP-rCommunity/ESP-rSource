@@ -71,6 +71,8 @@ C---- COMMON CONTAINIG PCM MODULE DATA
       INTEGER NSIZEPCM(MAX_STANK,2)
       REAL HPCM_MOD(MXMY,MAX_STANK)    ! PCM module enthalpy (for each cell)
       REAL TPCM_MOD(MXMY,MAX_STANK)    ! PCM module temperature (for each cell)
+      REAL HPCM_MOD_P(MXMY,MAX_STANK)  ! PCM module enthalpy (for each cell)
+      REAL TPCM_MOD_P(MXMY,MAX_STANK)  ! PCM module temperature (for each cell)
       REAL TM                          ! Phase Change temperature [C]
       PARAMETER (TM=0.0)               ! Scaling temprature [C]
       REAL HPCMSEC(MY,MAX_STANK)       ! PCM section height [m]
@@ -84,10 +86,9 @@ C---- COMMON CONTAINIG PCM MODULE DATA
       
 
 
-      
       COMMON/STRATIFIED_TANK/N_STANK,IPCOMP_STANK,TP_STANK,TF_STANK,
      &  TAVGP_STANK,TAVGF_STANK,PTIMEF_STANK,NSIZEPCM,
-     &  HPCM_MOD,TPCM_MOD, NPCMDATA, HPCMSEC, DPCMNODE,
-     &  AX,AXB,AY,V,DR
+     &  HPCM_MOD,HPCM_MOD_P,TPCM_MOD, TPCM_MOD_P, NPCMDATA, HPCMSEC,
+     &  DPCMNODE,AX,AXB,AY,V,DR
 
 

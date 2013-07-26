@@ -85,7 +85,6 @@ C---- Stratified tank common
 C---- Local variables
 
       INTEGER NITMS
-C      INTEGER I
       INTEGER J
       INTEGER NCITM,NCONS
       INTEGER IPCON,IPCONC
@@ -102,7 +101,6 @@ C      INTEGER I
       REAL K_DESTRAT            ! Destratification conductivity [W/m/C]
       REAL VOL                  ! Tank volume [m3]
       REAL U                    ! Tank heat loss coefficient [W/m2/C]
-
 
 C---- Set error flag to false
       ERROR_FLAG = .false.
@@ -624,7 +622,7 @@ C---- Call stratified tank function
       HASHX1=.FALSE.
       HASHX2=.FALSE.
       DUMMY=0.
-      CALL stratified_tank_calc(VOL, H, P, 
+      CALL stratified_tank_calc(VOL, H, P,
      &  HIN1, HIN2, HOUT1, HOUT2, U, K_DESTRAT, NSTEPS, NNODES,
      &  HASHX1,
      &  DUMMY, DUMMY, DUMMY, DUMMY, DUMMY, DUMMY, DUMMY,
@@ -637,7 +635,14 @@ C---- Call stratified tank function
      &  TOUT1, TOUT2, TAVGF_STANK(I_STANK), DUMMY, DUMMY,
      &  QLOSS, QIMMERSED_HX,
      &  STEPCOUNT, MIXCOUNT, NSECAVG,
-     &  TF_STANK(1,I_STANK),IER)
+     &  TF_STANK(1,I_STANK),IER,
+     &  DUMMY,DUMMY,
+     &  DUMMY,DUMMY,DUMMY,
+     &  DUMMY,
+     &  DUMMY,DUMMY,DUMMY,DUMMY,DUMMY,
+     &  DUMMY,DUMMY,DUMMY,DUMMY,DUMMY,DUMMY,DUMMY,DUMMY,DUMMY,DUMMY,
+     &  DUMMY,DUMMY,DUMMY,DUMMY,DUMMY, DUMMY,
+     &  DUMMY)
 
 C---- Check error code
 
@@ -1001,7 +1006,7 @@ C=======================================================================
      &  Axb,Ax,Ay,V,
      &  nX,nY,nPCMbot,nPCMtop,dr,
      &  PCMrhos,PCMrhol,cs,cl,heatLat,cndcts,cndctl,Tmi,method,e,
-     &  hPCMcyl,dPCMcyl,hPCMbot,hPCMtop, NPCM, HASPCM,dPCMnode)
+     &  hPCMcyl,dPCMcyl,hPCMbot,hPCMtop, NPCM, HasPCM,dPCMnode)
 C-----------------------------------------------------------------------
 C     Declarations
 C-----------------------------------------------------------------------
@@ -1160,7 +1165,7 @@ C     0.0 = Euler explicit, order 1, conditionally stable
 C     0.5 = Crank-Nicholson, order 2, unconditionally stable
 C     1.0 = Euler implicit, order 1, unconditionally stable
       REAL ALPHA
-
+     
 
       REAL QPCM(MAX_NNODES)       ! exchanged heat between PCM cylinders and water [W]
       LOGICAL HasPCM
@@ -1184,22 +1189,22 @@ C     1.0 = Euler implicit, order 1, unconditionally stable
                                  ! tank node which the cylinder top is located in
       INTEGER NPCM               ! number of PCM modules
 
-      REAL*4 PCMrhos             ! density of solid [kg/m^3]
-      REAL*4 PCMrhol             ! density of solid [kg/m^3]
-      REAL*4 cs              ! specific heat of solid [J/(kg K)]
-      REAL*4 cl              ! specific heat of liquid [J/(kg K)]
-      REAL*4 heatLat         ! latent heat [J/kg]
-      REAL*4 cndcts          ! conductivity into solid [W/(m K)]
-      REAL*4 cndctl          ! conductivity into liquid [W/(m K)]
-      REAL*4 Tmi             ! melting temperature  [°C]
+      REAL PCMrhos             ! density of solid [kg/m^3]
+      REAL PCMrhol             ! density of solid [kg/m^3]
+      REAL cs              ! specific heat of solid [J/(kg K)]
+      REAL cl              ! specific heat of liquid [J/(kg K)]
+      REAL heatLat         ! latent heat [J/kg]
+      REAL cndcts          ! conductivity into solid [W/(m K)]
+      REAL cndctl          ! conductivity into liquid [W/(m K)]
+      REAL Tmi             ! melting temperature  [°C]
       INTEGER method         ! time integration method [-]
-      REAL*4 e               ! phase change range [°C]
-      REAL*4 hPCMcyl         ! PCM cylinder height [m]
-      REAL*4 dPCMcyl         ! PCM cylinder diameter [m]
-      REAL*4 hPCMbot         ! Position of the cylinder bottom [m]
-      REAL*4 hPCMtop         ! Position of the cylinder top [m]
-      REAL*4 dr              ! grid dimension in radial direction
-      REAL*4 dPCMnode(nY-1)    ! distance among PCM nodes
+      REAL e               ! phase change range [°C]
+      REAL hPCMcyl         ! PCM cylinder height [m]
+      REAL dPCMcyl         ! PCM cylinder diameter [m]
+      REAL hPCMbot         ! Position of the cylinder bottom [m]
+      REAL hPCMtop         ! Position of the cylinder top [m]
+      REAL dr              ! grid dimension in radial direction
+      REAL dPCMnode(nY-1)    ! distance among PCM nodes
 
 
 
@@ -1399,8 +1404,8 @@ C---- The loop starts here and ends at label 900
 
 C-----------------------------------------------------------------------
 C---- CALCULATE CONTRIBUTION FROM IMMERSED HEAT EXCHANGERS AND PCM MODULES  
-C     The calculation is done only once per internal time step, since it
-C     depends only on the temperatures in the tank at the end of the
+C     The calculation is done only once per internal time step, since it 
+C     depends only on the temperatures in the tank at the end of the 
 C     previous internal time step
 C     When the calculation is done, the tank is considered unmixed. The
 C     heat transfer from the immersed HX, QHX, and from the immersed PCM   
@@ -1413,7 +1418,6 @@ C----     Zero heat transfer array
             QPCM(i) = 0.
             QHX(i) = 0.
   115     continue
-
 
           if (HasHX0)
      &      call immersed_HX_calc(NodeHeight, CrossArea,
@@ -1441,12 +1445,7 @@ C----     Zero heat transfer array
      &        HPCM_MOD(1,1),CrossArea,QPCM(1))
 
           LastpHX = p
-
-      endif
-
-
-
-
+        endif
 
 C-----------------------------------------------------------------------
 C---- SECTION TEMPERATURE CALCULATION ALGORITHM

@@ -31,7 +31,9 @@ C     Establishes for a stratified tank with 1 immersed HX whether the
 C     correct number of control variables have been specified, whether
 C     the number of water connections is correct and whether the
 C     connections are to the correct fluid type.
-C
+C-----------------------------------------------------------------------
+C     If a PCM enhanced tank is to be considered, the PCM module 
+C     discretisation is shown at routine "Immersed_PCM"
 C=======================================================================
 
       SUBROUTINE stratified_tank_1hx_static(IPCOMP)
@@ -78,6 +80,9 @@ C---- Common blocks
      &             PCNTMP(MPCOM)
       REAL PCTF,PCRF,PUAF,PCQF,PCNTMF,PCTP,PCRP,PUAP,PCQP,PCNTMP
 
+      COMMON/C12PS/NPCDAT(MPCOM,9),IPOFS1(MCOEFG),IPOFS2(MCOEFG,MPVAR)
+      INTEGER NPCDAT,IPOFS1,IPOFS2
+
 C---- Stratified tank common
 
 #include "stratified_tank.h"
@@ -90,55 +95,66 @@ C---- Local variables
       INTEGER IPCON,IPCONC
       LOGICAL CLOSEA
       LOGICAL ERROR_FLAG
+      LOGICAL RATIO_FLAG
+      INTEGER ITYPE             ! Component number
       INTEGER NNODES            ! Number of nodes of stratified tank
 
       REAL HTANK                ! Tank height (m)
       REAL HIN1                 ! Height of inlet 1 (m)
       REAL HOUT1                ! Height of outlet 1 (m)
       REAL TINIT                ! Initial temperature of stratified tank (C)
-      REAL K_DESTRAT            ! Destratification conductivity [W/m/C]
-      REAL VOL                  ! Tank volume [m3]
-      REAL U                    ! Tank heat loss coefficient [W/m2/C]
+      REAL K_DESTRAT            ! Destratification conductivity (W/m/C)
+      REAL VOL                  ! Tank volume (m3)
+      REAL U                    ! Tank heat loss coefficient (W/m2/C)
       REAL HINHX1               ! Height of inlet of HX1 (m)
-      REAL HOUTHX1              ! Height of inlet of HX1 (m)
+      REAL HOUTHX1              ! Height of outlet of HX1 (m)
       REAL DINHX1               ! Internal diameter of HX1 (m)
       REAL DOUTHX1              ! External diameter of HX1 (m)
+      REAL DCOILHX1             ! Diameter of immersed HX coil (m)
+      REAL SECTANK              ! Free space area where to put the PCM cylindres (m2)
 
-
-      INTEGER nX                ! Number of cells in radial direction [-]
-      INTEGER nY                ! Number of cells in axial direction [-]
-      INTEGER nXnY              ! Number of total cells [-]
-C      INTEGER nCells
+      INTEGER nX                ! Number of cells in radial direction (-)
+      INTEGER nY                ! Number of cells in axial direction (-)
+      INTEGER nXnY              ! Number of total cells (-)
       INTEGER NPCM              ! Number of PCM modules
-      REAL*4 PCMrhos            ! Density of solid [kg/m^3]
-      REAL*4 PCMrhol            ! Density of liquid [kg/m^3]
-      REAL*4 cs                 ! Specific heat of solid [J/(kg K)]
-      REAL*4 cl                 ! Specific heat of liquid [J/(kg K)]
-      REAL*4 heatLat            ! Latent heat [J/kg]
-      REAL*4 cndcts             ! Conductivity into solid [W/(m K)]
-      REAL*4 cndctl             ! Conductivity into liquid [W/(m K)]
-      REAL*4 Tmi                ! Melting temperature  [°C]
-      INTEGER method            ! time integration method [-]
-      REAL*4 e                  ! Phase change range [°C]
+      INTEGER MPCM              ! Number of PCM modules at maximum
+      PARAMETER(MPCM=40)  
+      REAL PCMrhos              ! Density of solid (kg/m^3)
+      REAL PCMrhol              ! Density of liquid (kg/m^3)
+      REAL cs                   ! Specific heat of solid (J/(kg K))
+      REAL cl                   ! Specific heat of liquid (J/(kg K))
+      REAL heatLat              ! Latent heat (J/kg)
+      REAL cndcts               ! Conductivity into solid (W/(m K))
+      REAL cndctl               ! Conductivity into liquid (W/(m K))
+      REAL Tmi                  ! Melting temperature  (°C)
+      INTEGER method            ! time integration method (-)
+      REAL e                    ! Phase change range (°C)
 
       INTEGER NPCMsec           ! Number of layers which the PCM cyl is divided into
 
-      REAL*4 DPCMcyl            ! PCM cylinder diameter [m]
-      REAL*4 HPCMcyl            ! PCM cylinder height [m]
-      REAL*4 HPCMbot            ! Position of the cylinder bottom [m]
-      REAL*4 HPCMtop            ! Position of the cylinder top [m]
+      REAL DPCMcyl              ! PCM cylinder diameter (m)
+      REAL DPCMcylMax           ! Max value for PCM cylinder diameter (m)
+      REAL ratio(MPCM)          ! Density of PCM cylindres referred to the tank section
+                                ! containing the HX coil
+      REAL HPCMcyl              ! PCM cylinder height (m)
+      REAL HPCMbot              ! Position of the cylinder bottom (m)
+      REAL HPCMtop              ! Position of the cylinder top (m)
       INTEGER NPCMbot           ! Tank node corresponding to the lower cylinder node
                                 ! Tank node which the cylinder bottom is located in
       INTEGER NPCMtop           ! Tank node corresponding to the higher cylinder node
                                 ! Tank node which the cylinder top is located in
-      REAL*4 HeightNode         ! Tank CV height
+      REAL HeightNode           ! Tank CV height
 
-      REAL*4 rp(mX)             ! Radius (axis-node distance) [m]
-      REAL*4 tol                ! Tolerance value
+      REAL rp(mX)               ! Radius (axis-node distance) (m)
+      REAL tol                  ! Tolerance value
 
+      REAL HBELOW1,HABOVE1
 
 C---- Set error flag to false
       ERROR_FLAG = .false.
+
+C---- Set ratio flag to false
+      RATIO_FLAG = .false.
 
 C---- Trace output
 
@@ -153,6 +169,8 @@ C---- Trace output
 
 C---- Check value of parameters
 
+      ITYPE=NPCDAT(IPCOMP,4)
+
       VOL   = ADATA(IPCOMP,1)     ! Tank volume
       HTANK = ADATA(IPCOMP,2)     ! Tank height
       HIN1  = ADATA(IPCOMP,4)     ! Height of inlet 1
@@ -164,26 +182,29 @@ C---- Check value of parameters
       HOUTHX1 = ADATA(IPCOMP,13)  ! Height of inlet of HX1 (m)
       DINHX1 = ADATA(IPCOMP,14)   ! Internal diameter of HX1 (m)
       DOUTHX1 = ADATA(IPCOMP,15)  ! External diameter of HX1 (m)
+      DCOILHX1 = ADATA(IPCOMP,16) ! Diameter of the coil of HX1 (m)
 
 C---- PCM data 
-      NPCM    = INT(ADATA(IPCOMP,19)) 
+      IF (ITYPE .EQ. 128) THEN
+        NPCM    = INT(ADATA(IPCOMP,19)) 
                                   ! Number of PCM modules       
-      HPCMcyl = ADATA(IPCOMP,20)  ! PCM cylinder height (m)
-      DPCMcyl = ADATA(IPCOMP,21)  ! PCM cylinder diameter (m)    
-      HPCMbot = ADATA(IPCOMP,22)  ! Position of the ciylinder bottom (m)
-      nX      = INT(ADATA(IPCOMP,23)) 
+        HPCMcyl = ADATA(IPCOMP,20)  ! PCM cylinder height (m)
+        DPCMcyl = ADATA(IPCOMP,21)  ! PCM cylinder diameter (m)    
+        HPCMbot = ADATA(IPCOMP,22)  ! Position of the ciylinder bottom (m)
+        nX      = INT(ADATA(IPCOMP,23)) 
                                   ! Number of cells in radial direction (-)
-      PCMrhos = ADATA(IPCOMP,24)  ! Density of solid (kg/m^3)
-      PCMrhol = ADATA(IPCOMP,25)  ! Density of liquid (kg/m^3)
-      cs      = ADATA(IPCOMP,26)  ! Specific heat of solid (J/(kg K))
-      cl      = ADATA(IPCOMP,27)  ! Specific heat of liquid (J/(kg K))
-      heatLat = ADATA(IPCOMP,28)  ! Latent heat (J/kg)
-      cndcts  = ADATA(IPCOMP,29)  ! Conductivity into solid (W/(m K))
-      cndctl  = ADATA(IPCOMP,30)  ! Conductivity into liquid [W/(m K)]
-      Tmi     = ADATA(IPCOMP,31)  ! Phase change temperature (C)
-      method  = INT(ADATA(IPCOMP,32))
+        PCMrhos = ADATA(IPCOMP,24)  ! Density of solid (kg/m^3)
+        PCMrhol = ADATA(IPCOMP,25)  ! Density of liquid (kg/m^3)
+        cs      = ADATA(IPCOMP,26)  ! Specific heat of solid (J/(kg K))
+        cl      = ADATA(IPCOMP,27)  ! Specific heat of liquid (J/(kg K))
+        heatLat = ADATA(IPCOMP,28)  ! Latent heat (J/kg)
+        cndcts  = ADATA(IPCOMP,29)  ! Conductivity into solid (W/(m K))
+        cndctl  = ADATA(IPCOMP,30)  ! Conductivity into liquid (W/(m K))
+        Tmi     = ADATA(IPCOMP,31)  ! Phase change temperature (C)
+        method  = INT(ADATA(IPCOMP,32))
                                   !time integration method (-)
-      e       = ADATA(IPCOMP,33)  ! Phase change range (C)
+        e       = ADATA(IPCOMP,33)  ! Phase change range (C)
+      ENDIF
 
 C---- Check that number of nodes is within acceptable range
       IF (NNodes .GT. MAX_NNODES .OR. NNodes .LT. 1) THEN
@@ -268,16 +289,16 @@ C---- Check component has 2 connections only, to water
 
 C---- Check that number of PCM nodes is within acceptable range for 
 C     implicit method calculation (max number of PCM cells should be at
-C     most equal to the LUDCMS routine maximum matrix value)
-      IF (nX*nY .GE. 500 .AND. method .EQ. 2 ) THEN
+C     most equal to the LUDCMS routine maximum matrix value NMAX)
+      IF (nX*nY .GE. 1000 .AND. method .EQ. 2 ) THEN
         WRITE(IUOUT,*) ' stratified_tank_1hx_static:Number of PCM nodes'
         WRITE(IUOUT,*) ' heigher than LUDCMS max range'
         STOP ' stratified_tank_1hx_static: reduce PCM nodes'
-      endif
+      ENDIF
 
 C---- Component is well defined. Store IPCOMP in stratified tank common
 C---- block, then set the node temperatures to their initial value
- 
+
       N_STANK = N_STANK+1
       IF (N_STANK .GT. MAX_STANK) THEN
         WRITE(IUOUT,*) ' stratified_tank_1hx_static: '
@@ -297,183 +318,259 @@ C---- block, then set the node temperatures to their initial value
       TAVGF_STANK(N_STANK) = TINIT
 
 
+C---- If a PCM enhanced tank is to be simulated:
+      IF (ITYPE .EQ. 128) THEN
+        IF (NPCM.NE.0) THEN
 
+C-------- Initialize pcm_module
 
+          HPCMtop = HPCMbot+HPCMcyl
 
+C-------- Geometrical check
 
-C---- Initialize pcm_module
-      HPCMtop = HPCMbot+HPCMcyl
+C         Calculate the tank free space in radial direction where to put
+C         the PCM cylindres:
 
-C      Tm = 0. !perchè messo nel common 
-
-
-C---- Calculate default node height
-
-      HeightNode = HTANK/NNODES
-
-
-C---- Calculate PCM position
-
-      NPCMbot=NINT(HPCMbot/HeightNode+0.5)
-      NPCMtop=NINT((HPCMbot+HPCMcyl)/HeightNode+0.5)
-C     Modify nPCMtop value in case of coincidence of PCM top position 
-C     with water layer in order to avoid round up errors
-      tol = 1E-5
-      IF((HPCMtop.GE.(NPCMtop-1)*HeightNode-tol))THEN
-        IF((HPCMtop.LE.(NPCMtop-1)*HeightNode+tol))THEN
-          NPCMtop = NPCMtop-1
-        ENDIF
-      ENDIF
-
-      IF (NPCM.GT.0) THEN
-        IF ((HPCMbot+HPCMcyl).GT.HTank) THEN
-          STOP 'geometric incongruity: lower cylinder(s) position!'
-        ENDIF
-      ENDIF
-
-
-C-----PCM section height - from bottom to top
-
-      HPCMsec(1,N_STANK) = FLOAT(NPCMbot)*HeightNode-HPCMbot
-
-      NPCMsec = NPCMtop-NPCMbot+1
-      DO I=2,NPCMsec-1
-        HPCMsec(I,N_STANK) = HeightNode
-      ENDDO
-
-C      HPCMsec(NPCMsec,N_STANK) = NPCMtop*HeightNode-HPCMtop
-      HPCMsec(NPCMsec,N_STANK) = HPCMtop-FLOAT((NPCMtop-1))*HeightNode
-      IF (FLOAT(NPCMtop)*HeightNode.EQ.HPCMtop) THEN
-        HPCMsec(NPCMsec,N_STANK) = HeightNode
-      ENDIF
-
-
-C-----distance among PCM nodes - from bottom to top
-C-----skip in case of 1! cell in axial direction
-      IF (nPCMsec.GT.1) THEN
-        IF (nPCMsec.GT.2) THEN
-          DO I=1,nPCMsec-1
-            IF (I.EQ.1) THEN! 1. element: distance between bottom node and node north
-              IF (HPCMbot.EQ.((NPCMbot-1)*HeightNode)) THEN 
-                dPCMnode(1,N_STANK) = HeightNode
-              ELSE 
-                dPCMnode(1,N_STANK) = HeightNode/2+
-     &                               ((NPCMbot*HeightNode)-HPCMbot)/2
-              ENDIF
-            ELSEIF(I.EQ.nPCMsec-1) THEN ! last element: distance between top node and node south
-              IF (HPCMtop.EQ.(NPCMtop*HeightNode)) THEN
-                dPCMnode(I,N_STANK) = HeightNode
-              ELSE
-                dPCMnode(I,N_STANK) = HeightNode/2+ 
-     &                              (HPCMtop-(NPCMtop-1)*HeightNode)/2
-              ENDIF
-            ELSE
-              dPCMnode(I,N_STANK) = HeightNode !generic element, generic distance
-            ENDIF
-          ENDDO
-        ELSE !case of 2 PCM sections
-          IF ((HPCMbot.EQ.((NPCMbot-1)*HeightNode))
-     &         .AND.(HPCMtop.EQ.(NPCMtop*HeightNode))) THEN                  
-            dPCMnode(1,N_STANK) = HeightNode
-          ELSEIF ((HPCMbot.EQ.((NPCMbot-1)*HeightNode))
-     &         .AND.(HPCMtop.NE.(NPCMtop*HeightNode)))  THEN
-            dPCMnode(1,N_STANK) = HeightNode/2+ 
-     &                             (HPCMtop-(NPCMtop-1)*HeightNode)/2
-          ELSEIF ((HPCMtop.EQ.(NPCMtop*HeightNode))
-     &         .AND.(HPCMbot.NE.((NPCMbot-1)*HeightNode))) THEN
-            dPCMnode(1,N_STANK) = ((NPCMbot*HeightNode)-HPCMbot)
-     &                        /2+HeightNode/2
-          ELSE 
-            dPCMnode(1,N_STANK) =(HPCMtop-(NPCMtop-1)*HeightNode)/2+
-     &                           ((NPCMbot*HeightNode)-HPCMbot)/2
-          ENDIF
-        ENDIF
-      ENDIF
-
-
-C-----GRID
-      dr(N_STANK) = DPCMcyl/(2*(nX-1))
-
-      nY = NPCMsec
-      nXnY = nX*nY ! TPCM_MOD and HPCM_MOD dimension 
-
-
-
-C-----INITIAL CONDITIONS
-      DO J=1, nX       
-        DO i=1, nY
-          K=(J-1)*NY+I
-          TPCM_MOD(K,N_STANK) = TINIT-Tmi
-        ENDDO
-      ENDDO
-
-
-      DO J=1, nX
-        DO i=1, nY
-          K=(J-1)*NY+I
-          IF ((TINIT-Tmi) .LT. Tm) THEN ! cells initial enthalpy [J/kg]
-            HPCM_MOD(K,N_STANK) = cs*(TINIT-Tmi)
+          IF(HOUTHX1.LT.HINHX1) THEN
+            HABOVE1=HINHX1
+            HBELOW1=HOUTHX1
           ELSE
-            HPCM_MOD(K,N_STANK) = cl*(TINIT-Tmi-Tm)+
-     &                               heatLat+cs*Tm
+            HABOVE1=HOUTHX1
+            HBELOW1=HINHX1
           ENDIF
-        ENDDO
-      ENDDO
+
+          IF (((HBELOW1.LT.HPCMbot).AND.(HPCMbot.LT.HABOVE1)).OR.
+     &         ((HBELOW1.LT.HPCMtop).AND.(HPCMtop.LT.HABOVE1)).OR.
+     &         ((HBELOW1.LT.(HPCMbot+HPCMcyl/2.)).AND.
+     &                  (HPCMbot+HPCMcyl/2.).LT.HABOVE1)) THEN
+            SECTANK = ((DCOILHX1-DOUTHX1)**2)/4*pi
+          ELSE
+            SECTANK = VOL/HTANK
+          ENDIF
+
+
+C         The next values derive from the solution of the packing problem.
+C         More values can be found in:
+C         "Dense packings of congruent circles in a circle"
+C         R.L. Graham, B.D. Lubachevsky, K.J. Nurmela, P.R.J. Ostergglrd,
+C         Discrete Mathematics 181 (1998) 139-154
+
+          RATIO(1)=1.0
+          RATIO(2)=0.5
+          RATIO(3)=0.6462
+          RATIO(4)=0.6863
+          RATIO(5)=0.6852
+          RATIO(6)=0.6667
+          RATIO(7)=0.7778
+          RATIO(8)=0.7325
+          RATIO(9)=0.6894
+          RATIO(10)=0.6878
+          RATIO(11)=0.7145
+          RATIO(12)=0.7144
+          RATIO(13)=0.7245
+          RATIO(14)=0.7473
+          RATIO(15)=0.7338
+          RATIO(16)=0.7511
+          RATIO(17)=0.7403
+          RATIO(18)=0.7609
+          RATIO(19)=0.8032
+          RATIO(20)=0.7622
+          RATIO(21)=0.7612
+          RATIO(22)=0.7435
+          RATIO(23)=0.7480
+          RATIO(24)=0.7514
+          RATIO(25)=0.7554
+          RATIO(26)=0.7654
+          RATIO(27)=0.7740
+          RATIO(28)=0.7739
+          RATIO(29)=0.7696
+          RATIO(30)=0.7810
+
+          DPCMcylMax = SQRT(RATIO(NPCM)*SECTANK*4/pi/NPCM)
+          DO WHILE (DPCMcyl**2/4*pi*NPCM/SECTANK.GT.RATIO(NPCM))
+            NPCM=NPCM-1
+            RATIO_FLAG=.TRUE.
+          ENDDO 
+          
+          IF (RATIO_FLAG) THEN
+            WRITE(IUOUT,*) ' stratified_tank_2hx_static error:'
+            WRITE(IUOUT,*) ' Max diameter value for PCM'
+            WRITE(IUOUT,*) ' modules =',DPCMcylMax,'. If the'
+            WRITE(IUOUT,*) ' PCM modules section is ok, then reduce'
+            WRITE(IUOUT,*) ' the modules number to',NPCM
+            STOP ' stratified_tank_2hx_static: geometrical incongruity'  
+          ENDIF
+
+C-------- Calculate default node height
+
+          HeightNode = HTANK/NNODES
+
+
+C-------- Calculate PCM position
+
+          NPCMbot=NINT(HPCMbot/HeightNode+0.5)
+          NPCMtop=NINT((HPCMbot+HPCMcyl)/HeightNode+0.5)
+C         Modify nPCMtop value in case of coincidence of PCM top position 
+C         with water layer in order to avoid round up errors
+          tol = 1E-5
+          IF((HPCMtop.GE.(NPCMtop-1)*HeightNode-tol))THEN
+            IF((HPCMtop.LE.(NPCMtop-1)*HeightNode+tol))THEN
+              NPCMtop = NPCMtop-1
+            ENDIF
+          ENDIF
+
+          IF (HPCMtop.GT.HTank) THEN
+            STOP 'geometric incongruity: lower cylinder(s) position!'
+          ENDIF
+
+
+C-------- PCM section height - from bottom to top
+
+          HPCMsec(1,N_STANK) = FLOAT(NPCMbot)*HeightNode-HPCMbot
+
+          NPCMsec = NPCMtop-NPCMbot+1
+          DO I=2,NPCMsec-1
+            HPCMsec(I,N_STANK) = HeightNode
+          ENDDO
+
+C         HPCMsec(NPCMsec,N_STANK) = NPCMtop*HeightNode-HPCMtop
+          HPCMsec(NPCMsec,N_STANK) = HPCMtop-FLOAT((NPCMtop-1))
+     &                               *HeightNode
+          IF (FLOAT(NPCMtop)*HeightNode.EQ.HPCMtop) THEN
+            HPCMsec(NPCMsec,N_STANK) = HeightNode
+          ENDIF
+
+
+C-------- distance among PCM nodes - from bottom to top
+C         skip in case of 1! cell in axial direction
+          IF (nPCMsec.GT.1) THEN
+            IF (nPCMsec.GT.2) THEN
+              DO I=1,nPCMsec-1
+                IF (I.EQ.1) THEN! 1. element: distance between bottom node and node north
+                  IF (HPCMbot.EQ.((NPCMbot-1)*HeightNode)) THEN 
+                    dPCMnode(1,N_STANK) = HeightNode
+                  ELSE 
+                    dPCMnode(1,N_STANK) = HeightNode/2+
+     &                                 ((NPCMbot*HeightNode)-HPCMbot)/2
+                  ENDIF
+                ELSEIF(I.EQ.nPCMsec-1) THEN ! last element: distance between top node and node south
+                  IF (HPCMtop.EQ.(NPCMtop*HeightNode)) THEN
+                    dPCMnode(I,N_STANK) = HeightNode
+                  ELSE
+                    dPCMnode(I,N_STANK) = HeightNode/2+ 
+     &                              (HPCMtop-(NPCMtop-1)*HeightNode)/2
+                  ENDIF
+                ELSE
+                  dPCMnode(I,N_STANK) = HeightNode !generic element, generic distance
+                ENDIF
+              ENDDO
+            ELSE !case of 2 PCM sections
+              IF ((HPCMbot.EQ.((NPCMbot-1)*HeightNode))
+     &           .AND.(HPCMtop.EQ.(NPCMtop*HeightNode))) THEN                  
+                dPCMnode(1,N_STANK) = HeightNode
+              ELSEIF ((HPCMbot.EQ.((NPCMbot-1)*HeightNode))
+     &           .AND.(HPCMtop.NE.(NPCMtop*HeightNode)))  THEN
+                dPCMnode(1,N_STANK) = HeightNode/2+ 
+     &                             (HPCMtop-(NPCMtop-1)*HeightNode)/2
+              ELSEIF ((HPCMtop.EQ.(NPCMtop*HeightNode))
+     &           .AND.(HPCMbot.NE.((NPCMbot-1)*HeightNode))) THEN
+                dPCMnode(1,N_STANK) = ((NPCMbot*HeightNode)-HPCMbot)
+     &                        /2+HeightNode/2
+              ELSE 
+                dPCMnode(1,N_STANK)=(HPCMtop-(NPCMtop-1)*HeightNode)/2+
+     &                           ((NPCMbot*HeightNode)-HPCMbot)/2
+              ENDIF
+            ENDIF
+          ENDIF
+
+
+C-------- GRID
+          dr(N_STANK) = DPCMcyl/(2*(nX-1))
+
+          nY = NPCMsec
+          nXnY = nX*nY ! TPCM_MOD and HPCM_MOD dimension 
 
 
 
-C-----GEOMETRY
+C-------- INITIAL CONDITIONS
+          DO J=1, nX       
+            DO i=1, nY
+              K=(J-1)*NY+I
+              TPCM_MOD(K,N_STANK) = TINIT-Tmi
+              TPCM_MOD_P(K,N_STANK) = TINIT-Tmi
+            ENDDO
+          ENDDO
+
+
+          DO J=1, nX
+            DO i=1, nY
+              K=(J-1)*NY+I
+              IF ((TINIT-Tmi) .LT. Tm) THEN ! cells initial enthalpy (J/kg)
+                HPCM_MOD(K,N_STANK) = cs*(TINIT-Tmi)
+                HPCM_MOD_P(K,N_STANK) = cs*(TINIT-Tmi)
+              ELSE
+                HPCM_MOD(K,N_STANK) = cl*(TINIT-Tmi-Tm)+
+     &                                 heatLat+cs*Tm
+                HPCM_MOD_P(K,N_STANK) = cl*(TINIT-Tmi-Tm)+
+     &                                 heatLat+cs*Tm
+              ENDIF
+            ENDDO
+          ENDDO
+
+
+
+C-------- GEOMETRY
 
 ! if node on the border 
-C-----PCM cells radius 
+C-------- PCM cells radius 
 
-        J = nX ! central cell
-        rp(nX) = 0.
-        DO WHILE (J.GT.1) 
+          J = nX ! central cell
+          rp(nX) = 0.
+          DO WHILE (J.GT.1) 
             J=J-1
             rp(J)=rp(J+1)+dr(N_STANK)
-        ENDDO ! rp(1)=ext, rp(nX)=0=int
+          ENDDO ! rp(1)=ext, rp(nX)=0=int
 
-C-----lateral surface of PCM cells 
+C-------- lateral surface of PCM cells 
 
-      DO I=1,nY
-        Axb(I,N_STANK) = 2*pi*rp(1)*HPCMsec(I,N_STANK) ! border cells
-      ENDDO 
+          DO I=1,nY
+            Axb(I,N_STANK) = 2*pi*rp(1)*HPCMsec(I,N_STANK) ! border cells
+          ENDDO 
 
 
-      DO J=1,nX-1 
-        DO I=1,nY
-          K=(J-1)*nY+I
-          Ax(K,N_STANK)=2*pi*HPCMsec(I,N_STANK)*(rp(J)-
+          DO J=1,nX-1 
+            DO I=1,nY
+              K=(J-1)*nY+I
+              Ax(K,N_STANK)=2*pi*HPCMsec(I,N_STANK)*(rp(J)-
      &                    dr(N_STANK)/2) ! generic cells
-        ENDDO
-      ENDDO
+            ENDDO
+          ENDDO
 
-C-----top/bottom surface of PCM cells 
+C-------- top/bottom surface of PCM cells 
 
-      Ay(1,N_STANK) = rp(1)*dr(N_STANK)*pi-dr(N_STANK)**2/4*pi ! external cell 
-      DO J=2,nX-1
-          Ay(J,N_STANK) = 2*dr(N_STANK)*rp(J)*pi ! generic cell
-      ENDDO
-      Ay(nX,N_STANK) = (dr(N_STANK)/2)**2*pi ! internal cell
+          Ay(1,N_STANK) = rp(1)*dr(N_STANK)*pi-dr(N_STANK)**2/4*pi ! external cell 
+          DO J=2,nX-1
+            Ay(J,N_STANK) = 2*dr(N_STANK)*rp(J)*pi ! generic cell
+          ENDDO
+          Ay(nX,N_STANK) = (dr(N_STANK)/2)**2*pi ! internal cell
    
 
-C-----cells PCM volume 
-      DO J=1,nX
-        DO I=1,nY
-          K=(J-1)*nY+I
-          IF (J.EQ.1) THEN ! external cell 
-            V(K,N_STANK) = pi*HPCMsec(I,N_STANK)*((rp(J))**2-
-     &                     (rp(J)-dr(N_STANK)/2)**2) 
-          ELSEIF (J.EQ.nX) THEN !internal cell 
-            V(K,N_STANK) = pi*HPCMsec(I,N_STANK)*
-     &                      (dr(N_STANK)/2)**2 
-          ELSE !generic cell
-            V(K,N_STANK)=pi*HPCMsec(I,N_STANK)*((rp(J)+
-     &                   dr(N_STANK)/2)**2-(rp(J)-dr(N_STANK)/2)**2) 
-          ENDIF
-        ENDDO              
-      ENDDO
+C-------- cells PCM volume 
+          DO J=1,nX
+            DO I=1,nY
+              K=(J-1)*nY+I
+              IF (J.EQ.1) THEN ! external cell 
+                V(K,N_STANK) = pi*HPCMsec(I,N_STANK)*((rp(J))**2-
+     &                       (rp(J)-dr(N_STANK)/2)**2) 
+              ELSEIF (J.EQ.nX) THEN !internal cell 
+                V(K,N_STANK) = pi*HPCMsec(I,N_STANK)*
+     &                        (dr(N_STANK)/2)**2 
+              ELSE !generic cell
+                V(K,N_STANK)=pi*HPCMsec(I,N_STANK)*((rp(J)+
+     &                     dr(N_STANK)/2)**2-(rp(J)-dr(N_STANK)/2)**2) 
+              ENDIF
+            ENDDO              
+          ENDDO
 
 
 
@@ -527,17 +624,20 @@ C-----cells PCM volume
 
 
 
-C---- Assign PCM grid and position data
-      NPCMDATA(1,N_STANK)=nX
-      NPCMDATA(2,N_STANK)=nY
-      NPCMDATA(3,N_STANK)=NPCMbot
-      NPCMDATA(4,N_STANK)=NPCMtop 
+C-------- Assign PCM grid and position data
+          NPCMDATA(1,N_STANK)=nX
+          NPCMDATA(2,N_STANK)=nY
+          NPCMDATA(3,N_STANK)=NPCMbot
+          NPCMDATA(4,N_STANK)=NPCMtop 
 
+        ENDIF
+      ENDIF
 
 C---- Normal return
 
       RETURN
       END
+
 
 C===================== stratified_tank_1hx_coeff_gen ===================
 C     Created by: Didier Thevenard
@@ -620,10 +720,13 @@ C---- Local variables
       INTEGER INOD1           ! Pointer to node 1
       INTEGER ICON2           ! Pointer to interconnection 2
       INTEGER INOD2           ! Pointer to node 2
-      INTEGER INOD3           ! Pointer to dummy node 3
-      REAL TOUT1              ! Outlet temperature 1 [C]
-      REAL TOUT2              ! Outlet temperature 2 [C]
-      REAL TOUT3              ! Outlet temperature 3 [C]
+      INTEGER INOD3           ! Pointer to (dummy) node 3
+      REAL TOUT1              ! Outlet temperature 1 (C)
+      REAL TOUT2              ! Outlet temperature 2 (C)
+      REAL TOUT3              ! Outlet temperature 3 (C) @ tank half height, only for cmp. 127
+      INTEGER ITYPE           ! Component number
+
+      ITYPE=NPCDAT(IPCOMP,4)
 
 C---- Trace output
 
@@ -631,79 +734,147 @@ C---- Trace output
      &   ITRACE(37).NE.0) WRITE(ITU,*) ' Entering subroutine ',
      &   ' stratified_tank_1hx_coeff_gen '
 
+C---- If a stratified tank is to be simulated:
+      IF (ITYPE .EQ. 126) THEN
+
 C---- Initialize pointers to inter-connection(s) ICON, and node(s) INOD.
 
-      ICON1=ICONDX(IPCOMP,1,1)
-      ICON2=ICONDX(IPCOMP,2,1)
-      INOD1=NPCDAT(IPCOMP,9)
-      INOD2=NPCDAT(IPCOMP,9)+1
-      INOD3=NPCDAT(IPCOMP,9)+2
+        ICON1=ICONDX(IPCOMP,1,1)
+        ICON2=ICONDX(IPCOMP,2,1)
+        INOD1=NPCDAT(IPCOMP,9)
+        INOD2=NPCDAT(IPCOMP,9)+1
 
 C=======================================================================
 C     Generate coefficients for energy balance equation
 C=======================================================================
 
-      IF(ISTATS.EQ.1) THEN
+        IF(ISTATS.EQ.1) THEN
 
 C---- Mark temperature of nodes for iteration
 
-        ICSV(INOD1,1)=1
-        CSVI(INOD1,1)=CSVF(INOD1,1)
-        ICSV(INOD2,1)=1
-        CSVI(INOD2,1)=CSVF(INOD2,1)
-        ICSV(INOD3,1)=1
-        CSVI(INOD3,1)=CSVF(INOD3,1)
+          ICSV(INOD1,1)=1
+          CSVI(INOD1,1)=CSVF(INOD1,1)
+          ICSV(INOD2,1)=1
+          CSVI(INOD2,1)=CSVF(INOD2,1)
 
 C---- Call wrapper of TRNSYS-like function to calculate temperature of tank outlets
 
-!       OPEN(UNIT=93,FILE='CellsTempFromRoutine.dat', 
-!      &                           FORM='FORMATTED', STATUS='UNKNOWN',
-!      &                           ACCESS='APPEND')
-!         WRITE(93, '(A)') "#call to wrapper"
-!       CLOSE(93)
-        CALL stratified_tank_1hx_wrapper(IPCOMP,TOUT1,TOUT2,TOUT3)
+          CALL stratified_tank_1hx_wrapper(IPCOMP,TOUT1,TOUT2)
 
 C Establish matrix equation self-coupling coefficients,
-         COUT(1)=1.
-         COUT(2)=1.
-         COUT(3)=1.
+           COUT(1)=1.
+           COUT(2)=1.
 C then matrix equation cross-coupling coefficients,
-         COUT(4)=0.
-         COUT(5)=0.
+           COUT(3)=0.
+           COUT(4)=0.
 C and then present-time coefficients (ie. right hand sides)
-         COUT(6)=TOUT1
-         COUT(7)=TOUT2
-         COUT(8)=TOUT3
+           COUT(5)=TOUT1
+           COUT(6)=TOUT2
 
 C=======================================================================
 C     Generate coefficients for 1st phase flow equation.
 C=======================================================================
 
-      ELSEIF(ISTATS.EQ.2) THEN
+        ELSEIF(ISTATS.EQ.2) THEN
 
-         COUT(1)=1.
-         COUT(2)=1.
-         COUT(3)=1.
-         COUT(4)=-PCONDR(ICON1)
-         COUT(5)=-PCONDR(ICON2)
-         COUT(6)=0.
-         COUT(7)=0.
-         COUT(8)=0.
+           COUT(1)=1.
+           COUT(2)=1.
+           COUT(3)=-PCONDR(ICON1)
+           COUT(4)=-PCONDR(ICON2)
+           COUT(5)=0.
+           COUT(6)=0.
 
 C=======================================================================
 C     Generate coefficients for 2nd phase flow equation.
 C=======================================================================
 
-      ELSEIF(ISTATS.EQ.3) THEN
+        ELSEIF(ISTATS.EQ.3) THEN
 
-         COUT(1)=1.
-         COUT(2)=1.
-         COUT(3)=1.
-         COUT(4)=-PCONDR(ICON1)
-         COUT(5)=-PCONDR(ICON2)
-         COUT(6)=0.
-         COUT(7)=0.
-         COUT(8)=0.
+           COUT(1)=1.
+           COUT(2)=1.
+           COUT(3)=-PCONDR(ICON1)
+           COUT(4)=-PCONDR(ICON2)
+           COUT(5)=0.
+           COUT(6)=0.
+
+        ENDIF
+
+      ENDIF
+
+C---- If a PCM enhanced stratified tank is to be simulated:
+      IF (ITYPE .EQ. 128) THEN
+
+C---- Initialize pointers to inter-connection(s) ICON, and node(s) INOD.
+
+        ICON1=ICONDX(IPCOMP,1,1)
+        ICON2=ICONDX(IPCOMP,2,1)
+        INOD1=NPCDAT(IPCOMP,9)
+        INOD2=NPCDAT(IPCOMP,9)+1
+        INOD3=NPCDAT(IPCOMP,9)+2
+
+C=======================================================================
+C     Generate coefficients for energy balance equation
+C=======================================================================
+
+        IF(ISTATS.EQ.1) THEN
+
+C---- Mark temperature of nodes for iteration
+
+          ICSV(INOD1,1)=1
+          CSVI(INOD1,1)=CSVF(INOD1,1)
+          ICSV(INOD2,1)=1
+          CSVI(INOD2,1)=CSVF(INOD2,1)
+          ICSV(INOD3,1)=1
+          CSVI(INOD3,1)=CSVF(INOD3,1)
+
+C---- Call wrapper of TRNSYS-like function to calculate temperature of tank outlets
+
+          CALL PCM_stratified_tank_1hx_wrapper(IPCOMP,TOUT1,TOUT2,
+     &                                         TOUT3)
+
+C Establish matrix equation self-coupling coefficients,
+           COUT(1)=1.
+           COUT(2)=1.
+           COUT(3)=1.
+C then matrix equation cross-coupling coefficients,
+           COUT(4)=0.
+           COUT(5)=0.
+C and then present-time coefficients (ie. right hand sides)
+           COUT(6)=TOUT1
+           COUT(7)=TOUT2
+           COUT(8)=TOUT3
+
+C=======================================================================
+C     Generate coefficients for 1st phase flow equation.
+C=======================================================================
+
+        ELSEIF(ISTATS.EQ.2) THEN
+  
+           COUT(1)=1.
+           COUT(2)=1.
+           COUT(3)=1.
+           COUT(4)=-PCONDR(ICON1)
+           COUT(5)=-PCONDR(ICON2)
+           COUT(6)=0.
+           COUT(7)=0.
+           COUT(8)=0.
+
+C=======================================================================
+C     Generate coefficients for 2nd phase flow equation.
+C=======================================================================
+
+        ELSEIF(ISTATS.EQ.3) THEN
+
+           COUT(1)=1.
+           COUT(2)=1.
+           COUT(3)=1.
+           COUT(4)=-PCONDR(ICON1)
+           COUT(5)=-PCONDR(ICON2)
+           COUT(6)=0.
+           COUT(7)=0.
+           COUT(8)=0.
+
+        ENDIF
 
       ENDIF
 
@@ -734,6 +905,8 @@ C---- Return to the calling module
 
       END
 
+
+
 C===================== stratified_tank_1hx_wrapper =========================
 C     Created by: Didier Thevenard
 C     Created on: June 2009
@@ -745,7 +918,7 @@ C     the temperatures in the stratified tank. The wrapper is called
 C     by the ESP-r coefficient generator
 C
 C=======================================================================
-      SUBROUTINE stratified_tank_1hx_wrapper(IPCOMP,TOUT1,TOUTHX1,TOUT2)
+      SUBROUTINE stratified_tank_1hx_wrapper(IPCOMP,TOUT1,TOUTHX1)
       use h3kmodule
 C---- Set implicit to none to force declaration of all variables
 
@@ -863,6 +1036,314 @@ C     Outputs of model
 C     Dummy variables
       LOGICAL HASHX1            ! Indicates presence of HX1 (.TRUE.)
       LOGICAL HASHX2            ! Indicates presence of HX2 (.FALSE.)
+      REAL DUMMY                ! Dummy variable
+
+C---- Functions
+      REAL SHTFLD
+      REAL RHOFLD
+      REAL KWATER
+
+C---- Trace output
+
+      IF(ITC.GT.0.AND.NSINC.GE.ITC.AND.NSINC.LE.ITCF.AND.
+     &   ITRACE(37).NE.0) WRITE(ITU,*) ' Entering subroutine ',
+     &   ' stratified_tank_1hx_wrapper '
+
+C=======================================================================
+C---- Initialise component parameters from the database information
+
+      VOL   = ADATA(IPCOMP,1)     ! Tank volume
+      H     = ADATA(IPCOMP,2)     ! Tank height
+      P     = ADATA(IPCOMP,3)     ! Tank perimeter as entered by user
+      HIN1  = ADATA(IPCOMP,4)     ! Height of inlet 1
+      HOUT1 = ADATA(IPCOMP,5)     ! Height of outlet 1
+      U     = ADATA(IPCOMP,6)     ! Tank heat loss coefficient
+      K_DESTRAT = ADATA(IPCOMP,7) ! Additional destratification coefficient
+      NNODES = INT(ADATA(IPCOMP,8))
+                                  ! Number of nodes
+      NSTEPS = INT(ADATA(IPCOMP,9))
+                                  ! Number of internal time steps per sim. t.s.
+      TBOIL  = ADATA(IPCOMP,11)   ! Boiling temperature of tank fluid
+      HINHX1 = ADATA(IPCOMP,12)   ! Height of inlet of HX1 (m)
+      HOUTHX1 = ADATA(IPCOMP,13)  ! Height of inlet of HX1 (m)
+      DINHX1 = ADATA(IPCOMP,14)   ! Internal diameter of HX1 (m)
+      DOUTHX1 = ADATA(IPCOMP,15)  ! External diameter of HX1 (m)
+      DCOILHX1 = ADATA(IPCOMP,16) ! Diameter of the coil of HX1 (m)
+      PITCHHX1 = ADATA(IPCOMP,17) ! Pitch of the coil of HX1 (m)
+      KHX1 = ADATA(IPCOMP,18)     ! Thermal conductivity of HX1 (W/m/C)
+
+C---- Initialize pointers to inter-connection(s) ICON, and node(s) INOD.
+
+      ICON1=ICONDX(IPCOMP,1,1)
+      ICON2=ICONDX(IPCOMP,2,1)
+
+C---- Identify variables
+C     HX mass flow rate is sum of water and secondary fluid mass flow rates
+C     (secondary fluid is for glycol)
+
+      TIN1=CONVAR(ICON1,1)
+      TIN2=0.
+      TINHX1=CONVAR(ICON2,1)
+      MDOT1=PCONDR(ICON1)*CONVAR(ICON1,2)
+      MDOT2=0.
+      MDOTHX1=PCONDR(ICON2)*(CONVAR(ICON2,2)+CONVAR(ICON2,3))
+
+C---- Calculate mass percentage of glycol in HX fluid
+      AUX = CONVAR(ICON2,2)+CONVAR(ICON2,3)
+      CALL ECLOSE(AUX,0.0,1.0e-15,CLOSEC)
+      if (.NOT.CLOSEC) THEN
+        GLYCOLHX1 = 100.*CONVAR(ICON2,3)/AUX
+      ELSE
+        GLYCOLHX1 = 0.
+      ENDIF
+
+C---- Check that tank fluid does not have glycol
+C     Enabling the tank to be filled with glycol would not be difficult to implement,
+C     however this is not done for now as such systems are probably very infrequent
+      CALL ECLOSE(CONVAR(ICON1,3),0.0,1.0e-15,CLOSED)
+      IF (.NOT.CLOSED) THEN
+        WRITE(ITU,*) 'Error in stratified tank model'
+        WRITE(ITU,*) 'Tank can be filled with water only - no glycol'
+        WRITE(ITU,*) 'Aborting simulation'
+        STOP
+      ENDIF
+
+C---- Calculate containment temperature. If no containment, set U to zero
+
+      TCONT = PCNTMF(IPCOMP)
+      CALL ECLOSE(TCONT,-99.0,0.001,CLOSEA)
+      IF(CLOSEA) U=0.
+
+C---- Compare current simulation time to time stored in common stratified_tank.
+C     If they are not equal, the simulation has advanced and future tank
+C     temperatures have to be transfered to past tank temperatures
+
+      CALL ECLOSE(PTIMEF_STANK,PTIMEF,1.0e-6,CLOSEB)
+      IF (.NOT.CLOSEB) THEN
+        DO 5 J=1,N_STANK
+          DO 7 I=1,MAX_NNODES
+            TP_STANK(I,J)=TF_STANK(I,J)
+    7     CONTINUE
+          TAVGP_STANK(J)=TAVGF_STANK(J)
+    5   CONTINUE
+        PTIMEF_STANK = PTIMEF          ! Update tank time
+      ENDIF
+
+C---- Identify number of stratified tank in common stratified_tank.h
+
+      I_STANK = 0
+      DO 10 I=1,N_STANK
+        IF (IPCOMP .EQ. IPCOMP_STANK(I)) THEN
+          I_STANK = I
+          GOTO 20
+        ENDIF
+   10 CONTINUE
+      WRITE(ITU,*) 'Stratified tank information not found'
+      WRITE(ITU,*) 'for component ', IPCOMP
+      WRITE(ITU,*) 'Aborting simulation'
+      STOP
+   20 CONTINUE
+
+C---- Calculate heat capacitance and density of fluid
+C     Use average temperature of tank at previous time step
+
+      CP=SHTFLD(3,TAVGP_STANK(I_STANK))
+      RHO=RHOFLD(3,TAVGP_STANK(I_STANK))
+      K=KWATER(TAVGP_STANK(I_STANK))
+
+C---- Call stratified tank function
+
+      HASHX1=.TRUE.
+      HASHX2=.FALSE.
+      DUMMY=0.
+      CALL stratified_tank_calc(VOL, H, P,
+     &  HIN1, 0., HOUT1, H, U, K_DESTRAT, NSTEPS, NNODES,
+     &  HASHX1,
+     &  HINHX1, HOUTHX1, DINHX1, DOUTHX1, DCOILHX1, PITCHHX1, KHX1,
+     &  HASHX2,
+     &  DUMMY, DUMMY, DUMMY, DUMMY, DUMMY, DUMMY, DUMMY,
+     &  TIMSEC, TIN1, TIN2, MDOT1, MDOT2, TCONT, CP, K,
+     &  RHO, TBOIL, TP_STANK(1,I_STANK),
+     &  TINHX1, MDOTHX1, GLYCOLHX1,
+     &  DUMMY, DUMMY, DUMMY,
+     &  TOUT1, TOUT2, TAVGF_STANK(I_STANK), TOUTHX1, TOUTHX2,
+     &  QLOSS, QIMMERSED_HX,
+     &  STEPCOUNT, MIXCOUNT, NSECAVG,
+     &  TF_STANK(1,I_STANK),IER,
+     &  DUMMY,DUMMY,
+     &  DUMMY,DUMMY,DUMMY,
+     &  DUMMY,
+     &  DUMMY,DUMMY,DUMMY,DUMMY,DUMMY,
+     &  DUMMY,DUMMY,DUMMY,DUMMY,DUMMY,DUMMY,DUMMY,DUMMY,DUMMY,DUMMY,
+     &  DUMMY,DUMMY,DUMMY,DUMMY,DUMMY, DUMMY,
+     &  DUMMY)
+
+C---- Check error code
+
+      IF (IER .NE. 0) THEN
+        WRITE(ITU,*) 'Internal error in stratified tank model'
+        WRITE(ITU,*) 'Error code: IER = ', IER
+        WRITE(ITU,*) 'Aborting simulation'
+        STOP
+      ENDIF
+
+C---- Additional outputs
+
+      NAPDAT(IPCOMP) = 6
+      PCAOUT(IPCOMP,1) = TAVGF_STANK(I_STANK)
+      PCAOUT(IPCOMP,2) = QLOSS
+      PCAOUT(IPCOMP,3) = STEPCOUNT
+      PCAOUT(IPCOMP,4) = MIXCOUNT
+      PCAOUT(IPCOMP,5) = NSECAVG
+      PCAOUT(IPCOMP,6) = QIMMERSED_HX
+
+C---- XML output
+      call AddToReport(rvPltAvgTemp%Identifier,
+     &      TAVGF_STANK(I_STANK),
+     &      pcname(ipcomp)(1:iPltNameLen(ipcomp)))
+
+C---- Trace output
+
+      IF(ITC.GT.0.AND.NSINC.GE.ITC.AND.NSINC.LE.ITCF.AND.
+     &   ITRACE(37).NE.0) WRITE(ITU,*) ' Exiting subroutine ',
+     &   ' stratified_tank_1hx_wrapper '
+
+C---- Return to the calling module
+
+      RETURN
+      END
+
+
+
+
+C===================== PCM_stratified_tank_1hx_wrapper =================
+C     This routine is based on routine "stratified_tank_1hx_wrapper"
+C-----------------------------------------------------------------------
+C     ABSTRACT:
+C     This is a wrapper around the subroutine that calculates
+C     the temperatures in the stratified tank. The wrapper is called
+C     by the ESP-r coefficient generator
+C
+C=======================================================================
+      SUBROUTINE PCM_stratified_tank_1hx_wrapper(IPCOMP,TOUT1,TOUTHX1,
+     &                                           TOUT2)
+      use h3kmodule
+C---- Set implicit to none to force declaration of all variables
+
+      IMPLICIT NONE
+
+C---- Include statements
+
+#include "building.h"
+#include "plant.h"
+
+C---- ESP-r Common blocks
+
+      COMMON/PTIME/PTIMEP,PTIMEF
+      REAL PTIMEP,PTIMEF
+
+      COMMON/C10/NPCON,IPC1(MPCON),IPN1(MPCON),IPCT(MPCON),
+     & IPC2(MPCON),IPN2(MPCON),PCONDR(MPCON),PCONSD(MPCON,2)
+      INTEGER NPCON,IPC1,IPN1,IPCT,IPC2,IPN2
+      REAL PCONDR,PCONSD
+
+      COMMON/PCRES/QDATA(MPCOM),PCAOUT(MPCOM,MPCRES),NAPDAT(MPCOM)
+      REAL QDATA,PCAOUT
+      INTEGER NAPDAT
+
+      COMMON/TC/ITC,ICNT
+      INTEGER ITC,ICNT
+
+      COMMON/PCOND/CONVAR(MPCON,MCONVR),ICONTP(MPCON),
+     &             ICONDX(MPCOM,MNODEC,MPCONC)
+      REAL CONVAR
+      INTEGER ICONTP,ICONDX
+
+      COMMON/PCTIME/TIMSEC
+      REAL TIMSEC
+
+      COMMON/PCVAR/PCTF(MPCON),PCRF(MPCON),PUAF(MPNODE),
+     & PCQF(MPNODE),PCNTMF(MPCOM),PCTP(MPCON),PCRP(MPCON),
+     & PUAP(MPNODE),PCQP(MPNODE),PCNTMP(MPCOM)
+      REAL PCTF,PCRF,PUAF,PCQF,PCNTMF,PCTP,PCRP,PUAP
+      REAL PCQP,PCNTMP
+
+      COMMON/SIMTIM/IHRP,IHRF,IDYP,IDYF,IDWP,IDWF,NSINC,ITS
+      INTEGER IHRP,IHRF,IDYP,IDYF,IDWP,IDWF,NSINC,ITS
+
+      COMMON/TRACE/ITCF,ITRACE(MTRACE),IZNTRC(MCOM),ITU
+      INTEGER ITCF,ITRACE,IZNTRC,ITU
+
+      COMMON/PDBDT/ADATA(MPCOM,MADATA),BDATA(MPCOM,MBDATA)
+      REAL ADATA,BDATA
+
+      COMMON/PCNAM/PCNAME(MPCOM)       ! PLANT COMPONENT NAMES
+      CHARACTER*15 PCNAME
+
+
+#include "stratified_tank.h"
+
+C---- Arguments
+
+      INTEGER  IPCOMP           ! Component number
+      REAL TOUT1                ! Outlet temperature 1 (C)
+      REAL TOUT2                ! Outlet temperature 2 (C) (dummy variable)
+      REAL TOUTHX1              ! Outlet temperature of HX1 (C)
+      REAL TOUTHX2              ! Outlet temperature of HX2 (C) (dummy variable)
+
+C---- Local variables
+
+      LOGICAL CLOSEA,CLOSEB,CLOSEC,CLOSED
+                                ! Auxiliary variable
+      REAL AUX                  ! Auxiliary variable
+      REAL HIN1                 ! Height of inlet 1 (m)
+      REAL HOUT1                ! Height of outlet 1 (m)
+      REAL MDOT1                ! Flow rate at inlet 1 (kg/s)
+      REAL MDOT2                ! Flow rate at inlet 1 (kg/s) (always zero)
+      REAL TIN1                 ! Temperature at inlet 1 (C)
+      REAL TIN2                 ! Temperature at inlet 2 (C) (dummy variable)
+      REAL K                    ! Thermal conductivity of fluid (W/m/C)
+      REAL K_DESTRAT            ! Destratification conductivity (W/m/C)
+      REAL VOL                  ! Tank volume (m3)
+      REAL CP                   ! Heat capacitance of fluid (J/kg/C)
+      REAL RHO                  ! Density of fluid in tank (kg/m3)
+      REAL TCONT                ! Containment temperature (C)
+      REAL H                    ! Tank height (m)
+      REAL P                    ! Actual tank perimeter (m)
+      REAL U                    ! Tank heat loss coefficient (W/m2/C)
+      REAL TBOIL                ! Boiling temperature of tank fluid (C)
+      INTEGER NNODES            ! Number of nodes
+      INTEGER NSTEPS            ! Number of internal time steps per simulation
+                                ! time step
+      INTEGER I_STANK           ! Number of stratified tank in common
+                                ! stratified_tank
+      INTEGER ICON1             ! Pointer to inter-connection 1
+      INTEGER ICON2             ! Pointer to inter-connection 2
+      INTEGER I,J               ! Counters
+
+C     Parameters of immersed HX 1
+      REAL HINHX1               ! Height of inlet of HX1 (m)
+      REAL HOUTHX1              ! Height of inlet of HX1 (m)
+      REAL DINHX1               ! Internal diameter of HX1 (m)
+      REAL DOUTHX1              ! External diameter of HX1 (m)
+      REAL DCOILHX1             ! Diameter of immersed HX coil (m)
+      REAL PITCHHX1             ! Pitch of the coil of HX1 (m)
+      REAL KHX1                 ! Thermal conductivity of HX1 (W/m/C)
+      REAL GLYCOLHX1            ! Mass percentage of propylene glycol in HX (0 or 50) (%)
+      REAL MDOTHX1              ! Flow rate through HX1 (kg/s)
+      REAL TINHX1               ! Temperature at inlet of HX1 (C)
+
+C     Outputs of model
+      REAL QLOSS                ! Heat loss from tank to environment (J)
+      REAL QIMMERSED_HX         ! Heat gain from immersed heat exchangers (J)
+      INTEGER STEPCOUNT         ! Number of internal time steps
+      INTEGER MIXCOUNT          ! Number of times mixing algorithm called
+      INTEGER NSECAVG           ! Average number of mixed sections
+      INTEGER IER               ! Error code
+
+C     Dummy variables
+      LOGICAL HASHX1            ! Indicates presence of HX1 (.TRUE.)
+      LOGICAL HASHX2            ! Indicates presence of HX2 (.FALSE.)
       LOGICAL HASPCM            ! Indicates presence of PCM module (.FALSE.)
       REAL DUMMY                ! Dummy variable
 
@@ -873,24 +1354,24 @@ C---- Functions
 
 c---- PCM data
       INTEGER NPCM              ! Number of PCM modules
-      REAL*4 PCMrhos            ! Density of solid [kg/m^3]
-      REAL*4 PCMrhol            ! Density of liquid [kg/m^3]
-      REAL*4 cs                 ! Specific heat of solid [J/(kg K)]
-      REAL*4 cl                 ! Specific heat of liquid [J/(kg K)]
-      REAL*4 heatLat            ! Latent heat [J/kg]
-      REAL*4 cndcts             ! Conductivity into solid [W/(m K)]
-      REAL*4 cndctl             ! Conductivity into liquid [W/(m K)]
-      REAL*4 Tmi                ! Melting temperature  [°C]
-      INTEGER method            ! time integration method [-]
-      REAL*4 e                  ! Phase change range [°C]
+      REAL PCMrhos              ! Density of solid (kg/m^3)
+      REAL PCMrhol              ! Density of liquid (kg/m^3)
+      REAL cs                   ! Specific heat of solid (J/(kg K))
+      REAL cl                   ! Specific heat of liquid (J/(kg K))
+      REAL heatLat              ! Latent heat (J/kg)
+      REAL cndcts               ! Conductivity into solid (W/(m K))
+      REAL cndctl               ! Conductivity into liquid (W/(m K))
+      REAL Tmi                  ! Melting temperature  (°C)
+      INTEGER method            ! time integration method (-)
+      REAL e                    ! Phase change range (°C)
 c---- PCM geometrical data 
-      REAL*4 HPCMcyl            ! PCM cylinder height [m]
-      REAL*4 DPCMcyl            ! PCM cylinder diameter [m]
-      REAL*4 HPCMbot            ! Position of the cylinder bottom [m]
-      REAL*4 HPCMtop            ! Position of the cylinder top [m]
+      REAL HPCMcyl              ! PCM cylinder height (m)
+      REAL DPCMcyl              ! PCM cylinder diameter (m)
+      REAL HPCMbot              ! Position of the cylinder bottom (m)
+      REAL HPCMtop              ! Position of the cylinder top (m)
 
-      INTEGER nX                ! Number of cells in radial direction [-]
-      INTEGER nY                ! Number of cells in axial direction [-]
+      INTEGER nX                ! Number of cells in radial direction (-)
+      INTEGER nY                ! Number of cells in axial direction (-)
       INTEGER NPCMbot           ! Tank node corresponding to the lower cylinder node
                                 ! Tank node which the cylinder bottom is located in
       INTEGER NPCMtop           ! Tank node corresponding to the higher cylinder node
@@ -939,7 +1420,7 @@ C---- PCM data
       cl      = ADATA(IPCOMP,27)  ! Specific heat of liquid (J/(kg K))
       heatLat = ADATA(IPCOMP,28)  ! Latent heat (J/kg)
       cndcts  = ADATA(IPCOMP,29)  ! Conductivity into solid (W/(m K))
-      cndctl  = ADATA(IPCOMP,30)  ! Conductivity into liquid [W/(m K)]
+      cndctl  = ADATA(IPCOMP,30)  ! Conductivity into liquid (W/(m K))
       Tmi     = ADATA(IPCOMP,31)  ! Phase change temperature (C)
       method  = INT(ADATA(IPCOMP,32))
                                   !time integration method (-)
@@ -991,8 +1472,6 @@ C---- Calculate containment temperature. If no containment, set U to zero
       CALL ECLOSE(TCONT,-99.0,0.001,CLOSEA)
       IF(CLOSEA) U=0.
 
-
-
 C---- Compare current simulation time to time stored in common stratified_tank.
 C     If they are not equal, the simulation has advanced and future tank
 C     temperatures have to be transfered to past tank temperatures
@@ -1005,7 +1484,24 @@ C     temperatures have to be transfered to past tank temperatures
     7     CONTINUE
           TAVGP_STANK(J)=TAVGF_STANK(J)
     5   CONTINUE
+        DO J=1,N_STANK
+           NX=NPCMDATA(1, J)
+           NY=NPCMDATA(2, J)
+           DO I=1, NX*NY
+             TPCM_MOD_P(I, J) = TPCM_MOD(I, J)
+             HPCM_MOD_P(I, J) = HPCM_MOD(I, J)
+           ENDDO
+        ENDDO                
         PTIMEF_STANK = PTIMEF          ! Update tank time
+      ELSE
+        DO J=1,N_STANK
+           NX=NPCMDATA(1, J)
+           NY=NPCMDATA(2, J)
+           DO I=1, NX*NY
+             TPCM_MOD(I, J) = TPCM_MOD_P(I, J)
+             HPCM_MOD(I, J) = HPCM_MOD_P(I, J)
+           ENDDO
+        ENDDO    
       ENDIF
 
 C---- Identify number of stratified tank in common stratified_tank.h
@@ -1023,10 +1519,7 @@ C---- Identify number of stratified tank in common stratified_tank.h
       STOP
    20 CONTINUE
 
-
-
 C---- Assign PCM grid and position data
-
       nX=NPCMDATA(1,I_STANK)
       nY=NPCMDATA(2,I_STANK)
       NPCMbot=NPCMDATA(3,I_STANK)
@@ -1043,7 +1536,7 @@ C     Use average temperature of tank at previous time step
 C---- Call stratified tank function
 
       HASPCM=.FALSE.
-      IF (NPCM .GT. 0) HASPCM=.TRUE.
+      IF (NPCM.GT.0) HASPCM=.TRUE.
 
 C---- If tank contains PCM cylinders subtract their volume
       IF (HASPCM) THEN
@@ -1053,6 +1546,7 @@ C---- If tank contains PCM cylinders subtract their volume
       HASHX1=.TRUE.
       HASHX2=.FALSE.
       DUMMY=0.
+
       CALL stratified_tank_calc(VOL, H, P,
      &  HIN1, 0., HOUT1, 0.5*H, U, K_DESTRAT, NSTEPS, NNODES,
      &  HASHX1,
@@ -1065,7 +1559,7 @@ C---- If tank contains PCM cylinders subtract their volume
      &  DUMMY, DUMMY, DUMMY,
      &  TOUT1, TOUT2, TAVGF_STANK(I_STANK), TOUTHX1, TOUTHX2,
      &  QLOSS, QIMMERSED_HX,
-     &  STEPCOUNT, MIXCOUNT, NSECAVG,
+     &  STEPCOUNT, MIXCOUNT, NSECAVG, 
      &  TF_STANK(1,I_STANK),IER,
      &  HPCM_MOD(1,I_STANK),TPCM_MOD(1,I_STANK),
      &  Axb(1,I_STANK),Ax(1,I_STANK),Ay(1,I_STANK),
