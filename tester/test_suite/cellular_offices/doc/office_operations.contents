@@ -41,7 +41,7 @@ Temporal data is available for this model.
  
 Databases associated with the model:
  standard pressure distr: pressc.db1
- standard materials     : constr.db2.a
+ standard materials     : constr_db2.materialdb
  constructions          : ../dbs/office_operations_constr.db2
  standard plant comp    : plantc.db1
  standard event profiles: profiles.db1.a
