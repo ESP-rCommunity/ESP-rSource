@@ -2336,14 +2336,12 @@ echo " Installing standard databases. This may take some time."
   rm -f ${DESTdir}/esp-r/climate/clm67
   rm -f ${DESTdir}/esp-r/databases/test.res
   echo " Done."
-  # Construction databases. Note constr.db1 and constr.db2 are subsets
-  # of constr.db3. Perhaps they can be merged into a single file?
+  # Construction databases. Note constr_db1.materialdb and constr_db2.materialdb
+  # are subsets of constr_db3.materialdb. Perhaps they can be merged into a single file?
   echo -n "   - Creating binary materials databases..."
   ./bin/materials_db_conv databases constr.db1.a ${DESTdir}/esp-r/databases/constr.db1 >/dev/null
-  ./bin/materials_db_conv databases constr.db2.a ${DESTdir}/esp-r/databases/constr.db2 >/dev/null
-  ./bin/materials_db_conv databases constr.db3.a ${DESTdir}/esp-r/databases/constr.db3 >/dev/null
-  ./bin/materials_db_conv databases north_american.materialdb.a ${DESTdir}/esp-r/databases/north_american.materialdb >/dev/null
   cp ${SRCdir}/databases/ccht_constr.db1 ${DESTdir}/esp-r/databases/ccht_constr.db1
+  cp ${SRCdir}/databases/ccht-optics.db1 ${DESTdir}/esp-r/databases/ccht-optics.db1
   cp ${SRCdir}/databases/ccht_na_constr.db1 ${DESTdir}/esp-r/databases/ccht_na_constr.db1
   cp ${SRCdir}/databases/ccht_material.ascii ${DESTdir}/esp-r/databases/ccht_material.ascii
   cp ${SRCdir}/databases/constr.db1.a ${DESTdir}/esp-r/databases/constr.db1.a
@@ -2353,6 +2351,8 @@ echo " Installing standard databases. This may take some time."
   cp ${SRCdir}/databases/constr.db3.a ${DESTdir}/esp-r/databases/constr.db3.a
   cp ${SRCdir}/databases/constr_db3.materialdb ${DESTdir}/esp-r/databases/constr_db3.materialdb
   cp ${SRCdir}/databases/north_american.materialdb.a ${DESTdir}/esp-r/databases/north_american.materialdb.a
+  cp ${SRCdir}/databases/north_american.materialdb.a ${DESTdir}/esp-r/databases/north_american.materialdb
+  cp ${SRCdir}/databases/north_american.constrdb ${DESTdir}/esp-r/databases/north_american.constrdb
   cp ${SRCdir}/databases/material.db3.a ${DESTdir}/esp-r/databases/material.db3.a
 
   cp ${SRCdir}/databases/SBEM.db1 ${DESTdir}/esp-r/databases/SBEM.db1

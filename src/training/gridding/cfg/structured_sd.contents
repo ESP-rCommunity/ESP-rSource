@@ -31,7 +31,7 @@ An Integrated Performance View is incomplete or missing.
  
 Databases associated with the model:
  pressure distributions : /usr/esru/esp-r/databases/pressc.db1
- materials              : /usr/esru/esp-r/databases/constr.db1.a
+ materials              : /usr/esru/esp-r/databases/constr_db1.mateerialdb
  constructions          : ./multicon.db1
  plant components       : /usr/esru/esp-r/databases/plantc.db1
  event profiles         : /usr/esru/esp-r/databases/profiles.db1.a
