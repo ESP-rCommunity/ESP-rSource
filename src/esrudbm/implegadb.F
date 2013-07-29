@@ -141,7 +141,7 @@ C material database so LFMAT should already be instanciated.
 C If it was not possible to open the material db then set default
 C values for the inside and outside solar and IR.
       write(LTMP,'(a)') LFMAT(1:72)
-      DFILE='/usr/esru/esp-r/databases/constr.db3.a'
+      DFILE='/usr/esru/esp-r/databases/constr_db3.materialdb'
   29  CALL EASKS(LTMP,
      &  'Legacy materials db used with this legacy construction',
      &  'database?',72,DFILE,'legacy matrl name',IER,1)

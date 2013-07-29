@@ -1,7 +1,7 @@
 *Materials 1.1
 *date,Mon Jun 18 12:15:16 2007
 # materials database defined in ../dbs/trombe_wall_office.materialdb
-*doc,ESP-r Materials based on scan of a legacy ASCII materials constr.db3.a with required materials for UK code complience. Additional infomation and documentation uses standard assumptions which should be updated as required.
+*doc,ESP-r Materials based on scan of a materials constr_db3.materialdb with required materials for UK code complience. Additional infomation and documentation uses standard assumptions which should be updated as required.
 18  # number of classifications
 #  
 # Materials have the following attributes:
