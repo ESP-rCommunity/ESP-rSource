@@ -1,5 +1,5 @@
 # composite construction db defined in ../dbs/assemblies.db
-# based on materials db /usr/esru/esp-r/databases/constr.db2.a
+# based on materials db /usr/esru/esp-r/databases/constr_db2.materialdb
     6     # no of composites 
 # layers  description   optics name   symmetry tag
     3    window_NECB   TRAN  DCF7447_06nb  SYMMETRIC     

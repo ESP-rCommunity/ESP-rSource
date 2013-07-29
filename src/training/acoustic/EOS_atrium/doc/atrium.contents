@@ -47,7 +47,7 @@ An Integrated Performance View is incomplete or missing.
  
 Databases associated with the model:
  standard pressure distr: pressc.db1
- standard materials     : constr.db2.a
+ standard materials     : constr_db2.materialdb
  constructions          : ../databases/EOSmlc.db1
  standard plant comp    : plantc.db1
  standard event profiles: profiles.db1.a
