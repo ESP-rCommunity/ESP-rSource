@@ -190,6 +190,9 @@ C Clear mapping array.
       icurrentsenarray=0; iseq=0; thejulianis=0.0
       do ij=1,12
         mapsentoarray(ij)=0
+        bamtmp(ij)=0.0
+        bamlight(ij)=0.0
+        bamhumidity(ij)=0.0
       enddo
 
 C Setup constants.
@@ -237,24 +240,6 @@ C Set pixels high to iappw and pixels wide to factor in monitor size.
       endif
 
       call edisp(IUOUT,' ')
-
-C Find the user's home folder then get user's custom settings.
-      call usrhome(upath)
-      if(unixok)then
-        write(esprc,'(3a)') upath(1:lnblnk(upath)),fs,'.esprc'
-      else
-        write(esprc,'(3a)') upath(1:lnblnk(upath)),fs,'esprc'
-      endif
-      if(ITRC.eq.0)then
-        call scesprc(esprc,IFIL+5,0,IIER)
-      else
-        call scesprc(esprc,IFIL+5,1,IIER)
-      endif
-
-C Debug.
-      write(6,*) 'upath',upath
-      write(6,*) 'esprc',esprc
-
       INIT =0
 
 C Take command line file name to INTER and use as initial survey file.
@@ -271,8 +256,6 @@ C Take command line file name to INTER and use as initial survey file.
         call edisp(iuout,outs)
       endif
 
-C Clear common blocks. <<  ?? >>
-
 C Setup fractions of the day related to each hour for
 C testing against. Also get the day fraction increment
 C for 5 minutes.
@@ -286,20 +269,19 @@ C for 5 minutes.
       oneminfrac=60.0/secondsinday
       tensecfrac=10.0/secondsinday
       twentysecfrac=20.0/secondsinday
-      write(6,*) hourdayfrac
 
       actd='B'
       datea='2013-06-21 20:24:53.518'
       call bamdatetojulian(datea,actd,juliand,julianfrac)
-      write(6,*) datea,' ',juliand,' ',julianfrac
+C      write(6,*) datea,' ',juliand,' ',julianfrac
 
       datea='2013-06-21 20:24:59.446'
       call bamdatetojulian(datea,actd,juliand,julianfrac)
-      write(6,*) datea,' ',juliand,' ',julianfrac
+C      write(6,*) datea,' ',juliand,' ',julianfrac
 
       datea='2013-06-21 20:29:53.413'
       call bamdatetojulian(datea,actd,juliand,julianfrac)
-      write(6,*) datea,' ',juliand,' ',julianfrac
+C      write(6,*) datea,' ',juliand,' ',julianfrac
 
 C Call the survey subroutines, the main controlling routine with the 
 C filename argument.  B for BAM standard csv files, C for compact 
@@ -333,26 +315,23 @@ C Debug.
           call usrmsg(' Problem opening...',LFOUT,'W')
           stop
         endif
-        write(6,*) 'working in progress...bB',INTER
+        write(6,*) 'processing...',INTER
 
-C Discover how many different sensors are included. Read the first 50 lines.
+C Discover how many different sensors are included. Read the first 100 lines.
         howmany=0      ! start with no sensors
         thehouris=0.0  ! clear assumption about when the csv file time starts
         nearstartofhour = .false.
-        do ij=1,50
+        do ij=1,100
           call stripc1k(IUNIT,loutstr,0,ND,1,'log line',IER)
           K=0
           CALL EGETW(loutstr,K,WORD,'W','TEDDI token',IFLAG)
           CALL EGETW(loutstr,K,WORD,'W','ignore time number',IFLAG)
           CALL EGETP(loutstr,K,datea,'W','YYYY-MM-DD hh:mm:ss.f',IFLAG)
 
-C Typically log files only cover an hour. See which hour this is by checking
+C Log files cover an unknown period. See which hour this is by checking
 C the timing of the 2nd line of the csv file. Note: if the initial lines do
-C not begin near the start of an hour then try alternative logic.
-
-C << To be done....
-C << If the log file is for multiple hours this needs to be detected!
-
+C not begin near the start of an hour use alternative logic.
+C << can this logic be moved ?? >>
           if(ij.eq.2)then
             actd='B'
             call bamdatetojulian(datea,actd,juliand,julianfrac)
@@ -361,7 +340,6 @@ C << If the log file is for multiple hours this needs to be detected!
               call ECLOSE(julianfrac,hourdayfrac(ih),oneminfrac,
      &          closetohour)
               if(closetohour)then
-C                thehouris=julianfrac  ! remember fraction
                 thehouris=hourdayfrac(ih)  ! remember fraction
                 thejulanis=juliand    ! remenber julian
                 write(6,*) 'csv file is for hour ',ih,julianfrac,
@@ -373,7 +351,7 @@ C                thehouris=julianfrac  ! remember fraction
               continue
             else
 
-C See if julianfrac between known hour fractions.
+C See if julianfrac between known hour fractions remember thehouris.
               do ih=0,22
                 if(julianfrac.gt.hourdayfrac(ih).and.
      &             julianfrac.lt.hourdayfrac(ih+1))then
@@ -403,18 +381,22 @@ C Did not find it so set the first open slot of mapsentoarray
             foundit=.true.
           endif
         enddo
+C Debug.
         write(6,*) 'how many sensors found ',howmany,mapsentoarray
 
-C Sort the array (increasing).
+C Sort the array (increasing) so that data can be written in a standard
+C order rather than the random order found in the intial lines of the file.
         KFLAG=1
         call SORTI(mapsentoarray,mapsent,howmany,KFLAG)
         write(6,*) 'after sort ',howmany,mapsentoarray
-
+        write(IUF,*) 'BAM summary '
+        write(IUF,*) '# number of sensors ',howmany
+        write(IUF,*) '# sensor list ',mapsentoarray
 
         rewind(IUNIT)   ! go back to the start of the csv file
 
 C First test is to see if we can identify lines in the log file that match specific
-C times and print out the information.
+C times (near hour or 5 minute mark) and print out the information.
 
 C We want the 3rd token on the line. Also remember the sequence number so that if
 C the next read is the same then it can be skipped.
@@ -432,11 +414,9 @@ C Debug.
         CALL EGETW(loutstr,K,WORD,'W','TEDDI token',IFLAG)
         CALL EGETW(loutstr,K,WORD,'W','ignore time number',IFLAG)
         CALL EGETP(loutstr,K,datea,'W','YYYY-MM-DD hh:mm:ss.fff',IFLAG)
-C Debug.
-C        write(6,*) '1st tokens ',WORD,' ',datea
         CALL EGETWI(loutstr,K,isen,0,200,'W','sensor index',IFLAG)
 
-C Find where in the data arrays to save current info.
+C Find where in the data arrays to save current sensor info.
         icurrentsenarray=0  ! clear
         do ij=1,howmany
           iwhich=mapsentoarray(ij)
@@ -446,7 +426,7 @@ C Find where in the data arrays to save current info.
         enddo
         if(icurrentsenarray.eq.0)then
           write(6,*) 'unknown sensor index ',isen,' @ ',datea
-          goto 42
+          goto 42   ! read another line of the file
         endif
 
         CALL EGETWI(loutstr,K,iver,4,5,'W','version',IFLAG)
@@ -455,12 +435,12 @@ C Find where in the data arrays to save current info.
         if(iseq.eq.lastseq(icurrentsenarray))then
 C Debug
 C          write(6,*) 'Duplicate sequence ',iseq,' for ',isen,' @ ',datea
-          goto 42
+          goto 42   ! read another line of the file
         else
-          lastseq(icurrentsenarray)=iseq
+          lastseq(icurrentsenarray)=iseq  ! remember sequence number
         endif
 
-C If there are more than 10 packets left ignore and read again.
+C If there are more than 10 pending packets ignore and read again.
         CALL EGETWI(loutstr,K,ipacketsleft,0,0,'-','nb packet lft',IER)
         if(ipacketsleft.gt.10)then
           goto 42
@@ -469,10 +449,10 @@ C If there are more than 10 packets left ignore and read again.
 C Get raw BAM dbt data.
         CALL EGETWI(loutstr,K,irdbt,0,40000,'W','raw temperature',IER)
 
-C Get BAM light data.
-        CALL EGETWI(loutstr,K,irlight,0,1000,'W','raw light',IER)
+C Get BAM light data, ignore battery value.
+        CALL EGETWI(loutstr,K,irlight,0,1000,'-','raw light',IER)
 
-        CALL EGETWI(loutstr,K,idum,0,1000,'-','battery',IER)
+        CALL EGETWI(loutstr,K,idum,0,0,'-','battery',IER)
 
 C Get raw BAM RH data.
         CALL EGETWI(loutstr,K,irrh,0,40000,'W','raw humidity',IER)
@@ -482,7 +462,7 @@ C Convert timestep to julian.
         call bamdatetojulian(datea,actd,juliand,julianfrac)
 
 C Test if we have moved on to a subsequent hour. Use a one minute
-C tollerance. Only do the test for the first sensor.
+C tollerance. Only do the test for the first two sensors.
         if(icurrentsenarray.le.2)then
           do ih=0,23
             nearstartofhour=.false.
@@ -522,7 +502,9 @@ C See if it is within 10 or 20 seconds of one of the 5 minute slots.
             call ECLOSE(julianfrac,nowis,twentysecfrac,closetofive)
           endif
           if(closetofive)then
-            write(6,*) 'closetofive ',closetofive,nowis,ifive,datea
+            if(icurrentsenarray.le.2)then
+               write(6,*) 'closetofive ',closetofive,nowis,ifive,datea
+            endif
             thejulianis=juliand   ! also remember julian
             goto 43
           endif
@@ -535,13 +517,10 @@ C If we are not near a desired time go and read another line.
           goto 42
         endif
 
-C Stuff into the arrays if close to the desired time. And we need to ensure
-C that we have collected data from all of the sensors before we dump the data.
-C The following logic results in two passes of sensors near the timestep.
-
 C Convert raw BAM data to dbt, RH lux using ESRU calibration info.
         dbt= (0.01185055 * real(irdbt)) - 438.169086
         bamtmp(icurrentsenarray)=dbt
+
         if(irlight.gt.850)then
           lux = 285.0
         else
@@ -549,13 +528,15 @@ C Convert raw BAM data to dbt, RH lux using ESRU calibration info.
           lux = 0.202549 * exp(lexponent)
         endif
         bamlight(icurrentsenarray)=lux
+
         rhl = (49.6 * log(real(irrh))) - 397.19
         bamhumidity(icurrentsenarray)=rhl
+
         howmanynow=howmanynow+1  ! got another sensor instance
 
 C Unsorted write (e.g. in the order of original log file.
 C        write(IUF,*) datea,' ',juliand,' * ',isen,dbt,rhl,lux,
-C     &    howmanynow
+C     &    icurrentsenarray,howmanynow
 
 C If all sensors likely to have been captured dump out the data
 C in sorted order (timestamp the same for each). This ensures
@@ -563,8 +544,8 @@ C that the bam arrays have been filled. Note: if data for a sensor
 C is not found the last known value in the bam array would be 
 C written. Example, if the sensor over-temperature.
 
-C NOTE: for some log files we need to read quite a few extra
-C lines in order to ensure we have captured all of the sensors
+C NOTE: for some log files we need to read extra lines
+C in order to ensure we have captured all of the sensors
 C In others we only slightly more than howmany.
 
 C        if(howmanynow.gt.howmany*2)then
@@ -619,31 +600,7 @@ C The order that sensor data is collected is not fixed so also need
 C to keep track of which bamtmp array matches which BAM sensor ID.
 
 C Logic for writing an ASCII temporal file (header and/or contents)...
-
-
-
-C << the internal array sizes would need to accommodate the full set
-C << of csv files - that would be huge...
-C << logic might be...
-C open folder, make up a list of all of the csv file names
-C open a csv file
-C set initial counters
-C loop through sets of 24 hours
-C find unique pattern as per normal, remember:
-C   -> how many patterns for this csv
-C   -> how many patterns globally 
-C   -> pointer to julian day as well as activity pattern number
-C   -> is it the 1st or 2nd or 3rd for this csv
-C at end of the csv file clear the locals
-C open the next csv file 
-C loop through sets of 24 hours - compare these against the global
-C   array of day patterns for matches and remember:
-C   -> how many patterns for this csv
-C   -> how many patterns globally 
-C   -> pointer to julian day as well as activity pattern number
-C  (a unique pattern many be used by many activities - do I need
-C   an array for this?)
-
+C << ?? >>
 
 C ********* partfa (equivalent to partf with an action parameter)
 C partfa allows terminal, file and action arguments
@@ -747,971 +704,6 @@ C         call edisp248(iuout,outs,90)
       endif
       end
 
-
-C ******************** scesprc (copied from esrucom/startup.F)
-C scesprc scans the ESP-r dot file which should be located in the
-C users home folder or in the esp-r distribution.  If not found
-C then some defaults are set.
-C Note: take this opportunity to instanciate common block stddbpath
-C while we have information on where esp-r was installed.
-
-      SUBROUTINE scesprc(LFDEF,IFDEF,ITRC,IER)
-C Use espriou.h for climatelist file name and defdbfl.
-#include "building.h"
-#include "model.h"
-#include "espriou.h"
-#include "esprdbfile.h"
-
-      integer lnblnk  ! function definition
-
-      COMMON/OUTIN/IUOUT,IUIN
-
-C External text editor.
-      common/texted/tedlbl,teditor
-
-C External document previewer.
-      common/textpv/tprevlbl,tpreview
-
-C External figure generator.
-      common/figtool/figlbl,figexe
-
-C External graphing tool.
-      common/graphtool/grflbl,grfexe
-
-C External folder browser.
-      common/folderbr/foldlbl,foldexe
-
-C A set of possible image formats which can be accepted within
-C a model configuration file. These definitions are held in the
-C so-called esprc file. To add additional image types and/or 3rd
-C party display applications edit the ESP-r Install script which
-C creates the esprc file.
-C   imgtyp is the number of different image formats supported
-C   fmttag (4 char) is a tag for each image formt (e.g. GIF XBM)
-C   fmtexe (20 char) is the application name used to display
-C          images of type fmttag.
-      common/showimg/imgtyp,fmttag(5),fmtexe(5)
-
-C A set of possible cad packages: labels and executables.
-      common/cad3rd/cadlbl,cadexe,cadfmt
-
-C Report generator: label and executable.
-      common/rep3rd/replbl,repexe
-
-C Save journal. journoo = ON or OFF
-      common/journopt/journio,iuj,journcmd,jfile
-
-C Graphic capture, window dump & text print: label, command.
-      common/gprint/gprlbl,gprcmd
-      common/gxwd/gxwdlbl,gxwdcmd
-      common/tprint/tprlbl,tprcmd
-
-C Where validation tests are kept.
-      character vldlbl*20,vldfl*96
-      common/vldlst/vldlbl,vldfl
-
-      logical localdot,unixok,dll
-
-      character*(*) LFDEF
-      CHARACTER OUTSTR*124,WORD*20,loutstr*248
-      character outs*124,outs248*248
-      character fmttag*4,fmtexe*20,cadlbl*20,cadexe*20,cadfmt*4
-      character replbl*20,repexe*20
-      character gprlbl*20,gprcmd*48
-      character gxwdlbl*20,gxwdcmd*60
-      character tprlbl*20,tprcmd*48
-      character tedlbl*20,teditor*20
-      character tprevlbl*20,tpreview*48
-      character figlbl*20,figexe*48
-      character grflbl*20,grfexe*48
-      character foldlbl*20,foldexe*48
-      character journcmd*20,jfile*72
-
-C Altdot is an alternative location for the esprc file in
-C the installation folder.
-      character altdot*144
-#include "espinstalldir.h"
-
-C Check if running in dll mode, if so clear most of the
-C initial values because they will not be used.
-      call isadll(dll)
-      if(dll)then
-        teditor=' '
-        tedlbl='no word processor'
-        tpreview=' '
-        tprevlbl='no document preview'
-        figlbl='diagram editor'
-        figexe=' '
-        grflbl='no graphing tool'
-        grfexe=' '
-        foldlbl='no folder browser'
-        foldexe=' '
-        cadlbl='no CAD package'
-        cadexe=' '
-        cadfmt='DXF'
-        replbl='No report generator'
-        repexe='UNKNOWN'
-        gprcmd='UNKNOWN'
-        journcmd=' '
-        jfile=' '
-        imgtyp=1
-        fmttag(1)='GIF'
-        fmtexe(1)=' '
-        gxwdlbl='no graphic dump'
-      else
-
-C Assume initial values for interactive use. Default to putting
-C temporary files in the users home folder.
-        teditor='vi'
-        tedlbl='word processor'
-        tpreview='GROFF -p '
-        tprevlbl='document previewer'
-        figlbl='diagram editor'
-        figexe='xfig'
-        grflbl='graphing tool'
-        grfexe='xvgr'
-        foldlbl='folder browser'
-        foldexe='xfs '
-        cadlbl='CAD package'
-        cadexe=' '
-        cadfmt='DXF'
-        replbl='No report generator'
-        repexe='UNKNOWN'
-        gprcmd='UNKNOWN'
-        journcmd=' '
-        jfile=' '
-
-C Assume two basic image types and that the application window dump
-C will use xwud.
-        imgtyp=2
-        fmttag(1)='GIF'
-        fmtexe(1)='xv'
-        fmttag(2)='XWD'
-        fmtexe(2)='xwud -in'
-        gxwdlbl='Appl window dump'
-      endif
-
-C Set defaults and exemplars depending on whether Unix or NT.
-      call isunix(unixok)
-      ln=lnblnk(instpath)
-      if(unixok)then
-        write(gxwdcmd,'(3a)')'xwud -out ',upath(1:lnblnk(upath)),
-     &  '/gxwd.xwd'
-        tprlbl='Text dump'
-        write(tprcmd,'(a,a)') upath(1:lnblnk(upath)),'/tx_dump'
-        exemlbl='Standard exemplars'
-        write(exemfl,'(2a)') instpath(1:ln),'/training/exemplars'
-        dfdblbl='Standard defaults'
-        write(defdbfl,'(2a)') instpath(1:ln),'/default'
-        vldlbl='Validation standards'
-        write(vldfl,'(2a)') instpath(1:ln),'/validation/stds_list'
-        cdblbl='Standard climates'
-        write(cdblfil,'(2a)') instpath(1:ln),'/climate/climatelist'
-        write(altdot,'(2a)') instpath(1:ln),'/esprc'
-        write(standarddbpath,'(2a)') instpath(1:ln),'/databases'
-        write(standardclmpath,'(2a)') instpath(1:ln),'/climate'
-      else
-        write(gxwdcmd,'(a)')'xwud -out c:/temp/gxwd.xwd'
-        tprlbl='Text dump'
-        write(tprcmd,'(a)') 'c:/temp/tx_dump'
-        exemlbl='Standard exemplars'
-        write(exemfl,'(2a)') instpath(1:ln),'/training/exemplars'
-        dfdblbl='Standard defaults'
-        write(defdbfl,'(2a)') instpath(1:ln),'/default'
-        vldlbl='Validation tests'
-        write(vldfl,'(2a)') instpath(1:ln),'/validation/stds_list'
-        cdblbl='Standard climates'
-        write(cdblfil,'(2a)') instpath(1:ln),'/climate/climatelist'
-        write(altdot,'(2a)') instpath(1:ln),'/esprc'
-        write(standarddbpath,'(2a)') instpath(1:ln),'/databases'
-        write(standardclmpath,'(2a)') instpath(1:ln),'/climate'
-      endif
-
-C Debug.
-C      write(6,*) 'standard databases are at ',
-C     &  standarddbpath(1:lnblnk(standarddbpath))
-
-C If running in dll mode skip reading .esprc file.
-      if(dll)then
-        return
-      endif
-
-C Open the esprc file, return if not found.
-      IER=0
-      CALL ERPFREE(IFDEF,ISTAT)
-
-C Debug.
-C      write(6,*) 'lfdef is ',lfdef
-
-      call FPOPEN(IFDEF,ISTAT,1,0,LFDEF)
-      IF(ISTAT.LT.0)THEN
-        CALL ERPFREE(IFDEF,ISTAT)
-        call FPOPEN(IFDEF,ISTAT,1,0,altdot)
-        IF(ISTAT.LT.0)THEN
-          call edisp(iuout,
-     &    '  No preferences (esprc or .esprc) file found so setting')
-          call edisp(iuout,
-     &    '  default exemplars, CAD, report & print links.')
-          IER=1
-          CALL ERPFREE(IFDEF,ISTAT)
-          RETURN
-        else
-          localdot=.false.
-          esprc=altdot  ! assign the install folder file as the esprc file.
-          if(itrc.ge.0) call edisp(iuout,
-     &      '  Preferences (esprc) file - standard version.')
-          write(currentfile,'(a)') esprc(1:lnblnk(esprc))
-        endif
-      else
-        localdot=.true.
-        if(itrc.ge.0) call edisp(iuout,
-     &    '  Preferences (.esprc) file - users version.')
-        write(currentfile,'(a)') lfdef(1:lnblnk(lfdef))
-      ENDIF
-
-C Read '*ESPRC' tag.
-      CALL STRIPC(IFDEF,OUTSTR,0,ND,1,'ESPRC tag',IER)
-      if(OUTSTR(1:6).ne.'*ESPRC')then
-        if(localdot)then
-          write(outs248,'(2a)')LFDEF(:lnblnk(LFDEF)),
-     &      ' not an .esprc file!'
-        else
-          write(outs248,'(2a)')altdot(:lnblnk(altdot)),
-     &      ' not a .esprc file!'
-        endif
-        call edisp(iuout,OUTSTR)
-        call edisp248(iuout,outs248,100)
-        IER=1
-        CALL ERPFREE(IFDEF,ISTAT)
-        RETURN
-      endif
-
-C Take image types from the file.
-      imgtyp=0
-
-
-C If '*ESPRC' found then read db until '*end' found.
-  44  continue
-      CALL STRIPC(IFDEF,OUTSTR,0,ND,1,'dot sequences',IER)
-      K=0
-      CALL EGETW(OUTSTR,K,WORD,'W','dot sequences',IFLAG)
-      if(WORD(1:5).eq.'*gprn')then
-
-C Capture rectangular area of screen via capexgf is in wwlib.c
-        CALL EGETP(OUTSTR,K,gprlbl,'W','rect area lbl',IER)
-        CALL EGETP(OUTSTR,K,gprcmd,'W','rect area exe',IER)
-        write(outs,'(a,a,2x,a)')' Rectangular area grab:',gprlbl,gprcmd
-        if(itrc.gt.1)call edisp(iuout,outs)
-        call capexgf(gprcmd)
-      elseif(WORD(1:5).eq.'*gxwd')then
-
-C Screen capture commands - dump whole screem via capexall in wwlib.c
-        CALL EGETP(OUTSTR,K,gxwdlbl,'W','screen dump lbl',IER)
-        CALL EGETP(OUTSTR,K,gxwdcmd,'W','screen dump exe',IER)
-        write(outs,'(a,a,2x,a)')' Screen dump: ',gxwdlbl,gxwdcmd
-        if(itrc.gt.1)call edisp(iuout,outs)
-        call capexall(gxwdcmd)
-      elseif(WORD(1:5).eq.'*tprn')then
-
-C Caputre text buffer to a file, capextf is in wwlib.c
-        CALL EGETP(OUTSTR,K,tprlbl,'W','text print lbl',IER)
-        CALL EGETP(OUTSTR,K,tprcmd,'W','text print file',IER)
-        write(outs,'(a,a,2x,a)')' Local text print: ',tprlbl,tprcmd
-        if(itrc.gt.1)call edisp(iuout,outs)
-        call capextf(tprcmd)
-      elseif(WORD(1:4).eq.'*cad')then
-        CALL EGETP(OUTSTR,K,cadlbl,'W','cad lbl',IER)
-        CALL EGETP(OUTSTR,K,cadexe,'W','cad exe',IER)
-        CALL EGETW(OUTSTR,K,cadfmt,'W','cad fnt',IER)
-        write(outs,'(a,a,2x,a,2x,a)')' Local CAD: ',cadlbl,cadexe,cadfmt
-        if(itrc.gt.1)call edisp(iuout,outs)
-      elseif(WORD(1:13).eq.'*tutorial_app')then
-
-C Tutorial application depreciated.
-        continue
-      elseif(WORD(1:8).eq.'*journal')then
-
-C Turn journaling on/off.
-        CALL EGETW(OUTSTR,K,journcmd,'W','on/off',IFLAG)
-        if(journcmd(1:2).eq.'ON'.or.journcmd(1:2).eq.'on')then
-          journio=1
-        else
-          journio=0
-        endif
-      elseif(WORD(1:14).eq.'*image_display')then
-        imgtyp=imgtyp+1
-        CALL EGETP(OUTSTR,K,fmttag(imgtyp),'W','image fmt',IER)
-        CALL EGETP(OUTSTR,K,fmtexe(imgtyp),'W','img exe',IER)
-        write(outs,'(4a)')' Images : ',fmttag(imgtyp),' via ',
-     &    fmtexe(imgtyp)
-        if(itrc.gt.1)call edisp(iuout,outs)
-      elseif(WORD(1:7).eq.'*editor')then
-        CALL EGETP(OUTSTR,K,tedlbl,'W','manual editor lbl',IER)
-        CALL EGETP(OUTSTR,K,teditor,'W','editor exe',IER)
-        write(outs,'(4a)')' Editor: ',tedlbl,' via ',teditor
-        if(itrc.gt.1)call edisp(iuout,outs)
-      elseif(WORD(1:11).eq.'*docpreview')then
-        CALL EGETP(OUTSTR,K,tprevlbl,'W','document previewer lbl',IER)
-        CALL EGETP(OUTSTR,K,tpreview,'W','doc previewer exe',IER)
-        write(outs,'(4a)')' Preview: ',tprevlbl,' via ',tpreview
-        if(itrc.gt.1)call edisp(iuout,outs)
-      elseif(WORD(1:7).eq.'*figure')then
-        CALL EGETP(OUTSTR,K,figlbl,'W','figure editor lbl',IER)
-        CALL EGETP(OUTSTR,K,figexe,'W','figure editor exe',IER)
-        write(outs,'(4a)')' Preview: ',figlbl,' via ',figexe
-        if(itrc.gt.1)call edisp(iuout,outs)
-      elseif(WORD(1:9).eq.'*graphing')then
-        CALL EGETP(OUTSTR,K,grflbl,'W','graphing tool lbl',IER)
-        CALL EGETP(OUTSTR,K,grfexe,'W','graphing tool exe',IER)
-        write(outs,'(4a)')' Graphing: ',grflbl,' via ',grfexe
-        if(itrc.gt.1)call edisp(iuout,outs)
-      elseif(WORD(1:9).eq.'*folderbr')then
-        CALL EGETP(OUTSTR,K,foldlbl,'W','folder br tool lbl',IER)
-        CALL EGETRM(OUTSTR,K,foldexe,'W','folder tool exe',IER)
-        write(outs,'(4a)')' Folder browsing: ',foldlbl,' via ',foldexe
-        if(itrc.gt.1)call edisp(iuout,outs)
-      elseif(WORD(1:10).eq.'*exemplars')then
-        CALL EGETP(OUTSTR,K,exemlbl,'W','exemplars list lbl',IER)
-        CALL EGETRM(OUTSTR,K,exemfl,'W','exemplars file',IER)
-        write(outs248,'(2a)')'  Exemplars (model list) - ',exemfl
-        if(itrc.gt.1)call edisp248(iuout,outs248,100)
-      elseif(WORD(1:12).eq.'*db_defaults')then
-        CALL EGETP(OUTSTR,K,dfdblbl,'W','def db list lbl',IER)
-        CALL EGETRM(OUTSTR,K,defdbfl,'W','default db file',IER)
-        write(outs248,'(2a)')'  Default file - ',defdbfl
-        if(itrc.gt.1)call edisp248(iuout,outs248,100)
-      elseif(WORD(1:16).eq.'*validation_stds')then
-        CALL EGETP(OUTSTR,K,vldlbl,'W','validation list lbl',IER)
-        CALL EGETRM(OUTSTR,K,vldfl,'W','validation stds file',IER)
-        write(outs248,'(4a)')' Validation: ',vldlbl,' in ',vldfl
-        if(itrc.gt.1)call edisp248(iuout,outs248,100)
-      elseif(WORD(1:12).eq.'*db_climates')then
-        CALL EGETP(OUTSTR,K,cdblbl,'W','clm db list lbl',IER)
-        CALL EGETRM(OUTSTR,K,cdblfil,'W','clm db list file',IER)
-        write(outs248,'(2a)')'  Weather (list) - ',cdblfil
-        if(itrc.gt.1)call edisp248(iuout,outs248,100)
-      elseif(WORD(1:11).eq.'*report_gen')then
-        CALL EGETP(OUTSTR,K,replbl,'W','report gen lbl',IER)
-        CALL EGETRM(OUTSTR,K,repexe,'W','report gen exe',IER)
-        write(outs,'(4a)')' Reports: ',replbl,' via ',repexe
-        if(itrc.gt.1)call edisp(iuout,outs)
-      elseif(WORD(1:5).eq.'*year')then
-      elseif(WORD(1:4).eq.'*end')then
-        goto 45
-      else
-        call usrmsg(' Unknown dot command in... ',outstr,'W')
-        goto 44
-      endif
-
-C Loop back for next command.
-      goto 44
-
-C Close file before exiting.
-   45 CONTINUE
-      if(localdot)then
-        write(outs248,'(3a)') 'Scanning ',
-     &         LFDEF(1:lnblnk(LFDEF)),' definitions.'
-        if(itrc.gt.1)call edisp248(iuout,outs248,100)
-      else
-        write(outs248,'(3a)') 'Standard settings in: ',
-     &         altdot(1:lnblnk(altdot)),' successfully scanned...'
-        if(itrc.gt.1)call edisp248(iuout,outs248,100)
-      endif
-      CALL ERPFREE(IFDEF,ISTAT)
-      RETURN
-      END
-
-C ******************** ESCDEF (copied from esrucom/startup.F)
-C ESCDEF scans the ESP-r defaults definition file and returns
-C the default file and database names via common block.
-C It uses espinstalldir.h which was created by the Install
-C script with the current esp-r install directory held
-C in a string instpath.
-
-C ESCDEF also scans default constructions to be offered
-C for code complience purposes or for use defined uses.
-      SUBROUTINE ESCDEF(IFDEF,IER)
-#include "esprdbfile.h"
-C Use espriou.h for climatelist file name and defdbfl.
-#include "espriou.h"
-
-      integer lnblnk  ! function definition
-
-      COMMON/OUTIN/IUOUT,IUIN
-
-C Defaults.
-      character*96 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF
-      COMMON/DEFLT2/DFCFG,DFCTL,DEFRLB,DAFRES,DAPROB,DPNF
-      COMMON/DEFLT3/DFCFD,DECMPDBFL,DICONDBFL
-      common/deflt4/dinstpath
-
-C Construction defaults:
-C cdtype (char*8) identifier for each set of constructions
-C cdtypelabel (char*32) menu select for each set of construcitons
-C cdextwall (char*32) external wall
-C cdextglz (char*32) external glazing/window
-C cdextfrm (char*32) external frame
-C cdextdisp (char*32) external display glazing
-C cdextdoor (char*32) external door
-C cdextvdoor (char*32) external vehicle door
-C cdextflrf (char*32) external flat roof
-C cdextslrf (char*32) external slope roof
-C cdextskyl (char*32) external skylight
-C cdextfnd (char*32) external foundation
-C cdintfloor (char*32) internal floor
-C cdintceil (char*32) internal ceiling
-C cdintptn (char*32) internal partition
-C cdintdoor (char*32) internal door
-C cdintglz (char*32) internal glazing/window
-      character cdtype*8,cdtypelabel*32,cdextwall*32,cdextglz*32
-      character cdextfrm*32,cdextdisp*32,cdextdoor*32,cdextvdoor*32
-      character cdextflrf*32,cdextslrf*32,cdextskyl*32,cdextfnd*32
-      character cdintfloor*32,cdintceil*32,cdintptn*32,cdintdoor*32
-      character cdintglz*32
-      integer icdtypes
-      common/deflt5t/icdtypes
-      common/deflt5/cdtype(5),cdtypelabel(5),cdextwall(5),cdextglz(5),
-     &  cdextfrm(5),cdextdisp(5),cdextdoor(5),cdextvdoor(5),
-     &  cdextflrf(5),cdextslrf(5),cdextskyl(5),cdextfnd(5),
-     &  cdintfloor(5),cdintceil(5),cdintptn(5),cdintdoor(5),cdintglz(5)
-
-      CHARACTER OUTSTR*124,WORD*20,outs248*248
-
-C << consider increasing size of these strings >>
-      character*72 DFCFD
-      character*72 DECMPDBFL,DICONDBFL
-      character dinstpath*60,di*60
-      logical unixok,dll
-#include "espinstalldir.h"
-
-C Assume default db names (in case of failure to find defaults
-C file or failure reading it).
-
-C << make a pass sorting out these default file names >>
-      call isunix(unixok)
-      if(unixok)then
-        write(dinstpath,'(a)') instpath(1:lnblnk(instpath))
-        write(di,'(a)') instpath(1:lnblnk(instpath))
-        ln=lnblnk(di)
-        write(DFCFG,'(2a)') di(1:min(ln,34)),
-     &    '/training/basic/cfg/bld_basic.cfg'
-        write(DFCTL,'(2a)') di(1:min(ln,34)),
-     &    '/training/basic/ctl/bld_basic.ctl'
-        write(DAPROB,'(2a)') di(1:min(ln,38)),
-     &    'training/basic/nets/bld_basic_af1.afn'
-        write(DPNF,'(2a)') di(1:min(ln,31)),
-     &    '/training/plant/vent_simple/cfg/vent.cfg'
-        write(DFCFD,'(2a)') di(1:min(ln,45)),
-     &    '/training/cfd/template.dfd'
-        write(DEFRLB,'(2a)') di(1:min(ln,51)),'/databases/test.res'
-        write(DAFRES,'(2a)') di(1:min(ln,51)),'/databases/test.mfr'
-        write(DCLIM,'(2a)') di(1:min(ln,51)),'/climate/clm67'
-        write(DAPRES,'(2a)') di(1:min(ln,51)),'/databases/pressc.db1'
-        write(DFCON,'(2a)') di(1:min(ln,51)),
-     &    '/databases/material.db3.a'
-        write(DFMUL,'(2a)') di(1:min(ln,51)),'/databases/multicon.db3'
-        write(DOPTDB,'(2a)') di(1:min(ln,51)),'/databases/optics.db2'
-        write(DPRFDB,'(2a)') di(1:min(ln,51)),
-     &    '/databases/profiles.db1.a'
-        write(DPCDB,'(2a)') di(1:min(ln,51)),'/databases/plantc.db1'
-        write(DECMPDBFL,'(2a)') di(1:min(ln,51)),'/databases/elcomp.db1'
-        write(DMCMPDBFL,'(2a)') di(1:min(ln,51)),'/databases/mscomp.db1'
-        write(DICONDBFL,'(2a)') di(1:min(ln,51)),'/databases/icons.db1'
-        write(dmdbnam,'(2a)') di(1:min(ln,51)),'/databases/mould.db1'
-        write(DSBEM,'(2a)') di(1:min(ln,51)),'/databases/SBEM.db1'
-      else
-C        dinstpath = 'c:/esru/esp-r'
-        write(dinstpath,'(a)') instpath(1:lnblnk(instpath))
-        write(di,'(a)') instpath(1:lnblnk(instpath))
-        ln=lnblnk(di)
-        write(DFCFG,'(2a)') di(1:min(ln,34)),
-     &    '/training/basic/cfg/bld_basic.cfg'
-        write(DFCTL,'(2a)') di(1:min(ln,34)),
-     &    '/training/basic/ctl/bld_basic.ctl'
-        write(DAPROB,'(2a)') di(1:min(ln,38)),
-     &    'training/basic/nets/bld_basic_af1.afn'
-        write(DPNF,'(2a)') di(1:min(ln,31)),
-     &    '/training/plant/vent_simple/cfg/vent.cfg'
-        write(DFCFD,'(2a)') di(1:min(ln,45)),
-     &    '/training/cfd/template.dfd'
-        write(DEFRLB,'(2a)') di(1:min(ln,51)),'/databases/test.res'
-        write(DAFRES,'(2a)') di(1:min(ln,51)),'/databases/test.mfr'
-        write(DCLIM,'(2a)') di(1:min(ln,51)),'/climate/clm67'
-        write(DAPRES,'(2a)') di(1:min(ln,51)),'/databases/pressc.db1'
-        write(DFCON,'(2a)') di(1:min(ln,51)),
-     &    '/databases/material.db3.a'
-        write(DFMUL,'(2a)') di(1:min(ln,51)),'/databases/multicon.db3'
-        write(DOPTDB,'(2a)') di(1:min(ln,51)),'/databases/optics.db2'
-        write(DPRFDB,'(2a)') di(1:min(ln,51)),
-     &    '/databases/profiles.db1.a'
-        write(DPCDB,'(2a)') di(1:min(ln,51)),'/databases/plantc.db1'
-        write(DECMPDBFL,'(2a)') di(1:min(ln,51)),'/databases/elcomp.db1'
-        write(DMCMPDBFL,'(2a)') di(1:min(ln,51)),'/databases/mscomp.db1'
-        write(DICONDBFL,'(2a)') di(1:min(ln,51)),'/databases/icons.db1'
-        write(dmdbnam,'(2a)') di(1:min(ln,51)),'/databases/mould.db1'
-        write(DSBEM,'(2a)') di(1:min(ln,51)),'/databases/SBEM.db1'
-      endif
-
-C << ?? Should there be default values for constructions? >>
-      icdtypes = 0
-
-C Check if running in dll mode, if so skip reading defaults file.
-      call isadll(dll)
-      if(dll)then
-        return
-      endif
-
-C Open the defaults file, return if not found.
-      IER=0
-      CALL EFOPSEQ(IFDEF,defdbfl,1,IER)
-      IF(IER.LT.0)THEN
-        write(outs248,'(3a)') 'The file ',defdbfl(1:lnblnk(defdbfl)),
-     &   ' was not found (assuming standard databases).'
-        call edisp248(IUOUT,outs248,100)
-        IER=1
-        RETURN
-      ENDIF
-
-C Read '*ESP-r Defaults' tag.
-      CALL STRIPC(IFDEF,OUTSTR,0,ND,1,'default tag',IER)
-      if(OUTSTR(1:15).ne.'*ESP-r Defaults')then
-        write(outs248,'(3a)') 'The file ',defdbfl(1:lnblnk(defdbfl)),
-     &   ' is not a defaults file.'
-        call edisp248(IUOUT,outs248,100)
-        IER=1
-        RETURN
-      endif
-
-C If '*ESP-r Defaults' found then read db until '*end' found.
-  44  continue
-      CALL STRIPC(IFDEF,OUTSTR,0,ND,1,'def names',IER)
-      K=0
-      CALL EGETW(OUTSTR,K,WORD,'W','def names',IFLAG)
-      if(WORD(1:5).eq.'*ipth')then
-        CALL EGETRM(OUTSTR,K,dinstpath,'W','instal folder',IER)
-      elseif(WORD(1:4).eq.'*cfg')then
-        CALL EGETRM(OUTSTR,K,DFCFG,'W','def config',IER)
-      elseif(WORD(1:4).eq.'*ctl')then
-        CALL EGETRM(OUTSTR,K,DFCTL,'W','def control',IER)
-      elseif(WORD(1:4).eq.'*mfn')then
-        CALL EGETRM(OUTSTR,K,DAPROB,'W','def mass flow net',IER)
-      elseif(WORD(1:4).eq.'*pnf')then
-        CALL EGETRM(OUTSTR,K,DPNF,'W','def mass flow net',IER)
-      elseif(WORD(1:4).eq.'*dfd')then
-        CALL EGETRM(OUTSTR,K,DFCFD,'W','def domain flow definit.',
-     &       IER)
-      elseif(WORD(1:4).eq.'*res')then
-        CALL EGETRM(OUTSTR,K,DEFRLB,'W','def results lib',IER)
-      elseif(WORD(1:4).eq.'*mfr')then
-        CALL EGETRM(OUTSTR,K,DAFRES,'W','def results lib',IER)
-      elseif(WORD(1:4).eq.'*prm')then
-        CALL EGETRM(OUTSTR,K,DFCON,'W','def material db',IER)
-      elseif(WORD(1:4).eq.'*mlc')then
-        CALL EGETRM(OUTSTR,K,DFMUL,'W','def multilayer db',IER)
-      elseif(WORD(1:4).eq.'*opt')then
-        CALL EGETRM(OUTSTR,K,DOPTDB,'W','def optical db',IER)
-      elseif(WORD(1:4).eq.'*prs')then
-        CALL EGETRM(OUTSTR,K,DAPRES,'W','def pressure db',IER)
-      elseif(WORD(1:4).eq.'*evn')then
-        CALL EGETRM(OUTSTR,K,DPRFDB,'W','def profiles db',IER)
-      elseif(WORD(1:4).eq.'*clm')then
-        CALL EGETRM(OUTSTR,K,DCLIM,'W','def climate db',IER)
-      elseif(WORD(1:4).eq.'*pdb')then
-        CALL EGETRM(OUTSTR,K,DPCDB,'W','def plant comp db',IER)
-      elseif(WORD(1:5).eq.'*ecdb')then
-        CALL EGETRM(OUTSTR,K,DECMPDBFL,'W','def elec comp db',IER)
-      elseif(WORD(1:5).eq.'*mcdb')then
-        CALL EGETRM(OUTSTR,K,DMCMPDBFL,'W','def misc comp db',IER)
-      elseif(WORD(1:5).eq.'*icdb')then
-        CALL EGETRM(OUTSTR,K,DICONDBFL,'W','default icons',IER)
-      elseif(WORD(1:5).eq.'*mldb')then
-        CALL EGETRM(OUTSTR,K,dmdbnam,'W','default mycotoxin db',IER)
-      elseif(WORD(1:5).eq.'*sbem')then
-        CALL EGETRM(OUTSTR,K,DSBEM,'W','default SBEM db',IER)
-      elseif(WORD(1:14).eq.'*constructions')then
-  46    continue
-        CALL STRIPC(IFDEF,OUTSTR,0,ND,1,'construction tags',IER)
-        K=0
-        CALL EGETW(OUTSTR,K,WORD,'W','constr tags',IFLAG)
-        if(WORD(1:4).eq.'*set')then
-          icdtypes=icdtypes+1
-          CALL EGETW(OUTSTR,K,cdtype(icdtypes),'W',
-     &      'construction set type',IER)
-          CALL EGETRM(OUTSTR,K,cdtypelabel(icdtypes),'W',
-     &      'construction set type menu',IER)
-          goto 46
-        elseif(WORD(1:9).eq.'*ext_wall')then
-          CALL EGETW(OUTSTR,K,cdextwall(icdtypes),'W',
-     &      'construction set ext wall',IER)
-          goto 46
-        elseif(WORD(1:8).eq.'*ext_glz')then
-          CALL EGETW(OUTSTR,K,cdextglz(icdtypes),'W',
-     &      'construction set ext glazing',IER)
-          goto 46
-        elseif(WORD(1:8).eq.'*ext_frm')then
-          CALL EGETW(OUTSTR,K,cdextfrm(icdtypes),'W',
-     &      'construction set ext frame',IER)
-          goto 46
-        elseif(WORD(1:9).eq.'*ext_disp')then
-          CALL EGETW(OUTSTR,K,cdextdisp(icdtypes),'W',
-     &      'construction set ext display glazing',IER)
-          goto 46
-        elseif(WORD(1:9).eq.'*ext_door')then
-          CALL EGETW(OUTSTR,K,cdextdoor(icdtypes),'W',
-     &      'construction set ext door',IER)
-          goto 46
-        elseif(WORD(1:10).eq.'*ext_vdoor')then
-          CALL EGETW(OUTSTR,K,cdextvdoor(icdtypes),'W',
-     &      'construction set ext vehicle door',IER)
-          goto 46
-        elseif(WORD(1:9).eq.'*ext_flrf')then
-          CALL EGETW(OUTSTR,K,cdextflrf(icdtypes),'W',
-     &      'construction set ext flat roof',IER)
-          goto 46
-        elseif(WORD(1:9).eq.'*ext_slrf')then
-          CALL EGETW(OUTSTR,K,cdextslrf(icdtypes),'W',
-     &      'construction set ext flat roof',IER)
-          goto 46
-        elseif(WORD(1:9).eq.'*ext_skyl')then
-          CALL EGETW(OUTSTR,K,cdextskyl(icdtypes),'W',
-     &      'construction set ext skylight',IER)
-          goto 46
-        elseif(WORD(1:8).eq.'*ext_fnd')then
-          CALL EGETW(OUTSTR,K,cdextfnd(icdtypes),'W',
-     &      'construction set ext foundation',IER)
-          goto 46
-        elseif(WORD(1:10).eq.'*int_floor')then
-          CALL EGETW(OUTSTR,K,cdintfloor(icdtypes),'W',
-     &      'construction set internal floor',IER)
-          goto 46
-        elseif(WORD(1:9).eq.'*int_ceil')then
-          CALL EGETW(OUTSTR,K,cdintceil(icdtypes),'W',
-     &      'construction set internal floor',IER)
-          goto 46
-        elseif(WORD(1:8).eq.'*int_ptn')then
-          CALL EGETW(OUTSTR,K,cdintptn(icdtypes),'W',
-     &      'construction set internal partition',IER)
-          goto 46
-        elseif(WORD(1:9).eq.'*int_door')then
-          CALL EGETW(OUTSTR,K,cdintdoor(icdtypes),'W',
-     &      'construction set internal door',IER)
-          goto 46
-        elseif(WORD(1:8).eq.'*int_glz')then
-          CALL EGETW(OUTSTR,K,cdintglz(icdtypes),'W',
-     &      'construction set internal glazing',IER)
-          goto 46
-        elseif(WORD(1:8).eq.'*end_set')then
-          goto 46
-        elseif(WORD(1:18).eq.'*end_constructions')then
-          goto 44
-        else
-          goto 46   ! nothing matches this try another line.
-        endif
-      elseif(WORD(1:4).eq.'*end')then
-        goto 45
-      else
-        call usrmsg(' Unknown default in... ',outstr,'W')
-        goto 44
-      endif
-
-      if(ier.ne.0)then
-        write(outs248,'(3a)') 'Problem detected in ',
-     &    defdbfl(:lnblnk(defdbfl)),' while reading...'
-        CALL EDISP248(IUOUT,outs248,100)
-        CALL EDISP(IUOUT,outstr)
-        goto 45
-      endif
-
-C Loop back for next default file.
-      goto 44
-
-C Close defaults file before exiting.
-   45 CONTINUE
-      CALL ERPFREE(IFDEF,ISTAT)
-      RETURN
-      END SUBROUTINE
-
-C findwhichdbpath: takes a database file name and checks to see if
-C            the path is local or absolute or standard database folder.
-
-C ******* findwhichdbpath (copied from esrucom/esystem.F)
-C findwhichdbpath takes a database file name and checks to
-C see if the path is local or absolute or standard database folder.
-C Depending on which database (the parameter topic) the
-C common block file string and whichdbpath variable is updated.
-C topic =  'opt' for optics, 'pdb' for plant component templates
-C       =  'prs' for pressure coef, 'sbm' for UK SBEM database,
-C       =  'mat' for common materials, 'evn' for event profiles
-C       =  'mul' for common constructions, 'msc' for active components
-C       =  'mld' for mould isopleths, 'clm' for weather
-      subroutine findwhichdbpath(topic,file,ier)
-      implicit none
-#include "esprdbfile.h"
-
-      integer lnblnk  ! function definition
-      integer ier  ! typd for passed parameter
-
-C Currently works with optical and plant template database.
-      character*(*) file
-      character topic*3 ! identify which type of database
-      integer lndbp,lnclmp ! length of standard database weather paths
-      integer lnwkg   ! for length of working file name
-      logical unixok  ! to check for database path file separators
-
-C Set OS and check that standarddbpath standardweatherpath have been set.
-      lndbp=lnblnk(standarddbpath)
-      lnclmp=lnblnk(standardclmpath)
-      lnwkg=lnblnk(file)
-      if(lndbp.lt.1.or.lnwkg.lt.1)then
-        ier=2
-        return
-      endif
-      call isunix(unixok)
-      
-      if(unixok)then
-        if(file(1:7).eq.'../dbs/')then
-
-C Local model dbs folder.
-          if(topic(1:3).eq.'opt')then
-            ipathoptdb=1  ! local folder for common optics
-            write(LOPTDB,'(a)') file(1:lnwkg) ! assign directly
-          elseif(topic(1:3).eq.'pdb')then
-            ipathpcdb=1  ! local folder for plant database
-            write(LPCDB,'(a)') file(1:lnwkg) ! assign directly
-          elseif(topic(1:3).eq.'prs')then
-            ipathapres=1  ! local folder for pressure distributions
-            write(lapres,'(a)') file(1:lnwkg) ! assign directly
-          elseif(topic(1:3).eq.'sbm')then
-            ipathsbem=1  ! local folder for UK SBEM database
-            write(lsbem,'(a)') file(1:lnwkg) ! assign directly
-          elseif(topic(1:3).eq.'mat')then
-            ipathmat=1  ! local folder for common materials
-            write(LFMAT,'(a)') file(1:lnwkg) ! assign directly
-          elseif(topic(1:3).eq.'evn')then
-            ipathprodb=1  ! local folder for event profiles
-            write(LPRFDB,'(a)') file(1:lnwkg) ! assign directly
-          elseif(topic(1:3).eq.'mul')then
-            ipathmul=1  ! local folder for common constructions
-            write(LFMUL,'(a)') file(1:lnwkg) ! assign directly
-          elseif(topic(1:3).eq.'msc')then
-            ipathmsc=1  ! local folder for active components
-            write(MCMPDBFL,'(a)') file(1:lnwkg) ! assign directly
-          elseif(topic(1:3).eq.'mld')then
-            ipathmould=1  ! local folder for mould isopleths
-            write(lfmould,'(a)') file(1:lnwkg) ! assign directly
-          elseif(topic(1:3).eq.'clm')then
-            ipathclim=1  ! local folder for weather
-            write(LCLIM,'(a)') file(1:lnwkg) ! assign directly
-          endif
-        elseif(file(1:lndbp).eq.standarddbpath(1:lndbp))then
-
-C The initial part of database path matches so save the file name w/o path.
-          if(topic(1:3).eq.'opt')then
-            ipathoptdb=2
-            write(LOPTDB,'(a)') file(lndbp+2:lnwkg)  ! without path
-          elseif(topic(1:3).eq.'pdb')then
-            ipathpcdb=2
-            write(LPCDB,'(a)')  file(lndbp+2:lnwkg)  ! without path
-          elseif(topic(1:3).eq.'prs')then
-            ipathapres=2
-            write(lapres,'(a)') file(lndbp+2:lnwkg)  ! without path
-          elseif(topic(1:3).eq.'sbm')then
-            ipathsbem=2
-            write(lsbem,'(a)') file(lndbp+2:lnwkg) ! without path
-          elseif(topic(1:3).eq.'mat')then
-            ipathmat=2
-            write(LFMAT,'(a)') file(lndbp+2:lnwkg) ! without path
-          elseif(topic(1:3).eq.'evn')then
-            ipathprodb=2
-            write(LPRFDB,'(a)') file(lndbp+2:lnwkg) ! without path
-          elseif(topic(1:3).eq.'mul')then
-            ipathmul=2
-            write(LFMUL,'(a)') file(lndbp+2:lnwkg) ! without path
-          elseif(topic(1:3).eq.'msc')then
-            ipathmsc=2
-            write(MCMPDBFL,'(a)') file(lndbp+2:lnwkg) ! without path
-          elseif(topic(1:3).eq.'mld')then
-            ipathmould=2
-            write(lfmould,'(a)') file(lndbp+2:lnwkg) ! without path
-          elseif(topic(1:3).eq.'clm')then
-            ipathclim=2
-            write(LCLIM,'(a)') file(lndbp+2:lnwkg) ! without path
-          endif
-        elseif(file(1:lnclmp).eq.standardclmpath(1:lnclmp))then
-
-C The initial part of the weather path matches save the file name w/o path.
-          if(topic(1:3).eq.'clm')then
-            ipathclim=2
-            write(LCLIM,'(a)') file(lnclmp+2:lnwkg) ! without path
-          endif
-        else
-          if(topic(1:3).eq.'opt')then
-            ipathoptdb=0
-            write(LOPTDB,'(a)') file(1:lnwkg)  ! assign directly
-          elseif(topic(1:3).eq.'pdb')then
-            ipathpcdb=0
-            write(LPCDB,'(a)')  file(1:lnwkg)  ! assign directly
-          elseif(topic(1:3).eq.'prs')then
-            ipathapres=0
-            write(lapres,'(a)') file(1:lnwkg)  ! assign directly
-          elseif(topic(1:3).eq.'sbm')then
-            ipathsbem=0
-            write(lsbem,'(a)') file(1:lnwkg) ! assign directly
-          elseif(topic(1:3).eq.'mat')then
-            ipathmat=0
-            write(LFMAT,'(a)') file(1:lnwkg)  ! assign directly
-          elseif(topic(1:3).eq.'evn')then
-            ipathprodb=0
-            write(LPRFDB,'(a)') file(1:lnwkg) ! assign directly
-          elseif(topic(1:3).eq.'mul')then
-            ipathmul=0
-            write(LFMUL,'(a)') file(1:lnwkg) ! assign directly
-          elseif(topic(1:3).eq.'msc')then
-            ipathmsc=0
-            write(MCMPDBFL,'(a)') file(1:lnwkg) ! assign directly
-          elseif(topic(1:3).eq.'mld')then
-            ipathmould=0  ! local folder for mould isopleths
-            write(lfmould,'(a)') file(1:lnwkg) ! assign directly
-          elseif(topic(1:3).eq.'clm')then
-            ipathclim=0
-            write(LCLIM,'(a)') file(1:lnwkg) ! assign directly
-          endif
-        endif
-      else
-        if(file(1:7).eq.'..\\dbs\\')then
-          if(topic(1:3).eq.'opt')then
-            ipathoptdb=1  ! local folder for optical database
-            write(LOPTDB,'(a)') file(1:lnwkg)  ! assign directly
-          elseif(topic(1:3).eq.'pdb')then
-            ipathpcdb=1  ! local folder for plant database
-            write(LPCDB,'(a)') file(1:lnwkg)   ! assign directly
-          elseif(topic(1:3).eq.'prs')then
-            ipathapres=1  ! local folder for pressure database
-            write(lapres,'(a)') file(1:lnwkg) ! assign directly
-          elseif(topic(1:3).eq.'sbm')then
-            ipathsbem=1
-            write(lsbem,'(a)') file(1:lnwkg) ! assign directly
-          elseif(topic(1:3).eq.'mat')then
-            ipathmat=1  ! local folder for materials database
-            write(LFMAT,'(a)') file(1:lnwkg) ! assign directly
-          elseif(topic(1:3).eq.'evn')then
-            ipathprodb=1  ! local folder for profiles database
-            write(LPRFDB,'(a)') file(1:lnwkg) ! assign directly
-          elseif(topic(1:3).eq.'mul')then
-            ipathmul=1  ! local folder for MLC database
-            write(LFMUL,'(a)') file(1:lnwkg) ! assign directly
-          elseif(topic(1:3).eq.'msc')then
-            ipathmsc=1  ! local folder for active components
-            write(MCMPDBFL,'(a)') file(1:lnwkg) ! assign directly
-          elseif(topic(1:3).eq.'mld')then
-            ipathmould=1  ! local folder for mould isopleths
-            write(lfmould,'(a)') file(1:lnwkg) ! assign directly
-          elseif(topic(1:3).eq.'clm')then
-            ipathclim=1  ! local folder for weather
-            write(LCLIM,'(a)') file(1:lnwkg) ! assign directly
-          endif
-        elseif(file(1:lndbp).eq.standarddbpath(1:lndbp))then
-          if(topic(1:3).eq.'opt')then
-            ipathoptdb=2
-            write(LOPTDB,'(a)') file(lndbp+2:lnwkg) ! without path
-          elseif(topic(1:3).eq.'pdb')then
-            ipathpcdb=2
-            write(LPCDB,'(a)')  file(lndbp+2:lnwkg)  ! without path
-          elseif(topic(1:3).eq.'prs')then
-            ipathapres=2
-            write(lapres,'(a)') file(lndbp+2:lnwkg)  ! without path
-          elseif(topic(1:3).eq.'sbm')then
-            ipathsbem=2
-            write(lsbem,'(a)') file(lndbp+2:lnwkg) ! without path
-          elseif(topic(1:3).eq.'mat')then
-            ipathmat=2
-            write(LFMAT,'(a)') file(lndbp+2:lnwkg) ! without path
-          elseif(topic(1:3).eq.'evn')then
-            ipathprodb=2
-            write(LPRFDB,'(a)') file(lndbp+2:lnwkg) ! without path
-          elseif(topic(1:3).eq.'mul')then
-            ipathmul=2
-            write(LFMUL,'(a)') file(lndbp+2:lnwkg) ! without path
-          elseif(topic(1:3).eq.'msc')then
-            ipathmsc=2
-            write(MCMPDBFL,'(a)') file(lndbp+2:lnwkg) ! without path
-          elseif(topic(1:3).eq.'mld')then
-            ipathmould=2
-            write(lfmould,'(a)') file(lndbp+2:lnwkg) ! without path
-          elseif(topic(1:3).eq.'clm')then
-            ipathclim=2
-            write(LCLIM,'(a)') file(lndbp+2:lnwkg) ! without path
-          endif
-        elseif(file(1:lnclmp).eq.standardclmpath(1:lnclmp))then
-          if(topic(1:3).eq.'clm')then
-            ipathclim=2
-            write(LCLIM,'(a)') file(lnclmp+2:lnwkg) ! without path
-          endif
-        else
-          if(topic(1:3).eq.'opt')then
-            ipathoptdb=0
-            write(LOPTDB,'(a)') file(1:lnwkg)  ! assign directly
-          elseif(topic(1:3).eq.'pdb')then
-            ipathpcdb=0
-            write(LPCDB,'(a)')  file(1:lnwkg)  ! assign directly
-          elseif(topic(1:3).eq.'prs')then
-            ipathapres=0
-            write(lapres,'(a)') file(1:lnwkg)  ! assign directly
-          elseif(topic(1:3).eq.'sbm')then
-            ipathsbem=0
-            write(lsbem,'(a)') file(1:lnwkg) ! assign directly
-          elseif(topic(1:3).eq.'mat')then
-            ipathmat=0
-            write(LFMAT,'(a)') file(1:lnwkg)  ! assign directly
-          elseif(topic(1:3).eq.'evn')then
-            ipathprodb=0
-            write(LPRFDB,'(a)') file(1:lnwkg) ! assign directly
-          elseif(topic(1:3).eq.'mul')then
-            ipathmul=0
-            write(LFMUL,'(a)') file(1:lnwkg) ! assign directly
-          elseif(topic(1:3).eq.'msc')then
-            ipathmsc=0
-            write(MCMPDBFL,'(a)') file(1:lnwkg) ! assign directly
-          elseif(topic(1:3).eq.'mld')then
-            ipathmould=0
-            write(lfmould,'(a)') file(1:lnwkg) ! assign directly
-          elseif(topic(1:3).eq.'clm')then
-            ipathclim=0
-            write(LCLIM,'(a)') file(1:lnwkg) ! assign directly
-          endif
-        endif
-      endif
-
-C Debug.
-      write(6,*) file
-      if(topic(1:3).eq.'opt')then
-C        write(6,*) loptdb
-C        write(6,*) 'findwhichdbpath ipath is ',ipathoptdb
-C      elseif(topic(1:3).eq.'pdb')then
-C        write(6,*) LPCDB
-C        write(6,*) 'findwhichdbpath ipath is ',ipathpcdb
-C      elseif(topic(1:3).eq.'prs')then
-C        write(6,*) lapres
-C        write(6,*) 'findwhichdbpath ipath is ',ipathapres
-C      elseif(topic(1:3).eq.'sbm')then
-C        write(6,*) lsbem
-C        write(6,*) 'findwhichdbpath ipath is ',ipathsbem
-C      elseif(topic(1:3).eq.'mat')then
-C        write(6,*) LFMAT
-C        write(6,*) 'findwhichdbpath ipath is ',ipathmat
-C      elseif(topic(1:3).eq.'evn')then
-C        write(6,*) LPRFDB
-C        write(6,*) 'findwhichdbpath ipath is ',ipathprodb
-C      elseif(topic(1:3).eq.'mul')then
-C        write(6,*) LFMUL
-C        write(6,*) 'findwhichdbpath ipath is ',ipathmul
-C      elseif(topic(1:3).eq.'msc')then
-C        write(6,*) MCMPDBFL
-C        write(6,*) 'findwhichdbpath ipath is ',ipathmsc
-      endif
-
-      return
-      end
 
 C ****** bamdatetojulian
 C bamdatetojulian is passed date string (from BAM log) and returns a 
