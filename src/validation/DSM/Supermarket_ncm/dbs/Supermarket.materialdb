@@ -7,21 +7,17 @@
 # Materials have the following attributes:
 #  conductivity (W/(m-K), density (kg/m**3) specific heat (J/(kg-K)
 #  emissivity out (-) emissivity in (-)#   absorptivity out (-) absorptivity in (-)
-#  diffusion rest (?) default thickness (mm)
+#  diffusion resistance (MNs g^-1m^-1)
+#  default thickness (mm)
 #  flag [-] legacy [o] opaque [t] transparent
-#       [g] gas data+T cor [h] gas data at 4T
+#       [g] gas or air gap
 #  
-# Transparent material attributes:
+# Transparent material additonal attributes:
 #  longwave tran (-) solar direct tran (-) solar reflec out (-) solar refled in (-)
 #  visable tran (-) visable reflec out (-) visable reflec in (-) colour rendering (-)
 #  
-# Gas material attributes:
-#  (first 9 items the same) [g] or [h]
+# Gas material additional attributes:
 #  air gap resistance for vert horiz other
-#  [g] 2 conduction, 2 viscosity, 2 density
-#      2 prandtl, 2 specific heat
-#  [h] 4 conduction, 4 viscosity, 4 density
-#      prandtl, specific heat
 #  
 # class index |nb items|description (32 char)
 *class, 1,11,Brick

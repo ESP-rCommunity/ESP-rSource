@@ -7,21 +7,17 @@
 # Materials have the following attributes:
 #  conductivity (W/(m-K), density (kg/m**3) specific heat (J/(kg-K)
 #  emissivity out (-) emissivity in (-)#   absorptivity out (-) absorptivity in (-)
-#  diffusion rest (?) default thickness (mm)
+#  diffusion resistance (MNs g^-1m^-1)
+#  default thickness (mm)
 #  flag [-] legacy [o] opaque [t] transparent
-#       [g] gas data+T cor [h] gas data at 4T
+#       [g] gas or air gap
 #  
-# Transparent material attributes:
+# Transparent material additonal attributes:
 #  longwave tran (-) solar direct tran (-) solar reflec out (-) solar refled in (-)
 #  visable tran (-) visable reflec out (-) visable reflec in (-) colour rendering (-)
 #  
-# Gas material attributes:
-#  (first 9 items the same) [g] or [h]
+# Gas material additional attributes:
 #  air gap resistance for vert horiz other
-#  [g] 2 conduction, 2 viscosity, 2 density
-#      2 prandtl, 2 specific heat
-#  [h] 4 conduction, 4 viscosity, 4 density
-#      prandtl, specific heat
 #  
 # class index |nb items|description (32 char)
 *class, 1,10,Brick
@@ -470,13 +466,13 @@ Category (18) holds the implied air material with a legacy index of zero.
 *item,air gap,  0,18,Air layer with default properties assumed for legacy treatment of air (index zero).
 0.000,0.000,0.000,0.990,0.990,0.990,0.990,1.000,25.0,-
 *item,Void 400mm,-99,18,Void 400mm
-0.000,0.000,0.000,0.990,0.990,0.990,0.990,1.000,25.0,g,0.00000,0.000000,0.00000000,0.00000000,0.0000,0.00000,0.000000,0.000000,0.000,0.000000
+0.000,0.000,0.000,0.990,0.990,0.990,0.990,1.000,25.0,g
 *item,Loft space,-99,18,Loft space (R=0.2)
-0.000,0.000,0.000,0.990,0.990,0.990,0.990,1.000,200.0,h,0.00000,0.00000,0.00000,0.00000,0.00000000,0.00000000,0.00000000,0.00000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000
+0.000,0.000,0.000,0.990,0.990,0.990,0.990,1.000,200.0,g
 *item,Air layer 25 mm wall,-99,18,Battens
-0.140,0.000,0.000,0.990,0.990,0.990,0.990,1.000,22.0,h,0.00000,0.00000,0.00000,0.00000,0.00000000,0.00000000,0.00000000,0.00000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000
+0.140,0.000,0.000,0.990,0.990,0.990,0.990,1.000,22.0,g
 *item,Air layer 50mm wall,-99,18,Air cavity
-0.140,0.000,0.000,0.990,0.990,0.990,0.990,1.000,50.0,h,0.00000,0.00000,0.00000,0.00000,0.00000000,0.00000000,0.00000000,0.00000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000
+0.140,0.000,0.000,0.990,0.990,0.990,0.990,1.000,50.0,g
 *item,Argon 16 mm,-99,18,Argon 16 mm
-0.020,1.700,519.000,0.990,0.990,0.990,0.990,1.000,16.0,g,0.00000,0.000000,0.00000000,0.00000000,0.0000,0.00000,0.000000,0.000000,0.000,0.000000
+0.020,1.700,519.000,0.990,0.990,0.990,0.990,1.000,16.0,g
 *end
