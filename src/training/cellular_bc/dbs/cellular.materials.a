@@ -292,13 +292,13 @@ Category ( 9) Asphalt and bitumen also includes materials which use bitumen and 
 1.290,1100.000,1260.000,0.950,0.950,0.950,0.950,1900.000,6.0,-
 *item,mat_169,169, 9,laminated paper (ASHRAE Handbook 1985)
 0.072,480.000,1380.000,0.900,0.900,0.900,0.900,15.000,6.0,-
-*item,mat_170,170, 9,Polyvinylchloride pipe estimated from CIBSE data
+*item,PVC_pipe,170, 9,Polyvinylchloride pipe estimated from CIBSE data
 0.160,1380.000,1000.000,0.900,0.900,0.800,0.800,19200.000,6.0,-
-*item,mat_171,171, 9,HDPE (high density polyethylene pipe (www.matweb.com)
+*item,HDPE_pipe,171, 9,HDPE (high density polyethylene pipe (www.matweb.com)
 0.290,918.000,2200.000,0.900,0.900,0.800,0.800,19200.000,6.0,-
-*item,mat_172,172, 9,ABS (Acrylonitrile Butadiene Styrene) pipe (www.matweb.com)
+*item,ABS_pipe,172, 9,ABS (Acrylonitrile Butadiene Styrene) pipe (www.matweb.com)
 0.250,1020.000,1400.000,0.900,0.900,0.800,0.800,19200.000,6.0,-
-*item,mat_173,173, 9,wool felt underlay (UK assumptions)
+*item,uk_wool_felt_underlay,173, 9,wool felt underlay (UK assumptions)
 0.040,160.000,1360.000,0.900,0.900,0.900,0.900,15.000,6.0,-
 # class index |nb items|description (32 char)
 *class,10, 4,Asbestos
@@ -379,9 +379,9 @@ Category (12) Carpet includes both natural and synthetic carpets, some differ on
 0.060,160.000,2500.000,0.900,0.900,0.900,0.900,10.000,5.0,-
 *item,ttgrey cord synth,230,12,Light grey cord synthetic carpet
 0.060,160.000,2500.000,0.900,0.900,0.780,0.780,10.000,5.0,-
-*item,mat_231,231,12,wool felt underlay (UK assumptions)
+*item,wool_underlay,231,12,wool felt underlay (UK assumptions)
 0.040,160.000,1360.000,0.900,0.900,0.600,0.600,10.000,5.0,-
-*item,mat_232,232,12,linoleum as per CSTC Belgium 1980
+*item,linoleum_CSTC,232,12,linoleum as per CSTC Belgium 1980
 0.190,1200.000,1470.000,0.900,0.900,0.600,0.600,10.000,5.0,-
 # class index |nb items|description (32 char)
 *class,13,10,Glass
@@ -417,11 +417,11 @@ Category (14) Earth includes loose materials. Also check the stone category for 
 1.280,1460.000,879.000,0.900,0.900,0.850,0.850,5.000,200.0,-
 *item,earth (MK),264,14,earth (milton keynes)
 1.750,1900.000,1700.000,0.900,0.900,0.850,0.850,5.000,200.0,-
-*item,mat_265,265,14,sand as per Indian Standards Institution
+*item,sand_ISI,265,14,sand as per Indian Standards Institution
 1.740,2240.000,840.000,0.900,0.900,0.850,0.850,5.000,200.0,-
-*item,mat_266,266,14,sand kiln dried CIBSE
+*item,sand_kiln_dry,266,14,sand kiln dried CIBSE
 1.740,2240.000,920.000,0.900,0.900,0.850,0.850,5.000,200.0,-
-*item,mat_267,267,14,alluvial clay with 40% sand as per Indian Standards Institution
+*item,clay_with_40sand,267,14,alluvial clay with 40% sand as per Indian Standards Institution
 1.210,1960.000,840.000,0.900,0.900,0.850,0.850,5.000,200.0,-
 *item,Clay underfloor 750 mm,268,14,Clay underfloor default 750 mm
 1.500,1500.000,2085.000,0.900,0.900,0.700,0.700,5.000,750.0,-
@@ -442,7 +442,7 @@ Category (15) Insulation materials (2) is a second tranche of loose, batt and fo
 0.034,132.730,1200.000,0.050,0.050,0.050,0.050,30.000,100.0,-
 *item,KarnsJoistR19,287,15,KarnsJoistR19 (Mfg specific product)
 0.140,185.460,1200.000,0.200,0.200,0.200,0.200,30.000,100.0,-
-*item,mat_288,288,15,Loose Vermiculite for high temperature use (www.matweb.com search)
+*item,vermiculite_loose,288,15,Loose Vermiculite for high temperature use (www.matweb.com search)
 0.069,60.100,1030.000,0.900,0.900,0.650,0.650,30.000,100.0,-
 *item,EPS 80mm,289,15,EPS 80mm
 0.040,15.000,1000.000,0.900,0.900,0.700,0.700,30.000,80.0,-
