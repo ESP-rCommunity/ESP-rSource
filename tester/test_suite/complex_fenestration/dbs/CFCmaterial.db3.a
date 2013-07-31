@@ -32,7 +32,7 @@ Category ( 1) Brick includes a range of brick types. Based on data traditionally
 0.960,2000.000,650.000,0.900,0.900,0.700,0.700,25.000,100.0,-
 *item,brick (MK),  7, 1,Brick (milton keyns)
 0.840,1700.000,800.000,0.900,0.900,0.700,0.700,25.000,100.0,-
-*item,mat_008,  8, 1,Vermiculite refractory brick (www.matweb.com search)
+*item,refractory_brick,  8, 1,Vermiculite refractory brick (www.matweb.com search)
 0.120,375.000,940.000,0.900,0.900,0.650,0.650,12.000,100.0,-
 *item,Brick slips 25 mm,  9, 1,Brick 25 mm (UK code)
 0.770,1700.000,940.000,0.900,0.900,0.650,0.650,12.000,25.0,-
@@ -73,7 +73,7 @@ Category ( 2) Concrete includes a mix of concrete types from heavy weight to lig
 0.510,1400.000,1000.000,0.900,0.900,0.250,0.250,10.000,100.0,-
 *item,concrete block, 36, 2,concrete block (milton keynes)
 1.060,1950.000,1000.000,0.900,0.900,0.400,0.400,18.000,100.0,-
-*item,mat_037, 37, 2,Aerated concrete autoclaved  .8 g/cc (www.matweb.com search)
+*item,aerated_concrete, 37, 2,Aerated concrete autoclaved  .8 g/cc (www.matweb.com search)
 0.230,800.000,1000.000,0.900,0.900,0.650,0.650,13.000,100.0,-
 *item,concrete 150mm, 38, 2,Concrete high density 150mm (UK code)
 1.930,2400.000,1000.000,0.900,0.900,0.700,0.700,13.000,150.0,-
@@ -100,7 +100,7 @@ Category ( 3) Metal has a range of metals, some are the same but are painted dif
 210.000,2700.000,880.000,0.820,0.820,0.320,0.320,19200.000,5.0,-
 *item,Thermobrite, 48, 3,Thermobrite
 210.000,2700.000,880.000,0.050,0.050,0.050,0.050,19200.000,5.0,-
-*item,mat_049, 49, 3,Lead as per CIBSE data
+*item,lead_sheet_CIBSE, 49, 3,Lead as per CIBSE data
 210.000,2700.000,880.000,0.050,0.050,0.050,0.050,19200.000,5.0,-
 *item,Aluminium 1.5 mm, 50, 3,Aluminium (copy of mat_043)
 210.000,2700.000,880.000,0.220,0.220,0.200,0.200,19200.000,1.5,-
@@ -160,7 +160,7 @@ Category ( 5) Stone includes building stone and gravels. Based on data tradition
 0.360,1840.000,840.000,0.900,0.900,0.600,0.600,2.000,200.0,-
 *item,chippings, 87, 5,Chippings
 0.960,1800.000,1000.000,0.900,0.900,0.600,0.600,2.000,200.0,-
-*item,mat_088, 88, 5,Basalt (www.matweb.com search)
+*item,basalt, 88, 5,Basalt (www.matweb.com search)
 0.800,2700.000,720.000,0.900,0.900,0.600,0.600,1960.000,200.0,-
 # class index |nb items|description (32 char)
 *class, 6,12,Plaster
@@ -179,7 +179,7 @@ Category ( 6) Plaster includes both tranditional plaster and gypsum plaster boar
 0.200,720.000,837.000,0.910,0.910,0.500,0.500,11.000,12.5,-
 *item,gypsum plasterboard,107, 6,Gypsum plasterboard (generic)
 0.190,950.000,840.000,0.910,0.910,0.500,0.500,11.000,12.5,-
-*item,white gypboard,108, 6,White paintedd Gypboard
+*item,white gypboard,108, 6,White painted Gypboard
 0.190,950.000,840.000,0.910,0.910,0.220,0.220,11.000,12.5,-
 *item,beige gypboard,109, 6,Beige painted Gypboard
 0.190,950.000,840.000,0.910,0.910,0.260,0.260,11.000,12.5,-
@@ -192,7 +192,7 @@ Category ( 6) Plaster includes both tranditional plaster and gypsum plaster boar
 # class index |nb items|description (32 char)
 *class, 7,12,Screeds and renders
 Category ( 7) Screeds are products typically used horizontally and renders are used on walls. Based on data traditionally distributed with ESP-r.
-*item,mat_121,121, 7,Lightweight conc screed
+*item,ltwt_conc_screed,121, 7,Lightweight conc screed
 0.410,1200.000,840.000,0.900,0.900,0.800,0.800,30.000,50.0,-
 *item,cast conc screed,122, 7,Cast concrete screed
 1.280,2100.000,1007.000,0.900,0.900,0.650,0.650,44.000,50.0,-
@@ -212,7 +212,7 @@ Category ( 7) Screeds are products typically used horizontally and renders are u
 0.410,1200.000,1000.000,0.910,0.910,0.700,0.700,19.000,50.0,-
 *item,Render External 20 mm,130, 7,Render External 20 mm (UK code)
 0.570,1300.000,1000.000,0.910,0.910,0.700,0.700,19.000,20.0,-
-*item,mat_131,131, 7,White dry render (copy of mat_125) (UK code)
+*item,dry_render_white,131, 7,White dry render (copy of mat_125) (UK code)
 0.500,1300.000,1000.000,0.910,0.910,0.500,0.500,19.000,50.0,-
 *item,mat_132,132, 7,Rendering (8% mc) (copy of mat_127) (UK code)
 0.790,1329.000,1000.000,0.910,0.910,0.500,0.500,19.000,50.0,-
@@ -245,7 +245,7 @@ Category ( 8) Tiles includes both floor tiles, ceiling tiles and roof tile. Base
 0.850,1050.000,837.000,0.900,0.900,0.800,0.800,1000.000,6.0,-
 *item,floor tiles,153, 8,floor tiles (milton keynes)
 0.600,500.000,750.000,0.900,0.900,0.650,0.650,52.000,6.0,-
-*item,mat_154,154, 8,PVC tile as per CSTC Belgium 1980
+*item,PVC_tile_CSTC,154, 8,PVC tile as per CSTC Belgium 1980
 0.190,1200.000,1470.000,0.900,0.900,0.600,0.600,1000.000,6.0,-
 *item,Ceiling tile,155, 8,Ceiling tiles
 0.060,250.000,1000.000,0.900,0.900,0.700,0.700,1000.000,15.0,o
@@ -270,7 +270,7 @@ Category ( 9) Asphalt and bitumen also includes materials which use bitumen and 
 1.200,2300.000,1700.000,0.300,0.300,0.300,0.300,1900.000,6.0,-
 *item,asphalt shingles,168, 9,Asphalt shingles
 1.290,1100.000,1260.000,0.950,0.950,0.950,0.950,1900.000,6.0,-
-*item,mat_169,169, 9,laminated paper (ASHRAE Handbook 1985)
+*item,lamin_bldg_paper,169, 9,laminated paper (ASHRAE Handbook 1985)
 0.072,480.000,1380.000,0.900,0.900,0.900,0.900,15.000,6.0,-
 *item,PVC_pipe,170, 9,Polyvinylchloride pipe estimated from CIBSE data
 0.160,1380.000,1000.000,0.900,0.900,0.800,0.800,19200.000,6.0,-
