@@ -124,19 +124,17 @@ C Significant figure reporting limit (NSIGFIG).
 
       CHARACTER INTER*144,INF*144,LFOUT*144
       character path*72
-      character outs*123,outs248*248,loutstr*1000,WORD*24
+      character outs*123,outs248*248,loutstr*1000,WORD*24,delim*1
       character fs*1
       character act*16 ! B is std BAM log file C compact log filecsv file
       character actd*1 ! B is std BAM log file C compact log filecsv file
       character datea*24
 
-      character cVnum*16      ! returned from ESPrVersionNum
+C      character cVnum*16      ! returned from ESPrVersionNum
       character pagestitle*42 ! for banner title via epages call
       logical unixok
       logical closetofive  ! true if we near a 5 minute mark
       logical closetohour  ! true if we are near an hour mark
-      logical alreadywritten ! set true when we have written out values at timeslot
-                             ! need to figure out how to reset
 
       real juliand,julianfrac  ! returned julian day and fraction of day
       real secondsinday  ! seconds per day
@@ -155,11 +153,16 @@ C Significant figure reporting limit (NSIGFIG).
 
 C Local variables for reading raw BAM sensor data in the log file.
       integer isen,idum,iver,ipacketsleft,irdbt,irlight,irrh
+      integer ipir,ipirpeak   ! for pir values
+      integer iaudio,iaudiopeak ! for audio values
       real lux,lexponent ! for RH calculation
       real thehouris  ! the csv file starts at hour
       logical nearstartofhour ! if file started near hour mark
       integer lastseq,iseq    ! sequence number current and prior
       dimension lastseq(12)
+      real tabular
+      dimension tabular(60)   ! array for writing out line of data
+      integer ipos            ! position in tabular
 
 
 C Mapping between the sensor index and array of (up to) a dozen sensors.
@@ -392,6 +395,7 @@ C order rather than the random order found in the intial lines of the file.
         write(IUF,*) 'BAM summary '
         write(IUF,*) '# number of sensors ',howmany
         write(IUF,*) '# sensor list ',mapsentoarray
+        write(IUF,*) '# julian drybulbT  lux   RH%  PIR  Aud_dbA dry...'
 
         rewind(IUNIT)   ! go back to the start of the csv file
 
@@ -408,6 +412,7 @@ C the next read is the same then it can be skipped.
 C Debug.
           write(6,*) 'stripc end of file ',ier
           CALL ERPFREE(IUNIT,ISTAT)
+          CALL ERPFREE(IUF,ISTAT)
           stop
         endif
         K=0
@@ -456,6 +461,20 @@ C Get BAM light data, ignore battery value.
 
 C Get raw BAM RH data.
         CALL EGETWI(loutstr,K,irrh,0,40000,'W','raw humidity',IER)
+
+C Get raw PIR data and figure out peak.
+        ipirpeak=0  ! reset peak
+        do loop = 1,24
+          CALL EGETWI(loutstr,K,ipir,0,0,'-','raw pir',IER)
+          if(ipir.gt.ipirpeak) ipirpeak=ipir
+        enddo
+
+C Get raw Audio and figure out peak.
+        iaudiopeak=0 ! reset peak
+        do loop = 1,24
+          CALL EGETWI(loutstr,K,iaudio,0,0,'-','raw audio',IER)
+          if(iaudio.gt.iaudiopeak) iaudiopeak=iaudio
+        enddo
 
 C Convert timestep to julian.
         actd='B'
@@ -532,6 +551,12 @@ C Convert raw BAM data to dbt, RH lux using ESRU calibration info.
         rhl = (49.6 * log(real(irrh))) - 397.19
         bamhumidity(icurrentsenarray)=rhl
 
+C Remember the peak PIR value.
+        bampir(icurrentsenarray)= real(ipirpeak)
+
+C Remember and convert iaudiopeak
+        bamaudio(icurrentsenarray)=(8.06 * log(real(iaudiopeak)))+23.5
+
         howmanynow=howmanynow+1  ! got another sensor instance
 
 C Unsorted write (e.g. in the order of original log file.
@@ -547,24 +572,58 @@ C written. Example, if the sensor over-temperature.
 C NOTE: for some log files we need to read extra lines
 C in order to ensure we have captured all of the sensors
 C In others we only slightly more than howmany.
+        delim='C'
 
 C        if(howmanynow.gt.howmany*2)then
         if(howmanynow.gt.howmany+2)then
+
+C Increment position in tabular array for the each of the 5 items associated
+C with a BAM sensor.
+          ipos=1
           do ij=1,howmany
-            if(closetohour)then
-              write(IUF,*) datea,' ',thejulianis,' -',
-     &          mapsentoarray(ij),
-     &          bamtmp(ij),bamhumidity(ij),bamlight(ij)
-            elseif(closetofive)then
-              write(IUF,*) datea,' ',thejulianis,' =',
-     &          mapsentoarray(ij),
-     &          bamtmp(ij),bamhumidity(ij),bamlight(ij)
-            else
-              write(IUF,*) datea,' ',thejulianis,' +',
-     &          mapsentoarray(ij),
-     &          bamtmp(ij),bamhumidity(ij),bamlight(ij)
-            endif
+            tabular(ipos)=bamtmp(ij)
+            ipos=ipos+1
+            tabular(ipos)=bamlight(ij)
+            ipos=ipos+1
+            tabular(ipos)=bamhumidity(ij)
+            ipos=ipos+1
+            tabular(ipos)=bampir(ij)
+            ipos=ipos+1
+            tabular(ipos)=bamaudio(ij)
+            ipos=ipos+1
+
+C Debug
+C            if(closetohour)then
+C              write(IUF,*) datea,' ',thejulianis,' -',
+C     &          mapsentoarray(ij),bamtmp(ij),bamlight(ij),
+C     &          bamhumidity(ij),bampir(ij),bamaudio(ij)
+C            elseif(closetofive)then
+C              write(IUF,*) datea,' ',thejulianis,' =',
+C     &          mapsentoarray(ij),bamtmp(ij),bamlight(ij),
+C     &          bamhumidity(ij),bampir(ij),bamaudio(ij)
+C            else
+C              write(IUF,*) datea,' ',thejulianis,' +',
+C     &          mapsentoarray(ij),bamtmp(ij),bamlight(ij),
+C     &          bamhumidity(ij),bampir(ij),bamaudio(ij)
+C            endif
           enddo
+
+C Write a line with the BAM time as well as julian day fraction
+C to support debug.
+          write(IUF,*) datea,' ',thejulianis
+          itrunc=1
+          ipos=1
+          do while (itrunc.ne.0)
+            call arlist(ipos,howmany*5,tabular,60,delim,loutstr,loutln,
+     &        itrunc)
+            if(ipos.eq.1) then
+              WRITE(iuf,'(F10.6,2a)',IOSTAT=ios,ERR=2) thejulianis,',',
+     &          loutstr(1:loutln)
+            else
+              WRITE(iuf,'(1x,a)',IOSTAT=ios,ERR=2) loutstr(1:loutln)
+            endif
+            ipos=itrunc+1
+          end do
           howmanynow=0  ! reset
         endif
         goto 42
@@ -575,11 +634,28 @@ C << additional logic ?? >>
 
 C << subroutine in planning >>
         write(6,*) 'tobe done...cC',INTER
-
+        CALL ERPFREE(IUNIT,ISTAT)
+        CALL ERPFREE(IUF,ISTAT)
+        call epwait
+        call epagend
+        STOP
       elseif(act(1:1).eq.'-')then
         write(6,*) 'done...',INTER
+        CALL ERPFREE(IUNIT,ISTAT)
+        CALL ERPFREE(IUF,ISTAT)
+        call epwait
+        call epagend
+        STOP
       endif
 
+C tabular array write errors.
+  2   write(6,*) 'could not write tabular data...',thejulianis
+      CALL ERPFREE(IUNIT,ISTAT)
+      CALL ERPFREE(IUF,ISTAT)
+      call epwait
+      call epagend
+      STOP
+      
       END
 
 
@@ -719,12 +795,10 @@ C << what other kind of date stamp to decode? >>
 C Setup indices to hold the day of the week (1-7), the month
 C (1-12), the day of the month (1-31), the hour of the day (1-24), the
 C minute of the hour (1-60) second of minute and the year.
-      integer imon,idom,ihrod,imohr,isomn,iyears,ijday
+      integer imon,idom,ihrod,imohr,iyears,ijday
       real secofhr
       real totalsecs
       real juliand,julianfrac
-      real fiveminseconds  ! seconds in 5 minutes
-      real seconds
 
       datetest=datea
       K=0
@@ -753,7 +827,6 @@ C moment of the datetest by 86400 yields the fraction of the day.
       julianfrac=(totalsecs/86400.0)
 C Debug.
 C      write(6,*) totalsecs,' ',juliand,' ',julianfrac
-      fiveminseconds =300.0/86400.0
       
       return
 
