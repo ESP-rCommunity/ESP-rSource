@@ -149,6 +149,7 @@ C      character cVnum*16      ! returned from ESPrVersionNum
       real twentysecfrac ! within 20 seconds
       real nowis         ! use with 5 minute incrementing test
       real thejulianis   ! to remember current time
+      real printedat     ! to remember julian when data printed
       integer k,nd       ! for looping
 
 C Local variables for reading raw BAM sensor data in the log file.
@@ -190,7 +191,7 @@ C Initial assumptions.
       INTER=' '
 
 C Clear mapping array.
-      icurrentsenarray=0; iseq=0; thejulianis=0.0
+      icurrentsenarray=0; iseq=0; thejulianis=0.0; printedat=-1.0
       do ij=1,12
         mapsentoarray(ij)=0
         bamtmp(ij)=0.0
@@ -392,10 +393,10 @@ C order rather than the random order found in the intial lines of the file.
         KFLAG=1
         call SORTI(mapsentoarray,mapsent,howmany,KFLAG)
         write(6,*) 'after sort ',howmany,mapsentoarray
-        write(IUF,*) 'BAM summary '
-        write(IUF,*) '# number of sensors ',howmany
-        write(IUF,*) '# sensor list ',mapsentoarray
-        write(IUF,*) '# julian drybulbT  lux   RH%  PIR  Aud_dbA dry...'
+        write(IUF,*)'BAM summary '
+        write(IUF,*)'# number of sensors ',howmany
+        write(IUF,*)'# sensor list ',mapsentoarray
+        write(IUF,*)'# julian  date  drybulbT  lux   RH%  PIR  Aud_dbA'
 
         rewind(IUNIT)   ! go back to the start of the csv file
 
@@ -513,6 +514,8 @@ C a 10 sec tollerance for version 4 and 20 sec for version 5.
         endif
 
 C See if it is within 10 or 20 seconds of one of the 5 minute slots.
+C AND also check that we have moved on at least a minute from the last
+C time that we printed out information.
         do ifive=1,12
           nowis=nowis+fiveminfrac
           if(iver.eq.4)then
@@ -521,11 +524,16 @@ C See if it is within 10 or 20 seconds of one of the 5 minute slots.
             call ECLOSE(julianfrac,nowis,twentysecfrac,closetofive)
           endif
           if(closetofive)then
-            if(icurrentsenarray.le.2)then
-               write(6,*) 'closetofive ',closetofive,nowis,ifive,datea
+            if(juliand.gt.(printedat+oneminfrac))then
+              if(icurrentsenarray.le.2)then
+                write(6,*) 'closetofive ',closetofive,nowis,ifive,datea
+              endif
+              thejulianis=juliand   ! also remember julian
+              goto 43
+            else
+              write(6,*) 'a bit to soon ',datea,juliand,printedat
+              goto 42
             endif
-            thejulianis=juliand   ! also remember julian
-            goto 43
           endif
         enddo
 
@@ -593,37 +601,28 @@ C with a BAM sensor.
             ipos=ipos+1
 
 C Debug
-C            if(closetohour)then
-C              write(IUF,*) datea,' ',thejulianis,' -',
-C     &          mapsentoarray(ij),bamtmp(ij),bamlight(ij),
-C     &          bamhumidity(ij),bampir(ij),bamaudio(ij)
-C            elseif(closetofive)then
-C              write(IUF,*) datea,' ',thejulianis,' =',
-C     &          mapsentoarray(ij),bamtmp(ij),bamlight(ij),
-C     &          bamhumidity(ij),bampir(ij),bamaudio(ij)
-C            else
-C              write(IUF,*) datea,' ',thejulianis,' +',
-C     &          mapsentoarray(ij),bamtmp(ij),bamlight(ij),
-C     &          bamhumidity(ij),bampir(ij),bamaudio(ij)
-C            endif
+C            write(IUF,*) datea,' ',thejulianis,' ',
+C     &        mapsentoarray(ij),bamtmp(ij),bamlight(ij),
+C     &        bamhumidity(ij),bampir(ij),bamaudio(ij)
           enddo
 
 C Write a line with the BAM time as well as julian day fraction
 C to support debug.
-          write(IUF,*) datea,' ',thejulianis
+C          write(IUF,*) datea,' ',thejulianis
           itrunc=1
           ipos=1
           do while (itrunc.ne.0)
             call arlist(ipos,howmany*5,tabular,60,delim,loutstr,loutln,
      &        itrunc)
             if(ipos.eq.1) then
-              WRITE(iuf,'(F10.6,2a)',IOSTAT=ios,ERR=2) thejulianis,',',
-     &          loutstr(1:loutln)
+              WRITE(iuf,'(F10.6,4a)',IOSTAT=ios,ERR=2) thejulianis,',',
+     &          datea(1:17),',',loutstr(1:loutln)
             else
               WRITE(iuf,'(1x,a)',IOSTAT=ios,ERR=2) loutstr(1:loutln)
             endif
             ipos=itrunc+1
           end do
+          printedat=thejulianis  ! remember julian for this print
           howmanynow=0  ! reset
         endif
         goto 42
