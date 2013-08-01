@@ -164,6 +164,8 @@ C Local variables for reading raw BAM sensor data in the log file.
       real tabular
       dimension tabular(60)   ! array for writing out line of data
       integer ipos            ! position in tabular
+      character t12a*12,t12b*12,t12c*12,t12d*12,t12e*12
+      integer lnt12a,lnt12b,lnt12c,lnt12d,lnt12e,lntabcde
 
 
 C Mapping between the sensor index and array of (up to) a dozen sensors.
@@ -393,9 +395,36 @@ C order rather than the random order found in the intial lines of the file.
         KFLAG=1
         call SORTI(mapsentoarray,mapsent,howmany,KFLAG)
         write(6,*) 'after sort ',howmany,mapsentoarray
-        write(IUF,*)'BAM summary '
-        write(IUF,*)'# number of sensors ',howmany
+        write(IUF,'(a)')'BAM summary '
+        write(IUF,'(a,i2)')'# number of sensors ',howmany
         write(IUF,*)'# sensor list ',mapsentoarray
+
+C Generate a header line with appropriate titles for the collected sensors
+        irows=1
+        K4=33   ! initial value for buffer
+        loutstr = '#JulianTime,yyyy-mm-dd hh:mm:ss,'
+        do loop = 1,howmany
+          write(t12a,'(a,i3.3,a)') 's',mapsentoarray(loop),'_degC'
+          lnt12a=lnblnk(t12a)
+          write(t12b,'(a,i3.3,a)') 's',mapsentoarray(loop),'_Lux'
+          lnt12b=lnblnk(t12b)
+          write(t12c,'(a,i3.3,a)') 's',mapsentoarray(loop),'_RH'
+          lnt12c=lnblnk(t12c)
+          write(t12d,'(a,i3.3,a)') 's',mapsentoarray(loop),'_PIR'
+          lnt12d=lnblnk(t12d)
+          write(t12e,'(a,i3.3,a)') 's',mapsentoarray(loop),'_dbA'
+          lnt12e=lnblnk(t12e)
+          lntabcde = lnt12a + lnt12b + lnt12c + lnt12d + lnt12e
+          KE4=K4+(lntabcde+5) ! set for 1k buffer
+          write(loutstr(K4:KE4),'(10a)') t12a(1:lnt12a),',',
+     &      t12b(1:lnt12b),',',t12c(1:lnt12c),',',t12d(1:lnt12d),',',
+     &      t12e(1:lnt12e),','
+C          write(6,*) loutstr(1:lnblnk(loutstr))
+          K4=KE4
+        enddo
+        lnb=lnblnk(loutstr)+1   ! ensure we do not warp line
+        write(IUF,'(A)',iostat=ios,err=2) loutstr(1:lnb)
+
         write(IUF,*)'# julian  date  drybulbT  lux   RH%  PIR  Aud_dbA'
 
         rewind(IUNIT)   ! go back to the start of the csv file
