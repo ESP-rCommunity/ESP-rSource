@@ -88,13 +88,13 @@ C   1023,1023,1023,1023,1023,1023,1023,1023,1023,1023,1023,1023,1023,1023,1023,1
 C   10,9,18,48,26,21,29,39,24,24,19,11,13,37,94,29,53,17,13,14,7,6,6,7  24 raw audio values
 
 C Compact BAM log files look like:
-C TEDDI,1373301699.462,2013-07-08 17:41:39.462,117,5,24,199,1,25.72,926,285.0,713,47.57,33,457,258,23.5,79.0,70.8
-C TEDDI,1373301685.880,2013-07-08 17:41:25.880,75,5,24,125,96,25.06,459,8.3,480,49.73,21,298,176,23.5,49.1,48.0
-C TEDDI,1373301691.891,2013-07-08 17:41:31.891,75,5,24,126,72,25.06,466,8.8,488,49.73,25,310,280,23.5,49.1,48.0
-C TEDDI,1373301697.986,2013-07-08 17:41:37.986,75,5,24,127,50,25.06,472,9.2,491,49.73,21,321,260,23.5,49.1,48.0
-C TEDDI,1373301703.996,2013-07-08 17:41:43.996,75,5,24,128,26,25.06,473,9.3,491,49.73,21,316,224,23.5,49.1,48.0
-C TEDDI,1373301709.875,2013-07-08 17:41:49.875,75,5,24,129,7,25.06,461,8.4,491,49.73,266,314,291,36.5,37.9,36.5
-C TEDDI,1373301705.667,2013-07-08 17:41:45.667,117,5,24,200,96,25.72,922,285.0,705,47.57,0,357,226,42.8,65.8,49.1
+C TEDDI,2013-07-08 17:41:39.462,117,5,24,199,1,25.72,926,285.0,713,47.57,33,457,258,23.5,79.0,70.8
+C TEDDI,2013-07-08 17:41:25.880,75,5,24,125,96,25.06,459,8.3,480,49.73,21,298,176,23.5,49.1,48.0
+C TEDDI,2013-07-08 17:41:31.891,75,5,24,126,72,25.06,466,8.8,488,49.73,25,310,280,23.5,49.1,48.0
+C TEDDI,2013-07-08 17:41:37.986,75,5,24,127,50,25.06,472,9.2,491,49.73,21,321,260,23.5,49.1,48.0
+C TEDDI,2013-07-08 17:41:43.996,75,5,24,128,26,25.06,473,9.3,491,49.73,21,316,224,23.5,49.1,48.0
+C TEDDI,2013-07-08 17:41:49.875,75,5,24,129,7,25.06,461,8.4,491,49.73,266,314,291,36.5,37.9,36.5
+C TEDDI,2013-07-08 17:41:45.667,117,5,24,200,96,25.72,922,285.0,705,47.57,0,357,226,42.8,65.8,49.1
 
 
 C *********************************** csvstats ******************************
@@ -157,6 +157,7 @@ C Local variables for reading raw BAM sensor data in the log file.
       integer ipir,ipirpeak   ! for pir values
       integer iaudio,iaudiopeak ! for audio values
       real lux,lexponent ! for RH calculation
+      real rdbt,rlight,rrh,audio,audiopeak
       real thehouris  ! the csv file starts at hour
       logical nearstartofhour ! if file started near hour mark
       integer lastseq,iseq    ! sequence number current and prior
@@ -289,39 +290,39 @@ C      write(6,*) datea,' ',juliand,' ',julianfrac
       call bamdatetojulian(datea,actd,juliand,julianfrac)
 C      write(6,*) datea,' ',juliand,' ',julianfrac
 
+C Assume csv file is on IFIL.
+      IUNIT=IFIL
+      IUF=IFIL+1
+      CALL EFOPSEQ(IUNIT,INTER,1,IER)
+      if(ier.ne.0)then
+        call usrmsg(' Problem opening...',INTER,'W')
+        stop
+      endif
+
+C Make up an output file with a .text ending matching the input file name.
+      lnb=lnblnk(INTER)
+      lnd=lnb-3
+      if(INTER(lnd:lnb).eq.'.csv')then
+        WRITE(LFOUT,'(2a)') INTER(1:lnd),'text'
+      else
+        WRITE(LFOUT,'(2a)') INTER(1:lnb),'text'
+      endif
+
+C Debug.
+      write(6,*) 'reporting to > ',LFOUT(1:lnblnk(LFOUT))
+      CALL EFOPSEQ(IUF,LFOUT,4,IER)
+      if(ier.eq.0)then
+        continue
+      else
+        call usrmsg(' Problem opening...',LFOUT,'W')
+        stop
+      endif
+      write(6,*) 'processing...',INTER
+
 C Call the survey subroutines, the main controlling routine with the 
 C filename argument.  B for BAM standard csv files, C for compact 
 C log files.
       if(act(1:1).eq.'b'.or.act(1:1).eq.'B'.or.act(1:1).eq.'-')then
-
-C Assume csv file is on IFIL.
-        IUNIT=IFIL
-        IUF=IFIL+1
-        CALL EFOPSEQ(IUNIT,INTER,1,IER)
-        if(ier.ne.0)then
-          call usrmsg(' Problem opening...',INTER,'W')
-          stop
-        endif
-
-C Make up an output file with a .text ending matching the input file name.
-        lnb=lnblnk(INTER)
-        lnd=lnb-3
-        if(INTER(lnd:lnb).eq.'.csv')then
-          WRITE(LFOUT,'(2a)') INTER(1:lnd),'text'
-        else
-          WRITE(LFOUT,'(2a)') INTER(1:lnb),'text'
-        endif
-
-C Debug.
-        write(6,*) 'reporting to > ',LFOUT(1:lnblnk(LFOUT))
-        CALL EFOPSEQ(IUF,LFOUT,4,IER)
-        if(ier.eq.0)then
-          continue
-        else
-          call usrmsg(' Problem opening...',LFOUT,'W')
-          stop
-        endif
-        write(6,*) 'processing...',INTER
 
 C Discover how many different sensors are included. Read the first 100 lines.
         howmany=0      ! start with no sensors
@@ -645,7 +646,7 @@ C          write(IUF,*) datea,' ',thejulianis
      &        itrunc)
             if(ipos.eq.1) then
               WRITE(iuf,'(F10.6,4a)',IOSTAT=ios,ERR=2) thejulianis,',',
-     &          datea(1:17),',',loutstr(1:loutln)
+     &          datea(1:19),',',loutstr(1:loutln)
             else
               WRITE(iuf,'(1x,a)',IOSTAT=ios,ERR=2) loutstr(1:loutln)
             endif
@@ -656,24 +657,340 @@ C          write(IUF,*) datea,' ',thejulianis
         endif
         goto 42
 
-C << additional logic ?? >>
-
       elseif(act(1:1).eq.'c'.or.act(1:1).eq.'C')then
 
-C << subroutine in planning >>
-        write(6,*) 'tobe done...cC',INTER
-        CALL ERPFREE(IUNIT,ISTAT)
-        CALL ERPFREE(IUF,ISTAT)
-        call epwait
-        call epagend
-        STOP
+C Scan a compact version of BAM log file.
+C Discover how many different sensors are included. Read the first 100 lines.
+        howmany=0      ! start with no sensors
+        thehouris=0.0  ! clear assumption about when the csv file time starts
+        nearstartofhour = .false.
+        do ij=1,100
+          call stripc1k(IUNIT,loutstr,0,ND,1,'log line',IER)
+          K=0
+          CALL EGETW(loutstr,K,WORD,'W','TEDDI token',IFLAG)
+          CALL EGETP(loutstr,K,datea,'W','YYYY-MM-DD hh:mm:ss.f',IFLAG)
+
+C Log files cover an unknown period. See which hour this is by checking
+C the timing of the 2nd line of the csv file. Note: if the initial lines do
+C not begin near the start of an hour use alternative logic.
+C << can this logic be moved ?? >>
+          if(ij.eq.2)then
+            actd='B'
+            call bamdatetojulian(datea,actd,juliand,julianfrac)
+            do ih=0,23
+              closetohour=.false.
+              call ECLOSE(julianfrac,hourdayfrac(ih),oneminfrac,
+     &          closetohour)
+              if(closetohour)then
+                thehouris=hourdayfrac(ih)  ! remember fraction
+                thejulanis=juliand    ! remenber julian
+                write(6,*) 'csv file is for hour ',ih,julianfrac,
+     &            thehouris
+                nearstartofhour=.true.
+              endif
+            enddo
+            if(nearstartofhour)then
+              continue
+            else
+
+C See if julianfrac between known hour fractions remember thehouris.
+              do ih=0,22
+                if(julianfrac.gt.hourdayfrac(ih).and.
+     &             julianfrac.lt.hourdayfrac(ih+1))then
+                  thehouris=hourdayfrac(ih)
+                  write(6,*) 'csv file is for hour ',ih,thehouris
+                endif
+              enddo
+            endif
+          endif
+
+          CALL EGETWI(loutstr,K,isen,0,200,'W','sensor index',IFLAG)
+
+C Has sensor id (isen) been mentioned? If so set foundit true.
+          foundit=.false.
+          do ik=1,12
+            if(mapsentoarray(ik).eq.isen)then
+               foundit=.true.
+            endif
+          enddo
+          if(foundit)then
+            continue
+          else
+
+C Did not find it so set the first open slot of mapsentoarray
+            mapsentoarray(howmany+1)=isen
+            howmany=howmany+1
+            foundit=.true.
+          endif
+        enddo
+C Debug.
+        write(6,*) 'how many sensors found ',howmany,mapsentoarray
+
+C Sort the array (increasing) so that data can be written in a standard
+C order rather than the random order found in the intial lines of the file.
+        KFLAG=1
+        call SORTI(mapsentoarray,mapsent,howmany,KFLAG)
+        write(6,*) 'after sort ',howmany,mapsentoarray
+        write(IUF,'(a)')'BAM summary '
+        write(IUF,'(a,i2)')'# number of sensors ',howmany
+        write(IUF,*)'# sensor list ',mapsentoarray
+
+C Generate a header line with appropriate titles for the collected sensors
+        irows=1
+        K4=33   ! initial value for buffer
+        loutstr = '#JulianTime,yyyy-mm-dd hh:mm:ss,'
+        do loop = 1,howmany
+          write(t12a,'(a,i3.3,a)') 's',mapsentoarray(loop),'_degC'
+          lnt12a=lnblnk(t12a)
+          write(t12b,'(a,i3.3,a)') 's',mapsentoarray(loop),'_Lux'
+          lnt12b=lnblnk(t12b)
+          write(t12c,'(a,i3.3,a)') 's',mapsentoarray(loop),'_RH'
+          lnt12c=lnblnk(t12c)
+          write(t12d,'(a,i3.3,a)') 's',mapsentoarray(loop),'_PIR'
+          lnt12d=lnblnk(t12d)
+          write(t12e,'(a,i3.3,a)') 's',mapsentoarray(loop),'_dbA'
+          lnt12e=lnblnk(t12e)
+          lntabcde = lnt12a + lnt12b + lnt12c + lnt12d + lnt12e
+          KE4=K4+(lntabcde+5) ! set for 1k buffer
+          write(loutstr(K4:KE4),'(10a)') t12a(1:lnt12a),',',
+     &      t12b(1:lnt12b),',',t12c(1:lnt12c),',',t12d(1:lnt12d),',',
+     &      t12e(1:lnt12e),','
+C          write(6,*) loutstr(1:lnblnk(loutstr))
+          K4=KE4
+        enddo
+        lnb=lnblnk(loutstr)+1   ! ensure we do not warp line
+        write(IUF,'(A)',iostat=ios,err=2) loutstr(1:lnb)
+
+        write(IUF,*)'# julian  date  drybulbT  lux   RH%  PIR  Aud_dbA'
+
+        rewind(IUNIT)   ! go back to the start of the csv file
+
+C First test is to see if we can identify lines in the log file that match specific
+C times (near hour or 5 minute mark) and print out the information.
+
+C We want the 2nd token on the line. Also remember the sequence number so that if
+C the next read is the same then it can be skipped.
+        lastseq=0
+        howmanynow=0
+ 142    call stripc1k(IUNIT,loutstr,0,ND,1,'log line',IER)
+        if(IER.ne.0)then
+
+C Debug.
+          write(6,*) 'stripc end of file ',ier
+          CALL ERPFREE(IUNIT,ISTAT)
+          CALL ERPFREE(IUF,ISTAT)
+          stop
+        endif
+        K=0
+        CALL EGETW(loutstr,K,WORD,'W','TEDDI token',IFLAG)
+        CALL EGETP(loutstr,K,datea,'W','YYYY-MM-DD hh:mm:ss.fff',IFLAG)
+        CALL EGETWI(loutstr,K,isen,0,200,'W','sensor index',IFLAG)
+
+C Find where in the data arrays to save current sensor info.
+        icurrentsenarray=0  ! clear
+        do ij=1,howmany
+          iwhich=mapsentoarray(ij)
+          if(isen.eq.iwhich)then
+            icurrentsenarray=ij  ! which part of the data arrays
+          endif
+        enddo
+        if(icurrentsenarray.eq.0)then
+          write(6,*) 'unknown sensor index ',isen,' @ ',datea
+          goto 142   ! read another line of the file
+        endif
+
+        CALL EGETWI(loutstr,K,iver,4,5,'W','version',IFLAG)
+        CALL EGETWI(loutstr,K,idum,0,24,'W','pir packets',IFLAG)
+        CALL EGETWI(loutstr,K,iseq,0,0,'-','sequence number',IFLAG)
+        if(iseq.eq.lastseq(icurrentsenarray))then
+C Debug
+C          write(6,*) 'Duplicate sequence ',iseq,' for ',isen,' @ ',datea
+          goto 142   ! read another line of the file
+        else
+          lastseq(icurrentsenarray)=iseq  ! remember sequence number
+        endif
+
+C If there are more than 10 pending packets ignore and read again.
+        CALL EGETWI(loutstr,K,ipacketsleft,0,0,'-','nb packet lft',IER)
+        if(ipacketsleft.gt.10)then
+          goto 142
+        endif
+
+C Get raw dbt deg C data.
+        CALL EGETWR(loutstr,K,rdbt,-20.0,100.0,'W','temperature C',IER)
+
+C Get light Lux, ignore battery value.
+        CALL EGETWR(loutstr,K,rlight,0.0,25000.0,'W','light lux',IER)
+
+        CALL EGETWI(loutstr,K,idum,0,0,'-','battery',IER)
+
+C Get RH % data.
+        CALL EGETWR(loutstr,K,rrh,0.0,100.0,'W','humidity %',IER)
+
+C Get raw PIR min max average data.
+        ipirpeak=0  ! reset peak
+        CALL EGETWI(loutstr,K,ipir,0,0,'-','pir min',IER)
+        CALL EGETWI(loutstr,K,ipirpeak,0,0,'-','pir peak',IER)
+        CALL EGETWI(loutstr,K,ipir,0,0,'-','pir avg',IER)
+
+C Get Audio min peak average dbA.
+        audiopeak=0.0 ! reset peak
+        CALL EGETWR(loutstr,K,audio,0.,0.,'-','audio dba min',IER)
+        CALL EGETWR(loutstr,K,audiopeak,0.,0.,'-','audio dba max',IER)
+        CALL EGETWR(loutstr,K,audio,0.,0.,'-','audio dba avg',IER)
+
+C Convert timestep to julian.
+        actd='B'
+        call bamdatetojulian(datea,actd,juliand,julianfrac)
+
+C Test if we have moved on to a subsequent hour. Use a one minute
+C tollerance. Only do the test for the first two sensors.
+        if(icurrentsenarray.le.2)then
+          do ih=0,23
+            nearstartofhour=.false.
+            call ECLOSE(julianfrac,hourdayfrac(ih),oneminfrac,
+     &        nearstartofhour)
+            if(nearstartofhour)then 
+              thehouris=hourdayfrac(ih)
+              write(6,*) 'csv file is NOW for hour ',ih,julianfrac,
+     &          thehouris
+            endif
+          enddo
+        endif
+
+C Are we close to hour mark or one of the five minute marks? Use
+C a 10 sec tollerance for version 4 and 20 sec for version 5.
+        closetohour=.false.
+        closetofive=.false.
+        nowis=thehouris
+        if(iver.eq.4)then
+          call ECLOSE(julianfrac,thehouris,tensecfrac,closetohour)
+        elseif(iver.eq.5)then
+          call ECLOSE(julianfrac,thehouris,twentysecfrac,closetohour)
+        endif 
+        if(closetohour)then
+          thejulanis=juliand    ! remenber julian
+          write(6,*) 'closetohour ',closetohour,thehouris,datea,
+     &      thejulianis
+          goto 143
+        endif
+
+C See if it is within 10 or 20 seconds of one of the 5 minute slots.
+C AND also check that we have moved on at least a minute from the last
+C time that we printed out information.
+        do ifive=1,12
+          nowis=nowis+fiveminfrac
+          if(iver.eq.4)then
+            call ECLOSE(julianfrac,nowis,tensecfrac,closetofive)
+          else
+            call ECLOSE(julianfrac,nowis,twentysecfrac,closetofive)
+          endif
+          if(closetofive)then
+            if(juliand.gt.(printedat+oneminfrac))then
+              if(icurrentsenarray.le.2)then
+                write(6,*) 'closetofive ',closetofive,nowis,ifive,datea
+              endif
+              thejulianis=juliand   ! also remember julian
+              goto 143
+            else
+              write(6,*) 'a bit to soon ',datea,juliand,printedat
+              goto 142
+            endif
+          endif
+        enddo
+
+C If we are not near a desired time go and read another line.
+ 143    if(closetohour.or.closetofive)then
+          continue
+        else
+          goto 142
+        endif
+
+C Copy dbt, RH lux to array.
+        bamtmp(icurrentsenarray)=rdbt
+
+        bamlight(icurrentsenarray)=rlight
+
+        bamhumidity(icurrentsenarray)=rrh
+
+C Remember the peak PIR value.
+        bampir(icurrentsenarray)= real(ipirpeak)
+
+C Remember and convert audiopeak
+        bamaudio(icurrentsenarray)=audiopeak
+
+        howmanynow=howmanynow+1  ! got another sensor instance
+
+C Unsorted write (e.g. in the order of original log file.
+C        write(IUF,*) datea,' ',juliand,' * ',isen,rdbt,rrh,rlight,
+C     &    icurrentsenarray,howmanynow
+
+C If all sensors likely to have been captured dump out the data
+C in sorted order (timestamp the same for each). This ensures
+C that the bam arrays have been filled. Note: if data for a sensor
+C is not found the last known value in the bam array would be 
+C written. Example, if the sensor over-temperature.
+
+C NOTE: for some log files we need to read extra lines
+C in order to ensure we have captured all of the sensors
+C In others we only slightly more than howmany.
+        delim='C'
+
+C        if(howmanynow.gt.howmany*2)then
+        if(howmanynow.gt.howmany+2)then
+
+C Increment position in tabular array for the each of the 5 items associated
+C with a BAM sensor.
+          ipos=1
+          do ij=1,howmany
+            tabular(ipos)=bamtmp(ij)
+            ipos=ipos+1
+            tabular(ipos)=bamlight(ij)
+            ipos=ipos+1
+            tabular(ipos)=bamhumidity(ij)
+            ipos=ipos+1
+            tabular(ipos)=bampir(ij)
+            ipos=ipos+1
+            tabular(ipos)=bamaudio(ij)
+            ipos=ipos+1
+
+C Debug
+C            write(IUF,*) datea,' ',thejulianis,' ',
+C     &        mapsentoarray(ij),bamtmp(ij),bamlight(ij),
+C     &        bamhumidity(ij),bampir(ij),bamaudio(ij)
+          enddo
+
+C Write a line with the BAM time as well as julian day fraction
+C to support debug.
+C          write(IUF,*) datea,' ',thejulianis
+          itrunc=1
+          ipos=1
+          do while (itrunc.ne.0)
+            call arlist(ipos,howmany*5,tabular,60,delim,loutstr,loutln,
+     &        itrunc)
+            if(ipos.eq.1) then
+              WRITE(iuf,'(F10.6,4a)',IOSTAT=ios,ERR=2) thejulianis,',',
+     &          datea(1:19),',',loutstr(1:loutln)
+            else
+              WRITE(iuf,'(1x,a)',IOSTAT=ios,ERR=2) loutstr(1:loutln)
+            endif
+            ipos=itrunc+1
+          end do
+          printedat=thejulianis  ! remember julian for this print
+          howmanynow=0  ! reset
+        endif
+        goto 142
+
       elseif(act(1:1).eq.'-')then
+
+C No directive given.
         write(6,*) 'done...',INTER
         CALL ERPFREE(IUNIT,ISTAT)
         CALL ERPFREE(IUF,ISTAT)
         call epwait
         call epagend
         STOP
+
       endif
 
 C tabular array write errors.
