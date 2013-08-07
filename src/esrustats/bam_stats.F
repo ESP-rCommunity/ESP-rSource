@@ -147,6 +147,8 @@ C      character cVnum*16      ! returned from ESPrVersionNum
       real oneminfrac    ! fraction of the julian day for 1 minute
       real tensecfrac    ! within 10 seconds
       real twentysecfrac ! within 20 seconds
+      real thirtysecfrac ! within 30 seconds
+      real fourtysecfrac ! within 40 seconds
       real nowis         ! use with 5 minute incrementing test
       real thejulianis   ! to remember current time
       real printedat     ! to remember julian when data printed
@@ -276,6 +278,8 @@ C for 5 minutes.
       oneminfrac=60.0/secondsinday
       tensecfrac=10.0/secondsinday
       twentysecfrac=20.0/secondsinday
+      thirtysecfrac=30.0/secondsinday
+      fourtysecfrac=45.0/secondsinday
 
       actd='B'
       datea='2013-06-21 20:24:53.518'
@@ -426,9 +430,14 @@ C          write(6,*) loutstr(1:lnblnk(loutstr))
         lnb=lnblnk(loutstr)+1   ! ensure we do not warp line
         write(IUF,'(A)',iostat=ios,err=2) loutstr(1:lnb)
 
-        write(IUF,*)'# julian  date  drybulbT  lux   RH%  PIR  Aud_dbA'
-
-        rewind(IUNIT)   ! go back to the start of the csv file
+C Noticed that rewind did not work so close and open instead.
+C        rewind(IUNIT)   ! go back to the start of the csv file
+        CALL ERPFREE(IUNIT,ISTAT)
+        CALL EFOPSEQ(IUNIT,INTER,1,IER)
+        if(ier.ne.0)then
+          call usrmsg(' Problem re-opening...',INTER,'W')
+          stop
+        endif
 
 C First test is to see if we can identify lines in the log file that match specific
 C times (near hour or 5 minute mark) and print out the information.
@@ -527,14 +536,25 @@ C tollerance. Only do the test for the first two sensors.
         endif
 
 C Are we close to hour mark or one of the five minute marks? Use
-C a 10 sec tollerance for version 4 and 20 sec for version 5.
+C a 10/20 sec tollerance for version 4 and 20/30/45 sec for version 5
+C depending on how many sensors are being dealt with.
         closetohour=.false.
         closetofive=.false.
         nowis=thehouris
         if(iver.eq.4)then
-          call ECLOSE(julianfrac,thehouris,tensecfrac,closetohour)
+          if(howmany.lt.5)then
+            call ECLOSE(julianfrac,thehouris,tensecfrac,closetohour)
+          else
+            call ECLOSE(julianfrac,thehouris,twentysecfrac,closetohour)
+          endif
         elseif(iver.eq.5)then
-          call ECLOSE(julianfrac,thehouris,twentysecfrac,closetohour)
+          if(howmany.lt.5)then
+            call ECLOSE(julianfrac,thehouris,twentysecfrac,closetohour)
+          elseif(howmany.ge.5.and.howmany.lt.8)then
+            call ECLOSE(julianfrac,thehouris,thirtysecfrac,closetohour)
+          elseif(howmany.ge.8)then
+            call ECLOSE(julianfrac,thehouris,fourtysecfrac,closetohour)
+          endif
         endif 
         if(closetohour)then
           thejulanis=juliand    ! remenber julian
@@ -549,9 +569,19 @@ C time that we printed out information.
         do ifive=1,12
           nowis=nowis+fiveminfrac
           if(iver.eq.4)then
-            call ECLOSE(julianfrac,nowis,tensecfrac,closetofive)
+            if(howmany.lt.5)then
+              call ECLOSE(julianfrac,nowis,tensecfrac,closetofive)
+            else
+              call ECLOSE(julianfrac,nowis,twentysecfrac,closetofive)
+            endif
           else
-            call ECLOSE(julianfrac,nowis,twentysecfrac,closetofive)
+            if(howmany.lt.5)then
+              call ECLOSE(julianfrac,nowis,twentysecfrac,closetofive)
+            elseif(howmany.ge.5.and.howmany.lt.8)then
+              call ECLOSE(julianfrac,nowis,thirtysecfrac,closetofive)
+            elseif(howmany.ge.8)then
+              call ECLOSE(julianfrac,nowis,fourtysecfrac,closetofive)
+            endif
           endif
           if(closetofive)then
             if(juliand.gt.(printedat+oneminfrac))then
@@ -612,49 +642,63 @@ C in order to ensure we have captured all of the sensors
 C In others we only slightly more than howmany.
         delim='C'
 
-C        if(howmanynow.gt.howmany*2)then
-        if(howmanynow.gt.howmany+2)then
+        if(iver.eq.4)then
+          if(howmanynow.gt.howmany*2)then
+            continue
+          else
+            goto 42
+          endif
+        elseif(iver.eq.5)then
+          if(howmany.lt.5.and.howmanynow.gt.howmany+2)then
+            continue
+          else
+            if(howmanynow.gt.howmany)then
+              continue
+            else
+              goto 42
+            endif
+          endif
+        endif
 
 C Increment position in tabular array for the each of the 5 items associated
 C with a BAM sensor.
-          ipos=1
-          do ij=1,howmany
-            tabular(ipos)=bamtmp(ij)
-            ipos=ipos+1
-            tabular(ipos)=bamlight(ij)
-            ipos=ipos+1
-            tabular(ipos)=bamhumidity(ij)
-            ipos=ipos+1
-            tabular(ipos)=bampir(ij)
-            ipos=ipos+1
-            tabular(ipos)=bamaudio(ij)
-            ipos=ipos+1
+        ipos=1
+        do ij=1,howmany
+          tabular(ipos)=bamtmp(ij)
+          ipos=ipos+1
+          tabular(ipos)=bamlight(ij)
+          ipos=ipos+1
+          tabular(ipos)=bamhumidity(ij)
+          ipos=ipos+1
+          tabular(ipos)=bampir(ij)
+          ipos=ipos+1
+          tabular(ipos)=bamaudio(ij)
+          ipos=ipos+1
 
 C Debug
-C            write(IUF,*) datea,' ',thejulianis,' ',
-C     &        mapsentoarray(ij),bamtmp(ij),bamlight(ij),
-C     &        bamhumidity(ij),bampir(ij),bamaudio(ij)
-          enddo
+C          write(IUF,*) datea,' ',thejulianis,' ',
+C     &      mapsentoarray(ij),bamtmp(ij),bamlight(ij),
+C     &      bamhumidity(ij),bampir(ij),bamaudio(ij)
+        enddo
 
 C Write a line with the BAM time as well as julian day fraction
 C to support debug.
-C          write(IUF,*) datea,' ',thejulianis
-          itrunc=1
-          ipos=1
-          do while (itrunc.ne.0)
-            call arlist(ipos,howmany*5,tabular,60,delim,loutstr,loutln,
-     &        itrunc)
-            if(ipos.eq.1) then
-              WRITE(iuf,'(F10.6,4a)',IOSTAT=ios,ERR=2) thejulianis,',',
-     &          datea(1:19),',',loutstr(1:loutln)
-            else
-              WRITE(iuf,'(1x,a)',IOSTAT=ios,ERR=2) loutstr(1:loutln)
-            endif
-            ipos=itrunc+1
-          end do
-          printedat=thejulianis  ! remember julian for this print
-          howmanynow=0  ! reset
-        endif
+C        write(IUF,*) datea,' ',thejulianis
+        itrunc=1
+        ipos=1
+        do while (itrunc.ne.0)
+          call arlist(ipos,howmany*5,tabular,60,delim,loutstr,loutln,
+     &      itrunc)
+          if(ipos.eq.1) then
+            WRITE(iuf,'(F10.6,4a)',IOSTAT=ios,ERR=2) thejulianis,',',
+     &        datea(1:19),',',loutstr(1:loutln)
+          else
+            WRITE(iuf,'(1x,a)',IOSTAT=ios,ERR=2) loutstr(1:loutln)
+          endif
+          ipos=itrunc+1
+        end do
+        printedat=thejulianis  ! remember julian for this print
+        howmanynow=0  ! reset
         goto 42
 
       elseif(act(1:1).eq.'c'.or.act(1:1).eq.'C')then
@@ -761,12 +805,19 @@ C          write(6,*) loutstr(1:lnblnk(loutstr))
         lnb=lnblnk(loutstr)+1   ! ensure we do not warp line
         write(IUF,'(A)',iostat=ios,err=2) loutstr(1:lnb)
 
-        write(IUF,*)'# julian  date  drybulbT  lux   RH%  PIR  Aud_dbA'
-
-        rewind(IUNIT)   ! go back to the start of the csv file
+C Noticed that rewind did not work so close and open instead.
+C        rewind(IUNIT)   ! go back to the start of the csv file
+        CALL ERPFREE(IUNIT,ISTAT)
+        CALL EFOPSEQ(IUNIT,INTER,1,IER)
+        if(ier.ne.0)then
+          call usrmsg(' Problem re-opening...',INTER,'W')
+          stop
+        endif
 
 C First test is to see if we can identify lines in the log file that match specific
-C times (near hour or 5 minute mark) and print out the information.
+C times (near hour or 5 minute mark) and print out the information. Note that in
+C the compact version there might be a minutes worth of data for one sensor before
+C the next sensor data is shown and the time jumps back
 
 C We want the 2nd token on the line. Also remember the sequence number so that if
 C the next read is the same then it can be skipped.
@@ -810,9 +861,9 @@ C          write(6,*) 'Duplicate sequence ',iseq,' for ',isen,' @ ',datea
           lastseq(icurrentsenarray)=iseq  ! remember sequence number
         endif
 
-C If there are more than 10 pending packets ignore and read again.
+C If there are more than 20 pending packets ignore and read again.
         CALL EGETWI(loutstr,K,ipacketsleft,0,0,'-','nb packet lft',IER)
-        if(ipacketsleft.gt.10)then
+        if(ipacketsleft.gt.20)then
           goto 142
         endif
 
@@ -864,9 +915,19 @@ C a 10 sec tollerance for version 4 and 20 sec for version 5.
         closetofive=.false.
         nowis=thehouris
         if(iver.eq.4)then
-          call ECLOSE(julianfrac,thehouris,tensecfrac,closetohour)
+          if(howmany.lt.5)then
+            call ECLOSE(julianfrac,thehouris,tensecfrac,closetohour)
+          else
+            call ECLOSE(julianfrac,thehouris,twentysecfrac,closetohour)
+          endif
         elseif(iver.eq.5)then
-          call ECLOSE(julianfrac,thehouris,twentysecfrac,closetohour)
+          if(howmany.lt.5)then
+            call ECLOSE(julianfrac,thehouris,twentysecfrac,closetohour)
+          elseif(howmany.ge.5.and.howmany.lt.8)then
+            call ECLOSE(julianfrac,thehouris,thirtysecfrac,closetohour)
+          elseif(howmany.ge.8)then
+            call ECLOSE(julianfrac,thehouris,fourtysecfrac,closetohour)
+          endif
         endif 
         if(closetohour)then
           thejulanis=juliand    ! remenber julian
@@ -881,9 +942,19 @@ C time that we printed out information.
         do ifive=1,12
           nowis=nowis+fiveminfrac
           if(iver.eq.4)then
-            call ECLOSE(julianfrac,nowis,tensecfrac,closetofive)
+            if(howmany.lt.5)then
+              call ECLOSE(julianfrac,nowis,tensecfrac,closetofive)
+            else
+              call ECLOSE(julianfrac,nowis,twentysecfrac,closetofive)
+            endif
           else
-            call ECLOSE(julianfrac,nowis,twentysecfrac,closetofive)
+            if(howmany.lt.5)then
+              call ECLOSE(julianfrac,nowis,twentysecfrac,closetofive)
+            elseif(howmany.ge.5.and.howmany.lt.8)then
+              call ECLOSE(julianfrac,nowis,thirtysecfrac,closetofive)
+            elseif(howmany.ge.8)then
+              call ECLOSE(julianfrac,nowis,fourtysecfrac,closetofive)
+            endif
           endif
           if(closetofive)then
             if(juliand.gt.(printedat+oneminfrac))then
@@ -936,49 +1007,63 @@ C in order to ensure we have captured all of the sensors
 C In others we only slightly more than howmany.
         delim='C'
 
-C        if(howmanynow.gt.howmany*2)then
-        if(howmanynow.gt.howmany+2)then
+        if(iver.eq.4)then
+          if(howmanynow.gt.howmany*2)then
+            continue
+          else
+            goto 142
+          endif
+        elseif(iver.eq.5)then
+          if(howmany.lt.5.and.howmanynow.gt.howmany+2)then
+            continue
+          else
+            if(howmanynow.gt.howmany)then
+              continue
+            else
+              goto 142
+            endif
+          endif
+        endif
 
 C Increment position in tabular array for the each of the 5 items associated
 C with a BAM sensor.
-          ipos=1
-          do ij=1,howmany
-            tabular(ipos)=bamtmp(ij)
-            ipos=ipos+1
-            tabular(ipos)=bamlight(ij)
-            ipos=ipos+1
-            tabular(ipos)=bamhumidity(ij)
-            ipos=ipos+1
-            tabular(ipos)=bampir(ij)
-            ipos=ipos+1
-            tabular(ipos)=bamaudio(ij)
-            ipos=ipos+1
+        ipos=1
+        do ij=1,howmany
+          tabular(ipos)=bamtmp(ij)
+          ipos=ipos+1
+          tabular(ipos)=bamlight(ij)
+          ipos=ipos+1
+          tabular(ipos)=bamhumidity(ij)
+          ipos=ipos+1
+          tabular(ipos)=bampir(ij)
+          ipos=ipos+1
+          tabular(ipos)=bamaudio(ij)
+          ipos=ipos+1
 
 C Debug
-C            write(IUF,*) datea,' ',thejulianis,' ',
-C     &        mapsentoarray(ij),bamtmp(ij),bamlight(ij),
-C     &        bamhumidity(ij),bampir(ij),bamaudio(ij)
-          enddo
+C          write(IUF,*) datea,' ',thejulianis,' ',
+C     &      mapsentoarray(ij),bamtmp(ij),bamlight(ij),
+C     &      bamhumidity(ij),bampir(ij),bamaudio(ij)
+        enddo
 
 C Write a line with the BAM time as well as julian day fraction
 C to support debug.
-C          write(IUF,*) datea,' ',thejulianis
-          itrunc=1
-          ipos=1
-          do while (itrunc.ne.0)
-            call arlist(ipos,howmany*5,tabular,60,delim,loutstr,loutln,
-     &        itrunc)
-            if(ipos.eq.1) then
-              WRITE(iuf,'(F10.6,4a)',IOSTAT=ios,ERR=2) thejulianis,',',
-     &          datea(1:19),',',loutstr(1:loutln)
-            else
-              WRITE(iuf,'(1x,a)',IOSTAT=ios,ERR=2) loutstr(1:loutln)
-            endif
-            ipos=itrunc+1
-          end do
-          printedat=thejulianis  ! remember julian for this print
-          howmanynow=0  ! reset
-        endif
+C        write(IUF,*) datea,' ',thejulianis
+        itrunc=1
+        ipos=1
+        do while (itrunc.ne.0)
+          call arlist(ipos,howmany*5,tabular,60,delim,loutstr,loutln,
+     &      itrunc)
+          if(ipos.eq.1) then
+            WRITE(iuf,'(F10.6,4a)',IOSTAT=ios,ERR=2) thejulianis,',',
+     &        datea(1:19),',',loutstr(1:loutln)
+          else
+            WRITE(iuf,'(1x,a)',IOSTAT=ios,ERR=2) loutstr(1:loutln)
+          endif
+          ipos=itrunc+1
+        end do
+        printedat=thejulianis  ! remember julian for this print
+        howmanynow=0  ! reset
         goto 142
 
       elseif(act(1:1).eq.'-')then

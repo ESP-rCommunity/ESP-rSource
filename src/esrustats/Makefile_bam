@@ -1,16 +1,14 @@
 SRCdir = `pwd`/..
 LIBdir = $(SRCdir)/lib
 COMdir = $(SRCdir)/esrucom
-PRJdir = $(SRCdir)/esruprj
 PROG = bamstats2$(EXE)
 MFC = lin
 MCC=gcc
 MCPL=g++
 MFC=gfortran
-CFLAGS=-I../include -I../shocc -I/usr/local/include -I../ -I/usr/include -DLIN -g -fno-automatic -DGCC4
-FFLAGS=-I../include -I../shocc -I/usr/local/include -DLIN -DX11 -g -fno-automatic -DGCC4 
+CFLAGS=-I../include -I/usr/local/include -I../ -I/usr/include -DLIN -g -fno-automatic -DGCC4
+FFLAGS=-I../include -I/usr/local/include -DLIN -DX11 -g -fno-automatic -DGCC4 
 LD_FLAGS=-Wl,--reduce-memory-overheads
-ULIBS=-L/home/jon/Src/cvsdude/jwh/src/lib
 
 .SUFFIXES: .o .F
 .F.o:
