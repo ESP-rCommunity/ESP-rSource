@@ -98,9 +98,9 @@ C Default value for GRTOOL file = 0 (off), day hash marks off.
         ITEM(11)='* time >>mm-dd 10:30:00'
       endif
       if(ILFLAG.eq.0)then
-        ITEM(12)='* labels >> multiline  '
+        ITEM(12)='& labels >> multiline  '
       elseif(ILFLAG.eq.1)then
-        ITEM(12)='* labels >> on one line'
+        ITEM(12)='& labels >> on one line'
       endif
       if(delim.eq.'-')then
         ITEM(13)='^ delim >> normal      '
