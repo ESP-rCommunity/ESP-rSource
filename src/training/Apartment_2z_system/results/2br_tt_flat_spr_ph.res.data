@@ -1,0 +1,91 @@
+Lib: 2br_tt_flat_spr_ph.res: For 2br_tt_flat_ph
+Period: Tue-13-Mar@00h07(2007) to Mon-14-May@23h52(2007) : sim@15m, output@15m
+ 
+ Zone total sensible and latent plant used (kWhrs)
+    Zone             Sensible heating  Sensible cooling   Humidification     Dehumidification
+ id name             Energy   No. of   Energy   No. of    Energy   No. of    Energy   No. of
+                     (kWhrs)  Hr rqd   (kWhrs)  Hr rqd    (kWhrs)  Hr rqd    (kWhrs)  Hr rqd
+  1 livdinkit          4.40    46.3       0.00     0.0       0.00     0.0       0.00     0.0
+  2 br12bthhall        6.47    56.3       0.00     0.0       0.00     0.0       0.00     0.0
+ 
+    All                10.9   102.5        0.0     0.0        0.0     0.0        0.0     0.0
+ 
+ 
+# Lib: 2br_tt_flat_spr_ph.res: For 2br_tt_flat_ph
+# Period: Tue-13-Mar@00h07(2007) to Mon-14-May@23h52(2007) : sim@15m, output@15m
+# Sensible heating load (kW)
+Description Max_value Max_occur Min_value Min_occur Ave_value Std_dev
+livdinkit            0.31827 13-Mar@22h37      0.00000 13-Mar@00h07      0.00291      0.01994
+br12bthhall          0.40718 26-Mar@20h37      0.00000 13-Mar@00h07      0.00428      0.02685
+ 
+   All              0.55007 13-Mar@08h22      0.00000 13-Mar@00h00           --           --
+ 
+# Lib: 2br_tt_flat_spr_ph.res: For 2br_tt_flat_ph
+# Period: Tue-13-Mar@00h07(2007) to Mon-14-May@23h52(2007) : sim@15m, output@15m
+# Zone db temperature (degC)
+Description Max_value Max_occur Min_value Min_occur Ave_value Std_dev
+livdinkit            26.057 11-May@18h37       18.978 24-Apr@00h52       21.601       0.80484
+br12bthhall          23.396 11-May@15h07       19.001 01-Apr@05h52       21.396       0.63010
+ 
+   All               26.057      --            18.978      --            21.498            --
+ 
+# Lib: 2br_tt_flat_spr_ph.res: For 2br_tt_flat_ph
+# Period: Tue-13-Mar@00h07(2007) to Mon-14-May@23h52(2007) : sim@15m, output@15m
+# Resultant temperature (degC)
+Description Max_value Max_occur Min_value Min_occur Ave_value Std_dev
+livdinkit            25.617 12-May@18h37       19.985 24-Apr@00h52       21.780       0.70764
+br12bthhall          23.611 27-Apr@16h52       20.223 01-Apr@05h52       21.604       0.42832
+ 
+   All               25.617      --            19.985      --            21.692            --
+ 
+Lib: 2br_tt_flat_spr_ph.res: For 2br_tt_flat_ph
+Period: Tue-13-Mar@00h07(2007) to Mon-14-May@23h52(2007) : sim@15m, output@15m
+ 
+ Monthly selection of gains & losses (to nearest 100Wh).
+ 
+ Zone      Period| Surface convection at face of |  Casual Gains (R+C)   |Air movement   | Environmental |Solar radiation |
+           in    |   transparent |    opaque     |Occu-  |Lights |Small  |Infil- |Venti- |   controls    |absorbd|entering|
+           month |outside|other  |outside|other  |pant   |       |Power  |tration|lation |Heating|Cooling|within |the     |
+                 |facing |facing |facing |facing |       |       |       |       |       |       |       |zone   |zone    |
+ The model overall base area is    60.290001     m2.
+ livdinkit    Mar     -2.7     0.0     1.7    14.6    24.2    16.7    34.2   -56.7     0.0     1.5     0.0    24.4    25.2
+              Apr     -5.0     0.0     1.4    20.0    39.3    26.4    54.6   -85.5     0.0     2.7     0.0    29.9    30.9
+              May      0.5     0.0     4.3    16.7    18.1    12.3    25.4   -52.8     0.0     0.2     0.0    22.9    25.8
+ br12bthhall  Mar     -0.0     0.0     2.2    38.2    38.5    12.7    15.8   -76.4     0.0     2.7     0.0    31.5    31.9
+              Apr     -1.3     0.0     2.5    50.9    60.9    20.4    24.8  -108.3     0.0     3.4     0.0    40.0    40.5
+              May      2.6     0.0     3.1    40.1    28.4     9.5    11.6   -71.0     0.0     0.3     0.0    32.4    32.8
+ 
+ All zones    Mar      -3.      0.      4.     53.     63.     29.     50.   -133.      0.      4.      0.     56.     57.
+              Apr      -6.      0.      4.     71.    100.     47.     79.   -194.      0.      6.      0.     70.     71.
+              May       3.      0.      7.     57.     47.     22.     37.   -124.      0.      1.      0.     55.     59.
+ 
+ Annual                -6.      0.     15.    181.    209.     98.    166.   -451.      0.     11.      0.    181.    187.
+ 
+ 
+Lib: 2br_tt_flat_spr_ph.res Set:   1: For 2br_tt_flat_ph
+Period: Tue-13-Mar@00h07(2007) to Mon-14-May@23h52(2007)
+Time steps: sim@15m, output@15m
+Resultant temperature (degC)
+Reporting number of hours above   23.00
+ 
+ Description       Maximum                Minimum            Mean    No of hours     %
+                value  occurrence     value  occurrence     value   above  below   above
+livdinkit       25.62 12-May@18h37    19.98 24-Apr@00h52    21.78   89.75 1422.25    5.9
+br12bthhall     23.61 27-Apr@16h52    20.22 01-Apr@05h52    21.60   10.50 1501.50    0.7
+ 
+ Total number of hours greater than query point:    100.25  (  3.3%)
+ Total number of hours less than or equal to query point:   2923.75  ( 96.7%)
+ 
+Lib: 2br_tt_flat_spr_ph.res Set:   1: For 2br_tt_flat_ph
+Period: Tue-13-Mar@00h07(2007) to Mon-14-May@23h52(2007)
+Time steps: sim@15m, output@15m
+Resultant temperature (degC)
+Reporting number of hours below   17.00
+ 
+ Description       Maximum                Minimum            Mean    No of hours     %
+                value  occurrence     value  occurrence     value   above  below   above
+livdinkit       25.62 12-May@18h37    20.51 31-Mar@11h07    22.22  567.00    0.00  100.0
+br12bthhall     23.61 27-Apr@16h52    20.22 01-Apr@05h52    21.52  783.00    0.00  100.0
+ 
+ Total number of hours less than query point:      0.00  (  0.0%)
+ Total number of hours greater than or equal to query point:   1350.00  (100.0%)

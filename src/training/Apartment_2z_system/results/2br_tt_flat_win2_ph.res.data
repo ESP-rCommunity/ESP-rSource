@@ -1,0 +1,91 @@
+Lib: 2br_tt_flat_win2_ph.re: For 2br_tt_flat_ph
+Period: Tue-30-Oct@00h07(2007) to Mon-31-Dec@23h52(2007) : sim@15m, output@15m
+ 
+ Zone total sensible and latent plant used (kWhrs)
+    Zone             Sensible heating  Sensible cooling   Humidification     Dehumidification
+ id name             Energy   No. of   Energy   No. of    Energy   No. of    Energy   No. of
+                     (kWhrs)  Hr rqd   (kWhrs)  Hr rqd    (kWhrs)  Hr rqd    (kWhrs)  Hr rqd
+  1 livdinkit         59.40   312.3       0.00     0.0       0.00     0.0       0.00     0.0
+  2 br12bthhall       37.98   189.8       0.00     0.0       0.00     0.0       0.00     0.0
+ 
+    All                97.4   502.0        0.0     0.0        0.0     0.0        0.0     0.0
+ 
+ 
+# Lib: 2br_tt_flat_win2_ph.re: For 2br_tt_flat_ph
+# Period: Tue-30-Oct@00h07(2007) to Mon-31-Dec@23h52(2007) : sim@15m, output@15m
+# Sensible heating load (kW)
+Description Max_value Max_occur Min_value Min_occur Ave_value Std_dev
+livdinkit            1.2802 11-Dec@17h37       0.00000 30-Oct@00h07      0.03929      0.10991
+br12bthhall          0.97191 10-Dec@08h52      0.00000 30-Oct@00h07      0.02512      0.09124
+ 
+   All              1.6966 08-Dec@09h22       0.00000 30-Oct@00h00           --           --
+ 
+# Lib: 2br_tt_flat_win2_ph.re: For 2br_tt_flat_ph
+# Period: Tue-30-Oct@00h07(2007) to Mon-31-Dec@23h52(2007) : sim@15m, output@15m
+# Zone db temperature (degC)
+Description Max_value Max_occur Min_value Min_occur Ave_value Std_dev
+livdinkit            25.361 20-Nov@18h37       16.776 17-Dec@09h22       21.072       0.86904
+br12bthhall          22.701 08-Dec@22h22       18.915 19-Nov@09h52       21.264       0.53057
+ 
+   All               25.361      --            16.776      --            21.168            --
+ 
+# Lib: 2br_tt_flat_win2_ph.re: For 2br_tt_flat_ph
+# Period: Tue-30-Oct@00h07(2007) to Mon-31-Dec@23h52(2007) : sim@15m, output@15m
+# Resultant temperature (degC)
+Description Max_value Max_occur Min_value Min_occur Ave_value Std_dev
+livdinkit            23.547 20-Nov@18h37       18.696 11-Dec@09h22       21.026       0.59986
+br12bthhall          22.047 08-Dec@22h22       19.941 19-Nov@09h52       21.284       0.31578
+ 
+   All               23.547      --            18.696      --            21.155            --
+ 
+Lib: 2br_tt_flat_win2_ph.re: For 2br_tt_flat_ph
+Period: Tue-30-Oct@00h07(2007) to Mon-31-Dec@23h52(2007) : sim@15m, output@15m
+ 
+ Monthly selection of gains & losses (to nearest 100Wh).
+ 
+ Zone      Period| Surface convection at face of |  Casual Gains (R+C)   |Air movement   | Environmental |Solar radiation |
+           in    |   transparent |    opaque     |Occu-  |Lights |Small  |Infil- |Venti- |   controls    |absorbd|entering|
+           month |outside|other  |outside|other  |pant   |       |Power  |tration|lation |Heating|Cooling|within |the     |
+                 |facing |facing |facing |facing |       |       |       |       |       |       |       |zone   |zone    |
+ The model overall base area is    60.290001     m2.
+ livdinkit    Oct     -0.6     0.0    -0.2     0.8     2.1     1.7     3.2    -4.3     0.0     0.5     0.0     0.8     0.8
+              Nov    -10.1     0.0    -5.0     9.2    38.4    26.3    53.9   -76.2     0.0    20.0     0.0     7.4     7.6
+              Dec    -12.4     0.0    -6.8     8.2    41.2    27.4    57.1   -90.1     0.0    38.9     0.0     4.9     5.0
+ br12bthhall  Oct     -0.4     0.0    -0.0     1.7     4.0     1.0     1.7    -4.9     0.0     0.3     0.0     1.1     1.1
+              Nov     -6.9     0.0    -1.1    21.1    60.8    20.0    24.9   -77.0     0.0    13.5     0.0    11.2    11.3
+              Dec     -8.9     0.0    -2.1    16.3    63.0    21.5    25.5   -80.3     0.0    24.3     0.0     7.2     7.2
+ 
+ All zones    Oct      -1.      0.     -0.      2.      6.      3.      5.     -9.      0.      1.      0.      2.      2.
+              Nov     -17.      0.     -6.     30.     99.     46.     79.   -153.      0.     33.      0.     19.     19.
+              Dec     -21.      0.     -9.     25.    104.     49.     83.   -170.      0.     63.      0.     12.     12.
+ 
+ Annual               -39.      0.    -15.     57.    209.     98.    166.   -333.      0.     97.      0.     33.     33.
+ 
+ 
+Lib: 2br_tt_flat_win2_ph.re Set:   1: For 2br_tt_flat_ph
+Period: Tue-30-Oct@00h07(2007) to Mon-31-Dec@23h52(2007)
+Time steps: sim@15m, output@15m
+Resultant temperature (degC)
+Reporting number of hours above   23.00
+ 
+ Description       Maximum                Minimum            Mean    No of hours     %
+                value  occurrence     value  occurrence     value   above  below   above
+livdinkit       23.55 20-Nov@18h37    18.70 11-Dec@09h22    21.03    5.75 1506.25    0.4
+br12bthhall     22.05 08-Dec@22h22    19.94 19-Nov@09h52    21.28    0.00 1512.00    0.0
+ 
+ Total number of hours greater than query point:      5.75  (  0.2%)
+ Total number of hours less than or equal to query point:   3018.25  ( 99.8%)
+ 
+Lib: 2br_tt_flat_win2_ph.re Set:   1: For 2br_tt_flat_ph
+Period: Tue-30-Oct@00h07(2007) to Mon-31-Dec@23h52(2007)
+Time steps: sim@15m, output@15m
+Resultant temperature (degC)
+Reporting number of hours below   17.00
+ 
+ Description       Maximum                Minimum            Mean    No of hours     %
+                value  occurrence     value  occurrence     value   above  below   above
+livdinkit       23.55 20-Nov@18h37    19.91 08-Dec@10h07    21.52  567.00    0.00  100.0
+br12bthhall     22.05 08-Dec@22h22    20.19 18-Dec@06h37    21.39  783.00    0.00  100.0
+ 
+ Total number of hours less than query point:      0.00  (  0.0%)
+ Total number of hours greater than or equal to query point:   1350.00  (100.0%)

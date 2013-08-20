@@ -1,0 +1,88 @@
+Lib: 2br_tt_flat_aut.res: For 2br_tt_flat
+Period: Tue-04-Sep@00h07(2007) to Mon-29-Oct@23h52(2007) : sim@15m, output@15m
+ 
+ Zone total sensible and latent plant used (kWhrs)
+    Zone             Sensible heating  Sensible cooling   Humidification     Dehumidification
+ id name             Energy   No. of   Energy   No. of    Energy   No. of    Energy   No. of
+                     (kWhrs)  Hr rqd   (kWhrs)  Hr rqd    (kWhrs)  Hr rqd    (kWhrs)  Hr rqd
+  1 livdinkit         62.86   211.3       0.00     0.0       0.00     0.0       0.00     0.0
+  2 br12bthhall      135.63   348.3       0.00     0.0       0.00     0.0       0.00     0.0
+ 
+    All               198.5   559.5        0.0     0.0        0.0     0.0        0.0     0.0
+ 
+ 
+# Lib: 2br_tt_flat_aut.res: For 2br_tt_flat
+# Period: Tue-04-Sep@00h07(2007) to Mon-29-Oct@23h52(2007) : sim@15m, output@15m
+# Sensible heating load (kW)
+Description Max_value Max_occur Min_value Min_occur Ave_value Std_dev
+livdinkit            2.0040 18-Oct@17h22       0.00000 04-Sep@00h07      0.04677      0.17695
+br12bthhall          2.1355 25-Oct@17h22       0.00000 04-Sep@00h07      0.10091      0.28046
+ 
+   All              4.0040 18-Oct@17h22       0.00000 04-Sep@00h00           --           --
+ 
+# Lib: 2br_tt_flat_aut.res: For 2br_tt_flat
+# Period: Tue-04-Sep@00h07(2007) to Mon-29-Oct@23h52(2007) : sim@15m, output@15m
+# Zone db temperature (degC)
+Description Max_value Max_occur Min_value Min_occur Ave_value Std_dev
+livdinkit            24.751 28-Sep@18h37       16.974 18-Oct@09h22       20.696       1.4334
+br12bthhall          23.043 24-Oct@22h37       18.352 29-Oct@16h52       20.714       0.79216
+ 
+   All               24.751      --            16.974      --            20.705            --
+ 
+# Lib: 2br_tt_flat_aut.res: For 2br_tt_flat
+# Period: Tue-04-Sep@00h07(2007) to Mon-29-Oct@23h52(2007) : sim@15m, output@15m
+# Resultant temperature (degC)
+Description Max_value Max_occur Min_value Min_occur Ave_value Std_dev
+livdinkit            23.693 28-Sep@18h37       17.620 18-Oct@06h52       20.682       1.0669
+br12bthhall          22.226 04-Sep@16h07       18.712 29-Oct@16h52       20.818       0.58706
+ 
+   All               23.693      --            17.620      --            20.750            --
+ 
+Lib: 2br_tt_flat_aut.res: For 2br_tt_flat
+Period: Tue-04-Sep@00h07(2007) to Mon-29-Oct@23h52(2007) : sim@15m, output@15m
+ 
+ Monthly selection of gains & losses (to nearest 100Wh).
+ 
+ Zone      Period| Surface convection at face of |  Casual Gains (R+C)   |Air movement   | Environmental |Solar radiation |
+           in    |   transparent |    opaque     |Occu-  |Lights |Small  |Infil- |Venti- |   controls    |absorbd|entering|
+           month |outside|other  |outside|other  |pant   |       |Power  |tration|lation |Heating|Cooling|within |the     |
+                 |facing |facing |facing |facing |       |       |       |       |       |       |       |zone   |zone    |
+ The model overall base area is    60.290001     m2.
+ livdinkit    Sep    -14.1     0.0    -2.5    16.1    35.2    45.8    57.8   -89.5     0.0    11.4     0.0    30.7    31.9
+              Oct    -21.1     0.0    -6.8    16.4    37.3    49.1    61.6  -115.8     0.0    51.4     0.0    29.1    30.3
+ br12bthhall  Sep     -9.0     0.0    -0.5    40.2    54.8    34.8    26.0  -116.8     0.0    30.1     0.0    42.3    43.1
+              Oct    -14.4     0.0    -3.1    39.4    58.8    36.8    27.9  -172.1     0.0   105.5     0.0    41.3    42.1
+ 
+ All zones    Sep     -23.      0.     -3.     56.     90.     81.     84.   -206.      0.     42.      0.     73.     75.
+              Oct     -36.      0.    -10.     56.     96.     86.     89.   -288.      0.    157.      0.     70.     72.
+ 
+ Annual               -59.      0.    -13.    112.    186.    167.    173.   -494.      0.    198.      0.    143.    147.
+ 
+ 
+Lib: 2br_tt_flat_aut.res    Set:   1: For 2br_tt_flat
+Period: Tue-04-Sep@00h07(2007) to Mon-29-Oct@23h52(2007)
+Time steps: sim@15m, output@15m
+Resultant temperature (degC)
+Reporting number of hours above   23.00
+ 
+ Description       Maximum                Minimum            Mean    No of hours     %
+                value  occurrence     value  occurrence     value   above  below   above
+livdinkit       23.69 28-Sep@18h37    17.62 18-Oct@06h52    20.68    8.75 1335.25    0.7
+br12bthhall     22.23 04-Sep@16h07    18.71 29-Oct@16h52    20.82    0.00 1344.00    0.0
+ 
+ Total number of hours greater than query point:      8.75  (  0.3%)
+ Total number of hours less than or equal to query point:   2679.25  ( 99.7%)
+ 
+Lib: 2br_tt_flat_aut.res    Set:   1: For 2br_tt_flat
+Period: Tue-04-Sep@00h07(2007) to Mon-29-Oct@23h52(2007)
+Time steps: sim@15m, output@15m
+Resultant temperature (degC)
+Reporting number of hours below   17.00
+ 
+ Description       Maximum                Minimum            Mean    No of hours     %
+                value  occurrence     value  occurrence     value   above  below   above
+livdinkit       23.69 28-Sep@18h37    18.77 28-Oct@15h52    21.57  504.00    0.00  100.0
+br12bthhall     22.23 04-Sep@16h07    18.71 29-Oct@16h52    20.83  696.00    0.00  100.0
+ 
+ Total number of hours less than query point:      0.00  (  0.0%)
+ Total number of hours greater than or equal to query point:   1200.00  (100.0%)

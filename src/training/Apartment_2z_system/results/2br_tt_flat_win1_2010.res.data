@@ -1,0 +1,91 @@
+Lib: 2br_tt_flat_win1_2010.: For 2br_tt_flat_2010
+Period: Mon-01-Jan@00h07(2007) to Mon-12-Mar@23h52(2007) : sim@15m, output@15m
+ 
+ Zone total sensible and latent plant used (kWhrs)
+    Zone             Sensible heating  Sensible cooling   Humidification     Dehumidification
+ id name             Energy   No. of   Energy   No. of    Energy   No. of    Energy   No. of
+                     (kWhrs)  Hr rqd   (kWhrs)  Hr rqd    (kWhrs)  Hr rqd    (kWhrs)  Hr rqd
+  1 livdinkit        300.25   585.5       0.00     0.0       0.00     0.0       0.00     0.0
+  2 br12bthhall      473.81   590.5       0.00     0.0       0.00     0.0       0.00     0.0
+ 
+    All               774.1  1176.0        0.0     0.0        0.0     0.0        0.0     0.0
+ 
+ 
+# Lib: 2br_tt_flat_win1_2010.: For 2br_tt_flat_2010
+# Period: Mon-01-Jan@00h07(2007) to Mon-12-Mar@23h52(2007) : sim@15m, output@15m
+# Sensible heating load (kW)
+Description Max_value Max_occur Min_value Min_occur Ave_value Std_dev
+livdinkit            2.3014 06-Jan@15h22       0.00000 01-Jan@00h22      0.17620      0.36997
+br12bthhall          2.2055 02-Jan@21h22       0.00000 01-Jan@00h07      0.27806      0.50425
+ 
+   All              4.1440 15-Feb@17h22       0.00000 01-Jan@00h00           --           --
+ 
+# Lib: 2br_tt_flat_win1_2010.: For 2br_tt_flat_2010
+# Period: Mon-01-Jan@00h07(2007) to Mon-12-Mar@23h52(2007) : sim@15m, output@15m
+# Zone db temperature (degC)
+Description Max_value Max_occur Min_value Min_occur Ave_value Std_dev
+livdinkit            26.595 07-Jan@18h52       15.576 02-Jan@06h52       20.105       1.9635
+br12bthhall          23.522 10-Jan@23h22       16.825 01-Jan@23h52       20.378       1.2957
+ 
+   All               26.595      --            15.576      --            20.242            --
+ 
+# Lib: 2br_tt_flat_win1_2010.: For 2br_tt_flat_2010
+# Period: Mon-01-Jan@00h07(2007) to Mon-12-Mar@23h52(2007) : sim@15m, output@15m
+# Resultant temperature (degC)
+Description Max_value Max_occur Min_value Min_occur Ave_value Std_dev
+livdinkit            23.988 07-Jan@18h52       15.869 02-Jan@06h52       19.958       1.4299
+br12bthhall          22.364 07-Feb@23h22       17.115 01-Jan@23h52       20.373       0.95439
+ 
+   All               23.988      --            15.869      --            20.166            --
+ 
+Lib: 2br_tt_flat_win1_2010.: For 2br_tt_flat_2010
+Period: Mon-01-Jan@00h07(2007) to Mon-12-Mar@23h52(2007) : sim@15m, output@15m
+ 
+ Monthly selection of gains & losses (to nearest 100Wh).
+ 
+ Zone      Period| Surface convection at face of |  Casual Gains (R+C)   |Air movement   | Environmental |Solar radiation |
+           in    |   transparent |    opaque     |Occu-  |Lights |Small  |Infil- |Venti- |   controls    |absorbd|entering|
+           month |outside|other  |outside|other  |pant   |       |Power  |tration|lation |Heating|Cooling|within |the     |
+                 |facing |facing |facing |facing |       |       |       |       |       |       |       |zone   |zone    |
+ The model overall base area is    60.290001     m2.
+ livdinkit    Jan    -29.0     0.0   -18.7     8.2    38.4    51.0    61.7  -190.5     0.0   177.1     0.0     7.2     7.4
+              Feb    -22.6     0.0   -12.1    10.9    36.3    47.5    57.6  -138.3     0.0    99.9     0.0    15.4    15.8
+              Mar     -7.9     0.0    -2.6     6.8    16.0    20.5    25.1   -50.7     0.0    23.2     0.0    12.5    12.9
+ br12bthhall  Jan    -20.9     0.0   -10.8    18.9    60.8    38.0    24.2  -259.3     0.0   258.2     0.0    10.2    10.4
+              Feb    -15.6     0.0    -6.7    25.8    56.8    35.8    22.2  -206.6     0.0   177.3     0.0    20.9    21.2
+              Mar     -5.2     0.0    -1.6    13.5    24.4    15.9     9.6   -64.1     0.0    38.3     0.0    16.2    16.5
+ 
+ All zones    Jan     -50.      0.    -30.     27.     99.     89.     86.   -450.      0.    435.      0.     17.     18.
+              Feb     -38.      0.    -19.     37.     93.     83.     80.   -345.      0.    277.      0.     36.     37.
+              Mar     -13.      0.     -4.     20.     40.     36.     35.   -115.      0.     62.      0.     29.     29.
+ 
+ Annual              -101.      0.    -53.     84.    233.    209.    200.   -910.      0.    774.      0.     83.     84.
+ 
+ 
+Lib: 2br_tt_flat_win1_2010. Set:   1: For 2br_tt_flat_2010
+Period: Mon-01-Jan@00h07(2007) to Mon-12-Mar@23h52(2007)
+Time steps: sim@15m, output@15m
+Resultant temperature (degC)
+Reporting number of hours above   23.00
+ 
+ Description       Maximum                Minimum            Mean    No of hours     %
+                value  occurrence     value  occurrence     value   above  below   above
+livdinkit       23.99 07-Jan@18h52    15.87 02-Jan@06h52    19.96    1.25 1702.75    0.1
+br12bthhall     22.36 07-Feb@23h22    17.11 01-Jan@23h52    20.37    0.00 1704.00    0.0
+ 
+ Total number of hours greater than query point:      1.25  (  0.0%)
+ Total number of hours less than or equal to query point:   3406.75  (100.0%)
+ 
+Lib: 2br_tt_flat_win1_2010. Set:   1: For 2br_tt_flat_2010
+Period: Mon-01-Jan@00h07(2007) to Mon-12-Mar@23h52(2007)
+Time steps: sim@15m, output@15m
+Resultant temperature (degC)
+Reporting number of hours below   17.00
+ 
+ Description       Maximum                Minimum            Mean    No of hours     %
+                value  occurrence     value  occurrence     value   above  below   above
+livdinkit       23.99 07-Jan@18h52    16.54 01-Jan@21h52    21.22  632.75    4.25   99.3
+br12bthhall     22.36 07-Feb@23h22    17.11 01-Jan@23h52    20.43  881.00    0.00  100.0
+ 
+ Total number of hours less than query point:      4.25  (  0.3%)
+ Total number of hours greater than or equal to query point:   1513.75  ( 99.7%)

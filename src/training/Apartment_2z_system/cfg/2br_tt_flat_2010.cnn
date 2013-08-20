@@ -1,0 +1,47 @@
+*connections for 2br_tt_flat_2010
+*Date Thu Aug  8 14:09:17 2013
+     44   # number of connections
+   1   1   0   0   0  #    1 right_facade in livdinkit is External
+   1   2   1   0   0  #    2 other in livdinkit >|< Identical environment
+   1   3   3   2   6  #    3 ptn_bath_a in livdinkit >|< ptn_liv_e in br12bthhall
+   1   4   3   2   5  #    4 ptn_bath_b in livdinkit >|< ptn_liv_d in br12bthhall
+   1   5   3   2   4  #    5 ptn_hall in livdinkit >|< ptn_liv_c in br12bthhall
+   1   6   3   2   3  #    6 ptn_br_a in livdinkit >|< ptn_liv_b in br12bthhall
+   1   7   3   2   2  #    7 ptn_br_b in livdinkit >|< ptn_liv_a in br12bthhall
+   1   8   0   0   0  #    8 fr_facade_a in livdinkit is External
+   1   9   0   0   0  #    9 fr_facade_b in livdinkit is External
+   1  10   0   0   0  #   10 fr_facade_c in livdinkit is External
+   1  11   1   0   0  #   11 ceiling in livdinkit >|< Identical environment
+   1  12   1   0   0  #   12 floor in livdinkit >|< Identical environment
+   1  13   0   0   0  #   13 operable in livdinkit is External
+   1  14   0   0   0  #   14 fixed in livdinkit is External
+   1  15   3   2  19  #   15 door_nonliv in livdinkit >|< door_liv in br12bthhall
+   2   1   0   0   0  #   16 right_facade in br12bthhall is External
+   2   2   3   1   7  #   17 ptn_liv_a in br12bthhall >|< ptn_br_b in livdinkit
+   2   3   3   1   6  #   18 ptn_liv_b in br12bthhall >|< ptn_br_a in livdinkit
+   2   4   3   1   5  #   19 ptn_liv_c in br12bthhall >|< ptn_hall in livdinkit
+   2   5   3   1   4  #   20 ptn_liv_d in br12bthhall >|< ptn_bath_b in livdinkit
+   2   6   3   1   3  #   21 ptn_liv_e in br12bthhall >|< ptn_bath_a in livdinkit
+   2   7   1   0   0  #   22 other_a in br12bthhall >|< Identical environment
+   2   8   1   0   0  #   23 other_b in br12bthhall >|< Identical environment
+   2   9   1   0   0  #   24 ptn_corid_a in br12bthhall >|< Identical environment
+   2  10   1   0   0  #   25 ptn_corid_b in br12bthhall >|< Identical environment
+   2  11   1   0   0  #   26 other_c in br12bthhall >|< Identical environment
+   2  12   0   0   0  #   27 fr_facade_a in br12bthhall is External
+   2  13   0   0   0  #   28 fr_facade_b in br12bthhall is External
+   2  14   1   0   0  #   29 ceiling in br12bthhall >|< Identical environment
+   2  15   1   0   0  #   30 floor in br12bthhall >|< Identical environment
+   2  16   0   0   0  #   31 br2_glz in br12bthhall is External
+   2  17   0   0   0  #   32 br1_glz in br12bthhall is External
+   2  18   1   0   0  #   33 entry_door in br12bthhall >|< Identical environment
+   2  19   3   1  15  #   34 door_liv in br12bthhall >|< door_nonliv in livdinkit
+   2  20   3   2  21  #   35 br1-2ptn in br12bthhall >|< br1-2ptn_ in br12bthhall
+   2  21   3   2  20  #   36 br1-2ptn_ in br12bthhall >|< br1-2ptn in br12bthhall
+   2  22   3   2  23  #   37 br1a_hall in br12bthhall >|< br1a_hall_ in br12bthhall
+   2  23   3   2  22  #   38 br1a_hall_ in br12bthhall >|< br1a_hall in br12bthhall
+   2  24   3   2  25  #   39 br1b_hall in br12bthhall >|< br1b_hall_ in br12bthhall
+   2  25   3   2  24  #   40 br1b_hall_ in br12bthhall >|< br1b_hall in br12bthhall
+   2  26   3   2  27  #   41 halla_bath in br12bthhall >|< halla_bath_ in br12bthhall
+   2  27   3   2  26  #   42 halla_bath_ in br12bthhall >|< halla_bath in br12bthhall
+   2  28   3   2  29  #   43 hallb_bath in br12bthhall >|< hallb_bath_ in br12bthhall
+   2  29   3   2  28  #   44 hallb_bath_ in br12bthhall >|< hallb_bath in br12bthhall

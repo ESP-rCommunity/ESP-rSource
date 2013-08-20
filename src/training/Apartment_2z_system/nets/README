@@ -1,0 +1,8 @@
+Information on plant models. 
+
+Filename			Description
+---------			------------
+2br_tt_flat_2010.pln (.ctl)		Base case systems file model featuring a condensing gas boiler, feeding a
+				domestic hot water tank and radiator network.
+
+

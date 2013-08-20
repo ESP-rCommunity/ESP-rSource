@@ -1,0 +1,38 @@
+#!/bin/csh
+# take current model and extract monthly report as well as
+# hours over for 24 25 26C unfiltered and filtered for occup.
+set RESFILE=$1
+res -mode text -file $RESFILE<<XXX
+
+d # enquire about
+>
+$RESFILE.data
+$RESFILE results
+f # energy delivered
+a # stats
+h # heating cooling
+a # zone flux
+b # temperature
+a # zone temp
+b # temperature
+e # resultant
+-
+l # monthly stats
+a # nearest 100wh
+c # hours above
+b # temperatures
+e # resultant
+23.0
+-
+d
++ # filter
+b # occupants
+b # temperatures
+e # resultant
+17.0
++
+> # switch back to screen
+-
+-
+-
+XXX
