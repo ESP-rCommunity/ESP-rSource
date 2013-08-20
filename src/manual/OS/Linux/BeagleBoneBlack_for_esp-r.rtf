@@ -1,15 +1,14 @@
 {\rtf1\ansi\ansicpg1252\cocoartf1187\cocoasubrtf390
-\cocoascreenfonts1{\fonttbl\f0\fswiss\fcharset0 Helvetica;}
-{\colortbl;\red255\green255\blue255;}
-{\*\listtable{\list\listtemplateid1\listhybrid{\listlevel\levelnfc23\levelnfcn23\leveljc0\leveljcn0\levelfollow0\levelstartat1\levelspace360\levelindent0{\*\levelmarker \{disc\}}{\leveltext\leveltemplateid1\'01\uc0\u8226 ;}{\levelnumbers;}\fi-360\li720\lin720 }{\listname ;}\listid1}}
-{\*\listoverridetable{\listoverride\listid1\listoverridecount0\ls1}}
+\cocoascreenfonts1{\fonttbl\f0\fswiss\fcharset0 Helvetica;\f1\fmodern\fcharset0 Courier;\f2\fmodern\fcharset0 Courier-Bold;
+}
+{\colortbl;\red255\green255\blue255;\red247\green247\blue247;}
 \paperw11900\paperh16840\margl1440\margr1440\vieww13780\viewh11700\viewkind0
 \pard\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural
 
 \f0\fs24 \cf0 \
 \pard\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural\qc
 
-\b \cf0 Setting up Raspberry Pi for use with ESP-r12\
+\b \cf0 Setting up a BeagleBoard Black for use with ESP-r12\
 19 August 2013\
 ESRU, Glasgow, Scotland
 \b0 \
@@ -20,64 +19,85 @@ ESRU, Glasgow, Scotland
 \b\fs22 \cf0 Introduction
 \b0\fs20 \
 \
-ESP-r works on a range of computers from desktops to enterprise servers.  This document discusses how to implement an ESP-r distribution on a computer at the other extreme - the Raspberry Pi.  If you are working with other ARM based single board computers such as the BeagleBoard Balck, the process of setting up the computer is slightly different (see BeagleBoneBlack_for_esp.r.rtf). This match-box sized single board computer (with draws ~2-4W) none-the-less supports a range of simulation tasks one might expect in training workshops where models of limited complexity and focused assessments are the norm. Whereas a typical laptop or desktop machine might run a one month assessment on a small model in ~2 seconds the Pi takes ~20 seconds. Given that a dozen of these take up about the same amount of space as a laptop the possibilities are considerable.\
+ESP-r works on a range of computers from desktops to enterprise servers.  This document discusses how to implement an ESP-r distribution on a computer at the other extreme - the BeagleBone Black (BBB).  The process is similar to setting up a Raspberry Pi and assumes that you are using the Debian Wheezy as an operating system.  \
 \
-These notes apply to the 512MB Pi with the standard Raspbian operating system image with a few tweaks to support compilation and use of ESP-r.  Raspbian is derived from Debian and thus those familiar with its package managers and compiler tool-chain can use their existing skills sets. The setup of a Pi follows the general pattern of described in the Ubuntu for ESP-r document on the ESRU web site. This document focuses on Pi-specific issues. Scanning both documents before you begin is a 
+The BBB is 90mm x 55mmis single board computer uses a newer ARM processor than the Pi, but has the same 512MB memory constraint of the Pi.  It supports a range of simulation tasks one might expect in training workshops where models of limited complexity and focused assessments are the norm. Whereas a typical laptop or desktop machine might run a one month assessment on a small model in ~2 seconds the BBB takes ~?? seconds. Given that a dozen of these take up about the same amount of space as a laptop the possibilities are considerable.\
+\
+These notes assume the Debian Wheezy operating system image (see instructions XX) on a microSD card (the native Angstrom Linux on the BBB eMMC chip has not been tested).  As with the Pi,  a few tweaks to support compilation and use of ESP-r.  Other Those familiar with its package managers and compiler tool-chain can use their existing skills sets. The setup follows the general pattern of described in the Ubuntu for ESP-r document on the ESRU web site. This document focuses on BBB-specific issues. Scanning both documents before you begin is a 
 \b really good idea
 \b0 !\
 \
-Once ESP-r has been setup on on Pi it is possible to use utilities to convert the contents of the SD card into an image file that can be 'burned' onto other SD cards and deployed on other Raspberry.\
+Once ESP-r has been setup on on BBB it is possible to use utilities to convert the contents of the microSD card into an image file that can be 'burned' onto other SD cards and deployed on other BBB.\
 \
 
 \b\fs22 Before you start
 \b0\fs20 \
 \
-Review the Raspberry Pi WIKI <en.wikipedia.org/wiki/Raspberry_Pi> as well as <www.raspberrypi.org> and <www.element14.com> web sites for further guidance.   Follow the recommendations for downloading the OS image and merging it onto the SD card (this requires access to another Linux or Mac or Windows computer) The same tools can also be used to transfer the updated OS and ESP-r environment to another SD card for backup or distribution (note: not all 8GB SD cards are the same size so reading and writing of images requires care and attention).  \
+Use the Web to review the BBB <http://circuitco.com/support>, <http://circuitco.com/support/index.php?title=Debian_On_BeagleBone_Black>, <http://elinux.org/BeagleBoardUbuntu>.   \
 \
-The standard preloaded 4GB SD card you can by from Raspberry Pi vendors is a bit small. An 8GB SD card is recommended. A class 10 card is much better for simulation and development work than the less expensive class 4 cards.  The steps below will ensure that all the space in a larger drive can be used.\
+Follow the recommendations for downloading the Debian Wheezy 7 OS image and merging it onto the microSD card (this requires access to another Linux or Mac or Windows computer <http://sourceforge.net/projects/win32diskimager/files/latest/download>) The same tools can also be used to transfer the updated OS and ESP-r environment to another SD card for backup or distribution (note: not all 8GB SD cards are the same size so reading and writing of images requires care and attention).  \
 \
-You can run a Pi headless (via a SSH session from another computer) or by connecting a monitor and/or TV, mouse and keyboard.  Your choice.  Similarly, you can run ESP-r in either graphic or pure-text mode on a Pi.  The OS supports the same powerful scripting environment that you can use on compute servers.\
+An 8GB microSD card is recommended. A class 10 card is much better for simulation and development work than the less expensive class 4 cards.  The steps (described below) will ensure that all the space in a larger drive can be used.\
+\
+You can run a BBB headless (via a SSH session from another computer) or by connecting a monitor and/or TV, mouse and keyboard.  Your choice.  Similarly, you can run ESP-r in either graphic or pure-text mode.  The OS supports the same powerful scripting environment that you can use on compute servers.\
 \
 
 \b\fs22 Initial setup
 \b0\fs20 \
 \
-The first time you power up a Pi run the configuration tool (you can also do this later to tweak the Pi). The configuration tool does not need graphics to run so you can do this prior to starting a window manager. Here are the options:\
-\pard\tx220\tx720\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\li720\fi-720\pardirnatural
-\ls1\ilvl0\cf0 {\listtext	\'95	}Use the expand-to-fill facility to grow the initial OS to fill the SD card.  \
-{\listtext	\'95	}Use the keyboard setup utility it makes subsequent tasks easier even if you later run the Pi headless.  \
-{\listtext	\'95	}Set a password and remember it.  Later you can add additional users e.g. a training account. \
-{\listtext	\'95	}Set the local - choose something like engb which will use a '.' for a decimal place.  \
-{\listtext	\'95	}Set the memory split between the CPU and GPU.  You want to maximise CPU memory so choose 32 or 64MB for the GPU.\
-{\listtext	\'95	}Set the over clock to High (700-950MHz). Turbo works but has some risk.\
-{\listtext	\'95	}Leave the boot option as non-gui so you have maximum flexibility.\
-{\listtext	\'95	}Select the raspberry-config update (this will scan the repository and download and install recent software changes).\
-{\listtext	\'95	}Set your time-zone.\
+Booting a BBB via the microSD card requires that you hold down a small boot switch as power is applied to the BBB. The boot switch is above the microSD card slot.  The documentation says that a BBB runs better powered from the 5VDC rather than via the USB Client port.  Hold down the switch for ~15 seconds and you should see the blue user LEDs blinking.  If you do not hold down the boot switch the internal Angstrom Linux will start.  To stop a BBB issue the command:\
+\
+  
+\b sudo halt
+\b0 \
+\
+Once the blue LED have stopped blinking you can remove power.  A restart (assuming the power is still connected) press the power button AND the boot button otherwise hold down the book button as you apply power.\
+\
+\
+
+\b Expanding file system to fill microSD card
+\b0 \
+\
+Debian images are sized to fit on a 2GB card, and retain this size when copied onto the microSD card. To expand the file system\
+follow the instructions at <http://circuitco.com/support/index.php?title=Expanding_File_System_Partition_On_A_microSD>. Since microSD cards differ slightly in size, to ensure that you can backup your card and restore it to another card consider setting the expanded size a bit smaller than the maximum of the card.\
+\
+\
+
+\b Creating swop space
+\b0 \
+\
+The limited memory on the BBB requires the creation of swap space (600-1000MB of virtual memory) so that ESP-r can be compiled and run. A discussion of the process can be found at the BBB pages of eLinux.org <http://elinux.org/BeagleBoardUbuntu#Swapfile> and differ from that used on the Raspberry Pi.  Issue the following commands to create a 1GB swop:\
+\pard\pardeftab720
+
+\f1\fs26 \cf0 \cb2 \
+ 
+\f0\b\fs20 sudo mkdir -p /var/cache/swap/   \
+  sudo dd if=/dev/zero of=/var/cache/swap/swapfile bs=1M count=1024\
+  sudo chmod 0600 /var/cache/swap/swapfile \
+  sudo mkswap /var/cache/swap/swapfile \
+  sudo swapon /var/cache/swap/swapfile\
+
+\f2 \
+
+\f0\b0 Then use a text editor to add the following to the /etc/fstab file so that swap is used every time you boot up.\
+\
+
+\f1\fs26  
+\f0\b\fs20 /var/cache/swap/swapfile    none    swap    sw    0   0\
+
+\f1\b0\fs26 \
+
+\f0\b\fs20 \cb1 Installing a graphical environment
+\b0 \
 \pard\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural
 \cf0 \
-When you select <finish> it will undertake the pending tasks and reboot the Pi.  If you want to re-visit the facility give the command:\
-  
-\b sudo raspi-config
-\b0  \
-in either text or graphic mode.  \
-\
-Your next step is to increase the swap space (virtual memory).  The initial setting is a 100MB swop file.  For ESP-r compiling and use you will want between 600MB-1GB.  A discussion of the process can be found at <raspberrypi.stackexchange.com>.  You need to edit the file /etc/dphys-swapfile.  Use sudo nano or your favourite text editor and change the CONF_SWAPSIZE= value in the file.  To record this change give the following commands in a text or graphic command window (see below):\
-
-\b sudo  /etc/init.d/dphys-swapfile stop\
-sudo  /etc/init.d/dphys-swapfile start
-\b0  \
+The Debian image that can be downloaded for a BBB is a minimal system that supports text interaction. Follow the instructions at <http://circuitco.com/support/index.php?title=Installing_LXDE> to install the LXDE desktop. After rebooting you will be presented with graphical login options.\
 \
 
 \b\fs22 Command windows
 \b0\fs20 \
 \
-If you stay in the initial text display you can issue commands for applications that do not use graphics (such as the ones listed below).  To start up the window manager give the command\
-\
-  
-\b startx
-\b0 \
-\
-which will start a graphical interface with the potential for an application/widget dock at the bottom and a number of icons on the left.  One of them is marked LXTerminal.  Click on that icon and a graphic command window will open (you could start more than one if you wanted to).  In the LXTerminal you can type in commands to run applications which are either text based or graphical in nature.\
+To accomplish many tasks you will need a command window.  In LXDE this is LXTerminal. It may be an icon on the desktop or it might be found in the LXDE menu under accessories.  Other desktops will offer different tools. If you are logging in remotely you have the choice of working with a text-only command window or using graphics (typically via forwarding X11 graphics via ssh). If you stay in the initial text display you can issue commands for applications that do not use graphics.  \
 \
 
 \b\fs22 Package mangers
@@ -103,8 +123,7 @@ and to find out if a package has already been installed:\
 \b pkg -l | grep -i 'package-name'
 \b0 \
 \
-Note: after running the update facility in raspi-config to get a newer version of raspi-config there may be other\
-package updates found but not acted upon.  To enable the other packages issue the command:\
+Note: as part of the initial setup and then every few weeks force a re-discovery of software updates via:\
 \
   
 \b sudo apt-get upgrade
@@ -163,7 +182,7 @@ To find out about the compilers (gcc g++ and gfortran) use:\
 \b\fs22 Setting up your account and folders
 \b0\fs20 \
 \
-The initial 'pi' account can be used for all tasks.  You may prefer to have a separate 'training' account for casual users.\
+The initial 'debian' account can be used for all tasks.  You may prefer to have a separate 'training' account for casual users.\
 \
 To simplify other tasks, create a 'bin' folder within each user HOME folder (e.g. /home/fred/bin) at a later stage there are some ESP-r related scripts to copy into this bin folder.\
 \
@@ -179,20 +198,20 @@ To simplify other tasks, create a 'bin' folder within each user HOME folder (e.g
   mkdir Models\
 \
 
-\b0 Now is a good time to reboot the Raspberry Pi to ensure that fonts and environment variables are registered. How might you do this? The command is:\
+\b0 Now is a good time to reboot to ensure that fonts and environment variables are registered. How might you do this? The command is:\
 \
   
 \b sudo reboot\
 \
 
-\b0 If you want to shut down the Raspberry Pi use the following command (before you disconnect the power):\
+\b0 If you want to shut down use the following command (before you disconnect the power):\
 \
   
 \b sudo halt\
 \
 
 \b0 \
-ESP-r uses a custom Install script instead of  the usual automake based system used in many Linux packages.  Because the Pi uses an ARM processor you will have to use a bespoke version of the ESP-r Install script. (soon to be added to the developent_branch).
+ESP-r uses a custom Install script instead of  the usual automake based system used in many Linux packages.  Because the BBB uses an ARM processor the ESP-r Install script and Makefile will need to recognise armv7l as the processor. (soon to be added to the development_branch).
 \b \
 
 \b0 \
@@ -201,7 +220,7 @@ The ESP-r distribution is traditionally placed in either /usr/esru or in /opt/es
 \pard\tx560\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural
 
 \b \cf0   sudo mkdir /opt/esru\
-  sudo chown pi /opt/esru\
+  sudo chown debian /opt/esru\
 \
 \pard\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural
 
@@ -217,7 +236,7 @@ The ESP-r distribution is traditionally placed in either /usr/esru or in /opt/es
 \
 \pard\tx560\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural
 
-\b0 \cf0 To ensure that ESP-r can compile and run on machines with constrained memory you need to copy a few header files in the src/include folder.  THIS IS IMPORTANT.  Here is what to do:\
+\b0 \cf0 To ensure that ESP-r can compile and run on machines with constrained memory you need to copy a few header files in the src/include folder. THIS IS IMPORTANT.  Here is what to do:\
 \
 \pard\tx560\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural
 
@@ -267,7 +286,7 @@ One way to do this is to use the standard Install command and then use the opera
 \pard\tx560\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural
 
 \b0 \cf0 \
-You can switch between these different ESP-r interfaces by going into the home/pi/bin folder and running the link_to script with the alternative path-to-executable e.g.:\
+You can switch between these different ESP-r interfaces by going into the home/debian/bin folder and running the link_to script with the alternative path-to-executable e.g.:\
 \pard\tx560\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural
 
 \b \cf0   cd\
@@ -278,7 +297,7 @@ You can switch between these different ESP-r interfaces by going into the home/p
 \b0 \cf0 \
 After you have installed the databases and exemplar models there is no need to do this for subsequent Install sessions (unless the databases or exemplar models have been updated).\
 \
-The compile process on a Pi is 
+The compile process on a BBB is 
 \i\b much slower 
 \i0\b0 than on desktop machines.  Expect a couple of hours for the complete Install cycle.\
 \pard\tx560\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural
@@ -316,14 +335,14 @@ If the 'which prj' commands returns a location the ESP-r executables and librari
 \b\fs22 Using ESP-r
 \b0\fs20 \
 \
-Remember when you log into your account on the Raspberry Pi that you need to issue the following command to re-fresh the system knowledge of where ESP-r lives:\
+Remember when you log into your account on that you need to issue the following command to re-fresh the system knowledge of where ESP-r lives:\
 \
 
 \b   cd\
   source .profile\
 
 \b0 \
-ESP-r has a large number of exemplar models.  These are located in the ESP-r distribution and the ESP-r Project Manager (prj) will access them and ask you where you want to copy them so that you can explore them and evolve them without messing up the originals.  One strategy is to create a Models subfolder of your home e.g. /home/pi/Models.  When prj asks you where you want to place a model change the suggested /home/pi to /home/pi/Models.  If you want to revisit and open it again you can use a command sequence in the following form (lets assume that the model folder is named small_house and the model cfg file is named small_house.cfg)\
+ESP-r has a large number of exemplar models.  These are located in the ESP-r distribution and the ESP-r Project Manager (prj) will access them and ask you where you want to copy them so that you can explore them and evolve them without messing up the originals.  One strategy is to create a Models subfolder of your home e.g. /home/debian/Models.  When prj asks you where you want to place a model change the suggested /home/debian to /home/debian/Models.  If you want to revisit and open it again you can use a command sequence in the following form (lets assume that the model folder is named small_house and the model cfg file is named small_house.cfg)\
 \
 
 \b   cd\
@@ -335,13 +354,19 @@ ESP-r has a large number of exemplar models.  These are located in the ESP-r dis
 The ESRU download web pages have documents related to managing source code, working with the subversion source code control environment as well as the ESP-r Cookbook which discusses the design of simulation models and working practices with ESP-r.  You may also find some useful materials in the folder src/manual/OS.\
 \
 
-\b\fs22 Shutting down a Raspberry Pi
+\b\fs22 Shutting down
 \b0\fs20 \
 \
-There is no off switch on a Pi.  To properly stop it issue the following command:\
+To properly stop the BBB issue the following command:\
 \
   
-\b sudo shutdown -h now
+\b sudo shutdown -h now\
+\
+
+\b0 or
+\b \
+\
+  sudo halt
 \b0 \
 \
 \
