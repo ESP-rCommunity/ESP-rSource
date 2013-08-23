@@ -22,9 +22,9 @@ C bamstats     - the main controlling routine.
 C partfa - allows terminal, file and action arguments to be passed.
 
 C ****************************************** bamstats ***************************************
-C bamstats.F is the main routine which scans standard or short BuildAX log files to create
-C a file fit for using as an import to temporal file. 
-C Use -act to say whether it is a std or short or units BuiltAX log file.
+C bamstats.F is the main routine which scans standard, short, units BuildAX log files to
+C create a file fit for using as an import to an ESP-r temporal file or for spreadsheets. 
+C Use -act to say whether it is a std (b) short (s) or units (u) BuiltAX log file.
 
 C BuildAX log files tend to be one per hour so a number of files will eventually need
 C to be scanned. If we assume that the user has initially created a temporal file
@@ -85,7 +85,7 @@ C   7883  raw humidity
 C   1023,1023,1023,1023,1023,1023,1023,1023,1023,1023,1023,1023,1023,1023,1023,1023,1023,1023,1023,1023,1023,1023,1023,1023,  24 PIR values
 C   10,9,18,48,26,21,29,39,24,24,19,11,13,37,94,29,53,17,13,14,7,6,6,7  24 raw audio values
 
-C Short BuildAX log files look like:
+C Short BuildAX log files (when run with -format:short) look like:
 C TEDDI_SHORT,1376633374.815,2013-08-16 07:09:34.815,107,5,24,0,97,38736,423,674,11361,500,1023,1001,0,657,97
 C TEDDI_SHORT,1376633380.837,2013-08-16 07:09:40.837,107,5,24,1,73,38738,461,667,11389,0,1023,146,5,11,6
 C TEDDI_SHORT,1376633386.849,2013-08-16 07:09:46.849,107,5,24,2,49,38741,468,665,11446,134,207,170,4,7,4
@@ -106,6 +106,31 @@ C   674   raw battery
 C   11361  raw humidity
 C   500,1023,1001, raw PIR minimum peak average
 C   0,657,97  raw audio minimum peak average
+
+C When waxrec is run with -format:units
+C TEDDI_UNIT,1376927571.983,2013-08-19 16:52:51.983,189,5,24,196,96,22.61,112.8,646,46.61,256,290,277,40.3,48.0,42.1
+C TEDDI_UNIT,1376927577.983,2013-08-19 16:52:57.983,189,5,24,197,72,22.61,118.4,654,46.58,246,287,261,41.2,42.8,41.2
+C TEDDI_UNIT,1376927583.998,2013-08-19 16:53:03.998,189,5,24,198,48,22.62,107.5,654,46.58,240,267,256,41.2,45.8,42.1
+C TEDDI_UNIT,1376927590.014,2013-08-19 16:53:10.014,189,5,24,199,24,22.62,142.6,654,46.58,243,277,259,40.3,44.2,41.2
+C TEDDI_UNIT,1376927595.780,2013-08-19 16:53:15.780,189,5,24,200,1,22.62,120.3,655,46.56,235,295,262,40.3,44.8,41.2
+C The tokens are:
+C   TEDDI_UNIT - identifer
+C   1376927571.983 - seconds since epoch
+C   2013-08-19 - year month day
+C   16:52:51.983 - hour minute second fraction of second
+C   189 - sensor ID
+C   5,24 - version of log file and number of PIR packets 
+C   196 - sequence number (to detect duplicate transmissions)
+C   96 - number of packets remaining
+C   22.61 temperature deg C
+C   112.8 Lux (assuming original BuildAX sensors)
+C   646   raw battery
+C   46.61  humidity RH %
+C   256,290,277, raw PIR minimum peak average
+C   40.3,48.0,42.1  audio dbA minimum peak average
+
+C Note: arrays sized for up to 27 BuildAX sensors with
+C five data values fitting within a 1k character text buffer.
 
 C *********************************** csvstats ******************************
 
@@ -173,26 +198,27 @@ C Local variables for reading raw BAM sensor data in the log file.
       real thehouris  ! the csv file starts at hour
       logical nearstartofhour ! if file started near hour mark
       integer lastseq,iseq    ! sequence number current and prior
-      dimension lastseq(12)
+      dimension lastseq(27)
       real tabular
-      dimension tabular(60)   ! array for writing out line of data
+      dimension tabular(135)  ! array for writing out line (to hold 27*5)
       integer ipos            ! position in tabular
       character t12a*12,t12b*12,t12c*12,t12d*12,t12e*12
       integer lnt12a,lnt12b,lnt12c,lnt12d,lnt12e,lntabcde
 
 
-C Mapping between the sensor index and array of (up to) a dozen sensors.
+C Mapping between the sensor index and array of (up to) 27 sensors (to
+C match 1k output buffer).
       integer icurrentsenarray ! which part of the array to work with
       integer mapsentoarray,mapsent
-      dimension mapsentoarray(12),mapsent(12)
+      dimension mapsentoarray(27),mapsent(27)
       logical foundit  ! for establishing link between sensor index and mapsentoarray
       integer howmany  ! number of sensors found
       integer howmanynow ! counter for if we got all sensor data at this time
 
 C Data for selected timestep for each sensor.
       real bamtmp,bamlight,bamhumidity,bampir,bamaudio
-      dimension bamtmp(12),bamlight(12),bamhumidity(12),bampir(12)
-      dimension bamaudio(12)
+      dimension bamtmp(27),bamlight(27),bamhumidity(27),bampir(27)
+      dimension bamaudio(27)
 
 C Initial assumptions.
       call ezero
@@ -207,7 +233,7 @@ C Initial assumptions.
 
 C Clear mapping array.
       icurrentsenarray=0; iseq=0; thejulianis=0.0; printedat=-1.0
-      do ij=1,12
+      do ij=1,27
         mapsentoarray(ij)=0
         bamtmp(ij)=0.0
         bamlight(ij)=0.0
@@ -340,16 +366,16 @@ C log files and U for -format:units format.
      &   act(1:1).eq.'s'.or.act(1:1).eq.'S'.or.
      &   act(1:1).eq.'u'.or.act(1:1).eq.'U'.or.act(1:1).eq.'-')then
 
-C Discover how many different sensors are included. Read the first 100 lines.
-C << If file is less than 100 lines need to trap error and jump to an
-C << appropriate point.
+C Discover how many different sensors are included. Read the first 400 lines.
+C Note: if sensors have been turned on in sequence it may be necessary to
+C cut out the intial portion of the file when all sensors are not yet active.
         howmany=0      ! start with no sensors
         thehouris=0.0  ! clear assumption about when the csv file time starts
         nearstartofhour = .false.
-        do ij=1,100
+        do ij=1,400
           call stripc1k(IUNIT,loutstr,0,ND,1,'log line',IER)
           if(IER.ne.0)then
-            write(6,*) 'This was a short log file.'
+            write(6,*) 'Rewinding the file after scan for sensors.'
             ier=0
             goto 44   ! this was a short log file so jump
           endif
@@ -400,7 +426,7 @@ C See if julianfrac between known hour fractions remember thehouris.
 
 C Has sensor id (isen) been mentioned? If so set foundit true.
           foundit=.false.
-          do ik=1,12
+          do ik=1,27
             if(mapsentoarray(ik).eq.isen)then
                foundit=.true.
             endif
@@ -677,16 +703,20 @@ C If we are not near a desired time go and read another line.
           goto 42
         endif
 
-C Convert raw BAM data to dbt, RH lux using ESRU calibration info or
+C Convert raw BAM data to dbt using equivalent of Culture Lab (CL)
+C equation (recast to avoid bit manipulation).
 C assign if -format:units.
         if(act(1:1).eq.'b'.or.act(1:1).eq.'B'.or.
      &     act(1:1).eq.'s'.or.act(1:1).eq.'S')then
-          dbt= (0.01185055 * real(irdbt)) - 438.169086
+C          dbt= (0.01185055 * real(irdbt)) - 438.169086  ! ESRU measurements
+          dbt= (0.010070815 * real(irdbt)) - 370.0056    ! CL mapping
           bamtmp(icurrentsenarray)=dbt
         elseif(act(1:1).eq.'u'.or.act(1:1).eq.'U')then
           bamtmp(icurrentsenarray)=rdbt
         endif
 
+C Convert light raw value (assuming original BuildAX sensor).
+C << how to determine if newer sensor being used? >>
         if(act(1:1).eq.'b'.or.act(1:1).eq.'B'.or.
      &     act(1:1).eq.'s'.or.act(1:1).eq.'S')then
           if(irlight.gt.850)then
@@ -792,7 +822,7 @@ C        write(IUF,*) datea,' ',thejulianis
         itrunc=1
         ipos=1
         do while (itrunc.ne.0)
-          call arlist(ipos,howmany*5,tabular,60,delim,loutstr,loutln,
+          call arlist(ipos,howmany*5,tabular,135,delim,loutstr,loutln,
      &      itrunc)
           if(ipos.eq.1) then
             WRITE(iuf,'(F10.6,4a)',IOSTAT=ios,ERR=2) thejulianis,',',
@@ -859,7 +889,7 @@ C See if julianfrac between known hour fractions remember thehouris.
 
 C Has sensor id (isen) been mentioned? If so set foundit true.
           foundit=.false.
-          do ik=1,12
+          do ik=1,27
             if(mapsentoarray(ik).eq.isen)then
                foundit=.true.
             endif
@@ -1161,7 +1191,7 @@ C        write(IUF,*) datea,' ',thejulianis
         itrunc=1
         ipos=1
         do while (itrunc.ne.0)
-          call arlist(ipos,howmany*5,tabular,60,delim,loutstr,loutln,
+          call arlist(ipos,howmany*5,tabular,135,delim,loutstr,loutln,
      &      itrunc)
           if(ipos.eq.1) then
             WRITE(iuf,'(F10.6,4a)',IOSTAT=ios,ERR=2) thejulianis,',',
