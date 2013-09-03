@@ -1903,10 +1903,10 @@ C     Non-dimensional numbers of fluid inside HX
       REAL    f            ! auxiliary coefficient in the calculation of Nu
       REAL    A            ! auxiliary coefficient in the calculation of Nu
 C     Heat transfer coefficients between HX fluid and tank fluid
-      REAL    U_int        ! heat transfer coefficient, inside of pipe [W/m/K]
-      REAL    U_wall       ! heat transfer coefficient through pipe [W/m/K]
-      REAL    U_ext        ! heat transfer coefficient, outside of pipe [W/m/K]
-      REAL    U            ! overall heat transfer coefficient [W/m/K]
+      REAL    h_int        ! heat transfer coefficient, inside of pipe [W/m^2/K]
+      REAL    R_wall       ! pipe thermal resistance per unit lenght [m K/W]
+      REAL    h_ext        ! heat transfer coefficient, outside of pipe [W/m^2/K]
+      REAL    U            ! overall heat transfer coefficient [W/m^2/K]
       LOGICAL CLOSEA       ! Auxiliary variable
 
 C     Thermophysical properties of tank fluid
@@ -2079,13 +2079,13 @@ C           Hemisphere (1990) eq. 12 and 13
             Nu = A*Nu_crit+(1.-A)*Nu_turb
           endif
 C----     Convert Nu into thermal conductance, expressed per unit length of coil
-          U_int = Nu*k/DinHX
+          h_int = Nu*k/DinHX
 
 
-C================= Conduction of heat through wall of coil ===============
-C         Kreith and Bohn, 2001, eq. 2.39
+C================= Resistance per unit lenght of heat through wall of coil ===============
+C         
 
-          U_wall = 2*PI*kHX/log(DoutHX/DinHX)
+          R_wall = 1/(2*PI*kHX)*log(DoutHX/DinHX)
 
 
 C================= Outside of coil ===============
@@ -2137,14 +2137,14 @@ C----     Mixed convection
 C         Incropera & DeWitt (1990), eq. 9.64
           Nu_m = ((Nu_n ** 3.) + (Nu_f ** 3.)) ** (1./3.)
 
-C----     Calculate thermal conductance, U_ext
-          U_ext = Nu_m*k/DoutHX
+C----     Calculate heat transfer coefficient, h_ext
+          h_ext = Nu_m*k_s/DoutHX
 
 C======== Calculate heat transfer from HX fluid to tank ===============================
 C----     Calculate total conductance, per unit length of coil
 C         For safety, check U_int and U_ext. Experience shows that U_ext may be zero
 C         in very rare circumstances
-          U = 1./(1./U_int + 1./U_wall + 1./U_ext)
+          U = 1./(1./h_int + pi*DinHX*R_wall + DinHX/(h_ext*DoutHX))
           Htop = max(HInHX, HOutHX)
           Hbot = min(HInHX, HOutHX)
           Hhx = min(i*NodeHeight, Htop)
@@ -2170,8 +2170,8 @@ C         which is simplified using the expression for THXout above
           THX = Ts + LMTD             ! this is the average HX fluid temperature
 
 C----     Update inside and outside wall temperatures, for next iteration
-          Twall_i = THX - U*(THX-Ts)/U_int
-          Twall_o = Ts + U*(THX-Ts)/U_ext
+          Twall_i = THX - U*(THX-Ts)/h_int
+          Twall_o = Ts + U*DinHX*(THX-Ts)/(h_ext*DoutHX)
 
 C----     End of iterative loop
         end do
