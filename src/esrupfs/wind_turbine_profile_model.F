@@ -863,11 +863,11 @@ C.... Get component name's length
       iNameLength = lnblnk(powcomnam(IPWC))
 
 C.....Format string as 'electrical_net/power_only_components/NAME/misc_data'
-      Call AddToReport(rvEPowWindGenOut%Identifier,
+      Call AddToReportWild1(rvEPowWindGenOut%Identifier,
      &      GetWTPower,
      &      powcomnam(IPWC)(1:iNameLength))
 
-      Call AddToReport(rvEPowWindSpeed%Identifier,
+      Call AddToReportWild1(rvEPowWindSpeed%Identifier,
      &      WISPD,
      &      powcomnam(IPWC)(1:iNameLength))
 

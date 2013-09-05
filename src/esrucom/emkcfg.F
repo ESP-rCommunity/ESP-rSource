@@ -36,9 +36,9 @@ C common blocks into the file and unit specified in COMMON/C21.
 #include "model.h"
 #include "site.h"
 #include "geometry.h"
-#include "net_flow.h"
 #include "tdf2.h"
 #include "uncertainty.h"
+#include "net_flow.h"
 #include "MultiYear_simulations.h"
 #include "bc_data.h"
 #include "esprdbfile.h"
@@ -59,7 +59,7 @@ C ICLIM,LCLIM (for climate file)
 #include "schedule.h"
 #include "dhw_common.h"
 
-      INTEGER, PARAMETER :: MSTMC=20
+      INTEGER, PARAMETER :: MSTMC=20,MSGAL=40
       
       integer lnblnk  ! function definition
 
@@ -69,20 +69,25 @@ C ICLIM,LCLIM (for climate file)
       INTEGER :: iuout,iuin
       common/pophelp/h(60)
       
-      integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
+      integer ncomp,ncon
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
       INTEGER :: ic1,ie1,ict,ic2,ie2
       COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
       INTEGER :: IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
       COMMON/C6/INDCFG
       INTEGER :: INDCFG
-      INTEGER :: IZSTOCN
+      common/C21/IFCFG,cfgroot,LCFGF
+      INTEGER :: ifcfg
       COMMON/C24/IZSTOCN(MCOM,MS)
+      INTEGER :: IZSTOCN
 
 C Plant network.
       COMMON/C23/IFPNF,LPNF
       INTEGER :: ifpnf
+
+C Project log file, paths to standard file locations.
+      COMMON/LLOG/LPRJLG
 
 C Configuration control.
       common/cctlnm/ctldoc,lctlf
@@ -151,6 +156,8 @@ C Primary energy and emissions conversions.
       common/PCONV/ipconv,pcnvht,pcnvcl,pcnvlt,pcnvfn,pcnvsp,pcnvhw
       INTEGER :: ipconv
       REAL :: pcnvht,pcnvcl,pcnvlt,pcnvfn,pcnvsp,pcnvhw
+      common/ECONV/ieconv
+      INTEGER :: ieconv
       common/CONVEM/phtco2,phtnox,phtsox,pclco2,pclnox,pclsox,
      &              pltco2,pltnox,pltsox,pfnco2,pfnnox,pfnsox,
      &              pspco2,pspnox,pspsox,phwco2,phwnox,phwsox
@@ -158,8 +165,7 @@ C Primary energy and emissions conversions.
       REAL :: pltco2,pltnox,pltsox,pfnco2,pfnnox,pfnsox
       REAL :: pspco2,pspnox,pspsox,phwco2,phwnox,phwsox
  
-C IPV description via ipvdata.h. If within cfg file then the file
-C name is replaced with 'internal'.
+C IPV description via ipvdata.h.
       common/IPVF/lipvdatf
 
 C CPCALC description
@@ -190,7 +196,10 @@ C Numbers associated with one climatelist item.
 C Uncertainty analysis common.
       COMMON/UA1/LUALF,LCNG(MNCNG),LLOC(MNIL)
 
-C Anchor data in model.h.
+C Anchor data.
+      common/anchora/NALOC,ALOC(20),ALOCLBL(20),ALOCTYP(20)
+      common/anchorb/IALOC(20),lstanchr(20,60)
+      INTEGER :: naloc,ialoc,lstanchr
 
 C Simulation parameter presets.
       common/spfldes/spfdescr(MSPS)
@@ -279,8 +288,9 @@ C If 0 then the calculation includes diffuse shading.
 
       CHARACTER*72 LBSIMP,hvacfile,LFClds
 
-      CHARACTER LAPROB*72
-      CHARACTER CXSTR*78
+      CHARACTER LCFGF*72
+      CHARACTER LAPROB*72,LPRJLG*72
+      CHARACTER CXSTR*78,cfgroot*24
       CHARACTER LPNF*72
       CHARACTER*72 LGDCVS,LGDCNC,LGDNDC,LGDNDD,LGDTAQ,LGRD1D,LNLTHP
       CHARACTER*72 L3DCVS,L3DCNC,L3DNDC,L3DTAQ,LMOIST,LGrdSt
@@ -309,13 +319,13 @@ C An array of mass flow nodes for writing.
       character ipvaction*3  ! to instruct mkipv to do it within cfg file
       character tab*1  ! a literal tab character
 
-      dimension iav(99)
+      dimension iav(60)
 
       logical dogrnd
       LOGICAL INTHPS,INTHPZ,IGR1D,GRND3D
       LOGICAL BLDG3D,ZONE3D,MSTROK,MSTRZN
       character dstmp*24
-      character ALOC*12
+      character ALOC*12,ALOCLBL*12,ALOCTYP*4
 
 C Control for writing out multi-climate sim presets
       logical bMY_set_open 
@@ -366,21 +376,21 @@ C If filename > 4 char it might have a .cfg attached.
           lcfgl=lcfgr-3
           if(lcfgr.gt.4)then
             if(LCFGF(lcfgl:lcfgr).eq.'.cfg')then
-              if(lcfgl.gt.32)then
-                write(cfgroot,'(a)',iostat=ios,err=3) LCFGF(1:32)
+              if(lcfgl.gt.24)then
+                write(cfgroot,'(a)',iostat=ios,err=3) LCFGF(1:24)
               else
                 write(cfgroot,'(a)',iostat=ios,err=3) LCFGF(1:lcfgl-1)
               endif
             else
-              if(lcfgr.gt.32)then
-                write(cfgroot,'(a)',iostat=ios,err=3) LCFGF(1:32)
+              if(lcfgr.gt.24)then
+                write(cfgroot,'(a)',iostat=ios,err=3) LCFGF(1:24)
               else
                 write(cfgroot,'(a)',iostat=ios,err=3) LCFGF(1:lcfgr)
               endif
             endif
           else
-            if(lcfgr.gt.32)then
-              write(cfgroot,'(a)',iostat=ios,err=3) LCFGF(1:32)
+            if(lcfgr.gt.24)then
+              write(cfgroot,'(a)',iostat=ios,err=3) LCFGF(1:24)
             else
               write(cfgroot,'(a)') LCFGF(1:lcfgr)
             endif
@@ -507,6 +517,8 @@ C Begin writing the file with version number in the header.
      &  '  # path to radiance files'
       WRITE(IFCFG,'(3a)',IOSTAT=IOS,ERR=3) '*imgpth  ',imgpth,
      &  '  # path to project images'
+      WRITE(IFCFG,'(3a)',IOSTAT=IOS,ERR=3) '*tmppth  ',tmppth,
+     &  '  # path to project scratch folder'
       WRITE(IFCFG,'(3a)',IOSTAT=IOS,ERR=3) '*docpth  ',docpth,
      &  '  # path to project documents'
       WRITE(IFCFG,'(3a)',IOSTAT=IOS,ERR=3) '*dbspth  ',dbspth,
@@ -578,31 +590,14 @@ C reflect whether the standard database folder is being used.
         WRITE(IFCFG,'(2A)',IOSTAT=IOS,ERR=2) '*stdevn  ',
      &      LPRFDB(1:lnblnk(LPRFDB))
       endif
-
-      if(ipathclim.eq.0.or.ipathclim.eq.1)then
-        WRITE(IFCFG,'(2A)',IOSTAT=IOS,ERR=2) '*clm  ',
+      WRITE(IFCFG,'(2A)',IOSTAT=IOS,ERR=2) '*clm  ',
      &      LCLIM(1:lnblnk(LCLIM))
-      elseif(ipathclim.eq.2)then
-        WRITE(IFCFG,'(2A)',IOSTAT=IOS,ERR=2) '*stdclm  ',
-     &      LCLIM(1:lnblnk(LCLIM))
-      endif
-
-C      WRITE(IFCFG,'(2A)',IOSTAT=IOS,ERR=2) '*clm  ',
-C     &      LCLIM(1:lnblnk(LCLIM))
-
       if(ipathmsc.eq.0.or.ipathmsc.eq.1)then
         WRITE(IFCFG,'(2A)',IOSTAT=IOS,ERR=2) '*mscldb  ',
      &      MCMPDBFL(1:lnblnk(MCMPDBFL))
       elseif(ipathmsc.eq.2)then
         WRITE(IFCFG,'(2A)',IOSTAT=IOS,ERR=2) '*stdmscldb  ',
      &      MCMPDBFL(1:lnblnk(MCMPDBFL))
-      endif
-      if(ipathmould.eq.0.or.ipathmould.eq.1)then
-        WRITE(IFCFG,'(3A)',IOSTAT=IOS,ERR=2) '*mould  ',
-     &    lfmould(1:lnblnk(lfmould)),' # mould isopleths'
-      elseif(ipathmould.eq.2)then
-        WRITE(IFCFG,'(3A)',IOSTAT=IOS,ERR=2) '*stdmould  ',
-     &    lfmould(1:lnblnk(lfmould)),' # mould isopleths'
       endif
 
 C Ground reflectivity model, no-snow monthly albedos, snow albedo
@@ -709,7 +704,7 @@ C Solar radiation (half hour data) flag.
 
 C Diffuse shading flag.
       if(iexcludediff_flag.eq.1)then
-        WRITE(IFCFG,'(A,i2,A)',IOSTAT=IOS,ERR=2) '*exclude_diff_shad  ',
+        WRITE(IFCFG,'(A,i2,A)',IOSTAT=IOS,ERR=2) '*exlude_diff_shad  ',
      &    iexcludediff_flag,'  # diffuse shading is excluded'
       endif      
       
@@ -745,18 +740,6 @@ C Write control file if known.
       else
         WRITE(IFCFG,'(2a)',IOSTAT=IOS,ERR=2) '*ctl  ',
      &    LCTLF(1:lnblnk(LCTLF))
-      endif
-
-C Write model contents file if known.
-      if(lnblnk(lmodelqa).eq.0)then
-        continue
-      elseif(lmodelqa(1:7).eq.'UNKNOWN')then
-        continue
-      elseif(lmodelqa(1:2).eq.'  ')then
-        continue
-      else
-        WRITE(IFCFG,'(a,a)',IOSTAT=IOS,ERR=2) '*contents ',
-     &    lmodelqa(1:lnblnk(lmodelqa))
       endif
 
 C Write contaminant model description
@@ -983,19 +966,6 @@ C name of the IPV file or write the data internal to the cfg file.
           continue
         elseif(lipvdatf(1:7).eq.'UNKNOWN')then
           continue
-        elseif(lipvdatf(1:8).eq.'internal')then
-
-C If the number of IPV metrics or demand sets is greater than
-C zero. If so take common block information and include
-C it in the configuration file.
-          if(nms.gt.0.or.neds.gt.0)then
-
-C Use call mkipvdat to write into the cfg file and then clear name of
-C the external IPV file (also notify the user they can remove it).
-            ipvaction='cfg'
-            if(ipvform.eq.0) ipvform=2  ! if format not defined set to tab separated
-            call mkipvdat(ifcfg,LCFGF,ipvaction)
-          endif
         else
           WRITE(IFCFG,'(2a)',IOSTAT=IOS,ERR=2) '*ipv  ',
      &      lipvdatf(1:lnipv)
@@ -1014,7 +984,13 @@ C the external IPV file (also notify the user they can remove it).
           ipvaction='cfg'
 	  if(ipvform.eq.0) ipvform=2  ! if format not defined set to tab separated
           call mkipvdat(ifcfg,LCFGF,ipvaction)
-          lipvdatf='internal'  ! ensure old file name is no longer referenced
+          if(lnipv.eq.0)then
+            continue
+          elseif(lipvdatf(1:7).eq.'UNKNOWN')then
+            continue
+          else
+	    lipvdatf=' '  ! ensure old file name is no longer referenced
+          endif
         endif
       endif
 
@@ -1236,7 +1212,7 @@ C Write out contact details of simulation team.
 
 C Write project log file related to this model.
       WRITE(IFCFG,'(A)',IOSTAT=IOS,ERR=2) '* PROJ LOG'
-      WRITE(IFCFG,'(A)',IOSTAT=IOS,ERR=2)lmodellog(1:lnblnk(lmodellog))
+      WRITE(IFCFG,'(A)',IOSTAT=IOS,ERR=2) LPRJLG(1:lnblnk(LPRJLG))
 
 C Ground information.
       dogrnd = .false.
@@ -1392,7 +1368,7 @@ C Re-build zone:surface to connection hash array.
 
 C If there is more than one anchor concept write them out.
       if(NALOC.gt.0)then
-        WRITE(IFCFG,'(A,i2)',IOSTAT=IOS,ERR=3) '*Anchor ',NALOC
+        WRITE(IFCFG,'(A,i3)',IOSTAT=IOS,ERR=3) '*Anchor ',NALOC
         do 44 ia=1,NALOC
           WRITE(IFCFG,'(3A,i3)',IOSTAT=IOS,ERR=3) ALOCLBL(ia),' ',
      &       ALOCTYP(ia),IALOC(ia)
@@ -1404,7 +1380,7 @@ C Write packed string of the items associated with each anchor.
           itrunc=1
           ipos=1
           do while (itrunc.ne.0)
-            call ailist(ipos,IALOC(ia),iav,99,'S',outs,loutlen,itrunc)
+            call ailist(ipos,IALOC(ia),iav,60,'S',outs,loutlen,itrunc)
             write(IFCFG,'(1x,a)',IOSTAT=ios,ERR=3) outs(1:loutlen)
             ipos=itrunc+1
           end do
@@ -1523,8 +1499,8 @@ C if possible. If ICON=0 then generate a text heading.
       integer lnblnk  ! function definition
 
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
-      INTEGER :: IZSTOCN
       COMMON/C24/IZSTOCN(MCOM,MS)
+      INTEGER :: IZSTOCN
       CHARACTER CXSTR*78,SST1*12,ZST1*12,SST2*12,ZST2*12
 
       IF(ICON.EQ.0.AND.ICF.GT.0)THEN
@@ -1635,7 +1611,6 @@ C Parameters
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
-      integer IZSTOCN
       COMMON/C24/IZSTOCN(MCOM,MS)
 
       logical dup,first

@@ -860,10 +860,9 @@ C Parameters
       COMMON/OUTIN/IUOUT,IUIN
 
       CHARACTER outs248*248
-      character llitem*144     ! local string buffer
-      character LTMP72*72      ! local string buffer
+      character llitem*144   ! local string buffer
       character LTMP96*96      ! local string buffer
-      character LTMP124*124    ! local string buffer
+      character LTMP124*124      ! local string buffer
       integer iglib      ! for detecting GTK or X11
       INTEGER llt,lfn    ! length of the local string buffer
 
@@ -871,11 +870,6 @@ C Depending on whether it is X11 or GTK or text setup dialogs. The
 C X11 and text will work with 96 or 124 char string.
       iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
       lfn=lnblnk(FILEN)
-      if(lfn.lt.72)then
-        write(LTMP72,'(a)') FILEN(1:lfn)   ! for X11 and text editing
-      else
-        write(LTMP72,'(a)') FILEN(1:72)    ! for X11 and text editing
-      endif
       if(lfn.lt.96)then
         write(LTMP96,'(a)') FILEN(1:lfn)   ! for X11 and text editing
       else
@@ -887,22 +881,13 @@ C X11 and text will work with 96 or 124 char string.
         write(LTMP124,'(a)') FILEN(1:124)  ! for X11 and text editing
       endif
       write(llitem,'(a)') FILEN(1:lfn)     ! for GTK dialog
-
-C If in text or GTK mode echo FILEN.
       llt=lnblnk(llitem)
-      if(iglib.eq.2.or.iglib.eq.3)then
-        call edisp(iuout,'  ')
-        write(outs248,'(2a)') 'Current file or folder:',llitem(1:llt)
-        call edisp248(iuout,outs248,100)
-      endif
+      write(outs248,'(2a)') 'The current file is:',llitem(1:llt)
+      call edisp248(iuout,outs248,100)
       if(iglib.eq.1.or.iglib.eq.3)then
 
-C Adjust dialog depending on initial length of file name. If shorter
-C than 32 char the use shortest width.
-        if(llt.lt.42)then
-          CALL EASKF(LTMP72,PROMP1,PROMP2,72,DFILE,ERMSG,IER,NHELP)
-          write(llitem,'(a)') LTMP72(1:lnblnk(LTMP72))
-        elseif(llt.lt.96)then
+C Adjust dialog depending on initial length of file name.
+        if(llt.lt.96)then
           CALL EASKF(LTMP96,PROMP1,PROMP2,96,DFILE,ERMSG,IER,NHELP)
           write(llitem,'(a)') LTMP96(1:lnblnk(LTMP96))
         elseif(llt.ge.96.and.llt.lt.124)then
@@ -1625,35 +1610,25 @@ C concatenate path with sfile.
 C If path is '  ' or './' do not concatenate
 C This version includes cross-platform logic.
       SUBROUTINE addpath(SFILE,tfile,concat)
-      IMPLICIT NONE
-      
-C Declare calling parameters
-      CHARACTER*(*), INTENT(OUT) :: sfile,tfile
-      LOGICAL, INTENT(OUT) :: concat
-C Declare local variables
-      LOGICAL :: unixok
-      CHARACTER :: fs,bs,a1
-      CHARACTER(72) :: path
-	  CHARACTER(12) :: tp, tp1
-	  CHARACTER(124):: outs
-	  INTEGER :: LN,LNS,I,LT,ios,iuin,iuout,pos
-C Common blocks
       COMMON/OUTIN/IUOUT,IUIN
       common/rpath/path
-      
+      LOGICAL concat,unixok
+      CHARACTER*(*) sfile,tfile
+      CHARACTER path*72,fs*1,fs1*1,tp*12,tp1*12,outs*124,a1*1
+C      character a2*1
+
 C Define path and file name lengths and check operating system.
       LN=max(1,lnblnk(path))
       LNS=max(1,lnblnk(sfile))
       call isunix(unixok)
-	
+
 C Set folder separator (fs) to \ or / and the folders to ignore as required.
       fs = char(47)
-      bs = char(92)
+      fs1 = char(92)
       write(tp,'(2a)') '.',fs
-      write(tp1,'(2a)') '.',bs
+      write(tp1,'(2a)') '.',fs1
       write(a1,'(a)') sfile(1:1)
-C Debug.
-C      write(*,*)'tp',tp,'tp1',tp1,'a1',a1
+C      write(a2,'(a)') sfile(2:2)
 
 C Assume that we will add the path to the file name.
       concat = .true.
@@ -1681,7 +1656,7 @@ C and change all \ to /.
           LT=max(1,lnblnk(tfile))
           sfile=tfile
           do 10 I=1,LT
-            if (tfile(I:I).eq.bs) then
+            if (tfile(I:I).eq.fs1) then
               write (sfile(I:I),'(a2)') fs
             endif
  10       continue
@@ -1700,15 +1675,6 @@ C been defined - do not add path.
      &        sfile(2:2).eq.':') then
           concat = .false.
         elseif (a1.eq.'/') then
-C make sure all \ (bs) are replaced with / (fs)
-         do
-           pos=SCAN(sfile,bs)
-           if (pos.ne.0) then
-             sfile(pos:pos)=fs
-           else 
-             EXIT
-           end if
-         end do      
 
 C Special case: unix absolute path being used on windows - substitute c: for initial /
 C Limit feedback text length to fit within outs text buffer.
@@ -1718,12 +1684,11 @@ C Limit feedback text length to fit within outs text buffer.
           write(outs,*)
      &      'addpath: warning found unix path changing to windows.'
           call edisp(iuout,outs)
-	      LNS=lnblnk(sfile)
-	      if(LNS.gt.112) LNS=112
+	  LNS=lnblnk(sfile)
+	  if(LNS.gt.112) LNS=112
           write(outs,*) 'addpath: ',sfile(1:LNS)
           call edisp(iuout,outs)
         endif
-        
       endif
 
       if(concat)then
@@ -1915,59 +1880,20 @@ C otherwise ask what to do.
           else
             IX=2
           endif
-        elseif (MPM.eq.3) then
-
-C If three pages and on 1st jump to middle, if at end jump to middle
-C and if in middle ask user what to do.
-          if (IPM.eq.1) then
-            IX=5
-          elseif (IPM.eq.3) then
-            IX=2
-          else
-            H(1)='In order to manage long lists of selections or data'
-            H(2)='a number of viewports may be necessary.'
-            CALL EASKABC(' ',' Menu-page options:','previous','next',
-     &                 'goto page',IW,2)
-            IF(IW.EQ.3)then
-              H(1)='If page greater than length then last page assumed.'
-              CALL EASKI(IGTP,' ',' Which page ? ',1,'F',1,'-',1,
-     &          'menu page',IER,1)
-              IX=3
-            elseif(IW.EQ.2)then
-              IX=5
-            elseif(IW.EQ.1)then
-              IX=2
-            endif
-            CALL USRMSG(' ',' ','-')
-          endif
         else
-
-C If lots of pages track the 1st and last page otherwise ask user.
-          if (IPM.eq.1) then
+          H(1)='In order to manage long lists of selections or data'
+          H(2)='a number of viewports may be necessary.'
+          CALL EASKABC(' ',' Menu-page options:','previous','next',
+     &                 'goto page',IW,2)
+          IF(IW.EQ.3)then
+            H(1)='If page greater than length then last page assumed.'
+            CALL EASKI(IGTP,' ',' Which page ? ',1,'F',1,'-',1,
+     &        'menu page',IER,1)
+            IX=3
+          elseif(IW.EQ.2)then
             IX=5
-          elseif (IPM.eq.MPM) then
+          elseif(IW.EQ.1)then
             IX=2
-          else
-            H(1)='In order to manage long lists of selections or data'
-            H(2)='a number of viewports may be necessary.'
-            CALL EASKATOG(' ',' Menu-page options:','first page',
-     &        'previous','next','goto page','last page','  ','  ',IW,2)
-            if(IW.eq.5)then
-              IGTP=MPM   ! set it to last page
-              IX=3
-            elseif(IW.EQ.4)then
-              H(1)='If page greater than length then last page assumed.'
-              CALL EASKI(IGTP,' ',' Which page ? ',1,'F',1,'-',1,
-     &          'menu page',IER,1)
-              IX=3
-            elseif(IW.EQ.3)then
-              IX=5
-            elseif(IW.EQ.2)then
-              IX=2
-            elseif(IW.EQ.1)then
-              IGTP=1   ! set it to first page
-              IX=3
-            endif
           endif
           CALL USRMSG(' ',' ','-')
         endif
@@ -3765,18 +3691,16 @@ C single character then ixl is ix.
         else
           length=ix
           itrunc = i-1
-          goto 1  ! cannot write more to the packed string
+          goto 1
         endif
   43  continue
       length=ixl
       return
 
    1  continue
-
-C Debug.
-C      write(outs,*) 'ASFLIST: truncation writing array at item: ',
-C     &  itrunc,' & pos ',length
-C      call edisp(iuout,outs)
+      write(outs,*) 'ASFLIST: truncation writing array at item: ',
+     &  itrunc,' & pos ',length
+      call edisp(iuout,outs)
       return
       END
 
@@ -5057,7 +4981,7 @@ C comma is found.
      &      ' past end of line for ',MSG(1:LNM),' (phrase) in...'
         else
           WRITE(loutstr,'(3a)',IOSTAT=IOS,ERR=1)
-     &      'FAILURE: Past end of line for ',
+     &      'FAILUREW: Past end of line for ',
      &      MSG(1:LNM),' (phrase) in...'
         endif
       endif
@@ -6148,10 +6072,10 @@ C Find if Unix or NT.
         call getenv('HOME',upath)
       else
         call getenv ('HOMEDRIVE',homedrive)
-        write(outs,*) '  Homedrive - ',homedrive
+        write(outs,*) 'homedrive is ',homedrive
         call edisp(IUOUT,outs)
         call getenv ('HOMEPATH',homepath)
-        write(outs,*) '  Homepath - ',homepath
+        write(outs,*) 'homepath is ',homepath
         call edisp(IUOUT,outs)
         if(homedrive(1:1).ne.' '.and.homepath(1:1).ne.' ')then
           write(upath,'(2a)') homedrive(1:lnblnk(homedrive)),
@@ -6184,98 +6108,11 @@ C usrdir: Find current folder.
       subroutine usrdir(upwd)
       common/OUTIN/IUOUT,IUIN
       character*(*) upwd
-      character local*96   ! getcwd needs a fixed char array
-      integer i,jlen,kblnk
+      integer getcwd
 
-C Older definition used function call.
-C      integer getcwd
-C      i= getcwd(upwd)
-
-C Modern compilers GCC F90 provide subroutine
-      call getcwd(local,i)
-      jlen= LEN(upwd)        ! defined length of upwd
-      kblnk= lnblnk(local)   ! actual length of local
-
-C Debug.
-C      write(6,*) 'getcwd ',i,jlen,kblnk,local
-
-C Ensure that string buffer does not overflow.
-      if(kblnk.lt.jlen)then
-        write(upwd,'(a)') local(1:kblnk)
-      else
-        write(upwd,'(a)') local(1:jlen)
-      endif
-
-C Normal return value is zero, otherwise provide warning
+      i= getcwd(upwd)
       if(i.ne.0)then
-        call edisp(iuout,'usrdir: problem recovering current folder')
-      endif
-      return
-      end
-
-C ************ clearfolderlist
-C Called from getfileslist_() in esru_util.c to clear the listfold
-C common block.
-      subroutine clearfolderlist()
-#include "espriou.h"
-C espriou.h for parameter MFFOLD
-      integer nboflistf  ! how many folders or file names passed
-      integer listfoldertype   ! zero if unused one if folder two if file
-      integer lenlistfolder    ! width of each string
-      character*72 listfolder  ! array of folder or file names
-      common/listfold/nboflistf,listfoldertype(MFFOLD),
-     &                lenlistfolder(MFFOLD),listfolder(MFFOLD)
-
-C Clear the list.
-      nboflistf=0
-      do 42 ilist=1,MFFOLD
-        listfoldertype(ilist)=0
-        listfolder(ilist)='  '
-        lenlistfolder(ilist)=0
-  42  continue
-      return
-      end
-
-C ************ addfolderlist
-C Called from getfileslist_() in esru_util.c to pass back a
-C file or folder name in the string folderf into a fortran
-C data structure for other code to use.
-      subroutine addfolderlist(type,folderf)
-#include "espriou.h"
-C espriou.h for parameter MFFOLD
-
-      integer lnblnk  ! function definition
-      
-      integer nboflistf  ! how many folders or file names passed
-      integer listfoldertype   ! zero if unused one if folder two if file
-      integer lenlistfolder    ! width of each string
-      character*72 listfolder  ! array of folder or file names
-      common/listfold/nboflistf,listfoldertype(MFFOLD),
-     &                lenlistfolder(MFFOLD),listfolder(MFFOLD)
-
-C Passed variables.
-      character folderf*(*)   ! file name null terminated within calling code
-      character type*(*)      ! type is D for directory and L for file
-
-C Local variables
-      CHARACTER WORD*96
-      integer iln
-      
-C Add to the list.
-      nboflistf=nboflistf+1
-      call c2fstr(folderf,WORD)
-      iln=lnblnk(WORD)
-C Debug.
-C      write(6,*) 'addfolderlist ',word(1:iln),' ',iln,nboflistf,type
-
-      listfolder(nboflistf)=WORD(1:iln)
-      lenlistfolder(nboflistf)=iln
-      if(type(1:1).eq.'D')then
-        listfoldertype(nboflistf)= 1
-      elseif(type(1:1).eq.'L')then
-        listfoldertype(nboflistf)= 2
-      else
-        listfoldertype(nboflistf)= 0
+        call edisp(iuout,'problem recovering current folder')
       endif
       return
       end
@@ -7376,12 +7213,12 @@ C Trap phrases longer than the outs buffer.
 C ********************* clrtextbuf
 C clrtextbuf clears the text buffer common blocks.
       subroutine clrtextbuf()
-      common/textbuf/dispbuf(500)
-      common/textbufl/indexbuf,lnbuf(500)
+      common/textbuf/dispbuf(360)
+      common/textbufl/indexbuf,lnbuf(360)
       character dispbuf*124
 
       indexbuf=0
-      do 42 i=1,500
+      do 42 i=1,360
         dispbuf(i)='  '
         lnbuf(i)=1
   42  continue
@@ -7421,9 +7258,9 @@ C Set MODIFY=true to force any wire-frame images to be redrawn.
       end
 
 C ********* WIREPK
-C WIREPK is called from C code in esru_x.c with current
+C WIREPK is called from C code in esru_x.c or esp-r.c  with current
 C number of zones which have been selected for display.
-C Compilation of X11 assumes this will be available in
+C Compilation of X11 or GTK version assumes this will be available in
 C each modules code somewhere.  If not needed then provide a dummy.
       subroutine wirepk(inpk)
 #include "building.h"

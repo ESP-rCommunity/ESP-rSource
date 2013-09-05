@@ -11,13 +11,6 @@
 
 #include <stdio.h>
 
-/* ********************************************************************
-** Class:   DBManager (stub)
-** Purpose: Stub of the DBmanager class.  When esp-r is built without
-**          the --SQLite option this file will be used instead of the
-**          DBManager.cpp
-** Used by: TReportsManager
-** ***************************************************************** */
 class DBManager
 {
    public:
@@ -33,7 +26,6 @@ class DBManager
       void addIntegratedData(int iVariableID, int iIndex, const char *sIntegratedUnits,double dTotal, int sType);
       void createTableStructure();
       void indexDatabase();
-      void createDataViews();
       void updateVariableName(int iVariableId, int iNewDescriptorID);
    private:
    protected:
@@ -52,5 +44,4 @@ void DBManager::addBinData(int iVariableID,int iIndex, int iStep, int iActiveSte
 void DBManager::addIntegratedData(int iVariableID, int iIndex, const char *sIntegratedUnits,double dTotal, int sType){}
 void DBManager::createTableStructure(){}
 void DBManager::indexDatabase(){}
-void DBManager::createDataViews(){};
 void DBManager::updateVariableName(int iVariableId, int iNewDescriptorID){}

@@ -1,10 +1,10 @@
 C This file is part of the ESP-r system.
 C Copyright Energy Systems Research Unit, University of
-C Strathclyde, Glasgow Scotland, 2010-2012.
+C Strathclyde, Glasgow Scotland, 2010.
 
 C Schedule.h holds common block for project scheduled demands
-C i.e. those not associated with any particular zone.  It also
-C hold zone operations common blocks.
+C i.e. those not associated with any particular zone.  It may
+C also later hold zone operations common blocks.
 C References to schedule.h should follow building.h so that
 C the parameters MDTY, MGTY and MC have been defined.
 
@@ -53,60 +53,5 @@ C How many of each dispersed demands for each gaintype/daytype.
       common/b3ver/idmdver
       integer idmdver   ! version of the demands file.
                         ! idmdver =0 standard, idmdver =1 with header
-
-C Version of zone operations file. ip3ver=0 legacy, =1 sorted with header,
-C =2 with more than 3 day types allowed and periods sorted,
-C =3 with key words for casual gain types.
-      integer ip3ver
-      common/p3ver/ip3ver(MCOM)
-
-      character oprdesc*248  ! notes for casual gain
-      character ventdesc*248 ! notes for air schedules
-      character ctlstr*24    ! summary of air control scheme
-      COMMON/P1/oprdesc(MCOM),ventdesc(MCOM),ctlstr(MCOM,MDTY)
-
-      character lodlabel*6  ! use label for each zone casual gain
-      common/loadlabel/lodlabel(mcom,MGTY)
-
-C Users can track a number of different casual gains up to MGTY and ICGT 
-C is this index for each period in each calendar day type. Older files 
-C implied a purpose to this index
-C 1=occupancy W, 2=lighting W, 3=small power W, 4=other W, 5=external electrical
-C -1=floor area/person -2 Light W/m2 -3=small power W/m2
-      integer ICGT  ! position within array of casual gains (overloaded see above)
-      COMMON/P3TYPEN/ICGT(MDTY,MC)
-
-      integer NAC       ! number of distinct air change periods per day type
-      integer IACS,IACF ! start & finish hours for each air change day:period
-      real ACI          ! infiltration air changes/hour for each day:period
-      real ACV          ! ventilation air changes/hour from other zones for each
-                        ! day:period
-      integer IPT  ! ACV source 0=specified constant temperature or
-                   ! N>0 ACV is at the time-dependent temperature of zone N.
-      real TA      ! where IPV=0 the constant source temperature otherwise 0
-      COMMON/P2N/NAC(MDTY),IACS(MDTY,MA),IACF(MDTY,MA),ACI(MDTY,MA),
-     &           ACV(MDTY,MA),IPT(MDTY,MA),TA(MDTY,MA)
-
-      integer NCAS       ! number casual gain periods for each daytype
-      integer ICGS,ICGF  ! start & finish hours for each casual day:period
-      real CMGS,CMGL     ! sensible and latent magnitude for each casual 
-                         ! day:period, units depend on value of ICGT
-      real RADC,CONC     ! radiant and convective fraction (0.0 - 1.0) for
-                         ! each casual gain day:period
-      COMMON/P3N/NCAS(MDTY),ICGS(MDTY,MC),ICGF(MDTY,MC),
-     &           CMGS(MDTY,MC),CMGL(MDTY,MC),RADC(MDTY,MC),CONC(MDTY,MC)
-
-C NOTE: P2CTL should be extended to support controls for each day type.
-      integer ITCTL    ! index of air flow control (see above)
-      real TLO,TUP,THI ! setpoint for low upper & high flow rates
-      real ACIL,ACVL   ! low level controlled infiltration & ventilation rates
-      real ACIU,ACVU   ! 1st stage controlled infiltration & ventilation rates
-      real ACIH,ACVH   ! 2nd stage controlled infiltration & ventilation rates
-      integer IVL,IVU,IVH ! indicates controlled ventilation source (see IPT)
-      real TAL,TAU,TAH    ! source temperature for low upper & high ventilation 
-      COMMON/P2CTL/ITCTL(MCOM),TLO(MCOM),TUP(MCOM),THI(MCOM),ACIL(MCOM),
-     &             ACVL(MCOM),IVL(MCOM),TAL(MCOM),ACIU(MCOM),ACVU(MCOM),
-     &             IVU(MCOM),TAU(MCOM),ACIH(MCOM),ACVH(MCOM),
-     &             IVH(MCOM),TAH(MCOM)
 
 C end of schedule.h

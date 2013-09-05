@@ -355,12 +355,10 @@ C      DIMENSION VAL1(1440),VAL2(1440)
       integer igwid,igheight  ! for use with axiscale
       integer iside,isize,ifont     ! passed to viewtext
       integer iupdown,isym    ! passed to etplot
-      integer iigl,iigr,iigt,iigb,iigw,iigwh
 #else
       integer*8 igwid,igheight  ! for use with axiscale
       integer*8 iside,isize,ifont     ! passed to viewtext
       integer*8 iupdown,isym    ! passed to etplot
-      integer*8 iigl,iigr,iigt,iigb,iigw,iigwh
 #endif
 
       call prsprof(idbh,iit,'g',NCG,Patr,DayT,ST,A,B,C,ier)
@@ -368,18 +366,15 @@ C      DIMENSION VAL1(1440),VAL2(1440)
       YMAX=100.
       YMIN=0.
 
-C Cast values for linescale.
-      iigl=igl;iigr=igr;iigt=igt;iigb=igb;iigw=igw;iigwh=igwh
-
 C Set up data ready for graph drawing.
       call startbuffer()
       igwid=igw
       igheight=igwh
       call axiscale(igwid,igheight,0.0,24.0,YMIN,YMAX,xsc,ysc,sca,
      &  Xadd,Yadd)
-      call linescale(iigl,Xadd,xsc,iigb,Yadd,ysc)
-      call horaxis(0.,24.,iigl,iigr,iigb,Xadd,xsc,1,'Time (minutes)')
-      call vrtaxis(YMIN,YMAX,iigl,iigb,iigt,Yadd,ysc,0,0,'Percent')
+      call linescale(igl,Xadd,xsc,igb,Yadd,ysc)
+      call horaxis(0.,24.,igl,igr,igb,Xadd,xsc,1,'Time (minutes)')
+      call vrtaxis(YMIN,YMAX,igl,igb,igt,Yadd,ysc,0,0,'Percent')
 
 C Pick up the data increment for the horizontal axis.
       call dinterval(0.,24.,DT,NDEC,1)

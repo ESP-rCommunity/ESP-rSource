@@ -172,8 +172,8 @@ C IFIL base file unit number (set in MAIN of each application).
       COMMON/ER1/IER1
       INTEGER :: ier1
       
-      integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
+      integer ncomp,ncon
 
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
       INTEGER :: ic1,ie1,ict,ic2,ie2
@@ -184,25 +184,32 @@ C IFIL base file unit number (set in MAIN of each application).
 C skyview viewfactor from external surfaces to the sky (site.h)
 C groundview viewfactor from external surfaces to the ground
 C buildingview viewfactor from external surfaces to other buildings & obstructions
-      INTEGER :: INDCFG
       COMMON/C6/INDCFG
+      INTEGER :: INDCFG
 
 C NZSUR is the number of surfaces in each zone (from geometry.h).
 C NZTV is the number of vertices in each zone (from geometry.h).
 
+C IFCFG is the file unit for the model configuration file.
+C cfgroot (24 char) root name for the model (used when generating
+C   system files.
+C LCFGF (72 char) model configuration file name.
+      common/C21/IFCFG,cfgroot,LCFGF
+      INTEGER :: IFCFG
+
 C IFPNF is the unit for the plant network file.
 C LPNF (72 char) plant network file name.
-      INTEGER :: IFPNF
       COMMON/C23/IFPNF,LPNF
+      INTEGER :: IFPNF
 
 C IZSTOCN - for each zone:surface a pointer to connection index.
-      INTEGER :: IZSTOCN
       COMMON/C24/IZSTOCN(MCOM,MS)
+      INTEGER :: IZSTOCN
       COMMON/PREC8/SLAT,SLON
       REAL :: SLAT,SLON
 
-      INTEGER :: iairn,icaas
       COMMON/AFN/IAIRN,LAPROB,ICAAS(MCOM)
+      INTEGER :: iairn,icaas
 
       COMMON/MFLOW1/NNOD,NCMP,NCNN
       INTEGER :: NNOD,NCMP,NCNN
@@ -222,6 +229,9 @@ C ctldoc (248 char) - Overall control notes. If equal to 'none'
 C                   then no control is imposed.
 C lctlf (72 char) - model control file name.
       common/cctlnm/ctldoc,lctlf
+
+C LPRJLG (72 char) model log file.
+      COMMON/LLOG/LPRJLG
 
 C Images in the model.
 C  imgfmt (4 char) gives the format of each image associated with
@@ -320,7 +330,11 @@ C Uncertainty analysis common.
 C IPV description come from ipvdata.h.
       common/IPVF/lipvdatf
 
-C Anchor data in model.h.
+C Anchor data.
+      common/anchora/NALOC,ALOC(20),ALOCLBL(20),ALOCTYP(20)
+      INTEGER :: NALOC
+      common/anchorb/IALOC(20),lstanchr(20,60)
+      INTEGER :: ialoc,lstanchr
 
 C Contaminant flow model commons
       COMMON/CONTM0/NCONTM,NOCNTM,CONTMNAM(MCONTM)
@@ -453,6 +467,7 @@ C iSlr_half_hr_flg value = 0 :hour-centered; =1 : half-hour centered.
       CHARACTER loutstr*248,OUTSTR*124,OUTS*124,text*124,t117*117
       CHARACTER*72 FILE,LCFD
       CHARACTER*72 LAPROB,LPNF
+      character LPRJLG*72
       character lworking*144
       CHARACTER*72 L3DCVS,L3DCNC,L3DNDC,L3DTAQ,LMOIST,LGrdSt
       CHARACTER WORD*20,NODID*12,MODE*4,CXSTR*78,ZN*12
@@ -463,15 +478,15 @@ C iSlr_half_hr_flg value = 0 :hour-centered; =1 : half-hour centered.
       character GTGEOM*72,GTNAME*15
       CHARACTER ectime*24,wkd1*10,wkd2*10,naco*40,type*4
       character*10 wkday(7)
-      character LUALF*72,LCNG*15,LLOC*15
-      CHARACTER NDNAM*12
+      character LUALF*72,LCNG*15,LLOC*15,cfgroot*24,LCFGF*72
+      CHARACTER NDNAM*12,ALOC*12,ALOCLBL*12,ALOCTYP*4
       character sblres*72,sflres*72,splres*72,smstres*72,sipvres*72
       character selres*72,spfdescr*8
       character hvacfile*72,LBSIMP*72,LFClds*72
       character gshpfile*72
       character gcepfile*72
       character dllsubr*12,dllmesg*124
-      character limgpth*24,ldocpth*24,lcfgroot*32,lpath*72
+      character limgpth*24,ldocpth*24,ltmppth*24,lcfgroot*24,lpath*72
       character path*72,lupath*72
       character namez*12,namen*12
       CHARACTER*72 NWKNAM,NWKDSC,NWKFLNAM
@@ -486,7 +501,7 @@ C iSlr_half_hr_flg value = 0 :hour-centered; =1 : half-hour centered.
       integer ier
       logical unixok  ! to check for database path file separators
 
-      DIMENSION GVA(12),IVA(99),namez(mcom),namen(mcom)
+      DIMENSION GVA(12),IVA(60),namez(mcom),namen(mcom)
       dimension IRVC(mcon),IRCC(365)
       data wkday/'Monday', 'Tuesday','Wednesday', 'Thursday',
      &           'Friday','Saturday', 'Sunday'/
@@ -501,12 +516,6 @@ C For help messages
       character helpinsub*24 ! subroutine name
       character helptopic*24 ! string (unique) for topic
       integer nbhelp     ! number of help lines found
-
-#ifdef OSI
-      integer iincomp,iincon  ! to pass nb zones connections to c code
-#else
-      integer*8 iincomp,iincon  ! to pass nb zones connections to c code
-#endif
 
       helpinsub='ERSYSG'  ! set for subroutine
       
@@ -612,21 +621,19 @@ C Initialize the indices.
       ANGI=40.
       initvt=0
 
-C Set day types to default of 4 (weekday/saturday/sunday/hol) and calendar
-C day type tags to default as well. These initial day types cannot be deleted
-C and more day types if defined will be stored in CALENTAG(5) onwards.
-C this can be modified later.
+C Set day types to default of 3 (weekday/saturday/sunday) and calendar
+C day type tags to default as well. These 3 day types cannot be deleted
+C and more day types if defined will be stored in CALENTAG(4) onwards.
+C this can be modified later. [The IF clause may not be necessary]
       IF(NBDAYTYPE.LT.3)THEN
-        nbdaytype=3  ! for older models will be updated in *list section
+        nbdaytype=3
       ENDIF
       CALENTAG(1)='weekday'
       CALENTAG(2)='saturday'
       CALENTAG(3)='sunday'
-      CALENTAG(4)='holiday'
       CALENDAYNAME(1)='generic weekday'
       CALENDAYNAME(2)='generic saturday'
       CALENDAYNAME(3)='generic sunday'
-      CALENDAYNAME(4)='generic holiday'
 
 C Open the configuration file, return if not found otherwise set
 C currentfile to the configuration file.
@@ -652,21 +659,21 @@ C If FILE > 4 char it might have a .cfg attached, otherwise add.
       lcfgl=lcfgr-3
       if(lcfgr.gt.4)then
         if(FILE(lcfgl:lcfgr).eq.'.cfg')then
-          if(lcfgl.gt.32)then
-            write(cfgroot,'(a)',iostat=ios,err=99) FILE(1:32)
+          if(lcfgl.gt.24)then
+            write(cfgroot,'(a)',iostat=ios,err=99) FILE(1:24)
           else
             write(cfgroot,'(a)',iostat=ios,err=99) FILE(1:lcfgl-1)
           endif
         else
-          if(lcfgr.gt.32)then
-            write(cfgroot,'(a)',iostat=ios,err=99) FILE(1:32)
+          if(lcfgr.gt.24)then
+            write(cfgroot,'(a)',iostat=ios,err=99) FILE(1:24)
           else
             write(cfgroot,'(a)',iostat=ios,err=99) FILE(1:lcfgr)
           endif
         endif
       else
-        if(lcfgr.gt.32)then
-          write(cfgroot,'(a)',iostat=ios,err=99) FILE(1:32)
+        if(lcfgr.gt.24)then
+          write(cfgroot,'(a)',iostat=ios,err=99) FILE(1:24)
         else
           write(cfgroot,'(a)',iostat=ios,err=99) FILE(1:lcfgr)
         endif
@@ -713,7 +720,9 @@ C via tags.
           CALL EGETRM(OUTSTR,K,imgpth,'W','path to img',IER)
           IF(IER.NE.0)goto 1
           goto 34
-        elseif(WORD(1:7).eq.'*tmppth')then  ! do not bother with this folder name
+        elseif(WORD(1:7).eq.'*tmppth')then
+          CALL EGETRM(OUTSTR,K,tmppth,'W','path to scratch',IER)
+          IF(IER.NE.0)goto 1
           goto 34
         elseif(WORD(1:7).eq.'*docpth')then
           CALL EGETRM(OUTSTR,K,docpth,'W','path to documents',IER)
@@ -878,8 +887,6 @@ C << add in ipathmsc >>
         CALL EGETRM(OUTSTR,K,LCLIM,'W','climate db',IER)
       elseif(WORD(1:4).eq.'*ctl')then
         CALL EGETRM(OUTSTR,K,LCTLF,'W','config control',IER)
-      elseif(WORD(1:9).eq.'*contents')then
-        CALL EGETRM(LOUTSTR,K,lmodelqa,'W','model contents',IER)
       elseif(WORD(1:5).eq.'*hvac')then
 
 C hvac file, test and see if it exists.
@@ -1426,9 +1433,8 @@ C Annual IPV report depreciated in favour of sipvres.
 
 C Project log file, read and then go on to fabric/plant description.
         CALL STRIPC(IUC,OUTSTR,0,ND,1,'project log file',IER)
-        lmodellog=OUTSTR(1:LNBLNK(OUTSTR))
+        LPRJLG=OUTSTR(1:LNBLNK(OUTSTR))
         goto 45
-
       else
         call usrmsg(' Unknown entry format... ',outstr,'W')
         dok=.true.
@@ -2160,11 +2166,11 @@ C of links and then the links.
           else
             write(ALOCTYP(ia),'(a4)') 'UNKN'
           endif
-          CALL EGETWI(OUTSTR,K,IALOC(ia),0,99,'F','anchor link',IER)
+          CALL EGETWI(OUTSTR,K,IALOC(ia),0,60,'F','anc link',IER)
           IRVA=IALOC(ia)
 
 C Scan next line for links.
-          CALL EGETWIA(IUC,IVA,IRVA,0,0,'-','anchor assoc links',IER)
+          CALL EGETWIA(IUC,IVA,IRVA,0,0,'-','assoc links',IER)
           DO 345 LC=1,IALOC(ia)
             lstanchr(ia,LC)=IVA(LC)
  345      continue
@@ -2454,16 +2460,15 @@ C Pass information about the current model to the C interface.
       lupath=upath
       limgpth=imgpth
       ldocpth=docpth
-      iincomp=ncomp
-      iincon=ncon
+      ltmppth=tmppth
       if(browse)then
         ibrowse=1
-        call curproject(lcfgroot,lpath,lupath,limgpth,ldocpth,
-     &    ibrowse,iincomp,iincon)
+        call curproject(lcfgroot,lpath,lupath,limgpth,ldocpth,ltmppth,
+     &    ibrowse)
       else
         ibrowse=0
-        call curproject(lcfgroot,lpath,lupath,limgpth,ldocpth,
-     &    ibrowse,iincomp,iincon)
+        call curproject(lcfgroot,lpath,lupath,limgpth,ldocpth,ltmppth,
+     &    ibrowse)
       endif
       RETURN
 
@@ -2681,7 +2686,6 @@ C array IZSTOCN(MCOM,MS) which holds the connection index.
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
-      integer IZSTOCN
       COMMON/C24/IZSTOCN(MCOM,MS)
 
       do 42 icc = 1, NCON
@@ -2694,11 +2698,11 @@ C **************** conninanchor
 C conninanchor returns true if a connection is included within
 C a particular anchor list and matches a valid anchor use.
       subroutine conninanchor(icnn,ianc,type,ok,ier)
-#include "building.h"
-#include "model.h"
       COMMON/OUTIN/IUOUT,IUIN
+      common/anchora/NALOC,ALOC(20),ALOCLBL(20),ALOCTYP(20)
+      common/anchorb/IALOC(20),lstanchr(20,60)
 
-      character outs*124,type*4,msgl2*48
+      character ALOC*12,ALOCLBL*12,ALOCTYP*4,outs*124,type*4,msgl2*48
       logical found,ok
 
 C Check if ianc is a known anchor and then if there is a list.

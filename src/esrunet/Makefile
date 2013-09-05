@@ -17,8 +17,6 @@ OBJECTS = aim2_module.o arrow.o ascii_mat.o basesimp.o basesimp_inputs.o bscoeff
 	esru_misc.o  filelist.o icndbscn.o mfcdat.o netwedit.o network.o nwkrewr.o netwkc2f.o \
 	netutil.o read3dv.o sort.o startup.o
 
-MODULES = aim2.mod aim2_calcdata.mod aim2_h2k_dummy.mod aim2_inputdata.mod
-
 $(PROG): $(OBJECTS) $(C_OBJ)
 	$(MFC) $(LD_FLAGS) -o $(PROG) $(FFLAGS) $(CFLAGS) $(OBJECTS) $(ULIBS)
 
@@ -90,7 +88,7 @@ install:
 	@if [ -f $(PROG) ]; then cp $(PROG) $(ESPBinDir); fi
 
 clean:
-	rm -f core $(PROG) $(PROG).exe $(OBJECTS) $(MODULES) \
+	rm -f core $(PROG) $(PROG).exe $(OBJECTS) \
 	*.o aim2_module.F arrow.F ascii_mat.F basesimp.F basesimp_inputs.F bscoeff.F bscoeff_extended.F \
 	common3dv.F edatabase.F egeometry.F e3dviews.F emfnetw.F eroper.F \
 	esru_misc.F filelist.F nwkrewr.F read3dv.F mfcdat.F sort.F startup.F

@@ -114,11 +114,19 @@ C==============================
       upath = cCfgPath	
       mode = 'text'
       
+#ifdef F90
       OPEN(unit=iuout,FILE=cLogFile, position ='APPEND')
       OPEN(unit=5,FILE=cLogFile, position ='APPEND')
       OPEN(unit=6,FILE=cLogFile, position ='APPEND')
       OPEN(unit=icout,FILE=cLogFile, position ='APPEND')
       OPEN(UNIT=iLogFile,FILE=cLogFile, position='APPEND' )
+#else
+      OPEN(unit=iuout,FILE=cLogFile, ACCESS = 'APPEND')
+      OPEN(unit=5,FILE=cLogFile, ACCESS = 'APPEND')
+      OPEN(unit=6,FILE=cLogFile, ACCESS = 'APPEND')
+      OPEN(unit=icout,FILE=cLogFile, ACCESS = 'APPEND')
+      OPEN(UNIT=iLogFile,FILE=cLogFile, ACCESS='APPEND' )
+#endif
        	
       write(outs248,'(a,a)')' the input file is: ',LCMDFL
       call edisp(iuout,outs248)
@@ -167,14 +175,22 @@ C----------------------------------------------------
 
       
       close( iLogFile )
+#ifdef F90
       open(UNIT=iLogFile, FILE=cLogFile,position='APPEND' )
+#else
+      OPEN(UNIT=iLogFile, FILE=cLogFile, ACCESS='APPEND' )
+#endif
       if( bOkay ) then
       	write( iLogFile, * ) strLogEntry, ' okay'
       else
       	write( iLogFile, * ) strLogEntry, ' not okay'
       endif
       close( iLogFile )
+#ifdef F90
       open(UNIT=iLogFile, FILE=cLogFile,position='APPEND' )
+#else
+      OPEN(UNIT=iLogFile, FILE=cLogFile, ACCESS='APPEND' )
+#endif
       
       return
       end

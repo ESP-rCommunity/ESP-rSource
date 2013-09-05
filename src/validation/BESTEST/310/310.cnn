@@ -1,5 +1,5 @@
-*connections for 310
-*Date Wed Aug 29 13:26:57 2012
+*connections  for 310
+*Date Wed Oct 14 10:25:01 2009
       8   # number of connections
    1   1   0   0   0  #    1 East_Wall in 310 is External
    1   2   0   0   0  #    2 North_Wall in 310 is External

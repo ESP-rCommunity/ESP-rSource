@@ -571,10 +571,8 @@ C#include "building.h"
       logical colok
 #ifdef OSI
       integer iupdown,isym,iid1,iid2,ixs,iys,iix,iiy    ! passed to etplot
-      integer iicol
 #else
       integer*8 iupdown,isym,iid1,iid2,ixs,iys,iix,iiy    ! passed to etplot
-      integer*8 iicol
 #endif
 
       colok=.false.
@@ -599,15 +597,11 @@ C#include "building.h"
             if(colok)then
               icm=IPCOMP-100
               if(ICM.gt.nzonec) ICM=(IPCOMP-100)-nzonec
-              iicol=ICM
-              call winscl('z',iicol)
+              call winscl('z',ICM)
             endif
             iid1=ixs+4; iid2=iys-4;
             call wstxpt(iid1,iid2,puts)
-            if(colok)then
-              iicol=0
-              call winscl('-',iicol)
-            endif
+            if(colok)call winscl('-',0)
             call forceflush()
           ELSEIF(IPCOMP.GT.0.AND.IPCOMP.LE.100) THEN 
 
@@ -618,15 +612,11 @@ C Keep track of components plotted
             if(colok)then
               icm=IPCOMP
               if(ICM.gt.nzonec) ICM=IPCOMP-nzonec
-              iicol=ICM
-              call winscl('z',iicol)
+              call winscl('z',ICM)
             endif
             iid1=ixs+4; iid2=iys-4;
             call wstxpt(iid1,iid2,puts)
-            if(colok)then
-              iicol=0
-              call winscl('-',iicol)
-            endif
+            if(colok)call winscl('-',0)
             call forceflush()
           ELSEIF(IPCOMP.EQ.0) THEN
             WRITE(PUTS,'(a)') 'Ext db'
@@ -643,15 +633,9 @@ C Keep track of components plotted
           ENDIF
         ENDIF 
         call u2pixel(x,y,iix,iiy)
-        if(colok.and.icm.ne.0)then
-          iicol=ICM
-          call winscl('z',iicol)
-        endif
+        if(colok.and.icm.ne.0)call winscl('z',ICM)
         call ecirc(iix,iiy,3,1)
-        if(colok)then
-          iicol=0
-          call winscl('-',iicol)
-        endif
+        if(colok)call winscl('-',0)
         IF(IPCOMP.GT.0.AND.IPCOMP.LE.100) IPLOTREC(IPCOMP,NOD)=1
         call forceflush()
       ENDIF
@@ -888,17 +872,11 @@ C enthmaxy enthalpy y axis maximum
 #ifdef OSI
       integer igwid,igheight  ! for use with axiscale
       integer ipos,isize      ! for use with etlabel
-      integer iupdown,isym    ! passed to etplot 
-      integer iicol
-      integer iigl,iigr,iigt,iigb,iigw,iigwh
-      integer iiw1,iiw2,iiw3,iiw4,iimenu
+      integer iupdown,isym    ! passed to etplot
 #else
       integer*8 igwid,igheight  ! for use with axiscale
       integer*8 ipos,isize      ! for use with etlabel
       integer*8 iupdown,isym    ! passed to etplot
-      integer*8 iicol
-      integer*8 iigl,iigr,iigt,iigb,iigw,iigwh
-      integer*8 iiw1,iiw2,iiw3,iiw4,iimenu
 #endif
 
       PATMOS=1013.25
@@ -922,15 +900,9 @@ C Store original text screen size
           call feedbox(menuchw,2,igfw,igfh)      
           call opengdisp(menuchw,LIMTTY,2,igdw,igdh)
         endif
-
-C Setup and pass in parameters to win3d.
-        iiw1=15; iiw2=15; iiw3=5; iiw4=5; iimenu=menuchw
-        iigl=igl; iigr=igr; iigt=igt; iigb=igb; iigw=igw; iigwh=igwh
-        CALL win3d(iimenu,iiw1,iiw2,iiw3,iiw4,
-     &    iigl,iigr,iigt,iigb,iigw,iigwh)
-C        call win3d(menuchw,15,15,5,5,igl,igr,igt,igb,igw,igwh)
-        igl=int(iigl); igr=int(iigr); igt=int(iigt); igb=int(iigb)
-        igw=int(iigw); igwh=int(iigwh)
+        call win3d(menuchw,15,15,5,5,igl,igr,igt,igb,igw,igwh)
+        igw=igr-igl
+        igwh=igb-igt
         igwid=igw
         igheight=igwh
       ENDIF
@@ -941,14 +913,12 @@ C        call win3d(menuchw,15,15,5,5,igl,igr,igt,igb,igw,igwh)
       CALL startbuffer
 
 C Draw the axes of the chart.
-      CALL horaxis(Xmin,Xmax,iigl,iigr,iigb,xadd,XSC,0,'db Temp C')
-      CALL vrtaxis(0.0,0.01,iigl,iigb,iigt,yadd,YSC,0,0,
-     &  'Enthalpy kJ/kg')
-      CALL vrtaxis(Ymin,Ymax,iigr,iigb,iigt,yadd,YSC,0,1,
-     &  'Moisture g/kg')
+      CALL horaxis(Xmin,Xmax,igl,igr,igb,xadd,XSC,0,'db Temp C')
+      CALL vrtaxis(0.0,0.01,igl,igb,igt,yadd,YSC,0,0,'Enthalpy kJ/kg')
+      CALL vrtaxis(Ymin,Ymax,igr,igb,igt,yadd,YSC,0,1,'Moisture g/kg')
 
 C Store the scaling parameters used in drawing the axes
-      CALL linescale(iigl,xadd,XSC,iigb,yadd,YSC)
+      CALL linescale(igl,xadd,XSC,igb,yadd,YSC)
 C Draw the dry-bulb temperature lines
       iupdown=0
       isym=0
@@ -991,10 +961,7 @@ C      if(colok)call winscl('z',15)
       isym=0
       CALL etplot(0.,GS,iupdown,isym)
       IF(GS.LE.ymax) goto 30 
-      if(colok)then
-        iicol=0
-        call winscl('-',iicol)
-      endif
+      if(colok)call winscl('-',0)
 
 C Draw on the RH curves.
       DO 40 IRH=100,10,-10
@@ -1009,10 +976,7 @@ C Draw on the RH curves.
             CALL etplot(TD,GS,iupdown,isym)
           ELSE
             IF(GS.GT.0..AND.GS.LT.ymax.AND.IPFLAG.EQ.0) THEN
-              if(colok)then
-                iicol=17
-                call winscl('z',iicol)
-              endif
+              if(colok)call winscl('z',17)
               iupdown=-102
               isym=0
               CALL etplot(TD,GS,iupdown,isym)
@@ -1023,10 +987,7 @@ C Case where TD<60 and GS>30
   60          TD=TD-0.05
               GS=1000.*(HUMRT1(TD,RH,PATMOS,IOPT))
               IF(GS.GT.ymax) GOTO 60
-              if(colok)then
-                iicol=17
-                call winscl('z',iicol)
-              endif
+              if(colok)call winscl('z',17)
               iupdown=-102
               isym=0
               CALL etplot(TD,GS,iupdown,isym)
@@ -1043,19 +1004,13 @@ C          IF(TD.EQ.int(xmax/2.)) THEN
           IF(close) THEN
             write(puts,'(i4,a)') INT(RH),'%'
             if(GS.LE.ymax)then
-              if(colok)then
-                iicol=17
-                call winscl('z',iicol)
-              endif
+              if(colok)call winscl('z',17)
               ipos=0
               isize=0
               CALL etlabel(puts,TD,GS,ipos,isize)
             endif
           ENDIF
-          if(colok)then
-            iicol=0
-            call winscl('-',iicol)
-          endif
+          if(colok)call winscl('-',0)
           call forceflush()
   50    CONTINUE
   40  CONTINUE
@@ -1075,19 +1030,13 @@ C Draw on the lines of constant enthalpy.
   110       GS=GS+0.05
             TD=TDB(ENTH,(GS/1000.))
             IF(TD.GT.xmax) GOTO 110
-            if(colok)then
-              iicol=24
-              call winscl('z',iicol)
-            endif
+            if(colok)call winscl('z',24)
             iupdown=0
             isym=0
             CALL etplot(TD,GS,iupdown,isym)
           ELSE
             IF(TD.GT.0..AND.TD.LT.xmax.AND.IPFLAG.EQ.0) THEN
-              if(colok)then
-                iicol=24
-                call winscl('z',iicol)
-              endif
+              if(colok)call winscl('z',24)
               iupdown=-102
               isym=0
               CALL etplot(TD,GS,iupdown,isym)
@@ -1098,10 +1047,7 @@ C Case where TD<60 and GS>30
   90          GS=GS+0.05
               TD=TDB(ENTH,(GS/1000.))
               IF(TD.GT.xmax) GOTO 90
-              if(colok)then
-                iicol=24
-                call winscl('z',iicol)
-              endif
+              if(colok)call winscl('z',24)
               iupdown=1
               isym=0
               CALL etplot(TD,GS,iupdown,isym) 
@@ -1110,29 +1056,20 @@ C Case where TD<60 and GS>30
  100          GS=GS-0.05
               TD=TDB(ENTH,(GS/1000.))
               IF(TD.LT.0) GOTO 100
-              if(colok)then
-                iicol=24
-                call winscl('z',iicol)
-              endif
+              if(colok)call winscl('z',24)
               iupdown=-102
               isym=0
               CALL etplot(TD,GS,iupdown,isym)
               IPFLAG=1
             ENDIF                                       
           ENDIF
-          if(colok)then
-            iicol=0
-            call winscl('-',iicol)
-          endif
+          if(colok)call winscl('-',0)
           call forceflush()
   80     CONTINUE
   70   CONTINUE
 
 C Draw on the enthalpy scales
-      if(colok)then
-        iicol=0
-        call winscl('-',iicol)
-      endif
+      if(colok)call winscl('-',0)
       DO 200 IENTH=0,int(ENTHMAXY),10
         ENTH=FLOAT(IENTH)
         IF (ENTH.GT.ENTHMINY.AND.ENTH.LE.ENTHMAXY) THEN

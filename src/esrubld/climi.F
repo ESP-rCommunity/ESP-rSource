@@ -46,7 +46,6 @@ C different from RATIO if half-hour centred solar data is used.
       SUBROUTINE MZCLMI(IOPT,PATMOS,X1,X2,RATIO,RATIOS,QFFX,TFX,QDFX,
      &VFX,DFX,HFX,TWBFX,HEXTFX,GEXTFX)
 #include "building.h"
-#include "net_flow.h"
 #include "tdf2.h"
 
 C TDF commons.
@@ -124,9 +123,9 @@ C time step.
 
       SUBROUTINE MZCLMPT(ITYP)
 #include "building.h"
-#include "net_flow.h"
 #include "tdf2.h"
 
+      COMMON/OUTIN/IUOUT,IUIN
       common/trc/itrc
       COMMON/SIMTIM/IHRP,IHRF,IDYP,IDYF,IDWP,IDWF,NSINC,ITS
       COMMON/PERS/ISD1,ISM1,ISD2,ISM2,ISDS,ISDF,NTSTEP
@@ -179,6 +178,11 @@ C PATMOS set here as a tempory measure.
       PATMOS=1013.25
 
       IF(ITYP.EQ.2)goto 1
+
+C Compute future time-row values. (T1 & T2 Not used)
+      T1=IHRP
+      IF(IHRP.EQ.24)T1=0.
+      T2=IHRF
 
 C Equate present time-row values for this time-step to
 C future time-row values of previous time-step.
@@ -244,6 +248,7 @@ C If allclimate from temporal db, process.
       if(IALLCLM.ne.0)THEN
         itdi=IALLCLM
         IFOC=itdi
+        IACC1=ITMAR(itdi,IATDF(itdi,1))
         CALL RCTDFB(itrc,btimef,VAL,ISD,IFOC,IER)
         X2B(1)=VAL(ISD)
         X2B(2)=VAL(ISD+1)
@@ -357,7 +362,7 @@ C temporal database then establish values to interpolate from.
         X2B(6)=VAL(ISD)
 
 C If last timestep of the day get first profile for the next day.
-        IF(btimef.LE.fstep)THEN
+  62    IF(btimef.LE.fstep)THEN
           CALL RCTDFB(itrc,fstep,VAL,ISD,IFOC,IER)
           X2B(6)=VAL(ISD)
         ENDIF

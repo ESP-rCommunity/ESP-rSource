@@ -98,7 +98,6 @@ C Daylight coefficient common block data definition:
       character outs*124,OUTSTR*124,cgcdesc*64,info*18
 
       dimension DV(MDCFV)
-      integer ndayt  ! local value for nbdaytype
 
       ier=0
 
@@ -122,8 +121,6 @@ C Clear daylight factor array.
     2 continue
 
 c Read type of casual gain to be controlled during each day type.
-C Warn if cgc line 3 has a different number of day types than
-C in the model cfg file.
       CALL STRIPC(IUNIT,OUTSTR,99,ND,1,'cgc line 1',IER)
       if(IER.NE.0)return
       if(OUTSTR(1:16).eq.'*Casual_gain_ctl')then
@@ -132,15 +129,11 @@ C in the model cfg file.
         if(OUTSTR(1:5).eq.'*desc')then
           k=6
           CALL EGETRM(OUTSTR,K,cgcdesc(icomp),'W','descr',IER)
-          CALL STRIPC(IUNIT,OUTSTR,ndayt,ND,1,'cgc line 3',IER)
-          if(ndayt.ne.NBDAYTYPE)then
-            call edisp(iuout,
-     & 'Model day types differ from cgc day file value! Please check!')
-          endif
+          CALL STRIPC(IUNIT,OUTSTR,NBDAYTYPE,ND,1,'cgc line 3',IER)
         endif
       endif
       K=0
-      DO 400 IDTY=1,ndayt
+      DO 400 IDTY=1,NBDAYTYPE
         CALL EGETWI(OUTSTR,K,N1,0,MCT,'F',' gain type',IER)
         NCGTC(ICOMP,IDTY)=N1
  400  CONTINUE
@@ -200,11 +193,9 @@ C and calculation type:
       NDF(ICOMP,N)=nls
       IDFST(ICOMP,N)=idc
       SUMSYS=SUMSYS+SYSPER(ICOMP,N)
-      IF(SUMSYS.GT.1.1)then
-
-C << is this strictly necessary? >>
-        call usrmsg('Individual lighting systems % are > 1.',
-     &    'Have a look at the controls.','W')
+      IF(SUMSYS.GT.1.0)then
+        call usrmsg('Individual lighting systems % are > 1.',' ','W')
+        goto 1000
       endif
 
 C Read sensor location data x, y, z coordinates,
@@ -282,11 +273,11 @@ C SLOPEM - linear control slope used by control 32
        
   111 CONTINUE
 
-C Check that all of the gain has been controlled. 
-C << is this strictly necessary? >>
-      IF(SUMSYS.LT.0.97)then
+C Check that all of the gain has been controlled.
+      IF(SUMSYS.LT.1.0)then
         call usrmsg(' Sum of controled casual gains fraction  < 1.',
-     &    'You might want to check the definitions. ','W')
+     &             ' ','W')
+        goto 1000
       endif
       
 C Loop through all lighting zones and read daylight
@@ -347,7 +338,7 @@ c Trace output follows.
 
       DO 401 IDTY=1,NBDAYTYPE
         write(outs,9989)CALENTAG(IDTY),NCGTC(ICOMP,IDTY)
- 9989     format(' Casual gain type for control during ',A,' = ',I3)
+ 9989     format(' Casual gain type for control during ',1A,' = ',1I3)
         call edisp(itru,outs)
  401  CONTINUE
         DO 117 N=1,NLITZ(ICOMP)
@@ -362,7 +353,7 @@ c Trace output follows.
      &        ' user spec. daylight factor photocell types. '
             call edisp(itru,outs)
             write(outs,'(A,I2,A)') ' There are ',NUDWIN(ICOMP),
-     &        ' source surfaces for daylighting in the zone.'
+     &        ' TMC (transparent) polygons defined. '
             call edisp(itru,outs)
           elseif(IDFST(ICOMP,N).eq.3)then
             call edisp(itru,' External lighting sensor.')
@@ -387,8 +378,8 @@ c Trace output follows.
           call edisp(itru,outs)
 
           call edisp(itru,'  ')
-          call edisp(itru,' % of |No. of|Calculation| ')
-          call edisp(itru,' whole|sensor|type       | ')
+          call edisp(itru,' % of |No. of|Calcul| ')
+          call edisp(itru,' whole|sensor|type  | ')
           write(outs,9988)SYSPER(ICOMP,N),NDF(ICOMP,N),IDFST(ICOMP,N)
  9988     format(F6.2,I7,I7)
           call edisp(itru,outs)
@@ -434,15 +425,15 @@ c Trace output follows.
           DO 9985 J=1,NDF(ICOMP,N)
             if(IDFST(ICOMP,N).EQ.2)then
               call edisp(itru,' ')
-              call edisp(itru,' Source  | Daylight | ')
-              call edisp(itru,' surface | factor(%)| ')
+              call edisp(itru,' TMC | Daylight | ')
+              call edisp(itru,' no. | factor(%)| ')
               idd=0
               DO 814 IL=1,NZSUR(icomp)
                 if(idd.lt.NUDWIN(ICOMP))then
                   if(DFDAT(ICOMP,N,IL,J).gt.0.0)then
                     idd=idd+1
                     write(outs,9917)IL,DFDAT(ICOMP,N,IL,J)*100.
- 9917               format(I5,F12.2)
+ 9917               format(I5,F10.2)
                     call edisp(itru,outs)
                   endif
                 endif
@@ -490,7 +481,6 @@ C ACT - 's' do not ask the user for confirmation of file write.
 
       COMMON/OUTIN/IUOUT,IUIN
       common/FILEP/IFIL
-      integer IZSTOCN
       COMMON/C24/IZSTOCN(MCOM,MS)
       common/caleni/nbdaytype,nbcaldays(MDTY),icalender(365)
       INTEGER NBDAYTYPE,NBCALDAYS,ICALENDER,IDTY

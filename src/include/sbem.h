@@ -22,11 +22,11 @@ C one each for the last two
       PARAMETER (MWS=6)     ! max. fuel types for DHW generators
       
 C WARNING: MNS should be at least as big as MCOM in building.h.
-      PARAMETER (MNS=82)    ! max. HVAC and DHW systems allowed in model
+      PARAMETER (MNS=72)    ! max. HVAC and DHW systems allowed in model
                             ! max. activities allowed in the model
                             ! This is kept equal to max zones normally allowed
       PARAMETER (MAC=65)    ! max. activity types 
-      PARAMETER (MACL=532)  ! max. activity types (global list) 
+      PARAMETER (MACL=530)  ! max. activity types (global list) 
       PARAMETER (MILS=10)   ! max. lighting types
       PARAMETER (ITWOMNS=2*MNS) ! Two times the max. activities allowed
       PARAMETER (MREN=10)   ! max. renewable energy systems in model
@@ -50,7 +50,7 @@ C from air permeability values using CIBSE data
       INTEGER ICIBSEAREA ! Floor area per storey
 
       COMMON/SBEM01/IBRUKLH(MFT,MPT,MHT),ISYSAPP(MPT,MHT),
-     & IATYPNDX(MACL,MBT),IBRUKLC(MHC,MHT),IBRUKLW(MDW,MWS),
+     & IATYPNDX(MAC,MBT),IBRUKLC(MHC,MHT),IBRUKLW(MDW,MWS),
      & IBRUKLF(MHT),IBTYPNDX(MBT),IBTYP,ICIBSESTOR(8,4),
      & ICIBSEAREA(8,4)
 
@@ -78,7 +78,7 @@ C from air permeability values using CIBSE data
 
       COMMON/SBEM02/FUELNAME(MFT),SYSNAME(MPT),HSYSNAME(MHT),BLDSS(MSS),
      & DHWGEN(MDW),BTYPNAME(MBT),SBTYP(MSBT),BLDREG(MREG),BLDSTG(MSTG),
-     & ATYPNAME(MACL),TLIGHT(MILS),SCLMTNM(MCLM),TEMPZS(MPT),
+     & ATYPNAME(MAC),TLIGHT(MILS),SCLMTNM(MCLM),TEMPZS(MPT),
      & CIBSEBLDN(8),CIBSEBLDD(8),CIBSESTR1(8)
 
 C Real numbers
@@ -361,11 +361,11 @@ C are local variables in mksbem.F subroutine BERTER.
      & TyER_HEATCO2,TyER_COOLCO2,TyER_AUXCO2,TyER_LIGHTCO2,TyER_DHWCO2
       
       CHARACTER*72 LCFGF_O      ! Original cfg file name
-      CHARACTER*32 CFGROOT_O    ! original cfg root name
-      CHARACTER*32 CFGROOT_S    ! stripped cfg root name
-      CHARACTER*32 CFGROOT_N    ! notional cfg root name
-      CHARACTER*32 CFGROOT_R    ! referemce cfg root name
-      CHARACTER*32 CFGROOT_T    ! typical cfg root name
+      CHARACTER*24 CFGROOT_O    ! original cfg root name
+      CHARACTER*24 CFGROOT_S    ! stripped cfg root name
+      CHARACTER*24 CFGROOT_N    ! notional cfg root name
+      CHARACTER*24 CFGROOT_R    ! referemce cfg root name
+      CHARACTER*24 CFGROOT_T    ! typical cfg root name
       CHARACTER*72 LGEOM_O      ! Original geometry file names
       CHARACTER*72 LCFGF_S      ! Stripped cfg file name
       CHARACTER*72 LCFGF_N      ! Notional cfg file name

@@ -45,12 +45,9 @@ C QP     - reactive power for present (1) and future (2) time step.
 C QLAT   - latent load for present (1) and future (2) time step.
 
       subroutine mzcasi(icomp)
-      USE TCC, ONLY:COSIM, COSIM_DATA
 #include "building.h"
 #include "model.h"
 #include "geometry.h"
-#include "schedule.h"
-#include "net_flow.h"
 #include "tdf2.h"
 #include "sbem.h"
 #include "power.h"
@@ -103,7 +100,6 @@ C and is used for code related to UK NCM method
 
 C Common for occupant/lighting/equipment sensible convective, sensible
 C radiant and latent W for future and present in each zone.
-C << adapt to include other casual gain >>
       real ctlperocupc,ctlperocupr,ctlperocupl ! occupant after control applied
       real ctlperlightc,ctlperlightr,ctlperlightl ! lighting after control applied
       real ctlequipc,ctlequipr,ctlequipl ! equipment after control applied
@@ -153,6 +149,10 @@ C ICGCTL - pointer to controlled gain type.
 C Variables used in trace.
       common/CASGNTRC/QP(MCOM,2,MC,MPHAS),RP(MCOM,2,MC,MPHAS)
 
+C Descriptive label for a zone load or casual gain types.
+      character lodlabel*6
+      common/loadlabel/lodlabel(mcom,MGTY)
+
 C Adaptive comfort commons
       COMMON/ADPCOM/PREVSTATWIN,PREVSTATFAN,PREVSTATLIGHT,TOTPWR(MCOM)
 
@@ -192,12 +192,16 @@ C It excludes start-up timesteps
       character*10 wkd1, wkd2
       logical traceok,closea
       REAL PEZON,QEZON
-      
+
 C Declation of heat gain from h3k models
+c      REAL H3K_HeatGainsFromModels(ICOMP)
+      REAL H3KGains
 C     Number of electric-load->gain couplings per zone,
       INTEGER iNumb_Gain_coupling
 C     Data fro each coupling
       REAL Coupling_gain_info
+C     Flag indicating type of present day (weekday/saturday/sunday)
+      INTEGER iDay_type
 C     HOT3000 storage arrays
       REAL Cas_Rad_dat, Cas_Con_dat, Cas_Lat_dat
 C     Function returning gains from ideal hot water tank
@@ -212,12 +216,13 @@ C     HVAC equipment)
       PARAMETER (occupant_load = 3)
 
 C.....Named constants for timerows
-      integer iFuture
-      parameter (iFuture=2) 
+      integer iPresent, iFuture
+      parameter (iPresent=1, iFuture=2) 
       common/wkdtyp/idwe1,idwe2,wkd1,wkd2
       integer imonth !current month at simulation time (to accumulate monthly results)
       integer idayn  
       logical closer
+      doubleprecision checkNAN
 
 C Trace output ?
       traceok = .true.
@@ -291,7 +296,7 @@ C        write(6,*) 'btimef.gt.24'
         DSTR='weekdays'
         IDAY=1
       endif
-      IF(NBDAYTYPE.gt.3)THEN ! non-standard calendar
+      IF(NBDAYTYPE.gt.3)THEN !
         IDAY=IDYP
         IF(IHRF.EQ.1)IDAY=IDYP+1
         IF(IDAY.GT.365)IDAY=IDAY-365
@@ -319,7 +324,7 @@ C new day control period:
           IPOINT=0
           if (IT.GT.ICGCS(ICOMP).AND.IT.LE.ICGCF(ICOMP)) IPOINT=1
           if (IPOINT.NE.0) then
-            call INTLUM(ICOMP,FRAC)  ! get the fraction of control
+            call INTLUM(ICOMP,FRAC)
             CGCTL(ICOMP,2,ICGCTL(ICOMP))=FRAC
           endif
         endif
@@ -330,8 +335,7 @@ C Update SHOCC-calculated equipment loads.
 
 C Use data from one of three sources.
 C NB tdf and time step file should have electrical data added to the 
-C definition.
-C << adapt to work with other gain type >>
+C   definition.
       if(ICASUAL(icomp).ne.0)then
 
 C Data in temporal database (1 column of gains). Also
@@ -647,8 +651,6 @@ C it can be used within MZLS3.
         ctlperlightl(icomp,2)=QLIGHTLATN
         ctlequipl(icomp,2)=QEQUIPLATN
 
-C << place to adapt for other casual gain >>
-
 C Using LGHT_ncm_Energy(icomp) for the results of the UK's NCM method
 C This will be in Wh units. It will also need to be divided with NTSTEP
 C (number of timesteps) to use it in results.
@@ -865,20 +867,6 @@ C
       QCASR(2)= QCASR(2) + Total_elec_RAD_gain
      &                   + fPltZone_Radiant_Gain(iComp,iFuture)    !(W)
 
-C When co-simulation with TRNSYS is active, parasitic thermal losses from TRNSYS
-C components (i.e. types) can be injected as casual gains into ESP-r's building
-C zone.  This is accomplished when the TRNSYS user connects a type's output
-C representing the thermal loss to a Type 130 input.  Within Type 130 this
-C heat loss is then associated with an ESP-r building zone.  If any such thermal
-C losses have been represented then append them here.
-C In the current implementation, it is assumed that all such thermal losses
-C from TRNSYS appear as convective gains within ESP-r's building zone.  This
-C facility could be extended in the future to allow these heat gains to be
-C injected as a weighted mix of convection and radiation.
-      IF ( COSIM ) THEN
-        QCASC(2) = QCASC(2) +
-     &              COSIM_DATA%ESPrZonesData(icomp)%AirPointCasualGains
-      END IF
 
 C Check if additional casual gains have been imposed by idealized
 C HVAC components...
@@ -888,6 +876,7 @@ C ...and append gains to appropriate arrays.
         QCASR(2) = QCASR(2) + fIdealHVACZoneRadGain ( icomp )
         QLATN(2) = QLATN(2) + fIdealHVACZoneLatGain ( icomp )
       endif
+
 
 C STORE future row casual and radiant gains
       Cas_Con_dat(icomp) = QCASC(2)  ! W
@@ -965,6 +954,9 @@ C Output the electrical results for the zone
       endif
 
   999 RETURN
+
+ 1000 call edisp(iuout,' MZCASI: casual gains file read error.')
+      goto 999
       END
 
 C ******************** INTLUM ********************
@@ -1000,6 +992,7 @@ C geometry.h provides commons G0/G1/G2/precz.
 
       common/filep/ifil
       COMMON/TC/ITC,ICNT
+      common/trc/itrc
       COMMON/TRACE/ITCF,ITRACE(MTRACE),IZNTRC(MCOM),ITU
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/SHOUT/ICOUT
@@ -1007,6 +1000,8 @@ C geometry.h provides commons G0/G1/G2/precz.
       COMMON/PERS/ISD1,ISM1,ISD2,ISM2,ISDS,ISDF,NTSTEP
       COMMON/SUNPOS/SAZI,SALT,ISUNUP
 C      COMMON/CLIMI/QFP,QFF,TP,TF,QDP,QDF,VP,VF,DP,DF,HP,HF
+
+      common/C21/IFCFG,cfgroot,LCFGF
 
 C Zone casual gain control data.
       COMMON/CGCIN2N/NCGTC(MCOM,MDTY),NLITZ(MCOM),IDFST(MCOM,MLCOM),
@@ -1050,15 +1045,15 @@ C Illuminance database.
       common/ILDB/NDBENT,DBILLA(200,5),DBILLS(200,MLCOM,MDF)
 
       DIMENSION selum(MLCOM,MDF),alt(8),SENTMP(MLCOM,MDF)
-      DIMENSION QDFTMP(MLCOM,MDF),Yb(MLCOM,MDF)
+      DIMENSION QDFTMP(MLCOM,MDF),QDRTMP(MLCOM,MDF),Yb(MLCOM,MDF)
       DIMENSION Aa(MLCOM,MDF),Ab(MLCOM,MDF),Ac(MLCOM,MDF),Ya(MLCOM,MDF)
       DIMENSION zelum(MLCOM)
       DIMENSION ZFRAC(MLCOM)
       DIMENSION XPL(MV),YPL(MV),ZPL(MV)
       CHARACTER*25 CSTR
-      character outs*124,doit*124,outstr*124
+      character outs*124,doit*124,outstr*124,cfgroot*24
 
-      character*72 LTMPFL,LTMPFLA,OUTCMD
+      character*72 LCFGF,LTMPFL,LTMPFLA,OUTCMD
 
       logical nog,close,closea,closeb,closec,closed,closee,closef
       logical closeg,closeh,closei,instart,neglum,XST
@@ -1110,20 +1105,19 @@ C sensor aloved in methods 1 and 2:
 
 C Calculate external horizontal unobstructed diffuse and direct
 C illuminance:
-      call LUMEFF(QDIF,QDIR,SALT,IDYP,skyeff,suneff)
-      esun=dir*suneff
-      esky=QDIF*skyeff
+        call LUMEFF(QDIF,QDIR,SALT,IDYP,skyeff,suneff)
+        esun=dir*suneff
+        esky=QDIF*skyeff
 
 C Loop through all lighting zones
       FRAC=0.
       DO 9 N=1,NLITZ(ICOMP)
-        ZFRAC(N)=0.
-
-      IF(IDFST(ICOMP,N).EQ.3)THEN
+      ZFRAC(N)=0.
 
 C If external sensor & surface (overload CGX) is exterior
 C calculate lux.  If CGY (overloaded)=1. then calculate
 C vertical unobstructed illum otherwise use horizontal illum.
+      IF(IDFST(ICOMP,N).EQ.3)THEN
         J=INT(CGX(ICOMP,N,1))
         IF(J.EQ.0)J=1
         CALL SURADJ(ICOMP,J,IES,T,IZC,ISC,ICN,CSTR)
@@ -1154,12 +1148,11 @@ C vertical unobstructed illum otherwise use horizontal illum.
           IF(IFT.EQ.1)call edisp(itu,
      &      '  not external surface, sensor not allowed!')
         ENDIF
-        
-      ELSEIF(IDFST(ICOMP,N).EQ.5)THEN
 
 C Daylight coefficient method. Test if there is any diffuse 
 C irradiation and if solar altitude is positive
 C number. If not set photo-cell values to zero:
+      ELSEIF(IDFST(ICOMP,N).EQ.5)THEN
         call eclose(QDIF,0.00,0.01,closea)
         if(SALT.LT.0.) closea=.true.
         if(closea) then
@@ -1317,12 +1310,11 @@ C Average illumination for this light zone (in case of more than one
 C sensor in lighting zone):
         zelum(N)=suma/float(NDF(ICOMP,N))
 
-      ELSEIF(IDFST(ICOMP,N).EQ.4)THEN
-
 C Time varying illuminances calculated by Radiance. Test if there
 C is any diffuse irradiation and if solar altitude is positive
 C number. Do not carry out lighting simulation if not, and if 
 C in pre-calculation period (via call to bInStartup):
+      ELSEIF(IDFST(ICOMP,N).EQ.4)THEN
         call eclose(QDIF,0.00,0.01,closea)
         instart=.false.
         if (bInStartup())then
@@ -1370,6 +1362,7 @@ C If IBOFOT()=1, then blind/shutter is ON.
 C Check if sensor values already in illuminance database and set accuracies.
             ILLDBM=0
             AZIACC=5.
+            ALTACC=5.
             QDRACC=5.
 
             write (66,*) ' ***  Solar data for this timestep *** '
@@ -1615,7 +1608,6 @@ C Average illumination for this light zone:
         zelum(N)=suma/float(NDF(ICOMP,N))
       ELSE
 
-C IDST is somthing other than 3/4/5.
 C Loop through each sensor point, calculate the illumination due
 C to each external window and summate.  Each window will
 C have a different solar contribution depending on whether or
@@ -1703,11 +1695,10 @@ C includes the maintinence factor.
      &                     F8.1,F7.1,F6.0)
                       call edisp(itu,outs)
                     endif
-                    
-                  ELSEIF((IES.EQ.3).AND.(IDFST(ICOMP,N).EQ.2 ))THEN
 
 C If user specified DF for internal window then calculate the
 C same way as for external, but do not check for sun dir illuminance:
+                  ELSEIF((IES.EQ.3).AND.(IDFST(ICOMP,N).EQ.2 ))THEN
                     suncon=0.
                     CALL DWINVT(ICOMP,J,V,RATIO)
                     skycon=esky*DFDAT(ICOMP,N,J,I)*V
@@ -2430,12 +2421,16 @@ C if ACTIVE=0. then no matching casual gain/occupants.
 
       SUBROUTINE HUNTA(IZONE,IH,ACTIVE)
 #include "building.h"
-#include "schedule.h"
 
       COMMON/SIMTIM/IHRP,IHRF,IDYP,IDYF,IDWP,IDWF,NSINC,ITS
       common/caleni/nbdaytype,nbcaldays(MDTY),icalender(365)
       INTEGER NBDAYTYPE,NBCALDAYS,ICALENDER,IDTY
 
+      COMMON/P3N/NCAS(MDTY),ICGS(MDTY,MC),ICGF(MDTY,MC),
+     &CMGS(MDTY,MC),CMGL(MDTY,MC),RADC(MDTY,MC),CONC(MDTY,MC)
+      COMMON/P3TYPEN/ICGT(MDTY,MC)
+      INTEGER NCAS,ICGS,ICGF,ICGT
+      REAL CMGS,CMGL,RADC,CONC
       COMMON/CGCIN2N/NCGTC(MCOM,MDTY),NLITZ(MCOM),IDFST(MCOM,MLCOM),
      & CGX(MCOM,MLCOM,MDF),CGY(MCOM,MLCOM,MDF),CGH(MCOM,MLCOM,MDF),
      & UX(MCOM,MLCOM,MDF),UY(MCOM,MLCOM,MDF),UH(MCOM,MLCOM,MDF),
@@ -2445,9 +2440,9 @@ C if ACTIVE=0. then no matching casual gain/occupants.
       ACTIVE=0.
 
 C Determine which day of the week (6=Sat, 7=Sun ,other weekday ot other
-C day types if defined using calendar function and set IGC
-C (gain to control) to that reqested in the casual gain control
-C file. Assumes 3 day types are standard. If matching gain(s) set ACTIVE=1.0.
+C day types if defined using calendar function
+C and set IGC (gain to control) to that reqested in the casual
+C gain control file.  If matching gain(s) set ACTIVE=1.0.
       IF(NBDAYTYPE.LE.3)THEN
         IDTY=1
         IF(IDWP.EQ.6)IDTY=2

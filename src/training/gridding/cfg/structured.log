@@ -1,6 +1,6 @@
 Project notes for building.cfg
 Description: testing structured mesh module
-In folder: gridding
+In folder: /home/esru/testing
 By: esru
 Date: Tue Jul 21 10:55:32 1998
 For: 
@@ -8,17 +8,7 @@ Project reference:
 Notes: 
 _____________________________
  
-Two configuration files has been created: building.cfg_1d and building.cfg_sd.  
+ Two configuration files has been created: building.cfg_1d and building.cfg_sd.  The former file is for simulating the default esp-r gridding scheme.  The later one is to simulate the structured mesh applied to the surfaces edge_s and edge_w including the edge between them.  
 
-The former file is for simulating the default esp-r gridding scheme. 
-
-The later one is to simulate the structured mesh applied to the 
-surfaces edge_s and edge_w including the edge between them.  
-
-When comparing the results from the default ESP-r gridding with the 
-structured gridding, the stronger dynamic response of the indoor 
-temperature with outside temperature can be seen.
-
-This is an old model. Many of the assumptions associated with the
-original project have been lost. 
+When comparing the results from the default ESP-r gridding with the structured gridding, the stronger dynamic response of the indoor temperature with outside temperature can be seen.
 

@@ -42,8 +42,6 @@ C      PCL10:  zero-energy band controller.
 C      PCL14:  multisensor controller (senses multiple control loops)
 C      PCL15:  PI room controller
 C      PCL16:  outside temperature compensation controller
-C      PCL17:  idealised optimal start controller
-C      PCL18:  idealised optimal stop controller
 C      PSYSPT: establishes set points for AHU systems.
 
 C ******************** CONTRL ********************
@@ -226,14 +224,6 @@ C Plant cotrol law 16: Outside temperature compensation
       ELSE IF(IPCLAW(ICFP,IDTYPP,IPERP).EQ.16) THEN
          CALL PCL16
          
-C Plant cotrol law 17: idealised optimal start controller
-      ELSE IF(IPCLAW(ICFP,IDTYPP,IPERP).EQ.17) THEN
-         CALL PCL17
-         
-C Plant cotrol law 18: idealised optimal stop controller
-      ELSE IF(IPCLAW(ICFP,IDTYPP,IPERP).EQ.18) THEN
-         CALL PCL18
-         
 C New controllers inserted here!
       ELSE
         call edisp(iuout,
@@ -269,6 +259,7 @@ C component type's control variable (IPCVR)
       COMMON/TRACE/ITCF,ITRACE(MTRACE),IZNTRC(MCOM),ITU
 
       COMMON/SIMTIM/IHRP,IHRF,IDYP,IDYF,IDWP,IDWF,NSINC,ITS
+      COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
       COMMON/CLIMIP/QFPP,QFFP,TPP,TFP,QDPP,QDFP,VPP,VFP,DPP,DFP,HPP,HFP
 
       COMMON/PCLSOL/ICFP,IDTYPP,IPERP
@@ -284,6 +275,7 @@ C component type's control variable (IPCVR)
       COMMON/FVALC/TFC(MCOM,MS,MN),QFC(MCOM)
 
       common/pcfngr/clfgsd(MCF,6),pcfngn,IDAYPD
+      COMMON/PTIME/PTIMEP,PTIMEF
 
       character outs*124
       
@@ -327,8 +319,7 @@ C only IPS1=-1,-5, or -6 sensor allows a signal other than temperature
       ICLCTP=IPCTYP(ICFP,IDTYPP,IPERP)
       IF(IPS1.NE.-1.AND.IPS1.NE.-5.AND.IPS1.NE.-6
      &             .AND.(ICLCTP.NE.0.AND.ICLCTP.NE.1
-     &             .AND.ICLCTP.NE.12.AND.ICLCTP.NE.18
-     &             .AND.ICLCTP.NE.41))then
+     &             .AND.ICLCTP.NE.12.AND.ICLCTP.NE.18))then
          call edisp(iuout,
      &    ' CLVAR: invalid sensor for plant loop controller type ')
          call epwait
@@ -529,6 +520,7 @@ C determines sensed condition SVCTLM(?,?).
       COMMON/TRACE/ITCF,ITRACE(MTRACE),IZNTRC(MCOM),ITU
 
       COMMON/SIMTIM/IHRP,IHRF,IDYP,IDYF,IDWP,IDWF,NSINC,ITS
+      COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
       COMMON/CLIMIP/QFPP,QFFP,TPP,TFP,QDPP,QDFP,VPP,VFP,DPP,DFP,HPP,HFP
 
       COMMON/PCLSOL/ICFP,IDTYPP,IPERP
@@ -1159,15 +1151,21 @@ C the sensed variable returned from CFVAR routine.
 #include "building.h"
 #include "control.h"
 
+      COMMON/OUTIN/IUOUT,IUIN
       COMMON/TC/ITC,ICNT
       COMMON/TRACE/ITCF,ITRACE(MTRACE),IZNTRC(MCOM),ITU
+
       COMMON/SIMTIM/IHRP,IHRF,IDYP,IDYF,IDWP,IDWF,NSINC,ITS
+      COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
+
       COMMON/PCLSOL/ICFP,IDTYPP,IPERP
       COMMON/Pctime/TIMSEC
 
       common/senact/realsn(MNONID,3,7),realac(MNONID,5,7),svctlp,
      &       deltap,ctldrp
       
+      PARAMETER (SMALL=1.0E-20)
+
 C Trace output
       IF(ITC.GT.0.AND.NSINC.GE.ITC.AND.NSINC.LE.ITCF.AND.
      &   ITRACE(40).NE.0) WRITE(ITU,*) ' Entering subroutine CLVARN'
@@ -1259,22 +1257,29 @@ C the controller output sent from the calling routine.
 #include "building.h"
 #include "control.h"
 
+      COMMON/OUTIN/IUOUT,IUIN
       COMMON/TC/ITC,ICNT
       COMMON/TRACE/ITCF,ITRACE(MTRACE),IZNTRC(MCOM),ITU
+
       COMMON/SIMTIM/IHRP,IHRF,IDYP,IDYF,IDWP,IDWF,NSINC,ITS
+      COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
+
       COMMON/PCLSOL/ICFP,IDTYPP,IPERP
+      COMMON/Pctime/TIMSEC
 
       common/senact/realsn(MNONID,3,7),realac(MNONID,5,7),svctlp,
      &       deltap,ctldrp
       COMMON/C9/NPCOMP,NCI(MPCOM),CDATA(MPCOM,MMISCD)
       
+      PARAMETER (SMALL=1.0E-20)
+
 C Trace output
       IF(ITC.GT.0.AND.NSINC.GE.ITC.AND.NSINC.LE.ITCF.AND.
      &   ITRACE(40).NE.0) WRITE(ITU,*) ' Entering subroutine CTLROP'
 
 C Initialise variables.
       ifunct=0
-C      offset=0. ! not used hence commented
+      offset=0.
       delta=0.
       prelod=0.
       preout=0.
@@ -1291,8 +1296,8 @@ C      offset=0. ! not used hence commented
 100   continue
       if(ifunct.eq.0)return
 
-C      rnsinc=float(nsinc) ! not used hence commented
-C      tim=timsec*rnsinc  ! not used hence commented
+      rnsinc=float(nsinc)
+      tim=timsec*rnsinc
 
 C Consider each non-ideal characteristic in turn.
       if(int(realac(ifunct,1,3)).eq.1)then
@@ -1303,12 +1308,12 @@ C c1 = linear rate of increase
 C amp = amplitude of periodic variation in offset
 C per = period of periodic variation in offset
 
-c        c0=realac(ifunct,1,4) ! not used hence commented
-c        c1=realac(ifunct,1,5) ! not used hence commented
-c        amp=realac(ifunct,1,6)  ! not used hence commented
-c        per=realac(ifunct,1,7)  ! not used hence commented
-c        pi=3.14  ! not used hence commented
-C        offset=c0+(c1*tim)+(amp*sin((2.*pi*tim)/per))
+        c0=realac(ifunct,1,4)
+        c1=realac(ifunct,1,5)
+        amp=realac(ifunct,1,6)
+        per=realac(ifunct,1,7)
+        pi=3.14
+        offset=c0+(c1*tim)+(amp*sin((2.*pi*tim)/per))
 
       endif
 
@@ -1622,6 +1627,7 @@ C    or type 10: senses relative humidity
       COMMON/Pctime/TIMSEC
       COMMON/CTLACTN/RINTGRL(MCF,2),DERIV(MCF)
       COMMON/DIGPID/PID(MCF,7)
+      COMMON/PSTAT/ISTATP
       COMMON/PCLOP8/LASTOUT(MCF)
 
 C Reversible heat pump common
@@ -2122,6 +2128,7 @@ C                 or type 11: senses relative humidity.
       COMMON/Pctime/TIMSEC
       COMMON/DIGPID/PID(MCF,7)
       COMMON/CTLACTN/RINTGRL(MCF,2),DERIV(MCF)
+      COMMON/PSTAT/ISTATP
       COMMON/PCLOP8/LASTOUT(MCF)
       logical closea
 
@@ -3132,18 +3139,19 @@ C PCL08 is a `Two-Position` controller.
 
       COMMON/PCLSOL/ICFP,IDTYPP,IPERP
       COMMON/PCLOP8/LASTOUT(MCF)
-
+      
 C Description of zone control action; these data are used
-C in H3Kreports to determine heating, cooling loads and
-C to evaluate passive solar design performance.
+C in H3Kreports to determine heating, cooling loads and 
+C to evaluate passive solar design performance. 
       common/H3KReportsControl/bZoneHeated,   bZoneCooled,
-     &                         fHeatSetpoint, fCoolSetpoint, 
+     &                         fHeatSetpoint, fCoolSetpoint,
      &                         bSlaveActive
 
 C Flags indicating zone is heated, cooled.
-      logical bZoneHeated(MCOM), bZoneCooled(MCOM), bSlaveActive(MCOM) 
+      logical bZoneHeated(MCOM), bZoneCooled(MCOM)
 C Heating and cooling setpoint (oC)
       real fHeatSetpoint(MCOM), fCoolSetpoint(MCOM)
+      logical bSlaveActive(MCOM)
 
 c tmdr(?,1) holds sum of mass diversion ratios
 c tmdr(?,2) indicates that (?,1) must be calculated
@@ -3215,6 +3223,7 @@ C                             OUTLO
 
 C Establish the sensed condition and the `actuated' component.
       CALL CLVAR(SVCTL,IPCMP,IPCVR)
+
       IF(IMODE.EQ.1)THEN
         IF(SVCTL.LT.SPTON)THEN
            CDATA(IPCMP,IPCVR)=OUTHI
@@ -3533,16 +3542,16 @@ C number based on logical (AND, OR) relationships of other control loops
 #include "building.h"
 #include "control.h"
 
-C Set MMLCL = Maximum number of loops to be sensed 
-      INTEGER MMLCL
-      PARAMETER(MMLCL=4)
-
       COMMON/OUTIN/IUOUT,IUIN
       INTEGER IUOUT,IUIN
       COMMON/TC/ITC,ICNT
       INTEGER ITC,ICNT
       COMMON/TRACE/ITCF,ITRACE(MTRACE),IZNTRC(MCOM),ITU
       INTEGER ITCF,ITRACE,IZNTRC,ITU
+      COMMON/PCVAL/CSVF(MPNODE,MPVAR),CSVP(MPNODE,MPVAR)
+      REAL CSVF,CSVP
+      COMMON/CLIMIP/QFPP,QFFP,TPP,TFP,QDPP,QDFP,VPP,VFP,DPP,DFP,HPP,HFP
+      REAL QFPP,QFFP,TPP,TFP,QDPP,QDFP,VPP,VFP,DPP,DFP,HPP,HFP
       COMMON/SIMTIM/IHRP,IHRF,IDYP,IDYF,IDWP,IDWF,NSINC,ITS
       INTEGER IHRP,IHRF,IDYP,IDYF,IDWP,IDWF,NSINC,ITS
       COMMON/PTIME/PTIMEP,PTIMEF
@@ -3550,6 +3559,12 @@ C Set MMLCL = Maximum number of loops to be sensed
       COMMON/C9/NPCOMP,NCI(MPCOM),CDATA(MPCOM,MMISCD)
       INTEGER NPCOMP,NCI
       REAL CDATA
+      COMMON/C10/NPCON,IPC1(MPCON),IPN1(MPCON),IPCT(MPCON),
+     &           IPC2(MPCON),IPN2(MPCON),PCONDR(MPCON),PCONSD(MPCON,2)
+      INTEGER NPCON,IPC1,IPN1,IPCT,IPC2,IPN2
+      REAL PCONDR,PCONSD
+      common/cctlnm/ctldoc,lctlf
+      CHARACTER ctldoc*248,LCTLF*72
       COMMON/PCLSOL/ICFP,IDTYPP,IPERP
       INTEGER ICFP,IDTYPP,IPERP
       COMMON/PCLOP8/LASTOUT(MCF)
@@ -3558,9 +3573,8 @@ C Set MMLCL = Maximum number of loops to be sensed
       REAL TIMSEC
       COMMON/LOCAL2/IPREVON,ITSOR,IOR
       INTEGER IPREVON,ITSOR,IOR
-
-      dimension ICTLR(MMLCL),LOGIC(MMLCL)
-      logical ctrld(MMLCL)
+      dimension ICTLR(4),LOGIC(4)
+      logical ctrld(4)
       REAL CTLPS,ORT,SVCTL
       INTEGER NCT,ICT,NTSOR,IPCVR,IPCMP,IDATNO,IMASTER,ICTL,LOGIC,ICTLR
            
@@ -3590,27 +3604,12 @@ C Get control logic, initially assuming OFF (ICTL=0)
       ICTL=0
 
 C Set this control loop to follow master loop if just one loop is
-C specified. Positive value for master loop set this loop to ON if
-C master is ON and vice versa. A negative value specifies inverse
-C control
+C specified
       IF(NCT.EQ.1)THEN
         IMASTER=INT(PMISCD(ICFP,IDTYPP,IPERP,2))
-        IF(LASTOUT(ABS(IMASTER)).EQ.0)then
-          IF(IMASTER.GT.0)then
-            ICTL=0
-            iprevon=0
-          ELSE
-            ICTL=1
-            iprevon=1
-          ENDIF
-        else
-          IF(IMASTER.GT.0)then
-            ICTL=1
-            iprevon=1
-          ELSE
-            ICTL=0
-            iprevon=0
-          ENDIF
+        IF(LASTOUT(IMASTER).NE.0)then
+          ICTL=1
+          iprevon=1
         endif
       ELSE
 
@@ -3678,6 +3677,14 @@ C Set CDATA item value
       ENDIF
       CDATA(IPCMP,IDATNO)=CTLPS
 
+C Debug
+*      if(ipcmp.eq.1)then
+*      write(78,*)'icfp,ihrp,loop1,loop2,loop3,multi,IPCMP,IDATNO ',
+*     &  icfp,ihrp,lastout(1),lastout(2),lastout(3),lastout(5)
+*     &  ,IPCMP,IDATNO
+*      write(79,*)'ntsor',ntsor,' cdata',CTLPS,' ipcmp',ipcmp
+*      endif
+
       IF(ITC.GT.0.AND.NSINC.GE.ITC.AND.NSINC.LE.ITCF.AND.
      &   ITRACE(40).NE.0)THEN
          CALL DAYCLK(IDYP,PTIMEF,ITU)
@@ -3707,6 +3714,8 @@ C Proportional Integral Room Controller
       INTEGER ITCF,ITRACE,IZNTRC,ITU
       COMMON/PCVAL/CSVF(MPNODE,MPVAR),CSVP(MPNODE,MPVAR)
       REAL CSVF,CSVP
+      COMMON/CLIMIP/QFPP,QFFP,TPP,TFP,QDPP,QDFP,VPP,VFP,DPP,DFP,HPP,HFP
+      REAL QFPP,QFFP,TPP,TFP,QDPP,QDFP,VPP,VFP,DPP,DFP,HPP,HFP
       COMMON/SIMTIM/IHRP,IHRF,IDYP,IDYF,IDWP,IDWF,NSINC,ITS
       INTEGER IHRP,IHRF,IDYP,IDYF,IDWP,IDWF,NSINC,ITS
       COMMON/PTIME/PTIMEP,PTIMEF
@@ -3714,8 +3723,15 @@ C Proportional Integral Room Controller
       COMMON/C9/NPCOMP,NCI(MPCOM),CDATA(MPCOM,MMISCD)
       INTEGER NPCOMP,NCI
       REAL CDATA
+      COMMON/C10/NPCON,IPC1(MPCON),IPN1(MPCON),IPCT(MPCON),
+     &           IPC2(MPCON),IPN2(MPCON),PCONDR(MPCON),PCONSD(MPCON,2)
+      INTEGER NPCON,IPC1,IPN1,IPCT,IPC2,IPN2
+      REAL PCONDR,PCONSD
       COMMON/PDBDT/ADATA(MPCOM,MADATA),BDATA(MPCOM,MBDATA)
       REAL ADATA,BDATA
+      COMMON/PCRES/QDATA(MPCOM),PCAOUT(MPCOM,MPCRES),napdat(mpcom)
+      REAL QDATA,PCAOUT
+      INTEGER NAPDAT
       COMMON/C12PS/NPCDAT(MPCOM,9),IPOFS1(MCOEFG),IPOFS2(MCOEFG,MPVAR)
       INTEGER NPCDAT,IPOFS1,IPOFS2
       COMMON/PCLSOL/ICFP,IDTYPP,IPERP
@@ -3727,51 +3743,13 @@ C Proportional Integral Room Controller
       COMMON/LOCAL1/ISET,PHIMAX
       INTEGER ISET
       REAL PHIMAX
-      COMMON/PCLP14/DELTAI,IISET,CYCTIME,CYCSTART
+      COMMON/PCLP14/DELTAI,IISET
       INTEGER IISET
-      REAL DELTAI,CYCTIME
-      INTEGER IPCMP,ITMNO,JPCOMP,INOD1,IOPTLP,nicfp
+      REAL DELTAI
+      INTEGER IPCMP,ITMNO,JPCOMP,INOD1,IOPTLP
       REAL TRSPT,TFSMAX,TFSMIN,PROPBAND,TRS,STATICV,ACTI,DELTA,
-     & HACTI,PROPTERM,UBTL,CYCPERIOD,XMINON,ONTIME,counter
-      LOGICAL CLOSER,CYCSTART,OUTPUT
-      COMMON/C10/NPCON,IPC1(MPCON),IPN1(MPCON),IPCT(MPCON),
-     &           IPC2(MPCON),IPN2(MPCON),PCONDR(MPCON),PCONSD(MPCON,2)
-      INTEGER NPCON,IPC1,IPN1,IPCT,IPC2,IPN2
-      REAL PCONDR,PCONSD
-
-c tmdr(?,1) holds sum of mass diversion ratios
-c tmdr(?,2) indicates that (?,1) must be calculated
-c           only once.
-      dimension tmdr(MCF,2)
-c      logical closea
-      integer i,ipass,icon1,icon2 ; real tmdr
-
-c Save contents of array 'tmdr'
-      save tmdr
-
-c 'ipass' is a flag used to indicate if first pass was made to this
-c routine. << Kelly recommends removal >>
-C      ipass = 0
-c If this is first pass, then initialise second 
-c data item of array 'tmdr'.
-      if(ipass.eq.0) then
-         do 77 i=1,MCF
-  77     tmdr(i,2)=0.0
-         ipass=1
-      endif
-      icon1=int(pmiscd(icfp,idtypp,iperp,12))
-      icon2=int(pmiscd(icfp,idtypp,iperp,13))
-
-c If second item of array 'tmdr' for this control loop
-c is zero, calculate sum of mass diversion ratios.
-      if(int(tmdr(icfp,2)).eq.0) then
-         if(icon1.gt.0.and.icon2.gt.0) then
-            tmdr(icfp,1)=pcondr(icon1)+pcondr(icon2) 
-         else
-            tmdr(icfp,1)=0.0
-         endif
-      endif
-
+     & HACTI,PROPTERM,UBTL
+           
 C Fatal error test.
       IF(INT(PMISCD(ICFP,IDTYPP,IPERP,1)).LT.6)THEN
          CALL EDISP(iuout,
@@ -3781,33 +3759,19 @@ C Fatal error test.
          STOP
       ENDIF
 
-C Initialise local variables
-      TRSPT   =PMISCD(ICFP,IDTYPP,IPERP,2)
-      TFSMAX  =PMISCD(ICFP,IDTYPP,IPERP,3)
-      TFSMIN  =PMISCD(ICFP,IDTYPP,IPERP,4)
+      TRSPT=PMISCD(ICFP,IDTYPP,IPERP,2)
+      TFSMAX=PMISCD(ICFP,IDTYPP,IPERP,3)
+      TFSMIN=PMISCD(ICFP,IDTYPP,IPERP,4)
       PROPBAND=PMISCD(ICFP,IDTYPP,IPERP,5)
-      ITMNO   =nint(PMISCD(ICFP,IDTYPP,IPERP,6))
-      ACTI    =PMISCD(ICFP,IDTYPP,IPERP,7)
-      IOPTLP  =NINT(PMISCD(ICFP,IDTYPP,IPERP,8))
-      STATICV =PMISCD(ICFP,IDTYPP,IPERP,9)
-
       IPCMP=IPAN(ICFP,2)
+      ITMNO=nint(PMISCD(ICFP,IDTYPP,IPERP,6))
       JPCOMP=IPSN(ICFP,2)
       INOD1=NPCDAT(JPCOMP,9)
       TRS=CSVP(INOD1,1)
+      IOPTLP=NINT(PMISCD(ICFP,IDTYPP,IPERP,8))
+      STATICV=PMISCD(ICFP,IDTYPP,IPERP,9)
+      ACTI=PMISCD(ICFP,IDTYPP,IPERP,7)
       DELTA=TRSPT-TRS
-
-C Read TPMPI specific information
-      CYCPERIOD=PMISCD(ICFP,IDTYPP,IPERP,10)
-      XMINON=PMISCD(ICFP,IDTYPP,IPERP,11)
-
-C Make sure this subroutine is called once per timestep per control loop
-      CALL ECLOSE(counter,ptimep,0.0001,CLOSER)
-      if(.not.closer)then
-        counter=ptimep
-        nicfp=icfp
-      endif
-      if(closer.and.(nicfp.eq.icfp))return
 
 C Implement integral action
       DELTAI=DELTAI+DELTA*TIMSEC
@@ -3819,73 +3783,26 @@ C Reset integral action to avoid integral windup (large integral action)
       IF(DELTAI.GT.HACTI*PROPBAND)DELTAI=HACTI*PROPBAND
       IF(DELTAI.LT.-1.*HACTI*PROPBAND)DELTAI=-1.*HACTI*PROPBAND
 
-C Determine if in TPMPI mode or not
-      CALL ECLOSE(CYCPERIOD,0.0,0.001,CLOSER)
-      IF(CLOSER)THEN
-
-C Not in TPMPI mode, calculate Bdata item value
-        IF(NINT(PROPBAND).EQ.0.OR.NINT(ACTI).EQ.0)THEN
-          UBTL=TFSMAX
-        ELSE  
-          UBTL=(TFSMAX-TFSMIN)*(DELTA/PROPBAND+DELTAI/(ACTI*PROPBAND))
-     &         +0.5*(TFSMAX+TFSMIN)
-        ENDIF
-        IF(UBTL.GT.TFSMAX)UBTL=TFSMAX
-        IF(UBTL.LT.TFSMIN)UBTL=TFSMIN
-
-C For the first time step skip modifying plant BDATA items so that
-C values from the plant file are read in 
-        IF(ISET.EQ.0)GOTO 9595
-
-C Modify BDATA item based on PI action above
-        IF(IOPTLP.LE.0)THEN
-          BDATA(IPCMP,ITMNO)=UBTL
-        ELSEIF(LASTOUT(IOPTLP).EQ.0)THEN
-          BDATA(IPCMP,ITMNO)=UBTL
-        ELSE
-          BDATA(IPCMP,ITMNO)=STATICV
-        ENDIF
-
-C In TPMPI mode do not change BDATA item value but change 
-C components ON/OFF state
+C Calculate Bdata item value
+      IF(PROPBAND.EQ.0..OR.ACTI.EQ.0.)THEN
+        UBTL=TFSMAX
+      ELSE  
+        UBTL=(TFSMAX-TFSMIN)*(DELTA/PROPBAND+DELTAI/(ACTI*PROPBAND))
+     &                  +0.5*(TFSMAX+TFSMIN)
+      ENDIF
+      IF(UBTL.GT.TFSMAX)UBTL=TFSMAX
+      IF(UBTL.LT.TFSMIN)UBTL=TFSMIN
+      IF(ISET.EQ.0)GOTO 9595
+      IF(IOPTLP.LE.0)THEN
+        BDATA(IPCMP,ITMNO)=UBTL
+      ELSEIF(LASTOUT(IOPTLP).EQ.0)THEN
+        BDATA(IPCMP,ITMNO)=UBTL
       ELSE
-        CYCTIME=CYCTIME+TIMSEC
-        IF(CYCTIME.GE.CYCPERIOD)THEN
-          CYCSTART=.TRUE.
-          CYCTIME=0.
-        ENDIF
-
-C Calcualte new on time (end of cycle or on set-point change)
-        IF(CYCSTART)THEN
-          ONTIME=CYCPERIOD*(DELTA/PROPBAND+DELTAI/(ACTI*PROPBAND))
-     &           +0.5*CYCPERIOD
-          CYCSTART=.FALSE.
-          IF(ONTIME.GT.(CYCPERIOD-XMINON))THEN
-            CYCSTART=.TRUE.
-            CYCTIME=0.
-          ENDIF
-          IF(ONTIME.LT.XMINON)ONTIME=-0.01 !ONTIME=XMINON
-          IF(ONTIME.GT.0.)OUTPUT=.TRUE.
-        ENDIF
-        IF(CYCTIME.GE.ONTIME)OUTPUT=.FALSE.
-
-C If output is true set controlled component (boiler in most cases) ON
-C else set it to OFF
-        CDATA(IPCMP,1)=0.0
-        LASTOUT(ICFP)=0
-        IF(OUTPUT)THEN
-          CDATA(IPCMP,1)=1.0
-          LASTOUT(ICFP)=1
-        ENDIF
+        BDATA(IPCMP,ITMNO)=STATICV
       ENDIF
 
-C Apply flow control
-      if(icon1.gt.0.and.icon2.gt.0)
-     &pcondr(icon1)=1.-(CDATA(IPCMP,1)*pcondr(icon2))
-
 C Trace output.
- 9595 ISET=1
-      IF(ITC.GT.0.AND.NSINC.GE.ITC.AND.NSINC.LE.ITCF.AND.
+ 9595 IF(ITC.GT.0.AND.NSINC.GE.ITC.AND.NSINC.LE.ITCF.AND.
      &   ITRACE(40).NE.0)THEN
          CALL DAYCLK(IDYP,PTIMEF,ITU)
          WRITE(ITU,*) ' NSINC = ',nsinc,         
@@ -3927,8 +3844,21 @@ C Outside temperature compensation controller
       COMMON/PTIME/PTIMEP,PTIMEF
       REAL PTIMEP,PTIMEF
 
+      COMMON/C9/NPCOMP,NCI(MPCOM),CDATA(MPCOM,MMISCD)
+      INTEGER NPCOMP,NCI
+      REAL CDATA
+
+      COMMON/C10/NPCON,IPC1(MPCON),IPN1(MPCON),IPCT(MPCON),
+     &           IPC2(MPCON),IPN2(MPCON),PCONDR(MPCON),PCONSD(MPCON,2)
+      INTEGER NPCON,IPC1,IPN1,IPCT,IPC2,IPN2
+      REAL PCONDR,PCONSD
+
       COMMON/PDBDT/ADATA(MPCOM,MADATA),BDATA(MPCOM,MBDATA)
       REAL ADATA,BDATA
+
+      COMMON/PCRES/QDATA(MPCOM),PCAOUT(MPCOM,MPCRES),napdat(mpcom)
+      REAL QDATA,PCAOUT
+      INTEGER NAPDAT
 
       COMMON/C12PS/NPCDAT(MPCOM,9),IPOFS1(MCOEFG),IPOFS2(MCOEFG,MPVAR)
       INTEGER NPCDAT,IPOFS1,IPOFS2
@@ -3944,50 +3874,9 @@ C Outside temperature compensation controller
       REAL PHIMAX
 
       INTEGER IPCMP,ITMNO,JPCOMP,INOD1,IOPTLP
-      REAL ALPHA,BETA,GAMMA,TRSPT1,TRSPT,TFSMAX,TFSMIN,TRS,STATICV,UBTL
+      REAL ALPHA,BETA,GAMMA,TRSPT1,TRSPT,TFSMAX,TFSMIN,TRS,STATICV,UBTL,
+     &UBTLj
       
-      COMMON/C9/NPCOMP,NCI(MPCOM),CDATA(MPCOM,MMISCD)
-      INTEGER NPCOMP,NCI
-      REAL CDATA
-
-      COMMON/C10/NPCON,IPC1(MPCON),IPN1(MPCON),IPCT(MPCON),
-     &           IPC2(MPCON),IPN2(MPCON),PCONDR(MPCON),PCONSD(MPCON,2)
-      INTEGER NPCON,IPC1,IPN1,IPCT,IPC2,IPN2
-      REAL PCONDR,PCONSD
-
-c tmdr(?,1) holds sum of mass diversion ratios
-c tmdr(?,2) indicates that (?,1) must be calculated
-c           only once.
-      dimension tmdr(MCF,2)
-c      logical closea
-      integer i,ipass,icon1,icon2 ; real tmdr
-
-c Save contents of array 'tmdr'
-      save tmdr
-
-c 'ipass' is a flag used to indicate if first pass was made to this
-c routine. << Kelly recommends removal >>
-C      ipass = 0
-c If this is first pass, then initialise second 
-c data item of array 'tmdr'.
-      if(ipass.eq.0) then
-         do 77 i=1,MCF
-  77     tmdr(i,2)=0.0
-         ipass=1
-      endif
-      icon1=int(pmiscd(icfp,idtypp,iperp,12))
-      icon2=int(pmiscd(icfp,idtypp,iperp,13))
-
-c If second item of array 'tmdr' for this control loop
-c is zero, calculate sum of mass diversion ratios.
-      if(int(tmdr(icfp,2)).eq.0) then
-         if(icon1.gt.0.and.icon2.gt.0) then
-            tmdr(icfp,1)=pcondr(icon1)+pcondr(icon2) 
-         else
-            tmdr(icfp,1)=0.0
-         endif
-      endif
-
 C Fatal error test.
       IF(INT(PMISCD(ICFP,IDTYPP,IPERP,1)).LT.8)THEN
          CALL EDISP(iuout,
@@ -4014,6 +3903,7 @@ C Fatal error test.
 
 C Outside Temperature Compensation for type 4 control
       UBTL=TRSPT1+BETA*(TRSPT1-TFP)+ALPHA+GAMMA*(TRSPT-TRS)
+      UBTLj=TRSPT1+BETA*(TRSPT1-TFP)+ALPHA+GAMMA*(TRSPT-TRS)
       IF(UBTL.GT.TFSMAX)UBTL=TFSMAX
       IF(UBTL.LT.TFSMIN)UBTL=TFSMIN
       IF(ISET.EQ.0)GOTO 235
@@ -4024,10 +3914,6 @@ C Outside Temperature Compensation for type 4 control
       ELSE
         BDATA(IPCMP,ITMNO)=STATICV
       ENDIF
-
-C Apply flow control
-      if(icon1.gt.0.and.icon2.gt.0)
-     &   pcondr(icon1)=1.-(CDATA(IPCMP,1)*pcondr(icon2))
 
 C Debug.
 C      write(6,*)'ubtl,ubtlj',ubtl,ubtlj,BDATA(IPCMP,ITMNO)
@@ -4043,468 +3929,6 @@ C Trace output.
 
       RETURN
       END
-
-C ******************** PCL17 ********************
-C      PCL17:  idealised optimal start controller
-C This controller sets the optimal start time of the future day to be
-C the same as the simulated start time of the present day. It works by
-C defining the following times:
-C startTime  = heating period start time in the control loop
-C finishTime = heating period finish time in the control loop
-C timeToTemp = time at which space should be at the set point (is
-C              assumed to be between startTime and finishTime)
-C ctrlOnTime = time at which heating if comes on will bring the space up
-C              to temperature. This is known from simulation of the
-C              present day
-C ctrlOffTime= time at which the heating is first shut off within the
-C              period startTime and finishTime
-C timeDelay  = (ctrlOffTime - ctrlOnTime) gives the ramp up from no
-C              heating to heating switched off because the space comes 
-C              up to setpoint
-
-      SUBROUTINE PCL17
-      IMPLICIT NONE
-#include "plant.h"
-#include "building.h"
-#include "control.h"
-
-C Set MMLCL = Maximum number of loops to be sensed 
-      INTEGER MMLCL
-      PARAMETER(MMLCL=4)
-
-      COMMON/OUTIN/IUOUT,IUIN
-      INTEGER IUOUT,IUIN
-      COMMON/TC/ITC,ICNT
-      INTEGER ITC,ICNT
-      COMMON/TRACE/ITCF,ITRACE(MTRACE),IZNTRC(MCOM),ITU
-      INTEGER ITCF,ITRACE,IZNTRC,ITU
-      COMMON/SIMTIM/IHRP,IHRF,IDYP,IDYF,IDWP,IDWF,NSINC,ITS
-      INTEGER IHRP,IHRF,IDYP,IDYF,IDWP,IDWF,NSINC,ITS
-      COMMON/PTIME/PTIMEP,PTIMEF
-      REAL PTIMEP,PTIMEF
-      COMMON/C9/NPCOMP,NCI(MPCOM),CDATA(MPCOM,MMISCD)
-      INTEGER NPCOMP,NCI
-      REAL CDATA
-      COMMON/PCLSOL/ICFP,IDTYPP,IPERP
-      INTEGER ICFP,IDTYPP,IPERP
-      COMMON/PCLOP8/LASTOUT(MCF)
-      INTEGER LASTOUT
-
-      dimension ICTLR(MMLCL)
-      logical ctrld(MMLCL)
-      REAL CTLPS,SVCTL
-      INTEGER NCT,ICT,IPCVR,IPCMP,IDATNO,IMASTER,ICTL,ICTLR
-
-      DIMENSION iDay3(MMLCL,MCDP),timeDelay(MCDP),
-     &iDay4(MMLCL,MCDP),ctrlOffFound(MMLCL,MCDP)
-     &,Delay(MMLCL,MCDP),loopNo(MMLCL),ctrlOnTime(MMLCL,MCDP),
-     &ctrlOffTime(MMLCL,MCDP)
-
-      INTEGER iPeriodNo,iDay1,iDay3,iDay4,loopNo,I,iPeriod
-      REAL timeToTemp,finishTime,timeDelay,startTime,Delay,ctrlOnTime,
-     & ctrlOffTime
-      LOGICAL ctrlOffFound
-      
-           
-C Fatal error test.
-      IF(INT(PMISCD(ICFP,IDTYPP,IPERP,1)).LT.3)THEN
-        CALL EDISP(iuout,
-     &    ' PCL17: fatal error -> too few misc. data items')
-        CALL EPWAIT
-        CALL EPAGEND
-        STOP
-      ENDIF
-
-      IF(NSINC.eq.1)then
-        iday1=idyp
-        iperiod=IPERP
-        timeDelay(IPERP)=0.0
-      endif
-
-C Set control parameters.
-      NCT=(NINT(PMISCD(ICFP,IDTYPP,IPERP,1))-2)
-      DO 4000 ICT=1,NCT
-        ICTLR(ICT)=INT((PMISCD(ICFP,IDTYPP,IPERP,ICT+1)))
-        loopNo(ICT)=ICTLR(ICT)
-	IF(LASTOUT(ICTLR(ICT)).NE.0)THEN
-	  CTRLD(ICT)=.TRUE.
-	ELSE
-	  CTRLD(ICT)=.FALSE.
-	ENDIF
- 4000 CONTINUE
-
-C Get control logic, initially assuming OFF (ICTL=0)
-      ICTL=0
-
-C Set this control loop to follow specified loop if just one loop is
-C specified
-      IF(NCT.EQ.1)THEN
-        IMASTER=INT(PMISCD(ICFP,IDTYPP,IPERP,2))
-        IF(LASTOUT(IMASTER).NE.0)ICTL=1
-      ELSE
-
-C If more than one loop then set this loop on if either loops are on
-        DO 5000 ICT=1,NCT-1
-          IF(ICT.EQ.1)THEN
-            IF(CTRLD(ICT).OR.CTRLD(ICT+1))THEN
-              ICTL=1
-            ENDIF
-          ELSE
-            IF(CTRLD(ICT+1).OR.(ICTL.EQ.1))THEN
-              ICTL=1
-            ENDIF
-          ENDIF
- 5000   CONTINUE
-      ENDIF
-      IDATNO=1
-
-C Get plant component number to control
-      CALL CLVAR(SVCTL,IPCMP,IPCVR)
-
-C Set CDATA item value
-      IF(ICTL.EQ.1)THEN
-        CTLPS=1 
-        LASTOUT(ICFP)=1
-      ELSE
-        CTLPS=0 
-        LASTOUT(ICFP)=0
-      ENDIF
-      CDATA(IPCMP,IDATNO)=CTLPS
-
-C Determine optimal start mode
-      timeToTemp=PMISCD(ICFP,IDTYPP,IPERP,NCT+3)
-      iPeriodNo =NINT(PMISCD(ICFP,IDTYPP,IPERP,NCT+2))
-      IF(iPeriodNo.EQ.0)GOTO 1000
-      startTime=tpcps(loopNo(1),IDTYPP,iPeriodNo)
-      IF(iPeriodNo.eq.npcdp(loopNo(1),IDTYPP))THEN
-        finishTime=24.
-      ELSE
-        finishTime=tpcps(loopNo(1),IDTYPP,iPeriodNo+1)
-      ENDIF
-
-C Keep control to off until optimal start time is reached
-      IF(iDay1.EQ.IDYP.AND.iPeriod.EQ.IPERP)then
-        IF(ptimep.lt.(timeToTemp-timeDelay(IPERP)).and.
-     &  ptimep.ge.
-     &  startTime.and.ptimep.le.timeToTemp)THEN
-          cdata(IPCMP,IDATNO)=0.0
-          LASTOUT(ICFP)=0
-        ENDIF
-      endif
-
-C Initialise iDay for this period if control period or day changes
-      IF(iPeriod.lt.IPERP.OR.iDay1.LT.IDYP)THEN
-        iDay1=IDYP
-        iPeriod=IPERP
-        DO 3 I=1,NCT
-          iDay3(I,IPERP)=0
-          iDay4(I,IPERP)=0
- 3      CONTINUE
-        timeDelay(IPERP)=0.0
-        DO 2 I=1,NCT
-          ctrlOffFound(I,IPERP)=.FALSE.
-          ctrlOffTime(I,IPERP)=finishTime
-          timeDelay(IPERP)=MAX(Delay(I,IPERP),timeDelay(IPERP))
-          if(timeDelay(IPERP).lt.0.0001)then
-            timeDelay(IPERP)=timeToTemp-startTime
-          endif
-          ctrlOnTime(I,IPERP)=timeToTemp-timeDelay(IPERP)
-          if(ctrlOnTime(I,IPERP).lt.startTime)
-     &    ctrlOnTime(I,IPERP)=startTime
- 2      CONTINUE
-      ENDIF
-
-      Do 1 I=1,NCT
-        ! Get control OFF time
-        IF(iDay3(I,IPERP).LT.IDYP)THEN
-          IF(ptimep.gt.startTime.and.ptimep.lt.finishTime)THEN
-            IF(.NOT.ctrlOffFound(I,IPERP))THEN
-              IF(LASTOUT(loopNo(I)).eq.0)THEN
-                ctrlOffFound(I,IPERP)=.TRUE.
-                ctrlOffTime(I,IPERP)=ptimep
-                iDay3(I,IPERP)=IDYP
-              ENDIF
-            ENDIF
-          ENDIF
-        ENDIF
-
-        ! Set time delay when both control OFF time is found
-        IF(iDay4(I,IPERP).LT.IDYP.AND.ctrlOffFound(I,IPERP))THEN
-          Delay(I,IPERP)=ctrlOffTime(I,IPERP)-ctrlOnTime(I,IPERP)
-          iDay4(I,IPERP)=IDYP
-
-C Debug...
-c      if(iperp.eq.2)
-c     &write(915,*)idyp,ptimep,"Found Delay in Loop ",
-c     &loopNo(I),ctrlOnTime(I,IPERP),
-c     &ctrlOffTime(I,IPERP)
-        ENDIF
- 1    continue
-
- 1000 IF(ITC.GT.0.AND.NSINC.GE.ITC.AND.NSINC.LE.ITCF.AND.
-     &   ITRACE(40).NE.0)THEN
-         CALL DAYCLK(IDYP,PTIMEF,ITU)
-         WRITE(ITU,*) ' NSINC = ',nsinc,         
-     &                ' CDATA = ',cdata(ipcmp,ipcvr)
-         write(itu,*) ' Leaving subroutine PCL17'
-      ENDIF
-
-      RETURN
-      END
-
-C ******************** PCL18 ********************
-C      PCL18  idealised optimal stop controller
-C This controller sets the optimal stop time of the future day to be
-C the same as the simulated stop time of the present day. It works by
-C defining the following times:
-C startTime  = heating period start time in the control loop
-C finishTime = heating period finish time in the control loop
-C timeToTemp = time at which space should be at the revised set point
-C              (is assumed to be after finishTime)
-C ctrlOffTime= time at which the heating should be shut off within the
-C              period startTime and finishTime
-
-      SUBROUTINE PCL18
-      IMPLICIT NONE
-#include "plant.h"
-#include "building.h"
-#include "control.h"
-
-C Set MMLCL = Maximum number of loops to be sensed 
-      INTEGER MMLCL
-      PARAMETER(MMLCL=4)
-
-      COMMON/OUTIN/IUOUT,IUIN
-      INTEGER IUOUT,IUIN
-      COMMON/TC/ITC,ICNT
-      INTEGER ITC,ICNT
-      COMMON/TRACE/ITCF,ITRACE(MTRACE),IZNTRC(MCOM),ITU
-      INTEGER ITCF,ITRACE,IZNTRC,ITU
-      COMMON/SIMTIM/IHRP,IHRF,IDYP,IDYF,IDWP,IDWF,NSINC,ITS
-      INTEGER IHRP,IHRF,IDYP,IDYF,IDWP,IDWF,NSINC,ITS
-      COMMON/PTIME/PTIMEP,PTIMEF
-      REAL PTIMEP,PTIMEF
-      COMMON/C9/NPCOMP,NCI(MPCOM),CDATA(MPCOM,MMISCD)
-      INTEGER NPCOMP,NCI
-      REAL CDATA
-      COMMON/PCLSOL/ICFP,IDTYPP,IPERP
-      INTEGER ICFP,IDTYPP,IPERP
-      COMMON/PCLOP8/LASTOUT(MCF)
-      INTEGER LASTOUT
-
-      dimension ICTLR(MMLCL)
-      logical ctrld(MMLCL)
-      REAL CTLPS,SVCTL
-      INTEGER NCT,ICT,IPCVR,IPCMP,IDATNO,IMASTER,ICTL,ICTLR
-
-      DIMENSION loopNo(MMLCL),timeDelay(MCDP),
-     &ctrlOffTime(MMLCL,MCDP),revisedSetPt(MMLCL,MCDP),
-     &previousTemp(MMLCL),timeToTemp(MMLCL,MCDP),savedTimeDelay(MCDP)
-
-      INTEGER iPeriodNo,iDay1,loopNo,
-     &I,iPeriod,iTemp1,iTemp2,iTemp3,iTemp4,iTemp5,iTemp6,
-     &iTemp7,iTemp8
-      REAL timeToTemp,finishTime,startTime,timeDelay,
-     & ctrlOffTime,revisedSetPt,previousTemp,savedTimeDelay
-      LOGICAL closer
-      
-C Init...
-      if(nsinc.eq.1)then
-        do 50 i=1,mcdp
-          iDay1=0
-          iPeriod=0
-          timeDelay(i)=0.
-          savedTimeDelay(i)=0.0
- 50     continue
-        do 51 i=1,mmlcl
- 51     previousTemp=0.
-      endif
-
-C Fatal error test.
-      IF(INT(PMISCD(ICFP,IDTYPP,IPERP,1)).LT.3)THEN
-        CALL EDISP(iuout,
-     &    ' PCL18: fatal error -> too few misc. data items')
-        CALL EPWAIT
-        CALL EPAGEND
-        STOP
-      ENDIF
-
-C Set control parameters.
-      NCT=(NINT(PMISCD(ICFP,IDTYPP,IPERP,1))-2)
-      DO 4000 ICT=1,NCT
-        ICTLR(ICT)=INT((PMISCD(ICFP,IDTYPP,IPERP,ICT+1)))
-        loopNo(ICT)=ICTLR(ICT)
-	IF(LASTOUT(ICTLR(ICT)).NE.0)THEN
-	  CTRLD(ICT)=.TRUE.
-	ELSE
-	  CTRLD(ICT)=.FALSE.
-	ENDIF
- 4000 CONTINUE
-
-C Get control logic, initially assuming OFF (ICTL=0)
-      ICTL=0
-
-C Set this control loop to follow specified loop if just one loop is
-C specified
-      IF(NCT.EQ.1)THEN
-        IMASTER=INT(PMISCD(ICFP,IDTYPP,IPERP,2))
-        IF(LASTOUT(IMASTER).NE.0)ICTL=1
-      ELSE
-
-C If more than one loop then set this loop on if either loops are on
-        DO 5000 ICT=1,NCT-1
-          IF(ICT.EQ.1)THEN
-            IF(CTRLD(ICT).OR.CTRLD(ICT+1))THEN
-              ICTL=1
-            ENDIF
-          ELSE
-            IF(CTRLD(ICT+1).OR.(ICTL.EQ.1))THEN
-              ICTL=1
-            ENDIF
-          ENDIF
- 5000   CONTINUE
-      ENDIF
-      IDATNO=1
-
-C Get plant component number to control
-      CALL CLVAR(SVCTL,IPCMP,IPCVR)
-
-C Set CDATA item value
-      IF(ICTL.EQ.1)THEN
-        CTLPS=1 
-        LASTOUT(ICFP)=1
-      ELSE
-        CTLPS=0 
-        LASTOUT(ICFP)=0
-      ENDIF
-      CDATA(IPCMP,IDATNO)=CTLPS
-
-C Determine optimal stop mode
-      iPeriodNo =NINT(PMISCD(ICFP,IDTYPP,IPERP,NCT+2))
-      IF(iPeriodNo.EQ.0)GOTO 1000
-      startTime=tpcps(loopNo(1),IDTYPP,iPeriodNo)
-      IF(iPeriodNo.eq.npcdp(loopNo(1),IDTYPP))THEN
-        finishTime=24.
-      ELSE
-        finishTime=tpcps(loopNo(1),IDTYPP,iPeriodNo+1)
-      ENDIF
-
-C Set control to off when optimal stop time is reached
-        IF(ptimep.gt.(finishTime-savedtimeDelay(iPeriodNo)))THEN
-          cdata(IPCMP,IDATNO)=0.0
-          LASTOUT(ICFP)=0
-        ENDIF
-        IF(ptimep.gt.finishTime)then
-          savedtimeDelay(iperiodNo)=timeDelay(iPeriodNo)
-        ENDIF
-
-C Initialise iDay for this period if control period or day changes
-      IF(iPeriod.lt.IPERP.OR.iDay1.LT.IDYP)THEN
-        iDay1=IDYP
-        iPeriod=IPERP
-      ENDIF
-
-      Do 1 I=1,NCT
-        ! Get revised set point (!item 3 = heating set point for
-        ! control 3,5, and 8
-        revisedSetPt(loopNo(I),iPeriodNo)=
-     &  PMISCD(loopNo(I),IDTYPP,iPeriodNo,3)+ 
-     &  PMISCD(ICFP,IDTYPP,IPERP,NCT+3)
-
-C Swap actuator and sensor information with loop being sensed
-        iTemp1=IPAN(ICFP,1)
-        iTemp2=IPAN(ICFP,2)
-        iTemp3=IPAN(ICFP,3)
-        iTemp4=IPSN(ICFP,1)
-        iTemp5=IPSN(ICFP,2)
-        iTemp6=IPSN(ICFP,3)
-        iTemp7=IPSN(ICFP,4)
-        iTemp8=IPSN(ICFP,5)
-        IPAN(ICFP,1)=IPAN(loopNo(I),1)
-        IPAN(ICFP,2)=IPAN(loopNo(I),2)
-        IPAN(ICFP,3)=IPAN(loopNo(I),3)
-        IPSN(ICFP,1)=IPSN(loopNo(I),1)
-        IPSN(ICFP,2)=IPSN(loopNo(I),2)
-        IPSN(ICFP,3)=IPSN(loopNo(I),3)
-        IPSN(ICFP,4)=IPSN(loopNo(I),4)
-        IPSN(ICFP,5)=IPSN(loopNo(I),5)
-        CALL CLVAR(SVCTL,IPCMP,IPCVR)
-
-C Reset actuator information (sensor information does not need to be
-C reset because dummy sensing is used for multi-sensor controllers
-        IPAN(ICFP,1)=iTemp1
-        IPAN(ICFP,2)=iTemp2
-        IPAN(ICFP,3)=iTemp3
-        IPSN(ICFP,1)=iTemp4
-        IPSN(ICFP,2)=iTemp5
-        IPSN(ICFP,3)=iTemp6
-        IPSN(ICFP,4)=iTemp7
-        IPSN(ICFP,5)=iTemp8
-
-C Init -- the call to eclose will be problematic for long time steps
-        closer=.false.
-        call eclose(startTime,ptimep,0.01,closer) 
-        if(closer)then
-          timeDelay(iPeriod)=0.
-          timeToTemp(loopNo(I),iPeriodNo)=startTime
-          ctrlOffTime(loopNo(I),iPeriodNo)=startTime
-        endif
-
-C If sensed controller is on then set ctrlOffTime to finishTime
-        if((ptimep.ge.startTime).and.(ptimep.le.finishTime))THEN
-          if(LASTOUT(loopNo(I)).eq.1)then
-            ctrlOffTime(loopNo(I),iPeriodNo)=finishTime
-
-C If sensed controller is off then set to earlier of present time or
-C ctrlOffTime (from previous timesteps)
-          else
-            ctrlOffTime(loopNo(I),iPeriodNo)=
-     &      max(ctrlOffTime(loopNo(I),iPeriodNo),ptimep)
-          endif
-        endif
-
-C If sensed temperature is less than revised set point mark this as
-C timeToTemp being reached
-        if(svctl.lt.revisedSetPt(loopNo(I),iPeriodNo).and.
-     &  previousTemp(I).ge.revisedSetPt(loopNo(I),iPeriodNo))then
-          timeToTemp(loopNo(I),iPeriodNo)=
-     &    max(timeToTemp(loopNo(I),iPeriodNo),ptimep)
-        endif
-        previousTemp(I)=svctl
-
-C Get timeDelay but only if revised set point is reached
-        if((timeToTemp(loopNo(I),iPeriodNo)-
-     &  ctrlOffTime(loopNo(I),iPeriodNo)).gt.0.)then
-          call eclose(timeDelay(iPeriodNo),0.0,0.001,closer)
-          if(closer)then
-            timeDelay(iPeriodNo)=timeToTemp(loopNo(I),iPeriodNo)-
-     &      ctrlOffTime(loopNo(I),iPeriodNo)
-          else
-            timeDelay(iPeriodNo)=min(timeDelay(iPeriodNo),
-     &      timeToTemp(loopNo(I),iPeriodNo)-
-     &      ctrlOffTime(loopNo(I),iPeriodNo))
-          endif
-        endif
- 1    continue
-
-C Debug...
-c      write(915,*)
-c     & ptimep,iPeriodNo,timeToTemp(loopNo(1),iPeriodNo),
-c     &timeToTemp(loopNo(2),iPeriodNo),
-c     &ctrlOffTime(loopNo(1),iPeriodNo),
-c     &ctrlOffTime(loopNo(2),iPeriodNo),timeDelay(iPeriodNo),
-c     &savedTimeDelay(iPeriodNo),finishTime
-
- 1000 IF(ITC.GT.0.AND.NSINC.GE.ITC.AND.NSINC.LE.ITCF.AND.
-     &   ITRACE(40).NE.0)THEN
-         CALL DAYCLK(IDYP,PTIMEF,ITU)
-         WRITE(ITU,*) ' NSINC = ',nsinc,         
-     &                ' CDATA = ',cdata(ipcmp,ipcvr)
-         write(itu,*) ' Leaving subroutine PCL18'
-      ENDIF
-      RETURN
-      END
-
 
 C ******************** PSYSPT ********************
 

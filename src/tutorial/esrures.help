@@ -267,15 +267,7 @@
 '  '
 *enditem
 *item MOFCON condensation_animation
-'Animation shows each timestep in sequence. You have a choice'
-'of the speed of the animation. There is no option to pause or'
-'exit from the animation once it starts - so best to try it with'
-'a short period first.
-' '
-'The choice of all-timesteps-at-once draws each timesteps data'
-'over the previous timestep with a minimal pause.'
-'The choice animate data display clears the prior data before'
-'drawing the current timesteps temperatures through the surface.'
+'Animation shows each timestep in sequence.'
 *enditem
           CALL EASKABC('When plotting temperatures:',' ',
 *subroutine MOINTC
@@ -995,13 +987,6 @@ C        CALL EASKABC('Data display options:',outs,
 '  comma separator (for excel)'
 '  tab separator (for excel)'
 '  tagged - marked up data'
-'  '
-'Also you can alter the reporting units for heating and cooling'
-'sensible and latent from kW or kWhr to W or Whr to reflect the'
-'range of values presented.  The Units choice is available for'
-'both tabular listings and graphs.'
-'Note: that surface energy balance values are always reported in 
-'W or Whr (even if the toggle is set to kW or kWhr.'
 *enditem
           CALL EASKATOG('Delimeter to use between columns of data:',' ',
 *item GOMENU res_graph_title_edit

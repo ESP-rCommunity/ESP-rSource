@@ -1,15 +1,7 @@
 #define DEBUG 0
+
 #include "TReportData.h"
 
-/* ********************************************************************
-** Class:   TReportData
-** Purpose: Used to store all the data and information relating one
-**          report variable.  Primary use of this class is a map object
-**          in TReportsManager that contains all the variable data
-**          generated during a simulation
-** Used by: TReportsManager
-** Error handling: to be implemented...
-** ***************************************************************** */
 /* ********************************************************************
 ** Method:   Default constructor
 ** Scope:    public
@@ -23,6 +15,7 @@ TReportData::TReportData()
 {
    //Call overloaded constructor
    TReportData(false);
+   //printf("RepData Constructor at: %p\n",this);
 }
 
 
@@ -40,16 +33,17 @@ TReportData::TReportData(bool bStarted)
    //set default to a 365 day, 1 hour timestep
    m_lExpectedTimeSteps = 8760;
 
-   //used for iterating through output
-   m_iNextLogBinIndex = 0;
-   m_lNextStepIndex = 0;
-   m_itNextLogBinIndex = m_LogBinData.begin();
+   //set the init bit to nothing
+   m_cInitBit = 0x00;
 
+   //used for iterating through output
+   m_iNextMonthlyBinIndex = 0;
+   m_lNextStepIndex = 0;
+   m_itNextMonthlyBinIndex = m_MonthlyBinData.begin();
    m_bSimulationStarted = bStarted; //is the sim out of startup?
    m_bReportStartupPeriod = false; //do we report the startup values
    m_fLastValue = 0.0; //initialize the first last value to 0.0
    m_lLastTimeStep = -1; //stores the last time stepped pushed
-   m_iLastLogIndex = 0;//stores the last log index a value was pushed
    m_firstpass = true;
    m_bStepOutput = false; //used for incremental save to file
    m_bTS_averaging = false; //set by the set_time_step_averaging
@@ -129,81 +123,44 @@ void TReportData::SetOutputType(unsigned char cOutType){
    if(m_cOutputType & OUT_STEP || m_cOutputType & OUT_ALL)
       m_StepData.reserve(m_lExpectedTimeSteps);
    if(m_cOutputType & OUT_LOG || m_cOutputType & OUT_ALL)
-      m_LogBinData.reserve(12); //max one year, fairly small anyways
+      m_MonthlyBinData.reserve(12); //max one year, fairly small anyways
 }
 
 
 /* ********************************************************************
 ** Method:   AddValue
 ** Scope:    public
-** Purpose:  Accessor method to push a value to the storage bins.  Will
-**           also perform timestep averaging is set.
+** Purpose:  Accessor method to push a value to the storage bins.
 ** Params:   lTimeStep - the time step attached to the value
-**           iLogIndex - the log index attached to the value
+**           iMonth - the month index attached to the value
 **           fValue - the value to push onto the bins
 ** Returns:  N/A
 ** Author:   Claude Lamarche
-** Mod Date: 2011-10-04
+** Mod Date: 2011-07-22
 ** ***************************************************************** */
-void TReportData::AddValue(const unsigned long &lTimeStep, const int &iLogIndex, const float &fValue)
+void TReportData::AddValue(const unsigned long &lTimeStep, const int &iMonthIndex,const float &fValue)
 {
-   //optimize, unstructure return if variable isn't reporting on in any format
-   if(!(m_cOutputType & OUT_ANY))
-      return;
-
-   /* ************************************** TS AVERAGING ***********************************************
-   ** Timestep averaging works by taking the old value + the new value divided by two.  When the simulation
-   ** skips a timesteps for a given variable the fill value of 0.0 is considered and averaging is applies.
-   ** ex:
-          Timesteps     Values from simualtion       Stored Values            Notes
-             1                0.6258                     0.6258               (First Pass), store itself
-             2                0.6174                     0.6216               (Previous + new) / 2
-             3                0.6007                     0.60905              (Previous + new / 2
-             4                                           0.30035              (Previous + fill 0) / 2
-             5                0.2686                     0.1343               (fill 0 + new) / 2
-             6                                           0.1343               (Previous + fill 0) / 2
-             7                0.2953                     0.14765              (fill 0 + new) / 2
-             8                                           0.14765              (Previous + fill 0) /2
-             9                                           0.0                  Fill 0.0
-            10                0.4253                     0.21265              (fill 0 + new) / 2
-   ** *********************************************************************************************** */
+   // If timestep averaging is requested and this is the first
+   // time step of the simulation, there is no 'old value' to
+   // average with. Use current value instead.
    if(m_bTS_averaging && lTimeStep >= 0)
    {
       if(m_firstpass)
       {
-         //handles example timestep: 1
-         //first pass does not have an old value therefore the passed in value
-         //is stored as is.
-         m_fLastValue = fValue;
-         m_firstpass = false;
-      }
-      else if(lTimeStep > m_lLastTimeStep + 1)
-      {
-         //handles example timesteps: 4, 6,8
-         //recursive call to itself to push the average of the first fill 0
-         //this recursive call will only go through once because of the combination of
-         //pass in TimeStep and above else if condition.
-         AddValue(m_lLastTimeStep+1, iLogIndex, 0.0);
 
-         //handles example timesteps: 5, 7, 10
-         //If the passed in timestep is not in sequence to the previous one
-         //we'll average out the step after the last time step with 0 and
-         //continue.
-         m_fLastValue = fValue / 2.0;
+         m_fLastValue = (fValue + fValue) / 2.0;
+         m_firstpass = false;
       }
       else
       {
-         //handles example timesteps: 2, 3
-         //normal sequence timestep averaging.
          m_fLastValue = (fValue + m_fLastValue) / 2.0;
       }
    }
-   /* **********************************END TIMESTEP AVERAGING*********************************** */
+
 
    //only store if the sim is started (startup mode false) or we report on the startup mode
    //and only store if the time step is not the last (handle duplicates)
    //do not store the timestep 0 ~ current fonctionality
-
    if((m_bSimulationStarted || m_bReportStartupPeriod) && lTimeStep != m_lLastTimeStep && lTimeStep != 0)
    {
       //store step data
@@ -211,16 +168,12 @@ void TReportData::AddValue(const unsigned long &lTimeStep, const int &iLogIndex,
          AddToStepData(lTimeStep,m_fLastValue);
 
       //store log data
-      //skip the first pass since we only push the last value stored
-      if(m_firstpass == false)
-      {
-         if(m_cOutputType & OUT_LOG || m_cOutputType & OUT_ALL)
-            AddToLogData(iLogIndex,m_fLastValue);
+      if(m_cOutputType & OUT_LOG || m_cOutputType & OUT_ALL)
+         AddToLogData(iMonthIndex,m_fLastValue);
 
-         //store summary data
-         if(m_cOutputType & OUT_SUMMARY || m_cOutputType & OUT_ALL)
-            AddToSummaryData(m_fLastValue);
-      }
+      //store summary data
+      if(m_cOutputType & OUT_SUMMARY || m_cOutputType & OUT_ALL)
+         AddToSummaryData(m_fLastValue);
    }
 
    //Current functionality, simulation records value one step prior the start and
@@ -229,11 +182,6 @@ void TReportData::AddValue(const unsigned long &lTimeStep, const int &iLogIndex,
 
    //When multiple values are pushed for the same time step we'll handle
    m_lLastTimeStep = lTimeStep;
-
-   //used to know what bin to push the last value unto in Finalze()
-   m_iLastLogIndex = iLogIndex;
-
-   m_firstpass = false;
 }
 
 
@@ -244,44 +192,17 @@ void TReportData::AddValue(const unsigned long &lTimeStep, const int &iLogIndex,
 **           size.  Fills empties with 0.0, push the last value when
 **           reporting startup mode.
 ** Params:   lTimeStep - the last time step
-**           iLogIndex - the last log index
+**           iMonth - the last month index
 **           lOutputStepCount - number of steps that are already in output files
 ** Returns:  N/A
 ** Author:   Claude Lamarche
 ** Mod Date: 2011-08-24
 ** ***************************************************************** */
-void TReportData::Finalize(unsigned int lTimeStep, unsigned int iLogIndex, unsigned long lOutputStepCount)
+void TReportData::Finalize(unsigned int lTimeStep, unsigned int iMonthIndex, unsigned long lOutputStepCount)
 {
-   //optimize, unstructure return if variable isn't reporting on in any format
-   if(!(m_cOutputType & OUT_ANY))
-      return;
-
-   //*** Use to trace a variable.  The varname can be taken for the ***
-   //*** log_trace.txt generated in the TReportsManager.cpp to turn on go to the ***
-   //*** top of the TReportsManager.cpp ***
-   #ifdef TRACE_VARIABLE
-   {
-      if(strcmp(sVarName,"total_fuel_use/natural_gas/all_end_uses/energy_content") == 0)
-      {
-         char sTemp[512];
-         sprintf(sTemp,"ReportData::Finalize:%s: ReportStartup:%s; TimeStep:%4d; LogIndex:%d; OutputStepCount:%ld; Stepsize:%d m_lLastTimeStep:%d"
-                 ,sVarName,(m_bReportStartupPeriod)?"true":"false",lTimeStep,iLogIndex,lOutputStepCount,m_StepData.size(),m_lLastTimeStep);
-         log::Instance()->writeTrace(sTemp);
-      }
-   }
-   #endif
-
-   //see AddValue method for example, this is to handle the last averaging before filling with 0's
-   //handles example timesteps: 4, 6,8
-   if(m_bTS_averaging && lTimeStep > m_lLastTimeStep + 1)
-   {
-      AddValue(m_lLastTimeStep+1, iLogIndex, 0.0);
-   }
-
    //push the last value in memory onto the storage bins
-   //when reporting the full simulation startup include, or
-   //when the last value push was not the last timestep
-   if(m_bReportStartupPeriod || (m_lLastTimeStep+lOutputStepCount) < lTimeStep )
+   //when reporting the full simulation startup include
+   if(m_bReportStartupPeriod)
    {
       //store step data
       if(m_cOutputType & OUT_STEP || m_cOutputType & OUT_ALL)
@@ -291,24 +212,24 @@ void TReportData::Finalize(unsigned int lTimeStep, unsigned int iLogIndex, unsig
 
       //store log data
       if(m_cOutputType & OUT_LOG || m_cOutputType & OUT_ALL)
-         AddToLogData(m_iLastLogIndex,m_fLastValue);
+         AddToLogData(iMonthIndex,m_fLastValue);
 
       //store summary data
       if(m_cOutputType & OUT_SUMMARY || m_cOutputType & OUT_ALL)
          AddToSummaryData(m_fLastValue);
-
    }
 
    //if not last step, fill with 0.0
    FinalizeStepData(lTimeStep - lOutputStepCount);
 
 
-   //store log bin, fill
+   //store Monthly bin, fill
    if(m_cOutputType & OUT_LOG || m_cOutputType & OUT_ALL)
    {
-      while(m_LogBinData.size() < iLogIndex+1)
+      while(m_MonthlyBinData.size() < iMonthIndex+1)
       {
-         m_LogBinData.push_back(TBinnedData());
+         m_MonthlyBinData.push_back(TBinnedData());
+         m_MonthlyBinData.back().Increment();
       }
    }
 
@@ -355,22 +276,13 @@ void TReportData::FinalizeStepData(unsigned long lTimeStep)
 ** Mod Date: 2011-07-22
 ** ***************************************************************** */
 void TReportData::AddToStepData(unsigned long lTimeStep, const double &fValue){
-   int iLastTMEStep = m_StepData.size();
-
    //push values until same size as timestep
    while(m_StepData.size() < lTimeStep)
    {
       m_StepData.push_back(0.0);
    }
-
    //handle duplicate - overwrite last everytime
-   //when in TS_avg mode, push the 0s before the value otherwise push the
-   //value before the 0s (this was done to match previous version's output)
-   if(m_bTS_averaging)
-      m_StepData.at(lTimeStep-1) = fValue;
-   else
-      m_StepData.at(iLastTMEStep) = fValue;
-
+   m_StepData.at(lTimeStep-1) = fValue;
 }
 
 
@@ -385,32 +297,36 @@ void TReportData::AddToStepData(unsigned long lTimeStep, const double &fValue){
 ** ***************************************************************** */
 void TReportData::AddToSummaryData(const double &fValue){
    m_AnnualData.AddValue(fValue);
+
+   //Increment step count
+   m_AnnualData.Increment();
 }
 
 
 /* ********************************************************************
 ** Method:   AddToLogData
 ** Scope:    private
-** Purpose:  push a value to the log storage bins
-** Params:   iLogIndex - The log index the value is attached to.
+** Purpose:  push a value to the monthly storage bins
+** Params:   iMonthIndex - The monthindex the value is attached to.
 **           fValue - the variable's value
 ** Note:     This method will ensure that the bin is the correct size
 ** Returns:  N/A
 ** Author:   Claude Lamarche
 ** Mod Date: 2011-07-22
 ** ***************************************************************** */
-void TReportData::AddToLogData(const int &iLogIndex, const double &fValue){
+void TReportData::AddToLogData(const int &iMonthIndex, const double &fValue){
    //The TBinnedData should be float and not double
    //for the exception of the sum **to do**
 
-   //push values until the same size as the log index
-   while(m_LogBinData.size() < iLogIndex+1)
+   //push values until the same size as the month index
+   while(m_MonthlyBinData.size() < iMonthIndex+1)
    {
-      m_LogBinData.push_back(TBinnedData());
+      m_MonthlyBinData.push_back(TBinnedData());
 
    }
 
-   m_LogBinData.back().AddValue(fValue);
+   m_MonthlyBinData.back().AddValue(fValue);
+   m_MonthlyBinData.back().Increment();
 
    //The Summary Reporting already tracks the annual bin,
    //do not add a value to the annual bin in that case.
@@ -491,7 +407,7 @@ bool TReportData::IsVariableDescriptionWild()
 }
 
 /* ********************************************************************
-** Method:   SetVariableDescriptionWild
+** Method:   SetVariableDescriptoinWild
 ** Scope:    public
 ** Purpose:  Set the variable's dynamicly generated variable description.
 **           The description is normally static and not set here.  This
@@ -500,11 +416,11 @@ bool TReportData::IsVariableDescriptionWild()
 ** Params:   sMetaType - The meta type "units"
 **           sVariableType - the variable type "(W),(oC)..."
 **           sDescription - the text description
-** Returns:  N/A
+** Returns:  true/false
 ** Author:   Claude Lamarche
 ** Mod Date: 2011-08-30
 ** ***************************************************************** */
-void TReportData::SetVariableDescriptionWild(const string& sMetaType,
+bool TReportData::SetVariableDescriptoinWild(const string& sMetaType,
                                              const string& sVariableType,
                                              const string& sDescription)
 {
@@ -640,39 +556,39 @@ TBinnedData* TReportData::GetAnnualBin()
 
 
 /* ********************************************************************
-** Method:   GetNextLogBin
+** Method:   GetNextMonthlyBin
 ** Scope:    public
-** Purpose:  consuming routine, return the next pointer to the log
+** Purpose:  consuming routine, return the next pointer to the monthly
 **           bin, NULL is return when end is reached.  Sister method
-**           GetNextLogBinReset will enable to start loop over.
+**           GetNextMonthlyBinReset will enable to start loop over.
 ** Params:   N/A
 ** Returns:  pointer to TBinnedData object, NULL when end is there
 ** Author:   Claude Lamarche
 ** Mod Date: 2011-08-11
 ** ***************************************************************** */
-TBinnedData* TReportData::GetNextLogBin()
+TBinnedData* TReportData::GetNextMonthlyBin()
 {
    //return the next iterator
-   if(m_itNextLogBinIndex == m_LogBinData.end())
+   if(m_itNextMonthlyBinIndex == m_MonthlyBinData.end())
       return NULL;
    else
-      return &*m_itNextLogBinIndex++;
+      return &*m_itNextMonthlyBinIndex++;
 }
 
 
 /* ********************************************************************
-** Method:   GetNextLogBinReset
+** Method:   GetNextMonthlyBinReset
 ** Scope:    public
-** Purpose:  Reset the count to enabel GetNextLogBin to start over
+** Purpose:  Reset the count to enabel GetNextMonthlyBin to start over
 ** Params:   N/A
 ** Returns:  N/A
 ** Author:   Claude Lamarche
 ** Mod Date: 2011-08-11
 ** ***************************************************************** */
-void TReportData::GetNextLogBinReset()
+void TReportData::GetNextMonthlyBinReset()
 {
-   m_iNextLogBinIndex = 0;
-   m_itNextLogBinIndex = m_LogBinData.begin();
+   m_iNextMonthlyBinIndex = 0;
+   m_itNextMonthlyBinIndex = m_MonthlyBinData.begin();
 }
 
 
@@ -749,7 +665,7 @@ void TReportData::PrintLogData()
 {
    BinnedDataVector::iterator it;
 
-   for ( it=m_LogBinData.begin() ; it < m_LogBinData.end(); it++ )
+   for ( it=m_MonthlyBinData.begin() ; it < m_MonthlyBinData.end(); it++ )
    {
      printf("%s: Steps:%d\n",sVarName,(int)it->ActiveTimesteps());
    }
@@ -775,4 +691,3 @@ void TReportData::printAll()
       printf("Step: %d; Value: %f\n",i++,*it);
    }
 }
-

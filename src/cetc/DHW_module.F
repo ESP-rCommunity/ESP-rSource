@@ -1182,6 +1182,8 @@ c----56--1---------2---------3---------4---------5---------6---------7---------8
 C Declarations for local variables and variables passed in common blocks.
       INTEGER   ihrp,ihrf,idyp,idyf,idwp,idwf,nsinc,its,iDAYN
       INTEGER   isd1,ism1,isd2,ism2,isds,isdf,ntstep
+      character cfgroot*24,LCFGF*72
+      integer IFCFG
 
 C Check to see if DHW is required.
       IF (iDHW_Flag.ne.1) then
@@ -1378,15 +1380,17 @@ C ------------------------------------------------------------------------------
 
       IMPLICIT NONE
 #include "building.h"
-#include "model.h"
 #include "dhw_parameters.h"
 #include "dhw_common.h"
 #include "ground_temp_mains_common.h"
 #include "espriou.h"
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
+      common/C21/IFCFG,cfgroot,LCFGF
 
 C Declarations for local variables and variables passed in common blocks.
+      character cfgroot*24,LCFGF*72
+      integer IFCFG
       character outs*124,OUTSTR*124
       integer IUOUT,IUIN,IFIL,IUNIT,ISTAT,IER,ND,k,ival
       real val

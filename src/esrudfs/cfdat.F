@@ -1467,7 +1467,6 @@ C   from common block variable icp.
       
       integer lnblnk  ! function definition
 
-      integer IZSTOCN
       COMMON/C24/IZSTOCN(MCOM,MS)
       COMMON/ICFNOD/ICFD,ICP
 

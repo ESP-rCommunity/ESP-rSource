@@ -656,7 +656,7 @@ C---- Additional outputs
       PCAOUT(IPCOMP,5) = NSECAVG
 
 C---- XML output
-      call AddToReport(rvPltAvgTemp%Identifier,
+      call AddToReportWild1(rvPltAvgTemp%Identifier,
      &      TAVGF_STANK(I_STANK),
      &       pcname(ipcomp)(1:iPltNameLen(ipcomp)))
 

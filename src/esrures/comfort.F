@@ -5,7 +5,7 @@ C Strathclyde, Glasgow Scotland, 2001.
 C ESP-r is free software.  You can redistribute it and/or
 C modify it under the terms of the GNU General Public
 C License as published by the Free Software Foundation 
-C (version 2 or later).
+C (version 2 orlater).
 
 C ESP-r is distributed in the hope that it will be useful
 C but WITHOUT ANY WARRANTY; without even the implied
@@ -40,9 +40,7 @@ C if act = 'E' return days PMV (effective temperature) in GVAL.
 
       SUBROUTINE MOCMFT(IDAY,IZONE,act)
 #include "building.h"
-#include "model.h"
 #include "geometry.h"
-#include "schedule.h"
 #include "espriou.h"
       
       integer lnblnk  ! function definition
@@ -52,6 +50,9 @@ C if act = 'E' return days PMV (effective temperature) in GVAL.
       COMMON/OUTPCH/ICOUT
 
       COMMON/SIMPIK/ISIM,ISTADD,ID1,IM1,ID2,IM2,ISDS,ISDF,NTS,ISAVE
+      common/C21/IFCFG,cfgroot,LCFGF
+      character lodlabel*6
+      common/loadlabel/lodlabel(mcom,MGTY)
       common/exporttg/xfile,tg,delim
       COMMON/EXPORTI/ixopen,ixunit,ixpunit
 
@@ -67,6 +68,7 @@ C Pre calculated data (filtered).
       DIMENSION ID(12),OP(MS),TS(MS),TSO(MS),QV(MS),ITEMS(14)
       character doit*248,tmode*8,tfile*72
       character longtfile*144,longtfiledos*144
+      character LCFGF*72,cfgroot*24
       CHARACTER*25 DESC(12)
       character outs*124,TSTR*24,ZN*12
       character xfile*144,ITEMS*25,tg*1,delim*1,act*1
@@ -167,6 +169,7 @@ C << revise for additional casual gain types >>
         endif
         iocuset=1
         call scnocup(iier)
+        if (iocut.ne.IFILT) call MMAPER
         IFILT=iocut
         return
       endif
@@ -318,6 +321,7 @@ C << revise for additional casual gain types >>
         endif
         call usrmsg(' ',' ','-')
         call scnocup(iier)
+        if (iocut.ne.IFILT) call MMAPER
         IFILT=iocut
       elseif(ino.eq.10)then
         goto 78
@@ -504,7 +508,6 @@ C sundays ioucpz(izone,[49-72]), This hash table will need altering
 C if sub-hour casual gains definitions are implemented. 
       subroutine scnocup(ier)
 #include "building.h"
-#include "schedule.h"
 #include "espriou.h"
 
       COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
@@ -517,6 +520,10 @@ C if sub-hour casual gains definitions are implemented.
       COMMON/GET1/VAL1(MZS,MTS),VAL2(MZS,MTS),VAL3(MZRL,MTS)
       common/cmftpar/WVEL,ACTL,CLO,iocut,iocuset,ioucpz(MCOM,72)
       common/recver/izver,ipver,iever
+
+C Version of operations file. ip3ver=0 standard, =1 sorted with header
+C =2 with more than 3 day types
+      common/p3ver/ip3ver(MCOM)
 
       logical close15,close16,close17
       character hold*24,outs*124
@@ -599,7 +606,7 @@ C If izver >= 4 the read the data directly.
             write(outs,'(a,i2,a)') 
      &      'Operation file for zone ',izone,' periods being sorted!'
             call edisp(iuout,outs)
-            call PROCESSOLDCAS(izone,0,iuout)
+            call PROCESSOLDCAS(izone,0,iuout,IER)
           endif
         endif
 
@@ -689,7 +696,6 @@ C << todo - use of explicit read of casual gains >>
       subroutine getocup(izone,iday,ih,ioc,ier)
 #include "building.h"
 #include "geometry.h"
-#include "net_flow.h"
 #include "tdf2.h"
 
       common/recver/izver,ipver,iever

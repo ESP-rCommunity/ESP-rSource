@@ -61,6 +61,9 @@ C
 C *******************************************************************************
 C ********************************************************************************
 C ************************ MODULE AIM2 *******************************************
+C Created by: Francesca Macdonald
+C Date: July 3, 2010
+C 
 C ********************************************************************************
       MODULE AIM2_InputData 
       
@@ -942,7 +945,7 @@ C of the zones that do receive infiltration.
       CALL STRIPC(IUNIT,OUTSTR,0,ND,1,' AIM-2 data',IER)
       IF(IER.NE.0)goto 1000
       K=0
-      CALL EGETWI(OUTSTR,K,IVAL,1,30,'F',' num zones with infil',IER)
+      CALL EGETWI(OUTSTR,K,IVAL,1,10,'F',' num zones with infil',IER)
       if(IER.NE.0)then
         call edisp(IUOUT,' Cannot read num of zones with infil.')
         goto 1000
@@ -970,7 +973,7 @@ C Check allocation was sucessful
  
         IF (ALLOCATED(AIM2_zone_infil)) THEN
           DO ICOMP=1,AIM2_num_zones_infil
-            CALL EGETWI(OUTSTR,K,IVAL,1,30,'F',
+            CALL EGETWI(OUTSTR,K,IVAL,1,10,'F',
      &          ' zone receiving infil',IER)
             if(IER.NE.0)then
               call edisp(IUOUT,' zone receiving infil.')
@@ -2434,6 +2437,7 @@ C **********************************************************************
       blockdata OpenWindows
       implicit none 
       include "building.h"
+      include "net_flow.h"
       include "blc25_open_windows.h"
       
       data bWindowsOpen  / mcom * .false. /

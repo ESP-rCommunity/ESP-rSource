@@ -22,20 +22,20 @@ C Compute srface visibility.
       COMMON /TOTAL/ nsurmf, NGRID, NTRPOL
       COMMON /ZZZ/  ZMIN(MSM,MSM), ZMAX(MSM,MSM)
 
-      DIMENSION IDPRI(MS)
+      DIMENSION  IDPRI(50)
 
       DO 100 I = 1,nsurmf
 
-C Count number of visible surfaces (NOBS).
+C Count number of visible surfaces.
       NOBS = 0
       DO 200 J = 1,nsurmf
 
-        IF (IVIS(I,J) .EQ. -1)  GOTO  200
+      IF (IVIS(I,J) .EQ. -1)  GOTO  200
 
-        NOBS = NOBS + 1
-        IF (NOBS .EQ. 1)  ID1 = J
+      NOBS = NOBS + 1
+      IF (NOBS .EQ. 1)  ID1 = J
 
-        IDPRI(NOBS) = J
+      IDPRI(NOBS) = J
 
   200 CONTINUE
 
@@ -50,28 +50,28 @@ C Only one surface visible.
 
       DO 400 J = 1,NOBS
 
-        J1 = IDPRI(J)
-        IF (IVIS(I,J1) .NE. 0)  GOTO  400
-        DO 500 K = 1,NOBS
-          IF (J .EQ. K) GOTO 500
-          K1 = IDPRI(K)
-          IF (ZMAX(I,J1) .LE. ZMIN(I,K1)) GOTO 500
-          CALL  VTEST(I,J1,K1,IANS)
-          IF (IANS .EQ. 1) GOTO 500
-          CALL  BOUND(I,J1,K1,IANS)
-          IF (IANS .EQ. 0) GOTO 500
+      J1 = IDPRI(J)
+      IF (IVIS(I,J1) .NE. 0)  GOTO  400
+      DO 500 K = 1,NOBS
+      IF (J .EQ. K)  GOTO  500
+      K1 = IDPRI(K)
+      IF (ZMAX(I,J1) .LE. ZMIN(I,K1))  GOTO  500
+      CALL  VTEST(I,J1,K1,IANS)
+      IF (IANS .EQ. 1)  GOTO  500
+      CALL  BOUND(I,J1,K1,IANS)
+      IF (IANS .EQ. 0)  GOTO  500
 
 C Fails test therefore assume obstructed.
-          IVIS(I,J1) = 2
-          IVIS(J1,I) = 2
-          GOTO  400
+      IVIS(I,J1) = 2
+      IVIS(J1,I) = 2
+      GOTO  400
 
-  500   CONTINUE
+  500 CONTINUE
 
 C Has passed tests for all other visible surfaces
 C assume totally visible.
-        IVIS(I,J1) = 1
-        IVIS(J1,I) = 1
+      IVIS(I,J1) = 1
+      IVIS(J1,I) = 1
 
   400 CONTINUE
   100 CONTINUE

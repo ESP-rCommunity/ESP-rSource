@@ -27,7 +27,6 @@ C bcfwrite takes a list of constructions (clist) and builds
 C a bcf file. ilen is the number of constructions.
       subroutine bcfwrite(ifa,file,act,ilen,clist,ier)
 #include "building.h"
-#include "model.h"
 #include "espriou.h"
 C espriou.h provides currentfile.
 #include "esprdbfile.h"
@@ -36,6 +35,7 @@ C providing paramaters MGDB,MGCL,MGIT
       integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
+      common/C21/IFCFG,cfgroot,LCFGF
 
 C Generic db commons: file log, current classifications,
 C and current items then lengths of each list.
@@ -60,7 +60,7 @@ C Working list of constructions and materials << >>
       character outs*124,outsd*124
       character ituntstr*42,itsrcstr*1,itcnfstr*42
       character unitchr*4,unitstr*12,unitnote*72
-      character clist*12,mlist*12
+      character clist*12,mlist*12,cfgroot*24,LCFGF*72
 
       character symname*12,othcolr*12,incolr*12,othacou*12,inacou*12
       character OTF*4,OPT*12,cnstimp*12,dstmp*24

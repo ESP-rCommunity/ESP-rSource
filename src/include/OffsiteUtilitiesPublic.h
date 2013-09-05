@@ -39,7 +39,7 @@ C.....Supported end-uses
 
 C.....Number of "components" in ESP-r that report data to OffsiteUtilities
       integer iNumOffsiteUtilComp
-      parameter ( iNumOffsiteUtilComp = 4 )
+      parameter ( iNumOffsiteUtilComp = 5 )
 
 C.....Named constants for components that report data
 
@@ -55,6 +55,9 @@ C.....Named constants for components that report data
       integer iIdealVent
       parameter ( iIdealVent = 4 )       ! Ideal Ventilation/HRV model (CentralVentSys.F)
 
+      integer iPfsComponents
+      parameter ( iPfsComponents = 5)  ! Explicit plant models (esruplt/)      
+      
 C-----------------------------------------------------------------------
 C     Named constants used to describe plt/pfs loads and
 C     energy conversion.
@@ -90,7 +93,7 @@ C     Array for passing fuel energy consumption into StoreSiteFuelUse.
 C     This variable *should not* be common!
 C-----------------------------------------------------------------------
       real fSUFuelEnergyUse(iNumFuel,iNumUses)  ! (W)
-
+      real fSUElectricityUse(iNumUses) 
 C-----------------------------------------------------------------------
 C     String names and units for the various fuel types
 C-----------------------------------------------------------------------

@@ -151,7 +151,8 @@ C
   100 RETURN
 C
 C Error trap on read error
-  999 WRITE(IUOUT,9991)
+  999 CALL ELINC(2)
+      WRITE(IUOUT,9991)
  9991 FORMAT(' MFRSET: climate file read error !')
       STOP ' MFRSET: unresolvable error !'
 C

@@ -56,11 +56,19 @@ C << are no longer any so-called default windows and doors.
       common/outin/iuout,iuin
       common/filep/ifil
 
+      common/prec1/sna(mcom,ms)
+      common/prec9/nconst(mcom),nelts(mcom,ms),ngaps(mcom,ms),
+     &             npgap(mcom,ms,mgp)
+
       integer ncomp,ncon
       common/c1/ncomp,ncon
+      common/adjc/ie(mcom,ms),atp(mcom,ms),atf(mcom,ms),arp(mcom,ms),
+     &            arf(mcom,ms)
+
       character outs*124
 
       iunit=ifil+2
+      nn=nconst(icomp)
       zgae=0.
       zgai=0.
       zdae=0.
@@ -795,8 +803,8 @@ C Next-to-surface term elimination.
       if(icascf(icomp).ge.1)then
          if(iban(icascf(icomp),1).eq.-2)then
            n1=nc+1
-c           n2=nc+2
-c           n3=nc+3
+           n2=nc+2
+           n3=nc+3
            n4=nc+4
            do 300 i=1,n1
            do 400 j=1,n4
@@ -977,10 +985,10 @@ C Next-to-surface term elimination.
       if(smalln.gt.b)goto 1
       
       if(iban(icomp,1).eq.-2)then
-c        n1=nc+1
+        n1=nc+1
         n2=nc+2
-c        n3=nc+3
-c        n4=nc+4
+        n3=nc+3
+        n4=nc+4
         n5=nc+5
         do 300 i=1,n2
         do 400 j=1,n5
@@ -1453,6 +1461,7 @@ C N5 relates to the control term
 #include "building.h"
 #include "control.h"
       common/trace/itcf,itrace(mtrace),izntrc(mcom),itu
+      common/outin/iuout,iuin
 
       common/tc/itc,icnt
 
@@ -1493,7 +1502,7 @@ C n5 relates to the control term.
       n1=nc+1
       n2=nc+2
       n3=nc+3
-c      n4=nc+4
+      n4=nc+4
       n5=nc+5            
 
 C Commence forward reduction:
@@ -1796,6 +1805,7 @@ C defined.
       subroutine mzpst1(b1,b2,b3,icomp,qf)
       include "building.h"
       include "control.h"
+      include "net_flow.h"
       include "blc25_open_windows.h"
 
       common/tc/itc,icnt
@@ -1823,6 +1833,9 @@ C defined.
       common/setuq/qpltp(mcom),qpltf(mcom),conv(mcom)
       COMMON/MBINFO/ZMBI(MCOM,4)
 
+      integer ncomp,ncon
+      common/c1/ncomp,ncon
+
       common/globct/qfutgb(mcf),tfutgb(mcf),tnpgb(mcf)
       common/glbctl/global,glbrwd
       common/sysctl/ipassr  
@@ -1840,11 +1853,9 @@ C For help messages
 
       helpinsub='mzpst1'  ! set for subroutine
 
-C Zeroise free-cooling variables.
-      fFreeCoolDelivered(icomp) = 0.
-      fCondFreeCool(icomp) = 0.
-      bFreeCoolCtl(icomp) = .false.
-
+C Zeroise free-cooling reporting variable.
+      fFreeCoolDelivered(icomp) = 0.      
+      
 C Zeroise moisture addition to zone from plant -
 C required in event of BCL06 not being referenced 
 C at current time-step.      
@@ -2082,6 +2093,7 @@ C input.
 #include "building.h"
 #include "control.h"
 
+      common/outin/iuout,iuin
       common/trace/itcf,itrace(mtrace),izntrc(mcom),itu
       common/tc/itc,icnt
 
@@ -2220,10 +2232,12 @@ C MZGSUP controls the simulation within the 3D ground start up period.
 C *********************************************************************
       SUBROUTINE MZGSUP(ISS)
 #include "building.h"
-#include "net_flow.h"
+#include "model.h"
+#include "tdf2.h"
 
       common/outin/iuout,iuin
       common/filep/ifil
+      common/trc/itrc
 
       integer ncomp,ncon
       common/c1/ncomp,ncon

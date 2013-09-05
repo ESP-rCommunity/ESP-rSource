@@ -29,7 +29,7 @@ C UK NCM method.
       SUBROUTINE RegOveheat(icomp)
       IMPLICIT NONE
 #include "building.h"
-#include "net_flow.h"
+#include "geometry.h"
 #include "tdf2.h"
 
 C..............

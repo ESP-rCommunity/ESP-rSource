@@ -1,11 +1,11 @@
 C This file is part of the ESP-r system.
 C Copyright Energy Systems Research Unit, University of
-C Strathclyde, Glasgow Scotland, 2001-2011.
+C Strathclyde, Glasgow Scotland, 2001.
 
 C ESP-r is free software.  You can redistribute it and/or
 C modify it under the terms of the GNU General Public
 C License as published by the Free Software Foundation 
-C (version 2 or later).
+C (version 2 orlater).
 
 C ESP-r is distributed in the hope that it will be useful
 C but WITHOUT ANY WARRANTY; without even the implied
@@ -18,572 +18,49 @@ C License along with ESP-r. If not, write to the Free
 C Software Foundation, Inc., 59 Temple Place, Suite 330,
 C Boston, MA 02111-1307 USA.
 
-C Hight & Mid level routines for dxf translator.
-C scandxf: a high level scan of a DXF file 
-C   BLOCK: processes the block definitions in .dxf file
-C extrblk: extracts block information related to an INCLUDE
-C          command in a dxf file.
+C Mid level routines for dxf translator.
+c  BLOCK: processes the block definitions in .dxf file
 C  insert: processes the 'INSERT' command in .dxf file and
 C  getlay: looks through the current layer names for the
-C writelc: srites the contents of a viewer layer file.
-C genplin: parse a 2 or 3D polyline from information in DXF file.
-C  vertex: compose XYZ from data in a DXF file.
-
-C Notes on DXF versions:
-C The code below is based on DXF files typically known as V12 and V13
-C ( $ACADVER AC1009 or AC1012 ). Some entities changed in V14 ( AC1014)
-C in particular POLYLINE can be rendered as LWPOLYLINE which is somewhat
-C more compact and does not use the VERTEX construct.
-
-C ******** scandxf
-C Scandxf does a high level scan of a DXF file and takes
-C the information gathered and writes to various output
-C file formats.
-      subroutine scandxf(filname,filname1,filname2,itmprm,itrc)
-#include "building.h"
-#include "model.h"
-#include "geometry.h"
-#include "dxfdata.h"
-      
-      integer lnblnk  ! function definition
-
-      COMMON/OUTIN/IUOUT,IUIN
-      
-      integer ncomp,ncon
-      COMMON/C1/NCOMP,NCON
-      COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
-
-      integer IZSTOCN
-      COMMON/C24/IZSTOCN(MCOM,MS)
-
-      integer indxzon
-      character oformat*24,head*4
-      common/dxfe/oformat,indxzon,head
-
-      integer ilay
-      integer nbo  ! local variable for nbobs
-      character ZN*12
-      character RZNAME*24
-      character outs*248,fs*1
-      character dstmp*24
-      logical OPND,match,unixok
-
-C File names.
-      character filname*144,filname2*144,filname1*144,lf*72
-
-      integer itrc,itmprm
-
-C Set folder separator (fs) to \ or / as required.
-      call isunix(unixok)
-      if(unixok)then
-        fs = char(47)
-      else
-        fs = char(92)
-      endif
-
-C System parameter initializing. Use ioin for the input file,
-C ioout for primary output file, ioblk for block storage,
-C iotmp2 for miscel output files.
-      ioin=1        
-      ioout=2        
-      ioblk=3
-      iotmp2=11        
-
-      lineno = 0
-      entelev=0.
-      dfltelev=entelev
-      entthick=0.
-      dfltthick=entthick
-      minseg = 6
-
-C Clear text buffers for obstructions.
-      ichartobs = 0
-      ichartblk = 0 
-      do 466 iloop=1,500
-        chartobs(iloop)='  '
-        chartblk(iloop)='  '
-  466 continue
-
-C The high level scan of a DXF file starts here. It works by
-C calling readgc to recover information from the DXF file until
-C and EOF is located. It looks for 'HEAD' and 'TABL' and 'ENDSEC'.
-      if(itrc.gt.0)then
-        call edisp(iuout,' ')
-        call edisp(iuout,'Start of debug of DXF file contents...')
-      endif
-      instring = 'start'
- 9007 if (instring(1:3).ne.'EOF')then
-        call readgc(itrc)
-        if (instring(1:4).eq.'HEAD') then
-
-C HEAD section. Note if header section has a number of entries then
-C keep reading until ENDSEC is read.
-          if(itrc.gt.1) call edisp(iuout,' ')
-          if(itrc.gt.0)call edisp(iuout,' Processing dxf head...')
- 9002     if (instring(1:6).ne.'ENDSEC')then
-            if (instring(2:5).eq.'SURF') then
-              call readgc(itrc)
-              minseg=innum
-            else
-              read(ioin,'(A)') instring
-              lineno = lineno + 1
-              goto  9002
-            endif
-            call readgc(itrc)
-            goto  9002
-          endif
-          if(itrc.gt.0)call edisp(iuout, ' Head processed...')
-        elseif (instring(1:4).eq.'TABL') then
-
-C TABLE section. Read until we find ENDSEC. We are interested in the
-C number of layers and layer colours and layer names.
-          if(itrc.gt.1) call edisp(iuout,' ')
-          if(itrc.gt.0)call edisp(iuout, ' Tables being processed....')
- 9008     if (instring(1:6).ne.'ENDSEC')then
-            if (gcode.eq.2 .and. instring(:5).eq.'LAYER') then
-              ilay = 0
-              call readgc(itrc)
- 9009         if(gcode.ne.0 .or.
-     &          (gcode.eq.0 .and. instring(1:6).ne.'ENDTAB')) then
-                if (gcode.eq.2) then
-                  call getlay(ilay,itrc)
-                  if (ilay .gt. 0) laycolour(ilay) = 1
-                elseif (gcode.eq.62) then
-                  if (ilay .gt. 0) laycolour(ilay) = abs(innum)
-                elseif (gcode .eq. 70) then
-                  if (ilay .gt. 0) layflag(ilay) = innum
-                endif
-                call readgc(itrc)
-                goto 9009
-              endif
-            else
-              read(ioin,'(A)') instring
-              lineno = lineno + 1
-              goto  9008
-            endif
-            call readgc(itrc)
-            goto  9008
-          endif
-          if(itrc.gt.0)call edisp(iuout, ' Tables processed....')
-
-C Transform information into esp-r common blocks. Begin by looping
-C though known layers, skipping layer `0` and `1`.  But if there are
-C only two layers and they are '0' and '1' then we have no named
-C layers so warn the user and advise that layer zero data will be
-C placed in a zone named First.
-          if(oformat(1:3).eq.'esp')then
-            if(numlay.eq.1)then
-              if(dxflayname(1)(1:1).eq.'0')then
-                call edisp(iuout,
-     & 'DXF file has no named layers. Dumping layer 0 into zone First')
-
-C Assuming a single esp-r zone so create file names etc.
-                NCOMP=NCOMP+1
-                write(ZN,'(a)') 'First'
-                ln =lnblnk(ZN)
-                if(itrc.gt.0)then
-                  write(outs,'(a,i2,2a)') 'Creating new zone ',
-     &              NCOMP,' named ',zn
-                  call edisp(iuout,outs)
-                endif
-                NCCODE(NCOMP)=NCOMP
-                write(zname(NCOMP),'(a)') ZN
-                lnzname(NCOMP)=lnblnk(ZN)
-                if(zonepth(1:2).eq.'  '.or.zonepth(1:2).eq.'./')then
-                  write(lf,'(a,a4)') ZN(1:ln),'.geo'
-                else
-                  write(lf,'(a,a1,a,a4)') zonepth(1:lnblnk(zonepth)),
-     &              fs,ZN(1:ln),'.geo'
-                endif
-                LGEOM(NCOMP)=lf
-                goto 46    ! jump to next step
-              endif
-            endif
-            do 45 i=1,numlay
-              ll=lnblnk(dxflayname(i))
-              if(dxflayname(i)(1:ll).ne.'0'.and.
-     &           dxflayname(i)(1:ll).ne.'1')then
-                call matchl(i,head,RZNAME,match,im)
-                if(.NOT.match)then
-
-C Found a new zone so create file names etc.
-                  NCOMP=NCOMP+1
-                  ln = min0(12,lnblnk(RZNAME))
-                  write(ZN,'(a)') RZNAME(1:ln)
-                  if(itrc.gt.0)then
-                    write(outs,'(a,i2,2a)') 'Creating new zone ',
-     &                NCOMP,' named ',zn
-                    call edisp(iuout,outs)
-                  endif
-                  NCCODE(NCOMP)=NCOMP
-                  write(zname(NCOMP),'(a)') ZN
-                  lnzname(NCOMP)=lnblnk(ZN)
-                  if(zonepth(1:2).eq.'  '.or.zonepth(1:2).eq.'./')then
-                    write(lf,'(a,a4)') ZN(1:ln),'.geo'
-                  else
-                    write(lf,'(a,a1,a,a4)') zonepth(1:lnblnk(zonepth)),
-     &                fs,ZN(1:ln),'.geo'
-                  endif
-                  LGEOM(NCOMP)=lf
-                else
-
-C Found subset of an existing zone.  If an obstructions
-C layer (starts with OBS_) then create a zone obs file. Add path
-C for zone files.
-
-C << need to update to work with v1.1 geometry files with embedded
-C << obstructions
-                  if(head.eq.'OBS_')then
-                    if(IOBS(im).eq.0)then
-                      IOBS(im)=1
-                      if(zonepth(1:2).eq.'  '.or.
-     &                   zonepth(1:2).eq.'./')then
-                        write(lf,'(a,a4)') 
-     &                    zname(im)(1:lnzname(im)),'.obs'
-                      else
-                        write(lf,'(a,a1,a,a4)') 
-     &                    zonepth(1:lnblnk(zonepth)),fs,
-     &                    zname(im)(1:lnzname(im)),'.obs'
-                      endif
-                      ZOBS(im)=lf
-                      if(itrc.gt.0)then
-                        write(outs,'(2a)')'Creating obstructions for ',
-     &                    zname(im)(1:lnzname(im))
-                        call edisp(iuout,outs)
-                      endif
-                    endif
-                  endif
-                endif
-              endif
-  45        continue
-
-C If obstruction layers (names beginning with "OBS_" use
-C ichartobs and chartobs to hold data. Reset ichartobs.
-
-C Continue with configuration file.
-  46        write(ioout,'(I7,a)')ncomp,'  # no of zones'
-
-C Write zone information to configuration file depending on format.
-C Knowing zones, create other zone files.
-            do 44 k2=1,ncomp
-              if(icfgv.lt.3)then
-                call usrmsg('Configuration file is an old format. ',
-     &            'skipping read... ','W')
-                stop 'ecnv aborted.'
-              elseif(icfgv.eq.3.or.icfgv.eq.4)then
-                WRITE(ioout,'(A,I3,A,A)',IOSTAT=IOS,ERR=2)
-     &            '*zon ',NCCODE(k2),'   # reference for ',zname(k2)
-                WRITE(ioout,'(A,A,A)',IOSTAT=IOS,ERR=2)
-     &            '*opr ',LPROJ(k2)(:LNBLNK(LPROJ(k2))),'  # schedules'
-                WRITE(ioout,'(A,A,A)',IOSTAT=IOS,ERR=2)
-     &            '*geo ',LGEOM(k2)(:lnblnk(LGEOM(k2))),'  # geometry'
-                WRITE(ioout,'(A,A,A)',IOSTAT=IOS,ERR=2)
-     &            '*con ',LTHRM(k2)(:LNBLNK(LTHRM(k2))),
-     &            '  # construction'
-                if(IOBS(k2).eq.1)then
-                  WRITE(ioout,'(a,a)',IOSTAT=IOS,ERR=2)'*obs ',
-     &              ZOBS(k2)(1:lnblnk(ZOBS(k2)))
-                endif
-                WRITE(ioout,'(A)',IOSTAT=IOS,ERR=2)'*zend '
-              endif
-  44        continue
-          elseif(oformat(1:5).eq.'click')then
-
-C << ?? >>
-          endif
-        elseif (instring(1:4).eq.'BLOC') then
-
-C << ? block treatment with esp-r? >>
-          call block(itrc)
-        elseif (instring(1:4).eq.'ENTI') then
-
-C ENTITY section.
-C << ? entity treatment with esp-r? >>
-          entelev=dfltelev        
-          entthick=dfltthick        
-          xscale=1.      
-          yscale=1.       
-          zscale=1.    
-          rotangl=0.
-      
-          if(itrc.gt.1) call edisp(iuout,' ')
-          if(itrc.gt.0)call edisp(iuout, ' Entities processing...')
-          blkxorg=0.0
-          blkyorg=0.0
-          blkzorg=0.0
-          currlay = 0
-          currcol = 1
-          call readgc(itrc)
- 91       if (instring(1:6).ne.'ENDSEC'.and. instring(1:6).ne.
-     &                         'ENDBLK') then
-            entelev=dfltelev        
-            entthick=dfltthick        
-            if (gcode.eq.0.and.instring(1:4).eq.'LINE') then
-
-C Take in 2D lines, if extruded then make into surfaces.
-              call genlin(itrc)
-            elseif (gcode.eq.0.and.instring(1:3).eq.'ARC') then
-              call genarc(itrc)
-            elseif (gcode.eq.0.and.instring(1:5).eq.'POINT') then
-              if(itrc.gt.1)call edisp(iuout, ' skipping POINT ')
-            elseif (instring(1:5).eq.'TRACE') then        
-              if(itrc.gt.1)call edisp(iuout, ' skipping TRACE ')
-            elseif (instring(1:5).eq.'SOLID') then        
-              if(itrc.gt.1)call edisp(iuout, ' skipping SOLID ')
-            elseif(instring(1:6).eq.'INSERT') then        
-              call insert(itrc)        
-            elseif (instring(1:5).eq.'CIRCL') then        
-              if(itrc.gt.1)call edisp(iuout, ' skipping CIRCLE ')
-              call gencrl(itrc)
-            elseif (instring(1:5).eq.'POLYL') then
-              call genplin(itrc)
-            elseif (instring(1:7).eq.'LWPOLYL') then
-              call genlwplin(itrc)
-            elseif (instring(1:6).eq.'3DFACE') then
-              call face3d(itrc)
-            elseif (instring(1:6).eq.'3DLINE') then
-
-C << is there some use for the points associated with a 3dline? >>
-              if(itrc.gt.0)call edisp(iuout,' skipping single line ')
-            elseif (instring(1:4).eq.'TEXT') then 
-              if(itrc.gt.1)call edisp(iuout, ' skipping text ')
-              call gentext(itrc)
-            elseif (gcode.eq.8) then
-              call getlay(currlay,itrc)
-              call readgc(itrc)
-            elseif (gcode.eq.39) then
-              entthick = realin
-              call readgc(itrc)
-            elseif (gcode.eq.62) then
-             currcol = innum
-             call readgc(itrc)
-            else
-             call readgc(itrc)
-            endif
-            goto  91
-          endif
-          if(itrc.gt.0)call edisp(iuout, ' Entities processed....')
-        endif
-        goto  9007
-      endif
-
-C  Write the picture name in .vew file
-      if(oformat(1:6).eq.'viewer')then
-        leng=lnblnk(filname2)                
-        write(ioout,'(a)') 'NAM'
-        write(ioout,'(a,a1,a)') 'AutoCAD',fs,filname2(1:(leng))        
-        write(ioout,'(a)') 'END'
-        call edisp(iuout, ' ')
-        call edisp(iuout, 'ecnv conversion is complete.')
-        write(outs,'(2a)') 'dxf2v_finished ',filname2(1:leng)
-        call edisp248(iuout,outs,100)
-
-C Close the files, remove temporary files if not to be kept.
-        close(ioout)
-        if(itmprm.eq.1)then
-          INQUIRE(ioblk,OPENED=OPND)
-          IF(OPND)CLOSE(ioblk,STATUS='DELETE')
-        else
-          INQUIRE(ioblk,OPENED=OPND)
-          IF(OPND)close(ioblk)
-        endif
-      elseif(oformat(1:5).eq.'click')then
-
-C Final processing of click arrays happens in calling code.
-        call edisp(iuout,' End of conversion.')
-        return
-
-      elseif(oformat(1:3).eq.'esp')then
-
-C Generate the zone geometry and any obstruction files. These
-C facilities require that IC1 IE1 ICT IC2 IE2 and IZSTOCN are
-C up to date. Start over and assume everything faces an
-C unknown boundary.  Actually in the low and mid level code
-C scanning the DXF file the values of izstocn and ncon have 
-C been updated. This start-again block of code is for safety.
-        NCON=0
-        icc=0
-        do 57 iv=1,ncomp
-          do 58 icz=1,nzsur(iv)
-            icc=icc+1
-            ncon=ncon+1
-            IC1(icc)=iv
-            IE1(icc)=icz
-            ICT(icc)=-1
-            IC2(icc)=0
-            IE2(icc)=0
-            IZSTOCN(IC1(icc),IE1(icc))=icc
-   58     continue
-   
-C Use the local wegeom to write out a old style of esp-r
-C geometry file based on the information available. After
-C writing close iotmp2 so that it can be used for the
-C connections file.
-
-C << need an alternative to wegeom for version 1.1 >>
-          if(itrc.gt.0)then
-            WRITE(outs,'(A,I3,A,A)',IOSTAT=IOS,ERR=2)
-     &        'Writing zone ',NCCODE(iv),' named ',zname(iv)
-            call edisp248(iuout,outs,100)
-	  endif
-          lf=LGEOM(iv)
-          ivv=iv
-          call wegeom(iotmp2,ivv,lf,ier)
-          close(iotmp2)
-
-C Create a dummy obstruction file for zone. Loop through the
-C character arry chartobs and scan for blocks matching the
-C curret zone name.
-C << what about newer obstruction forms ? >>
-          if(IOBS(ivv).eq.1)then
-            nbobs(ivv)=0
-            do 142 iloop=1,ichartobs
-              read(chartobs(iloop),*)ZN,TXO,TYO,TZO,TDX,TDY,TDZ,TBANG
-              if(ZN(1:lnblnk(ZN)).eq.zname(ivv)(1:lnzname(ivv)))then
-                nbobs(ivv)=nbobs(ivv)+1
-                nbo=nbobs(ivv)
-                XOB(ivv,nbo)=TXO
-                YOB(ivv,nbo)=TYO
-                ZOB(ivv,nbo)=TZO
-                DXOB(ivv,nbo)=TDX
-                DYOB(ivv,nbo)=TDY
-                DZOB(ivv,nbo)=TDZ
-                BANGOB(ivv,nbo,1)=TBANG
-                BANGOB(ivv,nbo,2)=0.0
-                BANGOB(ivv,nbo,3)=0.0
-                BLOCKTYP(ivv,nbo)='obs '
-                write(BLOCKNAME(ivv,nbo),'(a,i2.2)') 'dxf',iloop
-              endif
- 142        continue
- 
-C << NOTE: if we switch over to the new geometry format there is no
-C << need for a separate obstructions file
- 
-            CALL EFOPSEQ(iotmp2,ZOBS(ivv),3,IER)
-            write(iotmp2,'(a,a)')
-     &        '# DUMMY site obstruction file defined in ',
-     &        ZOBS(ivv)(1:lnblnk(ZOBS(ivv)))
-            write(iotmp2,'(a,a)')'# associated with zone geom file ',
-     &        LGEOM(ivv)(1:lnblnk(LGEOM(ivv)))
-            write(iotmp2,'(a)')' 0.0  0.0  # dummy valuse'
-            write(iotmp2,'(I4,a)') nbobs(ivv),
-     &        '     # no obstruction blocks'
-            write(iotmp2,'(a)')
-     &       '# origin  X   Y   Z   width  depth  height  angle  descr'
-            do 144 ibx=1,nbobs(ivv)
-              write(iotmp2,'(7f9.4,3a)')XOB(ivv,ibx),YOB(ivv,ibx),
-     &          ZOB(ivv,ibx),DXOB(ivv,ibx),DYOB(ivv,ibx),
-     &          DZOB(ivv,ibx),BANGOB(ivv,ibx,1),' ',
-     &          BLOCKNAME(ivv,ibx),' # block '
- 144        continue
-            write(iotmp2,'(a)')'# grid opq X opq Z win X win Z'
-            write(iotmp2,'(a)')'    20    20     5     5'
-            close(iotmp2)
-          endif
-  57    continue
-
-C Write out the connections (assuming everything exterior). Check to see
-C that LCNN is something other than UNKNOWN.
-        if(LCNN(1:7).eq.'UNKNOWN')then
-          write(LCNN,'(2a)') cfgroot(1:lnblnk(cfgroot)),'.cnn'
-        endif
-        if(icfgv.eq.3.or.icfgv.eq.4)then
-          WRITE(ioout,'(A,A,A)',IOSTAT=IOS,ERR=2)
-     &        '*cnn  ',LCNN(1:lnblnk(LCNN)),'  # connections '
-          CALL EFOPSEQ(iotmp2,LCNN,3,IER)
-          WRITE(iotmp2,'(A,A)',IOSTAT=IOS,ERR=2) '*connections  for ',
-     &      cfgroot(1:lnblnk(cfgroot))
-          call dstamp(dstmp)
-          WRITE(iotmp2,'(A,A)',IOSTAT=IOS,ERR=3) '*Date ',dstmp
-          WRITE(iotmp2,'(I7,A)',IOSTAT=IOS,ERR=2)
-     &        NCON,'   # number of connections'
-        endif
-        do 61 iv=1,ncomp
-          do 66 is=1,NZSUR(iv)
-            write(iotmp2,'(2i4,a)')iv,is,'  -1   0   0'
-  66      continue
-  61    continue
-        write(ioout,'(a)')'      0   # no mass flow analysis'
-        if(icfgv.eq.3.or.icfgv.eq.4)close(iotmp2)
-        close(ioout)
-
-        if(itmprm.eq.1)then
-          INQUIRE(ioblk,OPENED=OPND)
-          IF(OPND)CLOSE(ioblk,STATUS='DELETE')
-        else
-          INQUIRE(ioblk,OPENED=OPND)
-          IF(OPND)close(ioblk)
-        endif
-      endif
-
-C Dump out layer names and equivalent number.
-      leng=lnblnk(filname)                
-      write(filname2,'(2a)')filname(1:leng),'.lay'        
-      open(ioout,file=filname2,status='UNKNOWN', err=901)
-      write(ioout,'(a,a)') 'Layer names used in the file : ',
-     &      filname1(1:lnblnk(filname1))
-      write(ioout,'(a)') 'Number  Name       Default Colour'
-      do 10 i = 1,numlay
-        if (laycolour(i) .gt. 0) then
-          write(ioout,'(a,i3,3a,i3)') '*layer',i,' ',
-     &      dxflayname(i)(1:lnblnk(dxflayname(i))),' ',laycolour(i)
-        else
-          write(ioout,'(a,i3,3a)') '*layer',i,' ',
-     &      dxflayname(i)(1:lnblnk(dxflayname(i))),' - '
-        endif
- 10   continue
-      close(ioout)
-      call edisp(iuout,' End of conversion.')
-
-      return
-
- 901  write(outs,'(2a)') 'Error opening "NEW" file :',
-     &     filname2(:lnblnk(filname2))
-      call edisp248(iuout,outs,100)
-      goto 999
-
-    2 CALL edisp(iuout,' Problem writing config data config...')
-      close(ioout)
-      goto 999
-
-    3 CALL edisp(iuout,' Problem writing configuration name...')
-      close(ioout)
-      goto 999
-
- 999  stop 'ecnv aborted.'
-      end
 
 C ******** block
 c BLOCK processes the block definitions in .dxf file
-c of Autocad and fills chartblk array for later use by
-c 'INSERT' command.
+c of Autocad and create a /tmp/blockdxf2e file for later
+c 'INSERT' command use.
+
+C << NOTE: for some computer types there will not be >>
+C << a /tmp folder so work out a different approach >>
       subroutine block(itrc)
-#include "dxfdata.h"
       
       integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
-
-      real elevlast,thicklast
-      integer polylinflag
+      integer gcode,innum,ioin,ioout,ioblk,polylinflag,flagins
+      integer currlay, currcol, oldlay, oldcol
+      common/trn/xscale,yscale,zscale,rotangl,basex,lineno,minseg,
+     & basey, xincr,yincr,zincr,basez,elev,thick,dfltelev,dfltthick
+      common/rd/gcode,instring,innum,realin,coorx,coory,coorz,
+     &           blkxorg,blkyorg,blkzorg
+      common/fg/flag3d,flagins,radians,dxfconv
+      common/io/ioin,ioout,ioblk,iosblk,iotobs
       common/vex/elevlast,thicklast,polylinflag
-
-      integer indxzon
-      character oformat*24,head*4
+      common/attrs/ currlay, currcol, oldlay, oldcol
       common/dxfe/oformat,indxzon,head
 
-      character bname*72,chr*1
-      character RZNAME*24,outs*124
+      character bname*72,pbname*72,chr*1,instring*72
+      character oformat*24,RZNAME*24,head*4,outs*124
       logical skip,reset,match,close
 
       reset = .false.
 
-C Place info in the chartblk array.
+C Place a temporary file in the users home folder with name based
+C on the current process number. << >>
       if(itrc.gt.0)call edisp(iuout,' Processing BLOCK section...')
-      ichartblk = 0  ! reset position of array
+      write(pbname,'(a)') '/tmp/blockdxf2e'
+      open(ioblk,file=pbname,status='UNKNOWN')
 
-C The string array chartblk will be used. If the mm>>metre
-C conversion is on then disable it while writing.
+C The temporary block file (blockdxf2e) will be read in again,
+C if the mm>>metre conversion is on then disable it while writing.
       call eclose(dxfconv,1.0,0.001,close)
       if(.NOT.close)then
         reset = .true.
@@ -626,19 +103,10 @@ C Remove possible leading * from block name.
             bname(1:(leng-1))=bname(2:leng)
             leng=leng-1
           endif
-
-C << we may need to inform lower level calls e.g. solid
-C << that this is being done from within the block section
-C << some current dwg files have lots of block definitions
-C << should these data be dulplicated in the string arrays
-C << as well as in the dxf arrays?
              
 C There are certain block types that can be ignored:
 C aecid.vew, border.vew, ddi.vew, for these look until
 C `ENDBLK` found.
-
-C << consider adding to this list >>
-
           skip=.false.
           if(bname(1:9).eq.'aecid.vew')then
             skip=.true.
@@ -665,14 +133,13 @@ C << consider adding to this list >>
             goto 91
           endif
 
-C Being a block definition place it in the local array chartblk.
+C Being a block definition place it in the local folder.
 C Note the gcode=10 reads in the x & y block origin
-          ichartblk=ichartblk+1
-          write(chartblk(ichartblk),'(a,a)') '*blk ',bname(1:leng)
+          write(ioblk,'(a,a)') '*blk ',bname(1:leng)
         elseif (gcode.eq.10) then
           blkxorg=coorx
           blkyorg=coory
-          blkzorg=entelev
+          blkzorg=elev
         elseif (gcode.eq.30) then
           blkzorg=realin
         elseif (gcode.eq.38) then
@@ -684,20 +151,15 @@ C Note the gcode=10 reads in the x & y block origin
         call readgc(itrc)
         goto  9001
       endif
-
-C Increment ichartblk and write chartblk array
-      ichartblk=ichartblk+1
-      write(chartblk(ichartblk),'(a)') 'BLOCK BASE '
-      ichartblk=ichartblk+1
-      write(chartblk(ichartblk),*) blkxorg,blkyorg,blkzorg
+      write(ioblk,'(a)') 'BLOCK BASE '
+      write(ioblk,*) blkxorg,blkyorg,blkzorg
       
-C If the input string is something other than ENDBLK then
+C If the input string is something other then ENDBLK then
 C parse the set of commands that can be used. Skip those
-C that we cannot use (CIRCLE, POINT, TEXT). Work under
-C way to use SOLID
+C that we cannot use.
  9003 if (instring(1:6).ne.'ENDBLK')then
-        entelev=dfltelev
-        entthick = dfltthick
+        elev=dfltelev
+        thick = dfltthick
         if (instring(1:5).eq.'TRACE') then
           if(itrc.gt.0)then
             write(outs,'(a,a)') ' skipping TRACE:',bname(1:leng)
@@ -708,15 +170,12 @@ C way to use SOLID
         elseif (instring(1:3).eq.'ARC') then
           call genarc(itrc)
         elseif (instring(1:5).eq.'SOLID') then
-          call solid(itrc)   ! solid is work in progress
-C          if(itrc.gt.0)then
-
-C << could click have a use for solid - yes >>
-C            write(outs,'(a,a)') ' skipping SOLID:',bname(1:leng)
-C            call edisp(iuout,outs)
-C          endif
-C          call readgc(itrc)
-C          goto  9003
+          if(itrc.gt.0)then
+            write(outs,'(a,a)') ' skipping SOLID:',bname(1:leng)
+            call edisp(iuout,outs)
+          endif
+          call readgc(itrc)
+          goto  9003
         elseif (instring(1:6).eq.'CIRCLE') then
 
 C Circles are not delt with, but need to skip lines.
@@ -739,8 +198,6 @@ C Circles are not delt with, but need to skip lines.
         elseif (instring(1:5).eq.'3DFAC') then
           call face3d(itrc)
         elseif (instring(1:5).eq.'3DLIN') then 
-
-C << can we do something with 3DLIN? >>
           if(itrc.gt.0)then
             write(outs,'(a,a)') ' skipping line:',bname(1:leng)
             call edisp(iuout,outs)
@@ -754,27 +211,24 @@ C Text is not delt with, but need to skip lines.
           endif
           call gentext(itrc)
         elseif (gcode.eq.8) then
-          call getlay(currlay,itrc)   ! layer name
+          call getlay(currlay,itrc)
           call matchl(currlay,head,RZNAME,match,im)
           if(match)indxzon=im
           call readgc(itrc)
         elseif (gcode.eq.62) then
-          currcol = innum   ! the colour index
+          currcol = innum
           call readgc(itrc)
         else
           call readgc(itrc)
         endif
         goto  9003
       endif
-
-C Increment ichartblk and write to chartblk.
-      ichartblk=ichartblk+1
-      write(chartblk(ichartblk),'(a,a)') '*end ',bname(1:leng)
+      write(ioblk,'(a,a)') '*end ',bname(1:leng)
       goto 10
 
 C Finished the block file, close it.
  100  if(itrc.gt.0)call edisp(iuout,' Block section processed...')
-      ichartblk=0  ! rewind array position
+      close(ioblk)
 
       flagins=0
       dfltelev = elevlast
@@ -788,237 +242,55 @@ C Reset conversion if necessary.
       return
       end
 
-
-C ********** extrblk
-C extrblk extracts block information related to an
-C INCLUDE command in a dxf file. bn is the block name
-C being searched for in chartblk array.
-C xp,yp,zp are where to apply the block,
-C xsca,ysc,zsc are the scaling factors, rot is the rotation angle.
-      subroutine extrblk(itrc,bn,xp,yp,zp,xsc,ysc,zsc,rot,ier)
-#include "dxfdata.h"
-      
-      integer lnblnk  ! function definition
-
-      COMMON/OUTIN/IUOUT,IUIN
-      integer ioin,ioout,ioblk
-      common/io/ioin,ioout,ioblk
-
-      integer indxzon
-      character oformat*24,head*4
-      common/dxfe/oformat,indxzon,head
-
-C Use ichartblk and chartblk as a scratch area for blocks
-      character bn*72,instr*72,ckstr*85,endstr*85
-      character outs*124
-      
-      PI = 4.0 * ATAN(1.0)
-      RAD = PI/180.
-
-C Scan for the block name:  "*blk ????" start and end, make up
-C local strings for comparison.
-      write(ckstr,'(a,a)')  '*blk ',bn(1:lnblnk(bn))
-      write(endstr,'(a,a)') '*end ',bn(1:lnblnk(bn))
-      lc=lnblnk(instr)+5
-
-C Read from the string array chartblk.
-      if(ichartblk.eq.0) ichartblk=1  ! if zero reset to one
- 10   read(chartblk(ichartblk),'(a)',end=500,err=600) instr
-      l=lnblnk(instr)
-      if(instr(1:l).eq.ckstr(1:lc))then
-
-C Found start of block.
-        if(itrc.gt.0)then
-          write(outs,'(a,a)') 'found ',bn(1:lnblnk(bn))
-          call edisp(iuout,outs)
-        endif
-
-C Increment ichartblk and read chartblk array.
- 12     ichartblk=ichartblk+1
-        read(chartblk(ichartblk),'(a)',end=500,err=600) instr
-        l=lnblnk(instr)
-        if(instr(1:10).eq.'BLOCK BASE')then
-
-C Read the block base origin.
-C Increment ichartblk and read chartblk array
-          ichartblk=ichartblk+1
-          read(chartblk(ichartblk),*,end=500,err=600) blkxorg,blkyorg,
-     &      blkzorg
-          if(itrc.gt.0)then
-            write(outs,*) 'b base = ',blkxorg,blkyorg,blkzorg,
-     &               ' place at ',xp,yp,zp
-            call edisp(iuout,outs)
-            write(outs,*) 'scale by ',xsc,ysc,zsc,' rotate ',rot
-            call edisp(iuout,outs)
-          endif
-          goto 12
-        elseif(instr(1:3).eq.'LAY')then
-
-C Skip past the layer index and read again.
-C Increment ichartblk and read chartblk array
-          ichartblk=ichartblk+1
-          read(chartblk(ichartblk),*,end=500,err=600) ilayer
-          if(oformat(1:6).eq.'viewer')then
-            write(ioout,'(a)') 'LAY'
-            write(ioout,'(i3)') ilayer
-          elseif(oformat(1:5).eq.'click')then
-
-C << ?? >>
-
-          endif
-          goto 12
-        elseif(instr(1:3).eq.'COL')then
-
-C Skip past the colour and read again.
-
-C << could colour be used to signal composition? >>
-          ichartblk=ichartblk+1
-          read(chartblk(ichartblk),*,end=500,err=600) icolour
-          if(oformat(1:6).eq.'viewer')then
-            write(ioout,'(a)') 'COL'
-            write(ioout,'(i3)') icolour
-          elseif(oformat(1:5).eq.'click')then
-
-C << ?? >>
-          endif
-          goto 12
-        elseif(instr(1:3).eq.'PLA')then
-
-C Found a plane, see how many vertices.
-          ichartblk=ichartblk+1
-          read(chartblk(ichartblk),*,end=500,err=600) ivert
-          if(oformat(1:6).eq.'viewer')then
-            write(ioout,'(a,2x,a)') instr(1:l),bn(1:lnblnk(bn))
-            write(ioout,'(i3)') ivert
-          elseif(oformat(1:5).eq.'click')then
-
-C << ?? >>
-          endif
-          if(ivert.gt.0)then
-            do 42 iv=1,ivert
-
-C Get coords.
-              ichartblk=ichartblk+1
-              read(chartblk(ichartblk),*,end=500,err=600) X0,Y0,Z0
-              if(itrc.gt.1)then
-                write(outs,'(a,3f12.5)') 'vert orig ',X0,Y0,Z0
-                call edisp(iuout,outs)
-              endif
-
-C Scale & (block) Origin displacement.
-              X0=(X0-blkxorg)*xsc
-              Y0=(Y0-blkyorg)*ysc
-              Z0=(Z0-blkzorg)*zsc
-
-C Rotate about Z axis.
-              if(rot.gt.0.0.or.rot.lt.0.0)then
-                cosZ=cos(RAD*rot)
-                sinZ=sin(RAD*rot)
-                Xn=(X0-blkxorg)*cosZ-(Y0-blkyorg)*sinZ
-                Yn=(X0-blkxorg)*sinZ+(Y0-blkyorg)*cosZ
-                X0=Xn
-                Y0=Yn
-              endif
-C Translate by
-              X0=X0+xp
-              Y0=Y0+yp
-              Z0=Z0+zp
-              if(itrc.gt.1)then
-                write(outs,'(a,3f8.3,a,f8.3,a,3f8.3)') 
-     &            'scald ',xsc,ysc,zsc,' rot ',rot,
-     &            ' trand ',xp,yp,zp
-                call edisp(iuout,outs)
-              endif
-
-C Convert from mm to metres if requrired, write to file and tell user.
-              X0=X0*dxfconv
-              Y0=Y0*dxfconv
-              Z0=Z0*dxfconv
-              if(itrc.gt.1)then
-                write(outs,'(a,3f12.4)') ' new vert ',X0,Y0,Z0
-                call edisp(iuout,outs)
-                call edisp(iuout,'  ')
-              endif
-              if(oformat(1:6).eq.'viewer')then
-                write(ioout,'(3f12.4)') X0,Y0,Z0
-              elseif(oformat(1:5).eq.'click')then
-
-C << ?? >>
-              endif
-  42        continue
-          endif
-          goto 12
-        elseif(instr(1:l).eq.endstr(1:lc))then
-          rewind(ioblk,ERR=999)   ! will not need
-          return
-        endif
-      elseif(instr(1:l).eq.endstr(1:lc))then
-
-C End of block information, see about processing vertices.
-C Make sure to rewind the file.
-        ichartblk=0  ! reset array
-        return
-      else
-        goto 10
-      endif
-
-  22  return
-
- 500  if(itrc.gt.0)then
-        write(outs,'(a)') 'end of block file found... '
-        call edisp(iuout,outs)
-        call edisp(iuout,instr)
-      endif
-      ichartblk=0  ! reset array
-      goto 22
-
- 600  call edisp(iuout,'error reading block file... ')
-      ier=1
-      goto 22
-
- 999  call edisp(iuout,'error rewinding file ')
-      ier=1
-      goto 22
-      end
-
 C ******** insert
 C Subroutine insert processes the 'INSERT' command in .dxf file and
 C translates it into 'FIL' command for .vew file of viewer.
 C Note: all the insert files are assumed to be in local folder.
       subroutine insert(itrc) 
-#include "dxfdata.h"
       
       integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
-
-      integer ioin,ioout,ioblk
-      common/io/ioin,ioout,ioblk
+      integer gcode,innum,ioin,ioout,ioblk,flagins
+      integer currlay, currcol, oldlay, oldcol
+      common/trn/xscale,yscale,zscale,rotangl,basex,lineno,minseg,
+     & basey, xincr,yincr,zincr,basez,elev,thick,dfltelev,dfltthick
+      common/rd/gcode,instring,innum,realin,coorx,coory,coorz,
+     &           blkxorg,blkyorg,blkzorg
+      common/fg/flag3d,flagins,radians,dxfconv
+      common/io/ioin,ioout,ioblk,iosblk,iotobs
+      common/attrs/ currlay, currcol, oldlay, oldcol
       common/matrix/ amat(3,3), xnorm, ynorm, znorm
-
-      integer indxzon
-      character oformat*24,head*4
       common/dxfe/oformat,indxzon,head
-
-      character bname*72,chr*1
-      character RZNAME*24,outs*124
+               
+      character bname*72,pbname*72,chr*1,instring*72,scratch*72
+      character oformat*24,head*4,RZNAME*24,outs*124
       logical skip,match
 
-      xscale=1.0; yscale=1.0; zscale=1.0; rotangl=0.0
-      nrow=1; ncolumn=1
-      rdisp=0.0
+      xscale=1.
+      yscale=1.
+      zscale=1.
+      rotangl=0.
+      nrow=1
+      ncolumn=1
+      rdisp=0.
       cdisp=0
-      zrot=0.0
+      zrot=0.
       iucs = 0
-      xucs = 0.0; yucs = 0.0; zucs = 0.0
-      xrot = 0.0; yrot = 0.0
+      xucs = 0.0
+      yucs = 0.0
+      zucs = 0.0
+      xrot = 0.0
+      yrot = 0.0
       delta = 0.015625
 
-      xnorm = 0.0; ynorm = 0.0; znorm = 1.0
+      xnorm = 0.0
+      ynorm = 0.0
+      znorm = 1.0
       call initmatrix
 
 C Read an entity from DXF file. Depending on the value of gcode
-C process the entity type until gcode is zero.
+C process the entity type.
       call readgc(itrc)
  9001 if (gcode.ne.0)then
         if (gcode.eq.8) then
@@ -1050,13 +322,13 @@ C Found the block name, read `instance` information.
         elseif (gcode.eq.10) then
           dx=coorx
           dy=coory
-          dz=entelev
+          dz=elev
         elseif (gcode.eq.30) then
           dz=realin
         elseif (gcode.eq.38) then
-          entelev=realin
+          elev=realin
         elseif (gcode.eq.39) then
-          entthick=realin
+          thick=realin
         elseif (gcode.eq.41) then
           xscale=realin
         elseif (gcode.eq.42) then
@@ -1112,7 +384,20 @@ C If one of the blocks we know we can skip then do so.
       x=dx
       coorz=dz
 
-C All imported block definition files come from array chartblk.
+C All imported block definition files come from (blockdxf2e) and a
+C scratch file (block_scratch) for reporting translations.
+
+C << NOTE: to be done >>
+C << there will not be a /tmp folder on Native Windows >>
+C << find another place to put this temporary file >>
+
+      write(pbname,'(a)') '/tmp/blockdxf2e'
+      write(scratch,'(a)') '/tmp/block_scratch'
+      open(ioblk,file=pbname,status='UNKNOWN')
+      if(itrc.gt.0)then
+        open(iosblk,file=scratch,status='UNKNOWN')
+      endif
+
       if (iucs .eq. 1) then
         if (abs(xucs) .lt. delta) then
           xrot = 90.0
@@ -1134,9 +419,6 @@ C << Note: zrot not defined >>
             elseif(oformat(1:3).eq.'esp')then
               if(bname(1:11).eq.'obstruction')then
               endif
-            elseif(oformat(1:5).eq.'click')then
-
-C << ?? >>
             endif
             y=y+rdisp
  7006     continue
@@ -1152,8 +434,6 @@ C in and converted.
             if(oformat(1:6).eq.'viewer')then
               write(ioout,'(a)') 'COMMENT'
               write(ioout,'(a)') bname(1:lnblnk(bname))
-            elseif(oformat(1:5).eq.'click')then
-C << ?? >>
             endif
             if(itrc.gt.0)then
               write(outs,'(a,a)') ' importing ',bname(1:lnblnk(bname))
@@ -1162,36 +442,17 @@ C << ?? >>
             coorx=x
             coory=y
             if(oformat(1:3).eq.'esp')then
-
-C This assumes that obstructions are in blocks named obstruction
-C and the data is written to an array of strings for later scanning.
-
-C << extend to include additional rotations and
-C << tilts and opacity and ??
-
               if(bname(1:11).eq.'obstruction')then
                 call extrblk(itrc,bname,coorx,coory,coorz,
      &                     xscale,yscale,zscale,rotangl,ier)
-                if(ichartobs+1.lt.500)then
-
-C Write the next character array with coordinates.
-                  ichartobs=ichartobs+1
-                  write(chartobs(ichartobs),'(a12,2x,7f9.4)')
-     &              RZNAME(1:12),coorx*dxfconv,
-     &              coory*dxfconv,coorz*dxfconv,xscale*dxfconv,
-     &              yscale*dxfconv,zscale*dxfconv,rotangl
-                endif
+                write(iotobs,'(a12,2x,7f9.4)')RZNAME(1:12),
+     &            coorx*dxfconv,coory*dxfconv,coorz*dxfconv,
+     &            xscale*dxfconv,yscale*dxfconv,zscale*dxfconv,rotangl
               else
-                continue
               endif
             elseif(oformat(1:6).eq.'viewer')then
               call extrblk(itrc,bname,coorx,coory,coorz,
      &                     xscale,yscale,zscale,rotangl,ier)
-            elseif(oformat(1:5).eq.'click')then
-
-C << An inserted block might be of various types such as POLYLINE >>
-C << ?? >>
-C << ?? >>
             endif
             y=y+rdisp
  7002     continue
@@ -1207,16 +468,25 @@ C  string in instring, and returns the equivalent layer number
 C  if the string is not in the current layer names list, then
 C  the name is added.
       subroutine getlay(ilay,itrc)
-#include "dxfdata.h"
 
       integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
 
-      character outs*124
+      parameter (MAXLAY = 80)
+      integer gcode,innum
+      integer currlay, currcol, oldlay, oldcol
+      common/rd/gcode,instring,innum,realin,coorx,coory,coorz,
+     &           blkxorg,blkyorg,blkzorg
+      common/attrs/ currlay, currcol, oldlay, oldcol
+      common/layers/ layname(MAXLAY), numlay, laycolour(MAXLAY),
+     &       layflag(MAXLAY)
+
+      common/laytoo/ layuse(MAXLAY)
+      character layname*72,instring*72,outs*124
 
       do 100 i = 1, numlay
-        if (dxflayname(i) .eq. instring) then
+        if (layname(i) .eq. instring) then
           ilay = i
           if (laycolour(i).gt.0) currcol = laycolour(i)
           goto 999
@@ -1225,7 +495,7 @@ C  the name is added.
 
 C If this line is reached then name was not found so add it.
       numlay = numlay + 1
-      dxflayname(numlay) = instring
+      layname(numlay) = instring
       laycolour(numlay) = 0
       layflag(numlay) = 0
       ilay = numlay
@@ -1239,23 +509,24 @@ C If this line is reached then name was not found so add it.
       end
 
 C ******** WRITELC
-C writelc srites the contents of a viewer layer file.
+C Write the contents of a viewer layer file.
       subroutine writelc
-#include "dxfdata.h"
 
+      parameter (MAXLAY = 80)
       integer ioin,ioout,ioblk
-      common/io/ioin,ioout,ioblk
+      integer currlay, currcol, oldlay, oldcol
+      common/io/ioin,ioout,ioblk,iosblk,iotobs
+      common/attrs/ currlay, currcol, oldlay, oldcol
 
-      integer indxzon
-      character oformat*24,head*4
+      common/laytoo/ layuse(MAXLAY)
       common/dxfe/oformat,indxzon,head
+      character oformat*24,head*4
+
 
       if (oldlay.ne.currlay) then
         if(oformat(1:6).eq.'viewer')then
           write(ioout,'(a)') 'LAY'
           write(ioout,'(i3)') currlay
-        elseif(oformat(1:5).eq.'click')then
-C << ?? >>
         endif
         oldlay = currlay
         layuse(oldlay) = layuse(oldlay) + 1
@@ -1265,8 +536,6 @@ C << ?? >>
         if(oformat(1:6).eq.'viewer')then
           write(ioout,'(a)') 'COL'
           write(ioout,'(i3)') currcol
-        elseif(oformat(1:5).eq.'click')then
-C << ?? >>
         endif
         oldcol = currcol
       endif
@@ -1275,45 +544,43 @@ C << ?? >>
 
 C ******* genplin
 C genplin - parse a 2 or 3D polyline from information in DXF file.
-C (V12 AC1009 & V13 AC1012). itrc indicator so that debug can be 
-C done from command line.
+C itrc indicator so that debug can be done from command line.
 
       subroutine genplin(itrc)
 #include "building.h"
 #include "geometry.h"
-#include "dxfdata.h"
       parameter (MAXPNT = 100)
 
       COMMON/OUTIN/IUOUT,IUIN
       
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
-      integer IZSTOCN
       COMMON/C24/IZSTOCN(MCOM,MS)
 
-      integer polylinflag
-
-      integer ioin,ioout,ioblk
-      common/io/ioin,ioout,ioblk
+      integer gcode,innum,ioin,ioout,ioblk,polylinflag,flagins
+      integer currlay, currcol, oldlay, oldcol
+      common/trn/xscale,yscale,zscale,rotangl,basex,lineno,minseg,
+     & basey, xincr,yincr,zincr,basez,elev,thick,dfltelev,dfltthick
+      common/rd/gcode,instring,innum,realin,coorx,coory,coorz,
+     &           blkxorg,blkyorg,blkzorg
+      common/fg/flag3d,flagins,radians,dxfconv
+      common/io/ioin,ioout,ioblk,iosblk,iotobs
       common/vex/elevlast,thicklast,polylinflag
       common/arrays/xarray(MAXPNT), yarray(MAXPNT), zarray(MAXPNT),
      &       numpl
+      common/attrs/ currlay, currcol, oldlay, oldcol
       common/matrix/ amat(3,3), xnorm, ynorm, znorm
-
-      integer indxzon
-      character oformat*24,head*4
       common/dxfe/oformat,indxzon,head
-
-      character RZNAME*24
+      character instring*72,oformat*24,head*4,RZNAME*24
       logical match,close
-      integer iestart,iend
 
 C << Note, if this is being called within a block definition >>
 C << and the layer name is 0 (as it might be in microgds) then >>
 C << can ignore this and continue with the current layer info. >>
-      iestart=0; iend=0   ! clear
       numpl = 0
-      xnorm = 0.0; ynorm = 0.0; znorm = 1.0
+      xnorm = 0.
+      ynorm = 0.
+      znorm = 1.
       polylinflag = 0
       mesh = 0
       mclosed = 0
@@ -1328,17 +595,16 @@ C Find current layer and then matching zone.
           call matchl(currlay,head,RZNAME,match,im)
           if(match)indxzon=im
         elseif (gcode.eq.38) then
-          entelev=realin
+          elev=realin
         elseif (gcode.eq.39) then
           flag3d=1.0
-          entthick=realin
+          thick=realin
         elseif (gcode.eq.40) then
         elseif (gcode.eq.41) then
         elseif (gcode.eq.62) then
           currcol = innum
         elseif (gcode.eq.70) then
           polylinflag = innum
-          if(polylinflag.eq.1) nclosed = 1
 c  check the bits to see which flags are set
 c            ibset = iand(innum,1)
 c            if (ibset .gt. 0) mclosed = 1
@@ -1402,7 +668,6 @@ C << Polylines can probably be treated as surfaces >>
 
 C Add a surface to zone and update connection.
             if(head.eq.'OBS_')then
-              continue
             elseif(head.eq.'BLK_')then
               continue
             else
@@ -1414,51 +679,13 @@ C Add a surface to zone and update connection.
      &          'genplin increment esp surf list ',NCON,NZSUR(indxzon)
               endif
             endif
-          elseif(oformat(1:5).eq.'click')then
-            iestart=nbdxflines+1  ! start of edge list
           endif
           do 9006 i = istart, istart+numd-1
             coorx = xarray(i)
             coory = yarray(i)
             coorz = zarray(i)
             call putcoods(itrc)
-            if(oformat(1:5).eq.'click')then
-
-C Each call to putcoords incremented nbdxfcoords so make up the edge.
-C If we are less than numtod the edge is this coord plus the next one.
-C If last point and closed then point back to first, otherwise
-C no line is needed.
-              if(i.lt.numtod)then
-                nbdxflines=nbdxflines+1
-              elseif(i.eq.numtod.and.nclosed.eq.1)then
-                nbdxflines=nbdxflines+1
-              else
-                continue
-              endif
-              if(i.lt.numtod) idxfedge(nbdxflines,1)=nbdxfcoords
-              if(i.eq.numtod.and.nclosed.eq.1)then
-                idxfedge(nbdxflines,1)=nbdxfcoords
-              else
-                continue
-              endif
-              if(i.lt.numtod) idxfedge(nbdxflines,2)=nbdxfcoords+1
-              if(i.eq.numtod.and.nclosed.eq.1)then
-                idxfedge(nbdxflines,2)=iestart  ! point back to start
-              else
-                continue
-              endif
-              idxfedgecol(nbdxflines)=currcol
-              idxfedgelay(nbdxflines)=currlay
-            endif
  9006     continue
-          iend=nbdxflines   ! end of edge list
-          if(oformat(1:5).eq.'click')then
-            write(ioout,'(a)') '*startline  # from POLY'
-            do 9017 j = iestart,iend
-              write(ioout,'(a,i5,i5,2i4,a,i5)') '*edge',idxfedge(j,1),
-     &          idxfedge(j,2),currcol,currlay,' # ',j
- 9017       continue
-          endif
         else
 
 C Dump out the sides as planes.  If esp update connections.
@@ -1468,9 +695,7 @@ C Dump out the sides as planes.  If esp update connections.
               write(ioout,'(a)') '  4'
             elseif(oformat(1:3).eq.'esp')then
               if(head.eq.'OBS_')then
-                continue
               elseif(head.eq.'BLK_')then
-                continue
               else
                 NZSUR(indxzon) = NZSUR(indxzon) + 1
                 NCON=NCON+1
@@ -1481,54 +706,18 @@ C Dump out the sides as planes.  If esp update connections.
                 endif
               endif
             endif
-
-            iestart=0; iend=0   ! clear
-            coorx = xarray(i); coory = yarray(i); coorz = zarray(i)
+            coorx = xarray(i)
+            coory = yarray(i)
+            coorz = zarray(i)
             call putcoods(itrc)
-            iestart=nbdxfcoords  ! mark start of the edge list
-            coorz = coorz + entthick
+            coorz = coorz + thick
             call putcoods(itrc)
-            if(oformat(1:5).eq.'click')then
-
-C Each call to putcoords incremented nbdxfcoords so make up the edge.
-              nbdxflines=nbdxflines+1
-              idxfedge(nbdxflines,1)=nbdxfcoords-1
-              idxfedge(nbdxflines,2)=nbdxfcoords
-              idxfedgecol(nbdxflines)=currcol
-              idxfedgelay(nbdxflines)=currlay
-            endif
             coorx = xarray(i+1)
             coory = yarray(i+1)
             call putcoods(itrc)
-            if(oformat(1:5).eq.'click')then
-
-C Each call to putcoords incremented nbdxfcoords so make up the edge.
-              nbdxflines=nbdxflines+1
-              idxfedge(nbdxflines,1)=nbdxfcoords-1
-              idxfedge(nbdxflines,2)=nbdxfcoords
-              idxfedgecol(nbdxflines)=currcol
-              idxfedgelay(nbdxflines)=currlay
-            endif
             coorz = zarray(i+1)
             call putcoods(itrc)
-            if(oformat(1:5).eq.'click')then
-
-C Each call to putcoords incremented nbdxfcoords so make up the edge.
-              nbdxflines=nbdxflines+1
-              idxfedge(nbdxflines,1)=nbdxfcoords-1
-              idxfedge(nbdxflines,2)=nbdxfcoords
-              idxfedgecol(nbdxflines)=currcol
-              idxfedgelay(nbdxflines)=currlay
-            endif
  9007     continue
-          iend=nbdxflines   ! end of edge list
-          if(oformat(1:5).eq.'click')then
-            write(ioout,'(a)') '*startline  # from genplin'
-            do 9018 i = iestart,iend
-              write(ioout,'(a,i5,i5,2i4,a,i5)') '*edge',idxfedge(i,1),
-     &          idxfedge(i,2),currcol,currlay,' # ',nbdxflines
- 9018       continue
-          endif
         endif
         istart = istart+numd-1
         numtod = numtod - numd + 1
@@ -1541,173 +730,14 @@ C Each call to putcoords incremented nbdxfcoords so make up the edge.
       endif
  9003 if (gcode.ne.0)then
         if (gcode.eq.38) then
-          entelev=realin
+          elev=realin
         elseif (gcode.eq.39) then
-          entthick=realin
+          thick=realin
         endif
         call readgc(itrc)
         goto  9003
       endif
-      entthick = 0.0
-
-      return
-      end
-
-
-C ******* genlwplin
-C genlwplin - parse a 2D lwpolyline from information in a
-C V14 AC1014 DXF file.
-C itrc indicator so that debug can be done from command line.
-
-      subroutine genlwplin(itrc)
-#include "building.h"
-#include "geometry.h"
-#include "dxfdata.h"
-      parameter (MAXPNT = 100)
-
-      COMMON/OUTIN/IUOUT,IUIN
-      integer polylinflag
-
-      integer ioin,ioout,ioblk
-      common/io/ioin,ioout,ioblk
-      common/vex/elevlast,thicklast,polylinflag
-      common/arrays/xarray(MAXPNT), yarray(MAXPNT), zarray(MAXPNT),
-     &       numpl
-      common/matrix/ amat(3,3), xnorm, ynorm, znorm
-
-      integer indxzon
-      character oformat*24,head*4
-      common/dxfe/oformat,indxzon,head
-
-      character RZNAME*24
-      logical match,close
-      integer iestart,iend
-      integer nblwpoints
-
-C << Note, if this is being called within a block definition >>
-C << and the layer name is 0 (as it might be in microgds) then >>
-C << can ignore this and continue with the current layer info. >>
-
-      istart=1; iestart=0; iend=0   ! clear
-      numpl = 0; nblwpoints = 0 
-      xnorm = 0.0; ynorm = 0.0; znorm = 1.0
-      polylinflag = 0
-      mesh = 0
-      mclosed = 0
-      nclosed = 0
-      flag3d = 0.0
-      call readgc(itrc)
- 9001 if (gcode.ne.0)then
-        if (gcode.eq.8) then
-
-C Find current layer and then matching zone.
-          call getlay(currlay,itrc)
-          call matchl(currlay,head,RZNAME,match,im)
-          if(match)indxzon=im
-        elseif (gcode.eq.10) then
-          numpl = numpl + 1
-          xarray(numpl)=coorx  ! recover the x and y coordinate
-          yarray(numpl)=coory
-        elseif (gcode.eq.38) then
-          entelev=realin
-        elseif (gcode.eq.39) then
-          flag3d=1.0
-          entthick=realin
-        elseif (gcode.eq.40) then
-        elseif (gcode.eq.41) then
-        elseif (gcode.eq.42) then
-        elseif (gcode.eq.43) then
-        elseif (gcode.eq.62) then
-          currcol = innum
-        elseif (gcode.eq.70) then
-          polylinflag = innum
-          if(polylinflag.eq.1) nclosed = 1
-c  check the bits to see which flags are set
-c            ibset = iand(innum,1)
-c            if (ibset .gt. 0) mclosed = 1
-c            ibset = iand(innum,32)
-c            if (ibset .gt. 0) nclosed = 1
-
-C << btest a function, a vax extension. >>
-C             if (btest(innum,1) .eq. .TRUE.) mclosed = 1
-C             if (btest(innum,6) .eq. .TRUE.) nclosed = 1
-             if (btest(innum,1)) mclosed = 1
-             if (btest(innum,6)) nclosed = 1
-        elseif (gcode.eq.90) then
-          nblwpoints = innum   ! expected number of points
-          write(6,*) 'gcode90 ',innum,realin,nblwpoints
-        elseif (gcode.eq.210) then
-          xnorm = realin
-        elseif (gcode.eq.220) then
-          ynorm = realin
-        elseif (gcode.eq.230) then
-          znorm = realin
-        endif
-        call readgc(itrc)
-        goto  9001
-      endif
-
- 9002 if (nblwpoints.eq.numpl)then
-
-C We got the expected number of points so process.
-        call writelc
-        call initmatrix
-
-C Lwpolylines are only 2D.
-        if(oformat(1:6).eq.'viewer')then
-          continue
-        elseif(oformat(1:3).eq.'esp')then
-          continue
-        elseif(oformat(1:5).eq.'click')then
-
-C Get the coordinates back from the arrays, use putcoods and then
-C update the dxf arrays.
-          iestart=nbdxflines+1  ! start of edge list
-          do 9006 i = istart, numpl
-            coorx = xarray(i)
-            coory = yarray(i)
-            coorz = zarray(i)
-            call putcoods(itrc)
-
-C Each call to putcoords incremented nbdxfcoords so make up the edge.
-C If we are less than numpl the edge is this coord plus the next one.
-C If last point and closed then point back to first, otherwise
-C no line is needed.
-            if(i.lt.numpl)then
-              nbdxflines=nbdxflines+1
-            elseif(i.eq.numpl.and.nclosed.eq.1)then
-              nbdxflines=nbdxflines+1
-            else
-              continue
-            endif
-            if(i.lt.numpl) idxfedge(nbdxflines,1)=nbdxfcoords
-            if(i.eq.numpl.and.nclosed.eq.1)then
-              idxfedge(nbdxflines,1)=nbdxfcoords
-            else
-              continue
-            endif
-            if(i.lt.numpl) idxfedge(nbdxflines,2)=nbdxfcoords+1
-            if(i.eq.numpl.and.nclosed.eq.1)then
-              idxfedge(nbdxflines,2)=iestart  ! point back to start
-            else
-              continue
-            endif
-            idxfedgecol(nbdxflines)=currcol
-            idxfedgelay(nbdxflines)=currlay
- 9006     continue
-          iend=nbdxflines   ! end of edge list
-          if(oformat(1:5).eq.'click')then
-            write(ioout,'(a)') '*startline  # from LWPOLY'
-            do 9017 j = iestart,iend
-              write(ioout,'(a,i5,i5,2i4,a,i5)') '*edge',idxfedge(j,1),
-     &          idxfedge(j,2),currcol,currlay,' # ',j
- 9017       continue
-          endif
-        endif
-      else
-        write(ioout,'(a)') '# LWPOLY did not get expcted vertices'
-      endif
-      entthick = 0.0
+      thick = 0.0
 
       return
       end
@@ -1716,31 +746,36 @@ C no line is needed.
 C ****** vertex
 C vertex - compose XYZ from data in a DXF file.
       subroutine vertex(itrc)
-#include "dxfdata.h"
 
       parameter (MAXPNT = 100)
-
+      integer gcode,innum,flagins
+      common/trn/xscale,yscale,zscale,rotangl,basex,lineno,minseg,
+     &basey,  xincr,yincr,zincr,basez,elev,thick,dfltelev,dfltthick
+      common/rd/gcode,instring,innum,realin,coorx,coory,coorz,
+     &           blkxorg,blkyorg,blkzorg
+      common/fg/flag3d,flagins,radians,dxfconv
       common/arrays/xarray(MAXPNT), yarray(MAXPNT), zarray(MAXPNT),
      &       numpl
+      character instring*72
 
       ivertflag = 0
       call readgc(itrc) 
  9001 if (gcode.ne.0)then
         if (gcode.eq.38) then 
-          entelev=realin 
+          elev=realin 
         elseif (gcode.eq.39) then
           flag3d=1.0
-          entthick=realin
+          thick=realin
         elseif (gcode.eq.70) then
           ivertflag=innum
         elseif (gcode.eq.10) then
           numpl = numpl + 1
           xarray(numpl)=coorx
           yarray(numpl)=coory
-          zarray(numpl)=entelev 
+          zarray(numpl)=elev 
         elseif (gcode.eq.30) then
           zarray(numpl)=realin
-          entelev = realin
+          elev = realin
         elseif (gcode.eq.50) then 
         endif
         call readgc(itrc)

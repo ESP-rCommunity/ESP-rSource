@@ -31,9 +31,6 @@ TXMLAdapter::TXMLAdapter(string filePath)
 
         }else{
             m_document = xmlParseFile(filePath.c_str());
-            if(!xmlFree)
-            	xmlMemGet(&xmlFree,&xmlMalloc,&xmlRealloc,NULL);
-
             // Is file valid?
             if (m_document == NULL ){
                cerr << "\n H3KReports: configuration file ("<<filePath<<") does\n"
@@ -280,8 +277,6 @@ void TXMLAdapter::WriteTransformedXML(const char* sXMLFile,
 
         //set oringinal xml input file to doc.
         doc = xmlParseFile(sXMLFile);
-        if(!xmlFree)
-        	xmlMemGet(&xmlFree,&xmlMalloc,&xmlRealloc,NULL);
 
         // Open transform destination file
         outfile = fopen(sheet->second.c_str(),"w");

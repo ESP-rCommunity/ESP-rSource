@@ -1,8 +1,0 @@
-# site obstruction file defined in ../zones/living.obs
-# associated with zone geometry file ../zones/living.geo
- 0. 0.   # dummy values for site position
-    1    # no obstruction blocks
-# origin X Y Z, width, depth, height, rot angle, descr, material
--15.000 -9.000 0.000 39.500 4.000 10.000 0.000 liv_shd_ SE_r_l_.16 # block 1
-# grid opq X opq Z win X win Z
-    15    15    10    10

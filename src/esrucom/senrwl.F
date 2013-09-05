@@ -111,22 +111,27 @@ C Thermophysical property.
           call STRIPC(IUALF,OUTSTR,2,ND,0,'db ref & prop.',IER)
           if (IER.NE.0) return
           K=0
-          call EGETWI(OUTSTR,K,IDMAT(II,1),1,500,'W','material ary',IER)
-          call EGETWI(OUTSTR,K,IDMAT(II,2),1,6,'W','property ref.',IER)
+          call EGETWI(OUTSTR,K,IDMAT(II,1),1,500,'W',
+     &                                                   'db ref.',IER)
+          call EGETWI(OUTSTR,K,IDMAT(II,2),1,6,'W',
+     &                                             'property ref.',IER)
           call STRIPC(IUALF,OUTSTR,3,ND,0,'data.',IER)
           if (IER.NE.0) return
           K=0
           call EGETWI(OUTSTR,K,IDMAT(II,3),1,3,'W',
      &                                          'change type ref.',IER)
-          call EGETWR(OUTSTR,K,DAT(II,1),0.,100.,'W','change mag.',IER)
-          call EGETWR(OUTSTR,K,DAT(II,2),0.,100.,'W','change mag.',IER)
+          call EGETWR(OUTSTR,K,DAT(II,1),0.,100.,'W',
+     &                                               'change mag.',IER)
+          call EGETWR(OUTSTR,K,DAT(II,2),0.,100.,'W',
+     &                                               'change mag.',IER)
         elseif (IDTYP(II).eq.2) then
 
 C MLC name or layer thickness.
           call STRIPC(IUALF,OUTSTR,2,ND,0,'Layer and MLC name.',IER)
           if (IER.NE.0) return
           K=0
-          call EGETWI(OUTSTR,K,IDMAT(II,1),1,500,'W','Layer.',IER)
+          call EGETWI(OUTSTR,K,IDMAT(II,1),1,500,'W',
+     &                                                   'Layer.',IER)
           if (IDMAT(II,1).eq.0) then
 
 C 2 MLC names.
@@ -158,8 +163,10 @@ C Climate parameters.
           K=0
           call EGETWI(OUTSTR,K,IDMAT(II,3),1,2,'W',
      &                                          'change type ref.',IER)
-          call EGETWR(OUTSTR,K,DAT(II,1),0.,10.,'W','change mag.',IER)
-          call EGETWR(OUTSTR,K,DAT(II,2),0.,10.,'W','change mag.',IER)
+          call EGETWR(OUTSTR,K,DAT(II,1),0.,10.,'W',
+     &                                               'change mag.',IER)
+          call EGETWR(OUTSTR,K,DAT(II,2),0.,10.,'W',
+     &                                               'change mag.',IER)
         elseif (IDTYP(II).eq.4) then
 
 C Scheduled operations.
@@ -175,8 +182,10 @@ C Read associated data.
           K=0
           call EGETWI(OUTSTR,K,IDMAT(II,3),1,3,'W',
      &                                          'change type ref.',IER)
-          call EGETWR(OUTSTR,K,DAT(II,1),0.,100.,'W','change mag.',IER)
-          call EGETWR(OUTSTR,K,DAT(II,2),0.,100.,'W','change mag.',IER)
+          call EGETWR(OUTSTR,K,DAT(II,1),0.,100.,'W',
+     &                                               'change mag.',IER)
+          call EGETWR(OUTSTR,K,DAT(II,2),0.,100.,'W',
+     &                                               'change mag.',IER)
         elseif (IDTYP(II).eq.5) then
 
 C Convection coefficients.
@@ -191,9 +200,12 @@ C Read associated data.
             call STRIPC(IUALF,OUTSTR,3,ND,0,'corelations.',IER)
             if (IER.NE.0) return
             K=0
-            call EGETWI(OUTSTR,K,IDMAT(II,3),4,4,'W','corr ids.',IER)
-            call EGETWR(OUTSTR,K,DAT(II,1),1.,8.,'W','high corr.',IER)
-            call EGETWR(OUTSTR,K,DAT(II,2),1.,8.,'W','low corr.',IER)
+            call EGETWI(OUTSTR,K,IDMAT(II,3),4,4,'W',
+     &                                          'corr ids.',IER)
+            call EGETWR(OUTSTR,K,DAT(II,1),1.,8.,'W',
+     &                                               'high corr.',IER)
+            call EGETWR(OUTSTR,K,DAT(II,2),1.,8.,'W',
+     &                                               'low corr.',IER)
           endif
         elseif (IDTYP(II).eq.101) then
 
@@ -237,8 +249,10 @@ C Read associated data.
           K=0
           call EGETWI(OUTSTR,K,IDMAT(II,3),1,4,'W',
      &                                          'change type ref.',IER)
-          call EGETWR(OUTSTR,K,DAT(II,1),0.,100.,'W','change mag.',IER)
-          call EGETWR(OUTSTR,K,DAT(II,2),0.,100.,'W','change mag.',IER)
+          call EGETWR(OUTSTR,K,DAT(II,1),0.,100.,'W',
+     &                                               'change mag.',IER)
+          call EGETWR(OUTSTR,K,DAT(II,2),0.,100.,'W',
+     &                                               'change mag.',IER)
         endif
  10   continue
 
@@ -390,7 +404,7 @@ C For each change write info.
         if (IDTYP(II).eq.1) then
           write (outs,'(a)') ' # Change type: Materials'
         elseif (IDTYP(II).eq.2) then
-          write (outs,'(a)') ' # Change type: Constructions'
+          write (outs,'(a)') ' # Change type: Composite construction'
         elseif (IDTYP(II).eq.3) then
           write (outs,'(a)') ' # Change type: Climate parameter'
         elseif (IDTYP(II).eq.4) then
@@ -402,10 +416,10 @@ C For each change write info.
   46    FORMAT(i4,a40)
         if (IDTYP(II).eq.1) then
           write(IUALF,45,IOSTAT=ISTAT,ERR=1003)IDMAT(II,1),IDMAT(II,2)
-  45      FORMAT(2i4,' # material & property id')
+  45      FORMAT(2i4,' # material db ref, property id')
         elseif (IDTYP(II).eq.2) then
           write(IUALF,48,IOSTAT=ISTAT,ERR=1003)IDMAT(II,1),MATNAM(II,1)
-  48      FORMAT(i4,' ',a,' # material & construction name')
+  48      FORMAT(i4,' ',a,' # material db ref, composite name')
         elseif (IDTYP(II).eq.3) then
           write (IUALF,47,IOSTAT=ISTAT,ERR=1003)IDMAT(II,1)
   47      FORMAT(i4,' # Climate parameter ref')

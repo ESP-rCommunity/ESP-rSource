@@ -1,5 +1,5 @@
-*connections for shade
-*Date Wed Aug 29 21:25:11 2012
+*connections  for shade
+*Date Thu Oct 15 22:19:04 2009
      34   # number of connections
    1   1   0   0   0  #    1 Surf-1 in test-1 is External
    1   2   0   0   0  #    2 Surf-2 in test-1 is External

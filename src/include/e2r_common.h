@@ -129,8 +129,8 @@ C Sky definitions
       common/sky1/rgrfl,isky,irdoy,rtime,iryear
 
 C Daylight factors
-      character LDFGRID*72  ! file containing df grid points (one per scene)
-      common/radgrid/LDFGRID(MCOM+1)
+      character LDFGRID*72  ! file containing df grid points
+      common/radgrid/LDFGRID
 
       integer NDFP  ! number of locations for daylight factors
       real DFPTS    ! location X Y Z to calculate DF

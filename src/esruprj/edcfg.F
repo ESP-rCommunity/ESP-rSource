@@ -75,12 +75,14 @@ C Function definition
       COMMON/RAY5/ZCOG(MCOM,3),XMN,YMN,ZMN,XMX,YMX,ZMX
       REAL :: ZCOG,XMN,YMN,ZMN,XMX,YMX,ZMX
       
-      INTEGER :: ncomp,ncon
       common/C1/NCOMP,NCON
-      INTEGER :: indcfg
+      INTEGER :: ncomp,ncon
       common/C6/INDCFG
-      INTEGER :: IZSTOCN
+      INTEGER :: indcfg
+      common/C21/IFCFG,cfgroot,LCFGF
+      INTEGER :: ifcfg
       COMMON/C24/IZSTOCN(MCOM,MS)
+      INTEGER :: IZSTOCN
 
       common/user/browse
 
@@ -89,7 +91,6 @@ C Plant network.
       INTEGER :: IFPNF
 
 C Defaults.
-      character*96 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF
       common/DEFLT2/DFCFG,DFCTL,DEFRLB,DAFRES,DAPROB,DPNF
 
 C Uncertainty.
@@ -145,17 +146,17 @@ C Uncertainty.
       integer iglib   ! to test for X11 interface
 
       dimension ITEMS(30)
-      character LUALF*72,LCNG*15,LLOC*15
+      character LUALF*72,LCNG*15,LLOC*15,cfgroot*24
       character*72 LAPROB,DFILE,LPNF,tfile
       character longtfile*144,longtfiledos*144
-      character ITEMS*34,ETEXT*82
+      character LCFGF*72,ITEMS*34,ETEXT*82
       character NDNAM*12,LFIL*72
-      character*72 DCNN,ltmp
+      character*72 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF,DCNN,ltmp
       character tmode*8,doit*248
       character sblres*72,sflres*72,splres*72,smstres*72,sipvres*72
       character selres*72,entflnam*72
       character DEPRE*40,dstmp*24,tab*1,outsn*124,outsd*124
-      character CXITM*48,outs*124,fs*1
+      character CXITM*43,outs*124,fs*1
       CHARACTER*72 NWKNAM,NWKDSC,NWKFLNAM,ICONDBFL
       character ATRTAG*12,ATRMENU*32,ATRICN*12,NWKTYPSTR*12
       character ddtagatr*12,ddmenuatr*32,ddatrib*12
@@ -170,11 +171,12 @@ C Uncertainty.
       integer ier           ! non-zero if a problem
       
       INTEGER :: itrc,itru,i,ic,icc,istat
-      INTEGER :: iacc,icfoc,iclkok,idindcfg
+      INTEGER :: icfg_type,icfgz,icfgn,icfgc,icfgdfn,iicfgz,iicfgn
+      INTEGER :: iicfgc,iicfgdfn,iacc,icfoc,iclkok,idindcfg
       INTEGER :: ientxist,iier,im,ino,inwktyp,ios,ipedit,ipass,is
       INTEGER :: isindcfg,iuf,ium,iuo,iv,iver,iw,iz
-      INTEGER :: iser,lenlfil,ln,ltrf,nets,nitems
-      REAL :: szlow,szcog,szhigh
+      INTEGER :: iser,lenlfil,ln,ltrf,nets,nitems,szlow
+      REAL :: szcog,szhigh
 C Function definition      
       INTEGER :: igraphiclib
 
@@ -196,22 +198,6 @@ C ihvacflag=1 indicates HVAC models are active; 0 indicates no HVAC models.
       integer hvind, indhvac, hvidind
       PARAMETER (nhvac_items = 5)
       dimension HVAC_ITEMS(nhvac_items)
-
-C Passed parameters for cfgtogg
-#ifdef OSI
-      integer icfg_type  ! model cfg type
-      integer icfgz      ! if non-zero then there are zones
-      integer icfgn      ! if non-zero then there are networks
-      integer icfgc      ! if non-zero then cfg file known
-      integer icfgdfn    ! if non-zero then cdf domain exists
-      integer iicfgz     ! there are zone related images
-      integer iicfgn     ! there are network related images
-      integer iicfgc     ! there are control related images
-      integer iicfgdfn   ! there are cfd related images
-#else
-      integer*8 icfg_type,icfgz,icfgn,icfgc,icfgdfn,iicfgz
-      integer*8 iicfgn,iicfgc,iicfgdfn
-#endif
 
 C For help messages
       character helpinsub*24 ! subroutine name
@@ -1229,8 +1215,6 @@ C output, IER=0 indicates no error.
 #include "model.h"
 #include "geometry.h"
 #include "esprdbfile.h"
-#include "material.h"
-#include "schedule.h"
 #include "prj3dv.h"
       
       integer lnblnk  ! function definition
@@ -1246,7 +1230,7 @@ C output, IER=0 indicates no error.
       integer ncomp,ncon
       common/C1/NCOMP,NCON
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
-      integer IZSTOCN
+      common/C21/IFCFG,cfgroot,LCFGF
       COMMON/C24/IZSTOCN(MCOM,MS)
 
       common/user/browse
@@ -1260,8 +1244,22 @@ C output, IER=0 indicates no error.
       common/MOIST02/LMOIST(MCOM)
       common/cfdfil/LCFD(MCOM),IFCFD(MCOM)
 
+C Version of operations file. ip3ver=0 standard, =1 sorted with header
+C =2 with more than 3 day types
+      common/p3ver/ip3ver(MCOM)
+
+      CHARACTER oprdesc*248,ventdesc*248,ctlstr*24
+      COMMON/P1/oprdesc(MCOM),ventdesc(MCOM),ctlstr(MCOM,MDTY)
+      COMMON/P2CTL/ITCTL(MCOM),TLO(MCOM),TUP(MCOM),THI(MCOM),ACIL(MCOM),
+     &             ACVL(MCOM),IVL(MCOM),TAL(MCOM),ACIU(MCOM),ACVU(MCOM),
+     &             IVU(MCOM),TAU(MCOM),ACIH(MCOM),ACVH(MCOM),
+     &             IVH(MCOM),TAH(MCOM)
+
       common/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
 
+C Descriptive label for a zone load or casual gain types.
+      character lodlabel*6
+      common/loadlabel/lodlabel(mcom,MGTY)
       COMMON/AFN/IAIRN,LAPROB,ICAAS(MCOM)
       COMMON/PRECTC/ITMCFL(MCOM,MS),TMCT(MCOM,MTMC,5),
      &       TMCA(MCOM,MTMC,ME,5),TMCREF(MCOM,MTMC),TVTR(MCOM,MTMC)
@@ -1283,17 +1281,17 @@ C Flag noting whether casual gain periods are currently sorted.
       character ITEMS*32
       integer ivals
       dimension ITEMS(25),IVALS(MCOM)
-      dimension jict(MS),jic2(MS),jie2(MS),jmlcindex(MS)
+      dimension jict(MS),jic2(MS),jie2(MS)
       dimension jsotf(MS),jsmlcn(MS),jsvfc(ms),jsother(ms,3)
       dimension jsname(MS),jsparent(MS),jsuse(ms,3)
 
       character*72 CFILE,DFILE,LTMP,LCFD
       character*72 L3DCVS,L3DCNC,L3DNDC,L3DTAQ,LMOIST
-      character SFIL*72
+      character LCFGF*72,SFIL*72
       CHARACTER jsmlcn*32,jsvfc*4,jsotf*32,jsother*24,jsname*12
       character jsparent*12,jsuse*8
       character doit*248,tmode*8,DSFIL*72,ZN*12
-      character outs*124,outs248*248
+      character outs*124,outs248*248,cfgroot*24
       character ctldoc*248,LCTLF*72,lctmp*72,longtfile*144
       character HOLD*32,zd*64
       character lworking*144
@@ -1308,24 +1306,6 @@ C Flag noting whether casual gain periods are currently sorted.
       integer iuf       ! file unit type
       integer IRT,irop  ! for radio buttons
       integer nitems,INO ! max items and current menu item
-      integer ianother  ! flag for jumping to prior or next zone
-      integer icn1      ! connection index
-
-C Passed parameters for cfgtogg
-#ifdef OSI
-      integer icfg_type  ! model cfg type
-      integer icfgz      ! if non-zero then there are zones
-      integer icfgn      ! if non-zero then there are networks
-      integer icfgc      ! if non-zero then cfg file known
-      integer icfgdfn    ! if non-zero then cdf domain exists
-      integer iicfgz     ! there are zone related images
-      integer iicfgn     ! there are network related images
-      integer iicfgc     ! there are control related images
-      integer iicfgdfn   ! there are cfd related images
-#else
-      integer*8 icfg_type,icfgz,icfgn,icfgc,icfgdfn,iicfgz
-      integer*8 iicfgn,iicfgc,iicfgdfn
-#endif
 
 #ifdef OSI
       integer iside,isize,ifont     ! passed to viewtext
@@ -1517,7 +1497,6 @@ C Implement the rotations for the selected zones.
 
         elseif(IRT.eq.3)then
 
-C Search and replace an attribute.
           call serchrpl('a',itrc,iier)
           if(iier.eq.0)then
             call usrmsg('Surface attribute update',
@@ -1527,10 +1506,7 @@ C Search and replace an attribute.
      &        'was possibly unsucessful..','W')
           endif
           goto 3
-
         elseif(IRT.eq.4)then
-
-C Search and replace a construction.
           call serchrpl('c',itrc,iier)
           if(iier.eq.0)then
             call usrmsg('Construction attribute search & replace',
@@ -1539,29 +1515,6 @@ C Search and replace a construction.
             call usrmsg('Construction attribute search & replace',
      &        'was possibly unscuessful..','W')
           endif
-
-C Re-establish the ssmlcindex array for the model so that other-side
-C changes are known about when re-entering the zone geometry editing.
-
-C Scan for matching MLC for surfaces.
-          do 30 ICOMP=1,NCOMP
-            call georead(IFIL+1,LGEOM(ICOMP),ICOMP,1,iuout,ier)
-
-C Find the index of the MLC which matches each surface.
-            DO 9994 I=1,NZSUR(icomp)
-              icn1=izstocn(icomp,i)
-              ssmlcindex(icn1)=0  ! assume no matching MLC          
-              do 5 ii=1,nmlc
-                if(SSMLCN(icn1)(1:12).eq.DESC(ii)(1:12)) then
-                  ssmlcindex(icn1)=ii   ! remember MLC index     
-                endif
-  5           continue
- 9994       continue
- 30       continue
-          call usrmsg(
-     &    'Surface attributes have been updated. Next go to the Zone',
-     &    'Composition->construction materials & update all zones.',
-     &    'W')
           goto 3
         endif
 
@@ -1627,7 +1580,6 @@ C Recover connections associated with that zone.
               jie2(jixu)=IE2(IXU)
               jsotf(jixu)=SSOTF(IXU)
               jsmlcn(jixu)=SSMLCN(IXU)
-              jmlcindex(jixu)=ssmlcindex(IXU)
               jsvfc(jixu)=SSVFC(IXU)
               jsother(jixu,1)=SSOTHER(IXU,1)
               jsother(jixu,2)=SSOTHER(IXU,2)
@@ -1881,7 +1833,6 @@ C the new geometry file. Retain similar and adiabatic connections if found.
             IZSTOCN(ncomp,icc)=iccc
             SSOTF(ICCC)=jsotf(icc)
             SSMLCN(ICCC)=jsmlcn(icc)
-            ssmlcindex(ICCC)=jmlcindex(icc)
             SSVFC(ICCC)=jsvfc(icc)
             SSOTHER(ICCC,1)=jsother(icc,1)
             SSOTHER(ICCC,2)=jsother(icc,2)
@@ -2180,7 +2131,6 @@ C Also update lodlabel commons before writing out.
               IVU(ncomp)=IVU(ic); TAU(ncomp)=TAU(ic)
               ACIH(ncomp)=ACIH(ic); ACVH(ncomp)=ACVH(ic)
               IVH(ncomp)=IVH(ic); TAH(ncomp)=TAH(ic)
-C << revise for more casual gains >>
               lodlabel(ncomp,1)=lodlabel(ic,1)  ! revise to be in a loop
               lodlabel(ncomp,2)=lodlabel(ic,2)
               lodlabel(ncomp,3)=lodlabel(ic,3)
@@ -2442,69 +2392,8 @@ C Obstructions are alread in common - no need to scan.
         ENDIF
 
 C Present zone detail editing menu.
-        ianother=0
- 443    CALL EDZONE(ITRC,IC,ianother,IER)
+        CALL EDZONE(ITRC,IC,IER)
         MODIFY=.TRUE.
-
-C If user asked for next or prior zone reset IC and call again.
-        if(ianother.eq.0)then
-          continue
-        elseif(ianother.lt.0.and.IC.gt.1)then
-
-C Decrement ic and re-scan the geometry file and freshen derived
-C geometric common blocks.
-          ic=ic-1
-          call georead(IFIL+1,LGEOM(IC),IC,1,iuout,IER)
-          if(IER.NE.0)then
-            dok=.true.
-            helptopic='problem_scanning_file'
-            call gethelptext(helpinsub,helptopic,nbhelp)
-            CALL ASKOK('Problem reading geometry file!',
-     &            'Try again?',OK,dok,nbhelp)
-            IF(OK)GOTO 248
-          else
-            call zgupdate(0,ic,ier)
-          endif
-
-C Trace geometry related information. Because all zones will have
-c beeen read in so can include the extended surface `context`.
-          if(ITRC.ne.0)then
-            call ZINFOREP(itru,ic)
-            context=.true.
-            CALL SURINFO(IC,ITRU,context)
-            IF(ITRC.GT.1)CALL VERINFO(IC,ITRU)
-            CALL INSINFO(IC,ITRU)
-          endif
-          goto 443
-
-        elseif(ianother.gt.0.and.IC.lt.NCOMP)then
-
-C Increment ic and re-scan the geometry file and freshen derived
-C geometric common blocks.
-          ic=ic+1
-          call georead(IFIL+1,LGEOM(IC),IC,1,iuout,IER)
-          if(IER.NE.0)then
-            dok=.true.
-            helptopic='problem_scanning_file'
-            call gethelptext(helpinsub,helptopic,nbhelp)
-            CALL ASKOK('Problem reading geometry file!',
-     &            'Try again?',OK,dok,nbhelp)
-            IF(OK)GOTO 248
-          else
-            call zgupdate(0,ic,ier)
-          endif
-
-C Trace geometry related information. Because all zones will have
-c beeen read in so can include the extended surface `context`.
-          if(ITRC.ne.0)then
-            call ZINFOREP(itru,ic)
-            context=.true.
-            CALL SURINFO(IC,ITRU,context)
-            IF(ITRC.GT.1)CALL VERINFO(IC,ITRU)
-            CALL INSINFO(IC,ITRU)
-          endif
-           goto 443
-        endif
 
 C Loop back and see if another zone is requested.
         IC=-1
@@ -2619,7 +2508,7 @@ C << and apply it to another zone.
 
 C File is older format and assumed to be unsorted.
                     sorted=.false.
-                    call PROCESSOLDCAS(ICOMP,0,iuout)
+                    call PROCESSOLDCAS(ICOMP,0,iuout,IER)
                     if(browse)then
                       continue
                     else
@@ -2633,14 +2522,14 @@ C browsing update the operation file.
                     sorted=.true.
                     problem=.false.
                     DO 400 IDTY=1,NBDAYTYPE
-                      call checksort(icomp,IDTY,problem)
+                      call checksort(icomp,IDTY,problem,ier)
                       if(problem)then
                         sorted=.false.
                         call edisp(iuout,'casual gains may be unsorted')
                       endif
  400                CONTINUE
                     if(.NOT.sorted)then
-                      call PROCESSOLDCAS(ICOMP,0,iuout)
+                      call PROCESSOLDCAS(ICOMP,0,iuout,IER)
                       if(browse)then
                         continue
                       else
@@ -3244,8 +3133,6 @@ C ************* NEWPRB
 C NEWPRB specifies a new model via existing or new configuration file
 C and the various CAD and native definition facilities. 
 C Parameters passed into newprb:
-C  itrc = zero silent, one summary, two verbose and this may be
-C         reset via user actions
 C  confirm=true request confirmation of configuration file name
 C  ckpath=true finds the path to it (should be false for CAD use as
 C         the file and its location is already known). 
@@ -3254,13 +3141,11 @@ C         any case because the user has previously selected an exemplar model.
 C Parameter returned:
 C  ier = 0 if no problems found.
       SUBROUTINE NEWPRB(ITRC,confirm,ckpath,itisanexemplar,IER)
-#include "espriou.h"
 #include "building.h"
 #include "model.h"
-#include "geometry.h"
 #include "esprdbfile.h"
 #include "prj3dv.h"
-#include "material.h"
+#include "espriou.h"  
 C espriou.h for parameter MFFOLD
       
       integer lnblnk  ! function definition
@@ -3275,15 +3160,13 @@ C espriou.h for parameter MFFOLD
      
       integer ncomp,ncon
       common/C1/NCOMP,NCON
-      integer IZSTOCN
-      COMMON/C24/IZSTOCN(MCOM,MS)
+      common/C21/IFCFG,cfgroot,LCFGF
       common/rpath/path
       common/rcmd/LCMDFL
       common/user/browse
       common/deflt4/dinstpath
 
 C Defaults.
-      character*96 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF
       common/DEFLT2/DFCFG,DFCTL,DEFRLB,DAFRES,DAPROB,DPNF
 
       common/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
@@ -3291,51 +3174,28 @@ C Defaults.
       logical MODIFY,MODLEN,MODBND,browse
       logical confirm,ckpath,itisanexemplar
       logical unixok,prob
-      
-      integer nboflistf  ! how many folders or file names passed
-      integer listfoldertype   ! zero if unused one if folder two if file
-      integer lenlistfolder    ! width of each string
-      character*72 listfolder  ! array of folder or file names
-      common/listfold/nboflistf,listfoldertype(MFFOLD),
-     &                lenlistfolder(MFFOLD),listfolder(MFFOLD)
 
-      dimension ivlist(MFFOLD)
-      character*70 listfc70(MFFOLD)
+      dimension nwlistf(50),ivlist(50)
+      character*72 listf(50),listfc(50)
+      character*70 listfc70(50)
       character*32 WORDS(12)
 
       character path*72,LCMDFL*144,LTMP*144,GTGEOM*72
-      character MODE*4,fs*1,outs*124
+      character MODE*4,LCFGF*72,cfgroot*24,fs*1,outs*124
+      character*72 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF
       character OUTSTR*124,ctldoc*248,LCTLF*72,t96*96,t144*144,ETEXT*82
-      character sfile*144,odir*84,subpath*84
-      character action*3,GTNAME*15
-      CHARACTER dinstpath*60,dirpath*72
-
-C Passed parameters for cfgtogg
-#ifdef OSI
-      integer icfg_type  ! model cfg type
-      integer icfgz      ! if non-zero then there are zones
-      integer icfgn      ! if non-zero then there are networks
-      integer icfgc      ! if non-zero then cfg file known
-      integer icfgdfn    ! if non-zero then cdf domain exists
-      integer iicfgz     ! there are zone related images
-      integer iicfgn     ! there are network related images
-      integer iicfgc     ! there are control related images
-      integer iicfgdfn   ! there are cfd related images
-#else
-      integer*8 icfg_type,icfgz,icfgn,icfgc,icfgdfn,iicfgz
-      integer*8 iicfgn,iicfgc,iicfgdfn
-#endif
+      character sfile*144,odir*72,subpath*72,action*3,GTNAME*15
+      CHARACTER dinstpath*48,dirpath*72
 
 C Passed parameters for pregist.
-      character root*32,mpath*72,menu*72
+      character root*24,mpath*72,folder*12,menu*72
 
       integer igraphiclib  ! external definition
+      integer numberofzones ! to pass to updwire rather than ncomp
 #ifdef OSI
       integer iside,isize,ifont     ! passed to viewtext
-      integer numberofzones ! to pass to updwire rather than ncomp
 #else
       integer*8 iside,isize,ifont     ! passed to viewtext
-      integer*8 numberofzones ! to pass to updwire rather than ncomp
 #endif
 
 C For help messages
@@ -3367,7 +3227,6 @@ C Also scan utility files if they exist.
         call gethelptext(helpinsub,helptopic,nbhelp)
 
         LTMP=' '    ! reset return string
-        call edisp(iuout,'  ')  ! echo a blank line
         CALL EASKXORGTKF(LCMDFL,
      &    'System configuration file?',' ',
      &    DFCFG,LTMP,'config file name',IER,nbhelp)
@@ -3435,6 +3294,7 @@ C and so we treat that model as if browsing.
             call edisp(iuout,'Folder permission prevents modificaton!')
           else
             browse=.false.
+C            call edisp(iuout,'User can modify this model.')
           endif
 
           iglib = igraphiclib()  ! find out if GTK.
@@ -3492,6 +3352,7 @@ C          write(6,*) 'b iaccess is ',iaccess,icerr,ifold,path
             call edisp(iuout,'Folder permission prevents modificaton.')
           else
             browse=.false.
+C            call edisp(iuout,'User can modify this model.')
           endif
         endif
       endif
@@ -3524,10 +3385,8 @@ C configuration files.
         write(t144,'(3a)')LCMDFL(1:lnblnk(LCMDFL)),fs,'cfg'
         ifold=-1
         call ckaccess(ifold,iaccess,icerr,t144)
-C Debug.
-C        write(6,*) 'd iaccess is ',iaccess,icerr,ifold,t144
         if(ifold.eq.1.and.icerr.eq.0)then
-          lex=MIN0(lnblnk(LCMDFL),32)
+          lex=MIN0(lnblnk(LCMDFL),24)
           write(cfgroot,'(a)',IOSTAT=ios,ERR=13) LCMDFL(1:lex)
           subpath=' '
           call usrdir(odir)
@@ -3570,41 +3429,37 @@ C works. If path begins C:/ or D:/ or E:/ or F:/ no need to prepend odir.
 #endif
           write(outs,*,IOSTAT=ios,ERR=16) 'models in folder ',subpath
           call edisp(iuout,outs)
+          call clearfilelist(listf,MFFOLD)
 
-C Re-establish action and file separator prior to call to getfileslist.
+C Re-establish action and file separator prior to call to getfilelist.
           action='cfg'
           if(unixok)then
             fs = char(47)
           else
             fs = char(92)
           endif
-          call getfileslist(subpath,action,nlistf)
-          call printfileslist(outs,'p')
+          call getfilelist(subpath,action,listf,nwlistf,nlistf)
+          call copyfilelist(listf,nwlistf,listfc,MFFOLD,maxw)
+          call printfilelist(outs,'p',listfc,MFFOLD,nlistf)
 
 C Try to use information gathered from file scan.
           if(nlistf.gt.0)then
             ix=1
             do 76 ij=1,nlistf
               listfc70(ij)=' '
-              lex=lenlistfolder(ij)
-              if(lex.gt.70) lex=70
-              if(lex.le.1)then
-                write(listfc70(ij),'(a)') '  '
-              else
-                write(listfc70(ij),'(a)') listfolder(ij)(1:lex)
-              endif
-              if(lex.gt.maxw) maxw=lex  ! ensure widest string can be displayed
+              lex=MIN0(nwlistf(ij),70)  ! trap file names longer than 70
+              write(listfc70(ij),'(a)',IOSTAT=ios,ERR=13) 
+     &          listfc(ij)(1:lex)
   76        continue
             if(maxw.gt.70) maxw=70  ! ensure list fits
-            if(maxw.lt.15) maxw=15  ! ensure title can be seen
             CALL EPICKS(IX,ivlist,outs,' ',
-     &        maxw,nboflistf,listfc70,'Available files',IER,nbhelp)
+     &        maxw,nlistf,listfc70,'Available files',IER,nbhelp)
             if(ix.eq.1)then
               write(t144,'(3a)',IOSTAT=ios,ERR=17)
      &          LCMDFL(1:lnblnk(LCMDFL)),fs,'cfg'
               write(sfile,'(3a)',IOSTAT=ios,ERR=17) 
      &          t144(1:lnblnk(t144)),fs,
-     &          listfolder(ivlist(ix))(1:lenlistfolder(ivlist(ix)))
+     &          listfc(ivlist(ix))(1:nwlistf(ivlist(ix)))
 
 C Debug.
 C              write(6,*) 'sfile is ',sfile
@@ -3634,10 +3489,10 @@ C LCFGF into tokens and check the last token for .cfg.
         lwcfgl=lwcfgr-3
         if(lwcfgr.gt.4)then
           if(WORDS(IW)(lwcfgl:lwcfgr).eq.'.cfg')then
-            lex=MIN0((lwcfgl-1),32)  ! ensure cfgroot within length
+            lex=MIN0((lwcfgl-1),24)  ! ensure cfgroot within length
             write(cfgroot,'(a)',IOSTAT=ios,ERR=13)WORDS(IW)(1:lwcfgl-1)
           else
-            lex=MIN0(lwcfgr,32)  ! ensure cfgroot within length
+            lex=MIN0(lwcfgr,24)  ! ensure cfgroot within length
             write(cfgroot,'(a)',IOSTAT=ios,ERR=13) WORDS(IW)(1:lwcfgr)
             write(LTMP,'(a,a)',IOSTAT=ios,ERR=19) LTMP(1:lcfgr),'.cfg'
           endif
@@ -3776,18 +3631,12 @@ C Check to see adding a cfg folder and cfgroot to LCFGF works.
         endif
       endif
  444  IF(XST)THEN
- 
-C If user already said silent or very verbose follow this.
-C Otherwise allow a choice to switch to a different level.
-        if(itrc.eq.2)then
-          continue  ! user already set full report
-        elseif(itrc.eq.1)then
+        if(itrc.gt.0)then
           CALL EASKABC('When reading the model description,',
      &      'do it:','silently','with synopsis','full report',
      &      IW,0)
           itrc=IW-1
         endif
-        call edisp(iuout,'  ')  ! echo blank line in case of warning
         MODE='ALL '
         IUF=IPRODB   ! assign second file unit to the events db unit
         CALL ERSYS(LCFGF,IFCFG,IUF,MODE,itrc,IER)
@@ -3853,26 +3702,6 @@ C Open core databases associated with the exemplar or new model.
             ier = 0
           endif
         endif
-
-C Scan for matching MLC for surfaces.
-        do 30 ICOMP=1,NCOMP
-          call georead(IFIL+1,LGEOM(ICOMP),ICOMP,1,iuout,ier)
-
-C Find the index of the MLC which matches each surface.
-          DO 9994 I=1,NZSUR(icomp)
-            icn1=izstocn(icomp,i)
-            ssmlcindex(icn1)=0  ! assume no matching MLC          
-            do 5 ii=1,nmlc
-              if(SSMLCN(icn1)(1:12).eq.DESC(ii)(1:12)) then
-                ssmlcindex(icn1)=ii   ! remember MLC index     
-              endif
-  5         continue
- 9994     continue
- 30     continue
-
-C Debug the ssmlcindex array.
-C        write(6,*) ssmlcindex(1),ssmlcindex(2),ssmlcindex(3),
-C     &    ssmlcindex(4),ssmlcindex(5),ssmlcindex(6),ssmlcindex(7)
 
 C Scan control file (silently) if one exists.
         ICTLF=IFIL+1
@@ -3956,8 +3785,9 @@ C mode (with blanks for the parameters).
         call clrprb
         root=' '
         mpath=' '
+        folder=' '
         menu=' '
-        call pregist('i ',root,mpath,menu,ier)
+        call pregist('i ',root,mpath,folder,menu,ier)
         IF(IER.LT.0)RETURN
 
         CFGOK=.TRUE.
@@ -4040,18 +3870,17 @@ C << it would be clearer if all model I/O happened there >>
       
       integer lnblnk  ! function definition
 
-      common/OUTIN/IUOUT,IUIN
+C      common/OUTIN/IUOUT,IUIN
       common/FILEP/IFIL
+      common/C21/IFCFG,cfgroot,LCFGF
       common/appw/iappw,iappx,iappy
       common/user/browse
-      character path*72
-      common/rpath/path
       logical concat,OK,DOK,browse,XST,deref,unixok
-      character dradcf*72,OUTSTR*124,outs*124,outs248*248
-      character dvfil*72,ltmp*72
-      character doit*144,tmode*8,act*1
+      character dradcf*72,LCFGF*72,OUTSTR*124
+      character LFIL*72,dvfil*72,cfgroot*24,ltmp*72
+      character doit*124,tmode*8,act*1
       character fs*1
-      character longtfile*144,longtfiledos*144,L144*144,lltmp*144
+      character longtfile*124
       character brw*8   ! to signal model is being browsed
 #ifdef OSI
       integer ICPMOD     ! passed from tchild
@@ -4076,67 +3905,20 @@ C Set folder separator (fs) to \ or / as required.
 
       helptopic='visualization_options'
       call gethelptext(helpinsub,helptopic,nbhelp)
+      if(act.eq.'V')then
 
-  11  if(act.eq.'V')then
-
-C Construct a 'VIEWER' format file.  First get file name. Take
-C into account the current model path and whether it is in
-C a remote folder.
-        iw=0
-        if(path(1:2).ne.'./'.and.path(1:2).ne.'  ')then
-          write(outs,'(A,A)') 'The current path is: ',path
-          call edisp(iuout,outs)
-          CALL EASKAB('The model is in a remote folder.',
-     &    'Place exported file in:','current path','local folder',
-     &    IW,nbhelp)
-        endif
-        if(iw.eq.1)then
-          write(L144,'(4a)') path(1:lnblnk(path)),fs,
-     &      LCFGF(1:lnblnk(LCFGF)),'.vew'
-        else
-          write(L144,'(3a)') './',LCFGF(1:lnblnk(LCFGF)),'.vew'
-        endif
+C Construct a 'VIEWER' format file.  First get file name.
         dvfil='std.vew'
+        write(LFIL,'(a,a4)')LCFGF(1:lnblnk(LCFGF)),'.vew'
         doit = ' '
-
-C The X11 version will be returning only the name of the
-C file, while the GTK version will be returning the
-C name with the full path. L144 is the suggested name and
-C lltmp is the file name returned by the user selection.
-        lltmp='  '
-        call edisp(iuout,'  ')  ! echo a blank line
-        CALL EASKXORGTKF(L144,
-     &    'Viewer export file name?',' ',
-     &    dvfil,lltmp,'viewer file',IER,nbhelp)
-
-C If user request jump back and re-display the menu.
-        if(ier.eq.-3)then
-          return  ! cancel detected, return.
-        endif
-        if(ier.ne.0.or.lltmp(1:2).eq.'  ')then
-          goto 11
-        endif
-        if(unixok)then
-          call addpath(LCFGF,longtfile,concat)
-        else
-
-C If running on a non-unix machine see if there are spaces in the name
-C and change any / to \.
-          call addpath(LCFGF,longtfile,concat)
-          call cmdfiledos(longtfile,longtfiledos,ier)
-          longtfile=' '
-          longtfile=longtfiledos
-        endif
+        CALL EASKS(LFIL,' ','File name for image data?',
+     &    72,dvfil,'perspective input file',IER,nbhelp)
+        call addpath(LCFGF,longtfile,concat)
         write(doit,'(4a)') 'ecnv -obs -if esp -in ',
      &    longtfile(1:lnblnk(longtfile)),' -of viewer -out ',
-     &    lltmp(1:lnblnk(lltmp))
+     &    LFIL(1:lnblnk(LFIL))
         call usrmsg('starting conversion via',doit,'-')
         call runit(doit,'-')
-
-C Tell user about the new file.
-        write(outs248,'(3a)') 'The file ',lltmp(1:lnblnk(lltmp)),
-     &    ' has been created.'
-        call edisp248(iuout,outs248,90)
 
         dok=.true.
         CALL ASKOK(' ',' Display hidden line views?',OK,dok,nbhelp)
@@ -4150,16 +3932,15 @@ C string to drive VIEWER.
           if(iappw.gt.0.and.iappw.le.200)then
             write(doit,'(3a,3i4,3a)') 'viewer -mode ',tmode,
      &        ' -s ',iappw,iappx+25,iappy+20,' -file ',
-     &        lltmp(1:lnblnk(lltmp)),' &'
+     &        LFIL(1:lnblnk(LFIL)),' &'
           else
             write(doit,'(5a)') 'viewer -mode ',tmode,
-     &        ' -s 0 0 0 -file ',lltmp(1:lnblnk(lltmp)),' &'
+     &        ' -s 0 0 0 -file ',LFIL(1:lnblnk(LFIL)),' &'
           endif
           call usrmsg('starting hidden line viewer via',doit,'-')
           call runit(doit,tmode)
         endif
         return
-
       elseif(act.eq.'R')then
 
 C If in browse mode then run e2r and return, otherwise check rcf name

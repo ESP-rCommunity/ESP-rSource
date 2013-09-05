@@ -126,7 +126,7 @@ C For help messages
 
 C Assume whole day requested.
       ier=0
-      IT1=1
+   3  IT1=1
       IT2=24
       pmenu(1) ='a User defined          '
       pmenu(2) ='b January               '
@@ -181,41 +181,65 @@ C Adjust display if in southern hemisphere.
         call clmper(IFDAY,ier)
         return
       elseif(INO.EQ.2)then
-        ID1=1; IM1=1
-        ID2=31; IM2=1
+        ID1=1
+        IM1=1
+        ID2=31
+        IM2=1
       elseif(INO.EQ.3)then
-        ID1=1; IM1=2
-        ID2=28; IM2=2
+        ID1=1
+        IM1=2
+        ID2=28
+        IM2=2
       elseif(INO.EQ.4)then
-        ID1=1; IM1=3
-        ID2=31; IM2=3
+        ID1=1
+        IM1=3
+        ID2=31
+        IM2=3
       elseif(INO.EQ.5)then
-        ID1=1; IM1=4
-        ID2=30; IM2=4
+        ID1=1
+        IM1=4
+        ID2=30
+        IM2=4
       elseif(INO.EQ.6)then
-        ID1=1; IM1=5
-        ID2=31; IM2=5
+        ID1=1
+        IM1=5
+        ID2=31
+        IM2=5
       elseif(INO.EQ.7)then
-        ID1=1; IM1=6
-        ID2=30; IM2=6
+        ID1=1
+        IM1=6
+        ID2=30
+        IM2=6
       elseif(INO.EQ.8)then
-        ID1=1; IM1=7
-        ID2=31; IM2=7
+        ID1=1
+        IM1=7
+        ID2=31
+        IM2=7
       elseif(INO.EQ.9)then
-        ID1=1; IM1=8
-        ID2=31; IM2=8
+        ID1=1
+        IM1=8
+        ID2=31
+        IM2=8
       elseif(INO.EQ.10)then
-        ID1=1; IM1=9
-        ID2=30; IM2=9
+        ID1=1
+        IM1=9
+        ID2=30
+        IM2=9
       elseif(INO.EQ.11)then
-        ID1=1; IM1=10
-        ID2=31; IM2=10
+        ID1=1
+        IM1=10
+        ID2=31
+        IM2=10
       elseif(INO.EQ.12)then
-        ID1=1; IM1=11
-        ID2=30; IM2=11
+        ID1=1
+        IM1=11
+        ID2=30
+        IM2=11
       elseif(INO.EQ.13)then
-        ID1=1; IM1=12
-        ID2=31; IM2=12
+        ID1=1
+        IM1=12
+        ID2=31
+        IM2=12
       elseif(INO.EQ.15)then
         CALL EDAYR(ia1wins,ID1,IM1)
         CALL EDAYR(ia1winf,ID2,IM2)
@@ -247,8 +271,10 @@ C Adjust display if in southern hemisphere.
         CALL EDAYR(is2wins,ID1,IM1)
         CALL EDAYR(is2winf,ID2,IM2)
       elseif(INO.EQ.26)then
-        ID1=1; IM1=1
-        ID2=31; IM2=12
+        ID1=1
+        IM1=1
+        ID2=31
+        IM2=12
       elseif(INO.EQ.28)then
 
 C Help.
@@ -260,8 +286,10 @@ C Help.
       elseif(INO.EQ.29)then
 
 C If no option is selected, select whole year
-        ID1=1; IM1=1
-        ID2=31; IM2=12
+        ID1=1
+        IM1=1
+        ID2=31
+        IM2=12
       else
         ino=-1
         goto 4
@@ -416,14 +444,6 @@ C ITM is main item editing menu.
       integer onright ! number of right axis
       integer nitms,INO  ! max items and current menu item
 
-#ifdef OSI
-      integer iigl,iigr,iigt,iigb,iigw,iigwh
-      integer iiw1,iiw2,iiw3,iiw4,iimenu
-#else
-      integer*8 iigl,iigr,iigt,iigb,iigw,iigwh
-      integer*8 iiw1,iiw2,iiw3,iiw4,iimenu
-#endif
-
 C For help messages
       character helpinsub*24,helptopic*24 ! strings for help
       integer nbhelp     ! number of help lines found
@@ -442,8 +462,10 @@ C Check if Unix-based or DOS based.
 C Graphic analysis. Enlarge graphics area slightly and reset graphic
 C display period to the whole year.
       if(MMOD.EQ.8)then
-        ID1=1; IM1=1
-        ID2=31; IM2=12
+        ID1=1
+        IM1=1
+        ID2=31
+        IM2=12
         CALL EDAY(ID1,IM1,IIDS)
         CALL EDAY(ID2,IM2,IIDF)
         IDS=IIDS
@@ -523,7 +545,7 @@ C If clmlnam and clmlaid are not set fill them with default information.
       call stdate(iyear,ia2winf,descr,descrfn)
       jjd5=(ia2winf-ia2wins)+1
       WRITE(ITM(16),'(4a,i4)') 'n  2nd win ',descrst,' ',descrfn,jjd5
-      WRITE(ITM(17),'(A)')     '< scan weather for best-fit weeks'
+      WRITE(ITM(17),'(A)')     '< scan climate for best-fit weeks'
       WRITE(ITM(18),'(A,i2,a)')' ----documentation (',nbclmlhelp,
      &  ')----------'
       WRITE(ITM(19),'(A)')     'o list/generate/edit documentation'
@@ -542,20 +564,18 @@ C If clmlnam and clmlaid are not set fill them with default information.
 C If use already aksed for graph and date has change draw again.
       if(MMOD.EQ.8)then
         if(altered.and.havedrawn)then
-          IPICK(1)=0; IPICK(2)=1; IPICK(3)=0
-          IPICK(4)=0; IPICK(5)=0; IPICK(6)=0
+          IPICK(1)=0
+          IPICK(2)=1
+          IPICK(3)=0
+          IPICK(4)=0
+          IPICK(5)=0
+          IPICK(6)=0
           onleft=1
           onright=0
           if(IFS.ne.IMFS)call winfnt(IMFS)
-
-C Setup and pass in parameters to win3d.
-          iiw1=6; iiw2=12; iiw3=6; iiw4=3; iimenu=menuchw
-          iigl=igl; iigr=igr; iigt=igt; iigb=igb; iigw=igw; iigwh=igwh
-          CALL win3d(iimenu,iiw1,iiw2,iiw3,iiw4,
-     &      iigl,iigr,iigt,iigb,iigw,iigwh)
-C          CALL win3d(menuchw,6,12,6,3,igl,igr,igt,igb,igw,igwh)
-          igl=int(iigl); igr=int(iigr); igt=int(iigt); igb=int(iigb)
-          igw=int(iigw); igwh=int(iigwh)
+          CALL win3d(menuchw,6,12,6,3,igl,igr,igt,igb,igw,igwh)
+          igw=igr-igl
+          igwh=igb-igt
           if(IFS.ne.IMFS)call winfnt(IFS)
           call startbuffer()
 
@@ -573,7 +593,7 @@ C Context help
       helptopic='climate_list_facility'
       call gethelptext(helpinsub,helptopic,nbhelp)
 
-      CALL EMENU('Weather list item',ITM,nitms,INO)
+      CALL EMENU('Climate list item',ITM,nitms,INO)
       if(INO.EQ.nitms)then
 
 C Reset the graphic context prior to leaving. Currently commented out
@@ -618,7 +638,7 @@ C Aide memorie for the menu.
         if(t72(1:2).ne.'  ')clmlaid=t72
       elseif(INO.eq.3)then
 
-C Installed location of weather file. If GTK then use file browser.
+C Installed location of climate file. If GTK then use file browser.
         helptopic='climate_list_loc'
         call gethelptext(helpinsub,helptopic,nbhelp)
         write(llasci,'(a)') lclim(1:lnblnk(lclim))
@@ -630,21 +650,21 @@ C        write(6,*) llasci
         iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
         if(iglib.eq.1.or.iglib.eq.3)then
           if(llt.lt.96)then
-            CALL EASKF(LLASCI,'Weather file installed location:',
-     &        ' ',96,DCLIM,'weather file location',IER,nbhelp)
+            CALL EASKF(LLASCI,' Climate file installed location?',
+     &        ' ',96,DCLIM,'climate file location',IER,nbhelp)
           elseif(llt.ge.96.and.llt.lt.124)then
-            CALL EASKF(LLASCI,'Weather file installed location:',
-     &        ' ',124,DCLIM,'weather file location',IER,nbhelp)
+            CALL EASKF(LLASCI,' Climate file installed location?',
+     &        ' ',124,DCLIM,'climate file location',IER,nbhelp)
           elseif(llt.ge.124.and.llt.le.144)then
-            CALL EASKF(LLASCI,'Weather file installed location:',
-     &        ' ',144,DCLIM,'weather file location',IER,nbhelp)
+            CALL EASKF(LLASCI,' Climate file installed location?',
+     &        ' ',144,DCLIM,'climate file location',IER,nbhelp)
           endif
         elseif(iglib.eq.2)then
-          CALL EASKF(LLASCI,'Weather file installed location:',
-     &      ' ',144,DCLIM,'weather file location',IER,nbhelp)
+          CALL EASKF(LLASCI,' Climate file installed location?',
+     &      ' ',144,DCLIM,'climate file location',IER,nbhelp)
         else
-          CALL EASKF(LLASCI,'Weather file installed location:',
-     &      ' ',96,DCLIM,'weather file location',IER,nbhelp)
+          CALL EASKF(LLASCI,' Climate file installed location?',
+     &      ' ',96,DCLIM,'climate file location',IER,nbhelp)
         endif
         IF(LLASCI(1:2).EQ.'  '.or.LLASCI(1:4).eq.'UNKN')GOTO 290
 
@@ -897,7 +917,7 @@ C Edit the current period in terms of day and month.
             call stdate(iyear,jnext,descr,descrstp)
           endif
           write(louts,'(8a)') '2nd winter starts on a ',
-     &      DAYNAM(jjd5t),' and 1st winter starts on a ',
+     &      DAYNAM(jjd4t),' and 1st winter starts on a ',
      &      DAYNAM(jjd1t),' so consider ',descrstp,' or ',
      &      descrstn
           call edisp248(iuout,louts,80)
@@ -1047,7 +1067,7 @@ C Edit the current period in terms of day and month.
         if(iier.ne.0)goto 100
       elseif(INO.eq.17)then
 
-C Scan weather data for best-fit weeks.
+C Scan climate for best-fit weeks.
           call DDRADSUM('?')
       elseif(INO.eq.19)then
 
@@ -1066,7 +1086,7 @@ C Documentations text option.
             call edisp(iuout,'There is no documentation.')
           endif
         elseif(idw.eq.2)then
-          write(clmlhelp(1),'(2a)') 'Weather is ',clmloc 
+          write(clmlhelp(1),'(2a)') 'Climate is ',clmloc 
           ACLAT=ABS(CLAT)
           ACLONG=ABS(CLONG)
           IF(CLONG.LT.0.0.AND.CLAT.GE.0.0)then
@@ -1088,20 +1108,32 @@ C Use variant of code in clmmmm.F to generate text.
      &    ' Month    Minimum  Time          Maximum  Time         Mean'
 
 C Initialise parameters for whole year.
-          ID1=1;  IM1=1;  IT1=1
-          ID2=31; IM2=12; IT2=24
-          IDS=1;  IDF=365
-          KDS=1;  KDF=24
-          XMAXI=-1E+10; XMINI=1E+10
-          XMEANI=0.; HRTOT=0.
+          ID1=1
+          IM1=1
+          IT1=1
+          ID2=31
+          IM2=12
+          IT2=24
+          IDS=1
+          IDF=365
+          KDS=1
+          KDF=24
+          XMAXI=-1E+10
+          XMINI=1E+10
+          XMEANI=0
+          HRTOT=0.
 
 C INITIALISE PARAMETERS FOR MONTHLY TOTALS.
-          MTH1=IM1; XMAXM=-1E10; XMINM=1E10; XMEANM=0.; HRM=0.
+          MTH1=IM1
+          XMAXM=-1E10
+          XMINM=1E10
+          XMEANM=0.
+          HRM=0.
 
 C Find day of week for start of the period.
           CALL EDAYR(IDS,IDAYN,IMTHN)
       
-C Loop for each day, reading data from weather file.
+C Loop for each day, reading data from climate file.
           DO 10 I=IDS,IDF
             IDD=I
             CALL CLMGET(IDD)
@@ -1354,20 +1386,18 @@ C Control graphics.
 C Pre-define the period and the line type to draw and which
 C axis are required and then directly call CLMDRW
         if(MMOD.EQ.8)then
-          IPICK(1)=0; IPICK(2)=1; IPICK(3)=0
-          IPICK(4)=0; IPICK(5)=0; IPICK(6)=0
+          IPICK(1)=0
+          IPICK(2)=1
+          IPICK(3)=0
+          IPICK(4)=0
+          IPICK(5)=0
+          IPICK(6)=0
           onleft=1
           onright=0
           if(IFS.ne.IMFS)call winfnt(IMFS)
-
-C Setup and pass in parameters to win3d.
-          iiw1=6; iiw2=12; iiw3=6; iiw4=3; iimenu=menuchw
-          iigl=igl; iigr=igr; iigt=igt; iigb=igb; iigw=igw; iigwh=igwh
-          CALL win3d(iimenu,iiw1,iiw2,iiw3,iiw4,
-     &      iigl,iigr,iigt,iigb,iigw,iigwh)
-C          CALL win3d(menuchw,6,12,6,3,igl,igr,igt,igb,igw,igwh)
-          igl=int(iigl); igr=int(iigr); igt=int(iigt); igb=int(iigb)
-          igw=int(iigw); igwh=int(iigwh)
+          CALL win3d(menuchw,6,12,6,3,igl,igr,igt,igb,igw,igwh)
+          igw=igr-igl
+          igwh=igb-igt
           if(IFS.ne.IMFS)call winfnt(IFS)
           call startbuffer()
 
@@ -1536,7 +1566,7 @@ C For help messages
 
       if(is1wins.eq.0.or.is2wins.eq.0.or.is1sprs.eq.0)then
         call usrmsg('No winter|transition|summer season definitions',
-     &    'found in the weather database. Skipping.','W')
+     &    'found in the climate database. Skipping.','W')
         return
       endif
 
@@ -1578,7 +1608,7 @@ C Reset text feedback and write out beginning of report.
       call edisp(itru,outs)
       call edisp(itru,'  ')
       
-C Loop through the weather file and calculate data.
+C Loop through the climate file and calculate data.
       itrc=2
       call clmddscan(itrc,itru,'?','c',5,iyear)
 

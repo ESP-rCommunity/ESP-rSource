@@ -22,7 +22,8 @@ C This file contains the following routines related to the interface
 C of the AIM-2 infiltration model.
 
 C ************************ MODULE AIM2_INPUTS_InputData*******************************************
-
+C Created by: Francesca Macdonald
+C
 C Initialise        - contains the exact same data as in AIM2_InputData Module.
 C CheckForChanges   - checks if the interface has been used to make any changes
 C                     to the AIM2 parameters, so it can promt the user to save

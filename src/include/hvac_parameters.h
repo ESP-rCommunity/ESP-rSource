@@ -1,10 +1,5 @@
 c Declare integer variables in parameter file hvac.h
 
-
-c Maximum number of hvac systems that can be declared in the .hvac file
-      INTEGER max_sys
-      parameter (max_sys = 25)
-
 C Named constants for system types
       integer iSysFurnace, iSysBoiler, iSysBaseboard, iSysIMS_P10,
      &        iSysASHP, iSysGSHP, iSysGSHP_GCEP
@@ -115,6 +110,9 @@ C Named constants for economizer control
      &            iEcon_EnthIntegrated    = 3,
      &            iEcon_EnthNonIntegrated = 4   )
 
+c Maximum number of hvac systems that can be declared in the .hvac file
+      INTEGER max_sys
+      parameter (max_sys = 6)
 
 
 c Maximum number of hvac system types (furnace, heat pump, etc ...). This defines

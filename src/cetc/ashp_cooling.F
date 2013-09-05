@@ -2895,16 +2895,16 @@ C-----Prepare hvac zone index
         if ( i .lt. 10 ) write (cHVACZone, '(A,I1)') '0', i
 
 C-----sys zone does not correspond to esp-r's zone indexing, it follows the indexing in the *.hvac file
-        Call AddToReport(rvPltHvacZnCapFrac%Identifier,
+        Call AddToReportWild2(rvPltHvacZnCapFrac%Identifier,
      &       sys_zone_cap_frac(isys,i),
      &       cHVACIndex,
      &       cHVACZone)
-        Call AddToReport(rvPltHvacZnCapFrac%Identifier,
+        Call AddToReportWild2(rvPltHvacZnCapFrac%Identifier,
      &       sys_zone_cap_frac_ret_air(isys,i),
      &       cHVACIndex,
      &       cHVACZone)
 
-        Call AddToReport(rvPltHvacCrcFlwRt%Identifier,
+        Call AddToReportWild1(rvPltHvacCrcFlwRt%Identifier,
      &       flow_rate(isys),
      &       cHVACIndex)
 
@@ -3064,7 +3064,7 @@ c-----prepare component name
       if ( isys .ge. 10 ) write (cHVACIndex, '(I2)') isys
       if ( isys .lt. 10 ) write (cHVACIndex, '(A,I1)') '0', isys
 
-      Call AddToReport(rvPltHvacOutFanPw%Identifier,
+      Call AddToReportWild1(rvPltHvacOutFanPw%Identifier,
      &       outdoor_fan_energy,
      &       cHVACIndex)
 

@@ -49,6 +49,7 @@ C file unit for the demands file. IER=0 is OK.
       COMMON/FILEP/IFIL
       common/pophelp/h(60)
 
+      common/C21/IFCFG,cfgroot,LCFGF
       common/user/browse
       COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
 
@@ -58,7 +59,6 @@ C Floor area (optionally) associated with each demand type in an IPV.
 C Calendar commons.
       common/calena/calename,calentag(MDTY),calendayname(MDTY)
       common/caleni/nbdaytype,nbcaldays(MDTY),icalender(365)
-      INTEGER :: icalender,nbcaldays,nbdaytype
 
       COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
       LOGICAL        CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
@@ -69,7 +69,7 @@ C Flags noting whether casual gain periods are currently sorted.
       DIMENSION ITEM(13)
       CHARACTER tcname*248
       CHARACTER ITEM*36,H*72,LTMP*72,GFILE*72
-      character hold*60
+      character cfgroot*24,LCFGF*72,hold*60
       character calename*32,calentag*12,calendayname*32
       LOGICAL OK,DOK,XST,MODOPR,browse
       integer NITEMS,INO ! max items and current menu item
@@ -91,14 +91,10 @@ C Initially assume periods are not sorted.
 
 C If the model calendar has not yet been setup confirm what to
 C do with the user.
-
-C << this is where a number of new patterns of calendard could
-C << be implemented. Try for an initial default of wk sat sun holiday.
-
       if(nbdaytype.eq.0)then
         h(1)='Each model has a master calendar which indicates the'
         h(2)='day type for each Julian day (initially based on the'
-        h(3)='year & a basic Weekday Saturday Sunday Holiday scheme.'
+        h(3)='year and a basic Weekday Saturday Sunday scheme. '
         h(4)=' '
         h(5)='No calendar has been defined so if you want the basic '
         h(6)='Weekday Saturday Sunday scheme it will be created. If '
@@ -117,8 +113,6 @@ C << be implemented. Try for an initial default of wk sat sun holiday.
             call calenprint(iuout,'t',iyear,loopst,loop)
           endif
         elseif(IW.eq.2)then
-
-C Advise the user what to do.
           call usrmsg('Go to the Model context -> calendar option',
      &      'and when the calendar is defined return here.','W')
           return
@@ -504,7 +498,6 @@ C ITRC is the trace level, ITRU is the ouput channel, IER=0 is OK.
 C Calendar commons.
       common/calena/calename,calentag(MDTY),calendayname(MDTY)
       common/caleni/nbdaytype,nbcaldays(MDTY),icalender(365)
-      INTEGER :: icalender,nbcaldays,nbdaytype
 
 C Local editing arrays.
       dimension IEBCGS(MC),IEBCGF(MC),CEBMGS(MC),CEBMGL(MC),BERADC(MC)
@@ -845,7 +838,6 @@ C << use in the demands file timings
 C Calendar commons.
       common/calena/calename,calentag(MDTY),calendayname(MDTY)
       common/caleni/nbdaytype,nbcaldays(MDTY),icalender(365)
-      INTEGER :: icalender,nbcaldays,nbdaytype
 
 C Profile database commons via profile.h.
       CHARACTER outs248*248
@@ -858,7 +850,7 @@ C Profile database commons via profile.h.
       character lltmp*144
       character fs*1   ! file separator
       logical unixok  ! to check for database path file separators
-      integer ICGTL   ! for radio button
+      integer ICGT    ! for radio button
 
 C Set folder separator (fs) to \ or / as required.
       call isunix(unixok)
@@ -878,7 +870,7 @@ C Labels for loads.
       write(ll7,'(1x,a6,1x)') blodlabel(7)
 
       IER=0
-      ICGTL=1
+      ICGT=1
       PS=0.
       PL=0.
       RAD=0.5
@@ -889,7 +881,8 @@ C Labels for loads.
      &  LPRFDB(1:llt)
       call edisp248(iuout,outs248,100)
 
-C Scan the event profiles into common blocks.
+C Scan the event profiles database. If an error state is
+C returned then it might be an ASCII file, try and scan that.
       lndbp=lnblnk(standarddbpath)
       if(ipathprodb.eq.0.or.ipathprodb.eq.1)then
         lltmp=LPRFDB  ! use as is
@@ -897,15 +890,22 @@ C Scan the event profiles into common blocks.
         write(lltmp,'(3a)') standarddbpath(1:lndbp),fs,
      &    LPRFDB(1:lnblnk(LPRFDB))  ! prepend db folder path
       endif
-      CALL ERPFREE(IPRODB,ISTAT)
-      ier=0   ! reset prior to calling triprocom
-      call TRIPROCOM(IPRODB,lltmp,IER)
+      call TRIPROBIN(IPRODB,lltmp,IER)
       if(ier.ne.0)then
-        call usrmsg('Error opening the db. Please use one',
-     &              'of the other options.','W')
-        return
-      else
         CALL ERPFREE(IPRODB,ISTAT)
+        CALL USRMSG(' opened profiles db...',' ','-')
+        ier=0   ! reset prior to calling triprocom
+        call TRIPROCOM(IPRODB,lltmp,IER)
+        if(ier.ne.0)then
+          call usrmsg('Error opening the db. Please use one',
+     &                'of the other options.','W')
+          return
+        else
+          CALL ERPFREE(IPRODB,ISTAT)
+          CALL USRMSG(' opened profiles db...ok',' ','-')
+        endif
+      else
+        CALL USRMSG(' opened profiles db...ok',' ','-')
       endif
 
 C Copy the string list of event profiles to local string variable.
@@ -928,15 +928,15 @@ C Identify nature of demands
       H(3)='pump demands can be separately tracked from that of '
       H(4)='other equipment.  Values from 1 to 4 are accepted'
       H(5)='and can have any meaning that the user chooses. '
-      ICGTL=1
+      ICGT=1
       CALL EASKATOG(' ','Type of casual gain: ',ll1,ll2,ll3,ll4,ll5,
-     &  ll6,ll7,ICGTL,5)
+     &  ll6,ll7,ICGT,5)
 
 C Depending on type set relevant idmdinc value.
-      idmdinc(ICGTL)=1
+      idmdinc(ICGT)=1
 
       call easkab('Are values',' ','absolute','per m^2',IW,5)
-      if(IW.eq.2)ICGTL=-1*ICGTL
+      if(IW.eq.2)ICGT=-1*ICGT
 
  100  WRITE(HOLD,'(2f9.0,2f8.2,a)')PS,PL,RAD,CON,'  '
       H(1)='In order to expand the profile into energy values the'
@@ -974,7 +974,7 @@ C The current calendar day type gains.
           CBMGL(iday,I+IN) = CGL1(INDEX,I)*PL/100.0
           BRADC(iday,I+IN) = RAD
           BCONC(iday,I+IN) = CON
-          IBCGT(iday,I+IN) = ICGTL
+          IBCGT(iday,I+IN) = ICGT
 140     CONTINUE
       endif
 
@@ -1003,7 +1003,6 @@ C espriou.h provides currentfile.
 C Calendar commons.
       common/calena/calename,calentag(MDTY),calendayname(MDTY)
       common/caleni/nbdaytype,nbcaldays(MDTY),icalender(365)
-      INTEGER :: icalender,nbcaldays,nbdaytype
 
 C Error subroutine and error details for dll mode.
       common/dllerr/dllsubr,dllmesg
@@ -1226,7 +1225,6 @@ C ITRC unit number for user output, IER=0 OK IER=1 problem.
 C Calendar commons.
       common/calena/calename,calentag(MDTY),calendayname(MDTY)
       common/caleni/nbdaytype,nbcaldays(MDTY),icalender(365)
-      INTEGER :: icalender,nbcaldays,nbdaytype
 
       CHARACTER OPFIL*72
       character calename*32,calentag*12,calendayname*32
@@ -1312,7 +1310,6 @@ C from common block data.
 C Calendar commons.
       common/calena/calename,calentag(MDTY),calendayname(MDTY)
       common/caleni/nbdaytype,nbcaldays(MDTY),icalender(365)
-      INTEGER :: icalender,nbcaldays,nbdaytype
 
       CHARACTER outs*124
       character calename*32,calentag*12,calendayname*32

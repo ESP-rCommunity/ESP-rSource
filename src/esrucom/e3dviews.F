@@ -58,7 +58,6 @@ C Local variables
 
       CALL EYEMAT(EYEM,VIEWM,1.0,T1MAT,R1MAT)
 
-C T2MAT is a 4 x 4 transform matrix
       T2MAT(1,1) = 1.0
       T2MAT(1,2) = 0.0
       T2MAT(1,3) = 0.0
@@ -79,8 +78,8 @@ C T2MAT is a 4 x 4 transform matrix
       T2MAT(4,3) = -HITH
       T2MAT(4,4) = 1.0
 
-      SH=SIN(HANG*PI/180.0)  ! sine of half angle
-      CH=COS(HANG*PI/180.0)  ! cosine of half angle
+      SH=SIN(HANG*PI/180.0)
+      CH=COS(HANG*PI/180.0)
       T=SH/CH
 
       CALL HMATMUL(T1MAT,T2MAT,TEMAT)
@@ -89,7 +88,7 @@ C T2MAT is a 4 x 4 transform matrix
 
       IF (IERR .LT. 0) GOTO  999
 
-C Now compute ETSMAT eye to screen matrix
+C     Now compute ETSMAT
       ETSMAT(1,1) = SKALE
       ETSMAT(1,2) = 0.0
       ETSMAT(1,3) = 0.0
@@ -112,11 +111,11 @@ C Now compute ETSMAT eye to screen matrix
 
       CALL HMATMUL(TEMAT,ETSMAT,TSMAT)
 
-C Define test point TPCLIP and equations CLIPLN to the 6 clipping
+C Define test point and equations to the 6 clipping
 C planes in eye space.
       TPCLIP(1) = 0.0
       TPCLIP(2) = 0.0
-      TPCLIP(3) = (YON-HITH)/2.0   ! at half distance
+      TPCLIP(3) = (YON-HITH)/2.0
 
       CLIPLN(1,1) = CH
       CLIPLN(1,2) = 0.0
@@ -147,15 +146,6 @@ C planes in eye space.
       CLIPLN(6,2) = 0.0
       CLIPLN(6,3) = -1.0
       CLIPLN(6,4) = HITH-YON
-
-C Debug
-C      write(6,*) 'sh ch t hith yon hang ',sh,ch,t,hith,yon,hang
-C      do 41 ij=1,4
-C        write(6,*) 'clipln ',ij,(clipln(ij,k),k=1,4)
-C  41  continue
-C      do 42 ij=1,4
-C        write(6,*) 'etsmat ',ij,(etsmat(ij,k),k=1,4)
-C  42  continue
 
       RETURN
 
@@ -490,7 +480,6 @@ C CUTPOL: cuts a polygon within a viewing frustrum.
       DIMENSION  EQNP(4),ADST(100)
       LOGICAL CLOSE
 
-C For each of the 6 clipping planes.
       DO 300 J = 1,6
         IF (IFCLIP(J) .NE. 1)  GOTO  300
 
@@ -517,7 +506,7 @@ C Add points which lie on the plane.
 
         K1 = IANXT(K)
         CALL ECLOSE(ADST(K),0.0,0.001,CLOSE)
-        IF(CLOSE)GOTO 550   ! distance close to zero do not call vecpln
+        IF(CLOSE)GOTO 550
         CALL ECLOSE(ADST(K1),0.0,0.001,CLOSE)
         IF(CLOSE)GOTO 550
         IF (ADST(K)*ADST(K1) .GE. 0.0)  GOTO  550
@@ -699,13 +688,6 @@ C the arrows in a medium grey.
       real diag   ! diagonal across the site
       logical greyok
 
-C Local variables to pass to edline.
-#ifdef OSI
-      integer iicol
-#else
-      integer*8 iicol
-#endif       
-
       diag = XMX-XMN
       if(diag.lt.20.0)then
         shaft=1.0; al=0.3; aw=0.15
@@ -722,10 +704,7 @@ C If libraries and monitor support greyscale remember this.
       endif
 
 C Make up coordinates for arrow along X axis.
-      if(greyok)then
-        iicol=nifgrey-3
-        call winscl('i',iicol)
-      endif
+      if(greyok)call winscl('i',nifgrey-3)
       P(1)=0.1; P(2)=0.0; P(3)=-0.1
       Q(1)=shaft; Q(2)=0.0; Q(3)=-0.1
       call arrow(P,Q,al,aw,ipoints,'a',2)
@@ -742,10 +721,7 @@ C Make up coordinate for arrow along Z axis.
       Q(1)=-0.1; Q(2)=-0.1; Q(3)=shaft
       call arrow(P,Q,al,aw,ipoints,'a',2)
       call forceflush()
-      if(greyok)then
-        iicol=0
-        call winscl('-',iicol)
-      endif
+      if(greyok)call winscl('-',0)
 
       RETURN
       END
@@ -884,7 +860,6 @@ C Process selected zones.
         IZ=IZ+1
         IF(IZ.GT.nzg)GOTO 200
         IVZ=nznog(IZ)
-        IF(IVZ.le.0) goto 100  ! unknown zone try next one
 
 C If bounds ok then update project bounds with saved zone values.
         if(iZBFLG(IVZ).eq.1)then
@@ -1024,7 +999,7 @@ C a large site, otherwise include GRDIS to bounds.
         endif
       ENDIF
 
-C All bodies checked so calculate model centre within bounding box.
+C All bodies checked so calculate configuration centre of gravity.
       call eclose(XMN,0.0,0.001,CLOSE)
       if(XMN.LT.0..AND.XMX.GE.0.0)then
         VIEWM(1)=XMN+((XMX+ABS(XMN))/2.0)
@@ -1051,7 +1026,7 @@ C All bodies checked so calculate model centre within bounding box.
       elseif(ZMN.LT.0.0.AND.ZMX.LE.0.0)then
         VIEWM(3)=ZMN+((ABS(ZMN)-ABS(ZMX))/2.0)
       elseif(ZMN.GT.0.0.AND.ZMX.GT.0.0)then
-        VIEWM(3)=ZMX-((ZMX-ZMN)/2.0)
+        VIEWM(3)=ZMX+((ZMX-ZMN)/2.0)
       elseif(CLOSE.AND.ZMX.GT.0.0)then
         VIEWM(3)=ZMX/2.0
       endif

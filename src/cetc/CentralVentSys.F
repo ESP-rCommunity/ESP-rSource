@@ -147,6 +147,8 @@ c
 c
          T = TF ! "future" outdoor air temp
 
+         
+         
          ErsACH: if ( iCVSOpType == 8 ) then 
 C ERS 'magic' method: Operate HRV to ensure that natural + mechanical 
 C ventilation 0.3 ACH per hour as HOT2000 assumes during ERS calculations.
@@ -177,8 +179,9 @@ C ventilation 0.3 ACH per hour as HOT2000 assumes during ERS calculations.
           fVentPLR  = CVSOpTime
      
          endif ErsACH         
-
-
+                 
+         
+         
 c If a CVS exists,call the appropriate subroutine to
 C determine temperatures and flowrates
          If ( iCVSType .eq. 2 ) Then ! HRV

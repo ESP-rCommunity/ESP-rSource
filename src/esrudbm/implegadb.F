@@ -27,6 +27,14 @@ C IMPRESSC: Imports from legacy pressure coef file (AFIL) to a generic
 C    wind pressure db file (BFIL).
 C IMPROFL: Imports from legacy ascii profile file (AFIL) to a generic
 C    profile db file (BFIL)
+C MKAPRC: Creates an ascii materials db based on the
+C    current contents of binary file.
+C TROPRO creates an ASCII profiles db from the binary profiles db.
+C ERPCDB reads one element from a binary materials database
+C    returning them via parameter list.
+C parsemlcdesc: Parse the DESC string from common block returning text for
+C   MLCN (its name) ,OTF (whether OPAQ/TAN) ,OPT (optical name) ,MLCSYM
+C   tag for symmetry.
 
 C ************* IMPMLC 
 C IMPMLC: Imports from legacy construction file (AFIL) to a generic
@@ -35,7 +43,6 @@ C IFB as the binary channel. Idbh is position in hash table.
       subroutine impmlc(IFA,AFIL,IFB,BFIL,idbh,IER)
 #include "building.h"
 #include "esprdbfile.h"
-#include "material.h"
 C providing paramaters MGDB,MGCL,MGIT
       
       integer lnblnk  ! function definition
@@ -61,26 +68,24 @@ C providing paramaters MGDB,MGCL,MGIT
      &               nbitrep(MGIT),ibitusc(MGIT)
 
       dimension thrmtg(ME),gaptg(ME),mattag(ME),DT(ME)
-      dimension IP(ME),DRA(ME,3),glaydesc(ME)
-      CHARACTER OUTSTR*124,AFIL*72,BFIL*72,GDESC*48,NAM*72,RSTR*124
-      CHARACTER WORD*20
-C      character MLCN*12,OTF*4,OPT*12,MLCSYM*12
+      dimension IP(ME),DRA(ME,3),laydesc(ME)
+      CHARACTER OUTSTR*124,AFIL*72,BFIL*72,DESC*48,NAM*72,RSTR*124
+      CHARACTER WORD*20,MLCN*12,OTF*4,OPT*12,MLCSYM*12
       character dbtag*12,dbmenu*32,dbdate*24,dbdoc*248,catdoc*248
       character cattag*12,cattype*8,catmenu*32,catdate*24
       character itdat*248,itrep*248
       character ittag*12,itmenu*32,itdate*24,itdoc*248
-      character dbnote*72,c8*8,c20*20,outs*124
+      character dbnote*72,c8*8,c20*20,outs*124,outsd*124
       character ituntstr*42,itsrcstr*1,itcnfstr*42
       character unitchr*4,unitstr*12,unitnote*72,srcchr*4,srcnote*248
       character dstmp*24,symname*12,othcolr*12,incolr*12
       character othacou*12,inacou*12,cnstimp*12
-      character thrmtg*1,gaptg*1,mattag*12,glaydesc*32
-      CHARACTER LTMP*72,DFILE*72
+      character thrmtg*1,gaptg*1,mattag*12,laydesc*32
+      CHARACTER TITL*72,LTMP*72,DFILE*72
 
 C Logical noting whether it was possible to open legacy material
 C database to get IR and solar properties.
       logical scanmat
-      logical closemat1,closemat2
       integer ier
 
 C Initialise variables.
@@ -140,39 +145,24 @@ C there probably was an earlier scan and conversion of a legacy
 C material database so LFMAT should already be instanciated.
 C If it was not possible to open the material db then set default
 C values for the inside and outside solar and IR.
-      write(LTMP,'(a)') LFMAT(1:72)
-      DFILE='/usr/esru/esp-r/databases/constr.db3.a'
+      LTMP=LFMAT
+      DFILE='/usr/esru/esp-r/databases/constr.db2'
   29  CALL EASKS(LTMP,
-     &  'Legacy materials db used with this legacy construction',
-     &  'database?',72,DFILE,'legacy matrl name',IER,1)
+     &  ' Legacy materials db used with this legacy construction',
+     &  ' database?',72,DFILE,'legacy matrl name',IER,1)
       IF(LTMP.EQ.' ')GOTO 29
       IFMAT=IFIL
       call ERPFREE(IFMAT,IOS)
       ier=0
-      call rascimat(IFMAT,LTMP,IER)  ! try current ascii format
-      if(ier.eq.-2)then
-        ier=0
-        call rlegacymat(IFMAT,LTMP,ier)  ! try older ascii format
-        if(ier.ne.0)then
-          othir=0.90
-          sinir=0.90
-          othsol=0.50
-          sinsol=0.50
-          scanmat=.false.
-        else
-          call eclose(matver,1.1,0.001,closemat1)
-          call eclose(matver,1.2,0.001,closemat2)
-          if(closemat1.or.closemat2)then
-            call edisp(iuout,' Filled material data arrays...')
-            scanmat=.true.
-          else
-            othir=0.90
-            sinir=0.90
-            othsol=0.50
-            sinsol=0.50
-            scanmat=.false.
-          endif
-        endif
+      call EFOPRAN(IFMAT,LTMP,40,1,IER)
+      if(ier.ne.0)then
+        othir=0.90
+        sinir=0.90
+        othsol=0.50
+        sinsol=0.50
+        scanmat=.false.
+      else
+        scanmat=.true.
       endif
 
       nbcatit(1)=nbitem(idbh)
@@ -207,20 +197,20 @@ C For each item, provide default item data and read existing items.
 C Anything after no of layers is the description (which is overloaded
 C to include information on optical properties).
         CALL EGETRM(OUTSTR,K,RSTR,'W','layer description',IER)
-        GDESC=RSTR(1:LNBLNK(RSTR))
+        DESC=RSTR(1:LNBLNK(RSTR))
 
-C Parse the GDESC string into string tokens.
-        call matchmlcdesc(GDESC(1:12),im)
+C Parse the DESC string into string tokens.
+        call parsemlcdesc(DESC,MLCN,OTF,OPT,MLCSYM)
 
-        write(symname,'(a)') mlcsymetric(im)(1:12)
+        symname=MLCSYM
         othcolr='grey50'
         incolr='grey50'
         othacou='none'
         inacou='none'
         cnstimp='none'
-        write(itmenu(iit),'(a,20x)') mlcname(im)(1:lnblnk(mlcname(im)))
-        write(itdoc,'(3a)') 'construction ',
-     &    mlcname(im)(1:lnblnk(mlcname(im))),' is...'
+        write(itmenu(iit),'(a,20x)') MLCN
+        write(itdoc,'(3a)') 'construction ',MLCN(1:lnblnk(MLCN)),
+     &    ' is...'
         call dstamp(dstmp)
         write(itdate(iit),'(a)') dstmp
 
@@ -236,37 +226,34 @@ C Match the following 4 lines to instanitm in dbmedit.F
           IF(IER.NE.0)RETURN
           K=0
 
+C << note this subroutine assumes that the model is associated
+C << with a binary version of the materials database. It must
+C << be updated to use the material array structures.
+
 C Crate tag for material and reference tag for material db entry.
-C If material db was opened then scan for ir and sol values.
+C If legacy material db was opened then scan for ir and sol values.
           CALL EGETWI(OUTSTR,K,IP(il),0,600,'F','legacy index',IER)
           if(scanmat)then
-
-C Generally we want to assign values to the IPRMAT array so for each legacy 
-C IPR. NOTE: in case there are multiple items with the same characters
-C in the name also check to see if the legacy index associated
-C with the found item matches the IPR scanned above. If we are
-C still confused mark IPRMAT as -99.
-            ileghope=IP(IL)   ! what we hope we will find a match for
-
-C Pass the legacy record number (ileghope) along with the name (NAM) of the
-C material and get back the index of the material array that fits.
-            call parsematdesc(ileghope,NAM,matarrayindex)
-
+            itru=0
             if(IL.eq.1)then
-              if(matarrayindex.eq.0)then
+              if(IP(IL).eq.0)then
                 othir=0.0
                 othsol=0.0
               else
-                othir=matdboute(matarrayindex)
-                othsol=matdbouta(matarrayindex)
+                CALL ERPCDB(IFMAT,IP(IL),ITRU,IER,DBCON,DBDEN,
+     &            DBSHT,E,A,DRV,TITL,NAM)
+                othir=E
+                othsol=A
               endif
             elseif(IL.eq.nlay)then
               if(IP(IL).eq.0)then
                 othir=0.0
                 othsol=0.0
               else
-                sinir=matdbine(matarrayindex)
-                sinsol=matdbina(matarrayindex)
+                CALL ERPCDB(IFMAT,IP(IL),ITRU,IER,DBCON,DBDEN,
+     &            DBSHT,E,A,DRV,TITL,NAM)
+                sinir=E
+                sinsol=A
               endif
             endif
           endif
@@ -282,10 +269,10 @@ C Find matching material tag (sanning items found in material db) and
 C remember its name.
           isdbhash=2
           do 40 iln=1,nlay
-            glaydesc(iln)='not found'
+            laydesc(iln)='not found'
             do 35 itother=1,nbitem(isdbhash)
               if(mattag(iln)(1:12).eq.ittag(itother)(1:12))then
-                glaydesc(iln)=itmenu(itother)
+                laydesc(iln)=itmenu(itother)
                 goto 36
               endif
   35        continue
@@ -323,7 +310,7 @@ C Pick up 'AIR' followed by default R values.
 C Encode current data into generic db commons.
         call prsmlc(idbh,iit,'p',symname,othcolr,incolr,OTF,OPT,
      &   othacou,inacou,othir,sinir,othsol,sinsol,cnstimp,
-     &   nlay,thrmtg,gaptg,mattag,DT,IP,DRA,glaydesc,ier)
+     &   nlay,thrmtg,gaptg,mattag,DT,IP,DRA,laydesc,ier)
 
         IREC=IREC+1
         irsit(iit)=IREC
@@ -1186,180 +1173,270 @@ C Close file before exiting.
     
       END
 
-C << this is a copy of source from esrucom/edatabase.F >>
-C ******* matchmlcdesc
-C matchmlcdesc parse string (DES) and see if it matches a MLC
-C item - if so return its MLC index. DES might be from SMLCN or some 
-C other source.
-      subroutine matchmlcdesc(DES,imlcindex)
-#include "building.h"
+
+C ************* MKAPRC (copy from edcondb.F)
+C MKAPRC: Creates an ascii materials db based on the
+C current contents of binary file.
+      SUBROUTINE MKAPRC(LASCI,IFA,IER)
 #include "esprdbfile.h"
-#include "material.h"
-
-C Passed parameters DES length is flexable.
-      character*(*) DES
-      integer imlcindex
-
-C Local variable.
-      character MLCN*32
-      integer ii,lnmlcn,lndesc
-
-C Look for index for MLCN in the current constructions file.
-      imlcindex=0  ! assume no matching MLC          
-      lnmlcn=lnblnk(DES)
-      WRITE(MLCN,'(A)')DES
-      if(MLCN(1:4).eq.'UNKN') return
-      do ii=1,nmlc
-        lndesc=lnblnk(mlcname(ii))
-        if(MLCN(1:lnmlcn).eq.mlcname(ii)(1:lndesc)) then
-          imlcindex=ii   ! remember MLC index     
-        endif
-      end do
-      return
-      end
-
-C << this is a copy of source from esrucom/edatabase.F >>
-C ******* parsematdesc
-C Parse the NAM string from the MLC common block returning the index
-C (matarrayindex) of the version 1.1 or 1.2 materials array.
-C Newer MLC databases will include lines in the form:
-C   104    0.0130  gypsum plaster : Gypsum based plaster
-C and older MLC databases wil include lines in the form:
-C   104    0.0130  Gypsum plaster
-C So for newer MLC we are searching for ' : ' but in older
-C files there will not be such a string.
-
-C The logic initially looks for ' : ' and trys to match the matname 
-C variable and if that fails it trys without ' : ' and if that
-C fails it trys against matdoc. Lastly the value of
-C ileghope is checked against matlegindex. If no match is found a
-C warning is given and matarrayindex is returned as zero.
-
-      subroutine parsematdesc(ileghope,NAM,matarrayindex)
-#include "building.h"
-#include "esprdbfile.h"
-#include "material.h"
       
-      integer lnblnk        ! function definition
+      integer lnblnk  ! function definition
 
-C Parameters
-      integer ileghope      ! the legacy index to match against
-      character NAM*72      ! passed string from MLC
-      integer matarrayindex ! returned index in materials array
-
-      integer iuout,iuin
       COMMON/OUTIN/IUOUT,IUIN
+      COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
+      LOGICAL        CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
+      DIMENSION ICLN(30),VAL(6)
+      CHARACTER IDESC*72,NDESC*72,LASCI*72
+      integer ier
 
-      integer lnam,ltnam    ! length of material name
-      integer ipos,i2pos,iepos ! position start, 2 char along, end
-      character testname*32 ! local name for comparison
-      character PNAM*72     ! local string variable for scanning
-      logical foundcolon    ! true if ' : ' found
-      character outs*124
+C Open the binary materials database (in clase it was closed elsewhere).
+      CALL ERPFREE(IFMAT,ISTAT)
+      ier=0
+      call EFOPRAN(IFMAT,LFMAT,40,1,IER)
+      if(ier.ne.0)return
+      MATDBOK=.TRUE.
 
-C Initial assumptions.
-      foundcolon=.false.
-      matarrayindex=0
+C The ASCII file will be overwritten if it exists.
+      CALL EFOPSEQ(IFA,LASCI,4,IER)
+      
+C Write out a file header.
+      WRITE(IFA,30)LASCI(1:lnblnk(LASCI))
+  30  FORMAT('# materials db defined in ',A)
 
-C If the ileghope is zero then we are dealing with the standard (implied)
-C air gap and so no name is going to match and we can return with the
-C initial matarrayindex=0.
-      if(ileghope.eq.0)then
-        return
-      endif
+C Check binary contents.
+      IREC=601
+      READ(IFMAT,REC=IREC,IOSTAT=ISTAT,ERR=1000)NCLASS,(ICLN(K),K=1,30)
+      IF(NCLASS.LE.0)THEN
+        CALL USRMSG(' binary materials database empty! ',' ','W')
+        IER=1
+        RETURN
+      ENDIF
 
-C Copy NAM to PNAM and then search for ' : ' in PNAM and save to local
-C strings the matname.
-      PNAM=NAM
-      lnam=lnblnk(PNAM)
-      ipos=1   ! initial positions
-      i2pos=3
-      iepos=lnam-3
-      do 42 ip=1,iepos
-        if(PNAM(ipos:i2pos).eq.' : ')then
+C Proceed.
+      WRITE(IFA,'(I5,4X,A)')NCLASS,'#  number of classifications'
+      DO 10 I=1,NCLASS
+        IC=ICLN(I)
+        IREC=IC*20-19
+        READ(IFMAT,REC=IREC,IOSTAT=ISTAT,ERR=1000)NE,IDESC
+        WRITE(IFA,12)IC,NE,IDESC(:lnblnk(IDESC))
+   12   FORMAT('# class|no elements|description',/,I5,I5,3X,A)
+        IF(NE.LE.0)goto 10
+        DO 20 J=1,NE
+          IREC=IREC+1
+          READ(IFMAT,REC=IREC,IOSTAT=ISTAT,ERR=1001)(VAL(IL),IL=1,6),
+     &         NDESC
+          NCODE=IREC-1
+          WRITE(IFA,13)NCODE,NDESC(1:lnblnk(NDESC)),(VAL(K),K=1,6)
+   13     FORMAT( I5,3X,A,/,F13.3,2(', ',F8.3),2(', ',F6.3),', ',F10.3)
+   20   CONTINUE
+   10 CONTINUE
 
-C Save the string prior to ' : ' in testname and then see if any of
-C the matname matches.
-          foundcolon=.true.
-          write(testname,'(a)') PNAM(1:ipos-1)
-          ltnam=lnblnk(testname)
+  99  CALL ERPFREE(IFA,ISTAT)
+      RETURN
 
-C Find a matching matname, if the legacy index associated with this item
-C matches ileghope then our search is complete.  If it does not match
-C ileghope then there could be duplicate names to check further. If
-C ileghope is -99 then return what was found as an index match not possible.
-          do 43 imt=1,matdbitems
-            if(testname(1:ltnam).eq.matname(imt)(1:ltnam))then
-              if(matlegindex(imt).eq.ileghope)then
-                matarrayindex=imt
-                return
-              else
-                if(ileghope.eq.-99)then
-                  matarrayindex=imt
-                  return
-                else
-                  continue   ! keep looking for a text and index match
-                endif
-              endif
-            endif
-  43      continue
-        else
-          ipos=ipos+1
-          i2pos=i2pos+1
-        endif
-  42  continue
+C File errors.
+ 1000 CALL USRMSG(' NE,NDESC read error in ',LFMAT,'W')
+      IER=1
+      goto 99
+ 1001 CALL USRMSG(' Layer data write error in ',LFMAT,'W')
+      IER=1
 
-C If we did not find a ' : ' then take the PNAM literally and check against both
-C the matname and if that fails against matdoc
-      if(.NOT.foundcolon)then
+      END
 
-C Find a matching matname.
-        do 44 imt=1,matdbitems
-C check first the lenght of strings, if the stringsa re not equal the
-C material is different
-          if(lnblnk(matname(imt)).eq.lnam) then        
-             if(PNAM(1:lnam).eq.matname(imt)(1:lnam))then
-               matarrayindex=imt
-               return
-             endif
-          endif
-  44    continue
+C **************** TROPRO (copied from esruprj/edpro.F)
+C TROPRO creates an ASCII profiles db from the binary profiles db.
+C NOTE LASCI is 72 char. This is called only by esrudbm.
+      SUBROUTINE TROPRO(IFA,LASCI,IER)
+#include "esprdbfile.h"
+#include "espriou.h"
+#include "profile.h"
+      
+      integer lnblnk  ! function definition
 
-C If we got to this point also check for a matching matdoc string.
-        do 45 imt=1,matdbitems
-          if(PNAM(1:lnam).eq.matdoc(imt)(1:lnam))then
-            matarrayindex=imt
-            return
-          endif
-  45    continue
-      endif
+      COMMON/OUTIN/IUOUT,IUIN
+      CHARACTER LASCI*72
+      character ermsg*48   ! for read error messages
+      character outs*124   ! string buffer for messages
+      integer ier
 
-C There might have been a ' : ' but a text mismatch for matname so check matdoc.
-      do 46 imt=1,matdbitems
-        if(PNAM(1:lnam).eq.matdoc(imt)(1:lnam))then
-          matarrayindex=imt
+      IER =0
+
+C Because it is a binary file we are expecting a non-zero ier
+C does not require that we attempt to scan an ascii version of
+C the event profiles db.
+      CALL ERPFREE(IPRODB,ISTAT)
+      call EFOPRAN(IPRODB,LPRFDB,10,1,IER)
+      if(ier.ne.0)return
+
+      ermsg='reading record one number of profiles '
+      IREC=1
+      READ(IPRODB,REC=IREC,IOSTAT=ISTAT,ERR=1001)NPDBITEMS
+      IF(NPDBITEMS.LE.0)THEN
+        CALL USRMSG(' ',' Events profiles db is empty !','W') 
+        RETURN
+      ENDIF
+
+C Open or overwrite the ASCII file.
+      CALL EFOPSEQ(IFA,LASCI,4,IER)
+      IF(IER.NE.0)THEN
+        CALL USRMSG(' Could not open ASCII file!',LASCI,'W')
+        IER=1
+        RETURN
+      ENDIF
+      write(currentfile,'(a)') LASCI(1:lnblnk(LASCI))
+      
+C Write out a file header.
+      WRITE(IFA,30)LASCI(1:lnblnk(LASCI))
+  30  FORMAT('# events profiles db defined in ',A)
+
+C Proceed
+      ermsg='reading record one number of profiles '
+      IREC=1
+      READ(IPRODB,REC=IREC,IOSTAT=ISTAT,ERR=1001)  NPDBITEMS
+
+      WRITE(IFA,21,IOSTAT=ISTAT,ERR=1000)NPDBITEMS
+   21 FORMAT(I5,'    # Number of profiles')
+
+      DO 10 I = 1,NPDBITEMS
+        write(ermsg,'(a,i2)') 'reading number events in profile ',I
+        IREC = IREC + 1
+        READ(IPRODB,REC=IREC,IOSTAT=ISTAT,ERR=1001)  NCG(I)
+        write(ermsg,'(a,i2)') 'reading description of profile ',I
+        IREC = IREC + 1
+        READ(IPRODB,REC=IREC,IOSTAT=ISTAT,ERR=1001)  PDBDESC(I)
+
+        WRITE(IFA,22)NCG(I),PDBDESC(I)
+   22   FORMAT(I5,3X,A40,'  # No periods & description',/,
+     &                   '# start finish data data')
+
+C For each period.
+        DO 20 J = 1,NCG(I)
+          write(ermsg,'(a,i3,a,i2)') 'reading data of profile ',I,
+     &      ' at period ',J
+          IREC = IREC + 1
+          READ(IPRODB,REC=IREC,IOSTAT=ISTAT,ERR=1001)IS,IF,A,B
+          ICGS1(I,J)=IS
+          ICGF1(I,J)=IF
+          CGS1(I,J)=A
+          CGL1(I,J)=B
+          WRITE(IFA,23,IOSTAT=ISTAT,ERR=1000)IS,IF,A,B
+   23     FORMAT(I4,',',I4,',',F8.3,',',F8.3)
+   20   CONTINUE
+   10 CONTINUE
+
+  99  CALL ERPFREE(IPRODB,ISTAT)
+      CALL ERPFREE(IFA,ISTAT)
+      RETURN
+
+ 1000 CALL USRMSG(' ',' ASCII file write error in ','W')
+      goto 99
+
+ 1001 write(outs,'(3a,i4)') 'In profile db: error ',
+     &  ermsg(1:lnblnk(ermsg)),' at record ',irec
+      call edisp(iuout,outs)
+      goto 99
+
+      END
+
+
+C *************** ERPCDB (copied from esrucom/edatabase.F)
+C ERPCDB reads one element from a binary materials database
+C returning them via parameter list.
+C IFMAT is the unit number of the database,  IEL the requested 
+C element, ITRU unit number for user output, IER=0 OK, IER=1 problem.
+C ITRC is the trace level.  It is assumed that the database has been
+C previously opened and other parts of the code will close it when
+C appropriate.  E is the element emissivity, A is the solar absorb, DRV
+C is the diffusion resistance, TITL is the classification title, PNAM is
+C the material name.
+
+      SUBROUTINE ERPCDB(IFMAT,IEL,ITRU,IER,DBCON,DBDEN,DBSHT,E,A,
+     &                  DRV,TITL,PNAM)
+
+      CHARACTER PNAM*72,TITL*72,outs*124
+      logical close1,close2,close3
+
+      IER=0
+      close1=.false.
+      close2=.false.
+      close3=.false.
+
+C The record in the material db is IEL + 1 UNLESS the
+C reference is to material db 0 (air).
+      PNAM=' '
+      TITL=' '
+      DBCON=0.0
+      DBDEN=0.0
+      DBSHT=0.0
+      IF(IEL.NE.0)THEN
+        IR=((IEL-1)/20)*20+1
+        READ(IFMAT,REC=IR,IOSTAT=ISTAT,ERR=105)TITL
+        IR = IEL + 1
+        READ(IFMAT,REC=IR,IOSTAT=ISTAT,ERR=105)DBCON,DBDEN,DBSHT,E,A,
+     &       DRV,PNAM
+
+C If all values are still 0.0 then not an actual element.
+        CALL ECLOSE(DBCON,0.0,0.001,CLOSE1)
+        CALL ECLOSE(DBDEN,0.0,0.001,CLOSE2)
+        CALL ECLOSE(DBSHT,0.0,0.001,CLOSE3)
+        if(CLOSE1.and.CLOSE2.and.CLOSE3)then
+          write(outs,'(A,I3,A,2i4)') ' Material db reference ',IEL,
+     &                           ' has no data, or all zero...',IR,IFMAT
+          call usrmsg(outs,' Please check your selection! ','W')
+          ier=1
           return
         endif
-  46  continue
+      ELSE
 
-C Could not find it via a string match so see if there is a legacy index that
-C matches the required index.  This sometimes happens if the current version
-C materials database has a material name edited and the MLC database does not
-C have a matching string (but the legacy index is correct non-the-less).
-      do 47 imt=1,matdbitems
-        if(matlegindex(imt).eq.ileghope)then
-          matarrayindex=imt
-          return
-        endif
-  47  continue
+C Air layer encountered so put in zeroes.
+        E=0.99
+        A=0.99
+        DRV=1.0
+        PNAM='AIR'
+        TITL='GAPS'
+      ENDIF
 
-C If we got here there was no match. The value of matarrayindex remains at zero.
-      lnam=lnblnk(PNAM)
-      write(outs,*) 
-     &  'When scanning materials db looking for legacy index',ileghope
-      call edisp(iuout,outs)
-      write(outs,*) 'no match found for material named ',PNAM(1:lnam)
-      call edisp(iuout,outs)
-  
+  99  RETURN
+ 105  write(outs,'(A,I3,A,2i4)') ' Materials db reference ',IEL,
+     &    ' read error @ record ',IR,' in file',IFMAT
+      call edisp(itru,outs)
+      IER=1
+      CALL ERPFREE(IFMAT,ISTAT)
+      goto 99
+
+      END
+
+C ******* parsemlcdesc (copy from edatabase.F)
+C parsemlcdesc: Parse the DESC string from common block returning text for
+C MLCN (its name) ,OTF (whether OPAQ/TAN) ,OPT (optical name) ,MLCSYM
+C tag for symmetry. Where values are missing or unknown setup defaults.
+      subroutine parsemlcdesc(DES,MLCN,OTF,OPT,MLCSYM)
+      
+      integer lnblnk  ! function definition
+
+      character DES*48,MLCN*12,OTF*4,OPT*12,MLCSYM*12
+
+C Clear parameters to be returned and then copy from DES.
+      MLCN=' '
+      OTF=' '
+      OPT=' '
+      MLCSYM=' '
+      WRITE(MLCN,'(A)')DES(1:12)
+      WRITE(OTF,'(A)') DES(15:18)
+      IF(OTF.EQ.' ')OTF='OPAQ'
+      IF(OTF.EQ.'TRAN')THEN
+        WRITE(OPT,'(A)') DES(21:32)
+        IF(OPT.EQ.' ')OPT='UNKNOWN'
+      ELSE
+        OPT='OPAQUE'
+      ENDIF
+
+C Read tag for name of inverted version or symmetry if the length of the
+C DESC string could hold the tag, otherwise set MLCSYM to a blank.
+      if(lnblnk(DES).gt.35)then
+        WRITE(MLCSYM,'(A)') DES(35:46)
+      else
+        MLCSYM='  '
+      endif
       return
       end

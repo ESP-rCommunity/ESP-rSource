@@ -287,7 +287,7 @@ C-----
       fDHWLoad = fConFlow * fConCp * ( mains_temp - fConTemp )
 
 C-----Report thermal load: Format string as: 'plant/NAME/misc_data'
-      call AddToReport(rvPltDHWTermalLoad%Identifier,
+      call AddToReportWild1(rvPltDHWTermalLoad%Identifier,
      &      fDHWLoad,
      &      pcname(iPComp)(1:iPltNameLen(iPComp)))
 

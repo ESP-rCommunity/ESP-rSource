@@ -81,7 +81,7 @@ C LAPRES,IAPRES (for wind pressure databases)
       COMMON/FILEP/IFIL
       COMMON/ER1/IER1
 
-C      integer ncomp,ncon
+      integer ncomp,ncon
 C      COMMON/C1/NCOMP,NCON
 C      COMMON/C10/NPCON,IPC1(MPCON),IPN1(MPCON),IPCT(MPCON),
 C     &           IPC2(MPCON),IPN2(MPCON),PCONDR(MPCON),PCONSD(MPCON,2)

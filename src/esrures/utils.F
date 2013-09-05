@@ -666,9 +666,9 @@ C a different colour for each name.
       logical unixok
       
 #ifdef OSI
-      integer iix,iiy,iicol,iiline,iicx,iisize
+      integer iix,iiy
 #else
-      integer*8 iix,iiy,iicol,iiline,iicx,iisize
+      integer*8 iix,iiy
 #endif
 
 C Figure out how much text there is to write out. isecond is the last
@@ -686,25 +686,22 @@ C zone index that fit within 72 characters.
 C Full name of zone can be written. Find position of "Zones"
 C Set ix to last character position before looping through zones.
         word='Zones:'
-        iiline=line; iicx=2; iisize=isize
-        call findviewtext(iicx,iiline,iisize,iix,iiy)
-        iicol=0
-        call winscl('-',iicol)
+        call findviewtext(2,line,isize,ix,iy)
+        call winscl('-',0)
+        iix=ix; iiy=iy;
         call wstxpt(iix,iiy,word)
         icx=9
         do 43 i=1,NZ
 
 C Find x and y pixels for the current line and character postion.
 C Then get index of colour for this zone, then plot text in that colour.
-          iiline=line; iicx=icx; iisize=isize
-          call findviewtext(iicx,iiline,iisize,iix,iiy)
+          call findviewtext(icx,line,isize,ix,iy)
           lna=lnzname(NZNO(i))
           write(word,'(a)',iostat=ios,err=1) zname(NZNO(I))(1:lna)
-          call textatxy(iix,iiy,word,'z',NZNO(i))
+          call textatxy(ix,iy,word,'z',NZNO(i))
           icx=icx+lna+1
   43    continue
-        iicol=0
-        call winscl('-',iicol)
+        call winscl('-',0)
         call forceflush()
         return
       elseif(length.lt.140)then
@@ -712,10 +709,9 @@ C Then get index of colour for this zone, then plot text in that colour.
 C Try writing full name of zone on two lines. Find position of "Zones"
 C Set ix to last character position before looping through zones.
         word='Zones:'
-        iiline=line; iicx=2; iisize=isize
-        call findviewtext(iicx,iiline,iisize,iix,iiy)
-        iicol=0
-        call winscl('-',iicol)
+        call findviewtext(2,line,isize,ix,iy)
+        call winscl('-',0)
+        iix=ix; iiy=iy;
         call wstxpt(iix,iiy,word)
         icx=9
         iloop=MIN0(isecond,NZ)
@@ -723,11 +719,10 @@ C Set ix to last character position before looping through zones.
 
 C Find x and y pixels for the current line and character postion.
 C Then get index of colour for this zone, then plot text in that colour.
-          iiline=line; iicx=icx; iisize=isize
-          call findviewtext(iicx,iiline,iisize,iix,iiy)
+          call findviewtext(icx,line,isize,ix,iy)
           lna=lnzname(NZNO(i))
           write(word,'(a)',iostat=ios,err=1) zname(NZNO(I))(1:lna)
-          call textatxy(iix,iiy,word,'z',NZNO(i))
+          call textatxy(ix,iy,word,'z',NZNO(i))
           icx=icx+lna+1
  143    continue
         call forceflush()
@@ -740,66 +735,56 @@ C If there is a second line that can be created do it.
 
 C Find x and y pixels for the current line and character postion.
 C Then get index of colour for this zone, then plot text in that colour.
-            iiline=line+1; iicx=icx; iisize=isize
-            call findviewtext(iicx,iiline,iisize,iix,iiy)
+            call findviewtext(icx,line+1,isize,ix,iy)
             lna=lnzname(NZNO(i))
             write(word,'(a)',iostat=ios,err=1) zname(NZNO(I))(1:lna)
-            call textatxy(iix,iiy,word,'z',NZNO(i))
+            call textatxy(ix,iy,word,'z',NZNO(i))
             icx=icx+lna+1
  144      continue
         endif
-        iicol=0
-        call winscl('-',iicol)
+        call winscl('-',0)
         call forceflush()
         return
       else
         if(NZ.eq.1)then
           write(word,'(A,I2,A)',iostat=ios,err=1)' Zone (',NZNO(1),') '
-          iiline=line; iicx=2; iisize=isize
-          call findviewtext(iicx,iiline,iisize,iix,iiy)
-          iicol=0
-          call winscl('-',iicol)
+          call findviewtext(2,line,isize,ix,iy)
+          call winscl('-',0)
+          iix=ix; iiy=iy;
           call wstxpt(iix,iiy,word)
           icx=11
-          iiline=line; iicx=icx; iisize=isize
-          call findviewtext(iicx,iiline,iisize,iix,iiy)
+          call findviewtext(icx,line,isize,ix,iy)
           lna=lnzname(NZNO(1))
           write(word,'(a)',iostat=ios,err=1) zname(NZNO(1))(1:lna)
-          call textatxy(iix,iiy,word,'z',NZNO(1))
-          iicol=0
-          call winscl('-',iicol)
+          call textatxy(ix,iy,word,'z',NZNO(1))
+          call winscl('-',0)
           call forceflush()
         elseif(NZ.gt.1.and.NZ.LE.20)THEN
           word='Zones:'
-          iiline=line; iicx=2; iisize=isize
-          call findviewtext(iicx,iiline,iisize,iix,iiy)
-          iicol=0
-          call winscl('-',iicol)
+          call findviewtext(2,line,isize,ix,iy)
+          call winscl('-',0)
+          iix=ix; iiy=iy;
           call wstxpt(iix,iiy,word)
           icx=9
           do 44 i=1,NZ
-            iiline=line; iicx=icx; iisize=isize
-            call findviewtext(iicx,iiline,iisize,iix,iiy)
+            call findviewtext(icx,line,isize,ix,iy)
             lna=2
             write(word,'(i2)',iostat=ios,err=1) NZNO(I)
-            call textatxy(iix,iiy,word,'z',NZNO(i))
+            call textatxy(ix,iy,word,'z',NZNO(i))
             icx=icx+lna+1
   44      continue
-          iicol=0
-          call winscl('-',iicol)
+          call winscl('-',0)
           call forceflush()
           return
         ELSEIF(NZ.GT.20.AND.NZ.LE.24)THEN
           word='Zones:'
-          iiline=line; iicx=2; iisize=isize
-          call findviewtext(iicx,iiline,iisize,iix,iiy)
-          iicol=0
-          call winscl('-',iicol)
+          call findviewtext(2,line,isize,ix,iy)
+          call winscl('-',0)
+          iix=ix; iiy=iy;
           call wstxpt(iix,iiy,word)
           icx=9
           do 45 i=1,NZ
-            iiline=line; iicx=icx; iisize=isize
-            call findviewtext(iicx,iiline,iisize,iix,iiy)
+            call findviewtext(icx,line,isize,ix,iy)
             if(i.ge.1.and.i.lt.10)then
               lna=1
               write(word,'(i1)',iostat=ios,err=1) NZNO(I)
@@ -807,24 +792,21 @@ C Then get index of colour for this zone, then plot text in that colour.
               lna=2
               write(word,'(i2)',iostat=ios,err=1) NZNO(I)
             endif
-            call textatxy(iix,iiy,word,'z',NZNO(i))
+            call textatxy(ix,iy,word,'z',NZNO(i))
             icx=icx+lna+1
   45      continue
-          iicol=0
-          call winscl('-',iicol)
+          call winscl('-',0)
           call forceflush()
           return
         ELSEIF(NZ.GT.24.AND.NZ.LE.28)THEN
           word='Zn:'
-          iiline=line; iicx=2; iisize=isize
-          call findviewtext(iicx,iiline,iisize,iix,iiy)
-          iicol=0
-          call winscl('-',iicol)
+          call findviewtext(2,line,isize,ix,iy)
+          call winscl('-',0)
+          iix=ix; iiy=iy;
           call wstxpt(iix,iiy,word)
           icx=5
           do 46 i=1,NZ
-            iiline=line; iicx=icx; iisize=isize
-            call findviewtext(iicx,iiline,iisize,iix,iiy)
+            call findviewtext(icx,line,isize,ix,iy)
             if(i.ge.1.and.i.lt.10)then
               lna=1
               write(word,'(i1)',iostat=ios,err=1) NZNO(I)
@@ -832,18 +814,16 @@ C Then get index of colour for this zone, then plot text in that colour.
               lna=2
               write(word,'(i2)',iostat=ios,err=1) NZNO(I)
             endif
-            call textatxy(iix,iiy,word,'z',NZNO(i))
+            call textatxy(ix,iy,word,'z',NZNO(i))
             icx=icx+lna+1
   46      continue
-          iicol=0
-          call winscl('-',iicol)
+          call winscl('-',0)
           call forceflush()
           return
         ELSEIF(NZ.GT.28)THEN
           icx=2
           do 47 i=1,NZ
-            iiline=line; iicx=2; iisize=isize
-            call findviewtext(iicx,iiline,iisize,iix,iiy)
+            call findviewtext(icx,line,isize,ix,iy)
             if(i.ge.1.and.i.lt.10)then
               lna=1
               write(word,'(i1)',iostat=ios,err=1) NZNO(I)
@@ -851,11 +831,10 @@ C Then get index of colour for this zone, then plot text in that colour.
               lna=2
               write(word,'(i2)',iostat=ios,err=1) NZNO(I)
             endif
-            call textatxy(iix,iiy,word,'z',NZNO(i))
+            call textatxy(ix,iy,word,'z',NZNO(i))
             icx=icx+lna+1
   47      continue
-          iicol=0
-          call winscl('z',iicol)
+          call winscl('z',0)
           call forceflush()
           return
         ENDIF
@@ -1126,19 +1105,28 @@ C Check for selections and copy to call parameters for passing back.
 C ******************** PICKANC ********************
 C PICKANC: call to enquire which anchor point the user wishes data to 
 C be recovered for.  Returns lists of zone and surface numbers for 
-C anchor type 'SURF'. Definitions in model.h.
+C anchor type 'SURF'.
+C Anchor commons:
+C NALOC = nb of anchors,
+C ALOC = substitution attribute used with the the anchor (usually
+C   passed from a command to a function which manipulates the anchor.),
+C ALOCLBL = user's name for the anchor,
+C ALOCTYP = type (SURF|CTRL|LOAD) for the anchor,
+C IALOC = nb of links (surfaces, etc.) associated with the anchor,
+C lstanchr = links for each anchor
 
       SUBROUTINE PICKANC(ATYPE,IZLST,ISLST,NSANC,IER)
 #include "building.h"
-#include "model.h"
 
       COMMON/OUTIN/IUOUT,IUIN
 
+      common/anchora/NALOC,ALOC(20),ALOCLBL(20),ALOCTYP(20)
+      common/anchorb/IALOC(20),lstanchr(20,60)
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
 
       DIMENSION IV(20),IZLST(MCON),ISLST(MCON)
 
-      character ATYPE*4
+      character ALOC*12,ALOCLBL*12,ALOCTYP*4,ATYPE*4
       character ST(20)*12,outs*124
 
 C For help messages

@@ -277,7 +277,6 @@ C BHSTR - an array holding a descriptive string for each column of data.
 
 #include "b2e.h"
 #include "building.h"
-#include "model.h"
 #include "espriou.h"
       
       integer lnblnk  ! function definition
@@ -295,6 +294,7 @@ C Simulation parameter periods.
      &               isfnmon(MSPS)
       common/spfldat/nsset,isset,isstup,isbnstep,ispnstep,issave,isavgh
 
+      common/C21/IFCFG,cfgroot,LCFGF
 
       COMMON/RBEMSTR/BHSTR(MBCOL)   
 
@@ -305,7 +305,8 @@ C Commom for the optimim start/stop simulation.
      &NOPSSPCP,OPSSPCP(MCOM),OPSSPST(MCOM)
 
       CHARACTER*8 BHSTR
-      character*72 MODELCFG,TDFUD,BFILE,RSFIL,BREPT
+      CHARACTER cfgroot*24
+      character*72 MODELCFG,TDFUD,BFILE,RSFIL,BREPT,LCFGF
       CHARACTER*124 OUTSTR,OUTS
       
       INTEGER IBUNIT,NCOLS,NLINE,SENMAP
@@ -781,7 +782,6 @@ C ITRC is the trace level, IER=0 OK, IER=1 problem.
       SUBROUTINE tdfupd(ITRC,AFIL,IAFIL,IER)
 #include "building.h"
 #include "model.h"
-#include "net_flow.h"
 #include "tdf2.h"
 
       COMMON/OUTIN/IUOUT,IUIN

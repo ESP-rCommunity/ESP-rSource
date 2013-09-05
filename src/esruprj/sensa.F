@@ -32,14 +32,15 @@ C             the model.
 C ***************** UNCERTA *********************
       subroutine UNCERTA(LUALF)
 #include "building.h"
-#include "model.h"
 #include "uncertainty.h"
       
       integer lnblnk  ! function definition
 
       COMMON/FILEP/IFIL
       COMMON/OUTIN/IUOUT,IUIN
+      common/pophelp/h(60)
 
+      common/C21/IFCFG,cfgroot,LCFGF
       common/rpath/path
 
       COMMON/UA2/NILOC,NZG(MNIL),NZNOG(MNIL,MCOM),NSG(MNIL,MCOM),
@@ -49,22 +50,14 @@ C ***************** UNCERTA *********************
 
       CHARACTER*33 ITEM(11)
       character path*72,LUALF*72
-      CHARACTER LTEMP*72,DTEMP*72,outs*124
+      CHARACTER H*72,LTEMP*72,DTEMP*72,outs*124
+      character cfgroot*24,LCFGF*72
       integer NITMS,INO ! max items and current menu item
 
       LOGICAL LIBXST
 
-C For help messages
-      character helpinsub*24 ! subroutine name
-      character helptopic*24 ! string (unique) for topic
-      integer nbhelp     ! number of help lines found
-
-      helpinsub='UNCERTA'  ! set for subroutine
-      
       IUALF=IFIL
-      helptopic='uncert_overview_a'
-      call gethelptext(helpinsub,helptopic,nbhelp)
-      
+
 C Ask for an uncertainty library name and check to see if it exists.
  4    IW=0
       if(path.ne.'./'.and.path.ne.' ')then
@@ -72,7 +65,7 @@ C Ask for an uncertainty library name and check to see if it exists.
         call edisp(iuout,outs)
         CALL EASKAB(' You are working in a remote folder... ',
      &               ' place library:','using the path',
-     &               'in local folder',IW,nbhelp)
+     &               'in local folder',IW,0)
       endif
 
 C Create a sensible default name.
@@ -84,7 +77,7 @@ C Create a sensible default name.
         LTEMP=LUALF
       endif
       call EASKS(LTEMP,' Uncertainty definitions file name ?',
-     &                      ' ',72,DTEMP,'UA library',IER,nbhelp)
+     &                      ' ',72,DTEMP,'UA library',IER,0)
       if (IER.eq.0) then
         LUALF=LTEMP
       else
@@ -132,7 +125,21 @@ C Set up initial menu.
       ITEM(11)='- exit this menu       '
       NITMS=11
 
-   12 CALL EMENU('Uncertainty definition',ITEM,NITMS,INO)
+C Help text for this menu.
+   12 H(1) ='Uncertainties are defined in a three stage process '
+      H(2) ='analogous to mass flow.'
+      H(3) ='  '
+      H(4) ='1. A distribution for a chosen parameter is defined.  '
+      H(5) ='   Minimum one distribution.'
+      H(6) ='  '
+      H(7) ='2. A physical location in the model is defined; zone,  '
+      H(8) ='   surface etc. Minimum one location.'
+      H(9) ='  '
+      H(10)='3. Distributions and locations are linked to define an '
+      H(11)='   uncertainty.  The validity of the uncertainty is '
+      H(12)='   checked at simulation time. Minimum one uncertainty.'
+
+      CALL EMENU('Uncertainty definition',ITEM,NITMS,INO)
       if (INO.EQ.NITMS) then
 
 C Check if the library has been saved and closed.
@@ -140,9 +147,7 @@ C Check if the library has been saved and closed.
       elseif (INO.EQ.(NITMS-1)) then
 
 C HELP!
-        helptopic='uncert_overview_a'
-        call gethelptext(helpinsub,helptopic,nbhelp)
-        CALL PHELPD('Uncertainty definitions file',nbhelp,'-',0,0,IER)
+        CALL PHELPD('Uncertainty definitions file',12,'-',0,0,IER)
       elseif (INO.EQ.(NITMS-2)) then
 
 C Save uncertainty definitions.
@@ -185,9 +190,12 @@ C ITYP: 1=changes, 2=locations, 3=actions
 #include "building.h"
 #include "epara.h"
 #include "uncertainty.h"
-
 C muadel should be equivalent to max(MNCNG,MNIL,MNACT))
       parameter (muadel=50)
+
+
+      COMMON/OUTIN/IUOUT,IUIN
+      common/pophelp/h(60)
 
       COMMON/UA1/LUALF,LCNG(MNCNG),LLOC(MNIL)
       COMMON/UA2/NILOC,NZG(MNIL),NZNOG(MNIL,MCOM),NSG(MNIL,MCOM),
@@ -196,24 +204,13 @@ C muadel should be equivalent to max(MNCNG,MNIL,MNACT))
       COMMON/UA4/NIACT,IACTD(MNACT,2)
 
       character LUALF*72,LCNG*15,LLOC*15,ta15(MNCNG)*15
-      CHARACTER KEY*1,MLCITM(35)*24
+      CHARACTER H*72,KEY*1,MLCITM(35)*24
 
       dimension IDEL(muadel)
       integer NITMS,INO ! max items and current menu item
 
-C For help messages
-      character helpinsub*24 ! subroutine name
-      character helptopic*24 ! string (unique) for topic
-      integer nbhelp     ! number of help lines found
-
-      helpinsub='DISPOPT'  ! set for subroutine
-      
       IER=0
       if (ITYP.lt.1.and.ITYP.gt.3) return
-      
-C Generate help text for this subroutine.
-      helptopic='uncert_display'
-      call gethelptext(helpinsub,helptopic,nbhelp)
 
 C Create a menu showing the available database items.  Allow user to
 C select one and then list details of this item, allowing editing.
@@ -259,7 +256,7 @@ C If a long list include page facility text.
         MLCITM(M+1)=' -------------------- '
       ELSE
         WRITE(MLCITM(M+1),15)IPM,MPM 
-  15    FORMAT   ('0 ---Page: ',I2,' of ',I2,' ---')
+   15   FORMAT   ('0 ---Page: ',I2,' of ',I2,' ---')
       ENDIF
       MLCITM(M+2)='+ add definition '
       MLCITM(M+3)='= delete definition '
@@ -269,8 +266,13 @@ C If a long list include page facility text.
       MLCITM(M+7)='- exit this menu  '
       INO=-4
 
-C Depending on ityp display different headings for menu.
-  2   if (ITYP.eq.1) then
+C Help text for this menu.
+   2  H(1)='To create a new definition select + add entry. '
+      H(2)='To edit an existing entry then select it.'
+      H(3)='To remove an existing entry select = delete entry and'
+      H(4)='  then the entry you wish to delete.'
+
+      if (ITYP.eq.1) then
         CALL EMENU('Distributions',MLCITM,NITMS,INO)
       elseif (ITYP.eq.2) then
         CALL EMENU('Locations',MLCITM,NITMS,INO)
@@ -283,8 +285,6 @@ C Depending on ityp display different headings for menu.
       ELSEIF(INO.EQ.NITMS-1)THEN
 
 C Produce help text for the menu.
-        helptopic='uncert_display'
-        call gethelptext(helpinsub,helptopic,nbhelp)
         CALL PHELPD('UA file entries',4,'-',0,0,IER)
       ELSEIF(INO.EQ.NITMS-2)THEN
 
@@ -302,7 +302,7 @@ C Present list of currently defined then remove chosen from it.
         IDEL(1)=0
         if (ITYP.eq.1.and.NICNG.ge.1) then
           call EPICKS(INDEL,IDEL,' ',' ',15,NICNG,LCNG,
-     &       'Distributions',IER,nbhelp)
+     &                                         'Distributions',IER,4)
           if (IDEL(1).gt.0) then
             do 700 ID=IDEL(1),NICNG
               LCNG(ID)=LCNG(ID+1)
@@ -317,7 +317,7 @@ C Present list of currently defined then remove chosen from it.
           endif
         elseif (ITYP.eq.2.and.NILOC.ge.1) then
           call EPICKS(INDEL,IDEL,' ',' ',15,NILOC,LLOC,
-     &      'Locations',IER,nbhelp)
+     &                                         'Locations',IER,4)
           if (IDEL(1).gt.0) then
             do 701 ID=IDEL(1),NILOC
               LLOC(ID)=LLOC(ID+1)
@@ -337,7 +337,7 @@ C Present list of currently defined then remove chosen from it.
            write(ta15,'(2a)')LCNG(IACTD(I,1))(1:7),LLOC(IACTD(I,2))(1:7)
  799      continue
           call EPICKS(INDEL,IDEL,' ',' ',15,NIACT,ta15,
-     &      'Uncertainties',IER,nbhelp)
+     &                                         'Uncertainties',IER,4)
           if (IDEL(1).gt.0) then
             do 702 ID=IDEL(1),NIACT
               IACTD(ID,1)=IACTD(ID+1,1)
@@ -401,8 +401,11 @@ C DEFUAL create a set of default uncertainties
 #include "uncertainty.h"
 
       COMMON/OUTIN/IUOUT,IUIN
+      common/pophelp/h(60)
 
       COMMON/UA3/NICNG,IDTYP(MNCNG),IDMAT(MNCNG,3),DAT(MNCNG,2)
+
+      CHARACTER H*72
 
       IERR=0
       IER=0
@@ -444,21 +447,15 @@ C ICDEF  If equal to zero then add a new definition, else edit.
 #include "uncertainty.h"
 
       COMMON/OUTIN/IUOUT,IUIN
+      common/pophelp/h(60)
 
       COMMON/UA1/LUALF,LCNG(MNCNG),LLOC(MNIL)
       COMMON/UA3/NICNG,IDTYP(MNCNG),IDMAT(MNCNG,3),DAT(MNCNG,2)
 
       character LUALF*72,LCNG*15,LLOC*15,t15*15
-      CHARACTER ITEM(17)*40, outs*124
+      CHARACTER H*72, ITEM(17)*40, outs*124
       integer NITMS,INO ! max items and current menu item
 
-C For help messages
-      character helpinsub*24 ! subroutine name
-      character helptopic*24 ! string (unique) for topic
-      integer nbhelp     ! number of help lines found
-
-      helpinsub='CNGDEF'  ! set for subroutine
-      
       IERR=0
       IER=0
 
@@ -508,8 +505,11 @@ C Display current.
       endif
 
 C Help text for this menu.
-  5   helptopic='uncert_distribution'
-      call gethelptext(helpinsub,helptopic,nbhelp)
+  5   H(1)='Pick the required uncertainty category. You will then '
+      H(2)='be asked further questions to define the uncertainty '
+      H(3)='distribution.  '
+      H(4)='   '
+      H(5)='Exit returns to the main menu without saving any data. '
 
       INO=-1
       CALL EMENU('Uncertainty categories',ITEM,NITMS,INO)
@@ -525,8 +525,6 @@ C If no type has been selected then return to main SA menu.
         IERR=101
         return
       elseif (INO.eq.NITMS-1) then
-        helptopic='uncert_distribution'
-        call gethelptext(helpinsub,helptopic,nbhelp)
         CALL PHELPD('Uncertainty categories',5,'-',0,0,IER)
       elseif (INO.eq.2) then
 
@@ -572,12 +570,13 @@ C Check for errors.
       endif
 
 C Provide id string name.
+      H(1)='A descriptive name (up to 15 characters) is required.'
       if (ICDEF.gt.ICDEFold) then
         continue
       elseif (ICDEF.gt.0) then 
         t15=LCNG(ICDEF)
         CALL EASKS(t15,' ',' Name for uncertainty ? ',
-     &      15,LCNG(ICDEF),'Uncertainty name',IER,nbhelp)
+     &      15,LCNG(ICDEF),'Uncertainty name',IER,1)
         if(t15(1:2).ne.'  '.and.t15(1:4).ne.'UNKN')then
           LCNG(ICDEF)=t15
         endif
@@ -586,7 +585,7 @@ C Provide id string name.
 C Passed icdef of zero i.e. new uncertainty
         t15=LCNG(1)
         CALL EASKS(t15,' ',' Name for uncertainty ? ',
-     &      15,' ','Uncertainty name',IER,nbhelp)
+     &      15,' ','Uncertainty name',IER,1)
         if(t15(1:2).ne.'  '.and.t15(1:4).ne.'UNKN')then
           LCNG(1)=t15
         endif
@@ -611,10 +610,10 @@ C   specification and 2 if there was a cancel issued during editing.
 #include "uncertainty.h"
 
       COMMON/OUTIN/IUOUT,IUIN
+      common/pophelp/h(60)
 
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
-      integer IZSTOCN
       COMMON/C24/IZSTOCN(MCOM,MS)
 
       COMMON/UA1/LUALF,LCNG(MNCNG),LLOC(MNIL)
@@ -625,18 +624,11 @@ C   specification and 2 if there was a cancel issued during editing.
       DIMENSION STMP(MS),IVALZ(MCOM),IVALS(MS)
 
       character LUALF*72,LCNG*15,LLOC*15,t15*15
-      CHARACTER STMP*12
+      CHARACTER H*72,STMP*12
 
       integer idst,ihst,idft,ihft   ! for local editing.
       integer idf,ids,ihf,ihs
 
-C For help messages
-      character helpinsub*24 ! subroutine name
-      character helptopic*24 ! string (unique) for topic
-      integer nbhelp     ! number of help lines found
-
-      helpinsub='LOCDEF'  ! set for subroutine
-      
 C Set initial values.
       IERR=0
       IER=0
@@ -651,11 +643,17 @@ C Increment number of uncertainty locations.
       NTLOC(NILOC)=0
 
 C First discover if the location is spatial or temporal
-      helptopic='uncert_location'
-      call gethelptext(helpinsub,helptopic,nbhelp)
+      H(1)='The location of the uncertainty can be:'
+      H(2)=' - spatial and in all temporal locations.'
+      H(3)=' - temporal and in all spatial locations.'
+      H(4)=' - both.  Only use this option if both domains have'
+      H(5)='   a restriction'
+      H(6)=' '
+      H(7)='If you select cancel (where a number is requested) '
+      H(8)='the current model data will not be changed. '
       CALL EASKABC(' ',
-     &  'In which domain is the uncertainty location restricted: ',
-     &  'spatial','temporal','both',IW,nbhelp)
+     &    'In which domain is the uncertainty location restricted: ',
+     &    'spatial','temporal','both',IW,8)
 
       if (IW.eq.1.or.IW.eq.3) then
 
@@ -670,16 +668,18 @@ C Clear zone selected array first.
      &        (iuout,' Single zone model, therefore zone 1 selected. ')
           call edisp(iuout,'  ')
           NZG(NILOC)=1
-          NZNOG(NILOC,1)=1
         else
 
 C Otherwise select the zones from a list of zone names.
           call edisp(iuout,' Zone selection... ')
           call edisp(iuout,'  ')
 
+          H(1)='Pick one, several or All zones for inclusion in a'
+          H(2)='graph or tabular listing from the list provided. '
+          H(3)='You may choose them in any order. '
           INPIC=NCOMP
           CALL EPICKS(INPIC,IVALZ,' ',' Which zones to include: ',
-     &      12,NCOMP,ZNAME,' zone list',IERR,nbhelp)
+     &      12,NCOMP,ZNAME,' zone list',IERR,3)
 
 C Check for errors.
           if (IERR.ne.0) goto 999
@@ -721,9 +721,10 @@ C are applicable.
  511      continue
           call edisp(iuout,' Surface selection ')
           call edisp(iuout,'  ')
+          H(1)=' Pick one, several or all surfaces for inclusion.'
           call EPICKS(INPIC,IVALS,' Which surfaces to include: ',
      &      ' (If surface selection not required choose * All) ',
-     &      12,NZSUR(IZONE),STMP,ZNAME(IZONE),IERR,nbhelp)
+     &      12,NZSUR(IZONE),STMP,ZNAME(IZONE),IERR,1)
 
 C Check for errors.
           if (IERR.ne.0) goto 999
@@ -752,10 +753,14 @@ C * selection.
       if (IW.eq.2.or.IW.eq.3) then
 
 C Temporal locations.
+        H(1)='The period when uncertainty is applicable requires '
+        H(2)='starting and finishing dates. '
+        H(3)='If you select cancel (where a number is requested) '
+        H(4)='the current model data will not be changed. '
         NTLOC(NILOC)=-1
         idst=ids
         call EASKI(IDST,' ','Start day? ',1,'F',365,'F',9,
-     &    'day of year',IERI,nbhelp)
+     &                'day of year',IERI,4)
         if(ieri.eq.-3) then
           NILOC=NILOC-1
           IERR=2
@@ -764,7 +769,7 @@ C Temporal locations.
 
         ihst=ihs
         call EASKI(IHST,' ','Start hour? ',1,'F',24,'F',1,
-     &    'hour of day',IERI,nbhelp)
+     &                'hour of day',IERI,4)
         if(ieri.eq.-3) then
           NILOC=NILOC-1
           IERR=2
@@ -773,7 +778,7 @@ C Temporal locations.
 
         idft=idf
         call EASKI(IDFT,' ','Finish day? ',1,'F',365,'F',15,
-     &    'day of year',IERI,nbhelp)
+     &                'day of year',IERI,4)
         if(ieri.eq.-3) then
           NILOC=NILOC-1
           IERR=2
@@ -782,7 +787,7 @@ C Temporal locations.
 
         ihft=ihf
         call EASKI(IHFT,' ','Finish hour? ',1,'F',24,'F',24,
-     &    'hour of day',IERI,nbhelp)
+     &                'hour of day',IERI,4)
         if(ieri.eq.-3) then
           NILOC=NILOC-1
           IERR=2
@@ -797,9 +802,10 @@ C Ok to instanciate the data and complete the editing.
       endif
 
 C Provide id string name.
- 99   t15=LLOC(NILOC)
+ 99   H(1)='A descriptive name (up to 15 characters) is required.'
+      t15=LLOC(NILOC)
       CALL EASKS(t15,' ',' Name for location ? ',
-     &  15,' ','Location name',IERR,nbhelp)
+     &            15,' ','Location name',IERR,1)
       if(t15(1:2).ne.'  '.and.t15(1:4).ne.'UNKN')then
         LLOC(NILOC)=t15
       else
@@ -827,6 +833,7 @@ C ITEM   If equal to zero then add a new definition, else edit.
 #include "uncertainty.h"
 
       COMMON/OUTIN/IUOUT,IUIN
+      common/pophelp/h(60)
 
       COMMON/UA1/LUALF,LCNG(MNCNG),LLOC(MNIL)
       COMMON/UA2/NILOC,NZG(MNIL),NZNOG(MNIL,MCOM),NSG(MNIL,MCOM),
@@ -835,29 +842,22 @@ C ITEM   If equal to zero then add a new definition, else edit.
       COMMON/UA4/NIACT,IACTD(MNACT,2)
 
       character LUALF*72,LCNG*15,LLOC*15
+      CHARACTER H*72
 
       DIMENSION IVALC(MNCNG),IVALL(MNIL)
 
-C For help messages
-      character helpinsub*24 ! subroutine name
-      character helptopic*24 ! string (unique) for topic
-      integer nbhelp     ! number of help lines found
-
-      helpinsub=' LINKDEF'  ! set for subroutine
-      
       IERR=0
       IER=0
       if (IERR.ne.0)  goto 999
 
-C Help text for the subroutine.
-      helptopic='uncert_types'
-      call gethelptext(helpinsub,helptopic,nbhelp)
-      
 C Generate a list of changes and then locations so as the user can 
 C define actions.
+      H(1)='Pick the required uncertainty definition(s).'
+      H(2)='  '
+      H(3)='Exit returns to the main menu without saving any data. '
       INPIC=NICNG
       CALL EPICKS(INPIC,IVALC,' ',' Which uncertainty definition : ',
-     &   15,NICNG,LCNG,'Uncert. defn.',IERR,nbhelp)
+     &                       15,NICNG,LCNG,'Uncert. defn.',IERR,3)
       if (IERR.ne.0) goto 999
 
 C If no type has been selected then return to main SA menu.
@@ -869,9 +869,12 @@ C If no type has been selected then return to main SA menu.
         return
       endif
 
+      H(1)='Pick the required location definition.'
+      H(2)='  '
+      H(3)='Exit returns to the main menu without saving any data. '
       INPIL=NILOC
       CALL EPICKS(INPIL,IVALL,' ',' Which location definition : ',
-     &   15,NILOC,LLOC,' Location defs.',IERR,nbhelp)
+     &                          15,NILOC,LLOC,' Location defs.',IERR,3)
       if (IERR.ne.0) goto 999
 
 C If no type has been selected then return to main SA menu.
@@ -903,8 +906,8 @@ C Everything is OK re selection therefore add type selection to common.
       END
 
 C ************************ UPELM **************************
-C UPELM retrieves the unique materials used in the ESP-r 
-C model. This is done by copying all the materials used 
+C UPELM retrieves the unique materials used in the 
+C esp-r model. This is done by copying all the materials used 
 C into an array, then sorting them via a bubble search removing 
 C any duplicates.
 
@@ -939,12 +942,12 @@ C composite construction database.
         ENDIF
       ENDIF
 
-C Search through the constructions and store the materials array index.
+C Search through the composites and store the materials db ref.
       IPRIM=0
       do 10, IMLC=1,NMLC
         do 20, ILAY=1,LAYERS(IMLC)
           IPRIM=IPRIM+1
-          PRIMLIST(IPRIM)=IPRMAT(IMLC,ILAY)
+          PRIMLIST(IPRIM)=IPR(IMLC,ILAY)
    20   continue
    10 continue
 

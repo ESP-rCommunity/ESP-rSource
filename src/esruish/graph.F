@@ -46,7 +46,6 @@ C Parameter
       common/headl/irecs(ms)
       integer menuchw,igl,igr,igt,igb,igw,igwh
       common/viewpx/menuchw,igl,igr,igt,igb,igw,igwh
-      integer izstocn
       common/c24/izstocn(mcom,ms)
 
       character outs*124
@@ -57,12 +56,8 @@ C Parameter
       
 #ifdef OSI
       integer igwid,igheight  ! for use with axiscale
-      integer iigl,iigr,iigt,iigb,iigw,iigwh
-      integer iiw1,iiw2,iiw3,iiw4,iimenu
 #else
       integer*8 igwid,igheight  ! for use with axiscale
-      integer*8 iigl,iigr,iigt,iigb,iigw,iigwh
-      integer*8 iiw1,iiw2,iiw3,iiw4,iimenu
 #endif
 
 C For help messages
@@ -107,15 +102,9 @@ C Clear the viewing box, draw its border and return the offsets
 C that define it. The win3d parameters match those in facdrw
 C and sitpln.
       call startbuffer()
-
-C Setup and pass in parameters to win3d.
-      iiw1=7; iiw2=4; iiw3=4; iiw4=3; iimenu=menuchw
-      iigl=igl; iigr=igr; iigt=igt; iigb=igb; iigw=igw; iigwh=igwh
-      CALL win3d(iimenu,iiw1,iiw2,iiw3,iiw4,
-     &  iigl,iigr,iigt,iigb,iigw,iigwh)
-C      call win3d(menuchw,7,4,4,3,igl,igr,igt,igb,igw,igwh)
-      igl=int(iigl); igr=int(iigr); igt=int(iigt); igb=int(iigb)
-      igw=int(iigw); igwh=int(iigwh)
+      call win3d(menuchw,7,4,4,3,igl,igr,igt,igb,igw,igwh)
+      igw=igr-igl
+      igwh=igb-igt
       igwid=igw
       igheight=igwh
 
@@ -142,7 +131,7 @@ C Determine scaling ratios.
      &  Xadd,Zadd)
 
 C Place scaling in static C variables for use by line drawing routines.
-      call linescale(iigl,Xadd,sca,iigb,Zadd,sca)
+      call linescale(igl,Xadd,sca,igb,Zadd,sca)
 
 C Output start hour.
       ih=1
@@ -220,7 +209,6 @@ C Draws the elevation of the target surface.
       integer mon,isc,iyd
       common/contr/mon,isc(ms),iyd
       common/g1T/xft(mv),zft(mv)
-      integer izstocn
       common/c24/izstocn(mcom,ms)
       integer menuchw,igl,igr,igt,igb,igw,igwh
       common/viewpx/menuchw,igl,igr,igt,igb,igw,igwh
@@ -230,26 +218,18 @@ C Draws the elevation of the target surface.
 #ifdef OSI
       integer iside,isize,ifont     ! passed to viewtext
       integer ipos,iupdown,isym     ! passed to etplot
-      integer iigl,iigr,iigt,iigb,iigw,iigwh
-      integer iiw1,iiw2,iiw3,iiw4,iimenu
 #else
       integer*8 iside,isize,ifont     ! passed to viewtext
       integer*8 ipos,iupdown,isym     ! passed to etplot
-      integer*8 iigl,iigr,iigt,iigb,iigw,iigwh
-      integer*8 iiw1,iiw2,iiw3,iiw4,iimenu
 #endif
 
       data month/'Jan','Feb','Mar','Apr','May','Jun','Jul','Aug',
      &            'Sep','Oct','Nov','Dec'/
 
 C Display header information. Calculate graphic boundaries.
-      iiw1=7; iiw2=4; iiw3=3; iiw4=3; iimenu=menuchw
-      iigl=igl; iigr=igr; iigt=igt; iigb=igb; iigw=igw; iigwh=igwh
-      CALL win3d(iimenu,iiw1,iiw2,iiw3,iiw4,
-     &  iigl,iigr,iigt,iigb,iigw,iigwh)
-C      call win3d(menuchw,7,4,3,3,igl,igr,igt,igb,igw,igwh)
-      igl=int(iigl); igr=int(iigr); igt=int(iigt); igb=int(iigb)
-      igw=int(iigw); igwh=int(iigwh)
+      call win3d(menuchw,7,4,3,3,igl,igr,igt,igb,igw,igwh)
+      igw=igr-igl
+      igwh=igb-igt
       icn=izstocn(icomp,isur)
 
       write(etext,1)month(mon),ihour,isur,ssname(icn)
@@ -261,10 +241,10 @@ C      call win3d(menuchw,7,4,3,3,igl,igr,igt,igb,igw,igwh)
       call viewtext(etext,iside,isize,ifont)
 
 C Draw horizontal axis and move to start point.
-      call horaxis(xmin,xmax,iigl,iigr,iigb,Xadd,sca,0,'Horizontal')
+      call horaxis(xmin,xmax,igl,igr,igb,Xadd,sca,0,'Horizontal')
 
 C Draw vertical axis.
-      call vrtaxis(zmin,zmax,iigl,iigb,iigt,Zadd,sca,0,0,'Vertical')
+      call vrtaxis(zmin,zmax,igl,igb,igt,Zadd,sca,0,0,'Vertical')
 
 C Draw target surface.
       iupdown=0
@@ -373,14 +353,10 @@ C Draws a Mercator sun path diagram.
       integer igwid,igheight  ! passed to axiscale
       integer iside,isize,ifont     ! passed to viewtext
       integer ipos,iupdown,isym    ! passed to etplot
-      integer iigl,iigr,iigt,iigb,iigw,iigwh
-      integer iiw1,iiw2,iiw3,iiw4,iimenu
 #else
       integer*8 igwid,igheight  ! passed to axiscale
       integer*8 iside,isize,ifont     ! passed to viewtext
       integer*8 ipos,iupdown,isym    ! passed to etplot
-      integer*8 iigl,iigr,iigt,iigb,iigw,iigwh
-      integer*8 iiw1,iiw2,iiw3,iiw4,iimenu
 #endif
       real xsc,ysc,sca,Xadd,Yadd  ! returned from axiscale
 
@@ -388,16 +364,12 @@ C Draws a Mercator sun path diagram.
      &           'Sep','Oct','Nov','Dec'/
 
 C Clear the viewing box, draw its border and return the offsets
-C that define it. Call to axiscale works better if
+C that define it. On 64 bit machines igw and igwh can be incorrectly
+C returned so re-calculate. Call to axiscale works better if
 C local integer variables are used.
-C Setup and pass in parameters to win3d.
-      iiw1=8; iiw2=8; iiw3=4; iiw4=3; iimenu=menuchw
-      iigl=igl; iigr=igr; iigt=igt; iigb=igb; iigw=igw; iigwh=igwh
-      CALL win3d(iimenu,iiw1,iiw2,iiw3,iiw4,
-     &  iigl,iigr,iigt,iigb,iigw,iigwh)
-C      call win3d(menuchw,8,8,4,3,igl,igr,igt,igb,igw,igwh)
-      igl=int(iigl); igr=int(iigr); igt=int(iigt); igb=int(iigb)
-      igw=int(iigw); igwh=int(iigwh)
+      call win3d(menuchw,8,8,4,3,igl,igr,igt,igb,igw,igwh)
+      igw=igr-igl
+      igwh=igb-igt
       igwid=igw
       igheight=igwh
 
@@ -408,15 +380,15 @@ C Determine scaling ratios.
       call axiscale(igwid,igheight,0.,360.,0.,90.,xsc,ysc,sca,Xadd,Yadd)
 
 C Place scaling in static C variables for use by line drawing routines.
-      call linescale(iigl,Xadd,xsc,iigb,Yadd,ysc)
+      call linescale(igl,Xadd,xsc,igb,Yadd,ysc)
 
 C Draw horizontal axis.
-      call horaxis(0.,360.,iigl,iigr,iigb,Xadd,xsc,0,
-     &  'Azimuth deg.')
+      call horaxis(0.,360.,igl,igr,igb,Xadd,xsc,0,
+     &             'Azimuth deg.')
 
 C Draw vertical axes on left and right.
-      call vrtaxis(0.,90.,iigl,iigb,iigt,Yadd,ysc,0,0,'Altitude deg.')
-      call vrtaxis(0.,90.,iigr,iigb,iigt,Yadd,ysc,0,1,' ')
+      call vrtaxis(0.,90.,igl,igb,igt,Yadd,ysc,0,0,'Altitude deg.')
+      call vrtaxis(0.,90.,igr,igb,igt,Yadd,ysc,0,1,' ')
 
 C Output a heading for the view.
       call edayr(ijday,ido,imo)

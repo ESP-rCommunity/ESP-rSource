@@ -5,7 +5,7 @@ C Strathclyde, Glasgow Scotland, 2001.
 C ESP-r is free software.  You can redistribute it and/or
 C modify it under the terms of the GNU General Public
 C License as published by the Free Software Foundation 
-C (version 2 or later).
+C (version 2 orlater).
 
 C ESP-r is distributed in the hope that it will be useful
 C but WITHOUT ANY WARRANTY; without even the implied
@@ -37,10 +37,9 @@ C IER=0 OK, IER=1 problem.
       SUBROUTINE ITINSRT(ITRC,IFOC,IER)
 #include "building.h"
 #include "model.h"
-#include "net_flow.h"
 #include "tdf2.h"
       COMMON/OUTIN/IUOUT,IUIN
-      COMMON/TDFGH2/GTYPES(25),GMENUS(25)
+      COMMON/TDFGH2/GTYPES(24),GMENUS(24)
       COMMON/TDFG1/GAIDE,GHELP(MHEL),GDHDRT(3),GMH
       common/TDFADDC/iadcols,deftabu(9)
       COMMON/HDAT/IHREC(MIT)
@@ -197,7 +196,6 @@ C IFOC, the item array index at the point where the action is to take place.
       SUBROUTINE ITDEL(ITRC,IFOC,IER)
 #include "building.h"
 #include "model.h"
-#include "net_flow.h"
 #include "tdf2.h"
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/TDAT/TABU(MTABC),TABT(MTABC),TABUMN(MTABC),TABUMX(MTABC)
@@ -322,7 +320,6 @@ C Tabular columns are copied as required.
       SUBROUTINE ITCOPY(ITRC,IFOC,IFOC2,IER)
 #include "building.h"
 #include "model.h"
-#include "net_flow.h"
 #include "tdf2.h"
 
       COMMON/TDAT/TABU(MTABC),TABT(MTABC),TABUMN(MTABC),TABUMX(MTABC)
@@ -409,7 +406,6 @@ C REFSHG Refresh instance with generic attributes (placement,
 C help, indices, default values).
       SUBROUTINE REFSHG(IFOC,IER)
 #include "building.h"
-#include "net_flow.h"
 #include "tdf2.h"
       COMMON/TDFG1/GAIDE,GHELP(MHEL),GDHDRT(3),GMH
       COMMON/TDFG5/GMF(MBITS),MGMA(MBITS)

@@ -30,23 +30,41 @@ public:
 	void AddValue(double val); /// Does not call Increment()
 
    void RemoveValue(double val);
+	/**
+	Increment()
+
+	Increments the total number of timesteps
+	*/
+	void Increment();
+
+	/**
+	Log()
+
+	Logs the output to cout
+	*/
+	void Log();
 
 	///getters
+	double Timesteps();
 	double ActiveTimesteps();
 	double Sum();
 	double Max();
 	double Min();
 	double ActiveAverage();
-	double TotalAverage(long lBinStepCount);
+	double TotalAverage();
+
 protected:
+
     int m_activeTimesteps;
+	int m_timesteps;
     double m_sum;
     double m_maxValue;
     double m_minValue;
     double m_activeAverage;
 
-	 double m_lastValue;
-	 bool m_isInit;
+	double m_lastValue;
+	bool m_isInit;
+
 };
 
 #endif // TBINNEDDATA_H

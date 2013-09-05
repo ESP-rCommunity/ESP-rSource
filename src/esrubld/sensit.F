@@ -442,7 +442,7 @@ C      COMMON/PREC12/EI(MCOM,MS),EE(MCOM,MS),AI(MCOM,MS),AE(MCOM,MS)
       DIMENSION IEL(ME)
 
 C Data stored in UA01 has the following meaning in this routine:
-C IDMAT(?,1): Materials array index.
+C IDMAT(?,1): Primitive db reference number.
 C IDMAT(?,2): Thermophysical property (con; den; sp ht).
 C IDMAT(?,3): Change type (%; +/-; explicit).
 C Define variables for current location and change.
@@ -462,8 +462,8 @@ C Change data in the required surfaces.
          do 20 JJ=1,NSG(ICL,II)
            IS=NSNOG(ICL,II,JJ)
 
-C Check to see if material is used in current construction.
-C CHKPRIM returns the layers which are made of the required material (if any).
+C Check to see if primitive material is used in current construction.
+C CHKPRIM returns the elements which are made of the required material (if any).
            call CHKPRIM(IZ,IS,IDMAT(ICC,1),NEL,IEL)
            if (NEL.gt.0) then
              do 30 IEindex=1,NEL
@@ -528,8 +528,8 @@ C Check if surface ISC has associated uncertainties, if yes then edit.
              do 60 JJ=1,NSG(ICL,II)
                if (NSNOG(ICL,II,JJ).eq.ISC) then
 
-C Check to see if material is used in current construction.
-C CHKPRIM returns the layers which are made of the required material (if any).
+C Check to see if primitive material is used in current construction.
+C CHKPRIM returns the elements which are made of the required material (if any).
                  call CHKPRIM(IZONE,ISURF,IDMAT(ICC,1),NEL,IEL)
                  if (NEL.gt.0) then
                    do 50 IEindex=1,NEL
@@ -649,12 +649,14 @@ C target zone - search for MLC's with the same name as MATNAM(ICC).
          if (SMLCN(IS).eq.MATNAM(ICC,1)(1:12)) then
 
 C This construction has uncertainties defined, but which MLC database 
-C entry is it? C Find matching MLC.
-          call matchmlcdesc(SMLCN(is),imlc)
+C entry is it?
+          do 25 IX=1,NMLC
+           if (DESC(IX)(1:12).eq.SMLCN(IS)) IMLC=IX
+ 25       continue
           do 30 IE=1,NE(IS)
-C           write (36,*) 'iprmat(imlc,ie): ',IPRMAT(IMLC,IE),imlc,ie
+C           write (36,*) 'ipr(imlc,ie): ',IPR(IMLC,IE),imlc,ie
 C           write (36,*) 'IDMAT(ICC,1): ',IDMAT(ICC,1),icc
-           if (IPRMAT(IMLC,IE).eq.IDMAT(ICC,1)) then
+           if (IPR(IMLC,IE).eq.IDMAT(ICC,1)) then
 
 C Either edit layer thickness or whole construction.
             if (IE.eq.0) then
@@ -708,13 +710,13 @@ C is then we have to edit the matching surface in this zone ISURF.
            IS=NSNOG(ICL,II,JJ)
            if (IS.eq.ISC) then
             if (SMLCN(ISURF).eq.MATNAM(ICC,1)(1:12)) then
-
-C Find matching MLC.
-             call matchmlcdesc(SMLCN(isurf),imlc)
+             do 65 IX=1,NMLC
+              if (DESC(IX)(1:12).eq.SMLCN(ISURF)) IMLC=IX
+ 65          continue
              do 50 IE=1,NE(ISURF)
-              write (36,*) 'iprmat(imlc,ie): ',IPRMAT(IMLC,IE),imlc,ie
+              write (36,*) 'ipr(imlc,ie): ',IPR(IMLC,IE),imlc,ie
               write (36,*) 'IDMAT(ICC,1): ',IDMAT(ICC,1),icc
-              if (IPRMAT(IMLC,IE).eq.IDMAT(ICC,1)) then
+              if (IPR(IMLC,IE).eq.IDMAT(ICC,1)) then
 
 C Either edit layer thickness or whole construction.
 C Note the next few lines are not indented wrt the 'if' statement above.
@@ -767,7 +769,6 @@ C UAE04 edits casual gains in memory.
 
       SUBROUTINE UAE04(IZONE,IACT,DIR)
 #include "building.h"
-#include "schedule.h"
 #include "uncertainty.h"
 
       common/caleni/nbdaytype,nbcaldays(MDTY),icalender(365)
@@ -783,9 +784,14 @@ C UAE04 edits casual gains in memory.
       COMMON/UA3/NICNG,IDTYP(MNCNG),IDMAT(MNCNG,3),DAT(MNCNG,2)
       COMMON/UA4/NIACT,IACTD(MNACT,2)
 
-C << P3 is a old representation of casual gains - it be removed >>
-C << or converted to P3N variables!!! >>
-
+      COMMON/P2N/NAC(MDTY),IACS(MDTY,MA),IACF(MDTY,MA),ACI(MDTY,MA),
+     &ACV(MDTY,MA),IPT(MDTY,MA),TA(MDTY,MA)
+      INTEGER NAC,IACS,IACF,IPT
+      REAL ACI,ACV,TA
+      COMMON/P2CTL/ITCTL(MCOM),TLO(MCOM),TUP(MCOM),THI(MCOM),ACIL(MCOM),
+     &             ACVL(MCOM),IVL(MCOM),TAL(MCOM),ACIU(MCOM),ACVU(MCOM),
+     &             IVU(MCOM),TAU(MCOM),ACIH(MCOM),ACVH(MCOM),
+     &             IVH(MCOM),TAH(MCOM)
       COMMON/P3/NCAS1,ICGS1(MC),ICGF1(MC),CMGS1(MC),CMGL1(MC),
      &          RADC1(MC),CONC1(MC),NCAS2,ICGS2(MC),ICGF2(MC),CMGS2(MC),
      &          CMGL2(MC),RADC2(MC),CONC2(MC),NCAS3,ICGS3(MC),ICGF3(MC),
@@ -1183,34 +1189,33 @@ C Check for out of range values.
       END
 
 C ******************** CHKPRIM ********************
-C CHKPRIM scans the layers of the MLC for a specific surface
-C and returns if and where a specific material is used.
+C CHKPRIM returns list of elements referencing required primitive material
+C for required surface in zone.
+C NEL = number of matching elements
+C IEL = index of matching elements
+
       SUBROUTINE CHKPRIM(IZONE,ISURF,IPRIM,NEL,IEL)
 #include "building.h"
 #include "geometry.h"
 #include "esprdbfile.h"
 #include "material.h"
 
-C Passed parameters:
-      integer izone  ! requested zone
-      integer isurf  ! surface in the zone
-      integer iprim  ! material array index
-      integer nel    ! number of matching layers
-      integer iel    ! array of the position of the matched material
       DIMENSION IEL(ME)
 
-C Set number of matching layers to zero.
+C Set number of elements to zero.
       NEL=0
 
-C Find correct MLC. Check if the material array index matches
-C the passed value. C Find matching MLC.
-      call matchmlcdesc(SMLCN(isurf),i)
-      do 20 J=1,LAYERS(I)
-        if (IPRMAT(I,J).eq.IPRIM) then
-          NEL=NEL+1   ! matches criteria
-          IEL(NEL)=J  ! layer it was found in
+C Find correct MLC. 
+      do 10 I=1,NMLC
+        if (DESC(I)(1:12).eq.SMLCN(ISURF)(1:12)) then
+          do 20 J=1,LAYERS(I)
+            if (IPR(I,J).eq.IPRIM) then
+              NEL=NEL+1
+              IEL(NEL)=J
+            endif
+ 20       continue
         endif
- 20   continue
+ 10   continue
 
       RETURN
       END

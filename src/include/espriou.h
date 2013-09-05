@@ -1,6 +1,6 @@
 C This file is part of the ESP-r system.
 C Copyright Energy Systems Research Unit, University of
-C Strathclyde, Glasgow Scotland, 2001-2011.
+C Strathclyde, Glasgow Scotland, 2001-2007.
 
 C espriou.h holds common block for file units and file I/O.
 
@@ -32,8 +32,9 @@ C to the file and the section of the help text blocks.
 C parameters for browsing files (e.g. as used in esrucom/filelist.F)
 C MFFOLD - (integer) number of files remembered in a folder. Changes
 C to this parameter should also be reflected in the size of the
-C buffers and loop limits in lib/esru_util.c function getfileslist_.
+C buffers and loop limits in lib/esru_nox.c and lib/esru_x.c functions
+C getfilelist_.
       integer MFFOLD
-      parameter (MFFOLD=400)
+      parameter (MFFOLD=100)
 
 C end of espriou.h

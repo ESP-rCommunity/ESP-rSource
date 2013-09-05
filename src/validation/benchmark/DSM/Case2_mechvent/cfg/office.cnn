@@ -1,5 +1,5 @@
-*connections for shal_plan_office_mv
-*Date Fri Aug 31 17:14:02 2012
+*connections forshal_plan_office_mv_str
+*Date Tue Oct 13 13:23:28 2009
     212   # number of connections
    1   1   0   0   0  #    1 Wall-1 in office_1 is External
    1   2   0   0   0  #    2 Wall-3 in office_1 is External

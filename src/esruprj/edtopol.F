@@ -29,13 +29,14 @@ C          block C3 while taking into account confirmation preferences.
 C  anchor:   anchor point items (a list of connections & concept).
 C  anchlist: manage list of anchors
 C  easkconn: Select one or more connections from a list.
+C  PROCGDST process GDST command sets (defined in common blocks
+C           idsta and anchora.
 C  Serchrpl handles search and replace of composition attributes.
 
 C ************* EDCONN 
 C Edit/clear/check connection attributes in common blocks via a paging menu.
 C ITRU = unit number for user output, IER=0 OK, IER=1 problem.
       SUBROUTINE EDCONN(IER)
-#include "epara.h"
 #include "building.h"
 #include "model.h"
 
@@ -53,7 +54,7 @@ C espriou.h provides currentfile.
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
-      integer IZSTOCN
+      common/C21/IFCFG,cfgroot,LCFGF
       COMMON/C24/IZSTOCN(MCOM,MS)
 
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
@@ -86,13 +87,11 @@ C Pause length during sequentail scan longpause (true=1 sec)
 
       DIMENSION ITEMS1(23)
       CHARACTER CXSTR*78,outs*124,ITEMS1*34,CFGFN*72
-      character CXITM*48
+      CHARACTER LCFGF*72
+      character cfgroot*24
       character DCNN*72
       character bl*2
-      DIMENSION VERT(35)
-      character VERT*50,KEY*1
       integer MITEM,INO ! max items and current menu item
-      integer MVERT,IVERT ! max items and current menu item
 
 C For help messages
       character helpinsub*24 ! subroutine name
@@ -163,7 +162,7 @@ C failed searches brought to users attention.
 C CACC is the tolerance between two vertices, IACC is the number
 C of corners beyond tolerance which are allowed,
 C DACC is the line degree tolerance for setting of corners.
-      CACC=0.025
+      CACC=0.010
       IACC=0
       DACC=5.0
       DCNN=' '
@@ -384,9 +383,8 @@ C Flip logic for partitions.
           M3SKP=.false.
         else
           dok=.false.
-          call askok(
-     &      'Are you sure you want to skip confirmation of existing',
-     &      'marked partitions (see help)?',OK,dok,nbhelp)
+          call askok('Are you sure you want to skip marked partitions?',
+     &               '(see help)',OK,dok,nbhelp)
           if(OK)M3SKP=.true.
         endif
       ELSEIF(INO.EQ.8)THEN
@@ -452,109 +450,9 @@ C Flip logic for back-to-back within zone.
 
       ELSEIF(INO.EQ.15)THEN
 
-C Edit single connection. Setup a long list made up of short
-C connection descriptions and allow the user to select. This
-C then calls ?? to do the work.
-
-C Initialise connection menu size variables based on window size. 
-C IVERT is the menu position, MVERT the current number of menu lines.
-        MHEAD=2
-        MCTL=3
-        ILEN=NCON
-        IPACT=CREATE
-        CALL EKPAGE(IPACT)
-
-C Initial menu entry setup.
-   92   IER=0
-        IVERT=-3
-
-C Loop through the items until the page to be displayed. M is the 
-C current menu line index. Build up text strings for the menu. 
-   33   M=MHEAD
-        DO 10 L=1,ILEN
-          IF(L.GE.IST.AND.(L.LE.(IST+MIFULL)))THEN
-            M=M+1
-            CALL EMKEY(L,KEY,IER)
-            call CONXMENU(L,CXITM)
-            VERT(M)=' '
-            WRITE(VERT(M),'(A1,1x,A)')KEY,CXITM(1:47)
-          ENDIF
-   10   CONTINUE
-
-C Set menu header text.
-        VERT(1)=    ' conn|reference   |conn|      connection       |'
-        VERT(2)=    ' no. |zone|surface|type| zone/data|surf/data   |'
-
-C Number of actual items displayed.
-        MVERT=M+MCTL
-
-C If a long list include page facility text.      
-        IF(IPFLG.EQ.0)THEN
-          VERT(M+1)='  ___________________________________ '
-        ELSE
-          WRITE(VERT(M+1),15)IPM,MPM 
-   15     FORMAT   ('0 page ------- Part: ',I2,' of ',I2,' -----')
-        ENDIF
-        VERT(M+2)  ='? help                                '
-        VERT(M+3)  ='- exit this menu                      '
-
-C Help text for this menu.
-        helptopic='boundary_choice_menu'
-        call gethelptext(helpinsub,helptopic,nbhelp)
-
-C Now display the menu.
-        CALL EMENU('Zone Boundary Conditions',VERT,MVERT,IVERT)
-        IF(IVERT.LE.MHEAD)THEN
-
-C Within the header so skip request.
-          IVERT=-1
-          goto 33
-        ELSEIF(IVERT.EQ.MVERT)THEN
-
-          goto 3  ! go to main menu
-
-        ELSEIF(IVERT.EQ.(MVERT-1))THEN
-
-C List help text for the menu.
-          helptopic='boundary_choice_menu'
-          call gethelptext(helpinsub,helptopic,nbhelp)
-          CALL PHELPD('connection section',nbhelp,'-',0,0,IER)
-        ELSEIF(IVERT.EQ.(MVERT-2))THEN
-
-C If there are enough items allow paging control via EKPAGE.
-          IF(IPFLG.EQ.1)THEN
-            IPACT=EDIT
-            CALL EKPAGE(IPACT)
-          ENDIF
-        ELSEIF(IVERT.GT.MHEAD.AND.IVERT.LT.(MVERT-MCTL+1))THEN
-
-C Edit item identified by KEYIND after reporting on current values.
-          call tstamp('>','PRJ: enter topology edit')
-          CALL KEYIND(MVERT,IVERT,IFOC,IO)
-
-          CALL EDISP(iuout,' ')
-          CALL EDISP(iuout,' Current connection description...')
-          CALL CONXINF(1,0,CXSTR)
-          write(outs,'(1X,A)') CXSTR
-          CALL EDISP(iuout,outs)
-          CALL CONXINF(1,IFOC,CXSTR)
-          write(outs,'(1X,A)') CXSTR
-
-C Call edaconn to get the editing done.
-          call edaconn(IFOC,ier)
-          MODIFY=.TRUE.
-
-        ELSE
-
-C Not one of the legal menu choices.
-          goto 92
-        ENDIF
-        IVERT=-2
-        goto 33
-
-C << Has anyone used this recently? How about adapting this as a common bit of
-C << code called from the many places where connections are established
-C << in the model?
+C Edit single connection.
+        call edaconn(ier)
+        MODIFY=.TRUE.
       ELSEIF(INO.EQ.16)THEN
 
 C Clear contiguity.
@@ -803,7 +701,7 @@ C the user to confirm before writing to temporary configuration file.
       COMMON/RAY6/LINSTY(MCON)
 
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
-      integer IZSTOCN
+      common/C21/IFCFG,cfgroot,LCFGF
       COMMON/C24/IZSTOCN(MCOM,MS)
 
 C G5 required for updating zone geometry file (until such time as geometry
@@ -822,7 +720,7 @@ C Pause length during sequentail scan longpause (true=1 sec)
       character outs*124,CXSTR*78,SN*12
       character SO*24,TOTHER*24
       character DESCRC*25
-      character DCNN*72,bl*2
+      character DCNN*72,cfgroot*24,LCFGF*72,bl*2
       integer izselfcheck  ! the surface being tested
       logical selfcheck  ! set true if currently looking within zone
 
@@ -1704,7 +1602,6 @@ C Parameters: logical variables set the context of what to check
       
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
-      integer IZSTOCN
       COMMON/C24/IZSTOCN(MCOM,MS)
 
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
@@ -2097,35 +1994,35 @@ C anchor defines and instanciates anchor points (a list of connections
 C associated with a concept).
       subroutine anchor(ifoc,ier)
 #include "building.h"
-#include "model.h"
-#include "geometry.h"
-#include "esprdbfile.h"
-#include "material.h"
 #include "epara.h"
       
       integer lnblnk  ! function definition
 
-      COMMON/FILEP/IFIL
       COMMON/OUTIN/IUOUT,IUIN
       
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
-      integer IZSTOCN
-      COMMON/C24/IZSTOCN(MCOM,MS)
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
       COMMON/RAY3/MODIFY,MODLEN,MODBND
       COMMON/RAY6/LINSTY(MCON)
 
-C Anchor commons defined in model.h.
-      DIMENSION VERT(35),flag(mcon),iconnpk(99)
-      CHARACTER VERT*59,KEY*1,outs*124
-      character CXITM*48,flag*9
-      character ZN*12,SN*12
-      character AL*12
-      character LTMP*72
+C Anchor commons:
+C NALOC = nb of anchors,
+C ALOC = substitution attribute used with the the anchor (usually
+C   passed from a command to a function which manipulates the anchor.),
+C ALOCLBL = user's name for the anchor,
+C ALOCTYP = type (SURF|CTRL|LOAD) for the anchor,
+C IALOC = nb of links (surfaces, etc.) associated with the anchor,
+C lstanchr = links for each anchor
+      common/anchora/NALOC,ALOC(20),ALOCLBL(20),ALOCTYP(20)
+      common/anchorb/IALOC(20),lstanchr(20,60)
+
+      DIMENSION VERT(35),flag(mcon),iconnpk(60)
+      CHARACTER VERT*54,KEY*1,outs*124
+      character CXITM*43,flag*9
+      character ALOC*12,ALOCLBL*12,ALOCTYP*4,AL*12
       logical found,ok,dok,foundone,okd,MODIFY,MODLEN,MODBND
       integer MVERT,IVERT ! max items and current menu item
-      dimension IVALS(MCOM)
 
 C For help messages
       character helpinsub*24 ! subroutine name
@@ -2136,8 +2033,6 @@ C For help messages
 
 C Initialise connection menu size variables based on window size. 
 C IVERT is the menu position, MVERT the current number of menu lines.
-      iuf=IFIL+1
-      INPIC=0
   31  MHEAD=7
       MCTL=4
       ILEN=NCON
@@ -2178,10 +2073,9 @@ C anchor set(s) is/are associated with a connection.
       write(VERT(3),'(a)') '  index  label    type       nb. links'
       write(VERT(4),'(a,i2,5a,i2,a)') '1 ',ifoc,' ',ALOCLBL(ifoc),' ',
      &  ALOCTYP(ifoc),' (',IALOC(ifoc),' links)'
-      VERT(5)='  ______________________________________________   '
-      VERT(6)=
-     &     ' conn|  connection        |    connection       |123456789'
-      VERT(7)=' no. | inside face        | other side data     |anchor'
+      VERT(5)='  ___________________________________________   '
+      VERT(6)=' conn|  connection      |    connection     |123456789'
+      VERT(7)=' no. | inside face      | other side data   |anchor'
       do 5 i=1,NALOC
         if(IALOC(i).gt.0)then
           do 4 j = 1,IALOC(i)
@@ -2208,7 +2102,7 @@ C current menu line index. Build up text strings for the menu.
           CALL EMKEY(L,KEY,IER)
           call CONXMENU(L,CXITM)
           VERT(M)=' '
-          WRITE(VERT(M),'(A1,1x,A,1a,a)')KEY,CXITM(1:46),'|',flag(L)
+          WRITE(VERT(M),'(A1,1x,A42,1a,a)')KEY,CXITM(1:42),'|',flag(L)
         ENDIF
    10 CONTINUE
 
@@ -2220,7 +2114,7 @@ C If a long list include page facility text.
         VERT(M+1)='  ________________________________________ '
       ELSE
         WRITE(VERT(M+1),15)IPM,MPM 
-   15   FORMAT   ('0 page ------- Part: ',I3,' of ',I3,' -----')
+   15   FORMAT   ('0 page ------- Part: ',I2,' of ',I2,' -----')
       ENDIF
       VERT(M+2)  ='* modify list                         '
       VERT(M+3)  ='? help                                '
@@ -2239,83 +2133,17 @@ C Save and return.
         call gethelptext(helpinsub,helptopic,nbhelp)
         CALL PHELPD('anchor points',nbhelp,'-',0,0,IER)
       elseif(ivert.eq.mvert-2)then
-
-C Modify the list. Ask whether to locate via a construction or
-C via selection one at a time.
-        CALL EASKABC('Surfaces to include in anchor list',
-     &    'Select:',
-     &    'which match a construction','select manually',
-     &    'cancel',ins9,nbhelp)
-        if(ins9.eq.1)then
-
-C Search for matching constructions (similar to logic in serchrpl).
-          CALL EPKMLC(ISEL,'Select a construction to SEARCH for',
-     &      'or -Exit',IER)
-          if(ISEL.eq.0) goto 92
-
-          INPIC=NCOMP
-          CALL EPICKS(INPIC,IVALS,' ',' Search zones:',
-     &      12,NCOMP,zname,' zone list',IER,nbhelp)
-          IF(INPIC.EQ.0) goto 92
-          DO 96 IZ=1,INPIC
-            IF(IVALS(IZ).GT.0)THEN
-              write(zn,'(A)') zname(IVALS(IZ))
-              write(outs,'(3a)') ' Scanning: ',zn(1:lnblnk(zn)),
-     &           ' attributes...'
-              CALL USRMSG(' ',outs,'-')
-              LTMP=LGEOM(IVALS(IZ))
-              call georead(IUF,LTMP,IVALS(IZ),1,iuout,IER)
-
-C Remind user of surface attributes.
-              WRITE(outs,93)
-   93         FORMAT('          Surface|  Area  |Azim|Elev|geometry',
-     &               '| multilayer  |environment')
-              call edisp(iuout,outs)
-              WRITE(outs,94)
-   94         FORMAT('                 |  m^2   |deg |deg |type|loc',
-     &               '| constr name |other side ')
-              call edisp(iuout,outs)
-
-C Loop through surfaces in the zone and report on which ones match.
-              do 91 i=1,nsur
-                icc=izstocn(ivals(iz),i)
-                if(SSMLCN(icc)(1:12).eq.DESC(ISEL)(1:12))then
-                  write(sn,'(a)') SSNAME(icc)
-                  WRITE(outs,'(2a,F7.2,F5.0,F5.0,1X,A,
-     &              1X,A,1X,A,1X,A)') 'Match: ',sn,SSNA(icc),
-     &              SSPAZI(icc),SSPELV(icc),SSOTF(icc)(1:4),
-     &              SSVFC(icc),SSMLCN(icc)(1:12),SSOTHER(icc,1)
-                  call edisp(iuout,outs)
-                  if(inpic+1.lt.99)then
-                    write(outs,'(5a)') ' Include in anchor list ',
-     &                zn(1:lnblnk(zn)),':',sn(1:lnblnk(sn)),'?'
-                    dok=.true.
-                    CALL ASKOK(' ',outs,OK,dok,nbhelp)
-                    if(ok)then
-                      inpic=inpic+1       ! increment
-                      iconnpk(inpic)=icc  ! remember connection
-                    endif
-                  endif
-                endif
-  91          continue
-            endif
-  96      continue
-
-        elseif(ins9.eq.2)then
-          if(IALOC(ifoc).eq.0)then
-            inpic = 99
-          else
-            inpic = 99 - IALOC(ifoc)
-          endif
-          CALL EPMENSV
-          call easkconn(inpic,iconnpk,99,
-     &      'Select from the list of connections the',
-     &      'surfaces associated with this anchor.',ALOCLBL(ifoc),
-     &      ifoc,ier,nbhelp)
-          CALL EPMENRC
-        elseif(ins9.eq.3)then
-          goto 92  ! jump and re-display the menu
+        if(IALOC(ifoc).eq.0)then
+          inpic = 60
+        else
+          inpic = 60 - IALOC(ifoc)
         endif
+        CALL EPMENSV
+        call easkconn(inpic,iconnpk,60,
+     &    'Select from the list of connections the',
+     &    'surfaces associated with this anchor.',ALOCLBL(ifoc),
+     &    ifoc,ier,30)
+        CALL EPMENRC
         if(inpic.gt.0)then
           do 242 ij=1,inpic
 
@@ -2512,14 +2340,14 @@ C **************** anchlist
 C anchlist allows selection and list management of anchor points (a list of connections
 C associated with a concept).
       subroutine anchlist(iasel,ier)
-#include "building.h"
-#include "model.h"
-
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
+
+      common/anchora/NALOC,ALOC(20),ALOCLBL(20),ALOCTYP(20)
+      common/anchorb/IALOC(20),lstanchr(20,60)
 
       DIMENSION AVERT(27)
       CHARACTER AVERT*36,KEY*1
-      character AL*12
+      character ALOC*12,ALOCLBL*12,ALOCTYP*4,AL*12
       integer MVERT,IVERT ! max items and current menu item
 
 C For help messages
@@ -2560,7 +2388,7 @@ C Set menu header text.
         M=M+1
         CALL EMKEY(L,KEY,IER)
         AVERT(M)=' '
-        write(AVERT(M),'(2a,i2,5a,i3,a)') KEY,' ',L,'  ',ALOCLBL(L),
+        write(AVERT(M),'(2a,i2,5a,i2,a)') KEY,' ',L,'   ',ALOCLBL(L),
      &  ' ',ALOCTYP(L),' (',IALOC(L),' links)'
    5  continue
 
@@ -2693,17 +2521,17 @@ C Select one or more connections from a list.
       subroutine easkconn(inpic,iconnpk,lconnpk,promp1,promp2,ermsg,
      &  ltype,ier,nhelp)
 #include "building.h"
-#include "model.h"
 #include "epara.h"
       
       integer lnblnk  ! function definition
 
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
+      common/anchorb/IALOC(20),lstanchr(20,60)
 
       DIMENSION iconnpk(lconnpk),VERT(35),flag(mcon)
       CHARACTER*(*) PROMP1,PROMP2,ERMSG
-      CHARACTER VERT*54,KEY*1,CXITM*48,flag*1,SEL*50
+      CHARACTER VERT*54,KEY*1,CXITM*43,flag*1,SEL*50
       logical found
       integer MVERT,IVERT ! max items and current menu item
     
@@ -2761,8 +2589,8 @@ C items have been selected. Generate text for title.
     3 lne=LNBLNK(ERMSG)
       IF(lne.GT.50)WRITE(SEL,'(1X,A)')ERMSG(1:50)
       IF(lne.LE.50)WRITE(SEL,'(1X,A)')ERMSG(1:lne)
-      VERT(1)=  ' no. | inside face     | other side data      |anchor'
-      VERT(2)=  ' conn|  connection     |    connection        |select'
+      VERT(1)=  ' no. | inside face     | other side data   |anchor'
+      VERT(2)=  ' conn|  connection     |    connection     |select'
 
 C Loop through the items until the page to be displayed. M is the 
 C current menu line index. Build up text strings for the menu. 
@@ -2773,7 +2601,7 @@ C current menu line index. Build up text strings for the menu.
           CALL EMKEY(L,KEY,IER)
           call CONXMENU(L,CXITM)
           VERT(M)=' '
-          WRITE(VERT(M),'(A1,1x,A,1x,a1)')KEY,CXITM(1:48),flag(L)
+          WRITE(VERT(M),'(A1,1x,A43,1x,a1)')KEY,CXITM,flag(L)
         ENDIF
    10 CONTINUE
 
@@ -2857,6 +2685,391 @@ C Have picked as many as are allowed.
 
       end
 
+C ***** PROCGDST
+C PROCGDST process GDST command sets (defined in common blocks
+C idsta and anchora.
+C << Note: this procedure is somewhat out of date. Its function
+C << should be reviewed for current simulation demands
+      subroutine procgdst(itrc,runmode,keepres,donegdst,ier)
+#include "building.h"
+#include "model.h"
+#include "geometry.h"
+#include "esprdbfile.h"
+#include "material.h"
+#include "espriou.h"  
+C espriou.h for climatelist file name.
+      
+      integer lnblnk  ! function definition
+
+      COMMON/FILEP/IFIL
+      COMMON/OUTIN/IUOUT,IUIN
+      common/appw/iappw,iappx,iappy
+      
+      integer ncomp,ncon
+      COMMON/C1/NCOMP,NCON
+      COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
+      common/C21/IFCFG,cfgroot,LCFGF
+      COMMON/C24/IZSTOCN(MCOM,MS)
+
+C IDST tool commands.
+      common/idsta/CMDCFG,CMDCLM,CMDCLMN,CMDNOTE,CMDRES,CMDLBL(10),
+     &             CMDLNAM(10)
+      common/idstb/nidst
+      common/anchora/NALOC,ALOC(20),ALOCLBL(20),ALOCTYP(20)
+      common/anchorb/IALOC(20),lstanchr(20,60)
+      common/spflres/sblres(MSPS),sflres(MSPS),splres(MSPS),
+     &  smstres(MSPS),selres(MSPS),sipvres
+
+      character CMDCFG*72,CMDCLM*72,CMDCLMN*72,CMDNOTE*64,CMDRES*72
+      character CMDLNAM*80,CMDLBL*12
+      character LCFGF*72,cfgroot*24
+      character CXITM*43,outs*124,LTMP*72
+      character clmdb*144
+      character doit*248,tmode*8,aut*8,runmode*12,keepres*4
+      character sblres*72,sflres*72,splres*72,smstres*72,sipvres*72
+      character selres*72,alias*32,donegdst*72
+      character longtfile*144,longtfiledos*144
+      character ALOC*12,ALOCLBL*12,ALOCTYP*4
+      logical updatecon,QUIET,concat,unixok
+      logical newgeo  ! to use for testing if new/old geometry file.
+      integer ier
+
+#ifdef OSI
+      integer ICPMOD     ! passed from tchild
+#else
+      integer*8 ICPMOD     ! passed from tchild
+#endif
+
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='procgdst'  ! set for subroutine
+
+C Set flag for zone construction file update.
+      updatecon=.false.
+      newgeo=.false.  ! assume older format geometry.
+
+C Check if Unix-based or DOS based.
+      call isunix(unixok)
+
+C If IDST climate is different update the configuration. Check
+C against the climate list to see related db for climate name.
+      iuf=IFIL+1
+      write(alias,'(a)')CMDCLMN(1:lnblnk(CMDCLMN))
+      call matchcdb(iuf,alias,clmdb,ier)
+      if(clmdb(1:lnblnk(clmdb)).ne.LCLIM(1:lnblnk(LCLIM)))then
+        if(clmdb(1:4).ne.'UNKN')then
+          LCLIM=clmdb
+
+C Debug.
+C          write(6,*)'using new climate db ',clmdb
+
+          call tstamp('>','PRJ: IDST update climate in configuration')
+          call tstamp('>',LCFGF)
+          CALL EMKCFG('-',IER)
+        endif
+      endif
+
+C Loop through anchor types and deal with known types.
+      call edisp(iuout,' no. |zone|surf|type|   other side data')
+      call edisp(iuout,' conn|reference|conn|      connection  ')
+      do 32 m=1,nidst
+
+C Now see if can match the IDST ext_window parameter. ALOC(m).
+        imlcrepl=0
+        do 33 k=1,NMLC
+          if(ALOC(m)(1:12).eq.DESC(k)(1:12))then
+            imlcrepl=k
+          endif
+  33    continue
+        if(CMDLBL(m)(1:10).eq.'ext_window')then
+
+C If replacement mlc found then loop through anchor points and update
+C surface attributes by reading in the zone geometry, changing the
+C variable ssmlcn and ssotr and then writing out the geometry file
+C again. Also set updatecon to true so that construction files are
+C updated as well.
+          if(imlcrepl.ne.0)then
+            do 34 i=1,nidst
+              if(ALOCLBL(i)(1:10).eq.'ext_window')then
+                call edisp(iuout,' for type ext_window...')
+                do 243 j=1,IALOC(i)
+                  ifoc=lstanchr(i,j)
+                  call CONXMENU(ifoc,CXITM)
+                  call usrmsg(' Processing...',CXITM,'-')
+                  iz=ic1(ifoc)
+                  is=ie1(ifoc)
+                  icc=izstocn(iz,is)
+                  LTMP=LGEOM(IZ)
+                  call georead(IUF,LTMP,IZ,1,iuout,IER)
+                  WRITE(SSMLCN(icc),'(A12)')DESC(imlcrepl)(1:12)
+                 if(DESC(imlcrepl)(15:18).NE.'OPAQ')SSOTF(icc)='TRAN'
+                 if(DESC(imlcrepl)(15:18).EQ.'OPAQ')SSOTF(icc)='OPAQUE'
+                 if(DESC(imlcrepl)(15:18).EQ.'CFC ')SSOTF(icc)='CFC '
+                  updatecon=.true.
+                  call eclose(gversion(IZ),1.1,0.01,newgeo)
+                  if(igupgrade.eq.2.and.(.NOT.newgeo))then
+                    gversion(iz) =1.1
+                    newgeo = .true.
+                  endif
+                  if(newgeo)then
+                    call geowrite(IUF,LTMP,IZ,iuout,3,IER)
+                  else
+                    call emkgeo(IUF,LTMP,IZ,3,IER)
+                  endif
+ 243            continue
+              endif
+  34        continue
+          endif
+        elseif(CMDLBL(m)(1:10).eq.'int_window')then
+
+C If replacement mlc found then loop through anchor points and update
+C surface attributes. Similar logic to the 'ext_window' case above.
+          if(imlcrepl.ne.0)then
+            do 44 i=1,nidst
+              if(ALOCLBL(i)(1:10).eq.'int_window')then
+                call edisp(iuout,' of type int_window...')
+                do 244 j=1,IALOC(i)
+                  ifoc=lstanchr(i,j)
+                  call CONXMENU(ifoc,CXITM)
+                  call usrmsg(' Processing...',CXITM,'-')
+                  iz=ic1(ifoc)
+                  is=ie1(ifoc)
+                  icc=izstocn(iz,is)
+                  LTMP=LGEOM(IZ)
+                  call georead(IUF,LTMP,IZ,1,iuout,IER)
+                  WRITE(SSMLCN(icc),'(A12)')DESC(imlcrepl)(1:12)
+                 if(DESC(imlcrepl)(15:18).NE.'OPAQ')SSOTF(icc)='TRAN'
+                 if(DESC(imlcrepl)(15:18).EQ.'OPAQ')SSOTF(icc)='OPAQUE'
+                 if(DESC(imlcrepl)(15:18).EQ.'CFC ')SSOTF(icc)='CFC '
+                  updatecon=.true.
+                  call eclose(gversion(IZ),1.1,0.01,newgeo)
+                  if(igupgrade.eq.2.and.(.NOT.newgeo))then
+                    gversion(iz) =1.1
+                    newgeo = .true.
+                  endif
+                  if(newgeo)then
+                    call geowrite(IUF,LTMP,IZ,iuout,3,IER)
+                  else
+                    call emkgeo(IUF,LTMP,IZ,3,IER)
+                  endif
+ 244            continue
+              endif
+  44        continue
+          endif
+        elseif(CMDLBL(m)(1:10).eq.'atr_window')then
+
+C If replacement mlc found then loop through anchor points and update
+C surface attributes. Similar logic to the 'ext_window' case above.
+          if(imlcrepl.ne.0)then
+            do 45 i=1,nidst
+              if(ALOCLBL(i)(1:10).eq.'atr_window')then
+                call edisp(iuout,' of type atr_window...')
+                do 245 j=1,IALOC(i)
+                  ifoc=lstanchr(i,j)
+                  call CONXMENU(ifoc,CXITM)
+                  call usrmsg(' Processing...',CXITM,'-')
+                  iz=ic1(ifoc)
+                  is=ie1(ifoc)
+                  icc=izstocn(iz,is)
+                  LTMP=LGEOM(IZ)
+                  call georead(IUF,LTMP,IZ,1,iuout,IER)
+                  WRITE(SSMLCN(icc),'(A12)')DESC(imlcrepl)(1:12)
+                 if(DESC(imlcrepl)(15:18).NE.'OPAQ')SSOTF(icc)='TRAN'
+                 if(DESC(imlcrepl)(15:18).EQ.'OPAQ')SSOTF(icc)='OPAQUE'
+                 if(DESC(imlcrepl)(15:18).EQ.'CFC ')SSOTF(icc)='CFC '
+                  updatecon=.true.
+                  call eclose(gversion(IZ),1.1,0.01,newgeo)
+                  if(igupgrade.eq.2.and.(.NOT.newgeo))then
+                    gversion(iz) =1.1
+                    newgeo = .true.
+                  endif
+                  if(newgeo)then
+                    call geowrite(IUF,LTMP,IZ,iuout,3,IER)
+                  else
+                    call emkgeo(IUF,LTMP,IZ,3,IER)
+                  endif
+ 245            continue
+              endif
+  45        continue
+          endif
+        endif
+  32  continue
+
+C If attributes changed then zone construction files should be
+C re-generated via call to edcon.
+      if(updatecon)then
+        call tstamp('>','PRJ: IDST update zone constructions')
+        QUIET=.TRUE.
+        DO 2491, IZ=1,NCOMP
+          CALL EDCON(0,iuout,IZ,QUIET,IER)
+ 2491   CONTINUE
+        QUIET=.FALSE.
+      endif
+
+C Run the appropriate simulations.
+
+C << this is similar to code within prj.F subroutine simula >>
+C << consider combining these code blocks  >>
+
+      helptopic='interactive_ipv'
+      call gethelptext(helpinsub,helptopic,nbhelp)
+      if(runmode(1:11).eq.'interactive')then
+        CALL EASKAB('Simulation interaction options: (see help)',
+     &    ' ','run interactively','silent running mode',isauto,nbhelp)
+      else
+        isauto=2
+      endif
+      call tstamp('>','PRJ: beginning IPV simulations.')
+      doit = ' '
+      call tchild(ICPMOD)
+      call termode(ICPMOD,tmode)
+      if(isauto.eq.1)aut=' default'
+      if(isauto.eq.2)then
+        aut=' silent '
+        tmode='text'
+      endif
+      if(unixok)then
+        call addpath(LCFGF,longtfile,concat)
+      else
+
+C If running on a non-unix machine see if there are spaces in the name
+C and change any / to \.
+        call addpath(LCFGF,longtfile,concat)
+        call cmdfiledos(longtfile,longtfiledos,ier)
+        longtfile=' '
+        longtfile=longtfiledos
+      endif
+
+C If prj initial size is a % of default pass this on to child with
+C an offset from prj start position.
+      if(iappw.gt.0.and.iappw.le.200)then
+        write(doit,'(3a,3i4,5a)') 'bps -mode ',tmode,
+     &    ' -s ',iappw,iappx+15,iappy+50,' -file ',
+     &    longtfile(:lnblnk(longtfile)),' -p win',aut
+      else
+        write(doit,'(8a)') 'bps -mode ',tmode,' -s 0 0 0 -file ',
+     &   longtfile(1:lnblnk(longtfile)),' -p win',aut
+      endif
+      call usrmsg('starting winter assessment via',doit,'-')
+      call runit(doit,tmode)
+      call edisp(iuout,' ')
+      call edisp(iuout,'Winter season run complete.')
+      write(outs,'(a,a)')'IPV intermediate results file should be:',
+     &  sipvres(1:lnblnk(sipvres))
+      call edisp(iuout,outs)
+
+      if(iappw.gt.0.and.iappw.le.200)then
+        write(doit,'(3a,3i4,4a)') 'res -mode ',tmode,
+     &    ' -s ',iappw,iappx+15,iappy+50,' -file ',
+     &    sblres(1)(1:lnblnk(sblres(1))),' -act ipv_win ',aut
+      else
+        write(doit,'(6a)') 'res -mode ',tmode,
+     &   ' -s 0 0 0 -file ',sblres(1)(1:lnblnk(sblres(1))),
+     &   ' -act ipv_win ',aut
+      endif
+      call usrmsg('starting winter recovery via',doit,'-')
+      call runit(doit,tmode)
+      call edisp(iuout,'Winter season results complete.')
+
+      if(iappw.gt.0.and.iappw.le.200)then
+        write(doit,'(3a,3i4,5a)') 'bps -mode ',tmode,
+     &    ' -s ',iappw,iappx+15,iappy+50,' -file ',
+     &    longtfile(1:lnblnk(longtfile)),' -p trn',aut
+      else
+        write(doit,'(8a)') 'bps -mode ',tmode,' -s 0 0 0 -file ',
+     &    longtfile(1:lnblnk(longtfile)),' -p trn',aut
+      endif
+      call usrmsg('starting transition assessment via',doit,'-')
+      call runit(doit,tmode)
+      call edisp(iuout,'Transition season run complete.')
+
+      write(outs,'(a,a)')'IPV intermediate results file should be:',
+     &  sipvres(1:lnblnk(sipvres))
+      call edisp(iuout,outs)
+      if(iappw.gt.0.and.iappw.le.200)then
+        write(doit,'(3a,3i4,4a)') 'res -mode ',tmode,
+     &    ' -s ',iappw,iappx+15,iappy+50,' -file ',
+     &    sblres(2)(1:lnblnk(sblres(2))),' -act ipv_trn ',aut
+      else
+        write(doit,'(6a)') 'res -mode ',tmode,
+     &   ' -s 0 0 0 -file ',sblres(2)(1:lnblnk(sblres(2))),
+     &   ' -act ipv_trn ',aut
+      endif
+      call usrmsg('starting transition recovery via',doit,'-')
+      call runit(doit,tmode)
+      call edisp(iuout,'Transition season results complete.')
+
+      if(iappw.gt.0.and.iappw.le.200)then
+        write(doit,'(3a,3i4,5a)') 'bps -mode ',tmode,
+     &    ' -s ',iappw,iappx+15,iappy+50,' -file ',
+     &    longtfile(1:lnblnk(longtfile)),' -p sum',aut
+      else
+        write(doit,'(8a)') 'bps -mode ',tmode,' -s 0 0 0 -file ',
+     &   longtfile(1:lnblnk(longtfile)),' -p sum',aut
+      endif
+      call usrmsg('starting summer assessment via',doit,'-')
+      call runit(doit,tmode)
+      call edisp(iuout,'Summer season run complete.')
+
+      write(outs,'(a,a)')'IPV intermediate results file should be:',
+     &  sipvres(1:lnblnk(sipvres))
+      call edisp(iuout,outs)
+      if(iappw.gt.0.and.iappw.le.200)then
+        write(doit,'(3a,3i4,4a)') 'res -mode ',tmode,
+     &    ' -s ',iappw,iappx+15,iappy+50,' -file ',
+     &    sblres(3)(1:lnblnk(sblres(3))),' -act ipv_sum ',aut
+      else
+        write(doit,'(6a)') 'res -mode ',tmode,
+     &   ' -s 0 0 0 -file ',sblres(3)(1:lnblnk(sblres(3))),
+     &   ' -act ipv_sum ',aut
+      endif
+      call edisp(iuout,doit)
+      call runit(doit,tmode)
+      call edisp(iuout,'Summer season results complete.')
+
+      call edisp(iuout,'Annual IPV recovery starting...')
+      if(iappw.gt.0.and.iappw.le.200)then
+        write(doit,'(3a,3i4,4a)') 'res -mode ',tmode,
+     &    ' -s ',iappw,iappx+15,iappy+50,' -file ',
+     &    sblres(3)(1:lnblnk(sblres(3))),' -act ipv_ann ',aut
+      else
+        write(doit,'(6a)') 'res -mode ',tmode,
+     &   ' -s 0 0 0 -file ',sblres(3)(1:lnblnk(sblres(3))),
+     &   ' -act ipv_ann ',aut
+      endif
+      call edisp(iuout,doit)
+      call runit(doit,tmode)
+      call edisp(iuout,'Summer season results complete.')
+
+C Remove the esp-r results files if requested.
+C << only do this for the actual number of sets >>
+      if(keepres(1:2).eq.'no')then
+        idf=ifil+1
+        nzrl = MZRL
+        CALL ERPFREE(idf,ISTAT)
+        ier=0
+        call EFOPRAN(idf,sblres(1),nzrl,1,IER)
+        CALL EFDELET(idf,ISTAT)
+        CALL ERPFREE(idf,ISTAT)
+        call EFOPRAN(idf,sblres(2),nzrl,1,IER)
+        CALL EFDELET(idf,ISTAT)
+        CALL ERPFREE(idf,ISTAT)
+        call EFOPRAN(idf,sblres(3),nzrl,1,IER)
+        CALL EFDELET(idf,ISTAT)
+        call edisp(iuout,'ESP-r results libraries cleaned up.')
+      endif
+
+      call edisp(iuout,'GDST COMMANDS FINISHED.')
+      return
+
+C 3    CALL ERPFREE(idf,ISTAT)
+C      return
+
+      end
+
 C ******** serchrpl
 C Serchrpl handles search and replace of composition attributes.
       subroutine serchrpl(act,itrc,ier)
@@ -2875,8 +3088,10 @@ C Serchrpl handles search and replace of composition attributes.
       integer ncomp,ncon
       common/C1/NCOMP,NCON
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
-      integer IZSTOCN
       COMMON/C24/IZSTOCN(MCOM,MS)
+
+      common/anchora/NALOC,ALOC(20),ALOCLBL(20),ALOCTYP(20)
+      common/anchorb/IALOC(20),lstanchr(20,60)
 
       logical OK,DOK,MODIFY,MODLEN,MODBND,QUIET,apply
       logical newgeo  ! to use for testing if new/old geometry file.
@@ -2887,8 +3102,9 @@ C     dimension SNA(MS),PAZI(MS),PELV(MS)
       character LTMP*72
       character ZN*12,outs*124,SN*12
       character DESCRC*25,act*1
+      character ALOC*12,ALOCLBL*12,ALOCTYP*4
       character AL1*12,AL2*12,AL3*12,AL4*12,AL5*12,AL6*12,AL7*12
-      character AL8*12,AL9*12,CXITM*48
+      character AL8*12,AL9*12,CXITM*43
       integer ltype,ins2,ins3   ! for radio buttons
 
 C For help messages
@@ -2935,21 +3151,18 @@ C Search and replace by finding matching constructions.
               LTMP=LGEOM(IVALS(IZ))
               call georead(IUF,LTMP,IVALS(IZ),1,iuout,IER)
 
-C Remind user of surface attributes.
               WRITE(outs,93)
               call edisp(iuout,outs)
               WRITE(outs,94)
               call edisp(iuout,outs)
-
-C Loop through surfaces in the zone and report on which ones match.
               do 91 i=1,nsur
                 icc=izstocn(ivals(iz),i)
                 if(SSMLCN(icc)(1:12).eq.DESC(ISEL)(1:12))then
                   write(sn,'(a)') SSNAME(icc)
-                  WRITE(outs,'(2a,F7.2,F5.0,F5.0,1X,A,1X,A,
-     &              1X,A,1X,A)')'Match: ',sn,SSNA(icc),
-     &              SSPAZI(icc),SSPELV(icc),SSOTF(icc)(1:4),
-     &              SSVFC(icc),SSMLCN(icc)(1:12),SSOTHER(icc,1)
+                  WRITE(outs,'(a7,I3,1X,F7.2,F5.0,F5.0,1X,A12,1X,A4,
+     &              1X,A4,1X,A12,1X,A13)')'Match: ',I,SSNA(icc),
+     &              SSPAZI(icc),SSPELV(icc),SN,SSOTF(icc)(1:4),
+     &              SSVFC(icc),SSMLCN(icc)(1:12),SSOTHER(icc,1)(1:13)
                   call edisp(iuout,outs)
                   write(outs,'(5a)') ' Apply construction to ',
      &              zn(1:lnblnk(zn)),':',sn(1:lnblnk(sn)),'?'
@@ -2961,9 +3174,6 @@ C Loop through surfaces in the zone and report on which ones match.
 
 C << If newgeometry then can write out the optical property instead
 C << of TRAN for SSOTF.
-
-C << this is a place to update ssmlcindex >>
-
                     if(DESC(ISELR)(15:18).NE.'OPAQ')SSOTF(ioc)='TRAN'
                     if(DESC(ISELR)(15:18).EQ.'OPAQ')SSOTF(ioc)='OPAQUE'
                     if(DESC(ISELR)(15:18).EQ.'CFC ')SSOTF(ioc)='CFC '
@@ -3042,9 +3252,6 @@ C Anchor point substitution.
 
 C << If newgeometry then can write out the optical property instead
 C << of TRAN for SSOTF.
-
-C << this is a place to update ssmlcindex >>
-
             IF(DESC(ISELR)(15:18).NE.'OPAQ')SSOTF(icc)='TRAN'
             IF(DESC(ISELR)(15:18).EQ.'OPAQ')SSOTF(icc)='OPAQUE'
             IF(DESC(ISELR)(15:18).EQ.'CFC ')SSOTF(icc)='CFC '
@@ -3122,12 +3329,12 @@ C << this is a place to update ssmlcindex >>
             call georead(IUF,LTMP,IVALS(IZ),1,iuout,IER)
 
             WRITE(outs,93)
-   93       FORMAT('          Surface|  Area  |Azim|Elev|geometry',
-     &             '| multilayer  |environment')
+   93     FORMAT('           Sur|  Area  |Azim|Elev| surface    |',
+     &        'geometry| multilayer  |environment')
             call edisp(iuout,outs)
             WRITE(outs,94)
-   94       FORMAT('                 |  m^2   |deg |deg |type|loc',
-     &             '| constr name |other side ')
+   94     FORMAT('              |  m^2   |deg |deg | name       |',
+     &        'type|loc| constr name |other side ')
             call edisp(iuout,outs)
             do 11 i=1,nsur
               icc=izstocn(ivals(iz),i)
@@ -3186,9 +3393,6 @@ C 'any horizontal','any orien.','cancel'.
                 IF(OK)then
                   ioc=IZSTOCN(IVALS(IZ),i)
                   WRITE(SSMLCN(ioc),'(A12)')DESC(ISEL)(1:12)
-
-C << this is a place to update ssmlcindex >>
-
                   IF(DESC(ISEL)(15:18).NE.'OPAQ')SSOTF(ioc)='TRAN'
                   IF(DESC(ISEL)(15:18).EQ.'OPAQ')SSOTF(ioc)='OPAQ'
                   IF(DESC(ISEL)(15:18).EQ.'CFC ')SSOTF(ioc)='CFC '

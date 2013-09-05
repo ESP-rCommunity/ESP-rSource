@@ -1,9 +1,7 @@
 ! ********************************************************************
 ! Module: h3kmodule
 ! Purpose: h3k module is the main interface for all calls to interact
-!           with the C++ code for generating xml, csv, sql output.
-!           For information on how to use the H3KReports see the
-!           cetc/h3kreports/ConfigureH3kReports.txt document.
+!           with the C++ code for generating xml, csv, sql output
 !
 ! Error handling: to be determined
 ! ********************************************************************
@@ -11,31 +9,18 @@ MODULE h3kmodule
    IMPLICIT NONE
 
    !Private subroutines
-   private :: AddVariable, AddToReportWild, AddToReportWild1,  &
-              AddToReportWild2, AddToReportWild3, AddToReportDetailsWild, &
-              AddToReportDetailsWild1, AddToReportDetailsWild2, &
-              AddToReportDetailsWild3
+   private :: AddVariable
 
-
-   !Public subroutines and functions
-   public :: ReportNextTimeStep, SetReportParameter, &
+   !Public subroutines
+   public :: AddToReport, AddToReportWild1, AddToReportWild2, &
+             AddToReportWild3, ReportNextTimeStep, &
+             AddToReportDetails, AddToReportDetailsWild1, &
+             AddToReportDetailsWild2, SetReportParameter, &
              isH3KEnabled, UpdateH3kSimInfo, UpdateH3kReport, &
-             GenerateOutput, UpdateConfigFile, SetReportConfig, &
-             GetReportConfig, ReportToggleConfig, GetReportList, &
-             isReportingInstalled, SetReportEnable, IsH3kVarEnabled
+             GenerateOutput
 
-   !Function overloading interface to push a value to the TReportsManager
-   INTERFACE AddToReport
-      MODULE PROCEDURE AddToReportWild, AddToReportWild1,AddToReportWild2, AddToReportWild3
-   END INTERFACE
 
-   !Function overloading interface to overwrite a variable description and meta info during runtime
-   INTERFACE AddToReportDetails
-      MODULE PROCEDURE AddToReportDetailsWild, AddToReportDetailsWild1, AddToReportDetailsWild2, AddToReportDetailsWild3
-   END INTERFACE
-
-   !Declare interface of functions returning a value from c++, used internally to the h3kmodule.f90 this
-   !is not intended to be called anywhere else in the esp-r code.
+   !Declare interface of functions returning a value from c++
    INTERFACE
       logical function rep_xmlstatus()
       end function rep_xmlstatus
@@ -55,12 +40,8 @@ MODULE h3kmodule
          character(len=*), intent(in)::cDescription
       end function rep_report_config
 
-      logical function is_variable_enabled(cPattern)
-         character(len=*), intent(in)::cPattern
-      end function is_variable_enabled
+
    END INTERFACE
-
-
    !ReportVariable construct,
    !note that the C++ code will manipulate them for two reasons:
    !  1. autogenerate the id (sequencial)
@@ -75,7 +56,6 @@ MODULE h3kmodule
       logical*1      :: Enabled !Variable requested or not, populated by c++
    End Type ReportVariable
 
-   SAVE
    !Used by h3kstore.F
    Type(ReportVariable) :: rvPlantPumpElec
 
@@ -100,7 +80,7 @@ MODULE h3kmodule
          rvInsolationAdverse, rvInternalGainsTotal, rvInternalGainsUseful, &
          rvInternalGainsAdverse, rvBuildingAllZonesSuppliedEnergyHeating, &
          rvBuildingAllZonesSuppliedEnergyCooling, rvBuildingAllZonesSuppliedEnergyNetFlux, &
-         rvFreeCoolingDelivered , rvNodeTemp
+         rvFreeCoolingDelivered 
    Type(ReportVariable) :: rvBuildingAllZonesInsolationTotal, rvBuildingAllZonesInsolationUseful, &
          rvBuildingAllZonesInsolationAdverse, rvBuildingAllZonesEnvelopeWindowsHeatLoss, &
          rvBuildingAllZonesEnvelopeWallsHeatLoss, rvBuildingAllZonesEnvelopeFloorsHeatLoss, &
@@ -342,14 +322,6 @@ MODULE h3kmodule
          rvpltFCellFuelHHV,rvpltFCellElecEffBOP,rvpltFCellCogenEff,rvpltFCellFuelFlw
 
    Type(ReportVariable) :: rvBldInfAirInf,rvBldInfAirChg
-   
-   !Used by TCC.F
-   Type(ReportVariable) :: rvpltCosimInvocations, rvpltCosimEsprIter,rvpltCosimTrnsysIter,rvpltHCCTempToTrnsys, &
-      rvpltHCCFlowToTrnsys, rvpltACCTempToTrnsys, rvpltACCFlowToTrnsys, rvpltACCMoistFlowToTrnsys, &
-      rvpltHCCTempToEspr, rvpltHCCFlowToEspr, rvpltACCTempToEspr, rvpltACCFlowToEspr, &
-      rvpltACCMoistFlowToEspr, rvpltCosimAirPointTemperatures, rvpltCosimAirPointHumidities, &
-      rvpltCosimAirPointCasualGains
-   
 CONTAINS
    ! ********************************************************************
    ! Subroutine: UpdateH3kReport
@@ -960,12 +932,6 @@ CONTAINS
       rvAmbRT%Description = 'Ambient radiant temperature for exterior surface'
       Call AddVariable(rvAmbRT)
 
-      rvNodeTemp%VariableName = 'building/zone_*/surface_*/node_*/temperature'
-      rvNodeTemp%MetaType = 'units'
-      rvNodeTemp%VariableType = '(oC)'
-      rvNodeTemp%Description = 'Temperature at node within multilayer construction'
-      Call AddVariable(rvNodeTemp)
-
       rvClimateSolarDiffuseHorizontalRadiation%VariableName = 'climate/solar/diffuse_horizontal_radiation'
       rvClimateSolarDiffuseHorizontalRadiation%MetaType = 'units'
       rvClimateSolarDiffuseHorizontalRadiation%VariableType = '(W/m2)'
@@ -1110,13 +1076,13 @@ CONTAINS
       rvPlantCompNodeFirstPhaseFlow%Description = 'Plant component node first-phase flow'
       Call AddVariable(rvPlantCompNodeFirstPhaseFlow)
 
-      rvPlantCompNodeSecondPhaseFlow%VariableName = 'plant/*/node_*/second_phase/moisture_flow'
+      rvPlantCompNodeSecondPhaseFlow%VariableName = 'plant/*/node_*/moisture_flow'
       rvPlantCompNodeSecondPhaseFlow%MetaType = 'units'
       rvPlantCompNodeSecondPhaseFlow%VariableType = '(kg/s)'
       rvPlantCompNodeSecondPhaseFlow%Description = 'Plant component node second-phase flow'
       Call AddVariable(rvPlantCompNodeSecondPhaseFlow)
 
-      rvPlantCompNodeHydrogenFlow%VariableName = 'plant/*/node_*/second_phase/hydrogen_flow'
+      rvPlantCompNodeHydrogenFlow%VariableName = 'plant/*/node_*/hydrogen_flow'
       rvPlantCompNodeHydrogenFlow%MetaType = 'units'
       rvPlantCompNodeHydrogenFlow%VariableType = '(kg/s)'
       rvPlantCompNodeHydrogenFlow%Description = 'Plant component node hydrogen flow flow'
@@ -1155,7 +1121,7 @@ CONTAINS
       rvElecNetLoadsTotalLoad%VariableName = 'electrical_net/loads/total_load'
       rvElecNetLoadsTotalLoad%MetaType = 'units'
       rvElecNetLoadsTotalLoad%VariableType = '(W)'
-      rvElecNetLoadsTotalLoad%Description = 'Total load on electrical network'
+      rvElecNetLoadsTotalLoad%Description = 'Total load on electrical networ'
       Call AddVariable(rvElecNetLoadsTotalLoad)
 
       rvElecNetLoadsHvacLoad%VariableName = 'electrical_net/loads/HVAC_load'
@@ -1184,7 +1150,7 @@ CONTAINS
 
       rvElecNetGenOnsiteGeneration%VariableName = 'electrical_net/generation/onsite_generation'
       rvElecNetGenOnsiteGeneration%MetaType = 'units'
-      rvElecNetGenOnsiteGeneration%VariableType = '(W)'
+      rvElecNetGenOnsiteGeneration%VariableType = ''
       rvElecNetGenOnsiteGeneration%Description = 'Total onsite electrical generation'
       Call AddVariable(rvElecNetGenOnsiteGeneration)
 
@@ -1272,7 +1238,7 @@ CONTAINS
       rvElecNetHybridComponentFlux%Description = 'Electrical network hybrid component net electrical power'
       Call AddVariable(rvElecNetHybridComponentFlux)
 
-      rvElecNetPowerOnlyComponents%VariableName = 'electrical_net/power_only_components/*/flux'
+      rvElecNetPowerOnlyComponents%VariableName = 'electrical_net/power_only_components/*'
       rvElecNetPowerOnlyComponents%MetaType = 'units'
       rvElecNetPowerOnlyComponents%VariableType = '(W)'
       rvElecNetPowerOnlyComponents%Description = 'Electrical network power only component: electrical power'
@@ -1821,31 +1787,31 @@ CONTAINS
       !Used by the FC_components.F
       rvPltQElecDemand%VariableName = 'plant/*/misc_data/Q_electric_demand'
       rvPltQElecDemand%MetaType = 'units'
-      rvPltQElecDemand%VariableType = '(WattsToGJ)'
+      rvPltQElecDemand%VariableType = '(W)'
       rvPltQElecDemand%Description = ''
       Call AddVariable(rvPltQElecDemand)
 
       rvPltQElecNet%VariableName = 'plant/*/misc_data/Q_electric_net'
       rvPltQElecNet%MetaType = 'units'
-      rvPltQElecNet%VariableType = '(WattsToGJ)'
+      rvPltQElecNet%VariableType = '(W)'
       rvPltQElecNet%Description = ''
       Call AddVariable(rvPltQElecNet)
 
       rvPltQElecParasitic%VariableName = 'plant/*/misc_data/Q_electric_parasitic'
       rvPltQElecParasitic%MetaType = 'units'
-      rvPltQElecParasitic%VariableType = '(WattsToGJ)'
+      rvPltQElecParasitic%VariableType = '(W)'
       rvPltQElecParasitic%Description = ''
       Call AddVariable(rvPltQElecParasitic)
 
       rvPltQThermalNet%VariableName = 'plant/*/misc_data/Q_thermal_net'
       rvPltQThermalNet%MetaType = 'units'
-      rvPltQThermalNet%VariableType = '(WattsToGJ)'
+      rvPltQThermalNet%VariableType = '(W)'
       rvPltQThermalNet%Description = ''
       Call AddVariable(rvPltQThermalNet)
 
       rvPltFuelHHV%VariableName = 'plant/*/misc_data/Fuel_HHV'
       rvPltFuelHHV%MetaType = 'units'
-      rvPltFuelHHV%VariableType = '(WattsToGJ)'
+      rvPltFuelHHV%VariableType = '(W)'
       rvPltFuelHHV%Description = ''
       Call AddVariable(rvPltFuelHHV)
 
@@ -1869,7 +1835,7 @@ CONTAINS
 
       rvPltFuelFlowMass%VariableName = 'plant/*/misc_data/fuel_flow/mass'
       rvPltFuelFlowMass%MetaType = 'units'
-      rvPltFuelFlowMass%VariableType = '(KgPerStoKg)'
+      rvPltFuelFlowMass%VariableType = '(kg/s)'
       rvPltFuelFlowMass%Description = ''
       Call AddVariable(rvPltFuelFlowMass)
 
@@ -1881,7 +1847,7 @@ CONTAINS
 
       rvPltAirFlowMass%VariableName = 'plant/*/misc_data/air_flow/mass'
       rvPltAirFlowMass%MetaType = 'units'
-      rvPltAirFlowMass%VariableType = '(KgPerStoKg)'
+      rvPltAirFlowMass%VariableType = '(kg/s)'
       rvPltAirFlowMass%Description = ''
       Call AddVariable(rvPltAirFlowMass)
 
@@ -1905,7 +1871,7 @@ CONTAINS
 
       rvPltExhaustFlowMass%VariableName = 'plant/*/misc_data/exhaust_flow/mass'
       rvPltExhaustFlowMass%MetaType = 'units'
-      rvPltExhaustFlowMass%VariableType = '(KgPerStoKg)'
+      rvPltExhaustFlowMass%VariableType = '(kg/s)'
       rvPltExhaustFlowMass%Description = ''
       Call AddVariable(rvPltExhaustFlowMass)
 
@@ -1934,7 +1900,7 @@ CONTAINS
       Call AddVariable(rvPltHExchgUAVal)
 
       !Used by mains_temp_draw_profiles.F
-      rvPltDHWTermalLoad%VariableName = 'plant/*/misc_data/DHW_thermal_load'
+      rvPltDHWTermalLoad%VariableName = 'plant/*/DHW_thermal_load'
       rvPltDHWTermalLoad%MetaType = 'units'
       rvPltDHWTermalLoad%VariableType = '(W)'
       rvPltDHWTermalLoad%Description = 'Make-up water: thermal load associated with DHW service'
@@ -3386,11 +3352,9 @@ CONTAINS
       rvPltHvacCrcFlwRt%Description = 'Idealized HVAC models: circulation flow rate'
       Call AddVariable(rvPltHvacCrcFlwRt)
 
-
       rvPltHvacOutFanPw%VariableName = 'plant/ideal_hvac_models/component_*/outdoor_fan_power'
       rvPltHvacOutFanPw%MetaType = 'units'
-      !C.L.to match the testing, removed unit that was originaly not there. rvPltHvacOutFanPw%VariableType = '(W)'
-      rvPltHvacOutFanPw%VariableType = ''
+      rvPltHvacOutFanPw%VariableType = '(W)'
       rvPltHvacOutFanPw%Description = 'Idealized HVAC models: outdoor fan power'
       Call AddVariable(rvPltHvacOutFanPw)
 
@@ -3884,7 +3848,7 @@ CONTAINS
 
       rvpltFCellFuelHHV%VariableName = 'plant/fuel_cell/Fuel_HHV'
       rvpltFCellFuelHHV%MetaType = 'units'
-      rvpltFCellFuelHHV%VariableType = '(WattsToGJ)'
+      rvpltFCellFuelHHV%VariableType = '(W)'
       rvpltFCellFuelHHV%Description = ''
       Call AddVariable(rvpltFCellFuelHHV)
 
@@ -3918,105 +3882,7 @@ CONTAINS
       rvBldInfAirChg%VariableType = '(ACH)'
       rvBldInfAirChg%Description = ''
       Call AddVariable(rvBldInfAirChg)
-
-      !Used by TCC.F
-      rvpltCosimInvocations%VariableName = 'plant/co-sim/Invocaions'
-      rvpltCosimInvocations%MetaType = 'units'
-      rvpltCosimInvocations%VariableType = '-'
-      rvpltCosimInvocations%Description = ''
-      Call AddVariable(rvpltCosimInvocations)
-
-      rvpltCosimEsprIter%VariableName = 'plant/co-sim/Total_Esp-r_Iterations'
-      rvpltCosimEsprIter%MetaType = 'units'
-      rvpltCosimEsprIter%VariableType = '-'
-      rvpltCosimEsprIter%Description = ''
-      Call AddVariable(rvpltCosimEsprIter)
-
-      rvpltCosimTrnsysIter%VariableName = 'plant/co-sim/Total_Trnsys_Iterations'
-      rvpltCosimTrnsysIter%MetaType = 'units'
-      rvpltCosimTrnsysIter%VariableType = '-'
-      rvpltCosimTrnsysIter%Description = ''
-      Call AddVariable(rvpltCosimTrnsysIter)
-
-      rvpltHCCTempToTrnsys%VariableName ='plant/co-sim/HCC_*/HCC_Temp_to_Trnsys'
-      rvpltHCCTempToTrnsys%MetaType = 'units'
-      rvpltHCCTempToTrnsys%VariableType = '(oC)'
-      rvpltHCCTempToTrnsys%Description = ''
-      Call AddVariable(rvpltHCCTempToTrnsys)
-
-      rvpltHCCFlowToTrnsys%VariableName = 'plant/co-sim/HCC_*/HCC_Flow_To_Trnsys'
-      rvpltHCCFlowToTrnsys%MetaType = 'units'
-      rvpltHCCFlowToTrnsys%VariableType = 'kg/s'
-      rvpltHCCFlowToTrnsys%Description = ''
-      Call AddVariable(rvpltHCCFlowToTrnsys)
-            
-      rvpltACCTempToTrnsys%VariableName = 'plant/co-sim/ACC_*/ACC_Temp_to_Trnsys'
-      rvpltACCTempToTrnsys%MetaType = 'units'
-      rvpltACCTempToTrnsys%VariableType = '(oC)'
-      rvpltACCTempToTrnsys%Description = ''
-      Call AddVariable(rvpltACCTempToTrnsys)
-
-      rvpltACCFlowToTrnsys%VariableName = 'plant/co-sim/ACC_*/ACC_Flow_To_Trnsys'
-      rvpltACCFlowToTrnsys%MetaType = 'units'
-      rvpltACCFlowToTrnsys%VariableType = 'kg/s'
-      rvpltACCFlowToTrnsys%Description = ''
-      Call AddVariable(rvpltACCFlowToTrnsys)
-
-      rvpltACCMoistFlowToTrnsys%VariableName = 'plant/co-sim/ACC_*/ACC_MoistFlow_To_Trnsys'
-      rvpltACCMoistFlowToTrnsys%MetaType = 'units'
-      rvpltACCMoistFlowToTrnsys%VariableType = 'kg/s'
-      rvpltACCMoistFlowToTrnsys%Description = ''
-      Call AddVariable(rvpltACCMoistFlowToTrnsys)
-            
-      rvpltHCCTempToEspr%VariableName = 'plant/co-sim/HCC_*/HCC_Temp_to_Espr'
-      rvpltHCCTempToEspr%MetaType = 'units'
-      rvpltHCCTempToEspr%VariableType = '(oC)'
-      rvpltHCCTempToEspr%Description = ''
-      Call AddVariable(rvpltHCCTempToEspr)
-
-      rvpltHCCFlowToEspr%VariableName = 'plant/co-sim/HCC_*/HCC_Flow_To_Espr'
-      rvpltHCCFlowToEspr%MetaType = 'units'
-      rvpltHCCFlowToEspr%VariableType = 'kg/s'
-      rvpltHCCFlowToEspr%Description = ''
-      Call AddVariable(rvpltHCCFlowToEspr)
-            
-      rvpltACCTempToEspr%VariableName = 'plant/co-sim/ACC_*/ACC_Temp_to_Espr'
-      rvpltACCTempToEspr%MetaType = 'units'
-      rvpltACCTempToEspr%VariableType = '(oC)'
-      rvpltACCTempToEspr%Description = ''
-      Call AddVariable(rvpltACCTempToEspr)
-
-      rvpltACCFlowToEspr%VariableName = 'plant/co-sim/ACC_*/ACC_Flow_To_Espr'
-      rvpltACCFlowToEspr%MetaType = 'units'
-      rvpltACCFlowToEspr%VariableType = 'kg/s'
-      rvpltACCFlowToEspr%Description = ''
-      Call AddVariable(rvpltACCFlowToEspr)
-
-      rvpltACCMoistFlowToEspr%VariableName = 'plant/co-sim/ACC_*/ACC_MoistFlow_To_Espr'
-      rvpltACCMoistFlowToEspr%MetaType = 'units'
-      rvpltACCMoistFlowToEspr%VariableType = 'kg/s'
-      rvpltACCMoistFlowToEspr%Description = ''
-      Call AddVariable(rvpltACCMoistFlowToEspr)
-
-      rvpltCosimAirPointTemperatures%VariableName = 'plant/co-sim/zone_*/air_point_temperature'
-      rvpltCosimAirPointTemperatures%MetaType = 'units'
-      rvpltCosimAirPointTemperatures%VariableType = '(oC)'
-      rvpltCosimAirPointTemperatures%Description = ''
-      Call AddVariable(rvpltCosimAirPointTemperatures)
-
-      rvpltCosimAirPointHumidities%VariableName = 'plant/co-sim/zone_*/air_point_relative_humidity'
-      rvpltCosimAirPointHumidities%MetaType = 'units'
-      rvpltCosimAirPointHumidities%VariableType = '(%)'
-      rvpltCosimAirPointHumidities%Description = ''
-      Call AddVariable(rvpltCosimAirPointHumidities)
-
-      rvpltCosimAirPointCasualGains%VariableName = 'plant/co-sim/zone_*/casual_gains'
-      rvpltCosimAirPointCasualGains%MetaType = 'units'
-      rvpltCosimAirPointCasualGains%VariableType = 'W'
-      rvpltCosimAirPointCasualGains%Description = ''
-      Call AddVariable(rvpltCosimAirPointCasualGains)
-
-      End Subroutine UpdateH3kReport
+   End Subroutine UpdateH3kReport
 
 
    ! ********************************************************************
@@ -4041,13 +3907,13 @@ CONTAINS
          !call c++
          call set_report_simulation_info(isds,isdf,ntstep)
       endif
+
    End Subroutine UpdateH3kSimInfo
 
 
 
    ! ********************************************************************
    ! Subroutine: AddVariable
-   ! Scope:    Private
    ! Purpose:  private method that sends the ReportVariable information
    !           to the C++ routine.
    !           ** C++ will append a \0 char to the string parameters
@@ -4078,15 +3944,14 @@ CONTAINS
    End Subroutine AddVariable
 
    ! ********************************************************************
-   ! Subroutine: AddToReportWild
-   ! Scope:    Private, accessible only through AddToReport interface
+   ! Subroutine: AddToReport
    ! Purpose:  Wrapper to the C++ call add_to_report(int,float)
    ! Params:   integer, real
    ! Returns:  N/A
    ! Author:   Claude Lamarche
    ! Mod Date: 2011-07-04
    ! ********************************************************************
-   subroutine AddToReportWild(iIdentifier, rValue)
+   subroutine AddToReport(iIdentifier, rValue)
       integer,intent(in) :: iIdentifier
       real, intent(in) :: rValue
 
@@ -4094,11 +3959,10 @@ CONTAINS
       if (isH3KEnabled()) then
          call add_to_report(iIdentifier,rValue)
       endif
-   End Subroutine AddToReportWild
+   End Subroutine AddToReport
 
    ! ********************************************************************
    ! Subroutine: AddToReportWild1
-   ! Scope:    Private, accessible only through AddToReport interface
    ! Purpose:  Wrapper to the C++ call add_to_report_wild1(int,float,char*)
    !           Use this subroutine to send information to the xml and
    !           replace one '*' character in the Variable name with the
@@ -4121,7 +3985,6 @@ CONTAINS
 
    ! ********************************************************************
    ! Subroutine: AddToReportWild2
-   ! Scope:    Private, accessible only through AddToReport interface
    ! Purpose:  Wrapper to the C++ call add_to_report_wild1(int,float,char*,char*)
    !           Use this subroutine to send information to the xml and
    !           replace two '*' character in the Variable name with the
@@ -4144,7 +4007,6 @@ CONTAINS
 
    ! ********************************************************************
    ! Subroutine: AddToReportWild3
-   ! Scope:    Private, accessible only through AddToReport interface
    ! Purpose:  Wrapper to the C++ call add_to_report_wild1(int,float,char*,char*,char*)
    !           Use this subroutine to send information to the xml and
    !           replace three '*' character in the Variable name with the
@@ -4167,8 +4029,7 @@ CONTAINS
 
 
    ! ********************************************************************
-   ! Subroutine: AddToReportDetailsWild
-   ! Scope:    Private, accessible only through AddToReportDetails interface
+   ! Subroutine: AddToReportDetails
    ! Purpose:  Wrapper to the C++ call add_to_report_details
    !           Use this subroutine to send dynamic report description.
    !           When possible you should avoid the use of these
@@ -4178,7 +4039,7 @@ CONTAINS
    ! Author:   Claude Lamarche
    ! Mod Date: 2011-08-30
    ! ********************************************************************
-   subroutine AddToReportDetailsWild(iIdentifier, cUnit, cType, cDescription)
+   subroutine AddToReportDetails(iIdentifier, cUnit, cType, cDescription)
       integer,intent(in) :: iIdentifier
       character(len=*), intent(in) :: cUnit, cType, cDescription
 
@@ -4191,7 +4052,6 @@ CONTAINS
 
    ! ********************************************************************
    ! Subroutine: AddToReportDetailsWild1
-   ! Scope:    Private, accessible only through AddToReportDetails interface
    ! Purpose:  Wrapper to the C++ call add_to_report_details
    !           Use this subroutine to send dynamic report description.
    !           When possible you should avoid the use of these
@@ -4214,7 +4074,6 @@ CONTAINS
 
    ! ********************************************************************
    ! Subroutine: AddToReportDetailsWild2
-   ! Scope:    Private, accessible only through AddToReportDetails interface
    ! Purpose:  Wrapper to the C++ call add_to_report_details
    !           Use this subroutine to send dynamic report description.
    !           When possible you should avoid the use of these
@@ -4237,7 +4096,6 @@ CONTAINS
 
    ! ********************************************************************
    ! Subroutine: AddToReportDetailsWild3
-   ! Scope:    Private, accessible only through AddToReportDetails interface
    ! Purpose:  Wrapper to the C++ call add_to_report_details
    !           Use this subroutine to send dynamic report description.
    !           When possible you should avoid the use of these
@@ -4300,7 +4158,8 @@ CONTAINS
          call generate_output()
       endif
 
-      !Terminate the report call the c++
+
+      !Terminate the report
       call rep_cleanup_files()
    End Subroutine
 
@@ -4349,12 +4208,9 @@ CONTAINS
    ! Mod Date: 2011-09-12
    ! ********************************************************************
    logical Function isH3KEnabled()
-      logical::lRtn = .false.
 
       !Call the c++ routine
-      lRtn  = bH3K_rep_enabled()
-
-      isH3KEnabled = lRtn
+      isH3KEnabled = bH3K_rep_enabled()
    End Function isH3KEnabled
 
 
@@ -4367,11 +4223,7 @@ CONTAINS
    ! Mod Date: 2011-09-15
    ! ********************************************************************
    logical Function isReportingInstalled()
-      logical::lRtn = .false.
-
-      lRtn = rep_xmlstatus()
-
-      isReportingInstalled = lRtn
+      isReportingInstalled = rep_xmlstatus()
    End Function isReportingInstalled
 
 
@@ -4474,38 +4326,6 @@ CONTAINS
 
       ReportToggleConfig = lRtn
    End Function ReportToggleConfig
-
-
-   ! ********************************************************************
-   ! ***** NEEDS MORE TESTING METHOD DISABLE AT THE MOMENT ******
-   ! *******************************
-   ! Function: IsH3kVarEnabled
-   ! Purpose:  Wrapper to the c++ call is_variable_enabled, method that
-   !           perform a pattern lookup to see if a variable is enabled.
-   !           this can be used to optimize reports by avoiding sections of
-   !           code if the no report variables will be part of the simulation
-   !           results.  The lookup does not perform a regular expression
-   !           check, it only verifies if the cPattern is part of an
-   !           enabled variable VariableName defined above.
-   ! Params:   cPattern, string pattern ex: "/zone_*/surface_*/"
-   ! Returns:  true/false is enabled or not
-   ! Author:   Claude Lamarche
-   ! Mod Date: 2011-10-04
-   ! ********************************************************************
-   logical Function IsH3kVarEnabled(cPattern)
-      character(len=*), intent(in)::cPattern
-      logical::lRtn = .false.
-
-      !call the c++
-      !if (isH3kEnabled()) Then
-      !   lRtn = is_variable_enabled(cPattern)
-      !endif
-
-      !IsH3kVarEnabled = lRtn
-
-      !Disable for now
-      IsH3kVarEnabled = .true.
-   End Function IsH3kVarEnabled
 END MODULE
 
 

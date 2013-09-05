@@ -44,12 +44,8 @@ C      COMMON/OUTIN/IUOUT,IUIN
       integer iglib   ! if 1 then X11, if 2 then GTK, if 3 then text only.
 #ifdef OSI
       integer iside,isize,ifont     ! passed to viewtext
-      integer iigl,iigr,iigt,iigb,iigw,iigwh
-      integer iiw1,iiw2,iiw3,iiw4,iimenu
 #else
       integer*8 iside,isize,ifont     ! passed to viewtext
-      integer*8 iigl,iigr,iigt,iigb,iigw,iigwh
-      integer*8 iiw1,iiw2,iiw3,iiw4,iimenu
 #endif
 
 C For help messages
@@ -138,15 +134,9 @@ C bounds and redraw the image before presenting the command menu.
 
 C GTK note: the call to win3d is a new requirement (until such time
 C as the C automatically refreshes the coordinates).
-
-C Setup and pass in parameters to win3d.
-          iiw1=9; iiw2=8; iiw3=5; iiw4=3; iimenu=menuchw
-          iigl=igl; iigr=igr; iigt=igt; iigb=igb; iigw=igw; iigwh=igwh
-          CALL win3d(iimenu,iiw1,iiw2,iiw3,iiw4,
-     &      iigl,iigr,iigt,iigb,iigw,iigwh)
-C          CALL win3d(menuchw,9,8,5,3,igl,igr,igt,igb,igw,igwh)
-          igl=int(iigl); igr=int(iigr); igt=int(iigt); igb=int(iigb)
-          igw=int(iigw); igwh=int(iigwh)
+          CALL win3d(menuchw,9,8,5,3,igl,igr,igt,igb,igw,igwh)
+          igw=igr-igl
+          igwh=igb-igt
           call startbuffer()
         endif
 
@@ -413,10 +403,8 @@ C 'HISDRW' draws a histogram of the frequency distribution
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
 #ifdef OSI
       integer igwid,igheight  ! for use with axiscale
-      integer iigl,iigr,iigt,iigb,iigw,iigwh
 #else
       integer*8 igwid,igheight  ! for use with axiscale
-      integer*8 iigl,iigr,iigt,iigb,iigw,iigwh
 #endif
 
       CHARACTER*10 LABELX,LABLSX(5)
@@ -435,29 +423,25 @@ C 'HISDRW' draws a histogram of the frequency distribution
 C Percentage (right) axis.
       PMAX=(YMAX/FLOAT(ITOTAL))*100.0
       PMIN=0.0
-
-C Cast values for linescale.
-      iigl=igl;iigr=igr;iigt=igt;iigb=igb;iigw=igw;iigwh=igwh
       igwid=igw
       igheight=igwh
       call axiscale(igwid,igheight,XMIN,XMAX,PMIN,PMAX,TSC,YSCP,
      &              sca,Xadd,YaddP)
-      call vrtaxis(PMIN,PMAX,iigr,iigb,iigt,YaddP,YSCP,0,1,'Percent')
+      call vrtaxis(PMIN,PMAX,igr,igb,igt,YaddP,YSCP,0,1,'Percent')
 
 C Draw axis, begin with scaling factors for the X & Y axis.
 C Stuff this into static memory.
       call axiscale(igwid,igheight,XMIN,XMAX,YMIN,YMAX,XSC,YSC,
      &              sca,Xadd,Yadd)
-      call linescale(iigl,Xadd,XSC,iigb,Yadd,YSC)
+      call linescale(igl,Xadd,XSC,igb,Yadd,YSC)
 
 C Pick up the data increment for the horizontal axis and then draw
 C the horizontal axis.
       LABELX=LABLSX(IL)
-      call horaxis(XMIN,XMAX,iigl,iigr,iigb,Xadd,XSC,1,LABELX)
+      call horaxis(XMIN,XMAX,igl,igr,igb,Xadd,XSC,1,LABELX)
 
 C Draw the vertical axis.
-      call vrtaxis(YMIN,YMAX,iigl,iigb,iigt,Yadd,YSC,1,0,
-     &  'Distribution')
+      call vrtaxis(YMIN,YMAX,igl,igb,igt,Yadd,YSC,1,0,'Distribution')
       call forceflush()
 
 C Plot histogram.

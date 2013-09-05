@@ -1,0 +1,71 @@
+
+                 Multi zone air-conditioning system with reheat
+
+               One extension to the basic A/C system is to divide  the
+          supply  fan  outlet into the appropriate number of ducts and
+          fitting a separate reheater to each. The output of the  cen-
+          tral  plant cooling coil must be arranged to meet the demand
+          of whichever zone requires the  maximum  cooling.  For  this
+          reason a substantial amount of reheat will be required lead-
+          ing to uneconomic running costs. In order to  simulate  this
+          system, the reheat sections of the plant were coupled to the
+          reception and office zones of the 3 zone building.
+
+               A control loop was defined for each  reheater  so  that
+          the  heating coil flux could be actuated on the basis of the
+          appropriate zone air temperature. The fan air temperature is
+          sensed  in  order  to actuate the flux for the central plant
+          heating and cooling coils to control that temperature within
+          cooling and heating set points of 23C and 20C respectively.
+
+               A winter simulation was carried out  for  the  combined
+          building/plant  model.  Although it is possible to include a
+          fluid flow network in the simulation, it was not  considered
+          for this example but was included in a multi-zone air condi-
+          tioning system with VAV terminals in one of  the  exemplars.
+          The  simulation  period  considered  was for the 9th January
+          using ESP-r test climate file. The simulation was  conducted
+          for a building time-step of 10 minutes and a plant time-step
+          of 2 minutes and the following user input was specified  for
+          ESP-r simulator:
+
+                  1
+                  ahu_multizn_reheat.bps
+                  n
+                  d
+                  y
+                  2
+                  b.res
+                  p.res
+                  9 1
+                  9 1
+                  6
+                  5
+                  g
+                  101
+                  n
+                  1
+                  100
+                  1
+                  0.01
+                  1
+                  10
+                  0.001
+                  -
+                  s
+                  y
+                  ahu_multizn_reheat.ctl
+                  y
+                  y
+                  -
+                  f
+                  y
+
+
+               It can be concluded from the results  that  the  reheat
+          system  is  capable  of  responding  to load requirements of
+          individual zones when the correct heating and cooling energy
+          for   the  central  plant  is  sufficient  to  maintain  the
+          reheaters supply air at a desired level.
+
+

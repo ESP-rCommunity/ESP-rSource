@@ -310,11 +310,11 @@ C-------------------------------------------------------------------------------
 C.....Get component name's lenght
       hold_len = lnblnk(pcname(IPCOMP))
 C.....Push values to reporting engine
-       call AddToReport(rvPltH2AppLoad%Identifier,
+       call AddToReportWild1(rvPltH2AppLoad%Identifier,
      &         fH2_app_load,
      &         pcname(IPCOMP)(1:hold_len))
 
-      call AddToReport(rvPltH2AppDemand%Identifier,
+      call AddToReportWild1(rvPltH2AppDemand%Identifier,
      &         fH2_mass_flow,
      &         pcname(IPCOMP)(1:hold_len))
 

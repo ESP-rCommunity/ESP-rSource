@@ -44,7 +44,6 @@ C ********************************************************************
 
       COMMON/HELP/IHELPM
       COMMON/OUTIN/IUOUT,IUIN
-      integer IZSTOCN
       COMMON/C24/IZSTOCN(MCOM,MS)
       COMMON/T1/NE(MS),NAIRG(MS),IPAIRG(MS,MGP),RAIRG(MS,MGP)
       COMMON/VTHP02/IVKON(MCOM,MS,ME) 
@@ -317,7 +316,6 @@ C ******************************************************************
 #include "geometry.h"
 
       COMMON/OUTIN/IUOUT,IUIN
-      integer IZSTOCN
       COMMON/C24/IZSTOCN(MCOM,MS)
       DIMENSION IVALS(MS)
 
@@ -493,7 +491,6 @@ C *********************************************************************
       
       integer lnblnk  ! function definition
 
-      integer IZSTOCN
       COMMON/C24/IZSTOCN(MCOM,MS)
 
       CHARACTER NAMELYR*124

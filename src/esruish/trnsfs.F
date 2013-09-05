@@ -46,7 +46,6 @@ C coordinate system for use in 'point'.
       common/pangl/pazi(ms),pelv(ms),ptilt(ms)
       common/trnsf/a(5),b(3),c(5),xor,yor,zor
       common/g1t/xft(mv),zft(mv)
-      integer izstocn
       common/c24/izstocn(mcom,ms)
 
       dimension yft(mv)
@@ -588,7 +587,6 @@ C           face vertices.
 #include "geometry.h"
 
       common/pangl/pazi(ms),pelv(ms),ptilt(ms)
-      integer izstocn
       common/c24/izstocn(mcom,ms)
 
       logical bHorizontal

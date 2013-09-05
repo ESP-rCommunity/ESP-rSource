@@ -30,50 +30,6 @@ evaporating surface
 #            material model no 
      1            1 
 *DESC
-BP380_poly_36cell    
-*SPECDATA
-13                  
-22.1      Open circuit voltage. (V)
-4.80      Short circuit current. (I)
-17.6      Voltage at maximum power point (V)
-4.55      Current at maximum power point (A)
-1000.     Reference insolation. (W/m^2)
-298.      Reference temperature. (K)
-36.       Number of series connected cells (not panels) (-)
-1.        Number of parallel connected branches. (-)
-5.        Number of panels in surface. (-)
-10.       Empirical value used in calculation of Io
-0.        Load type (0-maximum power,1-fixed R,2-fixed V)
-0.        Load value - resistance or voltage (-)
-0.        Shading treatment (0-def,1-prop.,2-total,3-diff.)
-*TEXT
-Data from BP solar:
-BP Saturn (BP 585)
-Module type             BP 380 polycrstalline
-Module size             1209 x 537 mm
-Weight                  7.5 kg
-Construction            Low-Iron Glass, EVA (cells 400 microns thick)
-Cells in series         36
-Cells in parallel       1
-Peak power  at STC      80
-Voc at STC              22.1
-Isc at STC              4.8
-Vmax at STC             17.6
-Imax at STC             4.55
-
-Construction:
-                                         k     rho     c
-3mm low-iron glass                      1.05   2500    750
-1mm EVA tedlar (inc. cells)             0.38    920   2100
-3mm low-iron glass                      1.05   2500    750
-
-*ENDTEXT
-*END*SPECMATL
-*IDDATA
-# Category | Assoc. special 
-#            material model no 
-     1            1 
-*DESC
 BP_saturn_36cell    
 *SPECDATA
 13                  

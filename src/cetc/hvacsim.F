@@ -1513,7 +1513,7 @@ C.......or not.
 
 
 C.........All energy is electric
-          Call AddToReport(rvPltHvacComFuelAmnt%Identifier,
+          Call AddToReportWild2(rvPltHvacComFuelAmnt%Identifier,
      &      fConvertEnergyToFuelAmount( fH3KStorePrimaryEH(i)
      &                                   + fH3KStorePrimaryEC(i)
      &                                   + fH3KStorePumpEH(i)
@@ -1524,7 +1524,7 @@ C.........All energy is electric
      &      // cHVACTypes(ihvac_type(i))(1:iHVACTypeLen(ihvac_type(i))),
      &          cFuelName(ifuel_type(i))(1:iFuelNameLen(ifuel_type(i))))
 
-          Call AddToReportDetails(rvPltHvacComFuelAmnt%Identifier,
+          Call AddToReportDetailsWild2(rvPltHvacComFuelAmnt%Identifier,
      &      cHVACIndex // '_'
      &      // cHVACTypes(ihvac_type(i))(1:iHVACTypeLen(ihvac_type(i))),
      &      cFuelName(ifuel_type(i))(1:iFuelNameLen(ifuel_type(i))),
@@ -1539,7 +1539,7 @@ C.........All energy is electric
 
         else
 C.........Heating energy reported by fuel type
-          Call AddToReport(rvPltHvacComFuelAmnt%Identifier,
+          Call AddToReportWild2(rvPltHvacComFuelAmnt%Identifier,
      &      fConvertEnergyToFuelAmount( fH3KStorePrimaryEH(i)
      &                                   + fH3KStorePilotE(i),
      &                                  ifuel_type(i) ),
@@ -1548,7 +1548,7 @@ C.........Heating energy reported by fuel type
      &      cFuelName(ifuel_type(i))(1:iFuelNameLen(ifuel_type(i))))
 
 
-          Call AddToReportDetails(rvPltHvacComFuelAmnt%Identifier,
+          Call AddToReportDetailsWild2(rvPltHvacComFuelAmnt%Identifier,
      &      cHVACIndex // '_'
      &      // cHVACTypes(ihvac_type(i))(1:iHVACTypeLen(ihvac_type(i))),
      &      cFuelName(ifuel_type(i))(1:iFuelNameLen(ifuel_type(i))),
@@ -1564,7 +1564,7 @@ C.........Heating energy reported by fuel type
 
 C.........Auxiliary energy consumption is electric
 
-          call AddToReport(rvPltHvacComFuelAmnt%Identifier,
+          call AddToReportWild2(rvPltHvacComFuelAmnt%Identifier,
      &      fConvertEnergyToFuelAmount( fH3KStorePumpEH(i)
      &                                   + fH3KStorePumpEC(i)
      &                                   + fH3KStoreDraftE(i),
@@ -1573,7 +1573,7 @@ C.........Auxiliary energy consumption is electric
      &      // cHVACTypes(ihvac_type(i))(1:iHVACTypeLen(ihvac_type(i))),
      &      cFuelName(iElectricity)(1:iFuelNameLen(iElectricity)))
 
-          Call AddToReportDetails(rvPltHvacComFuelAmnt%Identifier,
+          Call AddToReportDetailsWild2(rvPltHvacComFuelAmnt%Identifier,
      &      cHVACIndex // '_'
      &      // cHVACTypes(ihvac_type(i))(1:iHVACTypeLen(ihvac_type(i))),
      &      cFuelName(iElectricity)(1:iFuelNameLen(iElectricity)),
@@ -1608,12 +1608,12 @@ C...........Test if pilot light actually exists.
      &            ( fH3KStorePilotE(i) > 1.  )
      &          ) then
 
-             Call AddToReport(rvPltHvacFuelEnPilot%Identifier,
+             Call AddToReportWild1(rvPltHvacFuelEnPilot%Identifier,
      &         fH3KStorePilotE(i),
      &         cHVACIndex // '_'
      &      // cHVACTypes(ihvac_type(i))(1:iHVACTypeLen(ihvac_type(i))))
  
-             Call AddToReportDetails(
+             Call AddToReportDetailsWild1(
      &         rvPltHvacFuelEnPilot%Identifier,
      &         cHVACIndex // '_'
      &      // cHVACTypes(ihvac_type(i))(1:iHVACTypeLen(ihvac_type(i))),
@@ -1627,12 +1627,12 @@ C...........Test if pilot light actually exists.
 
 C...........Efficiency:
             if ( fH3KStorePrimaryEH(i) > 1.0 ) then
-            Call AddToReport(rvPltHvacEff%Identifier,
+            Call AddToReportWild1(rvPltHvacEff%Identifier,
      &       fH3KStoreEfficiencyH(i),
      &       cHVACIndex // '_'
      &    // cHVACTypes(ihvac_type(i))(1:iHVACTypeLen(ihvac_type(i))))
  
-            Call AddToReportDetails(rvPltHvacEff%Identifier,
+            Call AddToReportDetailsWild1(rvPltHvacEff%Identifier,
      &          cHVACIndex // '_'
      &    // cHVACTypes(ihvac_type(i))(1:iHVACTypeLen(ihvac_type(i))),
      &       'units','(-)',
@@ -1663,12 +1663,12 @@ C..............Set end-use flag
 
 C.........COP:
           if ( fH3KStorePrimaryEH(i) > 1.0 ) then
-            Call AddToReport(rvPltHvacCOPHeat%Identifier,
+            Call AddToReportWild1(rvPltHvacCOPHeat%Identifier,
      &       fH3KStoreCOPH(i),
      &       cHVACIndex // '_'
      &    // cHVACTypes(ihvac_type(i))(1:iHVACTypeLen(ihvac_type(i))))
  
-            Call AddToReportDetails(rvPltHvacCOPHeat%Identifier,
+            Call AddToReportDetailsWild1(rvPltHvacCOPHeat%Identifier,
      &       cHVACIndex // '_'
      &    // cHVACTypes(ihvac_type(i))(1:iHVACTypeLen(ihvac_type(i))),
      &       'units','(-)',
@@ -1680,12 +1680,12 @@ C.........COP:
 
 C.........COP:
           if ( fH3KStorePrimaryEC(i) > 1.0 ) then
-            Call AddToReport(rvPltHvacCOPCool%Identifier,
+            Call AddToReportWild1(rvPltHvacCOPCool%Identifier,
      &       fH3KStoreCOPC(i),
      &       cHVACIndex // '_'
      &    // cHVACTypes(ihvac_type(i))(1:iHVACTypeLen(ihvac_type(i))))
 
-            Call AddToReportDetails(rvPltHvacCOPCool%Identifier,
+            Call AddToReportDetailsWild1(rvPltHvacCOPCool%Identifier,
      &       cHVACIndex // '_'
      &    // cHVACTypes(ihvac_type(i))(1:iHVACTypeLen(ihvac_type(i))),
      &       'units','(-)',
@@ -1700,13 +1700,13 @@ C.........COP:
 C.......Report energy use as heating or cooling end-use
 
         if ( bTwoModes(i) .or. iSysEndUse == iUseSpaceHeat ) then
-
-          Call AddToReport(rvPltHvacFuelEnHeat%Identifier,
+        
+          Call AddToReportWild1(rvPltHvacFuelEnHeat%Identifier,
      &      fH3KStorePrimaryEH(i),
      &      cHVACIndex // '_'
      &   // cHVACTypes(ihvac_type(i))(1:iHVACTypeLen(ihvac_type(i))))
  
-          Call AddToReportDetails(rvPltHvacFuelEnHeat%Identifier,
+          Call AddToReportDetailsWild1(rvPltHvacFuelEnHeat%Identifier,
      &      cHVACIndex // '_'
      &   // cHVACTypes(ihvac_type(i))(1:iHVACTypeLen(ihvac_type(i))),
      &      'units', '(W)',
@@ -1717,12 +1717,12 @@ C.......Report energy use as heating or cooling end-use
 
           System_is_on_H:
      &    if ( fH3KStorePrimaryEH(i) > 1.0 ) then
-           Call AddToReport(rvPltHvacPrtLdHeat%Identifier,
+           Call AddToReportWild1(rvPltHvacPrtLdHeat%Identifier,
      &      fH3KStorePLRH(i),
      &      cHVACIndex // '_'
      &   // cHVACTypes(ihvac_type(i))(1:iHVACTypeLen(ihvac_type(i))))
 
-           Call AddToReportDetails(rvPltHvacPrtLdHeat%Identifier,
+           Call AddToReportDetailsWild1(rvPltHvacPrtLdHeat%Identifier,
      &      cHVACIndex // '_'
      &   // cHVACTypes(ihvac_type(i))(1:iHVACTypeLen(ihvac_type(i))),
      &      'units', '(-)',
@@ -1731,12 +1731,12 @@ C.......Report energy use as heating or cooling end-use
      &   // ' heating part-load-ratio (PLR)')
           endif System_is_on_H
 
-          Call AddToReport(rvPltHvacThrmOutHeat%Identifier,
+          Call AddToReportWild1(rvPltHvacThrmOutHeat%Identifier,
      &      fH3KStoreOutputH(i),
      &      cHVACIndex // '_'
      &   // cHVACTypes(ihvac_type(i))(1:iHVACTypeLen(ihvac_type(i))))
 
-          Call AddToReportDetails(rvPltHvacThrmOutHeat%Identifier,
+          Call AddToReportDetailsWild1(rvPltHvacThrmOutHeat%Identifier,
      &      cHVACIndex // '_'
      &   // cHVACTypes(ihvac_type(i))(1:iHVACTypeLen(ihvac_type(i))),
      &      'units','(W)',
@@ -1749,12 +1749,12 @@ C.......Report energy use as heating or cooling end-use
 
 
 C...............Energy consumption for cooling
-          Call AddToReport(rvPltHvacFuelEnCool%Identifier,
+          Call AddToReportWild1(rvPltHvacFuelEnCool%Identifier,
      &      fH3KStorePrimaryEC(i),
      &      cHVACIndex // '_'
      &   // cHVACTypes(ihvac_type(i))(1:iHVACTypeLen(ihvac_type(i))))
  
-          Call AddToReportDetails(rvPltHvacFuelEnCool%Identifier,
+          Call AddToReportDetailsWild1(rvPltHvacFuelEnCool%Identifier,
      &      cHVACIndex
      &   // '_'
      &   // cHVACTypes(ihvac_type(i))(1:iHVACTypeLen(ihvac_type(i))),
@@ -1765,12 +1765,12 @@ C...............Energy consumption for cooling
  
           System_is_on_C:
      &    if ( fH3KStorePrimaryEC(i) > 1.0 ) then
-           Call AddToReport(rvPltHvacPrtCool%Identifier,
+           Call AddToReportWild1(rvPltHvacPrtCool%Identifier,
      &       fH3KStorePLRC(i),
      &       cHVACIndex // '_'
      &    // cHVACTypes(ihvac_type(i))(1:iHVACTypeLen(ihvac_type(i))))
 
-           Call AddToReportDetails(rvPltHvacPrtCool%Identifier,
+           Call AddToReportDetailsWild1(rvPltHvacPrtCool%Identifier,
      &       cHVACIndex // '_'
      &    // cHVACTypes(ihvac_type(i))(1:iHVACTypeLen(ihvac_type(i))),
      &       'units', '(-)',
@@ -1780,12 +1780,12 @@ C...............Energy consumption for cooling
           endif System_is_on_C
 
 
-          Call AddToReport(rvPltHvacThrmCool%Identifier,
+          Call AddToReportWild1(rvPltHvacThrmCool%Identifier,
      &      fH3KStoreOutputC(i),
      &      cHVACIndex // '_'
      &   // cHVACTypes(ihvac_type(i))(1:iHVACTypeLen(ihvac_type(i))))
 
-          Call AddToReportDetails(rvPltHvacThrmCool%Identifier,
+          Call AddToReportDetailsWild1(rvPltHvacThrmCool%Identifier,
      &       cHVACIndex // '_'
      &    // cHVACTypes(ihvac_type(i))(1:iHVACTypeLen(ihvac_type(i))),
      &       'units', '(W)',
@@ -1795,12 +1795,12 @@ C...............Energy consumption for cooling
      
 
 
-          Call AddToReport(rvPltHvacFuelEnTtl%Identifier,
+          Call AddToReportWild1(rvPltHvacFuelEnTtl%Identifier,
      &      fH3KStorePrimaryEH(i) + fH3KStorePrimaryEC(i),
      &      cHVACIndex // '_'
      &   // cHVACTypes(ihvac_type(i))(1:iHVACTypeLen(ihvac_type(i))))
 
-          Call AddToReportDetails(rvPltHvacFuelEnTtl%Identifier,
+          Call AddToReportDetailsWild1(rvPltHvacFuelEnTtl%Identifier,
      &      cHVACIndex // '_'
      &   // cHVACTypes(ihvac_type(i))(1:iHVACTypeLen(ihvac_type(i))),
      &      'units','(W)',
@@ -1824,13 +1824,13 @@ C.......interesting parameters from cooling simulation
 
 C.......Report interesting parameters from
 C.......ASHP cooling simulation: Coil loads
-        Call AddToReport(rvPltHvacCoilCoolSns%Identifier,
+        Call AddToReportWild1(rvPltHvacCoilCoolSns%Identifier,
      &    fASHP_AC_Coil_Load_Sensible(iCoolSys),
      &    cHVACIndex // '_'
      & // cHVACTypes(ihvac_type(iCoolSys))
      &            (1:iHVACTypeLen(ihvac_type(iCoolSys))))
 
-        Call AddToReportDetails(rvPltHvacCoilCoolSns%Identifier,
+        Call AddToReportDetailsWild1(rvPltHvacCoilCoolSns%Identifier,
      &    cHVACIndex // '_'
      & // cHVACTypes(ihvac_type(iCoolSys))
      &            (1:iHVACTypeLen(ihvac_type(iCoolSys))),
@@ -1841,13 +1841,13 @@ C.......ASHP cooling simulation: Coil loads
      & // ' sensible cooling load at coil')
 
 
-        Call AddToReport(rvPltHvacCoilCoolLtnt%Identifier,
+        Call AddToReportWild1(rvPltHvacCoilCoolLtnt%Identifier,
      &   fASHP_AC_Coil_Load_Latent(iCoolSys),
      &   cHVACIndex // '_'
      & // cHVACTypes(ihvac_type(iCoolSys))
      &               (1:iHVACTypeLen(ihvac_type(iCoolSys))))
 
-        Call AddToReportDetails(rvPltHvacCoilCoolLtnt%Identifier,
+        Call AddToReportDetailsWild1(rvPltHvacCoilCoolLtnt%Identifier,
      &   cHVACIndex // '_'
      & // cHVACTypes(ihvac_type(iCoolSys))
      &               (1:iHVACTypeLen(ihvac_type(iCoolSys))),
@@ -1858,13 +1858,13 @@ C.......ASHP cooling simulation: Coil loads
      & // ' latent cooling load at coil')
 
 
-        Call AddToReport(rvPltHvacCoilCoolTtl%Identifier,
+        Call AddToReportWild1(rvPltHvacCoilCoolTtl%Identifier,
      &   fASHP_AC_Coil_Load_Total(iCoolSys),
      &   cHVACIndex // '_'
      & // cHVACTypes(ihvac_type(iCoolSys))
      &               (1:iHVACTypeLen(ihvac_type(iCoolSys))))
 
-        Call AddToReportDetails(rvPltHvacCoilCoolTtl%Identifier,
+        Call AddToReportDetailsWild1(rvPltHvacCoilCoolTtl%Identifier,
      &   cHVACIndex // '_'
      & // cHVACTypes(ihvac_type(iCoolSys))
      &               (1:iHVACTypeLen(ihvac_type(iCoolSys))),
@@ -2088,13 +2088,14 @@ c     This is Equation 3 in Furnace Ref by Haddad
       end
 
 C-----------------------------------------------------------------------
-C     Definition of system name types, other HVAC params.
+C     Definition of system name types
 C-----------------------------------------------------------------------
 
       blockdata initialize_system_types
-      include "building.h"
-      include "hvac_parameters.h"
-      include "hvac_common.h"
+
+      common/HVAC_H3kNames/iHVACTypeLen,cHVACTypes
+      character*23 cHVACTypes(9)
+      integer iHVACTypeLen(9)
 
       integer iName
 
@@ -2109,9 +2110,6 @@ C-----------------------------------------------------------------------
      &                                    'ground_source_heat_pump' /
 
       data iHVACTypeLen /7,6,9,3,1,1,20,23,23/
-
-      data fIdealHVACZoneConGain / MCOM * 0. /
-
 
       end blockdata initialize_system_types
 

@@ -37,9 +37,9 @@ C This version uses generic databases.
 #include "model.h"
 #include "site.h"
 #include "geometry.h"
-#include "net_flow.h"
 #include "tdf2.h"
 #include "uncertainty.h"
+#include "net_flow.h"
 #include "esprdbfile.h"
 #include "CFC_common.h"
 C espprdbfile.h supplies the following:
@@ -50,7 +50,7 @@ C LPRFDB,IPRODB (for event profile database)
 C LFMAT,IFMAT,LFMUL,IFMUL (for materials and constructions database)
 C ICLIM,LCLIM (for climate file)
 #include "schedule.h"
-      INTEGER, PARAMETER :: MSTMC=20
+      INTEGER, PARAMETER :: MSTMC=20,MSGAL=40
       
       integer lnblnk  ! function definition
 
@@ -60,8 +60,8 @@ C ICLIM,LCLIM (for climate file)
       INTEGER :: iuout,iuin
       common/pophelp/h(60)
       
-      integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
+      integer ncomp,ncon
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
       INTEGER :: ic1,ie1,ict,ic2,ie2
 
@@ -69,12 +69,17 @@ C ICLIM,LCLIM (for climate file)
       INTEGER :: IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
       COMMON/C6/INDCFG
       INTEGER :: INDCFG
-      INTEGER :: IZSTOCN
+      common/C21/IFCFG,cfgroot,LCFGF
+      INTEGER :: ifcfg
       COMMON/C24/IZSTOCN(MCOM,MS)
+      INTEGER :: IZSTOCN
 
 C Plant network.
       COMMON/C23/IFPNF,LPNF
       INTEGER :: ifpnf
+
+C Project log file, paths to standard file locations.
+      COMMON/LLOG/LPRJLG
 
 C Configuration control.
       common/cctlnm/ctldoc,lctlf
@@ -140,6 +145,8 @@ C Temporal definition commons.
       COMMON/TDFFLG0/DBTAG(MIT),DBTASK(MIT),DBZN(MIT),DBSN(MIT)
 
 C Primary energy and emissions conversions.
+      common/ECONV/ieconv
+      INTEGER :: ieconv
       common/PCONV/ipconv,pcnvht,pcnvcl,pcnvlt,pcnvfn,pcnvsp,pcnvhw
       INTEGER :: ipconv
       REAL :: pcnvht,pcnvcl,pcnvlt,pcnvfn,pcnvsp,pcnvhw
@@ -167,7 +174,10 @@ C Assume: Mon=1, Tue=2, Wed=3, Thu=4, Fri=5, Sat=6, Sun=7
 C Uncertainty analysis common.
       COMMON/UA1/LUALF,LCNG(MNCNG),LLOC(MNIL)
 
-C Anchor data in model.h.
+C Anchor data.
+      common/anchora/NALOC,ALOC(20),ALOCLBL(20),ALOCTYP(20)
+      common/anchorb/IALOC(20),lstanchr(20,60)
+      INTEGER :: naloc,ialoc,lstanchr
 
 C Simulation parameter presets.
       common/spfldes/spfdescr(MSPS)
@@ -237,8 +247,9 @@ C Generic databases from esprdbfile.h.
 
       CHARACTER*72 LBSIMP,hvacfile,LFClds
 
-      CHARACTER LAPROB*72
-      CHARACTER CXSTR*78
+      CHARACTER LCFGF*72
+      CHARACTER LAPROB*72,LPRJLG*72
+      CHARACTER CXSTR*78,cfgroot*24
       CHARACTER LPNF*72
       CHARACTER*72 LGDCVS,LGDCNC,LGDNDC,LGDNDD,LGDTAQ,LGRD1D,LNLTHP
       CHARACTER*72 L3DCVS,L3DCNC,L3DNDC,L3DTAQ,LMOIST,LGrdSt
@@ -260,12 +271,13 @@ C An array of mass flow nodes for writing.
       character namen*12
       dimension namen(mcom)
 
-      dimension iav(99)
+      dimension iav(60)
 
       logical dogrnd
       LOGICAL INTHPS,INTHPZ,IGR1D,GRND3D
       LOGICAL BLDG3D,ZONE3D,MSTROK,MSTRZN
       character dstmp*24
+      character ALOC*12,ALOCLBL*12,ALOCTYP*4
 
 C Control for writing out multi-climate sim presets
       logical bMY_set_open 
@@ -308,21 +320,21 @@ C If filename > 4 char it might have a .cfg attached.
           lcfgl=lcfgr-3
           if(lcfgr.gt.4)then
             if(LCFGF(lcfgl:lcfgr).eq.'.cfg')then
-              if(lcfgl.gt.32)then
-                write(cfgroot,'(a)',iostat=ios,err=3) LCFGF(1:32)
+              if(lcfgl.gt.24)then
+                write(cfgroot,'(a)',iostat=ios,err=3) LCFGF(1:24)
               else
                 write(cfgroot,'(a)',iostat=ios,err=3) LCFGF(1:lcfgl-1)
               endif
             else
-              if(lcfgr.gt.32)then
-                write(cfgroot,'(a)',iostat=ios,err=3) LCFGF(1:32)
+              if(lcfgr.gt.24)then
+                write(cfgroot,'(a)',iostat=ios,err=3) LCFGF(1:24)
               else
                 write(cfgroot,'(a)',iostat=ios,err=3) LCFGF(1:lcfgr)
               endif
             endif
           else
-            if(lcfgr.gt.32)then
-              write(cfgroot,'(a)',iostat=ios,err=3) LCFGF(1:32)
+            if(lcfgr.gt.24)then
+              write(cfgroot,'(a)',iostat=ios,err=3) LCFGF(1:24)
             else
               write(cfgroot,'(a)') LCFGF(1:lcfgr)
             endif
@@ -410,6 +422,8 @@ C Begin writing the file.
      &  '  # path to radiance files'
       WRITE(IFCFG,'(3a)',IOSTAT=IOS,ERR=3) '*imgpth ',imgpth,
      &  '  # path to project images'
+      WRITE(IFCFG,'(3a)',IOSTAT=IOS,ERR=3) '*tmppth ',tmppth,
+     &  '  # path to project scratch folder'
       WRITE(IFCFG,'(3a)',IOSTAT=IOS,ERR=3) '*docpth ',docpth,
      &  '  # path to project documents'
       WRITE(IFCFG,'(3a)',IOSTAT=IOS,ERR=3) '*dbspth ',dbspth,
@@ -511,18 +525,6 @@ C Write control file if known.
       else
         WRITE(IFCFG,'(a,a)',IOSTAT=IOS,ERR=2) '*ctl  ',
      &    LCTLF(1:lnblnk(LCTLF))
-      endif
-
-C Write model contents file if known.
-      if(lnblnk(lmodelqa).eq.0)then
-        continue
-      elseif(lmodelqa(1:7).eq.'UNKNOWN')then
-        continue
-      elseif(lmodelqa(1:2).eq.'  ')then
-        continue
-      else
-        WRITE(IFCFG,'(a,a)',IOSTAT=IOS,ERR=2) '*contents ',
-     &    lmodelqa(1:lnblnk(lmodelqa))
       endif
 
 C Write contaminant model description
@@ -754,7 +756,7 @@ C Annual ipv report (if included).
 
 C Write project log file related to this model.
       WRITE(IFCFG,'(A)',IOSTAT=IOS,ERR=2) '* PROJ LOG'
-      WRITE(IFCFG,'(A)',IOSTAT=IOS,ERR=2)lmodellog(1:lnblnk(lmodellog))
+      WRITE(IFCFG,'(A)',IOSTAT=IOS,ERR=2) LPRJLG(1:lnblnk(LPRJLG))
 
 C Ground information.
       dogrnd = .false.
@@ -922,7 +924,7 @@ C Re-build zone:surface to connection hash array.
  43   continue
 
       if(NALOC.gt.0)then
-        WRITE(IFCFG,'(A,i2)',IOSTAT=IOS,ERR=3) '*Anchor ',NALOC
+        WRITE(IFCFG,'(A,i3)',IOSTAT=IOS,ERR=3) '*Anchor ',NALOC
         do 44 ia=1,NALOC
           WRITE(IFCFG,'(3A,i3)',IOSTAT=IOS,ERR=3) ALOCLBL(ia),' ',
      &       ALOCTYP(ia),IALOC(ia)
@@ -934,7 +936,7 @@ C Write packed string of the items associated with each anchor.
           itrunc=1
           ipos=1
           do while (itrunc.ne.0)
-            call ailist(ipos,IALOC(ia),iav,99,'S',outs,loutlen,itrunc)
+            call ailist(ipos,IALOC(ia),iav,60,'S',outs,loutlen,itrunc)
             write(IFCFG,'(1x,a)',IOSTAT=ios,ERR=3) outs(1:loutlen)
             ipos=itrunc+1
           end do
@@ -1019,8 +1021,8 @@ C if possible. If ICON=0 then generate a text heading.
 
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
       INTEGER :: ic1,ie1,ict,ic2,ie2
-      INTEGER :: IZSTOCN
       COMMON/C24/IZSTOCN(MCOM,MS)
+      INTEGER :: IZSTOCN
 
       CHARACTER CXSTR*78,SST1*12,ZST1*12,SST2*12,ZST2*12
 
@@ -1129,7 +1131,6 @@ C Parameters
       COMMON/C1/NCOMP,NCON
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
       INTEGER :: ic1,ie1,ict,ic2,ie2
-      integer IZSTOCN
       COMMON/C24/IZSTOCN(MCOM,MS)
 
       logical dup,first

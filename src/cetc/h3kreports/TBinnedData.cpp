@@ -1,3 +1,4 @@
+
 #include <iostream>
 #include <limits>
 
@@ -8,19 +9,21 @@ using namespace std;
 TBinnedData::TBinnedData()
 {
 	m_activeTimesteps = 0;
-	m_activeAverage = 0.0;
-	m_sum = 0.0;
+	m_activeAverage = 0;
+	m_timesteps = 0;
+	m_sum = 0;
 
 	//set the initial min/max
 	m_maxValue = -numeric_limits<double>::max();
 	m_minValue = numeric_limits<double>::max();
 
 	m_isInit = false;
-}
 
+	//printf("Construct:Bin %p\n",this);
+}
 TBinnedData::~TBinnedData()
 {
-
+   //printf("Destruct:Bin %p\n",this);
 }
 
 void TBinnedData::AddValue(double val)
@@ -43,20 +46,39 @@ void TBinnedData::RemoveValue(double val)
 
 }
 
+void TBinnedData::Increment()
+{
+	m_timesteps++;
+}
+
+double TBinnedData::Timesteps() {return m_timesteps;}
 double TBinnedData::ActiveTimesteps() {return m_activeTimesteps;}
 double TBinnedData::Sum() {return m_sum;}
 double TBinnedData::Max() {return m_maxValue;}
 double TBinnedData::Min() {return m_minValue;}
 double TBinnedData::ActiveAverage() {return m_activeAverage;}
+double TBinnedData::TotalAverage(){
 
-//params: lTimeStepsBin - the number of timesteps in that bin
-//          since the bins are only populated for active values
-//          the count of timestep per-bins is done in the
-//          tReportsManager
-double TBinnedData::TotalAverage(long lTimeStepsBin){
    //prevent division by zero
-   if(lTimeStepsBin > 0 )
-      return m_sum/lTimeStepsBin;
+   if(m_timesteps > 0 )
+      return m_sum/m_timesteps;
    else
       return 0.0;
+}
+
+
+void TBinnedData::Log()
+{
+	if(m_isInit)
+	{
+		cout << "Last: " << m_lastValue << "\tSteps: " << m_timesteps
+			 << "\tASteps: " << m_activeTimesteps
+			<< "\tSum: " << m_sum << "\tAAvg: " << m_activeAverage << "\tTAvg: "
+			<< this->TotalAverage() << "\tMin: " << m_minValue << "\tMax: " << m_maxValue
+			<< endl;
+	}
+	else
+	{
+		cout << "[EMPTY]" << endl;
+	}
 }

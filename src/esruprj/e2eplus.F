@@ -42,7 +42,6 @@ C LOPTDB,IOPTDB (for optical database)
 C LFMAT,IFMAT,LFMUL,IFMUL (for materials and constructions database)
 C ICLIM,LCLIM (for climate file)
 #include "material.h"
-#include "schedule.h"
       
       integer lnblnk  ! function definition
 
@@ -54,12 +53,23 @@ C ICLIM,LCLIM (for climate file)
       COMMON/C1/NCOMP,NCON
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
 
-      integer IZSTOCN
+      common/C21/IFCFG,cfgroot,LCFGF
       COMMON/C24/IZSTOCN(MCOM,MS)
       COMMON/GOPT/DG(5),HG(5),UVAL,VTRN,NTL,AB(ME,5),RF(ME),SRF,SAB
 
       COMMON/GB1/XB(12),YB(12),ZB(12),JVNB(6,4)
       common/cctlnm/ctldoc,lctlf
+
+C Version of operations file. ip3ver=0 standard, =1 sorted with header
+C =2 with more than 3 day types
+      common/p3ver/ip3ver(MCOM)
+
+      CHARACTER oprdesc*248,ventdesc*248,ctlstr*24
+      COMMON/P1/oprdesc(MCOM),ventdesc(MCOM),ctlstr(MCOM,MDTY)
+
+C Descriptive label for a zone load or casual gain types.
+      character lodlabel*6
+      common/loadlabel/lodlabel(mcom,MGTY)
 
 C Peaks (loadcasp(z,ty,1) sens)(loadcasp(z,ty,2) latent) for each
 C possible gain type in each zone.
@@ -78,6 +88,12 @@ C compact schedule is correctly written out.
       common/calena/calename,calentag(MDTY),calendayname(MDTY)
       CHARACTER CALENAME*32,CALENTAG*12,CALENDAYNAME*32
 
+      COMMON/P3N/NCAS(MDTY),ICGS(MDTY,MC),ICGF(MDTY,MC),
+     &CMGS(MDTY,MC),CMGL(MDTY,MC),RADC(MDTY,MC),CONC(MDTY,MC)
+      COMMON/P3TYPEN/ICGT(MDTY,MC)
+      INTEGER NCAS,ICGS,ICGF,ICGT
+      REAL CMGS,CMGL,RADC,CONC
+
 C Simulation parameter presets.
       common/spfldat/nsset,isset,isstup,isbnstep,ispnstep,issave,isavgh
       common/spflper/isstday(MSPS),isstmon(MSPS),isfnday(MSPS),
@@ -85,14 +101,16 @@ C Simulation parameter presets.
       COMMON/CLMDT1/CLMLOC
       COMMON/AFN/IAIRN,LAPROB,ICAAS(MCOM)
 
+      integer legmat  ! local variable for legacy index.
       integer matarrayindex ! the indes within matdatarray
       logical closemat1,closemat2
 
       character GDESCR*36
       CHARACTER NAM*72,outs*124
-      character CLMLOC*30
+      character CLMLOC*30,LCFGF*72
+      character cfgroot*24
       character ctldoc*248,LCTLF*72
-      character ZSDES*28,ZSDESC*20,ZSDESS*16,mlc_name*12
+      character ZSDES*28,ZSDESC*20,ZSDESS*16,mlcname*12
       character dstmp*24
       CHARACTER LAPROB*72
 
@@ -199,7 +217,7 @@ C have been filled (warn user if not).
       endif
 
 C First task is to loop through each of the mlc and get a
-C list of materials used in this problem. Clear the local
+C list of primitives used in this problem. Clear the local
 C arrays. Assumes that there are no more than 100 materials
 C and constructions used in the model.
       do 17 ii=1,100
@@ -552,8 +570,8 @@ C Scan for materials.
 
 C Loop through each construction in the database, check if it
 C is used in the model and if so proceed to check.
-        mlc_name=DESC(ino)(1:12)
-        call mlcrefs(mlc_name,areamlc,tareamlc,foundmlc)
+        mlcname=DESC(ino)(1:12)
+        call mlcrefs(mlcname,areamlc,tareamlc,foundmlc)
         if(.NOT.foundmlc) goto 20
 
 C If the construction is transparent then the materials need
@@ -562,6 +580,9 @@ C the overall construction and for single glazing this will the
 C the same for EnergyPlus. For multiple layers the data is not
 C quite correct. Assume that visible reflection is based on
 C visible trans and solar absorb.
+
+C << to be done - use if IPRMAT >>
+
         WRITE(OPT,'(A)') DESC(INO)(21:32)
         if(opt(1:6).eq.'OPAQUE')then
           continue
@@ -571,20 +592,14 @@ C visible trans and solar absorb.
         endif
         DO 23 IL=1,LAYERS(INO)
 
-C For each layer get material arraay index and then check either thickness
+C For each layer get primitive db ref and then check either thickness
 C or air gap resistance before adding it to the iprndx array.
-
           if(iij.gt.0)then
             close1 = .false.
             do 24 ij = 1,iij
               found = .false.
-              matarrayindex=IPRMAT(INO,IL)   ! which material index
-              if(matarrayindex.eq.iprndx(ij))found = .true.
- 
-C And if a gap layer reset dbcon.
-              if(matopaq(matarrayindex)(1:1).eq.'g'.or.
-     &           matopaq(matarrayindex)(1:1).eq.'h'.or.
-     &           matarrayindex.eq.0)then
+              if(IPR(INO,IL).eq.iprndx(ij))found = .true.
+              if(IPR(INO,IL).eq.0)then
 
 C If an opaque air gap, we have a unique one if the air gap resistence
 C is different (thickness does not matter for an opaque construction
@@ -608,11 +623,9 @@ C If solid then check if thickness is unique.
                 endif
               endif
   24        continue
-
-C If not already known add it to the list.
             if(.NOT.close1)then
               iij=iij+1
-              iprndx(iij)=IPRMAT(INO,IL)
+              iprndx(iij)=IPR(INO,IL)
               thkiprndx(iij)=DTHK(ino,IL)
               if(opt(1:6).eq.'OPAQUE')then
                 iglassndx(iij)=0
@@ -633,10 +646,7 @@ C If this approximation yields a negative reflectance try 1-vtrn.
 
 C If an opaque air gap remember air gap resistence and clear thickness.
 C If a window air gap remember thickness and resetn airgap res to 0.0.
-              matarrayindex=IPRMAT(INO,IL)   ! which material index
-              if(matopaq(matarrayindex)(1:1).eq.'g'.or.
-     &           matopaq(matarrayindex)(1:1).eq.'h'.or.
-     &           matarrayindex.eq.0)then
+              if(IPR(INO,IL).eq.0)then
                 if(opt(1:6).eq.'OPAQUE')then
                   riair(iij)=DRAIR(ino,IL,1)
                   thkiprndx(iij)=0.0
@@ -652,7 +662,7 @@ C If a window air gap remember thickness and resetn airgap res to 0.0.
 
 C First material (which will never be air).
             iij=iij+1
-            iprndx(iij)=IPRMAT(INO,IL)
+            iprndx(iij)=IPR(INO,IL)
             thkiprndx(iij)=DTHK(ino,IL)
             if(opt(1:6).eq.'OPAQUE')then
               iglassndx(iij)=0
@@ -670,55 +680,12 @@ C First material (which will never be air).
   20  continue
       nmat=iij
 
-C Now, for each unique material write description. 
+C Now, for each unique material write description.
       WRITE(ioout,'(a)') ' '
       WRITE(ioout,'(a)') '!- ======= MATERIAL ======'
 
       do 25 iy = 1,nmat
-        matarrayindex=iprndx(iy)   ! which material array index
-
-C A gap layer.
-        if(matopaq(matarrayindex)(1:1).eq.'g'.or.
-     &     matopaq(matarrayindex)(1:1).eq.'h'.or.
-     &     matarrayindex.eq.0)then
-          DBCON=0.0; DBDEN=0.0; DBSHT=0.0 
-          E=0.99; A=0.99
-          NAM='AIR'
-
-C Make up air name for opaque construction. t12a holds air gap resistance
-C as a string w/o leading blanks (use only first 7 char of t12a).
-          if(iglassndx(iy).eq.0)then
-            WRITE(ioout,'(a)',iostat=ios,err=3) ' '
-            WRITE(ioout,'(2a)',iostat=ios,err=3) '  Material:AirGap',
-     &        com
-            call relstr(riair(iy),t12a,lna,ier)
-            write(t25,'(3a)') 'Air-gap',':',t12a(1:7)
-            call st2name(T25,T25a)
-            write(nameiprndx(iy),'(a)') T25a
-            WRITE(ioout,'(4a)',iostat=ios,err=3) indent,
-     &        T25a(1:lnblnk(T25a)),com,'   !- Name'
-            WRITE(ioout,'(a,f6.4,2a)',iostat=ios,err=3) indent,
-     &        riair(iy),sim,'   !- Thermal Resistance {m2-K/W}'
-          else
-
-C For the case of an air gap in a window, assume air is the gas and
-C write out the thickness (rather than the air gap resistence, but only
-C the first 7 characters of t12a).
-            WRITE(ioout,'(a)',iostat=ios,err=3) ' '
-            WRITE(ioout,'(2a)',iostat=ios,err=3) 
-     &        '  WindowMaterial:Gas',com
-            call relstr(thkiprndx(iy),t12a,lna,ier)
-            write(t25,'(3a)') 'Air-win',':',t12a(1:7)
-            call st2name(T25,T25a)
-            write(nameiprndx(iy),'(a)') T25a
-            WRITE(ioout,'(4a)',iostat=ios,err=3) indent,
-     &        T25a(1:lnblnk(T25a)),com,'   !- Name'
-            WRITE(ioout,'(4a)',iostat=ios,err=3) indent,'Air',com,
-     &        '   !- Gas Type'
-            WRITE(ioout,'(a,f6.4,2a)',iostat=ios,err=3) indent,
-     &        thkiprndx(iy),sim,'   !- Thickness {m}'
-          endif
-        else
+        if(iprndx(iy).gt.0)then
           WRITE(ioout,'(a)',iostat=ios,err=3) ' '
           if(iglassndx(iy).eq.0)then
             WRITE(ioout,'(2a)',iostat=ios,err=3) '  Material',com
@@ -726,14 +693,24 @@ C the first 7 characters of t12a).
             WRITE(ioout,'(2a)',iostat=ios,err=3) 
      &        '  WindowMaterial:Glazing',com
           endif
-          matarrayindex=iprndx(iy)   ! which material array index
+          legmat=iprndx(iy)   ! which legacy index
+          if(legmat.gt.0)then
+            matarrayindex=mathash(legmat)  ! find matching array index
  
-          DBCON=matdbcon(matarrayindex)
-          DBDEN=matdbden(matarrayindex)
-          DBSHT=matdbsht(matarrayindex)
-          E=matdbine(matarrayindex)
-          A=matdbina(matarrayindex)
-          write(NAM,'(a)') matname(matarrayindex)(1:32)
+C And if matarrayindex is zero then resetn dbcon dbden dbsht.
+            if(matarrayindex.eq.0)then
+              DBCON=0.0; DBDEN=0.0; DBSHT=0.0 
+              E=0.99; A=0.99
+              NAM='AIR'
+            else
+              DBCON=matdbcon(matarrayindex)
+              DBDEN=matdbden(matarrayindex)
+              DBSHT=matdbsht(matarrayindex)
+              E=matdbine(matarrayindex)
+              A=matdbina(matarrayindex)
+              write(NAM,'(a)') matname(matarrayindex)(1:32)
+            endif
+          endif
 
 C Make up name. t12a holds the thickness as a string w/o leading blanks
 C (but only use the initial 7 characters of t12a.
@@ -801,6 +778,41 @@ C Take up to 12 char from NAM and the remove any blanks via st2name.
             WRITE(ioout,'(a,f7.4,2a)',iostat=ios,err=3)   indent,DBCON,
      &        sim,'   !- Conductivity {W/m-K}'
           endif
+        else
+
+C Make up air name for opaque construction. t12a holds air gap resistance
+C as a string w/o leading blanks (use only first 7 char of t12a).
+          if(iglassndx(iy).eq.0)then
+            WRITE(ioout,'(a)',iostat=ios,err=3) ' '
+            WRITE(ioout,'(2a)',iostat=ios,err=3) '  Material:AirGap',
+     &        com
+            call relstr(riair(iy),t12a,lna,ier)
+            write(t25,'(3a)') 'Air-gap',':',t12a(1:7)
+            call st2name(T25,T25a)
+            write(nameiprndx(iy),'(a)') T25a
+            WRITE(ioout,'(4a)',iostat=ios,err=3) indent,
+     &        T25a(1:lnblnk(T25a)),com,'   !- Name'
+            WRITE(ioout,'(a,f6.4,2a)',iostat=ios,err=3) indent,
+     &        riair(iy),sim,'   !- Thermal Resistance {m2-K/W}'
+          else
+
+C For the case of an air gap in a window, assume air is the gas and
+C write out the thickness (rather than the air gap resistence, but only
+C the first 7 characters of t12a).
+            WRITE(ioout,'(a)',iostat=ios,err=3) ' '
+            WRITE(ioout,'(2a)',iostat=ios,err=3) 
+     &        '  WindowMaterial:Gas',com
+            call relstr(thkiprndx(iy),t12a,lna,ier)
+            write(t25,'(3a)') 'Air-win',':',t12a(1:7)
+            call st2name(T25,T25a)
+            write(nameiprndx(iy),'(a)') T25a
+            WRITE(ioout,'(4a)',iostat=ios,err=3) indent,
+     &        T25a(1:lnblnk(T25a)),com,'   !- Name'
+            WRITE(ioout,'(4a)',iostat=ios,err=3) indent,'Air',com,
+     &        '   !- Gas Type'
+            WRITE(ioout,'(a,f6.4,2a)',iostat=ios,err=3) indent,
+     &        thkiprndx(iy),sim,'   !- Thickness {m}'
+          endif
         endif
   25  continue
 
@@ -810,23 +822,20 @@ C and assign iconmatpointer for each layer.
 
 C Loop through each construction in the database, check if it
 C is used in the model and if so proceed to check.
-        mlc_name=DESC(ino)(1:12)
-        call mlcrefs(mlc_name,areamlc,tareamlc,foundmlc)
+        mlcname=DESC(ino)(1:12)
+        call mlcrefs(mlcname,areamlc,tareamlc,foundmlc)
         if(.NOT.foundmlc) goto 200
 
         WRITE(OPT,'(A)') DESC(INO)(21:32)
         DO 230 IL=1,LAYERS(INO)
 
-C For each layer get material array index and then check either thickness
+C For each layer get primitive db ref and then check either thickness
 C or air gap resistance before adding it to the iprndx array.
           close1 = .false.
           do 240 ij = 1,nmat
             found = .false.
-            matarrayindex=IPRMAT(INO,IL)   ! which material index
-            if(matarrayindex.eq.iprndx(ij))found = .true.
-            if(matopaq(matarrayindex)(1:1).eq.'g'.or.
-     &         matopaq(matarrayindex)(1:1).eq.'h'.or.
-     &         matarrayindex.eq.0)then
+            if(IPR(INO,IL).eq.iprndx(ij))found = .true.
+            if(IPR(INO,IL).eq.0)then
 
 C If air gap, we have a unique one if the air gap resistence
 C is different (thickness does not matter for an opaque construction
@@ -871,14 +880,14 @@ C Now for each construction.
      &  '!- ======= CONSTRUCTION ======'
 
       do 36 ino = 1,NMLC
-        mlc_name=DESC(ino)(1:12)
-        call mlcrefs(mlc_name,areamlc,tareamlc,foundmlc)
+        mlcname=DESC(ino)(1:12)
+        call mlcrefs(mlcname,areamlc,tareamlc,foundmlc)
         if(.NOT.foundmlc) goto 36
 
         WRITE(ioout,'(a)',iostat=ios,err=4) ' '
         WRITE(ioout,'(2a)',iostat=ios,err=4) '  Construction',com
         WRITE(ioout,'(4a)',iostat=ios,err=4) indent,
-     &    mlc_name(1:lnblnk(mlc_name)),com,'   !- Name'    
+     &    mlcname(1:lnblnk(mlcname)),com,'   !- Name'    
         do 37 il = 1,LAYERS(INO)
           ilamat=iconmatpointer(ino,IL)
           if(ilamat.eq.0)then
@@ -1082,16 +1091,14 @@ C Start with a comment about zone schedule documentation.
         WRITE(ioout,'(2a)',iostat=ios,err=7) 
      &    '! ',oprdesc(mz)(1:lnblnk(oprdesc(mz)))
 
-C Scan each days gains and calculate maximum gain for each
-C calendar day type.
-C First clear loadcasp, looping for each gain type (7 or less)
-C and loadonday for day type and gain type.
+C Scan each days gains and calculate maximum gain.
+C First clear loadcasp, looping for each gain type.
         do 9 I=1,NBDAYTYPE
           if(I.le.7)loadcasp(mz,i,1)=0.0
-          if(I.le.7)loadcasp(mz,i,2)=0.0
           if(I.le.7)loadradfrac(mz,i)=0.0
+          loadcasp(mz,i,2)=0.0
           do 8 JD=1,7
-            loadonday(mz,i,jd)=.false.
+            loadonday(mz,jd,i)=.false.
   8       continue
   9     continue
 
@@ -1114,7 +1121,6 @@ C Detect radiant fraction.
               if (ICGT(ID,J).eq.-1) then
 
 C For case of m2/person CMGL(ID,J) remains zero so use cmgs(ID,J) instead.
-C << see if it can be generalized >>
                 if(CMGS(ID,J).lt.0.001)then
                   continue   ! to avoid division by zero.
                 else
@@ -1219,7 +1225,6 @@ C Write the AllOtherDays line as well.
      &    '24:00',com,'0.0',sim
 
 C Write the light objects for this zone.
-C << revise for additional gain types >>
         WRITE(ioout,'(a)',iostat=ios,err=7) ' '
         WRITE(ioout,'(2a)',iostat=ios,err=7) '  Lights',com
         WRITE(ioout,'(5a)',iostat=ios,err=7) indent,
@@ -1631,20 +1636,19 @@ C See if this surface happens to be a child in the strict sense.
  778      continue
 
 C Debug.
-C          write(6,*) 'self truechild is ',truechild(icc)
+          write(6,*) 'self truechild is ',truechild(icc)
  166    continue
 
         DO 64 IS=1,NSUR
           icc=izstocn(mz,is)
-
 C Info about children of this surface.
 C Debug.
-C          write(6,'(3a,i2,a,i3,a,i2,a,i3)')  ' for surface named ',
-C     &      SSNAME(icc),' nb children ',nbchild(icc),
-C     &      ' cnn is ',ichild(icc,1),' nb gc ',nbgchild(icc),
-C     &      ' cnn is ',igchild(icc,1)
+          write(6,'(3a,i2,a,i3,a,i2,a,i3)')  ' for surface named ',
+     &      SSNAME(icc),' nb children ',nbchild(icc),
+     &      ' cnn is ',ichild(icc,1),' nb gc ',nbgchild(icc),
+     &      ' cnn is ',igchild(icc,1)
           if(ichild(icc,1).gt.0) then
-C            write(6,*) ' child named ',SSNAME(ichild(icc,1))
+            write(6,*) ' child named ',SSNAME(ichild(icc,1))
           else
             usethisone(icc)=.true.  ! no children so use
           endif

@@ -5,7 +5,7 @@ C Strathclyde, Glasgow Scotland, 2001.
 C ESP-r is free software.  You can redistribute it and/or
 C modify it under the terms of the GNU General Public
 C License as published by the Free Software Foundation 
-C (version 2 or later).
+C (version 2 orlater).
 
 C ESP-r is distributed in the hope that it will be useful
 C but WITHOUT ANY WARRANTY; without even the implied
@@ -31,8 +31,6 @@ C MZINPT code in espbps/input.f.
       SUBROUTINE MOGCFG
 #include "building.h"
 #include "model.h"
-#include "schedule.h"
-#include "net_flow.h"
 C #include "geometry.h"
 #include "tdf2.h"
 #include "esprdbfile.h"
@@ -44,15 +42,19 @@ C #include "geometry.h"
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
 
+C Version of operations file. ip3ver=0 standard, =1 sorted with header
+C =2 with more than 3 day types
+      common/p3ver/ip3ver(MCOM)
       common/rpath/path
+      common/C21/IFCFG,cfgroot,LCFGF
       COMMON/CCTLNM/CTLDOC,LCTLF
       COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
       common/recver/izver,ipver,iever
 
-      CHARACTER*72 path
+      CHARACTER*72 LCFGF,path
       character longtmp*144
       CHARACTER MODE*4,OUTSTR*124,LCTLF*72,CTLDOC*248
-      character outs*124
+      character cfgroot*24,outs*124
       LOGICAL CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,XST,ok,dok
 
 C For help messages
@@ -132,7 +134,7 @@ C if izver >=4 the zone operation file is not needed.
             write(outs,'(a,i2,a)') 
      &      'Operation file for zone ',J,' periods being sorted!'
             call edisp(iuout,outs)
-            call PROCESSOLDCAS(J,0,iuout)
+            call PROCESSOLDCAS(J,0,iuout,IER)
           endif
         endif
    30 CONTINUE

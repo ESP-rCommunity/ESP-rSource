@@ -766,9 +766,6 @@ C act='p' iget parameters already set.
       common/exporttg/xfile,tg,delim
       COMMON/EXPORTI/ixopen,ixunit,ixpunit
 
-      integer ireportunit ! zero is default one is W two is kW three Joules
-      common/repunit/ireportunit
-
       dimension YMAX(MZS), YMIN(MZS), YTOTSD(MZS)
       dimension YAVE(MZS), YSTD(MZS), NY(MZS), YTOT(MZS)
       dimension TMAX(MZS), TMIN(MZS)
@@ -780,7 +777,7 @@ C act='p' iget parameters already set.
       character rfile*72,PFILE*72,MSTRFILE*72,LAFRES*72
       CHARACTER PDESCR*60,SDESCR*44,t12*12
 
-      logical LARGE,HAVEIT
+      logical LARGE
 
 C If output to file alter the edisp unit number. Skip if in IPV mode.
       prompt = '  '
@@ -806,8 +803,6 @@ C The logical variable totals controls the displaying of cumulative
 C data for all the zones chosen.  
       if(act(1:1).eq.'-')then
         MENUTYPE=5
-C        write(6,*) 'in stats ireportunit is ',ireportunit
-        ireportunit=0  ! assume normal for stats
         call GOMSETUP
         call GOMENU
         if(ixopen.eq.1)then
@@ -856,19 +851,8 @@ C starting Y are zone based.
       call usrmsg(prompt,' ','-')
 
 C First recover bounds of selected data and calculate distributed max, min.
-C If we can recover it efficiently use GETSTATS otherwise use MMACAL.
       do 40 IX=1,NGET
-        call GETSTATS(IX,HAVEIT,DMAX,DMIN,DAVE,DTOT,TXMAX,TXMIN)
-        if(HAVEIT)then
-
-C Debug.
-C          write(6,*) 'get stats ',DMAX,DMIN,DAVE,DTOT,TXMAX,TXMIN
-        else
-          call MMACAL(IX,DMAX,DMIN,DAVE,DTOT,TXMAX,TXMIN)
-
-C Debug.
-C          write(6,*) 'get MMACAL ',DMAX,DMIN,DAVE,DTOT,TXMAX,TXMIN
-        endif
+        call MMACHK(IX,DMAX,DMIN,DAVE,DTOT,TXMAX,TXMIN)
         YMAX(IX)=DMAX
         YMIN(IX)=DMIN
         YAVE(IX)=DAVE
@@ -1934,15 +1918,15 @@ C Energy requirements.
      &' Zone total sensible and latent plant used (kWhrs)')
         write(outs,'(2A)')
      &'    Zone             Sensible heating  Sensible cooling',
-     &'   Humidification     Dehumidification'
+     &'  Humidification   Dehumidification'
         call edisp(itru,outs)
         write(outs,'(2A)')
      &' id name             Energy   No. of   Energy   No. of ',
-     &'   Energy   No. of    Energy   No. of'
+     &'  Energy   No. of  Energy   No. of'
         call edisp(itru,outs)
         write(outs,'(2A)')
      &'                     (kWhrs)  Hr rqd   (kWhrs)  Hr rqd ',
-     &'   (kWhrs)  Hr rqd    (kWhrs)  Hr rqd'
+     &'  (kWhrs)  Hr rqd  (kWhrs)  Hr rqd'
         call edisp(itru,outs)
       endif
 
@@ -2008,20 +1992,14 @@ C Calcalate the sums and statistics to display during relevant period.
         if(act(1:1).ne.'i') then
           write(outs,66)IZ,zname(IZ),ZHE,ZHTIME,ZCE,Zctime,ZLHE,
      &      ZLHTIME,ZLCE,zlctime
-   66     format(I3,1X,A12,4(F11.2,F8.1))
+   66     format(I3,1X,A12,4(F11.2,F7.1))
           call eddisp(itru,outs)
         endif
    65 CONTINUE
       if(act(1:1).ne.'i') then
-        if(THE.gt.99999.0.or.TCE.lt.-99999.0)then
-          write(outs,67)THE,tzhtime,TCE,tzctime,TLHE,tzlhtime,TLCE,
-     &      tzlctime
-   67     format(1X,'   All',8X,4(F11.1,F8.0))
-        else
-          write(outs,68)THE,tzhtime,TCE,tzctime,TLHE,tzlhtime,TLCE,
-     &      tzlctime
-   68     format(1X,'   All',9X,4(F11.1,F8.1))
-        endif
+        write(outs,67)THE,tzhtime,TCE,tzctime,TLHE,tzlhtime,TLCE,
+     &    tzlctime
+   67   format(1X,'   All',9X,4(F11.2,F7.1))
         call edisp(itru,' ')
         call eddisp(itru,outs)
         call edisp(itru,' ')
@@ -2046,7 +2024,6 @@ C << file does not need to be scanned to get the surface emissivity.
 #include "building.h"
 #include "model.h"
 #include "geometry.h"
-#include "schedule.h"
       
       integer lnblnk  ! function definition
 
@@ -2059,6 +2036,9 @@ C << file does not need to be scanned to get the surface emissivity.
       common/getmenu/menutype,igetind(65),igetflux(65)
       common/recver/izver,ipver,iever
 
+      character lodlabel*6
+      common/loadlabel/lodlabel(mcom,MGTY)
+
       character SLABEL*32,GLABEL*20,TABLABEL*36
       COMMON/GETLABEL/SLABEL(MZS),GLABEL(MZS),TABLABEL(MZS)
       integer LNSLABEL,LNGLABEL,LNTABLABEL  ! lengths for label strings
@@ -2067,6 +2047,9 @@ C << file does not need to be scanned to get the surface emissivity.
 
       COMMON/T4/EMISI(MS),EMISE(MS),ABSI(MS),ABSE(MS)
 
+C Version of operations file. ip3ver=0 standard, =1 sorted with header
+C =2 with more than 3 day types
+      common/p3ver/ip3ver(MCOM)
       COMMON/RECV5/SNA(MCOM,MS)
       COMMON/EXPORTI/ixopen,ixunit,ixpunit
       COMMON/RESLIB/RFILE,PFILE,MSTRFILE,LAFRES
@@ -2158,7 +2141,6 @@ C Read geometry and construction files and setup labels.
         CALL ECONST(LTHRM(IZONE),IUNIT,izone,0,IUOUT,IER)
 
 C Update labels to match the current zone.
-C << revise for additional casual gains >>
         write(LABELS(1),'(1x,a,4x)')lodlabel(izone,1)
         write(LABELS(2),'(1x,a,4x)')lodlabel(izone,1)
         write(LABELS(3),'(1x,a,4x)')lodlabel(izone,2)
@@ -2192,7 +2174,7 @@ C Prepare to recover information from results library.
             write(outs,'(a,i2,a)') 
      &      'Operation file for zone ',izone,' periods being sorted!'
             call edisp(iuout,outs)
-            call PROCESSOLDCAS(izone,0,iuout)
+            call PROCESSOLDCAS(izone,0,iuout,IER)
           endif
           IF(IER.EQ.1)RETURN
           IF(ICGC(IZONE).EQ.1)CALL ercgcf(0,iuout,LCGCIN(izone),

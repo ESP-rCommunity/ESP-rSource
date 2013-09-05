@@ -14,22 +14,19 @@ PROG = grd$(EXE)
 %.o : %.f90
 	$(MCC) $(FFLAGS) -c $<
 
-MODULE_OBJECTS = h3kmodule.o startup.o aim2_module.o
-
-OBJECTS = grd.o arrow.o ascii_mat.o basesimp.o basesimp_inputs.o bgrd1d.o \
-  bgrd1m.o bgrd3d.o bgrdst.o bscoeff.o bscoeff_extended.o c2fdum.o common3dv.o \
+OBJECTS = h3kmodule.o grd.o aim2_module.o arrow.o ascii_mat.o basesimp.o basesimp_inputs.o bgrd1d.o \
+	 bgrd1m.o bgrd3d.o bgrdst.o bscoeff.o bscoeff_extended.o c2fdum.o common3dv.o \
 	 cread3dv.o ctlexp.o ctread.o dossupport.o e3dviews.o econstr.o edatabase.o \
 	 edcondb.o egeometry.o egrid.o emfnetw.o emkcfg.o emoist.o enetmisc.o eroper.o \
 	 esgrid.o esru_misc.o esystem.o filelist.o \
 	 item.o g3dcmp.o g3dcnc.o g3dmsc.o g3dmsh.o \
 	 grd_misc.o grnd3d.o mfcdat.o nwkrewr.o pltcfg.o readTrnsys.o \
-	 rwipv.o rwsbem.o sort.o  tdfile.o
+	 rwipv.o rwsbem.o sort.o startup.o tdfile.o 
 
-MODULES = aim2.mod aim2_calcdata.mod aim2_h2k_dummy.mod aim2_inputdata.mod start_up.mod \
-	parse_command_line.mod h3kmodule.mod
+MODULES = aim2.mod aim2_calcdata.mod aim2_h2K_dummy.mod aim2_inputdata.mod h3kmodule.mod	
 
-$(PROG): $(MODULE_OBJECTS) $(OBJECTS)
-	$(MFC) $(LD_FLAGS) -o $(PROG) $(FFLAGS) $(MODULE_OBJECTS) $(OBJECTS) $(ULIBS)
+$(PROG): $(OBJECTS)
+	$(MFC) $(LD_FLAGS) -o $(PROG) $(FFLAGS) $(OBJECTS) $(ULIBS) 
 
 aim2_module.F:
 	rm -f aim2_module.F
@@ -156,7 +153,7 @@ install:
 	@if [ -f $(PROG) ]; then cp $(PROG) $(ESPBinDir); fi
 
 clean:
-	rm -f core $(PROG) $(PROG).exe $(MODULE_OBJECTS) $(OBJECTS) $(MODULES) \
+	rm -f core $(PROG) $(PROG).exe $(OBJECTS) $(MODULES) \
 	aim2_module.F arrow.F ascii_mat.F basesimp.F basesimp_inputs.F bscoeff.F bscoeff_extended.F \
 	c2fdum.F common3dv.F cread3dv.F ctlexp.F ctread.F dossupport.F \
 	e3dviews.F econstr.F edatabase.F edcondb.F egeometry.F egrid.F emfnetw.F \

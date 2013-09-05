@@ -3636,97 +3636,97 @@ C........Q = hA ( T - T_amb )
          pcname_len = lnblnk(pcname(iComponent))
 C-----------------------------------------------
 C........Output data: future time-row free hydrogen (kmol)
-         call AddToReport(rvPltHydroFreeKMol%Identifier,
+         call AddToReportWild1(rvPltHydroFreeKMol%Identifier,
      &      fMH_Report_H2_free_kmol(iComponent) ,
      &      pcname(iComponent)(1:pcname_len))
 
 C-----------------------------------------------
 C........Output data: future time-row free hydrogen (kg)
-         call AddToReport(rvPltHydroFreeKg%Identifier,
+         call AddToReportWild1(rvPltHydroFreeKg%Identifier,
      &      fMH_Report_H2_free_kmol(iComponent) * fMM_Hydrogen,
      &      pcname(iComponent)(1:pcname_len))
 
 C-----------------------------------------------
 C........Output data: future time-row absorbed hydrogen (kmol)
-         call AddToReport(rvPltHydroAbsorbedKmol%Identifier,
+         call AddToReportWild1(rvPltHydroAbsorbedKmol%Identifier,
      &      fMH_Report_H_abs_kmol(iComponent) ,
      &      pcname(iComponent)(1:pcname_len))
 
 C-----------------------------------------------
 C........Output data: future time-row absorbed hydrogen (kg)
-         call AddToReport(rvPltHydroAbsorbedKg%Identifier,
+         call AddToReportWild1(rvPltHydroAbsorbedKg%Identifier,
      &      fMH_Report_H_abs_kmol(iComponent) * fMM_Hydrogen,
      &      pcname(iComponent)(1:pcname_len))
 
 C-----------------------------------------------
 C........Output data: future time-row hydrogen vent rate
-         call AddToReport(rvPltHydroVentKmol%Identifier,
+         call AddToReportWild1(rvPltHydroVentKmol%Identifier,
      &      fMH_Report_H2_vent(iComponent),
      &      pcname(iComponent)(1:pcname_len))
 
 C-----------------------------------------------
 C........Output data: future time-row hydrogen charge rate
-         call AddToReport(rvPltHydroChargeKmol%Identifier,
+         call AddToReportWild1(rvPltHydroChargeKmol%Identifier,
      &      fMH_Report_H2_charge(iComponent),
      &      pcname(iComponent)(1:pcname_len))
 
 C-----------------------------------------------
 C........Output data: future time-row hydrogen discharge rate
-         call AddToReport(rvPltHydroDisKmol%Identifier,
+         call AddToReportWild1(rvPltHydroDisKmol%Identifier,
      &      fMH_Report_H2_discharge(iComponent),
      &      pcname(iComponent)(1:pcname_len))
 
 C-----------------------------------------------
 C........Output data: future time-row pressure
-         call AddToReport(rvPltCylPressure%Identifier,
+         call AddToReportWild1(rvPltCylPressure%Identifier,
      &      fMH_Report_Pressure(iComponent) / 1000.,
      &      pcname(iComponent)(1:pcname_len))
 
 C-----------------------------------------------
 C........Output data: Explicit hydrogen demand
-         call AddToReport(rvPltDemandExpl%Identifier,
+         call AddToReportWild1(rvPltDemandExpl%Identifier,
      &      fMH_Report_Demand_EXP ( iComponent ),
      &      pcname(iComponent)(1:pcname_len))
 
 C-----------------------------------------------
 C........Output data: Implicit hydrogen demand
-         call AddToReport(rvPltDemandImpl%Identifier,
+         call AddToReportWild1(rvPltDemandImpl%Identifier,
      &      fMH_Report_Demand_IMP(iComponent),
      &      pcname(iComponent)(1:pcname_len))
 
 C-----------------------------------------------
 C........Output data: Heat transfer to cooling water
-         call AddToReport(rvPltHRecovery%Identifier,
+         call AddToReportWild1(rvPltHRecovery%Identifier,
      &      fQ_cooling,
      &      pcname(iComponent)(1:pcname_len))
 
 C-----------------------------------------------
 C........Output data: Heat loss
-         call AddToReport(rvPltHLoss%Identifier,
+         call AddToReportWild1(rvPltHLoss%Identifier,
      &      fQ_loss,
      &      pcname(iComponent)(1:pcname_len))
 
 C-----------------------------------------------
 C........Output data: Heat production (absorbtion)
-         call AddToReport(rvPltHReaction%Identifier,
+         call AddToReportWild1(rvPltHReaction%Identifier,
      &      fMH_Report_Q_absorbtion(iComponent),
      &      pcname(iComponent)(1:pcname_len))
 
 C-----------------------------------------------
 C........Output data: Containment temperature
-         call AddToReport(rvPltContainTemp%Identifier,
+         call AddToReportWild1(rvPltContainTemp%Identifier,
      &      fMH_Report_Containment_TEMP(iComponent),
      &      pcname(iComponent)(1:pcname_len))
 
 C-----------------------------------------------
 C........Flow work associated with charging
-         call AddToReport(rvPltH2ConnFlowWork%Identifier,
+         call AddToReportWild1(rvPltH2ConnFlowWork%Identifier,
      &      fMH_Report_Charge_FWork(iComponent),
      &      pcname(iComponent)(1:pcname_len))
 
 C-----------------------------------------------
 C........Flow work associated with charging
-         call AddToReport(rvPltH2DiscFlowWork%Identifier,
+         call AddToReportWild1(rvPltH2DiscFlowWork%Identifier,
      &      fMH_Report_Disch_FWork(iComponent),
      &      pcname(iComponent)(1:pcname_len))
 

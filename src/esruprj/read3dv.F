@@ -48,7 +48,6 @@ C Passed parameter.
       integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
 
-      integer IZSTOCN
       COMMON/C24/IZSTOCN(MCOM,MS)
       COMMON/RAY2/ITDSP,ITBND,ITEPT,ITZNM,ITSNM,ITVNO,ITORG,ITSNR,
      &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS,ITPPSW
@@ -73,16 +72,10 @@ C Passed parameter.
       integer igwid,igheight  ! for use with axiscale
       integer iside,isize,ifont     ! passed to viewtext
       integer iix,iiy,iixlast,iiylast,iixc,iiyc,iid1,iid2,iid3,iid4
-      integer iicol
-      integer iigl,iigr,iigt,iigb,iigw,iigwh
-      integer iiw1,iiw2,iiw3,iiw4,iimenu
 #else
       integer*8 igwid,igheight  ! for use with axiscale
       integer*8 iside,isize,ifont     ! passed to viewtext
       integer*8 iix,iiy,iixlast,iiylast,iixc,iiyc,iid1,iid2,iid3,iid4
-      integer*8 iicol
-      integer*8 iigl,iigr,iigt,iigb,iigw,iigwh
-      integer*8 iiw1,iiw2,iiw3,iiw4,iimenu
 #endif
 
 C If not in graphic mode return.
@@ -103,15 +96,9 @@ C menu. Also allow 2 text lines at the bottom for future dialogue.
 
 C Clear current viewing box and re-establish image bounds.
       CALL startbuffer()
-
-C Setup and pass in parameters to win3d.
-      iiw1=4; iiw2=1; iiw3=1; iiw4=3; iimenu=menuchw
-      iigl=igl; iigr=igr; iigt=igt; iigb=igb; iigw=igw; iigwh=igwh
-      CALL win3d(iimenu,iiw1,iiw2,iiw3,iiw4,
-     &  iigl,iigr,iigt,iigb,iigw,iigwh)
-C      CALL win3d(menuchw,4,1,1,3,igl,igr,igt,igb,igw,igwh)
-      igl=int(iigl); igr=int(iigr); igt=int(iigt); igb=int(iigb)
-      igw=int(iigw); igwh=int(iigwh)
+      CALL win3d(menuchw,4,1,1,3,igl,igr,igt,igb,igw,igwh)
+      igw=igr-igl
+      igwh=igb-igt
       igwid=igw
       igheight=igwh
 
@@ -120,7 +107,7 @@ C assume 1000 -1000 etc, if optimum then use SXMX,SYMX + 10% etc.
       IF(ITBND.EQ.0)THEN
         call axiscale(igwid,igheight,-1000.,1000.,-1000.,1000.,xsc,ysc,
      &                sca,Xadd,Yadd)
-        call linescale(iigl,Xadd,sca,iigb,Yadd,sca)
+        call linescale(igl,Xadd,sca,igb,Yadd,sca)
       ELSEIF(ITBND.EQ.1)THEN
 
 C Determine the 2D coords of the site extremes.
@@ -131,7 +118,7 @@ C Determine the 2D coords of the site extremes.
         endif
         call axiscale(igwid,igheight,SXMN,SXMX,SYMN,SYMX,xsc,ysc,sca,
      &                Xadd,Yadd)
-        call linescale(iigl,Xadd,sca,iigb,Yadd,sca)
+        call linescale(igl,Xadd,sca,igb,Yadd,sca)
       ENDIF
 
 C Refresh the dialogue box if terminal type 8.
@@ -413,12 +400,10 @@ C ETSMAT = Eye to Screen Matrix.  First move to the beginning.
           CALL  ORTTRN(BX(IP),BY(IP),BZ(IP),ETSMAT,AAX,AAY,AAZ,IERR)
           call u2pixel(AAX,AAY,iix,iiy)
 
-C If vertex are to be labeled do it in the smallest font, also place
-C a 2pixel square dot at the vertex so if it is embedded in a line
-C it can be seen. Then move cursor to vertex and remember position.
+C If vertex are to be labeled do it in the smallest font, then
+C move cursor to vertex and remember position.
           IF(ITVNO.EQ.0.AND.NAP.EQ.NBP)THEN
             IV=JVN(I,IP)
-            call esymbol(iix,iiy,8,1)
             CALL VERTLBL(iix,iiy,IV,ier)
           ENDIF
           iixlast=iix   ! cast for edline call
@@ -465,15 +450,9 @@ C unless duplicate line has already been drawn.
               if(imatshr(icc,iedge).eq.0)then
                 if(.NOT.found)call eswline(iixlast,iiylast,iix,iiy)
               else
-                if(greyok)then
-                  iicol=nifgrey-3
-                  call winscl('i',iicol)
-                endif
+                if(greyok)call winscl('i',nifgrey-3)
                 call eswline(iixlast,iiylast,iix,iiy)
-                if(greyok)then
-                  iicol=0
-                  call winscl('-',iicol)
-                endif
+                if(greyok)call winscl('-',0)
               endif
             endif
           elseif(IPEN.eq.-305)then
@@ -487,7 +466,6 @@ C If vertex are to be labeled do it in the smallest font and
 C move cursor back to vertex and remember position.
           IF(ITVNO.EQ.0.AND.NAP.EQ.NBP)THEN
             IV=JVN(I,IP1)
-            call esymbol(iix,iiy,8,1)
             CALL VERTLBL(iix,iiy,IV,ier)
             iixlast=iix   ! cast for edline call
             iiylast=iiy
@@ -533,15 +511,9 @@ C unless duplicate line has already been drawn.
               if(imatshr(icc,iedge).eq.0)then
                 if(.NOT.found)call eswline(iixlast,iiylast,iix,iiy)
               else
-                if(greyok)then
-                  iicol=nifgrey-3
-                  call winscl('i',iicol)
-                endif
+                if(greyok)call winscl('i',nifgrey-3)
                 call eswline(iixlast,iiylast,iix,iiy)
-                if(greyok)then
-                  iicol=0
-                  call winscl('-',iicol)
-                endif
+                if(greyok)call winscl('-',0)
               endif
             endif
           elseif(IPEN.eq.-305)then

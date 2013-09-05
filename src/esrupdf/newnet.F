@@ -66,7 +66,6 @@ C Mass flow network.
       COMMON/AFN/IAIRN,LAPROB,ICAAS(MCOM)
 
 C Defaults.
-      character*96 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF
       common/DEFLT2/DFCFG,DFCTL,DEFRLB,DAFRES,DAPROB,DPNF
 
 C Plant network.
@@ -103,6 +102,7 @@ C Common controlling format of plant network file
       character*20 simtyp(3)
       character lpnam*72,laprob*72,LPNF*72
 
+      character*72 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF
       dimension ival(mpcom)
       CHARACTER*44 ITEM(28)
       CHARACTER H*72,outs*124,ltmp*72,pcname*15, lctlf*72,ctldoc*248
@@ -2083,8 +2083,8 @@ C Reset electrical flag for component to 'off'
       end
 
 C ****************CONTLYR**************************************************
-C CONTLYR allows the user to select a layer in a construction of a
-C particular zone surface as a containment for or to embed a plant component.
+C CONTLYR allows the user to select a layer in a construction
+C of a particular zone surface as a containment for or to embed a plant component.
 C The routine presents a list of surface layers.
 
       subroutine CONTLYR(IZ,IS,IND)
@@ -2119,7 +2119,11 @@ C with ier=1.
 
 C Check composite name of surface with composite name in MLC common.
       imatch=0
-      call matchmlcdesc(SMLCN(is),imatch)
+      do 5 i=1,nmlc
+        if(SMLCN(is)(1:12).eq.DESC(i)(1:12)) then
+          imatch=i          
+        endif
+  5   continue
       if(imatch.eq.0) then
          call edisp(iuout,'Error: probably no MLC defined!')
          return
@@ -2130,7 +2134,7 @@ C Write menu displaying a list of layer names
       footer=3
       write(item(1),'(a,a)') 'a surface name: ',SNAME(iz,is)
       write(item(2),'(a,i2)')'b number of layers: ',LAYERS(imatch)
-      write(item(3),'(a,a)') 'c MLC name: ',mlcname(imatch)(1:12)
+      write(item(3),'(a,a)') 'c MLC name: ',DESC(imatch)(1:12)
       item(4)='  ----------------------------'
       do 10 j=1,LAYERS(imatch)
 
@@ -2141,12 +2145,15 @@ C If an air layer include the R values in the display.
 C And if matarrayindex is zero then reestablish NAM.
           if(matarrayindex.eq.0)then
             NAM='AIR'
-            PNAM(j)='Air gap'
           else
             write(NAM,'(a)') matname(matarrayindex)(1:32)
-            PNAM(j)=NAM(1:20)
           endif
         endif
+        IF(IPR(imatch,j).EQ.0)THEN
+          PNAM(j)='Air gap'
+        ELSE
+          PNAM(j)=NAM(1:20)
+        ENDIF 
         write(item(header+j),'(a,i2,1x,a12)')' Layer: ',j,PNAM(j)
         ndisp=header+j
   10  continue

@@ -34,7 +34,6 @@ C CALLS: MOSCS1 MOSCS2    CALLED BY: MOENER
 #include "building.h"
 #include "model.h"
 #include "geometry.h"
-#include "schedule.h"
       
       integer lnblnk  ! function definition
 
@@ -50,6 +49,9 @@ C CALLS: MOSCS1 MOSCS2    CALLED BY: MOENER
 
       COMMON/RECV5/SNA(MCOM,MS)
 
+C Version of operations file. ip3ver=0 standard, =1 sorted with header
+C =2 with more than 3 day types
+      common/p3ver/ip3ver(MCOM)
       COMMON/EXPORTI/ixopen,ixunit,ixpunit
       COMMON/SNAP/SNAPSH
       logical SNAPSH
@@ -78,7 +80,7 @@ C Read in the zone operational file data.
           write(outs,'(a,i2,a)') 
      &    'Operation file for zone ',izone,' periods being sorted!'
           call edisp(iuout,outs)
-          call PROCESSOLDCAS(izone,0,iuout)
+          call PROCESSOLDCAS(izone,0,iuout,IER)
         endif
         IF(IER.EQ.1)RETURN
 
@@ -153,10 +155,11 @@ C MOSCS1 provides I/O for heating/cooling breakdown for surfaces.
       SUBROUTINE MOSCS1(IZONE,ISFN,IANZSE,IE,IZC)
 
 #include "building.h"
-#include "schedule.h"
       COMMON/OUTPCH/ICOUT
       COMMON/GET1/VAL1(MZS,MTS),VAL2(MZS,MTS),VAL3(MZRL,MTS)
       COMMON/EXPORTI/ixopen,ixunit,ixpunit
+      character lodlabel*6
+      common/loadlabel/lodlabel(mcom,MGTY)
 
       DIMENSION IUSERD(MCOM,2)
 
@@ -269,10 +272,11 @@ C CALLS: MOSSUM MOFADJ    CALLED BY: MOSCAS
 
 #include "building.h"
 #include "geometry.h"
-#include "schedule.h"
       COMMON/OUTPCH/ICOUT
       COMMON/GET1/VAL1(MZS,MTS),VAL2(MZS,MTS),VAL3(MZRL,MTS)
       COMMON/EXPORTI/ixopen,ixunit,ixpunit
+      character lodlabel*6
+      common/loadlabel/lodlabel(mcom,MGTY)
 
       DIMENSION IUSERD(MCOM,2)
 

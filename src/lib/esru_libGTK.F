@@ -54,7 +54,10 @@ C  EDISP:   Generic send text to scrolling display (text or graphic).
 C  PHELPD:  Displays the current contents of common pophelp.
 C  PHELPW:  Returns the width IWH of the longest popup help string.
 
-C  EVSET:   provides dummy setup environment for wire frame view.
+
+C  WIREPK:  Called from 'C' upon a wireframe control button pick.
+C  WIRETOG: sets wireframe toggles and is called from C code in esp-r.c
+C  EVSET:   provides setup environment for wire frame view w/in prj.
 
 C Dummy subroutines and functions matching calling parameters used
 C in esru_x.c so that #ifdef statements are not required for GTK
@@ -113,6 +116,7 @@ C If IVAL is outwith range for failure then set to default.
 
 C Clear string buffers
    20 WORD=' '
+      ask='           '
       WRITE(ask,'(I5)',iostat=ios,err=1)IVAL
 
 C Remember value passed in in case of a cancel.
@@ -335,7 +339,7 @@ C    ...
       CHARACTER*(*) PROMP1,PROMP2,ERMSG
       CHARACTER MINACT*1,MAXACT*1,A*1,WORD*16,STR1*16,STR2*16
       CHARACTER OUTSTR*124,DSTR*124,outs*124
-      character ask*16,prompt*144
+      character prompt*144
       LOGICAL OK,close,DOK,unixok
 
 C If RVAL is outwith range for failure then set to default.
@@ -344,26 +348,9 @@ C If RVAL is outwith range for failure then set to default.
 
 C Check that value is not trivially close to zero (i.e. not
 C instantiated on the Fortran side before the call).
-   20 WORD=' '
       CALL ECLOSE(RVAL,0.00,0.000001,CLOSE)
-      if(close)then
-        RVAL=0.0
-        ask='   0.00   '
-      else
-        if(abs(rval).gt.1.E+6)then
-          WRITE(ask,'(1PE14.6)',IOSTAT=ios,ERR=999)RVAL
-        elseif(abs(rval).le.1.E+6.and.rval.gt.1.E+4)then
-          WRITE(ask,'(G15.5)',IOSTAT=ios,ERR=999)RVAL
-        elseif(abs(rval).le.1.E+4.and.rval.gt.1.E-3)then
-          WRITE(ask,'(G14.4)',IOSTAT=ios,ERR=999)RVAL
-        elseif(abs(rval).le.1.E-3.and.rval.gt.1.E-4)then
-          WRITE(ask,'(F10.7)',IOSTAT=ios,ERR=999)RVAL
-        elseif(abs(rval).le.1.E-4)then
-          WRITE(ask,'(1PE14.6)',IOSTAT=ios,ERR=999)RVAL
-        else
-          WRITE(ask,'(F14.4)',IOSTAT=ios,ERR=999)RVAL
-        endif
-      endif
+      if(close)RVAL=0.0
+   20 WORD=' '
 
 C Generate help and default strings.
       CALL REL16STR(DEFLT,STR2,IW2,IER)
@@ -383,7 +370,7 @@ C If in graphic mode use graphic facilities to edit the number.
         call dupphelp(newnbhelp)
         LN1=max(1,lnblnk(PROMP1))
         LN2=max(1,lnblnk(PROMP2))
-        if((LN1+LN2+1).lt.144)then
+	if((LN1+LN2+1).lt.144)then
           if(LN1.eq.1)then
             write(prompt,'(a)') PROMP2(1:LN2)
           else
@@ -393,14 +380,11 @@ C If in graphic mode use graphic facilities to edit the number.
           LN2=142-LN1
           write(prompt,'(3a)') PROMP1(1:LN1),' ',PROMP2(1:LN2)
         endif
+        RVALUE=RVAL
+        CALL askreal(PROMPT,RVALUE,IFLG)
 
 C Debug.
-C        write(6,*) '< askr prompt ',PROMPT(1:lnblnk(PROMPT))
-C        write(6,*) '< askr string ',ask(1:lnblnk(ask))
-        CALL askdialog(PROMPT,ask,IFLG)
-
-C Debug.
-C        write(6,*) 'askr VAL:',ask,' iflg ',IFLG
+C        write(6,*) 'EASKR',RVALUE,IFLG
 
         IF(iflg.EQ.-3)THEN
 
@@ -412,25 +396,22 @@ C A cancel answer detected, set ier to -3 and return.
 
 C A default answer detected, set to default value.
           call edisp(iuout,DSTR)
+          call edisp(iuout,' ')
           RVAL=DEFLT
-          call usrmsg('  ','  ','-')
           RETURN
-        ELSE
-
-C Strip off the last character (end of line mark) as well as any
-C leading blanks from string returned.
-          call c2fstr(ask,WORD)
-        ENDIF
-        IF(WORD.EQ.' ')THEN
+        ELSEIF(IFLG.eq.-1)THEN
 
 C A blank, carriage return or line feed encountered, assume user
 C wishes to use prior/existing real value.
-          CALL EXPSTR(RVAL,STR2,IW2,IER)
+          CALL REL16STR(RVAL,STR2,IW2,IER)
           WRITE(OUTSTR,55,iostat=ios,err=1)STR2(1:IW2)
           CALL USRMSG(' ',OUTSTR,'-')
           RETURN
-        ENDIF
+        ELSE
 
+C A valid number or interaction, so update RVALT for later use.
+          RVALT=RVALUE
+        ENDIF
       ELSE
 
 C In text mode, remind user of current value.
@@ -466,15 +447,15 @@ C use prior/existing real value.
           endif
           RETURN
         ENDIF
-      ENDIF
 
-C Decode the string into a real.
-      read(WORD,*,ERR=89)rvalt
-      CALL REL16STR(RVALT,STR1,IW1,IER)
-      IF(IER.NE.0)THEN
-        CALL USRMSG(' ','Did not understand, try again..','-')
-        IER=0
-        GOTO 20
+C Decode the text mode interface string into a real.
+        read(WORD,*,ERR=89)rvalt
+        CALL REL16STR(RVALT,STR1,IW1,IER)
+        IF(IER.NE.0)THEN
+          CALL USRMSG(' ','Did not understand, try again..','-')
+          IER=0
+          GOTO 20
+        ENDIF
       ENDIF
 
 C Check RVALT against minimum and respond based on MINACT.
@@ -595,6 +576,7 @@ C on the fortran side before the call).
       CALL ECLOSE(RVAL,0.00,0.000001,CLOSE)
       if(close)RVAL=0.00
    20 WORD=' '
+      ask='           '
       WRITE(ask,'(1PE14.6)')RVAL
 
 C Generate help and default strings.
@@ -615,7 +597,7 @@ C If in graphic mode use graphic facilities to edit the number.
         call dupphelp(newnbhelp)
         LN1=max(1,lnblnk(PROMP1))
         LN2=max(1,lnblnk(PROMP2))
-        if((LN1+LN2+1).lt.144)then
+	if((LN1+LN2+1).lt.144)then
           if(LN1.eq.1)then
             write(prompt,'(a)') PROMP2(1:LN2)
           else
@@ -1858,6 +1840,7 @@ C If in terminal type 8 use dialogue box.
         WORD=' '
         CALL PHELPW(newnbhelp,IHW,IER)
         call dupphelp(newnbhelp)
+        lmmod=mmod
         LN1=max(1,lnblnk(PROMP1))
         LN2=max(1,lnblnk(PROMP2))
 	if((LN1+LN2+1).lt.144)then
@@ -2602,12 +2585,14 @@ C Querry yes or no or default. Concat MSG1 & MSG2 together for prompt.
         optg='  '
         if (DEFLT) then
           if(DOK)then
+            id=1
             iw=1
             opta='default (yes)'
             optb='no'
             call espabcbox(prompt,opta,optb,optc,optd,opte,optf,optg,
      &        iw)
           else
+            id=2
             iw=2
             opta='yes'
             optb='default (no)'
@@ -2615,6 +2600,7 @@ C Querry yes or no or default. Concat MSG1 & MSG2 together for prompt.
      &        iw)
           endif
         else
+          id=0
           iw=0
           opta='yes'
           optb='no'
@@ -2623,7 +2609,7 @@ C Querry yes or no or default. Concat MSG1 & MSG2 together for prompt.
         endif
 	
 C Debug.
-C        write(6,*) 'espabcbox selected iw ',iw,opta,optb,optc
+C        write(6,*) 'espabcbox selected id iw ',id,iw,opta,optb,optc
 
         IF(IW.eq.1)THEN
           OK=.TRUE.
@@ -2987,7 +2973,7 @@ C MMOD=-2 TELETYPE: wait if full, page with blank line.
           IF(IPAG.EQ.1)THEN
             WRITE(IUOUT,301)
   301       FORMAT(/,' ',50('-'),'>>',$)
-            READ(IUIN,'(A1)') DUMMY
+            READ(IUIN,'(A1)')DUMMY
           ENDIF
           LIMIT=LIMTTY
           RETURN
@@ -3104,23 +3090,23 @@ C limtty is the initial request for text feedback height (in lines)
       CHARACTER*5 MM
 
 c If MMOD set to valid index, assume it, dont ask.
-      MM='     '
-  10  IF(MM(1:5).EQ.'-6   '.OR.MODEL.EQ.-6)THEN
+      MM=' '
+  10  IF(MM.EQ.'-6   '.OR.MODEL.EQ.-6)THEN
         MMOD=-6
         LIMTTY=24
         LIMIT=24
         RETURN
-      ELSEIF(MM(1:5).EQ.'-2   '.OR.MODEL.EQ.-2)THEN
+      ELSEIF(MM.EQ.'-2   '.OR.MODEL.EQ.-2)THEN
         MMOD=-2
         LIMTTY=24
         LIMIT=24
         RETURN
-      ELSEIF(MM(1:5).EQ.'-1   '.OR.MODEL.EQ.-1)THEN
+      ELSEIF(MM.EQ.'-1   '.OR.MODEL.EQ.-1)THEN
         MMOD=-1
         LIMTTY=24
         LIMIT=24
         RETURN
-      ELSEIF(MM(1:5).eq.'8    '.OR.MODEL.EQ.8)THEN
+      ELSEIF(MM.eq.'8    '.OR.MODEL.EQ.8)THEN
         MMOD = 8
         write(HEAD,'(a)') TITLE
 
@@ -3148,8 +3134,8 @@ C Open the dialogue box and begin message.
  200    FORMAT(' Terminal mode (? gives options): ')
         READ(IIN,101,ERR=500,IOSTAT=IOS)MM
  101    FORMAT(A5)
-        IF(MM(1:5).EQ.'-6   '.OR.MM(1:5).EQ.'-2   '.OR.
-     &     MM(1:5).EQ.'-1   '.OR.MM(1:5).EQ.'8    ')THEN
+        IF(MM.EQ.'-6   '.OR.MM.EQ.'-2   '.OR.
+     &     MM.EQ.'-1   '.OR.MM.EQ.'8    ')THEN
           goto 10
         ELSEIF(MM(1:1).EQ.'?')THEN
           WRITE(IOUT,102)
@@ -3235,6 +3221,7 @@ C Print out the menu. If text is > 36 char or there are few items
 C then restrict to a single column. If less than 36 characters
 C print double column.
         IF(IMLENG.GT.36.OR.NITMS.LE.6)THEN
+          CALL ELINC(NITMS)
           LN=max(1,LNBLNK(ITEMS(1)))
           WRITE(IUOUT,900,iostat=ios,err=1)NAME(1:ITLENG),ITEMS(1)(1:LN)
   900     FORMAT(/,1X,a,': ',a)
@@ -3246,6 +3233,7 @@ C print double column.
    92     CONTINUE
         ELSEIF(IMLENG.LT.24)THEN
           MNULEN=NITMS/2
+          CALL ELINC(MNULEN)
           WRITE(IUOUT,902,iostat=ios,err=2)NAME(1:ITLENG),
      &      ITEMS(1)(1:IMLENG),ITEMS(MNULEN+1)(1:IMLENG)
   902     FORMAT(/,1X,a,':  ',a,'   ',a)
@@ -3262,6 +3250,7 @@ C print double column.
           ENDIF
         ELSEIF(IMLENG.GE.24.and.IMLENG.LE.36)THEN
           MNULEN=(NITMS/2)
+          CALL ELINC(MNULEN)
           WRITE(IUOUT,'(2a)',iostat=ios,err=2)NAME(1:ITLENG),':'
           DO 193 K=1,MNULEN
             WRITE(IUOUT,'(2X,a,3x,a)',iostat=ios,err=2)
@@ -3664,8 +3653,8 @@ C treatment as a scrolling window.
       SUBROUTINE EDISP(ITRU,MSG)
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/OUTIN/IUOUT,IUIN
-      common/textbuf/dispbuf(500)
-      common/textbufl/indexbuf,lnbuf(500)
+      common/textbuf/dispbuf(360)
+      common/textbufl/indexbuf,lnbuf(360)
       CHARACTER*(*) MSG
       CHARACTER WWMSG*124,dispbuf*124
       logical unixok
@@ -3680,13 +3669,13 @@ C Use logic similar to that in egdisp.
       if(lcc.eq.0) lcc=1
       write(WWMSG,'(a)',iostat=ios,err=1)MSG(1:lcc)
 
-      if(indexbuf.lt.500)then
+      if(indexbuf.lt.360)then
         indexbuf=indexbuf+1
         lnbuf(indexbuf)=lcc
         dispbuf(indexbuf)='  '
         write(dispbuf(indexbuf),'(a)') MSG(1:lcc)
       else
-        do 42 i=1,499
+        do 42 i=1,359
           dispbuf(i)=dispbuf(i+1)
           lnbuf(i)=lnbuf(i+1)
   42    continue
@@ -3699,11 +3688,11 @@ C Use logic similar to that in egdisp.
 C If trace channel etc then just write to file.
         WRITE(ITRU,'(A)',iostat=ios,err=1)MSG(1:lnm)
       ELSEIF(MMOD.EQ.8.AND.ITRU.EQ.IUOUT)THEN
-        LINE=LIMTTY-LIMIT
-        LIMIT=LIMIT-1
-        if (LIMIT.lt.1) LIMIT=1
-        call espad(limit,limtty,line)
-        CALL inserttext(WWMSG)
+          LINE=LIMTTY-LIMIT
+          LIMIT=LIMIT-1
+          if (LIMIT.lt.1) LIMIT=1
+          call espad(limit,limtty,line)
+          CALL inserttext(WWMSG)
       ELSEIF(MMOD.EQ.-6)THEN
 
 C Write this to error channel if user specified channel = ICOUT
@@ -3711,11 +3700,13 @@ C otherwise redirect to user display.
         IF(ITRU.EQ.ICOUT)THEN
           WRITE(ICOUT,'(A)',iostat=ios,err=1)MSG(1:lnm)
         ELSE
+          CALL ELINC(1)
           WRITE(ITRU,'(A)',iostat=ios,err=1)MSG(1:lnm)
         ENDIF
       ELSE
 
 C Write this to standard text window.
+        CALL ELINC(1)
         WRITE(ITRU,'(A)',iostat=ios,err=1)MSG(1:lnm)
       ENDIF
 
@@ -3754,23 +3745,21 @@ C ****** write current text buffer to an appropraite file
 
 C Path to model and command line file (if any).
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
-      common/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
       common/rpath/path
       common/pophelp/h(60)
+      common/C21/IFCFG,cfgroot,LCFGF
+      common/textbuf/dispbuf(360)
+      common/textbufl/indexbuf,lnbuf(360)
 
-      logical browse
-      common/user/browse
-      common/textbuf/dispbuf(500)
-      common/textbufl/indexbuf,lnbuf(500)
-
-      character path*72,h*72,uname*24,fs*1
-      character sstr*144,title*18,ltypes*4
-      character lltmp*144
-      character dispbuf*124,outs*124
+      DIMENSION sstr(1),list(4),iswidth(1),listact(4),dh(60)
+      character path*72,h*72,tfile*60,uname*24,fs*1
+      character sstr*60,title*18,ltypes*4,list*17,cfgroot*24
+      character LCFGF*72,dispbuf*124,dh*72
       logical unixok,there
       integer ltf  ! position of last character in string.
-      integer iw   ! for user selection
+
+      if(MMOD.ne.8)return
 
 C Set folder separator (fs) to \ or / as required.
       call isunix(unixok)
@@ -3780,143 +3769,134 @@ C Set folder separator (fs) to \ or / as required.
         fs = char(92)
       endif
       uname=' '
-      sstr=' '
       call usrname(uname)
 
-C There are several location options to present to the user
-C depending on whether we are working in the model folder or
-C remotely, including the users home folder. Also take into
-C account whether we are browsing the model or own it.
-  11  if(browse)then
-
-C If browsing the model the output file should be dumped to
-C the users home folder (a place we know we can write to).
-        h(1)='The text displayed in the feedback area is'
-        h(2)='held in a buffer which can be written to a'
-        h(3)='file. As you are browsing the model the'
-        h(4)='file is placed in you HOME folder.'
-        h(5)='The file name can be edited. Complete edit'
-        h(6)='with Carriage Return or OK.'
-        nhelp=6
-        LNU=max(1,lnblnk(upath))
-        if(cfgroot(1:2).eq.'  ')then
-          LN=max(1,lnblnk(uname))
-          write(sstr,'(4a)') upath(1:LNU),fs,uname(1:LN),'.txt'
-        else
-          LN=max(1,lnblnk(cfgroot))
-          write(sstr,'(4a)') upath(1:LNU),fs,cfgroot(1:LN),'.txt'
-        endif
-        call edisp(iuout,'  ')  ! echo a black line
+      h(1)='The text displayed in the feedback area is '
+      h(2)='held in a buffer which can be written to a '
+      h(3)='file either overwriting or appending the   '
+      h(4)='text in the file (tick only one box).      '
+      h(5)='The file name can be edited. Complete edit '
+      h(6)='with Carriage Return.                       '
+      nhelp=6
+      CALL PHELPW(NHELP,IHW,IER)
+      call dupphelp(NHELP)
+      tfile='  '
+      LNU=max(1,lnblnk(upath))
+      if(cfgroot(1:2).eq.'  ')then
+        LN=max(1,lnblnk(uname))
+        write(sstr(1),'(4a)') upath(1:LNU),fs,uname(1:LN),'_text'
       else
-        h(1)='The text displayed in the feedback area is '
-        h(2)='held in a buffer which can be written to a '
-        h(3)='file in one of several locations (your HOME folder'
-        h(4)='in the model folder). You have the option to'
-        h(5)='adapt the name of the file. Complete edit '
-        h(6)='with Carriage Return.                      '
-        nhelp=6
-        iw=0
-        if(path.ne.'./'.and.path.ne.' ')then
-          call edisp(iuout,'  ')  ! echo a black line
-          write(outs,'(A,A)') 'The current path is: ',path
-          call edisp(iuout,outs)
-          CALL EASKABC('You are working in a remote model folder.',
-     &      'Options:','use remote model folder','use local folder',
-     &      'cancel',IW,nhelp)
-          if(iw.eq.1)then
-            LN=max(1,lnblnk(cfgroot))
-            write(sstr,'(4a)') path(1:lnblnk(path)),fs,
-     &        cfgroot(1:LN),'.txt'
-          elseif(iw.eq.2)then
-            LN=max(1,lnblnk(cfgroot))
-            write(sstr,'(3a)') './',cfgroot(1:LN),'.txt'
-          elseif(iw.eq.3)then
-            return
-          endif
+        LN=max(1,lnblnk(cfgroot))
+        write(sstr(1),'(4a)') upath(1:LNU),fs,cfgroot(1:LN),'_text'
+      endif
+      iswidth(1)=60
+      title='Export text buffer'
+      ltypes='ltte'
+      list(1)='options:         '
+      list(2)='write/create file'
+      list(3)='append to file   '
+      list(4)='file:            '
+      listact(1) = 0
+      listact(2) = 1
+      listact(3) = 0
+      listact(4) = 0
+      impx = 0
+      impy = 0
+      impcwth = 67
+      nstr = 1
+      nlist = 4
+  43  call fprofma(sstr,nstr,title,list,nlist,ltypes,impx,impy,impcwth,
+     &    iswidth,listact,ino,nhelp)
+
+C Debug
+C      write(6,*)listact,'  ',ino
+
+      if(ino.eq.-1)then
+
+C If no action return.
+        return
+      elseif(ino.eq.(nlist+1))then
+
+C If signaled ok then attempt to write out file.
+C        write(6,*)sstr(1)
+
+        tfile=sstr(1)
+        ltf=max(1,LNBLNK(tfile))
+        iuf=ifil+1
+        there=.false.
+        INQUIRE(FILE=tfile(1:ltf),EXIST=there)
+        if(there)then
+          close(iuf)
+          open(iuf,file=tfile(1:ltf),position='APPEND',
+     &      status='UNKNOWN',err=1)
         else
-          LN=max(1,lnblnk(cfgroot))
-          write(sstr,'(3a)') './',cfgroot(1:LN),'.txt'
+          close(iuf)
+          open(iuf,file=tfile,status='UNKNOWN',err=1)
         endif
-      endif
-
-C The X11 version will be returning only the name of the
-C file, while the GTK version will be returning the
-C name with the full path. sstr is the suggested name and
-C lltmp is the file name returned by the user selection.
-      lltmp='  '
-      CALL EASKXORGTKF(sstr,'Export file name?',' ',
-     &    'textbuffer.txt',lltmp,'buffer file',IER,nhelp)
-
-C If user request jump back and re-display the menu.
-      if(ier.eq.-3)then
-        return  ! cancel detected, return.
-      endif
-      if(ier.ne.0.or.lltmp(1:2).eq.'  ')then
-        goto 11
-      endif
-
-C Attempt to write out file.
-      ltf=max(1,LNBLNK(lltmp))
-      iuf=ifil+1
-      there=.false.
-      INQUIRE(FILE=lltmp(1:ltf),EXIST=there)
-      if(there)then
+        if(indexbuf.gt.1)then
+          do 42 i=1,indexbuf
+            write(iuf,'(a)',iostat=ios,err=2) dispbuf(i)(1:lnbuf(i))
+  42      continue
+        endif
         close(iuf)
-        open(iuf,file=lltmp(1:ltf),position='APPEND',
-     &    status='UNKNOWN',err=1)
+        return
+      elseif(ino.eq.1)then
+
+C If user has switched from create to append update display (reset
+C impx impy before recalling fprofma.
+        if(listact(2).eq.1)listact(3)=0
+        impx = 0
+        impy = 0
+        goto 43
+      elseif(ino.eq.2)then
+        if(listact(3).eq.1)listact(2)=0
+        impx = 0
+        impy = 0
+        goto 43
       else
-        close(iuf)
-        open(iuf,file=lltmp,status='UNKNOWN',err=1)
+        impx = 0
+        impy = 0
+        goto 43
       endif
-      if(indexbuf.gt.1)then
-        do 42 i=1,indexbuf
-          write(iuf,'(a)',iostat=ios,err=2) dispbuf(i)(1:lnbuf(i))
-  42    continue
-      endif
-      close(iuf)
       return
 
    1  if(IOS.eq.2)then
-        call usrmsg('Permissions open/write dump file...',lltmp,'W')
+        call usrmsg('Permissions open/write dump file...',tfile,'W')
       else
-        call usrmsg('Could not open/write dump file...',lltmp,'W')
+        call usrmsg('Could not open/write dump file...',tfile,'W')
       endif
       return
    2  if(IOS.eq.2)then
-        call usrmsg('Permissions for append to dump file...',lltmp,'W')
+        call usrmsg('Permissions for append to dump file...',tfile,'W')
       else
-        call usrmsg('Could not append to dump file...',lltmp,'W')
+        call usrmsg('Could not append to dump file...',tfile,'W')
       endif
       return
 
       end
 
 C ****** invoke graphics capture proforma
-
       subroutine profgrdump()
 #include "building.h"
 #include "model.h"
 
 C Path to model and command line file (if any).
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
-      common/OUTIN/IUOUT,IUIN
+      COMMON/FILEP/IFIL
       common/rpath/path
       common/pophelp/h(60)
-
-C Indicator of possible focus zone.
-      logical browse
-      common/user/browse
+      common/C21/IFCFG,cfgroot,LCFGF
 
 C Graphic capture, window dump: label, command.
-      character gprlbl*20,gprcmd*48
       common/gprint/gprlbl,gprcmd
+      common/gxwd/gxwdlbl,gxwdcmd
 
-      character path*72,h*72,uname*24,fs*1
-      character sstr*144
-      character lltmp*144,outs*124
-      character gcmd*144
-      integer ltf  ! position of last character in string.
-      integer iw   ! for user selection
+      DIMENSION sstr(1),list(4),iswidth(1),listact(4),dh(60)
+      character path*72,h*72,tfile*60,uname*24,fs*1
+      character sstr*60,title*16,ltypes*4,list*17,cfgroot*24
+      character LCFGF*72,dh*72,gcmd*90
+      character gprlbl*20,gprcmd*48
+      character gxwdlbl*20,gxwdcmd*60
 
       logical unixok
 
@@ -3930,102 +3910,93 @@ C Set folder separator (fs) to \ or / as required.
         fs = char(92)
       endif
       uname=' '
-      sstr=' '
       call usrname(uname)
 
-C There are several location options to present to the user
-C depending on whether we are working in the model folder or
-C remotely, including the users home folder. Also take into
-C account whether we are browsing the model or own it.
-  11  if(browse)then
-
-        h(1)='This button invokes a 3rd party application (typically'
-        h(2)='the [import] tool from ImageMagic) to capture a portion'
-        h(3)='of the screen. The application used is defined via the'
-        h(4)='esprc file in the ESP-r distribution of in a .esprc'
-        h(5)='file in your HOME folder.'
-        h(6)=' '
-        h(7)='The extension in the file name sets the type of image'
-        h(8)='and can be one of the following: gif jpg tiff. Because'
-        h(9)='you are browsing the model the default location for the'
-        h(10)='image file will be in your HOME folder.'
-        nhelp=10
-        LNU=max(1,lnblnk(upath))
-        if(cfgroot(1:2).eq.'  ')then
-          LN=max(1,lnblnk(uname))
-          write(sstr,'(4a)') upath(1:LNU),fs,uname(1:LN),'.gif'
-        else
-          LN=max(1,lnblnk(cfgroot))
-          write(sstr,'(4a)') upath(1:LNU),fs,cfgroot(1:LN),'.gif'
-        endif
-        call edisp(iuout,'  ')  ! echo a black line
+      h(1)='A screen image of a user selected portion '
+      h(2)='of the screen or the whole screen can be   '
+      h(3)='captured. It uses the application defined  '
+      h(4)='in the esprc file (typically import from   '
+      h(5)='the ImageMagick suite). A GIF image is     '
+      h(6)='assumed. Edit the file name as required.   '
+      nhelp=6
+      CALL PHELPW(NHELP,IHW,IER)
+      call dupphelp(NHELP)
+      tfile='  '
+      LNU=max(1,lnblnk(upath))
+      if(cfgroot(1:2).eq.'  ')then
+        LN=max(1,lnblnk(uname))
+        write(sstr(1),'(4a)') upath(1:LNU),fs,uname(1:LN),'_.gif'
       else
-        h(1)='This button invokes a 3rd party application (typically'
-        h(2)='the [import] tool from ImageMagic) to capture a portion'
-        h(3)='of the screen. The application used is defined via the'
-        h(4)='esprc file in the ESP-r distribution of in a .esprc'
-        h(5)='file in your HOME folder.'
-        h(6)=' '
-        h(7)='The extension in the file name sets the type of image'
-        h(8)='and can be one of the following: gif jpg tiff.'
-        h(9)=' '
-        h(10)='There are a number of possible locations for the file'
-        h(11)='to be written. '
-        nhelp=11
-        iw=0
-        if(path.ne.'./'.and.path.ne.' ')then
-          call edisp(iuout,'  ')  ! echo a black line
-          write(outs,'(A,A)') 'The current path is: ',path
-          call edisp(iuout,outs)
-          CALL EASKABC('You are working in a remote model folder.',
-     &      'Options:','use remote model folder','use local folder',
-     &      'cancel',IW,nhelp)
-          if(iw.eq.1)then
-            LN=max(1,lnblnk(cfgroot))
-            write(sstr,'(4a)') path(1:lnblnk(path)),fs,
-     &        cfgroot(1:LN),'.gif'
-          elseif(iw.eq.2)then
-            LN=max(1,lnblnk(cfgroot))
-            write(sstr,'(3a)') './',cfgroot(1:LN),'.gif'
-          elseif(iw.eq.3)then
-            return
-          endif
-        else
-          LN=max(1,lnblnk(cfgroot))
-          write(sstr,'(3a)') './',cfgroot(1:LN),'.gif'
+        LN=max(1,lnblnk(cfgroot))
+        write(sstr(1),'(4a)') upath(1:LNU),fs,cfgroot(1:LN),'_.gif'
+      endif
+      iswidth(1)=60
+      title='capture graphics'
+      ltypes='ltte'
+      list(1)='options:         '
+      list(2)='user defined area'
+      list(3)='whole of screen  '
+      list(4)='file:            '
+      listact(1) = 0
+      listact(2) = 1
+      listact(3) = 0
+      listact(4) = 0
+      impx = 0
+      impy = 0
+      impcwth = 67
+      nstr = 1
+      nlist = 4
+  43  call fprofma(sstr,nstr,title,list,nlist,ltypes,impx,impy,impcwth,
+     &    iswidth,listact,ino,nhelp)
+
+C Debug.
+C      write(6,*)listact,'  ',ino
+
+      if(ino.eq.-1)then
+
+C If no action return.
+        return
+      elseif(ino.eq.(nlist+1))then
+
+C If signaled ok then attempt to write out file.
+C        write(6,*)sstr(1)
+
+        tfile=sstr(1)
+        ltf=max(1,lnblnk(tfile))
+        if(listact(2).eq.1)then
+          LN=max(1,lnblnk(gprcmd))
+          write(gcmd,'(3a)') gprcmd(1:LN),' ',tfile(1:ltf)
+        elseif(listact(3).eq.1)then
+          LN=max(1,lnblnk(gxwdcmd))
+          write(gcmd,'(3a)') gxwdcmd(1:LN),' ',tfile(1:ltf)
         endif
+
+C Debug
+C        write(6,*)gcmd
+
+        call runit(gcmd,'-')
+        return
+      elseif(ino.eq.1)then
+
+C If user has switched from create to append update display (reset
+C impx impy before recalling fprofma.
+        if(listact(2).eq.1)listact(3)=0
+        impx = 0
+        impy = 0
+        goto 43
+      elseif(ino.eq.2)then
+        if(listact(3).eq.1)listact(2)=0
+        impx = 0
+        impy = 0
+        goto 43
+      else
+        impx = 0
+        impy = 0
+        goto 43
       endif
-
-C The X11 version will be returning only the name of the
-C file, while the GTK version will be returning the
-C name with the full path. sstr is the suggested name and
-C lltmp is the file name returned by the user selection.
-      lltmp='  '
-      CALL EASKXORGTKF(sstr,'Export image file name?',' ',
-     &    'currentview.gif',lltmp,'image file',IER,nhelp)
-
-C If user request jump back and re-display the menu.
-      if(ier.eq.-3)then
-        return  ! cancel detected, return.
-      endif
-      if(ier.ne.0.or.lltmp(1:2).eq.'  ')then
-        goto 11
-      endif
-
-      ltf=max(1,LNBLNK(lltmp))
-      LN=max(1,lnblnk(gprcmd))
-      write(gcmd,'(3a)') gprcmd(1:LN),' ',lltmp(1:ltf)
-
-C Invoke the application named in gprcmd with the file name.
-
-C << todo figure out how to determine if gprcmd is installed >>
-
-      call runit(gcmd,'-')
-
       return
 
       end
-
 
 C ************************ PHELPD
 C PHELPD displays the current contents of common pophelp in a form
@@ -4255,6 +4226,28 @@ C pophelp where IL is the number of lines of help under consideration.
       END
 
 
+C ********* WIRETOG
+C WIRETOG sets wireframe toggles and is called from C code in esp-r.c
+C with its current idea as to
+C the number of zones which have currently been selected for display.
+      subroutine wiretog(inpk)
+#include "building.h"
+
+C izgfoc is the graphic focus zone, nzg is the number of zones selected
+C and nznog array of selected zone indices.
+      COMMON/OUTIN/IUOUT,IUIN
+      COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
+      if(inpk.ne.nzg)then
+        call edisp(iuout,'Mismatch betwen inpk and nzg... ')
+      endif
+      CALL EVTOGSET(1,'B',IER)
+      if(ier.ne.0)then
+        call edisp(iuout,'Problem after wire toggle pick... ')
+      endif
+
+      return
+      end
+
 C ************* GETZONENAMES
 C GETZONENAMES calls the c function putzonename to fill the C zonenames variable.
       subroutine GETZONENAMES
@@ -4263,7 +4256,6 @@ C GETZONENAMES calls the c function putzonename to fill the C zonenames variable
 C Get precz common block from geometry.h
 #include "geometry.h"
 
-      integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
 
       character t12*12
@@ -4344,7 +4336,6 @@ C list management for this.
      &                'this will be added in a later version.','P')
 C          CALL EPKMLC(ISEL,'Select a construction to hilight.',' ',IER)
 C          ITHLZ=ISEL
-C          MODIFY=.TRUE.
         endif
 
         CALL INLNST(1)
@@ -4366,25 +4357,707 @@ C User toggled to an east view.
         call PLELEV('E')
       elseif(ITPPSW.eq.4)then
 
-C Perspective view from the sun is handled by other code.
-        call edisp(iuout,'Use the pull-down menu for views from sun.')
+C Perspective view from the sun.
+C Draw the zones and any obstructions based on sun
+C position. Confirm the lat, long, request day and time,
+C compute positon and update the view.
+        write(outs,'(A,F6.2,A,F6.2)')
+     &  ' Current latitude = ',SLAT,', longitude difference = ',SLON
+        call edisp(iuout,' ')
+        call edisp(iuout,outs)
+        call edisp(iuout,' ')
+        call edisp(iuout,' Date and time for the view... ')
+        NTS=1
+        IMO=6
+        IDO=1
+        STIME=1.
+  67    CALL ASKTIM(2,NTS,IMO,IDO,IJDAY,STIME,IT,IER)
+  68    CALL EAZALTS(STIME,IJDAY,SLAT,SLON,ISUNUP,SAZI,SALT)
+        IF(SALT.GT.0.0)THEN
+          CALL ANGXYZ(SAZI,SALT,X1,Y1,Z1)
+          EYEM(1)=X1
+          EYEM(2)=Y1
+          EYEM(3)=Z1
+          ITSNM=1
+          MODIFY=.TRUE.
+          MODLEN=.TRUE.
+          CALL ADJVIEW(IER)
+
+C Generate a heading for the view.
+          CALL EDTIME(STIME,DESCRH,DESCRD,TIMER)
+          WRITE(ETEXT,'(A,I2,1X,A3,A,A5,A,F6.1,A,F5.1)')
+     &      ' View: ',IDO,MTHNAM(IMO),' @',DESCRH,
+     &      '  azim:',SAZI,' elev:',SALT
+          ivt2=2
+          ivt3=1
+          ivt4=IFS
+          CALL viewtext(ETEXT,ivt2,ivt3,ivt4)
+          CALL EASKAB(' ',' Next viewpoint:',
+     &        'next hour','exit',IW,0)
+          if(IW.eq.1)then
+            STIME=STIME+((60.0/FLOAT(NTS))/60.0)
+            goto 68
+          else
+            ITSNM=0
+          endif
+        else
+          CALL EASKAB(' View point below horizon:',' ',
+     &        'specify another time','exit',IW,0)
+          if(IW.eq.1)goto 67
+          ITSNM=0
+        endif
+
+        MODLEN=.FALSE.
+        MODBND=.FALSE.
+        MODIFY=.FALSE.
       endif
 
       return
       end
 
 C ************* EVSET
-C EVSET provides a dummy setup environment for wire frame view.
+C EVSET provides setup environment for wire frame view w/in prj.
+C IER=0 OK, IER=1 problem. If izgfoc is not 0
+C then it represents the zone which is currently being edited.
       SUBROUTINE EVSET(act,IER)
+#include "building.h"
+#include "geometry.h"
+#include "prj3dv.h"
+#include "espriou.h"
 
-      character act*1
-      integer ier
-      return
+      COMMON/FILEP/IFIL
+      COMMON/SPAD/MMOD,LIMIT,LIMTTY
+      COMMON/OUTIN/IUOUT,IUIN
+      common/pophelp/h(60)
+      COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
+      COMMON/C1/NCOMP,NCON
+      common/rpath/path
+      common/appw/iappw,iappx,iappy
+      integer ifs,itfs,imfs
+      COMMON/GFONT/IFS,ITFS,IMFS
+      COMMON/PREC8/SLAT,SLON
+
+C ITDSP labels toggle: all surf + obs = 0, all surf = 1, ext = 2,
+C       partn = 3, similar = 4, surfs + obs+ ground = 5, ground only = 6
+C ITBND bounds toggle: static = 0, optimum = 1, zone focus = 2
+C ITEPT is not yet used.
+C ITZNM zone name toggle: display = 0, hidden = 1
+C ITSNM surface name toggle: display = 0, hidden = 1
+C ITORG origin toggle: display = 0, hidden = 1
+C ITSNR surf normal toggle: display = 0, hidden = 1.
+C ITOBS obstruction toggle: not yet enabled.
+C ITHLS highlight toggle: normal 0, constr 1, trans/opaq 2, part atrib 3
+C ITHLZ additional qualifier for ITHLS.
+C ITGRD grid toggle: display = 0, hidden = 1
+C ITVNO vertex toggle: display = 0, hidden = 1
+C ITPPSW current view - perspective/plan/south/west
+      COMMON/RAY2/ITDSP,ITBND,ITEPT,ITZNM,ITSNM,ITVNO,ITORG,ITSNR,
+     &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS,ITPPSW
+      COMMON/RAY3/MODIFY,MODLEN,MODBND
+      COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
+      LOGICAL        CFGOK,MLDBOK,MATDBOK,CTLOK
+      logical MODIFY,MODLEN,MODBND
+      LOGICAL OPTKOK,OK,DOK,found,concat,redraw
+      DIMENSION IVALS(MCOM),MTHNAM(12)
+      CHARACTER H*72,LFIL*72,outs*124
+      CHARACTER MTHNAM*3,ETEXT*60
+      CHARACTER DESCRH*5,DESCRD*5,path*72
+      character doit*124,tmode*8,longtfile*72, hold*24,act*1
+      CHARACTER head*19
+      character aopt*32,bopt*32,copt*32,dopt*32,eopt*32,fopt*32
+      character gopt*32,hopt*32
+
+      DATA MTHNAM/'Jan','Feb','Mar','Apr','May','Jun','Jul','Aug',
+     &            'Sep','Oct','Nov','Dec'/
+#ifdef OSI
+      integer ivt2,ivt3,ivt4  ! for use with viewtext
+      integer ICPMOD          ! passed from tchild
+#else
+      integer*8 ivt2,ivt3,ivt4  ! for use with viewtext
+      integer*8 ICPMOD          ! passed from tchild
+#endif
+
+C If not in graphic mode return.
+      if(MMOD.lt.8)return
+
+C Initial menu entry setup with one line header, 3 control lines.
+      redraw=.false.
+      IER=0
+      ITPPSW=0
+      IUF=IFIL+1
+
+C Menu loop.
+   92 IER=0
+
+      WRITE(AOPT,'(A,3F6.1)')'a eyepoint :',(EYEM(J),J=1,3)
+      WRITE(BOPT,'(A,3F6.1)')'b viewpoint:',(VIEWM(J),J=1,3)
+      WRITE(COPT,'(A,F6.1)') 'c angle of view:',ANG
+      DOPT ='* zones to include in image'
+      EOPT ='! refresh image'
+      FOPT ='1 hidden line view'
+      GOPT ='2 views from sun'
+      HOPT ='beam me up'
+
+C If image info altered (viewpoint) then update display.
+      IF(MODIFY)THEN
+        if(ITPPSW.eq.0)then
+          CALL INLNST(1)
+          CALL ADJVIEW(IER)
+          IF(ier.NE.0)RETURN
+          MODLEN=.FALSE.
+          MODBND=.FALSE.
+          MODIFY=.FALSE.
+        elseif(ITPPSW.eq.1)then
+          if(redraw)call PLELEV('P')
+        elseif(ITPPSW.eq.2)then
+          if(redraw)call PLELEV('S')
+        elseif(ITPPSW.eq.3)then
+          if(redraw)call PLELEV('E')
+        endif
+      ENDIF
+
+C Help text for this menu.
+      H(1)='The 3dv menu provides control of the perspective image'
+      H(2)='of the geometry begin browsed or edited. In most cases'
+      H(3)='the image will be refreshed as editing takes place.'
+      H(5)='The surface normal has yet to be enabled.'
+      H(6)='In the case of inserted vertices which have not yet'
+      H(7)='been associated with surfaces will be shown as circles'
+      H(8)='within the image.'
+
+C Now display the menu. If in response to wireframe control button
+C then shift its position slighty (taking into account the current
+C width of the control menu.
+      if(act.eq.'-')then
+        iwhich=8
+        head='Viewing Environment'
+        call  EASKDOZEN(head,' ',AOPT,BOPT,COPT,DOPT,EOPT,FOPT,
+     &  GOPT,HOPT,' ',' ',' ',' ',IWHICH,8)
+      elseif(act.eq.'B')then
+        iwhich=8
+        call findrtb(iappr,iappt,iappb)
+        head='  Wireframe control'
+        call  EASKDOZEN(head,' ',AOPT,BOPT,COPT,DOPT,EOPT,FOPT,
+     &  GOPT,HOPT,' ',' ',' ',' ',IWHICH,8)
+      endif
+      IF(IWHICH.eq.0.or.IWHICH.eq.-1)THEN
+        RETURN
+      ELSEIF(IWHICH.EQ.1)THEN
+        H(1)='The eyepoint is in metres in the coordinate system '
+        H(2)='of the site. '
+  43    WRITE(HOLD,'(1x,3f7.1)')EYEM(1),EYEM(2),EYEM(3)
+        CALL EASKS(HOLD,' Eye point  X  Y  Z (in metres): ',
+     &     '  ',24,' -100. -100. 100. ','eye point coord',IER,2)
+        K=0
+        CALL EGETWR(HOLD,K,EYEM(1),-999.,999.,'W','X cord',IER)
+        CALL EGETWR(HOLD,K,EYEM(2),-999.,999.,'W','Y cord',IER)
+        CALL EGETWR(HOLD,K,EYEM(3),0.,999.,'W','eye Z cord',IER)
+        if(ier.ne.0)goto 43
+        MODLEN=.TRUE.
+        MODIFY=.TRUE.
+      ELSEIF(IWHICH.EQ.2)THEN
+
+C Present viewpoint coords for editing then parse data from HOLD.
+        H(1)='The viewpoint is in metres in the coordinate system'
+        H(2)='of the site and defaults to the centre of gravity '
+        H(3)='of the body. '
+  42    WRITE(HOLD,'(1x,3f7.1)')VIEWM(1),VIEWM(2),VIEWM(3)
+        CALL EASKS(HOLD,' Viewpoint  X  Y  Z (in metres): ',
+     &     '  ',24,' 2. 2. 1. ','viewpoint coord',IER,3)
+        K=0
+        CALL EGETWR(HOLD,K,VIEWM(1),-999.,999.,'W','X cord',IER)
+        CALL EGETWR(HOLD,K,VIEWM(2),-999.,999.,'W','Y cord',IER)
+        CALL EGETWR(HOLD,K,VIEWM(3),0.,999.,'W','view Z cord',IER)
+        if(ier.ne.0)goto 42
+        MODLEN=.TRUE.
+        MODIFY=.TRUE.
+      ELSEIF(IWHICH.EQ.3)THEN
+        H(1)='The angle of view is in degrees, allowable values'
+        H(2)='are from 1 to 89 degrees. '
+        CALL EASKR(ANG,' ',' New angle of view ? ',
+     &             1.0,'W',89.0,'W',40.,'angle ofview',IER,2)
+        HANG=ANG/2.0
+        MODLEN=.TRUE.
+        MODIFY=.TRUE.
+      ELSEIF(IWHICH.EQ.4)THEN
+
+C Select zones to include, if one zone is the principal focus then
+C make sure it is included in the list.
+        IF(CFGOK)THEN
+          H(1)=' Pick one, several or all zones for inclusion'
+          INPIC=NCOMP
+          CALL EPICKS(INPIC,IVALS,' ',' Which zones to include: ',
+     &      12,NCOMP,zname,' zone list',IER,1)
+          nzg = inpic
+          if(izgfoc.ne.0)then
+            found=.false.
+            do 44 mz=1,nzg
+              nznog(mz)=IVALS(mz)
+              if(ivals(mz).eq.izgfoc)found=.true.
+  44        continue
+            if(.NOT.found)then
+              nzg=nzg+1
+              nznog(nzg)=izgfoc
+            endif
+          elseif(izgfoc.eq.0)then
+            do 24 mz=1,nzg
+              nznog(mz)=IVALS(mz)
+  24        continue
+          endif
+          MODBND=.TRUE.
+          MODLEN=.TRUE.
+          MODIFY=.TRUE.
+        ELSE
+          CALL USRMSG(' Model not yet defined!',
+     &    ' Please use option a of model definition menu.','W')
+          RETURN
+        ENDIF
+      ELSEIF(IWHICH.EQ.5.AND.INPIC.GE.1)THEN
+
+C Refresh the image.
+        MODLEN=.TRUE.
+        MODBND=.TRUE.
+        MODIFY=.TRUE.
+        do 444,ix=1,ncomp
+          iZBFLG(ix)=0
+  444   continue
+        CALL ADJVIEW(IER)
+        IF(ier.NE.0)RETURN
+        MODLEN=.FALSE.
+        MODBND=.FALSE.
+        MODIFY=.FALSE.
+      ELSEIF(IWHICH.EQ.6)THEN
+
+C Construct a 'viewer' format file. The trace level defines whether
+C information about the zones is displayed or not. Because users
+C who may be working in remote folders may wish to save locally
+C trap this condition.
+        IUO=IFIL+2
+        iw=0
+        if(path.ne.'./'.and.path.ne.' ')then
+          write(outs,'(A,A)') ' The current path is: ',path
+          call edisp(iuout,outs)
+          CALL EASKAB(' You are in a remote folder...  place the ',
+     &    ' viewing info:','using the path','in local folder',IW,0)
+         endif
+
+C Get file name.
+        H(1)='A viewer format file may be used with the 3rd party'
+        H(2)='wire-frame & hidden line program VIEWER.'
+        CALL EASKS(LFIL,' File name for image data ? ',
+     &    ' ',72,' ','viewer input file',IER,2)
+        if(iw.eq.1)then
+          CALL EFOPSEQ(IUO,LFIL,4,IER)
+          write(currentfile,'(a)') LFIL(1:lnblnk(LFIL))
+        else
+          CALL ERPFREE(IUO,ISTAT)
+          call FPOPEN(IUO,ISTAT,1,3,LFIL)
+          write(currentfile,'(a)') LFIL(1:lnblnk(LFIL))
+        endif
+        CALL EMKVIEW(IUO,CFGOK,IER)
+        IF(IER.NE.0)THEN
+          CALL USRMSG(' ',' problem creating image file... ','W')
+          goto 92
+        ENDIF
+        dok=.true.
+        h(1)='Assuming the conversion of the model geometry into '
+        h(2)='the hidden line viewing file was successfull, you'
+        h(3)='can now view the model via the ESP-r module `viewer`.'
+        h(4)='Be sure to tidy up any *.vew files that might'
+        h(5)='have been created. '
+        CALL ASKOK(' ','Display hidden line views?',OK,dok,5)
+        IF(OK)then
+
+C Get logical name of child process terminal type, expand model
+C name to include the path (if applicable) and create a string to
+C drive viewer.
+          doit = ' '
+          call tchild(ICPMOD)
+          call termode(ICPMOD,tmode)
+          if(iw.eq.1)then
+            call addpath(LFIL,longtfile,concat)
+          else
+            write(longtfile,'(a)') LFIL(1:lnblnk(LFIL))
+          endif
+          if(iappw.gt.0.and.iappw.le.200)then
+            write(doit,'(3a,3i4,3a)') 'viewer -mode ',tmode,
+     &        ' -s ',iappw,iappx+25,iappy+20,' -file ',
+     &        longtfile(:lnblnk(longtfile)),' &'
+          else
+            write(doit,'(5a)') 'viewer -mode ',tmode,
+     &        ' -s 0 0 0 -file ',longtfile(:lnblnk(longtfile)),' &'
+          endif
+          call usrmsg(' ','starting hidden line viewer.','-')
+          call runit(doit,tmode)
+        endif
+      ELSEIF(IWHICH.EQ.7)THEN
+
+C Draw the zones and any obstructions based on sun
+C position. Confirm the lat, long, request day and time,
+C compute positon and update the view.
+        write(outs,'(A,F6.2,A,F6.2)')
+     &  ' Current latitude = ',SLAT,', longitude difference = ',SLON
+        call edisp(iuout,' ')
+        call edisp(iuout,outs)
+        call edisp(iuout,' ')
+        call edisp(iuout,' Date and time for the view... ')
+        NTS=1
+        IMO=6
+        IDO=1
+        STIME=1.
+  67    CALL ASKTIM(2,NTS,IMO,IDO,IJDAY,STIME,IT,IER)
+  68    CALL EAZALTS(STIME,IJDAY,SLAT,SLON,ISUNUP,SAZI,SALT)
+        IF(SALT.GT.0.0)THEN
+          CALL ANGXYZ(SAZI,SALT,X1,Y1,Z1)
+          EYEM(1)=X1
+          EYEM(2)=Y1
+          EYEM(3)=Z1
+          ITSNM=1
+          MODIFY=.TRUE.
+          MODLEN=.TRUE.
+          CALL ADJVIEW(IER)
+
+C Generate a heading for the view.
+          CALL EDTIME(STIME,DESCRH,DESCRD,TIMER)
+          WRITE(ETEXT,'(A,I2,1X,A3,A,A5,A,F6.1,A,F5.1)')
+     &      ' View: ',IDO,MTHNAM(IMO),' @',DESCRH,
+     &      '  azim:',SAZI,' elev:',SALT
+          ivt2=2
+          ivt3=1
+          ivt4=IFS
+          CALL viewtext(ETEXT,ivt2,ivt3,ivt4)
+          CALL EASKAB(' ',' Next viewpoint:',
+     &        'next hour','exit',IW,0)
+          if(IW.eq.1)then
+            STIME=STIME+((60.0/FLOAT(NTS))/60.0)
+            goto 68
+          else
+            ITSNM=0
+            goto 92
+          endif
+        else
+          CALL EASKAB(' View point below horizon:',' ',
+     &        'specify another time','exit',IW,0)
+          if(IW.eq.1)goto 67
+          ITSNM=0
+        endif
+      ELSEIF(IWHICH.EQ.8)THEN
+        return
+      ENDIF
+      GOTO 92
+
+      END
+
+C ************* EVTOGSET
+C EVTOGSET provides setup environment for wire frame toggles w/in prj.
+C IER=0 OK, IER=1 problem.
+      SUBROUTINE EVTOGSET(ITRC,act,IER)
+#include "building.h"
+#include "esprdbfile.h"
+#include "material.h"
+
+      COMMON/FILEP/IFIL
+      COMMON/SPAD/MMOD,LIMIT,LIMTTY
+      COMMON/OUTIN/IUOUT,IUIN
+      common/pophelp/h(60)
+      common/rpath/path
+
+C ITDSP labels toggle: all surf + obs = 0, all surf = 1, partn = 2,
+C       similar = 4, surfs + obs+ ground = 5, ground only = 6
+C ITBND bounds toggle: static = 0, optimum = 1, zone focus = 2
+C ITEPT is
+C ITZNM zone name toggle: display = 0, hidden = 1
+C ITSNM surface name toggle: display = 0, hidden = 1
+C ITORG origin toggle: display = 0, hidden = 1
+C ITSNR surf normal toggle: display = 0, hidden = 1.
+C ITOBS obstruction toggle: not yet enabled.
+C ITHLS highlight toggle: normal 0, constr 1, trans/opaq 2, part atrib 3
+C ITGRD grid toggle: display = 0, hidden = 1
+C ITVNO vertex toggle: display = 0, hidden = 1
+C ITPPSW current view - perspective/plan/south/west
+      COMMON/RAY2/ITDSP,ITBND,ITEPT,ITZNM,ITSNM,ITVNO,ITORG,ITSNR,
+     &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS,ITPPSW
+      COMMON/RAY3/MODIFY,MODLEN,MODBND
+      COMMON/RAY5/ZCOG(MCOM,3),XMN,YMN,ZMN,XMX,YMX,ZMX
+      COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
+
+      LOGICAL CFGOK,MLDBOK,MATDBOK,CTLOK
+      logical MODIFY,MODLEN,MODBND
+      LOGICAL OPTKOK,CLOSE,redraw
+      DIMENSION FALT(7),IVAL(7)
+      CHARACTER H*72,FALT*37,path*72,act*1
+      character aopt*32,bopt*32,copt*32,dopt*32,eopt*32,fopt*32
+      character gopt*32,hopt*32,iopt*32,jopt*32,kopt*32,lopt*32
+      CHARACTER head*19
+      integer IW  ! for radio button
+
+C If not in graphic mode return.
+      if(MMOD.lt.8)return
+
+C Initial menu entry setup with one line header, 3 control lines.
+      redraw=.false.
+      IER=0
+C      ITPPSW=0
+      IUF=IFIL+1
+
+C Menu loop.
+   92 IER=0
+
+      if(ITPPSW.eq.0)then
+        AOPT ='a Display >> perspective'
+      elseif(ITPPSW.eq.1)then
+        AOPT ='a Display >> plan view'
+      elseif(ITPPSW.eq.2)then
+        AOPT ='a Display >> south elevation'
+      elseif(ITPPSW.eq.3)then
+        AOPT ='a Display >> west elevation'
+      endif
+      IF(ITDSP.EQ.0)THEN
+        BOPT ='b display >> surfaces & obstruct'
+      ELSEIF(ITDSP.EQ.1)THEN
+        BOPT ='b display >> all surfaces'
+      ELSEIF(ITDSP.EQ.2)THEN
+        BOPT ='b display >> exterior surfaces'
+      ELSEIF(ITDSP.EQ.3)THEN
+        BOPT ='b display >> partitions/int surf'
+      ELSEIF(ITDSP.EQ.4)THEN
+        BOPT ='b display >> const/boundary surf'
+      ELSEIF(ITDSP.EQ.5)THEN
+        BOPT ='b display >> surfs+obstr+ground'
+      ELSEIF(ITDSP.EQ.6)THEN
+        BOPT ='b display >> ground only'
+      ENDIF
+
+C Hilight surface based on OPQ/TRAN or material.
+      IF(ITHLS.EQ.0)THEN
+        COPT ='c highlight >> normal'
+      ELSEIF(ITHLS.EQ.1)THEN
+        if(ITHLZ.gt.0)then
+          WRITE(COPT,'(a,A12)')'c highlight >> ',DESC(ITHLZ)(1:12)
+        else
+          COPT ='c highlight >> composition'
+        endif
+      ELSEIF(ITHLS.EQ.2)THEN
+        COPT ='c highlight >> transparent:opaq'
+      ELSEIF(ITHLS.EQ.3)THEN
+        COPT ='c highlight >> partial attribute'
+      ENDIF
+
+      IF(ITBND.EQ.0)THEN
+        DOPT ='e view bounds >> static'
+      ELSEIF(ITBND.EQ.1)THEN
+        DOPT ='e view bounds >> optimum'
+      ELSEIF(ITBND.EQ.2)THEN
+
+C So what does ITBND=3 (focus on zone) actually mean?
+        DOPT ='e view bounds >> focus on zone'
+      ENDIF
+
+      IF(ITZNM.EQ.0)THEN
+        EOPT='f zone names >> display'
+      ELSEIF(ITZNM.EQ.1)THEN
+        EOPT='f zone names >> hidden'
+      ENDIF
+
+      IF(ITSNM.EQ.0)THEN
+        FOPT='g surface names >> display'
+      ELSEIF(ITSNM.EQ.1)THEN
+        FOPT='g surface names >> hidden'
+      ENDIF
+
+      IF(ITVNO.EQ.0)THEN
+        GOPT='h vertex number >> display'
+      ELSEIF(ITVNO.EQ.1)THEN
+        GOPT='h vertex number >> hidden'
+      ENDIF
+
+      IF(ITORG.EQ.0)THEN
+        HOPT='i site origin >> display'
+      ELSEIF(ITORG.EQ.1)THEN
+        HOPT='i site origin >> hidden'
+      ENDIF
+
+      IF(ITGRD.EQ.0)THEN
+        IOPT='j site grid >> display'
+      ELSEIF(ITGRD.EQ.1)THEN
+        IOPT='j site grid >> hidden'
+      ENDIF
+      CALL ECLOSE(GRDIS,0.0,0.001,CLOSE)
+      IF(CLOSE)THEN
+        JOPT='k grid distance: optimum'
+      ELSE
+        WRITE(JOPT,23)GRDIS
+  23    FORMAT('k grid distance:',F5.2,' (m)')
+      ENDIF
+
+      IF(ITSNR.EQ.0)THEN
+        KOPT='m surface normals >> display'
+      ELSEIF(ITSNR.EQ.1)THEN
+        KOPT='m surface normals >> hidden'
+      ENDIF
+      LOPT='n beam me up'
+
+C If image info altered (viewpoint) then update display.
+      IF(MODIFY)THEN
+        if(ITPPSW.eq.0)then
+          CALL INLNST(1)
+          CALL ADJVIEW(IER)
+          IF(ier.NE.0)RETURN
+          MODLEN=.FALSE.
+          MODBND=.FALSE.
+          MODIFY=.FALSE.
+        elseif(ITPPSW.eq.1)then
+          if(redraw)call PLELEV('P')
+        elseif(ITPPSW.eq.2)then
+          if(redraw)call PLELEV('S')
+        elseif(ITPPSW.eq.3)then
+          if(redraw)call PLELEV('E')
+        endif
+      ENDIF
+
+C Help text for this menu.
+      H(1)='The 3dv menu provides control of the perspective image'
+      H(2)='of the geometry begin browsed or edited. In most cases'
+      H(3)='the image will be refreshed as editing takes place.'
+      H(5)='The surface normal has yet to be enabled.'
+      H(6)='In the case of inserted vertices which have not yet'
+      H(7)='been associated with surfaces will be shown as circles'
+      H(8)='within the image.'
+
+C Now display the menu. If in response to wireframe control button
+C then shift its position slighty (taking into account the current
+C width of the control menu.
+      if(act.eq.'-')then
+        iwhich=12
+        head='Viewing Environment'
+        call  EASKDOZEN(head,' ',AOPT,BOPT,COPT,DOPT,EOPT,FOPT,
+     &  GOPT,HOPT,IOPT,JOPT,KOPT,LOPT,IWHICH,8)
+      elseif(act.eq.'B')then
+        iwhich=12
+        call findrtb(iappr,iappt,iappb)
+        head='  Wireframe toggles'
+        call  EASKDOZEN(head,' ',AOPT,BOPT,COPT,DOPT,EOPT,FOPT,
+     &  GOPT,HOPT,IOPT,JOPT,KOPT,LOPT,IWHICH,8)
+      endif
+      IF(IWHICH.eq.0.or.IWHICH.eq.-1)THEN
+        RETURN
+      ELSEIF(IWHICH.EQ.1)THEN
+        H(1)='In plan view you can change the viewing parameters,'
+        H(2)='the elevations are primarily for checking. '
+        CALL EASKABCD(' View choices: ',' ','Perspective',
+     &    'plan view ','south elevation ','west elevation ?',IW,2)
+        if(IW-1.ne.ITPPSW)then
+          redraw =.true.
+          MODIFY=.TRUE.
+        endif
+        ITPPSW=IW-1
+      ELSEIF(IWHICH.EQ.2)THEN
+
+C If configuration file loaded then can filter surfaces by location.
+C Allow this selection by text string.
+        IF(CFGOK)THEN
+          H(1)='The image may be filtered so that specific aspects'
+          H(2)='of the model may be studied.  The current filters '
+          H(3)='are shown in the list. '
+          FALT(1)='all surfaces and shading obstructions'
+          FALT(2)='all surfaces (no obstructions)       '
+          FALT(3)='exterior surfaces only               '
+          FALT(4)='partitions & interior surfaces only  '
+          FALT(5)='surf connected to ground or constant '
+          FALT(6)='all surfaces, obstructions & ground  '
+          FALT(7)='ground topology only                 '
+          IV=1
+          CALL EPICKS(IV,IVAL,' ',' Image filter: ',
+     &      37,7,FALT,' image filters',IER,1)
+          IF(IV.GT.0)THEN
+            ITDSP=IVAL(1)-1
+          ELSE
+            GOTO 92
+          ENDIF
+        ELSE
+          ITDSP=1
+        ENDIF
+        MODLEN=.TRUE.
+        MODBND=.TRUE.
+        MODIFY=.TRUE.
+      ELSEIF(IWHICH.EQ.3)THEN
+
+C Hilight control.
+        h(1)='Display of surfaces can be limited to surfaces which'
+        h(1)='match some filter. '
+        IW=1
+        CALL EASKATOG('Highlight choices: ',' ','normal','composition',
+     &    'opaq:transp','partial attrib','continue ?',' ',' ',IW,2)
+        ITHLS=IW-1
+        if(ITHLS.eq.0)then
+          MODIFY=.true.
+        elseif(ITHLS.eq.1)then
+          CALL EPKMLC(ISEL,'Select a construction to hilight.',' ',IER)
+          ITHLZ=ISEL
+          MODIFY=.TRUE.
+        elseif(ITHLS.eq.2)then
+          CALL EASKABC(' Opacity choices: ',' ','hilight opaque',
+     &    'hilight transparent','continue ?',IW,2)
+          ITHLZ=IW
+          MODIFY=.TRUE.
+        elseif(ITHLS.eq.3)then
+          MODIFY=.TRUE.
+        endif
+      ELSEIF(IWHICH.EQ.4)THEN
+        ITBND=ITBND+1
+        IF(ITBND.GT.1)ITBND=0
+        MODIFY=.TRUE.
+      ELSEIF(IWHICH.EQ.5)THEN
+        ITZNM=ITZNM+1
+        IF(ITZNM.GT.1)ITZNM=0
+        MODIFY=.TRUE.
+      ELSEIF(IWHICH.EQ.6)THEN
+        ITSNM=ITSNM+1
+        IF(ITSNM.GT.1)ITSNM=0
+        MODIFY=.TRUE.
+      ELSEIF(IWHICH.EQ.7)THEN
+        ITVNO=ITVNO+1
+        IF(ITVNO.GT.1)ITVNO=0
+        MODIFY=.TRUE.
+      ELSEIF(IWHICH.EQ.8)THEN
+
+C Site origin, see if w/in bounds to flag bounds and lens...
+        ITORG=ITORG+1
+        IF(ITORG.GT.1)ITORG=0
+        IF(1.1.GT.XMX.OR.1.1.LT.XMN) MODBND=.TRUE.
+        IF(1.1.GT.YMX.OR.1.1.LT.YMN) MODBND=.TRUE.
+        IF(0.0.GT.ZMX.OR.0.0.LT.ZMN) MODBND=.TRUE.
+        if(MODBND)then
+          MODLEN=.TRUE.
+          MODIFY=.TRUE.
+        endif
+      ELSEIF(IWHICH.EQ.9)THEN
+        ITGRD=ITGRD+1
+        IF(ITGRD.GT.1)ITGRD=0
+        MODBND=.TRUE.
+        MODLEN=.TRUE.
+        MODIFY=.TRUE.
+      ELSEIF(IWHICH.EQ.10)THEN
+        H(1)='The distance between site grid dotted lines can be'
+        H(2)='altered for clarity, especially in large zones. '
+        H(3)='If set to 0 then an optimum value will be found.'
+        CALL EASKR(GRDIS,' ',' Grid distance (metres)? ',
+     &             0.0,'F',10.0,'W',0.,'grid distance',IER,3)
+        MODIFY=.TRUE.
+      ELSEIF(IWHICH.EQ.11)THEN
+        ITSNR=ITSNR+1
+        IF(ITSNR.GT.1)ITSNR=0
+        MODIFY=.TRUE.
+      ELSEIF(IWHICH.EQ.12)THEN
+        RETURN
+      ENDIF
+      GOTO 92
+
       END
 
 
 C ********* dummy subroutines and functions to match what is found
-C in esru_fc.F.  May need to include explicit typing in some subroutines.
+C in esru_fc.f
 
 C opencpw place copyright button on screen
       subroutine opencpw

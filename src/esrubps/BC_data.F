@@ -1634,7 +1634,7 @@ C...........Report interpolated values: Step interpolation
      &                                       fBld_Day,
      &                                       iStep_Interp,
      &                                       cContext)
-            call AddToReport(rvBndCndStpInt%Identifier,
+            call AddToReportWild1(rvBndCndStpInt%Identifier,
      &         fBC_Value,
      &         cBC_names(iCount)(1:iNameLength))
 
@@ -1644,7 +1644,7 @@ C...........Report interpolated values: Step interpolation
      &                                       fBld_Day,
      &                                       iLinear_Interp,
      &                                       cContext)
-            Call AddToReport(rvBndCndLnInt%Identifier,
+            Call AddToReportWild1(rvBndCndLnInt%Identifier,
      &         fBC_Value,
      &         cBC_names(iCount)(1:iNameLength))
 
@@ -1652,13 +1652,13 @@ C...........Report interpolated values: Step interpolation
          if ( .not. bInitialized ) then
             iUnitsLength = lnblnk(cBC_units(iCount))
 C...........Store the variables' description
-            Call AddToReportDetails(rvBndCndStpInt%Identifier,
+            Call AddToReportDetailsWild1(rvBndCndStpInt%Identifier,
      &         cBC_names(iCount)(1:iNameLength),
      &         'units',
      &         '(' // cBC_units(iCount)(1:iUnitsLength) // ')',
      &         'Boundary condition data: step-interpolated values')
 
-            Call AddToReportDetails(rvBndCndLnInt%Identifier,
+            Call AddToReportDetailsWild1(rvBndCndLnInt%Identifier,
      &         cBC_names(iCount)(1:iNameLength),
      &         'units',
      &         '(' // cBC_units(iCount)(1:iUnitsLength) // ')',

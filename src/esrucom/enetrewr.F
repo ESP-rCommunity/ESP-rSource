@@ -1009,8 +1009,6 @@ C *********************************************************************
 
       SUBROUTINE ENETWRITE
 
-#include "building.h"
-#include "model.h"
 #include "power.h"
       
       integer lnblnk  ! function definition
@@ -1020,6 +1018,9 @@ C Common Blocks
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
       COMMON/POPHELP/H(60)
+
+C Configuration file path details 
+      COMMON/C21/IFCFG,CFGROOT,LCFGF
 
 C Common for electrical file 
       COMMON/ENTFILE/ENTFLNAM,IENTXIST
@@ -1101,8 +1102,9 @@ C Type casting (all varaiables and arrays cast explicitly)
 C Characters
       CHARACTER*12 ENTYPESTR,ENODTYPSTR,ENODNAM,HYCOMTYPSTR,HYCOMNAM,
      &POWCOMNAM,CONECOMNAM,PHTYPSTR
+      CHARACTER CFGROOT*24
       CHARACTER*72 ENDESC,HYDESC,POWCOMDESC,POWCDATS,CONECOMDESC,
-     &ENTFLNAM,LFIL,DEFLNAM,H
+     &ENTFLNAM,LFIL,DEFLNAM,H,LCFGF
       CHARACTER OUTS*124,longtfile*144
       LOGICAL CONCAT
 

@@ -1,5 +1,5 @@
-*connections for ccht_basic
-*Date Fri Jan 13 15:34:05 2012
+*connections  for ccht_basic
+*Date Fri Aug 17 15:42:08 2007
      43   # number of connections
    1   1   4   1   0  #    1 Surf-1 in basement >|< ground profile 1
    1   2   4   1   0  #    2 Surf-2 in basement >|< ground profile 1

@@ -146,7 +146,6 @@ C CovSurf   : Name of a surface behind a furniture (Extracted from ACA file)
 #include "acoustic.h"
 
       COMMON/SDATA/SNA(MS),GSA(MS),GWA(MS),PAZI(MS),PELV(MS)
-      integer IZSTOCN
       COMMON/C24/IZSTOCN(MCOM,MS)
       COMMON/AbsoCoef/SysAbsCo(MMLC,MNbAbs),PubAbsCo(MaxPub,MNbAbs),
      &                FurAbsCo(MaxPub,MNbAbs),AirAbs(MNbAbs)

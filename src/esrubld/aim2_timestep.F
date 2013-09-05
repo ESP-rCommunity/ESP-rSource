@@ -93,36 +93,68 @@ C This subroutine controls the time-step portion of the AIM-2 calculations.
 C The AIM-2 model is used to determine the infiltration rate and load to
 C each zone. This subroutine is called for each zone in the model each
 C time-step of the simulation.
+C
 
 C INPUTS:
 C    ICOMP  The zone under consideration
-C    furnON_flue_diam  Diameter of furnace flue when furnace operating (mm).
-C    furnOFF_flue_diam  Diameter of furnace flue when furnace off (mm).
 
 C OUTPUTS:
 C    ZONE_infil_cond  The zone's infiltration, expressed in terms of
 C                     a conductance (W/K).
+C
+C        or 
+C
+C    ZONE_infil_vol  The zone's infiltration, expressed in terms of
+C                     a conductance (W/K).
+
 C --------------------------------------------------------------------------------
       MODULE AIM2_TIMESTEP
       USE AIM2
       CONTAINS
-      SUBROUTINE AIM2_CONTROL(ICOMP,ZONE_infil_cond)
-     
+      
+C.....Interface for fetching infiltration load as a conductance for 
+C.....direct assignment to the thermal model       
+      SUBROUTINE AIM2_CONTROL_conductance(ICOMP,ZONE_infil_cond)     
+      integer iComp            ! Zone 
+      real ZONE_infil_cond     ! Equiv conductatnce (W/K)
+      real ZONE_infil_vol      ! Infiltration volume (m3/s)
+      call AIM2_CONTROL(iComp, ZONE_infil_cond, ZONE_infil_vol ) 
+      return 
+      end subroutine AIM2_CONTROL_conductance
 
+C.....Interface for fetching infiltration load as a flow rate for 
+C.....assignment to the air-flow network 
+     
+      SUBROUTINE AIM2_CONTROL_volume(ICOMP,ZONE_infil_vol)      
+      integer iComp             ! Zone 
+      real ZONE_infil_cond      ! Equiv conductatnce (W/K)
+      real ZONE_infil_vol       ! Infiltration volume (m3/s)
+      call AIM2_CONTROL(iComp, ZONE_infil_cond, ZONE_infil_vol ) 
+      return 
+      end subroutine AIM2_CONTROL_volume    
+     
+C.....Master procedure: returns infiltration load as both a 
+C.....conductance and a flow rate.      
+      SUBROUTINE AIM2_CONTROL(iComp, ZONE_infil_cond, ZONE_infil_vol ) 
       IMPLICIT NONE
 
       include "building.h"
 
-
 C HVAC_CALC_DATA common used to pass pass furnace part-load ratio to AIM-2 model
 C on time-step basis.
       common/HVAC_CALC_DATA/HVAC_furnace_plr
-
+      
+C ESP-r time data:
+      common/simtim/ihrp,ihrf,idyp,idyf,idwp,idwf,nsinc,its      
+      integer nsinc                               ! Simulation increment (-)
+      integer ihrp,ihrf,idyp,idyf,idwp,idwf,its   ! Not used. 
+      
 c Declare real in HVAC_CALC_DATA common
       REAL HVAC_furnace_plr
 C Declarations for variables passed in calling statement.
       INTEGER ICOMP
       REAL ZONE_infil_cond
+      REAL ZONE_infil_vol
 
 C Declarations for local variables.
       INTEGER num_inf_regimes,inf_regime
@@ -134,9 +166,9 @@ C Declarations for local variables.
       LOGICAL bNumsAreClose ! For close-to-zero comparisons
       logical bProcessCalcs 
       
-      integer iLastZone 
-      save iLastZone
-      data iLastZone / MCOM /
+      integer iLastTS
+      save iLastTS
+      data iLastTS / 0 /
       
       
 C The AIM-2 model calculates the infiltration rate for the whole house but
@@ -145,8 +177,9 @@ C only for the model's first zone. This will calculate the infiltration rate for
 C the whole house. Following this, apportion the infiltration air flow to
 C the individual zones.
       
-      if ( iCOMP <= iLastZone ) then
+      if  ( iLastTS /= nsinc ) then 
         bProcessCalcs = .true. 
+        iLastTS = nsinc 
       else
         bProcessCalcs = .false. 
       endif 
@@ -247,15 +280,12 @@ C zone's energy balance by ESP-r's normal approach, so no further
 C interactions with the zone matrix processor and solver are required.
 C Note that both AIM (natural) [/cetc/aim2_timestep.F] and CVS (forced) [/cetc/CentralVentSys.F]
 C infiltration exist and as such the values are summed in /esrubld/subsys.F.
-      CALL AIM2_airflow_to_conduct(ICOMP,ZONE_infil_cond)
+      CALL AIM2_airflow_to_conduct(ICOMP,ZONE_infil_cond,ZONE_infil_vol)
 
 C Record the infiltration rate for use in creating the results file that will be passed
 C to the HOT3000 interface.
       CALL H3KSTORE_AIM2_DATA(AIM2_total)
 
-C Set flag to ensure that we don't duplicate calls to AIM2 ctl      
-      iLastZone = iComp 
-      
 C Completion of the infiltration calculations for this zone, this time-step.
       RETURN
       END SUBROUTINE AIM2_CONTROL
@@ -1066,6 +1096,7 @@ C ------------------------------------------------------------------------------
 
 #include "building.h"
 #include "geometry.h"
+#include "net_flow.h"
 #include "blc25_open_windows.h"
 
       COMMON/C1/NCOMP,NCON
@@ -1115,17 +1146,7 @@ C be used to examine free cooling and summer comfort.
                 AIM2_infil_to_zones(ICOMP) =                  
      &                   VOL(ICOMP)  * fACH_when_windows_open / 3600.
 
-              elseif ( bWIndowsOpen(iComp) .and. 
-     &                 iAirFlowModel(iComp) /= iAIM2model ) then 
-     
-                ! There is infil to this zone, windows are open. 
-                ! But window flow rates will be computed using another
-                ! means (perhaps an air-flow network). Set AIM-2 infiltration 
-                ! to zero. 
-     
-                AIM2_infil_to_zones(ICOMP) = 0.
-                
-              elseif ( .not. bWindowsOpen(iComp) ) then 
+              else
               
                 ! There is infil to this zone, windows are closed. 
                 ! Impose AIM-2 computed infiltration, pro-rated to 
@@ -1134,10 +1155,6 @@ C be used to examine free cooling and summer comfort.
      
                 AIM2_infil_to_zones(ICOMP) =                  ! There is infil to this zone:
      &                 VOL(ICOMP)/AIM2_house_vol * AIM2_total ! calc air flow rate.
-     
-              else 
-              
-                ! Should not happen: all possibilities innumerated above. 
      
               endif winopen
               
@@ -1176,9 +1193,14 @@ C    AIM2_infil_to_zones(i)  The infiltration rate (m^3/s) to zone `i' (from MOD
 C OUTPUTS:
 C    ZONE_infil_cond  The zone's infiltration, expressed in terms of
 C                     a conductance (W/K).
+C
+C    Zone_infil_vol   The zone's infiltration, expressed in terms of 
+C                     volume flow (m3/s)
 C --------------------------------------------------------------------------------
 
-      SUBROUTINE AIM2_airflow_to_conduct(ICOMP,ZONE_infil_cond)          
+      SUBROUTINE AIM2_airflow_to_conduct(ICOMP,
+     &                                   ZONE_infil_cond,
+     &                                   ZONE_infil_vol   )          
       IMPLICIT NONE
       COMMON/CLIMI/QFP,QFF,TP,TF,QDP,QDF,VP,VF,DP,DF,HP,HF 
       REAL QFP,QFF,TP,TF,QDP,QDF,VP,VF,DP,DF, HP, HF
@@ -1187,6 +1209,7 @@ C ------------------------------------------------------------------------------
 
 C Type declarations for variables passed in calling statement.
       REAL ZONE_infil_cond
+      REAL ZONE_infil_vol
       INTEGER ICOMP
 
 C Type declarations for local variables.
@@ -1205,12 +1228,14 @@ C Express the infiltration air flow rate in terms of a conductance between the
 C indoor-outdoor temperature difference.
       IF (ALLOCATED(AIM2_infil_to_zones)) THEN
         ZONE_infil_cond = AIM2_infil_to_zones(ICOMP) * rho * Cp
+        ZONE_infil_vol  = AIM2_infil_to_zones(ICOMP)
       ELSE
         CALL EDISP(IUOUT,
      &        ' Warning: AIM2_infil_to_zones array not allocated (b)')
       END IF
 
-
+     
+      
       RETURN
       END SUBROUTINE AIM2_airflow_to_conduct
 

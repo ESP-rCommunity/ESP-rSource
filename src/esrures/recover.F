@@ -252,10 +252,15 @@ C Averaging.
           endif
         endif
 
-C If output period has changed.
+C Only call MMAPER if output period has changed.
         if (recal) then
+
+C Debug.
+C          write(6,*) 'ask for rescan of db ',recal
+
           CALL EDAY(IOD1,IOM1,IODS)
           CALL EDAY(IOD2,IOM2,IODF)
+          call MMAPER
         endif
 
 C Filtering data.
@@ -268,6 +273,7 @@ C Filtering data.
           IFILT=1
           call usrmsg('Assuming casual gain type 1=occupancy','  ','-')
           call scnocup(iier)
+          call MMAPER
         endif
           
         call EGETWI(OUTSTR,K,IROC,-1,1,'W','ROC filter',IER)

@@ -30,14 +30,14 @@ echo "usage example: first cd to esp-r directory level, then"
 echo "usage example: all_fckX11"
 echo currently working on $PWD
 
-foreach i (esruaco esrub2e esruc2e esruclm esrucnv esrudfs esrudbm \
+foreach i (esruaco esrub2e esrubps esruc2e esruclm esrucnv esrudfs esrudbm \
   esrue2r esrueco esrugrd esruish esrumfs esrumld esrumrt esrunet esrupdb \
-  esruprj esrures esruvew esrubps )
+  esruprj esrures esruvew )
  if ( -d $i ) then
    echo looking at $i
    cd $i
    if ( -f xx.chk ) mv xx.chk xx.chk-
-   /usr/local/bin/forchk  -I ../include *.F *.f90 ../lib/esru_ask.F ../lib/esru_blk.F ../lib/esru_libNonGTK.F > xx.chk
+   /usr/local/bin/forchk  -I ../include *.F ../lib/esru_ask.F ../lib/esru_blk.F ../lib/esru_lib.F ../lib/esru_libNonGTK.F > xx.chk
    echo "looking at xx.chk"
    tail -40 xx.chk | more
    cd ..

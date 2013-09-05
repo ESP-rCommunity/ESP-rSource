@@ -45,7 +45,6 @@ C VAL3(20,?) holds controlled convective casual type 3.
       SUBROUTINE ZCASC(IZONE,IDAY)
 #include "building.h"
 #include "geometry.h"
-#include "net_flow.h"
 #include "tdf2.h"
 
 C      COMMON/OUTIN/IUOUT,IUIN
@@ -414,7 +413,6 @@ C VAL3(20,?) holds controlled radiant casual type 3.
       SUBROUTINE ZCASR(IZONE,ISFN,IDAY)
 #include "building.h"
 #include "geometry.h"
-#include "net_flow.h"
 #include "tdf2.h"
 
 C      COMMON/OUTIN/IUOUT,IUIN
@@ -797,7 +795,6 @@ C VAL3(20,?) holds controlled casual type 3.
       SUBROUTINE CASRT(IZONE,IDAY)
 #include "building.h"
 #include "geometry.h"
-#include "net_flow.h"
 #include "tdf2.h"
 
       common/recver/izver,ipver,iever
@@ -1171,7 +1168,6 @@ C will be corrected in the revised results library.
 #include "building.h"
 #include "model.h"
 #include "geometry.h"
-#include "schedule.h"
 
       common/caleni/nbdaytype,nbcaldays(MDTY),icalender(365)
       INTEGER NBDAYTYPE,NBCALDAYS,ICALENDER,IDTY
@@ -1185,6 +1181,11 @@ C will be corrected in the revised results library.
       COMMON/CGCIN3/ICGCS(MCOM),ICGCF(MCOM),
      & ICGCFL(MCOM,MLCOM),SPELEC(MCOM,MLCOM),SLOPEM(MCOM,MLCOM)
       COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
+      COMMON/P3N/NCAS(MDTY),ICGS(MDTY,MC),ICGF(MDTY,MC),
+     &CMGS(MDTY,MC),CMGL(MDTY,MC),RADC(MDTY,MC),CONC(MDTY,MC)
+      COMMON/P3TYPEN/ICGT(MDTY,MC)
+      INTEGER NCAS,ICGS,ICGF,ICGT
+      REAL CMGS,CMGL,RADC,CONC
 
       real QCASR,QCASC,QCASL  ! total radiant/convective/latent
       real FRAC ! controlled fraction.
@@ -1260,9 +1261,6 @@ C been applied.
 
 C Note: Because there can be more than one casual gain of each
 C type in a zone, UCCRT1 etc. need to be summed.
-
-C If W/Sat/Sun then use idwk logic to set, otherwise use the
-C calendar array to set the day type.
       IF(NBDAYTYPE.LE.3)THEN
         IDTY=1
         IF(IDWK.EQ.6)THEN
@@ -1276,7 +1274,6 @@ C calendar array to set the day type.
 
 C Check if there are any casual gains at this hour.
 C for occupancy, lighting and equipment.
-C << adjust for additional casual gains >>
       IF(NCAS(IDTY).GE.1)THEN
         DO 30 ICNN=1,NCAS(IDTY)
           XC=CMGS(IDTY,ICNN)*CONC(IDTY,ICNN)
@@ -1414,10 +1411,9 @@ C VAL3(20,?) holds controlled casual type 3.
       SUBROUTINE ZCASCF(IZONE,IDAY,IJDAY)
 #include "building.h"
 #include "geometry.h"
-#include "net_flow.h"
 #include "tdf2.h"
 
-C      COMMON/OUTIN/IUOUT,IUIN
+      COMMON/OUTIN/IUOUT,IUIN
       common/recver/izver,ipver,iever
       COMMON/PERO/IOD1,IOM1,IOH1,IOD2,IOM2,IOH2,IODS,IODF,NOUT,IAV
       COMMON/SIMPIK/ISIM,ISTADD,ID1,IM1,ID2,IM2,ISDS,ISDF,NTS,ISAVE

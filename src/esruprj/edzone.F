@@ -53,7 +53,7 @@ C Use geometry for common g0/g1/g2/g4/g5/g6/g7/prec16/precz/c20.
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
-      integer IZSTOCN
+      common/C21/IFCFG,cfgroot,LCFGF
       COMMON/C24/IZSTOCN(MCOM,MS)
       common/user/browse
       common/cctlnm/ctldoc,lctlf
@@ -61,9 +61,10 @@ C Use geometry for common g0/g1/g2/g4/g5/g6/g7/prec16/precz/c20.
 
       DIMENSION XX(MS),YY(MS)
       CHARACTER HOLD*32
-      character MODE*4,fs*1
+      character MODE*4,fs*1,LCFGF*72
       CHARACTER OUTSTR*124,ZN*12,outs*124
       character ctldoc*248,LCTLF*72,zd*64,DFILE*72,CFILE*72,OFILE*72
+      character cfgroot*24
       LOGICAL OK,dok,browse,OKC,XST,unixok
       logical newgeo  ! to use for testing if new/old geometry file.
       real DX1,DY1,DZ1  ! to avoid name clash with geometry.h
@@ -331,7 +332,7 @@ C User will begin with a minimal GEN body.
         JVN(1,4)=4
         NZTV(icomp)=NTV
         SNAME(ICOMP,1)='first'
-        SOTF(1)='OPAQUE'
+        SOTF(1)='OPAQ'
         SMLCN(1)='UNKN'
         SVFC(1)='FLOR'
         SOTHER(1,1)='UNKNOWN'
@@ -348,7 +349,7 @@ C Update the connection list and hash for initial surface.
         ICCC=ICCC+1
         IC1(ICCC)=ICOMP
         IE1(ICCC)=1
-        ICT(ICCC)=-1  ! mark as unknown
+        ICT(ICCC)=0
         IC2(ICCC)=0
         IE2(ICCC)=0
         SSNAME(iccc)=SNAME(ICOMP,1)
@@ -380,7 +381,6 @@ C in the new geometry files is established.
               itrc=0
               MODE='ALL '
               IAPROB=IPRODB
-              call edisp(iuout,'  ')  ! echo blank line in case of warnings
               CALL ERSYS(LCFGF,IFCFG,IAPROB,MODE,itrc,IER)
             endif
             return
@@ -500,8 +500,6 @@ C NEWZONE controls the creation of a new zone. IER=0 OK.
 #include "model.h"
 #include "geometry.h"
 #include "prj3dv.h"
-#include "esprdbfile.h"
-#include "material.h"
       
       integer lnblnk  ! function definition
 
@@ -511,7 +509,6 @@ C NEWZONE controls the creation of a new zone. IER=0 OK.
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
-      integer IZSTOCN
       COMMON/C24/IZSTOCN(MCOM,MS)
       common/cctlnm/ctldoc,lctlf
       common/cctl/icascf(mcom)
@@ -528,7 +525,6 @@ C For help messages
       character helpinsub*24 ! subroutine name
       character helptopic*24 ! string (unique) for topic
       integer nbhelp     ! number of help lines found
-      integer ianother   ! flag for jumping to a different zone
 
       helpinsub='NEWZONE'  ! set for subroutine
 
@@ -552,14 +548,9 @@ C Input dimensions.
 
 C Provide scratch description and the default assumptions for
 C other zone files. If the cfg file is version 4 or newer then
-C set to create version 1.1 zone geometry files. Do not bother
-C to react to user request for jump to prior or next zone.
+C set to create version 1.1 zone geometry files.
         CALL SCRZONE(IC,IER)
-        CALL EDZONE(ITRC,IC,ianother,IER)
-        if(ianother.ne.0)then
-          call usrmsg('Ignoring request to jump to different zone',
-     &      '  ','-')
-        endif
+        CALL EDZONE(ITRC,IC,IER)
         iZBFLG(IC)=0
         return
 
@@ -653,7 +644,7 @@ C Update the connection list and then the model configuration.
           icascf(NCOMP)=0
           call CTLWRT(ICTLF,IER)
         endif
-        ICCC=NCON   ! connection number of the newest surface
+        ICCC=NCON
 
 C If surface attributes are adaibetic or similar then use these in
 C the connections list, then remind user to double check topology.
@@ -663,16 +654,14 @@ C the connections list, then remind user to double check topology.
           IC1(ICCC)=IC
           IE1(ICCC)=ICC
           if(SOTHER(icc,1)(1:8).eq.'EXTERIOR')then
-            write(outs,'(3a)') 'Note: ',SNAME(NCOMP,icc),
-     &        ' is a EXTERIOR connection which will be used.'
-            call edisp(iuout,outs)
             ICT(ICCC)=0
             IC2(ICCC)=0
             IE2(ICCC)=0
           elseif(SOTHER(icc,1)(1:7).eq.'SIMILAR')then
             write(outs,'(3a)') 'Note: ',SNAME(NCOMP,icc),
-     &        ' is a SIMILAR connection which will be used.'
-            call edisp(iuout,outs)
+     &        ' is a SIMILAR connection. Use the'
+            call usrmsg(outs,
+     &       'surface attribute facility to confirm its details.','W')
             ICT(ICCC)=1
             IC2(ICCC)=0
             IE2(ICCC)=0
@@ -682,24 +671,25 @@ C the connections list, then remind user to double check topology.
             IE2(ICCC)=0
           elseif(SOTHER(icc,1)(1:8).eq.'CONSTANT')then
             write(outs,'(3a)') 'Note: ',SNAME(NCOMP,icc),
-     &    ' was a CONSTANT connection. Confirm its surface attributes.'
-            call edisp(iuout,outs)
-            SOTHER(icc,1)='UNKNOWN'
-            ICT(ICCC)=-1
+     &        ' is a CONSTANT connection. Use the'
+            call usrmsg(outs,
+     &       'surface attribute facility to confirm its details.','W')
+            ICT(ICCC)=0
             IC2(ICCC)=0
             IE2(ICCC)=0
           elseif(SOTHER(icc,1)(1:6).eq.'GROUND')then
             write(outs,'(3a)') 'Note: ',SNAME(NCOMP,icc),
-     &      ' was a GROUND connection. Confirm its surface attributes.'
-            call edisp(iuout,outs)
-            SOTHER(icc,1)='UNKNOWN'
-            ICT(ICCC)=-1
+     &        ' is a GROUND connection. Use the'
+            call usrmsg(outs,
+     &       'surface attribute facility to confirm its details.','W')
+            ICT(ICCC)=0
             IC2(ICCC)=0
             IE2(ICCC)=0
           elseif(SOTHER(icc,1)(1:7).eq.'UNKNOWN')then
             write(outs,'(3a)') 'Note: ',SNAME(NCOMP,icc),
-     &    ' has an undefined boundary. Confirm its surface attributes.'
-            call edisp(iuout,outs)
+     &        ' has an undefined boundary. Confirm its'
+            call usrmsg(outs,
+     &        'surface attributes or use topology tool.','W')
             ICT(ICCC)=-1
             IC2(ICCC)=0
             IE2(ICCC)=0
@@ -707,8 +697,9 @@ C the connections list, then remind user to double check topology.
 
 C Existing partitions in an imported zone are reset to UNKNOWN.
             write(outs,'(3a)') 'Note: ',SNAME(NCOMP,icc),
-     &        ' was a partition. Confirm its surface attributes.'
-            call edisp(iuout,outs)
+     &        ' is a partition. Confirm its'
+            call usrmsg(outs,
+     &        'surface attributes or use topology tool.','W')
             SOTHER(icc,1)='UNKNOWN'
             ICT(ICCC)=-1
             IC2(ICCC)=0
@@ -718,8 +709,9 @@ C Existing partitions in an imported zone are reset to UNKNOWN.
 
 C Existing partitions in an imported zone are reset to UNKNOWN.
             write(outs,'(3a)') 'Note: ',SNAME(NCOMP,icc),
-     &        ' might be a partition. Confirm its surface attributes.'
-            call edisp(iuout,outs)
+     &        ' might be a partition. Confirm its'
+            call usrmsg(outs,
+     &        'surface attributes or use topology tool.','W')
             SOTHER(icc,1)='UNKNOWN'
             ICT(ICCC)=-1
             IC2(ICCC)=0
@@ -739,14 +731,6 @@ C Update the connection based data structures.
           SSUSE(iccc,2)=SUSE(icc,2)
           SSPARENT(iccc)=SPARENT(icc)
           IZSTOCN(ncomp,icc)=iccc
-
-C Find the index of the MLC which matches this surface.
-          ssmlcindex(iccc)=0  ! assume no matching MLC          
-          do 5 ii=1,nmlc
-            if(SSMLCN(iccc)(1:12).eq.DESC(ii)(1:12)) then
-              ssmlcindex(iccc)=ii   ! remember MLC index     
-            endif
-  5       continue
   132   CONTINUE
         NCON=ICCC
 
@@ -965,7 +949,6 @@ C DELZONE systematicly removes a thermal zone.
 #include "CFC_common.h"
 C espriou.h provides currentfile.
 #include "control.h"
-#include "schedule.h"
 #include "prj3dv.h"
       
       integer lnblnk  ! function definition
@@ -976,11 +959,23 @@ C espriou.h provides currentfile.
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
-      integer IZSTOCN
+      common/C21/IFCFG,cfgroot,LCFGF
       COMMON/C24/IZSTOCN(MCOM,MS)
 
+      COMMON/P2N/NAC(MDTY),IACS(MDTY,MA),IACF(MDTY,MA),ACI(MDTY,MA),
+     &ACV(MDTY,MA),IPT(MDTY,MA),TA(MDTY,MA)
+      INTEGER NAC,IACS,IACF,IPT
+      REAL ACI,ACV,TA
       common/caleni/nbdaytype,nbcaldays(MDTY),icalender(365)
       INTEGER NBDAYTYPE,NBCALDAYS,ICALENDER
+      COMMON/P2CTL/ITCTL(MCOM),TLO(MCOM),TUP(MCOM),THI(MCOM),ACIL(MCOM),
+     &             ACVL(MCOM),IVL(MCOM),TAL(MCOM),ACIU(MCOM),ACVU(MCOM),
+     &             IVU(MCOM),TAU(MCOM),ACIH(MCOM),ACVH(MCOM),
+     &             IVH(MCOM),TAH(MCOM)
+
+C Anchor data.
+      common/anchora/NALOC,ALOC(20),ALOCLBL(20),ALOCTYP(20)
+      common/anchorb/IALOC(20),lstanchr(20,60)
 
       common/cctlnm/ctldoc,lctlf
       common/cctl/icascf(mcom)
@@ -994,9 +989,11 @@ C espriou.h provides currentfile.
       LOGICAL DOK,OK,XST,changed,OKC,OKM,modopr,browse
       logical newgeo  ! to use for testing if new/old geometry file.
 
-      CHARACTER LAPROB*72
+      CHARACTER LAPROB*72,LCFGF*72
+      CHARACTER cfgroot*24
       CHARACTER ctldoc*248,LCTLF*72,outs*124
       character ltmp*72,NDNAM*12
+      character ALOC*12,ALOCLBL*12,ALOCTYP*4
       character OUTSTR*124
 
 C For help messages
@@ -1346,7 +1343,7 @@ C Disconnect high range alternative ventilation if pointing to focus.
           ACVH(IX)=0.0
         endif
 
-C Air flows for each day type.
+C Air flows
         DO 400 IDTY=1,NBDAYTYPE
           IF(NAC(IDTY).GT.0)THEN
             DO 10 I=1,NAC(IDTY)
@@ -1632,6 +1629,7 @@ C IER=0 OK.
 #include "building.h"
 #include "model.h"
 #include "CFC_common.h"
+      COMMON/OUTIN/IUOUT,IUIN
       common/pmchange/comold,tmcold,vwfold,ishold,cfcold
 
       CHARACTER act*3
@@ -1722,18 +1720,17 @@ C contents of the model.
       
       integer lnblnk  ! function definition
 
-C Passed parameters
-      integer icomp   ! index of the current zone
-      character act*1 ! i is initialise r is report on leaving
-      logical silent  ! if true then use silent recalc
-
       COMMON/OUTIN/IUOUT,IUIN
       character h*72
       common/pophelp/h(60)
       common/pmchange/comold,tmcold,vwfold,ishold,cfcold
+      common/C21/IFCFG,cfgroot,LCFGF
 
+      CHARACTER act*1
+      character cfgroot*24,LCFGF*72
       logical comold,tmcold,vwfold,ishold,ok,dok,QUIET
       logical unixok,cfcold
+      logical silent  ! if true then use silent recalc
 
 C For help messages
       character helpinsub*24 ! subroutine name
@@ -1855,14 +1852,16 @@ C     = 'in '  interactive new
       
       integer lnblnk  ! function definition
 
+      common/C21/IFCFG,cfgroot,LCFGF
       common/OUTIN/IUOUT,IUIN
       
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
       common/appw/iappw,iappx,iappy
 
+      character LCFGF*72
       CHARACTER ZN*12,longtfile*144,longtfiledos*144
-      character TMODE*8,outs*248,DOIT*248
+      character TMODE*8,outs*248,DOIT*248,CFGROOT*24
       character act*3  ! the parameter passed
       logical XST,concat,unixok
 #ifdef OSI
@@ -2064,19 +2063,14 @@ C Report length of line. Use method of Ward/Radiance in fvect.c
           return
         endif
       endif
-      if(vdis.ne.0.0)then
-        d2l=(vdis1-(vdis+vdis1-vdis2)*
-     &      (vdis+vdis1-vdis2)/vdis/4.0)
-        if(abs(d2l).lt.0.003)then
-          offset=d2l
-        else
-          offset=SQRT(d2l)
-        endif
-        match=.true.
+      d2l=(vdis1-(vdis+vdis1-vdis2)*
+     &    (vdis+vdis1-vdis2)/vdis/4.0)
+      if(abs(d2l).lt.0.003)then
+        offset=d2l
       else
-        offset=0.0   ! vdis was zero so assume a match
-        match=.true.
+        offset=SQRT(d2l)
       endif
+      match=.true.
       return
       end
 

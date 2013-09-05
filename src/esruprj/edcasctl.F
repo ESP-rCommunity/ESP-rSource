@@ -45,6 +45,7 @@ C geometry.h provides commons G0/G1/G2/G5/c20/precz.
       
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
+      common/C21/IFCFG,cfgroot,LCFGF
 
 C Zone casual gain control data.
       common/CGCIND/cgcdesc(MCOM)
@@ -77,11 +78,10 @@ C TMC common block:
       logical browse
 
       character outs*124,LTMP*72,DTMP*64
-      character KEY*1,hold*40,hold2*72,doitl*248
+      character KEY*1,hold*40,hold2*72,doitl*248,cfgroot*24
       character*48 ITEM(30)
-      CHARACTER*72 DLCGCIN
+      CHARACTER*72 DLCGCIN,LCFGF
       CHARACTER info*18,cgcdesc*64,brw*8
-      character sn*12  ! for source surface name.
       INTEGER IX,IY,IZ,KSTR
       integer IRT  ! for radio button
       integer NITEMS,INO ! max items and current menu item
@@ -101,7 +101,6 @@ C For help messages
 
 C Assume daylight coeffs do need calculated.
       ldcoef=.true.
-      ICMDCF=0  ! set initial value
 
 C Check and see if a casual gain control file exists.
       if(zonepth(1:2).eq.'  '.or.zonepth(1:2).eq.'./')then
@@ -142,7 +141,7 @@ C Set up default data based on ....
         call FINDFIL(LCGCIN(ICOMP),XST)
         if(XST)then
 
-C Read existing file or setup initial values.
+C Read existing file.
           ICGC(ICOMP)=1
           call ercgcf(itrc,iuout,LCGCIN(ICOMP),ICOMP,ier)
           call edisp(iuout,'Opened existing casual gain control file.')
@@ -151,16 +150,25 @@ C Read existing file or setup initial values.
           DO 400 IDTY=1,NBDAYTYPE
             NCGTC(ICOMP,IDTY)=2
  400      CONTINUE
-          ICGCS(ICOMP)=8; ICGCF(ICOMP)=18
-          ICGCFL(ICOMP,1)=1; IDFST(ICOMP,1)=1
-          SETPT(ICOMP,1)=500.0; SOFFLL(ICOMP,1)=1.5
-          SMLOUT(ICOMP,1)=0.1; SMEOUT(ICOMP,1)=0.1
+          ICGCS(ICOMP)=8
+          ICGCF(ICOMP)=18
+          ICGCFL(ICOMP,1)=1
+          IDFST(ICOMP,1)=1
+          SETPT(ICOMP,1)=500.
+          SOFFLL(ICOMP,1)=1.5
+          SMLOUT(ICOMP,1)=0.1
+          SMEOUT(ICOMP,1)=0.1
           IOFFDT(ICOMP,1)=0
-          SYSPER(ICOMP,1)=1.0; SPELEC(ICOMP,1)=15.0
+          SYSPER(ICOMP,1)=1.0
+          SPELEC(ICOMP,1)=15.0
           SLOPEM(ICOMP,1)=-0.025
           NDF(ICOMP,1)=1
-          CGX(ICOMP,1,1)=0.0; CGY(ICOMP,1,1)=0.0; CGH(ICOMP,1,1)=0.0
-          UX(ICOMP,1,1)=0.0; UY(ICOMP,1,1)=0.0; UH(ICOMP,1,1)=1.0
+          CGX(ICOMP,1,1)=0.0
+          CGY(ICOMP,1,1)=0.0
+          CGH(ICOMP,1,1)=0.0
+          UX(ICOMP,1,1)=0.0
+          UY(ICOMP,1,1)=0.0
+          UH(ICOMP,1,1)=1.0
           IDCFID(ICOMP,1,1)=1
           N=1  ! set N
           NLITZ(ICOMP)=1
@@ -170,8 +178,8 @@ C Read existing file or setup initial values.
   48      continue
 
           LTMP=DLCGCIN
-  246     CALL EASKS(LTMP,'Zone casual gain control file name.',
-     &      'Specify:',72,DLCGCIN,'cgc control file',IER,nbhelp)
+  246     CALL EASKS(LTMP,' Zone casual gain control file ?',
+     &      ' ',72,DLCGCIN,'cgc control file',IER,nbhelp)
           IF(IER.NE.0)GOTO 246
           IF(LTMP(1:2).NE.'  ')THEN
             LCGCIN(ICOMP)=LTMP
@@ -194,17 +202,15 @@ C (need to test blind/ shuter control flags).
       if(XST)then
         CALL ECONST(LTHRM(ICOMP),IUF,ICOMP,0,IUOUT,IER)
       else
-        write(outs,'(A,I3,A)') 
-     &    'WARNING: No zone construction file found in zone ',
-     &    ICOMP,' so blind control tracking not possible!'
+         write(outs,'(A,I3,A)') ' WARNING: No Constr. file for zone ',
+     &                     ICOMP,' blind control tracking not possible!'
          call edisp(iuout,outs)
       endif
       if(ITW(ICOMP).eq.1)then
         CALL ERTWIN(0,IUOUT,IUF,LTWIN(ICOMP),ICOMP,IER)
       else
-        write(outs,'(A,I3,A)') 
-     &    'WARNING: No zone TMC file found for zone ',ICOMP,
-     &    ' so blind control tracking not possible!'
+        write(outs,'(A,I3,A)') ' WARNING: No TMC file for zone ',ICOMP,
+     &                        ' blind control tracking not possible!'
         call edisp(iuout,outs)
       endif         
       MODIFY=.TRUE.
@@ -263,7 +269,7 @@ C If we got to this point and no lighting zone then there should be at least one
      &   IDFST(ICOMP,N).EQ.4)then
 
 C For each sensor for methods 1,2,4.
-        write(ITEM(12),'(A)') '  Posn: x  y   z     ux   uy   uz'
+        write(ITEM(12),'(A)') '  Posn: x  y   z   ux   uy   uz'
         m=12
         do 42 J = 1,NDF(ICOMP,N)
           m=m+1
@@ -284,10 +290,8 @@ C For each sensor for methods 1,2,4.
   42    continue
         call forceflush()
       elseif(IDFST(ICOMP,N).EQ.3)then
-
 C Method 3 (external sensor).
-        write(ITEM(12),'(A)') 
-     &    '  External photocell posit. & orientation'
+        write(ITEM(12),'(A)') '  External photocell posit. & orient:'
         m=13
         CALL EMKEY(m,KEY,IER)
         write(ITEM(m),'(A,2F6.1)')key,CGX(ICOMP,N,1),CGY(ICOMP,N,1)
@@ -295,7 +299,6 @@ C Set third coordinate to dummy value:
         CGH(ICOMP,N,1)=0.0       
 
       elseif(IDFST(ICOMP,N).EQ.5)then
-
 C Daylight coef method (5).
         write(ITEM(12),'(A)') '    Posn: x  y   z    ux   uy    uz   DC'
         m=12
@@ -320,17 +323,16 @@ C Daylight coef method (5).
         call forceflush()
       endif
 
-C In case of user defined daylight factor.
+C In special case...
       if(IDFST(ICOMP,N).EQ.2)then
         m=m+1   
-        write(ITEM(m),'(A)') '  Source surface & DF(s) per photocell:'
+        write(ITEM(m),'(A)') '  TMC number & DF(s) for each photocell:'
         do 44 ii = 1,NSUR
           if(SOTF(II)(1:4).NE.'OPAQ'.AND.SOTF(II)(1:4).NE.'CFC ')THEN
             m=m+1
             CALL EMKEY(m,KEY,IER)
-            write(sn,'(a)') sname(icomp,II)
-            write(ITEM(m),'(4A,F6.4,a)')key,' ',sn(1:lnblnk(sn)),' ',
-     &        DFDAT(ICOMP,N,II,1),' ...'
+            write(ITEM(m),'(A,I4,2X,F6.4,a)')key,II,DFDAT(ICOMP,N,II,1),
+     &            '.......'
             ITMC2DF(m)=ii
           endif
   44    continue
@@ -423,7 +425,7 @@ C <<  Perhaps this could be joined together? >>
         call edisp(iuout,outs)
         DO 401 IDTY=1,NBDAYTYPE
           write(outs,9989)CALENTAG(IDTY),NCGTC(ICOMP,IDTY)
- 9989     format(' Casual gain type for control during ',A,' = ',I3)
+ 9989     format(' Casual gain type for control during ',1A,' = ',1I3)
           call edisp(itru,outs)
  401    CONTINUE
         DO 117 NLZ=1,NLITZ(ICOMP)

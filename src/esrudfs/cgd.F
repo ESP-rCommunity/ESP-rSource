@@ -54,14 +54,6 @@ C IC = zone number (if in dfs set to 1)
       logical GRMODE
       integer NITMS,INO  ! max items and current menu item
 
-#ifdef OSI
-      integer iigl,iigr,iigt,iigb,iigw,iigwh
-      integer iiw1,iiw2,iiw3,iiw4,iimenu
-#else
-      integer*8 iigl,iigr,iigt,iigb,iigw,iigwh
-      integer*8 iiw1,iiw2,iiw3,iiw4,iimenu
-#endif
-
 C For help messages
       character helpinsub*24 ! subroutine name
       character helptopic*24 ! string (unique) for topic
@@ -88,15 +80,9 @@ C messages to stderr in case of rule script program control.
 C Reset the display bounds for grid display.
       IF(MMOD.EQ.8)THEN
         call startbuffer()
-
-C Setup and pass in parameters to win3d.
-        iiw1=6; iiw2=6; iiw3=2; iiw4=4; iimenu=menuchw
-        iigl=igl; iigr=igr; iigt=igt; iigb=igb; iigw=igw; iigwh=igwh
-        CALL win3d(iimenu,iiw1,iiw2,iiw3,iiw4,
-     &    iigl,iigr,iigt,iigb,iigw,iigwh)
-C        CALL win3d(menuchw,6,6,2,4,igl,igr,igt,igb,igw,igwh)
-        igl=int(iigl); igr=int(iigr); igt=int(iigt); igb=int(iigb)
-        igw=int(iigw); igwh=int(iigwh)
+        CALL win3d(menuchw,6,6,2,4,igl,igr,igt,igb,igw,igwh)
+        igw=igr-igl
+        igwh=igb-igt
         GRMODE=.true.
       ENDIF
       CALL INICNT
@@ -297,15 +283,9 @@ C Text listings
 C Finish grid visualization, returning display to initial state.
         IF(MMOD.EQ.8)THEN
           call startbuffer()
-
-C Setup and pass in parameters to win3d.
-          iiw1=4; iiw2=1; iiw3=1; iiw4=3; iimenu=menuchw
-          iigl=igl; iigr=igr; iigt=igt; iigb=igb; iigw=igw; iigwh=igwh
-          CALL win3d(iimenu,iiw1,iiw2,iiw3,iiw4,
-     &      iigl,iigr,iigt,iigb,iigw,iigwh)
-C          CALL win3d(menuchw,4,1,1,3,igl,igr,igt,igb,igw,igwh)
-          igl=int(iigl); igr=int(iigr); igt=int(iigt); igb=int(iigb)
-          igw=int(iigw); igwh=int(iigwh)
+          CALL win3d(menuchw,4,1,1,3,igl,igr,igt,igb,igw,igwh)
+          igw=igr-igl
+          igwh=igb-igt
         ENDIF
         return
       ELSE 
@@ -346,21 +326,14 @@ C xax       - text for horiz axis.
       integer igwid,igheight  ! for use with axiscale
       integer iside,isize,ifont     ! passed to viewtext
       integer iupdown,isym    ! passed to etplot
-      integer iigl,iigr,iigt,iigb,iigw,iigwh
-      integer iiw1
 #else
       integer*8 igwid,igheight  ! for use with axiscale
       integer*8 iside,isize,ifont     ! passed to viewtext
       integer*8 iupdown,isym    ! passed to etplot
-      integer*8 iigl,iigr,iigt,iigb,iigw,iigwh
-      integer*8 iiw1
 #endif
 
 C x-z plane grid.
       call startbuffer()
-
-C Cast values for linescale.
-      iigl=igl;iigr=igr;iigt=igt;iigb=igb;iigw=igw;iigwh=igwh
       Xmin=xoff
       Xmax=amax1(TOTDIS,CTDIS)
       Xmax=Xmax+xoff
@@ -372,9 +345,8 @@ C Cast values for linescale.
      &  Xadd,Yadd)
 
 C Store the scaling parameters used in drawing the axes.
-      CALL linescale(iigl,Xadd,sca,iigb,Yadd,sca)
-      iiw1=iigb+10
-      call horaxis(Xmin,Xmax,iigl,iigr,iiw1,Xadd,sca,0,xax)
+      CALL linescale(igl,Xadd,sca,igb,Yadd,sca)
+      call horaxis(Xmin,Xmax,igl,igr,igb+10,Xadd,sca,0,xax)
       iside=1
       isize=0
       ifont=1
@@ -454,22 +426,14 @@ C xax,yax   - text for horiz and vert axis.
       integer igwid,igheight  ! for use with axiscale
       integer iside,isize,ifont     ! passed to viewtext
       integer iupdown,isym    ! passed to etplot
-      integer iigl,iigr,iigt,iigb,iigw,iigwh
-      integer iiw1
 #else
       integer*8 igwid,igheight  ! for use with axiscale
       integer*8 iside,isize,ifont     ! passed to viewtext
       integer*8 iupdown,isym    ! passed to etplot
-      integer*8 iigl,iigr,iigt,iigb,iigw,iigwh
-      integer*8 iiw1
 #endif
 
 C x-z plane grid.
       call startbuffer()
-
-C Cast values for linescale.
-      iigl=igl;iigr=igr;iigt=igt;iigb=igb;iigw=igw;iigwh=igwh
-
       Xmin=xoff
       Xmax=xgrd(nx)+xoff
       Ymin=yoff
@@ -480,19 +444,14 @@ C Cast values for linescale.
      &  Xadd,Yadd)
 
 C Store the scaling parameters used in drawing the axes.
-      CALL linescale(iigl,Xadd,sca,iigb,Yadd,sca)
-      iiw1=iigb+10
-      call horaxis(Xmin,Xmax,iigl,iigr,iiw1,Xadd,sca,0,xax)
+      CALL linescale(igl,Xadd,sca,igb,Yadd,sca)
+      call horaxis(Xmin,Xmax,igl,igr,igb+10,Xadd,sca,0,xax)
       if((Ymax-Ymin).lt.2.0)then
-        iiw1=iigl-10
-        call vrtaxis(Ymin,Ymax,iiw1,iigb,iigt,Yadd,sca,0,0,yax)
-        iiw1=iigl+10
-        call vrtaxis(Ymin,Ymax,iiw1,iigb,iigt,Yadd,sca,0,1,yax)
+        call vrtaxis(Ymin,Ymax,igl-10,igb,igt,Yadd,sca,0,0,yax)
+        call vrtaxis(Ymin,Ymax,igr+10,igb,igt,Yadd,sca,0,1,yax)
       else
-        iiw1=iigl-10
-        call vrtaxis(Ymin,Ymax,iiw1,iigb,iigt,Yadd,sca,1,0,yax)
-        iiw1=iigl+10
-        call vrtaxis(Ymin,Ymax,iiw1,iigb,iigt,Yadd,sca,1,1,yax)
+        call vrtaxis(Ymin,Ymax,igl-10,igb,igt,Yadd,sca,1,0,yax)
+        call vrtaxis(Ymin,Ymax,igr+10,igb,igt,Yadd,sca,1,1,yax)
       endif
       iside=1
       isize=0
@@ -542,7 +501,6 @@ C izone is the index of the zone to be drawin (if zero do not bother`).
       integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
       common/appcols/mdispl,nifgrey,ncset,ngset,nzonec
-      integer IZSTOCN
       COMMON/C24/IZSTOCN(MCOM,MS)
 
       COMMON/ALL/NI,NJ,NK,NIM1,NJM1,NKM1,NIM2,NJM2,NKM2
@@ -561,15 +519,9 @@ C izone is the index of the zone to be drawin (if zero do not bother`).
 #ifdef OSI
       integer igwid,igheight  ! for use with axiscale
       integer iixs,iiys,iix,iiy,iixlast,iiylast
-      integer iicol
-      integer iigl,iigr,iigt,iigb,iigw,iigwh
-      integer iiw1,iiw2,iiw3,iiw4,iimenu
 #else
       integer*8 igwid,igheight  ! for use with axiscale
       integer*8 iixs,iiys,iix,iiy,iixlast,iiylast
-      integer*8 iicol
-      integer*8 iigl,iigr,iigt,iigb,iigw,iigwh
-      integer*8 iiw1,iiw2,iiw3,iiw4,iimenu
 #endif
 
 C Check in graphics mode.
@@ -587,15 +539,9 @@ C Set up grid information.
 
 C Clear current viewing box and re-establish image bounds.
       CALL startbuffer
-
-C Setup and pass in parameters to win3d.
-      iiw1=1; iiw2=1; iiw3=1; iiw4=1; iimenu=menuchw
-      iigl=igl; iigr=igr; iigt=igt; iigb=igb; iigw=igw; iigwh=igwh
-      CALL win3d(iimenu,iiw1,iiw2,iiw3,iiw4,
-     &  iigl,iigr,iigt,iigb,iigw,iigwh)
-C      CALL win3d(menuchw,1,1,1,1,igl,igr,igt,igb,igw,igwh)
-      igl=int(iigl); igr=int(iigr); igt=int(iigt); igb=int(iigb)
-      igw=int(iigw); igwh=int(iigwh)
+      CALL win3d(menuchw,1,1,1,1,igl,igr,igt,igb,igw,igwh)
+      igw=igr-igl
+      igwh=igb-igt
       igwid=igw
       igheight=igwh
 
@@ -610,7 +556,7 @@ C Determine the 2D coords of the site extremes.
       CALL SITE2D(SXMX,SXMN,SYMX,SYMN,ier)
       CALL axiscale(igwid,igheight,SXMN,SXMX,SYMN,SYMX,xsc,ysc,sca,
      &  Xadd,Yadd)
-      call linescale(iigl,Xadd,sca,iigb,Yadd,sca)
+      call linescale(igl,Xadd,sca,igb,Yadd,sca)
 
 C Loop through all X-Y plane grid lines.
       if(gact.eq.'xyz'.or.gact.eq.'xyg')then
@@ -634,17 +580,11 @@ C Draw dotted line.
                 call eline(iixs,iiys,1)
                 call eline(iix,iiy,0)
               else
-                if(greyok)then
-                  iicol=nifgrey-3
-                  call winscl('i',iicol)
-                endif
+                if(greyok)call winscl('i',nifgrey-3)
 
 C Draw the dotted line after casting to local variable.
                 call edline(iixs,iiys,iix,iiy,5)
-                if(greyok)then
-                  iicol=0
-                  call winscl('-',iicol)
-                endif
+                if(greyok)call winscl('-',0)
                 call forceflush()
               endif
             endif
@@ -674,15 +614,9 @@ C Draw line to end point.
                 call eline(iixs,iiys,1)
                 call eline(iix,iiy,0)
               else
-                if(greyok)then
-                  iicol=nifgrey-3
-                  call winscl('i',iicol)
-                endif
+                if(greyok)call winscl('i',nifgrey-3)
                 call edline(iixs,iiys,iix,iiy,4)
-                if(greyok)then
-                  iicol=0
-                  call winscl('-',iicol)
-                endif
+                if(greyok)call winscl('-',0)
                 call forceflush()
               endif
             endif
@@ -712,15 +646,9 @@ C Draw line to end point.
                 call eline(iixs,iiys,1)
                 call eline(iix,iiy,0)
               else
-                if(greyok)then
-                  iicol=nifgrey-3
-                  call winscl('i',iicol)
-                endif
+                if(greyok)call winscl('i',nifgrey-3)
                 call edline(iixs,iiys,iix,iiy,4)
-                if(greyok)then
-                  iicol=0
-                  call winscl('-',iicol)
-                endif
+                if(greyok)call winscl('-',0)
                 call forceflush()
               endif
             endif

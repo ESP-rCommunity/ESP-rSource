@@ -2,8 +2,8 @@
 # (see README file before installing).
 SRCdir=`pwd`
 
-PROGRAMS = aco bps c2e clm dbm dfs e2r ecnv eco grd harmonizer ish mfs \
-	   mld mrt net pdb prj res run vew stats
+PROGRAMS = aco bps c2e clm dbm dfs e2r ecnv eco grd ish mfs \
+	   mld mrt net pdb prj res run vew
 
 allX11: libX11 $(PROGRAMS)
 allGTK: libGTK $(PROGRAMS)
@@ -25,6 +25,15 @@ libnoX:
 	cd $(SRCdir)/lib; \
 	$(MAKE) the_libnoX; \
 	$(MAKE) the_libVer
+
+enableGccFPE:
+	cd $(SRCdir)/lib; \
+	$(MAKE) the_libFPE
+
+disableGccFPE:
+	cd $(SRCdir)/lib; \
+	$(MAKE) the_libNoFPE
+
 
 enableXML:
 	cd $(SRCdir)/lib; \
@@ -49,9 +58,7 @@ aco:
 b2e: 
 	cd $(SRCdir)/esrub2e; $(MAKE)
 bps: 
-	cd $(SRCdir)/esrubps; $(MAKE) theEXE
-bpsdll: 
-	cd $(SRCdir)/esrubps; $(MAKE) theDLL
+	cd $(SRCdir)/esrubps; $(MAKE)
 dbm: 
 	cd $(SRCdir)/esrudbm; $(MAKE)
 dfs: 
@@ -68,10 +75,6 @@ eco:
 	cd $(SRCdir)/esrueco; $(MAKE)
 grd: 
 	cd $(SRCdir)/esrugrd; $(MAKE)
-harmonizer: 
-	cd $(SRCdir)/harmonizer; $(MAKE) theExe
-harmonizerdll: 
-	cd $(SRCdir)/harmonizer; $(MAKE) theDLL
 ish: 
 	cd $(SRCdir)/esruish; $(MAKE)
 mfs: 
@@ -92,8 +95,6 @@ run:
 	cd $(SRCdir)/esrurun; $(MAKE)
 vew: 
 	cd $(SRCdir)/esruvew; $(MAKE)
-stats: 
-	cd $(SRCdir)/esrustats; $(MAKE)
 
 clean:
 	cd $(SRCdir)/lib;     $(MAKE) clean
@@ -118,8 +119,6 @@ clean:
 	cd $(SRCdir)/esrures; $(MAKE) clean
 	cd $(SRCdir)/esrurun; $(MAKE) clean
 	cd $(SRCdir)/esruvew; $(MAKE) clean
-	cd $(SRCdir)/esrustats; $(MAKE) clean
-	cd $(SRCdir)/harmonizer; $(MAKE) clean
 	@if [ -f $(SRCdir)/include/espinstalldir.h ]; then rm $(SRCdir)/include/espinstalldir.h; fi
 	@if [ -f $(SRCdir)/include/build_info.h    ]; then rm $(SRCdir)/include/build_info.h;    fi	
 
@@ -135,7 +134,6 @@ strip:
 	cd $(SRCdir)/esrucnv; $(MAKE) strip
 	cd $(SRCdir)/esrueco; $(MAKE) strip
 	cd $(SRCdir)/esrugrd; $(MAKE) strip
-	cd $(SRCdir)/harmonizer; $(MAKE) strip
 	cd $(SRCdir)/esruish; $(MAKE) strip
 	cd $(SRCdir)/esrumfs; $(MAKE) strip
 	cd $(SRCdir)/esrumld; $(MAKE) strip
@@ -146,7 +144,6 @@ strip:
 	cd $(SRCdir)/esrures; $(MAKE) strip
 	cd $(SRCdir)/esrurun; $(MAKE) strip
 	cd $(SRCdir)/esruvew; $(MAKE) strip
-	cd $(SRCdir)/esrustats; $(MAKE) strip
 
 InstBins:
 	cd $(SRCdir)/esruaco; $(MAKE) ESPBinDir=${ESPBinDir} EXE=${EXE} install
@@ -170,9 +167,6 @@ InstBins:
 	cd $(SRCdir)/esrures; $(MAKE) ESPBinDir=${ESPBinDir} EXE=${EXE} install
 	cd $(SRCdir)/esrurun; $(MAKE) ESPBinDir=${ESPBinDir} EXE=${EXE} install
 	cd $(SRCdir)/esruvew; $(MAKE) ESPBinDir=${ESPBinDir} EXE=${EXE} install
-	cd $(SRCdir)/esrustats; $(MAKE) ESPBinDir=${ESPBinDir} EXE=${EXE} install
-	cd $(SRCdir)/harmonizer; $(MAKE) ESPBinDir=${ESPBinDir} EXE=${EXE} install
-	cd $(SRCdir)/harmonizer; $(MAKE) ESPBinDir=${ESPBinDir} EXE=${DLL} install
 
 tars: clean
 	rm -f esp-r.tar esp-r.tar.gz esp-r_training.tar esp-r_training.tar.gz

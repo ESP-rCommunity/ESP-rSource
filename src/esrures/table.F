@@ -243,9 +243,6 @@ C act='m' called from ipv metric with parameters already set.
       common/exporttg/xfile,tg,delim
       COMMON/EXPORTI/ixopen,ixunit,ixpunit
 
-      integer ireportunit ! zero is default one is W two is kW three Joules
-      common/repunit/ireportunit
-
       character outs*124,outs248*248 ! string buffers
       character outs800*800,outs800d*800  ! really long string buffers
       character act*1,sq*1,unit*7,t28*28,dg*1
@@ -437,9 +434,7 @@ C   don't do this if printing to file.
             endif
             do 20 IL=1,NGET
             
-C Define units. Note: climate data will base its units on 
-C the IGETNO(IL,8) value along with all other items. Take
-C into account the value of ireportunit.
+C Define units.
               if (IGETNO(IL,8).eq.1) then
                 unit='(degC)'
               elseif (IGETNO(IL,8).eq.2) then
@@ -447,11 +442,7 @@ C into account the value of ireportunit.
      &             IGETNO(IL,1).eq.10.or.IGETNO(IL,1).eq.30.or.
      &             IGETNO(IL,1).eq.31.or.IGETNO(IL,1).eq.32.or.
      &             IGETNO(IL,1).eq.33) then
-                  if(ireportunit.eq.0.or.ireportunit.eq.2)then
-                    unit='(kW)'
-                  else
-                    unit='(W)'
-                  endif
+                  unit='(kW)'
                 else
                   unit='(W)'
                 endif
@@ -738,7 +729,6 @@ C gains and losses.
 
       DIMENSION VAL(12),TVAL(12,12)
       DIMENSION NDYMTH(12), CQ(MTS), CQR(MTS),CQOUT(MTS)
-      real biggest  ! guage size of annual numbers
 
       DATA NDYMTH/31,59,90,120,151,181,212,243,273,304,334,365/
       DATA NMTHNM/'Jan','Feb','Mar','Apr','May','Jun','Jul',
@@ -993,27 +983,14 @@ C Dump 'all-zone' statistics if more than one zone.
             call eddisp(itru,outs)
           ENDIF
         endif
-        biggest=0.0
         DO 685 IJK=1,12
           VAL(IJK)=VAL(IJK)+TVAL(IJK,IMNTH)
-          if(VAL(IJK).gt.biggest) biggest=VAL(IJK)
   685   CONTINUE
   680 CONTINUE
 
 C Dump the annual totals if run was for more than one month.
-
-C Find if any of the annual totals is large enough to require 10 digits
-C otherwise write with 8 or 9 digits.
-
       if (IOM2.GT.IOM1) then
-        if(biggest.gt.999999.0)then
-          write(outsl,'(A,12(F10.0))') ' Annual   ',(VAL(IJK),IJK=1,12)
-        elseif(biggest.gt.99999.0.and.biggest.lt.999999.0)then
-          write(outsl,'(A,12(F9.0))')' Annual      ',(VAL(IJK),IJK=1,12)
-        else
-          write(outsl,'(A,12(F8.0))')' Annual           ',
-     &      (VAL(IJK),IJK=1,12)
-        endif
+        write(outsl,'(A,12(F10.0))') ' Annual   ',(VAL(IJK),IJK=1,12)
         call edisp(itru,' ')
         call eddisp(itru,outsl)
       endif

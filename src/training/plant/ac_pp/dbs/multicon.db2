@@ -209,12 +209,12 @@
 # layers  description   optics name   symmetry tag
     8    Wall_Scot_no  OPAQ  OPAQUE        NONSYMMETRIC  
 # mat ref thickness (m) mat descr & air gap R
-  130    0.0200  Render External 20 mm : Render External 20 mm (UK code)
-   10    0.1020  Brick outer leaf : Brick (UK code)
+  130    0.0200  Render External 20 mm (UK code) : Render External 20 mm (UK code)
+   10    0.1020  Brick (UK code) : Brick (UK code)
     0    0.0500  air  0.180 0.180 0.180
-  295    0.0500  Min wool quilt 60mm : Insulation (Min wool quilt default 60 mm)
-  295    0.0500  Min wool quilt 60mm : Insulation (Min wool quilt default 60 mm)
-   40    0.1000  Concrete med density (1800) : Blockwork (UK code)
+  295    0.0500  Insulation (Min wool quilt defau : Insulation (Min wool quilt default 6
+  295    0.0500  Insulation (Min wool quilt defau : Insulation (Min wool quilt default 6
+   40    0.1000  Insulation (Min wool quilt defau : Insulation (Min wool quilt default 6
     0    0.0250  air  0.180 0.180 0.180
   112    0.0130  Plasterboard (UK code) : Plasterboard (UK code)
 # layers  description   optics name   symmetry tag
@@ -230,9 +230,9 @@
 # layers  description   optics name   symmetry tag
     3    window_Not_G  TRAN  Glaz_notiona  NONSYMMETRIC  
 # mat ref thickness (m) mat descr & air gap R
-  247    0.0040  REF A CLEAR LO 6MM : optics from UK national method datase Low-e coated
+  247    0.0040  optics from UK national method d : optics from UK national method datas
     0    0.0160  air  0.277 0.277 0.277
-  248    0.0040  REF A CLEAR MID 6MM : optics from UK national method datase Low-e coate
+  248    0.0040  optics from UK national method d : optics from UK national method datas
 # layers  description   optics name   symmetry tag
     4    EW_notPitch_  OPAQ  OPAQUE        NONSYMMETRIC  
 # mat ref thickness (m) mat descr & air gap R

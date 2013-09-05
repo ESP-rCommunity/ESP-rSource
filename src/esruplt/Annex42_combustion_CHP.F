@@ -3725,61 +3725,61 @@ C.....Check if cooling water flow rate is zero.
 
 C--------------------------------------------
 C.....Output data: Control Scheme
-      call AddToReport(rvPltExtCtrlScheme%Identifier,
+      call AddToReportWild1(rvPltExtCtrlScheme%Identifier,
      &         fReport_Control_Method(iIndex),
      &         pcname(iIndex)(1:iNameLength))
 
 C--------------------------------------------
 C.....Write a name: Control Signal
-      call AddToReport(rvPltExtCtrlSignal%Identifier,
+      call AddToReportWild1(rvPltExtCtrlSignal%Identifier,
      &         fReport_Control_Signal(iIndex),
      &         pcname(iIndex)(1:iNameLength))
 
 C--------------------------------------------
 C.....Write a name: Time spent inoperative
-      call AddToReport(rvPltOperModeInop%Identifier,
+      call AddToReportWild1(rvPltOperModeInop%Identifier,
      &         fReport_time_spent(iIndex,iOP_inoperative),
      &         pcname(iIndex)(1:iNameLength))
 
 C-----------------------------------------
 C.....Write a name: Time spent in start-up
-      call AddToReport(rvPltA42OperModeStartUp%Identifier,
+      call AddToReportWild1(rvPltA42OperModeStartUp%Identifier,
      &         fReport_time_spent(iIndex,iOP_startup),
      &         pcname(iIndex)(1:iNameLength))
 
 C-----------------------------------------
 C.....Write a name: Time spent in warm-up
-      call AddToReport(rvPltOperModeWarmup%Identifier,
+      call AddToReportWild1(rvPltOperModeWarmup%Identifier,
      &         fReport_time_spent(iIndex,iOP_warmup),
      &         pcname(iIndex)(1:iNameLength))
 
 C-----------------------------------------
 C.....Write a name: Time spent in normal operation
-      call AddToReport(rvPltOpenModeNormOper%Identifier,
+      call AddToReportWild1(rvPltOpenModeNormOper%Identifier,
      &         fReport_time_spent(iIndex,iOP_normal_operation),
      &         pcname(iIndex)(1:iNameLength))
 
 C-----------------------------------------
 C.....Write a name: Time spent in shutdown
-      call AddToReport(rvPltOperModeShutdown%Identifier,
+      call AddToReportWild1(rvPltOperModeShutdown%Identifier,
      &         fReport_time_spent(iIndex,iOP_shutdown),
      &         pcname(iIndex)(1:iNameLength))
 
 C-----------------------------------------
 C.....Write a name: Containment temperature
-      call AddToReport(rvPltContTemp%Identifier,
+      call AddToReportWild1(rvPltContTemp%Identifier,
      &         fReport_Containment_Temp(iIndex),
      &         pcname(iIndex)(1:iNameLength))
 
 C-----------------------------------------
 C.....Write a name: Cooling water temperature
-      call AddToReport(rvPltCoolWaterTemp%Identifier,
+      call AddToReportWild1(rvPltCoolWaterTemp%Identifier,
      &         fReport_CW_Temperature(iIndex),
      &         pcname(iIndex)(1:iNameLength))
 
 C-----------------------------------------
 C.....Write a name: Cooling water mass flow rate
-      call AddToReport(rvPltCoolWaterFlowRt%Identifier,
+      call AddToReportWild1(rvPltCoolWaterFlowRt%Identifier,
      &         fReport_CW_Mass_Flow(iIndex),
      &         pcname(iIndex)(1:iNameLength))
 
@@ -3789,31 +3789,31 @@ C-------------------------------------------------------------------
 
 C-----------------------------------------
 C.....Write a name: Net power
-      call AddToReport(rvPltInstPowerNet%Identifier,
+      call AddToReportWild1(rvPltInstPowerNet%Identifier,
      &         fReport_Net_Power(iIndex),
      &         pcname(iIndex)(1:iNameLength))
 
 C-----------------------------------------
 C.....Write a name: Heat recovery
-      call AddToReport(rvPltInstHeatRec%Identifier,
+      call AddToReportWild1(rvPltInstHeatRec%Identifier,
      &         fReport_Heat_Recovery(iIndex),
      &         pcname(iIndex)(1:iNameLength))
 
 C-----------------------------------------
 C.....Write a name: Air flow
-      call AddToReport(rvPltInstFlowRt%Identifier,
+      call AddToReportWild1(rvPltInstFlowRt%Identifier,
      &         fReport_Air_Flow(iIndex),
      &         pcname(iIndex)(1:iNameLength))
 
 C-----------------------------------------
 C.....Write a name: fuel flow
-      call AddToReport(rvPltInstFuelFlowRt%Identifier,
+      call AddToReportWild1(rvPltInstFuelFlowRt%Identifier,
      &         fReport_Fuel_Flow(iIndex),
      &         pcname(iIndex)(1:iNameLength))
 
 C-----------------------------------------
 C.....Write a name: fuel LHV flow rate
-      call AddToReport(rvPltInstFuelGrossEnInput%Identifier,
+      call AddToReportWild1(rvPltInstFuelGrossEnInput%Identifier,
      &         fReport_Fuel_LHV_rate(iIndex),
      &         pcname(iIndex)(1:iNameLength))
 
@@ -3821,13 +3821,13 @@ C-----------------------------------------
 C.....Write a name: fuel LHV value:
 C.....This data should be time-invariant, but there's presently
 C.....no better way to export time-invariant data out of ESP-r.
-      call AddToReport(rvPltInstFuelLowHeatVal%Identifier,
+      call AddToReportWild1(rvPltInstFuelLowHeatVal%Identifier,
      &         fFuel_LHV(iIndex),
      &         pcname(iIndex)(1:iNameLength))
 
 C-----------------------------------------
 C.....Write a name: Skin losses
-      call AddToReport(rvPltInstHeatLoss%Identifier,
+      call AddToReportWild1(rvPltInstHeatLoss%Identifier,
      &         fHeat_loss,
      &         pcname(iIndex)(1:iNameLength))
 
@@ -3836,31 +3836,31 @@ C     Reports -> time-step averaged data
 C-------------------------------------------------------------------
 C-----------------------------------------
 C.....Write a name: Heat recovery
-      call AddToReport(rvPltAvgHeatRec%Identifier,
+      call AddToReportWild1(rvPltAvgHeatRec%Identifier,
      &         fQ_recovery_average,
      &         pcname(iIndex)(1:iNameLength))
 
 C-----------------------------------------
 C.....Write a name: Net power
-      call AddToReport(rvPltAvgPowNet%Identifier,
+      call AddToReportWild1(rvPltAvgPowNet%Identifier,
      &         fAverage_Net_Power(iIndex),
      &         pcname(iIndex)(1:iNameLength))
 
 C-----------------------------------------
 C.....Write a name: fuel flow
-      call AddToReport(rvPltAvgFuelFlowRt%Identifier,
+      call AddToReportWild1(rvPltAvgFuelFlowRt%Identifier,
      &         fAverage_Fuel_Flow(iIndex),
      &         pcname(iIndex)(1:iNameLength))
 
 C-----------------------------------------
 C.....Write a name: fuel LHV flow rate
-      call AddToReport(rvPltAvgFuelGrossEnIn%Identifier,
+      call AddToReportWild1(rvPltAvgFuelGrossEnIn%Identifier,
      &         fAverage_Fuel_LHV_rate(iIndex),
      &         pcname(iIndex)(1:iNameLength))
 
 C-----------------------------------------
 C.....Write a name: carbon dioixide emissions
-      call AddToReport(rvPltAvgEmisCarbDio%Identifier,
+      call AddToReportWild1(rvPltAvgEmisCarbDio%Identifier,
      &         fAverage_CO2_emissions(iIndex),
      &         pcname(iIndex)(1:iNameLength))
 
@@ -3872,36 +3872,36 @@ C----------------------------------------------------------------------
 
 C-----------------------------------------
 C........Write a name: electrical efficiency
-         call AddToReport(rvPltAvgEffElec%Identifier,
+         call AddToReportWild1(rvPltAvgEffElec%Identifier,
      &         fAverage_Electric_Efficiency(iIndex),
      &         pcname(iIndex)(1:iNameLength))
 
 C-----------------------------------------
 C........Write a name: thermal efficiency
-         call AddToReport(rvPltAvgEffTherm%Identifier,
+         call AddToReportWild1(rvPltAvgEffTherm%Identifier,
      &         fAverage_Thermal_Efficiency(iIndex),
      &         pcname(iIndex)(1:iNameLength))
 
 C-----------------------------------------
 C........Write a name: cogeneration efficiency
-         call AddToReport(rvPltAvgEffCogen%Identifier,
+         call AddToReportWild1(rvPltAvgEffCogen%Identifier,
      &         fAverage_Cogen_efficiency(iIndex),
      &         pcname(iIndex)(1:iNameLength))
 
 C........Write a name: Cogeneration efficency
-         call AddToReport(rvPltInstEffCogen%Identifier,
+         call AddToReportWild1(rvPltInstEffCogen%Identifier,
      &         fReport_Cogen_Efficiency(iIndex),
      &         pcname(iIndex)(1:iNameLength))
 
 C--------------------------------------
 C........Write a name: Electric efficency
-         call AddToReport(rvPltInstEffElec%Identifier,
+         call AddToReportWild1(rvPltInstEffElec%Identifier,
      &         fReport_Electric_Efficiency(iIndex),
      &         pcname(iIndex)(1:iNameLength))
 
 C--------------------------------------
 C........Write a name: Thermal Efficiency
-         call AddToReport(rvPltInstEffTherm%Identifier,
+         call AddToReportWild1(rvPltInstEffTherm%Identifier,
      &         fReport_Thermal_Efficiency(iIndex),
      &         pcname(iIndex)(1:iNameLength))
 
@@ -3909,19 +3909,19 @@ C........Write a name: Thermal Efficiency
 
 C--------------------------------------
 C........Write a name: Solution weighting factor
-         call AddToReport(rvPltSolWeightFact%Identifier,
+         call AddToReportWild1(rvPltSolWeightFact%Identifier,
      &          fReport_alpha(iIndex),
      &         pcname(iIndex)(1:iNameLength))
 
 C--------------------------------------
 C........Write a name: engine control volume TC
-         call AddToReport(rvPltSolTmeCstEngCtrlVol%Identifier,
+         call AddToReportWild1(rvPltSolTmeCstEngCtrlVol%Identifier,
      &         fReport_TC_eng(iIndex),
      &         pcname(iIndex)(1:iNameLength))
 
 C--------------------------------------
 C........Write a name: cooling water control volume TC
-         call AddToReport(rvPltSolTmeCstCWCtrlVol%Identifier,
+         call AddToReportWild1(rvPltSolTmeCstCWCtrlVol%Identifier,
      &         fReport_TC_cw(iIndex),
      &         pcname(iIndex)(1:iNameLength))
 

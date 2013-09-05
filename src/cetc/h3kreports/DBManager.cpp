@@ -1,10 +1,6 @@
 #include "DBManager.h"
 
-//*************************** "TRACE_VARIABLE" **********************************
-//*** Use to trace a variable.  The varname can be taken for the ***
-//*** log_trace.txt generated in the TReportsManager.cpp to turn on go to the ***
-//*** top of the TReportsManager.cpp ***
-//*************************** "TRACE_VARIABLE" **********************************
+#define DEBUG 0
 
 
 /* ********************************************************************
@@ -45,16 +41,7 @@ DBManager::DBManager(const char *sFileName)
    int errCode;
    bool bIsInit;
 
-   #ifdef TRACE_VARIABLE
-      log::Instance()->writeTrace("DBManager::Overloaded Constructor");
-   #endif
-
-   //Used for transaction control
-   bOpenTrans = false;
-   m_iInsertCount = 0;
-
-   //Counts the number of defined variables in the database
-   m_iVariableCount = 0;
+   if(DEBUG)printf("Overloaded Constructor:\n");
 
    //open/create the database file
    sqlite3_open(sFileName,&db);
@@ -64,12 +51,14 @@ DBManager::DBManager(const char *sFileName)
    sqlite3_exec(db,"PRAGMA journal_mode = OFF;",0,0,0); //Disables Rollbacks
    sqlite3_exec(db,"PRAGMA synchronous = OFF;",0,0,0); //One user database, synchrosnous not required, SQLITE will not wait for disk to finish, when commit
 
-   //Check if the structure already exists.  Returns error if not found
-   errCode = sqlite3_exec(db,"SELECT 1 FROM BinTypes;",0,0,0);
+
+   //Check if the structure already exists by accessible a table's metavalue.  Returns error if not found
+   errCode = sqlite3_table_column_metadata(db,NULL,"StepDataValues","VariableID",NULL,NULL,NULL,NULL,NULL);
    (errCode)?bIsInit=false:bIsInit=true;
 
    if(!bIsInit)
       createTableStructure();
+
 
    //Create the prepared insert statements
    sqlite3_prepare_v2(db, "INSERT INTO StepDataValues values(?,?,?);", -1, &insertStatements[0], NULL);
@@ -86,6 +75,8 @@ DBManager::DBManager(const char *sFileName)
    //Initialize bin type values
    if(!bIsInit)
       addBinTypes();
+
+   iInsertCount = 0;
 }
 
 
@@ -99,9 +90,7 @@ DBManager::DBManager(const char *sFileName)
 ** ***************************************************************** */
 DBManager::~DBManager()
 {
-   #ifdef TRACE_VARIABLE
-      log::Instance()->writeTrace("DBManager::Destructor");
-   #endif
+   if(DEBUG)printf("Destructor:\n");
 
    //Destroy the prepared statement
    sqlite3_finalize(insertStatements[0]);
@@ -148,9 +137,7 @@ bool DBManager::isEnable()
 ** ***************************************************************** */
 void DBManager::createTableStructure()
 {
-   #ifdef TRACE_VARIABLE
-      log::Instance()->writeTrace("DBManager::createTableStructure");
-   #endif
+   if(DEBUG)printf("createTableStructure:\n");
 
    //Create the tables
    //Primary key was intentionally not put on the certain tables for performance reasons
@@ -163,7 +150,7 @@ void DBManager::createTableStructure()
    sqlite3_exec(db,"CREATE TABLE BinDataValues(VariableID INTEGER, BinIndex INTEGER, Step INTEGER, ActiveStep INTEGER, Sum FLOAT, Max FLOAT, \
                 Min FLOAT, ActiveAverage FLOAT, TotalAverage FLOAT, BinType INTEGER);",0,0,0);
    sqlite3_exec(db,"CREATE TABLE BinTypes(ID INTEGER PRIMARY KEY,Description TEXT);",0,0,0);
-   sqlite3_exec(db,"CREATE TABLE IntegratedDataValues(VariableID INTEGER, BinIndex INTEGER, Unit TEXT, Value FLOAT, BinType INTEGER);", 0,0,0);
+   sqlite3_exec(db,"CREATE TABLE IntegratedDataValues(VariableID INTEGER, MonthIndex INTEGER, Unit TEXT, Value FLOAT, Type INTEGER);", 0,0,0);
 
 
    //indexes are created before closing the database for performance reasons
@@ -183,9 +170,7 @@ void DBManager::createTableStructure()
 ** ***************************************************************** */
 void DBManager::indexDatabase()
 {
-   #ifdef TRACE_VARIABLE
-      log::Instance()->writeTrace("DBManager::indexDatabase");
-   #endif
+   if(DEBUG)printf("indexDatabase:\n");
 
    //Create the indexes before closing the database, index create takes time but
    //dramatically increase the search speed.  If indexes aren't required the removal
@@ -234,12 +219,12 @@ void DBManager::beginTran()
 ** ***************************************************************** */
 void DBManager::commitTran()
 {
-   if(bOpenTrans)
-   {
-      sqlite3_exec(db, "COMMIT TRANSACTION;", 0, 0, 0);
-      bOpenTrans = false;
-      m_iInsertCount = 0;
-   }
+    if(bOpenTrans)
+    {
+        sqlite3_exec(db, "COMMIT TRANSACTION;", 0, 0, 0);
+        bOpenTrans = false;
+        iInsertCount = 0;
+    }
 }
 
 /* ********************************************************************
@@ -257,6 +242,7 @@ void DBManager::commitTran()
 ** ***************************************************************** */
 void DBManager::addVariableDescriptor(int identifier,const char *sVarName,const char *sMetaType,const char *sMetaValue,const char *sDescription)
 {
+   if(DEBUG)printf("addVariableDescriptor:\n");
    if(!bOpenTrans)beginTran();
 
    sqlite3_bind_int(insertStatements[3], 1, identifier);
@@ -272,11 +258,11 @@ void DBManager::addVariableDescriptor(int identifier,const char *sVarName,const 
 
    sqlite3_clear_bindings(insertStatements[3]);
    sqlite3_reset(insertStatements[3]);
-   m_iInsertCount++;
+   iInsertCount++;
 
 
    //Commit transaction only every MAX_TRANSACTIONS
-   if(m_iInsertCount >= MAX_TRANSACTIONS)commitTran();
+   if(iInsertCount >= MAX_TRANSACTIONS)commitTran();
 
    return;
 }
@@ -297,6 +283,9 @@ void DBManager::addVariableDescriptor(int identifier,const char *sVarName,const 
 ** ***************************************************************** */
 long DBManager::addVariableName(int iVariableDescriptorID,const char *sDelimiters,const char *sVariableName)
 {
+
+   if(DEBUG)printf("addVariableName:\n");
+
    if(!bOpenTrans)beginTran();
 
    sqlite3_bind_int(insertStatements[2], 1, iVariableDescriptorID);
@@ -307,12 +296,10 @@ long DBManager::addVariableName(int iVariableDescriptorID,const char *sDelimiter
 
    sqlite3_clear_bindings(insertStatements[2]);
    sqlite3_reset(insertStatements[2]);
-   m_iInsertCount++;
+   iInsertCount++;
 
    //Commit transaction only every MAX_TRANSACTIONS
-   if(m_iInsertCount >= MAX_TRANSACTIONS)commitTran();
-
-   m_iVariableCount++;
+   if(iInsertCount >= MAX_TRANSACTIONS)commitTran();
 
    return (long)sqlite3_last_insert_rowid(db);
 }
@@ -330,6 +317,8 @@ long DBManager::addVariableName(int iVariableDescriptorID,const char *sDelimiter
 ** ***************************************************************** */
 void DBManager::addValue(long lStepID, long lVariableID, double fValue)
 {
+   if(DEBUG)printf("addValue:\n");
+
    if(!bOpenTrans)beginTran();
 
    sqlite3_bind_int(insertStatements[0],1,lVariableID);
@@ -342,11 +331,11 @@ void DBManager::addValue(long lStepID, long lVariableID, double fValue)
 
    sqlite3_clear_bindings(insertStatements[0]);
    sqlite3_reset(insertStatements[0]);
-   m_iInsertCount++;
+   iInsertCount++;
 
 
    //Commit transaction only every MAX_TRANSACTIONS
-   if(m_iInsertCount >= MAX_TRANSACTIONS)commitTran();
+   if(iInsertCount >= MAX_TRANSACTIONS)commitTran();
 
    return;
 }
@@ -365,6 +354,8 @@ void DBManager::addValue(long lStepID, long lVariableID, double fValue)
 ** ***************************************************************** */
 void DBManager::addTimeStep(long lStep, int iHour, int iDay, int bStartup)
 {
+   if(DEBUG)printf("addTimeStep:\n");
+
    if(!bOpenTrans)beginTran();
 
    sqlite3_bind_int(insertStatements[1], 1, lStep);
@@ -376,11 +367,11 @@ void DBManager::addTimeStep(long lStep, int iHour, int iDay, int bStartup)
 
    sqlite3_clear_bindings(insertStatements[1]);
    sqlite3_reset(insertStatements[1]);
-   m_iInsertCount++;
+   iInsertCount++;
 
 
    //Commit transaction only every MAX_TRANSACTIONS
-   if(m_iInsertCount >= MAX_TRANSACTIONS)commitTran();
+   if(iInsertCount >= MAX_TRANSACTIONS)commitTran();
 
    return;
 }
@@ -409,6 +400,8 @@ void DBManager::addBinData(int iVariableID,int iIndex, int iStep,
                                   double dMin, double dActiveAverage,
                                   double dTotalAverage, int iType)
 {
+   if(DEBUG)printf("addBinData:\n");
+
    if(!bOpenTrans)beginTran();
 
    sqlite3_bind_int(insertStatements[4],1,iVariableID);
@@ -426,12 +419,12 @@ void DBManager::addBinData(int iVariableID,int iIndex, int iStep,
 
    sqlite3_clear_bindings(insertStatements[4]);
    sqlite3_reset(insertStatements[4]);
-   m_iInsertCount++;
+   iInsertCount++;
 
 
 
    //Commit transaction only every MAX_TRANSACTIONS
-   if(m_iInsertCount >= MAX_TRANSACTIONS)commitTran();
+   if(iInsertCount >= MAX_TRANSACTIONS)commitTran();
 
    return;
 }
@@ -452,6 +445,8 @@ void DBManager::addBinData(int iVariableID,int iIndex, int iStep,
 ** ***************************************************************** */
 void DBManager::addIntegratedData(int iVariableID, int iIndex, const char *sIntegratedUnits,double dTotal, int iType)
 {
+   if(DEBUG)printf("addIntegratedData:\n");
+
    if(!bOpenTrans)beginTran();
 
    sqlite3_bind_int(insertStatements[6],1,iVariableID);
@@ -464,10 +459,10 @@ void DBManager::addIntegratedData(int iVariableID, int iIndex, const char *sInte
 
    sqlite3_clear_bindings(insertStatements[6]);
    sqlite3_reset(insertStatements[6]);
-   m_iInsertCount++;
+   iInsertCount++;
 
    //Commit transaction only every MAX_TRANSACTIONS
-   if(m_iInsertCount >= MAX_TRANSACTIONS)commitTran();
+   if(iInsertCount >= MAX_TRANSACTIONS)commitTran();
 
    return;
 }
@@ -484,6 +479,8 @@ void DBManager::addIntegratedData(int iVariableID, int iIndex, const char *sInte
 ** ***************************************************************** */
 void DBManager::addBinTypes()
 {
+   if(DEBUG)printf("addBinTypes:\n");
+
    if(!bOpenTrans)beginTran();
 
    //Insert Monthly
@@ -492,7 +489,7 @@ void DBManager::addBinTypes()
    sqlite3_step(insertStatements[5]);
    sqlite3_clear_bindings(insertStatements[5]);
    sqlite3_reset(insertStatements[5]);
-   m_iInsertCount++;
+   iInsertCount++;
 
    //Insert Annual
    sqlite3_bind_int(insertStatements[5],1,BIN_ANNUAL_TYPE);
@@ -500,11 +497,11 @@ void DBManager::addBinTypes()
    sqlite3_step(insertStatements[5]);
    sqlite3_clear_bindings(insertStatements[5]);
    sqlite3_reset(insertStatements[5]);
-   m_iInsertCount++;
+   iInsertCount++;
 
 
    //Commit transaction only every MAX_TRANSACTIONS
-   if(m_iInsertCount >= MAX_TRANSACTIONS)commitTran();
+   if(iInsertCount >= MAX_TRANSACTIONS)commitTran();
 
    return;
 }
@@ -523,6 +520,8 @@ void DBManager::addBinTypes()
 ** ***************************************************************** */
 void DBManager::updateVariableName(int iVariableId, int iNewDescriptorID)
 {
+   if(DEBUG)printf("updateVariableName:\n");
+
    //Before an update, commit outstanding trans
    beginTran();
 
@@ -536,45 +535,4 @@ void DBManager::updateVariableName(int iVariableId, int iNewDescriptorID)
    commitTran();
 
    return;
-}
-
-/* ********************************************************************
-** Method:   createDataViews
-** Purpose:  Execute a statement to create a view of the
-**           pivot_stepdatavalues table.
-** Scope:    Public
-** Params:   N/A
-** Returns:  N/A
-** Author:   Claude Lamarche
-** Mod Date: 2011-10-03
-** ***************************************************************** */
-
-void DBManager::createDataViews()
-{
-   char *sPivotTable;
-   char buffer[5]; //max acceptable variables 99999
-   int i;
-
-   //create statement for a flatten view of the stepdatavalues
-   if(m_iVariableCount > 0)
-   {
-     sPivotTable = (char*) malloc ((m_iVariableCount*65)+150);
-
-      strcpy(sPivotTable,"create view pivot_stepdatavalues as select TimeStepID ");
-      for(i=1;i<=m_iVariableCount;i++)
-      {
-         sprintf(buffer,"%d",i);
-         strcat(sPivotTable,",max(case when VariableID=");
-         strcat(sPivotTable,buffer);
-         strcat(sPivotTable," then value end) as Variable");
-         strcat(sPivotTable,buffer);
-      }
-      strcat(sPivotTable," from stepdatavalues group by TimeStepID;");
-
-      //create the view
-      sqlite3_exec(db,sPivotTable,0,0,0);
-
-
-      free(sPivotTable);
-   }
 }

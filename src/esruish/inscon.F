@@ -209,7 +209,6 @@ C                 insolation source. The latter is held
 C                 in common.
       common/outin/iuout,iuin
 
-      integer izstocn
       common/c24/izstocn(mcom,ms)
       common/shdfil/ishadf
       integer mon,isc,iyd
@@ -405,7 +404,6 @@ C            in the misur list.
 #include "building.h"
 #include "geometry.h"
 
-      integer izstocn
       common/c24/izstocn(mcom,ms)
       common/sunhr/isunhr
       common/tshd/ioshd(mox,moz)
@@ -607,25 +605,25 @@ C Store for each source and hour.
                if(indcom.eq.4)goto 30
                indcom=indcom+1
                if(paction(1:13).ne.'update_silent')then
-                  call usrmsg(outs,' complete.','-')
+                  call usrmsg(outs,' complete.','P')
                endif
             elseif(calcom.ge.0.75)then
                if(indcom.eq.3)goto 30
                indcom=indcom+1
                if(paction(1:13).ne.'update_silent')then
-                  call usrmsg(outs,' 75% complete.','-')
+                  call usrmsg(outs,' 75% complete.','P')
                endif
             elseif(calcom.ge.0.50)then
                if(indcom.eq.2)goto 30
                indcom=indcom+1
                if(paction(1:13).ne.'update_silent')then
-                  call usrmsg(outs,' 50% complete.','-')
+                  call usrmsg(outs,' 50% complete.','P')
                endif
             elseif(calcom.ge.0.25)then
                if(indcom.eq.1)goto 30
                indcom=indcom+1
                if(paction(1:13).ne.'update_silent')then
-                  call usrmsg(outs,' 25% complete.','-')
+                  call usrmsg(outs,' 25% complete.','P')
                endif
             endif
             goto 30
@@ -804,7 +802,6 @@ C at hour jj.
       common/inswin/igins(mox,moz)
       common/pinsol/ins(ms),pins(ms),pinw(ms),pcshad
       common/outin/iuout,iuin
-      integer izstocn
       common/c24/izstocn(mcom,ms)
 
       dimension icounts(ms+4),icountw(ms+4),icountt(ms+4)

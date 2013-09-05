@@ -116,8 +116,9 @@ C.....Simulation type
       integer indcfg
       
 C.....Building data 
-      integer ncomp,ncon      ! # of zones and connections
       common/c1/ncomp,ncon
+      integer ncomp                  ! # of zones
+      integer ncon                   ! ? (not used)
 
       common/prec9/nConst(mcom),nELts(mcom,ms),ngaps(mcom,ms),
      &             npgap(mcom,ms,mgp)

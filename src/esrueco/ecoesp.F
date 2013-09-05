@@ -212,7 +212,23 @@ C Add another category to the database << not yet tested >>
           matvisinrfl(ILNE)=0.5
           matrender(ILNE)=0.0
 
-         chgdb=.true.
+          matgapcnd(ILNE,1)=0.0
+          matgapcnd(ILNE,2)=0.0
+          matgapcnd(ILNE,3)=0.0
+          matgapcnd(ILNE,4)=0.0
+          matvisco(ILNE,1)=0.0
+          matvisco(ILNE,2)=0.0
+          matvisco(ILNE,3)=0.0
+          matvisco(ILNE,4)=0.0
+          matgapden(ILNE,1)=0.0
+          matgapden(ILNE,2)=0.0
+          matgapden(ILNE,3)=0.0
+          matgapden(ILNE,4)=0.0
+          matprandtl(ILNE,1)=0.0
+          matprandtl(ILNE,2)=0.0
+          matgapsht(ILNE,1)=0.0
+          matgapsht(ILNE,2)=0.0
+          chgdb=.true.
         endif
         goto 40
       ELSEIF(ICO.GT.1.AND.ICO.LT.(NCO-4))THEN
@@ -449,6 +465,22 @@ C If there is room add a note about its origin.
           matvisinrfl(ILNE)=matvisinrfl(IWHICH)
           matrender(ILNE)=matrender(IWHICH)
 
+          matgapcnd(ILNE,1)=matgapcnd(IWHICH,1)
+          matgapcnd(ILNE,2)=matgapcnd(IWHICH,2)
+          matgapcnd(ILNE,3)=matgapcnd(IWHICH,3)
+          matgapcnd(ILNE,4)=matgapcnd(IWHICH,4)
+          matvisco(ILNE,1)=matvisco(IWHICH,1)
+          matvisco(ILNE,2)=matvisco(IWHICH,2)
+          matvisco(ILNE,3)=matvisco(IWHICH,3)
+          matvisco(ILNE,4)=matvisco(IWHICH,4)
+          matgapden(ILNE,1)=matgapden(IWHICH,1)
+          matgapden(ILNE,2)=matgapden(IWHICH,2)
+          matgapden(ILNE,3)=matgapden(IWHICH,3)
+          matgapden(ILNE,4)=matgapden(IWHICH,4)
+          matprandtl(ILNE,1)=matprandtl(IWHICH,1)
+          matprandtl(ILNE,2)=matprandtl(IWHICH,2)
+          matgapsht(ILNE,1)=matgapsht(IWHICH,1)
+          matgapsht(ILNE,2)=matgapsht(IWHICH,2)
           matdbitems=matdbitems+1
           matcatitems(IC)=matcatitems(IC)+1
           MODDB=.TRUE.
@@ -491,6 +523,22 @@ C copy the contents of material > IWHICH into the next lower one.
               matvisinrfl(IVV)=matvisinrfl(IVV+1)
               matrender(IVV)=matrender(IVV+1)
 
+              matgapcnd(IVV,1)=matgapcnd(IVV+1,1)
+              matgapcnd(IVV,2)=matgapcnd(IVV+1,2)
+              matgapcnd(IVV,3)=matgapcnd(IVV+1,3)
+              matgapcnd(IVV,4)=matgapcnd(IVV+1,4)
+              matvisco(IVV,1)=matvisco(IVV+1,1)
+              matvisco(IVV,2)=matvisco(IVV+1,2)
+              matvisco(IVV,3)=matvisco(IVV+1,3)
+              matvisco(IVV,4)=matvisco(IVV+1,4)
+              matgapden(IVV,1)=matgapden(IVV+1,1)
+              matgapden(IVV,2)=matgapden(IVV+1,2)
+              matgapden(IVV,3)=matgapden(IVV+1,3)
+              matgapden(IVV,4)=matgapden(IVV+1,4)
+              matprandtl(IVV,1)=matprandtl(IVV+1,1)
+              matprandtl(IVV,2)=matprandtl(IVV+1,2)
+              matgapsht(IVV,1)=matgapsht(IVV+1,1)
+              matgapsht(IVV,2)=matgapsht(IVV+1,2)
   791       CONTINUE
             matdbitems=matdbitems-1
             matcatitems(IC)=matcatitems(IC)-1
@@ -552,6 +600,22 @@ C If there is room add a note about its origin.
                 matvisinrfl(ILNE)=matvisinrfl(lastcatitem)
                 matrender(ILNE)=matrender(lastcatitem)
 
+                matgapcnd(ILNE,1)=matgapcnd(lastcatitem,1)
+                matgapcnd(ILNE,2)=matgapcnd(lastcatitem,2)
+                matgapcnd(ILNE,3)=matgapcnd(lastcatitem,3)
+                matgapcnd(ILNE,4)=matgapcnd(lastcatitem,4)
+                matvisco(ILNE,1)=matvisco(lastcatitem,1)
+                matvisco(ILNE,2)=matvisco(lastcatitem,2)
+                matvisco(ILNE,3)=matvisco(lastcatitem,3)
+                matvisco(ILNE,4)=matvisco(lastcatitem,4)
+                matgapden(ILNE,1)=matgapden(lastcatitem,1)
+                matgapden(ILNE,2)=matgapden(lastcatitem,2)
+                matgapden(ILNE,3)=matgapden(lastcatitem,3)
+                matgapden(ILNE,4)=matgapden(lastcatitem,4)
+                matprandtl(ILNE,1)=matprandtl(lastcatitem,1)
+                matprandtl(ILNE,2)=matprandtl(lastcatitem,2)
+                matgapsht(ILNE,1)=matgapsht(lastcatitem,1)
+                matgapsht(ILNE,2)=matgapsht(lastcatitem,2)
                 matdbitems=matdbitems+1
                 matcatitems(IC)=matcatitems(IC)+1
 
@@ -787,7 +851,6 @@ C Iskip : If = 0, then skip the list of surfaces menu
       COMMON/FILEP/IFIL
       COMMON/OUTIN/IUOUT,IUIN
 
-      integer IZSTOCN
       COMMON/C24/IZSTOCN(MCOM,MS)
       COMMON/surfsel/isursel(MCON),NbSurSel(MCOM),ISelCon(MCON),
      &               ISelComp(MCON)
@@ -1033,9 +1096,6 @@ C Otherwise select the zones from a list of zone names.
       call gethelptext(helpinsub,helptopic,nbhelp)
 
 C <<Jon : allowing *Select all surface allow only one pik for the moment (Max.: NMLC)
-
-C << convert to use mlcname and mlctype...>>
-
       INPIC=NMLC
       CALL EPICKS(INPIC,IVALZ,' ',' Which composites to include:',
      &  48,NMLC,Desc,' Composite(s) list',IDerr,nbhelp)
@@ -1385,7 +1445,6 @@ C
       
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
-      integer IZSTOCN
       COMMON/C24/IZSTOCN(MCOM,MS)
       COMMON/surfsel/isursel(MCON),NbSurSel(MCOM),ISelCon(MCON),
      &               ISelComp(MCON)
@@ -2364,7 +2423,6 @@ C phylosophy as LCACalc
       
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
-      integer IZSTOCN
       COMMON/C24/IZSTOCN(MCOM,MS)
       COMMON/surfsel/isursel(MCON),NbSurSel(MCOM),ISelCon(MCON),
      &               ISelComp(MCON)
@@ -3333,7 +3391,7 @@ C Relevant only for pre-fabricated element
                         GOTO 901
                       ENDIF 
                       IF (K .EQ. 1) THEN
-C First transport line display is different than others.
+C First transport line display is different than others
                         WRITE (outs,325) LayerNam(ICurComp,J),
      &                    WeitLayr(J),CoTrPt(ICurComp,K),
      &                   CoTrDist(ICurComp,K),(LCAValue(IY),IY=1,MIMP)
@@ -3349,10 +3407,10 @@ C First transport line display is different than others.
                         endif
                       ENDIF
 
-C 8 Dump waste transport.
+C 8 Dump waste transport
                     elseif (M.EQ.8) then
                       IF (K .EQ. 1) THEN
-C First transport line display is different than others.
+C First transport line display is different than others
                         WRITE (outs,315) LayerNam(ICurComp,J),
      &                          WtLayrDu(J),DuTrPt(ICurMat,K),
      &                   DuTrDist(ICurMat,K),(LCAValue(IY),IY=1,MIMP)
@@ -3368,10 +3426,10 @@ C First transport line display is different than others.
                         endif
                       ENDIF
 
-C 10 Incinarated waste transport.
+C 10 Incinarated waste transport
                     elseif (M .EQ. 10) then
                       IF (K .EQ. 1) THEN
-C First transport line display is different than others.
+C First transport line display is different than others
                         WRITE (outs,318 )LayerNam(ICurComp,J), 
      &                     WtLayrBu(J),BuTrPt(ICurMat,K),
      &                     BuTrDist(ICurMat,K),(LCAValue(IY),IY=1,MIMP)
@@ -3388,10 +3446,10 @@ C First transport line display is different than others.
                       ENDIF
 
 
-C 11 Transport to recycling site.
+C 11 Transport to recycling site
                     elseif (M.EQ.12) then
                       IF (K.EQ.1) THEN
-C First transport line display is different than others.
+C First transport line display is different than others
                         WRITE (outs,321) LayerNam(ICurComp,J),
      &                         WtLayrRe(J),ReTrPt(ICurMat,K),
      &                     ReTrDist(ICurMat,K),(LCAValue(IY),IY=1,MIMP)
@@ -3413,13 +3471,13 @@ C Next layer
  40             CONTINUE
               ENDIF
 
-C Layer related. Check value of IPRMAT to see if an air gap.
+C Layer related
 C -------------
               IF (M.EQ.1 .OR. M.EQ.7 .OR. M.EQ.9 .OR. M.EQ.11 .OR. 
      &              M.EQ.13 .OR. M.EQ.14) THEN
                 DO 11 J=1,NbLays
                   ICurMat = IMatID(ICurComp,J)
-                  matarrayindex=IPRMAT(ICurComp,J)   ! which array index
+                  matarrayindex=IPRMAT(ICurComp,J)   ! which arrat index
                   if(matarrayindex.ge.0)then
  
 C And if matarrayindex is zero then reset dbcon dbden dbsht.
@@ -3439,11 +3497,11 @@ C And if matarrayindex is zero then reset dbcon dbden dbsht.
                     endif
                   endif
 
-C Loop over the impacts.
+C Loop over the impacts
                   DO 12 L=1,MIMP
                     IF (M.EQ.1.OR.M.EQ.9.OR.M.EQ.11.OR.M.EQ.13)THEN
                       LCAValue(L) = STEPIMP(ICurzone,ICurComp,J,-1,L,M)
-C Material replacement.
+C Material replacement
                     ELSEIF (M.EQ.7) THEN
                       LCAValue(L)=STEPIMP(ICurzone,ICurComp,J,-1,L,7)
                       LCAValue(L)=STEPIMP(ICurzone,ICurComp,J,-1,L,7)

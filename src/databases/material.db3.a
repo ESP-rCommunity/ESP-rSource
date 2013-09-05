@@ -7,17 +7,21 @@
 # Materials have the following attributes:
 #  conductivity (W/(m-K), density (kg/m**3) specific heat (J/(kg-K)
 #  emissivity out (-) emissivity in (-)#   absorptivity out (-) absorptivity in (-)
-#  diffusion resistance (MNs g^-1m^-1)
-#  default thickness (mm)
+#  diffusion rest (?) default thickness (mm)
 #  flag [-] legacy [o] opaque [t] transparent
-#       [g] gas or air gap
+#       [g] gas data+T cor [h] gas data at 4T
 #  
-# Transparent material additonal attributes:
+# Transparent material attributes:
 #  longwave tran (-) solar direct tran (-) solar reflec out (-) solar refled in (-)
 #  visable tran (-) visable reflec out (-) visable reflec in (-) colour rendering (-)
 #  
-# Gas material additional attributes:
+# Gas material attributes:
+#  (first 9 items the same) [g] or [h]
 #  air gap resistance for vert horiz other
+#  [g] 2 conduction, 2 viscosity, 2 density
+#      2 prandtl, 2 specific heat
+#  [h] 4 conduction, 4 viscosity, 4 density
+#      prandtl, specific heat
 #  
 # class index |nb items|description (32 char)
 *class, 1,11,Brick
@@ -111,7 +115,7 @@ Category ( 3) Metal has a range of metals, some are the same but are painted dif
 *item,steelSheedSBEM, 51, 3,Steel sheed SBEM
 60.000,7800.000,502.000,0.120,0.120,0.200,0.200,19200.000,1.0,-
 # class index |nb items|description (32 char)
-*class, 4,23,Wood
+*class, 4,22,Wood
 Category ( 4) Wood holds a range of wood types. Based on data traditionally distributed with ESP-r.
 *item,wood block, 61, 4,Block (wood)
 0.160,800.000,2093.000,0.900,0.900,0.650,0.650,11.000,25.0,-
@@ -157,8 +161,6 @@ Category ( 4) Wood holds a range of wood types. Based on data traditionally dist
 0.170,740.000,2000.000,0.900,0.900,0.650,0.650,250.000,12.0,-
 *item,HighDensityParticleBd, 91, 4,HDF based on info in Handbook of Heat Transfer by Thomas Irvine
 0.170,1000.000,1300.000,0.900,0.900,0.700,0.700,55.000,9.0,-
-*item,western larch, 92, 4,Wester Larch from simetric.co.uk and matbase specific ht via physical r prop and moisture relations of wood W Simpson and A TenWolde www.fs.d us/ccrc wood hanbook
-0.140,590.000,1800.000,0.900,0.900,0.650,0.650,12.000,25.0,-
 # class index |nb items|description (32 char)
 *class, 5, 9,Stone
 Category ( 5) Stone includes building stone and gravels. Based on data traditionally distributed with ESP-r.
@@ -239,7 +241,7 @@ Category ( 7) Screeds are products typically used horizontally and renders are u
 *item,mat_132,132, 7,Rendering (8% mc) (copy of mat_127) (UK code)
 0.790,1329.000,1000.000,0.910,0.910,0.500,0.500,19.000,50.0,-
 # class index |nb items|description (32 char)
-*class, 8,18,Tiles
+*class, 8,17,Tiles
 Category ( 8) Tiles includes both floor tiles, ceiling tiles and roof tile. Based on data traditionally distributed with ESP-r.
 *item,clay tile,141, 8,Clay tile
 0.850,1900.000,837.000,0.900,0.900,0.600,0.600,52.000,6.0,-
@@ -253,9 +255,9 @@ Category ( 8) Tiles includes both floor tiles, ceiling tiles and roof tile. Base
 0.300,1600.000,2000.000,0.940,0.940,0.820,0.820,1000.000,6.0,-
 *item,cork tile,146, 8,Cork tile
 0.080,530.000,1800.000,0.900,0.900,0.600,0.600,58.000,6.0,-
-*item,Asphalt/asbestos,147, 8,Asphalt/asbestos based tile
+*item,asphalt,147, 8,Asphalt/asbestos based tile
 0.550,1900.000,837.000,0.900,0.900,0.700,0.700,150.000,6.0,-
-*item,P.V.C./asbestos,148, 8,P.V.C./asbestos
+*item,plastic tile,148, 8,P.V.C./asbestos
 0.850,2000.000,837.000,0.900,0.900,0.600,0.600,1000.000,6.0,-
 *item,tile bedding,149, 8,Tile bedding/grout
 1.400,2100.000,650.000,0.900,0.900,0.600,0.600,25.000,6.0,-
@@ -275,10 +277,8 @@ Category ( 8) Tiles includes both floor tiles, ceiling tiles and roof tile. Base
 1.500,2100.000,1000.000,0.900,0.900,0.700,0.700,1000.000,10.0,o
 *item,EDPM rubber,157, 8,Rubber EDPM from IBO PassivHaus
 0.250,1200.000,1000.000,0.940,0.940,0.820,0.820,19200.000,6.0,-
-*item,EDPM for facades,158, 8,EDPM used in facade framing data from IEBAU Muttenz CH
-0.250,1050.000,1470.000,0.940,0.940,0.920,0.920,19200.000,3.0,-
 # class index |nb items|description (32 char)
-*class, 9,14,Asphalt and bitumen
+*class, 9,13,Asphalt and bitumen
 Category ( 9) Asphalt and bitumen also includes materials which use bitumen and asphalt like compositions. Based on data traditionally distributed with ESP-r.
 *item,bitumen felt,161, 9,Bitumen felt
 0.500,1700.000,1000.000,0.900,0.900,0.900,0.900,1000.000,6.0,-
@@ -306,8 +306,6 @@ Category ( 9) Asphalt and bitumen also includes materials which use bitumen and 
 0.250,1020.000,1400.000,0.900,0.900,0.800,0.800,19200.000,6.0,-
 *item,mat_173,173, 9,wool felt underlay (UK assumptions)
 0.040,160.000,1360.000,0.900,0.900,0.900,0.900,15.000,6.0,-
-*item,EDPM membrane,174, 9,EDPM membrane roofing or foundations data from Aquaflex aqua-flex.com
-0.170,1180.000,1470.000,0.900,0.900,0.920,0.920,19200.000,2.0,-
 # class index |nb items|description (32 char)
 *class,10, 4,Asbestos
 Category (10) Asbestos is included for historic reasons, but some regions still use asbestos in building products. Based on data traditionally distributed with ESP-r.
@@ -328,12 +326,12 @@ Category (11) Insulation materials (1) is an initial tranche of loose, batt and 
 0.100,500.000,1000.000,0.900,0.900,0.500,0.500,5.000,100.0,-
 *item,UF foam,203,11,UF foam
 0.030,30.000,1764.000,0.900,0.900,0.500,0.500,5.000,100.0,-
-*item,Thermalite,204,11,Thermalite high strength block heidelbergcement.com
-0.190,730.000,1050.000,0.900,0.900,0.700,0.700,10.000,100.0,-
+*item,Thermalite,204,11,Thermalite
+0.190,753.000,837.000,0.900,0.900,0.700,0.700,10.000,100.0,-
 *item,Polyurethane foam bd,205,11,Polyurethane foam board
 0.030,30.000,837.000,0.900,0.900,0.500,0.500,90.000,100.0,-
-*item,Siporex,206,11,Siporex block (autoclaved aerated concrete) lccsiporex.com
-0.144,550.000,1004.000,0.900,0.900,0.400,0.400,60.000,100.0,-
+*item,Siporex,206,11,Siporex
+0.120,550.000,1004.000,0.900,0.900,0.400,0.400,60.000,100.0,-
 *item,PVC,207,11,PVC
 0.160,1379.000,1004.000,0.900,0.900,0.600,0.600,70.000,10.0,-
 *item,hard rubber,208,11,Hard rubber
@@ -358,8 +356,8 @@ Category (11) Insulation materials (1) is an initial tranche of loose, batt and 
 0.040,105.000,1800.000,0.900,0.900,0.600,0.600,15.000,100.0,-
 *item,straw thatch,218,11,Straw thatch
 0.070,240.000,180.000,0.900,0.900,0.500,0.500,3.000,100.0,-
-*item,Thermalite turbo block,219,11,Thermalite turbo block heidelbergcement.com
-0.110,470.000,1050.000,0.900,0.900,0.650,0.650,10.000,100.0,-
+*item,Thermalite,219,11,Thermalite turbo blk
+0.110,480.000,1050.000,0.900,0.900,0.650,0.650,10.000,100.0,-
 *item,XPS CO2 foamed,220,11,XPS extruded polystyrene foamed with Co2 from IBO PassivHaus
 0.040,38.000,1450.000,0.900,0.900,0.300,0.300,350.000,100.0,-
 *item,celulose fiber flakes,233,11,cellulose fibre insulation flakes from IBO PassivHaus
@@ -392,7 +390,7 @@ Category (12) Carpet includes both natural and synthetic carpets, some differ on
 *item,mat_232,232,12,linoleum as per CSTC Belgium 1980
 0.190,1200.000,1470.000,0.900,0.900,0.600,0.600,10.000,5.0,-
 # class index |nb items|description (32 char)
-*class,13,12,Glass
+*class,13,10,Glass
 Category (13) Glass with additional single layer optical properties (some estimated, some still all zero). Based on data traditionally distributed with ESP-r.
 *item,glass block,241,13,Glass block with placeholder single layer optics
 0.700,3500.000,837.000,0.830,0.830,0.050,0.050,19200.000,6.0,t,0.000,0.000,0.000,0.000,0.000,0.000,0.000,0.000
@@ -414,10 +412,6 @@ Category (13) Glass with additional single layer optical properties (some estima
 1.050,2500.000,750.000,0.840,0.100,0.060,0.060,19200.000,6.0,t,0.000,0.600,0.170,0.220,0.840,0.055,0.078,0.000
 *item,dispGlz_not_modCond,250,13,6 mm clear glass (copy of 6 mm clear glass)
 30.000,2500.000,750.000,0.840,0.840,0.060,0.060,19200.000,6.0,t,0.000,0.780,0.000,0.070,0.880,0.080,0.080,0.000
-*item,low-iron-glass,251,13,low iron glass for use in PV modules and solar collectors
-1.050,2500.000,750.000,0.830,0.830,0.050,0.050,19200.000,6.0,t,0.000,0.000,0.000,0.000,0.000,0.000,0.000,0.000
-*item,EVA layer,252,13,EVA layer for embedded PV cells (resin cell resin)
-0.380,920.000,2100.000,0.900,0.900,0.500,0.500,19200.000,6.0,t,0.000,0.000,0.000,0.000,0.000,0.000,0.000,0.000
 # class index |nb items|description (32 char)
 *class,14, 8,Earth
 Category (14) Earth includes loose materials. Also check the stone category for other gravels. Based on data traditionally distributed with ESP-r.
@@ -468,7 +462,7 @@ Category (15) Insulation materials (2) is a second tranche of loose, batt and fo
 0.050,12.000,1000.000,0.900,0.900,0.700,0.700,30.000,50.0,-
 *item,Mineral wool batt 100mm,294,15,Insulation (Mineral wool batt default 100mm)
 0.040,25.000,1000.000,0.900,0.900,0.700,0.700,30.000,100.0,-
-*item,Min wool quilt 60mm,295,15,Insulation (Min wool quilt default 60 mm)
+*item,Min wool quilt 60 mm,295,15,Insulation (Min wool quilt default 60 mm)
 0.040,12.000,1030.000,0.900,0.900,0.700,0.700,30.000,60.0,-
 *item,PUR,296,15,notional floor UK material
 0.026,12.000,1030.000,0.900,0.900,0.700,0.700,30.000,60.0,-

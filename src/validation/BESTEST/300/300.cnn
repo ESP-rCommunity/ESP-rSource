@@ -1,5 +1,5 @@
-*connections for 300
-*Date Wed Aug 29 13:11:51 2012
+*connections  for 300
+*Date Wed Oct 14 10:23:14 2009
       8   # number of connections
    1   1   0   0   0  #    1 East_Wall in 300 is External
    1   2   0   0   0  #    2 North_Wall in 300 is External

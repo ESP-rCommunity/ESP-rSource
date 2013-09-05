@@ -431,7 +431,6 @@ C *********************************************************************
 #include "geometry.h"
 #include "control.h"
 
-      COMMON/OUTIN/IUOUT,IUIN
       COMMON/PRECTC/ITMCFL(MCOM,MS),TMCT(MCOM,MTMC,5),
      &       TMCA(MCOM,MTMC,ME,5),TMCREF(MCOM,MTMC),TVTR(MCOM,MTMC)
 
@@ -527,12 +526,7 @@ C Present term.
       CALL CFFVLU(IAIR,IPRT,CFV,IPRV,LCTN)
       CALL UPDZMX(IAIR,IPRT,PTERM,IPRV,LCTN)
       RETURN
-      
-    5 call edisp(iuout,
-     & 'error reading ND1 VOLM DNHC IS  or IL in control volumes file')
-      call epwait
-      call epagend
-      STOP ' error detected in the control volumes file.'
+    5 STOP ' error detected in the control volumes file.'
       END
 
 C *************************    MZ3SU3    ******************************
@@ -542,7 +536,6 @@ C *********************************************************************
       SUBROUTINE MZ3SU3
 #include "building.h"
 
-      COMMON/OUTIN/IUOUT,IUIN
       COMMON/GR3D110/ICVS,ICNC,INDC,INDD,ITAQ,ITLW,ILWV,ITF3
       COMMON/GR3D131/IAIR,IPLT,IPRT,IAVL,NZMCF
       COMMON/GR3D132/T3F(MNOD3)
@@ -570,12 +563,7 @@ C Present term.
         CALL UPDZMX(ND1,IPRT,PTERM,IPRV,LCTN)
       ENDIF
       GOTO 10
-
-    5 call edisp(iuout,
-     &  'error reading nd1 volm or dnhc in the control volumes file')
-      call epwait
-      call epagend
-      STOP ' error detected in the control volumes file.'
+    5 STOP ' error detected in the control volumes file.'
       END
 
 C ***************************    ENRGYO    ****************************
