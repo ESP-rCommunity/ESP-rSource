@@ -412,8 +412,10 @@ c is calculated every timestep from the heat pump calculation. This value has be
 c load averaged for the ground loop calculation.
 
            COP = daily_GSHP_COP(load_weighted_GSHP_COP,daily_heat_load)
-
-           dQ(iPeriod) = - daily_heat_load/1000. * (1 - 1/COP)
+           if ( ABS(daily_cool_load) > 0.1 ) then 
+             dQ(iPeriod) = daily_cool_load/1000. * (1 + 1/COP) 
+           endif 
+           
 
 c For days where there is a cooling load and no heating load, dQ
 c will be a function of daily_cool_load and COP.
@@ -425,7 +427,9 @@ c load averaged for the ground loop calculation, so we will not account for the
 c COP when the load is zero.
              COP = daily_GSHP_COP(load_weighted_GSHP_COP,
      &                            daily_cool_load)   
-             dQ(iPeriod) = daily_cool_load/1000. * (1 + 1/COP) 
+             if ( ABS(daily_cool_load) > 0.1 ) then 
+               dQ(iPeriod) = daily_cool_load/1000. * (1 + 1/COP) 
+             endif 
 
          else
 c For days where there are both heating and cooling loads and no cooling load, dQ
