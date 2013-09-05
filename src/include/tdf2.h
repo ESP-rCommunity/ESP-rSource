@@ -118,6 +118,7 @@ C is the 6th item in the temporal file.
       integer ISKYTMP   ! if non-zero measured sky temperature (not yet used)
       integer IGLOVRT   ! if non-zero vertical global solar is used
       integer ICASUAL3  ! if non-zero separate casual gains are used
+      integer IELECPWR  ! if non-zero real & reactive power available (one per zn)
       integer IACTIV    ! if non-zero a zone activity pattern is used
       integer IBIDIRS   ! if non-zero bidirectional data available
       integer IVERSOL   ! if non-zero surface vertical global solar used
@@ -129,6 +130,6 @@ C is the 6th item in the temporal file.
       COMMON/TDFFLG2/IALLCLM,ICASUAL(MCOM),IZIVENT(MCOM),IRAIRVL(MCOM),
      &       ISETPTT(MCOM),ICTLSTA(MCOM),ISKYLUX,IDBTEXT,IWINDVL,
      &       IWINDDR,IRELHUM,IDIFHSL,IDIRSOL,IGLOHSL,IOBJVEL,IOBJDIR,
-     &       ISKYTMP,IGLOVRT,ICASUAL3(MCOM),IACTIV(MCOM),
+     &       ISKYTMP,IGLOVRT,ICASUAL3(MCOM),IELECPWR(MCOM),IACTIV(MCOM),
      &       IBIDIRS(MCOM,MS),IVERSOL(MCOM,MS),IHTCLSETP(MCOM),
      &       IDBTZNM(MCOM),ISURTMEAS(MCOM,MS),IMFNTDFP(MNOD),IMFNTDFF

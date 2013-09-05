@@ -126,6 +126,10 @@ C Search instances in temporal file to find match(s).
      &                  ICASUAL(itd3)=itd4
                       if(DBTASK(ITD1)(1:7).eq.'CASUAL3')
      &                  ICASUAL3(itd3)=itd4
+
+C Associate with real & reactive power item with a zone.
+                      if(DBTASK(ITD1)(1:7).eq.'ELECPWR')
+     &                  IELECPWR(itd3)=itd4
                       if(DBTASK(ITD1)(1:6).eq.'ZIVENT')
      &                  IZIVENT(itd3)=itd4
                       if(DBTASK(ITD1)(1:6).eq.'RAIRVL')

@@ -300,6 +300,8 @@ C ------------------------------------------------------------------------------
       implicit none
 #include "building.h"
 #include "power.h"
+#include "net_flow.h"
+#include "tdf2.h"
 
 C External functions.
       integer lnblnk
@@ -319,6 +321,8 @@ C Trace & reporting data
 C Common holding simulation type (building, building+plant, or plant-only simulation)
       integer indcfg
       common/c6/indcfg
+      integer ncomp,ncon
+      common/c1/ncomp,ncon
 
 C---------------------------------------------------------------------------------
 C Commons holding simulation time-clock variables.
@@ -352,9 +356,11 @@ C-------------------------------------------------------------------------------
 C Declarations for local variables.
 C---------------------------------------------------------------------------------
       REAL      q_nonHVAC_elec, q_HVAC_elec
+      INTEGER   IZ
       LOGICAL   XST,dll
       CHARACTER OUTS*124
       LOGICAL   FCL_converted
+      LOGICAL   havereactive
 
       REAL fFuture_Time                    ! time on future time row.
 
@@ -362,6 +368,7 @@ C-------------------------------------------------------------------------------
 C--------------------------------------------------------------------------------
 C Determine the time corresponding to future time row
 C--------------------------------------------------------------------------------
+      havereactive= .false.
       if ( indcfg .eq. 1 ) then
 C........Building+electrical net simulation --- elec. domain is
 C........processed at the same frequency as building domain.
@@ -404,17 +411,35 @@ C-------------------------------------------------------------------------------
          if(XST)then
             iFClds=1
          else
-           write(outs,'(3a)') 'FC loads file ',LFClds(1:lnblnk(LFClds)),
-     &                        ' was referenced but not found.'
-            call isadll(dll)  ! Move this to within loop below.
-            if(dll)then
+
+C If FC loads file does not exist but there is a temporal item ELECPWR
+C then it will be associated with a zone. Bookkeepping needed to figure
+C out specific links. Loop through all the zone to see if IELECPWR()
+C is non-zero and matches the part of the electrical network.....
+           if(ITEMSTD.gt.0)then
+             do iz = 1,ncomp
+               if(IELECPWR(iz).gt.0)then
+C                if(??.eq.??)then
+C                   havereactive=.true.
+C << ?? logic >>
+C                endif
+               endif
+             enddo
+           else
+
+             write(outs,'(3a)') 'FC loads file ',
+     &                           LFClds(1:lnblnk(LFClds)),
+     &                           ' was referenced but not found.'
+             call isadll(dll)  ! Move this to within loop below.
+             if(dll)then
                dllsubr='ersys'
                dllmesg=outs
                return
-            else
+             else
                call edisp(iuout,outs)
                STOP ' Need elec loads data: unresolvable error.'
-            endif
+             endif
+           endif
          endif
          CALL FC_eloads_convert
       END IF

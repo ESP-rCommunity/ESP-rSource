@@ -129,7 +129,7 @@ C       GMH='2,1,0,0,1,0,-999.0'
       LOGICAL FOUND
 
 C Pick up the arrays used for displaying current generic items.
-      NITEMS=23
+      NITEMS=24
       GTYPES(1) ='ALLCLMT'
       GMENUS(1) ='Climate data (all six):'
       GTYPES(2) ='DBTEXTT'
@@ -180,6 +180,8 @@ C SURTM is not used by the simulator, res will graph/list it.
       GMENUS(22)='Surface T (to display):'
       GTYPES(23)='NODPRESS'
       GMENUS(23)='Flow node press Pa:    '
+      GTYPES(24)='ELECPWR'
+      GMENUS(24)='Real & reactive power: '
 
 C If not looking for a specific item then return.
       IF(FOCUS(1:7).EQ.'ALLCLMT')THEN
@@ -594,7 +596,22 @@ C Measured node pressure (for reporting in res): one data item.
         GMF(1)='REAL,1,0.0,-50.0,50.0'
         MGMA(1)='Measured node press(Pa): '
         FOUND=.TRUE.
+      ELSEIF(FOCUS(1:7).EQ.'ELECPWR')THEN
 
+C Real & reactive power for electrical networks: two data items.
+        GAIDE   ='Real & reactive power (W)'
+        GHELP(1)='Electrical equipment has both a real and reactive'
+        GHELP(2)='power value depending on its power factor. You can'
+        GHELP(3)='specify sources or demands via this item.'        
+        GMH='3,2,0,0,2,0,-999.9'
+        GDHDRT(1)='   time  | Real power|Reactive pwr'
+        GDHDRT(2)='   of day| (W)       |  (W)       '
+        GDHDRT(3)='Real:react power (W):'
+        GMF(1)='REAL,1,0.0,0.0,900000.0'
+        MGMA(1)='Real power (W): '
+        GMF(2)='REAL,2,0.0,0.0,900000.0'
+        MGMA(2)='Reactive power (W): '
+        FOUND=.TRUE.
       ELSEIF(FOCUS(1:4).EQ.'ALL ')THEN
         RETURN
 
