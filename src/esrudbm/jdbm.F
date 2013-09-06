@@ -56,8 +56,6 @@ C Redirected text/graphics parameters.
       common/exporttg/xfile,tg,delim
       common/exporttgi/ixopen,ixloc,ixunit
 
-      common/C21/IFCFG,cfgroot,LCFGF
-
 C Path to problem and command line file (if any).
       common/rpath/path
       common/rcmd/LCMDFL
@@ -98,15 +96,18 @@ C Name of current application
       dimension dba(MGDB)
       character dbtag*12,dbmenu*32,dbdate*24,dbdoc*248,dbnote*72
       character cattag*12,cattype*8,catmenu*32,catdate*24,catdoc*248
-      character ittag*12,itmenu*32,seldb*12,cnsel*12,MODE*4,LCFGF*72
+      character ittag*12,itmenu*32,seldb*12,cnsel*12,MODE*4
       character LGENDB*72,LAGENDB*72
       character item*54,db*12,fs*1,inf*144,LCMDFL*144,dfile*72
       character tfile*72
       character outs248*248,LTMP*144
       character path*72,pass*12,outs*124
-      character xfile*144,tg*1,delim*1,cfgroot*24
+      character xfile*144,tg*1,delim*1
       character dba*12,act*1,action*12
 C      character curfile*72
+
+      character cVnum*16      ! returned from ESPrVersionNum
+      character pagestitle*42 ! for banner title via epages call
 
       integer iglib   ! if 1 then X11, if 2 then GTK, if 3 then text only.
       integer ier
@@ -119,8 +120,12 @@ C For help messages
 
 #ifdef OSI
       integer impx,impy,iw
+      integer iigl,iigr,iigt,iigb,iigw,iigwh
+      integer iiw1,iiw2,iiw3,iiw4,iimenu
 #else
       integer*8 impx,impy,iw
+      integer*8 iigl,iigr,iigt,iigb,iigw,iigwh
+      integer*8 iiw1,iiw2,iiw3,iiw4,iimenu
 #endif
 
       call ezero
@@ -199,14 +204,25 @@ C Set initial font sizes (IMFS is for graphs, IFS is for dialog & text feedback)
         LIMTTY=18
         LIMIT =18
       ENDIF
+
+C Find the current ESP-r version number and add it to application title.
+      call ESPrVersionNum(cVnum)
+      write(pagestitle,'(2a)') 'ESP-r db manager ',
+     &  cVnum(1:lnblnk(cVnum))
+
       CALL EPAGES(MMOD,IUIN,IUOUT,iappwi,iapphi,iappx,iappy,menuchw,
-     &'ESP-r db manager: enquiries to esru@strath.ac.uk')
+     &  pagestitle)
 
 C Open the text display box equal to LIMTTY if MODEL = 8.
       IF(MODEL.EQ.8)THEN
-        CALL win3d(menuchw,8,20,3,3,igl,igr,igt,igb,igw,igwh)
-        igw=igr-igl
-        igwh=igb-igt
+
+C Setup and pass in parameters to win3d.
+        iiw1=8; iiw2=20; iiw3=3; iiw4=3; iimenu=menuchw
+        iigl=igl; iigr=igr; iigt=igt; iigb=igb; iigw=igw; iigwh=igwh
+        CALL win3d(iimenu,iiw1,iiw2,iiw3,iiw4,
+     &    iigl,iigr,iigt,iigb,iigw,iigwh)
+        igl=int(iigl); igr=int(iigr); igt=int(iigt); igb=int(iigb)
+        igw=int(iigw); igwh=int(iigwh)
         iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
         if(iglib.eq.1)then
           call opencpw
@@ -823,6 +839,46 @@ C ***** dummy routines for c code active descriptions buttons.
       return
       end
 
+      subroutine chgsun(isunhour)
+      return
+      end
+
+      subroutine chgeye(EVX,EVY,EVZ,VX,VY,VZ,EAN,JITZNM,JITSNM,JITVNO,
+     &   JITOBS,JITSNR,JITGRD,JITORG,DIS,JITBND,JITDSP,JITHLS,JITHLZ,
+     &   JITPPSW)
+
+C Passed paramters.
+      real EVX,EVY,EVZ,VX,VY,VZ,EAN,DIS
+
+C Depending on computer type set integer size of passed parameters.
+#ifdef OSI
+      integer JITZNM,JITSNM,JITVNO,JITOBS,JITSNR,JITGRD,JITORG
+      integer JITBND,JITDSP,JITHLS,JITHLZ,JITPPSW
+#else
+      integer*8 JITZNM,JITSNM,JITVNO,JITOBS,JITSNR,JITGRD,JITORG
+      integer*8 JITBND,JITDSP,JITHLS,JITHLZ,JITPPSW
+#endif     
+      return
+      end
+
+      subroutine chgzonpik(jizgfoc,jnzg)
+#ifdef OSI
+      integer jizgfoc,jnzg  ! for use with viewtext
+#else
+      integer*8 jizgfoc,jnzg  ! for use with viewtext
+#endif
+      return
+      end
+
+      subroutine chgzonpikarray(jnznog,jnznogv)
+#ifdef OSI
+      integer jnznog,jnznogv
+#else
+      integer*8 jnznog,jnznogv
+#endif
+      return
+      end
+
 C **** kact returns a single character for use as a key in a menu based
 C on browse or modify act character.
       character*1 function kact(act,key)
@@ -1186,90 +1242,6 @@ C Create a matching ascii version of the generic db.
               call EFOPRAN(igendbf(idp),gendbfn(idp),idbw,1,IER)
               gendbok(idp)=.true.
             endif
-          elseif(iter.eq.4)then
-
-C Legacy binary materials db found. First transfer from legacy
-C binary to legacy ASCII and then import that to generic format.
-            lenf=lnblnk(gendbfn(idp))
-            write(outs,*) 'Legacy bin ',gendbfn(idp)(1:lenf),
-     &        ' needing conversion...'
-            call edisp(iuout,outs)
-
-            if(dbspth(1:2).eq.'  '.or.dbspth(1:2).eq.'./')then
-              write(tfile,'(a)') dba(i)(1:lnblnk(dba(i)))
-            else
-              write(tfile,'(3a)') dbspth(1:lnblnk(dbspth)),fs,
-     &          dba(i)(1:lnblnk(dba(i)))
-            endif
-            helptopic='deal_with_older_format'
-            call gethelptext(helpinsub,helptopic,nbhelp)
- 149        CALL EASKS(tfile,'Root name of converted database?',
-     &        ' ',72,'xx_db','root file name',IER,nbhelp)
-            IF(tfile(1:2).EQ.'  '.or.ier.NE.0)GOTO 149
-            write(afil,'(2a)')   tfile(1:lnblnk(tfile)),'.la'
-            write(LAGENDB,'(2a)')tfile(1:lnblnk(tfile)),'.gdba'
-            write(LBGENDB,'(2a)')tfile(1:lnblnk(tfile)),'.gdb'
-            IAFIL=IFIL+1
-            IBFIL=IFIL+2
-            if(idp.eq.2)then
-
-C Use standard esp-r common flow for legacy materials db.
-              LFMAT=gendbfn(idp)
-              IFMAT=IFIL+2
-              ier=0
-              call EFOPRAN(IFMAT,LFMAT,40,1,IER)
-              if(ier.ne.0)then
-                call usrmsg('unable to open legacy binary materials db',
-     &            LFMAT,'W')
-                gendbok(idp)=.false.
-                goto 42
-              endif 
-              CALL MKAPRC(afil,IAFIL,IER)
-              IBFIL=IFIL+2
-              call imprimmat(IAFIL,afil,IBFIL,LBGENDB,idp,IER)
-
-C Create a matching ascii version of the generic db.
-              call MKAGDB(IAFIL,LAGENDB,IBFIL,LBGENDB,idp,IER)
-              if(ier.ne.0)then
-                call usrmsg(' Problem encountered creating a ',
-     &            'text version of the generic database.','W')
-                gendbok(idp)=.false.
-                goto 42
-              endif
-            elseif(idp.eq.11)then
-
-C Convert binary events profiles database into the ASCII version
-C filling the common blocks. 
-              write(LPRFDB,'(a)') gendbfn(idp)
-              IPRODB=IFIL+2
-              CALL TROPRO(IAFIL,afil,IER)
-              if(ier.eq.0)then
-                lenf=lnblnk(afil)
-                write(outs,*) 'Legacy asci profiles ',afil(1:lenf),
-     &            ' created...'
-                call edisp(iuout,outs)
-                call IMPROFL(IAFIL,afil,IBFIL,LBGENDB,idp,IER)
-
-C Create a matching ascii version of the generic db.
-                call MKAGDB(IAFIL,LAGENDB,IBFIL,LBGENDB,idp,IER)
-                if(ier.ne.0)then
-                  call usrmsg(' Problem encountered creating a ',
-     &              'text version of the generic database.','W')
-                  gendbok(idp)=.false.
-                  goto 42
-                endif
-              endif
-            endif
-            db=dbtag(idp)
-            idbw=idbwidth(idp)
-            call SCANDB(ibfil,LBGENDB,db,idp,IER)
-            if(ier.eq.0)then
-              gendbfn(idp)=LBGENDB
-              CALL ERPFREE(igendbf(idp),IOS)
-              ier=0
-              call EFOPRAN(igendbf(idp),gendbfn(idp),idbw,1,IER)
-              gendbok(idp)=.true.
-            endif
           endif
   42    continue
       else
@@ -1439,90 +1411,6 @@ C Create a matching ascii version of the generic db.
      &        'text version of the database.','W')
             gendbok(idp)=.false.
             return
-          endif
-          db=dbtag(idp)
-          idbw=idbwidth(idp)
-          call SCANDB(ibfil,LBGENDB,db,idp,IER)
-          if(ier.eq.0)then
-            gendbfn(idp)=LBGENDB
-            CALL ERPFREE(igendbf(idp),IOS)
-            ier=0
-            call EFOPRAN(igendbf(idp),gendbfn(idp),idbw,1,IER)
-            gendbok(idp)=.true.
-          endif
-        elseif(iter.eq.4)then
-
-C Legacy binary materials db found. First transfer from legacy
-C binary to legacy ASCII and then import that to generic format.
-          lenf=lnblnk(gendbfn(idp))
-          write(outs,*) 'Legacy bin ',gendbfn(idp)(1:lenf),
-     &      ' needing conversion...'
-          call edisp(iuout,outs)
-
-          if(dbspth(1:2).eq.'  '.or.dbspth(1:2).eq.'./')then
-            write(tfile,'(a)') dba(i)(1:lnblnk(dba(i)))
-          else
-            write(tfile,'(3a)') dbspth(1:lnblnk(dbspth)),fs,
-     &        dba(i)(1:lnblnk(dba(i)))
-          endif
-          helptopic='deal_with_older_format'
-          call gethelptext(helpinsub,helptopic,nbhelp)
- 159      CALL EASKS(tfile,'Root name of converted database?',
-     &      ' ',72,'xx_db','root file name',IER,nbhelp)
-          IF(tfile(1:2).EQ.'  '.or.ier.NE.0)GOTO 159
-          write(afil,'(2a)')   tfile(1:lnblnk(tfile)),'.la'
-          write(LAGENDB,'(2a)')tfile(1:lnblnk(tfile)),'.gdba'
-          write(LBGENDB,'(2a)')tfile(1:lnblnk(tfile)),'.gdb'
-          IAFIL=IFIL+1
-          IBFIL=IFIL+2
-          if(idp.eq.2)then
-
-C Use standard esp-r common flow for legacy materials db.
-            LFMAT=gendbfn(idp)
-            IFMAT=IFIL+2
-            ier=0
-            call EFOPRAN(IFMAT,LFMAT,40,1,IER)
-            if(ier.ne.0)then
-              call usrmsg('unable to open legacy binary materials db',
-     &          LFMAT,'W')
-              gendbok(idp)=.false.
-              return
-            endif 
-            CALL MKAPRC(afil,IAFIL,IER)
-            IBFIL=IFIL+2
-            call imprimmat(IAFIL,afil,IBFIL,LBGENDB,idp,IER)
-
-C Create a matching ascii version of the generic db.
-            call MKAGDB(IAFIL,LAGENDB,IBFIL,LBGENDB,idp,IER)
-            if(ier.ne.0)then
-              call usrmsg(' Problem encountered creating a ',
-     &          'text version of the generic database.','W')
-              gendbok(idp)=.false.
-              return
-            endif
-          elseif(idp.eq.11)then
-
-C Event profiles. 
-C << move to using common blocks version of events >>
-            write(LPRFDB,'(a)') gendbfn(idp)
-            IPRODB=IFIL+2
-            CALL TROPRO(IAFIL,afil,IER)
-            if(ier.eq.0)then
-              lenf=lnblnk(afil)
-              write(outs,*) 'Legacy asci profiles ',afil(1:lenf),
-     &          ' created...'
-              call edisp(iuout,outs)
-              call IMPROFL(IAFIL,afil,IBFIL,LBGENDB,idp,IER)
-
-C Create a matching ascii version of the generic db.
-              call MKAGDB(IAFIL,LAGENDB,IBFIL,LBGENDB,idp,IER)
-              if(ier.ne.0)then
-                call usrmsg(' Problem encountered creating a ',
-     &            'text version of the generic database.','W')
-                gendbok(idp)=.false.
-                return
-              endif
-            endif
           endif
           db=dbtag(idp)
           idbw=idbwidth(idp)
@@ -1770,7 +1658,7 @@ C      common/gendb/LGENDB
       character outs*124,LTMP*72,afil*72,LEXP*72
       character tfile*72,act*1,dba*12,db*12,dbask*12,fs*1,doit*248
       character LAGENDB*72,LGENDB*72
-      character dinstpath*48,path*72,dirpath*48
+      character dinstpath*60,path*72,dirpath*72
       logical unixok,browse,moddb,copydef,XST,newfile
       logical legacy,asciifound
       integer ier
@@ -2147,6 +2035,7 @@ C Depending on the type of database call various conversion functions.
             gendbok(idbhash)=.true.
             gendbfn(idbhash)=LGENDB
             moddb=.true.
+
 C << next lines ask if user want to use this database >>
 C << and if not to back out to the earlier database name >>
 C              dok=.true.
@@ -2168,94 +2057,6 @@ C                    call EFOPRAN(icurfu,curfile,idbw,1,IER)
 C                  endif
 C                endif
 
-            goto 42
-          endif
-        elseif(iter.eq.4)then
-
-C Legacy binary db found. First transfer from legacy binary
-C (gendbfn()) to legacy ASCII (afil) and then import that to
-C generic format ASCII (LAGENDB) and binary (LGENDB).
-          lenf=lnblnk(gendbfn(idbhash))
-          write(outs,*) 'Legacy bin ',gendbfn(idbhash)(1:lenf),
-     &      ' needing conversion...'
-          call edisp(iuout,outs)
-          if(dbspth(1:2).eq.'  '.or.dbspth(1:2).eq.'./')then
-            write(tfile,'(a)') dba(idbhash)(1:lnblnk(dba(idbhash)))
-          else
-            write(tfile,'(3a)') dbspth(1:lnblnk(dbspth)),fs,
-     &        dba(idbhash)(1:lnblnk(dba(idbhash)))
-          endif
-          helptopic='deal_with_older_format'
-          call gethelptext(helpinsub,helptopic,nbhelp)
- 149      CALL EASKS(tfile,'Root name of converted database?',
-     &      ' ',72,'xx_db','root file name',IER,nbhelp)
-          IF(tfile(1:2).EQ.'  '.or.ier.NE.0)GOTO 149
-          write(afil,'(2a)')   tfile(1:lnblnk(tfile)),'.la'
-          write(LAGENDB,'(2a)')tfile(1:lnblnk(tfile)),'.gdba'
-          write(LGENDB,'(2a)')tfile(1:lnblnk(tfile)),'.gdb'
-          IAFIL=IFIL+1
-          IBFIL=IFIL+2
-          if(dbask(1:8).eq.'material')then
-
-C Use standard esp-r common code for legacy materials db.
-            LFMAT=gendbfn(idbhash)
-            IFMAT=IFIL+2
-            ier=0
-            call EFOPRAN(IFMAT,LFMAT,40,1,IER)
-            if(ier.ne.0)then
-              call usrmsg('unable to open legacy binary materials db',
-     &          LFMAT,'W')
-              jdbhash=0
-              return
-            endif 
-            CALL MKAPRC(afil,IAFIL,IER)
-            IBFIL=IFIL+2
-
-C Depending on the type of database call various conversion functions.
-            if(dbask(1:8).eq.'material')then
-              call imprimmat(IAFIL,afil,IBFIL,LGENDB,idbhash,IER)
-            endif
-
-C Create a matching ascii version of the generic db.
-            call MKAGDB(IAFIL,LAGENDB,IBFIL,LGENDB,idbhash,IER)
-            if(ier.ne.0)then
-              call usrmsg(' Problem encountered creating a ',
-     &          'text version of the generic database.','W')
-              jdbhash=0
-              return
-            endif
-            moddb=.true.
-            jdbhash=idbhash
-            gendbok(idbhash)=.true.
-            gendbfn(idbhash)=LGENDB
-            goto 42
-          elseif(dbask(1:8).eq.'profiles')then
-
-C Event profiles database. 
-C << need to move to common block version of data >>
-            write(LPRFDB,'(a)')  gendbfn(idbhash)
-            IPRODB=IFIL+2
-            CALL TROPRO(IAFIL,afil,IER)
-            if(ier.eq.0)then
-              lenf=lnblnk(afil)
-              write(outs,*) 'Legacy asci profiles ',afil(1:lenf),
-     &          ' created...'
-              call edisp(iuout,outs)
-              call IMPROFL(IAFIL,afil,IBFIL,LGENDB,jdbhash,IER)
-
-C Create a matching ascii version of the generic db.
-              call MKAGDB(IAFIL,LAGENDB,IBFIL,LGENDB,jdbhash,IER)
-              if(ier.ne.0)then
-                call usrmsg(' Problem encountered creating a ',
-     &            'text version of the generic database.','W')
-                jdbhash=0
-                return
-              endif
-            endif
-            moddb=.true.
-            jdbhash=idbhash
-            gendbok(idbhash)=.true.
-            gendbfn(idbhash)=LGENDB
             goto 42
           endif
         elseif(iter.eq.-301)then
@@ -2425,6 +2226,7 @@ C calls in esru_lib.F
       ier=0
       return
       end
+
 
       SUBROUTINE EMKVIEW(IUO,CFGOK,IER)
       logical cfgok

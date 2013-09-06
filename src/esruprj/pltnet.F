@@ -478,11 +478,15 @@ C ********************** ASKPCMP
 C ASKPCMP presents a list of plant components returning the index IS.
 C If MOD = 'M' then include option to add an item then the appropriate
 C interaction is begun.
+C **CDB affected
       SUBROUTINE ASKPCMP(head,MOD,IS,IER)
 #include "epara.h"
 #include "plant.h"
+#include "gencompDB.h"
+c#include "gencompDB_common.h"
 
       COMMON/C9/NPCOMP,NCI(MPCOM),CDATA(MPCOM,MMISCD)
+      COMMON/C9plus/UCdbNam(MPCOM),CdbCat(MPCOM),CDBDesc(MPCOM)
 
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/OUTIN/IUOUT,IUIN
@@ -491,18 +495,25 @@ C interaction is begun.
       common /pcddsc/ pcdesc(maxpc), npref(mpcom)
       common/pcsort/icode(maxpc)
 
-      DIMENSION VERT(35), CTYPE(4)
-      CHARACTER PCNAME*15
+C Common for new format component database
+      COMMON/NCDBFORM/ICDBF
+
+
+      DIMENSION cVERT(35), CTYPE(4)
+      CHARACTER PCNAME*15, UCdbNam*16, CDBCAT*32, CDBDesc*72
       character*80 pcdesc
+      integer icdbf
 
       character*(*) head
-      CHARACTER H*72,VERT*44,KEY*1,MOD*1,ctype*16,desc*16
+      CHARACTER H*72,cVERT*48,KEY*1,MOD*1,ctype*16,desc*16
       LOGICAL SELECT,OK,dok
       integer MVERT,IVERT,IDVERT ! max items and current menu item
 
 C Initialise node menu variables based on window size. 
 C IVERT is the menu position, MVERT the current number 
 C of menu lines based on selected list.
+
+C if icdbf check here!
       ctype(1)= 'air conditioning'
       ctype(2)= 'water heating   '
       ctype(3)= 'primitive part  '
@@ -517,8 +528,10 @@ C of menu lines based on selected list.
       MCTL=6
       ILEN=NPCOMP
 
+C *** CDB affected!
 C Fill the component description arrays.
       CALL DESCPC
+C *** needs to be if checked!
 
 C Initial menu entry setup.
 
@@ -527,24 +540,33 @@ C Initial menu entry setup.
 
 C Loop through the items until the page to be displayed. M is the 
 C current menu line index. Build up text strings for the menu. 
-      WRITE(VERT(1),'(A)') '  Name           |ref no.|      Type'
+      IF(ICDBF.EQ.0)THEN
+        WRITE(cVERT(1),'(A)') '  Name           |ref no.|      Type'
+      ELSE
+        WRITE(cVERT(1),'(A)') '  Name           |db ids.|  Category'
+      ENDIF
       M=MHEAD
       DO 10 L=1,ILEN
         IF(L.GE.IST.AND.(L.LE.(IST+MIFULL)))THEN
           M=M+1
           CALL EMKEY(L,KEY,IER)
-          NRF=NPREF(L)
-          IF(ICODE(NRF).GT.0.AND.ICODE(NRF).LT.200)THEN
-            WRITE(DESC,'(A16)')CTYPE(1)
-          ELSEIF(ICODE(NRF).GE.200.AND.ICODE(NRF).LT.510)THEN
-            WRITE(DESC,'(A16)')CTYPE(2)
-          ELSEIF(ICODE(NRF).GE.510.AND.ICODE(NRF).LT.700)THEN
-            WRITE(DESC,'(A16)')CTYPE(3)
-          ELSE
-            WRITE(DESC,'(A16)')CTYPE(4)
-          ENDIF
-          WRITE(VERT(M),'(A1,1X,A15,3X,I3,3X,A16)')
+          IF(ICDBF.EQ.0)THEN
+            NRF=NPREF(L)
+            IF(ICODE(NRF).GT.0.AND.ICODE(NRF).LT.200)THEN
+              WRITE(DESC,'(A16)')CTYPE(1)
+            ELSEIF(ICODE(NRF).GE.200.AND.ICODE(NRF).LT.510)THEN
+              WRITE(DESC,'(A16)')CTYPE(2)
+            ELSEIF(ICODE(NRF).GE.510.AND.ICODE(NRF).LT.700)THEN
+              WRITE(DESC,'(A16)')CTYPE(3)
+            ELSE
+              WRITE(DESC,'(A16)')CTYPE(4)
+            ENDIF
+            WRITE(cVERT(M),'(A1,1X,A15,3X,I3,3X,A16)')
      &KEY,PCNAME(L),NPREF(L),DESC
+          ELSE            
+            WRITE(cVERT(M),'(A1,1X,A15,1X,A7,1X,A16)')
+     &KEY,PCNAME(L),UCDBNam(L)(1:7),CDBCAT(L)(1:16)
+          ENDIF
         ENDIF
    10 CONTINUE
 
@@ -553,27 +575,27 @@ C Number of actual items displayed.
 
 C If a long list include page facility text.      
       IF(IPFLG.EQ.0)THEN
-        VERT(M+1)='  ________________ '
+        cVERT(M+1)='  ________________ '
       ELSE
-        WRITE(VERT(M+1),'(A,I2,A,I2)')'0 Page: ',IPM,' :',MPM 
+        WRITE(cVERT(M+1),'(A,I2,A,I2)')'0 Page: ',IPM,' :',MPM 
       ENDIF
 
 C If MOD has been passed as a M then add an item at the end.
       IF(MOD.EQ.'M'.OR.MOD.EQ.'m')THEN
-        VERT(M+2)='+ Add/Delete/Copy '
-        VERT(M+3)=' '
+        cVERT(M+2)='+ Add/Delete/Copy '
+        cVERT(M+3)=' '
       ELSE
-        VERT(M+2)='                   '
-        VERT(M+3)='                   '
+        cVERT(M+2)='                   '
+        cVERT(M+3)='                   '
       ENDIF
       if(MMOD.EQ.8)then
-        VERT(M+4)  ='                   '
+        cVERT(M+4)  ='                   '
       else
-        VERT(M+4)  ='< Index select     '
+        cVERT(M+4)  ='< Index select     '
       endif
-      VERT(M+4)  ='              '
-      VERT(M+5)  ='? Help             '
-      VERT(M+6)  ='- Exit             '
+      cVERT(M+4)  ='              '
+      cVERT(M+5)  ='? Help             '
+      cVERT(M+6)  ='- Exit             '
 
 C Help text for this menu.
       H(1)='The list shows the (currently) available components '
@@ -585,7 +607,7 @@ C Help text for this menu.
       H(7)='Choose a component from the list or "Exit".'
 
 C Display the menu.
-      CALL EMENU(head,VERT,MVERT,IVERT)
+      CALL EMENU(head,cVERT,MVERT,IVERT)
       IF(IVERT.LE.MHEAD)THEN
         IVERT=-1
         goto 3
@@ -626,6 +648,7 @@ C Code to allow deletion commented out until support code in place.
      &'Delete','Copy','Continue',IOPT,0)
             IF(IOPT.EQ.1) THEN
               if(NPCOMP+1.LE.MPCOM)then
+C Needs to be if checked
                 CALL PCDEFN
                 ILEN=NPCOMP
                 IPACT=CREATE
@@ -638,7 +661,7 @@ C Code to allow deletion commented out until support code in place.
               endif
             ELSEIF(IOPT.EQ.2) THEN
                call usrmsg('Delete which component ? ',' ','-') 
-               CALL EMENU(head,VERT,MVERT,IDVERT)
+               CALL EMENU(head,cVERT,MVERT,IDVERT)
                CALL KEYIND(MVERT,IDVERT,IFOC,IO)
                call usrmsg(' ',' ','-') 
                IS=IFOC
@@ -686,6 +709,8 @@ C Decode from the potential long list to the comp no via KEYIND.
       ENDIF
       IVERT=-2
       goto 3
+
+C end of icdbf check!
 
       END
 
@@ -1238,6 +1263,7 @@ C This subroutine opens plant component database and
 C recovers components record pointers.
 C    mode = 1 : Read database file name and read data pointers.
 C    mode = 2 : Read data pointers only.
+C **CDB affected
 
       subroutine opnpdb(mode)
 
@@ -1256,14 +1282,21 @@ C    mode = 2 : Read data pointers only.
 C Common for screen control.
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
 
+C Common for new format component database
+      COMMON/NCDBFORM/ICDBF      
       LOGICAL OK,dok,unixok
       CHARACTER*25 PZDESC
       character h*72,buffer*72,ltmp*72,fs*1
       integer lndbp   ! for length of standard database path
       character lltmp*144  ! to re-create plant database file name with path
+      CHARACTER scantype*8
+c      character domain_s*16,category_s*16
 
       integer iglib   ! if 1 then X11, if 2 then GTK, if 3 then text only.
-      integer istat
+      integer icdbf   !0 if old format, 1 if new format.
+
+C Assume old format initially
+      icdbf=0
 
 C Set folder separator (fs) to \ or / as required.
       call isunix(unixok)
@@ -1279,7 +1312,7 @@ C Initialize plant component database file.
 C The X11 version will be returning only the name of the
 C file, while the GTK version will be returning the
 C name with the full path.
-  100 h(1)='The plant component database binary file holds the'
+  100 h(1)='The plant/components database file holds the'
       h(2)='description of available components. If the name'
       h(3)='given matches an existing file, it will be read in'
       h(4)='and the components data will be available for'
@@ -1335,22 +1368,33 @@ C same opening logic as in eddb.F and moplnt.F
          istat=0
 	 call EFOPRAN(ipcdb,lltmp,irecln,1,istat)
 
-C Check for error on openening.
+C Check for error on opening.
          if(istat.lt.0) then
-            dok=.false.
-            ok=.false.
-            h(1)='An error occurred wheb opening the plant template'
-            h(2)='template database. Check that the file exists and has'
-            h(3)='not been corrupted. '
-            CALL ASKOK('Error occurred on opening file',
+C Attempt to open the file as a new format cdb (ASCII) file. 
+            IERcdb=0
+            scantype='open'
+            CALL CDBScanDataBase(ipcdb,lltmp,scantype,IERcdb)
+            IF(IERcdb.gt.0) THEN
+              dok=.false.
+              ok=.false.
+              h(1)='An error occurred wheb opening the plant/components'
+              h(2)='template database. Check that the file exists and'
+              h(3)='has not been corrupted. '
+              CALL ASKOK('Error occurred on opening file',
      &              ' Try again? ',OK,dok,3)
-            if(ok) goto 100
+              if(ok) goto 100
+            ELSE
+
+C Set the components database flag to active.
+             icdbf=1
+             RETURN
+            ENDIF
          elseif(istat.eq.1) then
 
 C File doesn't exist.
             ok=.false.
             dok=.false.
-            h(1)='An error occurred when opening the plant template'
+            h(1)='An error occurred when opening the plant/components'
             h(2)='template database. Check that the file exists and'
             h(3)='that the name you supplied is correct. '
             CALL ASKOK(' Plant database file does not exist.',
@@ -1363,15 +1407,26 @@ C Old file, so check header.
          IREC = 1
          READ (ipcdb,REC=IREC,IOSTAT=ISTAT,ERR=99999) PZDESC
          IF (PZDESC .NE. ' PLANT COMPONENT DATABASE') then
-            ok=.false.
-            dok=.true.
-            h(1)='The file exists, but is either not a plant db file'
-            h(2)='or has been corrupted. This might happen if the file'
-            h(3)='was generated on a different type of computer.'
-            CALL ASKOK(' Not a plant data base file.',
+C Attempt to open the file as a new format cdb (ASCII) file. 
+            IERcdb=0
+            scantype='open'
+            CALL CDBScanDataBase(ipcdb,lltmp,scantype,IERcdb)
+            IF(IERcdb.gt.0) THEN
+              ok=.false.
+              dok=.true.
+              h(1)='The file exists, but is either not a plant db file'
+              h(2)='or has been corrupted. This might happen if the '
+              h(3)='file was generated by different type of computer.'
+              CALL ASKOK(' Not a plant data base file.',
      &                 ' Try another file? ',OK,dok,3)
-            CALL USRMSG(' ',' ','-')
-            if(ok) goto 100
+              CALL USRMSG(' ',' ','-')
+              if(ok) goto 100
+            ELSE
+
+C Set the components database flag to active.
+             icdbf=1
+             RETURN
+            ENDIF
          endif
          IREC = 2
          READ (ipcdb,REC=IREC,IOSTAT=ISTAT,ERR=99999) npcdb
@@ -1404,16 +1459,19 @@ C This subroutine reads data associated with component
 C ix. Data is read from component database.
 C  mode = 1 : read component parameters from database
 C  mode = 2 : skip reading component parameters
-C
+C **CDB affected
       subroutine rcdata(ipc,mode)
 
 #include "plant.h"
 #include "esprdbfile.h"
+#include "gencompDB.h"
+#include "gencompDB_common.h"
 
       PARAMETER (IRECLN = 20)      
 
       COMMON /dbdat/ NPCDB, ITMLOC(MAXPC,2) 
       COMMON/C9/NPCOMP,NCI(MPCOM),CDATA(MPCOM,MMISCD)
+      COMMON/C9plus/UCdbNam(MPCOM),CdbCat(MPCOM),CDBDesc(MPCOM)
       common /pcdat/ nnodes(mpcom), isv(mpcom,mnodec), 
      &               ndcon(mpcom,mnodec)
       COMMON/PCPAR/NPI(MPCOM), TADATA(MPCOM,MADATA)
@@ -1423,13 +1481,59 @@ C
       common /pcddsc/ pcdesc(maxpc), npref(mpcom)
       COMMON/OUTIN/IUOUT,IUIN
 
+C Common for new format component database
+      COMMON/NCDBFORM/ICDBF
+
       character*68 mscdsc, cvrdsc      
       dimension ival(mpcom)
-      character zcdate*16,pcdesc*80
+      character zcdate*16,pcdesc*80,level*16,UCdbNam*16,GetWhich*24,
+     &GetWhat*24,CDBCAT*32,CDBDesc*72
+      character domain_s*16,category_s*16
+      integer mode
+
+      if(icdbf.eq.1)then
+C Read information from new format database
+       if(mode.eq.1) then
+         level='detailed'
+       else 
+         level='light'
+       endif
+
+       GetWhat='parameters'
+       GetWhich=UCdbNam(IPC)(1:lnblnk(UCdbNam(IPC)))
+       if(GetWhich.NE.' ')THEN
+
+C Get the item parameter data.
+         domain_s='-'; category_s='-'
+         CALL CDBGetItemData(domain_s,category_s,GetWhich,GetWhat)
+
+C Fill plant commons with recovered data. 
+         CALL CDB2Plant(IPC,level)
+         ICODE=s_ICODE
+         nnodes(ipc)=s_NNODE
+         NMATX=s_NMATX
+         npi(ipc)=s_MISCD
+         NMISc=s_MISCD
+       else
+         CALL USRMSG('RCDATA: error trying to recover data',
+     &'component name appears to be blank','W')
+       endif
+
+      else
 
 C Find absolute record in dbase for component
 C and read associated data.
+
       irec=itmloc(npref(ipc),1)
+
+C Check that plant database is actually open and that itmloc is not zero.
+      if(irec.eq.0)then
+
+C Open database and extract the plant database pointers.
+        call opnpdb(2) 
+        irec=itmloc(npref(ipc),1)
+      endif
+
       read(ipcdb,rec=irec,iostat=istat,err=99999)
      &    idum1,icode(ipc),zcdate,nnode,nmatx,nmisc
       npi(ipc)=nmisc
@@ -1488,6 +1592,7 @@ C Read state variable index.
          read(ipcdb,rec=irec,iostat=istat,err=99999)
      &     (isv(ipc,jj),jj=1,nnode)
 
+C *** CDB affected
 C Point to TRNSYS model type entries
          irec=irec+1
          irec= irec+((nmatx-1)/irecln+1)
@@ -1538,6 +1643,9 @@ C read its description.
  1020       continue
          endif
       endif
+
+      endif !end of cdb check
+
       return
 
 C Error trap.
@@ -1547,6 +1655,7 @@ C Error trap.
 
 C*********************** update ************************
 C update descriptions for selected components
+C **CDB affected
       subroutine update
 
 #include "plant.h"
@@ -1557,7 +1666,12 @@ C update descriptions for selected components
       COMMON/C9/NPCOMP,NCI(MPCOM),CDATA(MPCOM,MMISCD)
       COMMON/OUTIN/IUOUT,IUIN
 
+C Common for new format component database
+      COMMON/NCDBFORM/ICDBF
+
       CHARACTER pcdesc*80, cdesc*80
+
+      IF(ICDBF.GT.0)RETURN
 
       do 10 ipc=1,npcomp
          IREC = ITMLOC(npref(ipc),1)+2
@@ -1584,9 +1698,16 @@ C in database.
       common /pcddsc/ pcdesc(maxpc), npref(mpcom)
       common/pcsort/icode(maxpc)
 
+C Common for new format component database
+      COMMON/NCDBFORM/ICDBF
+
       character pcdesc*80,cdesc*80
 
 C Write description of each component in string array.
+
+      IF(ICDBF.GT.0)RETURN
+
+C ***CDB affected.
       DO 10 L=1,npcdb
       irec=itmloc(L,1)
       read(ipcdb,rec=irec,iostat=istat,err=99999)
@@ -1605,6 +1726,7 @@ C Write description of each component in string array.
 C *********************** getmfs ************************
 C This subroutine reads mass flow component data 
 C from plant component database.
+C **CDB affected
       subroutine getmfc(ipc,nconns)
 #include "plant.h"
 #include "esprdbfile.h"

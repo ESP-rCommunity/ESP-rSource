@@ -1,5 +1,5 @@
-*connections  for int_LW_rad
-*Date Thu Oct 15 21:54:36 2009
+*connections for int_LW_rad
+*Date Wed Aug 29 19:57:52 2012
      25   # number of connections
    1   1   2  20   0  #    1 Surf-1 in test-1 >|< Constant @ 20 dC &   0 W rad
    1   2   2  30   0  #    2 Surf-2 in test-1 >|< Constant @ 30 dC &   0 W rad

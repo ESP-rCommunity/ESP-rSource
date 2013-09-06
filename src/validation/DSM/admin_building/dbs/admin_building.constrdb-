@@ -1,0 +1,400 @@
+# composite construction db defined in ../dbs/admin_building.constrdb
+# based on materials db ../dbs/admin_building.materialdb
+   57     # no of composites 
+# layers  description   optics name   symmetry tag
+    1    door          OPAQ  OPAQUE        SYMMETRIC     
+# mat ref thickness (m) mat descr & air gap R
+   69    0.0250  oak : Oak (radial cut)
+# layers  description   optics name   symmetry tag
+    1    int_doors     OPAQ  OPAQUE        SYMMETRIC     
+# mat ref thickness (m) mat descr & air gap R
+   69    0.0250  oak : Oak (radial cut)
+# layers  description   optics name   symmetry tag
+    8    foundation    OPAQ  OPAQUE        NONSYMMETRIC  
+# mat ref thickness (m) mat descr & air gap R
+  263    0.2000  earth std : Common_earth
+  263    0.2000  earth std : Common_earth
+  263    0.2000  earth std : Common_earth
+  263    0.2000  earth std : Common_earth
+  263    0.2000  earth std : Common_earth
+   82    0.1000  red granite : Red granite
+   32    0.1000  heavy mix concrete : Heavy mix concrete
+   32    0.1000  heavy mix concrete : Heavy mix concrete
+# layers  description   optics name   symmetry tag
+    1    susp_ceil     OPAQ  OPAQUE        SYMMETRIC     
+# mat ref thickness (m) mat descr & air gap R
+  104    0.0130  gypsum plaster : Gypsum based plaster
+# layers  description   optics name   symmetry tag
+    3    gyp_gyp_ptn   OPAQ  OPAQUE        SYMMETRIC     
+# mat ref thickness (m) mat descr & air gap R
+  108    0.0120  white gypboard : White paintedd Gypboard
+    0    0.0500  air  0.170 0.170 0.170
+  108    0.0120  white gypboard : White paintedd Gypboard
+# layers  description   optics name   symmetry tag
+    1    fictitious    TRAN  SC_fictit     SYMMETRIC     
+# mat ref thickness (m) mat descr & air gap R
+  245    0.0040  fict : fictitious material (almost not there) with matching single laye
+# layers  description   optics name   symmetry tag
+    3    raised_flr32  OPAQ  OPAQUE        SYMMETRIC     
+# mat ref thickness (m) mat descr & air gap R
+   42    0.0020  steel : Steel
+   91    0.0280  HighDensityParticleBd : HDF based on info in Handbook of Heat Transfer
+   42    0.0020  steel : Steel
+# layers  description   optics name   symmetry tag
+    4    top_pln       OPAQ  OPAQUE        flr_ov_pln    
+# mat ref thickness (m) mat descr & air gap R
+  228    0.0050  grey loop pile : Grey loop pile synthetic carpet
+   42    0.0020  steel : Steel
+   91    0.0280  HighDensityParticleBd : HDF based on info in Handbook of Heat Transfer
+   42    0.0020  steel : Steel
+# layers  description   optics name   symmetry tag
+    4    flr_ov_pln    OPAQ  OPAQUE        top_pln       
+# mat ref thickness (m) mat descr & air gap R
+   42    0.0020  steel : Steel
+   91    0.0280  HighDensityParticleBd : HDF based on info in Handbook of Heat Transfer
+   42    0.0020  steel : Steel
+  228    0.0050  grey loop pile : Grey loop pile synthetic carpet
+# layers  description   optics name   symmetry tag
+    1    slab_275      OPAQ  OPAQUE        SYMMETRIC     
+# mat ref thickness (m) mat descr & air gap R
+   34    0.2750  white ptd concrete : White painted heavy mix concrete
+# layers  description   optics name   symmetry tag
+    6    ceil_raised   OPAQ  OPAQUE        flr_raised    
+# mat ref thickness (m) mat descr & air gap R
+  228    0.0050  grey loop pile : Grey loop pile synthetic carpet
+   42    0.0020  steel : Steel
+   91    0.0280  HighDensityParticleBd : HDF based on info in Handbook of Heat Transfer
+   42    0.0020  steel : Steel
+    0    0.4500  air  0.170 0.170 0.170
+   34    0.2750  white ptd concrete : White painted heavy mix concrete
+# layers  description   optics name   symmetry tag
+    6    flr_raised    OPAQ  OPAQUE        ceil_raised   
+# mat ref thickness (m) mat descr & air gap R
+   34    0.2750  white ptd concrete : White painted heavy mix concrete
+    0    0.4500  air  0.170 0.170 0.170
+   42    0.0020  steel : Steel
+   91    0.0280  HighDensityParticleBd : HDF based on info in Handbook of Heat Transfer
+   42    0.0020  steel : Steel
+  228    0.0050  grey loop pile : Grey loop pile synthetic carpet
+# layers  description   optics name   symmetry tag
+    1    ceil_un_pln   OPAQ  OPAQUE        SYMMETRIC     
+# mat ref thickness (m) mat descr & air gap R
+   34    0.2750  white ptd concrete : White painted heavy mix concrete
+# layers  description   optics name   symmetry tag
+    7    spandrel_x    OPAQ  OPAQUE        NONSYMMETRIC  
+# mat ref thickness (m) mat descr & air gap R
+  243    0.0060  clear float : 4mm clear float glass with optics from UK national method
+    0    0.0120  air  0.170 0.170 0.170
+  243    0.0060  clear float : 4mm clear float glass with optics from UK national method
+    0    0.1010  air  0.200 0.200 0.200
+   42    0.0012  steel : Steel
+  211    0.0400  glasswool : Glasswool (generic)
+   42    0.0010  steel : Steel
+# layers  description   optics name   symmetry tag
+    3    mull_90       OPAQ  OPAQUE        SYMMETRIC     
+# mat ref thickness (m) mat descr & air gap R
+   46    0.0040  grey cotd alum : Grey coated aluminium
+    0    0.0700  air  0.200 0.200 0.200
+   46    0.0040  grey cotd alum : Grey coated aluminium
+# layers  description   optics name   symmetry tag
+    3    roof_0.2      OPAQ  OPAQUE        NONSYMMETRIC  
+# mat ref thickness (m) mat descr & air gap R
+   87    0.0500  chippings : Chippings
+  220    0.1800  XPS CO2 foamed : XPS extruded polystyrene foamed with Co2 from IBO Pass
+   34    0.2750  white ptd concrete : White painted heavy mix concrete
+# layers  description   optics name   symmetry tag
+    3    gyp_aco_gyp   OPAQ  OPAQUE        SYMMETRIC     
+# mat ref thickness (m) mat descr & air gap R
+  108    0.0240  white gypboard : White paintedd Gypboard
+  202    0.0600  woodwool : Woodwool
+  108    0.0240  white gypboard : White paintedd Gypboard
+# layers  description   optics name   symmetry tag
+    7    stone_m_ell   OPAQ  OPAQUE        NONSYMMETRIC  
+# mat ref thickness (m) mat descr & air gap R
+   81    0.0400  sandstone : Sandstone
+    0    0.0250  air  0.170 0.170 0.170
+  220    0.0900  XPS CO2 foamed : XPS extruded polystyrene foamed with Co2 from IBO Pass
+    0    0.1000  air  0.170 0.170 0.170
+   35    0.1200  block white ptd : block white painted inner (3% mc)
+    0    0.0100  air  0.170 0.170 0.170
+   63    0.0200  Hardboard std : Hardboard (standard density)
+# layers  description   optics name   symmetry tag
+    3    stone_atr_pt  OPAQ  OPAQUE        SYMMETRIC     
+# mat ref thickness (m) mat descr & air gap R
+   81    0.0400  sandstone : Sandstone
+    0    0.2000  air  0.170 0.170 0.170
+   81    0.0400  sandstone : Sandstone
+# layers  description   optics name   symmetry tag
+    1    inside_kw_el  OPAQ  OPAQUE        SYMMETRIC     
+# mat ref thickness (m) mat descr & air gap R
+   81    0.0400  sandstone : Sandstone
+# layers  description   optics name   symmetry tag
+    4    stone_kw_mtl  OPAQ  OPAQUE        NONSYMMETRIC  
+# mat ref thickness (m) mat descr & air gap R
+   81    0.0400  sandstone : Sandstone
+    0    0.0500  air  0.170 0.170 0.170
+  220    0.1200  XPS CO2 foamed : XPS extruded polystyrene foamed with Co2 from IBO Pass
+   45    0.0050  white ptd steel : White painted steel
+# layers  description   optics name   symmetry tag
+    5    stone_cast    OPAQ  OPAQUE        stone_cast_i  
+# mat ref thickness (m) mat descr & air gap R
+   81    0.0400  sandstone : Sandstone
+    0    0.0500  air  0.170 0.170 0.170
+  220    0.1000  XPS CO2 foamed : XPS extruded polystyrene foamed with Co2 from IBO Pass
+    0    0.1000  air  0.170 0.170 0.170
+   34    0.2500  white ptd concrete : White painted heavy mix concrete
+# layers  description   optics name   symmetry tag
+    5    stone_vent    OPAQ  OPAQUE        NONSYMMETRIC  
+# mat ref thickness (m) mat descr & air gap R
+   81    0.0400  sandstone : Sandstone
+    0    0.2400  air  0.170 0.170 0.170
+  220    0.1100  XPS CO2 foamed : XPS extruded polystyrene foamed with Co2 from IBO Pass
+    0    0.1000  air  0.170 0.170 0.170
+  108    0.0240  white gypboard : White paintedd Gypboard
+# layers  description   optics name   symmetry tag
+    5    stone_gyp     OPAQ  OPAQUE        NONSYMMETRIC  
+# mat ref thickness (m) mat descr & air gap R
+   81    0.0400  sandstone : Sandstone
+    0    0.0500  air  0.170 0.170 0.170
+  220    0.1100  XPS CO2 foamed : XPS extruded polystyrene foamed with Co2 from IBO Pass
+    0    0.1000  air  0.170 0.170 0.170
+  108    0.0240  white gypboard : White paintedd Gypboard
+# layers  description   optics name   symmetry tag
+    5    stone_masnry  OPAQ  OPAQUE        NONSYMMETRIC  
+# mat ref thickness (m) mat descr & air gap R
+   81    0.0400  sandstone : Sandstone
+    0    0.0500  air  0.170 0.170 0.170
+  220    0.1000  XPS CO2 foamed : XPS extruded polystyrene foamed with Co2 from IBO Pass
+    0    0.1000  air  0.170 0.170 0.170
+   35    0.1200  block white ptd : block white painted inner (3% mc)
+# layers  description   optics name   symmetry tag
+    1    conc_250      OPAQ  OPAQUE        SYMMETRIC     
+# mat ref thickness (m) mat descr & air gap R
+   34    0.2500  white ptd concrete : White painted heavy mix concrete
+# layers  description   optics name   symmetry tag
+    1    masny_at_st   OPAQ  OPAQUE        SYMMETRIC     
+# mat ref thickness (m) mat descr & air gap R
+   35    0.1500  block white ptd : block white painted inner (3% mc)
+# layers  description   optics name   symmetry tag
+    4    stone_eldon   OPAQ  OPAQUE        NONSYMMETRIC  
+# mat ref thickness (m) mat descr & air gap R
+   81    0.0400  sandstone : Sandstone
+    0    0.0500  air  0.170 0.170 0.170
+  220    0.1100  XPS CO2 foamed : XPS extruded polystyrene foamed with Co2 from IBO Pass
+  108    0.0240  white gypboard : White paintedd Gypboard
+# layers  description   optics name   symmetry tag
+    3    db_lpasol     TRAN  DSF4554_06nb  SYMMETRIC     
+# mat ref thickness (m) mat descr & air gap R
+  243    0.0060  clear float : 4mm clear float glass with optics from UK national method
+    0    0.0200  air  0.532 0.532 0.532
+  243    0.0060  clear float : 4mm clear float glass with optics from UK national method
+# layers  description   optics name   symmetry tag
+    5    stone_cast_i  OPAQ  OPAQUE        stone_cast    
+# mat ref thickness (m) mat descr & air gap R
+   34    0.2500  white ptd concrete : White painted heavy mix concrete
+    0    0.1000  air  0.170 0.170 0.170
+  220    0.1000  XPS CO2 foamed : XPS extruded polystyrene foamed with Co2 from IBO Pass
+    0    0.0500  air  0.170 0.170 0.170
+   81    0.0400  sandstone : Sandstone
+# layers  description   optics name   symmetry tag
+    5    stone_stone   OPAQ  OPAQUE        NONSYMMETRIC  
+# mat ref thickness (m) mat descr & air gap R
+   81    0.0400  sandstone : Sandstone
+    0    0.0500  air  0.170 0.170 0.170
+  220    0.0800  XPS CO2 foamed : XPS extruded polystyrene foamed with Co2 from IBO Pass
+    0    0.2000  air  0.170 0.170 0.170
+   81    0.0400  sandstone : Sandstone
+# layers  description   optics name   symmetry tag
+    1    glaz_ptn      TRAN  SCF8477_10nb  SYMMETRIC     
+# mat ref thickness (m) mat descr & air gap R
+  242    0.0100  plate glass : Plate glass with placeholder single layer optics
+# layers  description   optics name   symmetry tag
+    3    stn_stair     OPAQ  OPAQUE        vd_stn_stair  
+# mat ref thickness (m) mat descr & air gap R
+   81    0.0400  sandstone : Sandstone
+    0    0.1000  air  0.170 0.170 0.170
+   34    0.2500  white ptd concrete : White painted heavy mix concrete
+# layers  description   optics name   symmetry tag
+    3    vd_stn_stair  OPAQ  OPAQUE        stn_stair     
+# mat ref thickness (m) mat descr & air gap R
+   34    0.2500  white ptd concrete : White painted heavy mix concrete
+    0    0.1000  air  0.170 0.170 0.170
+   81    0.0400  sandstone : Sandstone
+# layers  description   optics name   symmetry tag
+    3    dbl_glz       TRAN  DCF7671_06nb  SYMMETRIC     
+# mat ref thickness (m) mat descr & air gap R
+  242    0.0060  plate glass : Plate glass with placeholder single layer optics
+    0    0.0120  air  0.170 0.170 0.170
+  242    0.0060  plate glass : Plate glass with placeholder single layer optics
+# layers  description   optics name   symmetry tag
+    8    grnd_floor    OPAQ  OPAQUE        NONSYMMETRIC  
+# mat ref thickness (m) mat descr & air gap R
+  263    0.2000  earth std : Common_earth
+  263    0.2000  earth std : Common_earth
+  263    0.2000  earth std : Common_earth
+  262    0.1500  gravel based : Gravel based
+   32    0.2000  heavy mix concrete : Heavy mix concrete
+    0    0.0500  air  0.170 0.170 0.170
+   67    0.0190  chipboard : Chipboard
+  221    0.0060  Wilton : Wilton weave wool carpet
+# layers  description   optics name   symmetry tag
+    4    entry_floor   OPAQ  OPAQUE        NONSYMMETRIC  
+# mat ref thickness (m) mat descr & air gap R
+  263    0.2500  earth std : Common_earth
+  262    0.1500  gravel based : Gravel based
+   32    0.1500  heavy mix concrete : Heavy mix concrete
+   83    0.0240  white marble : White marble
+# layers  description   optics name   symmetry tag
+    5    susp_floor    OPAQ  OPAQUE        susp_flr_re   
+# mat ref thickness (m) mat descr & air gap R
+  221    0.0060  Wilton : Wilton weave wool carpet
+   67    0.0190  chipboard : Chipboard
+    0    0.0500  air  0.170 0.170 0.170
+   32    0.1400  heavy mix concrete : Heavy mix concrete
+   42    0.0040  steel : Steel
+# layers  description   optics name   symmetry tag
+    5    susp_flr_re   OPAQ  OPAQUE        susp_floor    
+# mat ref thickness (m) mat descr & air gap R
+   42    0.0040  steel : Steel
+   32    0.1400  heavy mix concrete : Heavy mix concrete
+    0    0.0500  air  0.170 0.170 0.170
+   67    0.0190  chipboard : Chipboard
+  221    0.0060  Wilton : Wilton weave wool carpet
+# layers  description   optics name   symmetry tag
+    5    switched_gl   TRAN  DCF7671_6omb  SYMMETRIC     
+# mat ref thickness (m) mat descr & air gap R
+  243    0.0060  clear float : 4mm clear float glass with optics from UK national method
+    0    0.0100  air  0.170 0.170 0.170
+   45    0.0030  white ptd steel : White painted steel
+    0    0.0100  air  0.170 0.170 0.170
+  243    0.0060  clear float : 4mm clear float glass with optics from UK national method
+# layers  description   optics name   symmetry tag
+    4    pa_fl_notion  OPAQ  OPAQUE        NONSYMMETRIC  
+# mat ref thickness (m) mat descr & air gap R
+  155    0.0150  Ceiling tile : Ceiling tiles
+    0    0.4000  air  0.180 0.180 0.180
+   38    0.1500  concrete 150mm : Concrete high density 150mm (UK code)
+  129    0.0500  Screed 50mm : Flooring screed 50mm (UK code)
+# layers  description   optics name   symmetry tag
+    8    Sol_grnd_not  OPAQ  OPAQUE        NONSYMMETRIC  
+# mat ref thickness (m) mat descr & air gap R
+  268    0.1500  Clay underfloor 750 mm : Clay underfloor default 750 mm
+  268    0.2000  Clay underfloor 750 mm : Clay underfloor default 750 mm
+  268    0.2000  Clay underfloor 750 mm : Clay underfloor default 750 mm
+  268    0.2000  Clay underfloor 750 mm : Clay underfloor default 750 mm
+    9    0.0250  Brick slips 25 mm : Brick 25 mm (UK code)
+   39    0.1000  Cast concrete 100 mm : Cast concrete 100 mm (UK code)
+  289    0.1250  EPS 80mm : EPS 80mm
+  129    0.0500  Screed 50mm : Flooring screed 50mm (UK code)
+# layers  description   optics name   symmetry tag
+    3    Fl_roof_noti  OPAQ  OPAQUE        NONSYMMETRIC  
+# mat ref thickness (m) mat descr & air gap R
+   78    0.0190  Plywood deck : Plywood/felt (UK code)
+  290    0.1850  EPS 160 mm : EPS 160mm
+  110    0.0130  Plasterboard (wallboard) : Internal finish (UK code)
+# layers  description   optics name   symmetry tag
+    4    SC_Pitch_roo  OPAQ  OPAQUE        NONSYMMETRIC  
+# mat ref thickness (m) mat descr & air gap R
+  156    0.0100  Tiles Concrete 10 mm : Tiles
+    0    0.2000  air  0.200 0.200 0.200
+  291    0.2500  Min wool quilt 250 mm : Insulation (Min wool quilt default 250 mm)
+  111    0.0095  Plasterboard (ceiling) : Plasterboard Gypsum (10 mm) (UK code)
+# layers  description   optics name   symmetry tag
+    3    party_wall_n  OPAQ  OPAQUE        SYMMETRIC     
+# mat ref thickness (m) mat descr & air gap R
+  112    0.0130  Plasterboard (UK code) : Plasterboard (UK code)
+  293    0.0500  Min wool quilt 50mm tb : Studwork
+  112    0.0130  Plasterboard (UK code) : Plasterboard (UK code)
+# layers  description   optics name   symmetry tag
+    5    Wall_NI_noti  OPAQ  OPAQUE        NONSYMMETRIC  
+# mat ref thickness (m) mat descr & air gap R
+   10    0.1020  Brick outer leaf : Brick (UK code)
+  294    0.0900  Mineral wool batt 100mm : Insulation (Mineral wool batt default 100mm)
+   40    0.1000  Concrete med density (1800) : Blockwork (UK code)
+    0    0.0220  air  0.180 0.180 0.180
+  112    0.0130  Plasterboard (UK code) : Plasterboard (UK code)
+# layers  description   optics name   symmetry tag
+    5    Wall_EW_noti  OPAQ  OPAQUE        NONSYMMETRIC  
+# mat ref thickness (m) mat descr & air gap R
+   10    0.1020  Brick outer leaf : Brick (UK code)
+  294    0.0900  Mineral wool batt 100mm : Insulation (Mineral wool batt default 100mm)
+   40    0.1000  Concrete med density (1800) : Blockwork (UK code)
+    0    0.0220  air  0.180 0.180 0.180
+  112    0.0130  Plasterboard (UK code) : Plasterboard (UK code)
+# layers  description   optics name   symmetry tag
+    8    Wall_Scot_no  OPAQ  OPAQUE        NONSYMMETRIC  
+# mat ref thickness (m) mat descr & air gap R
+  130    0.0200  Render External 20 mm : Render External 20 mm (UK code)
+   10    0.1020  Brick outer leaf : Brick (UK code)
+    0    0.0500  air  0.180 0.180 0.180
+  295    0.0500  Min wool quilt 60 mm : Insulation (Min wool quilt default 60 mm)
+  295    0.0500  Min wool quilt 60 mm : Insulation (Min wool quilt default 60 mm)
+   40    0.1000  Concrete med density (1800) : Blockwork (UK code)
+    0    0.0250  air  0.180 0.180 0.180
+  112    0.0130  Plasterboard (UK code) : Plasterboard (UK code)
+# layers  description   optics name   symmetry tag
+    3    opDoorWind_n  OPAQ  OPAQUE        NONSYMMETRIC  
+# mat ref thickness (m) mat descr & air gap R
+   78    0.0190  Plywood deck : Plywood/felt (UK code)
+  290    0.1600  EPS 160 mm : EPS 160mm
+  110    0.0130  Plasterboard (wallboard) : Internal finish (UK code)
+# layers  description   optics name   symmetry tag
+    1    Not_DisplayG  TRAN  dispGlz_not   SYMMETRIC     
+# mat ref thickness (m) mat descr & air gap R
+  250    0.0060  dispGlz_not_modCond : 6 mm clear glass (copy of 6 mm clear glass)
+# layers  description   optics name   symmetry tag
+    3    window_Not_G  TRAN  Glaz_notiona  NONSYMMETRIC  
+# mat ref thickness (m) mat descr & air gap R
+  247    0.0040  REF A CLEAR LO 6MM : optics from UK national method datase Low-e coated
+    0    0.0160  air  0.277 0.277 0.277
+  248    0.0040  REF A CLEAR MID 6MM : optics from UK national method datase Low-e coate
+# layers  description   optics name   symmetry tag
+    4    EW_notPitch_  OPAQ  OPAQUE        NONSYMMETRIC  
+# mat ref thickness (m) mat descr & air gap R
+  156    0.0100  Tiles Concrete 10 mm : Tiles
+    0    0.2000  air  0.200 0.200 0.200
+  292    0.1850  Min wool quilt 250 mm tb : Quilt (Min wool quilt default 250 mm)
+  111    0.0095  Plasterboard (ceiling) : Plasterboard Gypsum (10 mm) (UK code)
+# layers  description   optics name   symmetry tag
+    3    Vehicle_door  OPAQ  OPAQUE        SYMMETRIC     
+# mat ref thickness (m) mat descr & air gap R
+   43    0.0015  aluminium : Aluminium
+    0    0.0250  air  0.500 0.500 0.500
+   43    0.0015  aluminium : Aluminium
+# layers  description   optics name   symmetry tag
+    5    gyp_blk_ptn   OPAQ  OPAQUE        SYMMETRIC     
+# mat ref thickness (m) mat descr & air gap R
+  108    0.0130  white gypboard : White paintedd Gypboard
+    0    0.0500  air  0.170 0.170 0.170
+   28    0.1000  block inner : Block inner (3% mc)
+    0    0.0500  air  0.170 0.170 0.170
+  108    0.0130  white gypboard : White paintedd Gypboard
+# layers  description   optics name   symmetry tag
+    5    glz_block     OPAQ  OPAQUE        NONSYMMETRIC  
+# mat ref thickness (m) mat descr & air gap R
+  242    0.0060  plate glass : Plate glass with placeholder single layer optics
+    0    0.0120  air  0.170 0.170 0.170
+  242    0.0060  plate glass : Plate glass with placeholder single layer optics
+    0    0.1000  air  0.170 0.170 0.170
+   35    0.1200  block white ptd : block white painted inner (3% mc)
+# layers  description   optics name   symmetry tag
+    5    gyp_ins_gyp   OPAQ  OPAQUE        SYMMETRIC     
+# mat ref thickness (m) mat descr & air gap R
+  108    0.0240  white gypboard : White paintedd Gypboard
+    0    0.0500  air  0.170 0.170 0.170
+  220    0.1100  XPS CO2 foamed : XPS extruded polystyrene foamed with Co2 from IBO Pass
+    0    0.0500  air  0.170 0.170 0.170
+  108    0.0240  white gypboard : White paintedd Gypboard
+# layers  description   optics name   symmetry tag
+   10    heated_slb    OPAQ  OPAQUE        NONSYMMETRIC  
+# mat ref thickness (m) mat descr & air gap R
+  263    0.2000  earth std : Common_earth
+  263    0.2000  earth std : Common_earth
+  263    0.2000  earth std : Common_earth
+  263    0.2000  earth std : Common_earth
+   82    0.1000  red granite : Red granite
+   32    0.1000  heavy mix concrete : Heavy mix concrete
+   32    0.1000  heavy mix concrete : Heavy mix concrete
+  220    0.0750  XPS CO2 foamed : XPS extruded polystyrene foamed with Co2 from IBO Pass
+  124    0.0750  cement screed : Cement screed
+  229    0.0050  grey cord synth : Grey cord synthetic carpet

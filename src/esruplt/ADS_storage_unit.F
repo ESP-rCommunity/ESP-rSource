@@ -1993,67 +1993,67 @@ C-------------------------------------------------------------------------------
 C.....Get component name's length
       iNameLength = lnblnk(pcname(IPCOMP))
 C.....Format string as: 'plant/NAME/misc_data'
-       call AddToReportWild1(rvPltMaxAdsTemp%Identifier,
+       call AddToReport(rvPltMaxAdsTemp%Identifier,
      &      fTemp_Adsorber_Max,
      &      pcname(IPCOMP)(1:iNameLength))
 
-       call AddToReportWild1(rvPltMinAdsTemp%Identifier,
+       call AddToReport(rvPltMinAdsTemp%Identifier,
      &      fTemp_Adsorber_Min,
      &      pcname(IPCOMP)(1:iNameLength))
 
-       call AddToReportWild1(rvPltAbsorbPress%Identifier,
+       call AddToReport(rvPltAbsorbPress%Identifier,
      &      fVapPressureAdsorber,
      &      pcname(IPCOMP)(1:iNameLength))
 
-       call AddToReportWild1(rvPltAdsVapFlow%Identifier,
+       call AddToReport(rvPltAdsVapFlow%Identifier,
      &      fMdotVap,
      &      pcname(IPCOMP)(1:iNameLength))
 
-       call AddToReportWild1(rvPltCondFanPow%Identifier,
+       call AddToReport(rvPltCondFanPow%Identifier,
      &      fQElecCondFan,
      &      pcname(IPCOMP)(1:iNameLength))
 
-       call AddToReportWild1(rvPltAdsorpHeat%Identifier,
+       call AddToReport(rvPltAdsorpHeat%Identifier,
      &      fAdsorptionHeat,
      &      pcname(IPCOMP)(1:iNameLength))
 
-       call AddToReportWild1(rvPltAdsHeatTransCH%Identifier,
+       call AddToReport(rvPltAdsHeatTransCH%Identifier,
      &      fChHeatTransfer,
      &      pcname(IPCOMP)(1:iNameLength))
 
-       call AddToReportWild1(rvPltAdsHeatTransDis%Identifier,
+       call AddToReport(rvPltAdsHeatTransDis%Identifier,
      &      fDisHeatTransfer,
      &      pcname(IPCOMP)(1:iNameLength))
 
-       call AddToReportWild1(rvPltAdsAmbHeatLoss%Identifier,
+       call AddToReport(rvPltAdsAmbHeatLoss%Identifier,
      &      fAdsQloss,
      &      pcname(IPCOMP)(1:iNameLength))
 
-       call AddToReportWild1(rvPltCondAmbHeatLoss%Identifier,
+       call AddToReport(rvPltCondAmbHeatLoss%Identifier,
      &      fCondQloss,
      &      pcname(IPCOMP)(1:iNameLength))
 
-       call AddToReportWild1(rvPltEvapAmbHeatLoss%Identifier,
+       call AddToReport(rvPltEvapAmbHeatLoss%Identifier,
      &      fEvapQloss,
      &      pcname(IPCOMP)(1:iNameLength))
 
-       call AddToReportWild1(rvPltTempCondIn%Identifier,
+       call AddToReport(rvPltTempCondIn%Identifier,
      &      fTemp_outdoor,
      &      pcname(IPCOMP)(1:iNameLength))
 
-       call AddToReportWild1(rvPltCondHeat%Identifier,
+       call AddToReport(rvPltCondHeat%Identifier,
      &      fCondHeat,
      &      pcname(IPCOMP)(1:iNameLength))
 
-       call AddToReportWild1(rvPltEvapHeat%Identifier,
+       call AddToReport(rvPltEvapHeat%Identifier,
      &      fEvapHeat,
      &      pcname(IPCOMP)(1:iNameLength))
 
-       call AddToReportWild1(rvPltRatioX%Identifier,
+       call AddToReport(rvPltRatioX%Identifier,
      &      fX_Present,
      &      pcname(IPCOMP)(1:iNameLength))
 
-       call AddToReportWild1(rvPltCyclePhase%Identifier,
+       call AddToReport(rvPltCyclePhase%Identifier,
      &      fPhaseCycle,
      &      pcname(IPCOMP)(1:iNameLength))
 

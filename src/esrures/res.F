@@ -53,6 +53,7 @@ C           - Principle use is for function button facility on workstations.
 
 C For operational details refer to the ESP-r program user's manual.
       program res
+      USE START_UP
 #include "building.h"
 #include "model.h"
 #include "esprdbfile.h"
@@ -72,9 +73,11 @@ C default file names for databases
       COMMON/GFONT/IFS,ITFS,IMFS
       common/appw/iappw,iappx,iappy
       integer menuchw,igl,igr,igt,igb,igw,igwh
+      integer childterminal  ! picks up mmod from starting of prj
+      common/childt/childterminal
+
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
-      common/C21/IFCFG,cfgroot,LCFGF
       COMMON/OUTPCH/ICOUT
       COMMON/DEFLT/IDEFLT
       COMMON/PSY1/PATMOS,IOPT
@@ -86,6 +89,7 @@ C Flags identifying if results libries are available. =0 no lib, =1 lib exists.
       COMMON/LIBOK/IBLIB,IFLIB,ICLIB,IELIB,IPLIB
 
 C Defaults.
+      character*96 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF
       COMMON/DEFLT2/DFCFG,DFCTL,DEFRLB,DAFRES,DAPROB,DPNF
 
 C Simulation period and save option.
@@ -108,6 +112,9 @@ C Comfort parameters and hash table.
 C Project journal on/off, unit number, cmd, file name.
       common/journopt/journio,iuj,journcmd,jfile
 
+      integer ireportunit ! zero is default one is W two is kW three Joules
+      common/repunit/ireportunit
+
 C CFD commons.
       common/flvimg/imgtyp,IMOPTS
       common/flvpar/Lflpar(MCOM)
@@ -115,12 +122,12 @@ C CFD commons.
 C Flags for generic data retrieval routines:
       COMMON/IGETFLG/IOCUPF,ialstused,IROC
 
-C Optional title for graph and up to 5 other labels and their positions.
-      common/grextras/graftitle,grlbl(5),ngrlbl,lblpx(5),lblpy(5)
+C Optional title for graph and up to 10 other labels and their positions.
+      common/grextras/graftitle,grlbl(10),ngrlbl,lblpx(10),lblpy(10)
       
 C Significant figure reporting limit (NSIGFIG).
       common/SFIG/NSIGFIG
-      COMMON/pres/iunitp
+      COMMON/pres/iunitp  ! file unit for plant
 
       COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
       
@@ -134,6 +141,16 @@ C IEEE callback (Solaris)
       integer SIGFPE_bps      
 #endif
 #endif
+
+#ifdef OSI
+      integer iigl,iigr,iigt,iigb,iigw,iigwh
+      integer iiw1,iiw2,iiw3,iiw4,iimenu
+      integer iicapture   ! to pass to updcapt
+#else
+      integer*8 iigl,iigr,iigt,iigb,iigw,iigwh
+      integer*8 iiw1,iiw2,iiw3,iiw4,iimenu
+      integer*8 iicapture   ! to pass to updcapt
+#endif
       
       character cAppName*12      
       
@@ -143,17 +160,20 @@ C IEEE callback (Solaris)
       logical     unixok,there
 
       CHARACTER ITEM(19)*23
-      CHARACTER*72 LCFGF,actf,Lflpar
+      CHARACTER*72 actf,Lflpar
       character inf*144,LCMDFL*144,outs248*248,xfile*144
       character outs*124,MODE*4,tg*1,delim*1
-      character*72 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF,LFCFG
+      character*72 LFCFG
       character path*72,spsname*8,paction*16
-      character cfgroot*24,fs*1,act*16,aut*12
+      character fs*1,act*16,aut*12
       character journcmd*20,jfile*72,uname*24,cjfile*72,OUTSTR*124
       character bact*4,pifltog*4,lpifl*72
       character graftitle*64,grlbl*24
       character firstbit*72,secondbit*72
       character longtmp*144
+
+      character cVnum*16      ! returned from ESPrVersionNum
+      character pagestitle*42 ! for banner title via epages call
 
       integer iglib   ! if 1 then X11, if 2 then GTK, if 3 then text only.
       integer NITMS,INO ! max items and current menu item
@@ -186,7 +206,9 @@ C     NSIGFIG=3
       IOPTDB=IFIL+6
       IUTDF=IFIL+7
       IUTDFA=IFIL+8
+      iunitp=IFIL+10
       matver=0.0   ! initial assumption of binary materials database
+      ireportunit=0 ! assume normal units for tabular listings
 
 C Set folder separator (fs) to \ or / as required.
       call isunix(unixok)
@@ -233,11 +255,9 @@ C have not been read in.
       IOPT=2
       graftitle=' '
       ngrlbl=0
-      grlbl(1)=' '
-      grlbl(2)=' '
-      grlbl(3)=' '
-      grlbl(4)=' '
-      grlbl(5)=' '
+      grlbl(1)=' '; grlbl(2)=' '; grlbl(3)=' '; grlbl(4)=' '
+      grlbl(5)=' '; grlbl(6)=' '; grlbl(7)=' '; grlbl(8)=' '
+      grlbl(9)=' '; grlbl(10)=' '
 
 C Set CFD visualization parameter files to UNKNOWN
       do 8 I=1,MCOM
@@ -313,8 +333,15 @@ C Set initial font sizes (IMFS is for graphs, IFS is for dialog & text feedback)
         LIMTTY=16
         LIMIT =16
       ENDIF
+
+C Find the current ESP-r version number and add it to application title.
+      call ESPrVersionNum(cVnum)
+      write(pagestitle,'(2a)') 'ESP-r Results Analysis ',
+     &  cVnum(1:lnblnk(cVnum))
+
       CALL EPAGES(MMOD,IUIN,IUOUT,iappwi,iapphi,iappx,iappy,menuchw,
-     &'ESP-r Results Analysis: enquiries to esru@strath.ac.uk')
+     &  pagestitle)
+
       IF(MMOD.EQ.-6)then
         ICOUT=0
       else
@@ -325,16 +352,25 @@ C Open the text display box equal to LIMTTY if MMOD = 8.
       IF(MMOD.EQ.8)THEN
         iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
         if(iglib.eq.1)then
-          call win3d(menuchw,15,15,5,3,igl,igr,igt,igb,igw,igwh)
-          igw=igr-igl
-          igwh=igb-igt
+
+C Setup and pass in parameters to win3d.
+          iiw1=15; iiw2=15; iiw3=5; iiw4=3; iimenu=menuchw
+          iigl=igl; iigr=igr; iigt=igt; iigb=igb; iigw=igw; iigwh=igwh
+          CALL win3d(iimenu,iiw1,iiw2,iiw3,iiw4,
+     &      iigl,iigr,iigt,iigb,iigw,iigwh)
+          igl=int(iigl); igr=int(iigr); igt=int(iigt); igb=int(iigb)
+          igw=int(iigw); igwh=int(iigwh)
           call opencpw
           call opensetup
-          call updcapt(1)
+          iicapture=1
+          call updcapt(iicapture)
         elseif(iglib.eq.2)then
-          CALL win3d(menuchw,9,20,5,3,igl,igr,igt,igb,igw,igwh)
-          igw=igr-igl
-          igwh=igb-igt
+          iiw1=9; iiw2=20; iiw3=5; iiw4=3; iimenu=menuchw
+          iigl=igl; iigr=igr; iigt=igt; iigb=igb; iigw=igw; iigwh=igwh
+          CALL win3d(iimenu,iiw1,iiw2,iiw3,iiw4,
+     &      iigl,iigr,iigt,iigb,iigw,iigwh)
+          igl=int(iigl); igr=int(iigr); igt=int(iigt); igb=int(iigb)
+          igw=int(iigw); igwh=int(iigwh)
         endif
         call setzscale()
         call setgscale()
@@ -345,16 +381,14 @@ C Open the text display box equal to LIMTTY if MMOD = 8.
         ngset=0
         nzonec=0
         call foundcolour(mdispl,nifgrey,ncset,ngset,nzonec)
+
+c Debug
+C        write(6,*) 'colurs ',nifgrey,ncset,ngset,nzonec
         call startbuffer()
       ENDIF
       ITRC=1
       IF(MMOD.NE.-6)ICOUT=IUOUT
       CALL ESPrVersion("summary",cAppName,IUOUT)
-      write(outs,'(2a)')
-     & ' Systems Research Unit, University of',
-     & ' Strathclyde, Glasgow, Scotland.'
-      call edisp(IUOUT,outs)
-      call edisp(IUOUT,' ')
 
 C Find the users home folder then get users custom settings.
 C Make temporary use of file unit ixunit.
@@ -402,9 +436,9 @@ C Scan the defaults file for default configuration.
 C Take command line file name as initial results file name.
       if(inf(1:2).ne.'  '.and.inf(1:4).ne.'UNKN')then
         LCMDFL=inf
-        write(outs248,'(a,a)')' the input file is: ',LCMDFL
-        call edisp248(iuout,outs,80)
-        call tstamp('>',outs)
+        call edisp(iuout,'  ')  ! echo blank line
+        write(outs248,'(a,a)')'The input file is: ',LCMDFL
+        call edisp248(iuout,outs248,90)
       else
         LCMDFL='UNKNOWN'
       endif
@@ -412,9 +446,9 @@ C Take command line file name as initial results file name.
 C Check for command line actions.
       if(act(1:2).ne.'  '.and.act(1:4).ne.'UNKN')then
          paction=act
-         write(outs,'(a,a)')' the action is: ',paction
+         write(outs,'(2a)') 'The action is: ',paction
          call edisp(iuout,outs)
-         write(outs,'(a,a)')'RES: the input action is: ',paction
+         write(outs,'(2a)') 'RES: the input action is: ',paction
          call tstamp('>',outs)
          if(aut(1:6).eq.'silent')then
            autook=.true.
@@ -427,13 +461,13 @@ C Check for command line actions.
 
 C Export (grtool) file information. Temporarily use 
 C unit ifil+6 for output file.
-      xfile = 'data.grt'
+      xfile = 'data.csv'
       ixopen = 0
       ixunit = ifil + 6
       ixpunit = ifil + 12
       delim = '-'
 
-C Assume primitive constructions input from IFIL+3.
+C Assume materials input from IFIL+3.
       IFMAT=IFIL+3
       write(LFMAT,'(a)') DFCON(1:lnblnk(DFCON))
 
@@ -471,14 +505,16 @@ C Read the plant configuration file.
           endif
           if(ier.eq.-3) goto 902  ! cancel detected pass back -3 in ier.
 
-	  call fdroot(longtmp,path,LCFGF)
+          call fdroot(longtmp,path,LCFGF)
 
-C Read the model plant-only configuration file.
+C Read the model plant-only configuration file. Also set the initial
+C export file name to reflect the model root name.
           IFCFG=IFIL+1
           IAPROB=IFIL+2  
           MODE='ALL '
           call ERSYS(LFCFG,IFCFG,IAPROB,MODE,ITRC,IER)
-	endif
+          write(xfile,'(2a)') cfgroot(1:lnblnk(cfgroot)),'.csv'
+        endif
 
 C If we have a plant only file go straight to the plant results menu.
         call sysoutp('-',0)
@@ -938,6 +974,46 @@ C Dummy routines from common3dv.F
       end
 
       subroutine chgelev(icelev)
+      return
+      end
+
+      subroutine chgsun(isunhour)
+      return
+      end
+
+      subroutine chgeye(EVX,EVY,EVZ,VX,VY,VZ,EAN,JITZNM,JITSNM,JITVNO,
+     &   JITOBS,JITSNR,JITGRD,JITORG,DIS,JITBND,JITDSP,JITHLS,JITHLZ,
+     &   JITPPSW)
+
+C Passed paramters.
+      real EVX,EVY,EVZ,VX,VY,VZ,EAN,DIS
+
+C Depending on computer type set integer size of passed parameters.
+#ifdef OSI
+      integer JITZNM,JITSNM,JITVNO,JITOBS,JITSNR,JITGRD,JITORG
+      integer JITBND,JITDSP,JITHLS,JITHLZ,JITPPSW
+#else
+      integer*8 JITZNM,JITSNM,JITVNO,JITOBS,JITSNR,JITGRD,JITORG
+      integer*8 JITBND,JITDSP,JITHLS,JITHLZ,JITPPSW
+#endif     
+      return
+      end
+
+      subroutine chgzonpik(jizgfoc,jnzg)
+#ifdef OSI
+      integer jizgfoc,jnzg  ! for use with viewtext
+#else
+      integer*8 jizgfoc,jnzg  ! for use with viewtext
+#endif
+      return
+      end
+
+      subroutine chgzonpikarray(jnznog,jnznogv)
+#ifdef OSI
+      integer jnznog,jnznogv
+#else
+      integer*8 jnznog,jnznogv
+#endif
       return
       end
 

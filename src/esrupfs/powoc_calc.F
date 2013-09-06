@@ -159,7 +159,6 @@ c     ELSEIF (ITYPE==??) THEN
 
 C-----This power-only component type is not currently supported.
       ELSE
-        call elinc(1)
         WRITE(IUOUT,*) ' No support for this type of power-only comp. ',
      &                 ITYPE
         STOP ' POWOC_CALC: unresolvable error on power-only comp type'
@@ -209,7 +208,6 @@ C ------------------------------------------------------------------------------
       implicit none
 #include "building.h"
 #include "power.h"
-#include "OffsiteUtilitiesPublic.h"
 
 C---------------------------------------------------------------------------------
 C Common holding the power-only component description read from the electric
@@ -251,27 +249,20 @@ C Declarations for variables passed in calling statement.
 C---------------------------------------------------------------------------------
       INTEGER IPWC
 
-      real fScale_Factor
+      integer fScale_Factor
       character*72 cFile_Name
       real fGet_nonHVACld           ! Function reference
-      real fLoad 
+
 C.....Get .fcl filename and scaling factor
       write (cFile_Name, '(A)') POWCDATS(IPWC,1)
       fScale_Factor = POWCDAT(IPWC,1)
 
 C.....Recover loads
 
-      fLoad = fGet_nonHVACld ( cFile_Name ) * fScale_Factor
 
-      PPOWOC(IPWC) = -1.* fLoad
+      PPOWOC(IPWC) = -1.* fGet_nonHVACld ( cFile_Name ) * fScale_Factor
       QPOWOC(IPWC) = 0.
 
-C---------------------------------------------------------------------------------------------
-C     Store power use for later. 
-C---------------------------------------------------------------------------------------------      
-      fSUElectricityUse(iUseEquipment) = fLoad
-      call StorePfsCompEnergyUse(iPWC, fSUElectricityUse )      
-      
 
       RETURN
       END
@@ -436,7 +427,7 @@ C-------------------------------------------------------------------------------
      &                             q_HVAC_elec)
 
       fGet_nonHVACld = q_nonHVAC_elec
-           
+
       RETURN
       END
 
@@ -1035,7 +1026,7 @@ C The first data item is the efficiency of the PCU
       PCU_Eff = POWCDAT(IPWC,1)
 C The second data item is the ID of the plant component (electrical
 C generation device) to which the PCU component is connected.
-      iElecGen_ID = int(POWCDAT(IPWC,2))
+      iElecGen_ID = POWCDAT(IPWC,2)
 C Determine DC electrical power output of plant component to which
 C the PCU is connected.
       QElecGen = pwrp(iElecGen_ID)
@@ -1454,7 +1445,7 @@ C There are 6 data items for the PCU power-only component; See full definitions 
 
 
 C.....Operating mode of PCU
-      iOpMode = int(POWCDAT(IPWC,1))
+      iOpMode = POWCDAT(IPWC,1)
 
 C.....Nominal power of PCU (W)
       fNomPower = POWCDAT(IPWC,2)
@@ -1647,24 +1638,24 @@ C.... Get component name's length
       iNameLength = lnblnk(powcomnam(IPWC))
 
 C.....Format string as 'electrical_net/power_only_components/NAME/misc_data'
-      Call AddToReportWild1(rvEPowPCUPowLoss%Identifier,
+      Call AddToReport(rvEPowPCUPowLoss%Identifier,
      &      fPwrLoss,
      &      powcomnam(IPWC)(1:iNameLength))
 
 C.....Only report efficiency if unit is on
       if ( .not. bPower_Zero ) then
 
-      Call AddToReportWild1(rvEPowPCUEff%Identifier,
+      Call AddToReport(rvEPowPCUEff%Identifier,
      &      fPCUEff,
      &      powcomnam(IPWC)(1:iNameLength))
 
       endif
 
-      Call AddToReportWild1(rvEPowPCUPowIn%Identifier,
+      Call AddToReport(rvEPowPCUPowIn%Identifier,
      &      fPwrInput,
      &      powcomnam(IPWC)(1:iNameLength))
 
-      Call AddToReportWild1(rvEPowPCUPowOut%Identifier,
+      Call AddToReport(rvEPowPCUPowOut%Identifier,
      &      fPwrOutput,
      &      powcomnam(IPWC)(1:iNameLength))
 
@@ -1708,6 +1699,7 @@ C ------------------------------------------------------------------------------
 #include "plant.h"
 #include "power.h"
 #include "Hydrogen_demand_controller.h"
+#include "OffsiteUtilitiesPublic.h"
 
 C---------------------------------------------------------------------------------
 C     Passed variables

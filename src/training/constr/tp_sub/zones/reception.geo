@@ -67,11 +67,11 @@ reception describes a
 *surf,west,VERT,-,-,-,extern_wall,OPAQUE,EXTERIOR,0,0  #   7 ||< external
 *surf,ceiling,CEIL,-,-,-,ceiling,OPAQUE,ANOTHER,03,01  #   8 ||< Ceiling_r:roof_space
 *surf,floor,FLOR,-,-,-,floor_1,OPAQUE,CONSTANT,20,00  #   9 ||< constant @ 20dC &   0W rad
-*surf,glz_s,VERT,south,-,-,d_glz,DCF7671_06nb,EXTERIOR,0,0  #  10 ||< external
+*surf,glz_s,VERT,south,-,-,dbl_glz,DCF7671_06nb,EXTERIOR,0,0  #  10 ||< external
 *surf,door_p,VERT,pasg,-,-,door,OPAQUE,SIMILAR,00,00  #  11 ||< identical environment
 *surf,door_a,VERT,part_a,-,-,door,OPAQUE,ANOTHER,02,07  #  12 ||< door_a:office
 *surf,door_w,VERT,west,-,-,door,OPAQUE,EXTERIOR,0,0  #  13 ||< external
-*surf,east_glz,VERT,east,-,-,d_glz,DCF7671_06nb,EXTERIOR,0,0  #  14 ||< external
+*surf,east_glz,VERT,east,-,-,dbl_glz,DCF7671_06nb,EXTERIOR,0,0  #  14 ||< external
 # 
 *insol,3,0,0,0  # default insolation distribution
 # 

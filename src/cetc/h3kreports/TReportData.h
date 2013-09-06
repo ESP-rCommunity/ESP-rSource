@@ -10,6 +10,7 @@
 #include <vector>
 #include <string>
 #include "TBinnedData.h"
+#include "log.h"
 
 #include <stdexcept>
 
@@ -18,6 +19,7 @@
 #define OUT_SUMMARY 0x02  // 0000 0010
 #define OUT_LOG     0x04  // 0000 0100
 #define OUT_STEP    0x08  // 0000 1000
+#define OUT_ANY     0xFF  // 0000 0000
 
 
 using namespace std;
@@ -34,8 +36,8 @@ class TReportData
 
       unsigned char GetOutputType();
       void SetOutputType(unsigned char OutputType);
-      void AddValue(const unsigned long &lTimeStep, const int &iMonthIndex,const float &fValue);
-      void Finalize(unsigned int iTimeStep, unsigned int iMonthIndex, unsigned long lOutputStepCount);
+      void AddValue(const unsigned long &lTimeStep, const int &iLogIndex,const float &fValue);
+      void Finalize(unsigned int iTimeStep, unsigned int iLogIndex, unsigned long lOutputStepCount);
       void FinalizeStepData(unsigned long lTimeStep);
 
       void SetExpectedTimeSteps(unsigned long lExpectedTimeStep);
@@ -51,9 +53,9 @@ class TReportData
       void GetNextStepValueReset();
       void EraseSteps(unsigned long lNumberOfSteps);
 
-      //methods to retreive the monthly bin data (m_MonthlyBinData)
-      void GetNextMonthlyBinReset();
-      TBinnedData* GetNextMonthlyBin();
+      //methods to retreive the log bin data (m_LogBinData)
+      void GetNextLogBinReset();
+      TBinnedData* GetNextLogBin();
 
       unsigned long GetStepCount();
       TBinnedData* GetAnnualBin();
@@ -67,7 +69,7 @@ class TReportData
 
       //Routine that checks if the variable meta data is wild (dynamic).
       bool IsVariableDescriptionWild();
-      bool SetVariableDescriptoinWild(const string& sMetaType,
+      void SetVariableDescriptionWild(const string& sMetaType,
                                       const string& sVariableType,
                                       const string& sDescription);
       string& getVariableDescription();
@@ -78,6 +80,10 @@ class TReportData
       //could be more efficient if we populate the sVarName
       //only when required.
       char sVarName[256];
+      
+      bool Enabled; 
+      unsigned char OutputType;
+
 
       //This boolean is to indicate if a step was previously outputted or not.
       //Initialize to false, set by calling class for outputting purpose.
@@ -93,32 +99,30 @@ class TReportData
 
    protected:
    private:
-      unsigned char m_cOutputType;
+      unsigned char m_cOutputType; //binary flag to indicate the output type
       unsigned long m_lExpectedTimeSteps; //used for optimization only
-      unsigned char m_cInitBit; //capture what has been initialize.
       bool m_bNextStepIndexEnd; //used to flag the end in the GetNextRoutine
       unsigned long m_lNextStepIndex; //used to track where the step index is at (for output only)
-      int m_iNextMonthlyBinIndex; //used to track where the monthly bin index is at (for output only)
+      int m_iNextLogBinIndex; //used to track where the log bin index is at (for output only)
       bool m_bReportStartupPeriod; //used to flag if we keep track of the startup period or not
       bool m_bSimulationStarted; //used to flag if the variable in startup mode or not
       double m_fLastValue; //last value passed to the AddValue() method
       long m_lLastTimeStep; //stores the last timestep that was pushed
+      int m_iLastLogIndex; //stores the last log index a value was push too.
       bool m_bTS_averaging; //Time step averging mode on/off.
       bool m_firstpass; //the first call has special code (ts_averaging)
 
-      BinnedDataVector::iterator m_itNextMonthlyBinIndex;
+      BinnedDataVector::iterator m_itNextLogBinIndex;
 
 
       int m_iSimulationStartDay; //the day number the simulation started
 
       void AddToStepData(unsigned long lTimeStep, const double &fValue);
       void AddToSummaryData(const double &fValue);
-      void AddToLogData(const int &iMonthIndex, const double &fValue);
-
-      bool IsNewMonth(const int &iDay);
+      void AddToLogData(const int &iLogIndex, const double &fValue);
 
       StepDataVector m_StepData;
-      BinnedDataVector m_MonthlyBinData;
+      BinnedDataVector m_LogBinData;
       TBinnedData m_AnnualData;
 
       //Only used when a meta variable description is passed.

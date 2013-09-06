@@ -863,17 +863,6 @@ C Type 470 range based flow rate controller (defunct type).
 C Type 500 multi configuration controller
         IF(NSDC.NE.6)
      &  call MFERR(ICMP,' Number of suppl data items incorrect.',IER)
-     
-      ELSE IF(ITPCMP(ICMP).eq.600) THEN
-C AIM-2 zone coupling       
-        if(NSDC.NE. 1 .and. NSDC .NE. 2 )
-     & call MFERR(ICMP,' Number of suppl data items incorrect.',IER)
-
-      ELSE IF(ITPCMP(ICMP).eq.610) THEN
-C Simple circ fan for residential models
-        if(NSDC.NE. 2)
-     & call MFERR(ICMP,' Number of suppl data items incorrect.',IER)
-            
       ELSE
         call edisp(iuout,' Unknown component type...')
         goto 999

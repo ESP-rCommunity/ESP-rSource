@@ -445,6 +445,12 @@ C Data returned from initial scan of icon db.
       character dtagatr*12,dmenuatr*32,datrib*12
       character dgtagatr*12,dgmenuatr*32,dgatrib*12
 
+#ifdef OSI
+      integer iicol
+#else
+      integer*8 iicol
+#endif
+
       CALL PIXEL2U(IX,IY,X,Y)
 
 C Hunt through the components
@@ -504,7 +510,8 @@ C point
 
 C If inside a component and button == 3 then end connection, update
 C connection data and clear the temporary array
-        call winscl('-',0)
+        iicol=0
+        call winscl('-',iicol)
         ICEND=INCOMP
         DMIN=1E+20
         DO 15 J=1,NCONP(ICEND)
@@ -638,7 +645,8 @@ C                  write(6,*) 'menu atr ',dmenuatr(id,ii)
 	else
 	  write(outs,'(a,i2,a,i2,a)') 'Attachement types for icons',
      &      ICSTRT,' & ',ICEND,' do not match! Setting to zero.'
-          call winscl('-',0)
+          iicol=0
+          call winscl('-',iicol)
           call usrmsg(outs,'Using type zero.','W')
 	  ICNNT(NICNN)=0
 	endif

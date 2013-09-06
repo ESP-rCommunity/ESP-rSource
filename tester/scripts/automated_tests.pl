@@ -34,7 +34,7 @@
 use Cwd;
 use warnings;
 use strict 'vars';
-
+use File::Find;
 #--------------------------
 # Prototypes:
 sub echo_config();
@@ -79,6 +79,10 @@ my %binlist = ( "aco"   =>   "esruaco",
 my %binalias = ( "vew"    =>   "viewer",
                  "mrt"    =>   "espvwf" );                          
 
+# Short list of bins can 
+# be used to restrict analysis to a single binary when 
+# debugging
+# %binlist  = ( "dfs" => "esrudfs" ); 
 
 my @Suppress_code_list  = ( "222 W" );
 my @Dangerous_info_list = ( "340 I" );
@@ -90,7 +94,7 @@ my $Test_base_URL="https://espr.svn.cvsdude.com/esp-r";
 my $smtp_server="Mailhost.nrcan.gc.ca";
              
 # Default SVN source
-my $def_ref_rev="development_branch\@r971";
+my $def_ref_rev="development_branch\@r8000";
 my $def_test_rev="development_branch\@HEAD";             
              
 # Target directories for reference and test repositories             
@@ -116,6 +120,7 @@ $build_args{"test"}      ="";
 
 # Flag for forcheck debugging
 my $debug_forcheck = 0;
+my $quick_FC = 0; 
 my $del_dir = 1; 
 # Hash for linking forcheck error codes to human-readable descriptions
 my %gDescriptions;
@@ -298,6 +303,7 @@ if ( @ARGV ){
   $cmd_arguements =~ s/-h;/--help;/g;
   $cmd_arguements =~ s/-v;/--verbose;/g;
   $cmd_arguements =~ s/-vv;/--very-verbose;/g;
+  $cmd_arguements =~ s/-qfc;/--quick-forcheck;/g;
   
   # Collate options expecting arguements ---
   #   transform ';' into ':'
@@ -364,6 +370,16 @@ if ( @ARGV ){
         last SWITCH;
       }
        
+      if ( $arg =~ /^--quick-forcheck/ ){
+
+        $quick_FC = 1;
+        $test_forcheck = 1;
+        $test_regression = 0;
+        $test_builds = 0; 
+         
+
+      }
+
       # Skip portions of test:
       if ($arg =~ /^--skip/ ){
         if ( $arg =~/^--skip-forcheck/ )  { $test_forcheck   = 0; }
@@ -483,7 +499,7 @@ for my $count ( scalar(@version_stack) ){
       last SWITCH;
     }    
     if ( $count > 2 ){
-      # Too many version_stack:
+      # Too many entries in version_stack:
       fatalerror("A maximum of two branches may be specified, but $count branches were provided!\n");
       last SWITCH;
     }
@@ -492,7 +508,7 @@ for my $count ( scalar(@version_stack) ){
 
 }
 
-# Coerse branch names into /branches/name format.
+# force branch names into /branches/name format.
 while ( my  ( $key, $branch ) = each %revisions ){
 
   if ( $branch !~ /^branches/i &&
@@ -590,29 +606,43 @@ if ( $test_forcheck || $test_builds || $test_regression ){
         }
       }
       
-      # Pull down source. Skip if source 
+      # Pull down source. Skip if source exists already 
       if ( ! -d $src_dirs{$key} ){
   
         execute("svn co $Test_base_URL/$branch $rev $src_dirs{$key}");
+       
       }
       stream_out("Done\n");
-
+  
     } elsif ( $revision_types{$key} =~ /local/ ) {
       # Local sand-box
 
-      # SVN Repository: Progress update
-      stream_out("Copying $revision to $src_dirs{$key}...");
-      
-      # Pull down source. Skip if source exists already.
-      if ( ! -d $src_dirs{$key} ){
-  
-        execute("cp -fr $revision $src_dirs{$key}");
-      }
-      stream_out("Done\n");
+      if ( $quick_FC ) {
 
+        # Link to 
+        stream_out("Linking $revision to $src_dirs{$key}...");
+        
+        execute("ln -s $revision $src_dirs{$key}");
+        stream_out("Done\n");
+
+      }else{
+
+        # SVN Repository: Progress update
+        stream_out("Copying $revision to $src_dirs{$key}...");
+        
+        # Copy directory. Skip if source exists already.
+        if ( ! -d $src_dirs{$key} ){
+    
+          execute("cp -fr $revision $src_dirs{$key}");
+        }
+        stream_out("Done\n");
+      }
     }
   }
 }
+
+
+
 
 #------------------------------------------------------------
 # Now prepare codes for forcheck static analysis. Unfortunately,
@@ -636,9 +666,11 @@ if ( $test_forcheck ){
     stream_out("Building $key ($revision) version of ESP-r for use with Forcheck.");
 
     # Build X11 debugging version.
-    if ( ! $debug_forcheck ) {
+    if (!$debug_forcheck) {
       buildESPr("default", $build_args{"$key"},"default","debug","onebyone");
     }
+
+
     stream_out(" Done\n");
     
   }
@@ -661,6 +693,7 @@ if ( $test_forcheck ){
   
  
   my %forcheck_output = ();
+  
   my $forcheck_summary = "";
   
   # Loop through revisions...
@@ -683,9 +716,92 @@ if ( $test_forcheck ){
       # verbosity.
       # DEBUG
 
-      if ( ! $debug_forcheck || ! -r "$TestFolder/$src_dirs{$key}/src/$folder/forcheck_$bin.out" ){
-        system ("forchk -I ../include *.F ../lib/esru_blk.F ../lib/esru_libX11.F ../lib/esru_ask.F  > forcheck_$bin.out 2>&1 " );
+
+      if ( ! $debug_forcheck || $debug_forcheck ){
+      #if ( ! $debug_forcheck && ! -r "$TestFolder/$src_dirs{$key}/src/$folder/forcheck_$bin.out" ){
+        my $module_files = "";
+        my $module_uses_module_files = ""; 
+        my $non_module_files = "";
+ 
+        # Search through the contents of this directory for Fortan 
+        # files containing "^        MODULE" statements. We need
+        # to instruct forcheck to parse these first so that the module
+        # structure is known when they're encountered in source.
+        # 
+        # (Forcheck is supposed to do this automagically, but 
+        #  our experence has been spotty).
+
+        my $filecount = 1; 
+
+        find ( sub{
+    
+
+          # skip svn files and non-fortran (*.F) source.
+          my $src_file = $File::Find::name;
+          return if -d;
+          return unless -r;
+          return if $src_file =~ m/\.svn/;
+          return unless $src_file =~ m/(\.F$|\.f90$)/;
+          #return if $filecount > 5;
+          #$filecount ++; 
+ 
+          # Debugging
+          # print (">$src_file \n");
+      
+          # Extract contents as an array
+          open(SOURCE,$src_file);
+          my @lines = <SOURCE>;
+          close(SOURCE);
+
+          # Loop through array and search each line 
+          # for a module statement
+          my $ModMatch = 0;
+          my $ModUseMatch =0; 
+          MATCH: foreach my $line (@lines){
+
+            if ( $line =~ /^\s+MODULE/i ){
+              $ModMatch = 1; 
+            }
+
+            if ( $line =~ /^\s+USE/i ){
+              $ModUseMatch = 1; 
+            }
+
+          }
+
+          # Now append file to appropraite list. Note: 
+          # assume .f90 files are free-form and parsed by forcheck 
+          # with -ff option, .F files are fixed form and need -nff 
+          # option. 
+
+          my $listfile = ( $src_file =~ /\.f90$/ ) ? 
+                        " -ff $src_file " : " -nff $src_file " ; 
+
+          if ( $ModUseMatch ) { $module_uses_module_files .= $listfile; }
+          elsif ( $ModMatch ) { $module_files .= $listfile; }
+          else { $non_module_files .= $listfile; }
+
+        }, "$TestFolder/$src_dirs{$key}/src/$folder");
+
+        # Debugging
+        #print ("\n>>>MODULE FILES  $module_files \n\n\n");
+        #print (">>>NON MODULE FILES  $non_module_files \n\n\n");
+        #print  ">Command: forchk -I ../include $module_files $module_uses_module_files $non_module_files../lib/esru_blk.F ../lib/esru_libX11.F ../lib/esru_ask.F  > forcheck_$bin.out 2>&1 <\n\n"; 
+        # Invoke forecheck (list module files first) 
+        #execute ("forchk -I ../include  $module_files  -nff /tmp/tdf/src_reference/src/esrubps/TCC.F -nff /tmp/tdf/src_reference/src/esrubps/ESPrTrnsysData.F  -ff /tmp/tdf/src_reference/src/esrubps/h3kmodule.f90  $module_uses_module_files $non_module_files -nff ../lib/esru_blk.F -nff ../lib/esru_libX11.F -nff ../lib/esru_ask.F > forcheck_$bin.out " );
+        my $path = getcwd(); 
+        #stream_out ">>> $path \n "; 
+        execute ("rm forcheck_$bin.out");
+        
+        my $forcheck_stream = "";  
+        $forcheck_stream = ` forchk -I ../include $module_files $module_uses_module_files $non_module_files -nff ../lib/esru_blk.F -nff ../lib/esru_libX11.F -nff ../lib/esru_ask.F  ` ;
+        open ( FORCHECK_OUT, ">forcheck_$bin.out") or die( "Could not open forcheck_$bin.out\n") ;
+        print FORCHECK_OUT $forcheck_stream; 
+        close (FORCHECK_OUT); 
+        my $forcheck_stream = "";
       }
+
+
       # Save location of forcheck output
       $forcheck_output{$bin}{$key} = "$TestFolder/$src_dirs{$key}/src/$folder/forcheck_$bin.out";
  
@@ -728,6 +844,7 @@ if ( $test_forcheck ){
     # old_msgs exists. If not, add message to 'unmatched code' hash. 
 
     my %unmatched_codes;
+    my %all_new_EW_codes;
     my %procedures;
     
     foreach my $msg ( keys %new_msgs ) {
@@ -742,20 +859,24 @@ if ( $test_forcheck ){
       # Check to see if an unmatched instance exists in new_msgs.
       # if so, append to unmatched_msgs/ unmatched_codes, and
       # set failure flag.
+
+      my ($files, $procedure, $source, $code) = split /{}/, $msg;
+      my( $topfile, $file) = split /:/, $files;
+
+      my $line = $new_msgs{$msg}{"line"};
+
+      my $location = "$file - line $line";
+
+      my $procedure_call = ( $file ne $topfile ) ? " ($topfile) " : "";
+
       if ( $new_count > $old_count ){
 
-        my ($files, $procedure, $source, $code) = split /{}/, $msg;
-        my( $topfile, $file) = split /:/, $files;
-
-        my $line = $new_msgs{$msg}{"line"};
-
-        my $location = "$file - line $line";
-
-        my $procedure_call = ( $file ne $topfile ) ? " ($topfile) " : "";
+        
 
         $unmatched_codes{$code}{"$location\{\}$source"} .=
           ( defined( $unmatched_codes{$code}{"$location\{\}$source"} ) ) ?
                ";$procedure$procedure_call" : "$procedure$procedure_call";
+
 
 
 #         $procedures{"location"} = 
@@ -763,6 +884,13 @@ if ( $test_forcheck ){
 #             ? "|$location" : "$location";
 
         if ( $code =~ /[EW]/ ){ $bin_fail = 1; }
+
+      }else{
+
+
+        $all_new_EW_codes{$code}{"$location\{\}$source"} .=
+          ( defined( $all_new_EW_codes{$code}{"$location\{\}$source"} ) ) ?
+               ";$procedure$procedure_call" : "$procedure$procedure_call";
 
       }
 
@@ -792,6 +920,8 @@ if ( $test_forcheck ){
     my @warning_codes = ();
     my @info_codes    = (); 
     my @total_counts  = ();  # <- already declared!
+    my @all_test_error_codes = ();
+    my @all_test_warn_codes  = ();
   
 
     my $status;
@@ -799,56 +929,61 @@ if ( $test_forcheck ){
     # Build lists of errors/warnings/info msgs for which the number of 
     # instances do not match between old and new versions
     while ( my ( $code, $count ) = each %all_summary ){
+
+
+
+
     
       # Split old and new count.
       my ($old_count, $new_count)= split /:/, $count;
-      if ( $old_count != $new_count ) {
-        
-        # Stuff code into appropriate array. Differences in errors 
-        # and warnings produce failures.
-        for ( $code ) {
 
-          SWITCH: {
-            if ( /E$/  )  {
-                                push @error_codes, $code;  
-                                last SWITCH; 
-                              } 
-            if ( /W$/ )  {
-                                push @warning_codes, $code;
-                                last SWITCH; 
-                              } 
-            if ( /I$/ )  {
-                                push @info_codes, $code;       
-                                last SWITCH; 
-                              } 
-          }
+      my $delta = $old_count != $new_count ? 1 : 0;
+
+      for ( $code ) {
+
+        SWITCH: {
+          if ( /E$/  )  {
+                              if ( $delta ) { push @error_codes, $code; }
+                              else  {push @all_test_error_codes, $code; }
+                              last SWITCH; 
+                            } 
+          if ( /W$/ )  {
+                              if ( $delta ) { push @warning_codes, $code; }
+                              else  {push @all_test_warn_codes, $code; }
+                              last SWITCH; 
+                            } 
+          if ( /I$/ )  {
+                              if ( $delta ) {push @info_codes, $code;}       
+                              last SWITCH; 
+                            } 
         }
-
-        # Turn code into human-readable string
-
-        if ( ! defined ( $gLong_codes{$code} ) ) {
-          my $number = $code;
-          $number =~ s/ (E|W|I)//g;
-          for ($code) {
-            SWITCH: {
-              if ( /E$/  )  {
-                             $gLong_codes{$code} = "Err.  # $number";
-                             last SWITCH;
-                                } 
-              if ( /W$/ )  {
-                             $gLong_codes{$code} = "Warn. # $number";
-                             last SWITCH;
-                                } 
-              if ( /I$/ )  {
-                             $gLong_codes{$code} = "Info. # $number";
-                             last SWITCH;
-                                } 
-            }
-  
-          }
-        }
-        
       }
+
+      # Turn code into human-readable string
+
+      if ( ! defined ( $gLong_codes{$code} ) ) {
+      my $number = $code;
+      $number =~ s/ (E|W|I)//g;
+      for ($code) {
+        SWITCH: {
+          if ( /E$/  )  {
+              $gLong_codes{$code} = "Err.  # $number";
+              last SWITCH;
+                } 
+          if ( /W$/ )  {
+              $gLong_codes{$code} = "Warn. # $number";
+              last SWITCH;
+                } 
+          if ( /I$/ )  {
+              $gLong_codes{$code} = "Info. # $number";
+              last SWITCH;
+                } 
+          }
+
+        }
+
+      }
+
       
       # Get summary information: Are there more warnings, errors & 
       # info messages, or less?
@@ -901,44 +1036,71 @@ if ( $test_forcheck ){
     }else{
       $forcheck_details .= "   No differences to report.\n";
     }
-    foreach my $code ( sort @error_codes, sort @warning_codes, sort @info_codes ){
-      $forcheck_details .= "     -> $gLong_codes{$code} ---"
-                           ." $gDescriptions{$code} "
-                           ."[ Instances: reference $old_summary{$code}, "
-                           ."test $new_summary{$code} ]\n";
-
-      # Check if this code appears in unmatched codes:
-      if ( defined ( $unmatched_codes{$code} ) ) {
-
-        # If so, get instances where code appears...
-
-        my %locations = %{$unmatched_codes{$code}};
-
-        # ...loop though instances
-        foreach my $instance ( sort keys %locations ){
-
-          # Split instance into file/line and source tokens
-          my ($location,$source ) = split /\{\}/, $instance;
-          $location = ( $location =~ /none/ ) ? "" : "in $location";
-
-          # Get procedures that include this source code (there
-          # may be more than one if source is in a header file)
-          my $procedures = $locations{$instance};
-
-          # Format output.
-          if ($source =~ /^\s*$/ ){
-            $source = "\n";
-          }else{
-            $source     =~ s/^(.+)$/                $1/mg;
-          }
+    
+    foreach my $code_type ("new_e", "new_w", "new_i" ){
+      my @code_list;
+      if ( $code_type =~ /new_e/ ) { @code_list = sort @error_codes;}
+      if ( $code_type =~ /new_w/ ) { @code_list = sort @warning_codes;}
+      if ( $code_type =~ /new_i/ ) { @code_list = sort @info_codes;}
+      if ( $code_type =~ /all_e/ ) { @code_list = sort @all_test_error_codes;}
+      if ( $code_type =~ /all_w/ ) { @code_list = sort @all_test_warn_codes;}
+        #$forcheck_details .= "\n ---------- $code_type -------------- \n";
+        foreach my $code ( @code_list ){
           
-          $procedures =~ s/;/;\n                             /mg;
-          $forcheck_details .=  "          - New instance $location:$source"
-                               ."                [appears in: $procedures]\n";
+          my $limit = ( $gLong_codes{$code} =~ /Info\./ ) ? 5 : 50 ;
+          $forcheck_details .= "\n     -> $gLong_codes{$code} ---"
+                              ." $gDescriptions{$code} "
+                              ."[ Instances: reference $old_summary{$code}, "
+                              ."test $new_summary{$code} ] \n";
+
+          
+          # Check if this code appears in unmatched codes:
+          foreach my $source ("new"){
+            my %locations;
+            if ($source =~ /new/ && defined ($unmatched_codes{$code} ) ){ %locations = %{$unmatched_codes{$code}} }
+            if ($source =~ /all/ && defined ($all_new_EW_codes{$code}) ){ %locations = %{$all_new_EW_codes{$code}} }
+
+            if ( defined ( %{$unmatched_codes{$code}} ) ){
+
+              %locations = %{$unmatched_codes{$code}}  ;            
+              my $instance_count = scalar( keys %locations  ); 
+
+              my $instance_index = 0;
+              
+              # ...loop though instances
+              INSTANCE: foreach my $instance ( sort keys %locations ){
+
+                $instance_index++;
+                if ( $instance_index > $limit ){
+                  my $difference = $instance_count - $limit ;
+                  $forcheck_details .=  "          + $difference similar instances (suppressed here)... \n";
+                last INSTANCE;
+              }else{
+
+                # Split instance into file/line and source tokens
+                my ($location,$source ) = split /\{\}/, $instance;
+                $location = ( $location =~ /none/ ) ? "" : "in $location";
+
+                # Get procedures that include this source code (there
+                # may be more than one if source is in a header file)
+                my $procedures = $locations{$instance};
+
+                # Format output.
+                if ($source =~ /^\s*$/ ){
+                  $source = "\n";
+                }else{
+                  $source     =~ s/^(.+)$/                $1/mg;
+                }
+                
+                $procedures =~ s/;/;\n                             /mg;
+                      $forcheck_details .=  "          - New instance $location:$source"
+                                          ."                [appears in: $procedures]\n";
+              }
+            }
         }
       }
     }
-
+  }
     
   
     # pseudo-progress meter:
@@ -1177,8 +1339,9 @@ if ( scalar(@addresses) > 0 ){
 
   $subject .=  "($revisions{\"test\"}) ";
 
-  $subject =~ s/branches\///g;
-  #push @addresses, "aferguso\@nrcan.gc.ca", "blomanow\@nrcan.gc.ca";
+  $subject =~ s/branches\///g; 
+  # Send email to aferguso, for debugging?
+  # push @addresses, "aferguso\@nrcan.gc.ca"; 
   foreach my $address (@addresses){
     stream_out(" -> $address \n");
     mail_message($smtp_server,$address,$mail_from,$subject,$output);
@@ -1465,6 +1628,7 @@ sub parse_forcheck ($){
       if ( $object =~ /<topfile>/ )
               { $topfile = $object;
                 $topfile =~ s/^.*<topfile>(.+)<\/topfile>.*$/$1/sg;
+                $topfile =~ s/^.*\/src\//src\//g;
                 last SWITCH;
               }
       if ( $object =~ /<procedure>/ )
@@ -1480,6 +1644,7 @@ sub parse_forcheck ($){
                 if ( $object =~ /<file>/ ){
                     $file = $object;
                     $file =~ s/^.*<file>(.+)<\/file>.*$/$1/sg;
+                    $file =~ s/^.*\/src\//src\//g;
                 }else{
                     $file = $topfile;
                 }
@@ -1524,6 +1689,7 @@ sub parse_forcheck ($){
 
                 if ( ! $suppress ){
                   # Now push message object into forcheck hash
+
                   $forcheck_details{"$topfile:$file\{\}$procedure\{\}$source\{\}$code"}{"count"}++;
                   $forcheck_details{"$topfile:$file\{\}$procedure\{\}$source\{\}$code"}{"line"} = $line;
 

@@ -14,8 +14,7 @@ C on the parameter act (3 char) ='ipv' or ='cfg'
       character dstmp*24
       character act*3   ! indicate which file destination
       integer list
-      dimension list(72)  ! zone lists currently limited to 72 max.
-                          ! edit if MCOM changes
+      dimension list(MCOM)  ! zone lists currently set to MCOM
       integer loutlen,itrunc,ipos  ! used with ailist call
 
 C      tab=CHAR(9)
@@ -140,7 +139,7 @@ C Copy izmg to single array list and then write via ailist call.
             itrunc=1
             ipos=1
             do while (itrunc.ne.0)
-              call ailist(ipos,nzmg(ijj),list,72,'C',louts,loutlen,
+              call ailist(ipos,nzmg(ijj),list,MCOM,'C',louts,loutlen,
      &          itrunc)
               write(ifu,'(1x,a)',IOSTAT=ios,ERR=1003) louts(1:loutlen)
               ipos=itrunc+1
@@ -180,7 +179,7 @@ C Copy izedg into list and the write out via ailist call.
             itrunc=1
             ipos=1
             do while (itrunc.ne.0)
-              call ailist(ipos,nzedg(ij),list,72,'C',louts,loutlen,
+              call ailist(ipos,nzedg(ij),list,MCOM,'C',louts,loutlen,
      &          itrunc)
               write(ifu,'(1x,a)',IOSTAT=ios,ERR=1003) louts(1:loutlen)
               ipos=itrunc+1
@@ -231,12 +230,7 @@ C then include initial data for energy demand sets and metrics.
       integer lnblnk  ! function definition
 
 C Comments about common blocks are in ripvdat.
-      common/C21/IFCFG,cfgroot,LCFGF
-
-
       character act*1
-      character cfgroot*24
-      character LCFGF*72
 
 C Days to display (default is three (early winter, spring, summer).
       nipvdispjd=3
@@ -280,7 +274,7 @@ C Items to clear in any case.
 C Clear commons with blanking.
       if(act.eq.'b')then
         ipvsynop=' '
-        ipvsimu=' '
+C        ipvsimu=' '
         nms=0
         do 65 ij=1,MIPVM
           imetget(ij)=0
@@ -337,6 +331,7 @@ C Read IPV data from an external file or within cfg file based
 C on the parameter act (3 char) ='ipv' or ='cfg'.
       subroutine ripvdat(ifu,file,act,ier)
 #include "building.h"
+#include "model.h"
 #include "espriou.h"
 #include "ipvdata.h"
       
@@ -347,8 +342,10 @@ C on the parameter act (3 char) ='ipv' or ='cfg'.
       character dstmp*24
       character act*3   ! indicate which file destination
       integer list
-      dimension list(72)  ! zone lists currently limited to 72 max.
-                          ! edit if MCOM changes
+      dimension list(MCOM)  ! zone lists currently set to MCOM
+      character tipvadesc*40
+
+C Comments about common blocks are in ripvdat.
 
 C Open any existing file by this name.
       if(act(1:3).eq.'ipv')then
@@ -454,10 +451,22 @@ C at its value by looking at the number of assessments.
           endif
         endif
       elseif(WORD(1:7).eq.'*period')then
+
+C If the initial portion of ipvadesc is the same as the model root
+C name then discard the initial portion.
         iper=iper+1
         CALL EGETWI(OUTSTR,K,ipvastjd(iper),1,365,'W','assmt st',IER)
         CALL EGETWI(OUTSTR,K,ipvafnjd(iper),1,365,'W','assmt fn',IER)
-        CALL EGETRM(OUTSTR,K,ipvadesc(iper),'W','assmt descr',IER)
+        tipvadesc=' '
+        CALL EGETRM(OUTSTR,K,tipvadesc,'W','assmt descr',IER)
+        lncf=lnblnk(cfgroot)
+        lnipva=lnblnk(tipvadesc)
+        if(tipvadesc(1:lncf).eq.cfgroot(1:lncf))then
+          write(ipvadesc(iper),'(a)') tipvadesc(lncf+1:lnipva)
+        else
+          write(ipvadesc(iper),'(a)') tipvadesc(1:lnipva)
+        endif
+
       elseif(WORD(1:13).eq.'*display_days')then
         CALL EGETWI(OUTSTR,K,nipvdispjd,1,10,'W','displays',IER)
         do 343 ij=1,nipvdispjd
@@ -529,9 +538,10 @@ C 4 also read in the group name for the zones associated with the metric.
         endif
         CALL EGETP(OUTSTR,K,metrglbl(imset),'W','metric 20 descr',IER)
 
-C Read in the associated zones (on multiple lines is needed).
+C Read in the associated zones (on multiple lines is needed). Be sure
+C to update warning range if model complexity changes in building.h
         if(nzmg(imset).gt.0)then
-          CALL EGETWIA(ifu,list,nzmg(imset),1,72,'W',
+          CALL EGETWIA(ifu,list,nzmg(imset),1,82,'W',
      &      'IPV metrics associated zones',IER)
           DO 118 KV=1,nzmg(imset)
             izmg(imset,KV)=list(KV)
@@ -601,8 +611,7 @@ C seasons.h provides typper and typsea
 
 C See ipvdata.h and ripvdat for IPV common block information.
       integer list
-      dimension list(72)  ! zone lists currently limited to 72 max.
-                          ! edit if MCOM changes
+      dimension list(MCOM)  ! zone lists set to MCOM
 
       character outs*124
       character act*1
@@ -806,7 +815,9 @@ C List current metrics and demand sets.
             do 829 ijj=1,nzmg(ij)
               list(ijj)=izmg(ij,ijj)
  829        continue
-            call znarlist(inlist,list,72,zdescr,length,ier)
+
+C 3rd parameter needs to be MCOM.
+            call znarlist(inlist,list,MCOM,zdescr,length,ier)
             call edisp248(itru,zdescr,100)
  269      continue
         else
@@ -815,7 +826,7 @@ C List current metrics and demand sets.
       endif
       if(act.eq.'a'.or.act.eq.'d')then
 
-C List current demand sets..
+C List current demand sets.
         if(neds.ge.1)then
           call edisp(itru,' ')
           call edisp(itru,
@@ -828,7 +839,7 @@ C List current demand sets..
             do 828 ijj=1,nzedg(ij)
               list(ijj)=izedg(ij,ijj)
  828        continue
-            call znarlist(inlist,list,72,zdescr,length,ier)
+            call znarlist(inlist,list,MCOM,zdescr,length,ier)
             call edisp248(itru,zdescr,100)
  268      continue
         else

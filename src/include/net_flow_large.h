@@ -1,13 +1,20 @@
 C Include file for network flow.
 C Updated December 2005 for additional nodes, components and control laws.
 C Updated January 2007 for additional connections.
+C Updated June 2008 for "implicit none" callability
+
+C Type declarations:
+      integer MNOD, MCMP, MCNN, MNDS, MCMV, MCMS, MCNS
+      integer MPOS, MPRD, MPCP,    NMRL
+      integer MFCNLST, MFCNEL, MFRS, MCONTM, MPRODI, MCSD
+      integer MSPMNO, MSRC
 
 C Maximum number of nodes, components, connections.
       PARAMETER (MNOD=70,MCMP=80,MCNN=199)
 C Maximum number of node supplementary data items
       PARAMETER (MNDS=2)
 C Number of valid fluid flow component types
-      PARAMETER (MCMV=25)
+      PARAMETER (MCMV=24)
 C Maximum number of component supplementary data items
       PARAMETER (MCMS=17)
 C Maximum number of connection level component supplementary items

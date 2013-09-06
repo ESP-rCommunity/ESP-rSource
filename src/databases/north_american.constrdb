@@ -1,5 +1,5 @@
 # composite construction db defined in north_american.constrdb
-# based on materials db ../dbs/north_american.materialdb
+# based on materials db ../dbs/north_american.materialdb.a
    50     # no of composites 
 # layers  description   optics name   symmetry tag
     1    R13WALL       OPAQ  OPAQUE        SYMMETRIC     

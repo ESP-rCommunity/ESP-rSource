@@ -1435,35 +1435,35 @@ C-------------------------------------------------------------------------------
 C-------------------------------------------------------------------------------
 C     .  Electricity produced/used
 C-------------------------------------------------------------------------------
-         Call AddToReportWild1(rvPltElecFlx%Identifier,
+         Call AddToReport(rvPltElecFlx%Identifier,
      &         pwrp(iComponent),
      &         pcname(iComponent)(1:iNameLength))
 
 C-------------------------------------------------------------------------------
 C     .  Thermal energy produced
 C-------------------------------------------------------------------------------
-         Call AddToReportWild1(rvPltHFlx%Identifier,
+         Call AddToReport(rvPltHFlx%Identifier,
      &         fTherFlux,
      &         pcname(iComponent)(1:iNameLength))
 
 C-------------------------------------------------------------------------------
 C     .  Control signal - as dictated by electrical loads / surplus
 C-------------------------------------------------------------------------------
-         Call AddToReportWild1(rvPltCtrlSgn%Identifier,
+         Call AddToReport(rvPltCtrlSgn%Identifier,
      &         fControlFlux,
      &         pcname(iComponent)(1:iNameLength))
 
 C-------------------------------------------------------------------------------
 C     .  Demand - control signal as constrained by system size
 C-------------------------------------------------------------------------------
-         Call AddToReportWild1(rvPltFlxCnstrnSz%Identifier,
+         Call AddToReport(rvPltFlxCnstrnSz%Identifier,
      &         fElecFluxDemand,
      &         pcname(iComponent)(1:iNameLength))
 
 C-------------------------------------------------------------------------------
 C     .  Portion of control signal that can't be met due to system size
 C-------------------------------------------------------------------------------
-         Call AddToReportWild1(rvPltUndlvFlxSysSz%Identifier,
+         Call AddToReport(rvPltUndlvFlxSysSz%Identifier,
      &         fElecUnderSized,
      &         pcname(iComponent)(1:iNameLength))
 
@@ -1471,14 +1471,14 @@ C------------------------------------------------------------------------------
 C    .   Electrical efficiency: ONLY report if system is active
 C------------------------------------------------------------------------------
          if ( .not. bInOperative ) then
-            Call AddToReportWild1(rvPltElecEff%Identifier,
+            Call AddToReport(rvPltElecEff%Identifier,
      &         fElecEfficiency,
      &         pcname(iComponent)(1:iNameLength))
          endif
 C-------------------------------------------------------------------------------
 C    .   Energy losses
 C-------------------------------------------------------------------------------
-         Call AddToReportWild1(rvPltEnLss%Identifier,
+         Call AddToReport(rvPltEnLss%Identifier,
      &         fEnergyLoss,
      &         pcname(iComponent)(1:iNameLength))
 
@@ -1489,7 +1489,7 @@ C------------------------------------------------------------------------------
 C    .   Operating point of electrolyzer (fraction of full load)
 C------------------------------------------------------------------------------
          if (iOperatingMode .eq. iElectrolyzer ) then
-            Call AddToReportWild1(rvPltLdRt%Identifier,
+            Call AddToReport(rvPltLdRt%Identifier,
      &         fLoadRatio,
      &         pcname(iComponent)(1:iNameLength))
          endif
@@ -1499,14 +1499,14 @@ C------------------------------------------------------------------------------
 C-------------------------------------------------------------------------------
 C     .  Hydrogen demand
 C-------------------------------------------------------------------------------
-            Call AddToReportWild1(rvPltH2Dmd%Identifier,
+            Call AddToReport(rvPltH2Dmd%Identifier,
      &         fH2FlowDemandKGs,
      &         pcname(iComponent)(1:iNameLength))
 
 C-------------------------------------------------------------------------------
 C     .  Auxiliary fuel flow
 C-------------------------------------------------------------------------------
-            Call AddToReportWild1(rvPltAuxFuelFlw%Identifier,
+            Call AddToReport(rvPltAuxFuelFlw%Identifier,
      &         fFuelFlowActualKGs,
      &         pcname(iComponent)(1:iNameLength))
 
@@ -1514,7 +1514,7 @@ C-------------------------------------------------------------------------------
 C     .  Portion of control signal that can't be met due to shortage of
 C     .  hydrogen:
 C-------------------------------------------------------------------------------
-            Call AddToReportWild1(rvPltUndlvFlxH2Shrt%Identifier,
+            Call AddToReport(rvPltUndlvFlxH2Shrt%Identifier,
      &         fElecH2Shortage,
      &         pcname(iComponent)(1:iNameLength))
 
@@ -1522,7 +1522,7 @@ C------------------------------------------------------------------------------
 C    Thermal efficiency
 C------------------------------------------------------------------------------
             if ( .not. bInOperative ) then
-              Call AddToReportWild1(rvPltThrmEff%Identifier,
+              Call AddToReport(rvPltThrmEff%Identifier,
      &          fTherEfficiency,
      &          pcname(iComponent)(1:iNameLength))
             endif
@@ -1531,12 +1531,12 @@ C------------------------------------------------------------------------------
 C------------------------------------------------------------------------------
 C     .     Unit is electrolyzer. Export consumption of water/oxygen
 C------------------------------------------------------------------------------
-            Call AddToReportWild1(rvPltOxgnFlw%Identifier,
+            Call AddToReport(rvPltOxgnFlw%Identifier,
      &         fO2FlowKGs,
      &         pcname(iComponent)(1:iNameLength))
 
 C........-> Set name
-            Call AddToReportWild1(rvPltWtrFlw%Identifier,
+            Call AddToReport(rvPltWtrFlw%Identifier,
      &         fH2OFlowKGs,
      &         pcname(iComponent)(1:iNameLength))
 
@@ -2274,21 +2274,21 @@ C-------------------------------------------------------------------------------
 C-------------------------------------------------------------------------------
 C     .  Electricity produced/used
 C-------------------------------------------------------------------------------
-         Call AddToReportWild1(rvPltElecWrk%Identifier,
+         Call AddToReport(rvPltElecWrk%Identifier,
      &         fElectricalWork,
      &         pcname(iComponent)(1:name_length))
 
 C-------------------------------------------------------------------------------
 C     .  Mechanical work produced/used
 C-------------------------------------------------------------------------------
-         Call AddToReportWild1(rvPltMchWrk%Identifier,
+         Call AddToReport(rvPltMchWrk%Identifier,
      &         fKinematicWorkW,
      &         pcname(iComponent)(1:name_length))
 
 C-------------------------------------------------------------------------------
 C     .  Thermal energy work produced/used
 C-------------------------------------------------------------------------------
-         Call AddToReportWild1(rvPltHFlow%Identifier,
+         Call AddToReport(rvPltHFlow%Identifier,
      &         fThermalWork,
      &         pcname(iComponent)(1:name_length))
 
@@ -3419,27 +3419,27 @@ C.....Get component name
       iNameLength = lnblnk(pcname(iComponentIndex))
 
 C.....Rate of flow into tank
-       Call AddToReportWild1(rvPltHydgnIn%Identifier,
+       Call AddToReport(rvPltHydgnIn%Identifier,
      &      fAVGFlow_in,
      &      pcname(iComponentIndex)(1:iNameLength))
 
 C.....Rate of flow into tank
-       Call AddToReportWild1(rvPltHydgnOut%Identifier,
+       Call AddToReport(rvPltHydgnOut%Identifier,
      &      fAVGFlow_out,
      &      pcname(iComponentIndex)(1:iNameLength))
 
 C.....Rate of flow into tank
-       Call AddToReportWild1(rvPltHydgnLss%Identifier,
+       Call AddToReport(rvPltHydgnLss%Identifier,
      &      fAVG_tankLoss,
      &      pcname(iComponentIndex)(1:iNameLength))
 
 C.....Rate of flow into tank
-       Call AddToReportWild1(rvPltHydgnStrPrs%Identifier,
+       Call AddToReport(rvPltHydgnStrPrs%Identifier,
      &      fH2massPresent,
      &      pcname(iComponentIndex)(1:iNameLength))
 
 C.....Rate of flow into tank
-       Call AddToReportWild1(rvPltHydgnStrFut%Identifier,
+       Call AddToReport(rvPltHydgnStrFut%Identifier,
      &      fH2massFuture,
      &      pcname(iComponentIndex)(1:iNameLength))
 

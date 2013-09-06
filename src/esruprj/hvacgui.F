@@ -70,13 +70,10 @@ C -------------------------------HVACGIN-------------------------------
       COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
       LOGICAL        CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK      ! file flags
       
-      COMMON/C21/IFCFG,cfgroot,LCFGF
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/rpath/path
       
       CHARACTER path*72                !path
-      CHARACTER LCFGF*72
-      CHARACTER cfgroot*24
       CHARACTER hvacfile*72            ! hvac file name
       CHARACTER def_hvacfile*72        ! default hvac filename
       CHARACTER sfile*72               ! file name returned from browsefilelist (with file path)
@@ -678,6 +675,7 @@ C IER=0 indicates no error. if -3, error button clicked (in ESP-r Code documenta
 #include "hvac_common.h"
 #include "furnace_common.h"
 
+      INTEGER NCOMP, NCON         ! Number of zones in system
       common/C1/NCOMP, NCON
       
       INTEGER ipck                ! Integer returned from epicks menu
@@ -685,7 +683,6 @@ C IER=0 indicates no error. if -3, error button clicked (in ESP-r Code documenta
       INTEGER nfueltyp            ! Number of fuel options
       INTEGER i                   ! identifier for current system number
       INTEGER k                   ! Counter used for zone association
-      INTEGER NCOMP, NCON         ! Number of zones in system
       INTEGER sys_zone_number(ncomp)   !Zone number of of a zone associated with the system
       INTEGER zonenum(ncomp)      !Array of all zone numbers associated with the system 
       INTEGER priority            !Passed integer. 1 if primary, 2 if backup
@@ -997,6 +994,7 @@ C ---------------------------------------------------------------------
 #include "hvac_common.h"
 #include "furnace_common.h"
 
+      INTEGER NCOMP, NCON            ! Number of zones in system
       common/C1/NCOMP, NCON
 
 C Common it up here.
@@ -1004,7 +1002,6 @@ C Common it up here.
       INTEGER ier                    ! Returned if error/nothing selected
       INTEGER priority               ! Passed as primary/backup
       INTEGER i                      ! Identifier for system number
-      INTEGER NCOMP, NCON            ! Number of zones in system
       INTEGER sys_zone_number(NCOMP) ! Zone numbers of zones associated with the system
       INTEGER K                      ! Counter used for zone association
       INTEGER nnm                    ! Counter used for zone association
@@ -1192,6 +1189,7 @@ C ---------------------------------------------------------------------
 #include "hvac_common.h"
 #include "ashp_common.h"
 
+      INTEGER NCOMP, NCON             ! Number of zones in system
       common/C1/NCOMP, NCON
 
 C Common it up here.
@@ -1201,7 +1199,6 @@ C Common it up here.
       INTEGER I                       ! Identifier for current system
       INTEGER priority                ! Passed priority of system, backup or primary
       INTEGER fbackup                 ! Passed whether system has a furnace backup
-      INTEGER NCOMP, NCON             ! Number of zones in system
       INTEGER sys_zone_number(ncomp)  ! Array of zone numbers associated with the system
       REAL fraction                   ! Fraction of power assigned to zones so far
       REAL ifraction                  ! 1-fraction, fraction which remains to be assigned
@@ -1531,6 +1528,7 @@ C ---------------------------------------------------------------------
 
 C    fbackup = 1 if there is a backup, 0 if not
 
+      INTEGER NCOMP, NCON            ! Number of zones in system
       common/C1/NCOMP, NCON
 
 C Common it up here.
@@ -1540,7 +1538,6 @@ C Common it up here.
       INTEGER I                      ! Identifier for current system
       INTEGER priority               ! Passed priority of system, backup or primary
       INTEGER fbackup                ! Passed whether system has a furnace backup
-      INTEGER NCOMP, NCON            ! Number of zones in system
       INTEGER sys_zone_number(ncomp) ! Array of zone numbers associated with the system
       REAL fraction                  ! Fraction of power assigned to zones so far
       REAL ifraction                 ! 1-fraction, fraction which remains to be assigned

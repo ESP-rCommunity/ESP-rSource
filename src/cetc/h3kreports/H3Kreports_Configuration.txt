@@ -2,17 +2,17 @@
 
                      H3Kreports
 
-    A flexible and extensible reporting facility for ESP-r 
+    A flexible and extensible reporting facility for ESP-r
     with support for xml, csv and database output
 
     Contents:
-    
+
     1. Abstract
     2. Introduction
     3. Requirements
     4. Compilation
     5. Configuration
-    6. Adding data to H3Kreports output 
+    6. Adding data to H3Kreports output
     7. Memory footprint
     8. Database structure
 
@@ -26,43 +26,45 @@ This document describes the configuration and use of h3Kreports.
 INTRODUCTION
 ================================
 
-H3Kreports is a C++ based reporting facility designed to compliment 
+H3Kreports is a C++ based reporting facility designed to compliment
 ESP-r's existing 'res' program.  During the simulation, routines in
 ESP-r pass data to H3Kreports. Upon the completion of the simulation,
 H3Kreports outputs the stored data in a variety of different formats.
 
-REQUIREMENTS 
+REQUIREMENTS
+
 ================================
 
 H3Kreports requires the libxml2 library. The libxslt library is not
-required, but may facilitate formatting H3Kreports output. SQLite 
-is not require, but database output is only avaible when installed.
+required, but may facilitate formatting H3Kreports output. SQLite
+is not require, but database output is only available when installed.
 
-By design, H3Kreports stores simulation results on the heap, enabling 
-swift recovery. However, bps's resulting memory requirements can 
+By design, H3Kreports stores simulation results on the heap, enabling
+swift recovery. However, bps's resulting memory requirements can
 approach or exceed the available system memory when:
 
   - annual simulations are performed at small timesteps, and/or
-
   - a large number of output data are requested.
 
 
-COMPILATION 
+COMPILATION
 ================================
 
-ESP-r is not compiled with H3Kreports by default. To build ESP-r 
+ESP-r is not compiled with H3Kreports by default. To build ESP-r
 with support for H3Kreports, the H3Kreports option must be selected
-during the install procedure (or the '--xml' command line option 
-must be provided).
+during the install procedure (or the '--xml' command line option
+must be provided).  To enable SQLite output the '--SQLite' command
+line option must also be provided).
+
 
 CONFIGURATION
 ================================
 
-H3Kreports is configured using an xml file, called "input.xml".  
+H3Kreports is configured using an xml file, called "input.xml".
 H3Kreports expects to find this file in a model's /cfg directory. If
 the file is not found, a set of defaults are assumed. There is only
 limited support for configuring H3Kreports through ESP-r's graphical
-interfaces. 
+interfaces.
 
 The basic structure of input.xml is as follows:
 
@@ -80,57 +82,31 @@ The basic structure of input.xml is as follows:
 
 
 The <?xml ?> and <configuration /> tags are required. The <option_X />
-tags alter H3Kreports' default behavior, and are not required. Valid
+tags alter H3Kreports' default behaviour, and are not required. Valid
 configuration options include:
-   
-   <apply_style_sheet> 
+
+   <apply_style_sheet>
 
      - Instructs H3Kreports to apply a set of  xslt transforms to out.xml
-       using the style sheets specified with the <style_sheet> tag, in order. 
+       using the style sheets specified with the <style_sheet> tag, in order.
        The transform will only be applied if the specified style sheets can
-       be found and are readable. The xslt output will be directed to 
-       the file specified with the <transform_destination_file> tag.     
-
-     - Valid values: true, false (default) 
-
-
-   <dump_all_data>
-
-     - Instructs H3Kreports to store and output all data, in specified 
-       formats, regardless of which variable names were requested. 
-       
-       NOTE: performing a complete dump of all simulation data requires
-       significant amounts of system memory. When dumping results from 
-       annual simulations run at short (that is, 1-5 minute timesteps),
-       bps's may require several hundred megabytes, or even gigabytes 
-       of memory. The <save_to_disk> option, discussed below, will 
-       reduce these requirements.
+       be found and are readable. The xslt output will be directed to
+       the file specified with the <transform_destination_file> tag.
 
      - Valid values: true, false (default)
 
-   <step_output_format> 
+   <dump_all_data>
 
-     - Instructs H3Kreports to store the output of step data in the 
-       specified format.  CSV output will be stored in a "out.csv"
-       file.  Database output will be stored in a "out.db3" file. 
+     - Instructs H3Kreports to store and output all data, in specified
+       formats, regardless of which variable names were requested.
 
-       NOTE: the db format produces an SQLite3 database file epr-r
-       must be built with the --SQLite option for this format to be
-       available.
+       NOTE: performing a complete dump of all simulation data requires
+       significant amounts of system resources. When dumping results from
+       annual simulations run at short (that is, 1-5 minute timesteps),
+       bps's may require several hundred megabytes of memory. The
+       <save_to_disk> option, discussed below, will reduce these requirements.
 
-     - Valid values: all, db, csv (default)
-
-   <log_output_format> 
-
-     - Instructs H3kreports to store the output of log data in the 
-       specified format.  XML output will be stored in "out.xml".   
-       Database output will be stored in "out.db3".
-
-       NOTE: the db format produces an SQLite3 database file epr-r
-       must be built with the --SQLite option for this format to be
-       available.
-
-     - Valid values: all, db, xml (default)
+     - Valid values: true, false (default)
 
    <enable_xml_wildcards>
 
@@ -139,7 +115,6 @@ configuration options include:
 
      - Valid values: true, false (default)
 
-
    <hierarchy>
 
      - Instructs H3Kreports to format xml output in flat, or nested
@@ -147,23 +122,46 @@ configuration options include:
 
      - Valid values: flat, tree (default)
 
-   <link_style_sheet> 
+   <index_database>
+
+     - Instructs H3Kreports to index the databse files it creates.  This
+       feature only applies if a database output format is being requested
+       by <log_output_format> or <step_output_format>.  One should always
+       query on an indexed database otherwise the query performance
+       will be unacceptable.  This feature is usefull to turn off if you
+       plan to have the result set imported into another database.
+
+     - Valid values: true (default), false
+
+   <link_style_sheet>
 
      - Instructs H3Kreports to include a link to the first specified style
-       sheet with the <style_sheet> tag to the out.xml file. If specified, 
-       the path included using the <style_sheet> tag will be used. 
-       The other stylesheets included in the input file will not be included. 
+       sheet with the <style_sheet> tag to the out.xml file. If specified,
+       the path included using the <style_sheet> tag will be used.
+       The other stylesheets included in the input file will not be included.
 
-     - Valid values: true, false (default)  
+     - Valid values: true, false (default)
+
+   <log_output_format>
+
+     - Instructs H3kreports to store the output of log data in the
+       specified format.  XML output will be stored in "out.xml".
+       Database output will be stored in "out.db3".
+
+       NOTE: the db format produces an SQLite3 database file esp-r
+       must be built with the --SQLite option for this format to be
+       available.
+
+     - Valid values: all, db, xml (default)
 
    <log_variable>
 
      - Instructs H3Kreports to calculate and store summary statistics
-       (min, max, average, monthly bin) for the specified variable. 
+       (min, max, average, monthly bin) for the specified variable.
        The specified variable will appear in the output format defined
        in <log_output_format>.
 
-     - Valid values: x-path name for any H3Kreports variable. If the 
+     - Valid values: x-path name for any H3Kreports variable. If the
        <enable_xml_wildcards> tag has been set to true, simple
        wildcard matching is also available.
 
@@ -172,23 +170,20 @@ configuration options include:
                plant/Fan_3/power/net_power
 
                plant/Fan_*/power/*        (wildcard matching, matches above)
-
-               
-   <output_dictionary> 
+   <output_dictionary>
 
      - Instructs H3Kreports to output a list in ascii format of variables
-       avaible for reporting.  This list will appear in a file called 
-       "out.dictionary".  There are two options for dictionary output. 
-       Option "sim": reports simulation encountered variable names (fully 
-           defined). 
-       Option "all": reports all the defined variables available for 
-           reporting in esp-r before their name are resoved.  Expect
-           the apperance of wilcards * in the variable names.  These
-           are to be replaced by character sets during the simulation run. 
+       encountered by h3kreports.  This list will appear in a file called
+       "out.dictionary".
 
-     - Valid values: sim(default), all, off 
-		     true, false (legacy support - true .eq. sim)
+     - Valid values: true, false(default)
 
+     - Note: the dictionary output may not include some variables if
+       <dump_all_data> is false.  This is due to optimizations in the esp-r
+       engine to jump over sections of code if a specified set of variables
+       are not part of the data output.  Example of this include all
+       zones, surfaces and nodes variables.
+       
    <report_startup_period_data>
 
      - Instructs H3Kreports to output data collected during the simulation
@@ -198,24 +193,47 @@ configuration options include:
      - Valid values: true, false (default)
 
    <save_to_disk every="#rows">
-     - Instructs H3Kreports to push the step data to defined output 
-       every #rows.  This option will significantly reduce bps's 
+
+     - Instructs H3Kreports to push the step data to defined output
+       every #rows.  This option will significantly reduce bps's
        memory requirements on longer simulation, but is only effective
        if options <dump_all_data>true</dump_all_data> or
-       <step_variable>...</step_variable> are set.  The optional "every" 
-       attribute instructs H3Kreports how many timestep before a write to
-       is done.        
+       <step_variable>...</step_variable> are set.  The optional "every"
+       attribute instructs H3Kreports how many timestep before a write
+       of the step data is done.  When more then 100000 timesteps are
+       detected the save to disk option will automatically turn itself
+       on.  This prevents a simulation from consuming GB of memory.
 
      - Valid values: true, false
-     - Attribute "every"(optional): 100-10000 default 1000 if unspecified
-     
+     - Attribute "every"(optional): range 100-100000 default 10000
+
+  <sort_output>
+
+     - Instructs H3Kreports to sort the output before writting to file.
+       This will only applies to the out.xml and out.csv files. Turn
+       feature off for optimal performance.
+
+     - Valid values: true, false(default)
+
+  <step_output_format>
+
+     - Instructs H3Kreports to store the output of step data in the
+       specified format.  CSV output will be stored in a "out.csv"
+       file.  Database output will be stored in a "out.db3" file.
+
+       NOTE: the db format produces an SQLite3 database file esp-r
+       must be built with the --SQLite option for this format to be
+       available.
+
+     - Valid values: all, db, csv (default)
+
    <step_variable>
 
      - Instructs H3Kreports to store time-step data for the specified
        variable. The specified variable will appear the output format
-       specified with the <log_output_format> option.  
+       specified with the <log_output_format> option.
 
-     - Valid values: x-path name for any H3Kreports variable. If the 
+     - Valid values: x-path name for any H3Kreports variable. If the
        <enable_xml_wildcards> tag has been set to true, simple
        wildcard matching is also available.
 
@@ -226,31 +244,31 @@ configuration options include:
                plant/[a-zA-Z0-9/_]*  (wildcard matching, matches above)
 
      - Note: when wildcard matching is used to match a large set of
-       variables, ESP-r's memory requirements and the file sizes of 
+       variables, ESP-r's memory requirements and the file sizes of
        out.csv can grow significantly.
-       
+
    <style_sheet>
 
      - Specifies a  xslt style sheet. There can be more than
-       one stylesheet included. They will be performed in series. 
-       This is useful for preprocessing the data for unit conversion and 
-       maybe language translation. Note that the currently only XSLT 1.0 
-       is supported using the "LIBXSLT" c tool. 
+       one stylesheet included. They will be performed in series.
+       This is useful for preprocessing the data for unit conversion and
+       maybe language translation. Note that the currently only XSLT 1.0
+       is supported using the "LIBXSLT" c tool.
 
      - Valid value: path to any valid .xsl file.
 
      - Various xsl files can be found in CETC's repository in the
        xsl directory:
-          
+
           bg_esp-r/src/cetc/h3kreports/xsl/
-     
+
    <summary_variable>
 
-     - Instructs H3Kreports to store and output summary statistics 
-       for the specified variable. The specified variable will 
+     - Instructs H3Kreports to store and output summary statistics
+       for the specified variable. The specified variable will
        appear in out.summary.
 
-     - Valid values: x-path name for any H3Kreports variable. If the 
+     - Valid values: x-path name for any H3Kreports variable. If the
        <enable_xml_wildcards> tag has been set to true, simple
        wildcard matching is also available.
 
@@ -260,22 +278,22 @@ configuration options include:
 
                plant/Fan_*/power/*  (wildcard matching, matches above)
 
-               
+
    <time_step_averaging>
- 
+
      - Instructs H3Kreports to ignore ESP-r's time-step averaging
        setting. If the provided value is true, time-step averaging
        will be enabled, otherwise no time-step averaging will be
        performed. If this tag is omitted from input.xml, the time-step
-       averaging setting  specified for the simulation will be used.  
+       averaging setting  specified for the simulation will be used.
 
-     - Valid values: true, false 
+     - Valid values: true, false
 
 
    <transform_destination_file>
 
-     - Instructs H3Kreports to save the output from an xslt transform 
-       in the provided file. 
+     - Instructs H3Kreports to save the output from an xslt transform
+       in the provided file.
 
      - Valid value: path to any writable file.
 
@@ -284,78 +302,196 @@ configuration options include:
 ADDING DATA TO H3KREPORTS OUTPUT
 ================================
 
-Step 1: Define the variable
+Step 1: Define the variable in cetc/h3kmodule.f90
+   Declare variable type
+     ex:
+      Type(ReportVariable) :: rvPump
 
+   Populate the definition in module's UpdateH3kReport method
+     ex:
+      rvPump%VariableName = 'plant/pump_elec'
+      rvPump%MetaType = 'units'
+      rvPump%VariableType = '(W/kgs/J/oC/)'
+      rvPump%Description = 'type my description'
+      Call AddVariable(rvPump)
 
+   Note: you can use wildcards in the variable name to allow
+         for run-time definition of variable names.
+         ex: 'building/zone_*/surface_*/heat_flux/above_grade/net'
 
+Step 2: Call the routine your code.
+   Make sure there's a reference to the h3kmodule in the function
+   or subroutine.  The "use h3kmodule" statement must the first
+   statement after your function or subroutine declaration even
+   before the "implicit none".
 
+   Call the function to pass data to the H3KReports:
+     ex: Call AddToReport(rvPump%Identifier, 0.123)
+     --> Arg1: the identifier is auto generated when ESP-r is
+               launched.  Therefore the syntax is always
+               [rvNAME]%identifier.
+     --> Arg2: the value to report on (REAL)
+	 --> (optional) Arg3: string to describe the *
+	 --> (optional) Arg4: string to describe the *
+	 --> (optional) Arg5: string to describe the *
 
-A single function call is used to pass data to H3KReports:
+   Note: the optional strings in argument 3-5 are use to
+		 identify the dynamic part of a variable name's
+		 prepared statements.
+         -------------------------------------------------------
+         -------------------------------------------------------
+         There is also a AddToReportDetails routine in the
+		 h3kmodule.  This methods were created to handle
+         run-time variable definition.  Avoid using when possible
+         since it is not as efficient as the AddToReport
+         routine.  To use, call the method after the AddToReport
+         call.  Only the first description passed to the h3kreport
+         for a specific variable will be stored.
+         Call AddToReportDetails(rv%Identifier,
+			&	   (opt)cWild1,(opt)cWild2,(opt)cWild3,
+            &      cUnit,cType,cDescription)
+         --> rv%Identifier: the identifier is auto generated
+                  when ESP-r is launched. The syntax is always
+                  [rvNAME]%identifier.
+         --> Wild#: (optional) strings used if variable was defined at run-time
+         --> cUnit: overwrites the %MetaType
+         --> cVariableType: overwrites the %VariableType
+         --> cDescription: overwrite the %Description
 
-   add_to_xml_reporting(
-        (real) Latest calculated value,
-        (string) Variable name
-        (string) Metadata mame
-        (string) Metadata value
-        (string) Variable Description
-   )
-
-Arguements:
-
-   -> Latest calculated value: real value of the variable to be
-      included in H3KReports
-   
-   -> Variable name: Unique identifier for variable. Use of
-      xpath notation to group variables is HIGHLY RECOMMENDED!
-      Examples:
-
-        'building/zone_1/casual_gains/radiant'
-        'plant/Fuel_Cell/misc_data/electrical_efficiency'
-        'climate/dry_bulb_temperature'
-
-      More examples are available in out.dictionary.
-
-   -> Metadata name: Type of metadata associated with variable.
-      Typically 'units' is used.
-
-   -> Metadata value: Metadata to be associated with variable.
-      Common values include '(oC)', '(W)', '(kg/s)', '(-)'
-
-   -> Variable description: Short, human-readable description
-      of the variable. (These strings will one-day be appended
-      to the variable names listed in out.dictionary.)
-
-
-Example:
-
-      call add_to_xml_reporting(
-     &     Fuel_Cell_Heat_Recovery,
-     &     'plant/Fuel_Cell/misc_data/heat_recovery',
-     &     'units',
-     &     '(W),
-     &     'Rate of heat transfer from fuel cell to cooling water'
-     & )
-     
-     
-   
-      
-H3Kreports MEMORY FOOTPRINT 
+H3Kreports MEMORY FOOTPRINT
 ===========================
 
-By design, H3Kreports saves simulation results in memory. Most of 
-these data are stored on the heap, in vectors that grow dynamically 
-as new data are calculated.  As a result, bps's memory footprint 
-can grow as the simulation progresses.
+By design, H3Kreports saves simulation results in memory. Most of
+these data are stored on the heap, in vectors that grow dynamically
+as new data are calculated.  As a result, bps's memory footprint
+can grow as the simulation progresses.  If the system's physical
+memory runs out during a simulation the O/S will utilize virtual
+memory slowing down the simulation to a crawl.  Using the save_to_disk
+option will prevent the simulation's memory footprint from becoming
+too large.  There is also a built in trigger that will turn on
+save_to_disk if the number of timesteps exceeds a certain number.
+See the save_to_disk option for additional information.
 
-When conducting long simulations at small timesteps, bps's memory 
-requirements can approach or exceed the available memory on the system.
-The following guidelines can help ensure bps's requirements do not 
-exceed system resources in these circumstances:
-  
-  - the <dump_all_data> facility should be used with extreme caution.
-  - only a limited number of <log_variable> tags should be used.
-  - the <save_to_disk> should be used to page timestep data to disk 
-    rather than storing it on the heap. 
+       _____________________            _________________
+      | VariableDescriptors |          |   TimeSteps     |
+      |---------------------|          |-----------------|
+      | ID           (INT)  |          | ID       (INT)  |
+      | MetaName    (TEXT)  |          | HOUR     (INT)  |
+      | MetaType    (TEXT)  |          | DAY      (INT)  |
+      | MetaValue   (TEXT)  |          | Startup  (INT)  |
+      | Description (TEXT)  |          |_________________|
+      |_____________________|
 
+DATABASE STRUCTURE
+===========================
 
+H3Kreports supports an output to SQLite database.  Both log and
+step data can be send to the out.db3 file.  This is controlled
+by the <log_output_format> and <step_output_format> options.
+The out.db3 file is erase and re-created at every
+simulation run.  At the end of a simulation the database is
+heavily indexed for optimized future queries.  To use the database
+option one must install SQLite on the operating system, see
+http://www.sqlite.org/ for details and enable database support
+for ESP-r by building with the --XML and --SQLite build options.
+Diagram below is a visual representation of the database model.
 
+       _____________________            _________________
+      | VariableDescriptors |          |   TimeSteps     |
+      |---------------------|          |-----------------|
+      | ID           (INT)  |          | ID       (INT)  |
+      | MetaName    (TEXT)  |          | HOUR     (INT)  |
+      | MetaType    (TEXT)  |          | DAY      (INT)  |
+      | MetaValue   (TEXT)  |          | Startup  (INT)  |
+      | Description (TEXT)  |          |_________________|
+      |_____________________|
+
+             1  /\                        1   /\
+               /  \                          /  \
+             *  ||                        *   ||
+   ____________________________        ____________________
+  |        Variables           |      |  StepDataValues    |
+  |----------------------------| 1  * |--------------------|
+  | ID                   (INT) | <<-- |VariableID (INT)    |
+  | VariableDescriptorID (INT) | <<-- |TimeStepID (INT)    |
+  | WildCard            (TEXT) |      |Value    (FLOAT)    |
+  | Name                (TEXT) |      |____________________|
+  |____________________________|
+                                  ____
+           1  /\               1 |\\
+             /  \                | \\
+           *  ||               *    \\
+   _______________________        _______________________
+  |     BinDataValues     |      | IntegratedDataValues |
+  |-----------------------|      |----------------------|
+  | VariableID      (INT) |      | VariableID  (INT)    |
+  | BinIndex        (INT) |      | BinIndex    (INT)    |
+  | Step            (INT) |      | Unit       (TEXT)    |
+  | ActiveStep      (INT) |      | Value     (FLOAT)    |
+  | Sum           (FLOAT) |      | BinType     (INT)    |
+  | Max           (FLOAT) |      |______________________|
+  | Min           (FLOAT) |
+  | ActiveAverage (FLOAT) |       *  ||
+  | BinType         (INT) |          ||
+  |_______________________|          ||
+                                     ||
+                     *  ||           ||
+                       \  /         \  /
+                     1  \/        1  \/
+                      ___________________
+                     |      BinTypes      |
+                     |--------------------|
+                     | ID           (INT) |
+                     | Description (TEXT) |
+                     |____________________|
+
+- TimeSteps: store all the timesteps of a the simulation. 
+
+Data Dictionary (summary)
+-------------------------
+- StepDataValues: stores all the step data collected during a
+   simulation.  StepValueTable table reference to the
+   Variables and TimeSteps tables.  Values captured are
+   comparable with the values in an out.csv file.  Table is
+   only populated if <step_variables> are captured during
+   the simulation.
+
+- BinDataValues: stores all the bin values captured during a
+   simulation.  BinDataValues table reference the Variables
+   and BinTypes table. Values captured are comparable with
+   the annual and monthly bin values found in the out.xml
+   file.  Table is only populated if <log_variables> are
+   captured during the simulation.
+
+- IntegratedDataValues: stores all the integrated bin values
+   captured during a simulation.  IntegratedDataValues
+   reference the Variables and BinTypes tables.  Values captured
+   are comparable with the intergrated bin values found in the
+   out.xml file.  Table is only populated if <log_variables>
+   are captured during the simulation.
+
+- TimeSteps: store all the timesteps of a the simulation.
+
+- BinTypes: code table contiaining two hardcoded types
+   Monthly and Annual.  Table only populated if the
+   <log_variables> are captured during the simulation
+
+- Variables: stores all the variables sent to H3KReport for
+   output.  Variables table reference the VariableDescriptors
+   table for description and meta tag information.
+
+- VariableDescriptors: description and meta infomration of
+   all variables declared in esp-r available for reporting.
+
+Notes:
+   To open: use the sqlite3 out.db3 command to open the database
+   Sample Query:
+      --Sum of the heat_loss values on the 31st day for all
+      --buildings zones envelope ceilings
+
+      SELECT V.Name, TS.day, SUM(STV.Value) from stepdatavalues STV
+      INNER JOIN Variables V ON V.id = STV.VariableID
+      INNER JOIN TimeSteps TS ON TS.id = STV.TimeStepID
+      WHERE V.name like 'building/zone_%/envelope/ceilings/heat_loss'
+         AND TS.day = 31
+      GROUP BY V.Name;

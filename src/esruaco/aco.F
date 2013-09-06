@@ -44,6 +44,7 @@ C XNbFur(MaxFur)(Real)      Nb of unit or surface area for the current
 C                           furniture
 
       PROGRAM RevTime
+      USE START_UP
 #include "building.h"
 #include "model.h"
 #include "geometry.h"
@@ -93,11 +94,10 @@ C Zone information
       COMMON/AirPro/RTair,RHR
 
 C Defaults and paths
+      character*96 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF
       COMMON/DEFLT2/DFCFG,DFCTL,DEFRLB,DAFRES,DAPROB,DPNF
       common/rpath/path
       COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
-
-      COMMON/C21/IFCFG,cfgroot,LCFGF
 
 C For exporting to file
       COMMON/exporttg/xfile,tg,delim
@@ -131,10 +131,9 @@ C Name of current application
       DIMENSION ITEM(26) 
 
       CHARACTER BCFName*72,DBCFNam*72
-      CHARACTER ACOName*72,DACONam*72,LCFGF*72,cfgroot*24
+      CHARACTER ACOName*72,DACONam*72
       CHARACTER outs*210,ITEM*35,MODE*4
       CHARACTER inf*144,LCMDFL*144
-      CHARACTER*72 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF
       CHARACTER*72 path
       CHARACTER fs*1,outsd*124
       CHARACTER TxtZone*72,CLMRF*72,TTmp*72
@@ -142,8 +141,21 @@ C Name of current application
       CHARACTER tg*1,delim*1,xfile*144,dstmp*24,LabFreq*4
       CHARACTER PubType*12,FurType*12,FurCat*4,CovSurf*12
 
+      character cVnum*16      ! returned from ESPrVersionNum
+      character pagestitle*42 ! for banner title via epages call
+
       integer iglib   ! if 1 then X11, if 2 then GTK, if 3 then text only.
+#ifdef OSI
       integer numberofzones ! to pass to updwire rather than ncomp
+      integer iicapture,iiazi    ! to pass to updcapt updazi
+      integer iigl,iigr,iigt,iigb,iigw,iigwh
+      integer iiw1,iiw2,iiw3,iiw4,iimenu
+#else
+      integer*8 numberofzones
+      integer*8 iigl,iigr,iigt,iigb,iigw,iigwh
+      integer*8 iiw1,iiw2,iiw3,iiw4,iimenu
+      integer*8 iicapture,iiazi   ! to pass to updcapt updazi
+#endif
       integer NITEMS,INO  ! max items and current menu item
 
 C For help messages
@@ -311,25 +323,36 @@ C Set initial font sizes (IMFS is for graphs, IFS is for dialog & text feedback)
         LIMTTY=16
         LIMIT =16
       ENDIF
+
+C Find the current ESP-r version number and add it to application title.
+      call ESPrVersionNum(cVnum)
+      write(pagestitle,'(2a)') 'ESP-r Acoustic ',cVnum(1:lnblnk(cVnum))
+
       CALL EPAGES(MMOD,IUIN,IUOUT,iappwi,iapphi,iappx,iappy,menuchw,
-     &'Acoustic: enquiries to esru.strath.ac')
+     &  pagestitle)
 
 C Open the text display box equal to LIMTTY if MODEL = 8.  Problem
 C not yet know so pass 0 to the wireframe control routine (updwire).
 C If starting as a reduced percentage of default then widen the
 C graphic display to compensate.
       IF(MMOD.EQ.8)THEN
-        CALL win3d(menuchw,4,1,1,3,igl,igr,igt,igb,igw,igwh)
-        igw=igr-igl
-        igwh=igb-igt
+
+C Setup and pass in parameters to win3d.
+        iiw1=4; iiw2=1; iiw3=1; iiw4=3; iimenu=menuchw
+        iigl=igl; iigr=igr; iigt=igt; iigb=igb; iigw=igw; iigwh=igwh
+        CALL win3d(iimenu,iiw1,iiw2,iiw3,iiw4,
+     &    iigl,iigr,iigt,iigb,iigw,iigwh)
+        igl=int(iigl); igr=int(iigr); igt=int(iigt); igb=int(iigb)
+        igw=int(iigw); igwh=int(iigwh)
         iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
         if(iglib.eq.1)then
           call opencpw
           call opensetup
           numberofzones=0
           call updwire(numberofzones)  ! pass local integer
-          call updcapt(1)
-          call updazi(1)
+          iicapture=1; iiazi=1
+          call updcapt(iicapture)
+          call updazi(iiazi)
         endif
         call setzscale()
         call setgscale()

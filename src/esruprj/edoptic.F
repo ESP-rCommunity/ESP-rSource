@@ -92,6 +92,14 @@ C select one and then edit/list details.  Setup for multi-page menu.
       IPACT=CREATE
       CALL EKPAGE(IPACT)
 
+C Remind the user if they are working with a common data file.
+      if(ipathoptdb.eq.0.or.ipathoptdb.eq.1)then
+        continue
+      else
+        call usrmsg('You are currently working with a common optical',
+     &    'data file. Take care if you make changes!','W')
+      endif
+
 C Initial menu entry setup.
    3  ILEN=nopt
 C      INO=-3
@@ -205,7 +213,7 @@ C Produce help text for both types of import.
      &    'Add','Delete','Copy','Ignore',' ',IOW,nbhelp)
         if(IOW.eq.1)then
 
-C Import (from Window 5.1, 5.2, v6.? ).
+C Import (from Window 5.1, 5.2, v6.x ).
           call OPT2TMP(ier)
           iwin4=IPRODB
           call IMPOPT(iwin4,IER)
@@ -218,6 +226,8 @@ C Import (from Window 5.1, 5.2, v6.? ).
             cpsopt=GTYPE
             cpgdescr=GDESCR
             goto 99
+          elseif(ier.eq.-2)then
+            continue   !user canceled
           else
             call usrmsg('Optics database can hold no more data sets.',
      &      'Please revise the database.','W')
@@ -572,11 +582,15 @@ C ilabs is string arry for layer insert/delet selection.
       integer iside,isize,ifont     ! passed to viewtext
       integer iigr,iigr2,iigt4,iix1,iiy1,iix2,iiy2,iix3,iiy3
       integer iix4,iiy4,iix5,iiy5,iid1,iid2,iid3,iid4,iix,iiy
+      integer iigl,iigt,iigb,iigw,iigwh
+      integer iiw1,iiw2,iiw3,iiw4,iimenu
 #else
       integer*8 igwid,igheight  ! for use with axiscale
       integer*8 iside,isize,ifont     ! passed to viewtext
       integer*8 iigr,iigr2,iigt4,iix1,iiy1,iix2,iiy2,iix3,iiy3
       integer*8 iix4,iiy4,iix5,iiy5,iid1,iid2,iid3,iid4,iix,iiy
+      integer*8 iigl,iigt,iigb,iigw,iigwh
+      integer*8 iiw1,iiw2,iiw3,iiw4,iimenu
 #endif
 
 C For help messages
@@ -650,18 +664,23 @@ C (re)draw optical properties.
         YMIN=0.
         YMAX=1.0
         CALL startbuffer()
-        call win3d(menuchw,12,30,5,3,igl,igr,igt,igb,igw,igwh)
-        igw=igr-igl
-        igwh=igb-igt
+
+C Setup and pass in parameters to win3d.
+        iiw1=12; iiw2=30; iiw3=5; iiw4=3; iimenu=menuchw
+        iigl=igl; iigr=igr; iigt=igt; iigb=igb; iigw=igw; iigwh=igwh
+        CALL win3d(iimenu,iiw1,iiw2,iiw3,iiw4,
+     &    iigl,iigr,iigt,iigb,iigw,iigwh)
+        igl=int(iigl); igr=int(iigr); igt=int(iigt); igb=int(iigb)
+        igw=int(iigw); igwh=int(iigwh)
         igwid=igw
         igheight=igwh
         call axiscale(igwid,igheight,XMIN,XMAX,YMIN,YMAX,xsc,ysc,sca,
      &              Xadd,Yadd)
 
 C Stuff into static variables for later access and draw axis.
-        call linescale(igl,Xadd,xsc,igb,Yadd,ysc)
-        call vrtaxis(YMIN,YMAX,igl,igb,igt,Yadd,ysc,0,0,'Value')
-        call horaxis(XMIN,XMAX,igl,igr,igb,Xadd,xsc,0,
+        call linescale(iigl,Xadd,xsc,iigb,Yadd,ysc)
+        call vrtaxis(YMIN,YMAX,iigl,iigb,iigt,Yadd,ysc,0,0,'Value')
+        call horaxis(XMIN,XMAX,iigl,iigr,iigb,Xadd,xsc,0,
      &    'Degrees from normal')
 
         WRITE(ETEXT,'(4a)') 'Type: ',GTYPE(1:lnblnk(GTYPE)),
@@ -1020,9 +1039,10 @@ C CLROPT clears common block GOPTED and sets it up for a new set.
       end
 
 C ************* IMPOPT
-C IMPOPT reads in an optical report from Window 5.1 or 5.2 or 6.2
+C IMPOPT reads in an optical report from Window 5.1 or 5.2 or 6.x
       SUBROUTINE IMPOPT(iwin4,IER)
 #include "building.h"
+#include "model.h"
       
       integer lnblnk  ! function definition
 
@@ -1032,10 +1052,12 @@ C IMPOPT reads in an optical report from Window 5.1 or 5.2 or 6.2
 
 C wlname is LBL Window name for layer, wlthk is mm thickness.
       dimension wlname(ME),wlthk(ME)
-      character lwin4*72,DFILE*72,outstr*124,word*20,wdum*20
-      character outs*124,wlname*12
-      logical LOK,close
+      character DFILE*72,outstr*124,word*20,wdum*20
+      character outs*124,wlname*12,fs*1
+      logical LOK,close,unixok
       integer iwversion    ! the version of the import file
+      character sfile*72,snpfile*72
+      character longtfile*144,fname*96
 
 C For help messages
       character helpinsub*24 ! subroutine name
@@ -1044,16 +1066,72 @@ C For help messages
 
       helpinsub='IMPOPT'  ! set for subroutine
 
-C Free unit and check if import file exists.
-      helptopic='optical_import_win6'
+C Locate the xbm files via the installed path.
+      call isunix(unixok)
+      if(unixok)then
+        fs = char(47)
+      else
+        fs = char(92)
+      endif
+
+C Free unit specify file and check if import file exists.
+  142 helptopic='optical_import_win6'
       call gethelptext(helpinsub,helptopic,nbhelp)
-      DFILE='wdata.tab'
-      CALL EASKS(lwin4,' Optical import file name? ',
-     &  ' ',72,DFILE,'optical properties import file',IER,nbhelp)
+      CALL EASKABC('LBNL Window file options:',' ','Edit file name',
+     &    'select in model dbs folder','Cancel',IOW,nbhelp)
+      if(IOW.eq.1)then
+        write(fname,'(2a)') '.',fs
+      elseif(IOW.eq.2)then
+
+C Use code similar to that in edzone.F subroutine newzone and in
+C folders.F pfolders to get files in ../dbs folder and recover
+C the name of the Window report file.
+        sfile=' '
+        snpfile=' '
+        call edisp(iuout,' ')
+        call browsefilelist('?','dbs','fil',sfile,snpfile,nfile,iier)
+        if(nfile.gt.0)then
+          sfile=' '
+          snpfile=' '
+          call browsefilelist('b','dbs','fil',sfile,snpfile,nfile,
+     &        iier)
+          if(snpfile(1:2).ne.'  ')then
+            write(fname,'(3a)')dbspth(1:lnblnk(dbspth)),fs,
+     &        snpfile(1:lnblnk(snpfile))
+
+C Debug.
+C            write(6,*) fname
+
+          else
+
+C User did not select a file. Take them back to the question.
+            call usrmsg('You did not select any existing file.',
+     &        'Please select or cancel.','W')
+            goto 142 ! ask for choice again
+          endif
+        else
+          call usrmsg('You did not select any existing file.',
+     &      'Please select or cancel.','W')
+          goto 142 ! ask for choice again
+        endif
+      elseif(IOW.eq.3)then
+        ier=-2
+        return
+      endif
+      longtfile=' '    ! reset return string
+      CALL EASKXORGTKF(fname,'Window 4/5/6 report file name?',' ',
+     &    'xxx.txt',longtfile,'LBNL win456 file',IER,nbhelp)
+      write(fname,'(a)') longtfile(1:lnblnk(longtfile))
+     
+C If user request jump back and re-display the menu.
+      if(ier.eq.-3)then
+        goto 142  ! redisplay menu.
+      endif
+
       IER=0
-      CALL EFOPSEQ(iwin4,lwin4,1,IER)
+      CALL EFOPSEQ(iwin4,fname,1,IER)
       IF(IER.NE.0)RETURN
-      call edisp(iuout,lwin4)
+      call edisp(iuout,fname)
 
 C Set initial values. Assume that there are air gaps between
 C the Window 4/5/6 "layers".
@@ -1412,7 +1490,7 @@ C actual data seems to start at column 38 (and after a :)
       elseif(outstr(1:22).eq.'--- Split solar factor')then
         continue  ! not yet used
       elseif(outstr(1:41).eq.
-     &  ' solar direct transmittance   	         :')then
+     &  ' solar direct transmittance              :')then
         continue  ! not yet used
       elseif(outstr(1:42).eq.
      &  ' solar factor convective                 :')then
@@ -1724,6 +1802,7 @@ C      PARAMETER (MSGAL=40,MANH=37,MANV=37)
       
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
+C      integer IZSTOCN
 C      COMMON/C24/IZSTOCN(MCOM,MS)
 
 C NSTMCFL flag for each model surface (connection). A non-zero
@@ -1733,7 +1812,7 @@ C   Limited to 0 or 1 at present.
       COMMON/BIDIRFL/bidirfile,bidirname(MSTMC)
 
       DIMENSION VERT(35)
-      character VERT*54,CXITM*43,key*1,lfil*72
+      character VERT*58,CXITM*48,key*1,lfil*72
       character bidirfile*72,DFILE*72,bidirname*12
       logical MODIFY,MODLEN,MODBND !,ok,dok
 C      character outs*124
@@ -1791,10 +1870,10 @@ C current menu line index. Build up text strings for the menu.
           call CONXMENU(L,CXITM)
           VERT(M)=' '
           if(NSTMCFL(L).ne.0)then
-            WRITE(VERT(M),'(A1,1x,A42,a,i1)')KEY,CXITM(1:42),'|',
+            WRITE(VERT(M),'(A1,1x,A,a,i1)')KEY,CXITM(1:47),'|',
      &        NSTMCFL(L)
           else
-            WRITE(VERT(M),'(A1,1x,A42,a)')KEY,CXITM(1:42),'| -'
+            WRITE(VERT(M),'(A1,1x,A,a)')KEY,CXITM(1:47),'| -'
           endif
         ENDIF
    10 CONTINUE

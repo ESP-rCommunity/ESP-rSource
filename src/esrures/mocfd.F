@@ -342,6 +342,7 @@ C MCFDM - define the parameters for the visualization of results.
       character LBITrt*12,t12*12,t24*24
       integer IWM,IWE  ! for radio buttons
       integer NITMS,INO ! max items and current menu item
+      logical ok,dok
 
 C For help messages
       character helpinsub*24   ! subroutine name
@@ -356,6 +357,10 @@ C Set vector colour option to velocity and temperature only.
 C Create a menu showing the available database items.  Allow user to
 C select one and then list details of this item, allowing editing.
 C Setup for multi-page menu.
+
+C Note: if you do not alter the output period it will produce images
+C or image files for each of the timesteps defined in the CFD output
+C file.
       ICOMP=1
  3    MHEAD=3
       MCTL=6
@@ -435,14 +440,24 @@ C redefine name of image.
           do 50 IFRAME=1,NCTS
             call RDCFDAT(IFRAME)
             if (imgtyp.eq.4) then
-	     call tecplotend(IFRAME)
-	     ELSEif (imgtyp.eq.5) then
-               call paraviewend(IFRAME)
+              call tecplotend(IFRAME)
+            elseif (imgtyp.eq.5) then
+              call paraviewend(IFRAME)
             else
               call VISMAK(ICOMP,IFRAME)
+
+C If drawing on screen allow a pause between each timestep. If user
+C says no then exit the loop.
+              if(imgtyp.eq.0.or.imgtyp.eq.3)then
+                dok=.true.
+                call ASKOK('View next timestep?',' ',ok,dok,nbhelp)
+                iF(.NOT.ok) goto 51
+              endif
             endif
  50       continue
+ 51       continue
         endif
+
       elseif (INO.EQ.(NITMS-3)) THEN
 
 C List current.
@@ -768,6 +783,7 @@ C In default mode then set output period to whole period.
         write (outs,'(2a)')
      &     'Current result set contains CFD data for the period:',PDESCR
         call edisp(iuout,outs)
+        call edisp(iuout,'Set a time within this period to plot.')
 
 C Set default to first timestep.
         IMO=IMs
@@ -781,17 +797,17 @@ C Select a single timestep to plot output for.
 
 C Check that CFD active at this time.
         if (IDAY.lt.ICDYS.or.IDAY.gt.ICDYF) then
-          call edisp(iuout,' Outside simulated period.')
+          call edisp(iuout,'Time is outside simulated period.')
           goto 10
         elseif (IDAY.eq.ICDYS.and.IDAY.eq.ICDYF.and.
      &          TIME.lt.CFTS.and.TIME.ge.CFTF) then
-          call edisp(iuout,' Outside simulated period.')
+          call edisp(iuout,'Time outside simulated period. Try again.')
           goto 10
         elseif (IDAY.eq.ICDYS.and.TIME.lt.CFTS) then
-          call edisp(iuout,' Before start time.')
+          call edisp(iuout,'Time is before start time. Try again.')
           goto 10
         elseif (IDAY.eq.ICDYF.and.TIME.ge.CFTF) then
-          call edisp(iuout,' After finish time.')
+          call edisp(iuout,'Time is after finish time. Try again.')
           goto 10
         endif
         ICDYOS=IDAY
@@ -816,17 +832,17 @@ C Check that CFD active at this time.
 
 C Check that CFD active at this time.
         if (ICDYOS.lt.ICDYS.or.ICDYOF.gt.ICDYF) then
-          call edisp(iuout,' Outside simulated period.')
+          call edisp(iuout,'Time is outside simulated period.')
           goto 20
         elseif (ICDYOS.eq.ICDYS.and.CFTOS.lt.CFTS) then
-          call edisp(iuout,' Before start time.')
+          call edisp(iuout,'Time is before start.')
           goto 20
         elseif (ICDYOF.eq.ICDYF.and.CFTOF.ge.CFTF) then
-          call edisp(iuout,' After finish time.')
+          call edisp(iuout,'Time is after finish.')
           goto 20
         elseif (ICDYOS.eq.ICDYS.and.ICDYOF.eq.ICDYF.and.
      &          CFTOS.lt.CFTS.and.CFTOF.ge.CFTF) then
-          call edisp(iuout,' Outside simulated period.')
+          call edisp(iuout,'Time outside simulated period.')
           goto 20
         endif
       endif

@@ -2468,99 +2468,99 @@ C----------------------------------------------------------------------
 C...........Fuel Flow is non-zero: efficiencies can be calculated.
 
 C...........Time-step averaged electric efficiency
-            call AddToReportWild1(rvPltAvrEffElec%Identifier,
+            call AddToReport(rvPltAvrEffElec%Identifier,
      &            fReport_Stack_Eff_Elec_TS_avg(iComponent),
      &            pcname(iComponent)(1:pcname_len))
 
 C...........Time-step averaged thermal efficiency
-            call AddToReportWild1(rvPltAvrEffThermal%Identifier,
+            call AddToReport(rvPltAvrEffThermal%Identifier,
      &            fReport_Stack_Eff_Ther_TS_avg(iComponent),
      &            pcname(iComponent)(1:pcname_len))
 
 C...........Time-step averaged cogeneration efficiency
-            call AddToReportWild1(rvPltAvrEffCogen%Identifier,
+            call AddToReport(rvPltAvrEffCogen%Identifier,
      &            fReport_Stack_Eff_Cogen_TS_avg(iComponent),
      &            pcname(iComponent)(1:pcname_len))
 
          endif
 
 C........Hydrogen supply flow rate
-         call AddToReportWild1(rvPltHydroSupMassFlowRate%Identifier,
+         call AddToReport(rvPltHydroSupMassFlowRate%Identifier,
      &            fReport_Hydrogen_flow(iComponent),
      &            pcname(iComponent)(1:pcname_len))
 
 C........Hydrogen supply LHV
-         call AddToReportWild1(rvPltHydroSupLHVFlowRate%Identifier,
+         call AddToReport(rvPltHydroSupLHVFlowRate%Identifier,
      &            fReport_Hydrogen_LHV(iComponent),
      &            pcname(iComponent)(1:pcname_len))
 
 C........Hydrogen demand flow rate
-         call AddToReportWild1(rvPltHydroDemMassFlowRate%Identifier,
+         call AddToReport(rvPltHydroDemMassFlowRate%Identifier,
      &            fReport_Hydrogen_demand(iComponent),
      &            pcname(iComponent)(1:pcname_len))
 
 C........Hydrogen demand LHV
-         call AddToReportWild1(rvPltHydroDemLHVFlowRate%Identifier,
+         call AddToReport(rvPltHydroDemLHVFlowRate%Identifier,
      &            fReport_Hydrogen_demand_LHV(iComponent),
      &            pcname(iComponent)(1:pcname_len))
 
 C........Stack voltage
-         call AddToReportWild1(rvPltStackVolt%Identifier,
+         call AddToReport(rvPltStackVolt%Identifier,
      &            fReport_Stack_Voltage(iComponent),
      &            pcname(iComponent)(1:pcname_len))
 
 C........Stack current
-         call AddToReportWild1(rvPltStackCurrent%Identifier,
+         call AddToReport(rvPltStackCurrent%Identifier,
      &            fReport_Stack_Current_TS_avg(iComponent),
      &            pcname(iComponent)(1:pcname_len))
 
 C........AC power usage (-ive ->O)
-         call AddToReportWild1(rvPltAvgPowAC%Identifier,
+         call AddToReport(rvPltAvgPowAC%Identifier,
      &            fReport_AC_Power_TS_avg(iComponent),
      &            pcname(iComponent)(1:pcname_len))
 
 C........DC power generation ( +ive O->)
-         call AddToReportWild1(rvPltAvrPowDC%Identifier,
+         call AddToReport(rvPltAvrPowDC%Identifier,
      &            fReport_DC_Power_TS_avg(iComponent),
      &            pcname(iComponent)(1:pcname_len))
 
 C........Heat production
-         call AddToReportWild1(rvPltAvgHOutput%Identifier,
+         call AddToReport(rvPltAvgHOutput%Identifier,
      &            fReport_heat_TS_avg(iComponent),
      &            pcname(iComponent)(1:pcname_len))
 
 C........Skin losses
-         call AddToReportWild1(rvPltAvgSkinLoss%Identifier,
+         call AddToReport(rvPltAvgSkinLoss%Identifier,
      &            fReport_Skin_Losses_TS_avg(iComponent),
      &            pcname(iComponent)(1:pcname_len))
 
 C.......Control scheme
-         call AddToReportWild1(rvPltCtrlScheme%Identifier,
+         call AddToReport(rvPltCtrlScheme%Identifier,
      &            float ( iReport_Control_method (iComponent) ),
      &            pcname(iComponent)(1:pcname_len))
 
 C........Control signal
-         call AddToReportWild1(rvPltCtrlSignal%Identifier,
+         call AddToReport(rvPltCtrlSignal%Identifier,
      &            fReport_Control_signal (iComponent) ,
      &            pcname(iComponent)(1:pcname_len))
 
 C........Time spent in standby
-         call AddToReportWild1(rvPltOperModeStandBy%Identifier,
+         call AddToReport(rvPltOperModeStandBy%Identifier,
      &            fReport_TS_modes (iComponent, iOP_inoperative),
      &            pcname(iComponent)(1:pcname_len))
 
 C........Time spent in startup
-         call AddToReportWild1(rvPltOperModeStartup%Identifier,
+         call AddToReport(rvPltOperModeStartup%Identifier,
      &            fReport_TS_modes (iComponent, iOP_startup),
      &            pcname(iComponent)(1:pcname_len))
 
 C........Time spent in normal operation
-         call AddToReportWild1(rvPltOperModeNormOp%Identifier,
+         call AddToReport(rvPltOperModeNormOp%Identifier,
      &            fReport_TS_modes (iComponent, iOP_normal_operation),
      &            pcname(iComponent)(1:pcname_len))
 
 C........Time spent in standby
-         call AddToReportWild1(rvPltOperModeCoolDown%Identifier,
+         call AddToReport(rvPltOperModeCoolDown%Identifier,
      &            fReport_TS_modes (iComponent, iOP_shutdown),
      &            pcname(iComponent)(1:pcname_len))
 

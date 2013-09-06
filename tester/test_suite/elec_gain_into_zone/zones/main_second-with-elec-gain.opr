@@ -1,6 +1,6 @@
 # operations of main_second defined in: 
 # ../zones/main_second-with-E-gain.opr
-nil_operations
+0.433 ach infil vent from zone 1 and E-gain in the 5th slot
 # control(no control of air flow  ), low mid & high setpoints 
    0     0.000     0.000     0.000
      1   # no Weekday flow periods
@@ -22,4 +22,4 @@ nil_operations
 # Sun: type, start, stop, sens, latent, rad_frac, conv_frac
     5,   0,  24,      0.8,      0.0, 0.000, 1.000
 # Labels for gain types 
- Occupt Lights Equipt
+ Occupt Lights Equipt Other E-gain

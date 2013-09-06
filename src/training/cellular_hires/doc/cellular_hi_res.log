@@ -1,0 +1,21 @@
+Project notes for cellular_offices_bc.cfg
+Description: base case model of two adjacent cellular offices
+In folder: cellular_hires
+By: jon
+Date: Mon Aug  1 10:11:58 2005
+For: 
+Project reference: 
+Notes: the standard model geometry has been revised to subdivide
+the walls and floor and ceiling so that assessments can capture
+changes in surface temperatures at different distances from the
+facade.
+_____________________________
+ 
+This is a synopsis of the model Two adjacent cellular offices with walls
+subdivided defined in cellular_hires.cfg generated on Wed Sep 30 08:53:17
+2009.  
+ 
+The model is located at latitude   46.00 with a longitude difference of   0.00
+from the local time meridian. The year used in simulations is 2000 and
+weekends occur on Saturday and Sunday.
+The site exposure is typical city centre and the ground reflectance is 0.20.

@@ -40,12 +40,14 @@ else
       @ A = $<
     end
     set DFS = $CHOICE[$A]
+    echo $DFS
   else
     echo "Version of CFD module to use (including full path)?"
     set A = $<
     @ OK = `file $A | grep -ic "No such file"`
     if ( $OK == 0 ) then
       set DFS = $A
+      echo $DFS
     else
       echo $A " does not exist! "
       echo "...using default: "
@@ -72,7 +74,7 @@ if ( $A == 1 || $A == 3 ) then
              tm1 porous tm2_so tst33vol)
     @ test ++
     echo "Test "$test": "$i".dfd with the default solver."
-    cd Models; dfs_basic.sh $DFS $i; cd ..
+    cd Models; ./dfs_basic.sh $DFS $i; cd ..
   end
 endif
 #
@@ -82,7 +84,7 @@ if ( $A == 1 || $A == 3 ) then
   foreach i (basicsol)
     @ test ++
     echo "Test "$test": "$i".dfd with the bi-cg solver."
-    cd Models; dfs_bi-cg.sh $DFS $i; cd ..
+    cd Models; ./dfs_bi-cg.sh $DFS $i; cd ..
   end
 endif
 #
@@ -92,7 +94,7 @@ if ( $A == 1 || $A == 3 ) then
   foreach i (displ)
     @ test ++
     echo "Test "$test": "$i".dfd with the ggdh solver."
-    cd Models; dfs_ggdh_not_conv.sh $DFS $i; cd ..
+    cd Models; ./dfs_ggdh_not_conv.sh $DFS $i; cd ..
   end
 endif
 #
@@ -102,7 +104,7 @@ if ( $A == 1 || $A == 3 ) then
   foreach i (displ displ_si tm1_so)
     @ test ++
     echo "Test "$test": "$i".dfd with the default solver."
-    cd Models; dfs_not_conv.sh $DFS $i; cd ..
+    cd Models; ./dfs_not_conv.sh $DFS $i; cd ..
   end
 endif
 #
@@ -112,7 +114,7 @@ if ( $A == 1 || $A == 3 ) then
   foreach i (tm1a tm1b)
     @ test ++
     echo "Test "$test": "$i".dfd with the default solver."
-    cd Models; dfs_basic.sh $DFS $i; cd ..
+    cd Models; ./dfs_basic.sh $DFS $i; cd ..
   end
 endif
 #
@@ -122,7 +124,7 @@ if ( $A == 2 || $A == 3 ) then
   foreach i (blockt)
     @ test ++
     echo "Test "$test": "$i".dfd with the default solver."
-    cd Models; dfs_basic.sh $DFS $i; cd ..
+    cd Models; ./dfs_basic.sh $DFS $i; cd ..
   end
 endif
 #
@@ -132,7 +134,7 @@ if ( $A == 2 || $A == 3 ) then
   foreach i (bi-cg)
     @ test ++
     echo "Test "$test": "$i".dfd with the default solver."
-    cd Models; dfs_basic.sh $DFS $i; cd ..
+    cd Models; ./dfs_basic.sh $DFS $i; cd ..
   end
 endif
 #
@@ -142,6 +144,6 @@ if ( $A == 2 || $A == 3 ) then
   foreach i (bi-cg)
     @ test ++
     echo "Test "$test": "$i".dfd with the bi-cg solver."
-    cd Models; dfs_bi-cg.sh $DFS $i; cd ..
+    cd Models; ./dfs_bi-cg.sh $DFS $i; cd ..
   end
 endif

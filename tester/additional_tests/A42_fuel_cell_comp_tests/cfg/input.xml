@@ -5,7 +5,7 @@
   <enable_xml_wildcards>true</enable_xml_wildcards>
   <hierarchy>flat</hierarchy>
   <link_style_sheet>false</link_style_sheet>
-  <output_dictionary>true</output_dictionary>
+  <output_dictionary>false</output_dictionary>
   <report_startup_period_data>false</report_startup_period_data>
   <time_step_averaging>false</time_step_averaging>
   <step_variable>building/time_step</step_variable>

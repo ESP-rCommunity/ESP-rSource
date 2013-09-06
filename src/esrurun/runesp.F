@@ -45,6 +45,7 @@ C deal with reading a silentread input file.
 C ************************************************************
 
       program runesp
+      USE START_UP
 #include "building.h"
 #include "model.h"
 #include "geometry.h"
@@ -65,8 +66,6 @@ C ************************************************************
       common/cctlnm/ctldoc,lctlf
       common/AFN/IAIRN,LAPROB,ICAAS(MCOM)
 
-      common/C21/IFCFG,cfgroot,LCFGF
-
       common/IPVF/lipvdatf
 
 C Path to problem and command line file (if any).
@@ -74,7 +73,6 @@ C Path to problem and command line file (if any).
       
 C Significant figure reporting limit (NSIGFIG).
       common/SFIG/NSIGFIG
-      common/LLOG/LPRJLG
       common/GTFIL/GTGEOM
 
 C Name of current application
@@ -87,7 +85,6 @@ C Uncertainty.
       common/spfldat/nsset,isset,isstup,isbnstep,ispnstep,issave,isavgh
 
       common/idstb/nidst
-      common/anchora/NALOC,ALOC(20),ALOCLBL(20),ALOCTYP(20)
       character imgfmt*4  ! GIF XBMP TIF JPG
       character imgfoc*4  ! FZON FNET FCTL FDFS
       character limgfil*72  ! file name (extend to 144 char)
@@ -100,16 +97,14 @@ C Uncertainty.
       COMMON/BIDIRFL/bidirfile,bidirname(MSTMC)
       
       CHARACTER INTER*144,INF*144
-      character path*72,cfgroot*24
+      character path*72
       character outs*124,outs248*248
       character doit*248,longtfile*144,longtfiledos*144
       character fs*1
       character act*16
       character LUALF*72,LCNG*15,LLOC*15
-      character ALOC*12,ALOCLBL*12,ALOCTYP*4
       character GTGEOM*72,lipvdatf*72
       character*10 wkd1, wkd2
-      character*72 LCFGF,LPRJLG
       character LCTLF*72,ctldoc*248
       character LAPROB*72 
       character bidirfile*72,bidirname*12
@@ -175,7 +170,6 @@ C Set folder separator (fs) to \ or / as required.
       write(imgpth,'(a1,a1)')'.',fs
       write(radpth,'(a1,a1)')'.',fs
       write(docpth,'(a1,a1)')'.',fs
-      write(tmppth,'(a1,a1)')'.',fs
       write(dbspth,'(a1,a1)')'.',fs
       write(bsmpth,'(a1,a1)')'.',fs
       IYEAR=2007
@@ -276,7 +270,7 @@ C Temporal information on channel IFIL+7.
       LPCDB=DPCDB
 
 C Project log.
-      LPRJLG='job.notes'
+      lmodellog='project.notes'
 
       INIT =0
 
@@ -378,7 +372,7 @@ C espriou.h provides currentfile.
 
 C Where ESP-r was installed (as recorded when it was compiled).
       common/deflt4/dinstpath
-      character dinstpath*48
+      character dinstpath*60
 
       common/dllerr/dllsubr,dllmesg
       character dllsubr*12,dllmesg*124  ! messages if errors in dll
@@ -393,7 +387,7 @@ C Simulation parameter presets.
       character sblres*72,sflres*72,splres*72,smstres*72,sipvres*72
       character selres*72,spfdescr*8
               
-      character*72 odir    ! where are folders
+      character*84 odir    ! where are folders
       CHARACTER OUTSTR*248,WORD*32,outs*124,outs2*124,outs248*248
 
       character LFILE*144,thefile*72,theresult*72
@@ -1209,6 +1203,46 @@ C Dummy routines from common3dv.F
       return
       end
 
+      subroutine chgsun(isunhour)
+      return
+      end
+
+      subroutine chgeye(EVX,EVY,EVZ,VX,VY,VZ,EAN,JITZNM,JITSNM,JITVNO,
+     &   JITOBS,JITSNR,JITGRD,JITORG,DIS,JITBND,JITDSP,JITHLS,JITHLZ,
+     &   JITPPSW)
+
+C Passed paramters.
+      real EVX,EVY,EVZ,VX,VY,VZ,EAN,DIS
+
+C Depending on computer type set integer size of passed parameters.
+#ifdef OSI
+      integer JITZNM,JITSNM,JITVNO,JITOBS,JITSNR,JITGRD,JITORG
+      integer JITBND,JITDSP,JITHLS,JITHLZ,JITPPSW
+#else
+      integer*8 JITZNM,JITSNM,JITVNO,JITOBS,JITSNR,JITGRD,JITORG
+      integer*8 JITBND,JITDSP,JITHLS,JITHLZ,JITPPSW
+#endif     
+      return
+      end
+
+      subroutine chgzonpik(jizgfoc,jnzg)
+#ifdef OSI
+      integer jizgfoc,jnzg  ! for use with viewtext
+#else
+      integer*8 jizgfoc,jnzg  ! for use with viewtext
+#endif
+      return
+      end
+
+      subroutine chgzonpikarray(jnznog,jnznogv)
+#ifdef OSI
+      integer jnznog,jnznogv
+#else
+      integer*8 jnznog,jnznogv
+#endif
+      return
+      end
+
       subroutine imgdisp(iforce,focus,ier)
       character focus*4
       return
@@ -1288,11 +1322,10 @@ C typical day with free float outside of occupied period.
 #include "geometry.h"
 #include "espriou.h"
       COMMON/FILEP/IFIL
-      common/C21/IFCFG,cfgroot,LCFGF
+      integer icascf
       common/cctl/icascf(mcom)
       common/cctlnm/ctldoc,lctlf
 
-      character cfgroot*24,LCFGF*72
       character LCTLF*72,ctldoc*248
       character fs*1
       logical unixok

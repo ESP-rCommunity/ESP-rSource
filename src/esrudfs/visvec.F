@@ -47,11 +47,15 @@ C MAKS2D - draw 2d slices on screen.
       integer iupdown,isym,ibx,iby,ixsl,iysl    ! passed to etplot
       integer iid1,iid2,iid3,iid4
       integer iigt,ileft,iright      ! passed to eswline
+      integer iigl,iigr,iigb,iigw,iigwh
+      integer iiw1,iiw2,iiw3,iiw4,iimenu
 #else
       integer*8 iside,isize,ifont     ! passed to viewtext
       integer*8 iupdown,isym,ibx,iby,ixsl,iysl    ! passed to etplot
       integer*8 iid1,iid2,iid3,iid4
       integer*8 iigt,ileft,iright      ! passed to eswline
+      integer*8 iigl,iigr,iigb,iigw,iigwh
+      integer*8 iiw1,iiw2,iiw3,iiw4,iimenu
 #endif
       integer iiright   !passed to wstxpt
 
@@ -62,9 +66,14 @@ C Set default values.
 
 C Clear viewing area, set and store scaling factors.
       CALL startbuffer()
-      CALL win3d(menuchw,6,6,3,4,igl,igr,igt,igb,igw,igwh)
-      igw=igr-igl
-      igwh=igb-igt
+
+C Setup and pass in parameters to win3d.
+      iiw1=6; iiw2=6; iiw3=3; iiw4=4; iimenu=menuchw
+      iigl=igl; iigr=igr; iigt=igt; iigb=igb; iigw=igw; iigwh=igwh
+      CALL win3d(iimenu,iiw1,iiw2,iiw3,iiw4,
+     &  iigl,iigr,iigt,iigb,iigw,iigwh)
+      igl=int(iigl); igr=int(iigr); igt=int(iigt); igb=int(iigb)
+      igw=int(iigw); igwh=int(iigwh)
 
 C Set up the do loops according to which surface is being viewed.
 C East or west view.

@@ -3475,6 +3475,20 @@ C CV5 (gas within burner).
         END SELECT ! CASE DEFAULT not required because already checked above.
 
 C Gas-to-water heat exchanger: CV6 (HX-water) and CV7 (HX-gas).
+C-------If there is no flow of water through HX then protect plant matrix from
+C-------division by zero.
+        CALL ECLOSE( C_water, 0., 0.001, CLOSE)
+        HX_no_flow: IF(CLOSE)THEN
+          COUT(10) = 0.  ! Water side of HX.
+          COUT(11) = 1.
+          COUT(12) = 0.
+          COUT(30) = -1.
+          COUT(37) = 0.
+          COUT(13) = -1. ! Gas side of HX.
+          COUT(14) = 1.
+          COUT(38) = 0.
+
+        ELSE HX_no_flow ! There is water flow through HX.
         SELECT CASE ( HX_method )
         CASE ( HX_fixed_eff )
 C---------CV6 (HX-water).
@@ -3571,6 +3585,7 @@ C-----------CV7 (HX-gas).
         CASE DEFAULT
 
         END SELECT
+        END IF HX_no_flow ! This goes with check on zero flow: need to label this 'endif'.
 
 
 C CV8 (dilution air system).
@@ -4345,248 +4360,248 @@ C-------------------------------------------------------------------------------
 C-------FCPM.
         iNameLength = lnblnk(pcname(IPCOMP))
 
-         call AddToReportWild1(rvPltAPel%Identifier,
+         call AddToReport(rvPltAPel%Identifier,
      &           Pel,
      &           pcname(IPCOMP)(1:iNameLength))
 
-         call AddToReportWild1(rvPltEtaEl%Identifier,
+         call AddToReport(rvPltEtaEl%Identifier,
      &           eta_el,
      &           pcname(IPCOMP)(1:iNameLength))
 
-         call AddToReportWild1(rvPltNdotFCPMFuel%Identifier,
+         call AddToReport(rvPltNdotFCPMFuel%Identifier,
      &           Ndot_FCPM_fuel,
      &           pcname(IPCOMP)(1:iNameLength))
 
-         call AddToReportWild1(rvPltNdotFCPMAir%Identifier,
+         call AddToReport(rvPltNdotFCPMAir%Identifier,
      &           Ndot_FCPM_air,
      &           pcname(IPCOMP)(1:iNameLength))
 
-         call AddToReportWild1(rvPltLambdaFCPM%Identifier,
+         call AddToReport(rvPltLambdaFCPM%Identifier,
      &           lambda_FCPM,
      &           pcname(IPCOMP)(1:iNameLength))
 
-         call AddToReportWild1(rvPltPelAncAc%Identifier,
+         call AddToReport(rvPltPelAncAc%Identifier,
      &           Pel_ancAC,
      &           pcname(IPCOMP)(1:iNameLength))
 
 C-------Auxiliary burner.
-         call AddToReportWild1(rvPltNdotAuxBurnFuel%Identifier,
+         call AddToReport(rvPltNdotAuxBurnFuel%Identifier,
      &           Ndot_auxburn_fuel,
      &           pcname(IPCOMP)(1:iNameLength))
 
-         call AddToReportWild1(rvPltNdotAuxBurnAir%Identifier,
+         call AddToReport(rvPltNdotAuxBurnAir%Identifier,
      &           Ndot_auxburn_air,
      &           pcname(IPCOMP)(1:iNameLength))
 
-         call AddToReportWild1(rvPltQAuxBurn%Identifier,
+         call AddToReport(rvPltQAuxBurn%Identifier,
      &           Q_auxburn,
      &           pcname(IPCOMP)(1:iNameLength))
 
-         call AddToReportWild1(rvPltAuxBurnPel%Identifier,
+         call AddToReport(rvPltAuxBurnPel%Identifier,
      &           auxburn_Pel,
      &           pcname(IPCOMP)(1:iNameLength))
 
-         call AddToReportWild1(rvPltAuxBurnSkinLoss%Identifier,
+         call AddToReport(rvPltAuxBurnSkinLoss%Identifier,
      &           auxburn_skin_loss,
      &           pcname(IPCOMP)(1:iNameLength))
 
 C-------Heat exchanger.
-         call AddToReportWild1(rvPltQHX%Identifier,
+         call AddToReport(rvPltQHX%Identifier,
      &           Q_HX,
      &           pcname(IPCOMP)(1:iNameLength))
 
-          call AddToReportWild1(rvPltQHSSens%Identifier,
+          call AddToReport(rvPltQHSSens%Identifier,
      &           Q_HX_sensible,
      &           pcname(IPCOMP)(1:iNameLength))
 
-         call AddToReportWild1(rvPltQHXLatent%Identifier,
+         call AddToReport(rvPltQHXLatent%Identifier,
      &           Q_HX_latent,
      &           pcname(IPCOMP)(1:iNameLength))
 
-         call AddToReportWild1(rvPltCWater%Identifier,
+         call AddToReport(rvPltCWater%Identifier,
      &           C_water,
      &           pcname(IPCOMP)(1:iNameLength))
 
-         call AddToReportWild1(rvPltCGas%Identifier,
+         call AddToReport(rvPltCGas%Identifier,
      &           C_gas,
      &           pcname(IPCOMP)(1:iNameLength))
 
-         call AddToReportWild1(rvPltUAHX%Identifier,
+         call AddToReport(rvPltUAHX%Identifier,
      &           UA_HX,
      &           pcname(IPCOMP)(1:iNameLength))
 
-         call AddToReportWild1(rvPltHXNdotCondense%Identifier,
+         call AddToReport(rvPltHXNdotCondense%Identifier,
      &           HX_Ndot_condense,
      &           pcname(IPCOMP)(1:iNameLength))
 
-         call AddToReportWild1(rvPltHXWaterVapFrac%Identifier,
+         call AddToReport(rvPltHXWaterVapFrac%Identifier,
      &           HX_water_vap_frac,
      &           pcname(IPCOMP)(1:iNameLength))
 
-         call AddToReportWild1(rvPltHXHfg%Identifier,
+         call AddToReport(rvPltHXHfg%Identifier,
      &           HX_Hfg,
      &           pcname(IPCOMP)(1:iNameLength))
 
-         call AddToReportWild1(rvPltNdoHXGax%Identifier,
+         call AddToReport(rvPltNdoHXGax%Identifier,
      &           Ndot_HX_gas,
      &           pcname(IPCOMP)(1:iNameLength))
 
 C-------Inter-model comparisons.
-         call AddToReportWild1(rvPltLHVFuel%Identifier,
+         call AddToReport(rvPltLHVFuel%Identifier,
      &           LHV_fuel,
      &           pcname(IPCOMP)(1:iNameLength))
 
-         call AddToReportWild1(rvPltDeltaHFCPMFuel%Identifier,
+         call AddToReport(rvPltDeltaHFCPMFuel%Identifier,
      &           deltaH_FCPM_fuel,
      &           pcname(IPCOMP)(1:iNameLength))
 
-         call AddToReportWild1(rvPltDeltaHFCPMAir%Identifier,
+         call AddToReport(rvPltDeltaHFCPMAir%Identifier,
      &           deltaH_FCPM_air,
      &           pcname(IPCOMP)(1:iNameLength))
 
-         call AddToReportWild1(rvPltNdotFCPMexhN2%Identifier,
+         call AddToReport(rvPltNdotFCPMexhN2%Identifier,
      &           Ndot_FCPMexh_N2,
      &           pcname(IPCOMP)(1:iNameLength))
 
-         call AddToReportWild1(rvPltNdotFCPMexhAr%Identifier,
+         call AddToReport(rvPltNdotFCPMexhAr%Identifier,
      &           Ndot_FCPMexh_Ar,
      &           pcname(IPCOMP)(1:iNameLength))
 
-         call AddToReportWild1(rvPltNdotFCPMexh02%Identifier,
+         call AddToReport(rvPltNdotFCPMexh02%Identifier,
      &           Ndot_FCPMexh_O2,
      &           pcname(IPCOMP)(1:iNameLength))
 
-         call AddToReportWild1(rvPltNdotFCPMexhC02%Identifier,
+         call AddToReport(rvPltNdotFCPMexhC02%Identifier,
      &           Ndot_FCPMexh_CO2,
      &           pcname(IPCOMP)(1:iNameLength))
 
-         call AddToReportWild1(rvPltNdotFCPMexhH20%Identifier,
+         call AddToReport(rvPltNdotFCPMexhH20%Identifier,
      &           Ndot_FCPMexh_H2O,
      &           pcname(IPCOMP)(1:iNameLength))
 
-         call AddToReportWild1(rvPltDeltaHFCPMexh%Identifier,
+         call AddToReport(rvPltDeltaHFCPMexh%Identifier,
      &           deltaH_FCPM_exh,
      &           pcname(IPCOMP)(1:iNameLength))
 
 C-------Blower, compressor, pump.
-         call AddToReportWild1(rvPltBlowerPel%Identifier,
+         call AddToReport(rvPltBlowerPel%Identifier,
      &           blower_Pel,
      &           pcname(IPCOMP)(1:iNameLength))
 
-         call AddToReportWild1(rvPltTBlowerIn%Identifier,
+         call AddToReport(rvPltTBlowerIn%Identifier,
      &           T_blower_in,
      &           pcname(IPCOMP)(1:iNameLength))
 
-         call AddToReportWild1(rvPltCompPel%Identifier,
+         call AddToReport(rvPltCompPel%Identifier,
      &           comp_Pel,
      &           pcname(IPCOMP)(1:iNameLength))
 
-         call AddToReportWild1(rvPltPumpPel%Identifier,
+         call AddToReport(rvPltPumpPel%Identifier,
      &           pump_Pel,
      &           pcname(IPCOMP)(1:iNameLength))
 
-         call AddToReportWild1(rvPltNdotFCPMLiqWater%Identifier,
+         call AddToReport(rvPltNdotFCPMLiqWater%Identifier,
      &           Ndot_FCPM_liqwater,
      &           pcname(IPCOMP)(1:iNameLength))
 
-         call AddToReportWild1(rvPltDeltaHFCPMLiqWater%Identifier,
+         call AddToReport(rvPltDeltaHFCPMLiqWater%Identifier,
      &           deltaH_FCPM_liqwater,
      &           pcname(IPCOMP)(1:iNameLength))
 
 C-------Battery and PCU.
-         call AddToReportWild1(rvPltBattSOCP%Identifier,
+         call AddToReport(rvPltBattSOCP%Identifier,
      &           battery_SOC_p,
      &           pcname(IPCOMP)(1:iNameLength))
 
-         call AddToReportWild1(rvPltBattSOCf%Identifier,
+         call AddToReport(rvPltBattSOCf%Identifier,
      &           battery_SOC_f,
      &           pcname(IPCOMP)(1:iNameLength))
 
-         call AddToReportWild1(rvPltDCReqPCU%Identifier,
+         call AddToReport(rvPltDCReqPCU%Identifier,
      &           DC_required_by_PCU,
      &           pcname(IPCOMP)(1:iNameLength))
 
-         call AddToReportWild1(rvPltDCInPCU%Identifier,
+         call AddToReport(rvPltDCInPCU%Identifier,
      &           DC_into_PCU,
      &           pcname(IPCOMP)(1:iNameLength))
 
-         call AddToReportWild1(rvPltPBatt%Identifier,
+         call AddToReport(rvPltPBatt%Identifier,
      &           P_battery,
      &           pcname(IPCOMP)(1:iNameLength))
 
-         call AddToReportWild1(rvPltACDemNet%Identifier,
+         call AddToReport(rvPltACDemNet%Identifier,
      &           AC_demand_net,
      &           pcname(IPCOMP)(1:iNameLength))
 
-         call AddToReportWild1(rvPltACProdGross%Identifier,
+         call AddToReport(rvPltACProdGross%Identifier,
      &           AC_production_gross,
      &           pcname(IPCOMP)(1:iNameLength))
 
-         call AddToReportWild1(rvPltACProdNet%Identifier,
+         call AddToReport(rvPltACProdNet%Identifier,
      &           AC_production_net,
      &           pcname(IPCOMP)(1:iNameLength))
 
-         call AddToReportWild1(rvPltPCULosses%Identifier,
+         call AddToReport(rvPltPCULosses%Identifier,
      &           PCU_losses,
      &           pcname(IPCOMP)(1:iNameLength))
 
-         call AddToReportWild1(rvPltEtaPCU%Identifier,
+         call AddToReport(rvPltEtaPCU%Identifier,
      &           eta_PCU,
      &           pcname(IPCOMP)(1:iNameLength))
 
 C-------Stack cooling system
-         call AddToReportWild1(rvPltQSCool%Identifier,
+         call AddToReport(rvPltQSCool%Identifier,
      &           q_s_cool,
      &           pcname(IPCOMP)(1:iNameLength))
 
-         call AddToReportWild1(rvPltQSCogen%Identifier,
+         call AddToReport(rvPltQSCogen%Identifier,
      &           q_s_cogen,
      &           pcname(IPCOMP)(1:iNameLength))
 
-         call AddToReportWild1(rvPltQSCoolAir%Identifier,
+         call AddToReport(rvPltQSCoolAir%Identifier,
      &           q_s_cool_air,
      &           pcname(IPCOMP)(1:iNameLength))
 
-         call AddToReportWild1(rvPltPAirEl%Identifier,
+         call AddToReport(rvPltPAirEl%Identifier,
      &           P_air_el,
      &           pcname(IPCOMP)(1:iNameLength))
 
-         call AddToReportWild1(rvPltUASCogen%Identifier,
+         call AddToReport(rvPltUASCogen%Identifier,
      &           UA_s_cogen,
      &           pcname(IPCOMP)(1:iNameLength))
 
 C-------Dilution air system/HRV.
-         call AddToReportWild1(rvPltQHRV%Identifier,
+         call AddToReport(rvPltQHRV%Identifier,
      &           q_HRV,
      &           pcname(IPCOMP)(1:iNameLength))
 
-         call AddToReportWild1(rvPltTVentAir%Identifier,
+         call AddToReport(rvPltTVentAir%Identifier,
      &           T_vent_air,
      &           pcname(IPCOMP)(1:iNameLength))
 
-         call AddToReportWild1(rvPltDilutionHeatToAir%Identifier,
+         call AddToReport(rvPltDilutionHeatToAir%Identifier,
      &           Dilution_heattoair,
      &           pcname(IPCOMP)(1:iNameLength))
 
 C-------Net efficiency values.
-         call AddToReportWild1(rvPltLHVToACEff%Identifier,
+         call AddToReport(rvPltLHVToACEff%Identifier,
      &           LHV_to_AC_eff,
      &           pcname(IPCOMP)(1:iNameLength))
 
-         call AddToReportWild1(rvPltLHVToThermEff%Identifier,
+         call AddToReport(rvPltLHVToThermEff%Identifier,
      &           LHV_to_therm_eff,
      &           pcname(IPCOMP)(1:iNameLength))
 
-         call AddToReportWild1(rvPltLHVToCogenEff%Identifier,
+         call AddToReport(rvPltLHVToCogenEff%Identifier,
      &           LHV_to_cogen_eff,
      &           pcname(IPCOMP)(1:iNameLength))
 
 C-------Heat transfer from FC-cogen unit to containing room.
-         call AddToReportWild1(rvPltHeatToRoomConv%Identifier,
+         call AddToReport(rvPltHeatToRoomConv%Identifier,
      &           heat_to_room_conv,
      &           pcname(IPCOMP)(1:iNameLength))
 
-         call AddToReportWild1(rvPltHeatToRoomRad%Identifier,
+         call AddToReport(rvPltHeatToRoomRad%Identifier,
      &           heat_to_room_rad,
      &           pcname(IPCOMP)(1:iNameLength))
 
@@ -4693,6 +4708,10 @@ C-------------------------------------------------------------------------------
       REAL tH_at_min_range ! Difference in enthalpy between temp at min of range and
                            ! that at standard state (J/kmol).
       REAL Cp_at_min_range ! Heat capacity at temp at min of range of applicability (J/kmolK).
+      LOGICAL msg_max_range(15), msg_min_range(15) ! Flags indicating warnings have been given.
+      DATA msg_max_range(1:15) / 15*.false. /
+      DATA msg_min_range(1:15) / 15*.false. /
+      SAVE msg_max_range, msg_min_range
 
 C---------------------------------------------------------------------------------
 C Shomate coefficients from NIST web site for N2, O2, Ar, CO2, H2, CH4, and
@@ -4753,15 +4772,22 @@ C-------------------------------------------------------------------------------
 C Issue error message and halt simulation if temperature exceeds maximum of
 C range of applicability of the correlations.
 C---------------------------------------------------------------------------------
-      IF (tempK > max_range(gas) ) THEN
-        write(IUOUT,*) ' Temperature > range of applicability'
-        write(IUOUT,*) ' of Shomate correlation for gas: ',gas
-        write(IUOUT,*) '   : ',tempK,' > ',max_range(gas)
+      IF( .not. msg_max_range(gas) ) THEN
+        IF (tempK > max_range(gas) ) THEN
+          write(IUOUT,*) ' Temperature > range of applicability'
+          write(IUOUT,*) ' of Shomate correlation for gas: ',gas
+          write(IUOUT,*) '   : ',tempK,' > ',max_range(gas)
+          msg_max_range(gas) = .true.
+        END IF
       END IF
-      IF (tempK < min_range(gas) ) THEN
-        write(IUOUT,*) ' Temperature < range of applicability'
-        write(IUOUT,*) ' of Shomate correlation for gas: ',gas
-        write(IUOUT,*) '   : ',tempK,' < ',min_range(gas)
+
+      IF( .not. msg_min_range(gas) ) THEN
+        IF (tempK < min_range(gas) ) THEN
+          write(IUOUT,*) ' Temperature < range of applicability'
+          write(IUOUT,*) ' of Shomate correlation for gas: ',gas
+          write(IUOUT,*) '   : ',tempK,' < ',min_range(gas)
+          msg_min_range(gas) = .true.
+        END IF
       END IF
 
 

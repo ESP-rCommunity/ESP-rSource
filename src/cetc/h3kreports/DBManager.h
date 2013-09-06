@@ -7,18 +7,20 @@
 
 #include <stdio.h>
 #include <sqlite3.h>
+#include <stdlib.h>
+#include "log.h"
 
 #define MAX_TRANSACTIONS 50000
 #define MAX_INSERTSTATEMENT 10
 #define MAX_UPDATESTATEMENT 1
 
-//Hardcoded available bin type (annual/monthly)
+//Hardcoded available bin type (annual/monthly/seasonal)
 #define BIN_MONTH_TYPE     0
 #define BIN_ANNUAL_TYPE    1
-
+#define BIN_SEASONAL_TYPE  2
 
 /* ******************************************************************
-** SQLite3 Return codes
+** SQLite3 Return codes (http://www.sqlite.org/)
 ** *************************************************************** */
 #define SQLITE_OK           0   /* Successful result */
 /* beginning-of-error-codes */
@@ -68,12 +70,13 @@ class DBManager
       void addIntegratedData(int iVariableID, int iIndex, const char *sIntegratedUnits,double dTotal, int sType);
       void createTableStructure();
       void indexDatabase();
+      void createDataViews();
       void updateVariableName(int iVariableId, int iNewDescriptorID);
-
     protected:
         sqlite3 *db;
     private:
-        int iInsertCount;
+        int m_iInsertCount;
+        int m_iVariableCount;
         bool bOpenTrans;
         sqlite3_stmt *insertStatements[MAX_INSERTSTATEMENT];
         sqlite3_stmt *updateStatements[MAX_UPDATESTATEMENT];

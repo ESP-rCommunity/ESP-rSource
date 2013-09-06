@@ -3040,11 +3040,11 @@ C   - None.
       subroutine AggregatePltCompEnergyUse()
 
 
-C AttributePltPfsEnergyUse analyses uncatagorized energy consumption reported in
+C AttributePltEnergyUse analyses uncatagorized energy consumption reported in
 C the plant/elec domains and attempts to attribute them according to
 C end-use.
 C Inputs: None.
-      subroutine AttributePltPfsEnergyUse()
+      subroutine AttributePltEnergyUse()
 
 
 C fConvertEnergyToFuelAmount converts an energy input into an equivlent

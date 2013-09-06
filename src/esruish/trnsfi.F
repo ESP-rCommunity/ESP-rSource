@@ -43,11 +43,14 @@ C essentially a copy of trnsf1.
       common/pangl/pazi(ms),pelv(ms),ptilt(ms)
       common/trnsf/a(5),b(3),c(5),xor,yor,zor
       common/g1t/xft(mv),zft(mv)
+      integer izstocn
       common/c24/izstocn(mcom,ms)
 
       dimension yft(mv)
       character outs*124
       logical tok
+      character ZSDES*28,ZSDESC*20,ZSDESS*16
+      integer lnzsn
 
 C If trace requested enable writing.
       tok=.false.
@@ -135,10 +138,13 @@ C Transformed y value should be close to zero; warn if not.
 C Trace output.
       if(tok)then
          icc=IZSTOCN(izone,is)
+         call zsid(izone,is,ZSDES,ZSDESC,ZSDESS)
+         lnzsn=lnblnk(ZSDES)
          call edisp(icout,' ')
-         write(outs,9996)is,pazi(is),pelv(is),ptilt(is)
- 9996    format('*** TRNSF1I: Surface ',i2,': PAZI= ',f5.1,'; PELV= ',
-     &          f5.1,'; PTILT= ',f5.1)
+         write(outs,'(3a,i3,a,f5.1,a,f5.1,a,f5.1)')
+     &     '*** TRNSF1I: Surface ',zsdes(1:lnzsn),' (',is,
+     &     ') PAZI= ',pazi(is),'; PELV= ',pelv(is),'; PTILT= ',
+     &     ptilt(is)
          call edisp(icout,outs)
          call edisp(icout,' ')
          call edisp(icout,'Axis translations & rotations:')
@@ -346,7 +352,13 @@ C The y-coordinate is left unprojected but in the new coordinate system.
 C This routine is similar to trnsf3 but with window grid points used
 C instead of obstruction block surface vertices.
 
-      subroutine trnsf3i(ihr,intsur,ipass,xxw,yyw,zzw)
+      subroutine trnsf3i(ihr,izone,intsur,ipass,xxw,yyw,zzw)
+
+      integer ihr    ! hour of the day
+      integer izone  ! current zone
+      integer intsur ! index if internal surface
+      integer ipass
+      real xxw,yyx,zzw ! window grid point
 
       common/tracech/icout
       common/trnsf/a(5),b(3),c(5),xor,yor,zor
@@ -354,7 +366,9 @@ C instead of obstruction block surface vertices.
       common/proji/xp,yp,zp
       common/save3i/ta1,ta2,ca1,xmult,eta1,eta2
 
+      character ZSDES*28,ZSDESC*20,ZSDESS*16
       character outs*124
+      integer lnzsn
       logical tok
 
 C If verbose trace requested enable writing.
@@ -415,25 +429,22 @@ C Tranform and project z.
 C Trace output (only for 1st grid point in source surface).
       if(tok.and.ipass.eq.0)then
          call edisp(icout,' ')
-         write(outs,9999)intsur,ihr
- 9999    format('*** TRNSF3I: 1st point projection to surface ',
-     &          i2,' for hour ',i2,'.')
+         call zsid(izone,intsur,ZSDES,ZSDESC,ZSDESS)
+         lnzsn=lnblnk(zsdes)
+         write(outs,'(3a,i2,a,i2,a)')
+     &     '*** TRNSF3I: 1st point projection to surface ',
+     &     ZSDES(1:lnzsn),' (',intsur,') for hour ',ihr,'.'
          call edisp(icout,outs)
          call edisp(icout,' ')
-         call edisp(icout,'x,y,z coordinates:')
-         write(outs,'(3f8.1)')xxw,yyw,zzw
+         write(outs,'(a,3f8.1)')'x,y,z    coordinates:',xxw,yyw,zzw
          call edisp(icout,outs)
-         call edisp(icout,'x`,y`,z` coordinates:')
-         write(outs,'(3f8.1)')xt,yt,zt
+         write(outs,'(a,3f8.1)')'x`,y`,z` coordinates:',xt,yt,zt
          call edisp(icout,outs)
-         write(outs,9998)eta1,eta2
- 9998    format('Pseudo solar angles: eta1= ',f8.1,'; eta2= ',f8.1)
+         write(outs,9998)eta1,eta2,ta1,ta2
+ 9998    format('Pseudo solar angles: eta1= ',f7.1,'; eta2= ',f7.1,
+     &     '; ta1= ',f7.1,'; ta2= ',f7.1)
          call edisp(icout,outs)
-         write(outs,9997)ta1,ta2
- 9997    format('ta1= ',f8.1,'; ta2= ',f8.1)
-         call edisp(icout,outs)
-         call edisp(icout,'xp,yp,zp coordinates:')
-         write(outs,'(3f8.1)')xp,yp,zp
+         write(outs,'(a,3f8.1)')'xp,yp,zp coordinates:',xp,yp,zp
          call edisp(icout,outs)
       endif
       return

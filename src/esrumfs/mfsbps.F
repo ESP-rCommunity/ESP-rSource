@@ -81,7 +81,7 @@ C LAPRES,IAPRES (for wind pressure databases)
       COMMON/FILEP/IFIL
       COMMON/ER1/IER1
 
-      integer ncomp,ncon
+C      integer ncomp,ncon
 C      COMMON/C1/NCOMP,NCON
 C      COMMON/C10/NPCON,IPC1(MPCON),IPN1(MPCON),IPCT(MPCON),
 C     &           IPC2(MPCON),IPN2(MPCON),PCONDR(MPCON),PCONSD(MPCON,2)
@@ -346,7 +346,7 @@ C Check that zones are legally mapped to network flow nodes.
           call edisp(iuout,outs)
           goto 99
         else if(ICAAS(ICOMP).ne.0) then
-          if(znotair(ICOMP)) then		! zone is not air filled
+          if(znotair(ICOMP)) then  ! zone is not air filled
             if(NDFLD(ICAAS(ICOMP)).ne.2) then
               write(outs,'(2(A,I3))') ' Building zone ',ICOMP,
      &            ' incorrectly references an air flow node.',
@@ -354,7 +354,7 @@ C Check that zones are legally mapped to network flow nodes.
               call edisp(iuout,outs)
               goto 99
             end if
-          else					! zone is air filled
+          else   ! zone is air filled
             if(NDFLD(ICAAS(ICOMP)).ne.1) then
               write(outs,'(2(A,I3))') ' Building zone ',ICOMP,
      &          ' incorrectly references a non-air flow node.',

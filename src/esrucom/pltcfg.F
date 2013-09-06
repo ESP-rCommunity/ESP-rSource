@@ -142,6 +142,8 @@ C  itrc the level of reporting (zero is quiet).
 #include "building.h"
 #include "geometry.h"
 #include "esprdbfile.h"
+#include "gencompDB.h"
+#include "gencompDB_common.h"
 C esprdbfile.h supplies the following:
 C LAPRES,IAPRES (for window pressure databases)
 C LPCDB/IPCDB (for plant template database)
@@ -154,6 +156,8 @@ C LPCDB/IPCDB (for plant template database)
       COMMON/C6/INDCFG
       COMMON/C8/LPNAM
       COMMON/C9/NPCOMP,NCI(MPCOM),CDATA(MPCOM,MMISCD)
+      COMMON/C9plus/UCdbNam(MPCOM),CdbCat(MPCOM),CDBDesc(MPCOM)
+
       COMMON/C10/NPCON,IPC1(MPCON),IPN1(MPCON),IPCT(MPCON),
      &           IPC2(MPCON),IPN2(MPCON),PCONDR(MPCON),PCONSD(MPCON,2)
       COMMON/C11/NCONT,IPCC(MPCOM),INDCP(MPCOM),CNTDAT(MPCOM,3)
@@ -170,10 +174,16 @@ C Electrical details for specified plant components
       common/elpcp/NPEL,PFP(mpcom),IPFP(mpcom),PWRP(mpcom),
      &BVOLTP(mpcom),IPHP(mpcom)
 
-      LOGICAL close,FOUNDNUM(10)
+C Common for new format component database
+      COMMON/NCDBFORM/ICDBF
+
+      COMMON/IsTRNSYS/Is_TRNSYS(MPCOM)
+
+
+      LOGICAL close,FOUNDNUM(10),Is_TRNSYS
       CHARACTER OUTSTR*124,OUTS*124,word*20,LLTMP*144,cmsg*24
-      CHARACTER LPNAM*72
-      CHARACTER PZDESCR*25
+      CHARACTER LPNAM*72,argstr*12
+      CHARACTER PZDESCR*25,UCDBNam*16, CdbCat*32, CDBDesc*72
       character*68 mscdsc, cvrdsc      
       character loutstr*248
       DIMENSION NPSTA(MAXPC),RVA(MMISCD),RVB(MPCON)
@@ -183,7 +193,8 @@ C CEDATE required when reading plant data base record
 C containing NMISC.
       CHARACTER CEDATE*16,pcdesc*80,pcname*15,CNTSTR*20,NUM*1
       character fs*1
-
+      CHARACTER scantype*8
+      character domain_s*16,category_s*16
       INTEGER   id_trnsysCMP  !trnsys component number
       integer lnpcdb ! length of file name
       integer lndbp   ! for length of standard database path
@@ -238,30 +249,58 @@ C -> but don't open the database if save-level 0 or 5 are specified!
       lnpcdb=lnblnk(lltmp)
       IRECLN=20
       ier=0
+      ICDBf=0
       call EFOPRAN(IUNIT1,LLTMP,IRECLN,1,IER)   
-      IF(IER.ne.0) GOTO 950
+      IF(IER.ne.0)THEN
 
+C Attempt to open the file as a new format cdb (ASCII) file. 
+        IERcdb=0
+        scantype='open'
+        CALL CDBScanDataBase(IUNIT1,lltmp,scantype,IERcdb)
+        IF(IERcdb.ne.0)THEN
+          GOTO 950
+        ELSE     
+C Set the components database flag to active.
+          icdbf=1
+          RETURN
+        ENDIF
+      ENDIF
+
+*** CDB affected
 C Read the total number of plant components (NTPC) in the database.
       IREC = 1
       READ(IUNIT1,REC=IREC,IOSTAT=ISTAT,ERR=950) PZDESCR
       IF (PZDESCR(1:25) .NE. ' PLANT COMPONENT DATABASE')then
-        call lusrmsg('May not be a plant db!',LPCDB,'W')
-      endif
-      IREC=2
-      READ(IUNIT1,REC=IREC,IOSTAT=ISTAT,ERR=950) NTPC,NXTREC
 
-      if(NTPC.eq.0)then
-        call lusrmsg('Plant db has no entries!',LPCDB,'W')
+C Attempt to open the file as a new format cdb (ASCII) file. 
+        IERcdb=0
+        scantype='open'
+        CALL CDBScanDataBase(IUNIT1,lltmp,scantype,IERcdb)
+        IF(IERcdb.ne.0)THEN        
+          call lusrmsg('May not be a plant db!',LPCDB,'W')
+        ELSE
+C Set the components database flag to active.
+          icdbf=1
+        ENDIF
       endif
 
+      if(icdbf.eq.0)then
+        IREC=2
+        READ(IUNIT1,REC=IREC,IOSTAT=ISTAT,ERR=950) NTPC,NXTREC
+  
+        if(NTPC.eq.0)then
+          call lusrmsg('Plant db has no entries!',LPCDB,'W')
+        endif
+  
 C Read the start address (NPSTA) for each component in the database.
-      I1=1
-      DO 42 I=1,MAXPC/20
-        IREC=IREC+1
-        II=I*20
-        READ(IUNIT1,REC=IREC,IOSTAT=ISTAT,ERR=950) (NPSTA(J),J=I1,II)
-        I1=II+1
-   42 CONTINUE
+        I1=1
+        DO 42 I=1,MAXPC/20
+          IREC=IREC+1
+          II=I*20
+          READ(IUNIT1,REC=IREC,IOSTAT=ISTAT,ERR=950) (NPSTA(J),J=I1,II)
+          I1=II+1
+  42     CONTINUE
+      endif
 
 C Configuration file plant data : first read system description.
       CALL STRIPC(iuc,OUTSTR,0,ND,1,'plnt system descr',IER)
@@ -297,142 +336,195 @@ C Reporting.
 
 C Read plant component information and plant database start address
 C Checks on plant component CDATA will be handled by CMP??S
-        DO 44 IPCOMP=1,NPCOMP
-          CALL STRIPC(iuc,OUTSTR,0,ND,1,'plant info',IER)
-          IF(IER.NE.0)RETURN
-          K=0
-          CALL EGETW(OUTSTR,K,WORD,'W','component name',IER)
-          pcname(ipcomp)=word(1:15)
+      DO 44 IPCOMP=1,NPCOMP
+        CALL STRIPC(iuc,OUTSTR,0,ND,1,'plant info',IER)
+        IF(IER.NE.0)RETURN
+        K=0
+        CALL EGETW(OUTSTR,K,WORD,'W','component name',IER)
+        pcname(ipcomp)=word(1:15)
 C Store length of name for reporting later.
-          iPltNameLen(ipcomp) = lnblnk(pcname(ipcomp))
-          npcdat(ipcomp,1)=ipcomp
+        iPltNameLen(ipcomp) = lnblnk(pcname(ipcomp))
+        npcdat(ipcomp,1)=ipcomp
+
+C **CDB affected!
+        IF(ICDBf.EQ.1)THEN
+          CALL EGETW(OUTSTR,K,WORD,'W','CDB database ref.',IER)
+          UCDBNam(IPCOMP)=word(1:16)
+
+C Get all of the components parameters
+c          write(*,*) 'recovering ',UCdbNam(IPCOMP)
+          argstr='parameters'
+          domain_s='-'; category_s='-'
+          CALL CDBGetItemData(domain_s,category_s,UCdbNam(IPCOMP),
+     &      argstr)
+          argstr="light"
+
+C Get all of the components parameters
+c          write(*,*) 'translating ',UCdbNam(IPCOMP)            
+          CALL CDB2Plant(IPCOMP,argstr)
+          NPCDAT(iPComp,8)=s_NNODE
+c          ICODE=s_ICODE
+          NNODE=s_NNODE
+          NMATX=s_NMATX
+          NMISC=s_MISCD
+c            nci(iPComp)=ncdata
+c            write(*,*) 'done ',UCdbNam(IPCOMP)                        
+        ELSE
           CALL EGETWI(OUTSTR,K,NPREF(IPCOMP),1,NTPC,'F',
      &              'plant db pointer',IER)
           IF(IER.NE.0) GOTO 1001
-
+        ENDIF
+          
 C Read component description from database.
+C ***CDB affected
+        IF(ICDBF.eq.0)THEN
           irec=NPSTA(NPREF(IPCOMP))+2
-          READ(IUNIT1,REC=IREC,IOSTAT=ISTAT,ERR=950) pcdesc(ipcomp)
 
+C Bug - pcdesc should be an array of db plant components descriptors, not a
+C descriptor for the plant component itself! 
+          READ(IUNIT1,REC=IREC,IOSTAT=ISTAT,ERR=950) 
+     &       pcdesc(NPREF(IPCOMP))
+        ENDIF
 
 
 C Determine number of control parameters
-          CALL STRIPC(iuc,OUTSTR,0,ND,1,'no of ctl',IER)
-          IF(IER.NE.0)RETURN
-          K=0
-          CALL EGETWI(OUTSTR,K,NCI(IPCOMP),0,0,'-','no of var',IER
-     &     )
+        CALL STRIPC(iuc,OUTSTR,0,ND,1,'no of ctl',IER)
+        IF(IER.NE.0)RETURN
+        K=0
+        CALL EGETWI(OUTSTR,K,NCI(IPCOMP),0,0,'-','no of var',IER)
 
 C Get all of the CDATA items from the configuration file.
-          IRVA=NCI(IPCOMP)
-          IF(IRVA.GT.0) THEN
-            CALL EGETWRA(iuc,RVA,IRVA,0.,0.,'-','cntr var',IER)
-            DO 12 KV=1,IRVA
-              CDATA(IPCOMP,KV)=RVA(KV)
-   12       CONTINUE
-          END IF
+        IRVA=NCI(IPCOMP)
+        IF(IRVA.GT.0) THEN
+          CALL EGETWRA(iuc,RVA,IRVA,0.,0.,'-','cntr var',IER)
+          DO 12 KV=1,IRVA
+            CDATA(IPCOMP,KV)=RVA(KV)
+   12     CONTINUE
+        END IF
+
+C*** CDB affected!
+C Get start address for component in old database
+        IF(ICDBF.EQ.0)THEN
           NPCDAT(IPCOMP,2)=NPSTA(NPREF(IPCOMP))
+        ELSE
+          NPCDAT(IPCOMP,2)=0
+        ENDIF
 
 C Reporting.
-          IF(ITRC.GE.1)THEN
-            CALL EDISP(itu,' ')
-            lo=lnblnk(pcname(ipcomp))
-            WRITE(OUTS,'(3a,i2,a,i2,a,i2)')' Component: ',
+C CDB affected!
+        IF(ITRC.GE.1)THEN
+          CALL EDISP(itu,' ')
+          lo=lnblnk(pcname(ipcomp))
+          if(ICDBf.eq.1)THEN
+            WRITE(OUTS,'(3a,i2,a,i2,a,a16)')' Component: ',
+     &        pcname(ipcomp)(1:lo),' (',IPCOMP,') code ',
+     &        NPCDAT(IPCOMP,1),', db reference ',UCDBNam(IPCOMP)
+          ELSE
+            WRITE(OUTS,'(3a,i2,a,i2,a,i3)')' Component: ',
      &        pcname(ipcomp)(1:lo),' (',IPCOMP,') code ',
      &        NPCDAT(IPCOMP,1),', db reference ',NPREF(IPCOMP)
-            CALL EDISP(itu,OUTS)
-            IF(NCI(IPCOMP).GT.0)THEN
-              WRITE(OUTS,'(A,5F9.3)') ' Control data:',
-     &             (CDATA(IPCOMP,J),J=1,NCI(IPCOMP))
-              CALL EDISP(itu,OUTS)
-            ELSE
-              CALL EDISP(itu,' No Control data')
-            ENDIF
           ENDIF
+          CALL EDISP(itu,OUTS)
+          IF(NCI(IPCOMP).GT.0)THEN
+            WRITE(OUTS,'(A,5F9.3)') ' Control data:',
+     &           (CDATA(IPCOMP,J),J=1,NCI(IPCOMP))
+            CALL EDISP(itu,OUTS)
+          ELSE
+            CALL EDISP(itu,' No Control data')
+          ENDIF
+        ENDIF
 
 C Check if user wishes to specify different parameters
 C for this component.
-          CALL STRIPC(iuc,OUTSTR,99,ND,1,'alt comp param',IER)
-          IF(IER.NE.0)RETURN
-          K=0
-          NEP(IPCOMP)=0
-          IF(ND.GE.1)THEN
-            CALL EGETWI(OUTSTR,K,NPI(IPCOMP),0,0,'-',
+        CALL STRIPC(iuc,OUTSTR,99,ND,1,'alt comp param',IER)
+        IF(IER.NE.0)RETURN
+        K=0
+        NEP(IPCOMP)=0
+        IF(ND.GE.1)THEN
+          CALL EGETWI(OUTSTR,K,NPI(IPCOMP),0,0,'-',
      &                'alt comp param',IER)
-          ENDIF
+        ENDIF
 
 C If a second data item exists on the line then electrical parameters will
 C be present.
-          IF (ND.EQ.2) THEN 
-            CALL EGETWI(OUTSTR,K,NEP(IPCOMP),0,0,'-',
+        IF (ND.EQ.2) THEN 
+          CALL EGETWI(OUTSTR,K,NEP(IPCOMP),0,0,'-',
      &                'elect param',IER)  
-          ENDIF
+        ENDIF
         
-          IF(NPI(IPCOMP).GT.0) THEN
 
+C CDB affected!!
+        IF(NPI(IPCOMP).GT.0) THEN
+
+C*** CDB affected!
 C Find component record entry in data base to establish number
 C of miscellaneous data items.
+          IF(ICDBF.Eq.0)THEN
             IREC1=NPCDAT(IPCOMP,2)
             READ(IUNIT1,REC=IREC1,IOSTAT=ISTAT,ERR=950)
      &        AA,ICODE,CEDATE,NNODE,NMATX,NMISC
-
+            
 C Save number of nodes associated with each component.
             NPCDAT(iPComp,8) = NNODE
+          ENDIF
 
 C Check to see if required number of items is specified.
-            if(npi(ipcomp).ne.nmisc) then
-              lo=lnblnk(pcname(ipcomp))
-              write(OUTS,'(a,i3,3a,i2,a,i2,a)')
-     &          'Invalid parameters for component',
-     &          ipcomp,' ',pcname(ipcomp)(1:lo),' found ',
-     &          npi(ipcomp),' expecting ',nmisc,
-     &          ' please check the component.'
-              call edisp(iuout,OUTS)
-              call epwait
-              stop
-            endif
+          if(npi(ipcomp).ne.nmisc) then
+            write(OUTS,'(a,i3,a,i2,a,i2,a)')
+     &        'Invalid no of parameters for component',
+     &        ipcomp,' found ',npi(ipcomp),' expecting ',nmisc,
+     &        ' please check plant component.'
+            call edisp(iuout,OUTS)
+            call epwait
+            stop
+          endif
 
+C ***CDB affected
 C Point to miscellaneous data record.
-            irec= NPSTA(NPREF(IPCOMP))+6+(nmatx-1)/IRECLN
-            if(nmisc.gt.0) then
+          IF(ICDBF.EQ.0)THEN
+            IF(IPCDB.eq.0)THEN
+              irec= NPSTA(NPREF(IPCOMP))+6+(nmatx-1)/IRECLN
+              if(nmisc.gt.0) then
 
 C Reading misc data items description and dummy value.
-              do 100 i=1, nmisc
-                 read(IUNIT1,rec=irec,iostat=istat,err=950)
-     &             mscdsc(i), parval
-                 irec=irec+1
-  100         continue
-            endif
-
-C Read new parameters from configuration file.
-            IRVA=NMISC
-            IF(IRVA.GT.0) THEN
-              CALL EGETWRA(iuc,RVC,IRVA,0.,0.,'-','alt dat',IER)
-              DO 235 KV=1,IRVA
-                TADATA(IPCOMP,KV)=RVC(KV)
-  235         CONTINUE
+                do 100 i=1, nmisc
+                  read(IUNIT1,rec=irec,iostat=istat,err=950)
+     &                mscdsc(i), parval
+                  irec=irec+1
+  100           continue
+              endif
             ENDIF
           ENDIF
 
+C Read new parameters from configuration file.
+          IRVA=NMISC
+          IF(IRVA.GT.0) THEN
+            CALL EGETWRA(iuc,RVC,IRVA,0.,0.,'-','alt dat',IER)
+            DO 235 KV=1,IRVA
+              TADATA(IPCOMP,KV)=RVC(KV)
+  235       CONTINUE
+          ENDIF
+        ENDIF
+
 C Read electrical parameters from the file ( if they exist !)
-          IF(NEP(IPCOMP).GT.0) THEN
-            IF (NEP(IPCOMP).NE.5) GOTO 1003
-            CALL STRIPC(iuc,OUTSTR,0,ND,1,'elect data',IER)
-            K=0
-            CALL EGETWR(OUTSTR,K,VAL,0.0,1.0,'F','p.f',IER)
-            PFP(IPCOMP)=VAL
-            CALL EGETWI(OUTSTR,K,IVAL,-1,1,'F','ipf',IER)
-            IPFP(IPCOMP)=IVAL
-            CALL EGETWR(OUTSTR,K,VAL,0.,999.,'-','pwr',IER)
-            PWRP(IPCOMP)=VAL
-            CALL EGETWR(OUTSTR,K,VAL,0.,999.,'-','volt',IER)
-            BVOLTP(IPCOMP)=VAL
-            CALL EGETWI(OUTSTR,K,IVAL,1,4,'F','phase',IER) 
-            IPHP(IPCOMP)=IVAL
-            IF(IER.GT.0) GOTO 1003
-            IPCELF(IPCOMP)=1
-            NPEL=NPEL+1
-          ENDIF           
+        IF(NEP(IPCOMP).GT.0) THEN
+          IF (NEP(IPCOMP).NE.5) GOTO 1003
+          CALL STRIPC(iuc,OUTSTR,0,ND,1,'elect data',IER)
+          K=0
+          CALL EGETWR(OUTSTR,K,VAL,0.0,1.0,'F','p.f',IER)
+          PFP(IPCOMP)=VAL
+          CALL EGETWI(OUTSTR,K,IVAL,-1,1,'F','ipf',IER)
+          IPFP(IPCOMP)=IVAL
+          CALL EGETWR(OUTSTR,K,VAL,0.,999.,'-','pwr',IER)
+          PWRP(IPCOMP)=VAL
+          CALL EGETWR(OUTSTR,K,VAL,0.,999.,'-','volt',IER)
+          BVOLTP(IPCOMP)=VAL
+          CALL EGETWI(OUTSTR,K,IVAL,1,4,'F','phase',IER) 
+          IPHP(IPCOMP)=IVAL
+          IF(IER.GT.0) GOTO 1003
+          IPCELF(IPCOMP)=1
+          NPEL=NPEL+1
+        ENDIF           
 
 
 C Reporting.
@@ -526,38 +618,44 @@ C Reporting.
 C            WRITE(OUTS,7005)IPC2(IPCON),IPN2(IPCON),PCONDR(IPCON),
 C     &                      PCONSD(IPCON,1),PCONSD(IPCON,2)
 C 7005       FORMAT(' supp. data :',I3,I3,3F8.2)
-            CALL EDISP(itu,OUTS)
+C            CALL EDISP(itu,OUTS)
           ENDIF
    45   CONTINUE
 
 C Now check connectivity information where possible
-        do 46 ipcon=1,npcon
-         if(ipc1(ipcon).lt.1.or.ipc1(ipcon).gt.npcomp) goto 913
-         irec=npcdat(ipc1(ipcon),2)
+      do 46 ipcon=1,npcon
+        if(ipc1(ipcon).lt.1.or.ipc1(ipcon).gt.npcomp) goto 913
+
+        if(icdbf.eq.0)then !skip if using the new components database
+          irec=npcdat(ipc1(ipcon),2)
 
 C     The receiving node number is not checked for trnsys type
 C     because the number in the plant database is a dummy value and the
 C     trnsys input file has not been read yet.
 C     The skip of this check will not cause any problem because the same
 C     check is performed in MZPMXT.
-         IF(NPREF(ipc1(ipcon)) .NE. 85) THEN
-         read(iunit1,rec=irec,iostat=istat,err=950) a,b,c,d,e,f,NumNod
-         if(ipn1(ipcon).lt.1.or.ipn1(ipcon).gt.NumNod) goto 914
-         END IF
+          IF(NPREF(ipc1(ipcon)) .NE. 85) THEN
+           read(iunit1,rec=irec,iostat=istat,err=950) a,b,c,d,e,f,NumNod
+           if(ipn1(ipcon).lt.1.or.ipn1(ipcon).gt.NumNod) goto 914
+          END IF
+        endif !icdbf skip
 
-         if(ipct(ipcon).lt.1.or.ipct(ipcon).gt.4) goto 913
-         if(ipc2(ipcon).lt.1.or.ipc2(ipcon).gt.npcomp) goto 913
-         irec=npcdat(ipc2(ipcon),2)
+        if(ipct(ipcon).lt.1.or.ipct(ipcon).gt.4) goto 913
+        if(ipc2(ipcon).lt.1.or.ipc2(ipcon).gt.npcomp) goto 913
+
+        if(icdbf.eq.0)then !skip if using the new components database
+          irec=npcdat(ipc2(ipcon),2)
 
 C     The sending node number is not checked for trnsys type
 C     because the number in the plant database is a dummy value and the
 C     trnsys input file has not been read yet.
 C     The skip of this check will not cause any problem because the same
 C     check is performed in MZPMXT.
-         IF(NPREF(ipc2(ipcon)) .NE. 85) THEN
-         read(iunit1,rec=irec,iostat=istat,err=950) a,b,c,d,e,f,NumNod
-         if(ipn2(ipcon).lt.1.or.ipn2(ipcon).gt.NumNod) goto 914
-         END IF
+          IF(NPREF(ipc2(ipcon)) .NE. 85) THEN
+          read(iunit1,rec=irec,iostat=istat,err=950) a,b,c,d,e,f,NumNod
+          if(ipn2(ipcon).lt.1.or.ipn2(ipcon).gt.NumNod) goto 914
+          END IF
+        endif ! end icdbf skip
 
          if(pcondr(ipcon).lt.0..or.pcondr(ipcon).gt.1.) goto 925
          if(ipct(ipcon).eq.4) then
@@ -599,24 +697,41 @@ C Reporting.
           CALL EGETWR(OUTSTR,K,CNTDAT(ICONT,3),0.,0.,'-',
      &         'containment data 3',IER)
 
-          IF(INDCP(ICONT).EQ.1) THEN
-            call eclose(CNTDAT(ICONT,1),0.0,0.0001,close)
-            IF(close) THEN
-              IREC=NPCDAT(IPCC(ICONT),2)
-              id_trnsysCMP = NPCDAT(IPCC(ICONT),1)
-            ELSE
-              IREC=NPCDAT(NINT(CNTDAT(ICONT,1)),2)
-              id_trnsysCMP = NPCDAT(NINT(CNTDAT(ICONT,1)),1)
-            ENDIF
-            IF(NPREF(id_trnsysCMP) .EQ. 85) THEN
+C ****CDB affected!
+        IF(INDCP(ICONT).EQ.1) THEN
+          call eclose(CNTDAT(ICONT,1),0.0,0.0001,close)
+          IF(close) THEN
+            IREC=NPCDAT(IPCC(ICONT),2)
+            id_trnsysCMP = NPCDAT(IPCC(ICONT),1)
+          ELSE
+            IREC=NPCDAT(NINT(CNTDAT(ICONT,1)),2)
+            id_trnsysCMP = NPCDAT(NINT(CNTDAT(ICONT,1)),1)
+          ENDIF
+          IF((NPREF(id_trnsysCMP) .EQ. 85).OR.Is_TRNSYS(IPCOMP)) THEN
+
 C  Since a trnsys component has dummy values in the plant database,
 C  its number of nodes needs to be read from an data file.
 C  Another method is to purposely set a large number (ie., MNODEC)
 C  in the database. In this case, reading file can be avoided here.
             CALL readTrnsysNodes(id_trnsysCMP,NumNod)
+          ELSE
+            IF(ICDBF.EQ.0)THEN
+              READ(IUNIT1,REC=IREC,IOSTAT=ISTAT,ERR=950)A,B,C,D,E,F,
+     &             NumNod
             ELSE
-            READ(IUNIT1,REC=IREC,IOSTAT=ISTAT,ERR=950)A,B,C,D,E,F,
-     &           NumNod
+
+C Get all of the components parameters
+              IPC=NINT(CNTDAT(ICONT,1))
+              argstr='parameters'
+              domain_s='-'; category_s='-'
+              CALL CDBGetItemData(domain_s,category_s,UCdbNam(IPC),
+     &          argstr)
+
+              argstr="light"
+C Decode data
+              CALL CDB2Plant(IPC,argstr)
+              NumNod=s_NNODE !numnod should really be held in common.
+            ENDIF 
             END IF
             if(cntdat(icont,1).lt.0.0.or.cntdat(icont,1).gt.
      &            float(npcomp).or.cntdat(icont,2).lt.0.0.or.
@@ -808,7 +923,7 @@ C Error handling
       CALL USRMSG(' ',' Plant component database file error.','W')
       GOTO 900
 
- 1001 CALL USRMSG(' Converstion error in',OUTSTR,'W')
+ 1001 CALL USRMSG(' Conversion error in',OUTSTR,'W')
       IER=1
       GOTO 6
 

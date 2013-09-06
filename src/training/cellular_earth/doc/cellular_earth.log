@@ -1,0 +1,23 @@
+Project notes for cellular_earth.cfg
+Description: Model of adjacent cellular offices with earth tube
+In folder: cellular_earth
+By: jon
+Date: Mon Aug  1 10:11:58 2005
+For: training
+Project reference: 
+Notes: 
+This is a variant of the cellular base case model with
+30m of 200x200 earth tube 1m below the surface. The
+earth tube is used for ventilation air into the
+offices.
+_____________________________
+
+This is an explicit representation of an earth tube. The
+tube is represented by several zones connected in series
+via a flow. The heat transfer coefficients have been set
+to account for typical flow velocities. The bounding
+surfaces are attached to bespoke ground temperature profiles
+which represent the state of the ground below, above and to
+the side of the tube.
+
+ 

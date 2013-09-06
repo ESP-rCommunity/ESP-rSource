@@ -118,6 +118,7 @@
 *root	/usr/esru/esp-r/training/cellular_natv
 *item
 *name	... with hybrid natural & mechanical ventilation
+*log    /usr/esru/esp-r/training/cellular_hybrid/dbs/readme.txt
 *cfg	/usr/esru/esp-r/training/cellular_hybrid/cfg/cellular_mctl.cfg
 *root	/usr/esru/esp-r/training/cellular_hybrid
 *item
@@ -171,16 +172,16 @@
 *help	A set of relatively detailed models.
 *item
 *name	house with sun-space, winter operation
-*cfg	/usr/esru/esp-r/training/house/sun_space/cfg/house_win.cfg
-*root	/usr/esru/esp-r/training/house/sun_space
+*cfg	/usr/esru/esp-r/training/sun_space/cfg/house_win.cfg
+*root	/usr/esru/esp-r/training/sun_space
 *item
-*name	... summer operation
-*cfg	/usr/esru/esp-r/training/house/sun_space/cfg/house_sum.cfg
-*root	/usr/esru/esp-r/training/house/sun_space
+*name	house with sun-space, summer operation
+*cfg	/usr/esru/esp-r/training/sun_space/cfg/house_sum.cfg
+*root	/usr/esru/esp-r/training/sun_space
 *item
 *name	house with solar ventilation pre-heat
-*cfg	/usr/esru/esp-r/training/house/svph/cfg/linford.cfg
-*root	/usr/esru/esp-r/training/house/svph
+*cfg	/usr/esru/esp-r/training/svph/cfg/linford.cfg
+*root	/usr/esru/esp-r/training/svph
 *item
 *name	office with natural ventilation
 *cfg	/usr/esru/esp-r/training/office/cfg/office_sum.cfg
@@ -224,6 +225,18 @@
 *name	... with controlled window opening
 *cfg    /usr/esru/esp-r/training/flow/cfg/bld_flw_ctl.cfg
 *root	/usr/esru/esp-r/training/flow
+*item
+*name	office with Trombe-Michell wall
+*cfg    /usr/esru/esp-r/training/trombe_wall/cfg/trombe_wall.cfg
+*root	/usr/esru/esp-r/training/trombe_wall
+*item
+*name	...Trombe-Michell wall with open dampers
+*cfg    /usr/esru/esp-r/training/trombe_wall/cfg/trombe_wall_crack.cfg
+*root	/usr/esru/esp-r/training/trombe_wall
+*item
+*name	...Trombe-Michell wall with controlled dampers
+*cfg    /usr/esru/esp-r/training/trombe_wall/cfg/trombe_wall_crack_ctl.cfg
+*root	/usr/esru/esp-r/training/trombe_wall
 *item
 *name	forced ventilation network with controlled recirculation
 *cfg    /usr/esru/esp-r/training/flow/cfg/bld_mech_ven.cfg

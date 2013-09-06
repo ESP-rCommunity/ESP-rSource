@@ -24,6 +24,8 @@ C  EZCTLI:  Zeroes all control data in common BCTL, CCTL, and FCTL.
 C  EVCNTRL: Decodes & returns string describing control file sensors,
 C           actuators, control types.
 C  EVCNTRLAW: Decodes & returns string describing control file laws.
+C  LSTCNTLD: List one day type of a building/plant/flow/global/optical/
+C           complex fenestration control.
 C  Ezctlc:  Checks all building control functions, plant loops, and
 C           mass flow control functions for validity.
 C  tscdta:  Sets TSC6 variables in the case of TSC6 called from a
@@ -323,6 +325,7 @@ C espriou.h provides currentfile.
       integer ncomp,ncon
       common/c1/ncomp,ncon
       common/cctlnm/ctldoc,lctlf
+      integer icascf
       common/cctl/icascf(mcom)
       COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
       common/fctl4/iasocc(MCF,MCMP),nfsup(MCF)
@@ -520,7 +523,7 @@ C then new format file, otherwise old format so set IBSN(II,4)=0.
           CALL EGETWI(OUTSTR,KG,IVAL,0,0,'-','sensor 3rd ',IER)
           IBSN(II,3)=IVAL
           IF(ND.EQ.4)THEN
-            CALL EGETWI(OUTSTR,KG,IVAL,0,0,'-','sensor pnter',IER)
+            CALL EGETWI(OUTSTR,KG,IVAL,0,0,'-','nested pnter',IER)
             IBSN(II,4)=IVAL
           ELSE
             IBSN(II,4)=0
@@ -539,8 +542,14 @@ C Reporting: Get a string describing the current sensor based on common.
         IF(ITRC.GE.1)THEN
           IIS=II
           CALL EVCNTRL(0,IIS,1,1,'S',SSTR)
-          WRITE(OUTSTR,65)II,SSTR(1:LNBLNK(SSTR))
-  65      FORMAT(' The sensor for function ',I2,' ',a)
+          if(IBSN(II,4).eq.0)then
+            WRITE(OUTSTR,'(a,i2,2a)') ' The sensor for function ',
+     &        II,' ',SSTR(1:LNBLNK(SSTR))
+          else
+            WRITE(OUTSTR,'(a,i2,3a,i2)') ' The sensor for function ',
+     &        II,' ',SSTR(1:LNBLNK(SSTR)),
+     &        ' with nested loop ',IBSN(II,4)
+          endif
           CALL EDISP(ITRU,' ')
           CALL EDISP(ITRU,OUTSTR)
         ENDIF
@@ -584,12 +593,11 @@ C Reporting:
         IF(ITRC.GE.1)THEN
           CALL EDISP(ITRU,' For building control')
           CALL EDISP(ITRU,' the following day types have been defined')
-          DO 78 IDTY=1,NBDAYTYPE
-            call edisp(ITRU,CALENTAG(idty))
- 78       CONTINUE
+          write(outstr,'(20a)') (CALENTAG(idty),idty=1,NBDAYTYPE)
+          call edisp(ITRU,outstr)
         ENDIF
 
-        nn=nbcdt(ii)
+        nn=nbcdt(ii)  ! a zero says use all day types
         if(nn.eq.0)nn=NBDAYTYPE
         do 20 j=1,nn
           jj=j
@@ -651,7 +659,7 @@ C Reporting:
   42          continue
               IF(IER.NE.0)GOTO 99
             ENDIF
-
+			
 C Set building-side function generator flag.
             if(ibsn(ii,1).eq.-6)then
                bfngn=.true.
@@ -669,6 +677,7 @@ C the last line of the file do not print end of file warning or pass
 C ier back to calling routine.
       IRVA=NCOMP
       CALL EGETWIA(IUNIT,IVA,IRVA,0,0,'-','assoc z list',IER)
+      IF(IER.NE.0)GOTO 109
       DO 28 LC=1,NCOMP
         ICASCF(LC)=IVA(LC)
 
@@ -853,12 +862,11 @@ C Reporting:
         IF(ITRC.GE.1)THEN
           CALL EDISP(ITRU,' For plant control')
           CALL EDISP(ITRU,' the following day types have been defined')
-          DO 378 IDTY=1,NBDAYTYPE
-            call edisp(ITRU,CALENTAG(idty))
- 378       CONTINUE
+          write(outstr,'(20a)') (CALENTAG(idty),idty=1,NBDAYTYPE)
+          call edisp(ITRU,outstr)
         ENDIF
 
-        nn=npcdt(ii)
+        nn=npcdt(ii)  ! a zero says use all day types
         if(nn.eq.0)nn=nbdaytype
         do 50 j=1,nn
           jj=j
@@ -1006,7 +1014,6 @@ C where possible.
       do 70 i=1,ncc
         ii=i
         icc=ii
-        CALL EDISP(ITRU,' ')
 
 C Read header : * control mf-functions.
         CALL STRIPC(IUNIT,OUTSTR,0,ND,1,'* Control mass ',IER)
@@ -1039,7 +1046,8 @@ C Reporting: Get a string describing the current sensor based on common.
         IF(ITRC.GE.1)THEN
           IIS=II
           CALL EVCNTRL(2,IIS,1,1,'S',SSTR)
-          WRITE(OUTSTR,65)II,SSTR(1:LNBLNK(SSTR))
+          WRITE(OUTSTR,'(a,i2,2a)') ' The sensor for function ',
+     &      II,' ',SSTR(1:LNBLNK(SSTR))
           CALL EDISP(ITRU,OUTSTR)
         ENDIF
 
@@ -1063,6 +1071,7 @@ C Range checking.
      &    ITPCMP(ifan(II,2)).EQ.250))THEN
           WRITE(outs,333) ITPCMP(ifan(II,2))
  333      FORMAT(' Component type ',I3,' cannot be actuated.')
+          call edisp(itru,'  ')
           call edisp(itru,outs)
           call edisp(itru,' Actuate a connection instead.')
         ENDIF
@@ -1084,14 +1093,14 @@ C Day types.
 
 C Reporting:
         IF(ITRC.GE.1)THEN
+          call edisp(itru,'  ')
           CALL EDISP(ITRU,' For mass flow network control')
           CALL EDISP(ITRU,' The following day types have been defined')
-          DO 788 IDTY=1,NBDAYTYPE
-            call edisp(ITRU,CALENTAG(idty))
- 788       CONTINUE
+          write(outstr,'(20a)') (CALENTAG(idty),idty=1,NBDAYTYPE)
+          call edisp(ITRU,outstr)
         ENDIF
 
-        nn=nfcdt(ii)
+        nn=nfcdt(ii)  ! a zero says use all day types
         if(nn.eq.0)nn=nbdaytype
         do 71 j=1,nn
           jj=j
@@ -1126,7 +1135,7 @@ C Get date strings. For this test assume some values.
      &           NTSPH,2,0,PERST1,PERST2,PERST3,IER)
 
             CALL EDISP(ITRU,' ')
-            WRITE(OUTSTR,'(A,I2,3A,I2,A)')' Day type ',JJ,
+            WRITE(OUTSTR,'(4A,I2,A)')' Day type ',CALENTAG(JJ),
      &        ' is valid ',PERST3(9:lnblnk(PERST3)),' with ',
      &        NFCDP(II,JJ),' periods.'
             CALL EDISP(ITRU,OUTSTR)
@@ -1333,14 +1342,14 @@ C Day types.
 
 C Reporting:
         IF(ITRC.GE.1)THEN
+          call edisp(itru,'  ')
           CALL EDISP(ITRU,' For electrical control')
           CALL EDISP(ITRU,' The following day types have been defined')
-          DO 578 IDTY=1,NBDAYTYPE
-            call edisp(ITRU,CALENTAG(idty))
- 578      CONTINUE
+          write(outstr,'(20a)') (CALENTAG(idty),idty=1,NBDAYTYPE)
+          call edisp(ITRU,outstr)
         ENDIF
 
-        nn=necdt(ii)
+        nn=necdt(ii)  ! a zero says use all day types
         if(nn.eq.0)nn=nbdaytype
         do 57 j=1,nn
           jj=j
@@ -1503,12 +1512,11 @@ C Reporting:
         IF(ITRC.GE.1)THEN
           CALL EDISP(ITRU,' For global control')
           CALL EDISP(ITRU,' The following day types have been defined')
-          DO 478 IDTY=1,NBDAYTYPE
-            call edisp(ITRU,CALENTAG(idty))
- 478      CONTINUE
+          write(outstr,'(20a)') (CALENTAG(idty),idty=1,NBDAYTYPE)
+          call edisp(ITRU,outstr)
         ENDIF
 
-        nn=ngcdt(ii)
+        nn=ngcdt(ii)  ! a zero says use all day types
         if(nn.eq.0)nn=nbdaytype
         do 89 j=1,nn
           jj=j
@@ -1668,14 +1676,13 @@ C Day types.
 
 C Reporting:
         IF(ITRC.GE.1)THEN
-          CALL EDISP(ITRU,' For global control')
+          CALL EDISP(ITRU,' For optical control')
           CALL EDISP(ITRU,' The following day types have been defined')
-          DO 678 IDTY=1,NBDAYTYPE
-            call edisp(ITRU,CALENTAG(idty))
- 678      CONTINUE
+          write(outstr,'(20a)') (CALENTAG(idty),idty=1,NBDAYTYPE)
+          call edisp(ITRU,outstr)
         ENDIF
 
-        nn=nocdt(ii)
+        nn=nocdt(ii)  ! a zero says use all day types
         if(nn.eq.0)nn=nbdaytype
         do 200 j=1,nn
           jj=j
@@ -1825,7 +1832,8 @@ C Reporting: Get a string describing the current sensor based on common.
         IF(ITRC.GE.1)THEN
           IIS=II
           CALL EVCNTRL(6,IIS,1,1,'S',SSTR)
-          WRITE(OUTSTR,65)II,SSTR(1:LNBLNK(SSTR))
+          WRITE(OUTSTR,'(a,i2,2a)') ' The sensor for function ',
+     &      II,' ',SSTR(1:LNBLNK(SSTR))
           CALL EDISP(ITRU,' ')
           CALL EDISP(ITRU,OUTSTR)
         ENDIF
@@ -2101,6 +2109,22 @@ C Low level I/O error. Close file before exiting.
         return
       endif
 
+C Issue with the zone - loop links.
+ 109  continue
+      write(outs,'(a)') 'warning zone - control loop links issue!'
+      if(dll)then
+        dllsubr='EZCTLR'
+        dllmesg=outs
+        ier=2
+        CALL ERPFREE(IUNIT,ISTAT)
+        return
+      else
+        call edisp(iuout,outs)
+        ier=1
+        CALL ERPFREE(IUNIT,ISTAT)
+        return
+      endif
+
       RETURN
       END
 
@@ -2112,6 +2136,7 @@ C and CFCCTL
 #include "net_flow.h"
 #include "control.h"
 
+      integer icascf
       common/cctl/icascf(mcom)
 
 c      COMMON/idrhctl1/rhspt(MCOM),irhct(MCOM)
@@ -2245,6 +2270,7 @@ C control file sensors, actuator, control types, control laws.
       integer lnblnk  ! function definition
 
 C      COMMON/OUTIN/IUOUT,IUIN
+      integer IZSTOCN
       COMMON/C24/IZSTOCN(MCOM,MS)
       common/pcnam/pcname(mpcom)
       COMMON/MFLOW2/NDNAM(0:MNOD)
@@ -2306,9 +2332,14 @@ C Actuator.
           WRITE(SSTR,'(a,i2,3a)')'plant component ',IBAN(II,2),' in ',
      &      zn(1:lnblnk(zn)),'.'
         ELSEIF(IBAN(II,1).EQ.-2)THEN
-          write(zn,'(a)') zname(IBAN(II,2))
-          WRITE(SSTR,'(3a)')'mixed convective/radiant flux in ',
-     &      zn(1:lnblnk(zn)),'.'
+          if(IBAN(II,2).gt.0)then
+            write(zn,'(a)') zname(IBAN(II,2))
+            WRITE(SSTR,'(3a)')'mixed convective/radiant flux in ',
+     &        zn(1:lnblnk(zn)),'.'
+          else
+            WRITE(SSTR,'(2a)')'mixed convective/radiant flux in ',
+     &        'the current zone.'
+          endif
         ENDIF
         IF(IBSN(II,1).EQ.-99)THEN
           WRITE(SSTR,75)IBAN(II,1),IBAN(II,2),IBAN(II,3)
@@ -2516,7 +2547,7 @@ C <<<Confirm this with bpfcontrl.F>>>>>>>>>>>>>>>>
 C<<<<Probably IOAN does not need a 3rd item. >>>>
           if(IOAN(II,2).gt.0)then
             icons=IOAN(II,2)
-            write(disp_constr,'(a)') DESC(icons)(1:12)
+            write(disp_constr,'(a)') mlcname(icons)(1:12)
             WRITE(SSTR,'(3a)')  'actuating the optical properties at ',
      &        'construction ', disp_constr
           else
@@ -2602,6 +2633,8 @@ C an esp-r control file control laws for zone/plant/flow/electrical.
 #include "building.h"
 #include "net_flow.h"
 #include "control.h"
+#include "esprdbfile.h"
+#include "material.h"
       
       integer lnblnk  ! function definition
 
@@ -2615,6 +2648,8 @@ C      COMMON/OUTIN/IUOUT,IUIN
       real cm
       dimension icsn(5)   ! for passing sensor location to
       integer icsn
+      integer isub1,isub2,isub3 ! for thermophysical substitution
+      character sub1*12,sub2*12,sub3*12 
 
 C sub-strings for describing multi-sensor flow controls.
       character msg1*24,msg2*24,msg3*24,msg4*24,msg*72,lmsg*248
@@ -2634,8 +2669,15 @@ C Ideal Control law.
         SSTR='undefined control        '
         IF(IBCLAW(II,JJ,KK).EQ.1.or.IBCLAW(II,JJ,KK).EQ.3)then
           IF(IBCLAW(II,JJ,KK).EQ.1)then
-            SSTR='basic control        '
-            msg1=' basic control:'
+
+C Check if the sensor is thermophysical property substitution.
+            if(IBSN(II,1).eq.-99)then
+              SSTR='substitution         '
+              msg1=' substitution :'
+            else
+              SSTR='basic control        '
+              msg1=' basic control:'
+            endif
           ELSEIF(IBCLAW(II,JJ,KK).EQ.3)then
             SSTR='pre-heat/cool        '
             msg1=' pre-heat/cool '
@@ -2652,54 +2694,76 @@ C Ideal Control law.
           cm(10)=bmiscd(II,JJ,KK,10)
           cm(11)=bmiscd(II,JJ,KK,11)
           cm(12)=bmiscd(II,JJ,KK,12)
-          if(nint(cm(1)).eq.6)then
+          if(IBSN(II,1).eq.-99)then
+            isub1=nint(cm(3)); isub2=nint(cm(4)); isub3=nint(cm(5))
+            sub1='-           '; sub2='-           '
+            sub3='-           '
+            if(isub1.ne.0) sub1=mlcname(isub1)(1:12)
+            if(isub2.ne.0) sub2=mlcname(isub2)(1:12)
+            if(isub3.ne.0) sub3=mlcname(isub3)(1:12)
+            if(nint(cm(1)).eq.4)then
+              write(lmsg,'(8a)')  msg1,' use mlc ',sub1,
+     &          ' mlc ',sub2,' mlc ',sub3,' for the surfaces.'
+            else
+              write(lmsg,'(2a)') 
+     &          msg1,' unexpected nb of data items for substitution.'
+            endif
+          else
+            if(nint(cm(1)).eq.6)then
 
 C Older control files might only have 6 items for basic controller.
-            write(lmsg,'(2a,f9.1,a,f9.1,a,f9.1,a,f9.1,a,f7.2,a,f7.2,a)') 
-     &        msg1,' max heating capacity ',cm(2),
-     &        'W min heating capacity ',cm(3),'W max cooling capacity ',
-     &        cm(4),'W min cooling capacity ',cm(5),
-     &        'W. Heating setpoint ',cm(6),'C cooling setpoint ',
-     &        cm(7),'C. (missing 7th item)'
-          elseif(nint(cm(1)).eq.7)then
+              write(lmsg,
+     &          '(2a,f9.1,a,f9.1,a,f9.1,a,f9.1,a,f7.2,a,f7.2,a)') 
+     &          msg1,' max heating capacity ',cm(2),
+     &          'W min heating capacity ',cm(3),
+     &          'W max cooling capacity ',cm(4),
+     &          'W min cooling capacity ',cm(5),
+     &          'W. Heating setpoint ',cm(6),'C cooling setpoint ',
+     &          cm(7),'C. (missing 7th item)'
+            elseif(nint(cm(1)).eq.7)then
 
 C Newer control files have an extra item related to humidity control.
-            write(lmsg,'(2a,f9.1,a,f9.1,a,f9.1,a,f9.1,a,f7.2,a,f7.2,a)') 
-     &        msg1(1:lnblnk(msg1)),' max heating capacity ',cm(2),
-     &        'W min heating capacity ',cm(3),'W max cooling capacity ',
-     &        cm(4),'W min cooling capacity ',cm(5),
-     &        'W. Heating setpoint ',cm(6),'C cooling setpoint ',
-     &        cm(7),'C.'
-          elseif(nint(cm(1)).eq.11)then
-            if(nint(cm(12)).eq.1)then
-              write(lmsg,'(2a,f9.1,a,f9.1,a,f9.1,a,f9.1,a,f7.2,
-     &          a,f7.2,a,f5.1,a,f5.1,a,f6.2,a,f6.2,a)') 
-     &          msg1(1:lnblnk(msg1)),' mx heat cap',cm(2),
-     &          'W mn heat cap',cm(3),'W mx cool cap',cm(4),
-     &          'W mn cool cap',cm(5),'W. Heat sp',cm(6),
-     &          'C cool sp',cm(7),
-     &          'C & moist inj RH ctl hi sp',
-     &          cm(8),'(%) low sp',cm(9),
-     &          '(%) max humid ',cm(10),
-     &          '(g/s) max dehumid ',cm(11),'(g/s).'
-            elseif(nint(cm(12)).eq.2)then
-              write(lmsg,'(2a,f9.1,a,f9.1,a,f9.1,a,f9.1,a,f7.2,
-     &          a,f7.2,a,f5.1,a,f5.1,a)') 
-     &          msg1(1:lnblnk(msg1)),' max heating cap ',cm(2),
-     &          'W min heating cap ',cm(3),
-     &          'W max cooling cap ',cm(4),
-     &          'W min heaing cap ',cm(5),
-     &          'W. Heating sp ',cm(6),
-     &          'C cooling sp ',cm(7),
-     &          'C and T based RH ctl upper sp ',
-     &          cm(8),'(%) lower sp ',cm(9),'(%).'
-            elseif(nint(cm(12)).eq.0)then
-            write(lmsg,'(2a,f9.1,a,f9.1,a,f9.1,a,f9.1,a,f7.2,a,f7.2,a)') 
-     &        msg1(1:lnblnk(msg1)),' max heating capacity ',cm(2),
-     &        'W min heating capacity ',cm(3),'W max cooling capacity ',
-     &        cm(4),'W min cooling capacity ',cm(5),
-     &        'W. Heating setpoint ',cm(6),'C cooling setpoint ',
-     &        cm(7),'C. with incomplete RH control.'
+              write(lmsg,
+     &          '(2a,f9.1,a,f9.1,a,f9.1,a,f9.1,a,f7.2,a,f7.2,a)') 
+     &          msg1(1:lnblnk(msg1)),' max heating capacity ',cm(2),
+     &          'W min heating capacity ',cm(3),
+     &          'W max cooling capacity ',cm(4),
+     &          'W min cooling capacity ',cm(5),
+     &          'W. Heating setpoint ',cm(6),'C cooling setpoint ',
+     &          cm(7),'C.'
+            elseif(nint(cm(1)).eq.11)then
+              if(nint(cm(12)).eq.1)then
+                write(lmsg,'(2a,f9.1,a,f9.1,a,f9.1,a,f9.1,a,f7.2,
+     &            a,f7.2,a,f5.1,a,f5.1,a,f6.2,a,f6.2,a)') 
+     &            msg1(1:lnblnk(msg1)),' mx heat cap',cm(2),
+     &            'W mn heat cap',cm(3),'W mx cool cap',cm(4),
+     &            'W mn cool cap',cm(5),'W. Heat sp',cm(6),
+     &            'C cool sp',cm(7),
+     &            'C & moist inj RH ctl hi sp',
+     &            cm(8),'(%) low sp',cm(9),
+     &            '(%) max humid ',cm(10),
+     &            '(g/s) max dehumid ',cm(11),'(g/s).'
+              elseif(nint(cm(12)).eq.2)then
+                write(lmsg,'(2a,f9.1,a,f9.1,a,f9.1,a,f9.1,a,f7.2,
+     &            a,f7.2,a,f5.1,a,f5.1,a)') 
+     &            msg1(1:lnblnk(msg1)),' max heating cap ',cm(2),
+     &            'W min heating cap ',cm(3),
+     &            'W max cooling cap ',cm(4),
+     &            'W min heaing cap ',cm(5),
+     &            'W. Heating sp ',cm(6),
+     &            'C cooling sp ',cm(7),
+     &            'C and T based RH ctl upper sp ',
+     &            cm(8),'(%) lower sp ',cm(9),'(%).'
+              elseif(nint(cm(12)).eq.0)then
+                write(lmsg,
+     &            '(2a,f9.1,a,f9.1,a,f9.1,a,f9.1,a,f7.2,a,f7.2,a)') 
+     &            msg1(1:lnblnk(msg1)),' max heating capacity ',cm(2),
+     &            'W min heating capacity ',cm(3),
+     &            'W max cooling capacity ',cm(4),
+     &            'W min cooling capacity ',cm(5),
+     &            'W. Heating setpoint ',cm(6),'C cooling setpoint ',
+     &            cm(7),'C. with incomplete RH control.'
+              endif
             endif
           endif
           call SDELIM(lmsg,message,'S',IW)
@@ -3379,6 +3443,8 @@ C          call edisp248(6,message,80)
         IF(IPCLAW(II,JJ,KK).EQ.14) SSTR='Multi-sensor '
         IF(IPCLAW(II,JJ,KK).EQ.15) SSTR='PI Room Ctrl'
         IF(IPCLAW(II,JJ,KK).EQ.16) SSTR='Amb Temp Cmpnstn ctrl'
+        IF(IPCLAW(II,JJ,KK).EQ.17) SSTR='Ideal Optimal start ctrl'
+        IF(IPCLAW(II,JJ,KK).EQ.18) SSTR='Ideal Optimal stop ctrl'
         return
       ENDIF
 
@@ -3586,11 +3652,11 @@ C Multisensing controller
             WRITE(LMSG,'(3A,i4,2a)')LMSG(1:LN),MSG2(1:LN2),' ',
      &      nlps,' ',MSG1(1:LN1)
  5050     CONTINUE
-	  IF(NINT(CM(NCLP*3+1)).EQ.1)THEN
-	    MSG2='Actuates massflow loop #'
-	  ELSEIF(NINT(CM(NCLP*3+1)).EQ.2)THEN
-	    MSG2='Actuates plant loop #'
-	  ENDIF
+      IF(NINT(CM(NCLP*3+1)).EQ.1)THEN
+        MSG2='Actuates massflow loop #'
+      ELSEIF(NINT(CM(NCLP*3+1)).EQ.2)THEN
+        MSG2='Actuates plant loop #'
+      ENDIF
           IALP=NINT(CM(NCLP*3+2))
           LN=LNBLNK(LMSG)
           LN2=LNBLNK(MSG2)
@@ -3732,12 +3798,15 @@ C Parameters
       integer icfoc   ! control domain to work with 
       integer II      ! index of the control
       integer JJ      ! index of day type
+      integer lncal   ! length of calendar day name
 
       COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
+      common/calena/calename,calentag(MDTY),calendayname(MDTY)
+      character calename*32,calentag*12,calendayname*32
 
       character outs*124,SSTR*96,TMP*96,LTMP*248
       CHARACTER PERST1*14,PERST2*44,PERST3*44
-      character outsa*84,outsb*84,outsc*84
+      character outsa*84,outs400*400
 
 C List data for function II and day type JJ.
       if(icfoc.eq.0)then
@@ -3782,24 +3851,21 @@ C List data for function II and day type JJ.
       elseif(icfoc.eq.6)then
         nnd=nCFCctldaytypes(ii)
       endif
-      if(nnd.eq.0.and.JJ.eq.1)then
-        WRITE(outs,'(3A,I2,A)')' Weekday control is valid ',
-     &    PERST3(9:lnblnk(PERST3)),' with ',LL,' periods.'
-      elseif(nnd.eq.0.and.JJ.eq.2)then
-       WRITE(outs,'(3A,I2,A)')' Saturday control is valid ',
-     &    PERST3(9:lnblnk(PERST3)),' with ',LL,' periods.'
-      elseif(nnd.eq.0.and.JJ.eq.3)then
-        WRITE(outs,'(3A,I2,A)')' Sunday control is valid ',
-     &    PERST3(9:lnblnk(PERST3)),' with ',LL,' periods.'
+
+C If nnd is zero then omitt days of validity information, otherwise
+C include it in the documentation line.
+      lncal=lnblnk(CALENTAG(JJ))
+      if(nnd.eq.0)then
+        WRITE(outs,'(3A,I2,A)') ' Day type ',CALENTAG(JJ)(1:lncal),
+     &    ' control has ',LL,' periods.'
       else
-        WRITE(outs,'(A,I2,3A,I2,A)')' Day type ',JJ,
-     &    ' is valid ',PERST3(9:lnblnk(PERST3)),' with ',LL,
-     &    ' periods.'
+        WRITE(outs,'(3A,I2,A)') ' Control is valid ',
+     &    PERST3(9:lnblnk(PERST3)),' with ',LL,' periods.'
       endif
       call edisp(itru,outs)
 
       call edisp(itru,
-     &' Per|Start|Sensing  |Actuating  | Control law       | Data')
+     &' Per|Start|Sensing  |Actuating  | Control law description')
       DO 30 K=1,LL
         CALL EVCNTRL(icfoc,II,JJ,K,'T',SSTR)
         CALL EVCNTRLAW(icfoc,II,JJ,K,TMP,LTMP)
@@ -3825,48 +3891,17 @@ C List data for function II and day type JJ.
         endif
   83    FORMAT(I4,F6.2,' ',a,' ',a)
 
-C Print out first 9 miscellaneous data if applicable.
-        outsb=' '
-        outsc=' '
-        if(NITEMS.GT.0)then
-          if(NITEMS.LE.9)then
-            if(icfoc.eq.0)then
-              write(outsb,84)(BMISCD(II,JJ,K,L),L=2,NITEMS+1)
-            elseif(icfoc.eq.1)then
-              write(outsb,84)(PMISCD(II,JJ,K,L),L=2,NITEMS+1)
-            elseif(icfoc.eq.2)then
-              write(outsb,84)(FMISCD(II,JJ,K,L),L=2,NITEMS+1)
-            elseif(icfoc.eq.3)then
-              write(outsb,84)(GMISCD(II,JJ,K,L),L=2,NITEMS+1)
-            elseif(icfoc.eq.5)then
-              write(outsb,84)(OMISCD(II,JJ,K,L),L=2,NITEMS+1)
-            elseif(icfoc.eq.6)then
-              write(outsb,84)(CFCmiscdata(II,JJ,K,L),L=2,NITEMS+1)
-            endif
-          else
-            if(icfoc.eq.0)then
-              write(outsb,84)(BMISCD(II,JJ,K,L),L=2,10)
-            elseif(icfoc.eq.1)then
-              write(outsb,84)(PMISCD(II,JJ,K,L),L=2,10)
-            elseif(icfoc.eq.2)then
-              write(outsb,84)(FMISCD(II,JJ,K,L),L=2,10)
-            elseif(icfoc.eq.3)then
-              write(outsb,84)(GMISCD(II,JJ,K,L),L=2,10)
-            elseif(icfoc.eq.5)then
-              write(outsb,84)(OMISCD(II,JJ,K,L),L=2,10)
-            elseif(icfoc.eq.6)then
-              write(outsb,84)(CFCmiscdata(II,JJ,K,L),L=2,10)
-            endif
-          endif
-  84      format(9F9.1)
-          call SDELIM(outsb,outsc,'S',IW)
-          write(outs,'(a,1x,a)',IOSTAT=IOS,ERR=3) outsa(1:52),
-     &        outsc(1:lnblnk(outsc))
-          CALL EDISP(ITRU,outs)
+         if(NITEMS.GT.0)then
 
-C For zone, plant, flow and global controls list out the verbose decoding of the misc items.
+C Write the initial part of the control followed by description.
+          write(outs400,'(a,1x,a)',IOSTAT=IOS,ERR=3) outsa(1:32),
+     &        ltmp(1:lnblnk(ltmp))
+
+C For zone, plant, flow and global controls list out the verbose 
+C decoding of the control law attributes.  Note that edisp248 is
+C able to work with strings longer than 248 characters.
           if(icfoc.eq.0.or.icfoc.eq.1.or.icfoc.eq.2.or.icfoc.eq.3)then
-            call edisp248(itru,ltmp,90)
+            call edisp248(itru,outs400,90)
           endif
         elseif(NITEMS.eq.0)then
           write(outs,'(a)',IOSTAT=IOS,ERR=3) outsa(1:52)
@@ -3891,6 +3926,9 @@ C icsn(5) is the array of indices
 C SSTR is the string (96 char) returned
 C SSTRB is brief string (48 char) returned
       subroutine decodesensor(icfoc,icsn,SSTR,SSTRB,ier)
+
+C << adapt report for case of thermophysical property substitution >>
+
 #include "building.h"
 #include "geometry.h"
 #include "plant.h"
@@ -3898,10 +3936,10 @@ C SSTRB is brief string (48 char) returned
       
       integer lnblnk  ! function definition
 
+      integer IZSTOCN
       COMMON/C24/IZSTOCN(MCOM,MS)
       common/pcnam/pcname(mpcom)
       COMMON/MFLOW2/NDNAM(0:MNOD)
-      COMMON/MFLOW8/CMNAM(MCMP),LTPCMP(MCMP)
       COMMON/MFLW10/NODPS(MCNN),HGTPS(MCNN),NODNE(MCNN),HGTNE(MCNN),
      &              ITPCON(MCNN),NDSCNN(MCNN,MCNS)
       COMMON/CONTM0/NCONTM,NOCNTM,CONTMNAM(MCONTM)
@@ -3910,7 +3948,7 @@ C SSTRB is brief string (48 char) returned
       dimension icsn(5)
       character sstr*96,sstrb*48
       CHARACTER ZN*12,NNAM*14,DESC*20
-      CHARACTER LTPCMP*60,CMNAM*12,NDNAM*12,pcname*15,contmnam*12
+      CHARACTER NDNAM*12,pcname*15,contmnam*12
       CHARACTER sn*12
 
       sstr=' '
@@ -4370,8 +4408,10 @@ C control loops for legality.
 #include "plant.h"
 #include "net_flow.h"
 #include "control.h"
+#include "blc25_open_windows.h"
 
       common/OUTIN/IUOUT,IUIN
+      integer icascf
       common/cctl/icascf(mcom)
       integer ncomp,ncon
       common/c1/ncomp,ncon
@@ -4382,11 +4422,13 @@ C control loops for legality.
       COMMON/MFLOW1/NNOD,NCMP,NCNN
 
       character outstr*124
+      
+      integer ii, jj, ll, kk
     
 C This code loops throug the building (m=1), plant (m=2) and flow (m=3)
 C control loops and tests them for validity. It's a mess of goto statements,
 C and is a good candidate for rewriting. 
-      
+
 C Loop through building/plant/flow/optical control loops       
       do 10 m=1,4
 
@@ -4416,6 +4458,21 @@ C 'i' appears to serve no purpose in this code.
       if(m.eq.2)goto 3
       if(m.eq.3)goto 22
       if(m.eq.4)goto 32
+
+C Check for minimum allowable free cooling delta T
+      do ii = 1, NCF
+        nn=nbcdt(ii) 
+        do jj = 1, nn
+          ll = nbcdp(ii,jj)
+          do kk = 1, ll
+            if ( ibclaw(ii, jj, kk) .eq. 27) then
+                if( bmiscd(II,JJ,KK,8) .lt. fMinDelTFreeCool )then
+                    goto 1011
+                end if
+            end if 
+          end do
+        end do
+      end do
 
 C Set up data for building control function ii.
       isn1=ibsn(ii,1)
@@ -4480,7 +4537,7 @@ C Sensor references a function generator.
          if(isn2.gt.9)goto 1008
          goto 9
       endif
-
+      
 C Senses data from a temporal file, 2nd item will temporal item.
   33  if(isn2.lt.1.or.isn2.gt.24)goto 1022
       goto 9
@@ -4633,6 +4690,10 @@ C Error messages.
       goto 1000
  1010 write(outstr,'(A,I3,A)')' Sensor node: 5th item (',isn5,
      &  ') invalid.'
+      call edisp(iuout,outstr)
+      goto 1000
+ 1011 write(outstr,'(A)')
+     &' Delta T for free cooling is below the minimum 2 deg C'
       call edisp(iuout,outstr)
       goto 1000
 

@@ -1438,10 +1438,14 @@ C *********************************************************************
       integer igwid,igheight  ! for use with axiscale
       integer iside,isize,ifont,ipos     ! passed to viewtext etlabel
       integer iix1,iiy1,iix2,iiy2,iix,iiy
+      integer iigl,iigr,iigt,iigb,iigw,iigwh
+      integer iiw1,iiw2,iiw3,iiw4,iimenu
 #else
       integer*8 igwid,igheight  ! for use with axiscale
       integer*8 iside,isize,ifont,ipos    ! passed to viewtext etlabel
       integer*8 iix1,iiy1,iix2,iiy2,iix,iiy
+      integer*8 iigl,iigr,iigt,iigb,iigw,iigwh
+      integer*8 iiw1,iiw2,iiw3,iiw4,iimenu
 #endif
 
       XMN2=0.
@@ -1450,14 +1454,19 @@ C *********************************************************************
       YMX2=FLOAT(NDYG)
       XYMX=AMAX1(XMX2,YMX2)
       CALL startbuffer
-      CALL WIN3D(28,10,10,5,3,IGL,IGR,IGT,IGB,IGW,IGWH)
-      igw=igr-igl
-      igwh=igb-igt
+
+C Setup and pass in parameters to win3d.
+      iiw1=10; iiw2=10; iiw3=5; iiw4=3; iimenu=28
+      iigl=igl; iigr=igr; iigt=igt; iigb=igb; iigw=igw; iigwh=igwh
+      CALL win3d(iimenu,iiw1,iiw2,iiw3,iiw4,
+     &  iigl,iigr,iigt,iigb,iigw,iigwh)
+      igl=int(iigl); igr=int(iigr); igt=int(iigt); igb=int(iigb)
+      igw=int(iigw); igwh=int(iigwh)
       igwid=igw
       igheight=igwh
       call axiscale(igwid,igheight,XMN2,XMX2,YMN2,YMX2,XSC,YSC,SCA,
      &   XADD,YADD)
-      CALL LINESCALE(IGL,XADD,SCA,IGB,YADD,SCA)
+      CALL LINESCALE(iigl,XADD,SCA,iigb,YADD,SCA)
       CALL U2PIXEL(XMX2,YMX2,iix,iiy)
       CALL ELINE(iix,iiy,1)
       CALL ECIRC(iix,iiy,3,1)
@@ -1537,10 +1546,14 @@ C *********************************************************************
       integer igwid,igheight  ! for use with axiscale
       integer iside,isize,ifont,ipos     ! passed to viewtext etlabel
       integer iix,iiy,iix1,iiy1,iix2,iiy2
+      integer iigl,iigr,iigt,iigb,iigw,iigwh
+      integer iiw1,iiw2,iiw3,iiw4,iimenu
 #else
       integer*8 igwid,igheight  ! for use with axiscale
       integer*8 iside,isize,ifont,ipos     ! passed to viewtext etlabel
       integer*8 iix,iiy,iix1,iiy1,iix2,iiy2
+      integer*8 iigl,iigr,iigt,iigb,iigw,iigwh
+      integer*8 iiw1,iiw2,iiw3,iiw4,iimenu
 #endif
 
       IF(ISRF.EQ.1.OR.ISRF.EQ.3.OR.ISRF.GE.5)THEN
@@ -1559,14 +1572,19 @@ C *********************************************************************
       YMX2=FLOAT(NUMY)
       XYMX=AMAX1(XMX2,YMX2)
       CALL startbuffer()
-      CALL WIN3D(33,10,10,5,3,IGL,IGR,IGT,IGB,IGW,IGWH)
-      igw=igr-igl
-      igwh=igb-igt
+
+C Setup and pass in parameters to win3d.
+      iiw1=10; iiw2=10; iiw3=5; iiw4=3; iimenu=33
+      iigl=igl; iigr=igr; iigt=igt; iigb=igb; iigw=igw; iigwh=igwh
+      CALL win3d(iimenu,iiw1,iiw2,iiw3,iiw4,
+     &  iigl,iigr,iigt,iigb,iigw,iigwh)
+      igl=int(iigl); igr=int(iigr); igt=int(iigt); igb=int(iigb)
+      igw=int(iigw); igwh=int(iigwh)
       igwid=igw
       igheight=igwh
       CALL AXISCALE(igwid,igheight,XMN2,XMX2,YMN2,YMX2,XSC,YSC,SCA,
      &   XADD,YADD)
-      CALL LINESCALE(IGL,XADD,SCA,IGB,YADD,SCA)
+      CALL LINESCALE(iigl,XADD,SCA,iigb,YADD,SCA)
       CALL U2PIXEL(XMN2,YMN2,iix,iiy)
       CALL ELINE(iix,iiy,1)
       CALL ECIRC(iix,iiy,3,1)
@@ -1695,9 +1713,13 @@ C *********************************************************************
 #ifdef OSI
       integer igwid,igheight  ! for use with axiscale
       integer iupdown,isym,iix,iiy    ! passed to etplot u2pixel
+      integer iigl,iigr,iigt,iigb,iigw,iigwh
+      integer iiw1,iiw2,iiw3,iiw4,iimenu
 #else
       integer*8 igwid,igheight  ! for use with axiscale
       integer*8 iupdown,isym,iix,iiy    ! passed to etplot u2pixel
+      integer*8 iigl,iigr,iigt,iigb,iigw,iigwh
+      integer*8 iiw1,iiw2,iiw3,iiw4,iimenu
 #endif
 
       THKX=0.
@@ -1749,14 +1771,19 @@ C Find 2D extremes coordinates.
 
 C Clear the graphical feedback window.
       CALL startbuffer()
-      CALL WIN3D(28,20,4,3,3,IGL,IGR,IGT,IGB,IGW,IGWH)
-      igw=igr-igl
-      igwh=igb-igt
+
+C Setup and pass in parameters to win3d.
+      iiw1=20; iiw2=4; iiw3=3; iiw4=3; iimenu=28
+      iigl=igl; iigr=igr; iigt=igt; iigb=igb; iigw=igw; iigwh=igwh
+      CALL win3d(iimenu,iiw1,iiw2,iiw3,iiw4,
+     &  iigl,iigr,iigt,iigb,iigw,iigwh)
+      igl=int(iigl); igr=int(iigr); igt=int(iigt); igb=int(iigb)
+      igw=int(iigw); igwh=int(iigwh)
       igwid=igw
       igheight=igwh
       CALL AXISCALE(igwid,igheight,XMN2,XMX2,YMN2,YMX2,XSC,YSC,SCA,
      &   XADD,YADD)
-      CALL LINESCALE(IGL,XADD,SCA,IGB,YADD,SCA)
+      CALL LINESCALE(iigl,XADD,SCA,iigb,YADD,SCA)
 
 C Locate and label the vertices.
       CALL U2PIXEL(XS(1),YS(1),iix,iiy)

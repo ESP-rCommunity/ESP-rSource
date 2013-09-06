@@ -25,12 +25,8 @@ C         in esrupro
 C  CASFMK:  Manage event profiles databases.
 C  EDPROF:  Mid level profile editing facility.
 C  EDEVENT: Edit details of a profile event.
-C  TRIPRO:  Reads data supplied from an ASCII profiles db and writes
-C           it to a NEW binary events profiles database file.
-C  TRIPROBIN: Fills common blocks from scan of binary profiles db.
 C  TRIPROCOM: Reads data supplied from an ASCII profiles db into
 C           common blocks.
-C  TROPRO:  Creates an ASCII profiles db from the binary profiles db.
 C  TROPROCOM:  Creates an ASCII profiles db from common blocks.
 C  PROGRF:  Outputs a graphical display of an event profile (IPRO).
 
@@ -185,7 +181,7 @@ C Insert a profile.
 C Instanciate the data.
           NCG(NPDBITEMS)=IV
           PDBDESC(NPDBITEMS)='New profile'
-	  
+  
           IPACT=CREATE
           CALL EKPAGE(IPACT)
           CALL EPMENSV
@@ -202,7 +198,7 @@ C If update needed write ascii file from commons and
 C then jump back to 77 to check the number of items.
 C If LPRFDB does not end in .a then update LLASACI
             llt=lnblnk(LPRFDB)
-	    if(LPRFDB(llt-1:llt).eq.'.a')then
+            if(LPRFDB(llt-1:llt).eq.'.a')then
               if(ipathprodb.eq.0.or.ipathprodb.eq.1)then
                 LLASCI=LPRFDB
               elseif(ipathprodb.eq.2)then
@@ -254,7 +250,7 @@ C If update needed write ascii file from common blocks
 C then jump back to 77 to rescan the header of the database.
           lndbp=lnblnk(standarddbpath)
           llt=lnblnk(LPRFDB)
-	  if(LPRFDB(llt-1:llt).eq.'.a')then
+          if(LPRFDB(llt-1:llt).eq.'.a')then
             if(ipathprodb.eq.0.or.ipathprodb.eq.1)then
               LLASCI=LPRFDB
             elseif(ipathprodb.eq.2)then
@@ -314,6 +310,8 @@ C << as multiple casual gain types
       common/FILEP/IFIL
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
+      integer menuchw,igl,igr,igt,igb,igw,igwh
+      COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
 
       DIMENSION ITEM(30)
       character NFLAG*1
@@ -326,6 +324,14 @@ C << as multiple casual gain types
       logical asciupdate   ! signal if user edits data
       logical unixok    ! to check for database path file separators
       integer MVERT,INO ! max items and current menu item
+
+#ifdef OSI
+      integer iigl,iigr,iigt,iigb,iigw,iigwh
+      integer iiw1,iiw2,iiw3,iiw4,iimenu
+#else
+      integer*8 iigl,iigr,iigt,iigb,iigw,iigwh
+      integer*8 iiw1,iiw2,iiw3,iiw4,iimenu
+#endif
 
 C For help messages
       character helpinsub*24 ! subroutine name
@@ -419,30 +425,37 @@ C current menu line index. Build up text strings for the menu.
           CALL EMKEY(M,KEY,IER)
           WRITE(ITEM(M),303)KEY,L,ICGS1(ITM,L),
      &      CGS1(ITM,L),CGL1(ITM,L)
-  303     FORMAT(A1,I4,I6,F10.2,F9.2)
+  303     FORMAT(A1,I4,I6,F10.2,F10.2)
         ENDIF
    10 CONTINUE
 
 C << number of day types to be added and the description extended
 C << add logic depending on the type of profile
 
-      write(ITEM(1),'(2A)')  'a profile: ',PDBDESC(ITM)(1:20)
+      write(ITEM(1),'(2A)')  'a name: ',PDBDESC(ITM)(1:24)
       write(ITEM(2),'(A,I3)')'  number of periods: ',NCG(ITM)
-      ITEM(3)=               '  ______________________________'
-      ITEM(4)=               '  event|start|sensible%|latent% '         
+      ITEM(3)=               '  _______________________________'
+      ITEM(4)=               '  event|start|sensible% | latent%'         
 
 C Number of actual items displayed.
       MVERT=M+MCTL
 
 C If a long list include page facility text.      
       IF(IPFLG.EQ.0)THEN
-        ITEM(M+1)=           '  ____________________________'
+        ITEM(M+1)=           '  _______________________________'
       ELSE
         WRITE(ITEM(M+1),15)IPM,MPM 
    15   FORMAT   ('0 Page --- Part: ',I2,' of ',I2,' ---')
       ENDIF
       ITEM(M+2)  ='! list current profile          '
-      ITEM(M+3)  ='> save current profile into db  '
+
+C Remind user if they are working with a model file or a common
+C data file.
+      if(ipathprodb.eq.0.or.ipathprodb.eq.1)then
+        ITEM(M+3)  ='> save current profile        '
+      else
+        ITEM(M+3)  ='> save profile to common file '
+      endif
       ITEM(M+4)  ='? help                          '
       ITEM(M+5)  ='- exit                          '
 
@@ -450,24 +463,6 @@ C If in graphic mode graph the current profile.
       if(MMOD.ge.8)then
         CALL USRMSG(' ',' ','-')
         CALL PROGRF(ITM)
-      endif
-
-C Display information about the profile.
-      if(NFLAG.EQ.'E')then
-        WRITE(outs,5120)  ITM,PDBDESC(ITM)
-        call edisp(iuout,outs)
-        WRITE(outs,5130)  NCG(ITM)
-        call edisp(iuout,outs)
-        call edisp(iuout,' ')
-        call edisp(iuout,
-     &  'Period  From    First     Second')
-        call edisp(iuout,
-     &  '        Hour      %          %  ')
-        DO 291 I = 1,NCG(ITM)
-          WRITE(outs,5151)  I,ICGS1(ITM,I),CGS1(ITM,I),CGL1(ITM,I)
-5151      FORMAT(I4,I7,F10.2,F10.2)
-          call edisp(iuout,outs)
-291     CONTINUE
       endif
 
 C Help text for this menu.
@@ -479,9 +474,14 @@ C Help text for this menu.
 
 C If in graphic mode restore the standard win3d values for prj.
         if(MMOD.ge.8)then
-          CALL win3d(menuchw,4,1,1,3,igl,igr,igt,igb,igw,igwh)
-          igw=igr-igl
-          igwh=igb-igt
+
+C Setup and pass in parameters to win3d.
+          iiw1=4; iiw2=1; iiw3=1; iiw4=3; iimenu=menuchw
+          iigl=igl; iigr=igr; iigt=igt; iigb=igb; iigw=igw; iigwh=igwh
+          CALL win3d(iimenu,iiw1,iiw2,iiw3,iiw4,
+     &      iigl,iigr,iigt,iigb,iigw,iigwh)
+          igl=int(iigl); igr=int(iigr); igt=int(iigt); igb=int(iigb)
+          igw=int(iigw); igwh=int(iigwh)
         endif
         RETURN
       ELSEIF(INO.EQ.(MVERT-1))THEN
@@ -492,7 +492,7 @@ C HELP information.
         CALL PHELPD('pro edit',nbhelp,'-',0,0,IER)
       ELSEIF(INO.EQ.(MVERT-2))THEN
 
-C Update the ascii database in all cases.
+C Update the events file in all cases.
         lndbp=lnblnk(standarddbpath)
         llt=lnblnk(LPRFDB)
         if(LPRFDB(llt-1:llt).eq.'.a')then
@@ -535,12 +535,13 @@ C List current profile.
         call edisp(iuout,outs)
         call edisp(iuout,' ')
         call edisp(iuout,
-     &  'Period  From    First     Second')
+     &  'Period  From    Sensible  Latent')
         call edisp(iuout,
      &  '        Hour      %          %  ')
         DO 290 I = 1,NCG(ITM)
           WRITE(outs,5151)  I,ICGS1(ITM,I),CGS1(ITM,I),
      &      CGL1(ITM,I)
+5151      FORMAT(I4,I7,F10.2,F10.2)
           call edisp(iuout,outs)
 290     CONTINUE
       ELSEIF(INO.EQ.(MVERT-4))THEN
@@ -652,113 +653,6 @@ C If we got to this point we can instanciate the data.
       END
 
 
-C ***************** TRIPRO 
-C TRIPRO reads data supplied from an ASCII profiles db (LASCI) and writes
-C it to a NEW binary events profiles database file (LBIN).
-      SUBROUTINE TRIPRO(IFA,IFB,LASCI,LBIN,IER)
-#include "esprdbfile.h"
-C esprdbfile.h supplies the following:
-C LPRFDB,IPRODB (for event profile database)
-
-#include "espriou.h"
-C espriou.h provides currentfile.
-#include "profile.h"
-
-C << the ASCII file should have a header with a version number as well
-C << as a date stamp a block of documentation but none of this would
-C << fit in the binary file
-      
-      integer lnblnk  ! function definition
-
-C Parameters
-      integer IFA,IFB       ! file unit numbers  
-      CHARACTER*(*) LASCI   ! ascii file name (full path)
-      CHARACTER*(*) LBIN    ! binary file name (full path)
-      integer IER           ! zero is ok, one is asci does not exist
-                            ! two is binary cannot be opened
-
-      COMMON/OUTIN/IUOUT,IUIN
-      CHARACTER OUTSTR*124
-      character ermsg*48   ! for read error messages
-      character outs*124   ! string buffer for messages
-
-C Note existing binary files will be overwritten.
-      CALL ERPFREE(IFB,ISTAT)
-      ier=0
-      call EFOPRAN(IFB,LBIN,10,3,IER)
-      IF(IER.NE.0)THEN
-        CALL USRMSG(' ','Binary file cannot be written!','W')
-        IER=2
-        RETURN
-      ENDIF
-      if(ier.ne.0)return
-      write(currentfile,'(a)') LASCI(1:lnblnk(LASCI))
-
-C Open the ASCII file for reading.
-      CALL EFOPSEQ(IFA,LASCI,1,IER)
-      IF(IER.NE.0)THEN
-        CALL USRMSG(' ',' ASCII file does not exist!','W')
-        IER=1
-        RETURN
-      ENDIF
-
-C Proceed.
-      CALL STRIPC(IFA,OUTSTR,0,ND,1,'no items',IER)
-      IF(IER.NE.0)RETURN
-      K=0
-      CALL EGETWI(OUTSTR,K,NPDBITEMS,0,0,'-','no items',IER)
-
-      ermsg='writing record one nb of profiles '
-      IREC = 1
-      WRITE(IFB,REC=IREC,IOSTAT=ISTAT,ERR=1001)  NPDBITEMS
-
-C Get number of events and description of profile (EGETRM gets the
-C remainder of the line after the first word (NCG).
-      DO 10 I = 1,NPDBITEMS
-        CALL STRIPC(IFA,OUTSTR,0,ND,1,'NCG,PDBDESC',IER)
-        IF(IER.NE.0)RETURN
-        K=0
-        CALL EGETWI(OUTSTR,K,NCG(I),0,0,'-','NCG',IER)
-        CALL EGETRM(OUTSTR,K,PDBDESC(I),'W','profile descr',IER)
-
-        write(ermsg,'(a,i3)') 'writing nb of periods in profile ',I
-        IREC = IREC + 1
-        WRITE(IFB,REC=IREC,IOSTAT=ISTAT,ERR=1001)  NCG(I)
-        write(ermsg,'(a,i3)') 'writing description of profile ',I
-        IREC = IREC + 1
-        WRITE(IFB,REC=IREC,IOSTAT=ISTAT,ERR=1001)  PDBDESC(I)
-
-        DO 20 J = 1,NCG(I)
-          CALL STRIPC(IFA,OUTSTR,0,ND,1,'IS,IF,A,B',IER)
-          IF(IER.NE.0)RETURN
-          K=0
-          CALL EGETWI(OUTSTR,K,IS,0,0,'-','Start',IER)
-          CALL EGETWI(OUTSTR,K,IF,0,0,'-','Finish',IER)
-          CALL EGETWR(OUTSTR,K,A,0.,0.,'-','VAL 1',IER)
-          CALL EGETWR(OUTSTR,K,B,0.,0.,'-','VAL 2',IER)
-          write(ermsg,'(a,2i4)') 'writing data of profile ',I,J
-          IREC = IREC + 1
-          WRITE(IFB,REC=IREC,IOSTAT=ISTAT,ERR=1001)IS,IF,A,B
-   20   CONTINUE
-   10 CONTINUE
-
-      ermsg='writing record one nb of profiles & last rec '
-      IR=IREC+1
-      IREC = 1
-      WRITE(IFB,REC=IREC,IOSTAT=ISTAT,ERR=1001)  NPDBITEMS,IR
-
-C Free both file units.
-  99  CALL ERPFREE(IFB,ISTAT)
-      CALL ERPFREE(IFA,ISTAT)
-      RETURN
-
- 1001 write(outs,'(3a,i4)') 'In profile db: error ',
-     &  ermsg(1:lnblnk(ermsg)),' at record ',irec
-      call edisp(iuout,outs)
-      goto 99
-
-      END
-
 C ***************** TRIPROCOM 
 C TRIPROCOM reads data supplied from an ASCII profiles db into common.
       SUBROUTINE TRIPROCOM(IFA,LLASCI,IER)
@@ -826,206 +720,6 @@ C remainder of the line after the first word (NCG).
 
       END
 
-C **************** TROPRO 
-C TROPRO creates an ASCII profiles db from the binary profiles db.
-C This is called only by esrudbm.
-      SUBROUTINE TROPRO(IFA,LASCI,IER)
-#include "esprdbfile.h"
-#include "espriou.h"
-#include "profile.h"
-      
-      integer lnblnk  ! function definition
-      CHARACTER*(*) LASCI   ! ascii file name
-
-      COMMON/OUTIN/IUOUT,IUIN
-      character ermsg*48   ! for read error messages
-      character outs*124   ! string buffer for messages
-      character fs*1       ! file separator
-      character lworking*144 ! file name
-      logical unixok  ! to check for database path file separators
-
-C Set folder separator (fs) to \ or / as required.
-      call isunix(unixok)
-      if(unixok)then
-        fs = char(47)
-      else
-        fs = char(92)
-      endif
-
-      IER =0
-
-C Because it is a binary file we are expecting a non-zero ier
-C does not require that we attempt to scan an ascii version of
-C the event profiles db.
-      lndbp=lnblnk(standarddbpath)
-      CALL ERPFREE(IPRODB,ISTAT)
-      if(ipathprodb.eq.0.or.ipathprodb.eq.1)then
-        ier=0
-        call EFOPRAN(IPRODB,LPRFDB,10,1,IER)
-      elseif(ipathprodb.eq.2)then
-        ier=0
-        write(lworking,'(3a)') standarddbpath(1:lndbp),fs,
-     &    LPRFDB(1:lnblnk(LPRFDB))
-        call EFOPRAN(IPRODB,lworking,10,1,IER)
-      endif
-      if(ier.ne.0)return
-
-      ermsg='reading record one number of profiles '
-      IREC=1
-      READ(IPRODB,REC=IREC,IOSTAT=ISTAT,ERR=1001)NPDBITEMS
-      IF(NPDBITEMS.LE.0)THEN
-        CALL USRMSG(' ',' Events profiles db is empty !','W') 
-        RETURN
-      ENDIF
-
-C Open or overwrite the ASCII file.
-      CALL EFOPSEQ(IFA,LASCI,4,IER)
-      IF(IER.NE.0)THEN
-        CALL USRMSG(' Could not open ASCII file!',LASCI,'W')
-        IER=1
-        RETURN
-      ENDIF
-      write(currentfile,'(a)') LASCI(1:lnblnk(LASCI))
-      
-C Write out a file header.
-      WRITE(IFA,30)LASCI(1:lnblnk(LASCI))
-  30  FORMAT('# events profiles db defined in ',A)
-
-C Proceed
-      ermsg='reading record one number of profiles '
-      IREC=1
-      READ(IPRODB,REC=IREC,IOSTAT=ISTAT,ERR=1001)  NPDBITEMS
-
-      WRITE(IFA,21,IOSTAT=ISTAT,ERR=1000)NPDBITEMS
-   21 FORMAT(I5,'    # Number of profiles')
-
-      DO 10 I = 1,NPDBITEMS
-        write(ermsg,'(a,i2)') 'reading number events in profile ',I
-        IREC = IREC + 1
-        READ(IPRODB,REC=IREC,IOSTAT=ISTAT,ERR=1001)  NCG(I)
-        write(ermsg,'(a,i2)') 'reading description of profile ',I
-        IREC = IREC + 1
-        READ(IPRODB,REC=IREC,IOSTAT=ISTAT,ERR=1001)  PDBDESC(I)
-
-        WRITE(IFA,22)NCG(I),PDBDESC(I)
-   22   FORMAT(I5,3X,A40,'  # No periods & description',/,
-     &                   '# start finish data data')
-
-C For each period.
-        DO 20 J = 1,NCG(I)
-          write(ermsg,'(a,i3,a,i2)') 'reading data of profile ',I,
-     &      ' at period ',J
-          IREC = IREC + 1
-          READ(IPRODB,REC=IREC,IOSTAT=ISTAT,ERR=1001)IS,IF,A,B
-          ICGS1(I,J)=IS
-          ICGF1(I,J)=IF
-          CGS1(I,J)=A
-          CGL1(I,J)=B
-          WRITE(IFA,23,IOSTAT=ISTAT,ERR=1000)IS,IF,A,B
-   23     FORMAT(I4,',',I4,',',F8.3,',',F8.3)
-   20   CONTINUE
-   10 CONTINUE
-
-  99  CALL ERPFREE(IPRODB,ISTAT)
-      CALL ERPFREE(IFA,ISTAT)
-      RETURN
-
- 1000 CALL USRMSG(' ',' ASCII file write error in ','W')
-      goto 99
-
- 1001 write(outs,'(3a,i4)') 'In profile db: error ',
-     &  ermsg(1:lnblnk(ermsg)),' at record ',irec
-      call edisp(iuout,outs)
-      goto 99
-
-      END
-
-C **************** TRIPROBIN 
-C TRIPROBIN fills common blocks from a binary profiles db.
-C Pass back the following error states:
-C ier= 0 file read ok.
-C ier= -1 open file error
-C ier= -2 error opening or reading header
-C ier= -3 no items in the database
-      SUBROUTINE TRIPROBIN(IFB,LBIN,IER)
-#include "esprdbfile.h"
-#include "espriou.h"
-#include "profile.h"
-      
-      integer lnblnk  ! function definition
-
-C Parameters
-      integer IFB         ! file unit
-      CHARACTER*(*) LBIN  ! binary file name (full path)
-      integer IER         ! zero is ok, -2 or -3 errors
-
-      COMMON/OUTIN/IUOUT,IUIN
-      character ermsg*48   ! for read error messages
-      character outs*124   ! string buffer for messages
-
-C Because it is a binary file we are expecting a non-zero ier
-C does not require that we attempt to scan an ascii version of
-C the event profiles db. But if there is an error in efopran or
-C there is an impossible number of items pass back ier=-2 so
-C other code can check if the file is an ascii version.
-      CALL ERPFREE(IFB,ISTAT)
-      ier=0
-      call EFOPRAN(IFB,LBIN,10,1,IER)
-      if(ier.ne.0)then
-        ier=-1
-        return
-      endif
-
-      ermsg='reading record one number of profiles '
-      IREC=1
-      READ(IFB,REC=IREC,IOSTAT=ISTAT,ERR=1001)NPDBITEMS
-      if(NPDBITEMS.LE.0)then
-        CALL USRMSG(' ','Events profiles db is empty !','W') 
-        ier=-3
-        return
-      elseif(NPDBITEMS.gt.MGIT)then
-        npdbitems=0   ! reset 
-        ier=-2
-        return
-      endif
-
-      write(currentfile,'(a)') LPRFDB(1:lnblnk(LPRFDB))
-      
-C Proceed
-      ermsg='reading record one number of profiles '
-      IREC=1
-      READ(IFB,REC=IREC,IOSTAT=ISTAT,ERR=1001)  NPDBITEMS
-
-      DO 10 I = 1,NPDBITEMS
-        write(ermsg,'(a,i2)') 'reading number events in profile ',I
-        IREC = IREC + 1
-        READ(IFB,REC=IREC,IOSTAT=ISTAT,ERR=1001)  NCG(I)
-        write(ermsg,'(a,i2)') 'reading description of profile ',I
-        IREC = IREC + 1
-        READ(IFB,REC=IREC,IOSTAT=ISTAT,ERR=1001)  PDBDESC(I)
-
-C For each period.
-        DO 20 J = 1,NCG(I)
-          write(ermsg,'(a,i3,a,i2)') 'reading data of profile ',I,
-     &      ' at period ',J
-          IREC = IREC + 1
-          READ(IFB,REC=IREC,IOSTAT=ISTAT,ERR=1001)IS,IF,A,B
-          ICGS1(I,J)=IS
-          ICGF1(I,J)=IF
-          CGS1(I,J)=A
-          CGL1(I,J)=B
-   20   CONTINUE
-   10 CONTINUE
-
-  99  CALL ERPFREE(IFB,ISTAT)
-      RETURN
-
- 1001 write(outs,'(3a,i4)') 'In profile db: error ',
-     &  ermsg(1:lnblnk(ermsg)),' at record ',irec
-      call edisp(iuout,outs)
-      goto 99
-
-      END
 
 C **************** TROPROCOM 
 C TROPROCOM creates an ASCII profiles db from common blocks.
@@ -1109,10 +803,14 @@ C based on the current common block data.
       integer igwid,igheight  ! for use with axiscale
       integer iside,isize,ifont     ! passed to viewtext
       integer iupdown,isym    ! passed to etplot
+      integer iigl,iigr,iigt,iigb,iigw,iigwh
+      integer iiw1,iiw2,iiw3,iiw4,iimenu
 #else
       integer*8 igwid,igheight  ! for use with axiscale
       integer*8 iside,isize,ifont     ! passed to viewtext
       integer*8 iupdown,isym    ! passed to etplot
+      integer*8 iigl,iigr,iigt,iigb,iigw,iigwh
+      integer*8 iiw1,iiw2,iiw3,iiw4,iimenu
 #endif
 
       DIMENSION VAL1(MPRFDBPER),VAL2(MPRFDBPER)
@@ -1127,16 +825,21 @@ C based on the current common block data.
 
 C Set up data ready for graph drawing.
       call startbuffer
-      call win3d(menuchw,10,10,4,4,igl,igr,igt,igb,igw,igwh)
-      igw=igr-igl
-      igwh=igb-igt
+
+C Setup and pass in parameters to win3d.
+      iiw1=10; iiw2=10; iiw3=4; iiw4=4; iimenu=menuchw
+      iigl=igl; iigr=igr; iigt=igt; iigb=igb; iigw=igw; iigwh=igwh
+      CALL win3d(iimenu,iiw1,iiw2,iiw3,iiw4,
+     &  iigl,iigr,iigt,iigb,iigw,iigwh)
+      igl=int(iigl); igr=int(iigr); igt=int(iigt); igb=int(iigb)
+      igw=int(iigw); igwh=int(iigwh)
       igwid=igw
       igheight=igwh
       call axiscale(igwid,igheight,0.0,24.0,YMIN,YMAX,xsc,ysc,sca,
      &  Xadd,Yadd)
-      call linescale(igl,Xadd,xsc,igb,Yadd,ysc)
-      call horaxis(0.,24.,igl,igr,igb,Xadd,xsc,1,'Time (hours)')
-      call vrtaxis(YMIN,YMAX,igl,igb,igt,Yadd,ysc,0,0,'Percent')
+      call linescale(iigl,Xadd,xsc,iigb,Yadd,ysc)
+      call horaxis(0.,24.,iigl,iigr,iigb,Xadd,xsc,1,'Time (hours)')
+      call vrtaxis(YMIN,YMAX,iigl,iigb,iigt,Yadd,ysc,0,0,'Percent')
 
 C Pick up the data increment for the horizontal axis.
       call dinterval(0.,24.,DT,NDEC,1)

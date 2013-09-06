@@ -175,7 +175,7 @@ C act='p' iget parameters already set.
       common/appcols/mdispl,nifgrey,ncset,ngset,nzonec
       integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
-      COMMON/GRAF1/YMAX(5),YMIN(5),YAXSET(5),ADDLIN
+      COMMON/GRAF1/YMAX(5),YMIN(5),YAXSET(5),ADDLIN,horaxisdiv
 
       COMMON/SIMPIK/ISIM,ISTADD,ID1,IM1,ID2,IM2,ISDS,ISDF,NTS,ISAVE
       COMMON/PERO/IOD1,IOM1,IOH1,IOD2,IOM2,IOH2,IODS,IODF,NOUT,IAV
@@ -191,9 +191,13 @@ C act='p' iget parameters already set.
 
       COMMON/EXPORTI/ixopen,ixunit,ixpunit
       COMMON/IGETFLG/IOCUPF,ialstused,IROC
-      common/grextras/graftitle,grlbl(5),ngrlbl,lblpx(5),lblpy(5)
+      common/grextras/graftitle,grlbl(10),ngrlbl,lblpx(10),lblpy(10)
       integer ifs,itfs,imfs
       COMMON/GFONT/IFS,ITFS,IMFS
+      logical HAVEIT   ! to signal data access via GETSTATS
+
+      integer ireportunit ! zero is default one is W two is kW three Joules
+      common/repunit/ireportunit
 
       dimension Yold(MZS), TIMEold(MZS)
       dimension YSC(5), Yadd(5), igx(5), ilr(5)
@@ -201,19 +205,26 @@ C act='p' iget parameters already set.
       character ALABEL(5)*12,t20*20,act*1
       character graftitle*64,grlbl*24,t24*24
 
-      integer YAXSET, ADDLIN
+      integer YAXSET,ADDLIN,horaxisdiv
       integer iglib   ! if iglib is 2 then using GTK library otherwise X11
+      integer overalldays ! number of days to graph (to set axis)
       integer oneonright  ! if only one axis on right.
       integer twoonrighta ! nearest if two axis on right
       integer twoonrightb ! farthest if two axis on right
       integer threerighta ! nearest if miscel plus two axis on right
       integer threerightb ! farthest if miscel plus two axis on right
 #ifdef OSI
+      integer igx,iigx  ! see array above
       integer igwid,igheight  ! for use with axiscale
       integer iupdown,isym,iid1,iid2   ! passed to etplot
+      integer iicol
+      integer iigl,iigr,iigt,iigb,iigw,iigwh
 #else
+      integer*8 igx,iigx  ! see array above
       integer*8 igwid,igheight  ! for use with axiscale
       integer*8 iupdown,isym,iid1,iid2   ! passed to etplot
+      integer*8 iicol
+      integer*8 iigl,iigr,iigt,iigb,iigw,iigwh
 #endif
 
       logical kwatts,colok
@@ -224,6 +235,9 @@ C Define prompt
 C Check if can draw in colour.
       colok=.false.
       if(nzonec.ge.NCOMP)colok=.true.
+
+C Cast values for linescale.
+      iigl=igl;iigr=igr;iigt=igt;iigb=igb;iigw=igw;iigwh=igwh
       
 C If output to file alter the edisp unit number.
       itru = icout
@@ -265,7 +279,8 @@ C then just draw the new profiles using the existing axis and scaling
 C factors.
       if (YAXSET(IGETNO(NGET,8)).ne.0.and.ADDLIN.eq.1) goto 99
 
-C Check if heating/cooling plant information requested.
+C Check if heating/cooling plant information requested. If user has
+C asked for normal units (kW) then set kwatts TRUE.
       do 3 I=1,NGET
         if (IGETNO(I,8).eq.2) then
           if (IGETNO(I,1).eq.8.or.IGETNO(I,1).eq.9.or.
@@ -273,7 +288,11 @@ C Check if heating/cooling plant information requested.
      &        IGETNO(I,1).eq.31.or.IGETNO(I,1).eq.32.or.
      &        IGETNO(I,1).eq.33) then
             if (YAXSET(2).lt.2) YAXSET(2)=0
-            kwatts=.TRUE.
+            if(ireportunit.eq.0.or.ireportunit.eq.2)then
+              kwatts=.TRUE.
+            else
+              kwatts=.FALSE.
+            endif
           endif
         endif
  3    continue
@@ -293,24 +312,44 @@ C The YMAX,MIN variables are for axis 1 through 5 max and min values.
  6    continue
       call usrmsg(prompt,'Scanning data for range of values...','-')
 
-C First recover bounds of selected data.
+C First recover bounds of selected data. MMACAL returns kW for DMAX and
+C DMIN for the specific cases of IGETNO(IX,1) = 10 or 32.
       do 40 IX=1,NGET
         if (YAXSET(IGETNO(IX,8)).lt.2) then
-          call MMACHK(IX,DMAX,DMIN,DAVE,DTOT,TXMAX,TXMIN)
+          call GETSTATS(IX,HAVEIT,DMAX,DMIN,DAVE,DTOT,TXMAX,TXMIN)
+          if(HAVEIT)then
+
+C Debug.
+C            write(6,*) 'get stats ',DMAX,DMIN,DAVE,DTOT,TXMAX,TXMIN
+          else
+            call MMACAL(IX,DMAX,DMIN,DAVE,DTOT,TXMAX,TXMIN)
+
+C Debug.
+C            write(6,*) 'get MMACAL ',DMAX,DMIN,DAVE,DTOT,TXMAX,TXMIN
+          endif
           YAXSET(IGETNO(IX,8))=1
 
 C Check for plant flux in kW, if so convert fluxes from W to kW
-          if (IGETNO(IX,8).eq.2.and.kwatts) then
+C based on value of ireportunit.
+          if (kwatts.and.IGETNO(IX,8).eq.2) then
             if (IGETNO(IX,1).ne.8.and.IGETNO(IX,1).ne.9.and.
      &          IGETNO(IX,1).ne.10.and.IGETNO(IX,1).ne.30.and.
      &          IGETNO(IX,1).ne.31.and.IGETNO(IX,1).ne.32.and.
      &          IGETNO(IX,1).ne.33) then
-              DMAX=DMAX/1000.
-              DMIN=DMIN/1000.
+              if(ireportunit.eq.0.or.ireportunit.eq.2)then
+                DMAX=DMAX/1000.
+                DMIN=DMIN/1000.
+              endif
+            endif
+          elseif (.NOT.kwatts.and.IGETNO(IX,8).eq.2) then
+            if (IGETNO(IX,1).eq.10.or.IGETNO(IX,1).eq.32) then
+              DMAX=DMAX*1000.
+              DMIN=DMIN*1000.
             endif
           endif
           YMAX(IGETNO(IX,8))=MAX(DMAX,YMAX(IGETNO(IX,8)))
           YMIN(IGETNO(IX,8))=MIN(DMIN,YMIN(IGETNO(IX,8)))
+C Debug          write(6,*) 'aft mmacal+ ',dmax,dmin,ymax(2),ymin(2)
         endif
  40   continue
       call usrmsg(prompt,'Scanning data for range of values...done.',
@@ -321,16 +360,17 @@ C Draw axis.where:
 C  igx(1) is the left vertical axis.
 C  igx(2) is the `Load W` vertical axis.
 C  igx(3) is the `Int W/m^2' vertical axis
-C  igx(4) is the `Miscel vertical axis which is placed in the centre.
+C  igx(4) is the `Miscel vertical axis if placed in the centre.
 C  igx(5) does not have a label and is not part of the do 100 loop.
-C Set local values of offset from right end of horiz axis. Note: in 
-C the GTK version the values probably should be adjusted to fit the
+C Set local values of vertical axis offset (in pixels) from right
+C end of horiz (in pixels) axis.
+C Note: in the GTK version the values probably should be adjusted to fit the
 C current label font.
-      oneonright=110
-      twoonrighta=85
-      twoonrightb=135
-      threerighta=80
-      threerightb=135
+      oneonright=110   ! was 110
+      twoonrighta=115   ! was 85
+      twoonrightb=175  ! was 135
+      threerighta=110   ! was 80
+      threerightb=170  ! was 135
 
 C moghed uses similar YAXSET logic to know how many right axis to draw.
       call MOGHED
@@ -409,6 +449,9 @@ C IROC, if rate of change of variable alter the axis label.
       ILR(2)=1
       ILR(3)=1
       ILR(4)=1
+      
+C Cast values for linescale.
+      iigl=igl;iigr=igr;iigt=igt;iigb=igb;iigw=igw;iigwh=igwh
       do 100 I=1,4
         if (YAXSET(I).gt.0) then
 
@@ -452,16 +495,21 @@ C Round YMIN to a sensible value.
 
 C Set-up frequency of labels (DT), number of decimal places (NDEC) and 
 C draw vertical axis.
+          if(colok)then
+            iicol=0
+            call winscl('-',iicol)  ! ensure axis drawn in black
+          endif
           call dinterval(TSTART-1.0,TFINSH,DT,NDEC,1)
           igwid=igw
           igheight=igwh
+          iigx=int(igx(I))
           call axiscale(igwid,igheight,TSTART-1.0,TFINSH,YMIN(I),
      &                  YMAX(I),TSC,YSC(I),sca,Xadd,Yadd(I))
           if (ILR(I).eq.0) then
-            call vrtaxis(YMIN(I),YMAX(I),igx(I),igb,igt,Yadd(I),
+            call vrtaxis(YMIN(I),YMAX(I),iigx,iigb,iigt,Yadd(I),
      &                             YSC(I),0,ilr(I),ALABEL(I))
           else
-            call vrtaxis(YMIN(I),YMAX(I),igx(I),igb,igt,Yadd(I),
+            call vrtaxis(YMIN(I),YMAX(I),iigx,iigb,iigt,Yadd(I),
      &                             YSC(I),0,ilr(I),'  ')
             iid1=igx(I); iid2=igt-5;
             call wstxpt(iid1,iid2,ALABEL(I))
@@ -471,8 +519,32 @@ C draw vertical axis.
 
 C Draw horizontal (time) axis. But if there is no right axis then
 C there should be logic to maximize the width of the plot.  << to be done >>
-      call horaxis(TSTART-1.0,TFINSH,igl,igr,igb,Xadd,TSC,1,'Time Hrs')
-
+C Determine how many days to graph. If less than 2 months default to hourly,
+C if 2-4 months default to days, if longer than 4 months use weeks as the
+C default.
+      if(horaxisdiv.eq.0.or.horaxisdiv.eq.1)then
+        overalldays=IODF-IODS
+        if(overalldays.le.60)then
+          call horaxis(TSTART-1.0,TFINSH,iigl,iigr,iigb,Xadd,TSC,1,
+     &      'Time Hrs')
+        elseif(overalldays.gt.60.and.overalldays.le.120)then
+          call horaxishdw(TSTART-1.0,TFINSH,iigl,iigr,iigb,Xadd,TSC,1,
+     &      2,24,iods,'Time (days)')
+        else
+          call horaxishdw(TSTART-1.0,TFINSH,iigl,iigr,iigb,Xadd,TSC,1,
+     &      3,168,iods,'Time (weeks)')
+        endif
+      elseif(horaxisdiv.eq.2)then
+        call horaxis(TSTART-1.0,TFINSH,iigl,iigr,iigb,Xadd,TSC,1,
+     &    'Time Hrs')
+      elseif(horaxisdiv.eq.3)then
+        call horaxishdw(TSTART-1.0,TFINSH,iigl,iigr,iigb,Xadd,TSC,1,
+     &    2,24,iods,'Time (days)')
+      elseif(horaxisdiv.eq.4)then
+        call horaxishdw(TSTART-1.0,TFINSH,iigl,iigr,iigb,Xadd,TSC,1,
+     &    3,168,iods,'Time (weeks)')
+      endif
+      
 C Recover and plot data.
  99   do 10 IDAY=IODS,IODF
         call GOGET(IDAY)
@@ -482,7 +554,7 @@ C Add values in VAL2 to there correct bins. Loop through selected zones.
 
 C Reset scaling factor for appropriate axis.
           Iax=IGETNO(IX,8)
-          call linescale(igl,Xadd,TSC,igb,Yadd(Iax),YSC(Iax))
+          call linescale(iigl,Xadd,TSC,iigb,Yadd(Iax),YSC(Iax))
 
 C Loop through a day's worth of data for the current metric (IX) stepping 
 C at defined output interval.
@@ -507,9 +579,12 @@ C Convert watts to kW if necessary.
      &            IGETNO(IX,1).ne.31.and.IGETNO(IX,1).ne.32.and.
      &            IGETNO(IX,1).ne.33) then
 
-C The data is a load and not related to plant.  By default these loads 
-C are in Watts but plant is being displayed so convert to kW.
-                Yold(IX)=Yold(IX)/1000.
+C The data is a load and not related to plant. By default these loads 
+C are in Watts but plant is being displayed so convert to kW if directed
+C to by ireportunit.
+                if(ireportunit.eq.0.or.ireportunit.eq.2)then
+                  Yold(IX)=Yold(IX)/1000.
+                endif
               endif
             endif
           endif
@@ -536,8 +611,11 @@ C Convert watts to kW if necessary.
      &            IGETNO(IX,1).ne.33) then
 
 C The data is a load and not related to plant.  By default these loads 
-C are in Watts but plant is being displayed so convert to kW.
-                VAL2(IX,J)=VAL2(IX,J)/1000.
+C are in Watts but plant is being displayed so convert to kW if directed
+C to by ireportunit.
+                if(ireportunit.eq.0.or.ireportunit.eq.2)then
+                  VAL2(IX,J)=VAL2(IX,J)/1000.
+                endif
               endif
             endif
             if (ioldpos.eq.1)then
@@ -570,9 +648,15 @@ C look sensible.
             endif
 
 C If plotting colours for different zones then recall which
-C zone we are dealing with.
+C zone we are dealing with.  If zone not set then use black.
             if(colok)then
-              if(IGETNO(IX,2).gt.0)call winscl('z',IGETNO(IX,2))
+              if(IGETNO(IX,2).gt.0)then
+                iicol=IGETNO(IX,2)
+                call winscl('z',iicol)
+              else
+                iicol=0
+                call winscl('-',iicol)
+              endif
             endif
 
 C Plot the current value - this has already been copied to Yold and
@@ -580,7 +664,10 @@ C then reset to forground colour.
             iupdown=IPEN
             isym=MARK
             call etplot(TIME,Yold(IX),iupdown,isym)
-            if(colok)call winscl('-',0)
+            if(colok)then
+              iicol=0
+              call winscl('-',iicol)
+            endif
             call forceflush()
  421      CONTINUE
  400    CONTINUE
@@ -596,14 +683,20 @@ C If IMFS is > zero then use IMFS-1 for line label.
       endif
       do 200 I=1,NGET
         Iax=IGETNO(I,8)
-        call linescale(igl,Xadd,TSC,igb,Yadd(Iax),YSC(Iax))
+        call linescale(iigl,Xadd,TSC,iigb,Yadd(Iax),YSC(Iax))
         t20=GLABEL(I)
         if(colok)then
-          if(IGETNO(I,2).gt.0)call winscl('z',IGETNO(I,2))
+          if(IGETNO(I,2).gt.0)then
+            iicol=IGETNO(I,2)
+            call winscl('z',iicol)
+          endif
         endif
         call u2pixel(TIMEold(I),Yold(I),iid1,iid2)
         call wstxpt(iid1,iid2,t20)
-        if(colok)call winscl('-',0)
+        if(colok)then
+          iicol=0
+          call winscl('-',iicol)
+        endif
         call forceflush()
  200  continue
       if(IMFS.gt.0.and.IMFS.lt.4)then
@@ -628,6 +721,7 @@ C to graphical result display.
 
       SUBROUTINE MOGHED
 #include "building.h"
+#include "model.h"
       
       integer lnblnk  ! function definition
 
@@ -641,16 +735,15 @@ C to graphical result display.
       COMMON/SIMPKA/NSIM
       COMMON/ZONPIK/NZ,NZNO(MCOM)
       COMMON/IGETFLG/IOCUPF,ialstused,IROC
-      common/anchora/NALOC,ALOC(20),ALOCLBL(20),ALOCTYP(20)
-      common/grextras/graftitle,grlbl(5),ngrlbl,lblpx(5),lblpy(5)
+      common/grextras/graftitle,grlbl(10),ngrlbl,lblpx(10),lblpy(10)
 
-      COMMON/GRAF1/YMAX(5),YMIN(5),YAXSET(5),ADDLIN
+      COMMON/GRAF1/YMAX(5),YMIN(5),YAXSET(5),ADDLIN,horaxisdiv
       COMMON/SIMPIK/ISIM,ISTADD,ID1,IM1,ID2,IM2,ISDS,ISDF,NTS,ISAVE
       integer ifs,itfs,imfs
       COMMON/GFONT/IFS,ITFS,IMFS
 
 C To extend logic to maximize plotting area.
-      integer YAXSET, ADDLIN
+      integer YAXSET,ADDLIN,horaxisdiv
       integer iglib   ! if iglib is 2 then using GTK library otherwise X11
       integer onright  ! number of axis on right
       integer onleft   ! whether there is an axis on the left
@@ -658,12 +751,15 @@ C To extend logic to maximize plotting area.
       CHARACTER ETEXT*124, RSNAME*40
       character rfile*72,PFILE*72,MSTRFILE*72,LAFRES*72
       CHARACTER PDESCR*60,SDESCR*44,outsd*80,outsd1*81
-      character ALOC*12,ALOCLBL*12,ALOCTYP*4
       character graftitle*64,grlbl*24,t64*64
 #ifdef OSI
       integer iside,isize,ifont     ! passed to viewtext
+      integer iigl,iigr,iigt,iigb,iigw,iigwh
+      integer iiw1,iiw2,iiw3,iiw4,iimenu
 #else
       integer*8 iside,isize,ifont     ! passed to viewtext
+      integer*8 iigl,iigr,iigt,iigb,iigw,iigwh
+      integer*8 iiw1,iiw2,iiw3,iiw4,iimenu
 #endif
 
 C If GTK library then there are additional options << work in progress >>.
@@ -722,35 +818,60 @@ C using similar logic tree to mowlin.
         endif
 
 C Debug.
-C        write(6,*) ' nb of right axis is currently ',onright
+C        write(6,*) ' nb of right axis is currently ',onright,onleft
 
 C Set standard fornt width so that space around graph is correct.
         call winfnt(imfs)
         if(onright.eq.0)then
           if(onleft.eq.0)then
-            call win3d(menuchw,3,16,5,3,igl,igr,igt,igb,igw,igwh)
+
+C Setup and pass in parameters to win3d.
+            iiw1=3; iiw2=16; iiw3=5; iiw4=3; iimenu=menuchw
+            iigl=igl; iigr=igr; iigt=igt; iigb=igb; iigw=igw;iigwh=igwh
+            CALL win3d(iimenu,iiw1,iiw2,iiw3,iiw4,
+     &        iigl,iigr,iigt,iigb,iigw,iigwh)
           else
-            call win3d(menuchw,9,16,5,3,igl,igr,igt,igb,igw,igwh)
+            iiw1=9; iiw2=16; iiw3=5; iiw4=3; iimenu=menuchw
+            iigl=igl; iigr=igr; iigt=igt; iigb=igb; iigw=igw;iigwh=igwh
+            CALL win3d(iimenu,iiw1,iiw2,iiw3,iiw4,
+     &        iigl,iigr,iigt,iigb,iigw,iigwh)
           endif
         elseif(onright.eq.1)then
           if(onleft.eq.0)then
-            call win3d(menuchw,3,26,5,3,igl,igr,igt,igb,igw,igwh)
+            iiw1=3; iiw2=28; iiw3=5; iiw4=3; iimenu=menuchw
+            iigl=igl; iigr=igr; iigt=igt; iigb=igb; iigw=igw;iigwh=igwh
+            CALL win3d(iimenu,iiw1,iiw2,iiw3,iiw4,
+     &        iigl,iigr,iigt,iigb,iigw,iigwh)
           else
-            call win3d(menuchw,9,26,5,3,igl,igr,igt,igb,igw,igwh)
+            iiw1=9; iiw2=28; iiw3=5; iiw4=3; iimenu=menuchw
+            iigl=igl; iigr=igr; iigt=igt; iigb=igb; iigw=igw;iigwh=igwh
+            CALL win3d(iimenu,iiw1,iiw2,iiw3,iiw4,
+     &        iigl,iigr,iigt,iigb,iigw,iigwh)
           endif
         elseif(onright.eq.2)then
+
+C Set the right termination of the horizontal axis to 37 char in so that
+C there is room for two axis on the right.
           if(onleft.eq.0)then
-            call win3d(menuchw,3,31,5,3,igl,igr,igt,igb,igw,igwh)
+            iiw1=3; iiw2=37; iiw3=5; iiw4=3; iimenu=menuchw
+            iigl=igl; iigr=igr; iigt=igt; iigb=igb; iigw=igw;iigwh=igwh
+            CALL win3d(iimenu,iiw1,iiw2,iiw3,iiw4,
+     &        iigl,iigr,iigt,iigb,iigw,iigwh)
           else
-            call win3d(menuchw,9,31,5,3,igl,igr,igt,igb,igw,igwh)
+            iiw1=9; iiw2=37; iiw3=5; iiw4=3; iimenu=menuchw
+            iigl=igl; iigr=igr; iigt=igt; iigb=igb; iigw=igw;iigwh=igwh
+            CALL win3d(iimenu,iiw1,iiw2,iiw3,iiw4,
+     &        iigl,iigr,iigt,iigb,iigw,iigwh)
           endif
         endif
-        igw=igr-igl
-        igwh=igb-igt
-        call startbuffer()
+
+C Cast values back depending on machine type.
+        igl=int(iigl); igr=int(iigr); igt=int(iigt); igb=int(iigb)
+        igw=int(iigw); igwh=int(iigwh)
+        call startbuffer
       ENDIF
 
-      lsn1=MIN0(lnblnk(RFILE),22)
+      lsn1=MIN0(lnblnk(RFILE),42)
       if(NSIM.gt.1)then
         WRITE(ETEXT,'(3A,I4,2A)')'Lib: ',RFILE(1:lsn1),' Set:',ISIM,
      &    ': ',RSNAME(ISIM)(1:lnblnk(RSNAME(ISIM)))
@@ -891,6 +1012,7 @@ C ****************************************************
       COMMON/PERO/IOD1,IOM1,IOH1,IOD2,IOM2,IOH2,IODS,IODF,NOUT,IAV
       COMMON/CGHOPT/ERPLOT,TRPLOT,SPPLOT,NCTLGH,ICTLGH,ISP,ITHR
       COMMON/CTLDAT/SPH,SPC,TRH,TRC,ICF,IDTYP,IPER,IBLW,PLTCTL,ILOOP
+      integer icascf
       COMMON/CCTL/ICASCF(MCOM)
       COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
       
@@ -1063,7 +1185,8 @@ C Draws the control graph(s).
       COMMON/ZONPIK/NZ,NZNO(MCOM)
 
       COMMON/CGHOPT/ERPLOT,TRPLOT,SPPLOT,NCTLGH,ICTLGH,ISP,ITHR
-      COMMON/CTLDAT/SPH,SPC,TRH,TRC,ICF,IDTYP,IPER,IBLW,PLTCTL,ILOOP      
+      COMMON/CTLDAT/SPH,SPC,TRH,TRC,ICF,IDTYP,IPER,IBLW,PLTCTL,ILOOP
+      integer icascf      
       COMMON/CCTL/ICASCF(MCOM)
 
       DIMENSION XVAL1(MS),XREM1(MS)

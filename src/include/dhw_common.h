@@ -6,7 +6,8 @@ c Volumes are in Litres
 c Global DHW Variables
 
       COMMON /DHW_DATA/ iNTSTEP,
-     &  iNumberOfTanks,fNumOfOccupants,fWaterDraw,
+     &  iNumberOfTanks,fNumOfOccupants, iDHW_draw_BCD_col,
+     &  fWaterDraw,
      &  fCold_Main_Temp,fHotSupplyTemp,iDHW_Flag,
      &  fDHWVersionNumber,
      &  fWaterDrawCurveHourly,fWaterDrawCurveTotal,
@@ -18,11 +19,13 @@ C iDay    Contains the day of the year number.
 C iMonth  Contains the Month Number.
 C iNTSTEP Number of Timestep in one hour.
 C iNumberOfTanks Number Tanks in simulation.
+C iDHW_draw_BCD_col BCD column num for central DHW system annual draw schedule 
 C iDHW_ground_temp_cal_flag 
 C             Flag for method for obtaining ground 
 C             temperature parameters. Either user 
 C             supplied in the dhw or internally calculated
       INTEGER iDay,iMonth,iNTSTEP,iNumberOfTanks,
+     &        iDHW_draw_BCD_col,      
      &        iDHW_ground_temp_cal_flag
 
      
@@ -99,6 +102,7 @@ c Calculated Values
        REAL    fFGas                       !FlueGas Loss Factor
        REAL    fFTank                      !Energy Factor of Tank
        REAL    fUA                         !UA value of Tank
+
         
 c Monthly values Arrays 
         REAL    fSumTotalEnergy(12)             !Fuel energy required
@@ -142,16 +146,16 @@ c Function Declarations
 C.......Array used to store data for H3Kreports, transport to
 C.......site-utilities.
         common/DHW_H3Kdata_storage/
-     &         fDHW_H3K_energy_requirement,
-     &         fDHW_H3K_energy_transfer_to_water,
-     &         fDHW_H3K_water_draw,
-     &         fDHW_H3K_supply_temp,
-     &         fDHW_H3K_delivery_temp,
-     &         fDHW_H3K_heating_load,
-     &         fDHW_H3K_flue_loss,
-     &         fDHW_H3K_skin_loss,
-     &         fDHW_H3K_heat_xfer_to_room,
-     &         fDHW_H3K_pilot_energy
+     &         fDHW_H3K_energy_requirement(2),
+     &         fDHW_H3K_energy_transfer_to_water(2),
+     &         fDHW_H3K_water_draw(2),
+     &         fDHW_H3K_supply_temp(2),
+     &         fDHW_H3K_delivery_temp(2),
+     &         fDHW_H3K_heating_load(2),
+     &         fDHW_H3K_flue_loss(2),
+     &         fDHW_H3K_skin_loss(2),
+     &         fDHW_H3K_heat_xfer_to_room(2),
+     &         fDHW_H3K_pilot_energy(2)
 
 C.......Energy input (fuel calorific value) needed by DHW system (W)
         real fDHW_H3K_energy_requirement
@@ -180,3 +184,17 @@ C.......Heat trasnfer to room (W)
 
 C.......Pilot energy (W)
         real fDHW_H3K_pilot_energy
+
+       COMMON/DHW_BCD/
+     &  fDayDrawMultiplier,
+     &  cDHW_BCD_col, bDHW_BCD
+      
+      REAL fDayDrawMultiplier ! multiplier from fDayLitres to boundary condition file value
+      CHARACTER*248 cDHW_BCD_col
+      LOGICAL bDHW_BCD
+      
+       COMMON/HOT3000_DHW_file_version/
+     &  bDHWv3_HOT3000
+     
+      LOGICAL bDHWv3_HOT3000     
+

@@ -1,0 +1,39 @@
+#!/bin/csh -fb
+set RESFILE=$1
+res -file $RESFILE -mode text<<XXX
+
+d # enquire about
+>
+$RESFILE.data
+$RESFILE results
+a # summary statistics
+h # sensible
+a # heating
+h
+b # cooling
+b # temperatures
+a # zone db
+b
+e # zone resultant
+-
+-
+d # enquire
+a # summary statistics
+f # zone flux
+a # infiltration
+f
+b # ventilation
+d # solar processes
+a # entering from outside
+-
+f # energy delivered
+g # casual gains distrib
+h # zone energy balance
+b
+b
+l # monthly 
+b
+>
+-
+-
+XXX

@@ -40,90 +40,7 @@ C     new file
 C  e) scan of exemplar models changing references from the older
 C     materials databases to the new. 
 
-C Materials common blocks:
-C matver (real) version of the database
-C matcats (integer) number of categories
-C matdbitems (integer) number of items in database
-C matcatitems (integer) number of items in each category
-C matdbdate (24 char) date stamp for the database
-C matdbdoc (248 char) documentation for the materials database
-C matcatname (32 char) for menu selection of categories
-C matcatdoc (248 char) documentation for the category
-C      real matver
-C      integer matcats,matcatitems,matdbitems
-C      character matdbdate*24,matdbdoc*248,matcatname*32,matcatdoc*248
-C      common/matheader/matver,matcats,matdbitems,matcatitems(MGCL),
-C     &  matdbdate,matdbdoc,matcatname(MGCL),matcatdoc(MGCL)
-
-C The variable matopaq indicates whether the material
-C was opaque/transparent and/or a gas (various types). This
-C allows additional data to be scanned from the file:
-C matopaq (1 char) 'o' is opaque, 't' is transparent,
-C                  'g' is gas (data+temp correction),
-C                  'h' is gas (data at 4 temps),
-C                  'a' is air (fixed resistances (not yet available)),
-C                  '-' imported from legacy
-
-C matname (32 char) for leacy materials the name is a combination of
-C   the characters 'mat_' followed by the legacy index in i3.3 format.
-C matdoc (248? char) is initially filled with the 72 char from
-C   the older name of the material.
-C    character matname*32,matdoc*248,matopaq*1
-C    common/matnamearray/matname(MGIT),matdoc(MGIT),matopaq(MGIT)
-
-C matlegindex (integer) is the original material index
-C matcatindex (integer) is pointer to index of the material category
-C matdbcon (real) is the conductivity ()
-C matdbden (real) is the density ()
-C matdbsht (real) is the specific heat ()
-
-C Traditionally emissivity and solar abs have been assumed to be the same
-C on both faces of a material. Proposal to expand data structure to allow
-C for differing values on each face.  Initially, both would be set to the
-C same value. Later the source could be updated to support differing
-C assumptions for each face.
-C matdboute (real) is the outside face long wave emissivity (-)
-C matdbine (real) is the inside face long wave emissivity (-)
-C matdbouta (real) is the outside face short wave absorbtivity (-)
-C matdbina (real) is the inside face short wave absorbtivity (-)
-C matdbdrv (real) is the diffusion resistance (?)
-C matdbthick (real) default thickness (mm) for item
-
-C So called 'G-value' calculations require the sorts of single layer optical
-C properties which ESP-r does not current hold. Also the lack of this data
-C makes it difficult to work with optical tools such as WIS
-
-C Based on WIS single layer data the following data could be held based
-C on the assumtion that the default thickness was used by the construction:
-C matirtran (real)     IR transmittance
-C matsoldrtrn  (real)  solar direct transmittance
-C matsoldrotrfl (real) outer solar direct reflectance
-C matsoldrinrfl (real) inner solar direct reflectance
-C matvistran (real)    visable transmittance
-C matvisotrfl (real)   outer visable reflectance
-C matvisinrfl (real)   inner visable reflectance
-C matrender (real)      colour rendering index
-
-C For air gaps WIS supplies some additional data.
-C matgapcnd (real) (4)  gap conduction at -10C 0C 10C 20C
-C matvisco (real)(4)    gap viscosity at -10C 0C 10C 20C
-C matgapden (real)(4)   gap density at -10C 0C 10C 20C
-C matprandtl (real)(2)  prandtl number and extra field for T correct
-C matgapsht (real)(2)   gap specific heat and T correct.
-C UK EPBD method uses the 1st array index for the value and
-C the 2nd array index for T derivitive.
-C matgapares (real)(3)  air gap resistance (i.e. DRAIR) 1=vert 2=floor/ceil 3=other
-
-C mathash is a pointer to the array index in matdatarray for a
-C   given legacy index e.g array_index = mathash(legacy_index)
-C   if return is negative then there is no pointer. Index includes
-C   zero to accommodate the implied air material.
-
-C << What further information differences are there with
-C << EnergyPlus and DOE-2?
-
-C << What further information differences are there with
-C << WIS and Window 5.1
+C Materials common blocks see documentation withing material.h file.
 
 C Categories for materials implied by UK national calculation method.
 C   Air Layer
@@ -186,23 +103,37 @@ C Parameters
       character LASCI*144  ! ascii file name
       integer IER         ! error return where zero is ok, 
                           ! ier=-1 file not found, ier=-2 no classes
+      COMMON/OUTIN/IUOUT,IUIN
+      common/texted/tedlbl,teditor
+      character tedlbl*20,teditor*20
 
+C Name of current application - only invoke editing if prj.
+      character cAppName*12
+      common/APPNAME/cAppName
+      character h*72
+      common/pophelp/h(60)
+
+      character tmode*8
+      CHARACTER DOIT*300
       DIMENSION VAL(6)
       CHARACTER IDESC*72,NDESC*72,OUTSTR*124
+      character namelist*32,nametocheck*32  ! to check for duplicate names
+      character outs*142,lltmp*144,longtfile*144,longtfiledos*144
+      dimension namelist(600)
+      integer loop,ih  ! loop indices
+      integer iln,iln2 ! length of name strings
+      logical dupfound,concat,unixok,ok,dok
 
 C Open the ASCII file for reading. Reset ier state prior to efopseq.
       ier=0
+      dupfound = .false.  ! assume no duplicate names
       CALL EFOPSEQ(IFA,LASCI,1,IER)
       IF(IER.NE.0)RETURN
+
       write(currentfile,'(a)') LASCI(1:lnblnk(LASCI))
 
 C Get date stamp for the materials arrays.
       call dstamp(matdbdate)
-
-C Fill the hash table with not included marker (-1)
-      do 42 ih=0,600
-        mathash(ih)=-1
-  42  continue
 
 C Initiate documentation for the database (new concept).
       write(matdbdoc,'(4a)')
@@ -217,11 +148,32 @@ C Proceed.
         ier=-2
         RETURN
       endif
+
+C Clear the materials common blocks.
+      matdbitems = 0   ! reset the total number of items.
+      do ij=1,MGCL
+        matcatname(ij)=' '
+        matcatdoc(ij)=' '
+        matcatitems(ij)=0
+      end do
+
+C Fill the hash table with not included marker (-1) and clear the
+C array of duplicate checking names and materials data.
+      nametocheck=' '
+      matopaq(-1)=' '  ! clear the confused material slot
+      do ih=0,600
+        mathash(ih)=-1
+        if(ih.gt.0)namelist(ih)=' '
+        if(ih.gt.0)matname(ih)=' '
+        if(ih.gt.0)matdoc(ih)=' '
+        matopaq(ih)=' '
+        if(ih.gt.0)matcatindex(ih)=0
+      end do
+
       K=0
       CALL EGETWI(OUTSTR,K,matcats,1,MGCL,'W','nb mat classes',IER)
       IF(IER.NE.0.or.matcats.le.0)RETURN  ! if no categories return
 
-      matdbitems = 0   ! reset the total number of items.
       DO 10 I=1,matcats
         CALL STRIPC(IFA,OUTSTR,0,ND,1,'IC NE NDESC',IER)
         IF(IER.NE.0)RETURN
@@ -257,12 +209,34 @@ C matdbitems counter and creating a new name.
           CALL EGETRM(OUTSTR,K,IDESC,'W','mat description',IER)
 
 C The MLC database will expect to find the name of the material matching the
-C description NDESC initial characters. The logic that started all matnames
-C with mat_ does not help. Writ the initial 32 char of NDESC as the name.
+C description NDESC initial characters. Write the initial 32 char of NDESC 
+C as the material name.
           lex=MIN0(lnblnk(IDESC),32)
-          write(matname(matdbitems),'(a)') IDESC(1:lex)
-C          write(matname(matdbitems),'(a,i3.3)') 'mat_',ncode
 
+C Record the name and then check and see if it is a duplicate.
+          write(namelist(matdbitems),'(a)') IDESC(1:lex)
+          write(nametocheck,'(a)') IDESC(1:lex)
+          iln=lnblnk(nametocheck)  ! length of name to test
+          if(matdbitems.gt.1)then
+            loop=matdbitems-1
+            do 43 ih=1,loop
+              iln2=lnblnk(namelist(ih))  ! length of prior name to test
+              if(iln.eq.iln2)then
+                if(namelist(ih)(1:iln2).eq.nametocheck(1:iln))then
+                  write(outs,'(3a,i4,3a,i4,a)') 'Duplicate names ',
+     &              nametocheck(1:iln),' (',matdbitems,') vs ',
+     &              namelist(ih)(1:iln2),' (',ih,
+     &              '). Must be unique!'
+                  call edisp(iuout,outs)
+                  dupfound = .true.  ! a duplicate name found
+                endif
+              else
+                continue
+              endif
+  43        continue
+          endif
+ 
+          write(matname(matdbitems),'(a)') IDESC(1:lex)
           write(matdoc(matdbitems),'(a)') IDESC(1:lnblnk(IDESC))
 
           CALL STRIPC(IFA,OUTSTR,0,ND,1,'the raw data line',IER)
@@ -307,7 +281,7 @@ C holder based on typcial classes (for databases with 15-17 classes)
               matdbthick(matdbitems)=5.0
             elseif(I.eq.13)then
 
-C Assume that this category is glass. ?? WIS data
+C Assume that category 13 is glass.
               write(matdoc(matdbitems),'(2a)') IDESC(1:lnblnk(IDESC)),
      &          ' with placeholder single layer optics'
               matdbthick(matdbitems)=6.0
@@ -336,7 +310,7 @@ C Assume that this category is glass. ?? WIS data
   10  CONTINUE
 
 C If there has been no air material read in then add in one more
-C category for air and fill it with tdefault information.
+C category for air and fill it with default information.
       if(mathash(0).eq.-1)then
         matcats=matcats+1
         matcatitems(matcats)=1
@@ -347,7 +321,7 @@ C category for air and fill it with tdefault information.
         matlegindex(matdbitems)=0
         matcatindex(matdbitems)=matcats
         mathash(0)=matdbitems  ! set up pointer from legacy index to array
-        write(matname(matdbitems),'(a)') 'mat_000'
+        write(matname(matdbitems),'(a)') 'air'
         write(matdoc(matdbitems),'(a)') 
      &    'Air layer with default properties'
         matdbcon(matdbitems)=0.0
@@ -359,7 +333,7 @@ C category for air and fill it with tdefault information.
         matdbina(matdbitems)=0.99
         matdbdrv(matdbitems)=1.0
         matdbthick(matdbitems)=25.0
-        matopaq(matdbitems)='-'
+        matopaq(matdbitems)='g'  ! set as gap type
         matirtran(matdbitems)=0.0
         matsoldrtrn(matdbitems)=0.0
         matsoldrotrfl(matdbitems)=0.0
@@ -368,9 +342,12 @@ C category for air and fill it with tdefault information.
         matvisotrfl(matdbitems)=0.0
         matvisinrfl(matdbitems)=0.0
         matrender(matdbitems)=0.0
+        matgapares(matdbitems,1)=0.17
+        matgapares(matdbitems,2)=0.17
+        matgapares(matdbitems,3)=0.17
       endif
 
-      matver = 1.1   ! set version of database.
+      matver = 1.2   ! set version of database.
 
 C Debug.
 C      write(6,*) 'matdbitems ',matdbitems
@@ -379,6 +356,50 @@ C      write(6,*) 'mathash ',mathash
 C      write(6,*) 'matlegindex ',matlegindex
       
       CALL ERPFREE(IFA,ISTAT)
+
+C If it is a local materials file and there has been a duplicate
+C name discovered and the application is 'prj' then offer the user
+C the option of editing the materials files.
+      if(cAppName(1:3).eq.'prj')then
+        continue
+      else
+        return
+      endif
+      if(dupfound)then
+        if(ipathmat.eq.0.or.ipathmat.eq.1)then
+          dok=.false.
+          h(1)='Each material should have a unique name. Duplicates'
+          h(2)='were found and should be rectified as soon as possible'
+          h(3)='to prevent confusion in the model. After editing the '
+          h(4)='materials file you should exit prj and re-open the '
+          h(5)='model. '
+          nbhelp=5
+          CALL ASKOK(
+     &      'Edit materials file to address duplicate material names?',
+     &      '(be sure to save file and re-open the model)',
+     &      OK,dok,nbhelp)
+          if(OK)then
+            lltmp=LASCI  ! file name to edit
+
+C Depending on whether Unix or DOS based setup paths. If DOS
+C then check for spaces in name and change / to \.
+            call isunix(unixok)
+            if(unixok)then
+              call addpath(lltmp,longtfile,concat)
+            else
+              call addpath(lltmp,longtfile,concat)
+              call cmdfiledos(longtfile,longtfiledos,ier)
+              longtfile=' '
+              longtfile=longtfiledos
+            endif
+            tmode='graph'
+            if(teditor(1:2).eq.'vi')tmode='text'
+            write(doit,'(a,2x,a)') teditor(1:lnblnk(teditor)),
+     &        longtfile(1:lnblnk(longtfile))
+            call runit(doit,tmode)
+          endif
+        endif
+      endif
       RETURN
     
       END
@@ -429,23 +450,19 @@ C Set closemat for the version.
      &  ' specific heat (J/(kg-K)'
       write(IFA,'(2A)') '#  emissivity out (-) emissivity in (-)',
      &  '#   absorptivity out (-) absorptivity in (-)'
-      write(IFA,'(A)') '#  diffusion rest (?) default thickness (mm)'
+      write(IFA,'(A)') '#  diffusion resistance (MNs g^-1m^-1)'
+      write(IFA,'(A)') '#  default thickness (mm)'
       write(IFA,'(A)') '#  flag [-] legacy [o] opaque [t] transparent'
-      write(IFA,'(A)') '#       [g] gas data+T cor [h] gas data at 4T'
+      write(IFA,'(A)') '#       [g] gas or air gap'
       write(IFA,'(A)') '#  '
-      write(IFA,'(A)') '# Transparent material attributes:'
+      write(IFA,'(A)') '# Transparent material additonal attributes:'
       write(IFA,'(2A)')'#  longwave tran (-) solar direct tran (-)',
      &  ' solar reflec out (-) solar refled in (-)'
       write(IFA,'(2A)')'#  visable tran (-) visable reflec out (-)',
      &  ' visable reflec in (-) colour rendering (-)'
       write(IFA,'(A)') '#  '
-      write(IFA,'(A)') '# Gas material attributes:'
-      write(IFA,'(A)') '#  (first 9 items the same) [g] or [h]'
+      write(IFA,'(A)') '# Gas material additional attributes:'
       write(IFA,'(A)') '#  air gap resistance for vert horiz other'
-      write(IFA,'(A)') '#  [g] 2 conduction, 2 viscosity, 2 density'
-      write(IFA,'(A)') '#      2 prandtl, 2 specific heat'
-      write(IFA,'(A)') '#  [h] 4 conduction, 4 viscosity, 4 density'
-      write(IFA,'(A)') '#      prandtl, specific heat'
       write(IFA,'(A)') '#  '
 
 C Loop through each classification (index I) and write out contents.
@@ -459,7 +476,7 @@ C Loop through each classification (index I) and write out contents.
         lncat=lnblnk(matcatdoc(I))
         write(IFA,'(a)') matcatdoc(I)(1:lncat)
 
-C Loop through each of the database items (index J) for items that fit the current
+C Loop through each of the items (index J) to check if in the current
 C category.  This has the effect of packing the file and sorting the
 C common block arrays so that future reads are more efficient.
         do 20 J=1,matdbitems
@@ -480,17 +497,17 @@ C common block arrays so that future reads are more efficient.
      &        matname(J)(1:lnna),tab,matlegindex(J),
      &        tab,matcatindex(J),tab,matdoc(J)(1:lndo)
             if(matopaq(J)(1:1).eq.'-')then
-              write(outs,'(f13.3,2F9.3,4f6.3,f10.3,F6.1,2a)')
+              write(outs,'(f13.3,2F10.3,4f6.3,f10.3,F6.1,2a)')
      &          matdbcon(J),matdbden(J),matdbsht(J),matdboute(J),
      &          matdbine(J),matdbouta(J),matdbina(J),matdbdrv(J),
      &          matdbthick(J),' ',matopaq(J)
             elseif(matopaq(J)(1:1).eq.'o')then
-              write(outs,'(f13.3,2F9.3,4f6.3,f10.3,F6.1,2a)')
+              write(outs,'(f13.3,2F10.3,4f6.3,f10.3,F6.1,2a)')
      &          matdbcon(J),matdbden(J),matdbsht(J),matdboute(J),
      &          matdbine(J),matdbouta(J),matdbina(J),matdbdrv(J),
      &          matdbthick(J),' ',matopaq(J)
             elseif(matopaq(J)(1:1).eq.'t')then
-              write(outs,'(f13.3,2F9.3,4f6.3,f10.3,F6.1,2a,8F6.3)')
+              write(outs,'(f13.3,2F10.3,4f6.3,f10.3,F6.1,2a,8F6.3)')
      &          matdbcon(J),matdbden(J),matdbsht(J),matdboute(J),
      &          matdbine(J),matdbouta(J),matdbina(J),matdbdrv(J),
      &          matdbthick(J),' ',matopaq(J),
@@ -498,52 +515,33 @@ C common block arrays so that future reads are more efficient.
      &          matsoldrinrfl(J),matvistran(J),matvisotrfl(J),
      &          matvisinrfl(J),matrender(J)
             elseif(matopaq(J)(1:1).eq.'g')then
-	      if(closemat1)then
-                write(outs,'(f13.3,2F9.3,4f6.3,f10.3,F6.1,2a,
-     &            f8.5,f9.6,2f11.8,f8.4,f9.5,2f9.6,f9.3,f9.6)')
+
+C If version 1.1 write out standard attributes, if version 2+ also
+C include the three air gap resistance values.
+              if(closemat1)then
+                write(outs,'(f13.3,2F9.3,4f6.3,f10.3,F6.1,2a)')
      &            matdbcon(J),matdbden(J),matdbsht(J),matdboute(J),
      &            matdbine(J),matdbouta(J),matdbina(J),matdbdrv(J),
-     &            matdbthick(J),' ',matopaq(J),
-     &            matgapcnd(J,1),matgapcnd(J,2),matvisco(J,1),
-     &            matvisco(J,2),matgapden(J,1),matgapden(J,2),
-     &            matprandtl(J,1),matprandtl(J,2),matgapsht(J,1),
-     &            matgapsht(J,2)
+     &            matdbthick(J),' ',matopaq(J)
 	      elseif(closemat2)then
-                write(outs,'(f13.3,2F9.3,4f6.3,f10.3,F6.1,2a,
-     &            3f7.4,f8.5,f9.6,2f11.8,f8.4,f9.5,2f9.6,f9.3,f9.6)')
+                write(outs,'(f13.3,2F9.3,4f6.3,f10.3,F6.1,2a,3f7.4)')
      &            matdbcon(J),matdbden(J),matdbsht(J),matdboute(J),
      &            matdbine(J),matdbouta(J),matdbina(J),matdbdrv(J),
      &            matdbthick(J),' ',matopaq(J),matgapares(J,1),
-     &            matgapares(J,2),matgapares(J,2),
-     &            matgapcnd(J,1),matgapcnd(J,2),matvisco(J,1),
-     &            matvisco(J,2),matgapden(J,1),matgapden(J,2),
-     &            matprandtl(J,1),matprandtl(J,2),matgapsht(J,1),
-     &            matgapsht(J,2)
+     &            matgapares(J,2),matgapares(J,2)
               endif
             elseif(matopaq(J)(1:1).eq.'h')then
 	      if(closemat1)then
-                write(outs,'(f13.3,2F9.3,4f6.3,f10.3,F6.1,2a,4f8.5,
-     &            4f11.8,4f9.6,f9.6,f9.3)')
+                write(outs,'(f13.3,2F9.3,4f6.3,f10.3,F6.1,2a)')
      &            matdbcon(J),matdbden(J),matdbsht(J),matdboute(J),
      &            matdbine(J),matdbouta(J),matdbina(J),matdbdrv(J),
-     &            matdbthick(J),' ',matopaq(J),
-     &            matgapcnd(J,1),matgapcnd(J,2),matgapcnd(J,3),
-     &            matgapcnd(J,4),matvisco(J,1),matvisco(J,2),
-     &            matvisco(J,3),matvisco(J,4),matgapden(J,1),
-     &            matgapden(J,2),matgapden(J,3),matgapden(J,4),
-     &            matprandtl(J,1),matgapsht(J,1)
+     &            matdbthick(J),' ',matopaq(J)
 	      elseif(closemat2)then
-                write(outs,'(f13.3,2F9.3,4f6.3,f10.3,F6.1,2a,3f7.4,
-     &            4f8.5,4f11.8,4f9.6,f9.6,f9.3)')
+                write(outs,'(f13.3,2F9.3,4f6.3,f10.3,F6.1,2a,3f7.4)')
      &            matdbcon(J),matdbden(J),matdbsht(J),matdboute(J),
      &            matdbine(J),matdbouta(J),matdbina(J),matdbdrv(J),
      &            matdbthick(J),' ',matopaq(J),matgapares(J,1),
-     &            matgapares(J,2),matgapares(J,2),
-     &            matgapcnd(J,1),matgapcnd(J,2),matgapcnd(J,3),
-     &            matgapcnd(J,4),matvisco(J,1),matvisco(J,2),
-     &            matvisco(J,3),matvisco(J,4),matgapden(J,1),
-     &            matgapden(J,2),matgapden(J,3),matgapden(J,4),
-     &            matprandtl(J,1),matgapsht(J,1)
+     &            matgapares(J,2),matgapares(J,2)
               endif
             endif
             call SDELIM(outs,outsd,'C',IW)
@@ -572,18 +570,35 @@ C Parameters
       character LASCI*144  ! ascii file name
       integer IER         ! error return where zero is ok and -2 signals
                           ! that the expected header was not found
+                          ! ier=-1 file not found, ier=-2 no classes
+      COMMON/OUTIN/IUOUT,IUIN
+      common/texted/tedlbl,teditor
+      character tedlbl*20,teditor*20
+
+C Name of current application - only invoke editing if prj.
+      common/APPNAME/cAppName
+      character cAppName*12
+
+      character tmode*8
+      CHARACTER DOIT*300
 
       DIMENSION VAL(19)
       CHARACTER NDESC*72,OUTSTR*124,WORD*24
       character WORD32*32,WORD248*248,LOUTSTR*248
       logical closemat1,closemat2
+      character namelist*32,nametocheck*32  ! to check for duplicate names
+      character outs*132,lltmp*144,longtfile*144,longtfiledos*144
+      dimension namelist(600)
+      integer loop,ih  ! loop indices
+      integer iln,iln2 ! length of name strings
+      logical dupfound,concat,unixok,ok,dok
 
 C Open the ASCII file for reading.
+      dupfound = .false.  ! assume no duplicate names
       CALL EFOPSEQ(IFA,LASCI,1,IER)
       IF(IER.NE.0)RETURN
       write(currentfile,'(a)') LASCI(1:lnblnk(LASCI))
 
-      matdbitems = 0   ! reset the total number of items.
       closemat1=.false.
       closemat2=.false.
 
@@ -594,11 +609,26 @@ C Proceed with header.
       CALL EGETW(OUTSTR,K,WORD,'-','*material',IER)
       if(WORD(1:10).eq.'*Materials'.or.WORD(1:10).eq.'*materials')then
 
-C Fill the hash table with not included marker (-1) and then get the
-C next token as the version number as set closemat.
-        do 42 ih=0,600
+C Clear the materials common blocks.
+        matdbitems = 0   ! reset the total number of items.
+        do ij=1,MGCL
+          matcatname(ij)=' '
+          matcatdoc(ij)=' '
+          matcatitems(ij)=0
+        end do
+
+C Fill the hash table with not included marker (-1) and clear the
+C array of duplicate checking names and materials data.
+        nametocheck=' '
+        do ih=0,600
           mathash(ih)=-1
-  42    continue
+          if(ih.gt.0)namelist(ih)=' '
+          if(ih.gt.0)matname(ih)=' '
+          if(ih.gt.0)matdoc(ih)=' '
+          matopaq(ih)=' '
+          if(ih.gt.0)matcatindex(ih)=0
+        end do
+
         matver = 1.1   ! set initial version of database.
         CALL EGETWR(OUTSTR,K,VAL(1),1.0,1.2,'-','db mat version',IER)
 	if(VAL(1).gt.1.0) matver = VAL(1)
@@ -646,8 +676,42 @@ C class index IC is used for subsequent items.
         write(matcatdoc(IC),'(a)') WORD248(1:lnblnk(WORD248))
         goto 41
       elseif(WORD(1:5).eq.'*Item'.or.WORD(1:5).eq.'*item')then
+
+C The item line includes a 'legacy index' for the record number in the
+C binary materials file. Traditionally this would be a positive number
+C for a non-gas material, zero for a gap/gas material or a -99 if there
+C was some confusion associated with the material or it could not have
+C been represented in the binary materials file.
+
+C << the overloading of -99 is an issue to deal with! >>
+
         matdbitems=matdbitems+1   ! increment counter
         CALL EGETP(LOUTSTR,K,WORD32,'-','item name',IER) ! name might contain a space
+
+C Record the name and then check and see if it is a duplicate.
+        lex=MIN0(lnblnk(WORD32),32)
+        write(namelist(matdbitems),'(a)') WORD32(1:lex)
+        write(nametocheck,'(a)') WORD32(1:lex)
+        iln=lnblnk(nametocheck)  ! length of name to test
+        if(matdbitems.gt.1)then
+          loop=matdbitems-1
+          do 43 ih=1,loop
+            iln2=lnblnk(namelist(ih))  ! length of prior name to test
+            if(iln.eq.iln2)then
+              if(namelist(ih)(1:iln2).eq.nametocheck(1:iln))then
+                write(outs,'(3a,i4,3a,i4,a)') 'Duplicate names ',
+     &            nametocheck(1:iln),' (',matdbitems,') vs ',
+     &            namelist(ih)(1:iln2),' (',ih,
+     &            '). Material names must be unique!'
+                call edisp(iuout,outs)
+                dupfound = .true.  ! a duplicate name found
+              endif
+            else
+              continue
+            endif
+  43      continue
+        endif
+
         write(matname(matdbitems),'(a)') WORD32(1:lnblnk(WORD32))
         CALL EGETWI(LOUTSTR,K,NCODE,-99,600,'F','legacy index',IER)
         matlegindex(matdbitems)=NCODE
@@ -687,7 +751,7 @@ C class index IC is used for subsequent items.
           matopaq(matdbitems)='-'
         elseif(WORD32(1:1).eq.'t')then
 
-C Read single layer optics if there are more than 
+C Read single layer optics if there are more than 10 items in line.
           matopaq(matdbitems)='t'
           if(ND.gt.10)then
             CALL EGETWR(LOUTSTR,K,VAL(1),0.,0.,'-','db ir tran',IER)
@@ -707,154 +771,42 @@ C Read single layer optics if there are more than
             matvisinrfl(matdbitems)=VAL(7)
             matrender(matdbitems)=VAL(8)
           endif
-        elseif(WORD32(1:1).eq.'g')then   ! gas (data+temp correction)
+        elseif(WORD32(1:1).eq.'g')then   ! gas
+
+C If marked with a 'g' and there are 13 ir more than 20 items on the
+C line  then read air gap resistance but otherwise skip the rest of the line.
           matopaq(matdbitems)='g'
-	  if(closemat1)then
-            CALL EGETWR(LOUTSTR,K,VAL(1),0.,0.,'-','db gas cond',IER)
-            CALL EGETWR(LOUTSTR,K,VAL(2),0.,0.,'-','db cond T deriv',
-     &        IER)
-            CALL EGETWR(LOUTSTR,K,VAL(3),0.,0.,'-','db gas visc',IER)
-            CALL EGETWR(LOUTSTR,K,VAL(4),0.,0.,'-','db visc T deriv',
-     &        IER)
-            CALL EGETWR(LOUTSTR,K,VAL(5),0.,0.,'-','db gas density',
-     &        IER)
-            CALL EGETWR(LOUTSTR,K,VAL(6),0.,0.,'-','db dens T deriv',
-     &        IER)
-            CALL EGETWR(LOUTSTR,K,VAL(7),0.,0.,'-','db prandtl',IER)
-            CALL EGETWR(LOUTSTR,K,VAL(8),0.,0.,'-','db prandtl der',
-     &        IER)
-            CALL EGETWR(LOUTSTR,K,VAL(9),0.,0.,'-','db spec ht',IER)
-            CALL EGETWR(LOUTSTR,K,VAL(10),0.,0.,'-','db spec ht der',
-     &        IER)
-            matgapcnd(matdbitems,1)=VAL(1)
-            matgapcnd(matdbitems,2)=VAL(2)
-            matvisco(matdbitems,1)=VAL(3)
-            matvisco(matdbitems,2)=VAL(4)
-            matgapden(matdbitems,1)=VAL(5)
-            matgapden(matdbitems,2)=VAL(6)
-            matprandtl(matdbitems,1)=VAL(7)
-            matprandtl(matdbitems,2)=VAL(8)
-            matgapsht(matdbitems,1)=VAL(9)
-            matgapsht(matdbitems,2)=VAL(10)
-          elseif(closemat2)then
-
-C Check if there are more than 20 values on the line for g type
-C of layer (and thus has the air gap resistances).
-            if(ND.gt.20)then
+          if(closemat1.or.closemat2)then
+            if(ND.eq.13.or.ND.gt.20)then
               CALL EGETWR(LOUTSTR,K,VAL(1),0.,0.,'-',
      &          'db air res vert',IER)
               CALL EGETWR(LOUTSTR,K,VAL(2),0.,0.,'-',
      &          'db air res floor:ceil',IER)
               CALL EGETWR(LOUTSTR,K,VAL(3),0.,0.,'-',
      &          'db air res other',IER)
-            endif
-            CALL EGETWR(LOUTSTR,K,VAL(4),0.,0.,'-','db gas cond',IER)
-            CALL EGETWR(LOUTSTR,K,VAL(5),0.,0.,'-','db cond T deriv',
-     &        IER)
-            CALL EGETWR(LOUTSTR,K,VAL(6),0.,0.,'-','db gas visc',IER)
-            CALL EGETWR(LOUTSTR,K,VAL(7),0.,0.,'-','db visc T deriv',
-     &        IER)
-            CALL EGETWR(LOUTSTR,K,VAL(8),0.,0.,'-','db gas density',
-     &        IER)
-            CALL EGETWR(LOUTSTR,K,VAL(9),0.,0.,'-','db dens T deriv',
-     &        IER)
-            CALL EGETWR(LOUTSTR,K,VAL(10),0.,0.,'-','db prandtl',IER)
-            CALL EGETWR(LOUTSTR,K,VAL(11),0.,0.,'-','db prandtl der',
-     &        IER)
-            CALL EGETWR(LOUTSTR,K,VAL(12),0.,0.,'-','db spec ht',IER)
-            CALL EGETWR(LOUTSTR,K,VAL(13),0.,0.,'-','db spec ht der',
-     &        IER)
-            if(ND.gt.20)then
               matgapares(matdbitems,1)=VAL(1)
               matgapares(matdbitems,2)=VAL(2)
               matgapares(matdbitems,3)=VAL(3)
             endif
-            matgapcnd(matdbitems,1)=VAL(4)
-            matgapcnd(matdbitems,2)=VAL(5)
-            matvisco(matdbitems,1)=VAL(6)
-            matvisco(matdbitems,2)=VAL(7)
-            matgapden(matdbitems,1)=VAL(8)
-            matgapden(matdbitems,2)=VAL(9)
-            matprandtl(matdbitems,1)=VAL(10)
-            matprandtl(matdbitems,2)=VAL(11)
-            matgapsht(matdbitems,1)=VAL(12)
-            matgapsht(matdbitems,2)=VAL(13)
           endif
-        elseif(WORD32(1:1).eq.'h')then   ! gas (data at 4 temps)
-          matopaq(matdbitems)='h'
-	  if(closemat1)then
-            CALL EGETWR(LOUTSTR,K,VAL(1),0.,0.,'-','gas cond -10',IER)
-            CALL EGETWR(LOUTSTR,K,VAL(2),0.,0.,'-','gas cond 0',IER)
-            CALL EGETWR(LOUTSTR,K,VAL(3),0.,0.,'-','gas cond 10',IER)
-            CALL EGETWR(LOUTSTR,K,VAL(4),0.,0.,'-','gas cond 20',IER)
-            CALL EGETWR(LOUTSTR,K,VAL(5),0.,0.,'-','gas visc -10',IER)
-            CALL EGETWR(LOUTSTR,K,VAL(6),0.,0.,'-','gas visc 0',IER)
-            CALL EGETWR(LOUTSTR,K,VAL(7),0.,0.,'-','gas visc 10',IER)
-            CALL EGETWR(LOUTSTR,K,VAL(8),0.,0.,'-','gas visc 20',IER)
-            CALL EGETWR(LOUTSTR,K,VAL(9),0.,0.,'-','gas dens -10',IER)
-            CALL EGETWR(LOUTSTR,K,VAL(10),0.,0.,'-','gas dens 0',IER)
-            CALL EGETWR(LOUTSTR,K,VAL(11),0.,0.,'-','gas dens 10',IER)
-            CALL EGETWR(LOUTSTR,K,VAL(12),0.,0.,'-','gas dens 20',IER)
-            CALL EGETWR(LOUTSTR,K,VAL(13),0.,0.,'-','db prandtl',IER)
-            CALL EGETWR(LOUTSTR,K,VAL(14),0.,0.,'-','db gas sp ht',IER)
-            matgapcnd(matdbitems,1)=VAL(1)
-            matgapcnd(matdbitems,2)=VAL(2)
-            matgapcnd(matdbitems,3)=VAL(3)
-            matgapcnd(matdbitems,4)=VAL(4)
-            matvisco(matdbitems,1)=VAL(5)
-            matvisco(matdbitems,2)=VAL(6)
-            matvisco(matdbitems,3)=VAL(7)
-            matvisco(matdbitems,4)=VAL(8)
-            matgapden(matdbitems,1)=VAL(9)
-            matgapden(matdbitems,2)=VAL(10)
-            matgapden(matdbitems,3)=VAL(11)
-            matgapden(matdbitems,4)=VAL(12)
-            matprandtl(matdbitems,1)=VAL(13)
-            matgapsht(matdbitems,1)=VAL(14)
-          elseif(closemat2)then
+        elseif(WORD32(1:1).eq.'h')then   ! gas
 
-C If there are more than 24 items then air gap resistance available.
-            if(ND.gt.24)then
+C If marked with a 'h' save matopaq as a 'g'. And if there are 13 or more 
+C than 20 items on the line  then read air gap resistance but otherwise skip
+C the rest of the line.
+          matopaq(matdbitems)='g'
+          if(closemat1.or.closemat2)then
+            if(ND.eq.13.or.ND.gt.20)then
               CALL EGETWR(LOUTSTR,K,VAL(1),0.,0.,'-',
      &          'db air res vert',IER)
               CALL EGETWR(LOUTSTR,K,VAL(2),0.,0.,'-',
      &          'db air res floor:ceil',IER)
               CALL EGETWR(LOUTSTR,K,VAL(3),0.,0.,'-',
      &          'db air res other',IER)
-            endif
-            CALL EGETWR(LOUTSTR,K,VAL(4),0.,0.,'-','gas cond -10',IER)
-            CALL EGETWR(LOUTSTR,K,VAL(5),0.,0.,'-','gas cond 0',IER)
-            CALL EGETWR(LOUTSTR,K,VAL(6),0.,0.,'-','gas cond 10',IER)
-            CALL EGETWR(LOUTSTR,K,VAL(7),0.,0.,'-','gas cond 20',IER)
-            CALL EGETWR(LOUTSTR,K,VAL(8),0.,0.,'-','gas visc -10',IER)
-            CALL EGETWR(LOUTSTR,K,VAL(9),0.,0.,'-','gas visc 0',IER)
-            CALL EGETWR(LOUTSTR,K,VAL(10),0.,0.,'-','gas visc 10',IER)
-            CALL EGETWR(LOUTSTR,K,VAL(11),0.,0.,'-','gas visc 20',IER)
-            CALL EGETWR(LOUTSTR,K,VAL(12),0.,0.,'-','gas dens -10',IER)
-            CALL EGETWR(LOUTSTR,K,VAL(13),0.,0.,'-','gas dens 0',IER)
-            CALL EGETWR(LOUTSTR,K,VAL(14),0.,0.,'-','gas dens 10',IER)
-            CALL EGETWR(LOUTSTR,K,VAL(15),0.,0.,'-','gas dens 20',IER)
-            CALL EGETWR(LOUTSTR,K,VAL(16),0.,0.,'-','db prandtl',IER)
-            CALL EGETWR(LOUTSTR,K,VAL(17),0.,0.,'-','db gas sp ht',IER)
-            if(ND.gt.24)then
               matgapares(matdbitems,1)=VAL(1)
               matgapares(matdbitems,2)=VAL(2)
               matgapares(matdbitems,3)=VAL(3)
             endif
-            matgapcnd(matdbitems,1)=VAL(4)
-            matgapcnd(matdbitems,2)=VAL(5)
-            matgapcnd(matdbitems,3)=VAL(6)
-            matgapcnd(matdbitems,4)=VAL(7)
-            matvisco(matdbitems,1)=VAL(8)
-            matvisco(matdbitems,2)=VAL(9)
-            matvisco(matdbitems,3)=VAL(10)
-            matvisco(matdbitems,4)=VAL(11)
-            matgapden(matdbitems,1)=VAL(12)
-            matgapden(matdbitems,2)=VAL(13)
-            matgapden(matdbitems,3)=VAL(14)
-            matgapden(matdbitems,4)=VAL(15)
-            matprandtl(matdbitems,1)=VAL(16)
-            matgapsht(matdbitems,1)=VAL(17)
           endif
         endif
 
@@ -863,7 +815,6 @@ C If there are more than 24 items then air gap resistance available.
 
 C End of file marker.
         CALL ERPFREE(IFA,ISTAT)
-        RETURN
       else
 
 C << did not find the correct header.... >>
@@ -876,6 +827,45 @@ C << did not find the correct header.... >>
       endif
       
       CALL ERPFREE(IFA,ISTAT)
+
+C If it is a local materials file and there has been a duplicate
+C name discovered and the application is 'prj' then offer the user
+C the option of editing the materials files.
+      if(cAppName(1:3).eq.'prj')then
+        continue
+      else
+        return
+      endif
+      if(dupfound)then
+        if(ipathmat.eq.0.or.ipathmat.eq.1)then
+          dok=.false.
+          CALL ASKOK(
+     &      'Edit materials file to address duplicate material names?',
+     &      '(be sure to save file and re-open the model)',
+     &      OK,dok,nbhelp)
+          if(OK)then
+            lltmp=LASCI  ! file name to edit
+
+C Depending on whether Unix or DOS based setup paths. If DOS
+C then check for spaces in name and change / to \.
+            call isunix(unixok)
+            if(unixok)then
+              call addpath(lltmp,longtfile,concat)
+            else
+              call addpath(lltmp,longtfile,concat)
+              call cmdfiledos(longtfile,longtfiledos,ier)
+              longtfile=' '
+              longtfile=longtfiledos
+            endif
+            tmode='graph'
+            if(teditor(1:2).eq.'vi')tmode='text'
+            write(doit,'(a,2x,a)') teditor(1:lnblnk(teditor)),
+     &        longtfile(1:lnblnk(longtfile))
+            call runit(doit,tmode)
+          endif
+        endif
+      endif
+
       RETURN
     
       END
@@ -912,11 +902,14 @@ C be sure to instanciate mathash with the material array index.
       end
 
 C ************* MATFROMBIN 
-C MATFROMBIN: Fills materials common blocks via scan of binary materials
-C database.  It should be called after an initial scan of the binary
-C file establishes that the file is ok for scanning. Other code blocks
-C can check the value of natdbitems is non-zero. If the returned value
-C of IER is zero then 
+C MATFROMBIN: Fills materials common blocks via scan of a legacy
+C binary materials database.  It should be called after an initial 
+C scan of the binary file establishes that the file is ok for scanning.
+C Other code blocks can check the value of natdbitems is non-zero.
+C If the returned value of IER is zero then scan was ok.
+
+C << this could be part of a legacy file conversion facility >>
+
       SUBROUTINE MATFROMBIN(IER)
 #include "building.h"
 #include "esprdbfile.h"
@@ -975,11 +968,6 @@ C Reset ier state prior to reading data.
 C Get date stamp for the materials arrays.
       call dstamp(matdbdate)
 
-C Fill the hash table with not included marker (-1)
-      do 42 ih=0,600
-        mathash(ih)=-1
-  42  continue
-
 C Initiate documentation for the database (new concept).
       write(matdbdoc,'(4a)')
      & 'ESP-r Materials based on scan of a binary materials',
@@ -999,11 +987,28 @@ C the file is not binary there is no need to inform the user.
         IER=-2
         RETURN
       ENDIF
-      matcats=NCLASS
+
+C Clear the materials common blocks.
       matdbitems = 0   ! reset the total number of items.
+
+      do ij=1,MGCL
+        matcatname(ij)=' '
+        matcatdoc(ij)=' '
+        matcatitems(ij)=0
+      end do
+
+C Fill the hash table with not included marker (-1)
+      do ih=0,600
+        mathash(ih)=-1
+        if(ih.gt.0)matname(ih)=' '
+        if(ih.gt.0)matdoc(ih)=' '
+        matopaq(ih)=' '  ! allow zero so that iprmat of zero is ok
+        if(ih.gt.0)matcatindex(ih)=0
+      end do
 
 C Proceed with the assumption that ICLN increments in the same order as
 C 1 -> NCLASS increments. ICLN is not held in the common blocks.
+      matcats=NCLASS
       DO 10 I=1,NCLASS
         IC=ICLN(I)
         IREC=IC*20-19
@@ -1033,11 +1038,10 @@ C If the class has some entries loop.
             endif
 
 C The MLC database will expect to find the name of the material matching the
-C description NDESC initial characters. The logic that started all matnames
-C with mat_ does not help. Writ the initial 32 char of NDESC as the name.
+C description NDESC initial characters. Write the initial 32 char of NDESC 
+C as the name.
             lex=MIN0(lnblnk(NDESC),32)
             write(matname(matdbitems),'(a)') NDESC(1:lex)
-C            write(matname(matdbitems),'(a,i3.3)') 'mat_',ncode
             write(matdoc(matdbitems),'(a)') NDESC(1:lnblnk(NDESC))
             matdbcon(matdbitems)=VAL(1)
             matdbden(matdbitems)=VAL(2)
@@ -1072,7 +1076,7 @@ C holder based on typcial classes (for databases with 15-17 classes)
                 matdbthick(matdbitems)=5.0
               elseif(I.eq.13)then
 
-C Assume that this category is glass. ?? WIS data
+C Assume that category 13 is glass.
                 write(matdoc(matdbitems),'(2a)') IDESC(1:lnblnk(IDESC)),
      &          ' with placeholder single layer optics'
                 matdbthick(matdbitems)=6.0
@@ -1138,7 +1142,7 @@ C category for air and fill it with default information.
         matgapares(matdbitems,3)=0.17
       endif
 
-      matver = 1.1   ! set version of materials structures.
+      matver = 1.2   ! set version of materials structures.
 
 C Debug.
 C      write(6,*) 'b matdbitems ',matdbitems
@@ -1204,6 +1208,8 @@ C Set folder separator (fs) to \ or / as required.
       else
         fs = char(92)
       endif
+
+C << revise initial assumption that materials file was binary >>
 
 C Scan the binary file data into materials commons and if this was
 C sucessful and matver was set to 1.1 in matformbin then we can

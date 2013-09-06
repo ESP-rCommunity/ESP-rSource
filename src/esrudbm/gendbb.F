@@ -1698,65 +1698,25 @@ C a profiles db file.
             call edisp(iuout,' Found legacy event profiles db...')
             ier=3
             return
-          else
-
-C Check to see if it is a legacy binary profiles database. (Use
-C code similar to that found in pro.F to open this file).
-            CALL ERPFREE(IFB,IOS)
-            IER=0
-            call EFOPRAN(IFB,LGENDB,10,1,IER)
-            IF(ier.eq.0)THEN
-              IREC=1
-              READ(IFB,REC=IREC,IOSTAT=ISTAT,ERR=450)NITEMS
-              CALL ERPFREE(IFB,IOS)
-              CALL USRMSG('Found legacy profiles db',' ','-')
-              idbhash=11
-              ier=4
-              return
-
-C If we got here then there was an error reading NITEMS.
-  450         CALL USRMSG('Could not check legacy profiles db',' ','P')
-              idbhash=0
-              ier=1
-              return
-            else
-              idbhash=0
-              call edisp(iuout,' Found unknown file type...')
-              ier=1
-              return
-            endif
           endif
         elseif(reqdbtype(1:8).eq.'material')then
 
-C It might be a binary legacy db file. If so close and reopen
-C and scan binary files.
-          CALL ERPFREE(IFB,IOS)
-          IER=0
-          call EFOPRAN(IFB,LGENDB,40,0,IER)
-          if(ier.ne.0)then
-
+C Check if ASCII materials file.
 C It might be a text materials db file.
-            CALL EFOPSEQ(IFB,LGENDB,1,IER)
-            CALL STRIPC(IFB,OUTSTR,99,ND1,1,'no classes',IER)
-            CALL STRIPC(IFB,OUTSTR,99,ND2,1,'IC NE NDESC',IER)
-            if(ND1.eq.1.and.ND2.ge.3)then
-              CALL ERPFREE(IFB,IOS)
-              idbhash=2
-              call edisp(iuout,' Found legacy materials db...')
-              ier=3
-              return
-            else
-              CALL ERPFREE(IFB,IOS)
-              idbhash=0
-              call edisp(iuout,' Found unknown file type...')
-              ier=1
-              return
-            endif
-          else
+          CALL EFOPSEQ(IFB,LGENDB,1,IER)
+          CALL STRIPC(IFB,OUTSTR,99,ND1,1,'no classes',IER)
+          CALL STRIPC(IFB,OUTSTR,99,ND2,1,'IC NE NDESC',IER)
+          if(ND1.eq.1.and.ND2.ge.3)then
             CALL ERPFREE(IFB,IOS)
             idbhash=2
-            call edisp(iuout,' Found legacy binary materials db...')
-            ier=4
+            call edisp(iuout,' Found legacy materials db...')
+            ier=3
+            return
+          else
+            CALL ERPFREE(IFB,IOS)
+            idbhash=0
+            call edisp(iuout,' Found unknown file type...')
+            ier=1
             return
           endif
         elseif(reqdbtype(1:11).eq.'multicon_db')then

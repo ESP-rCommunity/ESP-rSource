@@ -208,6 +208,7 @@ C *********************************************************************
 #include "building.h"
 #include "geometry.h"
 
+      integer IZSTOCN
       COMMON/C24/IZSTOCN(MCOM,MS)
 
       COMMON/GRSD31/INDLCL(MS)
@@ -933,6 +934,7 @@ C *********************************************************************
 
       COMMON/OUTIN/IUOUT,IUIN
 
+      integer IZSTOCN
       COMMON/C24/IZSTOCN(MCOM,MS)
 
       COMMON/GRSD51/NMtr,IMtrS(MMTR),IMtrE(MMTR)
@@ -1758,10 +1760,14 @@ C *********************************************************************
       integer igwid,igheight  ! for use with axiscale
       integer iside,isize,ifont,ipos     ! passed to viewtext etlabel
       integer iix,iiy,iix1,iiy1,iix2,iiy2
+      integer iigl,iigr,iigt,iigb,iigw,iigwh
+      integer iiw1,iiw2,iiw3,iiw4,iimenu
 #else
       integer*8 igwid,igheight  ! for use with axiscale
       integer*8 iside,isize,ifont,ipos     ! passed to viewtext etlabel
       integer*8 iix,iiy,iix1,iiy1,iix2,iiy2
+      integer*8 iigl,iigr,iigt,iigb,iigw,iigwh
+      integer*8 iiw1,iiw2,iiw3,iiw4,iimenu
 #endif
 
 C Return if not in graghical mode.
@@ -1773,9 +1779,14 @@ C Define the view parameters.
       XMax=FLOAT(NCol)
       YMax=FLOAT(NLay)
       call startbuffer()
-      CALL WIN3D(menuchw,14,14,4,3,igl,igr,igt,igb,igw,igwh)
-      igw=igr-igl
-      igwh=igb-igt
+
+C Setup and pass in parameters to win3d.
+      iiw1=14; iiw2=14; iiw3=4; iiw4=3; iimenu=menuchw
+      iigl=igl; iigr=igr; iigt=igt; iigb=igb; iigw=igw; iigwh=igwh
+      CALL win3d(iimenu,iiw1,iiw2,iiw3,iiw4,
+     &  iigl,iigr,iigt,iigb,iigw,iigwh)
+      igl=int(iigl); igr=int(iigr); igt=int(iigt); igb=int(iigb)
+      igw=int(iigw); igwh=int(iigwh)
       igwid=igw
       igheight=igwh
 
@@ -1784,7 +1795,7 @@ C Estimate the X, Y, XY scales.
      &               Xadd,Yadd)
 
 C Define the active scale.
-      CALL LINESCALE(IGL,Xadd,SCA,IGB,Yadd,SCA)
+      CALL LINESCALE(iigl,Xadd,SCA,iigb,Yadd,SCA)
 
 C Display header information.
       WRITE(Title,'(A14,I2)')'Row Number: ',IRow
@@ -1935,10 +1946,14 @@ C *********************************************************************
       integer igwid,igheight  ! for use with axiscale
       integer iside,isize,ifont,ipos     ! passed to viewtext etlabel
       integer iix,iiy,iix1,iiy1,iix2,iiy2
+      integer iigl,iigr,iigt,iigb,iigw,iigwh
+      integer iiw1,iiw2,iiw3,iiw4,iimenu
 #else
       integer*8 igwid,igheight  ! for use with axiscale
       integer*8 iside,isize,ifont,ipos     ! passed to viewtext etlabel
       integer*8 iix,iiy,iix1,iiy1,iix2,iiy2
+      integer*8 iigl,iigr,iigt,iigb,iigw,iigwh
+      integer*8 iiw1,iiw2,iiw3,iiw4,iimenu
 #endif
 
 C Return if not in graghical mode.
@@ -1950,9 +1965,14 @@ C Define the view parameters.
       XMax=FLOAT(NLay)
       YMax=FLOAT(NRow)
       call startbuffer()
-      CALL WIN3D(menuchw,14,14,4,3,igl,igr,igt,igb,igw,igwh)
-      igw=igr-igl
-      igwh=igb-igt
+
+C Setup and pass in parameters to win3d.
+      iiw1=14; iiw2=14; iiw3=4; iiw4=3; iimenu=menuchw
+      iigl=igl; iigr=igr; iigt=igt; iigb=igb; iigw=igw; iigwh=igwh
+      CALL win3d(iimenu,iiw1,iiw2,iiw3,iiw4,
+     &  iigl,iigr,iigt,iigb,iigw,iigwh)
+      igl=int(iigl); igr=int(iigr); igt=int(iigt); igb=int(iigb)
+      igw=int(iigw); igwh=int(iigwh)
       igwid=igw
       igheight=igwh
 
@@ -1961,7 +1981,7 @@ C Estimate the X, Y, XY scales.
      &              Xadd,Yadd)
 
 C Define the active scale.
-      CALL LINESCALE(IGL,Xadd,SCA,IGB,Yadd,SCA)
+      CALL LINESCALE(iigl,Xadd,SCA,iigb,Yadd,SCA)
 
 C Display header information.
       WRITE(Title,'(A14,I2)')'Column Number: ',ICol
@@ -2114,10 +2134,14 @@ C *********************************************************************
       integer igwid,igheight  ! for use with axiscale
       integer iside,isize,ifont,ipos     ! passed to viewtext etlabel
       integer iix,iiy,iix1,iiy1,iix2,iiy2
+      integer iigl,iigr,iigt,iigb,iigw,iigwh
+      integer iiw1,iiw2,iiw3,iiw4,iimenu
 #else
       integer*8 igwid,igheight  ! for use with axiscale
       integer*8 iside,isize,ifont,ipos    ! passed to viewtext etlabel
       integer*8 iix,iiy,iix1,iiy1,iix2,iiy2
+      integer*8 iigl,iigr,iigt,iigb,iigw,iigwh
+      integer*8 iiw1,iiw2,iiw3,iiw4,iimenu
 #endif
 
 C Return if not in graghical mode.
@@ -2129,9 +2153,14 @@ C Define the view parameters.
       XMax=FLOAT(NCol)
       YMax=FLOAT(NRow)
       call startbuffer()
-      CALL WIN3D(menuchw,14,14,4,3,igl,igr,igt,igb,igw,igwh)
-      igw=igr-igl
-      igwh=igb-igt
+
+C Setup and pass in parameters to win3d.
+      iiw1=14; iiw2=14; iiw3=4; iiw4=3; iimenu=menuchw
+      iigl=igl; iigr=igr; iigt=igt; iigb=igb; iigw=igw; iigwh=igwh
+      CALL win3d(iimenu,iiw1,iiw2,iiw3,iiw4,
+     &  iigl,iigr,iigt,iigb,iigw,iigwh)
+      igl=int(iigl); igr=int(iigr); igt=int(iigt); igb=int(iigb)
+      igw=int(iigw); igwh=int(iigwh)
       igwid=igw
       igheight=igwh
 
@@ -2140,7 +2169,7 @@ C Estimate the X, Y, XY scales.
      &               Xadd,Yadd)
 
 C Define the active scale.
-      CALL LINESCALE(IGL,Xadd,SCA,IGB,Yadd,SCA)
+      CALL LINESCALE(iigl,Xadd,SCA,iigb,Yadd,SCA)
 
 C Display header information.
       WRITE(Title,'(A14,I2)')'Layer Number: ',ILay

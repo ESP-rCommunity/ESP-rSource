@@ -1,9 +1,9 @@
-*connections  for conduction
-*Date Mon Feb  8 12:51:57 1999
+*connections for conduction
+*Date Thu Aug 30 08:33:00 2012
       6   # number of connections
-   1   1   2   0   0  #   1  Surf-1 in test_cell >|< Constant @  0 dC &   0 W rad
-   1   2   2   0   0  #   2  Surf-2 in test_cell >|< Constant @  0 dC &   0 W rad
-   1   3   2   0   0  #   3  Surf-3 in test_cell >|< Constant @  0 dC &   0 W rad
-   1   4   2   0   0  #   4  Surf-4 in test_cell >|< Constant @  0 dC &   0 W rad
-   1   5   2   0   0  #   5  Surf-5 in test_cell >|< Constant @  0 dC &   0 W rad
-   1   6   2   0   0  #   6  Surf-6 in test_cell >|< Constant @  0 dC &   0 W rad
+   1   1   2   0   0  #    1 Surf-1 in test_cell >|< Constant @  0 dC &   0 W rad
+   1   2   2   0   0  #    2 Surf-2 in test_cell >|< Constant @  0 dC &   0 W rad
+   1   3   2   0   0  #    3 Surf-3 in test_cell >|< Constant @  0 dC &   0 W rad
+   1   4   2   0   0  #    4 Surf-4 in test_cell >|< Constant @  0 dC &   0 W rad
+   1   5   2   0   0  #    5 Surf-5 in test_cell >|< Constant @  0 dC &   0 W rad
+   1   6   2   0   0  #    6 Surf-6 in test_cell >|< Constant @  0 dC &   0 W rad

@@ -1,0 +1,31 @@
+Notes on simple 1 zone building model with external shading,
+convective heating and ideal control:
+
+This model (bld_simple.cfg) relates to an L-shaped
+reception with convective heating.  The simple representation
+contains a single thermal zone, but the resolution of the
+model has been increased by including a shading and
+insolation analysis.
+
+The obstructions represent an adjacent building.  Several
+obstructions are used to represent adjacent buildings and
+a tree. 
+
+The following files are used in this example problem.
+
+   file                 description
+________________________________________________________________
+bld_simple_shd.cfg   model configuration
+bld_simple.ctl       configuration control (convective heating
+                     and ideal control)
+bld_simple_shd.log   project notes (this file)
+
+(zone files are in the directory ../zones)
+reception.geo       zone geometry
+reception.con       zone construction
+reception.opr       zone schedules
+reception.tmc       zone transparent properties
+reception.shd       zone shading database
+reception.obs       zone obstructions file
+                    used to generate reception.shd
+________________________________________________________________

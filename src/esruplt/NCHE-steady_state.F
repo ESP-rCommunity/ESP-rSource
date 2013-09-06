@@ -1088,13 +1088,13 @@ C........Get current day
 C----------------------------------------------------------------------
 C.....Heat exchanger effectiveness
 C     Report value
-      call AddToReportWild1(rvPltHXchgEff%Identifier,
+      call AddToReport(rvPltHXchgEff%Identifier,
      &         fReport_HX_effectiveness( iIndex ),
      &         pcname(iIndex)(1:iNameLength(iIndex)))
 
 C----------------------------------------------------------------------
 C.....Heat Exchanger heat transfer rate
-      call AddToReportWild1(rvPltHXchgHTrans%Identifier,
+      call AddToReport(rvPltHXchgHTrans%Identifier,
      &      fReport_HX_q( iIndex ),
      &      pcname(iIndex)(1:iNameLength(iIndex)))
 
@@ -1102,13 +1102,13 @@ C---------------------------------------------------------------------
 C.....Hot and cold stream flow rates (kg/s)
 C---------------------------------------------------------------------
 C.....Write a name: Hot water (forced flow) mass flow rate
-      call AddToReportWild1(rvPltHXchgHFlowRate%Identifier,
+      call AddToReport(rvPltHXchgHFlowRate%Identifier,
      &      fReport_HX_hot_mass_flow( iIndex ),
      &      pcname(iIndex)(1:iNameLength(iIndex)))
 
 C---------------------------------------------------------------------
 C.....Write a name: Cold water (natural convection) mass flow rate
-      call AddToReportWild1(rvPltHXchgCFlowRate%Identifier,
+      call AddToReport(rvPltHXchgCFlowRate%Identifier,
      &      fReport_HX_cold_mass_flow( iIndex ),
      &      pcname(iIndex)(1:iNameLength(iIndex)))
 
@@ -1116,25 +1116,25 @@ C---------------------------------------------------------------------
 C.....Inlet and outlet fluid temperatures
 C-------------------------------------------------------------------
 C.....Write a name: Hot fluid inlet temperature
-      call AddToReportWild1(rvPltHXchgHTempIn%Identifier,
+      call AddToReport(rvPltHXchgHTempIn%Identifier,
      &      fReport_HX_hot_temp_in( iIndex ),
      &      pcname(iIndex)(1:iNameLength(iIndex)))
 
 C-------------------------------------------------------------------
 C.....Write a name: Hot fluid outlet temperature
-      call AddToReportWild1(rvPltHXchgHTempOut%Identifier,
+      call AddToReport(rvPltHXchgHTempOut%Identifier,
      &      fReport_HX_hot_temp_out( iIndex ),
      &      pcname(iIndex)(1:iNameLength(iIndex)))
 
 C-----------------------------------------------------------------
 C.....Write a name: Cold water inlet temperature
-      call AddToReportWild1(rvPltHXchgCTempIn%Identifier,
+      call AddToReport(rvPltHXchgCTempIn%Identifier,
      &      fReport_HX_cold_temp_in( iIndex ),
      &      pcname(iIndex)(1:iNameLength(iIndex)))
 
 C------------------------------------------------------------------
 C.....Write a name: Cold water outlet temperature
-      call AddToReportWild1(rvPltHEXchgCTempOut%Identifier,
+      call AddToReport(rvPltHEXchgCTempOut%Identifier,
      &      fReport_HX_cold_temp_out( iIndex ),
      &      pcname(iIndex)(1:iNameLength(iIndex)))
 

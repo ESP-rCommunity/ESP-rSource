@@ -30,3 +30,6 @@ Additional Tests currently available:
 
   - ASHRAE-140: Tests from ASHRAE's Standard 140 (not
     yet incorporated).
+
+  - ESP-r_TRNSYS_co-simulation: Test cases for exercising the
+    ESP-r / TRNSYS co-simulator.

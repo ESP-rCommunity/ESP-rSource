@@ -124,6 +124,8 @@ C             new non-zero elements.
 #include "plant.h"
 #include "net_flow.h"
 #include "building.h"
+#include "gencompDB.h"  
+#include "gencompDB_common.h"
 
       PARAMETER (SMALL=1.0E-20)
 
@@ -164,7 +166,13 @@ C they can be accessed later by generic 'Zero_h2_flow' routine
       integer iPMC_locations
 
       COMMON /pcddsc/ pcdesc(maxpc), npref(mpcom)
-      CHARACTER pcdesc*80
+      COMMON/C9plus/UCdbNam(MPCOM),CdbCat(MPCOM),CDBDesc(MPCOM)
+
+
+C Common for new format component database
+      COMMON/NCDBFORM/ICDBF
+
+      CHARACTER pcdesc*80,UCDBNam*16, CdbCat*32, CDBDesc*72
       INTEGER NPREF
 
 
@@ -178,7 +186,7 @@ C False.
       INTEGER     ZZ(4)
       CHARACTER*5 A(MPNODE,MPNODE)
       character*68 dumstr
-      character outs*124
+      character outs*124, argstr*12, domstr*16, catstr*16
 
 C Suggested improvement:
 C Initialize PP transport delay flag to FALSE. If the subroutine
@@ -198,14 +206,48 @@ C First initialize
 C Now, component by component, get data needed for establishing
 C the templates for the plant network matrix
       DO 50 IPCOMP=1,NPCOMP
-C
+
 C First zeroize ADATA
       DO 10 IADATA=1,MADATA
       ADATA(IPCOMP,IADATA)=0.0
    10 CONTINUE
+
+
+      argstr=' '
+      IF(ICDBF.GT.0)THEN
+        argstr='parameters'
+        domstr='-'
+        catstr='-'
+        CALL CDBGetItemData(domstr,catstr,UCdbNam(IPCOMP),argstr)
+        IF(NPI(IPCOMP).GT.0)THEN
+          argstr='light'
+          CALL CDB2Plant(IPCOMP,argstr)
+        ELSE
+          argstr='detailed'
+          CALL CDB2Plant(IPCOMP,argstr)
+        ENDIF
+
+C NMATX, NNODE, MATPOS etc should eventually be held in common for all components!
+        NPCDAT(IPCOMP,3)=s_ICODE
+        NPCDAT(IPCOMP,4)=s_ICODE/10
+        NPCDAT(IPCOMP,5)=NXT
+        NPCDAT(IPCOMP,6)=s_NMATX
+        NPCDAT(IPCOMP,8)=s_NNODE
+        NPCDAT(IPCOMP,9)=MATPOS
+        LOCCON(IPCOMP)=NXT+s_NMATX
+        NMISCD(IPCOMP)=s_MISCD
+        DO 5 K=1,s_NMATX
+          NDPOS(K)=s_NDPOS(K)
+  5     CONTINUE
+        NMATX=s_NMATX
+        NNODE=s_NNODE
+      ENDIF
+C
+
 C
 C Read component code ICODE, number of nodes NNODE, number of non-zero
 C matrix entries NMATX and number of miscelaneous data items NMISC
+      IF(ICDBF.EQ.0)THEN
       IREC=NPCDAT(IPCOMP,2)
       READ(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=994)
      &     AA,ICODE,ZZ,NNODE,NMATX,NMISC
@@ -217,13 +259,14 @@ C it is a trnsys component. Since the code number (=85) is hard-coded
 C here, any change of this code number in the database will require
 C the changes in the source code. This may be potentially improved
 C by not referring to the code number.
+
       IF(NPREF(IPCOMP) .EQ. 85) THEN
 	CALL TRNPMXT(IPCOMP, ICODE, NXT, MATPOS, LOCCON)
         CYCLE
       END IF
 
       NMISCD(IPCOMP)=NMISC
-
+       
 C Read new record data related to meta components
       irec=irec+1
       read(iunit,rec=irec,iostat=istat,err=994)
@@ -232,7 +275,7 @@ C Read new record data related to meta components
 
 C For single components, do the following:
 C Read external connection potential for each node
-      if(ictype.eq.0) then
+c      if(ictype.eq.0) then
          IREC=IREC+2
          READ(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=994)
      &     (NDCON(IPCOMP,INOD),INOD=1,NNODE)
@@ -244,6 +287,7 @@ C Read each node's state variable identifier
 C Check that the component model is capable of generating coefficients
 C for all state variables as implied by the number of matrices called
 C for in the system configuration file.
+         ENDIF !ICDBFcheck
 C
 C HOT3000:
 C Note: Coefficient generators are not necessarly required for all
@@ -260,7 +304,6 @@ C (NPMTYP - 1)
 
          DO 20 INOD=1,NNODE
            IF(ISV(IPCOMP,INOD).LT.( min_PM_threshold -1 )*10) THEN
-             call elinc(2)
              WRITE(IUOUT,*) ' Plant matrix type ',NPMTYP,' cannot be',
      &                  ' established from'
              WRITE(IUOUT,*) ' component ',IPCOMP,' node ',INOD,
@@ -269,6 +312,8 @@ C (NPMTYP - 1)
            END IF
    20    CONTINUE
 
+
+         IF(ICDBF.Eq.0)THEN
 C Read matrix coefficient positions NDPOS and static manufacturers data
 C The assumption is made here that the plant component database
 C has 20 word records. If this is changed the following assignment
@@ -304,7 +349,9 @@ C Fill the general plant component array
          NPCDAT(IPCOMP,9)=MATPOS
 
 C Establish the coefficient location counter LOCCON for this component
-         LOCCON(IPCOMP)=NXT+NMATX
+          LOCCON(IPCOMP)=NXT+NMATX
+
+         ENDIF !end of CDB if check
 
 C Set coefficient positions
 C Establish the plant coefficient off-set vectors for this component
@@ -338,14 +385,12 @@ C Check if connection relates to current component as the receiving one
                IF(IPC1(IPCON).NE.IPCOMP) GOTO 32
                N=IPN1(IPCON)
                IF(N.LT.1.OR.N.GT.NNODE.OR.NDCON(IPCOMP,N).LE.0) THEN
-                  call elinc(1)
                   WRITE(IUOUT,*) ' No receiving connection allowed',
      &                     ' to component ',IPCOMP,' , node ',N
                   STOP ' MZPMXT: unresolvable error'
                END IF
                KNHIT(N)=KNHIT(N)+1
                IF(KNHIT(N).GT.NDCON(IPCOMP,N)) THEN
-                  call elinc(2)
                   WRITE(IUOUT,*) ' Max. number of connections exceeded',
      &                     ' for component ',IPCOMP,', node ',N
                   STOP ' MZPMXT: unresolvable error'
@@ -358,7 +403,6 @@ C which is only possible in case of a type 3 inter-connection
   32           IF(IPC2(IPCON).NE.IPCOMP.OR.IPCT(IPCON).NE.3) GOTO 39
                N=IPN2(IPCON)
                IF(N.LT.1.OR.N.GT.NNODE.OR.NDCON(IPCOMP,N).EQ.0) THEN
-                  call elinc(1)
                   WRITE(IUOUT,*) ' No connection allowed to component ',
      &                     IPCOMP,' , node ',N
                   STOP ' MZPMXT: unresolvable error'
@@ -382,10 +426,10 @@ C array external connection entries
 
 C For meta components, read sub-components data and
 C their inter-connections. ( future work ).
-      elseif(ictype.eq.1) then
-         write(iuout,*) ' Meta components not implemented yet '
-         stop ' Program terminated.'
-      endif
+c      elseif(ictype.eq.1) then
+c c        write(iuout,*) ' Meta components not implemented yet '
+c         stop ' Program terminated.'
+c      endif
 
 C Proceed with next component
    50 CONTINUE
@@ -422,7 +466,6 @@ C IFLD1/2 will be 0 for water, 1 for air, 9 for solid nodes
             STOP ' MZPMXT: unresolvable error on plant connection type'
          END IF
          IF(IFLD1.NE.IFLD2) THEN
-            call elinc(2)
             WRITE(IUOUT,*) ' Nodes with different fluid types',
      &                     ' connected by connection : ',IPCON
             STOP ' MZPMXT: unresolvable error'
@@ -442,7 +485,7 @@ C first reset KNHIT
 
 C If IP1 is TRNSYS type, skip the remaining of this loop
 C This is because trnsys components do not have cross-coupling coeff.
-         IF(NPREF(IP1) .EQ. 85) CYCLE
+         IF((NPREF(IP1) .EQ. 85).OR.(UCdbNam(IP1)(1:2).EQ.'TR')) CYCLE
 
          NXT=LOCCON(IP1)
          LOCCON(IP1)=LOCCON(IP1)+1
@@ -664,7 +707,6 @@ C Note that PCONDR is set to 1 in case fluid mass flow solver active
          ICNOD=IDENN(IPNOD)
          IF(NDCON(IPCMP,ICNOD).EQ.0) GOTO 94
          IF(ZDR(IPNOD).LT.0.OR.ZDR(IPNOD).GT.1.) THEN
-            call elinc(3)
             write(outs,904) ipcmp,icnod
             call edisp(iuout,outs)
   904       format(' MZPMXT error: component ',i5,' node ',i5)
@@ -673,7 +715,6 @@ C Note that PCONDR is set to 1 in case fluid mass flow solver active
   905       format(' exit mass diversion ratio erroneous : ',f10.5)
             GOTO 999
          ELSE IF(ZDR(IPNOD).GT.0..AND.ZDR(IPNOD).LT.1.) THEN
-            call elinc(3)
             write(outs,906) ipcmp,icnod
             call edisp(iuout,outs)
   906       format(' MZPMXT warning: component ',i5,' node ',i5)
@@ -682,7 +723,6 @@ C Note that PCONDR is set to 1 in case fluid mass flow solver active
   907       format(' exit mass diversion ratios do not summate',
      &                     ' to unity, but ',f10.5)
          ELSE IF(ZDR(IPNOD).LT.SMALL.AND.ICNOD.NE.1) THEN
-            call elinc(3)
             write(outs,908) ipcmp,icnod
             call edisp(iuout,outs)
   908       format(' MZPMXT warning: component ',i5,' node ',i5)
@@ -738,15 +778,12 @@ C
       RETURN
 C
 C Error handling
-  990 call elinc(1)
-      WRITE(IUOUT,*) ' MZPMXT: connection ',IPCON,' is erroneous '
+  990 WRITE(IUOUT,*) ' MZPMXT: connection ',IPCON,' is erroneous '
       GOTO 999
-  992 call elinc(1)
-      WRITE(IUOUT,*) ' MZPMXT: mapping of connection ',IPCON,
+  992 WRITE(IUOUT,*) ' MZPMXT: mapping of connection ',IPCON,
      &               ' to fluid flow network is erroneous '
       GOTO 999
-  994 call elinc(1)
-      WRITE(IUOUT,*) ' MZPMXT: error reading plant library for',
+  994 WRITE(IUOUT,*) ' MZPMXT: error reading plant library for',
      &               ' component ',IPCOMP
       GOTO 999
 C
@@ -867,55 +904,56 @@ C Initialize and/or adjust the plant solution process iteration count
 
 C set flag for plant iteration - initialize to true
       bPltCon = .true.
-   10 ITERP=ITERP+1
+      PlantIterationLoop: DO
+        ITERP=ITERP+1
 C Store the iteration number for reference by plant routines.
-      ITERNU=ITERP
+        ITERNU=ITERP
 C
 C Loop over all three ISTATS balances
 C Note that first phase mass balance will be handled first
-      DO 20 IMRX=1,MPVAR
-      ISTATS=IMRX+1
-      IF(ISTATS.GT.MPVAR) ISTATS=ISTATS-MPVAR
+        IStatsLoop: DO IMRX=1,MPVAR
+          ISTATS=IMRX+1
+          IF(ISTATS.GT.MPVAR) ISTATS=ISTATS-MPVAR
 C First check if it is necessary to solve this balance
-      IF(ISTATS.GT.NPMTYP) GOTO 20
+          IF(ISTATS.GT.NPMTYP) CYCLE IStatsLoop
 
 C Reset mass diversion ratios to 1 for istats=1 or 2
 C if mfs is active.
-      if((istats.eq.1.or.istats.eq.2).and.iflwn.eq.1) then
-         do 272 icon=1,npcon
-            pcondr(icon)=1.0
-  272    continue
+            if((istats.eq.1.or.istats.eq.2).and.iflwn.eq.1) then
+              do icon=1,npcon
+                pcondr(icon)=1.0
+              end do
 
 C For istats=3 and if mfs active, calculate mass
 C diversion ratios for connection type 3 only.
-      elseif(istats.eq.3.and.iflwn.eq.1) then
-         do 373 icon=1,npcon
-            ict=ipct(icon)
-            inod=npcdat(ipc2(icon),9)+ipn2(icon)-1
-            if(ict.eq.3) then
-               if(csvf(inod,2).ne.0.0) then
-                  pcondr(icon)=convar(icon,2)/csvf(inod,2)
-               else
-                  pcondr(icon)=0.0
-               endif
+            elseif(istats.eq.3.and.iflwn.eq.1) then
+              do icon=1,npcon
+                ict=ipct(icon)
+                inod=npcdat(ipc2(icon),9)+ipn2(icon)-1
+                if(ict.eq.3) then
+                  if(csvf(inod,2).ne.0.0) then
+                    pcondr(icon)=convar(icon,2)/csvf(inod,2)
+                  else
+                    pcondr(icon)=0.0
+                  endif
+                endif
+                if(pcondr(icon).gt.1.0) pcondr(icon)=1.0
+              end do
             endif
-            if(pcondr(icon).gt.1.0) pcondr(icon)=1.0
-  373    continue
-      endif
 
 C Set up connections data based on most recent temperatures and flows
-      CALL MZPADJ(ISTATS)
+          CALL MZPADJ(ISTATS)
 C If appropriate, invoke mass flow solver. In that case control of
 C fluid mass flow is also handled by the fluid flow solver
-      IF(ISTATS.EQ.2.AND.IFLWN.EQ.1) THEN
-         CALL MFLWCA(2,PTIMEF)
+          IF(ISTATS.EQ.2.AND.IFLWN.EQ.1) THEN
+            CALL MFLWCA(2,PTIMEF)
 
 C else CONTRL determines control status based on most recent results
 C (by invoking any defined pcl?? control laws to establish CDATA for
 C current time-step).
-      ELSE
-         if(iterp.le.itrclp) CALL CONTRL(iterp)
-      END IF
+          ELSE
+            if(iterp.le.itrclp) CALL CONTRL(iterp)
+          END IF
 C Note that in both cases control status is determined prior to
 C generating the balance equations. This means that control data is
 C one time-step behind matrix solution and so acts only to formulate
@@ -925,69 +963,70 @@ C influence the simultaneous solution. This is very problematic in
 C the case of non-linear control
 C
 C Establish and solve plant matrix, and assign results to CSVF array
-      CALL MZPMSU(ISTATS)
-      CALL MZPMSV(ISTATS)
-   20 CONTINUE
+          CALL MZPMSU(ISTATS)
+          CALL MZPMSV(ISTATS)
+        END DO IStatsLoop
 
 C set flag for iteration - set as active
-      bpltcon = .false.
+        bpltcon = .false.
+
 
 
 C Exact plant solutions may require iteration. Set iteration flag to false
-      bIteration_Required = .false.
+        bIteration_Required = .false.
 
 C Check for each node & each state variable if iteration marker set
-      DO 32 IPNOD=1,NPNOD
-        DO 30 ISTATS=1,MPVAR
-          bIterationForNodeStates(IPNOD,ISTATS) = .false.
+        NodeLoop: DO IPNOD=1,NPNOD
+          StateVarLoop: DO ISTATS=1,MPVAR
+            bIterationForNodeStates(IPNOD,ISTATS) = .false.
 C Check if iteration is requested for this node
-          IF(ICSV(IPNOD,ISTATS).NE.0) THEN
+            IF(ICSV(IPNOD,ISTATS).NE.0) THEN
 C If so, reset marker
-            ICSV(IPNOD,ISTATS)=0
+              ICSV(IPNOD,ISTATS)=0
 C establish initial CIN and future value CSV for state variable
-            CIN=CSVI(IPNOD,ISTATS)
-            CSV=CSVF(IPNOD,ISTATS)
+              CIN=CSVI(IPNOD,ISTATS)
+              CSV=CSVF(IPNOD,ISTATS)
 C Now see if difference less then maximum allowable relative error
-            IF (ABS((CSV-CIN)/AMAX1(SMALL,CIN)).LE.PERREL) THEN
+              IF (ABS((CSV-CIN)/AMAX1(SMALL,CIN)).LE.PERREL) THEN
                ! Assume solution is converged.
-            ELSE
+              ELSE
 C Then check absolute error temperature or mass flow rate, respectively
-              IF((ISTATS.EQ.1.AND.ABS(CSV-CIN).GT.PERTMP).OR.
-     &           (ISTATS.EQ.2.AND.ABS(CSV-CIN).GT.PERMFL).OR.
-     &           (ISTATS.EQ.3.AND.ABS(CSV-CIN).GT.PERMFL).OR.
-     &           (ISTATS.EQ.4.AND.ABS(CSV-CIN).GT.
+                IF((ISTATS.EQ.1.AND.ABS(CSV-CIN).GT.PERTMP).OR.
+     &             (ISTATS.EQ.2.AND.ABS(CSV-CIN).GT.PERMFL).OR.
+     &             (ISTATS.EQ.3.AND.ABS(CSV-CIN).GT.PERMFL).OR.
+     &             (ISTATS.EQ.4.AND.ABS(CSV-CIN).GT.
      &                                 fH2_iteration_tolerance)) THEN
 C State variable is outside absolute bound! Set flags for iteration!
-                bIteration_Required = .true.
-                bIterationForNodeStates(IPNOD,ISTATS) = .true.
+                    bIteration_Required = .true.
+                    bIterationForNodeStates(IPNOD,ISTATS) = .true.
 
 C Trace output
-                IF(ITC.GT.0.AND.NSINC.GE.ITC.AND.NSINC.LE.ITCF.AND.
-     &            ITRACE(38).NE.0)
-     &            WRITE(ITU,*) ' MZPMRX: iteration caused by ',
-     &                         ' node ',IPNOD,' ISTATS ',ISTATS,
-     &                         '   CIN = ',CIN,'   CSV = ',CSV
+                    IF(ITC.GT.0.AND.NSINC.GE.ITC.AND.NSINC.LE.ITCF.AND.
+     &                ITRACE(38).NE.0)
+     &                WRITE(ITU,*) ' MZPMRX: iteration caused by ',
+     &                             ' node ',IPNOD,' ISTATS ',ISTATS,
+     &                             '   CIN = ',CIN,'   CSV = ',CSV
 
-              ENDIF ! <- matches IF ((ISTATS.EQ. ...
-            ENDIF   ! <- matches IF (ABS((CSV-CIN)...
-          ENDIF     ! <- matches IF(ICSV(IPNOD...
+                ENDIF ! <- matches IF ((ISTATS.EQ. ...
+              ENDIF   ! <- matches IF (ABS((CSV-CIN)...
+            ENDIF     ! <- matches IF(ICSV(IPNOD...
 
-   30   CONTINUE
-   32 CONTINUE
+          END DO StateVarLoop
+        END DO NodeLoop
 
 C Now check if convergence has been stipulated for plant component
 C additional data arrays (PCdatf), and set call for iteration
 C if outside tolerance
-      IF ( .not. bIteration_Required ) THEN
+        IF ( .not. bIteration_Required ) THEN
 C Loop through components
 
-        DO ii = 1, NPCOMP
+          iiLoop: DO ii = 1, NPCOMP
 C Loop through additional data items (there is no variable that
 C holds the number of additional data items specified for each plant
 C component.  The addition of such a variable could reduce excessive
 C looping in the following DO block, although a limited test on
 C this showed that there is little to be gained in run time).
-            DO jj=1,MPCDAT
+            jjLoop: DO jj=1,MPCDAT
 C Has iteration for this plant additional output been requested?
               IF ( iPlt_Output_Iter_Flag(ii,jj) .ne. 1 ) THEN
                 ! this data not flagged for iteration
@@ -1017,37 +1056,39 @@ C Traceout
 
 C This statement is a substitute for the F90 'exit' command. Should save
 C some resources on large plant networks.
-              IF ( bIteration_Required ) GOTO 34
+              IF ( bIteration_Required ) EXIT iiLoop
 
-            ENDDO     ! <- matches DO jj = 1, ...
-        ENDDO         ! <- matches DO ii = 1,
-      ENDIF           ! <- matches IF ( .not. bIterationRequired ...
+            ENDDO jjLoop     ! <- matches DO jj = 1, ...
+          ENDDO iiLoop         ! <- matches DO ii = 1,
+        ENDIF           ! <- matches IF ( .not. bIterationRequired ...
 
 C     Is iteration required?
-   34 IF ( bIteration_Required ) THEN
+        IF ( bIteration_Required ) THEN
 C Use successive substitution method with relaxation factor = 0.5
 C to establish "new" initial value for nodes exhibiting instability.
 C refrain from iteration if maximum number of iterations exceeded.
-        IF(ITERP.LT.MAXITP) THEN
-          relaxation_loop: DO IPNOD=1,NPNOD
-            DO ISTATS=1,MPVAR
-              if ( bIterationForNodeStates(IPNOD,ISTATS) ) then
-                CSVF(IPNOD,ISTATS)= CSVI(IPNOD,ISTATS)
-     &               + ( CSVF(IPNOD,ISTATS)-CSVI(IPNOD,ISTATS) )/2.
-              endif
-            ENDDO
-          ENDDO relaxation_loop
-
-          GOTO 10
-        ELSE
-          CALL DAYCLK(IDYP,PTIMEF,ICOUT)
-          write(outs,1111) maxitp
- 1111     format(' MZPMRX: warning maximum number of plant',
+          IF(ITERP.LT.MAXITP) THEN
+            relaxation_loop: DO IPNOD=1,NPNOD
+              DO ISTATS=1,MPVAR
+                if ( bIterationForNodeStates(IPNOD,ISTATS) ) then
+                  CSVF(IPNOD,ISTATS)= CSVI(IPNOD,ISTATS)
+     &                 + ( CSVF(IPNOD,ISTATS)-CSVI(IPNOD,ISTATS) )/2.
+                endif
+              ENDDO
+            ENDDO relaxation_loop
+            CYCLE PlantIterationLoop
+          ELSE
+            CALL DAYCLK(IDYP,PTIMEF,ICOUT)
+            write(outs,1111) maxitp
+ 1111       format(' MZPMRX: warning maximum number of plant',
      &                  ' iterations (',i5,') exceeded')
-          call edisp(iuout,outs)
-          GOTO 40
-        END IF
-      ENDIF
+            call edisp(iuout,outs)
+            EXIT PlantIterationLoop
+          END IF
+        ELSE
+          EXIT PlantIterationLoop
+        ENDIF
+      END DO PlantIterationLoop
 
 C HOT3000:begin
 C Save state variables in h3kreports library for later use
@@ -1083,8 +1124,11 @@ C generated equation coefficients are for energy balance (1), or
 C first phase mass balance (2), or second phase mass balance (3)
 C
       SUBROUTINE MZPMSU(ISTATS)
-#include "plant.h"
+      USE TCC, ONLY:TCC_coeff_gen, HCC, ACC, nHCC_S, nHCC_R,
+     &              nACC_S, nACC_R
+
 #include "building.h"
+#include "plant.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/TC/ITC,ICNT
@@ -1110,6 +1154,14 @@ C hydrogen matrix
 C Storage for plant time (last time-row)
       REAL LastTSTP
       REAL OUT(MPCOE)
+
+C Variables to count the number of hydronic and air coupling components with TRNSYS.
+C These are only used when co-simulation with TRNSYS is active.
+      nHCC_S = 0
+      nHCC_R = 0
+      nACC_S = 0
+      nACC_R = 0
+
 C
 C Trace output
       IF(ITC.GT.0.AND.NSINC.GE.ITC.AND.NSINC.LE.ITCF.AND.
@@ -1121,10 +1173,7 @@ C Trace output
 c This subroutine keeps track of plantsteps per month.
       IF(ISTATS.eq.1) CALL TrackPlantTimeSteps()
 
-C Zero plant component model energy usage storage array.
-      call ZeroPltEnergyStorageArray()
 
-C
 C For each defined plant component, call the appropriate coefficient
 C generator (CMP??C) to generate the balance equations as required.
 C Finally locate the generated coefficients in the network matrix which
@@ -1286,6 +1335,9 @@ C 2 node (ISV=20) exponent model radiator
 C 1 node (ISV=20) WCH Air Source Heat Pump
          ELSE IF(ITYPE.EQ.45) THEN
             CALL CMP45C(IPCOMP,OUT,ISTATS)
+C 2 node (ISV=20) WCH advanced modulating boiler
+         ELSE IF(ITYPE.EQ.46) THEN
+            CALL CMP46C(IPCOMP,OUT,ISTATS)
 C 1 node (ISV=29) WCH thermostatic radiator valve
          ELSE IF(ITYPE.EQ.50) THEN
             CALL CMP50C(IPCOMP,OUT,ISTATS)
@@ -1293,6 +1345,9 @@ C 1 node (ISV=29)     mechanical room thermostat
          ELSE IF(ITYPE.EQ.51) THEN
             CALL CMP51C(IPCOMP,OUT,ISTATS)
 C 4 node (ISV>19) AC  heat transfer tube with transport delay
+         ELSE IF(ITYPE.EQ.52) THEN
+            CALL CMP52C(IPCOMP,OUT,ISTATS)
+C 1 node (ISV=29)     mechanical room thermostat (sensor only)
          ELSE IF(ITYPE.EQ.53) THEN
             CALL CMP53C(IPCOMP,OUT,ISTATS)
 C 1 node (ISV=20)     water circuit flow multiplier
@@ -1337,6 +1392,9 @@ C 1 node (ISV=20) flat plate collector segment.
 C 1 node (ISV=20) waterstorage tank layer.
          ELSE IF(ITYPE.EQ.72) THEN
             CALL CMP72C(IPCOMP,OUT,ISTATS)
+C 1 node (ISV=20) 3-port valve.
+         ELSE IF(ITYPE.EQ.73) THEN
+            CALL CMP73C(IPCOMP,OUT,ISTATS)
 C 1 node (ISV=20) Stochastic DHW Draw.
          ELSE IF(ITYPE.EQ.79) THEN
             CALL CMP79C(IPCOMP,OUT,ISTATS)
@@ -1479,11 +1537,25 @@ C 2-node stratified storage tank model with 1 immersed heat exchanger
         ELSE IF (ITYPE .EQ. 127) THEN
 C 3-node stratified storage tank model with 2 immersed heat exchangers
            CALL stratified_tank_2HX_coeff_gen(IPCOMP,OUT,ISTATS)
-
+        ELSE IF (ITYPE .EQ. 130) THEN
+C SENDING hydronic coupling component (HCC) for co-simulation with TRNSYS.
+           nHCC_S = nHCC_S+1
+           CALL TCC_coeff_gen(IPCOMP,OUT,ISTATS,nHCC_S,HCC,.true.)
+        ELSE IF (ITYPE .EQ. 131) THEN
+C RECEIVING hydronic coupling component (HCC) for co-simulation with TRNSYS.
+           nHCC_R = nHCC_R+1
+           CALL TCC_coeff_gen(IPCOMP,OUT,ISTATS,nHCC_R,HCC,.false.)
+        ELSE IF (ITYPE .EQ. 132) THEN
+C SENDING air-based coupling component (ACC) for co-simulation with TRNSYS.
+           nACC_S = nACC_S+1
+           CALL TCC_coeff_gen(IPCOMP,OUT,ISTATS,nACC_S,ACC,.true.)
+        ELSE IF (ITYPE .EQ. 133) THEN
+C RECEIVING air-based coupling component (ACC) for co-simulation with TRNSYS.
+           nACC_R = nACC_R+1
+           CALL TCC_coeff_gen(IPCOMP,OUT,ISTATS,nACC_R,ACC,.false.)
 C New component equation generators inserted here
 
          ELSE
-            call elinc(1)
             WRITE(IUOUT,*) ' No coefficient generator for component '
      &           ,IPCOMP
             STOP ' MZPMSU: unresolvable error on component type'

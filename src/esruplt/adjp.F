@@ -91,10 +91,7 @@ C    temperatures, PCNTMF, if defined to exist
 C Contextual buffer
       character cContext*124
       character outs*124  ! for warning messages
-      
-C External reference      
-      real fGet_BC_data_by_col
-      
+
 C Trace output
       IF(ITC.GT.0.AND.NSINC.GE.ITC.AND.NSINC.LE.ITCF.AND.
      &   ITRACE(40).NE.0) THEN
@@ -169,6 +166,7 @@ C Type 4 connection: to building zone air (or ambient air when zone=0)
 
 C New connector types go here!
         ELSE
+          write(*,*)'************ invalid connection',IPCT(IPCON)
           STOP ' MZPADJ: unresolvable error: invalid connection type'
         END IF
 
@@ -238,6 +236,7 @@ C and construction node CNTDAT(ICONT,3) counted from outside
           ELSE IF(IZ.GT.0.AND.IS.GT.0.AND.IN.GT.0) THEN
             PCNTMF(IPC)=TFC(IZ,IS,IN)
           ELSE
+          write(*,*)'!!!!!!!!!!!!!!!! invalid connection',INDCP(ICONT)
             STOP ' MZPADJ: unresolvable error: invalid containment data'
           END IF
 
@@ -286,7 +285,7 @@ C Dump CONVAR array
         ELSE
           WRITE(ITU,*) ' There are no plant connections'
         END IF
-10910   FORMAT(I5,3G11.4)
+10910   FORMAT(I5,4G11.4)
 
 C Dump PCNTMF array
         IF(ICONT.GT.0) THEN

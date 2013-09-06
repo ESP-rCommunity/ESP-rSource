@@ -468,6 +468,7 @@ C If ACT='i' then interactive, ACT='s' for silent.
       
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
+      integer IZSTOCN
       COMMON/C24/IZSTOCN(MCOM,MS)
 
 C TMC data
@@ -488,7 +489,7 @@ C For obstruction blocks of type "obsp":
       common/grndpl/NGT,NGTV,XGT(MGTV),YGT(MGTV),ZGT(MGTV),JGVN(MGRT,8),
      &  NGVER(MGRT),IVEDGE(MGRT)
 
-      CHARACTER GSNAME*6,GMLCN*12
+      CHARACTER GSNAME*6,GMLCN*32
       COMMON/GT5/GSNAME(MGRT),GMLCN(MGRT)
 
       integer matarrayindex ! the indes within matdatarray
@@ -501,7 +502,7 @@ C For obstruction blocks of type "obsp":
       character ZSN*28
       character ZN*12,outs*124,material*12,QT*1
       character GDESCR*36,DESCRC*25
-      CHARACTER MLCN*12,OTF*4,OPT*12
+      CHARACTER OPT*12  ! for optical name of the MLC
       CHARACTER ACT*1,doit*144
       character outsn*124,outsd*124, tfile*72
       character pfile*72,atfile*72,ltmp72*72,dtmp72*72,ObsMatName*32
@@ -698,23 +699,15 @@ C not be skipped.
         iskip(im)=0
 
 C Pick up general description of the composite.
-        WRITE(MLCN,'(A)')DESC(IM)(1:12)
-        WRITE(OTF,'(A)') DESC(IM)(15:18)
-        IF(OTF.EQ.' ')OTF='OPAQ'
-        IF(OTF.EQ.'TRAN')THEN
-          WRITE(OPT,'(A)') DESC(IM)(21:32)
-          IF(OPT.EQ.' ')OPT='UNKNOWN'
-        ELSE
-          OPT='OPAQUE'
-        ENDIF
+        WRITE(OPT,'(A)') mlcoptical(IM)(1:12)
 
 C For the inside and outside layer get surface properties.
-        matarrayindex=IPRMAT(IM,1)   ! which array index
+        matarrayindex=IPRMAT(IM,1)   ! which materials array index
         if(matarrayindex.ge.0)then
           AE=matdbina(matarrayindex)
         endif
-	
-        matarrayindex=IPRMAT(IM,LAYERS(IM))   ! which legacy index
+
+        matarrayindex=IPRMAT(IM,LAYERS(IM))   ! which materials array index
         if(matarrayindex.ge.0)then
           AI=matdbina(matarrayindex)
         endif
@@ -723,7 +716,7 @@ C If a tmc then find tranmission functions.  If more transparent than
 C the ficticious limit then mark to be skipped. Convert visible
 C transmission to transmissivity (as per Ward 1/12/94 Radiance 2.4 paper).
 C If TMC has an opaque layer then set gvt to a small number.
-        if(OTF(1:4).NE.'OPAQ')then
+        if(mlctype(IM)(1:4).NE.'OPAQ')then
           CALL EROPTDB(ITRC,iuout,OPT,GDESCR,IER)
           if(VTRN.gt.0.02)then
           gvt1=(sqrt(0.8402528435+(0.007252224*VTRN*VTRN))-0.9166530661)
@@ -737,7 +730,8 @@ C If TMC has an opaque layer then set gvt to a small number.
           endif
 
 C Setup equivalent for default use. 
-          WRITE(iglzfil,'(a,a)') 'void glass ',MLCN(1:lnblnk(MLCN))
+          WRITE(iglzfil,'(a,a)') 'void glass ',
+     &      mlcname(IM)(1:lnblnk(mlcname(IM)))
           WRITE(iglzfil,'(a)') '0 '
           WRITE(iglzfil,'(a)') '0 '
           WRITE(iglzfil,'(a,3F6.2)') '3  ',gvt,gvt,gvt
@@ -752,7 +746,8 @@ C Check for blind shutter control.
               do 111 isf=1,nsur
                ICN=IZSTOCN(newfoc,isf)
                if(ITMCFL(newfoc,isf).gt.0.AND.
-     &            SSMLCN(icn)(1:12).eq.MLCN(1:12))then
+     &            SSMLCN(icn)(1:lnblnk(SSMLCN(icn))).eq.
+     &            mlcname(IM)(1:lnblnk(mlcname(IM))))then
                 if (IBCMT(newfoc,ITMCFL(newfoc,isf)).gt.0) then
                  VTRAN=TVTR2(newfoc,ITMCFL(newfoc,isf),NABS)
                  if(VTRN.gt.0.02)then
@@ -766,7 +761,8 @@ C Check for blind shutter control.
               endif
  111         continue
  100        continue
-            WRITE(ita2,'(3a)')'void glass ',MLCN(1:lnblnk(MLCN)),'_sw'
+            WRITE(ita2,'(3a)')'void glass ',
+     &        mlcname(IM)(1:lnblnk(mlcname(IM))),'_sw'
             WRITE(ita2,'(a)') '0 '
             WRITE(ita2,'(a)') '0 '
             WRITE(ita2,'(a,3F6.2)') '3  ',gvt,gvt,gvt
@@ -778,10 +774,10 @@ C Check for blind shutter control.
           if (SCENEPURP(ISCENE)(1:8).eq.'External'.or.
      &        SCENEPURP(ISCENE)(1:8).eq.'Internal') then
             WRITE(imatfil,'(a,a)') 'fin_ex plastic rc_ex_',
-     &        MLCN(1:lnblnk(MLCN))
+     &        mlcname(IM)(1:lnblnk(mlcname(IM)))
           else
             WRITE(imatfil,'(a,a)') 'void plastic rc_ex_',
-     &        MLCN(1:lnblnk(MLCN))
+     &        mlcname(IM)(1:lnblnk(mlcname(IM)))
           endif
           WRITE(imatfil,'(a)') '0 '
           WRITE(imatfil,'(a)') '0 '
@@ -793,10 +789,10 @@ C Check for blind shutter control.
           if (SCENEPURP(ISCENE)(1:8).eq.'External'.or.
      &        SCENEPURP(ISCENE)(1:8).eq.'Internal') then
             WRITE(imatfil,'(a,a)') 'fin_in plastic rc_in_',
-     &        MLCN(1:lnblnk(MLCN))
+     &        mlcname(IM)(1:lnblnk(mlcname(IM)))
           else
             WRITE(imatfil,'(a,a)') 'void plastic rc_in_',
-     &        MLCN(1:lnblnk(MLCN))
+     &        mlcname(IM)(1:lnblnk(mlcname(IM)))
           endif
           WRITE(imatfil,'(a)') '0 '
           WRITE(imatfil,'(a)') '0 '
@@ -893,9 +889,7 @@ C to the outside file.
 
 C Find the matching mlc index.
           ICF=-1
-          DO 701 IC=1,NMLC
-            IF(DESC(IC)(1:12).EQ.GMLCN(isf)(1:12))ICF=IC
- 701      CONTINUE
+          call matchmlcdesc(GMLCN(isf),icf)
 
 C If not found then it is probably unknown.
           if(GMLCN(isf)(1:4).eq.'UNKN')then
@@ -1099,14 +1093,14 @@ C   All connections: create one surface (no shift).
           endif
 
 C Find the matching mlc index and set the material name.
+
+C << use call to matchmlcdesc >>
           ICF=-1
           ifict=0
-          DO 201 IC=1,NMLC
-            IF(DESC(IC)(1:12).EQ.SSMLCN(icn)(1:12))ICF=IC
- 201      CONTINUE
+          call matchmlcdesc(SSMLCN(icn),icf)
           if(ICF.eq.-1.or.SSMLCN(icn)(1:4).eq.'UNKN')then
-            if (SSOTF(icn)(1:4).ne.'OPAQ'
-     &            .and.SSOTF(icn)(1:4).ne.'CFC ') then
+            if (SSOTF(icn)(1:4).ne.'OPAQ'.and.
+     &          SSOTF(icn)(1:4).ne.'CFC ') then
               material='unknown_glz'
             else
               material='unknown'
@@ -1129,8 +1123,8 @@ C Aternative glazing descriptions file.
               WRITE(ita2,'(a)') outs
               WRITE(ita2,'(a)') '  '
             endif
-          elseif(SSOTF(icn)(1:4).ne.'OPAQ'
-     &            .and.SSOTF(icn)(1:4).ne.'CFC ')then
+          elseif(SSOTF(icn)(1:4).ne.'OPAQ'.and.
+     &           SSOTF(icn)(1:4).ne.'CFC ')then
 
 C Create surface based on the following:
 C  Focus zone - create.

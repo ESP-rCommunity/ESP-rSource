@@ -90,11 +90,14 @@ C For help messages
 
 C Open the mould database.
       if(iopmld.eq.0) then
-        mdbnam=dmdbnam
+        lnmdb=lnblnk(mdbnam)
+        if(mdbnam(1:4).eq.'UNKN'.or.mdbnam(1:2).eq.'  ')then
+          write(mdbnam,'(a)') dmdbnam(1:lnblnk(dmdbnam))
+        endif
         helptopic='mould_database_name'
         call gethelptext(helpinsub,helptopic,nbhelp)
-        call easks(mdbnam,'Mould database filename ?',' ',72,dmdbnam,
-     &  'mould dbnam',IER,nbhelp)
+        call easks(mdbnam,'Mould isopleth filename ?',' ',72,dmdbnam,
+     &    'mould isopleths',IER,nbhelp)
       endif
       imfil=ifil+1
       call efopseq(imfil,mdbnam,1,IER)
@@ -281,10 +284,14 @@ C ****************** mycograph *****************************
       integer igwid,igheight  ! for use with axiscale
       integer ipos,isize      ! for use with etlabel
       integer iupdown,isym    ! passed to etplot
+      integer iicol
+      integer iigl,iigr,iigt,iigb,iigw,iigwh
 #else
       integer*8 igwid,igheight  ! for use with axiscale
       integer*8 ipos,isize      ! for use with etlabel
       integer*8 iupdown,isym    ! passed to etplot
+      integer*8 iicol
+      integer*8 iigl,iigr,iigt,iigb,iigw,iigwh
 #endif
 
 C For help messages
@@ -297,6 +304,9 @@ C For help messages
 
 C Check in graphics mode.
       IF(MMOD.ne.8) return
+
+C Cast values for linescale.
+      iigl=igl;iigr=igr;iigt=igt;iigb=igb;iigw=igw;iigwh=igwh
 
 C If libraries and monitor support greyscale then reset forground
 C to 50% grey when drawing dots.
@@ -319,11 +329,11 @@ C Scale the axes of the chart (initial values)
       CALL startbuffer()
 
 C Draw the axes of the chart.
-      CALL horaxis(Xmin,Xmax,igl,igr,igb,xadd,XSC,0,'Db Temp C')
-      CALL vrtaxis(Ymin,Ymax,igl,igb,igt,yadd,YSC,0,0,'RH %')
+      CALL horaxis(Xmin,Xmax,iigl,iigr,iigb,xadd,XSC,0,'Db Temp C')
+      CALL vrtaxis(Ymin,Ymax,iigl,iigb,iigt,yadd,YSC,0,0,'RH %')
 
 C Store the scaling parameters used in drawing the axes
-      CALL linescale(igl,xadd,XSC,igb,yadd,YSC)
+      CALL linescale(iigl,xadd,XSC,iigb,yadd,YSC)
 
 C Label graph
       ipos=0
@@ -352,33 +362,47 @@ C Set the intervals for the chart.
 C If horizontal line is not the bottom or top draw as grey.
       TD=xmin
   20  if(greyok.and.(TD.gt.xmin.and.TD.lt.xmax))then
-        call winscl('i',nifgrey-3)
+        iicol=nifgrey-3
+        call winscl('i',iicol)
       endif
       iupdown=1
       isym=0
       CALL etplot(TD,ymax,iupdown,isym)
-      if(greyok)call winscl('-',0)
+      if(greyok)then
+        iicol=0
+        call winscl('-',iicol)
+      endif
       TD=TD+TDINT
       iupdown=0
       CALL etplot(TD,ymin,iupdown,isym)
       IF(TD.LE.xmax) goto 20
-      if(greyok)call winscl('-',0)
+      if(greyok)then
+        iicol=0
+        call winscl('-',iicol)
+      endif
 
 C Draw the relative humidity lines
       iupdown=0
       CALL etplot(xmin,ymin,iupdown,isym)
       RH=ymin
   30  if(greyok.and.(RH.gt.ymin.and.RH.lt.ymax))then
-        call winscl('i',nifgrey-3)
+        iicol=nifgrey-3
+        call winscl('i',iicol)
       endif
       iupdown=1
       CALL etplot(xmax,RH,iupdown,isym)
-      if(greyok)call winscl('-',0)
+      if(greyok)then
+        iicol=0
+        call winscl('-',iicol)
+      endif
       RH=RH+RHINT
       iupdown=0
       CALL etplot(xmin,RH,iupdown,isym)
       IF(RH.LE.ymax) goto 30 
-      if(greyok)call winscl('-',0)
+      if(greyok)then
+        iicol=0
+        call winscl('-',iicol)
+      endif
 
 C Draw on mould growth curves curves.
       do 90 imld=1,mould

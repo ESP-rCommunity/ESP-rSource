@@ -37,6 +37,7 @@ C            user-specifed efficiency;
 C SPMCMP3  - ducted wind turbine model;
 C SPMCMP4  - solar thermal collector model;
 C SPMCMP5  - a one diode PV model.
+C SPMCMP6  - free-standing wind turbine model;
 
 C Active material components:
 C SPMCMP51 - thermo-chromic glazing;
@@ -75,6 +76,8 @@ C zone then call the relevant subroutine.
                   call spmcmp4(icomp,ispmnod)
                elseif(ispmtype.eq.5)then
                   call spmcmp5(icomp,ispmnod)
+               elseif(ispmtype.eq.6)then
+                  call spmcmp6(icomp,ispmnod)
                elseif(ispmtype.eq.51)then
                   call spmcmp51(icomp,ispmnod)
                elseif(ispmtype.eq.52)then
@@ -234,7 +237,8 @@ C No shading case.
       qpnl=exrad(ispmloc(ispmnod,2))
 
 C Shading case.
-      if(exshad(ispmloc(ispmnod,2)).gt.1E-6)then
+      if((exshad(ispmloc(ispmnod,2)).gt.0.0).or.
+     &   (exshadf(ispmloc(ispmnod,2)).gt.0.0))then
          if(ishad.eq.0.or.ishad.eq.1)then
             qpnl=exrad(ispmloc(ispmnod,2))
          elseif(ishad.eq.2)then
@@ -634,11 +638,11 @@ C Set folder separator (fs) to \ or / as required.
       endif
 
 C Component data.
-      inzone=ispmloc(ispmnod,1)
-      insurf=ispmloc(ispmnod,2)
+C      inzone=ispmloc(ispmnod,1)
+C      insurf=ispmloc(ispmnod,2)
       insurft=ispmloc(ispmnod,3)
-      iozone=nint(spmdat(ispmnod,1))
-      iosurf=nint(spmdat(ispmnod,2))
+C      iozone=nint(spmdat(ispmnod,1))
+C      iosurf=nint(spmdat(ispmnod,2))
       iosurft=nint(spmdat(ispmnod,3))
       aziin=spmdat(ispmnod,4)
       aziou=spmdat(ispmnod,5)
@@ -742,7 +746,7 @@ C Set starting value of U velocity component.
 
 C Set up trace probability counters.
          tpru=0
-         tprc=0
+C         tprc=0
 
 C Loop to generate power output.
          do 66 i=1,10
@@ -1304,8 +1308,7 @@ C Special materials.
       real    exdir		!- direct solar radiation incident on surface
 				!  per unit area (includes shading effects)
       real    exdif		!- diffuse solar radiation incident on surface
-				!  per unit area (shading effect does not
-				!  apply on diffuse component)
+				!  per unit area (included shading effects)
       real    exshad		!- direct shaded portion expressed as a factor
 				!  b/w 0 and 1 of surface
       real    exshadf		!- diffuse shaded portion expressed as a factor
@@ -1790,43 +1793,43 @@ C and the two boundary nodes.
        endif
 
 C XML output.
-       Call AddToReportWild1(rvBldSPMatlEffIrr%Identifier,
+       Call AddToReport(rvBldSPMatlEffIrr%Identifier,
      &         fQPnl,
      &         cName(ispmnod)(1:iNameLen(ispmnod)))
 
-       Call AddToReportWild1(rvBldSPMatlIncAngl%Identifier,
+       Call AddToReport(rvBldSPMatlIncAngl%Identifier,
      &         fIncidence_angle,
      &         cName(ispmnod)(1:iNameLen(ispmnod)))
 
-       Call AddToReportWild1(rvBldSPMatlTrnsAngl%Identifier,
+       Call AddToReport(rvBldSPMatlTrnsAngl%Identifier,
      &         fTrans_IncAng,
      &         cName(ispmnod)(1:iNameLen(ispmnod)))
 
-       Call AddToReportWild1(rvBldSPMatlTrns0%Identifier,
+       Call AddToReport(rvBldSPMatlTrns0%Identifier,
      &         fTrans_0,
      &         cName(ispmnod)(1:iNameLen(ispmnod)))
 
-       Call AddToReportWild1(rvBldSPMatlTrns60%Identifier,
+       Call AddToReport(rvBldSPMatlTrns60%Identifier,
      &         fTrans_60,
      &         cName(ispmnod)(1:iNameLen(ispmnod)))
 
-       Call AddToReportWild1(rvBldSPMatlTtlIncAr%Identifier,
+       Call AddToReport(rvBldSPMatlTtlIncAr%Identifier,
      &         fQInc,
      &         cName(ispmnod)(1:iNameLen(ispmnod)))
 
-       Call AddToReportWild1(rvBldSPMatlTtlIncTtl%Identifier,
+       Call AddToReport(rvBldSPMatlTtlIncTtl%Identifier,
      &         fQInc * fSurfArea,
      &         cName(ispmnod)(1:iNameLen(ispmnod)))
 
-       Call AddToReportWild1(rvBldSPMatlDrtIncAr%Identifier,
+       Call AddToReport(rvBldSPMatlDrtIncAr%Identifier,
      &         exdir(ispmloc(ispmnod,2)),
      &         cName(ispmnod)(1:iNameLen(ispmnod)))
 
-       Call AddToReportWild1(rvBldSPMatlDffIncAr%Identifier,
+       Call AddToReport(rvBldSPMatlDffIncAr%Identifier,
      &         exdif(ispmloc(ispmnod,2)),
      &         cName(ispmnod)(1:iNameLen(ispmnod)))
 
-       Call AddToReportWild1(rvBldSPMatlPVPow%Identifier,
+       Call AddToReport(rvBldSPMatlPVPow%Identifier,
      &         fPVPower,
      &         cName(ispmnod)(1:iNameLen(ispmnod)))
 
@@ -1859,6 +1862,261 @@ C Trace output.
       write(outs,'(a,1x,f10.2)') 'Power output: ', fPVPower
       call edisp(itu,outs)
       write(outs,'(a,1x,f10.2)') 'Panel temperature: ', fTPnl
+      call edisp(itu,outs)
+  999 return
+      end
+
+C ***************** SPMCMP6 *****************
+C A model that calculates the electrical power output from a free standing
+C wind turbine (after Nick Kelly and Andy Grant). The model includes
+C a statistical manipulation of the mean wind velocity in order to
+C estimate the power output. Defining data as read from spmdat:
+C    1 - height of turbine axis (m)
+C    2 - turbine cross sectional area (m^2)
+C    3 - power velocity coefficient (-)
+C    4 - cut-in wind speed (m/s)
+C    5 - rated wind speed (m/s)
+C    6 - number of turbines (-)
+C    7 - location (1-urban, 2-suburban, 3-rural)
+C    8 - reference height (m)
+C    9 - wind speed statistics (on/off)
+C   10 - wind speed/turbulence profile (on/off)
+C   11 - default turbulence intensity (-)
+
+      subroutine spmcmp6(icomp,ispmnod)
+#include "building.h"
+C #include "plant.h"
+#include "net_flow.h"
+C #include "esprdbfile.h"
+
+C N.B. All parameters comply with the Fortran implicit naming
+C convention except where explicitly redefined.
+      common/tc/itc,icnt
+      common/trace/itcf,itrace(mtrace),izntrc(mcom),itu
+      common/simtim/ihrp,ihrf,idyp,idyf,idwp,idwf,nsinc,its
+      common/pers/isd1,ism1,isd2,ism2,isds,isdf,ntstep
+      common/enetspm/pspm(mspmnod),qspm(mspmnod),
+     &vspm(mspmnod)
+      common/resspm/ndatspm(mspmnod),dataspm(mspmnod,8),
+     &         strspm(mspmnod,8),unitspm(mspmnod,8),txtspm(mspmnod,8)
+      common/zonspmf/zspmf1(mcom),zspmf2(mcom)
+      common/spmfxst/ispmxist,spflnam
+      common/spmatl/nspmnod,ispmloc(mspmnod,3),ispmtyp(mspmnod,2),
+     &              nnodat(mspmnod),spmdat(mspmnod,mspmdat)
+      common/spmatlbl/spmlabel(mspmnod)
+      common/mflclm/dryb,qdif,qdnr,irvh,wdir,wspd,wred
+      common/climi/qfp,qff,tp,tf,qdp,qdf,vp,vf,dp,df,hp,hf
+
+      real minu,minv,inc
+      real hdwti,tarea,pvcoeff,ciwspd,ratewspd,refh,turbi
+      integer nturb,iloc,iwstat,iprof
+      complex vspm
+
+      character spmlabel*16,outs*124,spflnam*72,strspm*16,
+     &          unitspm*16,txtspm*72
+
+
+C Component data.
+      hdwti=spmdat(ispmnod,1)  ! height of turbine axis (m)
+      tarea=spmdat(ispmnod,2)  ! turbine cross sectional area (m^2)
+      pvcoeff=spmdat(ispmnod,3) ! power velocity coefficient (-)
+      ciwspd=spmdat(ispmnod,4)  ! cut-in wind speed (m/s)
+      ratewspd=spmdat(ispmnod,5) ! rated wind speed (m/s)
+      nturb=nint(spmdat(ispmnod,6))  ! number of turbines in the surface (-)
+      iloc=nint(spmdat(ispmnod,7))   ! location (1-urban, 2-suburban, 3-rural)
+      refh=spmdat(ispmnod,8)         ! reference height (m)
+      iwstat=nint(spmdat(ispmnod,9)) ! wind speed statistics (on/off)
+      iprof=nint(spmdat(ispmnod,10))  ! wind speed/turbulence profile (on/off)
+      turbi=spmdat(ispmnod,11)        ! default turbulence intensity (-)
+
+      pi=4.0*atan(1.0)
+
+C Current weather data.
+      widir=df
+      drybt=tf
+      wispd=vf
+      if(wispd.lt.1E-3)wispd=1E-3
+
+C Calculate the wind velocity prevailing at the height of the ducted
+C wind turbine. This information will be available if an air flow
+C network exists. If profiles or speed reduction are not specified
+C then use default values.
+      if(wred.gt.1E-6.and.iprof.lt.1)then
+         wispd=wispd*wred
+      elseif(iprof.gt.1)then
+
+C Urban location.
+         if(iloc.eq.1)then
+            pwr=0.32
+            rough=5.
+
+C Suburban location
+         elseif(iloc.eq.2)then
+            pwr=0.23
+            rough=0.8
+
+C Rural location
+         elseif(iloc.eq.3)then
+            pwr=0.14
+            rough=0.05
+         endif
+
+C Set the new wind speed and turbulent intensity from profiles. If
+C height is zero, set to a small value to avoid numerical problems.
+         if(hdwti.lt.1E-6)hdwti=1E-6
+         if(refh.lt.1E-6)refh=1E-6
+         wispd=wispd*(hdwti/refh)**pwr
+         turbi=(rough*log(30./refh))/log(hdwti/refh)
+      endif
+
+      if(iwstat.gt.0)then
+
+C Wind velocity components.
+         compu=wispd*sin((widir*pi)/180.)
+         compv=wispd*cos((widir*pi)/180.)
+
+C Standard deviation, based on turbulent intensity.
+         stdev=turbi*wispd
+
+C Wind velocity ranges.
+         minu=compu-3*stdev
+         minv=compv-3*stdev
+
+C Calculate the increment.
+         inc=6*stdev/10.
+         icount=1
+         pwrtot=0.
+
+C Set starting value of U velocity component.
+         valu=minu
+
+C Set up trace probability counters.
+         tpru=0
+C         tprc=0
+
+C Loop to generate power output.
+         do 66 i=1,10
+
+C Current U velocity component probability density.
+            pdu=(1/(stdev*(2*pi)**0.5))*
+     &                       exp(-(((valu-compu)**2.)/(2*stdev**2.)))
+            tpru=tpru+pdu*inc
+            tprv=0
+
+C Set starting value of V velocity component.
+            valv=minv
+
+            do 77 j=1,10
+
+C Current V velocity component probability density.
+               pdv=(1/(stdev*(2*pi)**0.5))*
+     &                       exp(-(((valv-compv)**2.)/(2*stdev**2.)))
+               tprv=tprv+pdv*inc
+
+C Combined probability.
+               prc=(inc*pdu)*(inc*pdv)
+
+C Duration of current wind speed and direction.
+               tsl=3600./float(ntstep)
+               tdur=prc*tsl
+
+C New wind speed and direction.
+               wispdm=(valu**2.+valv**2.)**0.5
+               if(abs(valv).lt.1E-6)valv=1E-6
+               widirm=atan(valu/valv)*(180./pi)
+               if(valv.ge.0)then
+                  if(valu.ge.0.)then
+                     widirm=widirm
+                  else
+                     widirm=360.+widirm
+                  endif
+               else
+                  if(valu.ge.0.)then
+                     widirm=180.+widirm
+                  else
+                     widirm=180.+widirm
+                  endif
+               endif
+
+C Check that the wind is strong enough for the turbine to cut in.
+               if(wispdm.ge.ciwspd)then
+                 continue
+               else
+                 wispdm=0. ! If not, set the wind speed to zero
+               endif
+
+               ro=densit(1,drybt)  ! get air density
+               if(wispdm.lt.ratewspd)then
+
+C Power output below rated from P=Cp(1/2).rho.A.V^3
+                 pwr=(pvcoeff*(0.5))*ro*tarea*(wispdm**3)*nturb
+               else
+
+C Power output above rated from P=Cp(1/2).rho.A.Vr^3
+                 pwr=(pvcoeff*(0.5))*ro*tarea*(ratewspd**3)*nturb
+               endif
+
+               icount=icount+1
+               valv=valv+inc
+               pwrtot=pwrtot+pwr*tdur
+   77       continue
+            valu=valu+inc
+   66    continue
+
+C Write results for probability-based power output.
+         pspm(ispmnod)=pwrtot/tsl
+
+      else
+
+C Check that the wind is strong enough for the turbine to cut in.
+         if(wispd.ge.ciwspd)then
+           continue
+         else
+           wispd=0. ! If not, set the wind speed to zero
+         endif
+
+         ro=densit(1,drybt)  ! get air density
+         if(wispd.lt.ratewspd)then
+
+C Power output below rated from P=Cp(1/2).rho.A.V^3
+           pspm(ispmnod)=(pvcoeff*(0.5))*ro*tarea*(wispd**3)*nturb
+         else
+
+C Power output above rated from P=Cp(1/2).rho.A.Vr^3
+           pspm(ispmnod)=(pvcoeff*(0.5))*ro*tarea*(ratewspd**3)*nturb
+         endif
+
+      endif
+
+C Results output.
+      ndatspm(ispmnod)=1
+      dataspm(ispmnod,1)=pspm(ispmnod)
+      strspm(ispmnod,1)='Power (W)'
+
+C As a temporary measure, use zone-related variable, zspmf1, for
+C results library storage. Output is limited to one special material
+C per zone.
+       zspmf1(ispmloc(ispmnod,1))=dataspm(ispmnod,1)
+
+C Trace output.
+      if(itc.le.0.or.nsinc.lt.itc.or.ispmxist.eq.0)goto 999
+      if(itrace(19).eq.0.or.nsinc.gt.itcf.or.
+     &   izntrc(icomp).ne.1) goto 999
+      write(outs,'(a,a)') 'Trace output from SPMCMP6 for ',
+     &                                              spmlabel(ispmnod)
+      call edisp(itu,outs)
+      if(iwstat.gt.0)then
+        write(outs,'(a,1x,f10.2)') 'Wind speed via probability: ',
+     &    wispdm
+      else
+        write(outs,'(a,1x,f10.2)') 'Wind speed: ',wispd
+      endif
+      call edisp(itu,outs)
+      write(outs,'(a,1x,f10.2)') 'Pressure coefficient: ',pvcoeff
+      call edisp(itu,outs)
+      write(outs,'(a,1x,f10.2)') 'Air density: ',ro
+      call edisp(itu,outs)
+      write(outs,'(a,1x,f10.2)') 'Power output: ',pspm(ispmnod)
       call edisp(itu,outs)
   999 return
       end
@@ -4149,14 +4407,14 @@ C Pad index to 'XX'.
 
 C Output available PCM layer data.
       do idat=1,ndat
-         Call AddToReportWild3(rvBuiSpm%Identifier,
+         Call AddToReport(rvBuiSpm%Identifier,
      &      dataspm(ispmnod,idat),
      &      spmlabel(ispmnod)(1:lnblnk(spmlabel(ispmnod))),
      &      '/z' // cZone_Chars // '/s' // cSurf_Chars
      &   // '/nd' // cNode_Chars,
      &      strspm(ispmnod,idat)(1:lnblnk(strspm(ispmnod,idat))))
 
-         Call AddToReportDetailsWild3(rvBuiSpm%Identifier,
+         Call AddToReportDetails(rvBuiSpm%Identifier,
      &      spmlabel(ispmnod)(1:lnblnk(spmlabel(ispmnod))),
      &      '/z' // cZone_Chars // '/s' // cSurf_Chars
      &   // '/nd' // cNode_Chars,

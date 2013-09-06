@@ -21,6 +21,7 @@
 #include "TWildCards.h"
 #include "TXMLAdapter.h"
 #include "TReportData.h"
+#include "log.h"
 
 //Optional SQLite support
 #ifdef SQLITE
@@ -35,10 +36,17 @@
 #define OUT_LOG     0x04  // 0000 0100
 #define OUT_STEP    0x08  // 0000 1000
 
+
+//Quick Run Multipliers
+#define MULT_NONE 0
+#define MULT_HTG  1
+#define MULT_CLG  2
+#define MULT_GEN  3
+
 //Used for the save_to_disk option to manage memory footprint
 #define SAVE_TO_DISK_MIN 100
 #define SAVE_TO_DISK_MAX 100000
-#define SAVE_TO_DISK_DEFAULT 10000
+#define SAVE_TO_DISK_DEFAULT 1000
 #define SAVE_TO_DISK_TRIGGER 100000 //This should cap around 750MB max
 
 
@@ -77,6 +85,7 @@ struct stVariableInfo{
    const char* MetaValue;
    const char* Description;
    unsigned char OutputType;
+   int Multiplier; //used for quickrun only
 };
 
 //Used by the TimeStepVecto to store details about each timestep
@@ -85,6 +94,14 @@ struct stTimeStep{
    int Hour;
    int Day;
    bool Startup;
+};
+
+//Used for Quickrun to store the different multipliers
+struct stSeasonMultipliers
+{
+   float Htg;
+   float Clg;
+   float Gen;
 };
 
 //Structure only used to output data in sorted order
@@ -104,6 +121,7 @@ int cmp_by_string(const void *a, const void *b)
 typedef map<int,stVariableInfo> VariableInfoMap;
 typedef map<stMapKey,TReportData> ReportDataMap;
 typedef vector<stTimeStep> TimeStepVector;
+typedef vector<stSeasonMultipliers> SeasonMultipliersVector;
 
 
 //const int kMonthlyTimesteps[] = {31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
@@ -131,7 +149,7 @@ class TReportsManager
                                  const char* sMetaValue, const char* sDescription);
 
       //Method to add the time step information to the list.
-      void AddToTimeStepList(bool bStartup, int iStep, int iDay, int iHour);
+      void AddToTimeStepList(bool bStartup, int iStep, int iDay, int iHour, int iQrun);
 
       //Method to add variable data to the list
       void AddToReportDataList(int id, const char* sDelimiter, float fValue);
@@ -139,8 +157,13 @@ class TReportsManager
       //Method to add dynamic variable description ** avoid its use when possible **
       void AddToReportDetails(int id,const char*, const string& sUnit,const string& sType,const string& sDescription);
 
+      void AddNewSeason(int iSeason_index,float fHtgMultiplier,float fClgMultiplier, float fGenMultiplier);
+
+      void SetVarAdditionalInfo(int iIdentifier,int iPropertyNum,bool bValue);
+
       //True/false if the report variable is enabled
       bool IsVariableEnable(int id);
+      bool IsVariableEnable(const char* cPattern);//match by pattern (contains)
 
       //True/false if the report variable is set with a wild description (normally false)
       bool IsReportDetailWildSet(int id, const char* sDelimiter);
@@ -217,6 +240,10 @@ class TReportsManager
       //Contains all the data collected during a simulation
       ReportDataMap m_ReportDataList;
 
+      //Contains the multiplier values by season index (use for QuickRun)
+      SeasonMultipliersVector m_SeasonMultipliersList;
+
+
       //The constructor / destructure is private because we're a Singleton
       TReportsManager();
       ~TReportsManager();
@@ -225,8 +252,6 @@ class TReportsManager
       void GetVariableName(const char* sVarName, const char* sDelimiter, char *Destination);
 
       int GetMonthIndex(int iDay);
-
-      int GetMonthIndex(int iDay,int iStartIndex);
 
       //Methods used for generating outputs
       void OutputCSVData(const char* sFileName, stSortedMapKeyRef sortedRef[]);
@@ -249,8 +274,13 @@ class TReportsManager
       int m_iStartMonthIndex; //Store the simulation start month index
       int m_iCurrentMonthIndex; //Store the current month index;
       int m_iTimeStepPerHour; //Store the number of timesteps in an hour (from cfg)
+      int m_iYearCount; //Counts the current years number
       float m_fMinutePerTimeStep; //# of ts per min
-
+      vector<long> m_BinStepCount; //Contains to total steps for each bin
+      long m_AnnualBinStepCount; //Contains the total step count for annual bin... for now total step count
+      bool m_bSeasonalRun; //true/false if this run is Quick Run (seasonal data only) [default-false]
+      int m_iCurrentSeasonIndex; //current season index
+      int m_iStartSeasonIndex; //start season index
 
       //Since step output can be incremental during a simluation we need to variable
       //to store how many steps were outputed so far.
@@ -274,17 +304,12 @@ class TReportsManager
       std::set<std::string> m_summary_nodes;
       // list of xsl styles sheet to be applied..in order..
       std::vector<std::string> m_stylesheet_list;
-      // dummy list to be used with the DUMPALLDATA flag
-      std::set<std::string> m_dummy_list;
 
       // Stylesheets and transform files:
       map<std::string,std::string> m_StyleSheets;
 
       // list of transform targets.
       std::vector<std::string> m_xsl_targets;
-
-      // vector indicating which timesteps contain monthly bins
-      std::vector<int> m_month_bin_ts;
 
       /**
       * Flags for results post-processing options
@@ -303,8 +328,8 @@ class TReportsManager
       bool bWildCardsEnabled;
       bool bTS_averaging;
       bool bDumpDictionary;
-      bool bDumpDictionaryAll;
       bool bSortOutput;
+      bool bIndexDatabase;
 
       bool bStyleSheetGood;
       bool bLinkStyleSheet;

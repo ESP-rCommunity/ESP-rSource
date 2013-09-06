@@ -195,8 +195,10 @@ C ARRANGES PLOT ON TEKTRONIX SCREEN AND DOES IT
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
 #ifdef OSI
       integer igwid,igheight  ! for use with axiscale
+      integer iigl,iigr,iigt,iigb,iigw,iigwh
 #else
       integer*8 igwid,igheight  ! for use with axiscale
+      integer*8 iigl,iigr,iigt,iigb,iigw,iigwh
 #endif
 
 C SET OUTPUT DEVICE
@@ -206,13 +208,16 @@ C SET VIEWPORT (HALF)SIZE
       BILDX=380.
       BILDY=380.
 
+C Cast values for linescale.
+      iigl=igl;iigr=igr;iigt=igt;iigb=igb;iigw=igw;iigwh=igwh
+
 C SET SCREEN WINDOW
       call startbuffer
       igwid=igw
       igheight=igwh
       call axiscale(igwid,igheight,-380.,380.,-380.,380.,xsc,ysc,sca,
      &              Xadd,Yadd)
-      call linescale(igl,Xadd,sca,igb,Yadd,sca)
+      call linescale(iigl,Xadd,sca,iigb,Yadd,sca)
 
 C DO PROJECTION
   20  CALL TRANSF

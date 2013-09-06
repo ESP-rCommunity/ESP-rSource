@@ -144,10 +144,10 @@ C ------------------------------------------------------------------------------
 #include "building.h"
 
       COMMON/OUTIN/IUOUT,IUIN
-      INTEGER	IUOUT,IUIN
+      INTEGER  IUOUT,IUIN
 
       COMMON/TC/ITC,ICNT
-      INTEGER	ITC,ICNT
+      INTEGER  ITC,ICNT
 
       COMMON/TRACE/ITCF,ITRACE,IZNTRC,ITU
       INTEGER ITCF,ITRACE(MTRACE),IZNTRC(MCOM),ITU
@@ -157,11 +157,11 @@ C ------------------------------------------------------------------------------
       REAL CDATA(MPCOM,MMISCD)
 
       COMMON/PDBDT/ADATA,BDATA
-      REAL	ADATA(MPCOM,MADATA),BDATA(MPCOM,MBDATA)
+      REAL  ADATA(MPCOM,MADATA),BDATA(MPCOM,MBDATA)
 
       COMMON/PCOND/CONVAR,ICONTP,ICONDX
-      REAL	CONVAR(MPCON,MCONVR)
-      INTEGER	ICONTP(MPCON),ICONDX(MPCOM,MNODEC,MPCONC)
+      REAL  CONVAR(MPCON,MCONVR)
+      INTEGER  ICONTP(MPCON),ICONDX(MPCOM,MNODEC,MPCONC)
 
       COMMON/C12PS/NPCDAT,IPOFS1,IPOFS2
       INTEGER NPCDAT(MPCOM,9),IPOFS1(MCOEFG),IPOFS2(MCOEFG,MPVAR)
@@ -639,22 +639,22 @@ C ------------------------------------------------------------------------------
 
 
       COMMON/OUTIN/IUOUT,IUIN
-      INTEGER	IUOUT,IUIN
+      INTEGER  IUOUT,IUIN
 
       COMMON/TC/ITC,ICNT
-      INTEGER	ITC,ICNT
+      INTEGER  ITC,ICNT
 
       COMMON/TRACE/ITCF,ITRACE,IZNTRC,ITU
       INTEGER ITCF,ITRACE(MTRACE),IZNTRC(MCOM),ITU
 
       COMMON/SIMTIM/IHRP,IHRF,IDYP,IDYF,IDWP,IDWF,NSINC,ITS
-      INTEGER	IHRP,IHRF,IDYP,IDYF,IDWP,IDWF,NSINC,ITS
+      INTEGER  IHRP,IHRF,IDYP,IDYF,IDWP,IDWF,NSINC,ITS
 
       COMMON/BTIME/BTIMEP,BTIMEF
-      REAL	BTIMEP,BTIMEF
+      REAL  BTIMEP,BTIMEF
 
       COMMON/PTIME/PTIMEP,PTIMEF
-      REAL	PTIMEP,PTIMEF
+      REAL  PTIMEP,PTIMEF
 
       COMMON/PITER/MAXITP,PERREL,PERTMP,PERFLX,PERMFL,itrclp,
      &             ICSV,CSVI
@@ -666,9 +666,9 @@ C ------------------------------------------------------------------------------
       REAL CDATA(MPCOM,MMISCD)
 
       COMMON/C10/NPCON,IPC1,IPN1,IPCT,IPC2,IPN2,PCONDR,PCONSD
-      INTEGER	NPCON,IPC1(MPCON),IPN1(MPCON),IPCT(MPCON)
-      INTEGER	IPC2(MPCON),IPN2(MPCON)
-      REAL	PCONDR(MPCON),PCONSD(MPCON,2)
+      INTEGER  NPCON,IPC1(MPCON),IPN1(MPCON),IPCT(MPCON)
+      INTEGER  IPC2(MPCON),IPN2(MPCON)
+      REAL     PCONDR(MPCON),PCONSD(MPCON,2)
 
       COMMON/C12PS/NPCDAT,IPOFS1,IPOFS2
       INTEGER NPCDAT(MPCOM,9),IPOFS1(MCOEFG),IPOFS2(MCOEFG,MPVAR)
@@ -677,13 +677,13 @@ C ------------------------------------------------------------------------------
       REAL CSVF(MPNODE,MPVAR),CSVP(MPNODE,MPVAR)
 
       COMMON/PCVAR/PCTF,PCRF,PUAF,PCQF,PCNTMF,PCTP,PCRP,PUAP,PCQP,PCNTMP
-      REAL	PCTF(MPCON),PCRF(MPCON),PUAF(MPNODE),PCQF(MPNODE)
-      REAL	PCNTMF(MPCOM),PCTP(MPCON),PCRP(MPCON),PUAP(MPNODE)
-      REAL	PCQP(MPNODE),PCNTMP(MPCOM)
+      REAL  PCTF(MPCON),PCRF(MPCON),PUAF(MPNODE),PCQF(MPNODE)
+      REAL  PCNTMF(MPCOM),PCTP(MPCON),PCRP(MPCON),PUAP(MPNODE)
+      REAL  PCQP(MPNODE),PCNTMP(MPCOM)
 
       COMMON/PCOND/CONVAR,ICONTP,ICONDX
-      REAL	CONVAR(MPCON,MCONVR)
-      INTEGER	ICONTP(MPCON),ICONDX(MPCOM,MNODEC,MPCONC)
+      REAL  CONVAR(MPCON,MCONVR)
+      INTEGER  ICONTP(MPCON),ICONDX(MPCOM,MNODEC,MPCONC)
 
       COMMON/PCRES/QDATA(MPCOM),PCAOUT(MPCOM,MPCRES),napdat(mpcom)
       REAL QDATA,PCAOUT
@@ -1731,14 +1731,14 @@ C ------------------------------------------------------------------------------
 #include "SOFC.h"
 
       COMMON/FILEP/IFIL
-      INTEGER	IFIL
+      INTEGER  IFIL
 
       common/Fcell/iFClds,LFClds
       INTEGER iFClds
       CHARACTER LFClds*72
 
       COMMON/OUTIN/IUOUT,IUIN
-      INTEGER	IUOUT,IUIN
+      INTEGER  IUOUT,IUIN
 
 C---------------------------------------------------------------------------------
 C Declare local variables.
@@ -2008,7 +2008,7 @@ C-------------------------------------------------------------------------------
 C     ESP-r commons
 C-------------------------------------------------------------------------------
       COMMON/OUTIN/IUOUT,IUIN           ! Number for default output and input screens
-      INTEGER	IUOUT,IUIN
+      INTEGER  IUOUT,IUIN
 
       COMMON/PDBDT/ADATA(MPCOM,MADATA),BDATA(MPCOM,MBDATA)
       REAL    ADATA                     !-array containing component data
@@ -2320,16 +2320,16 @@ C-------------------------------------------------------------------------------
 #include "h3kstore_parameters.h"
 #include "h3kstore_common.h"
       COMMON/OUTIN/IUOUT,IUIN
-      INTEGER	IUOUT,IUIN
+      INTEGER  IUOUT,IUIN
 
       COMMON/TC/ITC,ICNT
-      INTEGER	ITC,ICNT
+      INTEGER  ITC,ICNT
 
       COMMON/TRACE/ITCF,ITRACE,IZNTRC,ITU
       INTEGER ITCF,ITRACE(MTRACE),IZNTRC(MCOM),ITU
 
       COMMON/PCTIME/TIMSEC
-      REAL	TIMSEC
+      REAL  TIMSEC
 
       common/pltcon/bpltcon,LastTSTP
       logical bpltcon  ! Boolean indicating whether plant domain has converged.
@@ -2338,10 +2338,10 @@ C-------------------------------------------------------------------------------
       INTEGER isd1,ism1,isd2,ism2,isds,isdf,ntstep
 
       COMMON/PCTSTP/NTSTPP
-      INTEGER	NTSTPP
+      INTEGER  NTSTPP
 
       COMMON/SIMTIM/IHRP,IHRF,IDYP,IDYF,IDWP,IDWF,NSINC,ITS
-      INTEGER	IHRP,IHRF,IDYP,IDYF,IDWP,IDWF,NSINC,ITS
+      INTEGER  IHRP,IHRF,IDYP,IDYF,IDWP,IDWF,NSINC,ITS
 
 
 C---------------------------------------------------------------------------------
@@ -2751,33 +2751,33 @@ C.....Fuel cell balance of plant electrical efficiency
 C.....
 
 C.....Total electrical demand
-      call AddToReportWild1(rvPltQElecDemand%Identifier,
+      call AddToReport(rvPltQElecDemand%Identifier,
      &      q_total_elec,
      &      hold_name(1:hold_len))
 
 C.....Net electrical output
-      call AddToReportWild1(rvPltQElecNet%Identifier,
+      call AddToReport(rvPltQElecNet%Identifier,
      &      q_net_elec,
      &      hold_name(1:hold_len))
 
 C.....Parasitic electrical losses
-      call AddToReportWild1(rvPltQElecParasitic%Identifier,
+      call AddToReport(rvPltQElecParasitic%Identifier,
      &      q_par_elec,
      &      hold_name(1:hold_len))
 
 C.....Net thermal output
-      call AddToReportWild1(rvPltQThermalNet%Identifier,
+      call AddToReport(rvPltQThermalNet%Identifier,
      &      UA_exh*(T_exh_recent-Twater_recent),
      &      hold_name(1:hold_len))
 
 C.....Fuel HHV
-      call AddToReportWild1(rvPltFuelHHV%Identifier,
+      call AddToReport(rvPltFuelHHV%Identifier,
      &      phi_source,
      &      hold_name(1:hold_len))
 
 
 C.....Electrical Efficiency - fuel cell
-      call AddToReportWild1(rvPltElecEffFC%Identifier,
+      call AddToReport(rvPltElecEffFC%Identifier,
      &      eta_fc*100.,
      &      hold_name(1:hold_len))
 
@@ -2786,7 +2786,7 @@ C.....-> only report if phi_source is non-zero
       call eclose (phi_source, 0.0, 0.1, bClose)
       if (.not. bClose) then
 
-         call AddToReportWild1(rvPltElecEffBOP%Identifier,
+         call AddToReport(rvPltElecEffBOP%Identifier,
      &      q_net_elec / phi_source *100.,
      &      hold_name(1:hold_len))
       endif
@@ -2794,66 +2794,66 @@ C.....-> only report if phi_source is non-zero
 
 C.....Thermal efficiency ~ only report if phi_source is non-zero
       if (.not. bClose) then
-         call AddToReportWild1(rvPltCogEff%Identifier,
+         call AddToReport(rvPltCogEff%Identifier,
      &        (q_net_elec + UA_exh*(T_exh_recent-Twater_recent) )
      &            / phi_source * 100.,
      &      hold_name(1:hold_len))
       endif
 
 C.....Fuel Flow
-      call AddToReportWild1(rvPltFuelFlowMass%Identifier,
+      call AddToReport(rvPltFuelFlowMass%Identifier,
      &        m_dot_fuel_kg,
      &      hold_name(1:hold_len))
 
 C.....Fuel Flow - slpm
-      call AddToReportWild1(rvPltFuelFlowVol%Identifier,
+      call AddToReport(rvPltFuelFlowVol%Identifier,
      &        Vdot_fuel_STP,
      &      hold_name(1:hold_len))
 
 C.....Air Flow - mass
-      call AddToReportWild1(rvPltAirFlowMass%Identifier,
+      call AddToReport(rvPltAirFlowMass%Identifier,
      &        m_dot_air_kg,
      &      hold_name(1:hold_len))
 
 C.....Air Flow - volume
-      call AddToReportWild1(rvPltAirFlowVol%Identifier,
+      call AddToReport(rvPltAirFlowVol%Identifier,
      &        Vdot_air_STP,
      &      hold_name(1:hold_len))
 
 C.....Air Flow - stoicheometry
-      call AddToReportWild1(rvPltAirFlowStoi%Identifier,
+      call AddToReport(rvPltAirFlowStoi%Identifier,
      &        stoichs,
      &      hold_name(1:hold_len))
 
 
 C.....water Flow - volume
-      call AddToReportWild1(rvPltWaterFlowVol%Identifier,
+      call AddToReport(rvPltWaterFlowVol%Identifier,
      &        Vdot_liqwater,
      &      hold_name(1:hold_len))
 
 C.....Exhaust Gas - mass flow
-      call AddToReportWild1(rvPltExhaustFlowMass%Identifier,
+      call AddToReport(rvPltExhaustFlowMass%Identifier,
      &        m_dot_exh_kg,
      &      hold_name(1:hold_len))
 
 
 C.....Exhaust Gas - volumetric flow
-      call AddToReportWild1(rvPltExhaustFlowVol%Identifier,
+      call AddToReport(rvPltExhaustFlowVol%Identifier,
      &        Vdot_exh_STP,
      &      hold_name(1:hold_len))
 
 C.....Exhaust Gas - temperature
-      call AddToReportWild1(rvPltExhaustFlowTemp%Identifier,
+      call AddToReport(rvPltExhaustFlowTemp%Identifier,
      &        T_exh_recent,
      &      hold_name(1:hold_len))
 
 C.....Heat exchanger exit temperature
-      call AddToReportWild1(rvPltHExchgExitTemp%Identifier,
+      call AddToReport(rvPltHExchgExitTemp%Identifier,
      &        T_exit_recent,
      &      hold_name(1:hold_len))
 
 C.....Heat exchanger heat transfer coefficient
-      call AddToReportWild1(rvPltHExchgUAVal%Identifier,
+      call AddToReport(rvPltHExchgUAVal%Identifier,
      &        UA_exh,
      &      hold_name(1:hold_len))
 
