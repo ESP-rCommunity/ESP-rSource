@@ -84,8 +84,8 @@ c Variable passed in call
       REAL val
 
 c Define the characters variables associated with the utility
-c functions STRIPC,EGETWI,and EGETWR
-      character OUTSTR*124,word*124
+c functions LSTRIPC,EGETWI,and EGETWR
+      character OUTSTR*248,word*248
 
 c Declare function for determining fan size
       REAL FAN_SIZE
@@ -97,7 +97,7 @@ C Open the hvac file
 c Read the total number of HVAC systems serving the various zones in
 c the building
       k = 0
-      CALL STRIPC(IUNIT,OUTSTR,99,ND,1,'hvac data',IER)
+      CALL LSTRIPC(IUNIT,OUTSTR,99,ND,1,'hvac data',IER)
       CALL EGETWI(OUTSTR,K,ival,1,10,'F',
      &'hvac data: num_hvac_sys',IER)
       num_hvac_sys=ival
@@ -134,7 +134,7 @@ C Initialize linking flags to zero
 
 c Read the data associated with each of the HVAC systems
       do 10 i = 1,num_hvac_sys
-        CALL STRIPC(IUNIT,OUTSTR,99,ND,1,'hvac input',IER)
+        CALL LSTRIPC(IUNIT,OUTSTR,99,ND,1,'hvac input',IER)
         K = 0
 c Read the type of the hvac system ihvac_type
         CALL EGETWI(OUTSTR,K,ival,1,9,'F','hvac input: ihvac_type',IER)
@@ -247,15 +247,15 @@ c Declare local variables
       REAL val
 
 c Define the characters variables associated with the utility 
-c functions STRIPC,EGETWI,and EGETWR
-      character OUTSTR*124,word*124
+c functions LSTRIPC,EGETWI,and EGETWR
+      character OUTSTR*248,word*248
 
 c Declare number of variables in input file record
       INTEGER num_furnace_var
 
       IUNIT=IFIL+20
 
-      CALL STRIPC(IUNIT,OUTSTR,99,ND,1,'hvac input',IER)
+      CALL LSTRIPC(IUNIT,OUTSTR,99,ND,1,'hvac input',IER)
       k = 0
 
 c Find the total number of entries in the record in the hvac file 
@@ -493,8 +493,8 @@ c Declare local variables
       REAL val
 
 c Define the characters variables associated with the utility 
-c functions STRIPC,EGETWI,and EGETWR
-      CHARACTER OUTSTR*124,word*124
+c functions LSTRIPC,EGETWI,and EGETWR
+      CHARACTER OUTSTR*248,word*248
 
 c Logical variable associated with version 1.3 of file hvacinput.F
       LOGICAL version1_3_flag
@@ -516,7 +516,7 @@ c Other local variables
 C Controlled zoning is OFF by default
       izonecontrol(i) = 0
       
-      CALL STRIPC(IUNIT,OUTSTR,99,ND,1,'hvac input',IER)
+      CALL LSTRIPC(IUNIT,OUTSTR,99,ND,1,'hvac input',IER)
       k = 0
       
 c If number of variables on line 2 of the data is 1 then read in
@@ -528,7 +528,7 @@ c controlled zoning flag
         izonecontrol(i) = ival
         
 c-------read next line
-        CALL STRIPC(IUNIT,OUTSTR,99,ND,1,'hvac input',IER)
+        CALL LSTRIPC(IUNIT,OUTSTR,99,ND,1,'hvac input',IER)
         k = 0
         
       endif   
@@ -616,7 +616,7 @@ c served by the system
           endif
   30    continue
 
-        CALL STRIPC(IUNIT,OUTSTR,99,ND,1,'hvac input',IER)
+        CALL LSTRIPC(IUNIT,OUTSTR,99,ND,1,'hvac input',IER)
         k = 0
 
 c Read the steady-state capacity of the heat pump at rating conditions
@@ -632,7 +632,7 @@ c include the effect of indoor circulation fan power fan_power(i).
      &  'hvac input: ss_cop',IER)
         ss_cop(i) = val 
 
-        CALL STRIPC(IUNIT,OUTSTR,99,ND,1,'hvac input',IER)
+        CALL LSTRIPC(IUNIT,OUTSTR,99,ND,1,'hvac input',IER)
         k = 0
 
 c Read the actual flow rate through the indoor circulating fan of 
@@ -714,7 +714,7 @@ c If controlled zoning is ON, read data to establish the variable circulation
 c flow rates and fan power depending on the number of zones calling for 
 c cooling.         
         if(izonecontrol(i).eq.1)then
-          CALL STRIPC(IUNIT,OUTSTR,99,ND,1,'hvac input - zoning',IER)
+          CALL LSTRIPC(IUNIT,OUTSTR,99,ND,1,'hvac input - zoning',IER)
           k = 0
         
           do 31 j = 1,num_sys_zones(i)
@@ -735,7 +735,7 @@ c Read the fan power (W) corresponding to the number of calling zones
         
 c Read different variables depending on the function of the 
 c unit
-        CALL STRIPC(IUNIT,OUTSTR,99,ND,1,'hvac input',IER)
+        CALL LSTRIPC(IUNIT,OUTSTR,99,ND,1,'hvac input',IER)
         k = 0
 
 c When the unit is in the heating mode
@@ -788,7 +788,7 @@ c  =2 economizer
      &  'hvac input: icooling_type',IER)
           icooling_type(i) = ival
 
-          CALL STRIPC(IUNIT,OUTSTR,99,ND,1,'hvac input',IER)
+          CALL LSTRIPC(IUNIT,OUTSTR,99,ND,1,'hvac input',IER)
           k = 0
 
 c For the case when cooling type is conventional, get the number
@@ -801,7 +801,7 @@ c outdoor air schedules.
      &      'hvac input: num_out_air_day_types',IER)
             num_out_air_day_types(i) = ival
   
-            CALL STRIPC(IUNIT,OUTSTR,99,ND,1,'hvac input',IER)
+            CALL LSTRIPC(IUNIT,OUTSTR,99,ND,1,'hvac input',IER)
             k = 0
 
 c For each day type of the year, read the number of periods in the day type
@@ -828,7 +828,7 @@ c day periods
             iperiod_counter = 0
             do 300 icounter = 1,num_out_air_day_types(i)
 
-              CALL STRIPC(IUNIT,OUTSTR,99,ND,1,'hvac input',IER)
+              CALL LSTRIPC(IUNIT,OUTSTR,99,ND,1,'hvac input',IER)
               k = 0
 
               do 40 jcounter = 1,num_outside_air_day_periods(i,icounter)
@@ -941,7 +941,7 @@ c Initialize outdoor air flow array to zero
 
           endif
 
-          CALL STRIPC(IUNIT,OUTSTR,99,ND,1,'hvac input',IER)
+          CALL LSTRIPC(IUNIT,OUTSTR,99,ND,1,'hvac input',IER)
           k = 0
 
 c Read number associated with heat pump in heating mode
@@ -1021,8 +1021,8 @@ c Variable passed in call
       INTEGER i
 
 c Define the characters variables associated with the utility 
-c functions STRIPC,EGETWI,and EGETWR
-      character OUTSTR*124,word*124
+c functions LSTRIPC,EGETWI,and EGETWR
+      character OUTSTR*248,word*248
 #include "building.h"
 #include "hvac_parameters.h"
 #include "control.h"      
@@ -1156,7 +1156,7 @@ c the same power here as in the case of the backup system
 
 c Read different variables depending on the function of the 
 c unit
-      CALL STRIPC(IUNIT,OUTSTR,99,ND,1,'hvac input',IER)
+      CALL LSTRIPC(IUNIT,OUTSTR,99,ND,1,'hvac input',IER)
       k = 0
 
 c When the unit is in the heating mode
@@ -1294,12 +1294,12 @@ c Declare local variables
       REAL val
 
 c Define the characters variables associated with the utility 
-c functions STRIPC,EGETWI,and EGETWR
-      character OUTSTR*124,word*124
+c functions LSTRIPC,EGETWI,and EGETWR
+      character OUTSTR*248,word*248
 
       IUNIT=IFIL+20
 
-      CALL STRIPC(IUNIT,OUTSTR,99,ND,1,'hvac input',IER)
+      CALL LSTRIPC(IUNIT,OUTSTR,99,ND,1,'hvac input',IER)
       k = 0
 
 c Read the actual zone numbers associated with the HVAC system 
