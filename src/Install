@@ -105,7 +105,7 @@ unversioned="no"           # Check svn for versioning info?
 # Buildable targets:
 programs="aco b2e bps dbm dfs cdb c2e clm e2r ecnv eco grd ish mfs mld mrt pdb prj res stats vew"
 # (bld plt, net are not currently built)
-# (net, run, stats are not currently built)
+# (net, stats are not currently built)
 
 # Add leading and trailing spaces for regexp matching
 programs=" ${programs} "
