@@ -5838,9 +5838,9 @@ Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  0.20
  
  Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
       |db  |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
- Ext   108   24.0     0.190   950.   840. 0.91 0.22    11.  0.13 white gypboard : White paintedd Gypboard
+ Ext   108   24.0     0.190   950.   840. 0.91 0.22    11.  0.13 white gypboard : White painted Gypboard
     2  202   60.0     0.100   500.  1000. 0.90 0.50     5.  0.60 woodwool : Woodwool
- Int   108   24.0     0.190   950.   840. 0.91 0.22    11.  0.13 white gypboard : White paintedd Gypboard
+ Int   108   24.0     0.190   950.   840. 0.91 0.22    11.  0.13 white gypboard : White painted Gypboard
  ISO 6946 U values (horiz/upward/downward heat flow)=  0.978  1.007  0.941 (partition)  0.899
  
 Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  0.97
@@ -5916,7 +5916,7 @@ Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  0.31
     2    0  240.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
     3  220  110.0     0.040    38.  1450. 0.90 0.30   350.  2.75 XPS CO2 foamed : XPS extruded polystyrene foamed with Co2 from IBO PassivHaus
     4    0  100.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
- Int   108   24.0     0.190   950.   840. 0.91 0.22    11.  0.13 white gypboard : White paintedd Gypboard
+ Int   108   24.0     0.190   950.   840. 0.91 0.22    11.  0.13 white gypboard : White painted Gypboard
  ISO 6946 U values (horiz/upward/downward heat flow)=  0.293  0.296  0.290 (partition)  0.286
  
 Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  0.29
@@ -5932,7 +5932,7 @@ Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  0.29
     2    0   50.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
     3  220  110.0     0.040    38.  1450. 0.90 0.30   350.  2.75 XPS CO2 foamed : XPS extruded polystyrene foamed with Co2 from IBO PassivHaus
     4    0  100.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
- Int   108   24.0     0.190   950.   840. 0.91 0.22    11.  0.13 white gypboard : White paintedd Gypboard
+ Int   108   24.0     0.190   950.   840. 0.91 0.22    11.  0.13 white gypboard : White painted Gypboard
  ISO 6946 U values (horiz/upward/downward heat flow)=  0.293  0.296  0.290 (partition)  0.286
  
 Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  0.29
@@ -5987,7 +5987,7 @@ Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  2.11
  Ext    81   40.0     1.830  2200.   712. 0.90 0.60    29.  0.02 sandstone : Sandstone
     2    0   50.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
     3  220  110.0     0.040    38.  1450. 0.90 0.30   350.  2.75 XPS CO2 foamed : XPS extruded polystyrene foamed with Co2 from IBO PassivHaus
- Int   108   24.0     0.190   950.   840. 0.91 0.22    11.  0.13 white gypboard : White paintedd Gypboard
+ Int   108   24.0     0.190   950.   840. 0.91 0.22    11.  0.13 white gypboard : White painted Gypboard
  ISO 6946 U values (horiz/upward/downward heat flow)=  0.309  0.312  0.305 (partition)  0.300
  
 Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  0.31
@@ -6101,11 +6101,11 @@ Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  1.82
  
  Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
       |db  |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
- Ext   108   24.0     0.190   950.   840. 0.91 0.22    11.  0.13 white gypboard : White paintedd Gypboard
+ Ext   108   24.0     0.190   950.   840. 0.91 0.22    11.  0.13 white gypboard : White painted Gypboard
     2    0   50.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
     3  220  110.0     0.040    38.  1450. 0.90 0.30   350.  2.75 XPS CO2 foamed : XPS extruded polystyrene foamed with Co2 from IBO PassivHaus
     4    0   50.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
- Int   108   24.0     0.190   950.   840. 0.91 0.22    11.  0.13 white gypboard : White paintedd Gypboard
+ Int   108   24.0     0.190   950.   840. 0.91 0.22    11.  0.13 white gypboard : White painted Gypboard
  ISO 6946 U values (horiz/upward/downward heat flow)=  0.285  0.287  0.281 (partition)  0.278
  
 Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  0.28
@@ -6138,11 +6138,11 @@ Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  0.37
  
  Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
       |db  |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
- Ext   108   13.0     0.190   950.   840. 0.91 0.22    11.  0.07 white gypboard : White paintedd Gypboard
+ Ext   108   13.0     0.190   950.   840. 0.91 0.22    11.  0.07 white gypboard : White painted Gypboard
     2    0   50.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
     3   28  100.0     0.510  1400.  1000. 0.90 0.65    10.  0.20 block inner : Block inner (3% mc)
     4    0   50.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
- Int   108   13.0     0.190   950.   840. 0.91 0.22    11.  0.07 white gypboard : White paintedd Gypboard
+ Int   108   13.0     0.190   950.   840. 0.91 0.22    11.  0.07 white gypboard : White painted Gypboard
  ISO 6946 U values (horiz/upward/downward heat flow)=  1.186  1.230  1.133 (partition)  1.072
  
 Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  1.17

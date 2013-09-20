@@ -1,5 +1,5 @@
 # composite construction db defined in databases/building_mlc.db1
-# based on primitive construction db /usr/esru/esp-r/databases/constr.db1.a
+# based on primitive construction db /usr/esru/esp-r/databases/constr_db1.materialdb
    11     # no of composites 
 # layers  description   optics 
     6    grnd_floor    OPAQ  OPAQUE              

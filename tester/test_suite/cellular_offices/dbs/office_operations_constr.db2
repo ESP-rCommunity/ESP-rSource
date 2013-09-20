@@ -1,5 +1,5 @@
 # composite construction db defined in ../dbs/office_vent_constr.db2
-# based on materials db /usr/esru/esp-r/databases/constr.db2.a
+# based on materials db /usr/esru/esp-r/databases/constr_db2.materialdb
    13     # no of composites 
 # layers  description   optics 
     5    extern_wall   OPAQ  OPAQUE              

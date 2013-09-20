@@ -457,7 +457,7 @@ doublebox center;
 l.
 .TH
 # composite construction db defined in multicon.mdb
-# based on materials db constr.db2.a
+# based on materials db constr_db2.materialdb
    23     # no of composites 
 # layers  description   optics 
     4    extern_wall   OPAQ  OPAQUE              
@@ -851,7 +851,7 @@ l.
  51.700   -0.500   # Latitude & Longitude (diff from meridian)
       2   0.200   # Site exposure & ground reflectivity
 * DATABASES
-*prm  /usr/esru/esp-r/databases/constr.db2.a
+*mat  /usr/esru/esp-r/databases/constr_db2.materialdb
 *mlc  /usr/esru/esp-r/databases/multicon.db2
 *opt  /usr/esru/esp-r/databases/optics.db2
 *prs  /usr/esru/esp-r/databases/pressc.db1

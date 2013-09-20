@@ -106,10 +106,9 @@ plant components, pressure coefficients, profiles and optical databases respecti
 If your machine is compatible with ours then some of these files will
 be binary random access as required by ESP-r. In this case
 ??? = db1. Otherwise ??? = db1.a and these files are ascii
-images of each database. There are facilities invoked from 
-within the project manager to convert from ascii to 
-binary for the files constr.db1.a and profiles.db1.a. 
-The module \fBpdb\fR is used to create plantc.db1.
+images of each database.  
+The module \fBpdb\fR is used to create plantc.db1 (the binary version of
+the plant template common file).
 For reference, the following table sets out the names 
 and format of databases used within the ESP-r system.
 .TS H

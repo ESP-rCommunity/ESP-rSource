@@ -27,9 +27,9 @@
 # layers  description  type  optics name   symmetry tag
     3    gyp_gyp_ptn   OPAQ  OPAQUE        SYMMETRIC     
 # material ref thickness (m) description & air gap R
-  108    0.0120  white gypboard : White paintedd Gypboard
+  108    0.0120  white gypboard : White painted Gypboard
     0    0.0500  gap  0.170 0.170 0.170
-  108    0.0120  white gypboard : White paintedd Gypboard
+  108    0.0120  white gypboard : White painted Gypboard
 # layers  description  type  optics name   symmetry tag
     1    fictitious    TRAN  SC_fictit     SYMMETRIC     
 # material ref thickness (m) description & air gap R
@@ -105,9 +105,9 @@
 # layers  description  type  optics name   symmetry tag
     3    gyp_aco_gyp   OPAQ  OPAQUE        SYMMETRIC     
 # material ref thickness (m) description & air gap R
-  108    0.0240  white gypboard : White paintedd Gypboard
+  108    0.0240  white gypboard : White painted Gypboard
   202    0.0600  woodwool : Woodwool
-  108    0.0240  white gypboard : White paintedd Gypboard
+  108    0.0240  white gypboard : White painted Gypboard
 # layers  description  type  optics name   symmetry tag
     7    stone_m_ell   OPAQ  OPAQUE        NONSYMMETRIC  
 # material ref thickness (m) description & air gap R
@@ -150,7 +150,7 @@
     0    0.2400  gap  0.170 0.170 0.170
   220    0.1100  XPS CO2 foamed : XPS extruded polystyrene foamed with Co2 from IBO Pass
     0    0.1000  gap  0.170 0.170 0.170
-  108    0.0240  white gypboard : White paintedd Gypboard
+  108    0.0240  white gypboard : White painted Gypboard
 # layers  description  type  optics name   symmetry tag
     5    stone_gyp     OPAQ  OPAQUE        NONSYMMETRIC  
 # material ref thickness (m) description & air gap R
@@ -158,7 +158,7 @@
     0    0.0500  gap  0.170 0.170 0.170
   220    0.1100  XPS CO2 foamed : XPS extruded polystyrene foamed with Co2 from IBO Pass
     0    0.1000  gap  0.170 0.170 0.170
-  108    0.0240  white gypboard : White paintedd Gypboard
+  108    0.0240  white gypboard : White painted Gypboard
 # layers  description  type  optics name   symmetry tag
     5    stone_masnry  OPAQ  OPAQUE        NONSYMMETRIC  
 # material ref thickness (m) description & air gap R
@@ -181,7 +181,7 @@
    81    0.0400  sandstone : Sandstone
     0    0.0500  gap  0.170 0.170 0.170
   220    0.1100  XPS CO2 foamed : XPS extruded polystyrene foamed with Co2 from IBO Pass
-  108    0.0240  white gypboard : White paintedd Gypboard
+  108    0.0240  white gypboard : White painted Gypboard
 # layers  description  type  optics name   symmetry tag
     3    db_lpasol     TRAN  DSF4554_06nb  SYMMETRIC     
 # material ref thickness (m) description & air gap R
@@ -229,11 +229,11 @@
 # layers  description  type  optics name   symmetry tag
     5    gyp_ins_gyp   OPAQ  OPAQUE        SYMMETRIC     
 # material ref thickness (m) description & air gap R
-  108    0.0240  white gypboard : White paintedd Gypboard
+  108    0.0240  white gypboard : White painted Gypboard
     0    0.0500  gap  0.170 0.170 0.170
   220    0.1100  XPS CO2 foamed : XPS extruded polystyrene foamed with Co2 from IBO Pass
     0    0.0500  gap  0.170 0.170 0.170
-  108    0.0240  white gypboard : White paintedd Gypboard
+  108    0.0240  white gypboard : White painted Gypboard
 # layers  description  type  optics name   symmetry tag
    10    heated_slb    OPAQ  OPAQUE        NONSYMMETRIC  
 # material ref thickness (m) description & air gap R
@@ -455,11 +455,11 @@
 # layers  description  type  optics name   symmetry tag
     5    gyp_blk_ptn   OPAQ  OPAQUE        SYMMETRIC     
 # material ref thickness (m) description & air gap R
-  108    0.0130  white gypboard : White paintedd Gypboard
+  108    0.0130  white gypboard : White painted Gypboard
     0    0.0500  gap  0.170 0.170 0.170
    28    0.1000  block inner : Block inner (3% mc)
     0    0.0500  gap  0.170 0.170 0.170
-  108    0.0130  white gypboard : White paintedd Gypboard
+  108    0.0130  white gypboard : White painted Gypboard
 # layers  description  type  optics name   symmetry tag
     5    glz_block     OPAQ  OPAQUE        NONSYMMETRIC  
 # material ref thickness (m) description & air gap R

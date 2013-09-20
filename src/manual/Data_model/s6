@@ -810,7 +810,7 @@ T{
 During zone construction
 file creation it is normal to refer to the materials and
 composite constructions' databases. The former database is
-named constr.db1.a and the latter will have a name assigned by the
+named constr_db1.materialdb and the latter will have a name assigned by the
 user at the time of its creation. A windows' database can
 also be accessed. This is named window.db1.
 These databases must be assigned via the 0DEFDB command of the

@@ -42,9 +42,9 @@
 # layers  description   optics name   symmetry tag
     3    int_part      OPAQ  OPAQUE        SYMMETRIC     
 # material ref thickness (m) description & air gap R
-  108    0.0120  white gypboard : White paintedd Gypboard
+  108    0.0120  white gypboard : White painted Gypboard
     0    0.0500  gap  0.170 0.170 0.170
-  108    0.0120  white gypboard : White paintedd Gypboard
+  108    0.0120  white gypboard : White painted Gypboard
 # layers  description   optics name   symmetry tag
     3    d_glz         TRAN  DCF7671_06nb  SYMMETRIC     
 # material ref thickness (m) description & air gap R
@@ -133,17 +133,17 @@
 # layers  description   optics name   symmetry tag
     5    gyp_blk_ptn   OPAQ  OPAQUE        SYMMETRIC     
 # material ref thickness (m) description & air gap R
-  108    0.0130  white gypboard : White paintedd Gypboard
+  108    0.0130  white gypboard : White painted Gypboard
     0    0.0500  gap  0.170 0.170 0.170
    28    0.1000  block inner : Block inner (3% mc)
     0    0.0500  gap  0.170 0.170 0.170
-  108    0.0130  white gypboard : White paintedd Gypboard
+  108    0.0130  white gypboard : White painted Gypboard
 # layers  description   optics name   symmetry tag
     3    gyp_gyp_ptn   OPAQ  OPAQUE        SYMMETRIC     
 # material ref thickness (m) description & air gap R
-  108    0.0120  white gypboard : White paintedd Gypboard
+  108    0.0120  white gypboard : White painted Gypboard
     0    0.0500  gap  0.170 0.170 0.170
-  108    0.0120  white gypboard : White paintedd Gypboard
+  108    0.0120  white gypboard : White painted Gypboard
 # layers  description   optics name   symmetry tag
     5    switched_gl   TRAN  DCF7671_6omb  SYMMETRIC     
 # material ref thickness (m) description & air gap R
