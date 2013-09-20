@@ -12,7 +12,7 @@ MODULE_OBJECTS = startup.o
 OBJECTS = mfs.o c2fdum.o cntmnt.o ctlexp.o dossupport.o econtrol.o emfnetw.o \
 	  fctlc.o gcfunc.o initalc.o item.o mfcdat.o mfcntl.o mfdumb.o mfdumf.o mfdump.o \
 	  mfinit.o mfmach.o mfmode.o mfplot.o mfrlst.o mfrset.o mftabl.o \
-	  mfutil.o psychro.o rnor.o tdfile.o tdrecbps.o
+	  mfutil.o psychro.o rnor.o tdfile.o tdrecbps.o startup.o AirFlowDummyRoutines.o 
 
 MODULES = start_up.mod parse_command_line.mod
 
@@ -58,6 +58,10 @@ tdfile.F:
 tdrecbps.F:
 	rm -f tdrecbps.F
 	ln -s $(BPSdir)/tdrecbps.F .
+AirFlowDummyRoutines.F:
+	rm -f AirFlowDummyRoutines.F
+	ln -s $(COMdir)/AirFlowDummyRoutines.F
+  
 
 strip:
 	@if [ -f $(PROG) ]; then strip $(PROG); fi
@@ -66,6 +70,9 @@ install:
 	@if [ -f $(PROG) ]; then cp $(PROG) $(ESPBinDir); fi
 
 clean:
+
 	rm -f core $(PROG) $(PROG).exe $(MODULE_OBJECTS) $(OBJECTS) $(MODULES) \
+
+	rm -f core $(PROG) $(PROG).exe $(OBJECTS)  \
 	c2fdum.F ctlexp.F dossupport.F econtrol.F emfnetw.F gcfunc.F \
-        initalc.F item.F psychro.F rnor.F startup.F tdfile.F tdrecbps.F
+	initalc.F item.F psychro.F rnor.F startup.F tdfile.F tdrecbps.F AirFlowDummyRoutines.F 
