@@ -2,45 +2,45 @@
 *Date Fri Aug 24 11:30:55 2012
      64   # number of connections
    1   1   3   2   1  #    1 pt_general in manager_a >|< pt_general in manager_b
-   1   2   3   3   8  #    2 part_frame in manager_a >|< part_frame in coridor
-   1   3   3   3   6  #    3 door in manager_a >|< door in coridor
+   1   2   3   3   8  #    2 part_frame in manager_a >|< part_frame in corridor
+   1   3   3   3   6  #    3 door in manager_a >|< door in corridor
    1   4   1   0   0  #    4 pt_other in manager_a >|< Identical environment
    1   5   3   5   6  #    5 ceiling in manager_a >|< floor_ma in ceiling_abv
    1   6   3   4   6  #    6 floor in manager_a >|< floor_ma in floor_below
    1   7   0   0   0  #    7 spandral in manager_a is External
    1   8   0   0   0  #    8 frame in manager_a is External
    1   9   0   0   0  #    9 glazing in manager_a is External
-   1  10   3   3   9  #   10 part_glaz in manager_a >|< part_glaz in coridor
-   1  11   3   3   7  #   11 ptn_corid in manager_a >|< ptn_corid in coridor
+   1  10   3   3   9  #   10 part_glaz in manager_a >|< part_glaz in corridor
+   1  11   3   3   7  #   11 ptn_corid in manager_a >|< ptn_corid in corridor
    1  12   1   0   0  #   12 pt_other_a in manager_a >|< Identical environment
    1  13   1   0   0  #   13 pt_other_b in manager_a >|< Identical environment
    2   1   3   1   1  #   14 pt_general in manager_b >|< pt_general in manager_a
-   2   2   3   3  10  #   15 part_frame in manager_b >|< part_frameb in coridor
-   2   3   3   3  11  #   16 door in manager_b >|< door_b in coridor
+   2   2   3   3  10  #   15 part_frame in manager_b >|< part_frameb in corridor
+   2   3   3   3  11  #   16 door in manager_b >|< door_b in corridor
    2   4   1   0   0  #   17 pt_other in manager_b >|< Identical environment
    2   5   3   5   7  #   18 ceiling in manager_b >|< floor_mb in ceiling_abv
    2   6   3   4   7  #   19 floor in manager_b >|< floor_mb in floor_below
    2   7   0   0   0  #   20 spandral in manager_b is External
    2   8   0   0   0  #   21 frame in manager_b is External
    2   9   0   0   0  #   22 glazing in manager_b is External
-   2  10   3   3  13  #   23 part_glaz in manager_b >|< part_glazb in coridor
-   2  11   3   3  12  #   24 ptn_corid in manager_b >|< ptn_coridb in coridor
+   2  10   3   3  13  #   23 part_glaz in manager_b >|< part_glazb in corridor
+   2  11   3   3  12  #   24 ptn_corid in manager_b >|< ptn_coridb in corridor
    2  12   1   0   0  #   25 pt_other_a in manager_b >|< Identical environment
    2  13   1   0   0  #   26 pt_other_b in manager_b >|< Identical environment
-   3   1   1   0   0  #   27 right in coridor >|< Identical environment
-   3   2   1   0   0  #   28 wall in coridor >|< Identical environment
-   3   3   1   0   0  #   29 left in coridor >|< Identical environment
-   3   4   3   5   8  #   30 ceiling in coridor >|< floor_cor in ceiling_abv
-   3   5   3   4   8  #   31 floor in coridor >|< floor_cor in floor_below
-   3   6   3   1   3  #   32 door in coridor >|< door in manager_a
-   3   7   3   1  11  #   33 ptn_corid in coridor >|< ptn_corid in manager_a
-   3   8   3   1   2  #   34 part_frame in coridor >|< part_frame in manager_a
-   3   9   3   1  10  #   35 part_glaz in coridor >|< part_glaz in manager_a
-   3  10   3   2   2  #   36 part_frameb in coridor >|< part_frame in manager_b
-   3  11   3   2   3  #   37 door_b in coridor >|< door in manager_b
-   3  12   3   2  11  #   38 ptn_coridb in coridor >|< ptn_corid in manager_b
-   3  13   3   2  10  #   39 part_glazb in coridor >|< part_glaz in manager_b
-   3  14   5   0   0  #   40 filler in coridor is adiabatic
+   3   1   1   0   0  #   27 right in corridor >|< Identical environment
+   3   2   1   0   0  #   28 wall in corridor >|< Identical environment
+   3   3   1   0   0  #   29 left in corridor >|< Identical environment
+   3   4   3   5   8  #   30 ceiling in corridor >|< floor_cor in ceiling_abv
+   3   5   3   4   8  #   31 floor in corridor >|< floor_cor in floor_below
+   3   6   3   1   3  #   32 door in corridor >|< door in manager_a
+   3   7   3   1  11  #   33 ptn_corid in corridor >|< ptn_corid in manager_a
+   3   8   3   1   2  #   34 part_frame in corridor >|< part_frame in manager_a
+   3   9   3   1  10  #   35 part_glaz in corridor >|< part_glaz in manager_a
+   3  10   3   2   2  #   36 part_frameb in corridor >|< part_frame in manager_b
+   3  11   3   2   3  #   37 door_b in corridor >|< door in manager_b
+   3  12   3   2  11  #   38 ptn_coridb in corridor >|< ptn_corid in manager_b
+   3  13   3   2  10  #   39 part_glazb in corridor >|< part_glaz in manager_b
+   3  14   5   0   0  #   40 filler in corridor is adiabatic
    4   1   0   0   0  #   41 edge_s in floor_below is External
    4   2   1   0   0  #   42 edge_e in floor_below >|< Identical environment
    4   3   1   0   0  #   43 edge_n in floor_below >|< Identical environment
@@ -48,7 +48,7 @@
    4   5   2  20   0  #   45 Surf-6 in floor_below >|< Constant @ 20 dC &   0 W rad
    4   6   3   1   6  #   46 floor_ma in floor_below >|< floor in manager_a
    4   7   3   2   6  #   47 floor_mb in floor_below >|< floor in manager_b
-   4   8   3   3   5  #   48 floor_cor in floor_below >|< floor in coridor
+   4   8   3   3   5  #   48 floor_cor in floor_below >|< floor in corridor
    4   9   5   0   0  #   49 filler in floor_below is adiabatic
    5   1   0   0   0  #   50 edge_s in ceiling_abv is External
    5   2   1   0   0  #   51 edge_e in ceiling_abv >|< Identical environment
@@ -57,7 +57,7 @@
    5   5   3   6   1  #   54 upper in ceiling_abv >|< base in boundary_up
    5   6   3   1   5  #   55 floor_ma in ceiling_abv >|< ceiling in manager_a
    5   7   3   2   5  #   56 floor_mb in ceiling_abv >|< ceiling in manager_b
-   5   8   3   3   4  #   57 floor_cor in ceiling_abv >|< ceiling in coridor
+   5   8   3   3   4  #   57 floor_cor in ceiling_abv >|< ceiling in corridor
    5   9   5   0   0  #   58 filler in ceiling_abv is adiabatic
    6   1   3   5   5  #   59 base in boundary_up >|< upper in ceiling_abv
    6   2   2  20   0  #   60 t_upper in boundary_up >|< Constant @ 20 dC &   0 W rad

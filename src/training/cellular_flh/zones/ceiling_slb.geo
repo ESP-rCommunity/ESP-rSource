@@ -46,7 +46,7 @@ ceiling_slb represents zone for heating at ceiling level
 *surf,upper,CEIL,-,-,-,screed_rev,OPAQUE,CONSTANT,20,00  #   5 ||< constant @ 20dC &   0W rad
 *surf,floor_ma,FLOR,-,-,-,ceiling_scrd,OPAQUE,ANOTHER,01,05  #   6 ||< ceiling:manager_a
 *surf,floor_mb,FLOR,-,-,-,ceiling_scrd,OPAQUE,ANOTHER,02,05  #   7 ||< ceiling:manager_b
-*surf,floor_cor,FLOR,-,-,-,ceiling_scrd,OPAQUE,ANOTHER,03,04  #   8 ||< ceiling:coridor
+*surf,floor_cor,FLOR,-,-,-,ceiling_scrd,OPAQUE,ANOTHER,03,04  #   8 ||< ceiling:corridor
 *surf,filler,FLOR,-,-,-,screed_rev,OPAQUE,ADIABATIC,0,0  #   9 ||< adiabatic
 # 
 *insol,3,0,0,0  # default insolation distribution

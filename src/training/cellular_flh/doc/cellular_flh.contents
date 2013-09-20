@@ -65,17 +65,17 @@ Seasons (as found in climatelist file):
  
 Metric                zones area scaling weight  type name
  1 Resultant T (degC)    3   35.40 1.000 1.000 comfort ocup_zones
-Zones: manager_a manager_b coridor
+Zones: manager_a manager_b corridor
  2 Zone db T (degC)    3   35.40 1.000 1.000 ZndbT dbt_zones
-Zones: manager_a manager_b coridor
+Zones: manager_a manager_b corridor
  3 Infiltration (W)    3   35.40 1.000 1.000 Infil infil_zones
-Zones: manager_a manager_b coridor
+Zones: manager_a manager_b corridor
  
 Demand set,  nb zones, floor area, scaling factor
  1 offices        2   27.00 1.000
 Zones: manager_a manager_b
  2 other          1    8.40 1.000
-Zones: coridor
+Zones: corridor
  3 piping         2  115.10 1.000
 Zones: floor ceiling_slb
  
@@ -214,7 +214,7 @@ manager_a. h/c 0.0 28.0
  Zone to contol loop linkages:
  zone ( 1) manager_a    << control  0
  zone ( 2) manager_b    << control  0
- zone ( 3) coridor      << control  0
+ zone ( 3) corridor      << control  0
  zone ( 4) floor        << control  2
  zone ( 5) ceiling_slb  << control  3
  
@@ -224,7 +224,7 @@ ID Zone         Volume|          Surface
    Name         m^3   | No. Opaque  Transp  ~Floor
  1 manager_a      40.5  13    62.2     9.8    13.5  manager describes cellular office on left
  2 manager_b      40.5  13    62.2     9.8    13.5  manager_b describes right office
- 3 coridor        18.3  14    45.8     9.0     8.4  coridor describes passage adjacent to offices
+ 3 corridor        18.3  14    45.8     9.0     8.4  corridor describes passage adjacent to offices
  4 floor           6.8   9    72.4     0.0    47.3  floor is a thin zone representing piping for floor heating
  5 ceiling_slb     6.8   9    72.4     0.0    67.7  ceiling_slb represents zone for heating at ceiling level
    all           113.   58    315.     29.    150.
@@ -243,16 +243,16 @@ ID Zone         Volume|          Surface
  Sur| Area  |Azim|Elev| surface    |    geometry       | construction |environment
     | m^2   |deg |deg | name       |optical|locat| use | name         |other side
   1  13.5     90.   0. pt_general   OPAQUE   VERT -     gyp_gyp_ptn  ||< pt_general:manager_b
-  2  0.920   360.   0. part_frame   OPAQUE   VERT -     insul_frame  ||< part_frame:coridor
-  3  2.32      0.   0. door         OPAQUE   VERT -     door         ||< door:coridor
+  2  0.920   360.   0. part_frame   OPAQUE   VERT -     insul_frame  ||< part_frame:corridor
+  3  2.32      0.   0. door         OPAQUE   VERT -     door         ||< door:corridor
   4  6.00    270.   0. pt_other     OPAQUE   VERT -     gyp_gyp_ptn  ||< identical environment
   5  13.5      0.  90. ceiling      OPAQUE   CEIL -     ceiling_scrd ||< floor_ma:ceiling_slb
   6  13.5      0. -90. floor        OPAQUE   FLOR -     screed       ||< floor_ma:floor
   7  2.70    180.   0. spandral     OPAQUE   VERT -     insul_frame  ||< external
   8  0.980   180.   0. frame        OPAQUE   VERT -     insul_frame  ||< external
   9  5.32    180.   0. glazing      DCF7671_ VERT -     dbl_glz      ||< external
- 10  4.48      0.   0. part_glaz    DCF7671_ VERT -     dbl_glz      ||< part_glaz:coridor
- 11  1.28    360.   0. ptn_corid    OPAQUE   VERT -     gyp_gyp_ptn  ||< ptn_corid:coridor
+ 10  4.48      0.   0. part_glaz    DCF7671_ VERT -     dbl_glz      ||< part_glaz:corridor
+ 11  1.28    360.   0. ptn_corid    OPAQUE   VERT -     gyp_gyp_ptn  ||< ptn_corid:corridor
  12  0.450   270.   0. pt_other_a   OPAQUE   VERT -     gyp_gyp_ptn  ||< identical environment
  13  7.05    270.   0. pt_other_b   OPAQUE   VERT -     gyp_gyp_ptn  ||< identical environment
  
@@ -324,16 +324,16 @@ sunday      2 EquiptWm2  0-24      0.0      0.0       0.50       0.50
  Sur| Area  |Azim|Elev| surface    |    geometry       | construction |environment
     | m^2   |deg |deg | name       |optical|locat| use | name         |other side
   1  13.5    270.   0. pt_general   OPAQUE   VERT -     gyp_gyp_ptn  ||< pt_general:manager_a
-  2  0.920   360.   0. part_frame   OPAQUE   VERT -     insul_frame  ||< part_frameb:coridor
-  3  2.32      0.   0. door         OPAQUE   VERT -     door         ||< door_b:coridor
+  2  0.920   360.   0. part_frame   OPAQUE   VERT -     insul_frame  ||< part_frameb:corridor
+  3  2.32      0.   0. door         OPAQUE   VERT -     door         ||< door_b:corridor
   4  6.00     90.   0. pt_other     OPAQUE   VERT -     gyp_gyp_ptn  ||< identical environment
   5  13.5      0.  90. ceiling      OPAQUE   CEIL -     ceiling_scrd ||< floor_mb:ceiling_slb
   6  13.5      0. -90. floor        OPAQUE   FLOR -     screed       ||< floor_mb:floor
   7  2.70    180.   0. spandral     OPAQUE   VERT -     insul_frame  ||< external
   8  0.980   180.   0. frame        OPAQUE   VERT -     insul_frame  ||< external
   9  5.32    180.   0. glazing      DCF7671_ VERT -     dbl_glz      ||< external
- 10  4.48      0.   0. part_glaz    DCF7671_ VERT -     dbl_glz      ||< part_glazb:coridor
- 11  1.28      0.   0. ptn_corid    OPAQUE   VERT -     gyp_gyp_ptn  ||< ptn_coridb:coridor
+ 10  4.48      0.   0. part_glaz    DCF7671_ VERT -     dbl_glz      ||< part_glazb:corridor
+ 11  1.28      0.   0. ptn_corid    OPAQUE   VERT -     gyp_gyp_ptn  ||< ptn_coridb:corridor
  12  0.450    90.   0. pt_other_a   OPAQUE   VERT -     gyp_gyp_ptn  ||< identical environment
  13  7.05     90.   0. pt_other_b   OPAQUE   VERT -     gyp_gyp_ptn  ||< identical environment
  
@@ -392,12 +392,12 @@ sunday      2 EquiptWm2  0-24      0.0      0.0       0.50       0.50
  
  ____________________________________________________________
  
- Zone coridor ( 3) is composed of 14 surfaces and 32 vertices.
+ Zone corridor ( 3) is composed of 14 surfaces and 32 vertices.
  It encloses a volume of 18.3m^3 of space, with a total surface
  area of 54.8m^2 & approx floor area of 8.42m^2
- coridor describes passage adjacent to offices
+ corridor describes passage adjacent to offices
  
- A summary of the surfaces in coridor( 3) follows:
+ A summary of the surfaces in corridor( 3) follows:
  
  Sur| Area  |Azim|Elev| surface    |    geometry       | construction |environment
     | m^2   |deg |deg | name       |optical|locat| use | name         |other side
@@ -476,7 +476,7 @@ sunday      6 LightsW   20-24     0.0     0.0      0.3      0.7    0.90  1   10.
   5  33.9      0. -90. Surf-6       OPAQUE   FLOR -     structure    ||< constant @ 20dC &   0W rad
   6  13.5      0.  90. floor_ma     OPAQUE   CEIL -     screed_rev   ||< floor:manager_a
   7  13.5      0.  90. floor_mb     OPAQUE   CEIL -     screed_rev   ||< floor:manager_b
-  8  6.10      0.  90. floor_cor    OPAQUE   CEIL -     screed_rev   ||< floor:coridor
+  8  6.10      0.  90. floor_cor    OPAQUE   CEIL -     screed_rev   ||< floor:corridor
   9  0.755     0.  90. filler       OPAQUE   CEIL -     screed_rev   ||< adiabatic
  
  
@@ -534,7 +534,7 @@ Daytype   Gain Type    Period Sensible  Latent     Radiant    Convec
   5  33.9      0.  90. upper        OPAQUE   CEIL -     screed_rev   ||< constant @ 20dC &   0W rad
   6  13.5      0. -90. floor_ma     OPAQUE   FLOR -     ceiling_scrd ||< ceiling:manager_a
   7  13.5      0. -90. floor_mb     OPAQUE   FLOR -     ceiling_scrd ||< ceiling:manager_b
-  8  6.10      0. -90. floor_cor    OPAQUE   FLOR -     ceiling_scrd ||< ceiling:coridor
+  8  6.10      0. -90. floor_cor    OPAQUE   FLOR -     ceiling_scrd ||< ceiling:corridor
   9  0.755     0. -90. filler       OPAQUE   FLOR -     screed_rev   ||< adiabatic
  
  
