@@ -582,11 +582,11 @@ C---------`internal/specified constant', or `adiabatic'.
           endif
         endif
         IF(NSINC.EQ.1)TS=0.0
-C-------Select the correlation via subroutine SELCOR1 in convect2.F.
+C-------Select the correlation.
         call SELCOR1(ICOMP,ISUR,inRout,TA,TS,ICOR)
 
 C A specific approach may have been imposed for this surface through a convection
-C file (.htc).  If so, this will override the ICOR value made in SELCOR1.
+C file (.htc).  If so, this will override the selection made above.
         call SELCOR2(ICOMP,ISUR,inRout,ICOR)
 
 C `Adaptive' control may have been imposed on the convection calculations
@@ -607,9 +607,7 @@ C the surface under consideration is `inside' or `outside'.
 C ******************** SELCOR2 ********************
 C SELCOR2 selects the convection-calculation approach to use for a given
 C surface when `type 2' control over convection calculations is imposed.
-C Note: the normal ICOR for this surface will have already been set via
-C a call to SELCOR1. Only in the case that the user over-rides it is
-C the ICOR value reset and returned as a different value.
+
       SUBROUTINE SELCOR2(ICOMP,ISUR,inRout,ICOR)
 
 #include "building.h"

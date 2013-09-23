@@ -79,7 +79,7 @@ C Otherwise select the zones from a list of zone names.
  7      helptopic='aco_zones_to_inclue'
         call gethelptext(helpinsub,helptopic,nbhelp)
         INPIC = NCOMP 
-        CALL EPICKS(INPIC,IVALZ,' ','Which zones to include:',
+        CALL EPICKS(INPIC,IVALZ,' ',' Which zones to include:',
      &    12,NCOMP,ZNAME,'Zone(s) list',IDerr,nbhelp)
 
 C Check for errors (if => exit sub).
@@ -178,7 +178,6 @@ C geometry.h provides commons G0/G1/G2/G4/prec2/precz/prec17.
       COMMON/OUTIN/IUOUT,IUIN
       common/gzonpik/izgfoc,nzg,nznog(mcom)
 
-      integer IZSTOCN
       COMMON/C24/IZSTOCN(MCOM,MS)
       COMMON/RAY3/MODIFY,MODLEN,MODBND
       COMMON/SDATA/SNA(MS),GSA(MS),GWA(MS),PAZI(MS),PELV(MS)
@@ -248,7 +247,6 @@ C HeightCo (Real) : Height [m] of the constructions, for LCA calculation.
 
       SUBROUTINE CompoList
 #include "building.h"
-#include "geometry.h"
 #include "esprdbfile.h"
 #include "material.h"
 
@@ -361,7 +359,6 @@ C          1 = textual feedback or 2 = File
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
       COMMON/SDATA/SNA(MS),GSA(MS),GWA(MS),PAZI(MS),PELV(MS)
 
-      integer IZSTOCN
       COMMON/C24/IZSTOCN(MCOM,MS)
       COMMON/FILEP/IFIL
       COMMON/OUTIN/IUOUT,IUIN
@@ -1075,14 +1072,10 @@ C RESMN      - Minimum reverberation time
       integer igwid,igheight  ! for use with axiscale
       integer iside,isize,ifont     ! passed to viewtext
       integer iupdown,isym    ! passed to etplot
-      integer iigl,iigr,iigt,iigb,iigw,iigwh
-      integer iiw1,iiw2,iiw3,iiw4,iimenu
 #else
       integer*8 igwid,igheight  ! for use with axiscale
       integer*8 iside,isize,ifont     ! passed to viewtext
       integer*8 iupdown,isym    ! passed to etplot
-      integer*8 iigl,iigr,iigt,iigb,iigw,iigwh
-      integer*8 iiw1,iiw2,iiw3,iiw4,iimenu
 #endif
 
 C Initialisation
@@ -1094,14 +1087,9 @@ C Initialisation
 C Setup the graph dimension according to the max and min RT
       IF ((MAll.EQ.4).AND.(MethodCalc.GT.1)) THEN
       ELSE
-
-C Setup and pass in parameters to win3d.
-        iiw1=15; iiw2=15; iiw3=5; iiw4=5; iimenu=menuchw
-        iigl=igl; iigr=igr; iigt=igt; iigb=igb; iigw=igw; iigwh=igwh
-        CALL win3d(iimenu,iiw1,iiw2,iiw3,iiw4,
-     &    iigl,iigr,iigt,iigb,iigw,iigwh)
-        igl=int(iigl); igr=int(iigr); igt=int(iigt); igb=int(iigb)
-        igw=int(iigw); igwh=int(iigwh)
+        Call win3d(menuchw,15,15,5,5,igl,igr,igt,igb,igw,igwh)
+        igw=igr-igl
+        igwh=igb-igt
         do 20 I=1,MNbAbs
           if (TReverb(I).gt.RESMX) then
             RESMX=TReverb(I)
@@ -1121,16 +1109,15 @@ C Calculate plotting box locations.
         igheight=igwh
         call axiscale(igwid,igheight,plxmin,plxmax,Ymin,Ymax,                 
      &                            xsc,ysc,sca,xadd,yadd)
-        CALL linescale(iigl,xadd,xsc,iigb,yadd,ysc)
+        CALL linescale(igl,xadd,xsc,igb,yadd,ysc)
 
 C Scale and draw monitoring plot.
-        Call horaxis(plxmin,plxmax,iigl,iigr,iigb,xadd,XSC,0,
-     &    'Frequ.[Hz]')
-        call vrtaxis(YMIN,YMAX,iigl,iigb,iigt,Yadd,ysc,0,0,'RT  s')
+        Call horaxis(plxmin,plxmax,igl,igr,igb,xadd,XSC,0,'Frequ.[Hz]')
+        call vrtaxis(YMIN,YMAX,igl,igb,igt,Yadd,ysc,0,0,'RT  s')
 
 C Print title. IPS is used to keep track of number of title lines.
         IPS=1
-        write(title,'(20x,2a)')'Reverberation time for space: ',TxtZone
+        write(title,'(20x,2a)') 'Reverberation time for space: ',TxtZone
         iside=IPS
         isize=0
         ifont=0

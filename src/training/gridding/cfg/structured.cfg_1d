@@ -15,12 +15,12 @@
  50.000    0.000   # Latitude & Longitude (diff from meridian)
       1   0.200   # Site exposure & ground reflectivity
 * DATABASES
-*stdmat  constr.db1.a
+*stdmat  constr.db1
 *mlc  ../dbs/multicon.db1
 *stdopt  optics.db1
 *stdprs  pressc.db1
 *stdevn  profiles.db1.a
-*stdclm  clm67
+*clm  /usr/esru/esp-r/climate/clm67
 *stdpdb  plantc.db1
 *slr_half_hr   0  # solar timing hour centred
 *year  1999 # assessment year

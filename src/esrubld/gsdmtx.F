@@ -1407,7 +1407,6 @@ C *********************************************************************
 #include "building.h"
 #include "control.h"
       COMMON/OUTIN/IUOUT,IUIN
-      integer icascf
       COMMON/CCTL/ICASCF(MCOM)
 
       COMMON/GR3D130/IFST(MNOD3),W3(MCFF3),NCLMN(MCFF3),NXT(MCFF3),SML3
@@ -1502,7 +1501,6 @@ C *********************************************************************
 #include "control.h"
 
       COMMON/OUTIN/IUOUT,IUIN
-      integer icascf
       COMMON/CCTL/ICASCF(MCOM)
       COMMON/PREC9/NCONST(MCOM),NELTS(MCOM,MS),NGAPS(MCOM,MS),
      &             NPGAP(MCOM,MS,MGP)

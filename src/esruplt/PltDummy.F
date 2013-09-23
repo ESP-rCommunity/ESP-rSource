@@ -25,9 +25,8 @@ C     This file contins dummy routines for plt that are refereced, but
 C     not needed in prj.
 C-----------------------------------------------------------------------
 
-      subroutine StoreSiteEnergyUse(iSiteComp, fSUFuelEnergyUse )
-      implicit none
-#include "building.h"
+      subroutine StoreSiteEnergyUse(iComponent, fSUFuelEnergyUse )
+      implicit none      
 #include "plant.h"
 #include "power.h"
 #include "OffsiteUtilitiesPublic.h"

@@ -21,14 +21,14 @@ C Software Foundation, Inc., 59 Temple Place, Suite 330,
 C Boston, MA 02111-1307 USA.
 
 c     The file contains the following routines:
-c     SUM_HVAC_ENERGY_USED_MONTHLY     Get/Stores Monthly energy values
-c     OUTPUT_HVAC_ENERGY_USED_MONTHLY  Outputs Monthly energy values
-c     H3KOUTPUT_SUM_PLR_BIN_HOURS      Get/Stores PLR Bin values
-c     ZERO_H3KOUTPUT_DATA              Zeros output variables
-c     GETDAY                           Get the day of the month
-c     GETMONTH                         Get the Month number
-c     OUTPUT_HVAC_PLR_PERCENT          Output PLR Bin Values
-c     H3KOUTPUT                        Main Output Routine.
+c     SUM_HVAC_ENERGY_USED_MONTHLY 	Get/Stores Monthly energy values
+c     OUTPUT_HVAC_ENERGY_USED_MONTHLY	Outputs Monthly energy values
+c     H3KOUTPUT_SUM_PLR_BIN_HOURS	Get/Stores PLR Bin values
+c     ZERO_H3KOUTPUT_DATA		Zeros output variables
+c     GETDAY				Get the day of the month
+c     GETMONTH			Get the Month number
+c     OUTPUT_HVAC_PLR_PERCENT		Output PLR Bin Values
+c     H3KOUTPUT			Main Output Routine.
 
 
 c     *********************************************************************
@@ -39,7 +39,7 @@ c     Initial Creation Date:  March 23th 2001
 c     Copyright 2000: NRCan Buildings Group
       
 c     INPUTS:
-c     IWU   Output File Number
+c     IWU		Output File Number
 c     OUTPUTS:
 c
 c     COMMENTS:
@@ -137,7 +137,7 @@ C     COPYRIGHT 2000: NRCAN BUILDINGS GROUP
       
 C     INPUTS:
 C     ISYSTEM SYSTEM NUMBER
-C     IWU  OUTPUT FILE NUMBER
+C     IWU	OUTPUT FILE NUMBER
 C     OUTPUTS:
 C     OUTPUTS DATA TO FILE IWU
 C     COMMENTS:
@@ -166,7 +166,7 @@ C     DEFINING SYSTEM TYPE PARAMETER HERE. SHOULD BE DONE IN HVAC MODULE. WILL A
       PARAMETER( BASEBOARD = 3 )
       INTEGER   ASHP
       PARAMETER ( ASHP = 7 )
-          
+	          
       WRITE(OUTS,'(A,4X,I3)')'#HVAC SYSTEM NUMBER = ',ISYSTEM
       CALL EDISP(IWU,OUTS)
       
@@ -193,8 +193,8 @@ C     INITIAL CREATION DATE:  MARCH 23TH 2001
 C     COPYRIGHT 2000: NRCAN BUILDINGS GROUP
       
 C     INPUTS:
-C     SYSTEM   HVAC SYSTEM USED
-C     IWU      OUTPUT FILE NUMBER
+C     SYSTEM   	HVAC SYSTEM USED
+C     IWU		OUTPUT FILE NUMBER
       
 C     OUTPUTS:
 
@@ -277,8 +277,8 @@ C     INITIAL CREATION DATE:  MARCH 23TH 2001
 C     COPYRIGHT 2000: NRCAN BUILDINGS GROUP
       
 C     INPUTS:
-C     SYSTEM   HVAC SYSTEM USED
-C     IWU      OUTPUT FILE NUMBER
+C     SYSTEM   	HVAC SYSTEM USED
+C     IWU		OUTPUT FILE NUMBER
       
 C     OUTPUTS:
 C     OUTPUT MONTHLY ENERGY VALUES TO FILE IWU
@@ -354,8 +354,8 @@ C     INITIAL CREATION DATE:  MARCH 23TH 2001
 C     COPYRIGHT 2000: NRCAN BUILDINGS GROUP
       
 C     INPUTS:
-C     ISYSTEM   HVAC SYSTEM USED
-C     PLR       PART LOAD RATIO
+C     ISYSTEM   	HVAC SYSTEM USED
+C     PLR 		PART LOAD RATIO
       
 C     OUTPUTS:
 C     NONE.
@@ -450,8 +450,8 @@ C     INITIAL CREATION DATE:  MARCH 23TH 2001
 C     COPYRIGHT 2000: NRCAN BUILDINGS GROUP
       
 C     INPUTS:
-C     ISYSTEM   SYSTEM NUMBER
-C     IWU       OUTPUT FILE NUMBER
+C     ISYSTEM		SYSTEM NUMBER
+C     IWU		OUTPUT FILE NUMBER
 C     OUTPUTS:
 C     
 C     COMMENTS:
@@ -490,8 +490,8 @@ C     INITIAL CREATION DATE:  MARCH 23TH 2001
 C     COPYRIGHT 2000: NRCAN BUILDINGS GROUP
       
 C     INPUTS:
-C     ISYSTEM    SYSTEM NUMBER
-C     IWU        OUTPUT FILE NUMBER
+C     ISYSTEM		SYSTEM NUMBER
+C     IWU		OUTPUT FILE NUMBER
 C     OUTPUTS:
 C     
 C     COMMENTS:
@@ -527,8 +527,8 @@ C     INITIAL CREATION DATE:  MARCH 23TH 2001
 C     COPYRIGHT 2000: NRCAN BUILDINGS GROUP
       
 C     INPUTS:
-C     ISYSTEM     SYSTEM NUMBER
-C     IWU         OUTPUT FILE NUMBER
+C     ISYSTEM		SYSTEM NUMBER
+C     IWU		OUTPUT FILE NUMBER
 C     OUTPUTS:
 C     
 C     COMMENTS:
@@ -565,8 +565,8 @@ C     INITIAL CREATION DATE:  MARCH 23TH 2001
 C     COPYRIGHT 2000: NRCAN BUILDINGS GROUP
 
 C     INPUTS:
-C     ISYSTEM    SYSTEM NUMBER
-C     IWU        OUTPUT FILE NUMBER
+C     ISYSTEM		SYSTEM NUMBER
+C     IWU		OUTPUT FILE NUMBER
 C     OUTPUTS:
 C     
 C     COMMENTS:
@@ -626,7 +626,7 @@ C     INITIAL CREATION DATE:  MARCH 23TH 2001
 C     COPYRIGHT 2000: NRCAN BUILDINGS GROUP
       
 C     INPUTS:
-C     IWU      OUTPUT FILE NUMBER
+C     IWU		OUTPUT FILE NUMBER
 C     OUTPUTS:
 C     WRITE TO FILE IWU THE AIMS INFILTRATION DATA.
 C
@@ -713,7 +713,7 @@ C     COPYRIGHT 2000: NRCAN BUILDINGS GROUP
       
 C     THIS ROUTINE GATHERS THE ZONE ENERGY OF SOLAR,CASUAL AND FOUNDATION.
 C     INPUTS:
-C     ICOMP    ZONE NUMBER
+C     ICOMP		ZONE NUMBER
 C     IWU             Ouput file number
       
 c     OUTPUTS:
@@ -782,7 +782,7 @@ c     End Month Loop
 
 
       return
-      END
+      END	
 
 c     ******************** H3ZOUTP ********************
       
@@ -812,13 +812,14 @@ C     tzph,tzpc are zone heating/cooling use over time.
 
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
+      common/C21/IFCFG,cfgroot,LCFGF
       COMMON/RESLIB/RFILE,PFILE,MSTRFILE,LAFRES
       COMMON/rcmd/LCMDFL
       character LCMDFL*144
       character LTMP*72,h*72,outs*124,louts*248
       character PFILE*72,MSTRFILE*72,LAFRES*72
-      character tab*1
-      character*72 rfile
+      character cfgroot*24,tab*1
+      character*72 lcfgf,rfile
       DIMENSION MTHNAM(12)
       CHARACTER DS*7,DS1*10,DE*7,DE1*10,MTHNAM*3
       logical OK
@@ -1493,8 +1494,8 @@ C                                      data to the XML output structure.
                                          ! collector pump for the month in kWhr
       REAL fMONTH_SDHW_Tank_elec_KWHR    ! electricity consumption of storage tank in kWhr
       REAL fMONTH_SDHW_Tank_fuel_KWHR    ! fuel consumption of storage tank in Kwhr
-      REAL fMONTH_SDHW_coll_netgain_KWHR ! collector net heat gain in kWh 
-
+      REAL fMONTH_SDHW_coll_netgain_KWHR ! collector net heat gain in kWhr
+					 
 C     Output headers for solar DHW
       WRITE (OUTS,'(A)')' ' 
       CALL EDISP(IWU,OUTS)

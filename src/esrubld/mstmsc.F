@@ -30,7 +30,6 @@ C ALPHA        convective heat transfer coefficient (W/m2 K)
 C TC           ambient temperature    ( C )
 C TK           ambient temperature    ( K )
 C CP           air specific heat capacity  (J/kg K)
-C RhoA         air density (kg/m^3)
 C *********************************************************************
       FUNCTION BETA01(ALPHA,CP,TC)
 
@@ -38,8 +37,7 @@ C *********************************************************************
       ScPrn1=0.85
       Ru=8314.4
       TK=TC+273.15
-      RhoA=1.2
-      BETA01=ALPHA*H2OMOL*ScPrn1/(CP*Ru*TK*RhoA)
+      BETA01=ALPHA*H2OMOL*ScPrn1/(CP*Ru*TK)
       IF(BETA01.LT.0.0)
      &  STOP 'Error (701): negative mass transfer coefficient.'
       RETURN

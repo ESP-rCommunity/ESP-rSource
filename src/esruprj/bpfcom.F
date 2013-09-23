@@ -19,18 +19,6 @@ C Software Foundation, Inc., 59 Temple Place, Suite 330,
 C Boston, MA 02111-1307 USA.
 
 C Common source in building/plant/ flow/ global/ optical control.
-C Included subroutines:
-C ADDCNTL  Add or delete a building/plant/flow/optical/complex fenestration
-C          control.
-C ADDCTLD  Add or delete a building/plant/flow/global/optical control day type.
-C ADDCTLDP Add or delete a building/plant/flow/global/optical/complex fen
-C          control period.
-C LSTCNTL  List a building/plant/flow/global/optical control.
-C stfctl   Copies from control commons to working array.
-C extrctl  Copies from working array to control commons.
-C initperi Setting up initial (integer) periods for schedules.
-C initperr Setting up initial (real) periods for schedules.
-
 
 C ******** ADDCNTL
 C Add or delete a building/plant/flow/optical/complex fenestration
@@ -320,7 +308,7 @@ C Complex fenestration.
       elseif(ACT.eq.'A')then
         helptopic='ctl_add_loops'
         call gethelptext(helpinsub,helptopic,nbhelp)
-        IDOV=0  ! initial assumption not to use date-of-validity
+        IDOV=0
         if(icfoc.eq.0.and.ncf+1.gt.mcf)then
           call usrmsg('Cannot add more zone controls.',' ','W')
           return
@@ -353,27 +341,29 @@ C Complex fenestration.
 C Initial setup of day types. Offer the user a cancel option and
 C if that is selected decrement ncf and return.
           IV=NBCDT(ncf)
-          CALL EASKABC('Day types for ideal zone controls (see help)',
-     &      'select:','Follow calendar day types','Just one day type',
-     &      'Dates of validity (legacy)',IV,nbhelp)
+          write(outs,'(a,i2,a)')
+     &      ' Number of zone control day types (currently',IV,') :'
+          CALL EASKABC(outs,'(see help)',
+     &      'Follow calendar day types','Just one day type',
+     &      'Dates of validity',IV,nbhelp)
           if(iv.eq.1)then
             NBCDT(ncf)=0
           elseif(iv.eq.2)then
             NBCDT(ncf)=1
           elseif(iv.eq.3)then
             IVP=3
-	    CALL EASKI(IVP,'Number of user defined control periods',
-     &        'of validity in the whole year (see help) ',
-     &        0,'F',MCF,'-',1,'nb periods of validity',IERI,nbhelp)
+	    CALL EASKI(IVP,'Number of user defined control periods ',
+     &        'in the whole year (see help) ',
+     &        0,'F',MCF,'-',1,'no periods of validity',IERI,nbhelp)
 	    if(ieri.eq.-3)then
 	      ncf=ncf-1
 	      return
 	    else
 	      NBCDT(ncf)=IVP
-              IDOV=1     ! set to use date of validity
+              IDOV=1
 	    endif
           endif
-          NN=NBCDT(ncf)  ! assume zero means all calendar day types
+          NN=NBCDT(ncf)
           IF(NN.EQ.0)NN=NBDAYTYPE
           do 87 ik=1,NN
             IF(IDOV.EQ.1)THEN
@@ -438,25 +428,25 @@ C Initial setup of day types.
      &     ' Number of plant control day types (currently',IV,') :'
           CALL EASKABC(outs,'(see help)',
      &      'Follow calendar day types','Just one day type',
-     &      'Dates of validity (legacy)',IV,nbhelp)
+     &      'Dates of validity',IV,nbhelp)
           if(iv.eq.1)then
             NPCDT(ncl)=0
           elseif(iv.eq.2)then
             NPCDT(ncl)=1
           elseif(iv.eq.3)then
             IVP=3
-	    CALL EASKI(IVP,'Number of user defined control periods',
-     &      'of validity in the whole year (see help) ',
-     &      0,'F',MCF,'-',1,'nb periods of validity',IERI,nbhelp)
+	    CALL EASKI(IVP,'No of user defined control periods ',
+     &      'in the whole year (see help) ',
+     &      0,'F',MCF,'-',1,'no periods of validity',IERI,nbhelp)
 	    if(ieri.eq.-3)then
 	      ncl=ncl-1
 	      return
 	    else
 	      NPCDT(ncl)=IVP
-              IDOV=1     ! date of validity used
+              IDOV=1
 	    endif
           endif
-          NN=NPCDT(ncl)  ! assume zero means all calendar day types
+          NN=NPCDT(ncl)
           IF(NN.EQ.0)NN=NBDAYTYPE
           do 187 ik=1,NN
             IF(IDOV.EQ.1)THEN
@@ -526,25 +516,25 @@ C Initial setup of day types.
      &      ' No. vent/hydronic control day types (currently',IV,') :'
           CALL EASKABC(outs,'(see help)',
      &      'Follow calendar day types','Just one day type',
-     &      'Dates of validity (legacy)',IV,nbhelp)
+     &      'Dates of validity',IV,nbhelp)
           if(iv.eq.1)then
             NFCDT(ncc)=0
           elseif(iv.eq.2)then
             NFCDT(ncc)=1
           elseif(iv.eq.3)then
             IVP=3
-	    CALL EASKI(IVP,'Number of user defined control periods',
-     &      'of validity in the whole year (see help) ',
-     &      0,'F',MCF,'-',1,'nb periods of validity',IERI,nbhelp)
+	    CALL EASKI(IVP,'No of user defined control periods ',
+     &      'in the whole year (see help) ',
+     &      0,'F',MCF,'-',1,'no periods of validity',IERI,nbhelp)
 	    if(ieri.eq.-3)then
 	      ncc=ncc-1
 	      return
 	    else
 	      NFCDT(ncc)=IVP
-              IDOV=1     ! date of validity used
+              IDOV=1
 	    endif
           endif
-          NN=nfcdt(ncc)  ! assume zero means all calendar day types
+          NN=nfcdt(ncc)
           IF(NN.EQ.0) NN=NBDAYTYPE
           do 587 ik=1,NN
             IF(IDOV.EQ.1)THEN
@@ -619,7 +609,7 @@ C Initial setup of day types.
           elseif(iv.eq.2)then
             NGCDT(ncc)=1
           endif
-          NN=NGCDT(ngf)  ! assume zero means all calendar day types
+          NN=NGCDT(ngf)
           IF(NN.EQ.0)NN=NBDAYTYPE
           do 687 ik=1,NN
             igcdv(ngf,ik,1)=1
@@ -646,25 +636,25 @@ C if that is selected decrement ncf and return.
      &      ' Number of optical control day types (currently',IV,') :'
           CALL EASKABC(outs,'(see help)',
      &      'Follow calendar day types','Just one day type',
-     &      'Dates of validity (legacy)',IV,nbhelp)
+     &      'Dates of validity',IV,nbhelp)
           if(iv.eq.1)then
             NOCDT(nof)=0
           elseif(iv.eq.2)then
             NOCDT(nof)=1
           elseif(iv.eq.3)then
             IVP=3
-	    CALL EASKI(IVP,'Number of user defined control periods',
-     &      'of validity in the whole year (see help) ',
-     &      0,'F',MCF,'-',1,'nb periods of validity',IERI,nbhelp)
+	    CALL EASKI(IVP,'No of user defined control periods ',
+     &      'in the whole year (see help) ',
+     &      0,'F',MCF,'-',1,'no periods of validity',IERI,nbhelp)
 	    if(ieri.eq.-3)then
 	      nof=nof-1
 	      return
 	    else
 	      NOCDT(nof)=IVP
-              IDOV=1     ! date of validity used
+              IDOV=1
 	    endif
           endif
-          NN=NOCDT(nof)  ! assume zero means all calendar day types
+          NN=NOCDT(nof)
           IF(NN.EQ.0)NN=NBDAYTYPE
           do 5 ik=1,NN
             IF(IDOV.EQ.1)THEN
@@ -728,7 +718,7 @@ C Initial setup of day types. Offer the user a cancel option and
 C if that is selected decrement nCFCctlloops and return.
           IV=nCFCctldaytypes(nCFCctlloops)
           write(outs,'(a,i2,a)')
-     &      'Day types for fenistration control (currently',IV,') :'
+     &      ' Number of zone control day types (currently',IV,') :'
           CALL EASKABC(outs,' ',
      &      'weekday/Saturday/Sunday','one','other',IV,nbhelp)
           if(iv.eq.1)then
@@ -736,8 +726,8 @@ C if that is selected decrement nCFCctlloops and return.
           elseif(iv.eq.2)then
             nCFCctldaytypes(nCFCctlloops)=1
           elseif(iv.eq.3)then
-            CALL EASKI(IV,'Number of user defined control day types',
-     &        ' ',0,'F',MCF,'-',1,'no control day types',IERI,nbhelp)
+            CALL EASKI(IV,'No of user defined control day types',' ',
+     &       0,'F',MCF,'-',1,'no control day types',IERI,nbhelp)
             if(ieri.eq.-3)then
               nCFCctlloops=nCFCctlloops-1
               return
@@ -745,7 +735,7 @@ C if that is selected decrement nCFCctlloops and return.
               nCFCctldaytypes(nCFCctlloops)=IV
             endif
           endif
-          NN=nCFCctldaytypes(nCFCctlloops)  ! assume zero means all calendar day types
+          NN=nCFCctldaytypes(nCFCctlloops)
           IF(NN.EQ.0)NN=3
           do 6687 ik=1,NN
             IP=1
@@ -1638,7 +1628,6 @@ C Parameters
 
       integer ncomp,ncon
       common/c1/ncomp,ncon
-      integer icascf
       common/cctl/icascf(mcom)
 
       common/calena/calename,calentag(MDTY),calendayname(MDTY)
@@ -1671,18 +1660,8 @@ C List function details.
       CALL EVCNTRL(icfoc,II,1,1,'S',SSTR)
       call edisp(itru,' ')
       LN=max(1,LNBLNK(SSTR))
-      if(icfoc.eq.0)then
-        if(IBSN(II,4).eq.0)then
-          WRITE(outs,'(a,i2,2a)') ' The sensor for function ',
-     &      II,' ',SSTR(1:LN)
-        else
-          WRITE(outs,'(a,i2,3a,i2)') ' The sensor for function ',
-     &      II,' ',SSTR(1:LN),' with nested loop ',IBSN(II,4)
-        endif
-      else
-        WRITE(outs,'(a,i2,2a)') ' The sensor for function ',
-     &    II,' ',SSTR(1:LN)
-      endif
+      WRITE(outs,65)II,SSTR(1:LN)
+  65  FORMAT(' The sensor for function ',I2,' ',a)
       call edisp(itru,outs)
 
       CALL EVCNTRL(icfoc,II,1,1,'A',SSTR)
@@ -1706,20 +1685,23 @@ C List function details.
         nn=nCFCctldaytypes(ii)
       endif
 
-C NN is overloaded - zero follows the calendar day types, otherwise
-C non-zero signals the control uses dates-of-validity.
-      if(nn.eq.0)then
-        call edisp(itru,' The following day types are defined:')
-        write(outs,'(20a)') (CALENTAG(idty),idty=1,NBDAYTYPE)
+C NN is overloaded - zero can mean weekday/sat/sun if there are 3 calendar
+C day types, otherwise this signals the use of the current calendar day types.
+      IF(nn.EQ.0)THEN
+        IF(nbdaytype.GT.3)THEN
+          call edisp(itru,' The following day types are defined:')
+          DO 30 ID=1,NBDAYTYPE
+            call edisp(itru,calentag(id))
+ 30       CONTINUE
+        ELSE
+          call edisp(itru,
+     &     ' The function day types are Weekdays, Saturdays & Sundays')
+        ENDIF
+      ELSE
+        WRITE(outs,78)nn
+  78    FORMAT(' There have been ',I2,' day types defined.')
         call edisp(itru,outs)
-C        DO 30 ID=1,NBDAYTYPE
-C          call edisp(itru,calentag(id))
-C 30     CONTINUE
-      else
-        write(outs,'(a,i2,a)') 'There have been ',nn,
-     &    ' periods of validity defined during the year.'
-        call edisp(itru,outs)
-      endif
+      ENDIF
       if(nn.eq.0)nn=nbdaytype
       do 20 j=1,nn
         JJ=J

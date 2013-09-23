@@ -1,5 +1,4 @@
 *help_text clm
-*subroutine MKBCLM
 *item MKBCLM confirm_marker_line 
 'If the ASCII file was exported from the climate'
 'module it will have a marker line at the start of'
@@ -23,78 +22,6 @@
 'open to question.'
 *enditem
           CALL EASKR(CLAT,' ',' Climate latitude ? ',
-*subroutine COLTOBCLM
-*item COLTOBCLM clm_import_param
-'Weather data can be imported from column data files if'
-'you supply the name of the file and then select the'
-'columns to use for each of the data items (leaving the'
-'column index at zero skips the data).
-'  '
-'You can set which line of the file to begin reading at'
-'(this allows you to skip headings).'
-'  '
-'The enter site data asks you for documentation and year'
-'and the period prior to importing the hourly data.'
-'  '
-'Units for the data types are:'
-'  diffuse solar radiation - W/m2 real or integer or'
-'    tenths W/m2 integer'
-'  ambient db T - degrees C real or integer or  tenths'
-'    degree C integer'
-'  direct solar - W/m2 real or integer or tenths W/m2'
-'  global horizontal solar radiation - W/m2 real, W/m2 int'
-'    tenths W/m2 integer, sum of direct+diffuse KJ/m2 real'
-'    or sum of direct+diffuse KJ/m2 integer. For the latter'
-'    two choices you are also asked for the actual longitude'
-'    and the longitude difference and to select a method to'
-'    use.'
-'  wind speed - m/s real m/s int tenths m/s int or'
-'    knots real or integer
-'  wind direction - degrees from north real or integer'
-'    or tenths degree from north integer'
-'  RH  % real, tenths % integer or a real 0.0-1.0.'
-*enditem
-*item COLTOBCLM confirm_marker_line
-'Files for weather import might or might not have a demarcation'
-'between the days.  This is a yes or no question.'
-*enditem
-*item COLTOBCLM confirm_year
-'The year is required to find the day of the week '
-'for a given julian day.'
-*enditem
-*item COLTOBCLM confirm_lat_log_diff
-'The climate latitude does not necessarily have to '
-'match the site latitude.  However, the difference '
-'should not be great or simulation results may be '
-'open to question.'
-'  '
-'For solar radiation defined as the sum of direct and'
-'diffuse you are being asked for the ACTUAL latitude'
-'as well as the difference from the local time.'
-*enditem
-*item COLTOBCLM korea_met_conversion'
-'The default conversion model is based on a publication'
-'from Muneer: Solar Radiation and Daylight models (1997)'
-'ISBN: 0-7506-2495-7.'
-' '
-'The Maxwell model is equation 3.4.2a and 3.4.2b of '
-'Muneer book on page 102. '
-'The Erbs, Klein and Duffie model is based on empirical '
-'correlations, documented in: Erbs D.G., Klein S.A., '
-'Duffie J.A. 1982. Estimation of the diffuse radiation'
-'fraction for hourly, daily and monthly-average global '
-'radiation. Solar Energy 28: pp.293-302.'
-' '
-'The three methods tend to give different estimates of'
-'diffuse radiation for a given global horizontal solar'
-'radiation value. The default method tends to give higher'
-'diffuse values. '
-' '
-'If in doubt, create a climate file for each of the'
-'methods and visually inspect the predictions.'
-' '
-*enditem
-*subroutine MKOREANCLM
 *item MKOREANCLM confirm_lat_log_diff
 'The climate longitude does not necessarily have to '
 'match the site latitude.  However, the difference '
@@ -130,8 +57,8 @@
 ' '
 *enditem
       call easkabc
-*subroutine CFILIN
 *item CFILIN clm_file_contents
+*subroutine CFILIN
 'A climate file holds hourly values for diffuse solar'
 'intensity in W/m^2, dry bulb temp in tenths degrees C, '
 'direct normal or global horizontal solar intensity'
@@ -255,10 +182,7 @@
 'a file delimited by | marks. XXXD.dat files hold earth'
 'temperature data at 1m 3m 5m for each day of multiple '
 ' '
-'The ASCII column data import option allows you to specify'
-'a file with column data (e.g. a csv file) and then link the'
-'columns in the file with weather data and then set the units'
-'of the columns so that the data is correctly converted.'
+'This facility reads dry bulb ... '
 ' '
 *enditem
         CALL EASKABCD(' Climate import options:',' ',

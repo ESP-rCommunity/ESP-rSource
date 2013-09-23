@@ -30,7 +30,7 @@ C the climatelist file exceeds this the array name should be revised.
 
 C ********* rdblist
 C Scan list of climate databases and present selection to user.
-      subroutine rdblist(idblfil,clmdb,actreturn,ier)
+      subroutine rdblist(idblfil,clmdb,ier)
 #include "epara.h"
 #include "esprdbfile.h"
 #include "espriou.h"
@@ -44,12 +44,6 @@ C seasons.h provides typper and typsea
       
       integer lnblnk  ! function definition
 
-C Parameters
-      integer idblfil ! file unit for list of known
-      character clmdb*144
-      character actreturn*1
-      integer ier
-
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
       common/pophelp/h(60)
@@ -60,7 +54,7 @@ C Parameters
       dimension name(124), mitem(35)
       character name*32,mitem*33,OUTSTR*124,WORD*20
       character group*32,key*1,look*32,tlook*32
-      character llclmdb*144,h*72
+      character clmdb*144,llclmdb*144,h*72,actreturn*1
       integer NCO,ICO ! max items and current menu item
 
 C Set default early winter, spring, summer, autumn, late winter periods.
@@ -258,8 +252,6 @@ C Present information on a climate db.
           if(tlook(1:lnblnk(tlook)).eq.look(1:lnblnk(look)))then
 
 C Parse this item of the climatelist file.
-C Use an actreturn 's' that says do not start clm module and
-C actreturn 'u' to start clm module.
             write(clmlnam,'(a)') tlook(1:32)  ! remember menu entry 
             call itemclimatelist(idblfil,'r',actreturn,clmdb,ier)
             if(actreturn.eq.'e')then
@@ -269,9 +261,6 @@ C actreturn 'u' to start clm module.
             elseif(actreturn.eq.'m')then
               goto 42
             elseif(actreturn.eq.'u')then
-              CALL ERPFREE(idblfil,ISTAT)
-              return
-            elseif(actreturn.eq.'s')then
               CALL ERPFREE(idblfil,ISTAT)
               return
             elseif(actreturn.eq.'f')then
@@ -364,7 +353,7 @@ C Get info for db matching the alias.
         call egetrm(outstr,K,tlook,'W','name',IER)
         if(tlook(1:lnblnk(tlook)).eq.alias(1:lnblnk(alias)))then
           write(clmlnam,'(a)') tlook(1:32)  ! remember menu entry 
-
+	
   4       CALL STRIPC(idblfil,OUTSTR,0,ND,0,'item line',IER)
           if(ier.ne.0)goto 92
           K=0
@@ -516,8 +505,6 @@ C  if 'i' then jump to read another item in climatelist (3)
 C  if 'm' then jump to rebuild climatelist menu (42)
 C  if 'f' then stop the application
 C  if 'u' then jump to 'useit' part of calling subroutine
-C  if 's' then jump to 'selectedit' part of the calling subroutine
-C         (does not start the clm module)
 C  if 'e' then found 'end' so close unit number (92)
       subroutine itemclimatelist(idblfil,act,actreturn,clmdb,ier)
 
@@ -793,19 +780,14 @@ C for the line used in ASKOK.
               return
             endif
           elseif(clmlavail(1:6).eq.'ONLINE')then
-            CALL EASKABC(sethead,' ','Use it (view in clm)','Use it',
-     &        'Select another ? ',IW,1)
-            if(IW.eq.3)then
+            CALL EASKAB(sethead,' ','Use it','Select another ? ',IW,1)
+            if(IW.eq.2)then
               clmdb='UNKNOWN'
               actreturn='m'
               return
-            elseif(IW.eq.2)then
-              CALL ERPFREE(idblfil,ISTAT)
-              actreturn='s'   ! use it without clm
-              return
             elseif(IW.eq.1)then
               CALL ERPFREE(idblfil,ISTAT)
-              actreturn='u'   ! use it via clm
+              actreturn='u'
               return
             endif
           endif

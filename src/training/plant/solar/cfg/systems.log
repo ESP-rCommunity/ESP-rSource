@@ -1,0 +1,187 @@
+
+
+
+                                Simulation of solar systems
+
+                     The building for this system  is  divided  into  four
+                regions in order to cater for the different schemes imple-
+                mented in this example. The first scheme  "a  direct  gain
+                room"  uses  direct solar gain as much as possible with an
+                oil filled electric radiator as a backup  heating  source.
+                The middle two zones, "rad_test" and "heatexch", were used
+                for the next two schemes  and  were  heated  via  a  solar
+                sourced  wet  central  heating  system, while for the last
+                scheme, the zone "air collector room" was heated by an air
+                solar collector.
+
+                     The wet central heating system is composed of a  10m2
+                liquid  solar  collector feeding a nominal 1kW radiator in
+                "rad_test", a fan-coil  unit  in  "heatexch",  a  variable
+                speed  pump  (sensing collector temperature) and then back
+                to the collector.
+
+                     To take into account  grills  in  the  doors  between
+                zones, inter-zone flow-paths were also introduced. Because
+                there is no air conditioning in the model it was specified
+                that  occupants  would  choose to open windows if the room
+                temperature  rises  above  23C.  This  was   achieved   by
+                representing  a window as a common orifice flow  component 
+                and the window opening scheme is defined in a configuration
+                control file. In addition to the window opening  strategy,
+                the  zones  "heatexch"  and  "mixed_test" also   have   an
+                extract  fan  which  switches  on  if the room temperature
+                rises above 22C.  In combination, this would result in the
+                extract  fan  being switched on first and then if the room
+                continued to overheat, the window would  be  opened.   The
+                user  has the option to describe the fan as a flow inducer
+                with a pressure flow curve or approximate it as  a  volume
+                flow component (for initial sizing).
+
+                     Two  variants  of  the  air   solar   collector   are
+                represented  in this example. In the first case, an expli-
+                cit representation is assumed in which all of the internal
+                and  external shortwave and longwave radiation and thermal
+                mass is modelled. The temperature gradient in the  collec-
+                tor  is  accounted for by using three contiguous zones. To
+                operate the collector three nodes  have  been  established
+                within  a fluid flow network, linked, along with a fan, to
+                the air node of "mixed_test".  while this level of resolu-
+                tion  will  provide  a reasonable indication of how such a
+                system will perform, higher resolution can be achieved  by
+                further subdivision of the collector.
+
+                     In the second case, a single node plant model,  based
+                on  the  flat plate solar collector algorithm described in
+                the TRNSYS manual (TRNSYS, 1983), was used. In  this  case
+                the amount of energy transferred to the collector water is
+                evaluated by the algorithm and then  used  in  the  energy
+                balance  equation to calculate the nodal temperature which
+                represents the average component state.  The  single  pipe
+                radiator  is represented by a dynamic two node plant model
+                in which the capacitance nodes are coupled  to  the  inlet
+                and outlet connection.  An eight node model is also avail-
+                able but since this example  is  focused  on  the  thermal
+                interaction  between plant and building zones, rather than
+                on the accuracy of the individual  models,  the  two  node
+                radiator model is adequate.  
+
+                The  electric  oil-filled  radiator  component  in     the
+                direct  gain  room   is  included  to  provude      backup
+                heating   and  is  represented  by  a  single  node model.
+                The  maximum  output  from  this  radiator  is  700W.
+
+                While an ideal control could have been used, the choice of
+                a plant component means that the time lags associated with
+                the  heater  are  accounted for in full.  The heating coil
+                component is represented by a 3 node liquid to air  model.
+                The  first  node represents the solid material, the second
+                represents the air and the third node represents the water
+                in the coil. The coil is fed by the radiator return water.
+                The water pump maximum flow rate is 0.055 $kg/s$ when  the
+                collector  water  temperature  is  above 35C. The air flow
+                through the coil is supplied by a  single  node  fan  con-
+                trolled  by a proportional controller sensing the coil air
+                node temperature.  The fan maximum flow rate is 0.06 m^3/s
+                when  the air temperature in the heating coil exceeds 18C.
+                The period selected for the simulation is from 25th  April
+                until  27th  April  with boundary conditions from the 1967
+                ESP-r test climate file.  The building time-step  selected
+                was 15 minutes while the time-step for the plant was taken
+                as 3 minutes.
+
+                The user input for the simulator is as follows:
+                  dates: 25 - 27 april
+                  timesteps: buidling 4/hr
+                             plant  5/building step
+
+                 Set the plant simulation parameters as follows:
+                   solver type: 1 (Gaussian with back substitution and no pivoting)
+                   max iterations: 100
+                   max control iterations: 100
+                   relative error:  0.01
+                   absolute temperature error:  2 K
+                   absolute heat flux error:    10 W
+                   absolute error mass flow:   0.0005 kg/s
+
+                     If the thermal performance of the solar  system  con-
+                sidered  was  to be improved, then one way to achieve this
+                would be to improve the response of the collector so  that
+                more  solar  radiation  can  be  converted  to useful heat
+                energy. This can be achieved through  the  application  of
+                the sun tracking mechanism built into the collector model.
+                Sun tracking can be implemented using  a  fixed  collector
+                slope  angle  or it can be implemented using a slope angle
+                which gives the maximum solar radiation intensity  on  the
+                collector.
+
+
+
+The solar heating system considered consists of the  follow-
+ing components:
+
+       Flat plate  solar  collector (ESP-r component type 700)
+       Water  pump                  (ESP-r component type 240)
+       2-node  WCH  radiator        (ESP-r component type 210)
+       3-node  heating  coil        (ESP-r component type 410)
+       air  fan                     (ESP-r component type  30)
+
+In simulating this system, it has been assumed that:
+
+-    Ground reflectance is fixed at 0.2 for the  solar  col-
+     lector.
+
+-    The  orientation  of  the  solar  collector  is   fixed
+     throughout the simulation and there is no sun tracking.
+
+-    All components are  located  outdoors  apart  from  the
+     water radiator and the oil-filled electric radiators.
+
+-    There is no friction  and  energy  losses  occuring  in
+     ducts and pipes.
+
+The pump deliveres hot water from the solar collector  to  a
+radiator located in building zone 2 (rad_test). The returned
+water is still warm enough to be used in a preheater  (heat-
+ing  coil)  through  which return air from zone 3 (heatexch)
+flows and exchanges heat with the radiator return water. The
+water from the preheater is then pupmped back to the collec-
+tor to repeat the water cycle. In addition to the plant sys-
+tem  components mentioned above, there is also an oil-filled
+electric radiator (ESP-r component type 280) located in zone
+1 (direct_gain). This radiator is controlled such that it is
+operating within its control loop settings between  8  hours
+and 17 hours daily.
+
+     The solar collector used has an area  of  10  m^2.  The
+inclination angle (measured from the ground to the collector
+surface normal) was taken as 50 degrees and  ground  reflec-
+tance  was  assumed  to  be 0.2. The period selected for the
+simulation was arbitrarily chosen  to  be  from  25th  April
+until  27th April with a building time-step being 30 minutes
+and the plant time-step being 90 seconds. The  climate  file
+used  was 'clm67'. The complete set of parameters associated
+with each component is given in appendix z.
+
+     Three control loops were specified for  three  diferent
+components.  One  for  the pump, one for the fan and one for
+the electric radiator. The control loop for  the  pump  con-
+sists of a sensor sensing the water temperature in the solar
+collector and uses a proportional control law to actuate the
+pump  water  flow rate. Minimum water flow rate is delivered
+by the pump (0.001 kg/s) if the  water  temperature  in  the
+solar  collector is below 25 (C). Maximum water flow rate is
+delivered (0.055 kg/s) if the solar collector water tempera-
+ture  is above 35 (C). The control loop for the fan consists
+of a sensor sensing the air temperature in the heating  coil
+and  a  proportional controller used to actuate the fan flow
+rate. The fan is switched off if the sensed  temperature  is
+below  12.5  (C)  and  it  deliveres maximum flow rate (0.06
+m3/s) if the temperature is a bove 17.5 (C).  The  loop  for
+the oil filled radiator consists of a sensor located in zone
+1 and sensing zone air temperature and uses  a  proportional
+controller  to  actuate  the  electrical energy input to the
+radiator to 700 (W) if the zone temperature is below 18  (C)
+and to zero (W) if the zone temperature is above 20 (C).
+
+See the file component_data_sheet for details of the components
+used.

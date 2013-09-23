@@ -341,7 +341,6 @@ C ic Inetger: dummy variable use to skip "None" in list (transports, etc.)
 
       SUBROUTINE SCNBCF(IUC,BCFfile,IER)
 #include "building.h"
-#include "model.h"
 #include "LCA.h"
 #include "acoustic.h"
 #include "esprdbfile.h"
@@ -351,6 +350,7 @@ C ic Inetger: dummy variable use to skip "None" in list (transports, etc.)
 
 
       COMMON/OUTIN/IUOUT,IUIN
+      COMMON/C21/IFCFG,cfgroot,LCFGF
 
       COMMON/EVGENS/BCFName,System,BCFVer
       COMMON/EVGENL/BCFOK
@@ -399,7 +399,7 @@ C ic Inetger: dummy variable use to skip "None" in list (transports, etc.)
       LOGICAL BCFOK, ACOOK
 
       CHARACTER BCFfile*72,WORD*30,OUTSTR*124,RmStr*124,outs*174
-      CHARACTER CompDes*74,EOFT*4
+      CHARACTER LCFGF*72,cfgroot*24,CompDes*74,EOFT*4
       CHARACTER BCFName*72, System*72,BCFVer*72
       character Tmpstr*24
       CHARACTER SyTrevPt*12, SyTrevDe*40, AbsUnit*5, AbsFreq(MNbAbs)*9

@@ -1,5 +1,5 @@
-*connections for cond
-*Date Wed Aug 29 21:19:31 2012
+*connections  for cond
+*Date Thu Oct 15 21:51:44 2009
      24   # number of connections
    1   1   0   0   0  #    1 Surf-1 in Test_1 is External
    1   2   0   0   0  #    2 Surf-2 in Test_1 is External

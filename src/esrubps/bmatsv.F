@@ -26,9 +26,10 @@ C ******************** mznuma
 C The main controller for the numerical simulation.
 
       subroutine mznuma
-      use h3kmodule
-      USE TCC, ONLY:TCC_communication, COSIM
 
+C~Claude
+      USE h3kmodule
+C~End Claude
 
 C Include files req'd for deleting temporary files after the simulation is complete.
 #include "H2_wind.h"
@@ -39,10 +40,11 @@ C HOT3000: Fuel cell.
 #include "geometry.h"
 #include "esprdbfile.h"
 #include "plant.h"
-#include "net_flow.h"
 #include "tdf2.h"
 #include "monitor.h"
+#include "cfd.h"
 #include "uncertainty.h"
+#include "dhw_parameters.h"
 #include "dhw_common.h"
 #include "CETC_definitions.h"
 #include "MultiYear_simulations.h"
@@ -50,12 +52,9 @@ C HOT3000: Fuel cell.
 #include "lookup_data.h"
 #include "control.h"
 #include "roam.h"
-#include "power.h"
-#include "OffsiteUtilitiesPublic.h"
-#include "OffsiteUtilitiesPrivate.h"
-#include "qrun.h"
-#include "h3k_report_data.h"
-#include "hvac_parameters.h"
+
+C CWEC Degree Day and ground temperature parameters
+#include "ground_temp_mains_common.h"
 
       integer lnblnk  ! function definition
 
@@ -101,7 +100,6 @@ C Time-step controller data.
       common/ts4/itsitr(msch),itrpas
       COMMON/TS6/idysv,ihrsv,irwcou,tsclaw,rewnd,nsncv1,nsncv2,pasone
 
-
 C itsplt if set then transfer of mass flow
 C results is required.
       common/outflg/itsplt
@@ -124,6 +122,10 @@ C Air flow network
 C CFD
       COMMON/cfdfil/LCFD(MCOM),IFCFD(MCOM)
       COMMON/CFSEUP/CFTIMS,CFTIMF,ICFDYS,ICFDYF,ICFAUX(MCOM)
+
+C Power simulation flag.
+      COMMON/PWRFLG/IPWRSIM
+      common/pnsolm/ipsolm
 
 C Simulation start day required by cmp70c.
       common/simsdy/iss,isf
@@ -173,11 +175,15 @@ C ihvacflag=1 there is hvac file; ihvacflag=0 no hvac file.
 C Common holding flag indicating presence of gshp data input file:
 C igshp = 1 there is a gshp file; igshp = 0 no gshp file.
       common/gshpinfo/igshp
+      common/gshpfile/gshpfile
+      character gshpfile*72
 
 C GCEP (begin)
 C Common holding flag indicating presence of gcep data input file:
 C igcep = 1 there is a gcep file; igcep = 0 no gcep file.
       common/gcepinfo/igcep
+      common/gcepfile/gcepfile
+      character gcepfile*72
 C NumUNIT is the unit number of the binary files to be erased
       INTEGER NumUNIT
 C counter to go through the unit numbers
@@ -192,6 +198,8 @@ C Active domain common.
 
 C Common for electrical file.
       COMMON/ENTFILE/ENTFLNAM,IENTXIST
+      COMMON/rcmd/LCMDFL
+      CHARACTER LCMDFL*144
 
 C Additional commons for SHOCC.
 
@@ -216,7 +224,8 @@ C SHOCCshzFile - path to SHOCC .shz file for each SHOCC'd zone
       logical bSHOCCed,bZoneSHOCCed
       character SHOCCshlFile*72,SHOCCshzFile*72
 
-      character outs*124
+      character outs*124,STYPE*8
+      CHARACTER DBTAG*12,DBTASK*12,DBZN*15
       character*72 LCFD,ENTFLNAM
       CHARACTER*72 L3DCVS,L3DCNC,L3DNDC,L3DTAQ,L3DNDD,L3DTLW,L3DLWV
       CHARACTER*72 LGDCVS,LGDCNC,LGDNDC,LGDNDD,LGDTAQ
@@ -224,15 +233,18 @@ C SHOCCshzFile - path to SHOCC .shz file for each SHOCC'd zone
       CHARACTER*72 hvacfile
 
       dimension VAL(MBITS+2)
-      logical itpmod,WDARDO,MSTROK,MSTRZN
+      logical ok,itpmod,WDARDO,MSTROK,MSTRZN
       logical rewnd,irew,tsclaw,pasone
       LOGICAL BLDG3D,ZONE3D,GRND3D,GRNDSP
       logical global,glbrwd,close
       logical CFDOK
-      logical context
+
+C foundshoc will become true if any zones have SHOCC descriptions.
+      logical context,foundshoc
 
 C H3Kreporting object
       CHARACTER*128 H3K_rep_NAME, H3K_rep_value
+
 
 C Expected finish time variables.
       character*24 ectime
@@ -256,10 +268,6 @@ C BASESIMP.
       common/bsmtdef/iBSIMP(MCOM),LBSIMP(MCOM)
       character LBSIMP*72
 
-C Quick-run info
-      integer iOldSeasonIndex     !- Flags for tracking changes between seasons.
-      save iOldSeasonIndex
-
 C Flag for whether there is basesimp file
       logical bsm_flag
 
@@ -272,19 +280,10 @@ C water
 
       logical autook
       integer ier,IClmErr
-      logical unixok,concat
-      character fs*1
-      character llclmdb*144  ! to expand weather file
-      integer lndbp          ! length of weather folder path
 
-C Path to model 
-      common/rpath/path
-      character path*72
-      
 C SUN F90 has spotty support for cpu_time intrinsic
 #ifdef F90
 #else
-
 C Store start time for reporting simulationd duration
       call cpu_time(sec_a)
 #endif
@@ -292,27 +291,10 @@ C Store start time for reporting simulationd duration
       ier=0       ! set prior to use
       IClmErr=0
 
-C Set folder separator (fs) to \ or / as required.
-      call isunix(unixok)
-      if(unixok)then
-        fs = char(47)
-      else
-        fs = char(92)
-      endif
-
 C Set the H3k reporting on/off
-      IF(isReportingInstalled() .eqv. .false.) THEN
+      IF(REP_XMLSTATUS() .eqv. .false.) THEN
          call SetReportEnable(.false.)
       ENDIF
-
-C During a co-simulation with TRNSYS the path changes to where the TRNSYS deck file is
-C located. This needs to be reset to the directory containing the cfg file to ensure
-C the input.xml can be read.
-C file before generating output.
-      CALL chdir(path)
-
-C Debug.
-C      write(*,*)'chdir'
 
       IF(isH3KEnabled()) THEN
 C Send the simulation information to the h3k report
@@ -408,7 +390,8 @@ C iblnd(i,j) contains the index to the SHOCC zone blind array [1,~]
 C Initialize HVAC variables
       call ZERO_HVAC_VAR
 
-
+C Initialize DHW
+      call DHW_Initialize
 
 C Initialize zone<->plant casual gain coupling
       call plt_zone_gain_zero()
@@ -443,24 +426,10 @@ C of the assumed starting conditions.
       inhs=0
       inhsi=0
 
-C If quick run method is requested, set the start date and end date of the
-C simulation to span all periods of interest (all of the best weeks).
-        if ( iQuick_run .eq. 1 ) then
-          iOldSeasonIndex = 0
-          iss = iFirst_day_num - itcnst
-          isf = iLast_day_num
-          nhs = ( iLast_day_num - iFirst_day_num + 1 + itcnst )*24
-
-        endif
-
-
 C Has the start day been converted from a post-new year
 C day to a pre-new year day.
-        IF(ISS.LT.1)THEN
-          iss=365-itcnst+isds
-        if ( iQuick_run .eq. 1 ) then
-          iss = 365 - itcnst + iFirst_day_num
-        endif
+      IF(ISS.LT.1)THEN
+        iss=365-itcnst+isds
         isf=isf+365
         issny=1
 
@@ -485,14 +454,6 @@ C End year: (this data is not used at present)
 
       endif
 
-C Set the variable bSimThisDay (introduced for quick run method)
-C if a quick run is not requested.
-      if ( iQuick_run .ne. 1 ) then
-        quickrun_markdays_loop: do iCount = iss, isf
-             bSimThisDay(iCount) = .true.
-        enddo quickrun_markdays_loop
-      endif
-
 C H3Kreporting object - save the frequency of
 C building timesteps. Note: simulations with
 C different timesteps for multiple domains are
@@ -501,15 +462,6 @@ C.....H3Kreports.(timesteps).start.................
 C.....Minutes per timetep (building domain)
 C.....-> set name
       if ( isH3KEnabled() )  then
-
-C.....->Set flags indicating if h3kreports should (re)initialize
-        bFirst_call_bld = .true.
-        do 88 i = 1, max_sys
-          bFirst_call_hvac(i) = .true.
-88       continue
-        bFirst_call_fan = .true.
-        bFirst_call_hrv = .true.
-        bFirst_call_dhw = .true.
         WRITE(H3K_rep_NAME,'(A)')'minutes_per_step'
         WRITE(H3K_rep_VALUE,'(f7.3)') 60./real(ntstep)
 C.....-> update meta-data
@@ -553,11 +505,6 @@ C and process file if necessary.
         if ( bBC_data_err ) bBC_data_defined = .false.
       endif
 
-
-C Initialize DHW - NOTE this has been moved down below BCD initialization
-! to support a column check in the DHW_Initialize function
-      call DHW_Initialize
-
 C Check to see if lookup table data file has been defined and
 C process file if necessary
 
@@ -568,14 +515,14 @@ C process file if necessary
         if ( bLookup_data_err ) bLookup_data_defined = .false.
       endif
 
-C Zero energy usage storage arrays
-      call ZeroEnergyStorageArrays()
+C Zero Site energy usage storage array
+      call ZeroFuelEnergyStorageArray()
 
 C Initialize file unit number. This number should correspond
 C to the climate file number. However, the climate file name
 C and number saved in common C22 is used to handle the
 C climate file.
-C      iunit=ifil
+      iunit=ifil
 
 C Simulation year from configuration, if old way uncomment next 3 lines.
 C Determine simulation year from climate file.
@@ -732,20 +679,8 @@ C water
 C If this is a single year simulation, open the climate file. During
 C multi-year simulations, the climate files will be opened inside
 C the simulation loop
-      if ( .not. bMY_sim_enabled ) then
-
-C Take into account weather file location.
-        lndbp=lnblnk(standardclmpath)
-        if(ipathclim.eq.0.or.ipathclim.eq.1)then
-          call addpath(lclim,llclmdb,concat)
-        elseif(ipathclim.eq.2)then
-          write(llclmdb,'(3a)') standardclmpath(1:lndbp),fs,
-     &      LCLIM(1:lnblnk(LCLIM))
-        endif
-
-        call EFOPRAN(ICLIM,llclmdb,144,0,IClmErr)
-
-      endif
+      if ( .not. bMY_sim_enabled )
+     &   call EFOPRAN(ICLIM,LCLIM,144,0,IClmErr)
 
 C In the case that we have a gshp input file, dhw input file, and/or basesimp
 C input file, then call routines to determine degree days and ground temperature
@@ -768,45 +703,11 @@ C Initialize ground temperature profile parameters
 C Start simulation day-loop.
 C (i =curr day, iss = sim start day, isf = finish day)
       do 10 i=iss,isf
-      
-C debug (begin)
-C           print*, 'i = ', i, 'SimthisDay = ', bSimThisDay(i)
-C debug (end)
-
-        seasonal_run_test: if ( bSimThisDay(i) ) then
-
-
-
-C Get seasonal info
-        quick_run_init: if ( iQuick_run == 1 ) then
-
-          iThisSeason = iSeasonIndex(i)
-
-          if ( iOldSeasonIndex /= iThisSeason .and.
-     &         iThisSeason /= 0 ) then
-
-
-            call ReportNewSeason( iThisSeason,
-     &                           fHtgMultiplier(iThisSeason),
-     &                           fClgMultiplier(iThisSeason),
-     &                           fGenMultiplier(iThisSeason)  )
-
-
-            iOldSeasonIndex = iThisSeason
-
-C debug (begin)
-C             print*, 'iThisSeason = ', iThisSeason
-C             print*, 'iOldSeasonIndex = ', iOldSeasonIndex
-C debug (end)
-
-          endif
-        endif quick_run_init
-
 
 C For multi-year simulaitons, determine the current
 C and future time row years, and the incidies of these
 C years with respect to the multi-year climate databases
-        MY_sim_initialize: if ( bMY_sim_enabled ) then
+        if ( bMY_sim_enabled ) then
 C Years
           iMY_current_year = iMY_Start_year + int(float(i-1)/365.0)
           iMY_future_year = iMY_Start_year + int(float(i)/365.0)
@@ -835,7 +736,7 @@ C indicies to the first/last records in the database.
         else
           iYear_p = iYear
           iYear_f = iYear
-        endif MY_sim_initialize
+        endif
 
 C For type 6 time-step controller, loop until saved day,
         if(irew.and.i.lt.idysv)goto 10
@@ -1129,11 +1030,6 @@ C H3Kreports: send simulation time to reporting object
      &          nsinc )
             endif
 
-C Fuel costs: reset monthly fuel consumption.            
-            if ( bIncFuelCostCalcs ) then
-                  call ResetSumFuelUseArray()
-            end if
-
 C Output current simulation increment if trace on.
             if(itc.gt.0.and.nsinc.ge.itc.and.nsinc.le.itcf.and.
      &         itrace(33).ne.0)then
@@ -1158,12 +1054,6 @@ C Calculate the heat injections associated with plant
 C component heat losses to associated zone/surface/
 C containment
             call plt_zone_gain_calc()
-
-C Call DHW simulation controller if DHW models are active.
-C This is placed here to be prior to Casual gains - so that the heat transfer to the zones may be accounted for.
-            if(iDHW_Flag.eq.1) then
-              call DHW_Main
-            endif
 
 C Determine for each component and surface, the defining
 C index and the adjacent space temperature and radiation
@@ -1435,6 +1325,11 @@ C Zone loop complete. Call HVAC simulation controller if HVAC models are active.
               call START_HVAC_SIM(i)
             endif
 
+C Call DHW simulation controller if DHW models are active.
+            if(iDHW_Flag.eq.1) then
+              call DHW_Main
+            endif
+
 C Transport climate data to reporting object
             if ( isH3KEnabled() )
      &          call H3K_transport_climi_data()
@@ -1473,9 +1368,6 @@ C Reset h3k zone control action flags
             call h3kReports_reset_zone_flags()
 
 C Building side now complete.
-
-
-C If there is no plant, then skip down to 77 and check for BLD side electrical network
             if(indcfg.eq.1)goto 77
 
 C~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -1528,23 +1420,14 @@ C `plant_elec_converged' remains false.
               plant_elec_converged = .FALSE.
 
 C Call subroutine XXX_TimeRow_Manipulate to store present time-row
-C data.  This permits the the plant and electrical domains to be rewound
-C in time, which is necessary if there is iteration within the time-step
-C between these modelling domains.  Rewinding is also necessary in the case
-C of co-simulatino with TRNSYS when ESP-r's plant (and eventually electrical)
-C domain is invoked multiple times per time-step by the harmonizer.
-C The flag 'iSaving' tells XXX_TimeRow_Manipulate to store the present
-C time-row data.
+C data, permitting the simulation to be re-wound to to the state at
+C which plant iteration is ajourned, if inter-domain iteration is active.
 
 C Use flag 'iSaving' to tell XXX_TimeRow_Manipulate to store data
               if ( itsct.eq.7 ) then
                 call Plt_TimeRow_Manipulate(iSaving)
                 call Pfs_TimeRow_Manipulate(iSaving)
               endif
-              IF ( COSIM ) THEN
-                call Plt_TimeRow_Manipulate(iSaving)
-                call Pfs_TimeRow_Manipulate(iSaving)
-              END IF
 
 C Initalize the loop conter at the beginning of each plant time step
               plt_elec_loop_counter = 1
@@ -1555,26 +1438,13 @@ C the plant and electrical domains. Thus, if either domain is called
 C outside the context of bps ( and specifically, this iteration loop )
 C the state-variables will be handled normally.
 
-              plant_elec_loop: DO WHILE( .not. ( plant_elec_converged))
+              DO WHILE( .not. ( plant_elec_converged ) )
 
 C Set up and solve the plant matrix.
+C Subroutine MZPMRX (esruplt/pmatrx.F) controls iteration to converge the plant domain.
+C It also calls the controlling routine that executes each coefficient generator
+C within each iteration through the plant domain.
                 call mzpmrx(itera)
-
-C If co-simulation with TRNSYS is active, then pass data to and receive data from
-C TRNSYS via the Harmonizer. This is accomplished via the call to function TCC_communication.
-C The returned value from TCC_communication determines whether the Harmonizer is satisfied
-C with convergence between ESP-r and TRNSYS.  If the Harmonizer imposes another invocation
-C of ESP-r's plant domain, then: increment the counter tracking the number of invocations
-C per time-step; rewind the plant domain's present time-row variables to the state they were
-C in at the first invocation this time-step; and then invoke the plant domain again.
-                IF (COSIM) THEN
-                  IF (TCC_communication()== 0) THEN
-                    plt_elec_loop_counter = plt_elec_loop_counter + 1
-                    call Plt_TimeRow_Manipulate(iRewinding)
-                    CYCLE plant_elec_loop
-                  END IF
-                END IF
-
 
 C If necessary, iterate. *** NOT YET ACTIVE.
 C The variable `ITERA' is currently hard-code to zero. Its intention is to force
@@ -1614,7 +1484,7 @@ C be restored.
                   call Pfs_TimeRow_Manipulate(iRewinding)
                   plt_elec_loop_counter = plt_elec_loop_counter + 1
                 endif
-              ENDDO plant_elec_loop
+              ENDDO
 
 C Store plant results.
               iday=idyp
@@ -1625,7 +1495,7 @@ C displayed....
 
 C  don't write plant libraries if save-levels 0 or 5 are active
               if ( ISAVE .ne. 5 .and. ISAVE .ne. 0) then
-                if(NINT(amod(float(L),float(mtsc))).eq.0.and.
+                if(amod(float(L),float(mtsc)).eq.0.0.and.
      &            (itrflg.eq.0.or.itrflg.eq.2)) then
                   call mzpls3(iday,imonitor)
                   itsplt=1
@@ -1710,23 +1580,16 @@ C.....Check to see present time is close to midnight
             endif
 
 C.....Update reports.
-            if ( bInStartup() .or. ( iStart_flag(i) .eq. 1 ) ) then
-              iStartupFlag = 1
-            else
-              iStartupFlag = 0
-            endif
+!            if ( bInStartup() ) then
+!              iStartupFlag = 1
+!              iStartupFlag = 0
+!           endif
 
 C << NOTE: dummy call REP_UPDATE only has 3 parameters >>
-            call ReportNextTimeStep(nsinc,btimep,myday,iStartupFlag,
-     &                              iQuick_run)
+            call ReportNextTimeStep(nsinc,btimep,myday,bInStartup())
 !            call REP_UPDATE(nsinc,btimep,myday, iStartupFlag) ! <- store logged data
 
    30     continue
-
-C debug (begin)
-C          print*, 'i = ', i, 'iStartupFlag = ', iStartupFlag
-C debug (end)
-
 
 C Hour step now complete.
           if(itsct.eq.2.and.iagain.eq.1)goto 27
@@ -1802,7 +1665,7 @@ C report was issued more than 5 seconds ago.
           istamp=1
         end if
 
-        if(istamp.ne.0.and.(ictime-iltime).ge.1) then
+        if(istamp.ne.0.and.(ictime-iltime).ge.5) then
           iltime=ictime
           ietim=istime+(ictime-istime)*100/iperc
 
@@ -1829,8 +1692,6 @@ C GSHP system is defined.
        if(igshp.eq.1) then
          call GSHPSIM
        endif
-
-       endif seasonal_run_test
 
 C Day loop now complete.
    10 continue
@@ -1902,10 +1763,10 @@ C........H3Kreports.(SUMMARY).end........................
 C SUN F90 has spotty support for cpu_time intrinsic
 #ifdef F90
 #else
-C Use function isReportingInstalled() to report if h3k reports is available.
+C Use function rep_xmlstatus() to report if h3k reports is available.
 C If so, write out xml processing runtime - useful for investating
 C the impact of modifications on simulation times.
-      if ( isReportingInstalled() ) then
+      if ( rep_xmlstatus() ) then
          CALL cpu_time(sec_c)
          write(outs,'(A,F7.2,A)')
      &        'XML postprocessor cpu runtime: ',sec_c-sec_b,' seconds'

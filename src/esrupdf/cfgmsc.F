@@ -49,9 +49,6 @@ C Mass flow network.
 C Components variables.
       COMMON/C9/NPCOMP,NCI(MPCOM),CDATA(MPCOM,MMISCD)
 
-      COMMON/C9plus/UCdbNam(MPCOM),CdbCat(MPCOM),CDBDesc(MPCOM)
-
-
 C These variables hold data related to new component
 C parameters.
       COMMON/PCPAR/NPI(MPCOM), TADATA(MPCOM,MADATA)
@@ -72,15 +69,12 @@ C Strings describing plant components.
       common /pcddsc/ pcdesc(maxpc), npref(mpcom)
       common/pcnam/pcname(mpcom)
 
-C Common for new format component database
-      COMMON/NCDBFORM/ICDBF
-
 C Strings describing component input
       common/hfpar/hfpdsc(mpcom,madata)
       character hfpdsc*68
 
       character pcdesc*80, pcname*15,LPNF*72,dstmp*24
-      character lpnam*72,laprob*72,UCDBNam*16,CdbCat*32,CDBDesc*72
+      character lpnam*72, laprob*72
 
 C Common controlling format of plant network file
       common/PLNFMT/bPLN_format_long
@@ -107,17 +101,9 @@ C Write components definitions.
      &  '# Total no. of specified components and simulation type'
       write(IFPNF,'(2I5)') npcomp, npmtyp
       do 10 ipcomp=1, npcomp
-         IF(ICDBF.EQ.0)THEN
-            write(IFPNF,100) ipcomp,', ',pcdesc(npref(ipcomp))
-         ELSE
-            write(IFPNF,100) ipcomp,', ',CDBdesc(ipcomp)
-         ENDIF 
+         write(IFPNF,100) ipcomp,', ',pcdesc(npref(ipcomp))
   100    format('#-> ',I3,a2,a72)
-         IF(ICDBF.EQ.0)THEN
-            write(IFPNF,'(2x,A15,I5)') pcname(ipcomp),npref(ipcomp)
-         ELSE
-            write(IFPNF,'(2x,A15,A16)') pcname(ipcomp),UCDBNam(ipcomp)            
-         ENDIF
+         write(IFPNF,'(2x,A15,I5)') pcname(ipcomp),npref(ipcomp)
          write(IFPNF,110) nci(ipcomp), nci(ipcomp)
   110    format(I5,8x,'# Component has',i4,' control variable(s).')
          if(nci(ipcomp).gt.0)  write(IFPNF,*)

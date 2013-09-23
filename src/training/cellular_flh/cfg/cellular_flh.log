@@ -1,0 +1,51 @@
+Project notes for cellular_flh.cfg
+Description: Two adjacent cellular offices with floor heating
+In folder: /home/jon/training/ibpsa_course
+By: jon
+Date: Mon Oct  1 10:11:58 2005
+For: training
+Project reference: 
+Notes: 
+This is a variant of cellular_bc.cfg with underfloor
+heating via a separate zone and a chilled ceiling via
+a separate zone.
+_____________________________
+
+ESP-r supports a detailed systems based approach for
+representing radiant heating and cooling designs and
+it is also possible to create abstract representations
+of such designs.  
+
+This model is an example of an abstract approach which
+treats structural concrete slabs as THIN zones into
+which heat is injected or extracted. If you look at the
+details of the composition of the zones labeled floor
+and ceiling_slb (in the contents file in this folder)
+you will see that the constructions have been created
+to represent portions of the slab above and below
+the working fluid of the environmental control system.
+
+You will also notice that a heat transfer regime has
+been setup in the flor and ceiling_slb zones to ensure
+than any flux injected or extracted is transferred
+from to the surfaces.
+
+The control of the heating is by time and the temperature
+which makes use of a multi-sensor control law which allows
+the floor slab working fluid to reach 30C in order to
+control the temperature in the room above.
+An actual control should sense the room temperature
+as well as the slab temperature to limit discomfort.
+See the figure about floor heating in the image folder -
+because solar gains can cause the room temperature to
+vary.  Heating performance can be assessed via the
+winter period which has already been setup in the
+model simulation parameters.
+
+The control of the cooling is to reduce the ceiling temperature
+working fluid to ~16C in order to limit the room temperatures
+to approximately 26C.
+
+More notes needed about how to interpret information
+within the zone control file.
+ 

@@ -32,7 +32,6 @@ C an ascii file.
       integer ncomp,ncon
       common/c1/ncomp,ncon
       common/cctlnm/ctldoc,lctlf
-      integer icascf
       common/cctl/icascf(mcom)
       COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
       common/fctl4/iasocc(MCF,mcmp),nfsup(MCF)
@@ -301,6 +300,7 @@ C each period. Include the verbose decoding of data in the comment line.
             CALL EVCNTRL(2,II,JJ,KK,'T',SSTR)
             LN=max(1,LNBLNK(SSTR))
             CALL EVCNTRLAW(2,II,JJ,KK,SSTR1,SSTR2)
+            LN1=max(1,LNBLNK(SSTR1))
             LN2=max(1,LNBLNK(SSTR2))
             WRITE(IUNIT,'(2I5,F8.3,5A)',IOSTAT=ios,ERR=1)
      &        IFCTYP(II,1,1),IFCLAW(II,JJ,KK),TFCPS(II,JJ,KK),

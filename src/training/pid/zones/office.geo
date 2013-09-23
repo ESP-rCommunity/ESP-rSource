@@ -1,5 +1,5 @@
 *Geometry 1.1,GEN,office # tag version, format, zone name
-*date Sun Jun 23 20:15:35 2013  # latest file modification 
+*date Mon Jul 20 17:04:10 2009  # latest file modification 
 office describes a...
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,1.00000,5.00000,0.00000  #   1
@@ -40,8 +40,8 @@ office describes a...
 *surf,West_w,VERT,-,-,-,extern_wall,OPAQUE,EXTERIOR,0,0  #   4 ||< external
 *surf,Ceiling,CEIL,-,-,-,ceiling,OPAQUE,ANOTHER,03,02  #   5 ||< Ceiling_o:roof_space
 *surf,Floor,FLOR,-,-,-,floor_1,OPAQUE,GROUND,01,00  #   6 ||< ground profile  1
-*surf,door_a,VERT,part_a,-,-,door,OPAQUE,ANOTHER,01,12  #   7 ||< door_a:reception
-*surf,west_glz,VERT,West_w,-,-,dbl_glz,DCF7671_06nb,EXTERIOR,0,0  #   8 ||< external
+*surf,door_a,VERT,-,-,-,door,OPAQUE,ANOTHER,01,12  #   7 ||< door_a:reception
+*surf,west_glz,VERT,-,-,-,d_glz,DCF7671_06nb,EXTERIOR,0,0  #   8 ||< external
 # 
 *insol,3,0,0,0  # default insolation distribution
 # 

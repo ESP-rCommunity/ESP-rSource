@@ -40,8 +40,7 @@ C writes the recovered data to array GOTDAT
       DIMENSION IZNDX(24)
       CHARACTER FILENM*72,OUTSTR*124,OUTSTR2*124,txt*30
       character outs*124
-      integer ncomp  ! this might clash with common c1 so revise
-
+      integer ncomp
 #ifdef OSI
       integer ipos,isize      ! for use with etlabel
 #else

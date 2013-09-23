@@ -52,9 +52,7 @@ C      BCL24:  adaptive human comfort model.
 C      BCL25_open_windows: switch between different 
 C             air flow computation methods.
 C      BCL26:  heat exchanger model controlling zone flux extraction.
-C      BCL27:  storage heater model controlling zone flux injection
-C      BCL28:  room heat injector complimentary to BCL27
-C      BCL29:  Simple idealized controller based on BCL01 with 
+C      BCL27:  Simple idealized controller based on BCL01 with 
 C              limited support for free-cooling
 C      BCL99:  constructional thermo-physical property variation.
 C      MZRCPL: mixed temperature iteration.
@@ -78,12 +76,12 @@ C The main building control function executive.
       character dllsubr*12,dllmesg*124,outs*124
       logical dll
 
-      logical bNested 
+      logical bNested, bSlave 
 
 C Check if running in dll mode.
       call isadll(dll)
     
-C 28 control functions active at present + thermo-physical
+C 26 control functions active at present + thermo-physical
 C property substitution (BCL99).  If control function index
 C negated then property substitution active within zone
 C associated with control function.
@@ -100,6 +98,7 @@ C For the special case of current zone, mixed node control only.
      &.AND.IBCLAW(ICF,IDTYP,IPER).NE.24) IFUNC=0
      
       CtlLaw: select case (IFUNC) 
+
       case (0) 
         call BCL00
 
@@ -226,25 +225,31 @@ C CL25 simple window opening model
       case (25)
         bNested = .false. 
         iCtlFuncIndex = ICF
-        call BCL25_open_windows(ICOMP,iCtlFuncIndex,IER,.false.)
+        call BCL25_open_windows(ICOMP,iCtlFuncIndex,IER,bNested)
 
 C CL26 uses a heat exchanger model to determine the heat flux
 C to remove from the associated zone.
       case (26)
         call BCL26
-
-C CL27 storage heater model controlling heater charging and heat input
-C to room
-      case (27)
-        call BCL27
-
-C CL28 storage heater model controlling zone flux injection
-      case (28)
-        call BCL28
-      
-C CL29: Interface to BCL01_extended with free-cooling activated
-      case (29) 
+        
+C CL27: Interface to BCL01_extended with free-cooling activated
+      case (27) 
         call BCL01_extended(IER, .true.) 
+C Master residential heating/cooling model with window controls         
+      case (28) 
+        bSlave = .false. 
+        iCtlFuncIndex = ICF
+        call BCL27_residential_controller( ICOMP,
+     &                                     iCtlFuncIndex,IER,bSlave)
+
+
+C Same as BCL27, but in slave mode.       
+      case (29) 
+        bSlave = .true. 
+        iCtlFuncIndex = ICF
+        call BCL27_residential_controller( ICOMP,
+     &                                     iCtlFuncIndex,IER,bSlave)
+        
       
 C New control laws should be inserted here.
       case default 
@@ -340,6 +345,8 @@ C  IMRTS   - identifies which surfaces are used in the MRT calculation
 
       COMMON/FVALS/TFS(MCOM,MS),QFS(MCOM)
 
+      COMMON/CLIMI/QFP,QFF,TP,TF,QDP,QDF,VP,VF,DP,DF,HP,HF
+
       COMMON/PSTSOL/ICF,IDTYP,IPER,BB1,BB2,BB3,IICOMP,TNP,
      &QFUT,TFUT
       COMMON/CONTL/IMRTT(MCOM),ITSC(MCOM),NSAMRT(MCOM),IMRTS(MCOM,MS)
@@ -410,7 +417,6 @@ C with the sensor defined for the control function.
 
       SUBROUTINE CFVAR(TCTL,IER)
 #include "building.h"
-#include "net_flow.h"
 #include "tdf2.h"
 #include "control.h"
 
@@ -640,7 +646,6 @@ C Recover control point data.
       SUBROUTINE CFMVAR(ier)
 
 #include "building.h"
-#include "net_flow.h"
 #include "tdf2.h"
 #include "control.h"      
 
@@ -1119,8 +1124,8 @@ C.....Interface to extended BCL01
 
 
 C ******************** BCL01_extended
-C Basic controller with symplistic free-cooling capabilities available
-C as an option.
+C Basic controller with symplistic free-cooling capabilities.      
+C
       SUBROUTINE BCL01_extended(IER,bFreeCool)
       implicit none 
           
@@ -1128,6 +1133,7 @@ C as an option.
       include "hvac_parameters.h"
       include "hvac_common.h"
       include "control.h"
+      include "net_flow.h"
       include "blc25_open_windows.h"
 
       integer IER ! Error flag
@@ -1198,12 +1204,11 @@ C control.
       real TFA    ! Zone future temperature (oC)
       real QFA    ! Zone furure plant injection/extraction (W)
       
-      COMMON/SLAVE1/QHB(MCF),QCB(MCF),Qmst(MCF),
-     &              bMasterFreeCoolFlag(MCF)
+      COMMON/SLAVE1/QHB(MCF),QCB(MCF),Qmst(MCF),bMasterFreeCoolFlag(MCF)
       real QHB, QCB, Qmst
       logical bMasterFreeCoolFlag
       
-C Freecooling algorithm.
+C Freecooling algorithm
       real fQFreeCool         ! cooling achieved by ventilation
       logical bFreeCoolActive ! flag for free cooling active. 
       real fFreeCoolTemp      ! Threshold at which free-cooling 
@@ -1218,9 +1223,10 @@ C by BCL25_open_windows below.
      &                         bSlaveActive
 
 C Flags indicating zone is heated, cooled.
-      logical bZoneHeated(MCOM), bZoneCooled(MCOM), bSlaveActive(MCOM) 
+      logical bZoneHeated(MCOM), bZoneCooled(MCOM)
 C Heating and cooling setpoint (oC)
       real fHeatSetpoint(MCOM), fCoolSetpoint(MCOM)
+      logical bSlaveActive(MCOM) 
 
       common/dllerr/dllsubr,dllmesg
 
@@ -1228,22 +1234,24 @@ C Heating and cooling setpoint (oC)
       logical dll,CLOSERH
 
       
-C Local variables for control algorithm.
-      real CSP ! Cooling set point (deg.C) 
-      real HSP ! Heating set point (deg.C) 
+C Local variables for control algorithm
+      real CSP ! Cooling set point (oC) 
+      real HSP ! Heating set point (oC) 
       
-      integer iPlt ! Set IPLT to 1 for heating, 2 in case of cooling
+      integer iPlt ! Unknown flag
 
       real TCont ! Control temperature (oC)
       real TCtl, TiTm
       
-C Environmental control heat transfer: 
+C Plant heat transfer: 
       real Q
-      real QCM  ! max cooling capacity (W)
-      real QCN  ! min cooling capacity (W)
-      real QHM  ! max heating capacity (W)
-      real QHN  ! min heating capacity (W)
+      real QCM
+      real QCN
+      real QHM
+      real QHN
       real QMN, QMX ! min & max heat transfer (W)
+      
+      real QQ       !?
       
       logical bQBySurf   ! Flag indicating Q is per unit surface area 
       
@@ -1270,7 +1278,7 @@ C Check to see if running in dll mode.
 C Fatal error test.
       IF(BMISCD(ICF,IDTYP,IPER,1).LT.6.)GOTO 99
 
-C Trace output.
+C Trace output
       IF(ITC.GT.0.AND.NSINC.GE.ITC.AND.NSINC.LE.ITCF.AND.
      &   ITRACE(41).NE.0) then
         if (IBSN(ICF,1).GT.0.and.IBAN(ICF,1).eq.0) then
@@ -1295,7 +1303,7 @@ C Trace output.
       QFUT=0.
       TFUT=TNP
 
-C Added for slave controller.
+C Added for slave controller...
       Qmst(ICF)=QFUT
 
 C Determine sensed temperature.
@@ -1303,6 +1311,13 @@ C Determine sensed temperature.
       if(ier.eq.2)then
         return
       endif
+
+C QHM = max heating capacity (W)
+C QHN = min heating capacity (W)
+C QCM = max cooling capacity (W)
+C QCN = min cooling capacity (W)
+C HSP = heating set point temp. (deg.C)
+C CSP = cooling set point temp. (deg.C)
 
 C The variable keeping track of the cooling/heating capacities of the 
 C hvac system for ideal hvac modeling is set to zero at the beginning 
@@ -1318,43 +1333,39 @@ C Set maximum heating capacity:
         QHM=BMISCD(ICF,IDTYP,IPER,2)       
       endif
 
-C Set minimum heating capacity.
+C Set minimum heating capacity
       QHN=BMISCD(ICF,IDTYP,IPER,3)
 
-C Set maximum cooling capacity.
-      if(cont_fun_cool_cap(IICOMP).gt.0.
-     &  .and. 
-     &  .not. bFreeCool )then
-        QCM = - cont_fun_cool_cap(IICOMP)
+C Set maximum cooling capacity:
+      if(cont_fun_cool_cap(IICOMP).gt.0. ) then
+         QCM = - cont_fun_cool_cap(IICOMP)
       else
-        QCM = -BMISCD(ICF,IDTYP,IPER,4)
+         QCM = -BMISCD(ICF,IDTYP,IPER,4)
       endif
 
-C Set minimum cooling capacity.
+C Set minimum cooling capacity
       QCN=-BMISCD(ICF,IDTYP,IPER,5)
-      
+
       HSP=BMISCD(ICF,IDTYP,IPER,6)
       CSP=BMISCD(ICF,IDTYP,IPER,7)
 
-C Save heating/cooling setpoints.
+C Save heating/cooling setpointsd 
       fHeatSetpoint(iicomp) = HSP
       fCoolSetpoint(iicomp) = CSP
 
-C Set heating flags to true. These are used for reporting passive-solar 
-C performance. 
+C Set heating flags to true...
       bZoneHeated(iicomp) = .true.
       bZoneCooled(iicomp) = .true.
-
-C Set free cooling flag for zone to true. 
-      if(bFreeCool)bFreeCoolCtl(iicomp) = .true.
-
+      bSlaveActive(iicomp) = .false.
+      
+      
 C Setpoints must be between 10oC and 30oC for passive solar computations
       if ( fHeatSetpoint(iicomp).lt.10.0 .or.
      &     fHeatSetpoint(iicomp).gt.30.0 ) bZoneHeated(iicomp) = .false.
       if ( fCoolSetpoint(iicomp).lt.10.0 .or.
      &     fCoolSetpoint(iicomp).gt.30.0 ) bZoneCooled(iicomp) = .false.
 
-C Capacity must be greater than 1 W for passive solar computations.
+C Capacity must be greater than 1 W for passive solar computations
        if (  QHM .lt. 1.0 )  bZoneHeated(iicomp) = .false.
        if (  ABS(QCM) .lt. 1.0 )  bZoneCooled(iicomp) = .false.
 
@@ -1364,22 +1375,14 @@ C as a master control.
       QHB(ICF)=QHM
       QCB(ICF)=QCM
 
-C Get temperature threshold for free-cooling estimates. Free cooling 
-C is available if the sum of the outdoor temperature (TF) and the 
-C free-cooling threshold (fFreeCoolTemp) is less than the zone 
-C temperature (TFA(iComp)). 
-      if ( bFreeCool ) then 
-        fFreeCoolTemp=BMISCD(ICF,IDTYP,IPER,8)
-C Note that free cooling temperature must be greater than zero 
-C to ensure that mass-balance calculation is stable.
-        fFreeCoolTemp = max( fFreeCoolTemp, 0.1 )
-      endif 
-  
+C Get temperature threshold for free-cooling estimates 
+      if ( bFreeCool ) fFreeCoolTemp=BMISCD(ICF,IDTYP,IPER,8)
+      
       
 C Determine if a RH is to be controlled. If this is the case store the set point
 C for the zone and set the RH control flag. The control action takes place in 
 C MZVAPC, where the zone humidity and moisture content is calculated. 
-C (note: humidity control and simplistic free-cooling are mutually 
+C (note: humidity control and symplistic free-cooling are mutually 
 C  exclusive.) 
       IRHCT(IICOMP)=0
       IF(INT(BMISCD(ICF,IDTYP,IPER,1)).GT.7 .and. .not. bFreeCool )THEN
@@ -1413,7 +1416,7 @@ C heating and cooling set points appropriately.
 c          WRITE(*,*)'Current status ',TFA(IICOMP),GFA(IICOMP)
 c          WRITE(*,*)'Current RH',RHC
 C If moisture content above that for the target RH then implement
-C cooling (change cooling and heating set points).
+C cooling (change cooling and heating set points)
           IF(RHC.GT.RHSPTU(IICOMP))THEN
 c            WRITE(*,*)'Target RH',RHSPTU(IICOMP)       
 c            WRITE(*,*)'RH too high ... heating'
@@ -1422,10 +1425,10 @@ C Initiate the iterative temperature
 c            TITM=TFA(IICOMP)
              TITM=TCTL
         
-C Set the target RH.
+C Set the target RH 
             RHT=RHSPTU(IICOMP)
 
-C Calculate the RH at this temperature.
+C Calculate the RH at this temperature
             ITER=1
   404       RHI=PCRH2(TITM,GFA(IICOMP),PATMOS)
 c            WRITE(*,*)'New Iteration RH ...',RHI             
@@ -1484,13 +1487,8 @@ c              WRITE(*,*)'New heating and cooling set point',HSP,CSP
         IRHCT(IICOMP)=0
       ENDIF
 
-C Check if control is required and return if setpoints are met.
-
-C << however if standby losses are enabled then alternative logic
-C << is required to inject the standby losses.    
       IF(TCTL.LE.CSP.AND.TCTL.GE.HSP)RETURN
-
-c      WRITE(*,*)'Controlling zone to...',HSP,CSP,TCTL,TNP    
+  
 C Since sensed temperature is not within range, attempt to control
 C THIS zone's temperature.
       TCTL=TNP
@@ -1509,43 +1507,48 @@ C Set point is the dew point temperature of the zone.
         IF(CSP.LT.0.0)CSP=0.0
       ENDIF
 
-C Check zone temperature and determine if heating or cooling functions 
-C should be invoked.
+C Check zone temperature and determine of heating or cooling functions 
+C 
+
       HeatOrCool: if ( TCTL > CSP ) THEN 
       
-        IPLT=2     ! Indicate cooling mode
-        QMX=QCM    ! Note that cooling is negative!
-        QMN=QCN
-        TCont=CSP  ! Use the cooling setpoint
+        IPLT=2
+        QMX=QCN    ! Note that cooling is negative!
+        QMN=QCM
+        TCONT=CSP
       
       else 
         
-        IPLT=1     ! Indicate heating mode
+        IPLT=1
         QMX=QHM      
         QMN=QHN
-        TCont=HSP  ! Use the heating setpoint
+        TCont=HSP
             
       endif HeatOrCool
-
-C Determine required plant capacity.
+      
+      
+           
+C Determine required plant capacity 
 
       Q=(BB3-BB1*TCont)/BB2
-
+           
 C Is heat flux determined according to surface area?
+
       
       if ( IBAN(ICF,1).EQ.IICOMP.AND.IBAN(ICF,2).GT.0) then 
-
-        bQBySurf = .true.  ! Yes
+        bQBySurf = .true. 
         ISUR=IBAN(ICF,2)
       
-      else   ! No.
+      else 
+      
         bQBySurf = .false.   
         
       endif 
       
       
 C If necessary, multiply heat flux by surface area to convert 
-C from W/m^2 to W.
+C from W/m^2 to W 
+
 
       if ( bQBySurf ) then 
       
@@ -1560,12 +1563,7 @@ C from W/m^2 to W.
 C Determine if this capacity can be delivered using free-cooling. 
 C (This is very simple algorithm at present, but it might one day connect
 C  to more sophisticated algorithms) 
-C  Apply free cooing if: 
-C 
-C    1. free cooling is enabled 
-C    2. Cooling is requested.
-C    3. Outdoor temperatue < ( zone temp - free cooling threshold )
-C
+
       if ( bFreeCool    .and. 
      &     fQTotal < 0. .and. 
      &     TF < ( TFA(IICOMP) - fFreeCoolTemp ) ) then 
@@ -1574,18 +1572,7 @@ C
         
         bFreeCoolActive = .true. 
         
-C Compute the 'conductivity' achieved by free cooling to 
-C append to zone mass-balance solution on next timestep. 
-C
-C                              [ Free Cooling Load (W) ]
-C    conductivity (W/K) =  ------------------------------------
-C                          [ Zone temp (K) - Outdoor Temp (K) ]
-
-        fCondFreeCool(IICOMP) = -1.*(fQFreeCool / ( TFA(IICOMP) - TF)) 
-
-C ( Note that the the free cooling threshold (fFreeCoolTemp) must 
-C   be greater than 2, and the denomenator will never be zero. )
-        
+       
       else  
 
 C No free cooling.
@@ -1593,29 +1580,19 @@ C No free cooling.
         fQFreeCool = 0.
         
         bFreeCoolActive = .false. 
-        
-        fCondFreeCool(IICOMP) = 0.
+
       
-C Do we have enough heating/cooling capacity? 
-        if ( fQTotal > 0. ) then
-          
-          if ( fQTotal > QMX ) fQTotal = QMX   ! constrain to maximum
-          if ( fQTotal < QMN ) fQTotal = QMN   ! constrain to minimum
-
-        else 
-     
-          if ( fQTotal < QMX ) fQTotal = QMX   ! constrain to maximum
-          if ( fQTotal > QMN ) fQTotal = QMN   ! constrain to minimum
-
-        endif 
+C Do we have enough heating/cooling capacity?      
+        if ( fQTotal > QMX ) fQTotal = QMX
+        if ( fQTotal < QMN ) fQTotal = QMN
       
       endif 
 
-C Save free-cooling for reporting later.
+C Save free-cooling for reporting later
       fFreeCoolDelivered(IICOMP) = fQFreeCool * (-1.0)      
       
- 
-C Possibly convert back to W/m^2 if needed.      
+      
+C Possibly convert back to W/m^2 if needed       
 
       if ( bQBySurf ) then 
       
@@ -1632,20 +1609,24 @@ C Recompute resultant temperature.
       TFUT=(BB3-BB2*Q)/BB1
       
       
-C Save future time-row plant injection.  
-      if ( bFreeCoolActive ) then   
-        QFut = fQFreeCool      
+C Save future time-row plant injection. If free cooling 
+C is active, plant does not inject any heating/cooling. 
+      if ( bFreeCoolActive ) then       
+        QFut = 0.
       else       
         QFUT = Q      
       endif 
       
+C      print*, TF, TFA(IICOMP), bFreeCoolActive, fQTotal, QFut, 
+C     &   fFreeCoolDelivered(IICOMP)    
+      
 c      WRITE(*,*)'Heating/cooling flux and set points',QFUT,HSP,CSP
       IF(IBAN(ICF,1).EQ.-2)CALL MZRCPL(IICOMP,BB1,BB2,BB3,TCONT,0.05,
      &IPLT,QMX,QMN,TFUT,QFUT)
-     
-C Set QFUT for use by slave controller.
+
+C Set QFUT for use by slave controller
       Qmst(ICF)=Q
-      bMasterFreeCoolFlag(ICF)=bFreeCoolActive
+      bMasterFreeCoolFlag(ICF) = bFreeCoolActive
       
 C Trace output.
       IF(ITC.GT.0.AND.NSINC.GE.ITC.AND.NSINC.LE.ITCF.AND.
@@ -1655,7 +1636,7 @@ C Trace output.
          call edisp(itu,outs)
          call edisp(itu,' Leaving subroutine BCL01')
       END IF
-     
+
       RETURN
    99 write(outs,'(a)')' BCL01: data incomplete.'
       if(dll)then
@@ -1685,8 +1666,7 @@ C A free-float controller.
       COMMON/BTIME/BTIMEP,BTIMEF
 
       COMMON/PSTSOL/ICF,IDTYP,IPER,BB1,BB2,BB3,IICOMP,TNP,QFUT,TFUT
-      COMMON/SLAVE1/QHB(MCF),QCB(MCF),Qmst(MCF),
-     &      bMasterFreeCoolFlag(MCF)
+      COMMON/SLAVE1/QHB(MCF),QCB(MCF),Qmst(MCF),bMasterFreeCoolFlag(MCF)
       
       logical bMasterFreeCoolFlag
       
@@ -2340,6 +2320,7 @@ C QCMAX : maximum cooling flux allowed (W)
       COMMON/PCRES/QDATA(MPCOM),PCAOUT(MPCOM,MPCRES),napdat(mpcom)
       COMMON/PCEMB/IPALLOC(MPCOM),TALLOC(MPCOM)
       COMMON/MBINFO/ZMBI(MCOM,4)
+      COMMON/PVALA/TPA(MCOM),QPA(MCOM)
       COMMON/FVALA/TFA(MCOM),QFA(MCOM)
       COMMON/FVALS/TFS(MCOM,MS),QFS(MCOM)
       COMMON/FVALC/TFC(MCOM,MS,MN),QFC(MCOM)
@@ -5556,6 +5537,7 @@ C deliver proportionally).
       include "hvac_parameters.h"
       include "hvac_common.h"
       include "control.h"
+      include "net_flow.h"
       include "blc25_open_windows.h"
 
       COMMON/TC/ITC,ICNT
@@ -5563,36 +5545,25 @@ C deliver proportionally).
       COMMON/SIMTIM/IHRP,IHRF,IDYP,IDYF,IDWP,IDWF,NSINC,ITS
       COMMON/BTIME/BTIMEP,BTIMEF
       COMMON/PSTSOL/ICF,IDTYP,IPER,BB1,BB2,BB3,IICOMP,TNP,QFUT,TFUT
-      COMMON/SLAVE1/QHB(MCF),QCB(MCF),Qmst(MCF),
-     &              bMasterFreeCoolFlag(MCF)
+      COMMON/SLAVE1/QHB(MCF),QCB(MCF),Qmst(MCF),bMasterFreeCoolFlag(MCF)
       
       logical bMasterFreeCoolFlag
       
-      COMMON/FVALA/TFA(MCOM),QFA(MCOM)
-      real TFA, QFA
 
-
-      COMMON/CLIMI/QFP,QFF,TP,TF,QDP,QDF,VP,VF,DP,DF,HP,HF
-      REAL    QFP             !-diffuse horizontal radiation, present hour
-      REAL    QFF             !-diffuse horizontal radiation, future hour
-      REAL    TP              !-external temperature, present hour
-      REAL    TF              !-external temperature, future hour
-      REAL    QDP             !-direct normal radiation, present hour
-      REAL    QDF             !-direct normal radiation, future hour
-      REAL    VP              !-wind velocity, present hour
-      REAL    VF              !-wind velocity, future hour
-      REAL    DP              !-wind direction, present hour
-      REAL    DF              !-wind direction, future hour
-      REAL    HP              !-relative humidity, present hour
-      REAL    HF              !-relative humidity, future hour
-
-C Commons for identifying wether a zone is heated or cooled.
+C Description of zone control action; these data are used
+C in H3Kreports to determine heating, cooling loads and 
+C to evaluate passive solar design performance. Also used 
+C by BCL25_open_windows, below. 
       common/H3KReportsControl/bZoneHeated,   bZoneCooled,
      &                         fHeatSetpoint, fCoolSetpoint,
      &                         bSlaveActive
 
-      logical bZoneHeated(MCOM), bZoneCooled(MCOM), bSlaveActive(MCOM) 
+C Flags indicating zone is heated, cooled.
+      logical bZoneHeated(MCOM), bZoneCooled(MCOM)
+C Heating and cooling setpoint (oC)
       real fHeatSetpoint(MCOM), fCoolSetpoint(MCOM)
+      logical bSlaveActive(MCOM)
+      
       integer iMasterZone
       character outs*124  
       logical close
@@ -5681,7 +5652,7 @@ C heating capacity for time step
       
 C If the zone associated with this control function is served by an HVAC system
 C simulated ideally, then use HVAC system capacity to update controller
-C cooling capacity for time step.
+C cooling capacity for time step 
       if(cont_fun_cool_cap(IICOMP).gt.0.) then
         QCM=-cont_fun_cool_cap(IICOMP)
       else        
@@ -5709,40 +5680,32 @@ C Check Qslv not greater than specified base capacities
       endif
   
       QFUT=Qslv       
-   
-C Check for free cooling in master zone (are windows open?) 
-      if ( bMasterFreeCoolFlag(imasctlindex) ) then  
+      
+     
 
-        Tslv = fCoolSetpoint(iicomp) 
+
+C Check for free cooling in master zone (are windows open?)      
+      if ( bMasterFreeCoolFlag(imasctlindex) ) then 
         
-        fFreeCoolDelivered(IICOMP) = (-1.0)*(BB3-BB1*Tslv)/BB2 
-        bFreeCoolCtl(iicomp) = .true.      
-
-        if( fFreeCoolDelivered(IICOMP) < 0. )  
-     &      fFreeCoolDelivered(IICOMP) = 0.  
-
-C.......Compute the 'conductivity' achieved by free cooling to 
-C.......append to zone mass-balance solution on next timestep. 
-C
-C                                   [ Free Cooling Load (W) ]
-C.......conductivity (W/K) =  ------------------------------------
-C                             [ Zone temp (K) - Outdoor Temp (K) ]
-C
-        fCondFreeCool(IICOMP) = (fFreeCoolDelivered(IICOMP)
-     &                         / ( TFA(IICOMP) - TF))
- 
-		QFUT = -1.0 * fFreeCoolDelivered(IICOMP)
-
-C.......Determine temperatures in slave zone
-        Tslv=(BB3-BB2*fFreeCoolDelivered(IICOMP)*(-1.0))/BB1        
-
-      else  
+        Tslv = fCoolSetpoint(iicomp)
+        
+        fFreeCoolDelivered(IICOMP) = (BB3-BB1*Tslv)/BB2
+      
+        if( fFreeCoolDelivered(IICOMP) < 0. ) 
+     &                 fFreeCoolDelivered(IICOMP) = 0.
+        
+        QFUT = 0.
+      
+      else 
       
         fFreeCoolDelivered(IICOMP) = 0.
-C.......Determine temperatures in slave zone
-        Tslv=(BB3-BB2*QFUT)/BB1     
-        
-      endif
+    
+      endif 
+
+      
+C Determine temperatures in slave zone
+      Tslv=(BB3-BB2*MAX(QFUT,fFreeCoolDelivered(IICOMP)))/BB1    
+
       
 C If zero capacity to zone, use TNP
       call eclose(QM,0.00,0.1,close)
@@ -5752,6 +5715,14 @@ C If zero capacity to zone, use TNP
         TFUT=Tslv
       endif
 
+C Set flag for window control
+      if ( abs(QSlv) .gt. 100 ) then 
+        bSlaveActive(iicomp) = .true.
+      else 
+        bSlaveActive(iicomp) = .false. 
+        
+      endif 
+      
 C Trace output.
       IF(ITC.GT.0.AND.NSINC.GE.ITC.AND.NSINC.LE.ITCF.AND.
      &   ITRACE(41).NE.0) THEN
@@ -5948,7 +5919,6 @@ C of control law 1 (basic heating and cooling). It can use two items in tdf:
 C IACTIV (ACTIVITY of space) and IHTCLSETP (only heating and cooling setpoints)
       SUBROUTINE BCL23
 #include "building.h"
-#include "net_flow.h"
 #include "tdf2.h"
 #include "control.h"
 #include "sbem.h"
@@ -6007,9 +5977,6 @@ C CSP = cooling set point temp. (deg.C)
       QCN=0.0
       QFUT=0.0
       TFUT=TNP
-
-C << consider how this control can be used outwith the UK NCM
-C << regime.
 
 C Turn cooling off if no UK NCM cooling generator is linked to this zone
 C If there is no system associated with the zone then set QCM to zero.
@@ -6455,6 +6422,7 @@ C on-off and plant network cotnrollers will are not compatable with BLC25.
       
       include "building.h"
       include "control.h"
+      include "net_flow.h"
       include "blc25_open_windows.h"
       
 C Passed variables 
@@ -6476,8 +6444,8 @@ C - Zone characteristics
       common/pvala/tpa,qpa
       
 C Future values (not used)      
-C      common/fvala/tfa,qfa
-C      real tfa, qfa
+      common/fvala/tfa,qfa
+      real tfa(mcom), qfa(mcom)
       
 C - Environment characteristics 
 C      COMMON/CLIMI/QFP,QFF,TP,TF,QDP,QDF,VP,VF,DP,DF,HP,HF
@@ -6496,11 +6464,34 @@ C Time characteristics
       real BTimeP, BTimeF       
       
 
+C Last zone temperature 
+      real fLastZoneTemp(MCOM)
+      real fLastZoneCtlPosition(MCOM)
+      real fWindowControlPosition
+      save fLastZoneTemp, fLastZoneCtlPosition
       
-C Running clock 
+C Running clocks 
       real fTimeLapsed(MCF) 
       save fTimeLapsed
       data fTimeLapsed / MCF * 0. /
+      
+
+      real fTimeOverheated(MCOM)
+      save fTimeOverheated
+      data fTimeOverheated / MCOM * 0. /
+      
+C Flow control data 
+      COMMON/mfctl/ctlpos(MCNN)      
+      real ctlpos
+      
+C Climate data
+      COMMON/CLIMI/QFP,QFF,TP,TF,QDP,QDF,VP,VF,DP,DF,HP,HF
+      real QFP, QFF
+      real TP, TF
+      real QDP, QDF
+      real VP, VF
+      real DP, DF
+      real HP, HF      
       
 C Description of zone control action; these data are used
 C in H3Kreports to determine heating, cooling loads and 
@@ -6511,10 +6502,10 @@ C by BCL25_open_windows, below.
      &                         bSlaveActive
 
 C Flags indicating zone is heated, cooled.
-      logical bZoneHeated(MCOM), bZoneCooled(MCOM), bSlaveActive(MCOM) 
+      logical bZoneHeated(MCOM), bZoneCooled(MCOM)
 C Heating and cooling setpoint (oC)
       real fHeatSetpoint(MCOM), fCoolSetpoint(MCOM)      
-      
+      logical bSlaveActive(MCOM) 
 C Flags indicating how flow should be determined when windows are 
 C open, closed
       integer iClosedFlowMethod ! Method for determining air flow when 
@@ -6523,6 +6514,8 @@ C open, closed
                                 ! windows are open
       
 C Window control setpoints (oC)
+      integer iNumberOfInputs    ! # of inputs in ctl file 
+
       real fWindowLowerSetpoint  ! Temperature at which windows are 
                                  ! closed       
       
@@ -6536,6 +6529,8 @@ C Window control setpoints (oC)
                                  ! passed
                     
       logical bWindowPosAtStart  ! Window position at start of ts (-)                  
+      
+      real fWindowFractionSpecifier ! 
 
       real fOldTime, fNewTime
       
@@ -6543,12 +6538,35 @@ C Temperature data
 
       real fZoneTemperature      ! Temperature in zone (oC)
      
+      real fTargetTemperature    ! halfway between setpoints (oC)
+      
+      real fOutdoorTemperature   ! Ambient DBT (oC)
+      
+      
+C Map for connected windows
+      integer iFlowConnection(MCNN)      
+
+C Function counting # of operable windows in zone      
+      integer iCountAFN110Couplings     
+      
+C Window opening data
+      integer iWindowCount    
+      integer iNumberOfOpenWindows 
+      integer iOpenWindow      
+      real fWindowOpenFraction
+      integer iOpenExtraWindows
+      
+      
+      
+     
 C-----------------------------------------------------------------------
 C Get data from control spec.
 C-----------------------------------------------------------------------     
 
       bWindowPosAtStart = bWindowsOpen(iComp) 
 
+      iNumberOfInputs = int( BMISCD(iCtlFuncIndex,IDTYP,IPER,2) ) 
+      
 C Get setpoints from input data 
       fWindowLowerSetpoint = BMISCD(iCtlFuncIndex,IDTYP,IPER,2)  ! (oC)
       fWindowUpperSetpoint = BMISCD(iCtlFuncIndex,IDTYP,IPER,3)  ! (oC) 
@@ -6559,20 +6577,50 @@ C closed.
       iOpenFlowMethod   = int( BMISCD(iCtlFuncIndex,IDTYP,IPER,5) ) ! (oC)
 
 C Read delay between action (hours)
-      fDelayBetweenAction = BMISCD(iCtlFuncIndex,IDTYP,IPER,6)
+      if ( iNumberOfInputs > 4 ) then 
+        fDelayBetweenAction = BMISCD(iCtlFuncIndex,IDTYP,IPER,6)
+      else
+        fDelayBetweenAction = 0.
+      endif 
+
+      fDelayBetweenAction = max(fDelayBetweenAction,1./60.)
       
-C 1. Determine zone temperature (future time row). 
-        fZoneTemperature    = tpa(iComp) 
-       
-C Determine if control can act: Consider present and future time.
+      if ( iNumberOfInputs > 5 ) then 
+        fWindowFractionSpecifier = BMISCD(iCtlFuncIndex,IDTYP,IPER,7)     
+      else 
+        fWindowFractionSpecifier = 1.
+      endif 
+      
+      
+      
+      
+C Determine # of open windows       
+      iWindowCount = iCountAFN110Couplings(iComp,iFlowConnection )      
+      
+C 1. Determine zone temperature (future time row).
+      fZoneTemperature    = tfa(iComp) 
+      fOutdoorTemperature = TF 
+
+C Get time data (past and present) 
       fOldTime = bTimeP
       fNewTime = bTimeF 
       
       if ( fOldTime > fNewTime ) fNewTime = fNewTime + 24.
       
+C Determine if zone is overheated, and increment running counter if so.
+      if ( fZoneTemperature > fWindowUpperSetpoint ) then 
+        fTimeOverheated(iComp) = fTimeOverheated(iComp) 
+     &                            + fNewTime - fOldTime
+      else 
+      
+         fTimeOverheated(iComp)  = 0.
+      
+      endif 
+      
+      
+C Determine if control can act: Has specified delay lapsed?      
       fTimeLapsed(iCtlFuncIndex) =   fTimeLapsed(iCtlFuncIndex) 
      &                             + (fNewTime - fOldTime)  
-      
            
       if ( fTimeLapsed(iCtlFuncIndex) >= fDelayBetweenAction ) then 
       
@@ -6585,22 +6633,36 @@ C Determine if control can act: Consider present and future time.
       endif 
       
      
-C Get environment data 
-     
       CheckDelayLapsed: if ( bDelayLapsed ) then   
       
+      
+C Get number of windows, and initialize all windows to closed       
+      
+        AllWindowLoop: do iOpenWindow = 1, iWindowCount
+          
+         bBCL25FlowControlsActive(iFlowConnection(iOpenWindow)) = .true.
+         
+         fBCL25FlowControlSignal(iFlowConnection(iOpenWindow))  = 0.
 
+        enddo AllWindowLoop      
       
 C Determine if windows are open or closed. 
 C 1. Is AC system operational? If so, close windows if AC setpoint 
 C    is exceeded.
-       
+        
         AreWindowsOpen: 
-     &  if ( bZoneCooled(iComp) .and. 
-     &       fZoneTemperature .ge. fCoolSetpoint(iComp) ) then 
-     
+     &  if ( bSlaveActive(iComp) ) then 
+
           bWindowsOpen(iComp) = .false. 
         
+        elseif ( bZoneCooled(iComp) .and. 
+     &           fZoneTemperature .ge. fCoolSetpoint(iComp)  ) then 
+     
+          bWindowsOpen(iComp) = .false. 
+          
+          if ( fOutdoorTemperature <= fZoneTemperature - 2.0  )
+     &      bWindowsOpen(iComp) = .true. 
+          
 C 2. Is heating system operational? If so, close windows if heating 
 C    setpoint is exceeded.
 
@@ -6609,14 +6671,15 @@ C    setpoint is exceeded.
      
           bWindowsOpen(iComp) = .false. 
         
-C 3. Is zone temperatue above upper window control setpoint? If so, 
+C 3. Is zone temperature above upper window control setpoint? If so, 
 C    open windows to try to use free cooling. (Note: we presently don't
 C    consider what should happen if the OA temp is above the zone temp...
 
         elseif ( fZoneTemperature .ge. fWindowUpperSetpoint ) then 
       
           bWindowsOpen(iComp) = .true.
-        
+
+
 C 4. Is zone temperature below lower window control setpoint? If so, 
 C    close windows to retain the heat. 
 
@@ -6630,24 +6693,137 @@ C 5. Leave the windows where they are.
 
         endif AreWindowsOpen
       
+      
       endif CheckDelayLapsed
+
+      OpenWindows: if ( bWindowsOpen(iComp) ) then 
+
+
+C Determine if extra windows need to be opened       
+        iOpenExtraWindows = 
+     &        int( fTimeOverheated(iComp) / fDelayBetweenAction ) 
+     
+C Are there one or more windows in the zone?
+
+   
+        
+        OneOrMoreWin: if ( iWindowCount > 0 ) then 
+        
+          TempRange: if ( fOutdoorTemperature < 0. ) then 
+
+            iNumberOfOpenWindows = min( iWindowCount, 
+     &                                  1 + iOpenExtraWindows ) 
+            
+            fWindowOpenFraction = 0.05 
+                        
+          elseif ( fOutdoorTemperature < 10.) then 
+          
+            iNumberOfOpenWindows = min( iWindowCount, 
+     &                                  2 + iOpenExtraWindows ) 
+            
+            fWindowOpenFraction = 0.10
+
+          elseif ( fOutdoorTemperature < 15.) then 
+          
+            iNumberOfOpenWindows = min( iWindowCount, 
+     &                                  2 + iOpenExtraWindows ) 
+            
+            fWindowOpenFraction = 0.20
+
+          elseif ( fOutdoorTemperature < 25.) then 
+          
+            iNumberOfOpenWindows = min( iWindowCount, 
+     &                                  3 + iOpenExtraWindows ) 
+            
+            fWindowOpenFraction = 0.30
+            
+          else  
+          
+            iNumberOfOpenWindows = iWindowCount 
+            
+            fWindowOpenFraction = 1.0 
+          
+        
+          endif TempRange
+
+          fWindowOpenFraction = fWindowOpenFraction * 
+     &                          fWindowFractionSpecifier
+          
+          
+      
+
+          OpenWindowLoop: do iOpenWindow = 1, iNumberOfOpenWindows 
+            
+
+            fBCL25FlowControlSignal(iFlowConnection(iOpenWindow))  
+     &             =  fWindowOpenFraction
+          
+          enddo OpenWindowLoop
+
+          
+        endif OneOrMoreWin      
+      
+      endif OpenWindows
 
 C Flag which method should be used to determine if windows are open, 
 C closed.    
       
-      if ( bWindowsOpen(iComp) ) then 
+      FlowMethod: if ( bWindowsOpen(iComp) ) then 
         iAirFlowModel(iComp) = iOpenFlowMethod
       else 
         iAirFlowModel(iComp) = iClosedFlowMethod
-      endif 
+        iNumberOfOpenWindows = 0 
+        
+        
+        if ( iAirFlowModel(iComp) /= iFlowNetwork ) then 
+          AllWindowLoop2: do iOpenWindow = 1, iWindowCount
+          
+          ! Set control signal to a small, non-zero number to ensure 
+          ! flow network will converge (has no real effect thermal 
+          ! simulation because flow network will not determine 
+          ! air balance or effective conductivity. 
+          !fBCL25FlowControlSignal(iFlowConnection(iOpenWindow)) = 1.E-04
+
+          enddo AllWindowLoop2      
+        endif 
+      endif FlowMethod
       
 C Check to see if windows have moved, and update running clock if so.
       if ( bWindowsOpen(iComp) .neqv. bWindowPosAtStart ) then
-        
+
+!      print*, '>', btimef, fTimeLapsed(iCtlFuncIndex), fZoneTemperature, 
+!     &        fOutdoorTemperature, bWindowsOpen(iComp)
+
+      
         fTimeLapsed( iCtlFuncIndex ) = 0.
+          
       
       endif 
       
+      
+ !     AllWindowLoop1: do iOpenWindow = 1, iWindowCount
+ !      print*, 'bcl25-ICOMP:', ICOMP, iOpenWindow,
+ !   &       iFlowConnection(iOpenWindow),
+ !   &       fBCL25FlowControlSignal(iFlowConnection(iOpenWindow)) , 
+ !   &       bBCL25FlowControlsActive(iFlowConnection(iOpenWindow)) 
+ !     enddo AllWindowLoop1     
+      
+!     if ( bWindowsOpen(iComp) ) then   
+!     print*, '-----'
+!     print*, 'ZONE:', icomp
+!     print*, 'Ts :', fWindowUpperSetpoint, fZoneTemperature
+!     print*, '# of Open windows: ', iNumberOfOpenWindows
+!     AllWindowLoop1: do iOpenWindow = 1, iWindowCount
+!     
+!     print*, 'bcl25-ICOMP:', ICOMP, iOpenWindow,
+!    &       iFlowConnection(iOpenWindow),
+!    &       fBCL25FlowControlSignal(iFlowConnection(iOpenWindow)) , 
+!    &       bBCL25FlowControlsActive(iFlowConnection(iOpenWindow)) 
+!     enddo AllWindowLoop1     
+!      endif      
+      
+      
+C For unnested control, set parameters for free-floating operation       
       if (.not. bNested) then 
         QFUT = 0.
         TFUT = TNP 
@@ -6655,33 +6831,16 @@ C Check to see if windows have moved, and update running clock if so.
       
 C Set error flag 
       ier = 0      
-    
-!               call add_to_xml_reporting (
-!     &              fWindowUpperSetpoint ,
-!     &              "debug/blc25/setpoint/open",
-!     &              'units', '(kg/kg)',
-!     &              'mfn contaminant concentration' )      
-!      
-!               call add_to_xml_reporting (
-!     &              fWindowLowerSetpoint ,
-!     &              "debug/blc25/setpoint/closed",
-!     &              'units', '(kg/kg)',
-!     &              'mfn contaminant concentration' )
-!            
-!      
-!               call add_to_xml_reporting (
-!     &              fZoneTemperature ,
-!     &              "debug/blc25/sensor",
-!     &              'units', '(kg/kg)',
-!     &              'mfn contaminant concentration' )
-      
+
       return 
       end subroutine BCL25_open_windows
+
 
 C ******************** BCL26
 C A heat exchanger model (after Chunying Li) used to determine the heat
 C extracted (QFUT) from a zone established to represent the closed circuit
 C working fluid circulating in a building-connected network.
+
 
       SUBROUTINE BCL26
 #include "building.h"
@@ -6713,11 +6872,11 @@ C Fatal error test.
       IF(.not.close5)GOTO 99
 
 C Set heat exchanger parameters using data in system control file.
-      WGACF=BMISCD(ICF,IDTYP,IPER,2)! specific heat capacity
-      WGDIINERPIPE=BMISCD(ICF,IDTYP,IPER,3)! inner pipe diameter
-      WGDIOUTERPIPE=BMISCD(ICF,IDTYP,IPER,4)! outer pipe diameter
-      WGALHEAT=BMISCD(ICF,IDTYP,IPER,5)! heat exchanger length
-      WGFMOUTER=BMISCD(ICF,IDTYP,IPER,6)! open circuit flow rate
+      WGACF=BMISCD(ICF,IDTYP,IPER,2)		! specific heat capacity
+      WGDIINERPIPE=BMISCD(ICF,IDTYP,IPER,3)	! inner pipe diameter
+      WGDIOUTERPIPE=BMISCD(ICF,IDTYP,IPER,4)	! outer pipe diameter
+      WGALHEAT=BMISCD(ICF,IDTYP,IPER,5)		! heat exchanger length
+      WGFMOUTER=BMISCD(ICF,IDTYP,IPER,6)	! open circuit flow rate
 
 C Trace output
       IF(ITC.GT.0.AND.NSINC.GE.ITC.AND.NSINC.LE.ITCF.AND.
@@ -6744,7 +6903,7 @@ C Trace output
       QFUT=0.
       TFUT=TNP
 
-      WGPI=3.14159 ! pi
+      WGPI=3.14159  ! pi
 
 C Set the temperature of the fluid at inlet of the inner pipe to the
 C temperature of the fluid at the outlet of the fluid-filled glazing
@@ -6775,7 +6934,7 @@ C Mass flow rate in inner pipe (heat exchanger closed circuit).
          WGCMAX=WGCINTER
       END IF
 
-    
+ 	        
 C IF WGT20 > WGT10, set the heat transfer to zero. 
       IF (WGT10.LT.WGT20.OR.WGFMINNER.LT.0.0001) THEN
          WGHEXCHANGE=0.
@@ -6804,7 +6963,7 @@ C WGT10 AND WGT20.
       WGBV1=-0.047
       WGBV2=0.001
       WGBV3=-2.59/1000000.
-        
+    	    
       WGVISO=(WGAV+WGBV1*WGT2+WGBV2*WGT2**2.+WGBV3*WGT2**3.)/1000000.0
       WGVISI=(WGAV+WGBV1*WGT1+WGBV2*WGT1**2.+WGBV3*WGT1**3.)/1000000.0
 
@@ -6870,7 +7029,7 @@ C using updated guesstimate of outlet water temperature.
 
       WGAKWEXO=(WGAK+WGBK1*WGT2+WGBK2*WGT2**2.+WGBK3*WGT2**3.)/100.
       WGAKWEXI=(WGAK+WGBK1*WGT1+WGBK2*WGT1**2.+WGBK3*WGT1**3.)/100.
-     
+    	    
       WGVISO=(WGAV+WGBV1*WGT2+WGBV2*WGT2**2.+WGBV3*WGT2**3.)/1000000.0
       WGVISI=(WGAV+WGBV1*WGT1+WGBV2*WGT1**2.+WGBV3*WGT1**3.)/1000000.0
 
@@ -6947,6 +7106,7 @@ C Trace output.
          call edisp(itu,outs)
          call edisp(itu,' ')
 
+
          write(outs,'(5(A,F12.6))') ' WGT11 = ',WGT11,
      &                              ' WGT22 = ',WGT22,
      &                              ' WGCMIN  = ',WGCMIN,
@@ -7001,270 +7161,716 @@ C Trace output.
       STOP
       END
 
-C ******************** bcl27
-C storage heater model controlling zone flux injection, this controller
-C adds heat to a storage heater zone from tdf and loses heat from the same
-C zone based on a linear law. This linear law is a function of room set
-C point (room is the zone heated by the heater). The modes of operation
-C are ACTIVE (heater providing heat to the room) and PASSIVE (heater is
-C losing heat to the room i.e. standing losses).
+      
+C ******************** BCL27_residential_controller
+C    
+      subroutine bcl27_residential_controller( iComp,
+     &                                         iCtlFuncIndex,
+     &                                         iER, 
+     &                                         bSlave         )
+      implicit none 
+      
+      include "building.h"
+      include "control.h"
+      include "net_flow.h"
+      include "blc25_open_windows.h"
 
-      SUBROUTINE bcl27
-      implicit none
-#include "building.h"
-#include "control.h"
+C====================== Declarations ===================================      
 
-      COMMON/TC/ITC,ICNT
-      INTEGER ITC,ICNT
-
-      COMMON/TRACE/ITCF,ITRACE(MTRACE),IZNTRC(MCOM),ITU
-      INTEGER ITCF,ITRACE,IZNTRC,itu
-
-      COMMON/SIMTIM/IHRP,IHRF,IDYP,IDYF,IDWP,IDWF,NSINC,ITS
-      INTEGER IHRP,IHRF,IDYP,IDYF,IDWP,IDWF,NSINC,ITS
-
-      COMMON/BTIME/BTIMEP,BTIMEF
-      REAL BTIMEP,BTIMEF
-
-      COMMON/OUTIN/IUOUT,IUIN
-      INTEGER IUOUT,IUIN
-
+C Passed variables 
+      
+      integer iComp          ! Index of current zone 
+      integer iCtlFuncIndex  ! Index of control function 
+      integer iER            ! Error flag. 
+      logical bSlave         ! Flag for slave status.  
+      
+C ESP commons: 
+C - Zone characteristics 
+      real tpa(mcom)   ! Future time-row zone temperaturte (oC) 
+      real qpa(mcom)   ! Future time-row zone energy injection 
+                       ! /extraction (W, not used)
+      
+      
+      
+      ! Present and future fow temperatures 
+      common/pvala/tpa,qpa
+      
+C Future values (not used)      
+      common/fvala/tfa,qfa
+      real tfa(mcom), qfa(mcom)
+      
+C - Environment characteristics 
+      COMMON/CLIMI/QFP,QFF,TP,TF,QDP,QDF,VP,VF,DP,DF,HP,HF
+      real TP, TF          ! Present & Future time-row temperatures       
+      REAL QFP,QFF,QDP,QDF,VP,VF,DP,DF,HP,HF   ! Not used
+      
+      
+C Control heat injection.      
       COMMON/PSTSOL/ICF,IDTYP,IPER,BB1,BB2,BB3,IICOMP,TNP,QFUT,TFUT
       real BB1,BB2,BB3,TNP,QFUT,TFUT
       integer ICF,IDTYP,IPER,IICOMP
-
-      COMMON/BC2728/heatLoss(mcom)
-      real heatLoss
-   
-      character outs*124
-      INTEGER IER,IZ,IS,IN
-      REAL T_heating_setpoint,T_max,T_min,heaterCapacity,fracHeatGain,
-     &T_changeover_charging,T_changeover_notcharging,gradChargeActive1,
-     &interceptChargeActive1,gradChargeActive2,interceptChargeActive2,
-     &gradChargePassive1,interceptChargePassive1,gradChargePassive2,
-     &interceptChargePassive2,gradNotChargeActive1,
-     &interceptNotChargeActive1,gradNotChargeActive2,
-     &interceptNotChargeActive2,gradNotChargePassive1,
-     &interceptNotChargePassive1,gradNotChargePassive2,
-     &interceptNotChargePassive2,
-     &T_core,T_air_point,heatGain,gradient,constant
-      logical charging,allowHeating
-
-      character*3 State
-
-C Trace output
-      IF(ITC.GT.0.AND.NSINC.GE.ITC.AND.NSINC.LE.ITCF.AND.
-     &   ITRACE(41).NE.0) then
-        call edisp(itu,' ')
-        call edisp(itu,' Entering subroutine bcl27')
-        CALL DAYCLK(IDYP,BTIMEF,ITU)
-      endif
-
-c Fatal error test
-      IF(NINT(BMISCD(ICF,IDTYP,IPER,1)).LT.23)GOTO 99
-
-C Init...
-      QFUT                       = 0.0
-      T_heating_setpoint = BMISCD(ICF,IDTYP,IPER,2)
-      T_max              = BMISCD(ICF,IDTYP,IPER,3)
-      T_min              = BMISCD(ICF,IDTYP,IPER,4)
-      heaterCapacity     = BMISCD(ICF,IDTYP,IPER,5)
-      fracHeatGain       = BMISCD(ICF,IDTYP,IPER,6)
-      T_changeover_charging  = BMISCD(ICF,IDTYP,IPER,7)
-      T_changeover_notcharging   = BMISCD(ICF,IDTYP,IPER,8)
-      gradChargeActive1  = BMISCD(ICF,IDTYP,IPER,9)
-      interceptChargeActive1 = BMISCD(ICF,IDTYP,IPER,10)
-      gradChargeActive2  = BMISCD(ICF,IDTYP,IPER,11)
-      interceptChargeActive2 = BMISCD(ICF,IDTYP,IPER,12)
-      gradChargePassive1 = BMISCD(ICF,IDTYP,IPER,13)
-      interceptChargePassive1 = BMISCD(ICF,IDTYP,IPER,14)
-      gradChargePassive2 = BMISCD(ICF,IDTYP,IPER,15)
-      interceptChargePassive2 = BMISCD(ICF,IDTYP,IPER,16)
-      gradNotChargeActive1 = BMISCD(ICF,IDTYP,IPER,17)
-      interceptNotChargeActive1  = BMISCD(ICF,IDTYP,IPER,18)
-      gradNotChargeActive2 = BMISCD(ICF,IDTYP,IPER,19)
-      interceptNotChargeActive2  = BMISCD(ICF,IDTYP,IPER,20)
-      gradNotChargePassive1 = BMISCD(ICF,IDTYP,IPER,21)
-      interceptNotChargePassive1 = BMISCD(ICF,IDTYP,IPER,22)
-      gradNotChargePassive2 = BMISCD(ICF,IDTYP,IPER,23)
-      interceptNotChargePassive2 = BMISCD(ICF,IDTYP,IPER,24)
-
-C Determine room air point temperature
-      CALL CFVAR(T_air_point,IER)
-      if(ier.eq.2)return
-
-C To get heater zone core temperature change sensor information
-      IZ=IBSN(ICF,1)
-      IS=IBSN(ICF,2)
-      IN=IBSN(ICF,3)
-      IBSN(ICF,1)=IBAN(ICF,1)
-      IBSN(ICF,2)=IBAN(ICF,2)
-      IBSN(ICF,3)=IBAN(ICF,3)
-      CALL CFVAR(T_core,IER)
-      if(ier.eq.2)return
-
-C Reset sensor parameters
-      IBSN(ICF,1)=IZ
-      IBSN(ICF,2)=IS
-      IBSN(ICF,3)=IN
-
-C Determine heat gains from grid to heater
-      allowHeating=.TRUE.
-      if(T_core.LT.T_min)then
-        heatGain=heaterCapacity
-        charging=.TRUE.
-        allowHeating=.FALSE. ! Do not allow heater to be active
-      elseif(T_core.LT.T_max)then
-        heatGain=heaterCapacity*fracHeatGain
-        charging=.TRUE.
-      else
-        heatGain=0.0
-        charging=.FALSE.
-      endif
-
-C Determine heat loss from heater to room
-      if(T_air_point.LT.T_heating_setpoint.and.allowheating)then ! Active 
-        if(charging)then                        ! Charging
-          if(T_core.LT.T_changeover_charging)then
-            gradient=gradChargeActive1
-            constant=interceptChargeActive1
-            State='ACL'
-          else
-            gradient=gradChargeActive2
-            constant=interceptChargeActive2
-            State='ACH'
-          endif
-        else                                    ! Not Charging
-          if(T_core.LT.T_changeover_notcharging)then
-            gradient=gradNotChargeActive1
-            constant=interceptNotChargeActive1
-            State='ANL'
-          else
-            gradient=gradNotChargeActive2
-            constant=interceptNotChargeActive2
-            State='ANH'
-          endif
-        endif
-      else                                      ! Passive
-        if(charging)then                        ! Charging
-          if(T_core.LT.T_changeover_charging)then
-            gradient=gradChargePassive1
-            constant=interceptChargePassive1
-            State='PCL'
-          else
-            gradient=gradChargePassive2
-            constant=interceptChargePassive2
-            State='PCH'
-          endif
-        else                                    ! Not Charging
-          if(T_core.LT.T_changeover_notcharging)then
-            gradient=gradNotChargePassive1
-            constant=interceptNotChargePassive1
-            State='PNL'
-          else
-            gradient=gradNotChargePassive2
-            constant=interceptNotChargePassive2
-            State='PNH'
-          endif
-        endif
-      endif
-      heatLoss(IZ)=gradient*T_core+constant
-
-C If heater is at lower temperature than room, 
-C do not lose heat from heater
-      If(T_core.LT.T_air_point)then
-        heatLoss(IZ)=0.0
-        heatGain=0.0 ! Is positive but currently not implemented
-      endif
-
-C Determine QFUT 
-      QFUT=heatGain-heatLoss(IZ) ! Actuates storage heater zone
-      TFUT=(BB3-BB2*QFUT)/BB1
-
-C Debug ...
-C      write(96,*)nsinc,btimef,T_core,heatGain,heatLoss(6),qfut,state        
-
-C Trace output.
-      IF(ITC.GT.0.AND.NSINC.GE.ITC.AND.NSINC.LE.ITCF.AND.
-     &   ITRACE(41).NE.0) THEN
-         write(outs,'(A,F10.3,A,F10.3)')
-     &     ' Qfuture= ',QFUT,' Tfuture= ',TFUT
-         call edisp(itu,outs)
-         call edisp(itu,' Leaving subroutine bcl27')
-      END IF
-
-      RETURN
-   99 call edisp(iuout,' bcl27: data incomplete.')
-      call epwait
-      call epagend
-      STOP
-      END
       
-C ******************** bcl28
-C Room heater linked to the storage heater of BCL27. This controller
-C injects the heat lost from the storage heater to the room zone linked
-C to the heater
-      SUBROUTINE BCL28
-      implicit none
-#include "building.h"
-#include "control.h"
 
-      COMMON/TC/ITC,ICNT
-      INTEGER ITC,ICNT
+C Time characteristics       
+      common/btime/btimep,btimef     
+      real BTimeP, BTimeF       
+          
 
-      COMMON/TRACE/ITCF,ITRACE(MTRACE),IZNTRC(MCOM),ITU
-      INTEGER ITCF,ITRACE,IZNTRC,itu
-
-      COMMON/SIMTIM/IHRP,IHRF,IDYP,IDYF,IDWP,IDWF,NSINC,ITS
-      INTEGER IHRP,IHRF,IDYP,IDYF,IDWP,IDWF,NSINC,ITS
-
-      COMMON/BTIME/BTIMEP,BTIMEF
-      REAL BTIMEP,BTIMEF
-
-      COMMON/OUTIN/IUOUT,IUIN
-      INTEGER IUOUT,IUIN
-
-      COMMON/PSTSOL/ICF,IDTYP,IPER,BB1,BB2,BB3,IICOMP,TNP,QFUT,TFUT
-      real BB1,BB2,BB3,TNP,QFUT,TFUT
-      integer ICF,IDTYP,IPER,IICOMP
-
-      COMMON/BC2728/heatLoss(mcom)
-      real heatLoss
-   
-      character outs*124
-      INTEGER IZ
-
-C Trace output
-      IF(ITC.GT.0.AND.NSINC.GE.ITC.AND.NSINC.LE.ITCF.AND.
-     &   ITRACE(41).NE.0) then
-        call edisp(itu,' ')
-        call edisp(itu,' Entering subroutine BCL28')
-        CALL DAYCLK(IDYP,BTIMEF,ITU)
-      endif
-
-c Fatal error test
-      IF(NINT(BMISCD(ICF,IDTYP,IPER,1)).GT.0)GOTO 99
-
-C Determine QFUT 
-      QFUT=heatLoss(IBAN(ICF,1))
-      TFUT=(BB3-BB2*QFUT)/BB1
-
-C Trace output.
-      IF(ITC.GT.0.AND.NSINC.GE.ITC.AND.NSINC.LE.ITCF.AND.
-     &   ITRACE(41).NE.0) THEN
-         write(outs,'(A,F10.3,A,F10.3)')
-     &     ' Qfuture= ',QFUT,' Tfuture= ',TFUT
-         call edisp(itu,outs)
-         call edisp(itu,' Leaving subroutine BCL28')
-      END IF
-
-      RETURN
-   99 call edisp(iuout,' BCL28: data incomplete.')
-      call epwait
-      call epagend
-      STOP
-      END
+C Terms for zone airpoint heat injection 
+      real fZoneEqnTerm1
+      real fZoneEqnTerm2 
+      real fZoneEqnTerm3
       
+      
+C Environment temperatures (oC) 
+      real fMixedTemp, fMeanRadTemp ! Zone mixed and MRT 
+      real fOutdoorTemperature      ! Outside temp 
+      
+      
+C Flags indicating how flow should be determined when windows are 
+C open, closed
+      integer iClosedFlowMethod ! Method for determining air flow when 
+                                ! windows are closed
+      integer iOpenFlowMethod   ! Method for determining air flow when 
+                                ! windows are open
+      
+C Window control setpoints (oC)
+      real fWindowLowerSetpoint  ! Temperature at which windows are 
+                                 ! closed       
+      
+      real fWindowUpperSetpoint  ! Temperaturte at which windows are 
+                                 ! opened.
+      
+      real fDelayBetweenAction   ! time that must lapse between successive
+                                 ! control action (hours)
+                                 
+      logical bDelayLapsed       ! Flag indicating specified delay has 
+                                 ! passed
+                    
+      logical bWindowPosAtStart  ! Window position at start of ts (-)                  
+
+      
+      
+      real fOldTime, fNewTime    ! Parameters for counting time 
+
+
+      integer iMasterCtlIndex    ! Index of master contorl (slave mode)
+      
+      real fTargetTemperature    ! Target temperature for control 
+      
+      
+C Master heating/cooling capacity 
+      real fZoneHeatMax, fZoneCoolMax ! (W) 
+      
+C Slave heating/cooling ration !(W) 
+      real fSlaveHeatRatio, fSlaveCoolRatio
+      
+C Setpoints (oC)
+
+      real fHeatingSetpoint, fCoolingSetpoint
+
+      real CONV  ! ?
+      
+      real fZoneHeatInjection
+C====================== Initialization =================================          
+      
+C Get State-space equation terms       
+      fZoneEqnTerm1 = BB1
+      fZoneEqnTerm2 = BB2
+      fZoneEqnTerm3 = BB3      
+      
+      
+C Get maximum heating / cooling, or fraction of heating/cooling 
+C for slave 
+
+      if ( bSlave ) then 
+        fSlaveHeatRatio = BMISCD(ICF,IDTYP,IPER,2)
+        fSlaveCoolRatio = BMISCD(ICF,IDTYP,IPER,3)  
+      else            
+        fZoneHeatMax    = BMISCD(ICF,IDTYP,IPER,2)
+        fZoneCoolMax    = BMISCD(ICF,IDTYP,IPER,3)
+      endif 
+      
+C Determine how air flow should be determined when windows are open/
+C closed.
+      iClosedFlowMethod = int( BMISCD(iCtlFuncIndex,IDTYP,IPER,4) ) ! (oC)
+      iOpenFlowMethod   = int( BMISCD(iCtlFuncIndex,IDTYP,IPER,5) ) ! (oC)
+
+C Read delay between action (hours)
+      fDelayBetweenAction = BMISCD(iCtlFuncIndex,IDTYP,IPER,6)      
+      
+C Index of slave cotrol       
+      if ( bSlave ) iMasterCtlIndex = BMISCD(iCtlFuncIndex,IDTYP,IPER,7)
+      
+C.....Hardcode setpoints for now        
+      fHeatingSetpoint     = 18.0
+      fWindowLowerSetpoint = 20.0
+      fWindowUpperSetpoint = 24.0
+      fCoolingSetpoint     = 26.0
+
+C========================= Start calculations ==========================      
+      
+      
+C.....Compute Future time-row mixed temperature
+      call MzMixT(iComp, fMeanRadTemp, fMixedTemp )       
+      
+      fOutdoorTemperature = TF 
+      
+C.....Establish what action should be taken 
+
+      ! Master control: Windows will be closed when heating 
+      ! is activated. 
+
+
+      NotSlave: if ( .not. bSlave ) then 
+        
+        MasterMix: if ( fMixedTemp < fHeatingSetpoint ) then 
+        
+          iBCL25Mode(iComp) = iHeating 
+          
+          fTargetTemperature = fHeatingSetpoint
+          
+        elseif ( fMixedTemp > fCoolingSetpoint ) then 
+        
+          if ( fOutdoorTemperature <= fMixedTemp - 5. .and.
+     &         fOutdoorTemperature <  fCoolingSetpoint      ) then 
+       
+            iBCL25Mode(iComp) = iFreeFloatWindowsOpen
+       
+          else 
+          
+            iBCL25Mode(iComp) = iCooling 
+       
+            fTargetTemperature = fCoolingSetpoint
+       
+          endif 
+        
+        elseif ( fMixedTemp > fWindowUpperSetpoint ) then 
+         
+          iBCL25Mode(iComp) = iFreeFloatWindowsOpen
+
+        elseif ( fMixedTemp < fWindowLowerSetpoint ) then 
+        
+          iBCL25Mode(iComp) = iFreeFloatWindowsClosed
+          
+        endif MasterMix
+        
+      else 
+      
+        SlaveMix: if ( fMixedTemp > fWindowUpperSetpoint ) then 
+        
+          iBCL25Mode(iComp) = iFreeFloatWindowsOpen
+        
+        elseif ( fMixedTemp < fWindowLowerSetpoint ) then 
+        
+          iBCL25Mode(iComp) = iFreeFloatWindowsClosed
+        
+        endif SlaveMix
+        
+      endif NotSlave
+        
+C Compute 
+      HeatCool: if ( iBCL25Mode(iComp) == iHeating .or. 
+     &               iBCL25Mode(iComp) == iCooling      ) then 
+     
+     
+        CONV=FLOAT(IBSN(iCtlFuncIndex,3))/100.
+        fTargetTemperature=
+     &         (fHeatingSetpoint-fMeanRadTemp*(1.-CONV))/CONV
+        
+        fZoneHeatInjection = 
+     &    (fZoneEqnTerm3-fZoneEqnTerm1*fTargetTemperature)/fZoneEqnTerm2
+     
+        Limits: if ( iBCL25Mode(iComp) == iHeating .and. 
+     &               fZoneHeatInjection  > fZoneHeatMax ) then 
+          
+          fZoneHeatInjection = fZoneHeatMax
+     
+          fTargetTemperature = 
+     &    (fZoneEqnTerm3-fZoneEqnTerm2*fZoneHeatInjection)/fZoneEqnTerm1
+          
+        elseif ( iBCL25Mode(iComp) == iCooling .and. 
+     &           abs(fZoneHeatInjection)  > fZoneHeatMax ) then 
+        
+          fZoneHeatInjection = -1.0 * fZoneCoolMax
+     
+          fTargetTemperature = 
+     &    (fZoneEqnTerm3-fZoneEqnTerm2*fZoneHeatInjection)/fZoneEqnTerm1
+     
+        endif Limits 
+        
+      elseif ( bSlave ) then 
+
+        
+
+      else 
+
+        fTargetTemperature = TNP 
+        fZoneHeatInjection = 0.
+        
+      endif HeatCool
+      
+      
+      
+      
+      
+      
+      
+C Save data in esp-r commons       
+      TFUT = fTargetTemperature
+      QFUT = fZoneHeatInjection
+      
+        
+          
+      return           
+      end subroutine BCL27_residential_controller 
+  
+
+CC Neil's work starts here.  
+C  
+C
+C      subroutine BCL26_open_windows( iComp,
+C     &                               iCtlFuncIndex,
+C     &                               iER, 
+C     &                               bNested         )
+C      implicit none 
+C      
+C      include "building.h"
+C      include "control.h"
+C      include "net_flow.h"
+C      include "blc25_open_windows.h"
+C      include "blc26_open_windows.h"
+C    
+C      
+CC Passed variables 
+C      
+C      integer iComp          ! Index of current zone 
+C      integer iCtlFuncIndex  ! Index of control function 
+C      integer iER            ! Error flag. 
+C      logical bNested        ! Flag for nested status.  
+C      
+CC ESP commons: 
+CC - Zone characteristics 
+C      real tpa(mcom)   ! Future time-row zone temperaturte (oC) 
+C      real qpa(mcom)   ! Future time-row zone energy injection 
+C                       ! /extraction (W, not used)
+C      
+C      ! Present and future fow temperatures 
+C      common/pvala/tpa,qpa
+C      
+CC Future values (not used)      
+CC      common/fvala/tfa,qfa
+CC      real tfa, qfa
+C      
+CC - Environment characteristics 
+C      COMMON/CLIMI/QFP,QFF,TP,TF,QDP,QDF,VP,VF,DP,DF,HP,HF
+C      real TP, TF          ! Present & Future time-row temperatures       
+C      REAL QFP,QFF,QDP,QDF,VP,VF,DP,DF,HP,HF   ! Not used
+C
+C      
+CC Control heat injection.      
+C      COMMON/PSTSOL/ICF,IDTYP,IPER,BB1,BB2,BB3,IICOMP,TNP,QFUT,TFUT
+C      real BB1,BB2,BB3,TNP,QFUT,TFUT
+C      integer ICF,IDTYP,IPER,IICOMP
+C      
+C
+CC Time characteristics       
+C      common/btime/btimep,btimef     
+C      real BTimeP, BTimeF       
+C      
+C      COMMON/SIMTIM/IDYF,NSINC,IHRF
+C      real IDYF !Julian day of timestep
+C      INTEGER NSINC !Simulation timestep no.
+C      INTEGER IHRF !Future hour of day?
+C      
+CC Running clock 
+C      real fTimeLapsed(MCF) 
+C      save fTimeLapsed
+C      data fTimeLapsed / MCF * 0. /
+C      
+CC Description of zone control action; these data are used
+CC in H3Kreports to determine heating, cooling loads and 
+CC to evaluate passive solar design performance. Also used 
+CC by BCL25_open_windows, below. 
+C      common/H3KReportsControl/bZoneHeated,   bZoneCooled,
+C     &                         fHeatSetpoint, fCoolSetpoint,
+C     &                         bSlaveActive
+C
+CC Flags indicating zone is heated, cooled.
+C      logical bZoneHeated(MCOM), bZoneCooled(MCOM)
+CC Heating and cooling setpoint (oC)
+C      real fHeatSetpoint(MCOM), fCoolSetpoint(MCOM)
+C      logical bSlaveActive(MCOM)     
+C      
+CC Flags indicating how flow should be determined when windows are 
+CC open, closed
+C      integer iClosedFlowMethod ! Method for determining air flow when 
+C                                ! windows are closed
+C      integer iOpenFlowMethod   ! Method for determining air flow when 
+C                                ! windows are open
+C      
+CC Window control setpoints (oC)
+C      real fWindowLowerSetpoint  ! Temperature at which windows are 
+C                                 ! closed       
+C      
+C      real fWindowUpperSetpoint  ! Temperaturte at which windows are 
+C                                 ! opened.
+C      
+C      real fDelayBetweenAction   ! time that must lapse between successive
+C                                 ! control action (hours)
+C                                 
+C      logical bDelayLapsed       ! Flag indicating specified delay has 
+C                                 ! passed
+C                    
+C      logical bWindowPosAtStart  ! Window position at start of ts (-)                  
+C
+C      real fOldTime, fNewTime
+C      
+CC Temperature data 
+C
+C      real fZoneTemperature      ! Temperature in zone (oC)
+C      
+C      real TCOMF                 ! Occupant comfort temperature
+C      real Tcomf_winter          ! Occupant winter comfort temperature
+C      real Tcomf_summer          ! Occupant summer comfort temperature
+C      real TOP                   ! Operative temperature
+C      real diff                  ! Difference between desired temp and actual
+C      
+CC Normally distributed RN = (0,1)
+C      real RN
+C      real RNOR
+C      
+CC Variables to have option 2 of calculating occupant comfort      
+CC      PARAMETER (MMD=20)
+CC      REAL PREVTEMP(MMD)
+C     
+CC-----------------------------------------------------------------------
+CC Get data from control spec.
+CC-----------------------------------------------------------------------     
+C
+C      bWindowPosAtStart = bWindowsOpen(iComp) 
+C
+CC Get setpoints from input data 
+C      fWindowLowerSetpoint = BMISCD(iCtlFuncIndex,IDTYP,IPER,2)  ! (oC)
+C      fWindowUpperSetpoint = BMISCD(iCtlFuncIndex,IDTYP,IPER,3)  ! (oC) 
+C      
+CC Determine how air flow should be determined when windows are open/
+CC closed.
+C      iClosedFlowMethod = int( BMISCD(iCtlFuncIndex,IDTYP,IPER,4) ) ! (oC)
+C      iOpenFlowMethod   = int( BMISCD(iCtlFuncIndex,IDTYP,IPER,5) ) ! (oC)
+C
+CC Read delay between action (hours)
+C      fDelayBetweenAction = BMISCD(iCtlFuncIndex,IDTYP,IPER,6)
+C      
+CC 1. Determine zone temperature (future time row). 
+C      fZoneTemperature    = tpa(iComp) 
+C       
+CC Determine if control can act: Consider present and future time.
+C      fOldTime = bTimeP
+C      fNewTime = bTimeF 
+C      
+C      if ( fOldTime > fNewTime ) fNewTime = fNewTime + 24.
+C      
+C      fTimeLapsed(iCtlFuncIndex) =   fTimeLapsed(iCtlFuncIndex) 
+C     &                             + (fNewTime - fOldTime)  
+C       
+C      if ( fTimeLapsed(iCtlFuncIndex) >= fDelayBetweenAction ) then 
+C      
+C        bDelayLapsed = .true. 
+C        
+C      else 
+C        
+C        bDelayLapsed = .false. 
+C        
+C      endif 
+C      
+C     
+CC Get environment data 
+C     
+C      CheckDelayLapsed: if ( bDelayLapsed ) then 
+C            
+CC*** Begin probabilistic window opener based on occupant comfort      
+C
+CC Determine occupant comfort level based on two methods:
+CC
+CC 1) Fixed values as expressed by Brager et al. Operable Windows, Personal Control... (2004)
+C        Tcomf_winter = 22.     !Winter comfort control temperature
+C        Tcomf_summer = 23.     !Summer comfort control temperature 
+C              
+C        if ( IDYF < 135. .or. IDYF > 275. ) then
+C          TCOMF = Tcomf_winter ! This is the winter so take the winter comfort temp
+C        else
+C          TCOMF = Tcomf_summer ! otherwise take the summer setpoint
+C        endif
+C
+CC Calculate operative temperature of the zone (TOP). It is assumed that
+CC the user has selected to sense mean radiant temperature in the sensor
+CC details.
+C        CALL CFVAR(TOP,IER)
+C        if(ier.eq.2)then
+C          return
+C        endif    
+C                         
+C        
+CC See the difference between the occupant desired temperature and what it
+CC actually is
+C        diff = TOP - TCOMF  ! if diff -ve, occupants are cool
+C                            ! if diff +ve, occupants are hot
+CC Call out the probabilities and make them cumulative
+C        if (diff .le. -5.) then
+C          !occupants are cold
+C          Pr_3Up = real(probabilities(1,1))
+C          Pr_2Up = real(probabilities(1,2)) + Pr_3Up
+C          Pr_1Up = real(probabilities(1,3)) + Pr_2Up
+C          Pr_Neu = real(probabilities(1,4)) + Pr_1Up
+C          Pr_1Dn = real(probabilities(1,5)) + Pr_Neu
+C          Pr_2Dn = real(probabilities(1,6)) + Pr_1Dn
+C          Pr_3Dn = real(probabilities(1,7)) + Pr_2Dn !Should equal one
+C          OccFeel = 'cold' !This is how the occupants are feeling        
+C        elseif (diff .le. -3.) then
+C          !occupants are cool
+C          Pr_3Up = real(probabilities(2,1))
+C          Pr_2Up = real(probabilities(2,2)) + Pr_3Up
+C          Pr_1Up = real(probabilities(2,3)) + Pr_2Up
+C          Pr_Neu = real(probabilities(2,4)) + Pr_1Up
+C          Pr_1Dn = real(probabilities(2,5)) + Pr_Neu
+C          Pr_2Dn = real(probabilities(2,6)) + Pr_1Dn
+C          Pr_3Dn = real(probabilities(2,7)) + Pr_2Dn !Should equal one
+C          OccFeel = 'cool' !This is how the occupants are feeling          
+C        elseif (diff .le. -1.) then
+C          !occupants are slightly cool
+C          Pr_3Up =  real(probabilities(3,1))
+C          Pr_2Up =  real(probabilities(3,2)) + Pr_3Up
+C          Pr_1Up =  real(probabilities(3,3)) + Pr_2Up
+C          Pr_Neu =  real(probabilities(3,4)) + Pr_1Up
+C          Pr_1Dn =  real(probabilities(3,5)) + Pr_Neu
+C          Pr_2Dn =  real(probabilities(3,6)) + Pr_1Dn
+C          Pr_3Dn =  real(probabilities(3,7)) + Pr_2Dn !Should equal one
+C          OccFeel = 'slightly cool' !This is how the occupants are feeling 
+C        elseif (diff .le. 1.) then
+C          !occupants are neutral
+C          Pr_3Up =  real(probabilities(4,1))
+C          Pr_2Up =  real(probabilities(4,2)) + Pr_3Up
+C          Pr_1Up =  real(probabilities(4,3)) + Pr_2Up
+C          Pr_Neu =  real(probabilities(4,4)) + Pr_1Up
+C          Pr_1Dn =  real(probabilities(4,5)) + Pr_Neu
+C          Pr_2Dn =  real(probabilities(4,6)) + Pr_1Dn
+C          Pr_3Dn =  real(probabilities(4,7)) + Pr_2Dn !Should equal one
+C          OccFeel = 'neutral' !This is how the occupants are feeling           
+C        elseif (diff .le. 3.) then
+C          !occupants are slightly warm
+C          Pr_3Up =  real(probabilities(5,1))
+C          Pr_2Up =  real(probabilities(5,2)) + Pr_3Up
+C          Pr_1Up =  real(probabilities(5,3)) + Pr_2Up
+C          Pr_Neu =  real(probabilities(5,4)) + Pr_1Up
+C          Pr_1Dn =  real(probabilities(5,5)) + Pr_Neu
+C          Pr_2Dn =  real(probabilities(5,6)) + Pr_1Dn
+C          Pr_3Dn =  real(probabilities(5,7)) + Pr_2Dn !Should equal one
+C          OccFeel = 'slightly warm' !This is how the occupants are feeling 
+C        elseif (diff .le. 5.) then
+C          !occupants are warm
+C          Pr_3Up =  real(probabilities(6,1))
+C          Pr_2Up =  real(probabilities(6,2)) + Pr_3Up
+C          Pr_1Up =  real(probabilities(6,3)) + Pr_2Up
+C          Pr_Neu =  real(probabilities(6,4)) + Pr_1Up
+C          Pr_1Dn =  real(probabilities(6,5)) + Pr_Neu
+C          Pr_2Dn =  real(probabilities(6,6)) + Pr_1Dn
+C          Pr_3Dn =  real(probabilities(6,7)) + Pr_2Dn !Should equal one\
+C          OccFeel = 'warm' !This is how the occupants are feeling 
+C        elseif (diff .gt. 5.) then
+C          !occupants are hot
+C          Pr_3Up = probabilities(7,1)
+C          Pr_2Up = probabilities(7,2) + Pr_3Up
+C          Pr_1Up = probabilities(7,3) + Pr_2Up
+C          Pr_Neu = probabilities(7,4) + Pr_1Up
+C          Pr_1Dn = probabilities(7,5) + Pr_Neu
+C          Pr_2Dn = probabilities(7,6) + Pr_1Dn
+C          Pr_3Dn = probabilities(7,7) + Pr_2Dn !Should equal one  
+C          OccFeel = 'hot' !This is how the occupants are feeling
+C        endif
+C        
+C        if (Pr_3Dn .ne. 1.) then !The probabilities are off somewhere because it should have equalled 1
+C          WRITE(*,*) 'Human comfort probabilities error ',
+C     &                   ' for ', OccFeel, ' condition'
+C          Pr_3Dn = 1. ! Correct it to one
+C        endif
+C        write(96,*) probabilities , '----'
+C        write(97,*) 'TOP' , TOP
+C        write(97,*) 'TCOMF',TCOMF
+C        write(97,*) 'diff', diff
+C        write(97,*) 'feeling', OccFeel
+C        
+C        write(98,*) Pr_3Up, Pr_2Up, Pr_1Up, Pr_Neu, Pr_1Dn, Pr_2Dn, !Debug statement
+C     &              Pr_3Dn, OccFeel  !Debug statement
+C  
+CC Need to know where we are on the ladder right now
+CC 1) Heat with high setpoint |---1---|
+CC 2) Heat with low  setpoint |---2---|
+CC 3) Close windows           |---3---| (Given that Tin>Tout ?)
+CC 4) Open windows            |---4---| (Given that Tin>Tout ?) else maybe these two could switch positions on the ladder
+CC 5) Cool with high setpoint |---5---|
+CC 6) Cool with low  setpoint |---6---|
+C
+CC Get a random number to determine what to do depending on how the user is feeling
+C        RN=RNOR()
+C        RN=1000.*ABS(RN)-REAL(INT(RN))
+C        RN=(RN-REAL(INT(RN))) ! This should be uniformly distributed ~(0,1)
+CC Get random number
+CC        RN=RNOR()
+CC        RN=ABS(RN)
+CC        RN=1000.*RN
+CC        IRN=INT(RN)
+CC        RN=RN-REAL(IRN)     
+C        
+C        write(99,*) RN !Debug statement
+C        
+C
+CC Find out (using the random number) what the occupants are going to do
+C        if (RN .ge. 0. .and. RN .lt. Pr_3Up) then
+C          write(97,*) 'one'
+C          jump = 3 !The occupants are going to jump up 3 on the ladder  
+C        elseif (RN .ge. Pr_3Up .and. RN .lt. Pr_2Up) then
+C          write(97,*) 'one'
+C          jump = 2 !The occupants are going to jump up 2 on the ladder  
+C        elseif (RN .ge. Pr_2Up .and. RN .lt. Pr_1Up) then
+C          write(97,*) 'two'
+C          jump = 1 !The occupants are going to jump up 1 on the ladder  
+C        elseif (RN .ge. Pr_1Up .and. RN .lt. Pr_Neu) then
+C          write(97,*) 'three'
+C          jump = 0 !The occupants are going to jump nowhere on the ladder  
+C        elseif (RN .ge. Pr_Neu .and. RN .lt. Pr_1Dn) then
+C          write(97,*) 'four'
+C          jump = -1 !The occupants are going to jump dn 1 on the ladder  
+C        elseif (RN .ge. Pr_1Dn .and. RN .lt. Pr_2Dn) then
+C          write(97,*) 'five'
+C          jump = -2 !The occupants are going to jump dn 2 on the ladder  
+C        elseif (RN .ge. Pr_2Dn .and. RN .le. Pr_3Dn) then
+C          write(97,*) 'six'
+C          jump = -3 !The occupants are going to jump dn 3 on the ladder 
+C        else !Scenario shouln't happen 
+C          write(97,*) 'seven'
+C          WRITE(*,*) 'Incorrect occupant jump calculation in BCL26'
+C          jump = 0 !Set the jump to zero in the case of an error
+C        endif       
+C      
+C        IF(NSINC .EQ. 1) THEN
+C          LadderPos = 3  !initally set the occupants on the close window rung of the ladder
+C          jump = 0       !initally set the ladder jump that the occupants are going to do
+C        ENDIF
+C        
+C        
+C        !Begin control actuation
+C        if (jump .eq. 0) then !There's no change and we can skip the actuation
+C        
+C        else                  !actuate controls based what the occupants want to do
+C          LadderPos = LadderPos + jump !This is the new position
+C        
+C          if (LadderPos .gt. 6) then
+C            LadderPos = 6 !They are hot but can't do anything than
+C                        !what's going on already to make it colder 
+C          elseif (LadderPos .lt. 1) then
+C            LadderPos = 1 !They are cold but can't do anything than
+C                        !what's going on already to make it colder
+C          endif
+C          
+C
+C          if (LadderPos .eq. 1) then ! Heat with high set point
+C            bZoneHeated(iComp) = .true. ! Turn the heat on
+C            fHeatSetpoint(iComp) = 24. ! Put the setpoint to 24?
+C            bZoneCooled(iComp) = .false. ! Make sure the a/c's off            
+C            bWindowsOpen(iComp) = .false. !Close those windows
+C            
+C          elseif (LadderPos .eq. 2) then ! Heat with low set point
+C            bZoneHeated(iComp) = .true. ! Turn the heat on
+C            fHeatSetpoint(iComp) = 21. ! Put the setpoint to 21?
+C            bZoneCooled(iComp) = .false. ! Make sure the a/c's off            
+C            bWindowsOpen(iComp) = .false. !Close those windows
+C            
+C          elseif (LadderPos .eq. 3) then ! Close windows/Open windows?
+C            bZoneHeated(iComp) = .false.!Turn off the heating/cooling
+C            bZoneCooled(iComp) = .false.
+C                      
+C            if (fZoneTemperature .gt. TF) then !you would want to close the windows to warm up
+C              bWindowsOpen(iComp) = .false.
+C            else !You would want to open the windows to warm up?
+C              bWindowsOpen(iComp) = .true.
+C            endif
+C            
+C          elseif (LadderPos .eq. 4) then ! Open windows/Close windows?
+C            bZoneHeated(iComp) = .false.!Turn off the heating/cooling
+C            bZoneCooled(iComp) = .false.
+C            
+C            if (fZoneTemperature .gt. TF) then !you would want to open the windows to cool down
+C              bWindowsOpen(iComp) = .true.
+C            else !You would want to open the windows to warm up?
+C              bWindowsOpen(iComp) = .false.
+C            endif
+C            
+C          elseif (LadderPos .eq. 5) then ! Cool with high set point
+C            bZoneCooled(iComp) = .true. ! Turn the a/c on
+C            fCoolSetpoint(iComp) = 24. ! Put the setpoint to 24?
+C            bZoneHeated(iComp) = .false. ! Make sure the heat's off                     
+C            bWindowsOpen(iComp) = .false. !Close those windows
+C            
+C          elseif (LadderPos .eq. 6) then ! Cool with low set point
+C            bZoneCooled(iComp) = .true. ! Turn the a/c on
+C            fCoolSetpoint(iComp) = 21. ! Put the setpoint to 21?
+C            bZoneHeated(iComp) = .false. ! Make sure the heat's off                     
+C            bWindowsOpen(iComp) = .false. !Close those windows
+C            
+C          endif
+C          
+C        endif ! End control actuation
+C        
+C      endif CheckDelayLapsed
+C
+CC Flag which method should be used to determine if windows are open, 
+CC closed.    
+C      
+C      if ( bWindowsOpen(iComp) ) then 
+C        iAirFlowModel(iComp) = iOpenFlowMethod
+C      else 
+C        iAirFlowModel(iComp) = iClosedFlowMethod
+C      endif 
+C      
+CC Check to see if windows have moved, and update running clock if so.
+C      if ( bWindowsOpen(iComp) .neqv. bWindowPosAtStart ) then
+C        
+C        fTimeLapsed( iCtlFuncIndex ) = 0.
+C      
+C      endif 
+C      
+C      if (.not. bNested) then 
+C        QFUT = 0.
+C        TFUT = TNP 
+C      endif 
+C      
+CC Set error flag 
+C      ier = 0      
+C    
+C!               call add_to_xml_reporting (
+C!     &              fWindowUpperSetpoint ,
+C!     &              "debug/blc25/setpoint/open",
+C!     &              'units', '(kg/kg)',
+C!     &              'mfn contaminant concentration' )      
+C!      
+C!               call add_to_xml_reporting (
+C!     &              fWindowLowerSetpoint ,
+C!     &              "debug/blc25/setpoint/closed",
+C!     &              'units', '(kg/kg)',
+C!     &              'mfn contaminant concentration' )
+C!            
+C!      
+C!               call add_to_xml_reporting (
+C!     &              fZoneTemperature ,
+C!     &              "debug/blc25/sensor",
+C!     &              'units', '(kg/kg)',
+C!     &              'mfn contaminant concentration' )
+C      
+C      return 
+C      end subroutine BCL26_open_windows
+      
+
 C ******************** BCL99
 C BCL99 modifies the thermo-physical properties of up to three 
 C multi-layered construction(s).
@@ -7287,6 +7893,7 @@ C LFMAT,IFMAT,LFMUL,IFMUL (for materials and constructions database)
 
       common/outin/iuout,iuin
       common/filep/ifil
+      common/btime/btimep,btimef
 
       COMMON/VTHP14/THRMLI(MCOM,MS,ME,7)
       COMMON/GR1D02/IADP,IVAR,FMIN,FREF,FMAX,NSTP
@@ -7452,27 +8059,28 @@ C ic is tested for zero in solar.F
 
 C Debug.
 C        write(6,*) 'Updating thermophysical properties of surface ',ii
-C        write(6,*) 'with construction ',mlcname(ic)' at btimef ',btimef
+C        write(6,*) 'with construction ',DESC(ic)' at btimef ',btimef
 
-C Put the MLC info into current surface attributes common.
-C Gather information about each layer via materials info.
+C Put the composite db info into current surface attributes
+C common.  Gather information about each layer. Read in the
+C material db info. 
           ne(ii)=layers(ic)
           do 223 i=1,layers(ic)
             if(closemat1.or.closemat2)then
-              matarrayindex=iprmat(ic,i)   ! which materials array index
-              dbcon=matdbcon(matarrayindex)
-              dbden=matdbden(matarrayindex)
-              dbsht=matdbsht(matarrayindex)
-              E=matdbine(matarrayindex)
-              A=matdbina(matarrayindex)
+              legmat=ipr(ic,i)   ! which legacy index
+              if(legmat.gt.0)then
+                matarrayindex=mathash(legmat)  ! find matching array index
+                dbcon=matdbcon(matarrayindex)
+                dbden=matdbden(matarrayindex)
+                dbsht=matdbsht(matarrayindex)
+                E=matdbine(matarrayindex)
+                A=matdbina(matarrayindex)
+              endif
             else
               ier=1  ! incomplete materials arrays so pass back ier
             endif
-            if(ier.eq.1)return 
-
-C If not an air gap assign con den sht thk. Otherwise use the
-C air gap values depending on the surface orientation.
-            if(iprmat(ic,i).ne.0)then
+            if(ier.eq.1)return
+            if(ipr(ic,i).ne.0)then
               con(ii,i)=dbcon
               THRMLI(ICMP,II,I,1)=CON(II,I)
               den(ii,i)=dbden

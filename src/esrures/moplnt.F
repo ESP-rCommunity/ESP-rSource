@@ -699,8 +699,6 @@ C simulation related information. It is passed npc the
 C number of plant components used in the network.
 C If user cancels file browse set ier to -3.
       subroutine opnplt(npc,imode,ier)
-#include "building.h"
-#include "model.h"
 #include "plant.h"
 #include "esprdbfile.h"
 C esprdbfile.h supplies the following:
@@ -737,23 +735,20 @@ C the best-guess of file names (but with full path).
       
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
+      common/C21/IFCFG,cfgroot,LCFGF
       COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
 
 C Defaults.
-      character*96 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF
       COMMON/DEFLT2/DFCFG,DFCTL,DEFRLB,DAFRES,DAPROB,DPNF
+      character*72 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF
 
-      character xfile*144,tg*1,delim*1
-      common/exporttg/xfile,tg,delim
 
-      character DFILE*72,LTMP*144
-      character outs*124,louts*248
+      character DFILE*72,LTMP*144,outs*124,louts*248
       character lctlf*72,ctldoc*248,scname*12,MODE*4
-      character firstbit*72,secondbit*72,path*72
+      character firstbit*72,secondbit*72,path*72,LCFGF*72,cfgroot*24
       character longtmp*144
       logical XST,ok,dok
       logical CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
-      integer nsim  ! number of simulations
 
 C For help messages
       character helpinsub*24   ! subroutine name
@@ -775,6 +770,15 @@ C For help messages
         else
           ltmp=' '
         endif
+
+C Assume default plants results name (*.plr) taken from zone results
+C name (*.res). Use the same style as in MFOUTP.
+C	lrf=lnblnk(LTMP)
+C	lrf3=lrf-3
+C	lrf4=lrf-4
+C	if(LTMP(lrf3:lrf).eq.'.res')then
+C	  write(LTMP,'(2a)') LTMP(1:lrf4),'.plr'
+C	endif
 
         llt=lnblnk(ltmp)
         helptopic='res_plant_res_file'
@@ -810,28 +814,22 @@ C name with the full path.
       endif
       IER=0
 
-      INQUIRE (FILE=ltmp,EXIST=XST)
+      INQUIRE (FILE=LTMP,EXIST=XST)
       IF(XST)THEN
 
 C Set record length of library file.
-        CALL ERPFREE(iunitp,ISTAT)
         nprl = nprecl
-        call EFOPRAN(iunitp,ltmp,nprl,1,IER)
-        if(ier.eq.0) then
-          write(outs,'(A,I3)')
-     &     ' Opened plant results with record length',nprl
+        OPEN (iunitp,FILE=LTMP(1:lnblnk(LTMP)),ACCESS='DIRECT',
+     &    RECL=nprl*4,FORM='UNFORMATTED',STATUS='OLD',IOSTAT=ISTAT)
+          write(outs,'(A,I3)')' Opening file with record length',nprl
           call edisp(iuout,outs)
-        else
-          call edisp(iuout,'Unable to open plant results')
-        endif
       ELSE
 
-C Try again? Note: because of space limits only echo the start of
-C the plant file name.
+C Try again ?
         dok=.false.
         helptopic='plant_res_file_not'
         call gethelptext(helpinsub,helptopic,nbhelp)
-        write(outs,'(2a)') ' Could not find ',LTMP(1:72)
+        write(outs,'(2a)') ' Could not find ',LTMP(1:lnblnk(LTMP))
         CALL ASKOK(outs,' Do you want to try again?',OK,dok,nbhelp)
         IF(.NOT.OK) return
         goto  6
@@ -880,7 +878,7 @@ C scan it in at this point. Read the 2nd item on record 32 to get location.
 C Debug.
 C        write(6,*) 'opnplt: newer plant ',iftype
 
-        IPLIB=2
+	IPLIB=2
         IREC=32
         READ(IUNITp,REC=IREC,IOSTAT=ISTAT,ERR=1000)iftype,ireccfg
 
@@ -893,7 +891,7 @@ C        write(6,*) 'opnplt: the jump for cfg ',ireccfg
         READ(IUNITp,REC=IREC,IOSTAT=ISTAT,ERR=1000) secondbit
         lnfb=lnblnk(firstbit)
         lnsb=lnblnk(secondbit)
-        write(longtmp,'(2a)') firstbit(1:lnfb),secondbit(1:lnsb)
+	write(longtmp,'(2a)') firstbit(1:lnfb),secondbit(1:lnsb)
 
 C Debug.
 C        write(6,*) longtmp
@@ -922,10 +920,6 @@ C this information.
               CALL EROPER(0,iuout,IAPROB,izone,IER)
   43        CONTINUE
           endif
-
-C Set the default export file name based on model root name.
-          write(xfile,'(2a)') cfgroot(1:lnblnk(cfgroot)),'.csv'
-
         ELSE
 
 C Not found, might be in a remote folder.  Warn user first.
@@ -1007,10 +1001,10 @@ C Read climate file name.
         READ(IUNITp,REC=IREC,IOSTAT=ISTAT,ERR=1000) secondbit
         lnfb=lnblnk(firstbit)
         lnsb=lnblnk(secondbit)
-        write(LCLIM,'(2a)') firstbit(1:lnfb),secondbit(1:lnsb)
+	write(LCLIM,'(2a)') firstbit(1:lnfb),secondbit(1:lnsb)
 
 C Debug.
-C        write(6,*) 'plant lclim is ',LCLIM
+C        write(6,*) LCLIM
 
       endif
 
@@ -1063,7 +1057,7 @@ C Read plant component file name (long or short)
         IREC=IREC+1
         READ(IUNITp,REC=IREC,IOSTAT=ISTAT,ERR=1000) firstbit
         lnfb=lnblnk(firstbit)
-        write(Lpcdb,'(a)') firstbit(1:lnfb)
+	write(Lpcdb,'(a)') firstbit(1:lnfb)
 
 C Debug.
 C        write(6,*) Lpcdb
@@ -1075,7 +1069,7 @@ C        write(6,*) Lpcdb
         READ(IUNITp,REC=IREC,IOSTAT=ISTAT,ERR=1000) secondbit
         lnfb=lnblnk(firstbit)
         lnsb=lnblnk(secondbit)
-        write(Lpcdb,'(2a)') firstbit(1:lnfb),secondbit(1:lnsb)
+	write(Lpcdb,'(2a)') firstbit(1:lnfb),secondbit(1:lnsb)
 
 C Debug.
 C        write(6,*) Lpcdb
@@ -1095,7 +1089,7 @@ C        write(6,*) ' irec at  cfg file name ',irec
         READ(IUNITp,REC=IREC,IOSTAT=ISTAT,ERR=1000) secondbit
         lnfb=lnblnk(firstbit)
         lnsb=lnblnk(secondbit)
-        write(longtmp,'(2a)') firstbit(1:lnfb),secondbit(1:lnsb)
+	write(longtmp,'(2a)') firstbit(1:lnfb),secondbit(1:lnsb)
 
 C Debug.
 C        write(6,*) longtmp
@@ -1174,23 +1168,13 @@ C naout (number of additional output data) is returned.
       subroutine dbdat(ipc,irec,nnode,naout)
 #include "plant.h"
 #include "esprdbfile.h"
-#include "gencompDB.h"
-#include "gencompDB_common.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
       common/ntype/isv(mpcom,mnodec)
       common/adopdesc/adopdsc(mpcom,15)
-      COMMON/C9plus/UCdbNam(MPCOM),CdbCat(MPCOM),CDBDesc(MPCOM)
-      COMMON/PCRES/QDATA(MPCOM),PCAOUT(MPCOM,MPCRES),napdat(mpcom)
-
-
-C Common for new format component database
-      COMMON/NCDBFORM/ICDBF
-
       LOGICAL OK,dok,unixok
-      CHARACTER PZDESC*25,cdate*16,buffer*80,adopdsc*30,
-     &UCDBNam*16, CdbCat*32, CDBDesc*72, argstr*12
+      CHARACTER PZDESC*25,cdate*16,buffer*80,adopdsc*30
       character fs*1
       integer lndbp   ! for length of standard database path
       character lltmp*144  ! to re-create plant database file name with path
@@ -1209,10 +1193,6 @@ C Set folder separator (fs) to \ or / as required.
       else
         fs = char(92)
       endif
-
-C !icdbf should have already been set - so no need to open file again.
-
-      if (icdbf.eq.0)then
 
 C If unit for plant component db not yet set, do it.
       if(ipcdb.eq.0)ipcdb=ifil+11
@@ -1254,13 +1234,14 @@ C Old file, so check header.
       iorec = 1
       READ (ipcdb,REC=IOREC,IOSTAT=ISTAT,ERR=99999) PZDESC
       IF (PZDESC .NE. ' PLANT COMPONENT DATABASE') then
-
-C Attempt to open the file as a new format cdb (ASCII) file. 
-          ok=.false.
-          dok=.false.
-          CALL ASKOK('Error occurred on opening data base file',
-     &              ' Try again?',OK,dok,nbhelp)
-          if(ok) goto 100
+         ok=.false.
+         dok=.false.
+         helptopic='res_plant_db_not'
+         call gethelptext(helpinsub,helptopic,nbhelp)
+         CALL ASKOK(' Not a plant database file.',
+     &               ' Try another file? ',OK,dok,nbhelp)
+         CALL USRMSG(' ',' ','-')
+         if(ok) goto 100
       endif
 
       read(ipcdb,rec=irec,iostat=istat,err=99999)
@@ -1280,17 +1261,6 @@ C Read additional output description and type
           irec=irec+1
           read(ipcdb,REC=IREC,IOSTAT=ISTAT,ERR=99999)adopdsc(ipc,i)
   160   continue
-      endif
-
-      endif
-c Read the additional plant output data data from the new format database.
-      if(icdbf.eq.1)then
-        argstr='parameters'
-        call CDBGetItemData(' ',' ',UCdbNam(IPC),argstr)
-        argstr='detailed'
-        CALL CDB2Plant(IPC,argstr)
-        nnode=s_NNODE
-        naout=NAPDAT(IPC)
       endif
 
       return
@@ -1376,11 +1346,11 @@ C MOSYSSU clears commons/ sets default values for systems plotting.
 
       COMMON/MSYSPICK/NPGET,IPGETNO(MSYSRS,8)
 
-      COMMON/GRAF1/YMAX(5),YMIN(5),YAXSET(5),ADDLIN,horaxisdiv
+      COMMON/GRAF1/YMAX(5),YMIN(5),YAXSET(5),ADDLIN
       COMMON/IGETFLG/IOCUPF,ialstused,IROC
       COMMON/SYSLABEL/SPLABEL(MSYSRS),GPLABEL(MSYSRS)
 
-      integer YAXSET,ADDLIN,horaxisdiv
+      integer YAXSET, ADDLIN
       character SPLABEL*32,GPLABEL*20
 
 C Reset axis max and min values to 1.0 and 0.0 resp.
@@ -1442,9 +1412,9 @@ C act='p' iget parameters already set.
       common/appcols/mdispl,nifgrey,ncset,ngset,nzonec
       integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
-      COMMON/GRAF1/YMAX(5),YMIN(5),YAXSET(5),ADDLIN,horaxisdiv
+      COMMON/GRAF1/YMAX(5),YMIN(5),YAXSET(5),ADDLIN
       COMMON/GRAF2/YSC(5),Yadd(5),TSC,Xadd,IGX(5),ILR(5),DT
-      common/grextras/graftitle,grlbl(10),ngrlbl,lblpx(10),lblpy(10)
+      common/grextras/graftitle,grlbl(5),ngrlbl,lblpx(5),lblpy(5)
 
       COMMON/PPERS/IPSD1,IPSM1,IPSD2,IPSM2,IPSDS,IPSDF,NPTS,ipsav
       COMMON/SIMPIK/ISIM,ISTADD,ID1,IM1,ID2,IM2,ISDS,ISDF,NTS,ISAVE
@@ -1490,23 +1460,15 @@ C Flags identifying if results libries are available. =0 no lib, =1 lib exists.
       dimension FAVE(MSYSRS), FSTD(MSYSRS), NF(MSYSRS)
       dimension TMAX(MSYSRS), TMIN(MSYSRS), IQHRS(MSYSRS)
 
-      integer YAXSET,ADDLIN,horaxisdiv
+      integer YAXSET, ADDLIN
 
       integer iglib   ! if 1 then X11, if 2 then GTK, if 3 then text only.
 #ifdef OSI
-      integer IGX  ! see common graf2
       integer iside,isize,ifont     ! passed to viewtext
       integer iupdown,isym,iid1,iid2    ! passed to etplot
-      integer iicol
-      integer iigl,iigr,iigt,iigb,iigw,iigwh
-      integer iiw1,iiw2,iiw3,iiw4,iimenu
 #else
-      integer*8 IGX  ! see common graf2
       integer*8 iside,isize,ifont     ! passed to viewtext
       integer*8 iupdown,isym,iid1,iid2    ! passed to etplot
-      integer*8 iicol
-      integer*8 iigl,iigr,iigt,iigb,iigw,iigwh
-      integer*8 iiw1,iiw2,iiw3,iiw4,iimenu
 #endif
 
       logical colok,ok,dok,unixok
@@ -2094,14 +2056,9 @@ C Write graph head and set up axis positions and draw.
             call feedbox(menuchw,2,igfw,igfh)
             call opengdisp(menuchw,LIMTTY,2,igdw,igdh)
           endif
-
-C Setup and pass in parameters to win3d.
-          iiw1=9; iiw2=30; iiw3=4; iiw4=3; iimenu=menuchw
-          iigl=igl; iigr=igr; iigt=igt; iigb=igb; iigw=igw; iigwh=igwh
-          CALL win3d(iimenu,iiw1,iiw2,iiw3,iiw4,
-     &      iigl,iigr,iigt,iigb,iigw,iigwh)
-          igl=int(iigl); igr=int(iigr); igt=int(iigt); igb=int(iigb)
-          igw=int(iigw); igwh=int(iigwh)
+          call win3d(menuchw,9,30,4,3,igl,igr,igt,igb,igw,igwh)
+          igw=igr-igl
+          igwh=igb-igt
           call startbuffer()
         ENDIF
 
@@ -2349,7 +2306,7 @@ C Do the other menu types. If graph reset scaling factor for appropriate axis.
             do 400 IX=1,NPGET
               if (MENUTYPE.eq.3) then
                 Iax=IPGETNO(IX,8)
-                call linescale(iigl,Xadd,TSC,iigb,Yadd(Iax),YSC(Iax))
+                call linescale(igl,Xadd,TSC,igb,Yadd(Iax),YSC(Iax))
                 if (TIMEold(IX).lt.0.0.or.ADDLIN.eq.1) then
                   TIMEold(IX)=0
                   Yold(IX)=VAL(IX)
@@ -2399,8 +2356,7 @@ C than that of the number of colours re-use an earlier colour.
                     ICM=IPGETNO(IX,2)
                     if(ICM.gt.nzonec) ICM=IPGETNO(IX,2)-nzonec
                     if(ICM.gt.nzonec) ICM=IPGETNO(IX,2)-nzonec
-                    iicol=ICM
-                    call winscl('z',iicol)
+                    call winscl('z',ICM)
                   endif
                 endif
 
@@ -2409,10 +2365,7 @@ C then reset to forground colour.
                 iupdown=IPEN
                 isym=MARK
                 call etplot(GTIME,Yold(IX),iupdown,isym)
-                if(colok)then
-                  iicol=0
-                  call winscl('-',iicol)
-                endif
+                if(colok)call winscl('-',0)
                 call forceflush()
               elseif (MENUTYPE.eq.5) then
 
@@ -2600,8 +2553,7 @@ C Do the other menu types. If graph reset scaling factor for appropriate axis.
               do 401 IX=1,NPGET
                 if (MENUTYPE.eq.3) then
                   Iax=IPGETNO(IX,8)
-                  call linescale(iigl,Xadd,TSC,iigb,Yadd(Iax),
-     &              YSC(Iax))
+                  call linescale(igl,Xadd,TSC,igb,Yadd(Iax),YSC(Iax))
                   if (TIMEold(IX).lt.0.0.or.ADDLIN.eq.1) then
                     TIMEold(IX)=0
                     Yold(IX)=VAL(IX)
@@ -2652,8 +2604,7 @@ C than that of the number of colours re-use an earlier colour.
                       ICM=IPGETNO(IX,2)
                       if(ICM.gt.nzonec) ICM=IPGETNO(IX,2)-nzonec
                       if(ICM.gt.nzonec) ICM=IPGETNO(IX,2)-nzonec
-                      iicol=ICM
-                      call winscl('z',iicol)
+                      call winscl('z',ICM)
                     endif
                   endif
 
@@ -2662,10 +2613,7 @@ C then reset to forground colour.
                   iupdown=IPEN
                   isym=MARK
                   call etplot(GTIME,Yold(IX),iupdown,isym)
-                  if(colok)then
-                    iicol=0
-                    call winscl('-',iicol)
-                  endif
+                  if(colok)call winscl('-',0)
                   call forceflush()
                 elseif (MENUTYPE.eq.5) then
 
@@ -2760,14 +2708,9 @@ C Write graph head and set up axis positions and draw.
                 call feedbox(menuchw,2,igfw,igfh)
                 call opengdisp(menuchw,LIMTTY,2,igdw,igdh)
               endif
-
-C Setup and pass in parameters to win3d.
-              iiw1=9; iiw2=30; iiw3=4; iiw4=3; iimenu=menuchw
-              iigl=igl; iigr=igr;iigt=igt;iigb=igb;iigw=igw;iigwh=igwh
-              CALL win3d(iimenu,iiw1,iiw2,iiw3,iiw4,
-     &          iigl,iigr,iigt,iigb,iigw,iigwh)
-              igl=int(iigl); igr=int(iigr);igt=int(iigt);igb=int(iigb)
-              igw=int(iigw); igwh=int(iigwh)
+              call win3d(menuchw,9,30,4,3,igl,igr,igt,igb,igw,igwh)
+              igw=igr-igl
+              igwh=igb-igt
               call startbuffer()
             ENDIF
 
@@ -2844,23 +2787,19 @@ C histogram metric is selected it will be the first one.
 C Finally label lines, matching zone line colour if used.
         do 202 I=1,NPGET
           Iax=IPGETNO(I,8)
-          call linescale(iigl,Xadd,TSC,iigb,Yadd(Iax),YSC(Iax))
+          call linescale(igl,Xadd,TSC,igb,Yadd(Iax),YSC(Iax))
           t20=GPLABEL(I)
           if(colok)then
             if(IPGETNO(I,2).gt.0)then
               ICM=IPGETNO(I,2)
               if(ICM.gt.nzonec) ICM=IPGETNO(I,2)-nzonec
               if(ICM.gt.nzonec) ICM=IPGETNO(I,2)-nzonec
-              iicol=ICM
-              call winscl('z',iicol)
+              call winscl('z',ICM)
             endif
           endif
           call u2pixel(TIMEold(I),Yold(I),iid1,iid2)
           call wstxpt(iid1,iid2,t20)
-          if(colok)then
-            iicol=0
-            call winscl('-',iicol)
-          endif
+          if(colok)call winscl('-',0)
           call forceflush()
  202    continue
 

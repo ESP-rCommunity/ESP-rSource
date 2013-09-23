@@ -5,7 +5,7 @@ C Strathclyde, Glasgow Scotland, 2001.
 C ESP-r is free software.  You can redistribute it and/or
 C modify it under the terms of the GNU General Public
 C License as published by the Free Software Foundation 
-C (version 2 or later).
+C (version 2 orlater).
 
 C ESP-r is distributed in the hope that it will be useful
 C but WITHOUT ANY WARRANTY; without even the implied
@@ -37,7 +37,6 @@ C IER=0 OK, IER=1 problem.
       SUBROUTINE ITINSRT(ITRC,IFOC,IER)
 #include "building.h"
 #include "model.h"
-#include "net_flow.h"
 #include "tdf2.h"
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/TDFGH2/GTYPES(24),GMENUS(24)
@@ -47,7 +46,7 @@ C IER=0 OK, IER=1 problem.
       LOGICAL FOUND
 
       CHARACTER OUTS*124,msgl2*48,TTAG*12
-      CHARACTER GMENUS*24,GTYPES*8
+      CHARACTER GMENUS*16,GTYPES*8
       CHARACTER GAIDE*36,GHELP*72,GDHDRT*72,GMH*32
 
 C For help messages
@@ -57,15 +56,12 @@ C For help messages
 
       helpinsub='ITINSRT'  ! set for subroutine
 
-C Choose one of the generic types to create at the insertion point (ifoc).
-C Copy over default information into instance commons. IFG is the index
-C within the TDFGH2 common blocks for the temporal type and menu string.
+C Now choose one of the generic types to create at the insertion point.
+C Copy over default information into instance commons.
       IFG=0
   78  call EBRSTAB(IFG,IER)
       IF(IFG.EQ.0)RETURN
 
-C Use GENDAT to place into common blocks TDFG1 TDFG2 TDFG3 TDFG5 data for
-C the type GTYPES(IFG) at position IFOC.
       FOUND=.FALSE.
       CALL GENDAT(GTYPES(IFG),IFOC,FOUND,IER)
       IF(.NOT.FOUND)THEN
@@ -108,7 +104,7 @@ C The additional columns will fit within the current scratch file.
       endif
 
       TTYPE(IFOC)=GTYPES(IFG)
-      write(TMENU(IFOC),'(a)') GMENUS(IFG)
+      TMENU(IFOC)=GMENUS(IFG)
 
 C Ask for the name of this new entry.
       TAG(IFOC)='Undefined'
@@ -200,7 +196,6 @@ C IFOC, the item array index at the point where the action is to take place.
       SUBROUTINE ITDEL(ITRC,IFOC,IER)
 #include "building.h"
 #include "model.h"
-#include "net_flow.h"
 #include "tdf2.h"
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/TDAT/TABU(MTABC),TABT(MTABC),TABUMN(MTABC),TABUMX(MTABC)
@@ -325,7 +320,6 @@ C Tabular columns are copied as required.
       SUBROUTINE ITCOPY(ITRC,IFOC,IFOC2,IER)
 #include "building.h"
 #include "model.h"
-#include "net_flow.h"
 #include "tdf2.h"
 
       COMMON/TDAT/TABU(MTABC),TABT(MTABC),TABUMN(MTABC),TABUMX(MTABC)
@@ -412,7 +406,6 @@ C REFSHG Refresh instance with generic attributes (placement,
 C help, indices, default values).
       SUBROUTINE REFSHG(IFOC,IER)
 #include "building.h"
-#include "net_flow.h"
 #include "tdf2.h"
       COMMON/TDFG1/GAIDE,GHELP(MHEL),GDHDRT(3),GMH
       COMMON/TDFG5/GMF(MBITS),MGMA(MBITS)

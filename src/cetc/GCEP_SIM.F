@@ -41,7 +41,7 @@ C (within the 'do 20' loop.)
 C
 C
 C INPUTS:
-C  GCEPM_INPUT module
+C	GCEPM_INPUT module
 C 
 C OUTPUTS:
 C     Gload : load to the ground
@@ -52,7 +52,7 @@ C *********************************************************************
 
 C Use module for GCEPM data
 C      USE GCEP_INPUT
-
+	
       IMPLICIT NONE
 
 #include "building.h"
@@ -104,7 +104,7 @@ C evaluate the average loads on the agregation scheme periods
 C evaluate the agregated terms of the MLA
       CALL CalcTerms(GCEP_Time,GCEP_Nyear,GCEP_Nmonth,GCEP_Nweek,
      &     GCEP_Nday,GCEP_Py,GCEP_Pm,GCEP_Pw,GCEP_Pd,
-     &     GCEP_T_y,GCEP_T_m,GCEP_T_w,GCEP_T_d,GCEP_alpha_s,GCEP_D_bore)
+     &     GCEP_T_y,GCEP_T_m,GCEP_T_w,GCEP_T_d,GCEP_alpha_s,GCEP_D_bore)	
    
       GCEP_Gload=GCEP_hourly_load
    
@@ -135,24 +135,24 @@ C
 C INPUTS:
 C    Time    Hours passed since the begining of the simulation
 C Number of hours in the term i (0 or Xi)
-C  Ny  rest (yearly)
-C  Nm  month
-C  Nw  week
-C  Nd  day
+C	Ny		rest (yearly)
+C	Nm		month
+C	Nw		week
+C	Nd		day
 C Average ground load on each period
-C  Py          rest (yearly)
-C  Pm          month
-C  Pw          week
-C  Pd          day
-C  Alpha_s     thermal difusivity of the ground
-C  D_bor       Borehole diameter
+C	Py          rest (yearly)
+C	Pm          month
+C	Pw          week
+C	Pd          day
+C	Alpha_s     thermal difusivity of the ground
+C	D_bor       Borehole diameter
 C 
 C OUTPUTS:
 C MLA (Multple load agregation) scheme terms
-C  T_y     rest (yearly)
-C  T_m     month
-C  T_w     week
-C  T_d     day
+C	T_y     rest (yearly)
+C	T_m     month
+C	T_w     week
+C	T_d     day
 C
 C *********************************************************************
       SUBROUTINE CalcTerms(Time,Ny,Nm,Nw,Nd,Py,Pm,Pw,Pd,
@@ -197,12 +197,12 @@ C    Inter_Tg    number of hours between calculations of ground temperatures
 C    Time_Tg     Time since the last calculation of the ground temperatures
 C 
 C OUTPUTS:
-C  TgON       Indicates if it is time to recalculate ground temperatures
+C	TgON       Indicates if it is time to recalculate ground temperatures
 C
 C *********************************************************************
       SUBROUTINE Eval_TgON(Time,Inter_Tg,Time_Tg,TgON)
       
-      IMPLICIT NONE 
+	IMPLICIT NONE 
 C     INPUTS
       REAL Time,Inter_Tg,Time_Tg
       Logical TgON
@@ -232,27 +232,27 @@ C This subroutine is called once at the begining of every time step
 C By default this should be for every hour simulated
 C
 C INPUTS:
-C  nHis     number of terms in the LoadHis vector
-C  LoadHis  vector containing the history of the ground loads
-C  Xm       Number of hours in the aggregation period (m=month)
-C  Xw       Number of hours in the aggregation period (w=week)
-C  Xd       Number of hours in the aggregation period (d=day)
-C  Xh       Number of non agregated hours kept
+C	nHis    number of terms in the LoadHis vector
+C	LoadHis	vector containing the history of the ground loads
+C	Xm	    Number of hours in the aggregation period (m=month)
+C	Xw	    Number of hours in the aggregation period (w=week)
+C	Xd	    Number of hours in the aggregation period (d=day)
+C	Xh	    Number of non agregated hours kept
 C 
 C OUTPUTS:
-C  Xy    Number of hours in the rest (y is for yearly)
+C	Xy	    Number of hours in the rest (y is for yearly)
 C Number of hours in the term i (0 or Xi)
-C  Ny    rest (yearly)
-C  Nm    month
-C  Nw    week
-C  Nd    day
-C  Nh    hours
+C	Ny	    rest (yearly)
+C	Nm	    month
+C	Nw	    week
+C	Nd	    day
+C	Nh	    hours
 C Average ground load on each period
-C  Py    rest (yearly)
-C  Pm     month
-C  Pw     week
-C  Pd     day
-C  P(Xh)  Ground loads for the last non agregated Xh hours
+C	Py	    rest (yearly)
+C	Pm      month
+C	Pw      week
+C	Pd      day
+C	P(Xh)   Ground loads for the last non agregated Xh hours
 C
 C *********************************************************************
       SUBROUTINE CalcPAve(Time,nHis,LoadHis,Xy,Xm,Xw,Xd,Xh,
@@ -265,7 +265,7 @@ C     INPUTS
 C Function which calculates the average load between two times
 C Located in file GCEPtground
       REAL AveLoad
- 
+	 
 C initialize Nm,Ns and Nj
       Nm=0
       Nw=0
@@ -296,7 +296,7 @@ C evaluates Nw and Pw
           Pw=Pw+(LoadHis(1+Xm+Xw)-LoadHis(1+Xm))/Xw
         ENDIF
           Nw=Xw
-      ENDIF
+      ENDIF	
 C evaluates Nm and Pm
       IF(Time.GE.(Xm+Xw+Xd+Xh)) THEN
         IF(Time.EQ.(Xm+Xw+Xd+Xh)) THEN
@@ -316,7 +316,7 @@ C evaluates Xy,Ny and Py
       ENDIF
 *      write(90,*) Ny,Nm,Nw,Nd,Nh,Pd
       END
-
+	
 ***************************************************************
 *4
 C *********************************************************************
@@ -333,12 +333,12 @@ C This subroutine is called for the calculation of every term of the MLA scheme
 C 
 C
 C INPUTS:
-C  Time        Hours passed since the begining of the simulation
-C  Alpha_s      thermal difusivity of the ground
-C  D_bor       Borehole diameter
+C	Time        Hours passed since the begining of the simulation
+C	Alpha_s	    thermal difusivity of the ground
+C	D_bor       Borehole diameter
 C 
 C OUTPUTS:
-C  FunG        Value of the G function of the cylindrical heat source method
+C	FunG        Value of the G function of the cylindrical heat source method
 C
 C *********************************************************************
       REAL FUNCTION FonG(Alpha_s,D_bore,Time)
@@ -402,10 +402,10 @@ C This subroutine is called once at the begining of every time step
 C By default this should be for every hour simulated
 C
 C INPUTS:
-C  nHis      number of terms in the LoadHis vector
+C	nHis        number of terms in the LoadHis vector
 C 
 C OUTPUTS:
-C  LoadHis   vector containing the history of the ground loads
+C	LoadHis	    vector containing the history of the ground loads
 C
 C *********************************************************************
       SUBROUTINE InitHist(nHis,LoadHis)

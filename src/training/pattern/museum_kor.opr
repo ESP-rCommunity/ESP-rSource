@@ -1,5 +1,5 @@
 *Operations 1.0
-*date Sat Mar  9 08:10:44 2013  # latest file modification 
+*date Tue Jul 07 10:35:29 2009  # latest file modification 
 # operations of reception defined in: 
 # ../zones/museum_kor.opr
 museum_kor;weekdays10-18;casual_gains3.5W/m2(80%conv);0.57ach
@@ -10,13 +10,10 @@ museum_kor;weekdays10-18;casual_gains3.5W/m2(80%conv);0.57ach
    10, 18,    0.5700    0.000    0    0.000
      1   # number of flow periods in day type: saturday    
 # start, stop, infil, ventil, source, data
-   0, 24,    0.200    0.000    0    0.000
+   0, 24,    0.000    0.000    0    0.000
      1   # number of flow periods in day type: sunday      
 # start, stop, infil, ventil, source, data
-   0, 24,    0.200    0.000    0    0.000
-     1   # number of flow periods in day type: holiday      
-# start, stop, infil, ventil, source, data
-   0, 24,    0.200    0.000    0    0.000
+   0, 24,    0.000    0.000    0    0.000
      3   # number of casual gains in day type: weekday     
 # type, start, stop, sens, latent, rad_frac, conv_frac
    -3,   0,   10,     0.0,      0.0, 0.200, 0.800
@@ -24,6 +21,5 @@ museum_kor;weekdays10-18;casual_gains3.5W/m2(80%conv);0.57ach
    -3,  18,  24,      0.0,      0.0, 0.200, 0.800
      0   # number of casual gains in day type: saturday    
      0   # number of casual gains in day type: sunday      
-     0   # number of casual gains in day type: holiday      
 # Labels for gain types 
  Occupt Lights Equipt

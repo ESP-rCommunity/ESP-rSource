@@ -23,6 +23,7 @@ C Boston, MA 02111-1307 USA.
 #include "building.h"
 #include "net_flow.h"
 #include "control.h"
+#include "blc25_open_windows.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FCLSOL/ICFP,IDTYPP,IPERP
@@ -30,13 +31,38 @@ C Boston, MA 02111-1307 USA.
       COMMON/MFLCTL/IRY,IRM,IRD,IRH,FLWTIM,IHOUR,IYD,IFYD,ILYD,IPROG
       common/caleni/nbdaytype,nbcaldays(MDTY),icalender(365)
       INTEGER NBDAYTYPE,NBCALDAYS,ICALENDER,NIN
-
+      
+      common/mflow1/nnod,ncmp,ncnn     
+      integer nnod, ncmp, ncnn
+      
+      
       character outs*124
 
-      do 102 i=1,MCNN
+C ESP-r time data:
+      common/simtim/ihrp,ihrf,idyp,idyf,idwp,idwf,nsinc,its      
+      integer nsinc                               ! Simulation increment (-)
+      integer ihrp,ihrf,idyp,idyf,idwp,idwf,its   ! Not used. 
+C Reference
+      logical bFlowConnToOutside
+      integer iZone ! Dummy variable 
+      
+      
+      InitializeCtlPos: do i=1,ncnn
+        
         ctlpos(i)=1.0
- 102  continue
+        
+        if ( bBCL25FlowControlsActive(i) .and.
+     &       bFlowConnToOutside(i,iZone) .and.
+     &       nsinc > 1 ) then 
+          
+              ctlpos(i) = fBCL25FlowControlSignal(i) 
+            
+        endif 
 
+      enddo InitializeCtlPos
+ 
+      
+ 
 C Return if no mass flow control function active
       IF(NCC.EQ.0) GOTO 999
 
@@ -48,10 +74,10 @@ C Determine year day number of present day
 C Set up day type and period pointers
         NDAYT=NFCDT(ICFP)
 
-c Determine current day of the week.
+c determine current day of the week
         CALL EWEEKD(IRD,IRM,IRY,IDW)
 
-C If NDAYT=0 set data to all calendar day types.
+C If NDAYT=0 set data to all day types
         NIN=0
         IF(NDAYT.EQ.0)THEN
           NDAYT=NBDAYTYPE

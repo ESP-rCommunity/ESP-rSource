@@ -1,5 +1,5 @@
 # composite construction db defined in ../databases/burdie.mdb-ii
-# based on primitive construction db /usr/esru/esp-r/databases/constr.db1.a
+# based on primitive construction db /usr/esru/esp-r/databases/constr.db1
    23     # no of composites 
 # layers  description   optics 
     3    glazing       TRAN  DC_8074_04nb        

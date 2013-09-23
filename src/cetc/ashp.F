@@ -1,4 +1,4 @@
-C This file is part of the ESP-r system.
+C This file is part of the ESP-r system.	
 C Copyright CANMET Energy Technology Centre 
 C Natural Resources Canada, Government of Canada
 C 2004. Please Contact Ian Beausoliel-Morrison for details 
@@ -40,11 +40,11 @@ c  BACKUP_LOAD     determine the remaining space load to be supplied by a
 c                  baseboard/hydronic/plenum heater backup system when the 
 c                  primary system does not have enough capacity to meet the
 c                  load
-c  ASHP_FURNACE_PLF
+c       ASHP_FURNACE_PLF
 c                  determine the part-load factor of the air-source heat pump and
 c                  the fossil fuel backup heat source when operating together to
 c                  meet the load
-c  SYS_SOL         solve a system of linear equation for the unknowns using the 
+c       SYS_SOL    solve a system of linear equation for the unknowns using the 
 c                  back substitution method
 c *********************************************************************
 c *********************************************************************
@@ -181,7 +181,8 @@ c Steady-state heat pump capacity accounting for the effect of the outdoor
 c temperature
         ss_heat_pump_cap = ASHP_CAP(ss_capacity(isys),TP,
      &                     flow_rate(isys),
-     &                     flow_rate_r(isys),ifan_operation(isys))
+     &                     flow_rate_r(isys),ifan_operation(isys),
+     &                     cutoff_temp(isys))
       endif
 c GCEP (end)
 
@@ -491,13 +492,13 @@ c       ASHP_CAP    steady-state capacity of the heat pump at outdoor
 c                   temperature tout
 c **********************************************************************
       REAL FUNCTION ASHP_CAP(ss_cap,tout,flow_rate,flow_rate_r,
-     &                       ifan_operation)
+     &                       ifan_operation,cutoff_temp)
 
       IMPLICIT NONE
 
 c Variables passed in call
-      REAL ss_cap,tout,flow_rate,flow_rate_r
-
+      REAL ss_cap,tout,flow_rate,flow_rate_r, cutoff_temp
+      REAL cap_adjust 
       INTEGER ifan_operation
 
 c Local variables
@@ -511,11 +512,25 @@ c capacity of the heat pump
       d_cap = -1.4658e-5
       e_cap = -5.65296e-7
 
+      
+      if ( cutoff_temp > -20. ) then 
 c Set the steady-state capacity for the current time step
 c Equation 1 in Air-source heat pump Ref by Haddad
-      heating_cap = ss_cap * (a_cap + b_cap * tout + 
-     &c_cap * tout**2 + d_cap * tout**3 + e_cap * tout**4)
-
+         cap_adjust = (a_cap + b_cap * tout + 
+     &    c_cap * tout**2 + d_cap * tout**3 + e_cap * tout**4)
+      else 
+c Hard-coded capacity curve from Mitsibushi Zuba-Central 
+        if ( tout > -15. ) then 
+          cap_adjust = 1.0
+        elseif ( tout < -25. ) then 
+          cap_adjust = 0.0
+        else 
+          cap_adjust = 0.75 + 0.25 * ( tout - (-25.0) ) / 10. 
+        endif 
+      endif 
+         
+      heating_cap = ss_cap * cap_adjust
+      
 c Correct the capacity for the effect of air flow in case there is a
 c circulation fan
 c      if(ifan_operation.ne.0) then
@@ -600,12 +615,12 @@ c       ASHP_COP   steady-state cop of the heat pump at outdoor
 c                  temperature tout
 c **********************************************************************
       REAL FUNCTION ASHP_COP(ss_cop,tout,flow_rate,flow_rate_r,
-     &                       ifan_operation)
+     &                       ifan_operation,cutoff_temp)
 
       IMPLICIT NONE
 
 c Variables passed in call
-      REAL ss_cop,tout,flow_rate,flow_rate_r
+      REAL ss_cop,tout,flow_rate,flow_rate_r, cutoff_temp
 
       INTEGER ifan_operation
 
@@ -622,8 +637,18 @@ c of the heat pump
 
 c Set the steady-state C.O.P. for the current time step
 c Equation 2 in Air-source heat pump by Haddad
-      cop = ss_cop * (a_cop + b_cop * tout + c_cop * tout**2 +
-     &d_cop * tout**3 + e_cop * tout**4)
+
+      if ( cutoff_temp > -20. ) then 
+c Set the steady-state capacity for the current time step
+c Equation 1 in Air-source heat pump Ref by Haddad
+        cop = ss_cop * (a_cop + b_cop * tout + c_cop * tout**2 +
+     &        d_cop * tout**3 + e_cop * tout**4)
+      else 
+c Hard-coded performance curve from Mitsibushi Zuba-Central 
+        cop = 1.4 + (tout - (-25.) ) / ( 15. - ( -25. ) ) 
+     &            * ( 3.19 - 1.4 ) 
+      endif 
+        
 
 c Correct heat pump for the effect of flow rate in case there is a 
 c circulation fan
@@ -852,14 +877,14 @@ c furnace type is induced draft or condensing, then the total number of
 c unknowns is 6. For all other furnace types it is 7
 
 c In the following formulation, the following nomenclature is adopted:
-c   x(1)  plfhp
-c   x(2)  plrhp
-c   x(4)  plfb
-c   x(5)  plrb
-c   x(5)  heat_eir_fplr (energy-input ratio of the heat pump)
-c   x(6)  t (on-time fraction of the heat pump)
-c   x(7)  hir (energy-input ratio of the furnace. This is needed only
-c         for induced draft and condensing furnaces)
+c 	x(1)	plfhp
+c	x(2)	plrhp
+c	x(4)	plfb
+c	x(5)	plrb
+c	x(5)	heat_eir_fplr (energy-input ratio of the heat pump)
+c	x(6)	t (on-time fraction of the heat pump)
+c	x(7)	hir (energy-input ratio of the furnace. This is needed only
+c		     for induced draft and condensing furnaces)
 
 c Logical variable to flag when a soluation is reached 
       non_convergence = .true.
@@ -1063,20 +1088,20 @@ c Initial Creation Date: July 25th 2000
 c Copyright 2000: NRCan Buildings Group
 c
 c Subroutine to solve a system of m linear equations in m unknowns of the form
-c            jj y = f
+c 		jj y = f
 c using the back substitution method
 c
-c References:  Numerical Analysis, 3rd Edition
-c              Richard L. Burden
-c              J. Douglas Faires
+c References:	Numerical Analysis, 3rd Edition
+c		Richard L. Burden
+c		J. Douglas Faires
 c
 c INPUTS:
-c  jj    coefficient matrix of the system jj y = f
-c  f     constant matrix of the system jj y = f
-c  m     total number of equations and unknowns in the system
+c	jj	coefficient matrix of the system jj y = f
+c	f	constant matrix of the system jj y = f
+c	m	total number of equations and unknowns in the system
 
 c OUTPUTS:
-c  y  solution matrix
+c	y	solution matrix
 c **********************************************************************
       SUBROUTINE SYS_SOL(jj,f,y,m)
 
@@ -1168,19 +1193,19 @@ c Subroutine to update heating capacity of appropriate control function
 c associated with heat pump in heating mode 
 
 c INPUTS:
-c  isys       hvac system number
-c  sensible_heating_cap
+c	isys		hvac system number
+c	sensible_heating_cap
 c                       sensible heating capacity of equipment
-c  HVAC_INPUT_DATA  HVAC input data common
+c	HVAC_INPUT_DATA	HVAC input data common
 
 c OUTPUTS:
-c  cont_fun_heat_cap
-c     new heating capacity for hvac system isys. This 
-c     new heating capacity is used later to update the
-c     maximum heating capacity of the control function
-c     associated with hvac system isys. 
-c   hvac_timestep_parameters
-c     common for updated capacity of control function
+c	cont_fun_heat_cap
+c			new heating capacity for hvac system isys. This 
+c			new heating capacity is used later to update the
+c			maximum heating capacity of the control function
+c			associated with hvac system isys. 
+c	hvac_timestep_parameters	
+c                       common for updated capacity of control function
 c **********************************************************************
       SUBROUTINE SET_CONT_FUNC_HEAT_CAP(isys,sensible_heating_cap)
 

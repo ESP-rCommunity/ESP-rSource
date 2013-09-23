@@ -725,8 +725,8 @@ C     Commons for summary of solar (for results library)
         REAL q2tmc(2),q2wall(2),q2rem(2),q2cfc(2)
 
 
-      COMMON/CCTL/ICASCF(MCOM)
-      INTEGER ICASCF
+      COMMON/CCTL/ICASCF
+      INTEGER ICASCF(MCOM)
 
 
       COMMON/RHCTLDAT/ZLLDF,ZLLDP

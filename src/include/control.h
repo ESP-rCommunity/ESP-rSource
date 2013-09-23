@@ -1,17 +1,16 @@
 C control.h
 
 C Include file which defines/describes control specific PARAMETERs and COMMONs.
-C Re-compile all control-related modules if this file is altered. If MDTY or
-C MCOM are changed in building.h then MCDT and MCF should be updated.
+C Re-compile all control-related modules if this file is altered.
 
       INTEGER MNONID !Maximum number of non-ideal sensor/actuator loops
       PARAMETER (MNONID=2)
-      INTEGER MCDT ! Max. day types (should match MDTY in building.h)
-      PARAMETER (MCDT=15)
-      INTEGER MCF ! Max. control loops (allow one per zone MCOM in building.h)
-      PARAMETER (MCF=82)
+      INTEGER MCDT ! Max. day types
+      PARAMETER (MCDT=10)
+      INTEGER MCF ! Max. control loops (allow one per zone)
+      PARAMETER (MCF=72)
       INTEGER MCDP ! Max. periods per day
-      PARAMETER (MCDP=24)
+      PARAMETER (MCDP=12)
       INTEGER MISCC ! Max. miscellaneous data items
       PARAMETER (MISCC=41)
 
@@ -27,8 +26,8 @@ C Building control
      &     IBCDV(MCF,MCDT,2),NBCDP(MCF,MCDT),TBCPS(MCF,MCDT,MCDP),
      &     IBCTYP(MCF,MCDT,MCDP),IBCLAW(MCF,MCDT,MCDP),
      &     BMISCD(MCF,MCDT,MCDP,MISCC)
-      INTEGER NCF,IBSN,IBAN,NBCDT,IBCDV,NBCDP,IBCTYP,IBCLAW
-      REAL TBCPS,BMISCD
+      INTEGER	NCF,IBSN,IBAN,NBCDT,IBCDV,NBCDP,IBCTYP,IBCLAW
+      REAL	TBCPS,BMISCD
 
 C Mass flow network control
       COMMON/FCTL/NCC,IFSN(MCF,4),IFAN(MCF,3),NFCDT(MCF),
@@ -80,7 +79,7 @@ C is summarized variables is documented in econtrol.F
      &              iCFCctltype(MCF,MCDT,MCDP),
      &              iCFCctllaw(MCF,MCDT,MCDP),
      &              CFCmiscdata(MCF,MCDT,MCDP,MISCC)
-      INTEGER nCFCctlloops, iCFCactuator, iCFCsensor, nCFCctldaytypes
-      INTEGER iCFCctldatevalid, nCFCdayctlperiods
-      INTEGER iCFCctltype,iCFCctllaw
-      REAL    CFCctlperiodstart,CFCmiscdata
+      INTEGER	nCFCctlloops, iCFCactuator, iCFCsensor, nCFCctldaytypes
+      INTEGER     iCFCctldatevalid, nCFCdayctlperiods
+      INTEGER     iCFCctltype,iCFCctllaw
+      REAL        CFCctlperiodstart,CFCmiscdata

@@ -20,7 +20,7 @@ C Boston, MA 02111-1307 USA.
 
 C This subroutine draws a window with a simplified version of
 C the standard  psychrometric chart. Similar to code in
-C esrures/psychart.F - revised to for plotting weather data.
+C esrures/psychart.F - revised to for plotting climate data.
       SUBROUTINE PSYCHART
       PARAMETER (MT=24)
 
@@ -50,14 +50,8 @@ C esrures/psychart.F - revised to for plotting weather data.
 
 #ifdef OSI
       integer iside,isize,ifont     ! passed to viewtext
-      integer iicol
-      integer iigl,iigr,iigt,iigb,iigw,iigwh
-      integer iiw1,iiw2,iiw3,iiw4,iimenu
 #else
       integer*8 iside,isize,ifont     ! passed to viewtext
-      integer*8 iicol
-      integer*8 iigl,iigr,iigt,iigb,iigw,iigwh
-      integer*8 iiw1,iiw2,iiw3,iiw4,iimenu
 #endif
 
 C For help messages
@@ -83,7 +77,7 @@ C Colours used are nb 15 = grey40, nb 17 =grey60.
       if(ncset.gt.24)cscaleok=.true.
 
 C Scale the axes of the chart (initial values) - look at range
-C of ambient temperature from current weather period.
+C of ambient temperature from current climate period.
       CALL CLMXMN
       Xmin=YMIN(2)
       Xmax=YMAX(2)
@@ -104,16 +98,16 @@ C      write(6,*)'x x ',xmin,xmax,enthmax,enthminx,enthminy,enthmaxy
       ACLONG=ABS(CLONG)
       IF(CLONG.LT.0.0.AND.CLAT.GE.0.0)then
         WRITE(ETEXT,102)CLMLOC,ACLAT,ACLONG,IYEAR
- 102    FORMAT(' Weather analysis:',1X,A30,':',F6.2,'N',F6.2,'W :',I5)
+ 102    FORMAT(' Climate analysis:',1X,A30,':',F6.2,'N',F6.2,'W :',I5)
       elseif(CLONG.GE.0.0.AND.CLAT.LT.0.0)then
         WRITE(ETEXT,103)CLMLOC,ACLAT,ACLONG,IYEAR
- 103    FORMAT(' Weather analysis:',1X,A30,':',F6.2,'S',F6.2,'E :',I5)
+ 103    FORMAT(' Climate analysis:',1X,A30,':',F6.2,'S',F6.2,'E :',I5)
       elseif(CLONG.LT.0.0.AND.CLAT.LT.0.0)then
         WRITE(ETEXT,104)CLMLOC,ACLAT,ACLONG,IYEAR
- 104    FORMAT(' Weather analysis:',1X,A30,':',F6.2,'S',F6.2,'W :',I5)
+ 104    FORMAT(' Climate analysis:',1X,A30,':',F6.2,'S',F6.2,'W :',I5)
       else
         WRITE(ETEXT,101)CLMLOC,ACLAT,ACLONG,IYEAR
- 101    FORMAT(' Weather analysis:',1X,A30,':',F6.2,'N',F6.2,'E :',I5)
+ 101    FORMAT(' Climate analysis:',1X,A30,':',F6.2,'N',F6.2,'E :',I5)
       endif
       GTEXT=ETEXT
       iside=1
@@ -166,7 +160,7 @@ C the plotting. rhrange is the RH range, trange is the dbT range.
         trange=YMAX(2)-YMIN(2)
         DO 31 J=IDS,IDF
 
-C Read values of the weather for this day.
+C Read values of the climate for this day.
           ID=J
           CALL CLMGET(ID)
           KS=1
@@ -183,8 +177,7 @@ C range of T or RH via colmult.
             call eclose(X,0.000,0.001,close)
             RH=CHUM(K)
             if(iwhich.eq.1)then
-              iicol=0
-              call winscl('-',iicol)
+              call winscl('-',0)
               icolindex=ncset
             elseif(iwhich.eq.2)then
               colmult=(real(ncset)/trange)
@@ -192,11 +185,9 @@ C range of T or RH via colmult.
               if(icolindex.le.0) icolindex = 1
               if(icolindex.gt.ncset) icolindex = ncset
               if(cscaleok)then
-                iicol=icolindex
-                call winscl('c',iicol)
+                call winscl('c',icolindex)
               else
-                iicol=0
-                call winscl('-',iicol)
+                call winscl('-',0)
               endif
             elseif(iwhich.eq.3)then
               colmult=(real(ncset)/rhrange)
@@ -204,11 +195,9 @@ C range of T or RH via colmult.
               if(icolindex.le.0) icolindex = 1
               if(icolindex.gt.ncset) icolindex = ncset
               if(cscaleok)then
-                iicol=icolindex
-                call winscl('c',iicol)
+                call winscl('c',icolindex)
               else
-                iicol=0
-                call winscl('-',iicol)
+                call winscl('-',0)
               endif
             endif
             GS=1000.*(HUMRT1(CTMP(k),CHUM(k),PATMOS,IOPT))
@@ -226,8 +215,7 @@ C              write(6,*) ihrplt,colmult,icolindex,ix,iy,CTMP(K),CHUM(K)
             endif
  41       continue
  31     continue
-        iicol=0
-        call winscl('-',iicol)
+        call winscl('-',0)
         call forceflush()
       ELSEIF(INO.EQ.2)THEN
 
@@ -277,20 +265,12 @@ C Change the scales on the axis and re-calculated enthalph for the chart.
 C Reset original screen size values on exit.
         iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
         if(iglib.eq.1)then
-
-C Setup and pass in parameters to win3d.
-          iiw1=10; iiw2=20; iiw3=5; iiw4=3; iimenu=menuchw
-          iigl=igl; iigr=igr; iigt=igt; iigb=igb; iigw=igw; iigwh=igwh
-          CALL win3d(iimenu,iiw1,iiw2,iiw3,iiw4,
-     &      iigl,iigr,iigt,iigb,iigw,iigwh)
+          CALL win3d(menuchw,10,22,4,3,igl,igr,igt,igb,igw,igwh)
         elseif(iglib.eq.2)then
-          iiw1=9; iiw2=20; iiw3=5; iiw4=3; iimenu=menuchw
-          iigl=igl; iigr=igr; iigt=igt; iigb=igb; iigw=igw; iigwh=igwh
-          CALL win3d(iimenu,iiw1,iiw2,iiw3,iiw4,
-     &      iigl,iigr,iigt,iigb,iigw,iigwh)
+          CALL win3d(menuchw,9,20,5,3,igl,igr,igt,igb,igw,igwh)
         endif
-        igl=int(iigl); igr=int(iigr); igt=int(iigt); igb=int(iigb)
-        igw=int(iigw); igwh=int(iigwh)
+        igw=igr-igl
+        igwh=igb-igt
         call startbuffer()
         RETURN        
       ELSE
@@ -326,16 +306,10 @@ C enthmaxy enthalpy y axis maximum
       integer igwid,igheight  ! for use with axiscale
       integer ipos,isize      ! for use with etlabel
       integer iupdown,isym    ! passed to etplot
-      integer iicol
-      integer iigl,iigr,iigt,iigb,iigw,iigwh
-      integer iiw1,iiw2,iiw3,iiw4,iimenu
 #else
       integer*8 igwid,igheight  ! for use with axiscale
       integer*8 ipos,isize      ! for use with etlabel
       integer*8 iupdown,isym    ! passed to etplot
-      integer*8 iicol
-      integer*8 iigl,iigr,iigt,iigb,iigw,iigwh
-      integer*8 iiw1,iiw2,iiw3,iiw4,iimenu
 #endif
 
       PATMOS=1013.25
@@ -354,23 +328,15 @@ C Colours used are nb 15 = grey40, nb 17 =grey60.
         LIMIT =8
         call feedbox(menuchw,2,igfw,igfh)      
         call opengdisp(menuchw,LIMTTY,2,igdw,igdh)
-
-C Setup and pass in parameters to win3d.
-        iiw1=10; iiw2=15; iiw3=5; iiw4=3; iimenu=menuchw
-        iigl=igl; iigr=igr; iigt=igt; iigb=igb; iigw=igw; iigwh=igwh
-        CALL win3d(iimenu,iiw1,iiw2,iiw3,iiw4,
-     &    iigl,iigr,iigt,iigb,iigw,iigwh)
-        igl=int(iigl); igr=int(iigr); igt=int(iigt); igb=int(iigb)
-        igw=int(iigw); igwh=int(iigwh)
+        call win3d(menuchw,10,15,5,3,igl,igr,igt,igb,igw,igwh)
+        igw=igr-igl
+        igwh=igb-igt
         igwid=igw
         igheight=igwh
       elseif(iglib.eq.2)then
-        iiw1=10; iiw2=8; iiw3=4; iiw4=3; iimenu=menuchw
-        iigl=igl; iigr=igr; iigt=igt; iigb=igb; iigw=igw; iigwh=igwh
-        CALL win3d(iimenu,iiw1,iiw2,iiw3,iiw4,
-     &    iigl,iigr,iigt,iigb,iigw,iigwh)
-        igl=int(iigl); igr=int(iigr); igt=int(iigt); igb=int(iigb)
-        igw=int(iigw); igwh=int(iigwh)
+        CALL win3d(menuchw,10,8,4,3,igl,igr,igt,igb,igw,igwh)
+        igw=igr-igl
+        igwh=igb-igt
         igwid=igw
         igheight=igwh
       endif
@@ -380,14 +346,12 @@ C Setup and pass in parameters to win3d.
      &  xadd,yadd)
 
 C Draw the axes of the chart.
-      CALL horaxis(Xmin,Xmax,iigl,iigr,iigb,xadd,XSC,0,'db Temp C')
-      CALL vrtaxis(0.0,0.01,iigl,iigb,iigt,yadd,YSC,0,0,
-     &  'Enthalpy kJ/kg')
-      CALL vrtaxis(Ymin,Ymax,iigr,iigb,iigt,yadd,YSC,0,1,
-     &  'Moisture g/kg')
+      CALL horaxis(Xmin,Xmax,igl,igr,igb,xadd,XSC,0,'db Temp C')
+      CALL vrtaxis(0.0,0.01,igl,igb,igt,yadd,YSC,0,0,'Enthalpy kJ/kg')
+      CALL vrtaxis(Ymin,Ymax,igr,igb,igt,yadd,YSC,0,1,'Moisture g/kg')
 
 C Store the scaling parameters used in drawing the axes
-      CALL linescale(iigl,xadd,XSC,iigb,yadd,YSC)
+      CALL linescale(igl,xadd,XSC,igb,yadd,YSC)
 C Draw the dry-bulb temperature lines
       iupdown=0
       isym=0
@@ -425,18 +389,12 @@ C Draw the moisture content lines
       isym=0
       CALL etplot(xmax,GS,iupdown,isym)
       GS=GS+GSINT
-C      if(colok)then
-C         iicol=15
-C         call winscl('z',iicol)
-C      endif
+C      if(colok)call winscl('z',15)
       iupdown=0
       isym=0
       CALL etplot(0.,GS,iupdown,isym)
       IF(GS.LE.ymax) goto 30 
-      if(colok)then
-        iicol=0
-        call winscl('-',iicol)
-      endif
+      if(colok)call winscl('-',0)
 
 C Draw on the RH curves.
       DO 40 IRH=100,10,-10
@@ -451,10 +409,7 @@ C Draw on the RH curves.
             CALL etplot(TD,GS,iupdown,isym)
           ELSE
             IF(GS.GT.0..AND.GS.LT.ymax.AND.IPFLAG.EQ.0) THEN
-              if(colok)then
-                iicol=17
-                call winscl('z',iicol)
-              endif
+              if(colok)call winscl('z',17)
               iupdown=-102
               isym=0
               CALL etplot(TD,GS,iupdown,isym)
@@ -465,10 +420,7 @@ C Case where TD<60 and GS>30
   60          TD=TD-0.05
               GS=1000.*(HUMRT1(TD,RH,PATMOS,IOPT))
               IF(GS.GT.ymax) GOTO 60
-              if(colok)then
-                iicol=17
-                call winscl('z',iicol)
-              endif
+              if(colok)call winscl('z',17)
               iupdown=-102
               isym=0
               CALL etplot(TD,GS,iupdown,isym)
@@ -484,19 +436,13 @@ C          IF(TD.EQ.int(xmax/2.)) THEN
           IF(close) THEN
             write(puts,*) INT(RH),'%'
             if(GS.LE.ymax)then
-              if(colok)then
-                iicol=17
-                call winscl('z',iicol)
-              endif
+              if(colok)call winscl('z',17)
               ipos=0
               isize=0
               CALL etlabel(puts,TD,GS,ipos,isize)
             endif
           ENDIF
-          if(colok)then
-            iicol=0
-            call winscl('-',iicol)
-          endif
+          if(colok)call winscl('-',0)
   50    CONTINUE
   40  CONTINUE
                 
@@ -515,19 +461,13 @@ C Draw on the lines of constant enthalpy.
   110       GS=GS+0.05
             TD=TDB(ENTH,(GS/1000.))
             IF(TD.GT.xmax) GOTO 110
-            if(colok)then
-              iicol=24
-              call winscl('z',iicol)
-            endif
+            if(colok)call winscl('z',24)
             iupdown=0
             isym=0
             CALL etplot(TD,GS,iupdown,isym)
           ELSE
             IF(TD.GT.0..AND.TD.LT.xmax.AND.IPFLAG.EQ.0) THEN
-              if(colok)then
-                iicol=24
-                call winscl('z',iicol)
-              endif
+              if(colok)call winscl('z',24)
               iupdown=-102
               isym=0
               CALL etplot(TD,GS,iupdown,isym)
@@ -538,10 +478,7 @@ C Case where TD<60 and GS>30
   90          GS=GS+0.05
               TD=TDB(ENTH,(GS/1000.))
               IF(TD.GT.xmax) GOTO 90
-              if(colok)then
-                iicol=24
-                call winscl('z',iicol)
-              endif
+              if(colok)call winscl('z',24)
               iupdown=1
               isym=0
               CALL etplot(TD,GS,iupdown,isym) 
@@ -550,30 +487,21 @@ C Case where TD<60 and GS>30
  100          GS=GS-0.05
               TD=TDB(ENTH,(GS/1000.))
               IF(TD.LT.0) GOTO 100
-              if(colok)then
-                iicol=24
-                call winscl('z',iicol)
-              endif
+              if(colok)call winscl('z',24)
               iupdown=-102
               isym=0
               CALL etplot(TD,GS,iupdown,isym)
               IPFLAG=1
             ENDIF                                       
           ENDIF
-          if(colok)then
-            iicol=0
-            call winscl('-',iicol)
-          endif
+          if(colok)call winscl('-',0)
  
  80     CONTINUE
   
  70   CONTINUE
 
 C Draw on the enthalpy scales
-      if(colok)then
-        iicol=0
-        call winscl('-',iicol)
-      endif
+      if(colok)call winscl('-',0)
       DO 200 IENTH=0,int(ENTHMAXY),10
         ENTH=FLOAT(IENTH)
         IF (ENTH.GT.ENTHMINY.AND.ENTH.LE.ENTHMAXY) THEN

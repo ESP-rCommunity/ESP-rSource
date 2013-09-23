@@ -1,6 +1,7 @@
 /* Miscel non-graphic functions taken from esru_x.c
    
    winfnt(n)   changes the font (4 different sizes 0,1,2,3)
+   tchild_() return child process terminal info.
    Timer(msec) pause_for_milliseconds
    pausems_() pause_for_milliseconds
    pauses_() pause_for_seconds
@@ -45,10 +46,10 @@ void winfnt_(font_index)
 {
    
    gint ifont_index;
-   PangoFontDescription *pfd;	/* to hold test font */
-   long int ifsc,itfsc,imfsc,lttyc; /* parameters must be long int */
-
    ifont_index = (gint) *font_index;
+   PangoFontDescription *pfd;	/* to hold test font */
+   
+   long int ifsc,itfsc,imfsc,lttyc; /* parameters must be long int */
 
 /* Originally there were three options for fonts and disp_fnt was either 0, 1, or 2.
  * With the addition of Serif Largest, Courier Small, Courier Medium, Courier Large and Courier Largest,
@@ -156,6 +157,13 @@ void winfnt_(font_index)
   return;
 }
 
+/* *************** tchild_() return child process terminal info. ******** */
+void tchild_(cterm)
+long int *cterm;           /* child terminal type  */
+{
+  *cterm = child_ter;
+  return;
+}
 
 /* ************* Timer(msec) pause_for_milliseconds ********* */
 void Timer(msec)   /* from xvmisc.c */

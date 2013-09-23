@@ -102,6 +102,12 @@ C      123456789 123456789 123456789 123456789 123456789 1234567890
       IVALCM(24)=500
       LVALCM(24)=
      &'Multi configuration component                               '
-
+     
+      IVALCM(25)=600
+      LVALCM(25)=
+     &'AIM-2 model coupling component                              '
+      IVALCM(26)=610
+      LVALCM(26)=
+     &'Simple circulation fan coupling component                   '     
       RETURN
       END

@@ -1,5 +1,5 @@
-*connections for 640
-*Date Tue Aug 28 13:50:39 2012
+*connections  for 640
+*Date Wed Oct 14 22:04:08 2009
       9   # number of connections
    1   1   0   0   0  #    1 South_Wall in 640 is External
    1   2   0   0   0  #    2 South_Wall2 in 640 is External

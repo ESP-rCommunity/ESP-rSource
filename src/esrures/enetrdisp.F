@@ -43,7 +43,7 @@ C
 C View parameters
       integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/MENUCHW,IGL,IGR,IGT,IGB,IGW,IGWH
-      COMMON/GRAF1/YMAX(5),YMIN(5),YAXSET(5),ADDLIN,horaxisdiv
+      COMMON/GRAF1/YMAX(5),YMIN(5),YAXSET(5),ADDLIN
       COMMON/NETPLOT/XSTRT,XFIN,ILINST(MERAWD),AXSC(5)
 
 C Array of recovered data
@@ -71,29 +71,22 @@ C The period details
       CHARACTER EVLABS*16,EVLABU*4,STR*20,EXLAB*5
 
       REAL  VNEG,VPOS,YOLD,TIMEOLD
-      INTEGER YAXSET,ADDLIN,horaxisdiv,EVAXIS,EVMARK,EVLINE,EFILT
+      INTEGER YAXSET,ADDLIN,EVAXIS,EVMARK,EVLINE,EFILT
 #ifdef OSI
-      integer igx             ! see above array
       integer igwid,igheight  ! for use with axiscale
       integer ipos,isize      ! for use with etlabel
       integer iupdown,isym    ! passed to etplot
       integer iid1,iid2
-      integer iigl,iigr,iigt,iigb,iigw,iigwh
 #else
-      integer*8 igx             ! see above array
       integer*8 igwid,igheight  ! for use with axiscale
       integer*8 ipos,isize      ! for use with etlabel
       integer*8 iupdown,isym    ! passed to etplot
       integer*8 iid1,iid2
-      integer*8 iigl,iigr,iigt,iigb,iigw,iigwh
 #endif
 
 C Set up scaling and graph parameters
       VPOS=1E+15
       VNEG=-1E+15
-
-C Cast values for linescale.
-      iigl=igl;iigr=igr;iigt=igt;iigb=igb;iigw=igw;iigwh=igwh
 
 C Convert the start and finish times into timesteps and therefore record numbers. 
 C Firstly calculate the period start and finish days.
@@ -372,10 +365,10 @@ C draw vertical axis.
             call axiscale(igwid,igheight,XSTRT,XFIN,GMIN,GMAX,
      &                           TSC,YSC(I),SCA,XADD,YADD(I))
             IF (ILR(I).EQ.0) then
-              CALL VRTAXIS(GMIN,GMAX,IGX(I),iigb,iigt,YADD(I),
+              CALL VRTAXIS(GMIN,GMAX,IGX(I),IGB,IGT,YADD(I),
      &                             YSC(I),0,ILR(I),NETXLAB(I))
             ELSE
-              CALL VRTAXIS(GMIN,GMAX,IGX(I),iigb,iigt,YADD(I),
+              CALL VRTAXIS(GMIN,GMAX,IGX(I),IGB,IGT,YADD(I),
      &                         YSC(I),0,ILR(I),'  ')
               iid1=IGX(I); iid2=igt-5;
               CALL WSTXPT(iid1,iid2,NETXLAB(I))
@@ -387,8 +380,8 @@ C Reset the scaling flag if required
   70    CONTINUE 
 
 C Draw horizontal (time) axis.
-        CALL HORAXIS(XSTRT,XFIN,iigl,iigr,iigb,XADD,TSC,1,
-     &    'Time Hrs')
+        CALL HORAXIS(XSTRT,XFIN,IGL,IGR,IGB,XADD,TSC,1,
+     &                             'Time Hrs')
      
       ELSEIF(MODE.EQ.'U')THEN
 
@@ -456,7 +449,7 @@ C Reset the averaging flag.
               IF(EFILT(I).EQ.1)THEN
 C Scale the recovered data to the appropriate axis.
                 IAX=EVAXIS(I)
-                CALL LINESCALE(iigl,XADD,TSC,iigb,YADD(IAX),YSC(IAX))
+                CALL LINESCALE(IGL,XADD,TSC,IGB,YADD(IAX),YSC(IAX))
 
 C Calculate the current time (day fraction). 
                 HOURF=1.0/FLOAT(NETS)
@@ -502,7 +495,7 @@ C Plot the label at the end of the data line.
         DO 110 I=1,NVAL1
           IF(EFILT(I).EQ.1)THEN
             IAX=EVAXIS(I)
-            CALL LINESCALE(iigl,XADD,TSC,iigb,YADD(IAX),YSC(IAX))
+            CALL LINESCALE(IGL,XADD,TSC,IGB,YADD(IAX),YSC(IAX))
             STR=' '
 
 C Make sure the label is within the string bounds (20 chars).
@@ -880,12 +873,8 @@ C Array of recovered data
       integer iglib   ! if 1 then X11, if 2 then GTK, if 3 then text only.
 #ifdef OSI
       integer iside,isize,ifont     ! passed to viewtext
-      integer iigl,iigr,iigt,iigb,iigw,iigwh
-      integer iiw1,iiw2,iiw3,iiw4,iimenu
 #else
       integer*8 iside,isize,ifont     ! passed to viewtext
-      integer*8 iigl,iigr,iigt,iigb,iigw,iigwh
-      integer*8 iiw1,iiw2,iiw3,iiw4,iimenu
 #endif
 
 C Generate a descriptive string for the time period to be displayed
@@ -900,14 +889,9 @@ C pixel references for calls to VIEWTEXT.
           call feedbox(menuchw,2,igfw,igfh)
           call opengdisp(menuchw,LIMTTY,2,igdw,igdh)
         endif
-
-C Setup and pass in parameters to win3d.
-        iiw1=9; iiw2=30; iiw3=5; iiw4=3; iimenu=menuchw
-        iigl=igl; iigr=igr; iigt=igt; iigb=igb; iigw=igw; iigwh=igwh
-        CALL win3d(iimenu,iiw1,iiw2,iiw3,iiw4,
-     &    iigl,iigr,iigt,iigb,iigw,iigwh)
-        igl=int(iigl); igr=int(iigr); igt=int(iigt); igb=int(iigb)
-        igw=int(iigw); igwh=int(iigwh)
+        call win3d(menuchw,9,30,5,3,igl,igr,igt,igb,igw,igwh)
+        igw=igr-igl
+        igwh=igb-igt
         call startbuffer()
       ENDIF
 

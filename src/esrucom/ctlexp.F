@@ -25,7 +25,6 @@ C moved into this file at some point in the future.
 
 C   CTLEXP: Control feedback to export wireframe or text feedback area.
 C   CTLEXPMFS: mfs module varaitn for export of text/graphic feedback area.
-C   CTLDUMPT: Control text dump (ctlexp T mode equiv without dialog).
 
 C CTLEXP ***********
 C CTLEXP: Control feedback to export wireframe or text feedback area.
@@ -36,7 +35,7 @@ C xfile (width variable) is the initial name of the file to be exported
 C msg (width variable) is prepended to dialog as export happens
 C ixopen is a toggle reset each time ctlexp is called to signal open or close file.
 C ixunit is the file unit number for the export file.
-C ixloc signals whether path is local or remote and is passed back
+C ixloc signals whether path will is local or remote and is passed back
 C   to common block for retention until the second call to ctlexp
       subroutine ctlexp(xfile,ixopen,ixloc,ixunit,tg,msg,IER)
       
@@ -469,66 +468,6 @@ C Typical yaxis stuff.
           write(ixpunit,'(a)') '  legend font 4'
           write(ixpunit,'(a)') '  legend char size 0.75000'
         endif
-      endif
-      RETURN
-      END
-
-C CTLDUMPT ***********
-C CTLDUMPT: Control toggle between dump to text feedback and file
-C also checks if local or remote.
-C xfile (width variable) is the name of the file to be exported
-C msg (width variable) is prepended to dialog as export happens
-C ixopen is a toggle reset each time ctlexp is called to signal open or close file.
-C ixunit is the file unit number for the export file.
-C ixloc signals whether path is local or remote
-
-C A variant of ctlexp which does not have a dialog for file name
-C if the user is working remotely from the model.
-      subroutine ctldumpt(xfile,ixopen,ixloc,ixunit,msg,IER)
-      
-      integer lnblnk  ! function definition
-
-      COMMON/OUTIN/IUOUT,IUIN
-      common/rpath/path
-
-      character*(*) msg,xfile
-      character path*72,outs248*248
-      logical remote,unixok
-
-C Check if Unix-based or DOS based.
-      call isunix(unixok)
-
-C Each call is a toggle. If open then close text file.
-      ixopen=ixopen+1
-      if(ixopen.GT.1)ixopen=0
-      if(ixopen.eq.0)then
-        write(outs248,'(a,a)') 'closing export file: ',xfile
-        call edisp248(iuout,outs248,100)
-        CALL ERPFREE(ixunit,ISTAT)
-      elseif(ixopen.eq.1)then
-        ixloc=0
-        remote=.false.
-        if(unixok)then
-          if(path(1:2).ne.'./'.and.path(1:2).ne.'  ')remote=.true.
-        else
-          if(path(1:2).ne.'  ')remote=.true.
-          if(ichar(path(1:1)).eq.46.and.
-     &       ichar(path(2:2)).eq.92)remote=.false.
-        endif
-        if(remote)then
-          ixloc=1   ! put file in model folder
-          call efopseq(ixunit,xfile,4,IER)
-          if(ier.ne.0)return
-        else
-          ixloc = 2   ! ixloc needs to be non-zero for subsequent code to work.
-          CALL ERPFREE(ixunit,ISTAT)
-          call FPOPEN(ixunit,ISTAT,1,3,xfile)
-          if(ISTAT.lt.0)return
-        endif
-
-        write(outs248,'(1x,3A)') msg(1:lnblnk(msg)),
-     &    ' >> to ',xfile(1:lnblnk(xfile))
-        call edisp248(iuout,outs248,100)
       endif
       RETURN
       END

@@ -27,7 +27,7 @@ C.....Model parameters
      &                         fMC_HX_hot, fMC_HX_cold,
      &                         fTank_Height, 
      &                         iStrat_tank_CompIndex,
-     &                         iStrat_tank_number
+     &			       iStrat_tank_number
 
 C.....Modified effectiveness vs. capacitance ratio coefficients
       REAL fHX_eff_CR_a(MPCom)

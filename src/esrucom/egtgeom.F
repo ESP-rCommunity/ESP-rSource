@@ -57,13 +57,13 @@ C GTNAME (15 char) - description of the ground topology.
       COMMON/GT/GTNAME
 
 C GSNAME (6 char) - ground topology surface names
-C GMLCN (32 char) - ground topology surface construction attribute.
+C GMLCN (12 char) - ground topology surface construction attribute.
       COMMON/GT5/GSNAME(MGRT),GMLCN(MGRT)
 
       COMMON/OUTIN/IUOUT,IUIN
 
       CHARACTER OUTSTR*124,GTGEOM*72,WORD*20,GTTYPE*3,GTNAME*15
-      CHARACTER GMLCN*32,GSNAME*6,outs*124
+      CHARACTER GMLCN*12,GSNAME*6,outs*124
       character ZN*15
 
       IER=0
@@ -250,8 +250,7 @@ C user output. IER=0 OK, IER=1 problem.
 
       COMMON/OUTIN/IUOUT,IUIN
 
-      CHARACTER GENFIL*72,GTNAME*15
-      CHARACTER GSNAME*6,GMLCN*32
+      CHARACTER GENFIL*72,GTNAME*15,GSNAME*6,GMLCN*12
       character outstr*124,outl*124,outld*124
 
       IER=0
@@ -372,7 +371,7 @@ C define them.  Information is gathered from common block G1.
       COMMON/GT5/GSNAME(MGRT),GMLCN(MGRT)
 
       DIMENSION ISASSO(50)
-      CHARACTER OUTSTR*124,GSNAME*6,GMLCN*32
+      CHARACTER OUTSTR*124,GSNAME*6,GMLCN*12
 
       CALL EDISP(ITRU,' ')
       CALL EDISP(ITRU,
@@ -411,8 +410,7 @@ C Surfaces with associated vertices.
      &'        |ruction|Vert|')
       DO 9991 I=1,NGT
         NV=NGVER(I)
-        WRITE(OUTSTR,9990) GSNAME(I),GMLCN(i)(1:12),NV,
-     &    (JGVN(I,J),J=1,NV)
+        WRITE(OUTSTR,9990) GSNAME(I),GMLCN(i)(1:8),NV,(JGVN(I,J),J=1,NV)
  9990   FORMAT(1x,a,1x,a,I5,8(',',I3))
         CALL EDISP(ITRU,OUTSTR)
  9991 CONTINUE

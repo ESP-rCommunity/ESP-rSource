@@ -312,7 +312,7 @@ C Record ACC actions (begin).
 
 C Debug.
         call isunix(unixok)
-        if(unixok)then
+	if(unixok)then
           write(6,*)
           write(6,*) 'Initiating CFD sim with following parameters:'
           if(INCALU) write(6,*) '  U-momentum active'
@@ -639,13 +639,12 @@ C      write(6,*) 'LMA',CALLMA(ICFD),'  gopher',gophrun
       RETURN
       
 C Format statements.
- 312  FORMAT(I7,2X,7E11.3,/,9X,7E11.3)
+ 312  FORMAT(1H ,I6,2X,1P7E10.3,/,9X,1P7E10.3)
  410  FORMAT(/,' DFS - Monitoring of residuals & variables',/,/,
-     &'   ITER',8X,'U',10X,'V',10X,'W',10X,'P', 10X,'T',10X,'K',
-     &7X,'Eps.',/)
+     &'   ITER',8X,'U',9X,'V',9X,'W',9X,'P', 9X,'T',9X,'K',7X,'Eps.',/)
  420  FORMAT(/,' DFS - Monitoring of renormalized residuals &',
-     &' variables',/,/,'   ITER',8X,'U',10X,'V',10X,'W',10X,'P',
-     &10X,'T',10X,'K',7X,'Eps.',/)
+     &' variables',/,/,'   ITER',8X,'U',9X,'V',9X,'W',9X,'P', 9X,'T',
+     &9X,'K',7X,'Eps.',/)
  1030 FORMAT(/,'ITIME =',I3)
       END
 

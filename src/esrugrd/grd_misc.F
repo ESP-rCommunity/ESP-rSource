@@ -242,7 +242,6 @@ C FACDRW draws the elevation of the surface.
 
       COMMON/CONTR/MON,ISC(MS),IYD
       COMMON/G1T/XFT(MV),ZFT(MV)
-      integer IZSTOCN
       COMMON/C24/IZSTOCN(MCOM,MS)
       integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
@@ -250,13 +249,9 @@ C FACDRW draws the elevation of the surface.
 #ifdef OSI
       integer iside,isize,ifont     ! passed to viewtext
       integer iupdown,isym    ! passed to etplot
-      integer iigl,iigr,iigt,iigb,iigw,iigwh
-      integer iiw1,iiw2,iiw3,iiw4,iimenu
 #else
       integer*8 iside,isize,ifont     ! passed to viewtext
       integer*8 iupdown,isym    ! passed to etplot
-      integer*8 iigl,iigr,iigt,iigb,iigw,iigwh
-      integer*8 iiw1,iiw2,iiw3,iiw4,iimenu
 #endif
 
       CHARACTER*72 ETEXT
@@ -266,14 +261,9 @@ C FACDRW draws the elevation of the surface.
 
 C Display header information.
       call startbuffer()
-
-C Setup and pass in parameters to win3d.
-      iiw1=7; iiw2=4; iiw3=3; iiw4=3; iimenu=menuchw
-      iigl=igl; iigr=igr; iigt=igt; iigb=igb; iigw=igw; iigwh=igwh
-      CALL win3d(iimenu,iiw1,iiw2,iiw3,iiw4,
-     &  iigl,iigr,iigt,iigb,iigw,iigwh)
-      igl=int(iigl); igr=int(iigr); igt=int(iigt); igb=int(iigb)
-      igw=int(iigw); igwh=int(iigwh)
+      CALL win3d(menuchw,7,4,3,3,igl,igr,igt,igb,igw,igwh)
+      igw=igr-igl
+      igwh=igb-igt
 
       icon=IZSTOCN(icomp,isur)
       WRITE(ETEXT,1)MTHNAM(MON),IHOUR,ISUR,SSNAME(icon)
@@ -285,10 +275,10 @@ C Setup and pass in parameters to win3d.
       call viewtext(etext,iside,isize,ifont)
 
 C Draw a scale horizontal axis, move to beginning point.
-      CALL horaxis(XMIN,XMAX,iigl,iigr,iigb,Xadd,sca,0,'X axis ->')
+      CALL horaxis(XMIN,XMAX,igl,igr,igb,Xadd,sca,0,'X axis ->')
 
 C Draw a scale vertical axis.
-      CALL vrtaxis(ZMIN,ZMAX,iigl,iigb,iigt,Zadd,sca,0,0,'^ Z axis')
+      CALL vrtaxis(ZMIN,ZMAX,igl,igb,igt,Zadd,sca,0,0,'^ Z axis')
 
 
 C DRAW ZONE FACE.

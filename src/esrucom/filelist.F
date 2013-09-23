@@ -20,13 +20,17 @@ C Boston, MA 02111-1307 USA.
 
 C filelist.F contains:
 C  browsefilelist: presents user with list of files recovered from
-C    a call to getfileslist to select from.
-C  printfileslist: reports a list of file and/or folder names
-C    recovered from call to C function getfileslist.
+C    a call to getfilelist to select from.
+C  clearfilelist: clears a string array (char*72 listf(100))
+C    used before call to getfilelist.
+C  copyfilelist: takes string array returned from getfilelist and copies
+C    it into a string array suitable for use on fortran side.
+C  printfilelist: reports a list of file and/or folder names
+C    recovered from call to C function getfilelist.
 
 C ********* browsefilelist
 C browsefilelist presents user with list of files recovered from
-C a call to getfileslist to select from.
+C a call to getfilelist to select from.
 C Parameter act (chr*1) 'p' print packet list, 'l' line by line
 C   list, 'b' browse (popup menu), '?' find if any files exist.
 C Parameter `where` (char*3) says where to look for the file,
@@ -46,28 +50,20 @@ C espriou.h for parameter MFFOLD
       integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
-      character h*72
       common/pophelp/h(60)
       common/rpath/path
 
 C Where ESP-r was installed (as recorded when it was compiled).
       common/deflt4/dinstpath
-      
-      integer nboflistf  ! how many folders or file names passed
-      integer listfoldertype   ! zero if unused one if folder two if file
-      integer lenlistfolder    ! width of each string
-      character*72 listfolder  ! array of folder or file names
-      common/listfold/nboflistf,listfoldertype(MFFOLD),
-     &                lenlistfolder(MFFOLD),listfolder(MFFOLD)
 
 C where can be: `cfg` (looks in cfg folder), `dbs` (looks in ../dbs),
 C   `zon` (looks in ../zones), `net` (looks in ../nets),
 C   `ctl` (looks in ../ctl), `img` (looks in ../images),
 C   `rad` (looks in ../rad), `doc` (looks in ../doc),
-C   `usr` (looks in users home folder).
+C   `tmp` (looks in ../temp), `usr` (looks in users home folder).
 C   `pat` (looks in {where esp-r installed}/training/pattern).
 C   `clm` (looks in {where esp-r installed}/climate).
-C   `dbm` (looks in {where esp-r installed}/databases).
+C   `dba` (looks in {where esp-r installed}/databases).
 C   `hva`(looks in ../hvac), `bsm` (looks in ../bsm).
 
 C what can be: `dir` list of folders, `fil` any files in the folders,
@@ -87,23 +83,19 @@ C   `ipv` IPV definition file, `rep` IPV report file
 C   `qac` QA contents file, `zip` cflo3 zip (geometry) file, 
 C   `hva` hvac files, `bsm` (looks for BASESIMP files).
 
-      integer ivlist
-      dimension ivlist(MFFOLD)
-      character where*3,what*3,sfile*72,snpfile*72,tsfile*72
-      character path*72
+      dimension nwlistf(MFFOLD),ivlist(MFFOLD)
+      character where*3,what*3,sfile*72,snpfile*72,tsfile*72,h*72
+      character*72 path,odir
+      character*72 listf(MFFOLD),listfc(MFFOLD)
       character fs*1,act*1
-      character dinstpath*60
-      integer lex
+      character dinstpath*48
 
 C Array for browse menu.
       character*70 listfc70(MFFOLD)
 
 C relative is the portion of the path which needs to be prepended
 C to the selected file to have it relative to the cfg folder.
-      character action*3,outs*248,relative*60
-      character subpath*84   ! combined path
-      character subpathd*84  ! to use for native windows
-      character odir*84      ! the directory executable was started from
+      character subpath*72,action*3,outs*124,relative*60
       logical unixok
 
 C Set folder separator (fs) to \ or / as required.
@@ -123,19 +115,13 @@ C model. odir is the current working directory (which is where the
 C project manager was started from).
       subpath=' '
       call usrdir(odir)
-
-C Debug.
-C      write(6,*) 'odir is ',odir(1:lnblnk(odir))
-C      write(6,*) 'path is ',path(1:lnblnk(path))
-C      write(6,*) 'imgpth is ',imgpth(1:lnblnk(imgpth))
-
       if(where(1:3).eq.'cfg')then
         write(subpath,'(3a)',iostat=ios,err=1) odir(1:lnblnk(odir)),fs,
      &    path(1:lnblnk(path))
         write(relative,'(a)',iostat=ios,err=2) path(1:lnblnk(path))
       elseif(where(1:3).eq.'dbs')then
-        write(subpath,'(5a)',iostat=ios,err=1) odir(1:lnblnk(odir)),fs,
-     &    path(1:lnblnk(path)),dbspth(1:lnblnk(dbspth)),fs
+        write(subpath,'(4a)',iostat=ios,err=1) odir(1:lnblnk(odir)),fs,
+     &    path(1:lnblnk(path)),dbspth(1:lnblnk(dbspth))
         write(relative,'(2a)',iostat=ios,err=2) path(1:lnblnk(path)),
      &    dbspth(1:lnblnk(dbspth))
       elseif(where(1:3).eq.'hva')then
@@ -178,6 +164,11 @@ C      write(6,*) 'imgpth is ',imgpth(1:lnblnk(imgpth))
      &    path(1:lnblnk(path)),docpth(1:lnblnk(docpth))
         write(relative,'(2a)',iostat=ios,err=2) path(1:lnblnk(path)),
      &    docpth(1:lnblnk(docpth))
+      elseif(where(1:3).eq.'tmp')then
+        write(subpath,'(4a)',iostat=ios,err=1) odir(1:lnblnk(odir)),fs,
+     &    path(1:lnblnk(path)),tmppth(1:lnblnk(tmppth))
+        write(relative,'(2a)',iostat=ios,err=2) path(1:lnblnk(path)),
+     &    tmppth(1:lnblnk(tmppth))
       elseif(where(1:3).eq.'bsm')then
         write(subpath,'(4a)',iostat=ios,err=1) odir(1:lnblnk(odir)),fs,
      &    path(1:lnblnk(path)),bsmpth(1:lnblnk(bsmpth))
@@ -194,32 +185,15 @@ C      write(6,*) 'imgpth is ',imgpth(1:lnblnk(imgpth))
         write(relative,'(6a)',iostat=ios,err=2)
      &    dinstpath(1:lnblnk(dinstpath)),fs,'training',fs,'pattern',fs
       elseif(where(1:3).eq.'clm')then
-        if(unixok)then
-          write(subpath,'(4a)',iostat=ios,err=1)
-     &      dinstpath(1:lnblnk(dinstpath)),fs,'climate',fs
-          write(relative,'(4a)',iostat=ios,err=2)
-     &      dinstpath(1:lnblnk(dinstpath)),fs,'climate',fs
-        else
-          write(subpathd,'(4a)',iostat=ios,err=1)
-     &      dinstpath(1:lnblnk(dinstpath)),fs,'climate',fs
-          call backslashit(subpathd,subpath)
-          write(relative,'(a)',iostat=ios,err=2)
-     &      subpath(1:lnblnk(subpath))
-        endif
+        write(subpath,'(4a)',iostat=ios,err=1)
+     &    dinstpath(1:lnblnk(dinstpath)),fs,'climate',fs
+        write(relative,'(4a)',iostat=ios,err=2)
+     &    dinstpath(1:lnblnk(dinstpath)),fs,'climate',fs
       elseif(where(1:3).eq.'dbm')then
-
-C The install path works ok as-is in Unix variants, however it
-C needs to be backslashed to properly work in Native Windows.
-        if(unixok)then
-          write(subpath,'(4a)',iostat=ios,err=1)
-     &      dinstpath(1:lnblnk(dinstpath)),fs,'databases',fs
-        else
-          write(subpathd,'(4a)',iostat=ios,err=1)
-     &      dinstpath(1:lnblnk(dinstpath)),fs,'databases',fs
-          call backslashit(subpathd,subpath)
-        endif
-        write(relative,'(a)',iostat=ios,err=2)
-     &    subpath(1:lnblnk(subpath))
+        write(subpath,'(4a)',iostat=ios,err=1)
+     &    dinstpath(1:lnblnk(dinstpath)),fs,'databases',fs
+        write(relative,'(4a)',iostat=ios,err=2)
+     &    dinstpath(1:lnblnk(dinstpath)),fs,'databases',fs
       elseif(where(1:3).eq.'bsm')then
         write(subpath,'(4a)',iostat=ios,err=1) odir(1:lnblnk(odir)),fs,
      &    path(1:lnblnk(path)),bsmpth(1:lnblnk(bsmpth))
@@ -344,64 +318,50 @@ C In DOS no need to prepend odir (just use the relative path defined above).
         write(outs,*) 'ZIP/cflo3 files in ',subpath
       endif
 
-      call edisp248(iuout,outs,90) 
+      call edisp(iuout,outs) 
 
 C Clear the list of files and recover a list of files matching
-C the current criteria.
-      call getfileslist(subpath,action,nlistf)
+C the current criteria. Copy this list into listfc for use by
+C fortran code.
+      call clearfilelist(listf,MFFOLD)
+      call getfilelist(subpath,action,listf,nwlistf,nlistf)
+      call copyfilelist(listf,nwlistf,listfc,MFFOLD,maxw)
 
-C Debug
-C      write(6,*) 'nlistf nboflistf ',nlistf,nboflistf
-C      write(6,*) listfoldertype
-C      write(6,*) listfolder(1)
-C      write(6,*) listfolder(2)
-      
 C Depending on `act`, print or browse or just return with number of files.
       if(act.eq.'p')then
-        call printfileslist(outs,'p')
-        nlist=nboflistf
+        call printfilelist(outs,'p',listfc,MFFOLD,nlistf)
+        nlist=nlistf
         return
       elseif(act.eq.'?')then
-        nlist=nboflistf
+        nlist=nlistf
         return
       elseif(act.eq.'l')then
-        call printfileslist(outs,'l')
-        nlist=nboflistf
+        call printfilelist(outs,'l',listfc,MFFOLD,nlistf)
+        nlist=nlistf
         return
       elseif(act.eq.'b')then
 
 C Try to use information gathered from file scan.
-        if(nboflistf.gt.0)then
+        if(nlistf.gt.0)then
           h(1)='The following files match the search criteria.'
           h(2)='Select one to use or, if none selected, it will'
           h(3)='revert to prior value. '
           ix=1
-          maxw=1
-          do 76 ij=1,nboflistf
+          do 76 ij=1,nlistf
             listfc70(ij)=' '
-            lex=lenlistfolder(ij)
-C Debug.
-C            write(6,*) lex,listfolder(ij)
-            if(lex.gt.70) lex=70
-            if(lex.le.1)then
-              write(listfc70(ij),'(a)') '  '
-            else
-              write(listfc70(ij),'(a)') listfolder(ij)(1:lex)
-            endif
-            if(lex.gt.maxw) maxw=lex  ! ensure widest string can be displayed
-            if(maxw.lt.15) maxw=15    ! ensure title can be read
+            write(listfc70(ij),'(a)') listfc(ij)(1:nwlistf(ij))
   76      continue
           CALL EPICKS(IX,ivlist,outs,' ',
-     &      maxw,nboflistf,listfc70,'Available files',IER,3)
+     &      maxw,nlistf,listfc70,'Available files',IER,3)
           if(ix.eq.1)then
             write(sfile,'(3a)')relative(1:lnblnk(relative)),fs,
-     &        listfolder(ivlist(ix))(1:lenlistfolder(ivlist(ix)))
+     &        listfc(ivlist(ix))(1:nwlistf(ivlist(ix)))
 
 C Debug.
 C            write(6,*) sfile
 
             write(snpfile,'(a)')
-     &        listfolder(ivlist(ix))(1:lenlistfolder(ivlist(ix)))
+     &        listfc(ivlist(ix))(1:nwlistf(ivlist(ix)))
 
 C Debug.
 C            write(6,*) snpfile
@@ -450,65 +410,91 @@ C Errors when creating string buffers.
       ier=2
       return
 
-C Example of manual use of getfileslist, printfileslist.
+C Example of manual use of clearfilelist, getfilelist, copyfilelist, printfilelist.
 C The first lists out geometry file, the 2nd block lists operations files.
 C      subpath=' '
 C      write(subpath,'(4a)') odir(1:lnblnk(odir)),fs,
 C     &  path(1:lnblnk(path)),zonepth(1:lnblnk(zonepth))
 C      write(outs,*) 'geometry files in ',subpath
+C      call clearfilelist(listf,MFFOLD)
 C      action='geo'
-C      call getfileslist(subpath,action,nlistf)
-C      call printfileslist(outs,'p')
+C      call getfilelist(subpath,action,listf,nwlistf,nlistf)
+C      call copyfilelist(listf,nwlistf,listfc,MFFOLD,maxw)
+C      call printfilelist(outs,'p',listfc,MFFOLD,nlistf)
 C      write(outs,*) 'operation files in ',subpath
+C      call clearfilelist(listf,MFFOLD)
 C      action='opr'
-C      call getfileslist(subpath,action,nlistf)
-C      call printfileslist(outs,'p')
+C      call getfilelist(subpath,action,listf,nwlistf,nlistf)
+C      call copyfilelist(listf,nwlistf,listfc,MFFOLD,maxw)
+C      call printfilelist(outs,'p',listfc,MFFOLD,nlistf)
       end
 
-C ********* printfileslist
-C printfileslist reports a list of file and/or folder names
-C recovered from call to C function getfileslist.
-      subroutine printfileslist(title,act)
+C ********* clearfilelist
+C clearfilelist clears a string array of size iasize which should
+C be equivalent to MFFOLD (char*72 listf(iasize))
+C used before call to getfilelist.
+      subroutine clearfilelist(listf,iasize)
+      character*72 listf(iasize)
+      do 42 i=1,iasize
+        listf(i)=' '
+  42  continue
+      return
+      end
 
-#include "espriou.h"
-C espriou.h for parameter MFFOLD
-      
-      integer nboflistf  ! how many folders or file names passed
-      integer listfoldertype   ! zero if unused one if folder two if file
-      integer lenlistfolder    ! width of each string
-      character*72 listfolder  ! array of folder or file names
-      common/listfold/nboflistf,listfoldertype(MFFOLD),
-     &                lenlistfolder(MFFOLD),listfolder(MFFOLD)
+C ********* copyfilelist
+C copyfilelist takes string array of size iasize which should
+C be equivalent to MFFOLD (char*72 listf(iasize)) returned
+C from call to getfilelist and copies it into another string
+C array (char*72 listfc(iasize)). nwlistf(iasize) is the length of
+C each string (returned from getfilelist call).
+C maxw is the maximum width of any string in the list of file
+C names.
+      subroutine copyfilelist(listf,nwlistf,listfc,iasize,maxw)
+      character*72 listf(iasize),listfc(iasize)
+      dimension nwlistf(iasize)
+      integer loop
 
-C Passed parameters
-      character*(*) title   ! title of the printed list
-      character act*1       ! action l is list p is packed lines
+      loop=iasize-1  ! loop is one less than the size
+      maxw=0
+      do 42 i=1,loop
+        listfc(i)=' '
+        if(nwlistf(i).gt.0.and.nwlistf(i).le.72)then
+          if(nwlistf(i).gt.maxw) maxw = nwlistf(i)
+          write(listfc(i),'(a)') listf(i)(1:nwlistf(i))
+        elseif(nwlistf(i).gt.72)then
+          maxw = 72
+          write(listfc(i),'(a)') listf(i)(1:72)
+        endif
+  42  continue
+      return
+      end
 
+C ********* printfilelist
+C printfilelist reports a list of file and/or folder names
+C recovered from call to C function getfilelist.
+C listf: file/folder names - a string array (char*72 listf(iasize))
+C act: (char*1) `l` as list, `p` as packed line(s).
+      subroutine printfilelist(title,act,listf,iasize,nlist)
       common/OUTIN/IUOUT,IUIN
-      character t96*96
-      character*72 printfile
-      integer lntitle
+      character*(*) title
+      character act*1,t96*96
+      integer iasize,nlist
+      character*72 listf(iasize)
 
-      if(nboflistf.eq.0)then
+      if(nlist.eq.0)then
         return
       else
-        call edisp(iuout,'  ')
-        lntitle=lnblnk(title)
-        call edisp248(iuout,title,90)
+        call edisp(iuout,title)
         if(act.eq.'l')then
-          do 42 i=1,nboflistf
-            if(lenlistfolder(i).gt.1)then  ! do not bother with blank or 1 char names
-              write(printfile,'(a)') listfolder(i)(1:lenlistfolder(i))
-              call edisp(iuout,printfile)
-            endif
+          do 42 i=1,nlist
+            call edisp(iuout,listf(i))
   42      continue
           return
         elseif(act.eq.'p')then
           itrunc=1
           ipos=1
           do while (itrunc.ne.0)
-            call asflist(ipos,nboflistf,listfolder,MFFOLD,'S',t96,
-     &        louts,itrunc)
+            call asflist(ipos,nlist,listf,iasize,'S',t96,louts,itrunc)
             call edisp(iuout,t96)
             ipos=itrunc+1
           end do

@@ -182,22 +182,15 @@ C since not all compilers use the same default.
 #ifdef OSI
       integer igwid,igheight  ! for use with axiscale
       integer iside,isize,ifont     ! passed to viewtext
-      integer iicol
-      integer iigl,iigr,iigt,iigb,iigw,iigwh
 #else
       integer*8 igwid,igheight  ! for use with axiscale
       integer*8 iside,isize,ifont     ! passed to etplot
-      integer*8 iicol
-      integer*8 iigl,iigr,iigt,iigb,iigw,iigwh
 #endif
 
       tab=' '
 
 C This is string terminator for C.
       nulter=char(0)
-
-C Cast values for horaxis.
-      iigl=igl; iigr=igr; iigt=igt; iigb=igb; iigw=igw; iigwh=igwh
 
 C Jump to required routine.
       goto (1000,2000) mode
@@ -260,10 +253,10 @@ c Determine scaling ratios for the drawing and axis.
      &      xadd,yadd)
 
 c Draw a scale horizontal axis, move to beginning point.
-      call horaxis(xmin,xmax,iigl,iigr,iigb,xadd,xsc,1,'Time (hours)')
+      call horaxis(xmin,xmax,igl,igr,igb,xadd,xsc,1,'Time (hours)')
 
 c Draw a scale vertical axis.
-      call vrtaxis(ymin,ymax,iigl,iigb,iigt,yadd,ysc,1,0,label1)
+      call vrtaxis(ymin,ymax,igl,igb,igt,yadd,ysc,1,0,label1)
 
 c Restore original values for next call.
       if(mstate.eq.2.or.mstate.eq.3) then
@@ -307,22 +300,13 @@ c and 'N' stands for node in this component.
           ncoord(i,1,2)=igb-int((value+yadd)*ysc)
           iy= ncoord(i,1,2)
           ix= ncoord(i,1,1)+3
-          if(colok)then
-            iicol=i
-            call winscl('z',iicol)
-          endif
+          if(colok)call winscl('z',i)
           call wstxpt(ix,iy,clabel)
-          if(colok)then
-            iicol=0
-            call winscl('-',iicol)
-          endif
+          if(colok)call winscl('-',0)
 
 c else start plotting.
         else
-          if(colok)then
-            iicol=i
-            call winscl('z',iicol)
-          endif
+          if(colok)call winscl('z',i)
           ti=float(icount)/float(instpp)
           ncoord(i,2,1)=igl+int((ti+xadd)*xsc)
           ncoord(i,2,2)=igb-int((value+yadd)*ysc)
@@ -330,10 +314,7 @@ c else start plotting.
           call eline (ncoord(i,2,1),ncoord(i,2,2), lndrab)
           ncoord(i,1,1)=ncoord(i,2,1)
           ncoord(i,1,2)=ncoord(i,2,2)
-          if(colok)then
-            iicol=0
-            call winscl('-',iicol)
-          endif
+          if(colok)call winscl('-',0)
           call forceflush
         endif
    10 continue

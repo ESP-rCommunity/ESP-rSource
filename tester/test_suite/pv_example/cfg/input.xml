@@ -6,7 +6,7 @@
 	<hierarchy>tree</hierarchy>
 	<time_step_averaging>false</time_step_averaging>
 	<enable_xml_wildcards>true</enable_xml_wildcards>
-	<output_dictionary>false</output_dictionary>
+	<output_dictionary>true</output_dictionary>
   <dump_all_data>true</dump_all_data>
 
 </configuration>

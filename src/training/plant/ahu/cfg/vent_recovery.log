@@ -1,0 +1,44 @@
+
+                     Ventilation system with heat recovery
+
+               In order to simulate a system as close as possible to a
+          real  system, in which building, plant and flows are coupled
+          together, the detailed ventilation system, provided  as  one
+          of the exemplars, was coupled to a three zone building and a
+          fluid flow network was defined for the building/plant  prob-
+          lem. This building is one of ESP-r's test cases and consists
+          of a reception zone, an office zone and a roof space zone.
+
+               Two networks are shown, the one at the  top  represents
+          the  fluid  flow  network  and  the one at the bottom is the
+          plant network.  The dashed arrows indicate which  flow  com-
+          ponents  are  mapped  to which plant inter-component connec-
+          tions. Note that the flow network also allows the air  flows
+          in buildings to be modelled as shown by the window component
+          between the reception zone and the north boundary  node.  In
+          this  example  it is assumed that no air flow occurs between
+          the two zones.  For this reason, no  flow  component  (door)
+          was specified.
+
+               The coupling of the zones with  the  fresh  air  supply
+          duct  was  achieved  by defining a control strategy file and
+          using a building control function with control law 6  speci-
+          fied  for each zone. The controller specified for the heater
+          control loop was of the proportional type (plant control law
+          1) with a heating set point of 20C and a throttling range of
+          2C. The maximum and minimum heating flux was  4000W  and  0W
+          respectively.  An ideal sensor located in the reception zone
+          was also defined so that  the  heater  output  flux  can  be
+          actuated on the basis of that temperature.
+
+               The mechanical inlet  and  extract  ventilation  system
+          employed  a  heat  recovery unit in which the inlet cold air
+          exchanges heat with the exhaust air  and  thus  reduces  the
+          heating  load demand provided by the heating coil. Component
+          11 being introduced as a heat recovery unit (component  type
+          120).  This  is a two node component model which expects two
+          external connections having air as the working  fluid  type.
+          The  heat  recovery unit has reduced the total heat supplied
+          by the heating coil from 3435.7 KW to 2942 KW, ie  a  reduc-
+          tion of 493.7 KW for the simulation period considered.
+

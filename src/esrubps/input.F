@@ -187,7 +187,7 @@ C default file names for databases
 
 #include "material.h"
 #include "plant.h"
-#include "net_flow.h"
+#include "tdf2.h"
 #include "dhw_common.h"
 #include "MultiYear_simulations.h"
 #include "UserSimulationToggles.h"
@@ -214,6 +214,8 @@ C default file names for databases
 C Path to model and command line file name.
       common/rpath/path
       common/rcmd/LCMDFL
+      common/C21/IFCFG,cfgroot,LCFGF
+      INTEGER :: IFCFG
       common/c6/indcfg
       INTEGER :: indcfg
 
@@ -240,7 +242,6 @@ C Common for electrical file
       INTEGER :: ispmxist,ientxist
 
 C Defaults.
-      character*96 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF
       COMMON/DEFLT2/DFCFG,DFCTL,DEFRLB,DAFRES,DAPROB,DPNF
       COMMON/GR1D04/GAM,RGAM
       REAL :: GAM, RGAM
@@ -284,9 +285,10 @@ C Mechanical Ventilation systems.
 C For reading in of bi-directional data.
       COMMON/BIDIRFL/bidirfile,bidirname(MSTMC)
 
+      character*72 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF
       CHARACTER*72 LGDCVS,LGDCNC,LGDNDC,LGDNDD,LGDTAQ,LGrdSt
 
-      CHARACTER OUTSTR*124,MODE*4
+      CHARACTER OUTSTR*124,LCFGF*72,MODE*4,cfgroot*24
       CHARACTER outs*124,louts*248,spsname*8,L144*144
       CHARACTER outs248*248,LCMDFL*144
       character*72 laprob,path,ENTFLNAM
@@ -298,23 +300,24 @@ C HVAC AIM-2
       LOGICAL spfileok,perok,tstepok,saveok,autook,exitok,startupok
       LOGICAL OK,DOK,CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,XST
       LOGICAL GRND3D,MSTROK,MSTRZN
-      logical dll,closemat1,closemat2,unixok,concat
+      logical dll,closemat1,closemat2,unixok
 
 C GSHP
 C Common holding flag indicating presence of gshp data input file:
 C igshp = 1 there is a gshp file; igshp = 0 no gshp file.
       common/gshpinfo/igshp
       INTEGER :: igshp
+      common/gshpfile/gshpfile
+      character gshpfile*72
 
 C GCEP
 C Common holding flag indicating presence of gcep data input file:
 C igcep = 1 there is a gcep file; igcep = 0 no gcep file.
       common/gcepinfo/igcep
       INTEGER :: igcep
+      common/gcepfile/gcepfile
+      character gcepfile*72
 
-C Function determining if HOT3000 features enabled.
-      logical bH3KExtentionsActive
-      
 C Flag to enable inter-domain iteration 
       common / Plt_Elec_Net / bInter_domain_iteration
       logical bInter_domain_iteration
@@ -323,7 +326,7 @@ C Status of multi-year climate database
       logical bMY_clm_err 
       integer lndbp   ! for length of standard database path
       character lltmp*144  ! to re-create plant database file name with path
-      character lworking*144,fs*1,llclmdb*144
+      character lworking*144,fs*1
 
       integer IClmErr  ! the error state for climate file opening
       integer ier, irep
@@ -426,12 +429,9 @@ C Unless error occured, initiate computation/setting-up of:
             dok=.false.
             helptopic='model_cfg_warning'
             call gethelptext(helpinsub,helptopic,nbhelp)
-            ! Don't ask to rescan model if running in HOT3000 mode
-            if ( .not. bH3KExtentionsActive() )then
-              CALL ASKOK(' The model scan was not clean. Do you want',
+            CALL ASKOK(' The model scan was not clean. Do you want',
      &        'to rescan the model? (see help)',OK,dok,nbhelp)
-              if(OK)goto 42
-            endif
+            if(OK)goto 42
           endif
         endif
       else
@@ -765,19 +765,9 @@ C been properly entered.
 C Collect & process single-year climate file
 C Note: the climate file uses a different error flag than
 C the global model definition, as it can be specified separately.
-
-C Take into account weather file location.
-         lndbp=lnblnk(standardclmpath)
-         if(ipathclim.eq.0.or.ipathclim.eq.1)then
-           call addpath(lclim,llclmdb,concat)
-         elseif(ipathclim.eq.2)then
-           write(llclmdb,'(3a)') standardclmpath(1:lndbp),fs,
-     &       LCLIM(1:lnblnk(LCLIM))
-         endif
-
-         write(currentfile,'(a)') llclmdb(1:lnblnk(llclmdb))
+         write(currentfile,'(a)') lclim(1:lnblnk(lclim))
          IClmErr=0   ! clear error state before call
-         call EFOPRAN(ICLIM,llclmdb,144,0,IClmErr)
+         call EFOPRAN(ICLIM,LCLIM,144,0,IClmErr)
          IF(iClmErr.eq.0)THEN
             IREC=366
             READ(ICLIM,REC=IREC,IOSTAT=ISTAT,ERR=103)ICYEAR,ICDNGH
@@ -816,7 +806,7 @@ C Kill simulation if in DLL mode
 C Warn the user that the climate file definition has failed. 
                write(louts,'(A,A,A)')
      &           'Warning: specified climate file (',
-     &           llclmdb(1:LNBLNK(llclmdb)), ') could not be found.'
+     &           LCLIM(1:LNBLNK(LCLIM)), ') could not be found.'
               
                call edisp248 (iuout,louts,100)
                if ( autook ) then
@@ -918,7 +908,7 @@ C Error.
         STOP
       endif
 
-      write(outs,'(A,I3)') ' mzinpt: climate file error @ rec ',irec
+ 1001 write(outs,'(A,I3)') ' mzinpt: climate file error @ rec ',irec
       call edisp(iuout,outs)
       call epwait
       return
@@ -934,7 +924,6 @@ C IREP=1 implies no reporting or data checking.
 #include "building.h"
 #include "model.h"
 #include "site.h"
-#include "schedule.h"
 
 C geometry.h provides commons G0/G2/G5/c20/precz/prec16.
 #include "geometry.h"
@@ -947,12 +936,16 @@ C geometry.h provides commons G0/G2/G5/c20/precz/prec16.
       common/trc/itrc
       common/trace/itcf,itrace(mtrace),izntrc(mcom),itu
       
-      integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
-      INTEGER :: ic1,ie1,ict,ic2,ie2
+      integer ncomp,ncon
+
+C Version of operations file. ip3ver=0 standard, =1 sorted with header
+C =2 with more than 3 day types
+      common/p3ver/ip3ver(MCOM)
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
-      INTEGER :: IZSTOCN
+      INTEGER :: ic1,ie1,ict,ic2,ie2
       COMMON/C24/IZSTOCN(MCOM,MS)
+      INTEGER :: IZSTOCN
 
 C During setup scan for inbuilt and user defined ground temperatures.
 C igttype: if > 1 then index points to most often used standard profile
@@ -993,15 +986,21 @@ C Dll mode error subroutine and error details.
 
 C Simulator parameters.
       COMMON/SPFL/spfileok,perok,tstepok,saveok,autook,exitok,startupok
+      common/SPFLN/spsname
+      common/spfldes/spfdescr(MSPS)
+      common/spflres/sblres(MSPS),sflres(MSPS),splres(MSPS),
+     &  smstres(MSPS),selres(MSPS),sipvres
       LOGICAL     spfileok,perok,tstepok,saveok,autook,exitok,startupok
 
       CHARACTER*72 LMOIST,LMSTR
       character outs*124,CXSTR*78,spflnam*72
+      character sblres*72,sflres*72,splres*72,smstres*72,sipvres*72
+      character selres*72,spsname*8,spfdescr*8
       character dllsubr*12,dllmesg*124
       LOGICAL BLDG3D,ZONE3D,MSTROK,MSTRZN
       LOGICAL ILTHPS,ILTHPZ,CLOSE
       logical dll,prob
-      dimension igarray(mgrdp),iguarray(12)
+      dimension igarray(12),iguarray(12)
 
       if (.not.startupok) ITCNST=0
       IWARN=0
@@ -1012,12 +1011,11 @@ C Zone-by-zone. Use IUNIT for geometry file.
       NNDS=0
       MNDS=0
 
-C Clear igarray() for inbuilt ground temps and iguarray()
-C for user defined ground temps. 
+C Clear igarray() & iguarray()
        igttype=0
-       do 9 ij=1,mgrdp
+       do 9 ij=1,12
          igarray(ij)=0
-         if(ij.le.12) iguarray(ij)=0
+         iguarray(ij)=0
   9    continue
       call usrmsg(' Checking zone descriptions... ',' ','-')
       ILTHPS=.FALSE.
@@ -1055,7 +1053,7 @@ C        write(6,*) IZ,IP3VER(IZ)
           write(outs,'(a,i2,a)') 
      &      'Operation file for zone ',IZ,' periods being sorted!'
           call edisp(iuout,outs)
-          call PROCESSOLDCAS(IZ,itrc,itu)
+          call PROCESSOLDCAS(IZ,itrc,itu,IER)
         endif
 
 C Zero the thermal bridge heat loss before (perhaps) reading in from geometry file.
@@ -1412,6 +1410,7 @@ C      write(6,*) igumax,igumaxindex,iguarray
 
 C Nothing specified as a connection so use UK monthly mean
 C ground temperatures at 1.2m depth as given by Lacy.
+        igtype=0
         GTMP(1)=7.28
         GTMP(2)=6.5
         GTMP(3)=6.56
@@ -1452,30 +1451,39 @@ C Identify special materials file & call routine to read it.
 
 C ******************** MZUTIL ********************
 
-C MZUTIL reads additional zone descriptions if active.
+C MZUTIL reads the zone utilities file if one is active. This
+C file contains information on the source of any data which should
+C be used in preference to the zone file defaults.
+C Timestep zone airflow is handled by tdf.
 
       SUBROUTINE MZUTIL(ICOMP,IER)
 #include "building.h"
 #include "model.h"
 #include "cfd.h"
+#include "espriou.h"
 #include "CFC_common.h"
 C espriou.h provides currentfile.
 
       common/trc/itrc
       common/trace/itcf,itrace(mtrace),izntrc(mcom),itu
       COMMON/FILEP/IFIL
+      COMMON/OUTIN/IUOUT,IUIN
       COMMON/ER1/IER1
       INTEGER :: ier1
 
       COMMON/ICFNOD/ICFD,ICP
       COMMON/cfdfil/LCFD(MCOM),IFCFD(MCOM)
       common/ndcfd/NCFDND,ICFDND(MNZ),NCONF
+      COMMON/CHANNL/NOCHAN
+      common/flvpar/Lflpar(MCOM)
+      common/CFDres/photon,flwvis
       common/bsmtdef/iBSIMP(MCOM),LBSIMP(MCOM)
       COMMON/cfcall/icfcal(MNZ)
       COMMON/ACCrec/IACC
 
 C Active domain common.
       common/ACTDOM/CFDOK
+      common/dllerr/dllsubr,dllmesg
 
 C Experimental Hydrogen controller. use with caution
 C Residential hydrogen cogen: control file
@@ -1485,13 +1493,13 @@ C Residential hydrogen cogen: control file
       character*72 resh2flnam   !- name of file containing residential hydrogen cogen
                                 !- controller inputs
 
-      CHARACTER OUTSTR*124
-      CHARACTER*72 LCFD
+      CHARACTER NAME*5,OUTSTR*124
+      CHARACTER*72 LCFD,Lflpar
       CHARACTER*72 lfil
       CHARACTER*72 LBSIMP
-c      character dllsubr*12,dllmesg*124
+      character dllsubr*12,dllmesg*124,outs*124
 
-      logical CFDOK,dll
+      logical CFDOK,photon,flwvis,dll
 
 C Reset warning flag and check and see if running in dll mode.
       IER1=0
@@ -1499,8 +1507,6 @@ C Reset warning flag and check and see if running in dll mode.
       call isadll(dll)
       
 C Open zone viewfactors, pre-calculated shading, convection regimes.
-C Report the contents of the shading file if the user has requested 
-C a trace and then re-scanned the model.
       IF(IVF(ICOMP).EQ.1)CALL MZVFIN(ICOMP)
       IF(ISI(ICOMP).EQ.1)CALL MZSHIN(ICOMP)
       IF(IHC(ICOMP).EQ.1)CALL MZHCFV2(ICOMP)
@@ -1602,32 +1608,31 @@ C will be incremented each time CFD is called for this zone.
 
       RETURN
 
-C No path to following code (commented)
-c      outs='Problem reading *air or *cas!'
-c      CALL USRMSG(outs,' ','W')
-c      goto 1000
-c      outs='Could not open timestep air file!'
-c      CALL USRMSG(outs,' ','W')
-c      goto 1000
-c      outs='Not a zone timestep air flow file!'
-c      CALL USRMSG(outs,' ','W')
-c      goto 1000
-c      outs='Could not open timestep casual file!'
-c      CALL USRMSG(outs,' ','W')
-c      goto 1000
-c      outs='Not a zone timestep casual gain file!'
-c      CALL USRMSG(outs,' ','W')
+ 1002 outs='Problem reading *air or *cas!'
+      CALL USRMSG(outs,' ','W')
+      goto 1000
+ 1004 outs='Could not open timestep air file!'
+      CALL USRMSG(outs,' ','W')
+      goto 1000
+ 1005 outs='Not a zone timestep air flow file!'
+      CALL USRMSG(outs,' ','W')
+      goto 1000
+ 1007 outs='Could not open timestep casual file!'
+      CALL USRMSG(outs,' ','W')
+      goto 1000
+ 1008 outs='Not a zone timestep casual gain file!'
+      CALL USRMSG(outs,' ','W')
 
 C Record errors if running in dll mode or simply return.
-c 1000 if(dll)then
-c        dllsubr='MZUTIL'
-c        dllmesg=outs
-c        ier=2
-c        return
-c      else
-c        IER1=1
-c        RETURN
-c      endif
+ 1000 if(dll)then
+        dllsubr='MZUTIL'
+        dllmesg=outs
+        ier=2
+        return
+      else
+        IER1=1
+        RETURN
+      endif
       END
 
 C Routines for passing presimulation data in configuration file to
@@ -1671,6 +1676,7 @@ C Once per hour storage of results, averaged over that hour.
 
 C lafres  - fluid flow network results file
       COMMON/RESLIB/RFILE,PFILE,MSTRFILE,LAFRES
+      COMMON/AFN/IAIRN,LAPROB,ICAAS(MCOM)
       COMMON/ENETRES/ERESLIB
       COMMON/ENTFILE/ENTFLNAM,IENTXIST
       common/dllerr/dllsubr,dllmesg
@@ -1682,7 +1688,7 @@ C lafres  - fluid flow network results file
       logical dll,match
 
       character RFILE*72,PFILE*72,MSTRFILE*72,LAFRES*72
-      character*72 ENTFLNAM,ERESLIB
+      character*72 LAPROB,ENTFLNAM,ERESLIB
       character outs*124, outs2*124
       character sblres*72,sflres*72,splres*72,smstres*72,sipvres*72
       character selres*72,spfdescr*8,name*8
@@ -1693,6 +1699,7 @@ C Check if running in dll mode.
       IER=0
 
 C Assign data.
+      IPARS=0
       if(isstup.ne.0)then
         ITCNST=isstup
         startupok=.true.
@@ -1895,7 +1902,6 @@ C Parameters
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
-      integer IZSTOCN
       COMMON/C24/IZSTOCN(MCOM,MS)
 
       logical dup,first

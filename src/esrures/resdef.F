@@ -54,11 +54,11 @@ C Record lengths for zone (nzrl), plant (nprl), electrical(nerl) results librari
       common/recver/izver,ipver,iever
 
 C Defaults.
-      character*96 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF
       COMMON/DEFLT2/DFCFG,DFCTL,DEFRLB,DAFRES,DAPROB,DPNF
 
 C Simulator parameters.
       COMMON/SPFL/spfileok,perok,tstepok,saveok,autook,exitok,startupok
+      character*72 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF
  
       character LTMP*72,outs*124,outs248*248
       character rfile*72,PFILE*72,MSTRFILE*72,LAFRES*72
@@ -130,8 +130,6 @@ C will act on this.
 C Save back the command file name. While here also assume that any
 C other results files will be found in the same location and make
 C up full length strings that guess what those file names will be.
-C If file ends with .plr then assume it is a plant results file and
-C instanciate LAFRESABS and set PFILEABS to ltmpc.
           LCMDFL=ltmpc
           lrf=lnblnk(ltmpc)
           lrf3=lrf-3
@@ -139,9 +137,6 @@ C instanciate LAFRESABS and set PFILEABS to ltmpc.
           if(ltmpc(lrf3:lrf).eq.'.res')then
             write(LAFRESABS,'(2a)') ltmpc(1:lrf4),'.mfr'
             write(PFILEABS,'(2a)') ltmpc(1:lrf4),'.plr'
-          elseif(ltmpc(lrf3:lrf).eq.'.plr')then
-            write(LAFRESABS,'(2a)') ltmpc(1:lrf4),'.mfr'
-            write(PFILEABS,'(a)') ltmpc(1:lrf)
           else
             continue
           endif
@@ -162,8 +157,8 @@ C scans of cfg and zone files can be accomplished.
 C Debug.
 C      write(outs248,*) 'MORFIL: current command file path is ',path
 C      call edisp248(iuout,outs248,100)
-C      write(outs248,*) 'MORFIL: cmd line file is ',lcmdfl
-C      call edisp248(iuout,outs248,100)
+      write(outs248,*) 'MORFIL: cmd line file is ',lcmdfl
+      call edisp248(iuout,outs248,100)
 
       lpath=path
       call fdroot(LCMDFL,path,LTMP)
@@ -172,7 +167,7 @@ C Debug.
 C      write(outs248,*) 'MORFIL: local file is now ',ltmp
 C      call edisp248(iuout,outs248,100)
 C      write(outs248,*) 'MORFIL: rev path is ',path
-C       call edisp248(iuout,outs248,100)
+C      call edisp248(iuout,outs248,100)
 
       CALL ERPFREE(iunit,ISTAT)
       call FINDFIL(ltmp,xst)
@@ -191,18 +186,14 @@ C Debug.
 C             write(6,*) 'MORFIL: older plant ',iftype
 
              IPLIB=1
-             write(PFILEABS,'(a)') lcmdfl(1:lnblnk(lcmdfl)) ! remember
-             CALL ERPFREE(iunit,ISTAT)  ! free the file
              return
            elseif(iftype.eq.-2) then
 
 C Debug.
 C             write(6,*) 'MORFIL: newer plant ',iftype
 
-             IPLIB=2
+	     IPLIB=2
              iftype=-1
-             write(PFILEABS,'(a)') lcmdfl(1:lnblnk(lcmdfl)) ! remember
-             CALL ERPFREE(iunit,ISTAT)  ! free the file
              return
            endif
         endif
@@ -216,8 +207,6 @@ C as the simulator uses.
         irec=1
         read(iunit,rec=irec,iostat=ios,err=13)nsim,nreclx
         if (nreclx.lt.nzrl) then
-
-C The simulator created record width is less so close and reopen.
           nzrl = nreclx
           close(iunit)
           call EFOPRAN(iunit,LTMP,nzrl,1,IER)
@@ -225,26 +214,16 @@ C The simulator created record width is less so close and reopen.
           write(outs,'(A,I3)')' Opening file with record length',nzrl
           call edisp(iuout,outs)
         elseif (nreclx.gt.nzrl) then
-
-C The simulator created record width is larger so close and reopen.
-          nzrl = nreclx
-          close(iunit)
-          call EFOPRAN(iunit,LTMP,nzrl,1,IER)
-          irec=1
-          read(iunit,rec=irec,iostat=ios,err=13)nsim,nreclx
-          if (nreclx.gt.nzrl) then
-
-C If the record widths still do not match then give up.
-            write(outs,'(a,i3,a)') 
-     &        'Unable to open library (record width',nreclx,
-     &        'to large). Stopping!'
-            call usrmsg(outs,LTMP,'W')
-            CALL EPAGEND
-            STOP
-          endif
-          write(outs,'(A,I3)')' Opening file with record length',nzrl
-          call edisp(iuout,outs)
-          IBLIB=1
+C          nzrl = nreclx
+C          close(iunit)
+C          call EFOPRAN(iunit,LTMP,nzrl,1,IER)
+C          write(outs,'(A,I3)')' Opening file with record length',nzrl
+C          call edisp(iuout,outs)
+          call usrmsg(
+     &      'Unable to open library (record width to large). Stopping!',
+     &      LTMP,'W')
+          CALL EPAGEND
+          STOP
         else
           if(LTMP.eq.DEFRLB) then
             call edisp(iuout,' Default results library assigned.')
@@ -389,7 +368,6 @@ C TNAME (temporary value)
       common/prec7/itcnst
 
       COMMON/CCTLNM/ctldoc,LCTLF
-      integer icascf
       COMMON/CCTL/ICASCF(MCOM)
 
 C NS - number of selected result sets
@@ -650,8 +628,7 @@ C ******************** MOOPER
 C MOOPER allows user-definition of the output recovery
 C period, the output time-step increment and whether or
 C not the results should be averaged across the output
-C interval. It also decides whether a pre-scan of the
-C records to gather statistics is warranted.
+C interval.
 
 C Common block variables are:
 C IOD1, IOM1  - start day, month and hour numbers.
@@ -674,9 +651,6 @@ C               the output interval if NOUT > 1 (IAV=1 yes; IAV=0 no)
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/DEFLT/IDEFLT
       COMMON/C6/INDCFG
-      COMMON/SPAD/MMOD,LIMIT,LIMTTY
-      integer ncomp,ncon
-      COMMON/C1/NCOMP,NCON
 
       COMMON/SIMPIK/ISIM,ISTADD,ID1,IM1,ID2,IM2,ISDS,ISDF,NTS,ISAVE
       COMMON/PERO/IOD1,IOM1,IOH1,IOD2,IOM2,IOH2,IODS,IODF,NOUT,IAV
@@ -687,12 +661,8 @@ C               the output interval if NOUT > 1 (IAV=1 yes; IAV=0 no)
       common/MMAFDAT/IFILT,RDFMAX(MCOM,3,MZRL),RDFMIN(MCOM,3,MZRL),
      &    RDFAVE(MCOM,3,MZRL),RDTFMAX(MCOM,3,MZRL),RDTFMIN(MCOM,3,MZRL)
 
-C Signal that pre-scan has been used.
-      logical didprescan
-      common/MMAPRE/didprescan
-
       character outs*124,PDESCR*60
-      logical ok,dok,doprescan
+      logical ok,dok
 
 C For help messages
       character helpinsub*24   ! subroutine name
@@ -723,23 +693,20 @@ C casual gains (usually occupancy).
 C Only pre-scan library if there is a zone library involved.
         if(indcfg.eq.1.or.indcfg.eq.3)then
 
-C This version disables the prescan.
-          didprescan=.false.  ! no pre-scan done
-          doprescan=.false.  ! in text mode skip prescan
+C Calculate max, mins and averages of main results parameters.
+C Assume that occupancy filter will be set to cas type 1 for res lib scan.
+          iocut=1
+          IFILT=1
+          call usrmsg('Pre-scanning database... ','  ','-')
+          call scnocup(iier)
+          call MMAPER
 
-          if(.NOT.doprescan)then
-            iocut=1  ! signal always occupied
-            IFILT=1
-            call usrmsg('Pre-scanning occupancy... ','  ','-')
-            call scnocup(iier)
-            iocut=0  ! signal not always occupied
-            call scnocup(iier)
-            call usrmsg('Pre-scanning occupancy...done. ','  ','P')
-            didprescan=.false.  ! no pre-scan done
-            return
-          endif
-        else
-          didprescan=.false.  ! no pre-scan done
+C Reset occupancy filter.
+          iocut=0
+          call scnocup(iier)
+          call usrmsg('Pre-scanning database...done. ','  ','P')
+          call usrmsg('  ','  ','-')
+          return
         endif
       endif
 
@@ -778,19 +745,13 @@ C Output time-step increment ?
         endif
       endif
 
-C Prescan occupancy patterns.
+C Calculate max, mins and averages of main results parameters if
+C there is a zone library.
       if(indcfg.eq.1.or.indcfg.eq.3)then
-        if(MMOD.ne.8)then
-          iocut=1  ! signal always occupied
-          IFILT=1
-          call usrmsg('Pre-scanning occupancy... ','  ','-')
-          call scnocup(iier)
-          iocut=0  ! signal not always occupied
-          call scnocup(iier)
-          call usrmsg('Pre-scanning occupancy...done. ','  ','P')
-          didprescan=.false.  ! no pre-scan done
-          return
-        endif
+        call usrmsg('Rescanning database... ',' ','-')
+        call MMAPER
+        call usrmsg('Rescanning database...done.',' ','P')
+        call usrmsg('  ','  ','-')
       endif
 
       RETURN
@@ -906,7 +867,6 @@ C ier is zero if no problems and -3 if user issued a cancel.
 #include "model.h"
 #include "geometry.h"
 #include "esprdbfile.h"
-#include "schedule.h"
 
       integer lnblnk  ! function definition
       integer igraphiclib  ! external definition
@@ -916,11 +876,10 @@ C ier is zero if no problems and -3 if user issued a cancel.
 
       common/recver/izver,ipver,iever
       common/rpath/path
-      character xfile*144,tg*1,delim*1
-      common/exporttg/xfile,tg,delim
       
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
+      common/C21/IFCFG,cfgroot,LCFGF
 
       COMMON/DNORGH/IRTYPE
       COMMON/RECV3/NCONST(MCOM),NELTS(MCOM,MS),NGAPS(MCOM,MS),
@@ -943,40 +902,24 @@ C Nothing references ZGAE and ZGAI.
       COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
 
 C Defaults.
-      character*96 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF
       COMMON/DEFLT2/DFCFG,DFCTL,DEFRLB,DAFRES,DAPROB,DPNF
+      character*72 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF
 
-      CHARACTER CHDUM*72
+      CHARACTER LCFGF*72,CHDUM*72
 
 C longtmp is the model configuration file with full path.
-      CHARACTER NAME*6,longtmp*144
+      CHARACTER NAME*6,longtmp*144,cfgroot*24
       character outs*124,znpad*15,path*72,MODE*4
       character louts*248
       
       logical XST,CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
-      logical dmdsok  ! for dispersed demands
 
 C For help messages
       character helpinsub*24   ! subroutine name
       character helptopic*24 ! string (unique) for topic
       integer nbhelp     ! number of help lines found
 
-C For weather file.
-      logical unixok,concat
-      character fs*1
-      character llclmdb*144  ! to expand weather file
-      integer lndbp          ! length of weather folder path
-
       helpinsub='MOINIT'  ! set for subroutine
-
-
-C Set folder separator (fs) to \ or / as required.
-      call isunix(unixok)
-      if(unixok)then
-        fs = char(47)
-      else
-        fs = char(92)
-      endif
 
       IER=0
       IUNIT=IFIL
@@ -993,9 +936,9 @@ C read again.
         if(NCOMP.gt.MCOM.or.NCON.gt.MCON)then
           write(outs,*) 'WARNING: ncomp at record was dubious',NCOMP,
      &       IREC
-          call edisp(iuout,outs)
-          call edisp(iuout,'this results file needs to be scanned')
-          call edisp(iuout,'with an older version of res.')
+	  call edisp(iuout,outs)
+	  call edisp(iuout,'this results file needs to be scanned')
+	  call edisp(iuout,'with an older version of res.')
         endif
       endif
       IREC=IREC+1
@@ -1022,9 +965,9 @@ C read again.
       READ(IUNIT,REC=IREC,IOSTAT=ios,ERR=1000)(NCCODE(I),I=21,NCOMP)
       IREC=IREC+1
 
-C Recover CLIMATE file name used at simulation time.  Note this file
-C name will be updated when the model cfg file is scanned in subsequent
-C call to ersys later in this subroutine.
+C Recover CLIMATE file name used at simulation time.
+C << if there is an error it might be because of the version
+C << of the database file
 
     4 READ(IUNIT,REC=IREC,IOSTAT=ios,ERR=1000)LCLIM
       IREC=IREC+1
@@ -1099,7 +1042,7 @@ C     IREC=IREC+3*NCOMP
       DO 20 I=1,NCOMP
         READ(IUNIT,REC=IREC,IOSTAT=ios,ERR=1000)znpad
         write(ZNAME(I),'(a)') znpad(1:12)
-        lnzname(I)=lnblnk(znpad)  ! update string length
+	lnzname(I)=lnblnk(znpad)  ! update string length
         IREC=IREC+1
    20 CONTINUE
       READ(IUNIT,REC=IREC,IOSTAT=ios,ERR=1000)(NCONST(I),I=1,NCP)
@@ -1299,31 +1242,7 @@ C Open core databases (materials, constructions, optics).
           else
             call usrmsg('Databases scan (ok)',' ','P')
           endif
-
-C Set the default export file name based on model root name.
-          write(xfile,'(2a)') cfgroot(1:lnblnk(cfgroot)),'.csv'
-
         ENDIF
-
-C Take into account weather file location.
-       lndbp=lnblnk(standardclmpath)
-       if(ipathclim.eq.0.or.ipathclim.eq.1)then
-         call addpath(lclim,llclmdb,concat)
-       elseif(ipathclim.eq.2)then
-         write(llclmdb,'(3a)') standardclmpath(1:lndbp),fs,
-     &     LCLIM(1:lnblnk(LCLIM))
-       endif
-       lclim=llclmdb  ! overwrite weather with expanded file name
-
-C If there is a model dispersed demands file read it.
-       call FINDFIL(bdmds,XST)
-       IF(XST)THEN
-         CALL ERPFREE(IAPROB,ISTAT)
-         CALL ERBDMD(0,IAPROB,IER)
-         dmdsok=.true.
-       else
-         dmdsok=.false.
-       endif
 
 C If izver is >=4 then the only information needed from the zone
 C operation file is the user name for each casual gain type. Scan
@@ -1373,7 +1292,6 @@ C are not referenced. Could we use these slots for something else?
   140 CONTINUE
   
 C Finally check if the climate file read in above exists.
-C << take into account location >>
    44 IUNITC=IFIL+5
       call EFOPRAN(IUNITC,LCLIM,144,0,IER)
       IF(IER.LT.0)then

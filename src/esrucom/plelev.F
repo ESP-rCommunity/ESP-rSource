@@ -60,13 +60,9 @@ C geometry.h provides commons G0/G1/G2/precz/GS5/GS6.
 #ifdef OSI
       integer igwid,igheight  ! for use with axiscale
       integer iupdown,isym,iix,iiy,iid1,iid2    ! passed to etplot
-      integer iigl,iigr,iigt,iigb,iigw,iigwh
-      integer iiw1,iiw2,iiw3,iiw4,iimenu
 #else
       integer*8 igwid,igheight  ! for use with axiscale
       integer*8 iupdown,isym,iix,iiy,iid1,iid2    ! passed to etplot
-      integer*8 iigl,iigr,iigt,iigb,iigw,iigwh
-      integer*8 iiw1,iiw2,iiw3,iiw4,iimenu
 #endif
 
       IER=0
@@ -80,20 +76,12 @@ C return the offsets which define it. Recalculate igw and igwh
 C on fortran to address fault in 64 bit win3d code.
       call startbuffer()
       if(menuchw.ne.0)then
-
-C Setup and pass in parameters to win3d.
-        iiw1=7; iiw2=4; iiw3=3; iiw4=3; iimenu=menuchw
-        iigl=igl; iigr=igr; iigt=igt; iigb=igb; iigw=igw; iigwh=igwh
-        CALL win3d(iimenu,iiw1,iiw2,iiw3,iiw4,
-     &    iigl,iigr,iigt,iigb,iigw,iigwh)
+        CALL win3d(menuchw,7,4,3,3,igl,igr,igt,igb,igw,igwh)
       else
-        iiw1=7; iiw2=4; iiw3=3; iiw4=3; iimenu=32
-        iigl=igl; iigr=igr; iigt=igt; iigb=igb; iigw=igw; iigwh=igwh
-        CALL win3d(iimenu,iiw1,iiw2,iiw3,iiw4,
-     &    iigl,iigr,iigt,iigb,iigw,iigwh)
+        CALL win3d(32,7,4,3,3,igl,igr,igt,igb,igw,igwh)
       endif
-      igl=int(iigl); igr=int(iigr); igt=int(iigt); igb=int(iigb)
-      igw=int(iigw); igwh=int(iigwh)
+      igw=igr-igl
+      igwh=igb-igt
       igwid=igw
       igheight=igwh
       
@@ -108,21 +96,21 @@ C Draw a scale vertical axis.
       if(direc.eq.'P')then
         CALL axiscale(igwid,igheight,XMN,XMX,YMN,YMX,xsc,ysc,sca,
      &    Xadd,Yadd)
-        call linescale(iigl,Xadd,sca,iigb,Yadd,sca)
-        CALL horaxis(XMN,XMX,iigl,iigr,iigb,Xadd,sca,1,'East (m) ->')
-        CALL vrtaxis(YMN,YMX,iigl,iigb,iigt,Yadd,sca,1,0,'^ North')
+        call linescale(igl,Xadd,sca,igb,Yadd,sca)
+        CALL horaxis(XMN,XMX,igl,igr,igb,Xadd,sca,1,'East (m) ->')
+        CALL vrtaxis(YMN,YMX,igl,igb,igt,Yadd,sca,1,0,'^ North')
       elseif(direc.eq.'S')then
         CALL axiscale(igwid,igheight,XMN,XMX,ZMN,ZMX,xsc,ysc,sca,
      &    Xadd,Yadd)
-        call linescale(iigl,Xadd,sca,iigb,Yadd,sca)
-        call horaxis(XMN,XMX,iigl,iigr,iigb,Xadd,sca,1,'East (m) ->')
-        call vrtaxis(ZMN,ZMX,iigl,iigb,iigt,Yadd,sca,1,0,'^ Up')
+        call linescale(igl,Xadd,sca,igb,Yadd,sca)
+        call horaxis(XMN,XMX,igl,igr,igb,Xadd,sca,1,'East (m) ->')
+        call vrtaxis(ZMN,ZMX,igl,igb,igt,Yadd,sca,1,0,'^ Up')
       elseif(direc.eq.'E')then
         CALL axiscale(igwid,igheight,YMN,YMX,ZMN,ZMX,xsc,ysc,sca,
      &    Xadd,Yadd)
-        call linescale(iigl,Xadd,sca,iigb,Yadd,sca)
-        call horaxis(YMN,YMX,iigl,iigr,iigb,Xadd,sca,1,'North (m) ->')
-        call vrtaxis(ZMN,ZMX,iigl,iigb,iigt,Yadd,sca,1,0,'^ Up')
+        call linescale(igl,Xadd,sca,igb,Yadd,sca)
+        call horaxis(YMN,YMX,igl,igr,igb,Xadd,sca,1,'North (m) ->')
+        call vrtaxis(ZMN,ZMX,igl,igb,igt,Yadd,sca,1,0,'^ Up')
       endif
 
 C Loop through each of the selected zones, read geometry

@@ -55,6 +55,7 @@ C LPRFDB,IPRODB (for event profile database)
       
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
+      common/C21/IFCFG,cfgroot,LCFGF
       COMMON/MFLOW1/NNOD,NCMP,NCNN
       COMMON/MFLOW2/NDNAM(0:MNOD)
       COMMON/MFLOW3/NDFLD(MNOD),NDTYP(MNOD),HNOD(MNOD),SUPNOD(MNOD,MNDS)
@@ -67,8 +68,9 @@ C LPRFDB,IPRODB (for event profile database)
      &  smstres(MSPS),selres(MSPS),sipvres
 
       CHARACTER*33 ITEM1(24)
-      CHARACTER LAPROB*72
+      CHARACTER LAPROB*72,LCFGF*72
       CHARACTER LTMP*72,outs*124,outstr*124
+      character cfgroot*24
       character sblres*72,sflres*72,splres*72,smstres*72,sipvres*72
       character selres*72,NDNAM*12,fs*1
       LOGICAL OK,dok,found,XST,clkok,browse,unixok
@@ -570,7 +572,6 @@ C LAPRES,IAPRES (for window pressure databases)
       
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
-      integer IZSTOCN
       COMMON/C24/IZSTOCN(MCOM,MS)
       COMMON/MFLOW1/NNOD,NCMP,NCNN
       COMMON/MFLOW2/NDNAM(0:MNOD)
@@ -1636,7 +1637,6 @@ C Fluid flow model file: edit or input wind speed reduction factor
 #include "geometry.h"
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
-      integer IZSTOCN
       COMMON/C24/IZSTOCN(MCOM,MS)
       COMMON/MFLCLM/DRYB,QDIF,QDNR,IRVH,WDIR,WSPD,WRED
 
@@ -1827,7 +1827,6 @@ C << should mode Z be visible when user first enters flow facility? >>
 #include "building.h"
 #include "model.h"
 #include "geometry.h"
-#include "schedule.h"
 #include "net_flow.h"
 #include "esprdbfile.h"
 
@@ -1856,6 +1855,10 @@ C << should mode Z be visible when user first enters flow facility? >>
       COMMON/RAY3/MODIFY,MODLEN,MODBND
       COMMON/RAY6/LINSTY(MCON)
 
+      COMMON/P2N/NAC(MDTY),IACS(MDTY,MA),IACF(MDTY,MA),ACI(MDTY,MA),
+     &ACV(MDTY,MA),IPT(MDTY,MA),TA(MDTY,MA)
+      INTEGER NAC,IACS,IACF,IPT
+      REAL ACI,ACV,TA
       common/caleni/nbdaytype,nbcaldays(MDTY),icalender(365)
       INTEGER NBDAYTYPE,NBCALDAYS,ICALENDER
 

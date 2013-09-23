@@ -4,7 +4,7 @@ C Strathclyde, Glasgow Scotland, 2001.
 
 C ESP-r is free software.  You can redistribute it and/or
 C modify it under the terms of the GNU General Public
-C License as published by the Free Software Foundation 
+C License as published by the Free Software Foundation
 C (version 2 orlater).
 
 C ESP-r is distributed in the hope that it will be useful
@@ -21,7 +21,7 @@ C Boston, MA 02111-1307 USA.
 C BPS version: This file contains the following routines:
 
 C  SIMCON   Executes the required simulations.
-C  MZSIML   Sets the final simulation parameters prior to simulation. 
+C  MZSIML   Sets the final simulation parameters prior to simulation.
 C  SIMTOG   Set simulation toggles
 C  MSTTOG   Set moisture flow toggles.
 C  STMTOG   Set building construction structured mesh toggles.
@@ -31,25 +31,24 @@ C  MZTRAC   Define quantities to be traced.
 C  MZINFO   Displays values of the currently set simulation parameters.
 
 C ******************** SIMCON
-C SIMCON sets the final parameters before executing a simulation.  MZNUMA is 
-C called the required number of times, saving results after each simulation. 
+C SIMCON sets the final parameters before executing a simulation.  MZNUMA is
+C called the required number of times, saving results after each simulation.
 
       subroutine SIMCON
-      
+
       USE AIM2_InputData, ONLY:iAIM2
       USE AIM2, ONLY: AIM2_SETVARS
-      
+
       IMPLICIT NONE
 
 C      USE H3KSTORE_FC_DATA,ONLY: iCurrent_FCT_OUTPUT_FILE
-      include "building.h"
-      include "uncertainty.h"
-      include "hvac_parameters.h"
-      include "h3kstore_parameters.h"
-      include "h3kstore_common.h"
-      include "SOFC.h"
-      include "UserSimulationToggles.h"
-      include "plant.h"
+#include "building.h"
+#include "uncertainty.h"
+#include "hvac_parameters.h"
+#include "h3kstore_parameters.h"
+#include "h3kstore_common.h"
+#include "SOFC.h"
+#include "UserSimulationToggles.h"
 
       common/filep/ifil
       INTEGER :: ifil
@@ -64,24 +63,10 @@ C      USE H3KSTORE_FC_DATA,ONLY: iCurrent_FCT_OUTPUT_FILE
 
       COMMON/SOLOFF/ISOLAR
       INTEGER ISOLAR
-      
+
       COMMON/GR1D04/GAM,RGAM
       REAL GAM, RGAM
 
-C Plant matrix solver convergence criteria.      
-      COMMON/PITER/MAXITP,PERREL,PERTMP,PERFLX,PERMFL,itrclp,
-     &             ICSV(MPNODE,MPVAR),CSVI(MPNODE,MPVAR)
-
-      integer MAXITP, itrclp, ICSV
-      real PERREL, PERTMP, PERFLX, PERMFL, CSVI
-     
-C Tolerance for iteration of hydrogen flow matrix
-      common/PITER_H2/fH2_iteration_tolerance
-      real fH2_iteration_tolerance
-      
-      
-      
-      
       COMMON/SAVE/ISAVE
       INTEGER :: isave
       COMMON/SAVE1/LSAVE
@@ -107,7 +92,7 @@ C Simulator parameter.
       logical PBYFIL,OK,dok
 
       character LUALF*72,LCNG*15,LLOC*15,outs*124
-      
+
       INTEGER :: i,ier,irep,isimn1,isimn2,istat,iualf,iunit
       INTEGER :: nstep
       REAL :: tstep
@@ -121,7 +106,7 @@ C For help messages
 
       OK=.FALSE.
 
-C Default values for IMET and NRSIM. 
+C Default values for IMET and NRSIM.
       IMET=0
       NRSIM=1
 
@@ -129,10 +114,10 @@ C Set simulation control.
       IER=0
       call MZCSTR(IER)
       if (IER.eq.1) then
-C If simulator is in silent running mode, set flag to terminate run      
+C If simulator is in silent running mode, set flag to terminate run
          if ( autook ) exitok = .true.
          return
-      endif 
+      endif
 
 C Calculate the BASESIMP heat loss factors.
       CALL BSFCCTL
@@ -154,28 +139,13 @@ C Are uncertainties defined?
         call SENRNS(IER)
         if (IER.eq.1) return
       endif
-      
 
-C Reimpose any user-specified simulation toggles as needed 
+
+C Reimpose any user-specified simulation toggles as needed
       if ( bUserGAM ) GAM = fUserGAM        ! User-specified-implicitness.
-      if ( bUserSolar ) ISOLAR = iUserSolar ! User-specified-solar-processing 
-      
-      
-      if ( bUserPltSolvConfig ) then 
-      
-        MAXITP                   = iUserMAXITP    
-        itrclp                   = iUserITRCLP    
-        PERREL                   = fUserPERREL    
-        PERTMP                   = fUserPERTMP    
-        PERFLX                   = fUserPERFLX    
-        PERMFL                   = fUserPERMFL    
-        fH2_iteration_tolerance  = fUserH2iterTol 
-      
-      endif 
-      
-      
+      if ( bUserSolar ) ISOLAR = iUserSolar ! User-specified-solar-processing
 C Run the necessary number of simulations.
-      do 100, I=1,NRSIM 
+      do 100, I=1,NRSIM
         ISIM=I
 
 C Write info to sensitivity trace file.
@@ -185,7 +155,7 @@ C Write info to sensitivity trace file.
           write (36,*) '**'
         endif
 
-C Reset the data if ISIM > 1 and change the required data. 
+C Reset the data if ISIM > 1 and change the required data.
         if (ISIM.gt.1) then
 
 C Re-scan the model description files silently.
@@ -198,14 +168,14 @@ C Re-scan the model description files silently.
           call MZCSTR(IER)
           write (36,*) '** Edits for changes in set:',ISIM,NTSTEP
         endif
-        
+
 C MZNUMA is effectively a simulation clock.
         CALL MZNUMA
 
-C Close ascii plant-side boundary data file if last simulation 
+C Close ascii plant-side boundary data file if last simulation
 C otherwise rewind for use in next simulation.
         if(pbyfil)then
-          if (ISIM.eq.NRSIM) then 
+          if (ISIM.eq.NRSIM) then
             iunit=ifil+9
             call erpfree(iunit,istat)
           else
@@ -222,7 +192,7 @@ c Send Output to file if save level = 5
      &        ( indcfg == 1 .or. indcfg == 3 ) ) then
           call h3kmzoutp()
         ENDIF
-c Close FC timstep output if open.      
+c Close FC timstep output if open.
         IF (FC_timeStep_output == FC_timeStep_output_yes) then
           close(unit=iCurrent_FCT_OUTPUT_FILE)
         ENDIF
@@ -336,7 +306,6 @@ C and information on the saved result set.
 #include "net_flow.h"
 #include "monitor.h"
 #include "cfd.h"
-#include "UserSimulationToggles.h"
 
       COMMON/OUTIN/IUOUT,IUIN
 
@@ -358,7 +327,7 @@ C and information on the saved result set.
       COMMON/PITER/MAXITP,PERREL,PERTMP,PERFLX,PERMFL,itrclp,
      &             ICSV(MPNODE,MPVAR),CSVI(MPNODE,MPVAR)
 
-C Tolerance for iteration of hydrogen flow matrix 
+C Tolerance for iteration of hydrogen flow matrix
       common/PITER_H2/fH2_iteration_tolerance
       real fH2_iteration_tolerance
 
@@ -371,7 +340,7 @@ C Tolerance for iteration of hydrogen flow matrix
       common /montrv/mnpc,mcomp(mpcom),mcnod(mpcom),mstate,monitr,
      &               ymin,ymax
       COMMON/SPFL/spfileok,perok,tstepok,saveok,autook,exitok,startupok
-      
+
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
       common/ndcfd/ncfdnd,icfdnd(MNZ),NCONF
@@ -437,31 +406,16 @@ C every plant time-step <<check with essam on this!!!>>.
 C Initialise plant side matrix solver. By default, the Gaussian approach
       IPMSLV=1
 
+C Initialise plant side iteration parameters
+      MAXITP=100
+      PERREL=.01
+      PERTMP=1.
+      PERFLX=10.
+      PERMFL=.0005
+      itrclp=maxitp
+C Hydrogen flow iteration tolerance
+      fH2_iteration_tolerance = PERMFL * 1.0E-03
 
-     
-C Initialize user defined plant side convergence params to default values   
-
-
-      UsrPltConfig: if ( bUserPltSolvConfig ) then 
-      
-        ! Use specified plant solution parameters 
-        
-        MAXITP  = iUserMAXITP   
-        ITRCLP  = iUserITRCLP   
-        PERREL  = fUserPERREL   
-        PERTMP  = fUserPERTMP   
-        PERFLX  = fUserPERFLX   
-        PERMFL  = fUserPERMFL   
-        fH2_iteration_tolerance = fUserH2iterTol
-      
-      else 
-      
-        ! save comptued values to report to user. 
-      
-        
-      endif UsrPltConfig
-   
-     
 
 C Initialise all zones to air-filled
       do 114 iwz=1,mcom
@@ -479,13 +433,13 @@ C Assign user-specified library.
 
 C Set period if not already done. However if there is a CFD domain
 C in the model then we need to ask about when to include it (as this
-C information is not yet included in the simulation parameter set). 
+C information is not yet included in the simulation parameter set).
       IF ( .not. perok )then
         CALL MZSPER
       ELSE
         call askaboutcfd
       ENDIF
-      
+
 C Display menu of alternatives.
       if(.not.saveok)ISAVE=2
 
@@ -506,7 +460,7 @@ C Set up the menu text.
         ITEM(4)= '* Save >> 3 (2+) node temps  '
       elseif(ISAVE.eq.4)then
         ITEM(4)= '* Save >> 4 (2+) energy balnc'
-c save level 5 
+c save level 5
       elseif(ISAVE.eq.5)then
         ITEM(4)= '* Save >> 5 H3K no res file'
       elseif(ISAVE.eq.6)then
@@ -535,9 +489,9 @@ C Help text for this menu.
   91  helptopic='main_sim_menu'
       call gethelptext(helpinsub,helptopic,nbhelp)
 
-C Do not display the menu if in autook mode as defined in the 
+C Do not display the menu if in autook mode as defined in the
 C simulator parameter file.
-C NOTE: if the menu is changed then the values assigned to ino 
+C NOTE: if the menu is changed then the values assigned to ino
 C       will have to be updated.
       if (autook) then
         if (exitok) then
@@ -727,7 +681,7 @@ C Set simulation toggles.
       COMMON/FFN/IFLWN,ICFFS(MPCON)
       COMMON/PITER/MAXITP,PERREL,PERTMP,PERFLX,PERMFL,itrclp,
      &             ICSV(MPNODE,MPVAR),CSVI(MPNODE,MPVAR)
-C Tolerance for iteration of hydrogen flow matrix 
+C Tolerance for iteration of hydrogen flow matrix
       common/PITER_H2/fH2_iteration_tolerance
       real fH2_iteration_tolerance
       COMMON/MFSINC/MFBSNC
@@ -737,12 +691,12 @@ C Tolerance for iteration of hydrogen flow matrix
       COMMON/CLMFLG/ICLMFL
       COMMON/PMSLV/IPMSLV
 
-      common/spmfxst/ispmxist,spflnam 
-      
+      common/spmfxst/ispmxist,spflnam
+
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
 
-C Common for electrical file 
+C Common for electrical file
       COMMON/ENTFILE/ENTFLNAM,IENTXIST
       INTEGER :: ispmxist,ientxist
 
@@ -768,11 +722,11 @@ C Treatment of solar radiation data in weather file
 C ESP-r operates on hourly-centered data. That is, the amount of solar
 C irradiance at the recorded hour is the instantaneous irradiance at the
 C hour. In Canadian Weather for Energy Calculations (CWEC) files, solar
-C radiation is integrated over the previous hour. To account for 
+C radiation is integrated over the previous hour. To account for
 C the half hour shift, a flag has been implemented to indicate
 C whether solar radiation data in the weather file is hour-centered
 C (default) or half-hour centered.
-C The flag can be set in the .cfg file or within bps in the 
+C The flag can be set in the .cfg file or within bps in the
 C 'simulation toggles' menu.
 
       common/CWEC_SOL/iSlr_half_hr_flg
@@ -788,10 +742,10 @@ c This common block is used to define the sky temperature calculation method
       integer iExt_longwave_flg    ! 0 = Martin & Berdahl (1984);
                                    ! 1 = Clarke ($7.5.4 JC book, 2nd edition, 2001);
                                    ! 2 = Cole (?);
-                                   ! 3 = Czeplak & Kasten (1987);               
-                                   ! 4 = Swinbank (clear - uses dry bulb T);                  
-                                   ! 5 = Swinbank (clear - uses wet bulb T);       
-                                                                                                                                                    
+                                   ! 3 = Czeplak & Kasten (1987);
+                                   ! 4 = Swinbank (clear - uses dry bulb T);
+                                   ! 5 = Swinbank (clear - uses wet bulb T);
+
       CHARACTER*72 LAPROB,vsnam,lfil,entflnam
       CHARACTER*40 ITEMG(34)
       character SALT*51,spflnam*72,outs*124
@@ -931,13 +885,13 @@ C Make up strings for the current set of toggles.
       elseif(iExt_longwave_flg.eq.5)then
         ITEMG(31)=   'x Ext. longwave rad >>  Swinbank-bldng'
       endif
-      ITEMG(32)=    '  ________________________________      '      
+      ITEMG(32)=    '  ________________________________      '
       ITEMG(33)=    '? help                                  '
       ITEMG(34)=    '- exit to simul menu                    '
       NITMS=34
 
 C Help text for this menu.
-      helptopic='sim_toggles_menu'
+  91  helptopic='sim_toggles_menu'
       call gethelptext(helpinsub,helptopic,nbhelp)
 
       CALL EMENU(' toggles',ITEMG,NITMS,INO)
@@ -957,7 +911,7 @@ C Zone side equations implicitness degree.
      &        'Zone side equations implicitness degree: ',
      &         0.,'F',1.,'F',0.5,' implicitness degree',IER,nbhelp)
 
-        bUserGAM = .true. 
+        bUserGAM = .true.
         call tstamp('>','SIM: edit implicitness degree')
       elseif(INO.eq.3)then
 
@@ -971,7 +925,7 @@ C Plant components state-space equation types.
         call edisp(iuout,'   steady state                      (4)')
         call edisp(iuout,' ')
 
-        CALL EASKI(IMPEXP,' ','Plant equation type: (1-4, see help)',
+        CALL EASKI(IMPEXP,' ','Plant equation type: (see help)',
      &         1,'F',4,'F',3,'plant equation type iq 15',IER,nbhelp)
         IF(IER.NE.0)GOTO 131
         call tstamp('>','SIM: edit plant equation type')
@@ -988,7 +942,7 @@ C Solar ON/OFF option.
   191   CALL EASKI(iUserSolar,' ',
      &    'Solar processing  0) On,  1) Off ? ',
      &    0,'F',1,'F',0,'Solar processing iq 23',IER,nbhelp)
-  
+
         bUserSolar = .true.
         IF(IER.NE.0)GOTO 191
         call tstamp('>','SIM: edit solar radiation')
@@ -1083,44 +1037,31 @@ C Plant solution technique.
         CALL EASKI(IPMSLV,' ',' Plant solver type (see help)?',
      &    1,'F',3,'F',2,'solver type',IER,nbhelp)
         IF(IER.NE.0) GOTO 308
-        
-        bUserPltSolvConfig = .true. 
 
   309   CALL EASKI(MAXITP,' Maximum number of iterations',' : ',
      &    1,'F',0,'-',1,'no iter',IER,nbhelp)
 
-        CALL EASKI(iUserITRCLP,
-     &    ' No. of iterations for control loops',' : ',
+        CALL EASKI(itrclp,' No. of iterations for control loops',' : ',
      &    1,'F',0,'-',1,'no iter',IER,nbhelp)
 
-        CALL EASKR(fUserPERREL,' Relative error (-) ',' : ',
+        CALL EASKR(PERREL,' Relative error (-) ',' : ',
      &    0.0001,'F',0.,'-',1.,'rel err',IER,nbhelp)
 
-        CALL EASKR(fUserPERTMP,' Absolute error temperature (K) ',' : ',
+        CALL EASKR(PERTMP,' Absolute error temperature (K) ',' : ',
      &    0.0001,'F',0.,'-',1.,'abs err temp',IER,nbhelp)
 
-        CALL EASKR(fUserPERFLX,' Absolute error heat flux (W) ',' : ',
+        CALL EASKR(PERFLX,' Absolute error heat flux (W) ',' : ',
      &    0.0001,'F',0.,'-',1.,'abs err flux',IER,nbhelp)
 
-        CALL EASKR(fUserPERMFL,
-     &    ' Absolute error mass flow (kg/s) ',' : ',
+        CALL EASKR(PERMFL,' Absolute error mass flow (kg/s) ',' : ',
      &    0.0001,'F',0.,'-',1.,'abs err flux',IER,nbhelp)
 
-        CALL EASKR(fUserH2iterTol,
+        CALL EASKR(fH2_iteration_tolerance,
      &    ' Absolute error (H2 mass flow) flow (kg/s) ',' : ',
      &    5.0E-6,'F',0.,'-',1.,'abs err flux',IER,nbhelp)
 
         IF(IER.NE.0) GOTO 309
 
-C Update parameters         
-        MAXITP                  = iUserMAXITP    
-        itrclp                  = iUserITRCLP    
-        PERREL                  = fUserPERREL    
-        PERTMP                  = fUserPERTMP    
-        PERFLX                  = fUserPERFLX    
-        PERMFL                  = fUserPERMFL    
-        fH2_iteration_tolerance = fUserH2iterTol          
-        
 C Perhaps plant solution iteration parameters are altered, so always
 C synchronize corresponding mass flow solver iteration parameters
 C except for MAXITP / MAXITF
@@ -1283,7 +1224,7 @@ C << consider a different approach
      &    ' ',72,' ','vertical solar file',IER,nbhelp)
         if(IER.NE.0) then
           write(outs,'(a,a)') 'Could not find file ',vsnam
-          call edisp(iuout,outs)      
+          call edisp(iuout,outs)
           vtsol=.false.
           goto 92
         endif
@@ -1316,9 +1257,9 @@ C Determine how sky temperatures are calculated.
 
         call easki(iExt_longwave_flg,
      &    ' External longwave calculation 0) Martin & Berdahl, ',
-     &    ' 1) Clarke, 2) Cole, 3) Czeplak & Kasten, 4) Swinbank-clear, 
+     &    ' 1) Clarke, 2) Cole, 3) Czeplak & Kasten, 4) Swinbank-clear,
      &5) Swinbank-bldng',
-     &    0,'F',5,'F',0,'ext lngwave method',IER,nbhelp)  
+     &    0,'F',5,'F',0,'ext lngwave method',IER,nbhelp)
 
       elseif(INO.eq.(NITMS-1))then
 
@@ -1347,7 +1288,7 @@ C Set moisture flow toggles.
       COMMON/MOIST13/RLXln,RRLXln,RLXlnF,RRLXlnF,RLXlnT,RRLXlnT
       COMMON/MOIST14/DTfalse,TRMfls,TRMflsp1
 
-      CHARACTER ITEMG(11)*40 
+      CHARACTER ITEMG(11)*40
       integer NITMS,INO  ! max items and current menu item
 
 C For help messages
@@ -1451,7 +1392,7 @@ C Set building construction structured mesh toggles.
       COMMON/GRSD121/InSSlv,MSItrn,TSCrSM,QSCrSM
       COMMON/GRSD122/InSvST,ISTemp
 
-      CHARACTER ITEMG(10)*40 
+      CHARACTER ITEMG(10)*40
       integer NITMS,INO  ! max items and current menu item
 
 C For help messages
@@ -1575,7 +1516,7 @@ C TIMSEC       - length of time increment in seconds
       COMMON/C6/INDCFG
       COMMON/MOIST14/DTfalse,TRMfls,TRMflsp1
       COMMON/PREC7/ITCNST
-      
+
 C Active domain common.
       common/ACTDOM/CFDOK
 
@@ -1603,13 +1544,13 @@ C or day and month, return julian days and convert to month
 C and day.
   14  if(.NOT.perok) then
 
-C If period has not been defined, assign defaults        
+C If period has not been defined, assign defaults
         isds=9
         isdf=15
         if ( bMY_sim_enabled ) then
            iMY_start_year = 2000
            iMY_end_year   = 2000
-        endif     
+        endif
       else
 
 C If period has been defined get start & end days
@@ -1617,14 +1558,14 @@ C If period has been defined get start & end days
         CALL EDAY(isd2,ism2,isdf)
 
 C Adjust end date for multi-year simulation
-        if ( bMY_sim_enabled ) then           
-          isdf = isdf + 365 * ( iMY_end_year - iMY_start_year )         
+        if ( bMY_sim_enabled ) then
+          isdf = isdf + 365 * ( iMY_end_year - iMY_start_year )
         endif
-        
+
       endif
     8 if(.not.autook) then
         if ( bMY_sim_enabled ) then
-C Multi-year simulation prompt    
+C Multi-year simulation prompt
           call eAskPerYear('Simulation period:',isds,isdf,
      &                   iMY_start_year,iMY_end_year,ifday,ier)
         else
@@ -1632,7 +1573,7 @@ C Single year simulation prompt
           call eAskPer('Simulation period:',isds,isdf,ifday,ier)
         endif ! <- matches if ( bMY_sim_enabled )...
         IF(IER.NE.0) GOTO 14
-      endif ! <- matches if (.not. autook)     
+      endif ! <- matches if (.not. autook)
       call edayr(isds,isd1,ism1)
       call edayr(ISDF - 365*(iMY_end_year - iMY_start_year), ISD2,ISM2)
 
@@ -1728,7 +1669,7 @@ C Check against user preference in simulation parameters.
       endif
 
 C Debug.
-C      write(6,*) 'in mzper irdact & isavgh are ',irdact,isavgh 
+C      write(6,*) 'in mzper irdact & isavgh are ',irdact,isavgh
 
       RETURN
       END
@@ -1741,10 +1682,10 @@ C askaboutcfd confirms simulation periods for CFD assessments.
       COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/PERS/ISD1,ISM1,ISD2,ISM2,ISDS,ISDF,NTSTEP
-      
+
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
-      
+
 C Active domain common.
       common/ACTDOM/CFDOK
 
@@ -1811,7 +1752,7 @@ C        write(6,*) isd1,ism1,isds,isd2,ism2,isdf
           call edisp(iuout,' Start/Finish hours out of order.')
           goto 50
         endif
-      
+
         DO 30 IC=1,NCOMP
           ICFAUX(IC)=IFCFD(IC)
           IFCFD(IC)=0
@@ -1826,20 +1767,21 @@ C MZSIMH outputs simulation period and wait time information
 C prior to each simulation commencing.
 
       SUBROUTINE MZSIMH(ICON)
+      use h3kmodule
 #include "building.h"
 #include "model.h"
 #include "esprdbfile.h"
 #include "control.h"
-#include "UserSimulationToggles.h"       
+
       integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/SHOUT/ICOUT
       COMMON/TC/ITC,ICNT
       COMMON/TRACE/ITCF,ITRACE(MTRACE),IZNTRC(MCOM),ITU
-      
-      integer ncomp,ncon
+
       COMMON/C1/NCOMP,NCON
+      integer ncomp,ncon
       COMMON/PREC7/ITCNST
 
       COMMON/C6/INDCFG
@@ -1864,6 +1806,8 @@ C prior to each simulation commencing.
       COMMON/SOLOFF/ISOLAR
 
       COMMON/WARN/IWARN
+      common/C21/IFCFG,cfgroot,LCFGF
+      INTEGER :: IFCFG
 
 C TSC data.
       COMMON/TS/ITSFLG,NTSCPD,ITSSCH(MSCH,5),itsmus
@@ -1891,9 +1835,9 @@ C Simulator parameters.
       LOGICAL     spfileok,perok,tstepok,saveok,autook,exitok,startupok
 
       CHARACTER ctldoc*248
-      CHARACTER LCTLF*72
+      CHARACTER*72 LCFGF,LCTLF
       character PERST1*14,PERST2*44,PERST3*44
-      character outs*124,louts*248
+      character outs*124,louts*248,cfgroot*24
 
       LOGICAL OK,dok,IGR1D,GRND3D,MSTROK,MSTRZN
       LOGICAL ILTHPS,ILTHPZ,INTHPS,INTHPZ,global,glbrwd
@@ -1911,7 +1855,7 @@ C For help messages
 
       IDAYS=ISDF-ISDS+1
 
-C If multiple simulations then skip reporting (its the same as 
+C If multiple simulations then skip reporting (its the same as
 C the first time).
       IF (ISIM.gt.1) goto 6
 
@@ -1955,10 +1899,10 @@ C Determine the number of zone days simulated.
 
 C Write out appropriate message.
       write(louts,'(a,a)')  ' Climate file         : ',
-     &  LCLIM(1:lnblnk(LCLIM))
+     &  LCLIM(:lnblnk(LCLIM))
       call edisp248(icout,louts,100)
       write(outs,'(a,a)')   ' Configuration file   : ',
-     &  LCFGF(1:lnblnk(LCFGF))
+     &  LCFGF(:lnblnk(LCFGF))
       call edisp(icout,outs)
       write(outs,'(a,a)')   ' Configuration name   : ',
      &  modeltitle(:lnblnk(modeltitle))
@@ -2014,7 +1958,7 @@ C Derive string for simulation period.
       else
         write(outs,'(a,I6,a,F5.2,a)')' Zone time-steps      :',NTSTEP,
      &    ' / hr ( ',TMIN,' min. intervals saved once per hour)'
-      endif 
+      endif
       call edisp(icout,outs)
       write(outs,'(a,I5)') ' Number of zones      : ',NCOMP
       call edisp(icout,outs)
@@ -2079,9 +2023,8 @@ C If appropriate, output special features invoked.
       IF(GRND3D)IMESS=1
       IF(MSTROK)IMESS=1
       IF(IndxSt.GT.0)IMESS=1
-      IF(bUserPltSolvConfig) IMESS = 1
+
       IF(IMESS.EQ.1)THEN
-        call edisp(icout,'')
         call edisp(icout,' Special features invoked:')
         call edisp(icout,' =========================')
       ENDIF
@@ -2102,7 +2045,7 @@ C Non-linear thermophysical properties assigned.
 
 C Adaptive 1D gridding performed.
       IF(IGR1D)CALL EDISP(IUOUT,' Adaptive 1D gridding performed.')
-      
+
 C 3D conduction modelling invoked.
       IF(BLDG3D)CALL EDISP(IUOUT,' 3D conduction modelling invoked.')
 
@@ -2131,45 +2074,13 @@ C or mixed, based on time-step evaluation.
         endif
       ENDIF
 
-       UserPltConfigSettings: if ( bUserPltSolvConfig ) then 
-        
-        WRITE(OUTS,'(A,I5)')
-     &  ' Plant - max iterations: ',iUserMAXITP
-        CALL EDISP(IUOUT,OUTS)
-        
-        WRITE(OUTS,'(A,I5)')
-     &  '         max cotrol iterations: ', iUserITRCLP
-        CALL EDISP(IUOUT,OUTS)
-
-        WRITE(OUTS,'(A,F5.2)')
-     &  '         max relative error: ',fUserPERREL
-        CALL EDISP(IUOUT,OUTS)  
-        
-        WRITE(OUTS,'(A,F5.2)')
-     &  '         max temperature error (oC): ',fUserPERTMP
-        CALL EDISP(IUOUT,OUTS)  
-
-        WRITE(OUTS,'(A,F5.2)')
-     &  '         max mass flow error (kg/s): ',fUserPERMFL
-        CALL EDISP(IUOUT,OUTS)          
-
-        WRITE(OUTS,'(A,F5.2)')
-     &  '         max heat flux error (W): ',fUserPERFLX
-        CALL EDISP(IUOUT,OUTS)          
-        
-        WRITE(OUTS,'(A,E12.6)')
-     &  '         max H2 flow error (kg/s): ',fUserH2iterTol
-        CALL EDISP(IUOUT,OUTS)   
-        
-      endif UserPltConfigSettings
-      
 C Default solar treatment, solar ON.
       IF(ISOLAR.NE.0)call edisp(icout,' Solar processing OFF.')
 
 C Default - results are averaged.
       IF(IDAVER.NE.0)call edisp(icout,' Averaging OFF.')
 
-C Option to terminate - ignore if in autoexec mode as defined in 
+C Option to terminate - ignore if in autoexec mode as defined in
 C the simulator parameter file.
       if (autook.or.(ISIM.gt.1)) then
         ok=.true.
@@ -2197,7 +2108,7 @@ C Commence simulation.
       endif
       ICON=1
 
-C If trace is active then write to the file the header 
+C If trace is active then write to the file the header
 C information above to assist in identification.
       IF(ITC.gt.0.and.ITU.ne.iuout)call mzinfo(ITU)
     7 RETURN
@@ -2221,24 +2132,22 @@ C ICNT    - counts trace output for page numbering purposes
 
       SUBROUTINE MZTRAC
 #include "building.h"
-#include "model.h"
 #include "geometry.h"
-      
+
       integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/TC/ITC,ICNT
       COMMON/TRACE/ITCF,ITRACE(MTRACE),IZNTRC(MCOM),ITU
-      COMMON/PERS/ISD1,ISM1,ISD2,ISM2,ISDS,ISDF,NTSTEP
-      
+
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
       COMMON/C6/INDCFG
-      COMMON/PREC7/ITCNST
       COMMON/PREC9/NCONST(MCOM),NELTS(MCOM,MS),NGAPS(MCOM,MS),
      &             NPGAP(MCOM,MS,MGP)
       COMMON/PREC13/C(MCOM,MS,MN,2),QC(MCOM,MS,MN)
       COMMON/GR1D01/NNDS,NNDZ(MCOM),NNDC(MCOM,MS),NNDL(MCOM,MS,ME)
+      common/C21/IFCFG,cfgroot,LCFGF
 
 C Common for libsv3 trace
       COMMON/enbal/nsurf,insurf(MS)
@@ -2246,6 +2155,7 @@ C Common for libsv3 trace
       dimension IVALS(MCOM)
       CHARACTER*29 ITEM(33)
       character outs*124,dtrace*72,ltrace*72
+      character cfgroot*24,LCFGF*72
       logical OK,dok
       integer NITEMS,INO  ! max items and current menu item
 
@@ -2279,7 +2189,7 @@ C For help messages
       ITEM(19)='u surface adjacent conditions'
       ITEM(20)='v plant matrix template      '
       ITEM(21)='w plant component static     '
-      ITEM(22)='x plant component adj info   '
+      ITEM(22)='x plant component adj inf    '
       ITEM(23)='y plant coef generator       '
       ITEM(24)='z plant matrix solution      '
       ITEM(25)='1 plant matrix setup         '
@@ -2314,7 +2224,7 @@ C Initilise trace output facility.
    40 CONTINUE
 
 C Case for plant only.
-      if(indcfg.eq.2) goto 9989      
+      if(indcfg.eq.2) goto 9989
 
       dok=.true.
       CALL ASKOK(' ','Select trace topics?',OK,dok,nbhelp)
@@ -2354,57 +2264,38 @@ C Help for trace facility.
 C Shift the menu index back to get trace index.
       if(ino.eq.1)then
         II=2
-        call edisp(iuout,'Selected electical calculation trace.')
       elseif(ino.eq.2)then
         II=3
-        call edisp(iuout,'Selected temporal items trace.')
       elseif(ino.eq.3)then
         II=4
-        call edisp(iuout,'Selected view factor & longwave trace.')
       elseif(ino.eq.4)then
         II=5
-        call edisp(iuout,
-     &    'Selected shading & insolation trace.You must re-scan')
-        call edisp(iuout,'the model cfg file to get this report.')
       elseif(ino.eq.5)then
         II=6
-        call edisp(iuout,'Selected heat transfer coef trace.')
       elseif(ino.eq.6)then
         II=10
-        call edisp(iuout,'Selected zone RH & condensation trace.')
       elseif(ino.eq.7)then
         II=11
-        call edisp(iuout,'Selected infiltration & ventilation trace.')
       elseif(ino.eq.8)then
         II=12
-        call edisp(iuout,'Selected zone casual gains trace.')
       elseif(ino.eq.9)then
         II=14
-        call edisp(iuout,'Selected zone miscellaneous trace.')
       elseif(ino.eq.10)then
         II=15
-        call edisp(iuout,'Selected zone matrix modification trace.')
       elseif(ino.eq.11)then
         II=19
-        call edisp(iuout,'Selected solar radiation trace.')
       elseif(ino.eq.12)then
         II=25
-        call edisp(iuout,'Selected air flow calculations trace.')
       elseif(ino.eq.13)then
         II=26
-        call edisp(iuout,'Selected zone matrix setup trace.')
       elseif(ino.eq.14)then
         II=27
-        call edisp(iuout,'Selected matrix forward reduction trace.')
       elseif(ino.eq.15)then
         II=28
-        call edisp(iuout,'Selected matrix forward adjustment trace.')
       elseif(ino.eq.16)then
         II=29
-        call edisp(iuout,'Selected matrix forward red compl trace.')
       elseif(ino.eq.17)then
         II=30
-        call edisp(iuout,'Selected zone equation solution trace.')
       elseif(ino.eq.18)then
         II=31
 
@@ -2413,7 +2304,6 @@ C Trace output of library save..
           call edisp(iuout,'no zones yet for library save trace...')
           goto 4
         endif
-        call edisp(iuout,'Selected zone & surface flux balance trace.')
 
 C Ask for surfaces to be traced in the surface balances.
         CALL EASKI(NSURF,' ',
@@ -2428,30 +2318,22 @@ C Ask for surfaces to be traced in the surface balances.
   703   CONTINUE
       elseif(ino.eq.19)then
         II=32
-        call edisp(iuout,'Selected surface adjacent conditions trace.')
       elseif(ino.eq.20)then
         II=34
-        call edisp(iuout,'Selected plant matrix template trace.')
       elseif(ino.eq.21)then
         II=35
-        call edisp(iuout,'Selected plant component staic trace.')
       elseif(ino.eq.22)then
         II=36
-        call edisp(iuout,'Selected plant component adj info trace.')
       elseif(ino.eq.23)then
         II=37
-        call edisp(iuout,'Selected plant coefficient generator trace.')
       elseif(ino.eq.24)then
         II=38
-        call edisp(iuout,'Selected plant matrix solution trace.')
       elseif(ino.eq.25)then
         II=39
-        call edisp(iuout,'Selected plant matrix setup trace.')
       elseif(ino.eq.26)then
 
 C If all plant turn on related traces as well.
         II=40
-        call edisp(iuout,'Selected all plant trace.')
         ITRACE(34)=1
         ITRACE(35)=1
         ITRACE(36)=1
@@ -2462,19 +2344,15 @@ C If all plant turn on related traces as well.
         goto 4
       elseif(ino.eq.27)then
         II=41
-        call edisp(iuout,'Selected control functions trace.')
       elseif(ino.eq.28)then
         II=42
-        call edisp(iuout,'Selected timestep controller trace.')
       elseif(ino.eq.29)then
         II=7
         ITRACE(7)=1
-        call edisp(iuout,'Selected network flow ascii trace.')
         goto 4
       elseif(ino.eq.31)then
 
 C Clear all selections.
-        call edisp(iuout,'Selected CLEAR ALL trace.')
         DO 50 I=1,MTRACE
           ITRACE(I)=0
    50   CONTINUE
@@ -2485,16 +2363,7 @@ C Set trace index for the topic ON.
       ITRACE(II)=1
       GOTO 4
 
-C Good place to remind user of the number of timesteps
-C in the pre-simulation period.
- 9988 write(outs,'(a,i5,a)')'The presimulation period is ',
-     &  ITCNST*24*NTSTEP,' timesteps.'
-      call edisp(iuout,outs)
-      IDAYS=ISDF-ISDS+1+ITCNST
-      write(outs,'(a,i5,a)')'The last timestep of the simulation is ',
-     &  IDAYS*24*NTSTEP,' timesteps.'
-      call edisp(iuout,outs)
-      IVAL=ITC
+ 9988 IVAL=ITC
       CALL EASKI(IVAL,' Start trace after how many',
      &  ' (zone-side) time increments ?  ',
      &  1,'F',1,'-',1,'trace start',IER,nbhelp)
@@ -2525,7 +2394,7 @@ C in the pre-simulation period.
 
 C ******************** mzinfo
 C Mzinfo displays the values of the currently set simulation
-C parameters. If itru=iuout then goes to the display, 
+C parameters. If itru=iuout then goes to the display,
 C if itru=33 then works as a header to the trace.
 
       subroutine mzinfo(itru)
@@ -2533,7 +2402,7 @@ C if itru=33 then works as a header to the trace.
 #include "model.h"
 #include "esprdbfile.h"
 #include "control.h"
-      
+
       integer lnblnk  ! function definition
 
       common/pers/isd1,ism1,isd2,ism2,isds,isdf,ntstep
@@ -2541,14 +2410,14 @@ C if itru=33 then works as a header to the trace.
 
       integer ncomp,ncon
       common/c1/ncomp,ncon
+      common/C21/IFCFG,cfgroot,LCFGF
       COMMON/RESLIB/RFILE,PFILE,MSTRFILE,LAFRES
 
       common/cctlnm/ctldoc,lctlf
-      integer icascf
       common/cctl/icascf(mcom)
 
-      character*72 lafres,lctlf,rfile
-      character ctldoc*248,outs*124,PFILE*72,MSTRFILE*72
+      character*72 lafres,lctlf,lcfgf,rfile
+      character ctldoc*248,outs*124,PFILE*72,MSTRFILE*72,cfgroot*24
       character louts*248
 
       dimension io(mcom)
@@ -2621,7 +2490,7 @@ c added Save level 5 information
           io(ic)=j
    20   continue
    10 continue
-      if(n.eq.0)then 
+      if(n.eq.0)then
         call edisp(itru,'         None')
       else
         write(outs,16)i,(io(j),j=1,n)
@@ -2631,4 +2500,3 @@ c added Save level 5 information
 
    12 return
       end
- 

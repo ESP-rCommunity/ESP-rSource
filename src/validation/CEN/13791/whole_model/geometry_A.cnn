@@ -1,5 +1,5 @@
-*connections for geometry_A
-*Date Wed Aug 29 21:16:26 2012
+*connections  for geometry_A
+*Date Thu Oct 15 22:21:49 2009
      63   # number of connections
    1   1   7   0   0  #    1 South in T_1-V_a >|< Identical CEN 13791
    1   2   7   0   0  #    2 East in T_1-V_a >|< Identical CEN 13791

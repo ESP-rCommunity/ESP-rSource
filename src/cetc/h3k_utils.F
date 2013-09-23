@@ -229,14 +229,14 @@ C ------------------------------------------------------------------------------
 
         LOGICAL Function bCETC_OldStart()
         IMPLICIT NONE
-        common/simtim/ihrp,ihrf,idyp,idyf,idwp,idwf,nsinc,its
-        COMMON/PERS/ISD1,ISM1,ISD2,ISM2,ISDS,ISDF,NTSTEP
-        common/sus/issny
+	common/simtim/ihrp,ihrf,idyp,idyf,idwp,idwf,nsinc,its
+	COMMON/PERS/ISD1,ISM1,ISD2,ISM2,ISDS,ISDF,NTSTEP
+	common/sus/issny
         common/ptime/ptimep,ptimef
         REAL ptimep,ptimef
         INTEGER ihrp,ihrf,idyp,idyf,idwp,idwf,nsinc,its
-        INTEGER ISD1,ISM1,ISD2,ISM2,ISDS,ISDF,NTSTEP
-        INTEGER ISSNY
+	INTEGER ISD1,ISM1,ISD2,ISM2,ISDS,ISDF,NTSTEP
+	INTEGER ISSNY
 c Check if in startup period.
         bCETC_OldStart=.true.
         IF((ISSNY.EQ.1.AND.IDYP.EQ.365.AND.IHRP.EQ.24.AND.ISDS.EQ.1)
@@ -263,11 +263,11 @@ C ------------------------------------------------------------------------------
 #include "hvac_parameters.h"
 #include "h3kstore_parameters.h"
 #include "h3kstore_common.h"
-        common/simtim/ihrp,ihrf,idyp,idyf,idwp,idwf,nsinc,its
+	common/simtim/ihrp,ihrf,idyp,idyf,idwp,idwf,nsinc,its
         common/bldconpp/iBLTS
         INTEGER ihrp,ihrf,idyp,idyf,idwp,idwf,nsinc,its
         INTEGER IDAYN,iMonth,iBLTS
-        logical bInStartUp, bTimeHasTimstep
+	logical bInStartUp, bTimeHasTimstep
         IF(iBLTS == nsinc) then
           bTimeHasTimstep = .false.    !Timestep has not changed
         ELSE
@@ -303,13 +303,13 @@ C ------------------------------------------------------------------------------
 #include "hvac_parameters.h"
 #include "h3kstore_parameters.h"
 #include "h3kstore_common.h"
-        common/simtim/ihrp,ihrf,idyp,idyf,idwp,idwf,nsinc,its
+	common/simtim/ihrp,ihrf,idyp,idyf,idwp,idwf,nsinc,its
         common/pltcon/bPltCon,LastTSTP
         Real LastTSTP
         Logical bPltCon      !Is it really a new timestep?
         INTEGER ihrp,ihrf,idyp,idyf,idwp,idwf,nsinc,its,i1
         INTEGER IDAYN,iMonth
-        logical bInStartUp   !Are we in Startup?
+	logical bInStartUp   !Are we in Startup?
         if (.not.bINStartUp() .and.bPltCon ) then
 c Get month of year and bin the timestep.
            CALL EDAYR(idyp,IDAYN,iMonth)

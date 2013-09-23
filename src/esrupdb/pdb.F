@@ -19,20 +19,19 @@ C Software Foundation, Inc., 59 Temple Place, Suite 330,
 C Boston, MA 02111-1307 USA.
 
       program pdb
-      USE START_UP
+
 #include "building.h"
 #include "model.h"
 #include "plantdb.h"
-#include "pdb_data.h"
 #include "esprdbfile.h"
 #include "espriou.h"
 
       integer lnblnk  ! function definition
       integer igraphiclib  ! external definition
 
-C The Plant component template management program maintains
-C a file containing plant component descriptions.
-C The file holds the data needed by ESRUbps to
+C The Plant component DataBase program maintains a
+C database containing plant component descriptions.
+C The database holds the data needed by ESRUbps to
 C allow simulation of plant operation.
 C Facilities are provided to enter, list, edit and
 C delete component descriptions.
@@ -41,7 +40,6 @@ C delete component descriptions.
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
 
 C Defaults.
-      character*96 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF
       COMMON/DEFLT2/DFCFG,DFCTL,DEFRLB,DAFRES,DAPROB,DPNF
 
 C Path to problem and command line file (if any).
@@ -56,34 +54,30 @@ C Path to problem and command line file (if any).
       COMMON/ERRS/ISTAT,IREC
       EQUIVALENCE (ERRFLG, ISTAT)
 
+      common/PCCTL/MPC, NXTREC
+      common/PCDATC/NPC,ITMLOC(MAXPC,2)
+
+C Mass flow components data
+      common/mfcomp/itpcmp(maxcon), isdcmp(maxcon), isdcnn(maxcon),
+     &              supcmp(maxcon,maxflw), mfsdsc(maxcon,maxflw),
+     &              ltpcmp(maxcon), isdifc(maxcon)
+
 C Name of current application
       common/APPNAME/cAppName
       
       character cAppName*12
 
       logical     unixok,OK,DOK,XST
-      CHARACTER ZITEM(10)*30 
-      CHARACTER PZDESC*25,LTMP*72,cdesc*80
-      character inf*144,L144*144,paction*16,pact*16
-      character lcmdfl*144,lltmp*144,ascif*72,pascif*72
-      character outs*124,outs248*248
+      CHARACTER ZITEM(9)*26 
+      CHARACTER PZDESC*25,LTMP*72,cdesc*80,inf*144,L144*144
+      character lcmdfl*144,outs*124,outs248*248
+      character*72 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF
       character path*72,fs*1
-      character tab*1
-      character cVnum*16      ! returned from ESPrVersionNum
-      character pagestitle*48 ! for banner title via epages call
-      character buffer*124    ! for listing summary of components
+      character mfsdsc*68,ltpcmp*60 
 
       integer iglib   ! if 1 then X11, if 2 then GTK, if 3 then text only.
       integer ier
       integer NITEMS,INO ! max items and current menu item
-
-#ifdef OSI
-      integer iigl,iigr,iigt,iigb,iigw,iigwh
-      integer iiw1,iiw2,iiw3,iiw4,iimenu
-#else
-      integer*8 iigl,iigr,iigt,iigb,iigw,iigwh
-      integer*8 iiw1,iiw2,iiw3,iiw4,iimenu
-#endif
 
 C For help messages
       character helpinsub*24 ! subroutine name
@@ -100,7 +94,6 @@ C If left & top offsets are 0 then use defaults.
       cAppName = 'pdb'
       helpinapp='pdb'  ! set once for the application
       helpinsub='pdb'  ! set for MAIN
-      tab = CHAR(9)
       IUOUT=6
       IUIN=5
       IFIL=10
@@ -108,11 +101,7 @@ C If left & top offsets are 0 then use defaults.
       imod=0
       ltmp=' '
       ITFS=1
-
-C Parse the command line which might include instructions to carry
-C out an ascii->bin or bin->ascii conversion.
-C      call parpsf(MODL,iappw,iappx,iappy,inf)
-      call parsfact(MODL,iappw,iappx,iappy,inf,pact,ascif)
+      call parpsf(MODL,iappw,iappx,iappy,inf)
 
 C Set folder separator (fs) to \ or / as required.
       call isunix(unixok)
@@ -133,14 +122,14 @@ C Clear temporary descriptions.
 
       MMOD=MODL
       if(iappw.eq.0.and.iappx.eq.0.and.iappy.eq.0)then
-        iappw=520
+        iappw=480
         iappx=85
         iappy=110
       else
         if(iappx.le.0)iappx=85
         if(iappy.le.0)iappy=110
         if(iappw.le.200)then
-          iappwi=int(520*iappw*0.01)
+          iappwi=int(480*iappw*0.01)
           iappw=iappwi
         elseif(iappw.gt.200)then
           continue
@@ -149,15 +138,14 @@ C Clear temporary descriptions.
 
 C Set pixels high to iappw and pixels wide to factor in monitor size.
       iapphi=iappw
-C      iappwi=int(real(iappw)*(1024.0/780.0))
-      iappwi=int(real(iappw)*(1024.0/720.0))
+      iappwi=int(real(iappw)*(1024.0/780.0))
 
       if(iappw.gt.0.and.iappw.lt.100)then
-        menuchw = MAX0(int(24*iappw*0.01),20)
+        menuchw = MAX0(int(20*iappw*0.01),20)
         LIMIT =26
         LIMTTY=26
       else
-        menuchw = 32
+        menuchw = 20
         LIMIT =26
         LIMTTY=26
       endif
@@ -172,24 +160,13 @@ C Set initial font sizes (IMFS is for graphs, IFS is for dialog & text feedback)
         LIMTTY=16
         LIMIT =16
       ENDIF
-
-C Find the current ESP-r version number and add it to application title.
-      call ESPrVersionNum(cVnum)
-      write(pagestitle,'(2a)') 'ESP-r Plant component manager ',
-     &  cVnum(1:lnblnk(cVnum))
-
       CALL EPAGES(MMOD,IUIN,IUOUT,iappwi,iapphi,iappx,iappy,menuchw,
-     &  pagestitle)
+     &'ESP-r Plant db Manager: enquiries to esru@strath.ac.uk')
 
       IF(MMOD.EQ.8)THEN
-
-C Setup and pass in parameters to win3d.
-        iiw1=7; iiw2=1; iiw3=1; iiw4=3; iimenu=menuchw
-        iigl=igl; iigr=igr; iigt=igt; iigb=igb; iigw=igw; iigwh=igwh
-        CALL win3d(iimenu,iiw1,iiw2,iiw3,iiw4,
-     &    iigl,iigr,iigt,iigb,iigw,iigwh)
-        igl=int(iigl); igr=int(iigr); igt=int(iigt); igb=int(iigb)
-        igw=int(iigw); igwh=int(iigwh)
+        CALL win3d(menuchw,7,1,1,3,igl,igr,igt,igb,igw,igwh)
+        igw=igr-igl
+        igwh=igb-igt
         iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
         if(iglib.eq.1)then
           call opencpw
@@ -204,6 +181,7 @@ C Setup and pass in parameters to win3d.
         call startbuffer()
       endif
       CALL ESPrVersion("summary",cAppName,IUOUT)
+      call edisp(IUOUT,' ')
 
 C Find the user's home folder then get users custom settings.
       call usrhome(upath)
@@ -222,227 +200,42 @@ C after scan of .esprc file.
 C Take command line file name as initial file.
       if(inf(1:2).ne.'  '.and.inf(1:4).ne.'UNKN')then
         LCMDFL=inf
-        write(outs248,'(a,a)')'Input file is: ',LCMDFL
-        call edisp(iuout,'  ')
+        write(outs248,'(a,a)')' the input file is: ',LCMDFL
         call edisp248(iuout,outs248,80)
       else
         LCMDFL='UNKNOWN'
       endif
 
-C Take command line action parameter:
-C If paction = 'asci2bin' then fill binary file `inf` with data 
-C from `ascif` and exit.
-C If paction is `bin2asci` file ascii file `ascif` with data from
-C the binary file `inf` and exit.
-      if(pact(1:1).ne.' ')then
-        paction=pact
-        if(paction(1:4).ne.'NONE')then
-          write(outs,'(a,a)')' the action is: ',paction
-          call edisp(iuout,outs)
-        endif
-        write(outs,'(a,a)')'pdb: the input action is: ',paction
-        call tstamp('>',outs)
-        if(paction(1:8).eq.'asci2bin')then
-
-C Convert ascii file to binary (LCMDFL) and exit.
-          pascif=ascif
-
-          IUFIL = IFIL+1
-          CALL FPOPEN (IUFIL,ISTAT,1,1,pascif)
-          IF (ISTAT .EQ. -3)then
-            call usrmsg(
-     &        'Plant component import file could not be opend',
-     &        'so exiting without doing anything.','W')
-            CALL EPAGEND
-            STOP
-          endif
-
-C Create empty binary file. Use fdroot to set LTMP.
-          call fdroot(LCMDFL,path,LTMP)
-          ier=0
-          call EFOPRAN(IFIL,LTMP,IRECLN,3,IER)
-          CALL PCUPDT (0)
-          imod=1
-
-C Read components data from file
-          READ (IUFIL,2) PZDESC
-    2     FORMAT (A25,/)
-          IF(PZDESC(1:25).NE.' PLANT COMPONENT DATABASE') THEN
-            call usrmsg(
-     &        'Import file does not appear to be a plant templates',
-     &        'ascii file so exiting without doing anything.','W')
-            CALL EPAGEND
-            STOP
-          endif
-  212     CALL PCRDF(IUFIL)
-          IF(INDXPC.GT.0) THEN
-            CALL PCPUT (INDXPC)
-            WRITE(buffer,'(a,i5,a)')
-     &       ' Plant component entry ',INDXPC,' added'
-            call edisp(iuout,buffer)
-            GOTO 212  ! jump back and read more and dump to binary
-          ELSE IF(INDXPC.LT.0) THEN
-            GOTO 212  ! jump back and read more and dump to binary
-          ELSE
-            CALL ERPFREE(IUFIL,ISTAT)
-          END IF
-
-          call tstamp('>',
-     &      'Finished plant component conversion ASCI2BIN')
-          write(outs248,'(5a)')'Plant_conversion',tab,
-     &      pascif(1:lnblnk(pascif)),tab,LCMDFL(1:lnblnk(LCMDFL))
-          call edisp248(iuout,outs248,90)
-          call pausems(1000)  ! so users can see completion message
-          CALL EPAGEND
-          STOP
-        elseif(paction(1:8).eq.'bin2asci')then
-
-C Read in the supplied plant template file (LCMDFL), scan it to find
-C number of components and where each component starts in the file.
-          pascif=ascif
-          call fdroot(LCMDFL,path,LTMP)
-          XST=.false.
-          call findfil(LTMP,XST)
-          if(XST)then
-
-C Existing file, so check header. IRECLN is from plantdb.h file.
-            ier=0
-            call EFOPRAN(IFIL,LTMP,IRECLN,1,IER)
-            if(ier.ne.0)then
-              call usrmsg(
-     &          'Plant component templates file could not be opend',
-     &          'so exiting without doing anything.','W')
-              CALL EPAGEND
-              STOP
-            endif
-
-            IREC = 1
-            READ (IFIL,REC=IREC,IOSTAT=ISTAT,ERR=1) PZDESC
-            IF (PZDESC .NE. ' PLANT COMPONENT DATABASE')then
-              call usrmsg(
-     &          'File is not a plant component templates file,',
-     &          'so exiting without doing anything.','W')
-              CALL EPAGEND
-              STOP
-            endif
-            IREC = 2
-            READ (IFIL,REC=IREC,IOSTAT=ISTAT,ERR=1) NPC,NXTREC
-
-C Check library is not empty.
-            IF (NPC .EQ. 0) THEN
-              call usrmsg('No components in file so ascii file cannot',
-     &                    'be created. Exiting with no action.','W')
-              CALL EPAGEND
-              STOP
-            ENDIF
-
-C Recover item pointers which will be used by PCGET.
-            NR = 1
-            DO 111 I = 3, MHEADR
-              NRR = NR + IRECLN - 1
-              IREC = I
-              READ (IFIL,REC=IREC,IOSTAT=ISTAT,ERR=1)
-     &                          (ITMLOC(J,1),J=NR,NRR)
-              NR = NR + IRECLN
-  111       CONTINUE
-
-C Set file unit for export and open it for writing.
-            IUCHAN = IFIL+1
-            CALL FPOPEN (IUCHAN,ISTAT,4,3,pascif)
-            IF (ISTAT .LT. 0)then
-              call usrmsg(
-     &          'Unable to open ASCII export file so exiting without',
-     &          'doing anything.','W')
-              CALL EPAGEND
-              STOP
-            endif
-
-C Write to file
-            call edisp(iuchan,' PLANT COMPONENT DATABASE Listing')
-
-C Output unordered.
-            DO 810 I = 1, NPC
-              CALL PCGET (I)
-              IF (INDXPC .GT. 0) THEN
-                CALL PCWRT (IUCHAN)
-              ENDIF
-  810       CONTINUE
-            close(IUCHAN)
-            write(outs248,'(5a)')'Plant_conversion',tab,
-     &        LCMDFL(1:lnblnk(LCMDFL)),tab,pascif(1:lnblnk(pascif))
-            call edisp248(iuout,outs248,90)
-            call pausems(1000)  ! so users can see completion message
-          else
-            call usrmsg(
-     &        'Unable to find plant file so exiting without',
-     &        'doing any conversion.','W')
-          endif
-          CALL EPAGEND
-          STOP
-        endif
-      endif
-
-C Take the command line plant template file and if it can be
-C correctly read in do not ask the user for further confirmation.
-      L144=LCMDFL  ! set initial guess to command line file
-      call fdroot(LCMDFL,path,LTMP)
-      XST=.false.
-      call findfil(LTMP,XST)
-      if(XST)then
-
-C Existing file, so check header.
-C IRECLN= from plantdb.h file.
-        ier=0
-        call EFOPRAN(IFIL,LTMP,IRECLN,1,IER)
-        if(ier.ne.0)goto 100
-
-        IREC = 1
-        READ (IFIL,REC=IREC,IOSTAT=ISTAT,ERR=1) PZDESC
-        IF (PZDESC .NE. ' PLANT COMPONENT DATABASE')then
-          call usrmsg(
-     &      'File is not a plant component templates file,',
-     &      'please supply the file name again.','W')
-          goto 100
-        endif
-        IREC = 2
-        READ (IFIL,REC=IREC,IOSTAT=ISTAT,ERR=1) NPC,NXTREC
-
-C Recover item pointers.
-        NR = 1
-        DO 113 I = 3, MHEADR
-           NRR = NR + IRECLN - 1
-           IREC = I
-           READ (IFIL,REC=IREC,IOSTAT=ISTAT,ERR=1)
-     &                          (ITMLOC(J,1),J=NR,NRR)
-           NR = NR + IRECLN
-  113   CONTINUE
-
-C Recover item code numbers.
-        call edisp(iuout,' ')
-        write(outs,'(a,i3,a)') 'There are ',NPC,
-     &    ' plant component templates in the command line file.'
-        call edisp(iuout,outs)
-        goto 210
-      endif
-
-
-C Initialize plant component template file.
+C Initialize plant component database file.
   100 helptopic='pdb_file_name_select'
       call gethelptext(helpinsub,helptopic,nbhelp)
-      lltmp=' '  ! clear file name to be returned
-      call edisp(iuout,'  ')  ! echo blank line
-      L144=LCMDFL  ! set initial guess to command line file
-      CALL EASKXORGTKF(L144,
-     &  'Plant component templates (if new an empty file is created)',
-     &  'Confirm:',DPCDB,lltmp,'plant templates',IER,nbhelp)
+      L144=LCMDFL
+      llt=lnblnk(L144)
 
-C If user cancel display the menu without loading file.
-      if(ier.eq.-3)then
-        goto 210  ! display menu.
+C The X11 version will be returning only the name of the
+C file, while the GTK version will be returning the
+C name with the full path.
+      iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
+      if(iglib.eq.1.or.iglib.eq.3)then
+        if(llt.lt.96)then
+          CALL EASKF(L144,'Plant component database file name? ',' ',
+     &      96,DPCDB,' Database name ',IER,nbhelp)
+        elseif(llt.ge.96.and.llt.lt.124)then
+          CALL EASKF(L144,'Plant component database file name? ',' ',
+     &      124,DPCDB,' Database name ',IER,nbhelp)
+        elseif(llt.ge.124.and.llt.le.144)then
+          CALL EASKF(L144,'Plant component database file name? ',' ',
+     &      144,DPCDB,' Database name ',IER,nbhelp)
+        endif
+      elseif(iglib.eq.2)then
+        CALL EASKF(L144,'Plant component database file name? ',' ',
+     &    144,DPCDB,' Database name ',IER,nbhelp)
+      else
+        CALL EASKF(L144,'Plant component database file name? ',' ',
+     &    96,DPCDB,' Database name ',IER,nbhelp)
       endif
 
-C Set LCMDFL based on user confirmation.
-      if(lltmp(1:2).ne.'  ')LCMDFL=lltmp
+      if(L144(1:2).ne.'  ')LCMDFL=L144
 
 C Find the path and local file name, if exists open otherwise fill.
       call fdroot(LCMDFL,path,LTMP)
@@ -459,8 +252,7 @@ C IRECLN= from plantdb.h file.
         IREC = 1
         READ (IFIL,REC=IREC,IOSTAT=ISTAT,ERR=1) PZDESC
         IF (PZDESC .NE. ' PLANT COMPONENT DATABASE')then
-          call usrmsg(
-     &      'File is not a plant component templates file,',
+          call usrmsg('File is not a plant component database,',
      &      'please supply the file name again.','W')
           goto 100
         endif
@@ -479,9 +271,17 @@ C Recover item pointers.
 
 C Recover item code numbers.
         call edisp(iuout,' ')
-        write(outs,'(a,i3,a)') 'There are ',NPC,
-     &    ' plant component template entries.'
-        call edisp(iuout,outs)
+        call edisp(iuout,
+     &  ' Database contains the following plant component entries:')
+        call edisp(iuout,' ')
+        DO 120 I = 1,NPC
+          IREC = ITMLOC(I,1)
+          READ (IFIL,REC=IREC,IOSTAT=ISTAT,ERR=1)IDUM, ITMLOC(I,2)
+          irec=irec+2
+          read(ifil,REC=IREC,IOSTAT=ISTAT,ERR=1) cdesc
+          write(outs,'(i3,a,a80)') i,'- ',cdesc
+          call edisp(iuout,outs)
+  120   CONTINUE
       else
 
 C New file.
@@ -489,29 +289,28 @@ C New file.
         call EFOPRAN(IFIL,LTMP,IRECLN,3,IER)
         CALL PCUPDT (0)
         imod=1
-        call usrmsg(' ','Creating new plant components file.','-')
+        call usrmsg(' ',' Creating new database.','-')
       endif
 
 C Build main menu.
-  210  write(zitem(1),'(a,a)') 'a File: ',LTMP(1:19)
-      zitem(2)='  _______________________   '
-      zitem(3)='b List & export components  '
-      zitem(4)='c Insert & import components'
-      zitem(5)='d Delete components         '
-      zitem(6)='e Edit a component          '
-      zitem(7)='  _______________________   '
-      zitem(8)='! Summary of entries        '
-      zitem(9)='? Help                      '
-      zitem(10)='- Finish                   '
+      write(zitem(1),'(a,a)') 'a Db: ',LTMP(1:16)
+      zitem(2)='  ____________________   '
+      zitem(3)='b List & export compnts  '
+      zitem(4)='c Insert & import compnts'
+      zitem(5)='d Delete components      '
+      zitem(6)='e Edit a component       '
+      zitem(7)='  ____________________   '
+      zitem(8)='? Help                   '
+      zitem(9)='- Finish ESRUpdb         '
 
 C Display menu.
-      NITEMS = 10
+  210 NITEMS = 9
       INO = -5
 
 C Use askabout to instanciate the initial help messages (2nd parameter is one).
       call askabout('pdb ',1)
 
-  220 CALL EMENU('  ESP-r plant components',ZITEM,NITEMS,INO)
+  220 CALL EMENU('  ESP-r plant db',ZITEM,NITEMS,INO)
       if(imod.ne.1.and.ifchk.eq.0.and.
      &       (ino.eq.4.or.ino.eq.5.or.ino.eq.6)) then
 
@@ -526,31 +325,17 @@ C Display warning message.
           ifchk=1
         endif
       endif
-      if(INO.EQ.10)then
+      if(INO.EQ.9)then
 
 C Exit from program.
-        call usrmsg(' Closing plant component management...',' ','P')
+        call usrmsg(' Closing plant dbase management...',' ','P')
         call erpfree(ifil,istat)
         CALL EPAGEND
         STOP
-      elseif(INO .EQ. 9)then
+      elseif(INO .EQ. 8)then
 
 C Describe components and menu structure.
         call askabout('pdb ',0)
-      elseif(INO .EQ. 8)then
-
-C Provide summary of entries. Note INDXPC is in common via pdb_data.h
-C and it the identity index of the component.
-        call edisp(iuout,' Entry  Model Description')
-        DO 910 I = 1,NPC
-          CALL PCGET (I)
-          IF (INDXPC .EQ. I) THEN
-            WRITE (buffer,15) INDXPC,ICODE,ZCDESC(1:LNBLNK(ZCDESC))
-   15       FORMAT (I3,' =',I5,' ',A)
-            call edisp(iuout,buffer)
-          ENDIF
-  910   CONTINUE
-
       ELSEIF (INO .EQ. 1)then
         goto 100
       ELSEIF (INO .EQ. 3)then
@@ -571,7 +356,7 @@ C Error handling.
   1   dok=.true.
       helptopic='pdb_confusion_warning'
       call gethelptext(helpinsub,helptopic,nbhelp)
-      write(outs,'(a)') 'Error in pdb main component scan. '
+      write(outs,'(a)') 'Error in pdb main database scan. '
       CALL ASKOK(outs,' Exit from ESRUpdb ?',OK,dok,2)
       if(ok)then
         CALL EPAGEND
@@ -582,7 +367,7 @@ C Error handling.
       END
 
 C ******** list  ********
-C This subroutine lists component templates in a window.
+C This subroutine lists components in database in a window.
 C Components colud then be picked from list.
 C 'inpc'        : number of components.
 C 'ival'        : array to contain selected component(s) position
@@ -592,11 +377,11 @@ C                 from list.
 C 'ix'          : returns number of selections made.
       subroutine list(inpc,ival,nitems,ix)
 #include "plantdb.h"
-#include "pdb_data.h"
-
       common/FILEP/IFIL
       COMMON/ERRS/ISTAT,IREC
       EQUIVALENCE (ERRFLG, ISTAT)
+
+      common/PCDATC/NPC,ITMLOC(MAXPC,2)
 
       DIMENSION comp(MAXPC), ival(inpc)
       CHARACTER comp*80,cdesc*80,outs*124
@@ -618,23 +403,19 @@ C Write description of each component in string array.
    14    FORMAT(A80)
    10 CONTINUE
 
-C Help text for epicks << need to create this >>
-      helptopic='pdb_could_not_scan'
-      call gethelptext(helpinsub,helptopic,nbhelp)
-
 C Now display the menu.
         IX=nitems
         CALL EPICKS(IX,IVAL,
      &   ' Please select component(s) from the list provided: ',
      &   ' (Exit) terminates selection.',60,npc,comp,
-     &   'Components list',IER,nbhelp)
+     &   'Components list',IER,0)
 
       return
 
   1   dok=.true.
       helptopic='pdb_could_not_scan'
       call gethelptext(helpinsub,helptopic,nbhelp)
-      write(outs,'(a)') 'Error in pdb list component scan. '
+      write(outs,'(a)') 'Error in pdb list database scan. '
       CALL ASKOK(outs,' Exit from ESRUpdb ?',OK,dok,2)
       if(OK)then
         CALL EPAGEND
@@ -663,46 +444,6 @@ C Dummy routines from common3dv.F
       end
 
       subroutine chgelev(icelev)
-      return
-      end
-
-      subroutine chgsun(isunhour)
-      return
-      end
-
-      subroutine chgeye(EVX,EVY,EVZ,VX,VY,VZ,EAN,JITZNM,JITSNM,JITVNO,
-     &   JITOBS,JITSNR,JITGRD,JITORG,DIS,JITBND,JITDSP,JITHLS,JITHLZ,
-     &   JITPPSW)
-
-C Passed paramters.
-      real EVX,EVY,EVZ,VX,VY,VZ,EAN,DIS
-
-C Depending on computer type set integer size of passed parameters.
-#ifdef OSI
-      integer JITZNM,JITSNM,JITVNO,JITOBS,JITSNR,JITGRD,JITORG
-      integer JITBND,JITDSP,JITHLS,JITHLZ,JITPPSW
-#else
-      integer*8 JITZNM,JITSNM,JITVNO,JITOBS,JITSNR,JITGRD,JITORG
-      integer*8 JITBND,JITDSP,JITHLS,JITHLZ,JITPPSW
-#endif     
-      return
-      end
-
-      subroutine chgzonpik(jizgfoc,jnzg)
-#ifdef OSI
-      integer jizgfoc,jnzg  ! for use with viewtext
-#else
-      integer*8 jizgfoc,jnzg  ! for use with viewtext
-#endif
-      return
-      end
-
-      subroutine chgzonpikarray(jnznog,jnznogv)
-#ifdef OSI
-      integer jnznog,jnznogv
-#else
-      integer*8 jnznog,jnznogv
-#endif
       return
       end
 

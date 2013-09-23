@@ -1,5 +1,5 @@
-*connections for 3_windows_do
-*Date Fri Aug 24 11:45:05 2012
+*connections  for 3_windows_do
+*Date Fri Oct  2 08:56:41 2009
      33   # number of connections
    1   1   1   0   0  #    1 pt_general in manager >|< Identical environment
    1   2   1   0   0  #    2 part_frame in manager >|< Identical environment

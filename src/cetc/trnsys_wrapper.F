@@ -899,6 +899,7 @@ C           additional output of a specified component
 C New category of time-dependent parameters inserted here
 
          ELSE
+            call elinc(1)
             WRITE(IUOUT,*) ' No mapping defined for parameter type ',
      &                     iCat
             STOP ' trnsys_coeff_gen: unresolvable error on parameters'
@@ -965,6 +966,7 @@ C        linked to a function value
 C New input type inserted here
 
          ELSE
+            call elinc(1)
             WRITE(IUOUT,*) ' No mapping mechanism defined for ',
      &                     'input type ',iCat
             STOP ' trnsys_coeff_gen: unresolvable error on input'
@@ -1187,6 +1189,7 @@ C           real simulation afterwards.
 C  Calling other trnsys type subroutines inserted here
 
         ELSE
+          call elinc(1)
           WRITE(IUOUT,*) ' No subroutine available for trnysys type '
      &        ,nTYPE
           STOP ' trnsys_coeff_gen: unresolvable error on trnsys sub'
@@ -1331,12 +1334,12 @@ C Complete trace if trace output requested.
 
 C XML output
       DO i=1, NAPDAT(IPCOMP)
-         Call AddToReport(rvPltMiscData%Identifier,
+         Call AddToReportWild2(rvPltMiscData%Identifier,
      &      PCAOUT(IPCOMP,i),
      &      pcname(IPCOMP)(1:lnblnk(pcname(IPCOMP))),
      &      TRN_ADD_DESC(iTRNCOM,i))
 
-         Call AddToReportDetails(rvPltMiscData%Identifier,
+         Call AddToReportDetailsWild2(rvPltMiscData%Identifier,
      &      pcname(IPCOMP)(1:lnblnk(pcname(IPCOMP))),
      &      TRN_ADD_DESC(iTRNCOM,i),
      &      'units',

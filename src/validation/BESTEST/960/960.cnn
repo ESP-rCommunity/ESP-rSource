@@ -1,5 +1,5 @@
-*connections for 960
-*Date Wed Aug 29 13:23:13 2012
+*connections  for 960
+*Date Thu Oct 15 08:48:42 2009
      14   # number of connections
    1   1   0   0   0  #    1 East_Wall in 960_back is External
    1   2   0   0   0  #    2 North_Wall in 960_back is External

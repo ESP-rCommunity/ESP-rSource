@@ -33,9 +33,6 @@ C               Z coordinate.
 #include "building.h"
       COMMON/OUTIN/IUOUT,IUIN
       COMMON /FORMF/ FF(MSM,MSM), FFS
-      integer ncub,ivfok
-      real XOC,YOC,ZOC,DXC,DYC,DZC,CANG
-      character CUBN*6
       COMMON/MRTC/NCUB,XOC(MCUB),YOC(MCUB),ZOC(MCUB),DXC(MCUB),
      &            DYC(MCUB),DZC(MCUB),CANG(MCUB),IVFOK(MCUB),CUBN(MCUB)
       common /cube3/surarea(6)
@@ -46,7 +43,7 @@ C               Z coordinate.
       logical tmrt,temperr
 
       dimension vectemp(3,MS)
-      character outs*124
+      character outs*124,CUBN*6
       real t(6),sum
 
       vectemp(1,icube)=0.0
@@ -114,18 +111,15 @@ c  Cubefaces 4,1,6 have the larger x,y or z coordinates.
       vectemp(3,icube)=t(6)-t(5)
 
       call edisp(iuout,' ')
-      WRITE(outs,'(A,I2)') ' Number of MRT sensors: ',NCUB
+      WRITE(outs,'(A,I2)') ' MRT sensor: ',NCUB
       call edisp(iuout,outs)
-      call edisp(iuout,
-     &  ' ___________________________________________')
-      call edisp(iuout,
-     &  ' Sensor|   origin (m)       |    size (m)       |rotation')
-      call edisp(iuout,
-     &  ' name  |X-cord|Y-cord|Z-cord|length|width|height|degree')
+      call edisp(iuout,' ___________________________________________')
+      call edisp(iuout,' Sensor|   origin (m)    |    size (m)  |rot')
+      call edisp(iuout,' name  |Xcord|Ycord|Zcord|len |wid |ht  |deg')
       L=icube
       WRITE(outs,303)CUBN(L),XOC(L),YOC(L),ZOC(L),
      &               DXC(L),DYC(L),DZC(L),CANG(L)
-  303 FORMAT(1X,A6,3F7.2,1x,3F6.2,F6.1)
+  303 FORMAT(1X,A6,3F6.1,3F5.2,F5.0)
       call edisp(iuout,outs)
       call edisp(iuout,' ')
 

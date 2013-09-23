@@ -101,7 +101,6 @@ C Common saving coupled zones/surfaces
 C Control commons (for use with partition injections).
       COMMON/PVALS/TPS(MCOM,MS),QPS(MCOM)
       COMMON/SETUQ/QPLTP(MCOM),QPLTF(MCOM),CONV(MCOM)
-      integer icascf
       COMMON/CCTL/ICASCF(MCOM)
 
 C The following common saves the computed future time-row

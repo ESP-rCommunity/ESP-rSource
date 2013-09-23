@@ -1427,84 +1427,84 @@ C-------------------------------------------------------------------------------
 C.....Get component name's length
        name_length = lnblnk(pcname(IPCOMP))
 
-       Call AddToReport(rvPltOprtSgn%Identifier,
+       Call AddToReportWild1(rvPltOprtSgn%Identifier,
      &         fOperatingSignal,
      &         pcname(IPCOMP)(1:name_length))
 
 
-      Call AddToReport(rvPltStndSgn%Identifier,
+      Call AddToReportWild1(rvPltStndSgn%Identifier,
      &         fStandbySignal,
      &         pcname(IPCOMP)(1:name_length))
 
-      Call AddToReport(rvPltCtrlSgnEltrzr%Identifier,
+      Call AddToReportWild1(rvPltCtrlSgnEltrzr%Identifier,
      &         fControlSignal,
      &         pcname(IPCOMP)(1:name_length))
 
-      Call AddToReport(rvPltTtlAuxPow%Identifier,
+      Call AddToReportWild1(rvPltTtlAuxPow%Identifier,
      &         fPowerAux,
      &         pcname(IPCOMP)(1:name_length))
 
-      Call AddToReport(rvPltDCAuxPow%Identifier,
+      Call AddToReportWild1(rvPltDCAuxPow%Identifier,
      &         fDCPowerAux,
      &         pcname(IPCOMP)(1:name_length))
 
-      Call AddToReport(rvPltACAuxPow%Identifier,
+      Call AddToReportWild1(rvPltACAuxPow%Identifier,
      &         fACPowerAux,
      &         pcname(IPCOMP)(1:name_length))
 
-      Call AddToReport(rvPltStckPow%Identifier,
+      Call AddToReportWild1(rvPltStckPow%Identifier,
      &         fStackPower,
      &         pcname(IPCOMP)(1:name_length))
 
-      Call AddToReport(rvPltMxStckPow%Identifier,
+      Call AddToReportWild1(rvPltMxStckPow%Identifier,
      &         fMaxStackPower,
      &         pcname(IPCOMP)(1:name_length))
 
-      Call AddToReport(rvPltOpMode%Identifier,
+      Call AddToReportWild1(rvPltOpMode%Identifier,
      &         real(iOpMode),
      &         pcname(IPCOMP)(1:name_length))
 
-      Call AddToReport(rvPltDCPowDmd%Identifier,
+      Call AddToReportWild1(rvPltDCPowDmd%Identifier,
      &         fDCElecDemand,
      &         pcname(IPCOMP)(1:name_length))
 
-      Call AddToReport(rvPltACPowDmd%Identifier,
+      Call AddToReportWild1(rvPltACPowDmd%Identifier,
      &         fACElecDemand,
      &         pcname(IPCOMP)(1:name_length))
 
-      Call AddToReport(rvPltElecEffEltrzr%Identifier,
+      Call AddToReportWild1(rvPltElecEffEltrzr%Identifier,
      &         fElecEfficiency,
      &         pcname(IPCOMP)(1:name_length))
 
-      Call AddToReport(rvPltH2FlwKgs%Identifier,
+      Call AddToReportWild1(rvPltH2FlwKgs%Identifier,
      &         fH2NetFlow_kgs,
      &         pcname(IPCOMP)(1:name_length))
 
-      Call AddToReport(rvPlt02FlwKgs%Identifier,
+      Call AddToReportWild1(rvPlt02FlwKgs%Identifier,
      &         fO2NetFlow_kgs,
      &         pcname(IPCOMP)(1:name_length))
 
-      Call AddToReport(rvPltH20FlwKgs%Identifier,
+      Call AddToReportWild1(rvPltH20FlwKgs%Identifier,
      &         fH2OTotalFlow_kgs,
      &         pcname(IPCOMP)(1:name_length))
 
-      Call AddToReport(rvPltQIntPrst%Identifier,
+      Call AddToReportWild1(rvPltQIntPrst%Identifier,
      &         fQgen_present,
      &         pcname(IPCOMP)(1:name_length))
 
-      Call AddToReport(rvPltQlssPrst%Identifier,
+      Call AddToReportWild1(rvPltQlssPrst%Identifier,
      &         fQloss_present,
      &         pcname(IPCOMP)(1:name_length))
 
-      Call AddToReport(rvPltQCoolPrst%Identifier,
+      Call AddToReportWild1(rvPltQCoolPrst%Identifier,
      &         fQcool,
      &         pcname(IPCOMP)(1:name_length))
 
-      Call AddToReport(rvPltQInltWtrHtg%Identifier,
+      Call AddToReportWild1(rvPltQInltWtrHtg%Identifier,
      &         fQheat,
      &         pcname(IPCOMP)(1:name_length))
 
-      Call AddToReport(rvPltTnltWtr%Identifier,
+      Call AddToReportWild1(rvPltTnltWtr%Identifier,
      &         fTempInlet,
      &         pcname(IPCOMP)(1:name_length))
 

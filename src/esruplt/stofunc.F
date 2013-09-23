@@ -102,14 +102,14 @@ C Check if Cprob has still not reached thresh i.e. Rand > 0.99
       Return
       End
 
-      SUBROUTINE SRAND(ISEED)
+      SUBROUTINE SRANDesp(ISEED)
 C
 C  This subroutine sets the integer seed to be used with the
 C  companion RAND function to the value of ISEED.  A flag is 
 C  set to indicate that the sequence of pseudo-random numbers 
 C  for the specified seed should start from the beginning.
 C
-      COMMON /SEED/JSEED,IFRST
+      COMMON /SEEDesp/JSEED,IFRST
 C
       JSEED = ISEED
       IFRST = 0
@@ -130,7 +130,7 @@ C
       PARAMETER (MPLIER=16807,MODLUS=2147483647,MOBYMP=127773,
      +           MOMDMP=2836)
 C
-      COMMON  /SEED/JSEED,IFRST
+      COMMON  /SEEDesp/JSEED,IFRST
       INTEGER HVLUE, LVLUE, TESTV, NEXTN
       SAVE    NEXTN
 C
@@ -152,7 +152,7 @@ C
       RETURN
       END
       BLOCKDATA RANDBD
-      COMMON /SEED/JSEED,IFRST
+      COMMON /SEEDesp/JSEED,IFRST
 C
       DATA JSEED,IFRST/123456789,0/
 C

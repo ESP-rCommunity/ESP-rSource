@@ -61,11 +61,12 @@ C Return
 C ******************************************************************
       SUBROUTINE PCEXCH (N1,N2)
 #include "plantdb.h"
-#include "pdb_data.h"
 
 C  Parameters
 C Used by shell to exchange items
 C ie PC index for print list
+      COMMON/PL/INDXPR(MAXPC)
+      common/OUTIN/IUOUT,IUIN
 
       ITMP = INDXPR(N2)
       INDXPR(N2) = INDXPR(N1)
@@ -79,8 +80,14 @@ C Used by shell to compare keyed items
 C ie compare component descriptions
       LOGICAL FUNCTION COMPDS (N1,N2)
 #include "plantdb.h"
-#include "pdb_data.h"
 
+      COMMON /PL/ INDXPR(MAXPC)
+      common/OUTIN/IUOUT,IUIN
+      COMMON /PCDATA/ ZGTYPE, ZCDATE, ZCDESC
+
+      CHARACTER*40 ZGTYPE
+      CHARACTER*16 ZCDATE
+      CHARACTER*80 ZCDESC
       CHARACTER*80 PZDESC
 
       NN = INDXPR(N1)
@@ -100,10 +107,20 @@ C ie compare component descriptions
 C ******************************************************************
       LOGICAL FUNCTION COMPNO (N1,N2)
 #include "plantdb.h"
-#include "pdb_data.h"
 
-C INDXPR used by shell to compare keyed items
+C Used by shell to compare keyed items
 C ie compare component codes
+      COMMON /PL/ INDXPR(MAXPC)
+      common/OUTIN/IUOUT,IUIN
+      COMMON /PCDATB/ ICODE,INDXPC,IRC,NNODE,NMATX,NMISC,
+     &                nadata,nbdata,ncdata,napout,
+     &                NDCON(MAXNOD),ISV(MAXNOD),NCPOS(MAXMTX),
+     &                dtdesc(maxmsc),DATAMS(MAXMSC),range(maxmsc,2),
+     &                adodsc(mxaout),noutyp(mxaout)
+
+      character*68 dtdesc
+      character*30 adodsc
+
       NN = INDXPR(N1)
       CALL PCGET (NN)
       NCODE = ICODE

@@ -372,15 +372,15 @@
         call EASKAB(' ','Special facade materials : ','Off','On',IW,0)
         call easks(lfil,' Special Materials output ?',' ',
 *item simtog toggle_int_hc_methods
-'Several methods are available for calculating internal '
-'surface convection coefficients. The Alamdari & Hammond '
-'(BSER&T 1983) correlations for buoyancy-driven flow are '
-'used by default.'
-' '
-'Two sets of the Khalifa & Marshall (Int J of H&M Trans '
-'1990) correlations (also know as the [Cardiff] '
-'correlations) are available.  One is applicable for '
-'rooms heated by a radiator located underneath a window. '
+ 'Several methods are available for calculating internal '
+ 'surface convection coefficients. The Alamdari & Hammond '
+ '(BSER&T 1983) correlations for buoyancy-driven flow are '
+ 'used by default.'
+ ' '
+ 'Two sets of the Khalifa & Marshall (Int J of H&M Trans '
+ '1990) correlations (also know as the [Cardiff] '
+ 'correlations) are available.  One is applicable for '
+ 'rooms heated by a radiator located underneath a window. '
 'The other (labelled [NO radiator]) is applicable for '
 'rooms with floor heating or with radiators which are '
 'not located underneath windows.  As Khalifa & Marshall '
@@ -454,27 +454,27 @@
         call EASKSUR(ipkzon(iiii),ipksf(iiii),'-',
         call easks(vsnam,' Vertical Solar file ?',
 *item simtog solar_data_timing
-'In CWEC weather files, solar radiation data for a '
-'given hour are the values integrated over the previous '
-'hour. For example, the values that correspond to 9h00 '
-'represent the amount of solar radiation received '
-'between 8h00 and 9h00. By default, ESP-r assumes that '
-'the solar radiation data at a given hour are the '
-'instantaneous values  at the hour (hourly-centered '
-'values).Thus, by default, there is a half-hour shift '
-'in the solar radiation values. This can be corrected '
-'by specifying that the solar radiation data in the '
-'weather file are half-hour centered.'
+ 'In CWEC weather files, solar radiation data for a '
+ 'given hour are the values integrated over the previous '
+ 'hour. For example, the values that correspond to 9h00 '
+ 'represent the amount of solar radiation received '
+ 'between 8h00 and 9h00. By default, ESP-r assumes that '
+ 'the solar radiation data at a given hour are the '
+ 'instantaneous values  at the hour (hourly-centered '
+ 'values).Thus, by default, there is a half-hour shift '
+ 'in the solar radiation values. This can be corrected '
+ 'by specifying that the solar radiation data in the '
+ 'weather file are half-hour centered.'
 *enditem
         call easki(iSlr_half_hr_flg,' Solar data 0) hour-centered, ',
 *item simtog sky_temperature_options
-'At the moment there are 5 available calculations '
-'of the sky temperature to be used for the external '
-'longwave radiation calculations. The default used '
-'in ESP-r is Martin & Berdahl. A useful reference is: '
-' Martin & Berdahl, 1984. [Characteristics of infrared '
-'sky radiation in the United States]. Solar Energy, '
-'Vol. 33, pp. 321-336.'
+ 'At the moment there are 5 available calculations '
+ 'of the sky temperature to be used for the external '
+ 'longwave radiation calculations. The default used '
+ 'in ESP-r is Martin & Berdahl. A useful reference is: '
+ ' Martin & Berdahl, 1984. "Characteristics of infrared '
+ 'sky radiation in the United States". Solar Energy, '
+ 'Vol. 33, pp. 321-336.'
 *enditem
         call easki(iExt_longwave_flg,
 *subroutine msttog

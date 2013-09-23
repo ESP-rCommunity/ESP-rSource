@@ -74,7 +74,6 @@ C *********************************************************************
 
       COMMON/PREC8/SLAT,SLON
 
-      integer IZSTOCN
       COMMON/C24/IZSTOCN(MCOM,MS)
 
       COMMON/GR3D01/INDXS(MS),THKS(MS),DCOSS(MS,3,3)
@@ -282,14 +281,10 @@ C *********************************************************************
       integer igwid,igheight  ! for use with axiscale
       integer iside,isize,ifont     ! passed to viewtext
       integer iupdown,isym,iix,iiy    ! passed to etplot u2pixel
-      integer iigl,iigr,iigt,iigb,iigw,iigwh
-      integer iiw1,iiw2,iiw3,iiw4,iimenu
 #else
       integer*8 igwid,igheight  ! for use with axiscale
       integer*8 iside,isize,ifont     ! passed to viewtext
       integer*8 iupdown,isym,iix,iiy    ! passed to etplot u2pixel
-      integer*8 iigl,iigr,iigt,iigb,iigw,iigwh
-      integer*8 iiw1,iiw2,iiw3,iiw4,iimenu
 #endif
 
 C Define the  MAX & MIN surface coordinates.
@@ -302,14 +297,9 @@ C Clear the vieweing box, draw its border and return the offsets
 C which define it.  The win3d parameters match those in FACDRW
 C and SITPLN.
       call startbuffer()
-
-C Setup and pass in parameters to win3d.
-      iiw1=29; iiw2=7; iiw3=4; iiw4=3; iimenu=29
-      iigl=igl; iigr=igr; iigt=igt; iigb=igb; iigw=igw; iigwh=igwh
-      CALL win3d(iimenu,iiw1,iiw2,iiw3,iiw4,
-     &  iigl,iigr,iigt,iigb,iigw,iigwh)
-      igl=int(iigl); igr=int(iigr); igt=int(iigt); igb=int(iigb)
-      igw=int(iigw); igwh=int(iigwh)
+      CALL win3d(29,7,4,3,3,igl,igr,igt,igb,igw,igwh)
+      igw=igr-igl
+      igwh=igb-igt
       igwid=igw
       igheight=igwh
 
@@ -321,7 +311,7 @@ C Determine scaling ratios for the drawing and axis.
      &              Xadd,Zadd)
 
 C Place scaling in static C variables for use by line drawing routines.
-      call linescale(iigl,Xadd,sca,iigb,Zadd,sca)
+      call linescale(igl,Xadd,sca,igb,Zadd,sca)
 
 C Display header information.
       iside=1
@@ -330,10 +320,10 @@ C Display header information.
       call viewtext('Elevation View',iside,isize,ifont)
 
 C Draw a scale horizontal axis, move to beginning point.
-      CALL horaxis(XMIN,XMAX,iigl,iigr,iigb,Xadd,sca,0,'X axis ->')
+      CALL horaxis(XMIN,XMAX,igl,igr,igb,Xadd,sca,0,'X axis ->')
 
 C Draw a scale vertical axis.
-      CALL vrtaxis(ZMIN,ZMAX,iigl,iigb,iigt,Zadd,sca,0,0,'^ Z axis')
+      CALL vrtaxis(ZMIN,ZMAX,igl,igb,igt,Zadd,sca,0,0,'^ Z axis')
       DO 20 IL=1,NLINB(IS)
         IV1=ILINE(IS,IL,1)
         IV2=ILINE(IS,IL,2)
@@ -940,7 +930,6 @@ C *********************************************************************
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/RAY3/MODIFY,MODLEN,MODBND
       COMMON/PREC8/SLAT,SLON
-      integer IZSTOCN
       COMMON/C24/IZSTOCN(MCOM,MS)
 
       COMMON/GR3D21/NUMEDG,INDXE(MEZ),DCOSE(MEZ,3,3)
@@ -1189,13 +1178,9 @@ C *********************************************************************
 #ifdef OSI
       integer igwid,igheight  ! for use with axiscale
       integer iupdown,isym,iix,iiy    ! passed to etplot u2pixel
-      integer iigl,iigr,iigt,iigb,iigw,iigwh
-      integer iiw1,iiw2,iiw3,iiw4,iimenu
 #else
       integer*8 igwid,igheight  ! for use with axiscale
       integer*8 iupdown,isym,iix,iiy    ! passed to etplot u2pixel
-      integer*8 iigl,iigr,iigt,iigb,iigw,iigwh
-      integer*8 iiw1,iiw2,iiw3,iiw4,iimenu
 #endif
 
       IVRT1=IVXEDG(IEG,1)
@@ -1249,18 +1234,15 @@ C Find 2D extremes coordinates.
       XMX2=AMAX1(XS(1),XS(2),XS(3),XS(4),XS(5),XS(6),XS(7),XS(8))
       YMX2=AMAX1(YS(1),YS(2),YS(3),YS(4),YS(5),YS(6),YS(7),YS(8))
 
-C Setup and pass in parameters to win3d.
-      iiw1=20; iiw2=4; iiw3=3; iiw4=3; iimenu=29
-      iigl=igl; iigr=igr; iigt=igt; iigb=igb; iigw=igw; iigwh=igwh
-      CALL win3d(iimenu,iiw1,iiw2,iiw3,iiw4,
-     &  iigl,iigr,iigt,iigb,iigw,iigwh)
-      igl=int(iigl); igr=int(iigr); igt=int(iigt); igb=int(iigb)
-      igw=int(iigw); igwh=int(iigwh)
+C Clear the graphical feedback window.
+      CALL win3d(29,20,4,3,3,igl,igr,igt,igb,igw,igwh)
+      igw=igr-igl
+      igwh=igb-igt
       igwid=igw
       igheight=igwh
       CALL AXISCALE(igwid,igheight,XMN2,XMX2,YMN2,YMX2,XSC,YSC,
      &              SCA,XADD,YADD)
-      CALL LINESCALE(iigl,XADD,SCA,iigb,YADD,SCA)
+      CALL LINESCALE(IGL,XADD,SCA,IGB,YADD,SCA)
 
 C Locate and label the two extreme vertices.
       CALL U2PIXEL(XS(1),YS(1),iix,iiy)
@@ -1344,7 +1326,6 @@ C *********************************************************************
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/RAY3/MODIFY,MODLEN,MODBND
-      integer IZSTOCN
       COMMON/C24/IZSTOCN(MCOM,MS)
       COMMON/PREC8/SLAT,SLON
 
@@ -1611,7 +1592,6 @@ C *********************************************************************
 
       integer ifs,itfs,imfs
       COMMON/GFONT/IFS,ITFS,IMFS
-      integer IZSTOCN
       COMMON/C24/IZSTOCN(MCOM,MS)
       integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
@@ -1626,14 +1606,10 @@ C *********************************************************************
       integer igwid,igheight  ! for use with axiscale
       integer iside,isize,ifont,ipos     ! passed to viewtext etlabel
       integer iix,iiy,iix1,iiy1,iix2,iiy2
-      integer iigl,iigr,iigt,iigb,iigw,iigwh
-      integer iiw1,iiw2,iiw3,iiw4,iimenu
 #else
       integer*8 igwid,igheight  ! for use with axiscale
       integer*8 iside,isize,ifont,ipos    ! passed to viewtext etlabel
       integer*8 iix,iiy,iix1,iiy1,iix2,iiy2
-      integer*8 iigl,iigr,iigt,iigb,iigw,iigwh
-      integer*8 iiw1,iiw2,iiw3,iiw4,iimenu
 #endif
 
 C Define the two surfaces.
@@ -1645,19 +1621,14 @@ C Define the two surfaces.
       XMX2=FLOAT(NDXE(IEG))
       YMX2=FLOAT(NDYE(IEG))
       XYMX=AMAX1(XMX2,YMX2)
-
-C Setup and pass in parameters to win3d.
-      iiw1=30; iiw2=10; iiw3=5; iiw4=3; iimenu=29
-      iigl=igl; iigr=igr; iigt=igt; iigb=igb; iigw=igw; iigwh=igwh
-      CALL win3d(iimenu,iiw1,iiw2,iiw3,iiw4,
-     &  iigl,iigr,iigt,iigb,iigw,iigwh)
-      igl=int(iigl); igr=int(iigr); igt=int(iigt); igb=int(iigb)
-      igw=int(iigw); igwh=int(iigwh)
+      CALL WIN3D(29,30,10,5,5,igl,igr,igt,igb,igw,igwh)
+      igw=igr-igl
+      igwh=igb-igt
       igwid=igw
       igheight=igwh
       CALL AXISCALE(igwid,igheight,XMN2,XMX2,YMN2,YMX2,XSC,YSC,SCA,
      &               XADD,YADD)
-      CALL LINESCALE(iigl,XADD,SCA,iigb,YADD,SCA)
+      CALL LINESCALE(IGL,XADD,SCA,IGB,YADD,SCA)
       CALL U2PIXEL(XMN2,YMN2,iix,iiy)
       CALL ELINE(iix,iiy,1)
       CALL ECIRC(iix,iiy,3,1)
@@ -1950,7 +1921,6 @@ C *********************************************************************
       COMMON/RAY3/MODIFY,MODLEN,MODBND
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/OUTIN/IUOUT,IUIN
-      integer IZSTOCN
       COMMON/C24/IZSTOCN(MCOM,MS)
       COMMON/PREC8/SLAT,SLON
 
@@ -2213,13 +2183,9 @@ C *********************************************************************
 #ifdef OSI
       integer igwid,igheight  ! for use with axiscale
       integer iupdown,isym,iix,iiy    ! passed to etplot
-      integer iigl,iigr,iigt,iigb,iigw,iigwh
-      integer iiw1,iiw2,iiw3,iiw4,iimenu
 #else
       integer*8 igwid,igheight  ! for use with axiscale u2pixel
       integer*8 iupdown,isym,iix,iiy    ! passed to etplot u2pixel
-      integer*8 iigl,iigr,iigt,iigb,iigw,iigwh
-      integer*8 iiw1,iiw2,iiw3,iiw4,iimenu
 #endif
 
       IVRX=IVXCRN(ICR)
@@ -2270,18 +2236,15 @@ C Find 2D extremes coordinates.
       XMX2=AMAX1(XS(1),XS(2),XS(3),XS(4),XS(5),XS(6),XS(7),XS(8))
       YMX2=AMAX1(YS(1),YS(2),YS(3),YS(4),YS(5),YS(6),YS(7),YS(8))
 
-C Setup and pass in parameters to win3d.
-      iiw1=20; iiw2=4; iiw3=3; iiw4=3; iimenu=29
-      iigl=igl; iigr=igr; iigt=igt; iigb=igb; iigw=igw; iigwh=igwh
-      CALL win3d(iimenu,iiw1,iiw2,iiw3,iiw4,
-     &  iigl,iigr,iigt,iigb,iigw,iigwh)
-      igl=int(iigl); igr=int(iigr); igt=int(iigt); igb=int(iigb)
-      igw=int(iigw); igwh=int(iigwh)
+C Clear the graphical feedback window.
+      CALL WIN3D(29,20,4,3,3,igl,igr,igt,igb,igw,igwh)
+      igw=igr-igl
+      igwh=igb-igt
       igwid=igw
       igheight=igwh
       CALL AXISCALE(igwid,igheight,XMN2,XMX2,YMN2,YMX2,XSC,YSC,SCA,
      &              XADD,YADD)
-      CALL LINESCALE(iigl,XADD,SCA,iigb,YADD,SCA)
+      CALL LINESCALE(IGL,XADD,SCA,IGB,YADD,SCA)
 
 C Locate and label the vertex.
       CALL U2PIXEL(XS(1),YS(1),iix,iiy)
@@ -2362,7 +2325,6 @@ C *********************************************************************
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/RAY3/MODIFY,MODLEN,MODBND
-      integer IZSTOCN
       COMMON/C24/IZSTOCN(MCOM,MS)
       COMMON/PREC8/SLAT,SLON
 
@@ -2630,7 +2592,6 @@ C *********************************************************************
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       integer ifs,itfs,imfs
       COMMON/GFONT/IFS,ITFS,IMFS
-      integer IZSTOCN
       COMMON/C24/IZSTOCN(MCOM,MS)
       integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
@@ -2645,14 +2606,10 @@ C *********************************************************************
       integer igwid,igheight  ! for use with axiscale
       integer iside,isize,ifont,ipos     ! passed to viewtext etlabel
       integer iix,iiy,iix1,iiy1,iix2,iiy2
-      integer iigl,iigr,iigt,iigb,iigw,iigwh
-      integer iiw1,iiw2,iiw3,iiw4,iimenu
 #else
       integer*8 igwid,igheight  ! for use with axiscale
       integer*8 iside,isize,ifont,ipos     ! passed to viewtext etlabel
       integer*8 iix,iiy,iix1,iiy1,iix2,iiy2
-      integer*8 iigl,iigr,iigt,iigb,iigw,iigwh
-      integer*8 iiw1,iiw2,iiw3,iiw4,iimenu
 #endif
 
 C Return if not in graghical mode.
@@ -2668,19 +2625,14 @@ C Define the two surfaces.
       YMX2=FLOAT(NDYC(ICR))
       XYMX=AMAX1(XMX2,YMX2)
       call startbuffer()
-
-C Setup and pass in parameters to win3d.
-      iiw1=30; iiw2=10; iiw3=5; iiw4=5; iimenu=29
-      iigl=igl; iigr=igr; iigt=igt; iigb=igb; iigw=igw; iigwh=igwh
-      CALL win3d(iimenu,iiw1,iiw2,iiw3,iiw4,
-     &  iigl,iigr,iigt,iigb,iigw,iigwh)
-      igl=int(iigl); igr=int(iigr); igt=int(iigt); igb=int(iigb)
-      igw=int(iigw); igwh=int(iigwh)
+      CALL WIN3D(29,30,10,5,5,igl,igr,igt,igb,igw,igwh)
+      igw=igr-igl
+      igwh=igb-igt
       igwid=igw
       igheight=igwh
       CALL AXISCALE(igwid,igheight,XMN2,XMX2,YMN2,YMX2,XSC,YSC,SCA,
      &               XADD,YADD)
-      CALL LINESCALE(iigl,XADD,SCA,iigb,YADD,SCA)
+      CALL LINESCALE(IGL,XADD,SCA,IGB,YADD,SCA)
       CALL U2PIXEL(XMN2,YMN2,iix,iiy)
       CALL ELINE(iix,iiy,1)
       CALL ECIRC(iix,iiy,3,1)

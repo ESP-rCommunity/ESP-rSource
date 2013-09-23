@@ -21,12 +21,12 @@ C Software Foundation, Inc., 59 Temple Place, Suite 330,
 C Boston, MA 02111-1307 USA.
 
 c The file contains the following routines:
-c  START_HVAC_SIM
-c   start the simulation of HVAC systems performance by
-c   calling HVACSIM
-c  HVACSIM    control the simulation of the performance of the hvac
-c   system
-c  PLR   determine the part-load ratio of the hvac equipment
+c	START_HVAC_SIM
+c		   start the simulation of HVAC systems performance by
+c		   calling HVACSIM
+c	HVACSIM    control the simulation of the performance of the hvac
+c		   system
+c 	PLR	   determine the part-load ratio of the hvac equipment
 c *********************************************************************
 
 
@@ -55,7 +55,7 @@ c *********************************************************************
       CASE (BOILER)
          HVAC_STRING ='BOILER'
       CASE (BASEBOARD)
-         HVAC_STRING ='BASEBOARD'
+      	 HVAC_STRING ='BASEBOARD'
       CASE (ASHP)
          HVAC_STRING ='ASHP'
       CASE (GSHP)
@@ -79,7 +79,7 @@ c Subroutine to start HVAC systems simulation for the simulation period
 c after the startup period
 
 c     INPUTS:
-c     iday  day corresponding to the current time step
+c     iday		day corresponding to the current time step
 c     ********************************************************************
       SUBROUTINE START_HVAC_SIM(iday)
 
@@ -121,13 +121,13 @@ c                       common for total number of hours there is under
 c                       heating or under cooling
 c     HEAT_PUMP_INPUT_DATA
 c                       common for heat pump data
-c     pvala             common for the present time step loads
-c     fvala             common for the future time step loads
+c     pvala 	        common for the present time step loads
+c     fvala 	        common for the future time step loads
 c     GCEP_INPUT        common for parameters for GCEP
 c     hvacinfo          common for hvac simulation flag
 
 c     OUTPUTS:
-c     HVAC_OUTPUT  common for system energy consumption for time
+c     HVAC_OUTPUT	common for system energy consumption for time
 c     FC_ctl_h3khvacloads
 c                       common for electrical draws of hvac systems
 c     step
@@ -136,29 +136,27 @@ c     *********************************************************************
       use h3kmodule
       IMPLICIT NONE
 
-#include "hvac_parameters.h"
-
-#include "building.h"
-
-#include "hvac_common.h"
-
-#include "ashp_common.h"
-
-#include "SOFC.h"
-
-#include "gcep_common.h"
-
-#include "OffsiteUtilitiesPublic.h"
-
-#include "control.h"
-
-#include "h3k_report_data.h"
-
-#include "qrun.h"
-
-C Function determining if HOT3000 features enabled?
-      logical bH3KExtentionsActive
+      include "hvac_parameters.h"
       
+      include "building.h"
+      
+      include "control.h"
+      
+      include "hvac_common.h"
+      
+      include "ashp_common.h"
+      
+      include "SOFC.h"
+      
+      include "gcep_common.h"
+      
+      include "OffsiteUtilitiesPublic.h"
+      
+      include "IMS_common.h"
+
+      include "Ventilation_Data.h"
+
+
 c hvac system file and flag:  	ihvacflag=1 there is hvac file
 c ihvacflag=0 no hvac file
       common/hvacinfo/ihvacflag,hvacfile
@@ -170,11 +168,26 @@ c Use common for HVAC system energy consumption
       common/HVAC_OUTPUT/fan_energy(max_sys),
      &draft_energy(max_sys), sys_energy(max_sys),
      &backup_energy(max_sys), pilot_energy(max_sys),
-     &GSHP_pump_energy, GCEP_pump_energy
+     &pump_energy(max_sys) 
 
 c Real variables in HVAC system energy consumption common
       REAL fan_energy, draft_energy, sys_energy, backup_energy,
-     &pilot_energy, GSHP_pump_energy, GCEP_pump_energy
+     &pilot_energy, pump_energy
+
+      real est_fan_energy
+
+C Combined ventilation and circulation fan PLR (0->1)
+      real fCirc_and_Vent_PLR, fFanTotPLR
+      
+C Max power for fan-control-loop (W) 
+      real fFanMaxPower_hi, fFanMaxPower_lo, fFanPower, fSysFanPower
+      
+C Number of zones (ncomp)
+      common/c1/ncomp,ncon
+      integer ncomp, ncon
+
+    
+
 
 C Construction heat injection and temperature commons.
       COMMON/FVALC/             ! FUTURE:
@@ -188,8 +201,8 @@ C Construction heat injection and temperature commons.
       REAL TPC, QPC
 
 C Zone control data
-      integer icascf
       common/cctl/icascf(mcom)  ! Zone control type
+      integer icascf
 
 c Common for the present and the future zone temperatures and convective
 c heat injections.
@@ -217,6 +230,10 @@ c Variables for save level 5
       real fPPLR, fBPLR, fb_pilot_energy, fP_pilot_energy,
      &     fHeat_energy, fCool_energy
 
+      real fPLR(max_sys), fPLF(max_sys) 
+      real fPLR_backup(max_sys), fPLF_backup(max_sys)
+      real fBackupHeatingLoad(max_sys)
+      
 c Local real variables
       REAL plr_furnace, plr_backup, plr_heat_pump, plr_boiler,
      &plr_baseboard, plf_backup, plf_heat_pump, plf_furnace,
@@ -226,10 +243,47 @@ c Local real variables
      &heat_pump_cooling_cap
 
 c Local integer variables
-      INTEGER i, j, month, iday, icomp, iCoolSys, ihour_year
+
+      INTEGER i, j, month, iday, icomp, iCoolSys, ihour_year,iZoneIndex
+      integer iFanLoop, iNumSystemsOnLoop
 
 c Logical variable for whether there is space cooling load or ventilation load
       LOGICAL cooling_vent_yes,closea,closeb
+
+C IMS variables
+      real fIMS_SpaceHLoad        ! Space heating load (W)
+      real fIMS_WaterHLoad        ! Water heating load (W)
+      real fIMS_WaterHDuration    ! Duration of water heating load (s)
+      real fIMS_FuelUseRate       ! Fuel use (kg/s)
+      real fIMS_ElecUseRate       ! Electricity use (W)
+      real fIMS_FanUse            ! Fan power consumption (W)
+      real fIMS_VentUse           ! Ventilation power consumption (W)
+      real fIMS_VentFlowRate      ! IMS ventilation flow (kg/s)
+      real fIMS_VentLoad          ! Thermal load associated with vent. (W)
+      real fIMS_AddGains          ! Heat added/removed from zones
+                                  !   by IMS fans/systems/ventilation (W)
+      real fIMS_VaporChange       ! Moisture balance assoc. w/ IMS (kg/s)
+
+C.....H3Kreports.(HVAC_ELEC_DEC).start......................
+C.....DECLARATIONS for H3Kreporting object
+      CHARACTER*128 H3K_rep_NAME
+      CHARACTER*12  H3K_format
+      
+      CHARACTER*16 HVAC_STRING
+      CHARACTER*128 xmlHeat_Energy
+      CHARACTER*128 xmlCool_Energy
+      CHARACTER*128 xmlPilot_Energy
+      CHARACTER*128 xmlPLR
+      
+      REAL H3K_ASHP_elec
+      REAL H3K_GCEP_elec
+      REAL H3K_GSHP_elec
+      REAL H3K_fan_elec
+      REAL H3K_HRV_elec
+      REAL H3K_Current_elec
+      INTEGER LNBLNK
+C.....H3Kreports.(HVAC_ELEC_DEC).end........................
+
 
 C.....Energy content of fuel used, dissaggretated by end-use
       real fH3KSumEnergyUseHardWood(iNumUses)    ! Energy consumption assoc. w/ wood (W)
@@ -271,6 +325,9 @@ C.....Storage varaibles used to rationalize H3Kreports reporting
       real fH3KStoreOutputC(max_sys)     ! Thermal output (W)
       real fH3KStoreCOPC(max_sys)        ! Coefficient of performance - cooling
 
+      real fPLR_back_temp
+      real fPLF_back_temp
+
 !
 ! C.....Storage for reporting corresponding for heating/cooling heatpump
 ! C.....systems
@@ -284,6 +341,10 @@ C.....Storage varaibles used to rationalize H3Kreports reporting
 !       real fH3KLinkedOutput(max_sys)    ! Thermal output (W)
 !       real fH3KLinkedCOP(max_sys)       ! Coefficient of performance
 
+
+        logical bDebug
+        
+        bDebug = .false. 
 
 C.....Zero variables used to roll up energy use from all systems.
       use_loop: do iSysEndUse = 1, iNumUses
@@ -321,6 +382,7 @@ C systems according to their primary/backup status (as opposed to
 C sequentially)
       zero_storage_routines: do i = 1, num_hvac_sys
 
+
         fH3KStorePLRH(i)          = 0.0
         fH3KStoreFanEH(i)         = 0.0
         fH3KStoreDraftE(i)        = 0.0
@@ -351,49 +413,38 @@ C Set zone call heating/cooling bools to false
   4     continue
   5   continue
 
-c     For each of the HVAC systems, call the appropriate subroutine to determine
-c     the energy consumption of the system for the current time step. Before the
-c     specific system subroutine is called, the total heating or cooling load on the
-c     HVAC system is determined. This is the sum of all the heating or the cooling
-c     loads during the current time step for all the zones being served by the
-c     HVAC system.
-      do 10 i = 1,num_hvac_sys
 
-c     Determine the total heating or cooling requirement of the zones
-c     associated with the HVAC system i. This load is passed on to the
-c     equipment simulation subroutine to determine the energy cosumption.
-         heating_load = 0.
-         cooling_load = 0.
+C     Zero gain storage arrays.
+      ZoneZero: do iZoneIndex= 1, ncomp
+C       Set zone gain flag to false.
+        bIdealHVACZoneGain(iZoneIndex) = .false.
 
-c     The load for the current time step associated with the hvac system considered is
-c     the sum of the loads for the zones served by the hvac system. The load for each
-c     of the zones is the average of the load at the present and future time steps, qpa
-c     and qfa respectively
-         do 20 j=1,num_sys_zones(i)
-            if ( iban(icascf( isys_zone_num(i,j)),2) .gt. 0 ) then
-C...........PIN is within construction
+C       Zero gain storage arrays
+        fIdealHVACZoneConGain ( iZoneIndex ) = 0.0
+        fIdealHVACZoneRadGain ( iZoneIndex ) = 0.0
+        fIdealHVACZoneLatGain ( iZoneIndex ) = 0.0
 
-               req_load =( QPC(isys_zone_num(i,j)) +
-     &              QFC((isys_zone_num(i,j)) )) / 2.0
+      enddo ZoneZero
 
-            else
-               req_load = 0.5 * (qfa(isys_zone_num(i,j)) +
-     &              qpa(isys_zone_num(i,j)))
-                req_load = qfa(isys_zone_num(i,j))
-            endif
 
-            if(req_load.gt.0) then
+c     Initalize storage arrays for all HVAC systems 
+      HVAC_sys_loop_init : do i = 1,num_hvac_sys
 
-               zone_call_heat(i,j) = .true.
-               heating_load = heating_load + req_load
+C     (Re)Initialize idealized HVAC system - zone gain coupling
+C     to zero, and (re)set gain storage arrys to zero.
+         bIdealHVACSysGain( i ) = .false. 
 
-            elseif(req_load.lt.0) then
+         fIdealHVACSysAddGain( i ) = 0.0
+         fIdealHVACSysConGainFrac( i ) = 0.0
+         fIdealHVACSysRadGainFrac( i ) = 0.0
+         fIdealHVACSysLatGainFrac( i ) = 0.0
 
-               zone_call_cool(i,j) = .true.
-               cooling_load = cooling_load + abs(req_load)
 
-            endif
- 20      continue
+C.....H3Kreports.(HVAC_ELEC_CURR_INIT).start......................
+C.....INITIALIZATION for H3Kreporting object
+         H3K_Current_elec      = 0. 
+C.....H3Kreports.(HVAC_ELEC_CURR_INIT).end........................
+
 
 c     Initialize the part-load ratios and part-load factors
 c     Furnace part-load ratio
@@ -417,10 +468,13 @@ c     Boiler part-load factor
 c     Baseboard part-load factor
          plf_baseboard = 1.0
 c     Primary system PLR for H3K save lavel 5
-         fPPLR = 0
+         fPPLR = 0.
 c     Backup system PLR for H3K save level 5
          fBPLR = 0.
 
+C     Backup system load 
+         fBackupHeatingLoad (i) = 0. 
+         
 c     Initialize the system energy consumptions for the time step
 c     Primary system energy consumption
          sys_energy(i) = 0.
@@ -440,637 +494,839 @@ c     Primary system energy consumption for heating for H3K save level 5
          fHeat_Energy = 0.
 c     Primary system energy consumption for cooling for H3K save level 5
          fCool_energy = 0.
+C     Pump energy 
+          pump_energy(i)  = 0.
 
+C     Partload factors 
+          fPLR(i) = 0.
+          fPLF(i) = 1.
+          fPLR_backup(i) = 0.
+          fPLF_backup(i) = 1.
+          
 c Define hour of the year (from 8760 hours) for the simulation during
 c the current time step
          ihour_year = ihrp + 24 * (idyp - 1)
 
-c     At this point the total heating or cooling that needs to be supplied by
-c     the HVAC system is determined. Depending on the type of the HVAC system,
-c     the appropriate subroutine is called to determine the energy consumption.
+      enddo HVAC_sys_loop_init   
+        
+C     For each of the primary HVAC systems, call the appropriate subroutine to 
+C     determine the energy consumption of the system for the current time 
+C     step. Before the specific system subroutine is called, the total heating 
+C     or cooling load on the HVAC system is determined. This is the sum of all 
+C     the heating or the cooling loads during the current time step for all 
+C     the zones being served by the HVAC system. 
 
-c     If the primary heating system is a furnace
-         if((ihvac_type(i).eq.1).and.(ipriority(i).eq.1)) then
-            call FURNACE(i,heating_load,sys_energy(i),
-     &                   pilot_energy(i),plr_furnace,plf_furnace)
-            fP_pilot_energy = pilot_energy(i)
+      
+      HVAC_primary_sys_loop: do i=1, num_hvac_sys
+C.......Characterize primary systems first. Back-up systems handled in 
+C.......A second loop below.       
+        
+        IfPrimary: if ( ipriority(i) .eq. 1 ) then  
+c         Determine the total heating or cooling requirement of the zones
+c         associated with the HVAC system i. This load is passed on to the
+c         equipment simulation subroutine to determine the energy cosumption.
+          heating_load = 0.
+          cooling_load = 0.   
 
-c     Energy consumption of the circulation fan in J
-            fan_energy(i) = FAN_ENERGY_CON(i,plr_furnace,plr_backup,
-     &                      plf_furnace,plf_backup)
+c     The load for the current time step associated with the hvac system considered is
+c     the sum of the loads for the zones served by the hvac system. The load for each
+c     of the zones is the average of the load at the present and future time steps, qpa
+c     and qfa respectively
+          ZoneLoads: do j=1,num_sys_zones(i)
+            if ( iban(icascf( isys_zone_num(i,j)),2) .gt. 0 ) then
+C...........PIN is within construction
 
-            fPPLR = plr_furnace
-            fHeat_Energy = sys_energy(i)
+               req_load =( QPC(isys_zone_num(i,j)) +
+     &              QFC((isys_zone_num(i,j)) )) / 2.0
 
-
-c     If the draft fan power of the furnace is greater than 0, then the
-c     fan energy consumption during the time step is calculated. Draft
-c     fan power can be greater than zero only for induced draft and
-c     condensing furnaces.
-            if(draft_fan_power(i).gt.0.) then
-               draft_energy(i) = DRAFT_FAN_ENERGY(i,draft_fan_power(i),
-     &              plr_furnace,plf_furnace)
+            else
+               req_load = 0.5 * (qfa(isys_zone_num(i,j)) +
+     &              qpa(isys_zone_num(i,j)))
+                req_load = qfa(isys_zone_num(i,j))
             endif
 
-C Determine average electrical draws (W) by draft fan and circulating fan
-C and record them for use by the fuel cell controller.
-          FCctl_furnace_draft   = draft_energy(i) / time_step
-          FCctl_furnace_circfan = fan_energy(i)   / time_step
+            if(req_load.gt.0.) then
 
-C.........Store H3KReports data
-          fH3KStorePLRH(i)       = fPPLR
-          fH3KStoreFanEH(i)      = fan_energy(i)    / time_step
-          fH3KStoreDraftE(i)     = draft_energy(i)  / time_step
-          fH3KStorePrimaryEH(i)  = sys_energy(i)    / time_step
-          fH3KStorePilotE(i)     = pilot_energy(i)  / time_step
-          fH3KStoreOutputH(i)    = ss_capacity(i) * fH3KStorePLRH(i)
-          if ( fH3KStorePrimaryEH(i) > 1.0 .or.
-     &         fH3KStorePilotE(i)    > 1.0      ) then
-            fH3KStoreEfficiencyH(i)=
-     &         ( fH3KStoreOutputH(i) ) /
-     &         ( fH3KStorePrimaryEH(i) + fH3KStorePilotE(i) )
-          endif
+               zone_call_heat(i,j) = .true.
+               heating_load = heating_load + req_load
+
+            elseif(req_load.lt.0.) then
+
+               zone_call_cool(i,j) = .true.
+               cooling_load = cooling_load + abs(req_load)
+
+            endif
+          enddo ZoneLoads
+          
+          if ( bDebug) write (*,*) " HVAC module: system : ", i
+          if ( bDebug) write (*,*) 
+     &    "              calling characterization code for type ",
+     &    iHVAC_type(i), iUnit_Function(i), ipriority(i)
+          if ( bDebug) write (*,*) 
+     &    "              Heating Load: ", heating_load
+          if ( bDebug) write (*,*) 
+     &    "              Cooling Load: ", cooling_load
+
+          
+     
+     
+C.........At this point the total heating or cooling that needs to be supplied by
+C.........the HVAC system is determined. Depending on the type of the HVAC system,
+C.........the appropriate subroutine is called to determine the energy consumption.          
+          PrimarySelect: select case ( iHVAC_type (i) )
+
+C-----------------------------------------------------------------------                        
+C           Combustion-based heating systems (including furnaces, 
+C           boiler-based forced air combo systems, and hydronic 
+C           boiler systems) 
+C-----------------------------------------------------------------------                               
+            case (iSysFurnace,iSysBoiler) 
+              if ( bDebug) write (*,*) 
+     &    "              Calling Furnace code... "
+
+              call FURNACE(i,heating_load,sys_energy(i),
+     &                     pilot_energy(i),fPLR(i),fPLF(i) )
+          if ( bDebug) write (*,*) 
+     &    "              Done.  ", sys_energy(i), 
+     &                             pilot_energy(i),fPLR(i),fPLF(i)
 
 
-c     If the primary heating system is a boiler
-c     The model for a boiler is the same as that for a furnace
-         elseif((ihvac_type(i).eq.2).and.(ipriority(i).eq.1)) then
-            call FURNACE(i,heating_load,sys_energy(i),
-     &           pilot_energy(i),plr_boiler,plf_boiler)
 
-c     Energy consumption of the circulation fan in J
-            fan_energy(i) = FAN_ENERGY_CON(i,plr_boiler,plr_backup,
-     &                      plf_boiler,plf_backup)
 
-            fPPLR = plr_boiler
-            fP_pilot_energy = pilot_energy(i)
-            fHeat_Energy = sys_energy(i)
-
-c     If the draft fan power of the boiler is greater than 0, then the
-c     fan energy consumption during the time step is calculated. Draft
-c     fan power can be greater than zero only for induced draft and
-c     condensing boilers.
+C...........If the draft fan power of the furnace is greater than 0, then the
+C...........fan energy consumption during the time step is calculated. Draft
+C...........f an power can be greater than zero only for induced draft and
+C...........condensing furnaces.
             if(draft_fan_power(i).gt.0.) then
                draft_energy(i) = DRAFT_FAN_ENERGY(i,draft_fan_power(i),
-     &              plr_boiler,plf_boiler)
+     &              fPLR(i),fPLF(i))
+     
             endif
+    
 
-C Determine average electrical draws (W) by draft fan and circulating fan
-C and record them for use by the fuel cell controller. Note that circulating
-C fan does not really make sense.
-            FCctl_boiler_draft   = draft_energy(i) / time_step
-            FCctl_boiler_circfan = fan_energy(i)   / time_step
+C-----------------------------------------------------------------------                        
+C           'Baseboard' systems (electic, and includes electric resisitnce
+C            heaters in forced air plenums and in hydronic networks 
+C            such as back-up systems for heat pumps). 
+C-----------------------------------------------------------------------                        
+            case (iSysBaseboard)
 
-C.........Store H3KReports data
-          fH3KStorePLRH(i)       = fPPLR
-          fH3KStoreFanEH(i)      = fan_energy(i)    / time_step
-          fH3KStoreDraftE(i)     = draft_energy(i)  / time_step
-          fH3KStorePrimaryEH(i)  = sys_energy(i)    / time_step
-          fH3KStorePilotE(i)     = pilot_energy(i)  / time_step
-          fH3KStoreOutputH(i)    = ss_capacity(i) * fH3KStorePLRH(i)
-          if ( fH3KStorePrimaryEH(i) > 1.0 ) then
-            fH3KStoreEfficiencyH(i)= fH3KStoreOutputH(i)
-     &                                 / fH3KStorePrimaryEH(i)
-          endif
+            call BASEBOARD(i,heating_load,sys_energy(i),fPLR(i),
+     &                                                  fPLF(i) )
 
-c     If the primary heating system is a Baseboard/Hydronic/Plenum Heater
-         elseif((ihvac_type(i).eq.3).and.(ipriority(i).eq.1)) then
-            call BASEBOARD(i,heating_load,sys_energy(i),plr_baseboard,
-     &                     plf_baseboard)
 
-c     Energy consumption of the circulation fan in J
-            fan_energy(i) = FAN_ENERGY_CON(i,plr_baseboard,plr_backup,
-     &                      plf_baseboard,plf_backup)
-
-            fPPLR = plr_baseboard
-            fP_pilot_energy = 0.
-            fHeat_Energy = sys_energy(i)
-
-C Determine average electrical draws (W) by circulating fan
-C and record for use by the fuel cell controller.
-            FCctl_baseboard_fan = fan_energy(i)   / time_step
-
-C.........Store H3KReports data
-          fH3KStorePLRH(i)       = fPPLR
-          fH3KStoreFanEH(i)      = fan_energy(i)    / time_step
-          fH3KStorePrimaryEH(i)  = sys_energy(i)    / time_step
-          fH3KStoreOutputH(i)    = ss_capacity(i) * fH3KStorePLRH(i)
-          if ( fH3KStorePrimaryEH(i) > 1.0 ) then
-            fH3KStoreEfficiencyH(i)= fH3KStoreOutputH(i)
-     &                                  / fH3KStorePrimaryEH(i)
-          endif
-
-c     If the primary heating system is an air-source heat pump
-c     It is confirmed here that the air-source heat pump
-c     is a primary system
-         elseif((ihvac_type(i).eq.7).and.(iunit_function(i).eq.1)
-     &           .and.(ipriority(i).eq.1)) then
-
+C-----------------------------------------------------------------------                        
+C           Air-source heat pump (including cold-climate variety) 
+C           Heating or cooling.
+C-----------------------------------------------------------------------                        
+            case (iSysASHP)
+            
+              ASHPHeatOrCool: 
+     &        if ( iunit_function(i) == iFuncHeating ) then
+              
 c     Call the air-source heat pump subroutine
+                call ASHP_HEATING(i,heating_load,sys_energy(i),
+     &                            fPLR(i), fPLR_backup(i), fPLF(i) ) 
+            
+              else
+C...............Cooling case 
+C...............Is there a space sensible cooling load or 
+C...............ventilation load for hvac system i?
+                call eclose(cooling_load,0.0,1.e-6,closea)
+                call eclose(outdoor_air_flow(i,ihour_year),
+     &                      0.0,1.e-6,closeb)
+                if((.not.(closea)).or.(.not.(closeb))) then
+                  cooling_vent_yes = .true.
+                else
+                  cooling_vent_yes = .false.
+                endif
+                
+                call ASHP_COOLING(i,cooling_load,cooling_vent_yes,
+     &                            sys_energy(i),fPLR(i),fPLF(i) )
+                
+                    
+              endif ASHPHeatOrCool
 
-            call ASHP_HEATING(i,heating_load,sys_energy(i),
-     &           plr_heat_pump,plr_backup,plf_heat_pump)
-            fPPLR = plr_heat_pump
-            fHeat_Energy = sys_energy(i)
-c     In case the backup heat source is a furnace and there is a load on the backup
-c     source
+              
+C-----------------------------------------------------------------------                        
+C           Ground source HP: heating or cooling 
+C-----------------------------------------------------------------------                                   
+            case (iSysGSHP) 
 
-            if((plr_backup.gt.0.0001).and.
-     &           (ibackup_heat(i).eq.1)) then
-               call FURNACE(ibackup_sys_num(i),heating_load,
-     &              backup_energy(i),pilot_energy(i),plr_backup,
-     &              plf_backup)
-
-               fBPLR = plr_backup
-               fB_pilot_energy = pilot_energy(i)
-
-c     If the furnace draft fan power is > 0, then calculate the draft fan power
-c     consumption for the time step.
-               if(draft_fan_power(ibackup_sys_num(i)).gt.0.) then
-                  draft_energy(i) =
-     &                 DRAFT_FAN_ENERGY(i,
-     &                 draft_fan_power(ibackup_sys_num(i)),plr_backup,
-     &                                 plf_backup)
-C     Record electric draw of backup furnace draft fan for use by fuel
-C     cell controller.
-                  FCctl_furnace_draft = draft_energy(i) / time_step
-               endif
-
-c     In case the backup heat source is a boiler. The model for a boiler is the
-c     same as that for a furnace
-            elseif((plr_backup.gt.0.0001).and.
-     &              (ibackup_heat(i).eq.2)) then
-               call FURNACE(ibackup_sys_num(i),heating_load,
-     &              backup_energy(i),pilot_energy(i),plr_backup,
-     &              plf_backup)
-
-               fBPLR = plr_backup
-               fB_pilot_energy = pilot_energy(i)
-
-c     If the boiler draft fan power is > 0, then calculate the draft fan power
-c     consumption for the time step.
-               if(draft_fan_power(ibackup_sys_num(i)).gt.0.) then
-                  draft_energy(i) =
-     &                 DRAFT_FAN_ENERGY(i,
-     &                 draft_fan_power(ibackup_sys_num(i)),plr_backup,
-     &                 plf_backup)
-C     Record electric draw of backup boiler draft fan for use by fuel
-C     cell controller.
-                  FCctl_boiler_draft = draft_energy(i) / time_step
-               endif
-
-c     In case the backup heat source is Baseboards/Plenum Heaters/Hydronic
-            elseif((plr_backup.gt.0.0001).and.
-     &              (ibackup_heat(i).eq.3)) then
-               call BASEBOARD(ibackup_sys_num(i),heating_load,
-     &              backup_energy(i),plr_backup,plf_backup)
-               fBPLR = plr_backup
-               fB_pilot_energy = 0.
-            endif
-
-c     System circulation fan energy consumption in J
-            fan_energy(i) = FAN_ENERGY_CON(i,plr_heat_pump,plr_backup,
-     &                      plf_heat_pump,plf_backup)
+              GSHPHeatOrCool: 
+     &        if ( iunit_function(i) == iFuncHeating ) then
 
 
-C Determine average electrical draws (W) of air source heat pump operating
-C in heating mode and record for use by the fuel cell controller.
-            FCctl_ashp_compressor = sys_energy(i) / time_step
-            FCctl_ashp_circfan = fan_energy(i) / time_step
+C.............If the HVAC system under consideration (do 10 loop) is a GSHP, then
+C.............call to the GSHP_load subroutine to sum the daily heating and cooling
+C.............loads. These daily loads are needed by the ground heat exchanger to
+C.............determine the entering water temperature.
+                CALL GSHP_load(heating_load,cooling_load)
 
-C.........Store H3KReports data: Primary system...
+C...............Call the air-source heat pump subroutine
+                call GSHP_HEAT_COEFF(i)
+                call ASHP_HEATING(i,heating_load,sys_energy(i),
+     &                            fPLR(i), fPLR_backup(i), fPLF(i) ) 
 
 
-          fH3KStorePLRH(i)       = fPPLR
-          fH3KStoreFanEH(i)      = fan_energy(i)    / time_step
-          fH3KStorePrimaryEH(i)  = sys_energy(i)    / time_step
-          fH3KStoreOutputH(i)    = fH3KActualCapacity(i)
-     &                                          * fH3KStorePLRH(i)
-          if ( fH3KStorePrimaryEH(i) > 1. ) then
-            fH3KStoreCOPH(i)       = fH3KStoreOutputH(i)
-     &                                   / fH3KStorePrimaryEH(i)
-          endif
+              
+C...............The amount of pumping power required for the circulation of the fluid
+C...............through the ground loop and into the heat pump must be calculated.
+                heat_pump_cap = ss_capacity(i)
+                pump_energy(i) = GSHP_pump_power(heat_pump_cap)
 
-C......... ...and backup
-          ASHP_backup_energy_report:
-     &    if ( ibackup_heat(i) == 1 .or.
-     &         ibackup_heat(i) == 2 .or.
-     &         ibackup_heat(i) == 3      ) then
 
-C...........Get system number
+              else
+              
+C...............For a ground-source heat pump system in cooling mode, first call the
+C...............subroutine to calculate the correlation coefficients for the GSHP in cooling
+C...............mode. Once GSHP_COOL_COEFF is called, the same ASHP cooling routines are used -
+C...............for both the primary system and the backup systems.
+            
+C...............Is there a space sensible cooling load or ventilation load for hvac system i?
+                call eclose(cooling_load,0.0,1.e-6,closea)
+                call eclose(outdoor_air_flow(i,ihour_year),
+     &                      0.0,1.e-6,closeb)
+                if((.not.(closea)).or.(.not.(closeb))) then
+                  cooling_vent_yes = .true.
+                else
+                  cooling_vent_yes = .false.
+                endif
+
+
+              
+                
+                call GSHP_COOL_COEFF(i)
+                call ASHP_COOLING(i,cooling_load,cooling_vent_yes,
+     &                            sys_energy(i),fPLR(i),fPLF(i) )
+
+                heat_pump_cap = ss_capacity(i)
+                pump_energy(i)=GSHP_pump_power(heat_pump_cap)
+
+
+              endif GSHPHeatOrCool
+
+C-----------------------------------------------------------------------                        
+C           GCEP varient of  ground source HP: heating or cooling 
+C-----------------------------------------------------------------------                                    
+            case (iSysGSHP_GCEP)
+            
+            
+              GCEPHeatOrCool: 
+     &        if ( iunit_function(i) == iFuncHeating ) then 
+
+C...............For a ground-source heat pump system, call the GCEP_load subroutine
+C...............to average the load to the ground over an hour
+C...............the ground load is the minimum between the load and the heat pump capacity
+C...............adjusted with the COP
+                CALL GCEP_load(heating_load,cooling_load,
+     &                         heat_pump_cap,heat_pump_cooling_cap)
+
+C...............Call the air-source heat pump subroutine
+                call GCEP_HEAT_COEFF(i)
+                call ASHP_HEATING(i,heating_load,sys_energy(i),
+     &                        fPLR(i), fPLR_backup(i), fPLF(i) ) 
+
+
+
+C...............The amount of pumping power required for the circulation of the fluid
+C...............through the ground loop and into the heat pump must be calculated.
+                heat_pump_cap  = ss_capacity(i)
+                pump_energy(i) = GCEP_pump_power(heat_pump_cap)
+
+!                print*, " GCEP heating call, ", i 
+!                print*, "  - capH ", heat_pump_cap
+!                print*, "  - capC ", heat_pump_cooling_cap
+!                print*, "  - loadH", heating_load
+!                print*, "  - loadC", cooling_load             
+!                print*, "  - syse ", sys_energy(i) 
+!                print*, "  - plr  ", fPLR(i)
+!                print*, "  - plf  ", fPLF(i)
+!                print*, "  - plrba", fPLR_backup(i) 
+!                print*, "  - pump ", pump_energy(i)
+
+
+              else
+C...............GCEP variation on ground source HP
+C...............For a ground-source heat pump system in cooling mode, first call the
+C...............subroutine to calculate the correlation coefficients for the GSHP in cooling
+C...............mode. Once GSHP_COOL_COEFF is called, the same ASHP cooling routines are used -
+C...............for both the primary system and the backup systems.
+
+C............... Is there a space sensible cooling load or ventilation load for hvac system i?
+                 call eclose(cooling_load,0.0,1.e-6,closea)
+                 call eclose(outdoor_air_flow(i,ihour_year),
+     &                       0.0,1.e-6,closeb)
+                 if((.not.(closea)).or.(.not.(closeb))) then
+                   cooling_vent_yes = .true.
+                 else
+                   cooling_vent_yes = .false.
+                 endif
+                 
+                 call GCEP_COOL_COEFF(i)
+                 call ASHP_COOLING(i,cooling_load,cooling_vent_yes,
+     &                            sys_energy(i),fPLR(i),fPLF(i) )
+
+                heat_pump_cap  = ss_capacity(i)
+                pump_energy(i) = GCEP_pump_power(heat_pump_cap)
+              
+!                print*, " GCEP cooling call, ", i 
+!                print*, "  - capH ", heat_pump_cap
+!                print*, "  - capC ", heat_pump_cooling_cap
+!                print*, "  - loadH", heating_load
+!                print*, "  - loadC", cooling_load
+!                print*, "  - CVY  ", cooling_vent_yes                  
+!                print*, "  - syse ", sys_energy(i) 
+!                print*, "  - plr  ", fPLR(i)
+!                print*, "  - plf  ", fPLF(i) 
+!                print*, "  - pump ", pump_energy(i) 
+
+
+
+              endif GCEPHeatOrCool            
+            
+C-----------------------------------------------------------------------                        
+C           IMS in heating mode 
+C-----------------------------------------------------------------------                        
+            case (iSysIMS_P10) 
+            
+            
+C             Collect space and water heating loads.
+              fIMS_SpaceHLoad     = heating_load  ! W
+              fIMS_WaterHLoad     = 0.0 !20000.0  ! W
+              fIMS_WaterHDuration = 0.0 !1800.0   ! Seconds
+              
+C             Superviosry routine for IMS characteriztion
+              call IMS_CharPerformance ( i,
+     &                                   iMode_LowVent,
+     &                                   fIMS_SpaceHLoad,
+     &                                   fIMS_WaterHLoad,
+     &                                   fIMS_WaterHDuration,
+     &                                   fIMS_FuelUseRate,
+     &                                   fIMS_ElecUseRate,
+     &                                   fIMS_FanUse,
+     &                                   fIMS_VentUse,
+     &                                   fIMS_AddGains )
+              
+C.......      Translate IMS outputs into hvac-friendly params.
+              sys_energy(i) =  fIMS_FuelUseRate
+              fHeat_energy  =  fIMS_FuelUseRate
+              fP_pilot_energy = 0.0
+              fan_energy(i) = fIMS_FanUse
+              
+              
+C             Save additional gains.
+              bIdealHVACSysGain(i) = .true.
+              fIdealHVACSysAddGain( i ) = fIMS_AddGains
+C             Assume additional gains are 100% convective, as they
+C             may include a 'space-heating deficit' during periods
+C             of extended DHW loads.
+              fIdealHVACSysConGainFrac( i ) = 1.0
+              fIdealHVACSysRadGainFrac( i ) = 0.0
+              fIdealHVACSysLatGainFrac( i ) = 0.0
+            
+            
+          
+          end select PrimarySelect
+
+C.........Check to see if heating systems have back-up, and 
+C.........store remainder of unmet load for back-up calculation 
+          if ( bDebug) write (*,*) 
+     &    "              done."
+
+          
+     
+          SaveBackupLoad: 
+     &    if ( iUnit_Function(i)  == iFuncHeating .and. 
+     &         ibackup_heat(i)    /= 0 .and. 
+     &         ibackup_sys_num(i) >  0             ) then 
+     
+          if ( bDebug) write (*,*) 
+     &    "              Computing residual load "     
+          if ( bDebug) write (*,*) 
+     &    "              original load: ", heating_load     
             iBackup = ibackup_sys_num(i)
-C...........And store data ( back-up system's fan energy is aggregated
-C...........into main system's fan energy)
-            fH3KStorePLRH(iBackup)    = fBPLR
-            fH3KStoreDraftE(iBackup) = draft_energy(iBackup)
-     &                                            / time_step
-            fH3KStorePrimaryEH(iBackup) = backup_energy(i)
-     &                                            / time_step
-            fH3KStorePilotE(iBackup) = pilot_energy(iBackup)
-     &                                            / time_step
-            fH3KStoreOutputH(iBackup)  = ss_capacity(iBackup) * fBPLR
-            if ( fH3KStorePrimaryEH(iBackup) > 1.0 .or.
-     &           fH3KStorePilotE(iBackup)   > 1.0     ) then
-              fH3KStoreEfficiencyH(iBackup)= fH3KStoreOutputH(iBackup) /
-     &         (fH3KStorePrimaryEH(iBackup) + fH3KStorePilotE(iBackup))
-            endif
-          endif ASHP_backup_energy_report
+C...........Remainder of load (W)
+C...........
+C...........Remaining load = heating_load - part-load-ratio * capacity 
+C...........             
+            fBackupHeatingLoad( iBackup ) 
+     &            = heating_load - fPLR(i) * ss_capacity(i) 
+            
+            if ( fBackupHeatingLoad(iBackup)  < 0. ) 
+     &              fBackupHeatingLoad( iBackup ) = 0.
 
-c GSHP
-c For a ground-source heat pump system in the heating mode, first call the
-c subroutine to calculate the correlation coefficients for the GSHP in heating
-c mode. Once GSHP_HEAT_COEFF is called, the same ASHP heating routines are used -
-c for both the primary system and the backup systems.
-
-         elseif((ihvac_type(i).eq.8).and.(iunit_function(i).eq.1)
-     &         .and.(ipriority(i).eq.1)) then
+C...........Co
+            fPLR(iBackup) = fPLR_backup(i)
 
 
-c If the HVAC system under consideration (do 10 loop) is a GSHP, then
-c call to the GSHP_load subroutine to sum the daily heating and cooling
-c loads. These daily loads are needed by the ground heat exchanger to
-c determine the entering water temperature.
-           CALL GSHP_load(heating_load,cooling_load)
+          if ( bDebug) write (*,*) 
+     &    "              remaining load: ", fBackupHeatingLoad(iBackup)
+           endif SaveBackupLoad
+          
+        endif IfPrimary
+        
+      enddo HVAC_primary_sys_loop
+      
+C-----------------------------------------------------------------------
+C     Loop through systems a second time, and determine energy 
+C     consumption of backup systems 
+C-----------------------------------------------------------------------      
+      
 
-c Call the air-source heat pump subroutine
-           call GSHP_HEAT_COEFF(i)
-           call ASHP_HEATING(i,heating_load,sys_energy(i),
-     &                      plr_heat_pump,plr_backup,plf_heat_pump)
+      HVAC_backup_sys_loop: do i=1, num_hvac_sys
+      
+C.......Limit analysis to back-up systems. 
+        IfBackup: if ( ipriority(i) .eq. 2 ) then  
+C.........When specified with legacy hvac files, this if statement 
+C.........causes back-up routines to be called only when there is 
+C.........load on the system. This behavior is actually erroneous because
+C.........it means that pilot energy consumption and other stand-by losses are 
+C.........correctly evaluated for 
 
-           fPPLR = plr_heat_pump
-           fHeat_Energy = sys_energy(i)
+          V1Backup: 
+     &    if ( .not. bHVACVersion2 .and. fPLR(i) <= 0.0001 ) then 
 
-c The amount of pumping power required for the circulation of the fluid
-c through the ground loop and into the heat pump must be calculated.
-           heat_pump_cap = ss_capacity(i)
-           GSHP_pump_energy = GSHP_pump_power(heat_pump_cap)
-
-
-c In case the backup heat source is a furnace and there is a load on the backup
-c source
-
-           if((plr_backup.gt.0.0001).and.
-     &       (ibackup_heat(i).eq.1)) then
-             call FURNACE(ibackup_sys_num(i),heating_load,
-     &                    backup_energy(i),pilot_energy(i),plr_backup,
-     &                    plf_backup)
-             fBPLR = plr_backup
-             fB_pilot_energy = pilot_energy(i)
-c If the furnace draft fan power is > 0, then calculate the draft fan power
-c consumption for the time step.
-             if(draft_fan_power(ibackup_sys_num(i)).gt.0.) then
-                draft_energy(i) =
-     &                   DRAFT_FAN_ENERGY(i,
-     &                   draft_fan_power(ibackup_sys_num(i)),plr_backup,
-     &                   plf_backup)
-C Record electric draw of backup furnace for use by fuel cell controller
-                FCctl_furnace_draft = draft_energy(i) / time_step
-             endif
-
-c In case the backup heat source is a boiler. The model for a boiler is the
-c same as that for a furnace
-           elseif((plr_backup.gt.0.0001).and.
-     &           (ibackup_heat(i).eq.2)) then
-             call FURNACE(ibackup_sys_num(i),heating_load,
-     &       backup_energy(i),pilot_energy(i),plr_backup,plf_backup)
-             fBPLR = plr_backup
-             fB_pilot_energy = pilot_energy(i)
-c If the boiler draft fan power is > 0, then calculate the draft fan power
-c consumption for the time step.
-             if(draft_fan_power(ibackup_sys_num(i)).gt.0.) then
-                draft_energy(i) =
-     &                   DRAFT_FAN_ENERGY(i,
-     &                   draft_fan_power(ibackup_sys_num(i)),plr_backup,
-     &                   plf_backup)
-C Record electric draw of backup boiler for use by fuel cell controller
-                FCctl_boiler_draft = draft_energy(i) / time_step
-             endif
-
-c In case the backup heat source is Baseboards/Plenum Heaters/Hydronic
-           elseif((plr_backup.gt.0.0001).and.
-     &           (ibackup_heat(i).eq.3)) then
-             call BASEBOARD(ibackup_sys_num(i),heating_load,
-     &       backup_energy(i),plr_backup,plf_backup)
-             fBPLR = plr_backup
-             fB_pilot_energy = 0.
-           endif
-c System circulation fan energy consumption in J
-           fan_energy(i) = FAN_ENERGY_CON(i,plr_heat_pump,plr_backup,
-     &                     plf_heat_pump,plf_backup)
-
-C Record electric draw of circulating fan, pump and compressor
-c for use by fuel cell controller
-           FCctl_gshp_pump = GSHP_pump_energy / time_step
-           FCctl_ashp_compressor = sys_energy(i) / time_step
-           FCctl_ashp_circfan = fan_energy(i) / time_step
-
-C.........Store H3KReports data: Primary system...
-
-          fH3KStorePLRH(i)       = fPPLR
-          fH3KStoreFanEH(i)      = fan_energy(i)    / time_step
-          fH3KStorePrimaryEH(i)     = sys_energy(i)    / time_step
-          fH3KStorePumpEH(i)     = GSHP_pump_energy / time_step
-          fH3KStoreOutputH(i)    = fH3KActualCapacity(i)
-     &                                            * fH3KStorePLRH(i)
-          if ( fH3KStorePrimaryEH(i) > 1.0 ) then
-            fH3KStoreCOPH(i)       = fH3KStoreOutputH(i)
-     &                                / fH3KStorePrimaryEH(i)
-          endif
-
-
-C......... ...and backup
-          GSHP_backup_energy_report:
-     &    if ( ibackup_heat(i) == 1 .or.
-     &         ibackup_heat(i) == 2 .or.
-     &         ibackup_heat(i) == 3      ) then
-
-C...........Get system number
-            iBackup = ibackup_sys_num(i)
-C...........And store data ( back-up system's fan energy is aggregated
-C...........into main system's fan energy)
-            fH3KStorePLRH(iBackup)     = fBPLR
-            fH3KStoreDraftE(iBackup) = draft_energy(iBackup)
-     &                                            / time_step
-            fH3KStorePrimaryEH(iBackup) = backup_energy(i)
-     &                                            / time_step
-            fH3KStorePilotE(iBackup) = pilot_energy(iBackup)
-     &                                            / time_step
-            fH3KStoreOutputH(iBackup)  = ss_capacity(iBackup) * fBPLR
-            if ( fH3KStorePrimaryEH(iBackup) > 1.0 .or.
-     &           fH3KStorePilotE(iBackup)   > 1.0     ) then
-              fH3KStoreEfficiencyH(iBackup)= fH3KStoreOutputH(iBackup) /
-     &          (fH3KStorePrimaryEH(iBackup) + fH3KStorePilotE(iBackup))
-            endif
-          endif GSHP_backup_energy_report
-
-
-
-c GSHP: end
-
-c GCEP: begin
-c For a ground-source heat pump system in the heating mode, first call the
-c subroutine to calculate the correlation coefficients for the GCEP in heating
-c mode (same as for the GSHP systems).
-c Once GSHP_HEAT_COEFF is called, the same ASHP heating routines are used -
-c for both the primary system and the backup systems.
-
-         elseif((ihvac_type(i).eq.9).and.(iunit_function(i).eq.1)
-     &         .and.(ipriority(i).eq.1)) then
-
-c For a ground-source heat pump system, call the GCEP_load subroutine
-c to average the load to the ground over an hour
-c the ground load is the minimum between the load and the heat pump capacity
-c adjusted with the COP
-           CALL GCEP_load(heating_load,cooling_load,
-     &          heat_pump_cap,heat_pump_cooling_cap)
-
-c Call the air-source heat pump subroutine
-           call GCEP_HEAT_COEFF(i)
-           call ASHP_HEATING(i,heating_load,sys_energy(i),
-     &                      plr_heat_pump,plr_backup,plf_heat_pump)
-
-           fPPLR = plr_heat_pump
-           fHeat_Energy = sys_energy(i)
-c The amount of pumping power required for the circulation of the fluid
-c through the ground loop and into the heat pump must be calculated.
-           heat_pump_cap = ss_capacity(i)
-           GCEP_pump_energy = GCEP_pump_power(heat_pump_cap)
-
-c In case the backup heat source is a furnace and there is a load on the backup
-c source
-
-           if((plr_backup.gt.0.0001).and.
-     &       (ibackup_heat(i).eq.1)) then
-             call FURNACE(ibackup_sys_num(i),heating_load,
-     &                    backup_energy(i),pilot_energy(i),plr_backup,
-     &                    plf_backup)
-             fBPLR = plr_backup
-             fB_pilot_energy = pilot_energy(i)
-c If the furnace draft fan power is > 0, then calculate the draft fan power
-c consumption for the time step.
-             if(draft_fan_power(ibackup_sys_num(i)).gt.0.) then
-                draft_energy(i) =
-     &                   DRAFT_FAN_ENERGY(i,
-     &                   draft_fan_power(ibackup_sys_num(i)),plr_backup,
-     &                   plf_backup)
-             endif
-
-c In case the backup heat source is a boiler. The model for a boiler is the
-c same as that for a furnace
-           elseif((plr_backup.gt.0.0001).and.
-     &           (ibackup_heat(i).eq.2)) then
-             call FURNACE(ibackup_sys_num(i),heating_load,
-     &       backup_energy(i),pilot_energy(i),plr_backup,plf_backup)
-             fBPLR = plr_backup
-             fB_pilot_energy = pilot_energy(i)
-c If the boiler draft fan power is > 0, then calculate the draft fan power
-c consumption for the time step.
-             if(draft_fan_power(ibackup_sys_num(i)).gt.0.) then
-                draft_energy(i) =
-     &                   DRAFT_FAN_ENERGY(i,
-     &                   draft_fan_power(ibackup_sys_num(i)),plr_backup,
-     &                   plf_backup)
-             endif
-
-c In case the backup heat source is Baseboards/Plenum Heaters/Hydronic
-           elseif((plr_backup.gt.0.0001).and.
-     &           (ibackup_heat(i).eq.3)) then
-             call BASEBOARD(ibackup_sys_num(i),heating_load,
-     &       backup_energy(i),plr_backup,plf_backup)
-             fBPLR = plr_backup
-             fB_pilot_energy = 0.
-           endif
-c System circulation fan energy consumption in J
-           fan_energy(i) = FAN_ENERGY_CON(i,plr_heat_pump,plr_backup,
-     &                     plf_heat_pump,plf_backup)
-
-C.........Store H3KReports data: Primary system...
-
-          fH3KStorePLRH(i)       = fPPLR
-          fH3KStoreFanEH(i)      = fan_energy(i)    / time_step
-          fH3KStorePrimaryEH(i)  = sys_energy(i)    / time_step
-          fH3KStorePumpEH(i)     = GCEP_pump_energy / time_step
-          fH3KStoreOutputH(i)    = fH3KActualCapacity(i)
-     &                                            * fH3KStorePLRH(i)
-          if ( fH3KStorePrimaryEH(i) > 1.0 ) then
-            fH3KStoreCOPH(i)     = fH3KStoreOutputH(i)
-     &                              / fH3KStorePrimaryEH(i)
-          endif
-C......... ...and backup
-          GCEP_backup_energy_report:
-     &    if ( ibackup_heat(i) == 1 .or.
-     &         ibackup_heat(i) == 2 .or.
-     &         ibackup_heat(i) == 3      ) then
-
-C...........Get system number
-            iBackup = ibackup_sys_num(i)
-C...........And store data ( back-up system's fan energy is aggregated
-C...........into main system's fan energy)
-            fH3KStorePLRH(iBackup)    = fBPLR
-            fH3KStoreDraftE(iBackup) = draft_energy(iBackup)
-     &                                            / time_step
-            fH3KStorePrimaryEH(iBackup) = backup_energy(i)
-     &                                            / time_step
-            fH3KStorePilotE(iBackup) = pilot_energy(iBackup)
-     &                                            / time_step
-            fH3KStoreOutputH(iBackup)  = ss_capacity(iBackup) * fBPLR
-            if ( fH3KStorePrimaryEH(iBackup) > 1.0 .or.
-     &           fH3KStorePilotE(iBackup)   > 1.0     ) then
-              fH3KStoreEfficiencyH(iBackup)= fH3KStoreOutputH(iBackup) /
-     &          (fH3KStorePrimaryEH(iBackup) + fH3KStorePilotE(iBackup))
-            endif
-          endif GCEP_backup_energy_report
-
-
-c GCEP: end
-
-c     For an air-source heat pump system in the cooling mode, call the
-c     cooling mode simulation subroutine
-         elseif((ihvac_type(i).eq.7).and.(iunit_function(i).eq.2)
-     &           .and.(ipriority(i).eq.1)) then
-
-c Is there a space sensible cooling load or ventilation load for hvac system i?
-          call eclose(cooling_load,0.0,1.e-6,closea)
-          call eclose(outdoor_air_flow(i,ihour_year),0.0,1.e-6,closeb)
-          if((.not.(closea)).or.(.not.(closeb))) then
-            cooling_vent_yes = .true.
+             ! Do nothing 
+  
           else
-            cooling_vent_yes = .false.
-          endif
 
-          call ASHP_COOLING(i,cooling_load,cooling_vent_yes,
-     &         sys_energy(i),plr_heat_pump,plf_heat_pump)
+          heating_load = fBackupHeatingLoad(i) 
+          
+C.........At this point the total heating or cooling that needs to be supplied by
+C.........the HVAC system is determined. Depending on the type of the HVAC system,
+C.........the appropriate subroutine is called to determine the energy consumption.          
+          BackupSelect: select case ( iHVAC_type (i) )
+          
+C-----------------------------------------------------------------------                        
+C           Combustion-based heating systems (including furnaces, 
+C           boiler-based forced air combo systems, and hydronic 
+C           boiler systems) 
+C-----------------------------------------------------------------------                               
+            case (iSysFurnace,iSysBoiler)
+              
+              call FURNACE(i,heating_load,sys_energy(i),
+     &                     pilot_energy(i),fPLR(i),fPLF(i) )
 
-c System circulation fan energy consumption in J
-          fan_energy(i) = FAN_ENERGY_CON(i,plr_heat_pump,plr_backup,
-     &                    plf_heat_pump,plf_backup)
-          fPPLR = plr_heat_pump
-          fCool_Energy = sys_energy(i)
-
-C Determine average electrical draws (W) by A/C unit (compressor and
-C condensor fan) and circulating fan and record them for use by the
-C fuel cell controller.
-          FCctl_AC_compressor = sys_energy(i) / time_step
-          FCctl_AC_circfan    = fan_energy(i) / time_step
-
-C.........Store H3KReports data: Primary system...
-
-          fH3KStorePLRC(i)       = fPPLR
-          fH3KStoreFanEC(i)      = fan_energy(i)    / time_step
-          fH3KStorePrimaryEC(i)  = sys_energy(i)    / time_step
-          fH3KStoreOutputC(i)    = fH3KActualCapacity(i)
-     &                                     * fH3KStorePLRC(i)
-          if ( fH3KStorePrimaryEC(i) > 1.0 ) then
-            fH3KStoreCOPC(i)       = fH3KStoreOutputC(i)
-     &                                / fH3KStorePrimaryEC(i)
-          endif
-c GSHP: begin
-c For a ground-source heat pump system in cooling mode, first call the
-c subroutine to calculate the correlation coefficients for the GSHP in cooling
-c mode. Once GSHP_COOL_COEFF is called, the same ASHP cooling routines are used -
-c for both the primary system and the backup systems.
-         elseif((ihvac_type(i).eq.8).and.(iunit_function(i).eq.2)
-     &   .and.(ipriority(i).eq.1)) then
-c Is there a space sensible cooling load or ventilation load for hvac system i?
-            call eclose(cooling_load,0.0,1.e-6,closea)
-            call eclose(outdoor_air_flow(i,ihour_year),0.0,1.e-6,closeb)
-            if((.not.(closea)).or.(.not.(closeb))) then
-              cooling_vent_yes = .true.
-            else
-              cooling_vent_yes = .false.
+C...........If the draft fan power of the furnace is greater than 0, then the
+C...........fan energy consumption during the time step is calculated. Draft
+C...........fan power can be greater than zero only for induced draft and
+C...........condensing furnaces.
+            if(draft_fan_power(i).gt.0.) then
+               draft_energy(i) = DRAFT_FAN_ENERGY(i,draft_fan_power(i),
+     &              fPLR(i),fPLF(i))
             endif
+           
+C-----------------------------------------------------------------------                        
+C           'Baseboard' systems (electic, and includes electric resisitnce
+C            heaters in forced air plenums and in hydronic networks 
+C            such as back-up systems for heat pumps). 
+C-----------------------------------------------------------------------                        
+            case (iSysBaseboard)
 
-            call GSHP_COOL_COEFF(i)
-            call ASHP_COOLING(i,cooling_load,cooling_vent_yes,
-     &           sys_energy(i),plr_heat_pump,plf_heat_pump)
+              call BASEBOARD(i,heating_load,sys_energy(i),fPLR(i),
+     &                                                       fPLF(i) )
 
-c System circulation fan energy consumption in J
-            fan_energy(i) = FAN_ENERGY_CON(i,plr_heat_pump,plr_backup,
-     &                      plf_heat_pump,plf_backup)
-            fPPLR = plr_heat_pump
-            fCool_Energy = sys_energy(i)
-c In addition, the amount of pumping power required for the
-c circulation of the fluid through the ground loop and into the heat pump
-c must be calculated.
-            heat_pump_cooling_cap = ss_capacity(i)
-            GSHP_pump_energy = GSHP_pump_power(heat_pump_cooling_cap)
+C-----------------------------------------------------------------------                        
+C           Heatpump systems. These currently cannot be called as 
+C           backup. 
+C-----------------------------------------------------------------------                              
+            case (iSysASHP, iSysGSHP, iSysGSHP_GCEP, iSysIMS_P10 ) 
+            
+              ! Do nothing.
+              
+          end select BackupSelect
+      
+        endif V1Backup 
 
-C.........Store H3KReports data: Primary system...
+        endif IfBackup
+      
+      enddo HVAC_backup_sys_loop
+      
+C-----------------------------------------------------------------------
+C       Loop through HVAC systems again, and characterize fan operation 
+C-----------------------------------------------------------------------        
+        HVAC_Fan_Loop: do i = 1, num_hvac_sys
+C.........Characterize primary systems.        
+          if ( ipriority(i) == 1 ) then 
+        
+C...........Get index and PLR/PLF for backup system, if defined.
+            if ( ibackup_heat(i) /= 0 ) then  
 
-          fH3KStorePLRC(i)       = fPPLR
-          fH3KStoreFanEC(i)      = fan_energy(i)    / time_step
-          fH3KStorePrimaryEC(i)  = sys_energy(i)    / time_step
-          fH3KStoreOutputC(i)    = fH3KActualCapacity(i)
-     &         * fH3KStorePLRC(i)
-          if ( fH3KStorePrimaryEC(i) > 1.0 ) then
-            fH3KStoreCOPC(i)       = fH3KStoreOutputC(i)
-     &                                / fH3KStorePrimaryEC(i)
-          endif
-c GSHP: end
+              iBackup = ibackup_sys_num(i)
 
-C Determine average electrical draws (W) by A/C unit (compressor and
-C condensor fan) and circulating fan and record them for use by the
-C fuel cell controller.
-          FCctl_AC_compressor = sys_energy(i) / time_step
-          FCctl_AC_circfan    = fan_energy(i) / time_step
-C Determine electrical draw (W) of pump circulating fluid through
-C the ground loop and into the heat pump
-          FCctl_gshp_pump = GSHP_pump_energy / time_step
+              fPLR_back_temp = fPLR(iBackup)
+              fPLF_back_temp = fPLF(iBackup)
 
-c GCEP: begin
-c For a ground-source heat pump system in cooling mode, first call the
-c subroutine to calculate the correlation coefficients for the GSHP in cooling
-c mode. Once GSHP_COOL_COEFF is called, the same ASHP cooling routines are used -
-c for both the primary system and the backup systems.
-         elseif((ihvac_type(i).eq.9).and.(iunit_function(i).eq.2)
-     &   .and.(ipriority(i).eq.1)) then
-c Is there a space sensible cooling load or ventilation load for hvac system i?
-            call eclose(cooling_load,0.0,1.e-6,closea)
-            call eclose(outdoor_air_flow(i,ihour_year),0.0,1.e-6,closeb)
-            if((.not.(closea)).or.(.not.(closeb))) then
-              cooling_vent_yes = .true.
-            else
-              cooling_vent_yes = .false.
-            endif
+            else 
 
-            call GCEP_COOL_COEFF(i)
-            call ASHP_COOLING(i,cooling_load,cooling_vent_yes,
-     &           sys_energy(i),plr_heat_pump,plf_heat_pump)
+              fPLR_back_temp = 0.
+              fPLF_back_temp = 1.
 
-c System circulation fan energy consumption in J
-            fan_energy(i) = FAN_ENERGY_CON(i,plr_heat_pump,plr_backup,
-     &                      plf_heat_pump,plf_backup)
-            fPPLR = plr_heat_pump
-            fCool_Energy = sys_energy(i)
-c In addition, the amount of pumping power required for the
-c circulation of the fluid through the ground loop and into the heat pump
-c must be calculated.
-            heat_pump_cooling_cap = ss_capacity(i)
-            GCEP_pump_energy = GCEP_pump_power(heat_pump_cooling_cap)
+            endif 
 
-C...........Store H3KReports data: Primary system...
+            est_fan_energy = FAN_ENERGY_CON(i,fPLR(i),fPLR_back_temp,
+     &                                        fPLF(i),fPLF_back_temp )
 
-            fH3KStorePLRC(i)       = fPPLR
-            fH3KStoreFanEC(i)      = fan_energy(i)    / time_step
-            fH3KStorePrimaryEC(i)     = sys_energy(i)    / time_step
-            fH3KStorePumpEC(i)     = GCEP_pump_energy / time_step
+            
+     
+C           Note: fan_energy returns 0 if the fan-control-loop is 
+C                 active. In this case, fan-power will be estimated
+C                 after all hvac systems are characterized.           
+            if ( .not. bSysHasFanCtlLoop(i) ) 
+     &            fan_energy(i) = est_fan_energy   
+
+          endif 
+        
+        
+        enddo HVAC_Fan_Loop
+      
+C-----------------------------------------------------------------------
+C       Alternatively, HVAC systems specified in the hvac file with the 
+C       '*fan-ctl-loop' tag have controls interlocked with ventilation.
+C       Characterize these loops now. 
+C-----------------------------------------------------------------------              
+        FanCtlLoop: do iFanLoop = 1, max_fan_loops
+        
+C.........Is this loop active?
+!          print*, "> fan loop ", iFanLoop , "?", 
+!     &             bFanCtlLoopActive(iFanLoop)
+          LoopActive: if ( bFanCtlLoopActive(iFanLoop ) ) then 
+           
+            fFanTotPLR      = 0.
+            fFanMaxPower_hi = 0.
+            fFanMaxPower_lo = 0. 
+            iNumSystemsOnLoop = 0
+          
+C...........Loop though all systems, and find components connected
+C...........to this loop
+            HVAC_FanCtlLoop: do i = 1, num_hvac_sys
+              
+              if ( bSysHasFanCtlLoop(i) .and. 
+     &             iFanControlLoop(i) == iFanLoop ) then 
+
+C...............Increment system counter
+                iNumSystemsOnLoop = iNumSystemsOnLoop + 1 
+                   
+C...............Add up part-load ratios (includes back-up)                
+                fFanTotPLR = fFanTotPLR + fFanSysPLR_hi(i)
+              
+C...............Collect maximum power req'd in high and low (or off) 
+C...............operation 
+                if ( fFanSysPower_hi(i) > fFanMaxPower_hi ) 
+     &               fFanMaxPower_hi = fFanSysPower_hi(i) 
+
+                if ( fFanSysPower_lo(i) > fFanMaxPower_lo ) 
+     &               fFanMaxPower_lo = fFanSysPower_lo(i)
+     
+              
+              endif 
+              
+            enddo HVAC_FanCtlLoop
+              
+C...........Add ventilation requirements to PLR computation
+            
+            fCirc_and_Vent_PLR = max ( fFanTotPLR, fVentPLR)
+
+            !print*, "FANPLRs:", fFanTotPLR, fVentPLR, fCirc_and_Vent_PLR 
+            
+            
+            if ( fCirc_and_Vent_PLR > 1. ) 
+     &           fCirc_and_Vent_PLR = 1. 
+     
+C...........Now estimate total circulation fan power according to 
+C...........circulation and ventilation requirements. (W) 
+            fFanPower =  fFanMaxPower_hi * fCirc_and_Vent_PLR 
+     &                 + fFanMaxPower_lo * (1.- fCirc_and_Vent_PLR )
+
+            !print *, "    ->>>>>>> P:", fCirc_and_Vent_PLR , fFanPower
+     
+C...........Fan power is computed! Loop through the hvac systems 
+C...........again and save fan power to fan_energy arrays
+            HVAC_FanStorLoop: do i = 1, num_hvac_sys      
+        
+              SysOnLoop:        
+     &        if ( bSysHasFanCtlLoop(i) .and. 
+     &            iFanControlLoop(i) == iFanLoop ) then             
+
+C...............System fan power is porportional to PLR of 
+C...............the given sytem, if systems are operating.             
+                if ( fFanTotPLR > 0.0001 ) then 
+                 
+                  fSysFanPower = 
+     &              fFanPower * fFanSysPLR_hi(i) / fFanTotPLR
+      
+                else 
+C.................If heating/cooling systems aren't operating (circ
+C.................fan required for ventilation purposes only), split 
+C.................circ fan power between systems. This is imperfect, 
+C.................but the HVAC models don't provide a means of tracking 
+C.................ventilation requirements.          
+     
+                  fSysFanPower = fFanPower / real (iNumSystemsOnLoop) 
+     
+                endif 
+
+C...............Fan_energy is in joules, convert from watts.                    
+                fan_energy(i) = fSysFanPower * time_step
+            
+              endif SysOnLoop
+            
+            enddo HVAC_FanStorLoop
+            
+          
+          endif LoopActive
+        
+        enddo FanCtlLoop
+
+        
+         
+         
+C-----------------------------------------------------------------------
+C      Code for reporting/storing data in h3kreports!
+C-----------------------------------------------------------------------         
+        HVAC_report_loop_A: do i = 1, num_hvac_sys
+        
+C.........Store H3KReports data (Furnace/Boiler/Baseboard)
+          
+C.........Heating systems           
+ 
+          if ( bDebug) write (*,*) 
+     &    ",,,,,,,,,,,,,,Storing data for system ", i
+          if ( bDebug) write (*,*) 
+     &    "              Report: Iunit func ", iUnit_Function(i), 
+     &    "(?",iFuncHeating,")"
+     
+          RepHeatingCooling:     
+     &    if ( iUnit_Function(i) == iFuncHeating ) then 
+                      
+            fH3KStorePLRH(i)       = fPLR(i)
+            
+          if ( bDebug) write (*,*) 
+     &    "              Storing: PriEH ", fH3KStorePrimaryEH(i),
+     &                                     sys_energy(i), time_step
+          
+            
+            ! Variables ending in _energy are in joules. Convert to watts. 
+            fH3KStoreFanEH(i)      = fan_energy(i)    / time_step
+            fH3KStoreDraftE(i)     = draft_energy(i)  / time_step      ! Zero for HP, baseboard
+            fH3KStorePrimaryEH(i)  = sys_energy(i)    / time_step      
+            fH3KStorePilotE(i)     = pilot_energy(i)  / time_step      ! Zero for HP, baseboard
+            fH3KStorePumpEH(i)     = pump_energy(i)   / time_step      ! Zero for combustion systems, ASHP
+            
+          if ( bDebug) write (*,*) 
+     &    "              Storing: FanEH ", fH3KStoreFanEH(i),
+     &                                     fan_energy(i), time_step              
+
+          if ( bDebug) write (*,*) 
+     &    "              Storing: DraftE ", fH3KStoreDraftE(i),
+     &                                     draft_energy(i), time_step         
+     
+            
+            ! SS-capacity is in watts. 
+            
+            select case ( iHVAC_type(i) ) 
+            
+              case ( iSysFurnace, iSysBoiler, 
+     &               iSysBaseboard, iSysIMS_P10 ) 
+
+                fH3KStoreOutputH(i) = ss_capacity(i) * fH3KStorePLRH(i)
+                
+              case ( iSysASHP, iSysGSHP, iSysGSHP_GCEP ) 
+              
+                fH3KStoreOutputH(i) = fH3KActualCapacity(i) 
+     &                                     * fH3KStorePLRH(i)
+              
+            end select
+          
+            ! Report efficiency or COP depending on HVAC type. 
+            select case ( ihvac_type(i) ) 
+          
+              case ( iSysFurnace, iSysBaseboard, 
+     &               iSysIMS_P10     ) 
+                
+                if ( fH3KStorePrimaryEH(i) > 1.0 .or.
+     &               fH3KStorePilotE(i)    > 1.0 )  then
+
+                  fH3KStoreEfficiencyH(i)=
+     &               ( fH3KStoreOutputH(i) ) /
+     &               ( fH3KStorePrimaryEH(i) + fH3KStorePilotE(i) )
+
+                endif
+ 
+              case ( iSysBoiler ) 
+
+                if ( bHVACVersion2 .and. 
+     &               ( fH3KStorePrimaryEH(i) > 1.0 .or.
+     &                 fH3KStorePilotE(i)    > 1.0      )
+     &             ) then 
+
+                  fH3KStoreEfficiencyH(i)=
+     &               ( fH3KStoreOutputH(i) ) /
+     &               ( fH3KStorePrimaryEH(i) + fH3KStorePilotE(i) )
+
+                elseif (  fH3KStorePrimaryEH(i) > 1.0 )  then
+
+                  fH3KStoreEfficiencyH(i)=
+     &                fH3KStoreOutputH(i)  /
+     &                fH3KStorePrimaryEH(i)
+
+                endif      
+          
+              case ( iSysASHP, iSysGSHP, iSysGSHP_GCEP ) 
+              
+                if ( fH3KStorePrimaryEH(i) > 1.0 ) then
+                  fH3KStoreCOPH(i)       = fH3KStoreOutputH(i)
+     &                                / fH3KStorePrimaryEH(i)
+                endif
+              
+            end select 
+              
+            
+C.........Cooling systems           
+          else 
+            
+            
+
+            fH3KStorePLRC(i)       = fPLR(i) 
+            fH3KStoreFanEC(i)      = fan_energy(i)   / time_step
+            fH3KStorePrimaryEC(i)  = sys_energy(i)   / time_step   ! Compressor energy 
+            fH3KStorePumpEC(i)     = pump_energy(i)  / time_step   ! Pump energy (GSHP/GCEP only) 
             fH3KStoreOutputC(i)    = fH3KActualCapacity(i)
      &                                    * fH3KStorePLRC(i)
             if ( fH3KStorePrimaryEC(i) > 1.0 ) then
               fH3KStoreCOPC(i)       = fH3KStoreOutputC(i)
      &                                / fH3KStorePrimaryEC(i)
             endif
-c GCEP: end
+          
+          endif RepHeatingCooling
+          
+C.........Additional parameters for h3kstore?          
+          fHeat_Energy = sys_energy(i)
+          fP_pilot_energy = pilot_energy(i)
+         
+C-----------------------------------------------------------------------          
+C         This next convoluted case statement stores control parameters
+C         for use by the older Fuel cell controller, which expects HVAC 
+C         loads to be spec'd through the following variables. 
+C-----------------------------------------------------------------------          
 
-c     If the hvac system is not a primary system (This can be a backup
-c     furnace for an air-source heat pump system), the simulation is
-c     skipped here as it is taken care of when simulating the primary
-c     system performance
-         elseif(ipriority(i).eq.2) then
-            goto 10
-         endif
+          FCTctlSelect: select case ( ihvac_type(i) ) 
 
-c     Set the current month and day of the month using the day of the
+            case (iSysFurnace) 
+C---------------------------------------------------------------------------------
+C             Electrical draw (W) of gas-fired furnace.  One variable for the draft fan
+C             and another for the ciculating fan that distributes warm air through the
+C             house's ductwork. If the furnace is a backup system, the circulating fan
+C             power draw will be contained in the FCctl_ashp_circfan variable.
+C---------------------------------------------------------------------------------              
+              FCctl_furnace_draft   = draft_energy(i) / time_step
+              FCctl_furnace_circfan = fan_energy(i)   / time_step
+
+            case (iSysBoiler) 
+C---------------------------------------------------------------------------------
+C             Electrical draw (W) of gas-fired boiler. One variable for the draft fan
+C             (applicable for induced draft and condensing boilers). another for the
+C             circulating fan (though likely there is no circulating fan power for a boiler).
+C             Power draw of electric boiler not included. If the boiler is a backup system,
+C             the circulating fan power draw will be contained in the FCctl_ashp_circfan variable.
+C---------------------------------------------------------------------------------      
+              FCctl_boiler_draft    = draft_energy(i) / time_step
+              FCctl_boiler_circfan  = fan_energy(i)   / time_step
+              
+            case (iSysBaseboard) 
+C---------------------------------------------------------------------------------
+C             Electric draw (W) of circulating fan for baseboards. Power draw of 
+C             electric baseboards not included. If the baseboard is a backup system,
+C             the circulating fan power draw will be contained in the FCctl_ashp_circfan variable.
+C---------------------------------------------------------------------------------
+              FCctl_baseboard_fan   = fan_energy(i)   / time_step
+          
+            case (iSysASHP)
+              if ( iUnit_Function(i) == iFuncHeating  ) then 
+C---------------------------------------------------------------------------------
+C               Electric draw (W) of air source heat pump in heating mode. One variable for the
+C               compressor and condenser fan. One variable for the circulating fan that distributes
+C               warm air to the house's ductwork. The fan power of the circulating fan for the 
+C               backup furnace, boiler or baseboard is also included in FCctl_ashp_circfan.
+C---------------------------------------------------------------------------------
+                FCctl_ashp_compressor = sys_energy(i)   / time_step
+                FCctl_ashp_circfan    = fan_energy(i)   / time_step           
+              
+              endif 
+              
+            case (iSysGSHP, iSysGSHP_GCEP)
+              if ( iUnit_Function(i) == iFuncHeating  ) then 
+C---------------------------------------------------------------------------------
+C               Electric draw (W) of air source heat pump in heating mode. One variable for the
+C               compressor and condenser fan. One variable for the circulating fan that distributes
+C               warm air to the house's ductwork. The fan power of the circulating fan for the 
+C               backup furnace, boiler or baseboard is also included in FCctl_ashp_circfan.
+C---------------------------------------------------------------------------------
+                FCctl_ashp_compressor = sys_energy(i)   / time_step
+                FCctl_ashp_circfan    = fan_energy(i)   / time_step
+                FCctl_gshp_pump       = pump_energy(i)  / time_step
+              endif              
+              
+          end select FCTctlSelect
+
+C---------------------------------------------------------------------------------
+C Electrical draw (W) of A/C equipment (ie. ASHP operating in cooling mode).
+C One variable for the A/C unit (compressor and condensor fan) and another for the
+C ciculating fan that distributes cool air through the house's ductwork.
+C---------------------------------------------------------------------------------             
+          if ( iUnit_Function(i) == iFuncCooling ) then 
+            FCctl_AC_compressor = sys_energy(i)   / time_step
+            FCctl_AC_circfan    = fan_energy(i)   / time_step
+          
+          
+            ! Pump_energy is zero for ASHP. 
+            FCctl_gshp_pump       = pump_energy(i)  / time_step
+          
+          endif 
+          
+
+
+          CheckForGains: if ( bIdealHVACSysGain (i) ) then
+
+C     Loop through each serviced zone
+           LoopThroughZones: do j = 1, num_sys_zones(i)
+
+C     Get zone index
+              iZoneIndex = isys_zone_num( i, j )
+
+C     Set flag indicating serviced zone has associated gains
+C     from idealized HVAC equipment:
+              bIdealHVACZoneGain( iZoneIndex ) = .true.
+
+C     Add casual gains to running sum --- assume the gains are
+C     distributed according to the specified zone capacity
+C     fraction.
+              fIdealHVACZoneConGain( iZoneIndex ) =
+     &             fIdealHVACZoneConGain( iZoneIndex )
+     &           + fIdealHVACSysAddGain ( i )
+     &               * fIdealHVACSysConGainFrac( i )
+     &               * sys_zone_cap_frac( i, j )
+
+              fIdealHVACZoneRadGain( iZoneIndex ) =
+     &             fIdealHVACZoneRadGain( iZoneIndex )
+     &           + fIdealHVACSysAddGain ( i )
+     &               * fIdealHVACSysRadGainFrac( i )
+     &               * sys_zone_cap_frac( i, j )
+
+              fIdealHVACZoneLatGain( iZoneIndex ) =
+     &             fIdealHVACZoneLatGain( iZoneIndex )
+     &           + fIdealHVACSysAddGain ( i )
+     &               * fIdealHVACSysLatGainFrac( i )
+     &               * sys_zone_cap_frac( i, j )
+
+           enddo LoopThroughZones
+
+
+          endif CheckForGains
+
+
+c     Set the current month and day of the month using the day of the 
 c     year (integer between 1 and 365)
          if(idyp.le.31) then
             month = 1
@@ -1140,13 +1396,13 @@ C     fPPLR is the Part load ratio of the primary hvac system.
      &        fPPLR)
 
 C     Stores backup HVAC energy data
-      if ( ibackup_sys_num (i) .ne. 0 ) then
+         if ( ibackup_sys_num (i) .ne. 0 ) then
          call H3KSTORE_HVAC_SUBSYS_ENERGY(
 C     ibackup_sys_num(i) give the backup system number for the primary
 C     system "i"
      &        ibackup_sys_num(i),
 C     This is the energy used by the backup heating system during the timestep.
-     &        backup_energy(i),
+     &        sys_energy(ibackup_sys_num(i)),
 c     No backup cooling so hard coded to zero.
      &        0.,
 C     fB_pilot_energy is the pilot energy used in Joules for the Backup
@@ -1155,39 +1411,68 @@ C     HVAC system.
 C     fPPLR is the Part load ratio of the backup hvac system.
      &        fbPLR)
 c     Stores fan energy, Heating and cooling loads.
+         endif 
 
-         call H3KSTORE_HVAC_Packaged_DATA(
-C     stores the heating and cooling loads for the timestep in Joules.
+         if ( iHVAC_type(i) == iSysGSHP_GCEP ) then 
+         
+           call H3KSTORE_HVAC_Packaged_DATA(
      &        Heating_load,
      &        Cooling_load,
-C     determines the fan energy used in the primary HVAC system (the backup
-C     uses the same fan.) in Joules.
      &        fan_energy(i),
-     &        GSHP_pump_energy,
-     &        GCEP_pump_energy)
-        endif
+     &        0.0,
+     &        pump_energy(i))   ! <- subroutine expects GCEP / GSHP pump power to 
+                                !    to be reported separately, but we're using the
+                                !    same variable (pump_energy) to store both data.  
+                                !    therefore, we must set one or the other to zero. 
+          else 
+           call H3KSTORE_HVAC_Packaged_DATA(
+     &        Heating_load,
+     &        Cooling_load,
+     &        fan_energy(i),
+     &        pump_energy(i),
+     &        0.0)              ! <- subroutine expects GCEP / GSHP pump power to 
+                                !    to be reported separately, but we're using the
+                                !    same variable to store both data. Therefore, 
+                                !    we must pass it twice.           
+          
+          endif
+
+
 C-----------------------------------------------------------------------
-C       For linked systems (such as the cooling component of an GSHP),
-C       store cooling energy use in linked system arrays
+C     For linked systems (such as the cooling component of an GSHP),
+C     store cooling energy use in linked system arrays
 C-----------------------------------------------------------------------
 
         store_linked: if ( bLinked (i) ) then
-
+        
           iCoolSys = iLinkedSystem(i)
 
           fH3KStorePLRC(iCoolSys)          =   fH3KStorePLRC(i)
           fH3KStoreFanEC(iCoolSys)         =   fH3KStoreFanEC(i)
           fH3KStorePrimaryEC(iCoolSys)     =   fH3KStorePrimaryEC(i)
-          fH3KStorePumpEC(iCoolSys)        =   fH3KStorePumpEC(i)
+          
+          
+          if ( iHVAC_type(i) == iSysGSHP_GCEP 
+     &        .and. .not. bHVACVersion2  ) then 
+
+            fH3KStorePumpEC(iCoolSys) = fH3KStorePumpEC(i)            
+
+          else 
+
+            fH3KStorePumpEH(iCoolSys) = MAX( fH3KStorePumpEH(iCoolSys),
+     &                                     fH3KStorePumpEC(i) )
+            fH3KStorePumpEC(iCoolSys) = 0.
+
+          endif 
+
           fH3KStoreEfficiencyC(iCoolSys)   =   fH3KStoreEfficiencyC(i)
           fH3KStoreOutputC(iCoolSys)       =   fH3KStoreOutputC(i)
           fH3KStoreCOPC(iCoolSys)          =   fH3KStoreCOPC(i)
+        
+        endif store_linked 
 
-        endif store_linked
 
-
-  10  continue
-
+      enddo HVAC_report_loop_A
 
 C-----------------------------------------------------------------------
 C     Loop through HVAC systems, and report data to H3Kreports.
@@ -1199,16 +1484,22 @@ C-----------------------------------------------------------------------
 C.....Set fan energy to zero
       fH3KSumFanEnergy = 0.
 
-      HVAC_system_report_loop: do i = 1, num_hvac_sys
-
+      HVAC_system_report_loop_B: do i = 1, num_hvac_sys
+  
+      
+      
 C.......Check if system is cooling portion of heating heatpump system,
 C.......and if so, suppress system report.
         suppress_this_system:
      &  if (.not. bSuppressThisSystem(i) ) then
+
 C.......Add fan power to running total
+
+          
           fH3KSumFanEnergy = fH3KSumFanEnergy + fH3KStoreFanEC(i)
      &                                        + fH3KStoreFanEH(i)
 
+     
 C.......Prepare component name:
         if ( i .ge. 10 ) write (cHVACIndex, '(I2)') i
         if ( i .lt. 10 ) write (cHVACIndex, '(A,I1)') '0', i
@@ -1220,8 +1511,9 @@ C.......or not.
 
         if ( ifuel_type(i) == iElectricity ) then
 
+
 C.........All energy is electric
-          Call AddToReport(rvPltHvacComFuelAmnt%Identifier,
+          Call AddToReportWild2(rvPltHvacComFuelAmnt%Identifier,
      &      fConvertEnergyToFuelAmount( fH3KStorePrimaryEH(i)
      &                                   + fH3KStorePrimaryEC(i)
      &                                   + fH3KStorePumpEH(i)
@@ -1230,9 +1522,9 @@ C.........All energy is electric
      &                                  ifuel_type(i) ),
      &      cHVACIndex // '_'
      &      // cHVACTypes(ihvac_type(i))(1:iHVACTypeLen(ihvac_type(i))),
-     &      cFuelName(ifuel_type(i))(1:iFuelNameLen(ifuel_type(i))))
+     &          cFuelName(ifuel_type(i))(1:iFuelNameLen(ifuel_type(i))))
 
-          Call AddToReportDetails(rvPltHvacComFuelAmnt%Identifier,
+          Call AddToReportDetailsWild2(rvPltHvacComFuelAmnt%Identifier,
      &      cHVACIndex // '_'
      &      // cHVACTypes(ihvac_type(i))(1:iHVACTypeLen(ihvac_type(i))),
      &      cFuelName(ifuel_type(i))(1:iFuelNameLen(ifuel_type(i))),
@@ -1245,125 +1537,9 @@ C.........All energy is electric
      &      // cHVACTypes(ihvac_type(i))(1:iHVACTypeLen(ihvac_type(i)))
      &      // ' system')
 
-C........ Output for quick run method (electricity use needs to be reported seperately
-C.........for heating, cooling and auxiliaries so that appropriate scaling factor is applied).
-          HOT3000_quick_run: 
-     &    if ( bH3KExtentionsActive() .and. iQuick_run == 1)then 
-          
-C.........Electricity for heating
-C.........Set for quickrun 1 = scale_htg
-          if ( bFirst_call_hvac(i)  )
-     &       call SetAdditionalValues(
-     &         rvPltHvacComFuelAmntHeat%Identifier,
-     &         1,
-     &         .true.)
-
-          call AddToReport(
-     &     rvPltHvacComFuelAmntHeat%Identifier,
-     &     fConvertEnergyToFuelAmount( fH3KStorePrimaryEH(i),
-     &                                 ifuel_type(i) ),
-     &     cHVACIndex // '_'
-     &     // cHVACTypes(ihvac_type(i))(1:iHVACTypeLen(ihvac_type(i))),
-     &     cFuelName(ifuel_type(i))(1:iFuelNameLen(ifuel_type(i))))
-
-C........ Description defined at runtime.
-          if ( bFirst_call_hvac(i)  )
-     &     call AddToReportDetails(
-     &     rvPltHvacComFuelAmntHeat%Identifier,
-     &     cHVACIndex // '_'
-     &     // cHVACTypes(ihvac_type(i))(1:iHVACTypeLen(ihvac_type(i))),
-     &     cFuelName(ifuel_type(i))(1:iFuelNameLen(ifuel_type(i))),
-     &     'units',
-     &     cFuelUnit(ifuel_type(i))(1:iFuelUnitLen(ifuel_type(i))),
-     &     'Idealized HVAC models: Amount of '
-     &     // cFuelDesc(ifuel_type(i))(1:iFuelDescLen(ifuel_type(i)))
-     &     // ' used by '
-     &     // cHVACTypes(ihvac_type(i))(1:iHVACTypeLen(ihvac_type(i)))
-     &     // ' system for heating'
-     &     )
-
-C.............. Electricity for cooling
-C.............. Set for quickrun info, 2 = scale_clg
-           if ( bFirst_call_hvac(i)  )
-     &       call SetAdditionalValues(
-     &         rvPltHvacComFuelAmntCool%Identifier,
-     &         2,
-     &         .true.)
-
-          call AddToReport(
-     &      rvPltHvacComFuelAmntCool%Identifier,
-     &      fConvertEnergyToFuelAmount( fH3KStorePrimaryEC(i),
-     &                                  ifuel_type(i) ),
-     &      cHVACIndex // '_'
-     &      // cHVACTypes(ihvac_type(i))(1:iHVACTypeLen(ihvac_type(i))),
-     &      cFuelName(ifuel_type(i))(1:iFuelNameLen(ifuel_type(i))))
-
-C........ Description defined at runtime
-          if ( bFirst_call_hvac(i)  )
-     &     call AddToReportDetails(
-     &      rvPltHvacComFuelAmntCool%Identifier,
-     &      cHVACIndex // '_'
-     &      // cHVACTypes(ihvac_type(i))(1:iHVACTypeLen(ihvac_type(i))),
-     &      cFuelName(ifuel_type(i))(1:iFuelNameLen(ifuel_type(i))),
-     &      'units',
-     &       cFuelUnit(ifuel_type(i))(1:iFuelUnitLen(ifuel_type(i))),
-     &      'Idealized HVAC models: Amount of '
-     &      // cFuelDesc(ifuel_type(i))(1:iFuelDescLen(ifuel_type(i)))
-     &      // ' used by '
-     &      // cHVACTypes(ihvac_type(i))(1:iHVACTypeLen(ihvac_type(i)))
-     &      // ' system for cooling'
-     &      )
-
-C.............Electricity for auxiliaries (fans and pumps)
-C.............Set for quickrun 3=scale_gen
-          if ( bH3KExtentionsActive() .and. iQuick_run == 1
-     &                                .and. bFirst_call_hvac(i)  )
-     &       call SetAdditionalValues(
-     &         rvPltHvacComFlAmntAux%Identifier,
-     &         3,
-     &         .true.)
-
-          call AddToReport(
-     &      rvPltHvacComFlAmntAux%Identifier,
-     &      fConvertEnergyToFuelAmount( fH3KStoreDraftE(i)
-     &                                + fH3KStorePumpEH(i)
-     &                                + fH3KStorePumpEH(i),
-     &                                  ifuel_type(i) ),
-     &      cHVACIndex // '_'
-     &   // cHVACTypes(ihvac_type(i))(1:iHVACTypeLen(ihvac_type(i))),
-     &      cFuelName(ifuel_type(i))(1:iFuelNameLen(ifuel_type(i))))
-
-C........ Description defined at runtime
-          if ( bFirst_call_hvac(i)  )
-     &     call AddToReportDetails(
-     &      rvPltHvacComFlAmntAux%Identifier,
-     &      cHVACIndex // '_'
-     &   // cHVACTypes(ihvac_type(i))(1:iHVACTypeLen(ihvac_type(i))),
-     &      cFuelName(ifuel_type(i))(1:iFuelNameLen(ifuel_type(i))),
-     &      'units',
-     &       cFuelUnit(ifuel_type(i))(1:iFuelUnitLen(ifuel_type(i))),
-     &      'Idealized HVAC models: Amount of '
-     &   // cFuelDesc(ifuel_type(i))(1:iFuelDescLen(ifuel_type(i)))
-     &   // ' used by '
-     &   // cHVACTypes(ihvac_type(i))(1:iHVACTypeLen(ihvac_type(i)))
-     &   // ' system for auxiliaries'
-     &      )
-
-        end if HOT3000_quick_run
-     
         else
-
 C.........Heating energy reported by fuel type
-
-C.........Set for quickrun 1=scale_htg
-
-          if ( bFirst_call_hvac(i)  )
-     &       call SetAdditionalValues(
-     &         rvPltHvacComFuelAmnt%Identifier,
-     &         1,
-     &         .true.)
-     
-          Call AddToReport(rvPltHvacComFuelAmnt%Identifier,
+          Call AddToReportWild2(rvPltHvacComFuelAmnt%Identifier,
      &      fConvertEnergyToFuelAmount( fH3KStorePrimaryEH(i)
      &                                   + fH3KStorePilotE(i),
      &                                  ifuel_type(i) ),
@@ -1371,7 +1547,8 @@ C.........Set for quickrun 1=scale_htg
      &      // cHVACTypes(ihvac_type(i))(1:iHVACTypeLen(ihvac_type(i))),
      &      cFuelName(ifuel_type(i))(1:iFuelNameLen(ifuel_type(i))))
 
-          Call AddToReportDetails(rvPltHvacComFuelAmnt%Identifier,
+
+          Call AddToReportDetailsWild2(rvPltHvacComFuelAmnt%Identifier,
      &      cHVACIndex // '_'
      &      // cHVACTypes(ihvac_type(i))(1:iHVACTypeLen(ihvac_type(i))),
      &      cFuelName(ifuel_type(i))(1:iFuelNameLen(ifuel_type(i))),
@@ -1384,8 +1561,10 @@ C.........Set for quickrun 1=scale_htg
      &      // cHVACTypes(ihvac_type(i))(1:iHVACTypeLen(ihvac_type(i)))
      &      // ' system')
 
+
 C.........Auxiliary energy consumption is electric
-          call AddToReport(rvPltHvacComFuelAmnt%Identifier,
+
+          call AddToReportWild2(rvPltHvacComFuelAmnt%Identifier,
      &      fConvertEnergyToFuelAmount( fH3KStorePumpEH(i)
      &                                   + fH3KStorePumpEC(i)
      &                                   + fH3KStoreDraftE(i),
@@ -1394,7 +1573,7 @@ C.........Auxiliary energy consumption is electric
      &      // cHVACTypes(ihvac_type(i))(1:iHVACTypeLen(ihvac_type(i))),
      &      cFuelName(iElectricity)(1:iFuelNameLen(iElectricity)))
 
-          Call AddToReportDetails(rvPltHvacComFuelAmnt%Identifier,
+          Call AddToReportDetailsWild2(rvPltHvacComFuelAmnt%Identifier,
      &      cHVACIndex // '_'
      &      // cHVACTypes(ihvac_type(i))(1:iHVACTypeLen(ihvac_type(i))),
      &      cFuelName(iElectricity)(1:iFuelNameLen(iElectricity)),
@@ -1426,23 +1605,15 @@ C...........Test if pilot light actually exists.
      &              ifuel_type(i) == iPropane        ) .and.
      &            ( ihvac_type(i) == iSysFurnace .or.
      &              ihvac_type(i) == iSysBoiler      ) .and.
-     &            ( fH3KStorePilotE(i) > 0.1  )
+     &            ( fH3KStorePilotE(i) > 1.  )
      &          ) then
 
-C............Set for quickrun 1=scale_htg
-            if ( bH3KExtentionsActive() .and. iQuick_run == 1
-     &                                .and. bFirst_call_hvac(i)  )
-     &          call SetAdditionalValues(
-     &              rvPltHvacFuelEnPilot%Identifier,
-     &              1,
-     &              .true.)
-        
-             Call AddToReport(rvPltHvacFuelEnPilot%Identifier,
+             Call AddToReportWild1(rvPltHvacFuelEnPilot%Identifier,
      &         fH3KStorePilotE(i),
      &         cHVACIndex // '_'
      &      // cHVACTypes(ihvac_type(i))(1:iHVACTypeLen(ihvac_type(i))))
-
-             Call AddToReportDetails(
+ 
+             Call AddToReportDetailsWild1(
      &         rvPltHvacFuelEnPilot%Identifier,
      &         cHVACIndex // '_'
      &      // cHVACTypes(ihvac_type(i))(1:iHVACTypeLen(ihvac_type(i))),
@@ -1456,12 +1627,12 @@ C............Set for quickrun 1=scale_htg
 
 C...........Efficiency:
             if ( fH3KStorePrimaryEH(i) > 1.0 ) then
-            Call AddToReport(rvPltHvacEff%Identifier,
+            Call AddToReportWild1(rvPltHvacEff%Identifier,
      &       fH3KStoreEfficiencyH(i),
      &       cHVACIndex // '_'
      &    // cHVACTypes(ihvac_type(i))(1:iHVACTypeLen(ihvac_type(i))))
-
-            Call AddToReportDetails(rvPltHvacEff%Identifier,
+ 
+            Call AddToReportDetailsWild1(rvPltHvacEff%Identifier,
      &          cHVACIndex // '_'
      &    // cHVACTypes(ihvac_type(i))(1:iHVACTypeLen(ihvac_type(i))),
      &       'units','(-)',
@@ -1492,12 +1663,12 @@ C..............Set end-use flag
 
 C.........COP:
           if ( fH3KStorePrimaryEH(i) > 1.0 ) then
-            Call AddToReport(rvPltHvacCOPHeat%Identifier,
+            Call AddToReportWild1(rvPltHvacCOPHeat%Identifier,
      &       fH3KStoreCOPH(i),
      &       cHVACIndex // '_'
      &    // cHVACTypes(ihvac_type(i))(1:iHVACTypeLen(ihvac_type(i))))
-
-            Call AddToReportDetails(rvPltHvacCOPHeat%Identifier,
+ 
+            Call AddToReportDetailsWild1(rvPltHvacCOPHeat%Identifier,
      &       cHVACIndex // '_'
      &    // cHVACTypes(ihvac_type(i))(1:iHVACTypeLen(ihvac_type(i))),
      &       'units','(-)',
@@ -1509,12 +1680,12 @@ C.........COP:
 
 C.........COP:
           if ( fH3KStorePrimaryEC(i) > 1.0 ) then
-            Call AddToReport(rvPltHvacCOPCool%Identifier,
+            Call AddToReportWild1(rvPltHvacCOPCool%Identifier,
      &       fH3KStoreCOPC(i),
      &       cHVACIndex // '_'
      &    // cHVACTypes(ihvac_type(i))(1:iHVACTypeLen(ihvac_type(i))))
 
-            Call AddToReportDetails(rvPltHvacCOPCool%Identifier,
+            Call AddToReportDetailsWild1(rvPltHvacCOPCool%Identifier,
      &       cHVACIndex // '_'
      &    // cHVACTypes(ihvac_type(i))(1:iHVACTypeLen(ihvac_type(i))),
      &       'units','(-)',
@@ -1529,21 +1700,13 @@ C.........COP:
 C.......Report energy use as heating or cooling end-use
 
         if ( bTwoModes(i) .or. iSysEndUse == iUseSpaceHeat ) then
-
-C............Set for quickrun 1=scale_htg
-          if ( bH3KExtentionsActive() .and. iQuick_run == 1
-     &                                .and. bFirst_call_hvac(i)  )
-     &          call SetAdditionalValues(
-     &              rvPltHvacFuelEnHeat%Identifier,
-     &              1,
-     &              .true.)       
         
-          Call AddToReport(rvPltHvacFuelEnHeat%Identifier,
+          Call AddToReportWild1(rvPltHvacFuelEnHeat%Identifier,
      &      fH3KStorePrimaryEH(i),
      &      cHVACIndex // '_'
      &   // cHVACTypes(ihvac_type(i))(1:iHVACTypeLen(ihvac_type(i))))
-
-          Call AddToReportDetails(rvPltHvacFuelEnHeat%Identifier,
+ 
+          Call AddToReportDetailsWild1(rvPltHvacFuelEnHeat%Identifier,
      &      cHVACIndex // '_'
      &   // cHVACTypes(ihvac_type(i))(1:iHVACTypeLen(ihvac_type(i))),
      &      'units', '(W)',
@@ -1554,12 +1717,12 @@ C............Set for quickrun 1=scale_htg
 
           System_is_on_H:
      &    if ( fH3KStorePrimaryEH(i) > 1.0 ) then
-           Call AddToReport(rvPltHvacPrtLdHeat%Identifier,
+           Call AddToReportWild1(rvPltHvacPrtLdHeat%Identifier,
      &      fH3KStorePLRH(i),
      &      cHVACIndex // '_'
      &   // cHVACTypes(ihvac_type(i))(1:iHVACTypeLen(ihvac_type(i))))
 
-           Call AddToReportDetails(rvPltHvacPrtLdHeat%Identifier,
+           Call AddToReportDetailsWild1(rvPltHvacPrtLdHeat%Identifier,
      &      cHVACIndex // '_'
      &   // cHVACTypes(ihvac_type(i))(1:iHVACTypeLen(ihvac_type(i))),
      &      'units', '(-)',
@@ -1568,20 +1731,12 @@ C............Set for quickrun 1=scale_htg
      &   // ' heating part-load-ratio (PLR)')
           endif System_is_on_H
 
-C............Set for quickrun 1=scale_htg
-          if ( bH3KExtentionsActive() .and. iQuick_run == 1
-     &                                .and. bFirst_call_hvac(i)  )
-     &          call SetAdditionalValues(
-     &              rvPltHvacThrmOutHeat%Identifier,
-     &              1,
-     &              .true.)         
- 
-          Call AddToReport(rvPltHvacThrmOutHeat%Identifier,
+          Call AddToReportWild1(rvPltHvacThrmOutHeat%Identifier,
      &      fH3KStoreOutputH(i),
      &      cHVACIndex // '_'
-     &   // cHVACTypes(ihvac_type(i))(1:iHVACTypeLen(ihvac_type(i)))) 
+     &   // cHVACTypes(ihvac_type(i))(1:iHVACTypeLen(ihvac_type(i))))
 
-          Call AddToReportDetails(rvPltHvacThrmOutHeat%Identifier,
+          Call AddToReportDetailsWild1(rvPltHvacThrmOutHeat%Identifier,
      &      cHVACIndex // '_'
      &   // cHVACTypes(ihvac_type(i))(1:iHVACTypeLen(ihvac_type(i))),
      &      'units','(W)',
@@ -1592,23 +1747,14 @@ C............Set for quickrun 1=scale_htg
 
         if ( bTwoModes(i) .or. iSysEndUse == iUseSpaceCool ) then
 
+
 C...............Energy consumption for cooling
-
-C............Set for quickrun 2=scale_clg
-          if ( bH3KExtentionsActive() .and. iQuick_run == 1
-     &                                .and. bFirst_call_hvac(i)  )
-     &          call SetAdditionalValues(
-     &              rvPltHvacFuelEnCool%Identifier,
-     &              2,
-     &              .true.) 
-
-          Call AddToReport(rvPltHvacFuelEnCool%Identifier,
+          Call AddToReportWild1(rvPltHvacFuelEnCool%Identifier,
      &      fH3KStorePrimaryEC(i),
      &      cHVACIndex // '_'
      &   // cHVACTypes(ihvac_type(i))(1:iHVACTypeLen(ihvac_type(i))))
-
-         if ( bFirst_call_hvac(i) )
-     &    Call AddToReportDetails(rvPltHvacFuelEnCool%Identifier,
+ 
+          Call AddToReportDetailsWild1(rvPltHvacFuelEnCool%Identifier,
      &      cHVACIndex
      &   // '_'
      &   // cHVACTypes(ihvac_type(i))(1:iHVACTypeLen(ihvac_type(i))),
@@ -1616,15 +1762,15 @@ C............Set for quickrun 2=scale_clg
      &      'Idealized HVAC models: Primary energy used by '
      &   // cHVACTypes(ihvac_type(i))(1:iHVACTypeLen(ihvac_type(i)))
      &   // ' system for cooling')
-
+ 
           System_is_on_C:
      &    if ( fH3KStorePrimaryEC(i) > 1.0 ) then
-           Call AddToReport(rvPltHvacPrtCool%Identifier,
+           Call AddToReportWild1(rvPltHvacPrtCool%Identifier,
      &       fH3KStorePLRC(i),
      &       cHVACIndex // '_'
      &    // cHVACTypes(ihvac_type(i))(1:iHVACTypeLen(ihvac_type(i))))
 
-           Call AddToReportDetails(rvPltHvacPrtCool%Identifier,
+           Call AddToReportDetailsWild1(rvPltHvacPrtCool%Identifier,
      &       cHVACIndex // '_'
      &    // cHVACTypes(ihvac_type(i))(1:iHVACTypeLen(ihvac_type(i))),
      &       'units', '(-)',
@@ -1633,34 +1779,28 @@ C............Set for quickrun 2=scale_clg
      &    // ' cooling part-load-ratio (PLR)')
           endif System_is_on_C
 
-C............Set for quickrun 2=scale_clg
-          if ( bH3KExtentionsActive() .and. iQuick_run == 1
-     &                                .and. bFirst_call_hvac(i)  )
-     &          call SetAdditionalValues(
-     &              rvPltHvacThrmCool%Identifier,
-     &              2,
-     &              .true.)             
 
-          Call AddToReport(rvPltHvacThrmCool%Identifier,
+          Call AddToReportWild1(rvPltHvacThrmCool%Identifier,
      &      fH3KStoreOutputC(i),
      &      cHVACIndex // '_'
      &   // cHVACTypes(ihvac_type(i))(1:iHVACTypeLen(ihvac_type(i))))
 
-          Call AddToReportDetails(rvPltHvacThrmCool%Identifier,
-     &      cHVACIndex // '_'
-     &   // cHVACTypes(ihvac_type(i))(1:iHVACTypeLen(ihvac_type(i))),
-     &      'units','(W)',
-     &      'Idealized HVAC models: '
-     &   // cHVACTypes(ihvac_type(i))(1:iHVACTypeLen(ihvac_type(i)))
-     &   // ' cooling thermal output')
+          Call AddToReportDetailsWild1(rvPltHvacThrmCool%Identifier,
+     &       cHVACIndex // '_'
+     &    // cHVACTypes(ihvac_type(i))(1:iHVACTypeLen(ihvac_type(i))),
+     &       'units', '(W)',
+     &       'Idealized HVAC models: '
+     &    // cHVACTypes(ihvac_type(i))(1:iHVACTypeLen(ihvac_type(i)))
+     &    // ' cooling thermal output')     
+     
 
 
-          Call AddToReport(rvPltHvacFuelEnTtl%Identifier,
+          Call AddToReportWild1(rvPltHvacFuelEnTtl%Identifier,
      &      fH3KStorePrimaryEH(i) + fH3KStorePrimaryEC(i),
      &      cHVACIndex // '_'
      &   // cHVACTypes(ihvac_type(i))(1:iHVACTypeLen(ihvac_type(i))))
 
-          Call AddToReportDetails(rvPltHvacFuelEnTtl%Identifier,
+          Call AddToReportDetailsWild1(rvPltHvacFuelEnTtl%Identifier,
      &      cHVACIndex // '_'
      &   // cHVACTypes(ihvac_type(i))(1:iHVACTypeLen(ihvac_type(i))),
      &      'units','(W)',
@@ -1684,13 +1824,13 @@ C.......interesting parameters from cooling simulation
 
 C.......Report interesting parameters from
 C.......ASHP cooling simulation: Coil loads
-        Call AddToReport(rvPltHvacCoilCoolSns%Identifier,
+        Call AddToReportWild1(rvPltHvacCoilCoolSns%Identifier,
      &    fASHP_AC_Coil_Load_Sensible(iCoolSys),
      &    cHVACIndex // '_'
      & // cHVACTypes(ihvac_type(iCoolSys))
      &            (1:iHVACTypeLen(ihvac_type(iCoolSys))))
 
-        Call AddToReportDetails(rvPltHvacCoilCoolSns%Identifier,
+        Call AddToReportDetailsWild1(rvPltHvacCoilCoolSns%Identifier,
      &    cHVACIndex // '_'
      & // cHVACTypes(ihvac_type(iCoolSys))
      &            (1:iHVACTypeLen(ihvac_type(iCoolSys))),
@@ -1701,13 +1841,13 @@ C.......ASHP cooling simulation: Coil loads
      & // ' sensible cooling load at coil')
 
 
-        Call AddToReport(rvPltHvacCoilCoolLtnt%Identifier,
+        Call AddToReportWild1(rvPltHvacCoilCoolLtnt%Identifier,
      &   fASHP_AC_Coil_Load_Latent(iCoolSys),
      &   cHVACIndex // '_'
      & // cHVACTypes(ihvac_type(iCoolSys))
      &               (1:iHVACTypeLen(ihvac_type(iCoolSys))))
 
-        Call AddToReportDetails(rvPltHvacCoilCoolLtnt%Identifier,
+        Call AddToReportDetailsWild1(rvPltHvacCoilCoolLtnt%Identifier,
      &   cHVACIndex // '_'
      & // cHVACTypes(ihvac_type(iCoolSys))
      &               (1:iHVACTypeLen(ihvac_type(iCoolSys))),
@@ -1718,13 +1858,13 @@ C.......ASHP cooling simulation: Coil loads
      & // ' latent cooling load at coil')
 
 
-        Call AddToReport(rvPltHvacCoilCoolTtl%Identifier,
+        Call AddToReportWild1(rvPltHvacCoilCoolTtl%Identifier,
      &   fASHP_AC_Coil_Load_Total(iCoolSys),
      &   cHVACIndex // '_'
      & // cHVACTypes(ihvac_type(iCoolSys))
      &               (1:iHVACTypeLen(ihvac_type(iCoolSys))))
 
-        Call AddToReportDetails(rvPltHvacCoilCoolTtl%Identifier,
+        Call AddToReportDetailsWild1(rvPltHvacCoilCoolTtl%Identifier,
      &   cHVACIndex // '_'
      & // cHVACTypes(ihvac_type(iCoolSys))
      &               (1:iHVACTypeLen(ihvac_type(iCoolSys))),
@@ -1817,13 +1957,8 @@ C.......Append auxilary enery use (if any) to electric total:
      &                         + fH3KStorePumpEC(i)
 
         endif suppress_this_system
-        
-        if ( bH3KExtentionsActive() .and. iQuick_run == 1
-     &                                .and. bFirst_call_hvac(i)  )
-     &      bFirst_call_hvac(i)  = .false.
-     
-      enddo HVAC_system_report_loop
 
+      enddo HVAC_system_report_loop_B
 
 C Store fan electricity use in circulation/ventilation (W)
       fH3KSumEnergyUseElec( iUseHRV ) = fH3KSumFanEnergy
@@ -1831,35 +1966,15 @@ C Store fan electricity use in circulation/ventilation (W)
 C Report fan power consumption and heat gains
 
 C.......Fan energy
-
-C.......Set for quickrun 3=scale_gen
-        if ( bH3KExtentionsActive() .and. iQuick_run == 1
-     &                                .and. bFirst_call_fan  )
-     &       call SetAdditionalValues(
-     &            rvPltHvacCrcFuelEnIn%Identifier,
-     &            3,
-     &            .true.) 
-     
         Call AddToReport(rvPltHvacCrcFuelEnIn%Identifier,
      &   fH3KSumFanEnergy)
 
-C.......Set for quickrun 3=scale_gen
-        if ( bH3KExtentionsActive() .and. iQuick_run == 1
-     &                                .and. bFirst_call_fan  )
-     &       call SetAdditionalValues(
-     &            rvPltHvacCrcFElecAmnt%Identifier,
-     &            3,
-     &            .true.) 
-     
         Call AddToReport(rvPltHvacCrcFElecAmnt%Identifier,
      &   fConvertEnergyToFuelAmount( fH3KSumFanEnergy, iElectricity ))
 
         Call AddToReport(rvPltHvacCrcHeatTrn%Identifier,
      &   fH3KSumFanEnergy)
-     
-        if ( bH3KExtentionsActive() .and. iQuick_run == 1)
-     &    bFirst_call_fan = .false.      
-      
+
 C Store aggregate fuel/electricity use for reporting in Site Utility facilitity.
       report_use_loop: do iSysEndUse = 1, iNumUses
 
@@ -1889,7 +2004,6 @@ C Store aggregate fuel/electricity use for reporting in Site Utility facilitity.
 
 
       enddo report_use_loop
-
 
 C     Pass fuel energy stroage data to site utilities
       call StoreSiteEnergyUse(iIdealHvac, fSUFuelEnergyUse )
@@ -1928,24 +2042,24 @@ c
 c     Function to determine the part-load ratio of the hvac system based on
 c     the mode of operation of the indoor fan of the air handler
 
-c     References:  HOT2000 Technical Manual, Version 6, Canadian Home Builders
+c     References:	HOT2000 Technical Manual, Version 6, Canadian Home Builders
 c     Association, August 1991
 
 c     Furnace Model for Implementation in H3K, H3K model documentation,
 c     Kamel Haddad, April 5th 2000
 
 c     INPUTS:
-c     fan_power indoor fan power in W
-c     ss_cap    capacity of the hvac unit in W
-c     req_load  load on the hvac equipment in W
+c     fan_power	indoor fan power in W
+c     ss_cap		capacity of the hvac unit in W
+c     req_load	load on the hvac equipment in W
 c     ifan_operation  mode of operation of the indoor circulation fan
 c     =0 no circulation fan
 c     =1 fan in auto mode
 c     =2 fan in continuous mode
 
 c     OUTPUTS:
-c     PLR     estimate of the part-load ratio on the equipment.
-c     plr     is the ratio of the load on the system to the
+c     PLR		estimate of the part-load ratio on the equipment.
+c     plr is the ratio of the load on the system to the
 c     steay-state capacity of the equipment. The capacity
 c     accounts for the contribution of the circulation fan
 c     **********************************************************************

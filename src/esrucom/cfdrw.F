@@ -184,10 +184,6 @@ C File header and conflation.
         write(IUF,'(a,i2,a)',IOSTAT=ios,ERR=3)'*conflation',
      &    IFCFD(izone),
      &    '  # mass flow and cfd cooperate for solution'
-      else
-        write(IUF,'(a,i2,a)',IOSTAT=ios,ERR=3)'*conflation',
-     &    IFCFD(izone),
-     &    '  # conflation type'
       endif
 
 C Title, date and documentation.
@@ -793,10 +789,10 @@ C Set total number of cells in each direction.
       NTCZe=0
 
 C Set total domain length in each direction.
-      XLEN=0.0
-      YLEN=0.0
-      ZLEN=0.0
-      ZLENe=0.0
+      XLEN=0
+      YLEN=0
+      ZLEN=0
+      ZLENe=0
 
 C Now loop through each gridding direction.
       do 10 IAX=1,NAX
@@ -1302,7 +1298,7 @@ C Loop back again for next air flow BC.
       ELSE
 
 C Read number of contaminants defined and which one is water (humidity)
-        CALL EGETWI(OUTSTR,K,NCTM,0,MCTM,'w','# of contaminants',IER)
+        CALL EGETWI(OUTSTR,K,NCTM,0,MCTM,'w','# of cntmnts',IER)
         CALL EGETW(OUTSTR,K,WORD,'W','string in *sources line',IER)
         IF(VER.GT.2.15.AND.VER.LT.2.25)K=63
         IF(VER.GT.2.05.AND.VER.LT.2.15)K=57
@@ -1361,9 +1357,6 @@ C Read line containing contaminant name information
       ENDIF
 
 C Read line until reach *blockages line.
-C Expecting the source tag (should match a volume name followed by
-C the source heat values, casual gain index in the zone and the
-c fraction of that gain which is treated as a heat source.
  108  CALL STRIPC(IFL,OUTSTR,0,ND,1,'sources data',IER)
  706  K=0
       CALL EGETW(OUTSTR,K,WORD,'W','sources tag',IER)
@@ -2000,11 +1993,11 @@ C to the first opening.
             IPRESF(ICFD)=IOPENi(L,ICFD)
             JPRESF(ICFD)=JOPENi(L,ICFD)
             KPRESF(ICFD)=KOPENi(L,ICFD)
-            GOTO 321
+            GOTO 320
           ENDIF
- 302    CONTINUE
- 320  endif
- 321  continue
+302     CONTINUE
+320   endif
+
 
       RETURN
       END
@@ -2479,7 +2472,6 @@ C Passed parameter.
       LOGICAL WARN
       logical unixok
 
-C Clear arrays for boundary conditions on north south east west face. 
        DO 45 II=1,NTCX
          DO 46 KK=1,NTCZ
            IXZST(II,KK)=0
@@ -2605,33 +2597,32 @@ C Warn user if cell number starts/stops wrongly
         ENDIF
  1    CONTINUE
 
-C Debug if itrc is greather than one and NON DOS.
+C Debug if itrc is other than zero and NON DOS.
       call isunix(unixok)
-      IF(ITRC.GT.1.and.unixok)THEN
-        do iz=1,ntcz
+      IF(ITRC.GT.0.and.unixok)THEN
+        do 900 iz=1,ntcz
           write(6,*)'ixzst ',(ixzst(ix,iz),ix=1,ntcx)
-        enddo
+ 900    continue
 
-        do iz=1,ntcz
+        do 901 iz=1,ntcz
           write(6,*)'ixznt ',(ixznt(ix,iz),ix=1,ntcx)
-        enddo
+ 901    continue
 
-        do iz=1,ntcz
+        do 902 iz=1,ntcz
           write(6,*)'iyzet ',(iyzet(iy,iz),iy=1,ntcy)
-        enddo
+ 902    continue
 
-        do iz=1,ntcz
+        do 903 iz=1,ntcz
           write(6,*)'iyzwt ',(iyzwt(iy,iz),iy=1,ntcy)
-        enddo
+ 903    continue
  
-        do ix=1,ntcx
+        do 904 ix=1,ntcx
           write(6,*)'ixyhh ',(ixyhh(ix,iy),iy=1,ntcy)
-        enddo
+ 904   continue
 
-C Debug.
-C        do ix=1,ntcx
-C          write(6,*)'ixyll ',(ixyll(ix,iy),iy=1,ntcy)
-C        enddo
+        do 905 ix=1,ntcx
+          write(6,*)'ixyll ',(ixyll(ix,iy),iy=1,ntcy)
+ 905    continue
       ENDIF
 
 C Do checks and issue warning messages if any

@@ -27,7 +27,7 @@ C Created by: Patrice Pinel
 C Initial Creation Date: October 8, 2002
 C
 C 
-C This subroutine calculates the inlet and outlet fluid temperature in the borefield
+C This subroutine	calculates the inlet and outlet fluid temperature in the borefield
 C iterates with a system that provides the ground load and fluid flow
 C uses the Multiple Load Agregation Algorithm developped by Michel Bernier
 C
@@ -36,16 +36,16 @@ C
 C This subroutine is called for every iteration until convergence is obtained
 C
 C INPUTS:
-C   GCEPM_INPUT module
+C	GCEPM_INPUT module
 C especially
-C  Gload       Ground load
-C  Flow        Flow of fluid
+C	Gload       Ground load
+C	Flow        Flow of fluid
 C 
 C OUTPUTS:
-C  Rb      thermal resistance of the boreholes
-C  Re      Reynold number in the tubes
-C  OWT     Fluid temperature at the entrance of the borefield (exit of the HP)
-C  EWT     Fluid temperature at the exit of the borefield (entrance of the HP)
+C	Rb		thermal resistance of the boreholes
+C	Re		Reynold number in the tubes
+C	OWT  	Fluid temperature at the entrance of the borefield (exit of the HP)
+C	EWT     Fluid temperature at the exit of the borefield (entrance of the HP)
 C
 C *********************************************************************
       SUBROUTINE GCEP_MLAiterate
@@ -54,7 +54,7 @@ C Use module for GCEPM data
 C      USE GCEP_INPUT
 
 
-      IMPLICIT NONE
+	IMPLICIT NONE
 #include "gcep_parameters.h"
 #include "gcep_common.h"
 C Average temperature of the fluid
@@ -82,11 +82,11 @@ C Calculate the thermal resistance of a borehole
      &            GCEP_N_bor_x,GCEP_N_bor_y,GCEP_Flow,GCEP_Gload,
      &            GCEP_Di_tubes,GCEP_Do_tubes,GCEP_Rb,GCEP_Re)
 
-C MLA Equation  
+C MLA Equation	  
       Tave = (GCEP_Tg_init+GCEP_Tpen-
      &       (GCEP_Gload*GCEP_Rb+1.0/GCEP_K_s*
      &       (GCEP_T_y+GCEP_T_m+GCEP_T_w+GCEP_T_d+GCEP_T_h))/
-     &        GCEP_Deapth_bore/GCEP_N_bor_x/GCEP_N_bor_y)
+     &	      GCEP_Deapth_bore/GCEP_N_bor_x/GCEP_N_bor_y)
 
 C Evaluate inlet and outlet temperature of the fluid
       IF(GCEP_Flow.GT.0.0) THEN
@@ -115,26 +115,26 @@ C since the resistance is a function of the fluid flow
 C 
 C
 C INPUTS:
-C  Tube_Case  Tubes layout in borehole (choice)
-C  K_t        Tube properties (k=conductivity)
-C  D_bore     Borehole diameter
-C  Deapth_bore  Borehole length
-C  K_g        Grout properties (k=conductivity)
+C	Tube_Case	Tubes layout in borehole (choice)
+C	K_t		    Tube properties (k=conductivity)
+C	D_bore	    Borehole diameter
+C	Deapth_bore	Borehole length
+C	K_g		    Grout properties (k=conductivity)
 C Fluid property (k=conductivity, rho=density, Cp=specific heat, Mu=dynamic viscosity)
-C  K_f
-C  Rho_f
-C  Cp_f
-C  Mu_f
-C  N_bor_x    Number of bores in the X direction
-C  N_bor_y    Number of bores in the Y direction
-C  Gload      Ground load at the actual iteration
-C  Flow       Flow of fluid at the actual iteration
-C  Di_tubes   Inside tube diameter
-C  Do_tubes   Outside tube diameter
+C	K_f
+C	Rho_f
+C	Cp_f
+C	Mu_f
+C	N_bor_x	    Number of bores in the X direction
+C	N_bor_y	    Number of bores in the Y direction
+C	Gload	    Ground load at the actual iteration
+C	Flow        Flow of fluid at the actual iteration
+C	Di_tubes    Inside tube diameter
+C	Do_tubes    Outside tube diameter
 C 
 C OUTPUTS:
-C  Rb          thermal resistance of the boreholes
-C  Re        Reynold number in the tubes
+C	Rb          thermal resistance of the boreholes
+C	Re	        Reynold number in the tubes
 C
 C *********************************************************************
       SUBROUTINE CalcRb(Tube_Case,K_t,D_bore,Deapth_bore,K_g,K_f,Rho_f,
@@ -169,11 +169,11 @@ C Coefficients of the Remund method for 2 pipes (1U)
       ELSE IF (Tube_Case.EQ.2) THEN
         Beta0=17.44
         Beta1=-0.6052
-        Flow_tube=Flow/N_bor_x/N_bor_y
+        Flow_tube=Flow/N_bor_x/N_bor_y	
       ELSE IF (Tube_Case.EQ.3) THEN
         Beta0=21.91
         Beta1=-0.3796
-        Flow_tube=Flow/N_bor_x/N_bor_y
+        Flow_tube=Flow/N_bor_x/N_bor_y	
 C Coefficients of Helstrom's equation for 4 pipes (2U)
       ELSE IF (Tube_Case.EQ.4) THEN
         Bu=Do_tubes*(2.0**0.5-1)
@@ -204,7 +204,7 @@ C Helstrom's equation for 4 pipes (2U)
 
       END
 
-***********************************************************************
+***********************************************************************	
 *2
 C *********************************************************************
 C CalcRb
@@ -221,19 +221,19 @@ C since the convection is a function of the fluid flow
 C 
 C
 C INPUTS:
-C  Deapth_bore    Borehole length
+C	Deapth_bore	    Borehole length
 C Fluid property (k=conductivity, rho=density, Cp=specific heat, Mu=dynamic viscosity)
-C  K_f
-C  Rho_f
-C  Cp_f
-C  Mu_f
-C  Gload           Ground load at the actual iteration
-C  Di_tubes        Inside tube diameter
-C  Flow_tube       Flow in one tube (l/s)
+C	K_f
+C	Rho_f
+C	Cp_f
+C	Mu_f
+C	Gload           Ground load at the actual iteration
+C	Di_tubes        Inside tube diameter
+C	Flow_tube       Flow in one tube (l/s)
 C 
 C OUTPUTS:
-C  Hi              Convection coefficient in the tubes
-C  Re              Reynold number in the tubes
+C	Hi              Convection coefficient in the tubes
+C	Re              Reynold number in the tubes
 C
 C *********************************************************************
       SUBROUTINE Calchi(Deapth_bore,K_f,Rho_f,Cp_f,Mu_f,Flow_tube,
@@ -257,7 +257,7 @@ C pi universal constant
       REAL pi
 C Dummy variable
       REAL Tamp
-  
+	  
       pi=ATAN(1.0)*4.0
 C evaluation of the flow velocity
       velocity=Flow_tube/1000.0/(pi*Di_tubes**2.0/4.0)
@@ -282,7 +282,7 @@ C evaluation of Nu (3 relations: Laminar, intermediate, turbulent)
 * Charge au sol nëgative = climatisation
           N=0.3
         ELSE
-*        Chauffage
+*	Chauffage
           N=0.4
         ENDIF
         Nu=0.023*Re**0.8*Pr**N
@@ -290,6 +290,6 @@ C evaluation of Nu (3 relations: Laminar, intermediate, turbulent)
 C evaluation of the convection in the tubes
       Hi=Nu*K_f/Di_tubes
 
-      END    
+      END	    
 
 ************************************END**********************************

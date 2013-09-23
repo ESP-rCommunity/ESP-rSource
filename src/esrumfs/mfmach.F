@@ -101,8 +101,7 @@ C     RESRMX - maximum relative residual (relative to SAFLW for NDWREL)
 
 #include "building.h"
 #include "net_flow.h"
-#include "tdf2.h"
-      common/trc/itrc
+#include "cfd.h"
       COMMON/MFTRA/IMFTU
       COMMON/MFLOW2/NDNAM(0:MNOD)
 
@@ -121,12 +120,10 @@ C     RESRMX - maximum relative residual (relative to SAFLW for NDWREL)
       COMMON/MFLITR/MAXITF,FERREL,FERMFL,PMAX,STEFFR,MFTRAC,ITER,IOK
       COMMON/CONTM0/NCONTM,NOCNTM,CONTMNAM(MCONTM)
       COMMON/mfctl/ctlpos(MCNN)
-      common/btime/btimep,btimef
 
       PARAMETER       (SMALL=1.0E-15)
       PARAMETER       (RLARG=1.0E+15)
       DIMENSION        INDX(MNOD)
-      DIMENSION VAL(MBITS+2)
       DOUBLE PRECISION FLW1,FLW2,HDP,HDV,HFL,PRES,PSTACK,RESID,SAFLW
       DOUBLE PRECISION DFDDP,DP,FLW1old(MCNN),FLW2old(MCNN)
       DOUBLE PRECISION FLWA,HPJMTX(MNOD,MNOD),HPRC(MNOD)
@@ -135,7 +132,7 @@ C     RESRMX - maximum relative residual (relative to SAFLW for NDWREL)
       character outs*124,outw*254
       CHARACTER NDNAM*12,CONTMNAM*12
       LOGICAL ACTCNN,close
-
+      character outlong*1000
       IOK=1
       NDWABS=1
       NDWREL=1
@@ -169,15 +166,6 @@ C set diagonal elements of the Jacobian matrix for known pressure nodes
             PJMTX(INOD,JNOD)=DBLE(0.0)
           END IF
    22   CONTINUE
-
-C Set up pressures for nodes from temporal data
-        IF(IMFNTDFF.EQ.1)THEN
-          if(IMFNTDFP(inod).gt.0)then ! not every node may have tdf data
-            IFOC=IMFNTDFP(inod)
-            CALL RCTDFB(itrc,btimef,VAL,ISD,IFOC,IER)
-            PRES(INOD)=VAL(ISD)
-          endif
-        ENDIF
    24 CONTINUE
 
 C Start of connections fluid mass flow calculations
@@ -271,6 +259,10 @@ C and partial derivative dFlow/d(dPressure)
             CALL MF420C(ICNN,DP,DFDDP)
           ELSE IF(ITCN.EQ.460) THEN
             CALL MF460C(ICNN,DP,DFDDP)
+          ELSE IF(ITCN.EQ.600) THEN
+            CALL MF600_AIM2_coupling(ICNN,DP,DFDDP)
+          ELSE IF(ITCN.EQ.610) THEN
+            CALL MF610_circ_fan_coupling(ICNN,DP,DFDDP)            
           ELSE
             call edisp(IMFTU,' MFSOLV: unresolvable error !')
             call epwait
@@ -289,6 +281,10 @@ C Adjust fluid mass flow residual of connected nodes
         RESID(IDPS)=RESID(IDPS)-FLW1(ICNN)-FLW2(ICNN)
         RESID(IDNE)=RESID(IDNE)+FLW1(ICNN)+FLW2(ICNN)
 
+!        write
+!     &  (IMFTU,'(A,I2,A,I2,A,I2,A,E12.4,E12.4,E12.4)'), ' CNN: ', ICNN,
+!     &  'node: ', IDPS,'->',IDNE, 'FLOW:',FLW1(ICNN), FLW2(ICNN), DFDDP
+        
 C And their sum of absolute flows
         FLWA=DABS(FLW1(ICNN))+DABS(FLW2(ICNN))
         SAFLW(IDPS)=SAFLW(IDPS)+FLWA
@@ -326,7 +322,7 @@ C Make sure that: SMALL < | RESID / SAFLW | < RLARG
         ELSE 
           RESR=RESID(INOD)/SAFLW(INOD)
         END IF
-
+ 
 C Update worst node values if this is the worst node up to now
         IF(DABS(RESID(INOD)).GT.DABS(RESAMX)) THEN
           NDWABS=INOD
@@ -337,32 +333,34 @@ C Update worst node values if this is the worst node up to now
           RESRMX=RESR
         END IF
    40 CONTINUE
-
+      !MFTRAC = 0
+      !if  ( ITER > 10 ) MFTRAC = 2
+      
 C Write trace output if applicable
       IF(MFTRAC.GE.1)then
-         WRITE(outs,1050) ITER,NDNAM(NDWREL),PRES(NDWREL),
+         WRITE(outs,1050) ITER,NDNAM(NDWREL),NDWREL,PRES(NDWREL),
      &                    RESID(NDWREL),SAFLW(NDWREL),RESRMX
          call edisp(IMFTU,outs)
       endif
       IF(MFTRAC.GE.2) THEN
         DO 50 INOD=1,NNOD
           IF(INOD.NE.NDWABS.AND.INOD.NE.NDWREL) THEN
-            WRITE(outs,1052) '      ',NDNAM(INOD),PRES(INOD),
+            WRITE(outs,1052) '      ',NDNAM(INOD),INOD,PRES(INOD),
      &                         RESID(INOD),SAFLW(INOD)
             call edisp(IMFTU,outs)
           ELSE
-            WRITE(outs,1052) '*****>',NDNAM(INOD),PRES(INOD),
+            WRITE(outs,1052) '*****>',NDNAM(INOD),INOD,PRES(INOD),
      &                         RESID(INOD),SAFLW(INOD)
             call edisp(IMFTU,outs)
           END IF
    50   CONTINUE
       END IF
- 1050 FORMAT(' It',I4,1X,A12,
+ 1050 FORMAT(' It',I4,1X,A12,' (',I2,')'
      &       '  P: ',G12.5,
      &       '  R: ',G11.4,
      &       '  Sa: ',G11.4,
      &       '  Er: ',G11.4)
- 1052 FORMAT(' ',A6,1X,A12,
+ 1052 FORMAT(' ',A6,1X,A12,' (',I2,')'
      &       '  P: ',G12.5,
      &       '  R: ',G11.4,
      &       '  Sa: ',G11.4)
@@ -370,7 +368,9 @@ C Write trace output if applicable
 C If RESRMX or RESID(NDWABS) within tolerance, stop iteration
       IF(DABS(RESRMX).LE.FERREL.OR.
      &   DABS(RESID(NDWABS)).LE.FERMFL) GOTO 100
-
+      !print*, ' - RESRMX < FERREL:', RESRMX, '>', FERREL, '?'
+      !print*, ' - RESID  < FERMFL:', RESID(NDWABS), '>', FERMFL, '?'
+       
 C If maximum number of iterations reached, IOK=0 and stop iteration
       IF(ITER.GE.MAXITF) THEN
          IOK=0
@@ -379,17 +379,16 @@ C If maximum number of iterations reached, IOK=0 and stop iteration
 
 C Calculation of pressure corrections by matrix equation processing
 C Start with generating more trace output if applicable
-      IF(MFTRAC.GE.3) THEN
+      IF(MFTRAC.GE.4) THEN
         call edisp(IMFTU,' PJMTX matrix')
         DO 60 I=1,NNOD
-          WRITE(outw,*) (PJMTX(I,J),J=1,NNOD)
-          call edisp(IMFTU,outw)
+          !print*,' ----- row  ', I, '------'
+          WRITE(*,'(E12.4)') (PJMTX(I,J),J=1,NNOD)
           DO 60 J=1,NNOD
             HPJMTX(I,J)=PJMTX(I,J)
    60   CONTINUE
         call edisp(IMFTU,' RESID vector')
-        WRITE(outw,*) (RESID(I),I=1,NNOD)
-        call edisp(IMFTU,outw)
+        WRITE(*,'(E12.4)') (RESID(I),I=1,NNOD)
       END IF
 
 C Set right hand side of matrix equation {PJMTX} {PRC} = {RESID}
@@ -410,15 +409,15 @@ C this node's pressure for the time being)
          ELSE
             PJMTX(INOD,INOD)=DBLE(1.0)
             RHS(INOD)=0.0
-            IF(MFTRAC.GE.3)then
+            IF(MFTRAC.GE.2)then
               WRITE(outs,'(A,I3,A)') ' Node ',INOD,
      &                               ' DIAG. -> 1. ; RHS -> 0.'
               call edisp(IMFTU,outs)
-           endif
+            endif
          END IF
       ELSE
          RHS(INOD)=0.0
-         IF(MFTRAC.GE.3)then
+         IF(MFTRAC.GE.2)then
             WRITE(outs,'(A,I3,A)') ' Node ',INOD,' RHS   -> 0.'
             call edisp(IMFTU,outs)
          endif
@@ -442,10 +441,9 @@ C Now solve {PRC} from matrix equation {PJMTX} {PRC} = {RHS}
       END IF
 
 C If trace output then dump solution vector
-      IF(MFTRAC.GE.3) THEN
+      IF(MFTRAC.GE.2) THEN
          call edisp(IMFTU,'  PRC solution vector')
-         WRITE(outw,*) (PRC(I),I=1,NNOD)
-         call edisp(IMFTU,outw)
+         WRITE(IMFTU,*) (PRC(I),I=1,NNOD)
 
 C Dump {RHS} recalculated from {HPJMTX}*{PRC}
          WRITE(IMFTU,*) ' RHS vector recalculated from PJMTX * PRC'
@@ -454,8 +452,7 @@ C Dump {RHS} recalculated from {HPJMTX}*{PRC}
          DO 65 J=1,NNOD
          RHS(I)=RHS(I)+HPJMTX(I,J)*PRC(J)
    65    CONTINUE
-         WRITE(outw,*) (RHS(I),I=1,NNOD)
-         call edisp(IMFTU,outw)
+         WRITE(IMFTU,*) (RHS(I),I=1,NNOD)
       END IF
 
 C Revise pressure correction vector by Steffensen's method to
@@ -475,7 +472,7 @@ C Make sure that: SMALL < | PRC / HPRC | < RLARG
          call eclose(RATIO,1.00,0.00001,close)
          IF(RATIO.LT.STEFFR.AND.(.NOT.close)) THEN
             RELAX(INOD)=1.0/(1.0-RATIO)
-            IF(MFTRAC.GE.3)then
+            IF(MFTRAC.GE.2)then
                WRITE(outs,*) ' Node ',INOD,' RELAX  = ',RELAX(INOD)
                call edisp(IMFTU,outs)
             endif
@@ -491,13 +488,16 @@ C Adjust node pressure of NDTYP=0 nodes, but limit correction to PMAX
       DO 80 INOD=1,NNOD
       IF(NDTYP(INOD).NE.0) GOTO 80
       IF(DABS(PRC(INOD)).GT.PMAX) THEN
+         IF(MFTRAC.GE.2)then
+            WRITE(outs,*) ' Node ',INOD,' PRC: ',DABS(PRC(INOD)),
+     &                                  ' -> ',PMAX
+            call edisp(IMFTU,outs)
+         endif
+         !if ( dabs(PRC(INOD)) > 1000. ) stop 
          RELAX(INOD)=RELAX(INOD)*PMAX/DABS(PRC(INOD))
          IF(PRC(INOD).GT.0.0) PRC(INOD)= PMAX
          IF(PRC(INOD).LT.0.0) PRC(INOD)=-PMAX
-         IF(MFTRAC.GE.3)then
-            WRITE(outs,*) ' Node ',INOD,' PRC   -> ',PRC(INOD)
-            call edisp(IMFTU,outs)
-         endif
+         
       END IF
       PRES(INOD)=PRES(INOD)+PRC(INOD)
    80 CONTINUE
@@ -513,7 +513,6 @@ C Output message. If solution failed over-ride MFTRAC.
         endif
       ELSE
         WRITE(outs,1100) IRD,IRM,FLWTIM,ITER,'failed    '
-        WRITE(outs,1100) IRD,IRM,FLWTIM,ITER,'failed    '
         call edisp(IMFTU,outs)
         call edisp(IMFTU,' ')
         call edisp(IMFTU,'Please check (in the following order) that:')
@@ -521,7 +520,9 @@ C Output message. If solution failed over-ride MFTRAC.
      &    ' - each node has some flow path to a boundary pressure and')
         call edisp(IMFTU,
      &    ' - iteration convergence control is not too strict.')
-  
+        write(outs,*)' - WORST NODES (absolute, relative error): '
+     &               , NDWABS, NDWREL 
+        call edisp (IMFU,outs) 
 C Do not use these flow values (use values from previous time step).
         do 1111 I=1,NCNN
           FLW1(I)=FLW1old(I)
@@ -546,6 +547,14 @@ C Invoke contaminant simulation if contaminants are defined
         CALL MZCONT
       ENDIF
 
+C      call add_to_xml_reporting (
+C     &          real(iter),
+C     &          'debug/mfs/iterations' ,
+C     &          'units', '(-)',
+C     &          'mfs iterations ')
+
+      
+      
       RETURN
 
       END
@@ -1243,12 +1252,21 @@ C control ratio returned in ctlpos.
 
 C If DELP > 0 , flow is +ve; ie +ve side to -ve side.
       IF(DELP.GE.0) THEN
+
         FLW1(ICNN)=0.65*AREA*DSQRT(2.*RHON(IDPS)*DELP)*ctlpos(icnn)
+
+
       ELSE
         FLW1(ICNN)=-0.65*AREA*DSQRT(2.*RHON(IDNE)*DABS(DELP))*
      &              ctlpos(icnn)
-      END IF
 
+      END IF
+      
+!     print*, '    -> MF110C #',icnn,
+!    &       ' Delp:  ', Delp, 
+!    &       ' ctlpos:', ctlpos(icnn),
+!    &       ' flow:',   FLW1(ICNN) 
+!
       FLW2(ICNN)=0.
 
       IF(DABS(DELP).GT.dble(SMALL)) THEN

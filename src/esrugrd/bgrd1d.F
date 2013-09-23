@@ -44,7 +44,6 @@ C *********************************************************************
       
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
-      integer IZSTOCN
       COMMON/C24/IZSTOCN(MCOM,MS)
       COMMON/GR1D01/NNDS,NNDZ(MCOM),NNDC(MCOM,MS),NNDL(MCOM,MS,ME)
       COMMON/GR1D02/IADP,IVAR,FMIN,FREF,FMAX,NSTP
@@ -456,7 +455,6 @@ C *********************************************************************
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
-      integer IZSTOCN
       COMMON/C24/IZSTOCN(MCOM,MS)
 
       COMMON/VTHP14/THRMLI(MCOM,MS,ME,7)

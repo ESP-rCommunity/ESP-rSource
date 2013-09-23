@@ -1,5 +1,5 @@
 *Geometry 1.1,GEN,sunroom # tag version, format, zone name
-*date Sun Jun 23 20:24:07 2013  # latest file modification 
+*date Thu Aug 23 18:49:19 2007  # latest file modification 
 sunroom describes the only zone in the problem
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,0.00000,0.00000,0.00000  #   1
@@ -25,7 +25,7 @@ sunroom describes the only zone in the problem
 *edges,4,9,10,11,12  #  7
 # 
 # surf attributes:
-#  surf name, surf position VERT/CEIL/FLOR/SLOP/UNKN
+#  surf name, surf position VERT/CIIL/FLOR/SLOP/UNKN
 #  child of (surface name), useage (pair of tags) 
 #  construction name, optical name
 #  boundary condition tag followed by two data items
@@ -35,7 +35,7 @@ sunroom describes the only zone in the problem
 *surf,ouest,VERT,-,-,-,typical_wall,OPAQUE,EXTERIOR,0,0  #   4 ||< external
 *surf,haut,CEIL,-,-,-,typical_wall,OPAQUE,EXTERIOR,0,0  #   5 ||< external
 *surf,bas,FLOR,-,-,-,typical_wall,OPAQUE,EXTERIOR,0,0  #   6 ||< external
-*surf,fenetre,VERT,sud,-,-,d_glz,DCF7671_06nb,EXTERIOR,0,0  #   7 ||< external
+*surf,fenetre,VERT,-,-,-,d_glz,DCF7671_06nb,EXTERIOR,0,0  #   7 ||< external
 # 
 *insol,1,6,0,6  # default insolation distribution
 # 

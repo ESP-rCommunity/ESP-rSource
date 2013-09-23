@@ -143,8 +143,7 @@ C Process plant control loop ICFP to test if it is active
 C Set up day type and period pointers
       NDAYT=NPCDT(ICFP)
 
-C If NDAYT=0 set data to weekday, saturday and sunday format.
-C << would need to change if there are default holidays >>
+C If NDAYT=0 set data to weekday, saturday and sunday format
       NIN=0
       IF(NDAYT.EQ.0)THEN
         NDAYT=NBDAYTYPE
@@ -155,6 +154,7 @@ C << would need to change if there are default holidays >>
         IDF=IPCDV(ICFP,IDTYPP,2)
         IF(IDAY.GE.IDS.AND.IDAY.LE.IDF) GOTO 20
    10 CONTINUE
+      CALL ELINC(3)
       WRITE(IUOUT,*) ' MFCNTL: plant control loop ',ICFP
       WRITE(IUOUT,*) '         no valid day type for year-day ',IDAY
       STOP ' MFCNTL: cannot locate appropriate day type'

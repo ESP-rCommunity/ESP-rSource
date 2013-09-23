@@ -209,7 +209,6 @@ C                 insolation source. The latter is held
 C                 in common.
       common/outin/iuout,iuin
 
-      integer izstocn
       common/c24/izstocn(mcom,ms)
       common/shdfil/ishadf
       integer mon,isc,iyd
@@ -405,7 +404,6 @@ C            in the misur list.
 #include "building.h"
 #include "geometry.h"
 
-      integer izstocn
       common/c24/izstocn(mcom,ms)
       common/sunhr/isunhr
       common/tshd/ioshd(mox,moz)
@@ -548,10 +546,10 @@ C system.
 
 C Set up source surface global coordinates.
                do 90 inv=1,nznver(iccisrc)
-                 iwhich=nzjvn(iccisrc,inv)
-                 xf(inv)=vcoord(icomp,iwhich,1)
-                 yf(inv)=vcoord(icomp,iwhich,2)
-                 zf(inv)=vcoord(icomp,iwhich,3)
+	          iwhich=nzjvn(iccisrc,inv)
+                  xf(inv)=vcoord(icomp,iwhich,1)
+                  yf(inv)=vcoord(icomp,iwhich,2)
+                  zf(inv)=vcoord(icomp,iwhich,3)
    90          continue
 
 C Initiate source surface grid point-by-point analysis.
@@ -568,7 +566,7 @@ C Convert source surface grid point coordinates back to global
 C coordinates before initiating projection.
                      call transp(iccisrc,xf,yf,zf,xop(m,n),
      &                 zop(m,n),xgp,ygp,zgp)
-                     call trnsf3i(ihr,icomp,intsur,ipass,xgp,ygp,zgp)
+                     call trnsf3i(ihr,intsur,ipass,xgp,ygp,zgp)
                      ipass=1
                      if(yp.lt.0.0)goto 110
 
@@ -607,25 +605,25 @@ C Store for each source and hour.
                if(indcom.eq.4)goto 30
                indcom=indcom+1
                if(paction(1:13).ne.'update_silent')then
-                  call usrmsg(outs,' complete.','-')
+                  call usrmsg(outs,' complete.','P')
                endif
             elseif(calcom.ge.0.75)then
                if(indcom.eq.3)goto 30
                indcom=indcom+1
                if(paction(1:13).ne.'update_silent')then
-                  call usrmsg(outs,' 75% complete.','-')
+                  call usrmsg(outs,' 75% complete.','P')
                endif
             elseif(calcom.ge.0.50)then
                if(indcom.eq.2)goto 30
                indcom=indcom+1
                if(paction(1:13).ne.'update_silent')then
-                  call usrmsg(outs,' 50% complete.','-')
+                  call usrmsg(outs,' 50% complete.','P')
                endif
             elseif(calcom.ge.0.25)then
                if(indcom.eq.1)goto 30
                indcom=indcom+1
                if(paction(1:13).ne.'update_silent')then
-                  call usrmsg(outs,' 25% complete.','-')
+                  call usrmsg(outs,' 25% complete.','P')
                endif
             endif
             goto 30
@@ -804,7 +802,6 @@ C at hour jj.
       common/inswin/igins(mox,moz)
       common/pinsol/ins(ms),pins(ms),pinw(ms),pcshad
       common/outin/iuout,iuin
-      integer izstocn
       common/c24/izstocn(mcom,ms)
 
       dimension icounts(ms+4),icountw(ms+4),icountt(ms+4)
@@ -867,10 +864,6 @@ C Sort based on total hits on surface (i.e. icountt).
            endif
    41    continue
    40 continue
-
-C Debug.
-C      write(6,*) 'zone tmc hour ',icomp,ii,jj,'ihit is ',ihit
-C      write(6,*) 'ins is ',ins
 
 C Set insolated planes to zero if there are no hits, i.e. total shading.
       if(ihit.eq.0)then

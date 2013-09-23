@@ -35,14 +35,14 @@ C This subroutine is called every time Inter_Tg hours pass
 C By default this should be for every 2 weeks simulated
 C
 C INPUTS:
-C   GCEP_INPUT module
-C   Files containing previous temperatures and Patankar coefficients
+C	GCEP_INPUT module
+C	Files containing previous temperatures and Patankar coefficients
 C 
 C OUTPUTS:
-C  Tg:    Average temperature of the soil in the borefield region
-C  Tw:    Average temperature at the walls of the boreholes
-C  Tw_1b: Average temperature at the walls of the boreholes if ther were only one borehole
-C  Tp:    Temperature penalty for boreholes thermal interference (Tw-Tw_1b)
+C	Tg:		Average temperature of the soil in the borefield region
+C	Tw:		Average temperature at the walls of the boreholes
+C	Tw_1b:	Average temperature at the walls of the boreholes if ther were only one borehole
+C	Tp:		Temperature penalty for boreholes thermal interference (Tw-Tw_1b)
 C*********************************************************************
       SUBROUTINE GCEPtground
 
@@ -89,7 +89,7 @@ C Calculation of the average load since the last calculation of Tg
      &       GCEP_NHis-INT(GCEP_Inter_Tg),GCEP_NHis-1))/
      &      (GCEP_Deapth_bore*GCEP_N_bor_x*GCEP_N_bor_y)
 
-  
+	  
 C Calculation of The temperature of each element
       CALL Calc_Te(GCEP_N_bor_x,GCEP_N_bor_y,GCEP_Tg_ND,
      &            GCEP_Ndx,GCEP_Ndy,Ae,An,Aop,Ap,
@@ -115,7 +115,7 @@ C calculation of borehole walls temperature
      &             Ttemp_1b,dx_1b,dy_1b)
 C calculation of the temperature penalty
       GCEP_TPen=GCEP_Tw-GCEP_Tw_1b
-
+		
 C saving of the temperatures, Subroutines located in GCEPInit File
       CALL StockTemp(GCEP_ndx,GCEP_ndy,Ttemp)
       CALL StockTemp_1b(GCEP_ndx_1b,GCEP_ndy_1b,Ttemp_1b)
@@ -138,28 +138,28 @@ C This subroutine is called every time Inter_Tg hours pass
 C By default this should be for every 2 weeks simulated
 C
 C INPUTS:
-C  N_bor_x    Number of bores in the X direction
-C  N_bor_y    Number of bores in the Y direction
-C  Tg_ND      Undisturbed ground temperature
-C     Ndx_bor Number of elements to mesh a complete bore in the X direction (11)
-C  Ndy_bor  Number of elements to mesh a complete bore in the Y direction (11)
-C  Ndx_bor_c  Number of elements to mesh half a bore (side of a borehole) in the X direction (5)
-C  Ndy_bor_c  Number of elements to mesh half a bore (side of a borehole) in the Y direction (5)
-C  Ndx_res    Number of elements to mesh a thermal reservoir in the X direction (20)
-C  Ndy_res    Number of elements to mesh a thermal reservoir in the Y direction (20)
-C  Ndx         Number of elements to mesh the entire domain in the X direction
-C  Ndy        Number of elements to mesh the entire domain in the Y direction
-C  Ae        Table containing the east-west conduction coefficients of the elements
-C  An          Table containing the north-south conduction coefficients of the elements
-C  Aop        Table containing the thermal inertia of the elements
-C  Ap        Table containing the sum of the Patanker coefficients for each element
-C  Pave        average ground load since last calculation
+C	N_bor_x	    Number of bores in the X direction
+C	N_bor_y	    Number of bores in the Y direction
+C	Tg_ND		Undisturbed ground temperature
+C     Ndx_bor		Number of elements to mesh a complete bore in the X direction (11)
+C	Ndy_bor		Number of elements to mesh a complete bore in the Y direction (11)
+C	Ndx_bor_c	Number of elements to mesh half a bore (side of a borehole) in the X direction (5)
+C	Ndy_bor_c	Number of elements to mesh half a bore (side of a borehole) in the Y direction (5)
+C	Ndx_res		Number of elements to mesh a thermal reservoir in the X direction (20)
+C	Ndy_res		Number of elements to mesh a thermal reservoir in the Y direction (20)
+C	Ndx         Number of elements to mesh the entire domain in the X direction
+C	Ndy	        Number of elements to mesh the entire domain in the Y direction
+C	Ae	        Table containing the east-west conduction coefficients of the elements
+C	An          Table containing the north-south conduction coefficients of the elements
+C	Aop	        Table containing the thermal inertia of the elements
+C	Ap	        Table containing the sum of the Patanker coefficients for each element
+C	Pave        average ground load since last calculation
 C 
 C OUTPUTS:
-C  Ttemp       Table containing all temperatures in the ground
+C	Ttemp       Table containing all temperatures in the ground
 C
 C *********************************************************************
-       SUBROUTINE Calc_Te(N_bor_x,N_bor_y,Tg_ND,Ndx,Ndy,Ae,An,
+	SUBROUTINE Calc_Te(N_bor_x,N_bor_y,Tg_ND,Ndx,Ndy,Ae,An,
      &    Aop,Ap,Ndx_res,Ndy_res,Ndx_bor,Ndy_bor,
      &    Ndx_bor_c,Ndy_bor_c,Ttemp,Pave)
 
@@ -190,11 +190,11 @@ C Initial convergence criteria
       REAL ConvInit
       PARAMETER (ConvInit=0.0001)
 C Relaxation factor
-      REAL Relax
-      PARAMETER (Relax=1.0)
+	REAL Relax
+	PARAMETER (Relax=1.0)
 C Number of iterations before the convergence criteria is doubled
-      INTEGER NiterMax
-      PARAMETER (NiterMax=10)
+	INTEGER NiterMax
+	PARAMETER (NiterMax=10)
 
 C If convergence (Residu<convergence) is not obtained after NiterMax iterations
 C The convergence criteria is doubled, a warning is given and the calculations are continued
@@ -202,8 +202,8 @@ C The convergence criteria is doubled, a warning is given and the calculations a
       ConvLoc=ConvInit
 C Initialise the source term
       CALL init_source(N_bor_x,N_bor_y,Ndx,Ndy,Pave,
-     &             Ndx_res,Ndy_res,Ndx_bor,Ndy_bor,
-     &             Ndx_bor_c,Ndy_bor_c,Source)
+     &	             Ndx_res,Ndy_res,Ndx_bor,Ndy_bor,
+     &	             Ndx_bor_c,Ndy_bor_c,Source)
       CALL InitB(Ndx,Ndy,Aop,Source,Ttemp,B)
 C Ttampon=Ttemp
       CALL ReinitTtemp(Ndx,Ndy,Ttemp,Ttampon)
@@ -212,7 +212,7 @@ C If the NiterMax iterations have been done, double the convergence criteria and
         IF (Niter.GT.NiterMax) THEN
            ConvLoc=2.0*ConvLoc
            Niter=0
-        ENDIF
+	ENDIF
         Niter=Niter+1
 C Solve using sweeps in the Y direction of X solutions
         CALL ItereX(Relax,Tg_ND,Ndx,Ndy,Ae,An,Ap,B,Ttemp)
@@ -247,18 +247,18 @@ C By default this should be for every 2 weeks simulated
 C
 C INPUTS:
 C     Ndx_res   Number of elements to mesh a thermal reservoir in the X direction (20)
-C     Ndy_res   Number of elements to mesh a thermal reservoir in the Y direction (20)
-C     Ndx       Number of elements to mesh the entire domain in the X direction
-C     Ndy       Number of elements to mesh the entire domain in the Y direction
+C     Ndy_res	  Number of elements to mesh a thermal reservoir in the Y direction (20)
+C     Ndx	      Number of elements to mesh the entire domain in the X direction
+C     Ndy	      Number of elements to mesh the entire domain in the Y direction
 C     Ttemp     Table containing all temperatures in the groundC
-C     Aop       Table containing the thermal inertia of the elements
-C     Ap       Table containing the sum of the Patanker coefficients for each element
+C     Aop	      Table containing the thermal inertia of the elements
+C     Ap	      Table containing the sum of the Patanker coefficients for each element
 C 
 C OUTPUTS:
-C  Tg:       Average temperature of the soil in the borefield region
+C	Tg:       Average temperature of the soil in the borefield region
 C
 C *********************************************************************
-      REAL FUNCTION CalcTg(Ndx,Ndy,Aop,Ttemp,Ndx_res,Ndy_res)
+	REAL FUNCTION CalcTg(Ndx,Ndy,Aop,Ttemp,Ndx_res,Ndy_res)
 
       IMPLICIT NONE 
 C     INPUTS
@@ -278,7 +278,7 @@ C Partial sums somme1=thermal inertia*Temperature, somme2=thermal inertia
 220   CONTINUE
       CalcTg=Somme1/Somme2
       
-      END
+	END
 *****************************************************************
 *3
 C *********************************************************************
@@ -295,25 +295,25 @@ C This subroutine is called every time Inter_Tg hours pass
 C By default this should be for every 2 weeks simulated
 C
 C INPUTS:
-C   N_bor_x    Number of bores in the X direction
-C   N_bor_y    Number of bores in the Y direction
-C     Ndx_bor  Number of elements to mesh a complete bore in the X direction (11)
-C   Ndy_bor    Number of elements to mesh a complete bore in the Y direction (11)
-C   Ndx_bor_c  Number of elements to mesh half a bore (side of a borehole) in the X direction (5)
-C   Ndy_bor_c  Number of elements to mesh half a bore (side of a borehole) in the Y direction (5)
-C   Ndx_res    Number of elements to mesh a thermal reservoir in the X direction (20)
-C   Ndy_res    Number of elements to mesh a thermal reservoir in the Y direction (20)
-C   Ndx        Number of elements to mesh the entire domain in the X direction
-C   Ndy        Number of elements to mesh the entire domain in the Y direction
-C   dx         Vector containing the dimensions of the elements in the X direction
-C   dy         Vector containing the dimensions of the elements in the Y direction
-C   Ttemp      Table containing all temperatures in the ground
+C	N_bor_x	    Number of bores in the X direction
+C	N_bor_y	    Number of bores in the Y direction
+C     Ndx_bor		Number of elements to mesh a complete bore in the X direction (11)
+C	Ndy_bor		Number of elements to mesh a complete bore in the Y direction (11)
+C	Ndx_bor_c	Number of elements to mesh half a bore (side of a borehole) in the X direction (5)
+C	Ndy_bor_c	Number of elements to mesh half a bore (side of a borehole) in the Y direction (5)
+C	Ndx_res		Number of elements to mesh a thermal reservoir in the X direction (20)
+C	Ndy_res		Number of elements to mesh a thermal reservoir in the Y direction (20)
+C	Ndx		    Number of elements to mesh the entire domain in the X direction
+C	Ndy		    Number of elements to mesh the entire domain in the Y direction
+C	dx		    Vector containing the dimensions of the elements in the X direction
+C	dy		    Vector containing the dimensions of the elements in the Y direction
+C	Ttemp		Table containing all temperatures in the ground
 C 
 C OUTPUTS:
-C    Tw:       Average temperature at the walls of the boreholes
+C	Tw:		    Average temperature at the walls of the boreholes
 C
 C *********************************************************************
-      REAL FUNCTION CalcTw(N_bor_x,N_bor_y,Ndx,Ndy,Ndx_res,Ndy_res,
+	REAL FUNCTION CalcTw(N_bor_x,N_bor_y,Ndx,Ndy,Ndx_res,Ndy_res,
      &                     Ndx_bor,Ndy_bor,Ndx_bor_c,Ndy_bor_c,
      &                     Ttemp,dx,dy)
 
@@ -343,7 +343,7 @@ C Interpolation between boreholes and neighboring elements
 320   CONTINUE
       CalcTw=Somme/(N_bor_x*N_bor_y*4.0)
       
-      END
+	END
 
 *****************************************************************
 *4
@@ -355,22 +355,22 @@ C Initial Creation Date: October 7, 2002
 C
 C This subroutine calculates the average ground charge value between two times 
 C
-C This routine is called from GCEPtground and CalcPMoys (file GCEP_MLAinit.f)
+C This routine is called from GCEPtground	and CalcPMoys (file GCEP_MLAinit.f)
 C
 C This subroutine is called every time Inter_Tg hours pass
 C By default this should be for every 2 weeks simulated
 C
 C INPUTS:
-C  H1     First hour
-C  H2     Last hour
-C  nHis   number of terms in the HisC vector
-C  HisC   vector containing the history of the ground loads
+C	H1		First hour
+C	H2		Last hour
+C	nHis    number of terms in the HisC vector
+C	HisC    vector containing the history of the ground loads
 C 
 C OUTPUTS:
-C  MoyC:   average ground charge value
+C	MoyC:   average ground charge value
 C
 C *********************************************************************
-      REAL FUNCTION AveLoad(NHis,HistC,H1,H2)
+	REAL FUNCTION AveLoad(NHis,HistC,H1,H2)
 
       IMPLICIT NONE 
 C     INPUTS
@@ -385,7 +385,7 @@ C Partial sum of the ground charges
 410   CONTINUE
         AveLoad=Somme/(H2-H1+1.0)
       
-      END
+	END
 
 ***************************************************************************
 *5
@@ -403,20 +403,20 @@ C This subroutine is called every time Inter_Tg hours pass
 C By default this should be for every 2 weeks simulated
 C
 C INPUTS:
-C  N_bor_x    Number of bores in the X direction
-C  N_bor_y    Number of bores in the Y direction
-C       Ndx_bor  Number of elements to mesh a complete bore in the X direction (11)
-C  Ndy_bor    Number of elements to mesh a complete bore in the Y direction (11)
-C  Ndx_bor_c  Number of elements to mesh half a bore (side of a borehole) in the X direction (5)
-C  Ndy_bor_c  Number of elements to mesh half a bore (side of a borehole) in the Y direction (5)
-C  Ndx_res    Number of elements to mesh a thermal reservoir in the X direction (20)
-C  Ndy_res    Number of elements to mesh a thermal reservoir in the Y direction (20)
-C  Ndx        Number of elements to mesh the entire domain in the X direction
-C  Ndy        Number of elements to mesh the entire domain in the Y direction
-C  Pave       average ground charge since last calculation
+C	N_bor_x	    Number of bores in the X direction
+C	N_bor_y	    Number of bores in the Y direction
+C       Ndx_bor	Number of elements to mesh a complete bore in the X direction (11)
+C	Ndy_bor		Number of elements to mesh a complete bore in the Y direction (11)
+C	Ndx_bor_c	Number of elements to mesh half a bore (side of a borehole) in the X direction (5)
+C	Ndy_bor_c	Number of elements to mesh half a bore (side of a borehole) in the Y direction (5)
+C	Ndx_res		Number of elements to mesh a thermal reservoir in the X direction (20)
+C	Ndy_res		Number of elements to mesh a thermal reservoir in the Y direction (20)
+C	Ndx		    Number of elements to mesh the entire domain in the X direction
+C	Ndy		    Number of elements to mesh the entire domain in the Y direction
+C	Pave		average ground charge since last calculation
 C 
 C OUTPUTS:
-C   Source   Table containing the source term for every element
+C	Source		Table containing the source term for every element
 C
 C *********************************************************************
       SUBROUTINE init_source(N_bor_x,N_bor_y,Ndx,Ndy,Pave,
@@ -465,14 +465,14 @@ C This subroutine is called every time Inter_Tg hours pass
 C By default this should be for every 2 weeks simulated
 C
 C INPUTS:
-C  Ndx      Number of elements to mesh the entire domain in the X direction
-C  Ndy      Number of elements to mesh the entire domain in the Y direction
-C  Aop      Table containing the thermal inertia of the elements
-C  Source   Table containing the source term for every element
-C  Ttemp    Table containing all temperatures in the ground
+C	Ndx		Number of elements to mesh the entire domain in the X direction
+C	Ndy		Number of elements to mesh the entire domain in the Y direction
+C	Aop		Table containing the thermal inertia of the elements
+C	Source		Table containing the source term for every element
+C	Ttemp		Table containing all temperatures in the ground
 C 
 C OUTPUTS:
-C   B   Table containing the sum of the internal energy and the source term for each element
+C	B		Table containing the sum of the internal energy and the source term for each element
 C
 C *********************************************************************
       SUBROUTINE InitB(Ndx,Ndy,Aop,Source,Ttemp,B)
@@ -481,14 +481,14 @@ C *********************************************************************
 C     INPUTS
       INTEGER i,j,Ndx,Ndy
       REAL Aop(Ndy,Ndx),Source(Ndy,Ndx),Ttemp(Ndy,Ndx),B(Ndy,Ndx)
-  
+	  
       DO 620 j=1,Ndy
         DO 610 i=1,Ndx
           B(j,i)=Aop(j,i)*Ttemp(j,i)+Source(j,i)
 610     CONTINUE
-620   CONTINUE
+620   CONTINUE	
       
-      END
+	END
 
 ****************************************************************************
 *7
@@ -505,12 +505,12 @@ C
 C This subroutine is called at every iteration
 C
 C INPUTS:
-C  Ndx      Number of elements to mesh the entire domain in the X direction
-C  Ndy      Number of elements to mesh the entire domain in the Y direction
-C  Ttemp    Table containing all temperatures in the ground
+C	Ndx		Number of elements to mesh the entire domain in the X direction
+C	Ndy		Number of elements to mesh the entire domain in the Y direction
+C	Ttemp	Table containing all temperatures in the ground
 C 
 C OUTPUTS:
-C  Ttampon  Table containing temperatures from the previous iteration
+C	Ttampon	Table containing temperatures from the previous iteration
 C
 C *********************************************************************
       SUBROUTINE ReinitTtemp(Ndx,Ndy,Ttemp,Ttampon)
@@ -519,14 +519,14 @@ C *********************************************************************
 C     INPUTS
       INTEGER Ndx,Ndy,i,j
       REAL Ttemp(Ndy,Ndx),Ttampon(Ndy,Ndx)
-  
+	  
       DO 720 j=1,Ndy
         DO 710 i=1,Ndx
           Ttampon(j,i)=Ttemp(j,i)
 710     CONTINUE
 720   CONTINUE
       
-      END
+	END
 
 ********************************************************************
 *8
@@ -544,18 +544,18 @@ C
 C This subroutine is called for every iteration
 C
 C INPUTS:
-C  Relax      Relaxation factor
-C  Tg_ND      Undisturbed ground temperature
-C  Ndx        Number of elements to mesh the entire domain in the X direction
-C  Ndy        Number of elements to mesh the entire domain in the Y direction
-C  Ae         Table containing the east-west conduction coefficients of the elements
-C  An         Table containing the north-south conduction coefficients of the elements
-C  Aop        Table containing the thermal inertia of the elements
-C  Ap         Table containing the sum of the Patanker coefficients for each element
-C  B          Table containing the sum of the internal energy and the source term for each element
+C	Relax	Relaxation factor
+C	Tg_ND	Undisturbed ground temperature
+C	Ndx		Number of elements to mesh the entire domain in the X direction
+C	Ndy		Number of elements to mesh the entire domain in the Y direction
+C	Ae		Table containing the east-west conduction coefficients of the elements
+C	An		Table containing the north-south conduction coefficients of the elements
+C	Aop		Table containing the thermal inertia of the elements
+C	Ap		Table containing the sum of the Patanker coefficients for each element
+C	B		Table containing the sum of the internal energy and the source term for each element
 C 
 C OUTPUTS:
-C  Ttemp      Table containing all temperatures in the ground
+C	Ttemp	Table containing all temperatures in the ground
 C
 C *********************************************************************
       SUBROUTINE ItereX(relax,Tg_ND,Ndx,Ndy,Ae,An,Ap,B,Ttemp)
@@ -592,7 +592,7 @@ C Write calculated values in the 2-D table
 C Boundary conditions
       CALL Tfrontiere(Ndx,Ndy,Tg_ND,Ttemp)
       
-      END
+	END
 
 ***************************************************************
 *9
@@ -610,18 +610,18 @@ C
 C This subroutine is called for every iteration
 C
 C INPUTS:
-C  Relax   Relaxation factor
-C  Tg_ND   Undisturbed ground temperature
-C  Ndx     Number of elements to mesh the entire domain in the X direction
-C  Ndy     Number of elements to mesh the entire domain in the Y direction
-C  Ae      Table containing the east-west conduction coefficients of the elements
-C  An      Table containing the north-south conduction coefficients of the elements
-C  Aop     Table containing the thermal inertia of the elements
-C  Ap      Table containing the sum of the Patanker coefficients for each element
-C  B       Table containing the sum of the internal energy and the source term for each element
+C	Relax   Relaxation factor
+C	Tg_ND   Undisturbed ground temperature
+C	Ndx		Number of elements to mesh the entire domain in the X direction
+C	Ndy		Number of elements to mesh the entire domain in the Y direction
+C	Ae		Table containing the east-west conduction coefficients of the elements
+C	An		Table containing the north-south conduction coefficients of the elements
+C	Aop		Table containing the thermal inertia of the elements
+C	Ap		Table containing the sum of the Patanker coefficients for each element
+C	B		Table containing the sum of the internal energy and the source term for each element
 C 
 C OUTPUTS:
-C  Ttemp   Table containing all temperatures in the ground
+C	Ttemp   Table containing all temperatures in the ground
 C
 C *********************************************************************
       SUBROUTINE ItereY(relax,Tg_ND,Ndx,Ndy,Ae,An,Ap,B,Ttemp)
@@ -650,7 +650,7 @@ C Transform coefficients to the form used by TDMA from north to south
             bi(j)=Ap(pos,i)
             Ti(j)=Ttemp(pos,i)
             ri(j)=B(pos,i)+Ae(pos,i)*Ttemp(pos,i+1)+
-     &        Ae(pos,i-1)*Ttemp(pos,i-1)
+     &	        Ae(pos,i-1)*Ttemp(pos,i-1)
 910     CONTINUE
 C Solve using TDMA
         CALL TDMA(Ndy,ai,bi,ci,Ti,ri)
@@ -662,7 +662,7 @@ C Write calculated values in the 2-D table
 C Boundary conditions
       CALL Tfrontiere(Ndx,Ndy,Tg_ND,Ttemp)
 
-      END
+	END
 
 ***************************************************************
 *10
@@ -679,13 +679,13 @@ C
 C This subroutine is called at every iteration
 C
 C INPUTS:
-C  Ndx      Number of elements to mesh the entire domain in the X direction
-C  Ndy      Number of elements to mesh the entire domain in the Y direction
-C  Ttemp    Table containing all temperatures in the ground
-C  Ttampon  Table containing temperatures from the previous iteration
+C	Ndx		Number of elements to mesh the entire domain in the X direction
+C	Ndy		Number of elements to mesh the entire domain in the Y direction
+C	Ttemp	Table containing all temperatures in the ground
+C	Ttampon	Table containing temperatures from the previous iteration
 C 
 C OUTPUTS:
-C  CalcResidu  Largest difference between Ttemp and Ttampon
+C	CalcResidu	Largest difference between Ttemp and Ttampon
 C
 C *********************************************************************
       REAL FUNCTION CalcResidu(Ndx,Ndy,Ttemp,Ttampon)
@@ -694,7 +694,7 @@ C *********************************************************************
 C     INPUTS
       INTEGER Ndx,Ndy,i,j
       REAL Ttemp(Ndy,Ndx),Ttampon(Ndy,Ndx)
-C Residu (largest difference)  
+C Residu (largest difference)	  
       REAL DifMax
 C Local difference between Ttemp(j,i) and Ttampon(j,i)
       REAL Dif
@@ -724,15 +724,15 @@ C
 C This subroutine is called for every iteration
 C
 C INPUTS:
-C  X direction  ai=Aw, ci=Ae, bi=Ap, ri=b+AnTn+AsTs
-C  Y direction  ai=As, ci=An, bi=Ap, ri=b+AeTe+AwTw
+C	X direction	ai=Aw, ci=Ae, bi=Ap, ri=b+AnTn+AsTs
+C	Y direction	ai=As, ci=An, bi=Ap, ri=b+AeTe+AwTw
 C
 C 
 C OUTPUTS:
-C  Ti   Vector containing the calculated temperatures
+C	Ti		Vector containing the calculated temperatures
 C
 C *********************************************************************
-      SUBROUTINE TDMA(nd,ai,bi,ci,Ti,ri)
+	SUBROUTINE TDMA(nd,ai,bi,ci,Ti,ri)
 
       IMPLICIT NONE 
 C     INPUTS
@@ -770,12 +770,12 @@ C
 C This subroutine is called for every iteration
 C
 C INPUTS:
-C  Tg_ND  Undisturbed ground temperature
-C  Ndx    Number of elements to mesh the entire domain in the X direction
-C  Ndy    Number of elements to mesh the entire domain in the Y direction
+C	Tg_ND   Undisturbed ground temperature
+C	Ndx	    Number of elements to mesh the entire domain in the X direction
+C	Ndy	    Number of elements to mesh the entire domain in the Y direction
 C 
 C OUTPUTS:
-C  Ttemp   Table containing all temperatures in the ground
+C	Ttemp   Table containing all temperatures in the ground
 C
 C *********************************************************************
       SUBROUTINE Tfrontiere(Ndx,Ndy,Tg_ND,Ttemp)
@@ -784,7 +784,7 @@ C *********************************************************************
 C     INPUTS
       INTEGER Ndx,Ndy,i
       REAL Ttemp(Ndy,Ndx),Tg_ND
-
+	
       DO 1210 i=1,Ndx
         Ttemp(1,i)=Tg_ND
         Ttemp(Ndy,i)=Tg_ND
@@ -794,7 +794,7 @@ C     INPUTS
         Ttemp(i,Ndx)=Tg_ND
 1220  CONTINUE
       
-      END
+	END
 
 **********************************************************************    
 *13
@@ -813,11 +813,11 @@ C This subroutine is called every time Inter_Tg hours pass
 C By default this should be for every 2 weeks simulated
 C
 C INPUTS:
-C  Ndx    Number of elements to mesh the entire domain in the X direction
-C  Ndy    Number of elements to mesh the entire domain in the Y direction
+C	Ndx		Number of elements to mesh the entire domain in the X direction
+C	Ndy		Number of elements to mesh the entire domain in the Y direction
 C 
 C OUTPUTS:
-C  Ttemp  Table containing all temperatures in the ground
+C	Ttemp	Table containing all temperatures in the ground
 C
 C *********************************************************************
       SUBROUTINE ReadTemp(Ndx,Ndy,Ttemp)
@@ -853,11 +853,11 @@ C This subroutine is called every time Inter_Tg hours pass
 C By default this should be for every 2 weeks simulated
 C
 C INPUTS:
-C  Ndx_1b     Number of elements to mesh the entire domain in the X direction
-C  Ndy_1b     Number of elements to mesh the entire domain in the Y direction
+C	Ndx_1b		Number of elements to mesh the entire domain in the X direction
+C	Ndy_1b		Number of elements to mesh the entire domain in the Y direction
 C 
 C OUTPUTS:
-C  Ttemp_1b   Table containing all temperatures in the ground
+C	Ttemp_1b	Table containing all temperatures in the ground
 C
 C *********************************************************************
       SUBROUTINE ReadTemp_1b(Ndx,Ndy,Ttemp)
@@ -893,14 +893,14 @@ C This subroutine is called every time Inter_Tg hours pass
 C By default this should be for every 2 weeks simulated
 C
 C INPUTS:
-C  Ndx    Number of elements to mesh the entire domain in the X direction
-C  Ndy    Number of elements to mesh the entire domain in the Y direction
+C	Ndx	Number of elements to mesh the entire domain in the X direction
+C	Ndy	Number of elements to mesh the entire domain in the Y direction
 C 
 C OUTPUTS:
-C  Ae     Table containing the east-west conduction coefficients of the elements
-C  An     Table containing the north-south conduction coefficients of the elements
-C  Aop    Table containing the thermal inertia of the elements
-C  Ap     Table containing the sum of the Patanker coefficients for each element
+C	Ae	Table containing the east-west conduction coefficients of the elements
+C	An	Table containing the north-south conduction coefficients of the elements
+C	Aop	Table containing the thermal inertia of the elements
+C	Ap	Table containing the sum of the Patanker coefficients for each element
 C
 C *********************************************************************
       SUBROUTINE ReadPat(Ndx,Ndy,Ae,An,Aop,Ap)
@@ -948,14 +948,14 @@ C This subroutine is called every time Inter_Tg hours pass
 C By default this should be for every 2 weeks simulated
 C
 C INPUTS:
-C  Ndx_1b    Number of elements to mesh the entire domain in the X direction
-C  Ndy_1b    Number of elements to mesh the entire domain in the Y direction
+C	Ndx_1b		Number of elements to mesh the entire domain in the X direction
+C	Ndy_1b		Number of elements to mesh the entire domain in the Y direction
 C 
 C OUTPUTS:
-C  Ae_1b     Table containing the east-west conduction coefficients of the elements
-C  An_1b     Table containing the north-south conduction coefficients of the elements
-C  Aop_1b    Table containing the thermal inertia of the elements
-C  Ap_1b     Table containing the sum of the Patanker coefficients for each element
+C	Ae_1b		Table containing the east-west conduction coefficients of the elements
+C	An_1b		Table containing the north-south conduction coefficients of the elements
+C	Aop_1b		Table containing the thermal inertia of the elements
+C	Ap_1b		Table containing the sum of the Patanker coefficients for each element
 C
 C *********************************************************************
       SUBROUTINE ReadPat_1b(Ndx,Ndy,Ae,An,Aop,Ap)
@@ -1003,16 +1003,16 @@ C This subroutine is called every time Inter_Tg hours pass
 C By default this should be for every 2 weeks simulated
 C
 C INPUTS:
-C  Ndx    Number of elements to mesh the entire domain in the X direction
-C  Ndy    Number of elements to mesh the entire domain in the Y direction
-C  Ndx_1b Number of elements to mesh a domain containing only one bore in the X direction
-C  Ndy_1b Number of elements to mesh a domain containing only one bore in the Y direction
+C	Ndx		Number of elements to mesh the entire domain in the X direction
+C	Ndy		Number of elements to mesh the entire domain in the Y direction
+C	Ndx_1b	Number of elements to mesh a domain containing only one bore in the X direction
+C	Ndy_1b	Number of elements to mesh a domain containing only one bore in the Y direction
 C 
 C OUTPUTS:
-C  dx     Vector containing the dimensions of the elements in the X direction
-C  dy     Vector containing the dimensions of the elements in the Y direction
-C  dx_1b  Vector containing the dimensions of the elements in the X direction for a domain containing only one bore
-C  dy_1b  Vector containing the dimensions of the elements in the Y direction for a domain containing only one bore
+C	dx		Vector containing the dimensions of the elements in the X direction
+C	dy		Vector containing the dimensions of the elements in the Y direction
+C	dx_1b	Vector containing the dimensions of the elements in the X direction for a domain containing only one bore
+C	dy_1b	Vector containing the dimensions of the elements in the Y direction for a domain containing only one bore
 C
 C *********************************************************************
       SUBROUTINE ReadDim(Ndx,Ndy,Ndx_1b,Ndy_1b,dx,dy,dx_1b,dy_1b)
@@ -1061,9 +1061,9 @@ C
 C This subroutine is called once at the begining of the simulation
 C     
 C INPUTS:
-C     Ndx    Number of elements to mesh the entire domain in the X direction
-C     Ndy    Number of elements to mesh the entire domain in the Y direction
-C     Ttemp  Table containing all temperatures in the ground
+C     Ndx	    Number of elements to mesh the entire domain in the X direction
+C     Ndy	    Number of elements to mesh the entire domain in the Y direction
+C     Ttemp   Table containing all temperatures in the ground
 C     
 C OUTPUTS:
 C     File containing Ttemp
@@ -1108,9 +1108,9 @@ C
 C This subroutine is called once at the begining of the simulation
 C     
 C INPUTS:
-C     Ndx_1b    Number of elements to mesh the entire domain in the X direction
-C     Ndy_1b    Number of elements to mesh the entire domain in the Y direction
-C     Ttemp_1b  Table containing all temperatures in the ground
+C     Ndx_1b	    Number of elements to mesh the entire domain in the X direction
+C     Ndy_1b	    Number of elements to mesh the entire domain in the Y direction
+C     Ttemp_1b    Table containing all temperatures in the ground
 C     
 C OUTPUTS:
 C     File containing Ttemp_1b

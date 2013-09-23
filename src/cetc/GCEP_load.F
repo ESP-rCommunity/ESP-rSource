@@ -62,7 +62,7 @@ C The heating and cooling load will be read in each timestep.
 C Defining variables used in the subroutine   
       REAL  heating_load, cooling_load
 C Heating and cooling capacity of the heat pumps
-      REAL  HP_Hcapacity,HP_Ccapacity
+	REAL  HP_Hcapacity,HP_Ccapacity
       INTEGER  ISD1,ISM1,ISD2,ISM2,ISDS,ISDF,NTSTEP
 
 
@@ -81,10 +81,10 @@ c if the COP is equal to zero, it is badlt or not calculated and is set to infin
 c If there is a heating load, add the previous timesteps heating load (hourly_heat_load)
 c to the current timestep heating load (heating_load) - as calculated in HVACSIM.
       if (heating_load .ge. 0) then 
-        if(heating_load.le.HP_Hcapacity) then
+	  if(heating_load.le.HP_Hcapacity) then
            GCEP_ hourly_HP_hload = GCEP_hourly_HP_hload + 
      &                        heating_load/NTSTEP*(1-1/GCEP_HEAT_COP)
-        else
+	  else
             GCEP_hourly_HP_hload = GCEP_hourly_HP_hload +
      &                        HP_Hcapacity/NTSTEP*(1-1/GCEP_HEAT_COP)
           endif
@@ -92,10 +92,10 @@ c to the current timestep heating load (heating_load) - as calculated in HVACSIM
 c If there is a cooling load, add the previous timesteps cooling load (hourly_cool_load)
 c to the current timestep cooling load (cooling_load) - as calculated in HVACSIM.
       if (cooling_load .ge. 0) then
-         if(cooling_load.le.HP_Ccapacity) then
+	  if(cooling_load.le.HP_Ccapacity) then
             GCEP_hourly_HP_cload =GCEP_hourly_HP_cload +
      &                        cooling_load/NTSTEP*(1+1/GCEP_COOL_COP)
-         else
+	  else
             GCEP_hourly_HP_cload =GCEP_hourly_HP_cload +
      &                        HP_Ccapacity/NTSTEP*(1+1/GCEP_COOL_COP)
           endif
@@ -121,11 +121,11 @@ c Subroutine to set the degradation coefficients of a ground-source heat pump
 c when a heating load is placed upon it.
 
 c Reference:
-c       Water Source Heat Pump Data for HOT3000 - Milestone #1
-c       Caneta Research Inc., December 7, 2001
+c	       Water Source Heat Pump Data for HOT3000 - Milestone #1
+c	       Caneta Research Inc., December 7, 2001
 
 c INPUTS:
-c    isys    number of HVAC system
+c    isys	number of HVAC system
 c    GCEP_EWT        daily entering water temperature.
    
 c OUTPUTS:
@@ -180,11 +180,11 @@ c Subroutine to set the degradation coefficients of a ground-source heat pump
 c system when a cooling load is placed upon it.
 
 c Reference:
-c       Water Source Heat Pump Data for HOT3000 - Milestone #1
-c       Caneta Research Inc., December 7, 2001
+c	       Water Source Heat Pump Data for HOT3000 - Milestone #1
+c	       Caneta Research Inc., December 7, 2001
 
 c INPUTS:
-c    isys   number of HVAC system
+c    isys	number of HVAC system
 c    GCEP_EWT        entering water temperature
    
 c OUTPUTS:
@@ -238,14 +238,14 @@ c This function calculates the pump power required for a ground-
 c source heat pump system.
 
 c REFERENCE:
-c       Water Source Heat Pump Data for HOT3000 - Milestone #1
-c       Caneta Research Inc., December 7, 2001
+c	       Water Source Heat Pump Data for HOT3000 - Milestone #1
+c	       Caneta Research Inc., December 7, 2001
 c
-c       ASHRAE Handbook of Fundamentals, 2001.
+c              ASHRAE Handbook of Fundamentals, 2001.
 
 c INPUTS:
 c       igshp_type        type of GSHP system selected in the input file
-c       GSHP_CAP          system capacity at operting conditions, W
+c	GSHP_CAP	  system capacity at operting conditions, W
 c       pipe_length       total ground circuit pipe length, m
 c       HP_pressure_drop  pressure drop through heat pump loop, kPa
 c       runout_press_drop run-out pressure drop, kPa

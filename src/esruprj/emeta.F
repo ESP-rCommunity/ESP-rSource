@@ -32,17 +32,19 @@ C silentmodel creates a model from passed parameters.
 C The parameters are:
 C action (8 char) as follows:
 C    'new' creates model folders based on information
-C       in root and mpath parameters.
+C       in root, mpath folder parameters.
 C    'within' assumes that the current folder will be used.
-C root   (32 char) the root name of the model
+C root   (24 char) the root name of the model
 C mpath  (72 char) the path to the folder with cfg file.
+C folder (12 char) model folder layout: 'single' or 'distributed'
 C weather (32 char) the weather file name (no path included)
 C simact (6 char) assessments to be carried out '------' if
 C   none requested, otherwise follow pattern in edipv.F.
 
 C Current functionality is to update the climate & site data.
 
-      subroutine silentmodel(action,root,mpath,weather,simact,ier)
+      subroutine silentmodel(action,root,mpath,folder,weather,simact,
+     &  ier)
 #include "building.h"
 #include "model.h"
 #include "site.h"
@@ -60,7 +62,7 @@ C seasons.h provides typper and typsea
 
 C Where ESP-r was installed (as recorded when it was compiled).
       common/deflt4/dinstpath
-      character dinstpath*60
+      character dinstpath*48
 
 C Climate data.
       COMMON/CLMSET/ICYEAR,ICDNGH,CLAT,CLONG
@@ -79,18 +81,21 @@ C Simulation parameter sets.
       common/spfldat/nsset,isset,isstup,isbnstep,ispnstep,issave,isavgh
 
 C Passed in parameters.
-      character action*8,root*32,mpath*72,menu*72
+      character action*8,root*24,mpath*72,folder*12,menu*72
       character fs*1           ! file separator
       character weather*32     ! file name for the location (no path)
+      character weathergr*36   ! file name for weather related ground temps (no path)
+      character groundfile*72  ! file name for weather related gorund temps (with path)
       character subpath*72
       character simact*6 ! action for creating assessments.
 
       character outs*124,OUTSTR*124
       logical unixok,XST,ok
       logical haveground ! set true if ground temp file has been found
+      integer lnw   ! length of weather string.
+      integer lnwg   ! length of weather ground string.
+      integer igrfile ! unit number of ground file
       character inpxmlfl*144 !to write out the input.xml file
-      character llclmdb*144
-      integer llt,lndbp
 
       IER=0
 
@@ -110,29 +115,27 @@ C If the action is `within` do not create new folders for the model.
 
 C Debug
       if(unixok)then
-        write(6,*)  'action ',action,' ',root
+        write(6,*)  'action ',action,' ',root,' ',folder
         write(6,*)  'menu ',modeltitle
         write(6,*)  'mpath ',mpath
         write(6,*)  'weather ',weather
-        write(6,*)  'clm ',lclim
         write(6,*)  'assessments ',simact
       endif
 
-      call edisp(iuout,'  ')
       if(action(1:3).eq.'new')then
         write(menu,'(a)') modeltitle(1:lnblnk(modeltitle))
-        call pregist('sn',root,mpath,menu,ier)
+        call pregist('sn',root,mpath,folder,menu,ier)
       elseif(action(1:6).eq.'within')then
 
 C Assume the model folders exist when calling pregist.
         write(menu,'(a)') modeltitle(1:lnblnk(modeltitle))
-        call pregist('sw',root,mpath,menu,ier)
+        call pregist('sw',root,mpath,folder,menu,ier)
       endif
 
 C If there is a line with the root name of a climate file look
 C for a match in the current climate location and if there is
 C one set the name of that file, scan it and find its site. If
-C there is no weather file then set the default seasons.
+C there is no weather file then at least set the default seasons.
       if(weather(1:4).eq.'none')then
 
 C Set default early winter, spring, summer, autumn, late winter periods.
@@ -160,76 +163,116 @@ C Default season definitions.
         CALL EDAY(31,8,is1sumf)
       else
 
-C Assume that weather is in the standard location, expand the file
-C name and check if it exists via the usual pattern. If not
-C check if the climate file exists via findwhichdbpath.
+C First check if the climate file exists in the subpath. Also
+C make up a variant of the weather file name in case there
+C might be a small 12 item file for ground temperatures which
+C has a matching name.gnd.
         if(ICLIM.eq.0)then
           ICLIM=IFIL
         endif
-        llt=lnblnk(weather)
-        lndbp=lnblnk(standardclmpath)
-        write(llclmdb,'(3a)') standardclmpath(1:lndbp),fs,
-     &      weather(1:llt)
-        call EFOPRAN(ICLIM,llclmdb,144,0,ISTAT)
-        if(ISTAT.ge.0)then
+        igrfile=IFIL+2  ! hopefully not used
+        lnw=lnblnk(weather)
+	write(weathergr,'(2a)') weather(1:lnw),'.gnd'
+        lnwg=lnblnk(weathergr)
 
-C Read site and year.
-          IREC=366
-          READ(ICLIM,REC=IREC,IOSTAT=ISTAT,ERR=1000)ICYEAR,ICDNGH
-          IREC=368
-          READ(ICLIM,REC=IREC,IOSTAT=ISTAT,ERR=1000)CLAT,CLONG
+        write(subpath,'(4a)')
+     &    dinstpath(1:lnblnk(dinstpath)),fs,'climate',fs
+        write(LCLIM,'(2a)') subpath(1:lnblnk(subpath)),
+     &    weather(1:lnw)
+        write(groundfile,'(2a)') subpath(1:lnblnk(subpath)),
+     &    weathergr(1:lnwg)
+        write(currentfile,'(a)') LCLIM(1:lnblnk(LCLIM))
+        CALL ERPFREE(ICLIM,ISTAT)
+        CALL FPRAND(ICLIM,ISTAT,144,0,LCLIM)
+        if(ISTAT.ge.0)then
           CALL ERPFREE(ICLIM,ISTAT)
-          ipathclim=2
-          write(LCLIM,'(a)') weather(1:llt) ! set LCLIM
+
+C Also check to see if a ground temperature file exists
+          write(currentfile,'(a)') groundfile(1:lnblnk(groundfile))
+          call FPOPEN(igrfile,ISTAT,1,0,groundfile)
+          if(ISTAT.ge.0)then
+            haveground=.true.
+            CALL ERPFREE(igrfile,ISTAT)
+          endif
+          goto 75
         else
 
-C Use findwhichdbpath and then expand weather file path for checking.
-          call findwhichdbpath('clm',weather,ier)
-          llt=lnblnk(LCLIM)
-          lndbp=lnblnk(standardclmpath)
-          if(ipathclim.eq.0.or.ipathclim.eq.1)then
-            llclmdb=LCLIM
-          elseif(ipathclim.eq.2)then
-            write(llclmdb,'(3a)') standardclmpath(1:lndbp),fs,
-     &        LCLIM(1:lnblnk(LCLIM))
-          endif
-          CALL ERPFREE(ICLIM,ISTAT)
-          call EFOPRAN(ICLIM,llclmdb,144,0,ISTAT)
-          write(currentfile,'(a)') llclmdb(1:lnblnk(llclmdb))
-          if(ISTAT.ge.0)then
+C Also look in the folder where the model is being created.
+          write(LCLIM,'(3a)') mpath(1:lnblnk(mpath)),fs,
+     &      weather(1:lnw)
+          write(currentfile,'(a)') LCLIM(1:lnblnk(LCLIM))
+          write(groundfile,'(3a)') mpath(1:lnblnk(mpath)),fs,
+     &      weathergr(1:lnwg)
 
-C Read site and year.
-            IREC=366
-            READ(ICLIM,REC=IREC,IOSTAT=ISTAT,ERR=1000)ICYEAR,ICDNGH
-            IREC=368
-            READ(ICLIM,REC=IREC,IOSTAT=ISTAT,ERR=1000)CLAT,CLONG
+          CALL ERPFREE(ICLIM,ISTAT)
+          CALL FPRAND(ICLIM,ISTAT,144,0,LCLIM)
+          if(ISTAT.ge.0)then
             CALL ERPFREE(ICLIM,ISTAT)
+
+C Also check to see if a ground temperature file exists
+            write(currentfile,'(a)') groundfile(1:lnblnk(groundfile))
+            call FPOPEN(igrfile,ISTAT,1,0,groundfile)
+            if(ISTAT.ge.0)then
+              haveground=.true.
+              CALL ERPFREE(igrfile,ISTAT)
+            endif
+            goto 75
           else
 
-C Not found, use the default weather file as a backstop.
-            write(currentfile,'(a)') DCLIM(1:lnblnk(DCLIM))
+C Also look in the model dbs folder.
+            write(LCLIM,'(5a)') mpath(1:lnblnk(mpath)),fs,
+     &        dbspth(1:lnblnk(dbspth)),fs,weather(1:lnw)
+            write(currentfile,'(a)') LCLIM(1:lnblnk(LCLIM))
+            write(groundfile,'(5a)') mpath(1:lnblnk(mpath)),fs,
+     &        dbspth(1:lnblnk(dbspth)),fs,weathergr(1:lnwg)
+
             CALL ERPFREE(ICLIM,ISTAT)
-            CALL FPRAND(ICLIM,ISTAT,144,0,DCLIM)
+            CALL FPRAND(ICLIM,ISTAT,144,0,LCLIM)
             if(ISTAT.ge.0)then
-              IREC=366
-              READ(ICLIM,REC=IREC,IOSTAT=ISTAT,ERR=1000)ICYEAR,ICDNGH
-              IREC=368
-              READ(ICLIM,REC=IREC,IOSTAT=ISTAT,ERR=1000)CLAT,CLONG
               CALL ERPFREE(ICLIM,ISTAT)
-              LCLIM=DCLIM
-              ipathclim=2  ! assume default weather is in standard folder
+
+C Also check to see if a ground temperature file exists
+              write(currentfile,'(a)') groundfile(1:lnblnk(groundfile))
+              call FPOPEN(igrfile,ISTAT,1,0,groundfile)
+              if(ISTAT.ge.0)then
+                haveground=.true.
+                CALL ERPFREE(igrfile,ISTAT)
+              endif
+              goto 75
+            else
+              write(currentfile,'(a)') DCLIM(1:lnblnk(DCLIM))
+              CALL ERPFREE(ICLIM,ISTAT)
+              CALL FPRAND(ICLIM,ISTAT,144,0,DCLIM)
+              if(ISTAT.ge.0)then
+                CALL ERPFREE(ICLIM,ISTAT)
+                LCLIM=DCLIM
+                goto 75
+              else
+
+C Fell through, no change in climate and location.
+                call edisp(iuout,'No climate data located.')
+                goto 74
+              endif
             endif
           endif
         endif
 
 C Impose climate site data on the model.
 C << but we might want to use what was already in the META file >>
+  75    continue
+        CALL ERPFREE(ICLIM,ISTAT)
+        CALL FPRAND(ICLIM,ISTAT,144,1,LCLIM)
+        IREC=366
+        READ(ICLIM,REC=IREC,IOSTAT=ISTAT,ERR=1000)ICYEAR,ICDNGH
+        IREC=368
+        READ(ICLIM,REC=IREC,IOSTAT=ISTAT,ERR=1000)CLAT,CLONG
+        CALL ERPFREE(ICLIM,ISTAT)
         sitelat=CLAT
         sitelongdif=CLONG
         IYEAR=ICYEAR
-        write(outs,'(A,F6.1,A,F5.1,a,i4,a,2F7.3,a)')
-     &    'The weather lat is ',clat,' long diff is ',
-     &    clong,' Year is ',IYEAR,
+        write(outs,'(A,F7.3,A,F7.3,a,i4,i5,a,2F7.3,a)')
+     &    'The climate lat is ',clat,' & long diff is ',
+     &    clong,' & Year DN flag ',IYEAR,ICDNGH,
      &    '. Previously used ',sitelat,sitelongdif,'.'
         call edisp(iuout,outs)
 
@@ -242,7 +285,7 @@ C list. If not instanciate season and typical start and end dates.
           INQUIRE (FILE=cdblfil,EXIST=XST)
           if(XST)then
             IUF=IFIL+2
-            call scancdblist(IUF,llclmdb,ok,ier)
+            call scancdblist(IUF,LCLIM,ok,ier)
             if(ok)then
               continue
             else
@@ -290,8 +333,11 @@ C data into the simulation parameter set data structure.
       endif
 
 C Write calendar information (just the default one for the moment)
-      calename='standard weekday Sat Sun hol'
-      nbdaytype=4
+
+C << later include calendar and day types within the META file >>
+     
+      calename='standard weekday Sat & Sun'
+      nbdaytype=3
       nbcaldays(1)=0
       calentag(1)='weekdays'
       calendayname(1)='weekdays (all year)'
@@ -301,52 +347,57 @@ C Write calendar information (just the default one for the moment)
       nbcaldays(3)=0
       calentag(3)='sunday'
       calendayname(3)='Sundays (all year)'
-      calentag(4)='holiday'
-      calendayname(4)='holiday'
-      nbcaldays(4)=0
+      calentag(4)='-'
       calentag(5)='-'
-      calendayname(5)='-'
-      nbcaldays(5)=0
       calentag(6)='-'
-      calendayname(6)='-'
-      nbcaldays(6)=0
       calentag(7)='-'
-      calendayname(7)='-'
-      nbcaldays(7)=0
-      calendayname(8)='-'
       calentag(8)='-'
-      nbcaldays(8)=0
       calentag(9)='-'
+      calendayname(4)='-'
+      calendayname(5)='-'
+      calendayname(6)='-'
+      calendayname(7)='-'
+      calendayname(8)='-'
       calendayname(9)='-'
-      nbcaldays(9)=0
-      calentag(10)='-'
-      calendayname(10)='-'
-      nbcaldays(10)=0
-     
       do 542 ijd=1,365
 
-C Assume 1 Jan is a holiday (users can change this later).
-        if(ijd.eq.1)then
-          icalender(ijd)=4
-          nbcaldays(4)=nbcaldays(4)+1
-        else
-
 C For julian day ijd find month and day of month and day of week.
-          call edayr(ijd,idayn,imthn)
-          call eweekd(idayn,imthn,iyear,idwk)
-          if(idwk.ge.1.and.idwk.le.5)then
-            icalender(ijd)=1
-            nbcaldays(1)=nbcaldays(1)+1
-          elseif(idwk.eq.6)then
-            icalender(ijd)=2
-            nbcaldays(2)=nbcaldays(2)+1
-          elseif(idwk.eq.7)then
-            icalender(ijd)=3
-            nbcaldays(3)=nbcaldays(3)+1
-          endif
+        call edayr(ijd,idayn,imthn)
+        call eweekd(idayn,imthn,iyear,idwk)
+        if(idwk.ge.1.and.idwk.le.5)then
+          icalender(ijd)=1
+          nbcaldays(1)=nbcaldays(1)+1
+        elseif(idwk.eq.6)then
+          icalender(ijd)=2
+          nbcaldays(2)=nbcaldays(2)+1
+        elseif(idwk.eq.7)then
+          icalender(ijd)=3
+          nbcaldays(3)=nbcaldays(3)+1
         endif
-  542 continue
+  542 continue                    	
   
+C If there is ground temperature information scan that file and
+C put the data in UGRDTP.
+      if(haveground)then
+        write(currentfile,'(a)') groundfile(1:lnblnk(groundfile))
+        call FPOPEN(igrfile,ISTAT,1,0,groundfile)
+        NGRDP=1
+        CALL STRIPC(igrfile,OUTSTR,0,ND,1,'ground data',IER)
+
+        DO 29 J=1,12
+          CALL EGETWR(OUTSTR,K,valy,0.,0.,'-','ground temp',IER)
+          UGRDTP(J,NGRDP)=valy
+   29   CONTINUE
+
+C Debug.
+        CALL EDISP(iuout,' From file Ground temp profile Jan-Dec:')
+        WRITE(OUTS,'(12F6.1)')(UGRDTP(J,1),J=1,12)
+        CALL EDISP(iuout,OUTS)
+
+        CALL ERPFREE(igrfile,ISTAT)
+      else
+        NGRDP=0    ! no user defined ground temperature profiles.
+      endif
       CALL EMKCFG('-',IER)
 
 C Also write the xml input file if there is a metric defined in the flat file
@@ -422,7 +473,6 @@ C IER=0 OK.
 #include "geometry.h"
 #include "esprdbfile.h"
 #include "material.h"
-#include "schedule.h"
 
       integer lnblnk  ! function definition
 
@@ -444,16 +494,32 @@ C Parameters
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
-      integer IZSTOCN
       COMMON/C24/IZSTOCN(MCOM,MS)
       common/user/browse
       common/cctlnm/ctldoc,lctlf
-      integer icascf
       common/cctl/icascf(mcom)
 
 C Where ESP-r was installed (as recorded when it was compiled).
       common/deflt4/dinstpath
-      character dinstpath*60
+      character dinstpath*48
+
+C Version of operations file. ip3ver=0 standard, =1 sorted with header
+C =2 with more than 3 day types
+      common/p3ver/ip3ver(MCOM)
+      COMMON/P2N/NAC(MDTY),IACS(MDTY,MA),IACF(MDTY,MA),ACI(MDTY,MA),
+     &           ACV(MDTY,MA),IPT(MDTY,MA),TA(MDTY,MA)
+      INTEGER NAC,IACS,IACF,IPT
+      REAL ACI,ACV,TA
+      COMMON/P3N/NCAS(MDTY),ICGS(MDTY,MC),ICGF(MDTY,MC),
+     &           CMGS(MDTY,MC),CMGL(MDTY,MC),RADC(MDTY,MC),CONC(MDTY,MC)
+      INTEGER NCAS,ICGS,ICGF
+      REAL CMGS,CMGL,RADC,CONC
+
+      CHARACTER oprdesc*248,ventdesc*248,ctlstr*24
+      COMMON/P1/oprdesc(MCOM),ventdesc(MCOM),ctlstr(MCOM,MDTY)
+
+      character lodlabel*6
+      common/loadlabel/lodlabel(mcom,MGTY)
 
       COMMON/Vld20/Vldtng
       logical Vldtng
@@ -469,7 +535,7 @@ C hasname (string array) the surface name for each surface (so fillsur does not 
       character ctldoc*248,LCTLF*72,zd*64
       character DFILE*72,CFILE*72,OFILE*72,TFILE*72
       character act*2
-      character subpath*84,sfile*144
+      character subpath*72,sfile*144
       character icact*8,iwatt*8,afact*8,iflow*8,vflow*8
       character sn*12,constr*12,opt*12,outs*124
       LOGICAL browse,OKC,XST,unixok
@@ -674,14 +740,11 @@ C Instanciate the surface constructions.
         write(sname(icomp,icc),'(a)') hasname(icc)
         write(smlcn(icc),'(a)') hasconstr(icc)
 
-C Loop thru all of the known constructions to find the matching construction.
-C Also set ssmlcindex for this surface.
+C Loop thru all of the constructions to find the matching construction
         imatch=0
-        ssmlcindex(iccc)=0  ! assume no matching MLC          
         do 5 ii=1,nmlc
-          if(SMLCN(icc)(1:12).eq.mlcname(ii)(1:12)) then
+          if(SMLCN(icc)(1:12).eq.DESC(ii)(1:12)) then
             imatch=ii
-            ssmlcindex(iccc)=ii   ! remember MLC index     
           endif
   5     continue
 
@@ -701,7 +764,7 @@ C mark anunknownmlc so construction files are not created.
         elseif(metaver.eq.1)then
 
 C See if it is opaque or transparent and copy out the relevant
-C section of the construction attributes.
+C section of the string DESC.
           if(imatch.eq.0) then
 
 C If we do not have a match it might be because we are referencing a local
@@ -711,10 +774,10 @@ C the original model. In this case << ? >>
             SOTF(icc)='UNKNOWN'
             anunknownmlc=.true.   ! mark that one MLC is unknown
           else
-            if(mlctype(imatch)(1:4).EQ.'OPAQ')then
+            if(DESC(imatch)(15:18).EQ.'OPAQ')then
               SOTF(icc)='OPAQUE'
             else
-              WRITE(SOTF(icc),'(A)') mlcoptical(imatch)(1:12)
+              WRITE(SOTF(icc),'(A)') DESC(imatch)(21:32)
               willneedtmc=.true.
             endif
           endif
@@ -748,7 +811,6 @@ C Reset to represent UNKNOWN
         write(SOTHER(icc,2),'(i2.2)') zboundarytype(icomp,icc,2)
         write(SOTHER(icc,3),'(i2.2)') zboundarytype(icomp,icc,3)
 
-C Set connection based variables.
         SSNAME(iccc)=SNAME(icomp,icc)
         SSOTF(iccc)=SOTF(icc)
         SSMLCN(iccc)=SMLCN(icc)
@@ -857,10 +919,10 @@ C parent surface.  Later add logic to better place the door..
 
 C Loop thru all of the constructions to find the matching construction
 C and then see if it is opaque or transparent and copy out the relevant
-C section of the construction attributes.
+C section of the string DESC.
             imatch=0
             do 56 ii=1,nmlc
-              if(rsmlcn(1:12).eq.mlcname(ii)(1:12)) then
+              if(rsmlcn(1:12).eq.DESC(ii)(1:12)) then
                 imatch=ii
               endif
  56         continue
@@ -868,10 +930,10 @@ C section of the construction attributes.
               rsotf='UNKNOWN'
               anunknownmlc=.true.   ! mark that one MLC is unknown
             else
-              if(mlctype(imatch)(1:4).EQ.'OPAQ')then
+              if(DESC(imatch)(15:18).EQ.'OPAQ')then
                 rsotf='OPAQUE'
               else
-                write(rsotf,'(A)') mlcoptical(imatch)(1:12)
+                write(rsotf,'(A)') DESC(imatch)(21:32)
                 willneedtmc=.true.
               endif
             endif
@@ -886,11 +948,6 @@ C Connection information needs to be updated.
             ICT(ibcs)=zboundarytype(icomp,newsurf,1)  ! use boundarytype
             IC2(ibcs)=zboundarytype(icomp,newsurf,2)
             IE2(ibcs)=zboundarytype(icomp,newsurf,3)
-
-C If there was a matching MLC set ssmlcindex.
-            if(imatch.ne.0)then
-              ssmlcindex(ibcs)=imatch  ! remember MLC index     
-            endif
 
 C Use zboundarytype to instanciate sother & ssother << to be done >>
             IF(zboundarytype(icomp,newsurf,1).EQ.0)THEN
@@ -945,10 +1002,10 @@ C the parent surface as a percentage of area.
 
 C Loop thru all of the constructions to find the matching construction
 C and then see if it is opaque or transparent and copy out the relevant
-C section of the construction attributes.
+C section of the string DESC.
             imatch=0
             do 55 ii=1,nmlc
-              if(rsmlcn(1:12).eq.mlcname(ii)(1:12)) then
+              if(rsmlcn(1:12).eq.DESC(ii)(1:12)) then
                 imatch=ii
               endif
  55         continue
@@ -956,10 +1013,10 @@ C section of the construction attributes.
               rsotf='UNKNOWN'
               anunknownmlc=.true.   ! mark that one MLC is unknown
             else
-              if(mlctype(imatch)(1:4).EQ.'OPAQ')then
+              if(DESC(imatch)(15:18).EQ.'OPAQ')then
                 rsotf='OPAQUE'
               else
-                write(rsotf,'(A)') mlcoptical(imatch)(1:12)
+                write(rsotf,'(A)') DESC(imatch)(21:32)
                 willneedtmc=.true.
               endif
             endif
@@ -974,11 +1031,6 @@ C Connection information needs to be updated.
             ICT(ibcs)=zboundarytype(icomp,newsurf,1)  ! use boundarytype
             IC2(ibcs)=zboundarytype(icomp,newsurf,2)
             IE2(ibcs)=zboundarytype(icomp,newsurf,3)
-
-C If there was a matching MLC set ssmlcindex.
-            if(imatch.ne.0)then
-              ssmlcindex(ibcs)=imatch   ! remember MLC index     
-            endif
 
 C Use zboundarytype to instanciate sother & ssother << to be done >>
             IF(zboundarytype(icomp,newsurf,1).EQ.0)THEN
@@ -1109,7 +1161,7 @@ C Clear commons.
         lodlabel(icomp,1)='Occupt'
         lodlabel(icomp,2)='Lights'
         lodlabel(icomp,3)='Equipt'
-        lodlabel(icomp,4)='Other '
+        lodlabel(icomp,4)='N/A   '
         lodlabel(icomp,5)='Ann.El'
         lodlabel(icomp,6)='N/A   '
         lodlabel(icomp,7)='N/A   '
@@ -1117,7 +1169,7 @@ C Clear commons.
 C Fill common blocks for new zone based on information in the
 C pattern file.
 
-C Set to current zone operation file format.
+C Set to current format
         ip3ver(icomp)=2
         afact = use(2)
         iflow='ach-ach '
@@ -1137,7 +1189,7 @@ C Set to current zone operation file format.
         call IMPORTZCASG(isource,idest,icact,iwatt,sfile,itrc,'s',ier)
 
 C Just in case sort the data.
-        call PROCESSOLDCAS(ICOMP,0,iuout)
+        call PROCESSOLDCAS(ICOMP,0,iuout,IER)
         IUO=IFIL+2
         CALL EMKOPER(IUO,LPROJ(ICOMP),ICOMP,IER)
       endif
@@ -1171,7 +1223,7 @@ C and act on the information within the file.
        SUBROUTINE SILENTREAD(IUNIT,LFILE,act,silentreturndirec,IER)
        integer MSZ   ! number of META zones array sizes, edit to
                      ! match MCOM in building.h
-       PARAMETER (MSZ=82)
+       PARAMETER (MSZ=72)
 #include "building.h"
 #include "model.h"
 #include "site.h"
@@ -1216,8 +1268,10 @@ C IPV description via ipvdata.h.
       common/cctlnm/ctldoc,lctlf
       character LCTLF*72,CTLDOC*248
 
-      integer icascf
       common/cctl/icascf(mcom)
+      integer icascf
+
+      common/C21/IFCFG,cfgroot,LCFGF
 
 C XMLMETRICS are the metrics that could be included in the input.xml
 C in case the flag: <dump_all_data> is false
@@ -1232,18 +1286,17 @@ C nsurfinso nb of insolation sources, isurfinso() list of insolation sources.
       common/ishdirec/iaplic(MCOM,2),nsurfcalc(MCOM),lstsfcalc(MCOM,MS),
      &       nsurfinso(MCOM),isurfinso(MCOM,MS)
 
-      COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
-      LOGICAL CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
-
       integer inumXMLmetrics !counts for the number of xml metrics defined
+      character cfgroot*24
+      integer IFCFG
 
       CHARACTER OUTSTR*248,WORD*32,outs*124,outs2*124
-      character dstmp*24
+      character dstmp*24,LCFGF*72
       character word248*248
 
       character act*1  ! action requested.
       character simact*6 ! action for creating assessments.
-      character*84 odir    ! where are folders
+      character*72 odir    ! where are folders
 
 C At the head of the file is a title and a description
 C modeltitle (char 72) and modeldocblock (char 248) from model.h which can be
@@ -1253,7 +1306,7 @@ C used by scanning code to identify the contents of a silent file.
       character fs*1           ! file separator
 
 C For passing to silentmodel.
-      character actions*8,root*32,mpath*72
+      character actions*8,root*24,mpath*72,folder*12
 
 C Same as local variable actions which is passed back to calling code.
       character silentreturndirec*8
@@ -1321,6 +1374,7 @@ C in the file.
       if(act(1:1).ne.'?')then
         actions=' '
         root=' '
+        folder=' '
         mpath=' '
         modeltitle=' '
         modeldocblock=' '
@@ -1428,7 +1482,7 @@ C For each of the META specific arrays, clear values.
             szcoords(iz,isu,3)=0.0
   53      continue
           do 52 isu=1,MS
-            szhasconstr(iz,isu)=' '  ! clear MLC name and optics name
+            szhasconstr(iz,isu)=' '
             szhasoptic(iz,isu)=' '
   52      continue
   42    continue
@@ -1443,10 +1497,10 @@ C For each of the META specific arrays, clear values.
 C Check if running in dll mode.
       call isadll(dll)
 
-C Initialise meta file. and set currentfile.
+C Initialise geometry data file. and set currentfile.
       CALL EFOPSEQ(IUNIT,LFILE,1,IER)
       IF(IER.LT.0)THEN
-        write(outs,'(3a)') 'Meta file ',LFILE(1:lnblnk(LFILE)),
+        write(outs,'(3a)') 'Silent file ',LFILE(1:lnblnk(LFILE)),
      &      ' could not be opened.'
         if(dll)then
           dllsubr='SILENTREAD'
@@ -1512,12 +1566,14 @@ C *action,new,boxer,single,/tmp/boxer
         silentreturndirec=actions
         if(actions(1:3).eq.'new'.or.actions(1:6).eq.'within')then
           CALL EGETW(OUTSTR,K,root,'W','root name',IER)
+          CALL EGETW(OUTSTR,K,folder,'W','folder directive',IER)
           CALL EGETRM(OUTSTR,K,mpath,'W','model folder',IER)
 
 C Debug.
           call isunix(unixok)
           if(unixok)then
             write(6,*)  's action ',actions,' root ',root
+            write(6,*)  's folder ',folder
             write(6,*)  's mpath ',mpath
           endif
         endif
@@ -1537,7 +1593,8 @@ C Debug.
       elseif(WORD(1:7).eq.'*imgpth')then
         CALL EGETRM(OUTSTR,K,imgpth,'W','path to img',IER)
         goto 43
-      elseif(WORD(1:7).eq.'*tmppth')then  ! do not bother with this path
+      elseif(WORD(1:7).eq.'*tmppth')then
+        CALL EGETRM(OUTSTR,K,tmppth,'W','path to scratch',IER)
         goto 43
       elseif(WORD(1:7).eq.'*docpth')then
         CALL EGETRM(OUTSTR,K,docpth,'W','path to documents',IER)
@@ -1555,8 +1612,7 @@ C Debug.
         CALL EGETRM(OUTSTR,K,bsmpth,'W','path to BASESIMP',IER)
         goto 43
 
-C Databases. There may or may not be tags for specific databases. If
-C none is supplied assume the default names apply.
+C Databases
       elseif(WORD(1:4).eq.'*prm')then
 
         CALL EGETRM(OUTSTR,K,lworking,'W','material db',IER)
@@ -1813,7 +1869,7 @@ C   `five_season` followed by `typical_week` `forthnight` `user` or `season`
 
 C Feedback. simact is passed to silentmodel.
         write(outs,*) 'the value of simact is ',simact
-        call edisp(iuout,outs)
+	call edisp(iuout,outs)
 
         goto 43
       elseif(WORD(1:8).eq.'*cooling')then
@@ -2450,9 +2506,11 @@ C Process the data if the end of the file reached or if the
 C *end mark was found.
  1000 CALL ERPFREE(IUNIT,ios)
 
-C Create new model. Note the onfiguration file will be in the
+C Create new model. Note for a single folder option the
+C configuration will be in /tmp/box if mpath is /tmp/box. For the
+C distributed folder option the onfiguration file will be in the
 C folder /tmp/box/cfg if mpath is /tmp/box.
-      call silentmodel(actions,root,mpath,weather,simact,ier)
+      call silentmodel(actions,root,mpath,folder,weather,simact,ier)
 
 C Add in site information if tokens were included.
       if(havesite)then
@@ -2471,8 +2529,8 @@ C Add in site information if tokens were included.
   128   continue
       endif
 
-C Just to be sure re-scan the MLC database so that the construction
-C attributes array are filled.
+C Just to be sure re-scan the MLC database so that the string
+C array DESC is filled.
       call opendb(ier)
 
 C << location for further system level data >>
@@ -2596,7 +2654,7 @@ C the file with minimum interaction.
       SUBROUTINE METAWRITE(ifilg,LFILE,act,IER)
       integer MSZ   ! number of META zones array sizes, edit to
                     ! match MCOM in building.h
-      PARAMETER (MSZ=82)
+      PARAMETER (MSZ=72)
 #include "building.h"
 #include "model.h"
 #include "site.h"
@@ -2621,8 +2679,7 @@ C Obstruction blocks via geometry.h.
 C common zndata (VCOORD,NZNVER,NZJVN) via geometry.h
 
       common/rpath/path
-      character path*72    ! where path folders
-      character odir*84    ! where current working folder
+      character*72 path,odir    ! where path and odir are folders
 
       common/dllerr/dllsubr,dllmesg
       character dllsubr*12,dllmesg*124  ! messages if errors in dll
@@ -2635,10 +2692,10 @@ C IPV description via ipvdata.h.
       common/cctlnm/ctldoc,lctlf
       character LCTLF*72,CTLDOC*248
 
-      integer icascf
       common/cctl/icascf(mcom)
+      integer icascf
 
-      integer IZSTOCN
+      common/C21/IFCFG,cfgroot,LCFGF
       COMMON/C24/IZSTOCN(MCOM,MS)
 
 C XMLMETRICS are the metrics that could be included in the input.xml
@@ -2655,8 +2712,10 @@ C nsurfinso nb of insolation sources, isurfinso() list of insolation sources.
      &       nsurfinso(MCOM),isurfinso(MCOM,MS)
 
       integer inumXMLmetrics !counts for the number of xml metrics defined
+      character cfgroot*24
+      integer IFCFG
 
-      CHARACTER outs*124,outsd*124
+      CHARACTER outs*124,outsd*124,LCFGF*72
       character dstmp*24
 
       character act*1      ! action requested.
@@ -2672,7 +2731,7 @@ C the contents of the file via model.h.
       character fs*1           ! file separator
 
 C For passing to silentmodel.
-      character actions*8,root*32,mpath*72
+      character actions*8,root*24,mpath*72,folder*12
 
       logical dll,unixok
 
@@ -2699,7 +2758,7 @@ C Site related local variables.
       dimension i_ctl_link(MCOM),ht_Setpoint(MCOM),cl_Setpoint(MCOM)
       integer isilentncf !silent decide how many control functions needed
       character tab*1
-      integer lnzp,lnnp,lnap,lncp,lndcp,lndbp ! lengths of paths to model folders
+      integer lnzp,lnnp,lncp,lndcp,lndbp ! lengths of paths to model folders
       integer lnc  ! for length of climate file
       integer metaver  ! one for 1.1 and two for 1.2
 
@@ -2755,37 +2814,34 @@ C zone details and then write into the file.
       write(actions,'(a)') 'new'
       write(root,'(a)') cfgroot
 
-C Assume distributed folders.
+C If all of the associated folder paths are ./ then we have a
+C single folder model, otherwise use distributed folders.
       lnzp=lnblnk(zonepth)
       lnnp=lnblnk(netpth)
-      lnap=lnblnk(aimpth)
       lncp=lnblnk(ctlpth)
+      lnap=lnblnk(aimpth)
       lndcp=lnblnk(docpth)
       lndbp=lnblnk(dbspth)
+      if((lnzp+lnnp+lncp+lnap+lndcp+lndbp).lt.12)then
+        write(folder,'(a)') 'single'  ! multiple folders
+      else
+        write(folder,'(a)') 'distributed'  ! multiple folders
+      endif
       write(mpath,'(a)') cfgroot  ! model folder will take root name
 
 C Currently set the block of text to the model title.
       write(modeldocblock,'(a)')  modeltitle(1:lnblnk(modeltitle))
 
 C Site data.
-C If standard or local set weather to lclim otherwise remove the
-C path from the climate file and set the file name
+C Remove the path from the climate file and set the file name
 C only (the first 32 char) into weather.
-      if(ipathclim.eq.1.or.ipathclim.eq.2)then  ! standard or ../dbs
-        lnc=lnblnk(lclim)
-        if(lnc.lt.32)then
-          write(weather,'(a)') lclim(1:lnc)
-        else
-          write(weather,'(a)') lclim(1:31)
-        endif
+C << later introduce local/distribution logic for file name >>
+      call fdroot(LCLIM,cpath,cfile)
+      lnc=lnblnk(cfile)
+      if(lnc.lt.32)then
+        write(weather,'(a)') cfile(1:lnc)
       else
-        call fdroot(LCLIM,cpath,cfile)
-        lnc=lnblnk(cfile)
-        if(lnc.lt.32)then
-          write(weather,'(a)') cfile(1:lnc)
-        else
-          write(weather,'(a)') cfile(1:31)
-        endif
+        write(weather,'(a)') cfile(1:31)
       endif
       hoursGTM=0.0
 
@@ -2893,9 +2949,10 @@ C *meta_file
      &  modeldocblock(1:lnblnk(modeldocblock))
       write(ifilg,'(4a)',IOSTAT=IOS,ERR=13)'*date',tab,dstmp,
      &  '  # latest file modification '
-      write(ifilg,'(7a)',IOSTAT=IOS,ERR=13)'*action',tab,
+      write(ifilg,'(9a)',IOSTAT=IOS,ERR=13)'*action',tab,
      &  actions(1:lnblnk(actions)),tab,
-     &  root(1:lnblnk(root)),tab,mpath(1:lnblnk(mpath))
+     &  root(1:lnblnk(root)),tab,
+     &  folder(1:lnblnk(folder)),tab,mpath(1:lnblnk(mpath))
 
 C Include the model folder tags as in the cfg file. This will be used when
 C extracting to a set of standard ESP-r files.
@@ -2905,19 +2962,21 @@ C extracting to a set of standard ESP-r files.
      &  '  # path to networks'
       write(ifilg,'(3a)',IOSTAT=IOS,ERR=13) '*ctlpth ',ctlpth(1:lncp),
      &  '  # path to controls'
-      write(ifilg,'(3a)',IOSTAT=IOS,ERR=13) '*aimpth ',aimpth(1:lnap),
+      write(ifilg,'(3a)',IOSTAT=IOS,ERR=13) '*aimpth ',aimpth(1:lncp),
      &  '  # path to aim2'
       write(ifilg,'(3a)',IOSTAT=IOS,ERR=13) '*radpth ',radpth,
      &  '  # path to radiance files'
       write(ifilg,'(3a)',IOSTAT=IOS,ERR=13) '*imgpth ',imgpth,
      &  '  # path to project images'
+      write(ifilg,'(3a)',IOSTAT=IOS,ERR=13) '*tmppth ',tmppth,
+     &  '  # path to project scratch folder'
       write(ifilg,'(3a)',IOSTAT=IOS,ERR=13) '*docpth ',docpth(1:lndcp),
      &  '  # path to project documents'
       write(ifilg,'(3a)',IOSTAT=IOS,ERR=13) '*dbspth ',dbspth(1:lndbp),
      &  '  # path to local databases'
 
       write(ifilg,'(4a)',IOSTAT=IOS,ERR=13)'*weather_station',tab,
-     &  weather(1:lnblnk(weather)),'  # weather file'
+     &  weather(1:lnblnk(weather)),'  # climate file'
 
 C Depending on site exposure write two lines.
       if(siteexposureindex.eq.8)then
@@ -2977,8 +3036,8 @@ C line of 12 values for each included profile.
   28    CONTINUE
       endif
 
-C Write common data files related to this model.
-C Common material data has the option of two different syntax to
+C Write databases related to this model.
+C Material database has the option of two different syntax to
 C reflect whether the standard database folder is being used.
       if(ipathmat.eq.0.or.ipathmat.eq.1)then
         WRITE(ifilg,'(3A)',IOSTAT=IOS,ERR=13) '*mat  ',
@@ -2988,7 +3047,7 @@ C reflect whether the standard database folder is being used.
      &    LFMAT(1:lnblnk(LFMAT)),' # materials db'
       endif
 
-C Common constructions data has the option of two different syntax.
+C MLC database has the option of two different syntax.
       if(ipathmul.eq.0.or.ipathmul.eq.1)then
         WRITE(ifilg,'(3A)',IOSTAT=IOS,ERR=13) '*mlc  ',
      &    LFMUL(1:lnblnk(LFMUL)),' # constructions db'
@@ -2997,7 +3056,7 @@ C Common constructions data has the option of two different syntax.
      &    LFMUL(1:lnblnk(LFMUL)),' # constructions db'
       endif
 
-C Common optical data has the option of two different syntax to
+C Optical database has the option of two different syntax to
 C reflect whether the standard database folder is being used.
       if(ipathoptdb.eq.0.or.ipathoptdb.eq.1)then
         WRITE(ifilg,'(3A)',IOSTAT=IOS,ERR=13) '*opt  ',
@@ -3007,7 +3066,7 @@ C reflect whether the standard database folder is being used.
      &    LOPTDB(1:lnblnk(LOPTDB)),' # optical db'
       endif
 
-C Pressure coefficients have the option of two different syntax to
+C Pressure coef database has the option of two different syntax to
 C reflect whether the standard database folder is being used.
       if(ipathapres.eq.0.or.ipathapres.eq.1)then
         WRITE(ifilg,'(3A)',IOSTAT=IOS,ERR=13) '*prs  ',
@@ -3016,8 +3075,6 @@ C reflect whether the standard database folder is being used.
         WRITE(ifilg,'(3A)',IOSTAT=IOS,ERR=13) '*stdprs  ',
      &    LAPRES(1:lnblnk(LAPRES)),' # pressure coef db'
       endif
-
-C Common event profiles (ditto).
       if(ipathprodb.eq.0.or.ipathprodb.eq.1)then
         WRITE(ifilg,'(3A)',IOSTAT=IOS,ERR=13) '*evn  ',
      &    LPRFDB(1:lnblnk(LPRFDB)),' # profiles db'
@@ -3025,23 +3082,12 @@ C Common event profiles (ditto).
         WRITE(ifilg,'(3A)',IOSTAT=IOS,ERR=13) '*stdevn  ',
      &    LPRFDB(1:lnblnk(LPRFDB)),' # profiles db'
       endif
-
-C Common active materials (ditto).
       if(ipathmsc.eq.0.or.ipathmsc.eq.1)then
         WRITE(ifilg,'(3A)',IOSTAT=IOS,ERR=13) '*mscldb  ',
      &    MCMPDBFL(1:lnblnk(MCMPDBFL)),' # miscel cmp db'
       elseif(ipathmsc.eq.2)then
         WRITE(ifilg,'(3A)',IOSTAT=IOS,ERR=13) '*stdmscldb  ',
      &    MCMPDBFL(1:lnblnk(MCMPDBFL)),' # miscel cmp db'
-      endif
-
-C Common mould isopleths (ditto).
-      if(ipathmould.eq.0.or.ipathmould.eq.1)then
-        WRITE(ifilg,'(3A)',IOSTAT=IOS,ERR=13) '*mould  ',
-     &    lfmould(1:lnblnk(lfmould)),' # mould isopleths'
-      elseif(ipathmould.eq.2)then
-        WRITE(ifilg,'(3A)',IOSTAT=IOS,ERR=13) '*stdmould  ',
-     &    lfmould(1:lnblnk(lfmould)),' # mould isopleths'
       endif
 
 C << plant template file needs to be written >>

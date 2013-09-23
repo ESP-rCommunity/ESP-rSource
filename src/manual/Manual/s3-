@@ -622,10 +622,10 @@ which you have permission to access but not to modify.  If
 you require a personal version you will need to copy it
 into one of your own directories.  The command is
 .br
-\fIcp  /usr/esru/esp-r/databases/constr.db1.a  constr.db1.a\fP  From
+\fIcp  /usr/esru/esp-r/databases/constr.db1  constr.db1\fP  From
 the "Project Manager" menu you can then enter the "Database maintenance"
-facility and select the "Materials" item giving
-the name as \fIconstr.db1.a\fP  You may now add, delete and edit materials
+facility and select the "Construction elements" item giving
+the name as \fIconstr.db1\fP  You may now add, delete and edit materials
 to this private database
 without affecting other users.
 T}

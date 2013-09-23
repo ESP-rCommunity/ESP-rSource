@@ -6,15 +6,11 @@ PROG = pdb$(EXE)
 .F.o:
 	$(MFC) $(FFLAGS) -c $<
 
-MODULE_OBJECTS = startup.o
+OBJECTS = pdb.o c2fdum.o pc_manip.o pcedit.o pcentr.o pcompi.o pcwrt.o \
+	  pshell.o startup.o
 
-OBJECTS = pdb.o c2fdum.o pcexp.o pc_manip.o pcedit.o pcentr.o pcompi.o \
-	  pcwrt.o pshell.o
-
-MODULES = start_up.mod parse_command_line.mod
-
-$(PROG): $(MODULE_OBJECTS) $(OBJECTS)
-	$(MFC) $(LD_FLAGS) -o $(PROG) $(FFLAGS) $(MODULE_OBJECTS) $(OBJECTS) $(ULIBS)
+$(PROG): $(OBJECTS)
+	$(MFC) $(LD_FLAGS) -o $(PROG) $(FFLAGS) $(OBJECTS) $(ULIBS)
 
 c2fdum.F:
 	rm -f c2fdum.F
@@ -30,5 +26,5 @@ install:
 	@if [ -f $(PROG) ]; then cp $(PROG) $(ESPBinDir); fi
 
 clean:
-	rm -f core $(PROG) $(PROG).exe $(MODULE_OBJECTS) $(OBJECTS) $(MODULES) \
-	c2fdum.F startup.F
+	rm -f core $(PROG) $(PROG).exe $(OBJECTS) \
+	c2fdum.F startup.F 

@@ -14,20 +14,14 @@ C------------------------
       integer igwid,igheight  ! for use with axiscale
       integer ipos,isize      ! for use with etlabel
       integer iupdown,isym    ! passed to etplot
-      integer iigl,iigr,iigt,iigb,iigw,iigwh
 #else
       integer*8 igwid,igheight  ! for use with axiscale
       integer*8 ipos,isize      ! for use with etlabel
       integer*8 iupdown,isym    ! passed to etplot
-      integer*8 iigl,iigr,iigt,iigb,iigw,iigwh
 #endif
 
       LOGICAL J1J2
       IF(MMOD.LT.0)RETURN
-
-C Cast values for linescale.
-      iigl=igl;iigr=igr;iigt=igt;iigb=igb;iigw=igw;iigwh=igwh
-
       call startbuffer()
       igwid=igw
       igheight=igwh
@@ -36,7 +30,7 @@ C Cast values for linescale.
       scap=sca*0.2
       addx=(FLOAT(igw)*0.4)/scap
       addy=(FLOAT(igwh)*0.4)/scap
-      call linescale(iigl,addx,scap,iigb,addy,scap)
+      call linescale(igl,addx,scap,igb,addy,scap)
 
       X1=XMN-1.
       Y1=YMN-1.

@@ -24,22 +24,17 @@
 #include <glib.h>
 #include <esp-r.h>
 #include <commons.h>
-#include <fc_commons.h>
 
 #define ESP_LIST_MAIN
 #include <esp_list.h>
 #undef ESP_LIST_MAIN
 
 /* Global variable definitions start here */
-extern chgeye_();     /* in esrucom/common3dv.F */
-extern chgsun_();     /* in esrucom/common3dv.F */
-extern chgzonpik_();  /* in esrucom/common3dv.F */
-extern chgzonpikarray_();
 extern FILE *wwc;
 extern int  wwc_ok;   /* from esru_util.c */
 extern int  wwc_macro;   /* from esru_util.c */
 
-GdkColor cscale[49], zscale[100], gscale[85];
+GdkColor cscale[49], zscale[100], gscale[49];
 long int ncscale;   /* number of assigned colours in colour scale */
 long int ngscale;   /* number of assigned colours in grey scale */
 long int ngr;       /* number of assigned interface colours */
@@ -75,11 +70,12 @@ gint f_height;
 gint f_width;
 
 char cappl[5];	/* f77 application name */
-/* char cfgroot[32];	f77 project root name    */
+/* char cfgroot[25];	f77 project root name    */
 /* char path[73];	f77 project path    */
 /* char upath[73];	f77 users path    */
 /* char imgpth[25];	f77 relative path to images    */
 /* char docpth[25];	f77 relative path to documents    */
+/* char tmppth[25];	f77 relative path to scratch folder    */
 char capt_wf_exe[73];	/* command to execute for capture wire frame */
 char capt_tf_file[73];	/* file for text feedback buffer dump */
 char capt_all_exe[73];	/* command for capture all of display */
@@ -131,29 +127,13 @@ void calculate_font_metrics(void){
       pfd = pango_font_description_from_string("Serif,Medium 14");
 #endif
     else if(disp_fnt ==4)
-#ifdef SUN
       pfd = pango_font_description_from_string("Courier,Medium 8");
-#else
-      pfd = pango_font_description_from_string("Serif,Medium 8");
-#endif
     else if(disp_fnt == 5)
-#ifdef SUN
       pfd = pango_font_description_from_string("Courier,Medium 10");
-#else
-      pfd = pango_font_description_from_string("Serif,Medium 10");
-#endif
     else if(disp_fnt == 6)
-#ifdef SUN
       pfd = pango_font_description_from_string("Courier,Medium 12");
-#else
-      pfd = pango_font_description_from_string("Serif,Medium 12");
-#endif
     else if(disp_fnt == 7)
-#ifdef SUN
       pfd = pango_font_description_from_string("Courier,Medium 14");
-#else
-      pfd = pango_font_description_from_string("Serif,Medium 14");
-#endif
 
     context = gtk_widget_get_pango_context (text);
     metrics = pango_context_get_metrics (context, pfd,
@@ -192,7 +172,7 @@ static gboolean configure_event( GtkWidget *widget,
                      widget->window,
                      0, 0, 0, 0, -1, -1);*/
     g_object_unref(gr_image);
-    // fprintf(stderr,"configure_event unref gr_image\n");
+/* debug fprintf(stderr,"configure_event unref gr_image\n"); */
   }
 
   gr_image = gdk_pixmap_new(widget->window,
@@ -210,7 +190,7 @@ static gboolean configure_event( GtkWidget *widget,
                      0, 0, 0, 0,
 		     widget->allocation.width, widget->allocation.height);
                      */
-// fprintf(stderr,"configure_event widget %d %d \n",widget->allocation.width,widget->allocation.height);
+/* debug fprintf(stderr,"configure_event widget %d %d \n",widget->allocation.width,widget->allocation.height); */
 
   return TRUE;
 }
@@ -312,40 +292,40 @@ GtkWidget *create_text( void )
 #else
      pfd = pango_font_description_from_string("Serif,Medium 8");
 #endif
-     // g_print("create_text configure font medium 8\n");
+     /* g_print("create_text configure font medium 8\n");   debug */
    } else if (disp_fnt == 1 ) {
 #ifdef SUN
      pfd = pango_font_description_from_string("Courier,Medium 10");
 #else
      pfd = pango_font_description_from_string("Serif,Medium 10");
 #endif
-     // g_print("create_text configure font medium 10\n");
+     /* g_print("create_text configure font medium 10\n");  debug */
    } else if (disp_fnt == 2 ) {
 #ifdef SUN
      pfd = pango_font_description_from_string("Courier,Medium 12");
 #else
      pfd = pango_font_description_from_string("Serif,Medium 12");
 #endif
-     // g_printf("create_text configure font medium 12\n");
+     /* g_printf("create_text configure font medium 12\n");  debug */
    } else if (disp_fnt == 3 ) {
 #ifdef SUN
      pfd = pango_font_description_from_string("Courier,Medium 14");
 #else
      pfd = pango_font_description_from_string("Serif,Medium 14");
 #endif
-     // g_print("create_text configure font medium 14\n");
+     /* g_print("create_text configure font medium 14\n");  debug */
    } else if (disp_fnt == 4 ) {
      pfd = pango_font_description_from_string("Courier,Medium 8");
-     // g_print("create_text configure courier medium 8\n");
+     /* g_print("create_text configure courier medium 8\n");  debug */
    } else if (disp_fnt == 5 ) {
      pfd = pango_font_description_from_string("Courier,Medium 10");
-     // g_print("create_text configure courier medium 10\n");
+     /* g_print("create_text configure courier medium 10\n");  debug */
    } else if (disp_fnt == 6 ) {
      pfd = pango_font_description_from_string("Courier,Medium 12");
-     // g_print("create_text configure courier medium 12\n");
+     /* g_print("create_text configure courier medium 12\n");  debug */
    } else if (disp_fnt == 7 ) {
      pfd = pango_font_description_from_string("Courier,Medium 14");
-     // g_print("create_text configure courier medium 14\n");
+     /* g_print("create_text configure courier medium 14\n");  debug */
    }
    gtk_widget_modify_font(text, pfd);
    pango_font_description_free(pfd);
@@ -408,8 +388,10 @@ void text_feedback_reset ( void)
 
    gint g_width,g_height;	/* size of the graphics widget */
    long int b_top, b_bottom, b_left, b_right; /* pixels at top/bottom/left/right */
+   gint textf_pix_ht;	/* pixel height of text feedback (based on number of lines requested) */
    long int ifsc,itfsc,imfsc,lttyc; /* parameters must be long int */
-   long int gw,gh;             /* to match fortran conventions */
+   long int gw,gh,gdw,gdh,g3w,g3h;             /* to match fortran conventions */
+   long int cl,cr,ct,cb,vl,vr,vt,vb;
 
 /* First find the size of the graphic window. Note: do this prior to changing
  * the text feedback display font by using Pango context previously setup in esp-r.c */
@@ -437,61 +419,61 @@ void text_feedback_reset ( void)
      f_height = font_calculations_array[serif_small].f_height;   // pre-calculated value of f_height is read from the array
      f_width  = font_calculations_array[serif_small].f_width;    // pre-calculated value of f_width  is read from the array
 
-     // fprintf(stderr,"text_feedback_reset at serif medium 8 change font height and width is %d %d", f_height, f_width);
+     /* fprintf(stderr,"text_feedback_reset at serif medium 8 change font height and width is %d %d", f_height, f_width); debug */
 
    } else if (disp_fnt == 1 ) {
      pfd = pango_font_description_from_string("Serif,Medium 10");
      f_height = font_calculations_array[serif_medium].f_height;
      f_width  = font_calculations_array[serif_medium].f_width;
 
-     // fprintf(stderr,"text_feedback_reset at serif medium 10 change font height and width is %d %d", f_height, f_width);
+     /* fprintf(stderr,"text_feedback_reset at serif medium 10 change font height and width is %d %d", f_height, f_width); debug */
 
    } else if (disp_fnt == 2 ) {
      pfd = pango_font_description_from_string("Serif,Medium 12");
      f_height = font_calculations_array[serif_large].f_height;
      f_width  = font_calculations_array[serif_large].f_width;
 
-     // fprintf(stderr,"text_feedback_reset at serif medium 12 change font height and width is %d %d", f_height, f_width);
+     /* fprintf(stderr,"text_feedback_reset at serif medium 12 change font height and width is %d %d", f_height, f_width); debug */
 
    } else if (disp_fnt == 3 ) {
      pfd = pango_font_description_from_string("Serif,Medium 14");
      f_height = font_calculations_array[serif_largest].f_height;
      f_width  = font_calculations_array[serif_largest].f_width;
 
-     // fprintf(stderr,"text_feedback_reset at serif medium 14 change font height and width is %d %d", f_height, f_width);
+     /* fprintf(stderr,"text_feedback_reset at serif medium 14 change font height and width is %d %d", f_height, f_width); debug */
 
    } else if (disp_fnt == 4 ) {
      pfd = pango_font_description_from_string("Courier,Medium 8");
      f_height = font_calculations_array[courier_small].f_height;
      f_width  = font_calculations_array[courier_small].f_width;
 
-     // fprintf(stderr,"text_feedback_reset at courier medium 8 change font height and width is %d %d", f_height, f_width);
+     /* fprintf(stderr,"text_feedback_reset at courier medium 8 change font height and width is %d %d", f_height, f_width); debug */
 
    } else if (disp_fnt == 5 ) {
      pfd = pango_font_description_from_string("Courier,Medium 10");
      f_height = font_calculations_array[courier_medium].f_height;
      f_width  = font_calculations_array[courier_medium].f_width;
 
-     // fprintf(stderr,"text_feedback_reset at courier medium 10 change font height and width is %d %d", f_height, f_width);
+     /* fprintf(stderr,"text_feedback_reset at courier medium 10 change font height and width is %d %d", f_height, f_width); debug */
 
    } else if (disp_fnt == 6 ) {
      pfd = pango_font_description_from_string("Courier,Medium 12");
      f_height = font_calculations_array[courier_large].f_height;
      f_width  = font_calculations_array[courier_large].f_width;
 
-     // fprintf(stderr,"text_feedback_reset at courier medium 12 change font height and width is %d %d", f_height, f_width);
+     /* fprintf(stderr,"text_feedback_reset at courier medium 12 change font height and width is %d %d", f_height, f_width); debug */
 
    } else if (disp_fnt == 7 ) {
      pfd = pango_font_description_from_string("Courier,Medium 14");
      f_height = font_calculations_array[courier_largest].f_height;
      f_width  = font_calculations_array[courier_largest].f_width;
 
-     // fprintf(stderr,"text_feedback_reset at courier medium 14 change font height and width is %d %d", f_height, f_width);
+     /* fprintf(stderr,"text_feedback_reset at courier medium 14 change font height and width is %d %d", f_height, f_width); debug */
    }
 
    gtk_widget_modify_font(text, pfd);
 
-   // fprintf(stderr,"text_feedback_reset text feedback pixels %d %d \n",text->allocation.width,text->allocation.height);
+   /* fprintf(stderr,"text_feedback_reset text feedback pixels %d %d \n",text->allocation.width,text->allocation.height);  debug */
 
    pango_font_description_free(pfd);
 
@@ -514,8 +496,10 @@ void emenu_feedback_reset ( void)
    gint f_width;	/* pixel width of default font */
    gint g_width,g_height;	/* size of the graphics widget */
    long int b_top, b_bottom, b_left, b_right; /* pixels at top/bottom/left/right */
+   gint textf_pix_ht;	/* pixel height of text feedback (based on number of lines requested) */
    long int ifsc,itfsc,imfsc,lttyc; /* parameters must be long int */
-   long int gw,gh;             /* to match fortran conventions */
+   long int gw,gh,gdw,gdh,g3w,g3h;             /* to match fortran conventions */
+   long int cl,cr,ct,cb,vl,vr,vt,vb;
 
 /* the following would not be necessary if graphicf extents were remembered globally */
 /* << fix this >> */
@@ -532,9 +516,9 @@ void emenu_feedback_reset ( void)
    b_right = (long int) (g_width - (f_width * c3dcr));	/* pixel @ right  */
    gh = b_bottom - b_top;  /* box within axis pixel height  */
    gw = b_right - b_left;  /* box within axis pixel width */
-   // fprintf(stderr,"other box info b_top %ld b_bottom %ld b_left %ld b_right %ld\n",b_top,b_bottom,b_left,b_right);
-   // fprintf(stderr,"box within axis gh %ld gw %ld\n",gh,gw);
-   // fprintf(stderr,"emenu_feedback_reset text feedback pixels %d %d \n",text->allocation.width,text->allocation.height);
+   /* fprintf(stderr,"other box info b_top %ld b_bottom %ld b_left %ld b_right %ld\n",b_top,b_bottom,b_left,b_right);  debug */
+   /* fprintf(stderr,"box within axis gh %ld gw %ld\n",gh,gw);  debug */
+   /* fprintf(stderr,"emenu_feedback_reset text feedback pixels %d %d \n",text->allocation.width,text->allocation.height);  debug */
 
 /* create font description to use for resetting the menu font << dosn't quite work >>.
  * Use pango_font_get_metrics to get font width and height.
@@ -571,8 +555,10 @@ void graphic_feedback_reset ( void)
 
    gint g_width,g_height;	/* size of the graphics widget */
    long int b_top, b_bottom, b_left, b_right; /* pixels at top/bottom/left/right */
+   gint textf_pix_ht;	/* pixel height of text feedback (based on number of lines requested) */
    long int ifsc,itfsc,imfsc,lttyc; /* parameters must be long int */
-   long int gw,gh;             /* to match fortran conventions */
+   long int gw,gh,gdw,gdh,g3w,g3h;             /* to match fortran conventions */
+   long int cl,cr,ct,cb,vl,vr,vt,vb;
 
 /* Create font description to use for resetting the graphic font.
  * Use pango_font_get_metrics to get font width and height. */
@@ -586,7 +572,7 @@ void graphic_feedback_reset ( void)
      f_height = font_calculations_array[serif_small].f_height;   // pre-calculated value of f_height is read from the array
      f_width  = font_calculations_array[serif_small].f_width;    // pre-calculated value of f_width  is read from the array
 #endif
-     // g_print("viewtext graphic font medium 8\n");
+/*     g_print("viewtext graphic font medium 8\n");  debug */
  } else if (butn_fnt == 1 ) {
 #ifdef SUN
      pfd = pango_font_description_from_string("Courier,Medium 10");
@@ -597,7 +583,7 @@ void graphic_feedback_reset ( void)
      f_height = font_calculations_array[serif_medium].f_height;
      f_width  = font_calculations_array[serif_medium].f_width;
 #endif
-     // g_print("viewtext graphic font medium 10\n");
+/*     g_print("viewtext graphic font medium 10\n");  debug */
  } else if (butn_fnt == 2 ) {
 #ifdef SUN
      pfd = pango_font_description_from_string("Courier,Medium 12");
@@ -608,7 +594,7 @@ void graphic_feedback_reset ( void)
      f_height = font_calculations_array[serif_large].f_height;
      f_width  = font_calculations_array[serif_large].f_width;
 #endif
-    // g_print("viewtext graphic font medium 12\n");
+/*    g_print("viewtext graphic font medium 12\n");  debug */
  } else if (butn_fnt == 3 ) {
 #ifdef SUN
      pfd = pango_font_description_from_string("Courier,Medium 14");
@@ -619,47 +605,47 @@ void graphic_feedback_reset ( void)
      f_height = font_calculations_array[serif_largest].f_height;
      f_width  = font_calculations_array[serif_largest].f_width;
 #endif
-     // fprintf(stderr,"re-configure graphic font medium 10\n");
+     /* fprintf(stderr,"re-configure graphic font medium 10\n"); debug */
    } else if (butn_fnt == 4 ) {
      pfd = pango_font_description_from_string("Courier,Medium 8");
      f_height = font_calculations_array[courier_small].f_height;
      f_width  = font_calculations_array[courier_small].f_width;
 
-     // fprintf(stderr,"re-configure graphic font medium 12\n");
+     /* fprintf(stderr,"re-configure graphic font medium 12\n"); debug */
    }else if (butn_fnt == 5 ) {
      pfd = pango_font_description_from_string("Courier,Medium 10");
      f_height = font_calculations_array[courier_medium].f_height;
      f_width  = font_calculations_array[courier_medium].f_width;
 
-     // fprintf(stderr,"re-configure graphic font medium 10\n");
+     /* fprintf(stderr,"re-configure graphic font medium 10\n"); debug */
    } else if (butn_fnt == 6 ) {
      pfd = pango_font_description_from_string("Courier,Medium 12");
      f_height = font_calculations_array[courier_large].f_height;
      f_width  = font_calculations_array[courier_large].f_width;
 
-     // fprintf(stderr,"re-configure graphic font medium 12\n");
+     /* fprintf(stderr,"re-configure graphic font medium 12\n"); debug */
    }else if (butn_fnt == 7 ) {
      pfd = pango_font_description_from_string("Courier,Medium 14");
      f_height = font_calculations_array[courier_largest].f_height;
      f_width  = font_calculations_array[courier_largest].f_width;
 
-     // fprintf(stderr,"re-configure graphic font medium 10\n");
+     /* fprintf(stderr,"re-configure graphic font medium 10\n"); debug */
    }
    gtk_widget_modify_font(graphic, pfd);	/* << ?? >> */
 
    pango_font_description_free(pfd);
 
    gdk_drawable_get_size(graphic->window,&g_width,&g_height);
-   // fprintf(stderr,"graphic font height width is %d %d gr_w %d gr_h %d\n", f_height,f_width,g_width,g_height);
+   /* fprintf(stderr,"graphic font height width is %d %d gr_w %d gr_h %d\n", f_height,f_width,g_width,g_height);  debug */
    b_top = (long int) (0 + (f_height * c3dct));	/* pixel @ top    */
    b_bottom = (long int) (g_height - 9 - (f_height * c3dcb));	/* pixel @ bottom */
    b_left = (long int) (0 + 9 + (f_width * c3dcl));	/* pixel @ left   */
    b_right = (long int) (g_width - (f_width * c3dcr));	/* pixel @ right  */
    gh = b_bottom - b_top;  /* box within axis pixel height  */
    gw = b_right - b_left;  /* box within axis pixel width */
-   // fprintf(stderr,"graphic box info b_top %ld b_bottom %ld b_left %ld b_right %ld\n",b_top,b_bottom,b_left,b_right);
-   // fprintf(stderr,"box within axis gh %ld gw %ld\n",gh,gw);
-   // fprintf(stderr,"graphic_feedback_reset text feedback pixels %d %d \n",text->allocation.width,text->allocation.height);
+   /* fprintf(stderr,"graphic box info b_top %ld b_bottom %ld b_left %ld b_right %ld\n",b_top,b_bottom,b_left,b_right);  debug */
+   /* fprintf(stderr,"box within axis gh %ld gw %ld\n",gh,gw);  debug */
+   /* fprintf(stderr,"graphic_feedback_reset text feedback pixels %d %d \n",text->allocation.width,text->allocation.height);  debug */
 
    ifsc=butn_fnt; itfsc=disp_fnt; imfsc=menu_fnt;
    lttyc=10;	/* << this is a place holder >> */
@@ -784,7 +770,7 @@ void sml_menu_gph_cb (GtkWidget *widget, gpointer resize)
 /* **** Define small/medium/large option menu for use in graphics font resizing
  * New radio buttons and labels are added in the graphic feedback submenu to give
  * users more flexibility in choice of fonts the user can now choose any one of
- * the fonts from Serif small, medium, large and largest and Courier small, medium,
+  * the fonts from Serif small, medium, large and largest and Courier small, medium,
  * large, largest
  */
 static GtkWidget *sml_menu_gph ( void)
@@ -953,14 +939,21 @@ void esru_elev_down ( void)
   chgelev_(&elevchange);  /* Deal with user selection of azimuth decrement  */
 }
 
-/* esru_chg_sun() - send message to fortran to setup solar view. */
-void esru_chg_sun ( void)
+/* esru_wire_pick() - send message to fortran to rotate wireframe down. */
+void esru_wire_pick ( void)
 {
-  long int isunhour;	/* current value to pass to fortran. */
-  isunhour = 0;	/* initial up */
-  chgsun_(&isunhour);  /* Deal with user selection of solar view  */
+  long int avail_wire;	/* current value of wire_avail to pass to fortran. */
+  avail_wire = wire_avail;
+  wirepk_(&avail_wire);  /* Deal with user selection of wireframe control  */
 }
 
+/* esru_wire_tog() - send message to fortran to rotate wireframe down. */
+void esru_wire_tog ( void)
+{
+  long int avail_wire;	/* current value of wire_avail to pass to fortran. */
+  avail_wire = wire_avail;
+  wiretog_(&avail_wire);  /* Deal with user selection of wireframe control  */
+}
 
 /* putzonename(name) - add name to zonenames char array */
 void putzonename_ (char* name, long int* id,  int length)
@@ -969,17 +962,17 @@ void putzonename_ (char* name, long int* id,  int length)
    int zoneid = (int) *id;
 
    name_local = g_strndup(name, (gsize) length);
-   // fprintf(stderr,"number of zone %d\n", zoneid);
-   // fprintf(stderr,"name of zone %s\n",name_local);
+   //fprintf(stderr,"number of zone %d\n", zoneid);
+   //fprintf(stderr,"name of zone %s\n",name_local);
    /* copy local string to char array*/
    strcpy(zonenames[zoneid-1],name_local);
-   // fprintf(stderr,"zone name%s\n",zonenames[zoneid-1]);
+   //fprintf(stderr,"zone name%s\n",zonenames[zoneid-1]);
 }
 
 /* esru_wire_ctl() - wireframe control.
-    This routine alters the contents of the following struct directly:
-      cray2
-      cimage
+    This routine alters the contents of the following common block/struct directly:
+      ray2
+      image
     On pressing 'apply' the fortran routine GDUPDATE is called.
     On pressing 'OK' GDUPDATE is called and the dialog closed.*/
 void esru_wire_ctl ( void)
@@ -999,21 +992,16 @@ void esru_wire_ctl ( void)
    GtkWidget *DisplaySurfaceNormals, *DisplaySiteGrid, *DisplaySiteOrigin;
    GtkWidget *GridSpacingOtimum;
    GtkObject *GridSpacingDistance;
-   GtkWidget *ViewPerspective, *ViewPlan, *ViewEastElev, *ViewNorthElev;
+   GtkWidget *ViewPerspective, *ViewPlan, *ViewEastElev, *ViewNorthElev, *ViewFromSun;
    GtkWidget *zone_button[MCOM];
    GtkWidget *IncludeAll, *IncludeSurfaces, *IncludeExternal, *IncludePartition;
    GtkWidget *IncludeSimilar, *IncludeSurObsGrnd, *IncludeGrnd;
    GtkWidget *HighDefault, *HighConstr, *HighOpaque, *HighTrans, *HighPartAtt;
 
-   gint izone, itchar, ichar, result;
-   guint nrows, irow, icol;
-   int curindex;
+   gint nrows, irow, icol, izone, itchar, ichar, result;
    int no_valid_event;
    long int ibx,iby,more;	/* set default position of help */
    long int ipflg,iuresp;	/* response from pop-up help */
-   long int remembernzg;        /* remember how many zones have boxes ticked backup to cgzonpik_  */
-                                /* in 64 bit gzonepik_ structure being messed around from fortran */
-   long int rememberncomp;      /* local variable for number of zones
 
    esru_ask_wire();	/* instanciate the help associated with this interface */
 
@@ -1030,16 +1018,16 @@ void esru_wire_ctl ( void)
    hbox = gtk_hbox_new (FALSE, 1);
    label = gtk_label_new ("Eye point (x,y,z):");
    gtk_container_add (GTK_CONTAINER (hbox),label);
-   EyePointValueX = gtk_adjustment_new ((gdouble) cimage_.EYEM[0], -G_MAXFLOAT, G_MAXFLOAT, 0.5, 5., 0.);
-   spinner = gtk_spin_button_new (GTK_ADJUSTMENT (EyePointValueX), 1., 1);
+   EyePointValueX = gtk_adjustment_new ((gdouble) image_.EYEM[0], -G_MAXFLOAT, G_MAXFLOAT, 1., 10., 10.);
+   spinner = gtk_spin_button_new (GTK_ADJUSTMENT (EyePointValueX), 1., 0);
    gtk_spin_button_set_wrap (GTK_SPIN_BUTTON (spinner), TRUE);
    gtk_container_add (GTK_CONTAINER (hbox),spinner);
-   EyePointValueY = gtk_adjustment_new ((gdouble) cimage_.EYEM[1], -G_MAXFLOAT, G_MAXFLOAT, 0.5, 5., 0.);
-   spinner = gtk_spin_button_new (GTK_ADJUSTMENT (EyePointValueY), 1., 1);
+   EyePointValueY = gtk_adjustment_new ((gdouble) image_.EYEM[1], -G_MAXFLOAT, G_MAXFLOAT, 1., 10., 10.);
+   spinner = gtk_spin_button_new (GTK_ADJUSTMENT (EyePointValueY), 1., 0);
    gtk_spin_button_set_wrap (GTK_SPIN_BUTTON (spinner), TRUE);
    gtk_container_add (GTK_CONTAINER (hbox),spinner);
-   EyePointValueZ = gtk_adjustment_new ((gdouble) cimage_.EYEM[2], -G_MAXFLOAT, G_MAXFLOAT, 1., 10., 0.);
-   spinner = gtk_spin_button_new (GTK_ADJUSTMENT (EyePointValueZ), 1., 1);
+   EyePointValueZ = gtk_adjustment_new ((gdouble) image_.EYEM[2], -G_MAXFLOAT, G_MAXFLOAT, 1., 10., 10.);
+   spinner = gtk_spin_button_new (GTK_ADJUSTMENT (EyePointValueZ), 1., 0);
    gtk_spin_button_set_wrap (GTK_SPIN_BUTTON (spinner), TRUE);
    gtk_container_add (GTK_CONTAINER (hbox),spinner);
    gtk_container_add (GTK_CONTAINER (vbox),hbox);
@@ -1048,16 +1036,16 @@ void esru_wire_ctl ( void)
    hbox = gtk_hbox_new (FALSE, 1);
    label = gtk_label_new ("View point (x,y,z):");
    gtk_container_add (GTK_CONTAINER (hbox),label);
-   ViewPointValueX = gtk_adjustment_new ((gdouble) cimage_.VIEWM[0], -G_MAXFLOAT, G_MAXFLOAT, 0.5, 5., 0.);
-   spinner = gtk_spin_button_new (GTK_ADJUSTMENT (ViewPointValueX), 1., 1);
+   ViewPointValueX = gtk_adjustment_new ((gdouble) image_.VIEWM[0], -G_MAXFLOAT, G_MAXFLOAT, 1., 10., 10.);
+   spinner = gtk_spin_button_new (GTK_ADJUSTMENT (ViewPointValueX), 1., 0);
    gtk_spin_button_set_wrap (GTK_SPIN_BUTTON (spinner), TRUE);
    gtk_container_add (GTK_CONTAINER (hbox),spinner);
-   ViewPointValueY = gtk_adjustment_new ((gdouble) cimage_.VIEWM[1], -G_MAXFLOAT, G_MAXFLOAT, 0.5, 5., 0.);
-   spinner = gtk_spin_button_new (GTK_ADJUSTMENT (ViewPointValueY), 1., 1);
+   ViewPointValueY = gtk_adjustment_new ((gdouble) image_.VIEWM[1], -G_MAXFLOAT, G_MAXFLOAT, 1., 10., 10.);
+   spinner = gtk_spin_button_new (GTK_ADJUSTMENT (ViewPointValueY), 1., 0);
    gtk_spin_button_set_wrap (GTK_SPIN_BUTTON (spinner), TRUE);
    gtk_container_add (GTK_CONTAINER (hbox),spinner);
-   ViewPointValueZ = gtk_adjustment_new ((gdouble) cimage_.VIEWM[2], -G_MAXFLOAT, G_MAXFLOAT, 0.5, 5., 0.);
-   spinner = gtk_spin_button_new (GTK_ADJUSTMENT (ViewPointValueZ), 1., 1);
+   ViewPointValueZ = gtk_adjustment_new ((gdouble) image_.VIEWM[2], -G_MAXFLOAT, G_MAXFLOAT, 1., 10., 10.);
+   spinner = gtk_spin_button_new (GTK_ADJUSTMENT (ViewPointValueZ), 1., 0);
    gtk_spin_button_set_wrap (GTK_SPIN_BUTTON (spinner), TRUE);
    gtk_container_add (GTK_CONTAINER (hbox),spinner);
    gtk_container_add (GTK_CONTAINER (vbox),hbox);
@@ -1068,13 +1056,13 @@ void esru_wire_ctl ( void)
    gtk_container_add (GTK_CONTAINER (hbox),label);
    ViewBoundOptimum = gtk_check_button_new_with_label ("optimum");
    gtk_container_add (GTK_CONTAINER (hbox),ViewBoundOptimum);
-   if (cray2_.ITBND == 1 ) {
+   if (ray2_.ITBND == 1 ) {
      gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (ViewBoundOptimum), TRUE);
    }
    label = gtk_label_new ("angle (deg):");
    gtk_container_add (GTK_CONTAINER (hbox),label);
-   ViewAngleValue = gtk_adjustment_new ((gdouble) cimage_.ANG, 0.001, 90., 0.2, 5., 0.);
-   spinner = gtk_spin_button_new (GTK_ADJUSTMENT (ViewAngleValue), 1., 1);
+   ViewAngleValue = gtk_adjustment_new ((gdouble) image_.ANG, 0.001, 90., 1., 10., 10.);
+   spinner = gtk_spin_button_new (GTK_ADJUSTMENT (ViewAngleValue), 1., 0);
    gtk_spin_button_set_wrap (GTK_SPIN_BUTTON (spinner), FALSE);
    gtk_container_add (GTK_CONTAINER (hbox),spinner);
    gtk_container_add (GTK_CONTAINER (vbox),hbox);
@@ -1090,32 +1078,32 @@ void esru_wire_ctl ( void)
    DisplayZoneName = gtk_check_button_new_with_label ("Zone names");
    /* attach to column and row (note different order to above!) */
    gtk_table_attach_defaults (GTK_TABLE (table), DisplayZoneName, 0, 1, 0, 1);
-   if (cray2_.ITZNM == 0 ) {
+   if (ray2_.ITZNM == 0 ) {
      gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (DisplayZoneName), TRUE);
    }
    DisplaySurfaceName = gtk_check_button_new_with_label ("Surface names");
    gtk_table_attach_defaults (GTK_TABLE (table), DisplaySurfaceName, 0, 1, 1, 2);
-   if (cray2_.ITSNM == 0 ) {
+   if (ray2_.ITSNM == 0 ) {
      gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (DisplaySurfaceName), TRUE);
    }
    DisplayVertexNumbers = gtk_check_button_new_with_label ("Vertex numbers");
    gtk_table_attach_defaults (GTK_TABLE (table), DisplayVertexNumbers, 1, 2, 0, 1);
-   if (cray2_.ITVNO == 0 ) {
+   if (ray2_.ITVNO == 0 ) {
      gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (DisplayVertexNumbers), TRUE);
    }
    DisplaySurfaceNormals = gtk_check_button_new_with_label ("Surface normals");
    gtk_table_attach_defaults (GTK_TABLE (table), DisplaySurfaceNormals, 1, 2, 1, 2);
-   if (cray2_.ITSNR == 0 ) {
+   if (ray2_.ITSNR == 0 ) {
      gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (DisplaySurfaceNormals), TRUE);
    }
    DisplaySiteGrid = gtk_check_button_new_with_label ("Site grid");
    gtk_table_attach_defaults (GTK_TABLE (table), DisplaySiteGrid, 2, 3, 0, 1);
-   if (cray2_.ITGRD == 0 ) {
+   if (ray2_.ITGRD == 0 ) {
      gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (DisplaySiteGrid), TRUE);
    }
    DisplaySiteOrigin = gtk_check_button_new_with_label ("Site origin");
    gtk_table_attach_defaults (GTK_TABLE (table), DisplaySiteOrigin, 2, 3, 1, 2);
-   if (cray2_.ITORG == 0 ) {
+   if (ray2_.ITORG == 0 ) {
      gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (DisplaySiteOrigin), TRUE);
    }
    gtk_container_add (GTK_CONTAINER (GTK_DIALOG(control)->vbox),frame);
@@ -1131,35 +1119,27 @@ void esru_wire_ctl ( void)
    gtk_container_add (GTK_CONTAINER (hbox),GridSpacingOtimum);
    label = gtk_label_new (" distance (m):");
    gtk_container_add (GTK_CONTAINER (hbox),label);
-   GridSpacingDistance = gtk_adjustment_new ((gdouble) cray2_.GRDIS, -G_MAXFLOAT, G_MAXFLOAT, 0.25, 5., 0.);
-   spinner = gtk_spin_button_new (GTK_ADJUSTMENT (GridSpacingDistance), 1., 1);
+   GridSpacingDistance = gtk_adjustment_new ((gdouble) ray2_.GRDIS, -G_MAXFLOAT, G_MAXFLOAT, 1., 10., 10.);
+   spinner = gtk_spin_button_new (GTK_ADJUSTMENT (GridSpacingDistance), 1., 0);
    gtk_spin_button_set_wrap (GTK_SPIN_BUTTON (spinner), TRUE);
    gtk_container_add (GTK_CONTAINER (hbox),spinner);
    gtk_container_add (GTK_CONTAINER (GTK_DIALOG(control)->vbox),frame);
 
    /* create zones to display list  <<pick up zone names here>>*/
-   rememberncomp = cc1_.NCOMP;
-   remembernzg = cgzonpik_.nzg;
-   nrows = 1 + (guint)(rememberncomp/4);
+   nrows = 1 + c1_.NCOMP/4;
    irow = 0;
-/* debug */
-   // fprintf(stderr,"number of zones %d %d\n",cc1_.NCOMP,rememberncomp);
-   // fprintf(stderr,"number of cnn %d\n",cc1_.NCON);
-   // fprintf(stderr,"number of rows %d\n",nrows);
-   // fprintf(stderr,"nzg is %d %d\n",cgzonpik_.nzg,remembernzg);
-   // fprintf(stderr,"nznog zero is %d\n",cgzonpik_.nznog[0]);
-   // fprintf(stderr,"nznog one is %d\n",cgzonpik_.nznog[1]);
-   // fprintf(stderr,"nznog two is %d\n",cgzonpik_.nznog[2]);
-
+   //fprintf(stderr,"number of zones %d\n",c1_.NCOMP);
+   //fprintf(stderr,"number of rows %d\n",nrows);
+   //fprintf(stderr,"number of rows %f\n",nrows);
    frame = gtk_frame_new ("Zones to display");
    gtk_container_set_border_width (GTK_CONTAINER (frame), 4);
    table = gtk_table_new (nrows, 4, TRUE);
    gtk_container_add (GTK_CONTAINER (frame), table);
    getzonenames_();
    izone = 0;
-   while (izone < (gint)rememberncomp) {
-     for(icol = 0; icol < 4; icol++) {	/* fill columns in order */
-       // fprintf(stderr,"Zone %d, col %d, row %d\n",izone+1, icol, irow);
+   while (izone < c1_.NCOMP) {
+     for(icol = 0; icol < 4; icol++) {	/* fill columns in order  <<why does the while loop not work?>>*/
+       /* fprintf(stderr,"Zone %d, col %d, row %d\n",izone+1, icol, irow); */
        zone_button[izone] = gtk_check_button_new_with_label (zonenames[izone]);
        gtk_table_attach_defaults (GTK_TABLE (table), zone_button[izone], icol, icol+1, irow, irow+1);
        izone++;
@@ -1170,11 +1150,8 @@ void esru_wire_ctl ( void)
       This means that the zone referenced in the fortran
       code is one more than in the c code (hence the -1 below).
    */
-   for (izone = 0; izone < (gint)remembernzg; izone++) {
-     curindex = (int)cgzonpik_.nznog[izone]-1;
-     // debug
-     // fprintf(stderr,"Zone %d, index %d index %d\n",izone,izone+1, curindex);
-     gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (zone_button[curindex]), TRUE);
+   for (izone = 0; izone < gzonpik_.nzg; izone++) {
+     gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (zone_button[gzonpik_.nznog[izone]-1]), TRUE);
    }
    gtk_container_add (GTK_CONTAINER (GTK_DIALOG(control)->vbox),frame);
 
@@ -1191,29 +1168,34 @@ void esru_wire_ctl ( void)
    hbox = gtk_hbox_new (FALSE, 1);
 /*    gtk_container_add (GTK_CONTAINER (hbox),label); this causes a GTK warning about a label widget inside a table */
 
-/* Use variable cray2_.ITPPSW = 0 for perspective, cray2_.ITPPSW = 1 for plan,
- * cray2_.ITPPSW = 2 for south elevation, cray2_.ITPPSW = 2 for east elevation
+/* Use variable ray2_.ITPPSW = 0 for perspective, ray2_.ITPPSW = 1 for plan,
+ * ray2_.ITPPSW = 2 for south elevation, ray2_.ITPPSW = 2 for east elevation
  * to drive gtk_toggle_button_set_active call
  */
    ViewPerspective = gtk_radio_button_new_with_label (NULL, "Perspective");
    gtk_container_add (GTK_CONTAINER (hbox),ViewPerspective);
-   if (cray2_.ITPPSW == 0) {
+   if (ray2_.ITPPSW == 0) {
      gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(ViewPerspective), TRUE);
    }
    ViewPlan = gtk_radio_button_new_with_label_from_widget (GTK_RADIO_BUTTON (ViewPerspective), "Plan");
    gtk_container_add (GTK_CONTAINER (hbox),ViewPlan);
-   if (cray2_.ITPPSW == 1) {
+   if (ray2_.ITPPSW == 1) {
      gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(ViewPlan), TRUE);
    }
    ViewEastElev = gtk_radio_button_new_with_label_from_widget (GTK_RADIO_BUTTON (ViewPerspective), "East elevation");
    gtk_container_add (GTK_CONTAINER (hbox),ViewEastElev);
-   if (cray2_.ITPPSW == 3) {
+   if (ray2_.ITPPSW == 3) {
      gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(ViewEastElev), TRUE);
    }
    ViewNorthElev = gtk_radio_button_new_with_label_from_widget (GTK_RADIO_BUTTON (ViewPerspective), "South elevation");
    gtk_container_add (GTK_CONTAINER (hbox),ViewNorthElev);
-   if (cray2_.ITPPSW == 2) {
+   if (ray2_.ITPPSW == 2) {
      gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(ViewNorthElev), TRUE);
+   }
+   ViewFromSun = gtk_radio_button_new_with_label_from_widget (GTK_RADIO_BUTTON (ViewPerspective), "View from sun");
+   gtk_container_add (GTK_CONTAINER (hbox),ViewFromSun);
+   if (ray2_.ITPPSW == 4) {
+     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(ViewFromSun), TRUE);
    }
    gtk_table_attach_defaults (GTK_TABLE (table), hbox, 1, 2, 0, 1);
    label = gtk_label_new ("Include:");
@@ -1223,37 +1205,37 @@ void esru_wire_ctl ( void)
 
    IncludeAll = gtk_radio_button_new_with_label (NULL,"Surf+Obs");
    gtk_container_add (GTK_CONTAINER (hbox),IncludeAll);
-   if (cray2_.ITDSP == 0) {
+   if (ray2_.ITDSP == 0) {
      gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(IncludeAll), TRUE);
    }
    IncludeSurfaces = gtk_radio_button_new_with_label_from_widget (GTK_RADIO_BUTTON (IncludeAll), "Surf");
    gtk_container_add (GTK_CONTAINER (hbox),IncludeSurfaces);
-   if (cray2_.ITDSP == 1) {
+   if (ray2_.ITDSP == 1) {
      gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(IncludeSurfaces), TRUE);
    }
    IncludeExternal = gtk_radio_button_new_with_label_from_widget (GTK_RADIO_BUTTON (IncludeAll), "Extrn");
    gtk_container_add (GTK_CONTAINER (hbox),IncludeExternal);
-   if (cray2_.ITDSP == 2) {
+   if (ray2_.ITDSP == 2) {
      gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(IncludeExternal), TRUE);
    }
    IncludePartition = gtk_radio_button_new_with_label_from_widget (GTK_RADIO_BUTTON (IncludeAll), "Partn");
    gtk_container_add (GTK_CONTAINER (hbox),IncludePartition);
-   if (cray2_.ITDSP == 3) {
+   if (ray2_.ITDSP == 3) {
      gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(IncludePartition), TRUE);
    }
    IncludeSimilar = gtk_radio_button_new_with_label_from_widget (GTK_RADIO_BUTTON (IncludeAll), "Similar");
    gtk_container_add (GTK_CONTAINER (hbox),IncludeSimilar);
-   if (cray2_.ITDSP == 4) {
+   if (ray2_.ITDSP == 4) {
      gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(IncludeSimilar), TRUE);
    }
    IncludeSurObsGrnd = gtk_radio_button_new_with_label_from_widget (GTK_RADIO_BUTTON (IncludeAll), "Surf+Obs+Grnd");
    gtk_container_add (GTK_CONTAINER (hbox),IncludeSurObsGrnd);
-   if (cray2_.ITDSP == 5) {
+   if (ray2_.ITDSP == 5) {
      gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(IncludeSurObsGrnd), TRUE);
    }
    IncludeGrnd = gtk_radio_button_new_with_label_from_widget (GTK_RADIO_BUTTON (IncludeAll), "Ground");
    gtk_container_add (GTK_CONTAINER (hbox),IncludeGrnd);
-   if (cray2_.ITDSP == 6) {
+   if (ray2_.ITDSP == 6) {
      gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(IncludeGrnd), TRUE);
    }
 
@@ -1264,27 +1246,27 @@ void esru_wire_ctl ( void)
 /*    gtk_container_add (GTK_CONTAINER (hbox),label); this causes a GTK warning about a label widget inside a table */
    HighDefault = gtk_radio_button_new_with_label (NULL,"Default");
    gtk_container_add (GTK_CONTAINER (hbox),HighDefault);
-   if (cray2_.ITHLS == 0) {
+   if (ray2_.ITHLS == 0) {
      gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(HighDefault), TRUE);
    }
    HighConstr = gtk_radio_button_new_with_label_from_widget (GTK_RADIO_BUTTON (HighDefault), "By construction");
    gtk_container_add (GTK_CONTAINER (hbox),HighConstr);
-   if (cray2_.ITHLS == 1) {
+   if (ray2_.ITHLS == 1) {
      gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(HighConstr), TRUE);
    }
    HighOpaque = gtk_radio_button_new_with_label_from_widget (GTK_RADIO_BUTTON (HighDefault), "Opaque");
    gtk_container_add (GTK_CONTAINER (hbox),HighOpaque);
-   if ((cray2_.ITHLS == 2) && (cray2_.ITHLZ == 1)) {
+   if ((ray2_.ITHLS == 2) && (ray2_.ITHLZ == 1)) {
      gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(HighOpaque), TRUE);
    }
    HighTrans = gtk_radio_button_new_with_label_from_widget (GTK_RADIO_BUTTON (HighDefault), "Transparent");
    gtk_container_add (GTK_CONTAINER (hbox),HighTrans);
-   if ((cray2_.ITHLS == 2) && (cray2_.ITHLZ == 2)) {
+   if ((ray2_.ITHLS == 2) && (ray2_.ITHLZ == 2)) {
      gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(HighTrans), TRUE);
    }
    HighPartAtt = gtk_radio_button_new_with_label_from_widget (GTK_RADIO_BUTTON (HighDefault), "Partially attributed");
    gtk_container_add (GTK_CONTAINER (hbox),HighPartAtt);
-   if (cray2_.ITHLS == 3) {
+   if (ray2_.ITHLS == 3) {
      gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(HighPartAtt), TRUE);
    }
    gtk_table_attach_defaults (GTK_TABLE (table), hbox, 1, 2, 2, 3);
@@ -1303,186 +1285,155 @@ void esru_wire_ctl ( void)
      result = gtk_dialog_run (GTK_DIALOG (control));
      switch (result) {
        case GTK_RESPONSE_OK:
-         cimage_.EYEM[0] = gtk_adjustment_get_value(GTK_ADJUSTMENT (EyePointValueX));
-         cimage_.EYEM[1] = gtk_adjustment_get_value(GTK_ADJUSTMENT (EyePointValueY));
-         cimage_.EYEM[2] = gtk_adjustment_get_value(GTK_ADJUSTMENT (EyePointValueZ));
-         cimage_.VIEWM[0] = gtk_adjustment_get_value(GTK_ADJUSTMENT (ViewPointValueX));
-         cimage_.VIEWM[1] = gtk_adjustment_get_value(GTK_ADJUSTMENT (ViewPointValueY));
-         cimage_.VIEWM[2] = gtk_adjustment_get_value(GTK_ADJUSTMENT (ViewPointValueZ));
-         cimage_.ANG = gtk_adjustment_get_value(GTK_ADJUSTMENT (ViewAngleValue));
-         cimage_.HANG = cimage_.ANG/2.;
+         image_.EYEM[0] = gtk_adjustment_get_value(GTK_ADJUSTMENT (EyePointValueX));
+         image_.EYEM[1] = gtk_adjustment_get_value(GTK_ADJUSTMENT (EyePointValueY));
+         image_.EYEM[2] = gtk_adjustment_get_value(GTK_ADJUSTMENT (EyePointValueZ));
+         image_.VIEWM[0] = gtk_adjustment_get_value(GTK_ADJUSTMENT (ViewPointValueX));
+         image_.VIEWM[1] = gtk_adjustment_get_value(GTK_ADJUSTMENT (ViewPointValueY));
+         image_.VIEWM[2] = gtk_adjustment_get_value(GTK_ADJUSTMENT (ViewPointValueZ));
+         image_.ANG = gtk_adjustment_get_value(GTK_ADJUSTMENT (ViewAngleValue));
+         image_.HANG = image_.ANG/2.;
          if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON (DisplayZoneName)) == TRUE) {
-           cray2_.ITZNM = 0;} else {cray2_.ITZNM = 1;}
+           ray2_.ITZNM = 0;} else {ray2_.ITZNM = 1;}
          if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON (DisplaySurfaceName)) == TRUE) {
-           cray2_.ITSNM = 0;} else {cray2_.ITSNM = 1;}
+           ray2_.ITSNM = 0;} else {ray2_.ITSNM = 1;}
          if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON (DisplayVertexNumbers)) == TRUE) {
-           cray2_.ITVNO = 0;} else {cray2_.ITVNO = 1;}
+           ray2_.ITVNO = 0;} else {ray2_.ITVNO = 1;}
          if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON (DisplaySurfaceNormals)) == TRUE) {
-           cray2_.ITSNR = 0;} else {cray2_.ITSNR = 1;}
+           ray2_.ITSNR = 0;} else {ray2_.ITSNR = 1;}
          if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON (DisplaySiteGrid)) == TRUE) {
-           cray2_.ITGRD = 0;} else {cray2_.ITGRD = 1;}
+           ray2_.ITGRD = 0;} else {ray2_.ITGRD = 1;}
          if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON (DisplaySiteOrigin)) == TRUE) {
-           cray2_.ITORG = 0;} else {cray2_.ITORG = 1;}
+           ray2_.ITORG = 0;} else {ray2_.ITORG = 1;}
          if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON (GridSpacingOtimum)) == TRUE) {
-           cray2_.GRDIS = 0.;} else {cray2_.GRDIS = gtk_adjustment_get_value(GTK_ADJUSTMENT (GridSpacingDistance));}
+           ray2_.GRDIS = 0.;} else {ray2_.GRDIS = gtk_adjustment_get_value(GTK_ADJUSTMENT (GridSpacingDistance));}
          if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON (ViewBoundOptimum)) == TRUE) {
-           cray2_.ITBND = 1;} else {cray2_.ITBND = 0;}
-         /* Remember that C starts at zero, so add one to the zoneid to get the correct value
-            for the fortran code. Reset nzg, if button ticked et nznog array to the zone
-            index.
-         */
-         cgzonpik_.nzg = 0;
-         for (izone = 0; izone < (gint)rememberncomp; izone++) {
-           if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (zone_button[izone])) == TRUE) {
-             cgzonpik_.nznog[cgzonpik_.nzg++] = izone+1;}
-         }
-	 remembernzg = cgzonpik_.nzg;  // remember this
-         // debug
-         // fprintf(stderr,"-nzg is now %d\n",remembernzg);
-         // fprintf(stderr,"-nznog zero is now %d\n",cgzonpik_.nznog[0]);
-         // fprintf(stderr,"-nznog one is now %d\n",cgzonpik_.nznog[1]);
-         if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (IncludeAll)) == TRUE) {
-           cray2_.ITDSP = 0;}
-         if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (IncludeSurfaces)) == TRUE) {
-           cray2_.ITDSP = 1;}
-         if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (IncludeExternal)) == TRUE) {
-           cray2_.ITDSP = 2;}
-         if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (IncludePartition)) == TRUE) {
-           cray2_.ITDSP = 3;}
-         if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (IncludeSimilar)) == TRUE) {
-           cray2_.ITDSP = 4;}
-         if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (IncludeSurObsGrnd)) == TRUE) {
-           cray2_.ITDSP = 5;}
-         if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (IncludeGrnd)) == TRUE) {
-           cray2_.ITDSP = 6;}
-
-         if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (HighDefault)) == TRUE) {
-           cray2_.ITHLS = 0;}
-         if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (HighConstr)) == TRUE) {
-           cray2_.ITHLS = 1;}
-         if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (HighOpaque)) == TRUE) {
-           cray2_.ITHLS = 2;	/* Signal opaque by setting both ITHLS and ITHLZ */
-           cray2_.ITHLZ = 1;
-         }
-         if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (HighTrans)) == TRUE) {
-           cray2_.ITHLS = 2;	/* Signal transparent by setting both ITHLS and ITHLZ */
-           cray2_.ITHLZ = 2;
-         }
-         if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (HighPartAtt)) == TRUE) {
-           cray2_.ITHLS = 3;}
-
-/* Set which view type */
-         if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (ViewPerspective)) == TRUE) {
-           cray2_.ITPPSW = 0;}
-         if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (ViewPlan)) == TRUE) {
-           cray2_.ITPPSW = 1;}
-         if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (ViewNorthElev)) == TRUE) {
-           cray2_.ITPPSW = 2;}
-         if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (ViewEastElev)) == TRUE) {
-           cray2_.ITPPSW = 3;}
-
-         // the nznog needs to be passed back one element at a time to fill nznog fortran array
-         for (izone = 0; izone < (gint)rememberncomp; izone++) {
-           // fprintf(stderr,"-nznog passing %d %d\n",izone,cgzonpik_.nznog[izone]);
-           chgzonpikarray_(&izone,&cgzonpik_.nznog[izone]);
-         }
-         // pass back the current info on how many zones to view
-         chgzonpik_(&cgzonpik_.izgfoc,&remembernzg);
-
-         // pass back to the fortran the numbers that a user might have changed and invoke updated view (in the fortran)
-         chgeye_(&cimage_.EYEM[0],&cimage_.EYEM[1],&cimage_.EYEM[2],&cimage_.VIEWM[0],&cimage_.VIEWM[1],
-           &cimage_.VIEWM[2],&cimage_.ANG,&cray2_.ITZNM,&cray2_.ITSNM,&cray2_.ITVNO,&cray2_.ITOBS,&cray2_.ITSNR,&cray2_.ITGRD,
-           &cray2_.ITORG,&cray2_.GRDIS,&cray2_.ITBND,&cray2_.ITDSP,&cray2_.ITHLS,&cray2_.ITHLZ,&cray2_.ITPPSW);
-
-         no_valid_event = FALSE;
-         break;
-       case GTK_RESPONSE_APPLY:
-         cimage_.EYEM[0] = gtk_adjustment_get_value(GTK_ADJUSTMENT (EyePointValueX));
-         cimage_.EYEM[1] = gtk_adjustment_get_value(GTK_ADJUSTMENT (EyePointValueY));
-         cimage_.EYEM[2] = gtk_adjustment_get_value(GTK_ADJUSTMENT (EyePointValueZ));
-         cimage_.VIEWM[0] = gtk_adjustment_get_value(GTK_ADJUSTMENT (ViewPointValueX));
-         cimage_.VIEWM[1] = gtk_adjustment_get_value(GTK_ADJUSTMENT (ViewPointValueY));
-         cimage_.VIEWM[2] = gtk_adjustment_get_value(GTK_ADJUSTMENT (ViewPointValueZ));
-         cimage_.ANG = gtk_adjustment_get_value(GTK_ADJUSTMENT (ViewAngleValue));
-         cimage_.HANG = cimage_.ANG/2.;
-         if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON (DisplayZoneName)) == TRUE) {
-           cray2_.ITZNM = 0;} else {cray2_.ITZNM = 1;}
-         if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON (DisplaySurfaceName)) == TRUE) {
-           cray2_.ITSNM = 0;} else {cray2_.ITSNM = 1;}
-         if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON (DisplayVertexNumbers)) == TRUE) {
-           cray2_.ITVNO = 0;} else {cray2_.ITVNO = 1;}
-         if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON (DisplaySurfaceNormals)) == TRUE) {
-           cray2_.ITSNR = 0;} else {cray2_.ITSNR = 1;}
-         if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON (DisplaySiteGrid)) == TRUE) {
-           cray2_.ITGRD = 0;} else {cray2_.ITGRD = 1;}
-         if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON (DisplaySiteOrigin)) == TRUE) {
-           cray2_.ITORG = 0;} else {cray2_.ITORG = 1;}
-         if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON (GridSpacingOtimum)) == TRUE) {
-           cray2_.GRDIS = 0.;} else {cray2_.GRDIS = gtk_adjustment_get_value(GTK_ADJUSTMENT (GridSpacingDistance));}
-         if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON (ViewBoundOptimum)) == TRUE) {
-           cray2_.ITBND = 1;} else {cray2_.ITBND = 0;}
+           ray2_.ITBND = 1;} else {ray2_.ITBND = 0;}
          /* Remember that C starts at zero, so add one to the zoneid to get the correct value
             for the fortran code.
          */
-         cgzonpik_.nzg = 0;
-         for (izone = 0; izone < (gint)rememberncomp; izone++) {
+         gzonpik_.nzg = 0;
+         for (izone = 0; izone < c1_.NCOMP; izone++) {
            if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (zone_button[izone])) == TRUE) {
-             cgzonpik_.nznog[cgzonpik_.nzg++] = izone+1;}
+             gzonpik_.nznog[gzonpik_.nzg++] = izone+1;}
          }
-	 remembernzg = cgzonpik_.nzg;  // remember this
-         // debug
-         // fprintf(stderr,"-nzg is now %d\n",remembernzg);
-         // fprintf(stderr,"-nznog zero is now %d\n",cgzonpik_.nznog[0]);
-         // fprintf(stderr,"-nznog one is now %d\n",cgzonpik_.nznog[1]);
          if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (IncludeAll)) == TRUE) {
-           cray2_.ITDSP = 0;}
+           ray2_.ITDSP = 0;}
          if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (IncludeSurfaces)) == TRUE) {
-           cray2_.ITDSP = 1;}
+           ray2_.ITDSP = 1;}
          if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (IncludeExternal)) == TRUE) {
-           cray2_.ITDSP = 2;}
+           ray2_.ITDSP = 2;}
          if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (IncludePartition)) == TRUE) {
-           cray2_.ITDSP = 3;}
+           ray2_.ITDSP = 3;}
          if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (IncludeSimilar)) == TRUE) {
-           cray2_.ITDSP = 4;}
+           ray2_.ITDSP = 4;}
          if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (IncludeSurObsGrnd)) == TRUE) {
-           cray2_.ITDSP = 5;}
+           ray2_.ITDSP = 5;}
          if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (IncludeGrnd)) == TRUE) {
-           cray2_.ITDSP = 6;}
+           ray2_.ITDSP = 6;}
 
          if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (HighDefault)) == TRUE) {
-           cray2_.ITHLS = 0;}
+           ray2_.ITHLS = 0;}
          if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (HighConstr)) == TRUE) {
-           cray2_.ITHLS = 1;}
+           ray2_.ITHLS = 1;}
          if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (HighOpaque)) == TRUE) {
-           cray2_.ITHLS = 2;}
+           ray2_.ITHLS = 2;	/* Signal opaque by setting both ITHLS and ITHLZ */
+           ray2_.ITHLZ = 1;
+         }
          if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (HighTrans)) == TRUE) {
-           cray2_.ITHLS = 2;}
+           ray2_.ITHLS = 2;	/* Signal transparent by setting both ITHLS and ITHLZ */
+           ray2_.ITHLZ = 2;
+         }
          if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (HighPartAtt)) == TRUE) {
-           cray2_.ITHLS = 3;}
+           ray2_.ITHLS = 3;}
 
 /* Set which view type */
          if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (ViewPerspective)) == TRUE) {
-           cray2_.ITPPSW = 0;}
+           ray2_.ITPPSW = 0;}
          if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (ViewPlan)) == TRUE) {
-           cray2_.ITPPSW = 1;}
+           ray2_.ITPPSW = 1;}
          if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (ViewNorthElev)) == TRUE) {
-           cray2_.ITPPSW = 2;}
+           ray2_.ITPPSW = 2;}
          if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (ViewEastElev)) == TRUE) {
-           cray2_.ITPPSW = 3;}
+           ray2_.ITPPSW = 3;}
+         if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (ViewFromSun)) == TRUE) {
+           ray2_.ITPPSW = 4;}
 
-         // the nznog needs to be passed back one element at a time to fill nznog fortran array
-         for (izone = 0; izone < (gint)rememberncomp; izone++) {
-           // fprintf(stderr,"-nznog passing %d %d\n",izone,cgzonpik_.nznog[izone]);
-           chgzonpikarray_(&izone,&cgzonpik_.nznog[izone]);
+         gdupdate_();
+         no_valid_event = FALSE;
+         break;
+       case GTK_RESPONSE_APPLY:
+         image_.EYEM[0] = gtk_adjustment_get_value(GTK_ADJUSTMENT (EyePointValueX));
+         image_.EYEM[1] = gtk_adjustment_get_value(GTK_ADJUSTMENT (EyePointValueY));
+         image_.EYEM[2] = gtk_adjustment_get_value(GTK_ADJUSTMENT (EyePointValueZ));
+         image_.VIEWM[0] = gtk_adjustment_get_value(GTK_ADJUSTMENT (ViewPointValueX));
+         image_.VIEWM[1] = gtk_adjustment_get_value(GTK_ADJUSTMENT (ViewPointValueY));
+         image_.VIEWM[2] = gtk_adjustment_get_value(GTK_ADJUSTMENT (ViewPointValueZ));
+         image_.ANG = gtk_adjustment_get_value(GTK_ADJUSTMENT (ViewAngleValue));
+         image_.HANG = image_.ANG/2.;
+         if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON (DisplayZoneName)) == TRUE) {
+           ray2_.ITZNM = 0;} else {ray2_.ITZNM = 1;}
+         if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON (DisplaySurfaceName)) == TRUE) {
+           ray2_.ITSNM = 0;} else {ray2_.ITSNM = 1;}
+         if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON (DisplayVertexNumbers)) == TRUE) {
+           ray2_.ITVNO = 0;} else {ray2_.ITVNO = 1;}
+         if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON (DisplaySurfaceNormals)) == TRUE) {
+           ray2_.ITSNR = 0;} else {ray2_.ITSNR = 1;}
+         if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON (DisplaySiteGrid)) == TRUE) {
+           ray2_.ITGRD = 0;} else {ray2_.ITGRD = 1;}
+         if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON (DisplaySiteOrigin)) == TRUE) {
+           ray2_.ITORG = 0;} else {ray2_.ITORG = 1;}
+         if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON (GridSpacingOtimum)) == TRUE) {
+           ray2_.GRDIS = 0.;} else {ray2_.GRDIS = gtk_adjustment_get_value(GTK_ADJUSTMENT (GridSpacingDistance));}
+         if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON (ViewBoundOptimum)) == TRUE) {
+           ray2_.ITBND = 1;} else {ray2_.ITBND = 0;}
+         /* Remember that C starts at zero, so add one to the zoneid to get the correct value
+            for the fortran code.
+         */
+         gzonpik_.nzg = 0;
+         for (izone = 0; izone < c1_.NCOMP; izone++) {
+           if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (zone_button[izone])) == TRUE) {
+             gzonpik_.nznog[gzonpik_.nzg++] = izone+1;}
          }
-         // pass back the current info on how many zones to view
-         chgzonpik_(&cgzonpik_.izgfoc,&remembernzg);
+         if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (IncludeAll)) == TRUE) {
+           ray2_.ITDSP = 0;}
+         if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (IncludeSurfaces)) == TRUE) {
+           ray2_.ITDSP = 1;}
+         if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (IncludeExternal)) == TRUE) {
+           ray2_.ITDSP = 2;}
+         if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (IncludePartition)) == TRUE) {
+           ray2_.ITDSP = 3;}
+         if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (IncludeSimilar)) == TRUE) {
+           ray2_.ITDSP = 4;}
+         if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (IncludeSurObsGrnd)) == TRUE) {
+           ray2_.ITDSP = 5;}
+         if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (IncludeGrnd)) == TRUE) {
+           ray2_.ITDSP = 6;}
 
-         // pass back to the fortran the numbers that a user might have changed and invoke updated view (in the fortran)
-         chgeye_(&cimage_.EYEM[0],&cimage_.EYEM[1],&cimage_.EYEM[2],&cimage_.VIEWM[0],&cimage_.VIEWM[1],
-           &cimage_.VIEWM[2],&cimage_.ANG,&cray2_.ITZNM,&cray2_.ITSNM,&cray2_.ITVNO,&cray2_.ITOBS,&cray2_.ITSNR,&cray2_.ITGRD,
-           &cray2_.ITORG,&cray2_.GRDIS,&cray2_.ITBND,&cray2_.ITDSP,&cray2_.ITHLS,&cray2_.ITHLZ,&cray2_.ITPPSW);
+         if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (HighDefault)) == TRUE) {
+           ray2_.ITHLS = 0;}
+         if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (HighConstr)) == TRUE) {
+           ray2_.ITHLS = 1;}
+         if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (HighOpaque)) == TRUE) {
+           ray2_.ITHLS = 2;}
+         if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (HighTrans)) == TRUE) {
+           ray2_.ITHLS = 2;}
+         if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (HighPartAtt)) == TRUE) {
+           ray2_.ITHLS = 3;}
 
+/* Set which view type */
+         if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (ViewPerspective)) == TRUE) {
+           ray2_.ITPPSW = 0;}
+         if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (ViewPlan)) == TRUE) {
+           ray2_.ITPPSW = 1;}
+         if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (ViewNorthElev)) == TRUE) {
+           ray2_.ITPPSW = 2;}
+         if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (ViewEastElev)) == TRUE) {
+           ray2_.ITPPSW = 3;}
+         if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (ViewFromSun)) == TRUE) {
+           ray2_.ITPPSW = 4;}
+
+         gdupdate_();
          esru_ask_wire();	/* re-instanciate the help associated with this interface */
          break;
        case GTK_RESPONSE_HELP:
@@ -1501,14 +1452,12 @@ void esru_wire_ctl ( void)
 }
 
 /* ******  Notify level for wireframe button ********** */
-// Typically passed the current number of zones but the logic only
-// checks whether it is non-zero. Zero is initial state.
 void updwire_(avail)
   long int *avail;
 {
-  wire_avail = (int) *avail;
+  wire_avail = (int) *avail;         /* tell the world it is available */
   return;
-} /* updwire_ */
+} /* openwire_ */
 
 
 /* **** create_static_menus() - create static menus associated with the
@@ -1597,10 +1546,17 @@ GtkWidget *create_static_menus( void )
    g_signal_connect_swapped (G_OBJECT (menu_items), "activate",
                              G_CALLBACK (esru_elev_down), NULL);
 
-   menu_items = gtk_menu_item_new_with_label ("view from sun");
-   gtk_menu_shell_append (GTK_MENU_SHELL (view_items), menu_items);
-   g_signal_connect_swapped (G_OBJECT (menu_items), "activate",
-                             G_CALLBACK (esru_chg_sun), NULL);
+/* disable wireframe controls and wireframe toggles
+ *  menu_items = gtk_menu_item_new_with_label ("wireframe controls");
+ *  gtk_menu_shell_append (GTK_MENU_SHELL (view_items), menu_items);
+ *  g_signal_connect_swapped (G_OBJECT (menu_items), "activate",
+ *                            G_CALLBACK (esru_wire_pick), NULL);
+ *
+ *  menu_items = gtk_menu_item_new_with_label ("wireframe toggles");
+ *  gtk_menu_shell_append (GTK_MENU_SHELL (view_items), menu_items);
+ *  g_signal_connect_swapped (G_OBJECT (menu_items), "activate",
+ *                            G_CALLBACK (esru_wire_tog), NULL);
+ */
 
 /* proforma for all wireframe controls and toggles */
    menu_items = gtk_menu_item_new_with_label ("wireframe control");
@@ -1862,7 +1818,7 @@ char *gintstr[] = {
                pango_font_metrics_get_descent (metrics));
     f_width = PANGO_PIXELS (pango_font_metrics_get_approximate_digit_width (metrics));
     pango_font_metrics_unref (metrics);
-    // fprintf(stderr,"font height and width is %d %d\n", f_height,f_width);
+    /* fprintf(stderr,"font height and width is %d %d\n", f_height,f_width);  debug */
 
 /* Create upper frame, just below the menu bar and within vpaneunder */
     frame_u = gtk_frame_new (NULL);
@@ -1897,8 +1853,7 @@ char *gintstr[] = {
    if the application is re-sized */
     emenu = gtk_frame_new (NULL);
     menu_pix_wd = (gint) *imenuchw * f_width;
-    // debug
-    // fprintf(stderr,"menu chars and pix wd %ld %d\n", *imenuchw,menu_pix_wd);
+    /* fprintf(stderr,"menu chars and pix wd %ld %d\n", *imenuchw,menu_pix_wd);  debug */
 
 /* The reserved area for the graphic feedback is different for each application.
  * The following sizes are based on the standard iappw values defined in each
@@ -1978,8 +1933,7 @@ char *gintstr[] = {
 
     gtk_paned_pack2 (GTK_PANED (hpaned), emenu, FALSE, TRUE);
     gtk_widget_show (emenu);
-    // debug
-    // fprintf(stderr,"menu request pix wd %f %d %d\n", hratio,hother,menu_pix_wd);
+    /* fprintf(stderr,"menu request pix wd %f %d %d\n", hratio,hother,menu_pix_wd);  debug */
 
 /* so the emenu is a frame which we could try
    using the esp_list_in_frame function with */
@@ -2015,8 +1969,7 @@ char *gintstr[] = {
     textf = gtk_frame_new (NULL);
     gtk_frame_set_shadow_type (GTK_FRAME (textf), GTK_SHADOW_OUT);
     textf_pix_ht = (gint) *ilimtty * f_height +2;
-    // debug
-    // fprintf(stderr,"text feedback lines and pix ht %ld %d\n", *ilimtty,textf_pix_ht);
+    /* fprintf(stderr,"text feedback lines and pix ht %ld %d\n", *ilimtty,textf_pix_ht);  debug */
     gtk_widget_set_size_request (textf, -1, textf_pix_ht);
     gtk_paned_pack2 (GTK_PANED (vpaned), textf, FALSE, TRUE);
     textv = create_text ();
@@ -2131,7 +2084,7 @@ char *gintstr[] = {
         if ((gdk_color_parse(gintstr[11],&grey43)==1) && (gdk_colormap_alloc_color(cmap,&grey43,FALSE,TRUE)==1))  ngr=ngr+1;
       }
       ngr=ngr+2;	/* include black (ngr-1) and white (ngr) */
-      // fprintf(stderr,"greys ngr %ld\n",ngr);
+      /* fprintf(stderr,"greys ngr %ld\n",ngr); */
       infofg = black;  infobg = white;
 
     } else {
@@ -2178,7 +2131,7 @@ void setcscale_() {
 /* Some colours not allocated attempt half of the colours. Begin by freeing initial allocated set. */
   if ( ncscale <= 45 ) {
     gdk_colormap_free_colors(cmap,&cscale[0],(gint) ncscale);
-    // fprintf(stderr,"Trying reduced colour set\n");
+    /* fprintf(stderr,"Trying reduced colour set\n"); */
     ncscale = 0;
     ih = -1;
     for (ic=0; ic<24; ic++) {
@@ -2197,7 +2150,7 @@ void setcscale_() {
       }
     }
   }
-  // fprintf(stderr,"Created cscale %ld\n",ncscale);
+  /* fprintf(stderr,"Created cscale %ld\n",ncscale);	 debug */
   return;
 }
 
@@ -2206,30 +2159,26 @@ void setcscale_() {
 void clrcscale_() {
   gdk_colormap_free_colors(cmap,&cscale[0],(gint) ncscale);
   ncscale = 0;
-  // fprintf(stderr,"Freed cscale colour set\n");
+  /* fprintf(stderr,"Freed cscale colour set\n");	 debug */
   return;
 }
 
-/* ********* setgscale_() setgscale_() grey scale (84 or 42 steps) ******* */
+/* ********* setgscale_() setgscale_() grey scale (49 or 24 steps) ******* */
 /* Called with no parameters, sets global variable ngscale. The local
    variable gscaleok is not used (yet). */
 void setgscale_() {
 
 /* Color named arrays taken from esru_x.c */
   char *gscalestr[] = {
-  "grey97","grey96","grey95","grey94","grey93","grey92","grey91","grey90",
-  "grey89","grey88","grey87","grey86","grey85","grey84","grey83","grey82","grey81","grey80",
-  "grey79","grey78","grey77","grey76","grey75","grey74","grey73","grey72","grey71","grey70",
-  "grey69","grey68","grey67","grey66","grey65","grey64","grey63","grey62","grey61","grey60",
-  "grey59","grey58","grey57","grey56","grey55","grey54","grey53","grey52","grey51","grey50",
-  "grey49","grey48","grey47","grey46","grey45","grey44","grey43","grey42","grey41","grey40",
-  "grey39","grey38","grey37","grey36","grey35","grey34","grey33","grey32","grey31","grey30",
-  "grey29","grey28","grey27","grey26","grey25","grey24","grey23","grey22","grey21","grey20",
-  "grey19","grey18","grey17","grey16","grey15","grey14","grey13","grey12" };
+  "grey97","grey95","grey93","grey91","grey89","grey87","grey85","grey83","grey81",
+  "grey79","grey77","grey75","grey73","grey71","grey69","grey67","grey65","grey63","grey61",
+  "grey59","grey57","grey55","grey53","grey51","grey49","grey47","grey45","grey43","grey41",
+  "grey39","grey37","grey35","grey33","grey31","grey29","grey27","grey25","grey23","grey21",
+  "grey19","grey17","grey15","grey13","grey11","grey9","grey7","grey5","grey3","grey1"};
   gint ic,ih;
-  gboolean gscaleok[85];
+  gboolean gscaleok[49];
 /* assign grey scale to gscale array. */
-  for (ic=0; ic<84; ic++) {
+  for (ic=0; ic<48; ic++) {
     if (gdk_color_parse(gscalestr[ic],&gscale[ic])==1) {
       if (gdk_colormap_alloc_color(cmap,&gscale[ic],FALSE,TRUE)==1) {
         ngscale=ngscale+1;
@@ -2244,12 +2193,12 @@ void setgscale_() {
     }
   }
 /* Some colours not allocated attempt half of the colours. Begin by freeing initial allocated set. */
-  if ( ngscale <= 83 ) {
+  if ( ngscale <= 47 ) {
     gdk_colormap_free_colors(cmap,&gscale[0],(gint) ngscale);
-    // fprintf(stderr,"Trying reduced grey set\n");
+    /* fprintf(stderr,"Trying reduced grey set\n"); */
     ngscale = 0;
     ih = -1;
-    for (ic=0; ic<40; ic++) {
+    for (ic=0; ic<24; ic++) {
       ih = ih + 2;
       if (gdk_color_parse(gscalestr[ih],&gscale[ic])==1) {
         if (gdk_colormap_alloc_color(cmap,&gscale[ic],FALSE,TRUE)==1) {
@@ -2265,7 +2214,7 @@ void setgscale_() {
       }
     }
   }
-  // fprintf(stderr,"Created grey cscale %ld\n",ngscale);
+  /* fprintf(stderr,"Created grey cscale %ld\n",ngscale); */
   return;
 }
 
@@ -2274,7 +2223,7 @@ void setgscale_() {
 void clrgscale_() {
   gdk_colormap_free_colors(cmap,&gscale[0],(gint) ngscale);
   ngscale = 0;
-  // fprintf(stderr,"Freed gscale colour set\n");
+  /* fprintf(stderr,"Freed gscale colour set\n"); */
   return;
 }
 
@@ -2454,7 +2403,7 @@ void win3d_(menu_char,cl,cr,ct,cb,vl,vr,vt,vb,gw,gh)
      f_height = font_calculations_array[serif_small].f_height;   // pre-calculated value of f_height is read from the array
      f_width  = font_calculations_array[serif_small].f_width;    // pre-calculated value of f_width  is read from the array
 #endif
-     // g_print("viewtext graphic font medium 8\n");
+/*     g_print("viewtext graphic font medium 8\n");  debug */
  } else if (butn_fnt == 1 ) {
 #ifdef SUN
      pfd = pango_font_description_from_string("Courier,Medium 10");
@@ -2465,7 +2414,7 @@ void win3d_(menu_char,cl,cr,ct,cb,vl,vr,vt,vb,gw,gh)
      f_height = font_calculations_array[serif_medium].f_height;
      f_width  = font_calculations_array[serif_medium].f_width;
 #endif
-     // g_print("viewtext graphic font medium 10\n");
+/*     g_print("viewtext graphic font medium 10\n");  debug */
  } else if (butn_fnt == 2 ) {
 #ifdef SUN
      pfd = pango_font_description_from_string("Courier,Medium 12");
@@ -2476,7 +2425,7 @@ void win3d_(menu_char,cl,cr,ct,cb,vl,vr,vt,vb,gw,gh)
      f_height = font_calculations_array[serif_large].f_height;
      f_width  = font_calculations_array[serif_large].f_width;
 #endif
-     // g_print("viewtext graphic font medium 12\n");
+/*    g_print("viewtext graphic font medium 12\n");  debug */
  } else if (butn_fnt == 3 ) {
 #ifdef SUN
      pfd = pango_font_description_from_string("Courier,Medium 14");
@@ -2487,29 +2436,29 @@ void win3d_(menu_char,cl,cr,ct,cb,vl,vr,vt,vb,gw,gh)
      f_height = font_calculations_array[serif_largest].f_height;
      f_width  = font_calculations_array[serif_largest].f_width;
 #endif
-     // fprintf(stderr,"refresh graphic font medium 10\n");
+   /* fprintf(stderr,"refresh graphic font medium 10\n"); debug */
  } else if (butn_fnt == 4 ) {
    pfd = pango_font_description_from_string("Courier,Medium 8");
    f_height = font_calculations_array[courier_small].f_height;
    f_width  = font_calculations_array[courier_small].f_width;
 
-   // fprintf(stderr,"refresh graphic font medium 12\n");
+   /* fprintf(stderr,"refresh graphic font medium 12\n"); debug */
  }else if (butn_fnt == 5 ) {
    pfd = pango_font_description_from_string("Courier,Medium 10");
    f_height = font_calculations_array[courier_medium].f_height;
    f_width  = font_calculations_array[courier_medium].f_width;
-   // fprintf(stderr,"refresh graphic font medium 12\n");
+   /* fprintf(stderr,"refresh graphic font medium 12\n"); debug */
  } else if (butn_fnt == 6 ) {
    pfd = pango_font_description_from_string("Courier,Medium 12");
    f_height = font_calculations_array[courier_large].f_height;
    f_width  = font_calculations_array[courier_large].f_width;
 
-   // fprintf(stderr,"refresh graphic font medium 10\n");
+   /* fprintf(stderr,"refresh graphic font medium 10\n"); debug */
  } else if (butn_fnt == 7 ) {
    pfd = pango_font_description_from_string("Courier,Medium 14");
    f_height = font_calculations_array[courier_largest].f_height;
    f_width  = font_calculations_array[courier_largest].f_width;
-   // fprintf(stderr,"refresh graphic font medium 12\n");
+   /* fprintf(stderr,"refresh graphic font medium 12\n"); debug */
  }
  gtk_widget_modify_font(graphic, pfd);	/* << ?? >> */
 
@@ -2522,8 +2471,7 @@ void win3d_(menu_char,cl,cr,ct,cb,vl,vr,vt,vb,gw,gh)
  * are to the pixmap which is the same size as graphic, the coordinates
  * derived are based on upper left of the pixmap = 0, 0. */
  gdk_drawable_get_size(graphic->window,&g_width,&g_height);
- // debug
- // fprintf(stderr,"win3d font height width is %d %d gr_w %d gr_h %d\n", f_height,f_width,g_width,g_height);
+ /* fprintf(stderr,"win3d font height width is %d %d gr_w %d gr_h %d\n", f_height,f_width,g_width,g_height);  debug */
  b_top = 0 + (f_height * (*ct));
  b_bottom = g_height - 9 - (f_height * ((gint) *cb));
  b_left = 0 + 9 + (f_width * ((gint) *cl));

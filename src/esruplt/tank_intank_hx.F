@@ -1234,8 +1234,8 @@ C.....model
 
 C.....Local Variables
       integer tank_node_num      ! node number for tank
-      integer lnblnk             ! function
-      character*24 hold_name     ! temporary buffer for pcname
+      integer lnblnk
+      character(lnblnk(pcname(iComponentIndex))) hold_name    ! temporary variable for string manipulation
 C.....Calculated values
       real tank_jacket_heat_loss    ! losses to environment from tank (W)
 
@@ -1243,12 +1243,12 @@ C.....Plant network node number for water tank
       tank_node_num = NPCDAT(iComponentIndex,9)
 
 C.....Get component name
-      write(hold_name,'(a)') pcname(iComponentIndex)
+      hold_name = pcname(iComponentIndex)
      &               (1:lnblnk(pcname(iComponentIndex)))
 
 C....set name for total heat transfer
 C....add to XML reporting
-      call AddToReport(rvPltTHeatTrans%Identifier,
+      call AddToReportWild1(rvPltTHeatTrans%Identifier,
      &      total_heat_transfer,
      &      hold_name)
 
@@ -1258,25 +1258,25 @@ C....Heat loss from tank to surroundings
 
 C.....set name for tank jacket loss
 C.....add to XML reporting facility
-      call AddToReport(rvPltTHeatTransJacketHeatLoss%Identifier,
+      call AddToReportWild1(rvPltTHeatTransJacketHeatLoss%Identifier,
      &      tank_jacket_heat_loss,
      &      hold_name)
 
 C.....set name for tube side heat transfer coefficient
 C.....add to XML reporting facility
-      call AddToReport(rvPltTHeatTransTubeSideHi%Identifier,
+      call AddToReportWild1(rvPltTHeatTransTubeSideHi%Identifier,
      &      tube_side_hi,
      &      hold_name)
 
 C.....set name for tank side heat transfer coefficient
 C.....add to XML reporting facility
-      call AddToReport(rvPltTHeatTransTankSideHo%Identifier,
+      call AddToReportWild1(rvPltTHeatTransTankSideHo%Identifier,
      &      tank_side_ho,
      &      hold_name)
 
 C.....set name for tank side heat transfer coefficient
 C.....add to XML reporting facility
-      call AddToReport(rvPltTHeatTransIntankCoilTUValue%Identifier,
+      call AddToReportWild1(rvPltTHeatTransIntankCoilTUValue%Identifier,
      &      intank_coil_total_Uvalue,
      &      hold_name)
 

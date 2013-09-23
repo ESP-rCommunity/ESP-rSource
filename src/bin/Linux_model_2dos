@@ -4,10 +4,10 @@
 # or binary databases) into dos format. Should be run in the project
 # root folder (i.e. above cfg zones etc.)
 
-echo "FIRST: make a backup of your model"
-echo "SECOND: Make a copy of the model (i.e. cp -r model model_dos)"
-echo "   (substitute your own folder names for model and model_dos)"
-echo "THIRD: cd to model_dos root directory (above cfg zones etc.)" 
+echo "FIRST: export any local materials db to ascii format"
+echo "SECOND: Make a copy of the model (i.e. cp -r model model_nt)"
+echo "   (substitute your own folder names for model and model_nt)"
+echo "THIRD: cd to model_nt root directory (above cfg zones etc.)" 
 echo "  "
 echo "This procedure assumes the standard ESP-r model folder layout"
 echo " (cfg zones ctl nets) and standard file names"
@@ -20,7 +20,7 @@ echo "The script searches for forward slashes and converts them to "
 echo "backslashes. It also looks for /usr/esru and replaces it with  "
 echo "c:\esru "
 echo "  "
-echo "This version of Linux_model_2_dos is setup for Linux computers." 
+echo "This version of Linux_model_2_dos is setup for Linux workstations." 
 echo "  " 
 echo "usage example: Linux_model_2_dos" 
 echo "current model is in $PWD " 

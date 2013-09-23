@@ -376,29 +376,6 @@
 'The purpose of the scene is used when creating the '
 'scene description files. It is also used to control'
 'the application of Radiance.'
-'  '
-' External image - assumes you are looking at the model from'
-'   the outside at a given date and time (or range of times).'
-' Internal image - assumes a viewpoint within one of the zones'
-'   in the model.'
-' Glare - assumes a viewpoint within a zone and sets parameters'
-'   and uses Radiance facilities for glare.'
-' Daylight factors - focused on a zone of the model and a grid'
-'   of points in the room and calculates daylight factors based'
-'   on a standard overcast sky.'
-' Daylight lux - similar to daylight factors but determines the'
-'   illuminance (lux) at each grid point based on a standard'
-'   overcast sky.'
-' Illuminance - focused on a zone of the model and a grid of'
-'   points in the room and calculates illuminance at the points'
-'   based on the current time and sky conditions.'
-' Coupling - assumes a Radiance representation of one or more'
-'   casual gain control sensors in a room and during simulation'
-'   controls access to Radiance at each timestep to request the'
-'   state of these sensors.'
-' Daylight coefficient - Radiance supports a concept of pre-'
-'   calculated coefficients from surfaces in the model to patches'
-'   in the sky.'
 *enditem
         call MENUATOL('Select a default scene.',' Default scene',
         call MENUATOL('Select a scene purpose.',' Scene purpose',
@@ -500,24 +477,10 @@
       CALL EASKABCD('A scene is created for a specific day and time.',
 *subroutine genimage
 *item genimage single_time_or_sequence
-'Rendering can be for one instant in time or at intervals'
-'e.g. every 10 or 15 or 20 minutes during a period of a day.'
-'You can adjust the parameters needed to create a set of'
-'images (gif) which can be combined to form an amimation.'
-' '
-'If you specify a period from 8h00 to 9h00 at a 20 minute'
-'interval on the 69th day of the year there will be four files'
-'created (.hdr) and converted to gif files via the Radiance'
-'utility ra_gif.  You can then use a tool such as gimp or'
-'gifsicle to combine the separate gif files into an animation.'
-' '
-'For example: '
-'  gifsicle -l1 -d100 69*.gif >animation.gif'
-'will take all of the gif files that start with 69 and com-'
-'bine them into a file animation.gif with a 100ms delay between'
-'frames. This can be viewed in a web browser or via a utility'
-'named animate (part of the Imagemagick tool set).'
-
+'Rendering can only be for one instant in time or'
+'at intervals during a period of a day.  You can '
+'adjust the parameters needed to create a set of'
+'images which can be combined to form an amimation.'
 *enditem
         CALL EASKAB(' ',' Image(s):','single time instance',
 *item genimage render_to_screen_or_file
@@ -572,30 +535,6 @@
         CALL EASKAB('The rendering parameters would appear to be set',
 *item getdf e2r_df_file_overwrite
 'Daylight factors can be written to a file. If this file already'
-'exists you have a chance to save the past by giving a'
-'slightly different file name for the calculatons.'
-*enditem
-        CALL EASKAB(outs,'Do you want to: ','overwrite',
- 1221   CALL EASKS(ltmp,
-*subroutine getlux
-*item getdf e2r_lux_convergence
-'The calculations will strart with one ambient bounce and'
-'gradually increase the number of bounces until the change'
-'is less than a value (convergence criteria). The smaller'
-'the value the longer the calculations will take. '
-' '
-'If the display freezes it may be because the underlying'
-'rtrace calculations are hung. You may have to kill that'
-'process. '
-*enditem
-      CALL EASKR(CONV,'Daylight factor convergence criteria',
-*item getdf e2r_lux_confusion
-'Sometimes Radiance gets confused. This is one place'
-'where starting again can correct this. '
-*enditem
-        CALL EASKAB('The rendering parameters would appear to be set',
-*item getdf e2r_lux_file_overwrite
-'Illuminance can be written to a file. If this file already'
 'exists you have a chance to save the past by giving a'
 'slightly different file name for the calculatons.'
 *enditem

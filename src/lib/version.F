@@ -29,9 +29,6 @@ C      character cURL*256             ! Repository URL commented out in build_in
       character cTemp_a*124, cTemp_b*124 ! Temporary strings
       integer iLen   ! for actual string lengths
       
-      logical bH3KExtentionsActive  ! Function returning status of h3k extentions. 
-      
-      
 C Arrays mapping binary names to longer descriptions
       
       integer iBinCount
@@ -122,17 +119,21 @@ C  e.g.: 'ESP-r integrated builing performance simulator (bps)'
 C.....ESP-r banner 
       if ( bRelease ) then 
 C.......Release version        
-        write(cTemp_a,'(5A)') "ESP-r ", 
+        write(cTemp_a,'(7A)') "ESP-r ", 
      &       cBinDesc(iBinIndex)(1:lnblnk(cBinDesc(iBinIndex))), 
-     &       " Release ", 
+     &       " (",
+     &       cAppName(1:lnblnk(cAppName)),
+     &       ") Release ", 
      &       cRelease_Num(1:lnblnk(cRelease_Num)),
      &       "."
         call edisp(iuout,cTemp_a)      
       
       else 
         
-        write(cTemp_a,'(2A)') "ESP-r ", 
-     &       cBinDesc(iBinIndex)(1:lnblnk(cBinDesc(iBinIndex)))
+        write(cTemp_a,'(5A)') "ESP-r ", 
+     &       cBinDesc(iBinIndex)(1:lnblnk(cBinDesc(iBinIndex))), " (",
+     &       cAppName(1:lnblnk(cAppName)),
+     &       ")."
         call edisp(iuout,cTemp_a)      
         
         write(cTemp_a,'(6A)') "This is a development copy of ", 
@@ -151,7 +152,7 @@ C Copyright information:
      &  "Copyright resides with the member organisations of the ESP-r")
       call edisp(iuout,"development consortium as listed at:")
       call edisp(iuout,
-     &  "http://www.esru.strath.ac.uk/Programs/ESP-r_central.htm.")      
+     &  "http://www.esru.strath.ac.uk/Programs/ESP-r_central.htm")      
 
 C Check if source was versioned (that is, was svn available, and 
 C is it a working copy)
@@ -200,7 +201,7 @@ C............' - Source:    BRANCH @ rXYZ (modified state)'
         if ( bVersioned ) then 
             
           write (cTemp_a,'(5A)') 
-     &      "  SVN source -       ",
+     &      "  - SVN Source:       ",
      &      cBranch(1:lnblnk(cBranch)), 
      &      "@r",
      &      cRevision(1:lnblnk(cRevision))
@@ -215,19 +216,19 @@ C............' - Source:    BRANCH @ rXYZ (modified state)'
         
         else
            write (cTemp_a,'(A)') 
-     &       "  SVN source -       UNKNOWN"
+     &       "  - SVN Source:       UNKNOWN"
         endif 
         call edisp(iuout,cTemp_a)      
           
 C.........Build Platform (e.g.: i686:LINUX:2.6.9-gentoo-r1)
-        write (cTemp_a,'(6A)')   "  Platform -         ",
+        write (cTemp_a,'(6A)')   "  - Platform:         ",
      &         cArchitecture(1:lnblnk(cArchitecture)),":",
      &         cOperSystem(1:lnblnk(cOperSystem)),":",
      &         cOSversion(1:lnblnk(cOSversion))
         call edisp(iuout,cTemp_a)      
          
 C.........Compiliers ( eg: gcc/g++/g77)
-        write (cTemp_a,'(6A)')   "  Compilers -        ",
+        write (cTemp_a,'(6A)')   "  - Compilers:        ",
      &         cCC(1:lnblnk(cCC)),"/",
      &         cCPL(1:lnblnk(cCPL)),"/",
      &         cFC(1:lnblnk(cFC))
@@ -235,7 +236,7 @@ C.........Compiliers ( eg: gcc/g++/g77)
 
         call getXlibs(cXlibs)    ! find out the graphic library used
         
-        write (cTemp_a,'(2A)')   "  Graphics library - ",
+        write (cTemp_a,'(2A)')   "  - Graphics Library: ",
      &         cXLibs(1:3)
         call edisp(iuout,cTemp_a)
 
@@ -249,50 +250,12 @@ C.........Compiliers ( eg: gcc/g++/g77)
 
         endif 
         
-        write (cTemp_a,'(2A)')   "  XML output -       ",
+        write (cTemp_a,'(2A)')   "  - XML output:       ",
      &         cXML_support(1:lnblnk(cXML_support))
         call edisp(iuout,cTemp_a)
           
-        if ( bH3KExtentionsActive() ) then  ! find whether H3k extentions are active
-
-          write (cTemp_a,'(2A)')   "  H3K extensions -  ",
-     &         "Active"
-          call edisp(iuout,cTemp_a)
-
-        endif 
-            
-          
-          
-          
       endif
 
-
-      return
-      end
-
-C ******* ESPrVersionNum
-C Return out ESP-r versioning information.
-
-      subroutine ESPrVersionNum(cVnum)
-      implicit none
-      
-C PASSED VARIABLES 
-      character cVnum*16             ! Phrase with release number
-
-C LOCAL VARIABLES
-C declare variables describing version and build information
-      integer iLen   ! for actual string lengths
-            
-C References:
-      integer lnblnk
-      
-C Include dynamically-created installation information. 
-#include "build_info.h"
-
-C Write out version number. 
-      write(cVnum,'(3A)') "release ", 
-     &      cRelease_Num(1:lnblnk(cRelease_Num)),
-     &      "."
 
       return
       end

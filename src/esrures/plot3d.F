@@ -647,13 +647,9 @@ C << the 100 below needs to be bigger?
 #ifdef OSI
       integer igwid,igheight  ! for use with axiscale
       integer iside,isize,ifont,iposi     ! passed to viewtext
-      integer iigl,iigr,iigt,iigb,iigw,iigwh
-      integer iiw1,iiw2,iiw3,iiw4,iimenu
 #else
       integer*8 igwid,igheight  ! for use with axiscale
       integer*8 iside,isize,ifont,iposi     ! passed to viewtext
-      integer*8 iigl,iigr,iigt,iigb,iigw,iigwh
-      integer*8 iiw1,iiw2,iiw3,iiw4,iimenu
 #endif
 
       DATA LNAME/'MASK.DAT'/
@@ -671,14 +667,9 @@ C pixel references for calls to viewtext.
           call feedbox(menuchw,2,igfw,igfh)
           call opengdisp(menuchw,LIMTTY,2,igdw,igdh)
         endif
-
-C Setup and pass in parameters to win3d.
-        iiw1=9; iiw2=16; iiw3=7; iiw4=2; iimenu=menuchw
-        iigl=igl; iigr=igr; iigt=igt; iigb=igb; iigw=igw; iigwh=igwh
-        CALL win3d(iimenu,iiw1,iiw2,iiw3,iiw4,
-     &    iigl,iigr,iigt,iigb,iigw,iigwh)
-        igl=int(iigl); igr=int(iigr); igt=int(iigt); igb=int(iigb)
-        igw=int(iigw); igwh=int(iigwh)
+        call win3d(menuchw,9,16,7,2,igl,igr,igt,igb,igw,igwh)
+        igw=igr-igl
+        igwh=igb-igt
         igwid=igw
         igheight=igwh
         call startbuffer()
@@ -711,7 +702,7 @@ C Scaling happens here...
       igheight=igwh
       call axiscale(igwid,igheight,0.0,700.0,0.0,750.,xsc,ysc,sca,
      &  Xadd,Yadd)
-      call linescale(iigl,Xadd,xsc,iigb,Yadd,ysc)
+      call linescale(igl,Xadd,xsc,igb,Yadd,ysc)
 
       READ(LU1,REC=1) TITLE
       READ(LU1,REC=2) (AXIS(I),I=1,3)

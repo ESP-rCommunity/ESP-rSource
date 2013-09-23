@@ -204,14 +204,10 @@ C since not all compilers use the same default.
       integer igwid,igheight  ! for use with axiscale
       integer iside,isize,ifont     ! passed to viewtext
       integer iix,iiy,iix2,iix5,iix35,iiy2  ! passed to edline
-      integer iicol
-      integer iigl,iigr,iigt,iigb,iigw,iigwh
 #else
       integer*8 igwid,igheight  ! for use with axiscale
       integer*8 iside,isize,ifont     ! passed to viewtext
       integer*8 iix,iiy,iix2,iix5,iix35,iiy2  ! passed to edline
-      integer*8 iicol
-      integer*8 iigl,iigr,iigt,iigb,iigw,iigwh
 #endif
 
 C Test save option selected.
@@ -225,9 +221,6 @@ C do an internal write placing an end marker which C can understand.
 C Check if can draw in colour.
       colok=.false.
       if(nzonec.ge.NCOMP)colok=.true.
-
-C Cast values for horaxis.
-      iigl=igl; iigr=igr; iigt=igt; iigb=igb; iigw=igw; iigwh=igwh
 
       goto (1000,2000) mode
 
@@ -284,10 +277,10 @@ c Determine scaling ratios for other y axis.
      &      xsc,ysc1,sca1,xadd,yadd1)
 
 c Draw a scale horizontal axis, move to beginning point.
-      call horaxis(xmin,xmax,iigl,iigr,iigb,xadd,xsc,1,'Time (h)')
+      call horaxis(xmin,xmax,igl,igr,igb,xadd,xsc,1,'Time (h)')
 
 c Draw a scale vertical axis.
-      call vrtaxis(yminb(1),ymaxb(1),iigl,iigb,iigt,yadd,ysc,1,0,':')
+      call vrtaxis(yminb(1),ymaxb(1),igl,igb,igt,yadd,ysc,1,0,':')
       if(mbstv.eq.1.or.mbstv.eq.3) then
          call wstxpt(igl-5,igt-17,'Temp')
          call wstxpt(igl-5,igt-5,'deg.C')
@@ -300,7 +293,7 @@ c Draw a scale vertical axis.
 
       if(mbstv.eq.3) then
          call vrtaxis(yminb(2),
-     &      ymaxb(2),iigr,iigb,iigt,yadd1,ysc1,1,1,':')
+     &      ymaxb(2),igr,igb,igt,yadd1,ysc1,1,1,':')
           call wstxpt(igr,igt-17,'Plant')
           call wstxpt(igr,igt-5,'  KW')
           yminb(2)=yminb(2)*1000.
@@ -387,10 +380,7 @@ c If first point then store its coordinates and identify
 c each curve as 'Z??' where 'Z' stands for zone.
             if(icount.eq.0) then
                if(colok)then
-                 if(mzone(i).gt.0)then
-                   iicol=mzone(i)
-                   call winscl('z',iicol)
-                 endif
+                 if(mzone(i).gt.0)call winscl('z',mzone(i))
                endif
                clabel='                    '
 C               write(clabel,'(a1,i2,a1)')'Z',mzone(i),nterm
@@ -416,19 +406,13 @@ C               write(clabel,'(a1,i2,a1)')'Z',mzone(i),nterm
                call wstxpt(ix,iy,clabel)
                call eswline(ix+5,iy+2,ix+35,iy+2)
                call esymbol(ix+20,iy+2,i,0)
-               if(colok)then
-                 iicol=0
-                 call winscl('-',iicol)
-               endif
+               if(colok)call winscl('-',0)
                call forceflush
 
 c else start plotting.
             else
                if(colok)then
-                 if(mzone(i).gt.0)then
-                   iicol=mzone(i)
-                   call winscl('z',iicol)
-                 endif
+                 if(mzone(i).gt.0)call winscl('z',mzone(i))
                endif
                ti=float(icount)/float(instep)
                ncoord(i,2,1)=igl+int((ti+xadd)*xsc)
@@ -453,10 +437,7 @@ c else start plotting.
                   ncoord1(i,1,1)=ncoord1(i,2,1)
                   ncoord1(i,1,2)=ncoord1(i,2,2)
                endif
-               if(colok)then
-                 iicol=0
-                 call winscl('-',iicol)
-               endif
+               if(colok)call winscl('-',0)
                call forceflush
             endif
    10    continue

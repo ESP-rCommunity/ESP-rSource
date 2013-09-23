@@ -455,7 +455,7 @@ Materials db
    although an ASCII version may be generated (and vice versa) to
    enable transfer between different operating systems. Database
    entities are accessed via an associated index.  The standard
-   version of this database resides is ~esru/esp-r/databases/constr.db1.a.
+   version of this database resides is ~esru/esp-r/databases/constr.db1.
 
    In the case of a project where measured thermophysical
    properties are available or bespoke materials are being used,
@@ -523,7 +523,7 @@ Constructions db
    follows.
 
 # Construction db defined as test.mlc
-# based on Materials db /usr/esru/esp-r/databases/constr.db1.a
+# based on Materials db /usr/esru/esp-r/databases/constr.db1
     6     # no of composites
 # layers  description   optics
     3    d_glz         TRAN  DCF7671_06nb

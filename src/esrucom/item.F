@@ -22,19 +22,18 @@ C EBRSTAB: searches the item defs for tabular generic choices.
 C GENDAT:  holds cases of generic data.
 
 C ************* EBRSTAB 
-C EBRSITM searches the item definition and produces a menu of temporal 
-C type choices available and returns its index as IFG.  It uses a call
-C to subroutine gendat to populate the TDFGH2 common blocks.
+C EBRSITM searches the item definition and produces a menu of generic 
+C TABULAR choices available and returns its index INO.
 C IER=0 OK, IER=1 problem.
       SUBROUTINE EBRSTAB(IFG,IER)
       character h*72
       common/pophelp/h(60)
       COMMON/TDFGH1/NITEMS
       COMMON/TDFGH2/GTYPES(24),GMENUS(24)
-      DIMENSION ISGGT(28),IVAL(28)
+      DIMENSION ISGGT(27),IVAL(27)
       LOGICAL FOUND
-      CHARACTER GMENUS*24,GTYPES*8
-      CHARACTER KEY*1,ISGGT*36,FOCUS*8
+      CHARACTER GMENUS*16,GTYPES*8
+      CHARACTER KEY*1,ISGGT*30,FOCUS*8
       integer nitms,INO ! max items and current menu item
 
 C Read the generic descriptions to see what is available.
@@ -42,11 +41,11 @@ C Read the generic descriptions to see what is available.
       FOCUS='ALL'
       FOUND=.false.
       CALL GENDAT(FOCUS,0,FOUND,IER)
-      M=1     ! for the title of the list
+      M=1
       DO 3 IT=1,NITEMS
         M=M+1
         CALL EMKEY(M,KEY,IER)
-        IVAL(M)=IT   ! remember mapping between item and menu position
+        IVAL(M)=IT
         WRITE(ISGGT(M),72)KEY,GMENUS(IT),GTYPES(IT)
    72   FORMAT(A1,1X,A,1x,A)
     3 CONTINUE
@@ -61,15 +60,15 @@ C Instanciateh() strings for this menu.
 C Make a menu of available generic items.
       INO=-2
    14 nitms=m+2
-      CALL EMENU('Available temporal types',ISGGT,nitms,INO)
+      CALL EMENU('Available TAB types',ISGGT,nitms,INO)
       IF(INO.EQ.M+2)THEN
-        IFG=0     ! signal nothing selected
+        INO=0
         RETURN
       ELSEIF(INO.EQ.M+1)THEN
 
 C Help text...
       ELSEIF(INO.GE.2.AND.INO.LE.M+1)THEN
-        IFG=IVAL(INO)   ! decode menu position back to item
+        IFG=IVAL(INO)
 
 C Debug.
 C        write(6,*) 'picked ',ifg,ino
@@ -90,12 +89,11 @@ C FOCUS is the generic type string, IFOC is the instance array.
 C In the case of FOCUS='ALL' IFOC is not used. 
       SUBROUTINE GENDAT(FOCUS,IFOC,FOUND,IER)
 #include "building.h"
-#include "net_flow.h"
 #include "tdf2.h"
 
 C Related to generic items. See __ for details.
 C  GTYPES(): 8 char generic type tag for type of processing and info.
-C  GMENUS(): 24 char descriptive text for use in selection menus.
+C  GMENUS(): 16 char descriptive text for use in selection menus.
       COMMON/TDFGH1/NITEMS
       COMMON/TDFGH2/GTYPES(24),GMENUS(24)
 
@@ -122,64 +120,62 @@ C       GMH='2,1,0,0,1,0,-999.0'
       COMMON/TDFG5/GMF(MBITS),MGMA(MBITS)
       COMMON/TDFG6/IALT(MBITS)
 
-      CHARACTER GMENUS*24,GTYPES*8
+      CHARACTER GMENUS*16,GTYPES*8
       CHARACTER GAIDE*36,GHELP*72,GDHDRT*72,GMH*32
       CHARACTER GMF*32,MGMA*32
       CHARACTER FOCUS*8,WORD*20
       LOGICAL FOUND
 
 C Pick up the arrays used for displaying current generic items.
-      NITEMS=23
+      NITEMS=24
       GTYPES(1) ='ALLCLMT'
-      GMENUS(1) ='Climate data (all six):'
-      GTYPES(2) ='DBTEXTT'
-      GMENUS(2) ='External Dry Bulb T:   '
-      GTYPES(3) ='WINDVLT'
-      GMENUS(3) ='Wind velocity :        '
-      GTYPES(4) ='WINDDRT'
-      GMENUS(4) ='Wind direction:        '
-      GTYPES(5) ='RELHUMT'
-      GMENUS(5) ='External rel humidity :'
-      GTYPES(6) ='DIFHSLT'
-      GMENUS(6) ='Diffuse horiz solar:   '
-      GTYPES(7) ='GLOHSLT'
-      GMENUS(7) ='Global horiz solar:    '
-      GTYPES(8) ='DIRSOLT'
-      GMENUS(8) ='Direct normal solar:   '
-      GTYPES(9) ='VERTSOL'
-      GMENUS(9) ='Vertical solar @ surf: '     
-      GTYPES(10)='CASUALT'
-      GMENUS(10)='Casual sum of OccLtEq: '
-      GTYPES(11)='CASUAL3T'
-      GMENUS(11)='Casual separate OccLtEq'
-      GTYPES(12)='ZIVENTT'
-      GMENUS(12)='Zone infil & vent rate:'
-      GTYPES(13)='RAIRVLT'
-      GMENUS(13)='Room air velocity (NA):'  ! not yet implemented
-      GTYPES(14)='SETPTTT'
-      GMENUS(14)='Control set point T:   '
-      GTYPES(15)='HTCLSETP'
-      GMENUS(15)='Heat & Cool set points:'
-      GTYPES(16)='SKYTMPT'
-      GMENUS(16)='Sky temp (NotAvail):   '  ! not yet implemented
+      GMENUS(1) ='Climate data:  '
+      GTYPES(2) ='CASUALT'
+      GMENUS(2) ='Casual gain(W):'
+      GTYPES(3) ='ZIVENTT'
+      GMENUS(3) ='Zone infl_vent:'
+      GTYPES(4) ='RAIRVLT'
+      GMENUS(4) ='Air (room) vel:'
+      GTYPES(5) ='SETPTTT'
+      GMENUS(5) ='Set point temp:'
+      GTYPES(6) ='CTLSTAT'
+      GMENUS(6) ='Control state: '
+      GTYPES(7) ='SKYLUXT'
+      GMENUS(7) ='Sky lux       :'
+      GTYPES(8) ='DBTEXTT'
+      GMENUS(8) ='Extn Dry Blb T:'
+      GTYPES(9) ='WINDVLT'
+      GMENUS(9) ='Wind velocity :'
+      GTYPES(10)='WINDDRT'
+      GMENUS(10)='Wind direction:'
+      GTYPES(11)='RELHUMT'
+      GMENUS(11)='Ext Rel humid :'
+      GTYPES(12)='DIFHSLT'
+      GMENUS(12)='Diff horz sol: '
+      GTYPES(13)='GLOHSLT'
+      GMENUS(13)='Global H solar:'
+      GTYPES(14)='DIRSOLT'
+      GMENUS(14)='Direct N solar:'
+      GTYPES(15)='SKYTMPT'
+      GMENUS(15)='Sky temp:      '
+      GTYPES(16)='GLOVRTT'
+      GMENUS(16)='Global V solar:'
       GTYPES(17)='OBJROTT'
-      GMENUS(17)='Object rotate:         '
-      GTYPES(18)='ACTIVITY'
-      GMENUS(18)='Activity Type:         '
-      GTYPES(19)='BIDIRSET'
-      GMENUS(19)='Optical bi-direc set:  '       
-      GTYPES(20)='BAMSNSET'
-      GMENUS(20)='BAM wireless sensor:   '  ! this is work in progress   
-
-C DBTZNM is not used by the simulator, res will graph/list it.  
-      GTYPES(21)='DBTZNM'
-      GMENUS(21)='Zone db T (to display):'
-
-C SURTM is not used by the simulator, res will graph/list it.
-      GTYPES(22)='SURTM'
-      GMENUS(22)='Surface T (to display):'
-      GTYPES(23)='NODPRESS'
-      GMENUS(23)='Flow node press Pa:    '
+      GMENUS(17)='Object rotate: '
+      GTYPES(18)='CASUAL3T'
+      GMENUS(18)='Casual OccLtEq:'
+      GTYPES(19)='ACTIVITY'
+      GMENUS(19)='Activity Type: '
+      GTYPES(20)='BIDIRSET'
+      GMENUS(20)='Optical set:   '       
+      GTYPES(21)='VERTSOL'
+      GMENUS(21)='Vertical solar:'     
+      GTYPES(22)='HTCLSETP'
+      GMENUS(22)='H&C set points:'     
+      GTYPES(23)='DBTZNM'
+      GMENUS(23)='Msr Dry Bulb T:'
+      GTYPES(24)='SURTM'
+      GMENUS(24)='Msr surface T: '
 
 C If not looking for a specific item then return.
       IF(FOCUS(1:7).EQ.'ALLCLMT')THEN
@@ -212,6 +208,32 @@ C the static item will not be known in advance.
         MGMA(6)='Wind direction (deg clockwise): '
         GMF(7)='REAL,7,50.0,0.0,100.0'
         MGMA(7)='Relative humidity (%):          '
+        FOUND=.TRUE.
+      ELSEIF(FOCUS(1:7).EQ.'SETPTTT')THEN
+
+C Set point temperature: one data item.
+        GAIDE   ='Set point temp    '
+        GHELP(1)='Set point temperature deg C. This type used for '
+        GHELP(2)='control purposes.'
+        GMH='2,1,0,0,1,0,-999.0'
+        GDHDRT(1)='   time  | set point   '
+        GDHDRT(2)='   of day| temperature '
+        GDHDRT(3)='Set point temperature (C):'
+        GMF(1)='REAL,1,0.0,-101.0,101.0'
+        MGMA(1)='Set point temperature (C) :     '
+        FOUND=.TRUE.
+      ELSEIF(FOCUS(1:7).EQ.'CTLSTAT')THEN
+
+C Control state: one data item.
+        GAIDE   ='Control state   '
+        GHELP(1)='Control state (-1.0 to 1.0). This type used for'
+        GHELP(2)='control purposes. NOT YET IMPLEMENTED IN SIMULATOR'
+        GMH='2,1,0,0,1,0,-999.0'
+        GDHDRT(1)='   time  | control  '
+        GDHDRT(2)='   of day| state    '
+        GDHDRT(3)='Control state (0.0 to 1.0):'
+        GMF(1)='REAL,1,0.0,0.0,1.0'
+        MGMA(1)='Control state (0.0 to 1.0):     '
         FOUND=.TRUE.
       ELSEIF(FOCUS(1:7).EQ.'DBTEXTT')THEN
 
@@ -289,28 +311,14 @@ C External air temperature: one data item.
         GMF(1)='REAL,1,0.0,0.0,600.0'
         MGMA(1)='Direct normal solar rad (W/m2): '
         FOUND=.TRUE.
-      ELSEIF(FOCUS(1:7).EQ.'VERTSOL')THEN
-
-C Control state: one data item.
-        GAIDE   ='Vertical solar radiation in W/m2'
-        GHELP(1)='Global solar radiation data for surfaces in the'
-        GHELP(2)='facade. Values in Watts/m^2'
-        GMH='2,1,0,0,1,0,999.9'
-        GDHDRT(1)='   time  | vertical solar  '
-        GDHDRT(2)='   of day| radiation       '
-        GDHDRT(3)='Vertical solar radiation (0 to 999):'
-        GMF(1)='REAL,1,0.0,0.0,999.9'
-        MGMA(1)='Vertical solar rad (W/m2)   '
-        FOUND=.TRUE.
-
       ELSEIF(FOCUS(1:7).EQ.'CASUALT')THEN
 
 C Lumped zone casual loads -  in tabular format.
 C << ? what about an attribute to tag which casual gain type this
 C << relates to? (so other gains assumed to come from operation files?)
         GAIDE   ='Casual gains '
-        GHELP(1)='Casual gains are lumped together in the form of '
-        GHELP(2)='sensible conv W, sensible radiant W, and latent W.'
+        GHELP(1)='Casual gains are in the form of sensible conv W, '
+        GHELP(2)='sensible radiant W, laten W.'
         GMH='2,3,0,0,3,0,-999.0'
         GDHDRT(1)='   time  |       sensible      | latent'
         GDHDRT(2)='   of day| convective  radiant |       ' 
@@ -330,7 +338,7 @@ C Data for separate zone casual loads occup/lights/small power.
         GAIDE   ='Casual gains OccLtgEqp'
         GHELP(1)='Casual gains are in the form of sensible conv W, '
         GHELP(2)='sensible radiant W, laten W for occupants, lighting'
-        GHELP(3)='and small power separately.'
+        GHELP(3)='and small power'
         GMH='3,9,0,0,9,0,-999.0'
         write(GDHDRT(1),'(a)')
      &   ' time  |     ocupant     |    lights       |   small power   '
@@ -389,9 +397,9 @@ C Static field INTG : 0=ach 1-m3^hr associated zones.
 C             type, position, default, range
         GMF(1)='INTG,1,0,0,1'
         MGMA(1)='Units: 0 = ac/h and 1 = m^3/sec'
-        GMF(2)='INTG,2,0,0,82'
+        GMF(2)='INTG,2,0,0,24'
         MGMA(2)='Ventilation source 1st zone:    '
-        GMF(3)='INTG,3,0,0,82'
+        GMF(3)='INTG,3,0,0,24'
         MGMA(3)='Ventilation source 2nd zone:    '
 
 C Non-static infiltration and 1st and 2nd zone ventilation.
@@ -402,36 +410,6 @@ C Non-static infiltration and 1st and 2nd zone ventilation.
         GMF(6)='REAL,6,0.0,0.0,10000.0'
         MGMA(6)='Ventilation 2nd zone (m^3/sec):'
         FOUND=.TRUE.
-      ELSEIF(FOCUS(1:7).EQ.'SETPTTT')THEN
-
-C Control set point temperature (single) : one data item.
-        GAIDE   ='Set point temp    '
-        GHELP(1)='Set point temperature deg C. This type used for '
-        GHELP(2)='control purposes with a single target temperature.'
-        GMH='2,1,0,0,1,0,-999.0'
-        GDHDRT(1)='   time  | set point   '
-        GDHDRT(2)='   of day| temperature '
-        GDHDRT(3)='Set point temperature (C):'
-        GMF(1)='REAL,1,0.0,-101.0,101.0'
-        MGMA(1)='Set point temperature (C) :     '
-        FOUND=.TRUE.
-      ELSEIF(FOCUS(1:8).EQ.'HTCLSETP')THEN
-
-C Control state: two data item.
-        GAIDE   ='Heating & Cooling setp. (degC)'
-        GHELP(1)='Assign Heating and cooling set-points in'
-        GHELP(2)='two columns (degC). Ideal control (BCL23)'
-        GHELP(3)='uses this information for its setpoints.'        
-        GMH='3,2,0,0,2,0,-999.9'
-        GDHDRT(1)='   time  | Heating   |  Cooling   '
-        GDHDRT(2)='   of day| set-point |  set-point '
-        GDHDRT(3)='Heating set-points:'
-        GMF(1)='REAL,1,0.0,-300.0,300.0'
-        MGMA(1)='Heating set-points (degC): '
-        GMF(2)='REAL,2,0.0,-300.0,300.0'
-        MGMA(2)='Cooling set-points (degC): '
-        FOUND=.TRUE.
-        
       ELSEIF(FOCUS(1:7).EQ.'SKYTMPT')THEN
         GAIDE   ='Sky temp (C)    '
         GHELP(1)='Sky temperature (C) (measured).'
@@ -527,38 +505,43 @@ C Control state: one data item.
         MGMA(1)='Bidirectional data set:   '
         FOUND=.TRUE.
 
-      ELSEIF(FOCUS(1:8).EQ.'BAMSNSET')THEN
+      ELSEIF(FOCUS(1:7).EQ.'VERTSOL')THEN
 
-C BAM wireless sensor data (to be done).
-        GAIDE   ='BAM wireless sensor         '
-        GHELP(1)='A BAM wireless sensor records temperature, light, RH'
-        GHELP(2)='movement, audio level.'
-        GMH='2,5,1,0,5,0,-999'
-        GDHDRT(1)=
-     &'   time  | temp | light |relative| PIR   |audio'
-        GDHDRT(2)=
-     &'   of day| degC | lux   |humidity| value |level' 
-        GDHDRT(3)='Temp (degC)  Light (lux)  RH%  PIR(-) Audio(-):'
-        GMF(1)='INTG,1,0,0,900'    ! static
-        MGMA(1)='Sensor ID: (0-900)'
-        GMF(2)='REAL,2,0.0,-100.0,100.0'
-        MGMA(2)='Temp (degC):                '
-        GMF(3)='REAL,3,0.0,0.0,20000.0'
-        MGMA(3)='Light (lux):                '
-        GMF(4)='REAL,4,0.0,0.0,100.0'
-        MGMA(4)='RH (%):                     '
-        GMF(5)='REAL,5,0.0,0.0,1000.0'
-        MGMA(5)='Movement (-):               '
-        GMF(6)='REAL,5,0.0,0.0,1000.0'
-        MGMA(6)='Audio (-):                  '
+C Control state: one data item.
+        GAIDE   ='Vertical solar radiationi in W/m2'
+        GHELP(1)='Global solar radiation data for a facade.'
+        GHELP(2)='Values in Watts/m^2'
+        GMH='2,1,0,0,1,0,999.9'
+        GDHDRT(1)='   time  | vertical solar  '
+        GDHDRT(2)='   of day| radiation       '
+        GDHDRT(3)='Vertical solar radiation (0 to 999):'
+        GMF(1)='REAL,1,0.0,0.0,999.9'
+        MGMA(1)='Vertical solar rad (W/m2)   '
         FOUND=.TRUE.
 
+      ELSEIF(FOCUS(1:8).EQ.'HTCLSETP')THEN
+
+C Control state: two data item.
+        GAIDE   ='Heating & Cooling setp. (degC)'
+        GHELP(1)='Assign Heating and cooling set-points in'
+        GHELP(2)='different columns (degC). Ideal control'
+        GHELP(3)='is used for this (BCL23)'        
+        GMH='3,2,0,0,2,0,-999.9'
+        GDHDRT(1)='   time  | Heating   |  Cooling   '
+        GDHDRT(2)='   of day| set-point |  set-point '
+        GDHDRT(3)='Heating set-points:'
+        GMF(1)='REAL,1,0.0,-300.0,300.0'
+        MGMA(1)='Heating set-points (degC): '
+        GMF(2)='REAL,2,0.0,-300.0,300.0'
+        MGMA(2)='Cooling set-points (degC): '
+        FOUND=.TRUE.
+        
       ELSEIF(FOCUS(1:6).EQ.'DBTZNM')THEN
 
 C Measured zone air temperature: one data item.
         GAIDE   ='Measured zone DB temp '
-        GHELP(1)='Zone dry bulb temperature degree C measurements to'
-        GHELP(2)='to display in res for comparison with predictions.'
+        GHELP(1)='Zone dry bulb temperature deg C. This type used for'
+        GHELP(2)='measurements and to display.'
         GMH='2,1,0,0,1,0,-999.0'
         GDHDRT(1)='   time  | meas zone db'
         GDHDRT(2)='   of day| temperature '
@@ -569,30 +552,16 @@ C Measured zone air temperature: one data item.
         
       ELSEIF(FOCUS(1:5).EQ.'SURTM')THEN
 
-C Measured surface temperature (for reporting in res): one data item.
+C Measured surface temperature: one data item.
         GAIDE   ='Measured surface temp '
-        GHELP(1)='Zone surf temperature degree C measurements to'
-        GHELP(2)='to display in res for comparison with predictions.'
+        GHELP(1)='Zone surf temperature deg C. This type used for'
+        GHELP(2)='measurements and to display.'
         GMH='2,1,0,0,1,0,-999.0'
         GDHDRT(1)='   time  | meas surface'
         GDHDRT(2)='   of day| temperature '
         GDHDRT(3)='Meas Surf temperature:'
         GMF(1)='REAL,1,0.0,-49.0,49.0'
         MGMA(1)='Meas surf temperature (C): '
-        FOUND=.TRUE.
-
-      ELSEIF(FOCUS(1:8).EQ.'NODPRESS')THEN
-
-C Measured node pressure (for reporting in res): one data item.
-        GAIDE   ='Measured flow node pressure Pa'
-        GHELP(1)='Fluid flow network node pressure (Pa)'
-        GHELP(2)='measured data'
-        GMH='2,1,0,0,1,0,-999.0'
-        GDHDRT(1)='   time  | measured node'
-        GDHDRT(2)='   of day| pressure '
-        GDHDRT(3)='Meas Node Pressure:'
-        GMF(1)='REAL,1,0.0,-50.0,50.0'
-        MGMA(1)='Measured node press(Pa): '
         FOUND=.TRUE.
 
       ELSEIF(FOCUS(1:4).EQ.'ALL ')THEN
@@ -613,17 +582,12 @@ C than reading from TDF file.
 C            NHELP,NBITS,NSTATIC,NGMAT,NGMAR,NGMAI,GERR
 C        GMH='2,2,8,1,7,2,-999.0'
           K=0
-          CALL EGETWI(GMH,K,NHELP,0,MHEL,'F','nb help',IER)
-          CALL EGETWI(GMH,K,NTBITS(IFOC),1,MBITS,'F',
-     &      'total timestep fields',IER)
-          CALL EGETWI(GMH,K,NTSTAT(IFOC),0,MGAR,'F',
-     &      'nb of static data fields',IER)
-          CALL EGETWI(GMH,K,NTMAT(IFOC),0,MGAT,'F',
-     &      'nb text fields',IER)
-          CALL EGETWI(GMH,K,NTMAR(IFOC),0,MGAR,'F',
-     &      'nb real data fields',IER)
-          CALL EGETWI(GMH,K,NTMAI(IFOC),0,MGAI,'F',
-     &      'nb integer data fields',IER)
+          CALL EGETWI(GMH,K,NHELP,0,MHEL,'F','help',IER)
+          CALL EGETWI(GMH,K,NTBITS(IFOC),1,MBITS,'F','total bits',IER)
+          CALL EGETWI(GMH,K,NTSTAT(IFOC),0,MGAR,'F','nb of stat',IER)
+          CALL EGETWI(GMH,K,NTMAT(IFOC),0,MGAT,'F','nb tex flds',IER)
+          CALL EGETWI(GMH,K,NTMAR(IFOC),0,MGAR,'F','nb real flds',IER)
+          CALL EGETWI(GMH,K,NTMAI(IFOC),0,MGAI,'F','nb int flds',IER)
 
 C Loop through the field definitions (in GMF) to get patterns.
 C IEFLDS is the total number of fields in this instance.
@@ -665,7 +629,6 @@ C ******* EXGMAT
 C Extract text alternatives from gmat in the string array salt.
       subroutine exgmat(ia,SALT,ier)
 #include "building.h"
-#include "net_flow.h"
 #include "tdf2.h"
       integer iCountWords
 

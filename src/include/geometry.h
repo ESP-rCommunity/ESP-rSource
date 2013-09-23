@@ -128,8 +128,8 @@ C G9 holds information on children of a surface and its parent.
       integer igchild   ! list of grand children for each connection
       integer iparent   ! parent surface connection (zero is no parent)
       integer igparent  ! grandparent surface connection (zero is no grandparent)
-      common/G9/nbchild(MCON),nbgchild(MCON),ichild(MCON,4),
-     &          igchild(MCON,4),iparent(MCON),igparent(MCON)
+      common/G9/nbchild(MCON),nbgchild(MCON),ichild(MCON,8),
+     &          igchild(MCON,8),iparent(MCON),igparent(MCON)
 
 C Global coordinates for whole model (connection based).
       real VCOORD    ! X,Y & Z coordinates of vertices in all zones.
@@ -159,10 +159,6 @@ C areas which are of general interest to many subroutines.
       character zname*12  ! the zone name
       character zdesc*64  ! zone notes
       COMMON/precz/zname(MCOM),zdesc(MCOM)
-      
-c Long zone name for H3K reports
-      common/H3KSTORE_ZONE/zoneLabel(MCOM)
-      CHARACTER zoneLabel*32      
 
       integer lnzname,lnzdesc ! length of zname and zdesc strings
       common/preczln/lnzname(MCOM),lnzdesc(MCOM)
@@ -259,8 +255,4 @@ C  (zero if no surface is close to horizontal facing down).
       integer izsfloor,izsceil
       COMMON/PREC16/izsfloor(MCOM),izsceil(MCOM)
 
-C Althought ssmlcn(mcon) holds the name of the construction, also knowing the
-C matching index in the database can save search time.
-      integer ssmlcindex  ! for each connection points to MLC db item or zero
-      common/precmlc/ssmlcindex(MCON)
 

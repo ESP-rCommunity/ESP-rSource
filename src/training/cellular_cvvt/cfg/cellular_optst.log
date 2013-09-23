@@ -1,0 +1,12 @@
+Project notes for cellular_optst.cfg
+Description: Two adjacent cellular offices with optimal start controller
+In folder: training/cellular_cvvt
+By: jon
+Date: Tue Feb 06 12:00:00 2007
+For: 
+Project reference: 
+Notes: 
+_____________________________
+Derived from the cellular base case model. Used to test
+out ideal zone control law 15 optimal start (4 a.m.)
+ 

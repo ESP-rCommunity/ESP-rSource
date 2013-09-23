@@ -1,5 +1,5 @@
 *Operations 1.0
-*date Sat Mar  9 08:10:44 2013  # latest file modification 
+*date Tue Jul 07 10:19:48 2009  # latest file modification 
 # operations of reception defined in: 
 # ../zones/kitchen_kor.opr
 kitchen_kor;weekdays_and_saturday10-23;casual_gains142.8W/m2(80%conv);39ach
@@ -13,10 +13,7 @@ kitchen_kor;weekdays_and_saturday10-23;casual_gains142.8W/m2(80%conv);39ach
   10, 23,    39.000    0.000    0    0.000
      1   # number of flow periods in day type: sunday      
 # start, stop, infil, ventil, source, data
-   0, 24,     1.000    0.000    0    0.000
-     1   # number of flow periods in day type: holiday      
-# start, stop, infil, ventil, source, data
-   0, 24,     1.000    0.000    0    0.000
+   0, 24,    0.000    0.000    0    0.000
      3   # number of casual gains in day type: weekday     
 # type, start, stop, sens, latent, rad_frac, conv_frac
    -3,   0,  10,      0.0,      0.0, 0.200, 0.800
@@ -28,6 +25,5 @@ kitchen_kor;weekdays_and_saturday10-23;casual_gains142.8W/m2(80%conv);39ach
    -3,  10,  23,     142.8,     0.0, 0.200, 0.800
    -3,  23,  24,      0.0,      0.0, 0.200, 0.800
      0   # number of casual gains in day type: sunday      
-     0   # number of casual gains in day type: holiday     
 # Labels for gain types 
  Occupt Lights Equipt

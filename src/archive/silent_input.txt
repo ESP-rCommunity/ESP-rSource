@@ -1,0 +1,22 @@
+*silent_input
+*start_zone,metal_box5
+*shape,box
+*origin,0.0,40.0,0.0  # origin of zone
+*size,22.0,12.0,7.0  # length width height (m)
+*rotate,0.0          # rotation
+*glaze,1,1,20.0         # how many, index of parent and percent
+*door,1,1,2.5    # how many, index of parent and width of door
+*surface,front,extern_wall,0,0,0
+*surface,right,extern_wall,0,0,0
+*surface,back,extern_wall,0,0,0
+*surface,left,extern_wall,0,0,0
+*surface,roof,roof_1,0,0,0
+*surface,floor,floor_1,4,1,0
+*surface,door,door,0,0,0
+*surface,glaz_front,dbl_glz,0,0,0
+*usage,pattern,all,allcas,nothing_in_room.opr   # casual gain pattern
+*environment,comvective_night_off  # name of zone control pattern
+*heating,18.0,0.0   # setpoint occupied & unoccupied
+*cooling,26.0,100.0 # setpoint occupied & unoccupied
+*end_zone
+*end

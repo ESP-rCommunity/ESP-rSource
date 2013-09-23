@@ -47,7 +47,6 @@ C of inter-fabric temperature and condensation conditions.
       CHARACTER*23 ITEM(10)
       character xfile*144,tg*1,delim*1,act*1
       integer NITMS,INO ! max items and current menu item
-      integer IW,IWS    ! user choices
 
 C For help messages
       character helpinsub*24   ! subroutine name
@@ -95,10 +94,6 @@ C Request zone and surface for output and check if graph should be
 C plotted over the whole period or one timestep at a time.
           CALL ASKZON(ICOMP)
           CALL ASKSUR(ICOMP,ISUR)
-          if(icomp.eq.0.or.isur.eq.0)then
-            call usrmsg('nothing selected...',' ','W')
-            goto 3
-          endif
           helptopic='condensation_animation'
           call gethelptext(helpinsub,helptopic,nbhelp)
           CALL EASKABC('When plotting temperatures:',' ',
@@ -106,13 +101,6 @@ C plotted over the whole period or one timestep at a time.
      &      'continue',IW,nbhelp)
           if(IW.eq.1)act='-'
           if(IW.eq.2)act='a'
-          if(IW.eq.3) goto 3
-
-C Ask about speed
-          IWS=2
-          CALL EASKABC('Plotting speed:',' ',
-     &      'slower (200ms/step)','normal (100ms/step)',
-     &      'fast (50ms/step',IWS,nbhelp)
 
 C Get element thicknesses for this construction.
           CALL MOTHKE(ICOMP,ISUR)
@@ -124,7 +112,7 @@ C Compute scale and draw axes.
           CALL MOFAXS(ICOMP,ISUR)
 
 C Draw profiles.
-          CALL MOFDRW(ICOMP,ISUR,act,IWS)
+          CALL MOFDRW(ICOMP,ISUR,act)
         else
           goto 5
         endif
@@ -192,12 +180,8 @@ C to the fabric temperature or condensation information.
       integer lml   ! string length for construction name.
 #ifdef OSI
       integer iside,isize,ifont     ! passed to viewtext
-      integer iigl,iigr,iigt,iigb,iigw,iigwh
-      integer iiw1,iiw2,iiw3,iiw4,iimenu
 #else
       integer*8 iside,isize,ifont     ! passed to viewtext
-      integer*8 iigl,iigr,iigt,iigb,iigw,iigwh
-      integer*8 iiw1,iiw2,iiw3,iiw4,iimenu
 #endif
 
 C Generate a descriptive string for the time period to be displayed
@@ -211,17 +195,12 @@ C pixel references for calls to viewtext.
 
       IF(MMOD.EQ.8)THEN
         call startbuffer
-
-C Setup and pass in parameters to win3d.
-        iiw1=9; iiw2=24; iiw3=8; iiw4=3; iimenu=menuchw
-        iigl=igl; iigr=igr; iigt=igt; iigb=igb; iigw=igw; iigwh=igwh
-        CALL win3d(iimenu,iiw1,iiw2,iiw3,iiw4,
-     &    iigl,iigr,iigt,iigb,iigw,iigwh)
-        igl=int(iigl); igr=int(iigr); igt=int(iigt); igb=int(iigb)
-        igw=int(iigw); igwh=int(iigwh)
+        call win3d(menuchw,9,24,8,3,igl,igr,igt,igb,igw,igwh)
+        igw=igr-igl
+        igwh=igb-igt
       ENDIF
 
-      lsn1=MIN0(lnblnk(RFILE),32)
+      lsn1=MIN0(lnblnk(RFILE),22)
       if(NSIM.gt.1)then
         WRITE(ETEXT,'(3A,I4,A,A)')'Lib: ',RFILE(1:lsn1),' Set:',ISIM,
      &    ': ',RSNAME(ISIM)(1:lnblnk(RSNAME(ISIM)))
@@ -430,7 +409,7 @@ C LFMAT,IFMAT,LFMUL,IFMUL (for materials and constructions database)
       COMMON/ETHICK/ETHK(ME),THKMAX,THKMIN
       COMMON/T1/NE(MS),NAIRG(MS),IPAIRG(MS,MGP),RAIRG(MS,MGP)
 
-C VDIF is diffusion res, IPRZ is material array index for each layer.
+C VDIF is diffusion res, IPRZ is primitive db ref for each layer.
       COMMON/T7/VDIF(ME)
       common/T8/IPRZ(MS,ME)
 
@@ -479,15 +458,18 @@ C Determine diffusion resistance factor for each element.
       call edisp(iuout,' Diffusion resistance factor for:')
       call edisp(iuout,' ')
       DO 20 I=1,NE(ISUR)
-        matarrayindex=IPRZ(ISUR,I)   ! which material
+        legmat=IPRZ(ISUR,I)   ! which legacy index
+        if(legmat.gt.0)then
+          matarrayindex=mathash(legmat)  ! find matching array index
  
 C And if matarrayindex is zero then reset DRVAL and NAM.
-        if(matarrayindex.eq.0)then
-          DRVAL=1.0
-          NAM='AIR'
-        else
-          DRVAL=matdbdrv(matarrayindex)
-          write(NAM,'(a)') matname(matarrayindex)(1:32)
+          if(matarrayindex.eq.0)then
+            DRVAL=1.0
+            NAM='AIR'
+          else
+            DRVAL=matdbdrv(matarrayindex)
+            write(NAM,'(a)') matname(matarrayindex)(1:32)
+          endif
         endif
 
         helptopic='res_diffusion_resistance'
@@ -558,7 +540,6 @@ C and saturated vapour pressure gradients.
       COMMON/OUTIN/IUOUT,IUIN
 
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
-      integer IZSTOCN
       COMMON/C24/IZSTOCN(MCOM,MS)
       COMMON/RECV3/NCONST(MCOM),NELTS(MCOM,MS),NGAPS(MCOM,MS),
      &             NPGAP(MCOM,MS,MGP)
@@ -735,14 +716,9 @@ C condensation graphical output.
       character outs*124
 #ifdef OSI
       integer igwid,igheight  ! for use with axiscale
-      integer iigl,iigr,iigt,iigb,iigw,iigwh
 #else
       integer*8 igwid,igheight  ! for use with axiscale
-      integer*8 iigl,iigr,iigt,iigb,iigw,iigwh
 #endif
-
-C Cast values for linescale.
-      iigl=igl;iigr=igr;iigt=igt;iigb=igb;iigw=igw;iigwh=igwh
 
       XMAX=THKMAX
       XMIN=THKMIN
@@ -757,11 +733,9 @@ C Compute scaling factors and draw the axis.
       igheight=igwh
       call axiscale(igwid,igheight,XMIN,XMAX,PMIN,PMAX,xsc,ysc,sca,
      &              Xadd,Yadd)
-      call linescale(iigl,Xadd,xsc,iigb,Yadd,ysc)
-      call horaxis(XMIN,XMAX,iigl,iigr,iigb,Xadd,xsc,0,
-     &  'Thickness (mm)')
-      call vrtaxis(PMIN,PMAX,iigl,iigb,iigt,Yadd,ysc,0,0,
-     &  'Pressure mbar')
+      call linescale(igl,Xadd,xsc,igb,Yadd,ysc)
+      call horaxis(XMIN,XMAX,igl,igr,igb,Xadd,xsc,0,'Thickness (mm)')
+      call vrtaxis(PMIN,PMAX,igl,igb,igt,Yadd,ysc,0,0,'Pressure mbar')
 
       RETURN
       END
@@ -778,7 +752,7 @@ C and vapour pressure gradients.
       integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
 
-C IPRZ is materials array index for each layer.
+C IPRZ is primitive db ref for each layer.
       common/T8/IPRZ(MS,ME)
       COMMON/ETHICK/ETHK(ME),THKMAX,THKMIN
       COMMON/T1/NE(MS),NAIRG(MS),IPAIRG(MS,MGP),RAIRG(MS,MGP)
@@ -882,7 +856,6 @@ C period.
       COMMON/T2/CON(MS,ME),DEN(MS,ME),SHT(MS,ME),THK(MS,ME)
 
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
-      integer IZSTOCN
       COMMON/C24/IZSTOCN(MCOM,MS)
 
       COMMON/SIMPIK/ISIM,ISTADD,ID1,IM1,ID2,IM2,ISDS,ISDF,NTS,ISAVE
@@ -890,7 +863,7 @@ C period.
       COMMON/GET1/VAL1(MZS,MTS),VAL2(MZS,MTS),VAL3(MZRL,MTS)
       COMMON/GET2/XDUM(MTS),XDUM1(MTS),GVAL(MTS)
 
-C IPRZ is materials array index for each layer.
+C IPRZ is primitive db ref for each layer.
       COMMON/T7/VDIF(ME)
       common/T8/IPRZ(MS,ME)
       COMMON/ETHICK/ETHK(ME),THKMAX,THKMIN
@@ -963,16 +936,19 @@ C For each surface.
         SN=SSNAME(ICN)
 
 C Determine diffusion resistance factor for each element
-C check if gap via materials array and compute layer thickness.
+C from ascii or binary materials db and compute layer thickness.
         DO 24 I=1,NE(ISUR)
           ETHK(I)=THK(ISUR,I)*1000.0
-          matarrayindex=IPRZ(ISUR,I)   ! which material
+          legmat=IPRZ(ISUR,I)   ! which legacy index
+          if(legmat.gt.0)then
+            matarrayindex=mathash(legmat)  ! find matching array index
  
 C And if matarrayindex is zero then reset DRVAL.
-          if(matarrayindex.eq.0)then
-            DRVAL=1.0
-          else
-            DRVAL=matdbdrv(matarrayindex)
+            if(matarrayindex.eq.0)then
+              DRVAL=1.0
+            else
+              DRVAL=matdbdrv(matarrayindex)
+            endif
           endif
           VDIF(I)=DRVAL
    24   CONTINUE

@@ -2682,7 +2682,7 @@ C.....Connection temperatures
 C.....Water temperature
       fWater_temperature =  CSVF( node1, iTemperature )
 
-      call AddToReport(
+      call AddToReportWild1(
      &      rvPltWaterTemp%Identifier,
      &      CSVF(node1,iTemperature),
      &      pcname(iComponentIndex)(1:iNameLen))
@@ -2696,7 +2696,7 @@ C.....Heat injection = flow rate * ( T_in - T_tank)
      &     * ( H3K_connect_property(con1a,iTemperature) -
      &     fWater_temperature )
 
-      call AddToReport(rvPltConn1HeatInject%Identifier,
+      call AddToReportWild1(rvPltConn1HeatInject%Identifier,
      &   fConn_heat_injection,
      &   pcname(iComponentIndex)(1:iNameLen))
 
@@ -2709,18 +2709,18 @@ C.....Heat injection = flow rate * Cp * ( T_in - T_tank)
      &     * ( H3K_connect_property(con1b,iTemperature) -
      &     fWater_temperature )
 
-       call AddToReport(rvPltConn2HeatInject%Identifier,
+       call AddToReportWild1(rvPltConn2HeatInject%Identifier,
      &         fConn_heat_injection,
      &         pcname(iComponentIndex)(1:iNameLen))
 
 
 C.....DHW draw
-      call AddToReport(rvPltDomHotWtrVol%Identifier,
+      call AddToReportWild1(rvPltDomHotWtrVol%Identifier,
      &        dhw_draw_future,
      &        pcname(iComponentIndex)(1:iNameLen))
 
 C.......DHW make-up temperature
-      call AddToReport(rvPltDomHotWtrMkTemp%identifier,
+      call AddToReportWild1(rvPltDomHotWtrMkTemp%identifier,
      &         T_makeup_future,
      &         pcname(iComponentIndex)(1:iNameLen))
 
@@ -2732,7 +2732,7 @@ C.......LOAD = (T - T_makeup) * (m * Cp)
       DHW_load = (fWater_temperature - T_makeup_future)
      &     * mdotCp_DHW_future
 
-      call AddToReport(rvPltDomHotWtrThermal%identifier,
+      call AddToReportWild1(rvPltDomHotWtrThermal%identifier,
      &         DHW_load,
      &         pcname(iComponentIndex)(1:iNameLen))
 
@@ -2742,44 +2742,44 @@ C.....Gas-fired tank calculations
       if ( iTankType .eq. iGas_tank ) then
 
 C.......Burner heat procuction
-      call AddToReport(rvPltBurnOut%identifier,
+      call AddToReportWild1(rvPltBurnOut%identifier,
      &         q_burner,
      &         pcname(iComponentIndex)(1:iNameLen))
 
 C.......Fuel Flow
-      call AddToReport(rvPltFuelFlow%identifier,
+      call AddToReportWild1(rvPltFuelFlow%identifier,
      &         m_dot_fuel_kg_t,
      &         pcname(iComponentIndex)(1:iNameLen))
 
 C.......Volumetric fuel flow at STP.
 C.......-> set name
-      call AddToReport(rvPltFuelFlowVolSTP%identifier,
+      call AddToReportWild1(rvPltFuelFlowVolSTP%identifier,
      &         Vdot_fuel_STP_t,
      &         pcname(iComponentIndex)(1:iNameLen))
 
 C.......'gross heat input' (lower heating value flow rate)
-      call AddToReport(rvPltFuelFlowLHVVal%identifier,
+      call AddToReportWild1(rvPltFuelFlowLHVVal%identifier,
      &         m_dot_fuel_kmol_t * LHV_fuel_tank * 1.0E06,
      &         pcname(iComponentIndex)(1:iNameLen))
 
 C.......Air Flow
-      call AddToReport(rvPltAirFlow%identifier,
+      call AddToReportWild1(rvPltAirFlow%identifier,
      &         m_dot_air_kg_t,
      &         pcname(iComponentIndex)(1:iNameLen))
 
 C.......Exhaust Gas
-      call AddToReport(rvPltExhaustFlow%identifier,
+      call AddToReportWild1(rvPltExhaustFlow%identifier,
      &         m_dot_exh_kg_t,
      &         pcname(iComponentIndex)(1:iNameLen))
 
-      call AddToReport(rvPltEInput%identifier,
+      call AddToReportWild1(rvPltEInput%identifier,
      &          m_dot_fuel_kmol_t * LHV_fuel_tank * 1.0E06,
      &         pcname(iComponentIndex)(1:iNameLen))
 
 
       elseif( iTankType .eq. iEle_tank ) then
 C........Operations specific to electrical tank would go here.
-      call AddToReport(rvPltEInput%identifier,
+      call AddToReportWild1(rvPltEInput%identifier,
      &          q_element,
      &         pcname(iComponentIndex)(1:iNameLen))
 
@@ -2787,13 +2787,13 @@ C........Operations specific to electrical tank would go here.
       endif
 
 C.......Heat_transfer to water
-      call AddToReport(rvPltHTransWater%identifier,
+      call AddToReportWild1(rvPltHTransWater%identifier,
      &         q_capture_future,
      &         pcname(iComponentIndex)(1:iNameLen))
 
 C.......Jacket losses
       fJacket_losses = tank_UA * (fWater_temperature - Troom_future)
-      call AddToReport(rvPltJacketLoss%identifier,
+      call AddToReportWild1(rvPltJacketLoss%identifier,
      &         fJacket_losses,
      &         pcname(iComponentIndex)(1:iNameLen))
 
@@ -2806,7 +2806,7 @@ C-------------------------------------------------------------------------------
 
 
 C.......Heat dump
-      call AddToReport(rvPltHeatDump%identifier,
+      call AddToReportWild1(rvPltHeatDump%identifier,
      &         q_heatdump_future,
      &         pcname(iComponentIndex)(1:iNameLen))
 

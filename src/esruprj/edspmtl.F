@@ -137,16 +137,16 @@ C Clear temporary storage for special material node numbers.
   5   CONTINUE
 
       NSPMTYP1=0
-C Display active material components (ispmtyp above 50).
+C Display active material components.
       IF(MODE.EQ.'EM'.OR.MODE.EQ.'LM')THEN
         DO 10 L=1,ILEN
           IF(L.GE.IST.AND.(L.LE.(IST+MIFULL)))THEN
             IF(ISPMTYP(L,1).GT.50)THEN
-C              WRITE(*,*) 'type ', ISPMTYP(L,1) 
+c              WRITE(*,*) 'type ', ISPMTYP(L,1) 
               M=M+1
               NSPMTYP1=NSPMTYP1+1
               ITKEY(NSPMTYP1)=L
-C              WRITE(*,*) NSPMTYP1,ITKEY(NSPMTYP1)
+c              WRITE(*,*) NSPMTYP1,ITKEY(NSPMTYP1)
               CALL EMKEY(L,KEY,IER)
               WRITE(VERT(M),14)KEY,L,spmlabel(L),ispmloc(L,1),
      &        ispmloc(L,2),ispmloc(L,3)
@@ -158,7 +158,7 @@ C              WRITE(*,*) NSPMTYP1,ITKEY(NSPMTYP1)
        
       NSPMTYP2=0
 
-C Display embedded renewable components (ispmtyp less than 50).
+C Display embedded renewable components.
       IF(MODE.EQ.'EG'.OR.MODE.EQ.'LG')THEN
         DO 9 L=1,ILEN
           IF(L.GE.IST.AND.(L.LE.(IST+MIFULL)))THEN
@@ -436,11 +436,9 @@ C or embedded renewables (categories 1-50).
         IMS=5
         IME=NIT+4
       ELSE
-
-C The renewables are in the initial 5 categories.
-        NIT=5
+        NIT=4
         IMS=1
-        IME=5
+        IME=4
       ENDIF
       J=1
       DO 19 I=IMS,IME
@@ -619,9 +617,6 @@ c      ISO=ispmloc(IVAL,2)
       IF(ISPMTYP(ISPMN,1).EQ.3)THEN
         WRITE(OUTS,'(A)') 
      &  'Select zone to in which locate the DWT inlet. '
-      ELSEIF(ISPMTYP(ISPMN,1).EQ.6)THEN
-        WRITE(OUTS,'(A)') 
-     &  'Select a zone to associate with the turbine. '
       ELSE
         WRITE(OUTS,'(A)') 
      &  'Select zone to in which locate the special component. '
@@ -637,9 +632,17 @@ C << rewrite logic to use G7 common rather than call zinfo >>
       CALL ZINFO(SNA,ZOA,PAZI,PELV,ZVOL)
 
 C General image option flags.
-      ITDSP=1; ITBND=1; ITEPT=0; ITZNM=0
-      ITSNM=0; ITVNO=1; ITORG=1; ITSNR=1
-      ITGRD=1; GRDIS=0.0; ITPPSW=0
+      ITDSP=1
+      ITBND=1
+      ITEPT=0
+      ITZNM=0
+      ITSNM=0
+      ITVNO=1
+      ITORG=1
+      ITSNR=1
+      ITGRD=1
+      GRDIS=0.0
+      ITPPSW=0
 
       MODIFY=.TRUE.
       MODBND=.TRUE.
@@ -656,8 +659,6 @@ C General image option flags.
       CALL EPMENSV
       IF(ISPMTYP(ISPMN,1).EQ.3)THEN
         CALL EASKSUR(IZ,ISO,'-','Select surface for DWT','inlet.',IER)
-      ELSEIF(ISPMTYP(ISPMN,1).EQ.6)THEN
-        ISO=1   ! free standing turbine does not need this
       ELSE
         CALL EASKSUR(IZ,ISO,'-','Select surface for special',
      &    'component. ',IER)
@@ -821,10 +822,16 @@ C For ducted wind turbine - select the position of the DWT outlet
         if(IZ.eq.0) return
         call georead(IFIL+1,LGEOM(IZ),IZ,1,iuout,IER)
         CALL ZINFO(SNA,ZOA,PAZI,PELV,ZVOL)
-
 C General image option flags.
-        ITDSP=1; ITBND=1; ITEPT=0; ITZNM=0; ITSNM=0
-        ITVNO=1; ITORG=1; ITSNR=1; ITGRD=1
+        ITDSP=1
+        ITBND=1
+        ITEPT=0
+        ITZNM=0
+        ITSNM=0
+        ITVNO=1
+        ITORG=1
+        ITSNR=1
+        ITGRD=1
         GRDIS=0.0
         ITPPSW=0
 
@@ -972,17 +979,12 @@ C and extract the azimuth info.
 
 C Set the nodal location to 0 for the DWT - this information is not needed.
 c        ispmloc(ispmn,3)=0 
-      elseif(ispmtyp(ispmn,1).eq.6)then
-
-C Free standing turbine does not need this information.
-        ispmloc(ispmn,3)=0
-
       else
 
 C Check composite name of surface with composite name in MLC common.
         imatch=0
         do 5 i=1,nmlc
-          if(SMLCN(iso)(1:12).eq.mlcname(i)(1:12)) then
+          if(SMLCN(iso)(1:12).eq.DESC(i)(1:12)) then
             imatch=i          
           endif
   5     continue
@@ -996,27 +998,28 @@ C Write menu displaying a list of layer names
         footer=3
         write(item(1),'(a,a)') 'a surface name: ',SNAME(iz,iso)
         write(item(2),'(a,i2)')'b number of layers: ',LAYERS(imatch)
-        write(item(3),'(a,a)') 'c MLC name: ',mlcname(imatch)(1:12)
+        write(item(3),'(a,a)') 'c MLC name: ',DESC(imatch)(1:12)
         item(4)='  ----------------------------'
 
-C Loop through each layer in MLC imatch.
+C Loop through each layer.
         do 10 j=1,LAYERS(imatch)
 
 C If an air layer include the R values in the display.
-          matarrayindex=IPRMAT(imatch,j)   ! which material array index
+          matarrayindex=IPRMAT(imatch,j)   ! which array index
           if(matarrayindex.ge.0)then
  
 C And if matarrayindex is zero then reestablish NAM.
-            if(matopaq(matarrayindex)(1:1).eq.'g'.or.
-     &         matopaq(matarrayindex)(1:1).eq.'h'.or.
-     &         matarrayindex.eq.0)then
-              NAM='Air gap'
-              PNAM(j)='Air gap'
+            if(matarrayindex.eq.0)then
+              NAM='AIR'
             else
               write(NAM,'(a)') matname(matarrayindex)(1:32)
-              PNAM(j)=NAM(1:20)
             endif
           endif
+          IF(IPR(imatch,j).EQ.0)THEN
+            PNAM(j)='Air gap'
+          ELSE
+            PNAM(j)=NAM(1:20)
+          ENDIF 
           write(item(header+j),'(a,i2,1x,a12)')' Layer: ',j,PNAM(j)
           ndisp=header+j
   10    continue
@@ -1104,9 +1107,7 @@ C Report back to user
         call edisp(iuout,outs)
       endif
 
-      if(ispmtyp(ispmn,1).eq.3.or.ispmtyp(ispmn,1).eq.6)then
-        continue
-      else
+      if(ispmtyp(ispmn,1).NE.3)THEN
         write(outs,'(a,i2)')' Placed at node: ',ispmloc(ispmn,3)
         call edisp(iuout,outs)
       endif

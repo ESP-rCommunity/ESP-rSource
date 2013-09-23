@@ -26,7 +26,7 @@
   return;
  }
  fprintf(stderr,"file is %s\n",name);
- do {
+ do {	/* Read a line from file, skipping & stripping comments */
    iexp = 99; itm = 0; ier = 0;
    cstripc(wwc,outstr,&iexp,&itm,"wwc problem",&ier);
 

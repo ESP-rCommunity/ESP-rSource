@@ -23,8 +23,6 @@ C cmmon3dv.F contains the following Fortran subroutines:
 C  ADJVIEW: Adjusts the viewing transforms & boundaries if necessary.
 C  CHGAZI:  Called from C code with an increment or decrement of azimuth.
 C  CHGELEV: Called from C code with an increment or decrement of elevation.
-C  CHGEYE:  Called from C code with current contents of the ray2_ and
-C           image_ c structures.
 C  DRAWOBS: Checks for obstructions, loads, converts and draws them.
 C  DRWSEN:  Loads, converts and draws MRT sensors (rec bodies).
 C  EGRNDR:  Draws ground topology.
@@ -59,18 +57,9 @@ C Passed parameters.
       character ETEXT*82
 #ifdef OSI
       integer iside,isize,ifont     ! passed to viewtext
-      integer numberofzones
-      integer JITZNM,JITSNM,JITVNO,JITOBS,JITSNR,JITGRD,JITORG
-      integer JITBND,JITDSP,JITHLS,JITHLZ,JITPPSW
-      integer jizgfoc,jnzg,jnznog,jnznogv
 #else
       integer*8 iside,isize,ifont     ! passed to viewtext
-      integer*8 numberofzones
-      integer*8 JITZNM,JITSNM,JITVNO,JITOBS,JITSNR,JITGRD,JITORG
-      integer*8 JITBND,JITDSP,JITHLS,JITHLZ,JITPPSW
-      integer*8 jizgfoc,jnzg,jnznog,jnznogv
 #endif
-      real EVX,EVY,EVZ,VX,VY,VZ,EAN,GDIS
 
       SMALL=0.01
 
@@ -85,29 +74,6 @@ C If only drawing a ground topology set updwire manually.
       else
         numberofzones=nzg
         call updwire(numberofzones)  ! pass local integer
-      endif
-
-C Also tell wireframe control about the current views. 
-C << need to test about whether cast is needed >>
-      EVX=EYEM(1); EVY=EYEM(2); EVZ=EYEM(3)
-      VX=VIEWM(1); VY=VIEWM(2); VZ=VIEWM(3)
-      EAN=ANG; GDIS=GRDIS
-      JITZNM=ITZNM; JITSNM=ITSNM; JITVNO=ITVNO
-      JITOBS=ITOBS; JITSNR=ITSNR; JITGRD=ITGRD
-      JITORG=ITORG; JITBND=ITBND; JITDSP=ITDSP
-      JITHLS=ITHLS; JITHLZ=ITHLZ; JITPPSW=ITPPSW
-      call curviews(EVX,EVY,EVZ,VX,VY,VZ,EAN,JITZNM,JITSNM,JITVNO,
-     &  JITOBS,JITSNR,JITGRD,JITORG,GDIS,JITBND,JITDSP,JITHLS,JITHLZ,
-     &  JITPPSW)
-
-C Tell woreframe how many zones to include in the image.
-      jizgfoc=izgfoc; jnzg=nzg
-      call pushgzonpik(jizgfoc,jnzg)
-      if(nzg.gt.0)then
-        do 42 ij=1,nzg
-          jnznog=ij; jnznogv=nznog(ij)
-          call pushnznog(jnznog,jnznogv)
-  42    continue
       endif
 
 C If altered then do a bound check on the current zone and update display.
@@ -229,344 +195,6 @@ C Passed paramter.
       MODLEN=.TRUE.
       CALL ADJVIEW(IER)
 
-      return
-      end
-
-C ********* chgeye
-C CHGEYE is called from C code in esru_x.c with current contents of the ray2_ and
-C image_ c structures.  Integers are specially treated based on ifdef.
-      subroutine chgeye(EVX,EVY,EVZ,VX,VY,VZ,EAN,JITZNM,JITSNM,JITVNO,
-     &   JITOBS,JITSNR,JITGRD,JITORG,GDIS,JITBND,JITDSP,JITHLS,JITHLZ,
-     &   JITPPSW)
-#include "building.h"
-#include "prj3dv.h"
-
-C Passed paramters.
-      real EVX,EVY,EVZ,VX,VY,VZ,EAN,GDIS
-
-C Depending on computer type set integer size of passed parameters.
-#ifdef OSI
-      integer JITZNM,JITSNM,JITVNO,JITOBS,JITSNR,JITGRD,JITORG
-      integer JITBND,JITDSP,JITHLS,JITHLZ,JITPPSW
-#else
-      integer*8 JITZNM,JITSNM,JITVNO,JITOBS,JITSNR,JITGRD,JITORG
-      integer*8 JITBND,JITDSP,JITHLS,JITHLZ,JITPPSW
-#endif     
-      
-      COMMON/RAY2/ITDSP,ITBND,ITEPT,ITZNM,ITSNM,ITVNO,ITORG,ITSNR,
-     &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS,ITPPSW
-      COMMON/RAY3/MODIFY,MODLEN,MODBND
-      logical MODIFY,MODLEN,MODBND
-
-C Debug
-C      write(6,*) 'chgeye passed vals ',EVX,EVY,EVZ,VX,VY,VZ,EAN,
-C     &  JITZNM,JITSNM,JITVNO,JITOBS,'snr',JITSNR,JITGRD,JITORG,GDIS,
-C     &  JITBND,JITDSP,JITHLS,JITHLZ,JITPPSW
-C      write(6,*) 'chgeye com before  ',eyem(1),eyem(2),eyem(3),
-C     &  VIEWM(1),VIEWM(2),VIEWM(3),ANG,HANG
-C      write(6,*) 'ray2 com ',ITDSP,ITBND,ITEPT,ITZNM,ITSNM,
-C     &  ITVNO,ITORG,'snr',ITSNR,ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS,ITPPSW
-      eyem(1)=EVX
-      eyem(2)=EVY
-      eyem(3)=EVZ
-      VIEWM(1)=VX
-      VIEWM(2)=VY
-      VIEWM(3)=VZ
-      ANG=EAN
-      HANG=ANG/2.0
-
-C To avoid implicit casts also check machine type.
-#ifdef OSI
-      ITDSP=JITDSP; ITBND=JITBND; ITPPSW=JITPPSW
-      ITZNM=JITZNM; ITSNM=JITSNM; ITVNO=JITVNO
-      ITORG=JITORG; ITSNR=JITSNR; ITOBS=JITOBS
-      ITHLS=JITHLS; ITHLZ=JITHLZ; ITGRD=JITGRD
-#else
-      ITDSP=int(JITDSP); ITBND=int(JITBND); ITPPSW=int(JITPPSW)
-      ITZNM=int(JITZNM); ITSNM=int(JITSNM); ITVNO=int(JITVNO)
-      ITORG=int(JITORG); ITSNR=int(JITSNR); ITOBS=int(JITOBS)
-      ITHLS=int(JITHLS); ITHLZ=int(JITHLZ); ITGRD=int(JITGRD)
-#endif     
-
-      GRDIS=GDIS
-
-C Debug
-C      write(6,*) 'chgeye com after  ',eyem(1),eyem(2),eyem(3),
-C     &  VIEWM(1),VIEWM(2),VIEWM(3),ANG,HANG
-C      write(6,*) 'ray2 aft ',ITDSP,ITBND,ITEPT,ITZNM,ITSNM,
-C     &  ITVNO,ITORG,'snr',ITSNR,ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS,ITPPSW
-
-      MODIFY=.TRUE.
-      MODLEN=.TRUE.
-
-C Use same logic as in EVSET.
-      if(ITPPSW.eq.0)then
-
-C If perspective view do the normal wireframe calls.
-        if(ITHLS.eq.1)then
-
-C If ITHLS set to 1 then ask about which construction.
-C But this is disabled because epkmlc tries to use the current
-C main menu structure which causes a GTK fault. Need an alternative
-C list management for this.
-          call usrmsg('Hilight by construction is not yet working',
-     &                'this will be added in a later version.','P')
-C          CALL EPKMLC(ISEL,'Select a construction to hilight.',' ',IER)
-C          ITHLZ=ISEL
-C          MODIFY=.TRUE.
-        endif
-        CALL INLNST(1)
-        CALL ADJVIEW(IER)
-        MODLEN=.FALSE.
-        MODBND=.FALSE.
-        MODIFY=.FALSE.
-      elseif(ITPPSW.eq.1)then
-        call PLELEV('P')
-      elseif(ITPPSW.eq.2)then
-        call PLELEV('S')
-      elseif(ITPPSW.eq.3)then
-        call PLELEV('E')
-      endif
-
-      return
-      end
-
-C ********* chgsun
-C CHGSUN is called from C code in esru_x.ca and esp-r.c requesting solar view. 
-C If isunhour zero then do initial setup of date and time and ask user what
-C else they want to do (previous next animation close). If isunhour one
-C step to next hour. If isunhour two then present an animation. 
-      subroutine chgsun(isunhour)
-#include "building.h"
-#include "prj3dv.h"
-
-C Passed paramter.
-      integer isunhour
-
-      COMMON/OUTIN/IUOUT,IUIN
-      COMMON/PREC8/SLAT,SLON
-      integer ifs,itfs,imfs
-      COMMON/GFONT/IFS,ITFS,IMFS
-      COMMON/RAY2/ITDSP,ITBND,ITEPT,ITZNM,ITSNM,ITVNO,ITORG,ITSNR,
-     &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS,ITPPSW
-      logical MODIFY,MODLEN,MODBND
-      COMMON/RAY3/MODIFY,MODLEN,MODBND
-
-C Local variables
-      character outs*124,ETEXT*60,DESCRH*5,DESCRD*5
-      integer NTS,IMO,IDO,IJDAY,IT,IER
-      logical doanim
-      real STIME,X1,Y1,Z1
-      DIMENSION MTHNAM(12)
-      CHARACTER MTHNAM*3
-
-#ifdef OSI
-      integer ivt2,ivt3,ivt4  ! for use with viewtext
-#else
-      integer*8 ivt2,ivt3,ivt4  ! for use with viewtext
-#endif
-
-C Remember some values.
-      save STIME,NTS,IMO,IDO  ! remember for next call
-
-      DATA MTHNAM/'Jan','Feb','Mar','Apr','May','Jun','Jul','Aug',
-     &            'Sep','Oct','Nov','Dec'/
-
-C Draw the zones and any obstructions based on sun
-C position. Confirm the lat, long, request day and time,
-C compute positon and update the view.
-      doanim=.false.
-      write(outs,'(A,F6.2,A,F6.2)')
-     &  ' Current latitude = ',SLAT,', longitude difference = ',SLON
-      call edisp(iuout,' ')
-      call edisp(iuout,outs)
-      if(isunhour.eq.0)then
-
-C Ask for initial date and time and present view.
-        call edisp(iuout,' ')
-        call edisp(iuout,' Date and time for the view... ')
-        NTS=1
-        IMO=6
-        IDO=1
-        STIME=1.
-  67    CALL ASKTIM(2,NTS,IMO,IDO,IJDAY,STIME,IT,IER)
-  68    CALL EAZALTS(STIME,IJDAY,SLAT,SLON,ISUNUP,SAZI,SALT)
-        IF(SALT.GT.0.0)THEN
-          CALL ANGXYZ(SAZI,SALT,X1,Y1,Z1)
-          EYEM(1)=X1
-          EYEM(2)=Y1
-          EYEM(3)=Z1
-          ITSNM=1
-          MODIFY=.TRUE.
-          MODLEN=.TRUE.
-          CALL ADJVIEW(IER)
-
-C Generate a heading for the view.
-          CALL EDTIME(STIME,DESCRH,DESCRD,TIMER)
-          WRITE(ETEXT,'(A,I2,1X,A3,A,A5,A,F6.1,A,F5.1)')
-     &      ' View: ',IDO,MTHNAM(IMO),' @',DESCRH,
-     &      '  azim:',SAZI,' elev:',SALT
-          ivt2=2
-          ivt3=1
-          ivt4=IFS
-          CALL viewtext(ETEXT,ivt2,ivt3,ivt4)
-
-C Ask user what they want to do next.
-          CALL EASKABCD(' View choices: ',' ','previous hour',
-     &      'next hour ','animation','cancel',IW,0)
-          if(IW.eq.1)then
-            STIME=STIME-((60.0/FLOAT(NTS))/60.0)
-            goto 68
-          elseif(IW.eq.2)then
-            STIME=STIME+((60.0/FLOAT(NTS))/60.0)
-            goto 68
-          elseif(IW.eq.3)then
-            doanim=.true.
-          elseif(IW.eq.4)then
-            ITSNM=0
-            return
-          endif
-        else
-          CALL EASKAB(' View point below horizon:',' ',
-     &        'specify another time','exit',IW,0)
-          if(IW.eq.1)goto 67
-          ITSNM=0
-          return
-        endif
-      endif
-
-      if(isunhour.eq.1)then
-
-C User asked for next hour, increment and display unless below horizon.
-  69    STIME=STIME+((60.0/FLOAT(NTS))/60.0)
-        CALL EAZALTS(STIME,IJDAY,SLAT,SLON,ISUNUP,SAZI,SALT)
-        IF(SALT.GT.0.0)THEN
-          CALL ANGXYZ(SAZI,SALT,X1,Y1,Z1)
-          EYEM(1)=X1
-          EYEM(2)=Y1
-          EYEM(3)=Z1
-          ITSNM=1
-          MODIFY=.TRUE.
-          MODLEN=.TRUE.
-          CALL ADJVIEW(IER)
-
-C Generate a heading for the view.
-          CALL EDTIME(STIME,DESCRH,DESCRD,TIMER)
-          WRITE(ETEXT,'(A,I2,1X,A3,A,A5,A,F6.1,A,F5.1)')
-     &      ' View: ',IDO,MTHNAM(IMO),' @',DESCRH,
-     &      '  azim:',SAZI,' elev:',SALT
-          ivt2=2
-          ivt3=1
-          ivt4=IFS
-          CALL viewtext(ETEXT,ivt2,ivt3,ivt4)
-          call pauses(1)   ! pause before returning
-          ITSNM=0
-          return
-        else
-          if(STIME.LT.11.0) goto 69  ! try next hour
-          ITSNM=0
-          return
-        endif
-      elseif(isunhour.eq.2)then
-
-C User asked for animation.
-        doanim=.true.
-      endif
-
-      if(doanim)then
-        if(STIME.lt.3.0) STIME = 3.0  ! if not set
- 70     CALL EAZALTS(STIME,IJDAY,SLAT,SLON,ISUNUP,SAZI,SALT)
-        NTS=4  ! do animation at 15 minute steps
-        IF(SALT.GT.0.0)THEN
-          CALL ANGXYZ(SAZI,SALT,X1,Y1,Z1)
-          EYEM(1)=X1
-          EYEM(2)=Y1
-          EYEM(3)=Z1
-          ITSNM=1
-          MODIFY=.TRUE.
-          MODLEN=.TRUE.
-          CALL ADJVIEW(IER)
-
-C Generate a heading for the view.
-          CALL EDTIME(STIME,DESCRH,DESCRD,TIMER)
-          WRITE(ETEXT,'(A,I2,1X,A3,A,A5,A,F6.1,A,F5.1)')
-     &      ' View: ',IDO,MTHNAM(IMO),' @',DESCRH,
-     &      '  azim:',SAZI,' elev:',SALT
-          ivt2=2
-          ivt3=1
-          ivt4=IFS
-          CALL viewtext(ETEXT,ivt2,ivt3,ivt4)
-          STIME=STIME+((60.0/FLOAT(NTS))/60.0)
-          call forceflush()
-          call pauses(1)
-          goto 70
-        else
-          if(STIME.LT.11.0)then
-            goto 70  ! try next hour
-          else
-            ITSNM=0
-            return
-          endif
-        endif
-      endif
-
-      return
-      end
-
-C ********* chgzonpik
-C chgzonpik is called from C code in esp-r.c with parameters representing the
-C current state of izgfoc and nzg in the gzonpik_ c structure. Sparate
-C calls are made to chgzonpikarray is used to fill the nznog array
-      subroutine chgzonpik(jizgfoc,jnzg)
-#include "building.h"
-
-      COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
-
-#ifdef OSI
-      integer jizgfoc,jnzg  ! for use with viewtext
-#else
-      integer*8 jizgfoc,jnzg  ! for use with viewtext
-#endif
-
-C To avoid implicit casts also check machine type.
-#ifdef OSI
-        izgfoc=jizgfoc
-        nzg=jnzg
-#else
-        izgfoc=int(jizgfoc)
-        nzg=int(jnzg)
-#endif     
-
-C Debug.
-C      write(6,*) 'common gzonpik ',izgfoc,nzg,nznog(1),nznog(2),
-C     &    nznog(3),nznog(4),nznog(5)
-      return
-      end
-
-C ********* chgzonpikarray
-C chgzonpikarray is called from C code in esp-r.c with parameters representing
-C one element of nznog array (index and value) in the gzonpik_ c structure.
-C This is tedious, but does ensure that array elements are properly passed
-C from C to Fortran.
-      subroutine chgzonpikarray(jnznog,jnznogv)
-#include "building.h"
-
-      COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
-
-#ifdef OSI
-      integer jnznog,jnznogv
-#else
-      integer*8 jnznog,jnznogv
-#endif
-
-C To avoid implicit casts also check machine type. Increment the
-C index jnznog to account for fortran array indexing starts from
-C one and C starts from zero.
-#ifdef OSI
-      nznog(jnznog+1)=jnznogv
-#else
-      nznog(int(jnznog)+1)=int(jnznogv)
-#endif     
       return
       end
 
@@ -830,9 +458,6 @@ C Passed parameter.
       
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/GB1/XB(12),YB(12),ZB(12),JVNB(6,4)
-      integer ncub,ivfok
-      real XOC,YOC,ZOC,DXC,DYC,DZC,CANG
-      character CUBN*6
       COMMON/MRTC/NCUB,XOC(MCUB),YOC(MCUB),ZOC(MCUB),DXC(MCUB),
      &            DYC(MCUB),DZC(MCUB),CANG(MCUB),IVFOK(MCUB),CUBN(MCUB)
 
@@ -848,7 +473,7 @@ C Local arrays.
       integer*8 iix,iiy,iixlast,iiylast,iid2
 #endif     
 
-      CHARACTER temp*7
+      CHARACTER temp*7,CUBN*6
 
 C If not in graphic mode return.
       if(MMOD.lt.8)return
@@ -976,7 +601,7 @@ C Local arrays.
       DIMENSION  BX(MPL),BY(MPL),BZ(MPL),IBNXT(MPL)
       DIMENSION  SBBOX(3,2),COG1(3),COG2(3),COG3(3)
 
-      CHARACTER GMLCN*32, GSNAME*6,stemp*7
+      CHARACTER GMLCN*12, GSNAME*6,stemp*7
 
 C Local variables to pass to edline.
 #ifdef OSI
@@ -1130,9 +755,9 @@ C Explicit local variables
 
 C Local variables to pass to edline.
 #ifdef OSI
-      integer iix,iiy,iix1,iiy1,iicol
+      integer iix,iiy,iix1,iiy1
 #else
-      integer*8 iix,iiy,iix1,iiy1,iicol
+      integer*8 iix,iiy,iix1,iiy1
 #endif       
 C If not in graphic mode return.
       if(MMOD.lt.8)return
@@ -1143,8 +768,7 @@ C If libraries and monitor support greyscale then reset forground
 C to 50% grey when drawing dots.
       greyok=.false.
       if(nifgrey.gt.4)then
-        iicol=nifgrey-3
-        call winscl('i',iicol)
+        call winscl('i',nifgrey-3)
         greyok=.true.
       endif
 
@@ -1246,10 +870,7 @@ C Move to next grid position.
         YINC=YINC+GRIDD
         GOTO 110
       ENDIF
-      if(greyok)then
-        iicol=0
-        call winscl('-',iicol)
-      endif
+      if(greyok)call winscl('-',0)
       call forceflush()
 
       RETURN
@@ -1283,7 +904,7 @@ C Passed parameters.
 C Use JGVNT for ground surfaces and JVNZ to hold inverted order for zone.
       DIMENSION IVALS(MCOM),JGVNT(MGRT,8),JVNZ(MS,MV)
       CHARACTER H*72
-      CHARACTER GMLCN*32,GSNAME*6,outs*124
+      CHARACTER GMLCN*12,GSNAME*6,outs*124
 
       IER=0
       IUF=IFIL+1

@@ -2,7 +2,7 @@
 # based on materials db ../dbs/tp_sub.material.asci
    10     # no of composites 
 # layers  description   optics name   symmetry tag
-    3    dbl_glz       TRAN  DCF7671_06nb  SYMMETRIC     
+    3    d_glz         TRAN  DCF7671_06nb  SYMMETRIC     
 # mat ref thickness (m) mat descr & air gap R
   242    0.0060  mat_242 : Plate glass with placeholder single layer optics
     0    0.0120  air  0.170 0.170 0.170

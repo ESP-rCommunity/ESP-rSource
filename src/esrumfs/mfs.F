@@ -52,7 +52,6 @@ C     ICOUT  - write unit for (non-fatal) warning messages.
 C     MMOD   - determines the device type attached to the current job.
 
       program mfs
-      USE START_UP
 #include "building.h"
 #include "model.h"
 #include "net_flow.h"
@@ -88,7 +87,6 @@ C Project journal on/off, unit number, cmd, file name.
       common/journopt/journio,iuj,journcmd,jfile
 
 C Defaults.
-      character*96 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF
       COMMON/DEFLT2/DFCFG,DFCTL,DEFRLB,DAFRES,DAPROB,DPNF
 
 C Activation of connections
@@ -110,26 +108,14 @@ C Name of current application
       LOGICAL LAST,OK,DOK,unixok,there,ACTCNN
       CHARACTER*24 ITEM(18)
       CHARACTER OUTSTR*124,inf*144,outs*124
+      character*72 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF
       character path*72
       character tg*1,delim*1,xfile*144
       character journcmd*20,jfile*72,uname*24,fs*1,cjfile*72
 
-      character cVnum*16      ! returned from ESPrVersionNum
-      character pagestitle*48 ! for banner title via epages call
-
       integer iglib   ! if 1 then X11, if 2 then GTK, if 3 then text only.
       integer IWM     ! for radio button
       integer NITMS,INO ! max items and current menu item
-
-#ifdef OSI
-      integer iigl,iigr,iigt,iigb,iigw,iigwh
-      integer iiw1,iiw2,iiw3,iiw4,iimenu
-      integer iicapture   ! to pass to updcapt
-#else
-      integer*8 iigl,iigr,iigt,iigb,iigw,iigwh
-      integer*8 iiw1,iiw2,iiw3,iiw4,iimenu
-      integer*8 iicapture   ! to pass to updcapt
-#endif
 
 C For help messages
       character helpinsub*24 ! subroutine name
@@ -254,31 +240,19 @@ C Set initial font sizes (IMFS is for graphs, IFS is for dialog & text feedback)
         LIMTTY=16
         LIMIT =16
       ENDIF
-
-C Find the current ESP-r version number and add it to application title.
-      call ESPrVersionNum(cVnum)
-      write(pagestitle,'(2a)') 'ESP-r Network Flow Simulator ',
-     &  cVnum(1:lnblnk(cVnum))
-
       CALL EPAGES(MMOD,IUIN,IUOUT,iappwi,iapphi,iappx,iappy,menuchw,
-     &  pagestitle)
+     &'ESP-r Network Flow Simulator: enquiries to esru@strath.ac.uk')
 
 C Open the text display box equal to LIMTTY if MMOD = 8.
       IF(MMOD.EQ.8)THEN
-
-C Setup and pass in parameters to win3d.
-        iiw1=8; iiw2=8; iiw3=7; iiw4=3; iimenu=menuchw
-        iigl=igl; iigr=igr; iigt=igt; iigb=igb; iigw=igw; iigwh=igwh
-        CALL win3d(iimenu,iiw1,iiw2,iiw3,iiw4,
-     &    iigl,iigr,iigt,iigb,iigw,iigwh)
-        igl=int(iigl); igr=int(iigr); igt=int(iigt); igb=int(iigb)
-        igw=int(iigw); igwh=int(iigwh)
+        CALL win3d(menuchw,8,8,7,3,igl,igr,igt,igb,igw,igwh)
+        igw=igr-igl
+        igwh=igb-igt
         iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
         if(iglib.eq.1)then
           call opencpw
           call opensetup
-          iicapture=1
-          call updcapt(iicapture)
+          call updcapt(1)
         endif
         mdispl=0
         nifgrey=0
@@ -852,46 +826,6 @@ C calls in esru_lib.F
       end
 
       subroutine chgelev(icelev)
-      return
-      end
-
-      subroutine chgsun(isunhour)
-      return
-      end
-
-      subroutine chgeye(EVX,EVY,EVZ,VX,VY,VZ,EAN,JITZNM,JITSNM,JITVNO,
-     &   JITOBS,JITSNR,JITGRD,JITORG,DIS,JITBND,JITDSP,JITHLS,JITHLZ,
-     &   JITPPSW)
-
-C Passed paramters.
-      real EVX,EVY,EVZ,VX,VY,VZ,EAN,DIS
-
-C Depending on computer type set integer size of passed parameters.
-#ifdef OSI
-      integer JITZNM,JITSNM,JITVNO,JITOBS,JITSNR,JITGRD,JITORG
-      integer JITBND,JITDSP,JITHLS,JITHLZ,JITPPSW
-#else
-      integer*8 JITZNM,JITSNM,JITVNO,JITOBS,JITSNR,JITGRD,JITORG
-      integer*8 JITBND,JITDSP,JITHLS,JITHLZ,JITPPSW
-#endif     
-      return
-      end
-
-      subroutine chgzonpik(jizgfoc,jnzg)
-#ifdef OSI
-      integer jizgfoc,jnzg  ! for use with viewtext
-#else
-      integer*8 jizgfoc,jnzg  ! for use with viewtext
-#endif
-      return
-      end
-
-      subroutine chgzonpikarray(jnznog,jnznogv)
-#ifdef OSI
-      integer jnznog,jnznogv
-#else
-      integer*8 jnznog,jnznogv
-#endif
       return
       end
 

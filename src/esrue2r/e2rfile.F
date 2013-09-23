@@ -53,11 +53,7 @@ C Attempt to read in rview file, note it is assumed to be one line.
       K=0
       CALL EGETW(OUTSTR,K,WORD,'W','rview',IFLAG)
       IF(IFLAG.ne.0)goto 43
-
-C Older external view files start with rview and newer files start
-C with rvu.
-      if(word(1:5).eq.'rview'.or.
-     &   word(1:3).eq.'rvu')then
+      if(word(1:5).eq.'rview')then
   42    CALL EGETW(OUTSTR,K,WORD,'-','command',IFLAG)
         IF(IFLAG.ne.0)goto 43
         if(word(1:3).eq.'-vp')then

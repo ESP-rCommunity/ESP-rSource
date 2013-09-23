@@ -164,19 +164,22 @@ C ventilation 0.3 ACH per hour as HOT2000 assumes during ERS calculations.
            if ( fVentPLR > 1. ) fVentPLR = 1.
            if ( fVentPLR < 0. ) fVentPLR = 0.
            
-           write (*,*) "MVNT: AIM2Total: ", fACHpHour_ERSreq
-           write (*,*) "      AIM2Vol:   ", AIM2_house_vol
-           write (*,*) "      Nat ACH:   ", 
-     &           fAIM2_TotalHouseInfil * 3600./ AIM2_house_vol
-           write (*,*) "      Frac:      ", fVentPLR
+!           write (*,*) "MVNT: AIM2Total: ", fACHpHour_ERSreq
+!           write (*,*) "      AIM2Vol:   ", AIM2_house_vol
+!           write (*,*) "      Nat ACH:   ", 
+!     &           fAIM2_TotalHouseInfil * 3600./ AIM2_house_vol
+!           write (*,*) "      Frac:      ", fVentPLR
+     
+         elseif ( iCVSOpType == 9 ) then 
+     
+          fVentPLR = 8./24.
      
          else 
      
           fVentPLR  = CVSOpTime
      
          endif ErsACH         
-         
-         
+                 
          
          
 c If a CVS exists,call the appropriate subroutine to
@@ -208,20 +211,17 @@ c in proportion to each room's volume
          ZoneFraction = 0.
 c
 C Check to ensure memory has been allocated
-
-         IF (ALLOCATED(AIM2_zone_infil)) THEN
-
+        IF (ALLOCATED(AIM2_zone_infil)) THEN
            Do j = 1, AIM2_num_zones_infil
               If ( AIM2_zone_infil(j) .eq. iComp ) Then
                  ZoneFraction = VOL(iComp) / AIM2_house_vol 
                  Exit
               Endif
            End Do
-         ELSE
+        ELSE
           CALL EDISP(IUOUT,
      &          ' Warning: array AIM2_zone_infil not allocated')
         END IF
-
 c
 c --- Air heat loss rate for zone
 c
@@ -325,7 +325,6 @@ C     &            AIM2_attic_zone,AIM2_num_zones_infil,AIM2_zone_infil
 #include "Ventilation_Data.h"
 #include "SOFC.h"
 #include "OffsiteUtilitiesPublic.h"
-#include "h3k_report_data.h"
 
       Integer iFun
       Real T
@@ -539,19 +538,9 @@ c
             TotalPower = 0.
          Endif
 
-         ! Set flag allowing h3kreports to scale this data for seasonal 
-           ! reporting purposes.
-           if ( bFirst_call_hrv  )
-     &       call SetAdditionalValues(
-     &         rvPltHvacHRVElecLd%Identifier,
-     &         3,
-     &         .true.)         
-         
          Call AddToReport(rvPltHvacHRVElecLd%Identifier,
-     &       TotalPower)        
-         
-        bFirst_call_hrv = .false.     
-     
+     &       TotalPower)
+
 C Store aggregate electricity use for reporting in Site Utility facilitity.
       fSUFuelEnergyUse( iElectricity,iUseHRV )
      &                   = TotalPower
@@ -759,7 +748,7 @@ c This routine gathers the energy used by the HRV systems
 
 c INPUTS:
 c OUTPUTS:
-c  None. Sums up Monthly HRV energy in H3KSTORE_DATA module
+c	None. Sums up Monthly HRV energy in H3KSTORE_DATA module
 
       SUBROUTINE H3KSTORE_HRV_DATA()
            IMPLICIT NONE

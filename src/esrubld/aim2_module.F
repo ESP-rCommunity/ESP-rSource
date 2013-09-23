@@ -61,6 +61,9 @@ C
 C *******************************************************************************
 C ********************************************************************************
 C ************************ MODULE AIM2 *******************************************
+C Created by: Francesca Macdonald
+C Date: July 3, 2010
+C 
 C ********************************************************************************
       MODULE AIM2_InputData 
       
@@ -619,21 +622,22 @@ C espriou.h provides currentfile.
       INTEGER NCOMP,NCON
 
       COMMON/WindowControl/
+     &     fWindowSetpoint,
+     &     fACSetPoint,
      &     bWindowControlFlag,
-     &     iCoolingControlZone,
-     &     fWindowHighSetpoint,
-     &     fWindowLowSetpoint,
+     &     iWindowControlZone,
+     &     bWindowsAreOpen,
      &     fDeltaTInttoExt,
-     &     fMinAmbTemp,
-     &     bWindowsAreOpen
+     &     fWindowLowSetpoint
 
-      LOGICAL bWindowControlFlag !Indicates that the window_control.F model should activate
-      INTEGER iCoolingControlZone !The zone in which an active central cooling system sensor is place (usually a main level zone 1, should correspond to BC01 type and use of NRCan HVAC module)
-      REAL fWindowHighSetpoint !Temperature above which windows open
-      REAL fWindowLowSetpoint !Temperature below which windows close (allowing an operating deadband)
-      REAL fDeltaTInttoExt !Temperature difference (Tinterior - Texterior) required to open windows (so they are only opened when natural cooling will occur and is of significance)
-      REAL fMinAmbTemp !The minimum ambient temperature that windows are allowed to open too (otherwise it is possible to open windows when it is cold and replace the entire zone air mass in the timestep)
-      LOGICAL bWindowsAreOpen(MCOM) !Array to store the window position for each zone
+
+      REAL fWindowSetpoint
+      REAL fACSetPoint
+      INTEGER iWindowControlZone
+      LOGICAL bWindowControlFlag
+      LOGICAL bWindowsAreOpen
+      REAL  fDeltaTInttoExt
+      REAL fWindowLowSetpoint
       
       CHARACTER WORD*128
 
@@ -941,7 +945,7 @@ C of the zones that do receive infiltration.
       CALL STRIPC(IUNIT,OUTSTR,0,ND,1,' AIM-2 data',IER)
       IF(IER.NE.0)goto 1000
       K=0
-      CALL EGETWI(OUTSTR,K,IVAL,1,30,'F',' num zones with infil',IER)
+      CALL EGETWI(OUTSTR,K,IVAL,1,10,'F',' num zones with infil',IER)
       if(IER.NE.0)then
         call edisp(IUOUT,' Cannot read num of zones with infil.')
         goto 1000
@@ -969,7 +973,7 @@ C Check allocation was sucessful
  
         IF (ALLOCATED(AIM2_zone_infil)) THEN
           DO ICOMP=1,AIM2_num_zones_infil
-            CALL EGETWI(OUTSTR,K,IVAL,1,30,'F',
+            CALL EGETWI(OUTSTR,K,IVAL,1,10,'F',
      &          ' zone receiving infil',IER)
             if(IER.NE.0)then
               call edisp(IUOUT,' zone receiving infil.')
@@ -1051,6 +1055,12 @@ C----------------------------------------------------------------------
       elseIF (fAIM2VersionNumber >= 2.00 ) THEN
 
 C Read data inputs for window controls :
+C    - Window Control flag (0,1) 
+C    - Location of temperature control 
+C    - Hot (upper?) setpoint (oC)
+C    - Cold (lower?) setpoint (oC)
+C    - Temperature difference control (oC, min temp difference needed 
+C      to open windows?)
 C    ( All on the same line !)
          CALL STRIPC(IUNIT,OUTSTR,0,ND,1,' AIM-2 data',IER)
          IF(IER.NE.0)goto 1000
@@ -1071,47 +1081,38 @@ C     if the window control model is active get the setpoint and actuating zone.
          IF (bWindowControlFlag ) THEN
  
          CALL EGETWI(OUTSTR,K,IVAL,1,MCOM,'F',
-     &           ' Zone of cooling sys sensor',IER)
+     &           ' Zone actuator for window control',IER)
          if(IER.NE.0)then
             call edisp(IUOUT,
-     &           'Cannot read cooling sys zone for win control')
+     &           'Cannot read zone actuator for win control')
             goto 1000
          endif
-         iCoolingControlZone = IVAL
+         iWindowControlZone = IVAL
 
          CALL EGETWR(OUTSTR,K,VAL,0.,500.,'F',
-     &        ' Window Control High Setpoint',IER)
+     &        ' Window Control Hot Setpoint',IER)
          if(IER.NE.0)then
-            call edisp(IUOUT,' Cannot read window high setpoint.')
+            call edisp(IUOUT,' Cannot read window hot setpoint.')
             goto 1000
          endif
-         fWindowHighSetpoint = VAL
+         fWindowSetpoint = VAL
 
          CALL EGETWR(OUTSTR,K,VAL,0.,500.,'F',
-     &        ' Window Low Setpoint',IER)
+     &        ' Window Cold  Setpoint',IER)
          if(IER.NE.0)then
-            call edisp(IUOUT,'Cannot read window low setpoint.')
+            call edisp(IUOUT,'Cannot read window cold  setpoint.')
             goto 1000
          endif
          fWindowLowSetpoint = VAL
 
         CALL EGETWR(OUTSTR,K,VAL,0.,100.,'F',
-     &        ' Temperature Difference Required',IER)
+     &        ' Temperature Difference Control',IER)
          if(IER.NE.0)then
             call edisp(IUOUT,
-     &           ' Cannot read DeltaT (Tint-Text) for window control')
+     &           ' Cannot read DeltaT (Text-Tint) for window control')
             goto 1000
          endif
          fDeltaTInttoExt = VAL
-
-        CALL EGETWR(OUTSTR,K,VAL,-100.,100.,'F',
-     &        ' Minimum ambient temperature required',IER)
-         if(IER.NE.0)then
-            call edisp(IUOUT,
-     &           ' Cannot read Min ambient temp for window control')
-            goto 1000
-         endif
-         fMinAmbTemp = VAL
 
         ENDIF
       ENDIF newversions
@@ -2436,6 +2437,7 @@ C **********************************************************************
       blockdata OpenWindows
       implicit none 
       include "building.h"
+      include "net_flow.h"
       include "blc25_open_windows.h"
       
       data bWindowsOpen  / mcom * .false. /

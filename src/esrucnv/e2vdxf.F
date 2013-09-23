@@ -18,13 +18,12 @@ C License along with ESP-r. If not, write to the Free
 C Software Foundation, Inc., 59 Temple Place, Suite 330,
 C Boston, MA 02111-1307 USA.
 
-C e2dxf: takes an esp-r problem definition and creates either
-C        an AutoCad DXF file or viewer file.
-C e2thf: takes an esp-r problem definition and creates a
-C        THF (THINGS) file for use in MicroGDS.
-C lindir: finds the angles associate with a line in space.
+C e2dxf takes an esp-r problem definition and creates either
+C an AutoCad DXF file or viewer file.
+C e2thf takes an esp-r problem definition and creates a
+C THF (THINGS) file for use in MicroGDS.
 
-      subroutine e2vdxf(incobs)
+      subroutine e2vdxf(incobs,ichop)
 #include "building.h"
 #include "model.h"
 
@@ -42,16 +41,11 @@ C geometry.h provides commons G0/G1/G2/G5/precz/GS5.
       COMMON/GB1/XB(12),YB(12),ZB(12),JVNB(6,4)
       COMMON/PRECT3/NTMC,NGLAZ(MTMC)
 
-      integer ioin,ioout,ioblk
-      common/io/ioin,ioout,ioblk
-
-      integer indxzon
-      character oformat*24,head*4
+      common/io/ioin,ioout,ioblk,iosblk,iotobs
       common/dxfe/oformat,indxzon,head
-
       logical doobs
 
-      character ZN*12,outs*124
+      character oformat*24,head*4,ZN*12,outs*124
 
 C Setup standard assumptions.
       if(incobs.eq.1)doobs=.true.
@@ -76,7 +70,7 @@ C Read in the zone geometry.
           WRITE(outs,'(a,a)')' Scanning : ',LGEOM(newfoc)
           CALL edisp(iuout,outs)
           call georead(ITA1,LGEOM(newfoc),newfoc,1,IUOUT,IER)
-          call strup(zname(newfoc),ZN)  ! make upper case name
+          call strup(zname(newfoc),ZN)
 
 C Write surface information to the viewer file. First invert edges.
           DO 120 J=1,NSUR
@@ -92,13 +86,16 @@ C Write to output file.
           WRITE(ioout,'(a,a15)')'GEN ',ZN
           WRITE(ioout,'(2I7)')NTV,NSUR
           DO 40 J=1,NTV
-            WRITE(ioout,'(3F9.4)')X(J),Y(J),Z(J)
+            WRITE(ioout,'(3F8.3)')X(J),Y(J),Z(J)
    40     continue
           DO 50 J=1,NSUR
             WRITE(ioout,'(2X,I3,1X,21I3)')NVER(J),(JVN(J,K),K=1,NVER(J))
    50     continue
 
-C Deal with solar obstructions.
+C Read in obstruction file.
+C          IF(IOBS(newfoc).EQ.1)CALL EGOMST(ITA1,newfoc,ZOBS(newfoc),
+C     &      0,0,iuout,IER)
+
           if(nbobs(newfoc).ge.1)then
             if(incobs.eq.0)goto 4
             DO 301 IB=1,nbobs(newfoc)
@@ -131,7 +128,7 @@ C Write obstructions to output file.
               WRITE(ioout,'(a,a15,a)')'GEN ',ZN,' obstructions'
               WRITE(ioout,'(a)')'  8  6'
               DO 240 J=1,8  ! each of the vertices
-                WRITE(ioout,'(3F9.4)')XB(J),YB(J),ZB(J)
+                WRITE(ioout,'(3F8.3)')XB(J),YB(J),ZB(J)
   240         continue
               DO 250 J=1,6  ! each of the surfaces
                 WRITE(ioout,'(a,21I3)') '  4 ',(JVNB(J,K),K=1,4)
@@ -149,8 +146,7 @@ C Free the viewer file and reread the geometry file.
         STOP
       endif
 
-C If dxf is output format. This style below is roughly R14.
-C It can also be read by ?? and ??
+C If dxf is output format.
       write(ioout,'(a)')'  0'
       write(ioout,'(a)')'SECTION'
       write(ioout,'(a)')'  2'
@@ -164,57 +160,27 @@ C It can also be read by ?? and ??
 
 C Std line type definition.
       write(ioout,'(a)')'  0'
-      write(ioout,'(a)')'TABLE'
-      write(ioout,'(a)')'  2'
-      write(ioout,'(a)')'LTYPE'
-      write(ioout,'(a)')' 70'
-      write(ioout,'(a)')'     1'
+      write(ioout,"('TABLE',/,'  2',/,'LTYPE',/,' 70',/,'     1')")
       write(ioout,'(a)')'  0'
-      write(ioout,'(a)')'LTYPE'
-      write(ioout,'(a)')'  2'
-      write(ioout,'(a)')'CONTINUOUS'
-      write(ioout,'(a)')' 70'
+      write(ioout,"('LTYPE',/,'  2',/,'CONTINUOUS',/,' 70')")
       write(ioout,'(a)')'    64'
       write(ioout,'(a)')'  3'
-      write(ioout,'(a)')'Solid line'
-      write(ioout,'(a)')' 72'
-      write(ioout,'(a)')'    65'
-      write(ioout,'(a)')' 73'
+      write(ioout,"('Solid line',/,' 72',/,'    65',/,' 73')")
       write(ioout,'(a)')'     0'
       write(ioout,'(a)')' 40'
       write(ioout,'(a)')'0.0'
       write(ioout,'(a)')'  0'
       write(ioout,'(a)')'ENDTAB'
 
-C Std zero layer  << is this needed? >>.
+C Std zero layer.
+      write(ioout,"('  0',/,'TABLE',/,'  2')")
+      write(ioout,"('LAYER',/,' 70',/,'     4')")
       write(ioout,'(a)')'  0'
-      write(ioout,'(a)')'TABLE'
-      write(ioout,'(a)')'  2'
-      write(ioout,'(a)')'LAYER'
-      write(ioout,'(a)')' 70'
-      write(ioout,'(a)')'     4'
+      write(ioout,"('LAYER',/,'  2',/,'0',/,' 70',/,'    64')")
+      write(ioout,"(' 62',/,'     7',/,'  6',/,'CONTINUOUS')")
       write(ioout,'(a)')'  0'
-      write(ioout,'(a)')'LAYER'
-      write(ioout,'(a)')'  2'
-      write(ioout,'(a)')'0'
-      write(ioout,'(a)')' 70'
-      write(ioout,'(a)')'    64'
-      write(ioout,'(a)')' 62'
-      write(ioout,'(a)')'     7'
-      write(ioout,'(a)')'  6'
-      write(ioout,'(a)')'CONTINUOUS'
-      write(ioout,'(a)')'  0'
-
-C Std layer 1 << is this needed? >>.
-      write(ioout,'(a)')'LAYER'
-      write(ioout,'(a)')'  2'
-      write(ioout,'(a)')'1'
-      write(ioout,'(a)')' 70'
-      write(ioout,'(a)')'    64'
-      write(ioout,'(a)')' 62'
-      write(ioout,'(a)')'     7'
-      write(ioout,'(a)')'  6'
-      write(ioout,'(a)')'CONTINUOUS'
+      write(ioout,"('LAYER',/,'  2',/,'1',/,' 70',/,'    64')")
+      write(ioout,"(' 62',/,'     7',/,'  6',/,'CONTINUOUS')")
       write(ioout,'(a)')'  0'
 
 C Layer for each zone.
@@ -224,40 +190,25 @@ C Layer for each zone.
         write(ioout,'(a)')'LAYER'
         write(ioout,'(a)')'  2'
         write(ioout,'(a)')ZN(1:lnblnk(ZN))
-        write(ioout,'(a)')' 70'
-        write(ioout,'(a)')'    64'
-        write(ioout,'(a)')' 62'
-        write(ioout,'(a)')'     7'
-        write(ioout,'(a)')'  6'
-        write(ioout,'(a)')'CONTINUOUS'
+        write(ioout,"(' 70',/,'    64')")
+        write(ioout,"(' 62',/,'     7',/,'  6',/,'CONTINUOUS')")
         write(ioout,'(a)')'  0'
 
 C If an obstruction for zone then make it the next layer.
-        if(IOBS(mz).GT.0)then
+C If there are transparent surfaces put them in another layer << .. >>
+        if(IOBS(mz).EQ.1)then
           doobs=.TRUE.
-          write(ioout,'(a)')'LAYER'
-          write(ioout,'(a)')'  2'
+          write(ioout,"('LAYER',/,'  2')")
           write(ioout,'(a4,a)') 'OBS_',ZN(1:lnblnk(ZN))
-          write(ioout,'(a)')' 70'
-          write(ioout,'(a)')'    64'
-          write(ioout,'(a)')' 62'
-          write(ioout,'(a)')'     7'
-          write(ioout,'(a)')'  6'
-          write(ioout,'(a)')'CONTINUOUS'
+          write(ioout,"(' 70',/,'    64')")
+          write(ioout,"(' 62',/,'     7',/,'  6',/,'CONTINUOUS')")
           write(ioout,'(a)')'  0'
         endif
-
-C If there are transparent surfaces put them in another layer << .. >>
         if(ITW(mz).EQ.1)then
-          write(ioout,'(a)')'LAYER'
-          write(ioout,'(a)')'  2'
+          write(ioout,"('LAYER',/,'  2')")
           write(ioout,'(a4,a)') 'TRN_',ZN(1:lnblnk(ZN))
-          write(ioout,'(a)')' 70'
-          write(ioout,'(a)')'    64'
-          write(ioout,'(a)')' 62'
-          write(ioout,'(a)')'     7'
-          write(ioout,'(a)')'  6'
-          write(ioout,'(a)')'CONTINUOUS'
+          write(ioout,"(' 70',/,'    64')")
+          write(ioout,"(' 62',/,'     7',/,'  6',/,'CONTINUOUS')")
           write(ioout,'(a)')'  0'
         endif
   14  continue
@@ -266,125 +217,54 @@ C If there are transparent surfaces put them in another layer << .. >>
       write(ioout,'(a)')'ENDSEC'
 
 C Write a standard obstruction block in the block section if
-C there are any *.obs files or embedded blocks in geometry files.
-
-C << what about six sided non-cube blocks? >>
-C << could solids or 3DPOLY be used instead? >>
-
+C there are any *.obs files.
       write(ioout,'(a)')'  0'
       write(ioout,'(a)')'SECTION'
       write(ioout,'(a)')'  2'
       write(ioout,'(a)')'BLOCKS'
       write(ioout,'(a)')'  0'
       if(doobs)then
-        write(ioout,'(a)')'BLOCK'
-        write(ioout,'(a)')'  8'
-        write(ioout,'(a)')'0'
-        write(ioout,'(a)')'  2'
-        write(ioout,'(a)')'OBSTRUCTION'
-        write(ioout,'(a)')' 70'
-        write(ioout,'(a)')'    64'
-        write(ioout,'(a,/,a)')' 10','0.0'
-        write(ioout,'(a,/,a)')' 20','0.0'
-        write(ioout,'(a,/,a)')' 30','0.0'
+        write(ioout,"('BLOCK',/,'  8',/,'0')")
+        write(ioout,"('  2',/,'OBSTRUCTION',/,' 70',/,'    64')")
+        write(ioout,"(' 10',/,'0.0',/,' 20',/,'0.0',/,' 30',/,'0.0')")
         write(ioout,'(a)')'  3'
         write(ioout,'(a)')'OBSTRUCTION'
         write(ioout,'(a)')'  0'
-        write(ioout,'(a)')'3DFACE'
-        write(ioout,'(a)')'  8'
-        write(ioout,'(a)')'0'
-        write(ioout,'(a,/,a)')' 10','0.0'
-        write(ioout,'(a,/,a)')' 20','1.0'
-        write(ioout,'(a,/,a)')' 30','0.0'
-        write(ioout,'(a,/,a)')' 11','0.0'
-        write(ioout,'(a,/,a)')' 21','0.0'
-        write(ioout,'(a,/,a)')' 31','0.0'
-        write(ioout,'(a,/,a)')' 12','0.0'
-        write(ioout,'(a,/,a)')' 22','0.0'
-        write(ioout,'(a,/,a)')' 32','1.0'
-        write(ioout,'(a,/,a)')' 13','0.0'
-        write(ioout,'(a,/,a)')' 23','1.0'
-        write(ioout,'(a,/,a)')' 33','1.0'
+        write(ioout,"('3DFACE',/,'  8',/,'0')")
+        write(ioout,"(' 10',/,'0.0',/,' 20',/,'1.0',/,' 30',/,'0.0')")
+        write(ioout,"(' 11',/,'0.0',/,' 21',/,'0.0',/,' 31',/,'0.0')")
+        write(ioout,"(' 12',/,'0.0',/,' 22',/,'0.0',/,' 32',/,'1.0')")
+        write(ioout,"(' 13',/,'0.0',/,' 23',/,'1.0',/,' 33',/,'1.0')")
         write(ioout,'(a)')'  0'
-        write(ioout,'(a)')'3DFACE'
-        write(ioout,'(a)')'  8'
-        write(ioout,'(a)')'0'
-        write(ioout,'(a,/,a)')' 10','1.0'
-        write(ioout,'(a,/,a)')' 20','1.0'
-        write(ioout,'(a,/,a)')' 30','0.0'
-        write(ioout,'(a,/,a)')' 11','0.0'
-        write(ioout,'(a,/,a)')' 21','1.0'
-        write(ioout,'(a,/,a)')' 31','0.0'
-        write(ioout,'(a,/,a)')' 12','0.0'
-        write(ioout,'(a,/,a)')' 22','1.0'
-        write(ioout,'(a,/,a)')' 32','1.0'
-        write(ioout,'(a,/,a)')' 13','1.0'
-        write(ioout,'(a,/,a)')' 23','1.0'
-        write(ioout,'(a,/,a)')' 33','1.0'
+        write(ioout,"('3DFACE',/,'  8',/,'0')")
+        write(ioout,"(' 10',/,'1.0',/,' 20',/,'1.0',/,' 30',/,'0.0')")
+        write(ioout,"(' 11',/,'0.0',/,' 21',/,'1.0',/,' 31',/,'0.0')")
+        write(ioout,"(' 12',/,'0.0',/,' 22',/,'1.0',/,' 32',/,'1.0')")
+        write(ioout,"(' 13',/,'1.0',/,' 23',/,'1.0',/,' 33',/,'1.0')")
         write(ioout,'(a)')'  0'
-        write(ioout,'(a)')'3DFACE'
-        write(ioout,'(a)')'  8'
-        write(ioout,'(a)')'0'
-        write(ioout,'(a,/,a)')' 10','1.0'
-        write(ioout,'(a,/,a)')' 20','0.0'
-        write(ioout,'(a,/,a)')' 30','0.0'
-        write(ioout,'(a,/,a)')' 11','1.0'
-        write(ioout,'(a,/,a)')' 21','1.0'
-        write(ioout,'(a,/,a)')' 31','0.0'
-        write(ioout,'(a,/,a)')' 12','1.0'
-        write(ioout,'(a,/,a)')' 22','1.0'
-        write(ioout,'(a,/,a)')' 32','1.0'
-        write(ioout,'(a,/,a)')' 13','1.0'
-        write(ioout,'(a,/,a)')' 23','0.0'
-        write(ioout,'(a,/,a)')' 33','1.0'
+        write(ioout,"('3DFACE',/,'  8',/,'0')")
+        write(ioout,"(' 10',/,'1.0',/,' 20',/,'0.0',/,' 30',/,'0.0')")
+        write(ioout,"(' 11',/,'1.0',/,' 21',/,'1.0',/,' 31',/,'0.0')")
+        write(ioout,"(' 12',/,'1.0',/,' 22',/,'1.0',/,' 32',/,'1.0')")
+        write(ioout,"(' 13',/,'1.0',/,' 23',/,'0.0',/,' 33',/,'1.0')")
         write(ioout,'(a)')'  0'
-        write(ioout,'(a)')'3DFACE'
-        write(ioout,'(a)')'  8'
-        write(ioout,'(a)')'0'
-        write(ioout,'(a,/,a)')' 10','0.0'
-        write(ioout,'(a,/,a)')' 20','0.0'
-        write(ioout,'(a,/,a)')' 30','0.0'
-        write(ioout,'(a,/,a)')' 11','1.0'
-        write(ioout,'(a,/,a)')' 21','0.0'
-        write(ioout,'(a,/,a)')' 31','0.0'
-        write(ioout,'(a,/,a)')' 12','1.0'
-        write(ioout,'(a,/,a)')' 22','0.0'
-        write(ioout,'(a,/,a)')' 32','1.0'
-        write(ioout,'(a,/,a)')' 13','0.0'
-        write(ioout,'(a,/,a)')' 23','0.0'
-        write(ioout,'(a,/,a)')' 33','1.0'
+        write(ioout,"('3DFACE',/,'  8',/,'0')")
+        write(ioout,"(' 10',/,'0.0',/,' 20',/,'0.0',/,' 30',/,'0.0')")
+        write(ioout,"(' 11',/,'1.0',/,' 21',/,'0.0',/,' 31',/,'0.0')")
+        write(ioout,"(' 12',/,'1.0',/,' 22',/,'0.0',/,' 32',/,'1.0')")
+        write(ioout,"(' 13',/,'0.0',/,' 23',/,'0.0',/,' 33',/,'1.0')")
         write(ioout,'(a)')'  0'
-        write(ioout,'(a)')'3DFACE'
-        write(ioout,'(a)')'  8'
-        write(ioout,'(a)')'0'
-        write(ioout,'(a,/,a)')' 10','0.0'
-        write(ioout,'(a,/,a)')' 20','0.0'
-        write(ioout,'(a,/,a)')' 30','0.0'
-        write(ioout,'(a,/,a)')' 11','0.0'
-        write(ioout,'(a,/,a)')' 21','1.0'
-        write(ioout,'(a,/,a)')' 31','0.0'
-        write(ioout,'(a,/,a)')' 12','1.0'
-        write(ioout,'(a,/,a)')' 22','1.0'
-        write(ioout,'(a,/,a)')' 32','0.0'
-        write(ioout,'(a,/,a)')' 13','1.0'
-        write(ioout,'(a,/,a)')' 23','0.0'
-        write(ioout,'(a,/,a)')' 33','0.0'
+        write(ioout,"('3DFACE',/,'  8',/,'0')")
+        write(ioout,"(' 10',/,'0.0',/,' 20',/,'0.0',/,' 30',/,'0.0')")
+        write(ioout,"(' 11',/,'0.0',/,' 21',/,'1.0',/,' 31',/,'0.0')")
+        write(ioout,"(' 12',/,'1.0',/,' 22',/,'1.0',/,' 32',/,'0.0')")
+        write(ioout,"(' 13',/,'1.0',/,' 23',/,'0.0',/,' 33',/,'0.0')")
         write(ioout,'(a)')'  0'
-        write(ioout,'(a)')'3DFACE'
-        write(ioout,'(a)')'  8'
-        write(ioout,'(a)')'0'
-        write(ioout,'(a,/,a)')' 10','0.0'
-        write(ioout,'(a,/,a)')' 20','0.0'
-        write(ioout,'(a,/,a)')' 30','1.0'
-        write(ioout,'(a,/,a)')' 11','1.0'
-        write(ioout,'(a,/,a)')' 21','0.0'
-        write(ioout,'(a,/,a)')' 31','1.0'
-        write(ioout,'(a,/,a)')' 12','1.0'
-        write(ioout,'(a,/,a)')' 22','1.0'
-        write(ioout,'(a,/,a)')' 32','1.0'
-        write(ioout,'(a,/,a)')' 13','0.0'
-        write(ioout,'(a,/,a)')' 23','1.0'
-        write(ioout,'(a,/,a)')' 33','1.0'
+        write(ioout,"('3DFACE',/,'  8',/,'0')")
+        write(ioout,"(' 10',/,'0.0',/,' 20',/,'0.0',/,' 30',/,'1.0')")
+        write(ioout,"(' 11',/,'1.0',/,' 21',/,'0.0',/,' 31',/,'1.0')")
+        write(ioout,"(' 12',/,'1.0',/,' 22',/,'1.0',/,' 32',/,'1.0')")
+        write(ioout,"(' 13',/,'0.0',/,' 23',/,'1.0',/,' 33',/,'1.0')")
         write(ioout,'(a)')'  0'
         write(ioout,'(a)')'ENDBLK'
         write(ioout,'(a)')'  8'
@@ -413,15 +293,20 @@ C Read in the zone geometry.
         call georead(ITA1,LGEOM(mz),mz,1,IUOUT,IER)
         call strup(zname(mz),ZN)
 
+C Read in util & obstruction file.
+C        IF(IOBS(mz).EQ.1)THEN
+C          CALL EGOMST(ITA1,mz,ZOBS(mz),0,0,iuout,IER)
+C        endif
+
 C Inclusion of obstructions.
         if(nbobs(mz).ge.1)then
           if(incobs.eq.0)goto 61
           do 43 ib=1,nbobs(mz)
 
-C Convert block into an insertion and scaling for the block named
-C obstruction (in the above BLOCK section).
+C Convert block into insertion and scaling for a block named
+C obstruction.
 
-C << what about 2 rotation obstruction? >>
+C << what about 3 rotation obstruction? >>
 
 C << what about 6 sided obstruction? >>
 
@@ -431,17 +316,17 @@ C << what about 6 sided obstruction? >>
             write(ioout,'(a)')'  2'
             write(ioout,'(a)')'OBSTRUCTION'
             write(ioout,'(a)')' 10'
-            write(ioout,'(f9.1)')XOB(mz,IB)*1000.0
+            write(ioout,'(f9.1)')XOB(mz,IB)*1000.
             write(ioout,'(a)')' 20'
-            write(ioout,'(f9.1)')YOB(mz,IB)*1000.0
+            write(ioout,'(f9.1)')YOB(mz,IB)*1000.
             write(ioout,'(a)')' 30'
-            write(ioout,'(f9.1)')ZOB(mz,IB)*1000.0
+            write(ioout,'(f9.1)')ZOB(mz,IB)*1000.
             write(ioout,'(a)')' 41'
-            write(ioout,'(f9.1)')DXOB(mz,IB)*1000.0
+            write(ioout,'(f9.1)')DXOB(mz,IB)*1000.
             write(ioout,'(a)')' 42'
-            write(ioout,'(f9.1)')DYOB(mz,IB)*1000.0
+            write(ioout,'(f9.1)')DYOB(mz,IB)*1000.
             write(ioout,'(a)')' 43'
-            write(ioout,'(f9.1)')DZOB(mz,IB)*1000.0
+            write(ioout,'(f9.1)')DZOB(mz,IB)*1000.
             write(ioout,'(a)')' 50'
             write(ioout,'(f9.1)')BANGOB(mz,IB,1)
             write(ioout,'(a)')'  0'
@@ -453,48 +338,44 @@ C Reread in the geometry file.
   61    continue
 
 C Now surface information.  If there are tmc`s then put
-C them in layer 'TRN_??' and put opaque in standard zone layer'
-
-C To avoid mix of wire-frame lines and what looks like solid
-C blocks use 3DPOLY for all surfaces in the model.
+C them in layer 'TRN_??' and opaque in zone layer'
         do 75 isf=1,nsur
           iv=NVER(isf)
-C          if(iv.eq.3.or.iv.eq.4)then
-C            WRITE(ioout,'(A)')'3DFACE'
-C            WRITE(ioout,'(A)')'  8'
-C            if(SOTF(isf).eq.'TRAN')then
-C              WRITE(ioout,'(A4,a)') 'TRN_',ZN(:lnblnk(ZN))
-C            else
-C              WRITE(ioout,'(A)') ZN(:lnblnk(ZN))
-C            endif
-C            inc = 0
-C            DO 314 ibsv=1,iv
-C              ii=JVN(isf,ibsv)
-C              WRITE(ioout,'(I3)')10+inc
-C              WRITE(ioout,'(f9.1)')X(II)*1000.0
-C              WRITE(ioout,'(I3)')20+inc
-C              WRITE(ioout,'(f9.1)')Y(II)*1000.0
-C              WRITE(ioout,'(I3)')30+inc
-C              WRITE(ioout,'(f9.1)')Z(II)*1000.0
-C              inc = inc+1
-C314         continue
+          if(iv.eq.3.or.iv.eq.4)then
+            WRITE(ioout,'(A)')'3DFACE'
+            WRITE(ioout,'(A)')'  8'
+            if(SOTF(isf).eq.'TRAN')then
+              WRITE(ioout,'(A4,a)') 'TRN_',ZN(:lnblnk(ZN))
+            else
+              WRITE(ioout,'(A)') ZN(:lnblnk(ZN))
+            endif
+            inc = 0
+            DO 314 ibsv=1,iv
+              ii=JVN(isf,ibsv)
+              WRITE(ioout,'(I3)')10+inc
+              WRITE(ioout,'(f9.1)')X(II)*1000.
+              WRITE(ioout,'(I3)')20+inc
+              WRITE(ioout,'(f9.1)')Y(II)*1000.
+              WRITE(ioout,'(I3)')30+inc
+              WRITE(ioout,'(f9.1)')Z(II)*1000.
+              inc = inc+1
+314         continue
 
 C If a triangular surface duplicate the 4th corner.
-C            if(iv.eq.3)then
-C              ii=JVN(isf,3)
-C              WRITE(ioout,'(a)') ' 13'
-C              WRITE(ioout,'(f9.1)')X(ii)*1000.0
-C              WRITE(ioout,'(a)') ' 23'
-C              WRITE(ioout,'(f9.1)')Y(ii)*1000.0
-C              WRITE(ioout,'(a)') ' 33'
-C              WRITE(ioout,'(f9.1)')Z(ii)*1000.0
-C            endif
-C            write(ioout,'(a1)')'0'
-C          else
+            if(iv.eq.3)then
+              ii=JVN(isf,3)
+              WRITE(ioout,'(a)') ' 13'
+              WRITE(ioout,'(f9.1)')X(ii)*1000.
+              WRITE(ioout,'(a)') ' 23'
+              WRITE(ioout,'(f9.1)')Y(ii)*1000.
+              WRITE(ioout,'(a)') ' 33'
+              WRITE(ioout,'(f9.1)')Z(ii)*1000.
+            endif
+            write(ioout,'(a1)')'0'
+          else
 
-C Write as a 3DPOLY with VERTEX.
-            WRITE(ioout,'(A)')'POLYLINE'
-            WRITE(ioout,'(A)')'  8'
+C More complex shape - write as a 3DPOLY with VERTEX.
+            WRITE(ioout,"('POLYLINE',/,'  8')")
             if(SOTF(isf).eq.'TRAN')then
               WRITE(ioout,'(A4,a)') 'TRN_',ZN(1:lnblnk(ZN))
             else
@@ -502,23 +383,21 @@ C Write as a 3DPOLY with VERTEX.
             endif
             WRITE(ioout,'(A)')' 66'
             WRITE(ioout,'(A)')'     1'
-            write(ioout,'(a,/,a)')' 10','0.0'
-            write(ioout,'(a,/,a)')' 20','0.0'
-            write(ioout,'(a,/,a)')' 30','0.0'
-            WRITE(ioout,'(A)')' 70'
-            WRITE(ioout,'(A)')'     9'
+            WRITE(ioout,"(' 10',/,'0.0',/,' 20',/,'0.0',/,' 30')")
+            WRITE(ioout,'(A)')'0.0'
+            WRITE(ioout,"(' 70',/,'     9')")
             WRITE(ioout,'(A)')'  0'
             DO 311 ibsv=1,iv
-              WRITE(ioout,'(A)')'VERTEX'
+              WRITE(ioout,'(A6)')'VERTEX'
               WRITE(ioout,'(A)')'  8'
               WRITE(ioout,'(A)') ZN(1:lnblnk(ZN))
               ii=JVN(isf,ibsv)
               WRITE(ioout,'(a)') ' 10'
-              WRITE(ioout,'(f10.1)')X(ii)*1000.0
+              WRITE(ioout,'(f9.1)')X(ii)*1000.
               WRITE(ioout,'(a)') ' 20'
-              WRITE(ioout,'(f10.1)')Y(ii)*1000.0
+              WRITE(ioout,'(f9.1)')Y(ii)*1000.
               WRITE(ioout,'(a)') ' 30'
-              WRITE(ioout,'(f10.1)')Z(ii)*1000.0
+              WRITE(ioout,'(f9.1)')Z(ii)*1000.
               WRITE(ioout,'(A)')' 70'
               WRITE(ioout,'(A)')'    32'
               WRITE(ioout,'(A)')'  0'
@@ -527,7 +406,7 @@ C Write as a 3DPOLY with VERTEX.
             WRITE(ioout,'(A)')'  8'
             WRITE(ioout,'(A)')'0'
             WRITE(ioout,'(A)')'  0'
-C          endif
+          endif
  75     continue
   54  continue
 
@@ -547,7 +426,7 @@ C *************e2thf
 C e2thf takes an esp-r problem definition and creates a
 C THF (THINGS) file for use in MicroGDS.
 
-      subroutine e2thf(incobs)
+      subroutine e2thf(itrc,incobs,ichop)
 #include "building.h"
 #include "model.h"
 #include "geometry.h"
@@ -561,17 +440,15 @@ C THF (THINGS) file for use in MicroGDS.
       COMMON/GB1/XB(12),YB(12),ZB(12),JVNB(6,4)
       COMMON/PRECT3/NTMC,NGLAZ(MTMC)
 
-      integer ioin,ioout,ioblk
-      common/io/ioin,ioout,ioblk
-
-      integer indxzon
-      character oformat*24,head*4
+      common/io/ioin,ioout,ioblk,iosblk,iotobs
       common/dxfe/oformat,indxzon,head
+      LOGICAL doobs
 
-      character ZN*12,outs*124
+      character oformat*24,head*4,ZN*12,outs*124
       integer llbm    ! length of block material
 
 C Setup standard assumptions.
+      if(incobs.eq.1)doobs=.true.
       IFIL=11
 
 C Assume configuration file is from IFIL+5, any leakage description
@@ -654,9 +531,9 @@ C Free the THF file and reread in the geometry file.
       END
 
 C-----------------------------------------------------------------------
-C lindir finds the angles associate with a line in space.
-C The angles returned are the alpha and theta angles in degrees.
-C Alpha lies in the XY plane and Theta measured from the XY plane.
+C THIS SUBROUTINE FINDS THE ANGLES ASSOCIATED WITH A LINE IN
+C SPACE. THE ANGLES RETURNED ARE THE ALPHA AND THETA ANGLES IN DEGREES.
+C ALPHA LIES IN THE XY PLANE AND THETA MEASURED FROM THE XY PLANE.
 C-----------------------------------------------------------------------
       SUBROUTINE LINDIR(X1,Y1,Z1,X2,Y2,Z2,ALPHA,THETA)
 

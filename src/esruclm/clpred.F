@@ -20,7 +20,7 @@ C Boston, MA 02111-1307 USA.
 
 C clpred.F includes the following subroutines:
 C   CLPRED allows the user to predict/transform climatic data.
-C   POLYTR transforms weather data for a given period according to some
+C   POLYTR transforms climate data for a given period according to some
 C          polynomial function.
 C   PDRAW will draw the predicted climatic data for any period.
 C   PSOLRD uses method J.K. Page (Sheffield), to predict the direct
@@ -106,7 +106,7 @@ C For help messages
    55 CONTINUE
 
       WRITE(STR,'(2A)')'Modified ',CLMLOC(1:21)
-      CALL EASKS(STR,'On changing weather data it is usual to change'
+      CALL EASKS(STR,'On changing climate data it is usual to change'
      &   ,'synopsis ',30,'synopsis. ','new synopsis',IER,0)
       ICV=0
       DO 10 I=1,4
@@ -139,7 +139,7 @@ C For help messages
       elseif(ist.eq.3)then
         ITEM(10)='! Draw curve-fit data    '
       endif
-      ITEM(11)='s Save weather data        '
+      ITEM(11)='s Save climate data        '
       ITEM(12)='  ------------------------ '
       ITEM(13)='? Help                     '
       ITEM(14)='- Exit                     '
@@ -147,11 +147,11 @@ C For help messages
 
       INO=-2
       if(ist.eq.1)then
-        CALL EMENU(' Weather prediction',ITEM,NITEMS,INO)
+        CALL EMENU(' Climate prediction',ITEM,NITEMS,INO)
       elseif(ist.eq.2)then
-        CALL EMENU(' Weather transforms',ITEM,NITEMS,INO)
+        CALL EMENU(' Climate transforms',ITEM,NITEMS,INO)
       elseif(ist.eq.3)then
-        CALL EMENU(' Weather curve-fits',ITEM,NITEMS,INO)
+        CALL EMENU(' Climate curve-fits',ITEM,NITEMS,INO)
       endif
       if(ino.eq.nitems)then
 
@@ -185,7 +185,7 @@ C When exiting, return to the whole year period.
             RETURN
           endif
 
-C Update weather binary file for the period the user had selected
+C Update climate binary file for the period the user had selected
 C as well as writing out the tail of the file.
           DO 256 IDAY=IYDS,IYDF
             IDI=IDAY-IYDS+1
@@ -207,7 +207,7 @@ C as well as writing out the tail of the file.
           IREC=368
           WRITE(ICLIM,REC=IREC,IOSTAT=ISTAT,ERR=1000)CLAT,CLONG
           ISAVE=1
-          call edisp(iuout,'Weather data saved for...')
+          call edisp(iuout,'Climate data saved for...')
           call edisp(iuout,PERST2)
           ID1=1
           IM1=1
@@ -222,7 +222,7 @@ C as well as writing out the tail of the file.
       ELSEIF(INO.EQ.NITEMS-1)THEN
         helptopic='curve_fitting_overview'
         call gethelptext(helpinsub,helptopic,nbhelp)
-        CALL PHELPD('weather prediction',nbhelp,'clm_predict',0,0,IER)
+        CALL PHELPD('climate prediction',nbhelp,'clm_predict',0,0,IER)
       elseif(ino.eq.1)then
         goto 1
       ELSEIF(INO.GE.3.AND.INO.LE.9)THEN
@@ -431,12 +431,12 @@ C Draw variables.
             helptopic='specify_more_variables'
             call gethelptext(helpinsub,helptopic,nbhelp)
             CALL ASKOK(' Do you want to make any more changes before',
-     &        ' saving the weather data?',OK,dok,nbhelp)
+     &        ' saving the climate data?',OK,dok,nbhelp)
             IF(OK)THEN
               goto 11
             else
 
-C Update weather binary file for each altered day as well as the tail.
+C Update climate binary file for each altered day as well as the tail.
               DO 156 IDAY=IYDS,IYDF
                 IDI=IDAY-IYDS+1
                 DO 157 IT=1,MT 
@@ -457,7 +457,7 @@ C Update weather binary file for each altered day as well as the tail.
               IREC=368
               WRITE(ICLIM,REC=IREC,IOSTAT=ISTAT,ERR=1000)CLAT,CLONG
               ISAVE=1
-              call edisp(iuout,'Weather data saved for...')
+              call edisp(iuout,'Climate data saved for...')
               call edisp(iuout,PERST2)
               GOTO 11
             ENDIF
@@ -475,13 +475,13 @@ C Error handling
      &  0,0,IER)
       RETURN
 
-1000  write(outs,'(A,I4)')' Problem writing weather data on rec ',IREC
+1000  write(outs,'(A,I4)')' Problem writing climate data on rec ',IREC
       call usrmsg(outs,' returning....','W')
       goto 999
 
       END
 
-C POLYTR transforms weather data for a given period according to some
+C POLYTR transforms climate data for a given period according to some
 C polynomial function
       SUBROUTINE POLYTR(ICLMT,IYDS,IYDF)
       PARAMETER (MT=24,MD=365)
@@ -497,7 +497,7 @@ C For help messages
       character helptopic*24 ! string (unique) for topic
       integer nbhelp     ! number of help lines found
 
-C Setup limits for weather parameters
+C Setup limits for climate parameters
       helpinsub='POLYTR'  ! set for this subroutine
       IF(ICLMT.EQ.1)THEN
         CLMIN=0.
@@ -524,7 +524,7 @@ C Setup limits for weather parameters
       call gethelptext(helpinsub,helptopic,nbhelp)
       COEFFS=' '
       ILC=1
-      CALL EASKATOG('Change original weather value','(see help)'
+      CALL EASKATOG('Change original climate value ','(see help)'
      & ,'set to constant','change by constant','fraction of original'
      &    ,'polynomial transform ','continue',' ',' ',ILC,nbhelp)
       IF(ILC.EQ.5)RETURN
@@ -532,20 +532,20 @@ C Setup limits for weather parameters
       IF(ILC.EQ.1)THEN
         NORD=0
         CALL EASKS(COEFFS,'What is the constant value','(see help)',
-     &   5,' ','constant weather parameter',IER,nbhelp)
+     &   5,' ','constant climate parameter',IER,nbhelp)
         CALL EGETWR(COEFFS,K,A(1),CLMIN,CLMAX,'-','coefficients',IER)
         IF(IER.NE.0)GOTO 999
       ELSEIF(ILC.EQ.2)THEN
         NORD=1
         CALL EASKS(COEFFS,'Change by what constant value','(see help)',
-     &   5,' ','constant weather parameter',IER,nbhelp)
+     &   5,' ','constant climate parameter',IER,nbhelp)
         CALL EGETWR(COEFFS,K,A(2),CLMIN,CLMAX,'-','coefficients',IER)
         IF(IER.NE.0)GOTO 999
         A(1)=1.
       ELSEIF(ILC.EQ.3)THEN
         NORD=1
         CALL EASKS(COEFFS,'Change by what fraction','(see help)',
-     &   5,' ','constant weather parameter',IER,nbhelp)
+     &   5,' ','constant climate parameter',IER,nbhelp)
         CALL EGETWR(COEFFS,K,A(1),CLMIN,CLMAX,'-','coefficients',IER)
         IF(IER.NE.0)GOTO 999
         A(2)=0.
@@ -905,10 +905,6 @@ C See "Solar radiation and daylight models" book from Muneer
 C (1997) - ISBN: 0-7506-2495-7  pages 101-104.
 C and Erbs, Klein and Duffie model: see Solar energy Journal Vol. 28,
 C pp.293-302
-C Note: Erbs Klein & Duffie often results in lower diffuse which is
-C closer to values seen in weather files with direct and diffuse
-C pre-computed. Maxwell (as described in Muneer) can result in high
-C diffuse values.
       SUBROUTINE APPRDIFFUSE(IYEAR,IMT,IDAY,IHR,IGLOBH,LONGITUDE,
      &           DIFFGRNWCH,DRAD)
 
@@ -918,12 +914,12 @@ C Parameters:
       integer iday    ! the current day of the month
       integer ihr     ! the current hour of the day
       integer IGLOBH  ! global horizontal value (in w/m2)
-      real LONGITUDE  ! the weather site longitude (west: positive)
+      real LONGITUDE  ! the climate longitude (west: positive)
       real DIFFGRNWCH ! local time difference from Greenwich. Assumes
                       ! that west is positive (e.g. use -2 for Greece)
       real DRAD       ! diffuse value to be returned Muneer or Maxwell (in w/m2)
 
-C RADTYP Common might be needed in order to specify that weather
+C RADTYP Common might be needed in order to specify that climate
 C is based on global horizontal and not direct normal. At the moment
 C this is specified in MKOREANCLM when this is subroutine is used
 C      COMMON/RADTYP/IDNGH
@@ -1022,13 +1018,11 @@ C Calculate horizontal Diffuse irRADiance Orgill and Hollands
       XKT=GRAD/ERAD 
       IF(iapprox_diff.EQ.1)THEN
 
-C Muneer model using Orgill and Hollands (eq 3.4.1). Note this
-C sometimes results in high diffuse values when the global
-C horizontal is high.
+C Muneer model using Orgill and Hollands.
         DIFRAT=0.98
         IF(XKT.GT.0.2) THEN
           DIFRAT=1.006-(0.317*XKT)+(3.1241*XKT**2)
-     &    -(12.7616*XKT**3)+(9.7166*XKT**4)
+     &    -(12.7616*XKT**3)+9.7166*XKT**4
         ENDIF
 
 C Occassionally DIFRAT evaluates to greater than one. If so use 0.98
@@ -1050,45 +1044,31 @@ C        ENDIF
       ELSEIF(iapprox_diff.EQ.2)THEN
 
 C Calculate horizontal beam irradiance using Maxwell model on
-C page 102 of Muneer book (1987). If SOLALT is negative then
-C set to be .98 of GRAD or if GRAD is less than 1W/2m ignore.
-C Brackets included to clarify equations.
-        if(SOLALT.lt.0.2.or.GRAD.lt.1.0)then
-          DRAD=GRAD*0.98
-        else
-          XAM=1.0/SIN(SOLALT*DTOR)
-          XKNC=0.866-0.122*XAM+0.0121*XAM**2
+C page 102 of Muneer book (1987). 
+        XAM=1.0/SIN(SOLALT*DTOR)
+        XKNC=0.866-0.122*XAM+0.0121*XAM*XAM
      &       -(0.000653*XAM**3)+0.000014*XAM**4 
      
-          IF(XKT.LE.0.6) THEN
-            CAPA=0.512-(1.56*XKT)+(2.286*XKT**2)-(2.222*XKT**3)
-            CAPB=0.37+(0.962*XKT)
-            CAPC=-0.28+(0.932*XKT)-(2.048*XKT**2)
-          ELSE
-            CAPA=-5.743+(21.77*XKT)-(27.49*XKT**2)+(11.56*XKT**3)
-            CAPB=41.4-(118.5*XKT)+(66.05*XKT**2)+(31.9*XKT**3)
-            CAPC=-47.01+(184.2*XKT)-(222.0*XKT**2)+(73.81*XKT**3)
-          ENDIF
+        IF(XKT.LE.0.6) THEN
+          CAPA=0.512-1.56*XKT+2.286*XKT*XKT-2.222*XKT**3
+          CAPB=0.37+0.962*XKT
+          CAPC=-0.28+0.932*XKT-2.048*XKT**2 
+        ELSE
+          CAPA=-5.743+21.77*XKT-27.49*XKT*XKT+11.56*XKT**3
+          CAPB=41.4-118.5*XKT+66.05*XKT*XKT+31.9*XKT**3
+          CAPC=-47.01+184.2*XKT-222.0*XKT**2+73.81*XKT**3
+        ENDIF
 
 C Calculate the beam (XMAXHB) and if a posive number
 C and less than GRAD then subtract it from GRAD to get
 C the diffuse. If (XMAXHB) would cause diffuse to be
 C greater than global then set it to 0.98 of global.
-C Limit the size of the exponent to 60 to reduce the chance
-C of a numerical overflow.
-          if((XAM*CAPC).gt.60.0)then
-            XMAXI=XMAXI0*(XKNC-(CAPA+CAPB*EXP(60.0)))      
-          elseif((XAM*CAPC).lt.(-60.0))then
-            XMAXI=XMAXI0*(XKNC-(CAPA+CAPB*EXP(-60.0)))      
-          else
-            XMAXI=XMAXI0*(XKNC-(CAPA+CAPB*EXP(XAM*CAPC)))
-          endif     
-          XMAXHB=XMAXI*SIN(SOLALT*DTOR)
-          if(XMAXHB.gt.0.0.and.GRAD.gt.XMAXHB)then
-            DRAD=GRAD-XMAXHB
-          else
-            DRAD=GRAD*0.98
-          endif
+        XMAXI=XMAXI0*(XKNC-(CAPA+CAPB*EXP(XAM*CAPC)))      
+        XMAXHB=XMAXI*SIN(SOLALT*DTOR)
+        if(XMAXHB.gt.0.0.and.GRAD.gt.XMAXHB)then
+          DRAD=GRAD-XMAXHB
+        else
+          DRAD=GRAD*0.98
         endif
 
 C And if GRAD is zero then set DRAD to zero. 
@@ -1098,8 +1078,7 @@ C And if GRAD is zero then set DRAD to zero.
         endif
       ELSEIF(iapprox_diff.EQ.3)THEN
 
-C Erbs, Klein and Duffie model. This tends to limit the diffuse
-C when global horizontal is large.
+C Erbs, Klein and Duffie model.
         IF(XKT.LE.0.22)THEN
           DIFRAT=1.0-0.09*XKT
         ELSEIF(XKT.GT.0.22.AND.XKT.LE.0.8)THEN

@@ -1,5 +1,5 @@
-*connections for systems
-*Date Tue Aug 28 10:06:58 2012
+*connections  for systems
+*Date Wed Sep 30 17:25:21 2009
      79   # number of connections
    1   1   0   0   0  #    1 south in direct_gain is External
    1   2   3   2   4  #    2 right in direct_gain >|< left in rad_test

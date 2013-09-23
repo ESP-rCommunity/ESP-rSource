@@ -56,7 +56,7 @@ data of the model use 1967 and the temporal start will be 1 Feb and
 the temporal file end will be 12 Feb with two timesteps per hour. You
 are asked for documentation. The nature of the data is a good thing
 to record. After filling in the documentation the list of available
-temporal types is presented. Select [Zone db T to display] and give a name
+temporal types is presented. Select [Msr Dry Bulb T] and give a name
 for the entry e.g. office_dbt. The file will be updated and the entry
 name shown a second time.
 

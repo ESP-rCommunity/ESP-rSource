@@ -6,15 +6,11 @@ PROG = mld$(EXE)
 .F.o:
 	$(MFC) $(FFLAGS) -c $<
 
-MODULE_OBJECTS = startup.o
-
-OBJECTS = mld.o c2fdum.o mycores.o psychro.o  \
+OBJECTS = mld.o c2fdum.o mycores.o psychro.o startup.o \
 	  stats.o vfr.o
 
-MODULES = start_up.mod parse_command_line.mod
-
-$(PROG): $(MODULE_OBJECTS) $(OBJECTS)
-	$(MFC) $(LD_FLAGS) -o $(PROG) $(FFLAGS) $(MODULE_OBJECTS) $(OBJECTS) $(ULIBS)
+$(PROG): $(OBJECTS)
+	$(MFC) $(LD_FLAGS) -o $(PROG) $(FFLAGS) $(OBJECTS) $(ULIBS)
 
 c2fdum.F:
 	rm -f c2fdum.F
@@ -33,4 +29,4 @@ install:
 	@if [ -f $(PROG) ]; then cp $(PROG) $(ESPBinDir); fi
 
 clean:
-	rm -f core $(PROG)  $(PROG).exe $(MODULE_OBJECTS) $(OBJECTS) $(MODULES) c2fdum.F psychro.F startup.F
+	rm -f core $(PROG)  $(PROG).exe $(OBJECTS) c2fdum.F psychro.F startup.F 

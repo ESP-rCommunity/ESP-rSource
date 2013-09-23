@@ -451,50 +451,50 @@ C-------------------------------------------------------
 C.... Get component name's length
       iNameLength = lnblnk(powcomnam(IPWC))
 
-      Call AddToReport(rvEPowBattDem%Identifier,
+      Call AddToReportWild1(rvEPowBattDem%Identifier,
      &      batDemandP,
      &      powcomnam(IPWC)(1:iNameLength))
 
-      Call AddToReport(rvEPowBattOper%Identifier,
+      Call AddToReportWild1(rvEPowBattOper%Identifier,
      &      real(batMode),
      &      powcomnam(IPWC)(1:iNameLength))
 
-      Call AddToReport(rvEPowBattVolt%Identifier,
+      Call AddToReportWild1(rvEPowBattVolt%Identifier,
      &      batVolt,
      &      powcomnam(IPWC)(1:iNameLength))
 
-      Call AddToReport(rvEPowBattDOD%Identifier,
+      Call AddToReportWild1(rvEPowBattDOD%Identifier,
      &      batDODFin,
      &      powcomnam(IPWC)(1:iNameLength))
 
-      Call AddToReport(rvEPowBattCurr%Identifier,
+      Call AddToReportWild1(rvEPowBattCurr%Identifier,
      &      batCurFin,
      &      powcomnam(IPWC)(1:iNameLength))
 
-      Call AddToReport(rvEPowbattIntH%Identifier,
+      Call AddToReportWild1(rvEPowbattIntH%Identifier,
      &      pIntHeatFin,
      &      powcomnam(IPWC)(1:iNameLength))
 
 C Calculate and report SOC in %
        batSOC = (1. - batDODFin ) * 100.
 
-      Call AddToReport(rvEPowBattSOC%Identifier,
+      Call AddToReportWild1(rvEPowBattSOC%Identifier,
      &      batSOC,
      &      powcomnam(IPWC)(1:iNameLength))
 
-      Call AddToReport(rvEPowBattLd%Identifier,
+      Call AddToReportWild1(rvEPowBattLd%Identifier,
      &      pBat,
      &      powcomnam(IPWC)(1:iNameLength))
 
-      Call AddToReport(rvEPowBattMaxPow%Identifier,
+      Call AddToReportWild1(rvEPowBattMaxPow%Identifier,
      &      maxPBat,
      &      powcomnam(IPWC)(1:iNameLength))
 
-      Call AddToReport(rvEPowBattMaxPowChrg%Identifier,
+      Call AddToReportWild1(rvEPowBattMaxPowChrg%Identifier,
      &      maxPBatCharge,
      &      powcomnam(IPWC)(1:iNameLength))
 
-      Call AddToReport(rvEPowBattMaxDschrg%Identifier,
+      Call AddToReportWild1(rvEPowBattMaxDschrg%Identifier,
      &      maxPBatDischarge,
      &      powcomnam(IPWC)(1:iNameLength))
 
@@ -504,71 +504,71 @@ C    Calculate and report max battery heater power in W
       heatersRes = POWCDAT(IPWC,13)/(nParal*nSerie)
       maxPowHeat = batVolt**2/heatersRes
 
-      Call AddToReport(rvEPowBattMaxHPow%Identifier,
+      Call AddToReportWild1(rvEPowBattMaxHPow%Identifier,
      &      maxPowHeat,
      &      powcomnam(IPWC)(1:iNameLength))
 
-      Call AddToReport(rvEPowBattHPow%Identifier,
+      Call AddToReportWild1(rvEPowBattHPow%Identifier,
      &      pHeaters,
      &      powcomnam(IPWC)(1:iNameLength))
 
-      Call AddToReport(rvEPowBattPowBal%Identifier,
+      Call AddToReportWild1(rvEPowBattPowBal%Identifier,
      &      batPowBal,
      &      powcomnam(IPWC)(1:iNameLength))
 
-      Call AddToReport(rvEPowBattSysLd%Identifier,
+      Call AddToReportWild1(rvEPowBattSysLd%Identifier,
      &      pBatSystem,
      &      powcomnam(IPWC)(1:iNameLength))
 
-      Call AddToReport(rvEPowBattSysChrgLd%Identifier,
+      Call AddToReportWild1(rvEPowBattSysChrgLd%Identifier,
      &      pBatSysCharge,
      &      powcomnam(IPWC)(1:iNameLength))
 
-      Call AddToReport(rvEPowBattSysDschrgLd%Identifier,
+      Call AddToReportWild1(rvEPowBattSysDschrgLd%Identifier,
      &      pBatSysDischarge,
      &      powcomnam(IPWC)(1:iNameLength))
 
-      Call AddToReport(rvEPowBattTemp%Identifier,
+      Call AddToReportWild1(rvEPowBattTemp%Identifier,
      &      batTFin,
      &      powcomnam(IPWC)(1:iNameLength))
 
-      Call AddToReport(rvEPowBattLfUsed%Identifier,
+      Call AddToReportWild1(rvEPowBattLfUsed%Identifier,
      &      batLifeUsed,
      &      powcomnam(IPWC)(1:iNameLength))
 
-      Call AddToReport(rvEPowBattLfUsedCum%Identifier,
+      Call AddToReportWild1(rvEPowBattLfUsedCum%Identifier,
      &      cumBatLifeUsed,
      &      powcomnam(IPWC)(1:iNameLength))
 
-      Call AddToReport(rvEPowBattLfUseFac%Identifier,
+      Call AddToReportWild1(rvEPowBattLfUseFac%Identifier,
      &      real(lifeUseFactor),
      &      powcomnam(IPWC)(1:iNameLength))
 
-      Call AddToReport(rvEPowBattChrgCyc%Identifier,
+      Call AddToReportWild1(rvEPowBattChrgCyc%Identifier,
      &      real(mandChargeCycle),
      &      powcomnam(IPWC)(1:iNameLength))
 
-      Call AddToReport(rvEPowBattManChrgPh%Identifier,
+      Call AddToReportWild1(rvEPowBattManChrgPh%Identifier,
      &      real(mandChargePhase),
      &      powcomnam(IPWC)(1:iNameLength))
 
-      Call AddToReport(rvEPowBattManChrgPhInc%Identifier,
+      Call AddToReportWild1(rvEPowBattManChrgPhInc%Identifier,
      &      real(mandChargePhaseIncrease),
      &      powcomnam(IPWC)(1:iNameLength))
 
-      Call AddToReport(rvEPowBattTmeLstFulChrg%Identifier,
+      Call AddToReportWild1(rvEPowBattTmeLstFulChrg%Identifier,
      &      timeSinceLastFullCharge,
      &      powcomnam(IPWC)(1:iNameLength))
 
-      Call AddToReport(rvEPowBattBdTreatFlg%Identifier,
+      Call AddToReportWild1(rvEPowBattBdTreatFlg%Identifier,
      &      real(abuseFlag),
      &      powcomnam(IPWC)(1:iNameLength))
 
-      Call AddToReport(rvEPowBattCtrlScn%Identifier,
+      Call AddToReportWild1(rvEPowBattCtrlScn%Identifier,
      &      REAL(RE_H2_control_scenario),
      &      powcomnam(IPWC)(1:iNameLength))
 
-      Call AddToReport(rvEPowBattLiOnCycUsed%Identifier,
+      Call AddToReportWild1(rvEPowBattLiOnCycUsed%Identifier,
      &      cycles_used_Lion,
      &      powcomnam(IPWC)(1:iNameLength))
 

@@ -6,7 +6,7 @@ C supproted.
       IMPLICIT NONE
 
       COMMON/OUTIN/IUOUT,IUIN
-      INTEGER  IUOUT,IUIN
+      INTEGER	IUOUT,IUIN
       CHARACTER*124 cMSG
       
       CALL EDISP(IUOUT,cMSG(1:lnblnk(cMSG)))

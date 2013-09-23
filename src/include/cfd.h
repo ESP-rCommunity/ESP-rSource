@@ -24,7 +24,7 @@ C  Maximum number of solid boundaries per zone
 C (set equal to 2* or greater than MS in building.h, because of current
 C method of specification of solid boundary conditions from building
 C surfaces)
-      INTEGER, PARAMETER :: MNSBZ=160
+      INTEGER, PARAMETER :: MNSBZ=122
 C  Maximum number of zones with CFD (usual setting MNZ=1)
       INTEGER, PARAMETER :: MNZ=1
 C  Maximum number of key volumes (usual setting MNVLS=120)

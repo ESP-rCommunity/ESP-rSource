@@ -173,7 +173,7 @@ C ******************************************************************************
      &                          wa_0,wa_1,wa_2,
      &                          qhr_0,qhr_1,qhr_2,
      &                          liq_0,liq_1,liq_2,
-     &                          FC_control,
+     &		                        FC_control,
      &                          FC_elec_min_output,
      &                          FC_elec_max_output,
      &                          FC_timestep_output
@@ -243,15 +243,15 @@ C                             electrical output
 C    FC_ctl_ext               Named constant indicating fuel cell is controlled 
 C                             using external controller model
 C---------------------------------------------------------------------------------
-      INTEGER FC_control,
+	INTEGER FC_control,
      &        FC_ctl_elec_priority,
      &        FC_ctl_thermal_priority,
      &        FC_ctl_const_output,
      &        FC_ctl_ext
-      PARAMETER ( FC_ctl_elec_priority    = 1 )
-      PARAMETER ( FC_ctl_thermal_priority = 2 )
-      PARAMETER ( FC_ctl_const_output     = 3 )
-      PARAMETER ( FC_ctl_ext              = 4 )
+    	PARAMETER ( FC_ctl_elec_priority    = 1 )
+ 	PARAMETER ( FC_ctl_thermal_priority = 2 )
+	PARAMETER ( FC_ctl_const_output     = 3 )
+ 	PARAMETER ( FC_ctl_ext              = 4 )
 
 C---------------------------------------------------------------------------------
 C Variables for the fuel cell's minimum and maximum net electrical output (W)
@@ -551,13 +551,13 @@ C re-dimension these arrays.
 C---------------------------------------------------------------------------------
 C-----Energy transferred to water from burner or electric resistance element (J).
       REAL FC_tank_energy_capture_avg
-      REAL FC_tank_energy_capture(60)
+ 					REAL FC_tank_energy_capture(60)
 C-----Energy transferred from fuel cell exhaust to water through heat exchanger (J).
       REAL FC_heatX_energy_capture_avg
-      REAL FC_heatX_energy_capture(60)
+    		REAL FC_heatX_energy_capture(60)
 C-----Temperature of water in storage tank (oC).
       REAL FC_tank_temp_avg
-      REAL FC_tank_temp(60)
+    		REAL FC_tank_temp(60)
 C-----Fuel cell's electrical output (J).
       REAL FC_net_elec_avg
       REAL FC_net_elec(60)

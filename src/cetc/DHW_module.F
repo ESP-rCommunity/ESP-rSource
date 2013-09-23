@@ -170,7 +170,6 @@ c SAR Engineerings LTD report on 'Domestic Hot Water Simulation Algorithms' by K
 c Section 4.2 Appendix. See 'Load' equation
 c Created by: Phylroy A. Lopez
 c Initial Creation Date:  March 23th 2001
-c Revised by: Bart Lomanowski, March 28, 2011 (added support for v3.0)
 c Copyright 2000: NRCan Buildings Group
 c OUTPUTS:
 c       REAL    fWaterDraw                   Litres/Timestep
@@ -185,109 +184,14 @@ c----56--1---------2---------3---------4---------5---------6---------7---------8
 #include "ground_temp_mains_common.h"
 
       common/simtim/ihrp,ihrf,idyp,idyf,idwp,idwf,nsinc,its
+      INTEGER   ihrp,ihrf,idyp,idyf,idwp,idwf,nsinc,its
+      REAL   fNormalizedDailyWaterDraw
+      REAL   fLitresforNumOccupants
 
-      INTEGER   ihrp,ihrf,idyp,idyf,idwp,idwf,nsinc,its           
-      REAL   fNormalizedDailyWaterDraw 
-      REAL   fLitresforNumOccupants    
-      logical CLOSE
-
-C-----Variables for Access to the Boundary Condition Data
-      Real fConvert_current_TS_to_DAY ! returns day (float)
-      Real fGet_BC_data_by_col ! return the data for the timestep by column number
-      Real fGet_BC_data_by_name ! return the data for the timestep by column name
-      Integer iInterp_method ! 1 = step-wise; 2 = linear
-      Character cContext*124 ! string to print on BCD failure  
-      
-c-----Set the BCD interpolation method
-      iInterp_method = 1 ! 1 = step-wise; 2 = linear
-      iInterp_method = 1 ! 1 = step-wise; 2 = linear
-
-c-----This calulates the amount of water  used based on the the number of occupants
-      fLitresforNumOccupants = 85.0 + ( 35.0 * fNumOfOccupants )
-
-      IF ( bDHWv3_HOT3000 ) THEN
-c-----Version 3.0 is a HOT3000 specific version of the DHW file,
-c-----in which three options are available for definition of 
-c-----the hot water draw 
-c-----(1) Default load: Total daily water draw is based on the num of
-c-----    occupants and is then normalized to the 60degC usage.
-c-----(2) User specified load: The user specified total daily water draw
-c-----    is normalized to the 60degC usage.
-c-----(3) Annual profile from BCD: The hourly water draw values are
-c-----    read directly from BCD data and are not normalized.
-
-        write (cContext,*) "Determining DHW hourly water draw value " 
-
-c------(1) DEFAULT LOAD
-        CALL ECLOSE(fNumOfOccupants,-1.0,0.0001,CLOSE)
-        if ( .not. CLOSE .and. iDHW_draw_BCD_col .eq. 0 ) then   
-
-c---------This normalises the water draw based on a standard usage temperature (currently a parameter
-c---------of 60C. This is from B.Bradley'd H2KDHW.F line 254.
-          fNormalizedDailyWaterDraw = ( 0.75
-     &                   * fLitresforNumOccupants
-     &                   * ( (fUsageTemp
-     &                           - fDHW_ColdMainTemp(iMonth))
-     &                   / (fHotSupplyTemp
-     &                          - fDHW_ColdMainTemp(iMonth)) )
-     &                   + 0.25 * fLitresforNumOccupants )
-
-c---------This formula will first obtain the percentage of total daily water which has been drawn in that hour.
-          fDHW_WaterDraw = fWaterDrawCurveHourly(ihrp)
-     &                 / fWaterDrawCurveTotal
-c---------Then this will muliply it by the actual water draw and divide it by the time step slice.
-     &                 * fNormalizedDailyWaterDraw / REAL(iNTSTEP)
-
-c------(2) USER SPECIFIED LOAD
-        else if ( CLOSE .and. iDHW_draw_BCD_col .eq. 0 ) then
-
-c---------This normalises the water draw based on a standard usage temperature (currently a parameter
-c---------of 60C. This is from B.Bradley'd H2KDHW.F line 254.
-          fNormalizedDailyWaterDraw = ( 0.75
-     &                   * fWaterDrawCurveTotal
-     &                   * ( (fUsageTemp
-     &                           - fDHW_ColdMainTemp(iMonth))
-     &                   / (fHotSupplyTemp
-     &                          - fDHW_ColdMainTemp(iMonth)) )
-     &                   + 0.25 * fWaterDrawCurveTotal )
-
-c---------This formula will first obtain the percentage of total daily water which has been drawn in that hour.
-          fDHW_WaterDraw = fWaterDrawCurveHourly(ihrp)
-     &                 / fWaterDrawCurveTotal
-c---------Then this will muliply it by the actual water draw and divide it by the time step slice.
-     &                 * fNormalizedDailyWaterDraw / REAL(iNTSTEP)
-
-c------(3) ANNUAL PROFILE FROM BCD
-        else if ( iDHW_draw_BCD_col .gt. 0 ) then
-
-          fDHW_WaterDraw = fGet_BC_data_by_col( ! fetch BC data
-     &        iDHW_draw_BCD_col,
-     &        fConvert_current_TS_to_DAY(),
-     &        iInterp_method,
-     &        cContext)
-
-        end if
-
-      ELSE IF (bDHW_BCD) then ! specific to version 1.5
-!       set BCD call items
-        cContext = "Determining the DHW profile"
-        iInterp_method = 1 ! 1 = step-wise; 2 = linear
-
-!     We checked if the BDC profile exists in DHW_Initialize()
-
-!       L/timestep = L/h (from data) / timestep/h * ratio of actual DHW usage to BCD file usage
-        fDHW_WaterDraw = fGet_BC_data_by_name(
-     &                                cDHW_BCD_col,
-     &                fConvert_current_TS_to_DAY(),
-     &                              iInterp_method,
-     &                                    cContext)
-     &                  / REAL(iNTSTEP)
-     &                  * fDayDrawMultiplier
-        
-      ELSE ! continue with H2K type calculation of DHW load 
-        
-c-------This normalises the water draw based on a standard usage temperature (currently a parameter 
-c-------of 60C. This is from B.Bradley'd H2KDHW.F line 254.
+c This calulates the amount of water  used based on the the number of occupants
+        fLitresforNumOccupants = 85.0 + ( 35.0 * fNumOfOccupants )
+c This normalises the water draw based on a standard usage temperature (currently a parameter
+c of 60C. This is from B.Bradley'd H2KDHW.F line 254.
         fNormalizedDailyWaterDraw = ( 0.75
      &                   * fLitresforNumOccupants
      &                   * ( (fUsageTemp
@@ -296,18 +200,17 @@ c-------of 60C. This is from B.Bradley'd H2KDHW.F line 254.
      &                          - fDHW_ColdMainTemp(iMonth)) )
      &                   + 0.25 * fLitresforNumOccupants )
 
-        IF (iH2K.eq.1) then ! treat it like H2K
-          fDHW_WaterDraw = fNormalizedDailyWaterDraw
+      IF (iH2K.eq.1) then ! treat it like H2K
+        fDHW_WaterDraw = fNormalizedDailyWaterDraw
      &                  /fHoursInDay / REAL(iNTSTEP)
 
-        ELSE   !Treat it with water demand curve contained in fWaterDrawCurveHourly(24).
-c---------This formula will first obtain the percentage of total daily water which has been drawn in that hour.
-          fDHW_WaterDraw = fWaterDrawCurveHourly(ihrp)
-     &                 / fWaterDrawCurveTotal
-c-----------------Then this will muliply it by the actual water draw and divide it by the time step slice.
-     &                   * fNormalizedDailyWaterDraw / REAL(iNTSTEP)
-        ENDIF
 
+      ELSE   !Treat it with water demand curve contained in fWaterDrawCurveHourly(24).
+c This formula will first obtain the percentage of total daily water which has been drawn in that hour.
+        fDHW_WaterDraw = fWaterDrawCurveHourly(ihrp)
+     &                 / fWaterDrawCurveTotal
+c Then this will muliply it by the actual water draw and divide it by the time step slice.
+     &                   * fNormalizedDailyWaterDraw / REAL(iNTSTEP)
       ENDIF
 
 c Note the draw is considered instantaneous ie flow = infinite during draw period
@@ -319,14 +222,13 @@ C       l/s = -------- * ----------- * ------------
 C             timestep       hour      3600 seconds
 C
 C
-      fDHW_H3K_water_draw(2) = fDHW_WaterDraw * real (iNTSTEP)
+        fDHW_H3K_water_draw = fDHW_WaterDraw * real (iNTSTEP)
      &                                       * ( 1.0 / 3600.0 ) ! (l/s)
 
 C Save supply and delivery temperatures (oC)
-      fDHW_H3K_supply_temp(2) = fDHW_ColdMainTemp(iMonth)
-      fDHW_H3K_delivery_temp(2) = fHotSupplyTemp
+        fDHW_H3K_supply_temp = fDHW_ColdMainTemp(iMonth)
+        fDHW_H3K_delivery_temp = fHotSupplyTemp
 
-      RETURN
       END
 
 
@@ -643,7 +545,7 @@ c report January 1995
      &                  + 0.4 *fDHW_PilotEnergy ()
 
 C.....Save data for H3KReports output
-      fDHW_H3K_energy_requirement(2) = fDHW_FuelEnergyRequired
+      fDHW_H3K_energy_requirement = fDHW_FuelEnergyRequired
      &                                       * real (iNTSTEP)
      &                                       * ( 1.0 / 3600.0 ) ! (W)
 
@@ -699,7 +601,7 @@ c Portion of Pilot energy that is transmitted to room.
 
       endif 
 C.....Save energy transfer to room (W)
-      fDHW_H3K_heat_xfer_to_room(2) = fDHW_EnergyToZone
+      fDHW_H3K_heat_xfer_to_room = fDHW_EnergyToZone
      &                                       * real (iNTSTEP)
      &                                       * ( 1.0 / 3600.0 ) ! (W)
      
@@ -724,7 +626,7 @@ C on a zone.
       
       if ( iZone == iDHWZoneLocation ) then 
       
-        fIdealDHWGain = fDHW_H3K_heat_xfer_to_room(2)
+        fIdealDHWGain = fDHW_H3K_heat_xfer_to_room
       
       else 
       
@@ -987,7 +889,7 @@ c----56--1---------2---------3---------4---------5---------6---------7---------8
       END SELECT
 
 C.....Save standby skin losses (W)
-      fDHW_H3K_skin_loss(2) = fDHW_StandbyTankLosses
+      fDHW_H3K_skin_loss = fDHW_StandbyTankLosses
      &                                       * real (iNTSTEP)
      &                                       * ( 1.0 / 3600.0 ) ! (W)
 
@@ -1120,7 +1022,7 @@ c Determine max output for heat injector for timestep.
       fEnergyinputWater = fDHW_EnergyInputWater
 
 C.....Energy transfer to water
-      fDHW_H3K_energy_transfer_to_water(2) = fEnergyinputWater
+      fDHW_H3K_energy_transfer_to_water = fEnergyinputWater
      &                                       * real (iNTSTEP)
      &                                       * ( 1.0 / 3600.0 ) ! (W)
 
@@ -1251,7 +1153,7 @@ c Local variables
      &                    * fDHW_FlueGasLossFactor()
       END SELECT
 
-      fDHW_H3K_flue_loss(2) = fDHW_FlueLosses * real (iNTSTEP)
+      fDHW_H3K_flue_loss = fDHW_FlueLosses * real (iNTSTEP)
      &                                     * ( 1.0 / 3600.0 ) ! (W)
 
       END
@@ -1280,9 +1182,8 @@ c----56--1---------2---------3---------4---------5---------6---------7---------8
 C Declarations for local variables and variables passed in common blocks.
       INTEGER   ihrp,ihrf,idyp,idyf,idwp,idwf,nsinc,its,iDAYN
       INTEGER   isd1,ism1,isd2,ism2,isds,isdf,ntstep
-      logical CLOSE2
-
-      Logical bInquire_BC_Name_Exists ! to check that the BCD file data exists
+      character cfgroot*24,LCFGF*72
+      integer IFCFG
 
 C Check to see if DHW is required.
       IF (iDHW_Flag.ne.1) then
@@ -1299,28 +1200,15 @@ C Initialise to default values.
       fOldFinalWaterTemp =  55.0
       fOldStandbyTankLosses  = 0.0
 
-      fDHW_H3K_energy_requirement(2) = 0.
-      fDHW_H3K_energy_transfer_to_water(2) = 0.
-      fDHW_H3K_water_draw(2) = 0.
-      fDHW_H3K_supply_temp(2) = 0.
-      fDHW_H3K_delivery_temp(2) = 0.
-      fDHW_H3K_heating_load(2) = 0.
-      fDHW_H3K_flue_loss(2) = 0.
-      fDHW_H3K_skin_loss(2) = 0.
-      fDHW_H3K_heat_xfer_to_room(2) = 0.
-      fDHW_H3K_pilot_energy(2) = 0.
-
-      fUA = fDHW_UA() 
+      fUA = fDHW_UA()
 
       fFGas = fDHW_FlueGasLossFactor()
 
       fFTank =  fDHW_DOEEFTank()
 
-      CALL ECLOSE(fDHWVersionNumber,2.0,0.0001,CLOSE2)           
-      
 C For the case of DHW input files with FileVersion numbers greater than 2, the hourly
 C and daily DHW load is defined in the DHW input file, so skip the next section.
-      check_DHW_draws_in_file: if  ( CLOSE2 .or. bDHWv3_HOT3000) then
+      check_DHW_draws_in_file: if  ( fDHWVersionNumber .ge. 2.0 ) then
           continue
 
 c This water draw curve was taken from the CSA f379.1-88 Solar Domestic Hot Water Systems.
@@ -1353,25 +1241,6 @@ c This water draw curve was taken from the CSA f379.1-88 Solar Domestic Hot Wate
           fWaterDrawCurveTotal = 239.0
 
       endif check_DHW_draws_in_file
-
-
-!     If DHW version number is 1.5 then determine the appropriate boundary condition profile
-      if (bDHW_BCD) then
-
-        cDHW_BCD_col = "DHW"
-
-!     See if a profile for DHW exists. If it does not, turn off the indicator
-        if (.not. bInquire_BC_Name_Exists (cDHW_BCD_col)) then
-          bDHW_BCD = .false.
-          write (*,*) "BCD Column name was NOT found - ",
-     &      "Reverting to 24 hour profile"
-          
-        endif
-
-      endif
-
-
-
       RETURN
       END
 
@@ -1474,21 +1343,7 @@ C       IF (bInStartUp) then
 C         RETURN
 C       ENDIF
 
-
-      fDHW_H3K_energy_requirement(1) = fDHW_H3K_energy_requirement(2)
-      fDHW_H3K_energy_transfer_to_water(1) = 
-     &  fDHW_H3K_energy_transfer_to_water(2)
-      fDHW_H3K_water_draw(1) = fDHW_H3K_water_draw(2)
-      fDHW_H3K_supply_temp(1) = fDHW_H3K_supply_temp(2)
-      fDHW_H3K_delivery_temp(1) = fDHW_H3K_delivery_temp(2)
-      fDHW_H3K_heating_load(1) = fDHW_H3K_heating_load(2)
-      fDHW_H3K_flue_loss(1) = fDHW_H3K_flue_loss(2)
-      fDHW_H3K_skin_loss(1) = fDHW_H3K_skin_loss(2)
-      fDHW_H3K_heat_xfer_to_room(1) = fDHW_H3K_heat_xfer_to_room(2)
-      fDHW_H3K_pilot_energy(1) = fDHW_H3K_pilot_energy(2)
-
-
-      fWaterDraw = fDHW_WaterDraw() 
+      fWaterDraw = fDHW_WaterDraw()
 
 c This function will calulate exactly how much load the current tank can support.
       CALL fDHW_DrawsForEachTank()
@@ -1512,52 +1367,35 @@ C ************************ DHW_READIN ******************************************
 C Created by: Phylroy A. Lopez
 C Initial Creation Date: July 31, 2001
 C Copyright 2000: NRCan Buildings Group
-C
-C Revised by: Bart Lomanowski, March 28, 2011
-C             Added v3.0 to support three different methods of specifying
-C             water draws in HOT3000:
-C             (1) Default load: Total daily water draw is based on the num of
-C                 occupants and is then normalized to the 60degC usage.
-C                 The 24hr draw profile is provided in the input file.
-C
-C             (2) User specified load: The user specified total daily water draw
-C                 is normalized to the 60degC usage.
-C                 iNumOccupants is set to -1.
-C                 The 24hr draw profile is provided in the input file.
-C                 iDHW_draw_BCD_col is set to 0.
-C
-C             (3) Annual profile from BCD: The hourly water draw values are
-C                 read directly from BCD data and are not normalized.
-C                 iDHW_draw_BCD_col is set to the column number passed by HOT3000.
-C                 iNumOccupants is set to -1.
-C
+
 C This subroutine reads the input data required by the DHW
 C model (i.e. the contents of the .dhw file). It is called once per
 C simulation when the other building-level input data files (e.g. .ctl file)
 C are read in. All data read from the .dhw file are saved to variables declared
 C in MODULE DHW_DATA.
-C
+
 C --------------------------------------------------------------------------------
 
       SUBROUTINE DHW_READIN
 
       IMPLICIT NONE
 #include "building.h"
-#include "model.h"
 #include "dhw_parameters.h"
 #include "dhw_common.h"
 #include "ground_temp_mains_common.h"
 #include "espriou.h"
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
+      common/C21/IFCFG,cfgroot,LCFGF
 
 C Declarations for local variables and variables passed in common blocks.
+      character cfgroot*24,LCFGF*72
+      integer IFCFG
       character outs*124,OUTSTR*124
       integer IUOUT,IUIN,IFIL,IUNIT,ISTAT,IER,ND,k,ival
       real val
       INTEGER  iTankNumber
       logical error_flag, close, close2, close3
-      integer ihr
 
 
 C Set the version number
@@ -1584,13 +1422,6 @@ c based on Moore's method.
 C Addition of hourly draw profile to dhw input file (JP - Feb 2008)
 C If the version number is > 2, 24 hourly draw profiles are included in the .dhw file.
 
-! Addition of Version 1.5 to support an annual DHW draw value readin (Lukas Swan - Apl 2009)
-! The number 1.5 was selected because previous code checked for version 2 or greater.
-! The use of V 1.5 is to faciliate calling a boundary condition (BCD) profile of DHW use and
-! then passing this value in as the flow rate.
-! Note that initializations have been made in DHW_Initialize() and flow rate calls
-! are made in fDHW_WaterDraw().
-
 c Determine the version number of this file.
 c If it is an old file (with no version number or version number = 0), then we
 c will read in the values of fDHW_ground_temp_avg and fDHW_ground_temp_amp.
@@ -1598,7 +1429,7 @@ c For newer versions, these values won't be read in at all and they are
 c calculated internally instead.
 
 c Get first line.
-      CALL STRIPC(IUNIT,OUTSTR,0,ND,1,' DHW data',IER)
+      CALL STRIPC(IUNIT,OUTSTR,1,ND,1,' DHW data',IER)
       IF(IER.NE.0) error_flag = .true.
       K=0
 
@@ -1615,7 +1446,7 @@ c-------to read in the number of hot water tanks.
 c-------if there is no version number, continue with reading dhw data
         continue
 
-      ENDIF 
+      ENDIF
 
       if(.not. error_flag) then
         CALL EGETWI(OUTSTR,K,IVAL,1,10,'F',' # of Hot Water Tanks ',IER)
@@ -1626,31 +1457,7 @@ c-------if there is no version number, continue with reading dhw data
         iNumberOfTanks = IVAL
       endif
 
-c-----check for HOT3000 specific Version 3.0      
-      CALL ECLOSE(fDHWVersionNumber,3.0,0.01,bDHWv3_HOT3000)       
-      
-      IF(bDHWv3_HOT3000)THEN    
-      
-c-------Read column num in BCD file which contains the annual water draw
-c-------profile for the central DHW system
-        if(.not. error_flag) then
-          CALL STRIPC(IUNIT,OUTSTR,0,ND,1,' BCD col num',IER)
-          IF(IER.NE.0) error_flag = .true.
-          K=0
-        endif
-
-        if(.not. error_flag) then
-          CALL EGETWI(OUTSTR,K,IVAL,0,100,'F',' BCD col. num. ',IER)
-          if(IER.NE.0)then
-            call edisp(IUOUT,' Cannot read BCD col num in DHW file')
-            error_flag = .true.
-          endif
-          iDHW_draw_BCD_col = IVAL
-        endif
-
-      END IF
-
-c-----Read fNumOfOccupants of DHW.
+C Read  fNumOfOccupants of DHW.
       if(.not. error_flag) then
         CALL STRIPC(IUNIT,OUTSTR,0,ND,1,' DHW data',IER)
         IF(IER.NE.0) error_flag = .true.
@@ -1658,11 +1465,7 @@ c-----Read fNumOfOccupants of DHW.
       endif
 
       if(.not. error_flag) then
-        if(bDHWv3_HOT3000)then ! for version 3.0, -1 means "user specified" load
-          CALL EGETWR(OUTSTR,K,VAL,-1.,100.,'F','fNumOfOccupants',IER)
-        else
-          CALL EGETWR(OUTSTR,K,VAL,0.,100.,'F','fNumOfOccupants',IER)
-        end if
+        CALL EGETWR(OUTSTR,K,VAL,0.,100.,'F',' fNumOfOccupants ',IER)
         if(IER.NE.0)then
           call edisp(IUOUT,' Cannot read DHW fNumOfOccupants.')
           error_flag = .true.
@@ -1681,34 +1484,7 @@ c-----the variables fDHW_ground_temp_avg and fDHW_ground_temp_amp are read in
       CALL ECLOSE(fDHWVersionNumber,0.0,0.0001,CLOSE)
       CALL ECLOSE(fDHWVersionNumber,1.0,0.0001,CLOSE2)
       CALL ECLOSE(fDHWVersionNumber,2.0,0.0001,CLOSE3)
-
-!     Set a logical common variable here so this does not need to be called again
-!     in DHW_Initialize() and fDHW_WaterDraw()
-      CALL ECLOSE(fDHWVersionNumber,1.5,0.01,bDHW_BCD)
-
-C Read  fDayDrawMultiplier of DHW.
-      if(.not. error_flag .and. bDHW_BCD) then
-!         write (*,*) "DHW BCD multiplier readin"
-        CALL STRIPC(IUNIT,OUTSTR,0,ND,1,
-     &    ' DHW fDayDrawMultiplier data',IER)
-        IF(IER.NE.0) error_flag = .true.
-        K=0
-
-        if(.not. error_flag) then
-          CALL EGETWR(OUTSTR,K,VAL,0.,3.,'F',
-     &      ' fDayDrawMultiplier ',IER)
-          if(IER.NE.0)then
-            call edisp(IUOUT,' Cannot read DHW fDayDrawMultiplier.')
-            error_flag = .true.
-          endif
-          fDayDrawMultiplier = VAL
-!           write (*,*) "DHW BCD multiplier is ", fDayDrawMultiplier
-        endif
-      endif
-
-c-----If there is no version number associated with the dhw input file, then 
-c-----the variables fDHW_ground_temp_avg and fDHW_ground_temp_amp are read in
-      IF(CLOSE) then 
+      IF(CLOSE) then
 c Read  fDHW_ground_temp_avg of DHW.
         if(.not. error_flag) then
           CALL STRIPC(IUNIT,OUTSTR,0,ND,1,' DHW data',IER)
@@ -1755,11 +1531,9 @@ c-----In this case the ground average temperature and amplitude are based on
 c-----calculations using the weather file. Values for the ground temperature
 c-----average and amplitude are stored in common Ground_Temp in the include
 c-----file "ground_temp_mains_common"
-      ELSEIF(CLOSE2 .or. CLOSE3 .or. bDHW_BCD .or. 
-     &       bDHWv3_HOT3000) THEN
+      ELSEIF(CLOSE2 .or. CLOSE3) THEN
 c In this case the ground temperature evaluation method flag is set to 1
         iDHW_ground_temp_cal_flag = 1
-
         continue
       END IF
 
@@ -1926,32 +1700,7 @@ C Read  fBlanket Insulation of DHW.
             error_flag = .true.
           endif
           fBlanketRSI = VAL
-        endif        
-        
-c------HOT3000 (version 3.0): Read 24hr draw profile if iDHW_draw_BCD_col = 0.      
-       if ( bDHWv3_HOT3000 .and. iDHW_draw_BCD_col .eq. 0 ) then
-
-         do ihr = 1 , 24
-           if(.not. error_flag) then
-             CALL STRIPC(IUNIT,OUTSTR,0,ND,1,' DHW 24hr profile',IER)
-             IF(IER.NE.0) error_flag = .true.
-             K=0
-           endif
-
-           if(.not. error_flag) then
-             CALL EGETWR(OUTSTR,K,VAL,0.,999.,'F',
-     &                    'DHW hourly draw values [L] ',IER)
-             if(IER.NE.0)then
-               call edisp(IUOUT,' Cannot read hourly draw values [L]')
-               error_flag = .true.
-             endif
-
-             fWaterDrawCurveHourly(ihr) = VAL   ! [Litres]
-             fWaterDrawCurveTotal = fWaterDrawCurveTotal + VAL
-
-           endif
-         end do
-       end if
+        endif
 
       END DO
 
@@ -2164,54 +1913,44 @@ C=======================================================================
       implicit none
 #include "dhw_common.h"
 #include "OffsiteUtilitiesPublic.h"
-#include "h3k_report_data.h"
 
 C.....Store energy requirement in site-utilities facility storage
 C.....array. (W)
       fSUFuelEnergyUse( iFuelType, iUseDHW ) =
-     &    fDHW_H3K_energy_requirement(2)
+     &    fDHW_H3K_energy_requirement
 C.....Pass data to storage facility.
       call StoreSiteEnergyUse(iIdealDHW, fSUFuelEnergyUse )
 
 
 C.....Report interesting parameters:
       Call AddToReport(rvPltDHWWtr%Identifier,
-     &  fDHW_H3K_water_draw(2))
+     &  fDHW_H3K_water_draw)
 
-C.... Set flag allowing h3kreports to scale this data for seasonal
-C.... reporting purposes. 3 = scale_gen
-       if ( bFirst_call_dhw  )
-     &      call SetAdditionalValues(
-     &         rvPltDHWEnIn%Identifier,
-     &         3,
-     &         .true.)
+      Call AddToReport(rvPltDHWEnIn%Identifier,
+     &  fDHW_H3K_energy_requirement)
 
-       Call AddToReport(rvPltDHWEnIn%Identifier,
-     &  fDHW_H3K_energy_requirement(2))
-     
        Call AddToReport(rvPltDHWSupTmp%Identifier,
-     &  fDHW_H3K_supply_temp(2))
+     &  fDHW_H3K_supply_temp)
 
       Call AddToReport(rvPltDHWDlvTmp%Identifier,
-     &  fDHW_H3K_delivery_temp(2))
+     &  fDHW_H3K_delivery_temp)
 
       Call AddToReport(rvPltDHWBrnHOut%Identifier,
-     &  fDHW_H3K_energy_transfer_to_water(2))
+     &  fDHW_H3K_energy_transfer_to_water)
 
       Call AddToReport(rvPltDHWSknLss%Identifier,
-     &  fDHW_H3K_skin_loss(2))
+     &  fDHW_H3K_skin_loss)
 
       Call AddToReport(rvPltDHWFluLss%Identifier,
-     &  fDHW_H3K_flue_loss(2))
+     &  fDHW_H3K_flue_loss)
 
       Call AddToReport(rvPltDHWHTrnBld%Identifier,
-     &  fDHW_H3K_heat_xfer_to_room(2))
+     &  fDHW_H3K_heat_xfer_to_room)
 
       Call AddToReport(rvPltDHWWtrHLd%Identifier,
-     &  fDHW_H3K_water_draw(2) * 4106.0
-     &      * ( fDHW_H3K_delivery_temp(2) - fDHW_H3K_supply_temp(2)))
+     &  fDHW_H3K_water_draw * 4106.0
+     &      * ( fDHW_H3K_delivery_temp - fDHW_H3K_supply_temp))
 
-      bFirst_call_dhw = .false.
 
       return
       end

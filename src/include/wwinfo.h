@@ -54,14 +54,14 @@
 #endif
 
 #ifndef TRUE
-#define TRUE  1
-#define FALSE 0
+#define TRUE		1
+#define FALSE		0
 #endif /* TRUE */
-# define NULLPTR(x)  ((x *)0)  /* null (coerced) */
-#define WWERRLEN  200  /* length of errmsg buffer */
-#define WWNOCLIP  (-1) /* an uninteresting value to mark noclipbox out */
-#define WWERROR   (-2) /* failure */
-#define WWOK  0  /* ok */
+# define NULLPTR(x)	((x *)0)	/* null (coerced) */
+#define WWERRLEN	200	/* length of errmsg buffer */
+#define WWNOCLIP	(-1)	/* an uninteresting value to mark noclipbox out */
+#define WWERROR		(-2)	/* failure */
+#define WWOK		0	/* ok */
 /*
  * structure that holds the corners of a box
  */
@@ -105,19 +105,19 @@ typedef struct _window{
 /*
  * define w_flags bit settings
  */
-#define WICONSEEN 01  /* the icon is visible */
-#define WSEEN     02  /* window can be seen */
-#define WINSIDE   04  /* cursor is inside */
-#define WKILL     010 /* report if user wants/hasdestroyed window */
+#define WICONSEEN	01	/* the icon is visible */
+#define WSEEN		02	/* window can be seen */
+#define WINSIDE		04	/* cursor is inside */
+#define WKILL		010	/* report if user wants/hasdestroyed window */
 /*
  * define bmbox arguments that can be or-ed together
  */
-#define BMCLEARALL  01  /* clear box, including edges */
-#define BMCLEAR     02  /* clear inside of box, not including edges */
-#define BMNOTALL    04  /* not all of box */
-#define BMNOT       010 /* not inside of box */
-#define BMEDGES     020 /* draw edges of box, using dd->d_line */
-#define BMWIN     04000 /* use ddwin->w_bm instead of ddbm */
+#define BMCLEARALL	01	/* clear box, including edges */
+#define BMCLEAR		02	/* clear inside of box, not including edges */
+#define BMNOTALL	04	/* not all of box */
+#define BMNOT		010	/* not inside of box */
+#define BMEDGES		020	/* draw edges of box, using dd->d_line */
+#define BMWIN		04000	/* use ddwin->w_bm instead of ddbm */
 /*
  * define bmcopy arguments that can be or-ed together.
  */

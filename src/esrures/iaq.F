@@ -32,8 +32,6 @@ C facilities are 'hidden' in the current version.
       common/exporttg/xfile,tg,delim
       COMMON/EXPORTI/ixopen,ixunit,ixpunit
       COMMON/SIMPIK/ISIM,ISTADD,ID1,IM1,ID2,IM2,ISDS,ISDF,NTS,ISAVE
-      integer childterminal  ! picks up mmod from starting of prj
-      common/childt/childterminal
       
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
@@ -42,6 +40,12 @@ C facilities are 'hidden' in the current version.
       character doit*124,tmode*8
       character xfile*144,tg*1,delim*1
       integer NITMS,INO ! max items and current menu item
+
+#ifdef OSI
+      integer ICPMOD     ! passed from tchild
+#else
+      integer*8 ICPMOD     ! passed from tchild
+#endif
 
 C For help messages
       character helpinsub*24   ! subroutine name
@@ -102,7 +106,8 @@ C Instanciate the help strings for this menu.
       elseif(INO.EQ.6)then
         call edisp(iuout,' ')
         doit = ' '
-        call terminalmode(childterminal,tmode)
+        call tchild(ICPMOD)
+        call termode(ICPMOD,tmode)
         write(doit,'(a,a,a,a,a)') 'mld -mode ',tmode,' &'
         call runit(doit,tmode)
       elseif(INO.EQ.7)then

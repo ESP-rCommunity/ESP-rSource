@@ -50,7 +50,7 @@ C.....Model parameters
      &           fHX_height,
      &           fTank_Height, 
      &           iStrat_tank_CompIndex,
-     &           iStrat_tank_number
+     &	         iStrat_tank_number
 
 C.....Actual number of natural convection heat exchangers in system
       INTEGER N_NCHE

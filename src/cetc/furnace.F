@@ -20,9 +20,9 @@ C License along with ESP-r. If not, write to the Free
 C Software Foundation, Inc., 59 Temple Place, Suite 330,
 C Boston, MA 02111-1307 USA.
 c This file contains the following routines:
-c  FURNACE  determine the energy consumption of the furnace
-c  FURNACE_PLF
-c           determine the furnace part-load factor
+c	FURNACE	  determine the energy consumption of the furnace
+c	FURNACE_PLF
+c		  determine the furnace part-load factor
 c
 c *********************************************************************
 c *********************************************************************
@@ -49,26 +49,26 @@ c             "Part load curves for use in DOE-2"
 c              Prepared for the Lawrence Berkley Laboratory by
 c              Hugh Henderson, CDH Energy Corp, Cazenovia, NY
 
-c             "Furnace Model for Implementation in H3K",
-c             H3K Model Documentation, Kamel Haddad, April 5th 2000
+c	      "Furnace Model for Implementation in H3K",
+c	      H3K Model Documentation, Kamel Haddad, April 5th 2000
 
 c INPUTS:
-c  HVAC_INPUT_DATA
-c         common for hvac input data
-c  FURNACE_INPUT_DATA
-c         common for furnace input data
-c  UNDER_HEAT_COOL_HOURS
-c         common for number of hours zones served by HVAC 
-c      system are under heated or cooled
-c  pers   common containing the number of time steps per hour
-c  isys   HVAC system number
-c   heating_load  total combined heating load of the zones served
-c                 by the HVAC system isys 
+c	HVAC_INPUT_DATA
+c			common for hvac input data
+c	FURNACE_INPUT_DATA
+c			common for furnace input data
+c	UNDER_HEAT_COOL_HOURS
+c			common for number of hours zones served by HVAC 
+c			system are under heated or cooled
+c	pers		common containing the number of time steps per hour
+c	isys		HVAC system number
+c       heating_load	total combined heating load of the zones served
+c                       by the HVAC system isys 
 
 c OUTPUTS:
-c  furnace_energy  total energy consumed by the furnace system in J. This
-c                  includes the energy required when the furnace is on,
-c                  and the pilot energy when the furnace is off.
+c	furnace_energy	total energy consumed by the furnace system in J. This
+c			includes the energy required when the furnace is on,
+c			and the pilot energy when the furnace is off.
 c       pilot_energy    energy consumption by the pilot of the furnace if
 c                       applicable in J
 c       plrf            part-load ratio of the equipment
@@ -112,8 +112,8 @@ c Common for the number of time steps per hour
 c Declare integers in PERS common
       INTEGER ISD1,ISM1,ISD2,ISM2,ISDS,ISDF,NTSTEP
 
-c hvac system file and flag:  ihvacflag=1 there is hvac file
-c                             ihvacflag=0 no hvac file
+c hvac system file and flag:  	ihvacflag=1 there is hvac file
+c				ihvacflag=0 no hvac file
       common/hvacinfo/ihvacflag, hvacfile
       CHARACTER*72 hvacfile
       INTEGER ihvacflag
@@ -191,30 +191,30 @@ c
 c Function to determine the part-load factor of a furnace
 
 c References:
-c   "Further developments to the HOT2000 subroutine - Part B:
-c   furnace and heat pump models", prepared for Energy Mines 
-c   and Resource Canada, Energy Efficiency Division. 
-c   Submitted by C. Barringer. Report No. ET-91-045
+c		"Further developments to the HOT2000 subroutine - Part B:
+c              	furnace and heat pump models", prepared for Energy Mines 
+c             	and Resource Canada, Energy Efficiency Division. 
+c              	Submitted by C. Barringer. Report No. ET-91-045
 
-c   "Part load curves for use in DOE-2"
-c   Prepared for the Lawrence Berkley Laboratory by
-c   Hugh Henderson, CDH Energy Corp, Cazenovia, NY
+c             	"Part load curves for use in DOE-2"
+c              	Prepared for the Lawrence Berkley Laboratory by
+c              	Hugh Henderson, CDH Energy Corp, Cazenovia, NY
 
-c   "Furnace Model for Implementation in H3K",
-c   H3K Model Documentation, Kamel Haddad, April 5th 2000
+c	        "Furnace Model for Implementation in H3K",
+c	        H3K Model Documentation, Kamel Haddad, April 5th 2000
 
 c INPUTS:
-c  isys         number of HVAC system
-c  isys_type    type of furnace
-c  plrf         part-load ratio of the heat pump
-c  af,bf,cf,df  stored in common furnace_corr. These the correlation
-c               coefficients for the part load performance of the 
-c               furnace
-c  FURNACE_INPUT_DATA
-c    common for furnace input data
+c	isys		number of HVAC system
+c	isys_type	type of furnace
+c	plrf		part-load ratio of the heat pump
+c       af,bf,cf,df     stored in common furnace_corr. These the correlation
+c                       coefficients for the part load performance of the 
+c                       furnace
+c	FURNACE_INPUT_DATA
+c			common for furnace input data
 
 c OUTPUTS:
-c       FURNACE_PLF  estimate of the part-load factor
+c       FURNACE_PLF	estimate of the part-load factor
 c **********************************************************************    
       REAL FUNCTION FURNACE_PLF(isys,isys_type,plrf)
 

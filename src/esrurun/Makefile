@@ -1,6 +1,5 @@
 SRCdir = `pwd`/..
 BLDdir = $(SRCdir)/esrubld
-CDBdir = $(SRCdir)/esrucdb
 COMdir = $(SRCdir)/esrucom
 DFSdir = $(SRCdir)/esrudfs
 MFSdir = $(SRCdir)/esrumfs
@@ -18,12 +17,10 @@ PROG2 = runesp$(EXE)
 %.o : %.f90
 	$(MCC) $(FFLAGS) -c $<
 
-MODULE_OBJECTS = h3kmodule.o startup.o aim2_module.o
 
-OBJECTS = runesp.o arrow.o ascii_mat.o \
+OBJECTS = h3kmodule.o runesp.o aim2_module.o arrow.o ascii_mat.o \
 	basesimp.o basesimp_inputs.o bscoeff.o bscoeff_extended.o \
 	blcond.o bnlthp.o bpfcom.o bsimsel.o \
-	CDBPlugins.o CDBCommon.o CDBExplore.o\
 	c2fdum.o cfdat.o cfdrw.o cfg3dv.o cfgmsc.o cfgrid.o cgd.o \
 	clickonbitmap.o commonclm.o context.o ctlexp.o ctlwrt.o ctread.o \
 	dossupport.o e3dviews.o ecasctl.o \
@@ -36,13 +33,13 @@ OBJECTS = runesp.o arrow.o ascii_mat.o \
 	MultiYear_climate.o net2pdf.o newnet.o nwkrewr.o \
 	pltcfg.o pltnet.o prescoef.o prjdmds.o prjfmk.o prjqa.o \
 	psychro.o rcdblist.o readTrnsys.o rwipv.o rwroam.o rwsbem.o sort.o \
-	 tdfedit.o tdfile.o tdgraph.o qrun.o
+	startup.o tdfedit.o tdfile.o tdgraph.o 
 
-MODULES = aim2.mod aim2_calcdata.mod aim2_h2K_dummy.mod aim2_inputdata.mod start_up.mod \
-	parse_command_line.mod h3kmodule.mod
+MODULES = aim2.mod aim2_calcdata.mod aim2_h2K_dummy.mod aim2_inputdata.mod \
+	  h3kmodule.mod	
 
-$(PROG): $(MODULE_OBJECTS) $(OBJECTS)
-	$(MFC) $(LD_FLAGS) -o $(PROG) $(FFLAGS) $(MODULE_OBJECTS) $(OBJECTS) $(ULIBS)
+$(PROG): $(OBJECTS)
+	$(MFC) $(LD_FLAGS) -o $(PROG) $(FFLAGS) $(OBJECTS) $(ULIBS)
 
 arrow.F:
 	rm -f arrow.F
@@ -74,15 +71,6 @@ bpfcom.F:
 bsimsel.F:
 	rm -f bsimsel.F
 	ln -s $(COMdir)/bsimsel.F .
-CDBPlugins.F:
-	rm -f CDBPlugins.F
-	ln -s $(CDBdir)/CDBPlugins.F .
-CDBCommon.F:
-	rm -f CDBCommon.F
-	ln -s $(CDBdir)/CDBCommon.F .
-CDBExplore.F:
-	rm -f CDBExplore.F
-	ln -s $(CDBdir)/CDBExplore.F .
 c2fdum.F:
 	rm -f c2fdum.F
 	ln -s $(COMdir)/c2fdum.F .
@@ -311,9 +299,6 @@ tdgraph.F:
 tdfedit.F:
 	rm -f tdfedit.F
 	ln -s $(PRJdir)/tdfedit.F .
-qrun.F:
-	rm -f qrun.F
-	ln -s $(COMdir)/qrun.F .
 aim2_module.F:
 	rm -f aim2_module.F
 	ln -s $(BLDdir)/aim2_module.F .
@@ -330,11 +315,10 @@ install:
 	@if [ -f $(PROG) ]; then cp $(PROG) $(ESPBinDir)/$(PROG2); fi
 
 clean:
-	rm -f core $(PROG) $(PROG2) $(PROG).exe $(PROG2).exe $(MODULE_OBJECTS) $(OBJECTS) $(MODULES) \
+	rm -f core $(PROG) $(PROG2) $(PROG).exe $(PROG2).exe $(OBJECTS) $(MODULES) \
 	h3kmodule.f90 aim2_module.F arrow.F ascii_mat.F \
 	basesimp.F basesimp_inputs.F bscoeff.F bscoeff_extended.F \
 	blcond.F bnlthp.F bpfcom.F bsimsel.F \
-	CDBPlugins.F CDBCommon.F CDBExplore.F \
 	c2fdum.F cfdat.F cfdrw.F cfg3dv.F cfgmsc.F cfgrid.F cgd.F clickonbitmap.F commonclm.F \
 	context.F ctlexp.F ctlwrt.F ctread.F dossupport.F e3dviews.F ecasctl.F \
 	econstr.F econtrol.F edcfd.F edcon.F edcondb.F edatabase.F eddb.F edgeo.F edipv.F \
@@ -344,4 +328,6 @@ clean:
 	mfnmsc.F mfrlst.F mksbem.F MultiYear_climate.F net2pdf.F newnet.F nwkrewr.F \
 	pltcfg.F pltnet.F prescoef.F prjdmds.F prjfmk.F prjqa.F psychro.F rcdblist.F \
 	rwipv.F rwroam.F rwsbem.F readTrnsys.F sort.F startup.F tdfedit.F tdfile.F tdgraph.F \
-	editCFC.F qrun.F
+	editCFC.F 
+
+

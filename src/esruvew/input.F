@@ -5,6 +5,8 @@ C----------------------------------------------------
       
       integer lnblnk  ! function definition
 
+      integer igraphiclib  ! external definition
+
       PARAMETER (MNF = 10)
       PARAMETER (MTR = 100)
       PARAMETER (MELT = 8)
@@ -25,13 +27,13 @@ C----------------------------------------------------
 
       DIMENSION MNP(MELT),MNS(MELT),MNPP(MELT),MNPPP(MELT),XP(4),YP(4)
       CHARACTER Filnam(MNF)*72, LINE*72,path*72,LCMDFL*144
-      CHARACTER NAMDS0*30,NAMDS*30,NAMPIC*40,L144*144,lltmp*144
+      CHARACTER NAMDS0*30,NAMDS*30,NAMPIC*40,L144*144
       CHARACTER TEXT*25
       CHARACTER TTT*3, MC*3, BLAB*3
       CHARACTER*10 SN(MELT,6)
       character FNAME*72,outs*124
 
-      LOGICAL LOOK,NOIGN
+      LOGICAL LOOK,NOIGN,OK,XST
 
 C For help messages
       character helpinsub*24 ! subroutine name
@@ -116,28 +118,44 @@ C GET FILENAME IN USE
       INUSE = IFUSE
       NFILE = 1
 
-C Confirm command line file.
- 11   helptopic='the_viewer_file'
-      call gethelptext(helpinsub,helptopic,nbhelp)
-      L144=LCMDFL
+C Take in command line file.
+C If the file exists then go ahead and load it.
+      INQUIRE (FILE=LCMDFL,EXIST=XST)
+      if(.NOT.XST)then 
+ 11     helptopic='the_viewer_file'
+        call gethelptext(helpinsub,helptopic,nbhelp)
+        L144=LCMDFL
+        llt=lnblnk(L144)
 
 C The X11 version will be returning only the name of the
 C file, while the GTK version will be returning the
 C name with the full path.
-      lltmp='  '
-      CALL EASKXORGTKF(L144,
-     &  'Viewer input file name?',' ',
-     &  'model.vew',lltmp,'viewer file',IER,nbhelp)
+        iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
+        if(iglib.eq.1.or.iglib.eq.3)then
+          if(llt.lt.96)then
+            CALL EASKF(L144,' Viewer input file name?',' ',
+     &        96,'test.vew','initial input file',IER,nbhelp)
+          elseif(llt.ge.96.and.llt.lt.124)then
+            CALL EASKF(L144,' Viewer input file name?',' ',
+     &        124,'test.vew','initial input file',IER,nbhelp)
+          elseif(llt.ge.124.and.llt.le.144)then
+            CALL EASKF(L144,' Viewer input file name?',' ',
+     &        144,'test.vew','initial input file',IER,nbhelp)
+          endif
+        elseif(iglib.eq.2)then
+          CALL EASKF(L144,' Viewer input file name?',' ',
+     &      144,'test.vew','initial input file',IER,nbhelp)
+        else
+          CALL EASKF(L144,' Viewer input file name?',' ',
+     &      96,'test.vew','initial input file',IER,nbhelp)
+        endif
 
-C If user request jump back and re-display the menu.
-      if(ier.eq.-3)then
-        return  ! cancel detected, return.
+        call usrmsg('File selected is',LCMDFL,'-')
+        if(ier.ne.0.or.L144(1:2).eq.'  ')then
+          goto 11
+        endif
+        LCMDFL=L144
       endif
-      if(ier.ne.0.or.lltmp(1:2).eq.'  ')then
-        goto 11
-      endif
-      LCMDFL=lltmp
-
       call usrmsg(' ',' ','-')
       call fdroot(LCMDFL,path,FILNAM(NFILE))
       goto 8

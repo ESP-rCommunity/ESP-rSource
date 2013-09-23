@@ -37,18 +37,12 @@ C will have been defined prior to calling edmrt.
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/OUTIN/IUOUT,IUIN
       common/user/browse
-      integer childterminal  ! picks up mmod from starting of prj
-      common/childt/childterminal
 
-      integer IZSTOCN
+      common/C21/IFCFG,cfgroot,LCFGF
       COMMON/C24/IZSTOCN(MCOM,MS)
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
       COMMON/RAY3/MODIFY,MODLEN,MODBND
       COMMON/RAY5/ZCOG(MCOM,3),XMN,YMN,ZMN,XMX,YMX,ZMX
-
-      integer ncub,ivfok
-      real XOC,YOC,ZOC,DXC,DYC,DZC,CANG
-      character CUBN*6
       COMMON/MRTC/NCUB,XOC(MCUB),YOC(MCUB),ZOC(MCUB),DXC(MCUB),
      &            DYC(MCUB),DZC(MCUB),CANG(MCUB),IVFOK(MCUB),CUBN(MCUB)
       COMMON/MRTF/FFL(MCUB,6,MSM),VEWF(MS,MS)
@@ -58,7 +52,8 @@ C will have been defined prior to calling edmrt.
       DIMENSION SNA(MS),PAZI(MS),PELV(MS)
       LOGICAL MODIFY,MODLEN,MODBND,concat,cfgmod,browse,clkok,XST
       logical silent,unixok
-      CHARACTER VERT*46,LTMP*72
+      CHARACTER VERT*46,CUBN*6,LTMP*72,cfgroot*24
+      CHARACTER LCFGF*72
       character VFILE*72,head*32,outs*124,KEY*1,ETEXT*82
       character doit*248,tmode*8,tfile*72,ZN*12
       character act*1
@@ -66,26 +61,12 @@ C will have been defined prior to calling edmrt.
       integer icni,icnj  ! connection numbers for pair of surfaces.
       integer MVERT,IVERT ! max items and current menu item
 
-C Passed parameters for cfgtogg
-#ifdef OSI
-      integer icfg_type  ! model cfg type
-      integer icfgz      ! if non-zero then there are zones
-      integer icfgn      ! if non-zero then there are networks
-      integer icfgc      ! if non-zero then cfg file known
-      integer icfgdfn    ! if non-zero then cdf domain exists
-      integer iicfgz     ! there are zone related images
-      integer iicfgn     ! there are network related images
-      integer iicfgc     ! there are control related images
-      integer iicfgdfn   ! there are cfd related images
-#else
-      integer*8 icfg_type,icfgz,icfgn,icfgc,icfgdfn,iicfgz
-      integer*8 iicfgn,iicfgc,iicfgdfn
-#endif
-
 #ifdef OSI
       integer iside,isize,ifont     ! passed to viewtext
+      integer ICPMOD                ! passed from tchild
 #else
       integer*8 iside,isize,ifont   ! passed to viewtext
+      integer*8 ICPMOD              ! passed from tchild
 #endif
 
 C For help messages
@@ -187,7 +168,8 @@ C Otherwise commission an explicit calculation.
 C Get logical name of terminal type, expand model name
 C to include the path and create a string to drive espvwf module.
           doit = ' '
-          call terminalmode(childterminal,tmode)
+          call tchild(ICPMOD)
+          call termode(ICPMOD,tmode)
           if(unixok)then
             call addpath(LCFGF,longtfile,concat)
           else
@@ -335,7 +317,7 @@ C current menu line index. Build up text strings for the menu.
       VERT(3)='a Edit zone viewfactors                      '
       VERT(4)='b Calculate zone or MRT sensor viewfactors   '
       VERT(5)='  ___________________________________________'
-      WRITE(VERT(6),'(A,I2)') '  Number of MRT sensors: ',NCUB
+      WRITE(VERT(6),'(A,I2)') '  No of MRT sensors: ',NCUB
       VERT(7)='  ___________________________________________'
       VERT(8)='  Sensor|   Origin (m)    |    Size (m)  |Rot'
       VERT(9)='  name  |Xcord|Ycord|Zcord|len |wid |ht  |deg'
@@ -453,7 +435,7 @@ C Add a sensor.
           DYC(NCUB)=0.1
           DZC(NCUB)=0.1
           CANG(NCUB)=0.
-          write(CUBN(NCUB),'(A,I2.2)')'sen_',NCUB
+          write(CUBN(NCUB),'(A4,I1)')'sen_',NCUB
           MODIFY=.TRUE.
         ELSE
           CALL USRMSG(' ',' Too many sensors defined!','W')
@@ -531,7 +513,8 @@ C << Rewrite logic to use G7 common blocks rather than call zinfo. >>
 C Get logical name of terminal type, expand model name
 C to include the path and create a string to drive espvwf.
           doit = ' '
-          call terminalmode(childterminal,tmode)
+          call tchild(ICPMOD)
+          call termode(ICPMOD,tmode)
           if(unixok)then
             call addpath(LCFGF,longtfile,concat)
           else
@@ -609,35 +592,16 @@ C EDMRTS: Edit details of a MRT sensor block.
 
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
 
-      integer ncub,ivfok
-      real XOC,YOC,ZOC,DXC,DYC,DZC,CANG
-      character CUBN*6
       COMMON/MRTC/NCUB,XOC(MCUB),YOC(MCUB),ZOC(MCUB),DXC(MCUB),
      &            DYC(MCUB),DZC(MCUB),CANG(MCUB),IVFOK(MCUB),CUBN(MCUB)
 
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
       COMMON/RAY3/MODIFY,MODLEN,MODBND
       DIMENSION VERT(15)
-      CHARACTER VERT*28,MSG*72,S6*6,head*30
+      CHARACTER VERT*28,MSG*72,S6*6,CUBN*6,head*30
       character ETEXT*82
       LOGICAL MODIFY,MODLEN,MODBND
       integer NITMS,IVERT ! max items and current menu item
-
-C Passed parameters for cfgtogg
-#ifdef OSI
-      integer icfg_type  ! model cfg type
-      integer icfgz      ! if non-zero then there are zones
-      integer icfgn      ! if non-zero then there are networks
-      integer icfgc      ! if non-zero then cfg file known
-      integer icfgdfn    ! if non-zero then cdf domain exists
-      integer iicfgz     ! there are zone related images
-      integer iicfgn     ! there are network related images
-      integer iicfgc     ! there are control related images
-      integer iicfgdfn   ! there are cfd related images
-#else
-      integer*8 icfg_type,icfgz,icfgn,icfgc,icfgdfn,iicfgz
-      integer*8 iicfgn,iicfgc,iicfgdfn
-#endif
 
 #ifdef OSI
       integer iside,isize,ifont     ! passed to viewtext

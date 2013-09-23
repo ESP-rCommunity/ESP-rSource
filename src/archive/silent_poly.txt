@@ -1,0 +1,80 @@
+*silent_input
+*menu,Creates three zone model in /tmp/poly3
+*doc,Model of a box and roof and triangual room within distributed folders to be created in /tmp/poly3 and then set site to use data from irl_dublin_iwec climate file.
+*action,new,poly,distributed,/tmp/poly3
+*weather_station,uk_oban
+*site,45.320,0.000,0.0,6 # latitude, long diff, time zone, exposure index (and sky/ground/building exposure)
+*ground_refl_annual,0.20
+*sim_parameters,3,4,1,4
+*assessments,winter,fortnight
+*start_zone,metal_box5
+*shape,box
+*origin,0.0,0.0,0.0  # origin of zone
+*size,20.0,10.0,5.0  # length width height (m)
+*rotate,0.0          # rotation
+*glaze,1,1,20.0         # how many, index of parent and percent
+*door,1,1,2.5    # how many, index of parent and width of door
+*surface,front,extern_wall,0,0,0
+*surface,right,extern_wall,0,0,0
+*surface,back,extern_wall,0,0,0
+*surface,left,extern_wall,0,0,0
+*surface,ceiling,susp_ceil,3,2,1
+*surface,floor,floor_1,4,1,0
+*surface,door,door,0,0,0
+*surface,glaz_front,dbl_glz,0,0,0
+*usage,pattern,all,allcas,nothing_in_room.opr   # casual gain pattern
+*environment,comvective_night_off  # name of zone control pattern
+*heating,18.0,0.0   # setpoint occupied & unoccupied
+*cooling,26.0,100.0 # setpoint occupied & unoccupied
+*end_zone
+*start_zone,metal_roof
+*shape,poly
+*nbwalls,5
+*cord,0.0,0.0,5.0
+*cord,20.0,0.0,5.0
+*cord,20.0,10.0,5.0
+*cord,0.0,10.0,5.0
+*cord,5.0,0.0,6.0
+*cord,5.0,10.0,6.0
+*origin,0.0,3.0,0.0  # base and topsilent and ignored
+*size,0.0,0.0,0.0    # not used for extrude shape.
+*rotate,0.0          # rotation
+*surface,base,susp_ceil,3,1,5
+*list,4,1,4,3,2
+*surface,front,extern_wall,0,0,0
+*list,3,1,2,5
+*surface,roof_r,roof_1,0,0,0
+*list,4,2,3,6,5
+*surface,back,extern_wall,0,0,0
+*list,3,3,4,6
+*surface,roof_l,roof_1,0,0,0
+*list,4,4,1,5,6
+*usage,pattern,all,allcas,nothing_in_room.opr   # casual gain pattern
+*environment,comvective_night_off  # name of zone control pattern
+*heating,18.0,0.0   # setpoint occupied & unoccupied
+*cooling,26.0,100.0 # setpoint occupied & unoccupied
+*end_zone
+*start_zone,pavilion
+*shape,extrude
+*nbwalls,3
+*cord,0.0,15.0
+*cord,5.0,15.0
+*cord,2.5,19.0
+*origin,0.0,3.0,0.0  # base and top and ignored
+*size,0.0,0.0,0.0    # not used for extrude shape.
+*rotate,0.0          # rotation
+*glaze,1,1,20.0         # how many, index of parent and percent
+*door,1,2,1.5    # how many, index of parent and width of door
+*surface,front,extern_wall,0,0,0
+*surface,right,extern_wall,0,0,0
+*surface,left,extern_wall,0,0,0
+*surface,roof,roof_1,0,0,0
+*surface,floor,floor_1,4,1,0
+*surface,door,door,0,0,0
+*surface,glaz_front,dbl_glz,0,0,0
+*usage,pattern,all,allcas,nothing_in_room.opr   # casual gain pattern
+*environment,comvective_night_off  # name of zone control pattern
+*heating,18.0,0.0   # setpoint occupied & unoccupied
+*cooling,26.0,100.0 # setpoint occupied & unoccupied
+*end_zone
+*end

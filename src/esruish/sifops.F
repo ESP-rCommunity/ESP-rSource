@@ -46,7 +46,6 @@ C with the db at simulation time.
       common/outin/iuout,iuin
       common/filep/ifil
 
-      integer izstocn
       common/c24/izstocn(mcom,ms)
       common/tmc/itmc(ms),nwins
       common/data2/pso(ms,24),psof(ms,24)
@@ -173,8 +172,8 @@ C Identify a month.
          goto 1
       endif
 
-C Read binary shading file and fill commons DATA2, DATA3, DATA4 and DATA5
-C for the specified month.
+C Read db and fill commons DATA2, DATA3, DATA4 and DATA5 for
+C specified month.
       call sifrd(icomp,mnth,ier)
 
 C Present options menu and generate help text for these dialogs.
@@ -417,13 +416,13 @@ C hold 62 indices before it hits an overflow state.
          else
             write(iuj,'(A)',iostat=istat,err=1002) '* end'
             call erpfree(iuj,istat)
-         endif  ! end of expoort menu item
-
-      elseif(ipick.eq.4)then
+         endif
+C End of `export` menu selection.
 
 C *** Import from ascii file requested.  Note this code does not yet
 C update the value of irecx. The previous call to sifwrt returns a
 C value lastrec which is equivalent to irecx.
+      elseif(ipick.eq.4)then
          iuj=ifil+10
          helptopic='shading_export_options'
          call gethelptext(helpinsub,helptopic,nbhelp)
@@ -448,9 +447,8 @@ C value lastrec which is equivalent to irecx.
          call egetwi(outstr,k,iret,0,0,'-','zone index',ier)
          if(ier.ne.0)goto 1002
          if(iret.ne.icomp)then
-           call usrmsg(
-     &      'Number of surfaces in file does not match current model!',
-     &      expfil,'W')
+           call usrmsg('These data are for a different zone!',
+     &                                     expfil,'W')
            call erpfree(iuj,istat)
            goto 17
          endif
@@ -458,16 +456,15 @@ C value lastrec which is equivalent to irecx.
          if(ier.ne.0)goto 1002
          if(iret.ne.nzsur(icomp))then
            call usrmsg(
-     &      'Number of surfaces in file does not match current model!',
-     &      expfil,'W')
+     &     'Number of surfaces in file does not match current model!',
+     &     expfil,'W')
            call erpfree(iuj,istat)
            goto 17
          endif
 
 C Read data for a month. If we have a month that matches then
 C the code looks for either '24 hour external' in which case
-C the data is shading data. If '24 hour internal' found following
-C the * month tag then we have only insolation.
+C the data is shading data. If
          multic=2  ! signal data is known
          call stripc(iuj,outstr,0,nd,1,'month',ier)
  172     if(outstr(1:5).eq.'* end')goto 18
@@ -534,7 +531,7 @@ C the * month tag then we have only insolation.
          endif
 
 C Read insolation factors. But the next line might also hold
-C a Month string or end marker.
+C a Month string.
          call stripc(iuj,outstr,0,nd,1,'insolation header',ier)
  173     if(ier.ne.0.or.outstr(1:16).ne.'24 hour internal')then
            if(outstr(1:7).eq.'* month')then
@@ -547,15 +544,14 @@ C a Month string or end marker.
                  if(isadd(mnth+1).eq.0) isadd(mnth+1)=lastrec
                endif
              endif
-             mnth=mnth+1   ! increment the month and jump back
+             mnth=mnth+1
              goto 172
            elseif(outstr(1:5).eq.'* end')then
-             goto 18
+	     goto 18
            endif
            message='expecting 24 hours internal'
            goto 1002
          endif
-
          if(outstr(1:5).eq.'* end')goto 18
          call stripc(iuj,outstr,0,nd,1,'offsets header',ier)
          if(ier.ne.0.or.outstr(1:14).ne.'record offsets')then
@@ -626,6 +622,12 @@ C value for the first index of insst
             endif
   210    continue
 
+C << why abort if there is no insolation data? >>
+C         if(nwins.eq.0)then
+C            call usrmsg('File has no insolation data!',expfil,'W')
+C            call erpfree(iuj,istat)
+C            goto 17
+C         endif
          call stripc(iuj,outstr,0,nd,1,'* end',ier)
          if(ier.ne.0)goto 1002
          if(outstr(1:5).ne.'* end')then
@@ -877,10 +879,7 @@ C         write(6,*)(pso(i,j),j=1,24)
    10 continue
 
 C Write insolation factors.
-      if(ishd(mnth).eq.0.or.ishd(mnth).eq.1.or.nwins.eq.0) then
-         lastrecwritten=irec
-         return
-      endif
+      if(ishd(mnth).eq.0.or.ishd(mnth).eq.1.or.nwins.eq.0) return
       write(ifilsi,rec=irec,iostat=istat,err=1000)
      &                                (ioffs(i),i=1,nzsur(icomp))
       irec=irec+1
@@ -933,7 +932,6 @@ C  ier (integer) is zero if no problems, -3 if empty.
       common/outin/iuout,iuin
       common/filep/ifil
 
-      integer izstocn
       common/c24/izstocn(mcom,ms)
       common/tmc/itmc(ms),nwins
       common/data2/pso(ms,24),psof(ms,24)
@@ -1175,9 +1173,7 @@ C Assume there is nothing in the shading file and the
 C import from ascii file is used to fill it.
 
 C An empty shading file so setup some intial information. Find the
-C initial month in the import file and then close the file. Note:
-C the string for the month e.g. Jan is expected to be found
-C between positions 11 and 13 of the line. 
+C initial month in the import file and then close the file.
       iuj=ifil+10
       mnth=1
       call efopseq(iuj,exportfile,1,ier)
@@ -1239,8 +1235,7 @@ C Based on the file name being passed to this subroutine.
 
 C Read data for a month. If we have a month that matches then
 C the code looks for either '24 hour external' in which case
-C the data is shading data. If '24 hour internal' found following
-C the * month tag then we have only insolation.
+C the data is shading data. If
       multic=2  ! signal data is known
       call stripc(iuj,outstr,0,nd,1,'month',ier)
  172  if(outstr(1:5).eq.'* end')goto 18
@@ -1319,7 +1314,7 @@ C a Month string or end marker.
               if(isadd(mnth+1).eq.0) isadd(mnth+1)=lastrec
             endif
           endif
-          mnth=mnth+1   ! increment the month and jump back
+          mnth=mnth+1
           goto 172
         elseif(outstr(1:5).eq.'* end')then
           goto 18   ! end of file reached
@@ -1328,7 +1323,6 @@ C a Month string or end marker.
         multic=0  ! signal data is not known
         goto 1002
       endif
-
       if(outstr(1:5).eq.'* end')goto 18
       call stripc(iuj,outstr,0,nd,1,'offsets header',ier)
       if(ier.ne.0.or.outstr(1:14).ne.'record offsets')then
@@ -1426,7 +1420,7 @@ C if not december.
       if(ok)then
         call sifwrt(icomp,mnth,lastrec)
         if(lastrec.gt.5)then
-          if(mnth.le.11)then  ! this line is different from line 656
+          if(mnth.le.11)then
             if(isadd(mnth+1).eq.0)isadd(mnth+1)=lastrec
           endif
         endif

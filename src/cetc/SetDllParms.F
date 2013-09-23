@@ -21,42 +21,42 @@ C Software Foundation, Inc., 59 Temple Place, Suite 330,
 C Boston, MA 02111-1307 USA.
 
 C======Hot2000=============================
-C   Subroutine:
-C     SetDllParms
+C	Subroutine:
+C		SetDllParms
 C
-C     Parameters:
-C       inf - character*144 -  input cfg file name
+C	Parameters:
+C		inf - character*144 -  input cfg file name
 C
-C     Comments:
+C	Comments:
 C
-C     This is NOT a "C" callable function.
-C     Set parameters for esp-r engine as if running
-C     in silent mode and text mode
+C	This is NOT a "C" callable function.
+C	Set parameters for esp-r engine as if running
+C	in silent mode and text mode
 C
-C
-C     iuout = 215       - log file unit number
-C     itu=iuout         - trace file unit number
-C     inf = cCfgFile    - input file name
-C     sps  = '????'     - simulation parameter set
-C     aut  = 'silent'   - interactive or silent (esp-r silent mode switch)
+C	
+C     iuout = 215	- log file unit number
+C     itu=iuout		- trace file unit number
+C     inf = cCfgFile	- input file name
+C     sps  = '????'	- simulation parameter set
+C     aut  = 'silent'	- interactive or silent (esp-r silent mode switch)
 C     LCMDFL            - cfg file name and path
-C     inf=LCMDFL        - cfg file name and path            
+C     inf=LCMDFL	- cfg file name and path            
 C 
-C     termtype = -1     - console mode
-C     iappw = 0         - ??
-C     iappx = 0         - ??
-C     iappy = 0         - ??
-C     actf  = 'UNKNOWN' - ??
-C     argument = ' '    - ??
-C     mode   = 'text' - esp-r running mode, graphics or tes
-C     sps    = 'win'  - operating system
-C     actf   = 'unknown' - ??
-C     outs   =' '        - ??
+C     termtype = -1	- console mode
+C     iappw = 0		- ??
+C     iappx = 0		- ??
+C     iappy = 0		- ??
+C     actf  = 'UNKNOWN'	- ??
+C     argument = ' '	- ??
+C     mode 	= 'text' - esp-r running mode, graphics or tes
+C     sps 	= 'win'  - operating system
+C     actf 	= 'unknown' - ??
+C     outs	=' '	- ??
 C
 C----------------------------------------------------     
 
       subroutine SetDllParms(termtype,iappw,iappx,iappy,inf,sps,aut,
-     &  actf)
+     &	actf)
 #include "building.h"
 #include "model.h"
 
@@ -104,22 +104,30 @@ C==============================
 
       iappw  = 0
       iappx  = 0
-      iappy  = 0 
+      iappy  = 0 	
       sps    = spsname
       aut    = 'silent'      
       actf   = 'UNKNOWN'
       argument = ' '      
       termtype = -1
 
-      upath = cCfgPath
+      upath = cCfgPath	
       mode = 'text'
       
+#ifdef F90
       OPEN(unit=iuout,FILE=cLogFile, position ='APPEND')
       OPEN(unit=5,FILE=cLogFile, position ='APPEND')
       OPEN(unit=6,FILE=cLogFile, position ='APPEND')
       OPEN(unit=icout,FILE=cLogFile, position ='APPEND')
       OPEN(UNIT=iLogFile,FILE=cLogFile, position='APPEND' )
-       
+#else
+      OPEN(unit=iuout,FILE=cLogFile, ACCESS = 'APPEND')
+      OPEN(unit=5,FILE=cLogFile, ACCESS = 'APPEND')
+      OPEN(unit=6,FILE=cLogFile, ACCESS = 'APPEND')
+      OPEN(unit=icout,FILE=cLogFile, ACCESS = 'APPEND')
+      OPEN(UNIT=iLogFile,FILE=cLogFile, ACCESS='APPEND' )
+#endif
+       	
       write(outs248,'(a,a)')' the input file is: ',LCMDFL
       call edisp(iuout,outs248)
  
@@ -129,7 +137,7 @@ C==============================
      &    inf(1:lnblnk(inf))
 
       call edisp(iuout,outs248)
-      outs =' '
+      outs	=' '
       
       write(outs,'(5a)') 'and parameters ',sps(1:lnblnk(sps)),
      &    ' in ',aut,' mode.'
@@ -140,15 +148,15 @@ C==============================
       
       
 C======Hot2000=============================
-C      Subroutine:
-C        WriteToLog
+C	Subroutine:
+C		WriteToLog
 C
-C        Parameters:
-C          strLogEntry - characer*30 -  input log file entry
+C	Parameters:
+C		strLogEntry - characer*30 -  input log file entry
 C
-C       Comments:
+C	Comments:
 C
-C       This is NOT a "C" callable function.
+C	This is NOT a "C" callable function.
 C
 C
 C----------------------------------------------------     
@@ -167,14 +175,22 @@ C----------------------------------------------------
 
       
       close( iLogFile )
+#ifdef F90
       open(UNIT=iLogFile, FILE=cLogFile,position='APPEND' )
+#else
+      OPEN(UNIT=iLogFile, FILE=cLogFile, ACCESS='APPEND' )
+#endif
       if( bOkay ) then
-        write( iLogFile, * ) strLogEntry, ' okay'
+      	write( iLogFile, * ) strLogEntry, ' okay'
       else
-        write( iLogFile, * ) strLogEntry, ' not okay'
+      	write( iLogFile, * ) strLogEntry, ' not okay'
       endif
       close( iLogFile )
+#ifdef F90
       open(UNIT=iLogFile, FILE=cLogFile,position='APPEND' )
+#else
+      OPEN(UNIT=iLogFile, FILE=cLogFile, ACCESS='APPEND' )
+#endif
       
       return
       end

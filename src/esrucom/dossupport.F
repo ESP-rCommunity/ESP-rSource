@@ -197,7 +197,7 @@ C      write(outs,'(a,2i3)') 'lnrp lnblankrp ',lnrp,lnblankrp
 C      call edisp(iuout,outs)
 
 C Change any / to \ and if lnblankup returns as a 1 then there
-C was nothing to change so copy lcopy to upathdos.
+C was nothing to change so copy lcopyto upathdos.
       lncp=lnblnk(lcopy)
       lnblankup=iprevblnk(lcopy,lncp)
       if(lnblankup.eq.1)then

@@ -160,14 +160,6 @@ c-----m and width between 5 and 12 m. However, type '999' follows
 c-----the dimensions for BASECALC (max 20 by 20 m - with a minimum of 2 m).
 c-----Maximum and minimum values for parameters to be read in are set
 c-----for BASESIMP vs BASECALC ('999') types.
-c
-c-----Some sensitivity tests were performed with HOT2000 to explore whether
-C-----the above-mentioned dimension restrictions were reasonable. This testing  
-c-----examined a floor area range of 1 to 100 m2. The resulting heat loss
-c-----vs floor area curve aligned well with the area/volume ratio curve
-c-----suggesting that results with floor dimensions below the established
-c-----5m minimum are reasonable. Consequently, the limits imposed here for
-c-----BASESIMP foundations allow widths from 1 to 20 m and lengths from 1 to 100 m.
       IF(CLOSE99) THEN     ! set parameter windows on BASECALC dimensions (type 999)
         fMinFoundLength = 2.0   ! meter
         fMaxFoundLength = 20.0  ! meter
@@ -181,10 +173,10 @@ c-----BASESIMP foundations allow widths from 1 to 20 m and lengths from 1 to 100
         fMaxWaterTable = 20.0   ! meter
 
       ELSE                 ! set parameter windows on BASESIMP dimensions
-        fMinFoundLength = 1.0   ! meter
+        fMinFoundLength = 5.0   ! meter
         fMaxFoundLength = 100.0 ! meter
-        fMinFoundWidth = 1.0    ! meter
-        fMaxFoundWidth = 20.0   ! meter 
+        fMinFoundWidth = 1.5    ! meter   ! updated May 6,08 based on testing by Brian Bradley.
+        fMaxFoundWidth = 20.0   ! meter   ! updated May 6,08 based on testing by Brian Bradley.
         fMinInsulRSI = 0.0      ! m2K/W
         fMaxInsulRSI = 9.0      ! m2K/W
         fMinSoilCond = 0.85     ! W/mK
