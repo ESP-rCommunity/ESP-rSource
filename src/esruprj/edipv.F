@@ -2071,4 +2071,3 @@ C Error message trap.
  1000 call edisp(IUOUT,' No data in file')
       RETURN
       END
-

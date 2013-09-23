@@ -42,7 +42,7 @@ C Construction.
 
 C Glazing.
       PARAMETER (MGT=MS)       !- Insolated glazings in zone
-      PARAMETER (MTMC=7)       !- Glazing systems/zone,
+      PARAMETER (MTMC=20)       !- Glazing systems/zone,
       PARAMETER (MGAL=2)       !- Optical sets per optics db item.
       PARAMETER (MANG=9)       !- Angles at which optical data is held.
       PARAMETER (MGOPT=150)    !- Set size in optics database.

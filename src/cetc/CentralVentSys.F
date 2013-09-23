@@ -276,6 +276,7 @@ c
 #include "Ventilation_Data.h"
 #include "SOFC.h"
 #include "OffsiteUtilitiesPublic.h"
+#include "h3k_report_data.h"
 
       Integer iFun
       Real T
@@ -486,9 +487,19 @@ c
             TotalPower = 0.
          Endif
 
+         ! Set flag allowing h3kreports to scale this data for seasonal 
+           ! reporting purposes.
+           if ( bFirst_call_hrv  )
+     &       call SetAdditionalValues(
+     &         rvPltHvacHRVElecLd%Identifier,
+     &         3,
+     &         .true.)         
+         
          Call AddToReport(rvPltHvacHRVElecLd%Identifier,
-     &       TotalPower)
-
+     &       TotalPower)        
+         
+        bFirst_call_hrv = .false.     
+     
 C Store aggregate electricity use for reporting in Site Utility facilitity.
       fSUFuelEnergyUse( iElectricity,iUseHRV )
      &                   = TotalPower
