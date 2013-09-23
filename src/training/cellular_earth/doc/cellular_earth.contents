@@ -71,17 +71,17 @@ Seasons (as found in climatelist file):
  
 Metric                zones area scaling weight  type name
  1 Resultant T (degC)    3   35.40 1.000 1.000 comfort ocup_zones
-Zones: manager_a manager_b coridor
+Zones: manager_a manager_b corridor
  2 Zone db T (degC)    3   35.40 1.000 1.000 ZndbT dbt_zones
-Zones: manager_a manager_b coridor
+Zones: manager_a manager_b corridor
  3 Infiltration (W)    3   35.40 1.000 1.000 Infil infil_zones
-Zones: manager_a manager_b coridor
+Zones: manager_a manager_b corridor
  
 Demand set,  nb zones, floor area, scaling factor
  1 offices        2   27.00 1.000
 Zones: manager_a manager_b
  2 other          1    8.40 1.000
-Zones: coridor
+Zones: corridor
  
  
 Databases associated with the model:
@@ -139,7 +139,7 @@ capacity 0.0W max cooling capacity 2500.0W min cooling capacity 0.0W. Heating se
  Zone to contol loop linkages:
  zone ( 1) manager_a    << control  1
  zone ( 2) manager_b    << control  1
- zone ( 3) coridor      << control  1
+ zone ( 3) corridor      << control  1
  zone ( 4) tube_a       << control  0
  zone ( 5) tube_b       << control  0
  zone ( 6) tube_c       << control  0
@@ -173,7 +173,7 @@ The model includes an air flow network.
    # Node      Fluid   Node Type           Height Temperature    Data_1       Data_2
    1 manager_a    air   internal & unknown    1.5000   20.000     (-)     0.000  vol   40.501
    2 manager_b    air   internal & unknown    1.5000   20.000     (-)     0.000  vol   40.501
-   3 coridor      air   internal & unknown    1.5000   20.000     (-)     0.000  vol   18.300
+   3 corridor      air   internal & unknown    1.5000   20.000     (-)     0.000  vol   18.300
    4 tube_a       air   internal & unknown   -0.9000   20.000     (-)     0.000  vol    1.188
    5 tube_b       air   internal & unknown   -0.9000   20.000     (-)     0.000  vol    1.300
    6 tube_c       air   internal & unknown   -0.9000   20.000     (-)     0.000  vol    1.700
@@ -218,16 +218,16 @@ The model includes an air flow network.
     3 tube_b        0.000   tube_c        0.000   tube_c14       -0.900  -0.900
     4 tube_c        1.200   manager_a    -1.200   grill           0.300   0.300
     5 tube_c        1.200   manager_b    -1.200   grill           0.300   0.300
-    6 manager_a     0.000   coridor       0.000   door            1.500   1.500
-    7 manager_b     0.000   coridor       0.000   door            1.500   1.500
-    8 corid_west    0.000   coridor       0.000   door_crack      1.500   1.500
+    6 manager_a     0.000   corridor       0.000   door            1.500   1.500
+    7 manager_b     0.000   corridor       0.000   door            1.500   1.500
+    8 corid_west    0.000   corridor       0.000   door_crack      1.500   1.500
     9 manager_a     0.000   extr_point    0.000   extra_4ach      1.500   3.000
    10 manager_b     0.000   extr_point    0.000   extra_4ach      1.500   3.000
 thermal zone to air flow node mapping:
 thermal zone -> air flow node
 manager_a    -> manager_a
 manager_b    -> manager_b
-coridor      -> coridor
+corridor      -> corridor
 tube_a       -> tube_a
 tube_b       -> tube_b
 tube_c       -> tube_c
@@ -239,7 +239,7 @@ ID Zone         Volume|          Surface
    Name         m^3   | No. Opaque  Transp  ~Floor
  1 manager_a      40.5  13    62.2     9.8    13.5  manager describes cellular office on left
  2 manager_b      40.5  13    62.2     9.8    13.5  manager_b describes right office
- 3 coridor        18.3  14    45.8     9.0     8.4  coridor describes passage adjacent to offices
+ 3 corridor        18.3  14    45.8     9.0     8.4  corridor describes passage adjacent to offices
  4 tube_a          1.2   8    16.9     0.0     5.9  tube_a describes the a section of earth tube
  5 tube_b          1.3  14    18.4     0.0     6.5  tube_b is the b section of the earth tube
  6 tube_c          1.7  12    24.0     0.0     8.5  tube_c is thye c section of the earth tube
@@ -259,16 +259,16 @@ ID Zone         Volume|          Surface
  Sur| Area  |Azim|Elev| surface    |    geometry       | construction |environment
     | m^2   |deg |deg | name       |optical|locat| use | name         |other side
   1  13.5     90.   0. pt_general   OPAQUE   VERT -     gyp_gyp_ptn  ||< pt_general:manager_b
-  2  0.920   360.   0. part_frame   OPAQUE   VERT -     insul_frame  ||< part_frame:coridor
-  3  2.32      0.   0. door         OPAQUE   VERT -     door         ||< door:coridor
+  2  0.920   360.   0. part_frame   OPAQUE   VERT -     insul_frame  ||< part_frame:corridor
+  3  2.32      0.   0. door         OPAQUE   VERT -     door         ||< door:corridor
   4  6.00    270.   0. pt_other     OPAQUE   VERT -     gyp_gyp_ptn  ||< identical environment
   5  13.5      0.  90. ceiling      OPAQUE   CEIL -     ceiling      ||< identical environment
   6  13.5      0. -90. floor        OPAQUE   FLOR -     susp_flr_re  ||< identical environment
   7  2.70    180.   0. spandral     OPAQUE   VERT -     insul_frame  ||< external
   8  0.980   180.   0. frame        OPAQUE   VERT -     insul_frame  ||< external
   9  5.32    180.   0. glazing      DCF7671_ VERT -     dbl_glz      ||< external
- 10  4.48      0.   0. part_glaz    DCF7671_ VERT -     dbl_glz      ||< part_glaz:coridor
- 11  1.28    360.   0. ptn_corid    OPAQUE   VERT -     gyp_gyp_ptn  ||< ptn_corid:coridor
+ 10  4.48      0.   0. part_glaz    DCF7671_ VERT -     dbl_glz      ||< part_glaz:corridor
+ 11  1.28    360.   0. ptn_corid    OPAQUE   VERT -     gyp_gyp_ptn  ||< ptn_corid:corridor
  12  0.450   270.   0. pt_other_a   OPAQUE   VERT -     gyp_gyp_ptn  ||< identical environment
  13  7.05    270.   0. pt_other_b   OPAQUE   VERT -     gyp_gyp_ptn  ||< identical environment
  
@@ -330,16 +330,16 @@ sunday      2 Equipt     equipment Wm2  0-24      0.0      0.0       0.50       
  Sur| Area  |Azim|Elev| surface    |    geometry       | construction |environment
     | m^2   |deg |deg | name       |optical|locat| use | name         |other side
   1  13.5    270.   0. pt_general   OPAQUE   VERT -     gyp_gyp_ptn  ||< pt_general:manager_a
-  2  0.920   360.   0. part_frame   OPAQUE   VERT -     insul_frame  ||< part_frameb:coridor
-  3  2.32      0.   0. door         OPAQUE   VERT -     door         ||< door_b:coridor
+  2  0.920   360.   0. part_frame   OPAQUE   VERT -     insul_frame  ||< part_frameb:corridor
+  3  2.32      0.   0. door         OPAQUE   VERT -     door         ||< door_b:corridor
   4  6.00     90.   0. pt_other     OPAQUE   VERT -     gyp_gyp_ptn  ||< identical environment
   5  13.5      0.  90. ceiling      OPAQUE   CEIL -     ceiling      ||< identical environment
   6  13.5      0. -90. floor        OPAQUE   FLOR -     susp_flr_re  ||< identical environment
   7  2.70    180.   0. spandral     OPAQUE   VERT -     insul_frame  ||< external
   8  0.980   180.   0. frame        OPAQUE   VERT -     insul_frame  ||< external
   9  5.32    180.   0. glazing      DCF7671_ VERT -     dbl_glz      ||< external
- 10  4.48      0.   0. part_glaz    DCF7671_ VERT -     dbl_glz      ||< part_glazb:coridor
- 11  1.28      0.   0. ptn_corid    OPAQUE   VERT -     gyp_gyp_ptn  ||< ptn_coridb:coridor
+ 10  4.48      0.   0. part_glaz    DCF7671_ VERT -     dbl_glz      ||< part_glazb:corridor
+ 11  1.28      0.   0. ptn_corid    OPAQUE   VERT -     gyp_gyp_ptn  ||< ptn_coridb:corridor
  12  0.450    90.   0. pt_other_a   OPAQUE   VERT -     gyp_gyp_ptn  ||< identical environment
  13  7.05     90.   0. pt_other_b   OPAQUE   VERT -     gyp_gyp_ptn  ||< identical environment
  
@@ -388,12 +388,12 @@ sunday      2 Equipt     equipment Wm2  0-24      0.0      0.0       0.50       
  
  ____________________________________________________________
  
- Zone coridor ( 3) is composed of 14 surfaces and 32 vertices.
+ Zone corridor ( 3) is composed of 14 surfaces and 32 vertices.
  It encloses a volume of 18.3m^3 of space, with a total surface
  area of 54.8m^2 & approx floor area of 8.42m^2
- coridor describes passage adjacent to offices
+ corridor describes passage adjacent to offices
  
- A summary of the surfaces in coridor( 3) follows:
+ A summary of the surfaces in corridor( 3) follows:
  
  Sur| Area  |Azim|Elev| surface    |    geometry       | construction |environment
     | m^2   |deg |deg | name       |optical|locat| use | name         |other side
@@ -420,7 +420,7 @@ sunday      2 Equipt     equipment Wm2  0-24      0.0      0.0       0.50       
  
  
  Ventilation & infiltration is assessed via network analysis
- and the associated network node is: coridor
+ and the associated network node is: corridor
  
 Notes:
 half a person and 50-100W lighting weekdays 10W weekends with

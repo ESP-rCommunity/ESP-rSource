@@ -672,17 +672,17 @@ parameter [ "target = description" ]
 } 
   
  
-# zone coridor      starts here....
+# zone corridor      starts here....
 Anchor {
 parameter [ "target = description" ]
-  url [ "cellular_hi_res.html#coridor:right_fict" ]
+  url [ "cellular_hi_res.html#corridor:right_fict" ]
   children [
     Shape {
       appearance USE Glass_fict
       geometry DEF right_fict IndexedFaceSet {
         ccw TRUE
         solid FALSE
-        coord DEF COORD_coridor Coordinate { point [
+        coord DEF COORD_corridor Coordinate { point [
    0.00000   0.00000  -4.55000,
    6.10000   0.00000  -4.55000,
    6.10000   0.00000  -5.55000,
@@ -730,14 +730,14 @@ parameter [ "target = description" ]
   
 Anchor {
 parameter [ "target = description" ]
-  url [ "cellular_hi_res.html#coridor:wall" ]
+  url [ "cellular_hi_res.html#corridor:wall" ]
   children [
     Shape {
      appearance USE Solid_gyp_blk_ptn
       geometry DEF wall IndexedFaceSet {
         ccw TRUE
         solid TRUE
-        coord USE COORD_coridor
+        coord USE COORD_corridor
         coordIndex [ 
     2,3,7,6,-1,
     6,7,3,2,-1
@@ -752,14 +752,14 @@ parameter [ "target = description" ]
   
 Anchor {
 parameter [ "target = description" ]
-  url [ "cellular_hi_res.html#coridor:left_fict" ]
+  url [ "cellular_hi_res.html#corridor:left_fict" ]
   children [
     Shape {
      appearance USE Glass_fict
       geometry DEF left_fict IndexedFaceSet {
         ccw TRUE
         solid FALSE
-        coord USE COORD_coridor
+        coord USE COORD_corridor
         coordIndex [ 
     3,0,4,7,-1,
     7,4,0,3,-1
@@ -774,14 +774,14 @@ parameter [ "target = description" ]
   
 Anchor {
 parameter [ "target = description" ]
-  url [ "cellular_hi_res.html#coridor:ceiling" ]
+  url [ "cellular_hi_res.html#corridor:ceiling" ]
   children [
     Shape {
      appearance USE Solid_ceiling
       geometry DEF ceiling IndexedFaceSet {
         ccw TRUE
         solid TRUE
-        coord USE COORD_coridor
+        coord USE COORD_corridor
         coordIndex [ 
     4,12,13,15,26,27,31,5,6,7,-1,
     7,6,5,31,27,26,15,13,12,4,-1
@@ -796,14 +796,14 @@ parameter [ "target = description" ]
   
 Anchor {
 parameter [ "target = description" ]
-  url [ "cellular_hi_res.html#coridor:floor" ]
+  url [ "cellular_hi_res.html#corridor:floor" ]
   children [
     Shape {
      appearance USE Solid_susp_flr_re
       geometry DEF floor IndexedFaceSet {
         ccw TRUE
         solid TRUE
-        coord USE COORD_coridor
+        coord USE COORD_corridor
         coordIndex [ 
     0,3,2,1,29,20,21,14,8,9,-1,
     9,8,14,21,20,29,1,2,3,0,-1
@@ -818,14 +818,14 @@ parameter [ "target = description" ]
   
 Anchor {
 parameter [ "target = description" ]
-  url [ "cellular_hi_res.html#coridor:door" ]
+  url [ "cellular_hi_res.html#corridor:door" ]
   children [
     Shape {
      appearance USE Solid_door
       geometry DEF door IndexedFaceSet {
         ccw TRUE
         solid TRUE
-        coord USE COORD_coridor
+        coord USE COORD_corridor
         coordIndex [ 
     9,8,11,10,-1,
     10,11,8,9,-1
@@ -840,14 +840,14 @@ parameter [ "target = description" ]
   
 Anchor {
 parameter [ "target = description" ]
-  url [ "cellular_hi_res.html#coridor:ptn_corid" ]
+  url [ "cellular_hi_res.html#corridor:ptn_corid" ]
   children [
     Shape {
      appearance USE Solid_gyp_gyp_ptn
       geometry DEF ptn_corid IndexedFaceSet {
         ccw TRUE
         solid TRUE
-        coord USE COORD_coridor
+        coord USE COORD_corridor
         coordIndex [ 
     0,9,10,11,13,12,4,-1,
     4,12,13,11,10,9,0,-1
@@ -862,14 +862,14 @@ parameter [ "target = description" ]
   
 Anchor {
 parameter [ "target = description" ]
-  url [ "cellular_hi_res.html#coridor:part_frame" ]
+  url [ "cellular_hi_res.html#corridor:part_frame" ]
   children [
     Shape {
      appearance USE Solid_insul_frame
       geometry DEF part_frame IndexedFaceSet {
         ccw TRUE
         solid TRUE
-        coord USE COORD_coridor
+        coord USE COORD_corridor
         coordIndex [ 
     8,14,16,19,18,17,16,14,15,13,11,-1,
     11,13,15,14,16,17,18,19,16,14,8,-1
@@ -884,14 +884,14 @@ parameter [ "target = description" ]
   
 Anchor {
 parameter [ "target = description" ]
-  url [ "cellular_hi_res.html#coridor:part_glaz" ]
+  url [ "cellular_hi_res.html#corridor:part_glaz" ]
   children [
     Shape {
      appearance USE Glass_dbl_glz
       geometry DEF part_glaz IndexedFaceSet {
         ccw TRUE
         solid FALSE
-        coord USE COORD_coridor
+        coord USE COORD_corridor
         coordIndex [ 
     19,16,17,18,-1,
     18,17,16,19,-1
@@ -906,14 +906,14 @@ parameter [ "target = description" ]
   
 Anchor {
 parameter [ "target = description" ]
-  url [ "cellular_hi_res.html#coridor:part_frameb" ]
+  url [ "cellular_hi_res.html#corridor:part_frameb" ]
   children [
     Shape {
      appearance USE Solid_insul_frame
       geometry DEF part_frameb IndexedFaceSet {
         ccw TRUE
         solid TRUE
-        coord USE COORD_coridor
+        coord USE COORD_corridor
         coordIndex [ 
     21,20,28,27,26,21,22,25,24,23,22,-1,
     22,23,24,25,22,21,26,27,28,20,21,-1
@@ -928,14 +928,14 @@ parameter [ "target = description" ]
   
 Anchor {
 parameter [ "target = description" ]
-  url [ "cellular_hi_res.html#coridor:door_b" ]
+  url [ "cellular_hi_res.html#corridor:door_b" ]
   children [
     Shape {
      appearance USE Solid_door
       geometry DEF door_b IndexedFaceSet {
         ccw TRUE
         solid TRUE
-        coord USE COORD_coridor
+        coord USE COORD_corridor
         coordIndex [ 
     20,29,30,28,-1,
     28,30,29,20,-1
@@ -950,14 +950,14 @@ parameter [ "target = description" ]
   
 Anchor {
 parameter [ "target = description" ]
-  url [ "cellular_hi_res.html#coridor:ptn_coridb" ]
+  url [ "cellular_hi_res.html#corridor:ptn_coridb" ]
   children [
     Shape {
      appearance USE Solid_gyp_gyp_ptn
       geometry DEF ptn_coridb IndexedFaceSet {
         ccw TRUE
         solid TRUE
-        coord USE COORD_coridor
+        coord USE COORD_corridor
         coordIndex [ 
     29,1,5,31,27,28,30,-1,
     30,28,27,31,5,1,29,-1
@@ -972,14 +972,14 @@ parameter [ "target = description" ]
   
 Anchor {
 parameter [ "target = description" ]
-  url [ "cellular_hi_res.html#coridor:part_glazb" ]
+  url [ "cellular_hi_res.html#corridor:part_glazb" ]
   children [
     Shape {
      appearance USE Glass_dbl_glz
       geometry DEF part_glazb IndexedFaceSet {
         ccw TRUE
         solid FALSE
-        coord USE COORD_coridor
+        coord USE COORD_corridor
         coordIndex [ 
     22,23,24,25,-1,
     25,24,23,22,-1
@@ -994,14 +994,14 @@ parameter [ "target = description" ]
   
 Anchor {
 parameter [ "target = description" ]
-  url [ "cellular_hi_res.html#coridor:filler" ]
+  url [ "cellular_hi_res.html#corridor:filler" ]
   children [
     Shape {
      appearance USE Solid_gyp_gyp_ptn
       geometry DEF filler IndexedFaceSet {
         ccw TRUE
         solid TRUE
-        coord USE COORD_coridor
+        coord USE COORD_corridor
         coordIndex [ 
     14,21,26,15,-1,
     15,26,21,14,-1

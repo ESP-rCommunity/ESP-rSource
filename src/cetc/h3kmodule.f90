@@ -746,7 +746,7 @@ CONTAINS
       rvBuildingAllZonesFreeCooling%MetaType = 'units'
       rvBuildingAllZonesFreeCooling%VariableType = '(W)'
       rvBuildingAllZonesFreeCooling%Description = 'Free cooling used in building (all zones).'
-      Call AddVariable(rvBuildingAllZonesSuppliedEnergyCooling )        
+      Call AddVariable(rvBuildingAllZonesFreeCooling )        
 
       rvFreeCoolCtlFlag%VariableName = 'building/zone_*/free_cooling_ctl_flag'
       rvFreeCoolCtlFlag%MetaType = 'units'
