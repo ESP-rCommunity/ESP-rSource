@@ -520,7 +520,6 @@ C     the zones being served by the HVAC system.
       HVAC_primary_sys_loop: do i=1, num_hvac_sys
 C.......Characterize primary systems first. Back-up systems handled in 
 C.......A second loop below.       
-        
         IfPrimary: if ( ipriority(i) .eq. 1 ) then  
 c         Determine the total heating or cooling requirement of the zones
 c         associated with the HVAC system i. This load is passed on to the
@@ -623,7 +622,6 @@ C-----------------------------------------------------------------------
             
               ASHPHeatOrCool: 
      &        if ( iunit_function(i) == iFuncHeating ) then
-              
 c     Call the air-source heat pump subroutine
                 call ASHP_HEATING(i,heating_load,sys_energy(i),
      &                            fPLR(i), fPLR_backup(i), fPLF(i) ) 
@@ -643,7 +641,7 @@ C...............ventilation load for hvac system i?
                 
                 call ASHP_COOLING(i,cooling_load,cooling_vent_yes,
      &                            sys_energy(i),fPLR(i),fPLF(i) )
-                
+
                     
               endif ASHPHeatOrCool
 
@@ -865,8 +863,9 @@ C...........Co
            endif SaveBackupLoad
           
         endif IfPrimary
-        
+
       enddo HVAC_primary_sys_loop
+      
       
 C-----------------------------------------------------------------------
 C     Loop through systems a second time, and determine energy 
@@ -875,7 +874,7 @@ C-----------------------------------------------------------------------
       
 
       HVAC_backup_sys_loop: do i=1, num_hvac_sys
-      
+
 C.......Limit analysis to back-up systems. 
         IfBackup: if ( ipriority(i) .eq. 2 ) then  
 C.........When specified with legacy hvac files, this if statement 

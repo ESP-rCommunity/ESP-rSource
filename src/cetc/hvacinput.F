@@ -1573,8 +1573,9 @@ c For a Typical unit
         bhp(isys) = 1.18131
         chp(isys) = -0.246748
         dhp(isys) = 0.0555745
-c For a Good unit
-      elseif(isys_type(isys).eq.2) then
+c For a Good unit. Assume current crop of CCASHP units are 'good'.
+      elseif(isys_type(isys).eq.2 .or. 
+     &       isys_type(isys).eq.5      ) then
         ahp(isys) = 0.00988125
         bhp(isys) = 1.08033
         chp(isys) = -0.105267
