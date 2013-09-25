@@ -60,11 +60,11 @@
   233    0.1000  celulose fiber flakes : cellulose fibre insulation flakes from IBO Pass
    79    0.0180  OSB : OSB wood based on the SBEM database
   300    0.0500  lambswool felt insulation : lambswool insulation felt from IBO PassivHa
-  108    0.0250  white gypboard : White paintedd Gypboard
+  108    0.0250  white gypboard : White painted Gypboard
 # layers  description   optics name   symmetry tag
     9    AWI_06_inv    OPAQ  OPAQUE        AWI_06        
 # mat ref thickness (m) mat descr & air gap R
-  108    0.0250  white gypboard : White paintedd Gypboard
+  108    0.0250  white gypboard : White painted Gypboard
   300    0.0500  lambswool felt insulation : lambswool insulation felt from IBO PassivHa
    79    0.0180  OSB : OSB wood based on the SBEM database
   233    0.1000  celulose fiber flakes : cellulose fibre insulation flakes from IBO Pass
@@ -82,9 +82,9 @@
 # layers  description   optics name   symmetry tag
     3    int_part      OPAQ  OPAQUE        SYMMETRIC     
 # mat ref thickness (m) mat descr & air gap R
-  108    0.0120  white gypboard : White paintedd Gypboard
+  108    0.0120  white gypboard : White painted Gypboard
     0    0.0500  air  0.170 0.170 0.170
-  108    0.0120  white gypboard : White paintedd Gypboard
+  108    0.0120  white gypboard : White painted Gypboard
 # layers  description   optics name   symmetry tag
     5    partition     OPAQ  OPAQUE        SYMMETRIC     
 # mat ref thickness (m) mat descr & air gap R
@@ -100,17 +100,17 @@
 # layers  description   optics name   symmetry tag
     5    gyp_blk_ptn   OPAQ  OPAQUE        SYMMETRIC     
 # mat ref thickness (m) mat descr & air gap R
-  108    0.0130  white gypboard : White paintedd Gypboard
+  108    0.0130  white gypboard : White painted Gypboard
     0    0.0500  air  0.170 0.170 0.170
    28    0.1000  block inner : Block inner (3% mc)
     0    0.0500  air  0.170 0.170 0.170
-  108    0.0130  white gypboard : White paintedd Gypboard
+  108    0.0130  white gypboard : White painted Gypboard
 # layers  description   optics name   symmetry tag
     3    gyp_gyp_ptn   OPAQ  OPAQUE        SYMMETRIC     
 # mat ref thickness (m) mat descr & air gap R
-  108    0.0120  white gypboard : White paintedd Gypboard
+  108    0.0120  white gypboard : White painted Gypboard
     0    0.0500  air  0.170 0.170 0.170
-  108    0.0120  white gypboard : White paintedd Gypboard
+  108    0.0120  white gypboard : White painted Gypboard
 # layers  description   optics name   symmetry tag
     3    party_wall_n  OPAQ  OPAQUE        SYMMETRIC     
 # mat ref thickness (m) mat descr & air gap R
@@ -310,11 +310,11 @@
   299    0.0600  hemp insulation panels : hemp insulation panels with supporting fibres
    79    0.0180  OSB : OSB wood based on the SBEM database
   300    0.0500  lambswool felt insulation : lambswool insulation felt from IBO PassivHa
-  108    0.0250  white gypboard : White paintedd Gypboard
+  108    0.0250  white gypboard : White painted Gypboard
 # layers  description   optics name   symmetry tag
    11    DAI_04_inv    OPAQ  OPAQUE        DAI_04        
 # mat ref thickness (m) mat descr & air gap R
-  108    0.0250  white gypboard : White paintedd Gypboard
+  108    0.0250  white gypboard : White painted Gypboard
   300    0.0500  lambswool felt insulation : lambswool insulation felt from IBO PassivHa
    79    0.0180  OSB : OSB wood based on the SBEM database
   299    0.0600  hemp insulation panels : hemp insulation panels with supporting fibres
@@ -337,11 +337,11 @@
   233    0.1000  celulose fiber flakes : cellulose fibre insulation flakes from IBO Pass
    79    0.0180  OSB : OSB wood based on the SBEM database
   300    0.0500  lambswool felt insulation : lambswool insulation felt from IBO PassivHa
-  108    0.0250  white gypboard : White paintedd Gypboard
+  108    0.0250  white gypboard : White painted Gypboard
 # layers  description   optics name   symmetry tag
    10    DAI_05_inv    OPAQ  OPAQUE        DAI_05        
 # mat ref thickness (m) mat descr & air gap R
-  108    0.0250  white gypboard : White paintedd Gypboard
+  108    0.0250  white gypboard : White painted Gypboard
   300    0.0500  lambswool felt insulation : lambswool insulation felt from IBO PassivHa
    79    0.0180  OSB : OSB wood based on the SBEM database
   233    0.1000  celulose fiber flakes : cellulose fibre insulation flakes from IBO Pass
@@ -438,13 +438,13 @@
    32    0.1000  heavy mix concrete : Heavy mix concrete
    32    0.1000  heavy mix concrete : Heavy mix concrete
   303    0.0300  fibreboard 250kg : Porous wood fiberboard 250 kg/m3 from IBO PassivHaus
-  121    0.0500  mat_121 : Lightweight conc screed
+  121    0.0500  ltwt_conc_screed : Lightweight conc screed
    89    0.0120  parquet : Parquet (ready to install) from IBO PassivHaus (diffusion is
 # layers  description   optics name   symmetry tag
     8    EFu_01_inv    OPAQ  OPAQUE        EFu_01        
 # mat ref thickness (m) mat descr & air gap R
    89    0.0120  parquet : Parquet (ready to install) from IBO PassivHaus (diffusion is
-  121    0.0500  mat_121 : Lightweight conc screed
+  121    0.0500  ltwt_conc_screed : Lightweight conc screed
   303    0.0300  fibreboard 250kg : Porous wood fiberboard 250 kg/m3 from IBO PassivHaus
    32    0.1000  heavy mix concrete : Heavy mix concrete
    32    0.1000  heavy mix concrete : Heavy mix concrete
@@ -461,13 +461,13 @@
    32    0.1000  heavy mix concrete : Heavy mix concrete
    32    0.1000  heavy mix concrete : Heavy mix concrete
   303    0.0300  fibreboard 250kg : Porous wood fiberboard 250 kg/m3 from IBO PassivHaus
-  121    0.0500  mat_121 : Lightweight conc screed
+  121    0.0500  ltwt_conc_screed : Lightweight conc screed
    89    0.0120  parquet : Parquet (ready to install) from IBO PassivHaus (diffusion is
 # layers  description   optics name   symmetry tag
     9    EFu_05_inv    OPAQ  OPAQUE        EFu_05        
 # mat ref thickness (m) mat descr & air gap R
    89    0.0120  parquet : Parquet (ready to install) from IBO PassivHaus (diffusion is
-  121    0.0500  mat_121 : Lightweight conc screed
+  121    0.0500  ltwt_conc_screed : Lightweight conc screed
   303    0.0300  fibreboard 250kg : Porous wood fiberboard 250 kg/m3 from IBO PassivHaus
    32    0.1000  heavy mix concrete : Heavy mix concrete
    32    0.1000  heavy mix concrete : Heavy mix concrete

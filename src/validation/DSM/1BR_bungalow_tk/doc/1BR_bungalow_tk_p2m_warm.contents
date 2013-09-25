@@ -3770,7 +3770,7 @@ holiday     3 EquiptW    0-24      0.0      0.0       0.50       0.50
  Ext   128   30.0     0.790  1329.  1000. 0.91 0.74    19.  0.04 aged rendering : Aged Rendering
     2   36  154.0     1.060  1950.  1000. 0.90 0.40    18.  0.15 concrete block : concrete block (milton keynes)
     3    0  140.0     0.000     0.     0. 0.99 0.99     1.  0.19 air  0.19 0.19 0.19
- Int   108   18.0     0.190   950.   840. 0.91 0.22    11.  0.09 white gypboard : White paintedd Gypboard
+ Int   108   18.0     0.190   950.   840. 0.91 0.22    11.  0.09 white gypboard : White painted Gypboard
  ISO 6946 U values (horiz/upward/downward heat flow)=  1.567  1.645  1.475 (partition)  1.374
  Total area of tk_block_rn is     59.64
  

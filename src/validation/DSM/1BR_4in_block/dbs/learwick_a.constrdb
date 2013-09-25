@@ -337,8 +337,16 @@
    36    0.1020  concrete block : concrete block (milton keynes)
    70    0.0180  plywood 560d : Plywood (generic 560 density)
     0    0.0500  gap  0.190 0.190 0.190
-  108    0.0180  white gypboard : White paintedd Gypboard
-# layers  description   optics name   symmetry tag
+  108    0.0180  white gypboard : White painted Gypboard
+# layers  description  type  optics name   symmetry tag
+    5    tk_block_et   OPAQ  OPAQUE        NONSYMMETRIC  
+# material ref thickness (m) description & air gap R
+  128    0.0280  aged rendering : Aged Rendering
+   36    0.1020  concrete block : concrete block (milton keynes)
+   70    0.0180  plywood 560d : Plywood (generic 560 density)
+  294    0.0500  Mineral wool batt 100mm : Insulation (Mineral wool batt default 100mm)
+  108    0.0180  white gypboard : White painted Gypboard
+# layers  description  type  optics name   symmetry tag
     5    tk_block_et   OPAQ  OPAQUE        NONSYMMETRIC  
 # material ref thickness (m) description & air gap R
   128    0.0280  aged rendering : Aged Rendering

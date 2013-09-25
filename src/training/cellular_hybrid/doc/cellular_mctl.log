@@ -46,7 +46,7 @@ ID Zone         Volume|          Surface
    Name         m^3   | No. Opaque  Transp  ~Floor
  1 manager_a      40.5  13    62.2     9.8    13.5  manager describes cellular office on left
  2 manager_b      40.5  13    62.2     9.8    13.5  manager_b describes right office
- 3 coridor        18.3  14    45.8     9.0     8.4  coridor describes passage adjacent to offices
+ 3 corridor        18.3  14    45.8     9.0     8.4  corridor describes passage adjacent to offices
  4 plant           0.3   6     3.2     0.0     1.0  plant describes HVAC plant for ideal control
  5 plant-B         0.3   6     3.2     0.0     1.0  plant-B describes plant to heat manager_b
    all           100.   52    177.     29.     37.

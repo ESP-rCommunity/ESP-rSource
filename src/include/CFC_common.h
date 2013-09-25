@@ -853,7 +853,8 @@ C COMMONS FOR CFC type CONSTRUCTIONS
       real RadIncDirS,RadIncDifS,transBB_S,transD_S,refl_S
       real RadIncDifSky,RadIncDifGrd
       real transBB_V,transD_V,refl_V
-      real issur_self_shd,proang_s,qtmca_ext
+      real proang_s,qtmca_ext
+      integer issur_self_shd
 
 C---------------------------------------------------------------------------------
 C COMMONS for reporting of CFC type CONSTRUCTIONS 

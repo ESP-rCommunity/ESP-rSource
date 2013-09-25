@@ -2,7 +2,7 @@
  Node         Fld. Type   Height    Temperature    Data_1       Data_2
  manager_a       1    0   1.5000       20.000       0.0000       40.501    
  manager_b       1    0   1.5000       20.000       0.0000       40.501    
- coridor         1    0   1.5000       20.000       0.0000       18.300    
+ corridor         1    0   1.5000       20.000       0.0000       18.300    
  man_alow        1    3   1.0000       0.0000       5.0000       180.00    
  man_ahi         1    3   2.9000       0.0000       5.0000       180.00    
  man_blow        1    3   1.0000       0.0000       5.0000       180.00    
@@ -32,14 +32,14 @@
  man_ahi       0.000   manager_a     1.400   high_win       
  man_blow      0.000   manager_b    -0.500   low_win        
  man_bhi       0.000   manager_b     1.400   high_win       
- manager_a    -1.400   coridor      -1.400   door_cr        
- manager_b    -1.400   coridor      -1.400   door_cr        
- manager_a    -1.400   coridor      -1.400   rtrn_grill     
- manager_b    -1.400   coridor      -1.400   rtrn_grill     
+ manager_a    -1.400   corridor      -1.400   door_cr        
+ manager_b    -1.400   corridor      -1.400   door_cr        
+ manager_a    -1.400   corridor      -1.400   rtrn_grill     
+ manager_b    -1.400   corridor      -1.400   rtrn_grill     
  plant         0.150   manager_a    -0.150   fan            
  plant-B       0.150   manager_b    -0.150   fan            
- corid_left    0.000   coridor       0.000   small_grill    
- coridor       0.000   plant         0.000   rtrn_grill     
- coridor       0.000   plant-B       0.000   rtrn_grill     
+ corid_left    0.000   corridor       0.000   small_grill    
+ corridor       0.000   plant         0.000   rtrn_grill     
+ corridor       0.000   plant-B       0.000   rtrn_grill     
  corid_left    0.000   plant         0.000   the_crack      
  corid_left    0.000   plant-B       0.000   the_crack      

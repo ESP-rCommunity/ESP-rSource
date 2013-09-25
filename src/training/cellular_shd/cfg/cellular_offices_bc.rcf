@@ -2,10 +2,10 @@
 Thu Aug 18 14:44:20 2005 # latest file modification.
   1 # No. of scenes
 # Scene number  1
-*snm coridor_Intern                          # Scene name
-*rnm coridor_Intern.rif                      # Rif name
-*srt coridor_Intern                          # Scene prefix
-*rde Scene of coridor for Internal analysis. # Description
+*snm corridor_Intern                          # Scene name
+*rnm corridor_Intern.rif                      # Rif name
+*srt corridor_Intern                          # Scene prefix
+*rde Scene of corridor for Internal analysis. # Description
 *rpu Internal                                # Intended use
 *sceneEND
 *end
