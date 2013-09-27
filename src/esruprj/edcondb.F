@@ -34,6 +34,7 @@ C ELISTMAT: Controls display and editing of materials commons.
 C If ACTION = 'M' then include editing if ACTION = '-' only
 C allow choice.
       SUBROUTINE ELISTMAT(iwhich,chgdb,ACTION,imatarrayindex,IER)
+#include "epara.h"
 #include "building.h"
 #include "esprdbfile.h"
 #include "material.h"
@@ -53,20 +54,31 @@ C Parameters
 
 C CLSDES (30 char) is an array for menu items listing each class.
 C CLSSEL (36 char) is an array for menu items for the selected class.
-      DIMENSION CLSDES(30),PDBM(37),CLSSEL(30),ICLSSEL(30)
+      character CLSSEL*36,CLSDES*32
+      DIMENSION CLSDES(36),CLSSEL(30),ICLSSEL(30)
+      character PDBM*76     ! array to hold summary of each material
+      DIMENSION PDBM(37)    ! within the category
+      character managearray*32  ! string array for material management
+      dimension managearray(60)
+      integer iwhichmanage,iwhichmsel
+      dimension iwhichmanage(60),iwhichmsel(60) ! for each management array point back
       integer iwhicharray   ! for each item in menu point back to array
       dimension iwhicharray(60)
-      character ACTION*1,CLSSEL*36,lltmp*144,CLSDES*32
-      CHARACTER KEY*1,PDBM*76,outs*124
+      character ACTION*1,lltmp*144
+      CHARACTER KEY*1,outs*124
       CHARACTER xfile*144,tg*1,delim*1,t32*32,t248*248
       character lworking*144,fs*1
+      character heading*70
       logical closemat1,closemat2
       logical mod   ! to signal whether an item has been altered.
       logical unixok
       real per1,per2   ! percentages of material for non-homogeneous layer
       integer iwhich2  ! 2nd material array index
       integer idb,idb2 ! the two legacy indices selected
+      integer listc    ! for looping through classes
       integer NCO,ICO,NITMS,INO,IW  ! max items and current menu item
+      integer mclist  ! counter for materials found to be in this category
+
 
 C For help messages
       character helpinsub*24 ! subroutine name
@@ -104,24 +116,37 @@ C Check that the material db is not empty.
       endif
       call usrmsg('  ','  ','-')   ! clear editing box.
 
-C Setup for menu.
+C Initialise material category menu size variables based on window size. 
+      MHEAD=1
+      MCTL=5
+      ILEN=matcats
+      IPACT=CREATE
+      CALL EKPAGE(IPACT)
+
 C Gather the names of the various classes and present this list.
-  40  ICO=-1
+  40  ICO=-3
+      ILEN=matcats
       CLSDES(1)=  '  Description         No. Items'
-      M=1
-      DO 44 I=1,matcats
-        write(CLSSEL(I),'(A)') matcatname(I)(1:32)
-        IF(matcatitems(I).GT.0)THEN
+      M=MHEAD
+      DO 44 L=1,ILEN
+        IF(L.GE.IST.AND.(L.LE.(IST+MIFULL)))THEN
+          write(CLSSEL(L),'(A)') matcatname(L)(1:32)
           M=M+1
-          CALL EMKEY(M-1,KEY,IER)
-          WRITE(CLSDES(M),'(A1,1X,A,1X,I2)')KEY,matcatname(I)(1:26),
-     &      matcatitems(I)
+          CALL EMKEY(L,KEY,IER)
+          WRITE(CLSDES(M),'(A1,1X,A,1X,I2)')KEY,matcatname(L)(1:26),
+     &      matcatitems(L)
         ENDIF
    44 CONTINUE
 
-      CLSDES(M+1)=  '  __________________________  '
+C If a long list include page facility text.      
+      IF(IPFLG.EQ.0)THEN  
+        CLSDES(M+1)='  ____________________________ '
+      ELSE
+        WRITE(CLSDES(M+1),15)IPM,MPM 
+   15   FORMAT   ('0 page: ',I2,' of ',I2,' ------ ')
+      ENDIF
       if(ACTION.eq.'M'.or.ACTION.eq.'m')then
-        CLSDES(M+2)='+ add a classification        '
+        CLSDES(M+2)='+ manage classifications      '
         CLSDES(M+3)='! list database entries       '
       elseif(ACTION.eq.'-')then
         CLSDES(M+2)='                              '
@@ -131,7 +156,9 @@ C Gather the names of the various classes and present this list.
       endif
       CLSDES(M+4)=  '? help                        '
       CLSDES(M+5)=  '- exit                        '
-      NCO=M+5
+
+C Number of actual items displayed.
+      NCO=M+MCTL
       ICO=-2
 
 C Help text for this menu.
@@ -141,6 +168,59 @@ C Help text for this menu.
 C Now display the menu.
       CALL EMENU('Materials Classes',CLSDES,NCO,ICO)
       IF(ICO.EQ.NCO)THEN
+        IF(MODDB.and.ACTION.eq.'M')THEN
+
+C Changes were made so remove the existing file via delfiledosorunix
+C and write a new file based on current common blocks. If the original
+C file was binary then alter the name of the saved file to add a '.a'
+C at the end.
+          dok=.true.
+          CALL ASKOK('Changes have been made in this file. ',
+     &      'Save the materials changes?',OK,dok,nbhelp)
+          IF(.NOT.OK) return
+          chgdb=.true.   ! pass back signal to update
+          CALL ERPFREE(IFMUL,ISTAT)  ! in case other unit is still open
+          CALL ERPFREE(IAF,ISTAT)    ! in case unit is still open
+
+C Check the value of whichdbpath variable to see what to do with
+C this file. If local or absolute path then use lltmp directly. If in
+C the standard location then create lworking which has path
+C prepended.
+          if(ipathmat.eq.0.or.ipathmat.eq.1)then
+            lltmp=' '
+            if(origmatwasbin)then
+              write(lltmp,'(2a)') LFMAT(1:lnblnk(LFMAT)),'.a'
+            else
+              write(lltmp,'(a)') LFMAT(1:lnblnk(LFMAT))
+            endif
+C            call delfiledosorunix(lltmp,ider)
+            CALL mkascimat(IAF,lltmp,IER)
+          elseif(ipathmat.eq.2)then
+            lndbp=lnblnk(standarddbpath)
+            if(origmatwasbin)then
+              write(lworking,'(4a)') standarddbpath(1:lndbp),fs,
+     &          LFMAT(1:lnblnk(LFMAT)),'.a'
+            else
+              write(lworking,'(3a)') standarddbpath(1:lndbp),fs,
+     &          LFMAT(1:lnblnk(LFMAT))
+            endif
+C Debug.
+            write(6,*) 'working materials ',lworking
+            CALL mkascimat(IAF,lworking,IER)
+          endif
+
+C Having read in binary and saved to ASCII the latter is now the model
+C material database.
+          if(origmatwasbin)then
+            if(ipathmat.eq.0.or.ipathmat.eq.1)then
+              write(LFMAT,'(a)') lltmp(1:lnblnk(lltmp))
+            elseif(ipathmat.eq.2)then
+              write(LFMAT,'(a)') lworking(1:lnblnk(lworking))
+            endif
+            origmatwasbin=.false.
+          endif
+          MODDB=.FALSE.
+        ENDIF
         RETURN
       ELSEIF(ICO.EQ.(NCO-1))THEN
         helptopic='cat_list_materials'
@@ -150,8 +230,10 @@ C Now display the menu.
 
 C List one or more classifications.
         INPIC=matcats
+        CALL EPMENSV
         CALL EPICKS(INPIC,ICLSSEL,' ',' Which classes to list:',
      &    36,matcats,CLSSEL,'Material classes',IER,nbhelp)
+        CALL EPMENRC
         IF(INPIC.EQ.0)GOTO 40
         CALL EASKABC(' Reporting to:',' ',
      &    'text feedback','summary file','cancel',irpt,nbhelp)
@@ -178,8 +260,8 @@ C If user canceled the listing the reset unit to iuout and loop back.
           call edisp(itu, LFMAT)
         endif
         call edisp(itu,' ')
-        do 42 list=1,INPIC
-          IC=ICLSSEL(list)
+        do 42 listc=1,INPIC
+          IC=ICLSSEL(listc)
           IF(matcatitems(IC).GT.0)THEN
             WRITE(outs,'(3a,i2,a)')' Classification: ',
      &        matcatname(IC)(1:lnblnk(matcatname(IC))),' (',IC,')'
@@ -220,119 +302,203 @@ C Call ctlexp a 2nd time to close the file.
         endif
       ELSEIF(ICO.EQ.(NCO-3))THEN
 
-C Add another category to the database << not yet tested >>
-        if(matcats.LT.30)then
-          matcats=matcats+1
-          t32=' '
-          CALL EASKS(t32,' Classification name (<32 char)?',' ',
-     &      32,' ','class name',IER,nbhelp)
-          write(matcatname(matcats),'(a)') t32
-          write(matcatdoc(matcats),'(a,i2,3a)')
-     &      'Category (',matcats,') named ',t32(1:lnblnk(t32)),
-     &      ' was inserted manually. No other documentation (yet).'
-          ILNE=matdbitems+1
-          matname(ILNE)='new_material'
-          matopaq(ILNE)='o'
-          matdoc(ILNE)='no documentation (yet)'
-          matcatindex(ILNE)=matcats
-          matdbcon(ILNE)=1.0
-          matdbden(ILNE)=1.0
-          matdbsht(ILNE)=1.0
-          matdboute(ILNE)=0.9
-          matdbine(ILNE)=0.9
-          matdbouta(ILNE)=0.5
-          matdbina(ILNE)=0.5
-          matdbdrv(ILNE)=10.0
-          matdbthick(ILNE)=10.0
-          matirtran(ILNE)=0.0
-          matsoldrtrn(ILNE)=0.0
-          matsoldrotrfl(ILNE)=0.5
-          matsoldrinrfl(ILNE)=0.5
-          matvistran(ILNE)=0.0
-          matvisotrfl(ILNE)=0.5
-          matvisinrfl(ILNE)=0.5
-          matrender(ILNE)=0.0
+C Manage categories. Select and alter the category name or documentation
+C or add another category to the database << add not yet tested >>
+        CALL EASKABCD(' Options:',' ',
+     &    'edit category name','edit category documentation',
+     &    'add another category','cancel',irpt,nbhelp)
+        if(irpt.eq.1.or.irpt.eq.2)then
+          CALL EPMENSV
+          INPIC=1
+          CALL EPICKS(INPIC,ICLSSEL,' ',' Which class:',
+     &      36,matcats,CLSSEL,'Material class to manage',IER,nbhelp)
+          CALL EPMENRC
+          IF(INPIC.EQ.0)GOTO 40
+          IC=ICLSSEL(1)
+        endif
+        if(irpt.eq.1)then
 
-          matcatitems(matcats)=matcatitems(matcats)+1 ! increment nb of cat items
-          matcatindex(ILNE)=matcats  ! remember its category
-          matdbitems=matdbitems+1    ! increment nb of db items
+C Edit classification name.
+          write(t32,'(a)')matcatname(IC)(1:lnblnk(matcatname(IC)))
+          CALL EASKS(t32,' ',' Classification name (<32 char)?',
+     &      32,' ','class name',IER,nbhelp)
+          if(t32(1:2).ne.'  ')then
+            write(matcatname(IC),'(a)') t32(1:lnblnk(t32))
+            chgdb=.true.
+            MODDB=.TRUE.
+          endif
+        elseif(irpt.eq.2)then
+
+C Edit classification documentation.
+          t248=matcatdoc(IC)(1:lnblnk(matcatdoc(IC)))
+          CALL EASKS248(t248,'Category notes:',' ',
+     &      72,'this category...','category notes',IER,nbhelp)
+          if(t248(1:2).ne.'  ')then
+            write(matcatdoc(IC),'(a)') t248(1:lnblnk(t248))
+            chgdb=.true.
+            MODDB=.TRUE.
+          endif
+        elseif(irpt.eq.3)then
+
+C Add a classification.
+          if(matcats.LT.30)then
+            matcats=matcats+1
+            t32=' '
+            CALL EASKS(t32,' Classification name (<32 char)?',' ',
+     &        32,' ','class name',IER,nbhelp)
+            write(matcatname(matcats),'(a)') t32
+            write(t248,'(a,i2,3a)')
+     &        'Category (',matcats,') named ',t32(1:lnblnk(t32)),
+     &        ' was inserted manually. No other documentation (yet).'
+            CALL EASKS248(t248,'Category notes:',' ',
+     &        72,'this category...','category notes',IER,nbhelp)
+            write(matcatdoc(matcats),'(a)') t248(1:lnblnk(t248))
+        
+            ILNE=matdbitems+1
+            t32=' '
+            CALL EASKS(t32,'Name of initial material','confirm:',
+     &        32,' ','material name',IER,nbhelp)
+            write(matname(ILNE),'(a)') t32(1:lnblnk(t32))
+            matopaq(ILNE)='o'
+            matdoc(ILNE)='no documentation (yet)'
+            matcatindex(ILNE)=matcats
+            matdbcon(ILNE)=1.0; matdbden(ILNE)=1.0; matdbsht(ILNE)=1.0
+            matdboute(ILNE)=0.9; matdbine(ILNE)=0.9
+            matdbouta(ILNE)=0.5; matdbina(ILNE)=0.5
+            matdbdrv(ILNE)=10.0; matdbthick(ILNE)=10.0
+            matirtran(ILNE)=0.0; matsoldrtrn(ILNE)=0.0
+            matsoldrotrfl(ILNE)=0.5; matsoldrinrfl(ILNE)=0.5
+            matvistran(ILNE)=0.0
+            matvisotrfl(ILNE)=0.5; matvisinrfl(ILNE)=0.5
+            matrender(ILNE)=0.0
+
+            matcatitems(matcats)=matcatitems(matcats)+1 ! increment nb of cat items
+            matcatindex(ILNE)=matcats  ! remember its category
+            matdbitems=matdbitems+1    ! increment nb of db items
 
 C See if there is an available slot in the 0-600 list of legacy
 C indices.
-          lastcatitem=2
-          ip=matlegindex(lastcatitem)
-          call getnextascislot(ip,inext)
-          if(inext.le.600)then 
-            matlegindex(ILNE)=inext
-            mathash(inext)=ILNE
-          else
-            matlegindex(ILNE)=-99
+            lastcatitem=2
+            ip=matlegindex(lastcatitem)
+            call getnextascislot(ip,inext)
+            if(inext.le.600)then 
+              matlegindex(ILNE)=inext
+              mathash(inext)=ILNE
+            else
+              matlegindex(ILNE)=-99
+            endif
+            chgdb=.true.
+            MODDB=.TRUE.
           endif
-          chgdb=.true.
         endif
         goto 40
-      ELSEIF(ICO.GT.1.AND.ICO.LT.(NCO-4))THEN
+
+      ELSEIF(ICO.eq.(NCO-4))THEN
+
+C If there are enough items allow paging control via EKPAGE.
+        IF(IPFLG.EQ.1)THEN
+          IPACT=EDIT
+          CALL EKPAGE(IPACT)
+        ENDIF
+        GOTO 40    ! user paged so refresh
+
+      ELSEIF(ICO.GT.MHEAD.AND.ICO.LT.(NCO-4))THEN
         
-C Loop through data for this classification for manipulation.
-        IC=ICO-1
+C This is the secondary menu focused on a single material class. Loop through 
+C data for this classification for viewing and/or manipulation.
+C Edit categpru identified by KEYIND.
+        CALL KEYIND(NCO,ICO,IC,IO)
         IF(matcatitems(IC).EQ.0)THEN
          CALL USRMSG(' No items in this classification.',' ','W')
          GOTO 40
         ENDIF
 
-C Display the materials of the classification in a menu.
+C Echo documentation for classification when changing focus.
+        call edisp(iuout,' ')
+        call edisp248(iuout,matcatdoc(IC),100)
+        call edisp(iuout,' ')
+
+C Save the state of the initial menu prior to setting up the secondary
+C menu layout. Ensure that each logical exit point restores initial menu.
+        CALL EPMENSV
+        MHEAD=4  ! reset for inner menu head
+        MCTL=5   ! reset for inner menu control entries
+        ILEN=matcatitems(IC) ! reset for materials in this catetory 
+        IPACT=CREATE
+        CALL EKPAGE(IPACT)
+
+C Generate menu strings for materials in the class.
     3   PDBM(1)= ' Units: Conductivity W/(m deg.C), Density kg/m**3'
         PDBM(2)= ' Specific Heat J/(kg deg.C) Vapour (MNs g^-1m^-1)'
-        WRITE(PDBM(3),'(3a,i2,a,i2,a)') '1 Classification: ',
-     &    matcatname(IC)(1:lnblnk(matcatname(IC))),' (',IC,') with ',
-     &    matcatitems(IC),' entries.'
-        PDBM(4)=   '  ___________________________________'
-        PDBM(5)=
+        PDBM(3)=
      &' |Conduc-|Den- |Specif|IR  |Solar|Diffu|Description of material'
-        PDBM(6)=
+        PDBM(4)=
      &' |tivity |sity |heat  |emis|abs  |resis| name   : documentation'
-        M=6
+        M=MHEAD
+        ILEN=matcatitems(IC) ! reset if materials in this catetory changed
+        mclist=0  ! counter for materials found to be in this category
         DO 30 J=1,matdbitems
 
 C Loop through all of the items in the array and list out those that are
-C associated with this class.
+C associated with this class (and which fit within the current page).
           if(matcatindex(J).eq.IC)then
 
-C Remember the array index that goes with the menu position (m).
-            M=M+1
-            iwhicharray(M)=J  ! menu position M relates to data array J.
-            CALL EMKEY(M-6,KEY,IER)
-            if(matopaq(J).eq.'o')then
-              WRITE(PDBM(M),24)KEY,matdbcon(J),matdbden(J),
-     &          matdbsht(J),matdboute(J),matdbouta(J),matdbdrv(J),
-     &          matname(J)(1:31)
-   24         FORMAT(A1,F8.3,F6.0,F7.0,F5.2,F5.2,F7.0,1X,A)
-            elseif(matopaq(J).eq.'-')then
-              WRITE(PDBM(M),25)KEY,matdbcon(J),matdbden(J),
-     &          matdbsht(J),matdboute(J),matdbouta(J),matdbdrv(J),
-     &          matname(J)(1:12),': ',matdoc(J)(1:21)
-   25         FORMAT(A1,F8.3,F6.0,F7.0,F5.2,F5.2,F7.0,1X,3A)
-            elseif(matopaq(J).eq.'t')then
-              WRITE(PDBM(M),25)KEY,matdbcon(J),matdbden(J),
-     &          matdbsht(J),matdboute(J),matdbouta(J),matdbdrv(J),
-     &          matname(J)(1:12),': ',matdoc(J)(1:21)
-            elseif(matopaq(J).eq.'g')then
-              WRITE(PDBM(M),25)KEY,matdbcon(J),matdbden(J),
-     &          matdbsht(J),matdboute(J),matdbouta(J),matdbdrv(J),
-     &          matname(J)(1:12),': ',matdoc(J)(1:21)
-            elseif(matopaq(J).eq.'h')then
-              WRITE(PDBM(M),25)KEY,matdbcon(J),matdbden(J),
-     &          matdbsht(J),matdboute(J),matdbouta(J),matdbdrv(J),
-     &          matname(J)(1:12),': ',matdoc(J)(1:21)
-            else
-              WRITE(PDBM(M),24)KEY,matdbcon(J),matdbden(J),
-     &          matdbsht(J),matdboute(J),matdbouta(J),matdbdrv(J),
-     &          matname(J)(1:31)
+C Increment mclist and build string array for use in managing materials
+C in this category. Also create an array iwhichmanage to point from
+C the management list to the original materials data array.
+            mclist=mclist+1
+            write(managearray(mclist),'(a)') matname(J)
+            iwhichmanage(mclist)=J  ! management array to data array J
+
+C Test if the material fits within the current paged menu and then
+C remember the array index that goes with the menu position (m).
+            IF(mclist.GE.IST.AND.(mclist.LE.(IST+MIFULL)))THEN
+              M=M+1
+              iwhicharray(M)=J  ! menu position M relates to data array J
+              CALL EMKEY(mclist,KEY,IER)
+
+C Debug.
+              write(6,*) 'menu j m mclist iwhicharray(m) ',j,m,mclist,
+     &          ' ',iwhicharray(m),iwhichmanage(mclist)
+              if(matopaq(J).eq.'o')then
+                WRITE(PDBM(M),24)KEY,matdbcon(J),matdbden(J),
+     &            matdbsht(J),matdboute(J),matdbouta(J),matdbdrv(J),
+     &            matname(J)(1:31)
+   24           FORMAT(A1,F8.3,F6.0,F7.0,F5.2,F5.2,F7.0,1X,A)
+              elseif(matopaq(J).eq.'-')then
+                WRITE(PDBM(M),25)KEY,matdbcon(J),matdbden(J),
+     &            matdbsht(J),matdboute(J),matdbouta(J),matdbdrv(J),
+     &            matname(J)(1:12),': ',matdoc(J)(1:21)
+   25           FORMAT(A1,F8.3,F6.0,F7.0,F5.2,F5.2,F7.0,1X,3A)
+              elseif(matopaq(J).eq.'t')then
+                WRITE(PDBM(M),25)KEY,matdbcon(J),matdbden(J),
+     &            matdbsht(J),matdboute(J),matdbouta(J),matdbdrv(J),
+     &            matname(J)(1:12),': ',matdoc(J)(1:21)
+              elseif(matopaq(J).eq.'g')then
+                WRITE(PDBM(M),25)KEY,matdbcon(J),matdbden(J),
+     &            matdbsht(J),matdboute(J),matdbouta(J),matdbdrv(J),
+     &            matname(J)(1:12),': ',matdoc(J)(1:21)
+              elseif(matopaq(J).eq.'h')then
+                WRITE(PDBM(M),25)KEY,matdbcon(J),matdbden(J),
+     &            matdbsht(J),matdboute(J),matdbouta(J),matdbdrv(J),
+     &            matname(J)(1:12),': ',matdoc(J)(1:21)
+              else
+                WRITE(PDBM(M),24)KEY,matdbcon(J),matdbden(J),
+     &            matdbsht(J),matdboute(J),matdbouta(J),matdbdrv(J),
+     &            matname(J)(1:31)
+              endif
             endif
           endif
    30   CONTINUE
         NC=M
-        PDBM(NC+1)=  '  __________________________     '
+
+C If a long list include page facility text.      
+        IF(IPFLG.EQ.0)THEN  
+          PDBM(NC+1)='  ____________________________ '
+        ELSE
+          WRITE(PDBM(NC+1),15)IPM,MPM 
+        ENDIF
+
         if(ACTION.eq.'M'.or.ACTION.eq.'m')then
           PDBM(NC+2)='* add/ delete/ copy material     '
 
@@ -353,11 +519,14 @@ C a common data file.
         INO=-4
 
 C Help text for this menu.
-    2   continue
         helptopic='materials_db_overview'
         call gethelptext(helpinsub,helptopic,nbhelp)
+
+        write(heading,'(3a,i2,a,i2,a)') 'Materials in ',
+     &    matcatname(IC)(1:lnblnk(matcatname(IC))),' (',IC,') with ',
+     &    matcatitems(IC),' entries.'
  
-        CALL EMENU('Materials Database',PDBM,NITMS,INO)
+        CALL EMENU(heading,PDBM,NITMS,INO)
 
         IF(INO.EQ.NITMS.OR.INO.EQ.0)THEN
           IF(MODDB.and.ACTION.eq.'M')THEN
@@ -369,7 +538,10 @@ C at the end.
             dok=.true.
             CALL ASKOK('Changes have been made in this file. ',
      &        'Save the materials changes?',OK,dok,nbhelp)
-            IF(.NOT.OK)GOTO 4
+            if(.NOT.OK)then
+              CALL EPMENRC   ! recover initial menu state
+              GOTO 4         ! jump back to rebuild initial menu
+            endif
             chgdb=.true.   ! pass back signal to update
             CALL ERPFREE(IFMUL,ISTAT)  ! in case other unit is still open
             CALL ERPFREE(IAF,ISTAT)    ! in case unit is still open
@@ -413,32 +585,10 @@ C material database.
             endif
             MODDB=.FALSE.
           ENDIF
-          GOTO 4
-        ELSEIF(INO.EQ.1.OR.INO.EQ.2)THEN
-          GOTO 2
-        ELSEIF(INO.eq.3)THEN
-
-C Edit classification name.
-          write(t32,'(a)')matcatname(IC)(1:lnblnk(matcatname(IC)))
-          CALL EASKS(t32,' ',' Classification name (<32 char)?',
-     &      32,' ','class name',IER,nbhelp)
-          if(t32(1:2).ne.'  ')then
-            write(matcatname(IC),'(a)') t32(1:lnblnk(t32))
-            chgdb=.true.
-            MODDB=.TRUE.
-          endif
-
-C Also edit classification documentation.
-          t248=matcatdoc(IC)(1:lnblnk(matcatdoc(IC)))
-          CALL EASKS248(t248,'Category notes:',' ',
-     &      72,'this category...','category notes',IER,nbhelp)
-          if(t248(1:2).ne.'  ')then
-            write(matcatdoc(IC),'(a)') t248(1:lnblnk(t248))
-            chgdb=.true.
-            MODDB=.TRUE.
-          endif
-        ELSEIF(INO.GE.4.AND.INO.LE.6)THEN
-          GOTO 2
+          CALL EPMENRC   ! recover initial menu state
+          GOTO 4         ! go back and rebuild initial menu
+        ELSEIF(INO.EQ.1.AND.INO.LE.4)THEN
+          GOTO 3         ! not a useful selection redo inner menu
         ELSEIF(INO.EQ.NITMS-1)THEN
           helptopic='materials_db_overview'
           call gethelptext(helpinsub,helptopic,nbhelp)
@@ -455,7 +605,7 @@ C file is to be updated.
             CALL ASKOK('No changes in the materials file. Do you want',
      &        'to update it anyway:',OK,dok,nbhelp)
             if(.NOT.OK)then
-              goto 3  ! jump without doing anything
+              goto 3  ! jump back to inner menu without doing anything
             endif
           endif
           chgdb=.true.
@@ -501,16 +651,26 @@ C Add delete or copy material from db.
      &      'copy existing material','cancel','  ','  ',IW,nbhelp)
           IF(IW.EQ.1)THEN
 
-C Ask the user which one to remove then loop through materials and
+C Ask the user which material to remove (use the managearray list of material
+C names created in the do 30 loop above) then loop through materials and
 C copy the contents of material > IWHICH into the next lower one.
             CALL USRMSG(' ',' Which item of list? ','-')
-            CALL EMENU('delete material',PDBM,NITMS,IW)
-            IWHICH=iwhicharray(IW)
-            ip=matlegindex(IWHICH)  ! remove legacy index from the hash table.
+            INPIC=1
+            CALL EPMENSV
+            CALL EPICKS(INPIC,iwhichmsel,'Delete which material',
+     &        'Confirm:',32,matcatitems(IC),managearray,
+     &        'Material to delete',IER,nbhelp)
+            CALL EPMENRC
+            IF(INPIC.EQ.0)GOTO 40  ! user selected nothing go back to category menu
+            IW=iwhichmsel(1)       ! get position in management array
+            IWHICH=iwhichmanage(IW)  ! get the original material data position
+            ip=matlegindex(IWHICH)   ! todo remove legacy index from the hash table
+            write(6,*) 'iwhichmsel iw iwhichmanage iwhich ',iwhichmsel,
+     &        iw,iwhichmanage(iw),iwhich
             if(ip.gt.0) mathash(ip)=-1
             DO 791 IVV=IWHICH,matdbitems-1
               matlegindex(IVV)=matlegindex(IVV+1)
-              matdbcon(IVV)=matdbcon(IVV+1)
+              matdbcon(IVV)=matdbcon(IVV+1); 
               matdbden(IVV)=matdbden(IVV+1)
               matdbsht(IVV)=matdbsht(IVV+1)
               matdboute(IVV)=matdboute(IVV+1)
@@ -556,6 +716,10 @@ C indices and make up name and index based on inext value.
                 call getnextascislot(ip,inext)
                 if(inext.le.600)then 
                   write(matname(ILNE),'(a,i3.3)') 'mat_',inext
+                  write(t32,'(a)') matname(ILNE)
+                  CALL EASKS(t32,'Name of new material','confirm:',
+     &              32,' ','material name',IER,nbhelp)
+                  write(matname(ILNE),'(a)') t32(1:lnblnk(t32))
                   matlegindex(ILNE)=inext
                   mathash(inext)=ILNE
                 else
@@ -573,12 +737,12 @@ C indices and make up name and index based on inext value.
                 matdbthick(ILNE)=matdbthick(lastcatitem)
                 matcatindex(ILNE)=matcatindex(lastcatitem)  ! keep in same category
 
-C If there is room add a note about its origin.
-                ils=lnblnk(matdoc(lastcatitem))
+C If there is room add a note about material origin.
+                ils=lnblnk(matname(ILNE))
                 iln=lnblnk(matname(lastcatitem))
                 if(ils.le.200)then
                   write(matdoc(ILNE),'(4a)') 
-     &              matdoc(IWHICH)(1:ils),' (derived from ',
+     &              matname(ILNE)(1:ils),' (derived from ',
      &              matname(lastcatitem)(1:iln),')'
                 else
                   matdoc(ILNE)=matdoc(lastcatitem)
@@ -607,19 +771,22 @@ C and then resetn MODDB and chgdb if mod is true.
               endif
             ELSE
               CALL USRMSG(' ','Exceeds classification limit!','W')
-              GOTO 3
+              GOTO 3   ! go back an recreate the inner menu
             ENDIF
           ELSEIF(IW.EQ.3)THEN
 
 C Derive non-homogeneous properties from two solid materials.
-C Copy info from first existing material.  
+C Copy info from first existing material (save & recover the
+C state of the menu when doing this).  
             CALL USRMSG(' ','Select first material?','-')
+            CALL EPMENSV
             call allmat(imatarrayindex,ier)
+            CALL EPMENRC
             if(imatarrayindex.gt.0)then
               IWHICH=imatarrayindex
             else
               CALL USRMSG(' ','No first material selected!','W')
-              GOTO 3
+              GOTO 3  ! recreate and display inner menu
             endif
           
             PER1=90.0
@@ -639,13 +806,17 @@ C Copy info from first existing material.
      &        matname(IWHICH)(1:lnblnk(matname(IWHICH)))
             call edisp(iuout,outs)
 
+C Copy info from second existing material (save & recover the
+C state of the menu when doing this).  
             CALL USRMSG(' ','Select second material?','-')
+            CALL EPMENSV
             call allmat(imatarrayindex,ier)
+            CALL EPMENRC
             if(imatarrayindex.gt.0)then
               IWHICH2=imatarrayindex
             else
               CALL USRMSG(' ','No second material selected!','W')
-              GOTO 3
+              GOTO 3   ! recreate and display inner menu
             endif
           
             PER2=10.0
@@ -739,12 +910,16 @@ C The additional properties just use the 1st material (change this later).
             endif
           ELSEIF(IW.EQ.4)THEN
 
-C Copy an existing material to a new one at end of the array.
-C Use iwhicharray to go from the menu position to the array
-C end of the array.  
+C Copy an existing material to a new one at end of the array (use the managearray
+C list of material names created in the do 30 loop above).  
             CALL USRMSG(' ',' Which item of list?','-')
-            CALL EMENU('Copy material',PDBM,NITMS,IW)
-            IWHICH=iwhicharray(IW)
+            INPIC=1
+            CALL EPICKS(INPIC,iwhichmsel,'Copy which material',
+     &        'Confirm:',32,matcatitems(IC),managearray,
+     &        'Material to copy',IER,nbhelp)
+            IF(INPIC.EQ.0)GOTO 40  ! user selected nothing go back to category menu
+            IW=iwhichmsel(1)       ! get position in management array
+            IWHICH=iwhichmanage(IW)  ! get the original material data position
             ILNE=matdbitems+1
 
 C See if there is an available slot in the 0-600 list of legacy
@@ -755,6 +930,10 @@ C on the original.
             call getnextascislot(ip,inext)
             if(inext.le.600)then 
               write(matname(ILNE),'(a,i3.3)') 'mat_',inext
+              write(t32,'(a)') matname(ILNE)
+              CALL EASKS(t32,'Name of copied material','confirm:',
+     &          32,' ','material name',IER,nbhelp)
+              write(matname(ILNE),'(a)') t32(1:lnblnk(t32))
               matlegindex(ILNE)=inext
               mathash(inext)=ILNE
             else
@@ -764,11 +943,11 @@ C on the original.
             endif
 
 C If there is room add a note about its origin.
-            ils=lnblnk(matdoc(IWHICH))
+            ils=lnblnk(matname(ILNE))
             iln=lnblnk(matname(IWHICH))
             if(ils.le.200)then
               write(matdoc(ILNE),'(4a)') 
-     &          matdoc(IWHICH)(1:ils),' (copy of ',
+     &          matname(ILNE)(1:ils),' (copy of ',
      &          matname(IWHICH)(1:iln),')'
             else
               matdoc(ILNE)=matdoc(IWHICH)
@@ -799,17 +978,23 @@ C If there is room add a note about its origin.
             chgdb=.true.
 
           ELSEIF(IW.EQ.5)THEN
-            GOTO 3    ! user declined
+            GOTO 3    ! user declined so recreate and display inner menu
           ENDIF
         ELSEIF(INO.EQ.NITMS-4)THEN
-          GOTO 2
-        ELSEIF(INO.GT.6.AND.INO.LT.NITMS-4)THEN
+
+C If there are enough items allow paging control via EKPAGE.
+          IF(IPFLG.EQ.1)THEN
+            IPACT=EDIT
+            CALL EKPAGE(IPACT)
+          ENDIF
+          GOTO 3    ! user paged so refresh inner menu
+        ELSEIF(INO.GT.MHEAD.AND.INO.LT.NITMS-4)THEN
 
 C Identified one of the materials to edit or select.
           IFOC=iwhicharray(INO)
 
 C Debug.
-C          write(6,*) 'selected menu ',ino,'got array',ifoc
+          write(6,*) 'selected menu ',ino,'got array',ifoc
 
           if(ACTION.eq.'M')then
 
@@ -847,16 +1032,16 @@ C and then resetn MODDB and chgdb if mod is true.
             CALL ASKOK(outs,'Use it:',OK,dok,1)
             if(OK)then
               imatarrayindex=IFOC ! set to selected array index
-              return
+              return              ! task complete return to calling subroutine
             endif
           endif
         ENDIF
-        GOTO 3
+        GOTO 3  ! regenerate and display inner menu
       else
-        goto 40
+        goto 40 ! regenerate the category list and display
       endif
       call usrmsg(' ',' ','-')
-      goto 40
+      goto 40   ! regenerate the category list and display
 
       END
 
@@ -2672,7 +2857,7 @@ C If this parameter is changed also change it in subroutine GVALUE
       logical moddb,chgdb,layermatch,closemat1,closemat2
       logical unixok
 
-      CHARACTER KEY*1,T12*12,T12OTH*12,T14*14,T34*34,T34OTH*34,T72*72
+      CHARACTER KEY*1,T12*12,T12OTH*12,T14*14,T34*34,T72*72
       CHARACTER PROMP2*56,PROMP1*56
       CHARACTER*33 MLCITM(36)
       CHARACTER xfile*144,tg*1,delim*1,outs*124
@@ -3077,10 +3262,9 @@ C there is room in the database copy data to a new item.
           mlccatindex(NMLC)=mlccatindex(IWHICH)  ! assume same class 
 
 C Remember original construction name as T12OTH scratch for editing as T12
-C and T34OTH and T34 for matver 1.
+C and T34 for matver 1.
           WRITE(T12OTH,'(A)')mlcname(NMLC)(1:12)
           WRITE(T12,'(A)')mlcname(NMLC)(1:12)
-          WRITE(T34OTH,'(A)')mlcname(NMLC)
           WRITE(T34,'(A)')mlcname(NMLC)
 
 C If there is space attach an "_i" to the end of the name to save the
@@ -3319,9 +3503,9 @@ C air gap (and the user would overload the MLC layer
 C with 3 air gap resistance values). An emerging technique
 C is to label materials (matopaq) as follows: 
 C matopaq (1 char) 'o' is opaque, 't' is transparent,
-C                  'g' is gas, '-' imported from legacy
+C                  'g' is air gap, '-' imported from legacy
 C A -99 index (no equivalent in legacy databases) and the current code
-C assumes that -99 entities are unknown.
+C assumes that -99 entities are UNKNOWN.
 C
 C Add note about CFC modifications...
 
@@ -3543,7 +3727,7 @@ C Debug.
 C        write(6,*) 'debug ',matarrayindex,matopaq(matarrayindex),ifoc,
 C     &    il
  
-C And if a gap reset dbcon and NAM and assign DRAIR if newer materials file
+C And if an air gap reset dbcon and NAM and assign DRAIR if newer materials file
 C and we are dealing with something other than the traditional gap material.
           if(matopaq(matarrayindex)(1:1).eq.'g'.or.
      &     matopaq(matarrayindex)(1:1).eq.'h'.or.

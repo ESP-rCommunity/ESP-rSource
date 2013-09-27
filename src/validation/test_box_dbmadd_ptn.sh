@@ -12,6 +12,7 @@
 # the command line needs to include path to esp-r distribution
 VERSION=$1
 cd test_box/dbs
+mv test_box_a.constrdb- test_box_a.constrdb--
 cp test_box_a.constrdb test_box_a.constrdb-
 cd ../cfg
 pwd
@@ -20,69 +21,6 @@ b # database management
 e # MLC
 a # browse
 1 # add
-a # at end of list
-single_glz
-i # select the layer
-y # confirm
-m # glass cat
-c # clear float
-y # use it
-6 # thickness
-b # type
-b # tmc
-c # optics
-c # pick SCF8783_06nb
--
--
-1 # add
-a # at end of list
-conc_pla_ptn
-i # change to plaster
-y
-f # plaster
-a # dense plaster
-y
-20
-!
-b # append
-y
-r # gaps
-a # air gap
-y
-a # accept
-0.17
-0.17
-0.17
-10 # thickness
-!
-b # append
-y
-b # concrete
-l # heavy mix
-y
-150
-!
-b # append
-y
-r # gaps
-a # air gap
-y
-a # accept
-0.17
-0.17
-0.17
-10 # thickness
-!
-b # append
-y
-f # plaster
-a # dense plaster
-y
-20
--
->
-y
-1
 a # at end of list
 acu_gyp_ptn
 i # change layer
@@ -106,6 +44,11 @@ h # white gyp
 y
 24
 -
+-
+> # save
+y
+y
+a # browse edit
 1 # add
 a # end of list
 apt_conc_cl
@@ -139,6 +82,7 @@ y
 !
 b # append
 y
+0
 r # gaps
 a
 y
@@ -155,6 +99,11 @@ j # ceiling mine
 y
 12.5
 -
+-
+> # save
+y
+y
+a # browse edit
 1 # add
 e # copy invert
 0 # page
@@ -166,7 +115,7 @@ apt_conc_fl
 -
 > # save
 y
--
+y
 -
 -
 y
