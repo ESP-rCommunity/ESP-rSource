@@ -78,7 +78,7 @@ C Radiance based commons are explained in e2r_common.h.
 C Project journal on/off, unit number, cmd, file name.
       common/journopt/journio,iuj,journcmd,jfile
 
-      COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
+      COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,CFCDBOK
       
 C Significant figure reporting limit (NSIGFIG).
       common/SFIG/NSIGFIG
@@ -104,7 +104,7 @@ C Name of current application
       DIMENSION ITEM(24)
       DIMENSION IVALV(20),VALT(20),IPVALV(20)  ! for selecting view from list
 
-      LOGICAL KEEP,CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
+      LOGICAL KEEP,CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,CFCDBOK
       LOGICAL XST,unixok,there
       LOGICAL ok,dok
       logical browse  ! is true if parameter passed as yes
@@ -1167,14 +1167,14 @@ C Path to model.
       COMMON/RAY5/ZCOG(MCOM,3),XMN,YMN,ZMN,XMX,YMX,ZMX
       common/initv/initvt,EYEMI(3),VIEWMI(3),ANGI
 
-      COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
+      COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,CFCDBOK
 
       character path*72,GTGEOM*72
       CHARACTER LCMDFL*144
       character outs*124,fs*1,tldir*72,MODE*4
 
       LOGICAL unixok
-      LOGICAL CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
+      LOGICAL CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,CFCDBOK
       logical browse  ! as set in e2r command line.
 #ifdef OSI
       integer numberofzones ! to pass to updwire rather than ncomp

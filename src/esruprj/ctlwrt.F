@@ -525,7 +525,7 @@ C Complex fenestration control information.
 
       DO 109 I=1,nCFCctlloops
         II=I
-        WRITE(IUNIT,'(A)',IOSTAT=ios,ERR=1)'* Control function'
+        WRITE(IUNIT,'(A, I4)',IOSTAT=ios,ERR=1)'* Control function',I
         CALL EVCNTRL(6,II,1,1,'S',SSTR)
         LN=max(1,LNBLNK(SSTR))
         WRITE(IUNIT,'(A,A)',IOSTAT=ios,ERR=1)'# ',SSTR(1:ln)

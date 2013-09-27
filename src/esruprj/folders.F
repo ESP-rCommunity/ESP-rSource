@@ -73,7 +73,7 @@ C Images.
 C External text editor.
       common/texted/tedlbl,teditor
 
-      common/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
+      common/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,CFCDBOK
 
 C Calendar.
       common/caleni/nbdaytype,nbcaldays(MDTY),icalender(365)
@@ -82,7 +82,7 @@ C Calendar.
 C Passed in parameters.
       character root*32,mpath*72,menu*72
 
-      logical XST,OK,dok,CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
+      logical XST,OK,dok,CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,CFCDBOK
       logical OKI,concat,unixok,clkok
 
       character dstmp*24,LCFTMP*32
@@ -808,10 +808,10 @@ C #include "geometry.h"
 C External text editor.
       common/texted/tedlbl,teditor
 
-      common/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
+      common/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,CFCDBOK
       common/user/browse
 
-      logical OK,DOK,CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
+      logical OK,DOK,CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,CFCDBOK
       logical concat,unixok,changedit,browse
 
       character*72 path,LFIL,odir

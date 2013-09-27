@@ -500,6 +500,9 @@ C on common blocks. If isur=0 then all, otherwise for one surface.
       integer matarrayindex ! the indes within matdatarray
       logical closemat1,closemat2
 
+      integer cfcarrayindex ! the indes within cfcdataarray
+      logical closecfc1
+
       dimension RT(MS),OPT(MS),PNAM(MS,ME),iprtext(MS,ME),imatch(MS)
       CHARACTER OUTS*124,sn*12,SOPT*12,OPT*12,PNAM*72,NAM*72
       character iprtext*4,GDESCR*36
@@ -512,6 +515,17 @@ C have been filled after the model cfg file was scanned.
         continue
       else
         call usrmsg('CONINF: The materials arrays are incomplete so',
+     &    'this report is not available.','W')
+        return
+      endif
+
+C Use CFC layer arrays if available. This also assumes that constructions will
+C have been filled after the model cfg file was scanned.
+      call eclose(cfcver,1.1,0.01,closecfc1)
+      if(closecfc1)then
+        continue
+      else
+        call usrmsg('CONINF: The CFC layer arrays are incomplete so',
      &    'this report is not available.','W')
         return
       endif
@@ -568,33 +582,43 @@ C Set local optical name from material.h commons.
 C For each layer recover the name of material. For non-airgap layers
 C add resistance for layer (using data from constructions file)
           DO 15, IL=1,NELT
-            matarrayindex=IPRMAT(imatch(i),IL)   ! which array index
-            if(matarrayindex.ge.0)then
+C...........If CFC2, get details from CFClayers db
+            IF(SSOTF(icn1)(1:4).EQ.'CFC2') THEN
+              cfcarrayindex=ITMCFCDB(imatch(i),IL)
+              if(cfcarrayindex.gt.0)then
+                write(NAM,'(a)') cfcname(cfcarrayindex)(1:32)
+                write(iprtext(i,IL),'(i4)') cfcitmindex(cfcarrayindex)
+                PNAM(i,IL)=NAM
+              endif
+            ELSE
+              matarrayindex=IPRMAT(imatch(i),IL)   ! which array index
+              if(matarrayindex.ge.0)then
 
 C And if matarrayindex is zero then establish NAM.
-              if(matarrayindex.eq.0)then
-                NAM='AIR'
-              else
-                write(NAM,'(a)') matname(matarrayindex)(1:32)
+                if(matarrayindex.eq.0)then
+                  NAM='AIR'
+                else
+                  write(NAM,'(a)') matname(matarrayindex)(1:32)
+                endif
               endif
-            endif
-            IF(IPR(imatch(i),IL).EQ.0)THEN
+              IF(IPR(imatch(i),IL).EQ.0)THEN
 
 C Find matching air gap layer and resistance.
-              IF(NAIRG(I).GT.0)THEN
-                DO 90 J=1,NAIRG(I)
-                  if(IPAIRG(I,J).eq.IL)then
-                    WRITE(PNAM(i,IL),'(a,f6.3,a)')'air gap (R=',
-     &                RAIRG(I,J),')'
-                    RT(I)=RT(I)+RAIRG(I,J)
-                  endif
- 90             CONTINUE
+                IF(NAIRG(I).GT.0)THEN
+                  DO 90 J=1,NAIRG(I)
+                    if(IPAIRG(I,J).eq.IL)then
+                      WRITE(PNAM(i,IL),'(a,f6.3,a)')'air gap (R=',
+     &                  RAIRG(I,J),')'
+                      RT(I)=RT(I)+RAIRG(I,J)
+                    endif
+ 90               CONTINUE
+                ENDIF
+              ELSE
+                PNAM(i,IL)=NAM
+                RT(I)=RT(I)+THK(I,IL)/CON(I,IL)
               ENDIF
-            ELSE
-              PNAM(i,IL)=NAM
-              RT(I)=RT(I)+THK(I,IL)/CON(I,IL)
+              write(iprtext(i,IL),'(i4)') IPR(imatch(i),IL)
             ENDIF
-            write(iprtext(i,IL),'(i4)') IPR(imatch(i),IL)
   15      CONTINUE
         endif
  9994 CONTINUE
@@ -609,7 +633,8 @@ C Jump if not all requied and not the focus surface.
         if(OPT(i)(1:4).eq.'OPAQ')then
           write(outs,'(4a)') sn(1:lnblnk(sn)),' is composed of ',
      &      SSMLCN(icn1)(1:lsml),' and is opaque:'
-        elseif(OPT(i)(1:11).eq.'USE GSLedit')then
+        elseif(OPT(i)(1:11).eq.'USE GSLedit'.or.
+     &         OPT(i)(1:3).eq.'N/A')then
           write(outs,'(4a)') sn(1:lnblnk(sn)),' is composed of ',
      &      SSMLCN(icn1)(1:lsml),' and is complex fenestration const.'
         elseif(OPT(i)(1:7).eq.'UNKNOWN')then
@@ -660,15 +685,18 @@ C 0.10 inside upward flow and 0.17 inside downward flow.
         UVALUED=1.0/RTD
         RTI=RT(I)+0.13+0.13
         UVALUEI=1.0/RTI
-        write(OUTS,'(3A,3F7.3,a,F7.3)')
-     &    ' ISO 6946 U values (hor/up/dn heat flow) for ',
-     &    SSMLCN(icn1)(1:lnblnk(SSMLCN(icn1))),' is',
-     &    UVALUEH,UVALUEU,UVALUED,' (partn)',UVALUEI
-        call edisp(itru,OUTS)
+        IF(SSOTF(icn1)(1:4).NE.'CFC2') THEN
+          write(OUTS,'(3A,3F7.3,a,F7.3)')
+     &      ' ISO 6946 U values (hor/up/dn heat flow) for ',
+     &      SSMLCN(icn1)(1:lnblnk(SSMLCN(icn1))),' is',
+     &      UVALUEH,UVALUEU,UVALUED,' (partn)',UVALUEI
+          call edisp(itru,OUTS)
+        ENDIF
 
 C Also list optical properties for this construction (if it is
 C transparent and the optical property is likely to be known).
-        if(OPT(i)(1:4).eq.'OPAQ'.or.OPT(i)(1:11).eq.'USE GSLedit')then
+        if(OPT(i)(1:4).eq.'OPAQ'.or.OPT(i)(1:11).eq.'USE GSLedit'
+     &     .or.OPT(i)(1:3).eq.'N/A')then
           continue
         elseif(OPT(i)(1:7).eq.'UNKNOWN')then
           continue

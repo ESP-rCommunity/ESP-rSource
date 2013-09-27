@@ -56,8 +56,8 @@ C Passed parameter.
       COMMON/RAY6/LINSTY(MCON)
       common/appcols/mdispl,nifgrey,ncset,ngset,nzonec
 
-      COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
-      LOGICAL  ISTOK,CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
+      COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,CFCDBOK
+      LOGICAL  ISTOK,CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,CFCDBOK
       logical greyok,found
       integer ier1,ier2,ier3,ier4,ier5,ier6,ier7  ! traps
 

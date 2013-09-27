@@ -78,7 +78,7 @@ C Significant figure reporting limit (NSIGFIG).
 C Name of current application
       common/wkdtyp/idwe1,idwe2,wkd1,wkd2
       common/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
-      common/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
+      common/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,CFCDBOK
 
 C Uncertainty.
       COMMON/UA1/LUALF,LCNG(MNCNG),LLOC(MNIL)
@@ -109,7 +109,7 @@ C Uncertainty.
       character LAPROB*72 
       character bidirfile*72,bidirname*12
       LOGICAL unixok,concat
-      logical CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
+      logical CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,CFCDBOK
 
 C Initial assumptions.
       call ezero

@@ -3,12 +3,12 @@
 # CFC index for each surface
 0,0,0,0,0,0,1,2
    5   # layers in cfc type:  1
-# For each layer: normal solar optical properties - R_fr, R_bk, Tran.
-   0.071   0.071   0.775   # glazing
-   0.000   0.000   0.000   # gas gap
-   0.071   0.071   0.775   # glazing
-   0.000   0.000   0.000   # gas gap
-   0.850   0.850   0.000   # slat-type blind
+# For each layer: normal solar optical properties - R_fr, R_bk, Tran., (T_f_tot, T_b_tot, T_f_bd, T_b_bd)
+   0.071   0.071   0.775   0.000   0.000   0.000   0.000   # glazing
+   0.000   0.000   0.000   0.000   0.000   0.000   0.000   # gas gap
+   0.071   0.071   0.775   0.000   0.000   0.000   0.000   # glazing
+   0.000   0.000   0.000   0.000   0.000   0.000   0.000   # gas gap
+   0.850   0.850   0.000   0.000   0.000   0.000   0.000   # slat-type blind
 # For each layer: normal visible optical properties - R_fr, R_bk, Tran. CURRENTLY NOT USED
    0.080   0.080   0.881   # glazing
    0.000   0.000   0.000   # gas gap
@@ -22,14 +22,14 @@
    0.000   0.000   0.000   # gas gap
    0.850   0.850   0.000   # slat-type blind
    7   # layers in cfc type:  2
-# For each layer: normal solar optical properties - R_fr, R_bk, Tran.
-   0.071   0.071   0.775   # glazing
-   0.000   0.000   0.000   # gas gap
-   0.850   0.850   0.000   # slat-type blind
-   0.000   0.000   0.000   # gas gap
-   0.071   0.071   0.775   # glazing
-   0.000   0.000   0.000   # gas gap
-   0.071   0.071   0.775   # glazing
+# For each layer: normal solar optical properties - R_fr, R_bk, Tran., (T_f_tot, T_b_tot, T_f_bd, T_b_bd)
+   0.071   0.071   0.775   0.000   0.000   0.000   0.000   # glazing
+   0.000   0.000   0.000   0.000   0.000   0.000   0.000   # gas gap
+   0.850   0.850   0.000   0.000   0.000   0.000   0.000   # slat-type blind
+   0.000   0.000   0.000   0.000   0.000   0.000   0.000   # gas gap
+   0.071   0.071   0.775   0.000   0.000   0.000   0.000   # glazing
+   0.000   0.000   0.000   0.000   0.000   0.000   0.000   # gas gap
+   0.071   0.071   0.775   0.000   0.000   0.000   0.000   # glazing
 # For each layer: normal visible optical properties - R_fr, R_bk, Tran. CURRENTLY NOT USED
    0.080   0.080   0.881   # glazing
    0.000   0.000   0.000   # gas gap

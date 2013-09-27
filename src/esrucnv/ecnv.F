@@ -62,7 +62,7 @@ C ESP-r commons.
 C Significant figure reporting limit (NSIGFIG).
       common/SFIG/NSIGFIG
 
-      COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
+      COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,CFCDBOK
 
 C Path to SHOCC input files
 C bSHOCCed     - logical flag whether project has SHOCC input
@@ -78,7 +78,7 @@ C Name of current application
       common/APPNAME/cAppName
       character cAppName*12     
 
-      LOGICAL CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
+      LOGICAL CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,CFCDBOK
 
       character filname*144,filname2*144,filname1*144,repfile*40
       character inf*144,ouf*144

@@ -46,7 +46,7 @@ C #include "geometry.h"
 
       common/rpath/path
       COMMON/CCTLNM/CTLDOC,LCTLF
-      COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
+      COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,CFCDBOK
       common/recver/izver,ipver,iever
       character xfile*144,tg*1,delim*1
       common/exporttg/xfile,tg,delim
@@ -55,7 +55,7 @@ C #include "geometry.h"
       character longtmp*144
       CHARACTER MODE*4,OUTSTR*124,LCTLF*72,CTLDOC*248
       character outs*124
-      LOGICAL CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,XST,ok,dok
+      LOGICAL CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,XST,ok,dok,CFCDBOK
       logical dmdsok
 
 C For help messages

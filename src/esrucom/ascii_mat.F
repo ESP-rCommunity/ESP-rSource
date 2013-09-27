@@ -562,6 +562,7 @@ C current ASCII material database LASCI opened on unit IFA.
 #include "esprdbfile.h"
 #include "material.h"
 #include "espriou.h"
+#include "CFC_common.h"
       
       integer lnblnk  ! function definition
 
@@ -583,7 +584,7 @@ C Name of current application - only invoke editing if prj.
       CHARACTER DOIT*300
 
       DIMENSION VAL(19)
-      CHARACTER NDESC*72,OUTSTR*124,WORD*24
+      CHARACTER NDESC*72,OUTSTR*124,WORD*24, WORD4*4
       character WORD32*32,WORD248*248,LOUTSTR*248
       logical closemat1,closemat2
       character namelist*32,nametocheck*32  ! to check for duplicate names
@@ -592,6 +593,7 @@ C Name of current application - only invoke editing if prj.
       integer loop,ih  ! loop indices
       integer iln,iln2 ! length of name strings
       logical dupfound,concat,unixok,ok,dok
+      integer iCFCtype, ival
 
 C Open the ASCII file for reading.
       dupfound = .false.  ! assume no duplicate names
@@ -808,6 +810,7 @@ C the rest of the line.
               matgapares(matdbitems,3)=VAL(3)
             endif
           endif
+
         endif
 
         goto 41
@@ -1193,9 +1196,9 @@ C Parameters
       integer ier
 
       common/OUTIN/IUOUT,IUIN
-      common/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
+      common/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,CFCDBOK
 
-      logical CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
+      logical CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,CFCDBOK
       logical closemat1,closemat2
       character outs*248
       character lworking*144,fs*1
@@ -1293,3 +1296,533 @@ C Scan complete so return.
 
       end
 
+C ********** scancfcdb
+C scancfcdb scans any CFC layers database and fills common blocks. 
+C The new ascii materials db format is assumed.
+C If sucessful the material common blocks will be filled and ier
+C will be returned as zero.
+
+      subroutine scancfcdb(ier)
+#include "building.h"
+#include "esprdbfile.h"
+      
+      integer lnblnk  ! function definition
+
+C Parameters
+      integer ier
+
+      common/OUTIN/IUOUT,IUIN
+      common/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,CFCDBOK
+
+      logical CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,CFCDBOK
+      character outs*248
+      character lworking*144,fs*1
+      logical unixok
+
+C Set folder separator (fs) to \ or / as required.
+      call isunix(unixok)
+      if(unixok)then
+        fs = char(47)
+      else
+        fs = char(92)
+      endif
+
+C Check for ascii versions of the CFC layers database.
+      if(ipathcfc.eq.0.or.ipathcfc.eq.1)then
+        call rascicfc(ICFCDB,LCFCDB,IER)  ! try current ascii format
+      elseif(ipathcfc.eq.2)then
+        lndbp=lnblnk(standarddbpath)
+        write(lworking,'(3a)') standarddbpath(1:lndbp),fs,
+     &    LCFCDB(1:lnblnk(LCFCDB))
+        call rascicfc(ICFCDB,lworking,IER)  ! try current ascii format
+      endif
+      if(ier.ne.0)then
+        call usrmsg('No readable CFC layers database was found',
+     &                'or file was corrupt','W')
+        CFCDBOK=.FALSE.
+      elseif(ier.eq.0)then
+        CFCDBOK=.TRUE.
+      endif
+
+C Scan complete so return.
+      return
+
+      end
+
+C ************* rascicfc
+C rascicfc: Fills common cfcdatarray and cfcnamearray from
+C current ASCII CFC layers database LASCI opened on unit IFA. 
+      subroutine rascicfc(IFA,LASCI,IER)
+#include "building.h"
+#include "esprdbfile.h"
+#include "material.h"
+#include "espriou.h"
+#include "CFC_common.h"
+      
+      integer lnblnk  ! function definition
+
+C Parameters
+      integer IFA         ! ascii file unit number
+      character LASCI*144  ! ascii file name
+      integer IER         ! error return where zero is ok and -2 signals
+                          ! that the expected header was not found
+                          ! ier=-1 file not found, ier=-2 no classes
+      COMMON/OUTIN/IUOUT,IUIN
+      common/texted/tedlbl,teditor
+      character tedlbl*20,teditor*20
+
+C Name of current application - only invoke editing if prj.
+      common/APPNAME/cAppName
+      character cAppName*12
+
+      character tmode*8
+      CHARACTER DOIT*300
+
+      DIMENSION VAL(19)
+      CHARACTER NDESC*124,OUTSTR*124,WORD*24, WORD4*4
+      character WORD32*32,WORD248*248,LOUTSTR*248
+      character namelist*32,nametocheck*32  ! to check for duplicate names
+      character outs*132,lltmp*144,longtfile*144,longtfiledos*144
+      dimension namelist(6000)
+      integer loop,ih  ! loop indices
+      integer iln,iln2 ! length of name strings
+      logical dupfound,concat,unixok,ok,dok
+      integer iCFCtype, ival
+
+C Open the ASCII file for reading.
+      dupfound = .false.  ! assume no duplicate names
+      CALL EFOPSEQ(IFA,LASCI,1,IER)
+      IF(IER.NE.0)RETURN
+      write(currentfile,'(a)') LASCI(1:lnblnk(LASCI))
+
+C Proceed with header.
+      CALL STRIPC(IFA,OUTSTR,0,ND,1,'CFC layers header',IER)
+      IF(IER.NE.0)RETURN
+      K=0
+      CALL EGETW(OUTSTR,K,WORD,'-','*CFClayers',IER)
+      if(WORD(1:10).eq.'*CFClayers'.or.WORD(1:10).eq.'*cfclayers')then
+
+C Clear the CFC layers common blocks.
+        cfcdbitems = 0   ! reset the total number of items.
+        do ij=1,MGCL_CFC
+          cfccatname(ij)=' '
+          cfccatdoc(ij)=' '
+          cfccatitems(ij)=0
+        end do
+
+        cfcver = 1.1   ! set initial version of database.
+        CALL EGETWR(OUTSTR,K,VAL(1),1.0,1.2,'-','db cfc version',IER)
+        if(VAL(1).gt.1.0) cfcver = VAL(1)
+      else
+
+C Did not find the correct header so quit with error.
+        ier=-2
+        CALL ERPFREE(IFA,ISTAT)
+        return
+      endif
+
+  41  CALL LSTRIPC(IFA,LOUTSTR,0,ND,1,'header lines',IER)
+      IF(IER.NE.0)RETURN
+      K=0
+      CALL EGETW(LOUTSTR,K,WORD,'-','*date',IER)
+      if(WORD(1:5).eq.'*Date'.or.WORD(1:5).eq.'*date')then
+        CALL EGETRM(LOUTSTR,K,cfcdbdate,'W','date stamp',IER)
+        goto 41
+      elseif(WORD(1:4).eq.'*Doc'.or.WORD(1:4).eq.'*doc')then
+        CALL EGETRM(LOUTSTR,K,cfcdbdoc,'W','database doc',IER)
+
+C and the next line is number of classes...
+        CALL LSTRIPC(IFA,LOUTSTR,0,ND,1,'nb of classes',IER)
+        IF(IER.NE.0)RETURN
+        K=0
+        CALL EGETWI(LOUTSTR,K,cfccats,1,MGCL_CFC,
+     &               'W','nb of classes',IER)
+        goto 41
+      elseif(WORD(1:6).eq.'*Class'.or.WORD(1:6).eq.'*class')then
+
+C Get class index, nb of items and class name. Then read the next line
+C as documentation for the class. Untill the next *class line the
+C class index IC is used for subsequent items.
+        CALL EGETWI(LOUTSTR,K,IC,0,MGCL_CFC,'F','class',IER)
+        CALL EGETWI(LOUTSTR,K,NE,0,19,'-','no items',IER)
+        cfccatitems(IC)=NE
+        CALL EGETRM(LOUTSTR,K,NDESC,'-','description',IER)
+        write(cfccatname(IC),'(a)') NDESC(1:lnblnk(NDESC))
+
+        CALL LSTRIPC(IFA,LOUTSTR,0,ND,1,'class documentation',IER)
+        IF(IER.NE.0)RETURN
+        K=0
+        CALL EGETRM(LOUTSTR,K,WORD248,'W','categ doc',IER)
+        write(cfccatdoc(IC),'(a)') WORD248(1:lnblnk(WORD248))
+        goto 41
+      elseif(WORD(1:5).eq.'*Item'.or.WORD(1:5).eq.'*item')then
+
+        cfcdbitems=cfcdbitems+1   ! increment counter
+        CALL EGETP(LOUTSTR,K,WORD32,'-','item name',IER) ! name might contain a space
+
+C Record the name and then check and see if it is a duplicate.
+        lex=MIN0(lnblnk(WORD32),32)
+        write(namelist(cfcdbitems),'(a)') WORD32(1:lex)
+        write(nametocheck,'(a)') WORD32(1:lex)
+        iln=lnblnk(nametocheck)  ! length of name to test
+        if(cfcdbitems.gt.1)then
+          loop=cfcdbitems-1
+          do 43 ih=1,loop
+            iln2=lnblnk(namelist(ih))  ! length of prior name to test
+            if(iln.eq.iln2)then
+              if(namelist(ih)(1:iln2).eq.nametocheck(1:iln))then
+                write(outs,'(3a,i4,3a,i4,a)') 'Duplicate names ',
+     &            nametocheck(1:iln),' (',cfcdbitems,') vs ',
+     &            namelist(ih)(1:iln2),' (',ih,
+     &            '). CFC layer names must be unique!'
+                call edisp(iuout,outs)
+                dupfound = .true.  ! a duplicate name found
+              endif
+            else
+              continue
+            endif
+  43      continue
+        endif
+
+        write(cfcname(cfcdbitems),'(a)') WORD32(1:lnblnk(WORD32))
+        CALL EGETWI(LOUTSTR,K,cfcitmindex(cfcdbitems),1,MGIT_CFC,'F',
+     &    'item index',IER)
+        CALL EGETWI(LOUTSTR,K,cfccatindex(cfcdbitems),1,MGCL_CFC,'F',
+     &    'category index',IER)
+        CALL EGETRM(LOUTSTR,K,WORD248,'-','item doc',IER)
+        write(cfcdoc(cfcdbitems),'(a)') WORD248(1:lnblnk(WORD248))
+
+        CALL LSTRIPC(IFA,LOUTSTR,99,ND,1,'the raw data line',IER)
+        IF(IER.NE.0)RETURN
+        K=0
+        CALL EGETWR(LOUTSTR,K,VAL(1),0.,0.,'-','db con',IER)
+        CALL EGETWR(LOUTSTR,K,VAL(2),0.,0.,'-','db den',IER)
+        CALL EGETWR(LOUTSTR,K,VAL(3),0.,0.,'-','db sht',IER)
+        CALL EGETWR(LOUTSTR,K,VAL(4),0.,0.,'-','db def thick',IER)
+        cfcdbcon(cfcdbitems)=VAL(1)
+        cfcdbden(cfcdbitems)=VAL(2)
+        cfcdbsht(cfcdbitems)=VAL(3)
+        cfcdbthick(cfcdbitems)=VAL(4)
+
+        CALL EGETWI(LOUTSTR,K,iCFCtype,0,0,'-','shade type',IER)
+        CFCshdtp(cfcdbitems) = iCFCtype
+        if (CFCshdtp(cfcdbitems).eq.iGlazing)then
+            CALL EGETWR(LOUTSTR,K,VAL(2),0.,0.,'-',
+     &                    'sol refl out',IER)
+            CALL EGETWR(LOUTSTR,K,VAL(3),0.,0.,'-',
+     &                    'sol refl in',IER)
+            CALL EGETWR(LOUTSTR,K,VAL(4),0.,0.,'-',
+     &                    'sol tran dir',IER)
+            CALL EGETWR(LOUTSTR,K,VAL(5),0.,0.,'-','emiss out',IER)
+            CALL EGETWR(LOUTSTR,K,VAL(6),0.,0.,'-','emiss in',IER)
+            CALL EGETWR(LOUTSTR,K,VAL(7),0.,0.,'-','lw trans',IER)
+            CFCsolreflout(cfcdbitems) = VAL(2)
+            CFCsolreflin(cfcdbitems) = VAL(3)
+            CFCsoltrandir(cfcdbitems) =  VAL(4)
+            CFCemissout(cfcdbitems) = VAL(5)
+            CFCemissin(cfcdbitems) = VAL(6)
+            CFClwtran(cfcdbitems) = VAL(7)
+        else if(CFCshdtp(cfcdbitems).eq.iVenBlind)then
+            CALL EGETWR(LOUTSTR,K,VAL(2),0.,0.,'-',
+     &                    'sol refl out',IER)
+            CALL EGETWR(LOUTSTR,K,VAL(3),0.,0.,'-',
+     &                    'sol refl in',IER)
+            CALL EGETWR(LOUTSTR,K,VAL(4),0.,0.,'-','slat tran',IER)
+            CALL EGETWR(LOUTSTR,K,VAL(5),0.,0.,'-','emiss out',IER)
+            CALL EGETWR(LOUTSTR,K,VAL(6),0.,0.,'-','emiss in',IER)
+            CALL EGETWR(LOUTSTR,K,VAL(7),0.,0.,'-','lw tran',IER)
+            CALL EGETWR(LOUTSTR,K,VAL(8),0.,0.,'-',
+     &                    'slat width',IER)
+            CALL EGETWR(LOUTSTR,K,VAL(9),0.,0.,'-','slat space',IER)
+            CALL EGETWR(LOUTSTR,K,VAL(10),0.,0.,'-',
+     &                    'slat angle',IER)
+            CALL EGETW(LOUTSTR,K,WORD4,'-','slat orient',IER)
+            CALL EGETWR(LOUTSTR,K,VAL(11),0.,0.,'-',
+     &                    'slat crown',IER)
+            CALL EGETWR(LOUTSTR,K,VAL(12),0.,0.,'-',
+     &                    'slat wr ratio',IER)
+            CALL EGETWR(LOUTSTR,K,VAL(13),0.,0.,'-','slat thk',IER)
+            CFCsolreflout(cfcdbitems) = VAL(2)
+            CFCsolreflin(cfcdbitems) = VAL(3)
+            CFCslattran(cfcdbitems) = VAL(4)
+            CFCemissout(cfcdbitems) = VAL(5)
+            CFCemissin(cfcdbitems) = VAL(6)
+            CFClwtran(cfcdbitems) = VAL(7)
+            CFCslatwidth(cfcdbitems) = VAL(8)
+            CFCslatspacing(cfcdbitems) = VAL(9)
+            CFCslatangle(cfcdbitems) = VAL(10)
+            CFCslatorient(cfcdbitems) = WORD4
+            CFCslatcrown(cfcdbitems)  = VAL(11)
+            CFCslatwr(cfcdbitems) = VAL(12)
+            CFCslatthk(cfcdbitems) = VAL(13)
+        else if (CFCshdtp(cfcdbitems).eq.iPleatedDrape)then 
+            CALL EGETWR(LOUTSTR,K,VAL(2),0.,0.,'-',
+     &                    'sol refl out',IER)
+            CALL EGETWR(LOUTSTR,K,VAL(3),0.,0.,'-',
+     &                    'sol refl in',IER)
+            CALL EGETWR(LOUTSTR,K,VAL(4),0.,0.,'-',
+     &                    'sol tran dir',IER)
+            CALL EGETWR(LOUTSTR,K,VAL(5),0.,0.,'-',
+     &                    'sol tran tot out',IER)
+            CALL EGETWR(LOUTSTR,K,VAL(6),0.,0.,'-',
+     &                    'sol tran tot in',IER)
+            CALL EGETWR(LOUTSTR,K,VAL(7),0.,0.,'-',
+     &                    'pleat width',IER)
+            CALL EGETWR(LOUTSTR,K,VAL(8),0.,0.,'-',
+     &                    'pleat space',IER)
+            CFCsolreflout(cfcdbitems) = VAL(2)
+            CFCsolreflin(cfcdbitems) = VAL(3)
+            CFCsoltrandir(cfcdbitems) =  VAL(4)
+            CFCsoltrantotout(cfcdbitems) = VAL(5)
+            CFCsoltrantotin(cfcdbitems) = VAL(6)
+            CFCdrpwidth(cfcdbitems) = VAL(7)
+            CFCdrpspacing(cfcdbitems) = VAL(8)
+        else if (CFCshdtp(cfcdbitems).eq.iRollerBlind)then
+            CALL EGETWR(LOUTSTR,K,VAL(2),0.,0.,'-',
+     &                    'sol refl out',IER)
+            CALL EGETWR(LOUTSTR,K,VAL(3),0.,0.,'-',
+     &                    'sol refl in',IER)
+            CALL EGETWR(LOUTSTR,K,VAL(4),0.,0.,'-',
+     &                    'sol tran dir',IER)
+            CALL EGETWR(LOUTSTR,K,VAL(5),0.,0.,'-',
+     &                    'sol tran tot out',IER)
+            CALL EGETWR(LOUTSTR,K,VAL(6),0.,0.,'-',
+     &                    'sol tran tot in',IER)
+            CFCsolreflout(cfcdbitems) = VAL(2)
+            CFCsolreflin(cfcdbitems) = VAL(3)
+            CFCsoltrandir(cfcdbitems) =  VAL(4)
+            CFCsoltrantotout(cfcdbitems) = VAL(5)
+            CFCsoltrantotin(cfcdbitems) = VAL(6)
+        else if (CFCshdtp(cfcdbitems).eq.iInsectScreen)then
+            CALL EGETWR(LOUTSTR,K,VAL(2),0.,0.,'-',
+     &                    'sol refl out',IER)
+            CALL EGETWR(LOUTSTR,K,VAL(3),0.,0.,'-',
+     &                    'sol refl in',IER)
+            CALL EGETWR(LOUTSTR,K,VAL(4),0.,0.,'-',
+     &                    'sol tran dir',IER)
+            CALL EGETWR(LOUTSTR,K,VAL(5),0.,0.,'-',
+     &                    'sol tran tot out',IER)
+            CALL EGETWR(LOUTSTR,K,VAL(6),0.,0.,'-',
+     &                    'sol tran tot in',IER)
+            CALL EGETWR(LOUTSTR,K,VAL(7),0.,0.,'-','wire emiss',IER)
+            CALL EGETWR(LOUTSTR,K,VAL(8),0.,0.,'-','wire diam',IER)
+            CALL EGETWR(LOUTSTR,K,VAL(9),0.,0.,'-',
+     &                    'wire space',IER)
+            CFCsolreflout(cfcdbitems) = VAL(2)
+            CFCsolreflin(cfcdbitems) = VAL(3)
+            CFCsoltrandir(cfcdbitems) =  VAL(4)
+            CFCsoltrantotout(cfcdbitems) = VAL(5)
+            CFCsoltrantotin(cfcdbitems) = VAL(6)
+            CFCwireemiss(cfcdbitems) = VAL(7)
+            CFCwirediam(cfcdbitems) = VAL(8)
+            CFCwirespace(cfcdbitems) = VAL(9)
+        else if (CFCshdtp(cfcdbitems).eq.iGasGap)then
+            CALL EGETWI(LOUTSTR,K,ival,0,100,'-',
+     &           '% mole frac. air',IER)
+            CFCfillAir(cfcdbitems) = ival
+            CALL EGETWI(LOUTSTR,K,ival,0,100,'-',
+     &           '% mole frac. Ar',IER)
+            CFCfillAr(cfcdbitems) = ival
+            CALL EGETWI(LOUTSTR,K,ival,0,100,'-',
+     &           '% mole frac. Kr',IER)
+            CFCfillKr(cfcdbitems) = ival
+            CALL EGETWI(LOUTSTR,K,ival,0,100,'-',
+     &           '% mole frac. Xe',IER)
+            CFCfillXe(cfcdbitems)  = ival
+            CALL EGETWI(LOUTSTR,K,ival,0,100,'-',
+     &           '% mole frac. SF6',IER)
+            CFCfillSF6(cfcdbitems) = ival
+        end if
+
+        goto 41
+      elseif(WORD(1:4).eq.'*End'.or.WORD(1:4).eq.'*end')then
+
+C End of file marker.
+        CALL ERPFREE(IFA,ISTAT)
+      else
+
+C << did not find the correct header.... >>
+        write(word248,'(2a)') 'Unrecognised in line ',
+     &    outstr(1:lnblnk(outstr))
+        call edisp248(iuout,WORD248,100)
+        CALL ERPFREE(IFA,ISTAT)
+        ier=-2
+        return
+      endif
+
+C If it is a local CFC layers file and there has been a duplicate
+C name discovered and the application is 'prj' then offer the user
+C the option of editing the CFC layers files.
+      if(cAppName(1:3).eq.'prj')then
+        continue
+      else
+        return
+      endif
+      if(dupfound)then
+        if(ipathcfc.eq.0.or.ipathcfc.eq.1)then
+          dok=.false.
+          CALL ASKOK(
+     &      'Edit CFC layers file to address duplicate names?',
+     &      '(be sure to save file and re-open the model)',
+     &      OK,dok,nbhelp)
+          if(OK)then
+            lltmp=LASCI  ! file name to edit
+
+C Depending on whether Unix or DOS based setup paths. If DOS
+C then check for spaces in name and change / to \.
+            call isunix(unixok)
+            if(unixok)then
+              call addpath(lltmp,longtfile,concat)
+            else
+              call addpath(lltmp,longtfile,concat)
+              call cmdfiledos(longtfile,longtfiledos,ier)
+              longtfile=' '
+              longtfile=longtfiledos
+            endif
+            tmode='graph'
+            if(teditor(1:2).eq.'vi')tmode='text'
+            write(doit,'(a,2x,a)') teditor(1:lnblnk(teditor)),
+     &        longtfile(1:lnblnk(longtfile))
+            call runit(doit,tmode)
+          endif
+        endif
+      endif
+
+      RETURN
+    
+      END
+
+
+C ************* mkascicfc 
+C mkascicfc: creates ascii CFC layers file (version 1.1) based on
+C current information in common cfcdatarray, cfcnamearray.
+C ASCII file LASCI opened on unit IFA. 
+      subroutine mkascicfc(IFA,LASCI,IER)
+#include "building.h"
+#include "esprdbfile.h"
+#include "material.h"
+#include "CFC_common.h"
+      
+      integer lnblnk  ! function definition
+
+C Parameters
+      integer IFA         ! ascii file unit number
+      character LASCI*144  ! ascii file name
+      integer IER         ! error return where zero is ok
+
+      character tab*1,outs*248,outsd*248
+
+      integer cfccount,cfccatcount  ! used to increment arrays
+      integer lncat     ! for length of string
+      logical closemat1
+
+      tab=','       ! create tab separator.
+      cfccount=0    ! setup initial overall counter
+      cfccatcount=0 ! setup initial category counter
+
+C The ASCII file will be overwritten if it exists.
+      CALL EFOPSEQ(IFA,LASCI,4,IER)
+      IF(IER.NE.0)RETURN
+
+C Set closemat for the version.
+      call eclose(cfcver,1.1,0.001,closemat1)
+      
+      write(IFA,'(A,F3.1)') '*CFClayers ',cfcver
+      write(IFA,'(3A)') '*date',tab,cfcdbdate
+      write(IFA,'(2A)') '# CFC layers database defined in ',
+     &  LASCI(1:lnblnk(LASCI))
+      write(IFA,'(3A)') '*doc',tab,cfcdbdoc(1:lnblnk(cfcdbdoc))
+      write(IFA,'(i2,a)') cfccats,'  # number of classifications'
+      write(IFA,'(A)') '#  '
+      write(IFA,'(A)') '# CFC layers have the following attributes:'
+      write(IFA,'(2A)') '#  conductivity (W/(m-K), density (kg/m**3)',
+     &  ' specific heat (J/(kg-K)'
+      write(IFA,'(A)') '#  default thickness (mm)'
+      write(IFA,'(A)') '#  '
+
+C Loop through each classification (index I) and write out contents.
+      do 10 I=1,cfccats
+        cfccatcount=0 ! zero items in category counter
+        write(IFA,'(A)') 
+     &    '# class index |nb items|description (32 char)'
+        lncat=lnblnk(cfccatname(I))
+        write(IFA,'(2A,i2,a,i2,2a)') '*class',tab,I,tab,cfccatitems(I),
+     &    tab,cfccatname(I)(1:lncat)
+        lncat=lnblnk(cfccatdoc(I))
+        write(IFA,'(a)') cfccatdoc(I)(1:lncat)
+
+C Loop through each of the items (index J) to check if in the current
+C category.  This has the effect of packing the file and sorting the
+C common block arrays so that future reads are more efficient.
+        do 20 J=1,cfcdbitems
+          if(cfccatindex(J).eq.I)then
+            cfccatcount=cfccatcount+1 ! increment items in category counter
+            if(cfccatcount.gt.cfccatitems(I))then
+              call usrmsg('Number of items linked with a category ',
+     &                    'exceeds expected count.','W')
+            endif
+            cfccount=cfccount+1   ! increment counter
+            if(cfccount.gt.cfcdbitems)then
+              call usrmsg('Number of CFC layers scanned exceeds',
+     &                    'expected count for database.','W')
+            endif
+            lnna=lnblnk(cfcname(J))
+            lndo=lnblnk(cfcdoc(J))
+            write(IFA,'(4a,i4,a,i4,2a)') '*item',tab,
+     &        cfcname(J)(1:lnna),tab,cfcitmindex(J),
+     &        tab,cfccatindex(J),tab,cfcdoc(J)(1:lndo)
+
+            if(CFCshdtp(J).eq.iGasGap)then
+              write(outs,'(f13.3,3F10.3,6i4)')
+     &          cfcdbcon(J),cfcdbden(J),cfcdbsht(J),cfcdbthick(J),
+     &          CFCshdtp(J),
+     &          CFCfillAir(J),CFCfillAr(J),CFCfillKr(J),
+     &          CFCfillXe(J),CFCfillSF6(J)
+            elseif(CFCshdtp(J).eq.iGlazing)then
+              write(outs,'(f13.3,3F10.3,i2,6F8.3)')
+     &          cfcdbcon(J),cfcdbden(J),cfcdbsht(J),cfcdbthick(J),
+     &          CFCshdtp(J),
+     &          CFCsolreflout(J),CFCsolreflin(J),CFCsoltrandir(J),
+     &          CFCemissout(J),CFCemissin(J),CFClwtran(J)
+            elseif(CFCshdtp(J).eq.iVenBlind)then
+              write(outs,'(f13.3,3F10.3,i2,9F8.3,a5,3F8.3)')
+     &          cfcdbcon(J),cfcdbden(J),cfcdbsht(J),cfcdbthick(J),
+     &          CFCshdtp(J),
+     &          CFCsolreflout(J),CFCsolreflin(J),CFCslattran(J),
+     &          CFCemissout(J),CFCemissin(J),CFClwtran(J),
+     &          CFCslatwidth(J),CFCslatspacing(J),CFCslatangle(J),
+     &          CFCslatorient(J),CFCslatcrown(J),CFCslatwr(J),
+     &          CFCslatthk(J)
+            elseif(CFCshdtp(J).eq.iPleatedDrape)then
+              write(outs,'(f13.3,3F10.3,i2,7F8.3)')
+     &          cfcdbcon(J),cfcdbden(J),cfcdbsht(J),cfcdbthick(J),
+     &          CFCshdtp(J),
+     &          CFCsolreflout(J),CFCsolreflin(J),CFCsoltrandir(J),
+     &          CFCsoltrantotout(J),CFCsoltrantotin(J),
+     &          CFCdrpwidth(J),CFCdrpspacing(J)
+            elseif(CFCshdtp(J).eq.iRollerBlind)then
+              write(outs,'(f13.3,3F10.3,i2,5F8.3)')
+     &          cfcdbcon(J),cfcdbden(J),cfcdbsht(J),cfcdbthick(J),
+     &          CFCshdtp(J),
+     &          CFCsolreflout(J),CFCsolreflin(J),CFCsoltrandir(J),
+     &          CFCsoltrantotout(J),CFCsoltrantotin(J)
+            elseif(CFCshdtp(J).eq.iInsectScreen)then
+              write(outs,'(f13.3,3F10.3,i2,8F8.3)')
+     &          cfcdbcon(J),cfcdbden(J),cfcdbsht(J),cfcdbthick(J),
+     &          CFCshdtp(J),
+     &          CFCsolreflout(J),CFCsolreflin(J),CFCsoltrandir(J),
+     &          CFCsoltrantotout(J),CFCsoltrantotin(J),
+     &          CFCwireemiss(J),CFCwirediam(J),
+     &          CFCwirespace(J)
+            endif
+
+            call SDELIM(outs,outsd,'C',IW)
+            write(IFA,'(a)') outsd(1:lnblnk(outsd))
+
+          endif
+  20    continue
+  10  continue
+      write(IFA,'(a)') '*end'
+      CALL ERPFREE(IFA,ISTAT)
+      RETURN
+      end

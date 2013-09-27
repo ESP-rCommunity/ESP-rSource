@@ -544,6 +544,16 @@ C reflect whether the standard database folder is being used.
      &      LFMAT(1:lnblnk(LFMAT))
       endif
 
+C CFClayers database has the option of two different syntax to
+C reflect whether the standard database folder is being used.
+      if(ipathcfc.eq.0.or.ipathcfc.eq.1)then
+        WRITE(IFCFG,'(2A)',IOSTAT=IOS,ERR=2) '*cfcdb  ',
+     &      LCFCDB(1:lnblnk(LCFCDB))
+      elseif(ipathmat.eq.2)then
+        WRITE(IFCFG,'(2A)',IOSTAT=IOS,ERR=2) '*stdcfcdb  ',
+     &      LCFCDB(1:lnblnk(LCFCDB))
+      endif
+
 C MLC database has the option of two different syntax.
       if(ipathmul.eq.0.or.ipathmul.eq.1)then
         WRITE(IFCFG,'(2A)',IOSTAT=IOS,ERR=2) '*mlc  ',

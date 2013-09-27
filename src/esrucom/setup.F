@@ -30,8 +30,8 @@ C file setup.F includes facilities for display of dates, time and files.
       common/texted/tedlbl,teditor
       integer menuchw,igl,igr,igt,igb,igw,igwh
       common/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
-      common/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
-      logical OK,DOK,CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,concat
+      common/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,CFCDBOK
+      logical OK,DOK,CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,concat,CFCDBOK
       dimension ITEMS1(18)
       character LFIL*72,SFILE*72,H*72,tfile*72,longtfile*144
       character OUTSTR*124,ITEMS1*47,doit*248,tedlbl*20,teditor*20

@@ -121,7 +121,7 @@ C IEEE callback (Solaris)
       common/ray2/itdsp,itbnd,itept,itznm,itsnm,itvno,itorg,itsnr,
      &            itobs,ithls,ithlz,itgrd,grdis,itppsw
       common/ray3/modify,modlen,modbnd
-      common/fopened/cfgok,mldbok,matdbok,ctlok,optkok
+      common/fopened/cfgok,mldbok,matdbok,ctlok,optkok,CFCDBOK
       integer mon,isc,iyd
       common/contr/mon,isc(ms),iyd
       common/data1/ical,idifc,init
@@ -173,7 +173,7 @@ C Name of current application.
 
       logical silent,unixok,there,context,existing
       logical modify,modlen,modbnd,xst
-      logical ok,dok,cfgok,mldbok,matdbok,ctlok,optkok
+      logical ok,dok,cfgok,mldbok,matdbok,ctlok,optkok,CFCDBOK
       logical user_recalc  ! user requested recalculation
       logical loaded_existing  ! to signal working with existing shd file
       logical changed_existing  ! to signal existing shd file updated
@@ -235,6 +235,7 @@ C ifcfg  - system configuration file
       iairp=ifil+6    ! for alt files during cfg read
       IOPTDB=IFIL+7   ! set unit numbers for optical db.
       iuj=ifil+10
+      icfcdb=ifil+11  ! set unit number for CFClayers db
       cfgok=.false.
       lname='SHDTRN'
       zn='UNKNOWN'
@@ -1725,11 +1726,11 @@ C << update this to match changes in lfmat >>
 
       common/FILEP/IFIL
       common/OUTIN/IUOUT,IUIN
-      common/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
+      common/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,CFCDBOK
       common/ract/paction
       character paction*16
 
-      logical XST,CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
+      logical XST,CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,CFCDBOK
       logical closemat1,closemat2
       character LASCI*144,DFILE*144,fs*1
       character SOPT*12,outs*124,outs248*248,GDESCR*36

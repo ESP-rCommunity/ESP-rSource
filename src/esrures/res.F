@@ -129,7 +129,7 @@ C Significant figure reporting limit (NSIGFIG).
       common/SFIG/NSIGFIG
       COMMON/pres/iunitp  ! file unit for plant
 
-      COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
+      COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,CFCDBOK
       
 C Name of current application
       common/APPNAME/cAppName
@@ -154,7 +154,7 @@ C IEEE callback (Solaris)
       
       character cAppName*12      
       
-      LOGICAL        CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
+      LOGICAL        CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,CFCDBOK
 
       LOGICAL     spfileok,perok,tstepok,saveok,autook,exitok,startupok
       logical     unixok,there
@@ -474,6 +474,9 @@ C Assume materials input from IFIL+3.
 C Assume multilayer input from IFIL+9.
       IFMUL=IFIL+9
       write(LFMUL,'(a)') DFMUL(1:lnblnk(DFMUL))
+
+C Assume CFClayers input from IFIL+10.
+      icfcdb=ifil+10 
 
 C Initialise results library.
       CALL MORFIL(iftype)

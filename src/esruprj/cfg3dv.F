@@ -127,8 +127,8 @@ C VCOORD : X,Y & Z coordinates in model (via geometry.h).
 C NZNVER : number of vertices associated with each connection (via geometry.h).
 C NZJVN : topology of vertices associated with each connection (via geometry.h).
 
-      COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
-      LOGICAL  ISTOK,CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
+      COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,CFCDBOK
+      LOGICAL  ISTOK,CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,CFCDBOK
       logical greyok,found
 
       DIMENSION  AX(MPL),AY(MPL),AZ(MPL),IANXT(MPL)

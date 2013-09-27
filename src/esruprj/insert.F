@@ -69,8 +69,8 @@ C << what about including common zndata in this manipulation? >>
       COMMON/RAY3/MODIFY,MODLEN,MODBND
       COMMON/RAY5/ZCOG(MCOM,3),XMN,YMN,ZMN,XMX,YMX,ZMX
       LOGICAL MODIFY,MODLEN,MODBND,closex,closey
-      COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
-      LOGICAL     OK,CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
+      COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,CFCDBOK
+      LOGICAL     OK,CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,CFCDBOK
       logical same,clkok,found,DOK,DDOK,nameok,matchver
       logical newgeo  ! to use for testing if new/old geometry file.
       logical hasanotherchild ! true is surface is parent
