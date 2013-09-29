@@ -1,1 +1,0 @@
-This directory contains the model for the basic NCHE test: the model  includes a stratified tank, initially at 15°C; the tank is connected on its left side to a NCHE, and on the right side to nothing. The other side of the NCHE is connected to constant flowrate (0.02 kg/s), constant temperature (80°C) water source.

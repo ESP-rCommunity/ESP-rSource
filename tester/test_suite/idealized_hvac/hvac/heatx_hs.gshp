@@ -1,6 +1,0 @@
-3			                # GSHP system type
-21.9       26.7      0.391     966.0	# pipe size and properties
-967.8      3.99      0.7		# fluid properties
-10.1       12.5      41		        # Exterior conditions
-1.30       2.50   0.48E-06   0.84E-06   # Horizontal 2 pipe: Ks, Kw, Ds, Dw
-1.8        0.5                          # SD, BD

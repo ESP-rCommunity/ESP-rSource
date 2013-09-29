@@ -1,9 +1,0 @@
-# site obstruction file defined in hall.obs
-# associated with zone geometry file ../zone/hall.geo
-# and referenced by zone utility file ../zone/hall.utl
-  50.000   0.000    # latitude & longitude
-    1    # no obstruction blocks
-# origin  X   Y   Z   width  depth  height  angle  descr
-    0.000   -1.000    2.400   2.100   1.000   0.100    0.0  First         # block  1
-# grid opq X  opq Z
-    15    15
