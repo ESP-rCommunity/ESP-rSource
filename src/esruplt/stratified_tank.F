@@ -1883,8 +1883,11 @@ C-----------------------------------------------------------------------
 C---- There is no flow: nothing to do
       CALL ECLOSE(MdotHX,0.0,1.0E-15,CLOSEA)
       if (CLOSEA) then
-        TOutHX = TInHX
-        RETURN
+C Set flow to a low value to allow heat transfer between coil and wider tank volume to be calculated, 
+C to allow coil cooling when the coil flow is zero.
+         MDotHX=1E-6
+c        TOutHX = TInHX
+c        RETURN
       endif
 
 C---- Calculate the nodes where the HX is located
