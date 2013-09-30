@@ -1,0 +1,119 @@
+*Performance information file
+1 A.dat # All output in same file.
+# Group name and description.
+Maximum_Oper_temp description_here
+  5 # style
+*period
+   14    7    1 # Start day, month, hour
+   16    7   24 # Finish day, month, hour
+    1    0 # Output timesteps, averaging
+*filters
+   0   0   0  X # Occupancy, ROC, anchors
+*metlist
+*data     6    1    0    0    1    1    5    1
+*slab Resultant temperature (degC)    
+*glab T_1-V_a             
+*data     6    2    0    0    1    1    5    1
+*slab Resultant temperature (degC)    
+*glab T_1-V_b             
+*data     6    3    0    0    1    1    5    1
+*slab Resultant temperature (degC)    
+*glab T_1-V_c             
+*data     6    4    0    0    1    1    5    1
+*slab Resultant temperature (degC)    
+*glab T_2-V_a             
+*data     6    5    0    0    1    1    5    1
+*slab Resultant temperature (degC)    
+*glab T_2-V_b             
+*data     6    6    0    0    1    1    5    1
+*slab Resultant temperature (degC)    
+*glab T_2-V_c             
+*data     6    7    0    0    1    1    5    1
+*slab Resultant temperature (degC)    
+*glab T_3-V_a             
+*data     6    8    0    0    1    1    5    1
+*slab Resultant temperature (degC)    
+*glab T_3-V_b             
+*data     6    9    0    0    1    1    5    1
+*slab Resultant temperature (degC)    
+*glab T_3-V_c             
+*end 
+# --------------------------------- 
+# Group name and description.
+Minimum_Oper_temp description_here
+  5 # style
+*period
+   14    7    1 # Start day, month, hour
+   16    7   24 # Finish day, month, hour
+    1    0 # Output timesteps, averaging
+*filters
+   0   0   0  X # Occupancy, ROC, anchors
+*metlist
+*data     6    1    0    0    1    1    5    1
+*slab Resultant temperature (degC)    
+*glab T_1-V_a             
+*data     6    2    0    0    1    1    5    1
+*slab Resultant temperature (degC)    
+*glab T_1-V_b             
+*data     6    3    0    0    1    1    5    1
+*slab Resultant temperature (degC)    
+*glab T_1-V_c             
+*data     6    4    0    0    1    1    5    1
+*slab Resultant temperature (degC)    
+*glab T_2-V_a             
+*data     6    5    0    0    1    1    5    1
+*slab Resultant temperature (degC)    
+*glab T_2-V_b             
+*data     6    6    0    0    1    1    5    1
+*slab Resultant temperature (degC)    
+*glab T_2-V_c             
+*data     6    7    0    0    1    1    5    1
+*slab Resultant temperature (degC)    
+*glab T_3-V_a             
+*data     6    8    0    0    1    1    5    1
+*slab Resultant temperature (degC)    
+*glab T_3-V_b             
+*data     6    9    0    0    1    1    5    1
+*slab Resultant temperature (degC)    
+*glab T_3-V_c             
+*end 
+# --------------------------------- 
+# Group name and description.
+Average_Oper_temp description_here
+  5 # style
+*period
+   14    7    1 # Start day, month, hour
+   16    7   24 # Finish day, month, hour
+    1    0 # Output timesteps, averaging
+*filters
+   0   0   0  X # Occupancy, ROC, anchors
+*metlist
+*data     6    1    0    0    1    1    5    1
+*slab Resultant temperature (degC)    
+*glab T_1-V_a             
+*data     6    2    0    0    1    1    5    1
+*slab Resultant temperature (degC)    
+*glab T_1-V_b             
+*data     6    3    0    0    1    1    5    1
+*slab Resultant temperature (degC)    
+*glab T_1-V_c             
+*data     6    4    0    0    1    1    5    1
+*slab Resultant temperature (degC)    
+*glab T_2-V_a             
+*data     6    5    0    0    1    1    5    1
+*slab Resultant temperature (degC)    
+*glab T_2-V_b             
+*data     6    6    0    0    1    1    5    1
+*slab Resultant temperature (degC)    
+*glab T_2-V_c             
+*data     6    7    0    0    1    1    5    1
+*slab Resultant temperature (degC)    
+*glab T_3-V_a             
+*data     6    8    0    0    1    1    5    1
+*slab Resultant temperature (degC)    
+*glab T_3-V_b             
+*data     6    9    0    0    1    1    5    1
+*slab Resultant temperature (degC)    
+*glab T_3-V_c             
+*end 
+# --------------------------------- 

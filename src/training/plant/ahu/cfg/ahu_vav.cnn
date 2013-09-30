@@ -1,0 +1,30 @@
+*connections for ahu_vav
+*Date Mon Aug 27 15:48:56 2012
+     27   # number of connections
+   1   1   0   0   0  #    1 south in reception is External
+   1   2   0   0   0  #    2 east in reception is External
+   1   3   1   0   0  #    3 passage in reception >|< Identical environment
+   1   4   0   0   0  #    4 north in reception is External
+   1   5   3   2   2  #    5 part_a in reception >|< part_a in office
+   1   6   3   2   1  #    6 part_b in reception >|< part_b in office
+   1   7   0   0   0  #    7 west in reception is External
+   1   8   3   3   1  #    8 ceiling in reception >|< Ceiling_r in roof_space
+   1   9   2  20   0  #    9 floor in reception >|< Constant @ 20 dC &   0 W rad
+   1  10   0   0   0  #   10 glz_s in reception is External
+   1  11   1   0   0  #   11 door_p in reception >|< Identical environment
+   1  12   3   2   7  #   12 door_a in reception >|< door_a in office
+   1  13   0   0   0  #   13 door_w in reception is External
+   2   1   3   1   6  #   14 part_b in office >|< part_b in reception
+   2   2   3   1   5  #   15 part_a in office >|< part_a in reception
+   2   3   0   0   0  #   16 North_w in office is External
+   2   4   0   0   0  #   17 West_w in office is External
+   2   5   3   3   2  #   18 Ceiling in office >|< Ceiling_o in roof_space
+   2   6   4   1   0  #   19 Floor in office >|< ground profile 1
+   2   7   3   1  12  #   20 door_a in office >|< door_a in reception
+   3   1   3   1   8  #   21 Ceiling_r in roof_space >|< ceiling in reception
+   3   2   3   2   5  #   22 Ceiling_o in roof_space >|< Ceiling in office
+   3   3   0   0   0  #   23 s_roof in roof_space is External
+   3   4   2  12   0  #   24 Fire_wall in roof_space >|< Constant @ 12 dC &   0 W rad
+   3   5   0   0   0  #   25 North_wall in roof_space is External
+   3   6   0   0   0  #   26 Roof in roof_space is External
+   3   7   0   0   0  #   27 soffit in roof_space is External

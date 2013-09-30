@@ -1,0 +1,26 @@
+*Operations 2.1
+*date Mon Jun 24 08:04:04 2013  # latest file modification 
+# operations of plant defined in: 
+# ../zones/plant.opr
+infiltration is 1 ach all hours all days
+# control(no control of air flow  ), low mid & high setpoints 
+   0     0.000     0.000   100.000
+     1   # number of flow periods in day type: weekday     
+# start, stop, infil, ventil, source, data
+   0, 24,    1.000    0.000    0    0.000
+     1   # number of flow periods in day type: saturday    
+# start, stop, infil, ventil, source, data
+   0, 24,    1.000    0.000    0    0.000
+     1   # number of flow periods in day type: sunday      
+# start, stop, infil, ventil, source, data
+   0, 24,    1.000    0.000    0    0.000
+*casual
+no one is in the plant room and nothing happens in the plant room
+# casual user-label type-key-word slot attributes
+*type Occupt       people            1  0  0
+*type Lights       lighting          2  0  0
+*type Equipt       equipment         3  0  0
+*end_type 
+     0   # number of casual gains in day type: weekday     
+     0   # number of casual gains in day type: saturday    
+     0   # number of casual gains in day type: sunday      

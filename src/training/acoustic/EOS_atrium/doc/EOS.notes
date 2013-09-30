@@ -1,0 +1,100 @@
+Project notes for mid-inertia.cfg
+Description: as-built
+In folder: ./
+By: Stephane Citherlet
+Date: Thu Jan 24 08:16:09 2002
+For: 
+Project reference: EOS Building
+Notes: Acoustics assessment 
+_____________________________
+ 
+Room acoustics assessment
+=========================
+The example has been set up to present the room acoustics performance 
+assessment module (ACO) recently implemented in ESP-r. To run the module
+in this beta version, type:
+
+cd /usr/esru/esp-r/training/acoustic/EOS_atrium/cfg/
+
+then
+ 
+aco -file EOS_atrium.cfg
+
+in a separate window.
+
+Calculation method
+==================
+The calculation of the reverberation time applies the diffuse-sound
+field theory to calculate the reverberation time via three
+analytical equations: Sabine, Eyring and Millington approaches
+The calculation includes the absorption of the space boundaries,
+the occupants and furniture. Also included is the air absorption,
+which takes into account the air temperature and humidity from
+the thermal simulation.
+
+EOS building
+============
+The headquarters of Energie Ouest Suisse (EOS), a major electricity
+producing company in Switzerland had been widely monitored on
+the thermal and lighting side during the European project "Daylighting
+Design of European Building". 
+
+The building is characterised by two main daylighting features:
+
+- External lightshelves, installed on the South Western facade
+above a row of window office rooms.
+- A central atrium, providing daylight to the circulation zone,
+together with a secondary window located at the back of each office room.
+
+Here, only the atrium is modelled to present the room acoustics
+assessment that are now available in ESP-r, but it can also be
+used for thermal and lighting simulation.
+
+The EOS building uses a Superglass glazing for the facade windows with
+a U-value of 0.77 W/m2K. It is made of a double clear float glass
+with 2 low emissivity coatings tight in the gas gap. The internal
+windows (between the office and the atrium) are double clear float
+glass filled with air. There is no mechanical ventilation. The building
+is naturally ventilated through the atrium's roof and is simulated with
+a mass flow network.
+
+Acoustic absorption coefficients
+===============================
+The constructions absorption coefficients are defined in the file
+called EOS.bcf. In order to perform the reverberation time calculation,
+you should select this file in the ACO interface. It should hold, for
+each construction itemised in your project, a set of 17 absorption
+coefficients. Please see the EOS.bcf file for more information on its
+structure and on its utilisation.
+
+How to use this example
+=======================
+Please follow this procedure to perform the acoustic analysis.
+
+1) In the main menu of the Acoustic module, select the item
+   menu "b BCF" and enter : EOS.bcf 
+2) Select "c ACO" and then the default file: this loads information
+   on people and furniture.
+3) Then select the zone(s) to include (In this case, all the zones starting
+   with the letter F correspond to the central atrium)
+4) Finally, start the simulation with "k Start calculation"
+
+It is also possible to modify the calculation method by selecting
+"j Calculation method >>" and to rerun the calculation (step 6))
+
+Several options are available:
+- "e Frequency band": Switch between 1 octave and 1/3 octave band
+- "f Display >>": Switch between two numeric formats
+- "g Output": You can define which numerical information to display:
+  a) Only reverberation time
+  b) As a), plus the equivalent surface area
+  c) As b), plus the absorption coefficients of each surface
+- "h Air absorption >>" can be included or not. Although it should be
+always included, this option allows the evaluation of the effect of
+the air absorption
+- If air absorption is included, then "i Air properties:" will be available.
+In this case you can either define a constant air temperature and humidity,
+or pass a file with results from the thermal simulation
+
+For more enquiries, please contact Stephane Citherlet at 
+stephane@esru.strath.ac.uk

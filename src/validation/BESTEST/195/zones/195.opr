@@ -1,0 +1,15 @@
+*Operations 1.0
+*date Mon May  2 13:14:32 2005  # latest file modification 
+# operations of 195 defined in: 
+# 195.opr
+Nothing written yet.
+# control(no control of air flow  ), low mid & high setpoints 
+   0     0.000     0.000     0.000
+     0   # no Weekday flow periods
+     0   # no Saturday flow periods
+     0   # no Sunday flow periods 
+     0   # no Weekday casual gains 
+     0   # no Saturday casual gains 
+     0   # no Sunday casual gains 
+# Labels for gain types 
+ Occupt Lights Equipt

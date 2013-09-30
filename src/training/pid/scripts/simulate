@@ -1,0 +1,41 @@
+#! /bin/sh
+clear 
+echo
+echo  " Simulation underway - please wait"
+if [ -f $1 ]
+then
+rm $1 
+else
+echo
+fi
+if [ -f pp ]
+then
+\rm pp 
+else
+echo
+fi
+bps -mode text >> /dev/null <<~ 
+1
+../cfg/pid.cfg
+n
+d
+y
+2
+pid_res
+pp
+9 7
+10 7
+4
+2
+s
+y
+../ctl/pid.ctl.demo
+y
+y
+-
+f
+y
+~
+clear
+echo
+\rm pp

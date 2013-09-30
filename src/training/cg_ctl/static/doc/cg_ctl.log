@@ -1,0 +1,49 @@
+Lighting Control using Zone Casual Gain Control File
+
+The example problem comprises two rooms 4.0m wide, 5.0m deep
+and 3.0m high with window on the south wall.  The room on the
+left has control applied to the lighting system defined in the
+zone operation file.  The room on the right is identical, except
+that no control is applied to the lighting.  This allows
+the efficacy of lighting control and its effects to be tested. 
+
+In terms of lighting control ESP-r allows:
+
+[]   The definition of up to 4 lighting zones within
+     a  thermal zone, with a maximum of 9 sensors in
+     each.  A lighting zone represents a particular
+     lighting system.
+
+[]   Vertical (unobstructed) and horizontal external
+     illuminance sensors are available.
+
+[]   In the case of multiple lighting zones, the light
+     may be switched on the basis of the average or
+     positional sensed condition.
+
+[]   Illumination from adjacent spaces is derived
+     from ESP-r's shortwave radiation tracking. This
+     procedure takes into account the effects of blind
+     operation.
+
+[]   Provision has been made for user supplied daylight
+     factors to be used as required.
+
+[]   A range of sensor type exist to support coupled
+     daylighting and atrificial light switching.
+
+The control used in this exemplar divides the test
+room into two portions and is applicable between
+the 8h00 and 16h00 all days of the week.  The zone
+near the window uses the split-flux calculation method
+to determine daylight factors at four points and
+implements a proportional control for half the lighting
+casual gain.
+
+The second zone is at the rear of the zone and is
+based on a user defined daylight factor of 0.015
+associated with the glazing.  Control of this zone
+is based on a probability function.
+
+The ESP-r User Guide gives further information on
+the control of zone casual gains.

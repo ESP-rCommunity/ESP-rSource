@@ -1,0 +1,438 @@
+Synopsis
+ 
+Synopsis of the model Three offices with different window representations.
+defined in 3_windows_do.cfg generated on Wed Oct 17 10:37:18 2012. Notes
+associated with the model are in ../doc/3_windows.log
+ 
+The model is located at latitude   55.00 with a longitude difference of   0.00
+from the local time meridian. The year used in simulations is 2000 and
+weekends occur on Saturday and Sunday.
+The site exposure is typical city centre and the ground reflectance is 0.20.
+ 
+ 
+Simulationist name: not yet defined
+Simulationist telephone: not yet defined
+Simulationist address: not yet defined
+Simulationist city: not yet defined
+Simulationist postcode: not yet defined
+ 
+The climate is: ESP test climate and is held in: clm67 with hour centred solar
+data.
+ standard annual weather: clm67
+Calculated ground temp at 0.5m depth
+3.0888 4.3008 6.6610 8.8949 13.123 15.349 15.963 14.834 12.227 8.9770 5.7777 3.6649
+Calculated ground temp at 1.0m depth
+3.6630 4.5020 6.4738 8.4398 12.343 14.560 15.374 14.612 12.434 9.5459 6.5633 4.4524
+Calculated ground temp at 2.0m depth
+4.7588 5.0557 6.4004 7.8990 11.149 13.226 14.259 14.027 12.542 10.298 7.7730 5.7855
+Calculated ground temp at 4.0m depth
+6.4880 6.2779 6.8663 7.7174 9.8661 11.475 12.517 12.771 12.121 10.800 9.0880 7.5409
+ 
+Primary energy conversions (demand kWhr to primary kWhr) are:
+ heating   : 1.530
+ cooling   : 1.440
+ lighting  : 3.600
+ fans&pumps: 3.600
+ small powr: 3.600
+ hot water : 1.530
+ 
+ Emissions (g/kWh) co2  nox  sox
+ heating :  190.00   0.30   0.20
+ cooling :  612.00   2.06   7.57
+ lighting:  612.00   2.06   7.57
+ fan_pump:  612.00   2.06   7.57
+ small pr:  612.00   2.06   7.57
+ hot water: 190.00   0.30   0.20
+An Integrated Performance View is incomplete or missing.
+ 
+Databases associated with the model:
+ standard pressure distr: pressc.db1
+ standard materials     : material.db3.a
+ constructions          : ../dbs/office_vent_constr.db2
+ standard plant comp    : plantc.db1
+ standard event profiles: profiles.db1.a
+ standard optical prop  : optics.db1
+ standard UK NCM data   : SBEM.db1
+ standard mould isopleth: mould.db1
+ 
+ ____________________________________________________________
+ 
+The model includes ideal controls as follows:
+Control description:
+office environmental controls - base case heat 20 cool 24
+ 
+Zones control includes  1 functions.
+using zone controls only
+ 
+ The sensor for function  1 senses the temperature of the current zone.
+ The actuator for function  1 is air point of the current zone
+ The following day types are defined:
+weekday
+saturday
+sunday
+ Day type weekday control has  3 periods.
+ Per|Start|Sensing  |Actuating  | Control law description
+   1  0.00 db temp   > flux      basic control: max heating capacity 20000.0W min
+heating capacity 0.0W max cooling capacity 20000.0W min cooling capacity 0.0W. Heating
+setpoint 16.00C cooling setpoint 26.00C.
+   2  8.00 db temp   > flux      basic control: max heating capacity 20000.0W min
+heating capacity 0.0W max cooling capacity 20000.0W min cooling capacity 0.0W. Heating
+setpoint 20.00C cooling setpoint 24.00C.
+   3 18.00 db temp   > flux      basic control: max heating capacity 20000.0W min
+heating capacity 0.0W max cooling capacity 20000.0W min cooling capacity 0.0W. Heating
+setpoint 16.00C cooling setpoint 26.00C.
+ Day type saturday control has  3 periods.
+ Per|Start|Sensing  |Actuating  | Control law description
+   1  0.00 db temp   > flux      basic control: max heating capacity 20000.0W min
+heating capacity 0.0W max cooling capacity 20000.0W min cooling capacity 0.0W. Heating
+setpoint 16.00C cooling setpoint 26.00C.
+   2  9.00 db temp   > flux      basic control: max heating capacity 20000.0W min
+heating capacity 0.0W max cooling capacity 20000.0W min cooling capacity 0.0W. Heating
+setpoint 20.00C cooling setpoint 24.00C.
+   3 18.00 db temp   > flux      basic control: max heating capacity 20000.0W min
+heating capacity 0.0W max cooling capacity 20000.0W min cooling capacity 0.0W. Heating
+setpoint 16.00C cooling setpoint 26.00C.
+ Day type sunday control has  1 periods.
+ Per|Start|Sensing  |Actuating  | Control law description
+   1  0.00 db temp   > flux      basic control: max heating capacity 20000.0W min
+heating capacity 0.0W max cooling capacity 20000.0W min cooling capacity 0.0W. Heating
+setpoint 16.00C cooling setpoint 26.00C.
+ 
+ Zone to contol loop linkages:
+ zone ( 1) manager      << control  1
+ zone ( 2) manager_t_b  << control  1
+ zone ( 3) manager_bi   << control  1
+ ____________________________________________________________
+ 
+The model includes an air flow network.
+ 
+ Flow network description.
+ 
+   8 nodes,  10 components,  10 connections;     wind reduction =  1.000
+   # Node      Fluid   Node Type           Height Temperature    Data_1       Data_2
+   1 manager      air   internal & unknown    1.5000   20.000     (-)     0.000  vol   40.500
+   2 manager_t_b  air   internal & unknown    1.5000   20.000     (-)     0.000  vol   40.500
+   3 manager_bi   air   internal & unknown    1.5000   20.000     (-)     0.000  vol   40.501
+   4 adjacent     air   internal & unknown    0.0500 manager      (-)     0.000  vol   10.000
+   5 g_ext        air   boundary & wind ind   1.9500   0.0000     coef    6.000  azim 180.000
+   6 low_glz_ext  air   boundary & wind ind   1.1500   0.0000     coef    5.000  azim 180.000
+   7 hi_glz_ext   air   boundary & wind ind   2.7500   0.0000     coef    5.000  azim 180.000
+   8 bi_glz       air   boundary & wind ind   1.9500   0.0000     coef    5.000  azim 180.000
+ 
+ Component    Type C+ L+ Description
+ 
+ win_1.68      110  2  0 Specific air flow opening           m = rho.f(A,dP)
+ Fluid  1.0 opening area (m)  1.680
+ 
+ win_low.84    110  2  0 Specific air flow opening           m = rho.f(A,dP)
+ Fluid  1.0 opening area (m)  0.840
+ 
+ hi_win.84     110  2  0 Specific air flow opening           m = rho.f(A,dP)
+ Fluid  1.0 opening area (m)  0.840
+ 
+ bi_win        130  5  0 Specific air flow door              m = rho.f(W,H,dP)
+ Fluid  1.0 width  0.880 height 1.880 ref ht  0.600 discharge factor 0.600
+ 
+ door_cra      120  3  0 Specific air flow crack             m = rho.f(W,L,dP)
+ Fluid  1.0 crack width (m)  0.0050 crack length (m)  0.800
+ 
+ door_crb      120  3  0 Specific air flow crack             m = rho.f(W,L,dP)
+ Fluid  1.0 crack width (m)  0.0050 crack length (m)  0.800
+ 
+ door_crc      120  3  0 Specific air flow crack             m = rho.f(W,L,dP)
+ Fluid  1.0 crack width (m)  0.0050 crack length (m)  0.800
+ 
+ win_cb        120  3  0 Specific air flow crack             m = rho.f(W,L,dP)
+ Fluid  1.0 crack width (m)  0.0050 crack length (m)  2.000
+ 
+ win_cc        120  3  0 Specific air flow crack             m = rho.f(W,L,dP)
+ Fluid  1.0 crack width (m)  0.0050 crack length (m)  2.000
+ 
+ win_ca[1]     120  3  0 Specific air flow crack             m = rho.f(W,L,dP)
+ Fluid  1.0 crack width (m)  0.0050 crack length (m)  2.000
+ 
+    # +Node         dHght   -Node         dHght   Component       Z @+    Z @-
+    1 g_ext         0.000   manager      -0.500   win_ca[1]       1.950   1.000
+    2 low_glz_ext   0.000   manager_t_b  -0.500   win_cb          1.150   1.000
+    3 bi_glz        0.000   manager_bi   -0.500   win_cc          1.950   1.000
+    4 g_ext         0.000   manager       0.450   win_1.68        1.950   1.950
+    5 low_glz_ext   0.000   manager_t_b  -0.350   win_low.84      1.150   1.150
+    6 hi_glz_ext    0.000   manager_t_b   1.250   hi_win.84       2.750   2.750
+    7 bi_glz        0.000   manager_bi    0.450   bi_win          1.950   1.950
+    8 adjacent      0.000   manager      -1.450   door_cra        0.050   0.050
+    9 adjacent      0.000   manager_t_b  -1.450   door_crb        0.050   0.050
+   10 adjacent      0.000   manager_bi   -1.450   door_crc        0.050   0.050
+thermal zone to air flow node mapping:
+thermal zone -> air flow node
+manager      -> manager
+manager_t_b  -> manager_t_b
+manager_bi   -> manager_bi
+ 
+ 
+ ____________________________________________________________
+ 
+ID Zone         Volume|          Surface
+   Name         m^3   | No. Opaque  Transp  ~Floor
+ 1 manager        40.5  10    61.6    10.4    13.5  manager describes cellular office
+ 2 manager_t_b    40.5  12    61.6    10.4    13.5  manager_t_b describes an office with top and bottom openings
+ 3 manager_bi     40.5  11    61.6    10.4    13.5  manager_bi describes an office with bi-directional opening
+   all           122.   33    185.     31.     41.
+ 
+ 
+ Zone manager ( 1) is composed of 10 surfaces and 22 vertices.
+ It encloses a volume of 40.5m^3 of space, with a total surface
+ area of 72.0m^2 & approx floor area of 13.5m^2
+ manager describes cellular office
+ There is 9.0000m2 of exposed surface area, 9.0000m2 of which is vertical.
+ Outside walls are 27.259 % of floor area & average U of 0.461 & UA of 1.6958
+ Glazing is 39.407 % of floor & 59.111 % facade with average U of 2.811 & UA of 14.953
+ 
+ A summary of the surfaces in manager( 1) follows:
+ 
+ Sur| Area  |Azim|Elev| surface    |    geometry       | construction |environment
+    | m^2   |deg |deg | name       |optical|locat| use | name         |other side
+  1  13.5     90.   0. pt_general   OPAQUE   VERT -     gyp_gyp_ptn  ||< identical environment
+  2  0.960   360.   0. part_frame   OPAQUE   VERT -     insul_frame  ||< identical environment
+  3  3.00      0.   0. door         OPAQUE   VERT -     door         ||< identical environment
+  4  13.5    270.   0. pt_other     OPAQUE   VERT -     gyp_gyp_ptn  ||< identical environment
+  5  13.5      0.  90. ceiling      OPAQUE   CEIL -     ceiling      ||< identical environment
+  6  13.5      0. -90. floor        OPAQUE   FLOR -     susp_flr_re  ||< identical environment
+  7  2.70    180.   0. spandral     OPAQUE   VERT -     insul_frame  ||< external
+  8  0.980   180.   0. frame        OPAQUE   VERT -     insul_frame  ||< external
+  9  5.32    180.   0. glazing      DCF7671_ VERT -     dbl_glz      ||< external
+ 10  5.04      0.   0. part_glaz    DCF7671_ VERT -     dbl_glz      ||< identical environment
+ 
+ 
+ All surfaces will receive diffuse insolation (if shading not calculated).
+ No shading analysis requested.
+ No insolation analysis requested.
+ 
+ 
+ 
+ Ventilation & infiltration is assessed via network analysis
+ and the associated network node is: manager
+ 
+Notes:
+manager a has some diversity of occupancy  lights at 10W/m2 and small
+power on weekdays at 5W/m2
+ 
+Daytype   Gain Type    Period Sensible  Latent     Radiant    Convec
+          No.  label   Hours  Magn.(W)  Magn.(W)   Fraction   Fraction
+weekday     1 OccuptW    0- 7      0.0      0.0       0.50       0.50
+weekday     2 OccuptW    7- 8     20.0     10.0       0.60       0.40
+weekday     3 OccuptW    8- 9     60.0     30.0       0.60       0.40
+weekday     4 OccuptW    9-12    100.0     50.0       0.60       0.40
+weekday     5 OccuptW   12-14     65.0     32.5       0.60       0.40
+weekday     6 OccuptW   14-17    100.0     50.0       0.60       0.40
+weekday     7 OccuptW   17-24      0.0      0.0       0.50       0.50
+weekday     8 LightsWm2  0- 8      0.0      0.0       0.50       0.50
+weekday     9 LightsWm2  8-18     10.0      0.0       0.30       0.70
+weekday    10 LightsWm2 18-24      0.0      0.0       0.50       0.50
+weekday    11 EquiptWm2  0- 8      0.0      0.0       0.50       0.50
+weekday    12 EquiptWm2  8-18      5.0      0.0       0.40       0.60
+weekday    13 EquiptWm2 18-24      0.0      0.0       0.50       0.50
+saturday    1 OccuptW    0- 7      0.0      0.0       0.50       0.50
+saturday    2 OccuptW    7- 8     20.0     10.0       0.50       0.50
+saturday    3 OccuptW    8- 9     60.0     30.0       0.50       0.50
+saturday    4 OccuptW    9-12    100.0     50.0       0.50       0.50
+saturday    5 OccuptW   12-14     65.0     32.5       0.50       0.50
+saturday    6 OccuptW   14-17    100.0     50.0       0.50       0.50
+saturday    7 OccuptW   17-24      0.0      0.0       0.50       0.50
+saturday    8 LightsWm2  0- 8      0.0      0.0       0.50       0.50
+saturday    9 LightsWm2  8-12     10.0      0.0       0.30       0.70
+saturday   10 LightsWm2 12-24      0.0      0.0       0.50       0.50
+saturday   11 EquiptWm2  0-24      0.0      0.0       0.50       0.50
+sunday      1 LightsWm2  0-24      0.0      0.0       0.50       0.50
+sunday      2 EquiptWm2  0-24      0.0      0.0       0.50       0.50
+ 
+ ____________________________________________________________
+ 
+ Zone manager_t_b ( 2) is composed of 12 surfaces and 26 vertices.
+ It encloses a volume of 40.5m^3 of space, with a total surface
+ area of 72.0m^2 & approx floor area of 13.5m^2
+ manager_t_b describes an office with top and bottom openings
+ There is 9.0000m2 of exposed surface area, 9.0000m2 of which is vertical.
+ Outside walls are 27.259 % of floor area & average U of 0.280 & UA of 1.0293
+ Glazing is 39.407 % of floor & 59.111 % facade with average U of 2.811 & UA of 14.953
+ 
+ A summary of the surfaces in manager_t_b( 2) follows:
+ 
+ Sur| Area  |Azim|Elev| surface    |    geometry       | construction |environment
+    | m^2   |deg |deg | name       |optical|locat| use | name         |other side
+  1  13.5     90.   0. pt_general   OPAQUE   VERT -     gyp_gyp_ptn  ||< identical environment
+  2  0.960   360.   0. part_frame   OPAQUE   VERT -     insul_frame  ||< identical environment
+  3  3.00      0.   0. door         OPAQUE   VERT -     door         ||< identical environment
+  4  13.5    270.   0. pt_other     OPAQUE   VERT -     gyp_gyp_ptn  ||< identical environment
+  5  13.5      0.  90. ceiling      OPAQUE   CEIL -     ceiling      ||< identical environment
+  6  13.5      0. -90. floor        OPAQUE   FLOR -     susp_flr_re  ||< identical environment
+  7  2.70    180.   0. spandral     OPAQUE   VERT -     extern_wall  ||< external
+  8  0.980   180.   0. frame        OPAQUE   VERT -     insul_frame  ||< external
+  9  3.64    180.   0. glazing      DCF7671_ VERT -     dbl_glz      ||< external
+ 10  5.04      0.   0. part_glaz    DCF7671_ VERT -     dbl_glz      ||< identical environment
+ 11  0.840   180.   0. low_glz      DCF7671_ VERT -     dbl_glz      ||< external
+ 12  0.840   180.   0. high_glz     DCF7671_ VERT -     dbl_glz      ||< external
+ 
+ 
+ All surfaces will receive diffuse insolation (if shading not calculated).
+ No shading analysis requested.
+ No insolation analysis requested.
+ 
+ 
+ 
+ Uses same operations as zone manager
+ 
+ ____________________________________________________________
+ 
+ Zone manager_bi ( 3) is composed of 11 surfaces and 24 vertices.
+ It encloses a volume of 40.5m^3 of space, with a total surface
+ area of 72.0m^2 & approx floor area of 13.5m^2
+ manager_bi describes an office with bi-directional opening
+ There is 9.0000m2 of exposed surface area, 9.0000m2 of which is vertical.
+ Outside walls are 27.259 % of floor area & average U of 0.280 & UA of 1.0293
+ Glazing is 39.407 % of floor & 59.111 % facade with average U of 2.811 & UA of 14.953
+ 
+ A summary of the surfaces in manager_bi( 3) follows:
+ 
+ Sur| Area  |Azim|Elev| surface    |    geometry       | construction |environment
+    | m^2   |deg |deg | name       |optical|locat| use | name         |other side
+  1  13.5     90.   0. pt_general   OPAQUE   VERT -     gyp_gyp_ptn  ||< identical environment
+  2  0.960   360.   0. part_frame   OPAQUE   VERT -     insul_frame  ||< identical environment
+  3  3.00      0.   0. door         OPAQUE   VERT -     door         ||< identical environment
+  4  13.5    270.   0. pt_other     OPAQUE   VERT -     gyp_gyp_ptn  ||< identical environment
+  5  13.5      0.  90. ceiling      OPAQUE   CEIL -     ceiling      ||< identical environment
+  6  13.5      0. -90. floor        OPAQUE   FLOR -     susp_flr_re  ||< identical environment
+  7  2.70    180.   0. spandral     OPAQUE   VERT -     extern_wall  ||< external
+  8  0.980   180.   0. frame        OPAQUE   VERT -     insul_frame  ||< external
+  9  3.64    180.   0. glazing      DCF7671_ VERT -     dbl_glz      ||< external
+ 10  5.04      0.   0. part_glaz    DCF7671_ VERT -     dbl_glz      ||< identical environment
+ 11  1.68    180.   0. bi-glaz      DCF7671_ VERT -     dbl_glz      ||< external
+ 
+ 
+ All surfaces will receive diffuse insolation (if shading not calculated).
+ No shading analysis requested.
+ No insolation analysis requested.
+ 
+ 
+ 
+ Uses same operations as zone manager
+ 
+ ____________________________________________________________
+ 
+ Project floor area is 40.500m2, wall area is 11.040m2, window area is 15.960m2.
+ Sloped roof area is 0.00m2, flat roof area is 0.00m2, skylight area is 0.00m2.
+ In contact with ground 0.00m2.
+ There is 27.000m2 of outside surface area, 27.000m2 of which is vertical.
+ 
+ Outside walls are 27.259 % of floor area & average U of 0.340 & UA of 3.7544 & max MLC thickness 0.412
+ Glazing is 39.407 % of floor & 59.111 % facade with average U of 2.811 & UA of 44.858
+ 
+ ____________________________________________________________
+ Multi-layer constructions used:
+ 
+ Details of opaque construction: extern_wall and overall thickness  0.412
+ 
+ Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
+      |db  |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
+ Ext     6  100.0     0.960  2000.   650. 0.90 0.70    25.  0.10 Lt brown brick : Light brown brick
+    2  211  150.0     0.040   250.   840. 0.90 0.30     4.  3.75 glasswool : Glasswool (generic)
+    3    0   50.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
+    4   22  100.0     0.240   750.  1000. 0.90 0.65    10.  0.42 aerated conc block : Aerated concrete block
+ Int   108   12.0     0.190   950.   840. 0.91 0.22    11.  0.06 white gypboard : White painted Gypboard
+ ISO 6946 U values (horiz/upward/downward heat flow)=  0.214  0.215  0.212 (partition)  0.210
+ 
+Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  0.21
+ External surface admittance Y=  2.85  w=  2.24 decrement factor f=  0.74  phi=  0.99 surface factor f=  0.74  phi=  0.99
+ Partition admittance Y=  2.87  w=  2.19 surface factor f=  0.73  phi=  0.98
+ Total area of extern_wall is      5.40
+ 
+ Details of opaque construction: insul_frame and overall thickness  0.088
+ 
+ Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
+      |db  |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
+ Ext    46    4.0   210.000  2700.   880. 0.82 0.72 19200.  0.00 grey cotd alum : Grey coated aluminium
+    2  281   80.0     0.040    12.   840. 0.90 0.65    30.  2.00 glass fibre quilt : Glass Fibre Quilt
+ Int    46    4.0   210.000  2700.   880. 0.82 0.72 19200.  0.00 grey cotd alum : Grey coated aluminium
+ ISO 6946 U values (horiz/upward/downward heat flow)=  0.461  0.467  0.452 (partition)  0.442
+ 
+Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  0.46
+ External surface admittance Y=  0.81  w=  3.41 decrement factor f=  0.94  phi=  0.31 surface factor f=  0.94  phi=  0.31
+ Partition admittance Y=  0.70  w=  5.68 surface factor f=  1.00  phi=  0.32
+ Total area of insul_frame is      8.52
+ 
+ Details of opaque construction: door and overall thickness  0.025
+ 
+ Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
+      |db  |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
+    1   69   25.0     0.190   700.  2390. 0.90 0.65    12.  0.13 oak : Oak (radial cut)
+ ISO 6946 U values (horiz/upward/downward heat flow)=  3.316  3.682  2.928 (partition)  2.554
+ 
+Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  3.21
+ External surface admittance Y=  3.33  w=  0.61 decrement factor f=  0.61  phi=  0.40 surface factor f=  0.61  phi=  0.40
+ Partition admittance Y=  1.21  w=  5.38 surface factor f=  0.99  phi=  0.56
+ Total area of door is      9.00
+ 
+ Details of transparent construction: dbl_glz with DCF7671_06nb optics and overall thickness  0.024
+ 
+ Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
+      |db  |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
+ Ext   242    6.0     0.760  2710.   837. 0.83 0.05 19200.  0.01 plate glass : Plate glass with placeholder single layer optics
+    2    0   12.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
+ Int   242    6.0     0.760  2710.   837. 0.83 0.05 19200.  0.01 plate glass : Plate glass with placeholder single layer optics
+ ISO 6946 U values (horiz/upward/downward heat flow)=  2.811  3.069  2.527 (partition)  2.243
+ 
+Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  2.73
+ External surface admittance Y=  2.81  w=  0.63 decrement factor f=  0.67  phi=  0.31 surface factor f=  0.67  phi=  0.31
+ Partition admittance Y=  0.82  w=  5.64 surface factor f=  1.00  phi=  0.38
+ 
+ Clear float 76/71,     6mm, no blind: with id of: DCF7671_06nb
+ with 3 layers [including air gaps] and visible trn: 0.76
+ Direct transmission @ 0, 40, 55, 70, 80 deg
+   0.611 0.583 0.534 0.384 0.170
+ Layer| absorption @ 0, 40, 55, 70, 80 deg
+    1  0.157 0.172 0.185 0.201 0.202
+    2  0.001 0.002 0.003 0.004 0.005
+    3  0.117 0.124 0.127 0.112 0.077
+ Total area of dbl_glz is     31.08
+ 
+ Details of opaque construction: susp_flr_re linked to susp_floor & with overall thickness  0.219
+ 
+ Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
+      |db  |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
+ Ext    42    4.0    50.000  7800.   502. 0.12 0.20 19200.  0.00 steel : Steel
+    2   32  140.0     1.400  2100.   653. 0.90 0.65    19.  0.10 heavy mix concrete : Heavy mix concrete
+    3    0   50.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
+    4   67   19.0     0.150   800.  2093. 0.91 0.65    96.  0.13 chipboard : Chipboard
+ Int   221    6.0     0.060   186.  1360. 0.90 0.60    10.  0.10 Wilton : Wilton weave wool carpet
+ ISO 6946 U values (horiz/upward/downward heat flow)=  1.500  1.570  1.415 (partition)  1.321
+ 
+Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  1.48
+ External surface admittance Y=  2.11  w=  1.43 decrement factor f=  0.77  phi=  0.46 surface factor f=  0.77  phi=  0.46
+ Partition admittance Y=  2.46  w=  2.85 surface factor f=  0.81  phi=  0.95
+ Total area of susp_flr_re is     40.50
+ 
+ Details of opaque construction: ceiling linked to ceiling_rev & with overall thickness  0.110
+ 
+ Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
+      |db  |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
+ Ext   211  100.0     0.040   250.   840. 0.90 0.30     4.  2.50 glasswool : Glasswool (generic)
+ Int   150   10.0     0.030   290.  2000. 0.90 0.60     8.  0.33 ceiling mineral : Ceiling acoustic tile (mineral fibre based)
+ ISO 6946 U values (horiz/upward/downward heat flow)=  0.333  0.336  0.329 (partition)  0.323
+ 
+Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  0.33
+ External surface admittance Y=  0.82  w=  3.17 decrement factor f=  0.94  phi=  0.30 surface factor f=  0.94  phi=  0.30
+ Partition admittance Y=  0.92  w=  4.35 surface factor f=  0.96  phi=  0.40
+ Total area of ceiling is     40.50
+ 
+ Details of opaque construction: gyp_gyp_ptn and overall thickness  0.074
+ 
+ Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
+      |db  |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
+ Ext   108   12.0     0.190   950.   840. 0.91 0.22    11.  0.06 white gypboard : White painted Gypboard
+    2    0   50.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
+ Int   108   12.0     0.190   950.   840. 0.91 0.22    11.  0.06 white gypboard : White painted Gypboard
+ ISO 6946 U values (horiz/upward/downward heat flow)=  2.144  2.292  1.975 (partition)  1.798
+ 
+Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  2.10
+ External surface admittance Y=  2.15  w=  0.62 decrement factor f=  0.75  phi=  0.21 surface factor f=  0.75  phi=  0.21
+ Partition admittance Y=  0.61  w=  5.69 surface factor f=  1.00  phi=  0.28
+ Total area of gyp_gyp_ptn is     81.00

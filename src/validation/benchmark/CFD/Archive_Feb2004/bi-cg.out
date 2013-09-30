@@ -1,0 +1,133 @@
+ 
+ ESP-r Domain Flow Solver: Version 3.8a of April 2003. Copyright 2001 Energy
+ Systems Research Unit, University of Strathclyde, Glasgow, Scotland.
+ 
+ the input file is: bi-cg.dfd
+ 
+A CFD domain has been described for: 
+Description is: Floor Heating 1, a test to compare default and bi-cg solvers
+The current domain is orthogonal with:
+   5 X regions
+   5 Y regions
+   7 Z regions
+X Region   1 cells:   5 size:  2.50 power law coef: 1.000
+X Region   2 cells:   5 size:  2.50 power law coef: 1.000
+X Region   3 cells:   5 size:  2.50 power law coef: 1.000
+X Region   4 cells:   5 size:  2.50 power law coef: 1.000
+X Region   5 cells:   8 size:  4.00 power law coef: 1.000
+  Totals            28       14.00
+Y Region   1 cells:   5 size:  1.00 power law coef: 1.000
+Y Region   2 cells:   1 size:  0.20 power law coef: 1.000
+Y Region   3 cells: -12 size:  4.20 power law coef: 1.250
+Y Region   4 cells:   1 size:  0.20 power law coef: 1.000
+Y Region   5 cells: -10 size:  3.00 power law coef: 1.250
+  Totals            29        8.60
+  
+Z Region  1 cells:  -9 size:  2.86 power law coef: 1.200
+Z Region  2 cells:   1 size:  0.20 power law coef: 1.000
+Z Region  3 cells:   3 size:  0.90 power law coef: 1.250
+Z Region  4 cells:  -5 size:  1.79 power law coef: 1.300
+Z Region  5 cells:   1 size:  0.20 power law coef: 1.000
+Z Region  6 cells:   4 size:  0.90 power law coef: 1.100
+Z Region  7 cells:  -7 size:  2.19 power law coef: 1.150
+  Totals            30        9.04
+Volume Open1        is of type South , cells:   3   5   1   1   5   5
+Volume Open2        is of type South , cells:   8  10   1   1   5   5
+Volume Open3        is of type South , cells:  13  15   1   1   5   5
+Volume Open4        is of type South , cells:  18  20   1   1   5   5
+Volume Open5        is of type South , cells:   3   5   1   1  25  25
+Volume Open6        is of type South , cells:   8  10   1   1  25  25
+Volume Open7        is of type South , cells:  13  15   1   1  25  25
+Volume Open8        is of type South , cells:  18  20   1   1  25  25
+Volume Wall9        is of type South , cells:   1   2   1   1   1  30
+Volume Wall10       is of type South , cells:   3   5   1   1   1   4
+Volume Wall11       is of type South , cells:   3   5   1   1   6  24
+Volume Wall12       is of type South , cells:   3   5   1   1  26  30
+Volume Wall13       is of type South , cells:   6   7   1   1   1  30
+Volume Wall14       is of type South , cells:   8  10   1   1   1   4
+Volume Wall15       is of type South , cells:   8  10   1   1   6  24
+Volume Wall16       is of type South , cells:   8  10   1   1  26  30
+  
+Volume Wall17       is of type South , cells:  11  12   1   1   1  30
+Volume Wall18       is of type South , cells:  13  15   1   1   1   4
+Volume Wall19       is of type South , cells:  13  15   1   1   6  24
+Volume Wall20       is of type South , cells:  13  15   1   1  26  30
+Volume Wall21       is of type South , cells:  16  17   1   1   1  30
+Volume Wall22       is of type South , cells:  18  20   1   1   1   4
+Volume Wall23       is of type South , cells:  18  20   1   1   6  24
+Volume Wall24       is of type South , cells:  18  20   1   1  26  30
+Volume Wall25       is of type South , cells:  21  28   1   1   1  30
+Volume Wall26       is of type West  , cells:   1   1   1  29   1  30
+Volume Wall27       is of type East  , cells:  28  28   1  29   1  30
+Volume Wall28       is of type North , cells:   1  28  29  29   1  30
+Volume Wall29       is of type Low   , cells:   1  28   1  29   1   1
+Volume Wall30       is of type High  , cells:   1  28   1  29  30  30
+Solving P, init val   0.0000
+Solving Vu, init val   0.0010
+Solving Vv, init val   0.0010
+Solving Vw, init val   0.0010
+Solving k, init val   0.0090
+Solving e, init val   0.0050
+ 
+WARNING: in :   7500  1.0000E-04 No
+ the max iter value (7500) > normal maximum 1000!
+  
+
+  dfs:  a Problem definition     ____________________
+        b Grid visualisation    e Results analysis   
+         ____________________    ____________________
+        c Simulation toggles    ? Help               
+        d Initiate simulation   - Quit               
+
+  dfs:?>  
+ What kind of simulation is?  a) Steady, b) Transient ? 
+ Initiating CFD sim with following parameters:
+   U-momentum active
+   V-momentum active
+   W-momentum active
+   k-epsilon turb model active
+   Convergence criteria:  7500  9.99999975E-05
+   Relaxation factors:   0.75  0.75  0.75  0.25  1.  0.5  0.5  1.  1.
+
+ DFS - Monitoring of residuals & variables
+
+   ITER        U         V         W         P         T         K       Eps.
+
+Monitoring will start shortly...
+Solution converged.
+ Warning: Simulation complete.
+
+  dfs:  a Problem definition     ____________________
+        b Grid visualisation    e Results analysis   
+         ____________________    ____________________
+        c Simulation toggles    ? Help               
+        d Initiate simulation   - Quit               
+
+  dfs:?> 
+  results: a ASCII format file
+           b PHOTON analysis
+           c MATLAB analysis
+           d TECPLOT format file
+           e Flow visualization
+           - Exit
+
+  results:?> (currently: TECend.DAT)
+TECPLOT file name?  The existing string (TECend.DAT) will be used.
+  
+
+  dfs:  a Problem definition     ____________________
+        b Grid visualisation    e Results analysis   
+         ____________________    ____________________
+        c Simulation toggles    ? Help               
+        d Initiate simulation   - Quit               
+
+  dfs:?>  
+ Delete results file ? [Y]es [N]o ?
+ 
+ You must make a choice!
+ 
+ Delete results file ? [Y]es [N]o ?
+ 
+ Delete temporary file ? [Y]es [N]o ?
+ End of cfd analysis.
+ Are you sure you want to quit? [Y]es [N]o ?

@@ -1,0 +1,114 @@
+Project notes for ahu_hum.cfg
+Description: Base case three zone model with mass flow
+In directory: /usr2/esru
+By: esru
+Date: Thu Feb 13 04:04:57 1997
+For: 
+Project reference: 
+Notes: 
+_____________________________
+
+ *********** YEAR-ROUND AHU PLANT & CONTROL SYSTEM. *********** 
+
+This directory includes a demonstration on the modelling and simulation
+of a combined plant and building system representing a small office
+unit (or similarly occupied space) with associated air-conditioning plant.
+
+** Building Model:
+The building model is described by three zones, 
+each representing a distinct area of the building. 
+The three zones being: 1-reception, 2-office, 3-roofspace.
+ 
+** Plant Network:
+The plant network augments the building model and consists of 14 
+components describing the major items of plant of a typical 
+year-round, single zone, air-conditioning system. The components 
+required to create the system are:
+    * pre-heat and re-heat cooling coils
+    * cooling coil
+    * supply and return fans
+    * air washer
+    * mixing box
+    * conduit
+The system layout is shown in the diagram: ahu_hu.gif
+
+The preheat and re-heat coils are standard flux control heating 
+coils taken from the ESP-r plant component database, the maximum 
+output of each coil is 3.5kW. The cooling coil is also a standard 
+flux control model with a maximum capacity of 1kW. If a greater 
+level of granularity is required in the simulation the described 
+components can be replaced by the more detailed 3-node models also
+available in the plant component database, where a fluid flow rate 
+to the heater/chiller unit is controlled as opposed to flux.
+
+The intake and extract in the network provide a constant volume 
+flow rate of 0.2m^3/s to and from the conditioned space, this 
+corresponds to an air change rate of 5 ACH. The supply air has 
+a constant fresh air content of 20%, with the remainder made up from 
+re-circulated zone air, both air-streams meet in the mixing box 
+component.
+
+** Control System
+The reception had control on the air temperature and humidity; the 
+other two zones (office and roof) had no control regime imposed, i.e. 
+they were allowed to 'free-float'. Four control loops were imposed 
+on the plant system:- pre-heating control; re-heating control; 
+chiller control; and humidifier control.
+Control System Details:
+
+ * PRE-HEAT CONTROL.
+Sensor Location:       pre-heater exit. 
+Sensed Variable:       dry bulb temperature.
+Actuator Location:     pre-heater.
+Actuated Variable:     flux.
+Control Law:           proportional.
+Proportional Band.     2 deg C.
+Output Range:          0.0 -> 3.5 kW.
+Control Period:        07.00 -> 18.00
+
+ * HUMIDIFIER CONTROL.
+Sensor Location:       humidifier exit.
+Sensed Variable:       dry bulb temperature.
+Actuator Location:     humidifier.
+Actuated Variable:     moisture injection.
+Control Law:           proportional.
+Proportional Band.     12% RH.
+Output Range:          0.001 -> 0.005 kg/kg.da.
+Control Period:        07.00 -> 18.00
+
+ * COOLING COIL CONTROL.
+Sensor Location:       coiling coil exit.
+Sensed Variable:       dry bulb temperature.
+Actuator Location:     coiling coil.
+Actuated Variable:     flux.
+Control Law:           proportional.
+Proportional Band.     2 deg C.
+Output Range:          0.0 -> 1.0 kW.
+Control Period:        07.00 -> 18.00
+
+ * RE-HEAT CONTROL.
+Sensor Location:       re-heater exit.
+Sensed Variable:       dry bulb temperature.
+Actuator Location:     re-heater.
+Actuated Variable:     flux.
+Control Law:           proportional.
+Proportional Band.     2 deg C.
+Output Range:          0.0 -> 3.5 kW.
+Control Period:        07.00 -> 18.00
+
+Several other control strategies are available for use with the humidity
+controller plant network;
+
+Control Strategy               File                            Script
+-----------------              ------                          --------
+Basic on/off control of      ../ctl/onoff.ctl                  demo1
+the re-heat coil.
+
+Basic proportional control
+of humidity and temperature. ../ctl/P.ctl                      demo2
+
+Proportional with integral
+control of temperature.      ../ctl/PI.ctl                     demo3
+
+When running the simulations without the use of the scripts it is advisable
+to keep the time-step small (<3min) to ensure the stability of the solution. 

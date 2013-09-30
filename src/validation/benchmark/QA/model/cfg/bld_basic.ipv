@@ -1,0 +1,40 @@
+*IPV,4,0,i3t   
+*title,Basic 3 zone model. version 3 of ipv    
+*version,Version bld_basic_c more metrics        
+*date,Tue Mar 11 13:44:13 2008
+*synop,General test model for use in training courses
+*images,0
+*simulations,3
+*period,9,15,bld_basic winter run                    
+*period,65,71,bld_basic transition run                
+*period,192,198,bld_basic summer run                    
+*display_days,3,10,66,193
+season multipliers: heating|cooling|lights|fans|smallp|DWH
+*win1,1.000,1.000,1.000,1.000,1.000,1.000
+*spr,1.000,1.000,1.000,1.000,1.000,1.000
+*sum,1.000,1.000,1.000,1.000,1.000,1.000
+*aut,1.000,1.000,1.000,1.000,1.000,1.000
+*win2,1.000,1.000,1.000,1.000,1.000,1.000
+*metrics,7
+# metric data: metric index, nb zones, 2 miscel , floor area
+*metric_1,6,0,0,2,64.0,1.000,1.000,comfort,-,Resultant T (degC)
+  1,2
+*metric_2,1,1,0,2,64.0,1.000,1.000,ZndbT,-,Zone db T (degC)
+  1,2
+*metric_3,13,0,0,1,16.0,1.000,1.000,RH,-,Zone rel humid (%)
+  2
+*metric_4,11,0,0,1,48.0,1.000,1.000,Inf,-,Infiltration (W)
+  1
+*metric_5,15,0,0,1,48.0,1.000,1.000,TotCasG,-,Total casual gn (W)
+  1
+*metric_6,38,0,0,2,64.0,1.000,1.000,SolinEx,-,Solar via outside(W)
+  1,2
+*metric_7,40,0,0,2,64.0,1.000,1.000,TSolabs,-,Solar absorbed (W)
+  1,2
+*demand_sets, 1  # number of energy demand sets
+# nb. zones, 2 miscel, aggregate_toggle floor area, scaling descrip
+*energy_1,3,0,0,0,145.0,1.000,zones
+  1,2,3
+# non-specific demands: occup/light/sm pwr/fans/pumps/lifts/dhw
+*dmds,0,0,0,0,0,0,0
+*end

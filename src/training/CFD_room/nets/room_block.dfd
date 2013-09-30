@@ -1,0 +1,88 @@
+*DFS V2 # Zone air movement description.
+*conflation 0  # conflation type (not applicable to cfd-only)
+*title ...                                                                     
+# user supplied notes for this domain
+*thermal_geom
+*vrts    1   2   4   5
+# Ze is 0 if orthogonal
+*regions    3   3   3   0  # regions in X Y Zw Ze directions
+# Negative cell number enables symetrical gridding.
+*xregion
+ -10   3.750   1.100 # no cells, length, power law coeff
+   1   0.200   1.000 # no cells, length, power law coeff
+   1   0.250   1.000 # no cells, length, power law coeff
+*yregion
+  -4   1.650   1.100 # no cells, length, power law coeff
+   1   0.300   1.000 # no cells, length, power law coeff
+  -4   1.650   1.100 # no cells, length, power law coeff
+*zwregion
+  -6   2.050   1.100 # no cells, length, power law coeff
+   1   0.200   1.000 # no cells, length, power law coeff
+  -3   0.750   1.000 # no cells, length, power law coeff
+# Define the volumes for the CFD domain.
+*volumes   17
+# name  type  Ii If Ji Jf Ki Kf
+Inlet        West     1   1   5   5   7   7
+Outlet       High    11  11   5   5  10  10
+West_low     West     1   1   1   9   1   6
+West_mid1    West     1   1   1   4   7   7
+West_mid2    West     1   1   6   9   7   7
+West_top     West     1   1   1   9   8  10
+South        South    1  12   1   1   1  10
+North        North    1  12   9   9   1  10
+East         East    12  12   1   9   1  10
+Floor        Low      1  12   1   9   1   1
+Ceiling1     High     1  10   1   9  10  10
+Ceiling2     High    11  11   1   4  10  10
+Ceiling3     High    11  11   6   9  10  10
+Ceiling4     High    12  12   1   9  10  10
+CO2          Source   3   3   5   5   4   4
+Source16     Source   8   8   5   5   4   4
+Block        Block    1   2   5   5   4   4
+# Solid boundary conditions.
+*solids 
+West_low     Temp  20.00
+West_mid1    Temp  20.00
+West_mid2    Temp  20.00
+West_top     Temp  20.00
+South        Temp  20.00
+North        Temp  20.00
+East         Temp  20.00
+Floor        Temp  20.00
+Ceiling1     Temp  20.00
+Ceiling2     Temp  20.00
+Ceiling3     Temp  20.00
+Ceiling4     Temp  20.00
+# Air flow boundary conditions.
+*air_flow 
+Inlet        Velocity  0.010 Temp 18.000 Hum  0.000 Area  0.000 Ang  0.000  0.000
+Outlet       Velocity -0.010 Temp 20.000 Hum  0.000 Area  0.000 Ang  0.000  0.000
+# Internal sources.
+*sources
+CO2          Hum   0.0 CO2 0.0000153737 Heat       0.000
+Source16     Hum   1.0 CO2 0.0000000000 Heat       0.000
+# Blockages.
+*blockages
+Block        Heat       0.000
+*solution_methods
+Turbulence 3 # MIT
+Buoyancy 1 # full calculation
+# Equations to be solved:
+*solution_equations
+#  Type  Initial value  Relaxation type and factor
+Pressure    0.000 Linear  1.000
+Vel U  0.100E-02 Linear  0.500
+Vel V  0.100E-02 Linear  0.500
+Vel W  0.100E-02 Linear  0.100
+Temp   20.000 Linear  0.500
+Ted  0.500E-02 Linear  0.700    
+Epd  0.500E-02 Linear  0.700    
+Conc    0.500000E-02 Linear    0.700000    
+Hum    0.500000E-02 Linear    0.700000    
+Lmage  0.05  Linear 0.6
+# Iteration control.
+*iteration 
+   500  0.1000E-01 No
+*monitor    6   4   5  CFD.mon
+*reint  NO
+*svf  1  # frequency of results writing

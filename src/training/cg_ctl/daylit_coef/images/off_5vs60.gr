@@ -1,0 +1,1026 @@
+# ACE/gr parameter file
+#
+#
+@page 5
+@page inout 5
+@link page off
+@with g0
+@g0 on
+@g0 label off
+@g0 hidden false
+@g0 type xy
+@g0 autoscale type AUTO
+@g0 fixedpoint off
+@g0 fixedpoint type 0
+@g0 fixedpoint xy 0.000000, 0.000000
+@g0 fixedpoint format general general
+@g0 fixedpoint prec 6, 6
+@    default linestyle 1
+@    default linewidth 1
+@    default color 1
+@    default char size 1.000000
+@    default font 2
+@    default font source 0
+@    default symbol size 1.000000
+@    world xmin 7
+@    world xmax 19
+@    world ymin 0
+@    world ymax 500
+@    view xmin 0.150000
+@    view xmax 0.850000
+@    view ymin 0.150000
+@    view ymax 0.850000
+@    title ""
+@    title font 4
+@    title size 1.500000
+@    title color 1
+@    title linewidth 1
+@    subtitle ""
+@    subtitle font 4
+@    subtitle size 1.000000
+@    subtitle color 1
+@    subtitle linewidth 1
+@    s0 type xy
+@    s0 symbol 18
+@    s0 symbol size 1.000000
+@    s0 symbol fill 0
+@    s0 symbol center false
+@    s0 symbol char 0
+@    s0 skip 0
+@    s0 linestyle 0
+@    s0 linewidth 1
+@    s0 color 2
+@    s0 fill 0
+@    s0 fill with color
+@    s0 fill color 0
+@    s0 fill pattern 0
+@    s0 errorbar type BOTH
+@    s0 errorbar length 1.000000
+@    s0 errorbar linewidth 1
+@    s0 errorbar linestyle 1
+@    s0 errorbar riser on
+@    s0 errorbar riser linewidth 1
+@    s0 errorbar riser linestyle 1
+@    s0 xyz 0.000000, 0.000000
+@    s0 comment "of_5vs60.gr"
+@    s1 type xy
+@    s1 symbol 18
+@    s1 symbol size 1.000000
+@    s1 symbol fill 0
+@    s1 symbol center false
+@    s1 symbol char 0
+@    s1 skip 0
+@    s1 linestyle 0
+@    s1 linewidth 3
+@    s1 color 1
+@    s1 fill 0
+@    s1 fill with color
+@    s1 fill color 0
+@    s1 fill pattern 0
+@    s1 errorbar type BOTH
+@    s1 errorbar length 1.000000
+@    s1 errorbar linewidth 1
+@    s1 errorbar linestyle 1
+@    s1 errorbar riser on
+@    s1 errorbar riser linewidth 1
+@    s1 errorbar riser linestyle 1
+@    s1 xyz 0.000000, 0.000000
+@    s1 comment "of_5vs60.gr"
+@    xaxis  tick on
+@    xaxis  tick major 1
+@    xaxis  tick minor 1
+@    xaxis  tick offsetx 0.000000
+@    xaxis  tick offsety 0.000000
+@    xaxis  tick alt off
+@    xaxis  tick min 0
+@    xaxis  tick max 1
+@    xaxis  label "Time (h)"
+@    xaxis  label layout para
+@    xaxis  label place auto
+@    xaxis  label char size 1.000000
+@    xaxis  label font 1
+@    xaxis  label color 1
+@    xaxis  label linewidth 1
+@    xaxis  ticklabel on
+@    xaxis  ticklabel type auto
+@    xaxis  ticklabel prec 1
+@    xaxis  ticklabel format decimal
+@    xaxis  ticklabel layout horizontal
+@    xaxis  ticklabel skip 0
+@    xaxis  ticklabel stagger 0
+@    xaxis  ticklabel op bottom
+@    xaxis  ticklabel sign normal
+@    xaxis  ticklabel start type auto
+@    xaxis  ticklabel start 0.000000
+@    xaxis  ticklabel stop type auto
+@    xaxis  ticklabel stop 0.000000
+@    xaxis  ticklabel char size 1.000000
+@    xaxis  ticklabel font 4
+@    xaxis  ticklabel color 1
+@    xaxis  ticklabel linewidth 1
+@    xaxis  tick major on
+@    xaxis  tick minor on
+@    xaxis  tick default 6
+@    xaxis  tick in
+@    xaxis  tick major color 1
+@    xaxis  tick major linewidth 1
+@    xaxis  tick major linestyle 1
+@    xaxis  tick minor color 1
+@    xaxis  tick minor linewidth 1
+@    xaxis  tick minor linestyle 1
+@    xaxis  tick log off
+@    xaxis  tick size 1.000000
+@    xaxis  tick minor size 0.500000
+@    xaxis  bar off
+@    xaxis  bar color 1
+@    xaxis  bar linestyle 1
+@    xaxis  bar linewidth 1
+@    xaxis  tick major grid off
+@    xaxis  tick minor grid off
+@    xaxis  tick op both
+@    xaxis  tick type auto
+@    xaxis  tick spec 0
+@    yaxis  tick on
+@    yaxis  tick major 100
+@    yaxis  tick minor 50
+@    yaxis  tick offsetx 0.000000
+@    yaxis  tick offsety 0.000000
+@    yaxis  tick alt off
+@    yaxis  tick min 0
+@    yaxis  tick max 1
+@    yaxis  label "Instantaneous power demand (W)"
+@    yaxis  label layout para
+@    yaxis  label place auto
+@    yaxis  label char size 1.000000
+@    yaxis  label font 1
+@    yaxis  label color 1
+@    yaxis  label linewidth 1
+@    yaxis  ticklabel on
+@    yaxis  ticklabel type auto
+@    yaxis  ticklabel prec 1
+@    yaxis  ticklabel format decimal
+@    yaxis  ticklabel layout horizontal
+@    yaxis  ticklabel skip 0
+@    yaxis  ticklabel stagger 0
+@    yaxis  ticklabel op left
+@    yaxis  ticklabel sign normal
+@    yaxis  ticklabel start type auto
+@    yaxis  ticklabel start 0.000000
+@    yaxis  ticklabel stop type auto
+@    yaxis  ticklabel stop 0.000000
+@    yaxis  ticklabel char size 1.000000
+@    yaxis  ticklabel font 4
+@    yaxis  ticklabel color 1
+@    yaxis  ticklabel linewidth 1
+@    yaxis  tick major on
+@    yaxis  tick minor on
+@    yaxis  tick default 6
+@    yaxis  tick in
+@    yaxis  tick major color 1
+@    yaxis  tick major linewidth 1
+@    yaxis  tick major linestyle 1
+@    yaxis  tick minor color 1
+@    yaxis  tick minor linewidth 1
+@    yaxis  tick minor linestyle 1
+@    yaxis  tick log off
+@    yaxis  tick size 1.000000
+@    yaxis  tick minor size 0.500000
+@    yaxis  bar off
+@    yaxis  bar color 1
+@    yaxis  bar linestyle 1
+@    yaxis  bar linewidth 1
+@    yaxis  tick major grid off
+@    yaxis  tick minor grid off
+@    yaxis  tick op both
+@    yaxis  tick type auto
+@    yaxis  tick spec 0
+@    altxaxis  tick on
+@    altxaxis  tick major 0.5
+@    altxaxis  tick minor 0.25
+@    altxaxis  tick offsetx 0.000000
+@    altxaxis  tick offsety 0.000000
+@    altxaxis  tick alt off
+@    altxaxis  tick min 0
+@    altxaxis  tick max 1
+@    altxaxis  label ""
+@    altxaxis  label layout para
+@    altxaxis  label place auto
+@    altxaxis  label char size 1.000000
+@    altxaxis  label font 4
+@    altxaxis  label color 1
+@    altxaxis  label linewidth 1
+@    altxaxis  ticklabel off
+@    altxaxis  ticklabel type auto
+@    altxaxis  ticklabel prec 1
+@    altxaxis  ticklabel format decimal
+@    altxaxis  ticklabel layout horizontal
+@    altxaxis  ticklabel skip 0
+@    altxaxis  ticklabel stagger 0
+@    altxaxis  ticklabel op bottom
+@    altxaxis  ticklabel sign normal
+@    altxaxis  ticklabel start type auto
+@    altxaxis  ticklabel start 0.000000
+@    altxaxis  ticklabel stop type auto
+@    altxaxis  ticklabel stop 0.000000
+@    altxaxis  ticklabel char size 1.000000
+@    altxaxis  ticklabel font 4
+@    altxaxis  ticklabel color 1
+@    altxaxis  ticklabel linewidth 1
+@    altxaxis  tick major off
+@    altxaxis  tick minor on
+@    altxaxis  tick default 6
+@    altxaxis  tick in
+@    altxaxis  tick major color 1
+@    altxaxis  tick major linewidth 1
+@    altxaxis  tick major linestyle 1
+@    altxaxis  tick minor color 1
+@    altxaxis  tick minor linewidth 1
+@    altxaxis  tick minor linestyle 1
+@    altxaxis  tick log off
+@    altxaxis  tick size 1.000000
+@    altxaxis  tick minor size 0.500000
+@    altxaxis  bar off
+@    altxaxis  bar color 1
+@    altxaxis  bar linestyle 1
+@    altxaxis  bar linewidth 1
+@    altxaxis  tick major grid off
+@    altxaxis  tick minor grid off
+@    altxaxis  tick op both
+@    altxaxis  tick type auto
+@    altxaxis  tick spec 0
+@    altyaxis  tick on
+@    altyaxis  tick major 0.5
+@    altyaxis  tick minor 0.25
+@    altyaxis  tick offsetx 0.000000
+@    altyaxis  tick offsety 0.000000
+@    altyaxis  tick alt off
+@    altyaxis  tick min 0
+@    altyaxis  tick max 1
+@    altyaxis  label ""
+@    altyaxis  label layout para
+@    altyaxis  label place auto
+@    altyaxis  label char size 1.000000
+@    altyaxis  label font 4
+@    altyaxis  label color 1
+@    altyaxis  label linewidth 1
+@    altyaxis  ticklabel off
+@    altyaxis  ticklabel type auto
+@    altyaxis  ticklabel prec 1
+@    altyaxis  ticklabel format decimal
+@    altyaxis  ticklabel layout horizontal
+@    altyaxis  ticklabel skip 0
+@    altyaxis  ticklabel stagger 0
+@    altyaxis  ticklabel op left
+@    altyaxis  ticklabel sign normal
+@    altyaxis  ticklabel start type auto
+@    altyaxis  ticklabel start 0.000000
+@    altyaxis  ticklabel stop type auto
+@    altyaxis  ticklabel stop 0.000000
+@    altyaxis  ticklabel char size 1.000000
+@    altyaxis  ticklabel font 4
+@    altyaxis  ticklabel color 1
+@    altyaxis  ticklabel linewidth 1
+@    altyaxis  tick major off
+@    altyaxis  tick minor on
+@    altyaxis  tick default 6
+@    altyaxis  tick in
+@    altyaxis  tick major color 1
+@    altyaxis  tick major linewidth 1
+@    altyaxis  tick major linestyle 1
+@    altyaxis  tick minor color 1
+@    altyaxis  tick minor linewidth 1
+@    altyaxis  tick minor linestyle 1
+@    altyaxis  tick log off
+@    altyaxis  tick size 1.000000
+@    altyaxis  tick minor size 0.500000
+@    altyaxis  bar off
+@    altyaxis  bar color 1
+@    altyaxis  bar linestyle 1
+@    altyaxis  bar linewidth 1
+@    altyaxis  tick major grid off
+@    altyaxis  tick minor grid off
+@    altyaxis  tick op both
+@    altyaxis  tick type auto
+@    altyaxis  tick spec 0
+@    zeroxaxis  tick on
+@    zeroxaxis  tick major 10
+@    zeroxaxis  tick minor 5
+@    zeroxaxis  tick offsetx 0.000000
+@    zeroxaxis  tick offsety 0.000000
+@    zeroxaxis  tick alt off
+@    zeroxaxis  tick min 0
+@    zeroxaxis  tick max 1
+@    zeroxaxis  label ""
+@    zeroxaxis  label layout para
+@    zeroxaxis  label place auto
+@    zeroxaxis  label char size 1.000000
+@    zeroxaxis  label font 4
+@    zeroxaxis  label color 1
+@    zeroxaxis  label linewidth 1
+@    zeroxaxis  ticklabel off
+@    zeroxaxis  ticklabel type auto
+@    zeroxaxis  ticklabel prec 1
+@    zeroxaxis  ticklabel format decimal
+@    zeroxaxis  ticklabel layout horizontal
+@    zeroxaxis  ticklabel skip 0
+@    zeroxaxis  ticklabel stagger 0
+@    zeroxaxis  ticklabel op bottom
+@    zeroxaxis  ticklabel sign normal
+@    zeroxaxis  ticklabel start type auto
+@    zeroxaxis  ticklabel start 0.000000
+@    zeroxaxis  ticklabel stop type auto
+@    zeroxaxis  ticklabel stop 0.000000
+@    zeroxaxis  ticklabel char size 1.000000
+@    zeroxaxis  ticklabel font 4
+@    zeroxaxis  ticklabel color 1
+@    zeroxaxis  ticklabel linewidth 1
+@    zeroxaxis  tick major off
+@    zeroxaxis  tick minor on
+@    zeroxaxis  tick default 6
+@    zeroxaxis  tick in
+@    zeroxaxis  tick major color 1
+@    zeroxaxis  tick major linewidth 1
+@    zeroxaxis  tick major linestyle 1
+@    zeroxaxis  tick minor color 1
+@    zeroxaxis  tick minor linewidth 1
+@    zeroxaxis  tick minor linestyle 1
+@    zeroxaxis  tick log off
+@    zeroxaxis  tick size 1.000000
+@    zeroxaxis  tick minor size 0.500000
+@    zeroxaxis  bar off
+@    zeroxaxis  bar color 1
+@    zeroxaxis  bar linestyle 1
+@    zeroxaxis  bar linewidth 1
+@    zeroxaxis  tick major grid off
+@    zeroxaxis  tick minor grid off
+@    zeroxaxis  tick op both
+@    zeroxaxis  tick type auto
+@    zeroxaxis  tick spec 0
+@    zeroyaxis  tick on
+@    zeroyaxis  tick major 100
+@    zeroyaxis  tick minor 50
+@    zeroyaxis  tick offsetx 0.000000
+@    zeroyaxis  tick offsety 0.000000
+@    zeroyaxis  tick alt off
+@    zeroyaxis  tick min 0
+@    zeroyaxis  tick max 1
+@    zeroyaxis  label ""
+@    zeroyaxis  label layout para
+@    zeroyaxis  label place auto
+@    zeroyaxis  label char size 1.000000
+@    zeroyaxis  label font 4
+@    zeroyaxis  label color 1
+@    zeroyaxis  label linewidth 1
+@    zeroyaxis  ticklabel off
+@    zeroyaxis  ticklabel type auto
+@    zeroyaxis  ticklabel prec 1
+@    zeroyaxis  ticklabel format decimal
+@    zeroyaxis  ticklabel layout horizontal
+@    zeroyaxis  ticklabel skip 0
+@    zeroyaxis  ticklabel stagger 0
+@    zeroyaxis  ticklabel op left
+@    zeroyaxis  ticklabel sign normal
+@    zeroyaxis  ticklabel start type auto
+@    zeroyaxis  ticklabel start 0.000000
+@    zeroyaxis  ticklabel stop type auto
+@    zeroyaxis  ticklabel stop 0.000000
+@    zeroyaxis  ticklabel char size 1.000000
+@    zeroyaxis  ticklabel font 4
+@    zeroyaxis  ticklabel color 1
+@    zeroyaxis  ticklabel linewidth 1
+@    zeroyaxis  tick major off
+@    zeroyaxis  tick minor on
+@    zeroyaxis  tick default 6
+@    zeroyaxis  tick in
+@    zeroyaxis  tick major color 1
+@    zeroyaxis  tick major linewidth 1
+@    zeroyaxis  tick major linestyle 1
+@    zeroyaxis  tick minor color 1
+@    zeroyaxis  tick minor linewidth 1
+@    zeroyaxis  tick minor linestyle 1
+@    zeroyaxis  tick log off
+@    zeroyaxis  tick size 1.000000
+@    zeroyaxis  tick minor size 0.500000
+@    zeroyaxis  bar off
+@    zeroyaxis  bar color 1
+@    zeroyaxis  bar linestyle 1
+@    zeroyaxis  bar linewidth 1
+@    zeroyaxis  tick major grid off
+@    zeroyaxis  tick minor grid off
+@    zeroyaxis  tick op both
+@    zeroyaxis  tick type auto
+@    zeroyaxis  tick spec 0
+@    legend off
+@    legend loctype view
+@    legend layout 0
+@    legend vgap 2
+@    legend hgap 1
+@    legend length 4
+@    legend box off
+@    legend box fill off
+@    legend box fill with color
+@    legend box fill color 0
+@    legend box fill pattern 1
+@    legend box color 1
+@    legend box linewidth 1
+@    legend box linestyle 1
+@    legend x1 0.8
+@    legend y1 0.8
+@    legend font 4
+@    legend char size 1.000000
+@    legend linestyle 1
+@    legend linewidth 1
+@    legend color 1
+@    frame on
+@    frame type 0
+@    frame linestyle 1
+@    frame linewidth 1
+@    frame color 1
+@    frame fill off
+@    frame background color 0
+@WITH G0
+@G0 ON
+@TYPE xy
+0 0
+0.03 0
+0.08 0
+0.13 0
+0.18 0
+0.23 0
+0.28 0
+0.32 0
+0.38 0
+0.43 0
+0.47 0
+0.53 0
+0.58 0
+1.03 0
+1.08 0
+1.13 0
+1.18 0
+1.23 0
+1.28 0
+1.33 0
+1.38 0
+1.43 0
+1.48 0
+1.53 0
+1.58 0
+2.03 0
+2.08 0
+2.12 0
+2.17 0
+2.23 0
+2.27 0
+2.32 0
+2.38 0
+2.42 0
+2.47 0
+2.53 0
+2.57 0
+3.03 0
+3.08 0
+3.12 0
+3.17 0
+3.23 0
+3.27 0
+3.32 0
+3.38 0
+3.42 0
+3.47 0
+3.53 0
+3.57 0
+4.03 0
+4.08 0
+4.13 0
+4.18 0
+4.23 0
+4.28 0
+4.33 0
+4.38 0
+4.43 0
+4.48 0
+4.53 0
+4.58 0
+5.03 0
+5.08 0
+5.13 0
+5.18 0
+5.23 0
+5.28 0
+5.33 0
+5.38 0
+5.43 0
+5.48 0
+5.53 0
+5.58 0
+6.03 0
+6.08 0
+6.13 0
+6.18 0
+6.23 0
+6.28 0
+6.33 0
+6.38 0
+6.43 0
+6.48 0
+6.53 0
+6.58 0
+7.03 0
+7.08 0
+7.13 0
+7.18 0
+7.23 0
+7.28 0
+7.33 0
+7.38 0
+7.43 0
+7.48 0
+7.53 0
+7.58 0
+8.03 444
+8.08 444
+8.12 444
+8.17 444
+8.23 444
+8.27 444
+8.32 444
+8.38 444
+8.42 444
+8.47 444
+8.53 444
+8.57 444
+9.03 444
+9.08 444
+9.12 444
+9.17 444
+9.23 444
+9.27 444
+9.32 444
+9.38 444
+9.42 444
+9.47 444
+9.53 444
+9.57 444
+10.03 444
+10.08 444
+10.12 444
+10.17 444
+10.23 444
+10.27 444
+10.32 444
+10.38 444
+10.42 444
+10.47 444
+10.53 444
+10.57 444
+11.03 444
+11.08 444
+11.12 444
+11.17 444
+11.23 444
+11.27 444
+11.32 444
+11.38 444
+11.42 444
+11.47 222
+11.53 222
+11.57 222
+12.03 222
+12.08 222
+12.12 222
+12.17 222
+12.23 222
+12.27 222
+12.32 222
+12.38 222
+12.42 222
+12.47 222
+12.53 222
+12.57 222
+13.03 222
+13.08 222
+13.12 222
+13.17 222
+13.23 222
+13.27 222
+13.32 222
+13.38 222
+13.42 222
+13.47 222
+13.53 444
+13.57 444
+14.03 444
+14.08 444
+14.12 444
+14.17 444
+14.23 444
+14.27 444
+14.32 444
+14.38 444
+14.42 444
+14.47 444
+14.53 444
+14.57 444
+15.03 444
+15.08 444
+15.12 444
+15.17 444
+15.23 444
+15.27 444
+15.32 444
+15.38 444
+15.42 444
+15.47 444
+15.53 444
+15.57 444
+16.03 444
+16.08 444
+16.13 444
+16.18 444
+16.23 444
+16.28 444
+16.33 444
+16.38 444
+16.43 444
+16.48 444
+16.53 444
+16.58 444
+17.03 444
+17.08 444
+17.13 444
+17.18 444
+17.23 444
+17.28 444
+17.33 444
+17.38 444
+17.43 444
+17.48 444
+17.53 444
+17.58 444
+18.03 0
+18.08 0
+18.13 0
+18.18 0
+18.23 0
+18.28 0
+18.33 0
+18.38 0
+18.43 0
+18.48 0
+18.53 0
+18.58 0
+19.03 0
+19.08 0
+19.13 0
+19.18 0
+19.23 0
+19.28 0
+19.33 0
+19.38 0
+19.43 0
+19.48 0
+19.53 0
+19.58 0
+20.03 0
+20.08 0
+20.13 0
+20.18 0
+20.23 0
+20.28 0
+20.33 0
+20.38 0
+20.43 0
+20.48 0
+20.53 0
+20.58 0
+21.03 0
+21.08 0
+21.13 0
+21.18 0
+21.23 0
+21.28 0
+21.33 0
+21.38 0
+21.43 0
+21.48 0
+21.53 0
+21.58 0
+22.03 0
+22.08 0
+22.13 0
+22.18 0
+22.23 0
+22.28 0
+22.33 0
+22.38 0
+22.43 0
+22.48 0
+22.53 0
+22.58 0
+23.03 0
+23.08 0
+23.13 0
+23.18 0
+23.23 0
+23.28 0
+23.33 0
+23.38 0
+23.43 0
+23.48 0
+23.53 0
+23.58 0
+24 0
+&
+@TYPE xy
+0 0
+0.03 0
+0.08 0
+0.13 0
+0.18 0
+0.23 0
+0.28 0
+0.32 0
+0.38 0
+0.43 0
+0.47 0
+0.53 0
+0.58 0
+1.03 0
+1.08 0
+1.13 0
+1.18 0
+1.23 0
+1.28 0
+1.33 0
+1.38 0
+1.43 0
+1.48 0
+1.53 0
+1.58 0
+2.03 0
+2.08 0
+2.12 0
+2.17 0
+2.23 0
+2.27 0
+2.32 0
+2.38 0
+2.42 0
+2.47 0
+2.53 0
+2.57 0
+3.03 0
+3.08 0
+3.12 0
+3.17 0
+3.23 0
+3.27 0
+3.32 0
+3.38 0
+3.42 0
+3.47 0
+3.53 0
+3.57 0
+4.03 0
+4.08 0
+4.13 0
+4.18 0
+4.23 0
+4.28 0
+4.33 0
+4.38 0
+4.43 0
+4.48 0
+4.53 0
+4.58 0
+5.03 0
+5.08 0
+5.13 0
+5.18 0
+5.23 0
+5.28 0
+5.33 0
+5.38 0
+5.43 0
+5.48 0
+5.53 0
+5.58 0
+6.03 0
+6.08 0
+6.13 0
+6.18 0
+6.23 0
+6.28 0
+6.33 0
+6.38 0
+6.43 0
+6.48 0
+6.53 0
+6.58 0
+7.03 0
+7.08 0
+7.13 0
+7.18 0
+7.23 0
+7.28 0
+7.33 0
+7.38 0
+7.43 0
+7.48 0
+7.53 0
+7.58 0
+8.03 444
+8.08 444
+8.12 444
+8.17 444
+8.23 444
+8.27 444
+8.32 444
+8.38 444
+8.42 444
+8.47 444
+8.53 444
+8.57 444
+9.03 444
+9.08 444
+9.12 444
+9.17 444
+9.23 444
+9.27 444
+9.32 444
+9.38 444
+9.42 444
+9.47 444
+9.53 444
+9.57 444
+10.03 444
+10.08 444
+10.12 444
+10.17 444
+10.23 444
+10.27 444
+10.32 444
+10.38 444
+10.42 444
+10.47 444
+10.53 444
+10.57 444
+11.03 222
+11.08 222
+11.12 222
+11.17 222
+11.23 222
+11.27 222
+11.32 222
+11.38 222
+11.42 222
+11.47 222
+11.53 222
+11.57 222
+12.03 222
+12.08 222
+12.12 222
+12.17 222
+12.23 222
+12.27 222
+12.32 222
+12.38 222
+12.42 222
+12.47 222
+12.53 222
+12.57 222
+13.03 444
+13.08 444
+13.12 444
+13.17 444
+13.23 444
+13.27 444
+13.32 444
+13.38 444
+13.42 444
+13.47 444
+13.53 444
+13.57 444
+14.03 444
+14.08 444
+14.12 444
+14.17 444
+14.23 444
+14.27 444
+14.32 444
+14.38 444
+14.42 444
+14.47 444
+14.53 444
+14.57 444
+15.03 444
+15.08 444
+15.12 444
+15.17 444
+15.23 444
+15.27 444
+15.32 444
+15.38 444
+15.42 444
+15.47 444
+15.53 444
+15.57 444
+16.03 444
+16.08 444
+16.13 444
+16.18 444
+16.23 444
+16.28 444
+16.33 444
+16.38 444
+16.43 444
+16.48 444
+16.53 444
+16.58 444
+17.03 444
+17.08 444
+17.13 444
+17.18 444
+17.23 444
+17.28 444
+17.33 444
+17.38 444
+17.43 444
+17.48 444
+17.53 444
+17.58 444
+18.03 0
+18.08 0
+18.13 0
+18.18 0
+18.23 0
+18.28 0
+18.33 0
+18.38 0
+18.43 0
+18.48 0
+18.53 0
+18.58 0
+19.03 0
+19.08 0
+19.13 0
+19.18 0
+19.23 0
+19.28 0
+19.33 0
+19.38 0
+19.43 0
+19.48 0
+19.53 0
+19.58 0
+20.03 0
+20.08 0
+20.13 0
+20.18 0
+20.23 0
+20.28 0
+20.33 0
+20.38 0
+20.43 0
+20.48 0
+20.53 0
+20.58 0
+21.03 0
+21.08 0
+21.13 0
+21.18 0
+21.23 0
+21.28 0
+21.33 0
+21.38 0
+21.43 0
+21.48 0
+21.53 0
+21.58 0
+22.03 0
+22.08 0
+22.13 0
+22.18 0
+22.23 0
+22.28 0
+22.33 0
+22.38 0
+22.43 0
+22.48 0
+22.53 0
+22.58 0
+23.03 0
+23.08 0
+23.13 0
+23.18 0
+23.23 0
+23.28 0
+23.33 0
+23.38 0
+23.43 0
+23.48 0
+23.53 0
+23.58 0
+24 0
+&

@@ -1,0 +1,148 @@
+#  moisture nodes/layer
+     6     6     6
+     6     6     6
+     6     6
+     6     6     6     6     6     6
+     6     6
+     6     6     6
+     6     6     6
+     6     6     6
+     6     6     6
+     6     6
+     6 
+     6 
+# Vapour permeability data for each layer
+# indx |   associated data for surface  1
+    1          0.133     7.45e-4   5.10    
+    1          0.835        0.     1.00   
+    1          0.133     7.45e-4   5.10   
+# indx |   associated data for surface  2
+    1          0.133     7.45e-4   5.10    
+    1          0.835        0.     1.00   
+    1          0.133     7.45e-4   5.10     
+# indx |   associated data for surface  3
+    1       0.133     0.754E-03  5.10    
+    1       0.835        0.      1.00      
+# indx |   associated data for surface  4
+    1          1.0e-10   0.0       1.0  
+    1          6.76e-2   1.21e-3   3.94     
+    1          0.835        0.     1.00     
+    1          0.835        0.     1.00   
+    1          0.835        0.     1.00  
+    1          0.133     7.45e-4   5.10   
+# indx |   associated data for surface  5
+    1          0.835        0.     1.00     
+    1          0.133     7.45e-4   5.10     
+# indx |   associated data for surface  6
+    1          0.133     7.45e-4   5.10     
+    1          0.835        0.     1.00   
+    1          1.39e-2   6.58e-4   4.07    
+# indx |   associated data for surface  7
+    1          0.133     7.45e-4   5.10     
+    1          0.835        0.     1.00   
+    1          1.39e-2   6.58e-4   4.07    
+# indx |   associated data for surface  8
+    1          0.133     7.45e-4   5.10     
+    1          0.835        0.     1.00   
+    1          1.39e-2   6.58e-4   4.07     
+# indx |   associated data for surface  9
+    1          0.133     7.45e-4   5.10     
+    1          0.835        0.     1.00   
+    1          1.39e-2   6.58e-4   4.07    
+# indx |   associated data for surface 10
+    1       0.133     0.754E-03  5.10    
+    1       0.835        0.      1.00    
+# indx |   associated data for surface 11
+    1          1.0e-10   0.0       1.0    
+# indx |   associated data for surface 12
+    1          1.0e-10   0.0       1.0    
+# Sorption isotherm data for each layer
+# indx |   associated data for surface  1
+    1          355      0.161      5.13    
+    1          50.0     0.827E-03  2.70    
+    1          355      0.161      5.13   
+# indx |   associated data for surface  2
+    1          355      0.161      5.13    
+    1          50.0     0.827E-03  2.70    
+    1          355      0.161      5.13   
+# indx |   associated data for surface  3
+    1         355.     0.161E-01  5.13    
+    1         50.0     0.827E-03  2.70    
+# indx |   associated data for surface  4
+    1          1.0e-10   1.0       1.0    
+    1          112.5     0.0224    5.25    
+    1          50.0     0.827E-03  2.70                   
+    1          50.0     0.827E-03  2.70    
+    1          50.0     0.827E-03  2.70   
+    1          355      0.161      5.13    
+# indx |   associated data for surface  5
+    1          50.0     0.827E-03  2.70     
+    1          355      0.161      5.13      
+# indx |   associated data for surface  6
+    1          355      0.161      5.13     
+    1          50.0     0.827E-03  2.70     
+    1          35.0     0.0568     1.76    
+# indx |   associated data for surface  7
+    1          355      0.161      5.13     
+    1          50.0     0.827E-03  2.70     
+    1          35.0     0.0568     1.76      
+# indx |   associated data for surface  8
+    1          355      0.161      5.13     
+    1          50.0     0.827E-03  2.70     
+    1          35.0     0.0568     1.76     
+# indx |   associated data for surface  9
+    1          355      0.161      5.13     
+    1          50.0     0.827E-03  2.70     
+    1          35.0     0.0568     1.76    
+# indx |   associated data for surface 10
+    1         355.     0.161E-01  5.13    
+    1         50.0     0.827E-03  2.70   
+# indx |   associated data for surface 11
+    1          1.0e-10   1.0       1.0     
+# indx |   associated data for surface 12
+    1          1.0e-10   1.0       1.0     
+# Thermal vapour diffusion coefficient for each layer
+# indx |   associated data for surface  1
+    1          0.    
+    1          0.    
+    1          0.    
+# indx |   associated data for surface  2
+    1          0.    
+    1          0.    
+    1          0.    
+# indx |   associated data for surface  3
+    1          0.    
+    1          0.    
+# indx |   associated data for surface  4
+    1          0.    
+    1          0.    
+    1          0.    
+    1          0.    
+    1          0.    
+    1          0.    
+# indx |   associated data for surface  5
+    1          0.    
+    1          0.    
+# indx |   associated data for surface  6
+    1          0.    
+    1          0.    
+    1          0.    
+# indx |   associated data for surface  7
+    1          0.    
+    1          0.    
+    1          0.    
+# indx |   associated data for surface  8
+    1          0.    
+    1          0.    
+    1          0.    
+# indx |   associated data for surface  9
+    1          0.    
+    1          0.    
+    1          0.    
+# indx |   associated data for surface 10
+    1          0.    
+    1          0.    
+# indx |   associated data for surface 11
+    1          0.    
+# indx |   associated data for surface 12
+    1          0.    

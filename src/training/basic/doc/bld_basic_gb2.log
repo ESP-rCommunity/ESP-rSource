@@ -1,0 +1,32 @@
+Notes on basic 3 zone building with global control:
+
+This set of files is an example of a basic multi-zone
+building representation with global capacity control.  
+The global controller acts to shed loads according to 
+the zone sequence specified, in an attempt to maintain 
+the total demand within limits. 
+
+The problem comprises the following files.
+
+    file                       description
+____________________________________________________________
+cfg/bld_basic.cfg        problem configuration file defining a basic
+                         3 zone model.
+ctl/bld_basic_gb2.ctl    global capacity control strategy.
+
+zones/reception.opr      zone schedules.
+zones/office.opr
+zones/roof_space.opr
+
+zones/reception.geo      zone geometry.
+zones/office.geo
+zones/roof_space.geo
+
+zones/reception.con      zone constructions.
+zones/office.con
+zones/roof_space.con
+
+zones/reception.tmc      zone TMC files.
+zones/office.tmc        
+
+_________

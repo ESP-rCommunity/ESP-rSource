@@ -1,0 +1,54 @@
+Project notes for cellular_offices_bc.cfg
+Description: base case model of two adjacent cellular offices
+In folder: cellular_hybrid
+By: jon
+Date: Tue Aug  2 10:11:58 2011
+For: 
+Project reference: 
+Notes: this is a variant of the standard side-by-side offices with
+an attached corridor which has been extended to include a simple
+hybrid mechanical ventilation system. Two additional zones are
+used to represent a mixing box for each zone. Heat is applied
+to these mixing boxes to temper the incoming air if required.
+_____________________________
+ 
+This is a synopsis of the model Cellular offices with tempered mech vent (via
+flow network) defined in cellular_mctl.cfg generated on Tue Aug  2 12:39:48
+2011. Notes associated with the model are in cellular_mctl.log
+ 
+The model is located at latitude   39.18 with a longitude difference of  -1.67
+from the local time meridian. The year used in simulations is 2001 and
+weekends occur on Saturday and Sunday.
+The site exposure is typical city centre and the ground reflectance is 0.20.
+ 
+Databases associated with the model:
+ standard pressure distr: pressc.db1
+ materials              : ../dbs/cellular.materials.a
+ constructions          : ../dbs/cellular.constrdb
+ standard plant comp    : plantc.db1
+ standard event profiles: profiles.db1.a
+ standard optical prop  : optics.db2
+ UK NCM data            : /Users/jon/esru_jwh/esp-r/databases/SBEM.db1
+ 
+ ____________________________________________________________
+ 
+The model includes ideal controls as follows:
+Control description:
+zone control tempers inlet air from plant to manager_a & b to 18degC
+ 
+ Flow control includes  6 loops.
+Windows open and fan shuts down for manager_a when ambient temp is between 10
+and 25 degC and room temp is more than 21degC. Manager_b windows closed via
+controller, mixing box used during office hours.
+ ____________________________________________________________
+ 
+ID Zone         Volume|          Surface
+   Name         m^3   | No. Opaque  Transp  ~Floor
+ 1 manager_a      40.5  13    62.2     9.8    13.5  manager describes cellular office on left
+ 2 manager_b      40.5  13    62.2     9.8    13.5  manager_b describes right office
+ 3 corridor        18.3  14    45.8     9.0     8.4  corridor describes passage adjacent to offices
+ 4 plant           0.3   6     3.2     0.0     1.0  plant describes HVAC plant for ideal control
+ 5 plant-B         0.3   6     3.2     0.0     1.0  plant-B describes plant to heat manager_b
+   all           100.   52    177.     29.     37.
+ 
+ 

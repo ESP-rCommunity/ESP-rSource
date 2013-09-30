@@ -1,0 +1,51 @@
+*Operations 1.0
+*date Sat Mar  9 08:10:44 2013  # latest file modification 
+# operations of metal_box6 defined in: 
+# ../zones/single_office.opr
+Representative of a single occupant office during weekdays, nothing on weekends except low level lighting. Some diversity in occupancy.
+# control(no control of air flow  ), low mid & high setpoints 
+   0     0.000     0.000     0.000
+     1   # no Weekday flow periods
+# Wkd: start, stop, infil, ventil, source, data
+   0, 24,    0.330    0.000    0    0.000
+     1   # no Saturday flow periods
+# Sat: start, stop, infil, ventil, source, data
+   0, 24,    0.330    0.000    0    0.000
+     1   # no Sunday flow periods 
+# Sun: start, stop, infil, ventil, source, data
+   0, 24,    0.330    0.000    0    0.000
+     1   # no holiday flow periods 
+# hol: start, stop, infil, ventil, source, data
+   0, 24,    0.330    0.000    0    0.000
+    13   # no Weekday casual gains 
+# Wkd: type, start, stop, sens, latent, rad_frac, conv_frac
+    1,   0,   8,      0.0,      0.0, 0.500, 0.500
+    1,   8,   9,     50.0,     30.0, 0.500, 0.500
+    1,   9,  12,     90.0,     45.0, 0.500, 0.500
+    1,  12,  14,     50.0,     25.0, 0.500, 0.500
+    1,  14,  18,     90.0,     45.0, 0.500, 0.500
+    1,  18,  19,     50.0,     30.0, 0.500, 0.500
+    1,  19,  24,      0.0,      0.0, 0.500, 0.500
+   -2,   0,   8,      0.0,      0.0, 0.500, 0.500
+   -2,   8,  18,      8.0,      0.0, 0.500, 0.500
+   -2,  18,  24,      0.0,      0.0, 0.500, 0.500
+   -3,   0,   8,      0.0,      0.0, 0.500, 0.500
+   -3,   8,  18,      5.0,      0.0, 0.500, 0.500
+   -3,  18,  24,      0.0,      0.0, 0.500, 0.500
+     3   # no Saturday casual gains 
+# Sat: type, start, stop, sens, latent, rad_frac, conv_frac
+   -2,   0,   8,      0.0,      0.0, 0.500, 0.500
+   -2,   8,  18,      2.0,      0.0, 0.500, 0.500
+   -2,  18,  24,      0.0,      0.0, 0.500, 0.500
+     3   # no Sunday casual gains 
+# Sun: type, start, stop, sens, latent, rad_frac, conv_frac
+   -2,   0,   8,      0.0,      0.0, 0.500, 0.500
+   -2,   8,  18,      2.0,      0.0, 0.500, 0.500
+   -2,  18,  24,      0.0,      0.0, 0.500, 0.500
+     3   # no holiday casual gains 
+# hol: type, start, stop, sens, latent, rad_frac, conv_frac
+   -2,   0,   8,      0.0,      0.0, 0.500, 0.500
+   -2,   8,  18,      2.0,      0.0, 0.500, 0.500
+   -2,  18,  24,      0.0,      0.0, 0.500, 0.500
+# Labels for gain types 
+ Occupt Lights Equipt

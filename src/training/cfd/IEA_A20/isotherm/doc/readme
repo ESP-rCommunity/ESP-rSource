@@ -1,0 +1,35 @@
+Guide to Annex 20 isothermal exemplar
+=====================================
+
+Files
+-----
+./cfg/dfs_iso.cfg			ESP-r model of room.
+./cfg/dfs_iso.log			notes detailing analysis
+
+./zone/case_2_grid_turVZ_KE.dfd		dfs input file for Annex 20, 20x20 mesh
+./zone/case_2_grid_turVZ_KE_2030.dfd	dfs input file for Annex 20, 20x30 mesh
+./zone/office_dfs.utl			part of ESP-r model of room
+
+./images/20x20_flowvis.gif		flow field predicted with 20x20 mesh
+./images/20x30_flowvis.gif		flow field predicted with 20x30 mesh
+./images/graph_1tot_dfs.gif		comparison of dfs predictions with measurements
+./images/graph_2tot_dfs.gif		comparison of dfs predictions with measurements
+./images/graph_3tot_dfs.gif		comparison of dfs predictions with measurements
+./images/graph_4tot_dfs.gif		comparison of dfs predictions with measurements
+
+
+Working with exemplar
+---------------------
+To run ESP-r model (non-CFD analysis) of room, enter the following from ./cfg:
+	esp-r -file _iso.cfg
+
+To run dfs with the 20x20 mesh, enter the following from ./zone:
+	dfs -file case_2_grid_turVZ_KE.dfd
+
+To see the CFD gridding, select "Grid visualization" from dfs' main menu.
+
+To perform a CFD simulation, select "Initiate simulation" from dfs' main menu.
+
+To visualize the CFD-predicted flow field, select "Results analysis"
+from dfs' main menu.  Then select "Flow visualization".  Note that you must
+perform a CFD simulation before visualization results.

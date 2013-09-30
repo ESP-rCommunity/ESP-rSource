@@ -1,0 +1,12 @@
+# transparent properties of L4_admin defined in ../zones/L4_admin.tmc
+  23   # surfaces
+# tmc index for each surface
+0,0,0,0,1,0,1,0,1,0,1,0,0,0,0,1,1,1,1,1,1,1,1
+   3  DSF4554_06nb # layers in tmc type 1
+# Transmission @ 5 angles & visible tr.
+   0.421   0.395   0.359   0.258   0.112   0.450
+# For each layer absorption @ 5 angles
+   0.375   0.394   0.405   0.403   0.357
+   0.001   0.002   0.003   0.004   0.005
+   0.085   0.088   0.089   0.077   0.049
+   0  # optical control flag

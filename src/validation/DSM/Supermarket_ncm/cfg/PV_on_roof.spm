@@ -1,0 +1,12 @@
+# ESP-r special materials file used in 
+# configuration file Supermarket_2008pv.c
+   1# No. of special material nodes.
+# Node No:  1
+BP_saturn_36cell # label
+# Zone Surf Node Type Opq/Trn
+   1  49   3   1   1
+# No. of data items.
+  13
+# Data:
+   22.0300    5.0000   18.0000    4.7200 1000.0000  298.0000       36.000000    1.0000 3536.0000   10.0000
+    0.0000    0.0000    0.0000

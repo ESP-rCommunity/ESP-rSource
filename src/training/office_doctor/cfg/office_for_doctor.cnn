@@ -1,0 +1,26 @@
+*connections for office_for_doctor
+*Date Tue Aug 28 12:28:14 2012
+     23   # number of connections
+   1   1   3   2   5  #    1 partn_a in reception >|< partn_a in examination
+   1   2   3   2   6  #    2 partn_b in reception >|< partn_b in examination
+   1   3   0   0   0  #    3 south_wall in reception is External
+   1   4   0   0   0  #    4 east_wall in reception is External
+   1   5   0   0   0  #    5 north_wall in reception is External
+   1   6   1   0   0  #    6 partn_c in reception >|< Identical environment
+   1   7   0   0   0  #    7 west_wall in reception is External
+   1   8   0   0   0  #    8 ceiling in reception is External
+   1   9   4   1   0  #    9 floor in reception >|< ground profile 1
+   1  10   0   0   0  #   10 south_glz in reception is External
+   1  11   0   0   0  #   11 north_glz in reception is External
+   1  12   3   2   7  #   12 door in reception >|< door in examination
+   2   1   0   0   0  #   13 south_wall in examination is External
+   2   2   0   0   0  #   14 west_wall in examination is External
+   2   3   0   0   0  #   15 ceiling in examination is External
+   2   4   4   1   0  #   16 floor in examination >|< ground profile 1
+   2   5   3   1   1  #   17 partn_a in examination >|< partn_a in reception
+   2   6   3   1   2  #   18 partn_b in examination >|< partn_b in reception
+   2   7   3   1  12  #   19 door in examination >|< door in reception
+   2   8   0   0   0  #   20 triang_wall in examination is External
+   2   9   0   0   0  #   21 north_wall in examination is External
+   2  10   0   0   0  #   22 north_glz in examination is External
+   2  11   0   0   0  #   23 south_glz in examination is External

@@ -1,0 +1,22 @@
+Project notes for cellular_onoffpro.cfg
+Description: model of two adjacent cellular offices with time cycle separate ON OFF
+In folder: training/cellular_cvvt
+By: jon
+Date: Thu Jan 25 11:00:27 2007
+For: 
+Project reference: 
+Notes: 
+_____________________________
+Derived from the cellular base case model. Used to test
+out ideal zone control law 13 which has separate on off
+setpoints for heating and cooling with time proportioning
+cycles on the heating and cooling.
+ ____________________________________________________________
+ 
+The model includes ideal controls as follows:
+Control description:
+Represents separate on off setpoint for heating and cooling with cycle
+limits. Heating on below 18C and off above 20C. Cooling on above 24C
+and off below 22C. Loop 1 is for manager_a loop 2 equiv on/off
+manager_b and loop 3 the corridor.
+ 

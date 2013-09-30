@@ -1,0 +1,143 @@
+# Plant component data base:
+/usr/esru/esp-r/databases/plantc.db1                                  
+# Project title:
+ELSA building PV facade heat recovery and mechanical ventilation syste
+# Total no. of specified components and simulation type
+   16    3
+#-> air duct; 1 node model                                                  
+  inlet_duct         6
+    0        # Component has   0 control variable(s).
+    6
+  9.2500       500.00       14.000      0.12500       5.0000      0.12270E-01
+#-> air heating coil; 1 node model ; flux control                           
+  frost_coil         5
+    1        # Component has   1 control variable(s).
+  0.
+    3     5
+  15.000       1000.0       3.5000    
+# Component electrical details.
+  1.000   0      0.000    220.000   1
+#-> centrifugal fan, 1 node model ; flow control                            
+  supply_fan         3
+    1        # Component has   1 control variable(s).
+  0.
+    6     5
+  10.000       500.00       7.0000       535.00       1.0000      0.80000    
+# Component electrical details.
+  0.800   1      0.000    440.000   4
+#-> air/air plate heat exchanger; 2 node model                              
+  heat_exchanger    10
+    0        # Component has   0 control variable(s).
+    5
+  10.000       1000.0       7.0000       15.000      0.25000    
+#-> air heating coil; 1 node model ; flux control                           
+  heating_coil       5
+    1        # Component has   1 control variable(s).
+  0.
+    3     5
+  15.000       1000.0       3.5000    
+# Component electrical details.
+  1.000   0      0.000    220.000   1
+#-> air duct; 1 node model                                                  
+  supply_duc1        6
+    0        # Component has   0 control variable(s).
+    6
+  9.2500       500.00       14.000      0.12500       5.0000      0.12270E-01
+#-> air duct; 1 node model                                                  
+  supply_duc2        6
+    0        # Component has   0 control variable(s).
+    6
+  9.2500       500.00       14.000      0.12500       5.0000      0.12270E-01
+#-> air duct; 1 node model                                                  
+  supply_duc3        6
+    0        # Component has   0 control variable(s).
+    6
+  9.2500       500.00       14.000      0.12500       5.0000      0.12270E-01
+#-> air heating coil; 1 node model ; flux control                           
+  re_heat1           5
+    1        # Component has   1 control variable(s).
+  0.
+    3     5
+  15.000       1000.0       3.5000    
+# Component electrical details.
+  1.000   0      0.000    220.000   3
+#-> air heating coil; 1 node model ; flux control                           
+  re_heat2           5
+    1        # Component has   1 control variable(s).
+  0.
+    3     5
+  15.000       1000.0       3.5000    
+# Component electrical details.
+  1.000   0      0.000    220.000   3
+#-> air heating coil; 1 node model ; flux control                           
+  re_heat3           5
+    1        # Component has   1 control variable(s).
+  0.
+    3     5
+  15.000       1000.0       3.5000    
+# Component electrical details.
+  1.000   0      0.000    220.000   3
+#-> air duct; 1 node model                                                  
+  pv_duct            6
+    0        # Component has   0 control variable(s).
+    6
+  9.2500       500.00       14.000      0.12500       5.0000      0.12270E-01
+#-> air duct; 1 node model                                                  
+  exit_duct          6
+    0        # Component has   0 control variable(s).
+    6
+  9.2500       500.00       14.000      0.12500       5.0000      0.12270E-01
+#-> centrifugal fan, 1 node model ; flow control                            
+  extr_fan           3
+    1        # Component has   1 control variable(s).
+  0.
+    6     5
+  10.000       500.00       7.0000       535.00       1.0000      0.80000    
+# Component electrical details.
+  0.800   1      0.000    440.000   4
+#-> air mixing box or converging junction; 1 node model                     
+  convg1             1
+    0        # Component has   0 control variable(s).
+    3
+  1.0000       500.00       3.5000    
+#-> air mixing box or converging junction; 1 node model                     
+  convg2             1
+    0        # Component has   0 control variable(s).
+    3
+  1.0000       500.00       3.5000    
+# The following is a list of component connections.
+ 19          # Total number of connections
+# receiving       node  conncn sending          node  diversion  suppl1   suppl2
+# component              type  component                ratio
+  pv_duct           1     4     exit_duct         1    1.000     8.0000
+  frost_coil        1     3     pv_duct           1    1.000
+  inlet_duct        1     3     frost_coil        1    1.000
+  supply_fan        1     3     inlet_duct        1    1.000
+  heat_exchanger    1     3     supply_fan        1    1.000
+  heating_coil      1     3     heat_exchanger    1    1.000
+  supply_duc1       1     3     heating_coil      1    0.333
+  re_heat1          1     3     supply_duc1       1    1.000
+  supply_duc2       1     3     heating_coil      1    0.333
+  re_heat2          1     3     supply_duc2       1    1.000
+  supply_duc3       1     3     heating_coil      1    0.333
+  re_heat3          1     3     supply_duc3       1    1.000
+  convg1            1     4     re_heat1          1    1.000     2.0000
+  convg1            1     4     re_heat2          1    1.000     3.0000
+  convg2            1     4     re_heat3          1    1.000     4.0000
+  convg2            1     3     convg1            1    1.000
+  extr_fan          1     3     convg2            1    1.000
+  heat_exchanger    2     3     extr_fan          1    1.000
+  exit_duct         1     3     heat_exchanger    2    1.000
+# No containment temperatures defined
+  0
+# Mass flow network definition.
+    1
+../networks/elsa.afn    # leakage description
+/usr/esru/esp-r/databases/pressc.db1  # pressure distributions
+elsa_win.mfr  # mass flow results libray name
+# Mapping of mass flow network connections to
+# plant network connections.
+   6    6    6    6    6    6
+   7    7    8    8    9    9
+  10   11   12   13   14   15
+  15

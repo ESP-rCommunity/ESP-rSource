@@ -1,0 +1,17 @@
+This is a three zone problem where "office" is 
+ventilated by displacement.
+
+The "office" is ventilated at a constant flow 
+rate of 2 air changes per hour. Cool air is 
+supplied to the zone at a slot near the floor.
+This exits the zone at a slot near the ceiling
+in the opposite wall.
+
+A constant convective heat source of 250W is 
+located at the center of the zone (0.697x0294x0.528m3).
+The "office" is shown in detail in the image held
+in the file" officd.gif.
+
+The temperture of the reception is controlled
+during the working hours.
+

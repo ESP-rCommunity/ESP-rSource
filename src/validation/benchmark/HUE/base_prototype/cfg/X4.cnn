@@ -1,0 +1,27 @@
+*connections for SAPPmodels
+*Date Wed Jul 28 15:44:23 2010
+     24   # number of connections
+   1   1   0   0   0  #    1 liv_w_s in living is External
+   1   2   1   0   0  #    2 liv_w_e in living >|< Identical environment
+   1   3   3   2   3  #    3 liv_iw_n in living >|< nliv_iw_s in non-living
+   1   4   3   2   2  #    4 liv_iw_w in living >|< nliv_iw_e in non-living
+   1   5   0   0   0  #    5 liv_roof in living is External
+   1   6   1   0   0  #    6 liv_floor in living >|< Identical environment
+   1   7   0   0   0  #    7 liv_g_s in living is External
+   1   8   0   0   0  #    8 liv_thbr in living is External
+   1   9   0   0   0
+   2   1   0   0   0  #    9 nliv_w_s in non-living is External
+   2   2   3   1   4  #   10 nliv_iw_e in non-living >|< liv_iw_w in living
+   2   3   3   1   3  #   11 nliv_iw_s in non-living >|< liv_iw_n in living
+   2   4   1   0   0  #   12 nliv_w_e in non-living >|< Identical environment
+   2   5   0   0   0  #   13 nliv_w_n in non-living is External
+   2   6   0   0   0  #   14 nliv_w_w in non-living is External
+   2   7   0   0   0  #   15 nliv_roof in non-living is External
+   2   8   1   0   0  #   16 nliv_floor in non-living >|< Identical environment
+   2   9   0   0   0  #   17 nliv_g_s in non-living is External
+   2  10   0   0   0  #   18 nliv_d_s in non-living is External
+   2  11   0   0   0  #   19 nliv_g_n in non-living is External
+   2  12   0   0   0  #   20 nliv_d_n in non-living is External
+   2  13   0   0   0  #   21 nliv_thbr_s in non-living is External
+   2  14   0   0   0  #   22 nliv_thbr_n in non-living is External
+   2  15   0   0   0

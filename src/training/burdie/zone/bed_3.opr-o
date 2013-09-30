@@ -1,0 +1,19 @@
+# operations of north_beds defined in: 
+# north_beds.opr
+nil_operations    # operation name
+# control(no flow control         ), low & high setpoints 
+   0     0.000     0.000
+     0   # no Weekday flow periods
+     0   # no Saturday flow periods
+     0   # no Sunday flow periods 
+     1   # no Weekday casual gains 
+# Wkd: type, start, stop, sens, latent, rad_frac, conv_frac
+    1,   0,   7,    95.0,     45.0, 0.700, 0.300
+     1   # no Saturday casual gains 
+# Sat: type, start, stop, sens, latent, rad_frac, conv_frac
+    1,   0,   7,    95.0,     45.0, 0.700, 0.300
+     1   # no Sunday casual gains 
+# Sun: type, start, stop, sens, latent, rad_frac, conv_frac
+    1,   0,   7,    95.0,     45.0, 0.700, 0.300
+# Labels for gain types 
+ Occupt Lights Equipt

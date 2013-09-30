@@ -1,0 +1,153 @@
+#!/bin/csh -fb
+set CONFIG=$1
+set VERSION=$2
+$VERSION/bps -file $CONFIG -mode text <<XXX
+
+c
+$CONFIG.wc_res
+9 1
+15 1
+3
+1
+s
+y
+ESRU Standard test: $CONFIG
+y
+y
+-
+-
+XXX
+echo "running with energy balance save..."
+$VERSION/bps -file $CONFIG -mode text <<YYY
+
+c
+$CONFIG.wc4_res
+9 1
+15 1
+3
+1
+*
+*
+s
+y
+ESRU Std test (4): $CONFIG
+y
+y
+-
+-
+YYY
+echo "running with 2 time steps and energy balance save..."
+$VERSION/bps -file $CONFIG -mode text <<ZZZ
+
+c
+$CONFIG.wc42_res
+9 1
+15 1
+3
+2
+n
+*
+*
+s
+y
+ESRU Std test (4:2): $CONFIG
+y
+y
+-
+-
+ZZZ
+echo "running with 2 time steps and energy balance save and integration..."
+$VERSION/bps -file $CONFIG -mode text <<ZZ1
+
+c
+$CONFIG.wc42i_res
+9 1
+15 1
+3
+2
+y
+*
+*
+s
+y
+ESRU Std test (4:2:i): $CONFIG
+y
+y
+-
+-
+ZZ1
+$VERSION/bps -file $CONFIG -mode text <<XXX
+
+c
+$CONFIG.wcs_res
+9 7
+15 7
+3
+1
+s
+y
+ESRU Standard summer test: $CONFIG
+y
+y
+-
+-
+XXX
+echo "running with energy balance save..."
+$VERSION/bps -file $CONFIG -mode text <<YYY
+
+c
+$CONFIG.wc4s_res
+9 7
+15 7
+3
+1
+*
+*
+s
+y
+ESRU Std summer test (4): $CONFIG
+y
+y
+-
+-
+YYY
+echo "running with 2 time steps and energy balance save..."
+$VERSION/bps -file $CONFIG -mode text <<ZZZ
+
+c
+$CONFIG.wc42s_res
+9 7
+15 7
+3
+2
+n
+*
+*
+s
+y
+ESRU Std summer test (4:2): $CONFIG
+y
+y
+-
+-
+ZZZ
+echo "running with 2 time steps and energy balance save and integration..."
+$VERSION/bps -file $CONFIG -mode text <<ZZ1
+
+c
+$CONFIG.wc42is_res
+9 7
+15 7
+3
+2
+y
+*
+*
+s
+y
+ESRU Std summer test (4:2:i): $CONFIG
+y
+y
+-
+-
+ZZ1

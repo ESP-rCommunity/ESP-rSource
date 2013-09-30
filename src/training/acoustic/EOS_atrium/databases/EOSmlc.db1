@@ -1,0 +1,99 @@
+# composite construction db defined in ../databases/EOSmlc.db1
+# based on materials db /usr/esru/esp-r/databases/constr_db2.materialdb
+   15     # no of composites 
+# layers  description   optics name   symmetry tag
+    3    dbl_glz_int   TRAN  eos_int_win   SYMMETRIC     
+# mat ref thickness (m) mat descr & air gap R
+  243    0.0060  4mm clear float : 4mm clear float with placeholder single layer optics
+    0    0.0610  air  0.168 0.168 0.168
+  243    0.0060  4mm clear float : 4mm clear float with placeholder single layer optics
+# layers  description   optics name   symmetry tag
+    7    roof_abs      OPAQ  OPAQUE        NONSYMMETRIC  
+# mat ref thickness (m) mat descr & air gap R
+   86    0.0600  Gravel : Gravel
+  161    0.0100  Bitumen felt : Bitumen felt
+  212    0.1600  Roof insulation board : Roof insulation board
+   32    0.2200  Heavy mix concrete : Heavy mix concrete
+    0    0.1500  air  0.170 0.170 0.170
+  216    0.0200  Mineral fibre : Mineral fibre
+   62    0.0100  Hardboard (medium) : Hardboard (medium)
+# layers  description   optics name   symmetry tag
+    5    roof          OPAQ  OPAQUE        NONSYMMETRIC  
+# mat ref thickness (m) mat descr & air gap R
+   86    0.0600  Gravel : Gravel
+  161    0.0100  Bitumen felt : Bitumen felt
+  212    0.1600  Roof insulation board : Roof insulation board
+   32    0.2200  Heavy mix concrete : Heavy mix concrete
+  127    0.0100  Rendering (8% mc) : Rendering (8% mc)
+# layers  description   optics name   symmetry tag
+    5    Int_wall      OPAQ  OPAQUE        SYMMETRIC     
+# mat ref thickness (m) mat descr & air gap R
+   42    0.0060  Steel : Steel
+  107    0.0120  Gypsum plasterboard : Gypsum plasterboard
+  216    0.0470  Mineral fibre : Mineral fibre
+  107    0.0120  Gypsum plasterboard : Gypsum plasterboard
+   42    0.0060  Steel : Steel
+# layers  description   optics name   symmetry tag
+    1    fictious      TRAN  SC_8985_04nb  SYMMETRIC     
+# mat ref thickness (m) mat descr & air gap R
+  245    0.0010  fict : fict with placeholder single layer optics
+# layers  description   optics name   symmetry tag
+    3    Superglass    TRAN  Superglass    SYMMETRIC     
+# mat ref thickness (m) mat descr & air gap R
+  243    0.0040  4mm clear float : 4mm clear float with placeholder single layer optics
+    0    0.0230  air  1.250 1.250 1.250
+  243    0.0040  4mm clear float : 4mm clear float with placeholder single layer optics
+# layers  description   optics name   symmetry tag
+    4    Facade        OPAQ  OPAQUE        NONSYMMETRIC  
+# mat ref thickness (m) mat descr & air gap R
+  127    0.0200  Rendering (8% mc) : Rendering (8% mc)
+  216    0.1200  Mineral fibre : Mineral fibre
+   32    0.1500  Heavy mix concrete : Heavy mix concrete
+  127    0.0100  Rendering (8% mc) : Rendering (8% mc)
+# layers  description   optics name   symmetry tag
+    2    F-P_up        OPAQ  OPAQUE        NONSYMMETRIC  
+# mat ref thickness (m) mat descr & air gap R
+  225    0.0100  Synthetic carpet : Synthetic carpet
+   72    0.0300  Plywood 700d : Plywood 700d
+# layers  description   optics name   symmetry tag
+    2    F-P_down      OPAQ  OPAQUE        NONSYMMETRIC  
+# mat ref thickness (m) mat descr & air gap R
+   72    0.0300  Plywood 700d : Plywood 700d
+  225    0.0100  Synthetic carpet : Synthetic carpet
+# layers  description   optics name   symmetry tag
+    4    Base_up       OPAQ  OPAQUE        NONSYMMETRIC  
+# mat ref thickness (m) mat descr & air gap R
+   32    0.2200  Heavy mix concrete : Heavy mix concrete
+    0    0.1500  air  0.170 0.170 0.170
+  216    0.0200  Mineral fibre : Mineral fibre
+   62    0.0100  Hardboard (medium) : Hardboard (medium)
+# layers  description   optics name   symmetry tag
+    4    Base_down     OPAQ  OPAQUE        NONSYMMETRIC  
+# mat ref thickness (m) mat descr & air gap R
+   62    0.0100  Hardboard (medium) : Hardboard (medium)
+  216    0.0200  Mineral fibre : Mineral fibre
+    0    0.1500  air  0.170 0.170 0.170
+   32    0.2200  Heavy mix concrete : Heavy mix concrete
+# layers  description   optics name   symmetry tag
+    5    Facade_vent   OPAQ  OPAQUE        NONSYMMETRIC  
+# mat ref thickness (m) mat descr & air gap R
+   83    0.0300  White marble : White marble
+    0    0.0400  air  0.170 0.170 0.170
+  216    0.1200  Mineral fibre : Mineral fibre
+   32    0.1500  Heavy mix concrete : Heavy mix concrete
+  127    0.0100  Rendering (8% mc) : Rendering (8% mc)
+# layers  description   optics name   symmetry tag
+    1    concrete      OPAQ  OPAQUE        SYMMETRIC     
+# mat ref thickness (m) mat descr & air gap R
+   32    0.2500  Heavy mix concrete : Heavy mix concrete
+# layers  description   optics name   symmetry tag
+    3    Int_wall_2    OPAQ  OPAQUE        SYMMETRIC     
+# mat ref thickness (m) mat descr & air gap R
+  107    0.0120  Gypsum plasterboard : Gypsum plasterboard
+  216    0.0470  Mineral fibre : Mineral fibre
+  107    0.0120  Gypsum plasterboard : Gypsum plasterboard
+# layers  description   optics name   symmetry tag
+    2    cor_ceil      OPAQ  OPAQUE        NONSYMMETRIC  
+# mat ref thickness (m) mat descr & air gap R
+   32    0.2200  Heavy mix concrete : Heavy mix concrete
+  127    0.0100  Rendering (8% mc) : Rendering (8% mc)
