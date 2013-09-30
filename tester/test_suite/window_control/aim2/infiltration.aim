@@ -1,0 +1,23 @@
+FileVersion 2
+#
+# AIM-2 input file for CCHT house from HOT2000 inputs
+#
+#---Leakage description-------------------------------------------------------------------------
+4                           # Air tightness type is :Average 
+#                           # Set first number to 6 (and no other data) for energy tight house
+#---Leakage distribution------------------------------------------------------------------------
+1  0.30  0.50  0.2         # Ceiling, wall & floor fractions
+#---Shielding and terrain data------------------------------------------------------------------
+3 8 2 2 10.0                # See subroutine /users/ian/src/esp-r/esrubld/aim2.F/AIM2_READIN
+#---Height of building eaves (m)----------------------------------------------------------------
+5.0
+#---Flue diameters (mm)-------------------------------------------------------------------------
+0  0. 0. 0. 0. # furnace, fire#1, fire#2, dhw#1, dhw#2.
+#---Zone indices--------------------------------------------------------------------------------
+1                  # Zone whose temperature used to calculate density of indoor air.
+1 1                # Total number of zones receiving infil; indices of zones receive infil.
+0                  # Index of basement zone (=0 if no basement).
+#-----------------------------------------------------------------------------------------------
+# OPTIONAL
+#WINDOW_CONTROL: control_flag (1 has window control) cooling_sensor_zone (zone for central cooling check) hot_setpoint (above this zone temp windows can operate) cold_setpoint(below this zone temp the windows are closed) DeltaT (if zone - ambient > deltaT windows can operate) minimum_ambient_temp (the minimum ambient temp which allows windows to open so as to prevent very cold air)
+1 1 24 21 1 21

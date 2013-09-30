@@ -1,0 +1,12 @@
+# ESP-r special materials file used in 
+# configuration file PVTest2.cfg         
+   1# No. of special material nodes.
+# Node No:  1
+Solarex_MSX550   # label
+# Zone Surf Node Type Opq/Trn
+   2   7   2   1   0
+# No. of data items.
+  14
+# Data:
+   20.9000    3.0800   16.9000    2.9100 1000.0000  298.0000   36.0000    1.0000    8.1300   10.0000
+    0.0000    0.0000    0.0000    0.0000

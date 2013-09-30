@@ -1,0 +1,51 @@
+Current Directory:C:/H3000B~1
+Monday, 9 of July 2007 0:0:0
+All Directorys for project T_E_Door2WindowsSlabL created
+=========Window data======
+***( 0 )***
+Window Tilt            = 0
+Window Curtain         = 0.000000
+Window Over Hang Width = 0
+Window Shutter Value   = 0
+Window Tilt Value      = 0
+Window SGHC            = 0
+***( 0 )***
+Window Tilt            = 0
+Window Curtain         = 0.000000
+Window Over Hang Width = 0
+Window Shutter Value   = 0
+Window Tilt Value      = 0
+Window SGHC            = 0
+CFG fileuser/T_E_Door2WindowsSlabL/cfg/T_E_Door2WindowsSlabL.cfg open for write
+AIM fileuser/T_E_Door2WindowsSlabL/aim/T_E_Door2WindowsSlabL.aim open for write
+CON fileuser/T_E_Door2WindowsSlabL/zones/main.con open for write
+CON fileuser/T_E_Door2WindowsSlabL/zones/attic.con open for write
+CNN fileuser/T_E_Door2WindowsSlabL/cfg/T_E_Door2WindowsSlabL.cnn open for write
+----------surface parameters-------------|---connecting zone-------
+ # zon       name optics  type    db_name|Zone      name type surf#
+-----------------------------------------|-------------------------
+ 1  1  MainWall-03  OPAQ  VERT   ext_wall|  0   EXTERIOR   0   0
+ 2  1  MainWall-06  OPAQ  VERT   ext_wall|  0   EXTERIOR   0   0
+ 3  1  MainWall-05  OPAQ  VERT   ext_wall|  0   EXTERIOR   0   0
+ 4  1  MainWall-08  OPAQ  VERT   ext_wall|  0   EXTERIOR   0   0
+ 5  1  MainWall-01  OPAQ  VERT   ext_wall|  0   EXTERIOR   0   0
+ 6  1  MainWall-02  OPAQ  VERT   ext_wall|  0   EXTERIOR   0   0
+ 7  1  MainWall-07  OPAQ  VERT   ext_wall|  0   EXTERIOR   0   0
+ 8  1  MainWall-04  OPAQ  VERT   ext_wall|  0   EXTERIOR   0   0
+ 9  1       to_bsm  OPAQ  FLOR slab_floor| 28   BASESIMP   6 100
+10  1     to_attic  OPAQ  CEIL    ceiling|  2      attic   3   1
+11  1       Door-3  OPAQ  VERT   ext_door|  0   EXTERIOR   0   0
+12  1    Window-25  TRAN  VERT     window|  0   EXTERIOR   0   0
+13  1    Window-26  TRAN  VERT     window|  0   EXTERIOR   0   0
+----------surface parameters-------------|---connecting zone-------
+ # zon       name optics  type    db_name|Zone      name type surf#
+-----------------------------------------|-------------------------
+ 1  2      to_main  OPAQ  FLOR  ceiling_r|  1       main   3  10
+ 2  2   NorthSlope  OPAQ  SLOP    asphalt|  0   EXTERIOR   0   0
+ 3  2 NorthWestSlope  OPAQ  SLOP    asphalt|  0   EXTERIOR   0   0
+ 4  2   NorthGable  OPAQ  VERT   cladding|  0   EXTERIOR   0   0
+ 5  2    EastSlope  OPAQ  SLOP    asphalt|  0   EXTERIOR   0   0
+ 6  2   SouthGable  OPAQ  VERT   cladding|  0   EXTERIOR   0   0
+ 7  2 SouthWestSlope  OPAQ  SLOP    asphalt|  0   EXTERIOR   0   0
+ 8  2   SouthSlope  OPAQ  SLOP    asphalt|  0   EXTERIOR   0   0
+ 9  2   West Gable  OPAQ  VERT   cladding|  0   EXTERIOR   0   0

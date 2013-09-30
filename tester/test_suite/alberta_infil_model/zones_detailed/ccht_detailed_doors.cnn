@@ -1,0 +1,86 @@
+*connections  for ccht_detailed
+*Date Mon Feb 19 15:30:21 2001
+     83   # number of connections
+   1   1   4  1  0 # Ground profile # 1
+   1   2   4  1  0 # Ground profile # 1
+   1   3   4  1  0 # Ground profile # 1
+   1   4   3   3  19  #   4  bsment_ceiln in basement >|< main_floor in mainfloor
+   1   5   4  1  0 # Ground profile # 1
+   1   6   3   5   4  #   6  stair_north in basement >|< bsm_north in stairwell
+   1   7   3   5   3  #   7  stair_east in basement >|< bsm_east in stairwell
+   1   8   3   5   2  #   8  stair_south in basement >|< bsm_south in stairwell
+   1   9   4  1  0 # Ground profile # 1
+   1  10   4  1  0 # Ground profile # 1
+   1  11   4  1  0 # Ground profile # 1
+   1  12   4  1  0 # Ground profile # 1
+   2   1   3   3   3  #  13  main_share in garage >|< garage_share in mainfloor
+   2   2   0   0   0  #  14  front_garage in garage is External
+   2   3   0   0   0  #  15  side_wall in garage is External
+   2   4   3   3   4  #  16  garage_back in garage >|< garage_back in mainfloor
+   2   5   3   4  17  #  17  garage_ceiln in garage >|< flr_abv_gar in secondfloor
+   2   6   4  1  0 # Ground profile # 1
+   2   7   0   0   0  #  19  garage_door in garage is External
+   3   1   0   0   0  #  20  sidewall_1 in mainfloor is External
+   3   2   0   0   0  #  21  front in mainfloor is External
+   3   3   3   2   1  #  22  garage_share in mainfloor >|< main_share in garage
+   3   4   3   2   4  #  23  garage_back in mainfloor >|< garage_back in garage
+   3   5   0   0   0  #  24  sidewall_2 in mainfloor is External
+   3   6   0   0   0  #  25  back_2 in mainfloor is External
+   3   7   0   0   0  #  26  back_1 in mainfloor is External
+   3   8   3   4   6  #  27  main_ceiling in mainfloor >|< 2nd_floor in secondfloor
+   3   9   0   0   0  #  28  w_dining in mainfloor is External
+   3  10   0   0   0  #  29  w_family1 in mainfloor is External
+   3  11   0   0   0  #  30  w_family2 in mainfloor is External
+   3  12   0   0   0  #  31  w_living in mainfloor is External
+   3  13   0   0   0  #  32  w_side1 in mainfloor is External
+   3  14   0   0   0  #  33  w_side2 in mainfloor is External
+   3  15   3   5   7  #  34  stair_north in mainfloor >|< main_north in stairwell
+   3  16   3   5   6  #  35  stair_east in mainfloor >|< main_east in stairwell
+   3  17   3   5  14  #  36  stair_south in mainfloor >|< main_south in stairwell
+   3  18   0   0   0  #  37  sidewallfron in mainfloor is External
+   3  19   3   1   4  #  38  main_floor in mainfloor >|< bsment_ceiln in basement
+   3  20   0   0   0  #  39  patio in mainfloor is External
+   3  21   0   0   0  #  40  door in mainfloor is External
+   4   1   0   0   0  #  41  2nd_rt_side in secondfloor is External
+   4   2   0   0   0  #  42  2nd_front in secondfloor is External
+   4   3   0   0   0  #  43  2ns_l_side in secondfloor is External
+   4   4   0   0   0  #  44  2nd_back in secondfloor is External
+   4   5   3   6  10  #  45  2nd_ceiling in secondfloor >|< ceiling in roof
+   4   6   3   3   8  #  46  2nd_floor in secondfloor >|< main_ceiling in mainfloor
+   4   7   0   0   0  #  47  w_bedrm2 in secondfloor is External
+   4   8   0   0   0  #  48  w_bathroom in secondfloor is External
+   4   9   0   0   0  #  49  w_master in secondfloor is External
+   4  10   0   0   0  #  50  w_bdroom3 in secondfloor is External
+   4  11   0   0   0  #  51  w_bedroom4 in secondfloor is External
+   4  12   0   0   0  #  52  w_bathrom2 in secondfloor is External
+   4  13   3   5  11  #  53  stair_north in secondfloor >|< 2nd_north in stairwell
+   4  14   3   5  10  #  54  stair_east in secondfloor >|< 2nd_east in stairwell
+   4  15   3   5  12  #  55  stair_south in secondfloor >|< 2nd_south in stairwell
+   4  16   0   0   0  #  56  2nd_rt_side2 in secondfloor is External
+   4  17   3   2   5  #  57  flr_abv_gar in secondfloor >|< garage_ceiln in garage
+   5   1   4  1  0 # Ground profile # 1
+   5   2   3   1   8  #  59  bsm_south in stairwell >|< stair_south in basement
+   5   3   3   1   7  #  60  bsm_east in stairwell >|< stair_east in basement
+   5   4   3   1   6  #  61  bsm_north in stairwell >|< stair_north in basement
+   5   5   4  1  0 # Ground profile # 1
+   5   6   3   3  16  #  63  main_east in stairwell >|< stair_east in mainfloor
+   5   7   3   3  15  #  64  main_north in stairwell >|< stair_north in mainfloor
+   5   8   0   0   0  #  65  st_1_out in stairwell is External
+   5   9   0   0   0  #  66  st_2_out in stairwell is External
+   5  10   3   4  14  #  67  2nd_east in stairwell >|< stair_east in secondfloor
+   5  11   3   4  13  #  68  2nd_north in stairwell >|< stair_north in secondfloor
+   5  12   3   4  15  #  69  2nd_south in stairwell >|< stair_south in secondfloor
+   5  13   3   6  11  #  70  stair_ceilin in stairwell >|< stair_ceilin in roof
+   5  14   3   3  17  #  71  main_south in stairwell >|< stair_south in mainfloor
+   5  15   0   0   0  #  72  w_triangle in stairwell is External
+   6   1   0   0   0  #  73  roof1_back in roof is External
+   6   2   0   0   0  #  74  roof1_frnt in roof is External
+   6   3   0   0   0  #  75  roof1_side in roof is External
+   6   4   0   0   0  #  76  roof1_vert in roof is External
+   6   5   0   0   0  #  77  roof2_vert in roof is External
+   6   6   0   0   0  #  78  roof2_back in roof is External
+   6   7   0   0   0  #  79  roof2_front in roof is External
+   6   8   0   0   0  #  80  roof_1_2 in roof is External
+   6   9   0   0   0  #  81  roof1_tri in roof is External
+   6  10   3   4   5  #  82  ceiling in roof >|< 2nd_ceiling in secondfloor
+   6  11   3   5  13  #  83  stair_ceilin in roof >|< stair_ceilin in stairwell

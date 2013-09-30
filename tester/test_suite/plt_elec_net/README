@@ -1,0 +1,3 @@
+This folder contais test files for the SOFC fuel cell model. In this configuration,
+it is coupled to the distributed generation system controller and attached to 
+ESP-r's electrical network. The SOFC is controlled to follow thermal loads.

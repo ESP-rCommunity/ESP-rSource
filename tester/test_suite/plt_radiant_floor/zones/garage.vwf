@@ -1,0 +1,22 @@
+# zone viewfactors and MRT sensor definition of garage
+# defined in ../zones/garage.vwf
+*VIEWFACTORS
+*GEOM  ../zones/garage.geo
+   0   8   2    # no sensors, zone surfs, zone no
+# Zone viewfactors follow
+ 0.0000 0.1607 0.0264 0.1162 0.2908 0.2908 0.0724 0.0428
+ 0.1321 0.0000 0.0396 0.1183 0.3010 0.3010 0.0923 0.0158
+ 0.0910 0.1831 0.0000 0.1806 0.3040 0.2358 0.0000 0.0056
+ 0.1319 0.1341 0.0395 0.0000 0.3010 0.3010 0.0926 0.0000
+ 0.1291 0.1622 0.0311 0.1436 0.0000 0.4184 0.0980 0.0177
+ 0.1291 0.1622 0.0267 0.1386 0.4184 0.0000 0.1024 0.0227
+ 0.0988 0.1471 0.0000 0.1399 0.2842 0.3226 0.0000 0.0075
+ 0.2603 0.1326 0.0091 0.0000 0.2401 0.3259 0.0320 0.0000
+ sum over row  1 is :   1.0000908375
+ sum over row  2 is :   1.0000898838
+ sum over row  3 is :   1.0000914335
+ sum over row  4 is :   1.0000894070
+ sum over row  5 is :   1.0000931025
+ sum over row  6 is :   1.0000929832
+ sum over row  7 is :   1.0000890493
+ sum over row  8 is :   1.0000884533

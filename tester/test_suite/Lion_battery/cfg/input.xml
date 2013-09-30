@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+  <apply_style_sheet>false</apply_style_sheet>
+  <dump_all_data>false</dump_all_data>
+  <enable_xml_wildcards>true</enable_xml_wildcards>
+  <hierarchy>flat</hierarchy>
+  <link_style_sheet>false</link_style_sheet>
+  <output_dictionary>false</output_dictionary>
+  <report_startup_period_data>false</report_startup_period_data>
+  <save_to_disk>false</save_to_disk>
+  <style_sheet>/usr/esru/esp-r/xsl/generic_summary.xsl</style_sheet>
+  <transform_destination_file>none</transform_destination_file>
+  <step_variable>building/time_step</step_variable>
+  <step_variable>electrical_net/*</step_variable>
+  <step_variable>building/zone_01/air_point/temperature</step_variable>
+  <step_variable>building/day_number/present</step_variable>
+  <step_variable>building/time/present</step_variable>
+  <step_variable>building/all_zones/supplied_energy/heating</step_variable>
+  <step_variable>building/all_zones/supplied_energy/cooling</step_variable>
+  <step_variable>building/all_zones/thermal_loads/heating/total</step_variable>
+  <step_variable>climate/dry_bulb_temperature</step_variable>
+  <step_variable>plant/*</step_variable>
+</configuration>

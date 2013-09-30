@@ -1,0 +1,14 @@
+#
+# BASESIMP input file
+#
+2.5              # height
+1.9              # depth
+11.8             # length
+11.8             # width
+0.9              # overlap (only important for BCCN_1 and BCCN_2)
+0.0              # rsi
+0.85             # soilk
+5.               # wtable
+0.               # Tg, avg
+0.               # Tg, amp
+0.               # Ps

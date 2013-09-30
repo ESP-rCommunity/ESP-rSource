@@ -1,0 +1,28 @@
+*connections  for complex_fenestration
+*Date Tue Oct 13 12:47:09 2009
+     25   # number of connections
+   1   1   0   0   0  #    1 Wall-1 in zone1 is External
+   1   2   3   2   4  #    2 Wall-2 in zone1 >|< Wall-4 in zone2
+   1   3   0   0   0  #    3 Wall-3 in zone1 is External
+   1   4   0   0   0  #    4 Wall-4 in zone1 is External
+   1   5   0   0   0  #    5 Top-5 in zone1 is External
+   1   6   0   0   0  #    6 Base-6 in zone1 is External
+   1   7   0   0   0  #    7 window1 in zone1 is External
+   1   8   0   0   0  #    8 window2 in zone1 is External
+   1   9   0   0   0  #    9 window3 in zone1 is External
+   2   1   0   0   0  #   10 Wall-1 in zone2 is External
+   2   2   3   3   4  #   11 Wall-2 in zone2 >|< Wall-4 in zone3
+   2   3   0   0   0  #   12 Wall-3 in zone2 is External
+   2   4   3   1   2  #   13 Wall-4 in zone2 >|< Wall-2 in zone1
+   2   5   0   0   0  #   14 Top-5 in zone2 is External
+   2   6   0   0   0  #   15 Base-6 in zone2 is External
+   2   7   0   0   0  #   16 window4 in zone2 is External
+   2   8   0   0   0  #   17 window5 in zone2 is External
+   3   1   0   0   0  #   18 Wall-1 in zone3 is External
+   3   2   0   0   0  #   19 Wall-2 in zone3 is External
+   3   3   0   0   0  #   20 Wall-3 in zone3 is External
+   3   4   3   2   2  #   21 Wall-4 in zone3 >|< Wall-2 in zone2
+   3   5   0   0   0  #   22 Top-5 in zone3 is External
+   3   6   0   0   0  #   23 Base-6 in zone3 is External
+   3   7   0   0   0  #   24 window6 in zone3 is External
+   3   8   0   0   0  #   25 window7 in zone3 is External

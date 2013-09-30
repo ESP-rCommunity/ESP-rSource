@@ -1,0 +1,231 @@
+# Plant component data base:
+../dbs/plantc.db1                                                     
+# Project title:
+                                                                      
+# Total no. of specified components and simulation type
+   10    4
+#->   1, Empirical model of electrolyser                                         
+  electrolyzer      70
+    3        # Component has   3 control variable(s).
+  0.  0.  0.
+   39     5
+      0.85450     #   1 Electrolyser efficiency coefficient e0 (-)                      
+     -0.59480E-04 #   2 Electrolyser efficiency coefficient e1 (-/W)                    
+      0.75630E-08 #   3 Electrolyser efficiency coefficient e2 (-/W^2)                  
+       0.0000     #   4 Electrolyser efficiency coefficient e3 (/oC)                    
+       0.0000     #   5 Electrolyser efficiency coefficient e4 (/oC^2)                  
+       0.0000     #   6 Electrolyser efficiency coefficient e5 (/s)                     
+       0.0000     #   7 Age of electrolyser at start of simulation (s)                  
+       60.000     #   8 Auxiliary power coefficient wo (W)                              
+       0.0000     #   9 Auxiliary power coefficient w1 (-)                              
+       0.0000     #  10 Minimum protective power in standby mode (W)                    
+       4600.0     #  11 Maximum power demand of electrolyser stack (W)                  
+       0.0000     #  12 O2 production rate coefficient a0 (mol/s)                       
+      0.50000     #  13 O2 production rate coefficient a1 (-)                           
+       0.0000     #  14 O2 production rate coefficient a2 (s/mol)                       
+       0.0000     #  15 H2O consumption rate coefficient b0 (mol/s)                     
+       1.0000     #  16 H2O consumption rate coefficient b1 (-)                         
+       0.0000     #  17 H2O consumption rate coefficient b2 (s/mol)                     
+       20.000     #  18 Electrolyser stack inlet temperature(oC)                        
+       0.0000     #  19 Internal heat generation coefficient f0 (W)                     
+       0.0000     #  20 Internal heat generation coefficient f1 (-)                     
+       0.0000     #  21 Internal heat generation coefficient f2 (/W)                    
+       0.0000     #  22 Internal heat generation coefficient f3 (W/oC)                  
+       0.0000     #  23 Internal heat generation coefficient f4 (W/oC^2)                
+       0.0000     #  24 Internal heat generation coefficient f5 (W/s)                   
+       15.000     #  25 Overall heat transfer coefficient to ambient (W/m^2oC)          
+       10.000     #  26 Surface area (m^2)                                              
+       0.0000     #  27 Heat recovery coefficient g0 (W)                                
+       0.0000     #  28 Heat recovery coefficient g1 (/W)                               
+       0.0000     #  29 Heat recovery coefficient g2 (/W^2)                             
+       0.0000     #  30 Heat recovery coefficient g3 (W/oC)                             
+       0.0000     #  31 Heat recovery coefficient g4 (W/oC^2)                           
+       0.0000     #  32 Heat recovery coefficient g5 (Ws/kg)                            
+       0.0000     #  33 Heat recovery coefficient g6 (Ws^2/kg^2)                        
+       0.0000     #  34 Heat recovery coefficient g7 (W/oC)                             
+       0.0000     #  35 Heat recovery coefficient g8 (W/oC^2)                           
+       1.0000     #  36 Flag for feed water temperature (1=const,2=containment temp)    
+       20.000     #  37 Constant feed water inlet temperature (oC)                      
+       24.0000     #  38 Operating voltage of electrolyser (V)                           
+       2.0000     #  39 Mode of operation (1=Constant current; 2=Variable current)
+# Component electrical details.
+  1.000  -1      0.000    120.000   4
+#->   2, Empirical PEM hydrogen cogeneration fuel cell                           
+  PEMFC             73
+    2        # Component has   2 control variable(s).
+  0.  0.
+   62     5
+       12950.     #   1 System Nominal rated output (W)                                 
+       60.000     #   2 Number of cells in a stack                                      
+       0.0000     #   3 Accumulated operating time at start of simulation (s)           
+       0.0000     #   4 Minimum fuel flow (kg/s)                                        
+      0.24717E-03 #   5 Maximum fuel flow (kg/s)                                        
+       80.000     #   6 Maximum cooling water outlet temp (oC)                          
+      -1.0000     #   7 Max rate of change in power output (W/s)                        
+      -1.0000     #   8 Max rate of change in heat output (W/s)                         
+       20.000     #   9 Start-up period duation (s)                                     
+      0.24720E-03 #  10 Start-up period fuel flow (kg/s)                                
+      -50.000     #  11 Net electric output at start-up (W)                             
+       0.0000     #  12 Thermal output at start-up (W)                                  
+       60.000     #  13 Cool down period duration (s)                                   
+       0.0000     #  14 Cool-down period fuel flow (kg/s)                               
+       0.0000     #  15 Electric output at cool-down (W)                                
+       0.0000     #  16 Thermal output at cool-down (W)                                 
+       0.0000     #  17 Standby mode fuel flow (kg/s)                                   
+       0.0000     #  18 Net electrical output in standby mode (W)                       
+       0.0000     #  19 Thermal output in standby mode (W)                              
+       0.0000     #  20 Skin loss coefficient C0  (W)                                   
+       0.0000     #  21 Skin loss coefficient C1 (W / W)                                
+       0.0000     #  22 Skin loss coefficient C2 (W / W^2)                              
+       0.0000     #  23 Skin loss coefficient C3 (Ws/kmol)                              
+       0.0000     #  24 Skin loss coefficient C4 (Ws^2/kmol^2)                          
+       0.0000     #  25 Thermal efficiency coefficient C0 (-)                           
+       0.0000     #  26 Thermal efficiency coefficient C1 (1/W)                         
+       0.0000     #  27 Thermal efficiency coefficient C2 (1/W)                         
+       0.0000     #  28 Thermal efficiency coefficient C3 (1/oC)                        
+       0.0000     #  29 Thermal efficiency coefficient C4 (1/oC^2)                      
+       0.0000     #  30 Thermal efficiency coefficient C5 (s/kg)                        
+       0.0000     #  31 Thermal efficiency coefficient C6 (s^2/kg^2)                    
+       0.0000     #  32 Thermal efficiency coefficient C7 (1/s)                         
+      0.53970     #  33 Electrical efficiency coefficient C0 (-)                        
+     -0.36730E-05 #  34 Electrical efficiency coefficient C1 (1/W)                      
+       0.0000     #  35 Electrical efficiency coefficient C2 (1/W2)                     
+       0.0000     #  36 Electrical efficiency coefficient C3 (1/oC)                     
+       0.0000     #  37 Electrical efficiency coefficient C4 (1/oC^2)                   
+       0.0000     #  38 Electrical efficiency coefficient C5 (s/kg)                     
+       0.0000     #  39 Electrical efficiency coefficient C6 (s^2/kg^2)                 
+       0.0000     #  40 Electrical efficiency coefficient C7 (1/s)                      
+       379.50     #  41 Aux. DC power draw coefficient C0 (W)                           
+      0.76130E-02 #  42 Aux. DC power draw coefficient C1 (W / W)                       
+      0.55210E-06 #  43 Aux. DC power draw coefficient C2 (W / W^2)                     
+       0.0000     #  44 Aux. DC power draw coefficient C3 (W/oC)                        
+       0.0000     #  45 Aux. DC power draw coefficient C4 (W/oC^2)                      
+       0.0000     #  46 Aux. DC power draw coefficient C5 (Ws/kg)                       
+       0.0000     #  47 Aux. DC power draw coefficient C6 (Ws^2/kg^2)                   
+       0.0000     #  48 Aux. AC power draw coefficient C0 (W)                           
+       0.0000     #  49 Aux. AC power draw coefficient C1 (W / W)                       
+       0.0000     #  50 Aux. AC power draw coefficient C2 (W / W^2)                     
+       0.0000     #  51 Aux. AC power draw coefficient C3 (W/oC)                        
+       0.0000     #  52 Aux. AC power draw coefficient C4 (W/oC^2)                      
+       0.0000     #  53 Aux. AC power draw coefficient C5 (Ws/kg)                       
+       0.0000     #  54 Aux. AC power draw coefficient C6 (Ws^2/kg^2)                   
+       0.0000     #  55 Gross heat input correlation minimum bound (W)                  
+       50000.     #  56 Gross heat input correlation maximum bound (W)                  
+       0.0000     #  57 Cooling water temperature correlation minimum bound (oC)        
+       100.00     #  58 Cooling water temperature correlation minimum bound (oC)        
+       0.0000     #  59 Cooling water flow correlation minimum bound (kg/s)             
+       100.00     #  60 Cooling water flow correlation maximum bound (kg/s)             
+      -10.000     #  61 Ambient  temperature correlation minimum bound (oC)             
+       100.00     #  62 Ambient temperature correlation maximum bound (oC)              
+# Component electrical details.
+  1.000  -1      0.000    120.000   4
+#->   3, hydrogen compressor                                                     
+  compressor        65
+    0        # Component has   0 control variable(s).
+   10     5
+       2.0000     #   1 Analysis type (1 = ideal gas law, 2 = empirical)                
+       680.0      #   2 Inlet pressure (kPa)                                            
+       -1.        #   3 Outlet pressure (kPa)                                           
+       0.0000     #   4 Electrical/Kinematic performance coefficient 0                  
+      0.26600E+08 #   5 Electrical/Kinematic performance coefficient 1                  
+       0.0000     #   6 Electrical/Kinematic performance coefficient 2                  
+       1.0000     #   7 Thermal performance coefficient 0 (emperical model only!)       
+       0.0000     #   8 Thermal performance coefficient 1 (emperical model only!)       
+       0.0000     #   9 Thermal performance coefficient 2 (emperical model only!)   
+       1.0000     #  10 Motor/generator efficiency (ideal gas model only!)    
+# Component electrical details.
+  1.000  -1      0.000    120.000   4
+#->   4, Compressed gas storage cylinder model                                   
+  h2-storage        71
+    2        # Component has   2 control variable(s).
+  0.  0.
+    9
+       5.0000     #   1 Encapsulated volume (m3)                                        
+       200.00     #   2 Cylinder wall mass (kg)                                         
+       500.00     #   3 Cylinder wall specific heat (J/kg oC)                           
+       20.000     #   4 Cylinder heat transfer coefficient (W/K)                        
+       500.00     #   5 Minimum storage pressure (kPa)                                  
+       12000.     #   6 Maximum storage pressure (kPa)                                  
+        4000.     #   7 Initial storage pressure (kPa)                                  
+       1.0000     #   8 Gas model (1: ideal, 2: Lee-Kesler)                             
+       0.0000     #   9 Vent when over maximum pressure? (0: no, 1: yes)                
+#->   5, variable speed domestic WCH pump; 1 node model                          
+  pump-1            15
+    1        # Component has   1 control variable(s).
+  0.
+    6     5
+       5.0000     #   1 Component total mass (kg)                                       
+       2250.0     #   2 Mass weighted average specific heat (J/kgK)                     
+      0.20000     #   3 UA modulus from wall to environment (W/K)                       
+       0.0000     #   4 Rated total absorbed power (W)                                  
+      0.30000E-03 #   5 Rated volume flow rate (m^3/s)                                  
+      0.70000     #   6 Overall efficiency (-)                                          
+# Component electrical details.
+  1.000  -1      0.000    120.000   4
+#->   6, variable speed domestic WCH pump; 1 node model                          
+  pump-2            15
+    1        # Component has   1 control variable(s).
+  0.
+    6     5
+       5.0000     #   1 Component total mass (kg)                                       
+       2250.0     #   2 Mass weighted average specific heat (J/kgK)                     
+      0.20000     #   3 UA modulus from wall to environment (W/K)                       
+       50.000     #   4 Rated total absorbed power (W)                                  
+      0.30000E-03 #   5 Rated volume flow rate (m^3/s)                                  
+      0.70000     #   6 Overall efficiency (-)                                          
+# Component electrical details.
+  1.000  -1      0.000    120.000   4
+#->   7, WCH pipe; 1 node model                                                  
+  pipe-1            13
+    0        # Component has   0 control variable(s).
+    6
+       2.0000     #   1 Component total mass (kg)                                       
+       2250.0     #   2 Mass weighted average specific heat (J/kgK)                     
+       2.0000     #   3 UA modulus from wall to environment (W/K)                       
+      0.15000E-01 #   4 Hydraulic diameter of pipe (m)                                  
+       5.0000     #   5 Length of pipe section (m)                                      
+      0.17670E-03 #   6 Cross sectional face area (m^2)                                 
+#->   8, WCH pipe; 1 node model                                                  
+  pipe-2            13
+    0        # Component has   0 control variable(s).
+    6
+       2.0000     #   1 Component total mass (kg)                                       
+       2250.0     #   2 Mass weighted average specific heat (J/kgK)                     
+       2.0000     #   3 UA modulus from wall to environment (W/K)                       
+      0.15000E-01 #   4 Hydraulic diameter of pipe (m)                                  
+       5.0000     #   5 Length of pipe section (m)                                      
+      0.17670E-03 #   6 Cross sectional face area (m^2)                                 
+#->   9, Hydrogen appliance such as stove/dryer                                  
+  h2_dryer          74
+    0        # Component has   0 control variable(s).
+    3
+       1.0000     #   1 Interpolation method (1: step, 2: linear)                       
+      0.80000     #   2 Appliance efficiency
+       1.0000     #   3 Appliance scale factor                                            
+#->  10, Hydrogen appliance such as stove/dryer                                  
+  h2_stove          74
+    0        # Component has   0 control variable(s).
+    3
+       1.0000     #   1 Interpolation method (1: step, 2: linear)                       
+      0.80000     #   2 Appliance efficiency
+       1.0000     #   3 Appliance scale factor                                            
+# The following is a list of component connections.
+  9          # Total number of connections
+# receiving       node  conncn sending          node  diversion  suppl1   suppl2
+# component              type  component                ratio
+  compressor        1     3     electrolyzer      1    1.000                 #  1
+  h2-storage        1     3     compressor        1    1.000                 #  2
+  PEMFC             1     3     h2-storage        1    1.000                 #  3
+  electrolyzer      2     2     pump-1            1    1.000    20.00   0.00 #  4
+  pipe-1            1     3     electrolyzer      2    1.000                 #  5
+  pump-1            1     3     pipe-1            1    1.000                 #  6
+  PEMFC             2     2     pump-2            1    1.000    20.00   0.00 #  7
+  pipe-2            1     3     PEMFC             2    1.000                 #  8
+  pump-2            1     3     pipe-2            1    1.000                 #  9
+# The following is a list of containment temperatures.
+  2          # Total number of containments
+# Component       cont type        suppl1     suppl2    suppl3
+  electrolyzer        2            20.00000   0.00000   0.00000
+  h2-storage          2            20.00000   0.00000   0.00000
+# No mass flow network defined.
+    0
