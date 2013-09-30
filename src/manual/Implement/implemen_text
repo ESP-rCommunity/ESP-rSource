@@ -1,0 +1,254 @@
+.de MT    \"macro to start text
+.nr VS 12
+.nr PS 10
+.vs 12
+.ps 10
+..
+.de mT    \"macro to start table
+.nr VS 10
+.nr PS 8
+.vs 10
+.ps 8
+..
+.de ML    \"macro to start listing
+.LD
+.vs 8
+.ps 7
+.cs 1 22
+.cs 3 22
+..
+.de ES    \"macro to end code listing
+.DE
+.cs 1
+.cs 2
+.cs 3
+..
+.ds CH
+.ds RH %
+.ds LH ESP-r Implementation Procedure: Version 8 Series
+.EQ
+delim $$
+.EN
+.SH
+0 Introduction
+.PP
+This report describes the implementation procedure to be followed
+when installing ESP-r.  There are two alternative procedures for
+acquiring the system: by electronic transfer (FTP) and by
+tape medium.  The former is the preferred method, as it is much
+faster and permits more frequent distribution of code updates.
+.SH
+1 FTP Transfer
+.PP
+The latest release of ESP-r is kept on a University of Strathclyde computer
+that can be accessed by FTP.  FTP (File Transfer Protocol) is the
+primary method for transferring files over the Internet, and
+allows the copying of files from one computer to another
+worldwide at reasonable transfer speeds (in the order of 5-10Kbyte/s).
+The files are kept in compressed tar archives (esp-r?.tar.Z), 
+and they can be accessed by the following procedure:
+.DS
+ftp ftp.strath.ac.uk
+login>     esru
+password>  ??????
+           cd Esru/ESP-r
+           dir
+           get esp-r.list
+           binary
+           mget esp-r?.tar.Z    
+           bye
+.DE
+.PP
+The dir command gives a list of the files in the directory,
+which will contain the compressed tar files and a file
+called esp-r.list. The latter contains a listing of the files
+in the archive. Note that it is important to set the 
+binary switch before transferring the compressed tar files,
+in order to prevent corruption. It is likely that the transfer 
+will be significantly faster at night. Please contact ESRU
+(preferably by email at esru@strath.ac.uk)
+for the password and if you have trouble resolving the 
+ftp hostname (ftp.strath.ac.uk).
+.PP
+Once the compressed tar files have been transferred, the ESP-r
+files can be reconstituted with the "uncompress" and "tar x" commands.
+.SH
+2 ESP-r System Contents
+.PP
+The ESP-r system, as acquired by ftp, or by reading from 
+a tape, will include some or all of the following files.
+.sp 1
+.IP \(bu
+A README file containing further help on installation.
+.IP \(bu
+If source code is supplied, sets of files of type *.f, *.F
+or *.c will exist for each program
+module ??? where ??? = prj, bps, res, con, pro, pdb, pdf,
+win, clm, ish, mfs, cfg, tut and mrt. 
+These contain the FORTRAN77 or C source code
+for the subroutines which comprise the module.
+.IP \(bu
+When working with source code, two libraries are also
+required. These will be delivered as the general library
+libesru.a and the graphics library. The graphics library is a shared
+library named libXww.so.?.? for an X windows implementation
+and libww.so.?.? for a Sun windows implementation.
+Alternatively the libraries will be supplied as source and will
+need to be compiled.
+.IP \(bu
+If executables are supplied, these will be called \fBprj\fR,
+\fBbps\fR, \fBres\fR, \fBcon\fR, \fBpro\fR, \fBpdb\fR, \fBpdf\fR,
+\fBwin\fR, \fBclm\fR, \fBish\fR, \fBmfs\fR, \fBcfg\fR, \fBtut\fR and \fBmrt\fR.
+.IP \(bu
+Files material.???, constr.???, multicon.???, plantc.???, pressc.???, profiles.??? and optics.??? 
+are the primitive constructions, multi-constructions,
+plant components, pressure coefficients, profiles and optical databases respectively.
+If your machine is compatible with ours then some of these files will
+be binary random access as required by ESP-r. In this case
+??? = db1. Otherwise ??? = db1.a and these files are ascii
+images of each database.  
+The module \fBpdb\fR is used to create plantc.db1 (the binary version of
+the plant template common file).
+For reference, the following table sets out the names 
+and format of databases used within the ESP-r system.
+.TS H
+center box expand;
+l l l.
+.TH
+ESP-r database	ESP-r	Program for conversions
+	format
+_
+climate	binary	clm (can be invoked from prj)
+materials	binary	prj
+multi-constructions	ascii	-
+optics	ascii	-
+pressure coefficients	ascii	-
+plant components	binary	pdb
+profiles	binary	pro (can be invoked from prj)
+.TE
+.IP \(bu
+The file clm67 is a binary, random access climate file as
+required by ESP-r. Again you may have been supplied with
+clm67.a, the ascii equivalent. The program \fBclm\fR (which can be
+invoked from the project manager) is used
+to transform clm67.a to clm67. Since this file is only for testing
+purposes, we recommend that you set the latitude, longitude difference
+and year to 52, 0, 1967 in response to the questions you will be asked.
+.IP \(bu
+A training directory, containing exemplars ranging
+from very simple to complex problems. Section 7 of the manual and
+the on-line tutorial give details.
+.IP \(bu
+A defaults directory, useful for referencing frequently
+used databases and files, especially during testing and training.
+This directory contains links to other files: it may be
+supplied as a tar file.
+.IP \(bu
+A manual, set in troff format.
+.PP
+The tarfiles or tape contents will already be
+organised in a directory structure as described below.
+.SH
+3 Implementation Procedure
+.PP
+For Unix workstations, the implementation procedure is:
+.IP 1.
+Create a home directory /usr/esru. If necessary, this can 
+be a link to a directory `esru' anywhere on the system.
+You will need to be superuser to create this directory 
+and/or link. cd to directory `esru'.
+.IP 2.
+If you have tarfiles transferred by ftp, move them to
+your current directory (`esru'), then uncompress 
+and "tar x" the files. In the case of a 
+tape/cartridge/floppy, use "tar xf /dev/rst0" (or similar)
+to restore the contents. This will create a directory src/esp-r,
+lib and bin to contain the system contents as follows (note that
+if the system has to be fully installed from scratch, some of these
+directories will be created or moved during the install process):
+.sp 1
+.TS H
+box center expand;
+cb cb
+l l.
+Directory	Contents
+_
+.TH
+~esru/lib/libesru.a	utility library
+~esru/lib/libXww.so.?.?.	X windows graphics library
+~esru/src/lib/esru	bit-mapped library source
+~esru/src/lib/ww_3.8	raster-ops library source
+~esru/src/esp-r/esruprj	source and Makefile for prj
+~esru/src/esp-r/esrubps	source and Makefile for bps
+~esru/src/esp-r/esrures	source and Makefile for res
+~esru/src/esp-r/esrucon	source and Makefile for con
+~esru/src/esp-r/esrupro	source and Makefile for pro
+~esru/src/esp-r/esrupdb	source and Makefile for pdb
+~esru/src/esp-r/esrupdf	source and Makefile for pdf
+~esru/src/esp-r/esruwin	source and Makefile for win
+~esru/src/esp-r/esruclm	source and Makefile for clm
+~esru/src/esp-r/esruish	source and Makefile for ish
+~esru/src/esp-r/esrumfs	source and Makefile for mfs
+~esru/src/esp-r/esrucfg	source and Makefile for cfg
+~esru/src/esp-r/esrutut	source and Makefile for tut
+~esru/src/esp-r/Makefile	system Makefile
+~esru/src/esp-r/env	environment variables
+~esru/src/esp-r/training	training exemplars
+~esru/src/esp-r/manual	ESP-r manual
+~esru/esp-r/climate	clm67 (other climate files should be placed here)
+~esru/esp-r/databases	constr.db1.a, plantc.db1, pressc.db1 & profiles.db1
+~esru/esp-r/defaults	links to default files
+~esru/esp-r/include	include files for ESP-r
+~esru/esp-r/binsh	shell scripts for ESP-r
+~esru/esp-r/bin	executable objects & miscellaneous scripts
+.TE
+.IP 3.
+If the whole system including libraries needs to be made,
+the system Makefile in ~esru/src/esp-r should be used.
+Firstly, the Makefile should be edited so that
+the correct environment variables are set for the
+machine type and the location of the directory
+containing the window manager libraries. 
+Note that scripts wwl (for Sun windows) and xr5 (for X windows)
+in ~esru/src/esp-r/bin are used by make to return workstation
+specific libraries. These scripts should be moved to ~esru/bin,
+and in the case of an X windows implementation, the script xr5
+should be modified to point to the location of the X11 libraries.
+Type `make' and follow instructions. In case of difficulties
+with the ww graphics library, this can be made independently
+by changing directory to ~esru/src/lib/ww_3.8/dd/x (for X windows)
+or ~esru/src/lib/ww_3.8/dd/sun (for Sun windows) and typing
+make. If successful the library can be moved to its
+correct location, ~esru/lib.
+.IP 4.
+In a similar fashion, if the libraries are available
+but not the individual ESP-r program executables, these
+can be made using the system Makefile. For example,
+to make the project manager, module `prj',
+type "make prj".
+.IP 5.
+If you have not been sent the binary versions of the materials
+database and the test climate, you should
+have received their ascii equivalents. Use the project
+manager to convert from ascii to binary.
+.IP 6.
+If the defaults directory contains a tarfile, this should be
+exploded (tar xvf defaults.tar). If necessary, the links
+should be modified to point to the required default databases
+and/or files. Note that a default
+result library is not supplied: if required, one called
+test.res can be created by simulating a problem and placed
+in the directory /usr/esru/esp-r/demo.
+.IP 7.
+Set the environment variables (examples are given in
+directory env; see README) as appropriate
+for X windows or Sun windows implementations.
+.SH
+4 Software Structures
+.PP
+For those who wish to modify/extend ESP-r,
+the system source code is well commented
+and organised into directories by function (ie common
+utilities, graphics primitives, flow theory,
+control algorithms, plant components, etc held separately).
+Further details are available from ESRU on request.

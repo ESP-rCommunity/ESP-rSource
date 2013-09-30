@@ -1,0 +1,132 @@
+.ds CH
+.ds RH 3-%
+.ds LH ESP-r User Guide Version 11 Series
+.EQ
+delim $$
+.EN
+.ps 12
+.vs 14
+.nr PS 12
+.nr VS 14
+.LP
+\ 
+.sp 2
+.ce
+\fB\s+9Section Three\s0\fP
+.sp
+.ce
+\fB\s+5Exercises\s0\fP
+.sp 2
+.SH
+Contents
+.LP
+\ 
+.nf
+3.0 Introduction
+3.1 List of exercises
+.fi
+.bp
+.SH
+3.0 Introduction
+.PP
+There a number of simulation tools available for energy
+efficient building design, ranging from simplified tools
+to detailed simulation programs.
+Several of these are described on Web pages that can be found via the
+Web address given later in this section. To learn the capability
+of such design tools, it is useful to study:
+.IP a)
+the types of analysis questions that they can address and
+the benefits of using energy and environmental simulation;
+.IP b)
+how to use the tools; and
+.IP c)
+the underlying theory upon which the numerical processing and
+analysis functions of the tools are based.
+.PP
+The exercises and assignments described in this section are
+concerned with how to use one particular detailed simulation
+program, ESP-r, but those following the course are encouraged
+to also refer to related Web-based material.
+.PP
+In order to be able to use ESP-r and to appreciate the following
+sections, it is assumed that you have access to a Unix workstation (you
+will need a personal user account on the machine) and that you have
+a number of basic computer skills.  A number of exercises have been designed
+to progress ESP-r users from the category of novice to specialist
+over a period of time which will depend on the individual's aptitude
+and stamina. Once a level of proficiency has been attained, the exercises
+of section 4 can be attempted.
+.PP
+With the exercises are ten
+assignments which gradually increase in difficulty.
+It is suggested that the course participant follows the
+exercises and assignments in the order given.
+The assignments serve a dual purpose. They enable the instructor to
+assess whether or not the training material is being absorbed effectively. For
+the course participant they form a series of "real world" consultancy
+sub-tasks enabling the participant to check whether the training
+material is understood, while at the same time placing ESP-r in a realistic context.
+Each assignment has an associated prerequisite exercise,
+such as learning email in the case of assignment 1.
+The outcome of each assignment should be sent by electronic mail to the
+supervisor.
+.PP
+The exercises and assignments can be accessed by a Web browser, and it is
+suggested that they are constantly displayed in one window as the
+course participant progresses through the course.
+.PP
+The relevant Web address is:
+.sp 2
+.ce
+\ \ \ \ \ http://www.esru.strath.ac.uk
+.sp 2
+The course participant should follow links from this high level
+page to ESP-r training courses and from there to the structured
+exercises.
+.bp
+.SH
+3.1 List of Exercises
+.LP
+Foundation level exercises
+.DS
+1 Getting started on the workstation
+2 Configuring the workstation for ESP-r use
+3 Overview of ESP-r
+4 Exploring the in-built training exemplars
+5 Defining a problem to ESP-r - the basics
+6 Simulation - the basics
+7 Results analysis - the basics
+8 Problem definition - databases
+9 Problem definition - geometry
+10 Problem definition - constructions
+11 Problem description - operations
+12 Problem definition - inter-zone connections
+13 Climate data and its analysis
+14 Control capabilities
+15 Simulation - advanced facilities
+16 Results analysis - additional facilities
+17 Review of files and program modules
+18 Review of progress
+.DE
+.sp
+.LP
+Intermediate level exercises
+.DS
+19 Shading and insolation analysis
+20 Fluid flow analysis
+21 Plant and control modelling
+22 Lighting analysis
+23 Other ESP-r facilities
+24 Upcoming features
+.DE
+.sp
+.LP
+Expert level exercises
+.DS
+25 Making Models: CAD and Attribution
+26 Making Models: Fluid Flow, Plant and Control Networks
+27 Making Models: Enhanced Resolution
+28 Integrated Performance Appraisal
+29 Edit/ compile/ link test cycle
+.DE

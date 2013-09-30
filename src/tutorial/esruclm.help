@@ -1,0 +1,799 @@
+*help_text clm
+*subroutine MKBCLM
+*item MKBCLM confirm_marker_line 
+'If the ASCII file was exported from the climate'
+'module it will have a marker line at the start of'
+'each day. If the file does not have these markers'
+'then say no. '
+*enditem
+        CALL ASKOK(' ',
+*item MKBCLM confirm_year
+'The year is required to find the day of the week '
+'for a given julian day.'
+*enditem
+          CALL EASKI(IYEAR,' ',' What is the year ? ',
+*item MKBCLM confirm_site_name
+'Site name (30 char) for descriptive purposes. '
+*enditem
+          CALL EASKS(CLMLOC,' ',' Climate site name ? ',
+*item MKBCLM confirm_lat_log_diff
+'The climate latitude does not necessarily have to '
+'match the site latitude.  However, the difference '
+'should not be great or simulation results may be '
+'open to question.'
+*enditem
+          CALL EASKR(CLAT,' ',' Climate latitude ? ',
+*subroutine COLTOBCLM
+*item COLTOBCLM clm_import_param
+'Weather data can be imported from column data files if'
+'you supply the name of the file and then select the'
+'columns to use for each of the data items (leaving the'
+'column index at zero skips the data).
+'  '
+'You can set which line of the file to begin reading at'
+'(this allows you to skip headings).'
+'  '
+'The enter site data asks you for documentation and year'
+'and the period prior to importing the hourly data.'
+'  '
+'Units for the data types are:'
+'  diffuse solar radiation - W/m2 real or integer or'
+'    tenths W/m2 integer'
+'  ambient db T - degrees C real or integer or  tenths'
+'    degree C integer'
+'  direct solar - W/m2 real or integer or tenths W/m2'
+'  global horizontal solar radiation - W/m2 real, W/m2 int'
+'    tenths W/m2 integer, sum of direct+diffuse KJ/m2 real'
+'    or sum of direct+diffuse KJ/m2 integer. For the latter'
+'    two choices you are also asked for the actual longitude'
+'    and the longitude difference and to select a method to'
+'    use.'
+'  wind speed - m/s real m/s int tenths m/s int or'
+'    knots real or integer
+'  wind direction - degrees from north real or integer'
+'    or tenths degree from north integer'
+'  RH  % real, tenths % integer or a real 0.0-1.0.'
+*enditem
+*item COLTOBCLM confirm_marker_line
+'Files for weather import might or might not have a demarcation'
+'between the days.  This is a yes or no question.'
+*enditem
+*item COLTOBCLM confirm_year
+'The year is required to find the day of the week '
+'for a given julian day.'
+*enditem
+*item COLTOBCLM confirm_lat_log_diff
+'The climate latitude does not necessarily have to '
+'match the site latitude.  However, the difference '
+'should not be great or simulation results may be '
+'open to question.'
+'  '
+'For solar radiation defined as the sum of direct and'
+'diffuse you are being asked for the ACTUAL latitude'
+'as well as the difference from the local time.'
+*enditem
+*item COLTOBCLM korea_met_conversion'
+'The default conversion model is based on a publication'
+'from Muneer: Solar Radiation and Daylight models (1997)'
+'ISBN: 0-7506-2495-7.'
+' '
+'The Maxwell model is equation 3.4.2a and 3.4.2b of '
+'Muneer book on page 102. '
+'The Erbs, Klein and Duffie model is based on empirical '
+'correlations, documented in: Erbs D.G., Klein S.A., '
+'Duffie J.A. 1982. Estimation of the diffuse radiation'
+'fraction for hourly, daily and monthly-average global '
+'radiation. Solar Energy 28: pp.293-302.'
+' '
+'The three methods tend to give different estimates of'
+'diffuse radiation for a given global horizontal solar'
+'radiation value. The default method tends to give higher'
+'diffuse values. '
+' '
+'If in doubt, create a climate file for each of the'
+'methods and visually inspect the predictions.'
+' '
+*enditem
+*subroutine MKOREANCLM
+*item MKOREANCLM confirm_lat_log_diff
+'The climate longitude does not necessarily have to '
+'match the site latitude.  However, the difference '
+'should not be great or simulation results may be '
+'open to question.'
+*enditem
+      CALL EASKR(longit_for_diffuse_calcs,' ',
+*item MKOREANCLM local_time_difference
+'The local time difference from Greenwich is needed.'
+'Assume west is positive (e.g. use -2 for Greece) '
+*enditem
+      CALL EASKR(differ_from_Greenwich,' ',
+*item MKOREANCLM korea_met_conversion'
+'The default conversion model is based on a publication'
+'from Muneer: Solar Radiation and Daylight models (1997)'
+'ISBN: 0-7506-2495-7.'
+' '
+'The Maxwell model is equation 3.4.2a and 3.4.2b of '
+'Muneer book on page 102. '
+'The Erbs, Klein and Duffie model is based on empirical '
+'correlations, documented in: Erbs D.G., Klein S.A., '
+'Duffie J.A. 1982. Estimation of the diffuse radiation'
+'fraction for hourly, daily and monthly-average global '
+'radiation. Solar Energy 28: pp.293-302.'
+' '
+'The three methods tend to give different estimates of'
+'diffuse radiation for a given global horizontal solar'
+'radiation value. The default method tends to give higher'
+'diffuse values. '
+' '
+'If in doubt, create a climate file for each of the'
+'methods and visually inspect the predictions.'
+' '
+*enditem
+      call easkabc
+*subroutine CFILIN
+*item CFILIN clm_file_contents
+'A climate file holds hourly values for diffuse solar'
+'intensity in W/m^2, dry bulb temp in tenths degrees C, '
+'direct normal or global horizontal solar intensity'
+'in W/m^2, wind speed in tenths m/s, wind direction deg'
+'from north (clockwise), and relative humidity in '
+'percent.  It also holds latitude, longitude difference'
+'from the nearest time zone and the year represented.'
+' '
+'The normal location for climate files is:'
+' /usr/esru/esp-r/climate '
+' '
+'and any of these files may be analysed with clm.'
+' '
+'Climate files are either test reference years, actual'
+'climate data or synthetic data.'
+*enditem
+              CALL EASKF(LCMDFL,' New climate file (esp-r binary)?',
+*item HISCLM clm_numb_below_graph
+'If you want to see the numbers as well as the '
+'graph say yes. '
+*enditem
+          call askok(' ','Add table below existing graph?',ok,dok,2)
+*item HISCLM clm_frq_distr_choice
+'Frequency distribution choices. '
+*enditem
+*item HISFRQ clm_frq_distr_choice
+'Priority can be given to either the number of frequency'
+'bins or the width of each bin. Specifying the number of'
+'frequency bins adjusts the width of each bin, while'
+'setting this to 0 allows the number of bins to adjust'
+'to the (user specified) width of each bin.'
+*enditem
+      call easki(NBINS,' ',' Number of bins (0 for fixed width)?',
+*item HISFRQ clm_frq_distr_bins
+'Priority can be given to either the number of frequency'
+'bins or the width of each bin. Specifying the number of'
+'frequency bins adjusts the width of each bin, while'
+'setting this to 0 allows the number of bins to adjust'
+'to the (user specified) width of each bin.'
+*enditem
+      CALL EASKS(CHA,' ',' Bin width [d] ? ',20,
+*item HISFRQ clm_frq_min_bin
+'Give minimum bin value for the current parameter. '
+*enditem
+      call easkr(XBIN1,' ',' Minimum parameter value for bin ?',
+*item HISFRQ clm_frq_max_bin
+'Give maximum bin value for the current parameter. '
+*enditem
+      call easkr(XBINN,' ',' Maximum parameter value for bin ?',
+*item HISFRQ clm_frq_max_hit
+'You have the option to specify the maximum number '
+'of <hits> for the bins. '
+*enditem
+      call askok('  ',' Fix maximum height of bins?',OK,dok,2)
+*item HISFRQ clm_frq_max_hight
+'Height is in <hits> ?'
+*enditem
+        call easki(IFREQ,' ',' Maximim height ? ',
+*item clm select_db_opt
+'The <select db> option displays a list of available '
+'climate sets.  See menu level help for more information.'
+*enditem
+        CALL EASKABCD(' Climate database options:',' ',
+*item clm ok_to_clear_data
+'When reading in a new set of climate data you should'
+'clear the current data first.'
+*enditem
+          CALL ASKOK(' As part of changing climate file do you wish',
+*item clm rad_change_password
+'Changing the radiation type requires a password '
+'This is available from ESRU upon request. '
+*enditem
+        CALL EASKI(IANS,' ',' Password ? ',
+*item clm rad_type_choice
+'You have the choice of direct normal radiation and diffuse'
+'or global horizontal radiation and diffuse. Check carefully'
+'with the supplier of the file' 
+*enditem
+        CALL EASKAB(' Solar radiation type in file: ',' ',
+*item clm clm_data_creation_opt
+'Keyboard entry allows data for each hour to be '
+' typed in for a given day.'
+' '
+'Curve fitting can generate regular patterns of'
+' data (e.g. provide a maximum, minimum and a sinusodial'
+' pattern is generated.'
+' '
+'Transforms can change climate data by a fixed increment,'
+' make a fractional change or a polynomial based change'
+' or adjust wind speeds from particular directions.'
+' '
+'Prediction is used for predicting radiation from site '
+' position '
+*enditem
+        CALL EASKATOG(' Creation of data via: ',' ',
+*item clm clm_export_options
+'One option is to export a text version of the esp-r'
+'climate file. The other is a tab separated file suitable'
+'for use in an SQL database.'
+*enditem
+        call easkabc(' Climate export options:',' ',
+*item clm clm_file_browse_options
+'This file will be an ASCII version of the current db.'
+'You can accept the name or browse for a new location '
+'and add in a name. '
+*enditem
+            CALL EASKF(LLASCI,' Climate file (esp-r ascii format)?',
+*item clm clm_export_inclusive
+'Usually you will want to export the whole period.'
+'However you can select a portion of a year to export'
+'if required. '
+*enditem
+        CALL ASKOK(' Export the data inclusive of',outs,OK,dok,3)
+*item clm clm_esp_or_epw
+'One option is to import and EPW format file (joint esp-r'
+'and Energy Plus climate file format) or a text version'
+'of the esp-r climate file. '
+' '
+'Korean Met Office files are of two types XXXH.dat files'
+'hold hourly data, potentially for a number of years in '
+'a file delimited by | marks. XXXD.dat files hold earth'
+'temperature data at 1m 3m 5m for each day of multiple '
+' '
+'The ASCII column data import option allows you to specify'
+'a file with column data (e.g. a csv file) and then link the'
+'columns in the file with weather data and then set the units'
+'of the columns so that the data is correctly converted.'
+' '
+*enditem
+        CALL EASKABCD(' Climate import options:',' ',
+*item clm clm_epw_source
+'This text file is the EPW source to be read in.'
+'You can browse for the source location and then '
+'add in a name or type in the whole name. '
+*enditem
+              CALL EASKF(LLASCI,' Climate EPW file?',
+*item clm clm_import_inclusive
+'Usually you will want to import the whole period.'
+'If you want to import fewer days then say no and '
+'you will be asked to specify a period. '
+*enditem
+          CALL ASKOK(' Import the data inclusive of',outs,OK,dok,3)
+*item clm clm_import_ascii_esp
+'This ASCII ESP-r file is the source to be read in. '
+'You can browse for the source location and then '
+'add in a name or type in the whole name. '
+*enditem
+              CALL EASKF(LLASCI,' Climate ASCII file?',
+*item clm clm_also_update_site
+'When scanning an ASCII version of the ESP-r '
+'climate file you can also take any site data '
+'held in that file. '
+'Usually you want to update the site information.'
+*enditem
+          CALL ASKOK(' ','Update the site info as well?',OK,dok,4)
+*item clm clm_year_is_required
+'The year is required to find the day of the week '
+'for a given julian day. Korean Met off files can'
+'include several years but standard ESP-r climate'
+'files are setup for a single year. If your data '
+'file starts on something other than 1 January '
+'then data not matching the year you request will'
+'be filled with zeros. '
+*enditem
+          CALL EASKI(IYEAR,' ','Which year to import? ',
+*item clm clm_site_name
+'Site name (30 char) for descriptive purposes. '
+*enditem
+          CALL EASKS(CLMLOC,' ','Climate site name ? ',
+*item clm clm_latitude_match
+'The climate latitude does not necessarily have to '
+'match the site latitude.  However, the difference '
+'should not be great or simulation results may be '
+'open to question.'
+' '
+'Longitude difference is typically +-15 degrees and'
+'is the offset from the local time meridian. You will'
+'also be asked (later) about the actual longitude. '
+*enditem
+          CALL EASKR(CLAT,' ','Climate latitude ? ',
+*item clm clm_korea_met_file_name
+'This ASCII Korean file is the source to be read in.'
+'You can browse for the source location and then'
+'add in a name or type in the whole name.'
+' '
+'NOTE: the Korean MET file can include data in a form'
+'that is difficult for clm to read. Please check and'
+'edit the file for places of two commas in sequence '
+'(i.e. with no value between the commas). Ensure that'
+'there is a number (typically zero) inserted. '
+*enditem
+              CALL EASKF(LLASCI,' Korean XXXH.dat file?',
+*item clm korea_met_file_old_new
+'The Korean met office older files are in a different'
+'format than file after ~2006.'
+*enditem
+          CALL EASKABC('Korean met office file age options:',' ',
+*item clm clm_delimiter_choice
+'Tabular data can be sent to file with various '
+'delimiters: '
+'  spaces (format using spaces to lineup columns)'
+'  single space between columns'
+'  comma separator (for excel)'
+'  tab separator (for excel)'
+*enditem
+        CALL EASKATOG('Delimeter to use between columns of data:',' ',
+*item clm clm_additional_notes
+' '
+'Additional note: '
+' '
+'If you plan to import data from US DoE EPW climate files'
+'please read the relevant chapter in the ESP-r Cookbook.'
+' '
+'If you plan to import data from a Korean MET file might'
+'include data in a form that is difficult for clm to'
+'read. Please check and edit the file for places of two'
+'commas or || in sequence (i.e. with no value'
+'between the separators). Ensure that there is a'
+'number (typically zero) inserted. If the data item is'
+'for RH then a zero is not an appropriate number! '
+*enditem
+        CALL PHELPD('climate import',14,'climate_import',0,0,IER)
+*item CLMTOT confirm_another_period
+'If you do not want to carry on just say no. '
+*enditem
+      CALL ASKOK(' ','Continue with another period?',OK,dok,1)
+*item SETUP clm_setup_help
+'The preferences menu allows the format of the'
+'preferences (date & time) to be adjusted. '
+' '
+'For ease of viewing several font sizes are allowed.'
+'Remember that the window may be resized so that'
+'complex images may be viewed in greater detail.'
+*enditem
+        CALL PHELPD('clm preferences',6,'-',0,0,IER)
+*item CLMGRF clm_solar_graph
+'Both direct and diffuse solar share an axis. '
+*enditem
+*item CLMGRF clm_wind_graph
+'Wind is in m/sec, direction in degrees. '
+*enditem
+*item CLMGRF clm_graph_facilities
+'The graph facilities work by selecting items '
+'(from 1-6) to draw and then the <! Draw> command.'
+' '
+'You may alter the scaling of the various axis, to '
+'clarify or separate lines by choosing the <a Axis> '
+'command. '
+' '
+'If you have changed the size of the graphic or text '
+'feedback areas or the application window then use the'
+' <r Refresh> command '
+' '
+'You must <c Clear> the selections to look at another'
+'set of lines. '
+*enditem
+        CALL PHELPD('clm graphics',13,'-',0,0,IER)
+*item CLMINT clm_just_in_case
+'Just in case you made an error.... '
+*enditem
+      CALL ASKOK(' Is the analysis period (see below) correct?',
+*item CLMINT clm_another_say_no
+'Say no to stop looking at the data. '
+*enditem
+      CALL ASKOK(' ',' Continue with another period?',OK,dok,1)
+*subroutine CLMMMSYNOP
+*item CLMMMSYNOP pause_to_study_listing
+'Pause point so you can study the listing. '
+*enditem
+          call askok(' continue listing?',' ',OK,dok,1)
+*item CLMDAY period_at_least
+'The period must be at leas an hour long. '
+*enditem
+*item ONEDAY period_at_least
+'Period  must be within a calander year'
+*enditem
+        CALL EASKI(IDAY,' ',' d-o-y ? ',
+*item SELPER  period_user_defined
+'Clm periods can be user defined, months or typical'
+'periods or seasons associated with a climate db (and'
+'specified in the /usr/esru/esp-r/climate/climatelist'
+'file.'
+'The year associated with a climate file can be used '
+'as the date within a problem configuration, but this '
+'is not the default. '
+*enditem
+        CALL PHELPD('clm periods',7,'-',0,0,IER)
+*item CLMPER period_output_time
+'The output time defines the day, month and '
+'hour at which the output is requested. '
+'This must be no earlier than 0 hours or later '
+'than 24 hours. '
+' '
+'Julian example: 6th March at 9h00 am is given as 64  9'
+' '
+'Day Month example: 6th March at 9h00 am is given as 6 3 9'
+*enditem
+        CALL EASKS(HOLD,' ',' Start Day-of-year & time: ',
+*subroutine editemclimatelist
+*item editemclimatelist climate_list_facility
+'How to use the climate list facility: '
+' '
+'Climate data resides in individual files and ESP includes'
+'a <climatelist> file which holds high level information'
+'about where climate these files are located as well as'
+'summary information on seasons and typical periods.'
+' '
+'This menu allows you to set the definition of seasons'
+'during a year - winter @ start of year, spring, summer'
+'autumn, winter @ end of year (or summer @ start of year'
+'etc. at negative latitudes). One way to do this is to'
+'use your own criteria when scanning the heating and'
+'cooling degree day weekly reports, ambient temperature'
+'reports or graphs etc in this climate module. Then'
+'record the start and ending dates of each season.'
+' '
+'This menu also allows you to specify typical assessment'
+'periods (one per season). The clm module includes an'
+'automaitc search for weeks which are closest to the'
+'seasonal values of (use weighted) heating and cooling'
+'degree days & solar radiation. If you use that facility'
+'a typical week in each season will be found and can be'
+'saved into the <climatelist> file. '
+' '
+'If you have a text editor defined you can edit the text'
+'created by the list/generate menu selection. You can'
+'also edit the climatelist file. BE CAREFUL if you'
+'corrupt the file then you may get an incomplete list.'
+' '
+'If you want to see the context of the seasons use the'
+'option to graph ambient temperatures. This will also'
+'show you symbols along the top indicating the duration'
+'of each season as well as the typcial weeks in each'
+'season (drawn slightly below). '
+*enditem
+        CALL EASKS(t32,'Text for the selection list menu',' ',32,
+*item editemclimatelist climate_list_menu_txt
+'Text for the selection list menu (<=32 char). '
+*enditem
+*item editemclimatelist climate_list_menu_aide
+'Aide Memorie for the selection list menu (<=72 char). '
+*enditem
+        CALL EASKS(t72,'Aide memorie for the selection list menu',' ',
+*item editemclimatelist climate_list_loc
+'This is the <installed> location of the climate file.'
+'(remember to copy new climate files to this folder)'
+*enditem
+            CALL EASKF(LLASCI,' Climate file installed location?',
+*item editemclimatelist climate_item_offline
+'Set to OFFLINE if climate files tend to be kept as'
+'compressed files or are held in a secure location. '
+*enditem
+        call easkabc('Choices:',' ','online','offline','continue',IW,2)
+*item editemclimatelist climate_winter_season
+'Season start day & month and finish day and month. '
+*enditem
+        CALL EASKS(HOLD,'Season: start (day & month) and',
+*item editemclimatelist climate_spring_season
+'Season start day & month and finish day and month. '
+*enditem
+        CALL EASKS(HOLD,'Season: start (day & month) and',
+*item editemclimatelist climate_summer_season
+'Season start day & month and finish day and month. '
+*enditem
+        CALL EASKS(HOLD,'Season: start (day & month) and',
+*item editemclimatelist climate_autumn_season
+'Season start day & month and finish day and month. '
+*enditem
+        CALL EASKS(HOLD,'Season: start (day & month) and',
+*item editemclimatelist climate_winter2_season
+'Season start day & month and finish day and month. '
+*enditem
+        CALL EASKS(HOLD,'Season: start (day & month) and',
+*item editemclimatelist climate_winter1_season
+'Period start day & month and finish day and month. '
+*enditem
+        CALL EASKS(HOLD,'Typical: start (day & month) and',
+*item editemclimatelist climate_list_doc
+'The list option displays each of the lines of '
+'documentation. The initialise option creates a '
+'standard summary of the climate data. The Edit '
+'option is not yet enabled (save and use a text editor).'
+*enditem
+        call easkabcd('Documentation options:',' ','List','Initialise',
+*item editemclimatelist climate_current_info
+'Information on the current climate file (seasons etc.)'
+'will be written to a small ASCII file which can be'
+'copied into /usr/esru/esp-r/climatelist file. '
+*enditem
+            CALL EASKF(llitem,' Climatelist entry text block?',
+*item DDRADSUM dd_base_temp
+'Degree day calculations are derived from a specific '
+'base temperature (deg C). '
+*enditem
+      CALL EASKR(HBT,' ',' Heating base temperature ? ',
+*item PSYCHART psychrometric_overview
+'This psychrometric plotting facility support'
+'vieweing the psycrometric state of the ambient'
+'temperature and humidity for the selected period'
+'of the display. You have options to limit the'
+'temperature range or the maximum moisture content.'
+*enditem
+        call easkabcd('Options:',' ','display data',
+*item PSYCHART psychrometric_useful
+'Sometimes the display of climate data on a psychrometric'
+'chart will reveal userful patterns. '
+*enditem
+*item PSYCHART psychrometric_min_max
+'You are asked to provide a range of temperatures for inclusion'
+'in the chart. You can also specify the maximum moisture content'
+'for the chart. This allows you to focus your plot.'
+*enditem
+        call easkr(val,'Min temp C','for chart ',-10.0,'F',30.,'-',
+*item PSYCHART psychrometric_redraw
+'You have to redraw the chart to see any changes. '
+*enditem
+        call askok('Redraw the chart to apply changes?',' ',ok,dok,1)
+*subroutine CLMSYN
+*item CLMSYN typical_week_overview
+'Typical weeks are found by scanning the climate data'
+'for a week in each season which has the least deviation'
+'in heating degree days (DD), cooling degree days, and'
+'solar radiation. '
+' '
+'It reports the parameters it uses to determine the'
+'best fit as well as several ratios between the best'
+'week and the season (ratio of julian days, ratio of'
+'heating degree days and ratio of cooling degree days'
+'all of which are parameters required for generating'
+'an integrated performance view (IPV). The best-fit'
+'can also be recorded in the <climatelist> file.'
+*enditem
+        CALL PHELPD('climate synopsis',12,'-',0,0,IER)
+*item CLMSYN dd_day_week_month
+'If a number of months are selected you can get a'
+'weekly or monthly summary.'
+*enditem
+        CALL EASKABC(' Degree day reporting: ',' ','daily','weekly',
+*item CLMSYN days_in_range_limits
+'The days within range option requires that you set a lower range'
+'limit as well as an upper range limit. Only values which fall'
+'within this range are reported.
+*enditem
+        CALL EASKR(XL,outs,' Lower value for range:  ',
+*item CLMSYN best_fit_pause
+'If you answer yes the best-fit weeks that are found'
+'will be presented in additional detail and with pauses'
+'so that you can decide whether the weeks are correct. '
+*enditem
+        call askok('Do you want to record the best-fit weeks (for',
+*item CSIEQN climate_severity_types
+'The CSI house types (1 to 30). Each variant is a combination'
+'of the thermal capacity of the building (low medium high),'
+'the position of the thermal capacity (inside middle outside)'
+'as well as window size (standard large), infiltration level'
+'(tight standard), insultation level (standard high).'
+*enditem
+*item CLMDEG dd_base_temperature
+'Degree day calculations are derived from a specific '
+'base temperature (deg C). '
+*enditem
+      CALL EASKR(BT,' ',' Base temperature ? ',
+*subroutine SYNOPDEG
+*item SYNOPDEG dd_base_temperatures
+'Degree day calculations are derived from a specific '
+'base temperature (deg C). One base is for heating and'
+'the other is for cooling degree days.'
+*enditem
+      CALL EASKR(HBT,' ',' Heating base temperature ? ',
+*subroutine SYNOPDEGS
+*item SYNOPDEGS dd_base_temperature
+'Degree day calculations are derived from a specific '
+'base temperature (deg C). One base is for heating and'
+'the other is for cooling degree days.'
+*enditem
+      CALL EASKR(HBT,' ',' Heating base temperature ? ',
+*subroutine SYNOPWDEG
+*item SYNOPWDEG dd_base_temperature
+'Degree day calculations are derived from a specific '
+'base temperature (deg C). One base is for heating and'
+'the other is for cooling degree days.'
+*enditem
+      CALL EASKR(HBT,' ',' Heating base temperature ? ',
+*item SYNOPWDEG dd_reporting_pause
+'Pause point so you can study the data. '
+*enditem
+          call askok(' continue listing?',' ',OK,dok,1)
+*subroutine CLPRED
+*item CLPRED curve_fitting_overview
+'This menu allows climate data to be changed. In order to '
+'make a change choose one of the climate parameters (direct'
+'/diffuse radiation, temperature etc.)'
+ ' '
+'For curve fitting the time at which maximum'
+'occurs, the maximum and minimum value is required'
+ ' '
+'Transforms can change the parameter to a fixed value,'
+'increase or decrease by a fixed value, make fractional'
+'change or by a user specified polynomial function.'
+' '
+'In addition to this; radiation can also be predicted from'
+'knowledge of latitude, longitude, elevation, atmospheric '
+'turbidity (for which additional help is also provided in '
+'the relevant section) and precipitation (optional). This '
+'option to predict both direct and diffuse radiation is '
+'available for curve fitting only.'
+' '
+'Wind speed from specific directions can be transformed'
+'to account for wind speed reductions from wind-'
+'breaks or other site obstructions on one, two, or three'
+'sides of a building. For example if wind from 15-85 deg'
+'is 0.6 times normal wind velocty.'
+' '
+'Wind speed transforms are defined as follows:'
+'a) subdivide wind directions into segments (beginning at'
+'0 deg (north) and continuing anti-clockwise to 360 deg)'
+'and for each segment supply a factor. Up to 10 segments'
+'can be specified. Each hour in the data is checked and '
+'modified depending on which wind direction segment it '
+'falls into.'
+*enditem
+*item CLPRED reminder_on_saving
+'Any changes you might have made will only be '
+'written to THE CURRENT file if you agree. '
+' '
+'If you have not made any changes then just say no.'
+*enditem
+          CALL ASKOK('Changes have not yet been saved to file. Save',
+*item CLPRED interdependant_rh_temp
+'Temperature and RH are interdependant and some'
+'unrealistic combination may cause problems at'
+'simulation time. No checks are currently made.'
+*enditem
+          CALL PHELPD('RH prediction',3,'RH changing',0,0,IER)
+*item CLPRED jk_page_direct_normal
+'This model is based on the work of J K Page'
+'(Sheffield). It is used to predict the direct normal'
+'and the horizontal diffuse solar irradiance for any'
+'site at any time of day for particular values of '
+'atmospheric turbidity and precipitable water content'
+*enditem
+            CALL PHELPD('rad prediction',5,'rad prediction',0,0,IER)
+*item CLPRED hour_max_min
+'You are asked for the hour at maximum as well as the'
+'maximum value and the minimum value for the day. '
+*enditem
+          CALL EASKR(HOUR,'At which hour does the maximum ',PRML
+*item CLPRED specify_more_variables
+'You did not specify all of the variables that '
+'are allowed. Say yes to include the remaining '
+'variables. '
+*enditem
+            CALL ASKOK(' Do you want to make any more changes before',
+*item CLPRED io_error_message
+ 'A data i/o error has occured in the program'
+ 'and it is probably best not to go on. '
+ 'Program is taking one step back.'
+*enditem
+      CALL PHELPD('data i/o error',3,'i/o exception handler',0,0,IER)
+*subroutine POLYTR
+*item POLYTR polynomial_fit_overview
+'A climate parameter can either be set to a constant value'
+'for the chosen period of time. Or it can be increased or'
+'decreased by a constant value (e.g. to increase all temp-'
+'-eratures by 2.5deg). Or a climate parameter can be '
+'changed to a fraction of its original value (e.g. to make'
+'all wind speeds three times'
+'You may want a polynomial fit (useful in transforms e.g. '
+'increasing the temperature by two degrees or making the '
+'humdity 75% etc.) '
+'The polynomial fit asks for the degree of polynomial e.g.'
+'     Y = a0                    has degree 0 and can be '
+'used to set the climate parameter to a constant value'
+'     Y = a1*X + a0             has degree 1 and can be'
+'used to increase/decrease by a factor of a1'
+'     Y = a2*X^2 + a1*X + a0    has degree 2 and can be '
+'used in more complex transforms.'
+'Relevant number of coefficients a0, a1 etc. are also'
+'required as input'
+*enditem
+      CALL EASKATOG('Change original climate value ','(see help)'
+*item POLYTR polynomial_coef
+'For the polynomial a1X + a0 enter a1 and a0 '
+'in that order and separated by a space'
+*enditem
+        CALL EASKS(COEFFS,STR,' ',72,' ','polynom coeff',IER,2)
+*item POLYTR polyr_io_error_message
+ 'A data i/o error has occured in the program'
+ 'and it is probably best not to go on. '
+ 'Program is taking one step back.'
+*enditem
+      CALL PHELPD('data i/o error',3,'i/o exception handler',0,0,IER)
+*subroutine PDRAW
+*subroutine PSOLRD
+*item PSOLRD north_is_positive
+'North is positive, South is negative.'
+'East is positive, West is negative. '
+'Mass is used in determining air mass and turbidity. '
+*enditem
+      CALL EASKR(RLATIT,' Latitude (North +ve: South -ve) ',
+*item PSOLRD recommended_turbidity
+'     Recommended Turbidity Values:'
+' '
+' Clear weather in winter            0.09'
+' Clear summer weather in country    0.19'
+' Clear summer weather in town       0.28'
+' Hazy weather                       0.37'
+' Heavy warm hazy weather            0.45'
+*enditem
+      CALL EASKR(ATTURB,'Value of atmospheric turbidity?','(see help)',
+*item PSOLRD review_derived_value
+'You have been presented with a derived value. Plese '
+'review the value to see if it correct. If you say'
+'no you will be asked for precipitable water content. '
+*enditem
+      CALL ASKOK(outs,'Is this value satisfactory?',OK,dok,3)
+*item PSOLRD precip_water_content
+'Water content is in mm. '
+*enditem
+      CALL EASKR(PRECWC,' Average precipitable water content',
+*item RRITE ok_to_update
+'Changes were detected in the climate data. These'
+'may be lost if they are not saved back into the '
+'file. '
+*enditem
+          CALL ASKOK(' ','Update database?',OK,dok,3)
+*item RRITE one_day_at_a_time
+'Editing of climate data is done one day at a time.'
+'If you want to continue editing a different day '
+'say yes. '
+*enditem
+        CALL ASKOK(' ','Continue with another period?',OK,dok,3)
+*item RRITE edit_hourly_menu
+'This menu allows climatic data for each hour of a day to'
+'be edited. Edit by selecting an item or -Exit to escape.'
+*enditem
+        CALL PHELPD('clm data edit',2,'-',0,0,IER)
+*item RRITE one_day_data_summary
+'Data are: '
+' diffuse rad (W/m^2), glob hor rad (W/m^2), db temp (C),'
+'Relative Humidity (%), wind direc (deg from north),'
+'and speed (m/sec)'
+*enditem
+*item SITEDIT what_is_the_year
+'The year is required to find the day of the week'
+'for a given julian day. The year 2001 has 1 Jan'
+'as a Monday.'
+*enditem
+      CALL EASKI(IYEAR,' ',' What is the year ? ',
+*item SITEDIT what_is_descr
+'This description (<=30 char) is used in reporting.'
+*enditem
+      CALL EASKS(T30,' ',' Climate site name ? ',
+*item SITEDIT what_is_latitude
+'The climate latitude does not necessarily have to match'
+'the site latitude, however, the difference should not be'
+'great or simulation results may be open to question.'
+*enditem
+      CALL EASKR(CLAT,' ',' Climate latitude ? ',
+*item SITEDIT what_is_long_diff
+'The climate longitude difference does not necessarily'
+'have to match the site, however, it should be'
+'close for best results.'
+*enditem
+

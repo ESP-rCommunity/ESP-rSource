@@ -1,0 +1,2257 @@
+.ds CH
+.ds RH 4-%
+.ds LH ESP-r User Guide Version 11 Series
+.EQ
+delim $$
+.EN
+.ps 12
+.vs 14
+.nr PS 12
+.nr VS 14
+.de ML    \"macro to start listing
+.LD
+.vs 9
+.ps 8
+.fam C
+..
+.de ES    \"macro to end code listing
+.DE
+.fam T
+..
+.LP
+\ 
+.sp 5
+.ce
+\fB\s+9Section Four\s0\fR
+.sp
+.ce
+\fB\s+5Example applications\s0\fR
+.sp 0.5
+.ce
+\fB\s+5of the\s0\fR
+.sp 0.5
+.ce
+\fB\s+5ESP-r system\s0\fR
+.sp 4
+.SH
+Contents
+.LP
+\ 
+.nf
+4.0 Introduction
+4.1 Parametric studies
+4.2 Upgrading strategy
+4.3 The issue of cost
+4.4 Inovatory design
+4.5 Low energy housing
+4.6 Re-design
+4.7 Critical control
+4.8 Feasibility study
+4.9 Late design-stage use
+4.10 Comfort
+4.11 Speculative development
+4.12 Training exemplars
+4.12.1 Single office
+4.12.2 Simple building
+4.12.3 Small house
+4.12.4 Large house
+4.12.5 Test cells
+4.12.6 Special focus
+4.12.7 Office block
+4.12.8 Plant
+.bp
+.SH
+4.0 Introduction
+.LP
+Sections 4.1 through 4.11 presents a number of short case studies of typical
+and atypical designs as analysed by ESP-r. They have been selected
+to indicate the possibilities for performance assessment by
+simulation.  The remaining sections describe a number of simulation
+exercises based on exemplars supplied with the system. 
+These have a dual role: to test the ESP-r program
+modules on first implementation and to provide training for
+new users thereafter. The exercises progress from the simple
+to the more complex and have been designed to test several aspects of
+ESP-r. Each of the training sessions deals with a basic problem
+type with variations which explore simulation topics.
+.LP
+Throughout the exercises reference is made to standard ESP-r
+databases and test files. As explained elsewhere,
+such files are held in a strict directory structure.
+In the text that follows the Unix syntax is used so
+that ~esru/esp-r/climate means sub-directory climate of sub-directory
+esp-r of the home directory (wherever
+defined) of esru. Similarly ~esru/esp-r/training/office means sub-directory
+office of sub-directory training of sub_directory esp-r of
+the home directory of esru.
+.SH
+4.1 Parametric studies
+.LP
+Parametric analysis of building energy performance is, perhaps, the
+prerequisite of a more complete understanding of the issues relating
+to energy efficient building design. The process of simulation can
+be used to increase the corpus of knowledge upon which future designs
+can be built. ESP-r has been used as the simulation tool in a number
+of parametric studies.
+.LP
+In one, different window designs were analysed in terms of their
+performance in British and Scandinavian climates. Annual simulations
+were performed for a number of combinations of facade orientation,
+window size, window type and fabric capacity sampled from the many
+combinatorial possibilities. Typical occupancy patterns, internal gains
+and window curtain operation was assumed throughout. The different windows
+were then analysed in terms of the cost-benefit associated with
+the provision of varying comfort standards.
+.LP
+In another study, the model was used to generate design guidelines
+in public buildings by systematically varying the major design
+parameters such as insulation, capacity, window size, heating system
+regulation and degree of air permeability.
+.SH
+4.2 Upgrading strategy
+.LP
+Many Government agencies in the UK own housing stock which dates from
+the early 1950's. In recent times much of this stock has fallen due
+for upgrading. Obviously some mechanism must be employed to establish
+the most productive strategy. ESP-r has been used as such a mechanism.
+.LP
+A sample of houses in any estate are analysed, firstly in their
+original form, and subsequently with a range of alternative
+upgrading features formulated on the basis of the initial simulation
+results. In one case, the prime heat loss path was identified by ESP-r
+as being through the suspended timber floor. This occurred in a building
+for which substantial wall insulation was planned. As a result the
+upgrading proposal was modified and the client's investment put
+to better use.
+.SH
+4.3 The issue of cost
+.LP
+ESP-r was once used by a large regional council to investigate
+the possibilities in a proposed building conversion. The study involved
+an in-depth investigation into heating demand diversity as affected
+by alternative zoning strategies, plant control schedules and
+fabric treatments. Their resulting report included the technical
+details of the project but went on to raise the following general
+points.
+.IP \(bu
+The total cost incurred by them in the simulation exercise was
+calculated at half the cost incurred in a parallel exercise
+which involved only the calculation of zone heat loss by
+conventional `manual' methods.
+.IP \(bu
+The results from the ESP-r exercise allowed a more detailed
+analysis of both the building and plant performance than would have
+been possible by other means. In particular, the ability to interactively
+impose design changes was considered to be extremely useful.
+.IP \(bu
+The graphical presentation of results was considered invaluable as a
+means of conveying information to the design team.
+.SH
+4.4 Inovatory design
+.LP
+ESP-r has also been used to test inovatory design solutions.
+In one application, the program was used 
+to model a proposed solar wall construction
+which formed part of a multi-million
+pound laboratory complex.
+.LP
+The movement of large quantities of air had
+suggested a design solution in which this air was passed
+over the entire south-facing building facade
+and contained within an outer glass skin.
+ESP-r was used to simulate this solar wall
+to predict the potential annual pick-up
+of solar energy and the corresponding reduction of 
+the south facade heat loss due to the insulating
+effect of the additional glass and air space combination.
+.LP
+Modelling of the system was complicated by the proposed
+inclusion of ducts within the air space which caused
+wall shading as well as convective heat pick-up.
+What was required was a first principle computation
+method capable of modelling the complexities
+of the system.
+.SH
+4.5 Low energy housing
+.LP
+In conjunction with a private architectural practice
+ESP-r was used by the modelling team to develop a specification for a 
+low energy house.  Primary objectives were to
+select a building mass and insulation scheme
+which, in conjunction with the selected window
+configuration, would effectively minimise the
+heating demand.  Using real climatic data, initial
+simulations resulted in decisions on orientation,
+shape, zoning, window size and window type.
+Later simulations - assuming real occupancy
+and plant operational patterns - aided decisions on
+fabric weight, position of thermal capacity,
+position of insulation, and effective solar
+screening to avoid overheating during peak
+solar times.  Issues relating to controlled
+ventilation and heat distribution between
+different zones were also examined.
+.LP
+The final scheme was then rigorously analysed 
+over whole year periods and, in this way, efficient
+energy performance was established.
+.SH
+4.6 Re-design
+.LP
+ESP-r was used to investigate re-design issues
+in converting a large dockland complex to house departments
+of a polytechnic.  The exercise involved an analysis
+of the relationship between the existing massive
+construction and the potential overheating resulting
+from solar penetration and the introduction of high internal
+loads.  The possible set of conversion solutions 
+were constrained by the existence of a preservation
+order prohibiting substantive changes to the building
+facade.  The restriction on facade shading devices
+focused attention on the cost-benefit associated
+with various glazing types in terms of their
+ability to minimise solar penetration.  ESP-r
+was used to find a suitable economic solution.
+.SH
+4.7 Critical control
+.LP
+In another new design application ESP-r was used by
+a central government agency to analyse critical
+environmental conditions in an astronomical
+laboratory where control of 
+the thermal environment is crucial to the 
+effective working of the telemetry equipment.
+.LP
+ESP-r was used to select a constructional scheme which would
+ensure that internal, untreated conditions would remain
+within $+-$0.1\(deC of the required
+condition.  The proposed massive concrete construction had a large
+thermal time constant which had rendered simple
+predictive techniques unsuitable.
+.SH
+4.8 Feasibility study
+.LP
+A large practice was asked to carry out a 
+feasibility study and produce a development
+scheme for the comprehensive redevelopment 
+of a narrow but important urban site;  the
+redevelopment had to include two office blocks,
+each of 100,000 $ft sup 2$, to be let by the client.
+The narrowness of the site suggested a narrow
+floor plan in each office block, one rising to
+six stories, the other to eight stories.  The
+proposal that one of the blocks should be air
+conditioned, the other not, suggested to the
+architect an investigation of a broad range of
+construction types under `artificial', 
+`ambient', and `assisted', environmental control.
+.LP
+In the event, a two-stage ESP-r analysis 
+was carried out in the context of the non-air
+conditioned building.  In the first stage, office
+modules on the SW and NE orientations were simulated,
+respectively, under summer and winter conditions;
+within a fixed external envelope with 35% glazing.
+ESP-r was used to explore the implications of achieving
+shading on the SW facade, increasing the thermal mass
+of internal partitioning, altering the rate of
+mechanical ventilation and double-glazing the
+NE facade.  In the second stage, more explicit
+proposals were generated for the pattern of external
+glazing, the internal sub-division of space, etc;
+and a similar series of investigations, using ESP-r,
+carried out.
+.SH
+4.9 Late design-stage use
+.LP
+The design of a building to house a computer and ancillary
+activities for a nationalised industry was already
+well advanced when then the opportunity arose to
+use ESP-r.  The air conditioned building, of approximately
+6000 $m sup 2$, was to be built on four floors, each 30m wide
+by 50m long;  office accommodation would be housed on
+the perimeter with rooms of more occasional occupancy
+in the core.
+.LP
+The stimulus for use of a dynamic energy model came
+from the late decision to alter the building envelope
+from a lightweight metal cladding system to brickwork,
+with an associated increase in glazing from 25% to 40%,
+differentially arranged in the four floors.  The effect
+of these changes on the variable air volume (VAV) 
+distribution ductwork and on the central air-handling
+plant needed, as a matter of urgency, to be determined.
+.LP
+The ESP-r analysis was applied to spatial modules sited
+on all four corners of the building and halfway along
+each facade.  For each module, on each floor, the peak
+load across the VAV terminals was computed and the
+accumulative effect on the central plant estimated.
+In relation to the climate data used the peak load
+on all space modules was seen to occur on a high air
+temperature July day and not, as had been previously assumed,
+within the month of September when solar angles are
+lower.  The ability of ESP-r to model the dynamics of
+thermal behaviour, hour by hour, showed clearly that
+the peak load occurred in different space modules at
+different times throughout the critical day;  as a
+consequence, although individual VAV terminal duties
+had to be increased, no significant increase in 
+load would be experienced by the central plant.
+.SH
+4.10 Comfort
+.LP
+The first phase of an extension to a University Library
+comprised a reading room with a floor of bookstacks above.
+The construction proposed by the architect was dense
+reinforced concrete with double skin patent glazing
+angled back from sill to ceiling.
+.LP
+Concern for the environmental conditions focused on
+the maximum occupancy period of the reading room (May 
+with an estimated 350 readers) and on the mid-summer 
+period (June to August, with an estimated 100 readers);
+the architect also wished an appraisal of the scheme 
+under winter heating conditions.
+.LP
+Climatic data relevant to the study period were created in
+accordance with the diurnal range known to prevail at the
+location of the site.  The May analysis received a 24 hour
+heat input requirement under the proposed 10 air changes
+per hour ventilation regime;  as a result of the analysis
+the proposed air change rate in the Spring was
+reduced to a level just sufficient to combat odours
+and meet ventilation requirements.  With 10 air changes
+per hour in August, the maximum temperature was
+predicted to be 24\(deC.  Given the slightly lower
+predicted resultant temperature and the possibility
+of the 100 readers disposing themselves away from the
+external wall this was considered to be acceptable.
+A January analysis of heat flow through the double-glazed
+envelope revealed acceptable comfort conditions.
+.SH
+4.11 Speculative development
+.LP
+In another exercise ESP-r was used, in the context of speculative
+office developments, to:
+.IP \(bu
+Estimate the relative influence on energy conservation
+of different external wall constructions and window
+treatments.
+.IP \(bu
+Compare the generated 'best-buy' solution with other
+existing schemes.
+.IP \(bu
+Ascertain the impact of such an approach to capital
+expenditure (the developer's contribution)
+and running costs (the tenant's contribution).
+.LP
+The analysis indicated that:
+.IP \(bu
+Changes to the fabric alone can result in a +16% or a
+-24% alteration to the winter heating load relative to
+the standard.
+.IP \(bu
+Double glazing had a similar effect to that of adding
+a suspended ceiling, namely a 23% saving of winter energy.
+.IP \(bu
+Substituting internal fabric blinds for external blinds
+in winter saves about 12% which is comparable to the thermal
+benefit of retaining full light output.
+.IP \(bu
+There is no apparent advantage in reducing still further
+the construction U-value.
+.IP \(bu
+Peak cooling demands do not show an exactly negative
+correlation with peak heating load levels, suggesting that
+a balance in the fabric/services system between winter
+and summer conditions may be achievable.
+.LP
+From the study, the architect was able to provide a base
+of relevant data and conclude generally that, `if a developer
+seeks to offer a good level of environment, it may be
+advantageous to the tenant in terms of running costs
+to do so by means of design changes to the building
+rather than by introducing air conditioning'.
+.bp
+.SH
+4.12 Training Exemplars
+.LP
+The ESP-r system offers a model archiving and browsing facility
+by which past problems can be maintained and revisited.  On delivery,
+this facility is used to provide a number of exemplar problems
+which are useful for training support.  The following sections
+relate to some of these on-line exemplar models.
+.SH
+4.12.1 Single office
+.LP
+Figure 4.1.1 gives the geometry, construction and operation details
+for a single building zone containing office and computing equipment.
+The user would begin by creating a directory for this problem and
+moving into it and running ESP-r which contains or allows access
+to the facilities required to describe the problem, commission
+simulations and engage in analysis of the results.  
+.LP
+The opening display provides a tutorial, database management facility,
+problem definition, problem simulation and analysis and various
+support facilities.  If the user is a novice it is recommended
+that some time be spent using the tutorial facility.
+.LP
+When testing ESP-r it is not necessary to create the problem
+description files since they
+are supplied. In directory \fI~esru/esp-r/training/simple\fR, the
+files \fIcfg/bld_simple.cfg\fR, \fIzones/reception.geo\fR, \fIzones/reception.con\fR,
+\fIzones/reception.opr\fR and \fIctl/bld_simple.ctl\fR
+correspond to the system configuration, zone geometry, zone
+construction, zone operation and configuration
+control files respectively.  All that is required is to
+select \fIproblem definition\fR and supply the problem
+name \fIbld_simple.cfg\fR which will then be loaded.  At this point
+the user may explore the details of the problem or commission
+a simulation.  Notes supplied with the problem should be read
+by selecting \fIproblem registration:documentation\fR from within the
+\fIproblem definition\fR, accepting the file \fIbld_simple.log\fR
+and then reading the text displayed in the text feedback area.
+.LP
+Of course it is also possible to describe
+this problem from scratch yourself. Although
+the user may approach this task of in
+a number of ways, the following sequence is suggested.
+.LP
+The first task is to select \fIdatabase management\fR which
+allows various databases to be
+associated with a project.  In most cases the defaults provided
+for climate, pressure distribution, primitive constructions, 
+event profiles, plant components and optical properties will 
+not need to be changed.  Indeed some may not be used, but
+a multi-layered constructions database 
+will need to be defined for the current problem.  This database
+defines the details of wall floor and ceiling constructions - i.e.
+order, thickness and references to elements in the construction 
+primitives database. To create a new multi-layered constructions 
+database simply supply a new file name and a fresh database
+with a dummy construction will be created.  
+.LP
+For each of the
+constructions shown in Figure 4.1.1 follow the editing
+procedures - beginning with the outside face and working
+in to the layer which faces the zone.  You may
+edit, add or delete an individual layer as necessary.  In the
+case of the double glazing it is necessary to match the
+properties of the optical database and the best way to do
+this is to specify the optical properties first and then
+allow a matching set of layers to be created.  It is
+a good idea to \fIupdate\fR the database frequently. When you
+have finished the details should be as in Figure 4.1.2.
+Note that you can also use any text editor to 
+change this file (test.mlc).
+.sp 2
+.PSPIC FIGS/fig4.1.1.eps 18c 20c
+.sp 2
+.ce
+Figure 4.1.1 Details of the \fItest1\fR building
+.sp 3
+.ML
+.TS H
+doublebox center;
+l.
+.TH
+# composite construction db defined in multicon.mdb
+# based on materials db constr_db2.materialdb
+   23     # no of composites 
+# layers  description   optics 
+    4    extern_wall   OPAQ  OPAQUE              
+# db ref  thick   db name & air gap R 
+    6    0.1000  Lt brown brick
+  211    0.0750  Glasswool
+    0    0.0500  air  0.170 0.170 0.170
+    2    0.1000  Breeze block
+# layers  description   optics 
+    3    insul_mtl_p   OPAQ  OPAQUE              
+# db ref  thick   db name & air gap R 
+   46    0.0040  Grey cotd aluminium
+  281    0.0800  Glass Fibre Quilt
+   47    0.0040  Wt cotd aluminium
+# layers  description   optics 
+    2    intern_wall   OPAQ  OPAQUE              
+# db ref  thick   db name & air gap R 
+    2    0.1500  Breeze block
+  103    0.0120  Perlite plasterboard
+# layers  description   optics 
+    5    partition     OPAQ  OPAQUE              
+# db ref  thick   db name & air gap R 
+  104    0.0130  Gypsum plaster
+    0    0.0500  air  0.170 0.170 0.170
+   28    0.1000  Block inner (3% mc)
+    0    0.0500  air  0.170 0.170 0.170
+  104    0.0130  Gypsum plaster
+ . . .
+.TE
+.ES
+.ce
+Figure 4.1.2 Multi-layer construction database for \fItest1\fR
+.sp
+.LP
+Exit from the database facility and select \fIproblem definition\fR
+and, after reading the message, supply the new problem name \fIbld_simple.cfg\fR,
+indicate that you wish to begin with a new geometry from scratch and supply
+a name for the zone (this name is for reporting and display purposes
+and is not the file name).
+.LP
+The zone is most easily described as an extruded shape and after
+you have supplied the floor and ceiling height as well as the
+coordinates of the various corners and the connections between this corners,
+ you will be presented with
+a display similar to that in Figure 4.1.3. Use the 
+\fIgeometry-->surface attributes\fR option from the \fIproblem definition\fR
+menu to adapt the (zone)geometry of the problem.
+.br
+.PSPIC FIGS/s4_office.EPS 16c 8c 
+.ce
+Figure 4.1.3 geometry of bld_simple.cfg.
+.sp
+.LP
+Note that the surfaces have been given default names. 
+Clarity of presentation 
+is enhanced by replacing the default surface
+names with names which make sense in the context of
+a given building.  Use the \fIsurface attribute\fR selection
+to accomplish this.
+.LP
+Glazing is representation as a multi-layered construction
+with additional optical properties. The surface of the glazing
+can be any polygonal shape, although many users will 
+define glazing as an offset from the lower left corner
+of an existing surface to the lower left corner of the glazing as well
+as its width and height. 
+.LP
+From the \fIgeometry\fR menu some other subjects like \fIsolar
+insolation distribution\fR, \fIobstruction blocks\fR and \fIrotation &
+transforms\fR can be selected. These options are not relevant to the test
+case you are working on at this moment; later on, when you have seen some 
+results of this first test, some shading distributions will be added.
+.LP  
+At this point the zone will contain information similar to 
+that in Figure 4.1.4.
+.ML  
+.TS H
+doublebox center;
+l.
+.TH
+# geometry of reception defined in: ../zones/reception.geo
+GEN  reception              # type   zone name
+      34      14   0.000    # vertices, surfaces, rotation angle 
+#  X co-ord, Y co-ord, Z co-ord 
+      1.00000     1.00000     0.00000  # vert  1
+      9.00000     1.00000     0.00000  # vert  2
+      9.00000     4.50000     0.00000  # vert  3
+      9.00000     9.00000     0.00000  # vert  4
+      5.00000     9.00000     0.00000  # vert  5
+      5.00000     5.00000     0.00000  # vert  6
+      1.00000     5.00000     0.00000  # vert  7
+      1.00000     1.00000     3.00000  # vert  8
+      9.00000     1.00000     3.00000  # vert  9
+      9.00000     4.50000     3.00000  # vert 10
+      9.00000     9.00000     3.00000  # vert 11
+      5.00000     9.00000     3.00000  # vert 12
+      5.00000     5.00000     3.00000  # vert 13
+      1.00000     5.00000     3.00000  # vert 14
+      2.00000     1.00000     1.00000  # vert 15
+      8.00000     1.00000     1.00000  # vert 16
+      8.00000     1.00000     2.25000  # vert 17
+      2.00000     1.00000     2.25000  # vert 18
+      9.00000     5.00000     0.00000  # vert 19
+      9.00000     6.00000     0.00000  # vert 20
+      9.00000     6.00000     2.50000  # vert 21
+      9.00000     5.00000     2.50000  # vert 22
+      5.00000     7.00000     0.00000  # vert 23
+      5.00000     6.00000     0.00000  # vert 24
+      5.00000     6.00000     2.50000  # vert 25
+      5.00000     7.00000     2.50000  # vert 26
+      1.00000     3.00000     0.00000  # vert 27
+      1.00000     2.00000     0.00000  # vert 28
+      1.00000     2.00000     2.50000  # vert 29
+      1.00000     3.00000     2.50000  # vert 30
+      9.00000     2.00000     1.00000  # vert 31
+      9.00000     4.00000     1.00000  # vert 32
+      9.00000     4.00000     2.25000  # vert 33
+      9.00000     2.00000     2.25000  # vert 34
+# no of vertices followed by list of associated vert
+  10,  1,  2,  9,  8,  1, 15, 18, 17, 16, 15,
+  10,  2,  3, 10,  9,  2, 31, 34, 33, 32, 31,
+   8,  3, 19, 22, 21, 20,  4, 11, 10,
+   4,  4,  5, 12, 11,
+   8,  5, 23, 26, 25, 24,  6, 13, 12,
+   4,  6,  7, 14, 13,
+   8,  7, 27, 30, 29, 28,  1,  8, 14,
+   7,  8,  9, 10, 11, 12, 13, 14,
+  13,  1, 28, 27,  7,  6, 24, 23,  5,  4, 20, 19,  3,  2,
+   4, 15, 16, 17, 18,
+   4, 19, 20, 21, 22,
+   4, 23, 24, 25, 26,
+   4, 27, 28, 29, 30,
+   4, 31, 32, 33, 34,
+# unused indices 
+   0  0  0  0  0  0  0  0  0  0  0  0  0  0
+# surfaces indentation (m)
+ 0.000 0.000 0.000 0.000 0.000 0.000 0.000 0.000 0.000 0.000 0.000 0.000 0.000 0.000
+    3   0   0   0    # default insolation distribution
+# surface attributes follow: 
+# id  surface      geom  loc/  mlc db       environment
+# no  name         type  posn  name         other side
+  1, south         OPAQ  VERT  extern_wall  EXTERIOR       
+  2, east          OPAQ  VERT  extern_wall  EXTERIOR       
+  3, pasg          OPAQ  VERT  gyp_blk_ptn  SIMILAR        
+  4, north         OPAQ  VERT  extern_wall  EXTERIOR       
+  5, part_a        OPAQ  VERT  gyp_gyp_ptn  office         
+  6, part_b        OPAQ  VERT  gyp_gyp_ptn  office         
+  7, west          OPAQ  VERT  extern_wall  EXTERIOR       
+  8, ceiling       OPAQ  CEIL  ceiling      roof_space     
+  9, floor         OPAQ  FLOR  floor_1      CONSTANT       
+ 10, glz_s         TRAN  VERT  dbl_glz      EXTERIOR       
+ 11, door_p        OPAQ  VERT  door         SIMILAR        
+ 12, door_a        OPAQ  VERT  door         office         
+ 13, door_w        OPAQ  VERT  door         EXTERIOR       
+ 14, east_glz      TRAN  VERT  dbl_glz      EXTERIOR       
+.TE
+.ES
+.ce
+Figure 4.1.4 Zone geometry file.
+.sp
+.LP
+The next descriptive task is to define the thermophysical
+properties of the zone.  The recommended procedure is to use
+the \fIsurface attribute\fR facility and for each surface
+select the appropriate construction.  In the case of
+the glazing in the south wall make sure that it is marked
+as transparent.  Having defined these attributes 
+proceed to use the \fIconstruction browse/ edit\fR 
+facility to create a zone construction file.  Since there
+is a transparent wall in the zone a zone 
+TMC file is required. ESP-r knows about
+the file structure dependencies and will automatically
+generate such files.  After reading 
+in the geometry (including the surface attributes) ESP-r
+will attempt to create the necessary files.  During
+the creation process it will ask you to confirm that
+glz_s is transparent, otherwise the process is automatic.
+You may browse through any of the surfaces thermophysical
+properties and unless a change is demanded the data
+can be merged into the problem.
+The thermophysical properties are contained in \fIreception.con\fR
+which is listed below in Figure 4.1.5.
+.ML
+.TS H
+doublebox center;
+l.
+.TH
+# thermophysical properties of reception defined in reception.con
+# no of |air |surface(from geo)| multilayer construction
+# layers|gaps|  no.  name      | database name 
+     4,     1  #  1 south        extern_wall 
+     4,     1  #  2 east         extern_wall 
+     2,     0  #  3 passage      intern_wall 
+     4,     1  #  4 north        extern_wall 
+     4,     1  #  5 part_a       extern_wall 
+     4,     1  #  6 part_b       extern_wall 
+     4,     1  #  7 west         extern_wall 
+     4,     1  #  8 ceiling      roof_1      
+     4,     0  #  9 floor        floor_1     
+     3,     1  # 10 glz_s        d_glz       
+     1,     0  # 11 door_p       door        
+     1,     0  # 12 door_a       door        
+     1,     0  # 13 door_w       door        
+  3,   0.170,   # air gap position & resistance for surface  1
+  3,   0.170,   # air gap position & resistance for surface  2
+  3,   0.170,   # air gap position & resistance for surface  4
+  3,   0.170,   # air gap position & resistance for surface  5
+  3,   0.170,
+  3,   0.170,   # air gap position & resistance for surface  6
+  3,   0.170,   # air gap position & resistance for surface  7
+  3,   0.170,   # air gap position & resistance for surface  8
+  2,   0.170,   # air gap position & resistance for surface 10
+# conduc-  |  density | specific | thick- | surf|layer
+# tivity   |          | heat     | ness(m)|     |     
+     0.9600,    2000.0,     650.0,  0.1000  #  1  1
+     0.0400,     250.0,     840.0,  0.0750  #     2
+     0.0000,       0.0,       0.0,  0.0500  #     3
+     0.4400,    1500.0,     650.0,  0.1000  #     4
+     0.9600,    2000.0,     650.0,  0.1000  #  2  1
+     0.0400,     250.0,     840.0,  0.0750  #     2
+     0.0000,       0.0,       0.0,  0.0500  #     3
+     0.4400,    1500.0,     650.0,  0.1000  #     4
+     0.4400,    1500.0,     650.0,  0.1500  #  3  1
+     0.1800,     800.0,     837.0,  0.0120  #     2
+     0.9600,    2000.0,     650.0,  0.1000  #  4  1
+     0.0400,     250.0,     840.0,  0.0750  #     2
+     0.0000,       0.0,       0.0,  0.0500  #     3
+     0.4400,    1500.0,     650.0,  0.1000  #     4
+     0.9600,    2000.0,     650.0,  0.1000  #  5  1
+     0.0400,     250.0,     840.0,  0.0750  #     2
+     0.0000,       0.0,       0.0,  0.0500  #     3
+     0.4400,    1500.0,     650.0,  0.1000  #     4
+     0.9600,    2000.0,     650.0,  0.1000  #  6  1
+     0.0400,     250.0,     840.0,  0.0750  #     2
+     0.0000,       0.0,       0.0,  0.0500  #     3
+     0.4400,    1500.0,     650.0,  0.1000  #     4
+     0.9600,    2000.0,     650.0,  0.1000  #  7  1
+     0.0400,     250.0,     840.0,  0.0750  #     2
+     0.0000,       0.0,       0.0,  0.0500  #     3
+     0.4400,    1500.0,     650.0,  0.1000  #     4
+     0.1900,     960.0,     837.0,  0.0120  #  8  1
+     0.3800,    1200.0,     653.0,  0.0500  #     2
+     0.0000,       0.0,       0.0,  0.0500  #     3
+     0.3800,    1120.0,     840.0,  0.0080  #     4
+     1.2800,    1460.0,     879.0,  0.1000  #  9  1
+     2.9000,    2650.0,     900.0,  0.1000  #     2
+     1.4000,    2100.0,     653.0,  0.0500  #     3
+     1.4000,    2100.0,     650.0,  0.0500  #     4
+     0.7600,    2710.0,     837.0,  0.0060  # 10  1
+     0.0000,       0.0,       0.0,  0.0120  #     2
+     0.7600,    2710.0,     837.0,  0.0060  #     3
+     0.1900,     700.0,    2390.0,  0.0250  # 11  1
+     0.1900,     700.0,    2390.0,  0.0250  # 12  1
+     0.1900,     700.0,    2390.0,  0.0250  # 13  1
+# for each surface: inside face emissivity
+  0.90, 0.90, 0.91, 0.90, 0.90, 0.90, 0.90, 0.90, 0.91, 0.25, 0.90, 0.90, 0.90,
+# for each surface: outside face emissivity
+  0.90, 0.90, 0.90, 0.90, 0.90, 0.90, 0.90, 0.90, 0.90, 0.25, 0.90, 0.90, 0.90,
+# for each surface: inside face solar absorptivity
+  0.65, 0.65, 0.60, 0.65, 0.65, 0.65, 0.65, 0.60, 0.65, 0.05, 0.65, 0.65, 0.65,
+# for each surface: outside face solar absorptivity
+  0.93, 0.93, 0.65, 0.93, 0.93, 0.93, 0.93, 0.90, 0.85, 0.05, 0.65, 0.65, 0.65,
+.TE
+.ES
+.ce
+Figure 4.1.5 Zone construction file.
+.sp
+.LP
+The optical properties of the transparent glazing surface
+are contained in \fIreception.tmc\fR which is listed below
+in Figure 4.1.6:
+.ML
+.TS H
+doublebox center;
+l.
+.TH
+# transparent properties of reception defined in ../zones/reception.tmc
+  14   # surfaces
+# tmc index for each surface
+  0  0  0  0  0  0  0  0  0  1  0  0  0  1
+   3  DCF7671_06nb # layers in tmc type 1
+# Transmission @ 5 angles & visible tr.
+   0.611   0.583   0.534   0.384   0.170   0.760
+# For each layer absorption @ 5 angles
+   0.157   0.172   0.185   0.201   0.202
+   0.001   0.002   0.003   0.004   0.005
+   0.117   0.124   0.127   0.112   0.077
+   0  # blind/shutter control flag
+.TE
+.ES
+.ce
+Figure 4.1.6 Zone TMC file.
+.sp
+.LP
+To define the infiltration, occupancy, equipment
+and lighting within the zone select \fIoperations\fR
+and you will be placed into an editing environment
+which allows each of these to be defined.  Normally
+you will focus on weekdays first and then toggle to Saturdays and Sundays.
+The operations file \fIreception.opr\fR is listed below 
+in Figure 4.1.8
+.ML
+.TS H
+doublebox center;
+l.
+.TH
+# operations of reception defined in: 
+# reception.opr
+base case         # operation name
+# control(no flow control         ), low & high setpoints 
+   0     0.000     0.000
+     1   # no weekday flow periods
+# wkd: start, stop, infil, ventil, source, data
+   0, 24,    0.300    0.000    0    0.000
+     1   # no Saturday flow periods
+# Sat: start, stop, infil, ventil, source, data
+   0, 24,    0.300    0.000    0    0.000
+     1   # no Sunday flow periods 
+# Sun: start, stop, infil, ventil, source, data
+   0, 24,    0.300    0.000    0    0.000
+     4   # no weekday casual gains 
+# wkd: type, start, stop, sens, latent, rad_frac, conv_frac
+    3,   0,  24,    800.0,      0.0, 0.200, 0.800
+    3,   9,  17,    450.0,      0.0, 0.200, 0.800
+    2,   9,  17,    600.0,      0.0, 0.140, 0.000
+    1,   9,  17,    540.0,    300.0, 0.200, 0.800
+     1   # no Saturday casual gains 
+# Sat: type, start, stop, sens, latent, rad_frac, conv_frac
+    3,   0,  24,    800.0,      0.0, 0.200, 0.800
+     1   # no Sunday casual gains 
+# Sun: type, start, stop, sens, latent, rad_frac, conv_frac
+    3,   0,  24,    800.0,      0.0, 0.200, 0.800
+.TE
+.ES
+.ce
+Figure 4.1.8 Zone operation file.
+.sp
+.LP
+There are several points within \fIESP-r\fR where information
+related to the problem topology can be supplied.  Within
+the \fIproblem definition\fR menu there is the 
+\fIconnection and boundary\fR selection which allows
+one or more of the connections to be manually edited, topology
+to be checked and generated via a vertex matching algorithm or
+topology to be imported from surface attribute boundary
+specifications.  Within the
+\fIgeometry browse & edit\fR facility you may specify
+boundary conditions as surface attributes or import
+the connection topology to the surface attributes. 
+.LP
+By definition, the initial assumption 
+for the topology of a problem is that all surfaces face
+the outside.  This can be confirmed by exiting to 
+the \fIproblem definition\fR menu and consulting the
+\fIconnection and boundary\fR selection.  As most
+of the walls face the outside a quick way
+to update the surface boundary attributes is to
+return to the \fIgeometry browse & edit\fR and select
+\fIupdate topology from problem\fR. 
+.LP
+Two surfaces in the zone do not face the outside
+and this can be defined in two ways:
+.IP 1)
+supply the boundary for the other side of the 'passage'
+and the 'floor' as surface attributes and then exit to
+the \fIconnection and boundary\fR and import this
+information or;
+.IP 2)
+edit the connection in the \fIconnection and boundary\fR 
+display and then move to the \fIgeometry browse & edit\fR
+and import the information.
+.LP
+After updating the problem (system configuration) file
+\fIsimple_office\fR should look like the listing in Figure 4.1.9
+.ML
+.TS H
+doublebox center;
+l.
+.TH
+* CONFIGURATION3.0
+# ESRU system configuration defined by file 
+# bld_basic.cfg
+*date Mon Jun 26 16:50:29 2000  # latest file modification 
+*root bld_basic
+*zonpth ../zones                  # path to zones
+*netpth ../networks               # path to networks
+*ctlpth ../ctl                    # path to controls
+*radpth ../rad                    # path to radiance files
+*imgpth ../images                 # path to project images
+*indx    1 # Building only
+ 51.700   -0.500   # Latitude & Longitude (diff from meridian)
+      2   0.200   # Site exposure & ground reflectivity
+* DATABASES
+*mat  /usr/esru/esp-r/databases/constr_db2.materialdb
+*mlc  /usr/esru/esp-r/databases/multicon.db2
+*opt  /usr/esru/esp-r/databases/optics.db2
+*prs  /usr/esru/esp-r/databases/pressc.db1
+*evn  /usr/esru/esp-r/databases/profiles.db1
+*clm  /usr/esru/esp-r/climate/clm67
+*pdb  /usr/esru/esp-r/databases/plantc.db1
+*ctl  ../ctl/bld_basic.ctl
+*year  1967 # assessment year
+*img GIF   FZON  ../images/basic_montg.gif
+*img GIF   FZON  ../images/foyer.gif
+*img GIF   ****  ../images/daylight.gif
+# prim energy conv (heat,cool,lights,fan,sml pwr,hot water)
+*pecnv  1.250 3.600 3.600 3.600 3.600 1.250
+*htemis   190.000    0.200    0.100 # heating emissions CO2,NOX,SOX
+*clemis   612.000    2.060    7.500 # cooling emissions CO2,NOX,SOX
+*ltemis   612.000    2.060    7.500 # lighting emissions CO2,NOX,SOX
+*fnemis   612.000    2.060    7.500 # fan/pump emissions CO2,NOX,SOX
+*spemis   612.000    2.060    7.500 # small power emissions CO2,NOX,SOX
+*hwemis   190.000    0.200    0.100 # dhw emissions CO2,NOX,SOX
+*ipv  bld_basic.ipv
+# sim setup: no. sets startup zone_ts plant_ts save_lv
+*sps     4    3    1   10    2
+   9   1  15   1  def      # period & name
+*sblr bld_basic_def.res
+*sipv 
+*end_set
+   9   1  15   1  win      # period & name
+*sblr bld_basic_win.res
+*sipv bld_basicwin_ipv.rep
+*end_set
+   6   3  12   3  trn      # period & name
+*sblr bld_basic_trn.res
+*sipv bld_basictrn_ipv.rep
+*end_set
+  11   7  17   7  sum      # period & name
+*sblr bld_basic_sum.res
+*sipv bld_basicsum_ipv.rep
+*end_set
+*end_sps
+* PROJ LOG
+bld_basic.log
+* Ground
+*mgp    1
+  4.60  2.80  3.30  5.10  6.10  9.60 11.40 13.60 14.30 12.70  7.50  5.50
+*end
+* Building
+Basic 3 zone model.
+      3  # no of zones
+*zon   1   # reference for reception   
+*opr ../zones/reception.opr  # schedules
+*geo ../zones/reception.geo  # geometry
+*con ../zones/reception.con  # construction
+*tmc ../zones/reception.tmc  # transparent constr
+*zend 
+*zon   2   # reference for office      
+*opr ../zones/office.opr  # schedules
+*geo ../zones/office.geo  # geometry
+*con ../zones/office.con  # construction
+*tmc ../zones/office.tmc  # transparent constr
+*zend 
+*zon   3   # reference for roof_space  
+*opr ../zones/roof_space.opr  # schedules
+*geo ../zones/roof_space.geo  # geometry
+*con ../zones/roof_space.con  # construction
+*zend 
+*cnn  bld_basic.cnn  # connections 
+      0   # no fluid flow network
+.TE
+.ES
+.sp
+Figure 4.1.9  Problem definition (system configuration) file.
+.sp
+.LP
+Now a configuration control file must be created using 
+the \fIbuilding controls & actuation\fR facility. This
+file contains the control statements to be obeyed by the \fISimulator\fR at
+simulation time. This file can be
+confusing for some users of \fIESP-r\fR.  Previous releases
+provided only minimal editing facilities, however \fIESP-r\fR
+includes a extensive editing and reporting facilities
+which should ease the process considerably.
+.LP
+To set up a an ideal control with a heating capacity
+of 1000W max. and 0W min., a cooling
+capacity of 1000W max. and 0W min. and the
+following temperature profile:
+.nf
+weekday....
+0h00 - 7h00 free floating
+7h00 - 9h00 15\(deC heating setpoint and 100\(deC cooling setpoint
+9h00 - 17h00 20\(deC heating setpoint and 100\(deC cooling setpoint
+17h00 - 24h00 free floating
+
+Saturday....
+0h00 - 24h00 free floating
+
+Sunday....
+0h00 - 24h00 free floating
+
+.fi
+.LP
+A summary of the
+meaning of the file as well as the raw file are listed below:
+.ML
+.TS H
+doublebox center;
+l.
+.TH
+Within the current project  1 control functions have been specified.
+The overall project control has been named <test 1> and the building
+control has been named <summer/winter>.
+
+The sensor for function  1 measures the temperature of the current zone.
+
+The actuator for function  1 is air point of the current zone
+The day types are Weekdays, Saturdays & Sundays
+
+Day type  1 is valid Period: Tue  1 Jan To: Tue 31 Dec  YEAR:1991
+and contains  4 control periods.
+Period| Start |sensed   |actuated   | control law      |
+no    | time  |property |property   |                  |
+    1    0.00   db temp   > flux      free floating
+    2    7.00   db temp   > flux      ideal control
+       data...   1000.0     0.0   1000.0     0.0    15.0   100.0
+    3    9.00   db temp   > flux      ideal control
+       data...   1000.0     0.0   1000.0     0.0    20.0   100.0
+    4   18.00   db temp   > flux      free floating
+ 
+Day type  2 is valid Period: Tue  1 Jan To: Tue 31 Dec  YEAR:1991
+and contains  1 control periods.
+Period| Start |sensed   |actuated   | control law      |
+no    | time  |property |property   |                  |
+    1    0.00   db temp   > flux      free floating
+
+Day type  3 is valid Period: Tue  1 Jan To: Tue 31 Dec  YEAR:1991
+and contains  1 control periods.
+Period| Start |sensed   |actuated   | control law      |
+no    | time  |property |property   |                  |
+    1    0.00   db temp   > flux      free floating
+zone  1 << control  1
+
+_
+simple building  # overall descr 
+* Building
+convective heating, ideal control  # bld descr 
+   1  # No. of functions
+* Control function
+# measures the temperature of the current zone.
+    0    0    0    0  # sensor data
+# actuates air point of the current zone
+    0    0    0  # actuator data
+    0 # No. day types
+    1  365  # valid Sun  1 Jan - Sun 31 Dec
+     4  # No. of periods in day
+    0    2   0.000  # ctl type, law (free floating), start @
+      0.  # No. of data items
+    0    1   7.000  # ctl type, law (ideal control), start @
+      6.  # No. of data items
+  1000.000 0.000 0.000 0.000 20.000 100.000
+    0    1   9.000  # ctl type, law (ideal control), start @
+      6.  # No. of data items
+  1000.000 0.000 0.000 0.000 20.000 100.000
+    0    2  18.000  # ctl type, law (free floating), start @
+      0.  # No. of data items
+    1  365  # valid Sun  1 Jan - Sun 31 Dec
+     1  # No. of periods in day
+    0    2   0.000  # ctl type, law (free floating), start @
+      0.  # No. of data items
+    1  365  # valid Sun  1 Jan - Sun 31 Dec
+     1  # No. of periods in day
+    0    2   0.000  # ctl type, law (free floating), start @
+      0.  # No. of data items
+# Function:Zone links
+  1  1  0
+.TE
+.ES
+.ce
+Figure 4.1.10  System control information and file.
+.sp
+.LP
+A simulation is now performed via the \fISimulator\fR using the climate file
+\fI~esru/esp-r/climate/clm67\fR. Two simulations should
+be performed, saving both in the same
+results library called, for example, \fIex1.res\fR.
+The first should span the period 9th January to
+15 January inclusive. The second should span
+the period 11 July to 17 July inclusive. Both simulations should
+have a one hour time-step.
+.LP
+Now \fIResults Analysis Module\fR is used to see the results obtained from the simulation.
+After entering the library name (\fIex1.res\fR in this case) you can
+select \fIgraph\fR, \fItime-variable\fR and \fIinside air temperature\fR
+to obtain a common temperature-profile of the inside air. According to
+these profiles (see figures), the following items can be 
+discussed (you should generate these profiles yourself):
+.IP 1)
+In winter the maximum heating capacity of the actuated control is not 
+satisfactory to achieve the heating setpoint (20\(deC from 9h00 to 18h00)
+of the inside air. To perform the next simulation, you can change
+this maximum heating capacity for instance up to 3000 [W], you will
+notice that now -during weekdays- the setpoint temperature is reached 
+during the afternoon (figure 4.1.11 and 4.1.13). The
+new control file is listed below in figure 4.1.12.
+.IP 2)
+In summer the cooling setpoint (100\(deC from 7h00 to 18h00) never actuates
+the cooling capacity because this setpoint-temperature never occurs. In
+the new control file (figure 4.1.11) this setpoint-temperature is adapted to
+25\(deC actuating a cooling capacity of 3000 W. If you
+generate a temperature-profile now you can see that the 
+inside air temperature is decreased during weekday. 
+.br
+.PSPIC FIGS/s4_janur1.EPS 16c 8c
+.PSPIC FIGS/s4_july1.EPS 16c 8c
+.ce
+Figure 4.1.11 Temperature profiles for control as listed in fig. 4.1.10.
+.ML
+.TS H
+doublebox center;
+l.
+.TH
+simple building  # overall descr 
+* Building
+increased convective heating, ideal control  # bld descr 
+   1  # No. of functions
+* Control function
+# measures the temperature of the current zone.
+    0    0    0    0  # sensor data
+# actuates air point of the current zone
+    0    0    0  # actuator data
+    0 # No. day types
+    1  365  # valid Sun  1 Jan - Sun 31 Dec
+     4  # No. of periods in day
+    0    2   0.000  # ctl type, law (free floating), start @
+      0.  # No. of data items
+    0    1   7.000  # ctl type, law (ideal control), start @
+      6.  # No. of data items
+  3000.000 3000.000 0.000 0.000 20.000 25.000
+    0    1   9.000  # ctl type, law (ideal control), start @
+      6.  # No. of data items
+  3000.000 3000.000 0.000 0.000 20.000 100.000
+    0    2  18.000  # ctl type, law (free floating), start @
+      0.  # No. of data items
+    1  365  # valid Sun  1 Jan - Sun 31 Dec
+     1  # No. of periods in day
+    0    2   0.000  # ctl type, law (free floating), start @
+      0.  # No. of data items
+    1  365  # valid Sun  1 Jan - Sun 31 Dec
+     1  # No. of periods in day
+    0    2   0.000  # ctl type, law (free floating), start @
+      0.  # No. of data items
+# Function:Zone links
+  1  1  0
+.TE
+.ES
+.ce
+Figure 4.1.12 Listing of the new control file
+.KF
+.PSPIC FIGS/s4_janur2.EPS 16c 8c 
+.PSPIC FIGS/s4_july2.EPS 16c 8c 
+.ce
+Figure 4.1.13 Temperature profiles for control as listed in fig. 4.1.12.
+.sp
+.KE
+.SH
+4.12.1b Additional shading analysis
+.LP
+In the previous test, only a default insolation
+distribution has been used (i.e.. all internal surfaces
+receiving diffuse solar incidence). Before defining
+the geometry of the first test, we didn't take any notice of subjects like \fIsolar
+insolation distribution\fR, \fIobstruction blocks\fR and \fIrotation &
+transforms\fR. These subjects affect the time-series dependent solar incidence.
+.LP
+In order to increase the resolution of the problem (to make the problem more
+corresponding to reality) a second variant is included
+called \fIbld_simple_shd.cfg\fR. You may access this by specifying it as the
+problem name and the relevant information will be loaded. As you can see a 
+large obstruction (for instance a flat-block) is created at the south-side
+of the office.
+.LP
+If you select \fIobstruction blocks\fR from the \fIgeometry\fR-menu
+you can see in detail that this obstruction is build out of four
+blocks. In this menu you now can change the geometry of this blocks
+in order to make it cope with the outdoor situation you wish to
+simulate. Again don't forget to update this new situation into the
+new obstruction file. Obstruction data are listed below in Figure 4.1.14.
+.ML
+.TS H
+doublebox center;
+l.
+.TH
+# site obstruction file defined in ../zones/reception.obs
+# associated with zone geometry file ../zones/reception.geo
+ 0. 0.   # dummy values for site position
+    4    # no obstruction blocks
+# origin  X   Y   Z   width  depth  height  angle  descr
+   -5.000   -7.000    0.000   5.800   1.000  25.000    0.0  blk_1  # block  1
+    1.200   -7.000    0.000   3.600   1.000  25.000    0.0  blk_2  # block  2
+    5.200   -7.000    0.000   3.600   1.000  25.000    0.0  blk_3  # block  3
+    9.200   -7.000    0.000  10.800   1.000  25.000    0.0  blk_4  # block  4
+# grid opq X  opq Z  win X  win Z
+    20    20     5     5
+.TE
+.ES
+.ce
+Figure 4.1.14 Obstruction data 
+.sp
+.LP
+The next action to perform is to go back to the main
+menu and to start the \fIShading/ Insolation Module\fR
+via the \fIshading & insolation\fR option. This program
+calculates the insolation distribution and it writes the
+results to a database for use in subsequent simulations. 
+.LP
+The results that you will obtain now show no
+difference in winter. In this period the solar
+radiation is not remarkable. However in summer
+(cooling capacity 1000 W, actuated at 25\(deC) a
+slight difference occurs as you can see from
+Figure 4.1.15. Note that in these figures the
+internal and external surface temperatures of the
+south wall are drawn instead of the inside air temperature.
+.KF
+.PSPIC FIGS/s4_july5.EPS 14c 7c 
+.PSPIC FIGS/s4_july6.EPS 14c 7c 
+.ce
+Figure 4.1.15 Temperature-profiles for summer.
+.sp
+.KE
+.LP
+If no shading/insolation database exists,
+the default insolation distribution of the zone operations file
+will be used. In this case ESP-r assumes no obstructions so
+that only the building geometry is needed for calculation
+of the insolation distribution.
+.bp
+.SH
+4.12.2 Simple building
+.LP
+We now move to a multi-zone problem and ask
+what will be the effect on winter heating energy and summer overheating. Again
+there is no need to generate the zone and configuration files
+since the data has already been prepared
+and can be copied from directory  \fI~esru/esp-r/training/basic\fR.
+.LP
+This directory contains several subdirectories including one that contains 
+different problem configurations. A discussion of each of the problems
+is contained in the files
+\fIcfg/bld_basic*.log\fR which may be looked at via a text
+editor or by the facilities provided in the project manager. A
+summary of these configurations is included below.
+.TS H
+doublebox center;
+l l.
+file    description
+_
+.TH
+bld_basic.cfg	basic three zone model
+bld_basic_shd.cfg	model with shading
+bld_basic_af1.cfg	model with infiltration
+bld_basic_af2.cfg	model with controlled infiltration
+bld_basic_prht.cfg	model with ideal pre-heat control
+bld_basic_sns.cfg	model with zone temperature matching
+.TE
+.sp
+.LP
+Each problem assumes the same building geometry and
+construction, only different utilities are added. The
+building geometry is shown below in Figure 4.2.1.
+.LP
+Rather than list each of the different problem files
+the user is invited to make use of the display facilities
+within the project manager or the various UNIX file
+listing facilities. At least you should list the
+different configuration files to see how the \fIbld_basic.cfg\fR
+geometry is used for describing different problems.
+.LP
+Now perform the same winter and summer simulations as
+were performed initially in training session 1 for the
+base case problem \fIbld_basic.cfg\fR. Using the results
+analysis program you should now compare your results
+with the corresponding results for the winter period 9
+to 15 January in the following listings (assuming the default climate collection).
+.br
+.PSPIC FIGS/s4_basic.EPS 16c 8c 
+.sp
+.ce
+Figure 4.2.1 Simple_building geometry.
+.sp
+.ML
+.TS H
+doublebox center;
+l.
+.TH
+ Selected monthly energy statistics (kWhr) by zone.
+ Period: Mon  9 Jan @ 0h30 to: Sun 15 Jan @23h30 YEAR:1967
+ Tsteps: sim@ 60m, output@ 60m (not averaged)
+
+   Zone   Period|ML constr.** |Casual Gains |Infil.| Plant
+              in|int.surf.conv| conv. radnt.|& Vent|Heat  |Cool
+                |  int.  ext. |             |      |
+ 1 reception Jan  -31.3  -49.3  139.2   38.2  -64.4   19.5    0.0
+ 2 office    Jan  -17.5  -14.0    5.8    2.6    0.4   46.4    0.0
+ 3 roof_spac Jan   10.1  -21.2   11.2   16.3    0.0    0.0    0.0
+
+   All zones Jan   -39.   -85.   156.    57.   -64.    66.     0.
+
+** Opaque & transparent multilayer construction: via
+     conduction from surfaces facing zone (internal/external).
+   Note that connections to ground are considered internal.
+_
+ Interrogation output for result-set  1
+ Period: Mon  9 Jan @ 0h30 to: Sun 15 Jan @23h30 YEAR:1967
+ Tsteps: sim@ 60m, output@ 60m (not averaged)
+
+ Zone radiant & convective plant used (kWhrs)
+     Zone              Heating           Cooling
+  id name              Energy   No. of   Energy   No. of
+                       (kWhrs)  Hr rqd   (kWhrs)  Hr rqd
+   1 reception          19.541    39.0     0.000     0.0
+   2 office             46.428    60.0     0.000     0.0
+   3 roof_space          0.000     0.0     0.000     0.0
+
+     All                65.969             0.000
+_
+ Casual gains summary (kWhrs) for zone 1: reception
+ Period: Mon  9 Jan @ 0h30 to: Sun 15 Jan @23h30 YEAR:1967
+ Tsteps: sim@ 60m, output@ 60m (not averaged)
+
+ Casual gain   |  Convect |  Total   | Radiant by connection type
+               |  portion |  Radiant |  external    internal   ground
+ UC type 1 @opq     17.280      4.271      1.133      3.139      0.000
+ UC type 1 @trn                 0.049      0.049      0.000      0.000
+ UC type 2 @opq      0.000      3.322      0.881      2.441      0.000
+ UC type 2 @trn                 0.038      0.038      0.000      0.000
+ UC type 3 @opq    121.920     30.137      7.992     22.145      0.000
+ UC type 3 @trn                 0.343      0.343      0.000      0.000
+ Totals            139.200     38.160     10.435     27.725      0.000
+
+ @opq = associated with opaque MLC,
+ @trn = associated with transparent MLC,
+ UC = uncontrolled, C = controlled, all in kWhr.
+_
+ Causal energy breakdown (kWhrs) at air point for zone 1: reception
+ Period: Mon  9 Jan @ 0h30 to: Sun 15 Jan @23h30 YEAR:1967
+ Tsteps: sim@ 60m, output@ 60m (not averaged)
+
+                                Gain         Loss
+ Infiltration air load           0.000     -35.797
+ Ventilation air load            0.179     -28.828
+ Uncontr`d casual type 1        17.280       0.000
+ Uncontr`d casual type 2         0.000       0.000
+ Uncontr`d casual type 3       121.920       0.000
+ Opaque MLC convec: ext          0.000     -28.412
+ Opaque MLC convec: int          2.765     -34.043
+ Transp MLC convec: ext          0.021     -20.900
+ Transp MLC convec: int          0.000       0.000
+ Convec portion of plant        19.541       0.000
+ Totals                        162.215    -162.104
+_
+ Causal energy breakdown (Whrs) for south ( 1) in reception ( 1)
+ Surface is opaque MLC, area= 16.50m2 & connects to the outside
+ Period: Mon  9 Jan @ 0h30 to: Sun 15 Jan @23h30 YEAR:1967
+ Tsteps: sim@ 60m, output@ 60m (not averaged)
+
+                         Facing Zone  1           Facing Zone  0
+                         Gain       Loss          Gain       Loss
+ Conductive flux          0.00   -16106.23    29184.56   -15845.35
+ Convective flux       7822.55       -6.54    10173.91   -13390.11
+ Longwave rad int      4049.18     -325.08         --          --
+ LW rad ext >bldg          --         --         20.32    -1908.40
+ LW rad ext >sky           --         --          0.00   -64480.62
+ LW rad ext >grnd          --         --      11175.86    -1975.07
+ Shortwave rad.        1408.22        0.00    47656.58        0.00
+ Unctrl cas typ 1       385.34        0.00         --          --
+        cas typ 2       299.71        0.00         --          --
+        cas typ 3      2718.81        0.00         --          --
+ Heat stored           1837.48    -2083.43     8037.96    -8649.63
+ Plant                    0.00        0.00        0.00        0.00
+ Totals               18521.29   -18521.28   106249.20  -106249.19
+_
+ Casual gains summary (kWhrs) for zone 2: office
+ Period: Mon  9 Jan @ 0h30 to: Sun 15 Jan @23h30 YEAR:1967
+ Tsteps: sim@ 60m, output@ 60m (not averaged)
+
+ Casual gain   |  Convect |  Total   | Radiant by connection type
+               |  portion |  Radiant |  external    internal   ground
+ UC type 1 @opq      5.760      1.440      0.397      0.744      0.299
+ UC type 1 @trn                 0.000      0.000      0.000      0.000
+ UC type 2 @opq      0.000      1.120      0.309      0.578      0.233
+ UC type 2 @trn                 0.000      0.000      0.000      0.000
+ UC type 3 @opq      0.000      0.000      0.000      0.000      0.000
+ UC type 3 @trn                 0.000      0.000      0.000      0.000
+ Totals              5.760      2.560      0.706      1.322      0.532
+
+ @opq = associated with opaque MLC,
+ @trn = associated with transparent MLC,
+ UC = uncontrolled, C = controlled, all in kWhr.
+_
+ Causal energy breakdown (kWhrs) at air point for zone 2: office
+ Period: Mon  9 Jan @ 0h30 to: Sun 15 Jan @23h30 YEAR:1967
+ Tsteps: sim@ 60m, output@ 60m (not averaged)
+
+                                Gain         Loss
+ Infiltration air load           0.000      -9.078
+ Ventilation air load            9.531      -0.017
+ Uncontr`d casual type 1         5.760       0.000
+ Uncontr`d casual type 2         0.000       0.000
+ Uncontr`d casual type 3         0.000       0.000
+ Opaque MLC convec: ext          1.244     -15.231
+ Opaque MLC convec: int          4.804     -22.338
+ Transp MLC convec: ext          0.000       0.000
+ Transp MLC convec: int          0.000       0.000
+ Convec portion of plant        46.428       0.000
+ Totals                         67.987     -67.952
+.TE
+.ES
+.ce
+Figure 4.2.2 Tabular statistics during winter simulation period.
+.sp
+.LP
+From this tabular report you can see that during the
+simulation period, the office requires most heating
+energy (46 kWh) while the reception looses most energy
+(160 kWh). The energy statistics table and the causal
+energy breakdown table show that the reception zone
+loses most energy due to conduction (total 80 kWh).
+However the reception zone also suffers a high casual
+gain from equipment (type 3) so the reception net heat
+loss is less than the office net heat loss.
+.LP
+If you look to the operation files you will see that a
+coupled air flow from the reception into the office
+is defined. In the listed energy statistics you can
+see that (due to this interzonal airflow) the heat
+loss from the reception to the office is more or less 10 kWh.
+.LP
+Next you should perform the same simulation for the
+summer (11-17 July) and generate a tabular report. You
+will obtain results as listed below.
+.bp
+.ML
+.TS H
+doublebox center;
+l.
+.TH
+ Selected monthly energy statistics (kWhr) by zone.
+ Period: Tue 11 Jul @ 0h30 to: Mon 17 Jul @23h30 YEAR:1967
+ Tsteps: sim@ 60m, output@ 60m (not averaged)
+
+   Zone   Period|ML constr.** |Casual Gains |Infil.| Plant
+              in|int.surf.conv| conv. radnt.|& Vent|Heat  |Cool
+                |  int.  ext. |             |      |
+ 1 reception Jul  -30.7  -19.9  139.2   38.2  -80.3    0.0    0.0
+ 2 office    Jul   -5.1   -4.7    5.8    2.6   11.9    0.0    0.0
+ 3 roof_spac Jul    2.8  -14.0   11.2   16.3    0.0    0.0    0.0
+
+   All zones Jul  -33.   -39.   156.    57.   -68.     0.     0.
+
+** Opaque & transparent multilayer construction: via
+     conduction from surfaces facing zone (internal/external).
+   Note that connections to ground are considered internal.
+_
+ Interrogation output for result-set  1
+ Period: Tue 11 Jul @ 0h30 to: Mon 17 Jul @23h30 YEAR:1967
+ Tsteps: sim@ 60m, output@ 60m (not averaged)
+
+ Zone radiant & convective plant used (kWhrs)
+     Zone              Heating           Cooling
+  id name              Energy   No. of   Energy   No. of
+                       (kWhrs)  Hr rqd   (kWhrs)  Hr rqd
+   1 reception           0.000     0.0     0.000     0.0
+   2 office              0.000     0.0     0.000     0.0
+   3 roof_space          0.000     0.0     0.000     0.0
+
+     All                 0.000             0.000
+_
+ Casual gains summary (kWhrs) for zone 1: reception
+ Period: Tue 11 Jul @ 0h30 to: Mon 17 Jul @23h30 YEAR:1967
+ Tsteps: sim@ 60m, output@ 60m (not averaged)
+
+ Casual gain   |  Convect |  Total   | Radiant by connection type
+               |  portion |  Radiant |  external    internal   ground
+ UC type 1 @opq     17.280      4.271      1.133      3.139      0.000
+ UC type 1 @trn                 0.049      0.049      0.000      0.000
+ UC type 2 @opq      0.000      3.322      0.881      2.441      0.000
+ UC type 2 @trn                 0.038      0.038      0.000      0.000
+ UC type 3 @opq    121.920     30.137      7.992     22.145      0.000
+ UC type 3 @trn                 0.343      0.343      0.000      0.000
+ Totals            139.200     38.160     10.435     27.725      0.000
+
+ @opq = associated with opaque MLC,
+ @trn = associated with transparent MLC,
+ UC = uncontrolled, C = controlled, all in kWhr.
+_
+ Causal energy breakdown (kWhrs) at air point for zone 1: reception
+ Period: Tue 11 Jul @ 0h30 to: Mon 17 Jul @23h30 YEAR:1967
+ Tsteps: sim@ 60m, output@ 60m (not averaged)
+
+                                Gain         Loss
+ Infiltration air load           0.000     -29.759
+ Ventilation air load            0.000     -50.511
+ Uncontr`d casual type 1        17.280       0.000
+ Uncontr`d casual type 2         0.000       0.000
+ Uncontr`d casual type 3       121.920       0.000
+ Opaque MLC convec: ext          1.258     -14.654
+ Opaque MLC convec: int          0.213     -30.938
+ Transp MLC convec: ext          3.420      -9.899
+ Transp MLC convec: int          0.000       0.000
+ Convec portion of plant         0.000       0.000
+ Totals                        148.601    -148.412
+_
+ Causal energy breakdown (Whrs) for south ( 1) in reception ( 1)
+ Surface is opaque MLC, area= 16.50m2 & connects to the outside
+ Period: Tue 11 Jul @ 0h30 to: Mon 17 Jul @23h30 YEAR:1967
+ Tsteps: sim@ 60m, output@ 60m (not averaged)
+
+                         Facing Zone  1           Facing Zone  0
+                         Gain       Loss          Gain       Loss
+ Conductive flux       4721.47   -11392.12    86257.12   -81218.40
+ Convective flux       4928.98    -1191.62       95.71  -152806.64
+ Longwave rad int       629.11    -9413.97         --          --
+ LW rad ext >bldg          --         --        130.47   -10867.78
+ LW rad ext >sky           --         --          0.00  -116121.70
+ LW rad ext >grnd          --         --        177.24   -50955.58
+ Shortwave rad.        8829.52        0.00   325326.09        0.00
+ Unctrl cas typ 1       385.34        0.00         --          --
+        cas typ 2       299.71        0.00         --          --
+        cas typ 3      2718.81        0.00         --          --
+ Cntrld cas typ 1         0.00        0.00         --          --
+        cas typ 2         0.00        0.00         --          --
+        cas typ 3         0.00        0.00         --          --
+ Heat stored           2774.05    -3289.23    30477.60   -30494.03
+ Plant                    0.00        0.00        0.00        0.00
+ Totals               25286.99   -25286.95   442464.22  -442464.09
+_
+ Casual gains summary (kWhrs) for zone 2: office
+ Period: Tue 11 Jul @ 0h30 to: Mon 17 Jul @23h30 YEAR:1967
+ Tsteps: sim@ 60m, output@ 60m (not averaged)
+
+ Casual gain   |  Convect |  Total   | Radiant by connection type
+               |  portion |  Radiant |  external    internal   ground
+ UC type 1 @opq      5.760      1.440      0.397      0.744      0.299
+ UC type 1 @trn                 0.000      0.000      0.000      0.000
+ UC type 2 @opq      0.000      1.120      0.309      0.578      0.233
+ UC type 2 @trn                 0.000      0.000      0.000      0.000
+ UC type 3 @opq      0.000      0.000      0.000      0.000      0.000
+ UC type 3 @trn                 0.000      0.000      0.000      0.000
+ Totals              5.760      2.560      0.706      1.322      0.532
+
+ @opq = associated with opaque MLC,
+ @trn = associated with transparent MLC,
+ UC = uncontrolled, C = controlled, all in kWhr.
+_
+ Causal energy breakdown (kWhrs) at air point for zone 2: office
+ Period: Tue 11 Jul @ 0h30 to: Mon 17 Jul @23h30 YEAR:1967
+ Tsteps: sim@ 60m, output@ 60m (not averaged)
+
+                                Gain         Loss
+ Infiltration air load           0.000      -4.881
+ Ventilation air load           16.797       0.000
+ Uncontr`d casual type 1         5.760       0.000
+ Uncontr`d casual type 2         0.000       0.000
+ Uncontr`d casual type 3         0.000       
+_
+ Causal energy breakdown (Whrs) for West_w ( 4) in office ( 2)
+ Surface is opaque MLC, area=  9.50m2 & connects to the outside
+ Period: Tue 11 Jul @ 0h30 to: Mon 17 Jul @23h30 YEAR:1967
+ Tsteps: sim@ 60m, output@ 60m (not averaged)
+
+                         Facing Zone  2           Facing Zone  0
+                         Gain       Loss          Gain       Loss
+ Conductive flux       4622.67    -3264.31    47702.53   -49506.59
+ Convective flux       2592.00     -689.66      109.20   -71829.94
+ Longwave rad int       700.83    -5732.03         --          --
+ LW rad ext >bldg          --         --       3400.98    -5749.41
+ LW rad ext >sky           --         --          0.00   -69593.95
+ LW rad ext >grnd          --         --        177.87   -32013.02
+ Shortwave rad.        1593.01        0.00   177342.20        0.00
+ Unctrl cas typ 1       175.57        0.00         --          --
+        cas typ 2       136.56        0.00         --          --
+        cas typ 3         0.00        0.00         --          --
+ Cntrld cas typ 1         0.00        0.00         --          --
+        cas typ 2         0.00        0.00         --          --
+        cas typ 3         0.00        0.00         --          --
+ Heat stored           1319.85    -1454.46    18571.47   -18611.29
+ Plant                    0.00        0.00        0.00        0.00
+ Totals               11140.49   -11140.46   247304.25  -247304.19
+.TE
+.ES
+.ce
+Figure 4.2.3 Tabular statistics during summer simulation period.
+.sp
+.LP
+The heat loss due to the conduction through building
+partitions is less and infiltration & ventilation becomes
+the greatest heat loss factor. Because of the internal
+casual gains and the high cooling setpoint-temperature
+(100\(deC as you can see from the control file) no
+heating or cooling energy is required.
+.LP
+For example now it is interesting to run a simulation
+(winter and summer) to establish the heating and cooling
+energy required to maintain the zone 1 and 2 air temperatures
+constant at a setpoint of 24\(deC during the control period.
+.LP
+Therefore, first you should adapt the control file (or
+make a new one) to change the capacity and setpoint temperatures
+of both the heating and cooling plant. You can enter an
+extremely high capacity in order to be sure that the
+set-point temperature is reached when the control period starts.
+You should run the simulations and check
+the calculated temperature profiles using the \fIResults Analysis Module\fR.
+Finally, you can find the required energy data from the energy statistics.
+.LP
+When you perform the simulations correctly, you will
+find 60 and 70 kWh respectively for the reception and
+the office in winter and 130 and 6 kWh in summer. Due
+to the high casual gain in the reception less heating
+energy is required in winter and more cooling energy is required in summer.
+You can perform the same simulations as has been done
+for the basic problem configuration, for the other configurations. 
+.SH
+4.12.2b Additional fluid flow analysis
+.LP
+At the start of training session 2, a
+summary of the files \fIbld_basic*.log\fR was given.
+As you can see, two problem definition files exist in
+which fluid flows are governed by a flow network. Below, a
+summary of these problem definition files is included.
+.TS H
+doublebox center;
+l l.
+file	description
+_
+.TH
+bld_basic_af1.cfg	basic building model with infiltration
+bld_basic_af2.cfg	basic building model with controlled infiltration
+.TE
+.LP
+The basic building with air movement is restricted to flows via
+crack openings (under doors and around windows) in the occupied
+spaces. Separately, the roof is  vented  by  soffit  and
+ridge   vents.    Use   the   configuration   control   file
+bld_basic.ctl which  provides  1kW   to   the  reception  and
+office.
+.LP
+A variation is the base case with the addition of a component
+`door'  between the rooms in the mass flow network and a window
+which is controlled.  Browse and use the
+configuration control file \fIbld_basic_af2.ctl\fR.
+.LP
+The  base  case  mass   flow   network   is   described   in
+\fIbld_basic_af1.afn\fR  and  contains  four  boundary  nodes (north,
+east, south, west) and  three  nodes  (roof,  recep,  offic)
+which match the thermal zones.  Mass flow components (drcrk,
+wincrk, soffit, roofv) define the  flow  restrictions.   The
+flow  paths are between each zone and the outside via window
+cracks and between the two occupied rooms via a crack  under
+the  door.  The roof space has two flow paths to the outside
+- one through the soffit and one by way of the roof vent.
+.LP
+The mass flow network with window control is \fIbld_basic_af2.afn\fR.
+The control is made via a configuration control file \fIbld_basic_af2.ctl\fR. A
+window in the reception is assumed to open if the room
+temperature rises above 20\(deC.  A similar set of paths is
+defined for the office.
+.LP
+During a summer simulation the flow is restricted to the
+cracks in the windows until the room warms. Then the
+window opens, flow is allowed and then when the temperature
+drops below 20\(deC the window closes.  In the results
+analysis you will probably detect a sawtooth pattern as  the
+window opens and closes. The decision to open or close the
+window is only taken once per timestep and you should experiment
+with different simulation timesteps to see how this
+ventilation control changes.
+.LP
+As it is important to check the \fIleakage characteristic\fR
+of a space, we will first discuss a simple simulation of the fan pressurisation method.
+.LP
+A simple fan pressurisation apparatus consists essentially
+of a large variable-speed fan with an attached air flow
+measuring station. The rig is sealed into the doorway of
+the space under test with internal and external connections
+taken to a differential micromanometer. The flow rate is
+measured over a range of pressure differences between 10
+and 100 Pascals and the results presented as a curve of
+volume flow rate against pressure difference. This curve
+(with leakage parameters k and n) can be fitted by an expression of the form;
+.EQ
+~~~Q~=~k{( DELTA P)} sup n
+.EN
+.LP
+In order to simulate fan pressurisation, a mass flow
+network description as printed in Figure 4.2.4 can be used.
+Only air leakages (door and window cracks) in the reception
+zone (space under test) are considered. These air leakages
+(or flow restrictions) are determined by a thorough
+investigation of the room partitions. The fan
+pressurisation apparatus is simulated by a constant
+mass flow component in the east door. By altering
+the constant mass flow rate and reading the corresponding
+pressure differences from the results file, the leakage
+curve can be calculated (Figure 4.2.5).
+.ML
+.TS H
+doublebox center;
+l.
+.TH
+    7    5    3    1.000    (nodes, components, connections, wind reduction)
+ Node   Fld. Type   Height    Temperature    Data_1       Data_2
+ north     1    3   0.0000           0.       32.000           0.    
+ east      1    3   0.0000           0.       32.000       90.000    
+ south     1    3   0.0000           0.       32.000       180.00    
+ west      1    3   0.0000           0.       32.000       270.00    
+ roof      1    0   0.0000       20.000           0.       49.000    
+ recep     1    0   0.0000       20.000           0.       144.00    
+ offic     1    0   0.0000       20.000           0.       48.000    
+ Comp   Type C+ L+ Description
+ drcrk   120  3  0 Specific air flow crack             m = rho.f(W,L,dP)       
+    1.00000    1.00000E-02    1.00000
+ wincrk  120  3  0 Specific air flow crack             m = rho.f(W,L,dP)       
+    1.00000    5.00000E-03    3.00000
+ soffit  110  2  0 Specific air flow opening           m = rho.f(A,dP)         
+    1.00000    1.00000E-02
+ roofv   110  2  0 Specific air flow opening           m = rho.f(A,dP)         
+    1.00000    2.00000E-02
+ fan  35  3  0 Constant mass flow rate component   m = rho.f(A,dP)         
+    1.00000   0.05000  0.
+ +Node   dHght   -Node   dHght   Comp     Snod1  Snod2
+ south   0.000   recep   0.000   wincrk                
+ west    0.000   recep   0.000   drcrk                 
+ east    0.000   recep   0.000   fan
+# pressurisation reception
+.TE
+.ES
+.ce
+Figure 4.2.4 Fluid flow network describing pressurisation
+.sp
+.br
+.PSPIC FIGS/s4_pressure.EPS 14c 8c
+.nf
+.ta 1.5iR +0.5iL +1.0iL
+	n	= 0.53
+	k	= 3.20 [dm3/s * Pa^1/n]
+	Qv,10	= 14.0 [dm3/s]	(NEN 2686, Netherlands)
+.fi
+.LP
+Figure 4.2.5 Leakage characteristic (simulated) for the
+reception zone. The graph is drawn by use of copying
+the predicted flow data to the XVGR tool.
+.LP
+The leakage characteristic as printed above should be
+compared with data acquired by performing a fan
+pressurisation (as already explained). In case
+differences occur between measured data and
+simulation results, flow restrictions
+should be altered. For now we assume simulation results
+to be correct (i.e. more or less in agreement with the measured data).
+Reading National Standards on pressurisation testing
+you will find these leakage parameters to be very low and satisfying.
+.LP
+Now, when copying leakage data of various zones to an
+overall building mass flow network, you are able
+to perform accurate simulations concerning energy
+gains and losses due to infiltration and ventilation.
+Results for a winter's simulation are printed
+below in Figure 4.2.6. Comparing these data to
+the ones printed in Figure 4.2.2 you will find
+the reception infiltration and ventilation energy loss to be less.
+.ML
+.TS H
+doublebox center;
+l.
+.TH
+ Selected monthly energy statistics (kWhr) by zone.
+ Period: Sat  9 Jan @ 0h30 to: Fri 15 Jan @23h30 YEAR:1960
+ Tsteps: sim@ 60m, output@ 60m (not averaged)
+
+   Zone   Period|ML constr.** |Casual Gains |Infil.| Plant
+              in|int.surf.conv| conv. radnt.|& Vent|Heat  |Cool
+                  int.  ext. |             |      |
+ 1 reception Jan  -52.9  -64.2  139.2   38.2  -10.1    9.0    0.0
+ 2 office    Jan   -8.1  -11.6    5.8    2.6   -2.1   43.6    0.0
+ 3 roof_spac Jan   14.9  -24.9   11.2   16.3   -1.1    0.0    0.0
+
+   All zones Jan  -46.  -101.   156.    57.   -13.    53.     0.
+
+** Opaque & transparent multilayer construction: via
+     conduction from surfaces facing zone (internal/external).
+   Note that connections to ground are considered internal.
+_
+ Interrogation output for result-set  1
+ Period: Sat  9 Jan @ 0h30 to: Fri 15 Jan @23h30 YEAR:1960
+ Tsteps: sim@ 60m, output@ 60m (not averaged)
+
+ Zone radiant & convective plant used (kWhrs)
+     Zone              Heating           Cooling
+  id name              Energy   No. of   Energy   No. of
+                       (kWhrs)  Hr rqd   (kWhrs)  Hr rqd
+   1 reception           9.022    22.0     0.000     0.0
+   2 office             43.578    60.0     0.000     0.0
+   3 roof_space          0.000     0.0     0.000     0.0
+
+     All                52.600             0.000
+_
+ Causal energy breakdown (kWhrs) at air point for zone 1: reception
+ Period: Sat  9 Jan @ 0h30 to: Fri 15 Jan @23h30 YEAR:1960
+ Tsteps: sim@ 60m, output@ 60m (not averaged)
+
+                                Gain         Loss
+ Infiltration air load           0.000      -8.859
+ Ventilation air load            0.000      -1.224
+ Uncontr`d casual type 1        17.280       0.000
+ Uncontr`d casual type 2         0.000       0.000
+ Uncontr`d casual type 3       121.920       0.000
+ Opaque MLC convec: ext          0.000     -36.295
+ Opaque MLC convec: int          0.073     -53.000
+ Transp MLC convec: ext          0.035     -27.979
+ Transp MLC convec: int          0.000       0.000
+ Convec portion of plant         9.022       0.000
+ Totals                        149.146    -149.094
+_
+ Causal energy breakdown (kWhrs) at air point for zone 2: office
+ Period: Sat  9 Jan @ 0h30 to: Fri 15 Jan @23h30 YEAR:1960
+ Tsteps: sim@ 60m, output@ 60m (not averaged)
+
+                                Gain         Loss
+ Infiltration air load           0.000      -2.630
+ Ventilation air load            0.483       0.000
+ Uncontr`d casual type 1         5.760       0.000
+ Uncontr`d casual type 2         0.000       0.000
+ Uncontr`d casual type 3         0.000       0.000
+ Opaque MLC convec: ext          3.199     -14.844
+ Opaque MLC convec: int         11.728     -19.824
+ Transp MLC convec: ext          0.000       0.000
+ Transp MLC convec: int          0.000       0.000
+ Convec portion of plant        43.578       0.000
+ Totals                         65.232     -65.209
+_
+ Causal energy breakdown (kWhrs) at air point for zone 3: roof_space
+ Period: Sat  9 Jan @ 0h30 to: Fri 15 Jan @23h30 YEAR:1960
+ Tsteps: sim@ 60m, output@ 60m (not averaged)
+
+                                Gain         Loss
+ Infiltration air load           6.825      -7.971
+ Ventilation air load            0.000       0.000
+ Uncontr`d casual type 1         0.000       0.000
+ Uncontr`d casual type 2        11.200       0.000
+ Uncontr`d casual type 3         0.000       0.000
+ Opaque MLC convec: ext          0.031     -24.894
+ Opaque MLC convec: int         15.650      -0.734
+ Transp MLC convec: ext          0.000       0.000
+ Transp MLC convec: int          0.000       0.000
+ Totals                         33.706     -33.598
+.TE
+.ES
+.ce
+Figure 4.2.6 Tabular energy statistics of winter simulation
+.sp
+.LP
+In the basic problem configuration, air change rates
+of infiltration and ventilation were estimated by 0.3
+(~ 43 $m sup 3 /h$) and 1.0 (~ 144 $m sup 3 /h$) for the reception zone. If
+you analyse your mass flow results you will find these rates
+to be overestimated. With known wind pressure coefficients and
+wind velocities as boundary conditions, air flows of
+the reception are in order of magnitude of 10 $m sup 3 /h$ for
+both infiltration and ventilation. Note that we already
+mentioned the leakage parameters to be very low.
+.LP
+Finally two temperature profiles (Figure 4.2.7) are added for the
+reception and office zone. These profiles show the
+difference calculated between the basic problem
+(solid line) and the combination with fluid flow simulation (dashed line).
+.KF
+.PSPIC FIGS/s4_temptabel.EPS 14c 11c 
+.sp -2
+.ce
+Figure 4.2.7 Temperature profiles for winter simulations.
+.sp
+.KE
+.SH
+4.12.3 Small house
+.LP
+This training session focuses on the training directory
+\fIhouse/sun_space\fR which holds the description of a small 
+dwelling proposed for a remote
+Scottish island.  It is designed for high exposure locations.
+The provision
+of a unheated but protected space for inclement weather
+is part of the design brief.  Because of site constraints
+the model is rotated so that the lounge faces south-west.
+The dwelling is defined with ten thermal zones:
+.nf
+1) combined kitchen and lounge (kitliv)
+2) hollow south-west wall (west_space)
+3) passage (hall)
+4) bathroom (bath)
+5) bedroom (bed1)
+6) bedroom (bed2)
+7) buffer south-west portion (buf_1)
+8) buffer north-east portion (buf_2)
+9) upper buffer (buf_roof)
+10) roof over occupied space (roof)
+.fi
+.LP
+The dwelling has deep window reveals and its orientation 
+suggests that a
+detailed treatment of shading and solar penetration is
+called for.  To this end obstruction blocks define the
+deep window reveals in the bedrooms and kitchen/lounge
+and correctly limit sunlight entering the dwelling.
+.LP
+The model uses seasonally adjusted mass flow networks to 
+predict air movements.  There are timed extract fans in 
+the kitchen and bathroom as well as logic to open the 
+windows during particular hours and if internal 
+temperatures rise above a particular point. This is 
+defined in the configuration control file.
+.LP
+The subdivision of the buffer space into three thermal 
+zones allows warm air to rise into the upper space but 
+for the front and back of the space to evolve different 
+temperatures as a result of solar radiation patterns.
+This requires that `fictitious' boundaries be used
+between the zones and project based optical properties
+and multilayer construction databases have been created.
+.LP
+Of interest is the treatment of the south-west wall of the
+lounge as a separate thermal zone rather than as a 
+conventional multilayer construction.  The reason for 
+this is the large void (300mm) within this wall which, 
+thus described, will have a more detailed treatment of 
+radiant exchanges.
+.LP
+There are two configuration files, \fIhouse_win.cfg\fR which is used
+for winter simulations and \fIhouse_sum.cfg\fR for summer simulations.
+Similarly there are two mass flow network descriptions
+(\fIss_sum.afn\fR and \fIss_win.afn\fR for summer and winter respectively).
+The control file \fIss_win.ctl\fR should be used with winter
+simulations and\fI ss_sum.ctl\fR with summer simulations.
+.LP
+To browse the fluid flow network associated with
+a given problem use the appropriate command of the
+project manager.  The winter fluid flow network with
+the corresponding control functions is listed
+below.
+.ML
+.TS H
+doublebox center;
+l.
+.TH
+   13   7   18    1.000    (nodes, components, connections, wind reduction)
+ Node   Fld. Type   Height    Temperature    Data_1       Data_2
+ liv       1    0   1.2000       20.000           0.       62.500    
+ hall      1    0   1.2000       20.000           0.       40.960    
+ bath      1    0   1.2000       20.000           0.       26.200    
+ bed1      1    0   1.2000       20.000           0.       48.980    
+ bed2      1    0   1.2000       20.000           0.       48.980    
+ buf_1     1    0   1.2000       20.000           0.       113.56    
+ buf_ro    1    0   4.3000       15.000           0.       211.45    
+ ext_we    1    3   1.2000           0.       5.0000       270.00    
+ ext_ea    1    3   1.2000           0.       5.0000       90.000    
+ roof_w    1    3   4.3000           0.       8.0000       270.00    
+ roof_e    1    3   4.3000           0.       8.0000       90.000    
+ north     1    3   2.0000           0.       1.0000           0.    
+ buf_2     1    0   1.2000       20.000           0.       60.000    
+ Comp   Type C+ L+ Description
+ door    130  5  0 Specific air flow door              m = rho.f(W,H,dP)       
+    1.00000   0.300000    2.10000    1.50000   0.920000
+ door25  130  5  0 Specific air flow door              m = rho.f(W,H,dP)       
+    1.00000   0.300000    2.10000    0.50000   0.920000
+ horop   110  2  0 Specific air flow opening           m = rho.f(A,dP)         
+    1.00000    3.00000
+ bathex  460  3  0 Fixed flow rates controller                                 
+    1.00000    0.    2.20000E-02
+ kitex   460  3  0 Fixed flow rates controller                                 
+    1.00000    0.    1.40000E-02
+ crck    120  3  0 Specific air flow crack             m = rho.f(W,L,dP)       
+    1.00000    1.00000E-02    1.00000
+ crckl   120  3  0 Specific air flow crack             m = rho.f(W,L,dP)       
+    1.00000    2.00000E-02    1.00000
+ +Node   dHght   -Node   dHght   Comp     Snod1  Snod2
+ ext_we  0.000   liv     0.000   crck                    
+ ext_we  0.000   buf_1   0.000   crck                   
+ ext_ea  0.000   bed2    0.000   crck                   
+ ext_ea  0.000   bed1    0.000   crck                   
+ ext_ea  0.000   buf_2   0.000   crck                   
+ liv     0.000   buf_1   0.000   crckl                   
+ liv     0.000   hall    0.000   door25                
+ hall    0.000   buf_1   0.000   crckl                   
+ hall    0.000   bath    0.000   door25                   
+ hall    0.000   bed1    0.000   door25                    
+ hall    0.000   bed2    0.000   door25                    
+ buf_1   0.000   buf_ro  0.000   horop                  
+ buf_2   1.000   buf_ro -1.000   horop                  
+ buf_1   0.000   buf_2   0.000   door                  
+ buf_ro  0.000   roof_w  0.000   crckl                   
+ buf_ro  0.000   roof_e  0.000   crckl                   
+ liv     0.000   north   0.000   kitex              
+ bath    0.000   north   0.000   bathex            
+_
+
+* Mass Flow
+opening control  # flow descr 
+   2  # No. of controls
+* Control mass
+# measures mass flow node or connection.
+   -4    0    0    0  # sensor data
+# actuates mass flow component:   4 bathex
+   -4    4    1  # actuator data
+    1 # No. day types
+    1  365  # valid Sun  1 Jan - Sun 31 Dec
+     5  # No. of periods in day
+    1    0   0.000  # ctl type (dry bulb > flow), law (on / off), start @
+      2.  # No. of data items
+  30.000 1.000
+    1    0   7.000  # ctl type (dry bulb > flow), law (on / off), start @
+      2.  # No. of data items
+  0.000 1.000
+    1    0   9.000  # ctl type (dry bulb > flow), law (on / off), start @
+      2.  # No. of data items
+  30.000 1.000
+    1    0  17.000  # ctl type (dry bulb > flow), law (on / off), start @
+      2.  # No. of data items
+  10.000 1.000
+    1    0  19.000  # ctl type (dry bulb > flow), law (on / off), start @
+      2.  # No. of data items
+  30.000 1.000
+bath          north         bathex        bath        
+* Control mass
+# measures mass flow node or connection.
+   -4    0    0    0  # sensor data
+# actuates mass flow component:   5 bathpm
+   -4    5    1  # actuator data
+    1 # No. day types
+    1  365  # valid Sun  1 Jan - Sun 31 Dec
+     5  # No. of periods in day
+    1    0   0.000  # ctl type (dry bulb > flow), law (on / off), start @
+      2.  # No. of data items
+  30.000 1.000
+    1    0   7.000  # ctl type (dry bulb > flow), law (on / off), start @
+      2.  # No. of data items
+  0.000 1.000
+    1    0   8.000  # ctl type (dry bulb > flow), law (on / off), start @
+      2.  # No. of data items
+  30.000 1.000
+    1    0  17.000  # ctl type (dry bulb > flow), law (on / off), start @
+      2.  # No. of data items
+  0.000 1.000
+    1    0  18.000  # ctl type (dry bulb > flow), law (on / off), start @
+      2.  # No. of data items
+  30.000 1.000
+liv           north         kitex         liv         
+.TE
+.ES
+.ce
+Figure 4.3.1 Mass flow description for a small house.
+.sp
+.LP
+By now, you should be able to extract more detailed information
+about the problem definition from the different problem files.
+.LP
+As an exercise, three different types of occupants use are considered.
+Those types resulting in respectively lower (E-),
+normal (N) and higher (E+) energy consumption are printed below in Table 4.3.2.
+.sp
+.ce 2
+Table 4.3.2:  Control parameters for different types of occupants use
+for a single family house.
+.TS H
+box center;
+cb cb s s
+l cb cb cb
+lw(1.5i) | c c c.
+	Types of occupants use
+Variables	E-	N	E+
+_
+.TH
+Minimum air temperature \(deC
+- living floor	19	20	21
+- first floor	14	16	18
+- roof	14	16	18
+- night set-back	16	16	16
+
+Infiltration 1/h
+- living floor	0.20	0.40	0.60
+- first floor	0.20	0.40	0.60
+- roof	0.10	0.20	0.30
+
+Infiltration + ventilation 1/h
+- apartment building	0.3	0.5	1.3
+- block-house	0.6	0.8	1.0
+- stand alone-house	0.7	1.0	1.3
+.TE 
+.sp
+.LP
+Six simulations were performed; three simulations in which both temperatures and
+ventilation were controlled according to Table 4.3.2 and three
+simulations in which only
+temperatures were controlled and ventilation was governed by
+the original mass flow description
+as printed in Figure 4.3.1. January 1967 from the climate file clm67
+was taken for the simulation period.
+The control file for one of these simulations
+(normal energy consumption)
+is printed in Figure 4.3.3.
+.ML
+.TS H
+doublebox center;
+l.
+.TH
+winter_ht  # overall descr 
+* Building
+winter_htg  # bld descr 
+   2  # No. of functions
+* Control function
+# measures the temperature of the current zone.
+    0    0    0    0  # sensor data
+# actuates air point of the current zone
+    0    0    0  # actuator data
+    1 # No. day types
+    1  365  # valid Sun  1 Jan - Sun 31 Dec
+     1  # No. of periods in day
+    0    2   0.000  # ctl type, law (free floating), start @
+      0.  # No. of data items
+* Control function
+# measures the temperature of the current zone.
+    0    0    0    0  # sensor data
+# actuates air point of the current zone
+    0    0    0  # actuator data
+    0 # No. day types
+    1  365  # valid Sun  1 Jan - Sun 31 Dec
+     3  # No. of periods in day
+    0    1   0.000  # ctl type, law (ideal control), start @
+      6.  # No. of data items
+  2000.000 0.000 0.000 0.000 16.000 50.000
+    0    1   6.000  # ctl type, law (ideal control), start @
+      6.  # No. of data items
+  2000.000 0.000 0.000 0.000 19.000 50.000
+    0    1  22.000  # ctl type, law (ideal control), start @
+      6.  # No. of data items
+  2000.000 0.000 0.000 0.000 16.000 50.000
+    1  365  # valid Sun  1 Jan - Sun 31 Dec
+     3  # No. of periods in day
+    0    1   0.000  # ctl type, law (ideal control), start @
+      6.  # No. of data items
+  2000.000 0.000 0.000 0.000 16.000 50.000
+    0    1   8.000  # ctl type, law (ideal control), start @
+      6.  # No. of data items
+  2000.000 0.000 0.000 0.000 19.000 50.000
+    0    1  23.000  # ctl type, law (ideal control), start @
+      6.  # No. of data items
+  2000.000 0.000 0.000 0.000 16.000 50.000
+    1  365  # valid Sun  1 Jan - Sun 31 Dec
+     3  # No. of periods in day
+    0    1   0.000  # ctl type, law (ideal control), start @
+      6.  # No. of data items
+  2000.000 0.000 0.000 0.000 16.000 50.000
+    0    1   8.000  # ctl type, law (ideal control), start @
+      6.  # No. of data items
+  2000.000 0.000 0.000 0.000 19.000 50.000
+    0    1  22.000  # ctl type, law (ideal control), start @
+      6.  # No. of data items
+  2000.000 0.000 0.000 0.000 16.000 50.000
+# Function:Zone links
+   2  0  2  2  2  2  0  0  0  0
+.TE
+.ES
+.ce
+Figure 4.3.3 Control file for simulation of normal occupants use.
+.sp
+.LP
+The simulation results (i.e. total energy consumption in january) are gathered
+in Table 4.3.4. Occupants use E- and E+ are of the same frequent occurrence as
+type N: the simulation shows that energy consumption for this
+house will vary ~230 kWh (15%) within this range of common occupants use. 
+You can also see that the roof needs extra insulation
+in order to decrease energy consumption.
+Besides, the simulations with mass flow description
+show that the original mass flow description
+correlates (in terms of energy consumption) with the E+ occupants use.
+.sp 2
+.ce
+Table 4.3.4: Calculated total energy consumption in January
+.ce
+for types E-, N and E+.
+.TS H
+box center;
+cb c s s s s s
+l cb cb cb cb cb cb
+lw(1.0i) | cw(0.5i) | cw(0.5i) | cw(0.5i) | cw(0.5i) | cw(0.5i) | cw(0.5i).
+	ENERGY CONSUMPTION [kWhr]
+Zone	E-	E-(mfs)	N	N(mfs)	E+	E+(mfs)
+_
+.TH
+	T{
+T}
+- kitchen	54	127	97	138	151	153 
+- hall	126	141	152	146	178	147
+- bath	8	2	13	1	24	7
+- bed1	25	47	52	64	84	83
+- bed2	28	51	52	65	83	82
+- roof	1136	1117	1252	1225	1320	1293
+_
+	T{
+T}
+Total consumption	1377	1484	1618	1638	1839	1764
+.TE
+.sp
+.LP
+Succeeding simulations can be performed to
+determine the variation in summer's cooling
+energy.
+.SH
+4.12.4 Large house
+.LP
+Increasing the complexity of the models we now turn
+to the training directory \fIhouse/svph\fR which 
+is an example of a moderate size
+dwelling based on a direct gain house
+in Milton Keynes.  It has become a
+\fIde facto\fR modelling standard within the UK.
+.LP
+The directory structure, as for other exemplars described above,
+is an example of using several subdirectories to hold
+different portions of the problem definition.
+The benefit of this is that each directory
+has only a limited number of files.
+.DS
+  training/house/svph
+  `-----configuration (cfg)
+  `-----control (ctl)
+  `-----networks
+  `-----zones
+.DE
+.SH
+4.12.5 Test cells
+.LP
+To be completed.
+.SH
+4.12.6 Special focus
+.LP
+There are a number of specialised facilities within ESP-r which
+are provided for expert users and those who require additional
+detail in their simulation work.  Several examples are given in
+the exemplars. One example relates to
+the thermophysical property replacement facility.
+.LP
+It is based on the simple_building problem. The
+situation modelled in \fIconstr/tp_sub\fR is that the conductivity of the glass wool
+in some of the external walls is increased when the internal 
+air temperature rises above a certain temperature (20\(deC).
+This is obviously not a real situation, but a similar situation
+could occur if the conductivity of a particular constructional material
+was sensitive to temperature.
+.LP
+An additional entry (glasswool_mod, #282) has been made in the 
+primitives database (tp_subs.pdb). This is similar to glasswool (#211)
+but with increased conductivity. A new entry has also been made in
+the multi-constructional database (tp_subc.mlc) which is for ext_wall_mod.
+This is the same as for the entry for extern_wall except that it
+uses the modified properties of glasswool.
+.LP
+The control file demonstrates the activation of the replacement
+constructions.  For the space named reception,
+constructions 'south', 'east' and 'north', and for the office space,
+constructions 'North_w' and 'West_w', use the replacement construction whenever
+the room temperature exceeds 20\(deC.  In the control file, control
+function 1 (assigned to the reception) has a 'nested' control function
+3 which gives details of the thermophysical property control. Similarly,
+control function 2 (for the office) has a 'nested' control function 4.
+.SH
+4.12.7 Office block
+.LP
+This session switches the focus to full scale commercial buildings
+with a two level office block located in the north-east
+of Scotland. The 17-zone model makes use
+of mass flow simulation and opening of
+windows to control summer overheating.
+Images of the problem (in gif format) are
+included in the images directory.
+.LP
+To access the problem definitions
+go into the configuration directory. 
+Within the configuration
+directory is a file \fIoffice.log\fR which
+should be viewed via UNIX or project manager
+facilities.  
+.LP
+As this is a large problem it is recommended that
+simulations be kept to a few days.  In summer simulations
+you will note that the zone temperatures are to some
+extent a function of wind velocity and direction.
+.SH
+4.12.8 Plant
+.LP
+To be completed.
+.bp
+.LP
+\ 

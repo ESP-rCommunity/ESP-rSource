@@ -1,0 +1,830 @@
+.\" ******************** ESP-r Quality Assurance Procedure ********************
+.EQ
+delim $$
+.EN
+.TL
+ESP-r Quality Assurance Procedure
+.br
+Version of 7 February 2006
+.sp 2
+.LP
+This paper details the quality-assurance procedure for ESP-r. During the
+development of this procedure, existing practices at ESRU and CETC were
+surveyed, and accepted industry test practices were reviewed. The Appendices
+summarise these existing practices and the testing principles underpinning
+the procedures that follow.
+.NH
+Proposed testing protocol
+.LP
+The proposed quality assurance procedure prescribes the following:
+.IP \(bu
+the test suite used to diagnose changes in ESP-r results;
+.IP \(bu
+procedures to ensure that new features behave as expected;
+.IP \(bu
+procedures to ensure that new features do not compromise existing functionality
+prior to their incorporation in the archive;
+.IP \(bu
+procedures for assuring the results obtained with new releases of ESP-r are
+accurate and consistent across all platforms; and
+.IP \(bu
+an automation tool to assist with quality assurance tasks.
+.NH
+Test suite
+.LP
+The test suite is designed to exercise as many aspects of ESP-r as possible
+and may be expected to evolve over time to remain fit for purpose.
+At the present time it comprises:
+.IP \(bu
+the 5 models constituting ESRU's standard \fIbps\fR test suite;
+.IP \(bu
+the 82 models constituting NRCan's standard \fIbps\fR test suite;
+.IP \(bu
+the 26 models constituting ESRU's standard \fIdfs\fR test suite; and
+.IP \(bu
+the BESTEST and CEN test cases.
+.PP
+Even when combined, the above tests will not fully exercise ESP-r and, therefore,
+new test cases will be added as required to ensure that all functionality is
+adequately tested. Where possible, the example models contained in ESRU's training
+folder will be utilised to this end.
+.SH
+Test duration
+.LP
+Each test case should be exercised over a representative period appropriate
+for the relevant code. This period may differ from case to case, and should be
+denoted using the simulation preset name 'test period'. In addition, a subset
+of test cases exercising general components of the simulator (such as the
+start-up period facility, climate and results modules) should be exercised
+over annual and multi-year periods. These test cases should include simulation
+presets titled 'test year' and 'test multi-year'.
+.SH
+Testable output
+.LP
+The test protocol will involve comparisons of results from all output modules
+with past and standard results.
+Since results from the air flow, moisture flow and conflated CFD modules are
+not well suited for testing, some modification to the \fIres\fR and/or \fIH3K\fR
+report facilities will be implemented.
+.NH
+Development testing
+.LP
+When modifying the archive, a developer will incorporate changes into a private
+development branch. Before these changes are migrated into the common development
+branch, the developer must demonstrate to the Archivist that the changes behave
+as expected and that any new functionality is not disruptive. Testing must include
+formal code checking using a suitable tool (e.g. FORCHECK). To provide the
+necessary technical coverage, the Archivist will be assisted by a small
+team of specialists. These activities are called 'development testing'.
+.SH
+New features
+.LP
+Each time a new feature is added to ESP-r, the developer must devise one or more
+tests demonstrating that the changes work as expected. Results from these tests must
+be documented and made available to other ESP-r developers and users\s-2\u1\d\s0.
+Additionally, code changes implementing new features or bug fixes must be
+accompanied by one or more new test cases exercising the modified code.
+.FS 1
+Possible venues for publishing test documentation include the ESP-r mailing
+list, a dedicated ESP-r Web site or a folder within the source code distribution.
+.FE
+.SH
+Portability
+.LP
+Ideally, a developer would test code modifications for all platforms on which
+ESP-r is supported (currently Linux, Sun, Mac OS and CYGWIN/MinGW)
+before contributing these changes to the archive. Any significant differences
+must be investigated. That said, it is recognised that comprehensive
+portability testing is not always possible because the developer
+may not have access to all platforms, while incremental testing on Win32 platforms
+is sometimes impractical\s-2\u2\d\s0. Developers will undertake the
+following portability testing when modifying the archive:
+.IP \(bu
+compilation of the modified source code on all available platforms, taking action
+where the compiler issues a warning;
+.IP \(bu
+testing the modified code using a test case that exercises the new/changed features
+and comparing the results obtained for the same test case on all available
+platforms; and
+.IP \(bu
+notifying other developers of the platforms the code has been tested on
+at the point where the code is added to the archive.
+.FS 2
+Win32 platforms struggle with apportioning resources between CYGWIN/MinGW processes
+and native Windows programs. As a result, running extended simulations can
+render the workstation unusable for other tasks for several hours.
+.FE
+.SH
+Regression
+.LP
+Before modifications are incorporated in the archive, a developer must run a complete
+regression test on their platform of choice. This test will use incremental
+versions of ESP-r to demonstrate the modifications do not unexpectedly affect
+simulation results.
+.LP
+Any differences between the output of the incremental versions of ESP-r must
+be documented.
+.NH
+Beta testing
+.LP
+All developers are encouraged to use the latest version of ESP-r for internal
+research and consulting work. Any projects using newly developed source code
+should include independent verification of the simulation results.
+.NH
+Pre-release testing
+.LP
+Prior to migrating code from the common development branch to the release
+branch, the Archivist will complete a set of prescribed test procedures to
+assure the quality of the pending release. Pre-release testing expands on
+the development-cycle testing undertaken whenever a change to the archive
+is made. Pre-release testing:
+.IP \(bu
+verifies that the software behaves consistently on all platforms;
+.IP \(bu
+quantifies the total change in simulation results between releases; and
+.IP \(bu
+ensures that simulator resource requirements do not change significantly
+between releases.
+.SH
+Portability
+.LP
+Prior to a release, the simulator will be compiled on all supported 
+platforms (currently Linux, Sun, Mac OS, and CYGWIN/MinGW) and exercised 
+using the testsuite described in Section . The results form each platform 
+will be compared to those of a reference platform (Linux). Any 
+significant differences will be investigated.
+.SH
+Regression testing
+.LP
+Prior to a release, the Archivist will compile the latest version of the
+simulator on the reference platform and apply the test suite described above.
+The results will then be compared to archived result sets from previous releases
+and any differences described in the release notes.
+.PP
+If differences in the BESTEST and CEN test cases are noted, the results from
+these cases will be compared to the BESTEST and CEN standards. If the results
+deviate significantly, the changes made to the archive since the last release
+will be reviewed.
+.SH
+Efficiency
+.LP
+Efficiency is no longer a primary concern in building simulation software.
+Nevertheless, poorly designed code may needlessly waste computing resources
+and result in inexplicably slow run times. Thus, the test protocol includes
+elementary comparisons of simulator efficiency (performed by the Archivist):
+.IP \(bu
+successive releases will be compiled on the reference platform and CPU
+resource usage compared for all cases in the test suite using the output
+from the \fItime\fR utility; and
+.IP \(bu
+successive releases will be compiled on the reference platform and memory
+requirements compared for a set of representative test cases using the
+output of the \fIvalgrind\fR utility.
+.PP
+Since memory profiling using \fIvalgrind\fR significantly slows simulation
+run times, it is impractical to profile the simulator over the entire test
+suite. Instead, memory profiling will be applied to a subset of the test
+suite, which exercises the most commonly used ESP-r features. This test
+suite will include:
+.IP \(bu
+a simple building model;
+.IP \(bu
+a simple air flow model;
+.IP \(bu
+a simple shading model;
+.IP \(bu
+a simple plant model; and
+.IP \(bu
+a simple electrical model.
+.PP
+Clearly, efficiency testing does not perform comprehensive profiling of the
+software. Instead, it is intended to highlight significant differences in resource
+usage and inform developers of opportunities to improve their code. When code
+modifications are found to significantly reduce efficiency, further investigations
+using comprehensive profiling tools should be undertaken.
+.NH
+Tools and automation
+.LP
+Given the wide range of configurations available in ESP-r, a testing tool with the
+following capabilities is required.
+.IP \(bu
+The tool must be able to test incremental versions of ESP-r.
+.IP \(bu
+Wherever possible, the tool should support non-interactive runs of ESP-r executables
+to reduce dependencies on changing user interfaces.
+.IP \(bu
+The tool must be able to compare output from a single version of ESP-r to archived
+results from other versions.
+.IP \(bu
+The tool must be able to exercise ESP-r over the test suite and save the results for
+archival purposes.
+.IP \(bu
+The tool must be able to invoke the stand-alone \fIdfs\fR simulator.
+.IP \(bu
+The tool must be compatible with a large and continually growing test suite.
+.IP \(bu
+The tool must be able to compare output from all modules of ESP-r as well as measures
+of efficiency.
+.IP \(bu
+The tool must be able to compare results against accepted values or ranges such as
+those contained in the BESTEST and CEN standards.
+.IP \(bu
+The tool must support use of the 'test period', 'test year' and 'test multi-year'
+presets. Specifically, the tool should be able to parse the \fIcfg\fR file, identify
+the simulation presets and invoke the simulator using each simulation preset.
+.IP \(bu
+The tool must support varying levels of interaction. At a minimum, it must be able
+to exercise a single test case or the entire test suite without user interaction.
+.IP \(bu
+The tool must be compatible with profiling tools such as \fItime\fR and \fIvalgrind\fR.
+.NH
+Documentation
+.LP
+Care must be taken to document testing in the following circumstances:
+.IP \(bu
+where a new feature is added to ESP-r;
+.IP \(bu
+where incremental testing identifies differences between prior and current simulation
+results during development; or
+.IP \(bu
+where pre-release testing identifies differences between prior and current simulation
+results.
+.SH
+New features
+.LP
+Developers must devise tests demonstrating that new features operate correctly. These
+tests must be documented and made available to other ESP-r developers and users.
+A document should be:
+.IP \(bu 2
+published on-line; and
+.IP \(bu 2
+included in the source code distribution.
+.SH
+Differences in incremental testing results during development
+.LP
+A change log will be used to document differences as introduced into simulation
+results by modifications to the archive. This log will include:
+.IP \(bu
+the author of the modifications;
+.IP \(bu
+a brief description of the changes to the archive;
+.IP \(bu
+a list of the source code files modified;
+.IP \(bu
+a list of test cases exhibiting differences; and
+.IP \(bu
+a description of the observed differences.
+.SH
+Differences in incremental testing results between releases
+.LP
+Third party developers and users must be notified when modifications have introduced
+differences in simulation results between releases. Since the change log provides a
+concise description of these changes, a section in the release notes referring to
+the the relevant sections of the change log will suffice.
+.bp
+.SH
+Appendix A. Testing principles
+.sp
+.LP
+The International Standards Organisation\s-2\u3\d\s0 defines the following
+criteria for software testing.
+.FS 3
+International Standards Organisation 2001, 'Software Engineering - Product
+Quality, Part 1: Quality Model, First Edition', Technical Standard. ISO 9126.
+.FE
+.IP "Functionality:"
+These criteria evaluate the suitability of software for a particular
+task. Important criteria in the context of building simulation include the
+software's accuracy and the suitability of its algorithms for representing
+relevant physics.
+.IP "Reliability:"
+These criteria evaluate the capability of the software to consistently
+produce expected results under varied circumstances. Important criteria
+include maturity, recoverability and fault tolerance.
+.IP "Usability:"
+These criteria evaluate the suitability of software for the intended set
+of users. Important criteria include the ease with which the software's
+principles and operation can be understood by users and  the ease with
+which the software can be operated by the user.
+.IP "Efficiency:"
+These criteria evaluate the efficiency of use of computational resources.
+Important criteria include the software's processor, memory and storage
+requirements.
+.IP "Maintainability:"
+These criteria evaluate the effort required to examine and modify the
+software. Important criteria include the ease with which the code may
+be tested and the ease with which the software may be modified.
+.IP "Portability:"
+These criteria evaluate the ease with which the software can be transferred
+between environments. Important criteria include ease of installation,
+the replaceability of software dependencies and the software's conformance
+to platform-specific and industry-wide standards.
+.PP
+While some organisations have sufficient resources to perform quantitative
+testing using each of these criteria, such tests are beyond the means of
+most. Instead, this document focuses on testing the functionality of ESP-r,
+and in particular, accuracy. Testing of ESP-r's efficiency and portability 
+are also briefly discussed.
+.PP
+The remaining test criteria proposed by the International Standards Organisation
+can be evaluated qualitatively using other, informal measures such as dedicated
+validation studies, coding reviews and beta testing.
+.SH
+Metrics
+.LP
+When testing the simulator, results can be compared against:
+.IP \(bu
+the desired behaviour described in the modelling specification;
+.IP \(bu
+accepted values or ranges such as experimental data, analytic solutions or
+results from other simulation programs; or
+.IP \(bu
+the results from previous versions of the simulator.
+.PP
+The first two metrics are external to the simulator, and will not be
+affected as the simulator evolves. The third metric references the previous
+state of the simulator and thus can change from one version to the next.
+.PP
+Such incremental testing between versions of the simulator demonstrates that
+new functionality does not effect the tool's calculations for a given set of
+conditions. If simulation results do not change between versions, the tool's
+algorithms are unaffected by new functionality and the new version of the tool
+is as accurate as the previous version.
+.PP
+Bug fixes and algorithmic improvements inevitably introduce differences in
+simulation results. When considered individually, these differences will appear
+as small changes in numerical data, which can be attributed to the necessary
+improvements to the software tool. However, when aggregated over successive
+versions, these improvements may cause significant changes in the simulation
+output.
+.PP
+Ideally, the simulator's predictions will converge towards empirical or accepted
+values, thus improving the accuracy of the simulator. But the predictions may
+also diverge from these values, as modifications interact in unexpected ways.
+The effects of incremental improvements can be quantified by:
+.IP \(bu
+expanding the incremental tests to compare the most recent version of the
+tool with all previous versions; and
+.IP \(bu
+comparing the tool's output with external values, such as empirical data,
+accepted solutions and the results of other simulation tools.
+.PP
+With these measures, significant deviations in simulator results can be quantified.
+.SH
+Regression
+.LP
+ESP-r comprises a set of interrelated modules, each of which characterises one
+aspect of building performance. Since these models are closely coupled, additions
+and modifications to one component of the simulator may have unexpected
+effects on the behaviour of other components, and may even reintroduce previously
+remedied bugs.
+.PP
+Regression testing provides the means to detect such errors. By utilising a test suite
+that exercises as many aspects of the simulator as possible and comparing
+results from the modified version with a previous version, regression testing can
+determine if modifications have affected simulation output. If differences between
+the results cannot be directly attributed to the developer's intended modifications,
+it is likely that the changes have introduced further bugs to the software.
+.PP
+Effective regression testing requires a comprehensive test suite \(em errors can
+only be detected if affected ares of the simulator are exercised. When
+modifications are made to the simulator, test cases exercising new features should be
+added to the test suite. Similarly, when bugs in the simulator are identified and
+remedied, test cases exercising the effected algorithms should be created.
+.SH
+Automation
+.LP
+Tests of building simulation software can be performed with varying degrees of
+automation. In a completely manual test, a tester may start and interactively
+configure the simulator, invoke the simulation and manually review the results. The
+tester is likely able to place the results in the context of recent changes to the
+simulator, and can devise refined tests to exercise specific components of interest.
+.PP
+In a completely automatic test, a computer can be configured to recompile the
+simulator on a daily basis and exercise it over a suite of test-cases. With minimal
+human interaction, the automated tester can only determine if the software passes
+or fails the test, and cannot further refine the tests to focus on components of
+interest.
+.PP
+Manual testing can better associate changes in simulator output to modifications
+made to the code. However, given the vast number of configurations available
+in a large program such as ESP-r, some amount of test automation is necessary.
+Manual testing complements the automated test tools \(em when the simulator fails
+the automated tests, manual testing can be used to determine which aspect of the
+simulator is responsible.
+.SH
+Documentation
+.LP
+As the simulation tool evolves, additions, improvements and bug fixes will cause
+the simulation output to change over time. These changes will cause incremental
+tests between successive versions to fail and must be documented.
+.PP
+Documentation of changes between incremental versions of the software is
+invaluable for both developers and users. Without accompanying documentation,
+changes in simulation output may be mistaken for bugs that went undiagnosed
+during regression testing.
+.bp
+.SH
+Appendix B. Existing practices
+.sp
+.SH
+1. ESRU practices
+.LP
+ESRU incrementally tests ESP-r each time a change is made to the archive, as
+well as before each release. Additionally, the latest version of the archive is used
+for internal research and consulting work, which ensures that modifications to the
+code are exercised under real world scenarios.
+.LP
+\fIAutomation tools\fR
+.LP
+ESRU has developed 3 scripts to automate testing of \fIbps\fR and \fIres\fR between
+releases:
+.IP \(bu
+the TEST script contains a set of \fIbash\fR commands that invoke the SIMULATE
+and ANALYSE scripts for numerous models;
+.IP \(bu
+the SIMULATE script manages interactive \fIbps\fR runs for two one-week runs
+(in January and July); and
+.IP \(bu
+the ANALYSE script manages interactive \fIres\fR results recovery sessions and
+produces an ASCII text file (.data) containing summary and time step
+statistics for zone temperatures, heat fluxes, relative humidity and air movement.
+.PP
+The SIMULATE and ANALYSE scripts run \fIbps\fR and \fIres\fR interactively. This
+feature allow the scripts to access simulation settings and results reporting features
+that can only be invoked through ESP-r's user interface. However, the scripts
+must be modified whenever the simulator interface changes and are thus only
+compatible with the most recent version of ESP-r.
+.PP
+The TEST, SIMULATE and ANALYSE scripts can be used in conjunction with
+a 'compare data with archive script', which interactively compares differences
+between the simulation results and previous results archives.
+ESRU also uses three scripts to exercise \fIdfs\fR:
+.IP \(bu
+TEST.csh invokes a subordinate script (dfs.csh) for a list of CFD models;
+.IP \(bu
+dfs.csh manages interactive \fIdfs\fR runs for specified files; and
+.IP \(bu
+TECdiff.csh compares the ASCII .TEC file produced by \fIdfs\fR with archived
+results produced in other simulations.
+.PP
+The Test.csh and dfs.csh scripts run \fIdfs\fR interactively, which is necessary
+since \fIdfs\fR does not support silent mode execution.
+.LP
+\fIDevelopment testing\fR
+.LP
+ESRU does not employ a formalised standard for testing and documenting the
+behaviour of new features added to the archive. Instead, each developer undertakes
+whatever tests are deemed appropriate for the given project. If the modifications are
+undertaken as part of a thesis, such tests and results may be extensively documented
+\(em otherwise testing may not be documented at all.
+.PP
+Each time a modification is made to ESRU's archive, a syntax check should be
+performed using a code checker (such as FORCHECK). The modified version of the simulator
+is compiled on different platforms (Linux, Sun and Mac OS) and the results are
+compared to those from older versions of the simulator.
+.PP
+Incremental testing is facilitated by the TEST, SIMULATE, ANALYSE and
+'compare data with archive' scripts. The archive is exercised with five benchmark
+models exercising the climate, building, air flow control and shading modules.
+Each of these models is run in two configurations \(em with and without environmental
+controls.
+.LP
+\fIInternal beta-testing\fR
+.LP
+ESRU staff are encouraged to use the latest version of ESP-r
+for internal use and consulting work. Additionally, ESRU mandates that
+simulation results for consulting projects using new code must be independently
+inspected for validity.
+.PP
+This internal beta testing allows ESRU to vet algorithms, source code implementations
+and interfaces under realistic scenarios. However, new features do not
+receive a consistent amount of testing. Modifications added well before a release
+are likely to be thoroughly tested, while changes added near a release date may
+not be comprehensively exercised.
+.LP
+\fIPre-release testing\fR
+.LP
+Prior to a release, the simulator is subjected to the same tests used during development
+and the simulation results are compared to the output from older releases
+of ESP-r. In addition, \fIdfs\fR is run over a set of 26 simple
+test cases, each of which exercises the module in a different configuration. The
+TEST.csh, and dfs.csh scripts are used to automate the run, while the TECdiff.csh
+script is used to compare the results with those obtained in previous versions.
+.LP
+\fIBESTEST and CERN testing\fR
+.LP
+ESRU is presently integrating facilities into ESP-r to enable the program to automatically
+run the BESTEST and CEN test cases and compare results with expected values.
+While these facilities are primarily intended to permit users to determine if ESP-r
+complies with existing energy simulation standards, ESRU intends to incorporate
+these tests into their pre-release testing activity.
+.LP
+\fIDocumentation\fR
+.LP
+ESRU does not have a formal standard for documenting changes to the simulator
+that cause differences in simulation output. However, significant changes in
+simulation output are often described in the software release notes.
+.sp
+.SH
+2 NRCan practices
+.LP
+NRCan does not have a formal release schedule. Instead, a single, stable version
+is used for projects based on ESP-r and the version is updated when features
+available in the archive are needed to support these projects. The bulk of NRCan's
+testing activities is based on incremental testing between successive versions of
+the simulator.
+.LP
+\fIAutomation tools\fR
+.LP
+NRCan's testing procedures are largely based on \fIauto tester.pl\fR, a Perl script intended
+to compare the output from different versions of \fIbps\fR. The \fIauto tester.pl\fR script exercises
+two specified versions of \fIbps\fR and exercises them over a single test case or an
+entire test suite. Simulations can be run for different time periods and save levels.
+Features of \fIauto tester.pl\fR include:
+.IP \(bu
+a search algorithm permitting it to locate its own input files;
+.IP \(bu
+support for save levels 4 and 5.
+.IP \(bu
+support for weekly, seasonal, annual and multi-year simulations;
+.IP \(bu
+native support for testing .h3k, .fcts, out.xml and out.csv files;
+.IP \(bu
+compatibility with ESRU's ANALYSE script; and
+.IP \(bu
+support for comparisons between .data files.
+.PP
+The \fIauto tester.pl\fR script invokes \fIbps silently\fR, using a model's simulation presets to
+configure the start time, duration and save level. This approach prohibits \fIauto tester.pl\fR
+from invoking features only accessible through \fIbps\fR's interface while ensuring that the
+test script need not be modified when \fIbps\fR's menu structure changes and permits
+compatibility with older versions of \fIbps\fR.
+The \fIauto-tester.pl\fR script does not have native support for \fIres\fR but can invoke ESRU's
+ANALYSE script to extract results from a building results library file.
+.LP
+\fIDevelopment cycle testing\fR
+.LP
+NRCan does not have a formal procedures for testing
+new features. Instead, new features are tested to an extent deemed appropriate by the
+developer and while features may be described in peer reviewed publications, the
+scrutiny of new features is inconsistent.
+.PP
+Prior to committing their changes to the NRCan archive, each developer is
+expected to run a the \fIauto tester.pl\fR script on a test suite comprising 82 individual
+test cases. These cases exercise several components of the ESP-r simulator:
+.IP \(bu
+the building thermal simulation module;
+.IP \(bu
+idealised building controls;
+.IP \(bu
+the ground temperature model;
+.IP \(bu
+the multi-year simulation facility;
+.IP \(bu
+the BASEIMP model;
+.IP \(bu
+idealised HVAC components;
+.IP \(bu
+the plant simulator and associated controls;
+.IP \(bu
+the thermal coupling between the zone and plant;
+.IP \(bu
+the electrical network simulator;
+.IP \(bu
+the sub-hourly occupancy control library; and
+.IP \(bu
+the photovoltaic models.
+.PP
+The developer uses \fIauto tester.pl\fR to incrementally test the modified version of
+\fIbps\fR with the stable version in the archive. Results from the .h3k, out.xml,
+out.csv and .data files are compared. The test is assumed to fail if any of the
+output is found to differ between versions, and the code can only be committed to
+the archive if these differences are directly attributable to the new modifications.
+.PP
+Test simulations are run for four weeks in the year (one in each of January, April,
+July and October). The \fIauto tester.pl\fR script also supports annual simulations, although the CPU
+and disk requirements of annual simulations makes performing such runs over the
+entire test suite impractical.
+.PP
+When contributing new features, developers are expected to add a test case to the test-suite
+that exercises their modifications. These models are then used in regression
+testing for subsequent modifications.
+.PP
+NRCan develops exclusively in Linux and CYGWIN environments and does
+not perform testing on any other platform. Additionally, NRCan's testing consists
+entirely of comparisons between incremental versions of ESP-r that are compiled
+on the same platform. Thus, inter-platform differences are not identified.
+.PP
+NRCan also depends exclusively on incremental testing between subsequent
+versions of ESP-r. This testing is conducted over short periods in time and thus
+has the potential to disguise large changes in simulation output over extended
+periods.
+.LP
+\fIInternal beta testing\fR
+.LP
+NRCan staff also use the latest version in ESP-r available in the NRCan archive
+for internal research. However, NRCan's research activities typically focus on
+narrow aspects of the simulator and therefore internal beta testing is not as rigorous
+as similar testing at ESRU.
+.LP
+\fIDocumentation\fR
+.LP
+NRCan does not have a formal standard for documentation of the changes introduced
+to simulation results. Significant changes are often noted in CVS log
+messages but the nature of these changes is usually not described.
+NRCan has also attempted to maintain a log of significant changes to the simulator
+under versioning control but maintenance of this log has been sporadic.
+.sp
+.SH
+3. Testable output
+.LP
+ESP-r produces a number of results libraries that contain testable output. By
+default, ESP-r results output comprises:
+.IP "building domain results library:"
+named \fIlibb\fR by default, this contains data describing the
+building performance and climate boundary conditions;
+.IP "plant domain results library:"
+named \fIplant.res\fR by default, this contains state temperatures, flow rates, control data and additional
+output corresponding to the plant domain;
+.IP "electrical domain results library:"
+named \fIpower.res\fR by default, this contains state voltages, current flow and calculated power data
+for components in the electrical network;
+.IP "mass flow results library:"
+named \fIflow.res\fR by default, this contains pressures and associated air flow rates for components in
+the air flow network;
+.IP "moisture flow results library:"
+named \fImoisture.res\fR by default, this describes the movement of water vapour as
+predicted by the simulator;
+.IP "conflated CFD results file:"
+named \fICFD.res\fR by default, this contains air state and movement data; and
+.IP "stand-alone CFD simulator results file:"
+when run as a stand-alone application, \fIdfs\fR produces an ASCII file (.TEC)
+containing the air state and movement data.
+.PP
+With the exception of the .TEC file, all standard output from ESP-r is in binary
+format. These files can be analysed using the \fIres\fR results analysis program, which
+also permits results to be exported to ASCII text files.
+.PP
+NRCan has added alternate results reporting facilities to \fIbps\fR. These include:
+.IP "the .h3k file:"
+containing a brief summary of the annual and monthly
+simulation results for select metrics;
+.IP "the fuel cell time step output file:"
+containing time step results from
+NRCan's SOFC fuel cell model and associated balance of plant components;
+.IP "the H3K reports summary output file:"
+named \fIout.xml\fR by default, this file contains annual and
+monthly summary statistics for data passed from \fIbps\fR to the H3K reports
+facility; and
+.IP "he H3K reports time step output file:"
+named \fIout.csv\fR by default, this file contains time step
+output for data passed from \fIbps\fR to the H3K reports facility.
+.PP
+All NRCan added output facilities produce results in ASCII format.
+.PP
+The .h3k and .fcts files have been obsoleted by H3K reports and are no
+longer used in NRCan projects. However, the .fcts remains part of a legacy
+interface that is still supported by NRCan.
+.LP
+\fIComparison of output formats\fR
+.LP
+Table 1 presents the different results libraries produced by ESP-r and indicates
+which domains each library describes. It is clear that none of the results libraries
+contain data from all components of the simulator, but taken together the libraries
+provide a complete description of building performance.
+.sp
+.ce
+Table 1: Comparison of output formats.
+.TS
+center;
+l c c c c c c c.
+_
+	Climate	Building	Air flow	Moisture flow	Plant net.	Electric net.	CFD
+_
+libb	3	3
+flow.res			3
+moisture.res				3
+plant.res					3
+power.res						3
+CFD.res							3
+\.TEC							3
+\.h3k		3
+\.fcts						3
+out.xml/out.csv	3	3			3	3
+_
+.TE
+.PP
+At present, ESRU's test procedures compare data contained in the building
+results library and standalone simulation output. NRCan's procedures compare
+data contained in the .h3k, .fcts and the H3K Reports output files. The remaining
+results libraries are not well suited for use with automated comparison
+tools for the following reasons:
+.IP \(bu
+the results are stored in binary format, preventing meaningful comparison
+between the libraries;
+.IP \(bu
+the res program, which can parse and export data from the library files,
+does not provide summary statistics or automatic data extraction for these
+domains (instead the user must interactively select the data of interest
+element-by-element and so it is not possible to script these actions for all possible
+model topologies); and
+.IP \(bu
+there is a fixed number of columns that \fIres\fR can export for each of the given
+libraries \(em data from libraries exceeding this number will be truncated.
+.PP
+These constraints prevent detailed analysis of the data contained in the air
+flow, moisture, plant, electrical network and conflated CFD results libraries. Detailed analysis
+of the results from these modules would be possible if:
+.IP \(bu
+\fIres\fR was modified to permit automatic extraction of results\s-2\u4\d\s0, or
+.IP \(bu
+H3K reports were expanded to include support for the air flow, moisture flow
+and conflated CFD domains.
+.FS 4
+Such automation would be ideally implemented as a command-line API to prevent future
+interface changes from obsoleting tools designed for compatibility with \fIres\fR.
+.FE
+.sp
+.SH
+4. Comparison and recommendations
+.LP
+Review of the testing practices used by ESRU and NRCan indicates that neither is
+wholly adequate to identify all errors introduced by modifications
+to the source code:
+.IP \(bu
+neither ESRU nor NRCan have a formal standard for testing new features
+added to the archive;
+.IP \(bu
+ESRU's test suite only exercises \fIbps\fR over a limited set of configurations
+while NRCan's test suite is somewhat larger (and is expanded when new functionality
+is added to the simulator) but still does not provide a concise test of all
+ESP-r functionality;
+.IP \(bu
+neither ESRU nor NRCan exercise the simulator over an entire year;
+.IP \(bu
+ESRU performs incremental testing between releases as well as successive
+versions, permitting only deviations in simulation results between incremental
+modifications to be identified;
+.IP \(bu
+ESRU limits comparisons to the building .data files produced by the
+ANALYSE script, NRCan additionally compares the out.csv
+and out.xml files, while neither group compares
+output from the air flow, moisture or conflated CFD modules;
+.IP \(bu
+both ESRU and NRCan use automated scripts to assist with testing \(em ESRU's
+script runs \fIbps\fR and \fIres\fR interactively, while NRCan's script runs \fIbps\fR silently
+and configures the simulation by manipulating the input files;
+.IP \(bu
+ESRU tests the stand-alone CFD simulator, otherwise the efficiency of ESP-r is
+not tested by the ESRU or NRCan test procedures; and
+.IP \(bu
+neither ESRU nor NRCan sufficiently document changes in the simulation
+results that can be attributed to bug fixes and improvements.
+.PP
+Given these deficiencies, it is recommended that a common test protocol be
+developed for use by developers. This protocol should draw on existing
+best practice and include new procedures as required:
+.IP \(bu
+The protocol should include a standard for testing new features added to
+ESP-r. While such tests will have to be designed on a case-by-case basis,
+developers should be expected to demonstrate that their code functions
+correctly when incorporated into the archive and provide adequate documentation
+regarding the types of tests performed and the results observed.
+.IP \(bu
+The protocol should incorporate a comprehensive test suite exercising as
+much ESP-r functionality as possible.
+.IP \(bu
+While it is impractical to exercise the entire test suite over extended periods,
+some general components of the simulator (such as the start-up period
+facility, climate and results modules) should be exercised in annual and
+multi-year simulation runs. Each test case should be exercised over a period
+appropriate to the relevant models.
+.IP \(bu
+New test cases should be added to the test suite whenever new functionality
+is added to ESP-r or existing bugs are fixed.
+.IP \(bu
+Output from all modules should be tested. Such testing may necessitate modifications
+to \fIbps\fR and \fIres\fR.
+.IP \(bu
+The protocol should include routine testing on all platforms for which ESP-r
+is distributed and comparisons made between the results obtained on different
+platforms.
+.IP \(bu
+The protocol should support incremental testing between different versions
+of ESP-r, as well as comparisons with archived data from previous releases.
+.IP \(bu
+The protocol should support comparisons to absolute metrics such as empirical
+data, the BESTEST suite and CEN standards.
+.IP \(bu
+The protocol (and development practices) should encourage extensive beta testing
+whenever possible.
+.IP \(bu
+The protocol should include automation to expedite testing. However, the
+automated tools should support interactive use to assist with manual testing
+and development.
+.IP \(bu
+The protocol should include comparison of the efficiency of the simulator.
+.IP \(bu
+The protocol should include a standard format used to document changes to
+the simulator that produce differences in simulation output.

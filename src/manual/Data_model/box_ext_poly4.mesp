@@ -1,0 +1,128 @@
+*silent_input
+*title,Creates a three zone model from META descriptions
+*doc,Creates a three zone model from META descriptions
+*date,Wed Oct  7 11:58:47 2009  # latest file modification 
+*action,new,box_ext_poly4,distributed,box_ext_poly4
+*weather_station,XXX  # climate file
+*site_loc,52.000, 0.000, 0.00 # latitude deg long-diff deg time-zone GMT
+*site_exp, 1, 0.36, 0.36, 0.28 # exposure-index (std) sky ground building views
+*ground_refl_annual, 0.200 # ground reflection (avg for year)
+*start_zone,metal_box5    # zone name
+*shape,poly      # polygon enclosure
+*cord,0.0000,0.0000,0.0000  # X Y Z for   1
+*cord,20.0000,0.0000,0.0000  # X Y Z for   2
+*cord,20.0000,10.0000,0.0000  # X Y Z for   3
+*cord,0.0000,10.0000,0.0000  # X Y Z for   4
+*cord,0.0000,0.0000,5.0000  # X Y Z for   5
+*cord,20.0000,0.0000,5.0000  # X Y Z for   6
+*cord,20.0000,10.0000,5.0000  # X Y Z for   7
+*cord,0.0000,10.0000,5.0000  # X Y Z for   8
+*cord,17.2000,0.0000,0.0000  # X Y Z for   9
+*cord,19.7000,0.0000,0.0000  # X Y Z for  10
+*cord,19.7000,0.0000,2.1000  # X Y Z for  11
+*cord,17.2000,0.0000,2.1000  # X Y Z for  12
+*cord,5.5279,0.0000,1.3820  # X Y Z for  13
+*cord,14.4721,0.0000,1.3820  # X Y Z for  14
+*cord,14.4721,0.0000,3.6180  # X Y Z for  15
+*cord,5.5279,0.0000,3.6180  # X Y Z for  16
+*rotate,  0.0000  # rotation around zone origin
+*nbwalls,  8  # number of surfaces
+*surface,front,extern_wall,0,0,0  # surface attributes 
+*list,14,1,9,12,11,10,2,6,5,1,13,16,15,14,13  #  1
+*surface,right,extern_wall,0,0,0  # surface attributes 
+*list,4,2,3,7,6  #  2
+*surface,back,extern_wall,0,0,0  # surface attributes 
+*list,4,3,4,8,7  #  3
+*surface,left,extern_wall,0,0,0  # surface attributes 
+*list,4,4,1,5,8  #  4
+*surface,ceiling,susp_ceil,3,2,1  # surface attributes 
+*list,4,5,6,7,8  #  5
+*surface,floor,floor_1,4,1,0  # surface attributes 
+*list,6,1,4,3,2,10,9  #  6
+*surface,door,door,0,0,0  # surface attributes 
+*list,4,9,10,11,12  #  7
+*surface,glaz_front,dbl_glz,0,0,0  # surface attributes 
+*list,4,13,14,15,16  #  8
+# shading directives
+*shad_calc,none  # no temporal shading requested
+# insolation directives
+*insol_calc,none  # no insolation requested
+*heating,  0.00  # ideal heating stepoint
+*cooling,  0.00  # ideal heating stepoint
+*ideal_control,  0  # ideal control linkage
+*end_zone
+*start_zone,metal_roof    # zone name
+*shape,poly      # polygon enclosure
+*cord,0.0000,0.0000,5.0000  # X Y Z for   1
+*cord,20.0000,0.0000,5.0000  # X Y Z for   2
+*cord,20.0000,10.0000,5.0000  # X Y Z for   3
+*cord,0.0000,10.0000,5.0000  # X Y Z for   4
+*cord,5.0000,0.0000,6.0000  # X Y Z for   5
+*cord,5.0000,10.0000,6.0000  # X Y Z for   6
+*rotate,  0.0000  # rotation around zone origin
+*nbwalls,  5  # number of surfaces
+*surface,base,susp_ceil,3,1,5  # surface attributes 
+*list,4,1,4,3,2  #  1
+*surface,front,extern_wall,0,0,0  # surface attributes 
+*list,3,1,2,5  #  2
+*surface,roof_r,roof_1,0,0,0  # surface attributes 
+*list,4,2,3,6,5  #  3
+*surface,back,extern_wall,0,0,0  # surface attributes 
+*list,3,3,4,6  #  4
+*surface,roof_l,roof_1,0,0,0  # surface attributes 
+*list,4,4,1,5,6  #  5
+# shading directives
+*shad_calc,all_applicable   4 # list of surfs
+  2  3  4  5
+# insolation directives
+*insol_calc,none  # no insolation requested
+#  *obs = solar obstructions
+*solar_grid,20 20 # solar gridding density
+*obs3,0.000,-1.000,5.000,5.099,1.000,0.200,0.000,11.310,0.000,roof_l_ovhs,roof  # block  1
+*obs3,5.000,-1.000,6.000,15.033,1.000,0.200,0.000,-3.814,0.000,roof_r_ovhs,roof  # block  2
+*obs,-1.000,-1.000,5.000,1.000,11.000,0.200,0.000,roof_l_w,roof  # block  3
+*heating,  0.00  # ideal heating stepoint
+*cooling,  0.00  # ideal heating stepoint
+*ideal_control,  0  # ideal control linkage
+*end_zone
+*start_zone,pavilion      # zone name
+*shape,poly      # polygon enclosure
+*cord,0.0000,15.0000,0.0000  # X Y Z for   1
+*cord,5.0000,15.0000,0.0000  # X Y Z for   2
+*cord,2.5000,19.0000,0.0000  # X Y Z for   3
+*cord,0.0000,15.0000,3.0000  # X Y Z for   4
+*cord,5.0000,15.0000,3.0000  # X Y Z for   5
+*cord,2.5000,19.0000,3.0000  # X Y Z for   6
+*cord,3.4540,17.4736,0.0000  # X Y Z for   7
+*cord,2.6590,18.7456,0.0000  # X Y Z for   8
+*cord,2.6590,18.7456,2.1000  # X Y Z for   9
+*cord,3.4540,17.4736,2.1000  # X Y Z for  10
+*cord,1.3820,15.0000,0.8292  # X Y Z for  11
+*cord,3.6180,15.0000,0.8292  # X Y Z for  12
+*cord,3.6180,15.0000,2.1708  # X Y Z for  13
+*cord,1.3820,15.0000,2.1708  # X Y Z for  14
+*rotate,  0.0000  # rotation around zone origin
+*nbwalls,  7  # number of surfaces
+*surface,front,extern_wall,0,0,0  # surface attributes 
+*list,10,1,2,5,4,1,11,14,13,12,11  #  1
+*surface,right,extern_wall,0,0,0  # surface attributes 
+*list,8,2,7,10,9,8,3,6,5  #  2
+*surface,left,extern_wall,0,0,0  # surface attributes 
+*list,4,3,1,4,6  #  3
+*surface,roof,roof_1,0,0,0  # surface attributes 
+*list,3,4,5,6  #  4
+*surface,floor,floor_1,4,1,0  # surface attributes 
+*list,5,1,3,8,7,2  #  5
+*surface,door,door,0,0,0  # surface attributes 
+*list,4,7,8,9,10  #  6
+*surface,glaz_front,dbl_glz,0,0,0  # surface attributes 
+*list,4,11,12,13,14  #  7
+# shading directives
+*shad_calc,none  # no temporal shading requested
+# insolation directives
+*insol_calc,none  # no insolation requested
+*heating,  0.00  # ideal heating stepoint
+*cooling,  0.00  # ideal heating stepoint
+*ideal_control,  0  # ideal control linkage
+*end_zone
+*end

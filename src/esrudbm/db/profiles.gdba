@@ -1,0 +1,60 @@
+*ESP-r ascii gdb 2
+# db type, menu, width,nb of units:sources:cat:items, date
+profiles,Event profiles db,65, 2, 1, 1, 5,Fri Jan 30 14:38:04 2004
+*DBNOTE,Event profiles db log...
+*UNIT,-,none,no documentation
+*UNIT,a,(-),(-)
+*SOURCE,-,no documentation
+# db level documentation
+*DD,Event profiles database (imported from a legacy file) ../dbs/profiles.dba. Documentation follows:
+*DD,Each entry contains the following data fields: nb of active day types (up to 10), nb of periods including, one for each non-active day type (so the minimum is 10) and for each day type the nb of periods (zero for non-active)
+*DD,Each entry also contains repeating data fields: day type (8 char string) default = `all` , attribute (8 char string) default = `none`, start time (decimal hour), and 2 or 4 or 9 or 21 items of real data 
+*DD,Depending on the category: cat CASUAL uses sensible %, latent % (5per), cat 3CASUAL uses sensible/lat % for 3 gain types (3per), cat 7CASUAL uses sens/lat % for 7 gain types (2per), cat THERMOST uses heating%/cooling%/RH low%/RH high% (4per)
+# CAT tag,id,type,menu,items_in_cat,date
+*CATEG,convprofile,CASUAL,Converted event profiles,5,Fri Jan 30 14:38:04 2004
+# cat documentation
+*CD,Category CASUAL is imported from legacy profiles db. and includes sets of time, sensible %, latent % (5 per line)
+# item id, menu, date
+*ITEM,profile1,100% Continuous casual gains O/L,Fri Jan 30 14:38:04 2004
+*ID,100% Continuous casual gains O/L for weekdays, saturdays, sundays plus zero on 7 unused.
+*USC,-aaaa,-,----- # units srcs uncert
+*DAT,3,10,1,1,1,0,0,0,0,0,0,0
+*REP,weekday,none,0.00,100.0,100.0,saturday,none,0.00,100.0,100.0,sunday,none,0.00,100.0,100.0,all,none,0.00,0.00,0.00,all,none,0.00,0.00,0.00
+*REP,all,none,0.00,0.00,0.00,all,none,0.00,0.00,0.00,all,none,0.00,0.00,0.00,all,none,0.00,0.00,0.00,all,none,0.00,0.00,0.00,
+*ENDITEM
+*ITEM,profile2,Normal working day O/L/Mc's,Fri Jan 30 14:38:04 2004
+*ID,Normal working day O/L/Mc's 3 periods wkd, 1 per on sat, 1 per on sun, 7 unused
+*USC,-aaaa,-,----- # units srcs uncert
+*DAT,3,12,3,1,1,0,0,0,0,0,0,0
+*REP,weekday,none,0.00,0.00,0.00,weekday,none,7.00,100.00,100.00,weekday,none,18.00,0.00,0.00,saturday,none,0.00,100.0,100.0,sunday,none,0.00,100.0,100.0,
+*REP,all,none,0.00,0.00,0.00,all,none,0.00,0.00,0.00,all,none,0.00,0.00,0.00,all,none,0.00,0.00,0.00,all,none,0.00,0.00,0.00,
+*REP,all,none,0.00,0.00,0.00,all,none,0.00,0.00,0.00,
+*ENDITEM
+*ITEM,profile3,O/L/Mc's profile for late night,Fri Jan 30 14:38:04 2004
+*ID,O/L/Mc's profile for late night stays at 100 till 21h00.
+*USC,-aaaa,-,----- # units srcs uncert
+*DAT,3,12,3,1,1,0,0,0,0,0,0,0
+*REP,weekday,none,0.00,0.00,0.00,weekday,none,7.00,100.00,100.00,weekday,none,21.00,0.00,0.00,saturday,none,0.00,100.0,100.0,sunday,none,0.00,100.0,100.0,
+*REP,all,none,0.00,0.00,0.00,all,none,0.00,0.00,0.00,all,none,0.00,0.00,0.00,all,none,0.00,0.00,0.00,all,none,0.00,0.00,0.00,
+*REP,all,none,0.00,0.00,0.00,all,none,0.00,0.00,0.00,
+*ENDITEM
+*ITEM,profile4,Typical office occupancy,Fri Jan 30 14:38:04 2004
+*ID,Typical office occupancy is...
+*USC,-aaaa,-,----- # units srcs uncert
+*DAT,3,16,7,1,1,0,0,0,0,0,0,0
+*REP,weekday,none,0.00,0.00,0.00,weekday,none,7.00,20.00,20.00,weekday,none,8.00,60.00,60.00,weekday,none,9.00,100.00,100.00,weekday,none,12.00,65.00,65.00,
+*REP,weekday,none,14.00,100.00,100.00,weekday,none,17.00,0.00,0.00,saturday,none,0.00,100.0,100.0,sunday,none,0.00,100.0,100.0,all,none,0.00,0.00,0.00,
+*REP,all,none,0.00,0.00,0.00,all,none,0.00,0.00,0.00,all,none,0.00,0.00,0.00,all,none,0.00,0.00,0.00,all,none,0.00,0.00,0.00,
+*REP,all,none,0.00,0.00,0.00,
+*ENDITEM
+*ITEM,profile5,Occupancy for late night office,Fri Jan 30 14:38:04 2004
+*ID,Occupancy for late night office  is...
+*USC,-aaaa,-,----- # units srcs uncert
+*DAT,3,17,8,1,1,0,0,0,0,0,0,0
+*REP,weekday,none,0.00,0.00,0.00,weekday,none,7.00,20.00,20.00,weekday,none,8.00,60.00,60.00,weekday,none,9.00,100.00,100.00,weekday,none,12.00,65.00,65.00,
+*REP,weekday,none,14.00,100.00,100.00,weekday,none,17.00,10.00,10.00,weekday,none,21.00,0.00,0.00,saturday,none,0.00,100.0,100.0,sunday,none,0.00,100.0,100.0,
+*REP,all,none,0.00,0.00,0.00,all,none,0.00,0.00,0.00,all,none,0.00,0.00,0.00,all,none,0.00,0.00,0.00,all,none,0.00,0.00,0.00,
+*REP,all,none,0.00,0.00,0.00,all,none,0.00,0.00,0.00,
+*ENDITEM
+*ENDCAT
+*ENDDB
