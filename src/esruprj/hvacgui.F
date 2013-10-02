@@ -67,8 +67,8 @@ C -------------------------------HVACGIN-------------------------------
       COMMON/FILEP/IFIL
       COMMON/user/browse
       
-      COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
-      LOGICAL        CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK      ! file flags
+      COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,CFCDBOK
+      LOGICAL        CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,CFCDBOK    ! file flags
       
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/rpath/path

@@ -250,12 +250,12 @@ C     Function returning gains from ideal hot water tank
       Character cBCD_col*248
 
 C     HOT3000 Base Loads local variables
-      REAL W_BL_heat_gain                  ! Heat for the particular base load casual gain (type >20)
-      REAL Total_BL_Convective_gain        ! Total base loads convective casual gain  (type >20)
-      REAL Total_BL_Radiative_gain         ! Total base loads radiative casual gain  (type >20)
-      REAL Total_BL_electricity_Appliances ! Total electric load from base load appliances (type 20)      
-      REAL Total_BL_electricity_Lights     ! Total electric load from base load lights (type 21)
-      REAL Total_BL_electricity_Other      ! Total electric load from base load other (type 22)
+      REAL W_BL_heat_gain                  ! Heat for the particular base load casual gain
+      REAL Total_BL_Convective_gain        ! Total base loads convective casual gain 
+      REAL Total_BL_Radiative_gain         ! Total base loads radiative casual gain
+      REAL Total_BL_electricity_Appliances ! Total electric load from base load appliances      
+      REAL Total_BL_electricity_Lights     ! Total electric load from base load lights
+      REAL Total_BL_electricity_Other      ! Total electric load from base load other
       
 C     Flag indicating that function Elec_Net_Load_Calc(?) should 
 C     return the occupant-driven electrical load (excluding 

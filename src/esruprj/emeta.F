@@ -1232,8 +1232,8 @@ C nsurfinso nb of insolation sources, isurfinso() list of insolation sources.
       common/ishdirec/iaplic(MCOM,2),nsurfcalc(MCOM),lstsfcalc(MCOM,MS),
      &       nsurfinso(MCOM),isurfinso(MCOM,MS)
 
-      COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
-      LOGICAL CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
+      COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,CFCDBOK
+      LOGICAL CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,CFCDBOK
 
       integer inumXMLmetrics !counts for the number of xml metrics defined
 

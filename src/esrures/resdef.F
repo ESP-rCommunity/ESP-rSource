@@ -940,7 +940,7 @@ C Nothing references ZGAE and ZGAI.
       COMMON/CLMSET/ICYEAR,ICDNGH,CLAT,CLONG
 
       common/hcthry/ihct,icorexhct
-      COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
+      COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,CFCDBOK
 
 C Defaults.
       character*96 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF
@@ -953,7 +953,7 @@ C longtmp is the model configuration file with full path.
       character outs*124,znpad*15,path*72,MODE*4
       character louts*248
       
-      logical XST,CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
+      logical XST,CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,CFCDBOK
       logical dmdsok  ! for dispersed demands
 
 C For help messages
@@ -1564,9 +1564,9 @@ C closemat1 or closemat2 will be set.
       integer lnblnk  ! function definition
 
       common/OUTIN/IUOUT,IUIN
-      common/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
+      common/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,CFCDBOK
 
-      logical XST,CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
+      logical XST,CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,CFCDBOK
       logical closemat1,closemat2
       character SOPT*12,outs*248,GDESCR*36
       character lworking*144,fs*1

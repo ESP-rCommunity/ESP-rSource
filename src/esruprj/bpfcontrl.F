@@ -63,13 +63,13 @@ C                             data for validity.
       common/fctl4/iasocc(MCF,mcmp),nfsup(MCF)
 
       common/user/browse
-      COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
+      COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,CFCDBOK
       common/calena/calename,calentag(MDTY),calendayname(MDTY)
       character calename*32,calentag*12,calendayname*32
       common/caleni/nbdaytype,nbcaldays(MDTY),icalender(365)
       INTEGER nbdaytype,nbcaldays,icalender
      
-      LOGICAL        CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
+      LOGICAL        CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,CFCDBOK
 
 C mptback is pointer from position in display list to the control loop.
 C ipeerptbk is pointer from position in display to day type.
@@ -5790,9 +5790,9 @@ C Build up text strings for the menu.
       elseif(icfoc.eq.6)then
         helptopic='actlocation_CFC'
         call gethelptext(helpinsub,helptopic,nbhelp)
-        WRITE(VERT(1),'(a)')'a shading layer ON/OFF state          '
-        WRITE(VERT(2),'(a)')'b slat angle of slat-type shade       '
-        WRITE(VERT(3),'(a)')'c shade ON/OFF & slat angle (schedule)'
+        WRITE(VERT(1),'(a)')'a shading layer ON/OFF                '
+        WRITE(VERT(2),'(a)')'b slat angle of Venetian blind        '
+        WRITE(VERT(3),'(a)')'c shade ON/OFF (& slat angle) schedule'
         WRITE(VERT(4),'(a)')'  ------------------------------------'
       endif
       DO 10 L=1,ILEN
@@ -6009,7 +6009,7 @@ C Ask for CFC type in selected zone.
 C Check that selected CFC type contains a shading layer.
         shd_xst=.false.
         do 1001 ilayer=1,ncfc_el(ian2, ian3)
-          if(icfcltp(ian2,ian3,ilayer).ge.2)shd_xst=.true.
+          if(icfcltp(ian2,ian3,ilayer).gt.iGlazing)shd_xst=.true.
  1001   continue 
         if(.not.shd_xst)then
             SELECT=.false.
@@ -6105,7 +6105,7 @@ C if isn1.eq.-3 then no supplemental.
 
       elseif(ivert.eq.2.and.(icfoc.eq.6))then
 C Complex Fenestration      
-C       ian1 = actuator type (0 - shade ON/OFF, 1 - slat angle 2- both (for schedule) )
+C       ian1 = actuator type (0 - shade ON/OFF, 1 - slat angle 2- schedule )
 C       ian2 = zone index
 C       ian3 = CFC type index for selected zone
 
@@ -6125,11 +6125,11 @@ C Ask for CFC type in selected zone.
 C Check that slat-type shade exists for selected CFC type.
         vb_xst=.false.
         do 1002 ilayer=1,ncfc_el(ian2, ian3)
-          if(icfcltp(ian2,ian3,ilayer).ge.2)vb_xst=.true.
+          if(icfcltp(ian2,ian3,ilayer).eq.iVenBlind)vb_xst=.true.
  1002   continue 
         if(.not.vb_xst)then
             SELECT=.false.
-            CALL USRMSG(' Slat type shading layer not found, ',
+            CALL USRMSG(' Venetian blind shading layer not found, ',
      &       'please select another CFC type','W')
      
             CALL EPMENRC
@@ -6156,14 +6156,14 @@ C Ask for the specific zone.
 C Ask for CFC type in selected zone.   
         call askCFCtype(ian2,ian3,IER)
       
-C Check that slat-type shade exists for selected CFC type.
-        vb_xst=.false.
+C Check that shade exists for selected CFC type.
+        shd_xst=.false.
         do 1003 ilayer=1,ncfc_el(ian2, ian3)
-          if(icfcltp(ian2,ian3,ilayer).ge.2)vb_xst=.true.
+          if(icfcltp(ian2,ian3,ilayer).gt.iGlazing)shd_xst=.true.
  1003   continue 
-        if(.not.vb_xst)then
+        if(.not.shd_xst)then
             SELECT=.false.
-            CALL USRMSG(' Slat type shading layer not found, ',
+            CALL USRMSG(' Shading layer not found, ',
      &       'please select another CFC type','W')
      
             CALL EPMENRC

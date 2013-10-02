@@ -291,7 +291,7 @@ C Uncertainty.
 C Illuminance database.
       common/ILDB/NDBENT,DBILLA(200,5),DBILLS(200,MLCOM,MDF)
 
-      COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
+      COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,CFCDBOK
 
 C Active domain common (expand to other domains?).
       common/ACTDOM/CFDOK
@@ -315,7 +315,7 @@ C Flag for enabling h3k customizations
       character cAppName*12
       integer iverb     ! verbosity passed on command line
 
-      LOGICAL OK,dok,CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,OK3D
+      LOGICAL OK,dok,CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,OK3D,CFCDBOK
       LOGICAL IGR1D,BLDG3D,ZONE3D,GRND3D,INPOK,XST,CFDOK,browse
       LOGICAL INTHPS,INTHPZ,MSTROK,MSTRZN
       LOGICAL spfileok,perok,tstepok,saveok,autook,exitok,startupok
@@ -722,6 +722,9 @@ C Parameter 'nprecl' as defined in 'plant.h'.
 
 C Unit for materials db in case control -99 is invoked.
       ifmat=ifil+5
+
+C Unit for CFClayers db in case control -99 is invoked.
+      icfcdb=ifil+6
 
 C Initialise results averaging flag: 0 means
 C results will be averaged.

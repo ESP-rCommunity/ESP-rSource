@@ -129,7 +129,7 @@ C IPV description via ipvdata.h.
       common/RAY2/ITDSP,ITBND,ITEPT,ITZNM,ITSNM,ITVNO,ITORG,ITSNR,
      &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS,ITPPSW
       common/RAY3/MODIFY,MODLEN,MODBND
-      common/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
+      common/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,CFCDBOK
 
 C Uncertainty.
       COMMON/UA1/LUALF,LCNG(MNCNG),LLOC(MNIL)
@@ -147,7 +147,7 @@ C Name of current application
       character cAppName*12
 
       integer iverb     ! verbosity passed on command line
-      logical OK,CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,MODSIT
+      logical OK,CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,MODSIT,CFCDBOK
       logical MODIFY,MODLEN,MODBND,browse,confirm,XST,ckpath
       logical unixok,Vldtng,changedit
       logical itisanexemplar  ! passed to newprb to ensure browse mode.
@@ -603,6 +603,10 @@ C Temporal information on channel IFIL+7.
 C Text/graphic feedback redirection on channel ifil +9 
       ixunit = ifil + 9
 
+C CFClayers on channel IFIL+10.
+      icfcdb = ifil + 10
+      write(LCFCDB,'(a)') DCFCDB(1:lnblnk(DCFCDB))
+
 C Project log and contents.
       lmodellog='project.notes'
       lmodelqa='UNKNOWN'
@@ -810,7 +814,7 @@ C Find the index of the MLC which matches each surface.
               ssmlcindex(icn1)=0  ! assume no matching MLC          
               do 5 ii=1,nmlc
                 if(SSMLCN(icn1)(1:12).eq.mlcname(ii)(1:12)) then
-                  ssmlcindex(icn1)=ii   ! remember MLC index     
+                  ssmlcindex(icn1)=ii   ! remember MLC index  
                 endif
   5           continue
  9994       continue

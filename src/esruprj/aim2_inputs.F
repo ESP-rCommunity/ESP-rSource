@@ -1248,8 +1248,8 @@ C Declare local variables
 C Common blocks
       COMMON/OUTIN/IUOUT,IUIN
       INTEGER :: IUOUT,IUIN
-      COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
-      LOGICAL :: CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK  !CFGOK flag for wether cfg file has been loaded in
+      COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,CFCDBOK
+      LOGICAL :: CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK ,CFCDBOK !CFGOK flag for wether cfg file has been loaded in
       COMMON/C1/NCOMP,NCON
       INTEGER :: NCOMP,NCON                         !ncomp is the number of zones
 

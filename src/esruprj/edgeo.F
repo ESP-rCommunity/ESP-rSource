@@ -96,8 +96,8 @@ C prec17 common is described in geometry.h.
      &            DYC(MCUB),DZC(MCUB),CANG(MCUB),IVFOK(MCUB),CUBN(MCUB)
 
       LOGICAL MODIFY,MODLEN,MODBND,browse,context
-      COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
-      LOGICAL DOK,OK,CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
+      COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,CFCDBOK
+      LOGICAL DOK,OK,CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,CFCDBOK
 
       DIMENSION IVALS(MS),ITEMS(28),ITEMSS(MS),IVALSS(MS),jvn1(MV)
       DIMENSION SALT(10),trnalt(17),IVLST(MTV)
@@ -357,9 +357,9 @@ C Check to see if a non `FLOR` surface has been included in ibases.
             endif
           endif
         endif
-        if(SOTF(I)(1:4).NE.'OPAQ'.AND.SOTF(I)(1:4).NE.'CFC ')then
+        if(SOTF(I)(1:4).NE.'OPAQ'.AND.SOTF(I)(1:3).NE.'CFC')then
           TRN=TRN+SSNA(ioc)
-        elseif(SOTF(I)(1:4).EQ.'CFC ')then
+        elseif(SOTF(I)(1:3).EQ.'CFC')then
           CFC=CFC+SSNA(ioc)
         else
           OPQ=OPQ+SSNA(ioc)
@@ -1077,6 +1077,8 @@ C Find the optical name.
                 SOTF(ISS)='OPAQUE'
               ELSEIF(mlctype(ISEL)(1:4).EQ.'CFC ')then
                 SOTF(ISS)='CFC '
+              ELSEIF(mlctype(ISEL)(1:4).EQ.'CFC2')then
+                SOTF(ISS)='CFC2'
               ELSE
                 WRITE(SOTF(ISS),'(A)') mlcoptical(ISEL)
               ENDIF
@@ -2067,7 +2069,7 @@ C For floors.
                uavwall = uavwall + (SSNA(icc) * UVD)
              endif
            elseif(SOTF(is)(1:4).ne.'OPAQ'.and.
-     &            SOTF(is)(1:4).ne.'CFC ')then
+     &            SOTF(is)(1:3).ne.'CFC')then
              if(SVFC(is)(1:4).eq.'CEIL'.or.
      &          SVFC(is)(1:4).eq.'SLOP')then
 
@@ -2917,8 +2919,8 @@ C Pased parameters
 
       common/user/browse
       COMMON/GR3D07/Y0S(MS),Y0SS(MSSZ),Y0SE(MSEZ)
-      COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
-      LOGICAL        CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
+      COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,CFCDBOK
+      LOGICAL        CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,CFCDBOK
       LOGICAL MODIFY,MODLEN,MODBND,browse,nameok,close,showother
       logical dupedges,XST,OK,DOK,updoth
       logical newgeo  ! to use for testing if new/old geometry file.
@@ -3043,7 +3045,7 @@ C Check perimeter.
 
    13 WRITE(ISD(1),'(A,A12)')  'a surface name    : ',SSNAME(ioc)
       if(SSOTF(ioc)(1:4).eq.'OPAQ'.or.SSOTF(ioc)(1:4).eq.'TRAN'.or.
-     &                                SSOTF(ioc)(1:4).eq.'CFC ')then     
+     &                                SSOTF(ioc)(1:3).eq.'CFC')then     
         WRITE(ISD(2),'(A,A12)')'b surface type    : ',SSOTF(ioc)(1:12)
       else
         WRITE(ISD(2),'(A,A12)')'b optical set name: ',SSOTF(ioc)(1:12)
@@ -3499,6 +3501,8 @@ C Find the optical name.
               SOTF(IS)='OPAQUE'
             ELSEIF(mlctype(ISEL)(1:4).EQ.'CFC ')then
               SOTF(IS)='CFC '
+            ELSEIF(mlctype(ISEL)(1:4).EQ.'CFC2')then
+              SOTF(IS)='CFC2'
             ELSE
               WRITE(SOTF(ISS),'(A)') mlcoptical(ISEL)
             ENDIF

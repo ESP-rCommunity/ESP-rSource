@@ -737,7 +737,7 @@ C the best-guess of file names (but with full path).
       
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
-      COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
+      COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,CFCDBOK
 
 C Defaults.
       character*96 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF
@@ -752,7 +752,7 @@ C Defaults.
       character firstbit*72,secondbit*72,path*72
       character longtmp*144
       logical XST,ok,dok
-      logical CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
+      logical CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,CFCDBOK
       integer nsim  ! number of simulations
 
 C For help messages

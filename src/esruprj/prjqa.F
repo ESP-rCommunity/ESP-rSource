@@ -160,7 +160,7 @@ C A set of possible image formats (see config file) and
 C matching executables. For normal image viewing take the first option.
       common/showimg/imgtyp,fmttag(5),fmtexe(5)
       INTEGER :: imgtyp
-      common/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
+      common/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,CFCDBOK
 
 C iSlr_half_hr_flg value = 0 :hour-centered; =1 : half-hour centered.
       common/CWEC_SOL/iSlr_half_hr_flg
@@ -184,7 +184,7 @@ C bridgelen was calculated in subroutine suredgeadj
 
       real plen  ! combined length of standard and metal facade perimeter
 
-      logical CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
+      logical CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,CFCDBOK
 
 C Remember if each zone is fully attributed.
       logical attribok(MCOM)

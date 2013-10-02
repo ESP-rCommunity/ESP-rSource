@@ -165,6 +165,10 @@ MODULE h3kmodule
    !Used by Solar.F
    Type(ReportVariable) :: rvBuildingGroundReflectivity,rvClimateSnownDepth
 
+   !Used by complex_fenestration.F
+   Type(ReportVariable) :: rvCFCazimuth,rvCFCelevation,rvSolarIncidentDirect,rvSolarIncidentDiff, &
+         rvCFCtranDir, rvCFCtranDiff,rvCFCvertprofileangle
+
    !Used by water_tanks.F
    Type(ReportVariable) :: rvPltSDHWSumDHWTankFuel,rvPltSDHWSumDHWTankElec,rvPltWaterTemp, &
          rvPltConn1HeatInject, rvPltConn2HeatInject, rvPltDomHotWtrVol,rvPltDomHotWtrMkTemp, &
@@ -1666,6 +1670,48 @@ CONTAINS
       rvClimateSnownDepth%Description = 'Depth of the snow on the ground'
       Call AddVariable(rvClimateSnownDepth)
 
+      ! Used by complex_fenestration.F
+      rvCFCazimuth%VariableName = 'CFC/zone_*/surface_*/azimuth'
+      rvCFCazimuth%MetaType = 'units'
+      rvCFCazimuth%VariableType = 'degrees'
+      rvCFCazimuth%Description = 'Solar wall azimuth'
+      Call AddVariable(rvCFCazimuth)
+
+      rvCFCelevation%VariableName = 'CFC/zone_*/surface_*/elevation'
+      rvCFCelevation%MetaType = 'units'
+      rvCFCelevation%VariableType = 'degrees'
+      rvCFCelevation%Description = 'Solar elevation '
+      Call AddVariable(rvCFCelevation)
+
+      rvSolarIncidentDirect%VariableName = 'CFC/zone_*/surface_*/SolIncDir'
+      rvSolarIncidentDirect%MetaType = 'units'
+      rvSolarIncidentDirect%VariableType = 'W/m2'
+      rvSolarIncidentDirect%Description = 'Solar incident direct radiation '
+      Call AddVariable(rvSolarIncidentDirect)
+
+      rvSolarIncidentDiff%VariableName = 'CFC/zone_*/surface_*/SolIncDiff'
+      rvSolarIncidentDiff%MetaType = 'units'
+      rvSolarIncidentDiff%VariableType = 'W/m2'
+      rvSolarIncidentDiff%Description = 'Solar incident diffuse radiation '
+      Call AddVariable(rvSolarIncidentDiff)
+
+      rvCFCtranDir%VariableName = 'CFC/zone_*/surface_*/CFCtranDir'
+      rvCFCtranDir%MetaType = 'units'
+      rvCFCtranDir%VariableType = 'W/m2'
+      rvCFCtranDir%Description = 'CFC direct transmitted '
+      Call AddVariable(rvCFCtranDir)
+
+      rvCFCtranDiff%VariableName = 'CFC/zone_*/surface_*/CFCtranDiff'
+      rvCFCtranDiff%MetaType = 'units'
+      rvCFCtranDiff%VariableType = 'W/m2'
+      rvCFCtranDiff%Description = 'CFC diffuse transmitted '
+      Call AddVariable(rvCFCtranDiff)
+
+      rvCFCvertprofileangle%VariableName = 'CFC/zone_*/surface_*/CFCvertprofileangle'
+      rvCFCvertprofileangle%MetaType = 'units'
+      rvCFCvertprofileangle%VariableType = 'deg'
+      rvCFCvertprofileangle%Description = 'CFC vertical profile angle '
+      Call AddVariable(rvCFCvertprofileangle)
 
       !Used by water_tanks.F
       rvPltSDHWSumDHWTankFuel%VariableName = 'plant/SDHW_summary/DHW_tank_fuel'

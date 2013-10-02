@@ -90,6 +90,91 @@ C To record equivalence between IPR and materials arrays.
                       ! matdatarray array rather than DB position
       common/MLCMA/IPRMAT(MMLC,ME)
 
+
+C CFC layers header common blocks:
+      real cfcver         ! version of the database (current version is 1.1)
+      integer cfccats     ! number of categories
+      integer cfcdbitems  ! number of items (overall) in database
+      integer cfccatitems ! number of items in each category
+      common/cfcheader/cfcver,cfccats,cfcdbitems,cfccatitems(MGCL_CFC)
+
+C CFC layers category commons
+      character cfcdbdate*24 ! date stamp for the database
+      character cfcdbdoc*248 ! documentation for the CFC layers database
+      character cfccatname*124 ! identity/name of category
+      character cfccatdoc*248  ! documentation for the category
+      common/cfcheadertxt/cfcdbdate,cfcdbdoc,cfccatname(MGCL_CFC),
+     &  cfccatdoc(MGCL_CFC)
+
+C Strings associated with a CFC layer
+      character cfcname*32 ! name for CFC layer
+      character cfcdoc*248 ! documentation
+      common/cfcnamearray/cfcname(MGIT_CFC),cfcdoc(MGIT_CFC)
+
+C Data for each CFC layer:
+      integer cfccatindex  ! is pointer to index of the material category
+      integer cfcitmindex  ! is pointer to item index
+      real cfcdbcon        ! is the conductivity ()
+      real cfcdbden        ! is the density ()
+      real cfcdbsht        ! is the specific heat ()
+      real cfcdbthick      ! default thickness (mm) for item
+      common/cfcdatarray/cfccatindex(MGIT_CFC), cfcitmindex(MGIT_CFC),
+     &  cfcdbcon(MGIT_CFC),cfcdbden(MGIT_CFC),cfcdbsht(MGIT_CFC),
+     &  cfcdbthick(MGIT_CFC)      
+
+C Stores the CFC layers database item index for CFCs in the MLC
+C database.
+C If -1 then not a CFC
+C If 0 then confused or missing layer
+C If gt 0 then legitimate db index
+      integer ITMCFCDB
+      common/MLCCFC/ITMCFCDB(MMLC,ME)     
+     
+C Data structures associated with CFC layers
+      integer CFCshdtp        ! CFC shade type (defined in CFC_common.h)
+      real CFCsolreflout      ! CFC fabric/material solar reflectance, outside
+      real CFCsolreflin       ! CFC fabric/material solar reflectance, inside
+      real CFCsoltrandir      ! CFC fabric/material solar direct transmittance
+      real CFCsoltrantotout   ! CFC fabric/material solar total transmittance, outside
+      real CFCsoltrantotin    ! CFC fabric/material solar total transmittance, inside
+      real CFCemissout        ! CFC fabric/material emissivity, outside
+      real CFCemissin         ! CFC fabric/material emissivity, inside
+      real CFClwtran          ! CFC fabric/material longwave transmittance      
+      real CFCdrpwidth        ! CFC pleated drape width (mm)
+      real CFCdrpspacing      ! CFC pleated drape spacing (mm)
+      real CFCwireemiss       ! CFC insect screen wire emissivity
+      real CFCwirediam        ! CFC insect screen wire diameter (mm)
+      real CFCwirespace       ! CFC insect screen mesh spacing (mm)
+      real CFCslattran        ! CFC venetian blind slat beam-diffuse transmittance
+      real CFCslatwidth       ! CFC venetian blind slat width (mm)
+      real CFCslatspacing     ! CFC venetian blind slat spacing (mm)
+      real CFCslatangle       ! CFC venetian blind initial slat angle (deg, 0 =slats are open )
+      character CFCslatorient*4      ! CFC venetian blind slat orientation (HORZ or VERT)
+      real CFCslatcrown       ! CFC venetian blind slat crown (mm)
+      real CFCslatwr          ! CFC venetian blind slat width/radius of curvature ratio
+      real CFCslatthk         ! CFC venetian blind slat thickness (mm)
+      integer CFCfillAir      ! CFC fill gas % mole fraction, Air
+      integer CFCfillAr       ! CFC fill gas % mole fraction, argon
+      integer CFCfillKr       ! CFC fill gas % mole fraction, krypton
+      integer CFCfillXe       ! CFC fill gas % mole fraction, xenon
+      integer CFCfillSF6      ! CFC fill gas % mole fraction, SF6
+
+      common/dbCFC/CFCshdtp(MGIT_CFC),CFCsolreflout(MGIT_CFC),
+     &  CFCsolreflin(MGIT_CFC),CFCsoltrandir(MGIT_CFC),
+     &  CFCsoltrantotout(MGIT_CFC), CFCsoltrantotin(MGIT_CFC),
+     &  CFCemissout(MGIT_CFC), CFCemissin(MGIT_CFC), 
+     &  CFClwtran(MGIT_CFC),
+     &  CFCdrpwidth(MGIT_CFC), CFCdrpspacing(MGIT_CFC),
+     &  CFCwireemiss(MGIT_CFC), CFCwirediam(MGIT_CFC),
+     &  CFCwirespace(MGIT_CFC), CFCslattran(MGIT_CFC), 
+     &  CFCslatwidth(MGIT_CFC),
+     &  CFCslatspacing(MGIT_CFC), CFCslatangle(MGIT_CFC),
+     &  CFCslatorient(MGIT_CFC), CFCslatcrown(MGIT_CFC), 
+     &  CFCslatwr(MGIT_CFC), CFCslatthk(MGIT_CFC),
+     &  CFCfillAir(MGIT_CFC), CFCfillAr(MGIT_CFC),
+     &  CFCfillKr(MGIT_CFC), CFCfillXe(MGIT_CFC), 
+     &  CFCfillSF6(MGIT_CFC)   
+     
 C The construction database includes text after the thickness of each layer
 C which is based on the name and documentation of the material from the
 C materials database. To assist in recovering materials for which there is

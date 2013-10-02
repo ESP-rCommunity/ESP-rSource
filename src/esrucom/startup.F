@@ -1667,6 +1667,8 @@ C << make a pass sorting out these default file names >>
         write(DICONDBFL,'(2a)') di(1:min(ln,51)),'/databases/icons.db1'
         write(dmdbnam,'(2a)') di(1:min(ln,51)),'/databases/mould.db1'
         write(DSBEM,'(2a)') di(1:min(ln,51)),'/databases/SBEM.db1'
+        write(DCFCDB,'(2a)') di(1:min(ln,51)),
+     &    '/databases/cfclayers.db1.a'
       else
 C        dinstpath = 'c:/esru/esp-r'
         write(dinstpath,'(a)') instpath(1:lnblnk(instpath))
@@ -1698,6 +1700,8 @@ C        dinstpath = 'c:/esru/esp-r'
         write(DICONDBFL,'(2a)') di(1:min(ln,51)),'/databases/icons.db1'
         write(dmdbnam,'(2a)') di(1:min(ln,51)),'/databases/mould.db1'
         write(DSBEM,'(2a)') di(1:min(ln,51)),'/databases/SBEM.db1'
+        write(DCFCDB,'(2a)') di(1:min(ln,51)),
+     &    '/databases/cfclayers.db1.a'
       endif
 
 C << ?? Should there be default values for constructions? >>
@@ -1776,6 +1780,8 @@ C If '*ESP-r Defaults' found then read db until '*end' found.
         CALL EGETRM(OUTSTR,K,dmdbnam,'W','default mycotoxin db',IER)
       elseif(WORD(1:5).eq.'*sbem')then
         CALL EGETRM(OUTSTR,K,DSBEM,'W','default SBEM db',IER)
+      elseif(WORD(1:6).eq.'*cfcdb')then
+        CALL EGETRM(OUTSTR,K,DCFCDB,'W','def CFC db',IER)
       elseif(WORD(1:14).eq.'*constructions')then
   46    continue
         CALL STRIPC(IFDEF,OUTSTR,0,ND,1,'construction tags',IER)

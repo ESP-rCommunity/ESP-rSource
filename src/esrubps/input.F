@@ -226,7 +226,7 @@ C Path to model and command line file name.
       INTEGER :: itcnst
       COMMON/DNORGH/IRTYPE
       INTEGER :: irtype
-      COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
+      COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,CFCDBOK
 
 C Temporal definition commons.
 C For each timestep (assuming 10tsph frequency over a year) iknowrec
@@ -296,9 +296,9 @@ C HVAC AIM-2
       character hvacfile*72
 
       LOGICAL spfileok,perok,tstepok,saveok,autook,exitok,startupok
-      LOGICAL OK,DOK,CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,XST
+      LOGICAL OK,DOK,CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,XST,CFCDBOK
       LOGICAL GRND3D,MSTROK,MSTRZN
-      logical dll,closemat1,closemat2,unixok,concat
+      logical dll,closemat1,closemat2,unixok,concat,closecfc1
 
 C GSHP
 C Common holding flag indicating presence of gshp data input file:
@@ -675,6 +675,70 @@ C code from esruprj/eddb.F subroutine opendb.
             if(closemat1.or.closemat2) MATDBOK=.TRUE.
           endif
         endif
+      ENDIF
+
+      IF(.NOT.CFCDBOK)THEN
+  57    write(currentfile,'(a)') LCFCDB(1:lnblnk(LCFCDB))
+
+        if(ipathcfc.eq.0.or.ipathcfc.eq.1)then
+          ier=0
+          call EFOPRAN(ICFCDB,LCFCDB,40,1,IER)
+        elseif(ipathcfc.eq.2)then
+          ier=0
+          lndbp=lnblnk(standarddbpath)
+          write(lworking,'(3a)') standarddbpath(1:lndbp),fs,
+     &      LCFCDB(1:lnblnk(LCFCDB))
+          call EFOPRAN(ICFCDB,lworking,40,1,IER)
+        endif
+
+        if(ier.ne.0)then
+C Database was not found, or file could not be read.
+          if(dll)then
+            dllsubr='mzinpt'
+            dllmesg='Problem opening CFClayers database.'
+            ier=2
+            return
+
+C In interactive mode, prompt user for new database.
+          elseif ( .not. autook ) then
+
+            IER=0
+            helptopic='CFClayers_db_not_found'
+            call gethelptext(helpinsub,helptopic,nbhelp)
+            write(lltmp,'(a)') LCFCDB(1:lnblnk(LCFCDB))
+  58        CALL EASKS(lltmp,' CFClayers database? ',
+     &        ' ',144,DCFCDB,'CFClayers db file name',IER,nbhelp)
+            if(lltmp(1:2).ne.'  '.and.lltmp(1:4).ne.'UNKN')then
+              write(LCFCDB,'(a)') lltmp(1:lnblnk(lltmp))
+              goto 57
+            else
+              goto 58
+            endif
+          else
+
+C In silent running mode, notify user and terminate simulation.
+            call UsrMsg('CFClayers database could not be found',
+     &                  ' ', 'F')
+          endif ! <- matches 'if(ier.ne.0)then'
+        else
+
+          CALL ERPFREE(ICFCDB,ISTAT)  ! if a read error look at alternatives.
+          write(currentfile,'(a)') LCFCDB(1:lnblnk(LCFCDB))
+
+          if(ipathcfc.eq.0.or.ipathcfc.eq.1)then
+            call rascicfc(ICFCDB,LCFCDB,IER)  ! try current ascii format
+          elseif(ipathcfc.eq.2)then
+            lndbp=lnblnk(standarddbpath)
+            write(lworking,'(3a)') standarddbpath(1:lndbp),fs,
+     &        LCFCDB(1:lnblnk(LCFCDB))
+            call rascicfc(ICFCDB,lworking,IER)  ! try current ascii format
+          endif
+
+          if(ier.eq.0)then
+            call eclose(cfcver,1.1,0.001,closecfc1)
+            if(closecfc1) CFCDBOK=.TRUE.
+          endif
+        endif      
       ENDIF
 
 C Read in the multilayer construction database so that it's
