@@ -22,24 +22,39 @@
 # errors.
 
 # This script is for Linux computers and expects that
-# forchk is installed in /usr/esru/bin and that the environment
-# variable FCKCNF has been set (typically to /usr/local/lib/forcheck/esp-r.cnf)
+# forchk is found in the users $PATH and that $FCKCNF
+# has been defined (typically pointing to esp-r.cnf
+# in /usr/local/lib/forcheck/
 
 echo "all_fckX11 assumes forchk V13 is in /usr/local/bin"
-echo "usage example: first cd to esp-r directory level, then"
+echo "usage example: first cd to esp-r src directory level, then"
 echo "usage example: all_fckX11"
 echo currently working on $PWD
 
 foreach i (esruaco esrub2e esruc2e esruclm esrucnv esrudfs esrudbm \
   esrue2r esrueco esrugrd esruish esrumfs esrumld esrumrt esrunet esrupdb \
-  esruprj esrures esruvew esrubps )
+  esruprj esrures esruvew )
  if ( -d $i ) then
    echo looking at $i
    cd $i
    if ( -f xx.chk ) mv xx.chk xx.chk-
-   /usr/local/bin/forchk  -I ../include *.F *.f90 ../lib/esru_ask.F ../lib/esru_blk.F ../lib/esru_libNonGTK.F > xx.chk
-   echo "looking at xx.chk"
-   tail -40 xx.chk | more
+   if ( -f $i.xx.chk ) mv $i.xx.chk $i.xx.chk-
+   /usr/local/bin/forchk  -I ../include *.F *.f90 ../lib/esru_ask.F ../lib/esru_blk.F ../lib/esru_libNonGTK.F > $i.xx.chk
+   echo "looking at" $i.xx.chk
+   tail -40 $i.xx.chk | more
+   cd ..
+ endif
+end
+
+foreach i (esrubps )
+ if ( -d $i ) then
+   echo looking at $i
+   cd $i
+   if ( -f xx.chk ) mv xx.chk xx.chk-
+   if ( -f $i.xx.chk ) mv $i.xx.chk $i.xx.chk-
+   /usr/local/bin/forchk  -I ../include *.F *.f90 ../lib/esru_ask.F ../lib/esru_blk.F ../lib/esru_libNonGTK.F > $i.xx.chk
+   echo "looking at bps" $i.xx.chk
+   tail -40 $i.xx.chk | more
    cd ..
  endif
 end
