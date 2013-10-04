@@ -184,7 +184,7 @@ C If user wishes to deselect current control reset file name to
 C blank, call ezctli to clear commons and save the configuration file.
       if(iclkok.eq.1)then
         if(cfgok.and.(.NOT.browse))then
-	  call ezctli
+          call ezctli
           LCTLF='  '
           CALL EMKCFG('-',IER)
           call usrmsg(' ',' ','-')
@@ -213,7 +213,7 @@ C If the user supplied a blank file then this is the same as
 C de-referencing the file.
             call edisp(iuout,
      &        'A blank control file name returned. Clearing data.') 
-	    call ezctli
+            call ezctli
             LCTLF='  '
             CALL EMKCFG('-',IER)
             goto 44
@@ -223,7 +223,7 @@ C de-referencing the file.
 C If the user did not select a file then this is the same as
 C de-referencing the file. 
           call edisp(iuout,'No control file selected. Clearing data.') 
-	  call ezctli
+          call ezctli
           LCTLF='  '
           CALL EMKCFG('-',IER)
           goto 44
@@ -1818,7 +1818,7 @@ C string to remind the user.
               icsn(2)=nint(cm(ndx+1))
               icsn(3)=nint(cm(ndx+2))
               icsn(4)=nint(cm(ndx+3))
-	      icsn(5)=0
+              icsn(5)=0
               SSTR=' '
               call decodesensor(0,icsn,SSTR,SSTRB,ier)
               call edisp(iuout,SSTR)
@@ -1868,7 +1868,7 @@ C string to remind the user.
             icsn(2)=nint(cm(ndx+1))
             icsn(3)=nint(cm(ndx+2))
             icsn(4)=nint(cm(ndx+3))
-	    icsn(5)=0
+            icsn(5)=0
             SSTR=' '
             call decodesensor(0,icsn,SSTR,SSTRB,ier)
             call edisp(iuout,SSTR)
@@ -1938,7 +1938,7 @@ C string to remind the user.
               icsn(2)=nint(cm(ndx+1))
               icsn(3)=nint(cm(ndx+2))
               icsn(4)=nint(cm(ndx+3))
-	      icsn(5)=0
+              icsn(5)=0
               SSTR=' '
               call decodesensor(0,icsn,SSTR,SSTRB,ier)
               call edisp(iuout,SSTR)
@@ -1984,7 +1984,7 @@ C string to remind the user.
             icsn(2)=nint(cm(ndx+1))
             icsn(3)=nint(cm(ndx+2))
             icsn(4)=nint(cm(ndx+3))
-	    icsn(5)=0
+            icsn(5)=0
             SSTR=' '
             call decodesensor(0,icsn,SSTR,SSTRB,ier)
             call edisp(iuout,SSTR)
@@ -2220,7 +2220,7 @@ C string to remind the user.
               icsn(2)=nint(cm(ndx+1))
               icsn(3)=nint(cm(ndx+2))
               icsn(4)=nint(cm(ndx+3))
-	      icsn(5)=0
+              icsn(5)=0
               SSTR=' '
               call decodesensor(0,icsn,SSTR,SSTRB,ier)
               call edisp(iuout,SSTR)
@@ -2247,7 +2247,7 @@ C << air node to sense.
             icsn(2)=nint(cm(ndx+1))
             icsn(3)=nint(cm(ndx+2))
             icsn(4)=nint(cm(ndx+3))
-	    icsn(5)=0
+            icsn(5)=0
             SSTR=' '
             call decodesensor(0,icsn,SSTR,SSTRB,ier)
             call edisp(iuout,SSTR)

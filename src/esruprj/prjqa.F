@@ -1399,7 +1399,7 @@ C if verbose print periods, seasons and ratios as well.
               ieripv=0  ! there is an IPV assessment
             endif
           else
-	    ipvaction='ipv'
+            ipvaction='ipv'
             call ripvdat(IFCFG,lipvdatf,ipvaction,ieripv)  ! this returns a value for ieripv
             call edisp(itu,' ')
           endif
@@ -3005,7 +3005,7 @@ C be a black string or as 'internal'.
             continue
           else
             IUO=IFIL+1
-	    ipvaction='ipv'
+            ipvaction='ipv'
             call ripvdat(IUO,lipvdatf,ipvaction,ier)
           endif
           icfgv=4   ! set to current version.

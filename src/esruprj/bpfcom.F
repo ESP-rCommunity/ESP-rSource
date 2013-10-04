@@ -362,16 +362,16 @@ C if that is selected decrement ncf and return.
             NBCDT(ncf)=1
           elseif(iv.eq.3)then
             IVP=3
-	    CALL EASKI(IVP,'Number of user defined control periods',
+            CALL EASKI(IVP,'Number of user defined control periods',
      &        'of validity in the whole year (see help) ',
      &        0,'F',MCF,'-',1,'nb periods of validity',IERI,nbhelp)
-	    if(ieri.eq.-3)then
-	      ncf=ncf-1
-	      return
-	    else
-	      NBCDT(ncf)=IVP
+            if(ieri.eq.-3)then
+              ncf=ncf-1
+              return
+            else
+              NBCDT(ncf)=IVP
               IDOV=1     ! set to use date of validity
-	    endif
+            endif
           endif
           NN=NBCDT(ncf)  ! assume zero means all calendar day types
           IF(NN.EQ.0)NN=NBDAYTYPE
@@ -445,16 +445,16 @@ C Initial setup of day types.
             NPCDT(ncl)=1
           elseif(iv.eq.3)then
             IVP=3
-	    CALL EASKI(IVP,'Number of user defined control periods',
+            CALL EASKI(IVP,'Number of user defined control periods',
      &      'of validity in the whole year (see help) ',
      &      0,'F',MCF,'-',1,'nb periods of validity',IERI,nbhelp)
-	    if(ieri.eq.-3)then
-	      ncl=ncl-1
-	      return
-	    else
-	      NPCDT(ncl)=IVP
+            if(ieri.eq.-3)then
+              ncl=ncl-1
+              return
+            else
+              NPCDT(ncl)=IVP
               IDOV=1     ! date of validity used
-	    endif
+            endif
           endif
           NN=NPCDT(ncl)  ! assume zero means all calendar day types
           IF(NN.EQ.0)NN=NBDAYTYPE
@@ -533,16 +533,16 @@ C Initial setup of day types.
             NFCDT(ncc)=1
           elseif(iv.eq.3)then
             IVP=3
-	    CALL EASKI(IVP,'Number of user defined control periods',
+            CALL EASKI(IVP,'Number of user defined control periods',
      &      'of validity in the whole year (see help) ',
      &      0,'F',MCF,'-',1,'nb periods of validity',IERI,nbhelp)
-	    if(ieri.eq.-3)then
-	      ncc=ncc-1
-	      return
-	    else
-	      NFCDT(ncc)=IVP
+            if(ieri.eq.-3)then
+              ncc=ncc-1
+              return
+            else
+              NFCDT(ncc)=IVP
               IDOV=1     ! date of validity used
-	    endif
+            endif
           endif
           NN=nfcdt(ncc)  ! assume zero means all calendar day types
           IF(NN.EQ.0) NN=NBDAYTYPE
@@ -653,16 +653,16 @@ C if that is selected decrement ncf and return.
             NOCDT(nof)=1
           elseif(iv.eq.3)then
             IVP=3
-	    CALL EASKI(IVP,'Number of user defined control periods',
+            CALL EASKI(IVP,'Number of user defined control periods',
      &      'of validity in the whole year (see help) ',
      &      0,'F',MCF,'-',1,'nb periods of validity',IERI,nbhelp)
-	    if(ieri.eq.-3)then
-	      nof=nof-1
-	      return
-	    else
-	      NOCDT(nof)=IVP
+            if(ieri.eq.-3)then
+              nof=nof-1
+              return
+            else
+              NOCDT(nof)=IVP
               IDOV=1     ! date of validity used
-	    endif
+            endif
           endif
           NN=NOCDT(nof)  ! assume zero means all calendar day types
           IF(NN.EQ.0)NN=NBDAYTYPE
