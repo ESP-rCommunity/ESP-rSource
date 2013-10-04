@@ -21,6 +21,13 @@ C Boston, MA 02111-1307 USA.
 C bamstats     - the main controlling routine.
 C partfa - allows terminal, file and action arguments to be passed.
 
+C **********************
+C Pending tasks
+C a) be able to report only one nominated sensor via a command line option
+C b) allow for other-than-five-minute output
+C c) support writing consistent timestamps in the output (currently it 
+C    could be off by ~30 seconds.
+
 C ****************************************** bamstats ***************************************
 C bamstats.F is the main routine which scans standard, short, units BuildAX log files to
 C create a file fit for using as an import to an ESP-r temporal file or for spreadsheets. 
@@ -159,11 +166,13 @@ C Significant figure reporting limit (NSIGFIG).
 
       CHARACTER INTER*144,INF*144,LFOUT*144
       character path*72
-      character outs*123,outs248*248,loutstr*1000,WORD*24,delim*1
+      character outs*123,outsd*123,outs248*248,loutstr*1000
+      character WORD*24,delim*1
       character fs*1
       character act*16 ! B is std log file S short log file U units log file
       character actd*1 ! B is std log file S short log file U units log file
       character datea*24
+      integer itol     ! time tollerance for use in finding relevant data
 
 C      character cVnum*16      ! returned from ESPrVersionNum
       character pagestitle*42 ! for banner title via epages call
@@ -184,6 +193,7 @@ C      character cVnum*16      ! returned from ESPrVersionNum
       real twentysecfrac ! within 20 seconds
       real thirtysecfrac ! within 30 seconds
       real fourtysecfrac ! within 40 seconds
+      real closeenough   ! is twentysecfrac or thirtysecfrac or fourtysecfrac
       real nowis         ! use with 5 minute incrementing test
       real thejulianis   ! to remember current time
       real printedat     ! to remember julian when data printed
@@ -232,7 +242,8 @@ C Initial assumptions.
       INTER=' '
 
 C Clear mapping array.
-      icurrentsenarray=0; iseq=0; thejulianis=0.0; printedat=-1.0
+C      icurrentsenarray=0; iseq=0; thejulianis=0.0; printedat=-1.0
+      icurrentsenarray=0; iseq=0; thejulianis=0.0; printedat=0.0
       do ij=1,27
         mapsentoarray(ij)=0
         bamtmp(ij)=0.0
@@ -247,7 +258,7 @@ C Setup constants.
 
 C Get command line parameters (MODL= text assumed), inf = the BuildAX log file,
 C act = b or B (standard file) or s S for -format:short and u U for -format:units.
-      call partfa(MODL,inf,act)
+      call partfa(MODL,inf,act,itol)
 
 C Set folder separator (fs) to \ or / as required.
       call isunix(unixok)
@@ -313,9 +324,26 @@ C for 5 minutes.
       fiveminfrac=secondsin5min/secondsinday
       oneminfrac=60.0/secondsinday
       tensecfrac=10.0/secondsinday
+
+C Consider command line argument that will allow a switch between these
+C without a recompile so that it works with varying number of sensors.
       twentysecfrac=20.0/secondsinday
       thirtysecfrac=30.0/secondsinday
       fourtysecfrac=45.0/secondsinday
+
+C If a time tollerance has bee given set.
+      closeenough = thirtysecfrac
+      if(itol.ne.0)then
+        if(itol.eq.10)then
+          closeenough = tensecfrac
+        elseif(itol.eq.20)then
+          closeenough = twentysecfrac
+        elseif(itol.eq.30)then
+          closeenough = thirtysecfrac
+        elseif(itol.eq.40)then
+          closeenough = fourtysecfrac
+        endif
+      endif
 
       actd='B'   ! assume standard BuildAX log file
       datea='2013-06-21 20:24:53.518'
@@ -395,6 +423,8 @@ C << can this logic be moved ?? >>
           if(ij.eq.2)then
             actd='B'
             call bamdatetojulian(datea,actd,juliand,julianfrac)
+            thejulianis=juliand    ! in case no match at start of file kludge
+            write(6,*) 'line2 ',closetohour,thehouris,datea,thejulianis
             do ih=0,23
               closetohour=.false.
               call ECLOSE(julianfrac,hourdayfrac(ih),oneminfrac,
@@ -458,7 +488,9 @@ C order rather than the random order found in the intial lines of the file.
         endif
 
         write(IUF,'(a,i2)')'# number of sensors ',howmany
-        write(IUF,*)'# sensor list ',mapsentoarray
+        write(outs,'(32I4)') (mapsentoarray(J),J=1,howmany)
+        call SDELIM(outs,outsd,'C',IW)
+        write(IUF,'(2a)') '# sensor list ',outsd(1:lnblnk(outsd))
 
 C Generate a header line with appropriate titles for the collected sensors
         irows=1
@@ -508,6 +540,7 @@ C the next read is the same then it can be skipped.
 C Debug.
           write(6,*) 'stripc end of file ',ier
           CALL ERPFREE(IUNIT,ISTAT)
+          WRITE(iuf,'(a)',IOSTAT=ios,ERR=2) '# end'
           CALL ERPFREE(IUF,ISTAT)
           stop
         endif
@@ -635,25 +668,14 @@ C tollerance. Only do the test for the first two sensors.
         endif
 
 C Are we close to hour mark or one of the five minute marks? Use
-C a 10/20 sec tollerance for version 4 and 20/30/45 sec for version 5
-C depending on how many sensors are being dealt with.
+C a closeenough sec tollerance.
         closetohour=.false.
         closetofive=.false.
         nowis=thehouris
         if(iver.eq.4)then
-          if(howmany.lt.5)then
-            call ECLOSE(julianfrac,thehouris,tensecfrac,closetohour)
-          else
-            call ECLOSE(julianfrac,thehouris,twentysecfrac,closetohour)
-          endif
+          call ECLOSE(julianfrac,thehouris,closeenough,closetohour)
         elseif(iver.eq.5)then
-          if(howmany.lt.5)then
-            call ECLOSE(julianfrac,thehouris,twentysecfrac,closetohour)
-          elseif(howmany.ge.5.and.howmany.lt.8)then
-            call ECLOSE(julianfrac,thehouris,thirtysecfrac,closetohour)
-          elseif(howmany.ge.8)then
-            call ECLOSE(julianfrac,thehouris,fourtysecfrac,closetohour)
-          endif
+          call ECLOSE(julianfrac,thehouris,closeenough,closetohour)
         endif 
         if(closetohour)then
           thejulanis=juliand    ! remenber julian
@@ -662,25 +684,15 @@ C depending on how many sensors are being dealt with.
           goto 43
         endif
 
-C See if it is within 10 or 20 seconds of one of the 5 minute slots.
+C See if it is within closeenough seconds of one of the 5 minute slots.
 C AND also check that we have moved on at least a minute from the last
 C time that we printed out information.
         do ifive=1,12
           nowis=nowis+fiveminfrac
           if(iver.eq.4)then
-            if(howmany.lt.5)then
-              call ECLOSE(julianfrac,nowis,tensecfrac,closetofive)
-            else
-              call ECLOSE(julianfrac,nowis,twentysecfrac,closetofive)
-            endif
+            call ECLOSE(julianfrac,nowis,closeenough,closetofive)
           else
-            if(howmany.lt.5)then
-              call ECLOSE(julianfrac,nowis,twentysecfrac,closetofive)
-            elseif(howmany.ge.5.and.howmany.lt.8)then
-              call ECLOSE(julianfrac,nowis,thirtysecfrac,closetofive)
-            elseif(howmany.ge.8)then
-              call ECLOSE(julianfrac,nowis,fourtysecfrac,closetofive)
-            endif
+            call ECLOSE(julianfrac,nowis,closeenough,closetofive)
           endif
           if(closetofive)then
             if(juliand.gt.(printedat+oneminfrac))then
@@ -818,7 +830,7 @@ C     &      bamhumidity(ij),bampir(ij),bamaudio(ij)
 
 C Write a line with the BAM time as well as julian day fraction
 C to support debug.
-C        write(IUF,*) datea,' ',thejulianis
+        write(6,*) datea,' ',thejulianis
         itrunc=1
         ipos=1
         do while (itrunc.ne.0)
@@ -1054,19 +1066,9 @@ C a 10 sec tollerance for version 4 and 20 sec for version 5.
         closetofive=.false.
         nowis=thehouris
         if(iver.eq.4)then
-          if(howmany.lt.5)then
-            call ECLOSE(julianfrac,thehouris,tensecfrac,closetohour)
-          else
-            call ECLOSE(julianfrac,thehouris,twentysecfrac,closetohour)
-          endif
+          call ECLOSE(julianfrac,thehouris,closeenough,closetohour)
         elseif(iver.eq.5)then
-          if(howmany.lt.5)then
-            call ECLOSE(julianfrac,thehouris,twentysecfrac,closetohour)
-          elseif(howmany.ge.5.and.howmany.lt.8)then
-            call ECLOSE(julianfrac,thehouris,thirtysecfrac,closetohour)
-          elseif(howmany.ge.8)then
-            call ECLOSE(julianfrac,thehouris,fourtysecfrac,closetohour)
-          endif
+          call ECLOSE(julianfrac,thehouris,closeenough,closetohour)
         endif 
         if(closetohour)then
           thejulanis=juliand    ! remenber julian
@@ -1081,19 +1083,9 @@ C time that we printed out information.
         do ifive=1,12
           nowis=nowis+fiveminfrac
           if(iver.eq.4)then
-            if(howmany.lt.5)then
-              call ECLOSE(julianfrac,nowis,tensecfrac,closetofive)
-            else
-              call ECLOSE(julianfrac,nowis,twentysecfrac,closetofive)
-            endif
+            call ECLOSE(julianfrac,nowis,closeenough,closetofive)
           else
-            if(howmany.lt.5)then
-              call ECLOSE(julianfrac,nowis,twentysecfrac,closetofive)
-            elseif(howmany.ge.5.and.howmany.lt.8)then
-              call ECLOSE(julianfrac,nowis,thirtysecfrac,closetofive)
-            elseif(howmany.ge.8)then
-              call ECLOSE(julianfrac,nowis,fourtysecfrac,closetofive)
-            endif
+            call ECLOSE(julianfrac,nowis,closeenough,closetofive)
           endif
           if(closetofive)then
             if(juliand.gt.(printedat+oneminfrac))then
@@ -1251,10 +1243,11 @@ C ********* partfa (equivalent to partf with an action parameter)
 C partfa allows terminal, file and action arguments
 C  to be passed to the program from the invocation line.  
 C  Logic allows for the -file token to be optional.
+C  itol is tollerance in seconds 20 30 45
 
 C This is a truncated version of partfa from startup.F which has
 C fewer dependencies than the standard version.
-      subroutine partfa(termtype,inf,act)
+      subroutine partfa(termtype,inf,act,itol)
       
       integer lnblnk  ! function definition
 
@@ -1266,6 +1259,7 @@ C fewer dependencies than the standard version.
       integer iargc,m
       character argument*72,mode*8,inf*144,appn*24,outs*248,act*16
       logical unixok
+      integer itol
 
 
 C Determine if an X graphics library (GTK or X11) was linked
@@ -1288,6 +1282,7 @@ C into binary, and set default terminal type as necessary
       inf  = 'UNKNOWN'
       act = 'NONE'
       argument = ' '
+      itol = 30  ! if no one says anything assume 30 sec tollerance
 
 C Get arguments from command line: if no paramters just
 C return, otherwise process parameters.
@@ -1303,7 +1298,16 @@ C return, otherwise process parameters.
 C Only give feedback if non-DOS.
           call isunix(unixok)
           if(unixok)then
-            call edisp(iuout,'command line is csv or summary file')
+            call edisp(iuout,'command line is:')
+            call edisp(iuout,' [-act {b|s|u} ]')
+            call edisp(iuout,'   b is standard BuildAX log')
+            call edisp(iuout,'   s is short BuildAX log')
+            call edisp(iuout,'   u is user units BuildAX log')
+            call edisp(iuout,' [-tol {10|20|30|40} ]')
+            call edisp(iuout,'   10 20 30 or 40 seconds tollerance for')
+            call edisp(iuout,'   identifying relevant timesteps in log')
+            call edisp(iuout,' [-file <BuildAX log file name>]')
+            call edisp(iuout,' [-help  this message')
             stop
           endif
         elseif(argument(1:5).eq.'-mode')then
@@ -1328,6 +1332,10 @@ C Only give feedback if non-DOS.
         elseif(argument(1:5).eq.'-act ')then
           i=i+1
           call getarg(i,act)
+        elseif(argument(1:5).eq.'-tol ')then
+          i=i+1
+          call getarg(i,argument)
+          read(argument,*,IOSTAT=IOS,ERR=2)itol
         else
 
 C Assume argument is an input file without the -file token.
@@ -1340,12 +1348,18 @@ C Assume argument is an input file without the -file token.
 C Only give feedback if non-DOS.
         call isunix(unixok)
         if(unixok)then
-          write(outs,'(8a)') 'Starting ',appn(1:lnblnk(appn)),
-     &    ' in mode ',mode(1:lnblnk(mode)),' with file ',
-     &    inf(1:lnblnk(inf)),' with action ',act(1:lnblnk(act))
+          write(outs,'(7a,i3)') 'Starting ',appn(1:lnblnk(appn)),
+     &    ' with file ',inf(1:lnblnk(inf)),' with action ',
+     &    act(1:lnblnk(act)),' tollerance ',itol
 C         call edisp248(iuout,outs,90)
         endif
         return
+      endif
+
+C Errors.
+   2  call isunix(unixok)
+      if(unixok)then
+        call edisp(iuout,'Problem with command line parameter.')
       endif
       end
 
