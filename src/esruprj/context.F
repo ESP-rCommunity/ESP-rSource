@@ -468,7 +468,7 @@ C then re-initialize the calendar.
         call gethelptext(helpinsub,helptopic,nbhelp)
         iyeart=iyear
         CALL EASKI(iyeart,' ','Simulation year?',
-     &       1900,'W',2010,'W',2001,'year',IERI,nbhelp)
+     &       1900,'W',2051,'W',2007,'year',IERI,nbhelp)
         if(ieri.eq.-3) goto 3
         iyear=iyeart
         MODSIT=.true.

@@ -730,7 +730,7 @@ C initial set of days.
         call gethelptext(helpinsub,helptopic,nbhelp)
         iyeart=iyear
         CALL EASKI(IYEART,' ','Assessment year?',
-     &    1900,'W',3000,'W',2007,'assessment year',IERI,nbhelp)
+     &    1900,'W',2051,'W',2007,'assessment year',IERI,nbhelp)
         if(ieri.eq.-3) then
           call calenmanage('i',ier)
         else

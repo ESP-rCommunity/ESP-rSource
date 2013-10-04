@@ -82,7 +82,7 @@ C Define the beginning and ending dates for simulation.
         H(1)='The year is required to find the date of a given'
         H(2)='year day.'
         CALL EASKI(IYEAR,' ',' Please enter year?',
-     &             1900,'W',2020,'W',1997,'year',IER,2)
+     &             1900,'W',2051,'W',2007,'year',IER,2)
         CALL EASKPER('Assessment period:',IBDOY,IEDOY,IFDAY,IER)
       ELSEIF(INO1.EQ.2)THEN
 
