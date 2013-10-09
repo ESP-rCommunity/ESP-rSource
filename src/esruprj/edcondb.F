@@ -815,7 +815,7 @@ C state of the menu when doing this).
               GOTO 3   ! recreate and display inner menu
             endif
           
-            PER2=10.0
+            PER2=100.0-(PER1*100.0)  ! the balance from 100 percent
             CALL EASKR(PER2,' ','Second material % in the layer: ',
      &            0.1,'W',99.9,'W',1.,'2nd material %',IER,nbhelp)
             PER2=PER2*0.01
@@ -861,9 +861,11 @@ C assign -99 and make up initial name based on the original.
 C If there is room add a note about its origin.
               ils=lnblnk(matdoc(IWHICH))
               iln=lnblnk(matname(IWHICH))
+              iln1=lnblnk(matname(ILNE))
               iln2=lnblnk(matname(IWHICH2))
               if(ils.le.200)then
-                write(matdoc(ILNE),'(5a,2f5.2,a)') ' Derived from ',
+                write(matdoc(ILNE),'(6a,2f6.3,a)') 
+     &            matname(ILNE)(1:iln1),' derived from ',
      &            matname(IWHICH)(1:iln),' & ',
      &            matname(IWHICH2)(1:iln2),' (',PER1,PER2,')'
               else
