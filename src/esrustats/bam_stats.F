@@ -143,8 +143,6 @@ C *********************************** csvstats ******************************
 
       PROGRAM bamstats
 #include "building.h"
-#include "model.h"
-#include "esprdbfile.h"
 #include "espriou.h"
 #include "sbem.h"
 
@@ -207,6 +205,8 @@ C Local variables for reading raw BAM sensor data in the log file.
       real rdbt,rlight,rrh,audio,audiopeak
       real thehouris  ! the csv file starts at hour
       logical nearstartofhour ! if file started near hour mark
+      logical restrictreport  ! if true focus is on one sensor
+      logical foundrestricsensor ! if true the restrictreport sensor found
       integer lastseq,iseq    ! sequence number current and prior
       dimension lastseq(27)
       real tabular
@@ -240,6 +240,8 @@ C Initial assumptions.
       IFIL=10
       NSIGFIG=3
       INTER=' '
+      foundrestricsensor=.false.
+      irepsen=0  ! initial assumption
 
 C Clear mapping array.
 C      icurrentsenarray=0; iseq=0; thejulianis=0.0; printedat=-1.0
@@ -257,8 +259,17 @@ C Setup constants.
       secondsin5min= 300.0
 
 C Get command line parameters (MODL= text assumed), inf = the BuildAX log file,
-C act = b or B (standard file) or s S for -format:short and u U for -format:units.
-      call partfa(MODL,inf,act,itol)
+C act = b or B (standard file) or s S for -format:short and u U 
+C       for -format:units, irepsen non-zero report only one sensor.
+      call partfa(MODL,inf,act,itol,irepsen)
+
+C If irepsen is non-zero then restrict report to a single sensor
+C with the index irepsen.
+      if(irepsen.gt.0)then
+        restrictreport = .true.
+      else
+        restrictreport = .false.
+      endif
 
 C Set folder separator (fs) to \ or / as required.
       call isunix(unixok)
@@ -368,12 +379,22 @@ C Assume csv file is on IFIL.
       endif
 
 C Make up an output file with a .text ending matching the input file name.
+C If report restricted to one sensor adapt name to include sensor index.
       lnb=lnblnk(INTER)
       lnd=lnb-3
+      lnr=lnb-4
       if(INTER(lnd:lnb).eq.'.csv')then
-        WRITE(LFOUT,'(2a)') INTER(1:lnd),'text'
+        if(restrictreport)then
+          WRITE(LFOUT,'(2a,i3.3,a)') INTER(1:lnr),'-',irepsen,'.text'
+        else
+          WRITE(LFOUT,'(2a)') INTER(1:lnd),'text'
+        endif
       else
-        WRITE(LFOUT,'(2a)') INTER(1:lnb),'text'
+        if(restrictreport)then
+          WRITE(LFOUT,'(2a,i3.3,a)') INTER(1:lnb),'-',irepsen,'.text'
+        else
+          WRITE(LFOUT,'(2a)') INTER(1:lnb),'text'
+        endif
       endif
 
 C Debug.
@@ -394,13 +415,13 @@ C log files and U for -format:units format.
      &   act(1:1).eq.'s'.or.act(1:1).eq.'S'.or.
      &   act(1:1).eq.'u'.or.act(1:1).eq.'U'.or.act(1:1).eq.'-')then
 
-C Discover how many different sensors are included. Read the first 400 lines.
+C Discover how many different sensors are included. Read the first 800 lines.
 C Note: if sensors have been turned on in sequence it may be necessary to
 C cut out the intial portion of the file when all sensors are not yet active.
         howmany=0      ! start with no sensors
         thehouris=0.0  ! clear assumption about when the csv file time starts
         nearstartofhour = .false.
-        do ij=1,400
+        do ij=1,800
           call stripc1k(IUNIT,loutstr,0,ND,1,'log line',IER)
           if(IER.ne.0)then
             write(6,*) 'Rewinding the file after scan for sensors.'
@@ -431,7 +452,7 @@ C << can this logic be moved ?? >>
      &          closetohour)
               if(closetohour)then
                 thehouris=hourdayfrac(ih)  ! remember fraction
-                thejulanis=juliand    ! remenber julian
+                thejulianis=juliand    ! remenber julian
                 write(6,*) 'csv file is for hour ',ih,julianfrac,
      &            thehouris
                 nearstartofhour=.true.
@@ -469,8 +490,27 @@ C Did not find it so set the first open slot of mapsentoarray
             mapsentoarray(howmany+1)=isen
             howmany=howmany+1
             foundit=.true.
+
+C Also check if restricted reporting mode if this sensor matches
+C the one mentioned in the -sen command directive.
+            if(restrictreport)then
+              if(isen.eq.irepsen) foundrestricsensor=.true.
+            endif
           endif
         enddo
+
+C If we did not find the requested sensor exit with a warning.
+        if(restrictreport)then
+          if(foundrestricsensor)then
+            continue
+          else
+            call edisp(iuout,'ERROR: requested sensor not found')
+            call epwait
+            call epagend
+            STOP
+          endif
+        endif
+
 C Debug.
    44   write(6,*) 'how many sensors found ',howmany,mapsentoarray
 
@@ -487,36 +527,73 @@ C order rather than the random order found in the intial lines of the file.
           write(IUF,'(a)')'BuildAX summary from TEDDI_UNITS'
         endif
 
-        write(IUF,'(a,i2)')'# number of sensors ',howmany
-        write(outs,'(32I4)') (mapsentoarray(J),J=1,howmany)
-        call SDELIM(outs,outsd,'C',IW)
-        write(IUF,'(2a)') '# sensor list ',outsd(1:lnblnk(outsd))
+        if(.NOT.restrictreport)then
+          write(IUF,'(a,i2)')'# number of sensors ',howmany
+          write(outs,'(32I4)') (mapsentoarray(J),J=1,howmany)
+          call SDELIM(outs,outsd,'C',IW)
+          write(IUF,'(2a)') '# sensor list ',outsd(1:lnblnk(outsd))
+        else
+          write(IUF,'(a,i3.3)')'# for sensor ',irepsen
+        endif
 
 C Generate a header line with appropriate titles for the collected sensors
-        irows=1
-        K4=33   ! initial value for buffer
-        loutstr = '#JulianTime,yyyy-mm-dd hh:mm:ss,'
-        do loop = 1,howmany
-          write(t12a,'(a,i3.3,a)') 's',mapsentoarray(loop),'_degC'
-          lnt12a=lnblnk(t12a)
-          write(t12b,'(a,i3.3,a)') 's',mapsentoarray(loop),'_Lux'
-          lnt12b=lnblnk(t12b)
-          write(t12c,'(a,i3.3,a)') 's',mapsentoarray(loop),'_RH'
-          lnt12c=lnblnk(t12c)
-          write(t12d,'(a,i3.3,a)') 's',mapsentoarray(loop),'_PIR'
-          lnt12d=lnblnk(t12d)
-          write(t12e,'(a,i3.3,a)') 's',mapsentoarray(loop),'_dbA'
-          lnt12e=lnblnk(t12e)
-          lntabcde = lnt12a + lnt12b + lnt12c + lnt12d + lnt12e
-          KE4=K4+(lntabcde+5) ! set for 1k buffer
-          write(loutstr(K4:KE4),'(10a)') t12a(1:lnt12a),',',
-     &      t12b(1:lnt12b),',',t12c(1:lnt12c),',',t12d(1:lnt12d),',',
-     &      t12e(1:lnt12e),','
-C          write(6,*) loutstr(1:lnblnk(loutstr))
-          K4=KE4
-        enddo
-        lnb=lnblnk(loutstr)+1   ! ensure we do not warp line
-        write(IUF,'(A)',iostat=ios,err=2) loutstr(1:lnb)
+        if(.NOT.restrictreport)then
+C          irows=1
+          K4=33   ! initial value for buffer
+          loutstr = '#JulianTime,yyyy-mm-dd hh:mm:ss,'
+          do loop = 1,howmany
+            write(t12a,'(a,i3.3,a)') 's',mapsentoarray(loop),'_degC'
+            lnt12a=lnblnk(t12a)
+            write(t12b,'(a,i3.3,a)') 's',mapsentoarray(loop),'_Lux'
+            lnt12b=lnblnk(t12b)
+            write(t12c,'(a,i3.3,a)') 's',mapsentoarray(loop),'_RH'
+            lnt12c=lnblnk(t12c)
+            write(t12d,'(a,i3.3,a)') 's',mapsentoarray(loop),'_PIR'
+            lnt12d=lnblnk(t12d)
+            write(t12e,'(a,i3.3,a)') 's',mapsentoarray(loop),'_dbA'
+            lnt12e=lnblnk(t12e)
+            lntabcde = lnt12a + lnt12b + lnt12c + lnt12d + lnt12e
+            KE4=K4+(lntabcde+5) ! set for 1k buffer
+            write(loutstr(K4:KE4),'(10a)') t12a(1:lnt12a),',',
+     &        t12b(1:lnt12b),',',t12c(1:lnt12c),',',t12d(1:lnt12d),',',
+     &        t12e(1:lnt12e),','
+C           write(6,*) loutstr(1:lnblnk(loutstr))
+            K4=KE4
+          enddo
+          lnb=lnblnk(loutstr)+1   ! ensure we do not warp line
+          write(IUF,'(A)',iostat=ios,err=2) loutstr(1:lnb)
+        else
+
+C Restrict the header to the requested sensor.
+C          irows=1
+          K4=33   ! initial value for buffer
+          loutstr = '#JulianTime,yyyy-mm-dd hh:mm:ss,'
+          do loop = 1,howmany
+            if(mapsentoarray(loop).eq.irepsen)then
+              write(t12a,'(a,i3.3,a)') 's',mapsentoarray(loop),'_degC'
+              lnt12a=lnblnk(t12a)
+              write(t12b,'(a,i3.3,a)') 's',mapsentoarray(loop),'_Lux'
+              lnt12b=lnblnk(t12b)
+              write(t12c,'(a,i3.3,a)') 's',mapsentoarray(loop),'_RH'
+              lnt12c=lnblnk(t12c)
+              write(t12d,'(a,i3.3,a)') 's',mapsentoarray(loop),'_PIR'
+              lnt12d=lnblnk(t12d)
+              write(t12e,'(a,i3.3,a)') 's',mapsentoarray(loop),'_dbA'
+              lnt12e=lnblnk(t12e)
+              lntabcde = lnt12a + lnt12b + lnt12c + lnt12d + lnt12e
+              KE4=K4+(lntabcde+5) ! set for 1k buffer
+              write(loutstr(K4:KE4),'(9a)') t12a(1:lnt12a),',',
+     &          t12b(1:lnt12b),',',t12c(1:lnt12c),',',t12d(1:lnt12d),
+     &          ',',t12e(1:lnt12e)
+C              write(6,*) loutstr(1:lnblnk(loutstr))
+            else
+              continue
+            endif
+          enddo
+          lnb=lnblnk(loutstr)+1   ! ensure we do not warp line
+          write(IUF,'(A)',iostat=ios,err=2) loutstr(1:lnb)
+
+        endif
 
 C Noticed that rewind did not work so close and open instead.
 C        rewind(IUNIT)   ! go back to the start of the csv file
@@ -549,6 +626,14 @@ C Debug.
         CALL EGETW(loutstr,K,WORD,'W','ignore time number',IFLAG)
         CALL EGETP(loutstr,K,datea,'W','YYYY-MM-DD hh:mm:ss.fff',IFLAG)
         CALL EGETWI(loutstr,K,isen,0,200,'W','sensor index',IFLAG)
+
+C If restricting report and this is not the sensor we want jump.
+        if(restrictreport)then
+          if(isen.ne.irepsen)then
+C            write(6,*) 'not matching sensor index ',isen,' @ ',datea
+            goto 42   ! read another line of the file
+          endif
+        endif
 
 C Find where in the data arrays to save current sensor info.
         icurrentsenarray=0  ! clear
@@ -678,7 +763,7 @@ C a closeenough sec tollerance.
           call ECLOSE(julianfrac,thehouris,closeenough,closetohour)
         endif 
         if(closetohour)then
-          thejulanis=juliand    ! remenber julian
+          thejulianis=juliand    ! remenber julian
           write(6,*) 'closetohour ',closetohour,thehouris,datea,
      &      thejulianis
           goto 43
@@ -789,44 +874,68 @@ C in order to ensure we have captured all of the sensors
 C In others we only slightly more than howmany.
         delim='C'
 
-        if(iver.eq.4)then
-          if(howmanynow.gt.howmany*2)then
-            continue
-          else
-            goto 42
-          endif
-        elseif(iver.eq.5)then
-          if(howmany.lt.5.and.howmanynow.gt.howmany+2)then
-            continue
-          else
-            if(howmanynow.gt.howmany)then
+        if(.NOT.restrictreport)then
+          if(iver.eq.4)then
+            if(howmanynow.gt.howmany*2)then
               continue
             else
               goto 42
             endif
+          elseif(iver.eq.5)then
+            if(howmany.lt.5.and.howmanynow.gt.howmany+2)then
+              continue
+            else
+              if(howmanynow.gt.howmany)then
+                continue
+              else
+                goto 42
+              endif
+            endif
           endif
+        else
+          continue  ! probably
         endif
 
 C Increment position in tabular array for the each of the 5 items associated
 C with a BAM sensor.
-        ipos=1
-        do ij=1,howmany
-          tabular(ipos)=bamtmp(ij)
-          ipos=ipos+1
-          tabular(ipos)=bamlight(ij)
-          ipos=ipos+1
-          tabular(ipos)=bamhumidity(ij)
-          ipos=ipos+1
-          tabular(ipos)=bampir(ij)
-          ipos=ipos+1
-          tabular(ipos)=bamaudio(ij)
-          ipos=ipos+1
+        if(.NOT.restrictreport)then
+          ipos=1
+          do ij=1,howmany
+            tabular(ipos)=bamtmp(ij)
+            ipos=ipos+1
+            tabular(ipos)=bamlight(ij)
+            ipos=ipos+1
+            tabular(ipos)=bamhumidity(ij)
+            ipos=ipos+1
+            tabular(ipos)=bampir(ij)
+            ipos=ipos+1
+            tabular(ipos)=bamaudio(ij)
+            ipos=ipos+1
 
 C Debug
-C          write(IUF,*) datea,' ',thejulianis,' ',
-C     &      mapsentoarray(ij),bamtmp(ij),bamlight(ij),
-C     &      bamhumidity(ij),bampir(ij),bamaudio(ij)
-        enddo
+C           write(IUF,*) datea,' ',thejulianis,' ',
+C     &       mapsentoarray(ij),bamtmp(ij),bamlight(ij),
+C     &       bamhumidity(ij),bampir(ij),bamaudio(ij)
+          enddo
+        else
+
+C Restricted report.
+          ipos=1
+          do ij=1,howmany
+            if(mapsentoarray(ij).eq.irepsen)then
+              tabular(ipos)=bamtmp(ij)
+              ipos=ipos+1
+              tabular(ipos)=bamlight(ij)
+              ipos=ipos+1
+              tabular(ipos)=bamhumidity(ij)
+              ipos=ipos+1
+              tabular(ipos)=bampir(ij)
+              ipos=ipos+1
+              tabular(ipos)=bamaudio(ij)
+              ipos=ipos+1
+            endif
+          enddo
+        endif
 
 C Write a line with the BAM time as well as julian day fraction
 C to support debug.
@@ -834,8 +943,13 @@ C to support debug.
         itrunc=1
         ipos=1
         do while (itrunc.ne.0)
-          call arlist(ipos,howmany*5,tabular,135,delim,loutstr,loutln,
-     &      itrunc)
+          if(.NOT.restrictreport)then
+            call arlist(ipos,howmany*5,tabular,135,delim,loutstr,
+     &        loutln,itrunc)
+          else
+            call arlist(ipos,5,tabular,135,delim,loutstr,
+     &        loutln,itrunc)
+          endif
           if(ipos.eq.1) then
             WRITE(iuf,'(F10.6,4a)',IOSTAT=ios,ERR=2) thejulianis,',',
      &        datea(1:19),',',loutstr(1:loutln)
@@ -876,7 +990,7 @@ C << can this logic be moved ?? >>
      &          closetohour)
               if(closetohour)then
                 thehouris=hourdayfrac(ih)  ! remember fraction
-                thejulanis=juliand    ! remenber julian
+                thejulianis=juliand    ! remenber julian
                 write(6,*) 'csv file is for hour ',ih,julianfrac,
      &            thehouris
                 nearstartofhour=.true.
@@ -929,7 +1043,7 @@ C order rather than the random order found in the intial lines of the file.
         write(IUF,*)'# sensor list ',mapsentoarray
 
 C Generate a header line with appropriate titles for the collected sensors
-        irows=1
+C        irows=1
         K4=33   ! initial value for buffer
         loutstr = '#JulianTime,yyyy-mm-dd hh:mm:ss,'
         do loop = 1,howmany
@@ -1071,7 +1185,7 @@ C a 10 sec tollerance for version 4 and 20 sec for version 5.
           call ECLOSE(julianfrac,thehouris,closeenough,closetohour)
         endif 
         if(closetohour)then
-          thejulanis=juliand    ! remenber julian
+          thejulianis=juliand    ! remenber julian
           write(6,*) 'closetohour ',closetohour,thehouris,datea,
      &      thejulianis
           goto 143
@@ -1239,27 +1353,27 @@ C to keep track of which bamtmp array matches which BAM sensor ID.
 C Logic for writing an ASCII temporal file (header and/or contents)...
 C << ?? >>
 
-C ********* partfa (equivalent to partf with an action parameter)
+C ********* partfa (derived from partf with an action parameter)
 C partfa allows terminal, file and action arguments
 C  to be passed to the program from the invocation line.  
 C  Logic allows for the -file token to be optional.
 C  itol is tollerance in seconds 20 30 45
+C  irepsen is single sensor to report if -sen command included
 
 C This is a truncated version of partfa from startup.F which has
 C fewer dependencies than the standard version.
-      subroutine partfa(termtype,inf,act,itol)
+      subroutine partfa(termtype,inf,act,itol,irepsen)
       
       integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
-      common/APPNAME/cAppName
-      character*12 cAppName
       integer termtype
       character*48 prog
       integer iargc,m
       character argument*72,mode*8,inf*144,appn*24,outs*248,act*16
       logical unixok
       integer itol
+      integer irepsen ! if zero then do all sensors otherwise report one
 
 
 C Determine if an X graphics library (GTK or X11) was linked
@@ -1283,6 +1397,7 @@ C into binary, and set default terminal type as necessary
       act = 'NONE'
       argument = ' '
       itol = 30  ! if no one says anything assume 30 sec tollerance
+      irepsen = 0  ! assume all sensors to be reported
 
 C Get arguments from command line: if no paramters just
 C return, otherwise process parameters.
@@ -1306,6 +1421,8 @@ C Only give feedback if non-DOS.
             call edisp(iuout,' [-tol {10|20|30|40} ]')
             call edisp(iuout,'   10 20 30 or 40 seconds tollerance for')
             call edisp(iuout,'   identifying relevant timesteps in log')
+            call edisp(iuout,' [-sen <sensor id number> ] if included')
+            call edisp(iuout,'   restricts reporting to this sensor id')
             call edisp(iuout,' [-file <BuildAX log file name>]')
             call edisp(iuout,' [-help  this message')
             stop
@@ -1336,6 +1453,10 @@ C Only give feedback if non-DOS.
           i=i+1
           call getarg(i,argument)
           read(argument,*,IOSTAT=IOS,ERR=2)itol
+        elseif(argument(1:5).eq.'-sen ')then
+          i=i+1
+          call getarg(i,argument)
+          read(argument,*,IOSTAT=IOS,ERR=2)irepsen
         else
 
 C Assume argument is an input file without the -file token.
@@ -1425,13 +1546,6 @@ C      write(6,*) totalsecs,' ',juliand,' ',julianfrac
      &    'comparedate: permission error extracting minute.')
       else
         call edisp(iuout,'comparedate: error extracting minute.')
-      endif
-      return
- 1004 if(IOS.eq.2)then
-        call edisp(iuout,
-     &    'comparedate: permission error extracting second.')
-      else
-        call edisp(iuout,'comparedate: error extracting second.')
       endif
       return
       end
