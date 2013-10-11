@@ -1877,7 +1877,7 @@ C Work with local variables.
    3  IW=-4
       WRITE(PELM(1),'(A,1X,A)')    'a Name:',tnam(1:32)
       WRITE(PELM(2),'(A,1X,A)')    'b Note:',tdoc(1:32)
-      WRITE(PELM(3),'(A,1X,F9.3)') 'c Conductivity (W/(m-K)  :',DBCON
+      WRITE(PELM(3),'(A,1X,F10.4)')'c Conductivity (W/(m-K)  :',DBCON
       WRITE(PELM(4),'(A,1X,F8.2)') 'd Density (kg/m**3)      :',DBDEN
       WRITE(PELM(5),'(A,1X,F8.2)') 'e Specific Heat (J/(kg-K):',DBSHT
       WRITE(PELM(6),'(A,1X,F8.3)') 'f Emissivity out (-)     :',EOUT
@@ -3762,9 +3762,9 @@ C If a gap layer include the R values in the display.
           ENDIF
           M=M+1
           CALL EMKEY(M,KEY,IER)
-          WRITE(MLED(M),29)KEY,IL,IPR(IFOC,IL),DTHK(IFOC,IL)*1000.0,
-     &                   PNAM(IL)(1:19)
-  29      FORMAT(A1,I4,I5,F7.1,2X,A)
+          WRITE(MLED(M),29)KEY,IL,DTHK(IFOC,IL)*1000.0,
+     &                   PNAM(IL)(1:26)
+  29      FORMAT(A1,I5,F7.2,2X,A)
 
         ENDIF check_CFC2_or_MLC
   23  CONTINUE

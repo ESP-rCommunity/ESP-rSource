@@ -1204,7 +1204,7 @@ C Reporting based on report level.
       IF(ITRC.GT.1)THEN
         CALL EDISP(ITRU,' ')
         write(OUTSTR,'(2a)')
-     &' Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu|',
+     &' Layer|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu|',
      &' R    |Description'
         CALL EDISP(ITRU,OUTSTR)
         write(OUTSTR,'(2a)')
