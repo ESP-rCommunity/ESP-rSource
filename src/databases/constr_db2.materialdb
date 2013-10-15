@@ -21,7 +21,7 @@
 #  
 # class index |nb items|description (32 char)
 *class, 1,10,Brick
-Category ( 1) was initially named Brick. No other documentation (yet).
+Category ( 1) Brick includes a range of brick types. Based on data traditionally distributed with ESP-r.
 *item,Paviour brick,  1, 1,Paviour brick
 0.960,2000.000,840.000,0.930,0.930,0.700,0.700,12.000,100.0,-
 *item,Breeze block,  2, 1,Breeze block
@@ -44,7 +44,7 @@ Category ( 1) was initially named Brick. No other documentation (yet).
 0.700,1700.000,1000.000,0.900,0.900,0.930,0.930,12.000,100.0,-
 # class index |nb items|description (32 char)
 *class, 2,19,Concrete
-Category ( 2) was initially named Concrete. No other documentation (yet).
+Category ( 2) Concrete includes a mix of concrete types from heavy weight to lightweight insulating types. Based on data traditionally distributed with ESP-r.
 *item,Light mix concrete, 21, 2,Light mix concrete
 0.380,1200.000,653.000,0.900,0.900,0.650,0.650,6.000,100.0,-
 *item,Aerated concrete block, 22, 2,Aerated concrete block
@@ -85,7 +85,7 @@ Category ( 2) was initially named Concrete. No other documentation (yet).
 1.350,2000.000,1000.000,0.900,0.900,0.700,0.700,13.000,100.0,-
 # class index |nb items|description (32 char)
 *class, 3,10,Metal
-Category ( 3) was initially named Metal. No other documentation (yet).
+Category ( 3) Metal has a range of metals, some are the same but are painted differently. Based on data traditionally distributed with ESP-r.
 *item,Copper, 41, 3,Copper
 200.000,8900.000,418.000,0.720,0.720,0.650,0.650,19200.000,5.0,-
 *item,Steel, 42, 3,Steel
@@ -108,7 +108,7 @@ Category ( 3) was initially named Metal. No other documentation (yet).
 60.000,7800.000,502.000,0.120,0.120,0.200,0.200,19200.000,5.0,-
 # class index |nb items|description (32 char)
 *class, 4,19,Wood
-Category ( 4) was initially named Wood. No other documentation (yet).
+Category ( 4) Wood holds a range of wood types. Based on data traditionally distributed with ESP-r.
 *item,Block (wood), 61, 4,Block (wood)
 0.160,800.000,2093.000,0.900,0.900,0.650,0.650,11.000,25.0,-
 *item,Hardboard (medium), 62, 4,Hardboard (medium)
@@ -149,7 +149,7 @@ Category ( 4) was initially named Wood. No other documentation (yet).
 0.130,650.000,1700.000,0.900,0.900,0.700,0.700,576.000,25.0,-
 # class index |nb items|description (32 char)
 *class, 5, 8,Stone
-Category ( 5) was initially named Stone. No other documentation (yet).
+Category ( 5) Stone includes building stone and gravels. Based on data traditionally distributed with ESP-r.
 *item,Sandstone, 81, 5,Sandstone
 1.830,2200.000,712.000,0.900,0.900,0.600,0.600,29.000,200.0,-
 *item,Red granite, 82, 5,Red granite
@@ -168,7 +168,7 @@ Category ( 5) was initially named Stone. No other documentation (yet).
 0.800,2700.000,720.000,0.900,0.900,0.600,0.600,1960.000,200.0,-
 # class index |nb items|description (32 char)
 *class, 6,12,Plaster
-Category ( 6) was initially named Plaster. No other documentation (yet).
+Category ( 6) Plaster includes both tranditional plaster and gypsum plaster boards. Based on data traditionally distributed with ESP-r.
 *item,Dense plaster,101, 6,Dense plaster
 0.500,1300.000,1000.000,0.910,0.910,0.500,0.500,11.000,12.5,-
 *item,Light plaster,102, 6,Light plaster
@@ -195,7 +195,7 @@ Category ( 6) was initially named Plaster. No other documentation (yet).
 0.210,900.000,1000.000,0.910,0.910,0.700,0.700,11.000,12.5,-
 # class index |nb items|description (32 char)
 *class, 7,12,Screeds and renders
-Category ( 7) was initially named Screeds and renders. No other documentation (yet).
+Category ( 7) Screeds are products typically used horizontally and renders are used on walls. Based on data traditionally distributed with ESP-r.
 *item,Lightweight concrete screed,121, 7,Lightweight concrete screed
 0.410,1200.000,840.000,0.900,0.900,0.800,0.800,30.000,50.0,-
 *item,Cast concrete screed,122, 7,Cast concrete screed
@@ -222,7 +222,7 @@ Category ( 7) was initially named Screeds and renders. No other documentation (y
 0.790,1329.000,1000.000,0.910,0.910,0.500,0.500,19.000,50.0,-
 # class index |nb items|description (32 char)
 *class, 8,16,Tiles
-Category ( 8) was initially named Tiles. No other documentation (yet).
+Category ( 8) Tiles includes both floor tiles, ceiling tiles and roof tile. Based on data traditionally distributed with ESP-r.
 *item,Clay tile,141, 8,Clay tile
 0.850,1900.000,837.000,0.900,0.900,0.600,0.600,52.000,6.0,-
 *item,Concrete tile,142, 8,Concrete tile
@@ -257,7 +257,7 @@ Category ( 8) was initially named Tiles. No other documentation (yet).
 1.100,2100.000,1000.000,0.900,0.900,0.700,0.700,1000.000,6.0,-
 # class index |nb items|description (32 char)
 *class, 9,13,Asphalt and bitumen
-Category ( 9) was initially named Asphalt and bitumen. No other documentation (yet).
+Category ( 9) Asphalt and bitumen also includes materials which use bitumen and asphalt like compositions. Based on data traditionally distributed with ESP-r.
 *item,Bitumen felt,161, 9,Bitumen felt
 0.500,1700.000,1000.000,0.900,0.900,0.900,0.900,1000.000,6.0,-
 *item,Roofing felt,162, 9,Roofing felt
@@ -286,7 +286,7 @@ Category ( 9) was initially named Asphalt and bitumen. No other documentation (y
 0.040,160.000,1360.000,0.900,0.900,0.900,0.900,15.000,6.0,-
 # class index |nb items|description (32 char)
 *class,10, 4,Asbestos
-Category (10) was initially named Asbestos. No other documentation (yet).
+Category (10) Asbestos is included for historic reasons, but some regions still use asbestos in building products. Based on data traditionally distributed with ESP-r.
 *item,Asbestos cement,181,10,Asbestos cement
 0.360,1500.000,1000.000,0.900,0.900,0.600,0.600,300.000,6.0,-
 *item,Cement sheet,182,10,Cement sheet
@@ -297,7 +297,7 @@ Category (10) was initially named Asbestos. No other documentation (yet).
 0.160,577.000,840.000,0.900,0.900,0.600,0.600,3.000,6.0,-
 # class index |nb items|description (32 char)
 *class,11,19,Insulation materials (1)
-Category (11) was initially named Insulation materials (1). No other documentation (yet).
+Category (11) Insulation materials (1) is an initial tranche of loose, batt and foam insulating materials. Based on data traditionally distributed with ESP-r.
 *item,Fibreboard,201,11,Fibreboard
 0.060,300.000,1000.000,0.900,0.900,0.500,0.500,13.000,100.0,-
 *item,Woodwool,202,11,Woodwool
@@ -338,7 +338,7 @@ Category (11) was initially named Insulation materials (1). No other documentati
 0.110,480.000,1050.000,0.900,0.900,0.650,0.650,10.000,100.0,-
 # class index |nb items|description (32 char)
 *class,12,12,Carpet
-Category (12) was initially named Carpet. No other documentation (yet).
+Category (12) Carpet includes both natural and synthetic carpets, some differ only in colour. Based on data traditionally distributed with ESP-r.
 *item,Wilton,221,12,Wilton
 0.060,186.000,1360.000,0.900,0.900,0.600,0.600,10.000,5.0,-
 *item,Simulated sheeps wool,222,12,Simulated sheeps wool
@@ -365,7 +365,7 @@ Category (12) was initially named Carpet. No other documentation (yet).
 0.190,1200.000,1470.000,0.900,0.900,0.600,0.600,10.000,5.0,-
 # class index |nb items|description (32 char)
 *class,13,10,Glass
-Category (13) was initially named Glass. No other documentation (yet).
+Category (13) Glass with additional single layer optical properties (some estimated, some still all zero). Based on data traditionally distributed with ESP-r.
 *item,Glass block,241,13,Glass block with placeholder single layer optics
 0.700,3500.000,837.000,0.830,0.830,0.050,0.050,19200.000,6.0,t,0.000,0.000,0.000,0.000,0.000,0.000,0.000,0.000
 *item,Plate glass,242,13,Plate glass with placeholder single layer optics
@@ -388,7 +388,7 @@ Category (13) was initially named Glass. No other documentation (yet).
 30.000,2500.000,750.000,0.840,0.840,0.060,0.060,19200.000,6.0,t,0.000,0.000,0.000,0.000,0.000,0.000,0.000,0.000
 # class index |nb items|description (32 char)
 *class,14, 8,Earth
-Category (14) was initially named Earth. No other documentation (yet).
+Category (14) Earth includes loose materials. Also check the stone category for other gravels. Based on data traditionally distributed with ESP-r.
 *item,Infusorial (9% mc),261,14,Infusorial (9% mc)
 0.090,480.000,180.000,0.900,0.900,0.850,0.850,5.000,200.0,-
 *item,Gravel based,262,14,Gravel based
@@ -407,7 +407,7 @@ Category (14) was initially named Earth. No other documentation (yet).
 1.500,1500.000,2085.000,0.900,0.900,0.700,0.700,5.000,200.0,-
 # class index |nb items|description (32 char)
 *class,15,16,Insulation materials (2)
-Category (15) was initially named Insulation materials (2). No other documentation (yet).
+Category (15) Insulation materials (2) is a second tranche of loose, batt and foam insulating materials. Based on data traditionally distributed with ESP-r.
 *item,Glass Fibre Quilt,281,15,Glass Fibre Quilt
 0.040,12.000,840.000,0.900,0.900,0.650,0.650,30.000,100.0,-
 *item,cavity wall insul,282,15,cavity wall insul
@@ -442,7 +442,7 @@ Category (15) was initially named Insulation materials (2). No other documentati
 0.026,12.000,1030.000,0.900,0.900,0.700,0.700,30.000,100.0,-
 # class index |nb items|description (32 char)
 *class,16, 1,GAPS
-Category (16) holds the implied air material
+Category (16) GAPS holds the implied air material with a legacy index of zero.
 *item,air,  0,16,Air layer with default properties
 0.000,0.000,0.000,0.990,0.990,0.990,0.990,1.000,25.0,g,0.1700,0.1700,0.1700
 *end

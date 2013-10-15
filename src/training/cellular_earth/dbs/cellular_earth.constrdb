@@ -1,5 +1,5 @@
 # composite construction db defined in ../dbs/cellular_earth.constrdb
-# based on materials db ../dbs/cellular.materials.a
+# based on materials db cellular.materialdb
    16     # no of composites 
 # layers  description   optics name   symmetry tag
     5    extern_wall   OPAQ  OPAQUE        NONSYMMETRIC  

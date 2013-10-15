@@ -707,7 +707,6 @@ src
 |-- esruplt     source code for plant component solver
 |-- esruprj     source code for the project manager module (prj)
 |-- esrures     source code for the results analysis module (res)
-|-- esrurun     source code for converting 3rd party descriptions into ESP-r models
 |-- esruvew     source code for a hidden line wire-frame viewer
 |-- esruvld     source code for validation and uncertainty studies
 |-- include     header files for fortran and c code
@@ -765,7 +764,6 @@ esrumrt/Makefile:54:egeometry.F:
 esrunet/Makefile:28:egeometry.F:
 esruprj/Makefile:95:egeometry.F:
 esrures/Makefile:77:egeometry.F:
-esrurun/Makefile:144:egeometry.F:
 
 .ES
 .LP
@@ -2976,7 +2974,6 @@ CHANGE LOG
    U   branches/development_branch/src/esrubld/blibsv.F
    U   branches/development_branch/src/esrubld/input.F
    . . .
-   U   branches/development_branch/src/esrurun/Makefile
    U   branches/development_branch/src/esruvew/azalts.F
    U   branches/development_branch/src/include/esprdbfile.h
    A   branches/development_branch/src/include/ipvdata.h

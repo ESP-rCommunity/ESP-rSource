@@ -205,7 +205,7 @@ C            call delfiledosorunix(lltmp,ider)
      &          LFMAT(1:lnblnk(LFMAT))
             endif
 C Debug.
-            write(6,*) 'working materials ',lworking
+C            write(6,*) 'working materials ',lworking
             CALL mkascimat(IAF,lworking,IER)
           endif
 
@@ -456,10 +456,6 @@ C remember the array index that goes with the menu position (m).
               M=M+1
               iwhicharray(M)=J  ! menu position M relates to data array J
               CALL EMKEY(mclist,KEY,IER)
-
-C Debug.
-              write(6,*) 'menu j m mclist iwhicharray(m) ',j,m,mclist,
-     &          ' ',iwhicharray(m),iwhichmanage(mclist)
               if(matopaq(J).eq.'o')then
                 WRITE(PDBM(M),24)KEY,matdbcon(J),matdbden(J),
      &            matdbsht(J),matdboute(J),matdbouta(J),matdbdrv(J),

@@ -105,7 +105,7 @@ unversioned="no"           # Check svn for versioning info?
 # Buildable targets:
 programs="aco b2e bps dbm dfs cdb c2e clm e2r ecnv eco grd ish mfs mld mrt pdb prj res stats vew"
 # (bld plt, net are not currently built)
-# (net, run, stats are not currently built)
+# (net, stats are not currently built)
 
 # Add leading and trailing spaces for regexp matching
 programs=" ${programs} "
@@ -978,6 +978,11 @@ case $xLibs in
                   X11_found="yes"
                   XINSTALLDIR="/usr/lib/arm-linux-gnueabihf"
                 fi;;
+              armv7l)
+                if [ -d /usr/lib/X11 ] ; then
+                  X11_found="yes"
+                  XINSTALLDIR="/usr/lib/X11"
+                fi;;
               *)
                 if [ -d /usr/X11R6/lib/X11 ] ; then
                   X11_found="yes"
@@ -1118,6 +1123,7 @@ case $platform in
           i686)    fDefType="-DLIN";;
           x86_64)  fDefType="-DLIN";;
           armv6l)  fDefType="-DLIN";;
+          armv7l)  fDefType="-DLIN";;
         esac;;
    cygwin)     fDefType="-DCYGW";;
    mac) case $machine in
@@ -1226,6 +1232,7 @@ case $xLibs in
          i86pc) ULIBS="$ULIBS -lxesru -L${XINSTALLDIR}/lib -lX11";;
          i686) ULIBS="$ULIBS -lxesru -L${XINSTALLDIR}/lib -lX11";;
          armv6l) ULIBS="$ULIBS -lxesru -L${XINSTALLDIR} -lX11";;
+         armv7l) ULIBS="$ULIBS -lxesru -L${XINSTALLDIR} -lX11";;
          x86_64) case $platform in
                  mac) ULIBS="$ULIBS -lxesru -L${XINSTALLDIR}/lib -lX11";;
                  *) ULIBS="$ULIBS -lxesru -L${XINSTALLDIR}/lib64 -lX11";;        
@@ -1301,6 +1308,7 @@ case $platform in
    mac)      LD_FLAGS="";;
    *)  case $machine in
       armv6l) LD_FLAGS="-Wl,--reduce-memory-overheads";;
+      armv7l) LD_FLAGS="-Wl,--reduce-memory-overheads";;
       *)      LD_FLAGS="-Wl,--reduce-memory-overheads";;
       esac;;
 esac
@@ -2339,8 +2347,7 @@ echo " Installing standard databases. This may take some time."
   echo " Done."
   # Construction databases. Note constr_db1.materialdb and constr_db2.materialdb
   # are subsets of constr_db3.materialdb. Perhaps they can be merged into a single file?
-  echo -n "   - Creating binary materials databases..."
-  ./bin/materials_db_conv databases constr.db1.a ${DESTdir}/esp-r/databases/constr.db1 >/dev/null
+  echo -n "   - Copying materials databases..."
   cp ${SRCdir}/databases/ccht_constr.db1 ${DESTdir}/esp-r/databases/ccht_constr.db1
   cp ${SRCdir}/databases/ccht-optics.db1 ${DESTdir}/esp-r/databases/ccht-optics.db1
   cp ${SRCdir}/databases/ccht_na_constr.db1 ${DESTdir}/esp-r/databases/ccht_na_constr.db1
@@ -2351,11 +2358,13 @@ echo " Installing standard databases. This may take some time."
   cp ${SRCdir}/databases/constr_db2.materialdb ${DESTdir}/esp-r/databases/constr_db2.materialdb
   cp ${SRCdir}/databases/constr.db3.a ${DESTdir}/esp-r/databases/constr.db3.a
   cp ${SRCdir}/databases/constr_db3.materialdb ${DESTdir}/esp-r/databases/constr_db3.materialdb
+  cp ${SRCdir}/databases/cellular.materialdb ${DESTdir}/esp-r/databases/cellular.materialdb
   cp ${SRCdir}/databases/north_american.materialdb.a ${DESTdir}/esp-r/databases/north_american.materialdb.a
   cp ${SRCdir}/databases/north_american.materialdb.a ${DESTdir}/esp-r/databases/north_american.materialdb
   cp ${SRCdir}/databases/north_american.constrdb ${DESTdir}/esp-r/databases/north_american.constrdb
   cp ${SRCdir}/databases/material.db3.a ${DESTdir}/esp-r/databases/material.db3.a
   cp ${SRCdir}/databases/CFClayers.db1.a ${DESTdir}/esp-r/databases/CFClayers.db1.a
+  cp ${SRCdir}/databases/material.db4.a ${DESTdir}/esp-r/databases/material.db4.a
 
   cp ${SRCdir}/databases/SBEM.db1 ${DESTdir}/esp-r/databases/SBEM.db1
   cp ${SRCdir}/databases/UK_notional.constrdb ${DESTdir}/esp-r/databases/UK_notional.constrdb
