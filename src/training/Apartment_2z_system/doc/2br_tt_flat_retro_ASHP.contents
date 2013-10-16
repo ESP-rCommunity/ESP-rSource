@@ -1,0 +1,1067 @@
+Synopsis
+ 
+Synopsis of the model A 60m^2 modern 2BR flat with small balcony 2010 constr
+retro ASHP defined in 2br_tt_flat_retro_ASHP.cfg generated on Thu Oct 10
+16:17:02 2013. Notes associated with the model are in ../doc/2br_tt_flat.log
+ 
+The model is located at latitude   52.00 with a longitude difference of   0.00
+from the local time meridian. The year used in simulations is 2007 and
+weekends occur on Saturday and Sunday.
+The site exposure is typical city centre and the ground reflectance is 0.20.
+ 
+ 
+Simulationist name: not yet defined
+Simulationist telephone: not yet defined
+Simulationist address: not yet defined
+Simulationist city: not yet defined
+Simulationist postcode: not yet defined
+ 
+The climate is: ESP test climate and is held in: clm67 with hour centred solar
+data.
+ standard annual weather: clm67
+Calculated ground temp at 0.5m depth
+3.0888 4.3008 6.6610 8.8949 13.123 15.349 15.963 14.834 12.227 8.9770 5.7777 3.6649
+Calculated ground temp at 1.0m depth
+3.6630 4.5020 6.4738 8.4398 12.343 14.560 15.374 14.612 12.434 9.5459 6.5633 4.4524
+Calculated ground temp at 2.0m depth
+4.7588 5.0557 6.4004 7.8990 11.149 13.226 14.259 14.027 12.542 10.298 7.7730 5.7855
+Calculated ground temp at 4.0m depth
+6.4880 6.2779 6.8663 7.7174 9.8661 11.475 12.517 12.771 12.121 10.800 9.0880 7.5409
+ 
+Primary energy conversions (demand kWhr to primary kWhr) are:
+ heating   : 1.530
+ cooling   : 1.440
+ lighting  : 3.600
+ fans&pumps: 3.600
+ small powr: 3.600
+ hot water : 1.530
+ 
+ Emissions (g/kWh) co2  nox  sox
+ heating :  190.00   0.30   0.20
+ cooling :  612.00   2.06   7.57
+ lighting:  612.00   2.06   7.57
+ fan_pump:  612.00   2.06   7.57
+ small pr:  612.00   2.06   7.57
+ hot water: 190.00   0.30   0.20
+An Integrated Performance View has been defined:
+Title : A 60m^2 modern 2BR flat with small balco
+Version   : Version 2br_tt_flat retro ASHP
+synopsis:
+:The 2br_tt_flat
+Images    :   0
+ 
+Simulations to be undertaken:
+____simulations ( 5)____________days descrip___
+1st win Mon-01-Jan to Mon-12-Mar  71 1st winter sea
+spring  Tue-13-Mar to Mon-14-May  63 spring sea
+summer  Tue-15-May to Mon-03-Sep 112 summer sea
+autumn  Tue-04-Sep to Mon-29-Oct  56 autumn sea
+2nd win Tue-30-Oct to Mon-31-Dec  63 2nd winter sea
+ 
+display day Tue-02-Jan.
+display day Wed-14-Mar.
+display day Wed-16-May.
+display day Wed-05-Sep.
+display day Wed-31-Oct.
+ 
+Seasons (as found in climatelist file):
+         winter  spring  summer  autumn  winter
+  start  01-Jan  13-Mar  15-May  04-Sep  30-Oct
+  finish 12-Mar  14-May  03-Sep  29-Oct  31-Dec
+  days     71       63     112      56      63
+ 
+ Ratios for:  winter spring summer autumn winter
+ heating       1.00   1.00   1.00   1.00   1.00
+ cooling       1.00   1.00   1.00   1.00   1.00
+ lighting      1.00   1.00   1.00   1.00   1.00
+ small power   1.00   1.00   1.00   1.00   1.00
+ fans&pumps    1.00   1.00   1.00   1.00   1.00
+ DHW           1.00   1.00   1.00   1.00   1.00
+ 
+Metric                zones area scaling weight  type name
+ 1 Resultant T (degC)    0    1.00 1.000 1.000 zones ocup_zones
+Zones:
+ 
+Demand set,  nb zones, floor area, scaling factor
+ 1 zones          0    1.00 1.000
+Zones:
+ 
+ 
+Databases associated with the model:
+ standard pressure distr: pressc.db1
+ materials              : ../dbs/top_tail.materialdb
+ constructions          : ../dbs/top_tail.constrdb
+ standard plant comp    : plantc.db1
+ standard event profiles: profiles.db2.a
+ optical properties     : ../dbs/top_tail.opticdb
+ standard UK NCM data   : SBEM.db1
+ standard mould isopleth: mould.db1
+ 
+ ____________________________________________________________
+ 
+The model includes ideal controls as follows:
+Control description:
+UK_DE ASHP + sol therm no Buffer
+ 
+Zones control includes  2 functions.
+HEAT
+Details of control loops referenced in the model:
+ 
+ The sensor for function  1 senses dry bulb temperature in livdinkit.
+ The actuator for function  1 is mixed convective/radiant flux in livdinkit.
+There have been  1 periods of validity defined during the year.
+ Control is valid Mon-01-Jan to Mon-31-Dec, 2007 with  1 periods.
+ Per|Start|Sensing  |Actuating  | Control law description
+   1  0.00 db temp   > flux      plant/zone coupling: source plant component 13 plant
+component node 1 coupling type hrA(0s-0a) concurrent. Max heating 99000.00W max cooling
+99000.00W. Extract plant component 0 and extract node 0.
+ 
+ The sensor for function  2 senses dry bulb temperature in br12bthhall.
+ The actuator for function  2 is mixed convective/radiant flux in br12bthhall.
+There have been  1 periods of validity defined during the year.
+ Control is valid Mon-01-Jan to Mon-31-Dec, 2007 with  1 periods.
+ Per|Start|Sensing  |Actuating  | Control law description
+   1  0.00 db temp   > flux      plant/zone coupling: source plant component 14 plant
+component node 1 coupling type hrA(0s-0a) concurrent. Max heating 99000.00W max cooling
+99000.00W. Extract plant component 0 and extract node 0.
+ 
+ Zone to contol loop linkages:
+ zone ( 1) livdinkit    << control  1
+ zone ( 2) br12bthhall  << control  2
+ 
+ Plant control includes  7 loops.
+UK-DE: ASHP - No BufferTank
+ 
+ The sensor for function  1 senses var in compt.  5:DHW_tank @ node no.  1
+ The actuator for function  1 is plant component   1:ASHP @ node no.  1
+There have been  1 periods of validity defined during the year.
+ Control is valid Mon-01-Jan to Mon-31-Dec, 2007 with  5 periods.
+ Per|Start|Sensing  |Actuating  | Control law description
+   1  0.00 dry bulb   > varb     period off
+   2  6.00 dry bulb   > varb     OnOff std mode 1.0 on setpt 45.00C off setpt 55.00C
+output @ hi 1.000 output @ lo 0.000 sensor lag 0.0s actuator lag 0.0s.
+   3  9.00 dry bulb   > varb     period off
+   4 17.00 dry bulb   > varb     OnOff std mode 1.0 on setpt 45.00C off setpt 55.00C
+output @ hi 1.000 output @ lo 0.000 sensor lag 0.0s actuator lag 0.0s.
+   5 23.00 dry bulb   > varb     period off
+ 
+ The sensor for function  2 senses dry bulb temperature in livdinkit.
+ The actuator for function  2 is plant component   1:ASHP @ node no.  1
+There have been  1 periods of validity defined during the year.
+ Control is valid Mon-01-Jan to Mon-31-Dec, 2007 with  5 periods.
+ Per|Start|Sensing  |Actuating  | Control law description
+   1  0.00 dry bulb   > varb     period off
+   2  6.00 dry bulb   > varb     OnOff std mode 1.0 on setpt 19.00C off setpt 23.00C
+output @ hi 1.000 output @ lo 0.000 sensor lag 0.0s actuator lag 0.0s.
+   3  9.00 dry bulb   > varb     period off
+   4 17.00 dry bulb   > varb     OnOff std mode 1.0 on setpt 19.00C off setpt 23.00C
+output @ hi 1.000 output @ lo 0.000 sensor lag 0.0s actuator lag 0.0s.
+   5 23.00 dry bulb   > varb     period off
+ 
+ The sensor for function  3 senses var in compt.  5:DHW_tank @ node no.  1
+ The actuator for function  3 is plant component   4:DHW_divert @ node no.  1
+There have been  1 periods of validity defined during the year.
+ Control is valid Mon-01-Jan to Mon-31-Dec, 2007 with  1 periods.
+ Per|Start|Sensing  |Actuating  | Control law description
+   1  0.00 dry bulb   > varb     Prop numerical max output 0.00 min output 1.00 upper
+setpoint 55.00 lower setpoint 45.00 DS to overcome hystersis 0.00.
+ 
+ The sensor for function  4 senses dry bulb temperature in livdinkit.
+ The actuator for function  4 is plant component   8:radA_trv @ node no.  1
+There have been  1 periods of validity defined during the year.
+ Control is valid Mon-01-Jan to Mon-31-Dec, 2007 with  1 periods.
+ Per|Start|Sensing  |Actuating  | Control law description
+   1  0.00 dry bulb   > varb     Prop numerical max output 0.00 min output 0.25 upper
+setpoint 23.00 lower setpoint 19.00 DS to overcome hystersis 0.00.
+ 
+ The sensor for function  5 senses dry bulb temperature in br12bthhall.
+ The actuator for function  5 is plant component   9:radB_trv @ node no.  1
+There have been  1 periods of validity defined during the year.
+ Control is valid Mon-01-Jan to Mon-31-Dec, 2007 with  1 periods.
+ Per|Start|Sensing  |Actuating  | Control law description
+   1  0.00 dry bulb   > varb     Prop numerical max output 0.00 min output 1.00 upper
+setpoint 23.00 lower setpoint 19.00 DS to overcome hystersis 0.00.
+ 
+ The sensor for function  6 senses var in compt.  1:ASHP @ node no.  1
+ The actuator for function  6 is plant component   1:ASHP @ node no.  1
+There have been  1 periods of validity defined during the year.
+ Control is valid Mon-01-Jan to Mon-31-Dec, 2007 with  1 periods.
+ Per|Start|Sensing  |Actuating  | Control law description
+   1  0.00 undefined > plant     not yet coded for system controls.
+ 
+ The sensor for function  7 sen var diff bet compt. 19:Collector_C @ node  1and compt  5:DHW_tank @ node  3
+ The actuator for function  7 is plant component  16:sol_pump @ node no.  1
+There have been  1 periods of validity defined during the year.
+ Control is valid Mon-01-Jan to Mon-31-Dec, 2007 with  1 periods.
+ Per|Start|Sensing  |Actuating  | Control law description
+   1  0.00 dry bulb   > varb     OnOff std mode -1.0 on setpt 5.00C off setpt 2.00C
+output @ hi 0.000 output @ lo 0.000 sensor lag 0.0s actuator lag 0.0s.
+ 
+The model includes a plant network.
+ 
+ The plant network contains 19 components from plantc.db1
+ 
+ Component: ASHP ( 1) code  1, db reference 102
+ Control data:    0.000
+ Modified parameters for ASHP
+ Component total mass (kg)                          :   110.00
+ Mass weighted average specific heat (J/kgK)        :   2000.0
+ Heat loss modulus (W/K)                            :   1.6000
+ COP model [1 fixed;2 - Carnot efficiency; 3- quadr :   3.0000
+ COP empirical coefficient a0 (-)                   :   6.3972
+ COP empirical coefficient a1 (-)                   : -0.10220
+ COP empirical coefficient a2 (-)                   :  0.50000E-03
+ COP empirical coefficient a3 (-)                   :   0.0000
+ Compressor Model                                   :   3.0000
+ Compressor empirical coefficient a0 (-)            :   2.0020
+ Compressor empirical coefficient a1 (-)            :  0.12700E-01
+ Compressor empirical coefficient a2 (-)            :   0.0000
+ Compressor empirical coefficient a3 (-)            :   0.0000
+ Compressor pf (-)                                  :  0.90000
+ Pump rating (W)                                    :   95.000
+ Pump pf (-)                                        :  0.90000
+ Flowrate at rated pump power (l/s)                 :  0.26000
+ Fan power (W)                                      :   220.00
+ Fan pf (-)                                         :  0.90000
+ Controller power (W)                               :   10.000
+ Controller pf (-)                                  :   1.0000
+ Tout max (degC)                                    :   90.000
+ Tin max (degC)                                     :   65.000
+ Defrost cycle trigger ambient temp (degC)          :   5.0000
+ Defrost cycle time calc (0 - no defrost 1-user def :   0.0000
+ Defrost cycle  calc coefficient b0 or time (-)     :  -6.0000
+ Defrost cycle  calc coefficient b1 (-)             :  0.16000
+ Defrost cycle  lockout time (mins)                 :   40.000
+ Min defrost time (mins)                            :   2.0000
+ Max defrost time (mins)                            :   10.000
+ Temp compensation on/off (0-off 1-on)              :   0.0000
+ Nominal water return temperature (Deg C)           :   50.000
+ Nominal water return deadband (Deg C)              :   6.0000
+ Temp compensation start temperature [Deg C]        :   3.0000
+ Temp compensation end temperature (-)              :   17.000
+ Temp compensation gradient c1 (-)                  :  -1.3000
+Electrical data for component   1
+0.700   1      2.000    230.000   1
+ 
+ 
+ Component: pump ( 2) code  2, db reference  98
+ Control data:    0.000
+ Modified parameters for pump
+ Component total mass (kg)                          :   5.0000
+ Mass weighted average specific heat (J/kgK)        :   2250.0
+ UA modulus from wall to environment (W/K)          :  0.20000
+ Rated total absorbed power (W)                     :   20.000
+ Rated mass flow rate (m^3/s)                       :  0.40000
+ Overall efficiency (-)                             :  0.70000
+ 
+ Component: pump_bpass_cvg ( 3) code  3, db reference  14
+ No Control data
+ Modified parameters for pump_bpass_cvg
+ Component total mass (kg)                          :  0.10000
+ Mass weighted average specific heat (J/kgK)        :   2250.0
+ UA modulus from wall to environment (W/K)          :  0.20000E-01
+ 
+ Component: DHW_divert ( 4) code  4, db reference 112
+ Control data:    1.000
+ Modified parameters for DHW_divert
+ Component total mass (kg)                          :   1.0000
+ Mass weighted average specific heat (J/kgK)        :   500.00
+ UA modulus (W/K)                                   :   3.5000
+ 
+ Component: DHW_tank ( 5) code  5, db reference 104
+ No Control data
+ Modified parameters for DHW_tank
+ Tank volume (m3)                                   :  0.50000
+ Tank height (m)                                    :   1.5000
+ Tank perimeter (m; -1 if cylindrical)              :  -1.0000
+ Height of flow inlet (m)                           :  0.10000
+ Height of flow outlet (m)                          :   1.5000
+ Tank heat loss coefficient (W/m2-K)                :   1.0000
+ Additional destratification conductivity (W/m-K)   :   0.0000
+ Number of nodes                                    :   30.000
+ Internal time steps per simulation time step       :   5.0000
+ Initial temperature of tank (C)                    :   20.000
+ Boiling temperature of fluid (C)                   :   100.00
+ Height of first immersed HX inlet (m)              :   1.5000
+ Height of first immersed HX outlet (m)             :   1.0000
+ Inside diameter of first immersed HX coil (m)      :  0.34000E-01
+ Outside diameter of first immersed HX coil (m)     :  0.38000E-01
+ Diameter of first immersed HX coil (m)             :  0.35100
+ Pitch of first immersed HX coil (distance from one :  0.56000E-01
+ Thermal conductivity of first immersed HX coil mat :   40.000
+ eight of second immersed HX inlet (m)              :  0.60000
+ Height of second immersed HX outlet (m)            :  0.10000
+ Inside diameter of second immersed HX coil (m)     :  0.34000E-01
+ Outside diameter of second immersed HX coil (m)    :  0.38000E-01
+ Diameter of second immersed HX coil (m)            :  0.35100
+ Pitch of second immersed HX coil (distance from on :  0.56000E-01
+ Thermal conductivity of second immersed HX coil ma :   40.000
+ 
+ Component: DHW_draw ( 6) code  6, db reference 105
+ No Control data
+ Modified parameters for DHW_draw
+ Nominal daily hot water draw (l)                   :   120.00
+ Seasonal variation of hot water draw (%)           :   10.000
+ Phase shift of seasonal variation (W/K)            :   28.000
+ Number of holiday periods                          :   3.0000
+ Holiday period [1] start DOY                       :   1.0000
+ Holiday period [1] end DOY                         :   3.0000
+ Holiday period [2] start DOY                       :   181.00
+ Holiday period [2] end DOY                         :   193.00
+ Holiday period [3] start DOY                       :   357.00
+ Holiday period [3] end DOY                         :   365.00
+ Number of concurrent draw periods (start@0.0)      :   5.0000
+ Draw period start time                             :   0.0000
+ Fraction of daily draw taken in period (%)         :   5.0000
+ Draw period start time                             :   6.0000
+ Fraction of daily draw taken in period (%)         :   50.000
+ Draw period start time                             :   9.0000
+ Fraction of daily draw taken in period (%)         :   5.0000
+ Draw period start time                             :   17.000
+ Fraction of daily draw taken in period (%)         :   35.000
+ Draw period start time                             :   23.000
+ Fraction of daily draw taken in period (%)         :   5.0000
+ Number of distinct draw types (-)                  :   4.0000
+ Fraction of daily draw for this type (%)           :   14.000
+ Draw volume flow rate (l/min)                      :   1.0000
+ Flow rate standard deviation (l/min)               :   2.0000
+ Nominal duration (min)                             :   1.0000
+ Draw weekday probability modifier (-)              :   1.0000
+ Draw weekend probability modifier (-)              :   1.0000
+ Fraction of daily draw for this type (%)           :   36.000
+ Draw volume flow rate (l/min)                      :   6.0000
+ Flow rate standard deviation (l/min)               :   2.0000
+ Nominal duration (min)                             :   1.0000
+ Draw weekday probability modifier (-)              :   1.0000
+ Draw weekend probability modifier (-)              :   1.0000
+ Fraction of daily draw for this type (%)           :   10.000
+ Draw volume flow rate (l/min)                      :   12.000
+ Flow rate standard deviation (l/min)               :  0.20000
+ Nominal duration (min)                             :   10.000
+ Draw weekday probability modifier (-)              :  0.70000
+ Draw weekend probability modifier (-)              :   1.4000
+ Fraction of daily draw for this type (%)           :   40.000
+ Draw volume flow rate (l/min)                      :   8.0000
+ Flow rate standard deviation (l/min)               :  0.40000
+ Nominal duration (min)                             :   5.0000
+ Draw weekday probability modifier (-)              :   1.0000
+ Draw weekend probability modifier (-)              :   1.0000
+ Random number generator seed (-)                   :   1234.0
+ 
+ Component: flow_loss ( 7) code  7, db reference  13
+ No Control data
+ Modified parameters for flow_loss
+ Component total mass (kg)                          :   2.0000
+ Mass weighted average specific heat (J/kgK)        :   2250.0
+ UA modulus from wall to environment (W/K)          :   2.0000
+ Hydraulic diameter of pipe (m)                     :  0.15000E-01
+ Length of pipe section (m)                         :   5.0000
+ Cross sectional face area (m^2)                    :  0.17670E-03
+ 
+ Component: radA_trv ( 8) code  8, db reference 112
+ Control data:    0.333
+ Modified parameters for radA_trv
+ Component total mass (kg)                          :   1.0000
+ Mass weighted average specific heat (J/kgK)        :   500.00
+ UA modulus (W/K)                                   :   3.5000
+ 
+ Component: radB_trv ( 9) code  9, db reference 112
+ Control data:    0.999
+ Modified parameters for radB_trv
+ Component total mass (kg)                          :   1.0000
+ Mass weighted average specific heat (J/kgK)        :   500.00
+ UA modulus (W/K)                                   :   3.5000
+ 
+ Component: radB_div_mrg (10) code 10, db reference  14
+ No Control data
+ Modified parameters for radB_div_mrg
+ Component total mass (kg)                          :  0.10000
+ Mass weighted average specific heat (J/kgK)        :   2250.0
+ UA modulus from wall to environment (W/K)          :  0.20000E-01
+ 
+ Component: radA_B_mrg (11) code 11, db reference  14
+ No Control data
+ Modified parameters for radA_B_mrg
+ Component total mass (kg)                          :  0.10000
+ Mass weighted average specific heat (J/kgK)        :   2250.0
+ UA modulus from wall to environment (W/K)          :  0.20000E-01
+ 
+ Component: rads_DHW_mrg (12) code 12, db reference  14
+ No Control data
+ Modified parameters for rads_DHW_mrg
+ Component total mass (kg)                          :  0.10000
+ Mass weighted average specific heat (J/kgK)        :   2250.0
+ UA modulus from wall to environment (W/K)          :  0.20000E-01
+ 
+ Component: radA (13) code 13, db reference  93
+ No Control data
+ Modified parameters for radA
+ Component total mass (kg)                          :   90.000
+ Mass weighted average specific heat (J/kgK)        :   1500.0
+ Nominal heat supply rate (W)                       :   4475.0
+ Nominal supply water temperature (C)               :   70.000
+ Nominal environment temperature (C)                :   20.000
+ Nominal exit water temperature (C)                 :   60.000
+ Radiator Exponent (-)                              :   1.3000
+ Index of 1st wall for defining Te (-)              :   0.0000
+ Weighting factor 1st wall when defining Te (-)     :   0.0000
+ Index of 2nd wall for defining Te (-)              :   0.0000
+ Weighting factor 2nd wall when defining Te (-)     :   0.0000
+ Index of coupled building zone (0-n)               :   1.0000
+ Number of walls used for defining Te (0-n)         :   0.0000
+ 
+ Component: radB (14) code 14, db reference  93
+ No Control data
+ Modified parameters for radB
+ Component total mass (kg)                          :   268.00
+ Mass weighted average specific heat (J/kgK)        :   1500.0
+ Nominal heat supply rate (W)                       :   13425.
+ Nominal supply water temperature (C)               :   70.000
+ Nominal environment temperature (C)                :   20.000
+ Nominal exit water temperature (C)                 :   60.000
+ Radiator Exponent (-)                              :   1.3000
+ Index of 1st wall for defining Te (-)              :   0.0000
+ Weighting factor 1st wall when defining Te (-)     :   0.0000
+ Index of 2nd wall for defining Te (-)              :   0.0000
+ Weighting factor 2nd wall when defining Te (-)     :   0.0000
+ Index of coupled building zone (0-n)               :   2.0000
+ Number of walls used for defining Te (0-n)         :   0.0000
+ 
+ Component: return_loss (15) code 15, db reference  13
+ No Control data
+ Modified parameters for return_loss
+ Component total mass (kg)                          :   2.0000
+ Mass weighted average specific heat (J/kgK)        :   2250.0
+ UA modulus from wall to environment (W/K)          :   2.0000
+ Hydraulic diameter of pipe (m)                     :  0.15000E-01
+ Length of pipe section (m)                         :   5.0000
+ Cross sectional face area (m^2)                    :  0.17670E-03
+ 
+ Component: sol_pump (16) code 16, db reference  98
+ Control data:    0.000
+ Modified parameters for sol_pump
+ Component total mass (kg)                          :   5.0000
+ Mass weighted average specific heat (J/kgK)        :   2250.0
+ UA modulus from wall to environment (W/K)          :  0.20000
+ Rated total absorbed power (W)                     :   5.0000
+ Rated mass flow rate (m^3/s)                       :  0.60000E-01
+ Overall efficiency (-)                             :  0.80000
+ 
+ Component: Collector_A (17) code 17, db reference  84
+ No Control data
+ Modified parameters for Collector_A
+ Collector area (m2)                                :   1.3330
+ Type of efficiency equ. (1=North-American,2=Europe :   2.0000
+ Constant coef. of efficiency equ. (-)              :  0.69400
+ Linear coef. of efficiency equ. (W/m2/C)           :   4.8500
+ Quadratic coef. of efficiency equ. (W/m2/C2)       :   0.0000
+ Collector test flow rate (kg/s)                    :  0.38000E-01
+ Heat capacitance of fluid used for test (J/kg/C)   :   4200.0
+ Inc. angle correction (=1 Fit,=2 Interpolation)    :   1.0000
+ Inc. angle equation linear term coef. (-)          :  0.20000
+ Inc. angle equation quadratic term coef. (-)       :   0.0000
+ Number of data pairs for inc angle correction (-)  :   5.0000
+ 1st inc. angle correction data pair angle (Deg)    :   0.0000
+ 1st inc. angle correction data pair factor (-)     :   1.0000
+ 2nd inc. angle correction data pair angle (Deg)    :   30.000
+ 2nd inc. angle correction data pair factor (-)     :  0.99400
+ 3rd inc. angle correction data pair angle (Deg)    :   45.000
+ 3rd inc. angle correction data pair factor         :  0.96400
+ 4th inc. angle correction data pair angle (Deg)    :   60.000
+ 4th inc. angle correction data pair factor (-)     :  0.82800
+ 5th inc. angle correction data pair angle (Deg)    :   70.000
+ 5th inc. angle correction data pair factor (-)     :  0.74000
+ 6th inc. angle correction data pair angle (Deg)    :   0.0000
+ 6th inc. angle correction data pair factor (-)     :   1.0000
+ 7th inc. angle correction data pair angle (Deg)    :   0.0000
+ 7th inc. angle correction data pair factor (-)     :   1.0000
+ 8th inc. angle correction data pair angle (Deg)    :   0.0000
+ 8th inc. angle correction data pair factor (-)     :   1.0000
+ 9th inc. angle correction data pair angle (Deg)    :   0.0000
+ 9th inc. angle correction data pair factor (-)     :   1.0000
+ 10th inc. angle correction data pair angle (Deg)   :   0.0000
+ 10th inc. angle correction data pair factor (-)    :   1.0000
+ Collector slope (deg. from horizontal)             :   41.000
+ Collector azimuth (deg., N=0, E=90)                :   180.00
+ Mass fraction of propylene glycol (%)              :   50.000
+ Mass of collector (kg)                             :   20.000
+ Collector average capacitance (J/kg-C)             :   4200.0
+ 
+ Component: Collector_B (18) code 18, db reference  84
+ No Control data
+ Modified parameters for Collector_B
+ Collector area (m2)                                :   1.3330
+ Type of efficiency equ. (1=North-American,2=Europe :   2.0000
+ Constant coef. of efficiency equ. (-)              :  0.69400
+ Linear coef. of efficiency equ. (W/m2/C)           :   4.8500
+ Quadratic coef. of efficiency equ. (W/m2/C2)       :   0.0000
+ Collector test flow rate (kg/s)                    :  0.38000E-01
+ Heat capacitance of fluid used for test (J/kg/C)   :   4200.0
+ Inc. angle correction (=1 Fit,=2 Interpolation)    :   1.0000
+ Inc. angle equation linear term coef. (-)          :  0.20000
+ Inc. angle equation quadratic term coef. (-)       :   0.0000
+ Number of data pairs for inc angle correction (-)  :   5.0000
+ 1st inc. angle correction data pair angle (Deg)    :   0.0000
+ 1st inc. angle correction data pair factor (-)     :   1.0000
+ 2nd inc. angle correction data pair angle (Deg)    :   30.000
+ 2nd inc. angle correction data pair factor (-)     :  0.99400
+ 3rd inc. angle correction data pair angle (Deg)    :   45.000
+ 3rd inc. angle correction data pair factor         :  0.96400
+ 4th inc. angle correction data pair angle (Deg)    :   60.000
+ 4th inc. angle correction data pair factor (-)     :  0.82800
+ 5th inc. angle correction data pair angle (Deg)    :   70.000
+ 5th inc. angle correction data pair factor (-)     :  0.74000
+ 6th inc. angle correction data pair angle (Deg)    :   0.0000
+ 6th inc. angle correction data pair factor (-)     :   1.0000
+ 7th inc. angle correction data pair angle (Deg)    :   0.0000
+ 7th inc. angle correction data pair factor (-)     :   1.0000
+ 8th inc. angle correction data pair angle (Deg)    :   0.0000
+ 8th inc. angle correction data pair factor (-)     :   1.0000
+ 9th inc. angle correction data pair angle (Deg)    :   0.0000
+ 9th inc. angle correction data pair factor (-)     :   1.0000
+ 10th inc. angle correction data pair angle (Deg)   :   0.0000
+ 10th inc. angle correction data pair factor (-)    :   1.0000
+ Collector slope (deg. from horizontal)             :   41.000
+ Collector azimuth (deg., N=0, E=90)                :   180.00
+ Mass fraction of propylene glycol (%)              :   50.000
+ Mass of collector (kg)                             :   20.000
+ Collector average capacitance (J/kg-C)             :   4200.0
+ 
+ Component: Collector_C (19) code 19, db reference  84
+ No Control data
+ Modified parameters for Collector_C
+ Collector area (m2)                                :   1.3330
+ Type of efficiency equ. (1=North-American,2=Europe :   2.0000
+ Constant coef. of efficiency equ. (-)              :  0.69400
+ Linear coef. of efficiency equ. (W/m2/C)           :   4.8500
+ Quadratic coef. of efficiency equ. (W/m2/C2)       :   0.0000
+ Collector test flow rate (kg/s)                    :  0.38000E-01
+ Heat capacitance of fluid used for test (J/kg/C)   :   4200.0
+ Inc. angle correction (=1 Fit,=2 Interpolation)    :   1.0000
+ Inc. angle equation linear term coef. (-)          :  0.20000
+ Inc. angle equation quadratic term coef. (-)       :   0.0000
+ Number of data pairs for inc angle correction (-)  :   5.0000
+ 1st inc. angle correction data pair angle (Deg)    :   0.0000
+ 1st inc. angle correction data pair factor (-)     :   1.0000
+ 2nd inc. angle correction data pair angle (Deg)    :   30.000
+ 2nd inc. angle correction data pair factor (-)     :  0.99400
+ 3rd inc. angle correction data pair angle (Deg)    :   45.000
+ 3rd inc. angle correction data pair factor         :  0.96400
+ 4th inc. angle correction data pair angle (Deg)    :   60.000
+ 4th inc. angle correction data pair factor (-)     :  0.82800
+ 5th inc. angle correction data pair angle (Deg)    :   70.000
+ 5th inc. angle correction data pair factor (-)     :  0.74000
+ 6th inc. angle correction data pair angle (Deg)    :   0.0000
+ 6th inc. angle correction data pair factor (-)     :   1.0000
+ 7th inc. angle correction data pair angle (Deg)    :   0.0000
+ 7th inc. angle correction data pair factor (-)     :   1.0000
+ 8th inc. angle correction data pair angle (Deg)    :   0.0000
+ 8th inc. angle correction data pair factor (-)     :   1.0000
+ 9th inc. angle correction data pair angle (Deg)    :   0.0000
+ 9th inc. angle correction data pair factor (-)     :   1.0000
+ 10th inc. angle correction data pair angle (Deg)   :   0.0000
+ 10th inc. angle correction data pair factor (-)    :   1.0000
+ Collector slope (deg. from horizontal)             :   41.000
+ Collector azimuth (deg., N=0, E=90)                :   180.00
+ Mass fraction of propylene glycol (%)              :   50.000
+ Mass of collector (kg)                             :   20.000
+ Collector average capacitance (J/kg-C)             :   4200.0
+ 
+ Nb of plant component connections: 25
+ Con receiving component node type sending component node
+ 
+  1 pump node 1 (from another component.) ASHP node 1 details:     0.00    0.00    0.00
+ 
+  2 pump_bpass_cvg node 1 (from another component.) ASHP node 1 details:     1.00    0.00    0.00
+ 
+  3 pump_bpass_cvg node 1 (from another component.) pump node 1 details:     1.00    0.00    0.00
+ 
+  4 DHW_divert node 1 (from another component.) pump_bpass_cvg node 1 details:     1.00    0.00    0.00
+ 
+  5 DHW_tank node 1 (from another component.) DHW_draw node 1 details:     1.00    0.00    0.00
+ 
+  6 flow_loss node 1 (from another component.) DHW_divert node 3 details:     1.00    0.00    0.00
+ 
+  7 DHW_draw node 1 (from another component.) DHW_tank node 1 details:     1.00    0.00    0.00
+ 
+  8 DHW_tank node 2 (from another component.) DHW_divert node 2 details:     1.00    0.00    0.00
+ 
+  9 radA_trv node 1 (from another component.) flow_loss node 1 details:     1.00    0.00    0.00
+ 
+ 10 radA node 1 (from another component.) radA_trv node 2 details:     1.00    0.00    0.00
+ 
+ 11 radB_trv node 1 (from another component.) radA_trv node 3 details:     1.00    0.00    0.00
+ 
+ 12 radB node 1 (from another component.) radB_trv node 2 details:     1.00    0.00    0.00
+ 
+ 13 radB_div_mrg node 1 (from another component.) radB node 2 details:     1.00    0.00    0.00
+ 
+ 14 radB_div_mrg node 1 (from another component.) radB_trv node 3 details:     1.00    0.00    0.00
+ 
+ 15 radA_B_mrg node 1 (from another component.) radA node 2 details:     1.00    0.00    0.00
+ 
+ 16 radA_B_mrg node 1 (from another component.) radB_div_mrg node 1 details:     1.00    0.00    0.00
+ 
+ 17 rads_DHW_mrg node 1 (from another component.) DHW_tank node 2 details:     1.00    0.00    0.00
+ 
+ 18 rads_DHW_mrg node 1 (from another component.) radA_B_mrg node 1 details:     1.00    0.00    0.00
+ 
+ 19 return_loss node 1 (from another component.) rads_DHW_mrg node 1 details:     1.00    0.00    0.00
+ 
+ 20 ASHP node 1 (from another component.) return_loss node 1 details:     1.00    0.00    0.00
+ 
+ 21 sol_pump node 1 (from another component.) DHW_tank node 3 details:     1.00    0.00    0.00
+ 
+ 22 Collector_A node 1 (from another component.) sol_pump node 1 details:     1.00    0.00    0.00
+ 
+ 23 Collector_B node 1 (from another component.) Collector_A node 1 details:     1.00    0.00    0.00
+ 
+ 24 Collector_C node 1 (from another component.) Collector_B node 1 details:     1.00    0.00    0.00
+ 
+ 25 DHW_tank node 3 (from another component.) Collector_C node 1 details:     1.00    0.00    0.00
+ 
+ No of component containments =  7
+  Component      | Containment descr. | Type
+ 
+ 1  ASHP            zone: br12bthhall      3 details:     2.00    0.00    0.00
+ 
+ 2  flow_loss       zone: br12bthhall      3 details:     2.00    0.00    0.00
+ 
+ 3  return_loss     zone: br12bthhall      3 details:     2.00    0.00    0.00
+ 
+ 4  DHW_tank        zone: br12bthhall      3 details:     2.00    0.00    0.00
+ 
+ 5  Collector_A     outside air            0 details:     0.00    0.00    0.00
+ 
+ 6  Collector_B     outside air            0 details:     0.00    0.00    0.00
+ 
+ 7  Collector_C     outside air            0 details:     0.00    0.00    0.00
+ 
+ ____________________________________________________________
+ 
+ID Zone         Volume|          Surface
+   Name         m^3   | No. Opaque  Transp  ~Floor
+ 1 livdinkit      54.5  15    92.2     4.4    21.8  livdinkit is an open plan living dining kitchen
+ 2 br12bthhall    96.3  29   195.7     3.1    38.5  br12bthhall includes br1 br2 hall bath and cupboard
+   all           151.   44    288.      8.     60.
+ 
+ 
+ Zone livdinkit ( 1) is composed of 15 surfaces and 32 vertices.
+ It encloses a volume of 54.5m^3 of space, with a total surface
+ area of 96.6m^2 & approx floor area of 21.8m^2
+ livdinkit is an open plan living dining kitchen
+ There is 24.000m2 of exposed surface area, 24.000m2 of which is vertical.
+ Outside walls are 89.950 % of floor area & average U of 0.314 & UA of 6.1467
+ Glazing is 20.193 % of floor & 18.333 % facade with average U of 1.897 & UA of 8.3469
+ 
+ A summary of the surfaces in livdinkit( 1) follows:
+ 
+ Sur| Area  |Azim|Elev| surface    |    geometry       | construction |environment
+    | m^2   |deg |deg | name       |optical|locat| use | name         |other side
+  1  15.8    180.   0. right_facade OPAQUE   VERT -     Wall_EW_2002 ||< external
+  2  8.25     90.   0. other        OPAQUE   VERT -     gyp_blk_ptn  ||< identical environment
+  3  4.50      0.   0. ptn_bath_a   OPAQUE   VERT -     gyp_gyp_ptn  ||< ptn_liv_e:br12bthhall
+  4  2.50     90.   0. ptn_bath_b   OPAQUE   VERT -     gyp_gyp_ptn  ||< ptn_liv_d:br12bthhall
+  5  0.820     0.   0. ptn_hall     OPAQUE   VERT -     gyp_gyp_ptn  ||< ptn_liv_c:br12bthhall
+  6  2.50    270.   0. ptn_br_a     OPAQUE   VERT -     gyp_gyp_ptn  ||< ptn_liv_b:br12bthhall
+  7  8.75      0.   0. ptn_br_b     OPAQUE   VERT -     gyp_gyp_ptn  ||< ptn_liv_a:br12bthhall
+  8  1.80    270.   0. fr_facade_a  OPAQUE   VERT -     Wall_EW_2002 ||< external
+  9  1.30    270.   0. fr_facade_b  OPAQUE   VERT -     insul_frame  ||< external
+ 10  0.750   270.   0. fr_facade_c  OPAQUE   VERT -     Wall_EW_2002 ||< external
+ 11  21.8      0.  90. ceiling      OPAQUE   CEIL -     ceiling      ||< identical environment
+ 12  21.8      0. -90. floor        OPAQUE   FLOR -     susp_flr_re  ||< identical environment
+ 13  3.20    270.   0. operable     trip_glz VERT C-WIN tripglz_1.8  ||< external
+ 14  1.20    270.   0. fixed        trip_glz VERT C-WIN tripglz_1.8  ||< external
+ 15  1.68      0.   0. door_nonliv  OPAQUE   VERT DOOR  door         ||< door_liv:br12bthhall
+ 
+ 
+ An hourly solar radiation distribution is used for this zone.
+ Surfaces (all applicable) for shading analysis:
+right_facade fr_facade_a fr_facade_b fr_facade_c operable fixed
+ Insolation sources (all applicable):
+operable fixed
+ 
+ 
+Block X- Y- Z- coords DX- DY- DZ- values Orient Opacity
+  1     0.0     0.0    -0.2     1.2     3.3     0.2     0.0     0.0 1.00 balc_base extern_wall
+  2     0.0     0.0     2.5     1.2     3.3     0.2     0.0     0.0 1.00 balc_top extern_wall
+  3     0.0    -0.2    -0.2     1.2     0.2     2.9     0.0     0.0 1.00 corner extern_wall
+ 
+ Shading patterns have been calculated for this zone.
+ 
+ 
+ Air schedule notes:
+infiltration assuming mid-1990 construction - 0.4ach with 2ach if over
+22C and 3ach if over 24C
+ Control: infil only: zone temp
+ Control Setpoint  Infiltration     Ventilation    Source  temp
+ range             ac/h   m^3/s     ac/h   m^3/s   index   degC
+ Lower    20.00    0.400  0.0061     0.000  0.0000    0     0.000
+ Nominal between 20.0 &  22.0 based on period data.
+ Middle   22.00    2.000  0.0303     0.000  0.0000    0     0.000
+ High     24.00    3.000  0.0454     0.000  0.0000    0     0.000
+ 
+Scheduled air infiltration and ventilation:
+Daytype    Period     Infiltration     Ventilation     From Source
+           id Hours   Rate ac/h m3/s   Rate ac/h m3/s  Zone DegC
+weekdays   1  0 - 24    0.40  0.0061    0.00  0.0000   0     0.00
+saturday   1  0 - 24    0.40  0.0061    0.00  0.0000   0     0.00
+sunday     1  0 - 24    0.40  0.0061    0.00  0.0000   0     0.00
+holiday    1  0 - 24    0.40  0.0061    0.00  0.0000   0     0.00
+ 
+Notes:
+two occupants working with diversity and changes over day types
+compact flour lighting 6W/m2 equivalent and major cooking via gas pf
+via Watt metre testing
+ 
+Daytype   Gain Label    Type    Unit Period Sensible  Latent  Radiant  Convec   p.f +/-  Power Voltage Phase
+          No.                        Hours  Magn.(W) Magn.(W) Frac     Frac     (-) (-)    (W)    (V) (rgb)
+weekdays    1 occupants  people    W    0- 7      0.0      0.0    0.60    0.40    0.00  0    0.0    0.0  1
+weekdays    2 occupants  people    W    7- 8    200.0    100.0    0.60    0.40    0.00  0    0.0    0.0  1
+weekdays    3 occupants  people    W    8- 9    100.0     50.0    0.60    0.40    0.00  0    0.0    0.0  1
+weekdays    4 occupants  people    W    9-17      0.0      0.0    0.60    0.40    0.00  0    0.0    0.0  1
+weekdays    5 occupants  people    W   17-18    100.0     50.0    0.60    0.40    0.00  0    0.0    0.0  1
+weekdays    6 occupants  people    W   18-19    200.0    100.0    0.60    0.40    0.00  0    0.0    0.0  1
+weekdays    7 occupants  people    W   19-22    150.0     80.0    0.60    0.40    0.00  0    0.0    0.0  1
+weekdays    8 occupants  people    W   22-24      0.0      0.0    0.60    0.40    0.00  0    0.0    0.0  1
+weekdays    9 lights     lighting  W    0- 7     10.0      0.0    0.30    0.70    0.53 -1   10.0  220.0  1
+weekdays   10 lights     lighting  W    7- 9    130.0      0.0    0.30    0.70    0.53 -1  130.0  220.0  1
+weekdays   11 lights     lighting  W    9-17      0.0      0.0    0.30    0.70    0.00 -1    0.0    0.0  1
+weekdays   12 lights     lighting  W   17-24    130.0      0.0    0.30    0.70    0.53 -1  130.0  220.0  1
+weekdays   13 other      equipment W    0- 7     30.0      0.0    0.40    0.60    0.60 -1   30.0  220.0  1
+weekdays   14 other      equipment W    7- 8    400.0    300.0    0.40    0.60    0.60 -1  100.0  220.0  1
+weekdays   15 other      equipment W    8- 9     30.0      0.0    0.40    0.60    0.60 -1   30.0  220.0  1
+weekdays   16 other      equipment W    9-17     20.0      0.0    0.40    0.60    0.60 -1   20.0  220.0  1
+weekdays   17 other      equipment W   17-18    100.0    100.0    0.40    0.60    0.60 -1   40.0  220.0  1
+weekdays   18 other      equipment W   18-19    600.0    400.0    0.40    0.60    0.60 -1  100.0  220.0  1
+weekdays   19 other      equipment W   19-24     70.0      0.0    0.40    0.60    0.60 -1   70.0  220.0  1
+ 
+saturday    1 occupants  people    W    0- 7      0.0      0.0    0.60    0.40    0.00  0    0.0    0.0  1
+saturday    2 occupants  people    W    7- 9    200.0    100.0    0.60    0.40    0.00  0    0.0    0.0  1
+saturday    3 occupants  people    W    9-12    100.0     50.0    0.60    0.40    0.00  0    0.0    0.0  1
+saturday    4 occupants  people    W   12-13    200.0    100.0    0.60    0.40    0.00  0    0.0    0.0  1
+saturday    5 occupants  people    W   13-16      0.0      0.0    0.60    0.40    0.00  0    0.0    0.0  1
+saturday    6 occupants  people    W   16-18    100.0     50.0    0.60    0.40    0.00  0    0.0    0.0  1
+saturday    7 occupants  people    W   18-19    200.0    100.0    0.60    0.40    0.00  0    0.0    0.0  1
+saturday    8 occupants  people    W   19-23    150.0     70.0    0.60    0.40    0.00  0    0.0    0.0  1
+saturday    9 occupants  people    W   23-24      0.0      0.0    0.60    0.40    0.00  0    0.0    0.0  1
+saturday   10 lights     lighting  W    0- 7     10.0      0.0    0.30    0.70    0.53 -1   10.0  220.0  1
+saturday   11 lights     lighting  W    7- 9    130.0      0.0    0.30    0.70    0.53 -1  130.0  220.0  1
+saturday   12 lights     lighting  W    9-16      0.0      0.0    0.30    0.70    0.00 -1    0.0    0.0  1
+saturday   13 lights     lighting  W   16-24    130.0      0.0    0.30    0.70    0.53 -1  130.0  220.0  1
+saturday   14 other      equipment W    0- 7     30.0      0.0    0.40    0.60    0.60 -1   30.0  220.0  1
+saturday   15 other      equipment W    7- 9    400.0    300.0    0.40    0.60    0.60 -1  100.0  220.0  1
+saturday   16 other      equipment W    9-12     30.0      0.0    0.40    0.60    0.60 -1   30.0  220.0  1
+saturday   17 other      equipment W   12-13    500.0    300.0    0.40    0.60    0.60 -1  100.0  220.0  1
+saturday   18 other      equipment W   13-17     20.0      0.0    0.40    0.60    0.60 -1   20.0  220.0  1
+saturday   19 other      equipment W   17-18    100.0    100.0    0.40    0.60    0.60 -1  100.0  220.0  1
+saturday   20 other      equipment W   18-19    600.0    400.0    0.40    0.60    0.60 -1  100.0  220.0  1
+saturday   21 other      equipment W   19-24     70.0      0.0    0.40    0.60    0.60 -1   70.0  220.0  1
+ 
+sunday      1 occupants  people    W    0- 8      0.0      0.0    0.60    0.40    0.00  0    0.0    0.0  1
+sunday      2 occupants  people    W    8-10    200.0    100.0    0.60    0.40    0.00  0    0.0    0.0  1
+sunday      3 occupants  people    W   10-12    150.0     80.0    0.60    0.40    0.00  0    0.0    0.0  1
+sunday      4 occupants  people    W   12-13    200.0    100.0    0.60    0.40    0.00  0    0.0    0.0  1
+sunday      5 occupants  people    W   13-14      0.0      0.0    0.60    0.40    0.00  0    0.0    0.0  1
+sunday      6 occupants  people    W   14-18     80.0     40.0    0.60    0.40    0.00  0    0.0    0.0  1
+sunday      7 occupants  people    W   18-19    100.0     50.0    0.60    0.40    0.00  0    0.0    0.0  1
+sunday      8 occupants  people    W   19-20    200.0    100.0    0.60    0.40    0.00  0    0.0    0.0  1
+sunday      9 occupants  people    W   20-24    100.0     50.0    0.60    0.40    0.00  0    0.0    0.0  1
+sunday     10 lights     lighting  W    0- 8     10.0      0.0    0.30    0.70    0.53 -1   10.0  220.0  1
+sunday     11 lights     lighting  W    8-10    130.0      0.0    0.30    0.70    0.53 -1  130.0  220.0  1
+sunday     12 lights     lighting  W   10-16      0.0      0.0    0.30    0.70    0.00 -1    0.0    0.0  1
+sunday     13 lights     lighting  W   16-24    130.0      0.0    0.30    0.70    0.53 -1  130.0  220.0  1
+sunday     14 other      equipment W    0- 8     30.0      0.0    0.40    0.60    0.60 -1   30.0  220.0  1
+sunday     15 other      equipment W    8- 9    400.0    300.0    0.40    0.60    0.60 -1  100.0  220.0  1
+sunday     16 other      equipment W    9-12     30.0      0.0    0.40    0.60    0.60 -1   30.0  220.0  1
+sunday     17 other      equipment W   12-13    400.0    300.0    0.40    0.60    0.60 -1  100.0  220.0  1
+sunday     18 other      equipment W   13-17     20.0      0.0    0.40    0.60    0.60 -1   20.0  220.0  1
+sunday     19 other      equipment W   17-18    100.0    100.0    0.40    0.60    0.60 -1  100.0  220.0  1
+sunday     20 other      equipment W   18-19    600.0    400.0    0.40    0.60    0.60 -1  100.0  220.0  1
+sunday     21 other      equipment W   19-24    100.0      0.0    0.40    0.60    0.60 -1   70.0  220.0  1
+ 
+holiday     1 occupants  people    W    0-24      0.0      0.0    0.60    0.40    0.00  0    0.0    0.0  1
+holiday     2 lights     lighting  W    0-24     10.0      0.0    0.30    0.70    0.53 -1   10.0  220.0  1
+holiday     3 other      equipment W    0-24     20.0     10.0    0.40    0.60    0.60 -1   20.0  220.0  1
+ 
+ 
+ ____________________________________________________________
+ 
+ Zone br12bthhall ( 2) is composed of 29 surfaces and 62 vertices.
+ It encloses a volume of 96.3m^3 of space, with a total surface
+ area of 199.m^2 & approx floor area of 38.5m^2
+ br12bthhall includes br1 br2 hall bath and cupboard
+ There is 17.500m2 of exposed surface area, 17.500m2 of which is vertical.
+ Outside walls are 37.351 % of floor area & average U of 0.303 & UA of 4.3593
+ Glazing is 8.1039 % of floor & 17.829 % facade with average U of 1.897 & UA of 5.9187
+ 
+ A summary of the surfaces in br12bthhall( 2) follows:
+ 
+ Sur| Area  |Azim|Elev| surface    |    geometry       | construction |environment
+    | m^2   |deg |deg | name       |optical|locat| use | name         |other side
+  1  3.00    180.   0. right_facade OPAQUE   VERT -     Wall_EW_2002 ||< external
+  2  8.75    180.   0. ptn_liv_a    OPAQUE   VERT -     gyp_gyp_ptn  ||< ptn_br_b:livdinkit
+  3  2.50     90.   0. ptn_liv_b    OPAQUE   VERT -     gyp_gyp_ptn  ||< ptn_br_a:livdinkit
+  4  0.820   180.   0. ptn_liv_c    OPAQUE   VERT -     gyp_gyp_ptn  ||< ptn_hall:livdinkit
+  5  2.50    270.   0. ptn_liv_d    OPAQUE   VERT -     gyp_gyp_ptn  ||< ptn_bath_b:livdinkit
+  6  4.50    180.   0. ptn_liv_e    OPAQUE   VERT -     gyp_gyp_ptn  ||< ptn_bath_a:livdinkit
+  7  7.00     90.   0. other_a      OPAQUE   VERT -     gyp_blk_ptn  ||< identical environment
+  8  2.50     90.   0. other_b      OPAQUE   VERT -     gyp_blk_ptn  ||< identical environment
+  9  3.32      0.   0. ptn_corid_a  OPAQUE   VERT -     gyp_blk_ptn  ||< identical environment
+ 10  5.00     90.   0. ptn_corid_b  OPAQUE   VERT -     gyp_blk_ptn  ||< identical environment
+ 11  13.8      0.   0. other_c      OPAQUE   VERT -     gyp_blk_ptn  ||< identical environment
+ 12  5.58    270.   0. fr_facade_a  OPAQUE   VERT -     Wall_EW_2002 ||< external
+ 13  5.80    270.   0. fr_facade_b  OPAQUE   VERT -     Wall_EW_2002 ||< external
+ 14  38.5      0.  90. ceiling      OPAQUE   CEIL -     susp_ceil    ||< identical environment
+ 15  38.5      0. -90. floor        OPAQUE   FLOR -     susp_flr_re  ||< identical environment
+ 16  1.20    270.   0. br2_glz      trip_glz VERT C-WIN tripglz_1.8  ||< external
+ 17  1.92    270.   0. br1_glz      trip_glz VERT C-WIN tripglz_1.8  ||< external
+ 18  1.68      0.   0. entry_door   OPAQUE   VERT DOOR  door         ||< identical environment
+ 19  1.68    180.   0. door_liv     OPAQUE   VERT DOOR  door         ||< door_nonliv:livdinkit
+ 20  10.4    180.   0. br1-2ptn     OPAQUE   VERT PARTN gyp_gyp_ptn  ||< br1-2ptn_:br12bthhall
+ 21  10.4      0.   0. br1-2ptn_    OPAQUE   VERT PARTN gyp_gyp_ptn  ||< br1-2ptn:br12bthhall
+ 22  1.61    180.   0. br1a_hall    OPAQUE   VERT PARTN gyp_gyp_ptn  ||< br1a_hall_:br12bthhall
+ 23  1.61      0.   0. br1a_hall_   OPAQUE   VERT PARTN gyp_gyp_ptn  ||< br1a_hall:br12bthhall
+ 24  6.10    270.   0. br1b_hall    OPAQUE   VERT PARTN gyp_gyp_ptn  ||< br1b_hall_:br12bthhall
+ 25  6.10     90.  -0. br1b_hall_   OPAQUE   VERT PARTN gyp_gyp_ptn  ||< br1b_hall:br12bthhall
+ 26  3.68    180.   0. halla_bath   OPAQUE   VERT PARTN gyp_gyp_ptn  ||< halla_bath_:br12bthhall
+ 27  3.68      0.   0. halla_bath_  OPAQUE   VERT PARTN gyp_gyp_ptn  ||< halla_bath:br12bthhall
+ 28  3.45    270.   0. hallb_bath   OPAQUE   VERT PARTN gyp_gyp_ptn  ||< hallb_bath_:br12bthhall
+ 29  3.45     90.   0. hallb_bath_  OPAQUE   VERT PARTN gyp_gyp_ptn  ||< hallb_bath:br12bthhall
+ 
+ 
+ An hourly solar radiation distribution is used for this zone.
+ Insolation sources (all applicable):
+br2_glz br1_glz
+ 
+ 
+ Shading patterns have been calculated for this zone.
+ 
+ 
+ Air schedule notes:
+infiltration assuming mid-1990 construction - 0.4ach
+ Control: infil only: zone temp
+ Control Setpoint  Infiltration     Ventilation    Source  temp
+ range             ac/h   m^3/s     ac/h   m^3/s   index   degC
+ Lower    20.00    0.400  0.0107     0.000  0.0000    0     0.000
+ Nominal between 20.0 &  22.0 based on period data.
+ Middle   22.00    2.000  0.0535     0.000  0.0000    0     0.000
+ High     24.00    3.000  0.0802     0.000  0.0000    0     0.000
+ 
+Scheduled air infiltration and ventilation:
+Daytype    Period     Infiltration     Ventilation     From Source
+           id Hours   Rate ac/h m3/s   Rate ac/h m3/s  Zone DegC
+weekdays   1  0 - 24    0.40  0.0107    0.00  0.0000   0     0.00
+saturday   1  0 - 24    0.40  0.0107    0.00  0.0000   0     0.00
+sunday     1  0 - 24    0.40  0.0107    0.00  0.0000   0     0.00
+holiday    1  0 - 24    0.40  0.0107    0.00  0.0000   0     0.00
+ 
+Notes:
+two occupants with diversity and changes over day types compact flr
+lighting 6W/m2 equivalent small power 20-60W p.f. typical for type.
+ 
+Daytype   Gain Label    Type    Unit Period Sensible  Latent  Radiant  Convec   p.f +/-  Power Voltage Phase
+          No.                        Hours  Magn.(W) Magn.(W) Frac     Frac     (-) (-)    (W)    (V) (rgb)
+weekdays    1 occupants  people    W    0- 7    200.0    100.0    0.60    0.40    0.00  0    0.0    0.0  1
+weekdays    2 occupants  people    W    7- 8    100.0     50.0    0.60    0.40    0.00  0    0.0    0.0  1
+weekdays    3 occupants  people    W    8-16      0.0      0.0    0.60    0.40    0.00  0    0.0    0.0  1
+weekdays    4 occupants  people    W   16-17    100.0     50.0    0.60    0.40    0.00  0    0.0    0.0  1
+weekdays    5 occupants  people    W   17-22      0.0      0.0    0.60    0.40    0.00  0    0.0    0.0  1
+weekdays    6 occupants  people    W   22-24    200.0    200.0    0.60    0.40    0.00  0    0.0    0.0  1
+weekdays    7 lights     lighting  W    0- 7     10.0      0.0    0.30    0.70    0.53 -1   10.0  220.0  1
+weekdays    8 lights     lighting  W    7- 8    230.0      0.0    0.30    0.70    0.53 -1  230.0  220.0  1
+weekdays    9 lights     lighting  W    8-22      0.0      0.0    0.30    0.70    0.00 -1    0.0  220.0  1
+weekdays   10 lights     lighting  W   22-24    230.0      0.0    0.30    0.70    0.53 -1  230.0  220.0  1
+weekdays   11 other      equipment W    0- 7     20.0      0.0    0.40    0.60    0.60 -1   20.0  220.0  1
+weekdays   12 other      equipment W    7- 8     80.0     40.0    0.40    0.60    0.60 -1   80.0  220.0  1
+weekdays   13 other      equipment W    8-19     20.0      0.0    0.40    0.60    0.60 -1   20.0  220.0  1
+weekdays   14 other      equipment W   19-24     60.0      0.0    0.40    0.60    0.60 -1   60.0  220.0  1
+ 
+saturday    1 occupants  people    W    0- 8    200.0    200.0    0.60    0.40    0.00  0    0.0    0.0  1
+saturday    2 occupants  people    W    8-16      0.0      0.0    0.60    0.40    0.00  0    0.0    0.0  1
+saturday    3 occupants  people    W   16-18    100.0     50.0    0.60    0.40    0.00  0    0.0    0.0  1
+saturday    4 occupants  people    W   18-23     20.0     10.0    0.60    0.40    0.00  0    0.0    0.0  1
+saturday    5 occupants  people    W   23-24    200.0    200.0    0.60    0.40    0.00  0    0.0    0.0  1
+saturday    6 lights     lighting  W    0- 7     10.0      0.0    0.30    0.70    0.53 -1   10.0  220.0  1
+saturday    7 lights     lighting  W    7- 8    230.0      0.0    0.30    0.70    0.53 -1  230.0  220.0  1
+saturday    8 lights     lighting  W    8- 9    230.0      0.0    0.30    0.70    0.53 -1  230.0  220.0  1
+saturday    9 lights     lighting  W    9-19      0.0      0.0    0.30    0.70    0.00 -1    0.0  220.0  1
+saturday   10 lights     lighting  W   19-24    200.0      0.0    0.30    0.70    0.53 -1  200.0  220.0  1
+saturday   11 other      equipment W    0- 7     20.0      0.0    0.40    0.60    0.60 -1   20.0  220.0  1
+saturday   12 other      equipment W    7- 8     80.0     40.0    0.40    0.60    0.60 -1   80.0  220.0  1
+saturday   13 other      equipment W    8-19     20.0      0.0    0.40    0.60    0.60 -1   20.0  220.0  1
+saturday   14 other      equipment W   19-24    100.0      0.0    0.40    0.60    0.60 -1  100.0  220.0  1
+ 
+sunday      1 occupants  people    W    0- 8    200.0    200.0    0.60    0.40    0.00  0    0.0    0.0  1
+sunday      2 occupants  people    W    8-16      0.0      0.0    0.60    0.40    0.00  0    0.0    0.0  1
+sunday      3 occupants  people    W   16-18    100.0     50.0    0.60    0.40    0.00  0    0.0    0.0  1
+sunday      4 occupants  people    W   18-23     20.0     10.0    0.60    0.40    0.00  0    0.0    0.0  1
+sunday      5 occupants  people    W   23-24    200.0    200.0    0.60    0.40    0.00  0    0.0    0.0  1
+sunday      6 lights     lighting  W    0- 7     10.0      0.0    0.30    0.70    0.53 -1   10.0  220.0  1
+sunday      7 lights     lighting  W    7- 8    230.0      0.0    0.30    0.70    0.53 -1  230.0  220.0  1
+sunday      8 lights     lighting  W    8- 9    230.0      0.0    0.30    0.70    0.53 -1  230.0  220.0  1
+sunday      9 lights     lighting  W    9-20      5.0      0.0    0.30    0.70    0.53 -1    5.0  220.0  1
+sunday     10 lights     lighting  W   20-24    250.0      0.0    0.30    0.70    0.53 -1  250.0  220.0  1
+sunday     11 other      equipment W    0- 8     20.0      0.0    0.40    0.60    0.60 -1   20.0  220.0  1
+sunday     12 other      equipment W    8-10     80.0     40.0    0.40    0.60    0.60 -1   80.0  220.0  1
+sunday     13 other      equipment W   10-20     20.0      0.0    0.40    0.60    0.60 -1   20.0  220.0  1
+sunday     14 other      equipment W   20-24    100.0      0.0    0.40    0.60    0.60 -1  100.0  220.0  1
+ 
+holiday     1 occupants  people    W    0-24      0.0      0.0    0.60    0.40    0.00  0    0.0    0.0  1
+holiday     2 lights     lighting  W    0-24     10.0      0.0    0.30    0.70    0.53 -1   10.0  220.0  1
+holiday     3 other      equipment W    0-24     20.0     10.0    0.40    0.60    0.60 -1   20.0  220.0  1
+ 
+ 
+ ____________________________________________________________
+ 
+ Project floor area is 60.290m2, wall area is 33.980m2, window area is 7.5200m2.
+ Sloped roof area is 0.00m2, flat roof area is 0.00m2, skylight area is 0.00m2.
+ In contact with ground 0.00m2.
+ There is 41.500m2 of outside surface area, 41.500m2 of which is vertical.
+ 
+ Outside walls are 56.361 % of floor area & average U of 0.309 & UA of 10.506 & max MLC thickness 0.359
+ Glazing is 12.473 % of floor & 18.120 % facade with average U of 1.897 & UA of 14.266
+ 
+ ____________________________________________________________
+ Multi-layer constructions used:
+ 
+ Details of opaque construction: Wall_EW_2002 and overall thickness  0.359
+ 
+ Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
+      |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
+ Ext   102.0     0.770  1700.  1000. 0.90 0.70    12.  0.13 Brick outer leaf : Brick (UK code)
+    2   22.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
+    3  100.0     0.040    25.  1000. 0.90 0.70    30.  2.50 Mineral wool batt 100mm : Insulation (Mineral wool batt default 100mm)
+    4  100.0     1.060  1950.  1000. 0.90 0.40    18.  0.09 concrete block : concrete block (milton keynes)
+    5   22.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
+ Int    13.0     0.210   900.  1000. 0.91 0.70    11.  0.06 Plasterboard (UK code) : Plasterboard (UK code)
+ ISO 6946 U values (horiz/upward/downward heat flow)=  0.303  0.306  0.300 (partition)  0.295
+ 
+Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  0.30
+ External surface admittance Y=  2.72  w=  1.13 decrement factor f=  0.69  phi=  0.53 surface factor f=  0.69  phi=  0.53
+ Partition admittance Y=  2.76  w=  1.13 surface factor f=  0.69  phi=  0.54
+ Total area of Wall_EW_2002 is     32.68
+ 
+ Details of opaque construction: gyp_blk_ptn and overall thickness  0.226
+ 
+ Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
+      |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
+ Ext    13.0     0.190   950.   840. 0.91 0.22    11.  0.07 white gypboard : White paintedd Gypboard
+    2   50.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
+    3  100.0     0.510  1400.  1000. 0.90 0.65    10.  0.20 block inner : Block inner (3% mc)
+    4   50.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
+ Int    13.0     0.190   950.   840. 0.91 0.22    11.  0.07 white gypboard : White paintedd Gypboard
+ ISO 6946 U values (horiz/upward/downward heat flow)=  1.186  1.230  1.133 (partition)  1.072
+ 
+Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  1.17
+ External surface admittance Y=  2.38  w=  1.44 decrement factor f=  0.74  phi=  0.54 surface factor f=  0.74  phi=  0.54
+ Partition admittance Y=  2.59  w=  2.21 surface factor f=  0.76  phi=  0.86
+ Total area of gyp_blk_ptn is     39.82
+ 
+ Details of opaque construction: gyp_gyp_ptn and overall thickness  0.074
+ 
+ Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
+      |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
+ Ext    12.0     0.190   950.   840. 0.91 0.22    11.  0.06 white gypboard : White paintedd Gypboard
+    2   50.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
+ Int    12.0     0.190   950.   840. 0.91 0.22    11.  0.06 white gypboard : White paintedd Gypboard
+ ISO 6946 U values (horiz/upward/downward heat flow)=  2.144  2.292  1.975 (partition)  1.798
+ 
+Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  2.10
+ External surface admittance Y=  2.15  w=  0.62 decrement factor f=  0.75  phi=  0.21 surface factor f=  0.75  phi=  0.21
+ Partition admittance Y=  0.61  w=  5.69 surface factor f=  1.00  phi=  0.28
+ Total area of gyp_gyp_ptn is     88.51
+ 
+ Details of opaque construction: door and overall thickness  0.025
+ 
+ Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
+      |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
+    1   25.0     0.190   700.  2390. 0.90 0.65    12.  0.13 oak : Oak (radial cut)
+ ISO 6946 U values (horiz/upward/downward heat flow)=  3.316  3.682  2.928 (partition)  2.554
+ 
+Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  3.21
+ External surface admittance Y=  3.33  w=  0.61 decrement factor f=  0.61  phi=  0.40 surface factor f=  0.61  phi=  0.40
+ Partition admittance Y=  1.21  w=  5.38 surface factor f=  0.99  phi=  0.56
+ Total area of door is      5.04
+ 
+ Details of transparent construction: tripglz_1.8 with trip_glz_18 optics and overall thickness  0.042
+ 
+ Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
+      |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
+ Ext     6.0     1.050  2500.   750. 0.83 0.05 19200.  0.01 clear float : 4mm clear float glass with optics from UK national method datase for
+    2   12.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
+    3    6.0     1.050  2500.   750. 0.83 0.05 19200.  0.01 clear float : 4mm clear float glass with optics from UK national method datase for
+    4   12.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
+ Int     6.0     1.050  2500.   750. 0.83 0.05 19200.  0.01 clear float : 4mm clear float glass with optics from UK national method datase for
+ ISO 6946 U values (horiz/upward/downward heat flow)=  1.897  2.011  1.763 (partition)  1.620
+ 
+Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  1.86
+ External surface admittance Y=  2.05  w=  1.23 decrement factor f=  0.77  phi=  0.39 surface factor f=  0.77  phi=  0.39
+ Partition admittance Y=  1.08  w=  5.45 surface factor f=  0.99  phi=  0.50
+ 
+ basic tripple glazing air no coatng: with id of: trip_glz_18
+ with 5 layers [including air gaps] and visible trn: 0.70
+ Direct transmission @ 0, 40, 55, 70, 80 deg
+   0.486 0.453 0.387 0.241 0.089
+ Layer| absorption @ 0, 40, 55, 70, 80 deg
+    1  0.171 0.186 0.200 0.217 0.208
+    2  0.001 0.001 0.001 0.001 0.001
+    3  0.118 0.125 0.127 0.116 0.084
+    4  0.001 0.001 0.001 0.001 0.001
+    5  0.082 0.083 0.078 0.058 0.029
+ Total area of tripglz_1.8 is      7.52
+ 
+ Details of opaque construction: insul_frame and overall thickness  0.088
+ 
+ Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
+      |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
+ Ext     4.0   210.000  2700.   880. 0.82 0.72 19200.  0.00 grey cotd alum : Grey coated aluminium
+    2   80.0     0.040    12.   840. 0.90 0.65    30.  2.00 glass fibre quilt : Glass Fibre Quilt
+ Int     4.0   210.000  2700.   880. 0.82 0.72 19200.  0.00 grey cotd alum : Grey coated aluminium
+ ISO 6946 U values (horiz/upward/downward heat flow)=  0.461  0.467  0.452 (partition)  0.442
+ 
+Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  0.46
+ External surface admittance Y=  0.81  w=  3.41 decrement factor f=  0.94  phi=  0.31 surface factor f=  0.94  phi=  0.31
+ Partition admittance Y=  0.70  w=  5.68 surface factor f=  1.00  phi=  0.32
+ Total area of insul_frame is      1.30
+ 
+ Details of opaque construction: susp_ceil and overall thickness  0.013
+ 
+ Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
+      |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
+    1   13.0     0.420  1200.   837. 0.91 0.50    11.  0.03 gypsum plaster : Gypsum based plaster
+ ISO 6946 U values (horiz/upward/downward heat flow)=  4.976  5.850  4.150 (partition)  3.437
+ 
+Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  4.74
+ External surface admittance Y=  4.75  w=  0.10 decrement factor f=  0.43  phi=  0.13 surface factor f=  0.43  phi=  0.13
+ Partition admittance Y=  0.34  w=  5.84 surface factor f=  1.00  phi=  0.16
+ Total area of susp_ceil is     38.50
+ 
+ Details of opaque construction: ceiling linked to ceiling_rev & with overall thickness  0.110
+ 
+ Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
+      |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
+ Ext   100.0     0.040   250.   840. 0.90 0.30     4.  2.50 glasswool : Glasswool (generic)
+ Int    10.0     0.030   290.  2000. 0.90 0.60     8.  0.33 ceiling mineral : Ceiling acoustic tile (mineral fibre based)
+ ISO 6946 U values (horiz/upward/downward heat flow)=  0.333  0.336  0.329 (partition)  0.323
+ 
+Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  0.33
+ External surface admittance Y=  0.82  w=  3.17 decrement factor f=  0.94  phi=  0.30 surface factor f=  0.94  phi=  0.30
+ Partition admittance Y=  0.92  w=  4.35 surface factor f=  0.96  phi=  0.40
+ Total area of ceiling is     21.79
+ 
+ Details of opaque construction: susp_flr_re linked to susp_floor & with overall thickness  0.219
+ 
+ Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
+      |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
+ Ext     4.0    50.000  7800.   502. 0.12 0.20 19200.  0.00 steel : Steel
+    2  140.0     1.400  2100.   653. 0.90 0.65    19.  0.10 heavy mix concrete : Heavy mix concrete
+    3   50.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
+    4   19.0     0.150   800.  2093. 0.91 0.65    96.  0.13 chipboard : Chipboard
+ Int     6.0     0.060   186.  1360. 0.90 0.60    10.  0.10 Wilton : Wilton weave wool carpet
+ ISO 6946 U values (horiz/upward/downward heat flow)=  1.500  1.570  1.415 (partition)  1.321
+ 
+Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  1.48
+ External surface admittance Y=  2.11  w=  1.43 decrement factor f=  0.77  phi=  0.46 surface factor f=  0.77  phi=  0.46
+ Partition admittance Y=  2.46  w=  2.85 surface factor f=  0.81  phi=  0.95
+ Total area of susp_flr_re is     60.29

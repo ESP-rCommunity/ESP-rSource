@@ -2,7 +2,11 @@ Information on plant models.
 
 Filename			Description
 ---------			------------
-2br_tt_flat_2010.pln (.ctl)		Base case systems file model featuring a condensing gas boiler, feeding a
+2br_tt_flat_ave.pln (.ctl)	Base case systems file model featuring a condensing gas boiler, feeding a
 				domestic hot water tank and radiator network.
+2br_tt_flat_retro_ASHP.pln(.elr)	Retrofit of an air source heat pump
+2br_tt_flat_retro_mCHP.pln(.elr)	Retrofit of a micro CHP
+2br_tt_flat_zeroE.pln(.elr)	Adapted for low demands in zeroE variant
+
 
 

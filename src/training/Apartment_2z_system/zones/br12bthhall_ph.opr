@@ -4,7 +4,7 @@
 # ../zones/br12bthhall_ph.opr
 infiltration assuming Passive House elements - 0.03ach
 # control(infil only: zone temp   ), low mid & high setpoints 
- -11    20.000    22.000    24.000
+ -11    20.000    23.000    25.000
 # lower: infil, vent, source, data
      0.030     0.000    0     0.000
 # middle: infil, vent, source, data
