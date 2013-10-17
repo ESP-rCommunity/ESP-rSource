@@ -3517,6 +3517,7 @@ C Add note about CFC modifications...
 
 C geometry.h provides commons G0/G1/G2/G7/precz.
 #include "geometry.h"
+#include "epara.h"
 #include "esprdbfile.h"
 #include "material.h"
       
@@ -4342,7 +4343,7 @@ C << to cancel part way through the process.
             endif
 
 C Ask if user wishes to browse through materials to find suitable
-C reference. Use elistmat to select via materials array.
+C reference. Use (potentially multi-page) elistmat to select via materials array.
             dok=.true.
             check_CFC2_or_MLC_5:
      &      IF(mlctype(ifoc)(1:4).EQ.'CFC2')THEN
@@ -4385,7 +4386,9 @@ C code can recover the details of a confused layer.
      &          OK,dok,nbhelp)
               IF(OK)then
                 iwhich = 0
+                CALL EPMENSV
                 CALL ELISTMAT(iwhich,chdb,'-',matarrayindex,IER)
+                CALL EPMENRC
 C Debug
 C              write(6,*) 'selected matarrayindex iwhich ',
 C     &          matarrayindex,iwhich
@@ -4402,7 +4405,9 @@ C the traditional gap so reset matarrayindex.
      &              ' ','accept','reselect material','abort',
      &              iwair,nbhelp)
                   if(iwair.eq.2)then
+                    CALL EPMENSV
                     CALL ELISTMAT(iwhich,chdb,'-',matarrayindex,IER)
+                    CALL EPMENRC
                     if(iwhich.eq.0)then
                       matarrayindex=0 
                    endif
@@ -4820,7 +4825,9 @@ C menu display.
      &    'materials? (NO keeps the current material)',OK,dok,nbhelp)
           if(OK)then
             iwhich=0
+            CALL EPMENSV
             CALL ELISTMAT(iwhich,chdb,'-',matarrayindex,IER)
+            CALL EPMENRC
 C Debug.
 C            write(6,*) 'selected matarrayindex iwhich ',
 C     &        matarrayindex,iwhich
@@ -4839,7 +4846,9 @@ C     &          matarrayindex,iwhich
               CALL EASKABC('Your selection is a gap. Options:',
      &        ' ','accept','reselect material','abort',iwair,nbhelp)
               if(iwair.eq.2)then
+                CALL EPMENSV
                 CALL ELISTMAT(iwhich,chdb,'-',matarrayindex,IER)
+                CALL EPMENRC
                 if(iwhich.eq.0)then
                   matarrayindex=0   ! a gap assumption
                 endif
