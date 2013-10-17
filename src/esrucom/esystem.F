@@ -1001,7 +1001,7 @@ C Process the file name following *cfcdb and depending on its path
 C set the LCFCDB common block string via call to findwhichdbpath.
         call findwhichdbpath('cfc',lworking,ier)
       elseif(WORD(1:9).eq.'*stdcfcdb')then
-        CALL EGETRM(LOUTSTR,K,LFMAT,'W','CFClayers db',IER)
+        CALL EGETRM(LOUTSTR,K,LCFCDB,'W','CFClayers db',IER)
         ipathcfc=2  ! standard folder for material database
 
       elseif(WORD(1:4).eq.'*evn')then
