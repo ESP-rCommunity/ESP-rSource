@@ -70,7 +70,7 @@ MODULE h3kmodule
    !  3. populate Enabled from the input.xml file
    Type ReportVariable
       integer Identifier !overwriten on the C++ side
-      character(256)	:: VariableName !NUL terminated in C++
+      character(256) :: VariableName !NUL terminated in C++
       character(16)  :: MetaType !NUL terminated in C++
       character(16)  :: VariableType !NUL terminated in C++
       character(512) :: Description !NUL terminated in C++
@@ -757,7 +757,7 @@ CONTAINS
       rvFreeCoolCtlFlag%VariableType = '(-)'
       rvFreeCoolCtlFlag%Description = 'Free cooling control flag'
       Call AddVariable(rvFreeCoolCtlFlag )
-	  
+  
       rvBuildingAllZonesSuppliedEnergyNetFlux%VariableName = 'building/all_zones/supplied_energy/net_flux'
       rvBuildingAllZonesSuppliedEnergyNetFlux%MetaType = 'units'
       rvBuildingAllZonesSuppliedEnergyNetFlux%VariableType = '(W)'

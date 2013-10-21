@@ -128,7 +128,7 @@ C Help text for the menu.
         skydone=.false.
       elseif(INO.EQ.3)then
         CALL EASKI(iryear,' ',' Year ? ',
-     &    1900,'F',2010,'W',1993,'year',IER,nbhelp)
+     &    1900,'F',2051,'W',2007,'year',IER,nbhelp)
       elseif(INO.EQ.4)then
         call edisp(iuout,' ')
         call edisp(iuout,' Date and time for the view... ')

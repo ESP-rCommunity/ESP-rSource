@@ -174,8 +174,8 @@ C Allow user choices of beginning as a simple shape (with image feedback).
         CALL EGETWR(HOLD,K,XO1,-999.9,999.9,'W','X origin',IER)
         CALL EGETWR(HOLD,K,YO1,-999.9,999.9,'W','Y origin',IER)
         CALL EGETWR(HOLD,K,ZO1,-9.9,999.9,'W','Z origin',IER)
-	write(outs,'(a,3f9.4)') 'Origin is ',XO1,YO1,ZO1
-	call edisp(iuout,outs)
+        write(outs,'(a,3f9.4)') 'Origin is ',XO1,YO1,ZO1
+        call edisp(iuout,outs)
 
  242    HOLD=' '
         WRITE(HOLD,'(1x,3f8.3)')DX1,DY1,DZ1
@@ -186,8 +186,8 @@ C Allow user choices of beginning as a simple shape (with image feedback).
         CALL EGETWR(HOLD,K,DY1,0.001,99.9,'W','box depth',IER)
         CALL EGETWR(HOLD,K,DZ1,0.001,99.9,'W','box height',IER)
         if(DX1.lt.0.001.or.DY1.lt.0.001)goto 242
-	write(outs,'(a,3f9.4)') 'Width depth height is ',DX1,DY1,DZ1
-	call edisp(iuout,outs)
+        write(outs,'(a,3f9.4)') 'Width depth height is ',DX1,DY1,DZ1
+        call edisp(iuout,outs)
 
         ANGR=0.
         CALL EASKR(ANGR,' ','Rectangle orientation?',
@@ -232,9 +232,9 @@ C User begins with an extruded shape.
           K=0
           CALL EGETWR(HOLD,K,XX(IW),-999.,999.,'W','flr X',IER)
           CALL EGETWR(HOLD,K,YY(IW),-999.,999.,'W','flr Y',IER)
-	  write(outs,'(a,i3,a,2f9.4)') 'X&Y for v ',IW,' is ',
+          write(outs,'(a,i3,a,2f9.4)') 'X&Y for v ',IW,' is ',
      &      XX(IW),YY(IW)
-	  call edisp(iuout,outs)
+          call edisp(iuout,outs)
    45   CONTINUE
 
 C Allow user to have a 2nd chance to input the vertices.
@@ -728,7 +728,7 @@ C Existing partitions in an imported zone are reset to UNKNOWN.
             IE2(ICCC)=0
             altered = .true.   ! will need to write out geometry
           endif
-	  
+  
 C Update the connection based data structures.
           SSNAME(iccc)=SNAME(NCOMP,icc)
           SSOTF(iccc)=SOTF(icc)
@@ -1790,15 +1790,15 @@ C Check if Unix-based or DOS based.
      &        LSHAD(ICOMP)(1:lnblnk(LSHAD(ICOMP))),' out of date.'
         endif
         if(nh.gt.1)then
-	  if(.NOT.silent)then
+          if(.NOT.silent)then
             CALL PHELPD('files out of date',nh,'-',0,0,IER)
-	  endif  
+          endif  
         endif
       endif
       if(ishold)then
         if(silent)then
-	  IRT=1
-	else
+          IRT=1
+        else
           DOK=.true.
           helptopic='change_for_shading'
           call gethelptext(helpinsub,helptopic,nbhelp)
@@ -1823,8 +1823,8 @@ C If existing db out of date the perform recalculation.
       endif
       if(comold.or.tmcold.or.cfcold)then
         if(silent)then
-	  ok= .true.
-	else
+          ok= .true.
+        else
           DOK=.true.
           helptopic='change_for_constructions'
           call gethelptext(helpinsub,helptopic,nbhelp)

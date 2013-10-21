@@ -2983,7 +2983,7 @@ C Month and day of month of inspection.
 
 C Year for which the energy assessor inspected the building.
         CALL EASKI(Y_inspect,' ','Year of inspection?',
-     &    1900,'W',2080,'W',2009,'year',IERI,nbhelp)
+     &    1900,'W',2051,'W',2013,'year',IERI,nbhelp)
         call tstamp('>','PRJ: edited date of inspection')
         write(outs,'(A,I2,A,I2,A,I4)') 'Inspection date: ',
      &    D_inspect,'  ',M_inspect,'  ',Y_inspect
@@ -3086,7 +3086,7 @@ C Insurance policy start date
         CALL EASKI(S_Minsur,' ','Insurance start (month)?',
      &    1,'W',12,'W',1,'month',IERI,nbhelp)
         CALL EASKI(S_Yinsur,' ','Insurance start (year)?',
-     &    1900,'W',2080,'W',2009,'year',IERI,nbhelp)
+     &    1900,'W',2051,'W',2013,'year',IERI,nbhelp)
         call tstamp('>','PRJ: edited start date of insurance')
         write(outs,'(A,I2,A,I2,A,I4)') 'Insurance policy start date: ',
      &    S_Dinsur,'  ',S_Minsur,'  ',S_Yinsur
@@ -3099,7 +3099,7 @@ C Insurance policy expiry date - year
         CALL EASKI(E_Minsur,' ','Insurance expiry (month)?',
      &    1,'W',12,'W',1,'month',IERI,nbhelp)
         CALL EASKI(E_Yinsur,' ','Insurance expiry (year)?',
-     &    1900,'W',2080,'W',2010,'year',IERI,nbhelp)
+     &    1900,'W',2051,'W',2013,'year',IERI,nbhelp)
         call tstamp('>','PRJ: edited expiry date of insurance')
         write(outs,'(A,I2,A,I2,A,I4)')'Insurance policy expiry date: ',
      &    E_Dinsur,'  ',E_Minsur,'  ',E_Yinsur

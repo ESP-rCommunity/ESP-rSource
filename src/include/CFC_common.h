@@ -234,18 +234,18 @@ C pleats will represent the entire drapery. A cross-section below
 C describes such an enclosure represented by a pleat width, w, and a
 C pleat spacing, s
 C
-C	     w
-C	  <-------->		
+C         w
+C         <-------->
 C    ^  ----------  ^
 C    |  |           |
 C    |  |1st pleat  | s
-C    |  |	        |
-C    |  |	        |
+C    |  |               |
+C    |  |               |
 C  L |  ----------  -
-C    |     	     |
+C    |                |
 C    |  2nd pleat|
-C    |	         |
-C    |	         |
+C    |           |
+C    |           |
 C    -  ----------
 
 C Drape width (mm)
@@ -369,11 +369,11 @@ C SEE IMPORT COMMONS SECTIONS ABOVE FOR VARIABLE DEFINITIONS OF THE FOLLOWING:
       REAL solRF
       REAL solRB
       REAL solT
-	REAL SolTf_tot
-	REAL SolTb_tot
-	REAL SolTf_bd
-	REAL SolTb_bd
-	
+      REAL SolTf_tot
+      REAL SolTb_tot
+      REAL SolTf_bd
+      REAL SolTb_bd
+
       COMMON/CFCvis/visRF(mcom,mcfc,me),
      &              visRB(mcom,mcfc,me),
      &              visT(mcom,mcfc,me)
@@ -406,7 +406,7 @@ C SEE IMPORT COMMONS SECTIONS ABOVE FOR VARIABLE DEFINITIONS OF THE FOLLOWING:
       REAL vb_wr
       REAL vb_t
       CHARACTER vb_VorH*4
-	
+
       COMMON/CFCdrp/drp_w(mcom,mcfc),
      &             drp_s(mcom,mcfc),
      &             drp_Fr(mcom,mcfc)
@@ -414,7 +414,7 @@ C SEE IMPORT COMMONS SECTIONS ABOVE FOR VARIABLE DEFINITIONS OF THE FOLLOWING:
       REAL drp_w
       REAL drp_s
       REAL drp_Fr
-	
+
       COMMON/CFCbug/bug_d(mcom,mcfc),
      &             bug_s(mcom,mcfc),
      &             bug_Emis(mcom,mcfc)
@@ -422,7 +422,7 @@ C SEE IMPORT COMMONS SECTIONS ABOVE FOR VARIABLE DEFINITIONS OF THE FOLLOWING:
       REAL bug_d
       REAL bug_s
       REAL bug_Emis
-	
+
       COMMON/CFCgas/rmlr_mass(mcom,mcfc,me),
      &              cond_A(mcom,mcfc,me),
      &              cond_B(mcom,mcfc,me),
@@ -467,7 +467,7 @@ C Common to save effective longwave properties in
 
 C Effective emissivity of each element
       REAL lwE_eff
-	
+
 C Effective transmittance of each element
       REAL lwT_eff
 

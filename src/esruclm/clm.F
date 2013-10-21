@@ -917,7 +917,7 @@ C asking user which year to transfer.
           helptopic='clm_year_is_required'
           call gethelptext(helpinsub,helptopic,nbhelp)
           CALL EASKI(IYEAR,' ','Which year to import? ',
-     &             1900,'W',2020,'W',2000,'year',IER,nbhelp)
+     &             1900,'W',2051,'W',2007,'year',IER,nbhelp)
           CLMLOC=' '
           helptopic='clm_site_name'
           call gethelptext(helpinsub,helptopic,nbhelp)

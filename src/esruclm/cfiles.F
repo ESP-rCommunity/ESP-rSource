@@ -118,7 +118,7 @@ C If the user is not requesting new site data then skip over lines.
 
           CALL STRIPC(IUNIT,OUTSTR,4,ND,1,'yr lat lng idngh',IER)
           K=0
-          CALL EGETWI(OUTSTR,K,IYEAR,1900,2020,'W','year',IER)
+          CALL EGETWI(OUTSTR,K,IYEAR,1900,2051,'W','year',IER)
           CALL EGETWR(OUTSTR,K,CLAT,-90.,90.,'W','CLAT',IER)
           CALL EGETWR(OUTSTR,K,CLONG,-15.,15.,'W','CLONG',IER)
           CALL EGETWI(OUTSTR,K,IDNGH,0,123,'W','IDNGH',IER)
@@ -1141,7 +1141,7 @@ C If the older format read a line of the file.
           endif
           K=0
           CALL EGETWI(OUTSTR,K,isite,0,999,'W','site index',IER)
-          CALL EGETWI(OUTSTR,K,iyr,1900,2020,'W','year index',IER)
+          CALL EGETWI(OUTSTR,K,iyr,1900,2051,'W','year index',IER)
           if(iyr.lt.iyear) cycle   ! if not yet the correct year read again.
           if(iyr.gt.iyear) exit scan   ! if past the correct year write tail.
 
@@ -2078,7 +2078,7 @@ C (35) Liquid precipitation rate mm/hr < real >
 C Loop through days. If first line then set the year.
         irecloop=irecloop+1
         K=0
-        CALL EGETWI(OUTSTR,K,lyear,1900,2020,'-','line year',IER)
+        CALL EGETWI(OUTSTR,K,lyear,1900,2051,'-','line year',IER)
         if(irecloop.eq.1) IYEAR=lyear
         CALL EGETWI(OUTSTR,K,lmonth,1,12,'W','line month',IER)
         CALL EGETWI(OUTSTR,K,lday,1,31,'W','line day',IER)

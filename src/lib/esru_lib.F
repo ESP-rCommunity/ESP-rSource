@@ -4535,7 +4535,7 @@ C Reset string index K
 C Get end day and year
             write(HOLD,'(I4,I5)') iedoy,iEYr
             CALL EASKS(HOLD,PROMP1,' End day and year?',16,
-     &      ' 365 2000 ','end day and year',IER,2)
+     &      ' 365 2007 ','end day and year',IER,2)
 
             CALL EGETWI(HOLD,K,iedoy,1,365,'F','end doy',IER)
             if  ( ier .ne. 0 ) BDateok = .false.
@@ -4570,7 +4570,7 @@ C Append year to string
             H(3)='not presently supported.'
             CALL EASKS(HOLD,PROMP1,
      &        ' Start day, month & year (DD MM YYYY)?',
-     &        16,' 1 1 2000','start day, month and year',IER,3)
+     &        16,' 1 1 2007','start day, month and year',IER,3)
           endif
 
 C Error handling.
@@ -4644,7 +4644,7 @@ C Get day, month & year  and append year to string.
 
               CALL EASKS(HOLD,PROMP1,
      &          ' End day, month & year (DD MM YYYY)?',
-     &          16,' 31 12 2000','end day, month and year',IER,3)
+     &          16,' 31 12 2007','end day, month and year',IER,3)
 
             endif
 
@@ -6542,7 +6542,7 @@ C Parse time phrase in the form 11:13:16
         read(WORD(1:2),*,IOSTAT=IOS,ERR=1002)ihrod(i)
         read(WORD(4:5),*,IOSTAT=IOS,ERR=1003)imohr(i)
         read(WORD(7:8),*,IOSTAT=IOS,ERR=1004)isohr(i)
-        CALL EGETWI(datetest,K,iyears(i),1970,2010,'-','year',IER)
+        CALL EGETWI(datetest,K,iyears(i),1900,2051,'-','year',IER)
   42  continue
 
 C First compare the years. If the same compare the months.

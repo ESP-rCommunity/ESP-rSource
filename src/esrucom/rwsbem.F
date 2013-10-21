@@ -849,7 +849,7 @@ C If the 2nd line of the file is the UPR then do not jump back to 42.
         K=26
         CALL EGETWI(OUTSTR,K,D_inspect,1,31,'W','NCM insp_day',IER)
         CALL EGETWI(OUTSTR,K,M_inspect,1,12,'W','insp_month',IER)
-        CALL EGETWI(OUTSTR,K,Y_inspect,1900,2080,'W','insp_year',IER)
+        CALL EGETWI(OUTSTR,K,Y_inspect,1900,2051,'W','insp_year',IER)
         CALL STRIPC(IUF,OUTSTR,99,ND,1,'NCM Accr_Scheme',IER)
         K=13
         CALL EGETRM(OUTSTR,K,Accr_Scheme,'W','NCM Accr_Scheme',IER)
@@ -880,12 +880,12 @@ C If the 2nd line of the file is the UPR then do not jump back to 42.
         K=37
         CALL EGETWI(OUTSTR,K,S_Dinsur,1,31,'W','insStartDay',IER)
         CALL EGETWI(OUTSTR,K,S_Minsur,1,12,'W','insStartMonth',IER)
-        CALL EGETWI(OUTSTR,K,S_Yinsur,1900,2080,'W','insStartYear',IER)
+        CALL EGETWI(OUTSTR,K,S_Yinsur,1900,2051,'W','insStartYear',IER)
         CALL STRIPC(IUF,OUTSTR,99,ND,1,'NCM insExpiry_date',IER)
         K=39
         CALL EGETWI(OUTSTR,K,E_Dinsur,1,31,'W','insExpDay',IER)
         CALL EGETWI(OUTSTR,K,E_Minsur,1,12,'W','insExpMonth',IER)
-        CALL EGETWI(OUTSTR,K,E_Yinsur,1900,2080,'W','insExpYear',IER)        
+        CALL EGETWI(OUTSTR,K,E_Yinsur,1900,2051,'W','insExpYear',IER)        
         CALL STRIPC(IUF,OUTSTR,99,ND,1,'NCM insCoverLimit',IER)
         K=31
         CALL EGETWI(OUTSTR,K,pi_limit,0,0,'-','insCoverLimit',IER)

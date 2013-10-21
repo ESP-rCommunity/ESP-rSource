@@ -1539,7 +1539,7 @@ C Fill common blocks
         SUPCMP(ICMP,6)=REAL(RIHAS(3))
         SUPCMP(ICMP,7)=REAL(RIHAS(4))
       ENDIF
-	
+
       RETURN
       END
 
