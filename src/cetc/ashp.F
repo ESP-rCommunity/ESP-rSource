@@ -151,11 +151,15 @@ c temperature of the heat pump. In this case the heat pump is off and the
 c full load is satisfied by the backup heat source if it has enough 
 c capacity. The minimum temperature is based on the default in the DOE-2
 c computer program
-      ashp_temp_min = -12.22
+      ashp_temp_min = cutoff_temp(isys)
       if(TP.lt.ashp_temp_min) then
 c Estimate the plr of the backup heat source
+        
         plrb = PLR(heating_load,ss_capacity(ibackup_sys_num(isys)),
      &         fan_power(isys),ifan_operation(isys))
+     
+
+     
       endif
 
 
