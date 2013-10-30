@@ -28,6 +28,9 @@ C  EDWALL: Edit construction common block data.
 C  MKBPRC: Creates a binary materials db based on the
 C          current contents of an ASCII file. 
 C  MLCREFS: returns true/false if mlc referenced within current zone scope.
+C  GVALUE: Calculate g-value optical properties of systems given info on 
+C          individual glazing layers. In accordance with BS EN 410:1998
+C  allmat: Presents a list of all materials to select from.
 
 C ************* ELISTMAT 
 C ELISTMAT: Controls display and editing of materials commons.
@@ -815,7 +818,7 @@ C state of the menu when doing this).
               GOTO 3   ! recreate and display inner menu
             endif
           
-            PER2=10.0
+            PER2=100.0-(PER1*100.0)  ! the balance from 100 percent
             CALL EASKR(PER2,' ','Second material % in the layer: ',
      &            0.1,'W',99.9,'W',1.,'2nd material %',IER,nbhelp)
             PER2=PER2*0.01
@@ -858,12 +861,21 @@ C assign -99 and make up initial name based on the original.
                 matlegindex(ILNE)=-99
               endif
 
+C User to confirm or alter the suggested material name.
+              iln1=lnblnk(matname(ILNE))
+              write(t32,'(a)') matname(ILNE)(1:iln1)
+              CALL EASKS(t32,'Name of non-homogeneous material',
+     &          'confirm:',32,' ','material name',IER,nbhelp)
+              write(matname(ILNE),'(a)') t32(1:lnblnk(t32))
+
 C If there is room add a note about its origin.
               ils=lnblnk(matdoc(IWHICH))
               iln=lnblnk(matname(IWHICH))
+              iln1=lnblnk(matname(ILNE))
               iln2=lnblnk(matname(IWHICH2))
               if(ils.le.200)then
-                write(matdoc(ILNE),'(5a,2f5.2,a)') ' Derived from ',
+                write(matdoc(ILNE),'(6a,2f6.3,a)') 
+     &            matname(ILNE)(1:iln1),' derived from ',
      &            matname(IWHICH)(1:iln),' & ',
      &            matname(IWHICH2)(1:iln2),' (',PER1,PER2,')'
               else
@@ -1075,12 +1087,9 @@ C CLSSEL (36 char) is an array for menu items for the selected class.
       CHARACTER KEY*1,PDBM*76,outs*124
       CHARACTER xfile*144,tg*1,delim*1,t32*32,t248*248
       character lworking*144,fs*1
-      logical closemat1,closemat2
+      logical closemat1
       logical mod   ! to signal whether an item has been altered.
       logical unixok
-      real per1,per2   ! percentages of material for non-homogeneous layer
-      integer iwhich2  ! 2nd material array index
-      integer idb,idb2 ! the two legacy indices selected
       integer NCO,ICO,NITMS,INO,IW  ! max items and current menu item
       integer ilist, imax, J
 
@@ -1109,7 +1118,6 @@ C Assume no changes to db amd user has not entered password.
       t32 = ' '
       IAF=IFIL+1
       iwhich=1   ! initial material selections
-      iwhich2=1
 
 C Check that the CFClayers db is not empty.
     4 IER=0
@@ -1151,13 +1159,13 @@ C Gather the names of the various classes and present this list.
 
 C If a long list include page facility text.      
       IF(IPFLG.EQ.0)THEN
-        CLSDES(M+1)='  _____________________________  '
+        CLSDES(M+1)='  __________________________  '
       ELSE
         WRITE(CLSDES(M+1),15)IPM,MPM 
    15   FORMAT     ('0 -----Page: ',I2,' of ',I2,' -------')
       ENDIF
 
-      !CLSDES(M+1)=  '  __________________________  '
+      !CLSDES(M+1)= '  __________________________  '
       if(ACTION.eq.'M'.or.ACTION.eq.'m')then
         CLSDES(M+2)='+ add a classification        '
         CLSDES(M+3)='! list database entries       '
@@ -1869,7 +1877,7 @@ C Work with local variables.
    3  IW=-4
       WRITE(PELM(1),'(A,1X,A)')    'a Name:',tnam(1:32)
       WRITE(PELM(2),'(A,1X,A)')    'b Note:',tdoc(1:32)
-      WRITE(PELM(3),'(A,1X,F9.3)') 'c Conductivity (W/(m-K)  :',DBCON
+      WRITE(PELM(3),'(A,1X,F10.4)')'c Conductivity (W/(m-K)  :',DBCON
       WRITE(PELM(4),'(A,1X,F8.2)') 'd Density (kg/m**3)      :',DBDEN
       WRITE(PELM(5),'(A,1X,F8.2)') 'e Specific Heat (J/(kg-K):',DBSHT
       WRITE(PELM(6),'(A,1X,F8.3)') 'f Emissivity out (-)     :',EOUT
@@ -2166,8 +2174,6 @@ C Passed parameters.
       integer index  ! material array index
       logical mod    ! set to true if modified
       integer ier    ! non-zero if there is an issue
-
-      COMMON/OUTIN/IUOUT,IUIN
 
       DIMENSION PELM(30)
       CHARACTER PELM*40,tnam*32,tdoc*248,message*32
@@ -3511,6 +3517,7 @@ C Add note about CFC modifications...
 
 C geometry.h provides commons G0/G1/G2/G7/precz.
 #include "geometry.h"
+#include "epara.h"
 #include "esprdbfile.h"
 #include "material.h"
       
@@ -3756,9 +3763,9 @@ C If a gap layer include the R values in the display.
           ENDIF
           M=M+1
           CALL EMKEY(M,KEY,IER)
-          WRITE(MLED(M),29)KEY,IL,IPR(IFOC,IL),DTHK(IFOC,IL)*1000.0,
-     &                   PNAM(IL)(1:19)
-  29      FORMAT(A1,I4,I5,F7.1,2X,A)
+          WRITE(MLED(M),29)KEY,IL,DTHK(IFOC,IL)*1000.0,
+     &                   PNAM(IL)(1:26)
+  29      FORMAT(A1,I5,F7.2,2X,A)
 
         ENDIF check_CFC2_or_MLC
   23  CONTINUE
@@ -4336,7 +4343,7 @@ C << to cancel part way through the process.
             endif
 
 C Ask if user wishes to browse through materials to find suitable
-C reference. Use elistmat to select via materials array.
+C reference. Use (potentially multi-page) elistmat to select via materials array.
             dok=.true.
             check_CFC2_or_MLC_5:
      &      IF(mlctype(ifoc)(1:4).EQ.'CFC2')THEN
@@ -4379,7 +4386,9 @@ C code can recover the details of a confused layer.
      &          OK,dok,nbhelp)
               IF(OK)then
                 iwhich = 0
+                CALL EPMENSV
                 CALL ELISTMAT(iwhich,chdb,'-',matarrayindex,IER)
+                CALL EPMENRC
 C Debug
 C              write(6,*) 'selected matarrayindex iwhich ',
 C     &          matarrayindex,iwhich
@@ -4396,7 +4405,9 @@ C the traditional gap so reset matarrayindex.
      &              ' ','accept','reselect material','abort',
      &              iwair,nbhelp)
                   if(iwair.eq.2)then
+                    CALL EPMENSV
                     CALL ELISTMAT(iwhich,chdb,'-',matarrayindex,IER)
+                    CALL EPMENRC
                     if(iwhich.eq.0)then
                       matarrayindex=0 
                    endif
@@ -4814,7 +4825,9 @@ C menu display.
      &    'materials? (NO keeps the current material)',OK,dok,nbhelp)
           if(OK)then
             iwhich=0
+            CALL EPMENSV
             CALL ELISTMAT(iwhich,chdb,'-',matarrayindex,IER)
+            CALL EPMENRC
 C Debug.
 C            write(6,*) 'selected matarrayindex iwhich ',
 C     &        matarrayindex,iwhich
@@ -4833,7 +4846,9 @@ C     &          matarrayindex,iwhich
               CALL EASKABC('Your selection is a gap. Options:',
      &        ' ','accept','reselect material','abort',iwair,nbhelp)
               if(iwair.eq.2)then
+                CALL EPMENSV
                 CALL ELISTMAT(iwhich,chdb,'-',matarrayindex,IER)
+                CALL EPMENRC
                 if(iwhich.eq.0)then
                   matarrayindex=0   ! a gap assumption
                 endif
@@ -5136,7 +5151,7 @@ C Depending on the connection type, add the full or half area of surface.
       return
       end
       
-C ******************* GVALUE *******************
+C **************************************
 C Calculate g-value optical properties of systems given info on 
 C individual glazing layers. In accordance with BS EN 410:1998
 
@@ -5228,7 +5243,7 @@ C Parameters
 
 C      COMMON/OUTIN/IUOUT,IUIN
       DIMENSION VERT(35)
-      CHARACTER VERT*68,KEY*1
+      CHARACTER VERT*80,KEY*1
 C      character outs*124
       integer MVERT,IVERT ! max items and current menu item
 
@@ -5265,29 +5280,29 @@ C current menu line index. Build up text strings for the menu.
           if(matopaq(L).eq.'o')then
             WRITE(VERT(M),24)KEY,matdbcon(L),matdbden(L),
      &        matdbsht(L),matdboute(L),matdbouta(L),matdbdrv(L),
-     &        matname(L)(1:24)
+     &        matname(L)(1:32)
    24       FORMAT(A1,F8.3,F6.0,F7.0,F5.2,F5.2,F7.0,1X,A)
           elseif(matopaq(L).eq.'-')then
             WRITE(VERT(M),25)KEY,matdbcon(L),matdbden(L),
      &        matdbsht(L),matdboute(L),matdbouta(L),matdbdrv(L),
-     &        matname(L)(1:8),': ',matdoc(L)(1:17)
+     &        matname(L)(1:12),': ',matdoc(L)(1:25)
    25       FORMAT(A1,F8.3,F6.0,F7.0,F5.2,F5.2,F7.0,1X,3A)
           elseif(matopaq(L).eq.'t')then
             WRITE(VERT(M),25)KEY,matdbcon(L),matdbden(L),
      &        matdbsht(L),matdboute(L),matdbouta(L),matdbdrv(L),
-     &        matname(L)(1:8),': ',matdoc(L)(1:17)
+     &        matname(L)(1:12),': ',matdoc(L)(1:25)
           elseif(matopaq(L).eq.'g')then
             WRITE(VERT(M),25)KEY,matdbcon(L),matdbden(L),
      &        matdbsht(L),matdboute(L),matdbouta(L),matdbdrv(L),
-     &        matname(L)(1:8),': ',matdoc(L)(1:17)
+     &        matname(L)(1:12),': ',matdoc(L)(1:25)
           elseif(matopaq(L).eq.'h')then
             WRITE(VERT(M),25)KEY,matdbcon(L),matdbden(L),
      &        matdbsht(L),matdboute(L),matdbouta(L),matdbdrv(L),
-     &        matname(L)(1:8),': ',matdoc(L)(1:17)
+     &        matname(L)(1:12),': ',matdoc(L)(1:25)
           else
             WRITE(VERT(M),24)KEY,matdbcon(L),matdbden(L),
      &        matdbsht(L),matdboute(L),matdbouta(L),matdbdrv(L),
-     &        matname(L)(1:24)
+     &        matname(L)(1:32)
           endif
         ENDIF
    10 CONTINUE
