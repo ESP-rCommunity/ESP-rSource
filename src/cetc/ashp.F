@@ -140,28 +140,6 @@ C      integer GSHP_HP_mode,GCEP_HP_mode
      &     ASHP_COP,cop,time_step,TIME_INTERVAL,ASHP_ENERGY,ASHP_PLF,
      &     total_sys_heat_cap
 
-c The simulation procedure of the energy consumption of the air-source
-c heat pump system depends on the initial estimate of the part-load ratio 
-c plrhp and the temperature control strategy employed. Given this information
-c it is also possible to estimate the energy consumption of the backup 
-c heating system.
-
-c Check whether the outdoor temperature is below the minimum operating
-c temperature of the heat pump. In this case the heat pump is off and the 
-c full load is satisfied by the backup heat source if it has enough 
-c capacity. The minimum temperature is based on the default in the DOE-2
-c computer program
-      ashp_temp_min = cutoff_temp(isys)
-      if(TP.lt.ashp_temp_min) then
-c Estimate the plr of the backup heat source
-        
-        plrb = PLR(heating_load,ss_capacity(ibackup_sys_num(isys)),
-     &         fan_power(isys),ifan_operation(isys))
-     
-
-     
-      endif
-
 
 c GSHP 
 c If the system being modelled is a GSHP, then the capacity
@@ -181,14 +159,41 @@ c entering water temperature.
         ss_heat_pump_cap = GSHP_CAP(ss_capacity(isys),GCEP_EWT,
      &                              GCEP_HP_mode)
       else
+
+c The simulation procedure of the energy consumption of the air-source
+c heat pump system depends on the initial estimate of the part-load ratio 
+c plrhp and the temperature control strategy employed. Given this information
+c it is also possible to estimate the energy consumption of the backup 
+c heating system.
+
+c Check whether the outdoor temperature is below the minimum operating
+c temperature of the heat pump. In this case the heat pump is off and the 
+c full load is satisfied by the backup heat source if it has enough 
+c capacity. The minimum temperature is based on the default in the DOE-2
+c computer program
+        ashp_temp_min = cutoff_temp(isys)
+
+        write (*,*) "ASHP -> ", TP , ashp_temp_min 
+
+        if(TP.lt.ashp_temp_min) then
+c Estimate the plr of the backup heat source
+          ss_heat_pump_cap = 0. 
+          plrb = PLR(heating_load,ss_capacity(ibackup_sys_num(isys)),
+     &           fan_power(isys),ifan_operation(isys))
+     
+        else 
 c Steady-state heat pump capacity accounting for the effect of the outdoor
 c temperature
-        ss_heat_pump_cap = ASHP_CAP(ss_capacity(isys),TP,
-     &                     flow_rate(isys),
-     &                     flow_rate_r(isys),ifan_operation(isys),
-     &                     cutoff_temp(isys))
+          ss_heat_pump_cap = ASHP_CAP(ss_capacity(isys),TP,
+     &                       flow_rate(isys),
+     &                       flow_rate_r(isys),ifan_operation(isys),
+     &                       cutoff_temp(isys))
+
+
+        endif 
+
+     
       endif
-c GCEP (end)
 
 C Save actual capacity of heat-pump system
       fH3KActualCapacity(iSYS) = ss_heat_pump_cap
