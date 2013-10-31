@@ -81,9 +81,9 @@ Category ( 2) Concrete includes a mix of concrete types from heavy weight to lig
 1.060,1950.000,1000.000,0.900,0.900,0.400,0.400,18.000,100.0,-
 *item,aerated_concrete, 37, 2,Aerated concrete autoclaved  .8 g/cc (www.matweb.com search)
 0.230,800.000,1000.000,0.900,0.900,0.650,0.650,13.000,100.0,-
-*item,concrete 150mm, 38, 2,Concrete high density 150mm (UK code)
+*item,concrete hiden, 38, 2,Concrete high density (UK code)
 1.930,2400.000,1000.000,0.900,0.900,0.700,0.700,13.000,150.0,-
-*item,Cast concrete 100 mm, 39, 2,Cast concrete 100 mm (UK code)
+*item,Cast concrete (UK), 39, 2,Cast concrete (UK code)
 1.350,2000.000,1000.000,0.900,0.900,0.700,0.700,13.000,100.0,-
 *item,Concrete med density (1800), 40, 2,Blockwork (UK code)
 1.130,1800.000,1008.000,0.900,0.900,0.700,0.700,13.000,100.0,-
@@ -153,7 +153,7 @@ Category ( 4) Wood holds a range of wood types. Based on data traditionally dist
 0.130,500.000,1500.000,0.900,0.900,0.700,0.700,576.000,19.0,-
 *item,OSB, 79, 4,OSB wood based on the SBEM database
 0.130,650.000,1700.000,0.900,0.900,0.700,0.700,1200.000,9.0,-
-*item,MDF, 80, 4,MDF based on info in IBO PassivHaus
+*item,MDF, 80, 4,MDF based on info in IBO PassivHaus (diffusion guessed)
 0.080,780.000,2000.000,0.900,0.900,0.700,0.700,55.000,9.0,-
 *item,parquet, 89, 4,Parquet (ready to install) from IBO PassivHaus
 0.170,740.000,2000.000,0.900,0.900,0.650,0.650,250.000,12.0,-
@@ -205,7 +205,7 @@ Category ( 6) Plaster includes both tranditional plaster and gypsum plaster boar
 0.190,950.000,840.000,0.910,0.910,0.260,0.260,11.000,12.5,-
 *item,Plasterboard (wallboard),110, 6,Internal finish (UK code)
 0.210,900.000,1000.000,0.910,0.910,0.260,0.260,11.000,13.0,-
-*item,Plasterboard (ceiling),111, 6,Plasterboard Gypsum (10 mm) (UK code)
+*item,Plasterboard (ceiling),111, 6,Plasterboard Gypsum ceiling (UK code)
 0.210,900.000,1000.000,0.910,0.910,0.700,0.700,11.000,9.5,-
 *item,Plasterboard (UK code),112, 6,Plasterboard (UK code)
 0.210,900.000,1000.000,0.910,0.910,0.700,0.700,11.000,13.0,-
@@ -234,13 +234,13 @@ Category ( 7) Screeds are products typically used horizontally and renders are u
 0.790,1329.000,1000.000,0.910,0.910,0.500,0.500,19.000,50.0,-
 *item,aged rendering,128, 7,Aged Rendering
 0.790,1329.000,1000.000,0.910,0.910,0.740,0.740,19.000,50.0,-
-*item,Screed 50mm,129, 7,Flooring screed 50mm (UK code)
+*item,Screed 50mm,129, 7,Flooring screed (UK code)
 0.410,1200.000,1000.000,0.910,0.910,0.700,0.700,19.000,50.0,-
-*item,Render External 20 mm,130, 7,Render External 20 mm (UK code)
+*item,Render External (UK),130, 7,Render External (UK code)
 0.570,1300.000,1000.000,0.910,0.910,0.700,0.700,19.000,20.0,-
-*item,dry_render_white,131, 7,White dry render (copy of mat_125) (UK code)
+*item,dry_render_white,131, 7,White dry render (UK code)
 0.500,1300.000,1000.000,0.910,0.910,0.500,0.500,19.000,50.0,-
-*item,render_8pc,132, 7,Rendering (8% mc) (copy of mat_127) (UK code)
+*item,render_8pc,132, 7,Rendering (8% mc UK code)
 0.790,1329.000,1000.000,0.910,0.910,0.500,0.500,19.000,50.0,-
 # class index |nb items|description (32 char)
 *class, 8,18,Tiles
@@ -294,7 +294,7 @@ Category ( 9) Asphalt and bitumen also includes materials which use bitumen and 
 1.200,2300.000,1700.000,0.900,0.900,0.900,0.900,1900.000,6.0,-
 *item,bitumen composit,165, 9,Bitumen composit (floor)
 0.850,2400.000,1000.000,0.900,0.900,0.900,0.900,1500.000,6.0,-
-*item,bitumen paper,166, 9,Bitumen impregnt`d paper
+*item,bitumen paper,166, 9,Bitumen impregnated paper
 0.060,1090.000,1000.000,0.900,0.900,0.900,0.900,3000.000,6.0,-
 *item,reflective coat,167, 9,Asphalt reflective coating
 1.200,2300.000,1700.000,0.300,0.300,0.300,0.300,1900.000,6.0,-
@@ -425,7 +425,7 @@ Category (13) Glass with additional single layer optical properties (some estima
 # class index |nb items|description (32 char)
 *class,14, 8,Earth
 Category (14) Earth includes loose materials. Also check the stone category for other gravels. Based on data traditionally distributed with ESP-r.
-*item,earth infusorial,261,14,Infusorial (9% mc)
+*item,earth infusorial,261,14,Infusorial earth (9% mc)
 0.090,480.000,180.000,0.900,0.900,0.850,0.850,5.000,200.0,-
 *item,gravel based,262,14,Gravel based
 0.520,2050.000,184.000,0.900,0.900,0.850,0.850,2.000,200.0,-
@@ -439,8 +439,8 @@ Category (14) Earth includes loose materials. Also check the stone category for 
 1.740,2240.000,920.000,0.900,0.900,0.850,0.850,5.000,200.0,-
 *item,clay_with_40sand,267,14,alluvial clay with 40% sand as per Indian Standards Institution
 1.210,1960.000,840.000,0.900,0.900,0.850,0.850,5.000,200.0,-
-*item,Clay underfloor 750 mm,268,14,Clay underfloor default 750 mm
-1.500,1500.000,2085.000,0.900,0.900,0.700,0.700,5.000,750.0,-
+*item,Clay underfloor,268,14,Clay underfloor layer
+1.500,1500.000,2085.000,0.900,0.900,0.700,0.700,5.000,250.0,-
 # class index |nb items|description (32 char)
 *class,15,21,Insulation materials (2)
 Category (15) Insulation materials (2) is a second tranche of loose, batt and foam insulating materials. Based on data traditionally distributed with ESP-r.
@@ -468,11 +468,11 @@ Category (15) Insulation materials (2) is a second tranche of loose, batt and fo
 0.040,12.000,1000.000,0.900,0.900,0.700,0.700,30.000,250.0,-
 *item,Min wool quilt 250 mm tb,292,15,Quilt (Min wool quilt default 250 mm)
 0.050,12.000,1000.000,0.900,0.900,0.700,0.700,30.000,250.0,-
-*item,Min wool quilt 50mm tb,293,15,Studwork
+*item,Min wool quilt betwnstuds,293,15,Min wool quilt between studwork
 0.050,12.000,1000.000,0.900,0.900,0.700,0.700,30.000,50.0,-
-*item,Mineral wool batt 100mm,294,15,Insulation (Mineral wool batt default 100mm)
+*item,Mineral wool batt,294,15,Insulation (Mineral wool batt)
 0.040,25.000,1000.000,0.900,0.900,0.700,0.700,30.000,100.0,-
-*item,Min wool quilt 60mm,295,15,Insulation (Min wool quilt default 60 mm)
+*item,Min wool quilt 1030spht,295,15,Insulation (Min wool quilt with 1030 sp. ht.)
 0.040,12.000,1030.000,0.900,0.900,0.700,0.700,30.000,60.0,-
 *item,PUR,296,15,notional floor UK material
 0.026,12.000,1030.000,0.900,0.900,0.700,0.700,30.000,60.0,-
@@ -487,8 +487,8 @@ Category (15) Insulation materials (2) is a second tranche of loose, batt and fo
 *item,cork insul panel,306,15,cork insulation panel from IBO PassivHaus
 0.040,120.000,1670.000,0.900,0.900,0.700,0.700,90.000,100.0,-
 # class index |nb items|description (32 char)
-*class,16, 5,Board
-Category (16) Board is similar to plaster and wood. Based on data traditionally distributed with ESP-r.
+*class,16, 7,Board and Sheathing
+Category (16) Board  and Sheathing includes a range of plaster and wood products many from the IBO PassivHaus book.
 *item,gypsum board,301,16,Gypsum board
 0.160,800.000,1090.000,0.900,0.900,0.900,0.900,10.000,12.5,-
 *item,particle board underlay,302,16,Particle board underlayment
@@ -499,24 +499,38 @@ Category (16) Board is similar to plaster and wood. Based on data traditionally 
 0.050,270.000,2000.000,0.900,0.900,0.650,0.650,5.000,25.0,-
 *item,sound impact EPS,305,16,Sound impact EPS 11kg/m3 from IBO PassivHaus (diffusion is a guess guess)
 0.044,11.000,1500.000,0.900,0.900,0.650,0.650,20.000,5.0,-
-# class index |nb items|description (32 char)
-*class,17, 3,Sheathing
-Category (17) Sheathing is similar to the wood category. It also includes a test air gap layer. Based on data traditionally distributed with ESP-r.
-*item,sheating std,321,17,regular density sheathing
+*item,sheating std,321,16,regular density sheathing
 0.055,290.000,1300.000,0.900,0.900,0.900,0.900,10.000,100.0,-
-*item,air 12mm,322,17,place holder for testing an air material type for isbem
-0.055,290.000,1300.000,0.900,0.900,0.900,0.900,10.000,12.0,g
-*item,virtual_loft_space,323,17,for notional building loft space air 12mm)
+*item,virtual_loft_space,323,16,for UK notional building loft space air 12mm
 0.130,290.000,1300.000,0.900,0.900,0.900,0.900,10.000,39.0,-
 # class index |nb items|description (32 char)
-*class,18, 4,GAPS
-Category (18) holds the implied air material with a legacy index of zero.
+*class,17, 6,Non-homogeneous
+Category (17) Non-homogeneous layers combine two existing materials properties to represent non-homogeneous constructions. Documentation should state percentage and base materials.
+*item,cellulose+fir7.5pc,324,17,cellulose+fir7.5pc derived from fir & celulose fiber flakes ( 0.075 0.925) assuming 600mm centres for 45mm studs
+0.047,63.800,1961.500,0.900,0.900,0.326,0.326,10.150,100.0,-
+*item,wool+fir_4.16pc,325,17,wool+fir_4.16pc derived from fir & lambswool felt insulation ( 0.042 0.958) assuming 600mm centres for 25mm battens
+0.044,46.182,1550.752,0.900,0.900,0.698,0.698,10.083,25.0,-
+*item,cellulose+OSB_9.5mm,326,17,cellulose+OSB_9.5mm derived from OSB & celulose fiber flakes ( 0.016 0.984) assuming 600mm centres of web of I beam
+0.041,44.717,1896.840,0.900,0.900,0.306,0.306,28.802,9.0,-
+*item,outer_brick+lime_mortar,327,17,outer_brick+lime_mortar derived from outer leaf brick & lime cement mortar ( 0.800 0.200) based on 210 x 100 x 64mm brick and 10-15mm mortar
+0.928,1960.000,744.000,0.900,0.900,0.864,0.864,35.000,100.0,-
+*item,conc_block+lime_mortar,328,17,conc_block+lime_mortar derived from concrete block & lime cement mortar ( 0.890 0.110) assuming 435 x 210 x 150 block 10-20mm hor and 10-15mm vertical joints
+1.031,1933.500,1013.200,0.900,0.900,0.422,0.422,24.270,100.0,-
+*item,plaster_dabs_in_12mmair_gap,329,17,plaster_dabs_in_12mmair_gap derived from dense plaster & Air (k) 12mm glz ( 0.200 0.800)  as in mounting of plasterboard on structure via dabs
+0.156,260.963,1004.800,0.974,0.974,0.892,0.892,3.000,12.5,-
+# class index |nb items|description (32 char)
+*class,18, 6,GAPS
+Category (18) holds the implied air material (legacy index of zero), several gaps with default air gap resistances and air expressed as k value for a thickness to use in non-homogeneous layers.
 *item,air gap,  0,18,Air layer with default properties assumed for legacy treatment of air (index zero).
 0.000,0.000,0.000,0.990,0.990,0.990,0.990,1.000,25.0,-
-*item,Loft space,-99,18,Loft space (R=0.2)
-0.000,0.000,0.000,0.990,0.990,0.990,0.990,1.000,200.0,g,0.170000,0.170000,0.170000
-*item,Air layer 50mm wall,-99,18,Air cavity
-0.140,0.000,0.000,0.990,0.990,0.990,0.990,1.000,50.0,g
-*item,Argon 16 mm,-99,18,Argon 16 mm
-0.020,1.700,519.000,0.990,0.990,0.990,0.990,1.000,16.0,g
+*item,Air lowe 12mm,340,18,Air gap in 12mm lowe space
+0.032,1.204,1006.000,0.990,0.990,0.990,0.990,1.000,12.0,g
+*item,Air gap 12mm glz,341,18,Air gap in double glazing 12mm
+0.071,1.204,1006.000,0.990,0.990,0.990,0.990,1.000,12.0,g
+*item,Air (k) 12mm glz,342,18,Air (as k value) in double glazing 12mm
+0.071,1.204,1006.000,0.990,0.990,0.990,0.990,1.000,12.0,-
+*item,Air (k) 12mm lowe,340,18,Air (as k value) in 12mm lowe space
+0.033,1.204,1006.000,0.990,0.990,0.990,0.990,1.000,12.0,-
+*item,Argon (k) 16 mm,343,18,Argon (as k value) in 16 mm and lowe space
+2.336,1.670,519.000,0.990,0.990,0.990,0.990,1.000,16.0,g
 *end
