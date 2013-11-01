@@ -1553,7 +1553,10 @@ C stitute the U value for each layer unless we are dealing with
 C one of the [g] or [h] material types in which case the name
 C is written out.
 
-C This subroutine uses the material array data in matdatarray.
+C This subroutine uses the material array data in matdatarray. Currently it
+C writes the layer line with material name and documentation separate by 
+C a : but truncates the total length to 72 characters. A future variant might 
+C relax this limitation so as not to truncate the material documentation.
       SUBROUTINE EMKAMLD(ITRU,IER)
 #include "building.h"
 #include "esprdbfile.h"
