@@ -1094,7 +1094,7 @@ C Check version of materials database.
       endif
 
 C Check version of CFClayers database.
-      call eclose(matver,1.1,0.01,closecfc1)
+      call eclose(cfcver,1.1,0.01,closecfc1)
       if(closecfc1)then
         continue
       else
