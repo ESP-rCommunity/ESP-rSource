@@ -2163,8 +2163,9 @@ C zone obstructions file or are held in this geometry file.
 C If iobs() = 0 then no obstructions yet defined so the value should
 C be incremented to iobs() = 2.
           if(iobs(icomp).eq.1)then
-            call usrmsg(
-     &      'There is a zone obstructions file as well as block',
+            write(outs,'(3a)') 'In zone ',zname(icomp),
+     &        ' there is a zone obstructions file as well as block'
+            call usrmsg(outs(1:lnblnk(outs)),
      &      'definitions in this geometry file. Skipping data.','W')
           endif 
 
@@ -2194,9 +2195,9 @@ C formats depending on whether the key is '*obs' or '*obs3'.
             XOB(icomp,nbo)=VX
             YOB(icomp,nbo)=VY
             ZOB(icomp,nbo)=VZ
-            CALL EGETWR(LOUTSTR,K,VX,0., 99.,'W','obs X dis',IER)
-            CALL EGETWR(LOUTSTR,K,VY,0., 99.,'W','obs Y dis',IER)
-            CALL EGETWR(LOUTSTR,K,VZ,0., 99.,'W','obs Z dis',IER)
+            CALL EGETWR(LOUTSTR,K,VX,0.,150.,'W','obs X dis',IER)
+            CALL EGETWR(LOUTSTR,K,VY,0.,150.,'W','obs Y dis',IER)
+            CALL EGETWR(LOUTSTR,K,VZ,0.,150.,'W','obs Z dis',IER)
             DXOB(icomp,nbo)=VX
             DYOB(icomp,nbo)=VY
             DZOB(icomp,nbo)=VZ
@@ -2320,9 +2321,9 @@ C standard obstruction block when converted into a GB1 common block.
             XOB(icomp,nbo)=VX
             YOB(icomp,nbo)=VY
             ZOB(icomp,nbo)=VZ
-            CALL EGETWR(LOUTSTR,K,VX,0., 99.,'W','obs X dis',IER)
-            CALL EGETWR(LOUTSTR,K,VY,0., 99.,'W','obs Y dis',IER)
-            CALL EGETWR(LOUTSTR,K,VZ,0., 99.,'W','obs Z dis',IER)
+            CALL EGETWR(LOUTSTR,K,VX,0.,150.,'W','obs X dis',IER)
+            CALL EGETWR(LOUTSTR,K,VY,0.,150.,'W','obs Y dis',IER)
+            CALL EGETWR(LOUTSTR,K,VZ,0.,150.,'W','obs Z dis',IER)
             DXOB(icomp,nbo)=VX
             DYOB(icomp,nbo)=VY
             DZOB(icomp,nbo)=VZ
