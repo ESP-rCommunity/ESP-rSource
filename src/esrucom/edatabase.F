@@ -1642,7 +1642,7 @@ C Write out a file header.
       WRITE(IFMUL,30)LFMUL(1:lnblnk(LFMUL)),LFMAT(1:lnblnk(LFMAT)),
      &               LCFCDB(1:lnblnk(LCFCDB))
   30  FORMAT('# composite construction db defined in ',A,/,
-     &       '# based on materials db ',A,
+     &       '# based on materials db ',A,/,
      &       '# and based on CFClayers db ',A)
 
 C For each composite construction write the number of layers (LAYERS),
