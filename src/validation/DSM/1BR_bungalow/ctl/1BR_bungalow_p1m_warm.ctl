@@ -17,9 +17,8 @@ Summer has a bit of heating capacity in the various rooms needs to bed confirmed
   1000.000 0.000 0.000 0.000 21.000 100.000 0.000
     0    2   9.000  # ctl type, law (free floating), start @
       0.  # No. of data items
-    0    1  13.000  # ctl type, law (basic control), start @
-      7.  # No. of data items
-  1000.000 0.000 0.000 0.000 21.000 100.000 0.000
+    0    2  13.000  # ctl type, law (free floating), start @
+      0.  # No. of data items
     0    1  18.000  # ctl type, law (basic control), start @
       7.  # No. of data items
   1000.000 0.000 0.000 0.000 21.000 100.000 0.000
@@ -73,9 +72,8 @@ Summer has a bit of heating capacity in the various rooms needs to bed confirmed
   1000.000 0.000 0.000 0.000 21.000 100.000 0.000
     0    2   9.000  # ctl type, law (free floating), start @
       0.  # No. of data items
-    0    1  13.000  # ctl type, law (basic control), start @
-      7.  # No. of data items
-  1000.000 0.000 0.000 0.000 21.000 100.000 0.000
+    0    2  13.000  # ctl type, law (free floating), start @
+      0.  # No. of data items
     0    1  18.000  # ctl type, law (basic control), start @
       7.  # No. of data items
   1000.000 0.000 0.000 0.000 21.000 100.000 0.000
@@ -108,9 +106,8 @@ Summer has a bit of heating capacity in the various rooms needs to bed confirmed
   1000.000 0.000 0.000 0.000 21.000 100.000 0.000
     0    2   9.000  # ctl type, law (free floating), start @
       0.  # No. of data items
-    0    1  13.000  # ctl type, law (basic control), start @
-      7.  # No. of data items
-  1000.000 0.000 0.000 0.000 21.000 100.000 0.000
+    0    2  13.000  # ctl type, law (free floating), start @
+      0.  # No. of data items
     0    1  18.000  # ctl type, law (basic control), start @
       7.  # No. of data items
   1000.000 0.000 0.000 0.000 21.000 100.000 0.000
@@ -242,9 +239,8 @@ Summer has a bit of heating capacity in the various rooms needs to bed confirmed
   1000.000 0.000 0.000 0.000 23.000 100.000 0.000
     0    2   9.000  # ctl type, law (free floating), start @
       0.  # No. of data items
-    0    1  13.000  # ctl type, law (basic control), start @
-      7.  # No. of data items
-  1000.000 0.000 0.000 0.000 23.000 100.000 0.000
+    0    2  13.000  # ctl type, law (free floating), start @
+      0.  # No. of data items
     0    1  18.000  # ctl type, law (basic control), start @
       7.  # No. of data items
   1000.000 0.000 0.000 0.000 23.000 100.000 0.000
@@ -277,9 +273,8 @@ Summer has a bit of heating capacity in the various rooms needs to bed confirmed
   1000.000 0.000 0.000 0.000 23.000 100.000 0.000
     0    2   9.000  # ctl type, law (free floating), start @
       0.  # No. of data items
-    0    1  13.000  # ctl type, law (basic control), start @
-      7.  # No. of data items
-  1000.000 0.000 0.000 0.000 23.000 100.000 0.000
+    0    2  13.000  # ctl type, law (free floating), start @
+      0.  # No. of data items
     0    1  18.000  # ctl type, law (basic control), start @
       7.  # No. of data items
   1000.000 0.000 0.000 0.000 23.000 100.000 0.000
@@ -519,9 +514,8 @@ Summer has a bit of heating capacity in the various rooms needs to bed confirmed
   1300.000 0.000 0.000 0.000 23.000 100.000 0.000
     0    2   9.000  # ctl type, law (free floating), start @
       0.  # No. of data items
-    0    1  13.000  # ctl type, law (basic control), start @
-      7.  # No. of data items
-  1300.000 0.000 0.000 0.000 23.000 100.000 0.000
+    0    2  13.000  # ctl type, law (free floating), start @
+      0.  # No. of data items
     0    1  18.000  # ctl type, law (basic control), start @
       7.  # No. of data items
   1300.000 0.000 0.000 0.000 23.000 100.000 0.000
@@ -575,9 +569,8 @@ Summer has a bit of heating capacity in the various rooms needs to bed confirmed
   1300.000 0.000 0.000 0.000 23.000 100.000 0.000
     0    2   9.000  # ctl type, law (free floating), start @
       0.  # No. of data items
-    0    1  13.000  # ctl type, law (basic control), start @
-      7.  # No. of data items
-  1300.000 0.000 0.000 0.000 23.000 100.000 0.000
+    0    2  13.000  # ctl type, law (free floating), start @
+      0.  # No. of data items
     0    1  18.000  # ctl type, law (basic control), start @
       7.  # No. of data items
   1300.000 0.000 0.000 0.000 23.000 100.000 0.000
@@ -610,9 +603,8 @@ Summer has a bit of heating capacity in the various rooms needs to bed confirmed
   1300.000 0.000 0.000 0.000 23.000 100.000 0.000
     0    2   9.000  # ctl type, law (free floating), start @
       0.  # No. of data items
-    0    1  13.000  # ctl type, law (basic control), start @
-      7.  # No. of data items
-  1300.000 0.000 0.000 0.000 23.000 100.000 0.000
+    0    2  13.000  # ctl type, law (free floating), start @
+      0.  # No. of data items
     0    1  18.000  # ctl type, law (basic control), start @
       7.  # No. of data items
   1300.000 0.000 0.000 0.000 23.000 100.000 0.000
@@ -685,9 +677,8 @@ Summer has a bit of heating capacity in the various rooms needs to bed confirmed
   1000.000 0.000 0.000 0.000 23.000 100.000 0.000
     0    2   9.000  # ctl type, law (free floating), start @
       0.  # No. of data items
-    0    1  13.000  # ctl type, law (basic control), start @
-      7.  # No. of data items
-  1000.000 0.000 0.000 0.000 23.000 100.000 0.000
+    0    2  13.000  # ctl type, law (free floating), start @
+      0.  # No. of data items
     0    1  18.000  # ctl type, law (basic control), start @
       7.  # No. of data items
   1000.000 0.000 0.000 0.000 23.000 100.000 0.000
@@ -741,9 +732,8 @@ Summer has a bit of heating capacity in the various rooms needs to bed confirmed
   1000.000 0.000 0.000 0.000 23.000 100.000 0.000
     0    2   9.000  # ctl type, law (free floating), start @
       0.  # No. of data items
-    0    1  13.000  # ctl type, law (basic control), start @
-      7.  # No. of data items
-  1000.000 0.000 0.000 0.000 23.000 100.000 0.000
+    0    2  13.000  # ctl type, law (free floating), start @
+      0.  # No. of data items
     0    1  18.000  # ctl type, law (basic control), start @
       7.  # No. of data items
   1000.000 0.000 0.000 0.000 23.000 100.000 0.000
@@ -776,9 +766,8 @@ Summer has a bit of heating capacity in the various rooms needs to bed confirmed
   1000.000 0.000 0.000 0.000 23.000 100.000 0.000
     0    2   9.000  # ctl type, law (free floating), start @
       0.  # No. of data items
-    0    1  13.000  # ctl type, law (basic control), start @
-      7.  # No. of data items
-  1000.000 0.000 0.000 0.000 23.000 100.000 0.000
+    0    2  13.000  # ctl type, law (free floating), start @
+      0.  # No. of data items
     0    1  18.000  # ctl type, law (basic control), start @
       7.  # No. of data items
   1000.000 0.000 0.000 0.000 23.000 100.000 0.000
@@ -810,9 +799,8 @@ Summer has a bit of heating capacity in the various rooms needs to bed confirmed
   1000.000 0.000 0.000 0.000 19.000 100.000 0.000
     0    2   9.000  # ctl type, law (free floating), start @
       0.  # No. of data items
-    0    1  13.000  # ctl type, law (basic control), start @
-      7.  # No. of data items
-  1000.000 0.000 0.000 0.000 19.000 100.000 0.000
+    0    2  13.000  # ctl type, law (free floating), start @
+      0.  # No. of data items
     0    2  18.000  # ctl type, law (free floating), start @
       0.  # No. of data items
     0    2  23.000  # ctl type, law (free floating), start @
