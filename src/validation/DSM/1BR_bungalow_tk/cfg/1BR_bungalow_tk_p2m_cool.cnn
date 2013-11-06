@@ -1,5 +1,5 @@
-*connections for 1BR_bungalow_tk_p1m_warm
-*Date Wed Nov  6 10:18:47 2013
+*connections for 1BR_bungalow_tk_p2m_cool
+*Date Wed Nov  6 10:21:42 2013
     141   # number of connections
    1   1   0   0   0  #    1 front_a in stairs is External
    1   2   0   0   0  #    2 front_b in stairs is External
