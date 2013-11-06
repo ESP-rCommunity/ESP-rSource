@@ -1494,10 +1494,10 @@ C to include the path and create a string to drive the modules.
       common/IPVF/lipvdatf
 
 C Typical seasons and default simulation periods. Isset is the
-C current seasons set, nsset number of sets, Isauto (0=use info as
-C defaults 1=autoexec mode), istcnst (startup days), isbnstep (building
-C timesteps/hr), ispnstep (plant timesteps/hr), issave (results save
-C level).
+C current seasons set, nsset number of similar parameter sets,
+C Isauto (0=use info as defaults 1=autoexec mode),
+C istcnst (startup days), isbnstep (building timesteps/hr),
+C ispnstep (plant timesteps/hr), issave (results save level).
       common/spmfxst/ispmxist,spflnam
       common/spfldes/spfdescr(MSPS)
       common/spflper/isstday(MSPS),isstmon(MSPS),isfnday(MSPS),
@@ -2124,11 +2124,9 @@ C Select an existing set, create a new one or cancel.
           call gethelptext(helpinsub,helptopic,nbhelp)
           CALL PHELPD('Simulation sets',nbhelp,'-',0,0,IER)
           goto 170
-        elseif(IRT.eq.ic-2.and.nsset.lt.5)then
+        elseif(IRT.eq.ic-2.and.nsset.lt.MSPS)then
 
 C It is possible to add another set so ask user and set file names.
-C << note this probably should check to see if there is an IPV >>
-C << description first >>
           de='win'
           CALL EASKS(de,' ','Name for set?',8,'win','set name',
      &      IER,nbhelp)
@@ -2162,14 +2160,22 @@ C << description first >>
           endif
           modparms=.true.
           goto 170
+        elseif(IRT.eq.ic-2.and.nsset.ge.MSPS)then
+          call usrmsg('At the limit of simulation parameter sets',
+     &      'Unable to add another.','W')
+          goto 170
         elseif(IRT.ge.1.and.IRT.le.nsset)then
-          isset=IRT
+          isset=IRT  ! choose an existing set
         endif
         call scntcnst(TDM,istd,TCM,ISTC)
       elseif(MITEM.eq.25.and.INO.EQ.2)then
 
 C If there is an IPV descripton and this set is one,
 C do not allow this set name to be changed.
+
+C << see if this logic can be relaxed or altered so that
+C << IPV can co-exist with lots of parameter sets.
+
         if(nipvassmt.eq.nsset)then
           call usrmsg('IPV set name is pre-defined,','.','W')
         else

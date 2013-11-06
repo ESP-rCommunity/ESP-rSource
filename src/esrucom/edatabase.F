@@ -1204,7 +1204,7 @@ C Reporting based on report level.
       IF(ITRC.GT.1)THEN
         CALL EDISP(ITRU,' ')
         write(OUTSTR,'(2a)')
-     &' Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu|',
+     &' Layer|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu|',
      &' R    |Description'
         CALL EDISP(ITRU,OUTSTR)
         write(OUTSTR,'(2a)')
@@ -1323,9 +1323,10 @@ C 0.10 inside upward flow and 0.17 inside downward flow.
 
         IF(ITRC.NE.0)call edisp(itru,OUTSTR)
 
-C Include admittance calculations (use TM33 Table 4.5 values for admittance calcs).
+C Include admittance calculations (use TM33 Table 4.5 values for admittance calcs)
+C If in verbose mode, otherwise ignore.
 C << NOTE this code needs further debugging.
-        if(ITRC.ne.0)then
+        if(ITRC.gt.1)then
           Rsi=0.12
           Rso=0.06
           call ADMIT(ITRU,IFOC,Rsi,Rso)

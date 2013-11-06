@@ -659,7 +659,7 @@ C Reporting:
   42          continue
               IF(IER.NE.0)GOTO 99
             ENDIF
-			
+
 C Set building-side function generator flag.
             if(ibsn(ii,1).eq.-6)then
                bfngn=.true.

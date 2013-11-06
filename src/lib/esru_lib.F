@@ -1628,7 +1628,10 @@ C If path is '  ' or './' do not concatenate
 C This version includes cross-platform logic.
       SUBROUTINE addpath(SFILE,tfile,concat)
       IMPLICIT NONE
-      
+
+C Functions
+      integer lnblnk
+
 C Declare calling parameters
       CHARACTER*(*), INTENT(OUT) :: sfile,tfile
       LOGICAL, INTENT(OUT) :: concat
@@ -2070,11 +2073,15 @@ C information back into common PMENU.
 #include "epara.h"
       COMMON/PMENUSV/MHEAD1(5),MCTL1(5),MIFUL1(5),MFUL1(5),IST1(5),
      &               ILEN1(5),IPM1(5),MPM1(5),IPFLG1(5),MILEV
+      COMMON/OUTIN/IUOUT,IUIN
+      CHARACTER outs*124
       MILEV=MILEV+1
       if(MILEV.gt.5)then
 
 C Debug.
-C        write(6,*) 'Number of nested levels is',MILEV
+        write(outs,*) 'Number of nested menu levels is',MILEV,
+     &    ' which exceeds allowable menu depth.'
+        call edisp(iuout,outs)
 
       endif
       do 42 j=5,2,-1
@@ -2125,7 +2132,7 @@ C        write(6,*) 'Number of nested levels is',MILEV
       MFULL=MFUL1(1)
       IST=IST1(1)
       ILEN=ILEN1(1)
-      IPM=IPM1(3)
+      IPM=IPM1(1)
       MPM=MPM1(1)
       IPFLG=IPFLG1(1)
       do 42 i=2,5
@@ -3348,7 +3355,7 @@ C is zero then all items written, else the index of the last item
 C which was written. Delm is delimeter between items.
 
       SUBROUTINE ARLIST(inst,inrl,rlist,inrs,delm,pckstr,length,itrunc)
-      COMMON/OUTIN/IUOUT,IUIN
+C      COMMON/OUTIN/IUOUT,IUIN
       dimension rlist(inrs)
       character*(*) pckstr
       CHARACTER item*16,delm*1
@@ -3423,7 +3430,7 @@ C This subroutine is same as ARLIST but the final string written out is
 C shorter
 
       SUBROUTINE AELIST(inst,inrl,rlist,inrs,delm,pckstr,length,itrunc)
-      COMMON/OUTIN/IUOUT,IUIN
+C      COMMON/OUTIN/IUOUT,IUIN
       dimension rlist(inrs)
       character*(*) pckstr
       CHARACTER item*16,delm*1
@@ -3496,7 +3503,7 @@ C is zero then all items written, else the index of the last item
 C which was written. Delm is delimeter between items.
 
       SUBROUTINE AILIST(inst,inil,ilist,inisz,delm,pckstr,length,itrunc)
-      COMMON/OUTIN/IUOUT,IUIN
+C      COMMON/OUTIN/IUOUT,IUIN
       dimension ilist(inisz)
       character*(*) pckstr
       CHARACTER item*10,delm*1
@@ -3570,7 +3577,7 @@ C which was written. Delm is delimeter between items. It is assumed
 C that each string array item is less than 32 characters wide.
 
       SUBROUTINE ASLIST(inst,inil,list,inisz,delm,pckstr,length,itrunc)
-      COMMON/OUTIN/IUOUT,IUIN
+C      COMMON/OUTIN/IUOUT,IUIN
       dimension list(inisz)
       character*(*) pckstr,list
       CHARACTER item*32,delm*1
@@ -3646,7 +3653,8 @@ C that each string array item is less than 24 characters wide.
 
       SUBROUTINE ASLIST2(inst,inil,list,inisz,inisz2,inirw,
      &delm,pckstr,length,itrunc)
-      COMMON/OUTIN/IUOUT,IUIN
+
+C      COMMON/OUTIN/IUOUT,IUIN
       dimension list(inisz,inisz2)
       character*(*) pckstr,list
       CHARACTER item*24,delm*1
@@ -3720,10 +3728,11 @@ C which was written. Delm is delimeter between items. It is assumed
 C that each string array item is less than 48 characters wide.
 
       SUBROUTINE ASFLIST(inst,inil,list,inisz,delm,pckstr,length,itrunc)
-      COMMON/OUTIN/IUOUT,IUIN
+C      COMMON/OUTIN/IUOUT,IUIN
       dimension list(inisz)
       character*(*) pckstr,list
-      CHARACTER item*48,delm*1,outs*124
+      CHARACTER item*48,delm*1
+C      character outs*124
 
       itrunc=0
       LS=LEN(pckstr)
@@ -4330,11 +4339,11 @@ C Find out the number of separate words/string groupings.
         write(outs,*) 
      &  'STRIPC2500: permission error writing warning re: '
         call edisp(iuout,outs)
-	call edisp(iuout,outstr(1:72))
+        call edisp(iuout,outstr(1:72))
       else
         write(outs,*) 'STRIPC2500: error writing warning re: '
         call edisp(iuout,outs)
-	call edisp(iuout,outstr(1:72))
+        call edisp(iuout,outstr(1:72))
       endif
       return
 
@@ -4535,7 +4544,7 @@ C Reset string index K
 C Get end day and year
             write(HOLD,'(I4,I5)') iedoy,iEYr
             CALL EASKS(HOLD,PROMP1,' End day and year?',16,
-     &      ' 365 2000 ','end day and year',IER,2)
+     &      ' 365 2007 ','end day and year',IER,2)
 
             CALL EGETWI(HOLD,K,iedoy,1,365,'F','end doy',IER)
             if  ( ier .ne. 0 ) BDateok = .false.
@@ -4570,7 +4579,7 @@ C Append year to string
             H(3)='not presently supported.'
             CALL EASKS(HOLD,PROMP1,
      &        ' Start day, month & year (DD MM YYYY)?',
-     &        16,' 1 1 2000','start day, month and year',IER,3)
+     &        16,' 1 1 2007','start day, month and year',IER,3)
           endif
 
 C Error handling.
@@ -4644,7 +4653,7 @@ C Get day, month & year  and append year to string.
 
               CALL EASKS(HOLD,PROMP1,
      &          ' End day, month & year (DD MM YYYY)?',
-     &          16,' 31 12 2000','end day, month and year',IER,3)
+     &          16,' 31 12 2007','end day, month and year',IER,3)
 
             endif
 
@@ -4806,7 +4815,7 @@ C ******************** STDATE
 C STDATE takes the day of year and returns two descriptive strings.
 C DESCR takes the form '12-Jan' and DESCR1 takes the form 'Fri-12-Jan'.
       SUBROUTINE STDATE(IYEAR,IDOY,DESCR,DESCR1)
-      common/OUTIN/IUOUT,IUIN
+C      common/OUTIN/IUOUT,IUIN
       DIMENSION MTHNAM(12),DAYNAM(7)
 
       CHARACTER MTHNAM*3,DAYNAM*3,DESCR*7,DESCR1*10
@@ -6542,7 +6551,7 @@ C Parse time phrase in the form 11:13:16
         read(WORD(1:2),*,IOSTAT=IOS,ERR=1002)ihrod(i)
         read(WORD(4:5),*,IOSTAT=IOS,ERR=1003)imohr(i)
         read(WORD(7:8),*,IOSTAT=IOS,ERR=1004)isohr(i)
-        CALL EGETWI(datetest,K,iyears(i),1970,2010,'-','year',IER)
+        CALL EGETWI(datetest,K,iyears(i),1900,2051,'-','year',IER)
   42  continue
 
 C First compare the years. If the same compare the months.

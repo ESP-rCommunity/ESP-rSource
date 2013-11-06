@@ -996,7 +996,7 @@ C Process the file name following *cfcdb and depending on its path
 C set the LCFCDB common block string via call to findwhichdbpath.
         call findwhichdbpath('cfc',lworking,ier)
       elseif(WORD(1:9).eq.'*stdcfcdb')then
-        CALL EGETRM(LOUTSTR,K,LFMAT,'W','CFClayers db',IER)
+        CALL EGETRM(LOUTSTR,K,LCFCDB,'W','CFClayers db',IER)
         ipathcfc=2  ! standard folder for material database
 
       elseif(WORD(1:4).eq.'*evn')then
@@ -1588,7 +1588,7 @@ C Read and store the comments into the HELP array for later display.
         endif
 
       elseif(WORD(1:5).eq.'*year')then
-        CALL EGETWI(LOUTSTR,K,IYEAR,1900,2020,'W','year',IER)
+        CALL EGETWI(LOUTSTR,K,IYEAR,1900,2051,'W','year',IER)
 
 C Perform check that calendar day types correspond with simulation year.
 C The logic below assumes that the first three day types are still weekday
@@ -2094,12 +2094,12 @@ C Set flag indicating if set describes a multi-year period
           CALL EGETWI(OUTSTR,K,isstmon(iss),1,12,'W','start month',IER)
           if ( bMY_sim_sps )
      &      CALL EGETWI(OUTSTR,K,iMY_Period_Start_years(iss),
-     &                 1800,2100,'W','start year',IER)
+     &                 1900,2100,'W','start year',IER)
           CALL EGETWI(OUTSTR,K,isfnday(iss),1,31,'W','end day',IER)
           CALL EGETWI(OUTSTR,K,isfnmon(iss),1,12,'W','end month',IER)          
           if ( bMY_sim_sps )
      &      CALL EGETWI(OUTSTR,K,iMY_Period_end_years(iss),
-     &                 1800,2100,'W','end year',IER)
+     &                 1900,2100,'W','end year',IER)
 
           
 C Opportunity for improvenemt: Should error trap duplicate

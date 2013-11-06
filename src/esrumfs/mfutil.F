@@ -179,6 +179,9 @@ C     TEMP   - fluid temperature (C)
 
       FUNCTION DENSIT(IFLD,TEMP)
       COMMON/OUTIN/IUOUT,IUIN
+
+      character outs*124
+
 C Max and minimum temperatures for suppression of redundent errors
       real fMaxWaterTemp
       real fMinWaterTemp
@@ -192,10 +195,13 @@ C Flag for inappropriate temperatures
       IF(IFLD.EQ.1) THEN
 
          IF(TEMP.LT.-273.14) THEN
-            VTEMP=-273.0
-            WRITE(*,*) ' DENSIT: temperature [',TEMP,'] outside valid',
-     &                 ' range: T > -273.15'
-            WRITE(*,*) ' DENSIT: air density evaluated for T = ',VTEMP
+           VTEMP=-273.0
+           WRITE(outs,*)' DENSIT: temperature [',TEMP,'] outside valid',
+     &       ' range: T > -273.15'
+           call edisp(iuout,outs)
+           WRITE(outs,*) ' DENSIT: air density evaluated for T = ',
+     &       VTEMP
+           call edisp(iuout,outs)
          ENDIF
 
          DENSIT=1.1881*293.15/(273.15+VTEMP)
@@ -225,12 +231,13 @@ C Warn user, but suppress redundant messages
 
             if ( bWarn ) then
             
-              WRITE(*,*) ' DENSIT: temperature [',TEMP,'] outside ',
+              WRITE(outs,*) ' DENSIT: temperature [',TEMP,'] outside',
      &                   ' valid range: 0 < T < 100'
-              WRITE(*,*) ' DENSIT: water density evaluated for T = ',
+              call edisp(iuout,outs)
+              WRITE(outs,*) ' DENSIT: water density evaluated for T =',
      &                   VTEMP
-            endif
-            
+              call edisp(iuout,outs)
+            endif            
          ENDIF
 
          DENSIT=1001.1-0.082*VTEMP-0.0036*VTEMP*VTEMP
