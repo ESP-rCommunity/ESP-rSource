@@ -1,5 +1,5 @@
-*connections for 3BR_block_bung_p2m_cool
-*Date Fri Nov  8 11:12:41 2013
+*connections for 3BR_block_bung_p1m_warm
+*Date Fri Nov  8 11:04:25 2013
     201   # number of connections
    1   1   0   0   0  #    1 fac_side in lower_bath is External
    1   2   0   0   0  #    2 fac_a in lower_bath is External
