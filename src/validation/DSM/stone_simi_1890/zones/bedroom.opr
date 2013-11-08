@@ -1,8 +1,8 @@
 *Operations 2.1
-*date Thu Dec 27 13:55:44 2012  # latest file modification 
+*date Thu Nov  7 16:19:04 2013  # latest file modification 
 # operations of bedroom2 defined in: 
 # ../zones/bedroom.opr
-There is 1.5 ach infiltration all hours with infiltration control of overheating.
+There is 1.5 ach infiltration all hours with overheating control if over 23 or 25C.
 # control(infil only: zone temp   ), low mid & high setpoints 
  -11    10.000    23.000    25.000
 # lower: infil, vent, source, data
