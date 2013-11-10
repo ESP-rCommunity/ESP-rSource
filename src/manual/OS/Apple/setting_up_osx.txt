@@ -1,6 +1,6 @@
-             Setting OSX 10.6, 10.7,10.8 for ESP-r
+             Setting OSX 10.6, 10.7, 10.8 and 10.9 for ESP-r
                       Jon W. Hand, ESRU
-                       30 May 2013
+                       November 2013
 
 INTRODUCTION
 
@@ -12,39 +12,28 @@ is almost identical to that on Linux (GCC and Make).
 
 There are several tasks that are required before you can embark
 on creating or using the virtual physics of ESP-r. If you are
-setting up a new OSX machine with 10.6 take the opportunity to 
-customise the initial install. Go back to the DVD and use the XCode 
+setting up an OSX machine with 10.6 go to the DVD and use the XCode 
 installer. For 10.7 there is no DVD - use the Apple Store to
 get the free XCode development environment as well as its command 
-line utilities.  There are also notes for OSX 10.8 at the end of
-this document.
+line utilities.  There are also notes for OSX 10.8 and 10.9 at the
+end of this document.
 
 You will also need some additional libraries and development header 
-files that are most easily setup via the Fink (and optionally Fink 
-Commander) environment or the MacPorts environment. These are 
-discussed in subsequent sections.
-
-Apple's X11 environment comes in two parts: the first includes
-the X11 library, fonts, Xserver etc. which are part of the
-OSX general install process (look for X11 in the Applicatins ->
-Utilities folder), the second includes the `include` folders and 
-C header files needed to compile and link with X11 which is
-part of Xcode.
+files that are most easily setup via the Fink environment or the 
+MacPorts environment. These are discussed in subsequent sections.
 
 The OSX 10.6 developer kit XCode be used to compile 32 bit or 64 
 bit executables of ESP-r. The Apple X11 libraries and headers are
 32 bit whereas the alternative GTK interface for ESP-r are 64 bit
-and thus it is necessary to use an alternative Install script
-(look for Install_osx_64_… in the bin folder of the ESP-r 
-distribution) which uses an -m64 directive to get GTK working. 
+and thus it is necessary to add an use an -m64 directive to get GTK working. 
 
 OSX 10.7 and later are pure 64 bit environments and therefore both 
 the X11 and GTK ESP-r interfaces will need to be compiled as 64 bit.
-With OSX 10.7 the Xcode command line utilities are a separate install
-(see notes at end of document).
+With OSX 10.7 and 10.8 the Xcode command line utilities are a separate 
+install (see notes at end of document).
 
-Gfortran tends not to be included in the XCode release and needs
-to be sourced elsewhere (see links below).  
+Gfortran is not to be included in the XCode release and we recommend that
+you source gcc g++ and gfortran via fink or MacPorts (see links below).  
 
 
 FONTS
@@ -154,40 +143,92 @@ location.
 
 COMPILING
 
-By default OS X will place user accounts under the folder /Users.
-The default location for ESP-r on Linux tends to be either
-/usr/esru or /opt/esru. When compiling experimental versions of ESP-r
-you will need to adapt the Install command line options to direct it to 
-install the ESP-r distribution to a folder which you control such 
-as /Users/fred/esru. To create a /usr/esru or /opt/esru folder you 
-may need to use a sudo command to create the new folder and to gain 
-ownership of the new folder so that you can install ESP-r there.
+By default OS X will place user accounts under the folder /Users. The
+default location for ESP-r on Linux tends to be /opt/esru. When compiling
+experimental versions of ESP-r adapt the Install command options to direct
+it to install the ESP-r distribution to a folder which you control such 
+as /Users/fred/esru. To create /opt/esru folder use a sudo command to create 
+the new folder and to gain ownership of the new folder so that you can 
+install ESP-r there.
+  cd /opt
+  sudo mkdir esru
+  sudo chown your_login_name /opt/esru
+  sudo chgrp staff /opt/esru
 
 When compiling esp-r use Install script in the ESP-r source code
 distribution. A typical command would be:
 
- ./Install -d /opt/esru --gcc4 --reuse_ish_calcs --debug
+ ./Install -d /opt/esru --gcc4 --debug
 
 If you are using the MacPorts GCC tool chain you need to include
 the --compiler_version directive
 
- ./Install -d /opt/esru --gcc4 --compiler_version -mp-4.6 --reuse_ish_calcs --debug
+ ./Install -d /opt/esru --gcc4 --compiler_version -mp-4.6 --debug
 
-The Install script will also ask questions about debug (say yes) and 
-databases and example models (say yes the first time as well as when
-there have been changes to ESP-r databases and example models).
+You can find out more about the source code compile process by giving
+the command:
 
-If you give the command ./Install --help a list of command line 
-options will be shown.
+  ./Install --help
 
+There are a few responses you need to provide during the Install process: 
+a) if the Installer detects a machine type x86_64 say yes
+b) if XML support is detected and you want to have XML output say yes
+c) you are given a choice of GTK or X11 or pure-text interfaces
+d) typically says yes to retaining debugging symbols
+e) on first install and after merging in new databases or updates say
+   yes to databases and training models
+f) and if /opt/esru does not already have all of the distribution folders
+   in place say yes to a request to create them. If the Install process
+   cannot create the sub-folders you may have to update permissions.
+g) lastly say yes to proceed with the installation.
+
+The Install will echo the general progress as modules are built. 
+
+
+SETTING UP YOUR ENVIRONMENT
+
+To use ESP-r it is suggested that in your $HOME folder e.g. /Users/fred you
+create a bin folder and a Models folder.  In bin place the scripts link_to
+and link_to_bash from the src/bin folder. After building ESP-r into /opt/esru
+issue the following commands:
+  cd
+  cd bin
+  ./link_to /opt/esru/esp-r/bin
+
+This will create links to the ESP-r executables. If your .profile or your .cshrc
+environment files include $HOME/bin in the PATH definition when you login in
+the next time you should be able to issue the command:
+  which pro
+and get back
+  /Users/fred/bin/prj
+
+If this does not work you may need to issue the following commands first:
+  cd
+  source .profile
+  which pro
+
+When creating new models a good habit is to start from your Models folder:
+  cd
+  cd Models
+  prj
+
+This will start up the ESP-r Project Manager and if you ask for a new model
+it will be located in a subfolder of Models.
 
 RADIANCE
 
-The Radiance visual simulation suite R3.9 or R4.1 compiles ok on OSX 10.6
-or 10.7.  You also need to create a link named genrbox pointing
+The Radiance visual simulation suite R3.9 or R4.1 compiles ok on OSX 10.6,
+10.7 or 10.9.  You also need to create a link named genrbox pointing
 at genbox in /usr/local/bin (the typical location where Radiance is
 compiled to). Normally it is not necessary to set the RAYPATH environment
 variable if the Radiance library files are in /usr/local/lib/ray.
+
+HELPER APPLICATIONS
+
+ESP-r assumes that Linux-like operating systems will have installed the
+ImageMagick package for displaying or capturing images as well as nedit
+as a text editor and xfig to work with vector graphics.  These are available 
+via MacPorts.
 
 
 USEFUL LINKS
@@ -195,19 +236,13 @@ USEFUL LINKS
 The newest compilers for OSX are not found in the XCode environment but in
 external locations.  Here is a list of useful sites:
 
-The HPC Mac OSX site (high performance computing) http://hpc.sourceforge.net
-which currently offers GCC 4.6 for OSX 10.5 and 10.6  The GCC compilers
-are installed in /usr/local  These compilers seem to be an improvement
-over the default GCC that comes with the XCode install.  The MacPorts
-GCC 4.6 works well in OSX 10.7 and 10.8.
+MacPorts site (http://www.macports.org) 
+The MacPorts GCC 4.6 or 4.7 works well in OSX 10.7 and 10.8.
 
 There are a number of data analysis tools linked on the Macs in Chemistry
 site <http://www.macinchem.org/> site.
 
-MacPorts site (http://www.macports.org) 
-
 The Fink project site (http://www.finkproject.org/).
-
 
 DEPENDENCIES
 
@@ -231,13 +266,14 @@ numbers may be different on your machine):
 
 otool -L ./clm
 ./clm:
-    /usr/X11/lib/libX11.6.dylib (compatibility version 9.0.0, current version 9.0.0)
-    /usr/local/lib/libstdc++.6.dylib (compatibility version 7.0.0, current version 7.10.0)
-    /usr/lib/libxslt.1.dylib (compatibility version 3.0.0, current version 3.12.0)
-    /usr/lib/libxml2.2.dylib (compatibility version 9.0.0, current version 9.16.0)
-    /usr/local/lib/libgfortran.3.dylib (compatibility version 4.0.0, current version 4.0.0)
-    /usr/local/lib/libgcc_s.1.dylib (compatibility version 1.0.0, current version 1.0.0)
-    /usr/lib/libSystem.B.dylib (compatibility version 1.0.0, current version 111.1.5)
+        /usr/X11/lib/libX11.6.dylib (compatibility version 10.0.0, current version 10.0.0)
+        /opt/local/lib/libgcc/libstdc++.6.dylib (compatibility version 7.0.0, current version 7.18.0)
+        /usr/lib/libxslt.1.dylib (compatibility version 3.0.0, current version 3.24.0)
+        /usr/lib/libxml2.2.dylib (compatibility version 10.0.0, current version 10.3.0)
+        /opt/local/lib/libgcc/libgfortran.3.dylib (compatibility version 4.0.0, current version 4.0.0)
+        /usr/lib/libSystem.B.dylib (compatibility version 1.0.0, current version 159.1.0)
+        /opt/local/lib/libgcc/libgcc_s.1.dylib (compatibility version 1.0.0, current version 1.0.0)
+        /opt/local/lib/libgcc/libquadmath.0.dylib (compatibility version 1.0.0, current version 1.0.0)
 
 These libraries will typically be installed with the X11 environment 
 on Apple computers.
@@ -249,38 +285,50 @@ in /opt/lib if you are using MacPorts.
 
 % otool -L ./clm
 ./clm:
-    /sw/lib/libgtk-x11-2.0.0.dylib (compatibility version 401.0.0, current version 401.9.0)
-    /sw/lib/libgdk-x11-2.0.0.dylib (compatibility version 401.0.0, current version 401.9.0)
-    /usr/X11R6/lib/libXrandr.2.dylib (compatibility version 2.0.0, current version 2.0.0)
-    /usr/X11R6/lib/libXinerama.1.dylib (compatibility version 1.0.0, current version 1.0.0)
-    /usr/X11R6/lib/libXext.6.dylib (compatibility version 6.4.0, current version 6.4.0)
-    /usr/X11R6/lib/libXft.2.dylib (compatibility version 2.1.0, current version 2.1.0)
-    /usr/X11R6/lib/libfreetype.6.dylib (compatibility version 6.3.0, current version 6.3.0)
-    /usr/X11R6/lib/libXrender.1.dylib (compatibility version 1.2.0, current version 1.2.0)
-    /usr/X11R6/lib/libfontconfig.1.dylib (compatibility version 1.0.0, current version 1.0.0)
-    /usr/X11R6/lib/libX11.6.dylib (compatibility version 6.2.0, current version 6.2.0)
-    /usr/X11R6/lib/libXcursor.1.dylib (compatibility version 1.0.0, current version 1.0.0)
-    /sw/lib/libatk-1.0.0.dylib (compatibility version 601.0.0, current version 601.1.0)
-    /sw/lib/libgdk_pixbuf-2.0.0.dylib (compatibility version 401.0.0, current version 401.9.0)
-    /usr/lib/libSystem.B.dylib (compatibility version 1.0.0, current version 88.1.11)
-    /sw/lib/libpangoxft-1.0.0.dylib (compatibility version 601.0.0, current version 601.0.0)
-    /sw/lib/libpangox-1.0.0.dylib (compatibility version 601.0.0, current version 601.0.0)
-    /sw/lib/libpango-1.0.0.dylib (compatibility version 601.0.0, current version 601.0.0)
-    /sw/lib/libgobject-2.0.0.dylib (compatibility version 601.0.0, current version 601.6.0)
-    /sw/lib/libgmodule-2.0.0.dylib (compatibility version 601.0.0, current version 601.6.0)
-    /sw/lib/libglib-2.0.0.dylib (compatibility version 601.0.0, current version 601.6.0)
-    /sw/lib/libintl.1.dylib (compatibility version 2.0.0, current version 2.1.0)
-    /sw/lib/libiconv.2.dylib (compatibility version 6.0.0, current version 6.0.0)
-    /usr/lib/libmx.A.dylib (compatibility version 1.0.0, current version 93.0.0)
+        /opt/local/lib/libgtk-x11-2.0.0.dylib (compatibility version 2401.0.0, current version 2401.22.0)
+        /opt/local/lib/libgdk-x11-2.0.0.dylib (compatibility version 2401.0.0, current version 2401.22.0)
+        /opt/local/lib/libpangocairo-1.0.0.dylib (compatibility version 3601.0.0, current version 3601.0.0)
+        /opt/local/lib/libgio-2.0.0.dylib (compatibility version 3801.0.0, current version 3801.1.0)
+        /opt/local/lib/libXrender.1.dylib (compatibility version 5.0.0, current version 5.0.0)
+        /opt/local/lib/libXinerama.1.dylib (compatibility version 2.0.0, current version 2.0.0)
+        /opt/local/lib/libXi.6.dylib (compatibility version 8.0.0, current version 8.0.0)
+        /opt/local/lib/libXrandr.2.dylib (compatibility version 5.0.0, current version 5.0.0)
+        /opt/local/lib/libXcursor.1.dylib (compatibility version 2.0.0, current version 2.2.0)
+        /opt/local/lib/libXcomposite.1.dylib (compatibility version 2.0.0, current version 2.0.0)
+        /opt/local/lib/libXdamage.1.dylib (compatibility version 3.0.0, current version 3.0.0)
+        /opt/local/lib/libXfixes.3.dylib (compatibility version 5.0.0, current version 5.0.0)
+        /opt/local/lib/libX11.6.dylib (compatibility version 10.0.0, current version 10.0.0)
+        /opt/local/lib/libXext.6.dylib (compatibility version 11.0.0, current version 11.0.0)
+        /opt/local/lib/libatk-1.0.0.dylib (compatibility version 21010.0.0, current version 21010.1.0)
+        /opt/local/lib/libcairo.2.dylib (compatibility version 11203.0.0, current version 11203.16.0)
+        /opt/local/lib/libgdk_pixbuf-2.0.0.dylib (compatibility version 3001.0.0, current version 3001.0.0)
+        /opt/local/lib/libpangoft2-1.0.0.dylib (compatibility version 3601.0.0, current version 3601.0.0)
+        /opt/local/lib/libpango-1.0.0.dylib (compatibility version 3601.0.0, current version 3601.0.0)
+        /opt/local/lib/libgobject-2.0.0.dylib (compatibility version 3801.0.0, current version 3801.1.0)
+        /opt/local/lib/libglib-2.0.0.dylib (compatibility version 3801.0.0, current version 3801.1.0)
+        /opt/local/lib/libintl.8.dylib (compatibility version 10.0.0, current version 10.2.0)
+        /opt/local/lib/libfontconfig.1.dylib (compatibility version 10.0.0, current version 10.0.0)
+        /opt/local/lib/libfreetype.6.dylib (compatibility version 17.0.0, current version 17.2.0)
+        /opt/local/lib/libgcc/libstdc++.6.dylib (compatibility version 7.0.0, current version 7.18.0)
+        /opt/local/lib/libxslt.1.dylib (compatibility version 3.0.0, current version 3.28.0)
+        /opt/local/lib/libxml2.2.dylib (compatibility version 12.0.0, current version 12.1.0)
+        /opt/local/lib/libgcc/libgfortran.3.dylib (compatibility version 4.0.0, current version 4.0.0)
+        /usr/lib/libSystem.B.dylib (compatibility version 1.0.0, current version 159.1.0)
+        /opt/local/lib/libgcc/libgcc_s.1.dylib (compatibility version 1.0.0, current version 1.0.0)
+        /opt/local/lib/libgcc/libquadmath.0.dylib (compatibility version 1.0.0, current version 1.0.0)
 
 
-10.7 & 10.8 Additional notes:
+OSX 10.7, 10.8 10.9 Additional notes:
 
 The 10.7 developer kit XCode (V4.4.3.3) is only available via the Apple App Store and
 comes with GCC. The command line tools needed for compiling ESP-r are an additional
 install which is accessed via the Xcode -> Open developer tool -> More developer tools
-options. With OSX 10.8 the X11 server is not longer included as a standard
-install, you are directed to use XQuartz <xquartz.macosforge.org> with a Wiki at
+options. 
+
+With OSX 10.8 the X11 server is not longer included as a standard install,
+you are directed to use XQuartz <xquartz.macosforge.org> with a Wiki at
 <xquartz.macosforge.org/trac/wiki>.
+
+OSX 10.9 has not yet been proven to work with ESP-r. 
 
 
