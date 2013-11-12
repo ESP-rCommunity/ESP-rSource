@@ -2071,12 +2071,12 @@ C knowledge of the first is required.  See also EPMENRC which pops the
 C information back into common PMENU.
       SUBROUTINE EPMENSV
 #include "epara.h"
-      COMMON/PMENUSV/MHEAD1(5),MCTL1(5),MIFUL1(5),MFUL1(5),IST1(5),
-     &               ILEN1(5),IPM1(5),MPM1(5),IPFLG1(5),MILEV
+      COMMON/PMENUSV/MHEAD1(10),MCTL1(10),MIFUL1(10),MFUL1(10),IST1(10),
+     &               ILEN1(10),IPM1(10),MPM1(10),IPFLG1(10),MILEV
       COMMON/OUTIN/IUOUT,IUIN
       CHARACTER outs*124
       MILEV=MILEV+1
-      if(MILEV.gt.5)then
+      if(MILEV.gt.10)then
 
 C Debug.
         write(outs,*) 'Number of nested menu levels is',MILEV,
@@ -2084,7 +2084,7 @@ C Debug.
         call edisp(iuout,outs)
 
       endif
-      do 42 j=5,2,-1
+      do 42 j=10,2,-1
         i=j-1
         MHEAD1(j)=MHEAD1(i)
         MCTL1(j)=MCTL1(i)
@@ -2116,8 +2116,8 @@ C block PMENUSV.
 C This is useful if returning from a second menu.  See also EPMENSV.
       SUBROUTINE EPMENRC
 #include "epara.h"
-      COMMON/PMENUSV/MHEAD1(5),MCTL1(5),MIFUL1(5),MFUL1(5),IST1(5),
-     &               ILEN1(5),IPM1(5),MPM1(5),IPFLG1(5),MILEV
+      COMMON/PMENUSV/MHEAD1(10),MCTL1(10),MIFUL1(10),MFUL1(10),IST1(10),
+     &               ILEN1(10),IPM1(10),MPM1(10),IPFLG1(10),MILEV
       MILEV=MILEV-1
       if(MILEV.le.0)then
 
@@ -2135,7 +2135,7 @@ C        write(6,*) 'Number of nested levels is',MILEV
       IPM=IPM1(1)
       MPM=MPM1(1)
       IPFLG=IPFLG1(1)
-      do 42 i=2,5
+      do 42 i=2,10
         j=i-1
         MHEAD1(j)=MHEAD1(i)
         MCTL1(j)=MCTL1(i)
