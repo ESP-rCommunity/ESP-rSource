@@ -1,5 +1,5 @@
-*connections for 3br_tt_det_retroASHP_bc
-*Date Mon Oct 21 16:26:52 2013
+*connections for 3br_tt_det_retroASHP
+*Date Mon Nov 11 19:07:51 2013
      99   # number of connections
    1   1   0   0   0  #    1 liv_w_s in living is External
    1   2   0   0   0  #    2 liv_w_e in living is External
