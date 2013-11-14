@@ -2207,6 +2207,7 @@ C.....CFC shade or fill gas layer attributes
       integer locCFCfillKr
       integer locCFCfillXe
       integer locCFCfillSF6
+      character locCFC_IGDB_ID*8
 
 C Local variables for gas materials.
       integer jsur   ! for radio button
@@ -2260,6 +2261,7 @@ C Work with local variables.
       locCFCfillKr = CFCfillKr(index)
       locCFCfillXe = CFCfillXe(index)
       locCFCfillSF6 = CFCfillSF6(index)
+      locCFC_IGDB_ID = CFC_IGDB_ID(index)
 
    3  IW=-4
       WRITE(PELM(1),'(A,1X,A)')    'a Name:',tnam(1:32)
@@ -2287,7 +2289,9 @@ C.......Show shade layer attributes depending on type
      &      'q Emissivity in          :',locCFCemissin
             WRITE(PELM(14),'(A,F7.3)')
      &      'r Longwave tran.         :',locCFClwtran
-            m=14
+            WRITE(PELM(15),'(A,A8)')
+     &      's IGDB ID                :',locCFC_IGDB_ID     
+            m=15
       elseif(CFCshdtp(index).eq.iVenBlind)then
             WRITE(PELM(7),'(A)')  'l type >>Ven. blind'
             WRITE(PELM(8),'(A)')
@@ -2578,7 +2582,11 @@ C.......Edit shade layer attributes depending on type
      &        'Longwave transmittance',
      &        'confirm:',0.00,'W',1.00,'W',0.,'lw trans (out)',
      &        IER,nbhelp)
-            modify=.true.            
+            modify=.true. 
+           elseif(IW.eq.15)then
+            CALL EASKS(locCFC_IGDB_ID,'IGDB ID','Confirm:',
+     &        8,' ','IGDB ID',IER,nbhelp)
+            modify=.true.             
            endif
            goto 3         
         ELSEIF(CFCshdtp(index).eq.iVenBlind)THEN
