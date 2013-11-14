@@ -2716,7 +2716,7 @@ C So if the model is mixed then force an upgrade. If the
 C igupgrade was set to 2 in preferences also force an upgrade.
         forceupgrade=.false.
         do 777 iz=1,ncomp
-          if(gversion(iz).gt.1.0) forceupgrade=.true.
+          if(gversion(iz).lt.1.1) forceupgrade=.true.  ! found older geo
   777   continue
         if(forceupgrade.and.igupgrade.eq.0) igupgrade=2
         if(igupgrade.eq.2) forceupgrade=.true.

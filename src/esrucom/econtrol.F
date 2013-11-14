@@ -2111,7 +2111,8 @@ C Low level I/O error. Close file before exiting.
 
 C Issue with the zone - loop links.
  109  continue
-      write(outs,'(a)') 'warning zone - control loop links issue!'
+      write(outs,'(2a)') 'Warning reading zone - control loop links! ',
+     &  'Number of zones & control links differ.'
       if(dll)then
         dllsubr='EZCTLR'
         dllmesg=outs
