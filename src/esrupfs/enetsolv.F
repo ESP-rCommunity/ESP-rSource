@@ -42,6 +42,10 @@ C post-processes and stores the results.
 #include "CETC_definitions.h"
 
 
+C Establish the current time step simulation time, used in some power 
+C component models
+      CALL ENETSETIM
+C 
 C Setting up the boundary conditions and network state.
 C  Firstly, perform control actions based on the previous time step solution.
 C     CALL ENETCTLF
@@ -149,6 +153,9 @@ C The start of the iterative solution loop
 C Process the electrical network solution matrix based on the solver chosen
 C in ENETPARAM.
 
+C Set the time used by electrical component models (ETIMEP and ETIMEF)
+      CALL ENETSETIM
+
 C Set up the Gauss-Siedel solution.
       IF(ENETSLVT.EQ.1)THEN
         CALL ENETGAUS
@@ -233,6 +240,73 @@ C are not.
       RETURN
       END
 
+C ************************************************************************************
+C Subroutine ENETSETIM sets the electrical network simulation time variables ENETIMEF
+C and ENETIMEP based on the simulation type.
+C
+      SUBROUTINE ENETSETIM
+
+      COMMON/OUTIN/IUOUT,IUIN
+      COMMON/C6/INDCFG
+      COMMON/ENETIME/ENETIMEF,ENETIMEP
+      COMMON/BTIME/BTIMEP,BTIMEF
+      COMMON/PTIME/PTIMEP,PTIMEF  
+
+      COMMON/ENETDELTAT/IETSET,ENETSTP
+
+      COMMON/PERS/ISD1,ISM1,ISD2,ISM2,ISDS,ISDF,NTSTEP
+      COMMON/PCTSTP/NTSTPP
+
+      CHARACTER*124 OUTS
+
+
+      IF(INDCFG.EQ.1)THEN
+        ENETIMEF=BTIMEF
+        ENETIMEP=BTIMEP
+      ELSEIF(INDCFG.EQ.2)THEN
+        ENETIMEF=PTIMEF
+        ENETIMEP=PTIMEP
+      ELSEIF(INDCFG.EQ.3)THEN 
+        ENETIMEF=PTIMEF  
+        ENETIMEP=PTIMEP    
+      ENDIF
+
+C Set the timestep used with the electrical solver. 
+      IF(IETSET.EQ.0)THEN
+        IF(INDCFG.EQ.1) THEN
+          IF(NTSTEP.GT.0)THEN
+            ENETSTP=3600./FLOAT(NTSTEP)
+          ELSE
+            WRITE(OUTS,'(A)') 
+     &'Subroutine: ENETSINI, fatal error 0 building t-steps!'
+            CALL EDISP(IUOUT,OUTS)
+            STOP
+          ENDIF
+        ELSEIF(INDCFG.EQ.2)THEN
+          IF(NTSTPP.GT.0)THEN
+            ENETSTP=3600./FLOAT(NTSTPP)
+          ELSE
+            WRITE(OUTS,'(A)') 
+     &'Subroutine: ENETSINI, fatal error 0 plant tsteps!'
+            CALL EDISP(IUOUT,OUTS)
+            STOP
+          ENDIF
+        ELSEIF(INDCFG.EQ.3)THEN
+          IF(NTSTPP.GT.0.AND.NTSTEP.GT.0)THEN
+            ENETSTP=3600./FLOAT(NTSTPP*NTSTEP)
+          ELSE
+            WRITE(OUTS,'(A)') 
+     &'Subroutine: ENETSINI, fatal error 0 plant/building tsteps!'
+            CALL EDISP(IUOUT,OUTS)
+            STOP
+          ENDIF
+        ENDIF
+
+      IETSET=1
+      ENDIF
+      
+      RETURN
+      END   
 C ************************************************************************************
 C Subroutine EJMTXSET, this routine sets up the Jacobian matrix for the solution
 C of the electrical network. The solution is as follows, and depends on the

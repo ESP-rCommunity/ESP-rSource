@@ -587,16 +587,18 @@ Imax at STC             4.10
 *ENDTEXT
 *ENDSPMDB
 # Additional classes of entity to be added here same format as above.
+# Power only components for use with an ESP-r electrical network
 *POWRODB
 *CATEGORY
 # The categories of special material currently supported in the database
-6
+7
 Wind Turbines
 non-HVAC electrical loads
 HVAC electrical loads
 Transformation and network losses
 Off-site loads and generation
-Batteries
+Batteries and EV
+Profile-based loads
 *ENDCATEGORY
 *POWOCOMP
 *IDDATA
@@ -865,87 +867,90 @@ Column heading corresponding to wind speed data (if using bcd data source).
 A simple user configurable wind turbine model. 
 *ENDTEXT
 *END
-*ENDPOWERODB
-*ECONDDB 
-*CATEGORY
-# The categories of special material currently supported in the database
-2
-Electrical conductors
-Transformers
-*ENDCATEGORY
-*CONCOMP
+*POWOCOMP
 *IDDATA
-# Category | Assoc  connector model no. 
-     1            1 
+# Category | Assoc. special
+#            power only model no
+     6            23
 *DESC
-dc_cable
+Electric vehicle
 *SPECDATA
-2       
-0.0       Conductor series resistance Rs (ohms/m)   
-1.0       Length (m)
+57	 0
+16.0      Battery capacity (kWh)
+0.15      Battery discharge per km (kWh/km)
+0.00      Battery parasitic losses (kWh/hr)
+90.0      Battery charging efficiency (%)
+50.0      Initial battery state of charge (%)
+20.0      Battery minimum state of charge (%)
+0.50      Disconnect whilst charging probability modifier (-)
+8200.0    Nominal annual car use (km)
+8.50      Average trip distance (out and return) (km)
+0.0000    Trip distance equation a0
+5.26432   Trip distance equation a1
+12.16438  Trip distance equation a2
+28.24043  Trip distance equation a3
+1800.0    Stay lockout (s)
+1800.0    Trip lockout (s)
+110.0     Maximum vehicle speed (km/h)
+1         Number of holiday periods vehicle is absent (-)
+181       Holiday period start
+194       Holiday period end
+6         Number of weekday time periods 
+0.0       period start
+0.00535   trip (1-leg) probability in Wkdy period
+7.0       period start
+0.00842   trip (1-leg) probability in Wkdy period
+10.0      period start
+0.06372   trip (1-leg) probability in Wkdy period
+15.0      period start
+0.09153   trip (1-leg) probability in Wkdy period
+18.0      period start
+0.05325   trip (1-leg) probability in Wkdy period
+21.0      period start
+0.01525   trip (1-leg) probability in Wkdy period
+5         Number of Saturday time periods 
+0.0       period start
+0.06031   trip (1-leg) probability in period
+8.0       period start
+0.05662   trip (1-leg) probability in period
+10.0      period start
+0.09209   trip (1-leg) probability in period
+15.0      period start
+0.06052   trip (1-leg) probability in period
+21.0      period start
+0.01872   trip (1-leg) probability in Sat period
+4         Number of Sunday time periods 
+0.0       period start
+0.01284   trip (1-leg) probability in Sun period
+10.0      period start
+0.09036   trip (1-leg) probability in Sun period
+17.0      period start
+0.04873   trip (1-leg) probability in Sun period
+21.0      period start
+0.01473   trip (1-leg) probability in Sun period
+3.0       number of charging control data items
+1.0       charging type	(dumb charge)
+32.0      maximum charging current (A)
+220.0     nominal charging voltage (V)
+12345.0   random seed
 *TEXT
-None
+Electric vehicle model, for use in vehicle-to-home or grid simulations. Calibrates using 2013 UK DfT
+road transport data.
 *ENDTEXT
 *END
-*CONCOMP
+*POWOCOMP
 *IDDATA
-# Category | Assoc  connector model no. 
-     1            2 
+# Category | Assoc. special
+#            power only model no
+     7            24
 *DESC
-one_phase_cable
+Profile from TDF
 *SPECDATA
-6       
-0.0       Phase conductor series resistance Rs (ohms/m)   
-0.0       Phase conductor series reactance Xs (=jwLs) (ohms/m)            
-0.0       Neutral series resistance Rn (ohms/m)
-0.0       Neutral series reactance Xn (=jwLn) (ohms/m)
-0.0       Phase-Neutral mutual inductive reactance Xm (=jwLm) (ohms/m)
-1.0       Length (m)
+2	 0
+3.0      Entity id number in tdf database.
+1.0      Profile scaling factor (-).
 *TEXT
-This is a very simple short line model that ignores the capacitive properties 
-of the conductor. 
-*ENDTEXT
-*END
-*CONCOMP
-*IDDATA
-# Category | Assoc  connector model no. 
-     1            3 
-*DESC
-two_phase_cable
-*SPECDATA
-7       
-0.0       Phase conductor series resistance Rs (ohms/m)   
-0.0       Phase conductor series reactance Xs (=jwLs) (ohms/m)
-0.0       Phase-Phase mutual inductive reactance Xm (=jwLm) (ohms/m)           
- 
-0.0       Neutral series resistance Rn (ohms/m)
-0.0       Neutral series reactance Xn (=jwLn) (ohms/m)
-0.0       Phase-Neutral mutual inductive reactance Xm (=jwLm) (ohms/m)
-1.0       Length (m)
-*TEXT
-This is a very simple short line model that ignores the capacitive properties 
-of the conductor. 
-*ENDTEXT
-*END
-*CONCOMP
-*IDDATA
-# Category | Assoc  connector model no. 
-     1            4 
-*DESC
-three_phase_cable
-*SPECDATA
-7       
-0.0       Phase conductor series resistance Rs (ohms/m)   
-0.0       Phase conductor series reactance Xs (=jwLs) (ohms/m) 
-0.0       Phase-Phase mutual inductive reactance Xm (=jwLm) (ohms/m)           
-  
-0.0       Neutral series resistance Rn (ohms/m)
-0.0       Neutral series reactance Xn (=jwLn) (ohms/m)
-0.0       Phase-Neutral mutual inductive reactance Xm (=jwLm) (ohms/m)
-1.0       Length (m)
-*TEXT
-This is a very simple short line model that ignores the capacitive properties 
-of the conductor. 
+Component that reads text from a temporal data file. 
 *ENDTEXT
 *END
 *POWOCOMP
@@ -956,7 +961,7 @@ of the conductor.
 *DESC
 Lithium Ion Battery (CETC Battery subroutine)
 *SPECDATA
-81 0
+81 	0
 34       Number of cells connected in parrallel
 35       Number of cells connected in series
 1.5      reference capacity for a unit cell (Amp h)
@@ -1040,6 +1045,89 @@ Lithium Ion Battery (CETC Battery subroutine)
 3000.    The crucial cycle to indicate the end of the cell's life
 *TEXT
 Lithium Ion Battery
+*ENDTEXT
+*END
+*ENDPOWERODB
+*ECONDDB 
+*CATEGORY
+# The categories of special material currently supported in the database
+2
+Electrical conductors
+Transformers
+*ENDCATEGORY
+*CONCOMP
+*IDDATA
+# Category | Assoc  connector model no. 
+     1            1 
+*DESC
+dc_cable
+*SPECDATA
+2       
+0.0       Conductor series resistance Rs (ohms/m)   
+1.0       Length (m)
+*TEXT
+None
+*ENDTEXT
+*END
+*CONCOMP
+*IDDATA
+# Category | Assoc  connector model no. 
+     1            2 
+*DESC
+one_phase_cable
+*SPECDATA
+6       
+0.0       Phase conductor series resistance Rs (ohms/m)   
+0.0       Phase conductor series reactance Xs (=jwLs) (ohms/m)            
+0.0       Neutral series resistance Rn (ohms/m)
+0.0       Neutral series reactance Xn (=jwLn) (ohms/m)
+0.0       Phase-Neutral mutual inductive reactance Xm (=jwLm) (ohms/m)
+1.0       Length (m)
+*TEXT
+This is a very simple short line model that ignores the capacitive properties 
+of the conductor. 
+*ENDTEXT
+*END
+*CONCOMP
+*IDDATA
+# Category | Assoc  connector model no. 
+     1            3 
+*DESC
+two_phase_cable
+*SPECDATA
+7       
+0.0       Phase conductor series resistance Rs (ohms/m)   
+0.0       Phase conductor series reactance Xs (=jwLs) (ohms/m)
+0.0       Phase-Phase mutual inductive reactance Xm (=jwLm) (ohms/m)           
+ 
+0.0       Neutral series resistance Rn (ohms/m)
+0.0       Neutral series reactance Xn (=jwLn) (ohms/m)
+0.0       Phase-Neutral mutual inductive reactance Xm (=jwLm) (ohms/m)
+1.0       Length (m)
+*TEXT
+This is a very simple short line model that ignores the capacitive properties 
+of the conductor. 
+*ENDTEXT
+*END
+*CONCOMP
+*IDDATA
+# Category | Assoc  connector model no. 
+     1            4 
+*DESC
+three_phase_cable
+*SPECDATA
+7       
+0.0       Phase conductor series resistance Rs (ohms/m)   
+0.0       Phase conductor series reactance Xs (=jwLs) (ohms/m) 
+0.0       Phase-Phase mutual inductive reactance Xm (=jwLm) (ohms/m)           
+  
+0.0       Neutral series resistance Rn (ohms/m)
+0.0       Neutral series reactance Xn (=jwLn) (ohms/m)
+0.0       Phase-Neutral mutual inductive reactance Xm (=jwLm) (ohms/m)
+1.0       Length (m)
+*TEXT
+This is a very simple short line model that ignores the capacitive properties 
+of the conductor. 
 *ENDTEXT
 *END
 *ENDCONDDB 

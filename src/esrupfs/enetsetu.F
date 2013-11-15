@@ -77,6 +77,9 @@ C
       SUBROUTINE ENETSINI
 #include "power.h"
 
+      COMMON/C6/INDCFG
+      COMMON/OUTIN/IUOUT,IUIN
+
 C The PER-UNIT electrical network state variables.
       COMMON/ENETVPU/VOLTPUP(MENOD),VOLTPUF(MENOD)
 
@@ -116,6 +119,8 @@ C The array of driving port and transfer admittances
 C More network-related info - phase angles.
       COMMON/ENETMSC/PHASEANG(MPHAS)
 
+      COMMON/ENETDELTAT/IETSET,ENETSTP
+
 C Initialization status of power-only components
       COMMON/ENetPowComp/bComp_initialized
       logical bComp_Initialized(MPOWCOM)
@@ -124,16 +129,18 @@ C Initialization status of power-only components
       INTEGER NCONZPU,NCONECOM,CONECOMNO,CONECOMID,CONECOMPHTYP,
      &NCONECOMDAT,NECON,ECONO,CONPHTYP,CONPH,CCNO,SENOD,EENOD,NCONZ,
      &NENOD,ENODNO,ENODPHTYP,ENODPH,ENODTYP,ENETMAXI,ENETSLVT,NYELM,
-     &ENODCVGF
+     &ENODCVGF,ISD1,ISM1,ISD2,ISM2,ISDS,ISDF,NTSTEP,NTSTPP
 
       REAL RADPHA,PHASEANG,CONECOMDAT,ENODBASEV,ENODBASEP,ENETACVG,
-     &ENETVLIM,ENETVCVG
+     &ENETVLIM,ENETVCVG,ENETSTP
 
       DOUBLE PRECISION JACOBEL,EMATJZ,EDELTA
 
       COMPLEX CONZPU,CONYPU,YADM,VOLTPUF,VOLTPUP,CONZ
 
       LOGICAL CVGCHK
+
+      CHARACTER*124 OUTS
 
 C Solver parameters  
       ENETMAXI=100
@@ -185,7 +192,7 @@ C Matrix parameters
           JACOBEL(IJR,IJC)=0.0
   90  CONTINUE
   80  CONTINUE
-
+										
 C Set power-only component initialization flags to false.
 C Power-only component data requiring initialization will
 C set these data to true after initialization is complete.
@@ -193,6 +200,8 @@ C set these data to true after initialization is complete.
         bComp_Initialized(iComponent) = .false.
       ENDDO
 
+C Time step calculation. 
+      IETSET=0
   
       RETURN 
       END

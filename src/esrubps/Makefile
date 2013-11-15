@@ -37,7 +37,7 @@ BPS_OBJECTS = bps.o adaptconf1.o adaptconf2.o adjb.o adjp.o ascii_mat.o \
 	  climi.o cntmnt.o conc.o convect1.o convect2.o ctread.o dayfac.o drylink.o dossupport.o ecasctl.o \
 	  econstr.o econtrol.o edatabase.o egeometry.o egrid.o emfnetw.o emoist.o \
 	  enetbound.o enetmath.o enetmisc.o enetpost.o enetrewr.o enetsetu.o \
-	  enetsolv.o eroper.o esgrid.o esru_misc.o esystem.o filelist.o g3dfac.o \
+	  enetsolv.o eroper.o esgrid.o esru_misc.o esystem.o EV_model.o filelist.o g3dfac.o \
 	  g3dfnc.o g3dmtx.o gcfunc.o gsdmtx.o inital.o initalc.o initalp.o \
 	  input.o item.o lisolv.o locmage.o matsv.o mfbndr.o mfcdat.o mfcntl.o \
 	  mfmach.o mfmode.o mfsbld.o mfsbps.o mfsplt.o mfutil.o mitzero.o \
@@ -261,6 +261,9 @@ esru_misc.F:
 esystem.F:
 	rm -f esystem.F
 	ln -s $(COMdir)/esystem.F .
+EV_model.F:
+	rm -f EV_model.F
+	ln -s $(PFSdir)/EV_model.F .
 filelist.F:
 	rm -f filelist.F
 	ln -s $(COMdir)/filelist.F .
@@ -750,7 +753,7 @@ clean:
 	dossupport.F drylink.F ecasctl.F econstr.F econtrol.F edatabase.F egeometry.F \
 	egrid.F emfnetw.F emoist.F enetbound.F enetmath.F enetmisc.F enetpost.F \
 	enetrewr.F enetsetu.F enetsolv.F enet_state_variable_manipulate.F eroper.F esgrid.F ESPrTrnsysData.F \
-	esru_misc.F esystem.F fan.F filelist.F furnace.F g3dfac.F g3dfnc.F g3dmtx.F gcfunc.F gsdmtx.F \
+	esru_misc.F esystem.F EV_model.F fan.F filelist.F furnace.F g3dfac.F g3dfnc.F g3dmtx.F gcfunc.F gsdmtx.F \
 	gshpinput.F gshpsim.F h2_components.F h2_comps.F h2_matrix_library.F h3koutput.F ESPrTrnsysData.F \
 	h3kstore.F hvacinput.F hvac_output.F hvacsim.F Hydrogen_appliances.F TCC.F harmonizer.F harmonizer_timing.F \
 	Hydrogen_demand_controller.F Hydrogen_MH_store.F Hydrogen_PEMFC.F harmonizer_dummy.F \
