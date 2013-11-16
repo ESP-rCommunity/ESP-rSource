@@ -1094,7 +1094,7 @@ C Check version of materials database.
       endif
 
 C Check version of CFClayers database.
-      call eclose(matver,1.1,0.01,closecfc1)
+      call eclose(cfcver,1.1,0.01,closecfc1)
       if(closecfc1)then
         continue
       else
@@ -1553,7 +1553,10 @@ C stitute the U value for each layer unless we are dealing with
 C one of the [g] or [h] material types in which case the name
 C is written out.
 
-C This subroutine uses the material array data in matdatarray.
+C This subroutine uses the material array data in matdatarray. Currently it
+C writes the layer line with material name and documentation separate by 
+C a : but truncates the total length to 72 characters. A future variant might 
+C relax this limitation so as not to truncate the material documentation.
       SUBROUTINE EMKAMLD(ITRU,IER)
 #include "building.h"
 #include "esprdbfile.h"
@@ -1639,7 +1642,7 @@ C Write out a file header.
       WRITE(IFMUL,30)LFMUL(1:lnblnk(LFMUL)),LFMAT(1:lnblnk(LFMAT)),
      &               LCFCDB(1:lnblnk(LCFCDB))
   30  FORMAT('# composite construction db defined in ',A,/,
-     &       '# based on materials db ',A,
+     &       '# based on materials db ',A,/,
      &       '# and based on CFClayers db ',A)
 
 C For each composite construction write the number of layers (LAYERS),

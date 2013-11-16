@@ -1,8 +1,8 @@
 *Operations 2.1
-*date Thu Dec 27 13:55:50 2012  # latest file modification 
+*date Thu Nov  7 16:19:07 2013  # latest file modification 
 # operations of upper defined in: 
 # ../zones/upper.opr
-There is 1ach infiltration.
+There is 1ach infiltration all days all hours.
 # control(no control of air flow  ), low mid & high setpoints 
    0     0.000     0.000     0.000
      1   # number of flow periods in day type: weekdays    

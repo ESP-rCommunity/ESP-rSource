@@ -59,13 +59,14 @@ C CLSDES (30 char) is an array for menu items listing each class.
 C CLSSEL (36 char) is an array for menu items for the selected class.
       character CLSSEL*36,CLSDES*32
       DIMENSION CLSDES(36),CLSSEL(30),ICLSSEL(30)
-      character PDBM*76     ! array to hold summary of each material
+      character PDBM*86     ! array to hold summary of each material
       DIMENSION PDBM(37)    ! within the category
       character managearray*32  ! string array for material management
       dimension managearray(60)
       integer iwhichmanage,iwhichmsel
       dimension iwhichmanage(60),iwhichmsel(60) ! for each management array point back
       integer iwhicharray   ! for each item in menu point back to array
+      integer lsn,lfordoc   ! for detecting string lengths
       dimension iwhicharray(60)
       character ACTION*1,lltmp*144
       CHARACTER KEY*1,outs*124
@@ -282,10 +283,11 @@ C associated with this class.
               if(matcatindex(J).eq.IC)then
                 IDB=matlegindex(J)
                 lsn=MIN0(lnblnk(matname(J)),32)
+                lfordoc = 72 - (lsn +4)    ! space left for doc
                 WRITE(outs,46)IDB,matdbcon(J),matdbden(J),matdbsht(J),
      &            matdboute(J),matdbouta(J),matdbdrv(J),
-     &            matname(J)(1:lsn)
-   46           FORMAT(I4,F9.3,F6.0,F7.0,F5.2,F5.2,F7.0,1X,A)
+     &            matname(J)(1:lsn),' : ',matdoc(J)(1:lfordoc)
+   46           FORMAT(I4,F9.3,F6.0,F7.0,F5.2,F5.2,F7.0,2X,3A)
                 call edisp(itu,outs)
               endif
    47       CONTINUE
@@ -435,8 +437,9 @@ C Generate menu strings for materials in the class.
         PDBM(2)= ' Specific Heat J/(kg deg.C) Vapour (MNs g^-1m^-1)'
         PDBM(3)=
      &' |Conduc-|Den- |Specif|IR  |Solar|Diffu|Description of material'
-        PDBM(4)=
-     &' |tivity |sity |heat  |emis|abs  |resis| name   : documentation'
+        write(PDBM(4),'(2a)')
+     &' |tivity |sity |heat  |emis|abs  |resis| name       :',
+     &' documentation'
         M=MHEAD
         ILEN=matcatitems(IC) ! reset if materials in this catetory changed
         mclist=0  ! counter for materials found to be in this category
@@ -462,29 +465,29 @@ C remember the array index that goes with the menu position (m).
               if(matopaq(J).eq.'o')then
                 WRITE(PDBM(M),24)KEY,matdbcon(J),matdbden(J),
      &            matdbsht(J),matdboute(J),matdbouta(J),matdbdrv(J),
-     &            matname(J)(1:31)
+     &            matname(J)(1:32)
    24           FORMAT(A1,F8.3,F6.0,F7.0,F5.2,F5.2,F7.0,1X,A)
               elseif(matopaq(J).eq.'-')then
                 WRITE(PDBM(M),25)KEY,matdbcon(J),matdbden(J),
      &            matdbsht(J),matdboute(J),matdbouta(J),matdbdrv(J),
-     &            matname(J)(1:12),': ',matdoc(J)(1:21)
+     &            matname(J)(1:12),': ',matdoc(J)(1:31)
    25           FORMAT(A1,F8.3,F6.0,F7.0,F5.2,F5.2,F7.0,1X,3A)
               elseif(matopaq(J).eq.'t')then
                 WRITE(PDBM(M),25)KEY,matdbcon(J),matdbden(J),
      &            matdbsht(J),matdboute(J),matdbouta(J),matdbdrv(J),
-     &            matname(J)(1:12),': ',matdoc(J)(1:21)
+     &            matname(J)(1:12),': ',matdoc(J)(1:31)
               elseif(matopaq(J).eq.'g')then
                 WRITE(PDBM(M),25)KEY,matdbcon(J),matdbden(J),
      &            matdbsht(J),matdboute(J),matdbouta(J),matdbdrv(J),
-     &            matname(J)(1:12),': ',matdoc(J)(1:21)
+     &            matname(J)(1:12),': ',matdoc(J)(1:31)
               elseif(matopaq(J).eq.'h')then
                 WRITE(PDBM(M),25)KEY,matdbcon(J),matdbden(J),
      &            matdbsht(J),matdboute(J),matdbouta(J),matdbdrv(J),
-     &            matname(J)(1:12),': ',matdoc(J)(1:21)
+     &            matname(J)(1:12),': ',matdoc(J)(1:31)
               else
                 WRITE(PDBM(M),24)KEY,matdbcon(J),matdbden(J),
      &            matdbsht(J),matdboute(J),matdbouta(J),matdbdrv(J),
-     &            matname(J)(1:31)
+     &            matname(J)(1:32)
               endif
             endif
           endif
@@ -493,7 +496,7 @@ C remember the array index that goes with the menu position (m).
 
 C If a long list include page facility text.      
         IF(IPFLG.EQ.0)THEN  
-          PDBM(NC+1)='  ____________________________ '
+          PDBM(NC+1)='  ____________________________________ '
         ELSE
           WRITE(PDBM(NC+1),15)IPM,MPM 
         ENDIF
@@ -1251,7 +1254,7 @@ C associated with this class.
                 lsn=MIN0(lnblnk(cfcname(J)),32)
                 WRITE(outs,46)cfcitmindex(J),cfcdbcon(J),cfcdbden(J),
      &            cfcdbsht(J),cfcname(J)(1:lsn)
-   46           FORMAT(i4,F9.3,F6.0,F7.0,1X,A)
+   46           FORMAT(i4,F9.3,F6.0,F7.0,2X,A)
                 call edisp(itu,outs)
               endif
    47       CONTINUE
@@ -2207,6 +2210,7 @@ C.....CFC shade or fill gas layer attributes
       integer locCFCfillKr
       integer locCFCfillXe
       integer locCFCfillSF6
+      character locCFC_IGDB_ID*8
 
 C Local variables for gas materials.
       integer jsur   ! for radio button
@@ -2260,6 +2264,7 @@ C Work with local variables.
       locCFCfillKr = CFCfillKr(index)
       locCFCfillXe = CFCfillXe(index)
       locCFCfillSF6 = CFCfillSF6(index)
+      locCFC_IGDB_ID = CFC_IGDB_ID(index)
 
    3  IW=-4
       WRITE(PELM(1),'(A,1X,A)')    'a Name:',tnam(1:32)
@@ -2287,7 +2292,9 @@ C.......Show shade layer attributes depending on type
      &      'q Emissivity in          :',locCFCemissin
             WRITE(PELM(14),'(A,F7.3)')
      &      'r Longwave tran.         :',locCFClwtran
-            m=14
+            WRITE(PELM(15),'(A,A8)')
+     &      's IGDB ID                :',locCFC_IGDB_ID     
+            m=15
       elseif(CFCshdtp(index).eq.iVenBlind)then
             WRITE(PELM(7),'(A)')  'l type >>Ven. blind'
             WRITE(PELM(8),'(A)')
@@ -2578,7 +2585,11 @@ C.......Edit shade layer attributes depending on type
      &        'Longwave transmittance',
      &        'confirm:',0.00,'W',1.00,'W',0.,'lw trans (out)',
      &        IER,nbhelp)
-            modify=.true.            
+            modify=.true. 
+           elseif(IW.eq.15)then
+            CALL EASKS(locCFC_IGDB_ID,'IGDB ID','Confirm:',
+     &        8,' ','IGDB ID',IER,nbhelp)
+            modify=.true.             
            endif
            goto 3         
         ELSEIF(CFCshdtp(index).eq.iVenBlind)THEN

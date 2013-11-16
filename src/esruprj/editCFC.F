@@ -69,7 +69,6 @@ C ********************************************************************
       integer ij,it,icompare1,icompare2,icn2,ibk,iwa,nmax,itrunc,ipos
       integer IFU,ival,itype,istat,loutlen,ln_outs,ln_zonepth
       integer lnblnk    !function definition
-      integer matarrayindex
       integer cfcarrayindex ! for type CFC2
       CHARACTER outs*124
       CHARACTER con_name*32,ltmp*72,louts*248
@@ -108,7 +107,7 @@ C Ask user to update CFC file or continue
       CALL EASKAB(outs,'Options:',
      &     'Update CFC file','continue',IWA,9)
 
-C Import GSLedit files selected
+C Update CFC file selected
       IF(IWA.EQ.1)THEN
 
 C 1. scan G6 common and check that CFCs are VERT and EXTERIOR
@@ -128,7 +127,6 @@ C between each glazing/shading layer
                   do 15 ie=2,ne(is),2
                    check_CFC_or_CFC2:
      &             IF(SSOTF(icn1)(1:4).EQ.'CFC ') THEN    
-                     matarrayindex = IPRMAT(imlc,ie)
                      igap=igap+1
                      if(ie.ne.IPAIRG(IS,igap))then
                        CALL USRMSG(
@@ -160,27 +158,10 @@ C between each glazing/shading layer
  15               continue
 
 C 3.  scan constructions layers and check that there isn't more
-C than 1 shade layer, except if a combination of insect screen and 
-C shade layer is found. In that case check that the shade and insect screen
-C are separated by glass layer, otherwise the convection coefficients cannot
-C be handled correctly. 
+C than 1 shade layer (for CFC2 type only).
                   iShdLayers = 0
                   do 16 ie=1,ne(is),1
-                   IF(SSOTF(icn1)(1:4).EQ.'CFC ') THEN    
-                     matarrayindex = IPRMAT(imlc,ie)
-                     if(CFCshdtp(matarrayindex).gt.iGlazing)then
-                       iShdLayers = iShdLayers+1
-                     endif
-
-                     if(iShdLayers.gt.1)then
-                       CALL USRMSG(
-     &             ' Currently only one shade layer is allowed',
-     &             ' Check constructions and try again.',
-     &             'W') 
-                       IER=1
-                       return
-                     endif
-                   ELSEIF(SSOTF(icn1)(1:4).EQ.'CFC2')THEN
+                   IF(SSOTF(icn1)(1:4).EQ.'CFC2')THEN
                      cfcarrayindex = ITMCFCDB(imlc,ie)
                      if(CFCshdtp(cfcarrayindex).gt.iGlazing)then
                        iShdLayers = iShdLayers+1
@@ -335,7 +316,7 @@ C constructions cannot have the same CFC type)
 
 C ------------------------------------------------------------------
 C If we are at this point then checks passed, ready to assemble CFC file.
-C Ask user to either import CFC data from GSL edit, or use the materials
+C Ask user to either import CFC data from GSL edit, or use the CFClayers
 C database
 C ------------------------------------------------------------------
 
@@ -474,6 +455,8 @@ C...........Get shade and glazing layer properties
      &                  CFCemissout(cfcarrayindex)
                 rim_lwEb(icomp,icfctp,IL)=
      &                  CFCemissin(cfcarrayindex)
+                cim_IGDB_ID(icomp,icfctp,IL)=
+     &                  CFC_IGDB_ID(cfcarrayindex)               
               elseif(im_cfcltp(icomp,icfctp,IL).eq.iVenBlind)then
 
                 rim_SolRf(icomp,icfctp,IL)=
@@ -735,14 +718,22 @@ C commons.
      &      outs(1:lnblnk(outs))
 
         elseif(im_cfcltp(icomp,it,ie).eq.iGlazing)then
-            
-            write(outs,'(7F8.3,a)')rim_SolRf(icomp,it,ie),
-     &      rim_SolRb(icomp,it,ie),rim_SolT(icomp,it,ie),0.,0.,0.,0.,
-     &      '   # glazing '
-            WRITE(IFU,'(A)',IOSTAT=ISTAT,ERR=98)
-     &      outs(1:lnblnk(outs))
 
-        elseif(im_cfcltp(icomp,it,ie).eq.iGasGap)then
+            if(CFC2_xst .and. cim_IGDB_ID(icomp,it,ie) .ne. '')then
+              write(outs,'(7F8.3,a,a)')rim_SolRf(icomp,it,ie),
+     &        rim_SolRb(icomp,it,ie),rim_SolT(icomp,it,ie),0.,0.,0.,0.,
+     &        '   # glazing, IGDB ID: ', cim_IGDB_ID(icomp,it,ie)
+              WRITE(IFU,'(A)',IOSTAT=ISTAT,ERR=98)
+     &        outs(1:lnblnk(outs))
+            else
+              write(outs,'(7F8.3,a)')rim_SolRf(icomp,it,ie),
+     &        rim_SolRb(icomp,it,ie),rim_SolT(icomp,it,ie),0.,0.,0.,0.,
+     &        '   # glazing '
+              WRITE(IFU,'(A)',IOSTAT=ISTAT,ERR=98)
+     &        outs(1:lnblnk(outs))
+            endif
+
+        elseif(im_cfcltp(icomp,it,ie).eq.iGasGap)then        
         
             write(outs,'(7F8.3,a)')rim_SolRf(icomp,it,ie),
      &      rim_SolRb(icomp,it,ie),rim_SolT(icomp,it,ie),0.,0.,0.,0.,
@@ -1687,16 +1678,17 @@ C Read lines from file, discarding comments.
       CALL EGETWI(OUTSTR,K,NS,4,MS,'W','no zone cfc surf',IER)
 
 C Read pointer to type of CFC for each surface, strip comments etc. If
-C ICFCFL != 0 and surface attribute is not 'CFC ' then confirm
+C ICFCFL != 0 and surface attribute is not 'CFC' then confirm
 C if the surface attribute should be updated.
       IRVA=NS
       CALL EGETWIA(IUA,IVA,IRVA,0,MCFC,'W','cfc list',IER)
       ncfc(icomp)=0
       DO 10 I=1,NS
-        icfcfl(icomp,i)=iva(i)
-       IF(icfcfl(icomp,i).NE.0.AND.(SSOTF(I)(1:3).NE.'CFC'))THEN
+       icfcfl(icomp,i)=iva(i)
+       icn=izstocn(icomp,i)        
+       IF(icfcfl(icomp,i).NE.0.AND.(SSOTF(icn)(1:3).NE.'CFC'))THEN
          WRITE(OUTS,'(5a)')' The CFC file ',LUA(1:lnblnk(LUA)),
-     &      ' not sure if ',SSNAME(I),
+     &      ' not sure if ',SSNAME(icn),
      &     ' is a complex fenestration constr.'
          call edisp(itru,outs)
          call edisp(itru,' Check your zone files.')
@@ -1765,22 +1757,30 @@ C Read normal solar optical properties for complex fenestration construction.
         CALL EGETWR(OUTSTR,K,VAL,0.,1.0,'W','front solar tran.',
      &              IER)
         solT(ICOMP,i,j)=VAL
-
-	  CALL EGETWR(OUTSTR,K,VAL,0.,1.0,'W','total front tran.',
+        
+C.......Check number of items. If only 3 then this is a legacy file.
+C.......If 7 then this is a new file which includes the complete set 
+C.......of optical properties required for pleated drapes, roller blinds
+C.......and insect screens.        
+        if(ND.eq.3)then
+          SolTf_tot(ICOMP,i,j)=0.0
+          SolTb_tot(ICOMP,i,j)=0.0
+          SolTf_bd(ICOMP,i,j)=0.0
+          SolTb_bd(ICOMP,i,j)=0.0
+        else if(ND.eq.7)then
+	      CALL EGETWR(OUTSTR,K,VAL,0.,1.0,'W','total front tran.',
      &              IER)
-        SolTf_tot(ICOMP,i,j)=VAL
-
-        CALL EGETWR(OUTSTR,K,VAL,0.,1.0,'W','total back tran.',
+          SolTf_tot(ICOMP,i,j)=VAL
+          CALL EGETWR(OUTSTR,K,VAL,0.,1.0,'W','total back tran.',
      &              IER)
-        SolTb_tot(ICOMP,i,j)=VAL
-
-        CALL EGETWR(OUTSTR,K,VAL,0.,1.0,'W','bd front tran.',
+          SolTb_tot(ICOMP,i,j)=VAL
+          CALL EGETWR(OUTSTR,K,VAL,0.,1.0,'W','bd front tran.',
      &              IER)
-        SolTf_bd(ICOMP,i,j)=VAL
-
-	  CALL EGETWR(OUTSTR,K,VAL,0.,1.0,'W','bd back tran.',
+          SolTf_bd(ICOMP,i,j)=VAL
+	      CALL EGETWR(OUTSTR,K,VAL,0.,1.0,'W','bd back tran.',
      &              IER)
-        SolTb_bd(ICOMP,i,j)=VAL
+          SolTb_bd(ICOMP,i,j)=VAL
+        endif
 
    40 continue
 

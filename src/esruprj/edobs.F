@@ -1209,7 +1209,11 @@ C geometry files.
           VERT(21)=                 '< jump to previous obstruction  '
           VERT(22)=                 '                                '
         endif
-        VERT(23)                  = '* convert to general polygons   '
+        if(newgeo)then
+          VERT(23)                = '* convert to general polygons   '
+        else
+          VERT(23)                = '  not applicable                '
+        endif
         VERT(24)                  = '? help                          '
         VERT(25)                  = '- exit                          '
       else

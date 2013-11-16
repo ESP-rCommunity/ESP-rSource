@@ -1,8 +1,8 @@
 *Operations 2.1
-*date Thu Dec 27 13:55:49 2012  # latest file modification 
+*date Thu Nov  7 16:19:06 2013  # latest file modification 
 # operations of lower_ne defined in: 
 # ../zones/lower_ne.opr
-There is 1 ach infiltration.
+There is 1 ach infiltration all days and all hours.
 # control(no control of air flow  ), low mid & high setpoints 
    0     0.000     0.000     0.000
      1   # number of flow periods in day type: weekdays    

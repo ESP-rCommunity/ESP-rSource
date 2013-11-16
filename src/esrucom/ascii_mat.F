@@ -1379,7 +1379,7 @@ C Name of current application - only invoke editing if prj.
       CHARACTER DOIT*300
 
       DIMENSION VAL(19)
-      CHARACTER NDESC*124,OUTSTR*124,WORD*24, WORD4*4
+      CHARACTER NDESC*124,OUTSTR*124,WORD*24, WORD4*4, WORD8*8
       character WORD32*32,WORD248*248,LOUTSTR*248
       character namelist*32,nametocheck*32  ! to check for duplicate names
       character outs*132,lltmp*144,longtfile*144,longtfiledos*144
@@ -1507,115 +1507,121 @@ C Record the name and then check and see if it is a duplicate.
         CALL EGETWI(LOUTSTR,K,iCFCtype,0,0,'-','shade type',IER)
         CFCshdtp(cfcdbitems) = iCFCtype
         if (CFCshdtp(cfcdbitems).eq.iGlazing)then
-            CALL EGETWR(LOUTSTR,K,VAL(2),0.,0.,'-',
+            CALL EGETWR(LOUTSTR,K,VAL(5),0.,0.,'-',
      &                    'sol refl out',IER)
-            CALL EGETWR(LOUTSTR,K,VAL(3),0.,0.,'-',
+            CALL EGETWR(LOUTSTR,K,VAL(6),0.,0.,'-',
      &                    'sol refl in',IER)
-            CALL EGETWR(LOUTSTR,K,VAL(4),0.,0.,'-',
+            CALL EGETWR(LOUTSTR,K,VAL(7),0.,0.,'-',
      &                    'sol tran dir',IER)
-            CALL EGETWR(LOUTSTR,K,VAL(5),0.,0.,'-','emiss out',IER)
-            CALL EGETWR(LOUTSTR,K,VAL(6),0.,0.,'-','emiss in',IER)
-            CALL EGETWR(LOUTSTR,K,VAL(7),0.,0.,'-','lw trans',IER)
-            CFCsolreflout(cfcdbitems) = VAL(2)
-            CFCsolreflin(cfcdbitems) = VAL(3)
-            CFCsoltrandir(cfcdbitems) =  VAL(4)
-            CFCemissout(cfcdbitems) = VAL(5)
-            CFCemissin(cfcdbitems) = VAL(6)
-            CFClwtran(cfcdbitems) = VAL(7)
+            CALL EGETWR(LOUTSTR,K,VAL(8),0.,0.,'-','emiss out',IER)
+            CALL EGETWR(LOUTSTR,K,VAL(9),0.,0.,'-','emiss in',IER)
+            CALL EGETWR(LOUTSTR,K,VAL(10),0.,0.,'-','lw trans',IER)
+            CFCsolreflout(cfcdbitems) = VAL(5)
+            CFCsolreflin(cfcdbitems) = VAL(6)
+            CFCsoltrandir(cfcdbitems) =  VAL(7)
+            CFCemissout(cfcdbitems) = VAL(8)
+            CFCemissin(cfcdbitems) = VAL(9)
+            CFClwtran(cfcdbitems) = VAL(10)
+            if(ND.eq.12)then
+              CALL EGETW(LOUTSTR,K,WORD8,'-','IGDB ID',IER)
+              CFC_IGDB_ID(cfcdbitems) = WORD8              
+            else
+              CFC_IGDB_ID(cfcdbitems) = ''           
+            endif
         else if(CFCshdtp(cfcdbitems).eq.iVenBlind)then
-            CALL EGETWR(LOUTSTR,K,VAL(2),0.,0.,'-',
+            CALL EGETWR(LOUTSTR,K,VAL(5),0.,0.,'-',
      &                    'sol refl out',IER)
-            CALL EGETWR(LOUTSTR,K,VAL(3),0.,0.,'-',
+            CALL EGETWR(LOUTSTR,K,VAL(6),0.,0.,'-',
      &                    'sol refl in',IER)
-            CALL EGETWR(LOUTSTR,K,VAL(4),0.,0.,'-','slat tran',IER)
-            CALL EGETWR(LOUTSTR,K,VAL(5),0.,0.,'-','emiss out',IER)
-            CALL EGETWR(LOUTSTR,K,VAL(6),0.,0.,'-','emiss in',IER)
-            CALL EGETWR(LOUTSTR,K,VAL(7),0.,0.,'-','lw tran',IER)
-            CALL EGETWR(LOUTSTR,K,VAL(8),0.,0.,'-',
+            CALL EGETWR(LOUTSTR,K,VAL(7),0.,0.,'-','slat tran',IER)
+            CALL EGETWR(LOUTSTR,K,VAL(8),0.,0.,'-','emiss out',IER)
+            CALL EGETWR(LOUTSTR,K,VAL(9),0.,0.,'-','emiss in',IER)
+            CALL EGETWR(LOUTSTR,K,VAL(10),0.,0.,'-','lw tran',IER)
+            CALL EGETWR(LOUTSTR,K,VAL(11),0.,0.,'-',
      &                    'slat width',IER)
-            CALL EGETWR(LOUTSTR,K,VAL(9),0.,0.,'-','slat space',IER)
-            CALL EGETWR(LOUTSTR,K,VAL(10),0.,0.,'-',
+            CALL EGETWR(LOUTSTR,K,VAL(12),0.,0.,'-','slat space',IER)
+            CALL EGETWR(LOUTSTR,K,VAL(13),0.,0.,'-',
      &                    'slat angle',IER)
             CALL EGETW(LOUTSTR,K,WORD4,'-','slat orient',IER)
-            CALL EGETWR(LOUTSTR,K,VAL(11),0.,0.,'-',
+            CALL EGETWR(LOUTSTR,K,VAL(14),0.,0.,'-',
      &                    'slat crown',IER)
-            CALL EGETWR(LOUTSTR,K,VAL(12),0.,0.,'-',
+            CALL EGETWR(LOUTSTR,K,VAL(15),0.,0.,'-',
      &                    'slat wr ratio',IER)
-            CALL EGETWR(LOUTSTR,K,VAL(13),0.,0.,'-','slat thk',IER)
-            CFCsolreflout(cfcdbitems) = VAL(2)
-            CFCsolreflin(cfcdbitems) = VAL(3)
-            CFCslattran(cfcdbitems) = VAL(4)
-            CFCemissout(cfcdbitems) = VAL(5)
-            CFCemissin(cfcdbitems) = VAL(6)
-            CFClwtran(cfcdbitems) = VAL(7)
-            CFCslatwidth(cfcdbitems) = VAL(8)
-            CFCslatspacing(cfcdbitems) = VAL(9)
-            CFCslatangle(cfcdbitems) = VAL(10)
+            CALL EGETWR(LOUTSTR,K,VAL(16),0.,0.,'-','slat thk',IER)
+            CFCsolreflout(cfcdbitems) = VAL(5)
+            CFCsolreflin(cfcdbitems) = VAL(6)
+            CFCslattran(cfcdbitems) = VAL(7)
+            CFCemissout(cfcdbitems) = VAL(8)
+            CFCemissin(cfcdbitems) = VAL(9)
+            CFClwtran(cfcdbitems) = VAL(10)
+            CFCslatwidth(cfcdbitems) = VAL(11)
+            CFCslatspacing(cfcdbitems) = VAL(12)
+            CFCslatangle(cfcdbitems) = VAL(13)
             CFCslatorient(cfcdbitems) = WORD4
-            CFCslatcrown(cfcdbitems)  = VAL(11)
-            CFCslatwr(cfcdbitems) = VAL(12)
-            CFCslatthk(cfcdbitems) = VAL(13)
+            CFCslatcrown(cfcdbitems)  = VAL(14)
+            CFCslatwr(cfcdbitems) = VAL(15)
+            CFCslatthk(cfcdbitems) = VAL(16)
         else if (CFCshdtp(cfcdbitems).eq.iPleatedDrape)then 
-            CALL EGETWR(LOUTSTR,K,VAL(2),0.,0.,'-',
-     &                    'sol refl out',IER)
-            CALL EGETWR(LOUTSTR,K,VAL(3),0.,0.,'-',
-     &                    'sol refl in',IER)
-            CALL EGETWR(LOUTSTR,K,VAL(4),0.,0.,'-',
-     &                    'sol tran dir',IER)
             CALL EGETWR(LOUTSTR,K,VAL(5),0.,0.,'-',
-     &                    'sol tran tot out',IER)
+     &                    'sol refl out',IER)
             CALL EGETWR(LOUTSTR,K,VAL(6),0.,0.,'-',
-     &                    'sol tran tot in',IER)
+     &                    'sol refl in',IER)
             CALL EGETWR(LOUTSTR,K,VAL(7),0.,0.,'-',
-     &                    'pleat width',IER)
+     &                    'sol tran dir',IER)
             CALL EGETWR(LOUTSTR,K,VAL(8),0.,0.,'-',
-     &                    'pleat space',IER)
-            CFCsolreflout(cfcdbitems) = VAL(2)
-            CFCsolreflin(cfcdbitems) = VAL(3)
-            CFCsoltrandir(cfcdbitems) =  VAL(4)
-            CFCsoltrantotout(cfcdbitems) = VAL(5)
-            CFCsoltrantotin(cfcdbitems) = VAL(6)
-            CFCdrpwidth(cfcdbitems) = VAL(7)
-            CFCdrpspacing(cfcdbitems) = VAL(8)
-        else if (CFCshdtp(cfcdbitems).eq.iRollerBlind)then
-            CALL EGETWR(LOUTSTR,K,VAL(2),0.,0.,'-',
-     &                    'sol refl out',IER)
-            CALL EGETWR(LOUTSTR,K,VAL(3),0.,0.,'-',
-     &                    'sol refl in',IER)
-            CALL EGETWR(LOUTSTR,K,VAL(4),0.,0.,'-',
-     &                    'sol tran dir',IER)
-            CALL EGETWR(LOUTSTR,K,VAL(5),0.,0.,'-',
      &                    'sol tran tot out',IER)
-            CALL EGETWR(LOUTSTR,K,VAL(6),0.,0.,'-',
-     &                    'sol tran tot in',IER)
-            CFCsolreflout(cfcdbitems) = VAL(2)
-            CFCsolreflin(cfcdbitems) = VAL(3)
-            CFCsoltrandir(cfcdbitems) =  VAL(4)
-            CFCsoltrantotout(cfcdbitems) = VAL(5)
-            CFCsoltrantotin(cfcdbitems) = VAL(6)
-        else if (CFCshdtp(cfcdbitems).eq.iInsectScreen)then
-            CALL EGETWR(LOUTSTR,K,VAL(2),0.,0.,'-',
-     &                    'sol refl out',IER)
-            CALL EGETWR(LOUTSTR,K,VAL(3),0.,0.,'-',
-     &                    'sol refl in',IER)
-            CALL EGETWR(LOUTSTR,K,VAL(4),0.,0.,'-',
-     &                    'sol tran dir',IER)
-            CALL EGETWR(LOUTSTR,K,VAL(5),0.,0.,'-',
-     &                    'sol tran tot out',IER)
-            CALL EGETWR(LOUTSTR,K,VAL(6),0.,0.,'-',
-     &                    'sol tran tot in',IER)
-            CALL EGETWR(LOUTSTR,K,VAL(7),0.,0.,'-','wire emiss',IER)
-            CALL EGETWR(LOUTSTR,K,VAL(8),0.,0.,'-','wire diam',IER)
             CALL EGETWR(LOUTSTR,K,VAL(9),0.,0.,'-',
+     &                    'sol tran tot in',IER)
+            CALL EGETWR(LOUTSTR,K,VAL(10),0.,0.,'-',
+     &                    'pleat width',IER)
+            CALL EGETWR(LOUTSTR,K,VAL(11),0.,0.,'-',
+     &                    'pleat space',IER)
+            CFCsolreflout(cfcdbitems) = VAL(5)
+            CFCsolreflin(cfcdbitems) = VAL(6)
+            CFCsoltrandir(cfcdbitems) =  VAL(7)
+            CFCsoltrantotout(cfcdbitems) = VAL(8)
+            CFCsoltrantotin(cfcdbitems) = VAL(9)
+            CFCdrpwidth(cfcdbitems) = VAL(10)
+            CFCdrpspacing(cfcdbitems) = VAL(11)
+        else if (CFCshdtp(cfcdbitems).eq.iRollerBlind)then
+            CALL EGETWR(LOUTSTR,K,VAL(5),0.,0.,'-',
+     &                    'sol refl out',IER)
+            CALL EGETWR(LOUTSTR,K,VAL(6),0.,0.,'-',
+     &                    'sol refl in',IER)
+            CALL EGETWR(LOUTSTR,K,VAL(7),0.,0.,'-',
+     &                    'sol tran dir',IER)
+            CALL EGETWR(LOUTSTR,K,VAL(8),0.,0.,'-',
+     &                    'sol tran tot out',IER)
+            CALL EGETWR(LOUTSTR,K,VAL(9),0.,0.,'-',
+     &                    'sol tran tot in',IER)
+            CFCsolreflout(cfcdbitems) = VAL(5)
+            CFCsolreflin(cfcdbitems) = VAL(6)
+            CFCsoltrandir(cfcdbitems) =  VAL(7)
+            CFCsoltrantotout(cfcdbitems) = VAL(8)
+            CFCsoltrantotin(cfcdbitems) = VAL(9)
+        else if (CFCshdtp(cfcdbitems).eq.iInsectScreen)then
+            CALL EGETWR(LOUTSTR,K,VAL(5),0.,0.,'-',
+     &                    'sol refl out',IER)
+            CALL EGETWR(LOUTSTR,K,VAL(6),0.,0.,'-',
+     &                    'sol refl in',IER)
+            CALL EGETWR(LOUTSTR,K,VAL(7),0.,0.,'-',
+     &                    'sol tran dir',IER)
+            CALL EGETWR(LOUTSTR,K,VAL(8),0.,0.,'-',
+     &                    'sol tran tot out',IER)
+            CALL EGETWR(LOUTSTR,K,VAL(9),0.,0.,'-',
+     &                    'sol tran tot in',IER)
+            CALL EGETWR(LOUTSTR,K,VAL(10),0.,0.,'-','wire emiss',IER)
+            CALL EGETWR(LOUTSTR,K,VAL(11),0.,0.,'-','wire diam',IER)
+            CALL EGETWR(LOUTSTR,K,VAL(12),0.,0.,'-',
      &                    'wire space',IER)
-            CFCsolreflout(cfcdbitems) = VAL(2)
-            CFCsolreflin(cfcdbitems) = VAL(3)
-            CFCsoltrandir(cfcdbitems) =  VAL(4)
-            CFCsoltrantotout(cfcdbitems) = VAL(5)
-            CFCsoltrantotin(cfcdbitems) = VAL(6)
-            CFCwireemiss(cfcdbitems) = VAL(7)
-            CFCwirediam(cfcdbitems) = VAL(8)
-            CFCwirespace(cfcdbitems) = VAL(9)
+            CFCsolreflout(cfcdbitems) = VAL(5)
+            CFCsolreflin(cfcdbitems) = VAL(6)
+            CFCsoltrandir(cfcdbitems) =  VAL(7)
+            CFCsoltrantotout(cfcdbitems) = VAL(8)
+            CFCsoltrantotin(cfcdbitems) = VAL(9)
+            CFCwireemiss(cfcdbitems) = VAL(10)
+            CFCwirediam(cfcdbitems) = VAL(11)
+            CFCwirespace(cfcdbitems) = VAL(12)
         else if (CFCshdtp(cfcdbitems).eq.iGasGap)then
             CALL EGETWI(LOUTSTR,K,ival,0,100,'-',
      &           '% mole frac. air',IER)
@@ -1779,11 +1785,12 @@ C common block arrays so that future reads are more efficient.
      &          CFCfillAir(J),CFCfillAr(J),CFCfillKr(J),
      &          CFCfillXe(J),CFCfillSF6(J)
             elseif(CFCshdtp(J).eq.iGlazing)then
-              write(outs,'(f13.3,3F10.3,i2,6F8.3)')
+              write(outs,'(f13.3,3F10.3,i2,6F8.3,a8)')
      &          cfcdbcon(J),cfcdbden(J),cfcdbsht(J),cfcdbthick(J),
      &          CFCshdtp(J),
      &          CFCsolreflout(J),CFCsolreflin(J),CFCsoltrandir(J),
-     &          CFCemissout(J),CFCemissin(J),CFClwtran(J)
+     &          CFCemissout(J),CFCemissin(J),CFClwtran(J), 
+     &          CFC_IGDB_ID(J)
             elseif(CFCshdtp(J).eq.iVenBlind)then
               write(outs,'(f13.3,3F10.3,i2,9F8.3,a5,3F8.3)')
      &          cfcdbcon(J),cfcdbden(J),cfcdbsht(J),cfcdbthick(J),
