@@ -6,18 +6,18 @@ Method one - In the Cygwin command window (note alternative ./link_to commands):
 
   cd
   mkdir bin
-  cp /usr/esru/bash_profile .bash_profile
-  cp /usr/esru/bin/link_to bin
+  cp /opt/esru/bash_profile .bash_profile
+  cp /opt/esru/bin/link_to bin
   HOME=/home/your_user_name
   export HOME
   cd bin
-  ./link_to /usr/esru/esp-r/binX11
+  ./link_to /opt/esru/esp-r/binX11
 
 or
-  ./link_to /usr/esru/esp-r/binGTK
+  ./link_to /opt/esru/esp-r/binGTK
 
 If the link_to script fails to run it may be because it uses the csh command
-interpretor. There is an alternative link_to_bash in /usr/esru/bin.
+interpretor. There is an alternative link_to_bash in /opt/esru/bin.
 
 NOTE the DOT added to the bash_profile in the above command set. Next logout of cygwin and then log back in and issue the following command
 
@@ -26,7 +26,7 @@ NOTE the DOT added to the bash_profile in the above command set. Next logout of 
 what is printed out should include /home/your_home_folder_name/bin
 
 check if one of the ESP-r executables is found by giving the command:
-which prj
+  which prj
 
 it should report /home/your_home_folder_name/bin/prj
 
@@ -40,16 +40,16 @@ Method two
 Some users of ESP-r prefer to use the "C" shell. The entry in the .cshrc file in your home folder might look something like:
 
   set path = ( $path /usr/local/bin /usr/local/bin/ray /usr/local/lib/ray /home/fred/bin \
-    /usr/esru/esp-r/binX11 )
+    /opt/esru/esp-r/binX11 )
 
 or
   set path = ( $path /usr/local/bin /usr/local/bin/ray /usr/local/lib/ray /home/fred/bin \
-    /usr/esru/esp-r/binGTK )
+    /opt/esru/esp-r/binGTK )
 
 If you are running the bash shell then you would look for an entry
 in the .profile file something like:
 
-export PATH=/usr/local/bin:/usr/esru/esp-r/binX11:/home/fred/bin:$PATH
+export PATH=/usr/local/bin:/opt/esru/esp-r/binX11:/home/fred/bin:$PATH
 
 Once you have updated either the .cshrc file or the .profile file then you will need to log out and then back in again.  To see if the environment variables are correct give the following command:
 
@@ -73,7 +73,7 @@ To find about dependencies the tool dependency walker 2.2 sort of works (it expe
 Starting ESP-r modules within Cygwin
 
 To run graphic applications (such as ESP-r modules) inside Cygwin you need to use a graphic command window. The initial Cygwin window only takes text commands. A common command to start up a graphic command window is to issue the following command in the Cygwin command window:
-  startxwin.sh 
+  startxwin 
 
 this will start up an "X" command window (typically it will have a white background).
 
@@ -82,13 +82,13 @@ There are two ways to start the ESP-r project manager.  If you want to open up a
 
 If you want to create a new model use the Cygwin "cd" commands to go to a folder where you want to create new models. Many users will create a "Models" folder under their Cygwin home folder and work there. To start up the project manager to create a new model use the following command sequence:
 
-cd /home/my_home_folder/Models
-prj
+  cd /home/my_home_folder/Models
+  prj
 
   
 Keeping the standard distribution databases safe:
 
-ESP-r is supplied with a number of databases in the folder C:\cygwin\esru\esp-r\databases and your second task should be to make an archival copy of this folder.  Accidents happen.
+ESP-r is supplied with a number of databases in the folder C:\cygwin\opt\esp-r\databases and your second task should be to make an archival copy of this folder.  Accidents happen.
 
 Example models:
 
@@ -98,7 +98,7 @@ The best way to browse or work with a existing model is to find the 'cfg' folder
 
 If you have trouble starting ESP-r...
 
-The installer updates the system 'path' environment variables so that the various ESP-r modules can be found. If ESP-r modules do not start you might need to get your friendly IT guru to look in the system environment variables to include C:\Esru\esp-r\bin.
+Check you PATH environment variable within Cyginw. This is usually defined in the .profile or .bash_profile file. You home folder should have a bin folder in which you place links to the ESP-r executables. Use the link_to_bash script to set these up.
 
 Learning how to use ESP-r....
 
@@ -114,9 +114,7 @@ Go to <www.esru.strath.ac.uk> and look in the software and training and publicat
 
 About editing model files...
 
-If you must hack the model files, using Word with ESP-r files might corrupt them so consider using WordPad instead. The standard notepad application will not understand the line endings used in ESP-r, will run the lines together and might corrupt the files.
-  
-There is a text editor gvim62.exe which is compatible with ESP-r which you might find useful to look for on Google.
+If you must hack the model files use Notepad++ (a free download) or a native Cygwin text editor (nano or nedit). Word will mess up ESP-r model files.
 
 I want to evolve ESP-r...
 
