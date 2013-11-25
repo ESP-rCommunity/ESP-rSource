@@ -1,0 +1,265 @@
+ESP-r plant file version 2 written on: Fri Jun 21 09:21:09 2013
+# Project title:
+                                                                        
+# Total no. of specified components and simulation type
+   15    2
+#->   1, boiler with explicit startup and cycle detail                           
+  boiler           111
+    1        # Component has   1 control variable(s).
+   0.0000000    
+   32
+       40.000     #   1 Component total mass (kg)                                       
+       1000.0     #   2 Mass weighted average specific heat (J/kgK)                     
+       17.900     #   3 Full load firing rate (kW)                                      
+       0.0000     #   4 dump load fraction                                              
+       20.000     #   5 BS 4947/EN 437 gas specification (enter 20 for G20)             
+       3.0000     #   6 boiler lock out time (min)                                      
+       15.000     #   7 Boiler heat loss to surroundings UA (W/K)                       
+       0.0000     #   8 DHW draw schedule control loop no. if combi boiler (0 otherwise)
+       0.0000     #   9 DHW calorifier component number if combi boiler (0 otherwise) (-
+       10.000     #  10 Constant cold water feed temperature for DHW for combi boiler (d
+       50.000     #  11 Constant supply water temperature for DHW for combi boiler (degC
+       90.000     #  12 Upper boiler temperature limit (C)                              
+       30.000     #  13 Lower limit of modulating range  (%) (0 for ON/OFF boiler)      
+       1.0000     #  14 Lower limit of total differential  (%) (0 for ON/OFF boiler)    
+       7.7027     #  15 coeff for % CO2 equation (constant)                             
+      0.52200E-01 #  16 coeff for % CO2 equation (firingRate^1)                         
+     -0.71800E-03 #  17 coeff for % CO2 equation (firingRate^2)                         
+      0.33360E-05 #  18 coeff for % CO2 equation (firingRate^3)                         
+       2.9010     #  19 coeff for delta temp to flue equation (constant)                
+      0.88400E-01 #  20 coeff for delta temp to flue equation (firingRate^1)            
+     -0.83600E-03 #  21 coeff for delta temp to flue equation (firingRate^2)            
+      0.12400E-04 #  22 coeff for delta temp to flue equation (firingRate^3)            
+      0.50000     #  23 Design excess air ratio                                         
+       10.000     #  24 First pre-purge time (seconds)                                  
+       100.00     #  25 First pre-purge fan rate as % of maximum                        
+       3.0000     #  26 Secoond pre-purge time (seconds)                                
+       70.000     #  27 Second pre-purge fan rate as % of maximum                       
+       10.000     #  28 Ignition stabilisation time (seconds)                           
+       70.000     #  29 Firing rate during ignition stabilisation as % of maximum       
+       217.00     #  30 Anticycle time (seconds)                                        
+       30.000     #  31 Firing rate during anticycling as % of maximum                  
+       3.0000     #  32 Maximum Ramp up gradient (degC/minute)                          
+#->   2, variable speed domestic WCH pump; 1 node model                          
+  pump              98
+    1        # Component has   1 control variable(s).
+  0.34999999    
+    6
+       5.0000     #   1 Component total mass (kg)                                       
+       2250.0     #   2 Mass weighted average specific heat (J/kgK)                     
+      0.20000     #   3 UA modulus from wall to environment (W/K)                       
+       20.000     #   4 Rated total absorbed power (W)                                  
+      0.40000     #   5 Rated mass flow rate (m^3/s)                                    
+      0.70000     #   6 Overall efficiency (-)                                          
+#->   3, WCH pipe converging 2-leg junction; 1 node model                        
+  pump_bpass_cvg    14
+    0        # Component has   0 control variable(s).
+    3
+      0.10000     #   1 Component total mass (kg)                                       
+       2250.0     #   2 Mass weighted average specific heat (J/kgK)                     
+      0.20000E-01 #   3 UA modulus from wall to environment (W/K)                       
+#->   4, WCH 3-port valve; 3 node model; flow divert control                     
+  DHW_divert       112
+    1        # Component has   1 control variable(s).
+   1.0000000    
+    3
+       1.0000     #   1 Component total mass (kg)                                       
+       500.00     #   2 Mass weighted average specific heat (J/kgK)                     
+       3.5000     #   3 UA modulus (W/K)                                                
+#->   5, Stratified tank with 1 immersed HX; 2 node model                        
+  DHW_tank         103
+    0        # Component has   0 control variable(s).
+   18
+      0.20000     #   1 Tank volume (m3)                                                
+       1.5000     #   2 Tank height (m)                                                 
+      -1.0000     #   3 Tank perimeter (m; -1 if cylindrical)                           
+      0.10000     #   4 Height of flow inlet (m)                                        
+       1.5000     #   5 Height of flow outlet (m)                                       
+       1.0000     #   6 Tank heat loss coefficient (W/m2-K)                             
+       0.0000     #   7 Additional destratification conductivity (W/m-K)                
+       20.000     #   8 Number of nodes                                                 
+       5.0000     #   9 Internal time steps per simulation time step                    
+       20.000     #  10 Initial temperature of tank (C)                                 
+       100.00     #  11 Boiling temperature of fluid (C)                                
+       1.0000     #  12 Height of immersed HX inlet (m)                                 
+      0.50000     #  13 Height of immersed HX outlet (m)                                
+      0.34000E-01 #  14 Inside diameter of immersed HX coil (m)                         
+      0.38000E-01 #  15 Outside diameter of immersed HX coil (m)                        
+      0.35100     #  16 Diameter of immersed HX coil (m)                                
+      0.56000E-01 #  17 Pitch of immersed HX coil (distance from one loop to the next) (
+       40.000     #  18 Thermal conductivity of immersed HX coil material (W/m/K)       
+#->   6, Stochastic hot water draw connecting to WCH system; 1 node model        
+  DHW_draw         105
+    0        # Component has   0 control variable(s).
+   47
+       120.00     #   1 Nominal daily hot water draw (l)                                
+       10.000     #   2 Seasonal variation of hot water draw (%)                        
+       28.000     #   3 Phase shift of seasonal variation (W/K)                         
+       3.0000     #   4 Number of holiday periods                                       
+       1.0000     #   5 Holiday period [1] start DOY                                    
+       3.0000     #   6 Holiday period [1] end DOY                                      
+       181.00     #   7 Holiday period [2] start DOY                                    
+       193.00     #   8 Holiday period [2] end DOY                                      
+       357.00     #   9 Holiday period [3] start DOY                                    
+       365.00     #  10 Holiday period [3] end DOY                                      
+       5.0000     #  11 Number of concurrent draw periods (start@0.0)                   
+       0.0000     #  12 Draw period start time                                          
+       5.0000     #  13 Fraction of daily draw taken in period (%)                      
+       6.0000     #  14 Draw period start time                                          
+       50.000     #  15 Fraction of daily draw taken in period (%)                      
+       9.0000     #  16 Draw period start time                                          
+       5.0000     #  17 Fraction of daily draw taken in period (%)                      
+       17.000     #  18 Draw period start time                                          
+       35.000     #  19 Fraction of daily draw taken in period (%)                      
+       23.000     #  20 Draw period start time                                          
+       5.0000     #  21 Fraction of daily draw taken in period (%)                      
+       4.0000     #  22 Number of distinct draw types (-)                               
+       14.000     #  23 Fraction of daily draw for this type (%)                        
+       1.0000     #  24 Draw volume flow rate (l/min)                                   
+       2.0000     #  25 Flow rate standard deviation (l/min)                            
+       1.0000     #  26 Nominal duration (min)                                          
+       1.0000     #  27 Draw weekday probability modifier (-)                           
+       1.0000     #  28 Draw weekend probability modifier (-)                           
+       36.000     #  29 Fraction of daily draw for this type (%)                        
+       6.0000     #  30 Draw volume flow rate (l/min)                                   
+       2.0000     #  31 Flow rate standard deviation (l/min)                            
+       1.0000     #  32 Nominal duration (min)                                          
+       1.0000     #  33 Draw weekday probability modifier (-)                           
+       1.0000     #  34 Draw weekend probability modifier (-)                           
+       10.000     #  35 Fraction of daily draw for this type (%)                        
+       12.000     #  36 Draw volume flow rate (l/min)                                   
+      0.20000     #  37 Flow rate standard deviation (l/min)                            
+       10.000     #  38 Nominal duration (min)                                          
+      0.70000     #  39 Draw weekday probability modifier (-)                           
+       1.4000     #  40 Draw weekend probability modifier (-)                           
+       40.000     #  41 Fraction of daily draw for this type (%)                        
+       8.0000     #  42 Draw volume flow rate (l/min)                                   
+      0.40000     #  43 Flow rate standard deviation (l/min)                            
+       5.0000     #  44 Nominal duration (min)                                          
+       1.0000     #  45 Draw weekday probability modifier (-)                           
+       1.0000     #  46 Draw weekend probability modifier (-)                           
+       1234.0     #  47 Random number generator seed (-)                                
+#->   7, WCH pipe; 1 node model                                                  
+  flow_loss         13
+    0        # Component has   0 control variable(s).
+    6
+       2.0000     #   1 Component total mass (kg)                                       
+       2250.0     #   2 Mass weighted average specific heat (J/kgK)                     
+       2.0000     #   3 UA modulus from wall to environment (W/K)                       
+      0.15000E-01 #   4 Hydraulic diameter of pipe (m)                                  
+       5.0000     #   5 Length of pipe section (m)                                      
+      0.17670E-03 #   6 Cross sectional face area (m^2)                                 
+#->   8, WCH 3-port valve; 3 node model; flow divert control                     
+  radA_trv         112
+    1        # Component has   1 control variable(s).
+  0.33300000    
+    3
+       1.0000     #   1 Component total mass (kg)                                       
+       500.00     #   2 Mass weighted average specific heat (J/kgK)                     
+       3.5000     #   3 UA modulus (W/K)                                                
+#->   9, WCH 3-port valve; 3 node model; flow divert control                     
+  radB_trv         112
+    1        # Component has   1 control variable(s).
+  0.99900001    
+    3
+       1.0000     #   1 Component total mass (kg)                                       
+       500.00     #   2 Mass weighted average specific heat (J/kgK)                     
+       3.5000     #   3 UA modulus (W/K)                                                
+#->  10, WCH pipe converging 2-leg junction; 1 node model                        
+  radB_div_mrg      14
+    0        # Component has   0 control variable(s).
+    3
+      0.10000     #   1 Component total mass (kg)                                       
+       2250.0     #   2 Mass weighted average specific heat (J/kgK)                     
+      0.20000E-01 #   3 UA modulus from wall to environment (W/K)                       
+#->  11, WCH pipe converging 2-leg junction; 1 node model                        
+  radA_B_mrg        14
+    0        # Component has   0 control variable(s).
+    3
+      0.10000     #   1 Component total mass (kg)                                       
+       2250.0     #   2 Mass weighted average specific heat (J/kgK)                     
+      0.20000E-01 #   3 UA modulus from wall to environment (W/K)                       
+#->  12, WCH pipe converging 2-leg junction; 1 node model                        
+  rads_DHW_mrg      14
+    0        # Component has   0 control variable(s).
+    3
+      0.10000     #   1 Component total mass (kg)                                       
+       2250.0     #   2 Mass weighted average specific heat (J/kgK)                     
+      0.20000E-01 #   3 UA modulus from wall to environment (W/K)                       
+#->  13, Basic hot water radiator exponent 2 node model                          
+  radA              93
+    0        # Component has   0 control variable(s).
+   13
+       90.000     #   1 Component total mass (kg)                                       
+       1500.0     #   2 Mass weighted average specific heat (J/kgK)                     
+       4475.0     #   3 Nominal heat supply rate (W)                                    
+       70.000     #   4 Nominal supply water temperature (C)                            
+       20.000     #   5 Nominal environment temperature (C)                             
+       60.000     #   6 Nominal exit water temperature (C)                              
+       1.3000     #   7 Radiator Exponent (-)                                           
+       0.0000     #   8 Index of 1st wall for defining Te (-)                           
+       0.0000     #   9 Weighting factor 1st wall when defining Te (-)                  
+       0.0000     #  10 Index of 2nd wall for defining Te (-)                           
+       0.0000     #  11 Weighting factor 2nd wall when defining Te (-)                  
+       1.0000     #  12 Index of coupled building zone (0-n)                            
+       0.0000     #  13 Number of walls used for defining Te (0-n)                      
+#->  14, Basic hot water radiator exponent 2 node model                          
+  radB              93
+    0        # Component has   0 control variable(s).
+   13
+       268.00     #   1 Component total mass (kg)                                       
+       1500.0     #   2 Mass weighted average specific heat (J/kgK)                     
+       13425.     #   3 Nominal heat supply rate (W)                                    
+       70.000     #   4 Nominal supply water temperature (C)                            
+       20.000     #   5 Nominal environment temperature (C)                             
+       60.000     #   6 Nominal exit water temperature (C)                              
+       1.3000     #   7 Radiator Exponent (-)                                           
+       0.0000     #   8 Index of 1st wall for defining Te (-)                           
+       0.0000     #   9 Weighting factor 1st wall when defining Te (-)                  
+       0.0000     #  10 Index of 2nd wall for defining Te (-)                           
+       0.0000     #  11 Weighting factor 2nd wall when defining Te (-)                  
+       2.0000     #  12 Index of coupled building zone (0-n)                            
+       0.0000     #  13 Number of walls used for defining Te (0-n)                      
+#->  15, WCH pipe; 1 node model                                                  
+  return_loss       13
+    0        # Component has   0 control variable(s).
+    6
+       2.0000     #   1 Component total mass (kg)                                       
+       2250.0     #   2 Mass weighted average specific heat (J/kgK)                     
+       2.0000     #   3 UA modulus from wall to environment (W/K)                       
+      0.15000E-01 #   4 Hydraulic diameter of pipe (m)                                  
+       5.0000     #   5 Length of pipe section (m)                                      
+      0.17670E-03 #   6 Cross sectional face area (m^2)                                 
+# The following is a list of component connections.
+ 20          # Total number of connections
+# receiving       node  conncn sending          node  diversion  suppl1   suppl2
+# component              type  component                ratio
+  pump              1     3     boiler            2    1.000                 #  1
+  pump_bpass_cvg    1     3     boiler            2    0.000                 #  2
+  pump_bpass_cvg    1     3     pump              1    1.000                 #  3
+  DHW_divert        1     3     pump_bpass_cvg    1    1.000                 #  4
+  DHW_tank          1     3     DHW_draw          1    1.000                 #  5
+  flow_loss         1     3     DHW_divert        3    1.000                 #  6
+  DHW_draw          1     3     DHW_tank          1    1.000                 #  7
+  DHW_tank          2     3     DHW_divert        2    1.000                 #  8
+  radA_trv          1     3     flow_loss         1    1.000                 #  9
+  radA              1     3     radA_trv          2    1.000                 # 10
+  radB_trv          1     3     radA_trv          3    1.000                 # 11
+  radB              1     3     radB_trv          2    1.000                 # 12
+  radB_div_mrg      1     3     radB              2    1.000                 # 13
+  radB_div_mrg      1     3     radB_trv          3    1.000                 # 14
+  radA_B_mrg        1     3     radA              2    1.000                 # 15
+  radA_B_mrg        1     3     radB_div_mrg      1    1.000                 # 16
+  rads_DHW_mrg      1     3     DHW_tank          2    1.000                 # 17
+  rads_DHW_mrg      1     3     radA_B_mrg        1    1.000                 # 18
+  return_loss       1     3     rads_DHW_mrg      1    1.000                 # 19
+  boiler            1     3     return_loss       1    1.000                 # 20
+# The following is a list of containment temperatures.
+  4          # Total number of containments
+# Component       cont type        suppl1     suppl2    suppl3
+  boiler              3             2.00000   0.00000   0.00000
+  flow_loss           3             2.00000   0.00000   0.00000
+  return_loss         3             2.00000   0.00000   0.00000
+  DHW_tank            3             2.00000   0.00000   0.00000
+# No mass flow network defined.
+    0

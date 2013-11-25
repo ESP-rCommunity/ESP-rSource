@@ -1,0 +1,20 @@
+*HC_CTL for zone mvhr_right
+*Date,Fri Aug  3 07:12:50 2012
+  3 # number control intervals
+  6 # number of surfaces
+# (Wall-1 Wall-2 Wall-3 plate Top-5 Base-6)
+  0.00    10.00 # start and end time of interval
+  1 # fixed coefficients calculation control type
+*Doc,User supplied hc values
+ -1.0000,-1.0000,-1.0000,32.000,-1.0000,-1.0000
+ -1.0000,-1.0000,-1.0000,32.000,-1.0000,-1.0000
+ 10.00    12.00 # start and end time of interval
+  1 # fixed coefficients calculation control type
+*Doc,User supplied hc values
+ -1.0000,-1.0000,-1.0000,64.000,-1.0000,-1.0000
+ -1.0000,-1.0000,-1.0000,64.000,-1.0000,-1.0000
+ 12.00    24.00 # start and end time of interval
+  1 # fixed coefficients calculation control type
+*Doc,User supplied hc values
+ -1.0000,-1.0000,-1.0000,100.00,-1.0000,-1.0000
+ -1.0000,-1.0000,-1.0000,100.00,-1.0000,-1.0000

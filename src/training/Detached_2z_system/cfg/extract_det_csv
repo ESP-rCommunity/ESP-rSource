@@ -1,0 +1,31 @@
+#!/bin/csh
+# take current model and extract timestep data.
+set RESFILE=$1
+res -mode text -file $RESFILE<<XXX
+
+4 # select zones
+a
+b
+-
+c # timestep reports
+>
+$RESFILE.csv
+$RESFILE results
+* # time
+a
+* # time
+a
+^ # comma
+e
+g # performance metrics
+a # climate
+a # ambient
+h # heat cool
+a # heating
+! # list
+>
+-
+-
+-
+-
+XXX
