@@ -3620,7 +3620,7 @@ C is true then the common blocks are filled.
 C Check version of CFC layers database.  If closecfc1
 C is true then the common blocks are filled.
       call eclose(cfcver,1.1,0.01,closecfc1)
-      if(closemat1)then
+      if(closecfc1)then
         continue
       else
         CALL USRMSG('CFC layers database data not yet filled.',
