@@ -1,6 +1,6 @@
 # composite construction db defined in ./multicon.db4
 # based on materials db ./material.db4.a
-   71     # no of composites 
+   82     # no of composites 
 # layers  description  type  optics name   symmetry tag
     4    extern_wall   OPAQ  OPAQUE        NONSYMMETRIC  
 # material ref thickness (m) description & air gap R
@@ -60,11 +60,11 @@
   233    0.1000  celulose fiber flakes : cellulose fibre insulation flakes from IBO Pass
    79    0.0180  OSB : OSB wood based on the SBEM database
   300    0.0500  lambswool felt insulation : lambswool insulation felt from IBO PassivHa
-  108    0.0250  white gypboard : White painted Gypboard
+  108    0.0250  white gypboard : White painted Gypboard (inorganic-porous)
 # layers  description  type  optics name   symmetry tag
     9    AWI_06_inv    OPAQ  OPAQUE        AWI_06        
 # material ref thickness (m) description & air gap R
-  108    0.0250  white gypboard : White painted Gypboard
+  108    0.0250  white gypboard : White painted Gypboard (inorganic-porous)
   300    0.0500  lambswool felt insulation : lambswool insulation felt from IBO PassivHa
    79    0.0180  OSB : OSB wood based on the SBEM database
   233    0.1000  celulose fiber flakes : cellulose fibre insulation flakes from IBO Pass
@@ -80,28 +80,39 @@
     0    0.0200  gap  0.170 0.170 0.170
   216    0.0250  mineral fibre : Mineral fibre (non-hygroscopic)
    22    0.1000  aerated conc block : Aerated concrete block (inorganic-porous)
-  101    0.0130  dense plaster : Dense plaster
-  102    0.0125  light plaster : Light weight plaster
+  101    0.0130  dense plaster : Dense plaster (inorganic-porous)
+  102    0.0125  light plaster : Light weight plaster (inorganic-porous)
+# layers  description  type  optics name   symmetry tag
+    8    Brk_sip2013   OPAQ  OPAQUE        NONSYMMETRIC  
+# material ref thickness (m) description & air gap R
+   10    0.1020  Brick outer leaf : Brick (UK code) (inorganic-porous)
+    0    0.0200  gap  0.170 0.170 0.170
+   79    0.0120  OSB : OSB wood based on the SBEM database
+  216    0.1000  mineral fibre : Mineral fibre (non-hygroscopic)
+  216    0.0750  mineral fibre : Mineral fibre (non-hygroscopic)
+   79    0.0120  OSB : OSB wood based on the SBEM database
+    0    0.0200  gap  0.170 0.170 0.170
+  108    0.0120  white gypboard : White painted Gypboard (inorganic-porous)
 # layers  description  type  optics name   symmetry tag
     3    intern_wall   OPAQ  OPAQUE        SYMMETRIC     
 # material ref thickness (m) description & air gap R
-  103    0.0120  perlite plasterboard : Perlite plasterboard
+  103    0.0120  perlite plasterboard : Perlite plasterboard (inorganic-porous)
     2    0.1500  breeze block : Breeze block (inorganic-porous)
-  103    0.0120  perlite plasterboard : Perlite plasterboard
+  103    0.0120  perlite plasterboard : Perlite plasterboard (inorganic-porous)
 # layers  description  type  optics name   symmetry tag
     3    int_part      OPAQ  OPAQUE        SYMMETRIC     
 # material ref thickness (m) description & air gap R
-  108    0.0120  white gypboard : White painted Gypboard
+  108    0.0120  white gypboard : White painted Gypboard (inorganic-porous)
     0    0.0500  gap  0.170 0.170 0.170
-  108    0.0120  white gypboard : White painted Gypboard
+  108    0.0120  white gypboard : White painted Gypboard (inorganic-porous)
 # layers  description  type  optics name   symmetry tag
     5    partition     OPAQ  OPAQUE        SYMMETRIC     
 # material ref thickness (m) description & air gap R
-  104    0.0130  gypsum plaster : Gypsum based plaster
+  104    0.0130  gypsum plaster : Gypsum based plaster (inorganic-porous)
     0    0.0500  gap  0.170 0.170 0.170
    28    0.1000  block inner : Block inner (3% mc)
     0    0.0500  gap  0.170 0.170 0.170
-  104    0.0130  gypsum plaster : Gypsum based plaster
+  104    0.0130  gypsum plaster : Gypsum based plaster (inorganic-porous)
 # layers  description  type  optics name   symmetry tag
     1    mass_part     OPAQ  OPAQUE        SYMMETRIC     
 # material ref thickness (m) description & air gap R
@@ -109,17 +120,17 @@
 # layers  description  type  optics name   symmetry tag
     5    gyp_blk_ptn   OPAQ  OPAQUE        SYMMETRIC     
 # material ref thickness (m) description & air gap R
-  108    0.0130  white gypboard : White painted Gypboard
+  108    0.0130  white gypboard : White painted Gypboard (inorganic-porous)
     0    0.0500  gap  0.170 0.170 0.170
    28    0.1000  block inner : Block inner (3% mc)
     0    0.0500  gap  0.170 0.170 0.170
-  108    0.0130  white gypboard : White painted Gypboard
+  108    0.0130  white gypboard : White painted Gypboard (inorganic-porous)
 # layers  description  type  optics name   symmetry tag
     3    gyp_gyp_ptn   OPAQ  OPAQUE        SYMMETRIC     
 # material ref thickness (m) description & air gap R
-  108    0.0120  white gypboard : White painted Gypboard
+  108    0.0120  white gypboard : White painted Gypboard (inorganic-porous)
     0    0.0500  gap  0.170 0.170 0.170
-  108    0.0120  white gypboard : White painted Gypboard
+  108    0.0120  white gypboard : White painted Gypboard (inorganic-porous)
 # layers  description  type  optics name   symmetry tag
     3    party_wall_n  OPAQ  OPAQUE        SYMMETRIC     
 # material ref thickness (m) description & air gap R
@@ -130,6 +141,12 @@
     1    door          OPAQ  OPAQUE        SYMMETRIC     
 # material ref thickness (m) description & air gap R
    69    0.0250  oak : Oak (radial cut)
+# layers  description  type  optics name   symmetry tag
+    3    door_u1.5     OPAQ  OPAQUE        SYMMETRIC     
+# material ref thickness (m) description & air gap R
+   69    0.0125  oak : Oak (radial cut)
+  202    0.0365  woodwool : Woodwool (organic-hygroscopic)
+   69    0.0125  oak : Oak (radial cut)
 # layers  description  type  optics name   symmetry tag
     3    door_PH       OPAQ  OPAQUE        SYMMETRIC     
 # material ref thickness (m) description & air gap R
@@ -256,6 +273,14 @@
     0    0.0080  gap  0.060 0.060 0.060
    46    0.0030  grey cotd alum : Grey coated aluminium
 # layers  description  type  optics name   symmetry tag
+    5    PVC_fr_1.8u   OPAQ  OPAQUE        SYMMETRIC     
+# material ref thickness (m) description & air gap R
+  170    0.0030  PVC_pipe : Polyvinylchloride pipe estimated from CIBSE data (impermeabl
+    0    0.0080  gap  0.170 0.170 0.170
+  174    0.0040  EDPM membrane : EDPM membrane roofing or foundations data from Aquaflex
+    0    0.0080  gap  0.170 0.170 0.170
+  170    0.0030  PVC_pipe : Polyvinylchloride pipe estimated from CIBSE data (impermeabl
+# layers  description  type  optics name   symmetry tag
     3    frame_notion  OPAQ  OPAQUE        SYMMETRIC     
 # material ref thickness (m) description & air gap R
    43    0.1000  aluminium : Aluminium
@@ -317,6 +342,14 @@
   211    0.2400  glasswool : Glasswool (generic) (non-hygroscopic)
   111    0.0095  Plasterboard (ceiling) : Plasterboard Gypsum ceiling (UK code)
 # layers  description  type  optics name   symmetry tag
+    5    Pitch_rf2013  OPAQ  OPAQUE        NONSYMMETRIC  
+# material ref thickness (m) description & air gap R
+  156    0.0100  Tiles Concrete : Tiles Concrete typically 10mm thick (inorganic-porous)
+    0    0.2000  gap  0.170 0.170 0.170
+  211    0.1500  glasswool : Glasswool (generic) (non-hygroscopic)
+  211    0.1400  glasswool : Glasswool (generic) (non-hygroscopic)
+  111    0.0095  Plasterboard (ceiling) : Plasterboard Gypsum ceiling (UK code)
+# layers  description  type  optics name   symmetry tag
     5    Flat_rf_1980  OPAQ  OPAQUE        NONSYMMETRIC  
 # material ref thickness (m) description & air gap R
   162    0.0120  roofing felt : Roofing felt (impermeable)
@@ -330,7 +363,7 @@
   323    0.0080  virtual_loft_space : for UK notional building loft space air 12mm
   281    0.1500  glass fibre quilt : Glass Fibre Quilt (non-hygroscopic)
   156    0.0100  Tiles Concrete : Tiles Concrete typically 10mm thick (inorganic-porous)
-  110    0.0095  Plasterboard (wallboard) : Internal finish (UK code)
+  110    0.0095  Plasterboard (wallboard) : Internal finish (UK code) (inorganic-porous)
 # layers  description  type  optics name   symmetry tag
     5    Fl_roof_typi  OPAQ  OPAQUE        NONSYMMETRIC  
 # material ref thickness (m) description & air gap R
@@ -338,8 +371,14 @@
     0    0.0500  gap  0.780 0.780 0.780
    79    0.0090  OSB : OSB wood based on the SBEM database
     0    0.0500  gap  0.780 0.780 0.780
-  110    0.0130  Plasterboard (wallboard) : Internal finish (UK code)
+  110    0.0130  Plasterboard (wallboard) : Internal finish (UK code) (inorganic-porous)
 # layers  description  type  optics name   symmetry tag
+    4    tile_rfcold   OPAQ  OPAQUE        NONSYMMETRIC  
+# material ref thickness (m) description & air gap R
+  156    0.0200  Tiles Concrete : Tiles Concrete typically 10mm thick (inorganic-porous)
+    0    0.0250  gap  0.170 0.170 0.170
+  166    0.0020  bitumen paper : Bitumen impregnated paper (organic hygroscopic)
+   72    0.0120  plywood 700d : Plywood (700 density)# layers  description  type  optics name   symmetry tag
    11    DAI_04        OPAQ  OPAQUE        DAI_04_inv    
 # material ref thickness (m) description & air gap R
    46    0.0050  grey cotd alum : Grey coated aluminium
@@ -352,11 +391,11 @@
   299    0.0600  hemp insulation panels : hemp insulation panels with supporting fibres
    79    0.0180  OSB : OSB wood based on the SBEM database
   300    0.0500  lambswool felt insulation : lambswool insulation felt from IBO PassivHa
-  108    0.0250  white gypboard : White painted Gypboard
+  108    0.0250  white gypboard : White painted Gypboard (inorganic-porous)
 # layers  description  type  optics name   symmetry tag
    11    DAI_04_inv    OPAQ  OPAQUE        DAI_04        
 # material ref thickness (m) description & air gap R
-  108    0.0250  white gypboard : White painted Gypboard
+  108    0.0250  white gypboard : White painted Gypboard (inorganic-porous)
   300    0.0500  lambswool felt insulation : lambswool insulation felt from IBO PassivHa
    79    0.0180  OSB : OSB wood based on the SBEM database
   299    0.0600  hemp insulation panels : hemp insulation panels with supporting fibres
@@ -379,11 +418,11 @@
   233    0.1000  celulose fiber flakes : cellulose fibre insulation flakes from IBO Pass
    79    0.0180  OSB : OSB wood based on the SBEM database
   300    0.0500  lambswool felt insulation : lambswool insulation felt from IBO PassivHa
-  108    0.0250  white gypboard : White painted Gypboard
+  108    0.0250  white gypboard : White painted Gypboard (inorganic-porous)
 # layers  description  type  optics name   symmetry tag
    10    DAI_05_inv    OPAQ  OPAQUE        DAI_05        
 # material ref thickness (m) description & air gap R
-  108    0.0250  white gypboard : White painted Gypboard
+  108    0.0250  white gypboard : White painted Gypboard (inorganic-porous)
   300    0.0500  lambswool felt insulation : lambswool insulation felt from IBO PassivHa
    79    0.0180  OSB : OSB wood based on the SBEM database
   233    0.1000  celulose fiber flakes : cellulose fibre insulation flakes from IBO Pass
@@ -396,7 +435,7 @@
 # layers  description  type  optics name   symmetry tag
     1    susp_ceil     OPAQ  OPAQUE        SYMMETRIC     
 # material ref thickness (m) description & air gap R
-  104    0.0130  gypsum plaster : Gypsum based plaster
+  104    0.0130  gypsum plaster : Gypsum based plaster (inorganic-porous)
 # layers  description  type  optics name   symmetry tag
     2    ceiling       OPAQ  OPAQUE        ceiling_rev   
 # material ref thickness (m) description & air gap R
@@ -407,6 +446,30 @@
 # material ref thickness (m) description & air gap R
   150    0.0100  ceiling mineral : Ceiling acoustic tile (mineral fibre based)
   211    0.1000  glasswool : Glasswool (generic) (non-hygroscopic)
+# layers  description  type  optics name   symmetry tag
+    4    cpt_cel2flr   OPAQ  OPAQUE        cpt_flr2cel   
+# material ref thickness (m) description & air gap R
+  226    0.0060  dk grey Wilton : Dark grey Wilton carpet (organic-hygroscopic)
+   72    0.0180  plywood 700d : Plywood (700 density)
+    0    0.1000  gap  0.170 0.170 0.170
+  108    0.0125  white gypboard : White painted Gypboard (inorganic-porous)
+# layers  description  type  optics name   symmetry tag
+    4    cpt_flr2cel   OPAQ  OPAQUE        cpt_cel2flr   
+# material ref thickness (m) description & air gap R
+  108    0.0125  white gypboard : White painted Gypboard (inorganic-porous)
+    0    0.1000  gap  0.170 0.170 0.170
+   72    0.0180  plywood 700d : Plywood (700 density)
+  226    0.0060  dk grey Wilton : Dark grey Wilton carpet (organic-hygroscopic)
+# layers  description  type  optics name   symmetry tag
+    2    ceiling_2013  OPAQ  OPAQUE        ceil2013_rev  
+# material ref thickness (m) description & air gap R
+  211    0.2600  glasswool : Glasswool (generic) (non-hygroscopic)
+  150    0.0100  ceiling mineral : Ceiling acoustic tile (mineral fibre based)
+# layers  description  type  optics name   symmetry tag
+    2    ceil2013_rev  OPAQ  OPAQUE        ceiling_2013  
+# material ref thickness (m) description & air gap R
+  150    0.0100  ceiling mineral : Ceiling acoustic tile (mineral fibre based)
+  211    0.2600  glasswool : Glasswool (generic) (non-hygroscopic)
 # layers  description  type  optics name   symmetry tag
     8    grnd_floor    OPAQ  OPAQUE        NONSYMMETRIC  
 # material ref thickness (m) description & air gap R
@@ -441,7 +504,7 @@
 # material ref thickness (m) description & air gap R
   155    0.0150  Ceiling tile : Ceiling tiles
     0    0.4000  gap  0.180 0.180 0.180
-   38    0.1500  concrete hiden : Concrete high density (UK code)
+   38    0.1500  concrete hi-den : Concrete high density (UK code)
   129    0.0500  Screed (UK code) : Flooring screed typically 50mm thick (UK code)
 # layers  description  type  optics name   symmetry tag
     8    v3_1_floor_n  OPAQ  OPAQUE        NONSYMMETRIC  
@@ -471,6 +534,32 @@
   289    0.0630  EPS k 0.04 : EPS k=0.04 (non-hygroscopic)
    39    0.1000  Cast concrete (UK) : Cast concrete (UK code)
   129    0.0500  Screed (UK code) : Flooring screed typically 50mm thick (UK code)
+# layers  description  type  optics name   symmetry tag
+   11    floor_2013    OPAQ  OPAQUE        NONSYMMETRIC  
+# material ref thickness (m) description & air gap R
+  263    0.2500  earth std : Common_earth
+  263    0.2500  earth std : Common_earth
+  263    0.2500  earth std : Common_earth
+  262    0.1500  gravel based : Gravel based (non-hygroscopic)
+  220    0.1000  XPS CO2 foamed : XPS extruded polystyrene foamed with Co2 from IBO Pass
+  220    0.1000  XPS CO2 foamed : XPS extruded polystyrene foamed with Co2 from IBO Pass
+   32    0.1000  heavy mix concrete : Heavy mix concrete
+    0    0.0500  gap  0.170 0.170 0.170
+   67    0.0190  chipboard : Chipboard
+  231    0.0050  wool_underlay : wool felt underlay (UK assumptions) (organic-hygroscopi
+  221    0.0060  Wilton : Wilton weave wool carpet (organic-hygroscopic)
+# layers  description  type  optics name   symmetry tag
+    9    til_flr20133  OPAQ  OPAQUE        NONSYMMETRIC  
+# material ref thickness (m) description & air gap R
+  263    0.2500  earth std : Common_earth
+  263    0.2500  earth std : Common_earth
+  263    0.2500  earth std : Common_earth
+  262    0.1500  gravel based : Gravel based (non-hygroscopic)
+  220    0.1000  XPS CO2 foamed : XPS extruded polystyrene foamed with Co2 from IBO Pass
+  220    0.1200  XPS CO2 foamed : XPS extruded polystyrene foamed with Co2 from IBO Pass
+   32    0.1000  heavy mix concrete : Heavy mix concrete
+  121    0.0250  ltwt_conc_screed : Lightweight conc screed (inorganic-porous)
+  141    0.0120  clay tile : Clay tile (inorganic-porous)
 # layers  description  type  optics name   symmetry tag
     8    EFu_01        OPAQ  OPAQUE        EFu_01_inv    
 # material ref thickness (m) description & air gap R
@@ -538,13 +627,13 @@
 # material ref thickness (m) description & air gap R
   155    0.0150  Ceiling tile : Ceiling tiles
     0    0.4000  gap  0.180 0.180 0.180
-   38    0.1500  concrete hiden : Concrete high density (UK code)
+   38    0.1500  concrete hi-den : Concrete high density (UK code)
   129    0.0500  Screed (UK code) : Flooring screed typically 50mm thick (UK code)
 # layers  description  type  optics name   symmetry tag
     4    inv_pa_fl_no  OPAQ  OPAQUE        pa_fl_notion  
 # material ref thickness (m) description & air gap R
   129    0.0500  Screed (UK code) : Flooring screed typically 50mm thick (UK code)
-   38    0.1500  concrete hiden : Concrete high density (UK code)
+   38    0.1500  concrete hi-den : Concrete high density (UK code)
     0    0.4000  gap  0.180 0.180 0.180
   155    0.0150  Ceiling tile : Ceiling tiles
 # layers  description  type  optics name   symmetry tag
@@ -552,4 +641,5 @@
 # material ref thickness (m) description & air gap R
    78    0.0190  Plywood deck : Plywood/felt (UK code)
   290    0.1600  EPS k 0.05 : EPS k=0.05 (non-hygroscopic)
-  110    0.0130  Plasterboard (wallboard) : Internal finish (UK code)
+  110    0.0130  Plasterboard (wallboard) : Internal finish (UK code) (inorganic-porous)
+
