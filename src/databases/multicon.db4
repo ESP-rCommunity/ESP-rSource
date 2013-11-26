@@ -1,6 +1,7 @@
-# composite construction db defined in ./multicon.db4
-# based on materials db ./material.db4.a
-   82     # no of composites 
+# composite construction db defined in multicon.db4
+# based on materials db material.db4.a
+# and based on CFClayers db CFClayers.db1.a
+   94     # no of composites 
 # layers  description  type  optics name   symmetry tag
     4    extern_wall   OPAQ  OPAQUE        NONSYMMETRIC  
 # material ref thickness (m) description & air gap R
@@ -74,6 +75,14 @@
     0    0.0500  gap  0.050 0.050 0.050
    68    0.0250  weatherboard : Weatherboard (source does not clarify what it is)
 # layers  description  type  optics name   symmetry tag
+    5    cavity_brick  OPAQ  OPAQUE        NONSYMMETRIC  
+# material ref thickness (m) description & air gap R
+    4    0.1000  outer leaf brick : Outer leaf brick (inorganic-porous)
+    0    0.0400  gap  0.150 0.150 0.150
+    3    0.1000  inner leaf brick : Inner leaf brick (inorganic-porous)
+  101    0.0120  dense plaster : Dense plaster (inorganic-porous)
+  113    0.0100  lime plaster : lime plaster from IBO PassivHaus (inorganic-porous)
+# layers  description  type  optics name   symmetry tag
     6    Brk_blk_1980  OPAQ  OPAQUE        NONSYMMETRIC  
 # material ref thickness (m) description & air gap R
    10    0.1020  Brick outer leaf : Brick (UK code) (inorganic-porous)
@@ -93,6 +102,15 @@
    79    0.0120  OSB : OSB wood based on the SBEM database
     0    0.0200  gap  0.170 0.170 0.170
   108    0.0120  white gypboard : White painted Gypboard (inorganic-porous)
+# layers  description  type  optics name   symmetry tag
+    6    TimberU0.23   OPAQ  OPAQUE        NONSYMMETRIC  
+# material ref thickness (m) description & air gap R
+   68    0.0210  weatherboard : Weatherboard (source does not clarify what it is)
+    0    0.0500  gap  0.170 0.170 0.170
+   76    0.0095  plywood sheathing : Plywood sheathing (UK code)
+  294    0.1400  Mineral wool batt : Insulation (Mineral wool batt k=0.04) (non-hygrosco
+    0    0.0250  gap  0.170 0.170 0.170
+  112    0.0125  Plasterboard (UK code) : Plasterboard (UK code)
 # layers  description  type  optics name   symmetry tag
     3    intern_wall   OPAQ  OPAQUE        SYMMETRIC     
 # material ref thickness (m) description & air gap R
@@ -287,6 +305,14 @@
     0    0.0100  gap  0.285 0.285 0.285
    43    0.1000  aluminium : Aluminium
 # layers  description  type  optics name   symmetry tag
+    1    sash_fr55mm   OPAQ  OPAQUE        SYMMETRIC     
+# material ref thickness (m) description & air gap R
+   71    0.0550  softwood : Softwood (generic)
+# layers  description  type  optics name   symmetry tag
+    1    sash_fr74mm   OPAQ  OPAQUE        SYMMETRIC     
+# material ref thickness (m) description & air gap R
+   71    0.0740  softwood : Softwood (generic)
+# layers  description  type  optics name   symmetry tag
     4    roof          OPAQ  OPAQUE        NONSYMMETRIC  
 # material ref thickness (m) description & air gap R
    43    0.0030  aluminium : Aluminium
@@ -378,7 +404,8 @@
   156    0.0200  Tiles Concrete : Tiles Concrete typically 10mm thick (inorganic-porous)
     0    0.0250  gap  0.170 0.170 0.170
   166    0.0020  bitumen paper : Bitumen impregnated paper (organic hygroscopic)
-   72    0.0120  plywood 700d : Plywood (700 density)# layers  description  type  optics name   symmetry tag
+   72    0.0120  plywood 700d : Plywood (700 density)
+# layers  description  type  optics name   symmetry tag
    11    DAI_04        OPAQ  OPAQUE        DAI_04_inv    
 # material ref thickness (m) description & air gap R
    46    0.0050  grey cotd alum : Grey coated aluminium
@@ -561,6 +588,60 @@
   121    0.0250  ltwt_conc_screed : Lightweight conc screed (inorganic-porous)
   141    0.0120  clay tile : Clay tile (inorganic-porous)
 # layers  description  type  optics name   symmetry tag
+    7    ground        OPAQ  OPAQUE        NONSYMMETRIC  
+# material ref thickness (m) description & air gap R
+  263    0.2500  earth std : Common_earth
+  263    0.2500  earth std : Common_earth
+  263    0.2500  earth std : Common_earth
+  263    0.2500  earth std : Common_earth
+  263    0.2500  earth std : Common_earth
+  263    0.2500  earth std : Common_earth
+  262    0.1000  gravel based : Gravel based (non-hygroscopic)
+# layers  description  type  optics name   symmetry tag
+    1    tg_floor      OPAQ  OPAQUE        SYMMETRIC     
+# material ref thickness (m) description & air gap R
+   69    0.0220  oak : Oak (radial cut)
+# layers  description  type  optics name   symmetry tag
+    2    lino_tg_crwl  OPAQ  OPAQUE        linotg_floor  
+# material ref thickness (m) description & air gap R
+  232    0.0050  linoleum_CSTC : linoleum as per CSTC Belgium 1980 (impermeable)
+   69    0.0220  oak : Oak (radial cut)
+# layers  description  type  optics name   symmetry tag
+    4    cptlintgcrl   OPAQ  OPAQUE        cptlnotg_flr  
+# material ref thickness (m) description & air gap R
+  221    0.0150  Wilton : Wilton weave wool carpet (organic-hygroscopic)
+  224    0.0110  cellular rub underlay : Cellular rubber carpet underlay (non-hygroscopi
+  232    0.0050  linoleum_CSTC : linoleum as per CSTC Belgium 1980 (impermeable)
+   69    0.0220  oak : Oak (radial cut)
+# layers  description  type  optics name   symmetry tag
+    5    cpttginscrl   OPAQ  OPAQUE        cpttgins_flr  
+# material ref thickness (m) description & air gap R
+  221    0.0150  Wilton : Wilton weave wool carpet (organic-hygroscopic)
+  224    0.0110  cellular rub underlay : Cellular rubber carpet underlay (non-hygroscopi
+  232    0.0050  linoleum_CSTC : linoleum as per CSTC Belgium 1980 (impermeable)
+   69    0.0220  oak : Oak (radial cut)
+  211    0.1000  glasswool : Glasswool (generic) (non-hygroscopic)
+# layers  description  type  optics name   symmetry tag
+    2    linotg_floor  OPAQ  OPAQUE        lino_tg_crwl  
+# material ref thickness (m) description & air gap R
+   69    0.0220  oak : Oak (radial cut)
+  232    0.0050  linoleum_CSTC : linoleum as per CSTC Belgium 1980 (impermeable)
+# layers  description  type  optics name   symmetry tag
+    4    cptlnotg_flr  OPAQ  OPAQUE        cptlintgcrl   
+# material ref thickness (m) description & air gap R
+   69    0.0220  oak : Oak (radial cut)
+  232    0.0050  linoleum_CSTC : linoleum as per CSTC Belgium 1980 (impermeable)
+  224    0.0110  cellular rub underlay : Cellular rubber carpet underlay (non-hygroscopi
+  221    0.0150  Wilton : Wilton weave wool carpet (organic-hygroscopic)
+# layers  description  type  optics name   symmetry tag
+    5    cpttgins_flr  OPAQ  OPAQUE        cpttginscrl   
+# material ref thickness (m) description & air gap R
+  211    0.1000  glasswool : Glasswool (generic) (non-hygroscopic)
+   69    0.0220  oak : Oak (radial cut)
+  232    0.0050  linoleum_CSTC : linoleum as per CSTC Belgium 1980 (impermeable)
+  224    0.0110  cellular rub underlay : Cellular rubber carpet underlay (non-hygroscopi
+  221    0.0150  Wilton : Wilton weave wool carpet (organic-hygroscopic)
+# layers  description  type  optics name   symmetry tag
     8    EFu_01        OPAQ  OPAQUE        EFu_01_inv    
 # material ref thickness (m) description & air gap R
   165    0.0100  bitumen composit : Bitumen composit (floor) (impermeable)
@@ -642,4 +723,3 @@
    78    0.0190  Plywood deck : Plywood/felt (UK code)
   290    0.1600  EPS k 0.05 : EPS k=0.05 (non-hygroscopic)
   110    0.0130  Plasterboard (wallboard) : Internal finish (UK code) (inorganic-porous)
-
