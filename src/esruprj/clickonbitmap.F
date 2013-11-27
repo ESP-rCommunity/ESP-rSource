@@ -115,6 +115,8 @@ C an object has been saved the set justentered to false.
       integer iicol
       integer iigl,iigr,iigt,iigb,iigw,iigwh
       integer iiw1,iiw2,iiw3,iiw4,iimenu
+      integer iixoffset,iiyoffset,iiwidth,iihight
+      integer iixbul,iiybul,iixblr,iiyblr,iilix,iiliy
 #else
       integer*8 iixs1,iiys1,iixs2,iiys2,iixtn1,iiytn1,iixtn2,iiytn2
       integer*8 iixx1,iiyy1,iid1,iid2,iid3,iid4
@@ -122,6 +124,8 @@ C an object has been saved the set justentered to false.
       integer*8 iicol
       integer*8 iigl,iigr,iigt,iigb,iigw,iigwh
       integer*8 iiw1,iiw2,iiw3,iiw4,iimenu
+      integer*8 iixoffset,iiyoffset,iiwidth,iihight
+      integer*8 iixbul,iiybul,iixblr,iiyblr,iilix,iiliy
 #endif
 
 C For help messages
@@ -785,7 +789,8 @@ C and pixel height are also read.
               endif
 
 C Debug.
-              write(outs,*) 'The bitmap file is ',ibmwidth,' by ',
+              write(outs,'(a,i4,a,i4,a)') 
+     &          'The bitmap file is ',ibmwidth,' by ',
      &          ibmhight,' pixels.'
               call edisp(iuout,outs)
               CALL ERPFREE(iin,ISTAT)
@@ -814,26 +819,43 @@ C If bitmap is taller, adjust so we start with lower left corner.
                 if(igw.lt.ibmwidth) iwidth=igw
                 ihight=ibmhight
                 if(igwh.lt.ibmhight) ihight=igwh
-                write(outs,*) ' The bitmap was trimmed to ',iwidth,
+                write(outs,'(a,i4,a,i4,a,i4,a,i4)')
+     &          ' The bitmap was trimmed to ',iwidth,
      &            ' x',ihight,' pixels from ',ibmwidth,' x',ibmhight
                 call edisp(iuout,outs)
-                call winlodpart(fname,ixoffset,iyoffset,iwidth,ihight,
-     &            15,15,ixbul,iybul,ixblr,iyblr)
+
+C Cast data types for C code.
+                iixoffset=ixoffset; iiyoffset=iyoffset
+                iiwidth=iwidth; iihight=ihight
+                iixbul=ixbul; iiybul=iybul; iixblr=ixblr; iiyblr=iyblr
+                iilix=15; iiliy=15
+                call winlodpart(fname,iixoffset,iiyoffset,iiwidth,
+     &            iihight,iilix,iiliy,iixbul,iiybul,iixblr,iiyblr)
+                ixbul=int(iixbul); iybul=int(iiybul)
+                ixblr=int(iixblr); iyblr=int(iiyblr)
               else
                 trimmed=.false.
                 ixoffset=0
                 iyoffset=0
                 iwidth=ibmwidth
                 ihight=ibmhight
-                call winlodpart(fname,ixoffset,iyoffset,iwidth,ihight,
-     &            10,10,ixbul,iybul,ixblr,iyblr)
+
+C Cast data types for C code.
+                iixoffset=ixoffset; iiyoffset=iyoffset
+                iiwidth=iwidth; iihight=ihight
+                iixbul=ixbul; iiybul=iybul; iixblr=ixblr; iiyblr=iyblr
+                iilix=10; iiliy=10
+                call winlodpart(fname,iixoffset,iiyoffset,iiwidth,
+     &            iihight,iilix,iiliy,iixbul,iiybul,iixblr,iiyblr)
+                ixbul=int(iixbul); iybul=int(iiybul)
+                ixblr=int(iixblr); iyblr=int(iiyblr)
               endif
 
 C After loading the bitmap populate the display with corners, north,
 C origin if these have been defined.
 
 C Debug.
-C              write(6,*) 'bitmap drawn at ',ixbul,iybul,ixblr,iyblr
+              write(6,*) 'bitmap drawn at ',ixbul,iybul,ixblr,iyblr
               iicol=0
               call winscl('z',iicol)
               iid1=ixbul; iid2=iybul;
@@ -3115,17 +3137,27 @@ C Other is the grid distance if user supplied (iwmg=7).
 #ifdef OSI
       integer iixtn1,iiytn1,iixtn2,iiytn2,iid1,iid2,iid3,iid4
       integer iicol
+      integer iixoffset,iiyoffset,iiwidth,iihight
+      integer iixbul,iiybul,iixblr,iiyblr,iilix,iiliy
 #else
       integer*8 iixtn1,iiytn1,iixtn2,iiytn2,iid1,iid2,iid3,iid4
       integer*8 iicol
+      integer*8 iixoffset,iiyoffset,iiwidth,iihight
+      integer*8 iixbul,iiybul,iixblr,iiyblr,iilix,iiliy
 #endif
 
 C Debug.
 C      write(6,*) 'refresh bitmap'
 
       call startbuffer()
-      call winlodpart(fname,ixoffset,iyoffset,iwidth,ihight,
-     &  15,15,ixbul,iybul,ixblr,iyblr)
+      iixoffset=ixoffset; iiyoffset=iyoffset
+      iiwidth=iwidth; iihight=ihight
+      iixbul=ixbul; iiybul=iybul; iixblr=ixblr; iiyblr=iyblr
+      iilix=15; iiliy=15
+      call winlodpart(fname,iixoffset,iiyoffset,iiwidth,iihight,
+     &  iilix,iiliy,iixbul,iiybul,iixblr,iiyblr)
+      ixbul=int(iixbul); iybul=int(iiybul)
+      ixblr=int(iixblr); iyblr=int(iiyblr)
       call edisp(iuout,'Refreshing bitmap...')
       iicol=0
       call winscl('z',iicol)
@@ -3344,6 +3376,14 @@ C inpm is the input mode.
       dimension ipxwhis(MGTV),ipywhis(MGTV)
       character fname*72
 
+#ifdef OSI
+      integer iixoffset,iiyoffset,iiwidth,iihight
+      integer iixbul,iiybul,iixblr,iiyblr
+#else
+      integer*8 iixoffset,iiyoffset,iiwidth,iihight
+      integer*8 iixbul,iiybul,iixblr,iiyblr
+#endif
+
 C Debug.
 C      write(6,*) 'offsets ',ixoffset,iyoffset
 
@@ -3365,8 +3405,13 @@ C load a sub-section of the bitmap into the current display.
           if(igw.lt.ibmwidth) iwidth=igw
           ihight=ibmhight
           if(igwh.lt.ibmhight) ihight=igwh
-          call checklodpart(fname,ixoffset,iyoffset,iwidth,ihight,
-     &      15,15,ixbul,iybul,ixblr,iyblr)
+
+C Cast for calling of C code.
+          iixoffset=ixoffset; iiyoffset=iyoffset
+          iiwidth=iwidth; iihight=ihight
+          iixbul=ixbul; iiybul=iybul; iixblr=ixblr; iiyblr=iyblr
+          call checklodpart(fname,iixoffset,iiyoffset,iiwidth,iihight,
+     &      15,15,iixbul,iiybul,iixblr,iiyblr)
           call edisp(iuout,'Back to left edge of bitmap.')
         else
           call startbuffer()
@@ -3377,8 +3422,13 @@ C load a sub-section of the bitmap into the current display.
           if(igw.lt.ibmwidth) iwidth=igw
           ihight=ibmhight
           if(igwh.lt.ibmhight) ihight=igwh
-          call checklodpart(fname,ixoffset,iyoffset,iwidth,ihight,
-     &      15,15,ixbul,iybul,ixblr,iyblr)
+
+C Cast for calling of C code.
+          iixoffset=ixoffset; iiyoffset=iyoffset
+          iiwidth=iwidth; iihight=ihight
+          iixbul=ixbul; iiybul=iybul; iixblr=ixblr; iiyblr=iyblr
+          call checklodpart(fname,iixoffset,iiyoffset,iiwidth,iihight,
+     &      15,15,iixbul,iiybul,iixblr,iiyblr)
           call edisp(iuout,'Panned 50 pixels to left...')
         endif
         call shifoverlays(xbmnorth,xbmorigin,invert,nw,idfxoffset,
@@ -3393,9 +3443,15 @@ C load a sub-section of the bitmap into the current display.
         if(igw.lt.iwidth) iwidth=igw
         ihight=ibmhight
         if(igwh.lt.ibmhight) ihight=igwh
-        call checklodpart(fname,ixoffset,iyoffset,iwidth,ihight,
-     &    15,15,ixbul,iybul,ixblr,iyblr)
+
+C Cast for calling of C code.
+        iixoffset=ixoffset; iiyoffset=iyoffset
+        iiwidth=iwidth; iihight=ihight
+        iixbul=ixbul; iiybul=iybul; iixblr=ixblr; iiyblr=iyblr
+        call checklodpart(fname,iixoffset,iiyoffset,iiwidth,iihight,
+     &    15,15,iixbul,iiybul,iixblr,iiyblr)
         call edisp(iuout,'Panned 50 pixels to right...')
+
         call shifoverlays(xbmnorth,xbmorigin,invert,nw,idfxoffset,
      &   idfyoffset,inpm,ixtn1,ixtn2,iytn1,iytn2,ixo,iyo,ipxx,ipyy,ipzz,
      &   ipxw,ipyw,nipwhis,ipxwhis,ipywhis)
@@ -3411,9 +3467,15 @@ C load a sub-section of the bitmap into the current display.
           if(igw.lt.ibmwidth) iwidth=igw
           ihight=ibmhight
           if(igwh.lt.ibmhight) ihight=igwh
-          call checklodpart(fname,ixoffset,iyoffset,iwidth,ihight,
-     &      15,15,ixbul,iybul,ixblr,iyblr)
+
+C Cast for calling of C code.
+          iixoffset=ixoffset; iiyoffset=iyoffset
+          iiwidth=iwidth; iihight=ihight
+          iixbul=ixbul; iiybul=iybul; iixblr=ixblr; iiyblr=iyblr
+          call checklodpart(fname,iixoffset,iiyoffset,iiwidth,iihight,
+     &      15,15,iixbul,iiybul,iixblr,iiyblr)
           call edisp(iuout,'Panned to top of bitmap...')
+
           call shifoverlays(xbmnorth,xbmorigin,invert,nw,idfxoffset,
      &     idfyoffset,inpm,ixtn1,ixtn2,iytn1,iytn2,ixo,iyo,ipxx,ipyy,
      &     ipzz,ipxw,ipyw,nipwhis,ipxwhis,ipywhis)
@@ -3426,9 +3488,15 @@ C load a sub-section of the bitmap into the current display.
           if(igw.lt.ibmwidth) iwidth=igw
           ihight=ibmhight
           if(igwh.lt.ibmhight) ihight=igwh
-          call checklodpart(fname,ixoffset,iyoffset,iwidth,ihight,
-     &      15,15,ixbul,iybul,ixblr,iyblr)
+
+C Cast for calling of C code.
+          iixoffset=ixoffset; iiyoffset=iyoffset
+          iiwidth=iwidth; iihight=ihight
+          iixbul=ixbul; iiybul=iybul; iixblr=ixblr; iiyblr=iyblr
+          call checklodpart(fname,iixoffset,iiyoffset,iiwidth,iihight,
+     &      15,15,iixbul,iiybul,iixblr,iiyblr)
           call edisp(iuout,'Panned 50 pixels up in bitmap...')
+
           call shifoverlays(xbmnorth,xbmorigin,invert,nw,idfxoffset,
      &     idfyoffset,inpm,ixtn1,ixtn2,iytn1,iytn2,ixo,iyo,ipxx,ipyy,
      &     ipzz,ipxw,ipyw,nipwhis,ipxwhis,ipywhis)
@@ -3442,9 +3510,15 @@ C load a sub-section of the bitmap into the current display.
         if(igw.lt.ibmwidth) iwidth=igw
         ihight=ibmhight-50
         if(igwh.lt.ihight) ihight=igwh
-        call checklodpart(fname,ixoffset,iyoffset,iwidth,ihight,
-     &    15,15,ixbul,iybul,ixblr,iyblr)
+
+C Cast for calling of C code.
+        iixoffset=ixoffset; iiyoffset=iyoffset
+        iiwidth=iwidth; iihight=ihight
+        iixbul=ixbul; iiybul=iybul; iixblr=ixblr; iiyblr=iyblr
+        call checklodpart(fname,iixoffset,iiyoffset,iiwidth,iihight,
+     &    15,15,iixbul,iiybul,iixblr,iiyblr)
         call edisp(iuout,'Panned 50 pixels down in bitmap...')
+
         call shifoverlays(xbmnorth,xbmorigin,invert,nw,idfxoffset,
      &   idfyoffset,inpm,ixtn1,ixtn2,iytn1,iytn2,ixo,iyo,ipxx,ipyy,
      &   ipzz,ipxw,ipyw,nipwhis,ipxwhis,ipywhis)
