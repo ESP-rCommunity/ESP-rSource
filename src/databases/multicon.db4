@@ -1,7 +1,7 @@
 # composite construction db defined in multicon.db4
 # based on materials db material.db4.a
 # and based on CFClayers db CFClayers.db1.a
-   94     # no of composites 
+   98     # no of composites 
 # layers  description  type  optics name   symmetry tag
     4    extern_wall   OPAQ  OPAQUE        NONSYMMETRIC  
 # material ref thickness (m) description & air gap R
@@ -474,19 +474,91 @@
   150    0.0100  ceiling mineral : Ceiling acoustic tile (mineral fibre based)
   211    0.1000  glasswool : Glasswool (generic) (non-hygroscopic)
 # layers  description  type  optics name   symmetry tag
-    4    cpt_cel2flr   OPAQ  OPAQUE        cpt_flr2cel   
+    5    cpt_cel2flr   OPAQ  OPAQUE        cpt_flr2cel   
 # material ref thickness (m) description & air gap R
   226    0.0060  dk grey Wilton : Dark grey Wilton carpet (organic-hygroscopic)
+  224    0.0060  cellular rub underlay : Cellular rubber carpet underlay (non-hygroscopi
    72    0.0180  plywood 700d : Plywood (700 density)
     0    0.1000  gap  0.170 0.170 0.170
   108    0.0125  white gypboard : White painted Gypboard (inorganic-porous)
 # layers  description  type  optics name   symmetry tag
-    4    cpt_flr2cel   OPAQ  OPAQUE        cpt_cel2flr   
+    5    cpt_flr2cel   OPAQ  OPAQUE        cpt_cel2flr   
 # material ref thickness (m) description & air gap R
   108    0.0125  white gypboard : White painted Gypboard (inorganic-porous)
     0    0.1000  gap  0.170 0.170 0.170
    72    0.0180  plywood 700d : Plywood (700 density)
+  224    0.0060  cellular rub underlay : Cellular rubber carpet underlay (non-hygroscopi
   226    0.0060  dk grey Wilton : Dark grey Wilton carpet (organic-hygroscopic)
+# layers  description  type  optics name   symmetry tag
+    3    tg_cel2flr    OPAQ  OPAQUE        tg_flr2ceil   
+# material ref thickness (m) description & air gap R
+   69    0.0220  oak : Oak (radial cut)
+    0    0.1500  gap  0.170 0.170 0.170
+  108    0.0125  white gypboard : White painted Gypboard (inorganic-porous)
+# layers  description  type  optics name   symmetry tag
+    3    tg_flr2ceil   OPAQ  OPAQUE        tg_cel2flr    
+# material ref thickness (m) description & air gap R
+  108    0.0125  white gypboard : White painted Gypboard (inorganic-porous)
+    0    0.1500  gap  0.170 0.170 0.170
+   69    0.0220  oak : Oak (radial cut)
+# layers  description  type  optics name   symmetry tag
+    4    lntg_cel2flr  OPAQ  OPAQUE        lntg_flr2cel  
+# material ref thickness (m) description & air gap R
+  232    0.0050  linoleum_CSTC : linoleum as per CSTC Belgium 1980 (impermeable)
+   69    0.0220  oak : Oak (radial cut)
+    0    0.1500  gap  0.170 0.170 0.170
+  108    0.0125  white gypboard : White painted Gypboard (inorganic-porous)
+# layers  description  type  optics name   symmetry tag
+    4    lntg_flr2cel  OPAQ  OPAQUE        lntg_cel2flr  
+# material ref thickness (m) description & air gap R
+  108    0.0125  white gypboard : White painted Gypboard (inorganic-porous)
+    0    0.1500  gap  0.170 0.170 0.170
+   69    0.0220  oak : Oak (radial cut)
+  232    0.0050  linoleum_CSTC : linoleum as per CSTC Belgium 1980 (impermeable)
+# layers  description  type  optics name   symmetry tag
+    1    tg_floor      OPAQ  OPAQUE        SYMMETRIC     
+# material ref thickness (m) description & air gap R
+   69    0.0220  oak : Oak (radial cut)
+# layers  description  type  optics name   symmetry tag
+    2    lino_tg_crwl  OPAQ  OPAQUE        linotg_floor  
+# material ref thickness (m) description & air gap R
+  232    0.0050  linoleum_CSTC : linoleum as per CSTC Belgium 1980 (impermeable)
+   69    0.0220  oak : Oak (radial cut)
+# layers  description  type  optics name   symmetry tag
+    2    linotg_floor  OPAQ  OPAQUE        lino_tg_crwl  
+# material ref thickness (m) description & air gap R
+   69    0.0220  oak : Oak (radial cut)
+  232    0.0050  linoleum_CSTC : linoleum as per CSTC Belgium 1980 (impermeable)
+# layers  description  type  optics name   symmetry tag
+    4    cptlintgcrl   OPAQ  OPAQUE        cptlnotg_flr  
+# material ref thickness (m) description & air gap R
+  221    0.0150  Wilton : Wilton weave wool carpet (organic-hygroscopic)
+  224    0.0110  cellular rub underlay : Cellular rubber carpet underlay (non-hygroscopi
+  232    0.0050  linoleum_CSTC : linoleum as per CSTC Belgium 1980 (impermeable)
+   69    0.0220  oak : Oak (radial cut)
+# layers  description  type  optics name   symmetry tag
+    4    cptlnotg_flr  OPAQ  OPAQUE        cptlintgcrl   
+# material ref thickness (m) description & air gap R
+   69    0.0220  oak : Oak (radial cut)
+  232    0.0050  linoleum_CSTC : linoleum as per CSTC Belgium 1980 (impermeable)
+  224    0.0110  cellular rub underlay : Cellular rubber carpet underlay (non-hygroscopi
+  221    0.0150  Wilton : Wilton weave wool carpet (organic-hygroscopic)
+# layers  description  type  optics name   symmetry tag
+    5    cpttginscrl   OPAQ  OPAQUE        cpttgins_flr  
+# material ref thickness (m) description & air gap R
+  221    0.0150  Wilton : Wilton weave wool carpet (organic-hygroscopic)
+  224    0.0110  cellular rub underlay : Cellular rubber carpet underlay (non-hygroscopi
+  232    0.0050  linoleum_CSTC : linoleum as per CSTC Belgium 1980 (impermeable)
+   69    0.0220  oak : Oak (radial cut)
+  211    0.1000  glasswool : Glasswool (generic) (non-hygroscopic)
+# layers  description  type  optics name   symmetry tag
+    5    cpttgins_flr  OPAQ  OPAQUE        cpttginscrl   
+# material ref thickness (m) description & air gap R
+  211    0.1000  glasswool : Glasswool (generic) (non-hygroscopic)
+   69    0.0220  oak : Oak (radial cut)
+  232    0.0050  linoleum_CSTC : linoleum as per CSTC Belgium 1980 (impermeable)
+  224    0.0110  cellular rub underlay : Cellular rubber carpet underlay (non-hygroscopi
+  221    0.0150  Wilton : Wilton weave wool carpet (organic-hygroscopic)
 # layers  description  type  optics name   symmetry tag
     2    ceiling_2013  OPAQ  OPAQUE        ceil2013_rev  
 # material ref thickness (m) description & air gap R
@@ -588,7 +660,7 @@
   121    0.0250  ltwt_conc_screed : Lightweight conc screed (inorganic-porous)
   141    0.0120  clay tile : Clay tile (inorganic-porous)
 # layers  description  type  optics name   symmetry tag
-    7    ground        OPAQ  OPAQUE        NONSYMMETRIC  
+    7    ground_1.6m   OPAQ  OPAQUE        NONSYMMETRIC  
 # material ref thickness (m) description & air gap R
   263    0.2500  earth std : Common_earth
   263    0.2500  earth std : Common_earth
@@ -597,50 +669,6 @@
   263    0.2500  earth std : Common_earth
   263    0.2500  earth std : Common_earth
   262    0.1000  gravel based : Gravel based (non-hygroscopic)
-# layers  description  type  optics name   symmetry tag
-    1    tg_floor      OPAQ  OPAQUE        SYMMETRIC     
-# material ref thickness (m) description & air gap R
-   69    0.0220  oak : Oak (radial cut)
-# layers  description  type  optics name   symmetry tag
-    2    lino_tg_crwl  OPAQ  OPAQUE        linotg_floor  
-# material ref thickness (m) description & air gap R
-  232    0.0050  linoleum_CSTC : linoleum as per CSTC Belgium 1980 (impermeable)
-   69    0.0220  oak : Oak (radial cut)
-# layers  description  type  optics name   symmetry tag
-    4    cptlintgcrl   OPAQ  OPAQUE        cptlnotg_flr  
-# material ref thickness (m) description & air gap R
-  221    0.0150  Wilton : Wilton weave wool carpet (organic-hygroscopic)
-  224    0.0110  cellular rub underlay : Cellular rubber carpet underlay (non-hygroscopi
-  232    0.0050  linoleum_CSTC : linoleum as per CSTC Belgium 1980 (impermeable)
-   69    0.0220  oak : Oak (radial cut)
-# layers  description  type  optics name   symmetry tag
-    5    cpttginscrl   OPAQ  OPAQUE        cpttgins_flr  
-# material ref thickness (m) description & air gap R
-  221    0.0150  Wilton : Wilton weave wool carpet (organic-hygroscopic)
-  224    0.0110  cellular rub underlay : Cellular rubber carpet underlay (non-hygroscopi
-  232    0.0050  linoleum_CSTC : linoleum as per CSTC Belgium 1980 (impermeable)
-   69    0.0220  oak : Oak (radial cut)
-  211    0.1000  glasswool : Glasswool (generic) (non-hygroscopic)
-# layers  description  type  optics name   symmetry tag
-    2    linotg_floor  OPAQ  OPAQUE        lino_tg_crwl  
-# material ref thickness (m) description & air gap R
-   69    0.0220  oak : Oak (radial cut)
-  232    0.0050  linoleum_CSTC : linoleum as per CSTC Belgium 1980 (impermeable)
-# layers  description  type  optics name   symmetry tag
-    4    cptlnotg_flr  OPAQ  OPAQUE        cptlintgcrl   
-# material ref thickness (m) description & air gap R
-   69    0.0220  oak : Oak (radial cut)
-  232    0.0050  linoleum_CSTC : linoleum as per CSTC Belgium 1980 (impermeable)
-  224    0.0110  cellular rub underlay : Cellular rubber carpet underlay (non-hygroscopi
-  221    0.0150  Wilton : Wilton weave wool carpet (organic-hygroscopic)
-# layers  description  type  optics name   symmetry tag
-    5    cpttgins_flr  OPAQ  OPAQUE        cpttginscrl   
-# material ref thickness (m) description & air gap R
-  211    0.1000  glasswool : Glasswool (generic) (non-hygroscopic)
-   69    0.0220  oak : Oak (radial cut)
-  232    0.0050  linoleum_CSTC : linoleum as per CSTC Belgium 1980 (impermeable)
-  224    0.0110  cellular rub underlay : Cellular rubber carpet underlay (non-hygroscopi
-  221    0.0150  Wilton : Wilton weave wool carpet (organic-hygroscopic)
 # layers  description  type  optics name   symmetry tag
     8    EFu_01        OPAQ  OPAQUE        EFu_01_inv    
 # material ref thickness (m) description & air gap R
