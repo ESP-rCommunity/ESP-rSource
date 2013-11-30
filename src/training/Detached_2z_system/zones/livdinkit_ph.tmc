@@ -1,0 +1,14 @@
+# transparent properties of living defined in ../zones/livdinkit_ph.tmc
+  26   # surfaces
+# tmc index for each surface
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1
+   5  tr_Kgl_arg   # layers in tmc type 1
+# Transmission @ 5 angles & visible tr.
+   0.382   0.361   0.313   0.193   0.077   0.614
+# For each layer absorption @ 5 angles
+   0.260   0.264   0.264   0.255   0.195
+   0.001   0.001   0.001   0.001   0.001
+   0.103   0.111   0.115   0.107   0.083
+   0.001   0.001   0.001   0.001   0.001
+   0.098   0.095   0.086   0.061   0.028
+   0  # optical control flag

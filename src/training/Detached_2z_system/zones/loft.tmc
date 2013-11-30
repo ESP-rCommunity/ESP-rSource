@@ -1,0 +1,14 @@
+# transparent properties of loft defined in ../zones/loft.tmc
+  15   # surfaces
+# tmc index for each surface
+0,0,0,0,0,0,0,0,0,0,0,0,0,1,0
+   5  PV_Kyocera   # layers in tmc type 1
+# Transmission @ 5 angles & visible tr.
+   0.000   0.000   0.000   0.000   0.000   0.000
+# For each layer absorption @ 5 angles
+   0.027   0.030   0.032   0.034   0.034
+   0.823   0.813   0.775   0.643   0.401
+   0.000   0.000   0.000   0.000   0.000
+   0.000   0.000   0.000   0.000   0.000
+   0.000   0.000   0.000   0.000   0.000
+   0  # optical control flag

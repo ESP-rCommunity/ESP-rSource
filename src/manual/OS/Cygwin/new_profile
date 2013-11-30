@@ -28,7 +28,7 @@
 # If you wish to change the path on a user by user basis, it is recommended you
 #  edit ~/.bashrc
 
-PATH=/usr/local/bin:/usr/bin:/bin:/usr/X11R6/bin:/usr/esru/esp-r/bin:$PATH
+PATH=/usr/local/bin:/usr/bin:/bin:/usr/X11R6/bin:/opt/esru/esp-r/bin:$PATH
 export PATH
 
 MANPATH=/usr/local/man:/usr/share/man:/usr/man:$MANPATH
