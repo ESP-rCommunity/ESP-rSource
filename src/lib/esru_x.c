@@ -7,7 +7,6 @@ intialisation and graphics, using ww. The routines are :-
 	sizehwxy	:- passess window size, w/h ratio & position
 	setpause_(n)	:- set length of pause
 	jwinint		:- initialise X window and check fonts
-	tchild_(cterm)  :- return child process terminal info.
 	winclr		:- clears screen
 	winfin		:- closes ww window
 	winlod(name,ix,iy)
@@ -259,7 +258,7 @@ static unsigned int dispDEEP;
 /* indicies used for various colours */
 static unsigned long fg, bg, bd, bw, white, black, infofg, infobg;
 static unsigned long gmenuhl, gpopfr, gfeedfr, ginvert, gmodbg, grey50, grey43;
-static unsigned long cscale[49], zscale[29], gscale[29];
+static unsigned long cscale[49], zscale[100], gscale[85];
 
 char *getenv ();
 
@@ -334,7 +333,7 @@ static int asklprompt; /* left position of prompt text */
 
 static char help_list[HELP_LIST_LEN][73];	/* character arrays to hold help to be displayed
 				   by functions which include help */
-static char edisp_list[EDISP_LIST_LEN][125];	/* character arrays for edisp buffer */
+static char edisp_list[EDISP_LIST_LEN][145];	/* character arrays for edisp buffer */
 static char edit_list[PROFMA_LEN][96];	/* character arrays to be edited in fprofma_ */
 static char display_list[PROFMA_LEN][125];	/* character arrays used within fprofma_ */
 static int edisp_index = 0;	/* current position in edisp past list */
@@ -349,7 +348,7 @@ static int m_width = 0;		/* current menu max line length */
 static int m_lines = 0;		/* current number of active menu lines */
 
 static char cappl[5];	/* f77 application name */
-/* static char cfgroot[25];	f77 project root name    */
+/* static char cfgroot[33];	f77 project root name    */
 /* static char path[73];	f77 project path    */
 /* static char upath[73];	f77 users path    */
 /* static char imgpth[25];	f77 relative path to images    */
@@ -433,11 +432,17 @@ static char font_0[60], font_1[60], font_2[60], font_3[60], font_4[60], font_5[6
 /* info about root Xwindow */
 static int xrt_width, xrt_height;  /* same as xsh.width and xsh.height */
 static char *bgstr,  *whitestr, *blackstr; /* init default colors */
-static char *zscalestr[] = { /* colour names from rgb.txt to represent zone colours */
-  "red","MidnightBlue","peru","ForestGreen","khaki","turquoise","magenta","firebrick",
-  "DarkCyan","khaki3","RoyalBlue","tomato","OliveDrab","PaleGreen","orange","grey40",
-  "coral2","grey60","maroon4","gold3","PowderBlue","sienna","azure4","grey20",
-  "grey50","NavyBlue","DarkGreen","gold","grey80" };
+static char *zscalestr[] = { /* 100 colour names from rgb.txt to represent zone colours */
+    "red","MidnightBlue","peru","ForestGreen","khaki","grey14","turquoise","magenta","gold4","firebrick",
+    "DarkCyan","khaki3","grey25","RoyalBlue","tomato","grey34","OliveDrab","PaleGreen","orange","grey40",
+    "coral2","tan4","SeaGreen","grey60","maroon4","gold3","grey46","PowderBlue","sienna","azure4","grey20","burlywood2",
+    "grey50","khaki2","NavyBlue","sienna3","DarkGreen","gold","magenta3","grey80","turquoise2","gold1","tomato3",
+    "grey70","orange3","grey37","maroon1","grey19","tan2","green3",
+    "red","MidnightBlue","peru","ForestGreen","khaki","grey14","turquoise","magenta","gold4","firebrick",
+    "DarkCyan","khaki3","grey25","RoyalBlue","tomato","grey34","OliveDrab","PaleGreen","orange","grey40",
+    "coral2","tan4","SeaGreen","grey60","maroon4","gold3","grey46","PowderBlue","sienna","azure4","grey20","burlywood2",
+    "grey50","khaki2","NavyBlue","sienna3","DarkGreen","gold","magenta3","grey80","turquoise2","gold1","tomato3",
+    "grey70","orange3","grey37","maroon1","grey19","tan2","green3" };
 static char *cscalestr[] = { /* colour scale RGB HEX values (to represent 49 steps of temperature) */
   "#FF0000","#FF1500","#FF2B00","#FF4000","#FF5500","#FF6A00","#FF8000","#FF9500","#FFAA00","#FFBF00",
   "#FFD500","#FFEA00","#FFFF00","#EAFF00","#D5FF00","#BFFF00","#AAFF00","#95FF00","#80FF00","#6AFF00",
@@ -448,10 +453,17 @@ static char *cscalestr[] = { /* colour scale RGB HEX values (to represent 49 ste
 static char *gintstr[] = {
   "grey96","grey94","grey92","grey86","grey64","grey50",
   "grey95","grey93","grey91","grey85","grey63","grey49","grey43" };
+/* 86 strings to set greay scale for zones if zscalestr allocation fails. */
 static char *gscalestr[] = {
-  "grey97","grey94","grey91","grey88","grey85","grey82","grey79","grey76","grey73","grey70",
-  "grey67","grey64","grey61","grey58","grey55","grey52","grey49","grey46","grey43","grey40",
-  "grey37","grey34","grey31","grey28","grey25","grey22","grey19","grey16","grey14" };
+  "grey97","grey96","grey95","grey94","grey93","grey92","grey91","grey90",
+  "grey89","grey88","grey87","grey86","grey85","grey84","grey83","grey82","grey81","grey80",
+  "grey79","grey78","grey77","grey76","grey75","grey74","grey73","grey72","grey71","grey70",
+  "grey69","grey68","grey67","grey66","grey65","grey64","grey63","grey62","grey61","grey60",
+  "grey59","grey58","grey57","grey56","grey55","grey54","grey53","grey52","grey51","grey50",
+  "grey49","grey48","grey47","grey46","grey45","grey44","grey43","grey42","grey41","grey40",
+  "grey39","grey38","grey37","grey36","grey35","grey34","grey33","grey32","grey31","grey30",
+  "grey29","grey28","grey27","grey26","grey25","grey24","grey23","grey22","grey21","grey20",
+  "grey19","grey18","grey17","grey16","grey15","grey14","grey13","grey12" };
 static long int ncscale = 0; /* number of assigned colours in colour scale */
 static long int ngscale = 0; /* number of assigned colours in grey scale */
 static long int ngr = 0; /* number of assigned interface colours */
@@ -864,12 +876,12 @@ void clrcscale_() {
   return;
 }
 
-/* ********* grey scale (29 or 12 steps) ******* */
+/* ********* grey scale (84 or 42 steps) ******* */
 void setgscale_() {
   int ic,ih;
   XColor ecdef;
 /* assign grey scale to gscale (hex) array. */
-  for (ic=0; ic<28; ic++) {
+  for (ic=0; ic<84; ic++) {
     if (XParseColor(theDisp,theCmap,gscalestr[ic],&ecdef) && XAllocColor(theDisp,theCmap,&ecdef)) {
         gscale[ic] = ecdef.pixel;
         ngscale=ngscale+1;
@@ -880,14 +892,14 @@ void setgscale_() {
   }
 /* Some colours not allocated attempt half of the colours. Begin by freeing initial allocated set. */
 /* debug fprintf(stderr,"Created greys %ld\n",ngscale); */
-  if ( ngscale <= 27 ) {
+  if ( ngscale <= 83 ) {
     for (ic=0; ic<ngscale; ic++) {
       if( gscale[ic] >= 1 ) XFreeColors(theDisp,theCmap,&gscale[ic],1,0L);
     }
     fprintf(stderr,"Trying reduced grey set\n");
     ngscale = 0;
     ih = -1;
-    for (ic=0; ic<12; ic++) {
+    for (ic=0; ic<40; ic++) {
       ih = ih + 2;
       if (XParseColor(theDisp,theCmap,gscalestr[ih],&ecdef) && XAllocColor(theDisp,theCmap,&ecdef)) {
          gscale[ic] = ecdef.pixel;
@@ -911,12 +923,12 @@ void clrgscale_() {
   return;
 }
 
-/* ********* zone colour scale (29 steps) ******* */
+/* ********* zone colour scale (81 steps) ******* */
 void setzscale_() {
   int ic;
   XColor ecdef, sdef;
 /* assign colours (zscale names) for zone graphing. */
-  for (ic=0; ic<28; ic++) {
+  for (ic=0; ic<99; ic++) {
     if (XLookupColor(theDisp,theCmap,zscalestr[ic],&ecdef,&sdef) && XAllocColor(theDisp,theCmap,&ecdef)) {
       zscale[ic] = ecdef.pixel;
       izc = izc + 1;
@@ -1062,13 +1074,6 @@ long int *ifs,*itfs,*imfs;
  return;
 }
 
-/* *************** return child process terminal info. *************** */
-void tchild_(cterm)
-long int *cterm;           /* child terminal type  */
-{
-  *cterm = child_ter;
-  return;
-}
 
 /* *************** Release display. *************** */
 void winfin_()
@@ -1775,11 +1780,10 @@ this enables the size of the scroll bar to be set*/
 
 /* **************  Open a 3D viewing box *************** */
 /*
- Passed the character width of the main control menu, the number of
- lines of text to leave at the bottom for a dialogue box, the width of
- the left, right inside margins in terms of number of characters
- with the butn_fnt font and the top and bottom inside margins in terms
- of lines of characters.
+ Passed the character width of the main control menu (menu_char), 
+ the width of the left (cl), right (cr) inside margins in terms of
+ number of characters with the butn_fnt font and the top (ct)and bottom
+ (cb)inside margins in terms of lines of characters.
  Returns the pixel coord of the viewing box left, right, top, bottom as well
  as its overall pixel width & height.
  dbx1 is the outer box (including axes) and viewbx is the image area.
@@ -5131,12 +5135,12 @@ void disptext()
   int iy,lm1,i,len;
   long int saved_font;
   int j,jstart; 	/* variables for text feedback redisplay */
-  char msg2[125];
+  char msg2[145];
 
   saved_font = current_font;   /* save existing font  */
   if (disp_fnt != saved_font) winfnt_(&disp_fnt);
 
-  len = 124; /* max char width to print */
+  len = 144; /* max char width to print */
   disp_lines = (int) ((disp.b_bottom - disp.b_top) / (f_height+1));
   if (disp_lines != tfb_limtty) {
     tfb_line = tfb_line - tfb_limtty + disp_lines;
@@ -5177,7 +5181,7 @@ void egdisp_(msg,line,len)
   long int *line;             	 /* position indicator */
 {
   int i;		 /* local string length */
-  char msg2[125];
+  char msg2[145];
 
   if( len <= 1 )return; /* don`t bother if no characters */
 
@@ -5197,7 +5201,7 @@ void egdisp_(msg,line,len)
     strncpy(edisp_list[edisp_index],msg,len);	/* copy to static array */
   } else {
     for ( i = 0; i < EDISP_LIST_LEN-1; i++ ) {
-      strncpy(edisp_list[i],edisp_list[i+1],124);	/* shift array up */
+      strncpy(edisp_list[i],edisp_list[i+1],144);	/* shift array up */
     }
     strncpy(edisp_list[EDISP_LIST_LEN-1],msg,len);   /* copy to static array */
   }
@@ -6379,15 +6383,17 @@ void labelstr(n,val,WticC,sstr)
   return;
 } /* labelstr */
 
-/* ************** VRTAXS *********************** */
+/* ************** VRTAXIS *********************** */
 /*
- Construct and draw a vertical axis via WW where: YMN,YMX are the data
+ Construct and draw a vertical axis via where: YMN,YMX are the data
  minimum & maximum values, offl & offb are the pixel coords of the
  lower start of the axis.  SCA is the scaling factor and Yadd
  is a data offset to adjust plotting for various data ranges.
  Mode = 1 for time axis, Mode = 0 for other data display types.
  Side = 0 lables and tic on left, Side = 1 labels and tic on right.
- msg is the axis label and mlen is it's length (passed from f77).
+ msg is the axis label and mlen is it's length (passed from fortran).
+ TODO: pass in character offset for axis rather than assuming a
+       fixed value.
 */
 
 void vrtaxis_(ymn,ymx,offl,offb,offt,yadd,sca,mode,side,msg,mlen)
@@ -6513,14 +6519,16 @@ void vrtaxis_(ymn,ymx,offl,offb,offt,yadd,sca,mode,side,msg,mlen)
   XDrawLine(theDisp,win,theGC,ix1,iy1,ix,iy);
 
 /*
- Print out the axis label on left or right.
- Looping through each character in the string
- and placing in a buffer for printing.
+ Print out the axis label on left or right.  Loop through each
+ character in the string and placing in a buffer for printing.
+ If label on right ensure a bit of space between characters and
+ the right edge of box to allow for image capture. If on right
+ offset by 3 characters.
 */
   if (sid == 0) {
-      ix = dbx1.b_left+10;
+      ix = dbx1.b_left + (2 *f_width);
   } else {
-      ix = dbx1.b_right - (2 * f_width);
+      ix = dbx1.b_right - (3 * f_width);
   }
   mid = oft + ((ofb - oft)/2);
   iy = mid - (vertadj * ilen);

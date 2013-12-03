@@ -121,7 +121,7 @@ C IEEE callback (Solaris)
       common/ray2/itdsp,itbnd,itept,itznm,itsnm,itvno,itorg,itsnr,
      &            itobs,ithls,ithlz,itgrd,grdis,itppsw
       common/ray3/modify,modlen,modbnd
-      common/fopened/cfgok,mldbok,matdbok,ctlok,optkok
+      common/fopened/cfgok,mldbok,matdbok,ctlok,optkok,CFCDBOK
       integer mon,isc,iyd
       common/contr/mon,isc(ms),iyd
       common/data1/ical,idifc,init
@@ -131,7 +131,6 @@ C IEEE callback (Solaris)
       
       integer ncomp,ncon
       common/c1/ncomp,ncon
-      common/c21/ifcfg,cfgroot,lcfgf
 
 C Path to model and command line file (if any).
       common/rpath/path
@@ -159,11 +158,10 @@ C Name of current application.
 
       dimension month(12),items(24),isadd(12),ishd(12),iavdec(12)
       character*72 lname,tbase
-      character*72 lcfgf
       character items*26,cAppName*12
       character month*3,outs*124,outs248*248,etext*70,ltmp*144
       character descrh*5,descrd*5,inf*144,lcmdfl*144
-      character path*72,cfgroot*24,outstr*124
+      character path*72,outstr*124
       character inz*16,inzone*16,zn*12,pact*16,paction*16
       character ascif*72,pascif*72
       character journcmd*20,jfile*72,uname*24,fs*1,cjfile*72
@@ -175,7 +173,7 @@ C Name of current application.
 
       logical silent,unixok,there,context,existing
       logical modify,modlen,modbnd,xst
-      logical ok,dok,cfgok,mldbok,matdbok,ctlok,optkok
+      logical ok,dok,cfgok,mldbok,matdbok,ctlok,optkok,CFCDBOK
       logical user_recalc  ! user requested recalculation
       logical loaded_existing  ! to signal working with existing shd file
       logical changed_existing  ! to signal existing shd file updated
@@ -237,6 +235,7 @@ C ifcfg  - system configuration file
       iairp=ifil+6    ! for alt files during cfg read
       IOPTDB=IFIL+7   ! set unit numbers for optical db.
       iuj=ifil+10
+      icfcdb=ifil+11  ! set unit number for CFClayers db
       cfgok=.false.
       lname='SHDTRN'
       zn='UNKNOWN'
@@ -407,15 +406,15 @@ C and then call the ascii export facility and exit.
          write(outs,'(2a)')'Ish: the input action is: ',paction
          call tstamp('>',outs)
          if(paction(1:11).eq.'recalculate')then
-            write(outs,'(2a)')' the action is: ',paction
-            call edisp(iuout,outs)
-            user_recalc=.true.
+           write(outs,'(2a)')' the action is: ',paction
+           call edisp(iuout,outs)
+           user_recalc=.true.
          elseif(paction(1:13).eq.'update_silent')then
-            silent=.true.
+           silent=.true.
          elseif(paction(1:16).eq.'useupdate_silent')then
-            silent=.true.
+           silent=.true.
          elseif(paction(1:8).eq.'asci2bin')then
-	    write(ascif,'(a)') pascif(1:lnblnk(pascif))
+           write(ascif,'(a)') pascif(1:lnblnk(pascif))
             if(ascif(1:4).eq.'UNKN')then
               call edisp(iuout,'ish: the action file is unknown!')
               call pauses(1)
@@ -424,7 +423,7 @@ C and then call the ascii export facility and exit.
             endif
             silent=.true.
          elseif(paction(1:8).eq.'bin2asci')then
-	    write(ascif,'(a)') pascif(1:lnblnk(pascif))
+           write(ascif,'(a)') pascif(1:lnblnk(pascif))
             if(ascif(1:4).eq.'UNKN')then
               call edisp(iuout,'ish: the action file is unknown!')
               call pauses(1)
@@ -568,7 +567,7 @@ C Open core of databases if not already done so.
      &               'or Optical Properties db.','W')
               endif
             endif
-	    
+    
             if(paction(1:13).eq.'update_silent'.or.
      &         paction(1:16).eq.'useupdate_silent')then
               continue
@@ -613,7 +612,6 @@ C A new binary file was created from an existing ascii so
 C the requested useupdate_silent task has been completed.
                  loaded_existing=.true.
                  if(paction(1:16).eq.'useupdate_silent')then
-C                   call pauses(1)
                    call epagend
                    stop
                  endif
@@ -1201,7 +1199,7 @@ C in the zone transitional shading file or from common blocks).
      &        1,'F',12,'F',1,'month number',ier,nbhelp)
             if(ier.ne.0)goto 201
             call eday(iavdec(mon),mon,iyd)
-	    
+    
 C If there is a transitional shading file then use it when composing
 C the synopsis. If not found (i.e. if binary file is based on reading
 C an ascii shading file) then use an alternative approach.
@@ -1222,7 +1220,7 @@ C shading file.
               call edisp(iuout,outs)
               call retrv1(icomp)
               call shsynp(icomp)
-	       
+       
             else
 
 C Shading synopsis is based on common block information.
@@ -1342,7 +1340,7 @@ C source surfaces.
             call inscon(icomp,icstat,'-')
             changed_existing=.true.  ! so we know to update ASCII on exit
          else
-            call usrmsg(
+           call usrmsg(
      &       'No Zone Shading & Insolation db! Use Project Manager',
      &       'to specify one for this zone or choose another zone.',
      &       'W')
@@ -1650,7 +1648,7 @@ C or if the user requested a file conversion.
            elseif(paction(1:8).eq.'asci2bin')then
              continue
            else
-	     write(exportfile,'(2a)') 
+             write(exportfile,'(2a)') 
      &         lshad(icomp)(1:lnblnk(lshad(icomp))),'a'
              call findfil(exportfile,xst)
              if(xst)then
@@ -1728,11 +1726,11 @@ C << update this to match changes in lfmat >>
 
       common/FILEP/IFIL
       common/OUTIN/IUOUT,IUIN
-      common/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
+      common/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,CFCDBOK
       common/ract/paction
       character paction*16
 
-      logical XST,CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
+      logical XST,CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,CFCDBOK
       logical closemat1,closemat2
       character LASCI*144,DFILE*144,fs*1
       character SOPT*12,outs*124,outs248*248,GDESCR*36
@@ -1788,8 +1786,8 @@ C Depending on location check existance.
           elseif(IER.eq.2)then
             MLDBOK=.FALSE.
           endif
-	  goto 138    ! if silent and no materials jump to optics
-	endif
+          goto 138    ! if silent and no materials jump to optics
+        endif
         IF(IER.eq.1)then
           write(outs248,'(3a)') 
      &    ' Problems with materials used by Constructions db',

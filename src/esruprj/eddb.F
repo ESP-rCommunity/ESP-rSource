@@ -58,22 +58,19 @@ C default file names for standard files
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
 
-      character cfgroot*24,LCFGF*72
-      common/C21/IFCFG,cfgroot,LCFGF
-
       common/rpath/path
       common/user/browse
 
-      common/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
+      common/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,CFCDBOK
 
-      logical OK,DOK,XST,CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
+      logical OK,DOK,XST,CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,CFCDBOK
       logical moddb,browse,modcon,QUIET
       logical haveconstr
       integer ihd  ! for radio button
       integer NITMS,INO ! max items and current menu item
 
       character path*72
-      character*72 ITEMS(17)
+      character*72 ITEMS(18)
       character lworking*144  ! for processing file names
       
 C Strings for dos version of source and destination of db file.
@@ -116,6 +113,12 @@ C yet defined.
         call findwhichdbpath('opt',lworking,ier)
         lworking=MCMPDBFL
         call findwhichdbpath('msc',lworking,ier)
+        lworking=lfmould
+        call findwhichdbpath('mld',lworking,ier)
+        lworking=LCLIM
+        call findwhichdbpath('clm',lworking,ier)
+        lworking=LCFCDB
+        call findwhichdbpath('cfc',lworking,ier)
       endif
  
     3 INO=-4
@@ -258,21 +261,32 @@ C yet defined.
         WRITE(ITEMS(14),'(2A)')'j mould isopleths       : <std>',
      &    lfmould(1:38)
       endif
+      if(ipathcfc.eq.0)then
+        WRITE(ITEMS(15),'(2A)')'k CFC layers            : ',
+     &    LCFCDB(1:43)
+      elseif(ipathcfc.eq.1)then
+        lndbpth=lnblnk(dbspth)+2
+        WRITE(ITEMS(15),'(2A)')'k CFC layers            : <mod>',
+     &    LCFCDB(lndbpth:38)
+      elseif(ipathcfc.eq.2)then
+        WRITE(ITEMS(15),'(2A)')'k CFC layers            : <std>',
+     &    LCFCDB(1:38)
+      endif
 
-      ITEMS(15)='  _______________________________ '
-      ITEMS(16)='? help                            '
-      ITEMS(17)='- exit this menu                  '
+      ITEMS(16)='  _______________________________ '
+      ITEMS(17)='? help                            '
+      ITEMS(18)='- exit this menu                  '
 
 C Try to compact the width of the menu.
       IW=0
-      do 141 ij=1,17
+      do 141 ij=1,18
         if(lnblnk(ITEMS(ij)).gt.IW)IW=lnblnk(ITEMS(ij))
  141  continue
 
 C Help text for this menu.
       helptopic='database_mgt_overview'
       call gethelptext(helpinsub,helptopic,nbhelp)
-      NITMS=17
+      NITMS=18
       if(MMOD.EQ.8)then
         impx=0
         impy=0
@@ -282,7 +296,7 @@ C Help text for this menu.
       else
         CALL EMENU('Standard data maintenance',ITEMS,NITMS,INO)
       endif
-      IF(INO.EQ.17)THEN
+      IF(INO.EQ.18)THEN
         if(browse)return   ! no change since browsing
 
         if(cfgroot(1:2).ne.'  '.and.cfgroot(1:4).ne.'UNKN')then
@@ -300,6 +314,7 @@ C No model yet so reset to the default names and exit.
           write(LSBEM,'(a)')  DSBEM(1:lnblnk(DSBEM))  ! assign default SBEM db
           write(MCMPDBFL,'(a)') DMCMPDBFL(1:lnblnk(DMCMPDBFL))
           write(lfmould,'(a)') dmdbnam(1:lnblnk(dmdbnam))
+          write(LCFCDB,'(a)') DCFCDB(1:lnblnk(DCFCDB))
           return
         endif
 
@@ -452,6 +467,24 @@ C Mould isopleths.
 
       ELSEIF(INO.EQ.15)THEN
 
+C Manage CFC layers db and if a model loaded then warn user 
+C if db name or contents have changed.
+        call eddbcfc(moddb,modcon,'    ')
+        if(cfgroot(1:2).ne.'  '.and.cfgroot(1:4).ne.'UNKN')then
+          if(moddb)then
+            call usrmsg(
+     &      'The file name might have changed. Suggest',
+     &      'using the `save model` option to record this.','W')
+          endif
+          if(modcon)then
+            call usrmsg(
+     &      'The file details might have changed. In a moment',
+     &      'you will be offered the option to update zone files.','W')
+          endif
+        endif
+
+      ELSEIF(INO.EQ.17)THEN
+
 C Menu help text.
         helptopic='database_mgt_overview'
         call gethelptext(helpinsub,helptopic,nbhelp)
@@ -519,9 +552,9 @@ C closemat1 or closemat2 will be set.
 
       common/FILEP/IFIL
       common/OUTIN/IUOUT,IUIN
-      common/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
+      common/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,CFCDBOK
 
-      logical XST,CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
+      logical XST,CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,CFCDBOK
       logical closemat1,closemat2
       character LASCI*144,DFILE*144,fs*1
       character SOPT*12,outs248*248,GDESCR*36
@@ -742,15 +775,15 @@ C     if blank then no file name change implied.
       common/FILEP/IFIL
       common/OUTIN/IUOUT,IUIN
 
-      common/C21/IFCFG,cfgroot,LCFGF
-      common/rpath/path
+C      common/rpath/path
+C      character path*72
 
 C Default ESP-r distribution path.
       common/deflt4/dinstpath
 
-      common/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
+      common/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,CFCDBOK
 
-      logical CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
+      logical CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,CFCDBOK
       logical moddb,modcon,copydef,clkok,chgdb
       logical closemat1,closemat2
 
@@ -765,8 +798,7 @@ C Default ESP-r distribution path.
       CHARACTER APP*4
 C      CHARACTER outs248*248
       LOGICAL OK,XST,DOK,concat
-      character cfgroot*24,LCFGF*72
-      character dinstpath*60,path*72
+      character dinstpath*60
 
 C Local strings for user selections dependent on graphic library.
       integer lndbp   ! for length of standard path
@@ -863,7 +895,8 @@ C If standard file then offer the following choices (incl /):
      &    'f binary >> ascii export','g ascii >> binary',
      &    'h create new materials',' ',' ',' ',' ',
      &    isw,idno,nbhelp)
-        copydef=.false.
+        if(isw.eq.4)copydef=.true.
+        if(isw.eq.5)copydef=.false.
       elseif(longtfile(1:ldirpath-1).eq.dirpath(1:ldirpath-1))then
 
 C If standard file then offer the following choices (without /):
@@ -877,7 +910,8 @@ C If standard file then offer the following choices (without /):
      &    'f binary >> ascii export','g ascii >> binary',
      &    'h create new materials',' ',' ',' ',' ',
      &    isw,idno,nbhelp)
-        copydef=.false.
+        if(isw.eq.4)copydef=.true.
+        if(isw.eq.5)copydef=.false.
       else
 
 C If db exists locally toggle whether the user is asked to copy the
@@ -1152,9 +1186,6 @@ C Materials db: BINARY > ASCII. Open the ascii file on IAF=IFIL+1.
 C Do not assume that LFMAT is necessarily the binary file
 C the user may have been working earlier with an ascii version
 C revise to request the name of the binary file before opening it.
-
-C << what about value of ipathmat? >>
-
         write(LLTMP,'(a)') LFMAT(1:lnblnk(LFMAT))  ! remember current file name
         lsn2=MIN0(lnblnk(LLTMP),92)
         LTMP=' '
@@ -1219,7 +1250,14 @@ C << temporary shorter string until EASKXORGTKF >>
             CALL ERPFREE(IFMUL,ISTAT)  ! in case other unit is still open
             CALL mkascimat(IAF,LLASCI,IER)
           else
-            CALL MKAPRC(LLASCI,IAF,IER)
+
+C Use a call to MATFROMBIN (to scan binary file into common blocks)
+C followed by a call to mkascimat.
+            call MATFROMBIN(IER)  ! fill materials common blocks
+            if(ier.eq.0)then
+              CALL ERPFREE(IFMUL,ISTAT)  ! in case other unit is still open
+              CALL mkascimat(IAF,LLASCI,IER)
+            endif
           endif
         endif
 
@@ -1397,11 +1435,12 @@ C Work with a shorter string until we can switch to EASKXORGTKF
           continue
         else
 
-C Write out the ASCII version and make it the new LFMAT.
+C Write ASCII version from the common blocks and make it the new LFMAT.
 C << shorter string until replacement of EASKXORGTKF >>
           write(LLASCI,'(a)') LTMP(1:lnblnk(LTMP))
           IAF=IFIL+1
-          CALL MKAPRC(LLASCI,IAF,IER)
+          CALL ERPFREE(IFMUL,ISTAT)  ! in case other unit is still open
+          CALL mkascimat(IAF,LLASCI,IER)
           write(LFMAT,'(a)') LLASCI(1:lnblnk(LLASCI))
           origmatwasbin=.false.   ! reset so only done once
         endif
@@ -1412,6 +1451,496 @@ C << shorter string until replacement of EASKXORGTKF >>
 
 C Error messages.
    13 CALL USRMSG(' Write error to ascii Materials db ',LLTMPFL,'W')
+      IER=1
+      return
+      end
+
+C ********** EDDBCFC
+C Eddbcfc Changes the CFC layers db current cfg file references.
+C moddb is from version manager
+C modcon signals change in constructions.
+C APP is 4 character file name modifier (from version facility)
+C     if blank then no file name change implied.
+
+      SUBROUTINE EDDBCFC(moddb,modcon,APP)
+#include "building.h"
+#include "model.h"
+#include "esprdbfile.h"
+#include "material.h"
+      
+      integer lnblnk  ! function definition
+
+      common/FILEP/IFIL
+      common/OUTIN/IUOUT,IUIN
+
+      common/rpath/path
+
+C Default ESP-r distribution path.
+      common/deflt4/dinstpath
+
+      common/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,CFCDBOK
+
+      logical CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,CFCDBOK
+      logical moddb,modcon,copydef,clkok,chgdb
+      logical closemat1,closemat2
+
+      character LLTMP*144,LTMP*92
+      character fs*1
+      character DFILE*144,LLASCI*144,LLTMPFL*144
+      character lprev*144
+      character longtfile*144
+      character lworking*144
+      character dirpath*72
+
+      CHARACTER APP*4
+C      CHARACTER outs248*248
+      LOGICAL OK,XST,DOK,concat
+      character dinstpath*60,path*72
+
+C Local strings for user selections dependent on graphic library.
+      integer lndbp   ! for length of standard path
+      integer ier
+      logical unixok  ! to check for path file separators
+      logical allowbrowse ! to be done
+
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='EDDBCFC'  ! set for subroutine
+
+C Clear string buffers.
+      ltmp=' '
+      lltmp=' '
+
+C Set folder separator (fs) to \ or / as required.
+      call isunix(unixok)
+      if(unixok)then
+        fs = char(47)
+      else
+        fs = char(92)
+      endif
+
+C Setup string buffer with distribution database folder name.
+      write(dirpath,'(4a)') dinstpath(1:lnblnk(dinstpath)),
+     &  fs,'databases',fs
+      ldirpath=lnblnk(dirpath)
+
+C Remember the initial file name in case user choice fails.
+C Take into account the current value of ipathmat.
+      lndbp=lnblnk(standarddbpath)
+      if(ipathcfc.eq.0.or.ipathcfc.eq.1)then
+        write(lprev,'(a)') LCFCDB(1:lnblnk(LCFCDB))
+      elseif(ipathcfc.eq.2)then
+        write(lprev,'(3a)') standarddbpath(1:lndbp),fs,
+     &    LCFCDB(1:lnblnk(LCFCDB))
+      endif
+
+C Debug.
+C      write(outs248,*) 'Current materials ',lprev(1:lnblnk(lprev))
+C      call edisp248(iuout,outs248,100)
+
+C Setup lltmp to hold the full path to the file for use in dialog.
+  60  continue
+      if(ipathcfc.eq.0.or.ipathcfc.eq.1)then
+        lltmp=LCFCDB  ! use as is
+      elseif(ipathcfc.eq.2)then
+        write(lltmp,'(3a)') standarddbpath(1:lndbp),fs,
+     &    LCFCDB(1:lnblnk(LCFCDB))  ! prepend db folder path
+      endif
+
+      helptopic='cfc_db_edit_menu'
+      call gethelptext(helpinsub,helptopic,nbhelp)
+
+C If local or absolute path call addpath otherwise if a standard
+C file then set longtfile equal to LLTMP.
+      if(ipathcfc.eq.0.or.ipathcfc.eq.1)then
+        call addpath(lltmp,longtfile,concat)
+      elseif(ipathcfc.eq.2)then
+        longtfile=lltmp
+      endif
+      ltf=max(1,lnblnk(longtfile))
+      INQUIRE (FILE=longtfile(1:ltf),EXIST=xst)
+
+C Make up options depending on where the file is.
+      IF(.NOT.XST)THEN
+
+C If db does not exist locally offer limited choices.
+        idno=2
+        isw=0
+        call MENUATOL('  ','CFC layer properties',
+     &    ' ','b select file from list',
+     &    'c select from model ../dbs',
+     &    'd copy default file to model',
+     &    'e copy file from common to model',
+     &    'f create new CFC layers db',' ',' ',' ',' ',' ',' ',
+     &    isw,idno,nbhelp)
+        if(isw.eq.4)copydef=.true.
+        if(isw.eq.5)copydef=.false.
+      elseif(longtfile(1:ldirpath).eq.dirpath(1:ldirpath))then
+
+C If standard file then offer the following choices (incl /):
+        idno=1
+        isw=0
+        call MENUATOL('  ','CFC layer properties <std>',
+     &    'a browse/edit','b select file from list',
+     &    'c select from model ../dbs',
+     &    'd copy default file to model',
+     &    'e copy file from common to model',
+     &    'f create new CFC layers db',' ',' ',' ',' ',' ',' ',
+     &    isw,idno,nbhelp)
+        copydef=.false.
+      elseif(longtfile(1:ldirpath-1).eq.dirpath(1:ldirpath-1))then
+
+C If standard file then offer the following choices (without /):
+        idno=1
+        isw=0
+        call MENUATOL('  ','CFC layer properties <std>',
+     &    'a browse/edit','b select file from list',
+     &    'c select from model ../dbs',
+     &    'd copy default file to model',
+     &    'e copy file from common to model',
+     &    'f create new CFC layers db',' ',' ',' ',' ',' ',' ',
+     &    isw,idno,nbhelp)
+        copydef=.false.
+      else
+
+C If db exists locally toggle whether the user is asked to copy the
+C default file or the current database.
+        idno=1
+        isw=0
+        call MENUATOL('  ','CFC layer properties <mod>',
+     &    'a browse/edit','b select file from list',
+     &    'c select from model ../dbs',
+     &    'd copy default file to model',
+     &    'e copy file from common to model',
+     &    'f create new CFC layers db',' ',' ',' ',' ',' ',' ',
+     &    isw,idno,nbhelp)
+        if(isw.eq.4)copydef=.true.
+        if(isw.eq.5)copydef=.false.
+      endif
+
+C Act on the user's choice. If no choice return to calling menu.
+      if(isw.eq.0)then
+        return
+      elseif(isw.eq.1)then
+
+C If file exists read it and enter editing facility after
+C check to see if it is local or standard or absolute path.
+        if(XST)then
+          call findwhichdbpath('cfc',lltmp,ier)
+          goto 44
+        else
+          call edisp(iuout,
+     &    'No file to browse/edit. Please use another option.')
+          LCFCDB=lprev
+          goto 60
+        endif
+
+      elseif(isw.eq.2)then
+
+C Allow user to select from the distribution databases folder for an
+C CFClayers file. If moddb was set to true then proceed to edit
+C the materials.
+        numhelp=nbhelp
+        lltmp='  '
+        call usecommondbsfile('cfc',numhelp,lltmp,istat,moddb)
+        if(istat.eq.0.and.moddb)then
+          goto 44
+        else
+          goto 60
+        endif
+
+      elseif(isw.eq.6)then
+
+! C User requested the creation of a new CFC layers db file. Set up minimal
+! C set of categories and items, write this to a scratch file and
+! C then scan that into material arrays and create a new db and offer editing.
+!         lr=lnblnk(cfgroot)
+!         LTMP=' '
+!         LLTMP=' '
+!         if(dbspth(1:2).eq.'  '.or.dbspth(1:2).eq.'./')then
+!           write(LTMP,'(2a)') cfgroot(1:lr),'.cfcdb'
+!         else
+!           write(LTMP,'(4a)') dbspth(1:lnblnk(dbspth)),fs,
+!      &      cfgroot(1:lr),'.cfcdb'
+!         endif
+!         clkok=.false.
+!  62     clkok=.false.
+!         CALL EASKSCNCL(ltmp,'Name for new CFC layers properties file',
+!      &    'Confirm:','cancel',clkok,92,DFCON,'new CFC layers',
+!      &    IER,nbhelp)
+!         if(clkok)then
+!           LCFCDB=lprev  ! user canceled, restore initial name
+!           return
+!         endif
+!         if(ltmp(1:2).ne.'  '.and.ltmp(1:4).ne.'UNKN')then
+!           write(LCFCDB,'(a)') ltmp(1:lnblnk(ltmp))
+!           ipathcfc=1  ! this is a local materials.
+!         else
+!           goto 62
+!         endif
+! 
+!         CALL ERPFREE(IFMAT,ISTAT)
+!         CFCDBOK=.TRUE.
+!         moddb=.true.
+!         modcon=.true.
+! 
+! C Write a scratch file which can be re-scanned into common blocks.
+! C CFC layers db. Include typical categories with one item in each.
+! C The scratch file is in the format of an older ASCII materials
+! C file which will then be scanned into materials arrays.
+! 
+! C << Need to update this scratch file to use a newer format
+! C << of ascii Materials db or just assign the data arrays
+! C << directly.
+! 
+!         lr=lnblnk(cfgroot)
+!         LLTMPFL=' '
+!         if(dbspth(1:2).eq.'  '.or.dbspth(1:2).eq.'./')then
+!           write(LLTMPFL,'(2a)') cfgroot(1:lr),'.scratch'
+!         else
+!           write(LLTMPFL,'(4a)') dbspth(1:lnblnk(dbspth)),fs,
+!      &      cfgroot(1:lr),'.scratch'
+!         endif
+!         IAF=IFIL+1
+!         CALL EFOPSEQ(IAF,LLTMPFL,3,IER)
+!         write(IAF,'(2a)',IOSTAT=ios,ERR=13)
+!      &    '# Materials db defined in ',LFMAT(1:lnblnk(LFMAT))
+!         NCLASS=15
+!         write(IAF,'(i5,a)',IOSTAT=ios,ERR=13) NCLASS,
+!      &    '#  number of classifications'
+!         write(IAF,'(a)',IOSTAT=ios,ERR=13) 
+!      &    '# class|no elements|description'
+!         write(IAF,'(a)',IOSTAT=ios,ERR=13) '  1   1   Brick'
+!         write(IAF,'(a)',IOSTAT=ios,ERR=13) '  1   Paviour Brick'
+!         write(IAF,'(a)',IOSTAT=ios,ERR=13) 
+!      &    '  0.960, 2000.000, 840.000, 0.930, 0.700, 12.000'
+!         write(IAF,'(a)',IOSTAT=ios,ERR=13) 
+!      &    '# class|no elements|description'
+!         write(IAF,'(a)',IOSTAT=ios,ERR=13) '  2   1   Concrete'
+!         write(IAF,'(a)',IOSTAT=ios,ERR=13) ' 21   Light mix conc'
+!         write(IAF,'(a)',IOSTAT=ios,ERR=13) 
+!      &    '  0.380, 1200.000, 653.000, 0.900, 0.650, 6.000'
+!         write(IAF,'(a)',IOSTAT=ios,ERR=13) 
+!      &    '# class|no elements|description'
+!         write(IAF,'(a)',IOSTAT=ios,ERR=13) '  3   1   Metal'
+!         write(IAF,'(a)',IOSTAT=ios,ERR=13) ' 41   Copper   '
+!         write(IAF,'(a)',IOSTAT=ios,ERR=13) 
+!      &    '  200.000, 8900.000, 418.000, 0.720, 0.650, 19200.000'
+!         write(IAF,'(a)',IOSTAT=ios,ERR=13) 
+!      &    '# class|no elements|description'
+!         write(IAF,'(a)',IOSTAT=ios,ERR=13) '  4   1   Wood'
+!         write(IAF,'(a)',IOSTAT=ios,ERR=13) ' 61   Wood block   '
+!         write(IAF,'(a)',IOSTAT=ios,ERR=13) 
+!      &    '  0.160, 800.000, 2093.000, 0.900, 0.650, 11.000'
+!         write(IAF,'(a)',IOSTAT=ios,ERR=13) 
+!      &    '# class|no elements|description'
+!         write(IAF,'(a)',IOSTAT=ios,ERR=13) '  5   1   Stone'
+!         write(IAF,'(a)',IOSTAT=ios,ERR=13) ' 81   Sandstone   '
+!         write(IAF,'(a)',IOSTAT=ios,ERR=13) 
+!      &    '  1.830, 2200.000, 712.000, 0.900, 0.600, 29.000'
+!         write(IAF,'(a)',IOSTAT=ios,ERR=13) 
+!      &    '# class|no elements|description'
+!         write(IAF,'(a)',IOSTAT=ios,ERR=13) '  6   1   Plaster'
+!         write(IAF,'(a)',IOSTAT=ios,ERR=13) ' 101  Dense plaster '
+!         write(IAF,'(a)',IOSTAT=ios,ERR=13) 
+!      &    '  0.500, 1300.000, 1000.000, 0.910, 0.500, 11.000  '
+!         write(IAF,'(a)',IOSTAT=ios,ERR=13) 
+!      &    '# class|no elements|description'
+!         write(IAF,'(a)',IOSTAT=ios,ERR=13)
+!      &    '  7   1   Screeds and renders'
+!         write(IAF,'(a)',IOSTAT=ios,ERR=13)
+!      &    ' 121  Ltwt concrete screed '
+!         write(IAF,'(a)',IOSTAT=ios,ERR=13) 
+!      &    '  0.410, 1200.000, 840.000, 0.900, 0.800, 30.000'
+!         write(IAF,'(a)',IOSTAT=ios,ERR=13) 
+!      &    '# class|no elements|description'
+!         write(IAF,'(a)',IOSTAT=ios,ERR=13) '  8   1   Tiles'
+!         write(IAF,'(a)',IOSTAT=ios,ERR=13) ' 141  Clay tile '
+!         write(IAF,'(a)',IOSTAT=ios,ERR=13) 
+!      &    ' 0.850, 1900.000, 837.000, 0.900, 0.600, 52.000'  
+!         write(IAF,'(a)',IOSTAT=ios,ERR=13) 
+!      &    '# class|no elements|description'
+!         write(IAF,'(a)',IOSTAT=ios,ERR=13)
+!      &    '  9   1   Asphalt and bitumen'
+!         write(IAF,'(a)',IOSTAT=ios,ERR=13) ' 161  Bitumen felt '
+!         write(IAF,'(a)',IOSTAT=ios,ERR=13) 
+!      &    ' 0.500, 1700.000, 1000.000, 0.900, 0.900, 1000.000'
+!         write(IAF,'(a)',IOSTAT=ios,ERR=13) 
+!      &    '# class|no elements|description'
+!         write(IAF,'(a)',IOSTAT=ios,ERR=13) '  10   1  Fabric '
+!         write(IAF,'(a)',IOSTAT=ios,ERR=13) ' 181  wool '
+!         write(IAF,'(a)',IOSTAT=ios,ERR=13) 
+!      &    '  0.060, 198.000, 1360.000, 0.900, 0.600, 10.000'
+!         write(IAF,'(a)',IOSTAT=ios,ERR=13) 
+!      &    '# class|no elements|description'
+!         write(IAF,'(a)',IOSTAT=ios,ERR=13) '  11   1  Insulation '
+!         write(IAF,'(a)',IOSTAT=ios,ERR=13) ' 201  Fibreboard '
+!         write(IAF,'(a)',IOSTAT=ios,ERR=13) 
+!      &    '  0.060, 300.000, 1000.000, 0.900, 0.500, 13.000'
+!         write(IAF,'(a)',IOSTAT=ios,ERR=13) 
+!      &    '# class|no elements|description'
+!         write(IAF,'(a)',IOSTAT=ios,ERR=13) '  12   1  Carpet '
+!         write(IAF,'(a)',IOSTAT=ios,ERR=13) ' 221  Wilton '
+!         write(IAF,'(a)',IOSTAT=ios,ERR=13) 
+!      &    ' 0.060, 186.000, 1360.000, 0.900, 0.600, 10.000' 
+!         write(IAF,'(a)',IOSTAT=ios,ERR=13) 
+!      &    '# class|no elements|description'
+!         write(IAF,'(a)',IOSTAT=ios,ERR=13) '  13   1  Glass '
+!         write(IAF,'(a)',IOSTAT=ios,ERR=13) ' 241  Glass block '
+!         write(IAF,'(a)',IOSTAT=ios,ERR=13) 
+!      &    '  0.700, 3500.000, 837.000, 0.830, 0.050, 19200.000'
+!         write(IAF,'(a)',IOSTAT=ios,ERR=13) 
+!      &    '# class|no elements|description'
+!         write(IAF,'(a)',IOSTAT=ios,ERR=13) '  14   1  Earth '
+!         write(IAF,'(a)',IOSTAT=ios,ERR=13) ' 261  Infusorial (9% mc)'
+!         write(IAF,'(a)',IOSTAT=ios,ERR=13) 
+!      &    ' 0.090, 480.000, 180.000, 0.900, 0.850, 5.000 '
+!         write(IAF,'(a)',IOSTAT=ios,ERR=13) 
+!      &    '# class|no elements|description'
+!         write(IAF,'(a)',IOSTAT=ios,ERR=13) '  15   1  Plastic '
+!         write(IAF,'(a)',IOSTAT=ios,ERR=13) ' 281   Plastic tile'
+!         write(IAF,'(a)',IOSTAT=ios,ERR=13) 
+!      &    '  0.500, 1050.000, 837.000, 0.900, 0.400, 1000.000 '
+! 
+! C After creating the new file close the file unit.
+!         CALL ERPFREE(IAF,ISTAT)
+!         call pausems(400)
+! 
+! C Now scan the scratch file into material arrays.
+!         ier=0
+!         call rlegacymat(IAF,LLTMPFL,ier)
+!         if(ier.ne.0)then
+!           call usrmsg('The initial materials data could not',
+!      &                'be scanned into memory!','W')
+!         else
+!           call usrmsg('An initial set of material categories has been',
+!      &                'setup and you can modify as required.','-')
+!         endif
+! 
+! C And now write out the file with the materials arrays. mkascimat
+! C expects to be passed the expanded file name.
+!         CALL ERPFREE(IAF,ISTAT)
+!         CALL ERPFREE(IFMUL,ISTAT)  ! in case other unit is still open
+!         LLTMPFL=' '
+!         if(ipathmat.eq.0.or.ipathmat.eq.1)then
+!           write(LLTMPFL,'(a)') LFMAT(1:lnblnk(LFMAT))
+!         elseif(ipathmat.eq.2)then
+!           lndbp=lnblnk(standarddbpath)
+!           write(LLTMPFL,'(3a)') standarddbpath(1:lndbp),fs,
+!      &      LFMAT(1:lnblnk(LFMAT))
+!         endif
+!         CALL mkascimat(IAF,LLTMPFL,IER)
+! 
+!         dok=.true.
+!         CALL ASKOK(' ','Browse or edit new file?',OK,dok,nbhelp)
+!         if(OK)then
+!           moddb=.true.
+!           goto 44
+!         endif
+
+      elseif(isw.eq.4)then
+
+C Copy standard file to model folder. Suggest a local
+C file name based on the project root name. Update common to
+C reflect it is local.
+        allowbrowse=.false.
+        numhelp=nbhelp
+        lltmp='  '
+        call copycommonfile('cfc',copydef,allowbrowse,
+     &  numhelp,lltmp,istat,moddb)
+     
+        if(istat.eq.1)then
+          LCFCDB=lprev
+          goto 60  ! cancel detected, restore name and redisplay menu.
+        elseif(istat.eq.0)then
+          goto 44
+        endif
+
+      elseif(isw.eq.3)then
+
+C Allow user to select from the model ../dbs folder for a
+C CFC layers file. If moddb was set to true then proceed to edit
+C the CFC layers.
+        numhelp=nbhelp
+        lltmp='  '
+        call usemodeldbsfile('cfc',numhelp,lltmp,istat,moddb)
+        if(istat.eq.0.and.moddb)then
+          goto 44
+        else
+          goto 60
+        endif
+
+      elseif(isw.eq.5)then
+
+C Create a menu list of files in the distribution databases folder
+C If user requests, copy one of those files to the model folder.
+        copydef=.false.
+        allowbrowse=.true.
+        numhelp=nbhelp
+        lltmp='  '
+        call copycommonfile('cfc',copydef,allowbrowse,
+     &  numhelp,lltmp,istat,moddb)
+     
+        if(istat.eq.1)then
+          LCFCDB=lprev
+          goto 60  ! cancel detected, restore name and redisplay menu.
+        elseif(istat.eq.0)then
+          goto 44
+        endif
+
+      endif
+
+C Test the selected or copied file. If a problem loop back
+C otherwise edit its contents.
+   44 continue
+
+      ier=0
+
+C Scan CFC layers file into commons.
+      call scancfcdb(ier)
+      if(ier.ne.0)then
+        call usrmsg('Readable CFC layers file was not found',
+     &              'or file was corrupt','W')
+        CFCDBOK=.FALSE.
+      else
+        CFCDBOK=.TRUE.
+      endif
+
+      moddb=.true.
+      modcon=.true.
+      chgdb=.false.
+
+      call tstamp('>','PRJ: enter CFC layers db')
+      call eclose(cfcver,1.1,0.001,closemat1)
+      if(closemat1)then
+
+C Offer display and editing of CFC layer common blocks. If chgdb is
+C returned as true then write out the ASCII file.  
+        CALL ELISTCFC(iw,chgdb,'M',imatarryindex,IER)
+
+      else
+
+C If the CFC layer arrays were not filled warn the user.
+        call usrmsg('CFC layer arrays were not filled',
+     &              'properly or file was corrupt','W')
+        goto 60
+      endif
+
+C Write ASCII version from the common blocks.
+      if(chgdb)then
+        IAF=IFIL+1
+        CALL ERPFREE(IFMUL,ISTAT)  ! in case other unit is still open
+        CALL mkascicfc(IAF,LCFCDB,IER)
+      endif
+      modcon=chgdb
+
+      return
+
+C Error messages.
+   13 CALL USRMSG(' Write error to ascii CFC layers db ',LLTMPFL,'W')
       IER=1
       return
       end
@@ -1432,8 +1961,9 @@ C     if blank then no file name change implied.
       integer lnblnk  ! function definition
 
       common/OUTIN/IUOUT,IUIN
-      common/C21/IFCFG,cfgroot,LCFGF
       common/appw/iappw,iappx,iappy
+      integer childterminal  ! picks up mmod from starting of prj
+      common/childt/childterminal
       common/rpath/path
       common/deflt4/dinstpath
 
@@ -1444,7 +1974,6 @@ C     if blank then no file name change implied.
       CHARACTER OUTS*124,APP*4
 C      CHARACTER outs248*248
       LOGICAL CLKOK,OK,COPYDEF,MODDB,XST,DOK,concat
-      character cfgroot*24,LCFGF*72
       character dinstpath*60,path*72,tmode*8
       character dirpath*72
 
@@ -1455,12 +1984,6 @@ C Local strings for user selections dependent on graphic library.
       logical unixok  ! to check for path file separators
       integer iglib  ! for detecting GTK or X11
       logical allowbrowse ! to be done
-      
-#ifdef OSI
-      integer ICPMOD     ! passed from tchild
-#else
-      integer*8 ICPMOD     ! passed from tchild
-#endif
 
 C For help messages
       character helpinsub*24 ! subroutine name
@@ -1554,7 +2077,8 @@ C If standard file then offer the following choices (incl /):
      &    'f components >> ascii export','g ascii >> components',
      &    'h create new plant components',' ',' ',' ',' ',
      &    isw,idno,nbhelp)
-        copydef=.false.
+        if(isw.eq.4)copydef=.true.
+        if(isw.eq.5)copydef=.false.
       elseif(longtfile(1:ldirpath-1).eq.dirpath(1:ldirpath-1))then
 
 C If standard file then offer the following choices (without /):
@@ -1568,7 +2092,8 @@ C If standard file then offer the following choices (without /):
      &    'f components >> ascii export','g ascii >> components',
      &    'h create new plant components',' ',' ',' ',' ',
      &    isw,idno,nbhelp)
-        copydef=.false.
+        if(isw.eq.4)copydef=.true.
+        if(isw.eq.5)copydef=.false.
       else
 
 C If db exists locally toggle whether the user is asked to copy the
@@ -1883,8 +2408,7 @@ C otherwise edit the data. Pay attention to the implied path.
 C Get logical name of child process terminal type and create a string to drive pdb.
         call tstamp('>','PRJ: start pdb')
         doit = ' '
-        call tchild(ICPMOD)
-        call termode(ICPMOD,tmode)
+        call terminalmode(childterminal,tmode)
         if(iappw.gt.0.and.iappw.le.200)then
           write(doit,'(3a,3i4,3a)') 'pdb -mode ',tmode,
      &      ' -s ',iappw,iappx+10,iappy+40,' -file ',
@@ -1930,8 +2454,8 @@ C << introduce concept of types of profiles
 
       common/FILEP/IFIL
       common/OUTIN/IUOUT,IUIN
-      common/C21/IFCFG,cfgroot,LCFGF
-      common/rpath/path
+C      common/rpath/path
+C      character path*72
       common/deflt4/dinstpath
 
       CHARACTER LTMP*72,lltmp*144,lprev*144
@@ -1941,8 +2465,7 @@ C << introduce concept of types of profiles
       CHARACTER OUTS*124
       CHARACTER OUTS248*248
       LOGICAL CLKOK,OK,COPYDEF,MODDB,XST,DOK,concat
-      character cfgroot*24,LCFGF*72
-      character dinstpath*60,path*72,dirpath*72
+      character dinstpath*60,dirpath*72
 
 C Local strings for user selections dependent on graphic library.
       character optf*28
@@ -2047,7 +2570,8 @@ C If standard file then offer the following choices (incl /):
      &    'e copy file from common to model',optf,
      &    'g create new event profile',' ',' ',' ',' ',' ',
      &    isw,idno,nbhelp)
-        copydef=.false.
+        if(isw.eq.4)copydef=.true.
+        if(isw.eq.5.or.isw.eq.6)copydef=.false.
       elseif(longtfile(1:ldirpath-1).eq.dirpath(1:ldirpath-1))then
 
 C If standard file then offer the following choices (without /):
@@ -2060,7 +2584,8 @@ C If standard file then offer the following choices (without /):
      &    'e copy file from common to model',optf,
      &    'g create new event profile',' ',' ',' ',' ',' ',
      &    isw,idno,nbhelp)
-        copydef=.false.
+        if(isw.eq.4)copydef=.true.
+        if(isw.eq.5.or.isw.eq.6)copydef=.false.
       else
 
 C If db exists locally toggle whether the user is asked to copy the
@@ -2287,14 +2812,14 @@ C warn the user when attempting to update that file.
       integer lnblnk  ! function definition
 
       common/OUTIN/IUOUT,IUIN
-      common/C21/IFCFG,cfgroot,LCFGF
-      common/rpath/path
+C      common/rpath/path
+C      character path*72
 
 C Default esp-r distribution path.
       common/deflt4/dinstpath
 
-      common/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
-      logical CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
+      common/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,CFCDBOK
+      logical CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,CFCDBOK
       logical concat
       logical moddb,modcon,modmlc,copydef,clkok
 
@@ -2303,8 +2828,7 @@ C Default esp-r distribution path.
       CHARACTER fs*1,APP*4
 C      CHARACTER outs248*248
       LOGICAL OK,XST,DOK
-      character cfgroot*24,LCFGF*72
-      character dinstpath*60,path*72,dirpath*72
+      character dinstpath*60,dirpath*72
 
 C Local strings for user selections dependent on graphic library.
       character optf*28
@@ -2412,7 +2936,8 @@ C If standard file then offer the following choices (incl /):
      &    'e copy file from common to model',optf,
      &    'g create new constructions',' ',' ',' ',' ',' ',
      &    isw,idno,nbhelp)
-        copydef=.false.
+        if(isw.eq.4)copydef=.true.
+        if(isw.eq.5.or.isw.eq.6)copydef=.false.
       elseif(longtfile(1:ldirpath-1).eq.dirpath(1:ldirpath-1))then
 
 C If standard file then offer the following choices (without /):
@@ -2425,7 +2950,8 @@ C If standard file then offer the following choices (without /):
      &    'e copy file from common to model',optf,
      &    'g create new constructions',' ',' ',' ',' ',' ',
      &    isw,idno,nbhelp)
-        copydef=.false.
+        if(isw.eq.4)copydef=.true.
+        if(isw.eq.5.or.isw.eq.6)copydef=.false.
       else
 
 C If db exists locally toggle whether the user is asked to copy the
@@ -2508,16 +3034,15 @@ C be explored).
 
 C Create a minimal constructions.
 C Set the value of ipathmul to signal local file.
+
+C << alternative to IPR needed >>
         ipathmul=1  
 
         NMLC=1
-        DESC(1)='first_constr  OPAQ  OPAQUE        SYMMETRIC'
         DTHK(1,1)=0.100
         IPR(1,1)=1
         LAYERS(1)=1
-        DRAIR(1,1,1)=0.0
-        DRAIR(1,1,2)=0.0
-        DRAIR(1,1,3)=0.0
+        DRAIR(1,1,1)=0.0; DRAIR(1,1,2)=0.0; DRAIR(1,1,3)=0.0
         MLDBOK=.TRUE.
         moddb=.true.
         CALL EMKAMLD(iuout,IER)
@@ -2643,12 +3168,12 @@ C This facility offers browsing for GTK version.
 #include "model.h"
 #include "esprdbfile.h"
       common/OUTIN/IUOUT,IUIN
-      common/C21/IFCFG,cfgroot,LCFGF
-      common/rpath/path
+C      common/rpath/path
+C      character path*72
       common/deflt4/dinstpath
       COMMON/GOPT/DG(5),HG(5),UVAL,VTRN,NTL,AB(ME,5),RF(ME),SRF,SAB
 
-      common/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
+      common/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,CFCDBOK
 
       CHARACTER LTMP*72,lltmp*144,lprev*144
       character longtfile*144
@@ -2656,9 +3181,8 @@ C This facility offers browsing for GTK version.
 C      CHARACTER outs248*248
       character GTYPE*12,GDESCR*36,SOPT*12
       LOGICAL CLKOK,OK,COPYDEF,MODDB,XST,DOK
-      logical CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,concat
-      character cfgroot*24,LCFGF*72
-      character dinstpath*60,path*72,dirpath*72
+      logical CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,concat,CFCDBOK
+      character dinstpath*60,dirpath*72
 
 C Local strings for user selections dependent on graphic library.
       character optf*28
@@ -2761,7 +3285,8 @@ C If standard file then offer the following choices (incl /):
      &    'e copy file from common to model',optf,
      &    'g create new optics',' ',' ',' ',' ',' ',
      &    isw,idno,nbhelp)
-        copydef=.false.
+        if(isw.eq.4)copydef=.true.
+        if(isw.eq.5.or.isw.eq.6)copydef=.false.
       elseif(longtfile(1:ldirpath-1).eq.dirpath(1:ldirpath-1))then
 
 C If standard file then offer the following choices (without /):
@@ -2774,7 +3299,8 @@ C If standard file then offer the following choices (without /):
      &    'e copy file from common to model',optf,
      &    'g create new optics',' ',' ',' ',' ',' ',
      &    isw,idno,nbhelp)
-        copydef=.false.
+        if(isw.eq.4)copydef=.true.
+        if(isw.eq.5.or.isw.eq.6)copydef=.false.
       else
 
 C If db exists locally toggle whether the user is asked to copy the
@@ -2981,8 +3507,8 @@ C for all interfaces.
 
       common/FILEP/IFIL
       common/OUTIN/IUOUT,IUIN
-      common/C21/IFCFG,cfgroot,LCFGF
-      common/rpath/path
+C      common/rpath/path
+C      character path*72
       common/deflt4/dinstpath
 
       COMMON/MFLWPR/NPRE,FPRE(MPOS,MPRD)
@@ -2995,8 +3521,7 @@ C for all interfaces.
 C      CHARACTER outs248*248
 
       LOGICAL CLKOK,OK,COPYDEF,MODDB,XST,DOK,concat
-      character cfgroot*24,LCFGF*72
-      character dinstpath*60,path*72,dirpath*72
+      character dinstpath*60,dirpath*72
       character OUTSTR*124      ! string buffer for data read
       character t144*144        ! for passing to erprcdb
 
@@ -3105,7 +3630,8 @@ C If standard file then offer the following choices (incl /):
      &    'e copy file from common to model',optf,
      &    'g create new coefficients',' ',' ',' ',' ',' ',
      &    isw,idno,nbhelp)
-        copydef=.false.
+        if(isw.eq.4)copydef=.true.
+        if(isw.eq.5.or.isw.eq.6)copydef=.false.
       elseif(longtfile(1:ldirpath-1).eq.dirpath(1:ldirpath-1))then
 
 C If standard file then offer the following choices (without /):
@@ -3118,7 +3644,8 @@ C If standard file then offer the following choices (without /):
      &    'e copy file from common to model',optf,
      &    'g create new coefficients',' ',' ',' ',' ',' ',
      &    isw,idno,nbhelp)
-        copydef=.false.
+        if(isw.eq.4)copydef=.true.
+        if(isw.eq.5.or.isw.eq.6)copydef=.false.
       else
 
 C If db exists locally toggle whether the user is asked to copy the
@@ -3335,8 +3862,8 @@ C espriou.h provides currentfile.
 
       common/FILEP/IFIL
       common/OUTIN/IUOUT,IUIN
-
-      common/C21/IFCFG,cfgroot,LCFGF
+      integer childterminal  ! picks up mmod from starting of prj
+      common/childt/childterminal
       
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
@@ -3351,28 +3878,25 @@ C espriou.h provides currentfile.
 
 C Calendar.
       common/caleni/nbdaytype,nbcaldays(MDTY),icalender(365)
+      INTEGER :: icalender,nbcaldays,nbdaytype
 
-      CHARACTER DFILE*72,LLASCI*144
-      character longtfile*144,longtafile*144,message*48,longtmp*144
-      CHARACTER DOIT*248,fs*1,TMODE*8,CLMLOC*30,LCOPY*72
+      CHARACTER DFILE*72,LLASCI*144,ltmp*96,lguess*144
+      character longtfile*144,longtafile*144,longtfiledos*144
+      character message*48,longtmp*144
+      CHARACTER DOIT*248,ldoit*300
+      CHARACTER fs*1,TMODE*8,CLMLOC*30,LCOPY*144
       CHARACTER OUTS*124,APP*6,ext*4,llclmdb*144
       LOGICAL OK,concat,COPYDEF,MODDB,XST,DOK,UNIXOK
-      character cfgroot*24,LCFGF*72
       character dinstpath*60,path*72
       character dirpath*72
+      character actreturn*1  ! users preference
       CHARACTER*72 NNAME
       dimension ICLM(24,6)
       integer llt  ! length of string buffer
       integer ier
       integer icreport  ! to signal that calendar has been updated.
       integer IDOL,IDAYNUM,IMTHNUM,IDWKNUM,IDTYY  ! for correcting calendar
-      logical closelat,closelong
-      
-#ifdef OSI
-      integer ICPMOD     ! passed from tchild
-#else
-      integer*8 ICPMOD     ! passed from tchild
-#endif
+      logical closelat,closelong,clkok,usercreatednew
 
 C For help messages
       character helpinsub*24 ! subroutine name
@@ -3397,6 +3921,7 @@ C Setup string buffer with distribution weather folder name.
 C Take into account whether weather file is in standard folder.
 C If so llclmdb will be expanded to the full path.
       moddb=.false.
+      usercreatednew=.false.  ! dealing with a new weather file
  552  llt=lnblnk(LCLIM)
       lndbp=lnblnk(standardclmpath)
       if(ipathclim.eq.0.or.ipathclim.eq.1)then
@@ -3422,8 +3947,9 @@ C Depending on where the weather is located offer different options.
         isw=0
         call MENUATOL('  ','Weather',
      &    ' ','b select another from list',
-     &    'c create new weather','d copy standard weather',
-     &    ' ',' ',' ',' ',' ',' ',' ',' ',isw,idno,nbhelp)
+     &    'c select from model ../dbs',
+     &    'd create new weather','e copy standard weather',
+     &    ' ',' ',' ',' ',' ',' ',' ',isw,idno,nbhelp)
         copydef=.true.
       elseif(llclmdb(1:ldirpath).eq.dirpath(1:ldirpath))then
 
@@ -3432,9 +3958,10 @@ C If corportate weather then offer the following choices:
         isw=0
         call MENUATOL('  ','Weather <std>',
      &    'a browse/edit','b select another from list',
-     &    'c create new weather','d copy it to model',
-     &    'e weather >> ascii export','f ascii >> weather import',
-     &    'g EPW >> weather import',' ',' ',' ',' ',' ',
+     &    'c select from model ../dbs',
+     &    'd create new weather','e copy it to model',
+     &    'f weather >> ascii export','g ascii >> weather import',
+     &    'h EPW >> weather import',' ',' ',' ',' ',
      &    isw,idno,nbhelp)
         copydef=.false.
       else
@@ -3444,9 +3971,10 @@ C If db exists locally offer the following choices:
         isw=0
         call MENUATOL('  ','Weather <mod>',
      &    'a browse/edit','b select another from list',
-     &    'c create new weather','d copy standard weather',
-     &    'e weather >> ascii export','f ascii >> weather import',
-     &    'g EPW >> weather import',' ',' ',' ',' ',' ',
+     &    'c select from model ../dbs',
+     &    'd create new weather','e copy standard weather',
+     &    'f weather >> ascii export','g ascii >> weather import',
+     &    'h EPW >> weather import',' ',' ',' ',' ',
      &    isw,idno,nbhelp)
         copydef=.true.
       endif
@@ -3481,8 +4009,7 @@ C << update to deal with dos paths >>
 
         call tstamp('>','PRJ: start clm')
         doit = ' '
-        call tchild(ICPMOD)
-        call termode(ICPMOD,tmode)
+        call terminalmode(childterminal,tmode)
         if(ipathclim.eq.0.or.ipathclim.eq.1)then
           call addpath(llclmdb,longtfile,concat)
         elseif(ipathclim.eq.2)then
@@ -3502,38 +4029,26 @@ C << update to deal with dos paths >>
 
 C Pull up the official list of climate files and if the user selects
 C one that exists then assign it. If the user picks USER_DEFINED then
-C use a file browser to go looking for it.
+C use a file dialog (X11) or browser (GTK) to go looking for it.
         iuf=IFIL+1
         INQUIRE (FILE=cdblfil,EXIST=XST)
         if(XST)then
-          call rdblist(IUF,longtfile,ier)
+          call rdblist(IUF,longtfile,actreturn,ier)
           if(ier.eq.0)then
             if(longtfile(1:12).eq.'USER_DEFINED')then
 
-C << todo suggest name within the model dbs folder >>
               write(llclmdb,'(a)') 'newclim'
+              write(lguess,'(a)') 'newclim'
               ipathclim=0
- 291          llt=lnblnk(llclmdb)
+ 291          llt=lnblnk(lguess)
               iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
-              if(iglib.eq.1.or.iglib.eq.3)then
-                if(llt.lt.96)then
-                  CALL EASKF(llclmdb,'Weather file:',
-     &              'Confirm:',96,DCLIM,'climate file name',IER,nbhelp)
-                elseif(llt.ge.96.and.llt.lt.124)then
-                  CALL EASKF(llclmdb,'Weather file:',
-     &              'Confirm:',124,DCLIM,'climate file name',IER,nbhelp)
-                elseif(llt.ge.124.and.llt.le.144)then
-                  CALL EASKF(llclmdb,'Weather file:',
-     &              'Confirm:',144,DCLIM,'climate file name',IER,nbhelp)
-                endif
-              elseif(iglib.eq.2)then
-                CALL EASKF(llclmdb,'Weather file:',
-     &            'Confirm:',144,DCLIM,'climate file name',IER,nbhelp)
-              else
-                CALL EASKF(llclmdb,'Weather file:',
-     &            'Confirm:',96,DCLIM,'climate file name',IER,nbhelp)
-              endif
+              CALL EASKXORGTKF(lguess,'Weather file:','Confirm:',
+     &          DCLIM,llclmdb,'climate file name',IER,numhelp)
               IF(llclmdb(1:2).EQ.'  ')GOTO 291
+              if(ier.eq.-3)then
+                moddb=.false.
+                goto 552
+              endif
               IER=0
 
 C Cast back to LCLIM.
@@ -3567,32 +4082,17 @@ C Assign weather file name based on its location via findwhichdbpath.
         IF(XST)THEN
 
 C If file exists and user wants to browse then scan the file and
-C use the editing facility.
-          IER=0
-          call EFOPRAN(ICLIM,llclmdb,144,0,IER)
-          if(ier.eq.0)then
-            call tstamp('>','PRJ: start clm')
-            doit = ' '
-            call tchild(ICPMOD)
-            call termode(ICPMOD,tmode)
-            if(ipathclim.eq.0.or.ipathclim.eq.1)then
-              call addpath(llclmdb,longtfile,concat)
-            elseif(ipathclim.eq.2)then
-              longtfile=llclmdb
-            endif
-            if(iappw.gt.0.and.iappw.le.200)then
-              write(doit,'(3a,3i4,2a)') 'clm -mode ',tmode,
-     &            ' -s ',iappw,iappx+10,iappy+10,' -file ',
-     &            longtfile(1:lnblnk(longtfile))
-            else
-              write(doit,'(4a)') 'clm -mode ',tmode,' -file ',
-     &            longtfile(1:lnblnk(longtfile))
-            endif
-            call runit(doit,tmode)
+C use the editing facility. If user does not want to start clm jump
+C straight to the code that checks for differences in model and the
+C weather file locations.
+          if(actreturn(1:1).eq.'u')then
+            goto 44    ! start of clm module
+          elseif(actreturn(1:1).eq.'s')then
+            moddb=.true.
+            goto 43    ! skip clm do check for site information
           else
-            call usrmsg('Problem encountered with Climate db!',
-     &                  'Please check db location and content.','W')
-            goto 552
+            moddb=.true.
+            goto 44    ! start clm module
           endif
         else
           call usrmsg('No weather to browse/edit.',
@@ -3602,45 +4102,58 @@ C use the editing facility.
 
       elseif(isw.eq.3)then
 
+C Allow user to select from the model ../dbs folder for a
+C weather file. If moddb was set to true then proceed.
+        numhelp=nbhelp
+        llclmdb='  '
+        call usemodeldbsfile('clm',numhelp,llclmdb,istat,moddb)
+        if(istat.eq.0.and.moddb)then
+          CALL ERPFREE(ICLIM,ISTAT)
+          call FINDFIL(llclmdb,XST)
+          IF(XST)THEN
+
+C If file exists scan the file and use the editing facility.
+            goto 44
+          else
+            call usrmsg('No weather to browse/edit.',
+     &                  'Please use one of the other options.','W')
+            goto 552
+          endif
+        else
+          goto 552
+        endif
+
+      elseif(isw.eq.4)then
+
 C Set-up minimal common block, create a new weather file, populate
 C it with zeros and present editing facility.
         lr=lnblnk(cfgroot)
         if(dbspth(1:2).eq.'  '.or.dbspth(1:2).eq.'./')then
-          write(longtmp,'(2a)') cfgroot(1:lr),'.climate'
+          write(ltmp,'(2a)') cfgroot(1:lr),'.climate'
         else
-          write(longtmp,'(4a)') dbspth(1:lnblnk(dbspth)),fs,
+          write(ltmp,'(4a)') dbspth(1:lnblnk(dbspth)),fs,
      &        cfgroot(1:lr),'.climate'
         endif
 
-C If using X11 assume that the full path is less than 96 chars
-C but if using GTK then we need the full length to avoid truncation.
-        iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
-        if(iglib.eq.1.or.iglib.eq.3)then
-          CALL EASKF(longtmp,'New weather file (full of zeros)',
-     &      'Confirm:',96,DCLIM,'climate file name',IER,nbhelp)
-        elseif(iglib.eq.2)then
-          CALL EASKF(longtmp,'New weather file (full of zeros)',
-     &      'Confirm:',144,DCLIM,'climate file name',IER,nbhelp)
-        else
-          CALL EASKF(longtmp,'New weather file (full of zeros)',
-     &      'Confirm:',96,DCLIM,'climate file name',IER,nbhelp)
+        clkok=.false.
+        CALL EASKSCNCL(ltmp,
+     &    'Suggested name of the model copy of standard file.',
+     &    'Confirm:','cancel',clkok,96,DCLIM,'copied file',IER,numhelp)
+        if(clkok)then
+          moddb=.false.
+          goto 552
         endif
         if(ier.eq.-3) return  ! cancel detected pass back -3 in ier.
+        write(longtmp,'(a)') ltmp  ! cast file name to longer buffer
 
 C Create a blank climate file (code similar to clm.F).
         moddb=.true.
         clmloc='new site'
-        ID1=1
-        IM1=1
-        IT1=1
-        ID2=31
-        IM2=12
-        IT2=24
-        IDS=1
-        IDF=365
+        ID1=1; IM1=1; IT1=1
+        ID2=31; IM2=12; IT2=24
+        IDS=1; IDF=365
         IYEAR=2006
-        CLAT=50.
-        CLONG=0.
+        CLAT=50.0; CLONG=0.
         IDNGH=0
         IER=0
         call EFOPRAN(ICLIM,longtmp,144,4,IER)
@@ -3649,12 +4162,8 @@ C Loop through days and zero the data to be written.
         DO 101 I=IDS,IDF
           IDD=I
           DO 201 J=1,24
-            ICLM(J,1)=0
-            ICLM(J,2)=0
-            ICLM(J,3)=0
-            ICLM(J,4)=0
-            ICLM(J,5)=0
-            ICLM(J,6)=50
+            ICLM(J,1)=0; ICLM(J,2)=0; ICLM(J,3)=0; ICLM(J,4)=0
+            ICLM(J,5)=0; ICLM(J,6)=50
   201     CONTINUE
 
 C Transfer this to the binary file.
@@ -3685,43 +4194,11 @@ C Assign weather file name based on longtmp location via findwhichdbpath.
             write(llclmdb,'(3a)') standardclmpath(1:lndbp),fs,
      &        LCLIM(1:lnblnk(LCLIM))
           endif
-
-C Get logical name of child process terminal type, expand climate 
-C name to include the path and create a string to drive clm.
-          call tstamp('>','PRJ: start clm')
-          doit = ' '
-          call tchild(ICPMOD)
-          call termode(ICPMOD,tmode)
-
-C Take into account location for clm command parameters.
-          if(ipathclim.eq.0.or.ipathclim.eq.1)then
-            call addpath(llclmdb,longtfile,concat)
-          elseif(ipathclim.eq.2)then
-            longtfile=llclmdb
-          endif
-          if(iappw.gt.0.and.iappw.le.200)then
-            write(doit,'(3a,3i4,2a)') 'clm -mode ',tmode,
-     &          ' -s ',iappw,iappx+10,iappy+10,' -file ',
-     &          longtfile(1:lnblnk(longtfile))
-          else
-            write(doit,'(4a)') 'clm -mode ',tmode,' -file ',
-     &          longtfile(1:lnblnk(longtfile))
-          endif
-          call runit(doit,tmode)
-
-C Note: this new climate site might be altered or not so lets
-C not do the fall-through for site data unless the user asks.
-          dok=.false.
-          CALL ASKOK(' ','Check new site data against model?',
-     &      OK,dok,nbhelp)
-          if(OK)then
-            continue
-          else
-            goto 552
-          endif
+          usercreatednew=.true.
+          goto 44
         endif
 
-      elseif(isw.eq.4)then
+      elseif(isw.eq.5)then
 
 C Copy standard weather to project folder. Suggest a local
 C file name based on the project root name. Update common to
@@ -3739,116 +4216,93 @@ C reflect it is local.
         endif
         lr=lnblnk(cfgroot)
         if(dbspth(1:2).eq.'  '.or.dbspth(1:2).eq.'./')then
-          write(longtmp,'(2a)') cfgroot(1:lr),'.climate'
+          write(ltmp,'(2a)') cfgroot(1:lr),'.climate'
         else
-          write(longtmp,'(4a)') dbspth(1:lnblnk(dbspth)),fs,
+          write(ltmp,'(4a)') dbspth(1:lnblnk(dbspth)),fs,
      &        cfgroot(1:lr),'.climate'
         endif
 
-C If using X11 assume that the full path is less than 96 chars
-C but if using GTK then we need the full length to avoid truncation.
- 554    iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
-        if(iglib.eq.1.or.iglib.eq.3)then
-          CALL EASKF(longtmp,'Weather file (in model)','Confirm:',
-     &      96,DCLIM,'climate file name',IER,nbhelp)
-        elseif(iglib.eq.2)then
-          CALL EASKF(longtmp,'Weather file (in model)','Confirm:',
-     &      144,DCLIM,'climate file name',IER,nbhelp)
-        else
-          CALL EASKF(longtmp,'Weather file (in model)','Confirm:',
-     &      96,DCLIM,'climate file name',IER,nbhelp)
+ 554    clkok=.false.
+        CALL EASKSCNCL(ltmp,
+     &    'Suggested name of the model copy of standard file.',
+     &    'Confirm:','cancel',clkok,96,DCLIM,'copied file',IER,numhelp)
+        if(clkok)then
+          moddb=.false.
+          goto 552
         endif
         if(ier.eq.-3) return  ! cancel detected pass back -3 in ier.
+        write(longtmp,'(a)') ltmp  ! cast file name to longer buffer
 
         if(longtmp(1:2).ne.'  '.and.longtmp(1:4).ne.'UNKN')then
           LCLIM=longtmp
+          ipathclim=1   ! signal that it is a local file.
         else
           goto 554
         endif
+
         call isunix(unixok)
         IF(longtmp(1:2).NE.'  ')then
           write(LCOPY,'(3a)') path(1:lnblnk(path)),fs,
-     &        longtmp(1:lnblnk(longtmp))
+     &      longtmp(1:lnblnk(longtmp))
           if(copydef)then
-            doit = ' '
+
+C Copy the default weather file (dclim) to the model folder.
+            ldoit = ' '
             if(unixok)then
-              write(doit,'(4a)',IOSTAT=IOS) 'cp ',
+              write(ldoit,'(4a)',IOSTAT=IOS) 'cp ',
      &          DCLIM(1:lnblnk(DCLIM)),' ',LCOPY(1:lnblnk(LCOPY))
             else
-
-C Similar logic but using DCLIM.
               message='getting climate file from '
-              call dbdoscopy(DCLIM,lcopy,message,doit,ier)
+              call dblongdoscopy(DCLIM,lcopy,message,ldoit,ier)
             endif
-            call runit(doit,'-')
+            call runit(ldoit,'-')
+            llclmdb=longtmp
             LCLIM=longtmp
           else
-            doit = ' '
+
+C Copy the current common weather file to the model folder.
+            ldoit = ' '
             if(unixok)then
-              write(doit,'(4a)',IOSTAT=IOS) 'cp ',
+              write(ldoit,'(4a)',IOSTAT=IOS) 'cp ',
      &          llclmdb(1:lnblnk(llclmdb)),' ',LCOPY(1:lnblnk(LCOPY))
             else
 
 C Similar logic but using LCLIM.
               message='getting weather file from '
-              call dbdoscopy(llclmdb,lcopy,message,doit,ier)
+              call dblongdoscopy(llclmdb,lcopy,message,ldoit,ier)
             endif
-            call runit(doit,'-')
+            call runit(ldoit,'-')
 
-C Assign weather file name based on longtmp location via findwhichdbpath.
-            call findwhichdbpath('clm',longtmp,ier)
-            if(ipathclim.eq.0.or.ipathclim.eq.1)then
-              llclmdb=LCLIM
-            elseif(ipathclim.eq.2)then
-              write(llclmdb,'(3a)') standardclmpath(1:lndbp),fs,
-     &          LCLIM(1:lnblnk(LCLIM))
-            endif
+C Assign weather file name to pass to the clm application.
+            llclmdb=LCLIM
           endif
           moddb=.true.
-          call tstamp('>','PRJ: start clm')
-          doit = ' '
-          call tchild(ICPMOD)
-          call termode(ICPMOD,tmode)
-
-C Take into account location.
-          if(ipathclim.eq.0.or.ipathclim.eq.1)then
-            call addpath(llclmdb,longtfile,concat)
-          elseif(ipathclim.eq.2)then
-            longtfile=llclmdb
-          endif
-
-C Clm is started up in forground mode because when it was starting
-C up in background mode the questions about whether to use its
-C latitude & longitude and year pop-up over the climate module.
-          if(iappw.gt.0.and.iappw.le.200)then
-            write(doit,'(3a,3i4,2a)') 'clm -mode ',tmode,
-     &          ' -s ',iappw,iappx+10,iappy+10,' -file ',
-     &          longtfile(1:lnblnk(longtfile))
-          else
-            write(doit,'(4a)') 'clm -mode ',tmode,' -file ',
-     &          longtfile(1:lnblnk(longtfile))
-          endif
           CALL ASKOK(' ','Browse/edit copied climate data?',
      &      OK,dok,nbhelp)
           if(ok)then
-            call runit(doit,tmode)
+            goto 44
           endif
-        else
-          goto 554
         endif
 
-      elseif(isw.eq.5)then
+      elseif(isw.eq.6)then
 
-C Weather >> ascii export.  If current weather is
-C in standard folder start ASCII name in users home folder.
-C Confirm suggested name and then write out asci file.
+C Weather >> ascii export.  If current weather is in standard
+C folder or model folder put it in the model ../dbs folder.
         DFILE='./climate.a'
         if(ipathclim.eq.0.or.ipathclim.eq.1)then
           write(LLASCI,'(2a)') LCLIM(1:lnblnk(LCLIM)),'.a'
         elseif(ipathclim.eq.2)then
-          write(LLASCI,'(4a)') path(1:lnblnk(path)),fs,
-     &      LCLIM(1:lnblnk(LCLIM)),'.a'
+          if(dbspth(1:2).eq.'  '.or.dbspth(1:2).eq.'./')then
+            write(LLASCI,'(4a)') path(1:lnblnk(path)),fs,
+     &        LCLIM(1:lnblnk(LCLIM)),'.a'
+          else
+            write(LLASCI,'(6a)') path(1:lnblnk(path)),fs,
+     &        dbspth(1:lnblnk(dbspth)),fs,LCLIM(1:lnblnk(LCLIM)),'.a'
+          endif
         endif
+
+C Confirm suggested name and then write out asci file. In GTK the full
+C path is returned.
         iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
         if(iglib.eq.1.or.iglib.eq.3)then
           CALL EASKF(LLASCI,'Export ASCII weather file','Confirm:',
@@ -3870,6 +4324,10 @@ C to asking clm to do the conversion.
           longtfile=llclmdb
         endif
         call addpath(LLASCI,longtafile,concat)
+
+C Debug.
+C        write(6,*) 'llasci ',LLASCI(1:lnblnk(LLASCI))
+C        write(6,*) 'longtafile ',longtafile(1:lnblnk(longtafile))
         call tstamp('>','PRJ: start clm for conversion')
         doit = ' '
         write(doit,'(4a)') 'clm -mode text -file ',
@@ -3878,7 +4336,7 @@ C to asking clm to do the conversion.
         call runit(doit,tmode)
         goto 552  ! jump to redisplay menu.
 
-      elseif(isw.eq.6)then
+      elseif(isw.eq.7)then
 
 C Climate ascii >> weather import.
 C Confirm suggested name and then write out binary file.
@@ -3926,7 +4384,7 @@ C to asking clm to do the conversion.
         call addpath(LLASCI,longtafile,concat)
         call tstamp('>','PRJ: start clm for conversion')
         doit = ' '
-        write(doit,'(5a)') 'clm -mode text -file ',
+        write(doit,'(4a)') 'clm -mode text -file ',
      &    longtfile(1:lnblnk(longtfile)),' -act asci2bin silent ',
      &    longtafile(1:lnblnk(longtafile))
         call runit(doit,tmode)
@@ -3943,7 +4401,7 @@ C Assign weather file name based on longtmp location via findwhichdbpath.
 C After clm module run there will be a new binary file so fall
 C through to the code near line 4700 to check contents.
 
-      elseif(isw.eq.7)then
+      elseif(isw.eq.8)then
 
 C EPW >> weather import
 C Confirm suggested name and then write out binary file.
@@ -3991,7 +4449,7 @@ C to asking clm to do the conversion.
         call addpath(LLASCI,longtafile,concat)
         call tstamp('>','PRJ: start clm for conversion')
         doit = ' '
-        write(doit,'(5a)') 'clm -mode text -file ',
+        write(doit,'(4a)') 'clm -mode text -file ',
      &      longtfile(1:lnblnk(longtfile)),' -act epw2bin silent ',
      &      longtafile(1:lnblnk(longtafile))
         call runit(doit,tmode)
@@ -4012,7 +4470,7 @@ C After clm module run there will be a new binary file so fall through.
 C Confirm with user about update Site latitude and longitude, recover
 C clat and clong. First check if climate file exists: if so open,
 C otherwise create with 0 length.
-      CALL ERPFREE(ICLIM,ISTAT)
+  43  CALL ERPFREE(ICLIM,ISTAT)
       call EFOPRAN(ICLIM,llclmdb,144,0,IER)
       if(ISTAT.ge.0)then
         CALL ERPFREE(ICLIM,ISTAT)
@@ -4051,7 +4509,7 @@ C Check if weather site and model site differ.
         endif
       ENDIF
 
-C Update year.
+C Update year.  This is similar logic as is used in esystem.F ~line 1569
       if(icyear.eq.iyear)then
         continue
       else 
@@ -4066,39 +4524,44 @@ C Update year.
           CALL EDISP(IUOUT,OUTS)
           CALL EDISP(IUOUT,' ')
           if(nbdaytype.eq.0)then
+
+C If no day types found instanciate initial day types. 
             call calenmanage('i',ier)
-          elseif(nbdaytype.eq.3)then
-            call calenmanage('i',ier)
-          elseif(nbdaytype.gt.3)then
+          elseif(nbdaytype.ge.3)then
 
 C Perform check that calendar day types correspond with simulation year.
-C The logic below assumes that the first three day types are still weekday
-C saturday sunday. It loops through each Julian day and if the model
-C calendar day type is one of the standard 3 it checks that the model weekday
+C The logic below assumes that the first three day types are weekday
+C Saturday Sunday. It loops through each Julian day and if the model
+C calendar day type is one of the initial 3 it checks that the model weekday
 C is the same as a Julian weekday. Any calendar day types beyond 3 are 
 C retained. If no calendar was defined in the model then it should do the
-C work silently. (Same logic as in esystem.F) 
+C work silently. (Same logic as in esystem.F). If more than 4 day types
+C do not bother with this check.
             ICREPORT=0
-            DO 123 IDOL=1,365
-              IF(ICALENDER(IDOL).LE.3)THEN
-                CALL EDAYR(IDOL,IDAYNUM,IMTHNUM)
-                CALL EWEEKD(IDAYNUM,IMTHNUM,IYEAR,IDWKNUM)
-                IF(IDWKNUM.LT.6)THEN
-                  IDTYY=1 ! WEEKDAY
-                ELSEIF(IDWKNUM.EQ.6)THEN
-                  IDTYY=2 ! SATURDAY
-                ELSEIF(IDWKNUM.EQ.7)THEN
-                  IDTYY=3 ! SUNDAY
+            if(nbdaytype.gt.4)then
+              continue
+            else
+              DO 123 IDOL=1,365
+                IF(ICALENDER(IDOL).LE.3)THEN
+                  CALL EDAYR(IDOL,IDAYNUM,IMTHNUM)
+                  CALL EWEEKD(IDAYNUM,IMTHNUM,IYEAR,IDWKNUM)
+                  IF(IDWKNUM.LT.6)THEN
+                    IDTYY=1 ! WEEKDAY
+                  ELSEIF(IDWKNUM.EQ.6)THEN
+                    IDTYY=2 ! SATURDAY
+                  ELSEIF(IDWKNUM.EQ.7)THEN
+                    IDTYY=3 ! SUNDAY
+                  ENDIF
+                  IF(ICALENDER(IDOL).EQ.0)THEN
+                    ICALENDER(IDOL)=IDTYY  ! update the model calendar
+                    ICREPORT=2             ! do it silently
+                  ELSEIF(ICALENDER(IDOL).NE.IDTYY)THEN
+                    ICALENDER(IDOL)=IDTYY  ! update the model calendar
+                    ICREPORT=1
+                  ENDIF
                 ENDIF
-                IF(ICALENDER(IDOL).EQ.0)THEN
-                  ICALENDER(IDOL)=IDTYY  ! update the model calendar
-                  ICREPORT=2             ! do it silently
-                ELSEIF(ICALENDER(IDOL).NE.IDTYY)THEN
-                  ICALENDER(IDOL)=IDTYY  ! update the model calendar
-                  ICREPORT=1
-                ENDIF
-              ENDIF
- 123        CONTINUE
+ 123          CONTINUE
+            endif
             if(ICREPORT.EQ.1)then
               CALL EDISP(IUOUT,'  ')
               CALL EDISP(IUOUT,
@@ -4124,6 +4587,55 @@ C from version manager
   42    continue
       ENDIF
       RETURN
+
+C Invoke the climate module with llclmdb, it is assumed that the
+C weather file exists.
+  44  continue
+      IER=0
+      call EFOPRAN(ICLIM,llclmdb,144,0,IER)
+      if(ier.eq.0)then
+        call tstamp('>','PRJ: start clm')
+        doit = ' '
+        call terminalmode(childterminal,tmode)
+
+C Debug.
+        write(6,*) childterminal,' ',tmode,ipathclim
+        if(ipathclim.eq.0.or.ipathclim.eq.1)then
+          call addpath(llclmdb,longtfile,concat)
+        elseif(ipathclim.eq.2)then
+          longtfile=llclmdb
+        endif
+        if(iappw.gt.0.and.iappw.le.200)then
+          write(doit,'(3a,3i4,2a)') 'clm -mode ',tmode,
+     &      ' -s ',iappw,iappx+10,iappy+10,' -file ',
+     &      longtfile(1:lnblnk(longtfile))
+        else
+          write(doit,'(4a)') 'clm -mode ',tmode,' -file ',
+     &      longtfile(1:lnblnk(longtfile))
+        endif
+        call runit(doit,tmode)
+
+C If this was a freshly created weather file check if user wants to
+C checks its site data against the model.
+        if(usercreatednew)then
+          dok=.false.
+          CALL ASKOK(' ','Check new site data against model?',
+     &      OK,dok,nbhelp)
+          if(OK)then
+            usercreatednew=.false.
+            continue
+          else
+            usercreatednew=.false.
+            goto 552  ! go back and re-display menu
+          endif
+        endif
+        goto 43   ! check if site location or year has changed
+      else
+         call usrmsg('Problem encountered with Climate db!',
+     &               'Please check db location and content.','W')
+         goto 552
+      endif
+
 
  1000 WRITE(outs,774)ISTAT
   774 FORMAT(' Error ',I7,' reading Climate db information.')
@@ -4167,8 +4679,8 @@ C is via a text editor.
       common/texted/tedlbl,teditor
       character tedlbl*20,teditor*20
 
-      common/C21/IFCFG,cfgroot,LCFGF
-      common/rpath/path
+C      common/rpath/path
+C      character path*72
       common/deflt4/dinstpath
 
       CHARACTER lltmp*144,lprev*144
@@ -4176,8 +4688,7 @@ C is via a text editor.
       CHARACTER DOIT*300,fs*1,APP*4
 C      CHARACTER outs248*248
       LOGICAL OK,COPYDEF,MODDB,XST,DOK,concat
-      character cfgroot*24,LCFGF*72
-      character dinstpath*60,path*72,dirpath*72
+      character dinstpath*60,dirpath*72
       character tmode*8
 
 C Local strings for user selections dependent on graphic library.
@@ -4285,7 +4796,8 @@ C If standard file then offer the following choices (incl /):
      &    'e copy file from common to model',optf,
      &    'g create new components',' ',' ',' ',' ',' ',
      &    isw,idno,nbhelp)
-        copydef=.false.
+        if(isw.eq.4)copydef=.true.
+        if(isw.eq.5.or.isw.eq.6)copydef=.false.
       elseif(longtfile(1:ldirpath-1).eq.dirpath(1:ldirpath-1))then
 
 C If standard file then offer the following choices (without /):
@@ -4298,7 +4810,8 @@ C If standard file then offer the following choices (without /):
      &    'e copy file from common to model',optf,
      &    'g create new components',' ',' ',' ',' ',' ',
      &    isw,idno,nbhelp)
-        copydef=.false.
+        if(isw.eq.4)copydef=.true.
+        if(isw.eq.5.or.isw.eq.6)copydef=.false.
       else
 
 C If db exists locally toggle whether the user is asked to copy the
@@ -4475,12 +4988,14 @@ C is via a text editor.
       common/FILEP/IFIL
       common/OUTIN/IUOUT,IUIN
       common/appw/iappw,iappx,iappy
+      integer childterminal  ! picks up mmod from starting of prj
+      common/childt/childterminal
 
       common/texted/tedlbl,teditor
       character tedlbl*20,teditor*20
 
-      common/C21/IFCFG,cfgroot,LCFGF
-      common/rpath/path
+C      common/rpath/path
+C      character path*72
       common/deflt4/dinstpath
 
       CHARACTER lltmp*144,lprev*144
@@ -4488,19 +5003,13 @@ C is via a text editor.
       CHARACTER DOIT*300,fs*1,APP*4
       CHARACTER outs248*248
       LOGICAL OK,COPYDEF,MODDB,XST,DOK,concat
-      character cfgroot*24,LCFGF*72
-      character dinstpath*60,path*72,dirpath*72
+      character dinstpath*60,dirpath*72
       character tmode*8
 
 C Local strings for user selections dependent on graphic library.
       integer lndbp   ! for length of standard path
       logical allowbrowse  ! future feature
       logical unixok  ! to check for path file separators
-#ifdef OSI
-      integer ICPMOD     ! passed from tchild
-#else
-      integer*8 ICPMOD     ! passed from tchild
-#endif
 
 C For help messages
       character helpinsub*24 ! subroutine name
@@ -4589,7 +5098,8 @@ C If standard file then offer the following choices (incl /):
      &    'e copy file from common to model','f invoke mould utility',
      &    'g create new isopleths',' ',' ',' ',' ',' ',
      &    isw,idno,nbhelp)
-        copydef=.false.
+        if(isw.eq.4)copydef=.true.
+        if(isw.eq.5)copydef=.false.
       elseif(longtfile(1:ldirpath-1).eq.dirpath(1:ldirpath-1))then
 
 C If standard file then offer the following choices (without /):
@@ -4602,7 +5112,8 @@ C If standard file then offer the following choices (without /):
      &    'e copy file from common to model','f invoke mould utility',
      &    'g create new isopleths',' ',' ',' ',' ',' ',
      &    isw,idno,nbhelp)
-        copydef=.false.
+        if(isw.eq.4)copydef=.true.
+        if(isw.eq.5)copydef=.false.
       else
 
 C If db exists locally toggle whether the user is asked to copy the
@@ -4688,8 +5199,7 @@ C reflect it is local.
 
 C Start the mould utility.
         doit = ' '
-        call tchild(ICPMOD)
-        call termode(ICPMOD,tmode)
+        call terminalmode(childterminal,tmode)
         if(iappw.gt.0.and.iappw.le.200)then
           write(doit,'(3a,3i4,3a)') 'mld -mode ',tmode,
      &      ' -s ',iappw,iappx+10,iappy+40,' -file ',
@@ -4807,7 +5317,6 @@ C code is general rather than specific (for later consolidation).
 
       common/OUTIN/IUOUT,IUIN
 
-      common/C21/IFCFG,cfgroot,LCFGF
       common/rpath/path
       
       integer lnblnk  ! function definition
@@ -4817,7 +5326,7 @@ C Passed parameters:
                           ! mlc = constructions  opt = optics
                           ! pdb = plant components  prs = pressure coef
                           ! msc = active components  mld = mould isopleths
-                          ! pro = event profiles
+                          ! pro = event profiles  clm = weather
       logical copydef     ! copy the default file or current file
       logical allowbrowse ! whether browse of common folder allowed
       integer numhelp     ! number of help lines from calling code
@@ -4827,7 +5336,7 @@ C Passed parameters:
 
 C Local variables:
       character defaultfile*144  ! default file name
-      character sourcemsg*48     ! dialog for source dialog
+C      character sourcemsg*48     ! dialog for source dialog
       character ending*12         ! end of file name
       character gdef*72          ! fall back file name
       logical clkok
@@ -4840,7 +5349,6 @@ C      integer iglib  ! for detecting GTK or X11
 
       CHARACTER outs248*248
       LOGICAL XST
-      character cfgroot*24,LCFGF*72
       character path*72
       character sourcefile*144  ! the file to copy
       character longtfile*144,longtfiledos*144
@@ -4871,7 +5379,7 @@ C Setup assumptions based on topic.
       lndbp=lnblnk(standarddbpath)
       if(topic(1:3).eq.'mat')then
         defaultfile=dfcon     ! default standard file
-        sourcemsg='Material properties file (in source folder).'   ! dialog
+C        sourcemsg='Material properties file (in common).'   ! dialog
         ending='.materialdb'  ! file ending
         if(ipathmat.eq.0.or.ipathmat.eq.1)then
           write(lguess,'(a)') LFMAT(1:lnblnk(LFMAT)) ! suggested name
@@ -4881,7 +5389,7 @@ C Setup assumptions based on topic.
         endif
       elseif(topic(1:3).eq.'mlc')then
         defaultfile=dfmul
-        sourcemsg='Constructions file (in source folder).'
+C        sourcemsg='Constructions file (in common).'
         ending='.constrdb'
         if(ipathmul.eq.0.or.ipathmul.eq.1)then
           lguess=LFMUL  ! use as is
@@ -4891,7 +5399,7 @@ C Setup assumptions based on topic.
         endif
       elseif(topic(1:3).eq.'opt')then
         defaultfile=doptdb
-        sourcemsg='Optical properties file (in source folder).'
+C        sourcemsg='Optical properties file (in common).'
         ending='.opticdb'
         if(ipathoptdb.eq.0.or.ipathoptdb.eq.1)then
           lguess=LOPTDB  ! use as is
@@ -4901,7 +5409,7 @@ C Setup assumptions based on topic.
         endif
       elseif(topic(1:3).eq.'pdb')then
         defaultfile=DPCDB
-        sourcemsg='Plant components file (in source folder).'
+C        sourcemsg='Plant components file (in common).'
         ending='.plantdb'
         if(ipathpcdb.eq.0.or.ipathpcdb.eq.1)then
           lguess=LPCDB
@@ -4911,7 +5419,7 @@ C Setup assumptions based on topic.
         endif
       elseif(topic(1:3).eq.'prs')then
         defaultfile=DAPRES
-        sourcemsg='Pressure coefficients file (in source folder).'
+C        sourcemsg='Pressure coefficients file (in common).'
         ending='.pressuredb'
         if(ipathapres.eq.0.or.ipathapres.eq.1)then
           lguess=LPCDB
@@ -4921,7 +5429,7 @@ C Setup assumptions based on topic.
         endif
       elseif(topic(1:3).eq.'msc')then
         defaultfile=DMCMPDBFL
-        sourcemsg='Active components file (in source folder).'
+C        sourcemsg='Active components file (in common).'
         ending='.miscdb'
         if(ipathmsc.eq.0.or.ipathmsc.eq.1)then
           lguess=MCMPDBFL
@@ -4931,7 +5439,7 @@ C Setup assumptions based on topic.
         endif
       elseif(topic(1:3).eq.'mld')then
         defaultfile=dmdbnam
-        sourcemsg='Mould isopleths file (in source folder).'
+C        sourcemsg='Mould isopleths file (in common).'
         ending='.moulddta'
         if(ipathmsc.eq.0.or.ipathmsc.eq.1)then
           lguess=lfmould
@@ -4941,13 +5449,32 @@ C Setup assumptions based on topic.
         endif
       elseif(topic(1:3).eq.'pro')then
         defaultfile=DPRFDB
-        sourcemsg='Event profile file (in source folder).'
+C        sourcemsg='Event profile file (in common).'
         ending='.eventdb.a'
         if(ipathprodb.eq.0.or.ipathprodb.eq.1)then
           lguess=LPRFDB
         elseif(ipathprodb.eq.2)then
           write(lguess,'(3a)') standarddbpath(1:lndbp),fs,
      &      LPRFDB(1:lnblnk(LPRFDB))
+        endif
+      elseif(topic(1:3).eq.'clm')then
+        defaultfile=DCLIM
+C        sourcemsg='Weather file (in common).'
+        if(ipathclim.eq.0.or.ipathclim.eq.1)then
+          lguess=LCLIM
+        elseif(ipathclim.eq.2)then
+          write(lguess,'(3a)') standarddbpath(1:lndbp),fs,
+     &      LCLIM(1:lnblnk(LCLIM))
+        endif
+      elseif(topic(1:3).eq.'cfc')then
+        defaultfile=DCFCDB     ! default standard file
+C        sourcemsg='CFC layers properties file (in common).'   ! dialog
+        ending='.cfcdb.a'  ! file ending
+        if(ipathcfc.eq.0.or.ipathcfc.eq.1)then
+          write(lguess,'(a)') LCFCDB(1:lnblnk(LCFCDB)) ! suggested name
+        elseif(ipathcfc.eq.2)then
+          write(lguess,'(3a)') standarddbpath(1:lndbp),fs,
+     &      LCFCDB(1:lnblnk(LCFCDB))
         endif
 
       endif
@@ -5027,6 +5554,10 @@ C        endif
           ipathmould=1  ! signal that it will be a local file.
         elseif(topic(1:3).eq.'pro')then
           ipathprodb=1  ! signal that it is a local file.
+        elseif(topic(1:3).eq.'clm')then
+          ipathclim=1   ! signal that it is a local file.
+        elseif(topic(1:3).eq.'cfc')then
+          ipathcfc=1  ! signal that it is a local file.
         else
 
         endif
@@ -5041,6 +5572,13 @@ C        endif
       else
         write(LTMP,'(4a)') dbspth(1:lnblnk(dbspth)),fs,
      &    cfgroot(1:lr),ending(1:lnblnk(ending))
+      endif
+
+C Echo the suggested name of the destination file.
+      if(copydef)then
+        write(outs248,'(2a)') 'The suggested destination file is:',
+     &    LTMP(1:lnblnk(LTMP))
+        call edisp248(iuout,outs248,100)
       endif
 
 C Confirm name of model file.
@@ -5133,6 +5671,12 @@ C If it exists then update the common block name.
           elseif(topic(1:3).eq.'pro')then
             write(LPRFDB,'(3a)') dbspth(1:lnblnk(dbspth)),fs,
      &        fname(1:lnblnk(fname))
+          elseif(topic(1:3).eq.'clm')then
+            write(LCLIM,'(3a)') dbspth(1:lnblnk(dbspth)),fs,
+     &        fname(1:lnblnk(fname))
+          elseif(topic(1:3).eq.'cfc')then
+            write(LCFCDB,'(3a)') dbspth(1:lnblnk(dbspth)),fs,
+     &        fname(1:lnblnk(fname))
           else
 
           endif
@@ -5163,6 +5707,10 @@ C Signal that file is a local to model.
           ipathmould=1
         elseif(topic(1:3).eq.'pro')then
           ipathprodb=1
+        elseif(topic(1:3).eq.'clm')then
+          ipathclim=1
+        elseif(topic(1:3).eq.'cfc')then
+          ipathcfc=1
         else
 
         endif
@@ -5194,7 +5742,7 @@ C Passed parameters:
                           ! mlc = constructions  opt = optics
                           ! pdb = plant components  prs = pressure coef
                           ! msc = active components  mld = mould isopleths
-                          ! pro = event profiles
+                          ! pro = event profiles  clm = weather
       integer numhelp     ! number of help lines from calling code
       character lltmp*144 ! the returned file name
       integer istat       ! return status index for calling code
@@ -5294,6 +5842,22 @@ C users and the guess for file name.
           write(lguess,'(3a)') standarddbpath(1:lndbp),fs,
      &      LPRFDB(1:lnblnk(LPRFDB))
         endif
+      elseif(topic(1:3).eq.'clm')then
+        sourcemsg='weather file (in ../dbs).'
+        if(ipathclim.eq.0.or.ipathclim.eq.1)then
+          lguess=LCLIM
+        elseif(ipathclim.eq.2)then
+          write(lguess,'(3a)') standarddbpath(1:lndbp),fs,
+     &      LCLIM(1:lnblnk(LCLIM))
+        endif
+      elseif(topic(1:3).eq.'cfc')then
+        sourcemsg='CFC layers file (in ../dbs).'
+        if(ipathcfc.eq.0.or.ipathcfc.eq.1)then
+          lguess=LCFCDB
+        elseif(ipathcfc.eq.2)then
+          write(lguess,'(3a)') standarddbpath(1:lndbp),fs,
+     &      LCFCDB(1:lnblnk(LCFCDB))
+        endif
       endif
 
 C Remind user the current common data file.
@@ -5361,6 +5925,12 @@ C User did not select a file. Take them back to the question.
       elseif(topic(1:3).eq.'pro')then
         ipathprodb=1  ! signal that it is a local file.
         write(LPRFDB,'(a)') fname(1:lnblnk(fname))
+      elseif(topic(1:3).eq.'clm')then
+        ipathclim=1  ! signal that it is a local file.
+        write(LCLIM,'(a)') fname(1:lnblnk(fname))
+      elseif(topic(1:3).eq.'cfc')then
+        ipathcfc=1  ! signal that it is a local file.
+        write(LCFCDB,'(a)') fname(1:lnblnk(fname))
       else
 
       endif
@@ -5374,7 +5944,7 @@ C will exist.
       
 
 C ******** usecommondbsfile
-C usemodeldbsfile is a general facility to browse files in the
+C usecommondbsfile is a general facility to browse files in the
 C distribution databases folder. All files in this folder will 
 C be added to a menu list for selection. Selected file becomes
 C the current common file type and is returned via lltmp.
@@ -5392,7 +5962,7 @@ C Passed parameters:
                           ! mlc = constructions  opt = optics
                           ! pdb = plant components  prs = pressure coef
                           ! msc = active components  mld = mould isopleths
-                          ! pro = event profiles
+                          ! pro = event profiles  clm = weather
       integer numhelp     ! number of help lines from calling code
       character lltmp*144 ! the returned file name
       integer istat       ! return status index for calling code
@@ -5431,7 +6001,7 @@ C Remember current file for the current topic, set message to
 C users and the guess for file name.
       lndbp=lnblnk(standarddbpath)
       if(topic(1:3).eq.'mat')then
-        sourcemsg='material properties file (in ../dbs).'   ! dialog
+        sourcemsg='material properties file (in common).'   ! dialog
         if(ipathmat.eq.0.or.ipathmat.eq.1)then
           write(lguess,'(a)') LFMAT(1:lnblnk(LFMAT)) ! suggested name
         elseif(ipathmat.eq.2)then
@@ -5439,7 +6009,7 @@ C users and the guess for file name.
      &      LFMAT(1:lnblnk(LFMAT))
         endif
       elseif(topic(1:3).eq.'mlc')then
-        sourcemsg='constructions file (in ../dbs).'
+        sourcemsg='constructions file (in common).'
         if(ipathmul.eq.0.or.ipathmul.eq.1)then
           lguess=LFMUL  ! use as is
         elseif(ipathmul.eq.2)then
@@ -5447,7 +6017,7 @@ C users and the guess for file name.
      &      lfmul(1:lnblnk(lfmul))  ! prepend db folder path
         endif
       elseif(topic(1:3).eq.'opt')then
-        sourcemsg='optical properties file (in ../dbs).'
+        sourcemsg='optical properties file (in common).'
         if(ipathoptdb.eq.0.or.ipathoptdb.eq.1)then
           lguess=LOPTDB  ! use as is
         elseif(ipathoptdb.eq.2)then
@@ -5455,7 +6025,7 @@ C users and the guess for file name.
      &      LOPTDB(1:lnblnk(LOPTDB))  ! prepend db folder path
         endif
       elseif(topic(1:3).eq.'pdb')then
-        sourcemsg='plant components file (in ../dbs).'
+        sourcemsg='plant components file (in common).'
         if(ipathpcdb.eq.0.or.ipathpcdb.eq.1)then
           lguess=LPCDB
         elseif(ipathpcdb.eq.2)then
@@ -5463,7 +6033,7 @@ C users and the guess for file name.
      &      lpcdb(1:lnblnk(lpcdb))
         endif
       elseif(topic(1:3).eq.'prs')then
-        sourcemsg='pressure coefficients file (in ../dbs).'
+        sourcemsg='pressure coefficients file (in common).'
         if(ipathapres.eq.0.or.ipathapres.eq.1)then
           lguess=LPCDB
         elseif(ipathapres.eq.2)then
@@ -5471,7 +6041,7 @@ C users and the guess for file name.
      &      lapres(1:lnblnk(lapres))
         endif
       elseif(topic(1:3).eq.'msc')then
-        sourcemsg='active components file (in ../dbs).'
+        sourcemsg='active components file (in common).'
         if(ipathmsc.eq.0.or.ipathmsc.eq.1)then
           lguess=MCMPDBFL
         elseif(ipathmsc.eq.2)then
@@ -5479,7 +6049,7 @@ C users and the guess for file name.
      &      MCMPDBFL(1:lnblnk(MCMPDBFL))
         endif
       elseif(topic(1:3).eq.'mld')then
-        sourcemsg='mould isopleths file (in ../dbs).'
+        sourcemsg='mould isopleths file (in common).'
         if(ipathmsc.eq.0.or.ipathmsc.eq.1)then
           lguess=lfmould
         elseif(ipathmsc.eq.2)then
@@ -5487,12 +6057,28 @@ C users and the guess for file name.
      &      lfmould(1:lnblnk(lfmould))
         endif
       elseif(topic(1:3).eq.'pro')then
-        sourcemsg='event profile file (in ../dbs).'
+        sourcemsg='event profile file (in common).'
         if(ipathprodb.eq.0.or.ipathprodb.eq.1)then
           lguess=LPRFDB
         elseif(ipathprodb.eq.2)then
           write(lguess,'(3a)') standarddbpath(1:lndbp),fs,
      &      LPRFDB(1:lnblnk(LPRFDB))
+        endif
+      elseif(topic(1:3).eq.'clm')then
+        sourcemsg='weather file (in common).'
+        if(ipathclim.eq.0.or.ipathclim.eq.1)then
+          lguess=LCLIM
+        elseif(ipathclim.eq.2)then
+          write(lguess,'(3a)') standarddbpath(1:lndbp),fs,
+     &      LCLIM(1:lnblnk(LCLIM))
+        endif
+      elseif(topic(1:3).eq.'cfc')then
+        sourcemsg='CFC layer properties file (in common).'   ! dialog
+        if(ipathcfc.eq.0.or.ipathcfc.eq.1)then
+          write(lguess,'(a)') LCFCDB(1:lnblnk(LCFCDB)) ! suggested name
+        elseif(ipathcfc.eq.2)then
+          write(lguess,'(3a)') standarddbpath(1:lndbp),fs,
+     &      LCFCDB(1:lnblnk(LCFCDB))
         endif
       endif
 
@@ -5563,6 +6149,12 @@ C User did not select a file. Take them back to the question.
       elseif(topic(1:3).eq.'pro')then
         ipathprodb=2  ! signal that it is a common file.
         write(LPRFDB,'(a)') snpfile(1:lnblnk(snpfile))
+      elseif(topic(1:3).eq.'clm')then
+        ipathclim=2   ! signal that it is a common file.
+        write(LCLIM,'(a)') snpfile(1:lnblnk(snpfile))
+      elseif(topic(1:3).eq.'cfc')then
+        ipathcfc=2  ! signal that it will be a common file.
+        write(LCFCDB,'(a)') snpfile(1:lnblnk(snpfile))
       else
 
       endif

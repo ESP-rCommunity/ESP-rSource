@@ -39,7 +39,7 @@ C as in deletion of an entire zone.
 C ISCOPT signals how to treat the copy of a surface as follows:
 C   iscopt = 0 offer editing box and option to click on mouse for vertices
 C   iscopt = 1 use the mouse click directly to specify vertices
-C   iscopt = 2 offer copy of local (in the same zone) surfaces 
+C   iscopt = 2 offer copy of local (in the same zone) surfaces
 
 C << what about including common zndata in this manipulation? >>
 
@@ -69,8 +69,8 @@ C << what about including common zndata in this manipulation? >>
       COMMON/RAY3/MODIFY,MODLEN,MODBND
       COMMON/RAY5/ZCOG(MCOM,3),XMN,YMN,ZMN,XMX,YMX,ZMX
       LOGICAL MODIFY,MODLEN,MODBND,closex,closey
-      COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
-      LOGICAL     OK,CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
+      COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,CFCDBOK
+      LOGICAL     OK,CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,CFCDBOK
       logical same,clkok,found,DOK,DDOK,nameok,matchver
       logical newgeo  ! to use for testing if new/old geometry file.
       logical hasanotherchild ! true is surface is parent
@@ -2118,7 +2118,7 @@ C  #include "model.h"
 #include "esprdbfile.h"
 #include "material.h"
 
-      integer lnblnk  ! function definition
+C      integer lnblnk  ! function definition
 
 C Parameters
       integer itrc,itru  ! tracel level and reporting unit
@@ -2164,6 +2164,7 @@ C door width and height.
       CHARACTER T14*14
       character guesstype*24  ! for context of surface addition
       integer loop6  ! to keep track of inserted surface edges
+      integer iwedge ! number of extra frame vertices
 
 #ifdef OSI
       integer iupdown,isym    ! passed to etplot
@@ -2403,12 +2404,13 @@ C and the area will not be correct for other surface shapes.
 
       elseif (IRT.eq.4)then
 
-C Ask for frame width in m.
+C Ask for frame width in m. Logic for frame width could check the
+C size and minimum dimensions < not yet done >. 
         hold=' '
         helptopic='opening_percent_overview'
         call gethelptext(helpinsub,helptopic,nbhelp)
         CALL EASKR(FRW,'Frame width (m).','  ',
-     &    0.001,'F',0.2,'F',40.0,'frame width',IER,nbhelp)
+     &    0.001,'F',0.3,'F',40.0,'frame width',IER,nbhelp)
 
       endif
 
@@ -2429,8 +2431,13 @@ C in XFA YFA ZFA.
       if(IRT.eq.1.or.IRT.eq.2.or.IRT.eq.3)then
         CALL ETRANSW(ITRC,ITRU,N,XX,YY,ZZ,0.00,XO1,ZO1,XW,ZH,XA,YA,ZA)
       else
-        CALL ETRANFRAME(ITRC,ICOMP,IS,N,XX,YY,ZZ,FRW,XFA,YFA,ZFA,IER)
+
+C In the case of inserting a frame pass in the number of parent surface
+C edges (N) and coords in XX YY ZZ and frame width FRW and get back array
+C XFA YFA ZFA as well as the number of edges.
+        CALL ETRANFRAME(ITRC,N,XX,YY,ZZ,FRW,XFA,YFA,ZFA,iwedge,IER)
         loop=N  ! reset to match polygon edges
+        loop=iwedge  ! reset to match polygon edges
 C << trap non-zero ier value >>
       endif
 
@@ -2569,17 +2576,20 @@ C (otherwise there will be two surfaces point to the same other surface).
 C If in silent mode assign construction otherwise select. 
       if(act(1:2).eq.'sw'.or.act(1:2).eq.'sd'.or.act(1:2).eq.'sp')then
         WRITE(SMLCN(NSUR),'(A)') rsmlcn(1:12)
-        WRITE(SOTF(NSUR),'(A)')  rsotf(1:lnblnk(rsotf))
+        WRITE(SOTF(NSUR),'(A)')  rsotf(1:12)  ! only 1st 12 char
       else
         CALL EPMENSV
         CALL EPKMLC(ISEL,'Select one of the constructions for the',
      &    'inserted surface. ',IER)
         CALL EPMENRC
         IF(ISEL.GT.0)then
-          WRITE(SMLCN(NSUR),'(A12)')DESC(ISEL)(1:12)
-          IF(DESC(ISEL)(15:18).NE.'OPAQ')SOTF(NSUR)='TRAN'
-          IF(DESC(ISEL)(15:18).EQ.'OPAQ')SOTF(NSUR)='OPAQUE'
-          IF(DESC(ISEL)(15:18).EQ.'CFC ')SOTF(NSUR)='CFC '
+          WRITE(SMLCN(NSUR),'(A12)') mlcname(ISEL)(1:12)
+          IF(mlctype(ISEL)(1:4).NE.'OPAQ')SOTF(NSUR)='TRAN'
+          IF(mlctype(ISEL)(1:4).EQ.'OPAQ')SOTF(NSUR)='OPAQUE'
+          IF(mlctype(ISEL)(1:4).EQ.'CFC ')SOTF(NSUR)='CFC '
+        else
+          WRITE(SMLCN(NSUR),'(A)') 'UNKNOWN'
+          SOTF(NSUR)='OPAQUE'
         endif
       endif
 

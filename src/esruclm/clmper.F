@@ -553,7 +553,6 @@ C Setup and pass in parameters to win3d.
           iigl=igl; iigr=igr; iigt=igt; iigb=igb; iigw=igw; iigwh=igwh
           CALL win3d(iimenu,iiw1,iiw2,iiw3,iiw4,
      &      iigl,iigr,iigt,iigb,iigw,iigwh)
-C          CALL win3d(menuchw,6,12,6,3,igl,igr,igt,igb,igw,igwh)
           igl=int(iigl); igr=int(iigr); igt=int(iigt); igb=int(iigb)
           igw=int(iigw); igwh=int(iigwh)
           if(IFS.ne.IMFS)call winfnt(IFS)
@@ -897,7 +896,7 @@ C Edit the current period in terms of day and month.
             call stdate(iyear,jnext,descr,descrstp)
           endif
           write(louts,'(8a)') '2nd winter starts on a ',
-     &      DAYNAM(jjd4t),' and 1st winter starts on a ',
+     &      DAYNAM(jjd5t),' and 1st winter starts on a ',
      &      DAYNAM(jjd1t),' so consider ',descrstp,' or ',
      &      descrstn
           call edisp248(iuout,louts,80)
@@ -1365,7 +1364,6 @@ C Setup and pass in parameters to win3d.
           iigl=igl; iigr=igr; iigt=igt; iigb=igb; iigw=igw; iigwh=igwh
           CALL win3d(iimenu,iiw1,iiw2,iiw3,iiw4,
      &      iigl,iigr,iigt,iigb,iigw,iigwh)
-C          CALL win3d(menuchw,6,12,6,3,igl,igr,igt,igb,igw,igwh)
           igl=int(iigl); igr=int(iigr); igt=int(iigt); igb=int(iigb)
           igw=int(iigw); igwh=int(iigwh)
           if(IFS.ne.IMFS)call winfnt(IFS)

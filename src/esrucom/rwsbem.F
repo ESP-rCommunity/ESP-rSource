@@ -414,7 +414,10 @@ C holds the static data associated with the activity.
       IF(OUTSTR(1:23).NE.'*activities_by_building')then
         call usrmsg('expecting *activities_by_building and got...',
      &    outstr,'W')  
-      endif   
+      endif
+
+C Reset IAT to one, process entry and jump back to 17 until the
+C tag *end_activities_by_ is found.
       IAT=1
  17   CALL STRIPC(IUF,OUTSTR,99,ND,1,'Activity types',IER)
       IF(OUTSTR(1:19).EQ.'*end_activities_by_')GOTO 18
@@ -440,7 +443,7 @@ C    office/storage/industrial spaces and 6.2 for all other spaces)
 C e) quoted string name of activity (roomactname)
 C f) b_type order index (same as A) (bld_order_index)
 C g) occupant density people/m2 (occupant_dens)
-C h) metabolic rate W/person/m2 (metabolic_rate)
+C h) metabolic rate W/person (metabolic_rate)
 C i) Main cooling setpoint (Cmainsetpoint)
 C j) Main heating set point (Hmainsetpoint) to use for notional
 C       building overheating when naturally ventilated. This will be
@@ -846,7 +849,7 @@ C If the 2nd line of the file is the UPR then do not jump back to 42.
         K=26
         CALL EGETWI(OUTSTR,K,D_inspect,1,31,'W','NCM insp_day',IER)
         CALL EGETWI(OUTSTR,K,M_inspect,1,12,'W','insp_month',IER)
-        CALL EGETWI(OUTSTR,K,Y_inspect,1900,2080,'W','insp_year',IER)
+        CALL EGETWI(OUTSTR,K,Y_inspect,1900,2051,'W','insp_year',IER)
         CALL STRIPC(IUF,OUTSTR,99,ND,1,'NCM Accr_Scheme',IER)
         K=13
         CALL EGETRM(OUTSTR,K,Accr_Scheme,'W','NCM Accr_Scheme',IER)
@@ -877,12 +880,12 @@ C If the 2nd line of the file is the UPR then do not jump back to 42.
         K=37
         CALL EGETWI(OUTSTR,K,S_Dinsur,1,31,'W','insStartDay',IER)
         CALL EGETWI(OUTSTR,K,S_Minsur,1,12,'W','insStartMonth',IER)
-        CALL EGETWI(OUTSTR,K,S_Yinsur,1900,2080,'W','insStartYear',IER)
+        CALL EGETWI(OUTSTR,K,S_Yinsur,1900,2051,'W','insStartYear',IER)
         CALL STRIPC(IUF,OUTSTR,99,ND,1,'NCM insExpiry_date',IER)
         K=39
         CALL EGETWI(OUTSTR,K,E_Dinsur,1,31,'W','insExpDay',IER)
         CALL EGETWI(OUTSTR,K,E_Minsur,1,12,'W','insExpMonth',IER)
-        CALL EGETWI(OUTSTR,K,E_Yinsur,1900,2080,'W','insExpYear',IER)        
+        CALL EGETWI(OUTSTR,K,E_Yinsur,1900,2051,'W','insExpYear',IER)        
         CALL STRIPC(IUF,OUTSTR,99,ND,1,'NCM insCoverLimit',IER)
         K=31
         CALL EGETWI(OUTSTR,K,pi_limit,0,0,'-','insCoverLimit',IER)
@@ -1201,18 +1204,18 @@ C Subroutine MKSBEM writes out a project specific SBEM NCM file that holds
 C data relevant to the UK National Calculation Method.
       SUBROUTINE MKSBEM
 #include "building.h"
+#include "model.h"
 #include "geometry.h"
 #include "sbem.h"
       
       integer lnblnk  ! function definition
 
       common/FILEP/IFIL
-      common/C21/IFCFG,cfgroot,LCFGF
       
       integer ncomp,ncon
       common/C1/NCOMP,NCON
 
-      CHARACTER CFGROOT*24,LCFGF*72,TMPSTR*64
+      CHARACTER TMPSTR*64
       integer ireadactivityindex,lnb
       
       TMPSTR=' '

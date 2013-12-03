@@ -21,6 +21,7 @@ C Boston, MA 02111-1307 USA.
 C This file contains the following routines:
 C  MOTABL Produces tabular output for a 24 hour period.
 C  ZONTAB Multi-column tabular listing for performance metrics.
+C  MGLTBL monthly multi-column tabular listing for selected gains & losses.
 C  CZMRT  returns one day's temperatures of zone mean radiant temp.
 C  CZRESL returns one day's temperatures of zone resultant temp.
 
@@ -29,36 +30,37 @@ C MOTABL produces tabular output for a 24 hour period.
       SUBROUTINE MOTABL
 #include "building.h"
 #include "net_flow.h"
-#include "esprdbfile.h"
+C #include "esprdbfile.h"
 C esprdbfile.h supplies the following:
 C default file names for databases
-      COMMON/SPAD/MMOD,LIMIT,LIMTTY
+C      COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/OUTIN/IUOUT,IUIN
-      COMMON/FILEP/IFIL
-      COMMON/OUTPCH/ICOUT
+C      COMMON/FILEP/IFIL
+C      COMMON/OUTPCH/ICOUT
 
       COMMON/SIMPIK/ISIM,ISTADD,ID1,IM1,ID2,IM2,ISDS,ISDF,NTS,ISAVE
-      COMMON/PERO/IOD1,IOM1,IOH1,IOD2,IOM2,IOH2,IODS,IODF,NOUT,IAV
-      COMMON/ZONPIK/NZ,NZNO(MCOM)
+C      COMMON/PERO/IOD1,IOM1,IOH1,IOD2,IOM2,IOH2,IODS,IODF,NOUT,IAV
+C      COMMON/ZONPIK/NZ,NZNO(MCOM)
 
-C ihflag = 0 write 13h30, ihflag = 1 write 0.5625
+C ihflag = 0 write 13h30, ihflag = 1 write 0.5625, = 2 write yyyy-mm-dd 13:30:00
 C idhflg = 0 no day demarcations, idhflg = 1 write demarcation
 C          between tabular reporting days.
 C ilflag = 0 tabular labels on multi-lines, ilflag = 1 on one line.
       COMMON/GRTOOL/IHFLAG,IDHFLG,ILFLAG
       common/exporttg/xfile,tg,delim
       COMMON/EXPORTI/ixopen,ixunit,ixpunit
-      common/prec7/itcnst
+C      common/prec7/itcnst
 
 C Special materials file flag
-      common/spmfxst/ispmxist,spflnam  
-      common/spmatl/nspmnod,ispmloc(mspmnod,3),ispmtyp(mspmnod,2),
-     &nnodat(mspmnod),spmdat(mspmnod,mspmdat) 
-      COMMON/MFLCTL/IRY,IRM,IRD,IRH,FLWTIM,IHOUR,IYD,IFYD,ILYD,IPROG 
+C      common/spmfxst/ispmxist,spflnam  
+C      common/spmatl/nspmnod,ispmloc(mspmnod,3),ispmtyp(mspmnod,2),
+C     &nnodat(mspmnod),spmdat(mspmnod,mspmdat) 
+C      COMMON/MFLCTL/IRY,IRM,IRD,IRH,FLWTIM,IHOUR,IYD,IFYD,ILYD,IPROG 
       common/getmenu/menutype,igetind(65),igetflux(65)
 
       CHARACTER*23 ITEM(15)
-      character outs*124,xfile*144,tg*1,delim*1,spflnam*72
+      character xfile*144,tg*1,delim*1
+C      character spflnam*72
       integer IWM  ! for radio button
       integer NITMS,INO ! max items and current menu item
 
@@ -92,11 +94,13 @@ C Default value for GRTOOL file = 0 (off), day hash marks off.
         ITEM(11)='* time >> 10h30        '
       elseif(IHFLAG.eq.1)then
         ITEM(11)='* time >> 0.4375       '
+      elseif(IHFLAG.eq.2)then
+        ITEM(11)='* time >>mm-dd 10:30:00'
       endif
       if(ILFLAG.eq.0)then
-        ITEM(12)='* labels >> multiline  '
+        ITEM(12)='& labels >> multiline  '
       elseif(ILFLAG.eq.1)then
-        ITEM(12)='* labels >> on one line'
+        ITEM(12)='& labels >> on one line'
       endif
       if(delim.eq.'-')then
         ITEM(13)='^ delim >> normal      '
@@ -148,13 +152,16 @@ C Network flow tabular output.
 
 C Toggle time format and day separators.
         IHFLAG=IHFLAG+1
-        if(IHFLAG.GT.1)IHFLAG=0
+        if(IHFLAG.GT.2)IHFLAG=0
         if(IHFLAG.eq.0)then
           call edisp(iuout,' ')
-          call edisp(iuout,'standard display time = 10h30 set ')
+          call edisp(iuout,'setting standard display time = 10h30')
         elseif(IHFLAG.eq.1)then
           call edisp(iuout,' ')
-          call edisp(iuout,'3rd party graphing time = day fraction set')
+          call edisp(iuout,'setting time = day.fraction 10.5000')
+        elseif(IHFLAG.eq.2)then
+          call edisp(iuout,' ')
+          call edisp(iuout,'setting time = yyyy-mm-dd hh:mm:ss')
         endif
         CALL EASKAB('Include mark between days when ',
      &              'displaying or writing data :','no','yes',
@@ -219,7 +226,7 @@ C act='m' called from ipv metric with parameters already set.
       integer lnblnk  ! function definition
 
       COMMON/OUTPCH/ICOUT
-      COMMON/SPAD/MMOD,LIMIT,LIMTTY
+C      COMMON/SPAD/MMOD,LIMIT,LIMTTY
 
       COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
       COMMON/SIMPIK/ISIM,ISTADD,ID1,IM1,ID2,IM2,ISDS,ISDF,NTS,ISAVE
@@ -316,12 +323,12 @@ C Write tag line if tagged output requested.
       endif
       
 C Write general header information (skip if IPV mode).
-      if(act.ne.'m')then
+      if(act(1:1).ne.'m')then
         CALL HDDATE(PDESCR)
         CALL HDSTEP(SDESCR)
         
-C If requested or writing to file start lines with a '#'.
-        if (IHFLAG.eq.1.or.ixopen.eq.1) then
+C If julian or 13:30:00 requested or writing to file start lines with a '#'.
+        if (IHFLAG.eq.1.or.IHFLAG.eq.2.or.ixopen.eq.1) then
           call edisp(itru,'# Timestep performance metrics.')
           lsn1=MIN0(lnblnk(RFILE),42)
           if(NSIM.gt.1)then
@@ -380,7 +387,7 @@ C we can write to << ?? to be done >>
 
 C Write day of results and column headings information (skip if IPV mode).
         CALL STDATE(IYEAR,IDAY,DESCR,DESCR1)
-        if(act.ne.'m')then
+        if(act(1:1).ne.'m')then
           if (IDHFLG.eq.1.and.ixopen.eq.1) then
             outs='# '
             call edisp(itru,outs)
@@ -414,7 +421,7 @@ C   don't do this if printing to file.
               outs248='     '  ! clear for 248 buffer
               outs800='     '  ! clear for 800 buffer
             else
-              if (IHFLAG.eq.1.and.ixopen.eq.1) then
+              if ((IHFLAG.eq.1.or.IHFLAG.eq.2).and.ixopen.eq.1) then
                 if (delim.eq.'X') then
                   outs248='*time'
                   outs800='*time'
@@ -422,7 +429,7 @@ C   don't do this if printing to file.
                   outs248='#Time'
                   outs800='#Time'
                 endif
-              elseif (IHFLAG.eq.1.and.ixopen.eq.0) then
+              elseif ((IHFLAG.eq.1.or.IHFLAG.eq.2).and.ixopen.eq.0)then
                 if (delim.eq.'X') then
                   outs248='*time'
                   outs800='*time'
@@ -447,7 +454,7 @@ C into account the value of ireportunit.
      &             IGETNO(IL,1).eq.10.or.IGETNO(IL,1).eq.30.or.
      &             IGETNO(IL,1).eq.31.or.IGETNO(IL,1).eq.32.or.
      &             IGETNO(IL,1).eq.33) then
-                  if(ireportunit.eq.0.or.ireportunit.eq.3)then
+                  if(ireportunit.eq.0.or.ireportunit.eq.2)then
                     unit='(kW)'
                   else
                     unit='(W)'
@@ -471,11 +478,21 @@ C  tablabel (ie) to be printed (if to screen).
 C If writing to file remove blanks from label (up to 28 char with
 C a bit more for the units) lets assume average is 24 char which
 C says that ~33 labels can be written in the 800 char width. If data
-C relates to surfaces then labels take up more space.
+C relates to surfaces then labels take up more space. If there is
+C a delimeter being used in the data columns also apply this in
+C the generation of the heading of text file.
                 if (ixopen.eq.1) then
                   call SDELIM(TABLABEL(IL),t28,'N',IW)
-                  write(outs248(K:KE),'(3a)') ' ',
-     &              t28(1:lnblnk(t28)),unit
+                  if(delim.eq.'-'.or.delim.eq.'S')then
+                    write(outs248(K:KE),'(3a)') ' ',
+     &                t28(1:lnblnk(t28)),unit
+                  elseif(delim.eq.'C')then
+                    write(outs248(K:KE),'(3a)') ',',
+     &                t28(1:lnblnk(t28)),unit
+                  elseif(delim.eq.'T')then
+                    write(outs248(K:KE),'(3a)') CHAR(9),
+     &                t28(1:lnblnk(t28)),unit
+                  endif
                   K=K+lnblnk(t28)+lnblnk(unit)+1
                 else
                   if (ir.lt.4) then
@@ -487,12 +504,20 @@ C relates to surfaces then labels take up more space.
                 endif
               endif
 
-C For writing to file also fill the 800 char buffer
+C For writing to file also fill the 800 char buffer.
               if(KE4.le.800)then
                 if (ixopen.eq.1) then
                   call SDELIM(TABLABEL(IL),t28,'N',IW)
-                  write(outs800(K4:KE4),'(3a)') ' ',
-     &              t28(1:lnblnk(t28)),unit
+                  if(delim.eq.'-'.or.delim.eq.'S')then
+                    write(outs800(K4:KE4),'(3a)') ' ',
+     &                t28(1:lnblnk(t28)),unit
+                  elseif(delim.eq.'C')then
+                    write(outs800(K4:KE4),'(3a)') ',',
+     &                t28(1:lnblnk(t28)),unit
+                  elseif(delim.eq.'T')then
+                    write(outs800(K4:KE4),'(3a)') CHAR(9),
+     &                t28(1:lnblnk(t28)),unit
+                  endif
                   K4=K4+lnblnk(t28)+lnblnk(unit)+1
                 else
                   if (ir.lt.4) then
@@ -578,17 +603,36 @@ C Display data. Create both data strings for this timestep.
               write (outs800,'(a5)') LTIME
               K=6
             endif
-          else
+          elseif (IHFLAG.eq.1) then
             if(ipvform.eq.3)then
               call SJTIME(J,LJTIME)
               write (outs248,'(3a)') sq,LJTIME,sq
               write (outs800,'(3a)') sq,LJTIME,sq
               K=11
             else
-              RDOTY=FLOAT(IDAY)+(ATIME/24.)
-              write (outs248,'(f10.4)') RDOTY
-              write (outs800,'(f10.4)') RDOTY
+              RDOTY=REAL(IDAY)+(ATIME/24.)
+              write (outs248,'(f11.6)') RDOTY
+              write (outs800,'(f11.6)') RDOTY
               K=11
+            endif
+          elseif (IHFLAG.eq.2) then
+
+C Write in format that spreadsheets understand as time.
+            call edayr(IDAY,ID,IM)
+            if(ipvform.eq.3)then
+              call SJTIME(J,LJTIME)
+              write (outs248,'(a,i4,a,i2.2,a,i2.2,3a)') 
+     &          sq,IYEAR,'-',IM,'-',ID,' ',LJTIME,sq
+              write (outs800,'(a,i4,a,i2.2,a,i2.2,3a)') 
+     &          sq,IYEAR,'-',IM,'-',ID,' ',LJTIME,sq
+              K=22
+            else
+              call SJTIME(J,LJTIME)
+              write (outs248,'(i4,a,i2.2,a,i2.2,2a)') 
+     &          IYEAR,'-',IM,'-',ID,' ',LJTIME
+              write (outs800,'(i4,a,i2.2,a,i2.2,2a)') 
+     &          IYEAR,'-',IM,'-',ID,' ',LJTIME
+              K=20
             endif
           endif
 
@@ -659,9 +703,14 @@ C Assume fully occupied.
 
 C If delimiter set to alternative then process text before writing.
 C If using X delimeter (tagged data) then set the delimeter to a comma.
+C If IHFLAG is 2 then the initial 19 or 21 characters will be a time
+C stamp that needs the 11th character to be a literal space.
               dg=delim
               if (delim.eq.'X') dg='C'
               call SDELIM(outs800,outs800d,dg,IW)
+              if(IHFLAG.eq.2) then
+                write(outs800d(11:11),'(1a)') ' '
+              endif
               lnb=lnblnk(outs800d)   ! write directly to file
               write(itru,'(A)',iostat=ios,err=1) outs800d(1:lnb)
             endif
@@ -707,16 +756,19 @@ C gains and losses.
       SUBROUTINE MGLTBL
 #include "building.h"
 #include "geometry.h"
+#include "schedule.h"
       
       integer lnblnk  ! function definition
 
-      COMMON/SPAD/MMOD,LIMIT,LIMTTY
+C      COMMON/SPAD/MMOD,LIMIT,LIMTTY
+      COMMON/FILEP/IFIL
       COMMON/OUTPCH/ICOUT
       COMMON/SIMPIK/ISIM,ISTADD,ID1,IM1,ID2,IM2,ISDS,ISDF,NTS,ISAVE
       common/recver/izver,ipver,iever
       COMMON/ZONPIK/NZ,NZNO(MCOM)
       COMMON/PERO/IOD1,IOM1,IOH1,IOD2,IOM2,IOH2,IODS,IODF,NOUT,IAV
       COMMON/GETPIK/NGET,IGETNO(MZS,9)
+      COMMON/GET1/VAL1(MZS,MTS),VAL2(MZS,MTS),VAL3(MZRL,MTS)
 
       character SLABEL*32,GLABEL*20,TABLABEL*36
       COMMON/GETLABEL/SLABEL(MZS),GLABEL(MZS),TABLABEL(MZS)
@@ -729,15 +781,26 @@ C gains and losses.
       COMMON/RESLIB/RFILE,PFILE,MSTRFILE,LAFRES
       COMMON/SETNAM/RSNAME(MNRS)
       COMMON/SIMPKA/NSIM
-
+      integer ncomp,ncon
+      COMMON/C1/NCOMP,NCON
 
       CHARACTER PDESCR*60,SDESCR*44,CSTR*25,NMTHNM(12)*3
       character outs*124,prompt*124,outsl*144
       CHARACTER RSNAME*40
       character rfile*72,PFILE*72,MSTRFILE*72,LAFRES*72
 
-      DIMENSION VAL(12),TVAL(12,12)
-      DIMENSION NDYMTH(12), CQ(MTS), CQR(MTS),CQOUT(MTS)
+      DIMENSION VAL(14),TVAL(14,12)
+      DIMENSION NDYMTH(12), CQ(MTS), CQOUT(MTS)
+      DIMENSION CASDAY(MTS,4)  ! to hold casual type data
+      integer looplimit
+      real biggest  ! guage size of annual numbers
+      real perocupc,perocupr,perocupl ! average occupant to write out
+      real perlightc,perlightr,perlightl ! average lighting to write out
+      real perequipc,perequipr,perequipl ! average equipment to write out
+      real otherc,otherr,otherl ! average other (future expansion) to write out
+      integer theonectld  ! if non-zero the casual gain type that is controlled.
+      logical XST,dmdsok  ! for dispersed demands
+      real overallm2,zonem2frac(MCOM)  ! total of all the selected zones base areas
 
       DATA NDYMTH/31,59,90,120,151,181,212,243,273,304,334,365/
       DATA NMTHNM/'Jan','Feb','Mar','Apr','May','Jun','Jul',
@@ -746,6 +809,17 @@ C gains and losses.
 C Set chosen result set.
       ISET=ISIM
       IEND=24*NTS
+
+C Read project demands file if it exists.
+      IUO=IFIL+1
+      call FINDFIL(bdmds,XST)
+      IF(XST)THEN
+        CALL ERPFREE(IUO,ISTAT)
+        CALL ERBDMD(0,IUO,IER)
+        dmdsok=.true.
+      else
+        dmdsok=.false.
+      endif
 
 C Generate descriptive strings & output general header information.
 C If output to file alter the edisp unit number.
@@ -781,7 +855,7 @@ C Set header text.
       CALL HDDATE(PDESCR)
       CALL HDSTEP(SDESCR)
       call edisp(itru,' ')
-      lsn1=MIN0(lnblnk(RFILE),22)
+      lsn1=MIN0(lnblnk(RFILE),42)
       if(NSIM.gt.1)then
         WRITE(outs,'(3A,I4,2A)')'Lib: ',RFILE(1:lsn1),' Set:',ISIM,
      &    ': ',RSNAME(ISIM)(1:lnblnk(RSNAME(ISIM)))
@@ -795,31 +869,76 @@ C Set header text.
       call edisp(itru,outs)
       call edisp(itru,' ')
 
+C Echo header with units.
       if(IR.eq.1)call edisp(itru,
      &' Monthly selection of gains & losses (to nearest 100Wh).')
       if(IR.eq.2)call edisp(itru,
      &' Monthly selection of gains & losses (to nearest kWh).')
       call edisp(itru,' ')
 
+C If current version display monthly summary.
+      if(izver.ge.4)then
+
 C Monthly statistics of energy gains and losses.
-      write(outs,602)
-  602 format(
-     &  ' Zone      Period| Transp surfs   | Opaque surfs  | Casual',
-     &  ' Gains |Infilt.|Ventil |    Plant      |Solar radiation|')
-      call edisp(itru,outs)
-      write(outs,6021)
- 6021 format(
-     &  '             in  |extern  |other  |extern |other  |convec ',
-     &  'radiant|       |       |Heating|Cooling|absor |entering|')
-      call edisp(itru,outs)
-      write(outs,6022)
- 6022 format(
-     &  '                 |facing  |facing |facing |facing |       ',
-     &  '       |       |       |       |       |inside|zone    |')
+        if(dmdsok)then
+          write(outsl,'(3a)')
+     &    ' Zone      Period| Surface convection at face of |  Casual',
+     &    ' Gains (R+C)   |Air movement   | Environmental |Solar',
+     &    ' radiation |dispersed'
+          call edisp(itru,outsl)
+          write(outsl,'(3a)')
+     &    '           in    |   transparent |    opaque     |Occu-  |',
+     &    'Lights |Small  |Infil- |Venti- |   controls    |absorbd|',
+     &    'entering| demands'
+          call edisp(itru,outsl)
+          write(outsl,'(3a)')
+     &    '           month |outside|other  |outside|other  |pant   |',
+     &    '       |Power  |tration|lation |Heating|Cooling|within |',
+     &    'the     |for model'
+          call edisp(itru,outsl)
+          write(outsl,'(3a)')
+     &    '                 |facing |facing |facing |facing |       |',
+     &    '       |       |       |       |       |       |zone   |',
+     &    'zone    |'
+          call edisp(itru,outsl)
+        else
+          write(outsl,'(3a)')
+     &    ' Zone      Period| Surface convection at face of |  Casual',
+     &    ' Gains (R+C)   |Air movement   | Environmental |Solar',
+     &    ' radiation |'
+          call edisp(itru,outsl)
+          write(outsl,'(3a)')
+     &    '           in    |   transparent |    opaque     |Occu-  |',
+     &    'Lights |Small  |Infil- |Venti- |   controls    |absorbd|',
+     &    'entering|'
+          call edisp(itru,outsl)
+          write(outsl,'(3a)')
+     &    '           month |outside|other  |outside|other  |pant   |',
+     &    '       |Power  |tration|lation |Heating|Cooling|within |',
+     &    'the     |'
+          call edisp(itru,outsl)
+          write(outsl,'(3a)')
+     &    '                 |facing |facing |facing |facing |       |',
+     &    '       |       |       |       |       |       |zone   |',
+     &    'zone    |'
+          call edisp(itru,outsl)
+        endif
+      endif
+
+C For each zone in model sum the zone base areas and then get the
+C fraction of model base area for the zone.
+      overallm2=0.0
+      DO izn=1,NCOMP
+        overallm2=overallm2+ZBASEA(izn)
+      ENDDO
+      DO izn=1,NCOMP
+        zonem2frac(izn)=ZBASEA(izn)/overallm2
+      ENDDO
+      write(outs,*) 'The model overall base area is ',overallm2,'m2.'
       call edisp(itru,outs)
 
-C Loop for 12 topics and then each month.
-      DO 620 IJK=1,12
+C Loop for 13 topics and then each month.
+      DO 620 IJK=1,14
         DO 610 IMNTH=1,12
           TVAL(IJK,IMNTH)=0.0
   610   CONTINUE
@@ -828,7 +947,7 @@ C Loop for 12 topics and then each month.
 C Per zone statistics.
       DO 660 KGET=1,NGET
         izn=IGETNO(KGET,2)
-        DO 621 IJK=1,12
+        DO 621 IJK=1,14
           VAL(IJK)=0.0
   621   CONTINUE
 
@@ -845,27 +964,27 @@ C filter it according to IAV and get the sums for the day.
 
 C Column 1 tmc external, 2 tmc internal, 3 opq external, 4 opq internal.
 C If version 2 of library then recover via goutopq etc.
-          if(ISAVE.lt.4.and.izver.ge.2)then
+          if(ISAVE.lt.4)then
             CALL GOUTOPQ(JD,IZN,ISET)
             CALL FLTIAV(JD,GVAL,CQ,NEL)
-            do 161 ISTP=ISTART,IEND
+            do ISTP=ISTART,IEND
               VAL(3)=VAL(3)+CQ(ISTP)
-  161       continue
+            enddo
             CALL GOPQIN(JD,IZN,ISET)
             CALL FLTIAV(JD,GVAL,CQ,NEL)
-            do 162 ISTP=ISTART,IEND
+            do ISTP=ISTART,IEND
               VAL(4)=VAL(4)+CQ(ISTP)
-  162       continue
+            enddo
             CALL GOUTTRN(JD,IZN,ISET)
             CALL FLTIAV(JD,GVAL,CQ,NEL)
-            do 163 ISTP=ISTART,IEND
+            do ISTP=ISTART,IEND
               VAL(1)=VAL(1)+CQ(ISTP)
-  163       continue
+            enddo
             CALL GTRNIN(JD,IZN,ISET)
             CALL FLTIAV(JD,GVAL,CQ,NEL)
-            do 164 ISTP=ISTART,IEND
+            do ISTP=ISTART,IEND
               VAL(2)=VAL(2)+CQ(ISTP)
-  164       continue
+            enddo
           elseif(ISAVE.eq.4)then
 
 C Surface convection contributions, loop through each surface,
@@ -896,110 +1015,188 @@ C in terms of surface so negate it to have contribution to air node.
      &        'recovery of convection data.','W')
           endif
 
-C Get casual gains. Unlike other facilities, only the total
-C casual convective and radiant are required so there is
-C little overhead with the GCASC and GCASR method.
-          CALL GCASC(JD,IZN,ISET) ! for older versions.
-          CALL FLTIAV(JD,GVAL,CQ,NEL)
-          CALL SUM1V(CQ,ISTART,IEND,SGT,SLT,IGT,IEQ,ILT)
-          VAL(5)=VAL(5)+SGT+SLT
+          if(izver.ge.4)then
 
-          CALL GCASR(JD,IZN,ISET) ! for older versions.
-          CALL FLTIAV(JD,GVAL,CQ,NEL)
-          CALL SUM1V(CQ,ISTART,IEND,SGT,SLT,IGT,IEQ,ILT)
-          VAL(6)=VAL(6)+SGT+SLT
+C Get seperate casual gain total rad+convec. NOTE: this has been tested
+C for use with zone operations - but not yet temporal.
+
+C << extend code to check for TDF and NCM data structures >>
+
+            DO J2=ISTART,IEND
+              call getallcas(JD,IZN,ISET,J2,QCASR,QCASC,QCASL,FRAC,
+     &          perocupc,perlightc,perequipc,otherc,perocupr,
+     &          perlightr,perequipr,otherr,perocupl,perlightl,
+     &          perequipl,otherl,theonectld)
+              CASDAY(J2,1)=perocupc+perocupr ! Total occupant gain (W)
+              CASDAY(J2,2)=perlightc+perlightr ! Total lighting gain (W)
+              CASDAY(J2,3)=perequipc+perequipr ! Total small power gain (W)
+              CASDAY(J2,4)=otherc+otherr ! Total other gain (W)
+            ENDDO
+
+C Pass across the occupant gains into gval and then filter and sum.
+            DO J2=ISTART,IEND
+              GVAL(J2)=CASDAY(J2,1)
+            ENDDO
+            CALL FLTIAV(JD,GVAL,CQ,NEL)
+            CALL SUM1V(CQ,ISTART,IEND,SGT,SLT,IGT,IEQ,ILT)
+            VAL(5)=VAL(5)+SGT+SLT
+
+C Pass across the lighiting gains into gval and then filter and sum.
+            DO J2=ISTART,IEND
+              GVAL(J2)=CASDAY(J2,2)
+            ENDDO
+            CALL FLTIAV(JD,GVAL,CQ,NEL)
+            CALL SUM1V(CQ,ISTART,IEND,SGT,SLT,IGT,IEQ,ILT)
+            VAL(6)=VAL(6)+SGT+SLT
+
+C Pass across the small power gains into gval and then filter and sum.
+            DO J2=ISTART,IEND
+              GVAL(J2)=CASDAY(J2,3)
+            ENDDO
+            CALL FLTIAV(JD,GVAL,CQ,NEL)
+            CALL SUM1V(CQ,ISTART,IEND,SGT,SLT,IGT,IEQ,ILT)
+            VAL(7)=VAL(7)+SGT+SLT
 
 C Infiltration.
-          CALL GQV1(JD,IZN,ISET)
-          CALL FLTIAV(JD,GVAL,CQ,NEL)
-          CALL SUM1V(CQ,ISTART,IEND,SGT,SLT,IGT,IEQ,ILT)
-          VAL(7)=VAL(7)+SGT+SLT
+            CALL GQV1(JD,IZN,ISET)
+            CALL FLTIAV(JD,GVAL,CQ,NEL)
+            CALL SUM1V(CQ,ISTART,IEND,SGT,SLT,IGT,IEQ,ILT)
+            VAL(8)=VAL(8)+SGT+SLT
 
 C Ventilation.
-          CALL GQV2(JD,IZN,ISET)
-          CALL FLTIAV(JD,GVAL,CQ,NEL)
-          CALL SUM1V(CQ,ISTART,IEND,SGT,SLT,IGT,IEQ,ILT)
-          VAL(8)=VAL(8)+SGT+SLT
+            CALL GQV2(JD,IZN,ISET)
+            CALL FLTIAV(JD,GVAL,CQ,NEL)
+            CALL SUM1V(CQ,ISTART,IEND,SGT,SLT,IGT,IEQ,ILT)
+            VAL(9)=VAL(9)+SGT+SLT
 
 C Convection portion of plant.
-          CALL GZQM(JD,IZN,ISET)
-          CALL FLTIAV(JD,GVAL,CQ,NEL)
-          CALL SUM1V(CQ,ISTART,IEND,SGT,SLT,IGT,IEQ,ILT)
-          VAL(9)=VAL(9)+SGT
-          VAL(10)=VAL(10)+SLT
+            CALL GZQM(JD,IZN,ISET)
+            CALL FLTIAV(JD,GVAL,CQ,NEL)
+            CALL SUM1V(CQ,ISTART,IEND,SGT,SLT,IGT,IEQ,ILT)
+            VAL(10)=VAL(10)+SGT
+            VAL(11)=VAL(11)+SLT
 
 C Solar absorbed in the zone.
-          call GSOLABS(JD,IZN,ISET)
-          CALL FLTIAV(JD,GVAL,CQ,NEL)
-          CALL SUM1V(CQ,ISTART,IEND,SGT,SLT,IGT,IEQ,ILT)
-          VAL(11)=VAL(11)+SGT
+            call GSOLABS(JD,IZN,ISET)
+            CALL FLTIAV(JD,GVAL,CQ,NEL)
+            CALL SUM1V(CQ,ISTART,IEND,SGT,SLT,IGT,IEQ,ILT)
+            VAL(12)=VAL(12)+SGT
 
 C Solar entering zone from outside.
-          call GSOLX(JD,IZN,ISET)
-          CALL FLTIAV(JD,GVAL,CQ,NEL)
-          CALL SUM1V(CQ,ISTART,IEND,SGT,SLT,IGT,IEQ,ILT)
-          VAL(12)=VAL(12)+SGT
+            call GSOLX(JD,IZN,ISET)
+            CALL FLTIAV(JD,GVAL,CQ,NEL)
+            CALL SUM1V(CQ,ISTART,IEND,SGT,SLT,IGT,IEQ,ILT)
+            VAL(13)=VAL(13)+SGT
+
+C If dispersed demands (via VAL3 arrays) sum them to VAL(14).
+C As dispersed demands are for whole model in the reporting
+C for each zone factor it by the base area of that zone.
+            if(dmdsok)then
+              call DDMDS(JD)
+              DO J2=ISTART,IEND
+                GVAL(J2)=VAL3(15,J2)+VAL3(16,J2)+VAL3(17,J2)+
+     &            VAL3(18,J2)+VAL3(19,J2)+VAL3(20,J2)+VAL3(21,J2)
+              ENDDO
+              CALL FLTIAV(JD,GVAL,CQ,NEL)
+              CALL SUM1V(CQ,ISTART,IEND,SGT,SLT,IGT,IEQ,ILT)
+              VAL(14)=VAL(14)+(SGT*zonem2frac(izn))
+            else
+              VAL(14)=0.0
+            endif
+
+          endif
 
 C Check if month finished.
           IF(JD.LT.NDYMTH(IMNTH).AND.JD.NE.IODF)goto 650
 
 C Dump this month's statistics.
-          DO 638 IJK=1,12
+          DO IJK=1,14
             VAL(IJK)=VAL(IJK)/1000.
-  638     CONTINUE
+          ENDDO
 
+          if(dmdsok)then
+            looplimit=14
+          else
+            looplimit=13
+          endif
           IF(IMNTH.EQ.IOM1)THEN
             if(IR.eq.1)then
-              WRITE(outs,701)zname(IZN)(1:12),NMTHNM(IMNTH),
-     &                      (VAL(IJ),IJ=1,12)
-  701         FORMAT(1X,A12,1X,A3,1X,12F8.1)
+              WRITE(outsl,701)zname(IZN)(1:12),NMTHNM(IMNTH),
+     &                      (VAL(IJ),IJ=1,looplimit)
+  701         FORMAT(1X,A12,1X,A3,1X,14F8.1)
             elseif(IR.eq.2)then
-              WRITE(outs,703)zname(IZN)(1:12),NMTHNM(IMNTH),
-     &                      (VAL(IJ),IJ=1,12)
-  703         FORMAT(1X,A12,1X,A3,1X,12F8.0)
+              WRITE(outsl,703)zname(IZN)(1:12),NMTHNM(IMNTH),
+     &                      (VAL(IJ),IJ=1,looplimit)
+  703         FORMAT(1X,A12,1X,A3,1X,14F8.0)
             endif
-            call eddisp(itru,outs)
+            call eddisp(itru,outsl)
           ELSE
             if(IR.eq.1)then
-              WRITE(outs,702)NMTHNM(IMNTH),(VAL(IJ),IJ=1,12)
-  702         FORMAT(14x,A3,1X,12F8.1)
+              WRITE(outsl,702)NMTHNM(IMNTH),(VAL(IJ),IJ=1,looplimit)
+  702         FORMAT(14x,A3,1X,14F8.1)
             elseif(IR.eq.2)then
-              WRITE(outs,704)NMTHNM(IMNTH),(VAL(IJ),IJ=1,12)
-  704         FORMAT(14x,A3,1X,12F8.0)
+              WRITE(outsl,704)NMTHNM(IMNTH),(VAL(IJ),IJ=1,looplimit)
+  704         FORMAT(14x,A3,1X,14F8.0)
             endif
-            call eddisp(itru,outs)
+            call eddisp(itru,outsl)
           ENDIF
 
-          DO 640 IJK=1,12
+          DO IJK=1,looplimit
             TVAL(IJK,IMNTH)=TVAL(IJK,IMNTH)+VAL(IJK)
             VAL(IJK)=0.0
-  640     CONTINUE
+          ENDDO
           IMNTH=IMNTH+1
   650   CONTINUE
   660 CONTINUE
 
 C Dump 'all-zone' statistics if more than one zone.
+      if(dmdsok)then
+        looplimit=14
+      else
+        looplimit=13
+      endif
       DO 680 IMNTH=IOM1,IOM2
         if (NZ.GT.1) then
           IF(IMNTH.EQ.IOM1)THEN
-            write(outs,705)NMTHNM(IMNTH),(TVAL(IJK,IMNTH),IJK=1,12)
-  705       format(' All zones    ',A3,1X,12(F8.0))
+            write(outsl,705)NMTHNM(IMNTH),
+     &        (TVAL(IJK,IMNTH),IJK=1,looplimit)
+  705       format(' All zones    ',A3,1X,14(F8.0))
             call edisp(itru,' ')
-            call eddisp(itru,outs)
+            call eddisp(itru,outsl)
           ELSE
-            write(outs,706)NMTHNM(IMNTH),(TVAL(IJK,IMNTH),IJK=1,12)
-  706       format(14X,A3,1X,12(F8.0))
-            call eddisp(itru,outs)
+            write(outsl,706)NMTHNM(IMNTH),
+     &        (TVAL(IJK,IMNTH),IJK=1,looplimit)
+  706       format(14X,A3,1X,14(F8.0))
+            call eddisp(itru,outsl)
           ENDIF
         endif
-        DO 685 IJK=1,12
+        biggest=0.0
+        DO IJK=1,looplimit
           VAL(IJK)=VAL(IJK)+TVAL(IJK,IMNTH)
-  685   CONTINUE
+          if(VAL(IJK).gt.biggest) biggest=VAL(IJK)
+        ENDDO
   680 CONTINUE
 
 C Dump the annual totals if run was for more than one month.
+
+C Find if any of the annual totals is large enough to require 10 digits
+C otherwise write with 8 or 9 digits.
+      if(dmdsok)then
+        looplimit=14
+      else
+        looplimit=13
+      endif
       if (IOM2.GT.IOM1) then
-        write(outsl,'(A,12(F10.0))') ' Annual   ',(VAL(IJK),IJK=1,12)
+        if(biggest.gt.999999.0)then
+          write(outsl,'(A,14(F10.0))') ' Annual   ',
+     &      (VAL(IJK),IJK=1,looplimit)
+        elseif(biggest.gt.99999.0.and.biggest.lt.999999.0)then
+          write(outsl,'(A,14(F9.0))')' Annual      ',
+     &      (VAL(IJK),IJK=1,looplimit)
+        else
+          write(outsl,'(A,14(F8.0))')' Annual           ',
+     &      (VAL(IJK),IJK=1,looplimit)
+        endif
         call edisp(itru,' ')
         call eddisp(itru,outsl)
       endif

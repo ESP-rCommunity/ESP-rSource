@@ -5,7 +5,7 @@
    <dump_all_data>true</dump_all_data>
    <time_step_averaging>false</time_step_averaging>
    <report_startup_period_data>false</report_startup_period_data>
-   <output_dictionary>true</output_dictionary>
+   <output_dictionary>false</output_dictionary>
    <style_sheet>generic_summary.xsl</style_sheet>
    <apply_style_sheet>true</apply_style_sheet>
    <link_style_sheet>false</link_style_sheet>

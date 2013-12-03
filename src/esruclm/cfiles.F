@@ -69,6 +69,7 @@ C silent is a logical toggle, if .true. then do not interact with user.
 
       CHARACTER CLMLOC*30
       CHARACTER LASCI*72,outs*124,OUTSTR*124
+      integer IREAD  ! set to 1 if day demarcation lines
 
 C For help messages
       character helpinsub*24 ! subroutine name
@@ -91,6 +92,7 @@ C Open the ASCII file for reading.
         return
       endif
 
+      IREAD=0  ! assume no day demarcation lines
       if(silent)then
         IREAD=1
       else
@@ -116,7 +118,7 @@ C If the user is not requesting new site data then skip over lines.
 
           CALL STRIPC(IUNIT,OUTSTR,4,ND,1,'yr lat lng idngh',IER)
           K=0
-          CALL EGETWI(OUTSTR,K,IYEAR,1900,2020,'W','year',IER)
+          CALL EGETWI(OUTSTR,K,IYEAR,1900,2051,'W','year',IER)
           CALL EGETWR(OUTSTR,K,CLAT,-90.,90.,'W','CLAT',IER)
           CALL EGETWR(OUTSTR,K,CLONG,-15.,15.,'W','CLONG',IER)
           CALL EGETWI(OUTSTR,K,IDNGH,0,123,'W','IDNGH',IER)
@@ -227,9 +229,11 @@ C data as well as the units of the data column. Columns can be space or tab or
 C comma separated.
 
 C For solar radiation units can be W/m2 real, W/m2 integer, integer tenths W/m2
+C or (sum direct+diffuse) KJ integer or real using one of three methods to
+C evaluate the diffuse component.
 C For dry bulb degrees C real, integer tenths deg C
-C For wind speed m/s real, m/s integer, integer tenths m/s
-C For wind direction degrees from north real or integer, integer thenth degrees
+C For wind speed m/s real, m/s integer, integer tenths m/s, knots integer or real.
+C For wind direction degrees from north real or integer, integer tenths degrees
 C For RH  % real, tenths % integer, between 0. and 1.
 
 C At the end of the process we have...
@@ -259,6 +263,7 @@ C read in.
       COMMON/CLMSET/ICYEAR,ICDNGH,CLAT,CLONG
       COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
       COMMON/RADTYP/IDNGH
+      COMMON/APPRDIFF/iapprox_diff
       LOGICAL OK,DOK,silent
       dimension ICLM(24,6)
 
@@ -269,6 +274,9 @@ C read in.
       DIMENSION IMPT(24),IMSTC(7),ITUNITS(7)
       character word*32  ! for skipped column data
       integer iwidest    ! the last column to look in
+      integer IREAD  ! set to 1 if day demarcation lines
+      real longit_for_diffuse_calcs,differ_from_Greenwich
+      real dbtc
 
 C For help messages
       character helpinsub*24 ! subroutine name
@@ -276,6 +284,10 @@ C For help messages
       integer nbhelp     ! number of help lines found (will be non-zero
 
       helpinsub='COLTOBCLM'  ! set for cfiles
+
+C Initialiase defaults for easkr in the case of single dir+dif solar value
+      longit_for_diffuse_calcs=0.
+      differ_from_Greenwich=clong
 
 C Open the ASCII file for reading.
       if(iunit.eq.0)then
@@ -297,7 +309,7 @@ C Clear column association.
         ITUNITS(I)=0
    27 CONTINUE
       IMSTL=1
-      IDS=1; IDF=365; iwidest=0
+      IDS=1; IDF=365; iwidest=0; IREAD=0
 
 C Display the initial lines of the file for the user.
 
@@ -361,6 +373,10 @@ C For solar radiation units can be W/m2 real, W/m2 integer, integer tenths W/m2
         WRITE(IMPT(13),'(A)')'h Glob hor solar >> W/m2 integer'
       elseif(ITUNITS(4).eq.2)then
         WRITE(IMPT(13),'(A)')'h Glob hor solar >> tenths W/m2 integer'
+      elseif(ITUNITS(4).eq.3)then
+        WRITE(IMPT(13),'(A)')'h Glob hor solar >> dir+dif KJ/m2 real'
+      elseif(ITUNITS(4).eq.4)then
+        WRITE(IMPT(13),'(A)')'h Glob hor solar >> dir+dif KJ/m2 int'
       endif
       WRITE(IMPT(14),'(A,I2)')'i Wind speed colm: ',IMSTC(5)
       if(ITUNITS(5).eq.0)then
@@ -369,6 +385,10 @@ C For solar radiation units can be W/m2 real, W/m2 integer, integer tenths W/m2
         WRITE(IMPT(15),'(A)')'j Wind speed >> m/s integer'
       elseif(ITUNITS(5).eq.2)then
         WRITE(IMPT(15),'(A)')'j Wind speed >> tenths m/s integer'
+      elseif(ITUNITS(5).eq.3)then
+        WRITE(IMPT(15),'(A)')'j Wind speed >> knots real'
+      elseif(ITUNITS(5).eq.4)then
+        WRITE(IMPT(15),'(A)')'j Wind speed >> knots integer'
       endif
       WRITE(IMPT(16),'(A,I2)')'i Wind direc colm: ',IMSTC(6)
       if(ITUNITS(6).eq.0)then
@@ -407,7 +427,7 @@ C Help text for this menu.
       call gethelptext(helpinsub,helptopic,nbhelp)
  
       INODA=-2
-   13 CALL EMENU('  Import specs',IMPT,IMPTL,INODA)
+      CALL EMENU('  Import specs',IMPT,IMPTL,INODA)
 
       IF(INODA.EQ.IMPTL)THEN
         RETURN
@@ -502,7 +522,42 @@ C Define the year if not already done.
         if(iwidest.lt.IV) iwidest=IV  ! remember
       ELSEIF(INODA.EQ.13)THEN
         ITUNITS(4)=ITUNITS(4)+1
-        if(ITUNITS(4).gt.2) ITUNITS(4)=0
+        if(ITUNITS(4).gt.4) ITUNITS(4)=0
+        if(ITUNITS(4).eq.3.or.ITUNITS(4).eq.4)then
+      
+C Set the radiation flag to Global horizontal.     
+          IDNGH=123
+          helptopic='confirm_lat_log_diff'
+          call gethelptext(helpinsub,helptopic,nbhelp)
+          CALL EASKR(longit_for_diffuse_calcs,' ',
+     &     'Weather site longitude (actual)? (west: positive):',
+     &     -180.0,'W',180.0,'W',30.0,'weather longitude',IER,nbhelp)
+
+          helptopic='local_time_difference'
+          call gethelptext(helpinsub,helptopic,nbhelp)
+          CALL EASKR(differ_from_Greenwich,' ',
+     &      ' Time difference from Greenwich? (west: positive) ',
+     &      -24.0,'W',24.0,'W',0.0,'time_difference',IER,nbhelp)
+
+C Export weather data to ASCII file (with similar name).
+          helptopic='korea_met_conversion'
+          call gethelptext(helpinsub,helptopic,nbhelp)
+          call easkabc
+     &     ('Available models to approximate diffuse:',
+     &     ' ','Muneer','Maxwell','Erbs Klein & Duffie (default)',
+     &     IDIFF,nbhelp)
+
+C Set the global variable iapprox_diff to tell underlying calculation
+C method which equation set to use.
+          if(IDIFF.eq.1)then
+            iapprox_diff=1
+          elseif(IDIFF.eq.2)then  
+            iapprox_diff=2
+          elseif(IDIFF.eq.3)then  
+            iapprox_diff=3
+          endif
+        endif
+  
       ELSEIF(INODA.EQ.14)THEN
         IV=IMSTC(5)
         CALL EASKI(IV,' ','Column for wind speed:',
@@ -511,7 +566,7 @@ C Define the year if not already done.
         if(iwidest.lt.IV) iwidest=IV  ! remember
       ELSEIF(INODA.EQ.15)THEN
         ITUNITS(5)=ITUNITS(5)+1
-        if(ITUNITS(5).gt.2) ITUNITS(5)=0
+        if(ITUNITS(5).gt.4) ITUNITS(5)=0
       ELSEIF(INODA.EQ.16)THEN
         IV=IMSTC(6)
         CALL EASKI(IV,' ','Column for wind direction:',
@@ -580,9 +635,11 @@ C next column.
                 endif
               elseif(N1.eq.IMSTC(2))then
                 if(ITUNITS(2).eq.0)then
-                  CALL EGETWR(OUTSTR,K,TMP,0.0,0.0,'-',
+                  CALL EGETWR(OUTSTR,K,dbtc,0.0,0.0,'-',
      &              'deg C real',IER)
-                  ICLM(J,2)= NINT(TMP*10.0)
+                  ICLM(J,2)= NINT(dbtc*10.0)
+C Debug.
+C                  write(6,*) j,dbtc,ICLM(J,2)
                 elseif(ITUNITS(2).eq.1)then
                   CALL EGETWI(OUTSTR,K,ITMP,0,0,'-','deg C int',IER)
                   ICLM(J,2)=ITMP*10
@@ -613,7 +670,24 @@ C next column.
                 elseif(ITUNITS(4).eq.2)then
                  CALL EGETWI(OUTSTR,K,IGLO,0,0,'-','glo 10th w/m2',IER)
                   ICLM(J,3)=IGLO/10  ! to get back to w/m2
+                elseif(ITUNITS(4).eq.3)then
+
+C Source is global horizontal, so also need to derive the diffuse as
+C per the approach decoding Korea MET office data.
+                  CALL EGETWR(OUTSTR,K,GLO,0.0,0.0,'-',
+     &              'glo KJ/m2 real',IER)
+                  ICLM(J,3)= NINT(GLO*0.277777778)
+                elseif(ITUNITS(4).eq.4)then
+                  CALL EGETWI(OUTSTR,K,IGLO,0,0,'-','glo KJ/m2 int',IER)
+                  ICLM(J,3)= NINT(IGLO*0.277777778)
                 endif
+                call edayr(IDD,imonth,iday)
+                CALL APPRDIFFUSE(iyear,imonth,iday,J,ICLM(J,3),
+     &            longit_for_diffuse_calcs,differ_from_Greenwich,DRAD)
+                IDRAD=NINT(DRAD)
+                ICLM(J,1)=IDRAD
+C Debug.
+C                write(6,*) iyear,imonth,iday,j,iclm(j,3),drad
               elseif(N1.eq.IMSTC(5))then
                 if(ITUNITS(5).eq.0)then
                   CALL EGETWR(OUTSTR,K,VEL,0.0,0.0,'-',
@@ -625,6 +699,13 @@ C next column.
                 elseif(ITUNITS(5).eq.2)then
                   CALL EGETWI(OUTSTR,K,IVEL,0,0,'-','tenths m/s',IER)
                   ICLM(J,4)=IVEL  ! no conversion required
+                elseif(ITUNITS(5).eq.3)then
+                  CALL EGETWR(OUTSTR,K,VEL,0.0,0.0,'-',
+     &              'vel knots real',IER)
+                  ICLM(J,4)= NINT((VEL*10.0)*0.51444)
+                elseif(ITUNITS(5).eq.4)then
+                  CALL EGETWI(OUTSTR,K,IVEL,0,0,'-','vel knot int',IER)
+                  ICLM(J,4)= NINT((IVEL*10)*0.51444)
                 endif
               elseif(N1.eq.IMSTC(6))then
                 if(ITUNITS(6).eq.0)then
@@ -633,7 +714,7 @@ C next column.
                   ICLM(J,5)= NINT(DIR)
                 elseif(ITUNITS(6).eq.1)then
                   CALL EGETWI(OUTSTR,K,IDIR,0,0,'-','w dir int',IER)
-                  ICLM(J,5)=IVEL
+                  ICLM(J,5)=IDIR
                 elseif(ITUNITS(6).eq.2)then
                  CALL EGETWI(OUTSTR,K,IDIR,0,0,'-','tenths dir dg',IER)
                   ICLM(J,5)=IDIR/10  ! to get back to m/s
@@ -956,8 +1037,6 @@ C 123-125 ground temps at 1m 3m 5m (real)  (DEG.C)
 C Each data line is | or , separated and values are a mix of reals and integers.
 C Assume that the weather file has already been opened elsewhere. Note some
 C files may have first line STN_ID if this is found skip and try next.
-
-C silent is a logical toggle, if .true. then do not interact with user.
       SUBROUTINE MKOREANCLM(LASCI,IUNIT,ACT,IER)
 #include "esprdbfile.h"
 
@@ -1036,8 +1115,8 @@ C Export weather data to ASCII file (with similar name).
       helptopic='korea_met_conversion'
       call gethelptext(helpinsub,helptopic,nbhelp)
       call easkabc
-     &  ('There are three available models to approximate diffuse:',
-     &  ' ','Muneer (default)','Maxwell','Erbs Klein & Duffie',
+     &  ('Available models to approximate diffuse:',
+     &  ' ','Muneer','Maxwell','Erbs Klein & Duffie',
      &  IDIFF,nbhelp)
 
 C Set the global variable iapprox_diff to tell underlying calculation
@@ -1062,7 +1141,7 @@ C If the older format read a line of the file.
           endif
           K=0
           CALL EGETWI(OUTSTR,K,isite,0,999,'W','site index',IER)
-          CALL EGETWI(OUTSTR,K,iyr,1900,2020,'W','year index',IER)
+          CALL EGETWI(OUTSTR,K,iyr,1900,2051,'W','year index',IER)
           if(iyr.lt.iyear) cycle   ! if not yet the correct year read again.
           if(iyr.gt.iyear) exit scan   ! if past the correct year write tail.
 
@@ -1150,7 +1229,7 @@ C Clear solar values.
             CALL EGETWI(OUTSTR,K,IGLOBH,0,100,'-','GLOB_HORIZO',IER)
 
 C Convert MJ/m2 to W/m2
-            IGLOBH=IGLOBH*277
+            IGLOBH=NINT(IGLOBH*277.777)
             ICLM(ih,3)=IGLOBH
             CALL APPRDIFFUSE(iyear,imonth,iday,ih,IGLOBH,
      &        longit_for_diffuse_calcs,differ_from_Greenwich,DRAD)
@@ -1352,6 +1431,12 @@ C silent is a logical toggle: true keeps user interactions to a minimum.
       COMMON/RADTYP/IDNGH
       common/rcmd/LCMDFL
 
+C Climate list common.
+      character clmlnam*32,clmlaid*72,clmldbfile*144,clmlavail*10
+      character clmlhelp*72
+      common/clmltext/clmlnam,clmlaid,clmldbfile,clmlavail,clmlhelp(60)
+      common/clmlnum/nbclmlhelp
+
       logical XST,ok,silent,unixok
       
 C Logical rescan = true if climatelist needs to be rescanned to
@@ -1361,6 +1446,8 @@ C or passed into clm module).
 
       CHARACTER CLMLOC*30,outs*124,tab*1,outs248*248
       character LCMDFL*144,clmdb*144,L144*144,lltmp*144
+      character fs*1
+      character actreturn*1  ! users preference
 
 C For help messages
       character helpinsub*24   ! subroutine name
@@ -1369,6 +1456,14 @@ C For help messages
 
       helpinsub='CFILIN'  ! set for cfiles
       tab = CHAR(9)
+
+C Set folder separator (fs) to \ or / as required.
+      call isunix(unixok)
+      if(unixok)then
+        fs = char(47)
+      else
+        fs = char(92)
+      endif
 
 C Get help message set.
       helptopic='clm_file_contents'
@@ -1403,7 +1498,7 @@ C weather file.
           endif
           call usrmsg('Please select a weather set from the ',
      &                'list provided... ','-')
-          call rdblist(IUF,clmdb,ier)
+          call rdblist(IUF,clmdb,actreturn,ier)
           if(ier.ne.0)then
             write(LCMDFL,'(a)') DCLIM(1:lnblnk(DCLIM))
             rescan=.true.
@@ -1550,14 +1645,24 @@ C user for period definition).
       INIT=1
       INEW=1
 
-C If no documentation and periods know scan the climatelist
-C file for this information. If no climatelist then the defaults
-C set in clm.F will be used.
+C If rescan was set to TRUE re-scan the climatelist file
+C for period information. If no climatelist then the defaults
+C set in clm.F will be used and the climatelist data will be
+C reset to indicate the weather was not in the list.
       if(rescan)then
         IUF=ifil+1
         INQUIRE (FILE=cdblfil,EXIST=XST)
         if(XST)then
           call scancdblist(IUF,LCMDFL,ok,ier)
+          if(ok)then
+            continue
+          else
+            clmlnam = 'not yet entered'
+            clmlaid = 'not yet entered'
+            clmlavail = 'OFFLINE'
+            clmldbfile = ' '
+            nbclmlhelp = 1
+          endif
         endif
       endif
       call edisp(iuout,' ')
@@ -1973,7 +2078,7 @@ C (35) Liquid precipitation rate mm/hr < real >
 C Loop through days. If first line then set the year.
         irecloop=irecloop+1
         K=0
-        CALL EGETWI(OUTSTR,K,lyear,1900,2020,'-','line year',IER)
+        CALL EGETWI(OUTSTR,K,lyear,1900,2051,'-','line year',IER)
         if(irecloop.eq.1) IYEAR=lyear
         CALL EGETWI(OUTSTR,K,lmonth,1,12,'W','line month',IER)
         CALL EGETWI(OUTSTR,K,lday,1,31,'W','line day',IER)

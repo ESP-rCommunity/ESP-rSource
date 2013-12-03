@@ -36,6 +36,13 @@
 #define OUT_LOG     0x04  // 0000 0100
 #define OUT_STEP    0x08  // 0000 1000
 
+
+//Quick Run Multipliers
+#define MULT_NONE 0
+#define MULT_HTG  1
+#define MULT_CLG  2
+#define MULT_GEN  3
+
 //Used for the save_to_disk option to manage memory footprint
 #define SAVE_TO_DISK_MIN 100
 #define SAVE_TO_DISK_MAX 100000
@@ -72,11 +79,13 @@ struct stMapKey{
 //Used by the m_VariableInfoMap to store details about
 //each variable sent from Fortran
 struct stVariableInfo{
+   bool Enabled;
    const char* VarName;
    const char* MetaType;
    const char* MetaValue;
    const char* Description;
-   
+   unsigned char OutputType;
+   int Multiplier; //used for quickrun only
 };
 
 //Used by the TimeStepVecto to store details about each timestep
@@ -85,6 +94,14 @@ struct stTimeStep{
    int Hour;
    int Day;
    bool Startup;
+};
+
+//Used for Quickrun to store the different multipliers
+struct stSeasonMultipliers
+{
+   float Htg;
+   float Clg;
+   float Gen;
 };
 
 //Structure only used to output data in sorted order
@@ -104,6 +121,7 @@ int cmp_by_string(const void *a, const void *b)
 typedef map<int,stVariableInfo> VariableInfoMap;
 typedef map<stMapKey,TReportData> ReportDataMap;
 typedef vector<stTimeStep> TimeStepVector;
+typedef vector<stSeasonMultipliers> SeasonMultipliersVector;
 
 
 //const int kMonthlyTimesteps[] = {31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
@@ -131,13 +149,17 @@ class TReportsManager
                                  const char* sMetaValue, const char* sDescription);
 
       //Method to add the time step information to the list.
-      void AddToTimeStepList(bool bStartup, int iStep, int iDay, int iHour);
+      void AddToTimeStepList(bool bStartup, int iStep, int iDay, int iHour, int iQrun);
 
       //Method to add variable data to the list
       void AddToReportDataList(int id, const char* sDelimiter, float fValue);
 
       //Method to add dynamic variable description ** avoid its use when possible **
       void AddToReportDetails(int id,const char*, const string& sUnit,const string& sType,const string& sDescription);
+
+      void AddNewSeason(int iSeason_index,float fHtgMultiplier,float fClgMultiplier, float fGenMultiplier);
+
+      void SetVarAdditionalInfo(int iIdentifier,int iPropertyNum,bool bValue);
 
       //True/false if the report variable is enabled
       bool IsVariableEnable(int id);
@@ -218,6 +240,8 @@ class TReportsManager
       //Contains all the data collected during a simulation
       ReportDataMap m_ReportDataList;
 
+      //Contains the multiplier values by season index (use for QuickRun)
+      SeasonMultipliersVector m_SeasonMultipliersList;
 
 
       //The constructor / destructure is private because we're a Singleton
@@ -254,6 +278,9 @@ class TReportsManager
       float m_fMinutePerTimeStep; //# of ts per min
       vector<long> m_BinStepCount; //Contains to total steps for each bin
       long m_AnnualBinStepCount; //Contains the total step count for annual bin... for now total step count
+      bool m_bSeasonalRun; //true/false if this run is Quick Run (seasonal data only) [default-false]
+      int m_iCurrentSeasonIndex; //current season index
+      int m_iStartSeasonIndex; //start season index
 
       //Since step output can be incremental during a simluation we need to variable
       //to store how many steps were outputed so far.

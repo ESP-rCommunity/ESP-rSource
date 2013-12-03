@@ -1,0 +1,261 @@
+Synopsis
+ 
+Synopsis of the model Calculate shading for June only defined in shade.cfg
+generated on Wed Aug 29 21:25:13 2012. Notes associated with the model are in
+../doc/README
+ 
+The model is located at latitude   52.00 with a longitude difference of  -0.50
+from the local time meridian. The year used in simulations is 2000 and
+weekends occur on Saturday and Sunday.
+The site exposure is typical city centre and the ground reflectance is 0.00.
+ 
+ 
+Simulationist name: not yet defined
+Simulationist telephone: not yet defined
+Simulationist address: not yet defined
+Simulationist city: not yet defined
+Simulationist postcode: not yet defined
+ 
+The climate is: ESP test climate and is held in: clm67 with hour centred solar
+data.
+ standard annual weather: clm67
+Calculated ground temp at 0.5m depth
+3.0888 4.3008 6.6610 8.8949 13.123 15.349 15.963 14.834 12.227 8.9770 5.7777 3.6649
+Calculated ground temp at 1.0m depth
+3.6630 4.5020 6.4738 8.4398 12.343 14.560 15.374 14.612 12.434 9.5459 6.5633 4.4524
+Calculated ground temp at 2.0m depth
+4.7588 5.0557 6.4004 7.8990 11.149 13.226 14.259 14.027 12.542 10.298 7.7730 5.7855
+Calculated ground temp at 4.0m depth
+6.4880 6.2779 6.8663 7.7174 9.8661 11.475 12.517 12.771 12.121 10.800 9.0880 7.5409
+ 
+An Integrated Performance View is incomplete or missing.
+ 
+Databases associated with the model:
+ standard pressure distr: pressc.db1
+ standard materials     : constr_db1.materialdb
+ constructions          : ../databases/shade.constrdb
+ standard plant comp    : plantc.db1
+ standard event profiles: profiles.db1.a
+ standard optical prop  : optics.db1
+ standard UK NCM data   : SBEM.db1
+ standard mould isopleth: mould.db1
+ 
+ ____________________________________________________________
+ 
+ID Zone         Volume|          Surface
+   Name         m^3   | No. Opaque  Transp  ~Floor
+ 1 test-1         48.0   7    80.0     0.0    16.0  test-1 describes a...
+ 2 test-2         48.0   7    80.0     0.0    16.0  test-2 describes a...
+ 3 test-3.5       48.0   8    80.0     0.0    16.0  test-3.5 describes a...
+ 4 test-4        125.0   6   150.0     0.0    25.0  test-4 describes a...
+ 5 test-6        125.0   6   150.0     0.0    25.0  test-6 describes a...
+   all           394.   34    540.      0.     98.
+ 
+ 
+ Zone test-1 ( 1) is composed of 7 surfaces and 12 vertices.
+ It encloses a volume of 48.0m^3 of space, with a total surface
+ area of 80.0m^2 & approx floor area of 16.0m^2
+ test-1 describes a...
+ There is 80.000m2 of exposed surface area, 48.000m2 of which is vertical.
+ Outside walls are 400.00 % of floor area & avg U of 0.391 & UA of 25.036
+ Flat roof is 100.00 % of floor area & avg U of 0.397 & UA of 6.3582
+ 
+ A summary of the surfaces in test-1( 1) follows:
+ 
+ Sur| Area  |Azim|Elev| surface    |    geometry       | construction |environment
+    | m^2   |deg |deg | name       |optical|locat| use | name         |other side
+  1  8.00    180.   0. Surf-1       OPAQUE   VERT -     extern_wall  ||< external
+  2  12.0     90.   0. Surf-2       OPAQUE   VERT -     extern_wall  ||< external
+  3  12.0      0.   0. Surf-3       OPAQUE   VERT -     extern_wall  ||< external
+  4  12.0    270.   0. Surf-4       OPAQUE   VERT -     extern_wall  ||< external
+  5  16.0      0.  90. Surf-5       OPAQUE   CEIL -     extern_wall  ||< external
+  6  16.0      0. -90. Surf-6       OPAQUE   FLOR -     extern_wall  ||< external
+  7  4.00    180.   0. window       OPAQUE   VERT -     extern_wall  ||< external
+ 
+ 
+ An hourly solar radiation distribution is used for this zone.
+ Surfaces (all applicable) for shading analysis:
+Surf-1 Surf-2 Surf-3 Surf-4 Surf-5 Surf-6 window
+Block X- Y- Z- coords DX- DY- DZ- values Orient Opacity
+  1     0.0    -1.0     3.0     4.0     1.0     0.1     0.0     0.0 1.00 First NONE
+ 
+ Shading patterns have not yet been calculated.
+ 
+ 
+ Air schedule notes:
+no operations notes (yet)
+ Control: no control of air flow
+ 
+Scheduled air infiltration and ventilation:
+Daytype    Period     Infiltration     Ventilation     From Source
+           id Hours   Rate ac/h m3/s   Rate ac/h m3/s  Zone DegC
+ 
+Notes:
+no operations notes (yet)
+ 
+Daytype   Gain Type    Period Sensible  Latent     Radiant    Convec
+          No.  label   Hours  Magn.(W)  Magn.(W)   Fraction   Fraction
+ 
+ ____________________________________________________________
+ 
+ Zone test-2 ( 2) is composed of 7 surfaces and 12 vertices.
+ It encloses a volume of 48.0m^3 of space, with a total surface
+ area of 80.0m^2 & approx floor area of 16.0m^2
+ test-2 describes a...
+ There is 80.000m2 of exposed surface area, 48.000m2 of which is vertical.
+ Outside walls are 400.00 % of floor area & avg U of 0.391 & UA of 25.036
+ Flat roof is 100.00 % of floor area & avg U of 0.397 & UA of 6.3582
+ 
+ A summary of the surfaces in test-2( 2) follows:
+ 
+ Sur| Area  |Azim|Elev| surface    |    geometry       | construction |environment
+    | m^2   |deg |deg | name       |optical|locat| use | name         |other side
+  1  8.00    180.   0. Surf-1       OPAQUE   VERT -     extern_wall  ||< external
+  2  12.0     90.   0. Surf-2       OPAQUE   VERT -     extern_wall  ||< external
+  3  12.0      0.   0. Surf-3       OPAQUE   VERT -     extern_wall  ||< external
+  4  12.0    270.   0. Surf-4       OPAQUE   VERT -     extern_wall  ||< external
+  5  16.0      0.  90. Surf-5       OPAQUE   CEIL -     extern_wall  ||< external
+  6  16.0      0. -90. Surf-6       OPAQUE   FLOR -     extern_wall  ||< external
+  7  4.00    180.   0. window       OPAQUE   VERT -     extern_wall  ||< external
+ 
+ 
+ An hourly solar radiation distribution is used for this zone.
+ Surfaces (all applicable) for shading analysis:
+Surf-1 Surf-2 Surf-3 Surf-4 Surf-5 Surf-6 window
+Block X- Y- Z- coords DX- DY- DZ- values Orient Opacity
+  1     6.0    -1.0     0.0     1.0     1.0     3.0     0.0     0.0 1.00 First NONE
+  2    11.0    -1.0     0.0     1.0     1.0     3.0     0.0     0.0 1.00 second NONE
+ 
+ Shading patterns have not yet been calculated.
+ 
+ Uses same operations as zone test-1
+ 
+ ____________________________________________________________
+ 
+ Zone test-3.5 ( 3) is composed of 8 surfaces and 16 vertices.
+ It encloses a volume of 48.0m^3 of space, with a total surface
+ area of 80.0m^2 & approx floor area of 16.0m^2
+ test-3.5 describes a...
+ There is 80.000m2 of exposed surface area, 48.000m2 of which is vertical.
+ Outside walls are 400.00 % of floor area & avg U of 0.391 & UA of 25.036
+ Flat roof is 100.00 % of floor area & avg U of 0.397 & UA of 6.3582
+ 
+ A summary of the surfaces in test-3.5( 3) follows:
+ 
+ Sur| Area  |Azim|Elev| surface    |    geometry       | construction |environment
+    | m^2   |deg |deg | name       |optical|locat| use | name         |other side
+  1  8.00    180.   0. Surf-1       OPAQUE   VERT -     extern_wall  ||< external
+  2  8.00     90.   0. Surf-2       OPAQUE   VERT -     extern_wall  ||< external
+  3  12.0      0.   0. Surf-3       OPAQUE   VERT -     extern_wall  ||< external
+  4  12.0    270.   0. Surf-4       OPAQUE   VERT -     extern_wall  ||< external
+  5  16.0      0.  90. Surf-5       OPAQUE   CEIL -     extern_wall  ||< external
+  6  16.0      0. -90. Surf-6       OPAQUE   FLOR -     extern_wall  ||< external
+  7  4.00    180.   0. window_S     OPAQUE   VERT -     extern_wall  ||< external
+  8  4.00     90.   0. window_E     OPAQUE   VERT -     extern_wall  ||< external
+ 
+ 
+ An hourly solar radiation distribution is used for this zone.
+ Surfaces (all applicable) for shading analysis:
+Surf-1 Surf-2 Surf-3 Surf-4 Surf-5 Surf-6 window_S window_E
+Block X- Y- Z- coords DX- DY- DZ- values Orient Opacity
+  1    13.0    -1.0     0.0     1.0     1.0     3.0     0.0     0.0 1.00 First NONE
+  2    18.0     0.0     3.0     1.0     4.0     0.1     0.0     0.0 1.00 third NONE
+  3    14.0    -1.0     3.0     4.0     1.0     0.1     0.0     0.0 1.00 fourth NONE
+  4    18.0    -1.0     0.0     1.0     1.0     3.0     0.0     0.0 1.00 SE_fin NONE
+  5    18.0     4.0     0.0     1.0     1.0     3.0     0.0     0.0 1.00 NE_fin NONE
+ 
+ Shading patterns have not yet been calculated.
+ 
+ Uses same operations as zone test-1
+ 
+ ____________________________________________________________
+ 
+ Zone test-4 ( 4) is composed of 6 surfaces and 8 vertices.
+ It encloses a volume of 125.m^3 of space, with a total surface
+ area of 150.m^2 & approx floor area of 25.0m^2
+ test-4 describes a...
+ There is 150.00m2 of exposed surface area, 100.00m2 of which is vertical.
+ Outside walls are 500.00 % of floor area & avg U of 0.391 & UA of 48.936
+ Flat roof is 100.00 % of floor area & avg U of 0.397 & UA of 9.9347
+ 
+ A summary of the surfaces in test-4( 4) follows:
+ 
+ Sur| Area  |Azim|Elev| surface    |    geometry       | construction |environment
+    | m^2   |deg |deg | name       |optical|locat| use | name         |other side
+  1  25.0    180.   0. Surf-1       OPAQUE   VERT -     extern_wall  ||< external
+  2  25.0     90.   0. Surf-2       OPAQUE   VERT -     extern_wall  ||< external
+  3  25.0      0.   0. Surf-3       OPAQUE   VERT -     extern_wall  ||< external
+  4  25.0    270.   0. Surf-4       OPAQUE   VERT -     extern_wall  ||< external
+  5  25.0      0.  90. Surf-5       OPAQUE   CEIL -     extern_wall  ||< external
+  6  25.0      0. -90. Surf-6       OPAQUE   FLOR -     extern_wall  ||< external
+ 
+ 
+ An hourly solar radiation distribution is used for this zone.
+ Surfaces (all applicable) for shading analysis:
+Surf-1 Surf-2 Surf-3 Surf-4 Surf-5 Surf-6
+Block X- Y- Z- coords DX- DY- DZ- values Orient Opacity
+  1    -5.0     6.0     0.0    15.0     1.0    10.0     0.0     0.0 1.00 First NONE
+ 
+ Shading patterns have not yet been calculated.
+ 
+ Uses same operations as zone test-1
+ 
+ ____________________________________________________________
+ 
+ Zone test-6 ( 5) is composed of 6 surfaces and 8 vertices.
+ It encloses a volume of 125.m^3 of space, with a total surface
+ area of 150.m^2 & approx floor area of 25.0m^2
+ test-6 describes a...
+ There is 150.00m2 of exposed surface area, 100.00m2 of which is vertical.
+ Outside walls are 500.00 % of floor area & avg U of 0.391 & UA of 48.936
+ Flat roof is 100.00 % of floor area & avg U of 0.397 & UA of 9.9347
+ 
+ A summary of the surfaces in test-6( 5) follows:
+ 
+ Sur| Area  |Azim|Elev| surface    |    geometry       | construction |environment
+    | m^2   |deg |deg | name       |optical|locat| use | name         |other side
+  1  25.0    180.   0. Surf-1       OPAQUE   VERT -     extern_wall  ||< external
+  2  25.0     90.   0. Surf-2       OPAQUE   VERT -     extern_wall  ||< external
+  3  25.0      0.   0. Surf-3       OPAQUE   VERT -     extern_wall  ||< external
+  4  25.0    270.   0. Surf-4       OPAQUE   VERT -     extern_wall  ||< external
+  5  25.0      0.  90. Surf-5       OPAQUE   CEIL -     extern_wall  ||< external
+  6  25.0      0. -90. Surf-6       OPAQUE   FLOR -     extern_wall  ||< external
+ 
+ 
+ An hourly solar radiation distribution is used for this zone.
+ Surfaces (all applicable) for shading analysis:
+Surf-1 Surf-2 Surf-3 Surf-4 Surf-5 Surf-6
+Block X- Y- Z- coords DX- DY- DZ- values Orient Opacity
+  1    25.0     7.0     0.0     1.0    15.0    10.0     0.0     0.0 1.00 First NONE
+ 
+ Shading patterns have not yet been calculated.
+ 
+ Uses same operations as zone test-1
+ 
+ ____________________________________________________________
+ 
+ Project floor area is 98.000m2, wall area is 442.00m2, window area is 0.00m2.
+ Sloped roof area is 0.00m2, flat roof area is 98.000m2, skylight area is 0.00m2.
+ In contact with ground 0.00m2.
+ There is 540.00m2 of outside surface area, 344.00m2 of which is vertical.
+ 
+ Outside walls are 451.02 % of floor area & avg U of 0.391 & UA of 172.98 & max MLC thickness 0.325
+ Flat roof is 100.00 % of floor area & avg U of 0.397 & UA of 38.944
+ 
+ ____________________________________________________________
+ Multi-layer constructions used:
+ 
+ Details of opaque construction: extern_wall and overall thickness  0.325
+ 
+ Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
+      |db  |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
+ Ext     4  100.0     0.960  2000.   650. 0.90 0.93    25.  0.10 Outer leaf brick : Outer leaf brick
+    2  211   75.0     0.040   250.   840. 0.90 0.30     4.  1.88 Glasswool : Glasswool
+    3    0   50.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
+ Int     2  100.0     0.440  1500.   650. 0.90 0.65    15.  0.23 Breeze block : Breeze block
+ ISO 6946 U values (horiz/upward/downward heat flow)=  0.393  0.397  0.387 (partition)  0.379
+ 
+Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  0.39
+ External surface admittance Y=  3.94  w=  2.38 decrement factor f=  0.68  phi=  1.61 surface factor f=  0.68  phi=  1.61
+ Partition admittance Y=  4.10  w=  2.39 surface factor f=  0.67  phi=  1.71
+ Total area of extern_wall is    540.00

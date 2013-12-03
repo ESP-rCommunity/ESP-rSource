@@ -5,7 +5,7 @@ C Strathclyde, Glasgow Scotland, 2001.
 C ESP-r is free software.  You can redistribute it and/or
 C modify it under the terms of the GNU General Public
 C License as published by the Free Software Foundation 
-C (version 2 orlater).
+C (version 2 or later).
 
 C ESP-r is distributed in the hope that it will be useful
 C but WITHOUT ANY WARRANTY; without even the implied
@@ -31,6 +31,8 @@ C MZINPT code in espbps/input.f.
       SUBROUTINE MOGCFG
 #include "building.h"
 #include "model.h"
+#include "schedule.h"
+#include "net_flow.h"
 C #include "geometry.h"
 #include "tdf2.h"
 #include "esprdbfile.h"
@@ -42,20 +44,19 @@ C #include "geometry.h"
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
 
-C Version of operations file. ip3ver=0 standard, =1 sorted with header
-C =2 with more than 3 day types
-      common/p3ver/ip3ver(MCOM)
       common/rpath/path
-      common/C21/IFCFG,cfgroot,LCFGF
       COMMON/CCTLNM/CTLDOC,LCTLF
-      COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
+      COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,CFCDBOK
       common/recver/izver,ipver,iever
+      character xfile*144,tg*1,delim*1
+      common/exporttg/xfile,tg,delim
 
-      CHARACTER*72 LCFGF,path
+      CHARACTER*72 path
       character longtmp*144
       CHARACTER MODE*4,OUTSTR*124,LCTLF*72,CTLDOC*248
-      character cfgroot*24,outs*124
-      LOGICAL CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,XST,ok,dok
+      character outs*124
+      LOGICAL CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,XST,ok,dok,CFCDBOK
+      logical dmdsok
 
 C For help messages
       character helpinsub*24   ! subroutine name
@@ -85,6 +86,10 @@ C Open the cfg file.
         ELSE
           CFGOK=.TRUE.
         ENDIF
+
+C Set the default export file name based on model root name.
+          write(xfile,'(2a)') cfgroot(1:lnblnk(cfgroot)),'.csv'
+
       ELSE
 
 C Not found, might be in a remote folder.  Warn user first.
@@ -115,7 +120,7 @@ C but if using GTK then we need the full length to avoid truncation.
         if(ier.eq.-3) return  ! cancel detected pass back -3 in ier.
 
         if (longtmp.eq.' ') goto 45
-	call fdroot(longtmp,path,LCFGF)
+        call fdroot(longtmp,path,LCFGF)
         if(longtmp(1:2).ne.'  ')GOTO 289
         RETURN
       ENDIF
@@ -134,10 +139,22 @@ C if izver >=4 the zone operation file is not needed.
             write(outs,'(a,i2,a)') 
      &      'Operation file for zone ',J,' periods being sorted!'
             call edisp(iuout,outs)
-            call PROCESSOLDCAS(J,0,iuout,IER)
+            call PROCESSOLDCAS(J,0,iuout)
           endif
         endif
    30 CONTINUE
+
+C Also scan the model dispersed demands file if it exists.
+      IUNIT=IFIL+1
+      call FINDFIL(bdmds,XST)
+      IF(XST)THEN
+        CALL ERPFREE(IUNIT,ISTAT)
+        CALL ERBDMD(0,IUNIT,IER)
+        dmdsok=.true.
+      else
+        dmdsok=.false.
+      endif
+
       call usrmsg(' ',
      &  ' Checking existence of descriptive files...done.','-')
 

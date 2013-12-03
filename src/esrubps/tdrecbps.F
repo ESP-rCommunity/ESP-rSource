@@ -35,6 +35,7 @@ C day and VAL(2...) are timestep fields.
 
       SUBROUTINE RCTDFB(ITRC,time,VAL,ISDAT,IFOC,IER)
 #include "building.h"
+#include "net_flow.h"
 #include "tdf2.h"
 #include "sbem.h"
       common/tc/itc,icnt
@@ -64,7 +65,7 @@ C For help messages
       integer nbhelp     ! number of help lines found
 
       helpinsub='RCTDFB'  ! set for cfiles
-
+      idebug=0
 
 C Trace output ?
       traceok = .true.
@@ -86,7 +87,7 @@ C need to do once per simulaton. Skip if any of the UK NCM models
         IF(ISBNSTEP.GT.NTSPH.AND.ialrdy_warned.NE.1)THEN
           helptopic='tdf_timestep_mismatch'
           call gethelptext(helpinsub,helptopic,nbhelp)
-          CALL PHELPD('tdf warning',nbheop,'bsim-tdf-mismatch',0,0,IER)
+          CALL PHELPD('tdf warning',nbhelp,'bsim-tdf-mismatch',0,0,IER)
           ialrdy_warned=1
         ENDIF
       ENDIF
@@ -107,14 +108,14 @@ C see if there is one which is within tollerance.
         DO 12 I=1,24*NTSPH
           IF(.NOT.FOUND)THEN
             ANS=REAL(I)/REAL(24*NTSPH)-FPTLA
-            call eclose(ANS,0.0,0.001,closer)
+            call eclose(ANS,0.0,0.00001,closer)
             IF(CLOSER)THEN
               IPRECT=I
               FOUND=.TRUE.
-            ELSEIF(ANS.GT.0.001)THEN
-              IPRECT=I
-              FOUND=.TRUE.
-              INTERPOLATE=1
+            ELSEIF(ANS.GT.0.00001)THEN  ! Will read the same data twice 
+              IPRECT=I                  ! or more times if 
+              FOUND=.TRUE.              ! timestep < 0.00001 of a day
+              INTERPOLATE=1             ! which is 0.864 seconds
             ENDIF
           ENDIF
  12     CONTINUE
@@ -124,23 +125,24 @@ C see if there is one which is within tollerance.
 
 C Work out which day to read, IPRECD
         IF(IDYP.LT.ITDBDOY)THEN
-	  IPRECD=ITDBDOY
+          IPRECD=ITDBDOY
         ELSEIF(IDYP.GE.ITDBDOY.AND.IDYP.LE.ITDEDOY)THEN
-	  IPRECD=IDYP
+          IPRECD=IDYP
         ELSEIF(IDYP.GT.ITDEDOY)THEN
-	  IPRECD=ITDEDOY
+          IPRECD=ITDEDOY
         ENDIF
 
-C Go to next day if 1st record for the day is to be read in order to
-C avoid reading first record for that day again (but not for the last
-C day)
-        IF(IPRECD.NE.ITDEDOY)THEN
-          IF(IPRECT.EQ.1)THEN
-            IPRECD=IPRECD+1
-          ELSEIF(FPTLA.LE.(1./REAL(24*NTSPH)))THEN
-            IPRECD=IPRECD+1
-          ENDIF
-        ENDIF
+C Go to next day if 1st records for the day are to be read in order to
+C avoid reading first records for that day again (but not for the last
+C day). 1st records refers to all the records during the first hour of
+C the day. These will be missed otherwise because mznuma starts
+C simulation at btimef = 1hour + timestep (argument time to this
+C subroutine is usually set to btimef)
+         IF(IPRECD.NE.ITDEDOY)THEN
+           IF(IPRECT.le.ntsph)THEN
+             IPRECD=IPRECD+1
+           ENDIF
+         ENDIF
 
 C Work out which record in tdf file to read and remember in iknowrec.
         ITREC=49+(IPRECD-ITDBDOY)*24*NTSPH+IPRECT
@@ -178,6 +180,10 @@ C Copy appropriate fields for this single item into VAL.
         VAL(ITCC)=TABU(ITCOL(IFOC,J))
    66 CONTINUE
       VAL(1)=real(IDYP)+(time/24.)
+
+C Debug...
+      if(idebug.eq.1)
+     & write(96,*)nsinc,itrec,iprecd,iprect,time,fptla,val(2)
 
 C If required to interpolate do that now and use the alternate
 C data structure TABUPREV to get the previous steps data from.
@@ -230,6 +236,7 @@ C day and VAL(2...) are timestep fields.
 
       SUBROUTINE RCTDFBALL(ITRC,time,VAL,ISDAT,IER)
 #include "building.h"
+#include "net_flow.h"
 #include "tdf2.h"
 #include "sbem.h"
       common/tc/itc,icnt

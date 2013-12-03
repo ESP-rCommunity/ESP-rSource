@@ -263,9 +263,9 @@ rc_in_gyp_gyp_ptn  polygon  manager_b:pt_other_b
     6.09700    2.35000    0.00000
     6.09700    0.00000    0.00000
   
-# coridor Surface defs..
+# corridor Surface defs..
   
-rc_in_door  polygon  coridor:right_fict
+rc_in_door  polygon  corridor:right_fict
 0 
 0 
  12
@@ -274,7 +274,7 @@ rc_in_door  polygon  coridor:right_fict
     6.09700    5.55000    0.00000
     6.09700    4.55000    0.00000
   
-rc_in_gyp_blk_ptn  polygon  coridor:wall
+rc_in_gyp_blk_ptn  polygon  corridor:wall
 0 
 0 
  12
@@ -283,7 +283,7 @@ rc_in_gyp_blk_ptn  polygon  coridor:wall
     0.00000    5.54700    0.00000
     6.10000    5.54700    0.00000
   
-rc_in_door  polygon  coridor:left
+rc_in_door  polygon  corridor:left
 0 
 0 
  12
@@ -292,7 +292,7 @@ rc_in_door  polygon  coridor:left
     0.00300    4.55000    0.00000
     0.00300    5.55000    0.00000
   
-rc_in_ceiling  polygon  coridor:ceiling
+rc_in_ceiling  polygon  corridor:ceiling
 0 
 0 
  30
@@ -307,7 +307,7 @@ rc_in_ceiling  polygon  coridor:ceiling
     0.40000    4.55000    2.99700
     0.00000    4.55000    2.99700
   
-rc_in_susp_flr_re  polygon  coridor:floor
+rc_in_susp_flr_re  polygon  corridor:floor
 0 
 0 
  30
@@ -322,7 +322,7 @@ rc_in_susp_flr_re  polygon  coridor:floor
     0.00000    5.55000    0.00300
     0.00000    4.55000    0.00300
   
-rc_in_door  polygon  coridor:door
+rc_in_door  polygon  corridor:door
 0 
 0 
  12
@@ -331,7 +331,7 @@ rc_in_door  polygon  coridor:door
     1.20000    4.55300    0.00000
     0.40000    4.55300    0.00000
   
-rc_in_gyp_gyp_ptn  polygon  coridor:ptn_corid
+rc_in_gyp_gyp_ptn  polygon  corridor:ptn_corid
 0 
 0 
  21
@@ -343,7 +343,7 @@ rc_in_gyp_gyp_ptn  polygon  coridor:ptn_corid
     0.40000    4.55300    0.00000
     0.00000    4.55300    0.00000
   
-rc_in_insul_frame  polygon  coridor:part_frame
+rc_in_insul_frame  polygon  corridor:part_frame
 0 
 0 
  33
@@ -359,7 +359,7 @@ rc_in_insul_frame  polygon  coridor:part_frame
     3.00000    4.55300    0.00000
     1.20000    4.55300    0.00000
   
-rc_in_insul_frame  polygon  coridor:part_frameb
+rc_in_insul_frame  polygon  corridor:part_frameb
 0 
 0 
  33
@@ -375,7 +375,7 @@ rc_in_insul_frame  polygon  coridor:part_frameb
     4.90000    4.55300    0.00000
     3.10000    4.55300    0.00000
   
-rc_in_door  polygon  coridor:door_b
+rc_in_door  polygon  corridor:door_b
 0 
 0 
  12
@@ -384,7 +384,7 @@ rc_in_door  polygon  coridor:door_b
     5.70000    4.55300    0.00000
     4.90000    4.55300    0.00000
   
-rc_in_gyp_gyp_ptn  polygon  coridor:ptn_coridb
+rc_in_gyp_gyp_ptn  polygon  corridor:ptn_coridb
 0 
 0 
  21
@@ -396,7 +396,7 @@ rc_in_gyp_gyp_ptn  polygon  coridor:ptn_coridb
     6.10000    4.55300    0.00000
     5.70000    4.55300    0.00000
   
-rc_in_gyp_gyp_ptn  polygon  coridor:filler
+rc_in_gyp_gyp_ptn  polygon  corridor:filler
 0 
 0 
  12

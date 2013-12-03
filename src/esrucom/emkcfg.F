@@ -36,9 +36,9 @@ C common blocks into the file and unit specified in COMMON/C21.
 #include "model.h"
 #include "site.h"
 #include "geometry.h"
+#include "net_flow.h"
 #include "tdf2.h"
 #include "uncertainty.h"
-#include "net_flow.h"
 #include "MultiYear_simulations.h"
 #include "bc_data.h"
 #include "esprdbfile.h"
@@ -57,8 +57,10 @@ C ICLIM,LCLIM (for climate file)
 #include "seasons.h"
 #include "UserSimulationToggles.h"
 #include "schedule.h"
+#include "dhw_common.h"
+#include "qrun.h"
 
-      INTEGER, PARAMETER :: MSTMC=20,MSGAL=40
+      INTEGER, PARAMETER :: MSTMC=20
       
       integer lnblnk  ! function definition
 
@@ -76,8 +78,6 @@ C ICLIM,LCLIM (for climate file)
       INTEGER :: IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
       COMMON/C6/INDCFG
       INTEGER :: INDCFG
-      common/C21/IFCFG,cfgroot,LCFGF
-      INTEGER :: ifcfg
       INTEGER :: IZSTOCN
       COMMON/C24/IZSTOCN(MCOM,MS)
 
@@ -152,8 +152,6 @@ C Primary energy and emissions conversions.
       common/PCONV/ipconv,pcnvht,pcnvcl,pcnvlt,pcnvfn,pcnvsp,pcnvhw
       INTEGER :: ipconv
       REAL :: pcnvht,pcnvcl,pcnvlt,pcnvfn,pcnvsp,pcnvhw
-      common/ECONV/ieconv
-      INTEGER :: ieconv
       common/CONVEM/phtco2,phtnox,phtsox,pclco2,pclnox,pclsox,
      &              pltco2,pltnox,pltsox,pfnco2,pfnnox,pfnsox,
      &              pspco2,pspnox,pspsox,phwco2,phwnox,phwsox
@@ -234,10 +232,6 @@ C SHOCCshzFile - path to SHOCC .shz file for each SHOCC'd zone
       logical bSHOCCed,bZoneSHOCCed
       character SHOCCshlFile*72,SHOCCshzFile*72
       
-C DHW.
-      common/dhw/sDHW_InputFileName,iDHW_FLAG
-      character sDHW_InputFileName*72
-      INTEGER   iDHW_FLAG
 
 C Fuel cell.
       common/Fcell/iFClds,LFClds
@@ -286,9 +280,8 @@ C If 0 then the calculation includes diffuse shading.
 
       CHARACTER*72 LBSIMP,hvacfile,LFClds
 
-      CHARACTER LCFGF*72
       CHARACTER LAPROB*72
-      CHARACTER CXSTR*78,cfgroot*24
+      CHARACTER CXSTR*78
       CHARACTER LPNF*72
       CHARACTER*72 LGDCVS,LGDCNC,LGDNDC,LGDNDD,LGDTAQ,LGRD1D,LNLTHP
       CHARACTER*72 L3DCVS,L3DCNC,L3DNDC,L3DTAQ,LMOIST,LGrdSt
@@ -323,6 +316,7 @@ C An array of mass flow nodes for writing.
       LOGICAL INTHPS,INTHPZ,IGR1D,GRND3D
       LOGICAL BLDG3D,ZONE3D,MSTROK,MSTRZN
       character dstmp*24
+      character ALOC*12
 
 C Control for writing out multi-climate sim presets
       logical bMY_set_open 
@@ -373,21 +367,21 @@ C If filename > 4 char it might have a .cfg attached.
           lcfgl=lcfgr-3
           if(lcfgr.gt.4)then
             if(LCFGF(lcfgl:lcfgr).eq.'.cfg')then
-              if(lcfgl.gt.24)then
-                write(cfgroot,'(a)',iostat=ios,err=3) LCFGF(1:24)
+              if(lcfgl.gt.32)then
+                write(cfgroot,'(a)',iostat=ios,err=3) LCFGF(1:32)
               else
                 write(cfgroot,'(a)',iostat=ios,err=3) LCFGF(1:lcfgl-1)
               endif
             else
-              if(lcfgr.gt.24)then
-                write(cfgroot,'(a)',iostat=ios,err=3) LCFGF(1:24)
+              if(lcfgr.gt.32)then
+                write(cfgroot,'(a)',iostat=ios,err=3) LCFGF(1:32)
               else
                 write(cfgroot,'(a)',iostat=ios,err=3) LCFGF(1:lcfgr)
               endif
             endif
           else
-            if(lcfgr.gt.24)then
-              write(cfgroot,'(a)',iostat=ios,err=3) LCFGF(1:24)
+            if(lcfgr.gt.32)then
+              write(cfgroot,'(a)',iostat=ios,err=3) LCFGF(1:32)
             else
               write(cfgroot,'(a)') LCFGF(1:lcfgr)
             endif
@@ -548,6 +542,16 @@ C reflect whether the standard database folder is being used.
       elseif(ipathmat.eq.2)then
         WRITE(IFCFG,'(2A)',IOSTAT=IOS,ERR=2) '*stdmat  ',
      &      LFMAT(1:lnblnk(LFMAT))
+      endif
+
+C CFClayers database has the option of two different syntax to
+C reflect whether the standard database folder is being used.
+      if(ipathcfc.eq.0.or.ipathcfc.eq.1)then
+        WRITE(IFCFG,'(2A)',IOSTAT=IOS,ERR=2) '*cfcdb  ',
+     &      LCFCDB(1:lnblnk(LCFCDB))
+      elseif(ipathmat.eq.2)then
+        WRITE(IFCFG,'(2A)',IOSTAT=IOS,ERR=2) '*stdcfcdb  ',
+     &      LCFCDB(1:lnblnk(LCFCDB))
       endif
 
 C MLC database has the option of two different syntax.
@@ -716,10 +720,19 @@ C Solar radiation (half hour data) flag.
 
 C Diffuse shading flag.
       if(iexcludediff_flag.eq.1)then
-        WRITE(IFCFG,'(A,i2,A)',IOSTAT=IOS,ERR=2) '*exlude_diff_shad  ',
+        WRITE(IFCFG,'(A,i2,A)',IOSTAT=IOS,ERR=2) '*exclude_diff_shad  ',
      &    iexcludediff_flag,'  # diffuse shading is excluded'
       endif      
       
+C Flag for quick run method	  
+      if(iQuick_run.eq.0)then
+        WRITE(IFCFG,'(A,i2,A)',IOSTAT=IOS,ERR=2) '*quick_run  ',
+     &    iQuick_run,'  # no'
+      else
+        WRITE(IFCFG,'(A,i2,A)',IOSTAT=IOS,ERR=2) '*quick_run  ',
+     &    iQuick_run,'  # yes'
+      endif	  
+	  
 C SHOCC: library file.
       IF ( bSHOCCed ) then
          WRITE(IFCFG,'(3A)',IOSTAT=IOS,ERR=2) '*shl  ',

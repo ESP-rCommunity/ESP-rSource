@@ -50,7 +50,6 @@ C geometry.h provides commons G0/G1/G2/G4/G5/G7/prec17/precz/c20/GS5/GS6.
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
-      common/C21/IFCFG,cfgroot,LCFGF
       integer IZSTOCN
       COMMON/C24/IZSTOCN(MCOM,MS)
 
@@ -64,6 +63,7 @@ C Where ESP-r was installed (as recorded when it was compiled).
       COMMON/GTFIL/GTGEOM
       COMMON/GT5/GSNAME(MGRT),GMLCN(MGRT)
       common/cctlnm/ctldoc,lctlf
+      integer icascf
       common/cctl/icascf(mcom)
 
       DIMENSION ITEMS(21)
@@ -88,10 +88,9 @@ C end indices for each zone.
 
       CHARACTER ITEMS*33,outs*124,temp6*6,temp3*3
       character phrase*124,WORD*48,msg*72,ltmp*72,fs*1
-      character zn*12,LCFGF*72
+      character zn*12
       character ctldoc*248,LCTLF*72,zd*64,DFILE*72,CFILE*72,OFILE*72
-      character cfgroot*24
-      CHARACTER GMLCN*12,GSNAME*6,GTNAME*15,GTGEOM*72,t15*15,S12*12
+      CHARACTER GMLCN*32,GSNAME*6,GTNAME*15,GTGEOM*72,t15*15,S12*12
       character longtfile*144,fname*96
       integer nfile  ! nb of files in image folder
       character sfile*72,snpfile*72
@@ -258,7 +257,6 @@ C Setup and pass in parameters to win3d.
       iigl=igl; iigr=igr; iigt=igt; iigb=igb; iigw=igw; iigwh=igwh
       CALL win3d(iimenu,iiw1,iiw2,iiw3,iiw4,
      &  iigl,iigr,iigt,iigb,iigw,iigwh)
-C      CALL win3d(menuchw,1,3,1,1,igl,igr,igt,igb,igw,igwh)
       igl=int(iigl); igr=int(iigr); igt=int(iigt); igb=int(iigb)
       igw=int(iigw); igwh=int(iigwh)
 
@@ -2642,8 +2640,11 @@ C          S12='blk_'
      &      'Select an OPAQUE construction from the list to',
      &      'associate with the block for visualisation purposes.',IER)
           IF(ISEL.GT.0)then
-            WRITE(BLOCKMAT(IC,nbo),'(A)')DESC(ISEL)(1:12)
+            WRITE(BLOCKMAT(IC,nbo),'(A)') mlcname(ISEL)(1:12)
             LNBLOCKMAT(IC,nbo)=lnblnk(BLOCKMAT(IC,nbo))
+          else
+            WRITE(BLOCKMAT(IC,nbo),'(A)') 'UNKNOWN'
+            LNBLOCKMAT(IC,nbo)=7
           endif
           XOB(IC,nbo)=tpx1; YOB(IC,nbo)=tpy1; ZOB(IC,nbo)=Z1
           DXOB(IC,nbo)=twid; DYOB(IC,nbo)=tdepth; DZOB(IC,nbo)=Z2

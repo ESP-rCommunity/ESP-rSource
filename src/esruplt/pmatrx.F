@@ -124,6 +124,8 @@ C             new non-zero elements.
 #include "plant.h"
 #include "net_flow.h"
 #include "building.h"
+#include "gencompDB.h"  
+#include "gencompDB_common.h"
 
       PARAMETER (SMALL=1.0E-20)
 
@@ -164,7 +166,13 @@ C they can be accessed later by generic 'Zero_h2_flow' routine
       integer iPMC_locations
 
       COMMON /pcddsc/ pcdesc(maxpc), npref(mpcom)
-      CHARACTER pcdesc*80
+      COMMON/C9plus/UCdbNam(MPCOM),CdbCat(MPCOM),CDBDesc(MPCOM)
+
+
+C Common for new format component database
+      COMMON/NCDBFORM/ICDBF
+
+      CHARACTER pcdesc*80,UCDBNam*16, CdbCat*32, CDBDesc*72
       INTEGER NPREF
 
 
@@ -178,7 +186,7 @@ C False.
       INTEGER     ZZ(4)
       CHARACTER*5 A(MPNODE,MPNODE)
       character*68 dumstr
-      character outs*124
+      character outs*124, argstr*12, domstr*16, catstr*16
 
 C Suggested improvement:
 C Initialize PP transport delay flag to FALSE. If the subroutine
@@ -198,14 +206,48 @@ C First initialize
 C Now, component by component, get data needed for establishing
 C the templates for the plant network matrix
       DO 50 IPCOMP=1,NPCOMP
-C
+
 C First zeroize ADATA
       DO 10 IADATA=1,MADATA
       ADATA(IPCOMP,IADATA)=0.0
    10 CONTINUE
+
+
+      argstr=' '
+      IF(ICDBF.GT.0)THEN
+        argstr='parameters'
+        domstr='-'
+        catstr='-'
+        CALL CDBGetItemData(domstr,catstr,UCdbNam(IPCOMP),argstr)
+        IF(NPI(IPCOMP).GT.0)THEN
+          argstr='light'
+          CALL CDB2Plant(IPCOMP,argstr)
+        ELSE
+          argstr='detailed'
+          CALL CDB2Plant(IPCOMP,argstr)
+        ENDIF
+
+C NMATX, NNODE, MATPOS etc should eventually be held in common for all components!
+        NPCDAT(IPCOMP,3)=s_ICODE
+        NPCDAT(IPCOMP,4)=s_ICODE/10
+        NPCDAT(IPCOMP,5)=NXT
+        NPCDAT(IPCOMP,6)=s_NMATX
+        NPCDAT(IPCOMP,8)=s_NNODE
+        NPCDAT(IPCOMP,9)=MATPOS
+        LOCCON(IPCOMP)=NXT+s_NMATX
+        NMISCD(IPCOMP)=s_MISCD
+        DO 5 K=1,s_NMATX
+          NDPOS(K)=s_NDPOS(K)
+  5     CONTINUE
+        NMATX=s_NMATX
+        NNODE=s_NNODE
+      ENDIF
+C
+
 C
 C Read component code ICODE, number of nodes NNODE, number of non-zero
 C matrix entries NMATX and number of miscelaneous data items NMISC
+      IF(ICDBF.EQ.0)THEN
       IREC=NPCDAT(IPCOMP,2)
       READ(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=994)
      &     AA,ICODE,ZZ,NNODE,NMATX,NMISC
@@ -217,13 +259,14 @@ C it is a trnsys component. Since the code number (=85) is hard-coded
 C here, any change of this code number in the database will require
 C the changes in the source code. This may be potentially improved
 C by not referring to the code number.
+
       IF(NPREF(IPCOMP) .EQ. 85) THEN
 	CALL TRNPMXT(IPCOMP, ICODE, NXT, MATPOS, LOCCON)
         CYCLE
       END IF
 
       NMISCD(IPCOMP)=NMISC
-
+       
 C Read new record data related to meta components
       irec=irec+1
       read(iunit,rec=irec,iostat=istat,err=994)
@@ -232,7 +275,7 @@ C Read new record data related to meta components
 
 C For single components, do the following:
 C Read external connection potential for each node
-      if(ictype.eq.0) then
+c      if(ictype.eq.0) then
          IREC=IREC+2
          READ(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=994)
      &     (NDCON(IPCOMP,INOD),INOD=1,NNODE)
@@ -244,6 +287,7 @@ C Read each node's state variable identifier
 C Check that the component model is capable of generating coefficients
 C for all state variables as implied by the number of matrices called
 C for in the system configuration file.
+         ENDIF !ICDBFcheck
 C
 C HOT3000:
 C Note: Coefficient generators are not necessarly required for all
@@ -268,6 +312,8 @@ C (NPMTYP - 1)
            END IF
    20    CONTINUE
 
+
+         IF(ICDBF.Eq.0)THEN
 C Read matrix coefficient positions NDPOS and static manufacturers data
 C The assumption is made here that the plant component database
 C has 20 word records. If this is changed the following assignment
@@ -303,7 +349,9 @@ C Fill the general plant component array
          NPCDAT(IPCOMP,9)=MATPOS
 
 C Establish the coefficient location counter LOCCON for this component
-         LOCCON(IPCOMP)=NXT+NMATX
+          LOCCON(IPCOMP)=NXT+NMATX
+
+         ENDIF !end of CDB if check
 
 C Set coefficient positions
 C Establish the plant coefficient off-set vectors for this component
@@ -378,10 +426,10 @@ C array external connection entries
 
 C For meta components, read sub-components data and
 C their inter-connections. ( future work ).
-      elseif(ictype.eq.1) then
-         write(iuout,*) ' Meta components not implemented yet '
-         stop ' Program terminated.'
-      endif
+c      elseif(ictype.eq.1) then
+c c        write(iuout,*) ' Meta components not implemented yet '
+c         stop ' Program terminated.'
+c      endif
 
 C Proceed with next component
    50 CONTINUE
@@ -437,7 +485,7 @@ C first reset KNHIT
 
 C If IP1 is TRNSYS type, skip the remaining of this loop
 C This is because trnsys components do not have cross-coupling coeff.
-         IF(NPREF(IP1) .EQ. 85) CYCLE
+         IF((NPREF(IP1) .EQ. 85).OR.(UCdbNam(IP1)(1:2).EQ.'TR')) CYCLE
 
          NXT=LOCCON(IP1)
          LOCCON(IP1)=LOCCON(IP1)+1
@@ -1125,10 +1173,7 @@ C Trace output
 c This subroutine keeps track of plantsteps per month.
       IF(ISTATS.eq.1) CALL TrackPlantTimeSteps()
 
-C Zero plant component model energy usage storage array.
-      call ZeroPltEnergyStorageArray()
 
-C
 C For each defined plant component, call the appropriate coefficient
 C generator (CMP??C) to generate the balance equations as required.
 C Finally locate the generated coefficients in the network matrix which
@@ -1290,6 +1335,9 @@ C 2 node (ISV=20) exponent model radiator
 C 1 node (ISV=20) WCH Air Source Heat Pump
          ELSE IF(ITYPE.EQ.45) THEN
             CALL CMP45C(IPCOMP,OUT,ISTATS)
+C 2 node (ISV=20) WCH advanced modulating boiler
+         ELSE IF(ITYPE.EQ.46) THEN
+            CALL CMP46C(IPCOMP,OUT,ISTATS)
 C 1 node (ISV=29) WCH thermostatic radiator valve
          ELSE IF(ITYPE.EQ.50) THEN
             CALL CMP50C(IPCOMP,OUT,ISTATS)
@@ -1297,6 +1345,9 @@ C 1 node (ISV=29)     mechanical room thermostat
          ELSE IF(ITYPE.EQ.51) THEN
             CALL CMP51C(IPCOMP,OUT,ISTATS)
 C 4 node (ISV>19) AC  heat transfer tube with transport delay
+         ELSE IF(ITYPE.EQ.52) THEN
+            CALL CMP52C(IPCOMP,OUT,ISTATS)
+C 1 node (ISV=29)     mechanical room thermostat (sensor only)
          ELSE IF(ITYPE.EQ.53) THEN
             CALL CMP53C(IPCOMP,OUT,ISTATS)
 C 1 node (ISV=20)     water circuit flow multiplier
@@ -1341,6 +1392,9 @@ C 1 node (ISV=20) flat plate collector segment.
 C 1 node (ISV=20) waterstorage tank layer.
          ELSE IF(ITYPE.EQ.72) THEN
             CALL CMP72C(IPCOMP,OUT,ISTATS)
+C 1 node (ISV=20) 3-port valve.
+         ELSE IF(ITYPE.EQ.73) THEN
+            CALL CMP73C(IPCOMP,OUT,ISTATS)
 C 1 node (ISV=20) Stochastic DHW Draw.
          ELSE IF(ITYPE.EQ.79) THEN
             CALL CMP79C(IPCOMP,OUT,ISTATS)

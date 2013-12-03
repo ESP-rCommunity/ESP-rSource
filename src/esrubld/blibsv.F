@@ -48,7 +48,6 @@ c AND THE CURRENTLY ASSIGNED CLIMATE FILE NAME ARE ALSO SAVED.
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
-      common/C21/IFCFG,cfgroot,LCFGF
       COMMON/HCFIX2/NHCFP(MCOM),HCFPST(MCOM,MBP),HCFPFT(MCOM,MBP),
      &HCFVI(MCOM,MS,MBP),HCFVE(MCOM,MS,MBP)
       COMMON/LIBREC/IRECPL
@@ -58,18 +57,15 @@ c AND THE CURRENTLY ASSIGNED CLIMATE FILE NAME ARE ALSO SAVED.
       COMMON/PREC3I/CHARDM(MCOM,MS)
       COMMON/PREC9/NCONST(MCOM),NELTS(MCOM,MS),
      &                NGAPS(MCOM,MS),NPGAP(MCOM,MS,MGP)
-      COMMON/PREC10/NWINS(MCOM,MS)
       common/PREC18/ZTRANA(MCOM)
 
       COMMON/HCTHRY/IHCT,ICOREXHCT
 
-      dimension izdum(MZS)
-      CHARACTER*72 LCFGF
-      CHARACTER ZNPAD*15,outs248*248
+      CHARACTER ZNPAD*15
 C      character doit*248
       character llclmdb*144  ! for expanded climate file name
       CHARACTER*6 NAME
-      character outs*124,tfile*72,cfgroot*24,longtfile*144
+      character outs*124,longtfile*144
       character fs*1
       logical concat,unixok
       integer lndbp  ! length of weather folder path
@@ -96,9 +92,6 @@ C        call runit(doit,'-')
 C 10   continue
 
 C Clear dummy zones variable (in place of old NDOORS array).
-      do 42 jj=1,MCOM
-        izdum(jj)=0
-  42  continue
       IUNIT = IFIL + 2
       IREC = MNRS+2
 
@@ -137,81 +130,88 @@ C folder.
 
 C Write one operation file name per record.
       DO 20 I = 1,NCOMP
-      WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)LPROJ(I)
-      IREC = IREC + 1
+        WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)LPROJ(I)
+        IREC = IREC + 1
    20 CONTINUE
 
 C Write one geometry file name per record.
       DO 40 I = 1,NCOMP
-      WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)LGEOM(I)
-      IREC = IREC + 1
+        WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)LGEOM(I)
+        IREC = IREC + 1
    40 CONTINUE
 
 C Write one shading file name per record.
       DO 60 I = 1,NCOMP
-      WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)LSHAD(I)
-      IREC = IREC + 1
+        WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)LSHAD(I)
+        IREC = IREC + 1
    60 CONTINUE
 
 C Write one construction file name per record.
       DO 80 I = 1,NCOMP
-      WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)LTHRM(I)
-      IREC = IREC + 1
+        WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)LTHRM(I)
+        IREC = IREC + 1
    80 CONTINUE
 
 C Record width is not sensitive to the number of surfaces in the model
 C extra records are used.
+
+C << give a minimum width of 36 the logic below could be revised to
+C << use multiples of 36 rather than 20.
       XW=FLOAT(NCON)/20.
       N=INT(XW)+1
       DO 100 I = 1,N
-      J1 = I*20-19
-      J2 = I*20
-      IF (I .EQ. N)  J2 = NCON
-      WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)  (IC1(J),J=J1,J2)
-      IREC = IREC + 1
+        J1 = I*20-19
+        J2 = I*20
+        IF (I .EQ. N)  J2 = NCON
+        WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)  (IC1(J),J=J1,J2)
+        IREC = IREC + 1
   100 CONTINUE
 
       DO 110 I = 1,N
-      J1 = I*20-19
-      J2 = I*20
-      IF (I .EQ. N)  J2 = NCON
-      WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)  (IE1(J),J=J1,J2)
-      IREC = IREC + 1
+        J1 = I*20-19
+        J2 = I*20
+        IF (I .EQ. N)  J2 = NCON
+        WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)  (IE1(J),J=J1,J2)
+        IREC = IREC + 1
   110 CONTINUE
 
       DO 120 I = 1,N
-      J1 = I*20-19
-      J2 = I*20
-      IF (I .EQ. N)  J2 = NCON
-      WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)  (ICT(J),J=J1,J2)
-      IREC = IREC + 1
+        J1 = I*20-19
+        J2 = I*20
+        IF (I .EQ. N)  J2 = NCON
+        WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)  (ICT(J),J=J1,J2)
+        IREC = IREC + 1
   120 CONTINUE
 
       DO 130 I = 1,N
-      J1 = I*20-19
-      J2 = I*20
-      IF (I .EQ. N)  J2 = NCON
-      WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)  (IC2(J),J=J1,J2)
-      IREC = IREC + 1
+        J1 = I*20-19
+        J2 = I*20
+        IF (I .EQ. N)  J2 = NCON
+        WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)  (IC2(J),J=J1,J2)
+        IREC = IREC + 1
   130 CONTINUE
 
       DO 140 I = 1,N
-      J1 = I*20-19
-      J2 = I*20
-      IF (I .EQ. N)  J2 = NCON
-      WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)  (IE2(J),J=J1,J2)
-      IREC = IREC + 1
+        J1 = I*20-19
+        J2 = I*20
+        IF (I .EQ. N)  J2 = NCON
+        WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)  (IE2(J),J=J1,J2)
+        IREC = IREC + 1
   140 CONTINUE
 
 C Write out 15 char string for zone name (so reading logic the same).
       DO 150 I = 1,NCOMP
         write(znpad,'(a,a)')zname(I),'   '
-      WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)znpad
-      IREC = IREC + 1
+        WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)znpad
+        IREC = IREC + 1
   150 CONTINUE
 
 C Record width is slightly sensitive to the number of zones. A second
 C record is used if more than 20 zones.
+
+C << Later on zone based arrays are written to a single record so this
+C << two line logic is not needed.
+
       WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)  (NCONST(I),I=1,NCP)
       IREC = IREC + 1
       IF(NCOMP.LE.20)goto  5
@@ -224,16 +224,18 @@ C record is used if more than 20 zones.
   160 CONTINUE
 
       DO 170 I = 1,NCOMP
-      NN = NCONST(I)
-      WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000) (NGAPS(I,J),J=1,NN)
-      IREC = IREC + 1
+        NN = NCONST(I)
+        WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000) (NGAPS(I,J),J=1,NN)
+        IREC = IREC + 1
   170 CONTINUE
 
       DO 180 I = 1,NCOMP
       NN = NCONST(I)
       DO 190 J = 1,NN,5
 
-C DUMP FOR ALL THREE POSSIBLE AIR GAPS
+C Dump for all MGP possible air gaps. Record width is sensitive to the
+C current value of MGP. Thus if MGP is 10 then minimum record width
+C is 10*5.
         if(J.LE.(NN-5))then
           WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)
      &     (NPGAP(I,J,K),K=1,MGP),(NPGAP(I,J+1,K),K=1,MGP),
@@ -283,7 +285,9 @@ C sensitive to the number of surfaces in the zone.
   230 CONTINUE
 
 C Write one data record per zone.
+
 C << more items could be written into this e.g. ZBASEA and ZTRANA >>
+
       DO 240 I=1,NCOMP
       WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)zonetotsurfacearea(I)
       IREC=IREC+1
@@ -377,6 +381,7 @@ c save set.
 
       SUBROUTINE MZLS2
 #include "building.h"
+#include "model.h"
 #include "uncertainty.h"
       
       integer lnblnk  ! function definition
@@ -386,12 +391,12 @@ c save set.
 
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
-      common/C21/IFCFG,cfgroot,LCFGF
 
       COMMON/PERS/ISD1,ISM1,ISD2,ISM2,ISDS,ISDF,NTSTEP
       common/prec7/itcnst
 
       COMMON/CCTLNM/CTLDOC,LCTLF
+      integer icascf
       COMMON/CCTL/ICASCF(MCOM)
 
       COMMON/SAVE/ISAVE
@@ -445,7 +450,6 @@ C Simulator parameters.
       LOGICAL     spfileok,perok,tstepok,saveok,autook,exitok,startupok
 
       character LUALF*72,LCNG*15,LLOC*15
-      character LCFGF*72,cfgroot*24
 
 C scname is the first 12 characters of the overall control name.
       CHARACTER CTLDOC*248,LCTLF*72,RSNAME*40,outs*124,scname*12
@@ -567,6 +571,8 @@ c library.
       endif
       IREC=IREC+1
       IF(SCNAME(1:5).EQ.'NONE ')goto 5
+
+C << another section writing zone info to two records >>
       NCP=NCOMP
       IF(NCOMP.GT.20)NCP=20
       WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)(ICASCF(I),I=1,NCP)
@@ -584,7 +590,7 @@ c hold in memory for subsequent simulation result entry to library.
 C Ask for result-set information phrase.
 C Ignore if in autoexec mode - used the default.
 C Generate automatically if an uncertainty analysis.
-      write(RSNAME,'(2a)') 'Results for ',cfgroot(1:lnblnk(cfgroot))
+      write(RSNAME,'(2a)') 'For ',cfgroot(1:lnblnk(cfgroot))
       if (NRSIM.gt.1) then
         if (ISIM.eq.1) then
           RSNAME='Base case'
@@ -643,6 +649,7 @@ C ndbph is number of data blocks/hr for monitor function.
 C#include "cfd.h"
 #include "monitor.h"
 #include "control.h"
+#include "net_flow.h"
 #include "tdf2.h"
 
       COMMON/TC/ITC,ICNT
@@ -660,7 +667,7 @@ C#include "cfd.h"
       COMMON/PREC1/SNA(MCOM,MS)
       COMMON/PERS/ISD1,ISM1,ISD2,ISM2,ISDS,ISDF,NTSTEP
       COMMON/SIMTIM/IHRP,IHRF,IDYP,IDYF,IDWP,IDWF,NSINC,ITS
-      common/recver/izver,ipver,iever
+C      common/recver/izver,ipver,iever
 
       COMMON/PVALC/TPC(MCOM,MS,MN),QPC(MCOM)
       COMMON/PVALS/TPS(MCOM,MS),QPS(MCOM)
@@ -679,6 +686,7 @@ C Commons for summary of solar (for results library)
       common/solsum/q1adjz(2),q1outs(2),q2adjz(2),q2lost(2),q2tmc(2),
      &  q2wall(2),q2rem(2),q2cfc(2)
 
+      integer icascf
       COMMON/CCTL/ICASCF(MCOM)
       COMMON/PREC9/NCONST(MCOM),NELTS(MCOM,MS),NGAPS(MCOM,MS),
      &NPGAP(MCOM,MS,MGP)
@@ -801,11 +809,11 @@ C radiant and latent W for future and present in each zone.
      &  ctlperlightl(MCOM,2),ctlperequipc(MCOM,2),ctlperequipr(MCOM,2),
      &  ctlperequipl(MCOM,2) 
       common/caleni/nbdaytype,nbcaldays(MDTY),icalender(365)
-      INTEGER NBDAYTYPE,NBCALDAYS,ICALENDER,IDTY
+      INTEGER NBDAYTYPE,NBCALDAYS,ICALENDER
 
 C Local variables for casual gains.
       integer icurrentday  ! julian day
-      integer iweekdayweekend ! indicates weekday saturday sunday
+      integer iweekdayweekend ! indicates current day type when looping in operations file
       integer iperocup,iperlight,iperequip ! which period of day
       real perocupc,perocupr,perocupl  ! convective/radiant/latent for occupants
       real perlightc,perlightr,perlightl  ! convective/radiant/latent for lights
@@ -813,7 +821,7 @@ C Local variables for casual gains.
       real avgctlperocupc,avgctlperocupr,avgctlperocupl ! average occupant to write out
       real avgctlperlightc,avgctlperlightr,avgctlperlightl ! average lighting to write out
       real avgctlperequipc,avgctlperequipr,avgctlperequipl ! average equipment to write out
-      real avgctlotherc,avgctlotherr,avgctlotherl ! average other (future expansion) to write out
+      real avgctlotherc,avgctlotherr,avgctlotherl ! average other to write out
       integer theonectld  ! if non-zero the casual gain type that is controlled.
       PARAMETER       (SMALL=1.0E-15)
 
@@ -881,7 +889,8 @@ C weekday saturday or sunday.
         iweekdayweekend=1
       endif
 
-C If more calendar day types are defined choose from ICALENDAR day types
+C If non-traditional calendar day types are defined choose from ICALENDAR 
+C day types when setting iweekdayweekend.
       IF(NBDAYTYPE.gt.3)THEN !
         IDAY=IDYP
         IF(IHRF.EQ.1)IDAY=IDYP+1
@@ -1018,6 +1027,9 @@ C to the lighting code block above.
           ctlperequipr(icomp,2)=perequipr
           ctlperequipl(icomp,2)=perequipl
         endif
+
+C << place to add in logic for other casual gain >>
+
       endif
 
 C If it is the first timestep of the simulation the present value
@@ -1032,6 +1044,9 @@ C will be unknown so follow the pattern established in casual.F
         ctlperequipc(icomp,1)=ctlperequipc(icomp,2)
         ctlperequipr(icomp,1)=ctlperequipr(icomp,2)
         ctlperequipl(icomp,1)=ctlperequipl(icomp,2)
+
+C << place to add in logic for other casual gain >>
+
       endif
 
 C Calculate surface balance data for use later (need to do this now so 
@@ -1146,8 +1161,9 @@ C      IF(IDAY.EQ.ISDF.AND.IHRP.EQ.24) then
 C        ipass=0
 C        return
 C      endif     
+C  991 IUNIT=IFIL+2
 
-  991 IUNIT=IFIL+2
+      IUNIT=IFIL+2
       IREC=IRECPL
       irecpb(icntb)=irecpl
       icntb=icntb+1
@@ -1558,6 +1574,9 @@ C the future value until after the trace logic (i.e. after 700).
         ctlperequipr(icomp,1)=ctlperequipr(icomp,2)
         ctlperequipl(icomp,1)=ctlperequipl(icomp,2)
 
+C << place to add in logic for other casual gain >>
+
+
 C Get the ratio between the W for occup/lighting and small power
 C to use when writing out surface energy balance data.
         avgradtot=avgctlperequipr+avgctlperlightr+avgctlperocupr+
@@ -1610,13 +1629,11 @@ C        write(outs,'(A,2F9.2,A,2F9.2)')'Opaque conv: ext int',outopq,
 C     &    opqin,' Transp conv: ext int',outtrn,trnin
 C        call edisp(itu,outs)
 
-C Prior to izver 4 the zone air node energy balance information
-C did not include storage of the air mass itself. The following
-C qair could be written to the results file to improve the reporting
+C Qair is written to the results file to improve the reporting
 C of energy balances.
          qair=real(ntstep)*0.33*VOL(ICOMP)*(TPA(ICOMP)-TFA(ICOMP))
 
-C As of izver 4 explicit casual gain information is written into
+C For izver >=4 explicit casual gain information are written into
 C the results library. The first record has appended to it the sensible
 C convective W for occup/light/equip/other as well as qair.
 C The second record has the sensible radiant W for occup/light/equip/other
@@ -1907,27 +1924,19 @@ C Outside surface node temperature and average surface energy transfers.
               avqswrde=(qswrde(ICOMP,ISF,1)+qswrde(ICOMP,ISF,2))*0.5
             endif
 
-C Write out all of the information for ISAVE=4.
+C Write out all of the information for ISAVE=4 including explicit
+C radiant casual gains for occupants, lights, small power and other
+C so no calculations are needed to reconstitute the radiant casual 
+C gains.
 C << Note: in some cases it should be possible to write info for two
 C << surfaces into one record. 
             if(irdact.eq.0) then
-              if(izver.lt.4)then
-                WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)TMC(1),
-     &              avqswrdi,avqlwrdi,avqconvi,avqcondi,avqstori,
-     &              avqstore,avqconde,avqconve,avqlwrde,avqlwrbd,
-     &              avqlwrsk,avqswrde
-              else
-
-C For izver >=4 also include the explicit radiant casual gains
-C for occupants, lights, small power and other so no calculations
-C are needed to reconstitute the radiant casual gains.
-                WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)TMC(1),
-     &              avqswrdi,avqlwrdi,avqconvi,avqcondi,avqstori,
-     &              avqstore,avqconde,avqconve,avqlwrde,avqlwrbd,
-     &              avqlwrsk,avqswrde,avqcri*fracrocup,
-     &              avqcri*fracrlight,avqcri*fracrequip,
-     &              avqcri*fracroth
-              endif
+              WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)TMC(1),
+     &          avqswrdi,avqlwrdi,avqconvi,avqcondi,avqstori,
+     &          avqstore,avqconde,avqconve,avqlwrde,avqlwrbd,
+     &          avqlwrsk,avqswrde,avqcri*fracrocup,
+     &          avqcri*fracrlight,avqcri*fracrequip,
+     &          avqcri*fracroth
               IREC=IREC+1
             else
               sTMC(ICOMP,ISF,1)=sTMC(ICOMP,ISF,1)+TMC(1)
@@ -2042,6 +2051,8 @@ C Solar distribution info.
      &            FRAC,' no casual gain control.'
               endif
               call edisp(itu,outs)
+
+C << place to add in logic for other casual gain >>
 
               write(outs,'(A,F9.2,A,3F9.2,3i3)') 
      &          ' Total casual convec',QCASC,
@@ -2261,6 +2272,8 @@ C the future values are reset to zero at this point.
           ctlperequipr(icomp,2)=0.0
           ctlperequipl(icomp,2)=0.0
 
+C << place to adapt for other casual gain >>
+
   300     CONTINUE
         endif
       else
@@ -2402,6 +2415,7 @@ C#include "cfd.h"
       COMMON/COE32/QSOLI(MS,2),QSOLE(MS,2)
       COMMON/COE34/QCASRT(MCOM),QCASCT
 
+      integer icascf
       COMMON/CCTL/ICASCF(MCOM)
       COMMON/PREC9/NCONST(MCOM),NELTS(MCOM,MS),NGAPS(MCOM,MS),
      &NPGAP(MCOM,MS,MGP)
@@ -2438,8 +2452,6 @@ C Energy balance.
      &           qcri(MCOM,MS,2),qpltri(MCOM,MS,2),qstore(MCOM,MS,2),
      &           qconde(MCOM,MS,2),qconve(MCOM,MS,2),qlwrde(MCOM,MS,2),
      &           qlwrbd(MCOM,MS,2),qlwrsk(MCOM,MS,2),qswrde(MCOM,MS,2)
-
-      COMMON/BTIME/BTIMEP,BTIMEF
 
       LOGICAL IVTHPS,IVTHPZ
       real zoar  ! local for zonetotsurfacearea(MCOM)
@@ -2530,6 +2542,7 @@ C STANDARD ESP-R CALCULATION APPLIES
         ENDIF
 
 C -- Radiant casual gains are area AND emissivity weighted.
+C << does this need to be adapted for other gain? >>
         zoar = zonetotsurfacearea(ICOMP) ! assign local value
         qcri(ICOMP,ISFN,1)=qcri(ICOMP,ISFN,2)
         qcri(ICOMP,ISFN,2)=QCASRT(ICOMP)*0.5*zoar*sna(ICOMP,ISFN)*

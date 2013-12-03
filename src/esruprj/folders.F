@@ -32,13 +32,14 @@ C if 'e ' then provide editing menu, if 'sn' use passed parameters
 C for the root and path to create a new model, if 'sc' silent continue,
 C if 'sw' then pased root and model is assumed to be created silently 
 C within the current folder.
-C root (24 char) root name (for 'sn' case)
+C root (32 char) root name (for 'sn' case)
 C mpath (72 char) path to model folder (for 'sn' case)
 C menu (72 char) brief title of model
       subroutine pregist(act,root,mpath,menu,ier)
 #include "building.h"
 #include "model.h"
 #include "site.h"
+#include "esprdbfile.h"
 #include "espriou.h"
 C espriou.h provides currentfile and MFFOLD.
       
@@ -51,7 +52,6 @@ C espriou.h provides currentfile and MFFOLD.
       common/C1/NCOMP,NCON
       common/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
       common/C6/INDCFG
-      common/C21/IFCFG,cfgroot,LCFGF
       common/PREC8/SLAT,SLON
       common/rpath/path
       common/rcmd/LCMDFL
@@ -73,22 +73,22 @@ C Images.
 C External text editor.
       common/texted/tedlbl,teditor
 
-      common/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
+      common/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,CFCDBOK
 
 C Calendar.
-      common/caleni/nbdaytype,nbcaldays(10),icalender(365)
+      common/caleni/nbdaytype,nbcaldays(MDTY),icalender(365)
+      INTEGER NBDAYTYPE,NBCALDAYS,ICALENDER
 
 C Passed in parameters.
-      character root*24,mpath*72,menu*72
+      character root*32,mpath*72,menu*72
 
-      logical XST,OK,dok,CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
+      logical XST,OK,dok,CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,CFCDBOK
       logical OKI,concat,unixok,clkok
 
-      character dstmp*24,LCFTMP*24
+      character dstmp*24,LCFTMP*32
       character*72 LTMP
       character path*72,LCMDFL*144,LPNF*72
       character odir*84,pwd*84
-      character LCFGF*72,cfgroot*24
       character doit*248,longtfile*144,longtfiledos*144
       character tedlbl*20,teditor*20
       character uname*24,tmode*8
@@ -102,8 +102,10 @@ C Passed in parameters.
       integer iyeart    ! for local editing
       integer iglib  ! for detecting GTK or X11
       integer lnmp,lncr,lnod ! for with of mpath, cfgroot, odir strings
+      integer itrcc   ! for silently rescanning new cfg file
       character tcname*248   ! for editing image notes
       character WORDS(12)*32,testw*32
+      character MODE*4
 
 C For help messages
       character helpinsub*24 ! subroutine name
@@ -155,7 +157,7 @@ C        write(6,*)  ' pregist ',mpath
         call gethelptext(helpinsub,helptopic,nbhelp)
         LCFTMP='  '
         CALL EASKSCMD(LCFTMP,' ','Model root name?',
-     &    'cancel',clkok,24,'new_model','model root name',IER,nbhelp)
+     &    'cancel',clkok,32,'new_model','model root name',IER,nbhelp)
         call usrmsg(' ',' ','-')
         if(clkok) return         ! User selected cancel.
 
@@ -187,8 +189,8 @@ C Current default version is v4.
       noimg=0
       LPNF='UNKNOWN'
       lmodellog='UNKNOWN'
-      nbdaytype=0
-      call st2file(LCFTMP,LCMDFL)
+      nbdaytype=0   ! reset to zero day types
+      call st2file(LCFTMP,LCMDFL)  ! remove unprintable characters
 
 C Derive the model root name from this.
 C If sting > 4 char it might have a .cfg attached, otherwise add.
@@ -197,24 +199,24 @@ C If sting > 4 char it might have a .cfg attached, otherwise add.
       lcfgl=lcfgr-3
       if(lcfgr.gt.4)then
         if(LCFGF(lcfgl:lcfgr).eq.'.cfg')then
-          if(lcfgl-1.le.24)then
+          if(lcfgl-1.le.32)then
             write(cfgroot,'(a)') LCFGF(1:lcfgl-1)
           else
-            write(cfgroot,'(a)') LCFGF(1:24)
+            write(cfgroot,'(a)') LCFGF(1:32)
           endif
         else
-          if(lcfgr.le.24)then
+          if(lcfgr.le.32)then
             write(cfgroot,'(a)') LCFGF(1:lcfgr)
           else
-            write(cfgroot,'(a)') LCFGF(1:24)
+            write(cfgroot,'(a)') LCFGF(1:32)
           endif
           write(LCFGF,'(a,a)')LCFGF(1:lcfgr),'.cfg'
         endif
       else
-        if(lcfgr.le.24)then
+        if(lcfgr.le.32)then
           write(cfgroot,'(a)') LCFGF(1:lcfgr)
         else
-          write(cfgroot,'(a)') LCFGF(1:24)
+          write(cfgroot,'(a)') LCFGF(1:32)
         endif
         write(LCFGF,'(a,a)')LCFGF(1:lcfgr),'.cfg'
       endif
@@ -559,7 +561,9 @@ C Documentation.
         endif
       endif
 
-C Detect if working on X11 or GTK.
+C Detect if working on X11 or GTK. The file name returned (lltmp).
+C If X11 lltmp will be the file name and if GTK it will include the
+C full path to the file.
       iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
       lltmp='  '
       lguess='  '
@@ -590,7 +594,7 @@ C Ask user whether file is in ../doc and if so use fdroot if GTK.
      &      fname(1:lnblnk(fname))
         endif
       else
-        write(lmodellog,'(a)') lguess(1:lnblnk(lguess))
+        write(lmodellog,'(a)') lltmp(1:lnblnk(lltmp))
       endif
 
 C See if file exists, otherwise create it and write basic
@@ -685,7 +689,7 @@ C Provide a listing of the current contents of the ../images folder.
           imgfmt(noimg)=iformat
           imgfoc(noimg)=ifocus
 
-C Edit operation description if newer file.
+C Edit image description if newer configuration file.
           if(icfgv.gt.3)then
             tcname=imgdoc(noimg)
             CALL EASKS248(tcname,' ','Image notes:',
@@ -719,17 +723,22 @@ C Ask for site position.
         IF(IER.EQ.0)sitelongdif=SLON
 
 C Ask for year, initialise and then print out the calendar if the
-C user does not cancel the operation.
+C user does not cancel the operation. Because there have been no
+C day types created use a call to calenmanage to instanciate an
+C initial set of days.
         helptopic='cfg_model_year'
         call gethelptext(helpinsub,helptopic,nbhelp)
         iyeart=iyear
         CALL EASKI(IYEART,' ','Assessment year?',
-     &    1900,'W',3000,'W',2007,'assessment year',IERI,nbhelp)
+     &    1900,'W',2051,'W',2007,'assessment year',IERI,nbhelp)
         if(ieri.eq.-3) then
           call calenmanage('i',ier)
         else
           iyear=iyeart
           call calenmanage('i',ier)
+
+C Comment out printing of initial calendar as it can cause a crash
+C on some 64bit computers.
 C          loop=8
 C          loopst=1
 C          call calenprint(iuout,'t',iyear,loopst,loop)
@@ -762,6 +771,18 @@ C Open core of databases if not already done so.
             ier = 0
           endif
         endif
+
+C If initial registration re-read the newly created model cfg
+C file so that any explicit file paths for databases can get
+C recognised as *std items and then written out in *std format.
+        if(act(1:1).eq.'i')then
+          itrcc=0
+          MODE='ALL '
+          IUF=IPRODB   ! assign second file unit to the events db unit
+          CALL ERSYS(LCFGF,IFCFG,IUF,MODE,itrcc,IER)
+          call pausems(100)
+          CALL EMKCFG('-',IER)
+        endif
         return
       endif
       return
@@ -769,12 +790,12 @@ C Open core of databases if not already done so.
 
 C ********** pfolders
 C Maintain model folders.
-      subroutine pfolders(act,ier)
+      subroutine pfolders(ier)
 #include "building.h"
 #include "model.h"
 
 C geometry.h provides commons G0 and G2.
-#include "geometry.h"
+C #include "geometry.h"
 #include "espriou.h"
       
       integer lnblnk  ! function definition
@@ -782,24 +803,22 @@ C geometry.h provides commons G0 and G2.
       common/FILEP/IFIL
       common/OUTIN/IUOUT,IUIN
       
-      common/C21/IFCFG,cfgroot,LCFGF
       common/rpath/path
 
 C External text editor.
       common/texted/tedlbl,teditor
 
-      common/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
+      common/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,CFCDBOK
       common/user/browse
 
-      logical OK,DOK,CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
+      logical OK,DOK,CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,CFCDBOK
       logical concat,unixok,changedit,browse
 
       character*72 path,LFIL,odir
-      character LCFGF*72,cfgroot*24
       character doit*248,sfile*72,snpfile*72
       character longtfile*144,longtfiledos*144
       character tedlbl*20,teditor*20
-      character tmode*8,t24*24,act*1,outstr*124,outs*124
+      character tmode*8,t24*24,outs*124
       character*33 ITEMS(24)
       character fs*1
       character subpath*72,action*3
@@ -1385,7 +1404,6 @@ C Set folder separator (fs) to \ or / as required.
         fs = char(92)
       endif
 
-      IER=0
       IUF=IFIL+1
 
     3 INO=-4

@@ -21,7 +21,7 @@ C Software Foundation, Inc., 59 Temple Place, Suite 330,
 C Boston, MA 02111-1307 USA.
 
 c The file contains the following routines:
-c 	BASEBOARD  simulate performance of baseboard system
+c   BASEBOARD  simulate performance of baseboard system
 c *********************************************************************
 c *********************************************************************
 c BASEBOARD
@@ -35,24 +35,24 @@ c plenum heater system. For this system there is no loss of
 c efficiency at part-load
 
 c INPUTS:
-c	hvac_data	common containing the HVAC data
-c	pers		common containing the number of time steps per hour
-c	isys		HVAC system number
-c       heating_load	total combined heating load of the zones served
-c			by hvac system in W
-c       HVAC_INPUT_DATA Common for HVAC input data
-c       FURNACE_INPUT_DATA
-c                       Furnace data common
-c       UNDER_HEAT_COOL_HOURS
-c                       Common for total hours of under heating and under 
-c                       cooling
+c  hvac_data     common containing the HVAC data
+c  pers          common containing the number of time steps per hour
+c  isys          HVAC system number
+c  heating_load  total combined heating load of the zones served
+c                by hvac system in W
+c  HVAC_INPUT_DATA Common for HVAC input data
+c  FURNACE_INPUT_DATA
+c                Furnace data common
+c  UNDER_HEAT_COOL_HOURS
+c                Common for total hours of under heating and under 
+c                cooling
 
 c OUTPUTS:
-c	baseboard_energy	
-c			total energy consumed by baseboard system in J.
-c       plr_baseboard   part-load ratio of baseboard
-c       plr_baseboard   part-load factor of baseboard
-c       H3KSTORE_DATA   Common for save level 5 data
+c  baseboard_energy
+c                  total energy consumed by baseboard system in J.
+c  plr_baseboard   part-load ratio of baseboard
+c  plr_baseboard   part-load factor of baseboard
+c  H3KSTORE_DATA   Common for save level 5 data
 c ***********************************************************************
       SUBROUTINE BASEBOARD(isys,heating_load,baseboard_energy,
      &plr_baseboard,plf_baseboard)
@@ -71,8 +71,8 @@ c Variables passed in call
 
 
 
-c hvac system file and flag:  	ihvacflag=1 there is hvac file
-c				ihvacflag=0 no hvac file
+c hvac system file and flag:  ihvacflag=1 there is hvac file
+c                             ihvacflag=0 no hvac file
       common/hvacinfo/ihvacflag,hvacfile
       CHARACTER*72 hvacfile
       INTEGER ihvacflag

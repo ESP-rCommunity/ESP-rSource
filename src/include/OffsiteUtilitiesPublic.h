@@ -1,3 +1,4 @@
+C     OffsiteUtilitiesPublic.h
 
 C-----------------------------------------------------------------------
 C     This file contains data structures used to track fuel consumption,
@@ -24,21 +25,24 @@ C.....Named constants for fuel types
 
 C.....Supported end-uses
       integer iNumUses
-      parameter ( iNumUses = 7 )
+      parameter ( iNumUses = 9 )
       integer iUseSpaceHeat, iUseSpaceCool, iUseDHW,
      &        iUseLights, iUseEquipment, iUseUncatagorized,
-     &        iUseHRV 
+     &        iUseHRV, iUseOther, iExtraBillingCharges
       parameter ( iUseSpaceHeat     = 1,
      &            iUseSpaceCool     = 2,
      &            iUseDHW           = 3,
      &            iUseLights        = 4,
      &            iUseEquipment     = 5,
      &            iUseUncatagorized = 6,
-     &            iUseHRV           = 7 )
+     &            iUseHRV           = 7,
+     &            iUseOther         = 8, 
+     &            iExtraBillingCharges = 9 ) 
 
 C.....Number of "components" in ESP-r that report data to OffsiteUtilities
       integer iNumOffsiteUtilComp
-      parameter ( iNumOffsiteUtilComp = 4 )
+
+      parameter ( iNumOffsiteUtilComp = 7 )
 
 C.....Named constants for components that report data
 
@@ -54,6 +58,15 @@ C.....Named constants for components that report data
       integer iIdealVent
       parameter ( iIdealVent = 4 )       ! Ideal Ventilation/HRV model (CentralVentSys.F)
 
+      integer iPowoc
+      parameter ( iPowoc = 5 )       ! Power only components (powoc_calc.F)
+
+      integer iCasual_NG
+      parameter ( iCasual_NG = 6 )       ! Power only components (powoc_calc.F)
+
+      integer iH3KBaseLoads
+      parameter ( iH3KBaseLoads = 7 )    ! HOT3000 Base Loads linked with BCD file (casual.F)
+
 C-----------------------------------------------------------------------
 C     Named constants used to describe plt/pfs loads and
 C     energy conversion.
@@ -67,13 +80,13 @@ C-----------------------------------------------------------------------
 !       parameter ( iDomainPfs = 2 )     ! Electric domain
 
 C.....Types of end-use loads
-      integer iLoadCount
-      parameter ( iLoadCount = 4 )
-      integer iLoadSpaceH, iLoadSpaceC, iLoadWaterH, iLoadElec
-      parameter ( iLoadSpaceH = 1 )            ! Space heating
-      parameter ( iLoadSpaceC = 2 )            ! Space cooling 
-      parameter ( iLoadWaterH = 3 )            ! Water heating 
-      parameter ( iLoadElec   = 4 )            ! electric loads 
+!       integer iLoadCount
+!       parameter ( iLoadCount = 4 )
+!       integer iLoadSpaceH, iLoadSpaceC, iLoadWaterH, iLoadElec
+!       parameter ( iLoadSpaceH = 1 )            ! Space heating
+!       parameter ( iLoadSpaceC = 2 )            ! Space cooling 
+!       parameter ( iLoadWaterH = 3 )            ! Water heating 
+!       parameter ( iLoadElec   = 4 )            ! electric loads 
 
 ! C.....Types of generation
 !       integer ( iGenCount = 3 )
@@ -139,7 +152,7 @@ C.....Propane
       data cFuelDesc(iPropane) /'propane'/
       data iFuelDescLen(iPropane) /7/
 
-      data cFuelUnit(iPropane) /'(m3/s)'/
+      data cFuelUnit(iPropane) /'(l/s)'/
       data iFuelUnitLen(iPropane) /6/
 
 C.....HardWood
@@ -217,12 +230,12 @@ C.....Appliances/equipment
       data cUseDesc(iUseEquipment) /'equipment'/
       data iUseDescLen(iUseEquipment) /9/
 
-C.....Appliances/equipment
-      data cUseName(iUseLights) /'lighting'/
-      data iUseNameLen(iUseLights) /8/
+C.....Lights
+      data cUseName(iUseLights) /'lights'/
+      data iUseNameLen(iUseLights) /6/
 
-      data cUseDesc(iUseLights) /'lighting'/
-      data iUseDescLen(iUseLights) /8/
+      data cUseDesc(iUseLights) /'lights'/
+      data iUseDescLen(iUseLights) /6/
 
 C.....Uncatagorized
       data cUseName(iUseUncatagorized) /'uncatagorized'/
@@ -237,3 +250,17 @@ C.....Ventilation/HRV
 
       data cUseDesc(iUseHRV) /'ventilation'/
       data iUseDescLen(iUseHRV) /11/
+
+C.....Other
+      data cUseName(iUseOther) /'other'/
+      data iUseNameLen(iUseOther) /5/
+
+      data cUseDesc(iUseOther) /'other'/
+      data iUseDescLen(iUseOther) /5/ 
+
+C.....Extra billing charges
+      data cUseName(iExtraBillingCharges) /'extra_billing_charges'/
+      data iUseNameLen(iExtraBillingCharges) /21/
+
+      data cUseDesc(iExtraBillingCharges) /'extra_billing_charges'/
+      data iUseDescLen(iExtraBillingCharges) /21/ 

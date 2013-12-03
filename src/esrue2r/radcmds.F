@@ -380,7 +380,7 @@ C Calculate patch direction vector (location).
 
 C Debug
 C          write(6,*) 'IPTCH',' Xp',' Yp',' Zp',' azim',' alt'
-C          write(6,*) IPTCH,' ',xp,' ',yp,' ',zp,' ',aazim,' ',pzalt	   
+C          write(6,*) IPTCH,' ',xp,' ',yp,' ',zp,' ',aazim,' ',pzalt   
 C End Debug
 
           write(ITA3,'(a)') 'patch_light source patch'
@@ -1120,7 +1120,6 @@ C Setup and pass in parameters to win3d.
             iigl=igl; iigr=igr; iigt=igt; iigb=igb; iigw=igw; iigwh=igwh
             CALL win3d(iimenu,iiw1,iiw2,iiw3,iiw4,
      &        iigl,iigr,iigt,iigb,iigw,iigwh)
-C            call win3d(menuchw,8,8,5,3,igl,igr,igt,igb,igw,igwh)
             igl=int(iigl); igr=int(iigr); igt=int(iigt); igb=int(iigb)
             igw=int(iigw); igwh=int(iigwh)
             igwid=igw

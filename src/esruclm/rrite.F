@@ -18,6 +18,10 @@ C License along with ESP-r. If not, write to the Free
 C Software Foundation, Inc., 59 Temple Place, Suite 330,
 C Boston, MA 02111-1307 USA.
 
+C Subroutines in this file:
+C  RRITE: allows one day of hourly values to be edited
+C  SITEDIT: edits site related data in a weather file.
+
 C ************ RRITE
 C 'RRITE' allows one day of hourly values (of the 6 weather
 C parameters to be edtied by the user and merged into the
@@ -168,7 +172,6 @@ C Setup and pass in parameters to win3d.
           iigl=igl; iigr=igr; iigt=igt; iigb=igb; iigw=igw; iigwh=igwh
           CALL win3d(iimenu,iiw1,iiw2,iiw3,iiw4,
      &      iigl,iigr,iigt,iigb,iigw,iigwh)
-C          CALL win3d(menuchw,10,22,7,3,igl,igr,igt,igb,igw,igwh)
           igl=int(iigl); igr=int(iigr); igt=int(iigt); igb=int(iigb)
           igw=int(iigw); igwh=int(iigwh)
         endif
@@ -252,11 +255,11 @@ C For help messages
 
       helpinsub='SITEDIT'  ! set for MAIN
 
-C Ask for the year (2001 convenintly has monday on 1 Jan).
+C Ask for the year (2007 convenintly has monday on 1 Jan).
       helptopic='what_is_the_year'
       call gethelptext(helpinsub,helptopic,nbhelp)
       CALL EASKI(IYEAR,' ',' What is the year ? ',
-     &         1900,'F',2015,'W',2001,'year',IER,nbhelp)
+     &         1900,'F',2051,'W',2007,'year',IER,nbhelp)
       ICYEAR=IYEAR
 
 C Now transfer to the weather file.
@@ -268,8 +271,8 @@ C Determine the weather data location.
       T30=CLMLOC
       helptopic='what_is_descr'
       call gethelptext(helpinsub,helptopic,nbhelp)
-      CALL EASKS(T30,' ',' Weather site name ? ',
-     &    30,'North_Pole','weather site. ',IER,nbhelp)
+      CALL EASKS(T30,'Weather site name (up to 30 char)','Confirm:',
+     &  30,'North_Pole','weather site. ',IER,nbhelp)
       if(T30(1:2).ne.'  ') CLMLOC=T30
       IREC=367
       WRITE(IFIL,REC=IREC,IOSTAT=ISTAT,ERR=1000)CLMLOC

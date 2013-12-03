@@ -53,19 +53,18 @@ C Use geometry for common g0/g1/g2/g4/g5/g6/g7/prec16/precz/c20.
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
-      common/C21/IFCFG,cfgroot,LCFGF
       integer IZSTOCN
       COMMON/C24/IZSTOCN(MCOM,MS)
       common/user/browse
       common/cctlnm/ctldoc,lctlf
+      integer icascf
       common/cctl/icascf(mcom)
 
       DIMENSION XX(MS),YY(MS)
       CHARACTER HOLD*32
-      character MODE*4,fs*1,LCFGF*72
+      character MODE*4,fs*1
       CHARACTER OUTSTR*124,ZN*12,outs*124
       character ctldoc*248,LCTLF*72,zd*64,DFILE*72,CFILE*72,OFILE*72
-      character cfgroot*24
       LOGICAL OK,dok,browse,OKC,XST,unixok
       logical newgeo  ! to use for testing if new/old geometry file.
       real DX1,DY1,DZ1  ! to avoid name clash with geometry.h
@@ -175,8 +174,8 @@ C Allow user choices of beginning as a simple shape (with image feedback).
         CALL EGETWR(HOLD,K,XO1,-999.9,999.9,'W','X origin',IER)
         CALL EGETWR(HOLD,K,YO1,-999.9,999.9,'W','Y origin',IER)
         CALL EGETWR(HOLD,K,ZO1,-9.9,999.9,'W','Z origin',IER)
-	write(outs,'(a,3f9.4)') 'Origin is ',XO1,YO1,ZO1
-	call edisp(iuout,outs)
+        write(outs,'(a,3f9.4)') 'Origin is ',XO1,YO1,ZO1
+        call edisp(iuout,outs)
 
  242    HOLD=' '
         WRITE(HOLD,'(1x,3f8.3)')DX1,DY1,DZ1
@@ -187,8 +186,8 @@ C Allow user choices of beginning as a simple shape (with image feedback).
         CALL EGETWR(HOLD,K,DY1,0.001,99.9,'W','box depth',IER)
         CALL EGETWR(HOLD,K,DZ1,0.001,99.9,'W','box height',IER)
         if(DX1.lt.0.001.or.DY1.lt.0.001)goto 242
-	write(outs,'(a,3f9.4)') 'Width depth height is ',DX1,DY1,DZ1
-	call edisp(iuout,outs)
+        write(outs,'(a,3f9.4)') 'Width depth height is ',DX1,DY1,DZ1
+        call edisp(iuout,outs)
 
         ANGR=0.
         CALL EASKR(ANGR,' ','Rectangle orientation?',
@@ -233,9 +232,9 @@ C User begins with an extruded shape.
           K=0
           CALL EGETWR(HOLD,K,XX(IW),-999.,999.,'W','flr X',IER)
           CALL EGETWR(HOLD,K,YY(IW),-999.,999.,'W','flr Y',IER)
-	  write(outs,'(a,i3,a,2f9.4)') 'X&Y for v ',IW,' is ',
+          write(outs,'(a,i3,a,2f9.4)') 'X&Y for v ',IW,' is ',
      &      XX(IW),YY(IW)
-	  call edisp(iuout,outs)
+          call edisp(iuout,outs)
    45   CONTINUE
 
 C Allow user to have a 2nd chance to input the vertices.
@@ -516,6 +515,7 @@ C NEWZONE controls the creation of a new zone. IER=0 OK.
       integer IZSTOCN
       COMMON/C24/IZSTOCN(MCOM,MS)
       common/cctlnm/ctldoc,lctlf
+      integer icascf
       common/cctl/icascf(mcom)
 
       CHARACTER*72 LTMP,DFILE
@@ -728,7 +728,7 @@ C Existing partitions in an imported zone are reset to UNKNOWN.
             IE2(ICCC)=0
             altered = .true.   ! will need to write out geometry
           endif
-	  
+  
 C Update the connection based data structures.
           SSNAME(iccc)=SNAME(NCOMP,icc)
           SSOTF(iccc)=SOTF(icc)
@@ -745,7 +745,7 @@ C Update the connection based data structures.
 C Find the index of the MLC which matches this surface.
           ssmlcindex(iccc)=0  ! assume no matching MLC          
           do 5 ii=1,nmlc
-            if(SSMLCN(iccc)(1:12).eq.DESC(ii)(1:12)) then
+            if(SSMLCN(iccc)(1:12).eq.mlcname(ii)(1:12)) then
               ssmlcindex(iccc)=ii   ! remember MLC index     
             endif
   5       continue
@@ -967,6 +967,7 @@ C DELZONE systematicly removes a thermal zone.
 #include "CFC_common.h"
 C espriou.h provides currentfile.
 #include "control.h"
+#include "schedule.h"
 #include "prj3dv.h"
       
       integer lnblnk  ! function definition
@@ -977,22 +978,14 @@ C espriou.h provides currentfile.
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
-      common/C21/IFCFG,cfgroot,LCFGF
       integer IZSTOCN
       COMMON/C24/IZSTOCN(MCOM,MS)
 
-      COMMON/P2N/NAC(MDTY),IACS(MDTY,MA),IACF(MDTY,MA),ACI(MDTY,MA),
-     &ACV(MDTY,MA),IPT(MDTY,MA),TA(MDTY,MA)
-      INTEGER NAC,IACS,IACF,IPT
-      REAL ACI,ACV,TA
       common/caleni/nbdaytype,nbcaldays(MDTY),icalender(365)
       INTEGER NBDAYTYPE,NBCALDAYS,ICALENDER
-      COMMON/P2CTL/ITCTL(MCOM),TLO(MCOM),TUP(MCOM),THI(MCOM),ACIL(MCOM),
-     &             ACVL(MCOM),IVL(MCOM),TAL(MCOM),ACIU(MCOM),ACVU(MCOM),
-     &             IVU(MCOM),TAU(MCOM),ACIH(MCOM),ACVH(MCOM),
-     &             IVH(MCOM),TAH(MCOM)
 
       common/cctlnm/ctldoc,lctlf
+      integer icascf
       common/cctl/icascf(mcom)
       common/user/browse
       COMMON/PRECTC/ITMCFL(MCOM,MS),TMCT(MCOM,MTMC,5),
@@ -1004,8 +997,7 @@ C espriou.h provides currentfile.
       LOGICAL DOK,OK,XST,changed,OKC,OKM,modopr,browse
       logical newgeo  ! to use for testing if new/old geometry file.
 
-      CHARACTER LAPROB*72,LCFGF*72
-      CHARACTER cfgroot*24
+      CHARACTER LAPROB*72
       CHARACTER ctldoc*248,LCTLF*72,outs*124
       character ltmp*72,NDNAM*12
       character OUTSTR*124
@@ -1357,7 +1349,7 @@ C Disconnect high range alternative ventilation if pointing to focus.
           ACVH(IX)=0.0
         endif
 
-C Air flows
+C Air flows for each day type.
         DO 400 IDTY=1,NBDAYTYPE
           IF(NAC(IDTY).GT.0)THEN
             DO 10 I=1,NAC(IDTY)
@@ -1798,15 +1790,15 @@ C Check if Unix-based or DOS based.
      &        LSHAD(ICOMP)(1:lnblnk(LSHAD(ICOMP))),' out of date.'
         endif
         if(nh.gt.1)then
-	  if(.NOT.silent)then
+          if(.NOT.silent)then
             CALL PHELPD('files out of date',nh,'-',0,0,IER)
-	  endif  
+          endif  
         endif
       endif
       if(ishold)then
         if(silent)then
-	  IRT=1
-	else
+          IRT=1
+        else
           DOK=.true.
           helptopic='change_for_shading'
           call gethelptext(helpinsub,helptopic,nbhelp)
@@ -1831,8 +1823,8 @@ C If existing db out of date the perform recalculation.
       endif
       if(comold.or.tmcold.or.cfcold)then
         if(silent)then
-	  ok= .true.
-	else
+          ok= .true.
+        else
           DOK=.true.
           helptopic='change_for_constructions'
           call gethelptext(helpinsub,helptopic,nbhelp)
@@ -1866,23 +1858,18 @@ C     = 'in '  interactive new
       
       integer lnblnk  ! function definition
 
-      common/C21/IFCFG,cfgroot,LCFGF
       common/OUTIN/IUOUT,IUIN
+      integer childterminal  ! picks up mmod from starting of prj
+      common/childt/childterminal
       
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
       common/appw/iappw,iappx,iappy
 
-      character LCFGF*72
       CHARACTER ZN*12,longtfile*144,longtfiledos*144
-      character TMODE*8,outs*248,DOIT*248,CFGROOT*24
+      character TMODE*8,outs*248,DOIT*248
       character act*3  ! the parameter passed
       logical XST,concat,unixok
-#ifdef OSI
-      integer ICPMOD     ! passed from tchild
-#else
-      integer*8 ICPMOD     ! passed from tchild
-#endif
 
 C Check if Unix-based or DOS based.
       call isunix(unixok)
@@ -1904,8 +1891,7 @@ C Check if file exists and get local zone name for feedback.
 
 C Clear command and setup terminal type.
       doit = ' '
-      call tchild(ICPMOD)
-      call termode(ICPMOD,tmode)
+      call terminalmode(childterminal,tmode)
 
 C Setup file name depending on the machine type.
       if(unixok)then

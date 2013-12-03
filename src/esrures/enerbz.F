@@ -33,6 +33,7 @@ C CALLS: MOZSUM   CALLED BY: MOSTAT
 #include "building.h"
 #include "model.h"
 #include "geometry.h"
+#include "schedule.h"
 #include "control.h"
       
       integer lnblnk  ! function definition
@@ -43,12 +44,11 @@ C CALLS: MOZSUM   CALLED BY: MOSTAT
 
       COMMON/AVRAGE/IDAVER
       COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
+      integer icascf
       COMMON/CCTL/ICASCF(MCOM)
       COMMON/SIMPIK/ISIM,ISTADD,ID1,IM1,ID2,IM2,ISDS,ISDF,NTS,ISAVE
       common/recver/izver,ipver,iever
       COMMON/PERO/IOD1,IOM1,IOH1,IOD2,IOM2,IOH2,IODS,IODF,NOUT,IAV
-      character lodlabel*6
-      common/loadlabel/lodlabel(mcom,MGTY)
       COMMON/GET1/VAL1(MZS,MTS),VAL2(MZS,MTS),VAL3(MZRL,MTS)
       common/exporttg/xfile,tg,delim
       COMMON/EXPORTI/ixopen,ixunit,ixpunit
@@ -58,8 +58,8 @@ C CALLS: MOZSUM   CALLED BY: MOSTAT
       character outs*124,xfile*144,tg*1,delim*1
 
       character DESCRD*5,DDX*7,DDX1*10,DHX*5,sp*1,outsd*124
-      CHARACTER*26 LABELS(17)
-      CHARACTER*9 TITLE1(17)
+      CHARACTER*31 LABELS(17)
+      CHARACTER*15 TITLE1(17)
 
 C Read in the geometry file to refresh surface attributes.
       iunit=ifil+1
@@ -69,23 +69,23 @@ C Read in the geometry file to refresh surface attributes.
 C Generate the labels for the interface and report.
 
 C << revise for additional casual gain types >>
-      LABELS(1) =' Infiltration air load    '
-      LABELS(2) =' Ventilation air load     '
-      LABELS(3) =' N/A                      '
-      LABELS(4) =' N/A                      '
-      LABELS(5) =' N/A                      '
-      write(LABELS(6),'(2a)') ' Uncontr`d casual ',lodlabel(izone,1)
-      write(LABELS(7),'(2a)') ' Uncontr`d casual ',lodlabel(izone,2)
-      write(LABELS(8),'(2a)') ' Uncontr`d casual ',lodlabel(izone,3)
-      LABELS(9) =' Controlled casual gain   '
-      LABELS(10)=' Thermal bridge (linear)  '
-      LABELS(11)=' Storage at air point     '
-      LABELS(12)=' Opaque surf convec: ext  '
-      LABELS(13)=' Opaque surf convec: ptn  '
-      LABELS(14)=' Transp surf convec: ext  '
-      LABELS(15)=' Transp surf convec: ptn  '
-      LABELS(16)=' Convec portion of plant  '
-      LABELS(17)=' Totals                   '
+      LABELS(1) =' Infiltration air load         '
+      LABELS(2) =' Ventilation air load          '
+      LABELS(3) =' N/A                           '
+      LABELS(4) =' N/A                           '
+      LABELS(5) =' N/A                           '
+      write(LABELS(6),'(2a)') ' Casual ',lodlabel(izone,1)
+      write(LABELS(7),'(2a)') ' Casual ',lodlabel(izone,2)
+      write(LABELS(8),'(2a)') ' Casual ',lodlabel(izone,3)
+      LABELS(9) =' Controlled casual gain        '
+      LABELS(10)=' Thermal bridge (linear)       '
+      LABELS(11)=' Heat storage @ air point      '
+      LABELS(12)=' Convection @ opaque surf: ext '
+      LABELS(13)=' Convection @ opaque surf: ptn '
+      LABELS(14)=' Convection @ transp surf: ext '
+      LABELS(15)=' Convection @ transp surf: ptn '
+      LABELS(16)=' Convection portion of plant   '
+      LABELS(17)=' Totals                        '
       TITLE1(1)='|Infiltr '
       TITLE1(2)='|Ventilat'
       TITLE1(3)='|W cnd ex'
@@ -154,7 +154,7 @@ C gains/loss or user defined.
         call edisp(itru,outs)
       ELSEIF(IANZSE.EQ.2)THEN
         call edisp(itru,' ')
-        write(outs,'(29X,A)')'   Gain         Loss'
+        write(outs,'(35X,A)')'   Gain         Loss'
         call edisp(itru,outs)
       ENDIF
 
@@ -207,23 +207,23 @@ C don`t bother with row 9.
         else
           IF(IANZSE.EQ.1)THEN
             if(delim.eq.'-')then
-              write(outs,'(A9,6F11.2)')TITLE1(I),(VAL2(I,J),J=1,6)
+              write(outs,'(A,6F11.2)')TITLE1(I),(VAL2(I,J),J=1,6)
               call edisp(itru,outs)
             else
               write(outs,'(6F11.2)')(VAL2(I,J),J=1,6)
               call SDELIM(outs,outsd,delim,IW)
-              write(outs,'(a,a,a)')TITLE1(I)(1:lnblnk(TITLE1(I))),sp,
+              write(outs,'(3a)')TITLE1(I)(1:lnblnk(TITLE1(I))),sp,
      &          outsd(1:lnblnk(outsd))
               call edisp(itru,outs)
             endif
           ELSEIF(IANZSE.EQ.2)THEN
             if(delim.eq.'-')then
-              write(outs,'(A26,2F12.3)')LABELS(I),(VAL2(I,J),J=1,2)
+              write(outs,'(A,2F12.3)')LABELS(I),(VAL2(I,J),J=1,2)
               call edisp(itru,outs)
             else
               write(outs,'(2F12.3)')(VAL2(I,J),J=1,2)
               call SDELIM(outs,outsd,delim,IW)
-              write(outs,'(a,a,a)')LABELS(I)(1:lnblnk(LABELS(I))),sp,
+              write(outs,'(3a)')LABELS(I)(1:lnblnk(LABELS(I))),sp,
      &          outsd(1:lnblnk(outsd))
               call edisp(itru,outs)
             endif
@@ -245,23 +245,23 @@ C Totals: use VAL2(I,8) where I=1 to 6 depending on IANZSE.
 
       IF(IANZSE.EQ.1)then
         if(delim.eq.'-')then
-          write(outs,'(A9,6F11.1)')LABELS(17),(VAL2(I,8),I=1,6)
+          write(outs,'(A,6F11.1)')LABELS(17),(VAL2(I,8),I=1,6)
           call edisp(itru,outs)
         else
           write(outs,'(6F11.1)')(VAL2(I,8),I=1,6)
           call SDELIM(outs,outsd,delim,IW)
-          write(outs,'(a,a,a)')LABELS(17)(1:lnblnk(LABELS(17))),sp,
+          write(outs,'(3a)')LABELS(17)(1:lnblnk(LABELS(17))),sp,
      &      outsd(1:lnblnk(outsd))
           call edisp(itru,outs)
         endif
       elseif(IANZSE.EQ.2)then
         if(delim.eq.'-')then
-          write(outs,'(A26,2F12.3)')LABELS(17),(VAL2(I,8),I=1,2)
+          write(outs,'(A,2F12.3)')LABELS(17),(VAL2(I,8),I=1,2)
           call edisp(itru,outs)
         else
           write(outs,'(2F12.3)')(VAL2(I,8),I=1,2)
           call SDELIM(outs,outsd,delim,IW)
-          write(outs,'(a,a,a)')LABELS(17)(1:lnblnk(LABELS(17))),sp,
+          write(outs,'(3a)')LABELS(17)(1:lnblnk(LABELS(17))),sp,
      &      outsd(1:lnblnk(outsd))
           call edisp(itru,outs)
         endif
@@ -277,6 +277,7 @@ C CALLS: MOEGET    CALLED BY: MOZCAS
       SUBROUTINE MOZSUM(IZONE,IANZSE)
 #include "building.h"
 #include "model.h"
+#include "schedule.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
@@ -285,45 +286,19 @@ C CALLS: MOEGET    CALLED BY: MOZCAS
       COMMON/PERO/IOD1,IOM1,IOH1,IOD2,IOM2,IOH2,IODS,IODF,NOUT,IAV
       COMMON/SIMPIK/ISIM,ISTADD,ID1,IM1,ID2,IM2,ISDS,ISDF,NTS,ISAVE
 
-C Version of operations file. ip3ver=0 standard, =1 sorted with header
-C =2 with more than 3 day types
-      common/p3ver/ip3ver(MCOM)
-
       character outs*124
 
       DIMENSION XVAL1(MZS)
 
       TCMULT=NOUT/(NTS*1000.)
 
-C If izver >= 4 then there is no need to read the operation file.
-      if(izver.eq.4)then
-        continue
-      else
-
-C Assume that the operation file name has been read in via MOINIT.
-C Read in the zone operational file data.
-        IUNIT=IFIL+1
-        CALL EROPER(0,iuout,iunit,izone,IER) ! for older results files.
-        if(ip3ver(izone).eq.0)then
-          write(outs,'(a,i2,a)') 
-     &    'Operation file for zone ',izone,' periods being sorted!'
-          call edisp(iuout,outs)
-          call PROCESSOLDCAS(izone,0,iuout,IER)
-        endif
-        IF(IER.EQ.1)RETURN
-
-C Read casual gain control file for this zone.
-        IF(ICGC(IZONE).EQ.1)CALL ercgcf(0,iuout,LCGCIN(izone),IZONE,ier)
-        IF(IER.EQ.1)RETURN
-      endif
-
 C Initialise summation locations: VAL2(I,J) is used to store summations
 C where I=1 to 16 (one for each flowpath) and J=1 to 6 (representing
 C columns) depending on selected summation mode.
       DO 20 I=1,16
-       DO 201 J=1,7
-        VAL2(I,J)=0.
-  201  CONTINUE
+        DO 201 J=1,7
+          VAL2(I,J)=0.
+  201   CONTINUE
    20 CONTINUE
 
 C Day-by-day recovery.

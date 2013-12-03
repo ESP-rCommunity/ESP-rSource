@@ -5,6 +5,43 @@ C Created by: Bartosz Lomanowski
 C Initial Creation Date: May 7, 2008
 
 C---------------------------------------------------------------------------------
+C PARAMETERS
+C
+C---------------------------------------------------------------------------------
+
+C Flag (manually set for now) for calculation of ground and sky diffuse components
+      integer i_ground_sky_diff_calc
+      parameter ( i_ground_sky_diff_calc = 0 )
+
+C Flags for solar_multilayer subroutine to indicate which diffuse properties 
+C (sky or ground) to use for the venetian blind layer. 
+      integer i_ground, i_sky
+      parameter ( i_sky = 1 )
+      parameter ( i_ground = 2 )
+
+C---------------------------------------------------------------------------------
+
+C Named constants for complex fenestration layer types
+
+      Integer iGasGap
+      Parameter ( iGasGap = 0 )
+      
+      Integer iGlazing
+      Parameter ( iGlazing = 1 )
+      
+      Integer iVenBlind
+      Parameter ( iVenBlind = 2 )
+      
+      Integer iPleatedDrape
+      Parameter ( iPleatedDrape = 3 )
+      
+      Integer iRollerBlind
+      Parameter ( iRollerBlind = 4 ) 
+      
+      Integer iInsectScreen
+      Parameter ( iInsectScreen = 5 )
+      
+C---------------------------------------------------------------------------------
 C IMPORT COMMONS
 C
 C Used in the import process for creation of *.cfc zone file based
@@ -22,7 +59,7 @@ C Index for each CFC type:
 C      1: *.GSL import file exists
 C      0: *.GSL file does not exist
       INTEGER iGSLfile 
-
+      
 C---------------------------------------------------------------------------------
 
       COMMON/impCFC/im_cfcfl(mcom,ms),
@@ -46,15 +83,22 @@ C Layer type index:
 C      0: gas gap
 C      1: glazing
 C      2: venetian blind
+C      3: drapery
+C      4: roller blind
+C      5: Insect screen (bug)
       INTEGER im_cfcltp
-
+     
 C---------------------------------------------------------------------------------
 C Normal Solar Optical properties for each layer of CFC imported from *.GSL files.
 
       COMMON/impCFCsol/rim_SolRf(mcom,mcfc,me),
      &                 rim_SolRb(mcom,mcfc,me),
-     &                 rim_SolT(mcom,mcfc,me)
-
+     &                 rim_SolT(mcom,mcfc,me),
+     &                 rim_SolTf_tot(mcom,mcfc,me),
+     &                 rim_SolTb_tot(mcom,mcfc,me),
+     &                 rim_SolTf_bd(mcom,mcfc,me),
+     &                 rim_SolTb_bd(mcom,mcfc,me)
+     
 C Front reflectance of each element (facing exterior)
       REAL rim_SolRf
 
@@ -63,6 +107,18 @@ C Back reflectance of each element(facing interior)
 
 C Transmittance of each element
       REAL rim_SolT
+
+C Total front transmittance of each element
+      REAL rim_SolTf_tot
+
+C Total back transmittance of each element
+      REAL rim_SolTb_tot
+
+C Beam-Diffuse front transmittance of each element
+      REAL rim_SolTf_bd
+
+C Beam-Diffuse back transmittance of each element
+      REAL rim_SolTb_bd
 
 C---------------------------------------------------------------------------------
 C Normal Solar Visible properties for each layer of CFC imported from *.GSL files.
@@ -165,7 +221,78 @@ C Slat max thickness (mm)
 
 C Slat orientaion: VERT or HORZ
       CHARACTER cim_VorH*4
+C---------------------------------------------------------------------------------
+C Pleated drape descriptors for each CFC type (for type 3 CFC layers)
 
+      COMMON/impCFCdrp/rim_drp_w(mcom,mcfc),
+     &                rim_drp_s(mcom,mcfc),
+     &                rim_drp_Fr(mcom,mcfc)
+
+
+C Since pleats are repetitive, an enclosure formed by two consecutive
+C pleats will represent the entire drapery. A cross-section below
+C describes such an enclosure represented by a pleat width, w, and a
+C pleat spacing, s
+C
+C         w
+C         <-------->
+C    ^  ----------  ^
+C    |  |           |
+C    |  |1st pleat  | s
+C    |  |               |
+C    |  |               |
+C  L |  ----------  -
+C    |                |
+C    |  2nd pleat|
+C    |           |
+C    |           |
+C    -  ----------
+
+C Drape width (mm)
+      REAL rim_drp_w
+      
+C Drape spacing (mm)
+      REAL rim_drp_s
+
+C Drape fullness
+      REAL rim_drp_Fr
+C---------------------------------------------------------------------------------
+C Insect screen descriptors for each CFC type (for type 5 CFC layers)
+
+      COMMON/impCFCbug/rim_bug_d(mcom,mcfc),
+     &                rim_bug_s(mcom,mcfc),
+     &                rim_bug_Emis(mcom,mcfc)
+
+
+C 
+C A cross-section below describes such an enclosure represented by a 
+C wire diameter, d, a wire pitch, s, and a wire emissivity, Emis
+
+C           _
+C         _   _  ___
+C           _     ^
+C         <--->   |
+C           d     |   s
+C                 |
+C           _     |
+C         _   _  _|_
+C           _  
+
+
+
+C           _
+C         _   _
+C           _  
+
+
+C Insect screen wire diameter (mm)
+      REAL rim_bug_d
+      
+C Insect screen wire pitch (mm)
+      REAL rim_bug_s
+
+C Insect screen wire emissivity
+      REAL rim_bug_Emis
 C---------------------------------------------------------------------------------
 C Fill Gas properties:
 C Gas mixture as specified in GSLedit is characterized by:
@@ -213,6 +340,14 @@ C 'b' coefficient - fill gas specific heat
       REAL rim_spht_B
 
 C---------------------------------------------------------------------------------
+C Intenational Glazing Database ID (for type 0 (glazings) CFC layers)
+
+      COMMON/impCFC_IGDB/cim_IGDB_ID(mcom,mcfc,me)
+
+C IGDB database ID
+      CHARACTER cim_IGDB_ID*8
+      
+C---------------------------------------------------------------------------------
 C SIMULATION COMMONS
 C
 C These are essentially the same set of variables as the IMPORT COMMONS. These 
@@ -233,11 +368,19 @@ C SEE IMPORT COMMONS SECTIONS ABOVE FOR VARIABLE DEFINITIONS OF THE FOLLOWING:
 
       COMMON/CFCsol/solRF(mcom,mcfc,me),
      &              solRB(mcom,mcfc,me),
-     &              solT(mcom,mcfc,me)
+     &              solT(mcom,mcfc,me),
+     &              SolTf_tot(mcom,mcfc,me),
+     &              SolTb_tot(mcom,mcfc,me),
+     &              SolTf_bd(mcom,mcfc,me),
+     &              SolTb_bd(mcom,mcfc,me)
 
       REAL solRF
       REAL solRB
       REAL solT
+      REAL SolTf_tot
+      REAL SolTb_tot
+      REAL SolTf_bd
+      REAL SolTb_bd
 
       COMMON/CFCvis/visRF(mcom,mcfc,me),
      &              visRB(mcom,mcfc,me),
@@ -272,13 +415,31 @@ C SEE IMPORT COMMONS SECTIONS ABOVE FOR VARIABLE DEFINITIONS OF THE FOLLOWING:
       REAL vb_t
       CHARACTER vb_VorH*4
 
+      COMMON/CFCdrp/drp_w(mcom,mcfc),
+     &             drp_s(mcom,mcfc),
+     &             drp_Fr(mcom,mcfc)
+
+      REAL drp_w
+      REAL drp_s
+      REAL drp_Fr
+
+      COMMON/CFCbug/bug_d(mcom,mcfc),
+     &             bug_s(mcom,mcfc),
+     &             bug_Emis(mcom,mcfc)
+
+      REAL bug_d
+      REAL bug_s
+      REAL bug_Emis
+
       COMMON/CFCgas/rmlr_mass(mcom,mcfc,me),
      &              cond_A(mcom,mcfc,me),
      &              cond_B(mcom,mcfc,me),
      &              visc_A(mcom,mcfc,me),
      &              visc_B(mcom,mcfc,me),
      &              spht_A(mcom,mcfc,me),
-     &              spht_B(mcom,mcfc,me)
+     &              spht_B(mcom,mcfc,me), 
+C...................Molar mass % fractions of 1:Air, 2:Ar, 3:Kr, 4:Xe and 4:SF6     
+     &              imlr_mass_frac(mcom,mcfc,me,5)
 
       REAL rmlr_mass
       REAL cond_A
@@ -287,6 +448,7 @@ C SEE IMPORT COMMONS SECTIONS ABOVE FOR VARIABLE DEFINITIONS OF THE FOLLOWING:
       REAL visc_B
       REAL spht_A
       REAL spht_B
+      INTEGER imlr_mass_frac
 
 C---------------------------------------------------------------------------------
 C Common to save longwave properties as given in *.cfc file
@@ -306,7 +468,18 @@ C Transmittance of each element
       REAL rlwT_sv
 
 C---------------------------------------------------------------------------------
+C Common to save effective longwave properties in 
 
+      COMMON/CFClwEff/lwE_eff(mcom,mcfc,me),
+     &              lwT_eff(mcom,mcfc,me)
+
+C Effective emissivity of each element
+      REAL lwE_eff
+
+C Effective transmittance of each element
+      REAL lwT_eff
+
+C---------------------------------------------------------------------------------
       COMMON/CFCin/lcfcin(mcom),
      &             icfc(mcom)
 
@@ -614,6 +787,41 @@ C Front diffuse-diffuse transmittance
 
 C Back diffuse-diffuse transmittance
       REAL SolTBdd
+
+C---------------------------------------------------------------------------------
+C Solar Sky and Ground Diffuse-Diffuse properties
+      COMMON/cfc_sky_ground_DD/SolRFskydd(mcom,ms,mcfc,me),
+     &                SolRBskydd(mcom,ms,mcfc,me),
+     &                SolTFskydd(mcom,ms,mcfc,me),
+     &                SolTBskydd(mcom,ms,mcfc,me),
+     &                SolRFgrddd(mcom,ms,mcfc,me),
+     &                SolRBgrddd(mcom,ms,mcfc,me),
+     &                SolTFgrddd(mcom,ms,mcfc,me),
+     &                SolTBgrddd(mcom,ms,mcfc,me)
+
+C Front diffuse-diffuse sky reflectance
+      REAL SolRFskydd
+
+C Back diffuse-diffuse sky reflectance
+      REAL SolRBskydd
+
+C Front diffuse-diffuse sky transmittance
+      REAL SolTFskydd
+
+C Back diffuse-diffuse sky transmittance
+      REAL SolTBskydd
+
+C Front diffuse-diffuse ground reflectance
+      REAL SolRFgrddd
+
+C Back diffuse-diffuse ground reflectance
+      REAL SolRBgrddd
+
+C Front diffuse-diffuse ground transmittance
+      REAL SolTFgrddd
+
+C Back diffuse-diffuse ground transmittance
+      REAL SolTBgrddd
 
 C---------------------------------------------------------------------------------
 C Visible Beam-Beam properties

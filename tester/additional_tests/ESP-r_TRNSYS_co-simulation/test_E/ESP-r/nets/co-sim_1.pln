@@ -118,14 +118,14 @@
 #->   7, centrifugal fan, 1 node model ; flow control                            
   blower             3
     1        # Component has   1 control variable(s).
-  0.600000024
+  0.60000002    
     6     5
-       0.1000     #   1 Component total mass (kg)                                       
-       0.1000     #   2 Mass weighted average specific heat (J/kgK)                     
-       0.0000     #   3 UA modulus (W/K)                                                
-       50.000     #   4 Rated total absorbed power (W)                                  
-      0.60000     #   5 Rated volume flow rate (m^3/s)                                  
-      0.70000     #   6 Overall efficiency (-)                                          
+      5.00000     #   1 Component total mass (kg)                                       
+      500.000     #   2 Average specific heat of solids (J/kgK)                         
+       0.0000     #   3 UA modulus (node 1 to surroundings) (W/K)                       
+       50.000     #   4 Rater power (W)                    
+      0.60000     #   5 Rated flow rate (m^3/s)                     
+      0.70000     #   6 Overall efficiency (-)                    
 # Component electrical details.
   0.000  -1      1.000      0.000   1
 #->   8, The sending hydronic coupling component (HCC-S) is used for water coupli

@@ -29,7 +29,7 @@ C Common block variables are:
 C NLITZ    - Number of lighting zones per thermal zone
 
 C NCGTC    - Type number of casual gains to be controlled during
-C            different day types
+C            each of the models calendar day types.
 
 C IDFST    - illuminance calculation type (1: ESP-r calculated daylight
 C            factors, 2: User specified daylight factors, 3: external
@@ -95,9 +95,10 @@ C Daylight coefficient common block data definition:
      & IDCFID(MCOM,MLCOM,MDF)
 
       CHARACTER LCGCIN*72
-      character outs*124,OUTSTR*124,cgcdesc*64,info*18
+      character outs*124,OUTSTR*124,cgcdesc*64,info*18,calclabel*20
 
       dimension DV(MDCFV)
+      integer ndayt  ! local value for nbdaytype
 
       ier=0
 
@@ -121,6 +122,8 @@ C Clear daylight factor array.
     2 continue
 
 c Read type of casual gain to be controlled during each day type.
+C Warn if cgc line 3 has a different number of calendar day types
+C than in the model cfg file.
       CALL STRIPC(IUNIT,OUTSTR,99,ND,1,'cgc line 1',IER)
       if(IER.NE.0)return
       if(OUTSTR(1:16).eq.'*Casual_gain_ctl')then
@@ -129,11 +132,18 @@ c Read type of casual gain to be controlled during each day type.
         if(OUTSTR(1:5).eq.'*desc')then
           k=6
           CALL EGETRM(OUTSTR,K,cgcdesc(icomp),'W','descr',IER)
-          CALL STRIPC(IUNIT,OUTSTR,NBDAYTYPE,ND,1,'cgc line 3',IER)
+          CALL STRIPC(IUNIT,OUTSTR,99,ND,1,'cgc line 3',IER)
+          if(ND.ne.NBDAYTYPE)then
+            write(outs,'(a,i2,a,i2,a)') 'Model calendar day types ',
+     &        NBDAYTYPE,' differ from the list found in the cgc file ',
+     &        ND,'. Please check!'
+            call edisp(iuout,outs)
+          endif
+          ndayt=ND
         endif
       endif
       K=0
-      DO 400 IDTY=1,NBDAYTYPE
+      DO 400 IDTY=1,ndayt
         CALL EGETWI(OUTSTR,K,N1,0,MCT,'F',' gain type',IER)
         NCGTC(ICOMP,IDTY)=N1
  400  CONTINUE
@@ -150,7 +160,7 @@ C Read number of lighting zones in this thermal zone NLITZ(MLCOM).
 C Maximum 4 lighting zones allowed (MLCOM=4):
       CALL STRIPC(IUNIT,OUTSTR,1,ND,1,'cgc line 2',IER)
       K=0
-      CALL EGETWI(OUTSTR,K,NL,1,MLCOM,'F','No. light zones',IER)
+      CALL EGETWI(OUTSTR,K,NL,1,MLCOM,'F','Number light zones',IER)
       NLITZ(ICOMP)=NL
 
 C Loop through all lighting zones and read info.
@@ -187,7 +197,7 @@ C and calculation type:
       K=0
       CALL EGETWR(OUTSTR,K,sy,0.,1.,'F','zone cg %',IER)
       CALL EGETWI(OUTSTR,K,nls,1,MDF,'F',
-     &              'no. of light sensors',IER)
+     &              'number of light sensors',IER)
       CALL EGETWI(OUTSTR,K,idc,1,5,'F','sensor type',IER)
       SYSPER(ICOMP,N)=sy
       NDF(ICOMP,N)=nls
@@ -290,12 +300,12 @@ C coefficient values from casual gain file:
           do 207 ISE=1,NDF(ICOMP,N)
             call STRIPC(IUNIT,OUTSTR,0,ND,1,'DCF set',IER)
             K=0
-            CALL EGETWI(OUTSTR,K,ISN,1,5,'F','DCF set No.',IER)
-            CALL EGETWI(OUTSTR,K,INS,1,2,'F','No. of stages',IER)
+            CALL EGETWI(OUTSTR,K,ISN,1,5,'F','DCF set number',IER)
+            CALL EGETWI(OUTSTR,K,INS,1,2,'F','Number of stages',IER)
             IDCFID(ICOMP,N,ISE) = ISN
             NDCFS(ISN) = INS
             do 219 i = 1,INS
-              call STRIPC(IUNIT,OUTSTR,0,ND,1,'DCF stage no.',IER)
+              call STRIPC(IUNIT,OUTSTR,0,ND,1,'DCF stage number',IER)
               K=0
               CALL EGETWI(OUTSTR,K,IST,1,2,'F','DCF stage no',IER)
               call EGETWRA(IUNIT,DV,MDCFV,-1.0,1.0,'F','DCF vals',IER)
@@ -333,7 +343,8 @@ c Trace output ?
       call edisp(iuout,outs)
       goto 8
       
-c Trace output follows.
+C Trace output follows. Note: see if this can be combined
+C with the user feedback in the interface.
     5 call edisp(itru,' ')
       write(outs,'(A,I2)') ' Zone ',ICOMP
       call edisp(itru,outs)
@@ -348,11 +359,11 @@ c Trace output follows.
           call edisp(itru,outs)
           if(IDFST(ICOMP,N).eq.1)then
             write(outs,'(A,I2,A)') ' Average of ',NDF(ICOMP,N),
-     &        ' analytical daylight factor photocell types. '
+     &        ' analytical daylight factor photocell types.'
             call edisp(itru,outs)
           elseif(IDFST(ICOMP,N).eq.2)then
             write(outs,'(A,I2,A)') ' Average of ',NDF(ICOMP,N),
-     &        ' user spec. daylight factor photocell types. '
+     &        ' user specified daylight factor photocell types.'
             call edisp(itru,outs)
             write(outs,'(A,I2,A)') ' There are ',NUDWIN(ICOMP),
      &        ' source surfaces for daylighting in the zone.'
@@ -361,29 +372,40 @@ c Trace output follows.
             call edisp(itru,' External lighting sensor.')
           elseif(IDFST(ICOMP,N).eq.4)then
             write(outs,'(A,I2,A)') ' Average of ',NDF(ICOMP,N),
-     &        ' direct coupling photocell types. '
+     &        ' direct coupling photocell types.'
             call edisp(itru,outs)
           elseif(IDFST(ICOMP,N).eq.5)then
             write(outs,'(A,I2,A)') ' Average of ',NDF(ICOMP,N),
-     &        ' daylight coefficient photocell types. '
+     &        ' daylight coefficient photocell types.'
             call edisp(itru,outs)
           endif
 
           call edisp(itru,'  ')
           call edisp(itru,
-     &    ' Set   |Switch-off |Min. dim |Min. ele |Switch-off ')
+     &  ' Set   |Switch-off |Minimum dimming|Minimal elec|Switch-off ')
           call edisp(itru,
-     &    ' point |light level|light out|light out|delay time ')
+     &  ' point |light level|light output   |light output|delay time ')
           write(outs,9987)SETPT(ICOMP,N),SOFFLL(ICOMP,N),
      &      SMLOUT(ICOMP,N), SMEOUT(ICOMP,N),IOFFDT(ICOMP,N)
- 9987     format(F7.1,F12.1,F10.2,F10.2,I10)
+ 9987     format(F7.1,F12.1,F14.2,F14.2,I10)
           call edisp(itru,outs)
 
+          if(IDFST(ICOMP,N).eq.1)then
+            write(calclabel,'(A)')  ' Analytical DF'
+          elseif(IDFST(ICOMP,N).eq.2)then
+            write(calclabel,'(A)')  ' User defined DF'
+          elseif(IDFST(ICOMP,N).eq.3)then
+            write(calclabel,'(A)')  ' External sensor'
+          elseif(IDFST(ICOMP,N).eq.4)then
+            write(calclabel,'(A)')  ' Time step coupling'
+          elseif(IDFST(ICOMP,N).eq.5)then
+            write(calclabel,'(A)')  ' Daylight coeff.' 
+          endif
           call edisp(itru,'  ')
-          call edisp(itru,' % of |No. of|Calculation| ')
-          call edisp(itru,' whole|sensor|type       | ')
-          write(outs,9988)SYSPER(ICOMP,N),NDF(ICOMP,N),IDFST(ICOMP,N)
- 9988     format(F6.2,I7,I7)
+          call edisp(itru,' % of |Sensor|Calculation   | ')
+          call edisp(itru,' whole|number|type          | ')
+          write(outs,'(F6.2,I7,a)')SYSPER(ICOMP,N),NDF(ICOMP,N),
+     &      calclabel
           call edisp(itru,outs)
 
           call edisp(itru,'  ')
@@ -392,12 +414,12 @@ c Trace output follows.
            call edisp(itru,
      &       ' Sensor|   X  |   Y  |   Z  |  DX |  DY |  DZ |')
            call edisp(itru,
-     &       ' no.   |      |      |      |     |     |     |')
+     &       ' number|      |      |      |     |     |     |')
           elseif(IDFST(ICOMP,N).eq.5)then
            call edisp(itru,
      &       ' Sensor|   X  |   Y  |   Z  |  DX |  DY |  DZ |  DC| ')
            call edisp(itru,
-     &       ' no.   |      |      |      |     |     |     |    | ')
+     &       ' number|      |      |      |     |     |     |    | ')
           elseif(IDFST(ICOMP,N).eq.3)then
             call edisp(itru,' Sensor | Sensor |')
             call edisp(itru,' posit. | type   |')
@@ -525,10 +547,14 @@ C Initialise file.
         RETURN
       ENDIF
 
-C Write data to file.
+C Write data to file. The header starts with an identity tag,
+C next is a tag *desc followed by a brief user description.
       WRITE(IUNIT,'(A)',IOSTAT=ios,ERR=1)'*Casual_gain_ctl'
       WRITE(IUNIT,'(A,A)',IOSTAT=ios,ERR=1) '*desc ',
      &  cgcdesc(icomp)(1:lnblnk(cgcdesc(icomp)))
+
+C For each of the calendar day types in the model set the casual
+C gain type associated with casual gain control.
       DO 400 IDTY=1,NBDAYTYPE
         NCGTCX(IDTY)=NCGTC(ICOMP,IDTY)
  400  CONTINUE

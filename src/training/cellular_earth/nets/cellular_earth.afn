@@ -2,7 +2,7 @@
  Node         Fld. Type   Height    Temperature    Data_1       Data_2
  manager_a       1    0   1.5000       20.000       0.0000       40.501    
  manager_b       1    0   1.5000       20.000       0.0000       40.501    
- coridor         1    0   1.5000       20.000       0.0000       18.300    
+ corridor         1    0   1.5000       20.000       0.0000       18.300    
  tube_a          1    0 -0.90000       20.000       0.0000       1.1884    
  tube_b          1    0 -0.90000       20.000       0.0000       1.3000    
  tube_c          1    0 -0.90000       20.000       0.0000       1.7000    
@@ -34,8 +34,8 @@
  tube_b        0.000   tube_c        0.000   tube_c14                                
  tube_c        1.200   manager_a    -1.200   grill                                   
  tube_c        1.200   manager_b    -1.200   grill                                   
- manager_a     0.000   coridor       0.000   door                                    
- manager_b     0.000   coridor       0.000   door                                    
- corid_west    0.000   coridor       0.000   door_crack                              
+ manager_a     0.000   corridor       0.000   door                                    
+ manager_b     0.000   corridor       0.000   door                                    
+ corid_west    0.000   corridor       0.000   door_crack                              
  manager_a     0.000   extr_point    0.000   extra_4ach                              
  manager_b     0.000   extr_point    0.000   extra_4ach                              

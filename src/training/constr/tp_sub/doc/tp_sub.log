@@ -1,0 +1,26 @@
+Notes on time dependent therom-physical properties
+
+For a simple 3 zone problem, the conductivity of the
+glass wool in some external walls is increased when
+the internal air temperature rises above 20deg.C
+(obviously not a real problem but used to demonstrate
+the treatment of constructional materials which
+are temperature sensitive).
+
+An additional entry (glasswool_mod) has been made in the 
+materials database (tp_subs.materialdb). This is similar to glasswool
+but with increased conductivity. A new entry has also been made in
+the construction database (tp_subc.mlc) called ext_wall_mod.
+This is the same as for the extern_wall entry except that it
+uses the modified glasswool.
+
+The control file demonstrates the activation of the replacement
+constructions.  For the space named reception, constructions
+'south', 'east' and 'north', and for the office space, constructions
+'North_w' and 'West_w', use the replacement construction whenever
+the room temperature exceeds 20deg.C.  In the control file, control
+function 1 (assigned to the reception) has a 'nested' control function
+3 which gives details of the thermophysical property control. Similarly,
+control function 2 (for the office) has a 'nested' control function 4.
+
+See the mode contents report for further information.

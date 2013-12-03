@@ -36,25 +36,26 @@ C exportcad: controls model export facilities.
 
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       common/OUTIN/IUOUT,IUIN
+      integer childterminal  ! picks up mmod from starting of prj
+      common/childt/childterminal
 
-      common/C21/IFCFG,cfgroot,LCFGF
       common/rpath/path
       common/appw/iappw,iappx,iappy
       common/user/browse
 
-      common/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
+      common/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,CFCDBOK
       COMMON/exporttg/xfile,tg,delim
       COMMON/exporttgi/ixopen,ixloc,ixunit
       COMMON/RAY3/MODIFY,MODLEN,MODBND
 
-      logical OK,DOK,CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,concat
+      logical OK,DOK,CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,concat,CFCDBOK
       logical MODIFY,MODLEN,MODBND,unixok,browse
 
       DIMENSION ITEMS1(10)
 
-      character LFIL*72,path*72,LCFGF*72
+      character LFIL*72,path*72
       character ITEMS1*34,doit*248,outs*124,outs248*248
-      character cfgroot*24,tmode*12
+      character tmode*12
       character xfile*144,tg*1,delim*1,ffile*72,dvfil*72
       character ETEXT*82
       character longtfile*144,longtfiledos*144,L144*144,lltmp*144
@@ -81,10 +82,8 @@ C Passed parameters for cfgtogg
 
 #ifdef OSI
       integer iside,isize,ifont     ! passed to viewtext
-      integer ICPMOD     ! passed from tchild
 #else
       integer*8 iside,isize,ifont     ! passed to viewtext
-      integer*8 ICPMOD   ! passed from tchild
 #endif
 
 C For help messages
@@ -250,6 +249,10 @@ C by the user selection.
         CALL EASKXORGTKF(L144,'DXF export file name?',' ',
      &    dvfil,lltmp,'dxf file',IER,nbhelp)
 
+C Debug.
+C        write(6,*) 'l144 ',l144
+C        write(6,*) 'lltmp ',lltmp
+
 C If user request jump back and re-display the menu.
         if(ier.eq.-3)then
           return  ! cancel detected, return.
@@ -300,8 +303,7 @@ C If browsing pass this information to e2r.
           endif
           call tstamp('>','PRJ: export to RADIANCE')
           doit = ' '
-          call tchild(ICPMOD)
-          call termode(ICPMOD,tmode)
+          call terminalmode(childterminal,tmode)
           if(unixok)then
             call addpath(LCFGF,longtfile,concat)
           else
@@ -522,9 +524,10 @@ C Error.
 
 C ******** cadin
 C CADIN drives the conversion of CAD input into data model.
-C used by the Project Manager.
-C Parameter ichoice is currently not used.
-      subroutine cadin(itrc,ichoice,ier)
+C Used by the Project Manager.
+      subroutine cadin(itrc,ier)
+#include "building.h"
+#include "model.h"
       
       integer lnblnk  ! function definition
 
@@ -535,8 +538,6 @@ C Parameter ichoice is currently not used.
       
       integer ncomp,ncon
       common/C1/NCOMP,NCON
-      common/C21/IFCFG,cfgroot,LCFGF
-      INTEGER :: IFCFG
       common/rcmd/LCMDFL
 
 C Indicator of possible focus zone.
@@ -545,11 +546,11 @@ C Indicator of possible focus zone.
 C External cad package.
       common/cad3rd/cadlbl,cadexe,cadfmt
 
-      LOGICAL     OK,DOK,concat,browse,typez,confirm,ckpath,unixok
+      LOGICAL     OK,DOK,concat,browse,confirm,ckpath,unixok
       logical itisanexemplar  ! passed to newprb to ensure correct browse mode.
 
-      character LCFGF*72,LFIL*72,LCMDFL*144
-      character outs*124,OUTSTR*124,cfgroot*24,doit*248
+      character LFIL*72,LCMDFL*144
+      character outs*124,OUTSTR*124,doit*248
       character cadlbl*20,cadexe*20,cadfmt*4
       character longtfile*144,longtfiledos*144
 
@@ -658,7 +659,6 @@ C is a DXF file.
         CALL STRIPC(ifun,OUTSTR,0,ND,1,'CAD first line',IER)
         CALL STRIPC(ifun,OUTSTR,0,ND,1,'CAD 2nd line',IER)
         if(OUTSTR(1:7).eq.'SECTION')then
-          typez=.false.
           call edisp(iuout,'Based on 2nd line of file:')
           call edisp(iuout,outstr)
           call edisp(iuout,'this file is assumed to be a DXF file.')
@@ -725,16 +725,16 @@ C Passed parameters.
       
       integer ncomp,ncon
       common/C1/NCOMP,NCON
-      common/C6/INDCFG
       INTEGER :: INDFCG
+      common/C6/INDCFG
 
 C Images - included to warn user on subsequent browsing sessions
 C to quit the image browser.
-      character imgfmt*4  ! GIF XBMP TIF JPG
-      character imgfoc*4  ! FZON FNET FCTL FDFS
-      character limgfil*72  ! file name (extend to 144 char)
-      character imgdoc*248  ! text associated with image
-      common/imagf/imgfmt(MIMG),imgfoc(MIMG),limgfil(MIMG),imgdoc(MIMG)
+C      character imgfmt*4  ! GIF XBMP TIF JPG
+C      character imgfoc*4  ! FZON FNET FCTL FDFS
+C      character limgfil*72  ! file name (extend to 144 char)
+C      character imgdoc*248  ! text associated with image
+C      common/imagf/imgfmt(MIMG),imgfoc(MIMG),limgfil(MIMG),imgdoc(MIMG)
 
       integer noimg  ! number of images
       integer iton   ! zero if images not yet shown, one if yes
@@ -744,7 +744,7 @@ C to quit the image browser.
       dimension gitem(18),gh(13),cfgitem(30),inl2ngr(30),itemlog(30)
       character name*70,label*42,mitem*72,gitem*44,OUTSTR*124,WORD*20
       character group*42,tgroup*42,key*1,look*70,tlook*70
-      character line*72,outs*124,rootp*84,separ*42
+      character outs*124,rootp*84,separ*42
       character doit*248
       character gh*72,cfgitem*144,exdescr*81,doc*72,head*42
       character cfg*144,cfg_path*84,cfg_root*72,doc_file*96
@@ -804,6 +804,7 @@ C Clear some of the local strings.
         itemlog(loop)='  '
         inl2in(loop)=0
         inl2ngr(loop)=0
+        if(loop.le.15) group(loop)='  '
   38  continue
 
 C Read the header and see if '*EXEMPLARS'
@@ -1084,7 +1085,6 @@ C User selected an exemplar, attempt to access it.
   3     CALL STRIPC(iexfil,OUTSTR,0,ND,0,'item lines',IER)
         if(ier.ne.0)goto 92
 
-        line=' '
         exemplar=' '
         rootp=' '
         K=0
@@ -1248,7 +1248,6 @@ C                    call edisp(iuout,outs)
 C For an xcopy command we need the destination to also include the
 C model folder so use fdroot to extract this from rootp.
                     call fdroot(rootpdos,rootpath,modelroot)
-                    lnmr=lnblnk(modelroot)
 
                     call edisp(iuout,' ')
 
@@ -1353,7 +1352,8 @@ C the top menu to re-resent groups.
                 goto 41
               endif
 
-C If there was a prior model in memory clear it.
+C If there was a prior model in memory (e.g. some zones or a plant
+C only model) clear it.
               CALL ERPFREE(iexfil,ISTAT)
               if(ncomp.gt.0.or.INDCFG.eq.2)then
                 call usrmsg('Please wait... ',
@@ -1480,14 +1480,12 @@ C ICLIM,LCLIM (for climate file)
       COMMON/C1/NCOMP,NCON
       COMMON/C6/INDCFG
       INTEGER :: INDCFG
-      common/C21/IFCFG,cfgroot,LCFGF
-      INTEGER :: ifcfg
       COMMON/C23/IFPNF,LPNF
       INTEGER :: IFPNF
       COMMON/AFN/IAIRN,LAPROB,ICAAS(MCOM)
       INTEGER :: iairn,icaas
       common/cctlnm/ctldoc,lctlf
-      common/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
+      common/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,CFCDBOK
       common/GTFIL/GTGEOM
       common/cfdfil/LCFD(MCOM),IFCFD(MCOM)
       INTEGER :: ifcfd
@@ -1527,18 +1525,18 @@ C ICLIM,LCLIM (for climate file)
       common/bsmtdef/iBSIMP(MCOM),LBSIMP(MCOM)
       INTEGER :: ibsimp
 
-      character LUALF*72,LCNG*15,LLOC*15,LCFGF*72
+      character LUALF*72,LCNG*15,LLOC*15
       character LPNF*72,LMOIST*72
       character*72 LCFD
       character LCMDFL*144,LFIL*72
       
 C The string buffer doit and option used for tar command.
       character doit*248,option*4
-      character path*72,cfgroot*24
+      character path*72
       character curdir*84
       character LAPROB*72
       CHARACTER*72 LGDCVS,LGDCNC,LGDNDC,LGDNDD,LGDTAQ,LGRD1D,LNLTHP
-      character tp*32,tr*32
+      character tp*42,tr*32
       character ctldoc*248,LCTLF*72,LGrdSt*72
       character GTGEOM*72,lipvdatf*72
       character fs*1
@@ -1552,7 +1550,7 @@ C The string buffer doit and option used for tar command.
 
       logical browse,XST,unixok
       LOGICAL INTHPS,INTHPZ,IGR1D,GRND3D
-      LOGICAL CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
+      LOGICAL CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,CFCDBOK
 
 C Patdot is true if path is ./, patcfg is true if path is cfg,
 C patroot is true if path is at root level. 
@@ -1562,6 +1560,7 @@ C      character WORDS*32
 
       INTEGER :: lc,j,iw,iuf,iunit,ito,istat,ipid,img,ifold,i,ier
       INTEGER :: iaccess,icerr,ios,lcd,llf,lr,ltp,ltr
+      integer iwds,lniwd,lniwd1
 
       iunit=ifil+1
       patdot=.false.
@@ -1684,12 +1683,15 @@ C the root name check for rootname/cfg folders.
         endif
       elseif(path(1:2).eq.'./')then
         call GETTOKENS(curdir,IW,WORDS)
-        if(IW.gt.0)then
+        iwds=iw   ! remember how many words
+        if(iwds.gt.0)then
 
 C Find out how many characters are in the two folders above where we
 C are now so this can be subtracted from curdir for testing.
-          write(LF,'(3a)') WORDS(IW-1)(1:lnblnk(WORDS(IW-1))),
-     &            fs,WORDS(IW)(1:lnblnk(WORDS(IW)))
+          lniwd1=lnblnk(WORDS(iwds-1))
+          lniwd=lnblnk(WORDS(iwds))
+          write(LF,'(3a)') WORDS(iwds-1)(1:lniwd1),
+     &            fs,WORDS(iwds)(1:lniwd)
           llf=lnblnk(LF)
           write(LF,'(a)') curdir(1:lcd-llf)
 
@@ -1702,10 +1704,12 @@ C Debug.
           ifold=-1
           call ckaccess(ifold,iaccess,icerr,LF)
           if(ifold.eq.1.and.icerr.eq.0)then
-            write(tp,'(3a)') WORDS(IW-1)(1:lnblnk(WORDS(IW-1))),
-     &            fs,WORDS(IW)(1:lnblnk(WORDS(IW)))
+            lniwd1=lnblnk(WORDS(iwds-1))
+            lniwd=lnblnk(WORDS(iwds))
+            write(tp,'(3a)') WORDS(iwds-1)(1:lniwd1),
+     &            fs,WORDS(iwds)(1:lniwd)
             ltp=lnblnk(tp)
-            write(tr,'(a)') WORDS(IW-1)(1:lnblnk(WORDS(IW-1)))
+            write(tr,'(a)') WORDS(iwds-1)(1:lniwd1)
             ltr=lnblnk(tr)
             patdot=.true.
             goto 98
@@ -1725,11 +1729,13 @@ C cfg is appended to the curdir and this is a true path. If so then
 C will do a cd ../ before the tar command and so cfgroot can be included
 C in the tp name.
         call GETTOKENS(curdir,IW,WORDS)
-        if(IW.gt.0)then
+        iwds=iw   ! remember how many words
+        if(iwds.gt.0)then
 
 C Find out how many characters are in the folder above where we
 C are now so this can be subtracted from curdir for testing.
-          write(LF,'(a)') WORDS(IW)(1:lnblnk(WORDS(IW)))
+          lniwd=lnblnk(WORDS(iwds))
+          write(LF,'(a)') WORDS(iwds)(1:lniwd)
           llf=lnblnk(LF)
           write(LF,'(a)') curdir(1:lcd-llf)
 
@@ -1743,9 +1749,9 @@ C Debug.
           call ckaccess(ifold,iaccess,icerr,LF)
           if(ifold.eq.1.and.icerr.eq.0)then
             patcfg=.true.
-            write(tp,'(3a)') WORDS(IW)(1:lnblnk(WORDS(IW))),fs,'cfg'
+            write(tp,'(3a)') WORDS(iwds)(1:lniwd),fs,'cfg'
             ltp=lnblnk(tp)
-            write(tr,'(a)') WORDS(IW)(1:lnblnk(WORDS(IW)))
+            write(tr,'(a)') WORDS(iwds)(1:lniwd)
             ltr=lnblnk(tr)
             goto 98
           else
@@ -1762,13 +1768,14 @@ C is one level above the cfg folder.
 C There is no such folder so check the full path to find out which folder
 C is one level above the cfg folder.
         call GETTOKENS(path,IW,WORDS)
-        if(IW.gt.0)then
-          do 95 ito=1,IW
+        iwds=iw   ! remember how many words
+        if(iwds.gt.0)then
+          do 95 ito=1,iwds
+            lniwd=lnblnk(WORDS(ito-1))
             if(WORDS(ito)(1:3).eq.'cfg'.and.ito.gt.1)then
-              write(tp,'(3a)') WORDS(ito-1)(1:lnblnk(WORDS(ito-1))),
-     &          fs,'cfg'
+              write(tp,'(3a)') WORDS(ito-1)(1:lniwd),fs,'cfg'
               ltp=lnblnk(tp)
-              write(tr,'(a)') WORDS(ito-1)(1:lnblnk(WORDS(ito-1)))
+              write(tr,'(a)') WORDS(ito-1)(1:lniwd)
               ltr=lnblnk(tr)
             endif
   95      continue
@@ -1824,6 +1831,9 @@ C local (if ipath* value is 1).
           call wtarentry(iunit,pathome,tr,ltr,tp,ltp,LFL)
         endif
   41  continue
+
+C Write model contents file if it exists.
+C << to be done >>
 
 C Write control file if it exists.
       if(LCTLF(1:4).eq.'UNKN'.or.LCTLF(1:2).eq.'  ')then

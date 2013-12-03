@@ -284,7 +284,7 @@ C Echo the current information to the user.
         write(outs,'(a,f10.4)') 'Water-table depth: ',Water_Table
         call edisp(iuout,outs)
         write(outs,'(a,f10.4)') 'Anually-averaged soil temperature: ',
-     &    TGavg	
+     &    TGavg
         call edisp(iuout,outs)
         write(outs,'(a,f10.4)') 
      &    'Amplitude of ground-temp annual sine wave: ',TGamp 

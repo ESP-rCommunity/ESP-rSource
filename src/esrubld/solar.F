@@ -44,8 +44,6 @@ C on internal and external surfaces.
 
       COMMON/OUTIN/IUOUT,IUIN
 
-      integer ncomp,ncon
-      COMMON/C1/NCOMP,NCON
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
       integer IZSTOCN
       COMMON/C24/IZSTOCN(MCOM,MS)
@@ -82,7 +80,7 @@ C and last connections associated with surfaces.
       JCONF=IZSTOCN(ICOMP,1)
       JCONL=IZSTOCN(ICOMP,NC)
 
-   11 ISURF=0
+      ISURF=0
 
 C Connection-by-connection. Note: if JCONF was not reset
 C in the loop above the zero start of loop then ict(J) will
@@ -174,10 +172,13 @@ C These energy transfers are computed for both the present
 C and future time rows. Units: W/m^2
 
       SUBROUTINE MZSLGN(ICOMP)
-#include "building.h"
-#include "geometry.h"
-#include "CFC_common.h"
-#include "tdf2.h"
+      USE h3kmodule
+      
+      include "building.h"
+      include "geometry.h"
+      include "CFC_common.h"
+      include "net_flow.h"
+      include "tdf2.h"
 C ADD NEW PARAMETER STATEMENT
 C MSTMC is number of different bidirectional datasets, limited
 C to 20 for the present.
@@ -329,15 +330,20 @@ C COMMONS FOR CFC type CONSTRUCTIONS
       common/CFCsolarS/RadIncDirS(mcom,ms),RadIncDifS(mcom,ms),
      &      transBB_S(mcom,ms),transD_S(mcom,ms),refl_S(mcom,ms),
      &      issur_self_shd(mcom,ms),proang_s(mcom,mcfc,ms),
-     &      qtmca_ext(mcom,ms,mn)
+     &      qtmca_ext(mcom,ms,mn),omega_v_s(mcom,mcfc,ms),
+     &	omega_h_s(mcom,mcfc,ms)
+	 
       real RadIncDirS,RadIncDifS,transBB_S,transD_S,refl_S
-      real proang_s,qtmca_ext
+      real proang_s,qtmca_ext,omega_v_s,omega_h_s
       integer issur_self_shd
 
       REAL fInc_angle          ! Angle of incidence for surface
 
-      real proang
+      real proang,omega_v,omega_h
       real TRANSBB_SYS,TRANSD_SYS,REFL_SYS,CFCabs
+      real TRANSD_SYS_BD,TRANSD_SYS_SKY,TRANSD_SYS_GRD
+      real dummy
+      character ctmp*2
 
       logical VTSOL,vsolfl,closea,neglum
 
@@ -357,7 +363,9 @@ C tdtrace is the direct transmission at the current timestep for each surface.
 C tfftrace is the diffuse transmission at the current timestep for each surface.
       dimension tdtrace(MS),tfftrace(MS)
 
-      dimension AbsSol(me)
+      dimension AbsSol(me) 
+      dimension AbsSolDir(me),AbsSolDifSky(me),AbsSolDifGrd(me)
+      dimension EXDIFSKY(ms),EXDIFGRD(ms)
 
 C Definitions for daylight coefficient patch altitude:
       data alt/6.,18.,30.,42.,54.,66.,78.,90./
@@ -391,6 +399,9 @@ C rows respectively.
       COMMON/zfluid/znotair(mcom),zfldK,zfldD,zfldC,zfldA,
      &              zSWAp(mcom),zSWAf(mcom)
       logical znotair
+
+C.....DECLARATIONS for H3Kreporting object
+      CHARACTER*2   cZone_Chars, cSurf_Chars
 
       ZAREA=zonetotsurfacearea(ICOMP)
 
@@ -623,7 +634,7 @@ C First write out data into a temporary file for checking.
 C Replace calculated values by measured values from tdf file
 C Use the ratio of direct/diffuse as calculated to divide
 C the measured values into direct and diffuse components.
-C Temporal (TDF) vertical solar radiation data
+C Temporal (TDF) vertical solar radiation data.
           if(IVERSOL(icomp,isrf).ne.0)then
             IFOC=IVERSOL(icomp,isrf)
             CALL RCTDFB(itrc,btimef,VAL,ISD,IFOC,IER)
@@ -1372,7 +1383,7 @@ C Set a local flag if bidirectional data available for this surface.
         IBIDIR=NSTMCFL(IZSTOCN(ICOMP,I))
 
         icfctp=icfcfl(icomp,i)              !CFC type
-
+		
 C Bidirectional case
         if(IBIDIR.NE.0)then
 
@@ -1607,41 +1618,138 @@ C Get shading data if it exists
             ENDIF
 
 C Apply shading factor to external incident radiation
-            EXDIR(I)=SRADDO(I)*(1.-POO)
-            EXDIF(I)=SRADF(I)*(1.-POFF)
+            EXDIR(I)    = SRADDO(I)*(1.-POO)
+            EXDIF(I)    = SRADF(I)*(1.-POFF)
+            EXDIFSKY(I) = SKYDIF(I)*(1.-POFF)
+            EXDIFGRD(I) = GRDDIF(I)*(1.-POFF)
+
+C...........Pad zone index to 'XX'
+c            if ( ICOMP .gt. 9 ) then
+c              write (cZone_Chars,'(I2)') ICOMP
+c            else
+c              write (cZone_Chars,'(A,I1)') '0', ICOMP
+c            endif
+
+C...........Pad surface index to 'XX'
+c            if ( I .gt. 9 ) then
+c              write (cSurf_Chars,'(I2)') I
+c            else
+c              write (cSurf_Chars,'(A,I1)') '0', I
+c            endif
+
+c            call AddToReport(
+c     &         rvSolarIncidentDirect%identifier,
+c     &         EXDIR(I),
+c     &         cZone_Chars,
+c     &         cSurf_Chars)
+
+c            call AddToReport(
+c     &         rvSolarIncidentDiff%identifier,
+c     &         EXDIF(I),
+c     &         cZone_Chars,
+c     &         cSurf_Chars)
 
             IF(ians(i).eq.0)then  !surface is not self shaded
 
-C Determine profile angle
-             call profile_angle(icomp,i,icfctp,proang)
+C............Determine profile angle
+             call profile_angle(icomp,i,icfctp,omega_v,omega_h)
 
-             proang_s(icomp,icfctp,i)=proang    !save profile angle for CFC output
+             omega_v_s(icomp,icfctp,i)=omega_v  !save hori and vert profile angles for CFC output
+             omega_h_s(icomp,icfctp,i)=omega_h
 
-C Determine beam-beam, beam-diffuse and diffuse-diffuse solar properties for
-C each CFC layer. Glazing layers have incidence angle dependence. Slat-blind
-C layers have profile angle dependency
-             call cfc_eff_opt_prop(icomp,i,icfctp,angi(i),proang)
+C............Determine beam-beam, beam-diffuse and diffuse-diffuse solar properties for
+C............each CFC layer. Glazing layers have incidence angle dependence. Slat-blind
+C............layers have profile angle dependency
+             call cfc_eff_opt_prop(icomp,i,icfctp,angi(i),
+     &             omega_v,omega_h)
 
-C Calculate CFC system solar beam transmitted, diffuse transmitted, total reflected
-C and absorbed fluxes in each CFC layer.
-             call solar_multilayer(icomp,i,icfctp,EXDIR(I),EXDIF(I),
-     &       tmpIBM,tmpIDF,TRANSBB_SYS,TRANSD_SYS,REFL_SYS,AbsSol)
+C............Check whether sky and ground diffuse calc. is requested
+             if(i_ground_sky_diff_calc.eq.1)then
+
+C..............Calculate CFC system solar BEAM transmitted
+               call solar_multilayer(0,icomp,i,icfctp,
+     &                               EXDIR(I),tmpIDF,
+     &         tmpIBM,tmpIDF,TRANSBB_SYS,TRANSD_SYS_BD,dummy,AbsSolDir)
+
+C..............Calculate CFC system solar SKY diffuse transmitted
+               call solar_multilayer(i_sky,icomp,i,icfctp,
+     &                               tmpIBM,EXDIFSKY(I),
+     &          tmpIBM,tmpIDF,dummy,TRANSD_SYS_SKY,dummy,AbsSolDifSky)
+
+C..............Calculate CFC system solar GROUND diffuse transmitted
+               call solar_multilayer(i_ground,icomp,i,icfctp,
+     &                               tmpIBM,EXDIFGRD(I),
+     &           tmpIBM,tmpIDF,dummy,TRANSD_SYS_GRD,dummy,AbsSolDifGrd)
+
+C..............Sum up diffuse transmitted contributions (sky + ground)
+               TRANSD_SYS = TRANSD_SYS_BD +
+     &                      TRANSD_SYS_SKY + TRANSD_SYS_GRD 
+
+C..............Sum up solar absorbed contributions (direct + sky diff + ground diff)
+               do jj=1,ncfc_el(icomp,icfctp)
+                    AbsSol(jj)=AbsSolDir(jj) + 
+     &                         AbsSolDifSky(jj) +
+     &                         AbsSolDifGrd(jj)
+               end do
+
+             else
+
+C..............Calculate CFC system solar beam transmitted, diffuse transmitted, total reflected
+C..............and absorbed fluxes in each CFC layer.
+               call solar_multilayer(0,icomp,i,icfctp,EXDIR(I),EXDIF(I),
+     &           tmpIBM,tmpIDF,TRANSBB_SYS,TRANSD_SYS,REFL_SYS,AbsSol)
+             endif
 
             ELSE     !surface is self-shaded
 
              temp1=0.
              temp2=0.
-
+             temp3=0.
+		 
              proang_s(icomp,icfctp,i)=-1.    !save profile angle for CFC output, -1 indicates self shaded
 
 C Determine diffuse-diffuse solar properties for
 C each CFC layer. Incidence and profile angles set to 0 since self-shaded.
-             call cfc_eff_opt_prop(icomp,i,icfctp,temp1,temp2)
+             call cfc_eff_opt_prop(icomp,i,icfctp,temp1,temp2,
+     &		 temp3)
+
+C............Check whether sky and ground diffuse calc. is requested
+             if(i_ground_sky_diff_calc.eq.1)then
+
+C..............Calculate CFC system solar BEAM transmitted
+               call solar_multilayer(0,icomp,i,icfctp,
+     &                               EXDIR(I),tmpIDF,
+     &         tmpIBM,tmpIDF,TRANSBB_SYS,TRANSD_SYS_BD,dummy,AbsSolDir)
+
+C..............Calculate CFC system solar SKY diffuse transmitted
+               call solar_multilayer(i_sky,icomp,i,icfctp,
+     &                               tmpIBM,EXDIFSKY(I),
+     &          tmpIBM,tmpIDF,dummy,TRANSD_SYS_SKY,dummy,AbsSolDifSky)
+
+C..............Calculate CFC system solar GROUND diffuse transmitted
+               call solar_multilayer(i_ground,icomp,i,icfctp,
+     &                               tmpIBM,EXDIFGRD(I),
+     &           tmpIBM,tmpIDF,dummy,TRANSD_SYS_GRD,dummy,AbsSolDifGrd)
+
+C..............Sum up diffuse transmitted contributions (sky + ground)
+               TRANSD_SYS = TRANSD_SYS_BD +
+     &                      TRANSD_SYS_SKY + TRANSD_SYS_GRD 
+
+C..............Sum up solar absorbed contributions (direct + sky diff + ground diff)
+               do jjj=1,ncfc_el(icomp,icfctp)
+                    AbsSol(jjj)=AbsSolDir(jjj) + 
+     &                         AbsSolDifSky(jjj) +
+     &                         AbsSolDifGrd(jjj)
+               end do
+
+             else
 
 C Calculate CFC system solar beam transmitted, diffuse transmitted, total reflected
 C and absorbed fluxes in each CFC layer.
-             call solar_multilayer(icomp,i,icfctp,EXDIR(I),EXDIF(I),
-     &       tmpIBM,tmpIDF,TRANSBB_SYS,TRANSD_SYS,REFL_SYS,AbsSol)
+               call solar_multilayer(0,icomp,i,icfctp,EXDIR(I),EXDIF(I),
+     &         tmpIBM,tmpIDF,TRANSBB_SYS,TRANSD_SYS,REFL_SYS,AbsSol)
+
+             end if
 
             END IF
 
@@ -1653,6 +1761,18 @@ C save multilayer results for CFC output
              transD_S(icomp,i)=TRANSD_SYS!*SNA(ICOMP,I)
              refl_S(icomp,i)=REFL_SYS!*SNA(ICOMP,I)
 
+c            call AddToReport(
+c     &         rvCFCtranDir%identifier,
+c     &         transBB_S(icomp,i),
+c     &         cZone_Chars,
+c     &         cSurf_Chars)
+
+c            call AddToReport(
+c     &         rvCFCtranDiff%identifier,
+c     &         transD_S(icomp,i),
+c     &         cZone_Chars,
+c     &         cSurf_Chars)
+
 C Calculate total absorbed in CFC
              CFCabs=0.
              do 999 ij=1,ncfc_el(icomp,icfctp)
@@ -1663,6 +1783,36 @@ C Calculate total absorbed in CFC
 C Assign multilayer results to TD and TFF
              TD=TRANSBB_SYS*SNA(ICOMP,I)
              TFF=TRANSD_SYS*SNA(ICOMP,I)
+
+c      call add_to_xml_reporting (
+c     &         TRANSD_SYS_BD*SNA(ICOMP,I),
+c     &         'TRANSD_SYS_BD',
+c     &         'units', '(W)',
+c     &         '')
+
+c      call add_to_xml_reporting (
+c     &         TRANSD_SYS_SKY*SNA(ICOMP,I),
+c     &         'TRANSD_SYS_SKY',
+c     &         'units', '(W)',
+c     &         '')
+
+c      call add_to_xml_reporting (
+c     &         TRANSD_SYS_GRD*SNA(ICOMP,I),
+c     &         'TRANSD_SYS_GRD',
+c     &         'units', '(W)',
+c     &         '')
+
+c      call add_to_xml_reporting (
+c     &         TD,
+c     &         'solar_trans_direct',
+c     &         'units', '(W)',
+c     &         '')
+c      call add_to_xml_reporting (
+c     &         TFF,
+c     &         'solar_trans_diffuse_total',
+c     &         'units', '(W)',
+c     &         '')
+
              tfftrace(i)=tff
              tdtrace(i)=td
 
@@ -1692,6 +1842,21 @@ C Assign nodal absorptions to CFC layer nodes
                qtmca_ext(icomp,i,inode)=qtmca(i,inode,2)    !save for CFC output
 
   200        continue
+
+c             do jkl=1,nndc(icomp,i)
+
+c                  if ( jkl .gt. 9 ) then
+c                    write (ctmp,'(I2)') jkl
+c                  else
+c                    write (ctmp,'(A,I1)') '0', jkl
+c                  endif
+c                  call add_to_xml_reporting (
+c     &              qtmca(i,jkl,2)*SNA(ICOMP,I),
+c     &              'qtmca_sna/node_'//ctmp,
+c     &              'units', '(W)',
+c     &              '')
+c             end do
+
 
           end if
 
@@ -1833,7 +1998,7 @@ C Calculate CFC system solar beam transmitted, diffuse transmitted, total reflec
 C and absorbed fluxes in each CFC layer.Here, the transmitted component is actually
 C the reflected component on the inside surface since the source is from the
 C inside.
-                call solar_multilayer(icomp,ks,icfcfl(icomp,ks),
+                call solar_multilayer(0,icomp,ks,icfcfl(icomp,ks),
      &          temp1,temp2,temp3,X1,TRANSBB_SYS,TRANSD_SYS,
      &          REFL_SYS,AbsSol)
 
@@ -1914,7 +2079,7 @@ C Calculate CFC system solar beam transmitted, diffuse transmitted, total reflec
 C and absorbed fluxes in each CFC layer.Here, the transmitted component is actually
 C the reflected component on the inside surface since the source is from the
 C inside.
-                call solar_multilayer(icomp,k,icfcfl(icomp,k),
+                call solar_multilayer(0,icomp,k,icfcfl(icomp,k),
      &          temp1,temp2,temp3,X2,TRANSBB_SYS,TRANSD_SYS,
      &          REFL_SYS,AbsSol)
 
@@ -2002,7 +2167,7 @@ C Calculate CFC system solar beam transmitted, diffuse transmitted, total reflec
 C and absorbed fluxes in each CFC layer.Here, the transmitted component is actually
 C the reflected component on the inside surface since the source is from the
 C inside.
-             call solar_multilayer(icomp,i,icfcfl(icomp,i),
+             call solar_multilayer(0,icomp,i,icfcfl(icomp,i),
      &       temp1,temp2,temp3,RDIFR,TRANSBB_SYS,TRANSD_SYS,
      &       REFL_SYS,AbsSol)
 
@@ -2176,6 +2341,7 @@ C Output QSOLE and QSOLI for each construction if sun up.
 C Output direct and diffuse solar passing glazing and then clear.
           write(outs,'(2a,F6.1,a,F6.1,a)') '  Transmissions (W):',
      &      ' direct = ',tdtrace(i),'; diffuse = ',tfftrace(i)
+     
           call edisp(itu,outs)
           tdtrace(i)=0.
           tfftrace(i)=0.
@@ -2216,20 +2382,14 @@ c Britain).
 
       SUBROUTINE MZSANG
 #include "building.h"
-#include "geometry.h"
 #include "roam.h"
 
       COMMON/TC/ITC,ICNT
       COMMON/TRACE/ITCF,ITRACE(MTRACE),IZNTRC(MCOM),ITU
-      COMMON/OUTIN/IUOUT,IUIN
-
       COMMON/PREC8/SLAT,SLON
-
       COMMON/BTIME/BTIMEP,BTIMEF
       COMMON/SIMTIM/IHRP,IHRF,IDYP,IDYF,IDWP,IDWF,NSINC,ITS
-
       COMMON/SUNPOS/SAZI,SALT,ISUNUP
-
       COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
 
       character outs*124
@@ -2591,6 +2751,40 @@ C Slope of surface
 C Call subroutine to determine direct and diffuse solar
 C radiation
       CALL MZSRAD0(BETA,QD,QF,CAI,SRADDO,SRADF,SKYDIF,GRDDIF)
+      
+      if(ICOMP.eq.1.and.II.eq.7)then
+      
+C TODO: Convert to new format
+c            call add_to_xml_reporting (
+c     &         SRADDO,
+c     &         'building/zone_01/envelope/surface/SRADDO',
+c     &         'units', '(W/m2)',
+c     &         'SolarIncRad'
+c     &         //' (all zones) ' )
+           
+c            call add_to_xml_reporting (
+c     &         SRADF,
+c     &         'building/zone_01/envelope/surface/SRADF',
+c     &         'units', '(W/m2)',
+c     &         'SolarRad'
+c     &         //' (all zones) ' )
+           
+c            call add_to_xml_reporting (
+c     &         SKYDIF,
+c     &         'building/zone_01/envelope/surface/SKYDIF',
+c     &         'units', '(W/m2)',
+c     &         'SkyDiff'
+c     &         //' (all zones) ' )
+           
+c            call add_to_xml_reporting (
+c     &         GRDDIF,
+c     &         'building/zone_01/envelope/surface/GRDDIF',
+c     &         'units', '(W/m2)',
+c     &         'GrndDiff'
+c     &         //' (all zones) ' )
+     
+      endif
+      
       RETURN
       END
 
@@ -3211,7 +3405,6 @@ c         receiving internal surfaces.
       SUBROUTINE MZSHDO(IYRD)
 #include "building.h"
 #include "model.h"
-#include "geometry.h"
 #include "CFC_common.h"
 
       COMMON/FILEP/IFIL
@@ -3789,6 +3982,7 @@ C existing and new controls should be added here.
       SUBROUTINE MZSCTL(ICOMP,ISURFNumber,SRADDO,SRADF,ISET)
 #include "building.h"
 #include "geometry.h"
+#include "net_flow.h"
 #include "tdf2.h"
 #include "control.h"
 #include "esprdbfile.h"
@@ -3860,7 +4054,6 @@ C Definitions for daylight coefficient patch altitude:
       integer i_ctlZone  !This is used when the sensor is located to another zone and indicates
                          !which zone. It will take the value of iosn(1,1).
 
-      integer IDAYPD
       common/caleni/nbdaytype,nbcaldays(MDTY),icalender(365)
       INTEGER NBDAYTYPE,NBCALDAYS,ICALENDER,NIN
 
@@ -3890,7 +4083,7 @@ C<<<probably there is no need for this >>>>>
 C Set up day type and period pointers
           NDAYT=NOCDT(iol)
 
-C If NDAYT=0 set data to all day types
+C If NDAYT=0 set data to all day types.
           NIN=0
           IF(NDAYT.EQ.0)THEN
             NIN=NBDAYTYPE
@@ -3922,7 +4115,6 @@ C Check number of periods in each day and the start and finish times
           endif
           DO 22 IDAYP=1,NDAYP
             IPER=IDAYP
-            IDAYPD=IDAYP
             TOS=TOCPS(IOFP,IDTYP,IDAYP)
             IF(IDAYP.LT.NDAYP) THEN
               TOF=TOCPS(IOFP,IDTYP,IDAYP+1)
@@ -3937,11 +4129,11 @@ C Call in the future here different subroutines for different controls
 C **** IMPORTANT: TAKE ONLY THE 1ST 12 CHARS FROM "DESC" ****
 
 C Debug.
-C        write(6,*) 'desc', DESC(ictl_constrdbindex_number)
+C        write(6,*) 'desc', mlcname(ictl_constrdbindex_number)
 C        write(6,*) 'ssmlcn', SSMLCN(izstocn(icomp,ISURFNumber))
 
               write(ctl_constrdb_name,'(a)')
-     &             DESC(ictl_constrdbindex_number)(1:12)
+     &             mlcname(ictl_constrdbindex_number)(1:12)
               write(name_constr_ofStudy,'(a)')
      &             SSMLCN(izstocn(icomp,ISURFNumber))(1:12)
 

@@ -184,10 +184,11 @@ C espriou.h provides currentfile and defdbfl.
       include "seasons.h"
       include "schedule.h"
       include "UserSimulationToggles.h"
+      include "qrun.h"      
 
 
       INTEGER, PARAMETER :: MSTMC=20
-     
+
       integer lnblnk  ! function definition
 
 C Parameters
@@ -236,13 +237,6 @@ C Seasons.
 C NZSUR is the number of surfaces in each zone (from geometry.h).
 C NZTV is the number of vertices in each zone (from geometry.h).
 C VCOORD, NZNVER & NZJVN (from geometry.h)
-
-C IFCFG is the file unit for the model configuration file.
-C cfgroot (24 char) root name for the model (used when generating
-C   system files.
-C LCFGF (72 char) model configuration file name.
-      common/C21/IFCFG,cfgroot,LCFGF
-      INTEGER :: IFCFG
 
 C IFPNF is the unit for the plant network file.
 C LPNF (72 char) plant network file name.
@@ -497,8 +491,15 @@ C 'simulation toggles' menu.
 C iSlr_half_hr_flg value = 0 :hour-centered; =1 : half-hour centered.
       common/CWEC_SOL/iSlr_half_hr_flg
       integer iSlr_half_hr_flg,idty
+      
+
       INTEGER IRNCMD,IRNCMF
       INTEGER ICREPORT,IDOL,IDAYNUM,IMTHNUM,IDWKNUM,IDTYY
+      INTEGER iCount, jCount      !- counters
+      INTEGER iTemp_day_beg, iTemp_day_end, iTemp_start, iTemp_end   !- temporary variables
+      INTEGER iStart_beg, iStart_end                   !- temporary variables
+      INTEGER iPrevious_day_end, iPrevious_season      !- temporary variables
+      LOGICAL bDayFound, bSpanNewYear
 
       integer iexcludediff_flag
       common/excludediff/iexcludediff_flag
@@ -526,14 +527,14 @@ C Simulation parameters
       character GTGEOM*72
       CHARACTER ectime*24,wkd1*10,wkd2*10,naco*40,type*4
       character*10 wkday(7)
-      character LUALF*72,LCNG*15,LLOC*15,cfgroot*24,LCFGF*72
+      character LUALF*72,LCNG*15,LLOC*15
       CHARACTER NDNAM*12
       character sblres*72,sflres*72,splres*72,smstres*72,sipvres*72
       character hvacfile*72,LBSIMP*72,LFClds*72
       character gshpfile*72
       character gcepfile*72
       character dllsubr*12,dllmesg*124
-      character limgpth*24,ldocpth*24,lcfgroot*24,lpath*72
+      character limgpth*24,ldocpth*24,lcfgroot*32,lpath*72
       character path*72,lupath*72
       character namez*12,namen*12
       CHARACTER*72 NWKNAM,NWKDSC,NWKFLNAM
@@ -562,6 +563,9 @@ C Simulation parameters
 #else
       integer*8 iincomp,iincon  ! to pass nb zones connections to c code
 #endif
+
+C Quick run locals
+      integer iSeason, iCurrDay, iShift
       
       REAL :: gva
       DIMENSION GVA(12),IVA(99),namez(mcom),namen(mcom)
@@ -611,6 +615,7 @@ C Note: escdef must come after scan of .esprc file.
       write(LSBEM,'(a)')  DSBEM(1:lnblnk(DSBEM))  ! assign default SBEM db
       write(MCMPDBFL,'(a)') DMCMPDBFL(1:lnblnk(DMCMPDBFL))
       write(lfmould,'(a)') dmdbnam(1:lnblnk(dmdbnam))
+      write(LCFCDB,'(a)') DCFCDB(1:lnblnk(DCFCDB))
 
 C Clear the model common blocks.
       call clrprb
@@ -630,6 +635,9 @@ C Set flag indicating that solar radiation data is hour-centered (default)
 C Variable will be reset if 'slr_half_hr' included in .cfg
       iSlr_half_hr_flg = 0
 
+C Initialize flag for quick run simulation (default is 'no')    
+      iQuick_run = 0 
+ 
 C Initialise NCM data read flags
       IRNCMD=0
       IRNCMF=0
@@ -696,19 +704,25 @@ C Initialize the indices.
       ANGI=40.
       initvt=0
 
-C Set day types to default of 3 (weekday/saturday/sunday) and calendar
-C day type tags to default as well. These 3 day types cannot be deleted
-C and more day types if defined will be stored in CALENTAG(4) onwards.
-C this can be modified later. [The IF clause may not be necessary]
+C Older files may not have a *list section for the calendar and
+C to support compatibility with legacy assumption of 3 day types
+C set nbdaytype = 3 but instanciate the calendar variables for
+C weekday/saturday/sunday/holiday and calendar day type tags. Newer
+C cfg files will have a *list section and thus update nbdaytype.
+C The initial day types cannot (??) be deleted and more day types if 
+C defined will be stored in CALENTAG(5) onwards.
+C this can be modified later.
       IF(NBDAYTYPE.LT.3)THEN
         nbdaytype=3
       ENDIF
       CALENTAG(1)='weekday'
       CALENTAG(2)='saturday'
       CALENTAG(3)='sunday'
+      CALENTAG(4)='holiday'
       CALENDAYNAME(1)='generic weekday'
       CALENDAYNAME(2)='generic saturday'
       CALENDAYNAME(3)='generic sunday'
+      CALENDAYNAME(4)='generic holiday'
 
 C Open the configuration file, return if not found otherwise set
 C currentfile to the configuration file.
@@ -734,21 +748,21 @@ C If FILE > 4 char it might have a .cfg attached, otherwise add.
       lcfgl=lcfgr-3
       if(lcfgr.gt.4)then
         if(FILE(lcfgl:lcfgr).eq.'.cfg')then
-          if(lcfgl.gt.24)then
-            write(cfgroot,'(a)',iostat=ios,err=99) FILE(1:24)
+          if(lcfgl.gt.32)then
+            write(cfgroot,'(a)',iostat=ios,err=99) FILE(1:32)
           else
             write(cfgroot,'(a)',iostat=ios,err=99) FILE(1:lcfgl-1)
           endif
         else
-          if(lcfgr.gt.24)then
-            write(cfgroot,'(a)',iostat=ios,err=99) FILE(1:24)
+          if(lcfgr.gt.32)then
+            write(cfgroot,'(a)',iostat=ios,err=99) FILE(1:32)
           else
             write(cfgroot,'(a)',iostat=ios,err=99) FILE(1:lcfgr)
           endif
         endif
       else
-        if(lcfgr.gt.24)then
-          write(cfgroot,'(a)',iostat=ios,err=99) FILE(1:24)
+        if(lcfgr.gt.32)then
+          write(cfgroot,'(a)',iostat=ios,err=99) FILE(1:32)
         else
           write(cfgroot,'(a)',iostat=ios,err=99) FILE(1:lcfgr)
         endif
@@ -770,8 +784,7 @@ C embedded in the configuration file.
         CALL EGETW(OUTSTR,K,WORD,'W','header tags',IFLAG)
         IF(IFLAG.NE.0)goto 1
         if(WORD(1:5).eq.'*Date'.or.WORD(1:5).eq.'*date')then
-          CALL EGETRM(OUTSTR,K,ectime,'W','date stamp',IER)
-          IF(IER.NE.0)goto 1
+          CALL EGETRM(OUTSTR,K,ectime,'W','date stamp',IER)  ! missing date stamp not fatal
           goto 34
         elseif(WORD(1:5).eq.'*root')then
           CALL EGETRM(OUTSTR,K,cfgroot,'W','root name',IER)
@@ -975,6 +988,16 @@ C set the lapres common block string via call to findwhichdbpath.
       elseif(WORD(1:7).eq.'*stdprs')then
         ipathapres=2  ! standard folder for pressure coef database
         CALL EGETRM(LOUTSTR,K,LAPRES,'W','pressure db',IER)
+
+      elseif(WORD(1:6).eq.'*cfcdb')then
+        CALL EGETRM(LOUTSTR,K,lworking,'W','CFClayers db',IER)
+
+C Process the file name following *cfcdb and depending on its path
+C set the LCFCDB common block string via call to findwhichdbpath.
+        call findwhichdbpath('cfc',lworking,ier)
+      elseif(WORD(1:9).eq.'*stdcfcdb')then
+        CALL EGETRM(LOUTSTR,K,LCFCDB,'W','CFClayers db',IER)
+        ipathcfc=2  ! standard folder for material database
 
       elseif(WORD(1:4).eq.'*evn')then
         CALL EGETRM(LOUTSTR,K,lworking,'W','profiles db',IER)
@@ -1377,6 +1400,13 @@ C Solar radiation (half hour data) flag.
         call egetwi(loutstr,k,iexcludediff_flag,0,1,'W',
      &    'exclude diff shad flag',IER)
 
+      elseif(WORD(1:10).eq.'*quick_run') then
+
+C Flag for quick run method
+        call egetwi(loutstr,k,iWeekLength,0,365,'W',
+     &    'quick run method',IER)  
+        if (iWeekLength > 0) iQuick_run = 1
+
       elseif(WORD(1:4).eq.'*vew')then
         CALL EGETWR(LOUTSTR,K,EYEMI(1),0.,0.,'-','X cord',IER)
         CALL EGETWR(LOUTSTR,K,EYEMI(2),0.,0.,'-','Y cord',IER)
@@ -1403,6 +1433,12 @@ C There is a calendar of day types defined read its name.
           goto 443
         elseif(WORD(1:5).eq.'*list')then
           K=6
+
+C For each day of the year read from the 365 indicies into the
+C icalender array.
+C << how about allowing 1 day type - that would be the case
+C << for a hosptal that was used 365 days a year.
+
           CALL EGETWI(OUTSTR,K,NBDAYTYPE,3,MDTY,'W','day types',IER)
           CALL EGETWIA(IUC,IRCC,365,0,10,'W','calendar day types',IER)
           DO 118 KV=1,365
@@ -1552,7 +1588,7 @@ C Read and store the comments into the HELP array for later display.
         endif
 
       elseif(WORD(1:5).eq.'*year')then
-        CALL EGETWI(LOUTSTR,K,IYEAR,1900,2020,'W','year',IER)
+        CALL EGETWI(LOUTSTR,K,IYEAR,1900,2051,'W','year',IER)
 
 C Perform check that calendar day types correspond with simulation year.
 C The logic below assumes that the first three day types are still weekday
@@ -1560,28 +1596,33 @@ C saturday sunday. It loops through each Julian day and if the model
 C calendar day type is one of the standard 3 it checks that the model weekday
 C is the same as a Julian weekday. Any calendar day types beyond 3 are 
 C retained. If no calendar was defined in the model then it should do the
-C work silently. 
+C work silently. Howevere, if there are more than 4 day types then the
+C user might have setup a calendar that should not be overwritten.
         ICREPORT=0
-        DO 123 IDOL=1,365
-          IF(ICALENDER(IDOL).LE.3)THEN
-            CALL EDAYR(IDOL,IDAYNUM,IMTHNUM)
-            CALL EWEEKD(IDAYNUM,IMTHNUM,IYEAR,IDWKNUM)
-            IF(IDWKNUM.LT.6)THEN
-              IDTYY=1 ! WEEKDAY
-            ELSEIF(IDWKNUM.EQ.6)THEN
-              IDTYY=2 ! SATURDAY
-            ELSEIF(IDWKNUM.EQ.7)THEN
-              IDTYY=3 ! SUNDAY
+        if(nbdaytype.gt.4)then
+          continue
+        else
+          DO 123 IDOL=1,365
+            IF(ICALENDER(IDOL).LE.3)THEN
+              CALL EDAYR(IDOL,IDAYNUM,IMTHNUM)
+              CALL EWEEKD(IDAYNUM,IMTHNUM,IYEAR,IDWKNUM)
+              IF(IDWKNUM.LT.6)THEN
+                IDTYY=1 ! WEEKDAY
+              ELSEIF(IDWKNUM.EQ.6)THEN
+                IDTYY=2 ! SATURDAY
+              ELSEIF(IDWKNUM.EQ.7)THEN
+                IDTYY=3 ! SUNDAY
+              ENDIF
+              IF(ICALENDER(IDOL).EQ.0)THEN
+                ICALENDER(IDOL)=IDTYY  ! update the model calendar
+                ICREPORT=2             ! do it silently
+              ELSEIF(ICALENDER(IDOL).NE.IDTYY)THEN
+                ICALENDER(IDOL)=IDTYY  ! update the model calendar
+                ICREPORT=1
+              ENDIF
             ENDIF
-            IF(ICALENDER(IDOL).EQ.0)THEN
-              ICALENDER(IDOL)=IDTYY  ! update the model calendar
-              ICREPORT=2             ! do it silently
-            ELSEIF(ICALENDER(IDOL).NE.IDTYY)THEN
-              ICALENDER(IDOL)=IDTYY  ! update the model calendar
-              ICREPORT=1
-            ENDIF
-          ENDIF
- 123    CONTINUE
+ 123      CONTINUE
+        endif
         if(ICREPORT.EQ.1)then
           CALL EDISP(IUOUT,'  ')
           CALL EDISP(IUOUT,
@@ -1649,12 +1690,12 @@ C call ripvdat for data within the cfg file.
           CALL ERPFREE(IUTDF,ISTAT)
           call FINDFIL(lipvdatf,XST)
           if(XST)then
-	    ipvact='ipv'
+      ipvact='ipv'
             call ripvdat(IUTDF,lipvdatf,ipvact,ier)
             CALL ERPFREE(IUTDF,ISTAT)
           endif
         elseif(ND.ge.3)then
-	
+  
 C The IPV data line needs to be scanned prior to calling ripvdat
 C for the rest of the data.
           K=0
@@ -2015,12 +2056,13 @@ C Read references to TDF id's, and then the related tasks and zones.
         endif
         ITEMSTD=M
         CALL ERPFREE(IUTDF,ISTAT)
-        
+    
+      
       elseif(WORD(1:4).eq.'*sps' .or. WORD(1:6).eq. '*mysps')then
       
 C Check for simulation setup data and save level.
         CALL EGETWI(LOUTSTR,K,nsset,1,MSPS,'W','no. of sets',IER)
-        CALL EGETWI(LOUTSTR,K,isstup,0,300,'W','startup',IER)
+        CALL EGETWI(LOUTSTR,K,isstup,0,300,'W','startup',IER)    
         CALL EGETWI(LOUTSTR,K,isbnstep,1,60,'W','zone_ts',IER)
         CALL EGETWI(LOUTSTR,K,ispnstep,0,100,'W','plant_ts',IER)
         CALL EGETWI(LOUTSTR,K,issave,0,6,'W','save_lv',IER)
@@ -2052,13 +2094,14 @@ C Set flag indicating if set describes a multi-year period
           CALL EGETWI(OUTSTR,K,isstmon(iss),1,12,'W','start month',IER)
           if ( bMY_sim_sps )
      &      CALL EGETWI(OUTSTR,K,iMY_Period_Start_years(iss),
-     &                 1800,2100,'W','start year',IER)
+     &                 1900,2100,'W','start year',IER)
           CALL EGETWI(OUTSTR,K,isfnday(iss),1,31,'W','end day',IER)
           CALL EGETWI(OUTSTR,K,isfnmon(iss),1,12,'W','end month',IER)          
           if ( bMY_sim_sps )
      &      CALL EGETWI(OUTSTR,K,iMY_Period_end_years(iss),
-     &                 1800,2100,'W','end year',IER)
+     &                 1900,2100,'W','end year',IER)
 
+          
 C Opportunity for improvenemt: Should error trap duplicate
 C (ie ambigious) set names
           CALL EGETRM(OUTSTR,K,spfdescr(iss),'W','set name',IER)
@@ -2086,6 +2129,87 @@ C (ie ambigious) set names
           goto 334
  333    continue
 
+
+C If a quick run is requested    
+        quick_run: if ( iQuick_run .eq. 1 ) then
+
+C Call to subroutine that finds best week for each season and heating and cooling multipliers      
+          call Find_season_parameters()
+
+  
+C Initialise flag for loop below
+          do iCount = 1, 750
+             bSimThisDay(iCount)  = .false.
+             iSeasonIndex(iCount) = 0
+             iStart_flag = 0
+          enddo
+
+C Find first and last day that spans the periods of interest for 'quick run' simulation  
+          iFirst_day_num = iSeasonWeekStart(1)   !- initialize first day number
+          iLast_day_num = iSeasonWeekEnd(iNumberOfSeasons)      !- initialize last day number
+                    
+
+          if ( iLast_day_num < iFirst_day_num ) then
+             iLast_day_num = iLast_day_num + 365
+          endif
+
+           
+       
+          bSpanNewYear = .false.       !-initialize               
+
+          season_loop: do iSeason = 1, iNumberOfSeasons
+            iTemp_day_beg = iSeasonWeekStart(iSeason)
+            iTemp_day_end = iSeasonWeekEnd(iSeason)
+            
+            iPrevious_season = iSeason - 1
+            iPrevious_day_end = iSeasonWeekEnd(iPrevious_season)
+ 
+         
+            if ( iTemp_day_beg < iPrevious_day_end ) then         
+                iTemp_day_beg = iTemp_day_beg + 365
+                iTemp_day_end = iTemp_day_end + 365
+            endif
+            
+C Take into account startup period
+
+            iStart_beg = iTemp_day_beg - isstup
+
+            if ( iStart_beg .lt. 1 ) then
+               bSpanNewYear = .true.
+               iStart_beg = 365 - isstup + iTemp_day_beg
+            endif    
+                       
+            iStart_end = iStart_beg + isstup - 1
+
+            
+            iShift = 0
+            if ( bSpanNewYear ) iShift = iStart_end   
+                    
+            do iCount = iStart_beg, iStart_end
+              iStart_flag(iCount) = 1
+              bSimThisDay(iCount) = .true.
+              iSeasonIndex(iCount) = 0
+            enddo 
+            
+            iDay = iTemp_day_beg
+            iCurrDay = iDay
+            
+            flag_days: do while ( iDay .le. iTemp_day_end ) 
+
+
+              bSimThisDay(iCurrDay+iShift)  = .true. 
+              iSeasonIndex(iCurrDay+iShift) = iSeason
+              
+              iDay = iDay + 1
+              iCurrDay = iCurrDay + 1
+            
+            enddo flag_days
+            
+          enddo season_loop
+
+           
+        endif quick_run  
+ 
       elseif(WORD(1:8).eq.'*end_sps' .or.
      &       WORD(1:12).eq.'*end_my_sets' )then
         goto 44
@@ -2201,26 +2325,25 @@ C automatically and should not be modified through project manager
       IF(INOTI.EQ.1.AND.ITRC.NE.4)THEN
         IWARN=1
         OUTS=
-     &  'This is a UK NCM notional model and should not be modified'
+     &  'This is a UK NCM notional model and should not be modified.'
       ELSEIF(INOTI.EQ.2.AND.ITRC.NE.4)THEN
         IWARN=1
         OUTS=
-     &  'This is a UK NCM reference model and should not be modified'
+     &  'This is a UK NCM reference model and should not be modified.'
       ELSEIF(INOTI.EQ.3.AND.ITRC.NE.4)THEN
         IWARN=1
         OUTS=
-     &  'This is a UK NCM typical model and should not be modified'
+     &  'This is a UK NCM typical model and should not be modified.'
       ELSEIF(INOTI.EQ.4.AND.ITRC.NE.4)THEN
         IWARN=1
         OUTS=
-     &  'This is a UK NCM stripped model and should not be modified'
+     &  'This is a UK NCM stripped model and should not be modified.'
       ELSEIF(ISBEM.EQ.2.AND.INOTI.EQ.0.AND.ITRC.NE.4)THEN
         continue  ! this model is original which includes NCM file.
       ENDIF
       IF(IWARN.EQ.1.AND..NOT.AUTOOK)THEN
          call askok(OUTS,
-     &   'using project manager are you sure you want to continue',
-     &   OK,dok,10)
+     &   'Are you sure you want to continue?',OK,dok,10)
          IF(.NOT.OK)STOP
       ENDIF
 
@@ -2244,6 +2367,9 @@ C Store profile in array.
           DO 27 jMon=1,12
             eGrdTp(jMon)=getVal(jMon)
   27      CONTINUE
+   
+ 
+  
         elseif(WORD(1:4).eq.'*cvs')then
 
 C 3D ground control volumes file.
@@ -3572,6 +3698,7 @@ C       =  'prs' for pressure coef, 'sbm' for UK SBEM database,
 C       =  'mat' for common materials, 'evn' for event profiles
 C       =  'mul' for common constructions, 'msc' for active components
 C       =  'mld' for mould isopleths, 'clm' for weather
+C       =  'cfc' for cfc layers
       subroutine findwhichdbpath(topic,file,ier)
       implicit none
 #include "esprdbfile.h"
@@ -3630,6 +3757,9 @@ C Local model dbs folder.
           elseif(topic(1:3).eq.'clm')then
             ipathclim=1  ! local folder for weather
             write(LCLIM,'(a)') file(1:lnwkg) ! assign directly
+          elseif(topic(1:3).eq.'cfc')then
+            ipathcfc=1  ! local folder for CFC
+            write(LCFCDB,'(a)') file(1:lnwkg) ! assign directly
           endif
         elseif(file(1:lndbp).eq.standarddbpath(1:lndbp))then
 
@@ -3664,6 +3794,9 @@ C The initial part of database path matches so save the file name w/o path.
           elseif(topic(1:3).eq.'clm')then
             ipathclim=2
             write(LCLIM,'(a)') file(lndbp+2:lnwkg) ! without path
+          elseif(topic(1:3).eq.'cfc')then
+            ipathcfc=2
+            write(LCFCDB,'(a)') file(lndbp+2:lnwkg) ! without path
           endif
         elseif(file(1:lnclmp).eq.standardclmpath(1:lnclmp))then
 
@@ -3703,6 +3836,9 @@ C The initial part of the weather path matches save the file name w/o path.
           elseif(topic(1:3).eq.'clm')then
             ipathclim=0
             write(LCLIM,'(a)') file(1:lnwkg) ! assign directly
+          elseif(topic(1:3).eq.'cfc')then
+            ipathcfc=0
+            write(LCFCDB,'(a)') file(1:lnwkg) ! assign directly
           endif
         endif
       else
@@ -3737,6 +3873,9 @@ C The initial part of the weather path matches save the file name w/o path.
           elseif(topic(1:3).eq.'clm')then
             ipathclim=1  ! local folder for weather
             write(LCLIM,'(a)') file(1:lnwkg) ! assign directly
+          elseif(topic(1:3).eq.'cfc')then
+            ipathcfc=1  ! local folder for CFC
+            write(LCFCDB,'(a)') file(1:lnwkg) ! assign directly
           endif
         elseif(file(1:lndbp).eq.standarddbpath(1:lndbp))then
           if(topic(1:3).eq.'opt')then
@@ -3769,6 +3908,9 @@ C The initial part of the weather path matches save the file name w/o path.
           elseif(topic(1:3).eq.'clm')then
             ipathclim=2
             write(LCLIM,'(a)') file(lndbp+2:lnwkg) ! without path
+          elseif(topic(1:3).eq.'cfc')then
+            ipathcfc=2
+            write(LCFCDB,'(a)') file(lndbp+2:lnwkg) ! without path
           endif
         elseif(file(1:lnclmp).eq.standardclmpath(1:lnclmp))then
           if(topic(1:3).eq.'clm')then
@@ -3806,6 +3948,9 @@ C The initial part of the weather path matches save the file name w/o path.
           elseif(topic(1:3).eq.'clm')then
             ipathclim=0
             write(LCLIM,'(a)') file(1:lnwkg) ! assign directly
+          elseif(topic(1:3).eq.'cfc')then
+            ipathcfc=0
+            write(LCFCDB,'(a)') file(1:lnwkg) ! assign directly
           endif
         endif
       endif

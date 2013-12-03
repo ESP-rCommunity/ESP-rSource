@@ -3,62 +3,62 @@
    11     # no of composites 
 # layers  description   optics name   symmetry tag
     4    a-Si_PV       TRAN  DC_PVpn_06nb  NONSYMMETRIC  
-# mat ref thickness (m) mat descr & air gap R
+# material ref thickness (m) description & air gap R
    84    0.0040  ESG glass (low iron) : ESG glass (low iron)
    81    0.0030  Glass_clear_float : Glass_clear_float
    51    0.0020  pv_resin : pv_resin
    84    0.0040  ESG glass (low iron) : ESG glass (low iron)
 # layers  description   optics name   symmetry tag
     3    pv_back_wall  OPAQ  OPAQUE        SYMMETRIC     
-# mat ref thickness (m) mat descr & air gap R
+# material ref thickness (m) description & air gap R
    42    0.0020  Steel_1 : Steel_1
    12    0.0850  Glass Fibre : Glass Fibre
    42    0.0020  Steel_1 : Steel_1
 # layers  description   optics name   symmetry tag
     3    frame         OPAQ  OPAQUE        SYMMETRIC     
-# mat ref thickness (m) mat descr & air gap R
+# material ref thickness (m) description & air gap R
    49    0.0020  Aluminium : Aluminium
-    0    0.0200  air  0.170 0.170 0.170
+    0    0.0200  gap  0.170 0.170 0.170
    49    0.0020  Aluminium : Aluminium
 # layers  description   optics name   symmetry tag
     1    clear_glaz    TRAN  SCF8783_06nb  SYMMETRIC     
-# mat ref thickness (m) mat descr & air gap R
+# material ref thickness (m) description & air gap R
    81    0.0040  Glass_clear_float : Glass_clear_float
 # layers  description   optics name   symmetry tag
     2    opq_glaz      OPAQ  OPAQUE        NONSYMMETRIC  
-# mat ref thickness (m) mat descr & air gap R
+# material ref thickness (m) description & air gap R
    81    0.0040  Glass_clear_float : Glass_clear_float
    42    0.0020  Steel_1 : Steel_1
 # layers  description   optics name   symmetry tag
     3    wall_clad     OPAQ  OPAQUE        SYMMETRIC     
-# mat ref thickness (m) mat descr & air gap R
+# material ref thickness (m) description & air gap R
    49    0.0020  Aluminium : Aluminium
    11    0.0400  polyure_foam : polyure_foam
    49    0.0020  Aluminium : Aluminium
 # layers  description   optics name   symmetry tag
     3    roof_clad     OPAQ  OPAQUE        SYMMETRIC     
-# mat ref thickness (m) mat descr & air gap R
+# material ref thickness (m) description & air gap R
    49    0.0020  Aluminium : Aluminium
    11    0.0800  polyure_foam : polyure_foam
    49    0.0020  Aluminium : Aluminium
 # layers  description   optics name   symmetry tag
     4    Floor_slab    OPAQ  OPAQUE        NONSYMMETRIC  
-# mat ref thickness (m) mat descr & air gap R
+# material ref thickness (m) description & air gap R
    45    0.0100  Tile : Tile
    41    0.2500  Concrete_(Gibat) : Concrete_(Gibat)
     1    0.0500  Styropor_1 : Styropor_1
   162    0.2500  Gravel : Gravel
 # layers  description   optics name   symmetry tag
     1    fict          TRAN  SCF9999_06nb  SYMMETRIC     
-# mat ref thickness (m) mat descr & air gap R
+# material ref thickness (m) description & air gap R
    52    0.0010  fict : fict
 # layers  description   optics name   symmetry tag
     2    off_flr       OPAQ  OPAQUE        off_flr-r     
-# mat ref thickness (m) mat descr & air gap R
+# material ref thickness (m) description & air gap R
    41    0.1000  Concrete_(Gibat) : Concrete_(Gibat)
    45    0.0150  Tile : Tile
 # layers  description   optics name   symmetry tag
     2    off_flr-r     OPAQ  OPAQUE        off_flr       
-# mat ref thickness (m) mat descr & air gap R
+# material ref thickness (m) description & air gap R
    45    0.0150  Tile : Tile
    41    0.1000  Concrete_(Gibat) : Concrete_(Gibat)

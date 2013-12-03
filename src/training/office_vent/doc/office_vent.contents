@@ -1,43 +1,88 @@
-cfg: office_vent.cfg
-project: Office model for network flow studies
-print date: Thu Jun 14 07:35:02 2001
-
-ID Zone            Volume|          Surface
-   Name            m^3   | No. Opaque  Transp  ~Floor
- 1 manager        40.5  11    61.6    10.4    13.5 attributed
- 2 general       175.5  32   212.6    49.6    58.5 attributed
- 3 conference    141.8  28   173.4    36.7    61.8 attributed
- 4 reception     182.3  18   198.6    38.7    10.1 attributed
- 5 ceil_void      90.0  11   390.0     0.0   180.0 attributed
- 6 mixing_box      9.0   6    45.0     0.0    18.0 attributed
-   all           639.  106   1081.    135.    421.
-
+Synopsis
+ 
+Synopsis of the model Office model base case (scheduled infiltration) defined
+in office_vent.cfg generated on Mon Aug 27 15:29:22 2012. Notes associated
+with the model are in ../doc/office_vent.log
+ 
+The model is located at latitude   46.00 with a longitude difference of   0.00
+from the local time meridian. The year used in simulations is 1997 and
+weekends occur on Saturday and Sunday.
+The site exposure is typical city centre and the ground reflectance is 0.20.
+ 
+ 
+Simulationist name: not yet defined
+Simulationist telephone: not yet defined
+Simulationist address: not yet defined
+Simulationist city: not yet defined
+Simulationist postcode: not yet defined
+ 
+The climate is: Ottawa Intl ON CAN and is held in: can_ottawa with hour
+centred solar data.
+ standard annual weather: can_ottawa
+Calculated ground temp at 0.5m depth
+-7.3239 -8.6098 -6.3292 -2.7603 6.5748 13.779 18.638 20.117 17.597 12.004 4.5294 -2.4058
+Calculated ground temp at 1.0m depth
+-5.5667 -7.3286 -5.7900 -2.8690 5.3395 12.038 16.869 18.802 17.103 12.437 5.7987 -0.66126
+Calculated ground temp at 2.0m depth
+-2.5922 -4.8835 -4.4157 -2.5199 3.7264 9.3732 13.890 16.314 15.797 12.626 7.4760 2.0155
+Calculated ground temp at 4.0m depth
+1.3245 -1.0252 -1.5390 -0.82819 2.7073 6.5116 9.9991 12.427 12.995 11.620 8.5955 4.9014
+ 
+An Integrated Performance View is incomplete or missing.
+ 
+Databases associated with the model:
+ standard pressure distr: pressc.db1
+ standard materials     : material.db3.a
+ constructions          : ../dbs/office_vent_constr.db2
+ standard plant comp    : plantc.db1
+ standard event profiles: profiles.db1.a
+ standard optical prop  : optics.db2
+ standard UK NCM data   : SBEM.db1
+ standard mould isopleth: mould.db1
+ 
  ____________________________________________________________
- Control description: office environmental controls - base case heat 20 cool 24
-
-
- Zones control: using zone controls only : 1 functions.
-
- The sensor for function  1 measures the temperature of the current zone.
+ 
+The model includes ideal controls as follows:
+Control description:
+office environmental controls - base case heat 20 cool 24
+ 
+Zones control includes  1 functions.
+using zone controls only
+ 
+ The sensor for function  1 senses the temperature of the current zone.
  The actuator for function  1 is air point of the current zone
- The function day types are Weekdays, Saturdays & Sundays
-
- Weekday control is valid during period: Wed  1 Jan to Wed 31 Dec, 1997 with  3 periods.
- Per|Start|Sensing  |Actuating  | Control law       | Data
-   1  0.00 db temp   > flux      basic control       20000.0 0.0 20000.0 0.0 16.0 26.0 0.0
-   2  8.00 db temp   > flux      basic control       20000.0 0.0 20000.0 0.0 20.0 24.0 0.0
-   3 18.00 db temp   > flux      basic control       20000.0 0.0 20000.0 0.0 16.0 26.0 0.0
-
- Saturday control is valid during period: Wed  1 Jan to Wed 31 Dec, 1997 with  3 periods.
- Per|Start|Sensing  |Actuating  | Control law       | Data
-   1  0.00 db temp   > flux      basic control       20000.0 0.0 20000.0 0.0 16.0 26.0 0.0
-   2  9.00 db temp   > flux      basic control       20000.0 0.0 20000.0 0.0 20.0 24.0 0.0
-   3 18.00 db temp   > flux      basic control       20000.0 0.0 20000.0 0.0 16.0 26.0 0.0
-
- Sunday control is valid during period: Wed  1 Jan to Wed 31 Dec, 1997 with  1 periods.
- Per|Start|Sensing  |Actuating  | Control law       | Data
-   1  0.00 db temp   > flux      basic control       20000.0 0.0 20000.0 0.0 16.0 26.0 0.0
-
+ The following day types are defined:
+weekday
+saturday
+sunday
+ Day type weekday control has  3 periods.
+ Per|Start|Sensing  |Actuating  | Control law description
+   1  0.00 db temp   > flux      basic control: max heating capacity 20000.0W min
+heating capacity 0.0W max cooling capacity 20000.0W min cooling capacity 0.0W. Heating
+setpoint 16.00C cooling setpoint 26.00C.
+   2  8.00 db temp   > flux      basic control: max heating capacity 20000.0W min
+heating capacity 0.0W max cooling capacity 20000.0W min cooling capacity 0.0W. Heating
+setpoint 20.00C cooling setpoint 24.00C.
+   3 18.00 db temp   > flux      basic control: max heating capacity 20000.0W min
+heating capacity 0.0W max cooling capacity 20000.0W min cooling capacity 0.0W. Heating
+setpoint 16.00C cooling setpoint 26.00C.
+ Day type saturday control has  3 periods.
+ Per|Start|Sensing  |Actuating  | Control law description
+   1  0.00 db temp   > flux      basic control: max heating capacity 20000.0W min
+heating capacity 0.0W max cooling capacity 20000.0W min cooling capacity 0.0W. Heating
+setpoint 16.00C cooling setpoint 26.00C.
+   2  9.00 db temp   > flux      basic control: max heating capacity 20000.0W min
+heating capacity 0.0W max cooling capacity 20000.0W min cooling capacity 0.0W. Heating
+setpoint 20.00C cooling setpoint 24.00C.
+   3 18.00 db temp   > flux      basic control: max heating capacity 20000.0W min
+heating capacity 0.0W max cooling capacity 20000.0W min cooling capacity 0.0W. Heating
+setpoint 16.00C cooling setpoint 26.00C.
+ Day type sunday control has  1 periods.
+ Per|Start|Sensing  |Actuating  | Control law description
+   1  0.00 db temp   > flux      basic control: max heating capacity 20000.0W min
+heating capacity 0.0W max cooling capacity 20000.0W min cooling capacity 0.0W. Heating
+setpoint 16.00C cooling setpoint 26.00C.
+ 
  Zone to contol loop linkages:
  zone ( 1) manager      << control  1
  zone ( 2) general      << control  1
@@ -45,425 +90,650 @@ ID Zone            Volume|          Surface
  zone ( 4) reception    << control  1
  zone ( 5) ceil_void    << control  0
  zone ( 6) mixing_box   << control  0
-
+ 
  ____________________________________________________________
-
+ 
+ID Zone         Volume|          Surface
+   Name         m^3   | No. Opaque  Transp  ~Floor
+ 1 manager        40.5  11    61.6    10.4    13.5  manager describes cellular office
+ 2 general       175.5  32   212.6    49.6    58.5  general describes an open plan with 4 desks
+ 3 conference    141.8  28   173.4    36.7    61.8  conference describes a conference room for 10-12
+ 4 reception     182.3  18   198.6    38.7    10.1  reception of office group adj to conference room
+ 5 ceil_void      90.0  11   390.0     0.0   180.0  ceil_void is a 0.5m ceiling void over offices
+ 6 mixing_box      9.0   6    45.0     0.0    18.0  mixing_box is a zonal representation of ahu
+   all           639.  106   1081.    135.    342.
+ 
+ 
  Zone manager ( 1) is composed of 11 surfaces and 24 vertices.
- It encloses a volume of    40.5m^3 of space, with a total surface
- area of    72.00m^2 & approx floor area of   13.50m^2
+ It encloses a volume of 40.5m^3 of space, with a total surface
+ area of 72.0m^2 & approx floor area of 13.5m^2
  manager describes cellular office
-
+ There is 9.0000m2 of exposed surface area, 9.0000m2 of which is vertical.
+ Outside walls are 27.259 % of floor area & avg U of 0.307 & UA of 1.1280
+ Glazing is 39.407 % of floor & 59.111 % facade with avg U of 2.811 & UA of 14.953
+ 
  A summary of the surfaces in manager( 1) follows:
-
- Sur| Area  |Azim|Elev| surface    |geometry| multilayer   |environment
-    | m^2   |deg |deg | name       |type|loc| constr name  |other side
-  1    13.50  90.   0. pt_general   OPAQ VERT gyp_gyp_ptn  ||< pt_mgrs:general
-  2     0.96 360.   0. part_frame   OPAQ VERT insul_frame  ||< part_frame:general
-  3     3.00   0.   0. door         OPAQ VERT door         ||< door:general
-  4    13.50 270.   0. pt_other     OPAQ VERT gyp_gyp_ptn  ||< identical environment
-  5    13.50   0.  90. ceiling      OPAQ CEIL ceiling      ||< Surf-6:ceil_void
-  6    13.50   0. -90. floor        OPAQ FLOR susp_flr_re  ||< identical environment
-  7     2.30 180.   0. spandral     OPAQ VERT extern_wall  ||< external
-  8     0.40 180.   0. vent         OPAQ VERT insul_frame  ||< external
-  9     0.98 180.   0. frame        OPAQ VERT insul_frame  ||< external
- 10     5.32 180.   0. glazing      TRAN VERT dbl_glz      ||< external
- 11     5.04   0.   0. part_glaz    TRAN VERT dbl_glz      ||< part_glaz:general
-
-
+ 
+ Sur| Area  |Azim|Elev| surface    |    geometry       | construction |environment
+    | m^2   |deg |deg | name       |optical|locat| use | name         |other side
+  1  13.5     90.   0. pt_general   OPAQUE   VERT -     gyp_gyp_ptn  ||< pt_mgrs:general
+  2  0.960   360.   0. part_frame   OPAQUE   VERT -     insul_frame  ||< part_frame:general
+  3  3.00      0.   0. door         OPAQUE   VERT -     door         ||< door:general
+  4  13.5    270.   0. pt_other     OPAQUE   VERT -     gyp_gyp_ptn  ||< identical environment
+  5  13.5      0.  90. ceiling      OPAQUE   CEIL -     ceiling      ||< Surf-6:ceil_void
+  6  13.5      0. -90. floor        OPAQUE   FLOR -     susp_flr_re  ||< identical environment
+  7  2.30    180.   0. spandral     OPAQUE   VERT -     extern_wall  ||< external
+  8  0.400   180.   0. vent         OPAQUE   VERT -     insul_frame  ||< external
+  9  0.980   180.   0. frame        OPAQUE   VERT -     insul_frame  ||< external
+ 10  5.32    180.   0. glazing      DCF7671_ VERT -     dbl_glz      ||< external
+ 11  5.04      0.   0. part_glaz    DCF7671_ VERT -     dbl_glz      ||< part_glaz:general
+ 
+ 
  An hourly solar radiation distribution is used for this zone.
- Shading patterns have been calculated for this zone.
-
- Description: one person typical office pattern
+ Surfaces (all applicable) for shading analysis:
+spandral vent frame glazing
+ Insolation sources (all applicable):
+glazing
+ 
+ 
+Block X- Y- Z- coords DX- DY- DZ- values Orient Opacity
+  1     0.0    -0.1     3.1     3.0     0.0     0.3     0.0     0.0 1.00 ob1 NONE
+  2     0.0    -0.3     3.1     3.0     0.0     0.3     0.0     0.0 1.00 ob2 NONE
+  3     0.0    -0.5     3.1     3.0     0.0     0.2     0.0     0.0 1.00 ob3 NONE
+  4     0.0    -0.7     3.1     3.0     0.0     0.2     0.0     0.0 1.00 ob4 NONE
+  5     0.0    -0.9     3.1     3.0     0.0     0.2     0.0     0.0 1.00 ob5 NONE
+  6     0.0    -1.1     3.1     3.0     0.0     0.2     0.0     0.0 1.00 ob6 NONE
+ 
+ Shading patterns have not yet been calculated.
+ 
+ 
+ Air schedule notes:
+one person typical office pattern ramping up from 7-9am weekdays and
+saturdays. No lights or small power included.
  Control: no control of air flow
-
- Number of Weekday Sat Sun air change periods =  1  1  1
-     Period   Infiltration   Ventilation     From Source
-     id Hours Rate ac/h m3/s Rate ac/h m3/s  Zone Temp.
-Wkd  1  0 - 24     0.33  0.0037    0.00  0.0000   0     0.00
-Sat  1  0 - 24     0.33  0.0037    0.00  0.0000   0     0.00
-Sun  1  0 - 24     0.33  0.0037    0.00  0.0000   0     0.00
-
-
- Description : one person typical office pattern
- Number of Weekday Sat Sun casual gains=  5  5  0
-Day Gain Type   Period Sensible  Latent    Radiant   Convec
-    No.  labl   Hours  Magn.(W)  Magn. (W) Frac    Frac
-Wkd  1 OccuptW    7 -  8     20.0     10.0       0.50       0.50
-Wkd  2 OccuptW    8 -  9     60.0     30.0       0.50       0.50
-Wkd  3 OccuptW    9 - 12    100.0     50.0       0.50       0.50
-Wkd  4 OccuptW   12 - 14     65.0     32.5       0.50       0.50
-Wkd  5 OccuptW   14 - 17    100.0     50.0       0.50       0.50
-Sat  1 OccuptW    7 -  8     20.0     10.0       0.50       0.50
-Sat  2 OccuptW    8 -  9     60.0     30.0       0.50       0.50
-Sat  3 OccuptW    9 - 12    100.0     50.0       0.50       0.50
-Sat  4 OccuptW   12 - 14     65.0     32.5       0.50       0.50
-Sat  5 OccuptW   14 - 17    100.0     50.0       0.50       0.50
-
+ 
+Scheduled air infiltration and ventilation:
+Daytype    Period     Infiltration     Ventilation     From Source
+           id Hours   Rate ac/h m3/s   Rate ac/h m3/s  Zone DegC
+weekday    1  0 - 24    0.33  0.0037    0.00  0.0000   0     0.00
+saturday   1  0 - 24    0.33  0.0037    0.00  0.0000   0     0.00
+sunday     1  0 - 24    0.33  0.0037    0.00  0.0000   0     0.00
+ 
+Notes:
+one person typical office pattern ramping up from 7-9am weekdays and
+saturdays. No lights or small power included.
+ 
+Daytype   Gain Type    Period Sensible  Latent     Radiant    Convec
+          No.  label   Hours  Magn.(W)  Magn.(W)   Fraction   Fraction
+weekday     1 OccuptW    0- 7      0.0      0.0       0.50       0.50
+weekday     2 OccuptW    7- 8     20.0     10.0       0.50       0.50
+weekday     3 OccuptW    8- 9     60.0     30.0       0.50       0.50
+weekday     4 OccuptW    9-12    100.0     50.0       0.50       0.50
+weekday     5 OccuptW   12-14     65.0     32.5       0.50       0.50
+weekday     6 OccuptW   14-17    100.0     50.0       0.50       0.50
+weekday     7 OccuptW   17-24      0.0      0.0       0.50       0.50
+saturday    1 OccuptW    0- 7      0.0      0.0       0.50       0.50
+saturday    2 OccuptW    7- 8     20.0     10.0       0.50       0.50
+saturday    3 OccuptW    8- 9     60.0     30.0       0.50       0.50
+saturday    4 OccuptW    9-12    100.0     50.0       0.50       0.50
+saturday    5 OccuptW   12-14     65.0     32.5       0.50       0.50
+saturday    6 OccuptW   14-17    100.0     50.0       0.50       0.50
+saturday    7 OccuptW   17-24      0.0      0.0       0.50       0.50
+ 
  ____________________________________________________________
-
+ 
  Zone general ( 2) is composed of 32 surfaces and 90 vertices.
- It encloses a volume of   175.5m^3 of space, with a total surface
- area of   262.20m^2 & approx floor area of   58.50m^2
+ It encloses a volume of 176.m^3 of space, with a total surface
+ area of 262.m^2 & approx floor area of 58.5m^2
  general describes an open plan with 4 desks
-
+ There is 45.000m2 of exposed surface area, 45.000m2 of which is vertical.
+ Outside walls are 31.453 % of floor area & avg U of 0.307 & UA of 5.6401
+ Glazing is 45.470 % of floor & 59.111 % facade with avg U of 2.811 & UA of 74.763
+ 
  A summary of the surfaces in general( 2) follows:
-
- Sur| Area  |Azim|Elev| surface    |geometry| multilayer   |environment
-    | m^2   |deg |deg | name       |type|loc| constr name  |other side
-  1     3.00 180.   0. door         OPAQ VERT door         ||< door:manager
-  2    13.50 270.   0. pt_mgrs      OPAQ VERT gyp_gyp_ptn  ||< pt_general:manager
-  3     9.00   0.   0. pt_rec_a     OPAQ VERT gyp_gyp_ptn  ||< pt_rec_a:reception
-  4    18.00   0.   0. fict_rec     TRAN VERT fict         ||< fict_rec:reception
-  5     9.00   0.   0. pt_core_a    OPAQ VERT gyp_blk_ptn  ||< identical environment
-  6     4.50 270.   0. fire_door    OPAQ VERT door         ||< identical environment
-  7    58.50   0.  90. ceiling      OPAQ CEIL ceiling      ||< ceiling:ceil_void
-  8    58.50   0. -90. floor        OPAQ FLOR susp_flr_re  ||< identical environment
-  9     2.30 180.   0. spandral     OPAQ VERT extern_wall  ||< external
- 10     0.40 180.   0. vent         OPAQ VERT insul_frame  ||< external
- 11     0.98 180.   0. frame        OPAQ VERT insul_frame  ||< external
- 12     5.32 180.   0. glazing      TRAN VERT dbl_glz      ||< external
- 13     0.96 180.   0. part_frame   OPAQ VERT insul_frame  ||< part_frame:manager
- 14     5.04 180.   0. part_glaz    TRAN VERT dbl_glz      ||< part_glaz:manager
- 15     2.30 180.   0. spandral_a   OPAQ VERT extern_wall  ||< external
- 16     0.40 180.   0. vent_a       OPAQ VERT insul_frame  ||< external
- 17     0.98 180.   0. frame_a      OPAQ VERT insul_frame  ||< external
- 18     5.32 180.   0. glazing_a    TRAN VERT dbl_glz      ||< external
- 19     2.30 180.   0. spandral_b   OPAQ VERT extern_wall  ||< external
- 20     0.40 180.   0. vent_b       OPAQ VERT insul_frame  ||< external
- 21     0.98 180.   0. frame_b      OPAQ VERT insul_frame  ||< external
- 22     5.32 180.   0. glazing_b    TRAN VERT dbl_glz      ||< external
- 23     2.30  90.   0. spandral_c   OPAQ VERT extern_wall  ||< external
- 24     0.40  90.   0. vent_c       OPAQ VERT insul_frame  ||< external
- 25     0.98  90.   0. frame_c      OPAQ VERT insul_frame  ||< external
- 26     5.32  90.   0. glazing_c    TRAN VERT dbl_glz      ||< external
- 27     2.30  90.   0. spandral_d   OPAQ VERT extern_wall  ||< external
- 28     0.40  90.   0. vent_d       OPAQ VERT insul_frame  ||< external
- 29     0.98  90.   0. frame_d      OPAQ VERT insul_frame  ||< external
- 30     5.32  90.   0. glazing_d    TRAN VERT dbl_glz      ||< external
- 31    18.60   0.  90. desk_top     OPAQ CEIL door         ||< adiabatic
- 32    18.60   0. -90. desk_base    OPAQ FLOR door         ||< adiabatic
-
-
+ 
+ Sur| Area  |Azim|Elev| surface    |    geometry       | construction |environment
+    | m^2   |deg |deg | name       |optical|locat| use | name         |other side
+  1  3.00    180.   0. door         OPAQUE   VERT -     door         ||< door:manager
+  2  13.5    270.   0. pt_mgrs      OPAQUE   VERT -     gyp_gyp_ptn  ||< pt_general:manager
+  3  9.00      0.   0. pt_rec_a     OPAQUE   VERT -     gyp_gyp_ptn  ||< pt_rec_a:reception
+  4  18.0      0.   0. fict_rec     SC_ficti VERT -     fict         ||< fict_rec:reception
+  5  9.00      0.   0. pt_core_a    OPAQUE   VERT -     gyp_blk_ptn  ||< identical environment
+  6  4.50    270.   0. fire_door    OPAQUE   VERT -     door         ||< identical environment
+  7  58.5      0.  90. ceiling      OPAQUE   CEIL -     ceiling      ||< ceiling:ceil_void
+  8  58.5      0. -90. floor        OPAQUE   FLOR -     susp_flr_re  ||< identical environment
+  9  2.30    180.   0. spandral     OPAQUE   VERT -     extern_wall  ||< external
+ 10  0.400   180.   0. vent         OPAQUE   VERT -     insul_frame  ||< external
+ 11  0.980   180.   0. frame        OPAQUE   VERT -     insul_frame  ||< external
+ 12  5.32    180.   0. glazing      DCF7671_ VERT -     dbl_glz      ||< external
+ 13  0.960   180.   0. part_frame   OPAQUE   VERT -     insul_frame  ||< part_frame:manager
+ 14  5.04    180.  -0. part_glaz    DCF7671_ VERT -     dbl_glz      ||< part_glaz:manager
+ 15  2.30    180.   0. spandral_a   OPAQUE   VERT -     extern_wall  ||< external
+ 16  0.400   180.   0. vent_a       OPAQUE   VERT -     insul_frame  ||< external
+ 17  0.980   180.   0. frame_a      OPAQUE   VERT -     insul_frame  ||< external
+ 18  5.32    180.   0. glazing_a    DCF7671_ VERT -     dbl_glz      ||< external
+ 19  2.30    180.   0. spandral_b   OPAQUE   VERT -     extern_wall  ||< external
+ 20  0.400   180.   0. vent_b       OPAQUE   VERT -     insul_frame  ||< external
+ 21  0.980   180.   0. frame_b      OPAQUE   VERT -     insul_frame  ||< external
+ 22  5.32    180.   0. glazing_b    DCF7671_ VERT -     dbl_glz      ||< external
+ 23  2.30     90.   0. spandral_c   OPAQUE   VERT -     extern_wall  ||< external
+ 24  0.400    90.   0. vent_c       OPAQUE   VERT -     insul_frame  ||< external
+ 25  0.980    90.   0. frame_c      OPAQUE   VERT -     insul_frame  ||< external
+ 26  5.32     90.   0. glazing_c    DCF7671_ VERT -     dbl_glz      ||< external
+ 27  2.30     90.   0. spandral_d   OPAQUE   VERT -     extern_wall  ||< external
+ 28  0.400    90.   0. vent_d       OPAQUE   VERT -     insul_frame  ||< external
+ 29  0.980    90.   0. frame_d      OPAQUE   VERT -     insul_frame  ||< external
+ 30  5.32     90.   0. glazing_d    DCF7671_ VERT -     dbl_glz      ||< external
+ 31  18.6      0.  90. desk_top     OPAQUE   CEIL -     door         ||< adiabatic
+ 32  18.6      0. -90. desk_base    OPAQUE   FLOR -     door         ||< adiabatic
+ 
+ 
  An hourly solar radiation distribution is used for this zone.
- Shading patterns have been calculated for this zone.
-
- Description: 5 people std occup, 8Wm2 lights 10Wm2 small power
+ Surfaces (all applicable) for shading analysis:
+9 10 11 12 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30
+ Insolation sources (all applicable):
+glazing glazing_a glazing_b glazing_c glazing_d
+ 
+ 
+Block X- Y- Z- coords DX- DY- DZ- values Orient Opacity
+  1     3.0    -0.1     3.1     9.0     0.0     0.3     0.0     0.0 1.00 ob1 NONE
+  2     3.0    -0.3     3.1     9.0     0.0     0.3     0.0     0.0 1.00 ob2 NONE
+  3     3.0    -0.5     3.1     9.0     0.0     0.2     0.0     0.0 1.00 ob3 NONE
+  4     3.0    -0.7     3.1     9.0     0.0     0.2     0.0     0.0 1.00 ob4 NONE
+  5     3.0    -0.9     3.1     9.0     0.0     0.2     0.0     0.0 1.00 ob5 NONE
+  6     3.0    -1.1     3.1     9.0     0.0     0.2     0.0     0.0 1.00 ob6 NONE
+  7    12.1     0.1     3.1     6.0     0.0     0.3    90.0     0.0 1.00 eob1 NONE
+  8    12.3     0.1     3.1     6.0     0.0     0.3    90.0     0.0 1.00 eob2 NONE
+  9    12.5     0.1     3.1     6.0     0.0     0.2    90.0     0.0 1.00 eob3 NONE
+ 10    12.7     0.1     3.1     6.0     0.0     0.2    90.0     0.0 1.00 eob4 NONE
+ 11    12.9     0.1     3.1     6.0     0.0     0.2    90.0     0.0 1.00 eob5 NONE
+ 12    13.1     0.1     3.1     6.0     0.0     0.2    90.0     0.0 1.00 eob6 NONE
+ 
+ Shading patterns have not yet been calculated.
+ 
+ 
+ Air schedule notes:
+5 people std occup ramping up from 7-9am half occupants on saturday,
+8Wm2 lights 10Wm2 small power weekdays and Saturdays, nothing Sunday
  Control: no control of air flow
-
- Number of Weekday Sat Sun air change periods =  1  1  1
-     Period   Infiltration   Ventilation     From Source
-     id Hours Rate ac/h m3/s Rate ac/h m3/s  Zone Temp.
-Wkd  1  0 - 24     0.33  0.0161    0.00  0.0000   0     0.00
-Sat  1  0 - 24     0.33  0.0161    0.00  0.0000   0     0.00
-Sun  1  0 - 24     0.33  0.0161    0.00  0.0000   0     0.00
-
-
- Description : 5 people std occup, 8Wm2 lights 10Wm2 small power
- Number of Weekday Sat Sun casual gains=  7  7  0
-Day Gain Type   Period Sensible  Latent    Radiant   Convec
-    No.  labl   Hours  Magn.(W)  Magn. (W) Frac    Frac
-Wkd  1 LightsWm2  8 - 18      8.0      0.0       0.50       0.50
-Wkd  2 EquiptWm2  8 - 18     10.0      0.0       0.50       0.50
-Wkd  3 OccuptW    7 -  8    100.0     60.0       0.50       0.50
-Wkd  4 OccuptW    8 -  9    300.0    180.0       0.50       0.50
-Wkd  5 OccuptW    9 - 12    500.0    300.0       0.50       0.50
-Wkd  6 OccuptW   12 - 14    325.0    195.0       0.50       0.50
-Wkd  7 OccuptW   14 - 17    500.0    300.0       0.50       0.50
-Sat  1 LightsWm2  8 - 18      8.0      0.0       0.50       0.50
-Sat  2 EquiptWm2  8 - 18      5.0      0.0       0.50       0.50
-Sat  3 OccuptW    7 -  8     40.0      0.0       0.50       0.50
-Sat  4 OccuptW    8 -  9    120.0      0.0       0.50       0.50
-Sat  5 OccuptW    9 - 12    200.0      0.0       0.50       0.50
-Sat  6 OccuptW   12 - 14    130.0      0.0       0.50       0.50
-Sat  7 OccuptW   14 - 17    200.0      0.0       0.50       0.50
-
+ 
+Scheduled air infiltration and ventilation:
+Daytype    Period     Infiltration     Ventilation     From Source
+           id Hours   Rate ac/h m3/s   Rate ac/h m3/s  Zone DegC
+weekday    1  0 - 24    0.33  0.0161    0.00  0.0000   0     0.00
+saturday   1  0 - 24    0.33  0.0161    0.00  0.0000   0     0.00
+sunday     1  0 - 24    0.33  0.0161    0.00  0.0000   0     0.00
+ 
+Notes:
+5 people std occup ramping up from 7-9am half occupants on saturday,
+8Wm2 lights 10Wm2 small power weekdays and Saturdays, nothing Sunday
+ 
+Daytype   Gain Type    Period Sensible  Latent     Radiant    Convec
+          No.  label   Hours  Magn.(W)  Magn.(W)   Fraction   Fraction
+weekday     1 OccuptW    0- 7      0.0      0.0       0.50       0.50
+weekday     2 OccuptW    7- 8    100.0     60.0       0.50       0.50
+weekday     3 OccuptW    8- 9    300.0    180.0       0.50       0.50
+weekday     4 OccuptW    9-12    500.0    300.0       0.50       0.50
+weekday     5 OccuptW   12-14    325.0    195.0       0.50       0.50
+weekday     6 OccuptW   14-17    500.0    300.0       0.50       0.50
+weekday     7 OccuptW   17-24      0.0      0.0       0.50       0.50
+weekday     8 LightsWm2  0- 8      0.0      0.0       0.50       0.50
+weekday     9 LightsWm2  8-18      8.0      0.0       0.50       0.50
+weekday    10 LightsWm2 18-24      0.0      0.0       0.50       0.50
+weekday    11 EquiptWm2  0- 8      0.0      0.0       0.50       0.50
+weekday    12 EquiptWm2  8-18     10.0      0.0       0.50       0.50
+weekday    13 EquiptWm2 18-24      0.0      0.0       0.50       0.50
+saturday    1 OccuptW    0- 7      0.0      0.0       0.50       0.50
+saturday    2 OccuptW    7- 8     40.0      0.0       0.50       0.50
+saturday    3 OccuptW    8- 9    120.0      0.0       0.50       0.50
+saturday    4 OccuptW    9-12    200.0      0.0       0.50       0.50
+saturday    5 OccuptW   12-14    130.0      0.0       0.50       0.50
+saturday    6 OccuptW   14-17    200.0      0.0       0.50       0.50
+saturday    7 OccuptW   17-24      0.0      0.0       0.50       0.50
+saturday    8 LightsWm2  0- 8      0.0      0.0       0.50       0.50
+saturday    9 LightsWm2  8-18      8.0      0.0       0.50       0.50
+saturday   10 LightsWm2 18-24      0.0      0.0       0.50       0.50
+saturday   11 EquiptWm2  0- 8      0.0      0.0       0.50       0.50
+saturday   12 EquiptWm2  8-18      5.0      0.0       0.50       0.50
+saturday   13 EquiptWm2 18-24      0.0      0.0       0.50       0.50
+ 
  ____________________________________________________________
-
+ 
  Zone conference ( 3) is composed of 28 surfaces and 72 vertices.
- It encloses a volume of   141.8m^3 of space, with a total surface
- area of   210.06m^2 & approx floor area of   61.75m^2
+ It encloses a volume of 142.m^3 of space, with a total surface
+ area of 210.m^2 & approx floor area of 61.8m^2
  conference describes a conference room for 10-12
-
+ There is 45.000m2 of exposed surface area, 45.000m2 of which is vertical.
+ Outside walls are 29.798 % of floor area & avg U of 0.307 & UA of 5.6401
+ Glazing is 43.077 % of floor & 59.111 % facade with avg U of 2.811 & UA of 74.763
+ 
  A summary of the surfaces in conference( 3) follows:
-
- Sur| Area  |Azim|Elev| surface    |geometry| multilayer   |environment
-    | m^2   |deg |deg | name       |type|loc| constr name  |other side
-  1    13.50 270.   0. pt_next_off  OPAQ VERT gyp_gyp_ptn  ||< identical environment
-  2     9.00 180.   0. pt_recp_b    OPAQ VERT gyp_gyp_ptn  ||< pt_recp_b:reception
-  3    10.06 207.   0. fict_open    TRAN VERT fict         ||< fict_open:reception
-  4     9.00 180.   0. pt_recp_a    OPAQ VERT gyp_gyp_ptn  ||< pt_recp_a:reception
-  5    47.25   0.  90. ceiling      OPAQ CEIL ceiling      ||< ceil_conff:ceil_void
-  6    47.25   0. -90. floor        OPAQ FLOR susp_flr_re  ||< identical environment
-  7     2.30   0.   0. spandral     OPAQ VERT extern_wall  ||< external
-  8     0.40   0.   0. vent         OPAQ VERT insul_frame  ||< external
-  9     0.98 360.   0. frame        OPAQ VERT insul_frame  ||< external
- 10     5.32   0.   0. glazing      TRAN VERT dbl_glz      ||< external
- 11     2.30   0.   0. spandral_a   OPAQ VERT extern_wall  ||< external
- 12     0.40   0.   0. vent_a       OPAQ VERT insul_frame  ||< external
- 13     0.98 360.   0. frame_a      OPAQ VERT insul_frame  ||< external
- 14     5.32   0.   0. glazing_a    TRAN VERT dbl_glz      ||< external
- 15     2.30   0.   0. spandral_b   OPAQ VERT extern_wall  ||< external
- 16     0.40   0.   0. vent_b       OPAQ VERT insul_frame  ||< external
- 17     0.98 360.   0. frame_b      OPAQ VERT insul_frame  ||< external
- 18     5.32   0.   0. glazing_b    TRAN VERT dbl_glz      ||< external
- 19     2.30  90.   0. spandral_c   OPAQ VERT extern_wall  ||< external
- 20     0.40  90.   0. vent_c       OPAQ VERT insul_frame  ||< external
- 21     0.98  90.   0. frame_c      OPAQ VERT insul_frame  ||< external
- 22     5.32  90.   0. glazing_c    TRAN VERT dbl_glz      ||< external
- 23     2.30  90.   0. spandral_d   OPAQ VERT extern_wall  ||< external
- 24     0.40  90.   0. vent_d       OPAQ VERT insul_frame  ||< external
- 25     0.98  90.   0. frame_d      OPAQ VERT insul_frame  ||< external
- 26     5.32  90.   0. glazing_d    TRAN VERT dbl_glz      ||< external
- 27    14.50   0.  90. desk_top     OPAQ CEIL door         ||< adiabatic
- 28    14.50   0. -90. conf_bottom  OPAQ FLOR door         ||< adiabatic
-
-
+ 
+ Sur| Area  |Azim|Elev| surface    |    geometry       | construction |environment
+    | m^2   |deg |deg | name       |optical|locat| use | name         |other side
+  1  13.5    270.   0. pt_next_off  OPAQUE   VERT -     gyp_gyp_ptn  ||< identical environment
+  2  9.00    180.   0. pt_recp_b    OPAQUE   VERT -     gyp_gyp_ptn  ||< pt_recp_b:reception
+  3  10.1    207.   0. fict_open    SC_ficti VERT -     fict         ||< fict_open:reception
+  4  9.00    180.   0. pt_recp_a    OPAQUE   VERT -     gyp_gyp_ptn  ||< pt_recp_a:reception
+  5  47.3      0.  90. ceiling      OPAQUE   CEIL -     ceiling      ||< ceil_conff:ceil_void
+  6  47.3      0. -90. floor        OPAQUE   FLOR -     susp_flr_re  ||< identical environment
+  7  2.30      0.   0. spandral     OPAQUE   VERT -     extern_wall  ||< external
+  8  0.400     0.   0. vent         OPAQUE   VERT -     insul_frame  ||< external
+  9  0.980   360.   0. frame        OPAQUE   VERT -     insul_frame  ||< external
+ 10  5.32      0.   0. glazing      DCF7671_ VERT -     dbl_glz      ||< external
+ 11  2.30      0.   0. spandral_a   OPAQUE   VERT -     extern_wall  ||< external
+ 12  0.400     0.   0. vent_a       OPAQUE   VERT -     insul_frame  ||< external
+ 13  0.980   360.   0. frame_a      OPAQUE   VERT -     insul_frame  ||< external
+ 14  5.32      0.   0. glazing_a    DCF7671_ VERT -     dbl_glz      ||< external
+ 15  2.30      0.   0. spandral_b   OPAQUE   VERT -     extern_wall  ||< external
+ 16  0.400     0.   0. vent_b       OPAQUE   VERT -     insul_frame  ||< external
+ 17  0.980   360.   0. frame_b      OPAQUE   VERT -     insul_frame  ||< external
+ 18  5.32      0.   0. glazing_b    DCF7671_ VERT -     dbl_glz      ||< external
+ 19  2.30     90.   0. spandral_c   OPAQUE   VERT -     extern_wall  ||< external
+ 20  0.400    90.   0. vent_c       OPAQUE   VERT -     insul_frame  ||< external
+ 21  0.980    90.   0. frame_c      OPAQUE   VERT -     insul_frame  ||< external
+ 22  5.32     90.   0. glazing_c    DCF7671_ VERT -     dbl_glz      ||< external
+ 23  2.30     90.   0. spandral_d   OPAQUE   VERT -     extern_wall  ||< external
+ 24  0.400    90.   0. vent_d       OPAQUE   VERT -     insul_frame  ||< external
+ 25  0.980    90.   0. frame_d      OPAQUE   VERT -     insul_frame  ||< external
+ 26  5.32     90.   0. glazing_d    DCF7671_ VERT -     dbl_glz      ||< external
+ 27  14.5      0.  90. desk_top     OPAQUE   CEIL -     door         ||< adiabatic
+ 28  14.5      0. -90. conf_bottom  OPAQUE   FLOR -     door         ||< adiabatic
+ 
+ 
  An hourly solar radiation distribution is used for this zone.
- Shading patterns have been calculated for this zone.
-
- Description: morning and afternoon meetings 8 people
+ Surfaces (all applicable) for shading analysis:
+7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26
+ Insolation sources (all applicable):
+glazing glazing_a glazing_b glazing_c glazing_d
+ 
+ 
+Block X- Y- Z- coords DX- DY- DZ- values Orient Opacity
+  1    12.1    12.0     3.1     6.0     0.0     0.3    90.0     0.0 1.00 eob1 NONE
+  2    12.3    12.0     3.1     6.0     0.0     0.3    90.0     0.0 1.00 eob2 NONE
+  3    12.5    12.0     3.1     6.0     0.0     0.2    90.0     0.0 1.00 eob3 NONE
+  4    12.7    12.0     3.1     6.0     0.0     0.2    90.0     0.0 1.00 eob4 NONE
+  5    12.9    12.0     3.1     6.0     0.0     0.2    90.0     0.0 1.00 eob5 NONE
+  6    13.1    12.0     3.1     6.0     0.0     0.2    90.0     0.0 1.00 eob6 NONE
+ 
+ Shading patterns have not yet been calculated.
+ 
+ 
+ Air schedule notes:
+morning and afternoon meetings 8 people on weekdays, nothing on
+weekends
  Control: no control of air flow
-
- Number of Weekday Sat Sun air change periods =  1  1  1
-     Period   Infiltration   Ventilation     From Source
-     id Hours Rate ac/h m3/s Rate ac/h m3/s  Zone Temp.
-Wkd  1  0 - 24     0.33  0.0130    0.00  0.0000   0     0.00
-Sat  1  0 - 24     0.33  0.0130    0.00  0.0000   0     0.00
-Sun  1  0 - 24     0.33  0.0130    0.00  0.0000   0     0.00
-
-
- Description : morning and afternoon meetings 8 people
- Number of Weekday Sat Sun casual gains=  4  0  0
-Day Gain Type   Period Sensible  Latent    Radiant   Convec
-    No.  labl   Hours  Magn.(W)  Magn. (W) Frac    Frac
-Wkd  1 LightsWm2  9 - 17      8.0      0.0       0.50       0.50
-Wkd  2 OccuptW   10 - 12    800.0    400.0       0.50       0.50
-Wkd  3 OccuptW   14 - 16    700.0    350.0       0.50       0.50
-Wkd  4 EquiptW    0 - 24    100.0      0.0       0.50       0.50
-
+ 
+Scheduled air infiltration and ventilation:
+Daytype    Period     Infiltration     Ventilation     From Source
+           id Hours   Rate ac/h m3/s   Rate ac/h m3/s  Zone DegC
+weekday    1  0 - 24    0.33  0.0130    0.00  0.0000   0     0.00
+saturday   1  0 - 24    0.33  0.0130    0.00  0.0000   0     0.00
+sunday     1  0 - 24    0.33  0.0130    0.00  0.0000   0     0.00
+ 
+Notes:
+morning and afternoon meetings 8 people on weekdays, nothing on
+weekends
+ 
+Daytype   Gain Type    Period Sensible  Latent     Radiant    Convec
+          No.  label   Hours  Magn.(W)  Magn.(W)   Fraction   Fraction
+weekday     1 OccuptW    0-10      0.0      0.0       0.50       0.50
+weekday     2 OccuptW   10-12    800.0    400.0       0.50       0.50
+weekday     3 OccuptW   12-14      0.0      0.0       0.50       0.50
+weekday     4 OccuptW   14-16    700.0    350.0       0.50       0.50
+weekday     5 OccuptW   16-24      0.0      0.0       0.50       0.50
+weekday     6 LightsWm2  0- 9      0.0      0.0       0.50       0.50
+weekday     7 LightsWm2  9-17      8.0      0.0       0.50       0.50
+weekday     8 LightsWm2 17-24      0.0      0.0       0.50       0.50
+weekday     9 EquiptW    0-24    100.0      0.0       0.50       0.50
+ 
  ____________________________________________________________
-
+ 
  Zone reception ( 4) is composed of 18 surfaces and 47 vertices.
- It encloses a volume of   182.3m^3 of space, with a total surface
- area of   237.26m^2 & approx floor area of   10.10m^2
+ It encloses a volume of 182.m^3 of space, with a total surface
+ area of 237.m^2 & approx floor area of 10.1m^2
  reception of office group adj to conference room
-
+ There is 18.000m2 of exposed surface area, 18.000m2 of which is vertical.
+ Outside walls are 72.871 % of floor area & avg U of 0.307 & UA of 2.2560
+ Glazing is 105.35 % of floor & 59.111 % facade with avg U of 2.811 & UA of 29.905
+ 
  A summary of the surfaces in reception( 4) follows:
-
- Sur| Area  |Azim|Elev| surface    |geometry| multilayer   |environment
-    | m^2   |deg |deg | name       |type|loc| constr name  |other side
-  1    22.50 270.   0. pt_core_a    OPAQ VERT gyp_blk_ptn  ||< identical environment
-  2    18.00 180.   0. fict_rec     TRAN VERT fict         ||< fict_rec:general
-  3     9.00 180.   0. pt_rec_a     OPAQ VERT gyp_gyp_ptn  ||< pt_rec_a:general
-  4     9.00   0.   0. pt_recp_a    OPAQ VERT gyp_gyp_ptn  ||< pt_recp_a:conference
-  5    10.06  27.   0. fict_open    TRAN VERT fict         ||< fict_open:conference
-  6     9.00   0.   0. pt_recp_b    OPAQ VERT gyp_gyp_ptn  ||< pt_recp_b:conference
-  7     2.30  90.   0. spandral     OPAQ VERT extern_wall  ||< external
-  8     0.40  90.   0. vent         OPAQ VERT insul_frame  ||< external
-  9     0.98  90.   0. frame        OPAQ VERT insul_frame  ||< external
- 10     5.32  90.   0. glazing      TRAN VERT dbl_glz      ||< external
- 11     2.30  90.   0. spandral_a   OPAQ VERT extern_wall  ||< external
- 12     0.40  90.   0. vent_a       OPAQ VERT insul_frame  ||< external
- 13     0.98  90.   0. frame_a      OPAQ VERT insul_frame  ||< external
- 14     5.32  90.   0. glazing_a    TRAN VERT dbl_glz      ||< external
- 15    10.10   0.  90. desk_top     OPAQ CEIL door         ||< adiabatic
- 16    10.10   0. -90. desk_base    OPAQ FLOR door         ||< adiabatic
- 17    60.75   0.  90. ceiling      OPAQ CEIL ceiling      ||< ceil_rec:ceil_void
- 18    60.75   0. -90. floor        OPAQ FLOR susp_flr_re  ||< identical environment
-
-
+ 
+ Sur| Area  |Azim|Elev| surface    |    geometry       | construction |environment
+    | m^2   |deg |deg | name       |optical|locat| use | name         |other side
+  1  22.5    270.   0. pt_core_a    OPAQUE   VERT -     gyp_blk_ptn  ||< identical environment
+  2  18.0    180.   0. fict_rec     SC_ficti VERT -     fict         ||< fict_rec:general
+  3  9.00    180.   0. pt_rec_a     OPAQUE   VERT -     gyp_gyp_ptn  ||< pt_rec_a:general
+  4  9.00      0.   0. pt_recp_a    OPAQUE   VERT -     gyp_gyp_ptn  ||< pt_recp_a:conference
+  5  10.1     27.   0. fict_open    SC_ficti VERT -     fict         ||< fict_open:conference
+  6  9.00      0.   0. pt_recp_b    OPAQUE   VERT -     gyp_gyp_ptn  ||< pt_recp_b:conference
+  7  2.30     90.   0. spandral     OPAQUE   VERT -     extern_wall  ||< external
+  8  0.400    90.   0. vent         OPAQUE   VERT -     insul_frame  ||< external
+  9  0.980    90.   0. frame        OPAQUE   VERT -     insul_frame  ||< external
+ 10  5.32     90.   0. glazing      DCF7671_ VERT -     dbl_glz      ||< external
+ 11  2.30     90.   0. spandral_a   OPAQUE   VERT -     extern_wall  ||< external
+ 12  0.400    90.   0. vent_a       OPAQUE   VERT -     insul_frame  ||< external
+ 13  0.980    90.   0. frame_a      OPAQUE   VERT -     insul_frame  ||< external
+ 14  5.32     90.   0. glazing_a    DCF7671_ VERT -     dbl_glz      ||< external
+ 15  10.1      0.  90. desk_top     OPAQUE   CEIL -     door         ||< adiabatic
+ 16  10.1      0. -90. desk_base    OPAQUE   FLOR -     door         ||< adiabatic
+ 17  60.8      0.  90. ceiling      OPAQUE   CEIL -     ceiling      ||< ceil_rec:ceil_void
+ 18  60.8      0. -90. floor        OPAQUE   FLOR -     susp_flr_re  ||< identical environment
+ 
+ 
  An hourly solar radiation distribution is used for this zone.
- Shading patterns have been calculated for this zone.
-
- Description: 2 people most hours, 8Wm2 lights  5Wm2 small power
+ Surfaces (all applicable) for shading analysis:
+spandral vent frame glazing spandral_a vent_a frame_a glazing_a
+ Insolation sources (all applicable):
+glazing glazing_a
+ 
+ 
+Block X- Y- Z- coords DX- DY- DZ- values Orient Opacity
+  1    12.1     6.0     3.1     6.0     0.0     0.3    90.0     0.0 1.00 eob1 NONE
+  2    12.3     6.0     3.1     6.0     0.0     0.3    90.0     0.0 1.00 eob2 NONE
+  3    12.5     6.0     3.1     6.0     0.0     0.2    90.0     0.0 1.00 eob3 NONE
+  4    12.7     6.0     3.1     6.0     0.0     0.2    90.0     0.0 1.00 eob4 NONE
+  5    12.9     6.0     3.1     6.0     0.0     0.2    90.0     0.0 1.00 eob5 NONE
+  6    13.1     6.0     3.1     6.0     0.0     0.2    90.0     0.0 1.00 eob6 NONE
+ 
+ Shading patterns have not yet been calculated.
+ 
+ 
+ Air schedule notes:
+2 people most hours, 8Wm2 lights  5Wm2 small power weekdays, no gains
+on weekends, 0.33 ach infil all days all hours.
  Control: no control of air flow
-
- Number of Weekday Sat Sun air change periods =  1  1  1
-     Period   Infiltration   Ventilation     From Source
-     id Hours Rate ac/h m3/s Rate ac/h m3/s  Zone Temp.
-Wkd  1  0 - 24     0.33  0.0167    0.00  0.0000   0     0.00
-Sat  1  0 - 24     0.33  0.0167    0.00  0.0000   0     0.00
-Sun  1  0 - 24     0.33  0.0167    0.00  0.0000   0     0.00
-
-
- Description : 2 people most hours, 8Wm2 lights  5Wm2 small power
- Number of Weekday Sat Sun casual gains=  3  0  0
-Day Gain Type   Period Sensible  Latent    Radiant   Convec
-    No.  labl   Hours  Magn.(W)  Magn. (W) Frac    Frac
-Wkd  1 LightsWm2  8 - 18      8.0      0.0       0.50       0.50
-Wkd  2 OccuptW    9 - 18    200.0    100.0       0.50       0.50
-Wkd  3 EquiptWm2  8 - 18      5.0      0.0       0.50       0.50
-
+ 
+Scheduled air infiltration and ventilation:
+Daytype    Period     Infiltration     Ventilation     From Source
+           id Hours   Rate ac/h m3/s   Rate ac/h m3/s  Zone DegC
+weekday    1  0 - 24    0.33  0.0167    0.00  0.0000   0     0.00
+saturday   1  0 - 24    0.33  0.0167    0.00  0.0000   0     0.00
+sunday     1  0 - 24    0.33  0.0167    0.00  0.0000   0     0.00
+ 
+Notes:
+2 people most hours, 8Wm2 lights  5Wm2 small power weekdays, no gains
+on weekends, 0.33 ach infil all days all hours.
+ 
+Daytype   Gain Type    Period Sensible  Latent     Radiant    Convec
+          No.  label   Hours  Magn.(W)  Magn.(W)   Fraction   Fraction
+weekday     1 OccuptW    0- 9      0.0      0.0       0.50       0.50
+weekday     2 OccuptW    9-18    200.0    100.0       0.50       0.50
+weekday     3 OccuptW   18-24      0.0      0.0       0.50       0.50
+weekday     4 LightsWm2  0- 8      0.0      0.0       0.50       0.50
+weekday     5 LightsWm2  8-18      8.0      0.0       0.50       0.50
+weekday     6 LightsWm2 18-24      0.0      0.0       0.50       0.50
+weekday     7 EquiptWm2  0- 8      0.0      0.0       0.50       0.50
+weekday     8 EquiptWm2  8-18      5.0      0.0       0.50       0.50
+weekday     9 EquiptWm2 18-24      0.0      0.0       0.50       0.50
+ 
  ____________________________________________________________
-
+ 
  Zone ceil_void ( 5) is composed of 11 surfaces and 33 vertices.
- It encloses a volume of    90.0m^3 of space, with a total surface
- area of   390.00m^2 & approx floor area of  180.00m^2
+ It encloses a volume of 90.0m^3 of space, with a total surface
+ area of 390.m^2 & approx floor area of 180.m^2
  ceil_void is a 0.5m ceiling void over offices
-
+ There is 19.500m2 of exposed surface area, 19.500m2 of which is vertical.
+ Outside walls are 10.833 % of floor area & avg U of 0.214 & UA of 4.1720
+ 
  A summary of the surfaces in ceil_void( 5) follows:
-
- Sur| Area  |Azim|Elev| surface    |geometry| multilayer   |environment
-    | m^2   |deg |deg | name       |type|loc| constr name  |other side
-  1    13.50   0. -90. Surf-6       OPAQ FLOR ceiling_rev  ||< ceiling:manager
-  2    58.50   0. -90. ceiling      OPAQ FLOR ceiling_rev  ||< ceiling:general
-  3    47.25   0. -90. ceil_conff   OPAQ FLOR ceiling_rev  ||< ceiling:conference
-  4    60.75   0. -90. ceil_rec     OPAQ FLOR ceiling_rev  ||< ceiling:reception
-  5   180.00   0.  90. structure    OPAQ CEIL susp_floor   ||< identical environment
-  6     6.00 180.   0. south_edge   OPAQ VERT extern_wall  ||< external
-  7     9.00  90.   0. east_edge    OPAQ VERT extern_wall  ||< external
-  8     4.50   0.   0. north_edge   OPAQ VERT extern_wall  ||< external
-  9     6.00 270.   0. core_b       OPAQ VERT gyp_blk_ptn  ||< identical environment
- 10     1.50   0.   0. core_a       OPAQ VERT gyp_blk_ptn  ||< Surf-1:mixing_box
- 11     3.00 270.   0. core_c       OPAQ VERT gyp_blk_ptn  ||< identical environment
-
-
- All surfaces will receive diffuse insolation.
-
- Description: nil_operations
+ 
+ Sur| Area  |Azim|Elev| surface    |    geometry       | construction |environment
+    | m^2   |deg |deg | name       |optical|locat| use | name         |other side
+  1  13.5      0. -90. Surf-6       OPAQUE   FLOR -     ceiling_rev  ||< ceiling:manager
+  2  58.5      0. -90. ceiling      OPAQUE   FLOR -     ceiling_rev  ||< ceiling:general
+  3  47.3      0. -90. ceil_conff   OPAQUE   FLOR -     ceiling_rev  ||< ceiling:conference
+  4  60.8      0. -90. ceil_rec     OPAQUE   FLOR -     ceiling_rev  ||< ceiling:reception
+  5  180.      0.  90. structure    OPAQUE   CEIL -     susp_floor   ||< identical environment
+  6  6.00    180.   0. south_edge   OPAQUE   VERT -     extern_wall  ||< external
+  7  9.00     90.   0. east_edge    OPAQUE   VERT -     extern_wall  ||< external
+  8  4.50      0.   0. north_edge   OPAQUE   VERT -     extern_wall  ||< external
+  9  6.00    270.   0. core_b       OPAQUE   VERT -     gyp_blk_ptn  ||< identical environment
+ 10  1.50      0.   0. core_a       OPAQUE   VERT -     gyp_blk_ptn  ||< Surf-1:mixing_box
+ 11  3.00    270.   0. core_c       OPAQUE   VERT -     gyp_blk_ptn  ||< identical environment
+ 
+ 
+ All surfaces will receive diffuse insolation (if shading not calculated).
+ No shading analysis requested.
+ No insolation analysis requested.
+ 
+ 
+ Air schedule notes:
+the ceiling void has 0.33 ach infil and no casual gains.
  Control: no control of air flow
-
- Number of Weekday Sat Sun air change periods =  1  1  1
-     Period   Infiltration   Ventilation     From Source
-     id Hours Rate ac/h m3/s Rate ac/h m3/s  Zone Temp.
-Wkd  1  0 - 24     0.33  0.0083    0.00  0.0000   0     0.00
-Sat  1  0 - 24     0.33  0.0083    0.00  0.0000   0     0.00
-Sun  1  0 - 24     0.33  0.0083    0.00  0.0000   0     0.00
-
-
- Description : nil_operations
- Number of Weekday Sat Sun casual gains=  0  0  0
-
+ 
+Scheduled air infiltration and ventilation:
+Daytype    Period     Infiltration     Ventilation     From Source
+           id Hours   Rate ac/h m3/s   Rate ac/h m3/s  Zone DegC
+weekday    1  0 - 24    0.33  0.0083    0.00  0.0000   0     0.00
+saturday   1  0 - 24    0.33  0.0083    0.00  0.0000   0     0.00
+sunday     1  0 - 24    0.33  0.0083    0.00  0.0000   0     0.00
+ 
+Notes:
+the ceiling void has 0.33 ach infil and no casual gains.
+ 
+Daytype   Gain Type    Period Sensible  Latent     Radiant    Convec
+          No.  label   Hours  Magn.(W)  Magn.(W)   Fraction   Fraction
+ 
  ____________________________________________________________
-
- Zone mixing_box ( 6) is composed of  6 surfaces and  8 vertices.
- It encloses a volume of     9.0m^3 of space, with a total surface
- area of    45.00m^2 & approx floor area of   18.00m^2
+ 
+ Zone mixing_box ( 6) is composed of 6 surfaces and 8 vertices.
+ It encloses a volume of 9.00m^3 of space, with a total surface
+ area of 45.0m^2 & approx floor area of 18.0m^2
  mixing_box is a zonal representation of ahu
-
+ 
  A summary of the surfaces in mixing_box( 6) follows:
-
- Sur| Area  |Azim|Elev| surface    |geometry| multilayer   |environment
-    | m^2   |deg |deg | name       |type|loc| constr name  |other side
-  1     1.50 180.   0. Surf-1       OPAQ VERT gyp_blk_ptn  ||< core_a:ceil_void
-  2     3.00  90.   0. Surf-2       OPAQ VERT gyp_blk_ptn  ||< adiabatic
-  3     1.50   0.   0. Surf-3       OPAQ VERT gyp_blk_ptn  ||< adiabatic
-  4     3.00 270.   0. Surf-4       OPAQ VERT gyp_blk_ptn  ||< adiabatic
-  5    18.00   0.  90. Surf-5       OPAQ CEIL gyp_blk_ptn  ||< adiabatic
-  6    18.00   0. -90. Surf-6       OPAQ FLOR gyp_blk_ptn  ||< adiabatic
-
-
- All surfaces will receive diffuse insolation.
-
- Description: nil_operations
+ 
+ Sur| Area  |Azim|Elev| surface    |    geometry       | construction |environment
+    | m^2   |deg |deg | name       |optical|locat| use | name         |other side
+  1  1.50    180.   0. Surf-1       OPAQUE   VERT -     gyp_blk_ptn  ||< core_a:ceil_void
+  2  3.00     90.   0. Surf-2       OPAQUE   VERT -     gyp_blk_ptn  ||< adiabatic
+  3  1.50      0.   0. Surf-3       OPAQUE   VERT -     gyp_blk_ptn  ||< adiabatic
+  4  3.00    270.   0. Surf-4       OPAQUE   VERT -     gyp_blk_ptn  ||< adiabatic
+  5  18.0      0.  90. Surf-5       OPAQUE   CEIL -     gyp_blk_ptn  ||< adiabatic
+  6  18.0      0. -90. Surf-6       OPAQUE   FLOR -     gyp_blk_ptn  ||< adiabatic
+ 
+ 
+ All surfaces will receive diffuse insolation (if shading not calculated).
+ No shading analysis requested.
+ No insolation analysis requested.
+ 
+ 
+ Air schedule notes:
+nothing happens in the mixing box
  Control: no control of air flow
-
- Number of Weekday Sat Sun air change periods =  0  0  0
-
-
- Description : nil_operations
- Number of Weekday Sat Sun casual gains=  0  0  0
-
+ 
+Scheduled air infiltration and ventilation:
+Daytype    Period     Infiltration     Ventilation     From Source
+           id Hours   Rate ac/h m3/s   Rate ac/h m3/s  Zone DegC
+ 
+Notes:
+nothing happens in the mixing box
+ 
+Daytype   Gain Type    Period Sensible  Latent     Radiant    Convec
+          No.  label   Hours  Magn.(W)  Magn.(W)   Fraction   Fraction
+ 
+ ____________________________________________________________
+ 
+ Project floor area is 341.85m2, wall area is 67.340m2, window area is 69.160m2.
+ Sloped roof area is 0.00m2, flat roof area is 0.00m2, skylight area is 0.00m2.
+ In contact with ground 0.00m2.
+ There is 136.50m2 of outside surface area, 136.50m2 of which is vertical.
+ 
+ Outside walls are 19.699 % of floor area & avg U of 0.280 & UA of 18.836 & max MLC thickness 0.412
+ Glazing is 20.231 % of floor & 50.667 % facade with avg U of 2.811 & UA of 194.38
+ 
  ____________________________________________________________
  Multi-layer constructions used:
-
- Details of opaque composite: extern_wall
-
- Layer|Prim|Thick |Conduc-|Density|Specif|IR  |Solr|Diffu|Descr
-      |db  | (m)  |tivity |       |heat  |emis|abs |resis|
-    1    6 0.1000     0.960  2000.   650. 0.90 0.70    25. Lt brown brick
-    2  211 0.1500     0.040   250.   840. 0.90 0.30     4. Glasswool
-    3    0 0.0500     0.000     0.     0. 0.99 0.99     1. air  0.17 0.17 0.17
-    4   22 0.1000     0.240   750.  1000. 0.90 0.65    10. Aerated conc block
-    5  108 0.0120     0.190   950.   840. 0.91 0.22    11. White ptd Gypboard
- Standardised U value =    0.21
-
- Details of opaque composite: insul_frame
-
- Layer|Prim|Thick |Conduc-|Density|Specif|IR  |Solr|Diffu|Descr
-      |db  | (m)  |tivity |       |heat  |emis|abs |resis|
-    1   46 0.0040   210.000  2700.   880. 0.82 0.72 19200. Grey cotd aluminium
-    2  281 0.0800     0.040    12.   840. 0.90 0.65    30. Glass Fibre Quilt
-    3   46 0.0040   210.000  2700.   880. 0.82 0.72 19200. Grey cotd aluminium
- Standardised U value =    0.46
-
- Details of opaque composite: door
-
- Layer|Prim|Thick |Conduc-|Density|Specif|IR  |Solr|Diffu|Descr
-      |db  | (m)  |tivity |       |heat  |emis|abs |resis|
-    1   69 0.0250     0.190   700.  2390. 0.90 0.65    12. Oak (radial)
- Standardised U value =    3.23
-
- Details of transparent composite: fict         with SC_fictit    optics.
-
- Layer|Prim|Thick |Conduc-|Density|Specif|IR  |Solr|Diffu|Descr
-      |db  | (m)  |tivity |       |heat  |emis|abs |resis|
-    1  245 0.0060    20.000    10.    10. 0.99 0.01 19200. fict
- Standardised U value =    5.61
-
- Details of transparent composite: dbl_glz      with DCF7671_06nb optics.
-
- Layer|Prim|Thick |Conduc-|Density|Specif|IR  |Solr|Diffu|Descr
-      |db  | (m)  |tivity |       |heat  |emis|abs |resis|
-    1  242 0.0060     0.760  2710.   837. 0.83 0.05 19200. Plate glass
-    2    0 0.0120     0.000     0.     0. 0.99 0.99     1. air  0.17 0.17 0.17
-    3  242 0.0060     0.760  2710.   837. 0.83 0.05 19200. Plate glass
- Standardised U value =    2.75
-
- Details of opaque composite: susp_floor
-
- Layer|Prim|Thick |Conduc-|Density|Specif|IR  |Solr|Diffu|Descr
-      |db  | (m)  |tivity |       |heat  |emis|abs |resis|
-    1  221 0.0060     0.060   186.  1360. 0.90 0.60    10. Wilton
-    2   67 0.0190     0.150   800.  2093. 0.91 0.65    96. Chipboard
-    3    0 0.0500     0.000     0.     0. 0.99 0.99     1. air  0.17 0.17 0.17
-    4   32 0.1400     1.400  2100.   653. 0.90 0.65    19. Heavy mix concrete
-    5   42 0.0040    50.000  7800.   502. 0.12 0.20 19200. Steel
- Standardised U value =    1.48
-
- Details of opaque composite: susp_flr_re
-
- Layer|Prim|Thick |Conduc-|Density|Specif|IR  |Solr|Diffu|Descr
-      |db  | (m)  |tivity |       |heat  |emis|abs |resis|
-    1   42 0.0040    50.000  7800.   502. 0.12 0.20 19200. Steel
-    2   32 0.1400     1.400  2100.   653. 0.90 0.65    19. Heavy mix concrete
-    3    0 0.0500     0.000     0.     0. 0.99 0.99     1. air  0.17 0.17 0.17
-    4   67 0.0190     0.150   800.  2093. 0.91 0.65    96. Chipboard
-    5  221 0.0060     0.060   186.  1360. 0.90 0.60    10. Wilton
- Standardised U value =    1.48
-
- Details of opaque composite: ceiling
-
- Layer|Prim|Thick |Conduc-|Density|Specif|IR  |Solr|Diffu|Descr
-      |db  | (m)  |tivity |       |heat  |emis|abs |resis|
-    1  211 0.1000     0.040   250.   840. 0.90 0.30     4. Glasswool
-    2  150 0.0100     0.030   290.  2000. 0.90 0.60     8. Ceiling (mineral)
- Standardised U value =    0.33
-
- Details of opaque composite: ceiling_rev
-
- Layer|Prim|Thick |Conduc-|Density|Specif|IR  |Solr|Diffu|Descr
-      |db  | (m)  |tivity |       |heat  |emis|abs |resis|
-    1  150 0.0100     0.030   290.  2000. 0.90 0.60     8. Ceiling (mineral)
-    2  211 0.1000     0.040   250.   840. 0.90 0.30     4. Glasswool
- Standardised U value =    0.33
-
- Details of opaque composite: gyp_blk_ptn
-
- Layer|Prim|Thick |Conduc-|Density|Specif|IR  |Solr|Diffu|Descr
-      |db  | (m)  |tivity |       |heat  |emis|abs |resis|
-    1  108 0.0130     0.190   950.   840. 0.91 0.22    11. White ptd Gypboard
-    2    0 0.0500     0.000     0.     0. 0.99 0.99     1. air  0.17 0.17 0.17
-    3   28 0.1000     0.510  1400.  1000. 0.90 0.65    10. Block inner (3% mc)
-    4    0 0.0500     0.000     0.     0. 0.99 0.99     1. air  0.17 0.17 0.17
-    5  108 0.0130     0.190   950.   840. 0.91 0.22    11. White ptd Gypboard
- Standardised U value =    1.18
-
- Details of opaque composite: gyp_gyp_ptn
-
- Layer|Prim|Thick |Conduc-|Density|Specif|IR  |Solr|Diffu|Descr
-      |db  | (m)  |tivity |       |heat  |emis|abs |resis|
-    1  108 0.0120     0.190   950.   840. 0.91 0.22    11. White ptd Gypboard
-    2    0 0.0500     0.000     0.     0. 0.99 0.99     1. air  0.17 0.17 0.17
-    3  108 0.0120     0.190   950.   840. 0.91 0.22    11. White ptd Gypboard
- Standardised U value =    2.11
+ 
+ Details of opaque construction: extern_wall and overall thickness  0.412
+ 
+ Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
+      |db  |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
+ Ext     6  100.0     0.960  2000.   650. 0.90 0.70    25.  0.10 Lt brown brick : Light brown brick
+    2  211  150.0     0.040   250.   840. 0.90 0.30     4.  3.75 glasswool : Glasswool (generic)
+    3    0   50.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
+    4   22  100.0     0.240   750.  1000. 0.90 0.65    10.  0.42 aerated conc block : Aerated concrete block
+ Int   108   12.0     0.190   950.   840. 0.91 0.22    11.  0.06 white gypboard : White painted Gypboard
+ ISO 6946 U values (horiz/upward/downward heat flow)=  0.214  0.215  0.212 (partition)  0.210
+ 
+Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  0.21
+ External surface admittance Y=  2.85  w=  2.24 decrement factor f=  0.74  phi=  0.99 surface factor f=  0.74  phi=  0.99
+ Partition admittance Y=  2.87  w=  2.19 surface factor f=  0.73  phi=  0.98
+ Total area of extern_wall is     49.40
+ 
+ Details of opaque construction: insul_frame and overall thickness  0.088
+ 
+ Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
+      |db  |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
+ Ext    46    4.0   210.000  2700.   880. 0.82 0.72 19200.  0.00 grey cotd alum : Grey coated aluminium
+    2  281   80.0     0.040    12.   840. 0.90 0.65    30.  2.00 glass fibre quilt : Glass Fibre Quilt
+ Int    46    4.0   210.000  2700.   880. 0.82 0.72 19200.  0.00 grey cotd alum : Grey coated aluminium
+ ISO 6946 U values (horiz/upward/downward heat flow)=  0.461  0.467  0.452 (partition)  0.442
+ 
+Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  0.46
+ External surface admittance Y=  0.81  w=  3.41 decrement factor f=  0.94  phi=  0.31 surface factor f=  0.94  phi=  0.31
+ Partition admittance Y=  0.70  w=  5.68 surface factor f=  1.00  phi=  0.32
+ Total area of insul_frame is     19.86
+ 
+ Details of opaque construction: door and overall thickness  0.025
+ 
+ Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
+      |db  |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
+    1   69   25.0     0.190   700.  2390. 0.90 0.65    12.  0.13 oak : Oak (radial cut)
+ ISO 6946 U values (horiz/upward/downward heat flow)=  3.316  3.682  2.928 (partition)  2.554
+ 
+Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  3.21
+ External surface admittance Y=  3.33  w=  0.61 decrement factor f=  0.61  phi=  0.40 surface factor f=  0.61  phi=  0.40
+ Partition admittance Y=  1.21  w=  5.38 surface factor f=  0.99  phi=  0.56
+ Total area of door is     96.90
+ 
+ Details of transparent construction: fict with SC_fictit optics and overall thickness  0.006
+ 
+ Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
+      |db  |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
+    1  245    6.0    20.000    10.    10. 0.99 0.01 19200.  0.00 fict : fictitious material (almost not there) with matching single layer optics
+ ISO 6946 U values (horiz/upward/downward heat flow)=  5.872  7.128  4.755 (partition)  3.842
+ 
+Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  5.55
+ External surface admittance Y=  5.55  w=  0.00 decrement factor f=  0.33  phi=  0.00 surface factor f=  0.33  phi=  0.00
+ Partition admittance Y=  0.00  w=  6.00 surface factor f=  1.00  phi=  0.00
+ 
+ Fictitious 99/99,      4mm, no blind: with id of: SC_fictit
+ with 1 layers [including air gaps] and visible trn: 0.99
+ Direct transmission @ 0, 40, 55, 70, 80 deg
+   0.998 0.987 0.986 0.985 0.984
+ Layer| absorption @ 0, 40, 55, 70, 80 deg
+    1  0.001 0.001 0.001 0.001 0.001
+ Total area of fict is     56.12
+ 
+ Details of transparent construction: dbl_glz with DCF7671_06nb optics and overall thickness  0.024
+ 
+ Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
+      |db  |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
+ Ext   242    6.0     0.760  2710.   837. 0.83 0.05 19200.  0.01 plate glass : Plate glass with placeholder single layer optics
+    2    0   12.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
+ Int   242    6.0     0.760  2710.   837. 0.83 0.05 19200.  0.01 plate glass : Plate glass with placeholder single layer optics
+ ISO 6946 U values (horiz/upward/downward heat flow)=  2.811  3.069  2.527 (partition)  2.243
+ 
+Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  2.73
+ External surface admittance Y=  2.81  w=  0.63 decrement factor f=  0.67  phi=  0.31 surface factor f=  0.67  phi=  0.31
+ Partition admittance Y=  0.82  w=  5.64 surface factor f=  1.00  phi=  0.38
+ 
+ Clear float 76/71,     6mm, no blind: with id of: DCF7671_06nb
+ with 3 layers [including air gaps] and visible trn: 0.76
+ Direct transmission @ 0, 40, 55, 70, 80 deg
+   0.611 0.583 0.534 0.384 0.170
+ Layer| absorption @ 0, 40, 55, 70, 80 deg
+    1  0.157 0.172 0.185 0.201 0.202
+    2  0.001 0.002 0.003 0.004 0.005
+    3  0.117 0.124 0.127 0.112 0.077
+ Total area of dbl_glz is     79.24
+ 
+ Details of opaque construction: susp_floor linked to susp_flr_re  & with overall thickness  0.219
+ 
+ Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
+      |db  |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
+ Ext   221    6.0     0.060   186.  1360. 0.90 0.60    10.  0.10 Wilton : Wilton weave wool carpet
+    2   67   19.0     0.150   800.  2093. 0.91 0.65    96.  0.13 chipboard : Chipboard
+    3    0   50.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
+    4   32  140.0     1.400  2100.   653. 0.90 0.65    19.  0.10 heavy mix concrete : Heavy mix concrete
+ Int    42    4.0    50.000  7800.   502. 0.12 0.20 19200.  0.00 steel : Steel
+ ISO 6946 U values (horiz/upward/downward heat flow)=  1.500  1.570  1.415 (partition)  1.321
+ 
+Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  1.48
+ External surface admittance Y=  5.80  w=  1.63 decrement factor f=  0.47  phi=  2.55 surface factor f=  0.47  phi=  2.55
+ Partition admittance Y=  6.12  w=  2.04 surface factor f=  0.53  phi=  3.03
+ Total area of susp_floor is    180.00
+ 
+ Details of opaque construction: susp_flr_re linked to susp_floor   & with overall thickness  0.219
+ 
+ Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
+      |db  |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
+ Ext    42    4.0    50.000  7800.   502. 0.12 0.20 19200.  0.00 steel : Steel
+    2   32  140.0     1.400  2100.   653. 0.90 0.65    19.  0.10 heavy mix concrete : Heavy mix concrete
+    3    0   50.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
+    4   67   19.0     0.150   800.  2093. 0.91 0.65    96.  0.13 chipboard : Chipboard
+ Int   221    6.0     0.060   186.  1360. 0.90 0.60    10.  0.10 Wilton : Wilton weave wool carpet
+ ISO 6946 U values (horiz/upward/downward heat flow)=  1.500  1.570  1.415 (partition)  1.321
+ 
+Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  1.48
+ External surface admittance Y=  2.11  w=  1.43 decrement factor f=  0.77  phi=  0.46 surface factor f=  0.77  phi=  0.46
+ Partition admittance Y=  2.46  w=  2.85 surface factor f=  0.81  phi=  0.95
+ Total area of susp_flr_re is    180.00
+ 
+ Details of opaque construction: ceiling linked to ceiling_rev  & with overall thickness  0.110
+ 
+ Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
+      |db  |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
+ Ext   211  100.0     0.040   250.   840. 0.90 0.30     4.  2.50 glasswool : Glasswool (generic)
+ Int   150   10.0     0.030   290.  2000. 0.90 0.60     8.  0.33 ceiling mineral : Ceiling acoustic tile (mineral fibre based)
+ ISO 6946 U values (horiz/upward/downward heat flow)=  0.333  0.336  0.329 (partition)  0.323
+ 
+Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  0.33
+ External surface admittance Y=  0.82  w=  3.17 decrement factor f=  0.94  phi=  0.30 surface factor f=  0.94  phi=  0.30
+ Partition admittance Y=  0.92  w=  4.35 surface factor f=  0.96  phi=  0.40
+ Total area of ceiling is    180.00
+ 
+ Details of opaque construction: ceiling_rev linked to ceiling      & with overall thickness  0.110
+ 
+ Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
+      |db  |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
+ Ext   150   10.0     0.030   290.  2000. 0.90 0.60     8.  0.33 ceiling mineral : Ceiling acoustic tile (mineral fibre based)
+ Int   211  100.0     0.040   250.   840. 0.90 0.30     4.  2.50 glasswool : Glasswool (generic)
+ ISO 6946 U values (horiz/upward/downward heat flow)=  0.333  0.336  0.329 (partition)  0.323
+ 
+Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  0.33
+ External surface admittance Y=  0.68  w=  2.79 decrement factor f=  0.94  phi=  0.22 surface factor f=  0.94  phi=  0.22
+ Partition admittance Y=  0.75  w=  4.26 surface factor f=  0.96  phi=  0.32
+ Total area of ceiling_rev is    180.00
+ 
+ Details of opaque construction: gyp_blk_ptn and overall thickness  0.226
+ 
+ Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
+      |db  |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
+ Ext   108   13.0     0.190   950.   840. 0.91 0.22    11.  0.07 white gypboard : White painted Gypboard
+    2    0   50.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
+    3   28  100.0     0.510  1400.  1000. 0.90 0.65    10.  0.20 block inner : Block inner (3% mc)
+    4    0   50.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
+ Int   108   13.0     0.190   950.   840. 0.91 0.22    11.  0.07 white gypboard : White painted Gypboard
+ ISO 6946 U values (horiz/upward/downward heat flow)=  1.186  1.230  1.133 (partition)  1.072
+ 
+Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  1.17
+ External surface admittance Y=  2.38  w=  1.44 decrement factor f=  0.74  phi=  0.54 surface factor f=  0.74  phi=  0.54
+ Partition admittance Y=  2.59  w=  2.21 surface factor f=  0.76  phi=  0.86
+ Total area of gyp_blk_ptn is     87.00
+ 
+ Details of opaque construction: gyp_gyp_ptn and overall thickness  0.074
+ 
+ Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
+      |db  |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
+ Ext   108   12.0     0.190   950.   840. 0.91 0.22    11.  0.06 white gypboard : White painted Gypboard
+    2    0   50.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
+ Int   108   12.0     0.190   950.   840. 0.91 0.22    11.  0.06 white gypboard : White painted Gypboard
+ ISO 6946 U values (horiz/upward/downward heat flow)=  2.144  2.292  1.975 (partition)  1.798
+ 
+Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  2.10
+ External surface admittance Y=  2.15  w=  0.62 decrement factor f=  0.75  phi=  0.21 surface factor f=  0.75  phi=  0.21
+ Partition admittance Y=  0.61  w=  5.69 surface factor f=  1.00  phi=  0.28
+ Total area of gyp_gyp_ptn is    108.00

@@ -1,5 +1,5 @@
 *Geometry 1.1,GEN,changing # tag version, format, zone name
-*date Tue Jul 21 18:26:52 2009  # latest file modification 
+*date Mon Jun 24 08:02:20 2013  # latest file modification 
 changing describes a
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,0.00000,20.00000,0.00000  #   1
@@ -56,7 +56,7 @@ changing describes a
 *surf,Surf-1,VERT,-,-,-,intern_wall,OPAQUE,EXTERIOR,0,0  #   1 ||< external
 *surf,Surf-2,VERT,-,-,-,intern_wall,OPAQUE,ANOTHER,03,13  #   2 ||< change-r:main-hall
 *surf,Surf-3,VERT,-,-,-,intern_wall,OPAQUE,ANOTHER,02,01  #   3 ||< Surf-1:gym
-*surf,Surf-4,VERT,-,-,-,extern_wall,OPAQUE,EXTERIOR,0,0  #   4 ||< external
+*surf,Surf-4,VERT,glaz-1,-,-,extern_wall,OPAQUE,EXTERIOR,0,0  #   4 ||< external
 *surf,Surf-5,SLOP,-,-,-,roof,OPAQUE,EXTERIOR,0,0  #   5 ||< external
 *surf,Surf-6,FLOR,-,-,-,oth_ground,OPAQUE,GROUND,01,00  #   6 ||< ground profile  1
 *surf,recep-r,VERT,-,-,-,intern_wall,OPAQUE,ANOTHER,04,05  #   7 ||< Surf-5:entrance

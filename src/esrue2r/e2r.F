@@ -72,14 +72,13 @@ C Path to model.
       
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
-      common/C21/IFCFG,cfgroot,LCFGF
 
 C Radiance based commons are explained in e2r_common.h.
 
 C Project journal on/off, unit number, cmd, file name.
       common/journopt/journio,iuj,journcmd,jfile
 
-      COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
+      COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,CFCDBOK
       
 C Significant figure reporting limit (NSIGFIG).
       common/SFIG/NSIGFIG
@@ -90,9 +89,9 @@ C Name of current application
       character cAppName*12      
 
       CHARACTER outs*124,ITEM*30
-      CHARACTER inf*144,LCMDFL*144,LCFGF*72,L144*144
+      CHARACTER inf*144,LCMDFL*144,L144*144
       character tfile*72
-      character path*72,cfgroot*24
+      character path*72
       character journcmd*20,jfile*72,uname*24,fs*1,cjfile*72
       character OUTSTR*124
       character ltmp72*72,dtmp72*72,ltmp*72,dtmp96*96
@@ -105,7 +104,7 @@ C Name of current application
       DIMENSION ITEM(24)
       DIMENSION IVALV(20),VALT(20),IPVALV(20)  ! for selecting view from list
 
-      LOGICAL KEEP,CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
+      LOGICAL KEEP,CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,CFCDBOK
       LOGICAL XST,unixok,there
       LOGICAL ok,dok
       logical browse  ! is true if parameter passed as yes
@@ -353,7 +352,6 @@ C Setup and pass in parameters to win3d.
         iigl=igl; iigr=igr; iigt=igt; iigb=igb; iigw=igw; iigwh=igwh
         CALL win3d(iimenu,iiw1,iiw2,iiw3,iiw4,
      &    iigl,iigr,iigt,iigb,iigw,iigwh)
-C        CALL win3d(menuchw,2,2,2,3,igl,igr,igt,igb,igw,igwh)
         igl=int(iigl); igr=int(iigr); igt=int(iigt); igb=int(iigb)
         igw=int(iigw); igwh=int(iigwh)
         iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
@@ -680,7 +678,7 @@ C        lnrp=lnblnk(runpath)
             CALL ASKOK('Do you wish to keep the Radiance scene files?',
      &        '(see help)',KEEP,dok,nbhelp)
           else
-	  
+  
 C User owns the model. Only copy the lradcf file back to the cfg
 C folder (the other files can stay where they are).
             write (outs,'(5a)')'cp -f ',runpath(1:lnrp),
@@ -690,7 +688,7 @@ C folder (the other files can stay where they are).
             KEEP=.false.
           endif
         else
-	  
+  
 C User owns the model. Only copy the lradcf file back to the cfg
 C folder (the other files can stay where they are).
           write (outs,'(5a)')'cp -f ',runpath(1:lnrp),
@@ -1161,7 +1159,6 @@ C Path to model.
 
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
-      common/C21/IFCFG,cfgroot,LCFGF
       COMMON/GTFIL/GTGEOM
 
       LOGICAL MODIFY,MODLEN,MODBND
@@ -1170,14 +1167,14 @@ C Path to model.
       COMMON/RAY5/ZCOG(MCOM,3),XMN,YMN,ZMN,XMX,YMX,ZMX
       common/initv/initvt,EYEMI(3),VIEWMI(3),ANGI
 
-      COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
+      COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,CFCDBOK
 
-      character path*72,cfgroot*24,GTGEOM*72
-      CHARACTER LCMDFL*144,LCFGF*72
+      character path*72,GTGEOM*72
+      CHARACTER LCMDFL*144
       character outs*124,fs*1,tldir*72,MODE*4
 
       LOGICAL unixok
-      LOGICAL CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
+      LOGICAL CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,CFCDBOK
       logical browse  ! as set in e2r command line.
 #ifdef OSI
       integer numberofzones ! to pass to updwire rather than ncomp
@@ -1276,7 +1273,7 @@ C If unix and browsing get PID for use in /tmp directory structure.
             pathtype='radinhome'
             call edisp(iuout,' Currently using runpath in user home')
           else
-	  
+  
 C If user owns the model then use the ../rad or ./cfg folder so no
 C need to create a folder.
             if(radpth(1:3).eq.'./ '.or.radpth(1:3).eq.'.\\ ')then

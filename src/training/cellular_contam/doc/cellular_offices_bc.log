@@ -1,0 +1,46 @@
+Project notes for cellular_offices_bc.cfg
+Description: base case model of two adjacent cellular offices
+In folder: cellular_contam
+By: jon
+Date: Mon Aug  1 10:11:58 2005
+For: 
+Project reference: 
+Notes: This is a variant of the standard side-by-side cellular offices
+which has been extended to support analysis of contaminant distribution.
+_____________________________
+
+There are several model configuration files in this folder:
+cellular_contam_bc.cfg  the base case model
+cellular_contam_ho.cfg  adapted for high occupancy
+cellular_contam_mv.cfg  adapted with fixed mechanical ventilation
+cellular_contam_mvctl.cfg adapted with variable mechanical ventilation
+cellular_contam_src.cfg  with regulation 8 l/s/person ventilation
+
+_____________________________
+
+Details below apply to all of the models:
+ 
+The model is located at latitude   46.00 with a longitude difference of   0.00
+from the local time meridian. The year used in simulations is 2000 and
+weekends occur on Saturday and Sunday.
+The site exposure is typical city centre and the ground reflectance is 0.20.
+ 
+Databases associated with the model:
+ pressure distributions : pressc.db1
+ materials              : cellular.materialdb
+ constructions          : ../dbs/cellular.constrdb
+ plant components       : plantc.db1
+ event profiles         : /usr/esru/esp-r/databases/profiles.db1.a
+ optical properties     : optics.db2
+ ____________________________________________________________
+ 
+ID Zone         Volume|          Surface
+   Name         m^3   | No. Opaque  Transp  ~Floor
+ 1 manager_a      40.5  13    62.2     9.8    13.5  manager describes cellular office on left
+ 2 manager_b      40.5  13    62.2     9.8    13.5  manager_b describes right office
+ 3 corridor        18.3  14    45.8     9.0     8.4  corridor describes passage adjacent to offices
+   all            99.   40    170.     29.     35.
+ 
+
+ 
+ 

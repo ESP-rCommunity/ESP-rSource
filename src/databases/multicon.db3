@@ -1,6 +1,6 @@
 # composite construction db defined in ./multicon.db3
 # based on materials db ./material.db3.a
-   47     # no of composites 
+   48     # no of composites 
 # layers  description   optics name   symmetry tag
     4    extern_wall   OPAQ  OPAQUE        NONSYMMETRIC  
 # mat ref thickness (m) mat descr & air gap R
@@ -43,9 +43,9 @@
 # layers  description   optics name   symmetry tag
     3    int_part      OPAQ  OPAQUE        SYMMETRIC     
 # mat ref thickness (m) mat descr & air gap R
-  108    0.0120  white gypboard : White paintedd Gypboard
+  108    0.0120  white gypboard : White painted Gypboard
     0    0.0500  air  0.170 0.170 0.170
-  108    0.0120  white gypboard : White paintedd Gypboard
+  108    0.0120  white gypboard : White painted Gypboard
 # layers  description   optics name   symmetry tag
     3    d_glz         TRAN  DCF7671_06nb  SYMMETRIC     
 # mat ref thickness (m) mat descr & air gap R
@@ -146,17 +146,17 @@
 # layers  description   optics name   symmetry tag
     5    gyp_blk_ptn   OPAQ  OPAQUE        SYMMETRIC     
 # mat ref thickness (m) mat descr & air gap R
-  108    0.0130  white gypboard : White paintedd Gypboard
+  108    0.0130  white gypboard : White painted Gypboard
     0    0.0500  air  0.170 0.170 0.170
    28    0.1000  block inner : Block inner (3% mc)
     0    0.0500  air  0.170 0.170 0.170
-  108    0.0130  white gypboard : White paintedd Gypboard
+  108    0.0130  white gypboard : White painted Gypboard
 # layers  description   optics name   symmetry tag
     3    gyp_gyp_ptn   OPAQ  OPAQUE        SYMMETRIC     
 # mat ref thickness (m) mat descr & air gap R
-  108    0.0120  white gypboard : White paintedd Gypboard
+  108    0.0120  white gypboard : White painted Gypboard
     0    0.0500  air  0.170 0.170 0.170
-  108    0.0120  white gypboard : White paintedd Gypboard
+  108    0.0120  white gypboard : White painted Gypboard
 # layers  description   optics name   symmetry tag
     5    switched_gl   TRAN  DCF7671_6omb  SYMMETRIC     
 # mat ref thickness (m) mat descr & air gap R
@@ -236,8 +236,8 @@
   130    0.0200  Render External 20 mm : Render External 20 mm (UK code)
    10    0.1020  Brick outer leaf : Brick (UK code)
     0    0.0500  air  0.180 0.180 0.180
-  295    0.0500  Min wool quilt 60 mm : Insulation (Min wool quilt default 60 mm)
-  295    0.0500  Min wool quilt 60 mm : Insulation (Min wool quilt default 60 mm)
+  295    0.0500  Min wool quilt 60mm : Insulation (Min wool quilt default 60 mm)
+  295    0.0500  Min wool quilt 60mm : Insulation (Min wool quilt default 60 mm)
    40    0.1000  Concrete med density (1800) : Blockwork (UK code)
     0    0.0250  air  0.180 0.180 0.180
   112    0.0130  Plasterboard (UK code) : Plasterboard (UK code)
@@ -321,3 +321,13 @@
   247    0.0040  REF A CLEAR LO 6MM : optics from UK national method datase Low-e coated
     0    0.0160  air  0.125 0.125 0.125
   247    0.0040  REF A CLEAR LO 6MM : optics from UK national method datase Low-e coated
+# layers  description   optics name   symmetry tag
+    7    PV_constr     TRAN  PVmod_opt     NONSYMMETRIC  
+# mat ref thickness (m) mat descr & air gap R
+  251    0.0030  low-iron-glass : low iron glass for use in PV modules and solar collectors
+  252    0.0030  EVA layer : EVA layer for embedded PV cells (resin cell resin)
+  251    0.0030  low-iron-glass : low-iron-glass for use in PV modules and solar collectors
+    0    0.0200  air  0.170 0.170 0.170
+   46    0.0040  grey cotd alum : Grey coated aluminium
+  281    0.0800  Glass Fibre Quilt : Glass Fibre Quilt
+   46    0.0040  grey cotd alum : Grey coated aluminium

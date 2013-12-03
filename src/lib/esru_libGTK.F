@@ -137,7 +137,7 @@ C If in graphic mode use graphic faciltiies to edit the number.
 
         LN1=max(1,lnblnk(PROMP1))
         LN2=max(1,lnblnk(PROMP2))
-	if((LN1+LN2+1).lt.144)then
+        if((LN1+LN2+1).lt.144)then
           if(LN1.eq.1)then
             write(prompt,'(a)') PROMP2(1:LN2)
           else
@@ -826,7 +826,7 @@ C If in terminal type 8 use dialogue box.
         lmmod=mmod
         LN1=max(1,lnblnk(PROMP1))
         LN2=max(1,lnblnk(PROMP2))
-	if((LN1+LN2+1).lt.144)then
+        if((LN1+LN2+1).lt.144)then
           if(LN1.eq.1)then
             write(prompt,'(a)') PROMP2(1:LN2)
           else
@@ -1056,7 +1056,7 @@ C If in terminal type 8 use dialogue box.
         lmmod=mmod
         LN1=max(1,lnblnk(PROMP1))
         LN2=max(1,lnblnk(PROMP2))
-	if((LN1+LN2+1).lt.144)then
+        if((LN1+LN2+1).lt.144)then
           if(LN1.eq.1)then
             write(prompt,'(a)') PROMP2(1:LN2)
           else
@@ -1260,7 +1260,7 @@ C For graphic version use the standard GTK widget as does easks.
         lmmod=mmod
         LN1=max(1,lnblnk(PROMP1))
         LN2=max(1,lnblnk(PROMP2))
-	if((LN1+LN2+1).lt.144)then
+        if((LN1+LN2+1).lt.144)then
           if(LN1.eq.1)then
             write(prompt,'(a)') PROMP2(1:LN2)
           else
@@ -1489,7 +1489,7 @@ C If in terminal type 8 use dialogue box.
         lmmod=mmod
         LN1=max(1,lnblnk(PROMP1))
         LN2=max(1,lnblnk(PROMP2))
-	if((LN1+LN2+1).lt.144)then
+        if((LN1+LN2+1).lt.144)then
           if(LN1.eq.1)then
             write(prompt,'(a)') PROMP2(1:LN2)
           else
@@ -1678,7 +1678,7 @@ C If in terminal type 8 use dialogue box.
         lmmod=mmod
         LN1=max(1,lnblnk(PROMP1))
         LN2=max(1,lnblnk(PROMP2))
-	if((LN1+LN2+1).lt.144)then
+        if((LN1+LN2+1).lt.144)then
           if(LN1.eq.1)then
             write(prompt,'(a)') PROMP2(1:LN2)
           else
@@ -1860,7 +1860,7 @@ C If in terminal type 8 use dialogue box.
         call dupphelp(newnbhelp)
         LN1=max(1,lnblnk(PROMP1))
         LN2=max(1,lnblnk(PROMP2))
-	if((LN1+LN2+1).lt.144)then
+        if((LN1+LN2+1).lt.144)then
           if(LN1.eq.1)then
             write(prompt,'(a)') PROMP2(1:LN2)
           else
@@ -2583,7 +2583,7 @@ C Querry yes or no or default. Concat MSG1 & MSG2 together for prompt.
   19    continue
         LN1=max(1,lnblnk(MSG1))
         LN2=max(1,lnblnk(MSG2))
-	if((LN1+LN2+1).lt.144)then
+        if((LN1+LN2+1).lt.144)then
           if(LN1.eq.1)then
             write(prompt,'(a)') MSG2(1:LN2)
           else
@@ -2621,7 +2621,7 @@ C Querry yes or no or default. Concat MSG1 & MSG2 together for prompt.
           optc='  '
           call espabcbox(prompt,opta,optb,optc,optd,opte,optf,optg,IW)
         endif
-	
+
 C Debug.
 C        write(6,*) 'espabcbox selected iw ',iw,opta,optb,optc
 
@@ -2759,7 +2759,7 @@ C of help supplied and then provide the prompt again.
 C Querry which one.
   19    LN1=max(1,lnblnk(MSG1))
         LN2=max(1,lnblnk(MSG2))
-	if((LN1+LN2+1).lt.144)then
+        if((LN1+LN2+1).lt.144)then
           if(LN1.eq.1)then
             write(prompt,'(a)') MSG2(1:LN2)
           else
@@ -2937,7 +2937,7 @@ C of help supplied and then provide the prompt again.
 C Querry which one.
   19    LN1=max(1,lnblnk(MSG1))
         LN2=max(1,lnblnk(MSG2))
-	if((LN1+LN2+1).lt.144)then
+        if((LN1+LN2+1).lt.144)then
           if(LN1.eq.1)then
             write(prompt,'(a)') MSG2(1:LN2)
           else
@@ -3470,7 +3470,7 @@ C Single line prompt.
 C If warning mode then clear continuebox after use clicks continue.
           LN1=max(1,LNBLNK(MSG1))
           LN2=max(1,LNBLNK(MSG2))
-	  if((LN1+LN2+1).lt.144)then
+          if((LN1+LN2+1).lt.144)then
             if(LN1.eq.1)then
               write(prompt,'(a)') MSG2(1:LN2)
             else
@@ -3612,7 +3612,7 @@ C Single line prompt.
 C If warning mode then clear continuebox after use clicks continue.
           LN1=max(1,LNBLNK(MSG1))
           LN2=max(1,LNBLNK(MSG2))
-	  if((LN1+LN2+1).lt.144)then
+          if((LN1+LN2+1).lt.144)then
             if(LN1.eq.1)then
               write(prompt,'(a)') MSG2(1:LN2)
             else
@@ -3667,7 +3667,7 @@ C treatment as a scrolling window.
       common/textbuf/dispbuf(500)
       common/textbufl/indexbuf,lnbuf(500)
       CHARACTER*(*) MSG
-      CHARACTER WWMSG*124,dispbuf*124
+      CHARACTER WWMSG*144,dispbuf*144
       logical unixok
 
 C Temporarily set ICOUT.
@@ -3676,7 +3676,7 @@ C Temporarily set ICOUT.
 C Create matching string to pass to wwlib.c and hold in dispbuf.
 C Use logic similar to that in egdisp.
       lnm=max0(1,lnblnk(MSG))
-      lcc = MIN0(lnm,124)
+      lcc = MIN0(lnm,144)
       if(lcc.eq.0) lcc=1
       write(WWMSG,'(a)',iostat=ios,err=1)MSG(1:lcc)
 
@@ -3761,14 +3761,13 @@ C Path to model and command line file (if any).
 
       logical browse
       common/user/browse
-      common/C21/IFCFG,cfgroot,LCFGF
       common/textbuf/dispbuf(500)
       common/textbufl/indexbuf,lnbuf(500)
 
       character path*72,h*72,uname*24,fs*1
-      character sstr*144,title*18,ltypes*4,cfgroot*24
+      character sstr*144,title*18,ltypes*4
       character lltmp*144
-      character LCFGF*72,dispbuf*124,outs*124
+      character dispbuf*144,outs*124
       logical unixok,there
       integer ltf  ! position of last character in string.
       integer iw   ! for user selection
@@ -3907,16 +3906,15 @@ C Path to model and command line file (if any).
 C Indicator of possible focus zone.
       logical browse
       common/user/browse
-      common/C21/IFCFG,cfgroot,LCFGF
 
 C Graphic capture, window dump: label, command.
       character gprlbl*20,gprcmd*48
       common/gprint/gprlbl,gprcmd
 
       character path*72,h*72,uname*24,fs*1
-      character sstr*144,cfgroot*24
+      character sstr*144
       character lltmp*144,outs*124
-      character LCFGF*72,gcmd*144
+      character gcmd*144
       integer ltf  ! position of last character in string.
       integer iw   ! for user selection
 

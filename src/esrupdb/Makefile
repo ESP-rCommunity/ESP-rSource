@@ -8,8 +8,8 @@ PROG = pdb$(EXE)
 
 MODULE_OBJECTS = startup.o
 
-OBJECTS = pdb.o c2fdum.o pc_manip.o pcedit.o pcentr.o pcompi.o pcwrt.o \
-	  pshell.o
+OBJECTS = pdb.o c2fdum.o pcexp.o pc_manip.o pcedit.o pcentr.o pcompi.o \
+	  pcwrt.o pshell.o
 
 MODULES = start_up.mod parse_command_line.mod
 

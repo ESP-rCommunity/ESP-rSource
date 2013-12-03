@@ -71,6 +71,8 @@ C IEEE callback (Solaris)
 
       common/initv/initvt,EYEMI(3),VIEWMI(3),ANGI
       common/SPAD/MMOD,LIMIT,LIMTTY
+      integer childterminal  ! picks up mmod from starting of prj
+      common/childt/childterminal
       common/OUTIN/IUOUT,IUIN
       integer ifs,itfs,imfs
       common/GFONT/IFS,ITFS,IMFS
@@ -82,7 +84,6 @@ C IEEE callback (Solaris)
       integer ncomp,ncon
       common/C1/NCOMP,NCON
       common/C6/INDCFG
-      common/C21/IFCFG,cfgroot,LCFGF
       integer IZSTOCN
       COMMON/C24/IZSTOCN(MCOM,MS)
       common/cctlnm/ctldoc,lctlf
@@ -128,7 +129,7 @@ C IPV description via ipvdata.h.
       common/RAY2/ITDSP,ITBND,ITEPT,ITZNM,ITSNM,ITVNO,ITORG,ITSNR,
      &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS,ITPPSW
       common/RAY3/MODIFY,MODLEN,MODBND
-      common/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
+      common/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,CFCDBOK
 
 C Uncertainty.
       COMMON/UA1/LUALF,LCNG(MNCNG),LLOC(MNIL)
@@ -146,19 +147,18 @@ C Name of current application
       character cAppName*12
 
       integer iverb     ! verbosity passed on command line
-      logical OK,CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,MODSIT
+      logical OK,CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,MODSIT,CFCDBOK
       logical MODIFY,MODLEN,MODBND,browse,confirm,XST,ckpath
       logical unixok,Vldtng,changedit
       logical itisanexemplar  ! passed to newprb to ensure browse mode.
 
       character dstmp*24,uname*24
       character LUALF*72,LCNG*15,LLOC*15
-      character*72 LCFGF
       character LTMP*72
       character inf*144,inz*16,inzone*16,act*16,inact*16,LCMDFL*144
       character outs*124,outstr*124
 C      character outs248*248
-      character path*72,cfgroot*24,exemplar*144
+      character path*72,exemplar*144
       character LAPROB*72
       character ITEMS(27)*34
       character ltcmdfl*144
@@ -168,15 +168,16 @@ C      character outs248*248
       character*10 wkd1, wkd2
       character CMDCFG*72,CMDCLM*72,CMDCLMN*72,CMDNOTE*64,CMDRES*72
       character CMDLBL*12,CMDLNAM*80
-      CHARACTER cpth*48,cmdn*48,topt*72
-      character t24*24,DFILE*72,DCNN*72,bidirfile*72,bidirname*12
+      CHARACTER topt*72
+      character t32*32,DFILE*72,DCNN*72
+      character bidirfile*72,bidirname*12
       CHARACTER dinstpath*60,dirpath*72
       character useraction*8  ! returned from exemplar access call.
       character menu*72       ! blank model title for pregist call
       character fs*1
 
 C Passed parameters for pregist.
-      character root*24,mpath*72
+      character root*32,mpath*72
 
 C Returned parameters from silentread.
       character theprimedirective*8
@@ -188,6 +189,7 @@ C Returned parameters from silentread.
       integer MITEM,INO ! max items and current menu item
       dimension ivals(MCOM)
       logical silent  ! for dependency checking on transform or rotate
+      logical QUIET   ! to force silent rebuild of zone constructions
 
       character cVnum*16      ! returned from ESPrVersionNum
       character pagestitle*42 ! for banner title via epages call
@@ -264,6 +266,7 @@ C focus and actions arguments).
       issave=2
       isavgh=0
       NSIGFIG=3
+      childterminal=MODL  ! remember so that child processes can run the same
 
 C Initial assumptions about common data files (prior to configuration file scan
 C that the default common data files will be defined explicitly).
@@ -552,17 +555,19 @@ C then set inact.
 
 C Climate db is on channel IFIL (NB when not in use other binary
 C databases may make use of this unit temporarily).
-      ICLIM=IFIL
+      ICLIM=IFIL; ipathclim=0
       LCLIM=DCLIM
 
       write(LAPRES,'(a)') DAPRES(1:lnblnk(DAPRES))
 
-C Common constructions on channel IFIL+3.
-      IFMUL=IFIL+3
+C Common constructions on channel IFIL+3. Default file assumed with
+C full path.
+      IFMUL=IFIL+3; ipathmul=0
       write(LFMUL,'(a)') DFMUL(1:lnblnk(DFMUL))
 
-C Common Materials on channel IFIL+4.
-      IFMAT=IFIL+4
+C Common Materials on channel IFIL+4. Default file assumed with
+C full path.
+      IFMAT=IFIL+4; ipathmat=0
       write(LFMAT,'(a)') DFCON(1:lnblnk(DFCON))
 
 C System configuration file on channel IFIL+5. 
@@ -576,11 +581,17 @@ C Optical and rarely used common files on channel IFIL+6.
 
 C Set optical, mould event profiles etc. to default file names.
       write(LOPTDB,'(a)') DOPTDB(1:lnblnk(DOPTDB))
+      ipathoptdb=0
       write(lfmould,'(a)') dmdbnam(1:lnblnk(dmdbnam))
+      ipathmould=0
       write(LPRFDB,'(a)') DPRFDB(1:lnblnk(DPRFDB))
+      ipathprodb=0
       write(LPCDB,'(a)') DPCDB(1:lnblnk(DPCDB))
+      ipathpcdb=0
       write(MCMPDBFL,'(a)') DMCMPDBFL(1:lnblnk(DMCMPDBFL))
+      ipathmsc=0
       write(LSBEM,'(a)')  DSBEM(1:lnblnk(DSBEM))  ! assign default SBEM db
+      ipathsbem=0
 
 C Temporal information on channel IFIL+7.
       IUTDF=IFIL+7
@@ -591,6 +602,10 @@ C Temporal information on channel IFIL+7.
 
 C Text/graphic feedback redirection on channel ifil +9 
       ixunit = ifil + 9
+
+C CFClayers on channel IFIL+10.
+      icfcdb = ifil + 10
+      write(LCFCDB,'(a)') DCFCDB(1:lnblnk(DCFCDB))
 
 C Project log and contents.
       lmodellog='project.notes'
@@ -626,8 +641,14 @@ C Clear allocatable arrays
             endif
           endif
         endif
+
       elseif(inact(1:9).eq.'transform'.or.inact(1:6).eq.'rotate'.or.
-     &       inact(1:2).eq.'QA')then
+     &       inact(1:2).eq.'QA'.or.
+     &       inact(1:15).eq.'update_zone_con')then
+
+C Act on a command line request to transform the model or generate
+C a model contents report or rebuilt the zone construction files
+C (assumes that zone file names are known).
         XST=.false.
         if(LCMDFL(1:2).ne.'  '.and.LCMDFL(1:4).ne.'UNKN')then
           INQUIRE (FILE=LCMDFL,EXIST=XST)
@@ -666,16 +687,18 @@ C Scan control file if one exists.
             if(XST)then
               CALL EZCTLR(ICTLF,0,IUOUT,IER)
             endif
-	    
+    
 C Now implement the transform based on data passed in command line
 C for all the zones in the model. NOTE: in the next line set the
 C value of silent = .false if you want to interact with the transform
 C or rotation.
 C            silent= .false.
             silent= .true.
-	    inpic=NCOMP
-	    do 29 iz=1,inpic
-	      ivals(iz)=iz
+            inpic=NCOMP
+            nzg=NCOMP
+            do 29 iz=1,inpic
+              ivals(iz)=iz
+              nznog(iz)=iz
   29        continue
   
 C Perform either the transform or rotation or generate QA report.
@@ -686,7 +709,14 @@ C Perform either the transform or rotation or generate QA report.
               call globalrotate(d1,d2,d3,inpic,ivals,silent,itru,ier)
             elseif(inact(1:2).eq.'QA')then
               call prjqa(inpic,ivals,silent,ier)
-	    endif
+            elseif(inact(1:15).eq.'update_zone_con')then
+              QUIET=.TRUE.
+              DO 2491, IZ=1,NCOMP
+               CALL EDCON(ITRC,itru,IZ,QUIET,IER)
+ 2491         CONTINUE
+              QUIET=.FALSE.
+
+            endif
             if(silent)then 
               call usrmsg(
      &          'Processing of transform:rotate:QA complete.',
@@ -783,8 +813,8 @@ C Find the index of the MLC which matches each surface.
               icn1=izstocn(icomp,i)
               ssmlcindex(icn1)=0  ! assume no matching MLC          
               do 5 ii=1,nmlc
-                if(SSMLCN(icn1)(1:12).eq.DESC(ii)(1:12)) then
-                  ssmlcindex(icn1)=ii   ! remember MLC index     
+                if(SSMLCN(icn1)(1:12).eq.mlcname(ii)(1:12)) then
+                  ssmlcindex(icn1)=ii   ! remember MLC index  
                 endif
   5           continue
  9994       continue
@@ -1270,10 +1300,10 @@ C Root name of the model.
         if(CFGOK)then
           helptopic='model_root_name'
           call gethelptext(helpinsub,helptopic,nbhelp)
-          t24=cfgroot
-          CALL EASKS(t24,' ','Project root name (<24 chars)?',
-     &                24,'project','root name',IER,nbhelp)
-          if(t24(1:2).ne.'  '.and.t24(1:4).ne.'UNKN')cfgroot=t24
+          t32=cfgroot
+          CALL EASKS(t32,' ','Project root name (<32 chars)?',
+     &      32,'project','root name',IER,nbhelp)
+          if(t32(1:2).ne.'  '.and.t32(1:4).ne.'UNKN')cfgroot=t32
           changedit=.true.
         endif
       ELSEIF(INO.EQ.11)THEN
@@ -1307,7 +1337,7 @@ C Browse the current model.
       ELSEIF(INO.EQ.16)THEN
 
 C Import from 3rd party tools.
-        call cadin(itrc,ichoice,ier)
+        call cadin(itrc,ier)
       ELSEIF(INO.EQ.17)THEN
 
 C Export, if something other than registration or plant only.
@@ -1325,7 +1355,7 @@ C in the cfg file).
       ELSEIF(INO.EQ.20)THEN
 
 C Project folders and files.
-        call pfolders('-',iier)
+        call pfolders(iier)
       ELSEIF(INO.EQ.22.or.INO.EQ.23)THEN
 
 C Save model (22 without asking for file name & 23 asking for file name).
@@ -1354,11 +1384,11 @@ C Ask for file name.
 C Also give user option to alter the root name.
           helptopic='model_root_name'
           call gethelptext(helpinsub,helptopic,nbhelp)
-          t24=cfgroot
-          CALL EASKS(t24,' Root name for the project? (see help',
-     &     'about whether to modify)',24,'project','root name',
-     &     IER,nbhelp)
-          if(t24(1:2).ne.'  '.and.t24(1:4).ne.'UNKN')cfgroot=t24
+          t32=cfgroot
+          CALL EASKS(t32,' Root name for the project? (see help',
+     &      'about whether to modify)',32,'project','root name',
+     &      IER,nbhelp)
+          if(t32(1:2).ne.'  '.and.t32(1:4).ne.'UNKN')cfgroot=t32
         endif
 
 C If configuration file format is version 3 then check to see if there
@@ -1441,9 +1471,9 @@ C simula commissions technical assessments and analysis.
       subroutine simula(ier)
 #include "building.h"
 #include "model.h"
-#include "esprdbfile.h"
 #include "sbem.h"
 #include "ipvdata.h"
+#include "net_flow.h"
 #include "tdf2.h"
 C Get logical name of terminal type, expand model name
 C to include the path and create a string to drive the modules.
@@ -1453,7 +1483,8 @@ C to include the path and create a string to drive the modules.
       common/OUTIN/IUOUT,IUIN
       common/FILEP/IFIL
       common/appw/iappw,iappx,iappy
-      common/C21/IFCFG,cfgroot,LCFGF
+      integer childterminal  ! picks up mmod from starting of prj
+      common/childt/childterminal
       COMMON/PREC7/ITCNST
       COMMON/C6/INDCFG
       COMMON/AFN/IAIRN,LAPROB,ICAAS(MCOM)
@@ -1463,10 +1494,10 @@ C to include the path and create a string to drive the modules.
       common/IPVF/lipvdatf
 
 C Typical seasons and default simulation periods. Isset is the
-C current seasons set, nsset number of sets, Isauto (0=use info as
-C defaults 1=autoexec mode), istcnst (startup days), isbnstep (building
-C timesteps/hr), ispnstep (plant timesteps/hr), issave (results save
-C level).
+C current seasons set, nsset number of similar parameter sets,
+C Isauto (0=use info as defaults 1=autoexec mode),
+C istcnst (startup days), isbnstep (building timesteps/hr),
+C ispnstep (plant timesteps/hr), issave (results save level).
       common/spmfxst/ispmxist,spflnam
       common/spfldes/spfdescr(MSPS)
       common/spflper/isstday(MSPS),isstmon(MSPS),isfnday(MSPS),
@@ -1474,12 +1505,6 @@ C level).
       common/spfldat/nsset,isset,isstup,isbnstep,ispnstep,issave,isavgh
       common/spflres/sblres(MSPS),sflres(MSPS),splres(MSPS),
      &  smstres(MSPS),selres(MSPS),sipvres
-      character imgfmt*4  ! GIF XBMP TIF JPG
-      character imgfoc*4  ! FZON FNET FCTL FDFS
-      character limgfil*72  ! file name (extend to 144 char)
-      character imgdoc*248  ! text associated with image
-      common/imagf/imgfmt(MIMG),imgfoc(MIMG),limgfil(MIMG),imgdoc(MIMG)
-
       integer noimg  ! number of images
       integer iton   ! zero if images not yet shown, one if yes
       common/imagfi/noimg,iton
@@ -1491,8 +1516,8 @@ C level).
       character doit*248,tmode*8,ITEMS*34,key*1
       character sblres*72,sflres*72,splres*72,smstres*72,sipvres*72
       character selres*72,spflnam*72,longtfile*144,longtfiledos*144
-      CHARACTER*72 LAPROB,LCFGF,ENTFLNAM,lipvdatf
-      character cfgroot*24,cr*24,spfdescr*8,ipvaction*3
+      CHARACTER*72 LAPROB,ENTFLNAM,lipvdatf
+      character cr*32,spfdescr*8,ipvaction*3
 
 C dd is character array for selecting simulation parameter sets.
       character dd(MSPS+3)*33,de*8,aut*12
@@ -1508,12 +1533,6 @@ C dd is character array for selecting simulation parameter sets.
 
       integer isstupt,isbnstept,ispnstept,issavet  ! for local editing
       integer MITEM,INO,ic,IRT ! max items and current menu item
-
-#ifdef OSI
-      integer ICPMOD     ! passed from tchild
-#else
-      integer*8 ICPMOD     ! passed from tchild
-#endif
 
 C For help messages
       character helpinsub*24 ! subroutine name
@@ -1715,8 +1734,7 @@ C Invoke simulator for the case of a simulation parameter set.
 C Setup chile process for the type of terminal.
           call tstamp('>','PRJ: beginning simulation with param set.')
           doit = ' '
-          call tchild(ICPMOD)
-          call termode(ICPMOD,tmode)
+          call terminalmode(childterminal,tmode)
           call isunix(unixok)
           if(unixok)then
             call addpath(LCFGF,longtfile,concat)
@@ -1742,13 +1760,13 @@ C If browsing pass this information to bps and if the user
 C has set the trace level above one add a -v optin to the
 C command line.
           if(browse)then
-	    if(itrc.gt.1)then
+            if(itrc.gt.1)then
               brw = ' -v -b yes'
             else
               brw = ' -b yes'
             endif
           else
-	    if(itrc.gt.1)then
+            if(itrc.gt.1)then
               brw = ' -v -b no '
             else
               brw = ' -b no '
@@ -1777,8 +1795,7 @@ C Debug.
 C Invoke simulator for the case without a simulation parameter set.
           call tstamp('>','PRJ: beginning simulation')
           doit = ' '
-          call tchild(ICPMOD)
-          call termode(ICPMOD,tmode)
+          call terminalmode(childterminal,tmode)
           call isunix(unixok)
           if(unixok)then
             call addpath(LCFGF,longtfile,concat)
@@ -1799,13 +1816,13 @@ C Debug the patched file name.
 
 C If browsing pass this information to bps.
           if(browse)then
-	    if(itrc.gt.1)then
+            if(itrc.gt.1)then
               brw = ' -v -b yes'
             else
               brw = ' -b yes'
             endif
           else
-	    if(itrc.gt.1)then
+            if(itrc.gt.1)then
               brw = ' -v -b no '
             else
               brw = ' -b no '
@@ -1829,9 +1846,7 @@ C Debug.
           call runit(doit,tmode)
           return
         endif
-
       elseif(INO.EQ.MITEM-7)then
-
         helptopic='prj_simulation_menu'
         call gethelptext(helpinsub,helptopic,nbhelp)
         CALL EASKABC('Fluid flow analysis via:',' ','Nodal Network',
@@ -1841,8 +1856,7 @@ C Debug.
 C Execute mfs.
           call tstamp('>','PRJ: beginning mfs')
           doit = ' '
-          call tchild(ICPMOD)
-          call termode(ICPMOD,tmode)
+          call terminalmode(childterminal,tmode)
 
 C If prj initial size is a % of default pass this on to child with
 C an offset from prj start position.
@@ -1861,8 +1875,7 @@ C          call usrmsg('Beginning flow only assessment via',doit,'-')
 C Execute dfs.
           call tstamp('>','PRJ: beginning dfs')
           doit = ' '
-          call tchild(ICPMOD)
-          call termode(ICPMOD,tmode)
+          call terminalmode(childterminal,tmode)
 
 C If prj initial size is a % of default pass this on to child with
 C an offset from prj start position.
@@ -1885,13 +1898,13 @@ C if Unix or Windows setup the appropriate path.
 
 C If browsing pass this information to e2r.
         if(browse)then
-	  if(itrc.gt.1)then
+          if(itrc.gt.1)then
             brw = ' -v -b yes'
           else
             brw = ' -b yes'
           endif
         else
-	  if(itrc.gt.1)then
+          if(itrc.gt.1)then
             brw = ' -v -b no '
           else
             brw = ' -b no '
@@ -1900,8 +1913,7 @@ C If browsing pass this information to e2r.
 
         call tstamp('>','PRJ: beginning e2r')
         doit = ' '
-        call tchild(ICPMOD)
-        call termode(ICPMOD,tmode)
+        call terminalmode(childterminal,tmode)
         call isunix(unixok)
         if(unixok)then
           call addpath(LCFGF,longtfile,concat)
@@ -1961,7 +1973,7 @@ C IPV description held in a separate file.
 C Scan the IPV description before asking user choice.
             call FINDFIL(lipvdatf,XST)
             IF(XST)then
-	      ipvaction='ipv'
+              ipvaction='ipv'
               call ripvdat(ifil+1,lipvdatf,ipvaction,ier)
             else
               call usrmsg('IPV definition not found.',lipvdatf,'W')
@@ -1978,7 +1990,7 @@ C Scan the IPV description before asking user choice.
             ID=3   ! remember existing state
           endif
         else
-	
+
 C There may be ipv data held in the configuration file.
           if(nipvassmt.eq.0)then
             DOK=.false.
@@ -1997,7 +2009,7 @@ C There may be ipv data held in the configuration file.
               INO=-4
               GOTO 3
             endif
-            ID=3   ! remember existing state	   
+            ID=3   ! remember existing state   
           endif
         endif
 
@@ -2073,7 +2085,6 @@ C Set parameter sets for current number of IPV assessments.
           endif
           modparms=.true.
         endif
-
       elseif(MITEM.eq.25.and.INO.EQ.1)then
 
 C Help text for this menu and all of the dialogs.
@@ -2113,11 +2124,9 @@ C Select an existing set, create a new one or cancel.
           call gethelptext(helpinsub,helptopic,nbhelp)
           CALL PHELPD('Simulation sets',nbhelp,'-',0,0,IER)
           goto 170
-        elseif(IRT.eq.ic-2.and.nsset.lt.5)then
+        elseif(IRT.eq.ic-2.and.nsset.lt.MSPS)then
 
 C It is possible to add another set so ask user and set file names.
-C << note this probably should check to see if there is an IPV >>
-C << description first >>
           de='win'
           CALL EASKS(de,' ','Name for set?',8,'win','set name',
      &      IER,nbhelp)
@@ -2151,14 +2160,22 @@ C << description first >>
           endif
           modparms=.true.
           goto 170
+        elseif(IRT.eq.ic-2.and.nsset.ge.MSPS)then
+          call usrmsg('At the limit of simulation parameter sets',
+     &      'Unable to add another.','W')
+          goto 170
         elseif(IRT.ge.1.and.IRT.le.nsset)then
-          isset=IRT
+          isset=IRT  ! choose an existing set
         endif
         call scntcnst(TDM,istd,TCM,ISTC)
       elseif(MITEM.eq.25.and.INO.EQ.2)then
 
 C If there is an IPV descripton and this set is one,
 C do not allow this set name to be changed.
+
+C << see if this logic can be relaxed or altered so that
+C << IPV can co-exist with lots of parameter sets.
+
         if(nipvassmt.eq.nsset)then
           call usrmsg('IPV set name is pre-defined,','.','W')
         else
@@ -2357,7 +2374,8 @@ C to include the path and create a string to drive the modules.
       common/OUTIN/IUOUT,IUIN
       common/FILEP/IFIL
       common/appw/iappw,iappx,iappy
-      common/C21/IFCFG,cfgroot,LCFGF
+      integer childterminal  ! picks up mmod from starting of prj
+      common/childt/childterminal
       common/IPVF/lipvdatf
       common/exporttg/xfile,tg,delim
       
@@ -2377,8 +2395,8 @@ C level), isavgh = 0 save every timestep = 1 save hourly zone data.
       character doit*248,tmode*8,tfile*72
       character sblres*72,sflres*72,splres*72,smstres*72,sipvres*72
       character selres*72,longtfile*144,longtfiledos*144
-      CHARACTER LCFGF*72,lipvdatf*72
-      character cfgroot*24,aut*12
+      CHARACTER lipvdatf*72
+      character aut*12
 
       dimension assmttag(MSPS),runtag(MSPS)
       character assmttag*8,runtag*16,brw*8
@@ -2415,12 +2433,6 @@ C the first array index is base and 2nd is variant, 3rd diff
       dimension anu_tot_m2(3),anu_tot_bld(3)
       dimension anu_ht_cap_m2(3),anu_ht_cap_bld(3)
       dimension anu_cl_cap_m2(3),anu_cl_cap_bld(3)
-#ifdef OSI
-      integer ICPMOD     ! passed from tchild
-#else
-      integer*8 ICPMOD     ! passed from tchild
-#endif
-
 
       helpinsub='ipvactions'  ! set for subroutine
       ibasefile=11
@@ -2473,7 +2485,7 @@ C for legacy model cfg files.
         else
           call FINDFIL(lipvdatf,XST)
           IF(XST)then
-	    ipvaction='ipv'
+            ipvaction='ipv'
             call ripvdat(ifil+1,lipvdatf,ipvaction,ier)
             if(ier.ne.0)then
               CALL PHELPD('IPV message',nbhelp,'-',0,0,IER)
@@ -2489,7 +2501,7 @@ C for legacy model cfg files.
 C IPV data could be internal to cfg file.
         if(nipvassmt.eq.0)then
           CALL PHELPD('IPV message',nbhelp,'-',0,0,IER)
-          return	
+          return
         else
           continue
         endif
@@ -2507,8 +2519,7 @@ C Run the simulations.
      &    'cancel',isauto,nbhelp)
         call tstamp('>','PRJ: beginning IPV simulations.')
         doit = ' '
-        call tchild(ICPMOD)
-        call termode(ICPMOD,tmode)
+        call terminalmode(childterminal,tmode)
         if(isauto.eq.1)then
           aut=' default'
         elseif(isauto.eq.2)then
@@ -2593,8 +2604,7 @@ C Extract performance report from the standard results files.
      &    isauto,nbhelp)
         call tstamp('>','PRJ: beginning IPV recovery.')
         doit = ' '
-        call tchild(ICPMOD)
-        call termode(ICPMOD,tmode)
+        call terminalmode(childterminal,tmode)
         if(isauto.eq.1)then
           aut=' default'
         elseif(isauto.eq.2)then
@@ -3122,9 +3132,8 @@ C to include the path and create a string to drive the modules.
       character CXSTR*78
       CHARACTER*72 LS
       character ZSDES*28,ZSDESC*20,ZSDESS*16
-      CHARACTER*72 LAPROB
 
-      logical XST,asked,dok,sorted,problem
+      logical XST,asked,dok,problem
       logical mlcok,bndryok,bndrysxc,confok,geofok,oprfok,prob,dup
       logical tmcok,shdok
       integer icple,iscple  ! coupled zone and surface for tmc check.
@@ -3499,13 +3508,11 @@ C Now look for unknown files.
 
 C Do cursory check to see if the file is sorted.
             problem=.false.
-            call checksort(i,1,problem,ier)
-            if(problem) sorted=.false.
+            call checksort(i,1,problem)
             problem=.false.
-            call checksort(i,2,problem,ier)
-            if(problem) sorted=.false.
+            call checksort(i,2,problem)
             problem=.false.
-            call checksort(i,3,problem,ier)
+            call checksort(i,3,problem)
             if(problem)then
               oprfok=.false.
             endif
@@ -3725,7 +3732,7 @@ C  limgfil (72 char) name of the image file << ?? longer string >>
       common/imagfi/noimg,iton
 
       character ilist*200,dolist*254
-      character fmttag*4,fmtexe*20,tfile*72,focus*4
+      character fmttag*4,fmtexe*20,focus*4
       character longtfile*144,longtfiledos*144
       character topic*248,head*136,act*1,h*72
       integer iglib  ! if one then X11 if 2 then GTK if 3 text only.
@@ -3923,12 +3930,11 @@ C << the latest version prior to running this facility.
       common/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
       common/user/browse
-      common/C21/IFCFG,cfgroot,LCFGF
 
       dimension items2(33)
-      CHARACTER*72 H,LCFGF
+      CHARACTER*72 H
       CHARACTER ITEMS2*36,APP*6
-      CHARACTER NBSTR*6,CFGROOT*24,OUTS*124
+      CHARACTER NBSTR*6,OUTS*124
       LOGICAL BROWSE,clkok
       integer MITEMS2,KNO ! max items and current menu item
 
@@ -4257,10 +4263,11 @@ C Path to model and command line file (if any).
       
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
-      common/C21/IFCFG,cfgroot,LCFGF
       common/FILEP/IFIL
       common/IPVF/lipvdatf
       common/pophelp/h(60)
+      integer childterminal  ! picks up mmod from starting of prj
+      common/childt/childterminal
 
       common/spflres/sblres(MSPS),sflres(MSPS),splres(MSPS),
      &  smstres(MSPS),selres(MSPS),sipvres
@@ -4280,10 +4287,9 @@ C ivalsg keeps track of whether a geometry file has alread been copied.
 
       character*72 sblres,sflres,splres,smstres,sipvres,selres
       character CNTMFIL*72
-      CHARACTER*72 LIPVDATF,NNAME,H,LCFGF,msg1,MSG2,LCFD
+      CHARACTER*72 LIPVDATF,NNAME,H,msg1,MSG2,LCFD
       character ctldoc*248,lctlf*72
       CHARACTER*72 LAPROB
-      CHARACTER*24 cfgroot
       CHARACTER OUTSTR*124
       CHARACTER APE*6,EXT*4,OUTS*124,doit*248,tmode*8
       CHARACTER SALT*31,CNTMDESC*124
@@ -4295,11 +4301,6 @@ C ivalsg keeps track of whether a geometry file has alread been copied.
       logical newgeo  ! to use for testing if new/old geometry file.
       logical updatetitle ! if true the edit IPV titles.
       integer IW  ! for radio button
-#ifdef OSI
-      integer ICPMOD     ! passed from tchild
-#else
-      integer*8 ICPMOD     ! passed from tchild
-#endif
 
 C Set folder separator (fs) to \ or / as required.
       call isunix(unixok)
@@ -4917,7 +4918,7 @@ C If there is an IPV file also update it.
             call edisp(IUOUT,
      &        '* IPV file has been updated to match climate.')
             call edisp(IUOUT,'Please update the IPV titles.')
-	    ipvaction='ipv'
+            ipvaction='ipv'
             CALL RIPVDAT(IFIL+1,LIPVDATF,ipvaction,IER)
             EXT='.ipv'
             CALL FNCNGR(LIPVDATF,APE,EXT,NNAME)
@@ -4934,15 +4935,15 @@ C          CALL USRMSG('Copying IPV file via:',doit,'-')
             LIPVDATF=NNAME
             updatetitle=.true.
           else
-	    updatetitle=.false.   ! nothing to do
-	  endif
+            updatetitle=.false.   ! nothing to do
+          endif
         else
           if(nipvassmt.eq.0)then
-	    updatetitle=.false.   ! nothing to do
+            updatetitle=.false.   ! nothing to do
           else
             updatetitle=.true.
           endif
-	endif
+        endif
 
 C Update the titles.
         if(updatetitle)then
@@ -5070,7 +5071,6 @@ C Check if geometry file has already been updated.
 C Construction data file variant. Depending on location expand path to file.
 
 C << probably should only allow a variant if a local database >>
-
         if(ipathmul.eq.0.or.ipathmul.eq.1)then
           lworking=LFMUL
         elseif(ipathmul.eq.2)then
@@ -5237,7 +5237,7 @@ C variant integrated performance view
           call FINDFIL(lipvdatf,XST)
           call isunix(unixok)
           IF(XST)THEN
-	    ipvaction='ipv'
+            ipvaction='ipv'
             CALL RIPVDAT(IFIL+1,LIPVDATF,ipvaction,IER)
             CALL FNCNGR(LIPVDATF,APE,EXT,NNAME)
             if(unixok)then
@@ -5253,15 +5253,15 @@ C          CALL USRMSG('Copying file via:',doit,'-')
             LIPVDATF=NNAME
             updatetitle=.true.
           else
-	    updatetitle=.false.   ! nothing to do
-	  endif
+            updatetitle=.false.   ! nothing to do
+          endif
         else
           if(nipvassmt.eq.0)then
-	    updatetitle=.false.   ! nothing to do
+            updatetitle=.false.   ! nothing to do
           else
             updatetitle=.true.
           endif
-	endif
+        endif
 
 C Update the titles.
         if(updatetitle)then
@@ -5321,8 +5321,7 @@ C into commons and then written out again
      &        ' ',NNAME
           endif
           LAPROB=NNAME
-          call tchild(ICPMOD)
-          call termode(ICPMOD,tmode)
+          call terminalmode(childterminal,tmode)
 C          CALL USRMSG('Copying flow network via:',doit,'-')
           call runit(doit,tmode)
           CALL EFOPSEQ(IUM,LAPROB,1,IER)
@@ -5497,9 +5496,9 @@ C Check length of cfgroot string. Figure out how to include the
 C whole of ape in the root name, even if this requires removing
 C some characters from the middle of the string buffer.
         irootlen=LNBLNK(CFGROOT)
-	iapelin=lnblnk(ape)
-        IF(irootlen.GT.(24-iapelin))THEN
-          irootlen=24-iapelin
+        iapelin=lnblnk(ape)
+        IF(irootlen.GT.(32-iapelin))THEN
+          irootlen=32-iapelin
         ENDIF
         write(cfgroot,'(2a)')cfgroot(1:irootlen),ape(1:iapelin)
 

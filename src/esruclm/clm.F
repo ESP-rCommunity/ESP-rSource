@@ -53,7 +53,6 @@ C seasons.h provides typper and typsea
 
       COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
       COMMON/RADTYP/IDNGH
-      common/C21/IFCFG,cfgroot,LCFGF
       COMMON/PERC/ID1,IM1,IT1,ID2,IM2,IT2,IDS,IDF,INEW
       COMMON/DAYSF/KDS,KDF
 
@@ -95,7 +94,6 @@ C Name of current application
       character path*72,xfile*144,tg*1,delim*1
       character tab*1,fs*1,OUTSTR*124
       character journcmd*20,jfile*72,uname*24,cjfile*72
-      character cfgroot*24,LCFGF*72
       character blank*2   ! string for edisp of blank line
 
       character cVnum*16      ! returned from ESPrVersionNum
@@ -178,14 +176,13 @@ C Default season definitions.
       CALL EDAY(1,5,is1sums)
       CALL EDAY(31,8,is1sumf)
 
-C Set default climatelist text entries
+C Set default climatelist text entries.
       clmlnam = 'not yet entered'
       clmlaid = 'not yet entered'
       clmlavail = 'OFFLINE'
       clmldbfile = ' '
       nbclmlhelp = 1
       clmlhelp(1) = 'not yet entered'
-
  
 C Text/graphic feedback redirection on channel ifil +12 
       ixunit = ifil + 12
@@ -604,7 +601,6 @@ C Setup and pass in parameters to win3d.
               iigl=igl; iigr=igr;iigt=igt;iigb=igb;iigw=igw;iigwh=igwh
               CALL win3d(iimenu,iiw1,iiw2,iiw3,iiw4,
      &          iigl,iigr,iigt,iigb,iigw,iigwh)
-C              CALL win3d(menuchw,10,22,7,3,igl,igr,igt,igb,igw,igwh)
               igl=int(iigl); igr=int(iigr);igt=int(iigt);igb=int(iigb)
               igw=int(iigw); igwh=int(iigwh)
             elseif(iglib.eq.2)then
@@ -632,7 +628,7 @@ C Psychrometric analysis. Enlarge graphics area if small.
                 LIMIT = MAX0(int(6*iappw*0.01),4)
               else
                 menuchw = 29
-                LIMTTY=6	
+                LIMTTY=6
                 LIMIT =6
               endif
               call winclr
@@ -644,7 +640,6 @@ C Setup and pass in parameters to win3d.
               iigl=igl;iigr=igr;iigt=igt;iigb=igb;iigw=igw;iigwh=igwh
               CALL win3d(iimenu,iiw1,iiw2,iiw3,iiw4,
      &          iigl,iigr,iigt,iigb,iigw,iigwh)
-C              CALL win3d(menuchw,10,22,7,3,igl,igr,igt,igb,igw,igwh)
               igl=int(iigl);igr=int(iigr);igt=int(iigt);igb=int(iigb)
               igw=int(iigw);igwh=int(iigwh)
             elseif(iglib.eq.2)then
@@ -922,7 +917,7 @@ C asking user which year to transfer.
           helptopic='clm_year_is_required'
           call gethelptext(helpinsub,helptopic,nbhelp)
           CALL EASKI(IYEAR,' ','Which year to import? ',
-     &             1900,'W',2020,'W',2000,'year',IER,nbhelp)
+     &             1900,'W',2051,'W',2007,'year',IER,nbhelp)
           CLMLOC=' '
           helptopic='clm_site_name'
           call gethelptext(helpinsub,helptopic,nbhelp)
@@ -1193,7 +1188,6 @@ C Setup and pass in parameters to win3d.
           iigl=igl; iigr=igr; iigt=igt; iigb=igb; iigw=igw; iigwh=igwh
           CALL win3d(iimenu,iiw1,iiw2,iiw3,iiw4,
      &      iigl,iigr,iigt,iigb,iigw,iigwh)
-C          CALL win3d(menuchw,10,22,5,3,igl,igr,igt,igb,igw,igwh)
           igl=int(iigl); igr=int(iigr); igt=int(iigt); igb=int(iigb)
           igw=int(iigw); igwh=int(iigwh)
        elseif(iglib.eq.2)then

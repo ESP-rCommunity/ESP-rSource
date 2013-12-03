@@ -69,7 +69,7 @@ For testing an all-to-common control issue - rough control in slave zones. Capac
 * Control function
 # senses dry bulb temperature in manager_a.
     1    0    0    0  # sensor data
-# actuates the air point in coridor.
+# actuates the air point in corridor.
     3    0    0  # actuator data
     0 # No. day types
     1  365  # valid Sun-01-Jan - Sun-31-Dec

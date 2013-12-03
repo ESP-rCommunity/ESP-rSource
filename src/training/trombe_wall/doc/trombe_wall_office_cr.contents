@@ -1,0 +1,470 @@
+Synopsis
+ 
+Synopsis of the model Office with clear story window & TM wall & small dampers
+defined in trombe_wall_crack.cfg generated on Fri Aug 24 11:59:22 2012. Notes
+associated with the model are in ../doc/trombe_wall_office.log
+ 
+The model is located at latitude   55.90 with a longitude difference of  -4.10
+from the local time meridian. The year used in simulations is 2007 and
+weekends occur on Saturday and Sunday.
+The site exposure is typical city centre and the ground reflectance is 0.20.
+ 
+ 
+Simulationist name: not yet defined
+Simulationist telephone: not yet defined
+Simulationist address: not yet defined
+Simulationist city: not yet defined
+Simulationist postcode: not yet defined
+ 
+The climate is: ESP test climate and is held in: clm67 with hour centred solar
+data.
+ standard annual weather: clm67
+Calculated ground temp at 0.5m depth
+3.0888 4.3008 6.6610 8.8949 13.123 15.349 15.963 14.834 12.227 8.9770 5.7777 3.6649
+Calculated ground temp at 1.0m depth
+3.6630 4.5020 6.4738 8.4398 12.343 14.560 15.374 14.612 12.434 9.5459 6.5633 4.4524
+Calculated ground temp at 2.0m depth
+4.7588 5.0557 6.4004 7.8990 11.149 13.226 14.259 14.027 12.542 10.298 7.7730 5.7855
+Calculated ground temp at 4.0m depth
+6.4880 6.2779 6.8663 7.7174 9.8661 11.475 12.517 12.771 12.121 10.800 9.0880 7.5409
+ 
+An Integrated Performance View is incomplete or missing.
+ 
+Databases associated with the model:
+ standard pressure distr: pressc.db1
+ materials              : ../dbs/trombe_wall_office.materialdb
+ constructions          : ../dbs/trombe_wall_office.constrdb
+ standard plant comp    : plantc.db1
+ standard event profiles: profiles.db2.a
+ standard optical prop  : optics.db2
+ standard UK NCM data   : SBEM.db1
+ standard mould isopleth: mould.db1
+ ____________________________________________________________
+ 
+The model includes an air flow network.
+ 
+ Flow network description.
+ 
+   9 nodes,   9 components,  12 connections;     wind reduction =  1.000
+   # Node      Fluid   Node Type           Height Temperature    Data_1       Data_2
+   1 trombe_low   air   internal & unknown    0.3750   20.000     (-)     0.000  vol    0.600
+   2 trombe_mid   air   internal & unknown    1.1250   20.000     (-)     0.000  vol    0.600
+   3 trombe_mid2  air   internal & unknown    1.8750   20.000     (-)     0.000  vol    0.600
+   4 trombe_up    air   internal & unknown    2.6250   20.000     (-)     0.000  vol    0.600
+   5 bypass       air   internal & unknown    1.5000   20.000     (-)     0.000  vol    0.120
+   6 office       air   internal & unknown    1.5000   20.000     (-)     0.000  vol   49.501
+   7 sou_low      air   boundary & wind ind   0.1000   0.0000     coef    5.000  azim 180.000
+   8 sou_up       air   boundary & wind ind   2.9000   0.0000     coef    5.000  azim 180.000
+   9 nor_low      air   boundary & wind ind   0.1000   0.0000     coef    5.000  azim   0.000
+ 
+ Component    Type C+ L+ Description
+ 
+ ext_vent_cr   120  3  0 Specific air flow crack             m = rho.f(W,L,dP)
+ Fluid  1.0 crack width (m)  0.0040 crack length (m)  2.000
+ 
+ office_crac   120  3  0 Specific air flow crack             m = rho.f(W,L,dP)
+ Fluid  1.0 crack width (m)  0.0040 crack length (m)  4.000
+ 
+ low_damper     40  3  0 Common orifice flow component m = rho.f(Cd,A,rho,dP)
+ Fluid  1.0 opening area (m^2)  0.200 discharge factor (-) 0.500
+ 
+ upper_dampe    40  3  0 Common orifice flow component m = rho.f(Cd,A,rho,dP)
+ Fluid  1.0 opening area (m^2)  0.200 discharge factor (-) 0.400
+ 
+ clear_story   110  2  0 Specific air flow opening           m = rho.f(A,dP)
+ Fluid  1.0 opening area (m)  0.400
+ 
+ horiz_layer    40  3  0 Common orifice flow component m = rho.f(Cd,A,rho,dP)
+ Fluid  1.0 opening area (m^2)  0.600 discharge factor (-) 0.700
+ 
+ bypass_op      40  3  0 Common orifice flow component m = rho.f(Cd,A,rho,dP)
+ Fluid  1.0 opening area (m^2)  0.050 discharge factor (-) 0.400
+ 
+ int_vent_cr   120  3  0 Specific air flow crack             m = rho.f(W,L,dP)
+ Fluid  1.0 crack width (m)  0.0050 crack length (m)  2.000
+ 
+ small_dampe    40  3  0 Common orifice flow component m = rho.f(Cd,A,rho,dP)
+ Fluid  1.0 opening area (m^2)  0.100 discharge factor (-) 0.400
+ 
+    # +Node         dHght   -Node         dHght   Component       Z @+    Z @-
+    1 sou_low       0.000   trombe_low   -0.275   ext_vent_cr     0.100   0.100
+    2 sou_up        0.000   trombe_up     0.280   ext_vent_cr     2.900   2.905
+    3 nor_low       0.000   office       -1.400   office_crac     0.100   0.100
+    4 trombe_low   -0.300   office       -1.400   int_vent_cr     0.075   0.100
+    5 trombe_up    -0.300   office        1.400   int_vent_cr     2.325   2.900
+    6 trombe_low    0.375   trombe_mid   -0.375   horiz_layer     0.750   0.750
+    7 trombe_mid    0.375   trombe_mid2  -0.375   horiz_layer     1.500   1.500
+    8 trombe_mid2   0.375   trombe_up    -0.375   horiz_layer     2.250   2.250
+    9 trombe_low    0.562   bypass       -0.562   bypass_op       0.937   0.938
+   10 bypass        0.562   trombe_up    -0.562   bypass_op       2.062   2.063
+   11 trombe_low   -0.300   office       -1.400   small_dampe     0.075   0.100
+   12 trombe_up     0.300   office        1.400   small_dampe     2.925   2.900
+thermal zone to air flow node mapping:
+thermal zone -> air flow node
+trombe_low   -> trombe_low
+trombe_mid   -> trombe_mid
+trombe_mid2  -> trombe_mid2
+trombe_up    -> trombe_up
+bypass       -> bypass
+office       -> office
+ 
+ 
+ ____________________________________________________________
+ 
+ID Zone         Volume|          Surface
+   Name         m^3   | No. Opaque  Transp  ~Floor
+ 1 trombe_low      0.6   6     4.0     4.0     0.8  trombe_low describes lower section of trombe air gap
+ 2 trombe_mid      0.6   6     3.2     4.8     0.8  trombe_mid describes 2nd level of air gap in trombe wall
+ 3 trombe_mid2     0.6   6     3.2     4.8     0.8  trombe_mid2 describes upper middle section of trombe wall gap
+ 4 trombe_up       0.6   6     4.0     4.0     0.8  trombe_up is the clear glazing section of trombe wall air gap
+ 5 bypass          0.1   9     1.9     0.6     0.2  bypass describes a vertical air channel for circulation
+ 6 office         49.5  10    84.7     0.0    18.0  office is behind trombe wall with clear story glazing
+   all            52.   43    101.     18.     21.
+ 
+ 
+ Zone trombe_low ( 1) is composed of 6 surfaces and 8 vertices.
+ It encloses a volume of 0.600m^3 of space, with a total surface
+ area of 7.90m^2 & approx floor area of 0.800m^2
+ trombe_low describes lower section of trombe air gap
+ There is 3.0000m2 of exposed surface area, 3.0000m2 of which is vertical.
+ Glazing is 375.00 % of floor & 100.00 % facade with avg U of 5.621 & UA of 16.864
+ Ground contact is 100.00 % of floor area & avg U of 0.461 & perimeter 4.0000
+ 
+ A summary of the surfaces in trombe_low( 1) follows:
+ 
+ Sur| Area  |Azim|Elev| surface    | geometry | construction |environment
+    | m^2   |deg |deg | name       |type |loca| name         |other side
+  1  3.00    180.   0. front        SCF847 VERT single_glz   ||< external
+  2  0.150    90.   0. right        OPAQUE VERT insul_mtl_p  ||< identical environment
+  3  3.00      0.   0. trombe_face  OPAQUE VERT trombe_mas_a ||< wall_tlow:office
+  4  0.150   270.   0. fict_left    SC_fic VERT fictitious   ||< fict_low:bypass
+  5  0.800     0.  90. fict_up      SC_fic CEIL fictitious   ||< fict_base:trombe_mid
+  6  0.800     0. -90. base         OPAQUE FLOR insul_mtl_p  ||< ground profile  1
+ 
+ 
+ An hourly solar radiation distribution is used for this zone.
+ 
+ 
+ Shading patterns have not yet been calculated.
+ 
+ Ventilation & infiltration is assessed via network analysis
+ and the associated network node is: trombe_low
+ 
+Notes:
+nothing happens in this zone in terms of occupants lights and small
+power. There is not infiltration or ventilation.
+ 
+Daytype   Gain Type    Period Sensible  Latent     Radiant    Convec
+          No.  label   Hours  Magn.(W)  Magn.(W)   Fraction   Fraction
+weekdays    1 OccuptW    0-24      0.0      0.0       0.50       0.50
+weekdays    2 LightsW    0-24      0.0      0.0       0.50       0.50
+weekdays    3 EquiptW    0-24      0.0      0.0       0.50       0.50
+saturday    1 OccuptW    0-24      0.0      0.0       0.50       0.50
+saturday    2 LightsW    0-24      0.0      0.0       0.50       0.50
+saturday    3 EquiptW    0-24      0.0      0.0       0.50       0.50
+sunday      1 OccuptW    0-24      0.0      0.0       0.50       0.50
+sunday      2 LightsW    0-24      0.0      0.0       0.50       0.50
+sunday      3 EquiptW    0-24      0.0      0.0       0.50       0.50
+ 
+ ____________________________________________________________
+ 
+ Zone trombe_mid ( 2) is composed of 6 surfaces and 8 vertices.
+ It encloses a volume of 0.600m^3 of space, with a total surface
+ area of 7.90m^2 & approx floor area of 0.800m^2
+ trombe_mid describes 2nd level of air gap in trombe wall
+ There is 3.0000m2 of exposed surface area, 3.0000m2 of which is vertical.
+ Glazing is 375.00 % of floor & 100.00 % facade with avg U of 5.621 & UA of 16.864
+ 
+ A summary of the surfaces in trombe_mid( 2) follows:
+ 
+ Sur| Area  |Azim|Elev| surface    | geometry | construction |environment
+    | m^2   |deg |deg | name       |type |loca| name         |other side
+  1  3.00    180.   0. front        SCF847 VERT single_glz   ||< external
+  2  0.150    90.   0. right        OPAQUE VERT insul_mtl_p  ||< identical environment
+  3  3.00    360.   0. trombe_face  OPAQUE VERT trombe_mas_a ||< wall_tmid:office
+  4  0.150   270.   0. fict_left    SC_fic VERT fictitious   ||< fict_mid:bypass
+  5  0.800     0.  90. fict_up      SC_fic CEIL fictitious   ||< fict_base:trombe_mid2
+  6  0.800     0. -90. fict_base    SC_fic FLOR fictitious   ||< fict_up:trombe_low
+ 
+ 
+ An hourly solar radiation distribution is used for this zone.
+ 
+ 
+ Shading patterns have not yet been calculated.
+ 
+ Uses same operations as zone trombe_low
+ 
+ ____________________________________________________________
+ 
+ Zone trombe_mid2 ( 3) is composed of 6 surfaces and 8 vertices.
+ It encloses a volume of 0.600m^3 of space, with a total surface
+ area of 7.90m^2 & approx floor area of 0.800m^2
+ trombe_mid2 describes upper middle section of trombe wall gap
+ There is 3.0000m2 of exposed surface area, 3.0000m2 of which is vertical.
+ Glazing is 375.00 % of floor & 100.00 % facade with avg U of 5.621 & UA of 16.864
+ 
+ A summary of the surfaces in trombe_mid2( 3) follows:
+ 
+ Sur| Area  |Azim|Elev| surface    | geometry | construction |environment
+    | m^2   |deg |deg | name       |type |loca| name         |other side
+  1  3.00    180.   0. front        SCF847 VERT single_glz   ||< external
+  2  0.150    90.   0. right        OPAQUE VERT insul_mtl_p  ||< identical environment
+  3  3.00    360.   0. trombe_face  OPAQUE VERT trombe_mas_a ||< wall_tup:office
+  4  0.150   270.   0. fict_left    SC_fic VERT fictitious   ||< fict_mid2:bypass
+  5  0.800     0.  90. fict_up      SC_fic CEIL fictitious   ||< fict_base:trombe_up
+  6  0.800     0. -90. fict_base    SC_fic FLOR fictitious   ||< fict_up:trombe_mid
+ 
+ 
+ An hourly solar radiation distribution is used for this zone.
+ 
+ 
+ Shading patterns have not yet been calculated.
+ 
+ Uses same operations as zone trombe_low
+ 
+ ____________________________________________________________
+ 
+ Zone trombe_up ( 4) is composed of 6 surfaces and 8 vertices.
+ It encloses a volume of 0.600m^3 of space, with a total surface
+ area of 7.90m^2 & approx floor area of 0.800m^2
+ trombe_up is the clear glazing section of trombe wall air gap
+ There is 3.8000m2 of exposed surface area, 3.0000m2 of which is vertical.
+ Flat roof is 100.00 % of floor area & avg U of 0.467 & UA of 0.37383
+ Glazing is 375.00 % of floor & 100.00 % facade with avg U of 5.621 & UA of 16.864
+ 
+ A summary of the surfaces in trombe_up( 4) follows:
+ 
+ Sur| Area  |Azim|Elev| surface    | geometry | construction |environment
+    | m^2   |deg |deg | name       |type |loca| name         |other side
+  1  3.00    180.   0. front        SCF847 VERT single_glz   ||< external
+  2  0.150    90.   0. right        OPAQUE VERT insul_mtl_p  ||< identical environment
+  3  3.00    360.   0. frame_open   OPAQUE VERT door         ||< open_frame:office
+  4  0.150   270.   0. fict_left    SC_fic VERT fictitious   ||< fict_up:bypass
+  5  0.800     0.  90. top          OPAQUE CEIL insul_mtl_p  ||< external
+  6  0.800     0. -90. fict_base    SC_fic FLOR fictitious   ||< fict_up:trombe_mid2
+ 
+ 
+ An hourly solar radiation distribution is used for this zone.
+ 
+ 
+ Shading patterns have not yet been calculated.
+ 
+ Uses same operations as zone trombe_low
+ 
+ ____________________________________________________________
+ 
+ Zone bypass ( 5) is composed of 9 surfaces and 14 vertices.
+ It encloses a volume of 0.120m^3 of space, with a total surface
+ area of 2.48m^2 & approx floor area of 0.190m^2
+ bypass describes a vertical air channel for circulation
+ There is 0.60000m2 of exposed surface area, 0.60000m2 of which is vertical.
+ Outside walls are 315.79 % of floor area & avg U of 0.461 & UA of 0.27649
+ 
+ A summary of the surfaces in bypass( 5) follows:
+ 
+ Sur| Area  |Azim|Elev| surface    | geometry | construction |environment
+    | m^2   |deg |deg | name       |type |loca| name         |other side
+  1  0.600   180.   0. front        OPAQUE VERT insul_mtl_p  ||< external
+  2  0.600   360.   0. back         OPAQUE VERT insul_mtl_p  ||< adiabatic
+  3  0.600   270.   0. left         OPAQUE VERT insul_mtl_p  ||< adiabatic
+  4  0.040     0.  90. top          OPAQUE CEIL insul_mtl_p  ||< adiabatic
+  5  0.040     0. -90. base         OPAQUE FLOR insul_mtl_p  ||< adiabatic
+  6  0.150    90.   0. fict_low     SC_fic VERT fictitious   ||< fict_left:trombe_low
+  7  0.150    90.   0. fict_mid     SC_fic VERT fictitious   ||< fict_left:trombe_mid
+  8  0.150    90.   0. fict_mid2    SC_fic VERT fictitious   ||< fict_left:trombe_mid2
+  9  0.150    90.   0. fict_up      SC_fic VERT fictitious   ||< fict_left:trombe_up
+ 
+ 
+ All surfaces will receive diffuse insolation (if shading not calculated).
+ No shading analysis requested.
+ No insolation analysis requested.
+ 
+ 
+ 
+ Uses same operations as zone trombe_low
+ 
+ ____________________________________________________________
+ 
+ Zone office ( 6) is composed of 10 surfaces and 18 vertices.
+ It encloses a volume of 49.5m^3 of space, with a total surface
+ area of 84.7m^2 & approx floor area of 18.0m^2
+ office is behind trombe wall with clear story glazing
+ Ground contact is 88.889 % of floor area & avg U of 0.864 & perimeter 0.00
+ 
+ A summary of the surfaces in office( 6) follows:
+ 
+ Sur| Area  |Azim|Elev| surface    | geometry | construction |environment
+    | m^2   |deg |deg | name       |type |loca| name         |other side
+  1  3.00    180.   0. wall_tlow    OPAQUE VERT trombe_mass  ||< trombe_face:trombe_low
+  2  12.4     90.   0. right_ptn    OPAQUE VERT gyp_blk_ptn  ||< identical environment
+  3  12.0      0.   0. back_ptn     OPAQUE VERT gyp_blk_ptn  ||< identical environment
+  4  12.4    270.   0. left_ptn     OPAQUE VERT gyp_blk_ptn  ||< identical environment
+  5  18.0      0.  90. ceiling      OPAQUE CEIL trombe_mass  ||< identical environment
+  6  16.0      0. -90. floor        OPAQUE FLOR grnd_floor   ||< ground profile  1
+  7  3.00    180.   0. open_frame   OPAQUE VERT door         ||< frame_open:trombe_up
+  8  3.00    180.   0. wall_tmid    OPAQUE VERT trombe_mass  ||< trombe_face:trombe_mid
+  9  3.00    180.   0. wall_tup     OPAQUE VERT trombe_mass  ||< trombe_face:trombe_mid2
+ 10  2.00      0. -90. top_of_tw    OPAQUE FLOR trombe_mas_a ||< identical environment
+ 
+ 
+ All surfaces will receive diffuse insolation (if shading not calculated).
+ No shading analysis requested.
+ No insolation analysis requested.
+ 
+ Ventilation & infiltration is assessed via network analysis
+ and the associated network node is: office
+ 
+Notes:
+nothing happens in this zone in terms of occupants lights and small
+power. There is not infiltration or ventilation.
+ 
+Daytype   Gain Type    Period Sensible  Latent     Radiant    Convec
+          No.  label   Hours  Magn.(W)  Magn.(W)   Fraction   Fraction
+weekdays    1 OccuptW    0-24      0.0      0.0       0.50       0.50
+weekdays    2 LightsW    0-24      0.0      0.0       0.50       0.50
+weekdays    3 EquiptW    0-24      0.0      0.0       0.50       0.50
+saturday    1 OccuptW    0-24      0.0      0.0       0.50       0.50
+saturday    2 LightsW    0-24      0.0      0.0       0.50       0.50
+saturday    3 EquiptW    0-24      0.0      0.0       0.50       0.50
+sunday      1 OccuptW    0-24      0.0      0.0       0.50       0.50
+sunday      2 LightsW    0-24      0.0      0.0       0.50       0.50
+sunday      3 EquiptW    0-24      0.0      0.0       0.50       0.50
+ 
+ ____________________________________________________________
+ 
+ Project floor area is 21.390m2, wall area is 0.60000m2, window area is 12.000m2.
+ Sloped roof area is 0.00m2, flat roof area is 0.80000m2, skylight area is 0.00m2.
+ In contact with ground 16.800m2.
+ There is 13.400m2 of outside surface area, 12.600m2 of which is vertical.
+ 
+ Outside walls are 2.8050 % of floor area & avg U of 0.461 & UA of 0.27649 & max MLC thickness 0.088
+ Flat roof is 3.7401 % of floor area & avg U of 0.467 & UA of 0.37383
+ Glazing is 56.101 % of floor & 95.238 % facade with avg U of 5.621 & UA of 67.456
+ Ground contact is 78.541 % of floor area & avg U of 0.845 & perimeter 4.0000 & max MLC thickness 0.625
+ CIBSE ground beta! 8.400 dt 1.924 Ufleft 0.106 Ufright 2.689 Uf 0.285 R extra @ virtual layer 2.326
+ 
+ ____________________________________________________________
+ Multi-layer constructions used:
+ 
+ Details of opaque construction: insul_mtl_p and overall thickness  0.088
+ 
+ Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
+      |db  |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
+ Ext    46    4.0   210.000  2700.   880. 0.82 0.72 19200.  0.00 grey cotd alum : Grey coated aluminium
+    2  281   80.0     0.040    12.   840. 0.90 0.65    30.  2.00 glass fibre quilt : Glass Fibre Quilt
+ Int    46    4.0   210.000  2700.   880. 0.82 0.72 19200.  0.00 grey cotd alum : Grey coated aluminium
+ ISO 6946 U values (horiz/upward/downward heat flow)=  0.461  0.467  0.452 (partition)  0.442
+ 
+Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  0.46
+ External surface admittance Y=  0.81  w=  3.41 decrement factor f=  0.94  phi=  0.31 surface factor f=  0.94  phi=  0.31
+ Partition admittance Y=  0.70  w=  5.68 surface factor f=  1.00  phi=  0.32
+ Total area of insul_mtl_p is      4.08
+ 
+ Details of opaque construction: door and overall thickness  0.025
+ 
+ Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
+      |db  |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
+    1   69   25.0     0.190   700.  2390. 0.90 0.65    12.  0.13 oak : Oak (radial cut)
+ ISO 6946 U values (horiz/upward/downward heat flow)=  3.316  3.682  2.928 (partition)  2.554
+ 
+Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  3.21
+ External surface admittance Y=  3.33  w=  0.61 decrement factor f=  0.61  phi=  0.40 surface factor f=  0.61  phi=  0.40
+ Partition admittance Y=  1.21  w=  5.38 surface factor f=  0.99  phi=  0.56
+ Total area of door is      6.00
+ 
+ Details of opaque construction: trombe_mass linked to trombe_mas_a & with overall thickness  0.500
+ 
+ Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
+      |db  |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
+ Ext    50  250.0     1.400  2100.   653. 0.90 0.85    19.  0.18 solar_absorb concrete : Heavy mix concrete with dark surface for use in trombe-mic
+ Int    34  250.0     1.400  2100.   653. 0.90 0.21    19.  0.18 white ptd concrete : White painted heavy mix concrete
+ ISO 6946 U values (horiz/upward/downward heat flow)=  1.897  2.011  1.763 (partition)  1.620
+ 
+Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  1.86
+ External surface admittance Y=  5.28  w=  1.22 decrement factor f=  0.45  phi=  1.77 surface factor f=  0.45  phi=  1.77
+ Partition admittance Y=  5.61  w=  1.19 surface factor f=  0.41  phi=  1.99
+ Total area of trombe_mass is     27.00
+ 
+ Details of transparent construction: single_glz with SCF8477_10nb optics and overall thickness  0.006
+ 
+ Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
+      |db  |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
+    1  242    6.0     0.760  2710.   837. 0.83 0.05 19200.  0.01 plate glass : Plate glass with placeholder single layer optics
+ ISO 6946 U values (horiz/upward/downward heat flow)=  5.621  6.762  4.589 (partition)  3.733
+ 
+Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  5.32
+ External surface admittance Y=  5.33  w=  0.08 decrement factor f=  0.36  phi=  0.15 surface factor f=  0.36  phi=  0.15
+ Partition admittance Y=  0.34  w=  5.85 surface factor f=  1.00  phi=  0.15
+ 
+ Clear float 84/77,    10mm, no blind: with id of: SCF8477_10nb
+ with 1 layers [including air gaps] and visible trn: 0.84
+ Direct transmission @ 0, 40, 55, 70, 80 deg
+   0.699 0.672 0.629 0.503 0.294
+ Layer| absorption @ 0, 40, 55, 70, 80 deg
+    1  0.235 0.255 0.269 0.273 0.247
+ Total area of single_glz is     12.00
+ 
+ Details of opaque construction: grnd_floor and overall thickness  0.625
+ 
+ Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
+      |db  |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
+ Ext   263  250.0     1.280  1460.   879. 0.90 0.85     5.  0.20 earth std : Common_earth
+    2  262  150.0     0.520  2050.   184. 0.90 0.85     2.  0.29 gravel based : Gravel based
+    3   32  150.0     1.400  2100.   653. 0.90 0.65    19.  0.11 heavy mix concrete : Heavy mix concrete
+    4    0   50.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
+    5   67   19.0     0.150   800.  2093. 0.91 0.65    96.  0.13 chipboard : Chipboard
+ Int   221    6.0     0.060   186.  1360. 0.90 0.60    10.  0.10 Wilton : Wilton weave wool carpet
+ ISO 6946 U values (horiz/upward/downward heat flow)=  0.864  0.887  0.835 (partition)  0.802
+ 
+Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  0.86
+ External surface admittance Y=  2.16  w=  1.36 decrement factor f=  0.76  phi=  0.46 surface factor f=  0.76  phi=  0.46
+ Partition admittance Y=  2.20  w=  1.27 surface factor f=  0.76  phi=  0.43
+ Total area of grnd_floor is     16.00
+ 
+ Details of opaque construction: gyp_blk_ptn and overall thickness  0.226
+ 
+ Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
+      |db  |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
+ Ext   108   13.0     0.190   950.   840. 0.91 0.22    11.  0.07 white gypboard : White painted Gypboard
+    2    0   50.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
+    3   28  100.0     0.510  1400.  1000. 0.90 0.65    10.  0.20 block inner : Block inner (3% mc)
+    4    0   50.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
+ Int   108   13.0     0.190   950.   840. 0.91 0.22    11.  0.07 white gypboard : White painted Gypboard
+ ISO 6946 U values (horiz/upward/downward heat flow)=  1.186  1.230  1.133 (partition)  1.072
+ 
+Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  1.17
+ External surface admittance Y=  2.38  w=  1.44 decrement factor f=  0.74  phi=  0.54 surface factor f=  0.74  phi=  0.54
+ Partition admittance Y=  2.59  w=  2.21 surface factor f=  0.76  phi=  0.86
+ Total area of gyp_blk_ptn is     36.75
+ 
+ Details of transparent construction: fictitious with SC_fictit optics and overall thickness  0.004
+ 
+ Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
+      |db  |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
+    1  245    4.0    20.000    10.    10. 0.99 0.01 19200.  0.00 fict : fictitious material (almost not there) with matching single layer optics
+ ISO 6946 U values (horiz/upward/downward heat flow)=  5.875  7.133  4.757 (partition)  3.843
+ 
+Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  5.55
+ External surface admittance Y=  5.55  w=  0.00 decrement factor f=  0.33  phi=  0.00 surface factor f=  0.33  phi=  0.00
+ Partition admittance Y=  0.00  w=  6.00 surface factor f=  1.00  phi=  0.00
+ 
+ Fictitious 99/99,      4mm, no blind: with id of: SC_fictit
+ with 1 layers [including air gaps] and visible trn: 0.99
+ Direct transmission @ 0, 40, 55, 70, 80 deg
+   0.998 0.987 0.986 0.985 0.984
+ Layer| absorption @ 0, 40, 55, 70, 80 deg
+    1  0.001 0.001 0.001 0.001 0.001
+ Total area of fictitious is      6.00
+ 
+ Details of opaque construction: trombe_mas_a linked to trombe_mass  & with overall thickness  0.500
+ 
+ Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
+      |db  |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
+ Ext    34  250.0     1.400  2100.   653. 0.90 0.21    19.  0.18 white ptd concrete : White painted heavy mix concrete
+ Int    50  250.0     1.400  2100.   653. 0.90 0.85    19.  0.18 solar_absorb concrete : Heavy mix concrete with dark surface for use in trombe-mic
+ ISO 6946 U values (horiz/upward/downward heat flow)=  1.897  2.011  1.763 (partition)  1.620
+ 
+Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  1.86
+ External surface admittance Y=  5.28  w=  1.22 decrement factor f=  0.45  phi=  1.77 surface factor f=  0.45  phi=  1.77
+ Partition admittance Y=  5.61  w=  1.19 surface factor f=  0.41  phi=  1.99
+ Total area of trombe_mas_a is     11.00

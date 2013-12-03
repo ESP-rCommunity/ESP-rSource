@@ -61,15 +61,15 @@ C ------------------------------------------------------------------------------
 #include "H2_wind.h"
 
       COMMON/FILEP/IFIL
-      INTEGER	IFIL
+      INTEGER  IFIL
 
       common/H2wind/LWndSupp,iWndSupp
       CHARACTER LWndSupp*72
       INTEGER   iWndSupp
 
       COMMON/OUTIN/IUOUT,IUIN
-      INTEGER	IUOUT
-      INTEGER	IUIN
+      INTEGER  IUOUT
+      INTEGER  IUIN
 
 C---------------------------------------------------------------------------------
 C Declare local variables.
@@ -259,8 +259,8 @@ C ------------------------------------------------------------------------------
 
 C for debugging - writing to console
       COMMON/OUTIN/IUOUT,IUIN
-      INTEGER	IUOUT
-      INTEGER	IUIN
+      INTEGER  IUOUT
+      INTEGER  IUIN
 
 
 C---------------------------------------------------------------------------------

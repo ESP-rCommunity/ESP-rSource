@@ -3146,16 +3146,18 @@ C context is 124 characters.
       common/textbuf/dispbuf(500)
       common/textbufl/indexbuf,lnbuf(500)
       CHARACTER*(*) MSG
-      CHARACTER WWMSG*124,dispbuf*124
+      CHARACTER WWMSG*144,dispbuf*144
       logical unixok
 
+C Function determining if HOT3000 features enabled?
+      logical bH3KExtentionsActive
 C Temporarily set ICOUT.
       ICOUT=0
 
 C Create matching string to pass to wwlib.c and hold in dispbuf.
 C Use logic similar to that in egdisp.
       lnm=max0(1,lnblnk(MSG))
-      lcc = MIN0(lnm,124)
+      lcc = MIN0(lnm,144)
       if(lcc.eq.0) lcc=1
       write(WWMSG,'(a)',iostat=ios,err=1)MSG(1:lcc)
 
@@ -3196,6 +3198,10 @@ C otherwise redirect to user display.
 
 C Write this to standard text window.
         WRITE(ITRU,'(A)',iostat=ios,err=1)MSG(1:lnm)
+c.......write console output (ITRU=6) to file       
+        if(ITRU.eq.6 .and. bH3KExtentionsActive() )then
+            call redir_console_output_to_file(MSG(1:lnm)//CHAR(0))
+        endif
       ENDIF
 
       RETURN
@@ -3241,14 +3247,13 @@ C Path to model and command line file (if any).
 C Indicator of possible focus zone.
       logical browse
       common/user/browse
-      common/C21/IFCFG,cfgroot,LCFGF
       common/textbuf/dispbuf(500)
       common/textbufl/indexbuf,lnbuf(500)
 
       character path*72,h*72,uname*24,fs*1
-      character sstr*144,cfgroot*24
+      character sstr*144
       character lltmp*144
-      character LCFGF*72,dispbuf*124,outs*124
+      character dispbuf*144,outs*124
       logical unixok,there
       integer ltf  ! position of last character in string.
       integer iw   ! for user selection
@@ -3389,16 +3394,15 @@ C Path to model and command line file (if any).
 C Indicator of possible focus zone.
       logical browse
       common/user/browse
-      common/C21/IFCFG,cfgroot,LCFGF
 
 C Graphic capture, window dump: label, command.
       character gprlbl*20,gprcmd*48
       common/gprint/gprlbl,gprcmd
 
       character path*72,h*72,uname*24,fs*1
-      character sstr*144,cfgroot*24
+      character sstr*144
       character lltmp*144,outs*124
-      character LCFGF*72,gcmd*144
+      character gcmd*144
       integer ltf  ! position of last character in string.
       integer iw   ! for user selection
 
@@ -3786,9 +3790,9 @@ C ITPPSW current view - perspective/plan/south/west
      &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS,ITPPSW
       COMMON/RAY3/MODIFY,MODLEN,MODBND
       COMMON/RAY5/ZCOG(MCOM,3),XMN,YMN,ZMN,XMX,YMX,ZMX
-      COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
+      COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,CFCDBOK
 
-      LOGICAL CFGOK,MLDBOK,MATDBOK,CTLOK
+      LOGICAL CFGOK,MLDBOK,MATDBOK,CTLOK,CFCDBOK
       logical MODIFY,MODLEN,MODBND
       LOGICAL OPTKOK,CLOSE,OK,dok,found,concat,redraw
       DIMENSION ITEMS(23),IVALS(MCOM),FALT(7),IVAL(7)
@@ -3802,11 +3806,9 @@ C ITPPSW current view - perspective/plan/south/west
       integer MVERT,IVERT  ! max items and current menu item
 
 #ifdef OSI
-      integer ICPMOD          ! passed from tchild
       integer iappr,iappt,iappb ! for use with findrtb
       integer iapprp,iapptp,iappbp ! for local offsets
 #else
-      integer*8 ICPMOD          ! passed from tchild
       integer*8 iappr,iappt,iappb ! for use with findrtb
       integer*8 iapprp,iapptp,iappbp ! for local offsets
 #endif
@@ -3852,12 +3854,13 @@ C Menu loop.
         ITEMS(6) ='e display >> ground only'
       ENDIF
 
-C Hilight surface based on OPQ/TRAN or material.
+C Hilight surface based on OPQ/TRAN or construction.
       IF(ITHLS.EQ.0)THEN
         ITEMS(7) ='f highlight >> normal           '
       ELSEIF(ITHLS.EQ.1)THEN
         if(ITHLZ.gt.0)then
-          WRITE(ITEMS(7),'(a,A12)')'f highlight >> ',DESC(ITHLZ)(1:12)
+          WRITE(ITEMS(7),'(2A)')'f highlight >> ',
+     &      mlcname(ITHLZ)(1:12)
         else
           ITEMS(7) ='f highlight >> composition      '
         endif
@@ -4226,10 +4229,10 @@ C Get file name.
 
 C Get logical name of child process terminal type, expand model
 C name to include the path (if applicable) and create a string to
-C drive viewer.
+C drive viewer.  No point in using viewer in text mode so force
+C tmode as 'graphic'
           doit = ' '
-          call tchild(ICPMOD)
-          call termode(ICPMOD,tmode)
+          tmode='graph'
           if(iw.eq.1)then
             call addpath(LFIL,longtfile,concat)
           else

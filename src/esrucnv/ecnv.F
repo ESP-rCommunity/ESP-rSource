@@ -58,12 +58,11 @@ C ESP-r commons.
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
       COMMON/C6/INDCFG
-      common/C21/IFCFG,cfgroot,LCFGF
 
 C Significant figure reporting limit (NSIGFIG).
       common/SFIG/NSIGFIG
 
-      COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
+      COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,CFCDBOK
 
 C Path to SHOCC input files
 C bSHOCCed     - logical flag whether project has SHOCC input
@@ -79,7 +78,7 @@ C Name of current application
       common/APPNAME/cAppName
       character cAppName*12     
 
-      LOGICAL CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
+      LOGICAL CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,CFCDBOK
 
       character filname*144,filname2*144,filname1*144,repfile*40
       character inf*144,ouf*144
@@ -88,10 +87,9 @@ C Name of current application
       character path*72
       character upgcfg*72
 
-      character cfgroot*24,MODE*4
+      character MODE*4
       character buffer*144
 
-      CHARACTER LCFGF*72
       character htmlfile*72
       character outs*248
       logical unixok
@@ -453,7 +451,7 @@ C to be scanned.
             endif
   27      continue
           call edisp(iuout,'end of cfg file without finding *building')
-	else
+         else
           call mksyshd(filname2,ier)
         endif
       elseif(oformat(1:5).eq.'click')then
@@ -1063,7 +1061,6 @@ C << MUST be updated to reflect ipath and longer database names >>
 
       COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
       COMMON/C6/INDCFG
-      common/C21/IFCFG,cfgroot,LCFGF
 
       common/cctlnm/ctldoc,lctlf
 
@@ -1095,9 +1092,8 @@ C SHOCCshzFile - path to SHOCC .shz file for each SHOCC'd zone
       logical bSHOCCed,bZoneSHOCCed
       character SHOCCshlFile*72,SHOCCshzFile*72
 
-      CHARACTER LCFGF*72
       CHARACTER LOUT*72
-      CHARACTER CTLDOC*248,LCTLF*72,cfgroot*24
+      CHARACTER CTLDOC*248,LCTLF*72
       character indxcmt*24
 
       character dstmp*24

@@ -1,53 +1,62 @@
-{\rtf1\ansi\ansicpg1252\cocoartf1038\cocoasubrtf360
+{\rtf1\ansi\ansicpg1252\cocoartf1138\cocoasubrtf510
 {\fonttbl\f0\fswiss\fcharset0 Helvetica;}
 {\colortbl;\red255\green255\blue255;}
-{\*\listtable{\list\listtemplateid1\listhybrid{\listlevel\levelnfc23\levelnfcn23\leveljc0\leveljcn0\levelfollow0\levelstartat1\levelspace360\levelindent0{\*\levelmarker \{disc\}}{\leveltext\leveltemplateid1\'01\uc0\u8226 ;}{\levelnumbers;}\fi-360\li720\lin720 }{\listname ;}\listid1}
-{\list\listtemplateid2\listhybrid{\listlevel\levelnfc23\levelnfcn23\leveljc0\leveljcn0\levelfollow0\levelstartat1\levelspace360\levelindent0{\*\levelmarker \{disc\}}{\leveltext\leveltemplateid101\'01\uc0\u8226 ;}{\levelnumbers;}\fi-360\li720\lin720 }{\listname ;}\listid2}}
-{\*\listoverridetable{\listoverride\listid1\listoverridecount0\ls1}{\listoverride\listid2\listoverridecount0\ls2}}
+{\*\listtable{\list\listtemplateid1\listhybrid{\listlevel\levelnfc23\levelnfcn23\leveljc0\leveljcn0\levelfollow0\levelstartat1\levelspace360\levelindent0{\*\levelmarker \{disc\}}{\leveltext\leveltemplateid1\'01\uc0\u8226 ;}{\levelnumbers;}\fi-360\li720\lin720 }{\listname ;}\listid1}}
+{\*\listoverridetable{\listoverride\listid1\listoverridecount0\ls1}}
 \paperw11900\paperh16840\margl1440\margr1440\vieww13780\viewh11700\viewkind0
-\pard\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\ql\qnatural\pardirnatural
+\pard\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural
 
 \f0\fs24 \cf0 \
-\pard\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\qc\pardirnatural
+\pard\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural\qc
 
-\b \cf0 Installing Ubuntu 10.04 & 11.04 for use with ESP-r\
-16 January 2012\
-Jon W. Hand, ESRU, Glasgow, Scotland
+\b \cf0 Installing Ubuntu for use with ESP-r\
+10 January 2013\
+ESRU, Glasgow, Scotland
 \b0 \
-\pard\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\ql\qnatural\pardirnatural
+\pard\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural
 \cf0 \
-\pard\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\ql\qnatural\pardirnatural
+\pard\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural
 
 \b \cf0 Introduction
 \b0 \
 \
-These notes apply to Ubuntu versions 10.04 & 11.04. See note at end regarding Ubuntu 11.10. There are different disk layouts discussed as well as two sets of packages needed depending on whether software development is going to be done on the machine. If you are installing Ubuntu in a virtual machine or re-using an existing virtual machine for environments such as VirtualBox or Parallels the look at the last sections of the document.  Scanning this whole document before you begin is a 
+\pard\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural
+
+\fs20 \cf0 These notes apply to Ubuntu versions 10.04, 10.10, 11.04 & 11.10. See the end note regarding Ubuntu 12.04. There are different disk layouts discussed as well as the sets of packages needed for ESP-r to be compiled and run. If you are installing Ubuntu in a virtual machine or re-using an existing virtual machine for environments such as VirtualBox or Parallels the look at the last sections of the document.  Scanning this whole document before you begin is a 
 \b really good idea
 \b0 !\
-\
 
-\b Before you start
+\fs24 \
+\pard\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural
+
+\b \cf0 Before you start
 \b0 \
 \
-Have the following information available before you start:\
+\pard\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural
+
+\fs20 \cf0 Have the following information available before you start:\
 \
-a) the disk space available and RAM  - Ubuntu can take as little as 5GB of disk space and will run with about 1GB of RAM. If you can give it more memory then this will increase the speed of your assessments and results recovery tasks.  10GB of disk space is a ok for general use in a virtual machine or computer with limited disk space.  Some installs will need more space e.g. for larger models, testing purposes, or to support multiple users.  If you are likely to be working with larger models or models which will generate larger results files then more RAM is recommended. \
+a) the disk space available and RAM  - Ubuntu can take as little as 6GB of disk space and will run with ~1GB of RAM. More memory (e.g. 2 or 3GB) will increase the speed of your assessments and results recovery tasks.  10GB of disk space is ok for general use in a virtual machine or computer with limited disk space.  Complex models can generate results files of 2-4GB so consider the scope of likely work to be carried out.\
 \
 b) the layout of the disk(s) and partition(s) on the machine - you may be wanting to dual-boot or to use a virtual drive so locate where space is available.  If you are dual booting with Windows install Linux after Windows.\
 \
 c) the IP address, machine name/domain, router etc.\
 \
 d) finish reading this document\
-\
 
-\b Install sources
+\fs24 \
+\pard\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural
+
+\b \cf0 Install sources
 \b0 \
 \
-Ubuntu is available either as a live CD/DVD with the option to install or as an install direct from CD/DVD.  There are also alternative install CDs that support a text based install which sometimes works on machines with limited memory or with problematic monitors.\
+\pard\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural
+
+\fs20 \cf0 Ubuntu is available either as a live CD/DVD with the option to install or as an install direct from CD/DVD.  There are also alternative install CDs that support a text based install for machines with limited memory or with problematic monitors.\
 \
 The live variant will load into memory and after booting offers an 'Install' button.  After clicking on the Install button the process is identical for both.  If you have trouble with the Live or graphic mode install you should also try the alternative install CD which can be run in text mode.  If you are installing within a virtual machine and have read the notes at the end this is where you will re-join the install process.\
 \
-During the install process you will need to confirm your language, location, time and keyboard. Typically Ubuntu detects most computer hardware. If there are issues with hardware you may have to go to an earlier release of Ubuntu or, if possible find a slightly older PC.  Ubuntu tends to use of the newest applications.  This has a potential drawback - the ESP-r development community may not yet have tested the newest GCC compilers and libraries and thus we are recommending Ubuntu 11.04 rather than 11.10.\
+During the install process you will need to confirm your language, location, time and keyboard. Typically Ubuntu detects most computer hardware. Ubuntu tends to use of the newest applications.  This has a potential drawback - the ESP-r development community may not yet have tested the newest GCC compilers and libraries.\
 \
 If the machine is to be dual book and the disk has unpartitioned space then select the option 'largest contiguous free space' in the Ubuntu installer. You also have the option in recent versions of Ubuntu to use the whole disk or to manually edit the partition table. The latter is an option for experts.  \
 \
@@ -70,52 +79,67 @@ For the partition manager of Ubuntu, you can use the entire new virtual disk and
 If your computer needs to use a proxy server to reach the internet then set of these details first.  On the first reboot of the machine you may also want to confirm that the proxy is still correctly defined via the system -> preferences menu.\
 \
 Your next task is to setup the software sources via the system -> administration -> sources tool. You can then select system -> administration -> update manager and this will likely have quite a few packages to update (allow it to do this).\
-\
 
-\b Software needed to work with ESP-r
+\fs24 \
+\pard\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural
+
+\b \cf0 Software needed to work with ESP-r
 \b0 \
 \
-The base install of Ubuntu has much of what you need. One of the features of Ubuntu is the general ease of installing new software packages.  The graphic package manager on Ubuntu is Synaptic (found in System -> Administration). In the search dialog type in some or all of the package name you are looking for and a list of possible choices will be displayed. If the package has dependencies it will also install these.  You can also use the command line apt-get to install packages.  For example, to install the helper tool xfig the syntax would be:\
+\pard\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural
+
+\fs20 \cf0 The base install of Ubuntu has much of what you need. The installation of new software packages and their dependencies is handled via package managers (command line apt-get) or a graphic package manager such as Synaptic (found in System -> Administration). In the search dialog type in some or all of the package name you are looking for and a list of possible choices will be displayed.  For example, to install the helper tool xfig the syntax would be:\
 \
-  apt-get install xfig\
-\
-which will also list dependencies needed for the software to run.  \
+\pard\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural
+
+\b \cf0   apt-get install xfig\
+\pard\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural
+
+\b0 \cf0 \
+which will also list and install dependencies needed for the software to run.  \
 \
 Lets begin with the minimal requirements to run either the X11 or GTK version of ESP-r.\
 \
-The only required packages for running ESP-r are libgfortran and ImageMagick.  You can search for them in a package manager (Synaptic or Ubuntu Software Center or apt-get) and once it is in place you should be able to use the standard self-extracting installer for ESP-r on Linux.\
-\
-There are a few additional packages which provide helper applications that ESP-r may wish to access.  Unless you tell it differently (in the file esprc), ESP-r will invoke the 'nedit' text editor and so it is worth installing this package.\
-\
-ESP-r can also export its wire-frame images into the Xfig format as well as VRML.  Xfig and transfig work together to allow the creation of vector graphics which can be useful in reports.\
-\
+ESP-r requires libgfortran, ImageMagick, xfig (for vector graphics export) and a text editor such as nedit.  Once these are in place you should be able to use the standard self-extracting installer for ESP-r on Linux.\
 
-\b Software needed to develop ESP-r
+\fs24 \
+\pard\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural
+
+\b \cf0 Software needed to compile ESP-r
 \b0 \
 \
-If you are going to compile ESP-r you are going to need a number of tools and if you want to develop ESP-r there are more tools and libraries that are required via one of the package managers.  The package manager will list current and available packages in various formats.  You can also search for specific packages by name  e.g. ddd (a debugger) and groff (to convert some ESP-r documents into PS files).  In the list below are packages which you will need, they may already be included in your Linux distribution or be listed under a slightly different name.\
+\pard\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural
+
+\fs20 \cf0 To compile ESP-r requires additional software and libraries.  The package manager will list current and available packages in various formats.  You can also search for specific packages by name  e.g. ddd (a debugger) and groff (to convert some ESP-r documents into PS files).  In the list below are packages which you will need, they may already be included in your Linux distribution or be listed under a slightly different name.\
 \
-Again, use either the Synaptic package manager in Ubuntu or occasionally in the newest Ubuntu the 'Ubuntu One' package manager or apt-get to install the packages listed below.  An example might be:\
-  sudo apt-get install build-essential\
+Install them via the following syntax:\
+\pard\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural
+
+\b \cf0   sudo apt-get install build-essential\
   sudo apt-get install console-tools-dev\
   sudo apt-get install expect-dev\
-  . . .\
+\pard\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural
+
+\b0 \cf0   . . .\
 \
-Apt-get or the other package managers will tell you what dependencies are being installed in addition to the package that you requested.  In some cases the package manager will tell you that the current version of a package is already installed on your machine.\
+You can also combine commands\
+\pard\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural
+
+\b \cf0   sudo apt-get install build-essential console-tools-dev expect-dev\
+\pard\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural
+
+\b0 \cf0 \
+As the ESP-r community considers the GCC 4.4 compiler as the reference compiler you should consider which version of the GCC compilers to work with.  It is possible to have multiple compilers as long as you specify which compiler version to use in the Install command line (e.g. --compiler_version -4.4).\
 \
-As the ESP-r community considers the GCC 4.3 compiler as the reference compiler you should consider which version of the GCC compilers to work with.  It is possible to have multiple compilers as long as you specify which compiler version to use in the Install command line (e.g. --compiler_version -4.3) but some users prefer stick with a single compiler suite.\
-\
-Development:  build-essential, console-tools-dev, expect-dev, g++, gcc, gfortran, gdb,gettext, libtool, linux-headers, linux-source, subversion, subversion-tools, valgrind, libxml2, libxml2-dev, libxml2-utils libxslt1-dev libxslt1-dbg\
+Development:  build-essential, console-tools-dev, expect-dev, g++, gcc, gfortran, gdb,gettext, libtool, linux-headers, linux-source, subversion, libxml2, libxml2-dev, libxml2-utils libxslt1-dev libxslt1-dbg\
 \
 Gnome desktop: dia-gnome (a useful helper application)\
 \
-Graphics, netpbm (convert between graphics formats) imagemagick (screen grab & display) \
-   gimp gimp-data\
+Graphics, netpbm (convert between graphics formats) imagemagick (screen grab & display)  gimp gimp-data\
 \
 Libraries: libx11-6-dbg, libx11-dev, \
 \
-Miscellaneous - Graphical: gsfonts-x11 xfonts-mplus  xfonts-terminus  xfonts-terminus-dos \
-  xfonts-75dpi ttf-xfree86-nonfree t1-xfrree86-nonfree ttf-dejavu xfs font-manager\
+Miscellaneous - Graphical: gsfonts-x11 xfonts-mplus  xfonts-terminus  xfonts-terminus-dos  xfonts-100dpi xfs font-manager\
 \
 Networking: gfrtp-gtk, openssh-server, ssh\
 \
@@ -126,31 +150,53 @@ Word processing: enscript, psutils nedit nedit-dbg\
 For GTK development selecting the libgtk2.0-dev package will identify most of the dependencies you are likely to need. To assist with debugging also ask for the -dbg versions of the libraries such as:\
 libfontconfig1-dbg, libcairo2-dbg, libpixman-1-0-dbg, libxslt1-dbg, libgtk2.0-0-dbg\
 \
-Note that Ubuntu if you upgrade from 10.04 to 10.10 or 11.04 the fonts required by ESP-r will tend to be\
-located.  To force a refresh of the font cache do the following:\
-  sudo dpkg-reconfigure fontconfig-config\
-  sudo fc-cache -f -v\
+A fresh install of Ubuntu 11.04 is missing a number of the fonts which were available in earlier versions of Ubuntu. If the X11 interface will not start or the GTK wireframe control crashes then this is likely because of missing fonts.\
 \
-To find out the fonts installed on your computer you can use the command:\
-  fc-list\
-\
-A fresh install of Ubuntu 11.04 is missing a number of the fonts which were available in earlier versions of Ubuntu. If fonts are missing ESP-r modules tend to crash with a floating point exception.\
-\
+To force a refresh of the font cache do the following:\
+\pard\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural
 
-\b Setting up your account and folders
+\b \cf0   sudo dpkg-reconfigure fontconfig-config\
+  sudo fc-cache -f -v\
+\pard\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural
+
+\b0 \cf0 \
+To find out the fonts installed on your computer you can use the command:\
+\pard\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural
+
+\b \cf0   fc-list\
+\pard\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural
+
+\b0 \cf0 \
+To find out about the compilers (gcc g++ and gfortran) use commands such as:\
+\pard\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural
+
+\b \cf0   which gcc\
+  ls -l /usr/bin/gc*\
+  gcc --version\
+  which gfortran\
+  l s -l /usr/bin/gfor*\
+  gfortran --version\
+\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\pardirnatural
+
+\b0 \cf0 There may be several versions of gcc on your machine.  The gcc --version command tells you the specifics.\
+
+\fs24 \
+\pard\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural
+
+\b \cf0 Setting up your account and folders
 \b0 \
 \
-There are several strategies for setting up user accounts on a Ubuntu computer, whether or not it is within a virtual environment.  The first strategy is to remember that there is a 
+\pard\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural
+
+\fs20 \cf0 There are several strategies for setting up user accounts.  The first strategy is install a 
 \i standard version
 \i0  of ESP-r and (optionally) 
 \i your version
-\i0  of ESP-r.  The community puts in a lot of effort to make the standard version as robust as possible for production work. The standard version will often be located in /opt/esru while your own version should be installed within your own folder structure.\
+\i0  of ESP-r.  The community puts in a lot of effort to make the standard version as robust as possible for production work. The standard version will often be located in /opt/esru while your own version should be installed within your own folder structure. \
+To simplify other tasks, create a 'bin' folder within your HOME folder (e.g. /home/fred/bin) and place in it scripts that you use often as well as the 'link_to' script from the source distribution bin folder. You can use the 'link_to' script to point to your preferred version of ESP-r executables.\
 \
-To simplify other tasks, create a 'bin' folder within you HOME folder and place in it scripts that you use often as well as the 'link_to' script from the source distribution bin folder. You can use the 'link_to' script to point to your preferred version of ESP-r executables.\
-\
-There are a number of arbitrary conventions in the ESP-r community, one of which is the use of a custom Install script instead of  the usual automake based system used in many Linux packages.  Another convention is that traditional users of ESP-r tend to expect to find the ESP-r distribution in /usr/esru or in /home/esru.  Other users prefer to place the ESP-r distribution in /opt/esru.  If you are going to be running the so-called tester.pl scripts you will need to Install the current development_branch of ESP-r to the folder /usr/esru.\
-\
-People who need to keep multiple versions of ESP-r on their computers for testing and development tend to install ESP-r into their home folder e.g. esru_test and install the standard version of ESP-r to /usr/esru.  If you have a subversion branch and/or just want to make your own version of ESP-r, for example to support more complex models, you should place that distribution of ESP-r in a separate location. This will allow you to test a custom version against the standard distribution.  The Install script supports this via command line directives.  \
+ESP-r uses a custom Install script instead of  the usual automake based system.  People who need to keep multiple versions of ESP-r on their computers for testing and development tend to install ESP-r into their home folder e.g. esru_test and install the standard version of ESP-r to /usr/esru.  If you have a subversion branch and/or just want to make your own version of ESP-r, for example to support more complex models, you should place that distribution of ESP-r in a separate location. This will allow you to test a custom version against the standard distribution.  The Install script supports this via command line directives.  \
 \
 The following steps will create a standard distribution in the traditional location.  Note the commands assume that you have permission to create the folder 
 \i /usr/esru
@@ -158,46 +204,36 @@ The following steps will create a standard distribution in the traditional locat
 \b sudo mkdir /usr/esru
 \b0     \
 \
-To find out about the compilers use commands such as:\
-
-\b which gcc\
-ls -l /usr/bin/gc*\
-which gfortran\
-ls -l /usr/bin/gfor*\
-gcc --version\
-gfortran --version\
-which g++\
-g++ --version\
-ls -l /usr/bin/g++*\
-\
-\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\ql\qnatural\pardirnatural
-
-\b0 \cf0 Probably gcc will be located in /usr/bin/gcc.  There may actually be several versions of gcc on your machine.  The gcc --version command tells you.  You need to include the directive 
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\pardirnatural
+\cf0   You need to include the directive 
 \b --gcc4 
 \b0 in the Install script below. And if you want to specify which version of the compiler to use remember to include 
-\b --compiler_version -4.3 
+\b --compiler_version -4.4 
 \b0 (substitute the specific number to match the name of the executable e.g. gcc-4.3 or gcc-4.1) and 
 \b --reuse_ish_calcs
 \b0  to speed up the Install process.\
-\pard\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\ql\qnatural\pardirnatural
+\pard\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural
 \cf0 \
-\pard\tx220\tx720\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\li720\fi-720\ql\qnatural\pardirnatural
-\ls1\ilvl0\cf0 {\listtext	\'95	}Create a folder for the standard distribution via:  \
-\pard\tx560\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\ql\qnatural\pardirnatural
+\pard\tx220\tx720\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\li720\fi-720\pardirnatural
+\ls1\ilvl0\cf0 Create a folder for the standard distribution via:  \
+\pard\tx560\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural
 
-\b \cf0 mkdir /usr/esru\
-\pard\tx220\tx720\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\li720\fi-720\ql\qnatural\pardirnatural
-\ls2\ilvl0
-\b0 \cf0 {\listtext	\'95	}Create a folder structure for Source code in your home folder, checkout the current development_branch from the svn server and use the Install script to build the distribution in the folder /usr/esru with the GCC version 4 compilers:\
-\pard\tx560\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\ql\qnatural\pardirnatural
+\b \cf0 \
+  mkdir /opt/esru\
+\pard\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural
 
-\b \cf0 cd\
-mkdir Src\
-mkdir Src/cvsdude\
-cd Src/cvsdude\
-svn checkout https://espr.svn.cvsdude.com/esp-r/branches/development_branch\
-cd development_branch/src\
-./Install -d /usr/esru --gcc4 --reuse_ish_calcs
+\b0 \cf0 \
+Create a folder structure for Source code in your home folder, checkout the current development_branch from the svn server and use the Install script to build the distribution in the folder /usr/esru with the GCC version 4 compilers:\
+\pard\tx560\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural
+
+\b \cf0 \
+  cd\
+  mkdir Src\
+  mkdir Src/cvsdude\
+  cd Src/cvsdude\
+  svn checkout https://espr.svn.cvsdude.com/esp-r/branches/development_branch\
+  cd development_branch/src\
+  ./Install -d /opt/esru --gcc4 --reuse_ish_calcs --debug
 \b0 \
 \
 (Say yes to XML if you have that library, say yes to databases and yes to example models and say yes to debug.  Go and have a cup of coffee).\
@@ -205,15 +241,15 @@ cd development_branch/src\
 Lets say you have your own source code branch.  The process is similar:\
 
 \b \
-cd\
-mkdir esru_my_branch\
-cd Src/cvsdude\
-svn checkout https://espr.svn.cvsdude.com/esp-r/branches/my_branch\
-cd my_branch/src\
-./Install -d /home/my_login_name/esru_my_branch --gcc4 --reuse_ish_calcs
+  cd\
+  mkdir esru_my_branch\
+  cd Src/cvsdude\
+  svn checkout https://espr.svn.cvsdude.com/esp-r/branches/my_branch\
+  cd my_branch/src\
+  ./Install -d /home/my_login_name/esru_my_branch --gcc4 --reuse_ish_calcs --debug
 \b0 \
 \
-\pard\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\ql\qnatural\pardirnatural
+\pard\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural
 \cf0 Substitute you home folder name and your branch name as required.  Now there are two versions of ESP-r on your machine.  To get the version that you want you will have to manipulate the PATH environment variable to include the folder there the executables are located.  The PATH environment variable is usually defined in the ./profile file in your home folder. You might find a line which includes   
 \b PATH="$HOME/bin:$PATH"
 \b0 \
@@ -226,63 +262,90 @@ You could use a text editor to alter this line:
 \b PATH="$HOME/bin:$HOME/esru_my_branch/esp-r/bin:$PATH"
 \b0 \
 \
-Or, you could create a bin folder in your home folder and place it in links to the relevant executables of ESP-r.  Examples of such scripts can be found in the source distribution bin folder.\
-\
-\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\ql\qnatural\pardirnatural
+Or, you could create a bin folder in your home folder and place it in links to the relevant executables of ESP-r.\
+\pard\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural
+
+\b \cf0 \
+  cd \
+  mkdir bin\
+  cd Src/cvsdude/development_branch/src/bin\
+  cp link_to ~/bin\
+  cp link_to_bash ~/bin\
+  cd\
+  cd bin\
+  ./link_to /opt/esru/esp-r/bin\
+  cd\
+  source .profile\
+  which prj\
+\pard\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural
+
+\b0 \cf0 \
+If the 'which prj' commands returns a location the ESP-r executables and libraries are now known.  \
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\pardirnatural
 \cf0 If you want to be able to use both the X11 and GTK versions of ESP-r you are going to have to use the Install script twice and place the X11 version in one folder structure and the GTK version in another.  Remember to issue a 
 \b make clean 
 \b0 command in the src folder prior to invoking the installer script the second time.\
 \
 There are more documents related to managing your source code and working with the subversion source code control environment within the archive folder of the source distribution.  You may also find some useful materials in the folder src/manual/OS.\
-\pard\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\ql\qnatural\pardirnatural
-\cf0 \
+\pard\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural
+
+\fs24 \cf0 \
 \
-\pard\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\ql\qnatural\pardirnatural
+\pard\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural
 
 \b \cf0 The VirtualBox environment
 \b0 \
 \
-The package VirtualBox from Sun is currently a free download and supports a number of combinations of host computer and guest operating system.  This allows you to get Ubuntu running on a variety of computers.  There are other packages from vendors such as VMWare and Parallels for OSX and the procedures will be similar.\
+\pard\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural
+
+\fs20 \cf0 VirtualBox supports a number of combinations of host computer and guest operating system.  This allows you to get Ubuntu running on a variety of computers.  There are other packages from vendors such as VMWare and Parallels for OSX and the procedures will be similar.\
 \
 Download the installer for VirtualBox (check site via google search).  If this is for a machine used by several people you might choose to do it as Administrator.  \
 \
 You can either make use of an existing virtual disk (e.g. from another computer) or install the OS from scratch. Using an existing virtual disk tends to require only that you copy the virtual disk file to an appropriate location and then use the disk manager options within the virtual environment to identify the virtual disk file. There will be minimal adjustments once the new virtual computer is up and running,\
 \
-To install from scratch you must create a virtual disk drive.  With most virtual environments you are given two options - one is a fixed size and one expands to a maximum size.  The latter is a good choice, it will only be as large as it needs to be. But the maximum size cannot be changed so think a bit before you select it. The default size for a new hard disk is 8GB which is sufficient for development work and a few moderate sized models. If you are going to make lots of models or are going to try and run the full ESP-r testing suite then you might want to go for 12GB.  Keep in mind that you may wish to backup your virtual disk and the size of the virtual disk file limits your options.  USB drives that are formated with FAT32 will not accept files larger than 4GB and backing up to DVD is problematic.  You can compress a virtual disk but this is not a quick process.\
+To install from scratch you must create a virtual disk drive.  With most virtual environments you are given two options - a fixed size or one expands to a maximum size.  The latter is a good choice, it will only be as large as it needs to be. The maximum size cannot be changed so think a bit before you select it. The default size for a new hard disk is 8GB which is sufficient for light use, and if you have space go for 12-20GB.  Keep in mind that you may wish to backup your virtual disk and the size of the virtual disk file limits your options.  You also need to assign memory for the virtual machine.  If you have 2GB of physical memory then allocate 1 GB to the virtual machine.  Additional memory can speed up simulations and reduce the need for disk access during some results recovery tasks. \
 \
-You also need to assign a level of memory for the virtual machine.  800 MB is ok for normal work if you have 2GB available on your computer. If you only have 1GB available you probably want to squeeze the virtual memory down to 512 MB.  Additional memory can speed up simulations and reduce the need for disk access during some results recovery tasks. \
+Check the preferences of the tool to find where the new virtual environment will be storing the files (so you know what to backup). You might want to place it in a less obscure location so it will be easier to backup.  By default VirtualBox will attempt to use what they call host networking and this may require you to log into your computer a second time.\
 \
-Check the preferences of the tool to find where the new virtual environment will be storing the files. You might want to place it in a less obscure location so it will be easier to backup.  By default VirtualBox will attempt to use what they call host networking and this may require you to log into your computer a second time.\
-\
-Once you have the details completed you can start up the new virtual computer, it has no operating system so there will be a wizard that will ask some questions.  Place your Ubuntu CD in the drive or identify an iso file to use for the installation.  Remember there are several versions of Ubuntu.  Consider choosing a 'lightweight' version to limit its demands on your computer (so there is more power for compiling and running simulations).  Go back to the main instructions for the rest of the process.\
-\
+Once you have the details completed you can start up the new virtual computer, it has no operating system so there will be a wizard that will ask some questions.  Place your Ubuntu CD in the drive or identify an iso file to use for the installation.  Go back to the main instructions for the rest of the process.\
 
-\b Using an existing Ubuntu virtual disk under VirtualBox
+\fs24 \
+\
+\pard\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural
+
+\b \cf0 Parallels on OSX
 \b0 \
 \
-Install VirtualBox as above.  Decide where you want to locate your virtual disks and ensure that the VirtualBox preferences are updated.  Copy an existing virtual disk into that location and use the Virtual Media Manager to add this disk to the list.\
-\
-To create a new machine click on the 'new' button and give the new virtual computer a name (see above) as well as defining the OS type and vendor.  Allocate memory (see above) and when it asked indicate that you wish to use an existing disk.  After you click finish you can power up the new virtual computer.  Usually only minimal adjustments will be necessary to get a working computer (setting network preferences and download sources and fire-walls).  Note that VDI files will tend to expand over time even if the underlying disk use is constant. Occasionally it might be necessary to shrink the VDI file (the procedure for this is not included in this document).\
-\
-\
+\pard\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural
 
-\b Parallels on OSX
+\fs20 \cf0 An option to VirtualBox is Parallels.  To start from scratch have the Ubuntu CD ready, ask for a new virtual machine and it will identify typical defaults from scanning the CD and create a virtual disk for Ubuntu with minimal interactions. Parallels defaults to a disk image that will grow.  Once the new virtual machine is up and running then the standard install process with an alternative Ubuntu installer can follow the standard instructions (above).\
+
+\fs24 \
+\
+\pard\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural
+
+\b \cf0 Additional notes for Ubuntu 11.10 and 12.04
 \b0 \
 \
-One of the frustrations of VirtualBox is limited connections to the host machine.  If manual file transfers are an issue then Parallels on OSX  is an option.  To start from scratch have the Ubuntu CD ready, ask for a new virtual machine and it will identify typical defaults from scanning the CD and create a virtual disk for Ubuntu with minimal interactions. Parallels defaults to a disk image that will grow.  Once the new virtual machine is up and running then the standard install process with an alternative Ubuntu installer can follow the standard instructions (above).  The 'Live' CD assumes that there is already a working operating system (e.g. Windows) running so that is less appropriate.  Parallels on other host operating systems has not been tested.\
-\
-Parallels does not unfortunately seem to be able to reliably read in current VDI files in use under VirtualBox but may read somewhat older versions.\
-\
+\pard\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural
 
-\b Additional notes for Ubuntu 11.10
-\b0 \
+\fs20 \cf0 For Ubuntu 11.10 install the xubuntu-desktop package. Avoid Ubuntu 12.04 but if you must ensure you have the following packages:\
 \
-With the introduction of the 11 series the Ubuntu screen layout and user interactions have changed. In 11.04 it is possible to use a classic view or a newer interface. Some users have noted font issues with 11.10 so we suggest sticking with 11.04\
-until the newer interface is further patched.\
+- gfortran, g++, build-essential, console-tools-dev, expect-dev, libtool, csh, ssh\
+- subversion, libxml2-dev, libxslt1-dev, libxslt1-dbg,\
+- libgtk2.0-dev, libcairo2-dbg, libpixman-1-0-dbg, libgtk2.0-0-dbg \
+- kompare, xfig enscript, psutils, nedit-dbg,  imagemagick\
+- xfs,  xfonts-100dpi\
+
+\fs24 \
 \
 \
-\
-\
+- gfortran, g++, build-essential, console-tools-dev, expect-dev, libtool, csh, ssh\
+- subversion, subversion-tools, libxml2-dev, libxslt1-dev, libxslt1-dbg,\
+- libgtk2.0-dev, libcairo2-dbg, libpixman-1-0-dbg, libgtk2.0-0-dbg \
+- kompare, xfig enscript, psutils, nedit-dbg,  imagemagick\
+- xfs,  xfonts-75dpi, ttf-dejavu\
 \
 \
 \

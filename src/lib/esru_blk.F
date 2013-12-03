@@ -28,8 +28,8 @@ C Ezero loads the COMMONS used by libgtkesru.a, libxesru.a and libnoxesru.a.
 
 C Commons for paged menus, PMENUSV is to pop in a definition for
 C later recovery.
-      COMMON/PMENUSV/MHEAD1(5),MCTL1(5),MIFUL1(5),MFUL1(5),IST1(5),
-     &               ILEN1(5),IPM1(5),MPM1(5),IPFLG1(5),MILEV
+      COMMON/PMENUSV/MHEAD1(10),MCTL1(10),MIFUL1(10),MFUL1(10),IST1(10),
+     &               ILEN1(10),IPM1(10),MPM1(10),IPFLG1(10),MILEV
       COMMON/PBYDAT/PBYFIL,NSCVP,IPS
       logical PBYFIL
 
@@ -42,7 +42,7 @@ C later recovery.
       IPM=1
       MPM=1
       IPFLG=0
-      do 42 i=1,5
+      do 42 i=1,10
         MHEAD1(i)=0
         MCTL1(i)=0
         MIFUL1(i)=0

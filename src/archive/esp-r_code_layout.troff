@@ -343,7 +343,6 @@ src
 |-- esruplt     source code for plant component solver
 |-- esruprj     source code for the project manager module
 |-- esrures     source code for the results analysis module
-|-- esrurun     source code for converting 3rd party descriptions into ESP-r models
 |-- esruvew     source code for a hidden line wire-frame viewer
 |-- esruvld     source code for validation and uncertainty studies
 |-- include     header files for fortran and c code
@@ -3040,11 +3039,11 @@ C   - None.
       subroutine AggregatePltCompEnergyUse()
 
 
-C AttributePltPfsEnergyUse analyses uncatagorized energy consumption reported in
+C AttributePltEnergyUse analyses uncatagorized energy consumption reported in
 C the plant/elec domains and attempts to attribute them according to
 C end-use.
 C Inputs: None.
-      subroutine AttributePltPfsEnergyUse()
+      subroutine AttributePltEnergyUse()
 
 
 C fConvertEnergyToFuelAmount converts an energy input into an equivlent

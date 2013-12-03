@@ -5,7 +5,7 @@ C Strathclyde, Glasgow Scotland, 2001.
 C ESP-r is free software.  You can redistribute it and/or
 C modify it under the terms of the GNU General Public
 C License as published by the Free Software Foundation 
-C (version 2 orlater).
+C (version 2 or later).
 
 C ESP-r is distributed in the hope that it will be useful
 C but WITHOUT ANY WARRANTY; without even the implied
@@ -62,6 +62,7 @@ C which create the scratch or ascii version.
 #include "building.h"
 #include "model.h"
 #include "geometry.h"
+#include "net_flow.h"
 #include "tdf2.h"
 C Related to TDF ITEMS file.
 #include "control.h"      
@@ -79,6 +80,10 @@ C Need to loop for number of surfaces for bidirectional and vertical solar radia
 
       COMMON/TDFOPEN/OPTDF
       LOGICAL OPTDF,XST
+
+      COMMON/MFLOW1/NNOD,NCMP,NCNN
+      COMMON/MFLOW2/NDNAM(0:MNOD)
+      character*12 ndnam
 
       CHARACTER tfile*72,LTMPFL*72
       character FOCUS*8,msgl2*48,fs*1,act*1,outs*124
@@ -134,7 +139,7 @@ C Search instances in temporal file to find match(s).
                       if(DBTASK(ITD1)(1:6).eq.'DBTZNM')
      &                  IDBTZNM(itd3)=itd4   ! measured zn dbT
 
-C Bidirectional data are assigned per surface
+C Bidirectional data are assigned per surface.
                       if(DBTASK(ITD1)(1:8).eq.'BIDIRSET')then
                         DO 75 IS=1,NZSUR(itd3)
                           if(DBSN(itd1)(1:12).eq.
@@ -144,7 +149,7 @@ C Bidirectional data are assigned per surface
   75                    continue
                       endif
 
-C Vertical solar radiation data are assigned per surface
+C Vertical solar radiation data (used in solar.F) are assigned per surface.
                       if(DBTASK(ITD1)(1:7).eq.'VERTSOL')then
                         DO 975 IS=1,NZSUR(itd3)
                           if(DBSN(itd1)(1:12).eq.
@@ -154,8 +159,8 @@ C Vertical solar radiation data are assigned per surface
  975                    continue
                       endif
 
-C Measured surface temperature data are assigned per surface
-C Currently applies only on node 1 of the surface, i.e. for external surface temperature
+C Measured surface temperature data to display in res are assigned
+C per surface.
                       if(DBTASK(ITD1)(1:5).eq.'SURTM')then
                         DO 976 IS=1,NZSUR(itd3)
                           if(DBSN(itd1)(1:12).eq.
@@ -168,6 +173,22 @@ C Currently applies only on node 1 of the surface, i.e. for external surface tem
   77              continue
                 endif
   79          continue
+
+C Check if fluid mass flow network pressures are to be assigned
+              if(DBTASK(itd1)(1:8).eq.'NODPRESS')then
+                do 980 inod=1,nnod
+                  iln=lnblnk(ndnam(inod))
+                  if(ndnam(inod)(1:iln).eq.dbzn(itd1)(1:iln))then
+                    do 981 itd4=1,ndata
+                      iln=lnblnk(tag(itd4))
+                      if(tag(itd4)(1:iln).eq.dbtag(itd1)(1:iln))then
+                        IMFNTDFP(inod)= itd4
+                        IMFNTDFF=1
+                      endif
+ 981                continue
+                  endif
+ 980            continue
+              endif
 
 C Check if temporal item association is to a control loop. Loop through each
 C control function to see if multiple loops reference the same tdf item.
@@ -186,7 +207,7 @@ C Search instances in temporal file to find match(s).
                           ISETPTT(itd3)=itd4
                         ENDIF
   81                  CONTINUE
-		    endif
+                    endif
                   endif
   80            continue
               endif          
@@ -315,8 +336,8 @@ C in the tdf file.
      &            ' temporal index ',IFOC,' referenced.'
               IF(ITRC.GE.1)CALL EDISP(iuout,OUTS)
   4         continue
-            WRITE(OUTS,'(A,8I2)')' Simul tags:',IALLCLM,IDBTEXT,IWINDVL,
-     &        IWINDDR,IRELHUM,IDIFHSL,IDIRSOL,IGLOHSL
+            WRITE(OUTS,'(A,9I2)')' Simul tags:',IALLCLM,IDBTEXT,IWINDVL,
+     &        IWINDDR,IRELHUM,IDIFHSL,IDIRSOL,IGLOHSL,IGLOVRT
             IF(ITRC.GE.1)CALL EDISP(iuout,outs)
             IF(ITRC.GE.1)CALL EDISP(iuout,' ')
           endif
@@ -459,6 +480,7 @@ C will be read in. If version 3 then only a limited header is expected.
       SUBROUTINE ERTDF(ITRC,IFOC,IER)
 #include "building.h"
 #include "model.h"
+#include "net_flow.h"
 #include "tdf2.h"
 
       COMMON/OUTIN/IUOUT,IUIN
@@ -680,6 +702,7 @@ C IER=0 OK, IER=1 problem.
       SUBROUTINE EWTDF(IER)
 #include "building.h"
 #include "model.h"
+#include "net_flow.h"
 #include "tdf2.h"
 
       COMMON/HDAT/IHREC(MIT)
@@ -829,6 +852,7 @@ C   negative then fewer columns will be written.
 C   If nuwpr+iadcols > nwpr then a modified nwpr is written out.
       SUBROUTINE EWTDFA(ITRC,AFIL,IAFIL,iiadcols,IER)
 #include "building.h"
+#include "net_flow.h"
 #include "tdf2.h"
       
       integer lnblnk  ! function definition
@@ -1015,6 +1039,7 @@ C act='c'.
       SUBROUTINE TDFAIMPT(ITRC,AFIL,IAFIL,act,IER)
 #include "building.h"
 #include "model.h"
+#include "net_flow.h"
 #include "tdf2.h"
 
 C espriou.h provides current file.
@@ -1034,6 +1059,7 @@ C espriou.h provides current file.
       CHARACTER outs*124
       character outstr*248,LOUTSTR*1000,WORD*20,TMP*4,tail*8,msgl2*86
       integer ier
+      real toler  ! what is half of the timestep
 
 C If not already opened free unit and check if file exists.
       IER=0
@@ -1285,12 +1311,21 @@ C For nuwpr items read as many lines as required.
             if(TABU(J).lt.TABUMN(J))TABUMN(J)=TABU(J)
             if(TABU(J).gt.TABUMX(J))TABUMX(J)=TABU(J)
   47      continue
+
+C Calculate the julian day fraction RDOTY and check to see if the time
+C that has been read TIMEJD is within 0.0006 day tollerance in the case
+C of a >10 minute timestep and 0.00034 day for a one minute timestep.
           CDAY=AINT(FLOAT(IP)/FLOAT(NTSPH*24))
           ITIME=IP-(INT(CDAY)*NTSPH*24)
           RDOTY=REAL(itdbdoy)+CDAY+(REAL(ITIME)/(REAL(NTSPH)*24.))
-          call eclose(RDOTY,TIMEJD,0.0006,close)
+          toler=(1./(24.0*float(NTSPH)))*0.5
+          if(NTSPH.le.6)then
+            call eclose(RDOTY,TIMEJD,0.0006,close)
+          else
+            call eclose(RDOTY,TIMEJD,0.00034,close)
+          endif
           if(.NOT.close)then
-            write(iuout,*)'RDOTY ne TIMEJD @',ip,RDOTY,TIMEJD
+            write(iuout,*)'RDOTY ne TIMEJD @',ip,RDOTY,TIMEJD,toler
           else
 
 C The records for timstep data begins at 50.
@@ -1399,6 +1434,7 @@ C trace level, IER=0 OK, IER=1 problem.
       SUBROUTINE ERTABU(ITRC,ITREC,IER)
 #include "building.h"
 #include "model.h"
+#include "net_flow.h"
 #include "tdf2.h"
 
       COMMON/OUTIN/IUOUT,IUIN
@@ -1442,6 +1478,7 @@ C trace level, IER=0 OK, IER=1 problem.
       SUBROUTINE ERTABUPREV(ITRC,ITREC,IER)
 #include "building.h"
 #include "model.h"
+#include "net_flow.h"
 #include "tdf2.h"
 
       COMMON/OUTIN/IUOUT,IUIN
@@ -1485,6 +1522,7 @@ C ITREC is the record to be written.  ITRC is the trace level.
       SUBROUTINE EWTABU(ITRC,ITREC,IER)
 #include "building.h"
 #include "model.h"
+#include "net_flow.h"
 #include "tdf2.h"
 
       COMMON/OUTIN/IUOUT,IUIN
@@ -1522,6 +1560,7 @@ C actually used in the file. However, if ewtaba is being called
 C to alter the number of columns check the value of iadcols.
       SUBROUTINE EWTABA(ITREC,RDOTY,iafil,IER)
 #include "building.h"
+#include "net_flow.h"
 #include "tdf2.h"
 
       COMMON/OUTIN/IUOUT,IUIN
@@ -1555,7 +1594,7 @@ C as many lines as are required.
         call arlist(ipos,nuwpr+iadcols,TABU,MTABC,delim,louts,loutln,
      &    itrunc)
         if(ipos.eq.1) then
-          WRITE(iafil,'(F8.4,2a)',IOSTAT=ios,ERR=2) RDOTY,',',
+          WRITE(iafil,'(F10.6,2a)',IOSTAT=ios,ERR=2) RDOTY,',',
      &      louts(1:loutln)
         else
           WRITE(iafil,'(1x,a)',IOSTAT=ios,ERR=2) louts(1:loutln)
@@ -1576,6 +1615,7 @@ C ************* CLRTAB
 C CLRTAB clears the current working tabular timestep data.
       SUBROUTINE CLRTAB
 #include "building.h"
+#include "net_flow.h"
 #include "tdf2.h"
       COMMON/TDAT/TABU(MTABC),TABT(MTABC),TABUMN(MTABC),TABUMX(MTABC)
 
@@ -1591,6 +1631,7 @@ C ************* CLRTABPREV
 C CLRTABPREV clears the previous records working tabular timestep data.
       SUBROUTINE CLRTABPREV
 #include "building.h"
+#include "net_flow.h"
 #include "tdf2.h"
       COMMON/TDATPREV/TABUPREV(MTABC)
 

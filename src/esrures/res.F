@@ -73,9 +73,11 @@ C default file names for databases
       COMMON/GFONT/IFS,ITFS,IMFS
       common/appw/iappw,iappx,iappy
       integer menuchw,igl,igr,igt,igb,igw,igwh
+      integer childterminal  ! picks up mmod from starting of prj
+      common/childt/childterminal
+
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
-      common/C21/IFCFG,cfgroot,LCFGF
       COMMON/OUTPCH/ICOUT
       COMMON/DEFLT/IDEFLT
       COMMON/PSY1/PATMOS,IOPT
@@ -125,9 +127,9 @@ C Optional title for graph and up to 10 other labels and their positions.
       
 C Significant figure reporting limit (NSIGFIG).
       common/SFIG/NSIGFIG
-      COMMON/pres/iunitp
+      COMMON/pres/iunitp  ! file unit for plant
 
-      COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
+      COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,CFCDBOK
       
 C Name of current application
       common/APPNAME/cAppName
@@ -152,18 +154,18 @@ C IEEE callback (Solaris)
       
       character cAppName*12      
       
-      LOGICAL        CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
+      LOGICAL        CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,CFCDBOK
 
       LOGICAL     spfileok,perok,tstepok,saveok,autook,exitok,startupok
       logical     unixok,there
 
       CHARACTER ITEM(19)*23
-      CHARACTER*72 LCFGF,actf,Lflpar
+      CHARACTER*72 actf,Lflpar
       character inf*144,LCMDFL*144,outs248*248,xfile*144
       character outs*124,MODE*4,tg*1,delim*1
       character*72 LFCFG
       character path*72,spsname*8,paction*16
-      character cfgroot*24,fs*1,act*16,aut*12
+      character fs*1,act*16,aut*12
       character journcmd*20,jfile*72,uname*24,cjfile*72,OUTSTR*124
       character bact*4,pifltog*4,lpifl*72
       character graftitle*64,grlbl*24
@@ -204,6 +206,7 @@ C     NSIGFIG=3
       IOPTDB=IFIL+6
       IUTDF=IFIL+7
       IUTDFA=IFIL+8
+      iunitp=IFIL+10
       matver=0.0   ! initial assumption of binary materials database
       ireportunit=0 ! assume normal units for tabular listings
 
@@ -378,6 +381,9 @@ C Setup and pass in parameters to win3d.
         ngset=0
         nzonec=0
         call foundcolour(mdispl,nifgrey,ncset,ngset,nzonec)
+
+c Debug
+C        write(6,*) 'colurs ',nifgrey,ncset,ngset,nzonec
         call startbuffer()
       ENDIF
       ITRC=1
@@ -455,19 +461,22 @@ C Check for command line actions.
 
 C Export (grtool) file information. Temporarily use 
 C unit ifil+6 for output file.
-      xfile = 'data.grt'
+      xfile = 'data.csv'
       ixopen = 0
       ixunit = ifil + 6
       ixpunit = ifil + 12
       delim = '-'
 
-C Assume primitive constructions input from IFIL+3.
+C Assume materials input from IFIL+3.
       IFMAT=IFIL+3
       write(LFMAT,'(a)') DFCON(1:lnblnk(DFCON))
 
 C Assume multilayer input from IFIL+9.
       IFMUL=IFIL+9
       write(LFMUL,'(a)') DFMUL(1:lnblnk(DFMUL))
+
+C Assume CFClayers input from IFIL+10.
+      icfcdb=ifil+10 
 
 C Initialise results library.
       CALL MORFIL(iftype)
@@ -499,14 +508,16 @@ C Read the plant configuration file.
           endif
           if(ier.eq.-3) goto 902  ! cancel detected pass back -3 in ier.
 
-	  call fdroot(longtmp,path,LCFGF)
+          call fdroot(longtmp,path,LCFGF)
 
-C Read the model plant-only configuration file.
+C Read the model plant-only configuration file. Also set the initial
+C export file name to reflect the model root name.
           IFCFG=IFIL+1
           IAPROB=IFIL+2  
           MODE='ALL '
           call ERSYS(LFCFG,IFCFG,IAPROB,MODE,ITRC,IER)
-	endif
+          write(xfile,'(2a)') cfgroot(1:lnblnk(cfgroot)),'.csv'
+        endif
 
 C If we have a plant only file go straight to the plant results menu.
         call sysoutp('-',0)

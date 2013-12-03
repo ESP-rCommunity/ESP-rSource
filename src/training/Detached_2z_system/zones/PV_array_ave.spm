@@ -1,0 +1,21 @@
+# ESP-r special materials file used in 
+# configuration file 3br_tt_det_2010pv.cfg
+   1  # Number of special material nodes.
+# Node No:  1
+KyoceraKD245GHl  # label
+# Zone Surf Node Type Opq/Trn
+   3  14   3   1   1
+# Number of data items.
+  13
+# Data:
+# Open circuit voltage (V), Short circuit current. (I)
+# Short circuit current (I) Voltage at maximum pwr pt (V)
+# Current at maximum pwr pt (A), Reference insolation (W/m^2)
+# Reference temperature (K), Number series connected cells (-)
+# Number of parallel connected branches (-), Number of panels in surface. (-)
+# Empirical value used in calculation of Io, Load type (0-maximum power,1-fixed R,2-fixed V)
+# Load value - resistance or voltage (-), Shading treatment (0-def,1-prop.,2-total,3-diff.)
+   36.9000    8.9100   29.8000    8.2300 1000.0000  298.0000       60.000000    1.0000   15.0000   10.0000
+    0.0000    0.0000    0.0000
+# Kyocera panel .99 x 1.662 m
+# Power output at STC = 328 W

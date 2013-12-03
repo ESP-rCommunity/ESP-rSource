@@ -1,7 +1,11 @@
 C ESRUPDF.H of ESRUpdf
-C
+
 C ESRUpdf Plant network definition program, PARAMETERs & COMMONs.
-C
+
+C Type declarations:
+      integer IRECLN,MHEADR,MAXPC,MPCOM,MMISCD,MCOM,MCONVR
+      integer MADATA,MPCON,MNODEC
+
 C     Library record length.
 C     Remeber to update this if changed in PLANTDB.H.
       PARAMETER (IRECLN = 20)
@@ -15,15 +19,15 @@ C     The following parameters are same as in plant.h.
       PARAMETER (MPCOM = 50)
       PARAMETER (MMISCD= 5)
 C     This parameter is same as in building.h.
-      PARAMETER (MCOM = 25)
+      PARAMETER (MCOM = 82)
 
 C     Maximum number of control variables.
 C     Remember to update this if changed in PLANT.H.
-      PARAMETER (MCONVR = 3)
+      PARAMETER (MCONVR = 4)
 
 C     Maximum number of miscellaneous data items.
 C     Remember to update this if changed in PLANTDB.H.
-      PARAMETER (MADATA= 60)
+      PARAMETER (MADATA= 140)
 
 C     Maximum number of connections.
 C     Remember to update this if changed in PLANT.H.

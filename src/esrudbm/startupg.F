@@ -493,7 +493,8 @@ C        dinstpath = 'c:/esru/esp-r'
         write(DAFRES,'(2a)') di(1:ln),'/databases/test.mfr'
         write(DCLIM,'(2a)') di(1:ln),'/climate/clm67'
         write(DAPRES,'(2a)') di(1:min(ln,51)),'/databases/pressc.db1'
-        write(DFCON,'(2a)') di(1:min(ln,51)),'/databases/constr.db2'
+        write(DFCON,'(2a)') di(1:min(ln,51)),
+     &    '/databases/constr_db2.materialdb'
         write(DFMUL,'(2a)') di(1:min(ln,51)),'/databases/multicon.db2'
         write(DOPTDB,'(2a)') di(1:min(ln,51)),'/databases/optics.db2'
         write(DPRFDB,'(2a)') di(1:min(ln,51)),'/databases/profiles.db1'
@@ -2167,3 +2168,20 @@ C If islash > 0 then root and file name
 
       RETURN
       END
+      
+
+            
+C-----------------------------------------------------------------------
+C     Function bH3KExtentionsActive: Returns value of 
+C     h3k_extentions flag 
+C-----------------------------------------------------------------------
+      logical function bH3KExtentionsActive()
+      implicit none 
+      
+
+      bH3KExtentionsActive = .false. 
+      
+      return 
+      
+      end function bH3KExtentionsActive      
+      

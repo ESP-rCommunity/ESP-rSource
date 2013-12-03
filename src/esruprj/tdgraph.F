@@ -5,7 +5,7 @@ C Strathclyde, Glasgow Scotland, 2001.
 C ESP-r is free software.  You can redistribute it and/or
 C modify it under the terms of the GNU General Public
 C License as published by the Free Software Foundation 
-C (version 2 orlater).
+C (version 2 or later).
 
 C ESP-r is distributed in the hope that it will be useful
 C but WITHOUT ANY WARRANTY; without even the implied
@@ -21,6 +21,7 @@ C Boston, MA 02111-1307 USA.
       SUBROUTINE TMPLOT(ITRC,IFOC,IER)
 #include "building.h"
 #include "model.h"
+#include "net_flow.h"
 #include "tdf2.h"
 
 C Parameters for eline calls.
@@ -342,11 +343,11 @@ C Vertical axis label depending on generic type.
       ELSEIF(FOCUS(1:7).EQ.'ZIVENTT')THEN
         LABEL1='m^3/sec         '
       ELSEIF(FOCUS(1:7).EQ.'RAIRVLT')THEN
-        LABEL1='m  /sec         '
+        LABEL1='m/sec           '
       ELSEIF(FOCUS(1:7).EQ.'SETPTTT')THEN
         LABEL1='temperatue deg C'
-      ELSEIF(FOCUS(1:7).EQ.'CTLSTAT')THEN
-        LABEL1='status flag     '
+      ELSEIF(FOCUS(1:8).EQ.'HTCLSETP')THEN
+        LABEL1='temperatue deg C'
       ELSEIF(FOCUS(1:7).EQ.'SKYLUXT')THEN
         LABEL1='lux             '
       ELSEIF(FOCUS(1:7).EQ.'SKYTMPT')THEN
@@ -369,18 +370,18 @@ C Vertical axis label depending on generic type.
         LABEL1='Watts           '
       ELSEIF(FOCUS(1:8).EQ.'CASUAL3T')THEN
         LABEL1='Watts           '
-      ELSEIF(FOCUS(1:7).EQ.'OBJVELT')THEN
-        LABEL1='metres per sec  '
       ELSEIF(FOCUS(1:7).EQ.'OBJDIRT')THEN
         LABEL1='  degrees       '
       ELSEIF(FOCUS(1:7).EQ.'TSCASGT')THEN
         LABEL1='    Watts       '
-      ELSEIF(FOCUS(1:7).EQ.'GLOVRTT')THEN
+      ELSEIF(FOCUS(1:7).EQ.'VERTSOL')THEN
         LABEL1='Watts / sq metre'
       ELSEIF(FOCUS(1:8).EQ.'ACTIVITY')THEN
         LABEL1='fractions & degC'
       ELSEIF(FOCUS(1:8).EQ.'BIDIRSET')THEN
         LABEL1='set numb. (1-40)'
+      ELSEIF(FOCUS(1:8).EQ.'BAMSNSET')THEN
+        LABEL1='various units   '
       ELSE
 
 C Add in additional generic data definitions here.

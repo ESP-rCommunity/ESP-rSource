@@ -24,7 +24,7 @@ C This file contains the module AIM2 which contains the data for
 C the following routines related to the AIM-2 infiltration model.
 C These routines are invoked prior to bps commencing its time-step simulation:
 
-C   AIM2_H2KDefaults	    Initializes generic house data 
+C   AIM2_H2KDefaults        Initializes generic house data 
 C   AIM2_READIN             Reads the data contained in the .aim file.
 C   AIM2_SETVARS            Controls calc of time-invariant data for AIM-2 model.
 C   AIM2_HOUSE_VOLUME       Calculates house volume.
@@ -210,8 +210,8 @@ C but rather treated with different approach.
 
 C File version (used in report functions)
       REAL :: fAIM2VersionNumber
-	
-C Initialization flag	
+
+C Initialization flag
       LOGICAL :: AIM2_Initialized 
 
 C Air flow when windows open (ACH)
@@ -351,7 +351,7 @@ C     Flags indicating whether "fireplace #1" and "fireplace #2" exist.
       LOGICAL :: H2K_fireplace1  
       LOGICAL :: H2K_fireplace2
         
-	
+
 C     Flags indicating presence of primary ("1" suffix) and secondary ("2" suffix)
 C     DHW systems.
       LOGICAL :: H2K_DHW1_exist
@@ -373,7 +373,7 @@ C     indoors (true) or outdoors (false).
 C     Flag indicating whether primary DHW system is a solar collector. Interface
 C     does not allow secondary system to be solar.
       LOGICAL :: H2K_DHW1_solar
-	
+
 
       END MODULE AIM2_H2K_DUMMY 
 C ********************************************************************************
@@ -616,22 +616,21 @@ C espriou.h provides currentfile.
       INTEGER NCOMP,NCON
 
       COMMON/WindowControl/
-     &     fWindowSetpoint,
-     &     fACSetPoint,
      &     bWindowControlFlag,
-     &     iWindowControlZone,
-     &     bWindowsAreOpen,
+     &     iCoolingControlZone,
+     &     fWindowHighSetpoint,
+     &     fWindowLowSetpoint,
      &     fDeltaTInttoExt,
-     &     fWindowLowSetpoint
+     &     fMinAmbTemp,
+     &     bWindowsAreOpen
 
-
-      REAL fWindowSetpoint
-      REAL fACSetPoint
-      INTEGER iWindowControlZone
-      LOGICAL bWindowControlFlag
-      LOGICAL bWindowsAreOpen
-      REAL  fDeltaTInttoExt
-      REAL fWindowLowSetpoint
+      LOGICAL bWindowControlFlag !Indicates that the window_control.F model should activate
+      INTEGER iCoolingControlZone !The zone in which an active central cooling system sensor is place (usually a main level zone 1, should correspond to BC01 type and use of NRCan HVAC module)
+      REAL fWindowHighSetpoint !Temperature above which windows open
+      REAL fWindowLowSetpoint !Temperature below which windows close (allowing an operating deadband)
+      REAL fDeltaTInttoExt !Temperature difference (Tinterior - Texterior) required to open windows (so they are only opened when natural cooling will occur and is of significance)
+      REAL fMinAmbTemp !The minimum ambient temperature that windows are allowed to open too (otherwise it is possible to open windows when it is cold and replace the entire zone air mass in the timestep)
+      LOGICAL bWindowsAreOpen(MCOM) !Array to store the window position for each zone
       
       CHARACTER WORD*128
 
@@ -939,7 +938,7 @@ C of the zones that do receive infiltration.
       CALL STRIPC(IUNIT,OUTSTR,0,ND,1,' AIM-2 data',IER)
       IF(IER.NE.0)goto 1000
       K=0
-      CALL EGETWI(OUTSTR,K,IVAL,1,10,'F',' num zones with infil',IER)
+      CALL EGETWI(OUTSTR,K,IVAL,1,30,'F',' num zones with infil',IER)
       if(IER.NE.0)then
         call edisp(IUOUT,' Cannot read num of zones with infil.')
         goto 1000
@@ -967,7 +966,7 @@ C Check allocation was sucessful
  
         IF (ALLOCATED(AIM2_zone_infil)) THEN
           DO ICOMP=1,AIM2_num_zones_infil
-            CALL EGETWI(OUTSTR,K,IVAL,1,10,'F',
+            CALL EGETWI(OUTSTR,K,IVAL,1,30,'F',
      &          ' zone receiving infil',IER)
             if(IER.NE.0)then
               call edisp(IUOUT,' zone receiving infil.')
@@ -1049,12 +1048,6 @@ C----------------------------------------------------------------------
       elseIF (fAIM2VersionNumber >= 2.00 ) THEN
 
 C Read data inputs for window controls :
-C    - Window Control flag (0,1) 
-C    - Location of temperature control 
-C    - Hot (upper?) setpoint (oC)
-C    - Cold (lower?) setpoint (oC)
-C    - Temperature difference control (oC, min temp difference needed 
-C      to open windows?)
 C    ( All on the same line !)
          CALL STRIPC(IUNIT,OUTSTR,0,ND,1,' AIM-2 data',IER)
          IF(IER.NE.0)goto 1000
@@ -1075,38 +1068,47 @@ C     if the window control model is active get the setpoint and actuating zone.
          IF (bWindowControlFlag ) THEN
  
          CALL EGETWI(OUTSTR,K,IVAL,1,MCOM,'F',
-     &           ' Zone actuator for window control',IER)
+     &           ' Zone of cooling sys sensor',IER)
          if(IER.NE.0)then
             call edisp(IUOUT,
-     &           'Cannot read zone actuator for win control')
+     &           'Cannot read cooling sys zone for win control')
             goto 1000
          endif
-         iWindowControlZone = IVAL
+         iCoolingControlZone = IVAL
 
          CALL EGETWR(OUTSTR,K,VAL,0.,500.,'F',
-     &        ' Window Control Hot Setpoint',IER)
+     &        ' Window Control High Setpoint',IER)
          if(IER.NE.0)then
-            call edisp(IUOUT,' Cannot read window hot setpoint.')
+            call edisp(IUOUT,' Cannot read window high setpoint.')
             goto 1000
          endif
-         fWindowSetpoint = VAL
+         fWindowHighSetpoint = VAL
 
          CALL EGETWR(OUTSTR,K,VAL,0.,500.,'F',
-     &        ' Window Cold  Setpoint',IER)
+     &        ' Window Low Setpoint',IER)
          if(IER.NE.0)then
-            call edisp(IUOUT,'Cannot read window cold  setpoint.')
+            call edisp(IUOUT,'Cannot read window low setpoint.')
             goto 1000
          endif
          fWindowLowSetpoint = VAL
 
         CALL EGETWR(OUTSTR,K,VAL,0.,100.,'F',
-     &        ' Temperature Difference Control',IER)
+     &        ' Temperature Difference Required',IER)
          if(IER.NE.0)then
             call edisp(IUOUT,
-     &           ' Cannot read DeltaT (Text-Tint) for window control')
+     &           ' Cannot read DeltaT (Tint-Text) for window control')
             goto 1000
          endif
          fDeltaTInttoExt = VAL
+
+        CALL EGETWR(OUTSTR,K,VAL,-100.,100.,'F',
+     &        ' Minimum ambient temperature required',IER)
+         if(IER.NE.0)then
+            call edisp(IUOUT,
+     &           ' Cannot read Min ambient temp for window control')
+            goto 1000
+         endif
+         fMinAmbTemp = VAL
 
         ENDIF
       ENDIF newversions
@@ -1406,12 +1408,12 @@ C indicates the foundation type, but uses a different numbering
 C scheme than H2K's generic foundation description.
 
 C INPUTS:
-C	ifound  The index number of the foundation under consideration.
-C       H2K_found_type  The H2K foundation type flag.
-C       H2K_found_depth  The depth of the foundation as input by the user.
+C   ifound  The index number of the foundation under consideration.
+C   H2K_found_type  The H2K foundation type flag.
+C   H2K_found_depth  The depth of the foundation as input by the user.
 
 C OUTPUTS:
-C	j  The foundation type index corresponding to the `LeakDis' array.
+C   j  The foundation type index corresponding to the `LeakDis' array.
 C --------------------------------------------------------------------------------
 
       SUBROUTINE AIM2_SETJ(ifound,j)
@@ -2384,8 +2386,8 @@ C Common blocks
 
       IF (ALLOCATED(AIM2_infil_to_zones)) THEN
 C Debig AIM2      
-C        WRITE(*,*)'AIM2_infil_to_zones',AIM2_infil_to_zones      	
-	DEALLOCATE(AIM2_infil_to_zones, STAT=deallocatestatus)
+C        WRITE(*,*)'AIM2_infil_to_zones',AIM2_infil_to_zones
+        DEALLOCATE(AIM2_infil_to_zones, STAT=deallocatestatus)
         IF (deallocatestatus.NE.0) THEN
           CALL EDISP(IUOUT,
      &       ' Problem with deallocation of AIM2_infil_to_zones array')
@@ -2394,7 +2396,7 @@ C        WRITE(*,*)'AIM2_infil_to_zones',AIM2_infil_to_zones
 
       IF (ALLOCATED(AIM2_zone_infil)) THEN
 C Debig AIM2      
-C        WRITE(*,*)'AIM2_zone_infil',AIM2_zone_infil      	
+C        WRITE(*,*)'AIM2_zone_infil',AIM2_zone_infil
         DEALLOCATE(AIM2_zone_infil, STAT=deallocatestatus)
         IF (deallocatestatus.NE.0) THEN
           CALL EDISP(IUOUT,

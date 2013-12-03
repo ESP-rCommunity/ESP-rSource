@@ -190,13 +190,6 @@ C buildingview viewfactor from external surfaces to other buildings & obstructio
 C NZSUR is the number of surfaces in each zone (from geometry.h).
 C NZTV is the number of vertices in each zone (from geometry.h).
 
-C IFCFG is the file unit for the model configuration file.
-C cfgroot (24 char) root name for the model (used when generating
-C   system files.
-C LCFGF (72 char) model configuration file name.
-      INTEGER :: IFCFG
-      common/C21/IFCFG,cfgroot,LCFGF
-
 C IFPNF is the unit for the plant network file.
 C LPNF (72 char) plant network file name.
       INTEGER :: IFPNF
@@ -470,7 +463,7 @@ C iSlr_half_hr_flg value = 0 :hour-centered; =1 : half-hour centered.
       character GTGEOM*72,GTNAME*15
       CHARACTER ectime*24,wkd1*10,wkd2*10,naco*40,type*4
       character*10 wkday(7)
-      character LUALF*72,LCNG*15,LLOC*15,cfgroot*24,LCFGF*72
+      character LUALF*72,LCNG*15,LLOC*15
       CHARACTER NDNAM*12
       character sblres*72,sflres*72,splres*72,smstres*72,sipvres*72
       character selres*72,spfdescr*8
@@ -478,7 +471,7 @@ C iSlr_half_hr_flg value = 0 :hour-centered; =1 : half-hour centered.
       character gshpfile*72
       character gcepfile*72
       character dllsubr*12,dllmesg*124
-      character limgpth*24,ldocpth*24,lcfgroot*24,lpath*72
+      character limgpth*24,ldocpth*24,lcfgroot*32,lpath*72
       character path*72,lupath*72
       character namez*12,namen*12
       CHARACTER*72 NWKNAM,NWKDSC,NWKFLNAM
@@ -619,19 +612,21 @@ C Initialize the indices.
       ANGI=40.
       initvt=0
 
-C Set day types to default of 3 (weekday/saturday/sunday) and calendar
-C day type tags to default as well. These 3 day types cannot be deleted
-C and more day types if defined will be stored in CALENTAG(4) onwards.
-C this can be modified later. [The IF clause may not be necessary]
+C Set day types to default of 4 (weekday/saturday/sunday/hol) and calendar
+C day type tags to default as well. These initial day types cannot be deleted
+C and more day types if defined will be stored in CALENTAG(5) onwards.
+C this can be modified later.
       IF(NBDAYTYPE.LT.3)THEN
-        nbdaytype=3
+        nbdaytype=3  ! for older models will be updated in *list section
       ENDIF
       CALENTAG(1)='weekday'
       CALENTAG(2)='saturday'
       CALENTAG(3)='sunday'
+      CALENTAG(4)='holiday'
       CALENDAYNAME(1)='generic weekday'
       CALENDAYNAME(2)='generic saturday'
       CALENDAYNAME(3)='generic sunday'
+      CALENDAYNAME(4)='generic holiday'
 
 C Open the configuration file, return if not found otherwise set
 C currentfile to the configuration file.
@@ -657,21 +652,21 @@ C If FILE > 4 char it might have a .cfg attached, otherwise add.
       lcfgl=lcfgr-3
       if(lcfgr.gt.4)then
         if(FILE(lcfgl:lcfgr).eq.'.cfg')then
-          if(lcfgl.gt.24)then
-            write(cfgroot,'(a)',iostat=ios,err=99) FILE(1:24)
+          if(lcfgl.gt.32)then
+            write(cfgroot,'(a)',iostat=ios,err=99) FILE(1:32)
           else
             write(cfgroot,'(a)',iostat=ios,err=99) FILE(1:lcfgl-1)
           endif
         else
-          if(lcfgr.gt.24)then
-            write(cfgroot,'(a)',iostat=ios,err=99) FILE(1:24)
+          if(lcfgr.gt.32)then
+            write(cfgroot,'(a)',iostat=ios,err=99) FILE(1:32)
           else
             write(cfgroot,'(a)',iostat=ios,err=99) FILE(1:lcfgr)
           endif
         endif
       else
-        if(lcfgr.gt.24)then
-          write(cfgroot,'(a)',iostat=ios,err=99) FILE(1:24)
+        if(lcfgr.gt.32)then
+          write(cfgroot,'(a)',iostat=ios,err=99) FILE(1:32)
         else
           write(cfgroot,'(a)',iostat=ios,err=99) FILE(1:lcfgr)
         endif
@@ -1132,7 +1127,7 @@ C There is a calendar of day types defined read its name.
         wkd1=wkday(idwe1)
         wkd2=wkday(idwe2)
       elseif(WORD(1:5).eq.'*year')then
-        CALL EGETWI(OUTSTR,K,IYEAR,1900,2020,'W','year',IER)
+        CALL EGETWI(OUTSTR,K,IYEAR,1900,2051,'W','year',IER)
       elseif(WORD(1:4).eq.'*img')then
 
 C An image file. If this is a version 4 file then there will be

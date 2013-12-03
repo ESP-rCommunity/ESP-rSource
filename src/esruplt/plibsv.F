@@ -64,10 +64,9 @@ C ICLIM,LCLIM (for climate file)
 
       COMMON/C9/NPCOMP,NCI(MPCOM),CDATA(MPCOM,MMISCD)
       COMMON/C12PS/NPCDAT(MPCOM,9),IPOFS1(MCOEFG),IPOFS2(MCOEFG,MPVAR)
-      common/C21/IFCFG,cfgroot,LCFGF
 
       character firstbit*72,secondbit*72
-      character cfgroot*24,longtfile*144,LCFGF*72
+      character longtfile*144
       integer ireccfg   ! where the cfg file name starts.
       logical unixok,concat
       character fs*1

@@ -125,8 +125,6 @@ C HOT3000: BASESIMP.
 
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
       INTEGER :: ic1,ie1,ict,ic2,ie2
-      common/C21/IFCFG,cfgroot,LCFGF
-      INTEGER :: ifcfg
       COMMON/C23/IFPNF,LPNF
       INTEGER :: ifpnf
       common/cctl/icascf(mcom)
@@ -266,11 +264,10 @@ C door width and height.
       character*10 wkd1, wkd2
       character sblres*72,sflres*72,splres*72,smstres*72,sipvres*72
       character selres*72,spfdescr*8
-      character cfgroot*24,LCFGF*72
       LOGICAL INTHPS,INTHPZ,IGR1D,GRND3D
       LOGICAL BLDG3D,ZONE3D,MSTROK,MSTRZN
      
-      INTEGER :: i,icc,ibe,ibu,j,ixs,ix,ivu,isystcurrent,imu
+      INTEGER :: i,icc,ibe,ibu,j,ixs,ix,iivu,isystcurrent,imu
  
       call tstamp('>','PRJ: clearing model commons')
       
@@ -310,6 +307,9 @@ C Initial assumption is no SHOCC files.
       lipvdatf='UNKNOWN'
       bdmds='UNKNOWN'
       dmdsdesc='no dispersed demands notes (yet)'
+
+C << Consider clearing the calendar plus dependencies in
+C << control and operations which rely on daytypes.
       idwe1=6
       idwe2=7
       wkd1='Saturday'
@@ -505,8 +505,8 @@ C Per-zone areas and U-values.
           zhasglaze(ix,ixs)=0.0
           zhasdoor(ix,ixs)=0.0
           isznbedges(ix,ixs)=0
-          do 54 ivu=1,MV
-            iszlist(ix,ixs,ivu)=0
+          do 54 iivu=1,MV
+            iszlist(ix,ixs,iivu)=0
             szcoords(ix,ixs,1)=0.0
             szcoords(ix,ixs,2)=0.0
             szcoords(ix,ixs,3)=0.0
@@ -583,6 +583,8 @@ C Clear SHOCC zone information as well.
         lnzdesc(IX)=0
         zname(IX)=' '
         lnzname(IX)=0
+
+C << consider clearing the P3N commons >>
         LPROJ(IX)='UNKNOWN'
         LGEOM(IX)='UNKNOWN'
         LTHRM(IX)='UNKNOWN'
@@ -1026,9 +1028,9 @@ C of tokens in variable ND.
           XOB(icomp,I)=VX
           YOB(icomp,I)=VY
           ZOB(icomp,I)=VZ
-          CALL EGETWR(OUTSTR,K,VX,0., 99.,'W','obs X dis',IER)
-          CALL EGETWR(OUTSTR,K,VY,0., 99.,'W','obs Y dis',IER)
-          CALL EGETWR(OUTSTR,K,VZ,0., 99.,'W','obs Z dis',IER)
+          CALL EGETWR(OUTSTR,K,VX,0.,150.,'W','obs X dis',IER)
+          CALL EGETWR(OUTSTR,K,VY,0.,150.,'W','obs Y dis',IER)
+          CALL EGETWR(OUTSTR,K,VZ,0.,150.,'W','obs Z dis',IER)
           DXOB(icomp,I)=VX
           DYOB(icomp,I)=VY
           DZOB(icomp,I)=VZ
@@ -1181,7 +1183,7 @@ C For each block write info, use space as item separation.
      &    ZOB(icomp,I),DXOB(icomp,I),DYOB(icomp,I),DZOB(icomp,I),
      &    BANGOB(icomp,I,1),OPOB(icomp,I),
      &    BLOCKNAME(ICOMP,I)(1:llbn),BLOCKMAT(ICOMP,I)(1:llbm),I
-  34    FORMAT(7F9.3,F6.2,2X,A,1X,A,1X,'# block ',I2)
+  34    FORMAT(7F9.3,F6.2,2X,A,1X,A,1X,'# block ',I3)
         call SDELIM(outl,outld,'S',IW)
         WRITE(IAF,'(a)',IOSTAT=IOS,ERR=3) outld(1:lnblnk(outld))
    10 CONTINUE
@@ -1217,6 +1219,10 @@ C (for use in mrt).  IER=0 OK, IER=1 problem.
       integer lnblnk  ! function definition
 
       common/TOTAL/nsurmf, NGRID, NTRPOL
+      
+      integer ncub,ivfok
+      real XOC,YOC,ZOC,DXC,DYC,DZC,CANG
+      character CUBN*6
       common/MRTC/NCUB,XOC(MCUB),YOC(MCUB),ZOC(MCUB),DXC(MCUB),
      &            DYC(MCUB),DZC(MCUB),CANG(MCUB),IVFOK(MCUB),CUBN(MCUB)
       common/MRTF/FFL(MCUB,6,MSM),VEWF(MS,MS)
@@ -1227,7 +1233,7 @@ C Error subroutine and error details for dll mode.
 
       DIMENSION VA(MSM)
 
-      CHARACTER LMRT*72,LGEO*72,CUBN*6,OUTSTR*124,WORD*20,outs*124
+      CHARACTER LMRT*72,LGEO*72,OUTSTR*124,WORD*20,outs*124
       character dllsubr*12,dllmesg*124
       integer fstgrp,fstsur,lstsur,strtgr
       logical dll
@@ -1284,9 +1290,9 @@ C currently not used - mrt accesses configuration file.
 C Read number of sensors.
       CALL STRIPC(IUF,OUTSTR,0,ND,1,'no sensors & surfs',IER)
       K=0
-      CALL EGETWI(OUTSTR,K,NCUB,0,MCUB,'F','no sensors',IER)
-      CALL EGETWI(OUTSTR,K,NZS,1,MS,'F','no zone surfs',IER)
-      CALL EGETWI(OUTSTR,K,IZINDX,1,MCOM,'F','zone index',IER)
+      CALL EGETWI(OUTSTR,K,NCUB,0,MCUB,'F','number mrt sensors',IER)
+      CALL EGETWI(OUTSTR,K,NZS,1,MS,'F','number mrt zone surfs',IER)
+      CALL EGETWI(OUTSTR,K,IZINDX,1,MCOM,'F','mrt zone index',IER)
       if(ier.ne.0)return
       if(IZINDX.ne.IC)then
         write(outs,'(3a)') LMRT(1:lnblnk(LMRT)),
@@ -1444,20 +1450,16 @@ C sensor name then read the viewfactors and exit.
         IF(IER.NE.0)return
         IF(ND.EQ.8.OR.ND.EQ.9)THEN
           K=0
-          CALL EGETWI(OUTSTR,K,IVFOK(I),0,1,'W','vf flag',IER)
-          CALL EGETWR(OUTSTR,K,XOC(I),-999.,998.,'W','X org',IER)
-          CALL EGETWR(OUTSTR,K,YOC(I),-999.,998.,'W','Y org',IER)
-          CALL EGETWR(OUTSTR,K,ZOC(I),  -9., 99.,'W','Z org',IER)
-          CALL EGETWR(OUTSTR,K,DXC(I),   0., 99.,'W','X dis',IER)
-          CALL EGETWR(OUTSTR,K,DYC(I),   0., 99.,'W','Y dis',IER)
-          CALL EGETWR(OUTSTR,K,DZC(I),   0., 99.,'W','Z dis',IER)
-          CALL EGETWR(OUTSTR,K,CANG(I),-359.,359.,'W','rot',IER)
+          CALL EGETWI(OUTSTR,K,IVFOK(I),0,1,'W','mrt flag',IER)
+          CALL EGETWR(OUTSTR,K,XOC(I),-999.,998.,'W','mrt X org',IER)
+          CALL EGETWR(OUTSTR,K,YOC(I),-999.,998.,'W','mrt Y org',IER)
+          CALL EGETWR(OUTSTR,K,ZOC(I),  -9., 99.,'W','mrt Z org',IER)
+          CALL EGETWR(OUTSTR,K,DXC(I),   0., 99.,'W','mrt X dis',IER)
+          CALL EGETWR(OUTSTR,K,DYC(I),   0., 99.,'W','mrt Y dis',IER)
+          CALL EGETWR(OUTSTR,K,DZC(I),   0., 99.,'W','mrt Z dis',IER)
+          CALL EGETWR(OUTSTR,K,CANG(I),-359.,359.,'W','mrt rot',IER)
           IF(ND.EQ.8)THEN
-            IF(I.LE.9)THEN
-              WRITE(CUBN(I),'(A,I1)')'MRT-',I
-            ELSEIF(I.GT.9)THEN
-              WRITE(CUBN(I),'(A,I2)')'MRT-',I
-            ENDIF
+            WRITE(CUBN(I),'(A,I2.2)')'sen_',I
           ELSEIF(ND.EQ.9)THEN
             CALL EGETW(OUTSTR,K,WORD,'W','cube name',IFLAG)
             CUBN(I)=WORD(1:6)
@@ -1507,12 +1509,15 @@ C act character*1 if 'a' then area weighted, if 'r' ray traced.
 
       integer lnblnk  ! function definition
 
-      COMMON/MRTC/NCUB,XOC(MCUB),YOC(MCUB),ZOC(MCUB),DXC(MCUB),
+      integer ncub,ivfok
+      real XOC,YOC,ZOC,DXC,DYC,DZC,CANG
+      character CUBN*6
+      common/MRTC/NCUB,XOC(MCUB),YOC(MCUB),ZOC(MCUB),DXC(MCUB),
      &            DYC(MCUB),DZC(MCUB),CANG(MCUB),IVFOK(MCUB),CUBN(MCUB)
       COMMON/MRTF/FFL(MCUB,6,MSM),VEWF(MS,MS)
 
       dimension rval(MS)
-      character LMRT*72,LGEOM*72,CUBN*6,act*1
+      character LMRT*72,LGEOM*72,act*1
       character louts*248
 
       IER=0
@@ -1535,7 +1540,8 @@ C Write out the file data.
       WRITE(IUF,'(A,A)',IOSTAT=IOS,ERR=14)'*GEOM  ',
      &  LGEOM(1:lnblnk(LGEOM))
       WRITE(IUF,'(3I4,A)',IOSTAT=IOS,ERR=14)
-     &  NCUB,NZS,ICOMP,'    # no sensors, zone surfs, zone no'
+     &  NCUB,NZS,ICOMP,
+     &  '   # numb mrt sensors, numb zone surfs, zone index'
       if(act.eq.'a')then
         WRITE(IUF,'(A)',IOSTAT=IOS,ERR=14)
      &    '# Area weighted zone viewfactors follow'
@@ -1573,7 +1579,7 @@ C If there are any cubes the save this information as well.
       if(NCUB.eq.0)goto 999
       WRITE(IUF,'(A)',IOSTAT=IOS,ERR=14) '*MRT_SENSOR'
       WRITE(IUF,'(A)',IOSTAT=IOS,ERR=14)
-     &  '# OK, Xorig, Yorig, Zorig,   DX,    DY,    DZ,   rot,  name'
+     & '# OK, Xorig, Yorig, Zorig,   DX,    DY,    DZ, rotation,  name'
 
       DO 1180 I=1,NCUB
         WRITE(IUF,34)IVFOK(I),XOC(I),YOC(I),ZOC(I),DXC(I),DYC(I),
@@ -1983,7 +1989,8 @@ C the Z point by OFFSET.
 C ********************* ETRANFRAME
 C ETRANFRAME used when creating an fixed width frame into a surface. It
 C is assumed that an initial polygon of N edges will result in a frame
-C polygon of N edges.
+C polygon of N edges, however nwvert is returned with the actual number
+C of vertices.
 
 C STEP 1 - Find equation of surface (EQN(4)) via PLEQN and get centre
 C          Centre of Gravity (VP(3))
@@ -1996,19 +2003,17 @@ C          'origin'?
 C STEP 6 - Apply reverse transformation to Window/Door co-ordinates via
 C          ORTTRN to give vertices in global co-ords.
 
-      SUBROUTINE ETRANFRAME(ITRC,IZONE,ISURF,N,X,Y,Z,FRW,XXF,YYF,ZZF,
-     &  IER)
+      SUBROUTINE ETRANFRAME(ITRC,N,X,Y,Z,FRW,XXF,YYF,ZZF,nwvert,IER)
 #include "building.h"
 
 C Passed parameters:
-      integer IZONE  ! current zone
-      integer ISURF  ! parent surface
       integer N     ! number of edges in the parent polygon
       real X,Y,Z    ! array of coordinates of parent polygon
       DIMENSION  X(MV),Y(MV),Z(MV)
       real FRW      ! frame width (m)
       real XXF,YYF,ZZF ! array of returned frame coordinates
       DIMENSION  XXF(MV),YYF(MV),ZZF(MV)
+      integer nwvert  ! returned number of conformant new vertices
       integer ier   ! if 1 can not deal with complexity
 
       common/OUTIN/IUOUT,IUIN
@@ -2020,14 +2025,16 @@ C Local variables:
       real XPN,YPN    ! 2D coordinate array (plus offset)
       DIMENSION  XN(MV),YN(MV),XPN(MV),YPN(MV)
       real XL,YL    ! ?? 
-      DIMENSION  XL(MV),YL(MV) 
+      DIMENSION  XL(MV),YL(MV)
       real AIL,BIL,CIL  ! defines inner lines
       DIMENSION AIL(MVS),BIL(MVS),CIL(MVS)
       CHARACTER OUTSTR*124
       integer ITVX   ! number of vertices in polygon
       logical BCLOSE,ICLOSE,MCLOSE ! close to X or Y axis
       logical close  ! to avoid divide by zero
-      real pi
+      logical is180,close180  ! to avoid stright edge
+      dimension is180(MV)
+      real pi,ang3
 
 C Check if we can deal with additional complexity in parent surface.
       ITVX = N  ! remember N
@@ -2064,12 +2071,39 @@ C relative to the COG of the surface).
       XMIN=0.0
       YMIN=0.0
       DO 300 I=1,N
+
+C Also mark which of the edge angles is not close to 180 degrees.
+C Check where we are in the list of edges to ensure that we also
+C check from terminus vertex back to 1 & 2nd vertices.
+        is180(I)=.false.
+        if(I.lt.N-2)then
+          call ang3vtx(x(i),y(i),z(i),x(i+1),y(i+1),z(i+1),
+     &      x(i+2),y(i+2),z(i+2),ang3)
+C          write(6,*) 'angle v ',i,i+1,i+2,ang3
+          call eclose(ang3,180.,1.0,close180)
+          if(close180) is180(I)=.true.
+        elseif(I.eq.N-1)then
+          call ang3vtx(x(i),y(i),z(i),x(i+1),y(i+1),z(i+1),
+     &      x(1),y(1),z(1),ang3)
+C          write(6,*) 'angle v ',i,i+1,' 1',ang3
+          call eclose(ang3,180.,1.0,close180)
+          if(close180) is180(I)=.true.
+        elseif(I.eq.N)then
+          call ang3vtx(x(i),y(i),z(i),x(1),y(1),z(1),
+     &      x(2),y(2),z(2),ang3)
+C          write(6,*) 'angle v ',i,' 1 2',ang3
+          call eclose(ang3,180.,1.0,close180)
+          if(close180) is180(I)=.true.
+        endif
         CALL ORTTRN(X(I),Y(I),Z(I),TMAT,X1,Y1,ZZZ,IERR)
         IF(X1.LT.XMIN)XMIN=X1
         IF(Y1.LT.YMIN)YMIN=Y1
         XN(I)=X1
         YN(I)=Y1
   300 CONTINUE
+
+C Debug of list of angles that are close to 180 degrees.
+C      write(6,*) 'angles  ',is180
 
 C Offset the 2D coordinates so that lower left is at zero zero.
       if(XMIN.lt.0.0)then
@@ -2108,10 +2142,16 @@ C A1,B1,C1,A2,B2,C2,C22 are used in equation of line.
 C      AREA=0.  ! calculated area of inner polygon
 C      ITER=0   ! number of iterations to calculate required area
 
-C Loop through the 2D vertices.
-C 997  NWVERT=0   ! new vertices
+C Loop through all the possivblew 2D vertices.
       NWVERT=0   ! new vertices
       DO 765 IV=1,ITVX
+
+C If the next pair of edges would be a straight line do not bother.
+C This ensures that the AIL BIL CIL array is packed with only valid
+C corner data.
+        if(is180(iv))then
+          goto 765
+        endif
         I1=IV
         I2=IV+1
         IF(I1.EQ.ITVX)I2=1   ! end point at the start of polygon
@@ -2204,27 +2244,27 @@ C Figure out if M'or M'' is  contained within polygon
             BIL(NWVERT)=B2
             CIL(NWVERT)=C2
           ELSE
-            GOTO 765
+            GOTO 765  ! not a valid new corner
           ENDIF
         ENDIF
  765  CONTINUE
 
 C Debug.
       IF(ITRC.GT.1)THEN
-        WRITE(OUTSTR,'(a,42F8.3)') ' AIL:',(AIL(I),I=1,N)
+        WRITE(OUTSTR,'(a,42F8.3)') ' AIL:',(AIL(I),I=1,NWVERT)
         CALL EDISP(IUOUT,OUTSTR)
-        WRITE(OUTSTR,'(a,42F8.3)') ' BIL:',(BIL(I),I=1,N)
+        WRITE(OUTSTR,'(a,42F8.3)') ' BIL:',(BIL(I),I=1,NWVERT)
         CALL EDISP(IUOUT,OUTSTR)
-        WRITE(OUTSTR,'(a,42F8.3)') ' CIL:',(CIL(I),I=1,N)
+        WRITE(OUTSTR,'(a,42F8.3)') ' CIL:',(CIL(I),I=1,NWVERT)
         CALL EDISP(IUOUT,OUTSTR)
       endif
 
 C Solve equation to get intersections of the inner polygon 
 C XL,YL (2D points).
-      DO 766 IV=1,ITVX
+      DO 766 IV=1,NWVERT
         I1=IV
         I2=IV+1
-        IF(I1.EQ.ITVX)I2=1 
+        IF(I1.EQ.NWVERT)I2=1 
         XL(I1)= (((CIL(I1))*(AIL(I2)))-((CIL(I2))*(AIL(I1))))/
      &          (((BIL(I1))*(AIL(I2)))-((AIL(I1))*(BIL(I2))))
         YL(I1)= (((CIL(I1))*(BIL(I2)))-((CIL(I2))*(BIL(I1))))/
@@ -2242,10 +2282,11 @@ C the offsets.
  766  CONTINUE  
 
 C Take frame coords and apply reverse transformation from 2D to 3D.
-C Adjust looping to prevent the first edge of the new polygon being vertical. 
-      DO 350 K = 1,ITVX
+C Adjust looping to prevent the first edge of the new polygon being
+C vertical. Note: working within packed list.
+      DO 350 K = 1,NWVERT
         if(K.eq.1)then
-          I1=ITVX
+          I1=NWVERT
         else
           I1=K-1
         endif
@@ -2256,11 +2297,11 @@ C Adjust looping to prevent the first edge of the new polygon being vertical.
   350 CONTINUE
       IF(ITRC.GT.1)THEN
         CALL EDISP(IUOUT,' Transformed frame coords: ')
-        WRITE(OUTSTR,'(a,42F8.3)') ' X coords:',(XXF(I),I=1,N)
+        WRITE(OUTSTR,'(a,42F8.3)') ' X coords:',(XXF(I),I=1,NWVERT)
         CALL EDISP(IUOUT,OUTSTR)
-        WRITE(OUTSTR,'(a,42F8.3)') ' Y coords:',(YYF(I),I=1,N)
+        WRITE(OUTSTR,'(a,42F8.3)') ' Y coords:',(YYF(I),I=1,NWVERT)
         CALL EDISP(IUOUT,OUTSTR)
-        WRITE(OUTSTR,'(a,42F8.3)') ' Z coords:',(ZZF(I),I=1,N)
+        WRITE(OUTSTR,'(a,42F8.3)') ' Z coords:',(ZZF(I),I=1,NWVERT)
         CALL EDISP(IUOUT,OUTSTR)
       ENDIF
 
@@ -3036,6 +3077,7 @@ C `h` heat transfer (comvective) methods, `-` zone names only.
 #include "building.h"
 #include "model.h"
 #include "geometry.h"
+#include "schedule.h"
 #include "epara.h"
 
       COMMON/FILEP/IFIL
@@ -3045,10 +3087,6 @@ C `h` heat transfer (comvective) methods, `-` zone names only.
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
       common/cfdfil/LCFD(MCOM),IFCFD(MCOM)
-
-C Version of operations file. ip3ver=0 standard, =1 sorted with header
-C =2 with more than 3 day types allowed and sorted
-      common/p3ver/ip3ver(MCOM)
 
       LOGICAL SELECT,XST
       CHARACTER*(*) prompt,title,errmsg
@@ -3128,7 +3166,7 @@ C if it has been sorted and notify user.
                 elseif(ip3ver(L).eq.1)then
                   WRITE(VERT(M),'(a1,1x,a12,a)')KEY,zname(L),
      &              ' (defined)'
-                elseif(ip3ver(L).eq.2)then
+                elseif(ip3ver(L).ge.2)then
                   WRITE(VERT(M),'(a1,1x,a12,a)')KEY,zname(L),
      &              ' (defined)'
                 endif
@@ -3324,6 +3362,7 @@ C `-` zone names only.
 #include "building.h"
 #include "model.h"
 #include "geometry.h"
+#include "schedule.h"
 #include "epara.h"
 
       integer lnblnk  ! function definition
@@ -3335,10 +3374,6 @@ C `-` zone names only.
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
       common/cfdfil/LCFD(MCOM),IFCFD(MCOM)
-
-C Version of operations file. ip3ver=0 standard, =1 sorted with header
-C =2 with more than 3 day types allowed and sorted
-      common/p3ver/ip3ver(MCOM)
 
       LOGICAL XST,FOUND
       CHARACTER*(*) prompt,title
@@ -3406,10 +3441,13 @@ C if it has been sorted and notify user.
                   call edisp(iuout,outs)
                 elseif(ip3ver(L).eq.1)then
                   WRITE(VERT(M),'(a1,1x,a12,a)')KEY,zname(L),
-     &              ' (defined)'
+     &              ' (defined v1)'
                 elseif(ip3ver(L).eq.2)then
                   WRITE(VERT(M),'(a1,1x,a12,a)')KEY,zname(L),
-     &              ' (defined)'
+     &              ' (defined v2)'
+                elseif(ip3ver(L).gt.2)then
+                  WRITE(VERT(M),'(a1,1x,a12,a)')KEY,zname(L),
+     &              ' (definedv2+)'
                 endif
               else
                 WRITE(VERT(M),'(a1,1x,a12,a)')KEY,zname(L),
@@ -3845,16 +3883,9 @@ C Special materials file flag
       logical closemat1,closemat2  ! to check version of materials db.
 
 C Check name of surface with construction name in MLC common.
-
-C << a place to use ssmlcindex >>
-
       imatch=0
       icc=IZSTOCN(icomp,is)
-      do 5 i=1,nmlc
-        if(SSMLCN(icc)(1:12).eq.DESC(i)(1:12)) then
-          imatch=i
-        endif
-  5   continue
+      call matchmlcdesc(SSMLCN(icc),imatch)
       if(imatch.eq.0) then
          call edisp(iuout,'Error: probably no construction defined!')
          ier=1
@@ -3867,29 +3898,24 @@ C Write menu displaying a list of layer names
       header=3
       footer=3
       write(item(1),'(a,a)') 'a surface name: ',SSNAME(icc)
-      write(item(2),'(a,a)') 'c constr name: ',DESC(imatch)(1:12)
+      write(item(2),'(a,a)') 'c constr name: ',mlcname(imatch)(1:12)
       item(3)='  ----------------------------'
       do 10 j=1,LAYERS(imatch)
 
-C Pick up the material name of each layer by reading data from
-C materials db or from the.
-        iel=IPR(imatch,j)
+C Pick up the material name of each layer. Uses zero matarrayindex to signal gap.
         if(closemat1.or.closemat2)then
           matarrayindex=IPRMAT(imatch,j)
-          if(matarrayindex.ge.0)then
+          if(matarrayindex.ne.0)then
             write(NAM,'(a)') matname(matarrayindex)(1:32)
             PNAM(j)=NAM(1:20)
+          else
+            write(NAM,'(a)') 'air '
+            write(PNAM(j),'(a)') 'air '
           endif
         else
-          IF(iel.EQ.0)THEN
-            PNAM(j)='Air gap'
-          ELSE
-            NAM='  '
-            IR = iel + 1
-            READ(IFMAT,REC=IR,IOSTAT=IOS,ERR=105)DBCON,DBDEN,DBSHT,E,
-     &        A,DRV,NAM
-            PNAM(j)=NAM(1:20)
-          ENDIF
+          write(PNAM(j),'(a)') 'unknown'
+          call usrmsg('Materials are incomplete or not yet scanned.',
+     &      'Please check your model materials file.','W')
         endif
         write(item(header+j),'(a,i2,1x,a12)')' Layer: ',j,PNAM(j)
         ndisp=header+j
@@ -3942,19 +3968,6 @@ C Ask for the nodal location, first calculate a location at centre.
 
       return
 
- 105  if(IOS.eq.2)then
-        write(outs,'(A,I3,A,2i4)') ' Materials db reference ',IEL,
-     &    ' permission error @ record ',IR,' in file',IFMAT
-      else
-        write(outs,'(A,I3,A,2i4)') ' Materials db reference ',IEL,
-     &    ' read error @ record ',IR,' in file',IFMAT
-      endif
-      call edisp(iuout,outs)
-      write(outs,'(A,6f9.3)') ' with data ',DBCON,DBDEN,DBSHT,E,A,DRV
-      call edisp(iuout,outs)
-      IER=1
-      CALL ERPFREE(IFMAT,ISTAT)
-      return
       end
 
 C ******************** SURADJ

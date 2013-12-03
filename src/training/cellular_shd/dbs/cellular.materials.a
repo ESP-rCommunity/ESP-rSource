@@ -1,19 +1,23 @@
 *Materials 1.1
 *date,Mon Jun 18 12:15:16 2007
 # materials database defined in cellular.materials.a
-*doc,ESP-r Materials based on scan of a legacy ASCII materials database constr.db3. Information in ASCII file is recorded as found. Additional infomation and documentation uses standard assumptions which should be updated as required.
+*doc,ESP-r Materials based on scan of materials constr_db3.materialdb. Information in ASCII file is recorded as found. Additional infomation and documentation uses standard assumptions which should be updated as required.
 18  # number of classifications
 #  
 # Materials have the following attributes:
 #  conductivity (W/(m-K), density (kg/m**3) specific heat (J/(kg-K)
 #  emissivity out (-) emissivity in (-)#   absorptivity out (-) absorptivity in (-)
-#  diffusion rest (?) default thickness (mm)
+#  diffusion resistance (MNs g^-1m^-1)
+#  default thickness (mm)
 #  flag [-] legacy [o] opaque [t] transparent
-#       [g] gas data+T cor [h] gas data at 4T
+#       [g] gas or air gap
 #  
-# Transparent material attributes:
+# Transparent material additonal attributes:
 #  longwave tran (-) solar direct tran (-) solar reflec out (-) solar refled in (-)
 #  visable tran (-) visable reflec out (-) visable reflec in (-) colour rendering (-)
+#  
+# Gas material additional attributes:
+#  air gap resistance for vert horiz other
 #  
 # class index |nb items|description (32 char)
 *class, 1, 7,Brick
@@ -157,14 +161,14 @@ Category ( 6) Plaster includes both tranditional plaster and gypsum plaster boar
 0.200,720.000,837.000,0.910,0.910,0.500,0.500,11.000,12.5,-
 *item,gypsum plasterboard,107, 6,Gypsum plasterboard (generic)
 0.190,950.000,840.000,0.910,0.910,0.500,0.500,11.000,12.5,-
-*item,white gypboard,108, 6,White paintedd Gypboard
+*item,white gypboard,108, 6,White painted Gypboard
 0.190,950.000,840.000,0.910,0.910,0.220,0.220,11.000,12.5,-
 *item,beige gypboard,109, 6,Beige painted Gypboard
 0.190,950.000,840.000,0.910,0.910,0.260,0.260,11.000,12.5,-
 # class index |nb items|description (32 char)
 *class, 7, 8,Screeds and renders
 Category ( 7) Screeds are products typically used horizontally and renders are used on walls. Based on data traditionally distributed with ESP-r.
-*item,mat_121,121, 7,Lightweight conc screed
+*item,ltwt_conc_screed,121, 7,Lightweight conc screed
 0.410,1200.000,840.000,0.900,0.900,0.800,0.800,30.000,50.0,-
 *item,cast conc screed,122, 7,Cast concrete screed
 1.280,2100.000,1007.000,0.900,0.900,0.650,0.650,44.000,50.0,-
@@ -195,9 +199,9 @@ Category ( 8) Tiles includes both floor tiles, ceiling tiles and roof tile. Base
 0.300,1600.000,2000.000,0.940,0.940,0.820,0.820,1000.000,6.0,-
 *item,cork tile,146, 8,Cork tile
 0.080,530.000,1800.000,0.900,0.900,0.600,0.600,58.000,6.0,-
-*item,asphalt,147, 8,Asphalt/asbestos based tile
+*item,Asphalt/asbestos,147, 8,Asphalt/asbestos based tile
 0.550,1900.000,837.000,0.900,0.900,0.700,0.700,150.000,6.0,-
-*item,plastic tile,148, 8,P.V.C./asbestos
+*item,P.V.C./asbestos,148, 8,P.V.C./asbestos
 0.850,2000.000,837.000,0.900,0.900,0.600,0.600,1000.000,6.0,-
 *item,tile bedding,149, 8,Tile bedding/grout
 1.400,2100.000,650.000,0.900,0.900,0.600,0.600,25.000,6.0,-
@@ -278,7 +282,7 @@ Category (11) Insulation materials (1) is an initial tranche of loose, batt and 
 0.040,105.000,1800.000,0.900,0.900,0.600,0.600,15.000,100.0,-
 *item,straw thatch,218,11,Straw thatch
 0.070,240.000,180.000,0.900,0.900,0.500,0.500,3.000,100.0,-
-*item,Thermalite,219,11,Thermalite turbo blk
+*item,Thermalite turbo block,219,11,Thermalite turbo blk
 0.110,480.000,1050.000,0.900,0.900,0.650,0.650,10.000,100.0,-
 # class index |nb items|description (32 char)
 *class,12,10,Carpet

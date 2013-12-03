@@ -50,10 +50,14 @@ C
       COMMON/PDBDT/ADATA(MPCOM,MADATA),BDATA(MPCOM,MBDATA)
       COMMON/PCOND/CONVAR(MPCON,MCONVR),ICONTP(MPCON),
      &     ICONDX(MPCOM,MNODEC,MPCONC)
-C     Flag indicating if radiant floor is active.
-      COMMON/RadFloor/RadFloor_active
+C     Flag indicating if radiant floor is active, number of radiant 
+C      floors into model, vector with the indirect reference of plant component which is a radiant floor
+      COMMON/RadFloor/RadFloor_active, NRadFloor, IRadFloor,
+     &                InitRadFloor
 
       LOGICAL RadFloor_active
+      INTEGER NRadFloor
+      INTEGER IRadFloor(MPCOM), InitRadFloor(MPCOM)
 
 
 C     Trace output
@@ -92,6 +96,11 @@ C     Check component has 1 connection only to water
 
 C     Set radiant floor model flag
       RadFloor_active = .true.
+C     increments the number of radiant floors, NRadFloor should be initialized to 0, 
+C     this is  performed in block data routine. 
+      NRadFloor = NRadFloor+1 
+C     sets the position of current rad floor in IRadFloor array. 
+      IRadFloor(IPCOMP) = NRadFloor
 
       RETURN
 
@@ -149,7 +158,11 @@ C     5 Average circuit length (m)
 C     Cooling systems, min/max temperatures are inversed
 C     1 Maximum indoor surface temperature (C)
 C     2 Minimum indoor surface temperature (C)
-
+C     this routine has been modified to use an indirect reference for each radiant floor, the variables for solution refer
+C     to the particular radiant floor, in original version the variables were defined for each surface for each zone.
+C     this let to an unbearable computing time in copy routine.
+C     the routine now applies the computed flux to the linked zone structure too, so a radiant floor affects not only the 
+C     actual zone but also the linked zone.
       SUBROUTINE RadFloor_CoeffGen(IPCOMP,COUT,ISTATS)
 #include "plant.h"
 #include "building.h"
@@ -206,16 +219,34 @@ C     (found in ESRUPLT/PMATRX.F)to store present time values of some variables
 
       PARAMETER (Nmax = 20, ITmax = 100, PI=3.1415926535, PI2=0.5*PI)
       PARAMETER (Relax = 1.0, Tol = 1.E-6, TolF = 1.E-3, Small = 1.E-15)
-      COMMON /RHC/Acof(MCOM,MS,Nmax,Nmax),Fcof(MCOM,MS,Nmax,Nmax),
-     &     Fcofp(MCOM,MS,Nmax,Nmax),ConAf(MCOM,MS),ConBf(MCOM,MS),
-     &     ConDf(MCOM,MS),ConAp(MCOM,MS),ConBp(MCOM,MS),
-     &     ConDp(MCOM,MS), TetaMf(MCOM,MS), TetaMp(MCOM,MS),
-     &     Tpipef(MCOM,MS), Tpipep(MCOM,MS)
+      COMMON /RHC/Acof(MPCOM,Nmax,Nmax),Fcof(MPCOM,Nmax,Nmax),
+     &     Fcofp(MPCOM,Nmax,Nmax),ConAf(MPCOM),ConBf(MPCOM),
+     &     ConDf(MPCOM),ConAp(MPCOM),ConBp(MPCOM),
+     &     ConDp(MPCOM), TetaMf(MPCOM), TetaMp(MPCOM),
+     &     Tpipef(MPCOM), Tpipep(MPCOM)
       REAL    COUT(MPCOE), J11, J12, J21, J22
       
+      COMMON/GR1D01/NNDS,NNDZ(MCOM),NNDC(MCOM,MS),NNDL(MCOM,MS,ME)
+
+C Common used for saving  flux in coupled zones/surfaces
+      common/Zone_Couplings/ bCoupled_Zone (MCOM,MS),
+     &                       iCoupled_Zone (MCOM,MS),
+     &                       iCoupled_Surf (MCOM,MS)
+
+C logical value to assess if the zone has a coupled zone
+      logical bCoupled_Zone
+
       character outs*124
 C----------------------------------------------------------------------
+C     Flag indicating if radiant floor is active, number of radiant floors, indirect index for radiant_floor component
+      COMMON/RadFloor/RadFloor_active, NRadFloor, IRadFloor,
+     &                InitRadFloor
 
+      LOGICAL RadFloor_active
+      INTEGER NRadFloor
+      INTEGER IRadFloor(MPCOM), InitRadFloor(MPCOM)
+      INTEGER irf
+C----------------------------------------------------------------------
 C     Trace output
       IF(ITC.GT.0.AND.NSINC.GE.ITC.AND.NSINC.LE.ITCF.AND.
      &     ITRACE(37).NE.0) WRITE(ITU,*) ' Entering subroutine CMP95C'
@@ -363,15 +394,25 @@ C     Size (Dx, Dy, volume) of the heat generation control volume = pipe volume
       DYq   = DXq
       Volq  = 4. * DXq * DYq * CirL
 
+C
+C     find the component radiant floor number of component
+      irf = IRadFloor(IPCOMP)
+
 C--------------------------------------------------------------------------------------
 C     INITIALIZE VARIABLES BEFORE SIMULATION
-      IF( (ptimep .LE. 1.) .AND. (IDYP .LE. ISS) ) THEN
+C     initialize only before energy solution     
+
+      IF (InitRadFloor(irf) .EQ. 0 .AND. ISTATS .EQ. 1) THEN
+
+
+C set the initialization flag
+         InitRadFloor(irf) = 1     
 
 C     Circuit average temperature difference (Tfluid - Tpipe) at the present time
-         TetaMp(Iz,Is) = 0.
+         TetaMp(irf) = 0.
 
 C     Pipe outer surface temperature at the present time
-         Tpipep(Iz,Is) = Tpipe1D
+         Tpipep(irf) = Tpipe1D
 
 C     Calculate the film convection coefficient
          CALL CVCOEFF1(3,Tin, Vel, ADATA(IPCOMP,2), Hfilm)
@@ -384,15 +425,15 @@ C     Product of total thermal conductance and pipe perimeter
 
 C     Evaluate the equation constants: ConAp, ConBp, ConDp at the present time.
 C     See the above reports for more details
-         ConAp(Iz,Is) = RCPAf / UP
-         ConBp(Iz,Is) = 1.
-         ConDp(Iz,Is) = 0.
+         ConAp(irf) = RCPAf / UP
+         ConBp(irf) = 1.
+         ConDp(irf) = 0.
 
 C     Evaluate the equation constants: ConAf, ConBf, ConDf at the future time.
 C     See the above reports for more details
-         ConAf(Iz,Is)  = ConAp(Iz,Is)
-         ConBf(Iz,Is)  = ConBp(Iz,Is)
-         ConDf(Iz,Is)  = ConDp(Iz,Is)
+         ConAf(irf)  = ConAp(irf)
+         ConBf(irf)  = ConBp(irf)
+         ConDf(irf)  = ConDp(irf)
 
 C     calculate series coefficients: Aij abd Fij. See the above reports for more details
          DO 10 I = 1, Nmax
@@ -404,9 +445,9 @@ C     calculate series coefficients: Aij abd Fij. See the above reports for more
                Cof = OmegX*OmegX + OmegY*OmegY
                DEN = XL * YL * OmegX * OmegY * Cof
 
-               Acof(Iz,Is,I,J) = 8.*SIN(OmegX*DXq) * COS(OmegX*Xq) *
+               Acof(irf,I,J) = 8.*SIN(OmegX*DXq) * COS(OmegX*Xq) *
      &              SIN(OmegY*DYq) / DEN
-               Fcof(Iz,Is,I,J) = 0.
+               Fcof(irf,I,J) = 0.
 
  10         CONTINUE
 
@@ -424,7 +465,7 @@ C     - these are not used here -.
 
 C     Calculate current component time-constant TC
 C     TC(IPCOMP)=CM/AMAX1(SMALL,(C1+UA))
-            TC(IPCOMP) = ConAf(Iz,Is) / AMAX1(Small,ConBf(Iz,Is))
+            TC(IPCOMP) = ConAf(irf) / AMAX1(Small,ConBf(irf))
 
 C     Set up implicit/Explicit weighting factor ALPHA (1 = fully implicit)
             IF(IMPEXP.EQ.1) THEN
@@ -447,18 +488,18 @@ C     Set up implicit/Explicit weighting factor ALPHA (1 = fully implicit)
 
 C----------------------------------------------------------------------
 C     Start iteration here to calculate the fluid and pipe temperatures
-            TetaMf(Iz,Is) = TetaMp(Iz,Is)
-            Tpipef(Iz,Is) = Tpipep(Iz,Is)
+            TetaMf(irf) = TetaMp(irf)
+            Tpipef(irf) = Tpipep(irf)
 
 C     Heat source rate at the present time
             QsorP = GENFLXP(Iz,Is,In) *AreaR / (ADATA(IPCOMP,1)*Volq)
 
             DO 20 Iter = 1, ITmax
-               dTpdt = ( Tpipef(Iz,Is) - Tpipep(Iz,Is) ) / Dt
-               TetaIN = Tin - Tpipef(Iz,Is)
+               dTpdt = ( Tpipef(irf) - Tpipep(irf) ) / Dt
+               TetaIN = Tin - Tpipef(irf)
 
 C     Fluid average temperature over the circuit length
-               TFmean = TetaMf(Iz,Is) + Tpipef(Iz,Is)
+               TFmean = TetaMf(irf) + Tpipef(irf)
 
 C     Calculate film coefficient and convection resistance
                CALL CVCOEFF1(3,TFmean, Vel, ADATA(IPCOMP,2), Hfilm)
@@ -481,13 +522,13 @@ C     Product of circuit length and constant C
                DEN = CL -1. + ExpCL
 
 C     Calculate the constant A, B, D at the future time
-               ConAf(Iz,Is) = RCPAf / UP
-               ConBf(Iz,Is) = CL / DEN
-               ConDf(Iz,Is) = (1.- ExpCL) / DEN * TetaIN
+               ConAf(irf) = RCPAf / UP
+               ConBf(irf) = CL / DEN
+               ConDf(irf) = (1.- ExpCL) / DEN * TetaIN
      &              - RCPAm/UP*dTpdt
 
 C     Heat transfer per circuit
-               Qcir = UA * ( TetaMf(Iz,Is) - ResI * RCPAp * dTpdt )
+               Qcir = UA * ( TetaMf(irf) - ResI * RCPAp * dTpdt )
 
 C     Calculate the heat generation rate per pipe volume
                Qsor = Qcir/Volq
@@ -509,18 +550,18 @@ C     inside surface temperatures
                      Fact = DIFslab * Omeg2 * Dt
                      Factc = 1. + Fact
 
-                     Fcof(Iz,Is,I,J) = Fcofp(Iz,Is,I,J) *
+                     Fcof(irf,I,J) = Fcofp(irf,I,J) *
      &                    ( 1. - ALPHAc * Fact**2 ) / Factc +
      &                    ( ALPHA*Qsor + ALPHAc*Factc*QsorP )
      &                    * Fact/Factc
 
-                     Pro  = Fcof(Iz,Is,I,J) * Acof(Iz,Is,I,J)
+                     Pro  = Fcof(irf,I,J) * Acof(irf,I,J)
 
                      SumTmax  = SumTmax  + Pro
                      SumTmin  = SumTmin  + Pro*COS(Omegj*YL)
                      SumTpipe = SumTpipe + Pro*COS(Omegi*Xq)
                      SumJacob = SumJacob + Fact / Factc *
-     &                    Acof(Iz,Is,I,J) * COS(Omegi*Xq)
+     &                    Acof(irf,I,J) * COS(Omegi*Xq)
 
  30               CONTINUE
 
@@ -530,21 +571,21 @@ C     inside surface temperatures
                   SumJacob = SumJacob / AKslab
 
 C     Form the djacobien matrix for the Newton-Raphson method
-                  F1 = ConAp(Iz,Is) * ( ConAf(Iz,Is)
-     &                 + ConBf(Iz,Is)*Dt ) * TetaMf(Iz,Is)
-     &                 - ( ALPHA*ConAp(Iz,Is)*ConAf(Iz,Is)
-     &                 + ALPHAc* ( ConAp(Iz,Is)
-     &                 - ConBp(Iz,Is)*Dt ) * (ConAf(Iz,Is)
-     &                 + ConBf(Iz,Is) * Dt ) ) * TetaMp(Iz,Is) -
-     &                 ( ALPHA*ConDf(Iz,Is) * ConAp(Iz,Is)
-     &                 + ConDp(Iz,Is)*ALPHAc *
-     &                 (ConAf(Iz,Is) + ConBf(Iz,Is) * Dt) ) * Dt
+                  F1 = ConAp(irf) * ( ConAf(irf)
+     &                 + ConBf(irf)*Dt ) * TetaMf(irf)
+     &                 - ( ALPHA*ConAp(irf)*ConAf(irf)
+     &                 + ALPHAc* ( ConAp(irf)
+     &                 - ConBp(irf)*Dt ) * (ConAf(irf)
+     &                 + ConBf(irf) * Dt ) ) * TetaMp(irf) -
+     &                 ( ALPHA*ConDf(irf) * ConAp(irf)
+     &                 + ConDp(irf)*ALPHAc *
+     &                 (ConAf(irf) + ConBf(irf) * Dt) ) * Dt
 
-                  F2 = Tpipef(Iz,Is) - Tpipe1D - SumTpipe
+                  F2 = Tpipef(irf) - Tpipe1D - SumTpipe
 
-                  J11 = ConAp(Iz,Is) * (ConAf(Iz,Is)
-     &                 + ConBf(Iz,Is) * Dt)
-                  J12 = ALPHA*ConAp(Iz,Is)*( RCPAm/UP +
+                  J11 = ConAp(irf) * (ConAf(irf)
+     &                 + ConBf(irf) * Dt)
+                  J12 = ALPHA*ConAp(irf)*( RCPAm/UP +
      &                 Dt * (1.-ExpCL)/DEN )
                   J21 = - UA/Volq * SumJacob
                   J22 = 1. - ResI*RCPAp / Dt * J21
@@ -553,8 +594,8 @@ C     Form the djacobien matrix for the Newton-Raphson method
                   Delta1 = -F1*J22 + J12*F2
                   Delta2 = -J11*F2 + J21*F1
 
-                  TetaMf(Iz,Is) = TetaMf(Iz,Is) + Relax * Delta1/Delta
-                  Tpipef(Iz,Is) = Tpipef(Iz,Is) + Relax * Delta2/Delta
+                  TetaMf(irf) = TetaMf(irf) + Relax * Delta1/Delta
+                  Tpipef(irf) = Tpipef(irf) + Relax * Delta2/Delta
 
 C     Check whether or not convergence is reached
                   error  = (Delta1**2 + Delta2**2)/Delta**2
@@ -571,12 +612,19 @@ C     iteration now terminated --------------------------------------------
 C     temperatures and node heat injection flux (W)
                Ratio = ( (1. + CL)*ExpCL - 1.)/ (CL -1. + ExpCL)
                Tout = Ratio*Tin
-     &              + (1. - Ratio)*(TetaMf(Iz,Is) + Tpipef(Iz,Is) )
+     &              + (1. - Ratio)*(TetaMf(irf) + Tpipef(irf) )
                Tmin = Tsurf1D + SumTmin
                Tmax = Tsurf1D + SumTmax
                Qboiler = ADATA(IPCOMP,1) * FLWCp * (Tin - Tout)
                Qnode   = ADATA(IPCOMP,1) * Qcir
                GENFLXF(Iz,Is,In) = Qnode / AreaR
+C.....store the same flux for adiacent surface
+               if ( bCoupled_Zone( Iz, Is ) ) then
+                 Iza = iCoupled_Zone ( Iz, Is)
+                 Isa = iCoupled_Surf ( Iz, Is)
+                 Ina = NNDC(Iz, Is) - (In - 1)
+                 GENFLXF(Iza,Isa,Ina) = Qnode / AreaR
+               endif
 
 C     Establish additional output variables
 C     Minimum inside surface temperature
@@ -595,7 +643,7 @@ C     Establish matrix equation self- and cross-coupling coefficients
                COUT(1) = 1.
                COUT(2) = - Ratio
 C     and then present-time coefficient (ie. right hand side)
-               COUT(3) = (1.- Ratio)*( TetaMf(Iz,Is) + Tpipef(Iz,Is) )
+               COUT(3) = (1.- Ratio)*( TetaMf(irf) + Tpipef(irf) )
 
 C     Store "environment" variables future values (not used here)
                PUAF(INOD1)=UA
@@ -660,8 +708,7 @@ C     effectively lengthens simulation run times by a factor
 C     of 10!!! If CETC actually plans on using this model,
 C     the implementation of this routine will have to
 C     be revisited.
-C     (Alex Ferguon - May 04)
-C
+C     (Alex Ferguon - May 04) 
 C     REVISIONS:
 C
 C     This subroutine was expanded to perform 3 basic
@@ -678,6 +725,12 @@ C
 C      ( Alex Ferguson - July 04 )
 C
 C
+C     to solve the problem identified by Alex Ferguson the copy
+C     operation is performed for the radiant floor only. In previous version the 
+C     copy routine involved all the zones and all the sourfaces into the zone.
+C     now the 10 (or even more) time factor problem is solved
+C     ( Marco Manzan - July 2010)
+C
 C     ****************************************************
       SUBROUTINE RadFloor_store(iOperation)
       IMPLICIT NONE
@@ -691,27 +744,28 @@ C number of zones and number of constructions in model
       integer ncomp,ncon
 
 C     Flag indicating if radiant floor is active.
-      COMMON/RadFloor/RadFloor_active
+      COMMON/RadFloor/RadFloor_active, NRadFloor, IRadFloor,
+     &                InitRadFloor
 
 C     data for storage
       INTEGER Nmax, Iz, Is, J, I
       PARAMETER (Nmax = 20)
-      COMMON /RHC/Acof(MCOM,MS,Nmax,Nmax),Fcof(MCOM,MS,Nmax,Nmax),
-     &        Fcofp(MCOM,MS,Nmax,Nmax),ConAf(MCOM,MS),ConBf(MCOM,MS),
-     &          ConDf(MCOM,MS),ConAp(MCOM,MS),ConBp(MCOM,MS),
-     &          ConDp(MCOM,MS), TetaMf(MCOM,MS), TetaMp(MCOM,MS),
-     &          Tpipef(MCOM,MS), Tpipep(MCOM,MS)
+      COMMON /RHC/Acof(MPCOM,Nmax,Nmax),Fcof(MPCOM,Nmax,Nmax),
+     &        Fcofp(MPCOM,Nmax,Nmax),ConAf(MPCOM),ConBf(MPCOM),
+     &          ConDf(MPCOM),ConAp(MPCOM),ConBp(MPCOM),
+     &          ConDp(MPCOM), TetaMf(MPCOM), TetaMp(MPCOM),
+     &          Tpipef(MPCOM), Tpipep(MPCOM)
 
       REAL Acof,Fcof,Fcofp,ConAf,ConBf,ConDf,ConAp,ConBp,ConDp,
      &     TetaMf, TetaMp,Tpipef, Tpipep
 
 C.....Storage variables
-      REAL Fcofp_store(MCOM,MS,Nmax,Nmax)
-      REAL TetaMp_store(MCOM,MS)
-      REAL Tpipep_store(MCOM,MS)
-      REAL ConAp_store(MCOM,MS)
-      REAL ConBp_store(MCOM,MS)
-      REAL ConDp_store(MCOM,MS)
+      REAL Fcofp_store(MPCOM,Nmax,Nmax)
+      REAL TetaMp_store(MPCOM)
+      REAL Tpipep_store(MPCOM)
+      REAL ConAp_store(MPCOM)
+      REAL ConBp_store(MPCOM)
+      REAL ConDp_store(MPCOM)
 
       SAVE Fcofp_store,TetaMp_store,Tpipep_store,ConAp_store,ConBp_store
       SAVE ConDp_store
@@ -722,30 +776,33 @@ C.....Passed variable
 
 
       LOGICAL RadFloor_active
+      INTEGER NRadFloor
+      INTEGER IRadFloor(MPCOM), InitRadFloor(MPCOM)
+      INTEGER irf
 
 C     If radiant floor is active, transport future data to present data
 C     arrays. Note - it's important that this code is not called if
 C     the radiant floor model is not active; otherwise it will
 C     unnecessarly slow the simulation down!
       IF ( RadFloor_active ) THEN
-
-         DO Iz = 1, ncomp
-            DO Is = 1, ncon
-               DO J = 1, Nmax
-                  DO I = 1, Nmax
+C         DO Iz = 1, ncomp
+c            DO Is = 1, ncon
+            DO irf = 1, NRadFloor
+               DO I = 1, Nmax
+                  DO J = 1, Nmax
 
                      if (iOperation .eq. iSaving ) then
 
-                        Fcofp_store(Iz,Is,I,J) = Fcofp(Iz,Is,I,J)
+                        Fcofp_store(irf,I,J) = Fcofp(irf,I,J)
 
                      elseif ( iOperation .eq. iWinding ) then
 
-                        Fcofp(Iz,Is,I,J)  = Fcof(Iz,Is,I,J)
+                        Fcofp(irf,I,J)  = Fcof(irf,I,J)
 
                      elseif ( iOperation .eq. iRewinding ) then
 
-                        Fcof(Iz,Is,I,J)  = Fcofp(Iz,Is,I,J)
-                        Fcofp(Iz,Is,I,J) = Fcofp_store(Iz,Is,I,J)
+                        Fcof(irf,I,J)  = Fcofp(irf,I,J)
+                        Fcofp(irf,I,J) = Fcofp_store(irf,I,J)
 
                      endif
 
@@ -756,43 +813,43 @@ C     unnecessarly slow the simulation down!
 
                if (iOperation .eq. iSaving ) then
 
-                  TetaMp_store(Iz,Is) = TetaMp(Iz,Is)
-                  Tpipep_store(Iz,Is) = Tpipep(Iz,Is)
+                  TetaMp_store(irf) = TetaMp(irf)
+                  Tpipep_store(irf) = Tpipep(irf)
 
-                  ConAp_store(Iz,Is)  = ConAp(Iz,Is)
-                  ConBp_store(Iz,Is)  = ConBp(Iz,Is)
-                  ConDp_store(Iz,Is)  = ConDp(Iz,Is)
+                  ConAp_store(irf)  = ConAp(irf)
+                  ConBp_store(irf)  = ConBp(irf)
+                  ConDp_store(irf)  = ConDp(irf)
 
                elseif (iOperation .eq. iWinding ) then
 
-                  TetaMp(Iz,Is) = TetaMf(Iz,Is)
-                  Tpipep(Iz,Is) = Tpipef(Iz,Is)
+                  TetaMp(irf) = TetaMf(irf)
+                  Tpipep(irf) = Tpipef(irf)
 
-                  ConAp(Iz,Is)  = ConAf(Iz,Is)
-                  ConBp(Iz,Is)  = ConBf(Iz,Is)
-                  ConDp(Iz,Is)  = ConDf(Iz,Is)
+                  ConAp(irf)  = ConAf(irf)
+                  ConBp(irf)  = ConBf(irf)
+                  ConDp(irf)  = ConDf(irf)
 
                elseif (iOperation .eq. iRewinding ) then
 
-                  TetaMf(Iz,Is) = TetaMp(Iz,Is)
-                  Tpipef(Iz,Is) = Tpipep(Iz,Is)
+                  TetaMf(irf) = TetaMp(irf)
+                  Tpipef(irf) = Tpipep(irf)
 
-                  ConAf(Iz,Is)  = ConAp(Iz,Is)
-                  ConBf(Iz,Is)  = ConBp(Iz,Is)
-                  ConDf(Iz,Is)  = ConDp(Iz,Is)
+                  ConAf(irf)  = ConAp(irf)
+                  ConBf(irf)  = ConBp(irf)
+                  ConDf(irf)  = ConDp(irf)
 
-                  TetaMp(Iz,Is) = TetaMp_store(Iz,Is)
-                  Tpipep(Iz,Is) = Tpipep_store(Iz,Is)
+                  TetaMp(irf) = TetaMp_store(irf)
+                  Tpipep(irf) = Tpipep_store(irf)
 
-                  ConAp(Iz,Is)  = ConAp_store(Iz,Is)
-                  ConBp(Iz,Is)  = ConBp_store(Iz,Is)
-                  ConDp(Iz,Is)  = ConDp_store(Iz,Is)
+                  ConAp(irf)  = ConAp_store(irf)
+                  ConBp(irf)  = ConBp_store(irf)
+                  ConDp(irf)  = ConDp_store(irf)
 
                endif
 
             enddo
 
-         enddo
+c         enddo
 
       ENDIF
 

@@ -140,7 +140,7 @@ C Generating grid for current region.
       if (PLAW(IR,IC).GT.0.0) then
 
 C Generate power law grid type: I**PLAW
-        if (NCEL(IR,IC).GT.0.0) then
+        if (NCEL(IR,IC).GT.0) then
 
 C Grid size increasing from left to right.
           do 10 I=1,NCEL(IR,IC)-1
@@ -163,7 +163,7 @@ C from middle to right.
           DIST(NTC+ICELL)=REG(IR,IC)+DIST(ICELL)
         endif
       else
-        if (NCEL(IR,IC).GT.0.0) then
+        if (NCEL(IR,IC).GT.0) then
 
 C Grid size decreasing from left to right.
           do 50 I=1,NCEL(IR,IC)-1
@@ -447,7 +447,7 @@ C Get the xyz of the current and the next point (ignore Z diferences here).
         y2=Y(ivxhigh(loophi+1))
         z2=Z(ivxhigh(loophi+1))
         xdist = crowxyz(x1,y1,z1,x2,y2,z1)
-        if(xdist.gt.0)then
+        if(xdist.gt.0.0)then
           xm = (z2-z1)/xdist
         else
           call usrmsg('found a vertical step! yuck!',' ','W')

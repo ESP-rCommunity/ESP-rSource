@@ -118,7 +118,7 @@ C Give 100mm clearance on both sides for boundary plotting.
       END
 
 C ******************** GZPDBE
-C GZPDBE: Get material db ref for zone layers from mlc.
+C GZPDBE: Get material reference for zone layers from mlc.
 C Assumes that geometry file has been read and surface
 C attributes are known. 
 
@@ -132,7 +132,7 @@ C LFMAT,IFMAT,LFMUL,IFMUL (for materials and constructions database)
 
       COMMON/OUTIN/IUOUT,IUIN
 
-C IPRZ is material db ref for each layer.
+C IPRZ is materials array for each layer.
       common/T8/IPRZ(MS,ME)
 
       integer matarrayindex ! the indes within matdatarray
@@ -165,16 +165,15 @@ C the construction was not found.
       do 44 ISUR=1,NZSUR(ICOMP)
         CALL SURADJ(ICOMP,ISUR,IE,T,IZC,ISC,ICN,CSTR)
         ICKNE=0
-        DO 20 IC=1,NMLC
-          IF(DESC(IC)(1:12).EQ.SSMLCN(ICN))THEN
-            ICKNE=LAYERS(IC)
 
-C Gather material index about each layer. IPRZ is used elsewhere.
-            DO 23 IL=1,LAYERS(IC)
-              IPRZ(ISUR,IL)=IPR(IC,IL)
-   23       CONTINUE
-          ENDIF
-   20   CONTINUE
+C Find matching MLC. Gather materials array index for each 
+C layer of each surface in the zone. IPRZ is used elsewhere.
+        call matchmlcdesc(SSMLCN(ICN),ic)
+
+        ICKNE=LAYERS(IC)
+        DO 23 IL=1,LAYERS(IC)
+          IPRZ(ISUR,IL)=IPRMAT(IC,IL)
+   23   CONTINUE
         if(ICKNE.eq.0)then
           write(outs,'(5A)') ' The construction ',SSMLCN(ICN)(1:12),
      &       ' of ',SSNAME(ICN),' was not found in the mlc db...'
@@ -429,7 +428,6 @@ C Setup and pass in parameters to win3d.
           iigl=igl; iigr=igr; iigt=igt; iigb=igb; iigw=igw; iigwh=igwh
           CALL win3d(iimenu,iiw1,iiw2,iiw3,iiw4,
      &      iigl,iigr,iigt,iigb,iigw,iigwh)
-C          call win3d(menuchw,9,24,8,3,igl,igr,igt,igb,igw,igwh)
           igl=int(iigl); igr=int(iigr); igt=int(iigt); igb=int(iigb)
           igw=int(iigw); igwh=int(iigwh)
         elseif(act.eq.'s')then
@@ -438,13 +436,12 @@ C          call win3d(menuchw,9,24,8,3,igl,igr,igt,igb,igw,igwh)
           iigl=igl; iigr=igr; iigt=igt; iigb=igb; iigw=igw; iigwh=igwh
           CALL win3d(iimenu,iiw1,iiw2,iiw3,iiw4,
      &      iigl,iigr,iigt,iigb,iigw,iigwh)
-C          call win3d(menuchw,9,24,8,3,igl,igr,igt,igb,igw,igwh)
           igl=int(iigl); igr=int(iigr); igt=int(iigt); igb=int(iigb)
           igw=int(iigw); igwh=int(iigwh)
         endif
       ENDIF
 
-      lsn1=MIN0(lnblnk(RFILE),22)
+      lsn1=MIN0(lnblnk(RFILE),32)
       if(NSIM.gt.1)then
         WRITE(ETEXT,'(3A,I4,2A)')'Lib: ',RFILE(1:lsn1),' Set:',ISIM,
      &    ': ',RSNAME(ISIM)(1:lnblnk(RSNAME(ISIM)))
@@ -539,7 +536,7 @@ C Passed parameters
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
       common/appcols/mdispl,nifgrey,ncset,ngset,nzonec
 
-C IPRZ is material db ref for each layer.
+C IPRZ is materials array index for each layer.
       common/T8/IPRZ(MS,ME)
 
       DIMENSION XVAL1(MZS)
@@ -580,6 +577,8 @@ C Draw construction section.
       XX=0.
       YD=TMAX-TMIN
       NE=NELTS(ICOMP,ISUR)
+
+C Draw a grey box for each layer that is not a gap.
       DO 101 L=1,NE
         XL=XX
         XD=ETHK(L)

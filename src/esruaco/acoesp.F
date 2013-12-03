@@ -39,10 +39,10 @@ C Display Zones list and wait for INIPIC item selected
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
       common/surfsel/isursel(MCON),NbSurSel(MCOM)
-      COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
+      COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,CFCDBOK
       COMMON/ERRHAND/IDerr
 
-      LOGICAL CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
+      LOGICAL CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,CFCDBOK
       DIMENSION IVALZ(MCOM)
 
 C For help messages
@@ -79,7 +79,7 @@ C Otherwise select the zones from a list of zone names.
  7      helptopic='aco_zones_to_inclue'
         call gethelptext(helpinsub,helptopic,nbhelp)
         INPIC = NCOMP 
-        CALL EPICKS(INPIC,IVALZ,' ',' Which zones to include:',
+        CALL EPICKS(INPIC,IVALZ,' ','Which zones to include:',
      &    12,NCOMP,ZNAME,'Zone(s) list',IDerr,nbhelp)
 
 C Check for errors (if => exit sub).
@@ -248,15 +248,16 @@ C HeightCo (Real) : Height [m] of the constructions, for LCA calculation.
 
       SUBROUTINE CompoList
 #include "building.h"
+#include "geometry.h"
 #include "esprdbfile.h"
 #include "material.h"
 
       COMMON/OUTIN/IUOUT,IUIN
-      COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
+      COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,CFCDBOK
       COMMON/ERRHAND/IDerr
       COMMON/CompPik/IComfoc,NComPik,LstComp(MMLC)
 
-      LOGICAL CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
+      LOGICAL CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,CFCDBOK
 
       DIMENSION IVALZ(MCOM)
 
@@ -1099,7 +1100,6 @@ C Setup and pass in parameters to win3d.
         iigl=igl; iigr=igr; iigt=igt; iigb=igb; iigw=igw; iigwh=igwh
         CALL win3d(iimenu,iiw1,iiw2,iiw3,iiw4,
      &    iigl,iigr,iigt,iigb,iigw,iigwh)
-C        Call win3d(menuchw,15,15,5,5,igl,igr,igt,igb,igw,igwh)
         igl=int(iigl); igr=int(iigr); igt=int(iigt); igb=int(iigb)
         igw=int(iigw); igwh=int(iigwh)
         do 20 I=1,MNbAbs

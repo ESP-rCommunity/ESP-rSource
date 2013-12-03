@@ -31,22 +31,22 @@ C
 C This subroutine calculates the number of elements in each dimensions
 C It also evaluates the dimensions of the tubes
 C Calls the procedures that 
-C	-initialize the vectors and tables,
-C	-calculate dimensions and positions of mesh elements 
-C	-calculate the coefficients for the Patankar Finite Volumes method 
-C	-save all coefficients in files
+C   -initialize the vectors and tables,
+C   -calculate dimensions and positions of mesh elements 
+C   -calculate the coefficients for the Patankar Finite Volumes method 
+C   -save all coefficients in files
 C
 C This routine is called from GCEP_MLAinit
 C
 C This subroutine is called once when the problem is read
 C
 C INPUTS:
-C	GCEP_INPUT module
+C   GCEP_INPUT module
 C 
 C OUTPUTS:
-C	Tube diameters
-C	Number of elements in each direction for complete domain and for domain containing only one borehole
-C	Dimensions of the elements composing the mesh and Value of the Patenkar coefficients all stored in files
+C   Tube diameters
+C   Number of elements in each direction for complete domain and for domain containing only one borehole
+C   Dimensions of the elements composing the mesh and Value of the Patenkar coefficients all stored in files
 C
 C ********************************************************************
       SUBROUTINE GCEPInit
@@ -54,11 +54,11 @@ C ********************************************************************
 CUse module for GCEP data
 C        USE GCEP_INPUT
 
-	IMPLICIT NONE
+      IMPLICIT NONE
 #include "gcep_parameters.h"
 #include "gcep_common.h"
       COMMON/OUTIN/IUOUT,IUIN
-	INTEGER IUOUT,IUIN
+      INTEGER IUOUT,IUIN
 
 C This subroutine should only be called once during the simulation.
 C gcep_init_call is a dummy variable used to determine if the GCEP_init
@@ -84,7 +84,7 @@ C Ndx,Ndy,Ndx_1c and Ndy_1c are part of the GCEPM_INPUT module
         GCEP_Ndy_1b=2*(GCEP_Ndy_res+1)+GCEP_Ndy_bor
 
 C Initialize the times to zero     
-	GCEP_Time_Tg=0.0
+        GCEP_Time_Tg=0.0
         GCEP_Time=0.0
           
 C Initiation of the history vector
@@ -128,27 +128,27 @@ C
 C This subroutine is called once when the problem is read
 C     
 C INPUTS:
-C     K_s		    thermal conductivity of the ground
-C     Alpha_s		thermal difusivity of the ground
-C     D_bore		Borehole diameter
-C     N_bort_x	Number of bores in the X direction
-C     N_bort_y	Number of bores in the Y direction
-C     Inter_Tg	Number of hours between calculations of ground temperatures
-C     L_bort_x	Distance between boreholes in X direction
-C     L_bort_y	Distance between boreholes in Y direction
-C     Tg_init		Initial ground temperature
-C     Ndx_bor		Number of elements to mesh a complete bore in the X direction (11)
-C     Ndy_bor		Number of elements to mesh a complete bore in the Y direction (11)
-C     Ndx_bor_c	Number of elements to mesh half a bore (side of a borehole) in the X direction (5)
-C     Ndy_bor_c	Number of elements to mesh half a bore (side of a borehole) in the Y direction (5)
-C     L_res_x		Length of a the thermal reservoirs in the X direction (500m)
-C     L_res_y		Length of a the thermal reservoirs in the Y direction (500m)
-C     Ndx_res		Number of elements to mesh a thermal reservoir in the X direction (20)
-C     Ndy_res		Number of elements to mesh a thermal reservoir in the Y direction (20)
-C     Ndx		    Number of elements to mesh the entire domain in the X direction
-C     Ndy		    Number of elements to mesh the entire domain in the Y direction
-C     Ndx_1c		Number of elements to mesh a domain containing only one borehole in the X direction
-C     Ndy_1c		Number of elements to mesh a domain containing only one borehole in the Y direction
+C     K_s       thermal conductivity of the ground
+C     Alpha_s   thermal difusivity of the ground
+C     D_bore    Borehole diameter
+C     N_bort_x  Number of bores in the X direction
+C     N_bort_y  Number of bores in the Y direction
+C     Inter_Tg  Number of hours between calculations of ground temperatures
+C     L_bort_x  Distance between boreholes in X direction
+C     L_bort_y  Distance between boreholes in Y direction
+C     Tg_init   Initial ground temperature
+C     Ndx_bor   Number of elements to mesh a complete bore in the X direction (11)
+C     Ndy_bor   Number of elements to mesh a complete bore in the Y direction (11)
+C     Ndx_bor_c Number of elements to mesh half a bore (side of a borehole) in the X direction (5)
+C     Ndy_bor_c Number of elements to mesh half a bore (side of a borehole) in the Y direction (5)
+C     L_res_x   Length of a the thermal reservoirs in the X direction (500m)
+C     L_res_y   Length of a the thermal reservoirs in the Y direction (500m)
+C     Ndx_res   Number of elements to mesh a thermal reservoir in the X direction (20)
+C     Ndy_res   Number of elements to mesh a thermal reservoir in the Y direction (20)
+C     Ndx       Number of elements to mesh the entire domain in the X direction
+C     Ndy       Number of elements to mesh the entire domain in the Y direction
+C     Ndx_1c    Number of elements to mesh a domain containing only one borehole in the X direction
+C     Ndy_1c    Number of elements to mesh a domain containing only one borehole in the Y direction
 C     
 C     OUTPUTS:
 C     Dimensions of the elements composing the mesh and Value of the Patenkar coefficients
@@ -177,7 +177,7 @@ C Tables containing all temperatures in the ground
 C Tables containing the coefficients of conduction (Ae,An), of thermal inertia (Aop) and the sum (Ap)
       REAL Ae(Ndy,Ndx),An(Ndy,Ndx),Aop(Ndy,Ndx),Ap(Ndy,Ndx),
      &   Ae_1b(Ndy_1b,Ndx_1b),An_1b(Ndy_1b,Ndx_1b),
-     &	 Aop_1b(Ndy_1b,Ndx_1b),Ap_1b(Ndy_1b,Ndx_1b)
+     &   Aop_1b(Ndy_1b,Ndx_1b),Ap_1b(Ndy_1b,Ndx_1b)
 
 C Calculate mesh dimensions and positions and Patankar coefficients for complete borefield
       CALL CalcCoefPat(K_s,Alpha_s,D_bore,N_bort_x,N_bort_y,
@@ -255,32 +255,32 @@ C
 C This subroutine is called once when the problem is read
 C     
 C INPUTS:
-C     K_s		    thermal conductivity of the ground
-C     Alpha_s	    thermal difusivity of the ground
-C     D_bore      Bore diameter
-C     N_bort_x    Number of bores in the X direction
-C     N_bort_y    Number of bores in the Y direction
-C     Inter_Tg    Number of hours between calculations of ground temperatures
-C     L_bort_x    Distance between boreholes in X direction
-C     L_bort_y    Distance between boreholes in Y direction
-C     Ndx_bor	    Number of elements to mesh a complete bore in the X direction (11)
-C     Ndy_bor	    Number of elements to mesh a complete bore in the Y direction (11)
-C     Ndx_bor_c   Number of elements to mesh half a bore (side of a borehole) in the X direction (5)
-C     Ndy_bor_c   Number of elements to mesh half a bore (side of a borehole) in the Y direction (5)
-C     L_res_x	    Length of a the thermal reservoirs in the X direction (500m)
-C     L_res_y	    Length of a the thermal reservoirs in the Y direction (500m)
-C     Ndx_res	    Number of elements to mesh a thermal reservoir in the X direction (20)
-C     Ndy_res	    Number of elements to mesh a thermal reservoir in the Y direction (20)
-C     Ndx	        Number of elements to mesh the entire domain in the X direction
-C     Ndy	        Number of elements to mesh the entire domain in the Y direction
+C     K_s        thermal conductivity of the ground
+C     Alpha_s    thermal difusivity of the ground
+C     D_bore     Bore diameter
+C     N_bort_x   Number of bores in the X direction
+C     N_bort_y   Number of bores in the Y direction
+C     Inter_Tg   Number of hours between calculations of ground temperatures
+C     L_bort_x   Distance between boreholes in X direction
+C     L_bort_y   Distance between boreholes in Y direction
+C     Ndx_bor    Number of elements to mesh a complete bore in the X direction (11)
+C     Ndy_bor    Number of elements to mesh a complete bore in the Y direction (11)
+C     Ndx_bor_c  Number of elements to mesh half a bore (side of a borehole) in the X direction (5)
+C     Ndy_bor_c  Number of elements to mesh half a bore (side of a borehole) in the Y direction (5)
+C     L_res_x    Length of a the thermal reservoirs in the X direction (500m)
+C     L_res_y    Length of a the thermal reservoirs in the Y direction (500m)
+C     Ndx_res    Number of elements to mesh a thermal reservoir in the X direction (20)
+C     Ndy_res    Number of elements to mesh a thermal reservoir in the Y direction (20)
+C     Ndx        Number of elements to mesh the entire domain in the X direction
+C     Ndy        Number of elements to mesh the entire domain in the Y direction
 C     
 C     OUTPUTS:
-C     Ae	    Table containing the east-west conduction coefficients of the elements
-C     An	    Table containing the north-south conduction coefficients of the elements
-C     Aop	    Table containing the thermal inertia of the elements
-C     Ap	    Table containing the sum of the Patanker coefficients for each element
-C     Dx	    Vector containing the X dimensions of the elements
-C     Dy	    Vector containing the Y dimensions of the elements
+C     Ae    Table containing the east-west conduction coefficients of the elements
+C     An    Table containing the north-south conduction coefficients of the elements
+C     Aop   Table containing the thermal inertia of the elements
+C     Ap    Table containing the sum of the Patanker coefficients for each element
+C     Dx    Vector containing the X dimensions of the elements
+C     Dy    Vector containing the Y dimensions of the elements
 C     
 C     *********************************************************************
       SUBROUTINE CalcCoefPat(K_s,Alpha_s,D_bore,N_bort_x,N_bort_y,
@@ -293,8 +293,8 @@ C     INPUTS
       INTEGER N_bort_x,N_bort_y,Ndx_bor,Ndy_bor,
      &        Ndx_bor_c,Ndy_bor_c,Ndx_res,Ndy_res,Ndx,Ndy
       REAL K_s,Alpha_s,D_bore,L_bort_x,L_bort_y,L_res_x,L_res_y,
-     &	 Ae(Ndy,Ndx),An(Ndy,Ndx),Aop(Ndy,Ndx),Ap(Ndy,Ndx),
-     &	 Dx(Ndx),Dy(Ndy),Inter_Tg
+     &   Ae(Ndy,Ndx),An(Ndy,Ndx),Aop(Ndy,Ndx),Ap(Ndy,Ndx),
+     &   Dx(Ndx),Dy(Ndy),Inter_Tg
 
 C Vectors containing the X and Y position of the center of each element
       REAL X_mesh(Ndx),Y_mesh(Ndy)
@@ -333,8 +333,8 @@ C INPUTS:
 C     TypesTubes  Type of tubes used (choice 1..12)
 C     
 C OUTPUTS:
-C     Di_tubes	Inside tube diameter
-C     Do_tubes	Outside tube diameter
+C     Di_tubes  Inside tube diameter
+C     Do_tubes  Outside tube diameter
 C*********************************************************************
       SUBROUTINE D_tubes(TypeTubes,Di_tubes,Do_tubes)
 
@@ -398,14 +398,14 @@ C
 C This subroutine is called once when the problem is read
 C     
 C INPUTS:
-C     D_bort	  Bore diameter
+C     D_bort    Bore diameter
 C     N_bort    Number of bores in the direction
-C     L_bort	  Distance between boreholes in direction
-C     Nd_bor	  Number of elements to mesh a complete bore in the direction (11)
+C     L_bort    Distance between boreholes in direction
+C     Nd_bor    Number of elements to mesh a complete bore in the direction (11)
 C     Nd_bor_c  Number of elements to mesh half a bore (side of a borehole) in the direction (5)
-C     L_res	  Length of a the thermal reservoirs in the direction (500m)
-C     Nd_res	  Number of elements to mesh a thermal reservoir in the direction (20)
-C     Nd	      Number of elements to mesh the entire domain in the direction
+C     L_res     Length of a the thermal reservoirs in the direction (500m)
+C     Nd_res    Number of elements to mesh a thermal reservoir in the direction (20)
+C     Nd        Number of elements to mesh the entire domain in the direction
 C     
 C OUTPUTS:
 C     Dims      Vector containing the dimensions of the elements
@@ -493,11 +493,11 @@ C
 C This subroutine is called once when the problem is read
 C     
 C INPUTS:
-C     Nd		Number of elements to mesh the entire domain in the direction
-C     Dims    Vector containing the dimensions of the elements
+C     Nd     Number of elements to mesh the entire domain in the direction
+C     Dims   Vector containing the dimensions of the elements
 C     
 C OUTPUTS:
-C     mail		Vector containing the positions of the elements
+C     mail   Vector containing the positions of the elements
 C     
 C*********************************************************************
       SUBROUTINE Init_mesh(Dims,Nd,mail)
@@ -530,17 +530,17 @@ C
 C This subroutine is called once when the problem is read
 C
 C INPUTS:
-C     K_s	    thermal conductivity of the ground
-C     Ndx	    Number of elements to mesh the entire domain in the X direction
-C     Ndy	    Number of elements to mesh the entire domain in the Y direction
+C     K_s     thermal conductivity of the ground
+C     Ndx     Number of elements to mesh the entire domain in the X direction
+C     Ndy     Number of elements to mesh the entire domain in the Y direction
 C     X_mail  Vector containing the X positions of the elements
 C     Y_mail  Vector containing the Y positions of the elements
-C     Dx	    Vector containing the X dimensions of the elements
-C     Dy	    Vector containing the Y dimensions of the elements
+C     Dx      Vector containing the X dimensions of the elements
+C     Dy      Vector containing the Y dimensions of the elements
 C     
 C OUTPUTS:
-C     Ae	    Table containing the east-west conduction coefficients of the elements
-C     An	    Table containing the north-south conduction coefficients of the elements
+C     Ae      Table containing the east-west conduction coefficients of the elements
+C     An      Table containing the north-south conduction coefficients of the elements
 C     
 C***************************************************************************
       SUBROUTINE Init_A(K_s,Ndx,Ndy,X_mail,Y_mail,Dx,Dy,Ae,An)
@@ -579,16 +579,16 @@ C
 C This subroutine is called once when the problem is read
 C     
 C INPUTS:
-C     K_s	        thermal conductivity of the ground
-C     Alpha_s	    thermal difusivity of the ground
-C     Ndx	        Number of elements to mesh the entire domain in the X direction
-C     Ndy	        Number of elements to mesh the entire domain in the Y direction
-C     Dx	        Vector containing the X dimensions of the elements
-C     Dy	        Vector containing the Y dimensions of the elements
-C     Inter_Tg    Number of hours between calculations of ground temperatures
+C     K_s        thermal conductivity of the ground
+C     Alpha_s    thermal difusivity of the ground
+C     Ndx        Number of elements to mesh the entire domain in the X direction
+C     Ndy        Number of elements to mesh the entire domain in the Y direction
+C     Dx         Vector containing the X dimensions of the elements
+C     Dy         Vector containing the Y dimensions of the elements
+C     Inter_Tg   Number of hours between calculations of ground temperatures
 C     
 C OUTPUTS:
-C     Aop	        Table containing the thermal inertia of the elements
+C     Aop        Table containing the thermal inertia of the elements
 C     
 C*********************************************************************
 
@@ -625,14 +625,14 @@ C
 C This subroutine is called once when the problem is read
 C     
 C INPUTS:
-C     Ndx	   Number of elements to mesh the entire domain in the X direction
-C     Ndy	   Number of elements to mesh the entire domain in the Y direction
-C     Ae	   Table containing the east-west conduction coefficients of the elements
-C     An	   Table containing the north-south conduction coefficients of the elements
-C     Aop	   Table containing the thermal inertia of the elements
+C     Ndx   Number of elements to mesh the entire domain in the X direction
+C     Ndy   Number of elements to mesh the entire domain in the Y direction
+C     Ae    Table containing the east-west conduction coefficients of the elements
+C     An    Table containing the north-south conduction coefficients of the elements
+C     Aop   Table containing the thermal inertia of the elements
 C     
 C OUTPUTS:
-C     Ap	   Table containing the sum of the Patankar coefficients for each element
+C     Ap    Table containing the sum of the Patankar coefficients for each element
 C     
 C*********************************************************************
 
@@ -671,9 +671,9 @@ C
 C This subroutine is called once at the begining of the simulation
 C     
 C INPUTS:
-C     Ndx	    Number of elements to mesh the entire domain in the X direction
-C     Ndy	    Number of elements to mesh the entire domain in the Y direction
-C     Ttemp   Table containing all temperatures in the ground
+C     Ndx    Number of elements to mesh the entire domain in the X direction
+C     Ndy    Number of elements to mesh the entire domain in the Y direction
+C     Ttemp  Table containing all temperatures in the ground
 C     
 C OUTPUTS:
 C     File containing Ttemp
@@ -719,8 +719,8 @@ C
 C This subroutine is called once at the begining of the simulation
 C     
 C INPUTS:
-C     Ndx_1b	    Number of elements to mesh the entire domain in the X direction
-C     Ndy_1b	    Number of elements to mesh the entire domain in the Y direction
+C     Ndx_1b    Number of elements to mesh the entire domain in the X direction
+C     Ndy_1b    Number of elements to mesh the entire domain in the Y direction
 C     Ttemp_1b    Table containing all temperatures in the ground
 C     
 C OUTPUTS:
@@ -728,7 +728,7 @@ C     File containing Ttemp_1b
 C     
 C*********************************************************************
       SUBROUTINE StockTemp_1bInit(Ndx,Ndy,Ttemp)
-	IMPLICIT NONE
+      IMPLICIT NONE
 C     INPUTS
       INTEGER Ndx,Ndy
       REAL Ttemp(Ndy,Ndx)
@@ -767,19 +767,19 @@ C
 C This subroutine is called once at the begining of the simulation
 C     
 C INPUTS:
-C     Ndx	    Number of elements to mesh the entire domain in the X direction
-C     Ndy	    Number of elements to mesh the entire domain in the Y direction
-C     Ae	    Table containing the east-west conduction coefficients of the elements
-C     An	    Table containing the north-south conduction coefficients of the elements
-C     Aop	    Table containing the thermal inertia of the elements
-C     Ap	    Table containing the sum of the Patanker coefficients for each element
+C     Ndx    Number of elements to mesh the entire domain in the X direction
+C     Ndy    Number of elements to mesh the entire domain in the Y direction
+C     Ae     Table containing the east-west conduction coefficients of the elements
+C     An     Table containing the north-south conduction coefficients of the elements
+C     Aop    Table containing the thermal inertia of the elements
+C     Ap     Table containing the sum of the Patanker coefficients for each element
 C     
 C OUTPUTS:
 C     Files containing the tables in the INPUTS
 C     
 C     *********************************************************************
       SUBROUTINE StockPat(Ndx,Ndy,Ae,An,Aop,Ap)
-	IMPLICIT NONE
+      IMPLICIT NONE
 C     INPUTS
       INTEGER Ndx,Ndy
       REAL Ae(Ndy,Ndx),An(Ndy,Ndx),Aop(Ndy,Ndx),Ap(Ndy,Ndx)
@@ -906,12 +906,12 @@ C This subroutine is called once at the begining of the simulation
 C     
 C     
 C INPUTS:
-C     Ndx	    Number of elements to mesh the entire domain in the X direction
-C     Ndy	    Number of elements to mesh the entire domain in the Y direction
+C     Ndx     Number of elements to mesh the entire domain in the X direction
+C     Ndy     Number of elements to mesh the entire domain in the Y direction
 C     Ndx_1b  Number of elements to mesh a domain containing only one bore in the X direction
 C     Ndy_1b  Number of elements to mesh a domain containing only one bore in the Y direction
-C     dx	    Vector containing the dimensions of the elements in the X direction
-C     dy	    Vector containing the dimensions of the elements in the Y direction
+C     dx      Vector containing the dimensions of the elements in the X direction
+C     dy      Vector containing the dimensions of the elements in the Y direction
 C     dx_1b   Vector containing the dimensions of the elements in the X direction for a domain containing only one bore
 C     dy_1b   Vector containing the dimensions of the elements in the Y direction for a domain containing only one bore
 C     

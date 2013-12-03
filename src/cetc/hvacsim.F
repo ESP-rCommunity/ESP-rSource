@@ -21,12 +21,12 @@ C Software Foundation, Inc., 59 Temple Place, Suite 330,
 C Boston, MA 02111-1307 USA.
 
 c The file contains the following routines:
-c	START_HVAC_SIM
-c		   start the simulation of HVAC systems performance by
-c		   calling HVACSIM
-c	HVACSIM    control the simulation of the performance of the hvac
-c		   system
-c 	PLR	   determine the part-load ratio of the hvac equipment
+c  START_HVAC_SIM
+c   start the simulation of HVAC systems performance by
+c   calling HVACSIM
+c  HVACSIM    control the simulation of the performance of the hvac
+c   system
+c  PLR   determine the part-load ratio of the hvac equipment
 c *********************************************************************
 
 
@@ -55,7 +55,7 @@ c *********************************************************************
       CASE (BOILER)
          HVAC_STRING ='BOILER'
       CASE (BASEBOARD)
-      	 HVAC_STRING ='BASEBOARD'
+         HVAC_STRING ='BASEBOARD'
       CASE (ASHP)
          HVAC_STRING ='ASHP'
       CASE (GSHP)
@@ -79,7 +79,7 @@ c Subroutine to start HVAC systems simulation for the simulation period
 c after the startup period
 
 c     INPUTS:
-c     iday		day corresponding to the current time step
+c     iday  day corresponding to the current time step
 c     ********************************************************************
       SUBROUTINE START_HVAC_SIM(iday)
 
@@ -121,13 +121,13 @@ c                       common for total number of hours there is under
 c                       heating or under cooling
 c     HEAT_PUMP_INPUT_DATA
 c                       common for heat pump data
-c     pvala 	        common for the present time step loads
-c     fvala 	        common for the future time step loads
+c     pvala             common for the present time step loads
+c     fvala             common for the future time step loads
 c     GCEP_INPUT        common for parameters for GCEP
 c     hvacinfo          common for hvac simulation flag
 
 c     OUTPUTS:
-c     HVAC_OUTPUT	common for system energy consumption for time
+c     HVAC_OUTPUT  common for system energy consumption for time
 c     FC_ctl_h3khvacloads
 c                       common for electrical draws of hvac systems
 c     step
@@ -152,6 +152,13 @@ c     *********************************************************************
 
 #include "control.h"
 
+#include "h3k_report_data.h"
+
+#include "qrun.h"
+
+C Function determining if HOT3000 features enabled?
+      logical bH3KExtentionsActive
+      
 c hvac system file and flag:  	ihvacflag=1 there is hvac file
 c ihvacflag=0 no hvac file
       common/hvacinfo/ihvacflag,hvacfile
@@ -181,8 +188,8 @@ C Construction heat injection and temperature commons.
       REAL TPC, QPC
 
 C Zone control data
-      common/cctl/icascf(mcom)  ! Zone control type
       integer icascf
+      common/cctl/icascf(mcom)  ! Zone control type
 
 c Common for the present and the future zone temperatures and convective
 c heat injections.
@@ -1238,9 +1245,124 @@ C.........All energy is electric
      &      // cHVACTypes(ihvac_type(i))(1:iHVACTypeLen(ihvac_type(i)))
      &      // ' system')
 
+C........ Output for quick run method (electricity use needs to be reported seperately
+C.........for heating, cooling and auxiliaries so that appropriate scaling factor is applied).
+          HOT3000_quick_run: 
+     &    if ( bH3KExtentionsActive() .and. iQuick_run == 1)then 
+          
+C.........Electricity for heating
+C.........Set for quickrun 1 = scale_htg
+          if ( bFirst_call_hvac(i)  )
+     &       call SetAdditionalValues(
+     &         rvPltHvacComFuelAmntHeat%Identifier,
+     &         1,
+     &         .true.)
+
+          call AddToReport(
+     &     rvPltHvacComFuelAmntHeat%Identifier,
+     &     fConvertEnergyToFuelAmount( fH3KStorePrimaryEH(i),
+     &                                 ifuel_type(i) ),
+     &     cHVACIndex // '_'
+     &     // cHVACTypes(ihvac_type(i))(1:iHVACTypeLen(ihvac_type(i))),
+     &     cFuelName(ifuel_type(i))(1:iFuelNameLen(ifuel_type(i))))
+
+C........ Description defined at runtime.
+          if ( bFirst_call_hvac(i)  )
+     &     call AddToReportDetails(
+     &     rvPltHvacComFuelAmntHeat%Identifier,
+     &     cHVACIndex // '_'
+     &     // cHVACTypes(ihvac_type(i))(1:iHVACTypeLen(ihvac_type(i))),
+     &     cFuelName(ifuel_type(i))(1:iFuelNameLen(ifuel_type(i))),
+     &     'units',
+     &     cFuelUnit(ifuel_type(i))(1:iFuelUnitLen(ifuel_type(i))),
+     &     'Idealized HVAC models: Amount of '
+     &     // cFuelDesc(ifuel_type(i))(1:iFuelDescLen(ifuel_type(i)))
+     &     // ' used by '
+     &     // cHVACTypes(ihvac_type(i))(1:iHVACTypeLen(ihvac_type(i)))
+     &     // ' system for heating'
+     &     )
+
+C.............. Electricity for cooling
+C.............. Set for quickrun info, 2 = scale_clg
+           if ( bFirst_call_hvac(i)  )
+     &       call SetAdditionalValues(
+     &         rvPltHvacComFuelAmntCool%Identifier,
+     &         2,
+     &         .true.)
+
+          call AddToReport(
+     &      rvPltHvacComFuelAmntCool%Identifier,
+     &      fConvertEnergyToFuelAmount( fH3KStorePrimaryEC(i),
+     &                                  ifuel_type(i) ),
+     &      cHVACIndex // '_'
+     &      // cHVACTypes(ihvac_type(i))(1:iHVACTypeLen(ihvac_type(i))),
+     &      cFuelName(ifuel_type(i))(1:iFuelNameLen(ifuel_type(i))))
+
+C........ Description defined at runtime
+          if ( bFirst_call_hvac(i)  )
+     &     call AddToReportDetails(
+     &      rvPltHvacComFuelAmntCool%Identifier,
+     &      cHVACIndex // '_'
+     &      // cHVACTypes(ihvac_type(i))(1:iHVACTypeLen(ihvac_type(i))),
+     &      cFuelName(ifuel_type(i))(1:iFuelNameLen(ifuel_type(i))),
+     &      'units',
+     &       cFuelUnit(ifuel_type(i))(1:iFuelUnitLen(ifuel_type(i))),
+     &      'Idealized HVAC models: Amount of '
+     &      // cFuelDesc(ifuel_type(i))(1:iFuelDescLen(ifuel_type(i)))
+     &      // ' used by '
+     &      // cHVACTypes(ihvac_type(i))(1:iHVACTypeLen(ihvac_type(i)))
+     &      // ' system for cooling'
+     &      )
+
+C.............Electricity for auxiliaries (fans and pumps)
+C.............Set for quickrun 3=scale_gen
+          if ( bH3KExtentionsActive() .and. iQuick_run == 1
+     &                                .and. bFirst_call_hvac(i)  )
+     &       call SetAdditionalValues(
+     &         rvPltHvacComFlAmntAux%Identifier,
+     &         3,
+     &         .true.)
+
+          call AddToReport(
+     &      rvPltHvacComFlAmntAux%Identifier,
+     &      fConvertEnergyToFuelAmount( fH3KStoreDraftE(i)
+     &                                + fH3KStorePumpEH(i)
+     &                                + fH3KStorePumpEH(i),
+     &                                  ifuel_type(i) ),
+     &      cHVACIndex // '_'
+     &   // cHVACTypes(ihvac_type(i))(1:iHVACTypeLen(ihvac_type(i))),
+     &      cFuelName(ifuel_type(i))(1:iFuelNameLen(ifuel_type(i))))
+
+C........ Description defined at runtime
+          if ( bFirst_call_hvac(i)  )
+     &     call AddToReportDetails(
+     &      rvPltHvacComFlAmntAux%Identifier,
+     &      cHVACIndex // '_'
+     &   // cHVACTypes(ihvac_type(i))(1:iHVACTypeLen(ihvac_type(i))),
+     &      cFuelName(ifuel_type(i))(1:iFuelNameLen(ifuel_type(i))),
+     &      'units',
+     &       cFuelUnit(ifuel_type(i))(1:iFuelUnitLen(ifuel_type(i))),
+     &      'Idealized HVAC models: Amount of '
+     &   // cFuelDesc(ifuel_type(i))(1:iFuelDescLen(ifuel_type(i)))
+     &   // ' used by '
+     &   // cHVACTypes(ihvac_type(i))(1:iHVACTypeLen(ihvac_type(i)))
+     &   // ' system for auxiliaries'
+     &      )
+
+        end if HOT3000_quick_run
+     
         else
 
 C.........Heating energy reported by fuel type
+
+C.........Set for quickrun 1=scale_htg
+
+          if ( bFirst_call_hvac(i)  )
+     &       call SetAdditionalValues(
+     &         rvPltHvacComFuelAmnt%Identifier,
+     &         1,
+     &         .true.)
+     
           Call AddToReport(rvPltHvacComFuelAmnt%Identifier,
      &      fConvertEnergyToFuelAmount( fH3KStorePrimaryEH(i)
      &                                   + fH3KStorePilotE(i),
@@ -1261,7 +1383,6 @@ C.........Heating energy reported by fuel type
      &      // ' used by '
      &      // cHVACTypes(ihvac_type(i))(1:iHVACTypeLen(ihvac_type(i)))
      &      // ' system')
-
 
 C.........Auxiliary energy consumption is electric
           call AddToReport(rvPltHvacComFuelAmnt%Identifier,
@@ -1308,6 +1429,14 @@ C...........Test if pilot light actually exists.
      &            ( fH3KStorePilotE(i) > 0.1  )
      &          ) then
 
+C............Set for quickrun 1=scale_htg
+            if ( bH3KExtentionsActive() .and. iQuick_run == 1
+     &                                .and. bFirst_call_hvac(i)  )
+     &          call SetAdditionalValues(
+     &              rvPltHvacFuelEnPilot%Identifier,
+     &              1,
+     &              .true.)
+        
              Call AddToReport(rvPltHvacFuelEnPilot%Identifier,
      &         fH3KStorePilotE(i),
      &         cHVACIndex // '_'
@@ -1400,6 +1529,15 @@ C.........COP:
 C.......Report energy use as heating or cooling end-use
 
         if ( bTwoModes(i) .or. iSysEndUse == iUseSpaceHeat ) then
+
+C............Set for quickrun 1=scale_htg
+          if ( bH3KExtentionsActive() .and. iQuick_run == 1
+     &                                .and. bFirst_call_hvac(i)  )
+     &          call SetAdditionalValues(
+     &              rvPltHvacFuelEnHeat%Identifier,
+     &              1,
+     &              .true.)       
+        
           Call AddToReport(rvPltHvacFuelEnHeat%Identifier,
      &      fH3KStorePrimaryEH(i),
      &      cHVACIndex // '_'
@@ -1430,10 +1568,18 @@ C.......Report energy use as heating or cooling end-use
      &   // ' heating part-load-ratio (PLR)')
           endif System_is_on_H
 
+C............Set for quickrun 1=scale_htg
+          if ( bH3KExtentionsActive() .and. iQuick_run == 1
+     &                                .and. bFirst_call_hvac(i)  )
+     &          call SetAdditionalValues(
+     &              rvPltHvacThrmOutHeat%Identifier,
+     &              1,
+     &              .true.)         
+ 
           Call AddToReport(rvPltHvacThrmOutHeat%Identifier,
      &      fH3KStoreOutputH(i),
      &      cHVACIndex // '_'
-     &   // cHVACTypes(ihvac_type(i))(1:iHVACTypeLen(ihvac_type(i))))
+     &   // cHVACTypes(ihvac_type(i))(1:iHVACTypeLen(ihvac_type(i)))) 
 
           Call AddToReportDetails(rvPltHvacThrmOutHeat%Identifier,
      &      cHVACIndex // '_'
@@ -1446,14 +1592,23 @@ C.......Report energy use as heating or cooling end-use
 
         if ( bTwoModes(i) .or. iSysEndUse == iUseSpaceCool ) then
 
-
 C...............Energy consumption for cooling
+
+C............Set for quickrun 2=scale_clg
+          if ( bH3KExtentionsActive() .and. iQuick_run == 1
+     &                                .and. bFirst_call_hvac(i)  )
+     &          call SetAdditionalValues(
+     &              rvPltHvacFuelEnCool%Identifier,
+     &              2,
+     &              .true.) 
+
           Call AddToReport(rvPltHvacFuelEnCool%Identifier,
      &      fH3KStorePrimaryEC(i),
      &      cHVACIndex // '_'
      &   // cHVACTypes(ihvac_type(i))(1:iHVACTypeLen(ihvac_type(i))))
 
-          Call AddToReportDetails(rvPltHvacFuelEnCool%Identifier,
+         if ( bFirst_call_hvac(i) )
+     &    Call AddToReportDetails(rvPltHvacFuelEnCool%Identifier,
      &      cHVACIndex
      &   // '_'
      &   // cHVACTypes(ihvac_type(i))(1:iHVACTypeLen(ihvac_type(i))),
@@ -1478,6 +1633,13 @@ C...............Energy consumption for cooling
      &    // ' cooling part-load-ratio (PLR)')
           endif System_is_on_C
 
+C............Set for quickrun 2=scale_clg
+          if ( bH3KExtentionsActive() .and. iQuick_run == 1
+     &                                .and. bFirst_call_hvac(i)  )
+     &          call SetAdditionalValues(
+     &              rvPltHvacThrmCool%Identifier,
+     &              2,
+     &              .true.)             
 
           Call AddToReport(rvPltHvacThrmCool%Identifier,
      &      fH3KStoreOutputC(i),
@@ -1655,8 +1817,13 @@ C.......Append auxilary enery use (if any) to electric total:
      &                         + fH3KStorePumpEC(i)
 
         endif suppress_this_system
-
+        
+        if ( bH3KExtentionsActive() .and. iQuick_run == 1
+     &                                .and. bFirst_call_hvac(i)  )
+     &      bFirst_call_hvac(i)  = .false.
+     
       enddo HVAC_system_report_loop
+
 
 C Store fan electricity use in circulation/ventilation (W)
       fH3KSumEnergyUseElec( iUseHRV ) = fH3KSumFanEnergy
@@ -1664,15 +1831,35 @@ C Store fan electricity use in circulation/ventilation (W)
 C Report fan power consumption and heat gains
 
 C.......Fan energy
+
+C.......Set for quickrun 3=scale_gen
+        if ( bH3KExtentionsActive() .and. iQuick_run == 1
+     &                                .and. bFirst_call_fan  )
+     &       call SetAdditionalValues(
+     &            rvPltHvacCrcFuelEnIn%Identifier,
+     &            3,
+     &            .true.) 
+     
         Call AddToReport(rvPltHvacCrcFuelEnIn%Identifier,
      &   fH3KSumFanEnergy)
 
+C.......Set for quickrun 3=scale_gen
+        if ( bH3KExtentionsActive() .and. iQuick_run == 1
+     &                                .and. bFirst_call_fan  )
+     &       call SetAdditionalValues(
+     &            rvPltHvacCrcFElecAmnt%Identifier,
+     &            3,
+     &            .true.) 
+     
         Call AddToReport(rvPltHvacCrcFElecAmnt%Identifier,
      &   fConvertEnergyToFuelAmount( fH3KSumFanEnergy, iElectricity ))
 
         Call AddToReport(rvPltHvacCrcHeatTrn%Identifier,
      &   fH3KSumFanEnergy)
-
+     
+        if ( bH3KExtentionsActive() .and. iQuick_run == 1)
+     &    bFirst_call_fan = .false.      
+      
 C Store aggregate fuel/electricity use for reporting in Site Utility facilitity.
       report_use_loop: do iSysEndUse = 1, iNumUses
 
@@ -1702,6 +1889,7 @@ C Store aggregate fuel/electricity use for reporting in Site Utility facilitity.
 
 
       enddo report_use_loop
+
 
 C     Pass fuel energy stroage data to site utilities
       call StoreSiteEnergyUse(iIdealHvac, fSUFuelEnergyUse )
@@ -1740,24 +1928,24 @@ c
 c     Function to determine the part-load ratio of the hvac system based on
 c     the mode of operation of the indoor fan of the air handler
 
-c     References:	HOT2000 Technical Manual, Version 6, Canadian Home Builders
+c     References:  HOT2000 Technical Manual, Version 6, Canadian Home Builders
 c     Association, August 1991
 
 c     Furnace Model for Implementation in H3K, H3K model documentation,
 c     Kamel Haddad, April 5th 2000
 
 c     INPUTS:
-c     fan_power	indoor fan power in W
-c     ss_cap		capacity of the hvac unit in W
-c     req_load	load on the hvac equipment in W
+c     fan_power indoor fan power in W
+c     ss_cap    capacity of the hvac unit in W
+c     req_load  load on the hvac equipment in W
 c     ifan_operation  mode of operation of the indoor circulation fan
 c     =0 no circulation fan
 c     =1 fan in auto mode
 c     =2 fan in continuous mode
 
 c     OUTPUTS:
-c     PLR		estimate of the part-load ratio on the equipment.
-c     plr is the ratio of the load on the system to the
+c     PLR     estimate of the part-load ratio on the equipment.
+c     plr     is the ratio of the load on the system to the
 c     steay-state capacity of the equipment. The capacity
 c     accounts for the contribution of the circulation fan
 c     **********************************************************************

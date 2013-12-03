@@ -61,8 +61,8 @@ C Parameters passed
      &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS,ITPPSW
       COMMON/RAY3/MODIFY,MODLEN,MODBND
       COMMON/RAY6/LINSTY(MCON)
-      COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
-      LOGICAL        CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,dok
+      COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,CFCDBOK
+      LOGICAL        CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,dok,CFCDBOK
       LOGICAL MODIFY,MODLEN,MODBND,UPDGEO,browse,modcfg,close,updoth
 
 C TOTHER is a temporary array for manipulating SSOTHER.
@@ -200,10 +200,12 @@ C Editing of items.
       elseif(iart.eq.3)then 
         modcfg=.true.
         ICT(IFOC)=2
+        VAL=real(IC2(IFOC))
         CALL EASKR(VAL,' ',' Constant temperature ? ',
      &    -99.,'F',700.,'F',20.,'adjacent temperature',IER,nbhelp)
         IC2(IFOC)=INT(VAL)
 
+        VAL=real(IE2(IFOC))
         CALL EASKR(VAL,' ',
      &    ' Constant radiation source (Watts) ? ',
      &    0.0,'W',99999.,'W',0.0,'adjacent radiation source',

@@ -47,9 +47,12 @@ C  CMP39C   1 node (ISV=20) WCH pump (mass flow control)
 C  CMP42C   2 node (ISV=20) WCH modulating boiler
 C  CMP44C   2 node (ISV=20) WCH exponent model radiator
 C  CMP45C   1 node (ISV=20) Air source heat pump connection to WCH
+C  CMP46C   2 node (ISV=20) WCH advanced modulating boiler model
 C  CMP50C   1 node (ISV=29) WCH thermostatic radiator valve
 C  CMP51C   1 node (ISV=29)     mechanical room thermostat
-c  CMP79C   1 node (ISV=20) WCH stochastic hot water draw
+C  CMP52C   1 node (ISV=29) WCH thermostatic radiator valve (sensor only)
+C  CMP73C   3 node (ISV=20) WCH 3-port valve
+C  CMP79C   1 node (ISV=20) WCH stochastic hot water draw
 C  CMP90C   2 node (ISV>19)     air & water temperature source
 C  CMP91C   2 node (ISV>19)     imaginary building-like plant load
 C                               acting on heat and mass balances
@@ -70,7 +73,7 @@ C     BDATA: none
 C     CDATA: 1 Heating duty (W)
 C
       SUBROUTINE CMP20C(IPCOMP,COUT,ISTATS)
-      use h3kmodule
+       use h3kmodule
 #include "plant.h"
 #include "building.h"
 
@@ -651,7 +654,7 @@ C     CDATA: none
 
       PARAMETER (SMALL=1.0E-15)
       REAL      COUT(MPCOE)
-      logical closea,closeb
+      logical closea,closeb,closec
 
       PI = 4.0 * ATAN(1.0)
 
@@ -676,12 +679,34 @@ C First initialize UA modulus (for calculation of containment heat loss)
             PL=ADATA(IPCOMP,5)
             TW=CONVAR(ICON1,1)
             WMFR=PCONDR(ICON1)*CONVAR(ICON1,2)
-            call eclose(WMFR,0.00,0.0000001,closeb)
+
+C minimum allowed pipe diameter 
+            call eclose(DH,0.00,0.0005,closeb)
+
+C Calculate internal heat transfer coefficient using Dittus-Boelter
+C equation
             IF(.NOT.closeb) THEN
               VW=WMFR/(RHOFLD(3,TW)*ADATA(IPCOMP,6))
               HW=1400.*(1.+0.015*TW)*VW**0.8*DH**(-0.2)
+
+C Apply limiting value to heat transfer coefficient (which is for
+C laminar flow). 
+              IF(HW.lt.(2.1/DH))HW=2.1/DH
+
+C Modify UA to account for internal pipe heat transfer
               UA=1./(1./(HW*PI*DH*PL)+1./UA)
+
+C Apply limiting value to mass flow rate. If mass flow rate is less than
+C limiting value then it can be safely assumed that the pipe loses heat
+C fairly quickly and a high value of UA will be calculated below
+              call eclose(WMFR,0.00,0.001,closec)
+              if(closec)WMFR=0.001 
               WMCP=WMFR*SHTFLD(3,CONVAR(ICON1,1))
+
+C Pipe heat loss is calculated using exit temperature therefore UA is
+C artificially modified to account for the temperature distribution over
+C the pipe length. For low flow rates this will substantially increase
+C UA because average pipe temperature is much higher than at exit.
               UA=WMCP*(EXP(UA/WMCP)-1.)
             ENDIF
          END IF
@@ -935,7 +960,7 @@ C            3 Overall efficiency (-)
 C     CDATA: 1 Volume flow rate (m^3/s)
 
       SUBROUTINE CMP24C(IPCOMP,COUT,ISTATS)
-      use h3kmodule
+       use h3kmodule
 #include "plant.h"
 #include "building.h"
 #include "net_flow.h"
@@ -1716,7 +1741,6 @@ C            2 Total radiator heat emission (W)
       COMMON/TRACE/ITCF,ITRACE(MTRACE),IZNTRC(MCOM),ITU
 
       COMMON/SIMTIM/IHRP,IHRF,IDYP,IDYF,IDWP,IDWF,NSINC,ITS
-      COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
       COMMON/Pctime/TIMSEC
       COMMON/PCTC/TC(MPCOM)
 
@@ -2011,7 +2035,6 @@ C     PCDATF(IPCOMP,1): Supplied electrical energy (W).
       INTEGER napdat
 
 C Electrical details for specified plant components
-      common/pcelflg/ipcelf(mpcom)
       common/elpcp/NPEL,PFP(mpcom),IPFP(mpcom),PWRP(mpcom),
      &BVOLTP(mpcom),IPHP(mpcom)
 
@@ -3267,7 +3290,7 @@ C
 
 
       PARAMETER (SMALL=1.0E-15)
-      REAL      COUT(MPCOE),KHT,MSC,MFCP,LMTD
+      REAL      COUT(MPCOE),MSC,MFCP,LMTD
       LOGICAL CLOSE,CLOSEA,CLOSEB,CLOSEC
       CHARACTER*124 OUTS
 
@@ -3922,7 +3945,6 @@ C
 
 
 C Electrical details for specified plant components
-      common/pcelflg/ipcelf(mpcom)
       common/elpcp/NPEL,PFP(mpcom),IPFP(mpcom),PWRP(mpcom),
      &BVOLTP(mpcom),IPHP(mpcom)
 
@@ -4048,8 +4070,6 @@ C Calculate the electrical demand of the components
 	PWRP(IPCOMP)=w_compressor
         IEMODEL=1
         CALL EMACH(IPCOMP,IEMODEL,PWRP(IPCOMP),PQ,PA)
-        PWRQ=PQ
-
 
 C Calculate current component time-constant TC
         TC(IPCOMP)=AMAX1(
@@ -4268,7 +4288,6 @@ C        TE=ambient air temp.
          PWRP(IPCOMP)=E_parasitic
          IEMODEL=1
          CALL EMACH(IPCOMP,IEMODEL,PWRP(IPCOMP),PQ,PA)
-         PWRQ=PQ
 
 C Establish heat capacity of component mass CM (J/K) and
 C fluid heat capacity rate(s) C (W/K), ie. SUM(mass flow * specific heat)
@@ -4610,7 +4629,6 @@ C     CDATA: 1 Mass flow rate (kg/s)
       INTEGER napdat
 
 C Electrical details for specified plant components
-      common/pcelflg/ipcelf(mpcom)
       common/elpcp/NPEL,PFP(mpcom),IPFP(mpcom),PWRP(mpcom),
      &BVOLTP(mpcom),IPHP(mpcom)
 
@@ -4867,7 +4885,6 @@ C            2 Inter-node fluid heat capacity rate (W/K)
      & RO,HK,PHIW,A,TR,ZMFR,QL,TRD,G,Q,PHI,QLD,BLKOUT,FGAS,PHISB,CM,
      & ALPHA,C1,SHTFLD
       character outs*124
-      LOGICAL CLOSEA
       INTEGER ICON1,INOD1,INOD2,IONOFF,ICOMBI,ICCOMP,ICOMBIMOD,ICCN1,
      & IPC,NTSBO,IX1,I,NITMS,IPCON,ISTATS,IPCOMP
 
@@ -4910,7 +4927,7 @@ C Initialize pointers to inter-connection(s) ICON, and node(s) INOD
       ENDIF
 
 C Establish whether boiler is on or off (ie 1 or 0)
-      IONOFF=int(CDATA(IPCOMP,1))
+      IONOFF=Nint(CDATA(IPCOMP,1))
 
 C Set up coefficients for efficiency equation
       A1=BDATA(IPCOMP,13)
@@ -4928,8 +4945,8 @@ C Get gas firing modulation cut-in and cut-out
       CUTOUT=(BDATA(IPCOMP,11)-BDATA(IPCOMP,12)*0.5)*0.01
 
 C Determine if combi-boiler or not
-      ICOMBI=INT(BDATA(IPCOMP,6))
-      ICCOMP=INT(BDATA(IPCOMP,7))
+      ICOMBI=NINT(BDATA(IPCOMP,6))
+      ICCOMP=NINT(BDATA(IPCOMP,7))
       FEEDTM=BDATA(IPCOMP,8)
       SUPPTM=BDATA(IPCOMP,9)
       ICOMBIMOD=0
@@ -5002,7 +5019,7 @@ C component sends mass to the boiler
       PHI=ZMFR*SHTFLD(3,CONVAR(ICON1,1))*(TF-TR)
       IF(PHI.GT.PHIMAX)PHI=PHIMAX
       QL=PHI/PHIMAX
-      IF (BDATA(IPCOMP,12).NE.0) THEN
+      IF (NINT(BDATA(IPCOMP,12)).NE.0) THEN
 
 C Condensing boiler
         EFF_ON=(A1*TRD+A2*(TRD**2.)+A3*(TRD**3.)+A4*(TRD**4.)
@@ -5039,7 +5056,7 @@ C INSO = boiler on/off (1/0) flag for lockout
 C ITSBO = present no. of timesteps boiler is off due to lockout
 C NTSBO = total no. of timesteps boiler is off due to lockout
  33     BLKOUT=BDATA(IPCOMP,4)*60.
-        NTSBO=INT(BLKOUT/TIMSEC)
+        NTSBO=NINT(BLKOUT/TIMSEC)
         IF(CSVF(INOD2,1).GT.RUBTL)THEN
           INSO=1
           ITSBO=0
@@ -5498,7 +5515,7 @@ C            2 Model coef a0
 C            3 Model coef a1
 C            4 Model coef a2
 C	     5 Model coef a3
-C            6 Device power draw (kW) model [1 - fixed 2- polynomial]
+C            6 Device power draw (kW) model [1 - fixed 2- polynomial 3-exponential b0*e^(b1)]
 C            7 Model coef b0
 C            8 Model coef b1
 C            9 Model coef b2
@@ -5537,7 +5554,7 @@ C and will require modification if PID-type control is to be applied. The model 
 C water outlet temperature and ambient temperature compensation can be applied [linear model]
 
       SUBROUTINE CMP45C(IPCOMP,COUT,ISTATS)
-      use h3kmodule
+       use h3kmodule
       implicit none
 #include "plant.h"
 #include "building.h"
@@ -5778,6 +5795,10 @@ C Calculate the TOTAL device power draw (W)
           Td=ReturnT
           Ta=Tamb
           CompPower=1000.*(Compa0+(Compa1*Ta)+(Compa2*Td))
+        ELSEIF(CompModel.eq.3)THEN
+          Td=ReturnT
+          Ta=Tamb
+          CompPower=1000.*Compa0*EXP(Compa1*(Td-Ta)) !exponential power consumption.
         ENDIF
         if(CompPower.LT.0.0)CompPower=0.0
 
@@ -6028,6 +6049,738 @@ C Trace.
       RETURN
       END
 
+C ******************** CMP46C ********************
+
+C CMP46C generates for plant component IPCOMP with plant db code 420 ie.
+C 2 node (ISV=20) WCH boiler with modulation
+C This boiler is similar to the WCH 2 node boiler CMP42
+C except the efficiency is a function of outdoor air, fuel burned and
+C operating conditions
+C Air is taken to be 79% Nitrogen and 21% Oxygen
+
+C matrix equation coefficients COUT (in order: self-coupling, cross-
+C coupling, and present-time coefficients) for energy balance (ISTATS=1),
+C 1st phase mass balance (ISTATS=2), or 2nd phase mass (ISTATS=3)
+C     ADATA: 1 Component total mass (kg)
+C            2 Mass weighted average specific heat (J/kgK)
+C     BDATA: 1 Full load firing rate kW
+C            2 Dump load fraction
+C            3 BS 4947 / EN 437 gas specification (e.g. for G20 enter 20)
+C            4 Boiler lock out time (min)
+C            5 Boiler heat loss to surroundings UA (W/K)
+C            6 DHW draw schedule control loop no. if combiboiler (0 otherwise)
+C            7 DHW calorifier component number (0 otherwise)
+C            8 Constant cold water feed temperature for DHW for combiboiler (degC)
+C            9 Constant supply temperature for DHW for combiboiler(degC)
+C           10 Upper boiler temperature limit (C)
+C           11 Lower limit of modulating range (%), 0 for nonmodulating
+C           12 Lower limit total differential (%), 0 for nonmodulating
+C        13-20 Coefficients of percentage CO2 and delta temperature to flue equations: 
+C              perCO2=A+B*FR+C*FR^2+D*FR^3 where FR is firing rate in kW, deltaTFlue has similar equation
+C           21 Heat loss coefficient at startup purges
+C           22 First pre-purge time (seconds)
+C           23 First pre-purge fan rate as % of maximum
+C           24 Secoond pre-purge time  (seconds)
+C           25 Second pre-purge fan rate as % of maximum
+C           26 Ignition stabilisation time (seconds)
+C           27 Firing rate during ignition stabilisation as % of maximum 
+C           28 Anticycle time (seconds)
+C           29 Firing rate during anticycling as % of maximum
+C           30 Maximum Ramp up gradient (typically supply water is restricted to temp rise of 3K/min)
+C     CDATA: 1 ON/OFF control signal (-)
+
+C     PCDATF/P
+C            1 Holds boiler actual ON/OFF state (-)
+C            2 Inter-node fluid heat capacity rate (W/K)
+C
+C Various variables used in the subroutine:
+C perCO2     = percentage of CO2 in the flue
+C fRate      = firing rate (kW)
+C dTFlue     = delta Temp flue gas and return water 
+C fnCarbon   = fractional number of Carbon atoms in fuel
+C fnHydrogen = fractional number of Hydrogen molecules in fuel
+C fnNitrogen = fractional number of Nitrogen molecules in fuel
+C pCH4,pH2,pN2,pC3H8,pC4H10,pC2H6 = % or each chemical in fuel
+C fnCO2,fnH2O,fnN2 = fractional number of each molecule in fuel exhaust
+C                    (excluding N2 from air)
+C R_H2O,R_Air = Universal gas constant for each compound/mixture
+C L_H2O       = latent heat of vapourisation of water
+C volFlue     = volume of flue gas
+C TR          = Return water temperature
+C TFLOW       = Flow water temperature
+C ZMFR        = Water mass flow rate though boiler
+C G           = heat supplied by gas (gas firing rate*calorifc value)
+C INSO        = boiler flag for lockout (if = 1 then in lockout time)
+C ITSBO       = present no. of timesteps boiler is off due to lockout
+C NTSBO       = total no. of timesteps boiler is to be off due to lockout
+
+      SUBROUTINE CMP46C(IPCOMP,COUT,ISTATS)
+      IMPLICIT NONE
+#include "plant.h"
+#include "building.h"
+#include "control.h"
+#include "chemical_properties.h"
+
+      INTEGER IUOUT,IUIN
+      COMMON/OUTIN/IUOUT,IUIN
+
+      COMMON/TC/ITC,ICNT
+      INTEGER ITC,ICNT
+
+      COMMON/TRACE/ITCF,ITRACE(MTRACE),IZNTRC(MCOM),ITU
+      INTEGER ITCF,ITRACE,IZNTRC,ITU
+
+      COMMON/SIMTIM/IHRP,IHRF,IDYP,IDYF,IDWP,IDWF,NSINC,ITS
+      INTEGER IHRP,IHRF,IDYP,IDYF,IDWP,IDWF,NSINC,ITS
+
+      COMMON/Pctime/TIMSEC
+      REAL TIMSEC
+
+      COMMON/PTIME/PTIMEP,PTIMEF
+      REAL PTIMEP,PTIMEF
+
+      COMMON/PCTC/TC(MPCOM)
+      REAL TC
+
+      COMMON/PCEQU/IMPEXP,RATIMP
+      INTEGER IMPEXP
+      REAL RATIMP
+
+      COMMON/PITER/MAXITP,PERREL,PERTMP,PERFLX,PERMFL,itrclp,
+     &             ICSV(MPNODE,MPVAR),CSVI(MPNODE,MPVAR)
+      INTEGER MAXITP,ITRCLP,ICSV
+      REAL PERREL,PERTMP,PERFLX,PERMFL,CSVI
+
+      COMMON/C9/NPCOMP,NCI(MPCOM),CDATA(MPCOM,MMISCD)
+      INTEGER NPCOMP,NCI
+      REAL CDATA
+
+      COMMON/C10/NPCON,IPC1(MPCON),IPN1(MPCON),IPCT(MPCON),
+     &           IPC2(MPCON),IPN2(MPCON),PCONDR(MPCON),PCONSD(MPCON,2)
+      INTEGER NPCON,IPC1,IPN1,IPCT,IPC2,IPN2
+      REAL PCONDR,PCONSD
+
+      COMMON/C12PS/NPCDAT(MPCOM,9),IPOFS1(MCOEFG),IPOFS2(MCOEFG,MPVAR)
+      INTEGER NPCDAT,IPOFS1,IPOFS2
+
+      COMMON/PDBDT/ADATA(MPCOM,MADATA),BDATA(MPCOM,MBDATA)
+      REAL ADATA,BDATA
+
+      COMMON/PCVAL/CSVF(MPNODE,MPVAR),CSVP(MPNODE,MPVAR)
+      REAL CSVF,CSVP
+
+      COMMON/PCVAR/PCTF(MPCON),PCRF(MPCON),PUAF(MPNODE),PCQF(MPNODE),
+     &             PCNTMF(MPCOM),
+     &             PCTP(MPCON),PCRP(MPCON),PUAP(MPNODE),PCQP(MPNODE),
+     &             PCNTMP(MPCOM)
+      REAL PCTF,PCRF,PUAF,PCQF,PCNTMF,PCTP,PCRP,PUAP,PCQP,PCNTMP
+
+      COMMON/PCOND/CONVAR(MPCON,MCONVR),ICONTP(MPCON),
+     &             ICONDX(MPCOM,MNODEC,MPCONC)
+      REAL CONVAR
+      INTEGER ICONTP,ICONDX
+
+      COMMON/PCDAT/PCDATF(MPCOM,MPCDAT),PCDATP(MPCOM,MPCDAT)
+      REAL PCDATF,PCDATP
+
+      COMMON/PCRES/QDATA(MPCOM),PCAOUT(MPCOM,MPCRES),napdat(mpcom)
+      REAL QDATA,PCAOUT
+      INTEGER NAPDAT
+
+      COMMON/LOCAL1/ISET,PHIMAX
+      INTEGER ISET
+      REAL PHIMAX
+
+      COMMON/LOKOUT/INSO,ITSBO
+      INTEGER INSO,ITSBO
+
+      COMMON/PCLOP8/LASTOUT(MCF)
+      INTEGER LASTOUT
+
+      COMMON/FN_CHEM/fnCO2,fnH2O,fnN2,fnO2,fnN2O2,iFuel,IPCMP,
+     &A1,A2,A3,A4,A5,A6,A7,A8
+      REAL fnCO2,fnH2O,fnN2,fnO2,fnN2O2,A1,A2,A3,A4,A5,A6,A7,A8
+      INTEGER IPCMP
+
+      COMMON/pstctr/nsincp,nsncpr
+      INTEGER nsincp, nsncpr
+
+      REAL SMALL
+      PARAMETER (SMALL=1.0E-20)
+      REAL      COUT(MPCOE),TOTMAS,UA,TFLOW,
+     & RUBTL,CUTIN,CUTOUT,FEEDTM,SUPPTM,RI,
+     & RO,HK,A,TR,ZMFR,Q,PHI,BLKOUT,FGAS,CM,
+     & ALPHA,C1,SHTFLD,UBTL
+      character outs*124
+      INTEGER ICON1,INOD1,INOD2,IONOFF,ICOMBI,ICCOMP,ICOMBIMOD,ICCN1,
+     & IPC,NTSBO,IX1,I,NITMS,IPCON,ISTATS,IPCOMP,IPSND,icon2,idebug
+      integer iFuel,ii,iRunOnce,ICL,iii,noTStepsOn,nsincp_local
+
+      real tempAmb,  
+     &     effGross,            timeCompOn,
+     &     time1stPrePurge,     time2ndPrePurge,   timeIgnStab,
+     &     timeAntiCyc,         fanRate1stPP,      fanRate2ndPP,
+     &     fRatePerIgnStab,     fRatePerAntiCyc,   tempRampUp,
+     &     tempRampUpMax,       initTemp,
+     &     volFlowrateFuel,     heatOutFrac,BOIL_EFF
+
+      real fFuel_composition ( iCompound_count )
+      real fEval_element_mols_in_mixture
+      real maxFanFlowrate,airden
+
+C Trace output
+      IF(ITC.GT.0.AND.NSINC.GE.ITC.AND.NSINC.LE.ITCF.AND.
+     &   ITRACE(37).NE.0) WRITE(ITU,*) ' Entering subroutine CMP46C'
+
+C Check control data for relevant balance type
+      IF(ISTATS.EQ.1.AND.
+     &   (CDATA(IPCOMP,1).LT.0..OR.CDATA(IPCOMP,1).GT.1.)) THEN
+         CALL DAYCLK(IDYP,PTIMEF,IUOUT)
+         WRITE(outs,*) ' CMP46C: invalid control data for component ',
+     &                  IPCOMP,' : ',CDATA(IPCOMP,1)
+         call edisp(iuout,outs)
+         call edisp(iuout,' CMP46C: unresolvable error.')
+         call epwait
+         call epagend
+         STOP
+      END IF
+
+C Following code to be run once only
+      if(nsinc.eq.1)iRunOnce=0
+      if(iRunOnce.eq.0)then
+        iRunOnce=1 !save iRunOnce
+        initTemp=20.
+        iFuel=nint(BDATA(IPCOMP,3))
+        IPCMP=IPCOMP
+        ICON1=ICONDX(IPCOMP,1,1)
+        INOD1=NPCDAT(IPCOMP,9)
+        INOD2=NPCDAT(IPCOMP,9)+1
+        idebug=0
+
+C Set up real upper boiler temperature limit this will not be modified
+        RUBTL=BDATA(IPCOMP,10)
+
+C Set up coefficients for efficiency equations
+	A1=BDATA(IPCOMP,13)
+	A2=BDATA(IPCOMP,14)
+	A3=BDATA(IPCOMP,15)
+	A4=BDATA(IPCOMP,16)
+	A5=BDATA(IPCOMP,17)
+	A6=BDATA(IPCOMP,18)
+	A7=BDATA(IPCOMP,19)
+	A8=BDATA(IPCOMP,20)
+
+C Set up startup characteristics
+        time1stPrePurge   =BDATA(IPCOMP,22)
+        time2ndPrePurge   =BDATA(IPCOMP,24)
+        timeIgnStab       =BDATA(IPCOMP,26)
+        timeAntiCyc       =BDATA(IPCOMP,28)
+        fanRate1stPP      =BDATA(IPCOMP,23)
+        fanRate2ndPP      =BDATA(IPCOMP,25)
+        fRatePerIgnStab   =BDATA(IPCOMP,27)
+        fRatePerAntiCyc   =BDATA(IPCOMP,29)
+        tempRampUpMax     =BDATA(IPCOMP,30)
+
+C Get composition of fuel and flue
+        do ii = 1, iCompound_count
+          fFuel_composition (ii) = fuel2ChemProp(iFuel,ii)
+        enddo
+        fnCO2=fEval_element_mols_in_mixture (
+     &      fFuel_Composition, iElement_Carbon ) !x in combustion eqn
+        fnH2O=fEval_element_mols_in_mixture (
+     &      fFuel_Composition, iElement_Hydrogen )/2. ! y/2 in combustion eqn
+        fnN2 =fEval_element_mols_in_mixture (
+     &      fFuel_Composition, iElement_Nitrogen )/2.
+        fnO2  = fnCO2+fnH2O/2.      ! O2 for combustion
+        fnN2O2= fnN2 + fnO2*79./21. ! N2 and O2 for combustion
+
+C Determine loop number of first control loop that controls this boiler
+        do 325 iii=1,ncl
+          IF(IPAN(Iii,1).eq.-1)THEN
+            IF(IPAN(Iii,2).EQ.IPCOMP)ICL=iii
+          ENDIF
+ 325    continue
+
+C Calculate maximum volume flow rate of air by first calculating volume
+C flow rate of fuel assuming stoichiometric mass of oxygen supplied
+        volFlowrateFuel=1000.*BDATA(IPCOMP,1)/grossCalorific(iFuel)
+        maxFanFlowrate=(fnCO2+0.5*fnH2O)*(100./21.)*volFlowrateFuel/100.
+
+C Scale down parameters if dump load is to be supplied.
+        TOTMAS=ADATA(IPCOMP,1)*(1.-BDATA(IPCOMP,2))
+        UA=BDATA(IPCOMP,5)*(1.-BDATA(IPCOMP,2))
+        PHIMAX=1000.*BDATA(IPCOMP,1)*(1.-BDATA(IPCOMP,2))
+
+C Get gas firing modulation cut-in and cut-out
+        CUTIN=(BDATA(IPCOMP,11)+BDATA(IPCOMP,12)*0.5)*0.01
+        CUTOUT=(BDATA(IPCOMP,11)-BDATA(IPCOMP,12)*0.5)*0.01
+
+C Determine if combi-boiler or not
+        ICOMBI=NINT(BDATA(IPCOMP,6))
+        IF(ICOMBI.NE.0)THEN
+          ICCOMP=NINT(BDATA(IPCOMP,7))
+          FEEDTM=BDATA(IPCOMP,8)
+          SUPPTM=BDATA(IPCOMP,9)
+        ENDIF
+
+C Lock out time (in seconds), 
+        BLKOUT=BDATA(IPCOMP,4)*60.       
+        NTSBO=NINT(BLKOUT/TIMSEC)
+
+C Get connection which sends mass to boiler, assuming only one 
+C component sends mass to the boiler
+      DO 1515 IPC=1,NPCON
+        IF(IPC1(IPC).EQ.IPCOMP)IPCON=IPC ! This connection sends mass to boiler (node 1)
+        IF(IPC2(IPC).EQ.IPCOMP)IPSND=IPC ! Boiler (node 2) sends mass to this connection
+ 1515 CONTINUE
+      ICON2=IPSND
+
+C End code to be run once only
+      endif
+
+C Initialize pointers to inter-connection(s) ICON, and node(s) INOD
+      IF(ISTATS.EQ.1) THEN
+
+C Set up upper boiler temperature limit (this can be modified by
+C controllers like the PI room controller (OPenTHERM), OTC  (outside
+C temperature compensation) etc.)
+        UBTL=BDATA(IPCOMP,10)
+
+C %CO2 and flue delta Temperature is currently worked out as a 
+C function of percentage of firing rate to maximum (full load) firing 
+C rate determined from experimental observations (using dry flue gas)
+C Calculate full load %CO2 and dTFlue
+      TFLOW=CSVF(INOD2,1)
+      TR=CONVAR(IPCON,1)
+      IF(TR.GT.TFLOW)TR=TFLOW
+      effGross=BOIL_EFF(TR,1.)
+      PHI=0.
+
+C Establish whether boiler is on or off (ie 1 or 0)
+      IONOFF=NINT(CDATA(IPCOMP,1))
+
+C If boiler is combi and is supplying DHW determine firing rate 
+      ICOMBIMOD=0
+      IF(ICOMBI.NE.0)THEN
+        IF(LASTOUT(ICOMBI).NE.0)THEN
+          ICOMBIMOD=1
+          ICCN1=ICONDX(ICCOMP,1,1)
+          RI=1./(BDATA(ICCOMP,1)*BDATA(ICCOMP,2))
+          RO=1./(BDATA(ICCOMP,3)*BDATA(ICCOMP,4))
+          HK=1./(RI+RO)
+          PHI=(PCONDR(ICCN1)*CONVAR(ICCN1,2)*SHTFLD(3,CONVAR(ICCN1,1)))
+     &         *(SUPPTM-FEEDTM)
+          A=0.5*HK/
+     &      (PCONDR(ICON1)*CONVAR(ICON1,2)*SHTFLD(3,CONVAR(ICON1,1)))
+          TR=((1.-A)*TFLOW+A*(SUPPTM+FEEDTM))/(1.+A)
+          IF(TR.LT.FEEDTM)TR=FEEDTM
+          IF(PHI.LT.0.)PHI=0.
+          IF(PHI.GT.PHIMAX)PHI=PHIMAX
+        ENDIF
+      ENDIF
+
+C Set boiler on if there is demand for hot water from a combi boiler
+      IF(ICOMBIMOD.EQ.1)IONOFF=1
+      IF(ICOMBIMOD.EQ.1)GOTO 33
+
+C Get PHI for normal operation (i.e. not in combi mode)
+      ZMFR=PCONDR(ICON1)*CONVAR(ICON1,2)
+      PHI=ZMFR*SHTFLD(3,CONVAR(ICON1,1))*(UBTL-TR)
+      IF(PHI.LT.0.)PHI=0. ! Shut boiler if UBTL is less than return water temperature
+      IF(PHI.GT.PHIMAX)PHI=PHIMAX
+      IF (NINT(BDATA(IPCOMP,12)).EQ.0)PHI=PHIMAX ! non-modulating boiler (i.e. on/off)
+
+C Calculate load or heat out fraction
+ 33   heatOutFrac=PHI/PHIMAX
+
+C Reset to off in case GFR is less than CUTOUT or CUTIN as appropriate
+      IF(IONOFF.EQ.1)THEN
+        IF(heatOutFrac.GT.1.)THEN
+          heatOutFrac=1.
+        ELSEIF(heatOutFrac.LT.CUTOUT)THEN
+          heatOutFrac=0.
+          IONOFF=0
+        ENDIF
+      ELSE
+        IF(heatOutFrac.LT.CUTIN)heatOutFrac=0.
+      ENDIF
+
+C Update efficiency based on current heatOutFrac
+      effGross=BOIL_EFF(TR,heatOutFrac)
+      FGAS=PHI/(grossCalorific(iFuel)*effGross)
+
+C If boiler temperature reaches real upper boiler temperature limit 
+C it is shut down for amount of time = lock out time
+      IF(TFLOW.GT.RUBTL)THEN
+        if(idebug.eq.1)write(96,*)ptimep,'hit UBTL'
+        INSO=1
+        ITSBO=0
+      ENDIF
+      IF(ITSBO.LE.0)ITSBO=0
+      IF(INSO.EQ.1)THEN
+        ITSBO=ITSBO+1
+        IF(ITSBO.GE.NTSBO)INSO=0
+        FGAS=0.
+        PHI=0.
+        Q=0.0
+        noTStepsOn=0
+        IONOFF=0
+        if(idebug.eq.1)
+     &write(96,*)ptimef,'LKO ',noTStepsOn,nsincp,Q,tflow,effGross
+      ENDIF
+      IF(INSO.EQ.1)GOTO 333
+
+C First calculate boiler efficiency ETA based on current node 1 temp.
+C so mark node 1 temperature for iteration
+      ICSV(INOD1,1)=1
+      CSVI(INOD1,1)=CSVF(INOD1,1)
+ 
+C Determine startup characteristics if applicable
+C For uncontrolled boiler timing is not calculated
+      IF(IONOFF.EQ.1.OR.ICOMBIMOD.EQ.1)THEN
+        IF (icl.eq.0)then ! i.e. boiler not controlled
+          Q=PHI
+        else
+
+C Calculate time boiler has been on
+          if(nsincp_local.lt.nsincp)then
+            noTStepsOn=noTStepsOn+1
+            nsincp_local=nsincp
+          endif
+          timeCompOn=noTStepsOn*TIMSEC  ! Time boiler is ON (sec)
+
+C If in pre-purge time boiler no heat or gas is supplied only fan is on
+          if(timeCompOn.le.time1stPrePurge)then
+
+C Q is the heat lost due to air purging through boiler =m*Cp*dTemp
+            Q=-1.*(maxFanFlowrate*fanRate1stPP/100.) *
+     &      AIRDEN(tempAmb)*1006.*(TFLOW-tempAmb)*BDATA(IPCOMP,21)
+            PHI=Q
+            FGAS=0.
+            if(idebug.eq.1)
+     &      write(96,*)ptimef,'PP1 ',noTStepsOn,nsincp,Q,tflow,effGross
+          elseif(timeCompOn.le.(time1stPrePurge+time2ndPrePurge))then
+            Q=-1.*(maxFanFlowrate*fanRate2ndPP/100.) *
+     &      AIRDEN(tempAmb)*1006.*(TFLOW-tempAmb)*BDATA(IPCOMP,21)
+            phi=Q
+            FGAS=0.
+            if(idebug.eq.1)
+     &      write(96,*)ptimef,'PP2 ',noTStepsOn,nsincp,Q,tflow,effGross
+
+C No startup routine for non-modulating (on-off) boiler
+          elseif(NINT(BDATA(IPCOMP,12)).EQ.0)then
+            Q=PHI
+            if(idebug.eq.1)
+     &      write(96,*)ptimef,'NMD ',noTStepsOn,nsincp,Q,tflow,effGross
+
+C If in ignition stabilisation time boiler runs at a fixed load 
+          elseif(timeCompOn.le.
+     &    (time1stPrePurge+time2ndPrePurge+timeIgnStab))then
+            heatOutFrac=fRatePerIgnStab/100.
+            PHI=heatOutFrac*PHIMAX
+            IF(PHI.LT.0.)PHI=0.
+            IF(PHI.GT.PHIMAX)PHI=PHIMAX
+            IF(heatOutFrac.GT.1.)THEN
+	      heatOutFrac=1.
+            ELSEIF(heatOutFrac.LT.CUTOUT)THEN
+	      heatOutFrac=0.
+              IONOFF=0
+            ENDIF
+            effGross=BOIL_EFF(TR,heatOutFrac)
+            FGAS=PHI/(grossCalorific(iFuel)*effGross)
+            Q=PHI
+            if(idebug.eq.1)
+     &      write(96,*)ptimef,'IGS ',noTStepsOn,nsincp,Q,tflow,effGross
+
+C If in anti-cycle time boiler runs at a fixed load
+          elseif(timeCompOn.le.
+     &    (time1stPrePurge+time2ndPrePurge+timeIgnStab+timeAntiCyc))then
+            heatOutFrac=fRatePerAntiCyc/100.
+            PHI=heatOutFrac*PHIMAX
+            IF(PHI.LT.0.)PHI=0.
+            IF(PHI.GT.PHIMAX)PHI=PHIMAX
+            IF(heatOutFrac.GT.1.)THEN
+	      heatOutFrac=1.
+            ELSEIF(heatOutFrac.LT.CUTOUT)THEN
+	      heatOutFrac=0.
+              IONOFF=0
+            ENDIF
+            effGross=BOIL_EFF(TR,heatOutFrac)
+            FGAS=PHI/(grossCalorific(iFuel)*effGross)
+            Q=PHI
+            if(idebug.eq.1)
+     &      write(96,*)ptimef,'ACT ',noTStepsOn,nsincp,Q,tflow,effGross
+
+C If in normal operation then restrict heating to ramp up gradient
+          else
+	    tempRampUp=TR-initTemp
+	    initTemp=TR ! Init for next timestep
+	    if(tempRampUp.gt.(tempRampUpMax/60.*TIMSEC))then
+	      PHI=PHI*(tempRampUpMax/60.*TIMSEC)/tempRampUp
+              IF(PHI.LT.0.)PHI=0.
+              IF(PHI.GT.PHIMAX)PHI=PHIMAX
+              heatOutFrac=PHI/PHIMAX
+              IF(heatOutFrac.GT.1.)THEN
+	        heatOutFrac=1.
+              ELSEIF(heatOutFrac.LT.CUTOUT)THEN
+	        heatOutFrac=0.
+                IONOFF=0
+              ENDIF
+              effGross=BOIL_EFF(TR,heatOutFrac)
+              FGAS=PHI/(grossCalorific(iFuel)*effGross)
+	      Q=PHI
+	      if(idebug.eq.1)write(96,*)ptimef,'NWR ',noTStepsOn,nsincp,
+     &        Q,tflow,effGross
+	    else
+              Q=PHI
+              if(idebug.eq.1)write(96,*)ptimef,'NNR ',noTStepsOn,nsincp,
+     &        Q,tflow,effGross
+            endif
+          endif
+        endif
+
+C Set boiler state to OFF
+      ELSE
+        if(idebug.eq.1)
+     &  write(96,*)ptimef,'OFF ',noTStepsOn,nsincp,Q,tflow,effGross
+        FGAS=0.
+        PHI=0.
+        Q=0.0
+        noTStepsOn=0
+        IONOFF=0
+      ENDIF
+
+C Establish heat capacity of component mass CM (J/K) and
+C fluid heat capacity rate(s) C (W/K), ie. SUM(mass flow * specific heat)
+ 333    CM=TOTMAS*ADATA(IPCOMP,2)/2.
+        C1=PCONDR(ICON1)*CONVAR(ICON1,2)*SHTFLD(3,CONVAR(ICON1,1))
+
+C Boiler actual ON/OFF state PCDATF(IPCOMP,1) (-)
+        PCDATF(IPCOMP,1)=IONOFF
+
+C Inter-node fluid heat capacity rate (W/K)
+        PCDATF(IPCOMP,2)=CSVF(INOD1,2)*SHTFLD(3,CSVF(INOD1,1))
+
+C Calculate current component time-constant TC
+        TC(IPCOMP)=AMAX1(
+     &        CM/AMAX1(SMALL,(C1)),CM/AMAX1(SMALL,(PCDATF(IPCOMP,2))))
+
+C Set up implicit/explicit weighting factor ALPHA (1 = fully implicit)
+        IF(IMPEXP.EQ.1) THEN
+          ALPHA=1.
+        ELSE IF(IMPEXP.EQ.2) THEN
+          ALPHA=RATIMP
+        ELSE IF(IMPEXP.EQ.3) THEN
+          IF(TIMSEC.GT.0.63*TC(IPCOMP)) THEN
+            ALPHA=1.
+          ELSE
+            ALPHA=RATIMP
+          END IF
+        ELSE IF(IMPEXP.EQ.4) THEN
+          CM=0.
+          ALPHA=1.
+        ENDIF
+
+C Establish matrix equation self-coupling coefficients,
+C  node 1
+        COUT(1)=ALPHA*(-C1-UA)-CM/TIMSEC
+
+C  node 2
+        COUT(2)=ALPHA*(PCDATF(IPCOMP,2)+UA)
+        COUT(3)=ALPHA*(-PCDATF(IPCOMP,2)-UA)-CM/TIMSEC
+
+C then matrix equation cross-coupling coefficient,
+        COUT(4)=ALPHA*C1
+
+C and then present-time coefficients (ie. right hand sides)
+c        COUT(5)=((1.-ALPHA)*(PCRP(ICON1)+UA)-CM/TIMSEC)*CSVP(INOD1,1)
+c     &           +(1.-ALPHA)*(-PCRP(ICON1))*PCTP(ICON1)
+c     &           -(1.-ALPHA)*PUAP(INOD1)*PCNTMP(IPCOMP)
+c     &           -ALPHA*UA*PCNTMF(IPCOMP)-(1.-ALPHA)*UA*PCNTMP(IPCOMP)
+c
+c	COUT(6)=(1.-ALPHA)*(-PCDATP(IPCOMP,2)-UA)*CSVP(INOD1,1)
+c     &  	 +((1.-ALPHA)*(UA+PCDATP(IPCOMP,2))
+c     &  	 -CM/TIMSEC)*CSVP(INOD2,1)-ALPHA*Q-
+c     &  	 (1.-ALPHA)*PCQP(INOD2)
+
+C Set present-time coefficients to be mean of both nodes because due to
+C pump overrun both nodes will be at similar temperature and will lose
+C heat in approximately the same manner
+        COUT(5)=((1.-ALPHA)*(0.5*PCRP(ICON1)+0.5*PCRP(ICON2)+UA)-
+     &           CM/TIMSEC)*(0.5*CSVP(INOD1,1)+0.5*CSVP(INOD2,1))
+     &           +(1.-ALPHA)*(-0.5*PCRP(ICON1)-0.5*PCRP(ICON2))*
+     &           (0.5*PCTP(ICON1)+0.5*PCTP(ICON2))
+     &           -(1.-ALPHA)*(0.5*PUAP(INOD1)+0.5*PUAP(INOD2))*
+     &            PCNTMP(IPCOMP)
+     &           -ALPHA*UA*PCNTMF(IPCOMP)-(1.-ALPHA)*UA*PCNTMP(IPCOMP)
+
+	COUT(6)=(1.-ALPHA)*(-PCDATP(IPCOMP,2)-UA)*
+     &           (0.5*CSVP(INOD1,1)+0.5*CSVP(INOD2,1))
+     &  	 +((1.-ALPHA)*(UA+PCDATP(IPCOMP,2))
+     &  	 -CM/TIMSEC)*(0.5*CSVP(INOD2,1)+0.5*CSVP(INOD1,1))-
+     &           ALPHA*Q-(1.-ALPHA)*(0.5*PCQP(INOD2)+0.5*PCQP(INOD1))
+
+C Store "environment" variables future values
+        PCTF(ICON1)=CONVAR(ICON1,1)
+        PCRF(ICON1)=C1
+        PCQF(INOD2)=Q
+
+C Establish "containment loss" data
+        QDATA(IPCOMP)=0.
+
+C If boiler is off set its efficiency to zero
+        IF(IONOFF.EQ.0)effGross=0.
+
+C Establish additional output variables
+        napdat(ipcomp)=5
+
+C Boiler ON/OFF signal
+        PCAOUT(IPCOMP,1)=IONOFF
+
+C FGAS*1000 is to give resolution on output
+c this will translate from m3/s to l/s??
+        PCAOUT(IPCOMP,2)=FGAS*1000.
+
+C Upper boiler temperature limit
+        PCAOUT(IPCOMP,3)=UBTL
+
+C Heat input to water
+        PCAOUT(IPCOMP,4)=PHI
+
+C Efficiency
+        PCAOUT(IPCOMP,5)=effGross
+
+C 1st phase mass (ie. water) balance coefficients
+      ENDIF
+      IF(ISTATS.EQ.2) THEN
+        COUT(1)=1.
+        COUT(2)=-1.
+        COUT(3)=1.
+        COUT(4)=-PCONDR(ICON1)
+        COUT(5)=0.
+        COUT(6)=0.
+
+C 2nd phase mass (ie. "vapour") balance coefficients
+      ELSE IF(ISTATS.EQ.3) THEN
+        COUT(1)=1.
+        COUT(2)=0.
+        COUT(3)=1.
+        COUT(4)=0.
+        COUT(5)=0.
+        COUT(6)=0.
+      END IF
+
+C Trace output
+      IF(ITC.GT.0.AND.NSINC.GE.ITC.AND.NSINC.LE.ITCF.AND.
+     &   ITRACE(37).NE.0) THEN
+         WRITE(ITU,*) ' Component      ',IPCOMP,':'
+         WRITE(ITU,*) ' 2 node (ISV=20) WCH boiler & modulation'
+         WRITE(ITU,*) ' Matrix node(s) ',INOD1,INOD2
+         WRITE(ITU,*) ' Connection(s)  ',ICON1
+         IF(ISTATS.EQ.1) THEN
+            WRITE(ITU,*) ' CM     = ',CM,' (J/K)'
+            WRITE(ITU,*) ' C1     = ',C1,' (W/K)'
+            WRITE(ITU,*) ' TC     = ',TC(IPCOMP),' (s)'
+            WRITE(ITU,*) ' ALPHA  = ',ALPHA,' (-)'
+            WRITE(ITU,*) ' PCNTMF = ',PCNTMF(IPCOMP),' (C)'
+            WRITE(ITU,*) ' CDATA  = ',CDATA(IPCOMP,1)
+            WRITE(ITU,*) ' IONOFF = ',IONOFF,' (-)'
+            WRITE(ITU,*) ' FGAS   = ',FGAS,' (m^3/s)'
+            WRITE(ITU,*) ' GASCO  = ',FGAS*TIMSEC,' (m^3)'
+         END IF
+         WRITE(ITU,*) ' Matrix coefficients for ISTATS = ',ISTATS
+         NITMS=6
+         WRITE(ITU,*) (COUT(I),I=1,NITMS)
+         IF(ITU.EQ.IUOUT) THEN
+            IX1=(IPCOMP/4)*4
+            IF(IX1.EQ.IPCOMP.OR.IPCOMP.EQ.NPCOMP) call epagew
+         END IF
+      END IF
+
+      IF(ITC.GT.0.AND.NSINC.GE.ITC.AND.NSINC.LE.ITCF.AND.
+     &   ITRACE(37).NE.0) WRITE(ITU,*) ' Leaving subroutine CMP46C'
+
+      RETURN
+      END
+
+C ******************** BOIL_EFF ********************
+C Function to calculate WCH boiler efficiency at any return water
+C temperature (T_ret) and part load (F_rate)
+      FUNCTION BOIL_EFF(T_ret,F_rate)
+c      implicit none
+#include "plant.h"
+#include "chemical_properties.h"
+      COMMON/PDBDT/ADATA(MPCOM,MADATA),BDATA(MPCOM,MBDATA)
+      REAL ADATA,BDATA
+      COMMON/CLIMI/QFP,QFF,TP,TF,QDP,QDF,VP,VF,DP,DF,HP,HF
+      REAL QFP,QFF,TP,TF,QDP,QDF,VP,VF,DP,DF,HP,HF
+      COMMON/FN_CHEM/fnCO2,fnH2O,fnN2,fnO2,fnN2O2,iFuel,IPCMP,
+     &A1,A2,A3,A4,A5,A6,A7,A8
+      REAL fnCO2,fnH2O,fnN2,fnO2,fnN2O2,A1,A2,A3,A4,A5,A6,A7,A8,L_H2O,
+     &massWaterCond
+      INTEGER IPCMP
+      INTEGER iFuel
+      COMMON/OUTIN/IUOUT,IUIN
+      INTEGER IUOUT,IUIN
+      logical closer
+
+C Init
+      IPCOMP=IPCMP
+      R_H2O = fR_universal / fEval_Compound_MM(iWater_l)
+      iFuel=nint(BDATA(IPCOMP,3))
+
+C %CO2 and flue delta Temperature is currently worked out as a 
+C function of percentage of firing rate to maximum firing rate
+C determined from experimental observations (using dry flue gas)
+C Calculate full load %CO2 and dTFlue
+      fRate=F_rate*100.
+      perCO2= a1 + a2*fRate + a3*fRate**2 + a4*fRate**3
+      dTFlue= a5 + a6*fRate + a7*fRate**2 + a8*fRate**3
+      tempFlue=T_ret+dTFlue
+      tempAmb=TF
+      p_atmosp = PT01(tempAmb,0) ! at altitude = 0
+      L_H2O = EVAP01(tempFlue)
+
+C Determine excess air factor (it is worked out as a ratio and does not
+C require the actual volume of flue gas or air intake)
+      call eclose(fRate,100.,0.0001,closer)
+
+      volFlue=100.*fnCO2/perCO2
+      volXsAir=volFlue-fnN2-(79./21.)*(fnCO2+0.5*fnH2O)-fnCO2
+      xsAirFactor=(fnCO2+0.5*fnH2O+0.21*volXsAir)/(fnCO2+0.5*fnH2O)
+      if(xsAirFactor.lt.1.0)
+     &  call edisp(iuout,
+     &  'WARNING: CMP46 Excess air factor less than unity')
+
+C Get net boiler efficiency (non-condensing) using Siegert's equation
+      effSiegert=P(iFuel)-
+     &(Qgas(iFuel)/perCO2+R(iFuel))*(tempFlue-tempAmb)
+
+C Can get saturated vapour pressure using Teten's formula.
+C      sattPressWater=610.78*exp(17.2694*tempFlue/(tempFlue+238.3))
+C Get saturated vapour pressure of water at tempFlue 
+      sattPressWater=Psat01(tempFlue)
+
+C Get %CO2 but adjusted for water vapour as well
+      perCO2Adj=100.*perCO2/(fnH2O*perCO2/fnCO2+100.)
+
+C Calculate partial pressure of water vapour after combustion
+      partPressWater=(fnH2O/fnCO2)*(perCO2Adj/100.)*p_atmosp
+
+C Calculate density of water vapour
+      densityWaterVap=p_atmosp/(R_H2O*(tempAmb+273.16))
+
+C Calculate mass of water condensed from differnce in partial pressures
+      massWaterCond=(fnH2O/100.)*densityWaterVap*
+     &              ((partPressWater-sattPressWater)/partPressWater)
+
+C Calculate gross efficiency
+      effGross=(effSiegert*r_netCalorific(iFuel)+L_H2O*massWaterCond)/
+     &          grossCalorific(iFuel)/100.
+      BOIL_EFF=effGross
+      RETURN
+      END
+
 C ******************** CMP50C ********************
 
 C CMP50C generates for plant component IPCOMP with plant db code 500 ie.
@@ -6105,7 +6858,7 @@ C First set-up "surroundings"
             END IF
             TWAL=TAIR
          ELSE
-            IZ=INT(BDATA(IPCOMP,1))
+            IZ=NINT(BDATA(IPCOMP,1))
             TAIR=TFA(IZ)
             TWAL=TFS(IZ,NINT(BDATA(IPCOMP,2)))
          END IF
@@ -6275,7 +7028,7 @@ C First set-up "surroundings"
             TWL1=TAIR
             TWL2=TAIR
          ELSE
-            IZ=INT(BDATA(IPCOMP,1))
+            IZ=NINT(BDATA(IPCOMP,1))
             TAIR=TFA(IZ)
             TWL1=TFS(IZ,NINT(BDATA(IPCOMP,2)))
             TWL2=TFS(IZ,NINT(BDATA(IPCOMP,3)))
@@ -6368,11 +7121,436 @@ C Trace output
 
       RETURN
       END
+
+C ******************** CMP52C ********************
+
+C CMP52C generates for plant component IPCOMP with plant db code 520 ie.
+C 1 node (ISV=29) WCH thermostatic radiator valve (sensor only)
+C matrix equation coefficients COUT (in order: self-coupling, cross-
+C coupling, and present-time coefficients) for energy balance (ISTATS=1),
+C 1st phase mass balance (ISTATS=2), or 2nd phase mass (ISTATS=3)
+C     ADATA: 1 Component total mass (kg)
+C            2 Mass weighted average specific heat (J/kgK)
+C     BDATA: 1 Index of coupled building zone (-)
+C            2 Index of coupled wall in that zone (-)
+C            3 Thermal conductance between water and sensor (W/K)
+C            4 Equiv. convective conductance to air (W/K)
+C            5 Equiv. radiative conductance to wall (W/K)
+C            6 Equiv. radiative conductance to radiator (W/K)
+C            7 Index of radiator connected to TRV (-)
+C     CDATA: none
+
+C     PCDATF/P
+C            1 Air temperature of coupled building zone (C)
+C            2 Surface temperature of coupled wall in 1 (C)
+
+      SUBROUTINE CMP52C(IPCOMP,COUT,ISTATS)
+#include "plant.h"
+#include "building.h"
+
+      COMMON/OUTIN/IUOUT,IUIN
+      COMMON/TC/ITC,ICNT
+      COMMON/TRACE/ITCF,ITRACE(MTRACE),IZNTRC(MCOM),ITU
+
+      COMMON/SIMTIM/IHRP,IHRF,IDYP,IDYF,IDWP,IDWF,NSINC,ITS
+      COMMON/Pctime/TIMSEC
+      COMMON/PCTC/TC(MPCOM)
+
+      COMMON/PCEQU/IMPEXP,RATIMP
+
+      COMMON/C9/NPCOMP,NCI(MPCOM),CDATA(MPCOM,MMISCD)
+      COMMON/C12PS/NPCDAT(MPCOM,9),IPOFS1(MCOEFG),IPOFS2(MCOEFG,MPVAR)
+      COMMON/PDBDT/ADATA(MPCOM,MADATA),BDATA(MPCOM,MBDATA)
+      COMMON/PCVAL/CSVF(MPNODE,MPVAR),CSVP(MPNODE,MPVAR)
+      COMMON/PCVAR/PCTF(MPCON),PCRF(MPCON),PUAF(MPNODE),PCQF(MPNODE),
+     &             PCNTMF(MPCOM),
+     &             PCTP(MPCON),PCRP(MPCON),PUAP(MPNODE),PCQP(MPNODE),
+     &             PCNTMP(MPCOM)
+      COMMON/PCOND/CONVAR(MPCON,MCONVR),ICONTP(MPCON),
+     &             ICONDX(MPCOM,MNODEC,MPCONC)
+      COMMON/PCDAT/PCDATF(MPCOM,MPCDAT),PCDATP(MPCOM,MPCDAT)
+
+      COMMON/C6/INDCFG
+      COMMON/FVALA/TFA(MCOM),QFA(MCOM)
+      COMMON/FVALS/TFS(MCOM,MS),QFS(MCOM)
+
+      PARAMETER (SMALL=1.0E-15)
+      REAL      COUT(MPCOE)
+      logical closea
+
+C Trace output
+      IF(ITC.GT.0.AND.NSINC.GE.ITC.AND.NSINC.LE.ITCF.AND.
+     &   ITRACE(37).NE.0) WRITE(ITU,*) ' Entering subroutine CMP52C'
+
+C Initialize pointers to inter-connection(s) ICON, and node(s) INOD
+      JPCOMP=NINT(BDATA(IPCOMP,7))
+      JNOD1=NPCDAT(JPCOMP,9)
+      ICON1=ICONDX(JPCOMP,1,1)
+      INOD1=NPCDAT(IPCOMP,9)
+
+C Generate coefficients for energy balance equation
+      IF(ISTATS.EQ.1) THEN
+
+C First set-up "surroundings"
+         IF(INDCFG.EQ.2.OR.NINT(BDATA(IPCOMP,7)).EQ.0) THEN
+           call eclose(PCNTMF(IPCOMP),-99.00,0.001,closea)
+           IF(closea) THEN
+               TAIR=20.
+            ELSE
+               TAIR=PCNTMF(IPCOMP)
+            END IF
+            TWAL=TAIR
+         ELSE
+            IZ=INT(BDATA(IPCOMP,1))
+            TAIR=TFA(IZ)
+            TWAL=TFS(IZ,NINT(BDATA(IPCOMP,2)))
+         END IF
+         HWAT=BDATA(IPCOMP,3)
+         HAIR=BDATA(IPCOMP,4)
+         HWAL=BDATA(IPCOMP,5)
+         HRAD=BDATA(IPCOMP,6)
+
+C Establish heat capacity of component mass CM (J/K)
+         CM=ADATA(IPCOMP,1)*ADATA(IPCOMP,2)
+
+C Calculate current component time-constant TC
+         TC(IPCOMP)=CM/AMAX1(SMALL,(HWAT+HAIR+HWAL+HRAD))
+
+C Set up implicit/explicit weighting factor ALPHA (1 = fully implicit)
+         IF(IMPEXP.EQ.1) THEN
+            ALPHA=1.
+         ELSE IF(IMPEXP.EQ.2) THEN
+            ALPHA=RATIMP
+         ELSE IF(IMPEXP.EQ.3) THEN
+            IF(TIMSEC.GT.0.63*TC(IPCOMP)) THEN
+               ALPHA=1.
+            ELSE
+               ALPHA=RATIMP
+            END IF
+         ELSE IF(IMPEXP.EQ.4) THEN
+            CM=0.
+            ALPHA=1.
+         END IF
+
+C Establish matrix equation self- and cross-coupling coefficients
+         COUT(1)=ALPHA*(-HWAT-HAIR-HWAL-HRAD)-CM/TIMSEC
+
+C and then present-time coefficient (ie. right hand side)
+         COUT(2)=((1.-ALPHA)*(HAIR+HWAL+HWAT+HRAD)
+     &              -CM/TIMSEC)*CSVP(INOD1,1)
+     &             -ALPHA*HWAT*CSVP(JNOD1,1)
+     &             -(1.-ALPHA)*(HWAT)*CSVP(JNOD1,1)
+     &             -ALPHA*HRAD*CSVP(JNOD1,1)
+     &             -(1.-ALPHA)*(HRAD)*CSVP(JNOD1,1)
+     &             -ALPHA*HAIR*TAIR
+     &             -(1.-ALPHA)*HAIR*PCDATP(IPCOMP,1)
+     &             -ALPHA*HWAL*TWAL
+     &             -(1.-ALPHA)*HWAL*PCDATP(IPCOMP,2)
+
+C Store "environment" variables future values
+         PCDATF(IPCOMP,1)=TAIR
+         PCDATF(IPCOMP,2)=TWAL
+
+C 1st phase mass (ie. "water") balance coefficients
+      ELSE IF(ISTATS.EQ.2) THEN
+         COUT(1)=1.
+         COUT(2)=0.
+         COUT(3)=0.
+         COUT(4)=0.
+
+C 2nd phase mass (ie. "vapour") balance coefficients
+      ELSE IF(ISTATS.EQ.3) THEN
+         COUT(1)=1.
+         COUT(2)=0.
+         COUT(3)=0.
+         COUT(4)=0.
+      END IF
+
+C Trace output
+      IF(ITC.GT.0.AND.NSINC.GE.ITC.AND.NSINC.LE.ITCF.AND.
+     &   ITRACE(37).NE.0) THEN
+         WRITE(ITU,*) ' Component      ',IPCOMP,':'
+         WRITE(ITU,*) ' 1 node (ISV=29) WCH thermostatic valve'
+         WRITE(ITU,*) ' Matrix node(s) ',INOD1
+         WRITE(ITU,*) ' Connection(s)  ',ICON1
+         IF(ISTATS.EQ.1) THEN
+            WRITE(ITU,*) ' CM     = ',CM,' (J/K)'
+            WRITE(ITU,*) ' TC     = ',TC(IPCOMP),' (s)'
+            WRITE(ITU,*) ' ALPHA  = ',ALPHA,' (-)'
+            WRITE(ITU,*) ' Tair   = ',TAIR,' (C)'
+            WRITE(ITU,*) ' Twall  = ',TWAL,' (C)'
+         END IF
+         WRITE(ITU,*) ' Matrix coefficients for ISTATS = ',ISTATS
+         NITMS=3
+         WRITE(ITU,*) (COUT(I),I=1,NITMS)
+         IF(ITU.EQ.IUOUT) THEN
+            IX1=(IPCOMP/4)*4
+            IF(IX1.EQ.IPCOMP.OR.IPCOMP.EQ.NPCOMP) call epagew
+         END IF
+      END IF
+
+      IF(ITC.GT.0.AND.NSINC.GE.ITC.AND.NSINC.LE.ITCF.AND.
+     &   ITRACE(37).NE.0) WRITE(ITU,*) ' Leaving subroutine CMP52C'
+
+      RETURN
+      END
+
+C ******************** CMP73C ********************
+C CMP73C generates for plant component IPCOMP with plant db code 730 ie.
+C 3 node (ISV>20) WCH 3-port valve. This model supercedes CMP29C, which is
+C now depreciated;
+C matrix equation coefficients COUT (in order: self-coupling, cross-
+C coupling, and present-time coefficients) for energy balance (ISTATS=1),
+C 1st phase mass balance (ISTATS=2), or 2nd phase mass (ISTATS=3)
+C     ADATA: 1 Component total mass (kg)
+C            2 Mass weighted average specific heat (J/kgK)
+C            3 Component UA modulus (for heat loss to environment) (W/K)
+C
+C     CDATA: 1 Valve position (0-1)
+C 
+C This valve model has three nodes: 
+C 1 - inlet
+C 2 - primary outlet
+C 3 - secondary outlet
+C The input flow rate m_1 is distributed between the two nodes as follows: 
+C node 2 m_2 = a x m_1
+C node 3 m_3 = (1-a) x m_1
+
+      SUBROUTINE CMP73C(IPCOMP,COUT,ISTATS)
+
+       use h3kmodule
+      implicit none
+#include "plant.h"
+#include "building.h"
+
+      COMMON/OUTIN/IUOUT,IUIN
+      COMMON/TC/ITC,ICNT
+      COMMON/TRACE/ITCF,ITRACE(MTRACE),IZNTRC(MCOM),ITU
+
+      COMMON/SIMTIM/IHRP,IHRF,IDYP,IDYF,IDWP,IDWF,NSINC,ITS
+      COMMON/PCTIME/TIMSEC
+      COMMON/PCTC/TC(MPCOM)
+
+      COMMON/PCEQU/IMPEXP,RATIMP
+
+      COMMON/C9/NPCOMP,NCI(MPCOM),CDATA(MPCOM,MMISCD)
+      COMMON/C10/NPCON,IPC1(MPCON),IPN1(MPCON),IPCT(MPCON),
+     &           IPC2(MPCON),IPN2(MPCON),PCONDR(MPCON),PCONSD(MPCON,2)
+      COMMON/C12PS/NPCDAT(MPCOM,9),IPOFS1(MCOEFG),IPOFS2(MCOEFG,MPVAR)
+      COMMON/PDBDT/ADATA(MPCOM,MADATA),BDATA(MPCOM,MBDATA)
+      COMMON/PCVAL/CSVF(MPNODE,MPVAR),CSVP(MPNODE,MPVAR)
+      COMMON/PCVAR/PCTF(MPCON),PCRF(MPCON),PUAF(MPNODE),PCQF(MPNODE),
+     &             PCNTMF(MPCOM),
+     &             PCTP(MPCON),PCRP(MPCON),PUAP(MPNODE),PCQP(MPNODE),
+     &             PCNTMP(MPCOM)
+      COMMON/PCOND/CONVAR(MPCON,MCONVR),ICONTP(MPCON),
+     &             ICONDX(MPCOM,MNODEC,MPCONC)
+      COMMON/PCRES/QDATA(MPCOM),PCAOUT(MPCOM,MPCRES),napdat(mpcom)
+      COMMON/PCDAT/PCDATF(MPCOM,MPCDAT),PCDATP(MPCOM,MPCDAT)
+
+      REAL UA,CM,C1,V_POS,SMALL
+     
+      INTEGER IMPEXP,IPCOMP
+
+      integer iuout,iuin,itc,icnt,ITCF,ITRACE,IZNTRC,ITU,IHRP,IHRF,
+     &IDYP,IDYF,IDWP,IDWF,NSINC,ITS,NPCOMP,ICONTP,ISTATS
+      integer ICONDX,ICON1,INOD1,INOD2,INOD3,IPN1,IPN2,IPC1,IPC2,NPCON,
+     &IPCT,NPCDAT,NAPDAT,NCI,IPOFS1,IPOFS2,IX1,NITMS,I
+
+      real RATIMP,TC,TIMSEC,PCONDR,PCONSD,ADATA,BDATA,CDATA,CSVF,CSVP
+      real PCTF,PCRF,PUAF,PCQF,PCNTMF,PCTP,PCRP,PUAP,PCQP,PCNTMP,CONVAR
+      real PCDATF,PCDATP,ALPHA,QDATA,PCAOUT,SHTFLD
+
+
+      PARAMETER (SMALL=1.0E-15)
+      REAL COUT(MPCOE)
+      LOGICAL CLOSEA
+
+
+C Trace output
+      IF(ITC.GT.0.AND.NSINC.GE.ITC.AND.NSINC.LE.ITCF.AND.
+     &   ITRACE(37).NE.0) WRITE(ITU,*) ' Entering subroutine CMP73C'
+
+C Initialize pointers to inter-connection(s) ICON, and node(s) INOD
+
+C 1 connection
+      ICON1=ICONDX(IPCOMP,1,1)
+
+C 3 - nodes 1) water inlet 2) primary outlet m_out1=(a X m_in) 2) secondary outlet m_out2=(1-a) x m_in
+      INOD1=NPCDAT(IPCOMP,9)
+      INOD2=NPCDAT(IPCOMP,9)+1
+      INOD3=NPCDAT(IPCOMP,9)+2
+
+C Check the specified valve position
+      V_POS=CDATA(IPCOMP,1)
+      IF(V_POS.LT.0.OR.V_POS.GT.1.)THEN
+        V_POS=0.
+        WRITE(IUOUT,*)
+     &' WARNING:CMP73C a 3-port valve control setting <0 or >1'
+        WRITE(IUOUT,*)
+     &' has been detected. Resetting to valve position to zero.'
+      ENDIF
+
+C Generate coefficients for the energy balance equation
+      IF(ISTATS.EQ.1) THEN
+
+C First initialize UA modulus (for calculation of containment heat loss),
+C if there is no containment then zero the UA value.
+         UA=ADATA(IPCOMP,3)
+         CALL ECLOSE(PCNTMF(IPCOMP),-99.00,0.001,CLOSEA)
+         IF(CLOSEA) UA=0.
+
+C Establish heat capacity of component mass CM (J/K) and
+C fluid heat capacity rate(s) C (W/K), ie. SUM(mass flow * specific heat)
+         CM=ADATA(IPCOMP,1)*ADATA(IPCOMP,2)
+         C1=PCONDR(ICON1)*CONVAR(ICON1,2)*SHTFLD(3,CONVAR(ICON1,1))
+
+C Store inter-node fluid capacity rates (W/K).
+C Node 2
+         PCDATF(IPCOMP,2)=C1*V_POS
+
+C Node 3
+         PCDATF(IPCOMP,3)=C1*(1.-V_POS)
+
+C Calculate current component time-constant TC
+         TC(IPCOMP)=CM/AMAX1(SMALL,(UA+C1))
+
+C Set up implicit/explicit weighting factor ALPHA (1 = fully implicit)
+         IF(IMPEXP.EQ.1) THEN
+            ALPHA=1.
+         ELSE IF(IMPEXP.EQ.2) THEN
+            ALPHA=RATIMP
+         ELSE IF(IMPEXP.EQ.3) THEN
+            IF(TIMSEC.GT.0.63*TC(IPCOMP)) THEN
+               ALPHA=1.
+            ELSE
+               ALPHA=RATIMP
+            END IF
+         ELSE IF(IMPEXP.EQ.4) THEN
+            CM=0.
+            ALPHA=1.
+         END IF
+
+C Establish matrix equation self-and cross-coupling coefficients
+C matrix order as follows
+C   A  B  C | X     RHS
+C   1  0  0 | 6      7
+C   2  3  0 | 0    = 8
+C   4  0  5 | 0      9
+
+C Self-coupling coefficients.
+C Inlet node 1
+         COUT(1)=ALPHA*(-C1)-CM/(3.*TIMSEC) 
+
+C Primary outlet 2
+         COUT(2)=ALPHA*PCDATF(IPCOMP,2)
+         COUT(3)=ALPHA*(-PCDATF(IPCOMP,2)-(UA/2.))-CM/(3.*TIMSEC)
+
+C Secondary outlet node 3
+         COUT(4)=ALPHA*PCDATF(IPCOMP,3)
+         COUT(5)=ALPHA*(-PCDATF(IPCOMP,3)-(UA/2.))-CM/(3.*TIMSEC)
+
+C Cross coupling coefficient
+C Node 1
+         COUT(6)=ALPHA*C1 
+
+
+C 'Known coefficients' present-time coefficient (ie. right hand side
+C Node 1.
+         COUT(7)=(((1.-ALPHA)*(PCRP(ICON1)))
+     &-CM/(3.*TIMSEC))*CSVP(INOD1,1)
+     &-(1.-ALPHA)*(PCRP(ICON1))*PCTP(ICON1)
+
+
+C Node 2. 
+         COUT(8)=(((1.-ALPHA)*(PCDATP(IPCOMP,2)+(UA/2.)))
+     &           -CM/(3.*TIMSEC))*CSVP(INOD2,1)
+     &           -(1.-ALPHA)*(PCDATP(IPCOMP,2))*CSVP(INOD1,1)
+     &           -(ALPHA)*(UA/2.)*PCNTMF(IPCOMP)
+     &           -(1.-ALPHA)*PUAP(INOD2)*PCNTMP(IPCOMP)
+
+C Node 3.
+         COUT(9)=(((1.-ALPHA)*(PCDATP(IPCOMP,3)+(UA/2.)))
+     &           -CM/(3.*TIMSEC))*CSVP(INOD3,1)
+     &           -(1.-ALPHA)*(PCDATP(IPCOMP,3))*CSVP(INOD1,1)
+     &           -(ALPHA)*(UA/2.)*PCNTMF(IPCOMP)
+     &           -(1.-ALPHA)*PUAP(INOD3)*PCNTMP(IPCOMP)
+
+C Store "environment" variables future values.
+         PUAF(INOD2)=UA/2.
+         PUAF(INOD3)=UA/2.
+         
+C 1st phase mass (ie. dry air) balance coefficients
+      ELSE IF(ISTATS.EQ.2) THEN
+         COUT(1)=1.
+         COUT(2)=-V_POS
+         COUT(3)=1.
+         COUT(4)=-(1.-V_POS)
+         COUT(5)=1.
+         COUT(6)=-PCONDR(ICON1)
+         COUT(7)=0.
+         COUT(8)=0.
+         COUT(9)=0.
+         COUT(10)=0.
+
+C 2nd phase mass (ie. vapour) balance coefficients.
+      ELSE IF(ISTATS.EQ.3) THEN
+         COUT(1)=1.
+         COUT(2)=0.
+         COUT(3)=1.
+         COUT(4)=0.
+         COUT(5)=1.
+         COUT(6)=0.
+         COUT(7)=0.
+         COUT(8)=0.
+         COUT(9)=0.
+         COUT(10)=0.
+      END IF
+
+C Establish additional output variables
+      NAPDAT(IPCOMP)=1
+
+C Valve position
+      PCAOUT(IPCOMP,1)=CDATA(IPCOMP,1)
+
+C Trace output
+      IF(ITC.GT.0.AND.NSINC.GE.ITC.AND.NSINC.LE.ITCF.AND.
+     &   ITRACE(37).NE.0) THEN
+         WRITE(ITU,*) ' Component      ',IPCOMP,':'
+         WRITE(ITU,*) ' 3 node (ISV>21) WCH 3-port valve'
+         WRITE(ITU,*) ' Matrix node(s) ',INOD1,INOD2,INOD3
+         WRITE(ITU,*) ' Connection(s)  ',ICON1
+         IF(ISTATS.EQ.1) THEN
+            WRITE(ITU,*) ' CM     = ',CM,' (J/K)'
+            WRITE(ITU,*) ' C1     = ',C1,' (W/K)'
+            WRITE(ITU,*) ' V_POS  = ',V_POS,' (0-1)'
+            WRITE(ITU,*) ' TC     = ',TC(IPCOMP),' (s)'
+            WRITE(ITU,*) ' ALPHA  = ',ALPHA,' (-)'
+            WRITE(ITU,*) ' UA     = ',UA,' (W/K)'
+            WRITE(ITU,*) ' PCNTMF = ',PCNTMF(IPCOMP),' (C)'
+         END IF
+         WRITE(ITU,*) ' Matrix coefficients for ISTATS = ',ISTATS
+         NITMS=9
+         WRITE(ITU,*) (COUT(I),I=1,NITMS)
+         IF(ITU.EQ.IUOUT) THEN
+            IX1=(IPCOMP/4)*4
+            IF(IX1.EQ.IPCOMP.OR.IPCOMP.EQ.NPCOMP) call epagew
+         END IF
+      END IF
+
+      IF(ITC.GT.0.AND.NSINC.GE.ITC.AND.NSINC.LE.ITCF.AND.
+     &   ITRACE(37).NE.0) then
+        WRITE(ITU,*) ' Leaving subroutine CMP73C trace'
+      ENDIF
+
+      RETURN
+      END
+
 C --------------------------------- CMP79C -----------------------------------
 C CMP79C (DHWdraw) calculates an instantaneous hot water draw based on a
 C probabilistic model. For each simulation time step the model calculates
 C a hot water draw V in l/s. This flow is then passed into the model coefficient
-C generator. The models is (loosely) based on the work of Jordan and Vajen in IEA SHC Annex26.
+C generator. The model is (loosely) based on the work of Jordan and Vajen in IEA SHC Annex26.
 C
 C The draw calculation is based on the user supplying a nominal daily draw (litres).
 C The user also needs to define the typical % of the total draw consumed in up to

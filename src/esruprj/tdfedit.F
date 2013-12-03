@@ -5,7 +5,7 @@ C Strathclyde, Glasgow Scotland, 2001-6.
 C ESP-r is free software.  You can redistribute it and/or
 C modify it under the terms of the GNU General Public
 C License as published by the Free Software Foundation 
-C (version 2 orlater).
+C (version 2 or later).
 
 C ESP-r is distributed in the hope that it will be useful
 C but WITHOUT ANY WARRANTY; without even the implied
@@ -32,6 +32,7 @@ C TDFUPD: updates TDF file from an exchange file.
 #include "building.h"
 #include "model.h"
 #include "epara.h"
+#include "net_flow.h"
 #include "tdf2.h"
       
       integer lnblnk  ! function definition
@@ -47,9 +48,6 @@ C CREATE,PREV,NEXT,EDIT,LIST,NONE
       COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
       common/tdaid/tdaide(2)
       COMMON/GDPER/igbdoy,igedoy
-
-      character cfgroot*24,LCFGF*72
-      common/C21/IFCFG,cfgroot,LCFGF
 
 C Related to inport and export files.
       CHARACTER LIMP*96,LEXP*96
@@ -691,6 +689,7 @@ C ************** CLRTABC
 C CLRTABC clears temporal commons TDFFH, tdset, tdaid,GDPER.
       SUBROUTINE CLRTABC
 #include "building.h"
+#include "net_flow.h"
 #include "tdf2.h"
       common/tdaid/tdaide(2)
       COMMON/GDPER/igbdoy,igedoy
@@ -700,7 +699,7 @@ C CLRTABC clears temporal commons TDFFH, tdset, tdaid,GDPER.
 C Initial temporal defaults.
       tdaide(1)='- '
       tdaide(2)='- '
-      itdyear=2000
+      itdyear=2007
       itdbdoy=1
       itdedoy=1
       igbdoy=itdbdoy
@@ -728,6 +727,7 @@ C glbset: Global questions about TDF file. Foc is the topic.
 C If foc='init' do initial setup. 
       subroutine glbset(foc)
 #include "building.h"
+#include "net_flow.h"
 #include "tdf2.h"
 
       COMMON/TRC/ITRC
@@ -752,7 +752,7 @@ C Define the beginning and ending dates for the TDF file.
         call gethelptext(helpinsub,helptopic,nbhelp)
         if(foc.eq.'init')CALL PHELPD('setup period',nbhelp,'-',0,0,IER)
         CALL EASKI(itdyear,' ',' What is the year?',
-     &             1900,'W',2010,'W',2000,'tdf year',IER,nbhelp)
+     &             1900,'W',2051,'W',2007,'tdf year',IER,nbhelp)
 
         CALL EASKPER('Period:',itdbdoy,itdedoy,IFDAY,IER)
 
@@ -811,6 +811,7 @@ C IER=0 OK, IER=1 problem.
 C This facility supports the esp-r module b2e. 
       SUBROUTINE extracts(ITRC,AFIL,IAFIL,TIMEJD,incr,IER)
 #include "building.h"
+#include "net_flow.h"
 #include "tdf2.h"
 
       COMMON/OUTIN/IUOUT,IUIN
@@ -891,6 +892,7 @@ C record structures can be accommodated.
 
 C If there are tabular items, loop through each step until within
 C one minute of the given time and then get the data and write.
+C Take into account NTSPH when dealing with tollerance below.
       IF(NITDF.gt.0)THEN
         WRITE(iafil,'(a)',IOSTAT=ios,ERR=103)'*data'
         found=.FALSE.
@@ -903,12 +905,16 @@ C one minute of the given time and then get the data and write.
             call edisp(iuout,outs)
           endif
           if(.NOT.found)then
-            call eclose(RDOTY,TIMEJD,0.0006,CLOSE)
+            if(NTSPH.le.6)then
+              call eclose(RDOTY,TIMEJD,0.0006,close)
+            else
+              call eclose(RDOTY,TIMEJD,0.00034,close)
+            endif
             if(CLOSE)then
               ITREC=IP+49
               CALL ERTABU(ITRC,ITREC,IER)
               CALL ESTIME(NTSPH,1,ITIME,DESCRH,DESCRD,TIMER)
-              write(outs,'(a,F10.4,3a)') 'Extracting data for ',
+              write(outs,'(a,F10.6,3a)') 'Extracting data for ',
      &          RDOTY,' (@ ',DESCRH,')'
               if(ITRC.gt.1)call edisp(iuout,outs)
               CALL EWTABA(ITREC,RDOTY,iafil,IER)
@@ -926,7 +932,7 @@ C Write subsequent records if requested.
               ITREC=IP+49
               CALL ERTABU(ITRC,ITREC,IER)
               CALL ESTIME(NTSPH,1,ITIME,DESCRH,DESCRD,TIMER)
-              write(outs,'(a,F4.0,3a)') 'Extracting data for ',
+              write(outs,'(a,F10.6,3a)') 'Extracting data for ',
      &          RDOTY,' (@ ',DESCRH,')'
               if(ITRC.gt.1)call edisp(iuout,outs)
               CALL EWTABA(ITREC,RDOTY,iafil,IER)

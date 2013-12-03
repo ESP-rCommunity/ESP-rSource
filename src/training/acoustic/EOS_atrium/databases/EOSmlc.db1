@@ -1,5 +1,5 @@
 # composite construction db defined in ../databases/EOSmlc.db1
-# based on materials db /usr/esru/esp-r/databases/constr.db2.a
+# based on materials db /usr/esru/esp-r/databases/constr_db2.materialdb
    15     # no of composites 
 # layers  description   optics name   symmetry tag
     3    dbl_glz_int   TRAN  eos_int_win   SYMMETRIC     

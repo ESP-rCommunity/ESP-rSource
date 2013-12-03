@@ -94,7 +94,7 @@ C Simulator parameters.
       COMMON/FREQS1/ICBIN(MF),ITOTAL
 
       dimension Yold(MZS), TIMEold(MZS)
-      character TLABEL*60,trange*20,tranged*20,t28*28,t10*10,dg*1
+      character TLABEL*60,trange*20,tranged*20,t28*28,dg*1
       character outs*124,outs248*248
       character outs800*800,outs800d*800  ! really long string buffers
       character ALABEL(5)*12,t20*20,act*1
@@ -113,7 +113,7 @@ C Simulator parameters.
       integer YAXSET,ADDLIN,horaxisdiv
       integer iglib
       integer lnb,lsn1
-      integer k,k4,ke,ke4,ke4t  ! used for string positions
+      integer k,k4,ke,ke4  ! used for string positions
       integer lke,lket28        ! length of label and packed label
 
       logical colok,ok,dok
@@ -1383,7 +1383,7 @@ C Give feedback to user on selected entities.
         IN=NODNE(ICPK(I))
         IC=ITPCON(ICPK(I))
         if(unixok)then
-	  write(outs,'(5a)') NDNAM(IP),'->',NDNAM(IN),' via ',
+          write(outs,'(5a)') NDNAM(IP),'->',NDNAM(IN),' via ',
      &      CMNAM(IC)
           call edisp(iuout,outs)
         endif
@@ -1404,7 +1404,6 @@ C to graphical result display of network flows.
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
-      COMMON/AFN/IAIRN,LAPROB,ICAAS(MCOM)
       COMMON/RESLIB/RFILE,PFILE,MSTRFILE,LAFRES
       COMMON/SETNAM/RSNAME(MNRS)
       COMMON/SIMPKA/NSIM
@@ -1447,13 +1446,12 @@ C Setup and pass in parameters to win3d.
         iigl=igl; iigr=igr; iigt=igt; iigb=igb; iigw=igw; iigwh=igwh
         CALL win3d(iimenu,iiw1,iiw2,iiw3,iiw4,
      &    iigl,iigr,iigt,iigb,iigw,iigwh)
-C        call win3d(menuchw,9,30,4,3,igl,igr,igt,igb,igw,igwh)
         igl=int(iigl); igr=int(iigr); igt=int(iigt); igb=int(iigb)
         igw=int(iigw); igwh=int(iigwh)
         call startbuffer()
       ENDIF
 
-      lsn1=MIN0(lnblnk(LAFRES),22)
+      lsn1=MIN0(lnblnk(LAFRES),32)
       if(NSIM.gt.1)then
         WRITE(ETEXT,'(3A,I4,2A)')'Lib: ',LAFRES(1:lsn1),' Set:',ISIM,
      &    ': ',RSNAME(ISIM)(1:lnblnk(RSNAME(ISIM)))

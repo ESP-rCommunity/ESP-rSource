@@ -1,7 +1,6 @@
 /* Miscel non-graphic functions taken from esru_x.c
    
    winfnt(n)   changes the font (4 different sizes 0,1,2,3)
-   tchild_() return child process terminal info.
    Timer(msec) pause_for_milliseconds
    pausems_() pause_for_milliseconds
    pauses_() pause_for_seconds
@@ -157,13 +156,6 @@ void winfnt_(font_index)
   return;
 }
 
-/* *************** tchild_() return child process terminal info. ******** */
-void tchild_(cterm)
-long int *cterm;           /* child terminal type  */
-{
-  *cterm = child_ter;
-  return;
-}
 
 /* ************* Timer(msec) pause_for_milliseconds ********* */
 void Timer(msec)   /* from xvmisc.c */

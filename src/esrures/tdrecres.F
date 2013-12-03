@@ -5,7 +5,7 @@ C Strathclyde, Glasgow Scotland, 2001.
 C ESP-r is free software.  You can redistribute it and/or
 C modify it under the terms of the GNU General Public
 C License as published by the Free Software Foundation 
-C (version 2 orlater).
+C (version 2 or later).
 
 C ESP-r is distributed in the hope that it will be useful
 C but WITHOUT ANY WARRANTY; without even the implied
@@ -38,6 +38,7 @@ C day and VAL(2...) are timestep fields.
 
       SUBROUTINE RCTDFR(ITRC,ID,IJ,time,VAL,ISDAT,IFOC,IER)
 #include "building.h"
+#include "net_flow.h"
 #include "tdf2.h"
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/SIMPIK/ISIM,ISTADD,ID1,IM1,ID2,IM2,ISDS,ISDF,NTS,ISAVE
@@ -58,8 +59,8 @@ C current timestep in the day, rdoty is the julian day fraction.
 C << Implement this check for within the simulation period as
 C << a separate call made during the input section.
       IP=(ID-ISDS)*NTS*24+IJ
-      RDOTY=ID+(time/24.)
-      WRITE(OUTS,'(A,2I4,2F8.3)')' ID IP time RDOTY',
+      RDOTY=REAL(ID)+(time/24.)
+      WRITE(OUTS,'(A,2I4,2F10.6)')' ID IP time RDOTY',
      &             ID,IP,time,RDOTY
       IF(ITRC.GT.1)CALL EDISP(IUOUT,OUTS)
 
@@ -139,6 +140,7 @@ C Returns requested value in GVAL.
 
       subroutine momeasured(focus,iday,izone,isurf)
 #include "building.h"
+#include "net_flow.h"
 #include "tdf2.h"
 
 C Parameters
@@ -188,9 +190,7 @@ C Get value of the temporal item.
             if(focus(1:5).eq.'DBZNM')then
               itdi=IDBTZNM(izone)
             elseif(focus(1:5).eq.'SURTM')then
-            
-C Currently applies only on node 1 of the surface, i.e. for external surface temperature  
-              itdi=ISURTMEAS(izone,isurf) 
+              itdi=ISURTMEAS(izone,isurf)
             endif
             IFOC=itdi
             if(ij.eq.1)then

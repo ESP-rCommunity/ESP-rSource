@@ -85,6 +85,7 @@ C                   hourly profiles 'Hrly_Load.tmp'
 C           ifil+80 CETC month status IO channel
 C           ifil+81 Runtime lookup table data file
 C           ifil+82 File containing wind turbine power curve data
+C           ifil+83 Temporary file access for deleting "console_out.txt" prior to simulation
 
 C MMOD   -  index returned from the 'pages' routine
 C           and determines the device type attached to current job.
@@ -125,7 +126,7 @@ C  This bps main is here for convience. It
 C  allows the same version of this file to
 C  be used to compile the following forms
 C  of bps: a UNIX executable, a Windows
-C  EXE and a Windows DLL and bpsh3k.
+C  EXE and a Windows DLL.
 C
 C==========================================
       common/dllflg/dll
@@ -232,7 +233,6 @@ C Record lengths for zone (nzrl), plant (nprl), electrical(nerl) results librari
       common/recver/izver,ipver,iever
       common/hcthry/ihct,icorexhct
       COMMON/DNORGH/IRTYPE
-      common/C21/IFCFG,cfgroot,LCFGF
       COMMON/RESLIB/RFILE,PFILE,MSTRFILE,LAFRES
       common/rdcgen/irdact
       common/rdcmfs/irdcm,sFLWTIM,sDRYB,sWDIR,sWSPD,sITER,sIOK,
@@ -291,7 +291,7 @@ C Uncertainty.
 C Illuminance database.
       common/ILDB/NDBENT,DBILLA(200,5),DBILLS(200,MLCOM,MDF)
 
-      COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
+      COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,CFCDBOK
 
 C Active domain common (expand to other domains?).
       common/ACTDOM/CFDOK
@@ -307,10 +307,15 @@ C      integer iTimeoutFlag
 C Name of current application
       common/APPNAME/cAppName
 
+C Flag for enabling h3k customizations 
+
+      common/H3KCustom/bEnableH3kExtensions
+      logical bEnableH3kExtensions      
+      
       character cAppName*12
       integer iverb     ! verbosity passed on command line
 
-      LOGICAL OK,dok,CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,OK3D
+      LOGICAL OK,dok,CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,OK3D,CFCDBOK
       LOGICAL IGR1D,BLDG3D,ZONE3D,GRND3D,INPOK,XST,CFDOK,browse
       LOGICAL INTHPS,INTHPZ,MSTROK,MSTRZN
       LOGICAL spfileok,perok,tstepok,saveok,autook,exitok,startupok
@@ -318,7 +323,7 @@ C Name of current application
 C      logical gopher  ! not references
       logical concat
 
-      character LUALF*72,LCNG*15,LLOC*15,cfgroot*24,LCFGF*72
+      character LUALF*72,LCNG*15,LLOC*15
       character*29 item(15)
       character OUTS*124,spsname*8
       character LCMDFL*144,inf*144,sps*8,aut*12,fs*1,actf*72
@@ -359,34 +364,31 @@ C For help messages
       character helptopic*24 ! string (unique) for topic
       integer nbhelp     ! number of help lines found
 
-C (possibly) Enable floating point exception error handling on
-C gnu 3.X compilers
-      call trapfpe()
-
 C Active domain.  Assume not active, check if running in dll mode
 C and clear dll subroutine name and error details.
       CFDOK=.false.
+
 
 C Co-simulation between ESP-r and TRNSYS is possible.  By default assume
 C there is no co-simulation.  This flag will be set to true if a TRNSYS
 C coupling component is detected by the plant domain.
       COSIM = .false.
       
+
+C Prior to commencing simulation, delete "console_out.txt", if found.
+      INQUIRE (FILE="console_out.txt",EXIST=XST)
+      if(XST)then 
+            OPEN( UNIT=ifil+83, FILE="console_out.txt" )         
+            CLOSE ( UNIT=ifil+83, STATUS='DELETE' )
+      endif
+
 C mark in log file, start of simulation
       if( dll ) then
-#ifdef F90
         open(UNIT=iLogFile, FILE=cLogFile,position='APPEND' )
-#else
-        OPEN( UNIT=iLogFile, FILE=cLogFile, ACCESS='APPEND' )
-#endif
         write( iLogFile, * ) "subroutine: bps() - dll run"
         write( iLogFile, * ) "checking input"
         close( iLogFile )
-#ifdef F90
         open(UNIT=iLogFile, FILE=cLogFile,position='APPEND' )
-#else
-        OPEN(unit=iLogFile,FILE=cLogFile, ACCESS = 'APPEND')
-#endif
       endif
 
       dllsubr=' '
@@ -395,6 +397,10 @@ C mark in log file, start of simulation
         ACTCNN(I)=.TRUE.
  1    continue
 
+ 
+C Disable h3k customizations by default 
+      bEnableH3kExtensions = .false. 
+ 
 C Assume that the configuration, mlc db, primitive db, control file
 C have not been read in.
       CFGOK=.FALSE.
@@ -461,11 +467,7 @@ C all console write is rerouted to the log file
         itu = iLogFile
         iuout = iLogFile
         icout = iLogFile
-#ifdef F90
         open(UNIT=iLogFile, FILE=cLogFile,position='APPEND' )
-#else
-        OPEN(UNIT=iLogFile, FILE=cLogFile, ACCESS='APPEND' )
-#endif
         call SetDllParms(MODL,iappw,iappx,iappy,inf,sps,aut,actf)
         browsing='no'
       else
@@ -707,9 +709,9 @@ C Initialize once per hour storage of results counter.
       irdact=0
       irdcm=1
 
-C Record length of binary results file. izver is the
-C version of the zone results file. izver < 2 lacked
-C some records. izver < 4 do not include explicit separate
+C Record length of binary results file (nzrl). izver is the
+C version of the zone results file. Since Feb 2008 izver
+C has been set at 4 and signals explicit inclusion of separate
 C conv/rad/latent gain fields for each casual gain type.
       nzrl = MZRL
       izver = 4
@@ -720,6 +722,9 @@ C Parameter 'nprecl' as defined in 'plant.h'.
 
 C Unit for materials db in case control -99 is invoked.
       ifmat=ifil+5
+
+C Unit for CFClayers db in case control -99 is invoked.
+      icfcdb=ifil+6
 
 C Initialise results averaging flag: 0 means
 C results will be averaged.
@@ -742,6 +747,7 @@ C Default setting of IREP, reporting and range checking on.
 C If an input file has been specified then load it and then
 C return to the main menu.
       XST=.false.
+C Debug.
 C      write(*,*)'LCMDFL: ',LCMDFL
       if(LCMDFL(1:2).ne.'  '.and.LCMDFL(1:4).ne.'UNKN')then
         INQUIRE (FILE=LCMDFL,EXIST=XST)
@@ -752,7 +758,8 @@ C info in after reading the .cfg file.
           if(sps(1:2).ne.'  '.and.sps(1:4).ne.'UNKN')then
             write(spsname,'(a8)')sps(1:8)
             if(aut(1:6).eq.'silent')then
-              write(*,*)'Silent-running mode.'
+C Debug.
+C              write(*,*)'Silent-running mode.'
               autook=.true.
               call edisp(iuout,'Silent-running mode.')
               call tstamp('>','SIM: Silent-running mode')
@@ -767,11 +774,7 @@ C info in after reading the .cfg file.
 
 C If running dll note the failure mode.
           if(ier.eq.2.and.dll)then
-#ifdef F90
             open(UNIT=iLogFile, FILE=cLogFile,position='APPEND' )
-#else
-            OPEN( UNIT=iLogFile, FILE=cLogFile, ACCESS='APPEND' )
-#endif
             write(iLogFile,*) 'bps failed in ',dllsubr
             write(iLogFile,*) 'details: ',dllmesg
             return
@@ -923,11 +926,7 @@ C Enter configuration file
         call tstamp('>','SIM: enter read model')
         CALL MZINPT(IREP,ier)
         if(ier.eq.2.and.dll)then
-#ifdef F90
           open(UNIT=iLogFile, FILE=cLogFile,position='APPEND' )
-#else
-          OPEN(UNIT=iLogFile, FILE=cLogFile, ACCESS='APPEND' )
-#endif
           write(iLogFile,*) 'bps failed in ',dllsubr
           write(iLogFile,*) 'details: ',dllmesg
           ier=2
@@ -1112,18 +1111,10 @@ C For the multi-D model, check that the 1-D grid distribution is default.
             IF(OK3D)THEN
               if( dll ) then
                 close( iLogFile )
-#ifdef F90
                 open(UNIT=iLogFile,FILE=cLogFile,position='APPEND' )
-#else
-                OPEN(UNIT=iLogFile,FILE=cLogFile,ACCESS = 'APPEND')
-#endif
                 write( iLogFile, * ) "Simulation started"
                 close( iLogFile )
-#ifdef F90
                 open(UNIT=iLogFile,FILE=cLogFile,position='APPEND' )
-#else
-                OPEN(UNIT=iLogFile,FILE=cLogFile,ACCESS = 'APPEND')
-#endif
               endif
               CALL MZSIML
             ELSE

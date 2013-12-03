@@ -92,13 +92,12 @@ C Zone information
 
 C Composites information
       COMMON/CompPik/IComfoc,NComPik,LstComp(MMLC)
-      COMMON/C21/IFCFG,cfgroot,LCFGF
 
 C Defaults and paths
       character*96 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF
       COMMON/DEFLT2/DFCFG,DFCTL,DEFRLB,DAFRES,DAPROB,DPNF
       common/rpath/path
-      COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
+      COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,CFCDBOK
 
 C For exporting to file
       COMMON/exporttg/xfile,tg,delim
@@ -145,14 +144,13 @@ C Name of current application
       integer matarrayindex ! the indes within matdatarray
       logical closemat1,closemat2
 
-      LOGICAL OK,CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,SelSurf
+      LOGICAL OK,CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,SelSurf,CFCDBOK
       LOGICAL MODIFY,MODLEN,MODBND,XST,chdb,BCFOK,unixok
 
       DIMENSION ITEM(18) 
 
       REAL HeightCo,WidthCo, Perimeter, Area
       CHARACTER BCFName*72,DBCFNam*72,System*72,BCFVer*5
-      CHARACTER LCFGF*72,cfgroot*24
       CHARACTER outs*124,ITEM*35,Hold*24
       CHARACTER inf*144,LCMDFL*144
       CHARACTER path*72,L144*144
@@ -853,7 +851,10 @@ C update menu text
       ELSEIF (Ino.eq.6.and.IcalType.eq.2)then
 
         NZG = 0
-C Display the composites list.
+C Display the constructons list.
+
+C << needs to be converted to material.h >>
+
         CALL CompoList
         IF (NComPik .EQ. 0) THEN
           CALL USRMSG(' No Composite has been selected.',' ','-')
@@ -863,7 +864,7 @@ C Display the composites list.
           TxtCompo=' All'
           GOTO 10
         ELSE
-          TxtCompo= DESC(LstComp(1))(1:12)
+          TxtCompo= mlcname(LstComp(1))(1:12)
           TxtMat= 'All'
         ENDIF
 
@@ -997,7 +998,7 @@ C Display the composites list.
           TxtCompo=' All'
          GOTO 10
         ELSE
-          TxtCompo= DESC(LstComp(1))(1:12)
+          TxtCompo= mlcname(LstComp(1))(1:12)
           TxtMat= 'All'
         ENDIF
 

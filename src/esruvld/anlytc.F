@@ -856,13 +856,12 @@ C #include "geometry.h"
 
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
-      common/C21/IFCFG,cfgroot,LCFGF
       common/rpath/path
       common/rcmd/LCMDFL
       COMMON/Vld10/VlDirR,VlDirL
 
-      character h*72,doit*124,cfgroot*24,MODE*4
-      CHARACTER*72 path,LCFGF
+      character h*72,doit*124,MODE*4
+      CHARACTER*72 path
       character VlDirR*96,VlDirL*72
       character LCMDFL*144
 
@@ -1243,7 +1242,7 @@ C *********************************************************************
  10   CONTINUE
 
 C Solve the steady state part of the analytical solution, and find the
-C eigen values.	
+C eigen values.
 C Solve the steady state term.
       NL=NLayer
       I=ILayer

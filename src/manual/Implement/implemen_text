@@ -100,16 +100,15 @@ If executables are supplied, these will be called \fBprj\fR,
 \fBbps\fR, \fBres\fR, \fBcon\fR, \fBpro\fR, \fBpdb\fR, \fBpdf\fR,
 \fBwin\fR, \fBclm\fR, \fBish\fR, \fBmfs\fR, \fBcfg\fR, \fBtut\fR and \fBmrt\fR.
 .IP \(bu
-Files constr.???, multicon.???, plantc.???, pressc.???, profiles.??? and optics.??? 
+Files material.???, constr.???, multicon.???, plantc.???, pressc.???, profiles.??? and optics.??? 
 are the primitive constructions, multi-constructions,
 plant components, pressure coefficients, profiles and optical databases respectively.
 If your machine is compatible with ours then some of these files will
 be binary random access as required by ESP-r. In this case
 ??? = db1. Otherwise ??? = db1.a and these files are ascii
-images of each database. There are facilities invoked from 
-within the project manager to convert from ascii to 
-binary for the files constr.db1.a and profiles.db1.a. 
-The module \fBpdb\fR is used to create plantc.db1.
+images of each database.  
+The module \fBpdb\fR is used to create plantc.db1 (the binary version of
+the plant template common file).
 For reference, the following table sets out the names 
 and format of databases used within the ESP-r system.
 .TS H
@@ -120,7 +119,7 @@ ESP-r database	ESP-r	Program for conversions
 	format
 _
 climate	binary	clm (can be invoked from prj)
-primitives construction	binary	prj
+materials	binary	prj
 multi-constructions	ascii	-
 optics	ascii	-
 pressure coefficients	ascii	-
@@ -197,7 +196,7 @@ _
 ~esru/src/esp-r/training	training exemplars
 ~esru/src/esp-r/manual	ESP-r manual
 ~esru/esp-r/climate	clm67 (other climate files should be placed here)
-~esru/esp-r/databases	constr.db1, plantc.db1, pressc.db1 & profiles.db1
+~esru/esp-r/databases	constr.db1.a, plantc.db1, pressc.db1 & profiles.db1
 ~esru/esp-r/defaults	links to default files
 ~esru/esp-r/include	include files for ESP-r
 ~esru/esp-r/binsh	shell scripts for ESP-r
@@ -228,8 +227,8 @@ can be made using the system Makefile. For example,
 to make the project manager, module `prj',
 type "make prj".
 .IP 5.
-If you have not been sent the binary versions of the primitive
-constructions database and the test climate, you should
+If you have not been sent the binary versions of the materials
+database and the test climate, you should
 have received their ascii equivalents. Use the project
 manager to convert from ascii to binary.
 .IP 6.

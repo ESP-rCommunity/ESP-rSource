@@ -2,7 +2,7 @@
 # (see README file before installing).
 SRCdir=`pwd`
 
-PROGRAMS = aco bps c2e clm dbm dfs e2r ecnv eco grd harmonizer ish mfs \
+PROGRAMS = aco bps c2e cdb clm dbm dfs e2r ecnv eco grd harmonizer ish mfs \
 	   mld mrt net pdb prj res run vew stats
 
 allX11: libX11 $(PROGRAMS)
@@ -25,15 +25,6 @@ libnoX:
 	cd $(SRCdir)/lib; \
 	$(MAKE) the_libnoX; \
 	$(MAKE) the_libVer
-
-enableGccFPE:
-	cd $(SRCdir)/lib; \
-	$(MAKE) the_libFPE
-
-disableGccFPE:
-	cd $(SRCdir)/lib; \
-	$(MAKE) the_libNoFPE
-
 
 enableXML:
 	cd $(SRCdir)/lib; \
@@ -67,6 +58,8 @@ dfs:
 	cd $(SRCdir)/esrudfs; $(MAKE)
 c2e: 
 	cd $(SRCdir)/esruc2e; $(MAKE)
+cdb: 
+	cd $(SRCdir)/esrucdb; $(MAKE)
 clm: 
 	cd $(SRCdir)/esruclm; $(MAKE)
 e2r: 
@@ -97,8 +90,6 @@ prj:
 	cd $(SRCdir)/esruprj; $(MAKE)
 res: 
 	cd $(SRCdir)/esrures; $(MAKE)
-run: 
-	cd $(SRCdir)/esrurun; $(MAKE)
 vew: 
 	cd $(SRCdir)/esruvew; $(MAKE)
 stats: 
@@ -112,6 +103,7 @@ clean:
 	cd $(SRCdir)/esrudbm; $(MAKE) clean
 	cd $(SRCdir)/esrudfs; $(MAKE) clean
 	cd $(SRCdir)/esruc2e; $(MAKE) clean
+	cd $(SRCdir)/esrucdb; $(MAKE) clean
 	cd $(SRCdir)/esruclm; $(MAKE) clean
 	cd $(SRCdir)/esrue2r; $(MAKE) clean
 	cd $(SRCdir)/esrucnv; $(MAKE) clean
@@ -125,7 +117,6 @@ clean:
 	cd $(SRCdir)/esrupdb; $(MAKE) clean
 	cd $(SRCdir)/esruprj; $(MAKE) clean
 	cd $(SRCdir)/esrures; $(MAKE) clean
-	cd $(SRCdir)/esrurun; $(MAKE) clean
 	cd $(SRCdir)/esruvew; $(MAKE) clean
 	cd $(SRCdir)/esrustats; $(MAKE) clean
 	cd $(SRCdir)/harmonizer; $(MAKE) clean
@@ -139,6 +130,7 @@ strip:
 	cd $(SRCdir)/esrudbm; $(MAKE) strip
 	cd $(SRCdir)/esrudfs; $(MAKE) strip
 	cd $(SRCdir)/esruc2e; $(MAKE) strip
+	cd $(SRCdir)/esrucdb; $(MAKE) strip
 	cd $(SRCdir)/esruclm; $(MAKE) strip
 	cd $(SRCdir)/esrue2r; $(MAKE) strip
 	cd $(SRCdir)/esrucnv; $(MAKE) strip
@@ -153,7 +145,6 @@ strip:
 	cd $(SRCdir)/esrupdb; $(MAKE) strip
 	cd $(SRCdir)/esruprj; $(MAKE) strip
 	cd $(SRCdir)/esrures; $(MAKE) strip
-	cd $(SRCdir)/esrurun; $(MAKE) strip
 	cd $(SRCdir)/esruvew; $(MAKE) strip
 	cd $(SRCdir)/esrustats; $(MAKE) strip
 
@@ -164,6 +155,7 @@ InstBins:
 	cd $(SRCdir)/esrudbm; $(MAKE) ESPBinDir=${ESPBinDir} EXE=${EXE} install
 	cd $(SRCdir)/esrudfs; $(MAKE) ESPBinDir=${ESPBinDir} EXE=${EXE} install
 	cd $(SRCdir)/esruc2e; $(MAKE) ESPBinDir=${ESPBinDir} EXE=${EXE} install
+	cd $(SRCdir)/esrucdb; $(MAKE) ESPBinDir=${ESPBinDir} EXE=${EXE} install
 	cd $(SRCdir)/esruclm; $(MAKE) ESPBinDir=${ESPBinDir} EXE=${EXE} install
 	cd $(SRCdir)/esrue2r; $(MAKE) ESPBinDir=${ESPBinDir} EXE=${EXE} install
 	cd $(SRCdir)/esrucnv; $(MAKE) ESPBinDir=${ESPBinDir} EXE=${EXE} install
@@ -177,7 +169,6 @@ InstBins:
 	cd $(SRCdir)/esrupdb; $(MAKE) ESPBinDir=${ESPBinDir} EXE=${EXE} install
 	cd $(SRCdir)/esruprj; $(MAKE) ESPBinDir=${ESPBinDir} EXE=${EXE} install
 	cd $(SRCdir)/esrures; $(MAKE) ESPBinDir=${ESPBinDir} EXE=${EXE} install
-	cd $(SRCdir)/esrurun; $(MAKE) ESPBinDir=${ESPBinDir} EXE=${EXE} install
 	cd $(SRCdir)/esruvew; $(MAKE) ESPBinDir=${ESPBinDir} EXE=${EXE} install
 	cd $(SRCdir)/esrustats; $(MAKE) ESPBinDir=${ESPBinDir} EXE=${EXE} install
 	cd $(SRCdir)/harmonizer; $(MAKE) ESPBinDir=${ESPBinDir} EXE=${EXE} install

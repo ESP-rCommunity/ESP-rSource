@@ -39,7 +39,7 @@ extern FILE *wwc;
 extern int  wwc_ok;   /* from esru_util.c */
 extern int  wwc_macro;   /* from esru_util.c */
 
-GdkColor cscale[49], zscale[100], gscale[49];
+GdkColor cscale[49], zscale[100], gscale[85];
 long int ncscale;   /* number of assigned colours in colour scale */
 long int ngscale;   /* number of assigned colours in grey scale */
 long int ngr;       /* number of assigned interface colours */
@@ -75,7 +75,7 @@ gint f_height;
 gint f_width;
 
 char cappl[5];	/* f77 application name */
-/* char cfgroot[25];	f77 project root name    */
+/* char cfgroot[32];	f77 project root name    */
 /* char path[73];	f77 project path    */
 /* char upath[73];	f77 users path    */
 /* char imgpth[25];	f77 relative path to images    */
@@ -2210,22 +2210,26 @@ void clrcscale_() {
   return;
 }
 
-/* ********* setgscale_() setgscale_() grey scale (49 or 24 steps) ******* */
+/* ********* setgscale_() setgscale_() grey scale (84 or 42 steps) ******* */
 /* Called with no parameters, sets global variable ngscale. The local
    variable gscaleok is not used (yet). */
 void setgscale_() {
 
 /* Color named arrays taken from esru_x.c */
   char *gscalestr[] = {
-  "grey97","grey95","grey93","grey91","grey89","grey87","grey85","grey83","grey81",
-  "grey79","grey77","grey75","grey73","grey71","grey69","grey67","grey65","grey63","grey61",
-  "grey59","grey57","grey55","grey53","grey51","grey49","grey47","grey45","grey43","grey41",
-  "grey39","grey37","grey35","grey33","grey31","grey29","grey27","grey25","grey23","grey21",
-  "grey19","grey17","grey15","grey13","grey11","grey9","grey7","grey5","grey3","grey1"};
+  "grey97","grey96","grey95","grey94","grey93","grey92","grey91","grey90",
+  "grey89","grey88","grey87","grey86","grey85","grey84","grey83","grey82","grey81","grey80",
+  "grey79","grey78","grey77","grey76","grey75","grey74","grey73","grey72","grey71","grey70",
+  "grey69","grey68","grey67","grey66","grey65","grey64","grey63","grey62","grey61","grey60",
+  "grey59","grey58","grey57","grey56","grey55","grey54","grey53","grey52","grey51","grey50",
+  "grey49","grey48","grey47","grey46","grey45","grey44","grey43","grey42","grey41","grey40",
+  "grey39","grey38","grey37","grey36","grey35","grey34","grey33","grey32","grey31","grey30",
+  "grey29","grey28","grey27","grey26","grey25","grey24","grey23","grey22","grey21","grey20",
+  "grey19","grey18","grey17","grey16","grey15","grey14","grey13","grey12" };
   gint ic,ih;
-  gboolean gscaleok[49];
+  gboolean gscaleok[85];
 /* assign grey scale to gscale array. */
-  for (ic=0; ic<48; ic++) {
+  for (ic=0; ic<84; ic++) {
     if (gdk_color_parse(gscalestr[ic],&gscale[ic])==1) {
       if (gdk_colormap_alloc_color(cmap,&gscale[ic],FALSE,TRUE)==1) {
         ngscale=ngscale+1;
@@ -2240,12 +2244,12 @@ void setgscale_() {
     }
   }
 /* Some colours not allocated attempt half of the colours. Begin by freeing initial allocated set. */
-  if ( ngscale <= 47 ) {
+  if ( ngscale <= 83 ) {
     gdk_colormap_free_colors(cmap,&gscale[0],(gint) ngscale);
     // fprintf(stderr,"Trying reduced grey set\n");
     ngscale = 0;
     ih = -1;
-    for (ic=0; ic<24; ic++) {
+    for (ic=0; ic<40; ic++) {
       ih = ih + 2;
       if (gdk_color_parse(gscalestr[ih],&gscale[ic])==1) {
         if (gdk_colormap_alloc_color(cmap,&gscale[ic],FALSE,TRUE)==1) {

@@ -21,8 +21,8 @@ C Software Foundation, Inc., 59 Temple Place, Suite 330,
 C Boston, MA 02111-1307 USA.
 
 c This file contains the folowing functions:
-c	FAN_ENERGY_CONSUMPTION
-c			determines the energy consumption of the fan
+c  FAN_ENERGY_CONSUMPTION
+c    determines the energy consumption of the fan
 c *********************************************************************
 
 c FAN_ENERGY_CON
@@ -33,33 +33,33 @@ c Copyright 2000: NRCan Buildings Group
 c
 c Function to determine the indoor circulation fan energy consumption 
 
-c References:	
-c		"Further developments to the HOT2000 subroutine - Part B:
-c              	furnace an heat pump models", prepared for Energy Mines 
-c              	and Resource Canada, Energy Efficiency Division. 
-c              	Submitted by C. Barringer. Report No. ET-91-045
+c References:
+c   "Further developments to the HOT2000 subroutine - Part B:
+c   furnace an heat pump models", prepared for Energy Mines 
+c   and Resource Canada, Energy Efficiency Division. 
+c   Submitted by C. Barringer. Report No. ET-91-045
 
-c		Furnace Model for Implementation in H3K
-c		H3K model documentation,
-c		Kamel Haddad, April 5th 2000
+c   Furnace Model for Implementation in H3K
+c   H3K model documentation,
+c   Kamel Haddad, April 5th 2000
 
-c		Air-Source Heat Pump Model for Implementation in H3k
-c		H3k model documentation, Kamel Haddad, June 10 2000
+c   Air-Source Heat Pump Model for Implementation in H3k
+c   H3k model documentation, Kamel Haddad, June 10 2000
 
 
 c INPUTS:
-c	isys		number for hvac system
-c	plrp		part-load ratio of the primary system
-c	plrb		part-load ratio of the backup system
-c       plfp            part-load factor of primary system
-c       plfb            part-load factor of backup system
-c    	PERS		common containing number of time steps per hour
-c	HVAC_INPUT_DATA	common for HVAC input data
-c	HEAT_PUMP_INPUT_DATA
-c			common for heat pump input data
+c  isys    number for hvac system
+c  plrp    part-load ratio of the primary system
+c  plrb    part-load ratio of the backup system
+c  plfp    part-load factor of primary system
+c  plfb    part-load factor of backup system
+c  PERS    common containing number of time steps per hour
+c  HVAC_INPUT_DATA  common for HVAC input data
+c  HEAT_PUMP_INPUT_DATA
+c          common for heat pump input data
 
 c OUTPUTS:
-c       FAN_ENERGY_CON	energy consumption of the indoor fan in J
+c       FAN_ENERGY_CON  energy consumption of the indoor fan in J
 c **********************************************************************
       REAL FUNCTION FAN_ENERGY_CON(isys,plrp,plrb,plfp,plfb)
 
@@ -218,16 +218,15 @@ c
 c Function to determine the furnace/boiler draft fan energy consumption.
 
 c INPUTS:
-c       isys            hvac system number associated with furnace/boiler
-c	plr		part-load ratio of furnace/boiler
-c       plf             part-load factor of furnace/boiler
-c    	PERS		common containing number of time steps per hour
-c       fan_power	draft fan power
+c  isys    hvac system number associated with furnace/boiler
+c  plr     part-load ratio of furnace/boiler
+c  plf     part-load factor of furnace/boiler
+c  PERS    common containing number of time steps per hour
+c          fan_power  draft fan power
 
 c OUTPUTS:
-c       DRAFT_FAN_ENERGY	
-c                       energy consumption of furnace/boiler draft fan
-c                       in J
+c       DRAFT_FAN_ENERGY
+c          energy consumption of furnace/boiler draft fan in J
 c *********************************************************************
       REAL FUNCTION DRAFT_FAN_ENERGY(isys,fan_power,plr,plf)
 

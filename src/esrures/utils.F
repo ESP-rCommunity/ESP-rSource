@@ -602,7 +602,7 @@ C Not a domain combination that we can work with.
 C ******************** ZNLIST ********************
 C ZNLIST takes the current selected zones and builds a descriptive
 C string to be used in headers. 
-
+C Currently only deals with up to 28 zones.
       SUBROUTINE ZNLIST(zdescr,length,ierr)
 #include "building.h"
 
@@ -664,11 +664,13 @@ C a different colour for each name.
       common/appcols/mdispl,nifgrey,ncset,ngset,nzonec
       character word*24
       logical unixok
+
+      integer NZL
       
 #ifdef OSI
-      integer iix,iiy,iicol
+      integer iix,iiy,iicol,iiline,iicx,iisize
 #else
-      integer*8 iix,iiy,iicol
+      integer*8 iix,iiy,iicol,iiline,iicx,iisize
 #endif
 
 C Figure out how much text there is to write out. isecond is the last
@@ -686,20 +688,21 @@ C zone index that fit within 72 characters.
 C Full name of zone can be written. Find position of "Zones"
 C Set ix to last character position before looping through zones.
         word='Zones:'
-        call findviewtext(2,line,isize,ix,iy)
+        iiline=line; iicx=2; iisize=isize
+        call findviewtext(iicx,iiline,iisize,iix,iiy)
         iicol=0
         call winscl('-',iicol)
-        iix=ix; iiy=iy;
         call wstxpt(iix,iiy,word)
         icx=9
         do 43 i=1,NZ
 
 C Find x and y pixels for the current line and character postion.
 C Then get index of colour for this zone, then plot text in that colour.
-          call findviewtext(icx,line,isize,ix,iy)
+          iiline=line; iicx=icx; iisize=isize
+          call findviewtext(iicx,iiline,iisize,iix,iiy)
           lna=lnzname(NZNO(i))
           write(word,'(a)',iostat=ios,err=1) zname(NZNO(I))(1:lna)
-          call textatxy(ix,iy,word,'z',NZNO(i))
+          call textatxy(iix,iiy,word,'z',NZNO(i))
           icx=icx+lna+1
   43    continue
         iicol=0
@@ -711,10 +714,10 @@ C Then get index of colour for this zone, then plot text in that colour.
 C Try writing full name of zone on two lines. Find position of "Zones"
 C Set ix to last character position before looping through zones.
         word='Zones:'
-        call findviewtext(2,line,isize,ix,iy)
+        iiline=line; iicx=2; iisize=isize
+        call findviewtext(iicx,iiline,iisize,iix,iiy)
         iicol=0
         call winscl('-',iicol)
-        iix=ix; iiy=iy;
         call wstxpt(iix,iiy,word)
         icx=9
         iloop=MIN0(isecond,NZ)
@@ -722,10 +725,11 @@ C Set ix to last character position before looping through zones.
 
 C Find x and y pixels for the current line and character postion.
 C Then get index of colour for this zone, then plot text in that colour.
-          call findviewtext(icx,line,isize,ix,iy)
+          iiline=line; iicx=icx; iisize=isize
+          call findviewtext(iicx,iiline,iisize,iix,iiy)
           lna=lnzname(NZNO(i))
           write(word,'(a)',iostat=ios,err=1) zname(NZNO(I))(1:lna)
-          call textatxy(ix,iy,word,'z',NZNO(i))
+          call textatxy(iix,iiy,word,'z',NZNO(i))
           icx=icx+lna+1
  143    continue
         call forceflush()
@@ -738,10 +742,11 @@ C If there is a second line that can be created do it.
 
 C Find x and y pixels for the current line and character postion.
 C Then get index of colour for this zone, then plot text in that colour.
-            call findviewtext(icx,line+1,isize,ix,iy)
+            iiline=line+1; iicx=icx; iisize=isize
+            call findviewtext(iicx,iiline,iisize,iix,iiy)
             lna=lnzname(NZNO(i))
             write(word,'(a)',iostat=ios,err=1) zname(NZNO(I))(1:lna)
-            call textatxy(ix,iy,word,'z',NZNO(i))
+            call textatxy(iix,iiy,word,'z',NZNO(i))
             icx=icx+lna+1
  144      continue
         endif
@@ -750,102 +755,61 @@ C Then get index of colour for this zone, then plot text in that colour.
         call forceflush()
         return
       else
-        if(NZ.eq.1)then
-          write(word,'(A,I2,A)',iostat=ios,err=1)' Zone (',NZNO(1),') '
-          call findviewtext(2,line,isize,ix,iy)
-          iicol=0
-          call winscl('-',iicol)
-          iix=ix; iiy=iy;
-          call wstxpt(iix,iiy,word)
-          icx=11
-          call findviewtext(icx,line,isize,ix,iy)
-          lna=lnzname(NZNO(1))
-          write(word,'(a)',iostat=ios,err=1) zname(NZNO(1))(1:lna)
-          call textatxy(ix,iy,word,'z',NZNO(1))
-          iicol=0
-          call winscl('-',iicol)
-          call forceflush()
-        elseif(NZ.gt.1.and.NZ.LE.20)THEN
+
+C There are more than 140 characters so write numbers instead.
+        if(NZ.ge.1.and.NZ.LE.28)THEN
           word='Zones:'
-          call findviewtext(2,line,isize,ix,iy)
+          iiline=line; iicx=2; iisize=isize
+          call findviewtext(iicx,iiline,iisize,iix,iiy)
           iicol=0
           call winscl('-',iicol)
-          iix=ix; iiy=iy;
           call wstxpt(iix,iiy,word)
           icx=9
-          do 44 i=1,NZ
-            call findviewtext(icx,line,isize,ix,iy)
+          do i=1,NZ
+            iiline=line; iicx=icx; iisize=isize
+            call findviewtext(iicx,iiline,iisize,iix,iiy)
             lna=2
-            write(word,'(i2)',iostat=ios,err=1) NZNO(I)
-            call textatxy(ix,iy,word,'z',NZNO(i))
+            write(word,'(i2.2)',iostat=ios,err=1) NZNO(I)
+            call textatxy(iix,iiy,word,'z',NZNO(i))
             icx=icx+lna+1
-  44      continue
-          iicol=0
-          call winscl('-',iicol)
-          call forceflush()
-          return
-        ELSEIF(NZ.GT.20.AND.NZ.LE.24)THEN
-          word='Zones:'
-          call findviewtext(2,line,isize,ix,iy)
-          iicol=0
-          call winscl('-',iicol)
-          iix=ix; iiy=iy;
-          call wstxpt(iix,iiy,word)
-          icx=9
-          do 45 i=1,NZ
-            call findviewtext(icx,line,isize,ix,iy)
-            if(i.ge.1.and.i.lt.10)then
-              lna=1
-              write(word,'(i1)',iostat=ios,err=1) NZNO(I)
-            elseif(i.ge.10)then
-              lna=2
-              write(word,'(i2)',iostat=ios,err=1) NZNO(I)
-            endif
-            call textatxy(ix,iy,word,'z',NZNO(i))
-            icx=icx+lna+1
-  45      continue
-          iicol=0
-          call winscl('-',iicol)
-          call forceflush()
-          return
-        ELSEIF(NZ.GT.24.AND.NZ.LE.28)THEN
-          word='Zn:'
-          call findviewtext(2,line,isize,ix,iy)
-          iicol=0
-          call winscl('-',iicol)
-          iix=ix; iiy=iy;
-          call wstxpt(iix,iiy,word)
-          icx=5
-          do 46 i=1,NZ
-            call findviewtext(icx,line,isize,ix,iy)
-            if(i.ge.1.and.i.lt.10)then
-              lna=1
-              write(word,'(i1)',iostat=ios,err=1) NZNO(I)
-            elseif(i.ge.10)then
-              lna=2
-              write(word,'(i2)',iostat=ios,err=1) NZNO(I)
-            endif
-            call textatxy(ix,iy,word,'z',NZNO(i))
-            icx=icx+lna+1
-  46      continue
+          enddo
           iicol=0
           call winscl('-',iicol)
           call forceflush()
           return
         ELSEIF(NZ.GT.28)THEN
-          icx=2
-          do 47 i=1,NZ
-            call findviewtext(icx,line,isize,ix,iy)
-            if(i.ge.1.and.i.lt.10)then
-              lna=1
-              write(word,'(i1)',iostat=ios,err=1) NZNO(I)
-            elseif(i.ge.10)then
-              lna=2
-              write(word,'(i2)',iostat=ios,err=1) NZNO(I)
-            endif
-            call textatxy(ix,iy,word,'z',NZNO(i))
+
+C Write out digits on two lines.
+          word='Zones:'
+          iiline=line; iicx=2; iisize=isize
+          call findviewtext(iicx,iiline,iisize,iix,iiy)
+          iicol=0
+          call winscl('-',iicol)
+          call wstxpt(iix,iiy,word)
+          icx=9
+          do i=1,28
+            iiline=line; iicx=icx; iisize=isize
+            call findviewtext(iicx,iiline,iisize,iix,iiy)
+            lna=2
+            write(word,'(i2.2)',iostat=ios,err=1) NZNO(I)
+            call textatxy(iix,iiy,word,'z',NZNO(i))
             icx=icx+lna+1
-  47      continue
+          enddo
+          iicol=0
+          call winscl('-',iicol)
+          call forceflush()
+
+          icx=2
+          NZL=NZ
+          if(NZ.gt.56)NZL=56
+          do i=29,NZL
+            iiline=line+1; iicx=icx; iisize=isize
+            call findviewtext(iicx,iiline,iisize,iix,iiy)
+            lna=2
+            write(word,'(i2.2)',iostat=ios,err=1) NZNO(I)
+            call textatxy(iix,iiy,word,'z',NZNO(i))
+            icx=icx+lna+1
+          enddo
           iicol=0
           call winscl('z',iicol)
           call forceflush()
@@ -1574,7 +1538,8 @@ C   the file name.
 
       character*(*) msg,xfile
       character path*72,outs*124,tg*1,outs248*248
-      character ixpfile*144,ttext*42,LCMDFL*144
+      character ttext*42  ! for the 3rd party title dialog
+      character LCMDFL*144
       character longtfile*144,longtfiledos*144
       LOGICAL     spfileok,perok,tstepok,saveok,autook,exitok,startupok
       logical concat,remote,unixok
@@ -1587,13 +1552,7 @@ C For help messages
 
       helpinsub='ctlexp'  ! set for subroutine
 
-C Initial name for export parameter file is xfile+par.
       lenxfile=lnblnk(xfile)
-      if(xfile(1:1).ne.' '.and.lenxfile.gt.2)then
-        write(ixpfile,'(2a)') xfile(1:lnblnk(xfile)),'.par'
-      else
-        ixpfile = 'data.grt.par'
-      endif
 
 C Each call is a toggle.
       ixopen=ixopen+1
@@ -1603,14 +1562,9 @@ C Each call is a toggle.
         call edisp248(iuout,outs248,100)
         if(tg.eq.'X')then
           CALL ERPFREE(ixunit,ISTAT)
-          CALL ERPFREE(ixpunit,ISTAT)
-          write(outs248,'(2a)') 'closing export parameter file: ',
-     &      ixpfile
-          call edisp248(iuout,outs248,100)
           call usrmsg(outs,'reporting >> to display ','-')
         elseif(tg.eq.'T')then
           CALL ERPFREE(ixunit,ISTAT)
-          CALL ERPFREE(ixpunit,ISTAT)
         elseif(tg.eq.'G')then
           call wwcsetend
           call wwcclose(xfile)
@@ -1681,11 +1635,6 @@ C If user request cancel then return after resetting ixopen to zero.
           if(tg.eq.'X')then
             call efopseq(ixunit,xfile,4,IER)
             if(ier.ne.0)return
-            write(ixpfile,'(2a)') xfile(1:lnblnk(xfile)),'.par'
-            call efopseq(ixpunit,ixpfile,4,IER)
-            write(outs248,'(3A)')' opened ',ixpfile(1:lnblnk(ixpfile)),
-     &                           ' for export parameters.'
-            call edisp248(iuout,outs248,100)
           elseif(tg.eq.'T')then
             call efopseq(ixunit,xfile,4,IER)
             if(ier.ne.0)return
@@ -1714,12 +1663,6 @@ C and change any / to \.
             CALL ERPFREE(ixunit,ISTAT)
             call FPOPEN(ixunit,ISTAT,1,3,xfile)
             if(ISTAT.lt.0)return
-            write(ixpfile,'(a,a)') xfile(1:lnblnk(xfile)),'.par'
-            CALL ERPFREE(ixpunit,ISTAT)
-            call FPOPEN(ixpunit,ISTAT,1,3,ixpfile)
-            write(outs248,'(3A)')' opened ',ixpfile(1:lnblnk(ixpfile)),
-     &                           ' for export parameters.'
-            call edisp248(iuout,outs248,100)
           elseif(tg.eq.'T')then
             CALL ERPFREE(ixunit,ISTAT)
             call FPOPEN(ixunit,ISTAT,1,3,xfile)
@@ -1734,81 +1677,83 @@ C and change any / to \.
         call edisp248(iuout,outs248,100)
 
 C If tabular info then create the headder to the xvgr parameter file.
+C This facility commented out.
         if(tg.eq.'X')then
-          write(ixpunit,'(a)') '# ACE/gr parameter file'
-          write(ixpunit,'(a)') '# '
-          write(ixpunit,'(a)') 'page 5'
-          write(ixpunit,'(a)') 'page inout 5'
-          write(ixpunit,'(a)') 'link page off'
-          write(ixpunit,'(a)') 'with g0'
-          write(ixpunit,'(a)') 'g0 on'
-          write(ixpunit,'(a)') 'g0 type xy'
-          write(ixpunit,'(a)') 'g0 autoscale type AUTO'
-          write(ixpunit,'(a)') '  default linestyle 1'
-          write(ixpunit,'(a)') '  default linewidth 1'
-          write(ixpunit,'(a)') '  default color 1'
-          write(ixpunit,'(a)') '  default char size 1.0000'
-          write(ixpunit,'(a)') '  default font 2'
-          write(ixpunit,'(a)') '  default font source 0'
-          write(ixpunit,'(a)') '  default symbol size 0.5000'
-          write(ixpunit,'(a)') '  view xmin 0.15'
-          write(ixpunit,'(a)') '  view xmax 0.85'
-          write(ixpunit,'(a)') '  view ymin 0.15'
-          write(ixpunit,'(a)') '  view ymax 0.85'
+C          write(ixpunit,'(a)') '# ACE/gr parameter file'
+C          write(ixpunit,'(a)') '# '
+C          write(ixpunit,'(a)') 'page 5'
+C          write(ixpunit,'(a)') 'page inout 5'
+C          write(ixpunit,'(a)') 'link page off'
+C          write(ixpunit,'(a)') 'with g0'
+C          write(ixpunit,'(a)') 'g0 on'
+C          write(ixpunit,'(a)') 'g0 type xy'
+C          write(ixpunit,'(a)') 'g0 autoscale type AUTO'
+C          write(ixpunit,'(a)') '  default linestyle 1'
+C          write(ixpunit,'(a)') '  default linewidth 1'
+C          write(ixpunit,'(a)') '  default color 1'
+C          write(ixpunit,'(a)') '  default char size 1.0000'
+C          write(ixpunit,'(a)') '  default font 2'
+C          write(ixpunit,'(a)') '  default font source 0'
+C          write(ixpunit,'(a)') '  default symbol size 0.5000'
+C          write(ixpunit,'(a)') '  view xmin 0.15'
+C          write(ixpunit,'(a)') '  view xmax 0.85'
+C          write(ixpunit,'(a)') '  view ymin 0.15'
+C          write(ixpunit,'(a)') '  view ymax 0.85'
 
+C Many scripts expect this dialog. Consider how to depreciate it.
           helptopic='res_export_title_3rd'
           call gethelptext(helpinsub,helptopic,nbhelp)
           ttext = 'Simulation Results'
           call easks(ttext,'Title for 3rd party graph: ',' ',42,
      &      'Simulation Results ','3rd party title',IER,nbhelp)
-          write(ixpunit,'(a,a,a)') 'title "',
-     &      ttext(1:lnblnk(ttext)),'"'
-          write(ixpunit,'(a)') 'title font 4'
-          write(ixpunit,'(a)') 'title size 1.25'
+C          write(ixpunit,'(a,a,a)') 'title "',
+C     &      ttext(1:lnblnk(ttext)),'"'
+C          write(ixpunit,'(a)') 'title font 4'
+C          write(ixpunit,'(a)') 'title size 1.25'
 
 C Include the name of the results library as a subtitle.
-          write(ixpunit,'(a,a,a)') 'subtitle "',
-     &       LCMDFL(1:lnblnk(LCMDFL)),'"'
-          write(ixpunit,'(a)') 'subtitle font 4'
-          write(ixpunit,'(a)') 'subtitle size 1.00'
+C          write(ixpunit,'(a,a,a)') 'subtitle "',
+C     &       LCMDFL(1:lnblnk(LCMDFL)),'"'
+C          write(ixpunit,'(a)') 'subtitle font 4'
+C          write(ixpunit,'(a)') 'subtitle size 1.00'
           
 C Typical xaxis stuff.
-          write(ixpunit,'(a)') '  xaxis  label "Day of year"'
-          write(ixpunit,'(a)') '  xaxis  label place auto'
-          write(ixpunit,'(a)') '  xaxis  label char size 1.0000'
-          write(ixpunit,'(a)') '  xaxis  label font 4'
-          write(ixpunit,'(a)') '  xaxis  label color 1'
-          write(ixpunit,'(a)') '  xaxis  label linewidth 1'
-          write(ixpunit,'(a)') '  xaxis  ticklabel on'
-          write(ixpunit,'(a)') '  xaxis  ticklabel type auto'
-          write(ixpunit,'(a)') '  xaxis  ticklabel layout horizontal'
-          write(ixpunit,'(a)') '  xaxis  ticklabel  op bottom'
-          write(ixpunit,'(a)') '  xaxis  ticklabel char size 0.75000'
+C          write(ixpunit,'(a)') '  xaxis  label "Day of year"'
+C          write(ixpunit,'(a)') '  xaxis  label place auto'
+C          write(ixpunit,'(a)') '  xaxis  label char size 1.0000'
+C          write(ixpunit,'(a)') '  xaxis  label font 4'
+C          write(ixpunit,'(a)') '  xaxis  label color 1'
+C          write(ixpunit,'(a)') '  xaxis  label linewidth 1'
+C          write(ixpunit,'(a)') '  xaxis  ticklabel on'
+C          write(ixpunit,'(a)') '  xaxis  ticklabel type auto'
+C          write(ixpunit,'(a)') '  xaxis  ticklabel layout horizontal'
+C          write(ixpunit,'(a)') '  xaxis  ticklabel  op bottom'
+C          write(ixpunit,'(a)') '  xaxis  ticklabel char size 0.75000'
           
 C Typical yaxis stuff.
-          write(ixpunit,'(a)') '  yaxis  tick on'
-          write(ixpunit,'(a)') '  yaxis  label "Data"'
-          write(ixpunit,'(a)') '  yaxis  label place auto'
-          write(ixpunit,'(a)') '  yaxis  label char size 1.0000'
-          write(ixpunit,'(a)') '  yaxis  label font 4'
-          write(ixpunit,'(a)') '  yaxis  label color 1'
-          write(ixpunit,'(a)') '  yaxis  label linewidth 1'
-          write(ixpunit,'(a)') '  yaxis  ticklabel on'
-          write(ixpunit,'(a)') '  yaxis  ticklabel type auto'
-          write(ixpunit,'(a)') '  yaxis  ticklabel layout horizontal'
-          write(ixpunit,'(a)') '  yaxis  ticklabel  op left'
-          write(ixpunit,'(a)') '  yaxis  ticklabel char size 0.75000'
-          write(ixpunit,'(a)') '  legend on'
-          write(ixpunit,'(a)') '  legend vgap 2'
-          write(ixpunit,'(a)') '  legend hgap 1'
-          write(ixpunit,'(a)') '  legend x1 0.2'
-          write(ixpunit,'(a)') '  legend y1 0.8'
-          write(ixpunit,'(a)') '  legend length 4'
-          write(ixpunit,'(a)') '  legend color 1 '
-          write(ixpunit,'(a)') '  legend linestyle 1'
-          write(ixpunit,'(a)') '  legend linewidth 1'
-          write(ixpunit,'(a)') '  legend font 4'
-          write(ixpunit,'(a)') '  legend char size 0.75000'
+C          write(ixpunit,'(a)') '  yaxis  tick on'
+C          write(ixpunit,'(a)') '  yaxis  label "Data"'
+C          write(ixpunit,'(a)') '  yaxis  label place auto'
+C          write(ixpunit,'(a)') '  yaxis  label char size 1.0000'
+C          write(ixpunit,'(a)') '  yaxis  label font 4'
+C          write(ixpunit,'(a)') '  yaxis  label color 1'
+C          write(ixpunit,'(a)') '  yaxis  label linewidth 1'
+C          write(ixpunit,'(a)') '  yaxis  ticklabel on'
+C          write(ixpunit,'(a)') '  yaxis  ticklabel type auto'
+C          write(ixpunit,'(a)') '  yaxis  ticklabel layout horizontal'
+C          write(ixpunit,'(a)') '  yaxis  ticklabel  op left'
+C          write(ixpunit,'(a)') '  yaxis  ticklabel char size 0.75000'
+C          write(ixpunit,'(a)') '  legend on'
+C          write(ixpunit,'(a)') '  legend vgap 2'
+C          write(ixpunit,'(a)') '  legend hgap 1'
+C          write(ixpunit,'(a)') '  legend x1 0.2'
+C          write(ixpunit,'(a)') '  legend y1 0.8'
+C          write(ixpunit,'(a)') '  legend length 4'
+C          write(ixpunit,'(a)') '  legend color 1 '
+C          write(ixpunit,'(a)') '  legend linestyle 1'
+C          write(ixpunit,'(a)') '  legend linewidth 1'
+C          write(ixpunit,'(a)') '  legend font 4'
+C          write(ixpunit,'(a)') '  legend char size 0.75000'
         endif
       endif
       RETURN

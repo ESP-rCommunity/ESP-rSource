@@ -173,8 +173,8 @@
 *subroutine ENRFILT
 *item ENRFILT res_data_entry_onoff
 'Clicking on a data entity shown on this menu will'
-'toggle it to "ON" or "OFF". In the "ON" state the'
-'entity will be shown on the graph. In the "OFF" '
+'toggle it to [ON] or [OFF]. In the [ON] state the'
+'entity will be shown on the graph. In the [OFF] '
 'the entity is not graphed.'
 *enditem
         CALL PHELPD(HEAD,4,'-',0,0,IER)

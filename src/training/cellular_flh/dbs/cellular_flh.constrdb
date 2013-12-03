@@ -1,5 +1,5 @@
 # composite construction db defined in ../dbs/cellular_flh.constrdb
-# based on materials db ../dbs/cellular.materials.a
+# based on materials db cellular.materialdb
    17     # no of composites 
 # layers  description   optics name   symmetry tag
     5    extern_wall   OPAQ  OPAQUE        NONSYMMETRIC  
@@ -8,7 +8,7 @@
   211    0.1500  glasswool : Glasswool (generic)
     0    0.0500  air  0.170 0.170 0.170
    22    0.1000  aerated conc block : Aerated concrete block
-  108    0.0120  white gypboard : White paintedd Gypboard
+  108    0.0120  white gypboard : White painted Gypboard
 # layers  description   optics name   symmetry tag
     3    insul_frame   OPAQ  OPAQUE        SYMMETRIC     
 # mat ref thickness (m) mat descr & air gap R
@@ -69,17 +69,17 @@
 # layers  description   optics name   symmetry tag
     5    gyp_blk_ptn   OPAQ  OPAQUE        SYMMETRIC     
 # mat ref thickness (m) mat descr & air gap R
-  108    0.0130  white gypboard : White paintedd Gypboard
+  108    0.0130  white gypboard : White painted Gypboard
     0    0.0500  air  0.170 0.170 0.170
    28    0.1000  block inner : Block inner (3% mc)
     0    0.0500  air  0.170 0.170 0.170
-  108    0.0130  white gypboard : White paintedd Gypboard
+  108    0.0130  white gypboard : White painted Gypboard
 # layers  description   optics name   symmetry tag
     3    gyp_gyp_ptn   OPAQ  OPAQUE        SYMMETRIC     
 # mat ref thickness (m) mat descr & air gap R
-  108    0.0120  white gypboard : White paintedd Gypboard
+  108    0.0120  white gypboard : White painted Gypboard
     0    0.0500  air  0.170 0.170 0.170
-  108    0.0120  white gypboard : White paintedd Gypboard
+  108    0.0120  white gypboard : White painted Gypboard
 # layers  description   optics name   symmetry tag
     2    screed_rev    OPAQ  OPAQUE        screed        
 # mat ref thickness (m) mat descr & air gap R

@@ -32,6 +32,7 @@ C             the model.
 C ***************** UNCERTA *********************
       subroutine UNCERTA(LUALF)
 #include "building.h"
+#include "model.h"
 #include "uncertainty.h"
       
       integer lnblnk  ! function definition
@@ -39,7 +40,6 @@ C ***************** UNCERTA *********************
       COMMON/FILEP/IFIL
       COMMON/OUTIN/IUOUT,IUIN
 
-      common/C21/IFCFG,cfgroot,LCFGF
       common/rpath/path
 
       COMMON/UA2/NILOC,NZG(MNIL),NZNOG(MNIL,MCOM),NSG(MNIL,MCOM),
@@ -50,7 +50,6 @@ C ***************** UNCERTA *********************
       CHARACTER*33 ITEM(11)
       character path*72,LUALF*72
       CHARACTER LTEMP*72,DTEMP*72,outs*124
-      character cfgroot*24,LCFGF*72
       integer NITMS,INO ! max items and current menu item
 
       LOGICAL LIBXST
@@ -655,8 +654,8 @@ C First discover if the location is spatial or temporal
       helptopic='uncert_location'
       call gethelptext(helpinsub,helptopic,nbhelp)
       CALL EASKABC(' ',
-     &    'In which domain is the uncertainty location restricted: ',
-     &    'spatial','temporal','both',IW,nbhelp)
+     &  'In which domain is the uncertainty location restricted: ',
+     &  'spatial','temporal','both',IW,nbhelp)
 
       if (IW.eq.1.or.IW.eq.3) then
 
@@ -671,6 +670,7 @@ C Clear zone selected array first.
      &        (iuout,' Single zone model, therefore zone 1 selected. ')
           call edisp(iuout,'  ')
           NZG(NILOC)=1
+          NZNOG(NILOC,1)=1
         else
 
 C Otherwise select the zones from a list of zone names.
@@ -903,8 +903,8 @@ C Everything is OK re selection therefore add type selection to common.
       END
 
 C ************************ UPELM **************************
-C UPELM retrieves the unique materials used in the 
-C esp-r model. This is done by copying all the materials used 
+C UPELM retrieves the unique materials used in the ESP-r 
+C model. This is done by copying all the materials used 
 C into an array, then sorting them via a bubble search removing 
 C any duplicates.
 
@@ -915,8 +915,8 @@ C any duplicates.
 
 C      COMMON/OUTIN/IUOUT,IUIN
 
-      COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
-      LOGICAL        CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
+      COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,CFCDBOK
+      LOGICAL        CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,CFCDBOK
 
       INTEGER PRIMLIST(MMLC*ME)
 
@@ -939,12 +939,12 @@ C composite construction database.
         ENDIF
       ENDIF
 
-C Search through the composites and store the materials db ref.
+C Search through the constructions and store the materials array index.
       IPRIM=0
       do 10, IMLC=1,NMLC
         do 20, ILAY=1,LAYERS(IMLC)
           IPRIM=IPRIM+1
-          PRIMLIST(IPRIM)=IPR(IMLC,ILAY)
+          PRIMLIST(IPRIM)=IPRMAT(IMLC,ILAY)
    20   continue
    10 continue
 

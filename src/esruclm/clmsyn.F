@@ -319,7 +319,6 @@ C Setup and pass in parameters to win3d.
         iigl=igl; iigr=igr; iigt=igt; iigb=igb; iigw=igw; iigwh=igwh
         CALL win3d(iimenu,iiw1,iiw2,iiw3,iiw4,
      &    iigl,iigr,iigt,iigb,iigw,iigwh)
-C        CALL win3d(menuchw,10,20,5,3,igl,igr,igt,igb,igw,igwh)
         igl=int(iigl); igr=int(iigr); igt=int(iigt); igb=int(iigb)
         igw=int(iigw); igwh=int(iigwh)
         call startbuffer()
@@ -511,6 +510,13 @@ C      6 RELATIVE HUMIDITY
       DIMENSION XMAXI(MT),XMINI(MT),XMEANI(MT),X2I(MT)
       DIMENSION XMAXM(MT),XMINM(MT),XMEANM(MT),X2M(MT)
       character outs*124,VNAME*32
+
+C If IP is zero then warn user and return.
+      if(IP.eq.0)then
+        call usrmsg('No weather data selected for stats.',
+     &    'Please select one and try again.','W')
+        return
+      endif
 
 C INITIALISE PARAMETERS FOR WHOLE PERIOD
       BIG=1E10

@@ -52,6 +52,7 @@ C    and returns 1 if first date is more current, 0 if the same, otherwise -1.
 C  getsecs: Get computer clock seconds.
 
 C  iEGetArrW: integer function that breaks a string into an array.
+C  iEGetArrW_2500: Same as iEGetArrW but for strings 2500 ch long. 
 
 C  DAYCLK:  Print day, month, day no. and time based on the julian day & time.
 C  FDROOT:  Given a file name see if it contains a path.
@@ -119,6 +120,7 @@ C  STRIPC: Strips comments from a ASCII file str (124 char) & returns data.
 C  LSTRIPC: Strips comments from a ASCII file str (248 char) & returns data.
 C  STRIPC400 strips comments from a ASCII file (400 char long) string and returns the data.
 C  STRIPC1K strips comments from a ASCII file (1000 char long) string and returns the data.
+C  STRIPC2500 strips comments from a ASCII file (2500 char long) string and returns the data.
 C  CHARCH: Routine to check a string for a specific number of data items.
 C  NOYES:  INTEGER FUNCTION to read the answer Y,y,1,N,n,0 to a question.
 C  IFIRST: Function returning ASCII value for 1st char in a string ISTR.
@@ -596,7 +598,7 @@ C IUN, ISTAT, MODE, and IXIST;  FNARG is the file name.
         SUBROUTINE FPOPEN(IUN,ISTAT,MODE,IXIST,FNARG)
         CHARACTER*(*) FNARG
         LOGICAL        XST
-	logical unixok
+        logical unixok
 
         lfn=max(1,LNBLNK(fnarg))
 
@@ -724,8 +726,8 @@ C       >0      (LENG  ) words per record, ff BINARY   records
 C IUN,ISTAT, and IXIST are the same as standard conventions.
         SUBROUTINE FPRAND(IUN,ISTAT,LENG,IXIST,FNARG)
         CHARACTER*(*) FNARG
-	logical unixok
-	
+        logical unixok
+
         lfn = lnblnk(FNARG)
 
         call isunix(unixok)
@@ -1626,7 +1628,10 @@ C If path is '  ' or './' do not concatenate
 C This version includes cross-platform logic.
       SUBROUTINE addpath(SFILE,tfile,concat)
       IMPLICIT NONE
-      
+
+C Functions
+      integer lnblnk
+
 C Declare calling parameters
       CHARACTER*(*), INTENT(OUT) :: sfile,tfile
       LOGICAL, INTENT(OUT) :: concat
@@ -1634,9 +1639,9 @@ C Declare local variables
       LOGICAL :: unixok
       CHARACTER :: fs,bs,a1
       CHARACTER(72) :: path
-	  CHARACTER(12) :: tp, tp1
-	  CHARACTER(124):: outs
-	  INTEGER :: LN,LNS,I,LT,ios,iuin,iuout,pos
+      CHARACTER(12) :: tp, tp1
+      CHARACTER(124):: outs
+      INTEGER :: LN,LNS,I,LT,ios,iuin,iuout,pos
 C Common blocks
       COMMON/OUTIN/IUOUT,IUIN
       common/rpath/path
@@ -1645,7 +1650,7 @@ C Define path and file name lengths and check operating system.
       LN=max(1,lnblnk(path))
       LNS=max(1,lnblnk(sfile))
       call isunix(unixok)
-	
+
 C Set folder separator (fs) to \ or / and the folders to ignore as required.
       fs = char(47)
       bs = char(92)
@@ -1718,8 +1723,8 @@ C Limit feedback text length to fit within outs text buffer.
           write(outs,*)
      &      'addpath: warning found unix path changing to windows.'
           call edisp(iuout,outs)
-	      LNS=lnblnk(sfile)
-	      if(LNS.gt.112) LNS=112
+          LNS=lnblnk(sfile)
+          if(LNS.gt.112) LNS=112
           write(outs,*) 'addpath: ',sfile(1:LNS)
           call edisp(iuout,outs)
         endif
@@ -1856,16 +1861,14 @@ C   1  write(6,*) 'c2fstr: error writing: ',cstr
 C      return
       end
 
-C ******* termode
-C termode: given an index `mode` return a terminal text string.
-      SUBROUTINE termode(mode,tmode)
+
+C ******* terminalmode
+C terminalmode: given an index `mode` return a terminal text string.
+C this would be called based on the fortran setting of mode in prj.
+      SUBROUTINE terminalmode(mode,tmode)
       CHARACTER*(*) tmode
 
-#ifdef OSI
       integer mode          ! passed from tchild
-#else
-      integer*8 mode          ! passed from tchild
-#endif
 
       tmode = ' '
       if(mode.eq.-1)then
@@ -2068,16 +2071,20 @@ C knowledge of the first is required.  See also EPMENRC which pops the
 C information back into common PMENU.
       SUBROUTINE EPMENSV
 #include "epara.h"
-      COMMON/PMENUSV/MHEAD1(5),MCTL1(5),MIFUL1(5),MFUL1(5),IST1(5),
-     &               ILEN1(5),IPM1(5),MPM1(5),IPFLG1(5),MILEV
+      COMMON/PMENUSV/MHEAD1(10),MCTL1(10),MIFUL1(10),MFUL1(10),IST1(10),
+     &               ILEN1(10),IPM1(10),MPM1(10),IPFLG1(10),MILEV
+      COMMON/OUTIN/IUOUT,IUIN
+      CHARACTER outs*124
       MILEV=MILEV+1
-      if(MILEV.gt.5)then
+      if(MILEV.gt.10)then
 
 C Debug.
-C        write(6,*) 'Number of nested levels is',MILEV
+        write(outs,*) 'Number of nested menu levels is',MILEV,
+     &    ' which exceeds allowable menu depth.'
+        call edisp(iuout,outs)
 
       endif
-      do 42 j=5,2,-1
+      do 42 j=10,2,-1
         i=j-1
         MHEAD1(j)=MHEAD1(i)
         MCTL1(j)=MCTL1(i)
@@ -2109,8 +2116,8 @@ C block PMENUSV.
 C This is useful if returning from a second menu.  See also EPMENSV.
       SUBROUTINE EPMENRC
 #include "epara.h"
-      COMMON/PMENUSV/MHEAD1(5),MCTL1(5),MIFUL1(5),MFUL1(5),IST1(5),
-     &               ILEN1(5),IPM1(5),MPM1(5),IPFLG1(5),MILEV
+      COMMON/PMENUSV/MHEAD1(10),MCTL1(10),MIFUL1(10),MFUL1(10),IST1(10),
+     &               ILEN1(10),IPM1(10),MPM1(10),IPFLG1(10),MILEV
       MILEV=MILEV-1
       if(MILEV.le.0)then
 
@@ -2125,10 +2132,10 @@ C        write(6,*) 'Number of nested levels is',MILEV
       MFULL=MFUL1(1)
       IST=IST1(1)
       ILEN=ILEN1(1)
-      IPM=IPM1(3)
+      IPM=IPM1(1)
       MPM=MPM1(1)
       IPFLG=IPFLG1(1)
-      do 42 i=2,5
+      do 42 i=2,10
         j=i-1
         MHEAD1(j)=MHEAD1(i)
         MCTL1(j)=MCTL1(i)
@@ -3348,7 +3355,7 @@ C is zero then all items written, else the index of the last item
 C which was written. Delm is delimeter between items.
 
       SUBROUTINE ARLIST(inst,inrl,rlist,inrs,delm,pckstr,length,itrunc)
-      COMMON/OUTIN/IUOUT,IUIN
+C      COMMON/OUTIN/IUOUT,IUIN
       dimension rlist(inrs)
       character*(*) pckstr
       CHARACTER item*16,delm*1
@@ -3423,7 +3430,7 @@ C This subroutine is same as ARLIST but the final string written out is
 C shorter
 
       SUBROUTINE AELIST(inst,inrl,rlist,inrs,delm,pckstr,length,itrunc)
-      COMMON/OUTIN/IUOUT,IUIN
+C      COMMON/OUTIN/IUOUT,IUIN
       dimension rlist(inrs)
       character*(*) pckstr
       CHARACTER item*16,delm*1
@@ -3496,7 +3503,7 @@ C is zero then all items written, else the index of the last item
 C which was written. Delm is delimeter between items.
 
       SUBROUTINE AILIST(inst,inil,ilist,inisz,delm,pckstr,length,itrunc)
-      COMMON/OUTIN/IUOUT,IUIN
+C      COMMON/OUTIN/IUOUT,IUIN
       dimension ilist(inisz)
       character*(*) pckstr
       CHARACTER item*10,delm*1
@@ -3570,7 +3577,7 @@ C which was written. Delm is delimeter between items. It is assumed
 C that each string array item is less than 32 characters wide.
 
       SUBROUTINE ASLIST(inst,inil,list,inisz,delm,pckstr,length,itrunc)
-      COMMON/OUTIN/IUOUT,IUIN
+C      COMMON/OUTIN/IUOUT,IUIN
       dimension list(inisz)
       character*(*) pckstr,list
       CHARACTER item*32,delm*1
@@ -3646,7 +3653,8 @@ C that each string array item is less than 24 characters wide.
 
       SUBROUTINE ASLIST2(inst,inil,list,inisz,inisz2,inirw,
      &delm,pckstr,length,itrunc)
-      COMMON/OUTIN/IUOUT,IUIN
+
+C      COMMON/OUTIN/IUOUT,IUIN
       dimension list(inisz,inisz2)
       character*(*) pckstr,list
       CHARACTER item*24,delm*1
@@ -3720,10 +3728,11 @@ C which was written. Delm is delimeter between items. It is assumed
 C that each string array item is less than 48 characters wide.
 
       SUBROUTINE ASFLIST(inst,inil,list,inisz,delm,pckstr,length,itrunc)
-      COMMON/OUTIN/IUOUT,IUIN
+C      COMMON/OUTIN/IUOUT,IUIN
       dimension list(inisz)
       character*(*) pckstr,list
-      CHARACTER item*48,delm*1,outs*124
+      CHARACTER item*48,delm*1
+C      character outs*124
 
       itrunc=0
       LS=LEN(pckstr)
@@ -3878,11 +3887,11 @@ C Find out the number of separate words/string groupings.
       if(IOS.eq.2)then
         write(outs,*) 'STRIPC: permission error writing warning re: '
         call edisp(iuout,outs)
-	call edisp(iuout,outstr(1:72))
+        call edisp(iuout,outstr(1:72))
       else
         write(outs,*) 'STRIPC: error writing warning re: '
         call edisp(iuout,outs)
-	call edisp(iuout,outstr(1:72))
+        call edisp(iuout,outstr(1:72))
       endif
 
       END
@@ -3985,11 +3994,11 @@ C Find out the number of separate words/string groupings.
       if(IOS.eq.2)then
         write(outs,*) 'LSTRIPC: permission error writing warning re: '
         call edisp(iuout,outs)
-	call edisp(iuout,outstr(1:72))
+        call edisp(iuout,outstr(1:72))
       else
         write(outs,*) 'LSTRIPC: error writing warning re: '
         call edisp(iuout,outs)
-	call edisp(iuout,outstr(1:72))
+        call edisp(iuout,outstr(1:72))
       endif
       return
 
@@ -4096,11 +4105,11 @@ C Find out the number of separate words/string groupings.
       if(IOS.eq.2)then
         write(outs,*) 'LSTRIPC4: permission error writing warning re: '
         call edisp(iuout,outs)
-	call edisp(iuout,outstr(1:72))
+        call edisp(iuout,outstr(1:72))
       else
         write(outs,*) 'LSTRIPC4: error writing warning re: '
         call edisp(iuout,outs)
-	call edisp(iuout,outstr(1:72))
+        call edisp(iuout,outstr(1:72))
       endif
       return
 
@@ -4213,11 +4222,128 @@ C Find out the number of separate words/string groupings.
       if(IOS.eq.2)then
         write(outs,*) 'LSTRIPC4: permission error writing warning re: '
         call edisp(iuout,outs)
-	call edisp(iuout,outstr(1:72))
+        call edisp(iuout,outstr(1:72))
       else
         write(outs,*) 'LSTRIPC4: error writing warning re: '
         call edisp(iuout,outs)
-	call edisp(iuout,outstr(1:72))
+        call edisp(iuout,outstr(1:72))
+      endif
+      return
+
+      END
+
+C ******************** STRIPC2500
+C STRIPC2500 strips comments from a ASCII file (2500 char long) string and returns the data.
+C It assumes that if a string begins with a '#' then the whole line is
+C a comment an the next line is read.  If a ' #' is discovered within
+C a line the rest of the line is removed.
+C IER=0 if ok. MSG is a text string used in error messages. If
+C IR=0 then acts silently, otherwise notes when EOF found.
+C IEXP is the number of expected items in the line:
+C   IEXP = 0 means don't care or already know no. items - don't check
+C   IEXP >0  means a specific number of items expected (error if not)
+C   IEXP = 99 check number of items and return in ITEMS
+
+      SUBROUTINE STRIPC2500(INPCH,OUTSTR,IEXP,ITEMS,IR,MSG,IER)
+#include "espriou.h"
+
+      integer iCountWords
+
+      COMMON/OUTIN/IUOUT,IUIN
+      CHARACTER*2500 OUTSTR,STRING,TMP
+      CHARACTER loutstr*248,outs*124
+      character truncstr*248   ! truncate outsr for reporting.
+      CHARACTER*(*) MSG
+      logical unixok
+
+C Read a line of the file, strip off any trailing blanks, if the first
+C character is a # then read the next line from the file.
+      IER=0
+    8 READ(INPCH,10,IOSTAT=ISTAT,ERR=101,END=102)STRING
+   10 FORMAT(A)
+      tmp=STRING(1:LNBLNK(STRING))
+
+C Take the string and check for a #, discarding any text which follows.
+      iloc = INDEX(tmp,'#')
+      if(iloc.eq.1)then
+        goto 8
+      elseif(iloc.eq.0)then
+        OUTSTR=tmp
+      elseif(iloc.gt.1)then
+        OUTSTR=tmp(1:ILOC-1)
+      endif
+
+C For messages we need to remember the initial part of the long string.
+      lastcc = MIN0(LNBLNK(OUTSTR),247)
+      write(truncstr,'(a)') OUTSTR(1:lastcc)
+
+C Find out the number of separate words/string groupings.
+      if(IEXP.eq.99)then
+        ITEMS = iCountWords(OUTSTR)
+      elseif(IEXP.eq.0)then
+        ITEMS=0
+      elseif(IEXP.gt.0)then
+        ITEMS = iCountWords(OUTSTR)
+        if(IEXP.ne.ITEMS)then
+          LN=max(1,lnblnk(currentfile))
+          LNM=max(1,lnblnk(MSG))
+          if(currentfile(1:2).ne.'  ')then
+            WRITE(loutstr,'(3A,I3,3A)')' In ',currentfile(1:LN),
+     &        ' expecting',IEXP,' items (',MSG(1:LNM),') in...'
+            CALL LUSRMSG(loutstr,truncstr,'F')
+          else
+            WRITE(loutstr,'(A,I3,3A)')' Expecting',IEXP,' items (',
+     &         MSG(1:LNM),') in...'
+            CALL LUSRMSG(loutstr,truncstr,'F')
+          endif
+        endif
+      endif
+
+    4 RETURN
+
+  101 IER=1
+      IF(IR.EQ.1)THEN
+        LN=max(1,lnblnk(currentfile))
+        LNM=max(1,lnblnk(MSG))
+        if(currentfile(1:2).ne.'  ')then
+          WRITE(loutstr,'(5A)')' In ',currentfile(1:LN),
+     &      ' error reading (',MSG(1:LNM),') in...'
+        else
+          WRITE(loutstr,'(A,A)',IOSTAT=IOS,ERR=1)' Error reading: ',
+     &      MSG(1:LNM),') in...'
+        endif
+        lastcc = MIN0(LNBLNK(STRING),247)
+        write(truncstr,'(a)') STRING(1:lastcc)
+        CALL LUSRMSG(loutstr,truncstr,'W')
+      ENDIF
+      goto 4
+
+  102 IER=2
+      IF(IR.EQ.1)THEN
+        LN=max(1,lnblnk(currentfile))
+        LNM=max(1,lnblnk(MSG))
+        if(currentfile(1:2).ne.'  ')then
+          WRITE(loutstr,'(5A)')' In ',currentfile(1:LN),
+     &      ' error reading (',MSG(1:LNM),') EOF sensed.'
+        else
+          WRITE(loutstr,'(3A)',IOSTAT=IOS,ERR=1)' Error reading ',
+     &      MSG(1:LNM),' EOF sensed.'
+        endif
+        CALL LUSRMSG(' ',loutstr,'-')
+      ENDIF
+      goto 4
+
+   1  call isunix(unixok)
+      if(.NOT.unixok) return  ! if DOS return because of lack of I/O channel
+      if(IOS.eq.2)then
+        write(outs,*) 
+     &  'STRIPC2500: permission error writing warning re: '
+        call edisp(iuout,outs)
+        call edisp(iuout,outstr(1:72))
+      else
+        write(outs,*) 'STRIPC2500: error writing warning re: '
+        call edisp(iuout,outs)
+        call edisp(iuout,outstr(1:72))
       endif
       return
 
@@ -4418,7 +4544,7 @@ C Reset string index K
 C Get end day and year
             write(HOLD,'(I4,I5)') iedoy,iEYr
             CALL EASKS(HOLD,PROMP1,' End day and year?',16,
-     &      ' 365 2000 ','end day and year',IER,2)
+     &      ' 365 2007 ','end day and year',IER,2)
 
             CALL EGETWI(HOLD,K,iedoy,1,365,'F','end doy',IER)
             if  ( ier .ne. 0 ) BDateok = .false.
@@ -4453,7 +4579,7 @@ C Append year to string
             H(3)='not presently supported.'
             CALL EASKS(HOLD,PROMP1,
      &        ' Start day, month & year (DD MM YYYY)?',
-     &        16,' 1 1 2000','start day, month and year',IER,3)
+     &        16,' 1 1 2007','start day, month and year',IER,3)
           endif
 
 C Error handling.
@@ -4527,7 +4653,7 @@ C Get day, month & year  and append year to string.
 
               CALL EASKS(HOLD,PROMP1,
      &          ' End day, month & year (DD MM YYYY)?',
-     &          16,' 31 12 2000','end day, month and year',IER,3)
+     &          16,' 31 12 2007','end day, month and year',IER,3)
 
             endif
 
@@ -4689,7 +4815,7 @@ C ******************** STDATE
 C STDATE takes the day of year and returns two descriptive strings.
 C DESCR takes the form '12-Jan' and DESCR1 takes the form 'Fri-12-Jan'.
       SUBROUTINE STDATE(IYEAR,IDOY,DESCR,DESCR1)
-      common/OUTIN/IUOUT,IUIN
+C      common/OUTIN/IUOUT,IUIN
       DIMENSION MTHNAM(12),DAYNAM(7)
 
       CHARACTER MTHNAM*3,DAYNAM*3,DESCR*7,DESCR1*10
@@ -4948,11 +5074,11 @@ C Copy WORD from STRING, character by character until separator found.
       if(IOS.eq.2)then
         write(outs,*) 'EGETW: permission error writing warning re: '
         call edisp(iuout,outs)
-	call edisp(iuout,STRING(1:LNM))
+        call edisp(iuout,STRING(1:LNM))
       else
         write(outs,*) 'EGETW: error writing warning re: '
         call edisp(iuout,outs)
-	call edisp(iuout,STRING(1:LNM))
+        call edisp(iuout,STRING(1:LNM))
       endif
       return
 
@@ -5040,11 +5166,11 @@ C comma is found.
       if(IOS.eq.2)then
         write(outs,*) 'EGETP: permission error writing warning re: '
         call edisp(iuout,outs)
-	call edisp(iuout,STRING(1:LNM))
+        call edisp(iuout,STRING(1:LNM))
       else
         write(outs,*) 'EGETP: error writing warning re: '
         call edisp(iuout,outs)
-	call edisp(iuout,STRING(1:LNM))
+        call edisp(iuout,STRING(1:LNM))
       endif
       return
 
@@ -5167,11 +5293,11 @@ C cut out the intial quote when writing phrase.
       if(IOS.eq.2)then
         write(outs,*) 'EGETDQ: permission error writing warning re: '
         call edisp(iuout,outs)
-	call edisp(iuout,STRING(1:LNM))
+        call edisp(iuout,STRING(1:LNM))
       else
         write(outs,*) 'EGETDQ: error writing warning re: '
         call edisp(iuout,outs)
-	call edisp(iuout,STRING(1:LNM))
+        call edisp(iuout,STRING(1:LNM))
       endif
       return
 
@@ -5307,11 +5433,11 @@ C Check IV against minimum and respond based on ACT.
       if(IOS.eq.2)then
         write(outs,*) 'EGETWI: permission error writing warning re: '
         call edisp(iuout,outs)
-	call edisp(iuout,STRING(1:LNM))
+        call edisp(iuout,STRING(1:LNM))
       else
         write(outs,*) 'EGETWI: error writing warning re: '
         call edisp(iuout,outs)
-	call edisp(iuout,STRING(1:LNM))
+        call edisp(iuout,STRING(1:LNM))
       endif
       return
 
@@ -5450,11 +5576,11 @@ C Check RV against minimum and respond based on RACT.
       if(IOS.eq.2)then
         write(outs,*) 'EGETWR: permission error writing warning re: '
         call edisp(iuout,outs)
-	call edisp(iuout,STRING(1:LNM))
+        call edisp(iuout,STRING(1:LNM))
       else
         write(outs,*) 'EGETWR: error writing warning re: '
         call edisp(iuout,outs)
-	call edisp(iuout,STRING(1:LNM))
+        call edisp(iuout,STRING(1:LNM))
       endif
       return
 
@@ -6342,18 +6468,29 @@ C Used to isolate code from system details.
       common/OUTIN/IUOUT,IUIN
 
       integer time
+      integer lnblnk
+      integer lns
       character date_str*24
       character ectime*24
 
-C Unix date function.
+C Unix date function. If date_str blank assign a timestamp.
       ictime=time()
       write(date_str,'(A)',iostat=ios,err=1) ectime(ictime)
+      lns=lnblnk(date_str)
+      if(lns.gt.20)then
+        continue
+      else
+        date_str='Mon Feb 11 16:42:00 2013'
+      endif
       return
 
+C If an error detected assign a timestamp.
    1  if(IOS.eq.2)then
         call edisp(iuout,'dstamp: permission error getting time.')
+        date_str='Mon Feb 11 16:42:00 2013'
       else
-        call edisp(iuout,'dstamp: error getting time.')
+        call edisp(iuout,'dstamp: error getting time, using fixed date')
+        date_str='Mon Feb 11 16:42:00 2013'
       endif
       return
       end
@@ -6414,7 +6551,7 @@ C Parse time phrase in the form 11:13:16
         read(WORD(1:2),*,IOSTAT=IOS,ERR=1002)ihrod(i)
         read(WORD(4:5),*,IOSTAT=IOS,ERR=1003)imohr(i)
         read(WORD(7:8),*,IOSTAT=IOS,ERR=1004)isohr(i)
-        CALL EGETWI(datetest,K,iyears(i),1970,2010,'-','year',IER)
+        CALL EGETWI(datetest,K,iyears(i),1900,2051,'-','year',IER)
   42  continue
 
 C First compare the years. If the same compare the months.
@@ -6600,6 +6737,65 @@ C Copy current character into word buffer
       enddo
 
       iEGetArrW = iWordCount
+
+      return
+      end
+
+C ***************** iEGetArrW_2500
+C iEGetArrW_2500 reads all of the words in a 2500 character string, and populates a character
+C array with each word. Words are separated by blanks, commas, or tab: WORD,WORD,WORD
+C or WORD WORD WORD or WORD, WORD, WORD  are all valid.
+      integer function iEGetArrW_2500(cString,cWORDS)
+      implicit none
+
+      character*2500 cString 
+      character*248  cWords(124)
+      character*1 cChar
+      logical bWord
+      integer iStrLoc, iWordLoc, iEnd, iWordCount, iEr
+      parameter (iEnd=2500)
+
+C Empty word array
+      do iWordCount = 1, 124
+        cWords(iWordCount) = ' '
+      enddo
+
+C Reset word counter
+      iWordCount = 0
+
+C Loop through string
+      do iStrLoc = 1, iEnd
+
+C Get current character
+        cChar = cString(iStrLoc:iStrLoc)
+
+C If string is a word separation character, move on
+        if ( cChar .eq. ' ' .or.
+     &       cChar .eq. ',' .or.
+     &       iChar(cChar) .eq. 9 ) then
+
+           bWord = .false.
+        else
+
+C is this a new word?
+          if ( .not. bWord ) then
+
+            bWord = .true.
+            iWordCount = iWordCount + 1
+            iWordLoc = 1
+
+          endif
+
+C Copy current character into word buffer
+          cWords(iWordCount)(iWordLoc:iWordLoc) = cChar
+
+          iWordLoc = iWordLoc + 1
+
+        endif
+
+      enddo
+
+      iEGetArrW_2500 = iWordCount
 
       return
       end
@@ -7343,7 +7539,7 @@ C clrtextbuf clears the text buffer common blocks.
       subroutine clrtextbuf()
       common/textbuf/dispbuf(500)
       common/textbufl/indexbuf,lnbuf(500)
-      character dispbuf*124
+      character dispbuf*144
 
       indexbuf=0
       do 42 i=1,500

@@ -90,10 +90,6 @@ C MMGFUN controls all UK NCM related tasks
       CHARACTER*72 HVACFILE
       COMMON/HVACINFO/IHVACFLAG,HVACFILE
 
-      INTEGER IFCFG
-      CHARACTER CFGROOT*24,LCFGF*72
-      COMMON/C21/IFCFG,CFGROOT,LCFGF
-
       COMMON/SPFLDAT/NSSET,ISSET,ISSTUP,ISBNSTEP,ISPNSTEP,ISSAVE,ISAVGH
       COMMON/SPFLPER/ISSTDAY(MSPS),ISSTMON(MSPS),ISFNDAY(MSPS),
      &               ISFNMON(MSPS)
@@ -220,9 +216,9 @@ C Initialise
       OK=.TRUE.
       DOK=.TRUE.
 
-C Change cfgroot to have only 20 characters instead of the usual 24 (to
+C Change cfgroot to have only 28 characters instead of the usual 32 (to
 C assist in addition of standard appendages _str, _not, _ref and _typ)
-      IF(LNBLNK(CFGROOT).GT.20)WRITE(CFGROOT,'(2a)')CFGROOT(1:20),
+      IF(LNBLNK(CFGROOT).GT.28)WRITE(CFGROOT,'(2a)')CFGROOT(1:28),
      &'    '
 
 C Remember original model name, configuration and connection files
@@ -240,31 +236,31 @@ C configuration file names.
       APE='_str  '
       CALL FNCNGR(LCFGF,APE,EXT,LCFGF_S)
       IROOTLEN=LNBLNK(CFGROOT)
-      if(irootlen.le.19)then
+      if(irootlen.le.27)then
         write(cfgroot_s,'(2a)')cfgroot(1:irootlen),ape(1:4)
       else
-        write(cfgroot_s,'(2a)')cfgroot(1:19),ape(1:4)
+        write(cfgroot_s,'(2a)')cfgroot(1:27),ape(1:4)
       endif
       APE='_not  '
       CALL FNCNGR(LCFGF,APE,EXT,LCFGF_N)
-      if(irootlen.le.19)then
+      if(irootlen.le.27)then
         write(cfgroot_n,'(2a)')cfgroot(1:irootlen),ape(1:4)
       else
-        write(cfgroot_n,'(2a)')cfgroot(1:19),ape(1:4)
+        write(cfgroot_n,'(2a)')cfgroot(1:27),ape(1:4)
       endif
       APE='_ref  '
       CALL FNCNGR(LCFGF,APE,EXT,LCFGF_R)
-      if(irootlen.le.19)then
+      if(irootlen.le.27)then
         write(cfgroot_r,'(2a)')cfgroot(1:irootlen),ape(1:4)
       else
-        write(cfgroot_r,'(2a)')cfgroot(1:19),ape(1:4)
+        write(cfgroot_r,'(2a)')cfgroot(1:27),ape(1:4)
       endif
       APE='_typ  '
       CALL FNCNGR(LCFGF,APE,EXT,LCFGF_T)
-      if(irootlen.le.19)then
+      if(irootlen.le.27)then
         write(cfgroot_t,'(2a)')cfgroot(1:irootlen),ape(1:4)
       else
-        write(cfgroot_t,'(2a)')cfgroot(1:19),ape(1:4)
+        write(cfgroot_t,'(2a)')cfgroot(1:27),ape(1:4)
       endif
 
 C Remember zone specific files
@@ -562,8 +558,6 @@ C ier is returned as non-zero if there was a problem.
 #include "geometry.h"
 #include "sbem.h"
 #include "model.h"
-C #include "tdf2.h"
-C #include "espriou.h"
 
       integer lnblnk  ! function definition
 
@@ -572,14 +566,13 @@ C #include "espriou.h"
       common/OUTIN/IUOUT,IUIN
       integer ncomp,ncon
       common/C1/NCOMP,NCON
-      common/C21/IFCFG,cfgroot,LCFGF
 
       character D24*24
 
       DIMENSION ITEMS(33),ITEMX(15),KSYS(MHT),ITEMH(MCOM+4)
       DIMENSION KSTR(10),HSYSNM(MCOM+1),JSTR(8),LSYS(10)
       DIMENSION ITEMZ(MREN+5),LSTR(10)
-      character cfgroot*24,LCFGF*72,NNAME*72
+      character NNAME*72
       character outs*124,messg*42
       character ITEMS*50,D64*64,ITEMX*50,ITEMH*70
       CHARACTER HSYSNM*70,TMPSTR*64
@@ -603,7 +596,7 @@ C For tdf to call arlist:
       integer IANSWER !Used for a call to EASKAB (1:yes, 2: no)
       integer iavailsyst !Temporary integer used for looping through the defined HVAC systems
       integer IPASS !to ask for a password
-      integer ier,itrc,IAPROB,ISTAT,iw
+      integer ier,iw
       integer iuact  ! return state from sbmedit call
       integer NITEMH,IDO,nitms,INN,INND ! max items and current menu item
       integer ivalue ! for editing integers
@@ -618,9 +611,9 @@ C For help messages
       helpinsub='sbmedit'  ! set for subroutine
       CLOSER=.TRUE.
 
-C Change cfgroot to have only 20 characters instead of the usual 24 (to
+C Change cfgroot to have only 28 characters instead of the usual 32 (to
 C assist in addition of standard appendages _str, _not, _ref and _typ)
-      IF(LNBLNK(CFGROOT).GT.20)WRITE(CFGROOT,'(2a)')CFGROOT(1:20),
+      IF(LNBLNK(CFGROOT).GT.28)WRITE(CFGROOT,'(2a)')CFGROOT(1:28),
      &'    '
 
 C Remember original model name, configuration and model title.
@@ -666,14 +659,14 @@ C Check if *.ncm file exists if it does then read.
       APE='_str  '
       EXT='.ncm'
 
-C Check length of cfgroot string. If less than 20 char then
-C add on the _str, otherwise write initial 19 char of cfgroof
+C Check length of cfgroot string. If less than 28 char then
+C add on the _str, otherwise write initial 27 char of cfgroof
 C and then add in the _str.
       IROOTLEN=LNBLNK(CFGROOT)
-      if(irootlen.le.19)then
+      if(irootlen.le.27)then
         write(cfgroot,'(2a)')cfgroot(1:irootlen),ape(1:4)
       else
-        write(cfgroot,'(2a)')cfgroot(1:19),ape(1:4)
+        write(cfgroot,'(2a)')cfgroot(1:27),ape(1:4)
       endif
 
       CALL FNCNGR(LCFGF,APE,EXT,NNAME)
@@ -768,11 +761,11 @@ C Make high level menu asking for different parts of UK NCM
       ITEMX(11)= 'HVAC controls for EPC recommendations (optional)'
       ITEMX(12)= 'Advanced (only for DSM testing)'
       ITEMX(13)= 'Display current NCM information '
-C      ITEMX(14)= 'Proceed with setting up required models '
+      ITEMX(14)= 'Refresh temporal file based on NCM '
 C      ITEMX(15)= 'Run required assessments '
       IX=1
       CALL EPICKS(IX,KSTR,' ','Define UK NCM data',
-     &  50,13,ITEMX,'Define UK NCM data',IER,nbhelp)
+     &  50,14,ITEMX,'Define UK NCM data',IER,nbhelp)
       IF(KSTR(1).EQ.0)THEN
 
 C User did not pick anything. Save any changes in the NCM
@@ -1826,6 +1819,12 @@ C Display information
         call edisp(iuout,'  ')
         goto 222  ! see what the user wants to do next
 
+      ELSEIF(KSTR(1).EQ.14)THEN
+
+C Refresh the temporal file.
+        call refreshtemporal()
+        goto 222  ! see what the user wants to do next
+
       ENDIF
       return
 
@@ -1852,10 +1851,15 @@ C  act = 'l' lighting information
       integer ncomp,ncon
       common/c1/ncomp,ncon
 
-      character act*1,outs*124,outs248*248
+      character act*1,outs*144,outs248*248
       character TMPSTR*64
-      integer lnb,lnbb  ! actual lengths of strings
+      integer lnb,lnbb,lnact  ! actual lengths of strings
       integer itu       ! unit to write to
+      real nbpeople     ! number of people in the zone
+      real freshairhr   ! make-up air in m3/hr
+      real freshairchanges  ! make-up ach
+      real latentfrac   ! fraction of metabolic that is latent
+      real totocup,ocupsens,ocuplat ! sensible and latent
 
 C Re-establish glazing fractions based on UK NCM guidelines
       if(ibusertyp.ne.0)then
@@ -2158,22 +2162,40 @@ C DHW reporting.
  104    CONTINUE
       elseif(act.eq.'a'.or.act.eq.'o')then
 
-C Occupancy links.
-        write(outs,'(A)')'Zone to activity linkages'
+C Occupancy links. Also derive and report on ocupant density, makeup air
+C in M3/hr for the zone. 
+        write(outs,'(A)')
+     &  'Zone to activity occupants makeup air sensible latent casual'
         call edisp(itu,outs)
         DO 105 IZ=1,NCOMP
           lnb=lnzname(IZ)
           ireadactivityindex=theactivityindex(IZ)
           if(ireadactivityindex.gt.0)then
-            write(outs,'(3A,I4,I6,1X,A)') 'Zone ',zname(iz)(1:lnb),
-     &        ' is linked to ',IACTYTYP(IZ),ireadactivityindex,
-     &        roomactname(ireadactivityindex)
+            nbpeople=occupant_dens(ireadactivityindex)*ZBASEA(IZ)
+            freshairhr=nbpeople*fresh_air(ireadactivityindex) *
+     &                 (3600./1000.)
+            freshairchanges=freshairhr/vol(iz)
+            totocup=nbpeople*metabolic_rate(ireadactivityindex)
+            latentfrac=latent_ocup_percent(ireadactivityindex)/100.0
+            ocupsens=totocup-(totocup*latentfrac)
+            ocuplat=totocup*latentfrac
+            lnact=lnblnk(roomactname(ireadactivityindex))
+            if(lnact.gt.32) lnact=32
+            write(outs248,'(2A,I3,1X,2A,f5.1,a,f7.1,a,f5.2,a,
+     &        f6.0,a,f5.2,a,f6.0,a,f5.2,a)') 
+     &        zname(iz)(1:lnb),' uses ',ireadactivityindex,
+     &        roomactname(ireadactivityindex)(1:lnact),' : ',
+     &        nbpeople,' occupants & makeup air ',freshairhr,' m3/h ',
+     &        freshairchanges,' ach & occupant sen ',ocupsens,'W ',
+     &        ocupsens/ZBASEA(IZ),'W/m2 lat ',ocuplat,'W ',
+     &        ocuplat/ZBASEA(IZ),'W/m2.'
+            call edisp248(itu,outs248,100)
           else
             write(outs,'(6A)') 'Zone ',zname(iz)(1:lnb),
      &        ' is linked to ',' 0',' 0',
      &        ' activity number 0 (undefined activity)'
+            call edisp(itu,outs)
           endif
-          call edisp(itu,outs)
  105    continue
       elseif(act.eq.'a'.or.act.eq.'l')then
 
@@ -2961,7 +2983,7 @@ C Month and day of month of inspection.
 
 C Year for which the energy assessor inspected the building.
         CALL EASKI(Y_inspect,' ','Year of inspection?',
-     &    1900,'W',2080,'W',2009,'year',IERI,nbhelp)
+     &    1900,'W',2051,'W',2013,'year',IERI,nbhelp)
         call tstamp('>','PRJ: edited date of inspection')
         write(outs,'(A,I2,A,I2,A,I4)') 'Inspection date: ',
      &    D_inspect,'  ',M_inspect,'  ',Y_inspect
@@ -3064,7 +3086,7 @@ C Insurance policy start date
         CALL EASKI(S_Minsur,' ','Insurance start (month)?',
      &    1,'W',12,'W',1,'month',IERI,nbhelp)
         CALL EASKI(S_Yinsur,' ','Insurance start (year)?',
-     &    1900,'W',2080,'W',2009,'year',IERI,nbhelp)
+     &    1900,'W',2051,'W',2013,'year',IERI,nbhelp)
         call tstamp('>','PRJ: edited start date of insurance')
         write(outs,'(A,I2,A,I2,A,I4)') 'Insurance policy start date: ',
      &    S_Dinsur,'  ',S_Minsur,'  ',S_Yinsur
@@ -3077,7 +3099,7 @@ C Insurance policy expiry date - year
         CALL EASKI(E_Minsur,' ','Insurance expiry (month)?',
      &    1,'W',12,'W',1,'month',IERI,nbhelp)
         CALL EASKI(E_Yinsur,' ','Insurance expiry (year)?',
-     &    1900,'W',2080,'W',2010,'year',IERI,nbhelp)
+     &    1900,'W',2051,'W',2013,'year',IERI,nbhelp)
         call tstamp('>','PRJ: edited expiry date of insurance')
         write(outs,'(A,I2,A,I2,A,I4)')'Insurance policy expiry date: ',
      &    E_Dinsur,'  ',E_Minsur,'  ',E_Yinsur
@@ -3392,6 +3414,7 @@ C required models ') which returned iuact=1.
 #include "building.h"
 #include "geometry.h"
 #include "sbem.h"
+#include "net_flow.h"
 #include "tdf2.h"
 #include "control.h"
 #include "model.h"
@@ -3406,8 +3429,6 @@ C required models ') which returned iuact=1.
       integer ncomp,ncon
       common/C1/NCOMP,NCON
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
-      common/C21/IFCFG,cfgroot,LCFGF
-      INTEGER :: IFCFG
       integer IZSTOCN
       COMMON/C24/IZSTOCN(MCOM,MS)
       COMMON/RAY3/MODIFY,MODLEN,MODBND
@@ -3425,6 +3446,7 @@ C Need to write TDF info in the cfg file. Use next common(s) for this.
       COMMON/HDAT/IHREC(MIT)
 
       common/sctl/tcps,ictyp,iclaw,cm(misc)
+      integer icascf
       common/cctl/icascf(mcom)
       common/cctlnm/ctldoc,lctlf
       character ctldoc*248,LCTLF*72
@@ -3446,7 +3468,7 @@ C Where ESP-r was installed (as recorded when it was compiled).
       CHARACTER OUTSTR*124
 
       CHARACTER ACT*1,ADF*124
-      character cfgroot*24,LCFGF*72,NNAME*72
+      character NNAME*72
       character fs*1,msgl2*48,tab*1
       character outs*124,GUESS*24
 
@@ -4078,7 +4100,7 @@ C          ITREC=IP+49
             call aelist(ipos,icolumns,COLUMNWRITE,
      &        iarraycount,delim,louts,loutln,itrunc)
             if(ipos.eq.1) then
-              WRITE(iafil,'(F8.4,2a)',IOSTAT=ios,ERR=101) RDOTY,',',
+              WRITE(iafil,'(F10.6,2a)',IOSTAT=ios,ERR=101) RDOTY,',',
      &          louts(1:loutln)
             else
               WRITE(iafil,'(1x,a)',
@@ -4118,6 +4140,614 @@ C Keep writing now the items needed for cfg file
       return
       end
 
+C ********************* refreshtemporal
+C refreshtemporal takes the current NCM description and rebuilds
+C the hourly temporal database. Used if the occupancy assigned
+C to a zone changes (but nothing else does).
+      subroutine refreshtemporal()
+#include "building.h"
+#include "geometry.h"
+#include "sbem.h"
+#include "net_flow.h"
+#include "tdf2.h"
+#include "control.h"
+#include "model.h"
+#include "espriou.h"
+
+      integer lnblnk  ! function definition
+
+      common/FILEP/IFIL
+      INTEGER :: ifil
+      COMMON/OUTIN/IUOUT,IUIN
+      INTEGER :: iuout,iuin
+      integer ncomp,ncon
+      common/C1/NCOMP,NCON
+      COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
+      integer IZSTOCN
+      COMMON/C24/IZSTOCN(MCOM,MS)
+      COMMON/RAY3/MODIFY,MODLEN,MODBND
+      COMMON/RAY6/LINSTY(MCON)
+      COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
+      COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
+
+C TDF related.
+      CHARACTER LIMP*96,LEXP*96
+      COMMON/TDFIO/LIMP,IUIMP,ITIMP,LEXP,IUEXP,ITEXP
+      COMMON/TDAT/TABU(MTABC),TABT(MTABC),TABUMN(MTABC),TABUMX(MTABC)
+
+C Need to write TDF info in the cfg file. Use next common(s) for this.
+      COMMON/TDFFLG0/DBTAG(MIT),DBTASK(MIT),DBZN(MIT),DBSN(MIT)
+      COMMON/HDAT/IHREC(MIT)
+
+      common/sctl/tcps,ictyp,iclaw,cm(misc)
+      integer icascf
+      common/cctl/icascf(mcom)
+      common/cctlnm/ctldoc,lctlf
+      character ctldoc*248,LCTLF*72
+
+      integer nbrdg, ibrdg
+      real psi,lngth,losspercent,totheatloss,thbrpercent
+      real uavtotal
+      common/THRBRDG/nbrdg(MCOM),psi(MCOM,16),lngth(MCOM,16),
+     &       ibrdg(MCOM,16),losspercent(MCOM),totheatloss(MCOM),
+     &       thbrpercent,uavtotal(MCOM)
+
+      CHARACTER DFILE*72
+      character DBTAG*12,DBTASK*12,DBZN*15,DBSN*15
+
+C Where ESP-r was installed (as recorded when it was compiled).
+      common/deflt4/dinstpath
+      character dinstpath*60
+      character subpath*72
+      CHARACTER OUTSTR*124
+
+      CHARACTER ACT*1,ADF*124
+      character NNAME*72
+      character fs*1,msgl2*48,tab*1
+      character outs*124,GUESS*24
+
+      LOGICAL NEWGEO,MODIFY,MODLEN,MODBND
+      logical unixok,XST
+      logical ctl_Zonelink_match !This si to allow the sorted activity indices to be matched with
+                                 !the original ones. The zone numbers can then be used to link the
+                                 !controls to zones.
+      character APE*6,EXT*4
+      character delim*1
+      character louts*1000        ! buffer of 1k char to support larger models
+      real CDAY,RDOTY            ! reals for timestamp calculations
+      integer itime,ip           ! integers for timestamp calculations
+      integer iafil              ! file unit for writing temporal header
+      integer icolumns           ! number of colums for tdf file depending on the unique non-zero activities
+
+      integer inxt_column !the next available column in the tdf file
+      DIMENSION iactiv_tdf_item(MCOM)
+      DIMENSION iforuseintdfentry(MCOM)
+      DIMENSION iactiv_tdf_items(MCOM)
+      integer iactiv_tdf_item
+      integer iforuseintdfentry
+      integer icountnotequal  ! the final unique and non-zero number of activities that represent the number of entries
+                              ! in the tdf file.
+      integer iactiv_tdf_items
+      integer iarraycount !used to fill in the arrays and call arlist
+      integer iskipandmatch ! counter to skip common unsorted activities. See comments in the code for additional info.
+      integer i2skipandmatch !second counter in case iactiv_tdf_item(IZ).eq.theactivityindex(iCTLlink)
+      logical isnotequal     ! to avoid range error on logic test
+
+C For tdf to call arlist:
+      DIMENSION COLUMNTDF(MTABC,8760)
+      REAL COLUMNTDF
+      DIMENSION COLUMNWRITE(MTABC)
+      REAL COLUMNWRITE
+      integer iloc1,iloc2,iloc3,iloc4,iloc5  !for writing tdf location data in the file
+      REAL val_converted
+      real ZD  ! depth for ground temp calc
+
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='EMKSTRIPPED'  ! set for subroutine
+
+C Set folder separator (fs) to \ or / as required.
+      call isunix(unixok)
+      if(unixok)then
+        fs = char(47)
+      else
+        fs = char(92)
+      endif
+      tab=','
+
+      icountnotequal=0
+      DO 623 IZ=1,NCOMP
+        iactiv_tdf_item(IZ)=0
+        iactiv_tdf_items(IZ)=0
+        iforuseintdfentry(IZ)=0
+        iactiv_tdf_item(IZ)=theactivityindex(IZ)
+  623 CONTINUE
+
+C Set entries in ascending order.
+C There is more than one zone so sort the activities so that
+C controls can be created.
+      KFLAG=2
+      call SORTI(iactiv_tdf_item,iactiv_tdf_items,NCOMP,KFLAG)
+      iskipandmatch=1
+      DO 622 IZ=1,NCOMP
+        isnotequal=.false.
+        ctl_Zonelink_match=.false.
+        if(IZ.eq.1)then
+          isnotequal=.true.
+        elseif(IZ.gt.1)then
+          if(iactiv_tdf_item(IZ).ne.iactiv_tdf_item(IZ-1))then
+            isnotequal=.true.
+
+C Debug.
+C              if(unixok)then
+C                write(6,*)'iz: ',iactiv_tdf_item(IZ),'iz-1: ',
+C     &                 iactiv_tdf_item(IZ-1)
+C              endif
+          endif
+        endif
+        if(isnotequal)then
+
+C Reset the counter iskipandmatch to use for the opposite case (i.e.
+C where iactiv_tdf_item(IZ).eq.iactiv_tdf_item(IZ-1)
+C See comments at the place where iskipandmatch is used for more details
+C about this counter
+          iskipandmatch=1
+          icountnotequal=icountnotequal+1
+          iforuseintdfentry(icountnotequal)=iactiv_tdf_item(IZ)
+C Debug.
+C          write(6,*)'a:', icountnotequal
+
+C Control items
+C Need a counter here to skip common non-sorted activities and match the right one
+C Example: A building with sorted activity indices of: 92,92,92,155,196
+C in needed to identify the zone number where this activities belong to in order
+C to connect the control loops. Let's say: 2,4,5,3,1 respectively for this example.
+C Unsorted this activities would have been: 155,92,196,92,92 and the zone numbers
+C would obviously be 1,2,3,4,5 respectively.
+          iCTLlink=1
+          do while(.not.ctl_Zonelink_match.and.iCTLlink.le.ncomp)
+            if(iactiv_tdf_item(IZ).eq.
+     &          theactivityindex(iCTLlink))then
+              ctl_Zonelink_match=.true.
+            else
+              iCTLlink=iCTLlink+1
+            endif
+          end do
+
+C For an ACTIVITY type of item the heating setpoint will
+C always be the 5th column and the cooling setpoint will
+C always be the 6th colum so set cm(2) and cm(3) with
+C fixed values. Later when the temporal data is scanned
+C the returned array of values for the current ACTIVITY item
+C will have the heating and cooling at this offset.
+          ibsn(icountnotequal,1)=-2 !0
+          ibsn(icountnotequal,2)=0
+          ibsn(icountnotequal,3)=50 !0
+          ibsn(icountnotequal,4)=0
+          val_converted=REAL(icountnotequal)
+          cm(2)=5.0*val_converted
+          cm(3)=5.0*val_converted+1.
+          iban(icountnotequal,1)=0
+          iban(icountnotequal,2)=0
+          iban(icountnotequal,3)=0
+          nbcdt(icountnotequal)=1
+          ibcdv(icountnotequal,1,1)=1
+          ibcdv(icountnotequal,1,2)=365
+          nbcdp(icountnotequal,1)=1
+          tbcps(icountnotequal,1,1)=0.0
+          ibctyp(icountnotequal,1,1)=0
+          ibclaw(icountnotequal,1,1)=23
+          cm(1)=2.0
+
+C Update the control period data.
+          bmiscd(icountnotequal,1,1,1)=cm(1)
+          bmiscd(icountnotequal,1,1,2)=cm(2)
+          bmiscd(icountnotequal,1,1,3)=cm(3)
+
+C Update the control file and link the control loop to the correct zone.
+          icascf(iCTLlink)=icountnotequal
+        elseif(iactiv_tdf_item(IZ).eq.iactiv_tdf_item(IZ-1))then
+          iskipandmatch=iskipandmatch+1
+
+C Debug.
+C          write(6,*)'iz_b: ',iactiv_tdf_item(IZ),'iz_b-1: ',
+C     &               iactiv_tdf_item(IZ-1)
+C          write(6,*)'b:', icountnotequal
+          i2skipandmatch=0
+          iCTLlink=1
+          do while(.not.ctl_Zonelink_match.and.iCTLlink.le.ncomp)
+            if(iactiv_tdf_item(IZ).eq.
+     &         theactivityindex(iCTLlink))then
+
+C Need a counter here to skip common non-sorted activities and match the right one
+C Example: A building with sorted activity indices of: 92,92,92,155,196
+C in needed to identify the zone number where this activities belong to in order
+C to connect the control loops. Let's say: 2,4,5,3,1 respectively for this example.
+C Unsorted this activities would have been: 155,92,196,92,92 and the zone numbers
+C would obviously be 1,2,3,4,5 respectively. The first loop (IZ here) goes through the
+C sorted indices and then the second loop (iCTLlink here) goes through the unsorted.
+C In this second case here where iactiv_tdf_item(IZ).eq.iactiv_tdf_item(IZ-1)
+C for example 92,92... the logic for the loop through the unsorted activities needs to
+C know if the activity has already been scanned and skip it in order to take the right
+C zone number and use for the control loops. This is why the counter iskipandmatch is
+C used here.
+C i2skipandmatch will be used as a second counter in case
+C iactiv_tdf_item(IZ).eq.theactivityindex(iCTLlink)
+C This whole thing is done to determine which control function links to which zone
+              i2skipandmatch=i2skipandmatch+1
+              if(iskipandmatch.eq.i2skipandmatch)then
+                ctl_Zonelink_match=.true.
+              else
+                ctl_Zonelink_match=.false.
+              endif
+              iCTLlink=iCTLlink+1
+            else
+              iCTLlink=iCTLlink+1
+            endif
+          end do
+
+C Update the control file and link the control loop to the correct zone.
+C Using iCTLlink-1 because 1 has been added to iCTLlink when
+C the do while loop finished.
+          icascf(iCTLlink-1)=icountnotequal
+        endif
+  622 CONTINUE
+      call edisp(iuout,'Generating zone controls.')
+      iloc1=0
+      iloc2=0
+      iloc3=0
+      iloc4=0
+      iloc5=0
+      znctldoc='Specific controls for UK NCM activities '
+      ncf=icountnotequal
+
+C Save control file.
+      if(LCTLF(1:2).eq.'  '.or.LCTLF(1:4).eq.'UNKN')then
+        LN=max(1,LNBLNK(cfgroot))
+        if(ctlpth(1:2).eq.'  '.or.ctlpth(1:2).eq.'./')then
+          WRITE(LCTLF,'(2a)')cfgroot(1:ln),'.ctl'
+        else
+          WRITE(LCTLF,'(4a)') ctlpth(1:lnblnk(ctlpth)),fs,
+     &         cfgroot(1:ln),'.ctl'
+        endif
+      endif
+      ICTLF=IFIL+1
+      call usrmsg('Updating model control for temporal link...',
+     &  ' ','-')
+
+C Write control file (filename.ctl is saved to filename_str.ctl)
+      APE='_str  '
+      EXT='.ctl'
+      CALL FNCNGR(LCTLF,APE,EXT,NNAME)
+      LCTLF=NNAME
+      XST=.FALSE.
+      call FINDFIL(LCTLF,XST)  ! using model path
+      CALL CTLWRT(ICTLF,IER)
+
+C Write out the temporal header as well as hourly data for the
+C first temporal item.
+      XST=.FALSE.
+      call findfil(LTDFA,XST)
+      IF(XST)THEN
+        helptopic='ncm_str_ctl_warn'
+        call gethelptext(helpinsub,helptopic,nbhelp)
+        CALL PHELPD('File exists',nbhelp,'-',0,0,IER)
+      ENDIF
+      iafil=IUTDFA
+      ITDFLG=3
+      itdyear=iyear
+      CALL ERPFREE(iafil,ISTAT)
+      CALL EFOPSEQ(iafil,LTDFA,4,IER)
+      if(ier.eq.0)THEN
+        write(currentfile,'(a)') LTDFA(1:lnblnk(LTDFA))
+      ELSE ! WARNING MESSAGE HERE
+      ENDIF
+      call edisp(iuout,'Generating hourly room use data.')
+      WRITE(iafil,'(a)',IOSTAT=ios,ERR=101) 'ASCIITDF3'
+      WRITE(iafil,'(a)',IOSTAT=ios,ERR=101)
+     &  '# NWPR NITDF NTSPH itdyear,itdbdoy,itdedoy,columns'
+      if(icountnotequal.gt.1)then
+
+C write 5 columns per unique activity entry
+        icolumns=5*icountnotequal
+        WRITE(iafil,'(a,i2,a,i5,a,i3)',IOSTAT=ios,ERR=101)
+     &    '   20   ',icountnotequal,'    1',itdyear,'    1  365',
+     &  icolumns
+        WRITE(iafil,'(a)',IOSTAT=ios,ERR=101) 
+     &    '# NEXTRC,NEXTCL,NDBSTP'
+        inxt_column=icolumns+1
+        WRITE(iafil,'(a,i3,a)',IOSTAT=ios,ERR=101) '      1   ',
+     &       inxt_column,' 8760'
+      else
+        icolumns=5
+        WRITE(iafil,'(a,i5,a)',IOSTAT=ios,ERR=101)
+     &    '   20    1    1',itdyear,'    1  365    5'
+        WRITE(iafil,'(a)',IOSTAT=ios,ERR=101) 
+     &    '# NEXTRC,NEXTCL,NDBSTP'
+        WRITE(iafil,'(a)',IOSTAT=ios,ERR=101) 
+     &    '      1      1   8760'
+      endif
+      WRITE(iafil,'(a)',IOSTAT=ios,ERR=101)
+     &  '*tdaid1,Set set of UK NCM occupancy patterns'
+      WRITE(iafil,'(a)',IOSTAT=ios,ERR=101) '*tdaid2,-'
+      DO 1 i=1,icountnotequal
+
+C Get first the location of the columns to use the right data during simulation.
+C Instanciate ITCOL for use later on in the subroutine.
+        iloc1=5*(i-1)+1
+        ITCOL(i,12)=iloc1
+        iloc2=5*(i-1)+2
+        ITCOL(i,13)=iloc2
+        iloc3=5*(i-1)+3
+        ITCOL(i,14)=iloc3
+        iloc4=5*(i-1)+4
+        ITCOL(i,15)=iloc4
+        iloc5=5*(i-1)+5
+        ITCOL(i,16)=iloc5
+
+C Write the header of the ASCII tdf file.
+        WRITE(iafil,'(a)',IOSTAT=ios,ERR=101) '*items'
+        WRITE(iafil,'(2a,i4)',IOSTAT=ios,ERR=101) '*tag',tab,
+     &        iforuseintdfentry(i)
+        WRITE(iafil,'(a)',IOSTAT=ios,ERR=101) '*type,ACTIVITY'
+        WRITE(iafil,'(a)',IOSTAT=ios,ERR=101) '*menu,Activity Type:'
+        WRITE(iafil,'(a)',IOSTAT=ios,ERR=101)
+     &    '*aide,Activity db (DOE/SBEM)'
+
+C NTBITS and NTSTAT are hardwired here to 5 and 11 respectively
+        WRITE(iafil,'(a)',IOSTAT=ios,ERR=101) '*other,  11  5'
+        WRITE(iafil,'(2a)',IOSTAT=ios,ERR=101) '*fields,16'
+        WRITE(iafil,'(a,F4.3,2a)',IOSTAT=ios,ERR=101)
+     &    'REAL  1  0  ',occupant_dens(iforuseintdfentry(i)),
+     &    ' 0.000    100.000  ','Occupant density (pers/m2):'
+        WRITE(iafil,'(a,I3,2a)',IOSTAT=ios,ERR=101)
+     &    'INTG  2  0  ',metabolic_rate(iforuseintdfentry(i)),
+     &    ' 0       999  ','Metabolic rate (W/pers):'
+        WRITE(iafil,'(a,I3,2a)',IOSTAT=ios,ERR=101)
+     &    'INTG  3  0  ',latent_ocup_percent(iforuseintdfentry(i)),
+     &    ' 0       100  ','Occup. Latent gain % (0-100):'
+        WRITE(iafil,'(a,F6.3,2a)',IOSTAT=ios,ERR=101)
+     &    'REAL  4  0   ',equip_gain(iforuseintdfentry(i)),
+     &    ' 0.000    400.000  ','Equipment (W/m2):'
+        WRITE(iafil,'(1a,I3,2a)',IOSTAT=ios,ERR=101)
+     &    'INTG  5  0   ',latent_equip_percent(iforuseintdfentry(i)),
+     &    ' 0       100  ','Equip. Latent gain % (0-100):'
+        WRITE(iafil,'(a,I3,2a)',IOSTAT=ios,ERR=101)
+     &    'INTG  6  0    ',lighting_lux(iforuseintdfentry(i)),
+     &    ' 0       999  ','Number of luxes (lux):'
+        WRITE(iafil,'(a,F6.3,2a)',IOSTAT=ios,ERR=101)
+     &    'REAL  7  0    ',display_lighting(iforuseintdfentry(i)),
+     &    ' 0.000    400.000  ','Display Lighting (W/m2):'
+        WRITE(iafil,'(a,F7.2,2a)',IOSTAT=ios,ERR=101)
+     &    'REAL  8  0   ',dhw_litres(iforuseintdfentry(i)),
+     &    ' 0.000    400.000  ','Dom. Hot Water (l/d/m2):'
+        WRITE(iafil,'(a,F6.3,2a)',IOSTAT=ios,ERR=101)
+     &    'REAL  9  0    ',fresh_air(iforuseintdfentry(i)),
+     &    ' 0.000    400.000  ','Outdoor air (l/s/pers.):'
+        WRITE(iafil,'(2a)',IOSTAT=ios,ERR=101)
+     &    'INTG 10  0         0         0       100  ',
+     &    'Min Humidity levels (%): '
+        WRITE(iafil,'(2a)',IOSTAT=ios,ERR=101)
+     &    'INTG 11  0         0         0       100  ',
+     &    'Max Humidity levels (%): '
+        WRITE(iafil,'(a,i3,2a)',IOSTAT=ios,ERR=101)
+     &    'REAL 12 ',iloc1,'   0.000      0.000      1.000  ',
+     &    'Occupant fraction:'
+        WRITE(iafil,'(a,i3,2a)',IOSTAT=ios,ERR=101)
+     &    'REAL 13 ',iloc2,'   0.000      0.000      1.000  ',
+     &    'Lights fraction:'
+        WRITE(iafil,'(a,i3,2a)',IOSTAT=ios,ERR=101)
+     &    'REAL 14 ',iloc3,'   0.000      0.000      1.000  ',
+     &    'Equipment fraction:'
+        WRITE(iafil,'(a,i3,F7.2,2a)',IOSTAT=ios,ERR=101)
+     &    'REAL 15 ',iloc4,Hmainsetpoint(iforuseintdfentry(i)),
+     &    '   -101.000    101.000  ','Heating setpoint (C):'
+        WRITE(iafil,'(a,i3,F7.2,2a)',IOSTAT=ios,ERR=101)
+     &    'REAL 16 ',iloc5,Cmainsetpoint(iforuseintdfentry(i)),
+     &    '   -101.000    101.000  ','Cooling setpoint (C):'
+        WRITE(iafil,'(a)',IOSTAT=ios,ERR=101) '*end_item'
+ 1    CONTINUE
+      WRITE(iafil,'(a)',IOSTAT=ios,ERR=101) '*pointers'
+
+C Need to predict the next value of ihrec. Do this by setting irec
+C to the next position after the last item header. If the first
+C item then the position will be 5.
+      if(icountnotequal.gt.1)then
+
+C It will always be NTBITS=5 here and NTSTAT=11 for NCM activities
+        do 852 ibits_and_stats=1,icountnotequal
+          NTBITS(ibits_and_stats)=5
+          NTSTAT(ibits_and_stats)=11
+  852   continue
+        ihrec(1)=5
+        do 963 iwrpoint=2,icountnotequal
+          ihrec(iwrpoint)=ihrec(iwrpoint-1)+
+     &          NTBITS(iwrpoint-1)+NTSTAT(iwrpoint-1)+1
+  963   continue
+        itrunc=1
+        ipos=1
+        delim='C'
+        do while (itrunc.ne.0)
+          call ailist(ipos,icountnotequal,IHREC,MIT,delim,louts,
+     &         loutln,itrunc)
+          WRITE(iafil,'(1x,a)',IOSTAT=ios,ERR=101) louts(1:loutln)
+          ipos=itrunc+1
+        end do
+      else
+        ihrec(1)=5
+        WRITE(iafil,'(1x,i3)',IOSTAT=ios,ERR=101) ihrec(1)
+      endif
+      WRITE(iafil,'(a)',IOSTAT=ios,ERR=101) '*tabular_data'
+      WRITE(iafil,'(2a)',IOSTAT=ios,ERR=101)
+     &  '# Time Col 1 Col 2 Col 3 Col 4 Col 5 Col 6 Col 7 Col 8...'
+      iarraycount=0
+      DO 2 iimport=1,icountnotequal
+        if(iforuseintdfentry(iimport).ge.1.and.
+     &     iforuseintdfentry(iimport).lt.10)then
+          write(subpath,'(6a,I1,a)',iostat=ios,err=212)
+     &       dinstpath(1:lnblnk(dinstpath)),fs,'databases',fs,
+     &      'UK_NCM',fs,iforuseintdfentry(iimport),'.csv'
+        elseif(iforuseintdfentry(iimport).ge.10.and.
+     &         iforuseintdfentry(iimport).lt.100)then
+          write(subpath,'(6a,I2,a)',iostat=ios,err=212)
+     &       dinstpath(1:lnblnk(dinstpath)),fs,'databases',fs,
+     &      'UK_NCM',fs,iforuseintdfentry(iimport),'.csv'
+        elseif(iforuseintdfentry(iimport).ge.100.and.
+     &         iforuseintdfentry(iimport).lt.1000)then
+          write(subpath,'(6a,I3,a)',iostat=ios,err=212)
+     &       dinstpath(1:lnblnk(dinstpath)),fs,'databases',fs,
+     &      'UK_NCM',fs,iforuseintdfentry(iimport),'.csv'
+        endif
+        write(DFILE,'(a)')subpath(1:lnblnk(subpath))
+
+C << Improve this part in the future >>
+        LIMP=DFILE
+        IF(ITIMP.EQ.1)THEN
+          CALL ERPFREE(IUIMP,ISTAT)
+          call findfil(LIMP,XST)
+          IF(.NOT.XST)THEN
+            msgl2='  '
+            CALL USRMSG(
+     &        'The csv activity file is not in databases/UK_NCM.',
+     &        msgl2,'W')
+          ENDIF
+        ENDIF
+
+C Import data - open the import file and read them.
+        IUNIT=IFIL+4
+        CALL EFOPSEQ(IUNIT,LIMP,1,IER)
+        if(ier.eq.0)THEN
+          write(currentfile,'(a)') LIMP(1:lnblnk(LIMP))
+        ELSE
+          msgl2='Is the name correct?'
+          CALL USRMSG('Could not open import file.',msgl2,'W')
+
+C << Return may not needed.. test >>
+          RETURN
+        endif
+
+C STRIP the specific line of the specific timestep
+        DO 4 istrip=1,8760
+          CALL STRIPC(IUNIT,OUTSTR,0,ND,1,'import raw data',IER)
+          IF(IER.NE.0)GOTO 103
+
+C Read value, associate with proper column and check if it changes
+C the minimum/maximum of that column.
+          K=0
+          VAL=0.
+          CALL EGETWR(OUTSTR,K,VAL,0.,0.,'-','imp data',IER)
+          CALL EGETWR(OUTSTR,K,VAL,0.,0.,'-','imp data',IER)
+          TABU(ITCOL(iimport,12)) = VAL
+          if(TABU(ITCOL(iimport,12)).lt.TABUMN(ITCOL(iimport,12)))
+     &       TABUMN(ITCOL(iimport,12))=TABU(ITCOL(iimport,12))
+          if(TABU(ITCOL(iimport,12)).gt.TABUMX(ITCOL(iimport,12)))
+     &       TABUMX(ITCOL(iimport,12))=TABU(ITCOL(iimport,12))
+          iarraycount=1+((iimport-1)*5)
+          COLUMNTDF(iarraycount,istrip)=TABU(ITCOL(iimport,12))
+
+          CALL EGETWR(OUTSTR,K,VAL,0.,0.,'-','imp data',IER)
+          TABU(ITCOL(iimport,13)) = VAL
+          if(TABU(ITCOL(iimport,13)).lt.TABUMN(ITCOL(iimport,13)))
+     &       TABUMN(ITCOL(iimport,13))=TABU(ITCOL(iimport,13))
+          if(TABU(ITCOL(iimport,13)).gt.TABUMX(ITCOL(iimport,13)))
+     &       TABUMX(ITCOL(iimport,13))=TABU(ITCOL(iimport,13))
+          iarraycount=2+((iimport-1)*5)
+          COLUMNTDF(iarraycount,istrip)=TABU(ITCOL(iimport,13))
+
+          CALL EGETWR(OUTSTR,K,VAL,0.,0.,'-','imp data',IER)
+          TABU(ITCOL(iimport,14)) = VAL
+          if(TABU(ITCOL(iimport,14)).lt.TABUMN(ITCOL(iimport,14)))
+     &       TABUMN(ITCOL(iimport,14))=TABU(ITCOL(iimport,14))
+          if(TABU(ITCOL(iimport,14)).gt.TABUMX(ITCOL(iimport,14)))
+     &       TABUMX(ITCOL(iimport,14))=TABU(ITCOL(iimport,14))
+          iarraycount=3+((iimport-1)*5)
+          COLUMNTDF(iarraycount,istrip)=TABU(ITCOL(iimport,14))
+
+          CALL EGETWR(OUTSTR,K,VAL,0.,0.,'-','imp data',IER)
+          TABU(ITCOL(iimport,15))= VAL
+          if(TABU(ITCOL(iimport,15)).lt.TABUMN(ITCOL(iimport,15)))
+     &       TABUMN(ITCOL(iimport,15))=TABU(ITCOL(iimport,15))
+          if(TABU(ITCOL(iimport,15)).gt.TABUMX(ITCOL(iimport,15)))
+     &       TABUMX(ITCOL(iimport,15))=TABU(ITCOL(iimport,15))
+          iarraycount=4+((iimport-1)*5)
+          COLUMNTDF(iarraycount,istrip)=TABU(ITCOL(iimport,15))
+
+          CALL EGETWR(OUTSTR,K,VAL,0.,0.,'-','imp data',IER)
+          TABU(ITCOL(iimport,16))= VAL
+          if(TABU(ITCOL(iimport,16)).lt.TABUMN(ITCOL(iimport,16)))
+     &       TABUMN(ITCOL(iimport,16))=TABU(ITCOL(iimport,16))
+          if(TABU(ITCOL(iimport,16)).gt.TABUMX(ITCOL(iimport,16)))
+     &       TABUMX(ITCOL(iimport,16))=TABU(ITCOL(iimport,16))
+          iarraycount=5+((iimport-1)*5)
+          COLUMNTDF(iarraycount,istrip)=TABU(ITCOL(iimport,16))
+ 4      CONTINUE
+
+C End of file encountered, close the file and return to menu.
+  103   msgl2=' End of import file reached'
+        CALL USRMSG(' ',msgl2,'-')
+        CALL ERPFREE(IUNIT,ISTAT)
+        continue
+
+C << Change this in the future >>
+C << Need to add "errors when creating string buffers." ?? >>
+  212   continue
+  2     continue
+      NTSPH=1
+      itdbdoy=1
+      DO 46 IP=1,8760
+C          ITREC=IP+49
+        CDAY=AINT(FLOAT(IP)/FLOAT(NTSPH*24))
+        ITIME=IP-(INT(CDAY)*NTSPH*24)
+        RDOTY=REAL(itdbdoy)+CDAY+(REAL(ITIME)/(REAL(NTSPH)*24.))
+        itrunc=1
+        ipos=1
+        delim='C'
+        do while (itrunc.ne.0)
+          do 5 iwrite=1,iarraycount
+            COLUMNWRITE(iwrite)=COLUMNTDF(iwrite,IP)
+  5       continue
+          call aelist(ipos,icolumns,COLUMNWRITE,
+     &      iarraycount,delim,louts,loutln,itrunc)
+          if(ipos.eq.1) then
+            WRITE(iafil,'(F10.6,2a)',IOSTAT=ios,ERR=101) RDOTY,',',
+     &        louts(1:loutln)
+          else
+            WRITE(iafil,'(1x,a)',
+     &        IOSTAT=ios,ERR=101) louts(1:loutln)
+          endif
+          ipos=itrunc+1
+        end do
+   46 CONTINUE
+      WRITE(iafil,'(2a)',IOSTAT=ios,ERR=101) '*end_tabular_data'
+      CALL ERPFREE(iafil,ISTAT)
+
+      ITEMSTD=0
+      DO 555 IZ=1,NCOMP
+
+C If there is an activity associated to the zone then assign
+C DBZN to use later on in the cfg file
+        if(theactivityindex(IZ).gt.0)then
+          ITEMSTD=ITEMSTD+1
+
+C Keep writing now the items needed for cfg file
+          write(DBTAG(ITEMSTD),'(i4)')theactivityindex(IZ)
+          write(DBZN(ITEMSTD),'(a)') zname(IZ)(1:12)
+          DBSN(ITEMSTD)='ALL'
+          DBTASK(ITEMSTD)='ACTIVITY'
+        endif
+ 555  CONTINUE
+      call emkcfg('-',IER)
+      return
+
+ 101  msgl2='  '
+      CALL USRMSG('Could not write TDF header',msgl2,'W')
+      IER=1
+      return
+
+      end
 
 C ********************* EMKSBM
 C EMKSBM creates a model variant based on the SBEM methodology. Details
@@ -4129,6 +4759,11 @@ C Changes to the model are then made, geometry and construction files
 C are changed and so are the constructions and materials databases.
 C If ier=0 no problems, ier=2 insufficient data.
 C This routine assumes newer geometry files are being used.
+
+C This logic has been superceeded by EMKSBM2 which uses a
+C zone by zone approach rather than passing multiple times
+C though the whole model to identify, remove and rebuild the
+C facade.
       SUBROUTINE EMKSBM(ier)
 #include "building.h"
 #include "geometry.h"
@@ -4147,7 +4782,6 @@ C This routine assumes newer geometry files are being used.
       COMMON/C1/NCOMP,NCON
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
       INTEGER :: ic1,ie1,ict,ic2,ie2
-      common/C21/IFCFG,cfgroot,LCFGF
       INTEGER :: IZSTOCN
       COMMON/C24/IZSTOCN(MCOM,MS)
 
@@ -4156,8 +4790,7 @@ C This routine assumes newer geometry files are being used.
       CHARACTER*1 ACT
       character EXT*4    ! up to 4 characters in file extension
       character APE*6    ! up to 6 characters in variant name
-      CHARACTER CFGROOT*24
-      CHARACTER LCFGF*72,NNAME*72
+      CHARACTER NNAME*72
       CHARACTER OUTS*124,ADF*124,SNM*12,USE*8,USE2*8
       character SN*12,msg*42
       CHARACTER*12 XJCCU,XKCCU
@@ -4259,57 +4892,57 @@ C in order to instanciate ssmlcindex.
       call opendb(ier) ! make sure materials & constructions known
   41  mlcf=0
       do 6 ii=1,nmlc
-        if(DESC(ii)(1:12).eq.'opDoorWind_n') then
+        if(mlcname(ii)(1:12).eq.'opDoorWind_n') then
           haveopDoor=.true.; mlciopDoor=ii; mlcf=mlcf+1
-        elseif(DESC(ii)(1:12).eq.'Vehicle_door') then
+        elseif(mlcname(ii)(1:12).eq.'Vehicle_door') then
           haveVehicle=.true.; mlciVehicle=ii; mlcf=mlcf+1
-        elseif(DESC(ii)(1:12).eq.'Not_DisplayG') then
+        elseif(mlcname(ii)(1:12).eq.'Not_DisplayG') then
           haveNot_D=.true.; mlciNot_D=ii; mlcf=mlcf+1
-        elseif(DESC(ii)(1:12).eq.'window_Not_G') then
+        elseif(mlcname(ii)(1:12).eq.'window_Not_G') then
           haveNot_G=.true.; mlciNot_G=ii; mlcf=mlcf+1
-        elseif(DESC(ii)(1:12).eq.'frame_notion') then
+        elseif(mlcname(ii)(1:12).eq.'frame_notion') then
           haveframe=.true.; mlciframe=ii; mlcf=mlcf+1
-        elseif(DESC(ii)(1:12).eq.'Wall_Scot_no') then
+        elseif(mlcname(ii)(1:12).eq.'Wall_Scot_no') then
           haveWall_Sc=.true.; mlciWall_Sc=ii; mlcf=mlcf+1
-        elseif(DESC(ii)(1:12).eq.'Wall_EW_noti') then
+        elseif(mlcname(ii)(1:12).eq.'Wall_EW_noti') then
           haveWall_EW=.true.; mlciWall_EW=ii; mlcf=mlcf+1
-        elseif(DESC(ii)(1:12).eq.'Wall_NI_noti') then
+        elseif(mlcname(ii)(1:12).eq.'Wall_NI_noti') then
           haveWall_NI=.true.; mlciWall_NI=ii; mlcf=mlcf+1
-        elseif(DESC(ii)(1:12).eq.'Fl_roof_noti') then
+        elseif(mlcname(ii)(1:12).eq.'Fl_roof_noti') then
           haveFl_r=.true.; mlciFl_r=ii; mlcf=mlcf+1
-        elseif(DESC(ii)(1:12).eq.'SC_Pitch_roo') then
+        elseif(mlcname(ii)(1:12).eq.'SC_Pitch_roo') then
           haveSC_P=.true.; mlciSC_P=ii; mlcf=mlcf+1
-        elseif(DESC(ii)(1:12).eq.'EW_notPitch_') then
+        elseif(mlcname(ii)(1:12).eq.'EW_notPitch_') then
           haveEW_notP=.true.; mlciEW_notP=ii; mlcf=mlcf+1
-        elseif(DESC(ii)(1:12).eq.'Sol_grnd_not') then
+        elseif(mlcname(ii)(1:12).eq.'Sol_grnd_not') then
           haveSol_gr=.true.; mlciSol_gr=ii; mlcf=mlcf+1
-        elseif(DESC(ii)(1:12).eq.'pa_fl_notion') then
+        elseif(mlcname(ii)(1:12).eq.'pa_fl_notion') then
           havepa_fl=.true.; mlcipa_fl=ii; mlcf=mlcf+1
-        elseif(DESC(ii)(1:12).eq.'inv_pa_fl_no') then
+        elseif(mlcname(ii)(1:12).eq.'inv_pa_fl_no') then
           haveinv_pa_f=.true.; mlciinv_pa_f=ii; mlcf=mlcf+1
-        elseif(DESC(ii)(1:12).eq.'party_wall_n') then
+        elseif(mlcname(ii)(1:12).eq.'party_wall_n') then
           haveparty_w=.true.; mlciparty_w=ii; mlcf=mlcf+1
-        elseif(DESC(ii)(1:12).eq.'internal_glz') then
+        elseif(mlcname(ii)(1:12).eq.'internal_glz') then
           haveint_g=.true.; mlciint_g=ii; mlcf=mlcf+1
-        elseif(DESC(ii)(1:12).eq.'exWall_typic') then
+        elseif(mlcname(ii)(1:12).eq.'exWall_typic') then
           haveexWall_ty=.true.; mlciWall_ty=ii; mlcf=mlcf+1
-        elseif(DESC(ii)(1:12).eq.'Fl_roof_typi') then
+        elseif(mlcname(ii)(1:12).eq.'Fl_roof_typi') then
           haveFl_rty=.true.; mlciFL_rty=ii; mlcf=mlcf+1
-        elseif(DESC(ii)(1:12).eq.'window_Typ_G') then
+        elseif(mlcname(ii)(1:12).eq.'window_Typ_G') then
           havewin_Typ_G=.true.; mlciwin_Typ_G=ii; mlcf=mlcf+1
-        elseif(DESC(ii)(1:12).eq.'Sol_grnd_typ') then
+        elseif(mlcname(ii)(1:12).eq.'Sol_grnd_typ') then
           haveSol_gr_typ=.true.; mlciSol_gr_typ=ii; mlcf=mlcf+1
         endif
   6   continue
 
 C Debug.
-      write(6,*) 'Index of required UK NCM constructions...'
-      write(6,*) mlciopDoor,mlciVehicle,mlciNot_D,mlciNot_G,mlciframe
-      write(6,*) mlciWall_Sc,mlciWall_EW,mlciFl_r,mlciSC_P,mlciEW_notP
-      write(6,*) mlciSol_gr,mlcipa_fl,mlciinv_pa_f,mlciparty_w,
-     &  mlciint_g
-      write(6,*) mlciWall_NI,mlciWall_ty,mlciFL_rty,mlciwin_Typ_G
-      write(6,*) mlciSol_gr_typ
+C      write(6,*) 'Index of required UK NCM constructions...'
+C      write(6,*) mlciopDoor,mlciVehicle,mlciNot_D,mlciNot_G,mlciframe
+C      write(6,*) mlciWall_Sc,mlciWall_EW,mlciFl_r,mlciSC_P,mlciEW_notP
+C      write(6,*) mlciSol_gr,mlcipa_fl,mlciinv_pa_f,mlciparty_w,
+C     &  mlciint_g
+C      write(6,*) mlciWall_NI,mlciWall_ty,mlciFL_rty,mlciwin_Typ_G
+C      write(6,*) mlciSol_gr_typ
 
       if(mlcf.eq.20)then
         call edisp(iuout,'All reqd MLC found so using std databases')
@@ -4365,13 +4998,13 @@ C << (e.g. a zero activity) need to be marked at this point.
 
 C Find the index of the MLC which matches each surface.
 C Debug.
-        write(6,*) icomp,NZSUR(icomp),nmlc
+C        write(6,*) icomp,NZSUR(icomp),nmlc
 
         DO 9994 I=1,NZSUR(icomp)
           icn1=izstocn(icomp,i)
           ssmlcindex(icn1)=0  ! assume no matching MLC          
           do 5 ii=1,nmlc
-            if(SSMLCN(icn1)(1:12).eq.DESC(ii)(1:12)) then
+            if(SSMLCN(icn1)(1:12).eq.mlcname(ii)(1:12)) then
               ssmlcindex(icn1)=ii   ! remember MLC index     
             endif
   5       continue
@@ -4611,8 +5244,8 @@ C into which compliant glass and frames can be added subsequently.
                 if(iparent(icc).eq.0)then
 
 C Debug.
-                  write(6,*) 'found external glazed parent surf',icc
-                  write(6,*) 'it has ',nbchild(icc),' child surfaces'
+C                  write(6,*) 'found external glazed parent surf',icc
+C                  write(6,*) 'it has ',nbchild(icc),' child surfaces'
 
                   DO 554 ICHL=1,NBCHILD(ICC)
 
@@ -4744,15 +5377,15 @@ C for deletion in IRMV
       DO 6100 ICOMP=1,NCOMP
 
 C Debug the initial list of surfaces to remove.
-        write(6,*) 'about to remove ',NRMV(icomp),' surfs in z ',
-     &    icomp
+C        write(6,*) 'about to remove ',NRMV(icomp),' surfs in z ',
+C     &    icomp
 
 C In the current zone we need to delete NRMV surfaces.
         DO 6001 IR=1,NRMV(icomp)
 
 C Debug.
-          write(6,*) ' x conn surf ',IRMV(ICOMP,IR),' ',
-     &     ssname(IRMV(ICOMP,IR)),' ',ie1(IRMV(ICOMP,IR)),' for ir ',ir
+C          write(6,*) ' x conn surf ',IRMV(ICOMP,IR),' ',
+C     &     ssname(IRMV(ICOMP,IR)),' ',ie1(IRMV(ICOMP,IR)),' for ir ',ir
 
 C Pack the list of TARSURF etc from the current connection data
 C to one less than the end of the number of connections in the
@@ -4785,9 +5418,9 @@ C connection index held in IRMV.
  6006     CONTINUE
 
 C Debug the packed irmv array.
-        write(6,*) 'listx ',IRMV(ICOMP,1),IRMV(ICOMP,2),IRMV(ICOMP,3),
-     &    IRMV(ICOMP,4),IRMV(ICOMP,5),IRMV(ICOMP,6),IRMV(ICOMP,7),
-     &    IRMV(ICOMP,8),IRMV(ICOMP,9),IRMV(ICOMP,10),IRMV(ICOMP,11)
+C        write(6,*) 'listx ',IRMV(ICOMP,1),IRMV(ICOMP,2),IRMV(ICOMP,3),
+C     &    IRMV(ICOMP,4),IRMV(ICOMP,5),IRMV(ICOMP,6),IRMV(ICOMP,7),
+C     &    IRMV(ICOMP,8),IRMV(ICOMP,9),IRMV(ICOMP,10),IRMV(ICOMP,11)
 
 C Remove the surface. Get is from the irmv list (which is
 C connection based).
@@ -4803,13 +5436,13 @@ C Re-scan the geometry, use ADDSUR to delete surface index 'is' and then
 C update the model cfg file and then re-write the geometry file.
           iopt=0
           call georead(IUF,LGEOM(ICOMP),ICOMP,1,iuout,IER)
-          write(6,*) 'before addsur d ',NZSUR(icomp)
+C          write(6,*) 'before addsur d ',NZSUR(icomp)
           CALL ADDSUR(ITRC,ICOMP,IS,'D','A',iopt,IER)
-          write(6,*) 'after addsur d ',NZSUR(icomp)
+C          write(6,*) 'after addsur d ',NZSUR(icomp)
           CALL EMKCFG('-',IER)
-          write(6,*) 'after emkcfg d ',NZSUR(icomp)
+C          write(6,*) 'after emkcfg d ',NZSUR(icomp)
           call geowrite(IFIL+2,LGEOM(ICOMP),ICOMP,ITRU,3,IER)
-          write(6,*) 'after geowrite d ',NZSUR(icomp)
+C          write(6,*) 'after geowrite d ',NZSUR(icomp)
 
 C Update the image if working in graphics mode.
           if(MMOD.eq.8)then
@@ -4858,8 +5491,10 @@ C additional windows
               XNWAREA(ICC)=
      &          TARSURF(ICC)*GLZFR-XREAREA(ICC)+XNWAREA(ICC)
             ENDIF
-            write(6,*) 'estimating ',icc,GLZFR,FRMFR,TARSURF(ICC),
-     &        XREAREA(ICC),XNWAREA(ICC)
+
+C Debug.
+C            write(6,*) 'estimating ',icc,GLZFR,FRMFR,TARSURF(ICC),
+C     &        XREAREA(ICC),XNWAREA(ICC)
           endif
  200    continue
  557  continue
@@ -4909,8 +5544,8 @@ C Get scale factors
             SCALEFACTORFR=SQRT(FRMFR)
 
 C Debug.
-            write(6,*) '580 ',ICC,TOTAREA,REQDAREA,SCALEFACTORPD,
-     &        SCALEFACTORFR,XPDAREA(ICC)
+C            write(6,*) '580 ',ICC,TOTAREA,REQDAREA,SCALEFACTORPD,
+C     &        SCALEFACTORFR,XPDAREA(ICC)
 
 C First put pedestrian door in if there was one in the original model.
 C If likely new surface complexity is within limits add door.
@@ -4981,17 +5616,6 @@ C added as child of door and not child of original surface.
               is=nsur
               TOTAREA=REQDAREA
 
-C Update the wireframe image if running in graphics mode.
-C              if(MMOD.eq.8)then
-C                MODBND=.TRUE.
-C                MODIFY=.TRUE.
-C                CALL INLNST(1)
-C                nzg=1
-C                nznog(1)=ICOMP
-C                izgfoc=ICOMP
-C                CALL ADJVIEW(IER)
-C                call pausems(500)
-C              endif
             ENDIF
 
 C Now put vehicle door in if there was one in the original model
@@ -5071,17 +5695,6 @@ C added as child of door and not child of original surface.
               is=nsur
               TOTAREA=REQDAREA
 
-C Update the image if running in graphics mode.
-C              if(MMOD.eq.8)then
-C                MODBND=.TRUE.
-C                MODIFY=.TRUE.
-C                CALL INLNST(1)
-C                nzg=1
-C                nznog(1)=ICOMP
-C                izgfoc=ICOMP
-C                CALL ADJVIEW(IER)
-C                call pausems(500)
-C              endif
             ENDIF
 
 C Now put display glazing in if there was one in the original model
@@ -5090,8 +5703,8 @@ C and within complexity limits.
             SCALEFACTORDG=SQRT(REQDAREA/TOTAREA)
 
 C Debug.
-            write(6,*) 'D-glz ',ICC,REQDAREA,SCALEFACTORDG,
-     &        XDWAREA(ICC)
+C            write(6,*) 'D-glz ',ICC,REQDAREA,SCALEFACTORDG,
+C     &        XDWAREA(ICC)
 
             CALL ECLOSE(XDWAREA(ICC),0.0,0.1,NEAR)
             if(2*NVER(IS)+2.lt.42.and.(.NOT.NEAR).and.
@@ -5128,9 +5741,9 @@ C Debug.
 
 C Update the connection list. Move all others up and then insert with
 C default values.
-              write(6,*) 'before adddedsurf c ',icon,NZSUR(icomp)
+C              write(6,*) 'before adddedsurf c ',icon,NZSUR(icomp)
               call addedsurf(icomp,icon,itrc,ier)
-              write(6,*) 'after adddedsurf c ',icon,NZSUR(icomp),ier
+C              write(6,*) 'after adddedsurf c ',icon,NZSUR(icomp),ier
 
 C Add surfaces attribution parameters
               ICT(ICON)=0
@@ -5162,17 +5775,6 @@ C added as child of door and not child of original surface.
               is=nsur
               TOTAREA=REQDAREA
 
-C Update the image if running in graphic mode.
-C              if(MMOD.eq.8)then
-C                MODBND=.TRUE.
-C                MODIFY=.TRUE.
-C                CALL INLNST(1)
-C                nzg=1
-C                nznog(1)=ICOMP
-C                izgfoc=ICOMP
-C                CALL ADJVIEW(IER)
-C                call pausems(500)
-C              endif
             ENDIF
 
 C Now put glazing and frame based on the NCM requirements (there might
@@ -5181,8 +5783,8 @@ C not have been a window or frame in the original model).
             SCALEFACTORNG=SQRT(REQDAREA/TOTAREA)
 
 C Debug.
-            write(6,*) 'glz ',ICC,REQDAREA,SCALEFACTORNG,
-     &        XNWAREA(ICC)
+C            write(6,*) 'glz ',ICC,REQDAREA,SCALEFACTORNG,
+C     &        XNWAREA(ICC)
 
             CALL ECLOSE(XNWAREA(ICC),0.0,0.1,NEAR)
 
@@ -5222,9 +5824,9 @@ C already gotten enough glazing area add another window and frame.
 
 C Update the connection list. Move all others up and then insert with
 C default values.
-              write(6,*) 'before adddedsurf d ',icon,NZSUR(icomp)
+C              write(6,*) 'before adddedsurf d ',icon,NZSUR(icomp)
               call addedsurf(icomp,icon,itrc,ier)
-              write(6,*) 'after adddedsurf d ',icon,NZSUR(icomp),ier
+C              write(6,*) 'after adddedsurf d ',icon,NZSUR(icomp),ier
 
 C Add surfaces attribution parameters
               ICT(ICON)=0
@@ -5250,18 +5852,6 @@ C Update connections list before displaying notional model zone
               call geowrite(IUF,LGEOM(ICOMP),ICOMP,ITRU,3,IER)
               call emkcfg('-',IER)
               is=nsur
-
-C Update the image if running in graphic mode.
-C              if(MMOD.eq.8)then
-C                MODBND=.TRUE.
-C                MODIFY=.TRUE.
-C                CALL INLNST(1)
-C                nzg=1
-C                nznog(1)=ICOMP
-C                izgfoc=ICOMP
-C                CALL ADJVIEW(IER)
-C                call pausems(500)
-C              endif
 
 C Now put frame based on the NCM requirements (e.g. there might not have
 C been a frame in the original model).
@@ -5297,9 +5887,9 @@ C been a frame in the original model).
 
 C Update the connection list. Move all others up and then insert with
 C default values.
-              write(6,*) 'before adddedsurf e ',icon,NZSUR(icomp)
+C              write(6,*) 'before adddedsurf e ',icon,NZSUR(icomp)
               call addedsurf(icomp,icon,itrc,ier)
-              write(6,*) 'after adddedsurf e ',icon,NZSUR(icomp),ier
+C              write(6,*) 'after adddedsurf e ',icon,NZSUR(icomp),ier
 
 C Add surfaces attribution parameters
               ICT(ICON)=0
@@ -5324,17 +5914,6 @@ C Update connections list before displaying notional model zone
               call geowrite(IUF,LGEOM(ICOMP),ICOMP,ITRU,3,IER)
               call emkcfg('-',IER)
 
-C Update the image if running in graphic mode.
-C              if(MMOD.eq.8)then
-C                MODBND=.TRUE.
-C                MODIFY=.TRUE.
-C                CALL INLNST(1)
-C                nzg=1
-C                nznog(1)=ICOMP
-C                izgfoc=ICOMP
-C                CALL ADJVIEW(IER)
-C                call pausems(500)
-C              endif
             ENDIF
           ENDIF
  580    CONTINUE
@@ -5555,6 +6134,10 @@ C Update constructions and tmc files if applicable.
 
 C ********************* EMKSBM2
 C The setup part of creating notional model.
+
+C Note: because a notional assessment is writing a save 6 file for
+C a period which may differ from any IPV definition. It might be
+C better to simply not write out any IPV definitions.
       SUBROUTINE EMKSBM2(ier)
 #include "building.h"
 #include "geometry.h"
@@ -5570,13 +6153,11 @@ C The setup part of creating notional model.
       common/OUTIN/IUOUT,IUIN
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
-      common/C21/IFCFG,cfgroot,LCFGF
 
       character EXT*4    ! up to 4 characters in file extension
       character APE*6    ! up to 6 characters in variant name
       CHARACTER ACT*1
-      CHARACTER CFGROOT*24
-      CHARACTER LCFGF*72,NNAME*72
+      CHARACTER NNAME*72
       CHARACTER OUTS*124
       character msg*42
       logical ok,dok
@@ -5595,7 +6176,6 @@ C Test whether required constructions exist.
      &  haveEW_notP,haveSol_gr,havepa_fl,haveinv_pa_f,haveparty_w,
      &  haveint_g,haveWall_NI,haveexWall_ty,haveFl_rty,havewin_Typ_G,
      &  haveSol_gr_typ
-      logical changeuse   ! to signal change of use of surface
 
 C mlcindex for each of these required constructions.
       integer mlciopDoor,mlciVehicle,mlciNot_D,mlciNot_G,mlciframe
@@ -5653,45 +6233,45 @@ C in order to instanciate ssmlcindex.
       call opendb(ier) ! make sure materials & constructions known
    41  mlcf=0
       do 6 ii=1,nmlc
-        if(DESC(ii)(1:12).eq.'opDoorWind_n') then
+        if(mlcname(ii)(1:12).eq.'opDoorWind_n') then
           haveopDoor=.true.; mlciopDoor=ii; mlcf=mlcf+1
-        elseif(DESC(ii)(1:12).eq.'Vehicle_door') then
+        elseif(mlcname(ii)(1:12).eq.'Vehicle_door') then
           haveVehicle=.true.; mlciVehicle=ii; mlcf=mlcf+1
-        elseif(DESC(ii)(1:12).eq.'Not_DisplayG') then
+        elseif(mlcname(ii)(1:12).eq.'Not_DisplayG') then
           haveNot_D=.true.; mlciNot_D=ii; mlcf=mlcf+1
-        elseif(DESC(ii)(1:12).eq.'window_Not_G') then
+        elseif(mlcname(ii)(1:12).eq.'window_Not_G') then
           haveNot_G=.true.; mlciNot_G=ii; mlcf=mlcf+1
-        elseif(DESC(ii)(1:12).eq.'frame_notion') then
+        elseif(mlcname(ii)(1:12).eq.'frame_notion') then
           haveframe=.true.; mlciframe=ii; mlcf=mlcf+1
-        elseif(DESC(ii)(1:12).eq.'Wall_Scot_no') then
+        elseif(mlcname(ii)(1:12).eq.'Wall_Scot_no') then
           haveWall_Sc=.true.; mlciWall_Sc=ii; mlcf=mlcf+1
-        elseif(DESC(ii)(1:12).eq.'Wall_EW_noti') then
+        elseif(mlcname(ii)(1:12).eq.'Wall_EW_noti') then
           haveWall_EW=.true.; mlciWall_EW=ii; mlcf=mlcf+1
-        elseif(DESC(ii)(1:12).eq.'Wall_NI_noti') then
+        elseif(mlcname(ii)(1:12).eq.'Wall_NI_noti') then
           haveWall_NI=.true.; mlciWall_NI=ii; mlcf=mlcf+1
-        elseif(DESC(ii)(1:12).eq.'Fl_roof_noti') then
+        elseif(mlcname(ii)(1:12).eq.'Fl_roof_noti') then
           haveFl_r=.true.; mlciFl_r=ii; mlcf=mlcf+1
-        elseif(DESC(ii)(1:12).eq.'SC_Pitch_roo') then
+        elseif(mlcname(ii)(1:12).eq.'SC_Pitch_roo') then
           haveSC_P=.true.; mlciSC_P=ii; mlcf=mlcf+1
-        elseif(DESC(ii)(1:12).eq.'EW_notPitch_') then
+        elseif(mlcname(ii)(1:12).eq.'EW_notPitch_') then
           haveEW_notP=.true.; mlciEW_notP=ii; mlcf=mlcf+1
-        elseif(DESC(ii)(1:12).eq.'Sol_grnd_not') then
+        elseif(mlcname(ii)(1:12).eq.'Sol_grnd_not') then
           haveSol_gr=.true.; mlciSol_gr=ii; mlcf=mlcf+1
-        elseif(DESC(ii)(1:12).eq.'pa_fl_notion') then
+        elseif(mlcname(ii)(1:12).eq.'pa_fl_notion') then
           havepa_fl=.true.; mlcipa_fl=ii; mlcf=mlcf+1
-        elseif(DESC(ii)(1:12).eq.'inv_pa_fl_no') then
+        elseif(mlcname(ii)(1:12).eq.'inv_pa_fl_no') then
           haveinv_pa_f=.true.; mlciinv_pa_f=ii; mlcf=mlcf+1
-        elseif(DESC(ii)(1:12).eq.'party_wall_n') then
+        elseif(mlcname(ii)(1:12).eq.'party_wall_n') then
           haveparty_w=.true.; mlciparty_w=ii; mlcf=mlcf+1
-        elseif(DESC(ii)(1:12).eq.'internal_glz') then
+        elseif(mlcname(ii)(1:12).eq.'internal_glz') then
           haveint_g=.true.; mlciint_g=ii; mlcf=mlcf+1
-        elseif(DESC(ii)(1:12).eq.'exWall_typic') then
+        elseif(mlcname(ii)(1:12).eq.'exWall_typic') then
           haveexWall_ty=.true.; mlciWall_ty=ii; mlcf=mlcf+1
-        elseif(DESC(ii)(1:12).eq.'Fl_roof_typi') then
+        elseif(mlcname(ii)(1:12).eq.'Fl_roof_typi') then
           haveFl_rty=.true.; mlciFL_rty=ii; mlcf=mlcf+1
-        elseif(DESC(ii)(1:12).eq.'window_Typ_G') then
+        elseif(mlcname(ii)(1:12).eq.'window_Typ_G') then
           havewin_Typ_G=.true.; mlciwin_Typ_G=ii; mlcf=mlcf+1
-        elseif(DESC(ii)(1:12).eq.'Sol_grnd_typ') then
+        elseif(mlcname(ii)(1:12).eq.'Sol_grnd_typ') then
           haveSol_gr_typ=.true.; mlciSol_gr_typ=ii; mlcf=mlcf+1
         endif
   6   continue
@@ -5874,9 +6454,8 @@ C UK standard construction and materials databases are also copied.
 C Changes to the model are then made, geometry and construction files
 C are changed and so are the constructions and materials databases.
 C If ier=0 no problems, ier=2 insufficient data.
-C This routine assumes newer geometry files are being used.
-
-C << assumes that the cfg and cnn have already been setup. >>
+C This routine assumes newer geometry files are being used and
+C it also assumes that the cfg and cnn have already been setup.
       SUBROUTINE EMKSBMZN(icomp,ier)
 #include "building.h"
 #include "geometry.h"
@@ -5895,7 +6474,6 @@ C << assumes that the cfg and cnn have already been setup. >>
       COMMON/C1/NCOMP,NCON
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
       INTEGER :: ic1,ie1,ict,ic2,ie2
-      common/C21/IFCFG,cfgroot,LCFGF
       INTEGER :: IZSTOCN
       COMMON/C24/IZSTOCN(MCOM,MS)
 
@@ -5904,8 +6482,7 @@ C << assumes that the cfg and cnn have already been setup. >>
       CHARACTER*1 ACT
       character EXT*4    ! up to 4 characters in file extension
       character APE*6    ! up to 6 characters in variant name
-      CHARACTER CFGROOT*24
-      CHARACTER LCFGF*72,NNAME*72
+      CHARACTER NNAME*72
       CHARACTER OUTS*124,ADF*124,SNM*12,USE*8,USE2*8
       character SN*12,SPN*12,msg*42
       CHARACTER*12 XJCCU,XKCCU
@@ -6023,7 +6600,7 @@ C      write(6,*) icomp,NZSUR(icomp),nmlc
         icn1=izstocn(icomp,i)
         ssmlcindex(icn1)=0  ! assume no matching MLC          
         do 5 ii=1,nmlc
-          if(SSMLCN(icn1)(1:12).eq.DESC(ii)(1:12)) then
+          if(SSMLCN(icn1)(1:12).eq.mlcname(ii)(1:12)) then
             ssmlcindex(icn1)=ii   ! remember MLC index     
           endif
   5     continue
@@ -6157,6 +6734,9 @@ C For each surface in this zone.
         do 555 isur=1,nzsur(icomp)
           ICC=IZSTOCN(icomp,isur)
           write(SNM,'(a)') SSUSE(ICC,1)  ! remember surface use
+          write(outs,'(9a)') 'Considering ',ssname(icc),' ',SSMLCN(ICC),
+     &            ' ',SSOTF(ICC),' ',SSUSE(ICC,1),'...'
+          call edisp(iuout,outs)
 
 C Only the following types of areas will be retained in this exterior
 C type surface with use roof or wall.
@@ -6165,7 +6745,7 @@ C type surface with use roof or wall.
           XDWAREA(ICC)=0. ! display window area in this parent
           XNWAREA(ICC)=0. ! normal window area in this parent
           XREAREA(ICC)=0. ! If requisite area is more than required
-                              ! do not put any glazing in this surface
+                          ! do not put any glazing in this surface
           TARSURF(ICC)=SSNA(ICC)
 
 C For all exterior surfaces that are marked wall or roof.
@@ -6175,8 +6755,11 @@ C For all exterior surfaces that are marked wall or roof.
 C For each grand child.
               DO 5500 IGCD=1,NBGCHILD(ICC)
                 KCC=IGCHILD(ICC,IGCD)      ! index of grand child
-                NRMV(icomp)=NRMV(icomp)+1  ! increment list of surfaces to remove
-                IRMV(ICOMP,NRMV(icomp))=KCC
+                write(outs,'(9a)') 'Mark to remove ',ssname(kcc),' ',
+     &            SSMLCN(kCC),' ',SSOTF(kCC),' ',SSUSE(kCC,1),'...'
+                call edisp(iuout,outs)
+                NRMV(icomp)=NRMV(icomp)+1    ! increment list of surfaces to remove
+                IRMV(ICOMP,NRMV(icomp))=KCC  ! remember its connection number
                 XKCCU=SSUSE(KCC,1)
                 TARSURF(ICC)=TARSURF(ICC)+SSNA(KCC)
                 IF(XKCCU(1:6).EQ.'P-DOOR')THEN
@@ -6207,8 +6790,11 @@ C area for the parent reset to the required area.
 C Mark child surfaces for removal (via IRMV) and add their surface
 C areas to TARSURF as well as XPDAREA / XREAREA / XVDAREA etc.
                 JCC=ICHILD(ICC,ICHL)        ! index of child surface
+                write(outs,'(9a)') 'Mark to remove ',ssname(jcc),' ',
+     &            SSMLCN(jCC),' ',SSOTF(jCC),' ',SSUSE(jCC,1),'...'
+                call edisp(iuout,outs)
                 NRMV(icomp)=NRMV(icomp)+1   ! increment list of surfaces to remove
-                IRMV(ICOMP,NRMV(icomp))=JCC
+                IRMV(ICOMP,NRMV(icomp))=JCC ! remember its connection
                 XJCCU=SSUSE(JCC,1)
                 TARSURF(ICC)=TARSURF(ICC)+SSNA(JCC)
                 IF(XJCCU(1:6).EQ.'P-DOOR')THEN
@@ -6243,16 +6829,19 @@ C into which compliant glass and frames can be added subsequently.
               if(iparent(icc).eq.0)then
 
 C Debug.
-                write(6,*) 'found external glazed parent surface',icc
-                write(6,*) 'it has ',nbchild(icc),' child surfaces'
+C                write(6,*) 'found external glazed parent surface',icc
+C                write(6,*) 'it has ',nbchild(icc),' child surfaces'
 
                 DO 554 ICHL=1,NBCHILD(ICC)
 
 C Mark child surfaces for removal (via IRMV) and add their surface
 C areas to TARSURF as well as XPDAREA / XREAREA / XVDAREA etc.
                   JCC=ICHILD(ICC,ICHL)
-                  NRMV(icomp)=NRMV(icomp)+1
-                  IRMV(ICOMP,NRMV(icomp))=JCC
+                  write(outs,'(9a)') 'Mark to remove ',ssname(jcc),' ',
+     &              SSMLCN(jCC),' ',SSOTF(jCC),' ',SSUSE(jCC,1),'...'
+                  call edisp(iuout,outs)
+                  NRMV(icomp)=NRMV(icomp)+1   ! increment how many to remove
+                  IRMV(ICOMP,NRMV(icomp))=JCC ! remember its connection
                   XJCCU=SSUSE(JCC,1)
                   TARSURF(ICC)=TARSURF(ICC)+SSNA(JCC)
                   IF(XJCCU(1:6).EQ.'P-DOOR')THEN
@@ -6293,8 +6882,8 @@ C area for the parent reset to the required area.
                 ENDIF
                 write(SSUSE(ICC,1),'(a)') 'WALL'
 C Debug.
-                write(6,*) 'reset ',ssname(icc),'  ',SSMLCN(ICC),
-     &            ' ',SSOTF(ICC),' ',SSUSE(ICC,1)
+C                write(6,*) 'reset use',ssname(icc),' ',SSMLCN(ICC),
+C     &            ' ',SSOTF(ICC),' ',SSUSE(ICC,1)
                 changeuse=.true.  ! change of use
               else
                 continue
@@ -6310,8 +6899,11 @@ C they need to be converted into wall uses and constructions.
 C Mark child surfaces for removal (via IRMV) and add their surface
 C areas to TARSURF as well as XPDAREA / XREAREA / XVDAREA etc.
                   JCC=ICHILD(ICC,ICHL)
-                  NRMV(icomp)=NRMV(icomp)+1
-                  IRMV(ICOMP,NRMV(icomp))=JCC
+                  write(outs,'(9a)') 'Mark to remove ',ssname(jcc),' ',
+     &              SSMLCN(jCC),' ',SSOTF(jCC),' ',SSUSE(jCC,1),'...'
+                  call edisp(iuout,outs)
+                  NRMV(icomp)=NRMV(icomp)+1   ! increment how many to remove
+                  IRMV(ICOMP,NRMV(icomp))=JCC ! remember which connection
                   XJCCU=SSUSE(JCC,1)
                   TARSURF(ICC)=TARSURF(ICC)+SSNA(JCC)
                   IF(XJCCU(1:6).EQ.'P-DOOR')THEN
@@ -6352,8 +6944,8 @@ C area for the parent reset to the required area.
                 ENDIF
                 write(SSUSE(ICC,1),'(a)') 'WALL'
 C Debug.
-                write(6,*) 'reset ',ssname(icc),'  ',SSMLCN(ICC),
-     &            ' ',SOTF(ICC)
+C                write(6,*) 'reset use',ssname(icc),'  ',SSMLCN(ICC),
+C     &            ' ',SOTF(ICC)
                 changeuse=.true.  ! change of use
               else
                 continue
@@ -6370,19 +6962,20 @@ C to the geometry file prior to deleting surfaces.
  
       ENDIF
 
-C Remove surfaces marked for deletion in IRMV
+C Remove surfaces marked for deletion in IRMV.
  559  CONTINUE
 
 C Debug the initial list of surfaces to remove.
-      write(6,*) 'about to remove ',NRMV(icomp),' surfs in z ',
+      write(outs,*) 'about to remove ',NRMV(icomp),' surfs in z ',
      &  icomp
+      call edisp(iuout,outs)
 
 C In the current zone we need to delete NRMV surfaces.
       DO 6001 IR=1,NRMV(icomp)
 
 C Debug.
-        write(6,*) ' x conn surf ',IRMV(ICOMP,IR),' ',
-     &    ssname(IRMV(ICOMP,IR)),' ',ie1(IRMV(ICOMP,IR)),' for ir ',ir
+C        write(6,*) ' x conn surf ',IRMV(ICOMP,IR),' ',
+C     &    ssname(IRMV(ICOMP,IR)),' ',ie1(IRMV(ICOMP,IR)),' for ir ',ir
 
 C Pack the list of TARSURF etc from the current connection data
 C to one less than the end of the number of connections in the
@@ -6407,7 +7000,7 @@ C connection index held in IRMV.
  6005   CONTINUE
 
 C And for subsequent surfaces in subsequent zones, decrement their
-C connection index held in IRMV.
+C connection index held in IRMV.  << is this necessary ?? >>
         DO 6006 IC=ICOMP+1,NCOMP
           DO 6007 IRC=1,NRMV(IC)
             IRMV(IC,IRC)=IRMV(IC,IRC)-1
@@ -6419,8 +7012,9 @@ C connection based).
         is=ie1(IRMV(ICOMP,IR))
 
 C Debug.
-        write(6,*) 'removing surf ',ssname(irmv(icomp,ir))
-        write(6,*) 'ir is ',ir,' surf ',is,' in zone ',icomp
+        write(outs,*) 'removing surf ',ssname(irmv(icomp,ir))
+        call edisp(iuout,outs)
+C        write(6,*) 'ir is ',ir,' surf ',is,' in zone ',icomp
 
 C Re-scan the geometry, use ADDSUR to delete surface index 'is' and then
 C update the model cfg file and then re-write the geometry file.
@@ -6433,7 +7027,8 @@ C update the model cfg file and then re-write the geometry file.
 
 C Update the image if working in graphics mode.
       if(MMOD.eq.8)then
-        call edisp(iuout,'Zone with child surfaces removed...')
+        call edisp(iuout,
+     &    'Displaying the zone with child surfaces removed...')
         MODBND=.TRUE.
         MODIFY=.TRUE.
         CALL INLNST(1)
@@ -6476,8 +7071,8 @@ C additional windows
             XNWAREA(ICC)=
      &        TARSURF(ICC)*GLZFR-XREAREA(ICC)+XNWAREA(ICC)
           ENDIF
-          write(6,*) 'estimating ',icc,GLZFR,FRMFR,TARSURF(ICC),
-     &      XREAREA(ICC),XNWAREA(ICC)
+C          write(6,*) 'estimating ',icc,GLZFR,FRMFR,TARSURF(ICC),
+C     &      XREAREA(ICC),XNWAREA(ICC)
         endif
  200  continue
  557  continue
@@ -6487,7 +7082,9 @@ C vehicle door or display glazing then re-instate them. You will
 C notice several repeating blocks of code below which carries this
 C out. If the logic in one is updated then check the others to
 C ensure they are updated (if required).
+
 C << need to trap error state in georead >>
+
       if(.NOT.ivalocup(icomp)) goto 551  ! do not bother if unoccupied & unconditioned
       NUMBS=NZSUR(ICOMP)
       do 580 isur=NUMBS,1,-1
@@ -6525,8 +7122,8 @@ C Get scale factors
           SCALEFACTORFR=SQRT(FRMFR)
 
 C Debug.
-          write(6,*) '580 ',ICC,TOTAREA,REQDAREA,SCALEFACTORPD,
-     &      SCALEFACTORFR,XPDAREA(ICC)
+C          write(6,*) '580 ',ICC,TOTAREA,REQDAREA,SCALEFACTORPD,
+C     &      SCALEFACTORFR,XPDAREA(ICC)
 
 C First put pedestrian door in if there was one in the original model.
 C If likely new surface complexity is within limits add door.
@@ -6598,17 +7195,6 @@ C added as child of door and not child of original surface.
             is=nsur
             TOTAREA=REQDAREA
 
-C Update the wireframe image if running in graphics mode.
-C            if(MMOD.eq.8)then
-C              MODBND=.TRUE.
-C              MODIFY=.TRUE.
-C              CALL INLNST(1)
-C              nzg=1
-C              nznog(1)=ICOMP
-C              izgfoc=ICOMP
-C              CALL ADJVIEW(IER)
-C              call pausems(500)
-C            endif
           ENDIF
 
 C Now put vehicle door in if there was one in the original model
@@ -6618,8 +7204,8 @@ C and the new surface will be within complexity limits.
           SCALEFACTORVD=SQRT(REQDAREA/TOTAREA)
 
 C Debug.
-          write(6,*) 'V-door ',ICC,REQDAREA,SCALEFACTORVD,
-     &      XVDAREA(ICC)
+C          write(6,*) 'V-door ',ICC,REQDAREA,SCALEFACTORVD,
+C     &      XVDAREA(ICC)
 
           CALL ECLOSE(XVDAREA(ICC),0.0,0.1,NEAR)
           if(2*NVER(IS)+2.lt.42.and.(.NOT.NEAR).and.
@@ -6657,9 +7243,9 @@ C Debug.
 
 C Update the connection list. Move all others up and then insert with
 C default values.
-            write(6,*) 'before adddedsurf b ',icon,NZSUR(icomp)
+C            write(6,*) 'before adddedsurf b ',icon,NZSUR(icomp)
             call addedsurf(icomp,icon,itrc,ier)
-            write(6,*) 'after adddedsurf b ',icon,NZSUR(icomp),ier
+C            write(6,*) 'after adddedsurf b ',icon,NZSUR(icomp),ier
 
 C Add surfaces attribution parameters
             ICT(ICON)=0
@@ -6691,17 +7277,6 @@ C added as child of door and not child of original surface.
             is=nsur
             TOTAREA=REQDAREA
 
-C Update the image if running in graphics mode.
-C            if(MMOD.eq.8)then
-C              MODBND=.TRUE.
-C              MODIFY=.TRUE.
-C              CALL INLNST(1)
-C              nzg=1
-C              nznog(1)=ICOMP
-C              izgfoc=ICOMP
-C              CALL ADJVIEW(IER)
-C              call pausems(500)
-C            endif
           ENDIF
 
 C Now put display glazing in if there was one in the original model
@@ -6710,8 +7285,8 @@ C and within complexity limits.
           SCALEFACTORDG=SQRT(REQDAREA/TOTAREA)
 
 C Debug.
-          write(6,*) 'D-glz ',ICC,REQDAREA,SCALEFACTORDG,
-     &      XDWAREA(ICC)
+C          write(6,*) 'D-glz ',ICC,REQDAREA,SCALEFACTORDG,
+C     &      XDWAREA(ICC)
 
           CALL ECLOSE(XDWAREA(ICC),0.0,0.1,NEAR)
           if(2*NVER(IS)+2.lt.42.and.(.NOT.NEAR).and.
@@ -6749,9 +7324,9 @@ C Debug.
 
 C Update the connection list. Move all others up and then insert with
 C default values.
-            write(6,*) 'before adddedsurf c ',icon,NZSUR(icomp)
+C            write(6,*) 'before adddedsurf c ',icon,NZSUR(icomp)
             call addedsurf(icomp,icon,itrc,ier)
-            write(6,*) 'after adddedsurf c ',icon,NZSUR(icomp),ier
+C            write(6,*) 'after adddedsurf c ',icon,NZSUR(icomp),ier
 
 C Add surfaces attribution parameters
             ICT(ICON)=0
@@ -6783,17 +7358,6 @@ C added as child of door and not child of original surface.
             is=nsur
             TOTAREA=REQDAREA
 
-C Update the image if running in graphic mode.
-C            if(MMOD.eq.8)then
-C              MODBND=.TRUE.
-C              MODIFY=.TRUE.
-C              CALL INLNST(1)
-C              nzg=1
-C              nznog(1)=ICOMP
-C              izgfoc=ICOMP
-C              CALL ADJVIEW(IER)
-C              call pausems(900)
-C            endif
           ENDIF
 
 C Now put glazing and frame based on the NCM requirements (there might
@@ -6802,8 +7366,8 @@ C not have been a window or frame in the original model).
           SCALEFACTORNG=SQRT(REQDAREA/TOTAREA)
 
 C Debug.
-          write(6,*) 'glz ',ICC,REQDAREA,SCALEFACTORNG,
-     &      XNWAREA(ICC)
+C          write(6,*) 'glz ',ICC,REQDAREA,SCALEFACTORNG,
+C     &      XNWAREA(ICC)
 
           CALL ECLOSE(XNWAREA(ICC),0.0,0.1,NEAR)
 
@@ -6821,8 +7385,7 @@ C already gotten enough glazing area add another window and frame.
      &        is,CHAR(96+IELF),'_glz'  ! Name
             write(outs,'(4a)') 'Adding new glaz ',SN(1:lnblnk(SN)),
      &        ' into ',SPN(1:lnblnk(SPN))
-            write(6,*) icomp,nsur,is,nver(is)
-            write(6,*) outs
+C            write(6,*) icomp,nsur,is,nver(is)
             call edisp(iuout,outs)
             ISUR2=NSUR
             DO 7512 NV=1,NVER(IS)
@@ -6846,9 +7409,9 @@ C already gotten enough glazing area add another window and frame.
 
 C Update the connection list. Move all others up and then insert with
 C default values.
-            write(6,*) 'before adddedsurf d ',icon,NZSUR(icomp)
+C            write(6,*) 'before adddedsurf d ',icon,NZSUR(icomp)
             call addedsurf(icomp,icon,itrc,ier)
-            write(6,*) 'after adddedsurf d ',icon,NZSUR(icomp),ier
+C            write(6,*) 'after adddedsurf d ',icon,NZSUR(icomp),ier
 
 C Add surfaces attribution parameters
             ICT(ICON)=0
@@ -6874,18 +7437,6 @@ C Update connections list before displaying notional model zone
             call geowrite(IUF,LGEOM(ICOMP),ICOMP,ITRU,3,IER)
             call emkcfg('-',IER)
             is=nsur
-
-C Update the image if running in graphic mode.
-C            if(MMOD.eq.8)then
-C              MODBND=.TRUE.
-C              MODIFY=.TRUE.
-C              CALL INLNST(1)
-C              nzg=1
-C              nznog(1)=ICOMP
-C              izgfoc=ICOMP
-C              CALL ADJVIEW(IER)
-C              call pausems(900)
-C            endif
 
 C Now put frame based on the NCM requirements (e.g. there might not have
 C been a frame in the original model).
@@ -6922,9 +7473,9 @@ C been a frame in the original model).
 
 C Update the connection list. Move all others up and then insert with
 C default values.
-            write(6,*) 'before adddedsurf e ',icon,NZSUR(icomp)
+C            write(6,*) 'before adddedsurf e ',icon,NZSUR(icomp)
             call addedsurf(icomp,icon,itrc,ier)
-            write(6,*) 'after adddedsurf e ',icon,NZSUR(icomp),ier
+C            write(6,*) 'after adddedsurf e ',icon,NZSUR(icomp),ier
 
 C Add surfaces attribution parameters
             ICT(ICON)=0
@@ -6949,17 +7500,6 @@ C Update connections list before displaying notional model zone
             call geowrite(IUF,LGEOM(ICOMP),ICOMP,ITRU,3,IER)
             call emkcfg('-',IER)
 
-C Update the image if running in graphic mode.
-C            if(MMOD.eq.8)then
-C              MODBND=.TRUE.
-C              MODIFY=.TRUE.
-C              CALL INLNST(1)
-C              nzg=1
-C              nznog(1)=ICOMP
-C              izgfoc=ICOMP
-C              CALL ADJVIEW(IER)
-C              call pausems(500)
-C            endif
           ENDIF
         ENDIF
  580  CONTINUE
@@ -7178,15 +7718,17 @@ C EMKREF creates a model variant based on the SBEM methodology. Details
 C of this can be found in relevant EU and UK building regulations.
 C This subroutine copies and modifies the cfg file and
 C makes a new model representative of the reference building.
+
+C Note: because a reference assessment is writing a save 6 file for
+C a period which may differ from any IPV definition. It might be
+C better to simply not write out any IPV definitions.
       SUBROUTINE EMKREF
       IMPLICIT NONE
 #include "building.h"
 #include "sbem.h"
 #include "model.h"
 
-      common/C21/IFCFG,cfgroot,LCFGF
-      CHARACTER CFGROOT*24,LCFGF*72
-      INTEGER IFCFG,IER,LNBLNK,lns
+      INTEGER IER,LNBLNK,lns
 
 C Initialise
       IER=0
@@ -7213,6 +7755,10 @@ C of this can be found in relevant EU and UK building regulations.
 C This subroutine copies and modifies the cfg file and
 C makes a new model representative of the typical building.
 C Changes to the model are then made.
+
+C Note: because a typical assessment is writing a save 6 file for
+C a period which may differ from any IPV definition. It might be
+C better to simply not write out any IPV definitions.
       SUBROUTINE EMKTYP
       IMPLICIT NONE
 #include "sbem.h"
@@ -7225,10 +7771,6 @@ C Changes to the model are then made.
 
       common/FILEP/IFIL
       integer ifil
-
-      common/C21/IFCFG,cfgroot,LCFGF
-      CHARACTER CFGROOT*24,LCFGF*72
-      INTEGER IFCFG
 
       integer ncomp,ncon
       common/C1/NCOMP,NCON
@@ -7252,7 +7794,6 @@ C Test whether required constructions exist.
      &  haveEW_notP,haveSol_gr,havepa_fl,haveinv_pa_f,haveparty_w,
      &  haveint_g,haveWall_NI,haveexWall_ty,haveFl_rty,havewin_Typ_G,
      &  haveSol_gr_typ
-      logical changeuse   ! to signal change of use of surface
 
 C mlcindex for each of these required constructions.
       integer mlciopDoor,mlciVehicle,mlciNot_D,mlciNot_G,mlciframe
@@ -7395,25 +7936,16 @@ C building as described in SBEM - EPBD documents
       IMPLICIT NONE
 #include "sbem.h"
 #include "building.h"
-      COMMON/C21/IFCFG,CFGROOT,LCFGF
-      INTEGER IFCFG
-      CHARACTER CFGROOT*24,LCFGF*72
-
+#include "model.h"
       COMMON/OUTIN/IUOUT,IUIN
       INTEGER IUOUT,IUIN
-
-      COMMON/APPW/IAPPW,IAPPX,IAPPY
-      INTEGER IAPPW,IAPPX,IAPPY
+      integer childterminal  ! picks up mmod from starting of prj
+      common/childt/childterminal
 
       INTEGER IER,LNBLNK,IMODE
       CHARACTER AUT*12,DOIT*248,LONGTFILE*144,LONGTFILEDOS*144
       character OUTS*248,TMODE*8
       LOGICAL CONCAT,UNIXOK
-#ifdef OSI
-      integer ICPMOD     ! passed from tchild
-#else
-      integer*8 ICPMOD     ! passed from tchild
-#endif
 
 C First run simulation
       IF(IMODE.EQ.1)THEN      ! simulating stripped building
@@ -7461,8 +7993,7 @@ C on to child with an offset from prj start position.
      &    'stripped ',aut
         tmode='graph'
         call edisp248(iuout,doit,100)
-        call tchild(ICPMOD)   ! find out if in text or graphic mode
-        call termode(ICPMOD,tmode)
+        call terminalmode(childterminal,tmode)
       endif
 
 C Run simulation with a message to the user before and after.
@@ -7508,6 +8039,7 @@ C IMODE = 4 -> Typical model
       IMPLICIT NONE
 #include "sbem.h"
 #include "building.h"
+#include "model.h"
 #include "geometry.h"
 #include "espriou.h"
       integer lnblnk  ! function definition
@@ -7520,10 +8052,6 @@ C IMODE = 4 -> Typical model
 
       INTEGER NCOMP,NCON
       common/C1/NCOMP,NCON
-
-      COMMON/C21/IFCFG,CFGROOT,LCFGF
-      INTEGER IFCFG
-      CHARACTER CFGROOT*24,LCFGF*72
 
       INTEGER IUR,ND,ISTAT,K,LTW2,ICDHW,IER,IMODE,
      & ICHT,ICCL,ICLT,ICAUX,LZNL,IM,Istart,Ifinish,INDX,icomp
@@ -7706,7 +8234,11 @@ C Air conditioned
           ELSEIF(IDHWLZ(ICDHW).LT.0)THEN
             INDX=-1*IDHWLZ(ICDHW)
             DHW_efficiency=Heating_efficiency
-            DHW_efficiency=HeatSCoP_N(IHLZ(ICDHW))
+            if(IHLZ(ICDHW).eq.0)then
+              DHW_efficiency=0.0
+            else
+              DHW_efficiency=HeatSCoP_N(IHLZ(ICDHW))
+            endif
           ENDIF
         ENDIF
 
@@ -9518,7 +10050,6 @@ C It finally generate BRUKL input document and other SBEM reports.
 
       integer ncomp,ncon
       common/C1/NCOMP,NCON
-      common/C21/IFCFG,cfgroot,LCFGF
       integer IZSTOCN
       COMMON/C24/IZSTOCN(MCOM,MS)
 
@@ -9531,21 +10062,19 @@ C It finally generate BRUKL input document and other SBEM reports.
      &       thbrpercent,uavtotal(MCOM)
       common/rpath/path
       character DOIT*248
-      character limgpth*24,ldocpth*24,lcfgroot*24,lpath*72
+      character limgpth*24,ldocpth*24,lcfgroot*32,lpath*72
       character path*72,lupath*72
       character fs*1, col*1
       character BATCHFL*72
 
 C Build variable (These should eventually be placed in build_info.h)
-      logical bBuild_Info       ! Flag indicating if build info should
-                                !   be dumped.
 C      character cURL*256       ! Repository URL commented out in build_info.h
 
       CHARACTER BRUKFL*72
-      CHARACTER CFGROOT*24,LCFGF*72,MODE*4
+      CHARACTER MODE*4
       CHARACTER TMPSTR*24,TMPSTR2*70
       character delim*1,louts*248,outs*124,TEMP1*42
-      LOGICAL CONTEXT,BNDRY,ISNEAR,ISNEAR2,ISNEAR3
+      LOGICAL ISNEAR,ISNEAR2,ISNEAR3
       LOGICAL UNIXOK
       REAL TMPREAL
       integer iactFlarea
@@ -9736,7 +10265,7 @@ c      EXP_COND=0.   ! External envelope conductance W/K
 
 C Recover the ISO 6946 U values as in prjqa.F.
             do 7511 ii=1,nmlc
-              if(SSMLCN(icc)(1:12).eq.DESC(ii)(1:12))then
+              if(SSMLCN(icc)(1:12).eq.mlcname(ii)(1:12))then
                 call etmldbu(0,itu,ii,UVH,UVU,UVD,UVI,UVG)
               endif
  7511       continue
@@ -10661,21 +11190,17 @@ C Subroutine EPCCAL generates the UK Energy Performance input file.
       integer ncomp,ncon
       common/C1/NCOMP,NCON
 
-      CHARACTER CFGROOT*24,LCFGF*72,MODE*4
-      integer ifcfg
-      common/C21/IFCFG,cfgroot,LCFGF
-
       common/rpath/path
       character DOIT*248
-      character limgpth*24,ldocpth*24,lcfgroot*24,lpath*72
+      character limgpth*24,ldocpth*24,lcfgroot*32,lpath*72
       character path*72,lupath*72
       character fs*1, col*1, quote*1
       CHARACTER EPCBATFL*72,EPCINIFL*72
-      integer mpof, ibrowse
+      integer ibrowse
       LOGICAL UNIXOK
 
       CHARACTER EPCFL*72
-      CHARACTER TMPSTR2*70
+      CHARACTER TMPSTR2*70,MODE*4
       character delim*1,louts*248
       LOGICAL ISNEAR,ISNEAR2,ISNEAR3
       integer iactFlarea
@@ -10707,8 +11232,8 @@ C      logical   bVersioned           ! Flag indicating if repository
 C                                     !   is versioned
 C      logical bRelease               ! Logical indicating if this is
 C                                     !   a release version.
-      logical bBuild_Info            ! Flag indicating if build info should
-                                     !   be dumped.
+C      logical bBuild_Info            ! Flag indicating if build info should
+C                                     !   be dumped.
 C      logical bModified              ! Flag indicating local copy contains
 C                                     !   modifications
 C      character cRelease_Num*8       ! Release version
@@ -10758,7 +11283,6 @@ C      character cXlibrary*32         !
       integer itrunc,ipos,loutln
       integer istat
       integer ios
-      real vexposed,fexposed,rexposed
       integer IAPROB
       integer itrc
       logical ExistLightType
@@ -10778,7 +11302,7 @@ C      character cXlibrary*32         !
       character cNameMainFuel*42 !string to define the name of the main fuel type
       integer IHF !index for fuel number (as used in previous routines.
       integer ifueloriginal !to hold temporarily the fuel type index number
-      INTEGER IMODE
+c      INTEGER IMODE
 
 #ifdef OSI
       integer iincomp,iincon  ! to pass nb zones connections to c code
@@ -10789,7 +11313,7 @@ C      character cXlibrary*32         !
 #include "build_info.h"
 
 C Initialise IMODE
-      IMODE=2
+c      IMODE=2
 
 C Read cfg file for the stripped model
       ifcfg=ifil+3
@@ -15378,7 +15902,6 @@ C Create a batch file to run the EPCgen input file for Windows only
 C Check if the machine is UNIX, If UNIX, do nothing
       call isunix(unixok)
       if(unixok)then
-        mpof=1
         call edisp(iuout,'Copy UK NCM input files (BRUKL.inp and')
         call edisp(iuout,'EPCGen.inp) to a windows platform and ')
         call edisp(iuout,'run BRUKL and EPCGen in order to generate')
@@ -15766,10 +16289,8 @@ C    NBS Journal of Research, Vol. 71C, Jan-Mar. 1967, pp 43-50.
       subroutine GTCALC(ZD,act,IER)
       implicit none
 #include "building.h"
-#include "model.h"
 #include "site.h"
 #include "esprdbfile.h"
-#include "espriou.h"
 
       integer lnblnk  ! function definition
 

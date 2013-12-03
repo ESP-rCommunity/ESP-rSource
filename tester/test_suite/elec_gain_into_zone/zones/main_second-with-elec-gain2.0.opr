@@ -1,0 +1,27 @@
+*Operations 2.0
+*date Thu Feb 21 15:32:43 2013  # latest file modification 
+# operations of main_second defined in: 
+# ../zones/main_second-with-elec-gain2.1.opr
+Shows 2.0 format. Points to electric gains via E-gain (net_utilit)
+# control(no control of air flow  ), low mid & high setpoints 
+   0     0.000     0.000     0.000
+     1   # number of flow periods in day type: weekday     
+# start, stop, infil, ventil, source, data
+   0, 24,    0.433    2.616    1    0.000
+     1   # number of flow periods in day type: saturday    
+# start, stop, infil, ventil, source, data
+   0, 24,    0.433    2.616    1    0.000
+     1   # number of flow periods in day type: sunday      
+# start, stop, infil, ventil, source, data
+   0, 24,    0.433    2.616    1    0.000
+     1   # number of casual gains in day type: weekday     
+# slot, period, sensible, latent, rad_frac, conv_frac
+   5,   0,  24,      0.8,      0.0,  0.000,  1.000
+     1   # number of casual gains in day type: saturday    
+# slot, period, sensible, latent, rad_frac, conv_frac
+   5,   0,  24,      0.8,      0.0,  0.000,  1.000
+     1   # number of casual gains in day type: sunday      
+# slot, period, sensible, latent, rad_frac, conv_frac
+   5,   0,  24,      0.8,      0.0,  0.000,  1.000
+# Labels for gains 
+ Occupt       Lights       Equipt       Other        E-gain      

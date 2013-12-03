@@ -261,7 +261,7 @@ C Call the menu of choices (this also sets some default options).
         ISET=ISIM
         CALL HDDATE(PDESCR)
         CALL HDSTEP(SDESCR)
-        lsn1=MIN0(lnblnk(RFILE),22)
+        lsn1=MIN0(lnblnk(RFILE),42)
         if(NSIM.gt.1)then
         write(outs,'(3A,I4,2A)')'Lib: ',RFILE(1:lsn1),' Set:',ISIM,
      &    ': ',RSNAME(ISIM)(1:lnblnk(RSNAME(ISIM)))
@@ -379,7 +379,7 @@ C Call the menu of choices (this also sets some default options).
         ISET=ISIM
         CALL HDDATE(PDESCR)
         CALL HDSTEP(SDESCR)
-        lsn1=MIN0(lnblnk(RFILE),22)
+        lsn1=MIN0(lnblnk(RFILE),42)
         if(NSIM.gt.1)then
         write(outs,'(3A,I4,2A)')'Lib: ',RFILE(1:lsn1),' Set:',ISIM,
      &    ': ',RSNAME(ISIM)(1:lnblnk(RSNAME(ISIM)))
@@ -446,7 +446,7 @@ C scanning data. Call MOSURC for each selected zone in turn.
         ISET=ISIM
         CALL HDDATE(PDESCR)
         CALL HDSTEP(SDESCR)
-        lsn1=MIN0(lnblnk(RFILE),22)
+        lsn1=MIN0(lnblnk(RFILE),42)
         if(NSIM.gt.1)then
         write(outs,'(3A,I4,2A)')'Lib: ',RFILE(1:lsn1),' Set:',ISIM,
      &    ': ',RSNAME(ISIM)(1:lnblnk(RSNAME(ISIM)))
@@ -460,6 +460,10 @@ C scanning data. Call MOSURC for each selected zone in turn.
         call edisp(itru,outs)
 
 C For each selected zone and surface condensation report.
+        write(outs,'(2a)')
+     &  ' Total occurances = timesteps with condensation',
+     &  ' on at least one surface.'
+        call edisp(itru,outs)
         DO 166 KGET=1,NGET
           izone=IGETNO(KGET,2)
           izrh =IGETNO(KGET,3)
@@ -766,6 +770,9 @@ C act='p' iget parameters already set.
       common/exporttg/xfile,tg,delim
       COMMON/EXPORTI/ixopen,ixunit,ixpunit
 
+      integer ireportunit ! zero is default one is W two is kW three Joules
+      common/repunit/ireportunit
+
       dimension YMAX(MZS), YMIN(MZS), YTOTSD(MZS)
       dimension YAVE(MZS), YSTD(MZS), NY(MZS), YTOT(MZS)
       dimension TMAX(MZS), TMIN(MZS)
@@ -777,7 +784,7 @@ C act='p' iget parameters already set.
       character rfile*72,PFILE*72,MSTRFILE*72,LAFRES*72
       CHARACTER PDESCR*60,SDESCR*44,t12*12
 
-      logical LARGE
+      logical LARGE,HAVEIT
 
 C If output to file alter the edisp unit number. Skip if in IPV mode.
       prompt = '  '
@@ -803,6 +810,8 @@ C The logical variable totals controls the displaying of cumulative
 C data for all the zones chosen.  
       if(act(1:1).eq.'-')then
         MENUTYPE=5
+C        write(6,*) 'in stats ireportunit is ',ireportunit
+        ireportunit=0  ! assume normal for stats
         call GOMSETUP
         call GOMENU
         if(ixopen.eq.1)then
@@ -851,8 +860,19 @@ C starting Y are zone based.
       call usrmsg(prompt,' ','-')
 
 C First recover bounds of selected data and calculate distributed max, min.
+C If we can recover it efficiently use GETSTATS otherwise use MMACAL.
       do 40 IX=1,NGET
-        call MMACHK(IX,DMAX,DMIN,DAVE,DTOT,TXMAX,TXMIN)
+        call GETSTATS(IX,HAVEIT,DMAX,DMIN,DAVE,DTOT,TXMAX,TXMIN)
+        if(HAVEIT)then
+
+C Debug.
+C          write(6,*) 'get stats ',DMAX,DMIN,DAVE,DTOT,TXMAX,TXMIN
+        else
+          call MMACAL(IX,DMAX,DMIN,DAVE,DTOT,TXMAX,TXMIN)
+
+C Debug.
+C          write(6,*) 'get MMACAL ',DMAX,DMIN,DAVE,DTOT,TXMAX,TXMIN
+        endif
         YMAX(IX)=DMAX
         YMIN(IX)=DMIN
         YAVE(IX)=DAVE
@@ -956,7 +976,7 @@ C At each step here need to check if default space delimiter has been
 C changed.
       CALL HDDATE(PDESCR)
       CALL HDSTEP(SDESCR)
-      lsn1=MIN0(lnblnk(RFILE),22)
+      lsn1=MIN0(lnblnk(RFILE),42)
       
 C Write tag line if tagged output requested otherwise write a line
 C separator between reports.
@@ -1243,6 +1263,8 @@ C standard.
 
 C Get common precz from geometry.h
 #include "geometry.h"
+
+      integer lnblnk
       
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/OUTPCH/ICOUT
@@ -1270,6 +1292,7 @@ C Get common precz from geometry.h
       dimension YMAX(MZS), YMIN(MZS), YTOT(MZS), YTOTSD(MZS)
       dimension YAVE(MZS), NY(MZS)
       dimension CENMAX(9), CENMIN(9), CENAVE(9)
+      integer lsn1
 
       character outs*124,act*1
       character prompt*124
@@ -1402,11 +1425,12 @@ C Now display the calculated data.
       call edisp(itru,'  ')
       CALL HDDATE(PDESCR)
       CALL HDSTEP(SDESCR)
+      lsn1=MIN0(lnblnk(RFILE),42)
       if (NS.lt.2) then
-        write (outs,'(1X,A44,A5,A22,A5,A22)')
-     &            SDESCR,' Lib:',RFILE(1:22),' Set:',RSNAME(ISIM)(1:22)
+        write (outs,'(1X,5A)')
+     &    SDESCR,' Lib:',RFILE(1:lsn1),' Set:',RSNAME(ISIM)(1:22)
       else
-        write (outs,'(1X,A44,A5,A22)') SDESCR,' Lib:',RFILE(1:22)
+        write (outs,'(1X,3A)') SDESCR,' Lib:',RFILE(1:lsn1)
       endif
       call edisp(itru,outs)
       write (outs,'(a)') SLABEL(NGET)
@@ -1443,6 +1467,8 @@ C act='p' iget parameters already set.
 
       SUBROUTINE MOSQHR(act,iabove,tval)
 #include "building.h"
+
+      integer lnblnk
       
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/OUTPCH/ICOUT
@@ -1476,6 +1502,7 @@ C act='p' iget parameters already set.
       dimension YMAX(MZS), YMIN(MZS), YTOT(MZS)
       dimension YAVE(MZS), NY(MZS),NYABOVE(MZS),NYBELOW(MZS)
       dimension TMAX(MZS), TMIN(MZS)
+      integer lsn1
 
 C For help messages
       character helpinsub*24   ! subroutine name
@@ -1638,8 +1665,9 @@ C changed.
       call edisp(itru,'  ')
       CALL HDDATE(PDESCR)
       CALL HDSTEP(SDESCR)
+      lsn1=MIN0(lnblnk(RFILE),42)
       WRITE(outs,'(3A,I4,2A)')
-     &             'Lib: ',RFILE(1:22),' Set:',ISIM,': ',RSNAME(ISIM)
+     &  'Lib: ',RFILE(1:lsn1),' Set:',ISIM,': ',RSNAME(ISIM)
       call edisp(itru,outs)
       WRITE(outs,'(A)')PDESCR
       call edisp(itru,outs)
@@ -1900,7 +1928,7 @@ C Energy requirements.
       if(act(1:1).ne.'i') then
         CALL HDDATE(PDESCR)
         CALL HDSTEP(SDESCR)
-        lsn1=MIN0(lnblnk(RFILE),22)
+        lsn1=MIN0(lnblnk(RFILE),42)
         if(NSIM.gt.1)then
           write(outs,'(3A,I4,2A)')'Lib: ',RFILE(1:lsn1),' Set:',ISIM,
      &      ': ',RSNAME(ISIM)(1:lnblnk(RSNAME(ISIM)))
@@ -1918,15 +1946,15 @@ C Energy requirements.
      &' Zone total sensible and latent plant used (kWhrs)')
         write(outs,'(2A)')
      &'    Zone             Sensible heating  Sensible cooling',
-     &'  Humidification   Dehumidification'
+     &'   Humidification     Dehumidification'
         call edisp(itru,outs)
         write(outs,'(2A)')
      &' id name             Energy   No. of   Energy   No. of ',
-     &'  Energy   No. of  Energy   No. of'
+     &'   Energy   No. of    Energy   No. of'
         call edisp(itru,outs)
         write(outs,'(2A)')
      &'                     (kWhrs)  Hr rqd   (kWhrs)  Hr rqd ',
-     &'  (kWhrs)  Hr rqd  (kWhrs)  Hr rqd'
+     &'   (kWhrs)  Hr rqd    (kWhrs)  Hr rqd'
         call edisp(itru,outs)
       endif
 
@@ -1992,7 +2020,7 @@ C Calcalate the sums and statistics to display during relevant period.
         if(act(1:1).ne.'i') then
           write(outs,66)IZ,zname(IZ),ZHE,ZHTIME,ZCE,Zctime,ZLHE,
      &      ZLHTIME,ZLCE,zlctime
-   66     format(I3,1X,A12,4(F11.2,F7.1))
+   66     format(I3,1X,A12,4(F11.2,F8.1))
           call eddisp(itru,outs)
         endif
    65 CONTINUE
@@ -2000,11 +2028,11 @@ C Calcalate the sums and statistics to display during relevant period.
         if(THE.gt.99999.0.or.TCE.lt.-99999.0)then
           write(outs,67)THE,tzhtime,TCE,tzctime,TLHE,tzlhtime,TLCE,
      &      tzlctime
-   67     format(1X,'   All',8X,4(F11.1,F7.0))
+   67     format(1X,'   All',8X,4(F11.1,F8.0))
         else
           write(outs,68)THE,tzhtime,TCE,tzctime,TLHE,tzlhtime,TLCE,
      &      tzlctime
-   68     format(1X,'   All',9X,4(F11.2,F7.1))
+   68     format(1X,'   All',9X,4(F11.1,F8.1))
         endif
         call edisp(itru,' ')
         call eddisp(itru,outs)
@@ -2030,6 +2058,7 @@ C << file does not need to be scanned to get the surface emissivity.
 #include "building.h"
 #include "model.h"
 #include "geometry.h"
+#include "schedule.h"
       
       integer lnblnk  ! function definition
 
@@ -2042,9 +2071,6 @@ C << file does not need to be scanned to get the surface emissivity.
       common/getmenu/menutype,igetind(65),igetflux(65)
       common/recver/izver,ipver,iever
 
-      character lodlabel*6
-      common/loadlabel/lodlabel(mcom,MGTY)
-
       character SLABEL*32,GLABEL*20,TABLABEL*36
       COMMON/GETLABEL/SLABEL(MZS),GLABEL(MZS),TABLABEL(MZS)
       integer LNSLABEL,LNGLABEL,LNTABLABEL  ! lengths for label strings
@@ -2053,9 +2079,6 @@ C << file does not need to be scanned to get the surface emissivity.
 
       COMMON/T4/EMISI(MS),EMISE(MS),ABSI(MS),ABSE(MS)
 
-C Version of operations file. ip3ver=0 standard, =1 sorted with header
-C =2 with more than 3 day types
-      common/p3ver/ip3ver(MCOM)
       COMMON/RECV5/SNA(MCOM,MS)
       COMMON/EXPORTI/ixopen,ixunit,ixpunit
       COMMON/RESLIB/RFILE,PFILE,MSTRFILE,LAFRES
@@ -2064,7 +2087,7 @@ C =2 with more than 3 day types
       COMMON/ZONPIK/NZ,NZNO(MCOM)
 
       CHARACTER PDESCR*60,SDESCR*44,CSTR*25
-      CHARACTER*13 LABELS(13)
+      CHARACTER*18 LABELS(13)
       CHARACTER*5 LABSurf(2)
       character outs*124,act*1,prompt*124
       CHARACTER RSNAME*40
@@ -2111,7 +2134,7 @@ C Energy requirements.
       ISET=ISIM
       CALL HDDATE(PDESCR)
       CALL HDSTEP(SDESCR)
-      lsn1=MIN0(lnblnk(RFILE),22)
+      lsn1=MIN0(lnblnk(RFILE),42)
       if(NSIM.gt.1)then
         write(outs,'(3A,I4,2A)')'Lib: ',RFILE(1:lsn1),' Set:',ISIM,
      &    ': ',RSNAME(ISIM)(1:lnblnk(RSNAME(ISIM)))
@@ -2147,12 +2170,13 @@ C Read geometry and construction files and setup labels.
         CALL ECONST(LTHRM(IZONE),IUNIT,izone,0,IUOUT,IER)
 
 C Update labels to match the current zone.
-        write(LABELS(1),'(1x,a,4x)')lodlabel(izone,1)
-        write(LABELS(2),'(1x,a,4x)')lodlabel(izone,1)
-        write(LABELS(3),'(1x,a,4x)')lodlabel(izone,2)
-        write(LABELS(4),'(1x,a,4x)')lodlabel(izone,2)
-        write(LABELS(5),'(1x,a,4x)')lodlabel(izone,3)
-        write(LABELS(6),'(1x,a,4x)')lodlabel(izone,3)
+C << revise for additional casual gains >>
+        write(LABELS(1),'(1x,a)')lodlabel(izone,1)
+        write(LABELS(2),'(1x,a)')lodlabel(izone,1)
+        write(LABELS(3),'(1x,a)')lodlabel(izone,2)
+        write(LABELS(4),'(1x,a)')lodlabel(izone,2)
+        write(LABELS(5),'(1x,a)')lodlabel(izone,3)
+        write(LABELS(6),'(1x,a)')lodlabel(izone,3)
         write(LABELS(7),'(2a)')' Ctl ',lodlabel(izone,1)
         write(LABELS(8),'(2a)')' Ctl ',lodlabel(izone,1)
         write(LABELS(9),'(2a)')' Ctl ',lodlabel(izone,2)
@@ -2180,7 +2204,7 @@ C Prepare to recover information from results library.
             write(outs,'(a,i2,a)') 
      &      'Operation file for zone ',izone,' periods being sorted!'
             call edisp(iuout,outs)
-            call PROCESSOLDCAS(izone,0,iuout,IER)
+            call PROCESSOLDCAS(izone,0,iuout)
           endif
           IF(IER.EQ.1)RETURN
           IF(ICGC(IZONE).EQ.1)CALL ercgcf(0,iuout,LCGCIN(izone),
@@ -2365,7 +2389,7 @@ C Update IR.
           IF(IR.EQ.11)IRL=9
           IF(IR.EQ.12)IRL=11
 
-          write(outs,126)LABELS(IRL)(1:11),TOTCG,VAL2(IR-6,1),
+          write(outs,126)LABELS(IRL)(1:12),TOTCG,VAL2(IR-6,1),
      &                   TOR,LABSurf(1),CE,CI,CG
           call edisp(itru,outs)
           write(outs,127) TR, LABSurf(2),CTE,CTI,CTG
@@ -2428,11 +2452,11 @@ C Output general header information.
 
 C Print the data and labels for uncontrolled casual gains.
         write(outs,'(2a)')
-     &    ' Gains     |   Total   | Convective|    Radiative  | ',
+     &    ' Gains      |   Total   | Convective|    Radiative  | ',
      &    '       Radiant by connection type'
         call edisp(itru,outs)
         write(outs,'(2a)')
-     &    ' type      | (Con+Rad) | part (air)|     on surf   | ',
+     &    ' type       | (Con+Rad) | part (air)|     on surf   | ',
      &    '    external    internal     ground '
         call edisp(itru,outs)
         DO 520 IIR=7,IRLC
@@ -2442,7 +2466,7 @@ C Print the data and labels for uncontrolled casual gains.
           IF(IIR.EQ.10)IRL=7
           IF(IIR.EQ.11)IRL=9
           IF(IIR.EQ.12)IRL=11
-          write(outs,226)LABELS(IRL)(1:11),ST(IIR-6,1),ST(IIR-6,2),
+          write(outs,226)LABELS(IRL)(1:12),ST(IIR-6,1),ST(IIR-6,2),
      &      ST(IIR-6,3),LABSurf(1),ST(IIR-6,4),ST(IIR-6,5),ST(IIR-6,6)
           call edisp(itru,outs)
 

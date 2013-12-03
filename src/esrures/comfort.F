@@ -5,7 +5,7 @@ C Strathclyde, Glasgow Scotland, 2001.
 C ESP-r is free software.  You can redistribute it and/or
 C modify it under the terms of the GNU General Public
 C License as published by the Free Software Foundation 
-C (version 2 orlater).
+C (version 2 or later).
 
 C ESP-r is distributed in the hope that it will be useful
 C but WITHOUT ANY WARRANTY; without even the implied
@@ -40,19 +40,20 @@ C if act = 'E' return days PMV (effective temperature) in GVAL.
 
       SUBROUTINE MOCMFT(IDAY,IZONE,act)
 #include "building.h"
+#include "model.h"
 #include "geometry.h"
-#include "espriou.h"
+#include "schedule.h"
+C #include "espriou.h"
       
       integer lnblnk  ! function definition
 
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/OUTPCH/ICOUT
+      integer childterminal  ! picks up mmod from starting of prj
+      common/childt/childterminal
 
       COMMON/SIMPIK/ISIM,ISTADD,ID1,IM1,ID2,IM2,ISDS,ISDF,NTS,ISAVE
-      common/C21/IFCFG,cfgroot,LCFGF
-      character lodlabel*6
-      common/loadlabel/lodlabel(mcom,MGTY)
       common/exporttg/xfile,tg,delim
       COMMON/EXPORTI/ixopen,ixunit,ixpunit
 
@@ -64,24 +65,19 @@ C Pre calculated data (filtered).
      &    RDFAVE(MCOM,3,MZRL),RDTFMAX(MCOM,3,MZRL),RDTFMIN(MCOM,3,MZRL)
 
       COMMON/GET2/XDUM(MTS),XDUM1(MTS),GVAL(MTS)
+      COMMON/IGETFLG/IOCUPF,ialstused,IROC
+
 
       DIMENSION ID(12),OP(MS),TS(MS),TSO(MS),QV(MS),ITEMS(14)
-      character doit*248,tmode*8,tfile*72
+      character doit*248,tmode*8
       character longtfile*144,longtfiledos*144
-      character LCFGF*72,cfgroot*24
       CHARACTER*25 DESC(12)
       character outs*124,TSTR*24,ZN*12
       character xfile*144,ITEMS*25,tg*1,delim*1,act*1
-      character*8 ll1,ll2,ll3
+      character*12 ll1,ll2,ll3
       logical ok,dok,concat,unixok
       integer IOT  ! for radio button
       integer NITMS,INO ! max items and current menu item
-
-#ifdef OSI
-      integer ICPMOD     ! passed from tchild
-#else
-      integer*8 ICPMOD     ! passed from tchild
-#endif
 
 C For help messages
       character helpinsub*24   ! subroutine name
@@ -152,15 +148,16 @@ C Set representative casual gain and then search all zones and build
 C up hash list of zone:time:occupancy.
 
 C << revise for additional casual gain types >>
-        write(ll1,'(1x,a6,1x)') lodlabel(IZONE,1)
-        write(ll2,'(1x,a6,1x)') lodlabel(IZONE,2)
-        write(ll3,'(1x,a6,1x)') lodlabel(IZONE,3)
+        write(ll1,'(a)') lodlabel(IZONE,1)
+        write(ll2,'(a)') lodlabel(IZONE,2)
+        write(ll3,'(a)') lodlabel(IZONE,3)
         helptopic='res_comfort_occupied'
         call gethelptext(helpinsub,helptopic,nbhelp)
         IOT=1
         CALL EASKATOG('Which casual gain represents occupancy:',' ',
      &      'Always occupied',ll1,ll2,ll3,'time',' ',' ',IOT,nbhelp)
         if (IOT.gt.1.and.IOT.lt.5) then
+          iocupf=1      
           iocut=IOT-1
         elseif(IOT.eq.1)then
           iocut=0
@@ -169,7 +166,6 @@ C << revise for additional casual gain types >>
         endif
         iocuset=1
         call scnocup(iier)
-        if (iocut.ne.IFILT) call MMAPER
         IFILT=iocut
         return
       endif
@@ -304,9 +300,9 @@ C Casual gain type.  Ask user which constitutes occupancy.
 
 C << revise for additional casual gain types >>
         call edisp(iuout,' ')
-        write(ll1,'(1x,a6,1x)') lodlabel(IZONE,1)
-        write(ll2,'(1x,a6,1x)') lodlabel(IZONE,2)
-        write(ll3,'(1x,a6,1x)') lodlabel(IZONE,3)
+        write(ll1,'(a)') lodlabel(IZONE,1)
+        write(ll2,'(a)') lodlabel(IZONE,2)
+        write(ll3,'(a)') lodlabel(IZONE,3)
         helptopic='res_comfort_occupancy'
         call gethelptext(helpinsub,helptopic,nbhelp)
         IOT=1
@@ -321,7 +317,6 @@ C << revise for additional casual gain types >>
         endif
         call usrmsg(' ',' ','-')
         call scnocup(iier)
-        if (iocut.ne.IFILT) call MMAPER
         IFILT=iocut
       elseif(ino.eq.10)then
         goto 78
@@ -339,8 +334,7 @@ C to include the path and create a string to drive ish.
           write(zn,'(A)') zname(IZONE)
           call tstamp('>','RES: start mft')
           doit = ' '
-          call tchild(ICPMOD)
-          call termode(ICPMOD,tmode)
+          call terminalmode(childterminal,tmode)
           if(unixok)then
             call addpath(LCFGF,longtfile,concat)
           else
@@ -508,25 +502,22 @@ C sundays ioucpz(izone,[49-72]), This hash table will need altering
 C if sub-hour casual gains definitions are implemented. 
       subroutine scnocup(ier)
 #include "building.h"
-#include "espriou.h"
+C #include "schedule.h"
+C #include "espriou.h"
 
       COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
       COMMON/SIMPIK/ISIM,ISTADD,ID1,IM1,ID2,IM2,ISDS,ISDF,NTS,ISAVE
       
       integer ncomp,ncon
       common/c1/ncomp,ncon
-      COMMON/OUTIN/IUOUT,IUIN
-      COMMON/FILEP/IFIL
+C      COMMON/OUTIN/IUOUT,IUIN
       COMMON/GET1/VAL1(MZS,MTS),VAL2(MZS,MTS),VAL3(MZRL,MTS)
       common/cmftpar/WVEL,ACTL,CLO,iocut,iocuset,ioucpz(MCOM,72)
-      common/recver/izver,ipver,iever
-
-C Version of operations file. ip3ver=0 standard, =1 sorted with header
-C =2 with more than 3 day types
-      common/p3ver/ip3ver(MCOM)
+C      common/recver/izver,ipver,iever
 
       logical close15,close16,close17
-      character hold*24,outs*124
+      character hold*24
+C      character outs*124
 
 C For help messages
       character helpinsub*24 ! subroutine name
@@ -596,19 +587,6 @@ C current simulation.
         isunfn=24
       endif
       do 42, izone = 1,ncomp
-
-C If izver >= 4 the read the data directly.
-        if(izver.eq.4)then
-          continue
-        else
-          CALL EROPER(0,iuout,IFIL+1,izone,IER)  ! for older library
-          if(ip3ver(izone).eq.0)then
-            write(outs,'(a,i2,a)') 
-     &      'Operation file for zone ',izone,' periods being sorted!'
-            call edisp(iuout,outs)
-            call PROCESSOLDCAS(izone,0,iuout,IER)
-          endif
-        endif
 
 C Get periods for weekday, and two weekend days. If no casual gains
 C (occupancy type) at each hour then set ioucpz to zero.  This hash
@@ -695,7 +673,8 @@ C << todo - use of explicit read of casual gains >>
 
       subroutine getocup(izone,iday,ih,ioc,ier)
 #include "building.h"
-#include "geometry.h"
+C #include "geometry.h"
+#include "net_flow.h"
 #include "tdf2.h"
 
       common/recver/izver,ipver,iever
@@ -707,14 +686,6 @@ C      COMMON/OUTIN/IUOUT,IUIN
       common/c1/ncomp,ncon
       common/cmftpar/WVEL,ACTL,CLO,iocut,iocuset,ioucpz(MCOM,72)
 
-      COMMON/GET1/VAL1(MZS,MTS),VAL2(MZS,MTS),VAL3(MZRL,MTS)
-
-C.........START: USED FOR ACTIVITY TDF DATA.....................
-      REAL X2a_QTOTOCCUP
-      REAL X2c_QTOTEQUIP
-C.........END: USED FOR ACTIVITY TDF DATA.....................
-
-      DIMENSION VAL(MBITS+2)
       character outs*124
       logical found,close15,close16,close17
       real QCASR,QCASC,QCASL  ! total radiant/convective/latent
@@ -759,7 +730,7 @@ C Find day of week.
 
 C If izver >= 4 the read the data directly for the exceptional
 C cases of temporal gains.
-      if(izver.eq.4)then
+      if(izver.ge.4)then
         found = .false.
         if(ICASUAL(izone).ne.0)found = .true.  ! if single casual item
         if(ICASUAL3(izone).ne.0)found = .true. ! if 3 separate casual item
@@ -788,78 +759,6 @@ C            if(ioc.gt.0) write(6,*) '* Found temporal occupancy @',itt
   141     continue
           return
         endif
-      endif
-
-C Older format results file. If there are separate temporal casual
-C gains then explicitly gather information for this zone and day.
-C If close to zero then zone is not occupied.
-      found = .false.
-      if(ICASUAL3(izone).ne.0)found = .true.
-      if(found)then
-        itt=ih*NTS
-        call DATIME(ITT,TIME)
-        TIMEF=real(ITT)/real(NTS)
-        TIMEP=TIMEF - (1./real(NTS))
-        itdi=ICASUAL3(izone)
-        IFOC=itdi
-        CALL RCTDFR(0,IDAY,ITT,TIMEF,VAL,ISD,IFOC,IER)
-        X2a=VAL(ISD)
-        X2b=VAL(ISD+3)
-        X2c=VAL(ISD+6)
-        call eclose(X2a,0.0,0.1,close15)
-        call eclose(X2b,0.0,0.1,close16)
-        call eclose(X2c,0.0,0.1,close17)
-        ioc=1
-        if(iocut.eq.1)then
-          if(close15) ioc=0
-        elseif(iocut.eq.2)then
-          if(close16) ioc=0
-        elseif(iocut.eq.3)then
-          if(close17) ioc=0
-        endif
-
-C Debug.
-C        if(ioc.gt.0) write(6,*) '* Found temporal occupancy @',itt
-
-        return
-      endif
-
-C Following now the same pattern as the CASUAL3T for the "ACTIVITY" tdf
-C entity.
-      found = .false.
-      if(IACTIV(izone).ne.0)found = .true.
-      if(found)then
-        itt=ih*NTS
-        call DATIME(ITT,TIME)
-        TIMEF=real(ITT)/real(NTS)
-        TIMEP=TIMEF - (1./real(NTS))
-        itdi=IACTIV(izone)
-        IFOC=itdi
-        CALL RCTDFR(0,IDAY,ITT,TIMEF,VAL,ISD,IFOC,IER)
-        X2a_QTOTOCCUP=TMAR(1,1)*ITMAR(1,2)*VAL(ISD)*ZBASEA(izone)
-        X2a=(X2a_QTOTOCCUP-((X2a_QTOTOCCUP*ITMAR(1,3))/100))/2
-
-C<<< let the lighting gains to be 0 for now until there is a
-C a decision on the calculation of the lighting gains>>
-        X2b=0
-        X2c_QTOTEQUIP=TMAR(1,4)*VAL(ISD+2)*ZBASEA(izone)
-        X2c=(X2c_QTOTEQUIP-((X2c_QTOTEQUIP*ITMAR(1,5))/100))/2
- 
-        call eclose(X2a,0.0,0.1,close15)
-        call eclose(X2b,0.0,0.1,close16)
-        call eclose(X2c,0.0,0.1,close17)
-        ioc=1
-        if(iocut.eq.1)then
-          if(close15) ioc=0
-        elseif(iocut.eq.2)then
-          if(close16) ioc=0
-        elseif(iocut.eq.3)then
-          if(close17) ioc=0
-        endif
-
-C Debug.
-C        if(ioc.gt.0) write(6,*) '* Found temporal occupancy @',itt
-
       endif
 
       return

@@ -277,6 +277,7 @@ C BHSTR - an array holding a descriptive string for each column of data.
 
 #include "b2e.h"
 #include "building.h"
+#include "model.h"
 #include "espriou.h"
       
       integer lnblnk  ! function definition
@@ -294,7 +295,6 @@ C Simulation parameter periods.
      &               isfnmon(MSPS)
       common/spfldat/nsset,isset,isstup,isbnstep,ispnstep,issave,isavgh
 
-      common/C21/IFCFG,cfgroot,LCFGF
 
       COMMON/RBEMSTR/BHSTR(MBCOL)   
 
@@ -305,8 +305,7 @@ C Commom for the optimim start/stop simulation.
      &NOPSSPCP,OPSSPCP(MCOM),OPSSPST(MCOM)
 
       CHARACTER*8 BHSTR
-      CHARACTER cfgroot*24
-      character*72 MODELCFG,TDFUD,BFILE,RSFIL,BREPT,LCFGF
+      character*72 MODELCFG,TDFUD,BFILE,RSFIL,BREPT
       CHARACTER*124 OUTSTR,OUTS
       
       INTEGER IBUNIT,NCOLS,NLINE,SENMAP
@@ -782,6 +781,7 @@ C ITRC is the trace level, IER=0 OK, IER=1 problem.
       SUBROUTINE tdfupd(ITRC,AFIL,IAFIL,IER)
 #include "building.h"
 #include "model.h"
+#include "net_flow.h"
 #include "tdf2.h"
 
       COMMON/OUTIN/IUOUT,IUIN
@@ -864,7 +864,7 @@ C data and write to the relevant record, repeating as necessary.
         noread=0
 
 C Set a tolerance on the time stamp of +/- 30% of one time increment
-        toler=(1./(24*float(NTSPH)))*0.5
+        toler=(1./(24.0*float(NTSPH)))*0.5
         DO 46 IP=1,NDBSTP
           CDAY=AINT(FLOAT(IP)/FLOAT(NTSPH*24))
           ITIME=IP-(INT(CDAY)*NTSPH*24)
@@ -898,7 +898,7 @@ C Check if the read record falls within the tolerance band.
               closet=.true.
             endif
             if(.NOT.closet)then
-              write(outs,'(a,i5,3F9.3)')'RDOTY != TIMEJDIP',ip,RDOTY,
+              write(outs,'(a,i5,3F11.6)')'RDOTY != TIMEJDIP',ip,RDOTY,
      &          TIMEJD,STARTNG
 	      call edisp(iuout,outs)
               ier=1
@@ -908,7 +908,7 @@ C Check if the read record falls within the tolerance band.
               noread=noread+1
             endif
             CALL ESTIME(NTSPH,1,ITIME,DESCRH,DESCRD,TIMER)
-            write(outs,'(a,F4.0,2a)') 'Updating data for ',RDOTY,
+            write(outs,'(a,F10.6,2a)') 'Updating data for ',RDOTY,
      &        ' @ ',DESCRH
             if(ITRC.gt.1)call edisp(iuout,outs)
             CALL EWTABU(ITRC,ITREC,IER)
@@ -1230,6 +1230,7 @@ C Commom for the optimim start/stop simulation.
      &SENMAP(MBCOL)
 
 C Control law mapping
+      integer icascf
       common/cctl/icascf(mcom)
       
       INTEGER SENMAP

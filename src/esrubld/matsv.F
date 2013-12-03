@@ -56,19 +56,11 @@ C << are no longer any so-called default windows and doors.
       common/outin/iuout,iuin
       common/filep/ifil
 
-      common/prec1/sna(mcom,ms)
-      common/prec9/nconst(mcom),nelts(mcom,ms),ngaps(mcom,ms),
-     &             npgap(mcom,ms,mgp)
-
       integer ncomp,ncon
       common/c1/ncomp,ncon
-      common/adjc/ie(mcom,ms),atp(mcom,ms),atf(mcom,ms),arp(mcom,ms),
-     &            arf(mcom,ms)
-
       character outs*124
 
       iunit=ifil+2
-      nn=nconst(icomp)
       zgae=0.
       zgai=0.
       zdae=0.
@@ -108,6 +100,7 @@ C *********************************************************************
 
       common/simtim/ihrp,ihrf,idyp,idyf,idwp,idwf,nsinc,its
       common/pers/isd1,ism1,isd2,ism2,isds,isdf,ntstep
+      integer icascf
       common/cctl/icascf(mcom)
       COMMON/GRND110/GRNDSP
 
@@ -386,6 +379,7 @@ C from the corresponding surface equation.
       common/coeadj/a1,a2,a3,a4
       common/conadj/wa(ms,mn,6)
 
+      integer icascf
       common/cctl/icascf(mcom)
 
       COMMON/GR1D01/NNDS,NNDZ(MCOM),NNDC(MCOM,MS),NNDL(MCOM,MS,ME)
@@ -512,6 +506,7 @@ C  equation and the control node coefficient introduced if appropriate.
       common/cadj2/b1,b2,b3,b4
       common/conadj/wa(ms,mn,6)
 
+      integer icascf
       common/cctl/icascf(mcom)
 
       COMMON/GR1D01/NNDS,NNDZ(MCOM),NNDC(MCOM,MS),NNDL(MCOM,MS,ME)
@@ -767,6 +762,7 @@ C                            is zero.
       common/prec9/nconst(mcom),nelts(mcom,ms),ngaps(mcom,ms),
      &             npgap(mcom,ms,mgp)
 
+      integer icascf
       common/cctl/icascf(mcom)
 
       common/simtim/ihrp,ihrf,idyp,idyf,idwp,idwf,nsinc,its
@@ -803,8 +799,8 @@ C Next-to-surface term elimination.
       if(icascf(icomp).ge.1)then
          if(iban(icascf(icomp),1).eq.-2)then
            n1=nc+1
-           n2=nc+2
-           n3=nc+3
+c           n2=nc+2
+c           n3=nc+3
            n4=nc+4
            do 300 i=1,n1
            do 400 j=1,n4
@@ -882,6 +878,7 @@ C                           and coefficient 4 is introduced.
       common/outin/iuout,iuin
 
       common/tc/itc,icnt
+      integer icascf
       common/cctl/icascf(mcom)
 
       common/prec9/nconst(mcom),nelts(mcom,ms),ngaps(mcom,ms),
@@ -985,10 +982,10 @@ C Next-to-surface term elimination.
       if(smalln.gt.b)goto 1
       
       if(iban(icomp,1).eq.-2)then
-        n1=nc+1
+c        n1=nc+1
         n2=nc+2
-        n3=nc+3
-        n4=nc+4
+c        n3=nc+3
+c        n4=nc+4
         n5=nc+5
         do 300 i=1,n2
         do 400 j=1,n5
@@ -1266,6 +1263,7 @@ C substitution completed.
       common/prec9/nconst(mcom),nelts(mcom,ms),ngaps(mcom,ms),
      &             npgap(mcom,ms,mgp)
 
+      integer icascf
       common/cctl/icascf(mcom)
 
       character outs*144
@@ -1461,7 +1459,6 @@ C N5 relates to the control term
 #include "building.h"
 #include "control.h"
       common/trace/itcf,itrace(mtrace),izntrc(mcom),itu
-      common/outin/iuout,iuin
 
       common/tc/itc,icnt
 
@@ -1478,6 +1475,7 @@ C N5 relates to the control term
       common/prec9/nconst(mcom),nelts(mcom,ms),ngaps(mcom,ms),
      &             npgap(mcom,ms,mgp)
 
+      integer icascf
       common/cctl/icascf(mcom)
 
       character outs*144
@@ -1502,7 +1500,7 @@ C n5 relates to the control term.
       n1=nc+1
       n2=nc+2
       n3=nc+3
-      n4=nc+4
+c      n4=nc+4
       n5=nc+5            
 
 C Commence forward reduction:
@@ -1713,40 +1711,22 @@ C intra-nodal temperatures.
 
       subroutine mzcnb1(icomp,iconst)
 #include "building.h"
-#include "tdf2.h"
+
       common/prec1/sna(mcom,ms)
       common/conadj/wa(ms,mn,6)
 
       common/fvalc/tfc(mcom,ms,mn),qfc(mcom)
       common/fvals/tfs(mcom,ms),qfs(mcom)
 
-      COMMON/BTIME/BTIMEP,BTIMEF
       COMMON/GR1D01/NNDS,NNDZ(MCOM),NNDC(MCOM,MS),NNDL(MCOM,MS,ME)
-      DIMENSION VAL(MBITS+2)
-      
+
       n=nndc(icomp,iconst)-1
       ts=tfs(icomp,iconst)
       do 10 i=1,n
       jn=n-i+1
-        if(jn.eq.1)then 
-
-C Currently the tdf item applies only on node 1 of the 
-C surface, i.e. for external surface temperature        
-          if(ISURTMEAS(icomp,iconst).ne.0)then
-            IFOC=  ISURTMEAS(icomp,iconst)
-            call RCTDFB(itrc,btimef,VAL,ISD,IFOC,IER)
-            tfc(icomp,iconst,jn)=VAL(ISD)
-            write(6,*) 'tfc node: ', jn, 'val: ', VAL(ISD)
-          else      
-            tfc(icomp,iconst,jn)=(wa(iconst,jn,4)-wa(iconst,jn,3)*
+      tfc(icomp,iconst,jn)=(wa(iconst,jn,4)-wa(iconst,jn,3)*
      &qfc(icomp)/sna(icomp,iconst)-wa(iconst,jn,2)*ts)/(wa(iconst,jn,1))
-            ts=tfc(icomp,iconst,jn)
-          endif
-        else      
-            tfc(icomp,iconst,jn)=(wa(iconst,jn,4)-wa(iconst,jn,3)*
-     &qfc(icomp)/sna(icomp,iconst)-wa(iconst,jn,2)*ts)/(wa(iconst,jn,1))
-            ts=tfc(icomp,iconst,jn)
-        endif
+      ts=tfc(icomp,iconst,jn)
    10 continue
       return
       end
@@ -1768,7 +1748,8 @@ C temperatures.
 
       common/fvalc/tfc(mcom,ms,mn),qfc(mcom)
       common/fvals/tfs(mcom,ms),qfs(mcom)
-      
+
+      integer icascf
       common/cctl/icascf(mcom)
 
       COMMON/GR1D01/NNDS,NNDZ(MCOM),NNDC(MCOM,MS),NNDL(MCOM,MS,ME)
@@ -1821,8 +1802,9 @@ C terms of the control function information previously
 C defined.
 
       subroutine mzpst1(b1,b2,b3,icomp,qf)
-#include "building.h"
-#include "control.h"
+      include "building.h"
+      include "control.h"
+      include "blc25_open_windows.h"
 
       common/tc/itc,icnt
 
@@ -1837,6 +1819,7 @@ C defined.
       common/fvalc/tfc(mcom,ms,mn),qfc(mcom)
       common/fvals/tfs(mcom,ms),qfs(mcom)
 
+      integer icascf
       common/cctl/icascf(mcom)
 
       common/pstflg/icflg1(mcf),icflg2(mcf)
@@ -1848,9 +1831,6 @@ C defined.
 
       common/setuq/qpltp(mcom),qpltf(mcom),conv(mcom)
       COMMON/MBINFO/ZMBI(MCOM,4)
-
-      integer ncomp,ncon
-      common/c1/ncomp,ncon
 
       common/globct/qfutgb(mcf),tfutgb(mcf),tnpgb(mcf)
       common/glbctl/global,glbrwd
@@ -1868,6 +1848,11 @@ C For help messages
       integer nbhelp     ! number of help lines found
 
       helpinsub='mzpst1'  ! set for subroutine
+
+C Zeroise free-cooling variables.
+      fFreeCoolDelivered(icomp) = 0.
+      fCondFreeCool(icomp) = 0.
+      bFreeCoolCtl(icomp) = .false.
 
 C Zeroise moisture addition to zone from plant -
 C required in event of BCL06 not being referenced 
@@ -2088,7 +2073,10 @@ C Mixed injection -
       call edisp(itu,outs)
 
  9998 return
-   14 call edisp(iuout,' mzpst1: problem with flux assignments.')
+   14 write(outs,'(a,4i3)')
+     &  'mzpst1: problem with flux assignments zn icf ian1 ian2 ',
+     &  icomp,icf,ian1,ian2
+      call edisp(iuout,outs)
       call epwait
       stop
 
@@ -2106,7 +2094,6 @@ C input.
 #include "building.h"
 #include "control.h"
 
-      common/outin/iuout,iuin
       common/trace/itcf,itrace(mtrace),izntrc(mcom),itu
       common/tc/itc,icnt
 
@@ -2245,12 +2232,10 @@ C MZGSUP controls the simulation within the 3D ground start up period.
 C *********************************************************************
       SUBROUTINE MZGSUP(ISS)
 #include "building.h"
-#include "model.h"
-#include "tdf2.h"
+#include "net_flow.h"
 
       common/outin/iuout,iuin
       common/filep/ifil
-      common/trc/itrc
 
       integer ncomp,ncon
       common/c1/ncomp,ncon

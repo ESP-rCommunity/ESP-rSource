@@ -34,7 +34,7 @@ C action (8 char) as follows:
 C    'new' creates model folders based on information
 C       in root and mpath parameters.
 C    'within' assumes that the current folder will be used.
-C root   (24 char) the root name of the model
+C root   (32 char) the root name of the model
 C mpath  (72 char) the path to the folder with cfg file.
 C weather (32 char) the weather file name (no path included)
 C simact (6 char) assessments to be carried out '------' if
@@ -79,7 +79,7 @@ C Simulation parameter sets.
       common/spfldat/nsset,isset,isstup,isbnstep,ispnstep,issave,isavgh
 
 C Passed in parameters.
-      character action*8,root*24,mpath*72,menu*72
+      character action*8,root*32,mpath*72,menu*72
       character fs*1           ! file separator
       character weather*32     ! file name for the location (no path)
       character subpath*72
@@ -290,11 +290,8 @@ C data into the simulation parameter set data structure.
       endif
 
 C Write calendar information (just the default one for the moment)
-
-C << later include calendar and day types within the META file >>
-     
-      calename='standard weekday Sat & Sun'
-      nbdaytype=3
+      calename='standard weekday Sat Sun hol'
+      nbdaytype=4
       nbcaldays(1)=0
       calentag(1)='weekdays'
       calendayname(1)='weekdays (all year)'
@@ -304,32 +301,49 @@ C << later include calendar and day types within the META file >>
       nbcaldays(3)=0
       calentag(3)='sunday'
       calendayname(3)='Sundays (all year)'
-      calentag(4)='-'
+      calentag(4)='holiday'
+      calendayname(4)='holiday'
+      nbcaldays(4)=0
       calentag(5)='-'
-      calentag(6)='-'
-      calentag(7)='-'
-      calentag(8)='-'
-      calentag(9)='-'
-      calendayname(4)='-'
       calendayname(5)='-'
+      nbcaldays(5)=0
+      calentag(6)='-'
       calendayname(6)='-'
+      nbcaldays(6)=0
+      calentag(7)='-'
       calendayname(7)='-'
+      nbcaldays(7)=0
       calendayname(8)='-'
+      calentag(8)='-'
+      nbcaldays(8)=0
+      calentag(9)='-'
       calendayname(9)='-'
+      nbcaldays(9)=0
+      calentag(10)='-'
+      calendayname(10)='-'
+      nbcaldays(10)=0
+     
       do 542 ijd=1,365
 
+C Assume 1 Jan is a holiday (users can change this later).
+        if(ijd.eq.1)then
+          icalender(ijd)=4
+          nbcaldays(4)=nbcaldays(4)+1
+        else
+
 C For julian day ijd find month and day of month and day of week.
-        call edayr(ijd,idayn,imthn)
-        call eweekd(idayn,imthn,iyear,idwk)
-        if(idwk.ge.1.and.idwk.le.5)then
-          icalender(ijd)=1
-          nbcaldays(1)=nbcaldays(1)+1
-        elseif(idwk.eq.6)then
-          icalender(ijd)=2
-          nbcaldays(2)=nbcaldays(2)+1
-        elseif(idwk.eq.7)then
-          icalender(ijd)=3
-          nbcaldays(3)=nbcaldays(3)+1
+          call edayr(ijd,idayn,imthn)
+          call eweekd(idayn,imthn,iyear,idwk)
+          if(idwk.ge.1.and.idwk.le.5)then
+            icalender(ijd)=1
+            nbcaldays(1)=nbcaldays(1)+1
+          elseif(idwk.eq.6)then
+            icalender(ijd)=2
+            nbcaldays(2)=nbcaldays(2)+1
+          elseif(idwk.eq.7)then
+            icalender(ijd)=3
+            nbcaldays(3)=nbcaldays(3)+1
+          endif
         endif
   542 continue
   
@@ -408,6 +422,7 @@ C IER=0 OK.
 #include "geometry.h"
 #include "esprdbfile.h"
 #include "material.h"
+#include "schedule.h"
 
       integer lnblnk  ! function definition
 
@@ -433,29 +448,12 @@ C Parameters
       COMMON/C24/IZSTOCN(MCOM,MS)
       common/user/browse
       common/cctlnm/ctldoc,lctlf
+      integer icascf
       common/cctl/icascf(mcom)
 
 C Where ESP-r was installed (as recorded when it was compiled).
       common/deflt4/dinstpath
       character dinstpath*60
-
-C Version of operations file. ip3ver=0 standard, =1 sorted with header
-C =2 with more than 3 day types
-      common/p3ver/ip3ver(MCOM)
-      COMMON/P2N/NAC(MDTY),IACS(MDTY,MA),IACF(MDTY,MA),ACI(MDTY,MA),
-     &           ACV(MDTY,MA),IPT(MDTY,MA),TA(MDTY,MA)
-      INTEGER NAC,IACS,IACF,IPT
-      REAL ACI,ACV,TA
-      COMMON/P3N/NCAS(MDTY),ICGS(MDTY,MC),ICGF(MDTY,MC),
-     &           CMGS(MDTY,MC),CMGL(MDTY,MC),RADC(MDTY,MC),CONC(MDTY,MC)
-      INTEGER NCAS,ICGS,ICGF
-      REAL CMGS,CMGL,RADC,CONC
-
-      CHARACTER oprdesc*248,ventdesc*248,ctlstr*24
-      COMMON/P1/oprdesc(MCOM),ventdesc(MCOM),ctlstr(MCOM,MDTY)
-
-      character lodlabel*6
-      common/loadlabel/lodlabel(mcom,MGTY)
 
       COMMON/Vld20/Vldtng
       logical Vldtng
@@ -676,11 +674,14 @@ C Instanciate the surface constructions.
         write(sname(icomp,icc),'(a)') hasname(icc)
         write(smlcn(icc),'(a)') hasconstr(icc)
 
-C Loop thru all of the constructions to find the matching construction
+C Loop thru all of the known constructions to find the matching construction.
+C Also set ssmlcindex for this surface.
         imatch=0
+        ssmlcindex(iccc)=0  ! assume no matching MLC          
         do 5 ii=1,nmlc
-          if(SMLCN(icc)(1:12).eq.DESC(ii)(1:12)) then
+          if(SMLCN(icc)(1:12).eq.mlcname(ii)(1:12)) then
             imatch=ii
+            ssmlcindex(iccc)=ii   ! remember MLC index     
           endif
   5     continue
 
@@ -700,7 +701,7 @@ C mark anunknownmlc so construction files are not created.
         elseif(metaver.eq.1)then
 
 C See if it is opaque or transparent and copy out the relevant
-C section of the string DESC.
+C section of the construction attributes.
           if(imatch.eq.0) then
 
 C If we do not have a match it might be because we are referencing a local
@@ -710,10 +711,10 @@ C the original model. In this case << ? >>
             SOTF(icc)='UNKNOWN'
             anunknownmlc=.true.   ! mark that one MLC is unknown
           else
-            if(DESC(imatch)(15:18).EQ.'OPAQ')then
+            if(mlctype(imatch)(1:4).EQ.'OPAQ')then
               SOTF(icc)='OPAQUE'
             else
-              WRITE(SOTF(icc),'(A)') DESC(imatch)(21:32)
+              WRITE(SOTF(icc),'(A)') mlcoptical(imatch)(1:12)
               willneedtmc=.true.
             endif
           endif
@@ -747,10 +748,10 @@ C Reset to represent UNKNOWN
         write(SOTHER(icc,2),'(i2.2)') zboundarytype(icomp,icc,2)
         write(SOTHER(icc,3),'(i2.2)') zboundarytype(icomp,icc,3)
 
+C Set connection based variables.
         SSNAME(iccc)=SNAME(icomp,icc)
         SSOTF(iccc)=SOTF(icc)
         SSMLCN(iccc)=SMLCN(icc)
-        ssmlcindex(iccc)=ssmlcindex(icc)
         SSVFC(iccc)=SVFC(icc)
         SSOTHER(iccc,1)=SOTHER(icc,1)
         SSOTHER(iccc,2)=SOTHER(icc,2)
@@ -856,10 +857,10 @@ C parent surface.  Later add logic to better place the door..
 
 C Loop thru all of the constructions to find the matching construction
 C and then see if it is opaque or transparent and copy out the relevant
-C section of the string DESC.
+C section of the construction attributes.
             imatch=0
             do 56 ii=1,nmlc
-              if(rsmlcn(1:12).eq.DESC(ii)(1:12)) then
+              if(rsmlcn(1:12).eq.mlcname(ii)(1:12)) then
                 imatch=ii
               endif
  56         continue
@@ -867,10 +868,10 @@ C section of the string DESC.
               rsotf='UNKNOWN'
               anunknownmlc=.true.   ! mark that one MLC is unknown
             else
-              if(DESC(imatch)(15:18).EQ.'OPAQ')then
+              if(mlctype(imatch)(1:4).EQ.'OPAQ')then
                 rsotf='OPAQUE'
               else
-                write(rsotf,'(A)') DESC(imatch)(21:32)
+                write(rsotf,'(A)') mlcoptical(imatch)(1:12)
                 willneedtmc=.true.
               endif
             endif
@@ -885,6 +886,11 @@ C Connection information needs to be updated.
             ICT(ibcs)=zboundarytype(icomp,newsurf,1)  ! use boundarytype
             IC2(ibcs)=zboundarytype(icomp,newsurf,2)
             IE2(ibcs)=zboundarytype(icomp,newsurf,3)
+
+C If there was a matching MLC set ssmlcindex.
+            if(imatch.ne.0)then
+              ssmlcindex(ibcs)=imatch  ! remember MLC index     
+            endif
 
 C Use zboundarytype to instanciate sother & ssother << to be done >>
             IF(zboundarytype(icomp,newsurf,1).EQ.0)THEN
@@ -939,10 +945,10 @@ C the parent surface as a percentage of area.
 
 C Loop thru all of the constructions to find the matching construction
 C and then see if it is opaque or transparent and copy out the relevant
-C section of the string DESC.
+C section of the construction attributes.
             imatch=0
             do 55 ii=1,nmlc
-              if(rsmlcn(1:12).eq.DESC(ii)(1:12)) then
+              if(rsmlcn(1:12).eq.mlcname(ii)(1:12)) then
                 imatch=ii
               endif
  55         continue
@@ -950,10 +956,10 @@ C section of the string DESC.
               rsotf='UNKNOWN'
               anunknownmlc=.true.   ! mark that one MLC is unknown
             else
-              if(DESC(imatch)(15:18).EQ.'OPAQ')then
+              if(mlctype(imatch)(1:4).EQ.'OPAQ')then
                 rsotf='OPAQUE'
               else
-                write(rsotf,'(A)') DESC(imatch)(21:32)
+                write(rsotf,'(A)') mlcoptical(imatch)(1:12)
                 willneedtmc=.true.
               endif
             endif
@@ -968,6 +974,11 @@ C Connection information needs to be updated.
             ICT(ibcs)=zboundarytype(icomp,newsurf,1)  ! use boundarytype
             IC2(ibcs)=zboundarytype(icomp,newsurf,2)
             IE2(ibcs)=zboundarytype(icomp,newsurf,3)
+
+C If there was a matching MLC set ssmlcindex.
+            if(imatch.ne.0)then
+              ssmlcindex(ibcs)=imatch   ! remember MLC index     
+            endif
 
 C Use zboundarytype to instanciate sother & ssother << to be done >>
             IF(zboundarytype(icomp,newsurf,1).EQ.0)THEN
@@ -1098,7 +1109,7 @@ C Clear commons.
         lodlabel(icomp,1)='Occupt'
         lodlabel(icomp,2)='Lights'
         lodlabel(icomp,3)='Equipt'
-        lodlabel(icomp,4)='N/A   '
+        lodlabel(icomp,4)='Other '
         lodlabel(icomp,5)='Ann.El'
         lodlabel(icomp,6)='N/A   '
         lodlabel(icomp,7)='N/A   '
@@ -1106,7 +1117,7 @@ C Clear commons.
 C Fill common blocks for new zone based on information in the
 C pattern file.
 
-C Set to current format
+C Set to current zone operation file format.
         ip3ver(icomp)=2
         afact = use(2)
         iflow='ach-ach '
@@ -1126,7 +1137,7 @@ C Set to current format
         call IMPORTZCASG(isource,idest,icact,iwatt,sfile,itrc,'s',ier)
 
 C Just in case sort the data.
-        call PROCESSOLDCAS(ICOMP,0,iuout,IER)
+        call PROCESSOLDCAS(ICOMP,0,iuout)
         IUO=IFIL+2
         CALL EMKOPER(IUO,LPROJ(ICOMP),ICOMP,IER)
       endif
@@ -1205,10 +1216,8 @@ C IPV description via ipvdata.h.
       common/cctlnm/ctldoc,lctlf
       character LCTLF*72,CTLDOC*248
 
-      common/cctl/icascf(mcom)
       integer icascf
-
-      common/C21/IFCFG,cfgroot,LCFGF
+      common/cctl/icascf(mcom)
 
 C XMLMETRICS are the metrics that could be included in the input.xml
 C in case the flag: <dump_all_data> is false
@@ -1223,12 +1232,13 @@ C nsurfinso nb of insolation sources, isurfinso() list of insolation sources.
       common/ishdirec/iaplic(MCOM,2),nsurfcalc(MCOM),lstsfcalc(MCOM,MS),
      &       nsurfinso(MCOM),isurfinso(MCOM,MS)
 
+      COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,CFCDBOK
+      LOGICAL CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,CFCDBOK
+
       integer inumXMLmetrics !counts for the number of xml metrics defined
-      character cfgroot*24
-      integer IFCFG
 
       CHARACTER OUTSTR*248,WORD*32,outs*124,outs2*124
-      character dstmp*24,LCFGF*72
+      character dstmp*24
       character word248*248
 
       character act*1  ! action requested.
@@ -1243,7 +1253,7 @@ C used by scanning code to identify the contents of a silent file.
       character fs*1           ! file separator
 
 C For passing to silentmodel.
-      character actions*8,root*24,mpath*72
+      character actions*8,root*32,mpath*72
 
 C Same as local variable actions which is passed back to calling code.
       character silentreturndirec*8
@@ -1418,7 +1428,7 @@ C For each of the META specific arrays, clear values.
             szcoords(iz,isu,3)=0.0
   53      continue
           do 52 isu=1,MS
-            szhasconstr(iz,isu)=' '
+            szhasconstr(iz,isu)=' '  ! clear MLC name and optics name
             szhasoptic(iz,isu)=' '
   52      continue
   42    continue
@@ -1433,10 +1443,10 @@ C For each of the META specific arrays, clear values.
 C Check if running in dll mode.
       call isadll(dll)
 
-C Initialise geometry data file. and set currentfile.
+C Initialise meta file. and set currentfile.
       CALL EFOPSEQ(IUNIT,LFILE,1,IER)
       IF(IER.LT.0)THEN
-        write(outs,'(3a)') 'Silent file ',LFILE(1:lnblnk(LFILE)),
+        write(outs,'(3a)') 'Meta file ',LFILE(1:lnblnk(LFILE)),
      &      ' could not be opened.'
         if(dll)then
           dllsubr='SILENTREAD'
@@ -1545,7 +1555,8 @@ C Debug.
         CALL EGETRM(OUTSTR,K,bsmpth,'W','path to BASESIMP',IER)
         goto 43
 
-C Databases
+C Databases. There may or may not be tags for specific databases. If
+C none is supplied assume the default names apply.
       elseif(WORD(1:4).eq.'*prm')then
 
         CALL EGETRM(OUTSTR,K,lworking,'W','material db',IER)
@@ -2460,8 +2471,8 @@ C Add in site information if tokens were included.
   128   continue
       endif
 
-C Just to be sure re-scan the MLC database so that the string
-C array DESC is filled.
+C Just to be sure re-scan the MLC database so that the construction
+C attributes array are filled.
       call opendb(ier)
 
 C << location for further system level data >>
@@ -2627,7 +2638,6 @@ C IPV description via ipvdata.h.
       integer icascf
       common/cctl/icascf(mcom)
 
-      common/C21/IFCFG,cfgroot,LCFGF
       integer IZSTOCN
       COMMON/C24/IZSTOCN(MCOM,MS)
 
@@ -2645,10 +2655,8 @@ C nsurfinso nb of insolation sources, isurfinso() list of insolation sources.
      &       nsurfinso(MCOM),isurfinso(MCOM,MS)
 
       integer inumXMLmetrics !counts for the number of xml metrics defined
-      character cfgroot*24
-      integer IFCFG
 
-      CHARACTER outs*124,outsd*124,LCFGF*72
+      CHARACTER outs*124,outsd*124
       character dstmp*24
 
       character act*1      ! action requested.
@@ -2664,7 +2672,7 @@ C the contents of the file via model.h.
       character fs*1           ! file separator
 
 C For passing to silentmodel.
-      character actions*8,root*24,mpath*72
+      character actions*8,root*32,mpath*72
 
       logical dll,unixok
 
