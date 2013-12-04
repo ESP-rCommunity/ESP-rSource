@@ -102,7 +102,7 @@ C prec17 common is described in geometry.h.
       LOGICAL DOK,OK,CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,CFCDBOK
 
       DIMENSION IVALS(MS),ITEMS(28),ITEMSS(MS),IVALSS(MS),jvn1(MV)
-      DIMENSION SALT(10),trnalt(17),IVLST(MTV)
+      DIMENSION SALT(11),trnalt(17),IVLST(MTV)
       CHARACTER HEAD*32,SALT*33,hold*36
       CHARACTER DESCRC*25
       CHARACTER D14*14,T14*14,D12*12,T12*12,LTMP*72,GFILE*72
@@ -885,12 +885,13 @@ C Remind user of current surface boundary attributes.
             SALT(8)='BASESIMP foundation calculation'
             SALT(9)='CEN 13791 partition         '
             SALT(10)='unknown at this time       '
+            SALT(11)='Green roof                 '
 
             helptopic='geometry_boundary_menu'
             call gethelptext(helpinsub,helptopic,nbhelp)
             IX=1
             CALL EPICKS(IX,IVALSS,' ','Surface boundary condition:',
-     &           33,10,SALT,'surface boundary options',IER,nbhelp)
+     &           33,11,SALT,'surface boundary options',IER,nbhelp)
             IOS=IVALSS(1)
             if(IOS.EQ.2)then
               VALT=0.0
@@ -944,7 +945,17 @@ C profile has not been defined.
      &          'Go to `Model Context` menu to define.','W')
                 goto 3
               endif
-            endif
+
+C ********
+C Green roof attribute. Could be asking for inputs or let user load an input file dataset.
+            elseif(IOS.EQ.11)then
+              CALL EASKR(VALT,' ','Green roof?',
+     &         -99.,'F',270.,'F',20.,'gr_roof details',IER,nbhelp)
+              CALL EASKR(VALW,' ','Constant radiation?',
+     &         0.0,'W',99999.,'W',0.0,'adjacent radiation source',
+     &         IER,nbhelp)            
+	    endif
+C*******
           elseif(IRT.eq.4)then
 
 C Select surface use.
@@ -1286,6 +1297,18 @@ C Reset to represent UNKNOWN
                 ICT(IC)=-1
                 IE2(IC)=0
                 IC2(IC)=0
+             
+	      ELSEIF(IOS.EQ.11)THEN
+                SOTHER(ISS,1)='GREEN_R'
+                write(SOTHER(ISS,2),'(i2.2)')INT(VALT)
+                write(SOTHER(ISS,3),'(i2.2)')INT(VALW)
+                SSOTHER(IC,1)='GREEN_R'
+C****must change this *********************
+                write(SSOTHER(IC,2),'(i2.2)')INT(VALT)
+                write(SSOTHER(IC,3),'(i2.2)')INT(VALW)
+                ICT(IC)=8
+                IC2(IC)=INT(VALT)
+                IE2(IC)=INT(VALW)
               ENDIF
               call warnmod(ICOMP,'sat')
               MODGEO=.TRUE.
@@ -2927,7 +2950,7 @@ C Pased parameters
       logical dupedges,XST,OK,DOK,updoth
       logical newgeo  ! to use for testing if new/old geometry file.
 
-      DIMENSION SALT(14),IVAL(MCOM)  ! ,bl(144)
+      DIMENSION SALT(15),IVAL(MCOM)  ! ,bl(144)
       DIMENSION cog(3),cogo(3),COG1(3),COG2(3),COG3(3)
       integer iocog  ! loop counter for detecting close surfaces
       integer ifound,ifoundc ! how many close surfaces and which one
@@ -3681,17 +3704,18 @@ C Specify the environment of the 'other' face of the surface.
         SALT(10)='BASESIMP foundation configuration'
         SALT(11)='CEN 13791 partition            '
         SALT(12)='unknown at this time           '
-        SALT(13)='scan for nearby surfaces       '
-        SALT(14)='no change at this time         '
+        SALT(13)='green roof                     '
+        SALT(14)='scan for nearby surfaces       '
+        SALT(15)='no change at this time         '
 
         helptopic='surface_boundary_opt'
         call gethelptext(helpinsub,helptopic,nbhelp)
         IX=1
         CALL EPICKS(IX,IVAL,' ','Other Side Boundary Condition',
-     &    33,14,SALT,'surface boundary ',IER,nbhelp)
+     &    33,15,SALT,'surface boundary ',IER,nbhelp)
 
         IF(IX.EQ.0) goto 13
-        IF(IVAL(1).EQ.14) goto 13
+        IF(IVAL(1).EQ.15) goto 13
 
 C Determine the match in the system topology and update it. 
         CALL SURADJ(ICOMP,IS,IE,TMP,IZC,ISC,IC,DESCRC)
@@ -4137,7 +4161,25 @@ C Reset to zeros set ICT to -1 to signal UNKNOWN
           ICT(IC)=-1; IE2(IC)=0; IC2(IC)=0
           showother=.false.
 
+C********************
         ELSEIF(IVAL(1).EQ.13)THEN
+          SOTHER(IS,1)='GREEN_R'; SSOTHER(IC,1)='GREEN_R'
+          ICT(IC)=8
+          VALT=0.0; VALW=0.0
+          CALL EASKR(VALT,' ','Constant temperature?',
+     &      -99.,'F',700.,'F',20.,'adjacent temperature',IER,nbhelp)
+          CALL EASKR(VALW,' ','Constant radiation?',
+     &      0.0,'W',99999.,'W',0.0,'adjacent radiation source',
+     &      IER,nbhelp)
+          IC2(IC)=INT(VALT)
+          IE2(IC)=INT(VALW)
+          write(SOTHER(IS,2),'(i2.2)')INT(VALT)
+          write(SOTHER(IS,3),'(i2.2)')INT(VALW)
+          write(SSOTHER(IC,2),'(i2.2)')INT(VALT)
+          write(SSOTHER(IC,3),'(i2.2)')INT(VALW)
+          showother=.false.
+          updoth=.false.        
+	ELSEIF(IVAL(1).EQ.14)THEN
 
 C Scan for neighbor surfaces in all zones. Report if within 1m 
 C and 0.5m2 area difference.
@@ -8926,6 +8968,14 @@ C the connections list, then remind user to double check topology.
           ICT(ICCC)=-1
           IC2(ICCC)=0
           IE2(ICCC)=0
+        elseif(SOTHER(icc,1)(1:7).eq.'GREEN_R')then
+          write(outs,'(3a)') 'Note: ',SNAME(NCOMP,icc),
+     &      ' is a GREEN ROOF connection. Use the'
+          call usrmsg(outs,
+     &      'surface attribute facility to confirm its details.','W')
+          ICT(ICCC)=0
+          IC2(ICCC)=0
+          IE2(ICCC)=0	  
         else
           write(outs,'(3a)') 'Note: ',SNAME(NCOMP,icc),
      &      ' is a possible partition. Confirm its'

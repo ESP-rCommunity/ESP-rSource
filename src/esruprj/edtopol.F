@@ -80,11 +80,12 @@ C Pause length during sequentail scan longpause (true=1 sec)
 
       LOGICAL MODIFY,MODLEN,MODBND,OTHEROK
       logical M0SKP,M1SKP,M2SKP,M3SKP,M4SKP,M5SKP,M6SKP,M7SKP,M8SKP
-      logical M1OK,M2OK,M4OK,M5OK,M6OK,M7OK
+      logical M9SKP
+      logical M1OK,M2OK,M4OK,M5OK,M6OK,M7OK,M8OK
       LOGICAL prob,OK,dok,unixok
       logical longpause
 
-      DIMENSION ITEMS1(23)
+      DIMENSION ITEMS1(24)
       CHARACTER CXSTR*78,outs*124,ITEMS1*34,CFGFN*72
       character CXITM*48
       character DCNN*72
@@ -156,7 +157,8 @@ C failed searches brought to users attention.
       M5SKP=.TRUE.
       M6SKP=.TRUE.
       M7SKP=.TRUE.
-      M8SKP=.FALSE.  !  back-to-back in zone assumed to be partitions
+      M8SKP=.TRUE.
+      M9SKP=.FALSE.  !  back-to-back in zone assumed to be partitions
       OTHEROK=.TRUE.
       MODIFY=.FALSE.
 
@@ -240,49 +242,54 @@ C surface attribute.
       else
         ITEMS1(11)='h   marked as IDENT_CEN : Yes '
       endif
-      if(M0SKP)then
-        ITEMS1(12)='i   if no match found: No     '
-      else
-        ITEMS1(12)='i   if no match found: Yes    '
-      endif
       if(M8SKP)then
-        ITEMS1(13)='j   if back-to-back found: No '
+        ITEMS1(12)='i   marked as GREEN_R : No    '
       else
-        ITEMS1(13)='j   if back-to-back found: Yes'
+        ITEMS1(12)='i   marked as GREEN_R : Yes   '
       endif
-      ITEMS1(14)=  '  _______________________     '
+      if(M0SKP)then
+        ITEMS1(13)='j   if no match found: No     '
+      else
+        ITEMS1(13)='j   if no match found: Yes    '
+      endif
+      if(M9SKP)then
+        ITEMS1(14)='k   if back-to-back found: No '
+      else
+        ITEMS1(14)='k   if back-to-back found: Yes'
+      endif
+      ITEMS1(15)=  '  _______________________     '
 
-      ITEMS1(15)=  'p edit individual connections'
+      ITEMS1(16)=  'p edit individual connections'
 
 C If contiguity has problems then hilight the selection.
       if(prob)then
         if(IPROB.gt.10)then
-          ITEMS1(16)='q CLEAR ALL contiguity  '
+          ITEMS1(17)='q CLEAR ALL contiguity  '
         else
-          ITEMS1(16)='q CLEAR SOME/ALL contiguity  '
+          ITEMS1(17)='q CLEAR SOME/ALL contiguity  '
         endif
       else
-          ITEMS1(16)='q clear some/all contiguity  '
+          ITEMS1(17)='q clear some/all contiguity  '
       endif
-      ITEMS1(17)=    'r check via vertex contiguity'
-      ITEMS1(18)=  '  _______________________     '
+      ITEMS1(18)=    'r check via vertex contiguity'
+      ITEMS1(19)=  '  _______________________     '
 
       IF(ITRC.EQ.0)THEN
-        ITEMS1(19)='s reporting >> silent         '
+        ITEMS1(20)='s reporting >> silent         '
       ELSEIF(ITRC.EQ.1)THEN  
-        ITEMS1(19)='s reporting >> summary        ' 
+        ITEMS1(20)='s reporting >> summary        ' 
       ELSEIF(ITRC.EQ.2)THEN
-        ITEMS1(19)='s reporting >> verbose        '
+        ITEMS1(20)='s reporting >> verbose        '
       ENDIF
-      ITEMS1(20)=  '! list connections            '
+      ITEMS1(21)=  '! list connections            '
       if(longpause)then
-        ITEMS1(21)='* pause during check 1 sec    '
+        ITEMS1(22)='* pause during check 1 sec    '
       else
-        ITEMS1(21)='* pause during check 0.5 sec  '
+        ITEMS1(22)='* pause during check 0.5 sec  '
       endif
-      ITEMS1(22)=  '? help                        '
-      ITEMS1(23)=  '- exit                        '
-      MITEM=23
+      ITEMS1(23)=  '? help                        '
+      ITEMS1(24)=  '- exit                        '
+      MITEM=24
 
 C Help text for this menu.
       helptopic='topology_choice_menu'
@@ -428,6 +435,15 @@ C Flip logic for case of CEN 13791 partition or no match found.
         endif
       ELSEIF(INO.EQ.12)THEN
 
+C Green roof (flip logic as above or no match found).
+        call tstamp('>','CFG: toggle no match found')
+        if(M8SKP)then
+          M8SKP=.false.
+        else
+          M8SKP=.true.
+        endif
+      ELSEIF(INO.EQ.13)THEN
+
 C Flip logic for case of UNKNOWN or no match found.
         call tstamp('>','CFG: toggle no match found')
         if(M0SKP)then
@@ -435,12 +451,12 @@ C Flip logic for case of UNKNOWN or no match found.
         else
           M0SKP=.true.
         endif
-      ELSEIF(INO.EQ.13)THEN
+      ELSEIF(INO.EQ.14)THEN
       
 C Flip logic for back-to-back within zone.
         call tstamp('>','CFG: toggle back-to-back')
-        if(M8SKP)then
-          M8SKP=.false.
+        if(M9SKP)then
+          M9SKP=.false.
         else
           dok=.false.
           helptopic='boundary_back_to_back'
@@ -450,7 +466,7 @@ C Flip logic for back-to-back within zone.
           if(OK)M3SKP=.true.
         endif
 
-      ELSEIF(INO.EQ.15)THEN
+      ELSEIF(INO.EQ.16)THEN
 
 C Edit single connection. Setup a long list made up of short
 C connection descriptions and allow the user to select. This
@@ -555,7 +571,7 @@ C Not one of the legal menu choices.
 C << Has anyone used this recently? How about adapting this as a common bit of
 C << code called from the many places where connections are established
 C << in the model?
-      ELSEIF(INO.EQ.16)THEN
+      ELSEIF(INO.EQ.17)THEN
 
 C Clear contiguity.
         helptopic='boundary_clear_all'
@@ -605,7 +621,7 @@ C attributes.
      &      '(adiabetic,similar, constant etc. see help)',OK,dok,9)
           if(OK)then
             call tstamp('>','CFG: import surface attributes')
-            call ESACON(M1SKP,M2SKP,M4SKP,M5SKP,M6SKP,M7SKP,IER)
+            call ESACON(M1SKP,M2SKP,M4SKP,M5SKP,M6SKP,M7SKP,M8SKP,IER)
             MODIFY=.TRUE.
           endif
         elseif(IRT.eq.2)then
@@ -622,6 +638,8 @@ C attributes.
           call askok(' ','Clear items marked BASESIMP?',M6OK,
      &      dok,nbhelp)
           call askok(' ','Clear items marked IDENT_CEN?',M7OK,
+     &      dok,nbhelp)
+          call askok(' ','Clear items marked GREEN_R?',M8OK,
      &      dok,nbhelp)
           call usrmsg('Clearing partial contiguity...',bl,'-')
           ICC=0
@@ -674,6 +692,13 @@ C << show the surface attributes also be cleared?? >>
                 ICT(ICC)=0
                 IC2(ICC)=0
                 IE2(ICC)=0
+              elseif(ICT(ICC).eq.8.and.M8OK)then
+                ICC=ICC+1
+                IC1(ICC)=IZ
+                IE1(ICC)=IS
+                ICT(ICC)=0
+                IC2(ICC)=0
+                IE2(ICC)=0
               else
                 ICC=ICC+1
                 IC1(ICC)=IZ
@@ -700,7 +725,7 @@ C attributes.
      &      OK,dok,nbhelp)
           if(OK)then
             call tstamp('>','CFG: import surface attributes')
-            call ESACON(M1SKP,M2SKP,M4SKP,M5SKP,M6SKP,M7SKP,IER)
+            call ESACON(M1SKP,M2SKP,M4SKP,M5SKP,M6SKP,M7SKP,M8SKP,IER)
             MODIFY=.TRUE.
           endif
         elseif(IRT.eq.3)then
@@ -728,7 +753,7 @@ C Older configuration file format, ask for its name.
           if(CFGFN.ne.' ')LCFGF=CFGFN
           CALL EMKCFG('-',IER)
         endif
-      ELSEIF(INO.EQ.17)THEN
+      ELSEIF(INO.EQ.18)THEN
 
 C Check vertex matches and rebuild configuration file. If icfgv = 3 or 4 then
 C only need to update the connections file. If it changes also update
@@ -755,7 +780,7 @@ C Older configuration file format, ask for its name.
 C Look for connections.
         call tstamp('>','CFG: do graphic match of surfaces')
         CALL CONFIG(NZONES,CACC,IACC,DACC,M0SKP,M1SKP,M2SKP,M3SKP,
-     &    M4SKP,M5SKP,M6SKP,M7SKP,M8SKP,OTHEROK)
+     &    M4SKP,M5SKP,M6SKP,M7SKP,M8SKP,M9SKP,OTHEROK)
 
 C Re-build zone:surface to connection hash array.
         do 43 icc = 1, NCON
@@ -783,7 +808,7 @@ C ************** CONFIG
 C CONFIG processes the vertex data and presents close matches for
 C the user to confirm before writing to temporary configuration file.
       SUBROUTINE CONFIG(NZONES,CACC,IACC,DACC,M0SKP,M1SKP,M2SKP,M3SKP,
-     &  M4SKP,M5SKP,M6SKP,M7SKP,M8SKP,OTHEROK)
+     &  M4SKP,M5SKP,M6SKP,M7SKP,M8SKP,M9SKP,OTHEROK)
 #include "building.h"
 #include "model.h"
 #include "site.h"
@@ -817,6 +842,7 @@ C Pause length during sequentail scan longpause (true=1 sec)
 
       LOGICAL MODIFY,MODLEN,MODBND,OK,DOK,DOIT,OTHEROK,UPDGEO
       logical M0SKP,M1SKP,M2SKP,M3SKP,M4SKP,M5SKP,M6SKP,M7SKP,M8SKP
+      logical M9SKP
       logical closea,closee,close,longpause
       logical newgeo  ! to use for testing if new/old geometry file.
       character outs*124,CXSTR*78,SN*12
@@ -1003,8 +1029,8 @@ C Reset ICNT before commencing a new loop.
 
 C Depending on how many matches were found, proceed.  If there were
 C no matches then check for existing IDENTICAL or CONSTANT or GROUND
-C or ADIABATIC or BASESIMP or IDENT_CEN and set these if the user
-C asked to skip onfirmation.
+C or ADIABATIC or BASESIMP or IDENT_CEN or GREEN_R (green roof) and 
+C set these if the user has asked to skip confirmation.
           if(ipmatch.eq.0)then
 
 C If user said skip confirmation of marked IDENTICAL, check and update the
@@ -1128,6 +1154,28 @@ C surface attribute if it does not match and jump around.
               goto 110
             endif
 
+C****green roof part (modify and adapt later)
+C If user said skip confirmation of marked GREEN_R, check and update the
+C surface attribute if it does not match and jump around. 
+            if(M8SKP.and.(ICT(IC).eq.8))then
+              call edisp(iuout,'known connection skipped.')
+              if(MMOD.eq.8)then
+                if(longpause)then
+                  call pauses(1)
+                else
+                  call pausems(400)
+                endif
+              endif
+              if(SO(1:7).ne.'GREEN_R')then
+                TOTHER(JS,1)='GREEN_R'
+                write(tother(JS,2),'(i2.2)') IC2(ic)
+                write(tother(JS,3),'(i2.2)') IE2(ic)
+                UPDGEO=.TRUE.
+              endif
+              goto 110
+            endif
+C*******green roof end
+
 C Ask user if some other type of connection. If M0SKP is true then
 C set connection to exterior and proceed.
             if(OTHEROK)then
@@ -1171,9 +1219,9 @@ C Setup contextural help for boundary conditions.
      &  'c static boundary conditions','d ground (standard profile) ',
      &  'e ground (user def profile) ','f ground (3D conduction)    ',
      &  'g adiabatic (no heat flux)  ','h BASESIMP foundation       ',
-     &  'i CEN 13791 partition       ',
-     &  'j UNKNOWN (at this time)    ','k accept current            ',
-     &   ' ',iart,idno,nbhelp)
+     &  'i CEN 13791 partition       ','j green roof attached       ',
+     &  'k UNKNOWN (at this time)    ','l accept current            ',
+     &   iart,idno,nbhelp)
                 if(IART.eq.0)then
                   continue
                 elseif(IART.eq.1)then
@@ -1357,7 +1405,30 @@ C BASESIMP end.
                   endif
 
 C CEN 13791 partition end.
+
+C******Green roof boundary start
                 elseif(IART.eq.10)then
+                  CALL EASKR(VAL,' ',' Green roof ? ',
+     &              -99.,'F',99.,'F',20.,'adjacent temperature',
+     &              IER,nbhelp)
+
+C          *****must modify later on
+                  CALL EASKR(VAL2,' ',' Constant rad (W/m^2) ? ',
+     &              -999.,'F',999.,'F',0.,'adjacent rad',IER,nbhelp)
+                  IC1(IC)=IZ
+                  IE1(IC)=JS
+                  ICT(IC)=8
+                  IE2(IC)=INT(VAL2)
+                  IC2(IC)=INT(VAL)
+                  if(SO(1:7).ne.'GREEN_R')then
+                    TOTHER(JS,1)='GREEN_R'
+                    write(tother(JS,2),'(i2.2)') IC2(ic)
+                    write(tother(JS,3),'(i2.2)') IE2(ic)
+                    UPDGEO=.TRUE.
+                  endif
+C ****Green roof boundary end
+		  
+                elseif(IART.eq.11)then
                   IC1(IC)=IZ
                   IE1(IC)=JS
                   ICT(IC)=-1
@@ -1377,7 +1448,7 @@ C CEN 13791 partition end.
 C Only one possible matching surface, inform user and then proceed. If
 C selfcheck is false then the match is as a partition to a surface in
 C another zone. If selfcheck is true then we have a back-to-back
-C match and we need to test the value of M8SKP.
+C match and we need to test the value of M9SKP.
             II=ipmz(1)
             JJ=ipms(1)
 
@@ -1433,9 +1504,9 @@ C update the attributes.
             else
     
 C If we are in the same room then we have a back-to-back surface.
-C If M8SKP was set to false then go ahead and
+C If M9SKP was set to false then go ahead and
 C make it a partition without bothering to ask the user.
-              if(M8SKP)then
+              if(M9SKP)then
                 write(TOTHER(JS,1),'(a)') 'ANOTHER'
                 write(tother(JS,2),'(i2.2)') IC2(ic)
                 write(tother(JS,3),'(i2.2)') IE2(ic)
@@ -1448,7 +1519,7 @@ C make it a partition without bothering to ask the user.
                 goto 110  ! no need to check further
               else
                 CALL EASKABC('Matched surface within room:',' ',
-     &            'set to back-to-back','set to ADIABETIC',
+     &            'set to back-to-back','set to ADIABATIC',
      &            'set to UNKNOWN',IRTA,nbhelp)
                 if(IRTA.eq.1)then
                   write(TOTHER(JS,1),'(a)') 'ANOTHER'
@@ -1703,7 +1774,7 @@ C ************* ESACON
 C ESACON import surface connection attributes into the problem topology
 C common block C3 while taking into account confirmation preferences.
 C IER=0 OK, IER=1 problem.
-      SUBROUTINE ESACON(M1SKP,M2SKP,M4SKP,M5SKP,M6SKP,M7SKP,IER)
+      SUBROUTINE ESACON(M1SKP,M2SKP,M4SKP,M5SKP,M6SKP,M7SKP,M8SKP,IER)
 #include "building.h"
 #include "model.h"
 #include "site.h"
@@ -1712,7 +1783,7 @@ C IER=0 OK, IER=1 problem.
       integer lnblnk  ! function definition
 
 C Parameters: logical variables set the context of what to check
-      logical M1SKP,M2SKP,M4SKP,M5SKP,M6SKP,M7SKP
+      logical M1SKP,M2SKP,M4SKP,M5SKP,M6SKP,M7SKP,M8SKP
       integer  IER   ! zero is ok 
 
       COMMON/FILEP/IFIL
@@ -1831,6 +1902,9 @@ C Set connected zone name if one exists.
           GOTO 123
         ELSEIF(SO(1:9).EQ.'IDENT_CEN'.AND.ICT(ICC).EQ.7)THEN
           CALL EDISP(iuout,'   topology & attribute IDENT_CEN match.')
+          GOTO 123
+        ELSEIF(SO(1:7).EQ.'GREEN_R'.AND.ICT(ICC).EQ.8)THEN
+          CALL EDISP(iuout,'   topology & attribute GREEN_R match.')
           GOTO 123
         ELSEIF(SO(1:7).EQ.'UNKNOWN'.OR.SO(1:2).EQ.'  ')THEN
           CALL EDISP(iuout,' surface attribute was UNKNOWN: skipping.')
@@ -2049,7 +2123,37 @@ C BASESIMP end.
           IC2(ICC)=0
           IE2(ICC)=0
           GOTO 123
-        ELSEIF(SO(1:8).EQ.'EXTERIOR')THEN
+
+C*******green roof start (must be adapted later on)
+        ELSEIF(SO(1:7).EQ.'GREEN_R')THEN
+          MODIFY=.TRUE.
+          if(MMOD.eq.8)CALL INLNST(1)
+          LINSTY(ICC)=2
+          nzg=1
+          nznog(1)=IC1(ICC)
+          izgfoc=IC1(ICC)
+          if(MMOD.eq.8)CALL CADJVIEW(IER)
+          if(.NOT.M8SKP)then
+            call edisp(iuout,OUTSTR)
+            call edisp(iuout,TMP)
+            dok=.true.
+            CALL ASKOK(' ','Use this surface attribute?',OK,dok,nbhelp)
+            IF(.NOT.OK)GOTO 123
+          endif
+          CALL EDISP(iuout,'   topology << GREEN_R.')
+          ICT(ICC)=8
+          VAL=IC2(ICC)
+          CALL EASKR(VAL,' ',' Green roof  ? ',
+     &        -99.,'F',99.,'F',20.,'green roof temp',IER,nbhelp)
+          VAL2=IE2(ICC)
+          CALL EASKR(VAL2,' ',' Constant rad (W/m^2) ? ',
+     &        -999.,'F',999.,'F',0.,'adjacent rad',IER,nbhelp)
+          IC2(ICC)=INT(VAL)
+          IE2(ICC)=INT(VAL2)
+          GOTO 123
+C*******green roof end (must be adapted later on)
+        
+	ELSEIF(SO(1:8).EQ.'EXTERIOR')THEN
           MODIFY=.TRUE.
           if(MMOD.eq.8)CALL INLNST(1)
           LINSTY(ICC)=2

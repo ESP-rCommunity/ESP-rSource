@@ -112,6 +112,7 @@ C           3 ; connection to another zone (as defined by IC2 & IE2
 C           4 ; connected to ground
 c           5 ; surface is adiabatic
 c           7 ; surface partition according to the CEN 13791
+c           8 ; green roof construction
 C IC2 &   - connection description where IC2 & IE2:
 C IE2       - are unused if corresponding ICT=0
 C           - contain relative temp and absolute incident radiation 
@@ -2909,7 +2910,7 @@ C Read from either the connections file or configuration file.
         IF(IER.NE.0) GOTO 1
         CALL EGETWI(OUTSTR,K,IE1(ICON),1,MS,'F','conn src surf',IER)
         IF(IER.NE.0) GOTO 1
-        CALL EGETWI(OUTSTR,K,ICT(ICON),-1,7,'F','conn type',IER)
+        CALL EGETWI(OUTSTR,K,ICT(ICON),-1,8,'F','conn type',IER)
         IF(IER.NE.0) GOTO 1
         CALL EGETWI(OUTSTR,K,IC2(ICON),0,0,'-','conn other zone',IER)
         IF(IER.NE.0) GOTO 1
@@ -3616,6 +3617,12 @@ C CEN 13791 boundary condition.
  9987     FORMAT(I4,1X,a,' in ',a,' >|< CEN13791+-',i3,'dC & ',
      &      I4,' W rad')
         endif
+C************green roof connection writing
+      ELSEIF(ICT(ICON).EQ.8.AND.ICF.GT.0)THEN
+        WRITE(CXSTR,9988)ICON,SST1(1:lsn1),ZST1(1:lzn1),
+     &                   IC2(ICON),IE2(ICON)
+ 9988   FORMAT(I4,1X,a,' in ',a,' >|< gr_roof @',I3,' dC &',
+     &         I4,' W rad')      
       ENDIF
       RETURN
       END

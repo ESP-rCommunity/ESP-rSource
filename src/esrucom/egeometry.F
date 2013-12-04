@@ -861,6 +861,23 @@ C the C24 and C3 data structures will have data that can be used.
             write(ssother(icn,2),'(a)') '0'
             write(ssother(icn,3),'(a)') '0'
           endif
+
+C ******Green roof - must be fixed/changed.
+        elseif(tother(1:7).eq.'GREEN_R')then
+
+C In this case the 2nd and 3rd values are not held in a legacy geometry
+C file. And if this is not the first scan of the geometry file then
+C the C24 and C3 data structures will have data that can be used.
+          write(sother(isn,1),'(a)') 'GREEN_R'
+          write(sother(isn,2),'(a)') '-'   ! must be filled from C3
+          write(sother(isn,3),'(a)') '-'   ! must be filled from C3
+          if(havec24)then
+            write(ssother(icn,1),'(a)') 'GREEN_R'
+            write(ssother(icn,2),'(i2.2)') IC2(icn)
+            write(ssother(icn,3),'(i2.2)') IE2(icn)
+            write(sother(isn,2),'(i2.2)') IC2(icn)
+            write(sother(isn,3),'(i2.2)') IE2(icn)
+          endif
         else
 
 C Assume partition so setup sother arrays with this in mind.
@@ -1218,6 +1235,8 @@ C to write out.
           SO='IDENT_CEN'
         ELSEIF(SSOTHER(icc,1)(1:7).EQ.'ANOTHER')then
           SO='ANOTHER'
+        ELSEIF(SSOTHER(icc,1)(1:7).EQ.'GREEN_R')then
+          SO='GREEN_R'
         ELSE
           if(IC2(icc).ne.0)then
             write(SO,'(a)') zname(IC2(icc))  ! write other zone name
@@ -1745,6 +1764,7 @@ C   BASESIMP,i,j     where i is configuration index and j is % to this surface
 C   GROUND_STD,i,j     where i is profile index and j is 0
 C   GROUND_USR,i,j     where i is 0 and j is profile index
 C   UNKNOWN,i,j     where i is 0 and j is 0
+C   GREEN_R,i,j     where i is degC and j is Watts
 
 C Surface name, allow for future spaces in name.
             CALL EGETP(LOUTSTR,K,WORD,'W','surface name',IER)
@@ -1949,6 +1969,17 @@ C Surface other side - three tokens.
                 write(ssother(icn,2),'(a)') tother1
                 write(ssother(icn,3),'(a)') tother2
               endif
+
+C Green roof entry *****adjust it
+            elseif(tother(1:7).eq.'GREEN_R')then
+              write(sother(ns,1),'(a)') 'GREEN_R'
+              write(sother(ns,2),'(a)') tother1
+              write(sother(ns,3),'(a)') tother2
+              if(havec24)then
+                write(ssother(icn,1),'(a)') 'GREEN_R'
+                write(ssother(icn,2),'(a)') tother1
+                write(ssother(icn,3),'(a)') tother2
+              endif  
             else
 
 C Assume partition so setup sother arrays with this in mind.
@@ -3711,6 +3742,14 @@ C CEN 13791 partition start.
      &        'dC &',IE2(ICON),'W rad'
             endif
 C CEN 13791 partition end.
+
+C Green roof start.
+          ELSEIF(ICT(ICON).EQ.8)THEN
+C *********** Currently writes in a similar way as the constant ***
+            WRITE(OTHSTR,'(a,i3,a,i4,a)')   '||< gr_roof @',IC2(ICON),
+     &        'dC &',IE2(ICON),'W rad'           
+C Green roof end.
+
           ENDIF
         else
 

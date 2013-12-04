@@ -1636,6 +1636,12 @@ C CEN 13791 boundary condition.
  9987     FORMAT(I4,1X,a,' in ',a,' >|< CEN13791+-',i3,'dC & ',
      &      I4,' W rad')
         endif
+C************green roof connection writing
+      ELSEIF(ICT(ICON).EQ.8.AND.ICF.GT.0)THEN
+        WRITE(CXSTR,9988)ICON,SST1(1:lsn1),ZST1(1:lzn1),
+     &                   IC2(ICON),IE2(ICON)
+ 9988   FORMAT(I4,1X,a,' in ',a,' >|< gr_roof @',I3,' dC &',
+     &         I4,' W rad')      
       ENDIF
 
       RETURN

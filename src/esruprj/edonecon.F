@@ -164,7 +164,7 @@ C Editing of items.
      &  'e ground (standard profile) ','f ground (user def profile) ',
      &  'g ground (3D conduction)    ','h adiabatic (no heat flux)  ',
      &  'i BASESIMP foundation       ','j CEN 13791 partition       ',
-     &  'k continue ',' ',iart,idno,nbhelp)
+     &  'k green roof attached       ','l continue ',iart,idno,nbhelp)
       if(iart.eq.0)then
         continue
       elseif(iart.eq.1)then
@@ -408,8 +408,29 @@ C CEN 13791 partition start
           UPDGEO=.TRUE.
         endif
 C CEN 13791 partition end
+        
+C ******Green roof
+      elseif(iart.eq.11)then 
+        modcfg=.true.
+        ICT(IFOC)=8
+        VAL=real(IC2(IFOC)) !!!must be linked with the green roof routine
+        CALL EASKR(VAL,' ',' Green roof ? ',
+     &    -99.,'F',700.,'F',20.,'gr_roof details',IER,nbhelp)
+        IC2(IFOC)=INT(VAL)
 
-      elseif(iart.eq.11)then
+        VAL=real(IE2(IFOC))
+        CALL EASKR(VAL,' ',
+     &    ' Constant radiation source (Watts) ? ',  !!!turn radiation to 0
+     &    0.0,'W',99999.,'W',0.0,'adjacent radiation source',
+     &    IER,nbhelp)
+        IE2(IFOC)=INT(VAL)
+        if(SO(1)(1:7).ne.'GREEN_R')then
+          TOTHER(IE1(IFOC),1)='GREEN_R'
+          write(tother(IE1(IFOC),2),'(i2.2)') IC2(ifoc)
+          write(tother(IE1(IFOC),3),'(i2.2)') IE2(ifoc)
+          UPDGEO=.TRUE.
+        endif
+      elseif(iart.eq.12)then
         return
       endif 
 
@@ -619,6 +640,16 @@ C Not enought space so write only the 1st 9 char of each.
         else
           WRITE(CXITM,'(I4,1x,4a)') ICON,SST1(1:lsn12),':',
      &      ZST1(1:lzn12),' >|< IDENT_CEN'
+        endif
+
+C**************Green roof entry
+      ELSEIF(ICT(ICON).EQ.8)THEN
+        if((lsn1+lzn1+28).lt.48)then
+          WRITE(CXITM,'(I4,1x,4a,I3,a)') ICON,SST1(1:lsn1),' in ',
+     &      ZST1(1:lzn1),' >|< gr_roof @',IC2(ICON),'dC'
+        else
+          WRITE(CXITM,'(I4,1x,4a,I3,a)') ICON,SST1(1:lsn1),':',
+     &      ZST1(1:lzn1),' >|< gr_roof @',IC2(ICON),'dC'
         endif
       ENDIF
 

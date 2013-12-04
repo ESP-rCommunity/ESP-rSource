@@ -3985,6 +3985,7 @@ C IE=4 : ground connection, both TMP=0.0/ISC=0
 C IE=5 : adiabatic, both TMP=0.0/ISC=0
 C IE=6 : BASESIMP foundation
 C IE=7 : CEN 13791 partition
+C IE=8 : Green roof
 C DESCR: descriptive string 25 characters wide
 C IC   : connection number.
 C TMP  : is IE2 (constant temperature if IE=2)
@@ -4048,6 +4049,9 @@ C Knowing IE establish TMP, IZC,ISC.
         else
           DESCR=' a similar CEN +- env    '
         endif
+C*************Green roof type: should be modified
+      ELSEIF(IE.EQ.8)THEN
+        DESCR=' bottom of green roof temp '
       ENDIF
 
       RETURN

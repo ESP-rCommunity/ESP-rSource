@@ -45,6 +45,7 @@ C          IE=-4 ; ground coupled.
 C          IE=-5 ; adiabatic.
 C          IE=-6 ; BASESIMP foundation.
 C          IE=-7 ; CEN 13791 partition.
+C*****          IE=-8 ; Green roof.
 
 C ATP    - present time adjacent temperature
 C ATF    - future time adjacent temperature
@@ -463,6 +464,17 @@ C
               ARF(ICOMP,I)=qlwsum(I)+qradcas(I)+qswsum(I)
               APf(ICOMP,I)=Pfair(ICOMP)
       
+C******* GREEN ROOF CONNECTION: NEEDS TO BE MODIFIED
+C******* SHOULD CALL THE GREEN ROOF ROUTINE AT THIS STAGE
+            ELSEIF(ICT(J).EQ.8)THEN
+C             ATF(ICOMP,I)=call GRB(,,,)
+C             ARF(ICOMP,I)=0 additional heat flux 
+C            (but somehow need to switch off convection and radiation)
+             
+	      ATF(ICOMP,I)=FLOAT(IC2(J))
+              ARF(ICOMP,I)=FLOAT(IE2(J))
+              APf(ICOMP,I)=0.6*Psat01(ATF(ICOMP,I))
+
 C Other connection types go here !
 C           ELSEIF  ......    
         

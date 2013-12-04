@@ -74,6 +74,7 @@ C           3 ; connection to another zone (as defined by IC2 & IE2
 C           4 ; connected to ground
 C           5 ; surface is adiabatic
 C           7 ; surface according to the CEN 13791 partition
+C           8 ; surface for green roof boundary condition
 
 C ic2 &   - connection description where ic2 & ie2:
 C ie2       - are unused if corresponding ict=0
