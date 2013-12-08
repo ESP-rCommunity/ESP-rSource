@@ -1,5 +1,5 @@
 *connections for conduction
-*Date Thu Aug 30 08:33:00 2012
+*Date Sun Dec  8 17:35:52 2013
       6   # number of connections
    1   1   2   0   0  #    1 Surf-1 in test_cell >|< Constant @  0 dC &   0 W rad
    1   2   2   0   0  #    2 Surf-2 in test_cell >|< Constant @  0 dC &   0 W rad

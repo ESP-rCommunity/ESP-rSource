@@ -1,7 +1,7 @@
 Synopsis
  
 Synopsis of the model Analytical validation of the transient heat conduction
-defined in conduction.cfg generated on Thu Aug 30 08:33:01 2012. Notes
+defined in conduction.cfg generated on Sun Dec  8 17:33:50 2013. Notes
 associated with the model are in ../doc/conduction.log
  
 The model is located at latitude   50.00 with a longitude difference of   0.00
@@ -32,8 +32,8 @@ An Integrated Performance View is incomplete or missing.
  
 Databases associated with the model:
  standard pressure distr: pressc.db1
- standard materials     : constr_db1.materialdb
- standard constructions : multicon.db1
+ standard materials     : material.db4.a
+ standard constructions : multicon.db3
  standard plant comp    : plantc.db1
  standard event profiles: profiles.db1.a
  standard optical prop  : optics.db1
@@ -48,6 +48,7 @@ proj cntrl
  
 Zones control includes  1 functions.
 no descrip
+Details of control loops referenced in the model:
  
  The sensor for function  1 senses the temperature of the current zone.
  The actuator for function  1 is air point of the current zone
@@ -76,15 +77,31 @@ ID Zone         Volume|          Surface
  
  A summary of the surfaces in test_cell( 1) follows:
  
- Sur| Area  |Azim|Elev| surface    | geometry | construction |environment
-    | m^2   |deg |deg | name       |type |loca| name         |other side
-  1  1.000   180.   0. Surf-1       OPAQUE VERT intern_wall  ||< constant @  0dC &   0W rad
-  2  1.000    90.   0. Surf-2       OPAQUE VERT intern_wall  ||< constant @  0dC &   0W rad
-  3  1.000     0.   0. Surf-3       OPAQUE VERT intern_wall  ||< constant @  0dC &   0W rad
-  4  1.000   270.   0. Surf-4       OPAQUE VERT intern_wall  ||< constant @  0dC &   0W rad
-  5  1.000     0.  90. Surf-5       OPAQUE CEIL intern_wall  ||< constant @  0dC &   0W rad
-  6  1.000     0. -90. Surf-6       OPAQUE FLOR intern_wall  ||< constant @  0dC &   0W rad
+ Sur| Area  |Azim|Elev| surface    |    geometry       | construction |environment
+    | m^2   |deg |deg | name       |optical|locat| use | name         |other side
+  1  1.000   180.   0. Surf-1       OPAQUE   VERT -     intern_wall  ||< constant @  0dC &   0W rad
+  2  1.000    90.   0. Surf-2       OPAQUE   VERT -     intern_wall  ||< constant @  0dC &   0W rad
+  3  1.000     0.   0. Surf-3       OPAQUE   VERT -     intern_wall  ||< constant @  0dC &   0W rad
+  4  1.000   270.   0. Surf-4       OPAQUE   VERT -     intern_wall  ||< constant @  0dC &   0W rad
+  5  1.000     0.  90. Surf-5       OPAQUE   CEIL -     intern_wall  ||< constant @  0dC &   0W rad
+  6  1.000     0. -90. Surf-6       OPAQUE   FLOR -     intern_wall  ||< constant @  0dC &   0W rad
  
+ Vertices ( index X Y Z) in the zone...
+*vertex   1     0.00000     0.00000     0.00000
+*vertex   2     1.00000     0.00000     0.00000
+*vertex   3     1.00000     1.00000     0.00000
+*vertex   4     0.00000     1.00000     0.00000
+*vertex   5     0.00000     0.00000     1.00000
+*vertex   6     1.00000     0.00000     1.00000
+*vertex   7     1.00000     1.00000     1.00000
+*vertex   8     0.00000     1.00000     1.00000
+ Number of vertices followed by list of associated vert
+*edges,4,1,2,6,5   Surf-1
+*edges,4,2,3,7,6   Surf-2
+*edges,4,3,4,8,7   Surf-3
+*edges,4,4,1,5,8   Surf-4
+*edges,4,5,6,7,8   Surf-5
+*edges,4,1,4,3,2   Surf-6
  
  All surfaces will receive diffuse insolation (if shading not calculated).
  No shading analysis requested.
@@ -117,8 +134,8 @@ Daytype    Period     Infiltration     Ventilation     From Source
 Notes:
 nil_operations
  
-Daytype   Gain Type    Period Sensible  Latent     Radiant    Convec
-          No.  label   Hours  Magn.(W)  Magn.(W)   Fraction   Fraction
+Daytype   Gain Label     Type    Unit Period Sensible  Latent     Radiant    Convec
+          No.                          Hours Magn.(W)  Magn.(W)   Fraction   Fraction
  
  ____________________________________________________________
  
@@ -130,15 +147,16 @@ Daytype   Gain Type    Period Sensible  Latent     Radiant    Convec
  ____________________________________________________________
  Multi-layer constructions used:
  
- Details of opaque construction: intern_wall and overall thickness  0.162
+ Details of opaque construction: intern_wall and overall thickness  0.174
  
- Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
-      |db  |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
- Ext     2  150.0     0.440  1500.   650. 0.90 0.65    15.  0.34 Breeze block : Breeze block
- Int   103   12.0     0.180   800.   837. 0.91 0.60     9.  0.07 Perlite plasterboard : Perlite plasterboard
- ISO 6946 U values (horiz/upward/downward heat flow)=  1.731  1.826  1.619 (partition)  1.498
+ Layer|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
+      |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
+ Ext    12.0     0.180   800.   837. 0.91 0.60     9.  0.07 perlite plasterboard : Perlite plasterboard (inorganic-porous)
+    2  150.0     0.440  1500.   650. 0.90 0.65    15.  0.34 breeze block : Breeze block (inorganic-porous)
+ Int    12.0     0.180   800.   837. 0.91 0.60     9.  0.07 perlite plasterboard : Perlite plasterboard (inorganic-porous)
+ ISO 6946 U values (horiz/upward/downward heat flow)=  1.552  1.628  1.461 (partition)  1.362
  
-Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  1.70
- External surface admittance Y=  3.03  w=  1.70 decrement factor f=  0.69  phi=  0.87 surface factor f=  0.69  phi=  0.87
- Partition admittance Y=  3.32  w=  3.11 surface factor f=  0.78  phi=  1.45
+Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  1.53
+ External surface admittance Y=  3.10  w=  1.71 decrement factor f=  0.68  phi=  0.91 surface factor f=  0.68  phi=  0.91
+ Partition admittance Y=  3.46  w=  2.75 surface factor f=  0.74  phi=  1.44
  Total area of intern_wall is      6.00
