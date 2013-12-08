@@ -1,8 +1,8 @@
 Synopsis
  
 Synopsis of the model burdie house detailed model for moisture & IAQ defined
-in burdie.cfg generated on Fri Aug 24 17:21:44 2012. Notes associated with the
-model are in burdie.notes
+in burdie.cfg generated on Sun Dec  8 13:53:10 2013. Notes associated with the
+model are in ../doc/burdie.notes
  
 The model is located at latitude   50.00 with a longitude difference of   0.00
 from the local time meridian. The year used in simulations is 2000 and
@@ -187,25 +187,25 @@ ID Zone         Volume|          Surface
  area of 81.4m^2 & approx floor area of 17.8m^2
  living_room is the ground level lounge
  There is 12.960m2 of exposed surface area, 12.960m2 of which is vertical.
- Outside walls are 49.437 % of floor area & avg U of 0.429 & UA of 3.7630
- Glazing is 23.536 % of floor & 32.253 % facade with avg U of 5.706 & UA of 23.850
- Ground contact is 100.00 % of floor area & avg U of 0.864 & perimeter 4.8000
+ Outside walls are 49.437 % of floor area & average U of 0.429 & UA of 3.7630
+ Glazing is 23.536 % of floor & 32.253 % facade with average U of 5.706 & UA of 23.850
+ Ground contact is 100.00 % of floor area & average U of 0.864 & perimeter 4.8000
  
  A summary of the surfaces in living_room( 1) follows:
  
- Sur| Area  |Azim|Elev| surface    | geometry | construction |environment
-    | m^2   |deg |deg | name       |type |loca| name         |other side
-  1  8.78    180.   0. liv_ex_s     OPAQUE VERT ext_wall_low ||< external
-  2  9.99     90.  -0. liv_sim_e    OPAQUE VERT intern_wall  ||< identical environment
-  3  8.37      0.   0. kitch_r      OPAQUE VERT partition    ||< liv_r:kitchen
-  4  9.99    270.   0. hall_r       OPAQUE VERT partition    ||< livrm_r:hall
-  5  0.720     0.  90. bed_3_r      OPAQUE CEIL ceiling      ||< liv_r:bed_3
-  6  17.8      0. -90. floor        OPAQUE FLOR grnd_floor   ||< ground profile  1
-  7  1.62      0.  90. hall_up_r    OPAQUE CEIL ceiling      ||< liv_r:hall_up
-  8  13.3      0.  90. bed_1_r      OPAQUE CEIL ceiling      ||< liv_r:bed_1
-  9  4.59      0.   0. store_r      OPAQUE VERT partition    ||< liv_r:store
- 10  2.16      0.  90. bed_2_r      OPAQUE CEIL ceiling      ||< liv_r:bed_2
- 11  4.18    180.   0. s_glaz       SC_898 VERT glazing      ||< external
+ Sur| Area  |Azim|Elev| surface    |    geometry       | construction |environment
+    | m^2   |deg |deg | name       |optical|locat| use | name         |other side
+  1  8.78    180.   0. liv_ex_s     OPAQUE   VERT -     ext_wall_low ||< external
+  2  9.99     90.  -0. liv_sim_e    OPAQUE   VERT -     intern_wall  ||< identical environment
+  3  8.37      0.   0. kitch_r      OPAQUE   VERT -     partition    ||< liv_r:kitchen
+  4  9.99    270.   0. hall_r       OPAQUE   VERT -     partition    ||< livrm_r:hall
+  5  0.720     0.  90. bed_3_r      OPAQUE   CEIL -     ceiling      ||< liv_r:bed_3
+  6  17.8      0. -90. floor        OPAQUE   FLOR -     grnd_floor   ||< ground profile  1
+  7  1.62      0.  90. hall_up_r    OPAQUE   CEIL -     ceiling      ||< liv_r:hall_up
+  8  13.3      0.  90. bed_1_r      OPAQUE   CEIL -     ceiling      ||< liv_r:bed_1
+  9  4.59      0.   0. store_r      OPAQUE   VERT -     partition    ||< liv_r:store
+ 10  2.16      0.  90. bed_2_r      OPAQUE   CEIL -     ceiling      ||< liv_r:bed_2
+ 11  4.18    180.   0. s_glaz       SC_8985_ VERT -     glazing      ||< external
  
  
  Solar insolation focused on surface floor        (if shading not calculated).
@@ -220,35 +220,35 @@ ID Zone         Volume|          Surface
 Notes:
 living room gains - mostly in evening
  
-Daytype   Gain Type    Period Sensible  Latent     Radiant    Convec
-          No.  label   Hours  Magn.(W)  Magn.(W)   Fraction   Fraction
-weekday     1 OccuptW    0- 8      0.0      0.0       0.50       0.50
-weekday     2 OccuptW    8-18    190.0    110.0       0.68       0.32
-weekday     3 OccuptW   18-22    285.0    165.0       0.68       0.32
-weekday     4 OccuptW   22-24      0.0      0.0       0.50       0.50
-weekday     5 EquiptW    0-15      0.0      0.0       0.50       0.50
-weekday     6 EquiptW   15-22   1300.0      0.0       0.80       0.20
-weekday     7 EquiptW   22-24      0.0      0.0       0.50       0.50
-saturday    1 OccuptW    0- 8      0.0      0.0       0.50       0.50
-saturday    2 OccuptW    8-10     95.0     55.0       0.68       0.32
-saturday    3 OccuptW   10-18      0.0      0.0       0.50       0.50
-saturday    4 OccuptW   18-22    380.0    220.0       0.68       0.32
-saturday    5 OccuptW   22-24      0.0      0.0       0.50       0.50
-saturday    6 EquiptW    0- 8      0.0      0.0       0.50       0.50
-saturday    7 EquiptW    8-12   1000.0      0.0       0.80       0.20
-saturday    8 EquiptW   12-18      0.0      0.0       0.50       0.50
-saturday    9 EquiptW   18-22   1000.0      0.0       0.80       0.20
-saturday   10 EquiptW   22-24      0.0      0.0       0.50       0.50
-sunday      1 OccuptW    0- 8      0.0      0.0       0.50       0.50
-sunday      2 OccuptW    8-10     95.0     55.0       0.68       0.32
-sunday      3 OccuptW   10-18      0.0      0.0       0.50       0.50
-sunday      4 OccuptW   18-22    380.0    220.0       0.68       0.32
-sunday      5 OccuptW   22-24      0.0      0.0       0.50       0.50
-sunday      6 EquiptW    0- 8      0.0      0.0       0.50       0.50
-sunday      7 EquiptW    8-12   1000.0      0.0       0.80       0.20
-sunday      8 EquiptW   12-18      0.0      0.0       0.50       0.50
-sunday      9 EquiptW   18-22   1000.0      0.0       0.80       0.20
-sunday     10 EquiptW   22-24      0.0      0.0       0.50       0.50
+Daytype   Gain Label     Type    Unit Period Sensible  Latent     Radiant    Convec
+          No.                          Hours Magn.(W)  Magn.(W)   Fraction   Fraction
+weekday     1 Occupt     people    W    0- 8      0.0      0.0       0.50       0.50
+weekday     2 Occupt     people    W    8-18    190.0    110.0       0.68       0.32
+weekday     3 Occupt     people    W   18-22    285.0    165.0       0.68       0.32
+weekday     4 Occupt     people    W   22-24      0.0      0.0       0.50       0.50
+weekday     5 Equipt     equipment W    0-15      0.0      0.0       0.50       0.50
+weekday     6 Equipt     equipment W   15-22   1300.0      0.0       0.80       0.20
+weekday     7 Equipt     equipment W   22-24      0.0      0.0       0.50       0.50
+saturday    1 Occupt     people    W    0- 8      0.0      0.0       0.50       0.50
+saturday    2 Occupt     people    W    8-10     95.0     55.0       0.68       0.32
+saturday    3 Occupt     people    W   10-18      0.0      0.0       0.50       0.50
+saturday    4 Occupt     people    W   18-22    380.0    220.0       0.68       0.32
+saturday    5 Occupt     people    W   22-24      0.0      0.0       0.50       0.50
+saturday    6 Equipt     equipment W    0- 8      0.0      0.0       0.50       0.50
+saturday    7 Equipt     equipment W    8-12   1000.0      0.0       0.80       0.20
+saturday    8 Equipt     equipment W   12-18      0.0      0.0       0.50       0.50
+saturday    9 Equipt     equipment W   18-22   1000.0      0.0       0.80       0.20
+saturday   10 Equipt     equipment W   22-24      0.0      0.0       0.50       0.50
+sunday      1 Occupt     people    W    0- 8      0.0      0.0       0.50       0.50
+sunday      2 Occupt     people    W    8-10     95.0     55.0       0.68       0.32
+sunday      3 Occupt     people    W   10-18      0.0      0.0       0.50       0.50
+sunday      4 Occupt     people    W   18-22    380.0    220.0       0.68       0.32
+sunday      5 Occupt     people    W   22-24      0.0      0.0       0.50       0.50
+sunday      6 Equipt     equipment W    0- 8      0.0      0.0       0.50       0.50
+sunday      7 Equipt     equipment W    8-12   1000.0      0.0       0.80       0.20
+sunday      8 Equipt     equipment W   12-18      0.0      0.0       0.50       0.50
+sunday      9 Equipt     equipment W   18-22   1000.0      0.0       0.80       0.20
+sunday     10 Equipt     equipment W   22-24      0.0      0.0       0.50       0.50
  
  ____________________________________________________________
  
@@ -257,24 +257,24 @@ sunday     10 EquiptW   22-24      0.0      0.0       0.50       0.50
  area of 56.5m^2 & approx floor area of 9.87m^2
  hall describes the lower portion of the entry
  There is 18.360m2 of exposed surface area, 18.360m2 of which is vertical.
- Outside walls are 171.53 % of floor area & avg U of 0.673 & UA of 11.389
- Glazing is 14.488 % of floor & 7.7887 % facade with avg U of 5.706 & UA of 8.1592
- Ground contact is 100.00 % of floor area & avg U of 0.864 & perimeter 6.8000
+ Outside walls are 171.53 % of floor area & average U of 0.673 & UA of 11.389
+ Glazing is 14.488 % of floor & 7.7887 % facade with average U of 5.706 & UA of 8.1592
+ Ground contact is 100.00 % of floor area & average U of 0.864 & perimeter 6.8000
  
  A summary of the surfaces in hall( 2) follows:
  
- Sur| Area  |Azim|Elev| surface    | geometry | construction |environment
-    | m^2   |deg |deg | name       |type |loca| name         |other side
-  1  3.67    180.   0. hall_ex_s    OPAQUE VERT ext_wall_low ||< external
-  2  9.99     90.  -0. livrm_r      OPAQUE VERT partition    ||< hall_r:living_room
-  3  5.67      0.   0. bathrm_r     OPAQUE VERT partition    ||< hall_r:bathroom
-  4  11.3    270.   0. hall_ex_w    OPAQUE VERT ext_wall_low ||< external
-  5  3.36      0.  90. bed_3_r      OPAQUE CEIL ceiling      ||< hall_r:bed_3
-  6  9.87      0. -90. floor        OPAQUE FLOR grnd_floor   ||< ground profile  1
-  7  6.51      0.  90. hall_up_r    OPAQUE CEIL ceiling      ||< hall_r:hall_up
-  8  2.70     90.   0. kitchrev     OPAQUE VERT partition    ||< hall_r:kitchen
-  9  2.00    180.   0. front_door   OPAQUE VERT door         ||< external
- 10  1.43    270.   0. w_glaz       SC_898 VERT glazing      ||< external
+ Sur| Area  |Azim|Elev| surface    |    geometry       | construction |environment
+    | m^2   |deg |deg | name       |optical|locat| use | name         |other side
+  1  3.67    180.   0. hall_ex_s    OPAQUE   VERT -     ext_wall_low ||< external
+  2  9.99     90.  -0. livrm_r      OPAQUE   VERT -     partition    ||< hall_r:living_room
+  3  5.67      0.   0. bathrm_r     OPAQUE   VERT -     partition    ||< hall_r:bathroom
+  4  11.3    270.   0. hall_ex_w    OPAQUE   VERT -     ext_wall_low ||< external
+  5  3.36      0.  90. bed_3_r      OPAQUE   CEIL -     ceiling      ||< hall_r:bed_3
+  6  9.87      0. -90. floor        OPAQUE   FLOR -     grnd_floor   ||< ground profile  1
+  7  6.51      0.  90. hall_up_r    OPAQUE   CEIL -     ceiling      ||< hall_r:hall_up
+  8  2.70     90.   0. kitchrev     OPAQUE   VERT -     partition    ||< hall_r:kitchen
+  9  2.00    180.   0. front_door   OPAQUE   VERT -     door         ||< external
+ 10  1.43    270.   0. w_glaz       SC_8985_ VERT -     glazing      ||< external
  
  
  Solar insolation focused on surface floor        (if shading not calculated).
@@ -292,8 +292,8 @@ Block X- Y- Z- coords DX- DY- DZ- values Orient Opacity
 Notes:
 nil_operations
  
-Daytype   Gain Type    Period Sensible  Latent     Radiant    Convec
-          No.  label   Hours  Magn.(W)  Magn.(W)   Fraction   Fraction
+Daytype   Gain Label     Type    Unit Period Sensible  Latent     Radiant    Convec
+          No.                          Hours Magn.(W)  Magn.(W)   Fraction   Fraction
  
  ____________________________________________________________
  
@@ -302,22 +302,22 @@ Daytype   Gain Type    Period Sensible  Latent     Radiant    Convec
  area of 27.7m^2 & approx floor area of 3.57m^2
  bathroom describes the lower level toilet
  There is 10.260m2 of exposed surface area, 10.260m2 of which is vertical.
- Outside walls are 238.10 % of floor area & avg U of 0.429 & UA of 3.6430
- Glazing is 49.300 % of floor & 17.154 % facade with avg U of 5.706 & UA of 10.042
- Ground contact is 100.00 % of floor area & avg U of 0.864 & perimeter 3.8000
+ Outside walls are 238.10 % of floor area & average U of 0.429 & UA of 3.6430
+ Glazing is 49.300 % of floor & 17.154 % facade with average U of 5.706 & UA of 10.042
+ Ground contact is 100.00 % of floor area & average U of 0.864 & perimeter 3.8000
  
  A summary of the surfaces in bathroom( 3) follows:
  
- Sur| Area  |Azim|Elev| surface    | geometry | construction |environment
-    | m^2   |deg |deg | name       |type |loca| name         |other side
-  1  5.67    180.   0. hall_r       OPAQUE VERT partition    ||< bathrm_r:hall
-  2  4.59     90.  -0. kitch_r      OPAQUE VERT partition    ||< bathrm_r:kitchen
-  3  3.91      0.   0. bath_ex_n    OPAQUE VERT ext_wall_low ||< external
-  4  4.59    270.   0. bath_ex_w    OPAQUE VERT ext_wall_low ||< external
-  5  3.44      0.  90. bed_1_r      OPAQUE CEIL ceiling      ||< bath_r:bed_3
-  6  3.57      0. -90. floor        OPAQUE FLOR grnd_floor   ||< ground profile  1
-  7  1.76    360.   0. n_glaz       SC_898 VERT glazing      ||< external
-  8  0.134     0.  90. air_gap_r    OPAQUE CEIL ceiling      ||< xair_gap_r:bed_3_air_g
+ Sur| Area  |Azim|Elev| surface    |    geometry       | construction |environment
+    | m^2   |deg |deg | name       |optical|locat| use | name         |other side
+  1  5.67    180.   0. hall_r       OPAQUE   VERT -     partition    ||< bathrm_r:hall
+  2  4.59     90.  -0. kitch_r      OPAQUE   VERT -     partition    ||< bathrm_r:kitchen
+  3  3.91      0.   0. bath_ex_n    OPAQUE   VERT -     ext_wall_low ||< external
+  4  4.59    270.   0. bath_ex_w    OPAQUE   VERT -     ext_wall_low ||< external
+  5  3.44      0.  90. bed_1_r      OPAQUE   CEIL -     ceiling      ||< bath_r:bed_3
+  6  3.57      0. -90. floor        OPAQUE   FLOR -     grnd_floor   ||< ground profile  1
+  7  1.76    360.   0. n_glaz       SC_8985_ VERT -     glazing      ||< external
+  8  0.134     0.  90. air_gap_r    OPAQUE   CEIL -     ceiling      ||< xair_gap_r:bed_3_air_g
  
  
  Solar insolation focused on surface floor        (if shading not calculated).
@@ -332,17 +332,17 @@ Daytype   Gain Type    Period Sensible  Latent     Radiant    Convec
 Notes:
 only small power loads 7-9AM
  
-Daytype   Gain Type    Period Sensible  Latent     Radiant    Convec
-          No.  label   Hours  Magn.(W)  Magn.(W)   Fraction   Fraction
-weekday     1 EquiptW    0- 7      0.0      0.0       0.50       0.50
-weekday     2 EquiptW    7- 9    160.0    500.0       0.50       0.50
-weekday     3 EquiptW    9-24      0.0      0.0       0.50       0.50
-saturday    1 EquiptW    0- 7      0.0      0.0       0.50       0.50
-saturday    2 EquiptW    7- 9    160.0    500.0       0.50       0.50
-saturday    3 EquiptW    9-24      0.0      0.0       0.50       0.50
-sunday      1 EquiptW    0- 7      0.0      0.0       0.50       0.50
-sunday      2 EquiptW    7- 9    160.0    500.0       0.50       0.50
-sunday      3 EquiptW    9-24      0.0      0.0       0.50       0.50
+Daytype   Gain Label     Type    Unit Period Sensible  Latent     Radiant    Convec
+          No.                          Hours Magn.(W)  Magn.(W)   Fraction   Fraction
+weekday     1 Equipt     equipment W    0- 7      0.0      0.0       0.50       0.50
+weekday     2 Equipt     equipment W    7- 9    160.0    500.0       0.50       0.50
+weekday     3 Equipt     equipment W    9-24      0.0      0.0       0.50       0.50
+saturday    1 Equipt     equipment W    0- 7      0.0      0.0       0.50       0.50
+saturday    2 Equipt     equipment W    7- 9    160.0    500.0       0.50       0.50
+saturday    3 Equipt     equipment W    9-24      0.0      0.0       0.50       0.50
+sunday      1 Equipt     equipment W    0- 7      0.0      0.0       0.50       0.50
+sunday      2 Equipt     equipment W    7- 9    160.0    500.0       0.50       0.50
+sunday      3 Equipt     equipment W    9-24      0.0      0.0       0.50       0.50
  
  ____________________________________________________________
  
@@ -351,24 +351,24 @@ sunday      3 EquiptW    9-24      0.0      0.0       0.50       0.50
  area of 48.1m^2 & approx floor area of 8.37m^2
  kitchen describes the north facing kitchen
  There is 8.3700m2 of exposed surface area, 8.3700m2 of which is vertical.
- Outside walls are 57.945 % of floor area & avg U of 0.429 & UA of 2.0787
- Glazing is 42.055 % of floor & 42.055 % facade with avg U of 5.706 & UA of 20.084
- Ground contact is 100.00 % of floor area & avg U of 0.864 & perimeter 3.1000
+ Outside walls are 57.945 % of floor area & average U of 0.429 & UA of 2.0787
+ Glazing is 42.055 % of floor & 42.055 % facade with average U of 5.706 & UA of 20.084
+ Ground contact is 100.00 % of floor area & average U of 0.864 & perimeter 3.1000
  
  A summary of the surfaces in kitchen( 4) follows:
  
- Sur| Area  |Azim|Elev| surface    | geometry | construction |environment
-    | m^2   |deg |deg | name       |type |loca| name         |other side
-  1  8.37    180.   0. liv_r        OPAQUE VERT partition    ||< kitch_r:living_room
-  2  7.29     90.   0. store_r      OPAQUE VERT partition    ||< kitch_r:store
-  3  4.85      0.   0. kitch_ex_n   OPAQUE VERT ext_wall_low ||< external
-  4  2.70    270.   0. hall_r       OPAQUE VERT partition    ||< kitchrev:hall
-  5  5.13      0.  90. bed_2_r      OPAQUE CEIL ceiling      ||< kitch_r:bed_2
-  6  8.37      0. -90. floor        OPAQUE FLOR grnd_floor   ||< ground profile  1
-  7  4.59    270.   0. bathrm_r     OPAQUE VERT partition    ||< kitch_r:bathroom
-  8  3.16      0.  90. bed_1_r      OPAQUE CEIL ceiling      ||< kitch_r:bed_3
-  9  3.52    360.   0. n_glaz       SC_898 VERT glazing      ||< external
- 10  0.077     0.  90. xfirst       OPAQUE CEIL ceiling      ||< first:bed_3_air_g
+ Sur| Area  |Azim|Elev| surface    |    geometry       | construction |environment
+    | m^2   |deg |deg | name       |optical|locat| use | name         |other side
+  1  8.37    180.   0. liv_r        OPAQUE   VERT -     partition    ||< kitch_r:living_room
+  2  7.29     90.   0. store_r      OPAQUE   VERT -     partition    ||< kitch_r:store
+  3  4.85      0.   0. kitch_ex_n   OPAQUE   VERT -     ext_wall_low ||< external
+  4  2.70    270.   0. hall_r       OPAQUE   VERT -     partition    ||< kitchrev:hall
+  5  5.13      0.  90. bed_2_r      OPAQUE   CEIL -     ceiling      ||< kitch_r:bed_2
+  6  8.37      0. -90. floor        OPAQUE   FLOR -     grnd_floor   ||< ground profile  1
+  7  4.59    270.   0. bathrm_r     OPAQUE   VERT -     partition    ||< kitch_r:bathroom
+  8  3.16      0.  90. bed_1_r      OPAQUE   CEIL -     ceiling      ||< kitch_r:bed_3
+  9  3.52    360.   0. n_glaz       SC_8985_ VERT -     glazing      ||< external
+ 10  0.077     0.  90. xfirst       OPAQUE   CEIL -     ceiling      ||< first:bed_3_air_g
  
  
  Solar insolation focused on surface floor        (if shading not calculated).
@@ -383,38 +383,38 @@ sunday      3 EquiptW    9-24      0.0      0.0       0.50       0.50
 Notes:
 morning and evening cooking
  
-Daytype   Gain Type    Period Sensible  Latent     Radiant    Convec
-          No.  label   Hours  Magn.(W)  Magn.(W)   Fraction   Fraction
-weekday     1 OccuptW    0- 7      0.0      0.0       0.50       0.50
-weekday     2 OccuptW    7- 8    285.0    165.0       0.68       0.32
-weekday     3 OccuptW    8-17      0.0      0.0       0.50       0.50
-weekday     4 OccuptW   17-18    285.0    165.0       0.68       0.32
-weekday     5 OccuptW   18-24      0.0      0.0       0.50       0.50
-weekday     6 EquiptW    0- 7      0.0      0.0       0.50       0.50
-weekday     7 EquiptW    7- 8   1870.0   1300.0       0.50       0.50
-weekday     8 EquiptW    8-16      0.0      0.0       0.50       0.50
-weekday     9 EquiptW   16-18   4160.0   2890.0       0.50       0.50
-weekday    10 EquiptW   18-24      0.0      0.0       0.50       0.50
-saturday    1 OccuptW    0- 7      0.0      0.0       0.50       0.50
-saturday    2 OccuptW    7- 8    285.0    165.0       0.68       0.32
-saturday    3 OccuptW    8-17      0.0      0.0       0.50       0.50
-saturday    4 OccuptW   17-18    285.0    165.0       0.68       0.32
-saturday    5 OccuptW   18-24      0.0      0.0       0.50       0.50
-saturday    6 EquiptW    0- 7      0.0      0.0       0.50       0.50
-saturday    7 EquiptW    7- 8   1870.0   1300.0       0.50       0.50
-saturday    8 EquiptW    8-16      0.0      0.0       0.50       0.50
-saturday    9 EquiptW   16-18   4160.0   2890.0       0.50       0.50
-saturday   10 EquiptW   18-24      0.0      0.0       0.50       0.50
-sunday      1 OccuptW    0- 7      0.0      0.0       0.50       0.50
-sunday      2 OccuptW    7- 8    285.0    165.0       0.68       0.32
-sunday      3 OccuptW    8-17      0.0      0.0       0.50       0.50
-sunday      4 OccuptW   17-18    285.0    165.0       0.68       0.32
-sunday      5 OccuptW   18-24      0.0      0.0       0.50       0.50
-sunday      6 EquiptW    0- 7      0.0      0.0       0.50       0.50
-sunday      7 EquiptW    7- 8   1870.0   1300.0       0.50       0.50
-sunday      8 EquiptW    8-16      0.0      0.0       0.50       0.50
-sunday      9 EquiptW   16-18   4160.0   2890.0       0.50       0.50
-sunday     10 EquiptW   18-24      0.0      0.0       0.50       0.50
+Daytype   Gain Label     Type    Unit Period Sensible  Latent     Radiant    Convec
+          No.                          Hours Magn.(W)  Magn.(W)   Fraction   Fraction
+weekday     1 Occupt     people    W    0- 7      0.0      0.0       0.50       0.50
+weekday     2 Occupt     people    W    7- 8    285.0    165.0       0.68       0.32
+weekday     3 Occupt     people    W    8-17      0.0      0.0       0.50       0.50
+weekday     4 Occupt     people    W   17-18    285.0    165.0       0.68       0.32
+weekday     5 Occupt     people    W   18-24      0.0      0.0       0.50       0.50
+weekday     6 Equipt     equipment W    0- 7      0.0      0.0       0.50       0.50
+weekday     7 Equipt     equipment W    7- 8   1870.0   1300.0       0.50       0.50
+weekday     8 Equipt     equipment W    8-16      0.0      0.0       0.50       0.50
+weekday     9 Equipt     equipment W   16-18   4160.0   2890.0       0.50       0.50
+weekday    10 Equipt     equipment W   18-24      0.0      0.0       0.50       0.50
+saturday    1 Occupt     people    W    0- 7      0.0      0.0       0.50       0.50
+saturday    2 Occupt     people    W    7- 8    285.0    165.0       0.68       0.32
+saturday    3 Occupt     people    W    8-17      0.0      0.0       0.50       0.50
+saturday    4 Occupt     people    W   17-18    285.0    165.0       0.68       0.32
+saturday    5 Occupt     people    W   18-24      0.0      0.0       0.50       0.50
+saturday    6 Equipt     equipment W    0- 7      0.0      0.0       0.50       0.50
+saturday    7 Equipt     equipment W    7- 8   1870.0   1300.0       0.50       0.50
+saturday    8 Equipt     equipment W    8-16      0.0      0.0       0.50       0.50
+saturday    9 Equipt     equipment W   16-18   4160.0   2890.0       0.50       0.50
+saturday   10 Equipt     equipment W   18-24      0.0      0.0       0.50       0.50
+sunday      1 Occupt     people    W    0- 7      0.0      0.0       0.50       0.50
+sunday      2 Occupt     people    W    7- 8    285.0    165.0       0.68       0.32
+sunday      3 Occupt     people    W    8-17      0.0      0.0       0.50       0.50
+sunday      4 Occupt     people    W   17-18    285.0    165.0       0.68       0.32
+sunday      5 Occupt     people    W   18-24      0.0      0.0       0.50       0.50
+sunday      6 Equipt     equipment W    0- 7      0.0      0.0       0.50       0.50
+sunday      7 Equipt     equipment W    7- 8   1870.0   1300.0       0.50       0.50
+sunday      8 Equipt     equipment W    8-16      0.0      0.0       0.50       0.50
+sunday      9 Equipt     equipment W   16-18   4160.0   2890.0       0.50       0.50
+sunday     10 Equipt     equipment W   18-24      0.0      0.0       0.50       0.50
  
  ____________________________________________________________
  
@@ -423,20 +423,20 @@ sunday     10 EquiptW   18-24      0.0      0.0       0.50       0.50
  area of 32.9m^2 & approx floor area of 4.59m^2
  store describes the back entrance and store
  There is 4.5900m2 of exposed surface area, 4.5900m2 of which is vertical.
- Outside walls are 100.00 % of floor area & avg U of 1.329 & UA of 6.1004
- Ground contact is 100.00 % of floor area & avg U of 0.864 & perimeter 1.7000
+ Outside walls are 100.00 % of floor area & average U of 1.329 & UA of 6.1004
+ Ground contact is 100.00 % of floor area & average U of 0.864 & perimeter 1.7000
  
  A summary of the surfaces in store( 5) follows:
  
- Sur| Area  |Azim|Elev| surface    | geometry | construction |environment
-    | m^2   |deg |deg | name       |type |loca| name         |other side
-  1  4.59    180.   0. liv_r        OPAQUE VERT partition    ||< store_r:living_room
-  2  7.29     90.   0. store_sim_e  OPAQUE VERT intern_wall  ||< identical environment
-  3  2.59      0.   0. store_n_ex   OPAQUE VERT ext_wall_low ||< external
-  4  7.29    270.   0. kitch_r      OPAQUE VERT partition    ||< store_r:kitchen
-  5  4.59      0.  90. bed_2_r      OPAQUE CEIL ceiling      ||< store_r:bed_2
-  6  4.59      0. -90. floor        OPAQUE FLOR grnd_floor   ||< ground profile  1
-  7  2.00      0.   0. back_door    OPAQUE VERT door         ||< external
+ Sur| Area  |Azim|Elev| surface    |    geometry       | construction |environment
+    | m^2   |deg |deg | name       |optical|locat| use | name         |other side
+  1  4.59    180.   0. liv_r        OPAQUE   VERT -     partition    ||< store_r:living_room
+  2  7.29     90.   0. store_sim_e  OPAQUE   VERT -     intern_wall  ||< identical environment
+  3  2.59      0.   0. store_n_ex   OPAQUE   VERT -     ext_wall_low ||< external
+  4  7.29    270.   0. kitch_r      OPAQUE   VERT -     partition    ||< store_r:kitchen
+  5  4.59      0.  90. bed_2_r      OPAQUE   CEIL -     ceiling      ||< store_r:bed_2
+  6  4.59      0. -90. floor        OPAQUE   FLOR -     grnd_floor   ||< ground profile  1
+  7  2.00      0.   0. back_door    OPAQUE   VERT -     door         ||< external
  
  
  Solar insolation focused on surface floor        (if shading not calculated).
@@ -449,8 +449,8 @@ sunday     10 EquiptW   18-24      0.0      0.0       0.50       0.50
 Notes:
 nil_operations
  
-Daytype   Gain Type    Period Sensible  Latent     Radiant    Convec
-          No.  label   Hours  Magn.(W)  Magn.(W)   Fraction   Fraction
+Daytype   Gain Label     Type    Unit Period Sensible  Latent     Radiant    Convec
+          No.                          Hours Magn.(W)  Magn.(W)   Fraction   Fraction
  
  ____________________________________________________________
  
@@ -459,24 +459,24 @@ Daytype   Gain Type    Period Sensible  Latent     Radiant    Convec
  area of 47.0m^2 & approx floor area of 8.13m^2
  hall_up describes the upper portion of the hall and stairs
  There is 12.557m2 of exposed surface area, 12.557m2 of which is vertical.
- Outside walls are 135.52 % of floor area & avg U of 0.429 & UA of 4.7219
- Glazing is 18.942 % of floor & 12.264 % facade with avg U of 5.706 & UA of 8.7868
+ Outside walls are 135.52 % of floor area & average U of 0.429 & UA of 4.7219
+ Glazing is 18.942 % of floor & 12.264 % facade with average U of 5.706 & UA of 8.7868
  
  A summary of the surfaces in hall_up( 6) follows:
  
- Sur| Area  |Azim|Elev| surface    | geometry | construction |environment
-    | m^2   |deg |deg | name       |type |loca| name         |other side
-  1  3.58    180.   0. hallup_ex_s  OPAQUE VERT ext_wall_up  ||< external
-  2  5.04     90.   0. bed_1_r      OPAQUE VERT partition    ||< hallup_r_3:bed_1
-  3  2.40    180.   0. bed_1_r2     OPAQUE VERT partition    ||< hallup_r_2:bed_1
-  4  2.40     90.   0. bed_1_r3     OPAQUE VERT partition    ||< hallup_r_1:bed_1
-  5  7.92      0.   0. bed_1        OPAQUE VERT partition    ||< hallup_r:bed_3
-  6  7.44    270.   0. hallup_ex_w  OPAQUE VERT ext_wall_up  ||< external
-  7  8.13      0.  90. ceil         OPAQUE CEIL ceil_loft    ||< hallup:loft
-  8  6.51      0. -90. hall_r       OPAQUE FLOR ceiling_rev  ||< hall_up_r:hall
-  9  1.62      0. -90. liv_r        OPAQUE FLOR ceiling_rev  ||< hall_up_r:living_room
- 10  0.402   180.   0. loft         OPAQUE VERT ext_wall_up  ||< hallup_sof:loft
- 11  1.54    180.   0. s_glaz       SC_898 VERT glazing      ||< external
+ Sur| Area  |Azim|Elev| surface    |    geometry       | construction |environment
+    | m^2   |deg |deg | name       |optical|locat| use | name         |other side
+  1  3.58    180.   0. hallup_ex_s  OPAQUE   VERT -     ext_wall_up  ||< external
+  2  5.04     90.   0. bed_1_r      OPAQUE   VERT -     partition    ||< hallup_r_3:bed_1
+  3  2.40    180.   0. bed_1_r2     OPAQUE   VERT -     partition    ||< hallup_r_2:bed_1
+  4  2.40     90.   0. bed_1_r3     OPAQUE   VERT -     partition    ||< hallup_r_1:bed_1
+  5  7.92      0.   0. bed_1        OPAQUE   VERT -     partition    ||< hallup_r:bed_3
+  6  7.44    270.   0. hallup_ex_w  OPAQUE   VERT -     ext_wall_up  ||< external
+  7  8.13      0.  90. ceil         OPAQUE   CEIL -     ceil_loft    ||< hallup:loft
+  8  6.51      0. -90. hall_r       OPAQUE   FLOR -     ceiling_rev  ||< hall_up_r:hall
+  9  1.62      0. -90. liv_r        OPAQUE   FLOR -     ceiling_rev  ||< hall_up_r:living_room
+ 10  0.402   180.   0. loft         OPAQUE   VERT -     ext_wall_up  ||< hallup_sof:loft
+ 11  1.54    180.   0. s_glaz       SC_8985_ VERT -     glazing      ||< external
  
  
  All surfaces will receive diffuse insolation (if shading not calculated).
@@ -491,17 +491,17 @@ Daytype   Gain Type    Period Sensible  Latent     Radiant    Convec
 Notes:
 GEN  hall_up small power loads in evening
  
-Daytype   Gain Type    Period Sensible  Latent     Radiant    Convec
-          No.  label   Hours  Magn.(W)  Magn.(W)   Fraction   Fraction
-weekday     1 EquiptW    0-18      0.0      0.0       0.50       0.50
-weekday     2 EquiptW   18-23   1000.0      0.0       0.80       0.20
-weekday     3 EquiptW   23-24      0.0      0.0       0.50       0.50
-saturday    1 EquiptW    0-18      0.0      0.0       0.50       0.50
-saturday    2 EquiptW   18-23   1000.0      0.0       0.80       0.20
-saturday    3 EquiptW   23-24      0.0      0.0       0.50       0.50
-sunday      1 EquiptW    0-18      0.0      0.0       0.50       0.50
-sunday      2 EquiptW   18-23   1000.0      0.0       0.80       0.20
-sunday      3 EquiptW   23-24      0.0      0.0       0.50       0.50
+Daytype   Gain Label     Type    Unit Period Sensible  Latent     Radiant    Convec
+          No.                          Hours Magn.(W)  Magn.(W)   Fraction   Fraction
+weekday     1 Equipt     equipment W    0-18      0.0      0.0       0.50       0.50
+weekday     2 Equipt     equipment W   18-23   1000.0      0.0       0.80       0.20
+weekday     3 Equipt     equipment W   23-24      0.0      0.0       0.50       0.50
+saturday    1 Equipt     equipment W    0-18      0.0      0.0       0.50       0.50
+saturday    2 Equipt     equipment W   18-23   1000.0      0.0       0.80       0.20
+saturday    3 Equipt     equipment W   23-24      0.0      0.0       0.50       0.50
+sunday      1 Equipt     equipment W    0-18      0.0      0.0       0.50       0.50
+sunday      2 Equipt     equipment W   18-23   1000.0      0.0       0.80       0.20
+sunday      3 Equipt     equipment W   23-24      0.0      0.0       0.50       0.50
  
  ____________________________________________________________
  
@@ -510,23 +510,23 @@ sunday      3 EquiptW   23-24      0.0      0.0       0.50       0.50
  area of 63.5m^2 & approx floor area of 13.3m^2
  bed_1 describes a south facing bedroom
  There is 10.235m2 of exposed surface area, 10.235m2 of which is vertical.
- Outside walls are 52.300 % of floor area & avg U of 0.429 & UA of 2.9722
- Glazing is 24.887 % of floor & 32.242 % facade with avg U of 5.706 & UA of 18.829
+ Outside walls are 52.300 % of floor area & average U of 0.429 & UA of 2.9722
+ Glazing is 24.887 % of floor & 32.242 % facade with average U of 5.706 & UA of 18.829
  
  A summary of the surfaces in bed_1( 7) follows:
  
- Sur| Area  |Azim|Elev| surface    | geometry | construction |environment
-    | m^2   |deg |deg | name       |type |loca| name         |other side
-  1  6.93    180.   0. bed1_ex_s    OPAQUE VERT ext_wall_up  ||< external
-  2  7.44     90.   0. bed1_sim_e   OPAQUE VERT intern_wall  ||< identical environment
-  3  8.64      0.   0. bed_2_r      OPAQUE VERT partition    ||< bed1_r:bed_2
-  4  2.40    270.   0. hallup_r_1   OPAQUE VERT partition    ||< bed_1_r3:hall_up
-  5  2.40      0.   0. hallup_r_2   OPAQUE VERT partition    ||< bed_1_r2:hall_up
-  6  5.04    270.   0. hallup_r_3   OPAQUE VERT partition    ||< bed_1_r:hall_up
-  7  13.3      0.  90. loft_r       OPAQUE CEIL ceil_loft    ||< bed_1:loft
-  8  13.3      0. -90. liv_r        OPAQUE FLOR ceiling_rev  ||< bed_1_r:living_room
-  9  0.805   180.   0. loft_s_r     OPAQUE VERT ext_wall_up  ||< bed1_sof:loft
- 10  3.30    180.   0. s_glaz       SC_898 VERT glazing      ||< external
+ Sur| Area  |Azim|Elev| surface    |    geometry       | construction |environment
+    | m^2   |deg |deg | name       |optical|locat| use | name         |other side
+  1  6.93    180.   0. bed1_ex_s    OPAQUE   VERT -     ext_wall_up  ||< external
+  2  7.44     90.   0. bed1_sim_e   OPAQUE   VERT -     intern_wall  ||< identical environment
+  3  8.64      0.   0. bed_2_r      OPAQUE   VERT -     partition    ||< bed1_r:bed_2
+  4  2.40    270.   0. hallup_r_1   OPAQUE   VERT -     partition    ||< bed_1_r3:hall_up
+  5  2.40      0.   0. hallup_r_2   OPAQUE   VERT -     partition    ||< bed_1_r2:hall_up
+  6  5.04    270.   0. hallup_r_3   OPAQUE   VERT -     partition    ||< bed_1_r:hall_up
+  7  13.3      0.  90. loft_r       OPAQUE   CEIL -     ceil_loft    ||< bed_1:loft
+  8  13.3      0. -90. liv_r        OPAQUE   FLOR -     ceiling_rev  ||< bed_1_r:living_room
+  9  0.805   180.   0. loft_s_r     OPAQUE   VERT -     ext_wall_up  ||< bed1_sof:loft
+ 10  3.30    180.   0. s_glaz       SC_8985_ VERT -     glazing      ||< external
  
  
  Solar insolation focused on surface liv_r        (if shading not calculated).
@@ -541,14 +541,14 @@ sunday      3 EquiptW   23-24      0.0      0.0       0.50       0.50
 Notes:
 two people sleeping
  
-Daytype   Gain Type    Period Sensible  Latent     Radiant    Convec
-          No.  label   Hours  Magn.(W)  Magn.(W)   Fraction   Fraction
-weekday     1 OccuptW    0- 7    190.0     90.0       0.70       0.30
-weekday     2 OccuptW    7-24      0.0      0.0       0.50       0.50
-saturday    1 OccuptW    0- 7    190.0     90.0       0.70       0.30
-saturday    2 OccuptW    7-24      0.0      0.0       0.50       0.50
-sunday      1 OccuptW    0- 7    190.0     90.0       0.70       0.30
-sunday      2 OccuptW    7-24      0.0      0.0       0.50       0.50
+Daytype   Gain Label     Type    Unit Period Sensible  Latent     Radiant    Convec
+          No.                          Hours Magn.(W)  Magn.(W)   Fraction   Fraction
+weekday     1 Occupt     people    W    0- 7    190.0     90.0       0.70       0.30
+weekday     2 Occupt     people    W    7-24      0.0      0.0       0.50       0.50
+saturday    1 Occupt     people    W    0- 7    190.0     90.0       0.70       0.30
+saturday    2 Occupt     people    W    7-24      0.0      0.0       0.50       0.50
+sunday      1 Occupt     people    W    0- 7    190.0     90.0       0.70       0.30
+sunday      2 Occupt     people    W    7-24      0.0      0.0       0.50       0.50
  
  ____________________________________________________________
  
@@ -557,25 +557,25 @@ sunday      2 OccuptW    7-24      0.0      0.0       0.50       0.50
  area of 56.9m^2 & approx floor area of 11.9m^2
  bed_2 describes a north facing bedroom
  There is 8.0100m2 of exposed surface area, 8.0100m2 of which is vertical.
- Outside walls are 39.646 % of floor area & avg U of 0.429 & UA of 2.0186
- Glazing is 27.778 % of floor & 41.199 % facade with avg U of 5.706 & UA of 18.829
+ Outside walls are 39.646 % of floor area & average U of 0.429 & UA of 2.0186
+ Glazing is 27.778 % of floor & 41.199 % facade with average U of 5.706 & UA of 18.829
  
  A summary of the surfaces in bed_2( 8) follows:
  
- Sur| Area  |Azim|Elev| surface    | geometry | construction |environment
-    | m^2   |deg |deg | name       |type |loca| name         |other side
-  1  8.64    180.   0. bed1_r       OPAQUE VERT partition    ||< bed_2_r:bed_1
-  2  7.92     90.   0. bed2_sim_e   OPAQUE VERT intern_wall  ||< identical environment
-  3  4.71    360.   0. bed2_ex_n    OPAQUE VERT ext_wall_up  ||< external
-  4  7.77    270.   0. bed_3_r      OPAQUE VERT partition    ||< bed_2_r:bed_3
-  5  11.9      0.  90. loft_r       OPAQUE CEIL ceil_loft    ||< bed2:loft
-  6  2.16      0. -90. liv_r        OPAQUE FLOR ceiling_rev  ||< bed_2_r:living_room
-  7  0.630     0.   0. loft_n_r     OPAQUE VERT ext_wall_up  ||< bed2_sof:loft
-  8  4.59      0. -90. store_r      OPAQUE FLOR ceiling_rev  ||< bed_2_r:store
-  9  5.13      0. -90. kitch_r      OPAQUE FLOR ceiling_rev  ||< bed_2_r:kitchen
- 10  3.30    360.   0. n_glaz       SC_898 VERT glazing      ||< external
- 11  0.142   270.   0. xSurf-10     OPAQUE VERT partition    ||< Surf-10:bed_3_air_g
- 12  0.011   270.   0. xbed_2_r     OPAQUE VERT partition    ||< bed_2_r:t_bridge
+ Sur| Area  |Azim|Elev| surface    |    geometry       | construction |environment
+    | m^2   |deg |deg | name       |optical|locat| use | name         |other side
+  1  8.64    180.   0. bed1_r       OPAQUE   VERT -     partition    ||< bed_2_r:bed_1
+  2  7.92     90.   0. bed2_sim_e   OPAQUE   VERT -     intern_wall  ||< identical environment
+  3  4.71    360.   0. bed2_ex_n    OPAQUE   VERT -     ext_wall_up  ||< external
+  4  7.77    270.   0. bed_3_r      OPAQUE   VERT -     partition    ||< bed_2_r:bed_3
+  5  11.9      0.  90. loft_r       OPAQUE   CEIL -     ceil_loft    ||< bed2:loft
+  6  2.16      0. -90. liv_r        OPAQUE   FLOR -     ceiling_rev  ||< bed_2_r:living_room
+  7  0.630     0.   0. loft_n_r     OPAQUE   VERT -     ext_wall_up  ||< bed2_sof:loft
+  8  4.59      0. -90. store_r      OPAQUE   FLOR -     ceiling_rev  ||< bed_2_r:store
+  9  5.13      0. -90. kitch_r      OPAQUE   FLOR -     ceiling_rev  ||< bed_2_r:kitchen
+ 10  3.30    360.   0. n_glaz       SC_8985_ VERT -     glazing      ||< external
+ 11  0.142   270.   0. xSurf-10     OPAQUE   VERT -     partition    ||< Surf-10:bed_3_air_g
+ 12  0.011   270.   0. xbed_2_r     OPAQUE   VERT -     partition    ||< bed_2_r:t_bridge
  
  
  Solar insolation focused on surface liv_r        (if shading not calculated).
@@ -590,8 +590,8 @@ sunday      2 OccuptW    7-24      0.0      0.0       0.50       0.50
 Notes:
 nil_operations
  
-Daytype   Gain Type    Period Sensible  Latent     Radiant    Convec
-          No.  label   Hours  Magn.(W)  Magn.(W)   Fraction   Fraction
+Daytype   Gain Label     Type    Unit Period Sensible  Latent     Radiant    Convec
+          No.                          Hours Magn.(W)  Magn.(W)   Fraction   Fraction
  
  ____________________________________________________________
  
@@ -600,25 +600,25 @@ Daytype   Gain Type    Period Sensible  Latent     Radiant    Convec
  area of 52.7m^2 & approx floor area of 10.7m^2
  bed_3 describes room with moisture details
  There is 9.2568m2 of exposed surface area, 9.2568m2 of which is vertical.
- Outside walls are 57.233 % of floor area & avg U of 0.429 & UA of 2.6173
- Glazing is 29.522 % of floor & 34.029 % facade with avg U of 5.706 & UA of 17.973
+ Outside walls are 57.233 % of floor area & average U of 0.429 & UA of 2.6173
+ Glazing is 29.522 % of floor & 34.029 % facade with average U of 5.706 & UA of 17.973
  
  A summary of the surfaces in bed_3( 9) follows:
  
- Sur| Area  |Azim|Elev| surface    | geometry | construction |environment
-    | m^2   |deg |deg | name       |type |loca| name         |other side
-  1  7.92    180.   0. hallup_r     OPAQUE VERT partition    ||< bed_1:hall_up
-  2  7.76     90.   0. bed_2_r      OPAQUE VERT partition    ||< bed_3_r:bed_2
-  3  5.84      0.   0. bed3_ex_n    OPAQUE VERT air_gap_int  ||< xbed3_ex_n:bed_3_air_g
-  4  6.11    270.   0. bed3_ex_w    OPAQUE VERT ext_wall_up  ||< external
-  5  10.7      0.  90. loft_r       OPAQUE CEIL ceil_loft    ||< bed3:loft
-  6  3.16      0. -90. kitch_r      OPAQUE FLOR ceiling_rev  ||< bed_1_r:kitchen
-  7  3.43      0. -90. bath_r       OPAQUE FLOR ceiling_rev  ||< bed_1_r:bathroom
-  8  3.36      0. -90. hall_r       OPAQUE FLOR ceiling_rev  ||< bed_3_r:hall
-  9  0.720     0. -90. liv_r        OPAQUE FLOR ceiling_rev  ||< bed_3_r:living_room
- 10  0.577     0.   0. loft_n_r     OPAQUE VERT t_bridge     ||< bed_3_r:t_bridge
- 11  1.50      0.   0. n_glaz       SC_898 VERT glazing      ||< external
- 12  1.65    270.   0. w_glaz       SC_898 VERT glazing      ||< external
+ Sur| Area  |Azim|Elev| surface    |    geometry       | construction |environment
+    | m^2   |deg |deg | name       |optical|locat| use | name         |other side
+  1  7.92    180.   0. hallup_r     OPAQUE   VERT -     partition    ||< bed_1:hall_up
+  2  7.76     90.   0. bed_2_r      OPAQUE   VERT -     partition    ||< bed_3_r:bed_2
+  3  5.84      0.   0. bed3_ex_n    OPAQUE   VERT -     air_gap_int  ||< xbed3_ex_n:bed_3_air_g
+  4  6.11    270.   0. bed3_ex_w    OPAQUE   VERT -     ext_wall_up  ||< external
+  5  10.7      0.  90. loft_r       OPAQUE   CEIL -     ceil_loft    ||< bed3:loft
+  6  3.16      0. -90. kitch_r      OPAQUE   FLOR -     ceiling_rev  ||< bed_1_r:kitchen
+  7  3.43      0. -90. bath_r       OPAQUE   FLOR -     ceiling_rev  ||< bed_1_r:bathroom
+  8  3.36      0. -90. hall_r       OPAQUE   FLOR -     ceiling_rev  ||< bed_3_r:hall
+  9  0.720     0. -90. liv_r        OPAQUE   FLOR -     ceiling_rev  ||< bed_3_r:living_room
+ 10  0.577     0.   0. loft_n_r     OPAQUE   VERT -     t_bridge     ||< bed_3_r:t_bridge
+ 11  1.50      0.   0. n_glaz       SC_8985_ VERT -     glazing      ||< external
+ 12  1.65    270.   0. w_glaz       SC_8985_ VERT -     glazing      ||< external
  
  
  Solar insolation focused on surface kitch_r      (if shading not calculated).
@@ -633,17 +633,17 @@ Daytype   Gain Type    Period Sensible  Latent     Radiant    Convec
 Notes:
 one person sleeping no lights
  
-Daytype   Gain Type    Period Sensible  Latent     Radiant    Convec
-          No.  label   Hours  Magn.(W)  Magn.(W)   Fraction   Fraction
-weekday     1 OccuptW    0- 7     95.0     45.0       0.70       0.30
-weekday     2 OccuptW    7-24      0.0      0.0       0.50       0.50
-weekday     3 LightsW    0-24      0.0      0.0       0.70       0.30
-saturday    1 OccuptW    0- 7     95.0     45.0       0.70       0.30
-saturday    2 OccuptW    7-24      0.0      0.0       0.50       0.50
-saturday    3 LightsW    0-24      0.0      0.0       0.70       0.30
-sunday      1 OccuptW    0- 7     95.0     45.0       0.70       0.30
-sunday      2 OccuptW    7-24      0.0      0.0       0.50       0.50
-sunday      3 LightsW    0-24      0.0      0.0       0.70       0.30
+Daytype   Gain Label     Type    Unit Period Sensible  Latent     Radiant    Convec
+          No.                          Hours Magn.(W)  Magn.(W)   Fraction   Fraction
+weekday     1 Occupt     people    W    0- 7     95.0     45.0       0.70       0.30
+weekday     2 Occupt     people    W    7-24      0.0      0.0       0.50       0.50
+weekday     3 Lights     lighting  W    0-24      0.0      0.0       0.70       0.30
+saturday    1 Occupt     people    W    0- 7     95.0     45.0       0.70       0.30
+saturday    2 Occupt     people    W    7-24      0.0      0.0       0.50       0.50
+saturday    3 Lights     lighting  W    0-24      0.0      0.0       0.70       0.30
+sunday      1 Occupt     people    W    0- 7     95.0     45.0       0.70       0.30
+sunday      2 Occupt     people    W    7-24      0.0      0.0       0.50       0.50
+sunday      3 Lights     lighting  W    0-24      0.0      0.0       0.70       0.30
  
  ____________________________________________________________
  
@@ -654,14 +654,14 @@ sunday      3 LightsW    0-24      0.0      0.0       0.70       0.30
  
  A summary of the surfaces in t_bridge(10) follows:
  
- Sur| Area  |Azim|Elev| surface    | geometry | construction |environment
-    | m^2   |deg |deg | name       |type |loca| name         |other side
-  1  0.577   180.   0. bed_3_r      OPAQUE VERT t_bridge_r   ||< loft_n_r:bed_3
-  2  0.011    90.   0. bed_2_r      OPAQUE VERT partition    ||< xbed_2_r:bed_2
-  3  0.577     0.   0. loft_n_r     OPAQUE VERT air_gap_ext  ||< bed3_sof:loft
-  4  0.011   270.   0. west_ext     OPAQUE VERT ext_wall_up  ||< external
-  5  0.211     0.  90. loft_up      OPAQUE CEIL ceil_loft    ||< t_bridge:loft
-  6  0.211     0. -90. bedroom      OPAQUE FLOR steel_sheet  ||< xbedroom:bed_3_air_g
+ Sur| Area  |Azim|Elev| surface    |    geometry       | construction |environment
+    | m^2   |deg |deg | name       |optical|locat| use | name         |other side
+  1  0.577   180.   0. bed_3_r      OPAQUE   VERT -     t_bridge_r   ||< loft_n_r:bed_3
+  2  0.011    90.   0. bed_2_r      OPAQUE   VERT -     partition    ||< xbed_2_r:bed_2
+  3  0.577     0.   0. loft_n_r     OPAQUE   VERT -     air_gap_ext  ||< bed3_sof:loft
+  4  0.011   270.   0. west_ext     OPAQUE   VERT -     ext_wall_up  ||< external
+  5  0.211     0.  90. loft_up      OPAQUE   CEIL -     ceil_loft    ||< t_bridge:loft
+  6  0.211     0. -90. bedroom      OPAQUE   FLOR -     steel_sheet  ||< xbedroom:bed_3_air_g
  
  
  All surfaces will receive diffuse insolation (if shading not calculated).
@@ -674,8 +674,8 @@ sunday      3 LightsW    0-24      0.0      0.0       0.70       0.30
 Notes:
 nil_operations
  
-Daytype   Gain Type    Period Sensible  Latent     Radiant    Convec
-          No.  label   Hours  Magn.(W)  Magn.(W)   Fraction   Fraction
+Daytype   Gain Label     Type    Unit Period Sensible  Latent     Radiant    Convec
+          No.                          Hours Magn.(W)  Magn.(W)   Fraction   Fraction
  
  ____________________________________________________________
  
@@ -684,33 +684,33 @@ Daytype   Gain Type    Period Sensible  Latent     Radiant    Convec
  area of 120.m^2 & approx floor area of 50.6m^2
  loft describes the roof space over all rooms
  There is 62.483m2 of exposed surface area, 5.0440m2 of which is vertical.
- Outside walls are 23.073 % of floor area & avg U of 4.374 & UA of 51.035
- Sloped roof is 100.49 % of floor area & avg U of 6.835 & UA of 347.31
+ Outside walls are 23.073 % of floor area & average U of 4.374 & UA of 51.035
+ Sloped roof is 100.49 % of floor area & average U of 6.835 & UA of 347.31
  
  A summary of the surfaces in loft(11) follows:
  
- Sur| Area  |Azim|Elev| surface    | geometry | construction |environment
-    | m^2   |deg |deg | name       |type |loca| name         |other side
-  1  3.31      0. -90. soffit_s     OPAQUE FLOR soffit       ||< external
-  2  0.402     0.   0. hallup_sof   OPAQUE VERT ext_wall_upr ||< loft:hall_up
-  3  0.805     0.   0. bed1_sof     OPAQUE VERT ext_wall_upr ||< loft_s_r:bed_1
-  4  8.13      0. -90. hallup       OPAQUE FLOR ceil_loft_r  ||< ceil:hall_up
-  5  13.3      0. -90. bed_1        OPAQUE FLOR ceil_loft_r  ||< loft_r:bed_1
-  6  10.7      0. -90. bed3         OPAQUE FLOR ceil_loft_r  ||< loft_r:bed_3
-  7  11.9      0. -90. bed2         OPAQUE FLOR ceil_loft_r  ||< loft_r:bed_2
-  8  0.577   180.   0. bed3_sof     OPAQUE VERT air_gap_extr ||< loft_n_r:t_bridge
-  9  0.630   180.   0. bed2_sof     OPAQUE VERT ext_wall_upr ||< loft_n_r:bed_2
- 10  3.31      0. -90. soffit_n     OPAQUE FLOR soffit       ||< external
- 11  24.5    180.  67. roof_s       OPAQUE SLOP roof         ||< external
- 12  26.3      0.  64. roof_n       OPAQUE SLOP roof         ||< external
- 13  5.04    270.   0. roof_v_ext   OPAQUE VERT steel_sheet  ||< external
- 14  5.04     90.   0. Surf-14      OPAQUE VERT intern_wall  ||< identical environment
- 15  0.213     0. -90. t_bridge     OPAQUE FLOR ceil_loft_r  ||< loft_up:t_bridge
- 16  5.00    180.  67. xcollector   OPAQUE SLOP collector    ||< xxcollector:collector
- 17  0.100   270.   0. coll-e       OPAQUE VERT door         ||< xcoll-e:collector
- 18  0.125   180. -23. coll-up      OPAQUE SLOP door         ||< xcoll-up:collector
- 19  0.100    90.   0. coll-w       OPAQUE VERT door         ||< xcoll-w:collector
- 20  0.125     0.  23. coll-dn      OPAQUE SLOP door         ||< xcoll-dn:collector
+ Sur| Area  |Azim|Elev| surface    |    geometry       | construction |environment
+    | m^2   |deg |deg | name       |optical|locat| use | name         |other side
+  1  3.31      0. -90. soffit_s     OPAQUE   FLOR -     soffit       ||< external
+  2  0.402     0.   0. hallup_sof   OPAQUE   VERT -     ext_wall_upr ||< loft:hall_up
+  3  0.805     0.   0. bed1_sof     OPAQUE   VERT -     ext_wall_upr ||< loft_s_r:bed_1
+  4  8.13      0. -90. hallup       OPAQUE   FLOR -     ceil_loft_r  ||< ceil:hall_up
+  5  13.3      0. -90. bed_1        OPAQUE   FLOR -     ceil_loft_r  ||< loft_r:bed_1
+  6  10.7      0. -90. bed3         OPAQUE   FLOR -     ceil_loft_r  ||< loft_r:bed_3
+  7  11.9      0. -90. bed2         OPAQUE   FLOR -     ceil_loft_r  ||< loft_r:bed_2
+  8  0.577   180.   0. bed3_sof     OPAQUE   VERT -     air_gap_extr ||< loft_n_r:t_bridge
+  9  0.630   180.   0. bed2_sof     OPAQUE   VERT -     ext_wall_upr ||< loft_n_r:bed_2
+ 10  3.31      0. -90. soffit_n     OPAQUE   FLOR -     soffit       ||< external
+ 11  24.5    180.  67. roof_s       OPAQUE   SLOP -     roof         ||< external
+ 12  26.3      0.  64. roof_n       OPAQUE   SLOP -     roof         ||< external
+ 13  5.04    270.   0. roof_v_ext   OPAQUE   VERT -     steel_sheet  ||< external
+ 14  5.04     90.   0. Surf-14      OPAQUE   VERT -     intern_wall  ||< identical environment
+ 15  0.213     0. -90. t_bridge     OPAQUE   FLOR -     ceil_loft_r  ||< loft_up:t_bridge
+ 16  5.00    180.  67. xcollector   OPAQUE   SLOP -     collector    ||< xxcollector:collector
+ 17  0.100   270.   0. coll-e       OPAQUE   VERT -     door         ||< xcoll-e:collector
+ 18  0.125   180. -23. coll-up      OPAQUE   SLOP -     door         ||< xcoll-up:collector
+ 19  0.100    90.   0. coll-w       OPAQUE   VERT -     door         ||< xcoll-w:collector
+ 20  0.125     0.  23. coll-dn      OPAQUE   SLOP -     door         ||< xcoll-dn:collector
  
  
  All surfaces will receive diffuse insolation (if shading not calculated).
@@ -723,9 +723,9 @@ Daytype   Gain Type    Period Sensible  Latent     Radiant    Convec
 Notes:
 GEN  loft
  
-Daytype   Gain Type    Period Sensible  Latent     Radiant    Convec
-          No.  label   Hours  Magn.(W)  Magn.(W)   Fraction   Fraction
-weekday     1 OccuptW    0-24      0.0      0.0       0.50       0.50
+Daytype   Gain Label     Type    Unit Period Sensible  Latent     Radiant    Convec
+          No.                          Hours Magn.(W)  Magn.(W)   Fraction   Fraction
+weekday     1 Occupt     people    W    0-24      0.0      0.0       0.50       0.50
  
  ____________________________________________________________
  
@@ -734,18 +734,18 @@ weekday     1 OccuptW    0-24      0.0      0.0       0.50       0.50
  area of 10.4m^2 & approx floor area of 0.000m^2
  collector describes a solar collector (air based)
  There is 5.0002m2 of exposed surface area.
- Sloped roof is 1.0000 % of floor area & avg U of 6.835 & UA of 34.175
+ Sloped roof is 1.0000 % of floor area & average U of 6.835 & UA of 34.175
  
  A summary of the surfaces in collector(12) follows:
  
- Sur| Area  |Azim|Elev| surface    | geometry | construction |environment
-    | m^2   |deg |deg | name       |type |loca| name         |other side
-  1  5.00    180.  67. first        OPAQUE SLOP roof         ||< external
-  2  5.00      0. -67. xxcollector  OPAQUE SLOP collector    ||< xcollector:loft
-  3  0.100    90.   0. xcoll-e      OPAQUE VERT door         ||< coll-e:loft
-  4  0.124     0.  23. xcoll-up     OPAQUE SLOP door         ||< coll-up:loft
-  5  0.100   270.  -0. xcoll-w      OPAQUE VERT door         ||< coll-w:loft
-  6  0.125   180. -23. xcoll-dn     OPAQUE SLOP door         ||< coll-dn:loft
+ Sur| Area  |Azim|Elev| surface    |    geometry       | construction |environment
+    | m^2   |deg |deg | name       |optical|locat| use | name         |other side
+  1  5.00    180.  67. first        OPAQUE   SLOP -     roof         ||< external
+  2  5.00      0. -67. xxcollector  OPAQUE   SLOP -     collector    ||< xcollector:loft
+  3  0.100    90.   0. xcoll-e      OPAQUE   VERT -     door         ||< coll-e:loft
+  4  0.124     0.  23. xcoll-up     OPAQUE   SLOP -     door         ||< coll-up:loft
+  5  0.100   270.  -0. xcoll-w      OPAQUE   VERT -     door         ||< coll-w:loft
+  6  0.125   180. -23. xcoll-dn     OPAQUE   SLOP -     door         ||< coll-dn:loft
  
  
  All surfaces will receive diffuse insolation (if shading not calculated).
@@ -758,8 +758,8 @@ weekday     1 OccuptW    0-24      0.0      0.0       0.50       0.50
 Notes:
 nil_operations
  
-Daytype   Gain Type    Period Sensible  Latent     Radiant    Convec
-          No.  label   Hours  Magn.(W)  Magn.(W)   Fraction   Fraction
+Daytype   Gain Label     Type    Unit Period Sensible  Latent     Radiant    Convec
+          No.                          Hours Magn.(W)  Magn.(W)   Fraction   Fraction
  
  ____________________________________________________________
  
@@ -768,23 +768,23 @@ Daytype   Gain Type    Period Sensible  Latent     Radiant    Convec
  area of 12.7m^2 & approx floor area of 0.280m^2
  bed_3_air_g is the air gap on north face of bedroom 3
  There is 6.3049m2 of exposed surface area, 6.1769m2 of which is vertical.
- Outside walls are 2228.9 % of floor area & avg U of 3.803 & UA of 23.735
+ Outside walls are 2228.9 % of floor area & average U of 3.803 & UA of 23.735
  
  A summary of the surfaces in bed_3_air_g(13) follows:
  
- Sur| Area  |Azim|Elev| surface    | geometry | construction |environment
-    | m^2   |deg |deg | name       |type |loca| name         |other side
-  1  0.077     0. -90. first        OPAQUE FLOR ceiling_rev  ||< xfirst:kitchen
-  2  5.84    180.   0. xbed3_ex_n   OPAQUE VERT air_gap_intr ||< bed3_ex_n:bed_3
-  3  5.84      0.   0. xxbed3_ex_n  OPAQUE VERT air_gap_ext  ||< external
-  4  0.211     0.  90. xbedroom     OPAQUE CEIL steel_sheet  ||< bedroom:t_bridge
-  5  0.064     0. -90. Surf-5       OPAQUE FLOR steel_sheet  ||< external
-  6  0.142   270.   0. gap_ext_w    OPAQUE VERT ext_wall_up  ||< external
-  7  0.064     0.  90. Surf-7       OPAQUE CEIL steel_sheet  ||< external
-  8  0.096   270.   0. Surf-8       OPAQUE VERT steel_sheet  ||< external
-  9  0.096    90.   0. Surf-9       OPAQUE VERT steel_sheet  ||< external
- 10  0.142    90.   0. Surf-10      OPAQUE VERT partition    ||< xSurf-10:bed_2
- 11  0.134     0. -90. xair_gap_r   OPAQUE FLOR ceiling_rev  ||< air_gap_r:bathroom
+ Sur| Area  |Azim|Elev| surface    |    geometry       | construction |environment
+    | m^2   |deg |deg | name       |optical|locat| use | name         |other side
+  1  0.077     0. -90. first        OPAQUE   FLOR -     ceiling_rev  ||< xfirst:kitchen
+  2  5.84    180.   0. xbed3_ex_n   OPAQUE   VERT -     air_gap_intr ||< bed3_ex_n:bed_3
+  3  5.84      0.   0. xxbed3_ex_n  OPAQUE   VERT -     air_gap_ext  ||< external
+  4  0.211     0.  90. xbedroom     OPAQUE   CEIL -     steel_sheet  ||< bedroom:t_bridge
+  5  0.064     0. -90. Surf-5       OPAQUE   FLOR -     steel_sheet  ||< external
+  6  0.142   270.   0. gap_ext_w    OPAQUE   VERT -     ext_wall_up  ||< external
+  7  0.064     0.  90. Surf-7       OPAQUE   CEIL -     steel_sheet  ||< external
+  8  0.096   270.   0. Surf-8       OPAQUE   VERT -     steel_sheet  ||< external
+  9  0.096    90.   0. Surf-9       OPAQUE   VERT -     steel_sheet  ||< external
+ 10  0.142    90.   0. Surf-10      OPAQUE   VERT -     partition    ||< xSurf-10:bed_2
+ 11  0.134     0. -90. xair_gap_r   OPAQUE   FLOR -     ceiling_rev  ||< air_gap_r:bathroom
  
  
  All surfaces will receive diffuse insolation (if shading not calculated).
@@ -797,8 +797,8 @@ Daytype   Gain Type    Period Sensible  Latent     Radiant    Convec
 Notes:
 nil_operations
  
-Daytype   Gain Type    Period Sensible  Latent     Radiant    Convec
-          No.  label   Hours  Magn.(W)  Magn.(W)   Fraction   Fraction
+Daytype   Gain Label     Type    Unit Period Sensible  Latent     Radiant    Convec
+          No.                          Hours Magn.(W)  Magn.(W)   Fraction   Fraction
  
  ____________________________________________________________
  
@@ -807,10 +807,10 @@ Daytype   Gain Type    Period Sensible  Latent     Radiant    Convec
  In contact with ground 44.160m2.
  There is 168.40m2 of outside surface area, 105.83m2 of which is vertical.
  
- Outside walls are 64.918 % of floor area & avg U of 1.263 & UA of 114.08 & max MLC thickness 0.180
- Sloped roof is 40.109 % of floor area & avg U of 6.835 & UA of 381.49
- Glazing is 15.938 % of floor & 20.958 % facade with avg U of 5.706 & UA of 126.55
- Ground contact is 31.733 % of floor area & avg U of 0.864 & perimeter 20.200 & max MLC thickness 0.625
+ Outside walls are 64.918 % of floor area & average U of 1.263 & UA of 114.08 & max MLC thickness 0.180
+ Sloped roof is 40.109 % of floor area & average U of 6.835 & UA of 381.49
+ Glazing is 15.938 % of floor & 20.958 % facade with average U of 5.706 & UA of 126.55
+ Ground contact is 31.733 % of floor area & average U of 0.864 & perimeter 20.200 & max MLC thickness 0.625
  CIBSE ground beta! 4.372 dt 1.976 Ufleft 0.191 Ufright 2.073 Uf 0.396 R extra @ virtual layer 1.369
  
  ____________________________________________________________
@@ -818,9 +818,9 @@ Daytype   Gain Type    Period Sensible  Latent     Radiant    Convec
  
  Details of transparent construction: glazing with SC_8985_04nb optics and overall thickness  0.004
  
- Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
-      |db  |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
-    1  242    4.0     0.760  2710.   837. 0.83 0.05 19200.  0.01 Plate glass : Plate glass with placeholder single layer optics
+ Layer|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
+      |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
+    1    4.0     0.760  2710.   837. 0.83 0.05 19200.  0.01 Plate glass : Plate glass with placeholder single layer optics
  ISO 6946 U values (horiz/upward/downward heat flow)=  5.706  6.884  4.645 (partition)  3.770
  
 Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  5.40
@@ -837,13 +837,13 @@ Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  5.40
  
  Details of opaque construction: ext_wall_low and overall thickness  0.179
  
- Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
-      |db  |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
- Ext   121   38.0     0.410  1200.   840. 0.90 0.80    30.  0.09 Lightweight concrete screed : Lightweight concrete screed
-    2    0   32.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
-    3  211   67.0     0.040   250.   840. 0.90 0.30     4.  1.68 Glasswool : Glasswool
-    4    0   32.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
- Int   103   10.0     0.180   800.   837. 0.91 0.60     9.  0.06 Perlite plasterboard : Perlite plasterboard
+ Layer|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
+      |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
+ Ext    38.0     0.410  1200.   840. 0.90 0.80    30.  0.09 Lightweight concrete screed : Lightweight concrete screed
+    2   32.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
+    3   67.0     0.040   250.   840. 0.90 0.30     4.  1.68 Glasswool : Glasswool
+    4   32.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
+ Int    10.0     0.180   800.   837. 0.91 0.60     9.  0.06 Perlite plasterboard : Perlite plasterboard
  ISO 6946 U values (horiz/upward/downward heat flow)=  0.429  0.434  0.421 (partition)  0.413
  
 Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  0.43
@@ -853,11 +853,11 @@ Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  0.43
  
  Details of opaque construction: intern_wall and overall thickness  0.175
  
- Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
-      |db  |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
- Ext   103   12.5     0.180   800.   837. 0.91 0.60     9.  0.07 Perlite plasterboard : Perlite plasterboard
-    2    2  150.0     0.440  1500.   650. 0.90 0.65    15.  0.34 Breeze block : Breeze block
- Int   103   12.0     0.180   800.   837. 0.91 0.60     9.  0.07 Perlite plasterboard : Perlite plasterboard
+ Layer|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
+      |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
+ Ext    12.5     0.180   800.   837. 0.91 0.60     9.  0.07 Perlite plasterboard : Perlite plasterboard
+    2  150.0     0.440  1500.   650. 0.90 0.65    15.  0.34 Breeze block : Breeze block
+ Int    12.0     0.180   800.   837. 0.91 0.60     9.  0.07 Perlite plasterboard : Perlite plasterboard
  ISO 6946 U values (horiz/upward/downward heat flow)=  1.546  1.621  1.456 (partition)  1.357
  
 Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  1.52
@@ -867,9 +867,9 @@ Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  1.52
  
  Details of opaque construction: door and overall thickness  0.030
  
- Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
-      |db  |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
-    1   71   30.0     0.130   630.  2760. 0.90 0.65    12.  0.23 Softwood : Softwood
+ Layer|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
+      |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
+    1   30.0     0.130   630.  2760. 0.90 0.65    12.  0.23 Softwood : Softwood
  ISO 6946 U values (horiz/upward/downward heat flow)=  2.495  2.697  2.269 (partition)  2.038
  
 Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  2.43
@@ -879,14 +879,14 @@ Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  2.43
  
  Details of opaque construction: grnd_floor and overall thickness  0.625
  
- Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
-      |db  |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
- Ext   263  250.0     1.280  1460.   879. 0.90 0.85     5.  0.20 Common earth : Common earth
-    2  262  150.0     0.520  2050.   184. 0.90 0.85     2.  0.29 Gravel based : Gravel based
-    3   32  150.0     1.400  2100.   653. 0.90 0.65    19.  0.11 Heavy mix concrete : Heavy mix concrete
-    4    0   50.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
-    5   67   19.0     0.150   800.  2093. 0.91 0.65    96.  0.13 Chipboard : Chipboard
- Int   221    6.0     0.060   186.  1360. 0.90 0.60    10.  0.10 Wilton : Wilton
+ Layer|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
+      |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
+ Ext   250.0     1.280  1460.   879. 0.90 0.85     5.  0.20 Common earth : Common earth
+    2  150.0     0.520  2050.   184. 0.90 0.85     2.  0.29 Gravel based : Gravel based
+    3  150.0     1.400  2100.   653. 0.90 0.65    19.  0.11 Heavy mix concrete : Heavy mix concrete
+    4   50.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
+    5   19.0     0.150   800.  2093. 0.91 0.65    96.  0.13 Chipboard : Chipboard
+ Int     6.0     0.060   186.  1360. 0.90 0.60    10.  0.10 Wilton : Wilton
  ISO 6946 U values (horiz/upward/downward heat flow)=  0.864  0.887  0.835 (partition)  0.802
  
 Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  0.86
@@ -896,10 +896,10 @@ Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  0.86
  
  Details of opaque construction: roof and overall thickness  0.004
  
- Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
-      |db  |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
- Ext    42    3.0    50.000  7800.   502. 0.12 0.20 19200.  0.00 Steel : Steel
- Int   207    1.0     0.160  1379.  1004. 0.90 0.60    70.  0.01 PVC : PVC
+ Layer|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
+      |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
+ Ext     3.0    50.000  7800.   502. 0.12 0.20 19200.  0.00 Steel : Steel
+ Int     1.0     0.160  1379.  1004. 0.90 0.60    70.  0.01 PVC : PVC
  ISO 6946 U values (horiz/upward/downward heat flow)=  5.672  6.835  4.623 (partition)  3.755
  
 Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  5.37
@@ -909,11 +909,11 @@ Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  5.37
  
  Details of opaque construction: partition and overall thickness  0.083
  
- Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
-      |db  |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
- Ext   104   13.0     0.420  1200.   837. 0.91 0.50    11.  0.03 Gypsum plaster : Gypsum plaster
-    2    0   57.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
- Int   104   13.0     0.420  1200.   837. 0.91 0.50    11.  0.03 Gypsum plaster : Gypsum plaster
+ Layer|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
+      |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
+ Ext    13.0     0.420  1200.   837. 0.91 0.50    11.  0.03 Gypsum plaster : Gypsum plaster
+    2   57.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
+ Int    13.0     0.420  1200.   837. 0.91 0.50    11.  0.03 Gypsum plaster : Gypsum plaster
  ISO 6946 U values (horiz/upward/downward heat flow)=  2.488  2.689  2.263 (partition)  2.033
  
 Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  2.43
@@ -921,13 +921,13 @@ Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  2.43
  Partition admittance Y=  0.81  w=  5.62 surface factor f=  1.00  phi=  0.37
  Total area of partition is    155.03
  
- Details of opaque construction: ceiling_rev linked to ceiling      & with overall thickness  0.125
+ Details of opaque construction: ceiling_rev linked to ceiling & with overall thickness  0.125
  
- Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
-      |db  |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
- Ext   150   10.0     0.030   290.  2000. 0.90 0.60     8.  0.33 Ceiling (mineral) : Ceiling (mineral)
-    2    0  100.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
- Int    65   15.0     0.140   600.  1210. 0.91 0.65    14.  0.11 Flooring : Flooring
+ Layer|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
+      |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
+ Ext    10.0     0.030   290.  2000. 0.90 0.60     8.  0.33 Ceiling (mineral) : Ceiling (mineral)
+    2  100.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
+ Int    15.0     0.140   600.  1210. 0.91 0.65    14.  0.11 Flooring : Flooring
  ISO 6946 U values (horiz/upward/downward heat flow)=  1.281  1.332  1.219 (partition)  1.149
  
 Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  1.27
@@ -937,14 +937,14 @@ Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  1.27
  
  Details of opaque construction: ext_wall_up linked to ext_wall_upr & with overall thickness  0.180
  
- Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
-      |db  |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
- Ext    42    1.0    50.000  7800.   502. 0.12 0.20 19200.  0.00 Steel : Steel
-    2  121   38.0     0.410  1200.   840. 0.90 0.80    30.  0.09 Lightweight concrete screed : Lightweight concrete screed
-    3    0   32.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
-    4  211   67.0     0.040   250.   840. 0.90 0.30     4.  1.68 Glasswool : Glasswool
-    5    0   32.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
- Int   103   10.0     0.180   800.   837. 0.91 0.60     9.  0.06 Perlite plasterboard : Perlite plasterboard
+ Layer|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
+      |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
+ Ext     1.0    50.000  7800.   502. 0.12 0.20 19200.  0.00 Steel : Steel
+    2   38.0     0.410  1200.   840. 0.90 0.80    30.  0.09 Lightweight concrete screed : Lightweight concrete screed
+    3   32.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
+    4   67.0     0.040   250.   840. 0.90 0.30     4.  1.68 Glasswool : Glasswool
+    5   32.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
+ Int    10.0     0.180   800.   837. 0.91 0.60     9.  0.06 Perlite plasterboard : Perlite plasterboard
  ISO 6946 U values (horiz/upward/downward heat flow)=  0.429  0.434  0.421 (partition)  0.413
  
 Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  0.43
@@ -952,12 +952,12 @@ Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  0.43
  Partition admittance Y=  1.02  w=  4.82 surface factor f=  0.97  phi=  0.46
  Total area of ext_wall_up is     30.76
  
- Details of opaque construction: ceil_loft linked to ceil_loft_r  & with overall thickness  0.025
+ Details of opaque construction: ceil_loft linked to ceil_loft_r & with overall thickness  0.025
  
- Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
-      |db  |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
- Ext   211   15.0     0.040   250.   840. 0.90 0.30     4.  0.38 Glasswool : Glasswool
- Int   103   10.0     0.180   800.   837. 0.91 0.60     9.  0.06 Perlite plasterboard : Perlite plasterboard
+ Layer|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
+      |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
+ Ext    15.0     0.040   250.   840. 0.90 0.30     4.  0.38 Glasswool : Glasswool
+ Int    10.0     0.180   800.   837. 0.91 0.60     9.  0.06 Perlite plasterboard : Perlite plasterboard
  ISO 6946 U values (horiz/upward/downward heat flow)=  1.665  1.753  1.561 (partition)  1.448
  
 Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  1.64
@@ -965,16 +965,16 @@ Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  1.64
  Partition admittance Y=  0.46  w=  5.76 surface factor f=  1.00  phi=  0.21
  Total area of ceil_loft is     44.15
  
- Details of opaque construction: ext_wall_upr linked to ext_wall_up  & with overall thickness  0.180
+ Details of opaque construction: ext_wall_upr linked to ext_wall_up & with overall thickness  0.180
  
- Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
-      |db  |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
- Ext   103   10.0     0.180   800.   837. 0.91 0.60     9.  0.06 Perlite plasterboard : Perlite plasterboard
-    2    0   32.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
-    3  211   67.0     0.040   250.   840. 0.90 0.30     4.  1.68 Glasswool : Glasswool
-    4    0   32.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
-    5  121   38.0     0.410  1200.   840. 0.90 0.80    30.  0.09 Lightweight concrete screed : Lightweight concrete screed
- Int    42    1.0    50.000  7800.   502. 0.12 0.20 19200.  0.00 Steel : Steel
+ Layer|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
+      |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
+ Ext    10.0     0.180   800.   837. 0.91 0.60     9.  0.06 Perlite plasterboard : Perlite plasterboard
+    2   32.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
+    3   67.0     0.040   250.   840. 0.90 0.30     4.  1.68 Glasswool : Glasswool
+    4   32.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
+    5   38.0     0.410  1200.   840. 0.90 0.80    30.  0.09 Lightweight concrete screed : Lightweight concrete screed
+ Int     1.0    50.000  7800.   502. 0.12 0.20 19200.  0.00 Steel : Steel
  ISO 6946 U values (horiz/upward/downward heat flow)=  0.429  0.434  0.421 (partition)  0.413
  
 Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  0.43
@@ -984,9 +984,9 @@ Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  0.43
  
  Details of opaque construction: soffit and overall thickness  0.015
  
- Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
-      |db  |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
-    1   67   15.0     0.150   800.  2093. 0.91 0.65    96.  0.10 Chipboard : Chipboard
+ Layer|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
+      |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
+    1   15.0     0.150   800.  2093. 0.91 0.65    96.  0.10 Chipboard : Chipboard
  ISO 6946 U values (horiz/upward/downward heat flow)=  3.704  4.167  3.226 (partition)  2.778
  
 Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  3.57
@@ -994,12 +994,12 @@ Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  3.57
  Partition admittance Y=  0.71  w=  5.65 surface factor f=  1.00  phi=  0.33
  Total area of soffit is      6.62
  
- Details of opaque construction: ceil_loft_r linked to ceil_loft    & with overall thickness  0.025
+ Details of opaque construction: ceil_loft_r linked to ceil_loft & with overall thickness  0.025
  
- Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
-      |db  |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
- Ext   103   10.0     0.180   800.   837. 0.91 0.60     9.  0.06 Perlite plasterboard : Perlite plasterboard
- Int   211   15.0     0.040   250.   840. 0.90 0.30     4.  0.38 Glasswool : Glasswool
+ Layer|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
+      |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
+ Ext    10.0     0.180   800.   837. 0.91 0.60     9.  0.06 Perlite plasterboard : Perlite plasterboard
+ Int    15.0     0.040   250.   840. 0.90 0.30     4.  0.38 Glasswool : Glasswool
  ISO 6946 U values (horiz/upward/downward heat flow)=  1.665  1.753  1.561 (partition)  1.448
  
 Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  1.64
@@ -1009,9 +1009,9 @@ Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  1.64
  
  Details of opaque construction: steel_sheet and overall thickness  0.001
  
- Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
-      |db  |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
-    1   42    1.0    50.000  7800.   502. 0.12 0.20 19200.  0.00 Steel : Steel
+ Layer|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
+      |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
+    1    1.0    50.000  7800.   502. 0.12 0.20 19200.  0.00 Steel : Steel
  ISO 6946 U values (horiz/upward/downward heat flow)=  5.882  7.142  4.761 (partition)  3.846
  
 Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  5.55
@@ -1019,13 +1019,13 @@ Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  5.55
  Partition admittance Y=  0.09  w=  5.96 surface factor f=  1.00  phi=  0.04
  Total area of steel_sheet is      5.79
  
- Details of opaque construction: ceiling linked to ceiling_rev  & with overall thickness  0.125
+ Details of opaque construction: ceiling linked to ceiling_rev & with overall thickness  0.125
  
- Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
-      |db  |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
- Ext    65   15.0     0.140   600.  1210. 0.91 0.65    14.  0.11 Flooring : Flooring
-    2    0  100.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
- Int   150   10.0     0.030   290.  2000. 0.90 0.60     8.  0.33 Ceiling (mineral) : Ceiling (mineral)
+ Layer|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
+      |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
+ Ext    15.0     0.140   600.  1210. 0.91 0.65    14.  0.11 Flooring : Flooring
+    2  100.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
+ Int    10.0     0.030   290.  2000. 0.90 0.60     8.  0.33 Ceiling (mineral) : Ceiling (mineral)
  ISO 6946 U values (horiz/upward/downward heat flow)=  1.281  1.332  1.219 (partition)  1.149
  
 Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  1.27
@@ -1033,12 +1033,12 @@ Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  1.27
  Partition admittance Y=  0.38  w=  5.68 surface factor f=  1.00  phi=  0.17
  Total area of ceiling is     44.16
  
- Details of opaque construction: air_gap_extr linked to air_gap_ext  & with overall thickness  0.039
+ Details of opaque construction: air_gap_extr linked to air_gap_ext & with overall thickness  0.039
  
- Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
-      |db  |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
- Ext   121   38.0     0.410  1200.   840. 0.90 0.80    30.  0.09 Lightweight concrete screed : Lightweight concrete screed
- Int    42    1.0    50.000  7800.   502. 0.12 0.20 19200.  0.00 Steel : Steel
+ Layer|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
+      |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
+ Ext    38.0     0.410  1200.   840. 0.90 0.80    30.  0.09 Lightweight concrete screed : Lightweight concrete screed
+ Int     1.0    50.000  7800.   502. 0.12 0.20 19200.  0.00 Steel : Steel
  ISO 6946 U values (horiz/upward/downward heat flow)=  3.807  4.297  3.304 (partition)  2.835
  
 Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  3.67
@@ -1048,10 +1048,10 @@ Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  3.67
  
  Details of opaque construction: air_gap_int linked to air_gap_intr & with overall thickness  0.077
  
- Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
-      |db  |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
- Ext   211   67.0     0.040   250.   840. 0.90 0.30     4.  1.68 Glasswool : Glasswool
- Int   103   10.0     0.180   800.   837. 0.91 0.60     9.  0.06 Perlite plasterboard : Perlite plasterboard
+ Layer|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
+      |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
+ Ext    67.0     0.040   250.   840. 0.90 0.30     4.  1.68 Glasswool : Glasswool
+ Int    10.0     0.180   800.   837. 0.91 0.60     9.  0.06 Perlite plasterboard : Perlite plasterboard
  ISO 6946 U values (horiz/upward/downward heat flow)=  0.526  0.535  0.515 (partition)  0.502
  
 Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  0.52
@@ -1059,12 +1059,12 @@ Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  0.52
  Partition admittance Y=  0.91  w=  5.27 surface factor f=  0.99  phi=  0.42
  Total area of air_gap_int is      5.84
  
- Details of opaque construction: air_gap_intr linked to air_gap_int  & with overall thickness  0.077
+ Details of opaque construction: air_gap_intr linked to air_gap_int & with overall thickness  0.077
  
- Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
-      |db  |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
- Ext   103   10.0     0.180   800.   837. 0.91 0.60     9.  0.06 Perlite plasterboard : Perlite plasterboard
- Int   211   67.0     0.040   250.   840. 0.90 0.30     4.  1.68 Glasswool : Glasswool
+ Layer|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
+      |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
+ Ext    10.0     0.180   800.   837. 0.91 0.60     9.  0.06 Perlite plasterboard : Perlite plasterboard
+ Int    67.0     0.040   250.   840. 0.90 0.30     4.  1.68 Glasswool : Glasswool
  ISO 6946 U values (horiz/upward/downward heat flow)=  0.526  0.535  0.515 (partition)  0.502
  
 Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  0.52
@@ -1074,10 +1074,10 @@ Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  0.52
  
  Details of opaque construction: air_gap_ext linked to air_gap_extr & with overall thickness  0.039
  
- Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
-      |db  |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
- Ext    42    1.0    50.000  7800.   502. 0.12 0.20 19200.  0.00 Steel : Steel
- Int   121   38.0     0.410  1200.   840. 0.90 0.80    30.  0.09 Lightweight concrete screed : Lightweight concrete screed
+ Layer|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
+      |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
+ Ext     1.0    50.000  7800.   502. 0.12 0.20 19200.  0.00 Steel : Steel
+ Int    38.0     0.410  1200.   840. 0.90 0.80    30.  0.09 Lightweight concrete screed : Lightweight concrete screed
  ISO 6946 U values (horiz/upward/downward heat flow)=  3.807  4.297  3.304 (partition)  2.835
  
 Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  3.67
@@ -1085,12 +1085,12 @@ Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  3.67
  Partition admittance Y=  1.14  w=  5.44 surface factor f=  0.99  phi=  0.52
  Total area of air_gap_ext is      6.42
  
- Details of opaque construction: t_bridge linked to t_bridge_r   & with overall thickness  0.013
+ Details of opaque construction: t_bridge linked to t_bridge_r & with overall thickness  0.013
  
- Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
-      |db  |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
- Ext    42    3.0    50.000  7800.   502. 0.12 0.20 19200.  0.00 Steel : Steel
- Int   103   10.0     0.180   800.   837. 0.91 0.60     9.  0.06 Perlite plasterboard : Perlite plasterboard
+ Layer|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
+      |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
+ Ext     3.0    50.000  7800.   502. 0.12 0.20 19200.  0.00 Steel : Steel
+ Int    10.0     0.180   800.   837. 0.91 0.60     9.  0.06 Perlite plasterboard : Perlite plasterboard
  ISO 6946 U values (horiz/upward/downward heat flow)=  4.432  5.112  3.765 (partition)  3.168
  
 Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  4.24
@@ -1098,12 +1098,12 @@ Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  4.24
  Partition admittance Y=  0.40  w=  5.79 surface factor f=  1.00  phi=  0.18
  Total area of t_bridge is      0.58
  
- Details of opaque construction: t_bridge_r linked to t_bridge     & with overall thickness  0.013
+ Details of opaque construction: t_bridge_r linked to t_bridge & with overall thickness  0.013
  
- Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
-      |db  |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
- Ext   103   10.0     0.180   800.   837. 0.91 0.60     9.  0.06 Perlite plasterboard : Perlite plasterboard
- Int    42    3.0    50.000  7800.   502. 0.12 0.20 19200.  0.00 Steel : Steel
+ Layer|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
+      |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
+ Ext    10.0     0.180   800.   837. 0.91 0.60     9.  0.06 Perlite plasterboard : Perlite plasterboard
+ Int     3.0    50.000  7800.   502. 0.12 0.20 19200.  0.00 Steel : Steel
  ISO 6946 U values (horiz/upward/downward heat flow)=  4.432  5.112  3.765 (partition)  3.168
  
 Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  4.24
@@ -1113,9 +1113,9 @@ Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  4.24
  
  Details of opaque construction: collector and overall thickness  0.050
  
- Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
-      |db  |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
-    1  203   50.0     0.030    30.  1764. 0.90 0.50     5.  1.67 UF foam : UF foam
+ Layer|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
+      |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
+    1   50.0     0.030    30.  1764. 0.90 0.50     5.  1.67 UF foam : UF foam
  ISO 6946 U values (horiz/upward/downward heat flow)=  0.544  0.554  0.533 (partition)  0.519
  
 Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  0.54
