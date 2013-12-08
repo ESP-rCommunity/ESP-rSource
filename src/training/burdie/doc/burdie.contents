@@ -1,7 +1,7 @@
 Synopsis
  
 Synopsis of the model burdie house detailed model for moisture & IAQ defined
-in burdie.cfg generated on Sun Dec  8 13:53:10 2013. Notes associated with the
+in burdie.cfg generated on Sun Dec  8 15:07:48 2013. Notes associated with the
 model are in ../doc/burdie.notes
  
 The model is located at latitude   50.00 with a longitude difference of   0.00
@@ -32,7 +32,7 @@ An Integrated Performance View is incomplete or missing.
  
 Databases associated with the model:
  standard pressure distr: pressc.db1
- standard materials     : constr_db1.materialdb
+ standard materials     : material.db4.a
  constructions          : ../dbs/burdie.mdb
  standard plant comp    : plantc.db1
  standard event profiles: profiles.db1.a
@@ -207,6 +207,30 @@ ID Zone         Volume|          Surface
  10  2.16      0.  90. bed_2_r      OPAQUE   CEIL -     ceiling      ||< liv_r:bed_2
  11  4.18    180.   0. s_glaz       SC_8985_ VERT -     glazing      ||< external
  
+ Vertices ( index X Y Z) in the zone...
+vertex   1    2.10000    0.00000    0.00000   vertex  11    3.30000    2.10000    2.70000
+vertex   2    6.90000    0.00000    0.00000   vertex  12    2.30000    2.10000    2.70000
+vertex   3    6.90000    3.70000    0.00000   vertex  13    2.30000    0.00000    2.70000
+vertex   4    2.10000    3.70000    0.00000   vertex  14    3.30000    3.70000    2.70000
+vertex   5    2.10000    0.00000    2.70000   vertex  15    5.20000    3.70000    0.00000
+vertex   6    6.90000    0.00000    2.70000   vertex  16    5.20000    3.70000    2.70000
+vertex   7    6.90000    3.70000    2.70000   vertex  17    6.90000    3.10000    2.70000
+vertex   8    2.10000    3.70000    2.70000   vertex  18    3.40000    0.00000    0.40000
+vertex   9    2.10000    3.10000    2.70000   vertex  19    5.60000    0.00000    0.40000
+vertex  10    3.30000    3.10000    2.70000   vertex  20    5.60000    0.00000    2.30000
+                                              vertex  21    3.40000    0.00000    2.30000
+ Number of vertices followed by list of associated vert
+*edges,11,1,2,6,13,5,1,18,21,20,19,18   liv_ex_s
+*edges,5,2,3,7,17,6   liv_sim_e
+*edges,5,15,4,8,14,16   kitch_r
+*edges,5,4,1,5,9,8   hall_r
+*edges,4,9,10,14,8   bed_3_r
+*edges,5,4,15,3,2,1   floor
+*edges,6,9,5,13,12,11,10   hall_up_r
+*edges,6,11,12,13,6,17,10   bed_1_r
+*edges,4,3,15,16,7   store_r
+*edges,5,16,14,10,17,7   bed_2_r
+*edges,4,18,19,20,21   s_glaz
  
  Solar insolation focused on surface floor        (if shading not calculated).
  No shading analysis requested.
@@ -276,6 +300,28 @@ sunday     10 Equipt     equipment W   22-24      0.0      0.0       0.50       
   9  2.00    180.   0. front_door   OPAQUE   VERT -     door         ||< external
  10  1.43    270.   0. w_glaz       SC_8985_ VERT -     glazing      ||< external
  
+ Vertices ( index X Y Z) in the zone...
+vertex   1    0.00000    0.00000    0.00000   vertex  11    2.10000    3.70000    0.00000
+vertex   2    2.10000    0.00000    0.00000   vertex  12    2.10000    3.70000    2.70000
+vertex   3    2.10000    4.70000    0.00000   vertex  13    1.00000    0.00000    0.00000
+vertex   4    0.00000    4.70000    0.00000   vertex  14    2.00000    0.00000    0.00000
+vertex   5    0.00000    0.00000    2.70000   vertex  15    2.00000    0.00000    2.00000
+vertex   6    2.10000    0.00000    2.70000   vertex  16    1.00000    0.00000    2.00000
+vertex   7    2.10000    4.70000    2.70000   vertex  17    0.00000    4.40000    0.90000
+vertex   8    0.00000    4.70000    2.70000   vertex  18    0.00000    3.30000    0.90000
+vertex   9    0.00000    3.10000    2.70000   vertex  19    0.00000    3.30000    2.20000
+vertex  10    2.10000    3.10000    2.70000   vertex  20    0.00000    4.40000    2.20000
+ Number of vertices followed by list of associated vert
+*edges,8,1,13,16,15,14,2,6,5   hall_ex_s
+*edges,5,2,11,12,10,6   livrm_r
+*edges,4,3,4,8,7   bathrm_r
+*edges,11,4,1,5,9,8,4,17,20,19,18,17   hall_ex_w
+*edges,5,9,10,12,7,8   bed_3_r
+*edges,7,4,3,11,2,14,13,1   floor
+*edges,4,10,9,5,6   hall_up_r
+*edges,4,11,3,7,12   kitchrev
+*edges,4,13,14,15,16   front_door
+*edges,4,17,18,19,20   w_glaz
  
  Solar insolation focused on surface floor        (if shading not calculated).
  No shading analysis requested.
@@ -319,6 +365,30 @@ Daytype   Gain Label     Type    Unit Period Sensible  Latent     Radiant    Con
   7  1.76    360.   0. n_glaz       SC_8985_ VERT -     glazing      ||< external
   8  0.134     0.  90. air_gap_r    OPAQUE   CEIL -     ceiling      ||< xair_gap_r:bed_3_air_g
  
+ Vertices ( index X Y Z) in the zone...
+*vertex   1     0.00000     4.70000     0.00000
+*vertex   2     2.10000     4.70000     0.00000
+*vertex   3     2.10000     6.40000     0.00000
+*vertex   4     0.00000     6.40000     0.00000
+*vertex   5     0.00000     4.70000     2.70000
+*vertex   6     2.10000     4.70000     2.70000
+*vertex   7     2.10000     6.40000     2.70000
+*vertex   8     0.00000     6.40000     2.70000
+*vertex   9     2.00000     6.40000     0.70000
+*vertex  10     0.90000     6.40000     0.70000
+*vertex  11     0.90000     6.40000     2.30000
+*vertex  12     2.00000     6.40000     2.30000
+*vertex  13     0.00000     6.33600     2.70000
+*vertex  14     2.10000     6.33600     2.70000
+ Number of vertices followed by list of associated vert
+*edges,4,1,2,6,5   hall_r
+*edges,5,2,3,7,14,6   kitch_r
+*edges,10,3,4,8,7,3,9,12,11,10,9   bath_ex_n
+*edges,5,4,1,5,13,8   bath_ex_w
+*edges,4,5,6,14,13   bed_1_r
+*edges,4,4,3,2,1   floor
+*edges,4,9,10,11,12   n_glaz
+*edges,4,13,14,7,8   air_gap_r
  
  Solar insolation focused on surface floor        (if shading not calculated).
  No shading analysis requested.
@@ -370,6 +440,36 @@ sunday      3 Equipt     equipment W    9-24      0.0      0.0       0.50       
   9  3.52    360.   0. n_glaz       SC_8985_ VERT -     glazing      ||< external
  10  0.077     0.  90. xfirst       OPAQUE   CEIL -     ceiling      ||< first:bed_3_air_g
  
+ Vertices ( index X Y Z) in the zone...
+*vertex   1     2.10000     3.70000     0.00000
+*vertex   2     5.20000     3.70000     0.00000
+*vertex   3     5.20000     6.40000     0.00000
+*vertex   4     2.10000     6.40000     0.00000
+*vertex   5     2.10000     3.70000     2.70000
+*vertex   6     5.20000     3.70000     2.70000
+*vertex   7     5.20000     6.40000     2.70000
+*vertex   8     2.10000     6.40000     2.70000
+*vertex   9     2.10000     4.70000     0.00000
+*vertex  10     2.10000     4.70000     2.70000
+*vertex  11     3.30000     3.70000     2.70000
+*vertex  12     3.30000     6.40000     2.70000
+*vertex  13     5.10000     6.40000     0.70000
+*vertex  14     2.90000     6.40000     0.70000
+*vertex  15     2.90000     6.40000     2.30000
+*vertex  16     5.10000     6.40000     2.30000
+*vertex  17     2.10000     6.33600     2.70000
+*vertex  18     3.30000     6.33600     2.70000
+ Number of vertices followed by list of associated vert
+*edges,5,1,2,6,11,5   liv_r
+*edges,4,2,3,7,6   store_r
+*edges,11,3,4,8,12,7,3,13,16,15,14,13   kitch_ex_n
+*edges,4,9,1,5,10   hall_r
+*edges,5,11,6,7,12,18   bed_2_r
+*edges,5,4,3,2,1,9   floor
+*edges,5,4,9,10,17,8   bathrm_r
+*edges,5,5,11,18,17,10   bed_1_r
+*edges,4,13,14,15,16   n_glaz
+*edges,4,8,17,18,12   xfirst
  
  Solar insolation focused on surface floor        (if shading not calculated).
  No shading analysis requested.
@@ -438,6 +538,27 @@ sunday     10 Equipt     equipment W   18-24      0.0      0.0       0.50       
   6  4.59      0. -90. floor        OPAQUE   FLOR -     grnd_floor   ||< ground profile  1
   7  2.00      0.   0. back_door    OPAQUE   VERT -     door         ||< external
  
+ Vertices ( index X Y Z) in the zone...
+*vertex   1     5.20000     3.70000     0.00000
+*vertex   2     6.90000     3.70000     0.00000
+*vertex   3     6.90000     6.40000     0.00000
+*vertex   4     5.20000     6.40000     0.00000
+*vertex   5     5.20000     3.70000     2.70000
+*vertex   6     6.90000     3.70000     2.70000
+*vertex   7     6.90000     6.40000     2.70000
+*vertex   8     5.20000     6.40000     2.70000
+*vertex   9     6.50000     6.40000     0.00000
+*vertex  10     5.50000     6.40000     0.00000
+*vertex  11     5.50000     6.40000     2.00000
+*vertex  12     6.50000     6.40000     2.00000
+ Number of vertices followed by list of associated vert
+*edges,4,1,2,6,5   liv_r
+*edges,4,2,3,7,6   store_sim_e
+*edges,8,3,9,12,11,10,4,8,7   store_n_ex
+*edges,4,4,1,5,8   kitch_r
+*edges,4,5,6,7,8   bed_2_r
+*edges,6,4,10,9,3,2,1   floor
+*edges,4,9,10,11,12   back_door
  
  Solar insolation focused on surface floor        (if shading not calculated).
  No shading analysis requested.
@@ -478,6 +599,29 @@ Daytype   Gain Label     Type    Unit Period Sensible  Latent     Radiant    Con
  10  0.402   180.   0. loft         OPAQUE   VERT -     ext_wall_up  ||< hallup_sof:loft
  11  1.54    180.   0. s_glaz       SC_8985_ VERT -     glazing      ||< external
  
+ Vertices ( index X Y Z) in the zone...
+vertex   1    0.00000    0.00000    2.70000   vertex  11    3.30000    3.10000    5.10000
+vertex   2    2.30000    0.00000    2.70000   vertex  12    0.00000    3.10000    5.10000
+vertex   3    2.30000    2.10000    2.70000   vertex  13    2.30000    0.00000    4.92500
+vertex   4    3.30000    2.10000    2.70000   vertex  14    0.00000    0.00000    4.92500
+vertex   5    3.30000    3.10000    2.70000   vertex  15    2.10000    0.00000    2.70000
+vertex   6    0.00000    3.10000    2.70000   vertex  16    2.10000    3.10000    2.70000
+vertex   7    0.00000    0.00000    5.10000   vertex  17    1.00000    0.00000    3.40000
+vertex   8    2.30000    0.00000    5.10000   vertex  18    2.10000    0.00000    3.40000
+vertex   9    2.30000    2.10000    5.10000   vertex  19    2.10000    0.00000    4.80000
+vertex  10    3.30000    2.10000    5.10000   vertex  20    1.00000    0.00000    4.80000
+ Number of vertices followed by list of associated vert
+*edges,11,1,15,2,13,14,1,17,20,19,18,17   hallup_ex_s
+*edges,5,2,3,9,8,13   bed_1_r
+*edges,4,3,4,10,9   bed_1_r2
+*edges,4,4,5,11,10   bed_1_r3
+*edges,5,5,16,6,12,11   bed_1
+*edges,5,6,1,14,7,12   hallup_ex_w
+*edges,6,7,8,9,10,11,12   ceil
+*edges,4,1,6,16,15   hall_r
+*edges,6,15,16,5,4,3,2   liv_r
+*edges,4,14,13,8,7   loft
+*edges,4,17,18,19,20   s_glaz
  
  All surfaces will receive diffuse insolation (if shading not calculated).
  No shading analysis requested.
@@ -528,6 +672,36 @@ sunday      3 Equipt     equipment W   23-24      0.0      0.0       0.50       
   9  0.805   180.   0. loft_s_r     OPAQUE   VERT -     ext_wall_up  ||< bed1_sof:loft
  10  3.30    180.   0. s_glaz       SC_8985_ VERT -     glazing      ||< external
  
+ Vertices ( index X Y Z) in the zone...
+*vertex   1     2.30000     0.00000     2.70000
+*vertex   2     6.90000     0.00000     2.70000
+*vertex   3     6.90000     3.10000     2.70000
+*vertex   4     3.30000     3.10000     2.70000
+*vertex   5     3.30000     2.10000     2.70000
+*vertex   6     2.30000     2.10000     2.70000
+*vertex   7     2.30000     0.00000     5.10000
+*vertex   8     6.90000     0.00000     5.10000
+*vertex   9     6.90000     3.10000     5.10000
+*vertex  10     3.30000     3.10000     5.10000
+*vertex  11     3.30000     2.10000     5.10000
+*vertex  12     2.30000     2.10000     5.10000
+*vertex  13     2.30000     0.00000     4.92500
+*vertex  14     6.90000     0.00000     4.92500
+*vertex  15     3.40000     0.00000     3.40000
+*vertex  16     5.60000     0.00000     3.40000
+*vertex  17     5.60000     0.00000     4.90000
+*vertex  18     3.40000     0.00000     4.90000
+ Number of vertices followed by list of associated vert
+*edges,10,1,2,14,13,1,15,18,17,16,15   bed1_ex_s
+*edges,5,2,3,9,8,14   bed1_sim_e
+*edges,4,3,4,10,9   bed_2_r
+*edges,4,4,5,11,10   hallup_r_1
+*edges,4,5,6,12,11   hallup_r_2
+*edges,5,6,1,13,7,12   hallup_r_3
+*edges,6,7,8,9,10,11,12   loft_r
+*edges,6,6,5,4,3,2,1   liv_r
+*edges,4,13,14,8,7   loft_s_r
+*edges,4,15,16,17,18   s_glaz
  
  Solar insolation focused on surface liv_r        (if shading not calculated).
  No shading analysis requested.
@@ -577,6 +751,31 @@ sunday      2 Occupt     people    W    7-24      0.0      0.0       0.50       
  11  0.142   270.   0. xSurf-10     OPAQUE   VERT -     partition    ||< Surf-10:bed_3_air_g
  12  0.011   270.   0. xbed_2_r     OPAQUE   VERT -     partition    ||< bed_2_r:t_bridge
  
+ Vertices ( index X Y Z) in the zone...
+vertex   1    3.30000    3.10000    2.70000   vertex  11    5.20000    3.70000    2.70000
+vertex   2    6.90000    3.10000    2.70000   vertex  12    6.90000    3.70000    2.70000
+vertex   3    6.90000    6.40000    2.70000   vertex  13    5.20000    6.40000    2.70000
+vertex   4    3.30000    6.40000    2.70000   vertex  14    3.30000    3.70000    2.70000
+vertex   5    3.30000    3.10000    5.10000   vertex  15    5.60000    6.40000    3.40000
+vertex   6    6.90000    3.10000    5.10000   vertex  16    3.40000    6.40000    3.40000
+vertex   7    6.90000    6.40000    5.10000   vertex  17    3.40000    6.40000    4.90000
+vertex   8    3.30000    6.40000    5.10000   vertex  18    5.60000    6.40000    4.90000
+vertex   9    6.90000    6.40000    4.92500   vertex  19    3.30000    6.33600    4.92500
+vertex  10    3.30000    6.40000    4.92500   vertex  20    3.30000    6.33600    2.70000
+                                              vertex  21    3.30000    6.33600    5.10000
+ Number of vertices followed by list of associated vert
+*edges,4,1,2,6,5   bed1_r
+*edges,6,2,12,3,9,7,6   bed2_sim_e
+*edges,11,3,13,4,10,9,3,15,18,17,16,15   bed2_ex_n
+*edges,6,20,14,1,5,21,19   bed_3_r
+*edges,5,5,6,7,8,21   loft_r
+*edges,5,14,11,12,2,1   liv_r
+*edges,4,7,9,10,8   loft_n_r
+*edges,4,12,11,13,3   store_r
+*edges,5,11,14,20,4,13   kitch_r
+*edges,4,15,16,17,18   n_glaz
+*edges,4,19,10,4,20   xSurf-10
+*edges,4,10,19,21,8   xbed_2_r
  
  Solar insolation focused on surface liv_r        (if shading not calculated).
  No shading analysis requested.
@@ -620,6 +819,32 @@ Daytype   Gain Label     Type    Unit Period Sensible  Latent     Radiant    Con
  11  1.50      0.   0. n_glaz       SC_8985_ VERT -     glazing      ||< external
  12  1.65    270.   0. w_glaz       SC_8985_ VERT -     glazing      ||< external
  
+ Vertices ( index X Y Z) in the zone...
+vertex   1    0.00000    3.10000    2.70000   vertex  13    3.30000    3.70000    2.70000
+vertex   2    3.30000    3.10000    2.70000   vertex  14    2.10000    3.70000    2.70000
+vertex   3    3.30000    6.33200    2.70000   vertex  15    3.30000    6.33200    4.92500
+vertex   4    0.00000    6.33200    2.70000   vertex  16    0.00000    6.33200    4.92500
+vertex   5    0.00000    3.10000    5.10000   vertex  17    2.10000    6.33200    3.40000
+vertex   6    3.30000    3.10000    5.10000   vertex  18    1.10000    6.33200    3.40000
+vertex   7    3.30000    6.33200    5.10000   vertex  19    1.10000    6.33200    4.90000
+vertex   8    0.00000    6.33200    5.10000   vertex  20    2.10000    6.33200    4.90000
+vertex   9    0.00000    4.70000    2.70000   vertex  21    0.00000    4.60000    3.40000
+vertex  10    2.10000    4.70000    2.70000   vertex  22    0.00000    3.50000    3.40000
+vertex  11    2.10000    6.33200    2.70000   vertex  23    0.00000    3.50000    4.90000
+vertex  12    2.10000    3.10000    2.70000   vertex  24    0.00000    4.60000    4.90000
+ Number of vertices followed by list of associated vert
+*edges,5,1,12,2,6,5   hallup_r
+*edges,6,2,13,3,15,7,6   bed_2_r
+*edges,11,3,11,4,16,15,3,17,20,19,18,17   bed3_ex_n
+*edges,12,1,5,8,16,4,9,1,21,24,23,22,21   bed3_ex_w
+*edges,4,5,6,7,8   loft_r
+*edges,5,13,14,10,11,3   kitch_r
+*edges,4,10,9,4,11   bath_r
+*edges,5,12,1,9,10,14   hall_r
+*edges,4,2,12,14,13   liv_r
+*edges,4,15,16,8,7   loft_n_r
+*edges,4,17,18,19,20   n_glaz
+*edges,4,21,22,23,24   w_glaz
  
  Solar insolation focused on surface kitch_r      (if shading not calculated).
  No shading analysis requested.
@@ -663,6 +888,22 @@ sunday      3 Lights     lighting  W    0-24      0.0      0.0       0.70       
   5  0.211     0.  90. loft_up      OPAQUE   CEIL -     ceil_loft    ||< t_bridge:loft
   6  0.211     0. -90. bedroom      OPAQUE   FLOR -     steel_sheet  ||< xbedroom:bed_3_air_g
  
+ Vertices ( index X Y Z) in the zone...
+*vertex   1     0.00000     6.33600     4.92500
+*vertex   2     3.30000     6.33600     4.92500
+*vertex   3     3.30000     6.40000     4.92500
+*vertex   4     0.00000     6.40000     4.92500
+*vertex   5     0.00000     6.33600     5.10000
+*vertex   6     3.30000     6.33600     5.10000
+*vertex   7     3.30000     6.40000     5.10000
+*vertex   8     0.00000     6.40000     5.10000
+ Number of vertices followed by list of associated vert
+*edges,4,1,2,6,5   bed_3_r
+*edges,4,2,3,7,6   bed_2_r
+*edges,4,3,4,8,7   loft_n_r
+*edges,4,4,1,5,8   west_ext
+*edges,4,5,6,7,8   loft_up
+*edges,4,1,4,3,2   bedroom
  
  All surfaces will receive diffuse insolation (if shading not calculated).
  No shading analysis requested.
@@ -712,6 +953,45 @@ Daytype   Gain Label     Type    Unit Period Sensible  Latent     Radiant    Con
  19  0.100    90.   0. coll-w       OPAQUE   VERT -     door         ||< xcoll-w:collector
  20  0.125     0.  23. coll-dn      OPAQUE   SLOP -     door         ||< xcoll-dn:collector
  
+ Vertices ( index X Y Z) in the zone...
+vertex   1    0.00000   -0.48000    4.92500   vertex  17    0.00000    6.88000    4.92500
+vertex   2    6.90000   -0.48000    4.92500   vertex  18    6.90000    6.88000    4.92500
+vertex   3    6.90000    0.00000    4.92500   vertex  19    0.00000    3.45000    6.60000
+vertex   4    0.00000    0.00000    4.92500   vertex  20    6.90000    3.45000    6.60000
+vertex   5    0.00000    0.00000    5.10000   vertex  21    3.30000    6.40000    4.92500
+vertex   6    2.30000    0.00000    4.92500   vertex  22    0.00000    6.40000    4.92500
+vertex   7    2.30000    0.00000    5.10000   vertex  23    6.90000    6.40000    4.92500
+vertex   8    6.90000    0.00000    5.10000   vertex  24    3.30000    6.33600    5.10000
+vertex   9    2.30000    2.10000    5.10000   vertex  25    0.00000    6.33500    5.10000
+vertex  10    3.30000    2.10000    5.10000   vertex  26    1.50000    0.89990    5.51312
+vertex  11    3.30000    3.10000    5.10000   vertex  27    4.00000    0.89990    5.51312
+vertex  12    0.00000    3.10000    5.10000   vertex  28    4.00000    2.73976    6.29729
+vertex  13    6.90000    3.10000    5.10000   vertex  29    1.50000    2.73976    6.29729
+vertex  14    3.30000    6.40000    5.10000   vertex  30    1.50000    0.91990    5.46712
+vertex  15    0.00000    6.40000    5.10000   vertex  31    4.00000    0.91990    5.46712
+vertex  16    6.90000    6.40000    5.10000   vertex  32    4.00000    2.75976    6.25129
+                                              vertex  33    1.50000    2.75976    6.25129
+ Number of vertices followed by list of associated vert
+*edges,5,2,1,4,6,3   soffit_s
+*edges,4,5,7,6,4   hallup_sof
+*edges,4,7,8,3,6   bed1_sof
+*edges,6,7,5,12,11,10,9   hallup
+*edges,6,8,7,9,10,11,13   bed_1
+*edges,4,11,12,25,24   bed3
+*edges,5,13,11,24,14,16   bed2
+*edges,4,22,21,14,15   bed3_sof
+*edges,4,23,16,14,21   bed2_sof
+*edges,5,17,18,23,21,22   soffit_n
+*edges,10,1,2,20,19,1,26,29,28,27,26   roof_s
+*edges,4,17,19,20,18   roof_n
+*edges,9,1,19,17,22,15,25,12,5,4   roof_v_ext
+*edges,8,2,3,8,13,16,23,18,20   Surf-14
+*edges,4,15,14,24,25   t_bridge
+*edges,4,30,31,32,33   xcollector
+*edges,4,31,27,28,32   coll-e
+*edges,4,32,28,29,33   coll-up
+*edges,4,29,26,30,33   coll-w
+*edges,4,26,27,31,30   coll-dn
  
  All surfaces will receive diffuse insolation (if shading not calculated).
  No shading analysis requested.
@@ -747,6 +1027,22 @@ weekday     1 Occupt     people    W    0-24      0.0      0.0       0.50       
   5  0.100   270.  -0. xcoll-w      OPAQUE   VERT -     door         ||< coll-w:loft
   6  0.125   180. -23. xcoll-dn     OPAQUE   SLOP -     door         ||< coll-dn:loft
  
+ Vertices ( index X Y Z) in the zone...
+*vertex   1     1.50000     0.90000     5.51300
+*vertex   2     4.00000     0.90000     5.51300
+*vertex   3     4.00000     2.74000     6.29700
+*vertex   4     1.50000     2.74000     6.29700
+*vertex   5     1.50000     0.91990     5.46712
+*vertex   6     4.00000     0.91990     5.46712
+*vertex   7     4.00000     2.75976     6.25129
+*vertex   8     1.50000     2.75976     6.25129
+ Number of vertices followed by list of associated vert
+*edges,4,1,2,3,4   first
+*edges,4,6,5,8,7   xxcollector
+*edges,4,2,6,7,3   xcoll-e
+*edges,4,3,7,8,4   xcoll-up
+*edges,4,1,4,8,5   xcoll-w
+*edges,4,2,1,5,6   xcoll-dn
  
  All surfaces will receive diffuse insolation (if shading not calculated).
  No shading analysis requested.
@@ -786,6 +1082,37 @@ Daytype   Gain Label     Type    Unit Period Sensible  Latent     Radiant    Con
  10  0.142    90.   0. Surf-10      OPAQUE   VERT -     partition    ||< xSurf-10:bed_2
  11  0.134     0. -90. xair_gap_r   OPAQUE   FLOR -     ceiling_rev  ||< air_gap_r:bathroom
  
+ Vertices ( index X Y Z) in the zone...
+*vertex   1     0.00000     6.33600     2.70000
+*vertex   2     0.00000     6.40000     2.70000
+*vertex   3     3.30000     6.33600     2.70000
+*vertex   4     0.00000     6.33600     4.92500
+*vertex   5     3.30000     6.33600     4.92500
+*vertex   6     2.10000     6.33600     3.40000
+*vertex   7     2.10000     6.33600     4.90000
+*vertex   8     1.10000     6.33600     4.90000
+*vertex   9     1.10000     6.33600     3.40000
+*vertex  10     3.30000     6.40000     2.70000
+*vertex  11     2.10000     6.40000     3.40000
+*vertex  12     1.10000     6.40000     3.40000
+*vertex  13     1.10000     6.40000     4.90000
+*vertex  14     2.10000     6.40000     4.90000
+*vertex  15     3.30000     6.40000     4.92500
+*vertex  16     0.00000     6.40000     4.92500
+*vertex  17     2.10000     6.33600     2.70000
+*vertex  18     2.10000     6.40000     2.70000
+ Number of vertices followed by list of associated vert
+*edges,4,17,18,10,3   first
+*edges,11,3,6,9,8,7,6,3,5,4,1,17   xbed3_ex_n
+*edges,11,10,11,14,13,12,11,10,18,2,16,15   xxbed3_ex_n
+*edges,4,16,4,5,15   xbedroom
+*edges,4,7,8,13,14   Surf-5
+*edges,4,2,1,4,16   gap_ext_w
+*edges,4,6,11,12,9   Surf-7
+*edges,4,11,6,7,14   Surf-8
+*edges,4,13,8,9,12   Surf-9
+*edges,4,15,5,3,10   Surf-10
+*edges,4,17,1,2,18   xair_gap_r
  
  All surfaces will receive diffuse insolation (if shading not calculated).
  No shading analysis requested.
@@ -820,7 +1147,7 @@ Daytype   Gain Label     Type    Unit Period Sensible  Latent     Radiant    Con
  
  Layer|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
       |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
-    1    4.0     0.760  2710.   837. 0.83 0.05 19200.  0.01 Plate glass : Plate glass with placeholder single layer optics
+    1    4.0     0.760  2710.   837. 0.83 0.05 19200.  0.01 plate glass : Plate glass with placeholder single layer optics
  ISO 6946 U values (horiz/upward/downward heat flow)=  5.706  6.884  4.645 (partition)  3.770
  
 Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  5.40
@@ -839,11 +1166,11 @@ Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  5.40
  
  Layer|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
       |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
- Ext    38.0     0.410  1200.   840. 0.90 0.80    30.  0.09 Lightweight concrete screed : Lightweight concrete screed
+ Ext    38.0     0.410  1200.   840. 0.90 0.80    30.  0.09 ltwt_conc_screed : Lightweight conc screed (inorganic-porous)
     2   32.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
-    3   67.0     0.040   250.   840. 0.90 0.30     4.  1.68 Glasswool : Glasswool
+    3   67.0     0.040   250.   840. 0.90 0.30     4.  1.68 glasswool : Glasswool (generic) (non-hygroscopic)
     4   32.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
- Int    10.0     0.180   800.   837. 0.91 0.60     9.  0.06 Perlite plasterboard : Perlite plasterboard
+ Int    10.0     0.180   800.   837. 0.91 0.60     9.  0.06 perlite plasterboard : Perlite plasterboard (inorganic-porous)
  ISO 6946 U values (horiz/upward/downward heat flow)=  0.429  0.434  0.421 (partition)  0.413
  
 Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  0.43
@@ -855,9 +1182,9 @@ Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  0.43
  
  Layer|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
       |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
- Ext    12.5     0.180   800.   837. 0.91 0.60     9.  0.07 Perlite plasterboard : Perlite plasterboard
-    2  150.0     0.440  1500.   650. 0.90 0.65    15.  0.34 Breeze block : Breeze block
- Int    12.0     0.180   800.   837. 0.91 0.60     9.  0.07 Perlite plasterboard : Perlite plasterboard
+ Ext    12.5     0.180   800.   837. 0.91 0.60     9.  0.07 perlite plasterboard : Perlite plasterboard (inorganic-porous)
+    2  150.0     0.440  1500.   650. 0.90 0.65    15.  0.34 breeze block : Breeze block (inorganic-porous)
+ Int    12.0     0.180   800.   837. 0.91 0.60     9.  0.07 perlite plasterboard : Perlite plasterboard (inorganic-porous)
  ISO 6946 U values (horiz/upward/downward heat flow)=  1.546  1.621  1.456 (partition)  1.357
  
 Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  1.52
@@ -869,7 +1196,7 @@ Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  1.52
  
  Layer|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
       |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
-    1   30.0     0.130   630.  2760. 0.90 0.65    12.  0.23 Softwood : Softwood
+    1   30.0     0.130   630.  2760. 0.90 0.65    12.  0.23 softwood : Softwood (generic)
  ISO 6946 U values (horiz/upward/downward heat flow)=  2.495  2.697  2.269 (partition)  2.038
  
 Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  2.43
@@ -881,12 +1208,12 @@ Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  2.43
  
  Layer|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
       |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
- Ext   250.0     1.280  1460.   879. 0.90 0.85     5.  0.20 Common earth : Common earth
-    2  150.0     0.520  2050.   184. 0.90 0.85     2.  0.29 Gravel based : Gravel based
-    3  150.0     1.400  2100.   653. 0.90 0.65    19.  0.11 Heavy mix concrete : Heavy mix concrete
+ Ext   250.0     1.280  1460.   879. 0.90 0.85     5.  0.20 earth std : Common_earth
+    2  150.0     0.520  2050.   184. 0.90 0.85     2.  0.29 gravel based : Gravel based (non-hygroscopic)
+    3  150.0     1.400  2100.   653. 0.90 0.65    19.  0.11 heavy mix concrete : Heavy mix concrete
     4   50.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
-    5   19.0     0.150   800.  2093. 0.91 0.65    96.  0.13 Chipboard : Chipboard
- Int     6.0     0.060   186.  1360. 0.90 0.60    10.  0.10 Wilton : Wilton
+    5   19.0     0.150   800.  2093. 0.91 0.65    96.  0.13 chipboard : Chipboard
+ Int     6.0     0.060   186.  1360. 0.90 0.60    10.  0.10 Wilton : Wilton weave wool carpet (organic-hygroscopic)
  ISO 6946 U values (horiz/upward/downward heat flow)=  0.864  0.887  0.835 (partition)  0.802
  
 Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  0.86
@@ -898,8 +1225,8 @@ Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  0.86
  
  Layer|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
       |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
- Ext     3.0    50.000  7800.   502. 0.12 0.20 19200.  0.00 Steel : Steel
- Int     1.0     0.160  1379.  1004. 0.90 0.60    70.  0.01 PVC : PVC
+ Ext     3.0    50.000  7800.   502. 0.12 0.20 19200.  0.00 steel : Steel
+ Int     1.0     0.160  1379.  1004. 0.90 0.60    70.  0.01 PVC : PVC (non-hygroscopic)
  ISO 6946 U values (horiz/upward/downward heat flow)=  5.672  6.835  4.623 (partition)  3.755
  
 Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  5.37
@@ -911,9 +1238,9 @@ Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  5.37
  
  Layer|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
       |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
- Ext    13.0     0.420  1200.   837. 0.91 0.50    11.  0.03 Gypsum plaster : Gypsum plaster
+ Ext    13.0     0.420  1200.   837. 0.91 0.50    11.  0.03 gypsum plaster : Gypsum based plaster (inorganic-porous)
     2   57.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
- Int    13.0     0.420  1200.   837. 0.91 0.50    11.  0.03 Gypsum plaster : Gypsum plaster
+ Int    13.0     0.420  1200.   837. 0.91 0.50    11.  0.03 gypsum plaster : Gypsum based plaster (inorganic-porous)
  ISO 6946 U values (horiz/upward/downward heat flow)=  2.488  2.689  2.263 (partition)  2.033
  
 Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  2.43
@@ -925,9 +1252,9 @@ Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  2.43
  
  Layer|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
       |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
- Ext    10.0     0.030   290.  2000. 0.90 0.60     8.  0.33 Ceiling (mineral) : Ceiling (mineral)
+ Ext    10.0     0.030   290.  2000. 0.90 0.60     8.  0.33 ceiling mineral : Ceiling acoustic tile (mineral fibre based)
     2  100.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
- Int    15.0     0.140   600.  1210. 0.91 0.65    14.  0.11 Flooring : Flooring
+ Int    15.0     0.140   600.  1210. 0.91 0.65    14.  0.11 flooring : Flooring (source does not clarify what it is)
  ISO 6946 U values (horiz/upward/downward heat flow)=  1.281  1.332  1.219 (partition)  1.149
  
 Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  1.27
@@ -939,12 +1266,12 @@ Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  1.27
  
  Layer|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
       |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
- Ext     1.0    50.000  7800.   502. 0.12 0.20 19200.  0.00 Steel : Steel
-    2   38.0     0.410  1200.   840. 0.90 0.80    30.  0.09 Lightweight concrete screed : Lightweight concrete screed
+ Ext     1.0    50.000  7800.   502. 0.12 0.20 19200.  0.00 steel : Steel
+    2   38.0     0.410  1200.   840. 0.90 0.80    30.  0.09 ltwt_conc_screed : Lightweight conc screed (inorganic-porous)
     3   32.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
-    4   67.0     0.040   250.   840. 0.90 0.30     4.  1.68 Glasswool : Glasswool
+    4   67.0     0.040   250.   840. 0.90 0.30     4.  1.68 glasswool : Glasswool (generic) (non-hygroscopic)
     5   32.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
- Int    10.0     0.180   800.   837. 0.91 0.60     9.  0.06 Perlite plasterboard : Perlite plasterboard
+ Int    10.0     0.180   800.   837. 0.91 0.60     9.  0.06 perlite plasterboard : Perlite plasterboard (inorganic-porous)
  ISO 6946 U values (horiz/upward/downward heat flow)=  0.429  0.434  0.421 (partition)  0.413
  
 Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  0.43
@@ -956,8 +1283,8 @@ Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  0.43
  
  Layer|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
       |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
- Ext    15.0     0.040   250.   840. 0.90 0.30     4.  0.38 Glasswool : Glasswool
- Int    10.0     0.180   800.   837. 0.91 0.60     9.  0.06 Perlite plasterboard : Perlite plasterboard
+ Ext    15.0     0.040   250.   840. 0.90 0.30     4.  0.38 glasswool : Glasswool (generic) (non-hygroscopic)
+ Int    10.0     0.180   800.   837. 0.91 0.60     9.  0.06 perlite plasterboard : Perlite plasterboard (inorganic-porous)
  ISO 6946 U values (horiz/upward/downward heat flow)=  1.665  1.753  1.561 (partition)  1.448
  
 Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  1.64
@@ -969,12 +1296,12 @@ Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  1.64
  
  Layer|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
       |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
- Ext    10.0     0.180   800.   837. 0.91 0.60     9.  0.06 Perlite plasterboard : Perlite plasterboard
+ Ext    10.0     0.180   800.   837. 0.91 0.60     9.  0.06 perlite plasterboard : Perlite plasterboard (inorganic-porous)
     2   32.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
-    3   67.0     0.040   250.   840. 0.90 0.30     4.  1.68 Glasswool : Glasswool
+    3   67.0     0.040   250.   840. 0.90 0.30     4.  1.68 glasswool : Glasswool (generic) (non-hygroscopic)
     4   32.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
-    5   38.0     0.410  1200.   840. 0.90 0.80    30.  0.09 Lightweight concrete screed : Lightweight concrete screed
- Int     1.0    50.000  7800.   502. 0.12 0.20 19200.  0.00 Steel : Steel
+    5   38.0     0.410  1200.   840. 0.90 0.80    30.  0.09 ltwt_conc_screed : Lightweight conc screed (inorganic-porous)
+ Int     1.0    50.000  7800.   502. 0.12 0.20 19200.  0.00 steel : Steel
  ISO 6946 U values (horiz/upward/downward heat flow)=  0.429  0.434  0.421 (partition)  0.413
  
 Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  0.43
@@ -986,7 +1313,7 @@ Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  0.43
  
  Layer|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
       |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
-    1   15.0     0.150   800.  2093. 0.91 0.65    96.  0.10 Chipboard : Chipboard
+    1   15.0     0.150   800.  2093. 0.91 0.65    96.  0.10 chipboard : Chipboard
  ISO 6946 U values (horiz/upward/downward heat flow)=  3.704  4.167  3.226 (partition)  2.778
  
 Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  3.57
@@ -998,8 +1325,8 @@ Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  3.57
  
  Layer|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
       |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
- Ext    10.0     0.180   800.   837. 0.91 0.60     9.  0.06 Perlite plasterboard : Perlite plasterboard
- Int    15.0     0.040   250.   840. 0.90 0.30     4.  0.38 Glasswool : Glasswool
+ Ext    10.0     0.180   800.   837. 0.91 0.60     9.  0.06 perlite plasterboard : Perlite plasterboard (inorganic-porous)
+ Int    15.0     0.040   250.   840. 0.90 0.30     4.  0.38 glasswool : Glasswool (generic) (non-hygroscopic)
  ISO 6946 U values (horiz/upward/downward heat flow)=  1.665  1.753  1.561 (partition)  1.448
  
 Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  1.64
@@ -1011,7 +1338,7 @@ Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  1.64
  
  Layer|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
       |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
-    1    1.0    50.000  7800.   502. 0.12 0.20 19200.  0.00 Steel : Steel
+    1    1.0    50.000  7800.   502. 0.12 0.20 19200.  0.00 steel : Steel
  ISO 6946 U values (horiz/upward/downward heat flow)=  5.882  7.142  4.761 (partition)  3.846
  
 Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  5.55
@@ -1023,9 +1350,9 @@ Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  5.55
  
  Layer|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
       |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
- Ext    15.0     0.140   600.  1210. 0.91 0.65    14.  0.11 Flooring : Flooring
+ Ext    15.0     0.140   600.  1210. 0.91 0.65    14.  0.11 flooring : Flooring (source does not clarify what it is)
     2  100.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
- Int    10.0     0.030   290.  2000. 0.90 0.60     8.  0.33 Ceiling (mineral) : Ceiling (mineral)
+ Int    10.0     0.030   290.  2000. 0.90 0.60     8.  0.33 ceiling mineral : Ceiling acoustic tile (mineral fibre based)
  ISO 6946 U values (horiz/upward/downward heat flow)=  1.281  1.332  1.219 (partition)  1.149
  
 Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  1.27
@@ -1037,8 +1364,8 @@ Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  1.27
  
  Layer|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
       |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
- Ext    38.0     0.410  1200.   840. 0.90 0.80    30.  0.09 Lightweight concrete screed : Lightweight concrete screed
- Int     1.0    50.000  7800.   502. 0.12 0.20 19200.  0.00 Steel : Steel
+ Ext    38.0     0.410  1200.   840. 0.90 0.80    30.  0.09 ltwt_conc_screed : Lightweight conc screed (inorganic-porous)
+ Int     1.0    50.000  7800.   502. 0.12 0.20 19200.  0.00 steel : Steel
  ISO 6946 U values (horiz/upward/downward heat flow)=  3.807  4.297  3.304 (partition)  2.835
  
 Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  3.67
@@ -1050,8 +1377,8 @@ Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  3.67
  
  Layer|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
       |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
- Ext    67.0     0.040   250.   840. 0.90 0.30     4.  1.68 Glasswool : Glasswool
- Int    10.0     0.180   800.   837. 0.91 0.60     9.  0.06 Perlite plasterboard : Perlite plasterboard
+ Ext    67.0     0.040   250.   840. 0.90 0.30     4.  1.68 glasswool : Glasswool (generic) (non-hygroscopic)
+ Int    10.0     0.180   800.   837. 0.91 0.60     9.  0.06 perlite plasterboard : Perlite plasterboard (inorganic-porous)
  ISO 6946 U values (horiz/upward/downward heat flow)=  0.526  0.535  0.515 (partition)  0.502
  
 Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  0.52
@@ -1063,8 +1390,8 @@ Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  0.52
  
  Layer|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
       |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
- Ext    10.0     0.180   800.   837. 0.91 0.60     9.  0.06 Perlite plasterboard : Perlite plasterboard
- Int    67.0     0.040   250.   840. 0.90 0.30     4.  1.68 Glasswool : Glasswool
+ Ext    10.0     0.180   800.   837. 0.91 0.60     9.  0.06 perlite plasterboard : Perlite plasterboard (inorganic-porous)
+ Int    67.0     0.040   250.   840. 0.90 0.30     4.  1.68 glasswool : Glasswool (generic) (non-hygroscopic)
  ISO 6946 U values (horiz/upward/downward heat flow)=  0.526  0.535  0.515 (partition)  0.502
  
 Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  0.52
@@ -1076,8 +1403,8 @@ Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  0.52
  
  Layer|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
       |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
- Ext     1.0    50.000  7800.   502. 0.12 0.20 19200.  0.00 Steel : Steel
- Int    38.0     0.410  1200.   840. 0.90 0.80    30.  0.09 Lightweight concrete screed : Lightweight concrete screed
+ Ext     1.0    50.000  7800.   502. 0.12 0.20 19200.  0.00 steel : Steel
+ Int    38.0     0.410  1200.   840. 0.90 0.80    30.  0.09 ltwt_conc_screed : Lightweight conc screed (inorganic-porous)
  ISO 6946 U values (horiz/upward/downward heat flow)=  3.807  4.297  3.304 (partition)  2.835
  
 Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  3.67
@@ -1089,8 +1416,8 @@ Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  3.67
  
  Layer|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
       |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
- Ext     3.0    50.000  7800.   502. 0.12 0.20 19200.  0.00 Steel : Steel
- Int    10.0     0.180   800.   837. 0.91 0.60     9.  0.06 Perlite plasterboard : Perlite plasterboard
+ Ext     3.0    50.000  7800.   502. 0.12 0.20 19200.  0.00 steel : Steel
+ Int    10.0     0.180   800.   837. 0.91 0.60     9.  0.06 perlite plasterboard : Perlite plasterboard (inorganic-porous)
  ISO 6946 U values (horiz/upward/downward heat flow)=  4.432  5.112  3.765 (partition)  3.168
  
 Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  4.24
@@ -1102,8 +1429,8 @@ Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  4.24
  
  Layer|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
       |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
- Ext    10.0     0.180   800.   837. 0.91 0.60     9.  0.06 Perlite plasterboard : Perlite plasterboard
- Int     3.0    50.000  7800.   502. 0.12 0.20 19200.  0.00 Steel : Steel
+ Ext    10.0     0.180   800.   837. 0.91 0.60     9.  0.06 perlite plasterboard : Perlite plasterboard (inorganic-porous)
+ Int     3.0    50.000  7800.   502. 0.12 0.20 19200.  0.00 steel : Steel
  ISO 6946 U values (horiz/upward/downward heat flow)=  4.432  5.112  3.765 (partition)  3.168
  
 Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  4.24
@@ -1115,7 +1442,7 @@ Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  4.24
  
  Layer|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
       |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
-    1   50.0     0.030    30.  1764. 0.90 0.50     5.  1.67 UF foam : UF foam
+    1   50.0     0.030    30.  1764. 0.90 0.50     5.  1.67 UF foam : UF foam (non-hygroscopic)
  ISO 6946 U values (horiz/upward/downward heat flow)=  0.544  0.554  0.533 (partition)  0.519
  
 Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  0.54
