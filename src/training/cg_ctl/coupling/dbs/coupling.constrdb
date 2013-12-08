@@ -1,0 +1,57 @@
+# composite construction db defined in ../dbs/coupling.constrdb
+# based on materials db ../dbs/coupl_coef.materialdb
+# and based on CFClayers db /home/jon/esru_jwh/esp-r/databases/CFClayers.db1.a
+   10     # no of composites 
+# layers  description  type  optics name   symmetry tag
+    1    Floor         OPAQ  OPAQUE        SYMMETRIC     
+# material ref thickness (m) description & air gap R
+   32    0.2000  heavy mix concrete : Heavy mix concrete
+# layers  description  type  optics name   symmetry tag
+    3    dbl_gl_up     TRAN  DBL_glz_6nb1  SYMMETRIC     
+# material ref thickness (m) description & air gap R
+  242    0.0060  plate glass : Plate glass with placeholder single layer optics
+    0    0.0120  gap  0.430 0.430 0.430
+  242    0.0060  plate glass : Plate glass with placeholder single layer optics
+# layers  description  type  optics name   symmetry tag
+    1    Ceiling       OPAQ  OPAQUE        SYMMETRIC     
+# material ref thickness (m) description & air gap R
+   32    0.2000  heavy mix concrete : Heavy mix concrete
+# layers  description  type  optics name   symmetry tag
+    4    Facade_bot    OPAQ  OPAQUE        NONSYMMETRIC  
+# material ref thickness (m) description & air gap R
+  241    0.0060  glass block : Glass block with placeholder single layer optics
+    0    0.0050  gap  0.170 0.170 0.170
+  211    0.1150  glasswool : Glasswool (generic) (non-hygroscopic)
+  107    0.0100  gypsum plasterboard : Gypsum plasterboard (generic) (inorganic-porous)
+# layers  description  type  optics name   symmetry tag
+    4    Facade_top    OPAQ  OPAQUE        NONSYMMETRIC  
+# material ref thickness (m) description & air gap R
+   81    0.0750  sandstone : Sandstone
+    0    0.0500  gap  0.170 0.170 0.170
+  211    0.0500  glasswool : Glasswool (generic) (non-hygroscopic)
+   32    0.2750  heavy mix concrete : Heavy mix concrete
+# layers  description  type  optics name   symmetry tag
+    3    Frame         OPAQ  OPAQUE        SYMMETRIC     
+# material ref thickness (m) description & air gap R
+   43    0.0050  aluminium : Aluminium
+    0    0.0100  gap  0.170 0.170 0.170
+   43    0.0050  aluminium : Aluminium
+# layers  description  type  optics name   symmetry tag
+    2    Int_wall      OPAQ  OPAQUE        NONSYMMETRIC  
+# material ref thickness (m) description & air gap R
+    2    0.1500  breeze block : Breeze block (inorganic-porous)
+  103    0.0120  perlite plasterboard : Perlite plasterboard (inorganic-porous)
+# layers  description  type  optics name   symmetry tag
+    1    Light_sh_t    OPAQ  OPAQUE        SYMMETRIC     
+# material ref thickness (m) description & air gap R
+   43    0.0020  aluminium : Aluminium
+# layers  description  type  optics name   symmetry tag
+    3    dbl_glz_low   TRAN  DBL_glz_6nb2  SYMMETRIC     
+# material ref thickness (m) description & air gap R
+  242    0.0060  plate glass : Plate glass with placeholder single layer optics
+    0    0.0120  gap  0.430 0.430 0.430
+  242    0.0060  plate glass : Plate glass with placeholder single layer optics
+# layers  description  type  optics name   symmetry tag
+    1    Light_sh_b    OPAQ  OPAQUE        SYMMETRIC     
+# material ref thickness (m) description & air gap R
+   66    0.0100  cork board : Cork board
