@@ -1,7 +1,7 @@
 Synopsis
  
 Synopsis of the model Calculate shading for June only defined in shade.cfg
-generated on Wed Aug 29 21:25:13 2012. Notes associated with the model are in
+generated on Sun Dec  8 17:24:48 2013. Notes associated with the model are in
 ../doc/README
  
 The model is located at latitude   52.00 with a longitude difference of  -0.50
@@ -32,7 +32,7 @@ An Integrated Performance View is incomplete or missing.
  
 Databases associated with the model:
  standard pressure distr: pressc.db1
- standard materials     : constr_db1.materialdb
+ standard materials     : material.db4.a
  constructions          : ../databases/shade.constrdb
  standard plant comp    : plantc.db1
  standard event profiles: profiles.db1.a
@@ -57,8 +57,8 @@ ID Zone         Volume|          Surface
  area of 80.0m^2 & approx floor area of 16.0m^2
  test-1 describes a...
  There is 80.000m2 of exposed surface area, 48.000m2 of which is vertical.
- Outside walls are 400.00 % of floor area & avg U of 0.391 & UA of 25.036
- Flat roof is 100.00 % of floor area & avg U of 0.397 & UA of 6.3582
+ Outside walls are 400.00 % of floor area & average U of 0.391 & UA of 25.036
+ Flat roof is 100.00 % of floor area & average U of 0.397 & UA of 6.3582
  
  A summary of the surfaces in test-1( 1) follows:
  
@@ -93,8 +93,8 @@ Daytype    Period     Infiltration     Ventilation     From Source
 Notes:
 no operations notes (yet)
  
-Daytype   Gain Type    Period Sensible  Latent     Radiant    Convec
-          No.  label   Hours  Magn.(W)  Magn.(W)   Fraction   Fraction
+Daytype   Gain Label     Type    Unit Period Sensible  Latent     Radiant    Convec
+          No.                          Hours Magn.(W)  Magn.(W)   Fraction   Fraction
  
  ____________________________________________________________
  
@@ -103,8 +103,8 @@ Daytype   Gain Type    Period Sensible  Latent     Radiant    Convec
  area of 80.0m^2 & approx floor area of 16.0m^2
  test-2 describes a...
  There is 80.000m2 of exposed surface area, 48.000m2 of which is vertical.
- Outside walls are 400.00 % of floor area & avg U of 0.391 & UA of 25.036
- Flat roof is 100.00 % of floor area & avg U of 0.397 & UA of 6.3582
+ Outside walls are 400.00 % of floor area & average U of 0.391 & UA of 25.036
+ Flat roof is 100.00 % of floor area & average U of 0.397 & UA of 6.3582
  
  A summary of the surfaces in test-2( 2) follows:
  
@@ -137,8 +137,8 @@ Block X- Y- Z- coords DX- DY- DZ- values Orient Opacity
  area of 80.0m^2 & approx floor area of 16.0m^2
  test-3.5 describes a...
  There is 80.000m2 of exposed surface area, 48.000m2 of which is vertical.
- Outside walls are 400.00 % of floor area & avg U of 0.391 & UA of 25.036
- Flat roof is 100.00 % of floor area & avg U of 0.397 & UA of 6.3582
+ Outside walls are 400.00 % of floor area & average U of 0.391 & UA of 25.036
+ Flat roof is 100.00 % of floor area & average U of 0.397 & UA of 6.3582
  
  A summary of the surfaces in test-3.5( 3) follows:
  
@@ -175,8 +175,8 @@ Block X- Y- Z- coords DX- DY- DZ- values Orient Opacity
  area of 150.m^2 & approx floor area of 25.0m^2
  test-4 describes a...
  There is 150.00m2 of exposed surface area, 100.00m2 of which is vertical.
- Outside walls are 500.00 % of floor area & avg U of 0.391 & UA of 48.936
- Flat roof is 100.00 % of floor area & avg U of 0.397 & UA of 9.9347
+ Outside walls are 500.00 % of floor area & average U of 0.391 & UA of 48.936
+ Flat roof is 100.00 % of floor area & average U of 0.397 & UA of 9.9347
  
  A summary of the surfaces in test-4( 4) follows:
  
@@ -207,8 +207,8 @@ Block X- Y- Z- coords DX- DY- DZ- values Orient Opacity
  area of 150.m^2 & approx floor area of 25.0m^2
  test-6 describes a...
  There is 150.00m2 of exposed surface area, 100.00m2 of which is vertical.
- Outside walls are 500.00 % of floor area & avg U of 0.391 & UA of 48.936
- Flat roof is 100.00 % of floor area & avg U of 0.397 & UA of 9.9347
+ Outside walls are 500.00 % of floor area & average U of 0.391 & UA of 48.936
+ Flat roof is 100.00 % of floor area & average U of 0.397 & UA of 9.9347
  
  A summary of the surfaces in test-6( 5) follows:
  
@@ -239,20 +239,20 @@ Block X- Y- Z- coords DX- DY- DZ- values Orient Opacity
  In contact with ground 0.00m2.
  There is 540.00m2 of outside surface area, 344.00m2 of which is vertical.
  
- Outside walls are 451.02 % of floor area & avg U of 0.391 & UA of 172.98 & max MLC thickness 0.325
- Flat roof is 100.00 % of floor area & avg U of 0.397 & UA of 38.944
+ Outside walls are 451.02 % of floor area & average U of 0.391 & UA of 172.98 & max MLC thickness 0.325
+ Flat roof is 100.00 % of floor area & average U of 0.397 & UA of 38.944
  
  ____________________________________________________________
  Multi-layer constructions used:
  
  Details of opaque construction: extern_wall and overall thickness  0.325
  
- Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
-      |db  |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
- Ext     4  100.0     0.960  2000.   650. 0.90 0.93    25.  0.10 Outer leaf brick : Outer leaf brick
-    2  211   75.0     0.040   250.   840. 0.90 0.30     4.  1.88 Glasswool : Glasswool
-    3    0   50.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
- Int     2  100.0     0.440  1500.   650. 0.90 0.65    15.  0.23 Breeze block : Breeze block
+ Layer|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
+      |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
+ Ext   100.0     0.960  2000.   650. 0.90 0.93    25.  0.10 outer leaf brick : Outer leaf brick (inorganic-porous)
+    2   75.0     0.040   250.   840. 0.90 0.30     4.  1.88 glasswool : Glasswool (generic) (non-hygroscopic)
+    3   50.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
+ Int   100.0     0.440  1500.   650. 0.90 0.65    15.  0.23 breeze block : Breeze block (inorganic-porous)
  ISO 6946 U values (horiz/upward/downward heat flow)=  0.393  0.397  0.387 (partition)  0.379
  
 Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  0.39
