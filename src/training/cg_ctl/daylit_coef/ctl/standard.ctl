@@ -2,14 +2,14 @@ proj cntrl
 * Building
 no descrip
    1  # No. of functions
-* Control function
+* Control function    1
 # senses the temperature of the current zone.
     0    0    0    0  # sensor data
 # actuates air point of the current zone
     0    0    0  # actuator data
-    0 # No. day types
+    0 # day types follow calendar  3
     1  365  # valid Sat-01-Jan - Sat-31-Dec
-     3  # No. of periods in day
+     3  # No. of periods in day: weekdays    
     0    1   0.000  # ctl type, law (basic control), start @
       6.  # No. of data items
   20000.000 0.000 20000.000 0.000 12.000 100.000
@@ -20,12 +20,12 @@ no descrip
       6.  # No. of data items
   20000.000 0.000 20000.000 0.000 12.000 100.000
     1  365  # valid Sat-01-Jan - Sat-31-Dec
-     1  # No. of periods in day
+     1  # No. of periods in day: saturday    
     0    1   0.000  # ctl type, law (basic control), start @
       6.  # No. of data items
   20000.000 0.000 20000.000 0.000 12.000 100.000
     1  365  # valid Sat-01-Jan - Sat-31-Dec
-     1  # No. of periods in day
+     1  # No. of periods in day: sunday      
     0    1   0.000  # ctl type, law (basic control), start @
       6.  # No. of data items
   20000.000 0.000 20000.000 0.000 12.000 100.000
