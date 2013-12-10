@@ -340,6 +340,14 @@ C 'b' coefficient - fill gas specific heat
       REAL rim_spht_B
 
 C---------------------------------------------------------------------------------
+C Intenational Glazing Database ID (for type 0 (glazings) CFC layers)
+
+      COMMON/impCFC_IGDB/cim_IGDB_ID(mcom,mcfc,me)
+
+C IGDB database ID
+      CHARACTER cim_IGDB_ID*8
+      
+C---------------------------------------------------------------------------------
 C SIMULATION COMMONS
 C
 C These are essentially the same set of variables as the IMPORT COMMONS. These 
@@ -782,7 +790,7 @@ C Back diffuse-diffuse transmittance
 
 C---------------------------------------------------------------------------------
 C Solar Sky and Ground Diffuse-Diffuse properties
-      COMMON/cfcDD/SolRFskydd(mcom,ms,mcfc,me),
+      COMMON/cfc_sky_ground_DD/SolRFskydd(mcom,ms,mcfc,me),
      &                SolRBskydd(mcom,ms,mcfc,me),
      &                SolTFskydd(mcom,ms,mcfc,me),
      &                SolTBskydd(mcom,ms,mcfc,me),
