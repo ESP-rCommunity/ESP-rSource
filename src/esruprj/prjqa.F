@@ -2613,6 +2613,7 @@ C Images.
       logical MODOPR ! to flag if zone operations file needs changing.
       logical opernew ! if true then all operations are current.
       logical forceoper ! force if any operation is older
+      logical QUIET   ! for use in updating zone construction files
 
 C Flags noting whether casual gain periods are currently sorted.
       logical sorted,problem
@@ -2939,6 +2940,21 @@ C Save the file, sorting the periods if necessary.
             endif
           enddo   ! loop for operations
         endif
+      endif  ! of forceoper
+
+C Ask if zone construction files should also be refreshed. Note
+C EDCON does nothing if files do not exist.
+      QUIET=.FALSE.
+      dok=.true.
+      helptopic='model_upgrade_older'
+      call gethelptext(helpinsub,helptopic,nbhelp)
+      call askok('Also refresh zone construction files from common',
+     &  'materials and construction attributes?',QUIET,dok,nbhelp)
+      if(QUIET)then
+        DO IZ=1,NCOMP
+          CALL EDCON(ITRC,ITRU,IZ,QUIET,IER)
+        ENDDO
+        QUIET=.FALSE.
       endif
 
 C Save the model configuration file before continuing.
