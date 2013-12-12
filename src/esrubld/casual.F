@@ -103,6 +103,9 @@ C and is used for code related to UK NCM method
       COMMON/COE34L/QLAT(MCOM)
       COMMON/GRSD130/QCASRS(MCOM)
 
+      COMMON/BCLCHP/StoreCap,znElecCasGain(MCOM)
+      real StoreCap,znElecCasGain
+
 C Common for occupant/lighting/equipment sensible convective, sensible
 C radiant and latent W for future and present in each zone.
 C << adapt to include other casual gain >>
@@ -902,6 +905,9 @@ C Set future casual gain values if there is periods defined.
      &                 CGCTL(ICOMP,2,IGN)
               QLATN(2)=QLATN(2)+CGLAT(ICOMP,IDAY,IGN,IPER)*
      &                 CGCTL(ICOMP,2,IGN)
+              if(IGN.gt.1)then 
+	        znElecCasGain(ICOMP)=QCASC(2)+QCASR(2)
+	      endif
             else
 
 C Instead of using fracf, add-on shcon,shrad,shlat for SHOCC.

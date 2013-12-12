@@ -113,6 +113,10 @@ C PI controller
         ELSE IF(IFCLAW(ICFP,IDTYPP,IPERP).EQ.5)THEN
           CALL FCL05
  
+C Plant network slave
+        ELSE IF(IFCLAW(ICFP,IDTYPP,IPERP).EQ.6)THEN
+          CALL FCL06
+ 
 C New controllers inserted here!
         ELSE
           WRITE(outs,*) 'MFCNTR: invalid m. flow control law ',
@@ -1238,4 +1242,45 @@ C Controlling a component.
   1     continue
       endif
  9595 RETURN
+      END
+
+C *******  FCL06 Plant network slave
+C Actuates a mass flow network component or connection based on the 
+C output of a given plant network control loop. Complication is caused
+C because flow controllers output a ratio CTLPOS which is from 0 to 1
+C but plant controllers may output larger or smaller (absolute) numbers
+C This controller has been used with the following plant control laws:
+C PCL08 (on/off)
+C PCL05 (Proportional)
+C PCL14 (multisensor of plant loops)
+      SUBROUTINE FCL06
+      
+#include "net_flow.h"
+#include "building.h"
+#include "control.h"
+
+      COMMON/FCLSOL/ICFP,IDTYPP,IPERP
+      COMMON/mfctl/ctlpos(MCNN)
+      COMMON/PLNFMN/ACTFRAC(MCF)
+      COMMON/MFLOW1/NNOD,NCMP,NCNN
+      COMMON/MFLW10/NODPS(MCNN),HGTPS(MCNN),NODNE(MCNN),HGTNE(MCNN),
+     &              ITPCON(MCNN),NDSCNN(MCNN,MCNS)
+
+C Get plant loop number 
+      IPLN=nint(FMISCD(ICFP,IDTYPP,IPERP,2))
+
+C Set value to output of this plant loop
+C Controlling a connection.
+      if(ifan(ICFP,1).eq.-3)then
+          CTLPOS(ifan(icfp,2))=ACTFRAC(IPLN)
+
+C Controlling a component.
+      else
+        do 1 icnn=1,ncnn
+          if(ifan(icfp,2).eq.ITPCON(ICNN))CTLPOS(icnn)=ACTFRAC(IPLN)
+  1     continue
+      endif
+c      write(97,*)icfp,actfrac(ipln)
+c      if(icfp.eq.5)write(905,*)ifan(icfp,2),ctlpos(ifan(icfp,2))
+      RETURN
       END

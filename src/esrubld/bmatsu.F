@@ -317,7 +317,6 @@ c hour.
       COMMON/PREC9/NCONST(MCOM),NELTS(MCOM,MS),NGAPS(MCOM,MS),
      &NPGAP(MCOM,MS,MGP)
       COMMON/PREC13/C(MCOM,MS,MN,2),QC(MCOM,MS,MN)
-      common/pers/isd1,ism1,isd2,ism2,isds,isdf,ntstep
 
       COMMON/GR1D01/NNDS,NNDZ(MCOM),NNDC(MCOM,MS),NNDL(MCOM,MS,ME)
 
@@ -430,7 +429,6 @@ c solved simultaneously at the current simulation time-step.
       SUBROUTINE MZSETU(ICOMP)
 #include "building.h"
 #include "geometry.h"
-#include "cfd.h"
 #include "control.h"
 #include "CFC_common.h"
 
@@ -458,7 +456,6 @@ c solved simultaneously at the current simulation time-step.
 
       COMMON/PVALA/TPA(MCOM),QPA(MCOM)
 
-      integer icascf
       COMMON/CCTL/ICASCF(MCOM)
       COMMON/CONEQN/W(MS,MNM,5)
       COMMON/ZONEQN/E(MEQ,MTR)
@@ -516,9 +513,6 @@ C CFD
       COMMON/cfdfil/LCFD(MCOM),IFCFD(MCOM)
       COMMON/CFDCNV/QCFDF(MCOM,MS),QCFDP(MCOM,MS)
 
-C Drylink variables:
-      common/gan/qgan1,qgan2,wgan
-
 C Thermal bridge common block is described in esruprj/edgeo.F
       integer nbrdg, ibrdg
       real psi,lngth,losspercent,totheatloss,thbrpercent
@@ -533,6 +527,10 @@ C Thermal bridge common block is described in esruprj/edgeo.F
       character outs*144,LCFD*72
       logical atrace,MSTROK,MSTRZN
       
+C Heat lost from zone surface if zone represents quantum storage heater
+      COMMON/QBCL31/QX31S(MCOM,MS,2),QX31V(MCOM,2),QX31Vcon(MCOM,2)
+      real QX31S,QX31V,QX31Vcon
+
 C.....Named constants for timerows.
       integer iPresent, iFuture
       parameter (iPresent=1, iFuture=2)
@@ -651,8 +649,8 @@ C........adjacent zone
          endif 
             
          
-C Set up present coefficient (QHPNOP and QHPNOF relate to special 
-C control function BCL09).
+C Set up present coefficient 
+C QHPNOP and QHPNOF relate to special control function BCL09
          QELWCP=QELWP(I)*(1.-ADBMOD)
          QELWCF=QELWF(I)*(1.-ADBMOD)
          W(I,IN,5)=VCP(I,IN,1)*RGAM*HCOP(ICOMP,I)*TT1+
@@ -967,12 +965,18 @@ C Get convective plant input.
 C Calculate thermal bridge term.
       qtbridge=ACAP*RGAM*tbrig*(TP-TFA(icomp))+ACAP*GAM*tbrig*TF
 
+C Calculate BCL31 term 
+C QSXH = heat lost from storage heater zones as calculated in BCL31,
+C this heat is gained by the room zone in BCL31 and lost from storage
+C heaters here
+      QXSH=acap*(RGAM*qx31V(icomp,1)+GAM*qx31v(icomp,2))
+
 C Set-up present coefficient.
       E(N1,N3)=SUM2*RGAM+(1.-SUM3*RGAM)*TNair+
      &ACAP*RGAM*(QNair+QCASC(1)+QWCP+
      &QVNP+PADDC+zSWAp(icomp)+zSWAf(icomp)+q_airndConv_to_cfc(icomp,1))
      &+(XX1+XX3+QCASC(2)+q_airndConv_to_cfc(icomp,2))*ACAP*GAM
-     &+qtbridge
+     &+qtbridge+QXSH
 
       IGANg=0
       if(IGANg.eq.1)then
