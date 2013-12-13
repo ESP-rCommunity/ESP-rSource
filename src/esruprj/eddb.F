@@ -1461,6 +1461,7 @@ C moddb is from version manager
 C modcon signals change in constructions.
 C APP is 4 character file name modifier (from version facility)
 C     if blank then no file name change implied.
+C Unused variables commented out.
 
       SUBROUTINE EDDBCFC(moddb,modcon,APP)
 #include "building.h"
@@ -1486,16 +1487,16 @@ C Default ESP-r distribution path.
 C      logical clkok,closemat2,DOK,OK
       logical closemat1
 
-C      character LTMP*92
+C      character LTMP*92,LLTMPFL*144
       character fs*1
-      character LLTMP*144,LLTMPFL*144
+      character LLTMP*144
       character lprev*144
       character longtfile*144
       character dirpath*72
 
       CHARACTER APP*4
 C      CHARACTER outs248*248
-      LOGICAL OK,XST,concat
+      LOGICAL XST,concat
       character dinstpath*60
 
 C Local strings for user selections dependent on graphic library.
