@@ -1,8 +1,8 @@
 Synopsis
  
 Synopsis of the model Living room with radiator and wch. defined in wch.cfg
-generated on Mon Aug 27 16:48:49 2012. Notes associated with the model are in
-wch.log
+generated on Sat Dec 14 22:42:38 2013. Notes associated with the model are in
+../doc/wch.log
  
 The model is located at latitude   52.00 with a longitude difference of -10.00
 from the local time meridian. The year used in simulations is 2000 and
@@ -16,9 +16,9 @@ Simulationist address: not yet defined
 Simulationist city: not yet defined
 Simulationist postcode: not yet defined
  
-The climate is: ESP test climate and is held in: /usr/esru/esp-r/climate/clm67
-with hour centred solar data.
- annual weather         : /usr/esru/esp-r/climate/clm67
+The climate is: ESP test climate and is held in: clm67 with hour centred solar
+data.
+ standard annual weather: clm67
 Calculated ground temp at 0.5m depth
 3.0888 4.3008 6.6610 8.8949 13.123 15.349 15.963 14.834 12.227 8.9770 5.7777 3.6649
 Calculated ground temp at 1.0m depth
@@ -54,6 +54,7 @@ living room control of wch radiator - one day type applicable all year
 Zones control includes  1 functions.
 Example of building control via wet central heating.  For more informati see
 the wch.log file in the cfg folder.
+Details of control loops referenced in the model:
  
  The sensor for function  1 senses the temperature of the current zone.
  The actuator for function  1 is air point of the current zone
@@ -89,7 +90,7 @@ The model includes a plant network.
  
  The plant network contains  6 components from plantc.db1
  
- Component: boiler ( 1) code  1, db reference 16
+ Component: boiler ( 1) code  1, db reference  16
  Control data:    1.000
  Modified parameters for boiler
  Component total mass (kg)                          :   50.000
@@ -105,7 +106,7 @@ The model includes a plant network.
  Normalized start-stop loss (s)                     :   1.0000
  Upper boiler temperature limit (C)                 :   95.000
  
- Component: pipe1 ( 2) code  2, db reference 13
+ Component: pipe1 ( 2) code  2, db reference  13
  No Control data
  Modified parameters for pipe1
  Component total mass (kg)                          :   4.0000
@@ -115,7 +116,7 @@ The model includes a plant network.
  Length of pipe section (m)                         :   10.000
  Cross sectional face area (m^2)                    :  0.17670E-03
  
- Component: radiator ( 3) code  3, db reference 12
+ Component: radiator ( 3) code  3, db reference  12
  No Control data
  Modified parameters for radiator
  Component total mass (kg)                          :   25.000
@@ -132,7 +133,7 @@ The model includes a plant network.
  Index of 2nd wall for defining Te (-)              :   7.0000
  Weighting factor 2nd wall when defining Te (-)     :  0.50000
  
- Component: pipe2 ( 4) code  4, db reference 13
+ Component: pipe2 ( 4) code  4, db reference  13
  No Control data
  Modified parameters for pipe2
  Component total mass (kg)                          :   4.0000
@@ -142,7 +143,7 @@ The model includes a plant network.
  Length of pipe section (m)                         :   10.000
  Cross sectional face area (m^2)                    :  0.17670E-03
  
- Component: pump ( 5) code  5, db reference 15
+ Component: pump ( 5) code  5, db reference  15
  Control data:    0.000
  Modified parameters for pump
  Component total mass (kg)                          :   5.0000
@@ -152,7 +153,7 @@ The model includes a plant network.
  Rated volume flow rate (m^3/s)                     :  0.30000E-03
  Overall efficiency (-)                             :  0.70000
  
- Component: thermostat ( 6) code  6, db reference 23
+ Component: thermostat ( 6) code  6, db reference  23
  Control data:    0.020
  Modified parameters for thermostat
  Component total mass (kg)                          :  0.50000E-01
@@ -168,18 +169,13 @@ The model includes a plant network.
  Con receiving component node type sending component node
  
   1 boiler node 1 (from another component.) pump node 1 details:     1.00    0.00    0.00
-  1 boiler node 1 (from another component.) pump node 1 details:     1.00    0.00    0.00
  
-  2 pipe1 node 1 (from another component.) boiler node 2 details:     1.00    0.00    0.00
   2 pipe1 node 1 (from another component.) boiler node 2 details:     1.00    0.00    0.00
  
   3 radiator node 1 (from another component.) pipe1 node 1 details:     1.00    0.00    0.00
-  3 radiator node 1 (from another component.) pipe1 node 1 details:     1.00    0.00    0.00
  
   4 pipe2 node 1 (from another component.) radiator node 2 details:     1.00    0.00    0.00
-  4 pipe2 node 1 (from another component.) radiator node 2 details:     1.00    0.00    0.00
  
-  5 pump node 1 (from another component.) pipe2 node 1 details:     1.00    0.00    0.00
   5 pump node 1 (from another component.) pipe2 node 1 details:     1.00    0.00    0.00
  
  No of component containments =  4
@@ -206,9 +202,9 @@ ID Zone         Volume|          Surface
  area of 126.m^2 & approx floor area of 32.2m^2
  living describes a...
  There is 14.580m2 of exposed surface area, 14.580m2 of which is vertical.
- Outside walls are 32.952 % of floor area & avg U of 0.651 & UA of 6.9064
- Glazing is 12.356 % of floor & 27.271 % facade with avg U of 2.861 & UA of 11.376
- Ground contact is 100.01 % of floor area & avg U of 0.804 & perimeter 5.4000
+ Outside walls are 32.952 % of floor area & average U of 0.651 & UA of 6.9064
+ Glazing is 12.356 % of floor & 27.271 % facade with average U of 2.861 & UA of 11.376
+ Ground contact is 100.01 % of floor area & average U of 0.804 & perimeter 5.4000
  
  A summary of the surfaces in living( 1) follows:
  
@@ -224,6 +220,35 @@ ID Zone         Volume|          Surface
   8  0.859     0.   0. north_gla    DC_8074_ VERT -     double_glz   ||< external
   9  3.12      0.   0. north_glb    DC_8074_ VERT -     double_glz   ||< external
  
+ Vertices ( index X Y Z) in the zone...
+*vertex   1     0.00000     2.71000     0.00000
+*vertex   2     2.56000     2.71000     0.00000
+*vertex   3     5.40000     2.71000     0.00000
+*vertex   4     5.40000     8.67000     0.00000
+*vertex   5     0.00000     8.67000     0.00000
+*vertex   6     0.00000     2.71000     2.70000
+*vertex   7     2.56000     2.71000     2.70000
+*vertex   8     5.40000     2.71000     2.70000
+*vertex   9     5.40000     8.67000     2.70000
+*vertex  10     0.00000     8.67000     2.70000
+*vertex  11     4.40000     8.67000     0.38000
+*vertex  12     3.87000     8.67000     0.38000
+*vertex  13     3.87000     8.67000     2.00000
+*vertex  14     4.40000     8.67000     2.00000
+*vertex  15     2.90000     8.67000     0.55000
+*vertex  16     0.75000     8.67000     0.55000
+*vertex  17     0.75000     8.67000     2.00000
+*vertex  18     2.90000     8.67000     2.00000
+ Number of vertices followed by list of associated vert
+*edges,4,1,2,7,6   ptn_hall
+*edges,4,2,3,8,7   ptn_kitch
+*edges,4,3,4,9,8   east_neigh
+*edges,16,4,5,16,15,18,17,16,5,10,9,4,11,14,13,12,11   north
+*edges,4,5,1,6,10   west_neigh
+*edges,5,6,7,8,9,10   ceiling
+*edges,5,1,5,4,3,2   floor
+*edges,4,11,12,13,14   north_gla
+*edges,4,15,16,17,18   north_glb
  
  All surfaces will receive diffuse insolation (if shading not calculated).
  No shading analysis requested.
@@ -248,32 +273,32 @@ Notes:
 living rooom with radiator. adjacent kitchen and hall at fixed temp.
 occupancy varies during the day from 80W to 450W.
  
-Daytype   Gain Type    Period Sensible  Latent     Radiant    Convec
-          No.  label   Hours  Magn.(W)  Magn.(W)   Fraction   Fraction
-weekday     1 OccuptW    0- 8      0.0      0.0       0.50       0.50
-weekday     2 OccuptW    8-10    125.0      0.0       0.50       0.50
-weekday     3 OccuptW   10-14    100.0      0.0       0.50       0.50
-weekday     4 OccuptW   14-16     75.0      0.0       0.50       0.50
-weekday     5 OccuptW   16-18    150.0      0.0       0.50       0.50
-weekday     6 OccuptW   18-20    305.0      0.0       0.50       0.50
-weekday     7 OccuptW   20-22    450.0      0.0       0.50       0.50
-weekday     8 OccuptW   22-24    385.0      0.0       0.50       0.50
-saturday    1 OccuptW    0- 8      0.0      0.0       0.50       0.50
-saturday    2 OccuptW    8-10    125.0      0.0       0.50       0.50
-saturday    3 OccuptW   10-14    100.0      0.0       0.50       0.50
-saturday    4 OccuptW   14-16     75.0      0.0       0.50       0.50
-saturday    5 OccuptW   16-18    150.0      0.0       0.50       0.50
-saturday    6 OccuptW   18-20    305.0      0.0       0.50       0.50
-saturday    7 OccuptW   20-22    450.0      0.0       0.50       0.50
-saturday    8 OccuptW   22-24    385.0      0.0       0.50       0.50
-sunday      1 OccuptW    0- 8      0.0      0.0       0.50       0.50
-sunday      2 OccuptW    8-10    125.0      0.0       0.50       0.50
-sunday      3 OccuptW   10-14    100.0      0.0       0.50       0.50
-sunday      4 OccuptW   14-16     75.0      0.0       0.50       0.50
-sunday      5 OccuptW   16-18    150.0      0.0       0.50       0.50
-sunday      6 OccuptW   18-20    305.0      0.0       0.50       0.50
-sunday      7 OccuptW   20-22    450.0      0.0       0.50       0.50
-sunday      8 OccuptW   22-24    385.0      0.0       0.50       0.50
+Daytype   Gain Label     Type    Unit Period Sensible  Latent     Radiant    Convec
+          No.                          Hours Magn.(W)  Magn.(W)   Fraction   Fraction
+weekday     1 Occupt     people    W    0- 8      0.0      0.0       0.50       0.50
+weekday     2 Occupt     people    W    8-10    125.0      0.0       0.50       0.50
+weekday     3 Occupt     people    W   10-14    100.0      0.0       0.50       0.50
+weekday     4 Occupt     people    W   14-16     75.0      0.0       0.50       0.50
+weekday     5 Occupt     people    W   16-18    150.0      0.0       0.50       0.50
+weekday     6 Occupt     people    W   18-20    305.0      0.0       0.50       0.50
+weekday     7 Occupt     people    W   20-22    450.0      0.0       0.50       0.50
+weekday     8 Occupt     people    W   22-24    385.0      0.0       0.50       0.50
+saturday    1 Occupt     people    W    0- 8      0.0      0.0       0.50       0.50
+saturday    2 Occupt     people    W    8-10    125.0      0.0       0.50       0.50
+saturday    3 Occupt     people    W   10-14    100.0      0.0       0.50       0.50
+saturday    4 Occupt     people    W   14-16     75.0      0.0       0.50       0.50
+saturday    5 Occupt     people    W   16-18    150.0      0.0       0.50       0.50
+saturday    6 Occupt     people    W   18-20    305.0      0.0       0.50       0.50
+saturday    7 Occupt     people    W   20-22    450.0      0.0       0.50       0.50
+saturday    8 Occupt     people    W   22-24    385.0      0.0       0.50       0.50
+sunday      1 Occupt     people    W    0- 8      0.0      0.0       0.50       0.50
+sunday      2 Occupt     people    W    8-10    125.0      0.0       0.50       0.50
+sunday      3 Occupt     people    W   10-14    100.0      0.0       0.50       0.50
+sunday      4 Occupt     people    W   14-16     75.0      0.0       0.50       0.50
+sunday      5 Occupt     people    W   16-18    150.0      0.0       0.50       0.50
+sunday      6 Occupt     people    W   18-20    305.0      0.0       0.50       0.50
+sunday      7 Occupt     people    W   20-22    450.0      0.0       0.50       0.50
+sunday      8 Occupt     people    W   22-24    385.0      0.0       0.50       0.50
  
  ____________________________________________________________
  
@@ -282,9 +307,9 @@ sunday      8 OccuptW   22-24    385.0      0.0       0.50       0.50
  In contact with ground 32.184m2.
  There is 14.580m2 of outside surface area, 14.580m2 of which is vertical.
  
- Outside walls are 32.952 % of floor area & avg U of 0.651 & UA of 6.9064 & max MLC thickness 0.265
- Glazing is 12.356 % of floor & 27.271 % facade with avg U of 2.861 & UA of 11.376
- Ground contact is 100.01 % of floor area & avg U of 0.804 & perimeter 5.4000 & max MLC thickness 0.165
+ Outside walls are 32.952 % of floor area & average U of 0.651 & UA of 6.9064 & max MLC thickness 0.265
+ Glazing is 12.356 % of floor & 27.271 % facade with average U of 2.861 & UA of 11.376
+ Ground contact is 100.01 % of floor area & average U of 0.804 & perimeter 5.4000 & max MLC thickness 0.165
  CIBSE ground beta!11.920 dt 2.191 Ufleft 0.076 Ufright 2.895 Uf 0.219 R extra @ virtual layer 3.319
  
  ____________________________________________________________
@@ -292,13 +317,13 @@ sunday      8 OccuptW   22-24    385.0      0.0       0.50       0.50
  
  Details of opaque construction: Facade and overall thickness  0.265
  
- Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
-      |db  |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
- Ext     6  100.0     1.300  2100.   840. 0.90 0.65    31.  0.08 Gevelklinkers : Gevelklinkers
-    2    0   20.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
-    3  281   35.0     0.035    30.  1470. 0.90 0.50   100.  1.00 PS-schuim geexpandeerd : PS-schuim geexpandeerd
-    4    1  100.0     0.960  2000.   840. 0.93 0.70    12.  0.10 Paviour : Paviour
- Int   110   10.0     0.700  1600.   840. 0.90 0.25    30.  0.01 Kalkpleister : Kalkpleister
+ Layer|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
+      |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
+ Ext   100.0     1.300  2100.   840. 0.90 0.65    31.  0.08 Gevelklinkers : Gevelklinkers
+    2   20.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
+    3   35.0     0.035    30.  1470. 0.90 0.50   100.  1.00 PS-schuim geexpandeerd : PS-schuim geexpandeerd
+    4  100.0     0.960  2000.   840. 0.93 0.70    12.  0.10 Paviour : Paviour
+ Int    10.0     0.700  1600.   840. 0.90 0.25    30.  0.01 Kalkpleister : Kalkpleister
  ISO 6946 U values (horiz/upward/downward heat flow)=  0.651  0.664  0.635 (partition)  0.615
  
 Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  0.65
@@ -308,11 +333,11 @@ Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  0.65
  
  Details of opaque construction: Ground_floor and overall thickness  0.165
  
- Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
-      |db  |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
- Ext    39   30.0     1.400  2000.   880. 0.90 0.50    50.  0.02 Estrich : Estrich
-    2   35  100.0     1.900  2500.   840. 0.90 0.65    40.  0.05 Verdicht gewapend : Verdicht gewapend
- Int   281   35.0     0.035    30.  1470. 0.90 0.50   100.  1.00 PS-schuim geexpandeerd : PS-schuim geexpandeerd
+ Layer|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
+      |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
+ Ext    30.0     1.400  2000.   880. 0.90 0.50    50.  0.02 Estrich : Estrich
+    2  100.0     1.900  2500.   840. 0.90 0.65    40.  0.05 Verdicht gewapend : Verdicht gewapend
+ Int    35.0     0.035    30.  1470. 0.90 0.50   100.  1.00 PS-schuim geexpandeerd : PS-schuim geexpandeerd
  ISO 6946 U values (horiz/upward/downward heat flow)=  0.804  0.824  0.779 (partition)  0.750
  
 Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  0.80
@@ -322,11 +347,11 @@ Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  0.80
  
  Details of opaque construction: Inner_floor and overall thickness  0.210
  
- Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
-      |db  |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
- Ext    39   30.0     1.400  2000.   880. 0.90 0.50    50.  0.02 Estrich : Estrich
-    2   35  170.0     1.900  2500.   840. 0.90 0.65    40.  0.09 Verdicht gewapend : Verdicht gewapend
- Int   151   10.0     0.380  1120.   840. 0.90 0.60    12.  0.03 Ceiling (plaster) : Ceiling (plaster)
+ Layer|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
+      |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
+ Ext    30.0     1.400  2000.   880. 0.90 0.50    50.  0.02 Estrich : Estrich
+    2  170.0     1.900  2500.   840. 0.90 0.65    40.  0.09 Verdicht gewapend : Verdicht gewapend
+ Int    10.0     0.380  1120.   840. 0.90 0.60    12.  0.03 Ceiling (plaster) : Ceiling (plaster)
  ISO 6946 U values (horiz/upward/downward heat flow)=  3.255  3.607  2.880 (partition)  2.518
  
 Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  3.15
@@ -336,11 +361,11 @@ Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  3.15
  
  Details of opaque construction: Partition and overall thickness  0.230
  
- Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
-      |db  |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
- Ext   109   10.0     0.930  1900.   840. 0.90 0.25    30.  0.01 Cementpleister : Cementpleister
-    2   35  210.0     1.900  2500.   840. 0.90 0.65    40.  0.11 Verdicht gewapend : Verdicht gewapend
- Int   109   10.0     0.930  1900.   840. 0.90 0.25    30.  0.01 Cementpleister : Cementpleister
+ Layer|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
+      |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
+ Ext    10.0     0.930  1900.   840. 0.90 0.25    30.  0.01 Cementpleister : Cementpleister
+    2  210.0     1.900  2500.   840. 0.90 0.65    40.  0.11 Verdicht gewapend : Verdicht gewapend
+ Int    10.0     0.930  1900.   840. 0.90 0.25    30.  0.01 Cementpleister : Cementpleister
  ISO 6946 U values (horiz/upward/downward heat flow)=  3.311  3.676  2.924 (partition)  2.551
  
 Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  3.20
@@ -350,11 +375,11 @@ Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  3.20
  
  Details of opaque construction: Inner_wall and overall thickness  0.120
  
- Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
-      |db  |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
- Ext   125   10.0     0.500  1300.  1000. 0.91 0.50    19.  0.02 White dry render : White dry render
-    2   22  100.0     0.240   750.  1000. 0.90 0.65    10.  0.42 Aerated block : Aerated block
- Int   125   10.0     0.500  1300.  1000. 0.91 0.50    19.  0.02 White dry render : White dry render
+ Layer|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
+      |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
+ Ext    10.0     0.500  1300.  1000. 0.91 0.50    19.  0.02 White dry render : White dry render
+    2  100.0     0.240   750.  1000. 0.90 0.65    10.  0.42 Aerated block : Aerated block
+ Int    10.0     0.500  1300.  1000. 0.91 0.50    19.  0.02 White dry render : White dry render
  ISO 6946 U values (horiz/upward/downward heat flow)=  1.596  1.676  1.500 (partition)  1.395
  
 Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  1.57
@@ -364,11 +389,11 @@ Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  1.57
  
  Details of transparent construction: double_glz with DC_8074_04nb optics and overall thickness  0.022
  
- Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
-      |db  |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
- Ext   243    5.0     1.050  2500.   750. 0.90 0.05 19200.  0.00 4mm clear float : 4mm clear float with placeholder single layer optics
-    2    0   12.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
- Int   243    5.0     1.050  2500.   750. 0.90 0.05 19200.  0.00 4mm clear float : 4mm clear float with placeholder single layer optics
+ Layer|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
+      |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
+ Ext     5.0     1.050  2500.   750. 0.90 0.05 19200.  0.00 4mm clear float : 4mm clear float with placeholder single layer optics
+    2   12.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
+ Int     5.0     1.050  2500.   750. 0.90 0.05 19200.  0.00 4mm clear float : 4mm clear float with placeholder single layer optics
  ISO 6946 U values (horiz/upward/downward heat flow)=  2.861  3.130  2.567 (partition)  2.275
  
 Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  2.78
