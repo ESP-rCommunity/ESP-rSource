@@ -1,7 +1,7 @@
 Synopsis
  
 Synopsis of the model Systems model of ventilation via ducts, fan & mixing box
-defined in vent.cfg generated on Tue Aug 28 10:01:57 2012. Notes associated
+defined in vent.cfg generated on Sat Dec 14 22:32:33 2013. Notes associated
 with the model are in ../doc/vent.log
  
 The model is located at latitude   51.70 with a longitude difference of  -0.50
@@ -32,8 +32,8 @@ An Integrated Performance View is incomplete or missing.
  
 Databases associated with the model:
  standard pressure distr: pressc.db1
- standard materials     : material.db3.a
- standard constructions : multicon.db3
+ standard materials     : material.db4.a
+ standard constructions : multicon.db4
  standard plant comp    : plantc.db1
  standard event profiles: profiles.db1.a
  standard optical prop  : optics.db1
@@ -44,7 +44,7 @@ The model includes a plant network.
  
  The plant network contains  6 components from plantc.db1
  
- Component: fresh_duct ( 1) code  1, db reference  6
+ Component: fresh_duct ( 1) code  1, db reference   6
  No Control data
  Modified parameters for fresh_duct
  Component total mass (kg)                          :   3.7000
@@ -54,7 +54,7 @@ The model includes a plant network.
  Length of duct section (m)                         :   2.0000
  Cross sectional face area (m^2)                    :  0.12270E-01
  
- Component: return_duct ( 2) code  2, db reference  6
+ Component: return_duct ( 2) code  2, db reference   6
  No Control data
  Modified parameters for return_duct
  Component total mass (kg)                          :   3.7000
@@ -64,14 +64,14 @@ The model includes a plant network.
  Length of duct section (m)                         :   2.0000
  Cross sectional face area (m^2)                    :  0.12270E-01
  
- Component: mixing_box ( 3) code  3, db reference  1
+ Component: mixing_box ( 3) code  3, db reference   1
  No Control data
  Modified parameters for mixing_box
  Component total mass (kg)                          :   0.0000
  Mass weighted average specific heat (J/kgK)        :   0.0000
  UA modulus (W/K)                                   :   0.0000
  
- Component: duct ( 4) code  4, db reference  6
+ Component: duct ( 4) code  4, db reference   6
  No Control data
  Modified parameters for duct
  Component total mass (kg)                          :   9.2500
@@ -81,7 +81,7 @@ The model includes a plant network.
  Length of duct section (m)                         :   5.0000
  Cross sectional face area (m^2)                    :  0.12270E-01
  
- Component: fan ( 5) code  5, db reference  3
+ Component: fan ( 5) code  5, db reference   3
  Control data:    0.090
  Modified parameters for fan
  Component total mass (kg)                          :   0.0000
@@ -91,7 +91,7 @@ The model includes a plant network.
  Rated volume flow rate (m^3/s)                     :   0.0000
  Overall efficiency (-)                             :   0.0000
  
- Component: exhaust_duct ( 6) code  6, db reference  6
+ Component: exhaust_duct ( 6) code  6, db reference   6
  No Control data
  Modified parameters for exhaust_duct
  Component total mass (kg)                          :   5.5000
@@ -105,24 +105,17 @@ The model includes a plant network.
  Con receiving component node type sending component node
  
   1 fresh_duct node 1 (zone air or ambient.) exhaust_duct node 1 details:     0.50    0.00    0.00
-  1 fresh_duct node 1 (zone air or ambient.) exhaust_duct node 1 details:     0.50    0.00    0.00
  
-  2 return_duct node 1 (known T + hum ratio.) exhaust_duct node 1 details:     0.50   25.00    0.00
   2 return_duct node 1 (known T + hum ratio.) exhaust_duct node 1 details:     0.50   25.00    0.00
  
   3 mixing_box node 1 (from another component.) fresh_duct node 1 details:     1.00    0.00    0.00
-  3 mixing_box node 1 (from another component.) fresh_duct node 1 details:     1.00    0.00    0.00
  
-  4 mixing_box node 1 (from another component.) return_duct node 1 details:     1.00    0.00    0.00
   4 mixing_box node 1 (from another component.) return_duct node 1 details:     1.00    0.00    0.00
  
   5 duct node 1 (from another component.) mixing_box node 1 details:     1.00    0.00    0.00
-  5 duct node 1 (from another component.) mixing_box node 1 details:     1.00    0.00    0.00
  
   6 fan node 1 (from another component.) duct node 1 details:     1.00    0.00    0.00
-  6 fan node 1 (from another component.) duct node 1 details:     1.00    0.00    0.00
  
-  7 exhaust_duct node 1 (from another component.) fan node 1 details:     1.00    0.00    0.00
   7 exhaust_duct node 1 (from another component.) fan node 1 details:     1.00    0.00    0.00
  
  No of component containments =  0
