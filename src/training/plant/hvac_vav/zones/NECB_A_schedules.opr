@@ -1,56 +1,61 @@
-*Operations 1.0
-*date Mon Mar 21 16:04:48 2005  # latest file modification 
-# operations of west defined in: 
+*Operations 2.1
+*date Sat Dec 14 22:10:16 2013  # latest file modification 
+# operations of east defined in: 
 # ../zones/NECB_A_schedules.opr
 on weekdays a complex pattern of occupants lights and equipment is used on saturday and sunday the loads are constant (and low) Note the ramp-down on weekday evenings.
 # control(no control of air flow  ), low mid & high setpoints 
    0     0.000     0.000     0.000
-     3   # no Weekday flow periods
-# Wkd: start, stop, infil, ventil, source, data
+     3   # number of flow periods in day type: weekday     
+# start, stop, infil, ventil, source, data
    0,  5,    0.240    0.000    0    0.000
    5, 20,    0.000    0.000    0    0.000
   20, 24,    0.240    0.000    0    0.000
-     1   # no Saturday flow periods
-# Sat: start, stop, infil, ventil, source, data
+     1   # number of flow periods in day type: saturday    
+# start, stop, infil, ventil, source, data
    0, 24,    0.240    0.000    0    0.000
-     1   # no Sunday flow periods 
-# Sun: start, stop, infil, ventil, source, data
+     1   # number of flow periods in day type: sunday      
+# start, stop, infil, ventil, source, data
    0, 24,    0.240    0.000    0    0.000
-    26   # no Weekday casual gains 
-# Wkd: type, start, stop, sens, latent, rad_frac, conv_frac
-    1,   0,   6,      0.0,      0.0, 0.500, 0.500
-    1,   6,   7,     78.0,      0.0, 0.300, 0.700
-    1,   7,   8,    546.0,      0.0, 0.300, 0.700
-    1,   8,  11,    702.0,      0.0, 0.300, 0.700
-    1,  11,  13,    390.0,      0.0, 0.300, 0.700
-    1,  13,  16,    702.0,      0.0, 0.300, 0.700
-    1,  16,  17,    546.0,      0.0, 0.300, 0.700
-    1,  17,  19,    234.0,      0.0, 0.300, 0.700
-    1,  19,  22,     78.0,      0.0, 0.300, 0.700
-    1,  22,  24,      0.0,      0.0, 0.500, 0.500
-   -2,   0,   6,      0.9,      0.0, 0.600, 0.400
-   -2,   6,   7,      5.4,      0.0, 0.600, 0.400
-   -2,   7,   8,     14.4,      0.0, 0.600, 0.400
-   -2,   8,  16,     16.2,      0.0, 0.600, 0.400
-   -2,  16,  17,     14.4,      0.0, 0.600, 0.400
-   -2,  17,  18,      9.0,      0.0, 0.600, 0.400
-   -2,  18,  20,      5.4,      0.0, 0.600, 0.400
-   -2,  20,  22,      1.8,      0.0, 0.600, 0.400
-   -2,  22,  24,      0.9,      0.0, 0.600, 0.400
-   -3,   0,   6,      1.5,      0.0, 0.250, 0.750
-   -3,   6,   7,      2.2,      0.0, 0.250, 0.750
-   -3,   7,   8,      6.0,      0.0, 0.250, 0.750
-   -3,   8,  17,      6.8,      0.0, 0.250, 0.750
-   -3,  17,  18,      3.8,      0.0, 0.250, 0.750
-   -3,  18,  20,      2.2,      0.0, 0.250, 0.750
-   -3,  20,  24,      1.5,      0.0, 0.250, 0.750
-     2   # no Saturday casual gains 
-# Sat: type, start, stop, sens, latent, rad_frac, conv_frac
-   -2,   0,  24,      0.9,      0.0, 0.600, 0.400
-   -3,   0,  24,      1.5,      0.0, 0.250, 0.750
-     2   # no Sunday casual gains 
-# Sun: type, start, stop, sens, latent, rad_frac, conv_frac
-   -2,   0,  24,      0.9,      0.0, 0.600, 0.400
-   -3,   0,  24,      1.5,      0.0, 0.250, 0.750
-# Labels for gain types 
- Occupt Lights Equipt
+*casual
+on weekdays a complex pattern of occupants lights and equipment is used on saturday and sunday the loads are constant (and low) Note the ramp-down on weekday evenings.
+# casual user-label type-key-word slot attributes
+*type Occupt       people            1  0  0
+*type Lights       lighting          2  0  0
+*type Equipt       equipment         3  0  0
+*end_type 
+    26   # number of casual gains in day type: weekday     
+# slot, period, sensible, latent, rad_frac, conv_frac
+   1,   0,   6,      0.0,      0.0,  0.500,  0.500
+   1,   6,   7,     78.0,      0.0,  0.300,  0.700
+   1,   7,   8,    546.0,      0.0,  0.300,  0.700
+   1,   8,  11,    702.0,      0.0,  0.300,  0.700
+   1,  11,  13,    390.0,      0.0,  0.300,  0.700
+   1,  13,  16,    702.0,      0.0,  0.300,  0.700
+   1,  16,  17,    546.0,      0.0,  0.300,  0.700
+   1,  17,  19,    234.0,      0.0,  0.300,  0.700
+   1,  19,  22,     78.0,      0.0,  0.300,  0.700
+   1,  22,  24,      0.0,      0.0,  0.500,  0.500
+  -2,   0,   6,      0.9,      0.0,  0.600,  0.400
+  -2,   6,   7,      5.4,      0.0,  0.600,  0.400
+  -2,   7,   8,     14.4,      0.0,  0.600,  0.400
+  -2,   8,  16,     16.2,      0.0,  0.600,  0.400
+  -2,  16,  17,     14.4,      0.0,  0.600,  0.400
+  -2,  17,  18,      9.0,      0.0,  0.600,  0.400
+  -2,  18,  20,      5.4,      0.0,  0.600,  0.400
+  -2,  20,  22,      1.8,      0.0,  0.600,  0.400
+  -2,  22,  24,      0.9,      0.0,  0.600,  0.400
+  -3,   0,   6,      1.5,      0.0,  0.250,  0.750
+  -3,   6,   7,      2.2,      0.0,  0.250,  0.750
+  -3,   7,   8,      6.0,      0.0,  0.250,  0.750
+  -3,   8,  17,      6.8,      0.0,  0.250,  0.750
+  -3,  17,  18,      3.8,      0.0,  0.250,  0.750
+  -3,  18,  20,      2.2,      0.0,  0.250,  0.750
+  -3,  20,  24,      1.5,      0.0,  0.250,  0.750
+     2   # number of casual gains in day type: saturday    
+# slot, period, sensible, latent, rad_frac, conv_frac
+  -2,   0,  24,      0.9,      0.0,  0.600,  0.400
+  -3,   0,  24,      1.5,      0.0,  0.250,  0.750
+     2   # number of casual gains in day type: sunday      
+# slot, period, sensible, latent, rad_frac, conv_frac
+  -2,   0,  24,      0.9,      0.0,  0.600,  0.400
+  -3,   0,  24,      1.5,      0.0,  0.250,  0.750

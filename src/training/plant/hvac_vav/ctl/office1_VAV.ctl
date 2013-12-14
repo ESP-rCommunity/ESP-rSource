@@ -7,7 +7,7 @@ no descrip
     1    0    0    0  # sensor data
 # actuates the air point in west.
     1    0    0  # actuator data
-    1 # No. day types
+    1  # all daytypes
     1  365  # valid Fri-01-Jan - Fri-31-Dec
      1  # No. of periods in day: weekday     
     0    6   0.000  # ctl type, law (flux zone/plant), start @
@@ -18,7 +18,7 @@ no descrip
     2    0    0    0  # sensor data
 # actuates the air point in east.
     2    0    0  # actuator data
-    1 # No. day types
+    1  # all daytypes
     1  365  # valid Fri-01-Jan - Fri-31-Dec
      1  # No. of periods in day: weekday     
     0    6   0.000  # ctl type, law (flux zone/plant), start @
@@ -34,7 +34,7 @@ no descrip
    -1    4    1    0    0  # sensor 
 # plant component   3:cooling_coil @ node no.  1
    -1    3    1    0  # actuator 
-    1 # No. day types
+    1  # all daytypes
     1  365  # valid Fri-01-Jan - Fri-31-Dec
      3  # No. of periods in day: weekday     
     1    2   0.000  # ctl type, law (PID flow control.), start @
@@ -54,7 +54,7 @@ flow control on damper (twice) and fan (twice)
    -4    1    0    0  # sensor data
 # actuates flow connection:   8 reheat_w - damp_w via damper
    -3    8    0  # actuator data
-    1 # No. day types
+    1  # all daytypes
     1  365  # valid Fri-01-Jan - Fri-31-Dec
      3  # No. of periods in day: weekday     
     1    1   0.000  # ctl type (dry bulb > flow), law (proportional + hysteresis: signal lower limit 18.00 valve lower limit (%)10.0 signal upper limit 27.00 valve upper limit (%)100.0 dS 0.00.), starting @
@@ -71,7 +71,7 @@ flow control on damper (twice) and fan (twice)
    -4   12    0    0  # sensor data
 # actuates flow connection:   5 duct_in - fan_s via fan
    -3    5    0  # actuator data
-    1 # No. day types
+    1  # all daytypes
     1  365  # valid Fri-01-Jan - Fri-31-Dec
      3  # No. of periods in day: weekday     
     1    1   0.000  # ctl type (dry bulb > flow), law (proportional + hysteresis: signal lower limit 18.00 valve lower limit (%)10.0 signal upper limit 27.00 valve upper limit (%)100.0 dS 0.00.), starting @
@@ -88,7 +88,7 @@ flow control on damper (twice) and fan (twice)
    -4    2    0    0  # sensor data
 # actuates flow connection:  10 reheat_e - damp_e via damper
    -3   10    0  # actuator data
-    1 # No. day types
+    1  # all daytypes
     1  365  # valid Fri-01-Jan - Fri-31-Dec
      3  # No. of periods in day: weekday     
     1    1   0.000  # ctl type (dry bulb > flow), law (proportional + hysteresis: signal lower limit 18.00 valve lower limit (%)10.0 signal upper limit 27.00 valve upper limit (%)100.0 dS 0.00.), starting @
@@ -105,7 +105,7 @@ flow control on damper (twice) and fan (twice)
    -4   12    0    0  # sensor data
 # actuates flow connection:  15 junc_e - fan_e via fan
    -3   15    0  # actuator data
-    1 # No. day types
+    1  # all daytypes
     1  365  # valid Fri-01-Jan - Fri-31-Dec
      3  # No. of periods in day: weekday     
     1    1   0.000  # ctl type (dry bulb > flow), law (proportional + hysteresis: signal lower limit 18.00 valve lower limit (%)10.0 signal upper limit 27.00 valve upper limit (%)100.0 dS 0.00.), starting @
