@@ -1,5 +1,5 @@
 *connections for deep_plan
-*Date Mon Sep  3 09:42:35 2012
+*Date Sun Dec 15 13:23:07 2013
     704   # number of connections
    1   1   0   0   0  #    1 south in office_1 is External
    1   2   3   2   4  #    2 ptn_a in office_1 >|< ptn_o1 in office_2
