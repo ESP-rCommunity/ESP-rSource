@@ -1,64 +1,69 @@
-*Operations 1.0
-*date Sat Jul  1 14:19:00 2006  # latest file modification 
+*Operations 2.1
+*date Mon Dec 16 15:06:55 2013  # latest file modification 
 # operations of office_w_3 defined in: 
-# ../zones/ctl_temp/office_w_3divz.opr
-Based on 1W/ft^2 lighting (10.76 W/m2) during occupied period and 10% of this during unoccupied. Occupied is 8h00-17h00 M-F with diversity. 1 person per 4.646m^2 in office so 51 people in this room. Ventilation should be 0.00944m^3/person/second. Infil at 0.5 ach
+# ../zones/office_w_3.opr
+Based on 1W/ft^2 lighting (10.76 W/m2) during occupied period and 10% of this during unoccupied. Occupied is 8h00-17h00 M-F with diversity. 1 person per 4.646m^2 in office so 51 people in this room. Ventilation should be 0.00944m^3/person/second. I
 # control(no control of air flow  ), low mid & high setpoints 
    0     0.000     0.000     0.000
-     3   # no Weekday flow periods
-# Wkd: start, stop, infil, ventil, source, data
+     3   # number of flow periods in day type: weekdays    
+# start, stop, infil, ventil, source, data
    0,  8,    0.500    0.000    0    0.000
    8, 17,    0.500    2.570   21    0.000
   17, 24,    0.500    0.000    0    0.000
-     1   # no Saturday flow periods
-# Sat: start, stop, infil, ventil, source, data
+     1   # number of flow periods in day type: saturday    
+# start, stop, infil, ventil, source, data
    0, 24,    0.500    0.000    0    0.000
-     1   # no Sunday flow periods 
-# Sun: start, stop, infil, ventil, source, data
+     1   # number of flow periods in day type: sunday      
+# start, stop, infil, ventil, source, data
    0, 24,    0.500    0.000    0    0.000
-    26   # no Weekday casual gains 
-# Wkd: type, start, stop, sens, latent, rad_frac, conv_frac
-    1,   0,   7,      0.0,      0.0, 0.500, 0.500
-    1,   7,   8,    477.0,    238.5, 0.500, 0.500
-    1,   8,   9,   3339.0,   1669.5, 0.500, 0.500
-    1,   9,  12,   4770.0,   2385.0, 0.500, 0.500
-    1,  12,  13,   2385.0,   1192.5, 0.500, 0.500
-    1,  13,  14,   3339.0,   1669.5, 0.500, 0.500
-    1,  14,  16,   4770.0,   2385.5, 0.500, 0.500
-    1,  16,  17,   4054.0,   2027.0, 0.500, 0.500
-    1,  17,  18,   2385.0,   1192.5, 0.500, 0.500
-    1,  18,  19,    954.0,    477.0, 0.500, 0.500
-    1,  19,  24,      0.0,      0.0, 0.500, 0.500
-    2,   0,   7,    264.6,      0.0, 0.500, 0.500
-    2,   7,   8,   1323.0,      0.0, 0.500, 0.500
-    2,   8,  12,   2646.9,      0.0, 0.500, 0.500
-    2,  12,  13,   2117.5,      0.0, 0.500, 0.500
-    2,  13,  17,   2646.9,      0.0, 0.500, 0.500
-    2,  17,  18,   2117.5,      0.0, 0.500, 0.500
-    2,  18,  19,   1323.4,      0.0, 0.500, 0.500
-    2,  19,  24,    264.6,      0.0, 0.500, 0.500
-    3,   0,   7,    992.0,      0.0, 0.500, 0.500
-    3,   7,   8,   1191.0,      0.0, 0.500, 0.500
-    3,   8,  12,   1885.2,      0.0, 0.500, 0.500
-    3,  12,  13,   1985.2,      0.0, 0.500, 0.500
-    3,  13,  18,   1885.2,      0.0, 0.500, 0.500
-    3,  18,  19,   1588.2,      0.0, 0.500, 0.500
-    3,  19,  24,    992.0,      0.0, 0.500, 0.500
-     9   # no Saturday casual gains 
-# Sat: type, start, stop, sens, latent, rad_frac, conv_frac
-    1,   0,   9,      0.0,      0.0, 0.500, 0.500
-    1,   9,  12,    954.0,    477.0, 0.500, 0.500
-    1,  12,  24,      0.0,      0.0, 0.500, 0.500
-    2,   0,   9,     25.1,      0.0, 0.500, 0.500
-    2,   9,  12,    251.9,      0.0, 0.500, 0.500
-    2,  12,  24,     25.1,      0.0, 0.500, 0.500
-    3,   0,   9,    595.0,      0.0, 0.500, 0.500
-    3,   9,  12,    992.6,      0.0, 0.500, 0.500
-    3,  12,  24,    595.0,      0.0, 0.500, 0.500
-     3   # no Sunday casual gains 
-# Sun: type, start, stop, sens, latent, rad_frac, conv_frac
-    1,   0,  24,      0.0,      0.0, 0.500, 0.500
-    2,   0,  24,    251.9,      0.0, 0.500, 0.500
-    3,   0,  24,    595.0,      0.0, 0.500, 0.500
-# Labels for gain types 
- Occupt Lights Equipt
+*casual
+Based on 1W/ft^2 lighting (10.76 W/m2) during occupied period and 10% of this during unoccupied. Occupied is 8h00-17h00 M-F with diversity. 1 person per 4.646m^2 in office so 51 people in this room. Ventilation should be 0.00944m^3/person/second. I
+# casual user-label type-key-word slot attributes
+*type Occupt       people            1  0  0
+*type Lights       lighting          2  0  0
+*type Equipt       equipment         3  0  0
+*end_type 
+    26   # number of casual gains in day type: weekdays    
+# slot, period, sensible, latent, rad_frac, conv_frac
+   1,   0,   7,      0.0,      0.0,  0.500,  0.500
+   1,   7,   8,    477.0,    238.5,  0.500,  0.500
+   1,   8,   9,   3339.0,   1669.5,  0.500,  0.500
+   1,   9,  12,   4770.0,   2385.0,  0.500,  0.500
+   1,  12,  13,   2385.0,   1192.5,  0.500,  0.500
+   1,  13,  14,   3339.0,   1669.5,  0.500,  0.500
+   1,  14,  16,   4770.0,   2385.5,  0.500,  0.500
+   1,  16,  17,   4054.0,   2027.0,  0.500,  0.500
+   1,  17,  18,   2385.0,   1192.5,  0.500,  0.500
+   1,  18,  19,    954.0,    477.0,  0.500,  0.500
+   1,  19,  24,      0.0,      0.0,  0.500,  0.500
+   2,   0,   7,    264.6,      0.0,  0.500,  0.500
+   2,   7,   8,   1323.0,      0.0,  0.500,  0.500
+   2,   8,  12,   2646.9,      0.0,  0.500,  0.500
+   2,  12,  13,   2117.5,      0.0,  0.500,  0.500
+   2,  13,  17,   2646.9,      0.0,  0.500,  0.500
+   2,  17,  18,   2117.5,      0.0,  0.500,  0.500
+   2,  18,  19,   1323.4,      0.0,  0.500,  0.500
+   2,  19,  24,    264.6,      0.0,  0.500,  0.500
+   3,   0,   7,    992.0,      0.0,  0.500,  0.500
+   3,   7,   8,   1191.0,      0.0,  0.500,  0.500
+   3,   8,  12,   1885.2,      0.0,  0.500,  0.500
+   3,  12,  13,   1985.2,      0.0,  0.500,  0.500
+   3,  13,  18,   1885.2,      0.0,  0.500,  0.500
+   3,  18,  19,   1588.2,      0.0,  0.500,  0.500
+   3,  19,  24,    992.0,      0.0,  0.500,  0.500
+     9   # number of casual gains in day type: saturday    
+# slot, period, sensible, latent, rad_frac, conv_frac
+   1,   0,   9,      0.0,      0.0,  0.500,  0.500
+   1,   9,  12,    954.0,    477.0,  0.500,  0.500
+   1,  12,  24,      0.0,      0.0,  0.500,  0.500
+   2,   0,   9,     25.1,      0.0,  0.500,  0.500
+   2,   9,  12,    251.9,      0.0,  0.500,  0.500
+   2,  12,  24,     25.1,      0.0,  0.500,  0.500
+   3,   0,   9,    595.0,      0.0,  0.500,  0.500
+   3,   9,  12,    992.6,      0.0,  0.500,  0.500
+   3,  12,  24,    595.0,      0.0,  0.500,  0.500
+     3   # number of casual gains in day type: sunday      
+# slot, period, sensible, latent, rad_frac, conv_frac
+   1,   0,  24,      0.0,      0.0,  0.500,  0.500
+   2,   0,  24,    251.9,      0.0,  0.500,  0.500
+   3,   0,  24,    595.0,      0.0,  0.500,  0.500

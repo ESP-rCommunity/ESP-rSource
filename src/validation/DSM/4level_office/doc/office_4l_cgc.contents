@@ -1,7 +1,7 @@
 Synopsis
  
 Synopsis of the model Four level small office building with lighting control
-defined in office_4l_cgc.cfg generated on Wed Oct  3 15:17:22 2012. Notes
+defined in office_4l_cgc.cfg generated on Mon Dec 16 15:07:13 2013. Notes
 associated with the model are in office_bc.log
  
 The model is located at latitude   57.20 with a longitude difference of  -2.22
@@ -123,7 +123,7 @@ Dispersed fan demands included.
  
 Databases associated with the model:
  standard pressure distr: pressc.db1
- materials              : ../dbs/impact_mat.db2.a
+ materials              : ../dbs/impact.materialdb
  constructions          : ../dbs/office.constrdb
  standard plant comp    : plantc.db1
  event profiles         : ../dbs/office_profile
@@ -135,18 +135,17 @@ Databases associated with the model:
  
 The model includes ideal controls as follows:
 Control description:
-Four level office building base case heating to 22.22C and cooling to
-23.8C all hours. Supply and extract zones not yet used
+Four level office building base case heating to 22.22C and cooling to 23.8C
+all hours. Supply and extract zones not yet used
  
 Zones control includes  3 functions.
 Office base case zone controls (setback is treated as a separate ECM)
+Details of control loops referenced in the model:
  
  The sensor for function  1 senses the temperature of the current zone.
  The actuator for function  1 is air point of the current zone
  The following day types are defined:
-weekdays
-saturday
-sunday
+weekdays    saturday    sunday
  Day type weekdays control has  3 periods.
  Per|Start|Sensing  |Actuating  | Control law description
    1  0.00 db temp   > flux      basic control: max heating capacity 22000.0W min
@@ -180,34 +179,6 @@ setpoint 22.22C cooling setpoint 23.80C.
    3 18.50 db temp   > flux      basic control: max heating capacity 20000.0W min
 heating capacity 0.0W max cooling capacity 22000.0W min cooling capacity 0.0W. Heating
 setpoint 22.22C cooling setpoint 23.80C.
- 
- The sensor for function  2 senses the temperature of the current zone.
- The actuator for function  2 is air point of the current zone
- The following day types are defined:
-weekdays
-saturday
-sunday
- Day type weekdays control has  3 periods.
- Per|Start|Sensing  |Actuating  | Control law description
-   1  0.00 db temp   > flux      free floating
-   2  7.50 db temp   > flux      basic control: max heating capacity 40000.0W min
-heating capacity 0.0W max cooling capacity 40000.0W min cooling capacity 0.0W. Heating
-setpoint 22.22C cooling setpoint 23.80C.
-   3 18.00 db temp   > flux      free floating
- Day type saturday control has  3 periods.
- Per|Start|Sensing  |Actuating  | Control law description
-   1  0.00 db temp   > flux      free floating
-   2  7.50 db temp   > flux      basic control: max heating capacity 40000.0W min
-heating capacity 0.0W max cooling capacity 40000.0W min cooling capacity 0.0W. Heating
-setpoint 22.22C cooling setpoint 23.80C.
-   3 18.00 db temp   > flux      free floating
- Day type sunday control has  3 periods.
- Per|Start|Sensing  |Actuating  | Control law description
-   1  0.00 db temp   > flux      free floating
-   2  7.50 db temp   > flux      basic control: max heating capacity 40000.0W min
-heating capacity 0.0W max cooling capacity 40000.0W min cooling capacity 0.0W. Heating
-setpoint 22.22C cooling setpoint 23.80C.
-   3 18.00 db temp   > flux      free floating
  
  The sensor for function  3 senses the temperature of the current zone.
  The actuator for function  3 is air point of the current zone
@@ -309,6 +280,92 @@ frm_north frm_est_1 frm_est_2 south_frame
  
  
  Casual gains are controlled in this zone.
+ 
+ Zone  1
+ Casual gain type for control during weekdays     =   2
+ Casual gain type for control during saturday     =   2
+ Casual gain type for control during sunday       =   2
+ Light zone 1
+ Average of  1 user specified daylight factor photocell types.
+ There are  4 source surfaces for daylighting in the zone.
+ 
+ Set   |Switch-off |Minimum dimming|Minimal elec|Switch-off
+ point |light level|light output   |light output|delay time
+  400.0         1.4          0.10          0.10         0
+ 
+ % of |Sensor|Calculation   |
+ whole|number|type          |
+  0.33      1 User defined DF
+ 
+ Sensor|   X  |   Y  |   Z  |  DX |  DY |  DZ |
+ number|      |      |      |     |     |     |
+      1  32.50   9.50   1.25  0.00  0.00  1.00
+ 
+ 
+ Source  | Daylight |
+ surface | factor(%)|
+   16        6.40
+   17        1.00
+   18        1.00
+   19        1.00
+ 
+ Start| Finish| Control    |
+  Hour|   Hour|    Type    |
+      8     18 On-Off
+ Light zone 2
+ Average of  1 user specified daylight factor photocell types.
+ There are  4 source surfaces for daylighting in the zone.
+ 
+ Set   |Switch-off |Minimum dimming|Minimal elec|Switch-off
+ point |light level|light output   |light output|delay time
+  400.0         1.4          0.10          0.10         0
+ 
+ % of |Sensor|Calculation   |
+ whole|number|type          |
+  0.33      1 User defined DF
+ 
+ Sensor|   X  |   Y  |   Z  |  DX |  DY |  DZ |
+ number|      |      |      |     |     |     |
+      1  32.50  24.00   1.25  0.00  0.00  1.00
+ 
+ 
+ Source  | Daylight |
+ surface | factor(%)|
+   16        1.00
+   17        7.00
+   18        1.00
+   19        1.00
+ 
+ Start| Finish| Control    |
+  Hour|   Hour|    Type    |
+      8     18 On-Off
+ Light zone 3
+ Average of  1 user specified daylight factor photocell types.
+ There are  4 source surfaces for daylighting in the zone.
+ 
+ Set   |Switch-off |Minimum dimming|Minimal elec|Switch-off
+ point |light level|light output   |light output|delay time
+  400.0         1.4          0.10          0.10         0
+ 
+ % of |Sensor|Calculation   |
+ whole|number|type          |
+  0.33      1 User defined DF
+ 
+ Sensor|   X  |   Y  |   Z  |  DX |  DY |  DZ |
+ number|      |      |      |     |     |     |
+      1  32.50  15.50   1.25  0.00  0.00  1.00
+ 
+ 
+ Source  | Daylight |
+ surface | factor(%)|
+   16        6.00
+   17        6.00
+   18        6.00
+   19        6.00
+ 
+ Start| Finish| Control    |
+  Hour|   Hour|    Type    |
+      8     18 Always On
  Shading patterns have not yet been calculated.
  
  
@@ -334,46 +391,46 @@ of this during unoccupied. Occupied is 8h00-17h00 M-F. 1 person per
 4.646m^2 in office so 51 people in this room. Ventilation should be
 0.00944m^3/person/second. Infil at 0.5 ach
  
-Daytype   Gain Type    Period Sensible  Latent     Radiant    Convec
-          No.  label   Hours  Magn.(W)  Magn.(W)   Fraction   Fraction
-weekdays    1 OccuptW    0- 7      0.0      0.0       0.50       0.50
-weekdays    2 OccuptW    7- 8    459.0    229.7       0.50       0.50
-weekdays    3 OccuptW    8- 9   3213.0   1606.3       0.50       0.50
-weekdays    4 OccuptW    9-12   4590.0   2295.5       0.50       0.50
-weekdays    5 OccuptW   12-13   2295.0   1147.7       0.50       0.50
-weekdays    6 OccuptW   13-14   3213.0   1606.3       0.50       0.50
-weekdays    7 OccuptW   14-16   4590.0   2295.5       0.50       0.50
-weekdays    8 OccuptW   16-17   3901.5   1950.0       0.50       0.50
-weekdays    9 OccuptW   17-18   2295.0   1147.7       0.50       0.50
-weekdays   10 OccuptW   18-19    918.0    459.5       0.50       0.50
-weekdays   11 OccuptW   19-24      0.0      0.0       0.50       0.50
-weekdays   12 LightsW    0- 7    254.6      0.0       0.50       0.50
-weekdays   13 LightsW    7- 8   1273.1      0.0       0.50       0.50
-weekdays   14 LightsW    8-12   2546.1      0.0       0.50       0.50
-weekdays   15 LightsW   12-13   2036.9      0.0       0.50       0.50
-weekdays   16 LightsW   13-17   2546.1      0.0       0.50       0.50
-weekdays   17 LightsW   17-18   2036.9      0.0       0.50       0.50
-weekdays   18 LightsW   18-19   1273.1      0.0       0.50       0.50
-weekdays   19 LightsW   19-24    254.6      0.0       0.50       0.50
-weekdays   20 EquiptW    0- 7    955.0      0.0       0.50       0.50
-weekdays   21 EquiptW    7- 8   1146.1      0.0       0.50       0.50
-weekdays   22 EquiptW    8-12   1814.6      0.0       0.50       0.50
-weekdays   23 EquiptW   12-13   1910.1      0.0       0.50       0.50
-weekdays   24 EquiptW   13-18   1814.6      0.0       0.50       0.50
-weekdays   25 EquiptW   18-19   1528.1      0.0       0.50       0.50
-weekdays   26 EquiptW   19-24    955.0      0.0       0.50       0.50
-saturday    1 OccuptW    0- 9      0.0      0.0       0.50       0.50
-saturday    2 OccuptW    9-12    918.0    459.5       0.50       0.50
-saturday    3 OccuptW   12-24      0.0      0.0       0.50       0.50
-saturday    4 LightsW    0- 9    254.6      0.0       0.50       0.50
-saturday    5 LightsW    9-12   2546.1      0.0       0.50       0.50
-saturday    6 LightsW   12-24    254.6      0.0       0.50       0.50
-saturday    7 EquiptW    0- 9    573.0      0.0       0.50       0.50
-saturday    8 EquiptW    9-12    955.0      0.0       0.50       0.50
-saturday    9 EquiptW   12-24    573.0      0.0       0.50       0.50
-sunday      1 OccuptW    0-24      0.0      0.0       0.50       0.50
-sunday      2 LightsW    0-24    242.4      0.0       0.50       0.50
-sunday      3 EquiptW    0-24    572.5      0.0       0.50       0.50
+Daytype   Gain Label     Type    Unit Period Sensible  Latent     Radiant    Convec
+          No.                          Hours Magn.(W)  Magn.(W)   Fraction   Fraction
+weekdays    1 Occupt     people    W    0- 7      0.0      0.0       0.50       0.50
+weekdays    2 Occupt     people    W    7- 8    459.0    229.7       0.50       0.50
+weekdays    3 Occupt     people    W    8- 9   3213.0   1606.3       0.50       0.50
+weekdays    4 Occupt     people    W    9-12   4590.0   2295.5       0.50       0.50
+weekdays    5 Occupt     people    W   12-13   2295.0   1147.7       0.50       0.50
+weekdays    6 Occupt     people    W   13-14   3213.0   1606.3       0.50       0.50
+weekdays    7 Occupt     people    W   14-16   4590.0   2295.5       0.50       0.50
+weekdays    8 Occupt     people    W   16-17   3901.5   1950.0       0.50       0.50
+weekdays    9 Occupt     people    W   17-18   2295.0   1147.7       0.50       0.50
+weekdays   10 Occupt     people    W   18-19    918.0    459.5       0.50       0.50
+weekdays   11 Occupt     people    W   19-24      0.0      0.0       0.50       0.50
+weekdays   12 Lights     lighting  W    0- 7    254.6      0.0       0.50       0.50
+weekdays   13 Lights     lighting  W    7- 8   1273.1      0.0       0.50       0.50
+weekdays   14 Lights     lighting  W    8-12   2546.1      0.0       0.50       0.50
+weekdays   15 Lights     lighting  W   12-13   2036.9      0.0       0.50       0.50
+weekdays   16 Lights     lighting  W   13-17   2546.1      0.0       0.50       0.50
+weekdays   17 Lights     lighting  W   17-18   2036.9      0.0       0.50       0.50
+weekdays   18 Lights     lighting  W   18-19   1273.1      0.0       0.50       0.50
+weekdays   19 Lights     lighting  W   19-24    254.6      0.0       0.50       0.50
+weekdays   20 Equipt     equipment W    0- 7    955.0      0.0       0.50       0.50
+weekdays   21 Equipt     equipment W    7- 8   1146.1      0.0       0.50       0.50
+weekdays   22 Equipt     equipment W    8-12   1814.6      0.0       0.50       0.50
+weekdays   23 Equipt     equipment W   12-13   1910.1      0.0       0.50       0.50
+weekdays   24 Equipt     equipment W   13-18   1814.6      0.0       0.50       0.50
+weekdays   25 Equipt     equipment W   18-19   1528.1      0.0       0.50       0.50
+weekdays   26 Equipt     equipment W   19-24    955.0      0.0       0.50       0.50
+saturday    1 Occupt     people    W    0- 9      0.0      0.0       0.50       0.50
+saturday    2 Occupt     people    W    9-12    918.0    459.5       0.50       0.50
+saturday    3 Occupt     people    W   12-24      0.0      0.0       0.50       0.50
+saturday    4 Lights     lighting  W    0- 9    254.6      0.0       0.50       0.50
+saturday    5 Lights     lighting  W    9-12   2546.1      0.0       0.50       0.50
+saturday    6 Lights     lighting  W   12-24    254.6      0.0       0.50       0.50
+saturday    7 Equipt     equipment W    0- 9    573.0      0.0       0.50       0.50
+saturday    8 Equipt     equipment W    9-12    955.0      0.0       0.50       0.50
+saturday    9 Equipt     equipment W   12-24    573.0      0.0       0.50       0.50
+sunday      1 Occupt     people    W    0-24      0.0      0.0       0.50       0.50
+sunday      2 Lights     lighting  W    0-24    242.4      0.0       0.50       0.50
+sunday      3 Equipt     equipment W    0-24    572.5      0.0       0.50       0.50
  
  ____________________________________________________________
  
@@ -417,6 +474,92 @@ frm_north frm_wst_1 frm_wst_2 south_frm
  
  
  Casual gains are controlled in this zone.
+ 
+ Zone  2
+ Casual gain type for control during weekdays     =   2
+ Casual gain type for control during saturday     =   2
+ Casual gain type for control during sunday       =   2
+ Light zone 1
+ Average of  1 user specified daylight factor photocell types.
+ There are  4 source surfaces for daylighting in the zone.
+ 
+ Set   |Switch-off |Minimum dimming|Minimal elec|Switch-off
+ point |light level|light output   |light output|delay time
+  400.0         1.4          0.10          0.10         0
+ 
+ % of |Sensor|Calculation   |
+ whole|number|type          |
+  0.33      1 User defined DF
+ 
+ Sensor|   X  |   Y  |   Z  |  DX |  DY |  DZ |
+ number|      |      |      |     |     |     |
+      1  17.50   9.50   1.25  0.00  0.00  1.00
+ 
+ 
+ Source  | Daylight |
+ surface | factor(%)|
+   16        1.00
+   17        1.00
+   18        1.00
+   19        6.40
+ 
+ Start| Finish| Control    |
+  Hour|   Hour|    Type    |
+      8     18 On-Off
+ Light zone 2
+ Average of  1 user specified daylight factor photocell types.
+ There are  4 source surfaces for daylighting in the zone.
+ 
+ Set   |Switch-off |Minimum dimming|Minimal elec|Switch-off
+ point |light level|light output   |light output|delay time
+  400.0         1.4          0.10          0.10         0
+ 
+ % of |Sensor|Calculation   |
+ whole|number|type          |
+  0.33      1 User defined DF
+ 
+ Sensor|   X  |   Y  |   Z  |  DX |  DY |  DZ |
+ number|      |      |      |     |     |     |
+      1  17.50  24.00   1.25  0.00  0.00  1.00
+ 
+ 
+ Source  | Daylight |
+ surface | factor(%)|
+   16        7.10
+   17        1.00
+   18        1.00
+   19        1.00
+ 
+ Start| Finish| Control    |
+  Hour|   Hour|    Type    |
+      8     18 On-Off
+ Light zone 3
+ Average of  1 user specified daylight factor photocell types.
+ There are  4 source surfaces for daylighting in the zone.
+ 
+ Set   |Switch-off |Minimum dimming|Minimal elec|Switch-off
+ point |light level|light output   |light output|delay time
+  400.0         1.4          0.10          0.10         0
+ 
+ % of |Sensor|Calculation   |
+ whole|number|type          |
+  0.33      1 User defined DF
+ 
+ Sensor|   X  |   Y  |   Z  |  DX |  DY |  DZ |
+ number|      |      |      |     |     |     |
+      1  17.50  15.50   1.25  0.00  0.00  1.00
+ 
+ 
+ Source  | Daylight |
+ surface | factor(%)|
+   16        6.00
+   17        6.00
+   18        6.00
+   19        6.00
+ 
+ Start| Finish| Control    |
+  Hour|   Hour|    Type    |
+      8     18 Always On
  Shading patterns have not yet been calculated.
  
  
@@ -442,46 +585,46 @@ of this during unoccupied. Occupied is 8h00-17h00 M-F. 1 person per
 4.646m^2 in office so 51 people in this room. Ventilation should be
 0.00944m^3/person/s. Infil at 0.5 ach
  
-Daytype   Gain Type    Period Sensible  Latent     Radiant    Convec
-          No.  label   Hours  Magn.(W)  Magn.(W)   Fraction   Fraction
-weekdays    1 OccuptW    0- 7      0.0      0.0       0.50       0.50
-weekdays    2 OccuptW    7- 8    459.0    229.7       0.50       0.50
-weekdays    3 OccuptW    8- 9   3213.0   1606.3       0.50       0.50
-weekdays    4 OccuptW    9-12   4590.0   2295.5       0.50       0.50
-weekdays    5 OccuptW   12-13   2295.0   1147.7       0.50       0.50
-weekdays    6 OccuptW   13-14   3213.0   1606.3       0.50       0.50
-weekdays    7 OccuptW   14-16   4590.0   2295.5       0.50       0.50
-weekdays    8 OccuptW   16-17   3901.5   1950.0       0.50       0.50
-weekdays    9 OccuptW   17-18   2295.0   1147.7       0.50       0.50
-weekdays   10 OccuptW   18-19    918.0    459.5       0.50       0.50
-weekdays   11 OccuptW   19-24      0.0      0.0       0.50       0.50
-weekdays   12 LightsW    0- 7    254.6      0.0       0.50       0.50
-weekdays   13 LightsW    7- 8   1273.1      0.0       0.50       0.50
-weekdays   14 LightsW    8-12   2546.1      0.0       0.50       0.50
-weekdays   15 LightsW   12-13   2036.9      0.0       0.50       0.50
-weekdays   16 LightsW   13-17   2546.1      0.0       0.50       0.50
-weekdays   17 LightsW   17-18   2036.9      0.0       0.50       0.50
-weekdays   18 LightsW   18-19   1273.1      0.0       0.50       0.50
-weekdays   19 LightsW   19-24    254.6      0.0       0.50       0.50
-weekdays   20 EquiptW    0- 7    955.0      0.0       0.50       0.50
-weekdays   21 EquiptW    7- 8   1146.1      0.0       0.50       0.50
-weekdays   22 EquiptW    8-12   1814.6      0.0       0.50       0.50
-weekdays   23 EquiptW   12-13   1910.1      0.0       0.50       0.50
-weekdays   24 EquiptW   13-18   1814.6      0.0       0.50       0.50
-weekdays   25 EquiptW   18-19   1528.1      0.0       0.50       0.50
-weekdays   26 EquiptW   19-24    955.0      0.0       0.50       0.50
-saturday    1 OccuptW    0- 9      0.0      0.0       0.50       0.50
-saturday    2 OccuptW    9-12    918.0    459.5       0.50       0.50
-saturday    3 OccuptW   12-24      0.0      0.0       0.50       0.50
-saturday    4 LightsW    0- 9    254.6      0.0       0.50       0.50
-saturday    5 LightsW    9-12   2546.1      0.0       0.50       0.50
-saturday    6 LightsW   12-24    254.6      0.0       0.50       0.50
-saturday    7 EquiptW    0- 9    573.0      0.0       0.50       0.50
-saturday    8 EquiptW    9-12    955.0      0.0       0.50       0.50
-saturday    9 EquiptW   12-24    573.0      0.0       0.50       0.50
-sunday      1 OccuptW    0-24      0.0      0.0       0.50       0.50
-sunday      2 LightsW    0-24    242.4      0.0       0.50       0.50
-sunday      3 EquiptW    0-24    572.5      0.0       0.50       0.50
+Daytype   Gain Label     Type    Unit Period Sensible  Latent     Radiant    Convec
+          No.                          Hours Magn.(W)  Magn.(W)   Fraction   Fraction
+weekdays    1 Occupt     people    W    0- 7      0.0      0.0       0.50       0.50
+weekdays    2 Occupt     people    W    7- 8    459.0    229.7       0.50       0.50
+weekdays    3 Occupt     people    W    8- 9   3213.0   1606.3       0.50       0.50
+weekdays    4 Occupt     people    W    9-12   4590.0   2295.5       0.50       0.50
+weekdays    5 Occupt     people    W   12-13   2295.0   1147.7       0.50       0.50
+weekdays    6 Occupt     people    W   13-14   3213.0   1606.3       0.50       0.50
+weekdays    7 Occupt     people    W   14-16   4590.0   2295.5       0.50       0.50
+weekdays    8 Occupt     people    W   16-17   3901.5   1950.0       0.50       0.50
+weekdays    9 Occupt     people    W   17-18   2295.0   1147.7       0.50       0.50
+weekdays   10 Occupt     people    W   18-19    918.0    459.5       0.50       0.50
+weekdays   11 Occupt     people    W   19-24      0.0      0.0       0.50       0.50
+weekdays   12 Lights     lighting  W    0- 7    254.6      0.0       0.50       0.50
+weekdays   13 Lights     lighting  W    7- 8   1273.1      0.0       0.50       0.50
+weekdays   14 Lights     lighting  W    8-12   2546.1      0.0       0.50       0.50
+weekdays   15 Lights     lighting  W   12-13   2036.9      0.0       0.50       0.50
+weekdays   16 Lights     lighting  W   13-17   2546.1      0.0       0.50       0.50
+weekdays   17 Lights     lighting  W   17-18   2036.9      0.0       0.50       0.50
+weekdays   18 Lights     lighting  W   18-19   1273.1      0.0       0.50       0.50
+weekdays   19 Lights     lighting  W   19-24    254.6      0.0       0.50       0.50
+weekdays   20 Equipt     equipment W    0- 7    955.0      0.0       0.50       0.50
+weekdays   21 Equipt     equipment W    7- 8   1146.1      0.0       0.50       0.50
+weekdays   22 Equipt     equipment W    8-12   1814.6      0.0       0.50       0.50
+weekdays   23 Equipt     equipment W   12-13   1910.1      0.0       0.50       0.50
+weekdays   24 Equipt     equipment W   13-18   1814.6      0.0       0.50       0.50
+weekdays   25 Equipt     equipment W   18-19   1528.1      0.0       0.50       0.50
+weekdays   26 Equipt     equipment W   19-24    955.0      0.0       0.50       0.50
+saturday    1 Occupt     people    W    0- 9      0.0      0.0       0.50       0.50
+saturday    2 Occupt     people    W    9-12    918.0    459.5       0.50       0.50
+saturday    3 Occupt     people    W   12-24      0.0      0.0       0.50       0.50
+saturday    4 Lights     lighting  W    0- 9    254.6      0.0       0.50       0.50
+saturday    5 Lights     lighting  W    9-12   2546.1      0.0       0.50       0.50
+saturday    6 Lights     lighting  W   12-24    254.6      0.0       0.50       0.50
+saturday    7 Equipt     equipment W    0- 9    573.0      0.0       0.50       0.50
+saturday    8 Equipt     equipment W    9-12    955.0      0.0       0.50       0.50
+saturday    9 Equipt     equipment W   12-24    573.0      0.0       0.50       0.50
+sunday      1 Occupt     people    W    0-24      0.0      0.0       0.50       0.50
+sunday      2 Lights     lighting  W    0-24    242.4      0.0       0.50       0.50
+sunday      3 Equipt     equipment W    0-24    572.5      0.0       0.50       0.50
  
  ____________________________________________________________
  
@@ -524,6 +667,92 @@ frm_north frm_est_1 frm_est_2 south_frm
  
  
  Casual gains are controlled in this zone.
+ 
+ Zone  3
+ Casual gain type for control during weekdays     =   2
+ Casual gain type for control during saturday     =   2
+ Casual gain type for control during sunday       =   2
+ Light zone 1
+ Average of  1 user specified daylight factor photocell types.
+ There are  4 source surfaces for daylighting in the zone.
+ 
+ Set   |Switch-off |Minimum dimming|Minimal elec|Switch-off
+ point |light level|light output   |light output|delay time
+  400.0         1.4          0.10          0.10         0
+ 
+ % of |Sensor|Calculation   |
+ whole|number|type          |
+  0.33      1 User defined DF
+ 
+ Sensor|   X  |   Y  |   Z  |  DX |  DY |  DZ |
+ number|      |      |      |     |     |     |
+      1  32.50   9.50   5.10  0.00  0.00  1.00
+ 
+ 
+ Source  | Daylight |
+ surface | factor(%)|
+   16        1.00
+   17        1.00
+   18        1.00
+   19        6.40
+ 
+ Start| Finish| Control    |
+  Hour|   Hour|    Type    |
+      8     18 On-Off
+ Light zone 2
+ Average of  1 user specified daylight factor photocell types.
+ There are  4 source surfaces for daylighting in the zone.
+ 
+ Set   |Switch-off |Minimum dimming|Minimal elec|Switch-off
+ point |light level|light output   |light output|delay time
+  400.0         1.4          0.10          0.10         0
+ 
+ % of |Sensor|Calculation   |
+ whole|number|type          |
+  0.33      1 User defined DF
+ 
+ Sensor|   X  |   Y  |   Z  |  DX |  DY |  DZ |
+ number|      |      |      |     |     |     |
+      1  32.50  24.00   5.10  0.00  0.00  1.00
+ 
+ 
+ Source  | Daylight |
+ surface | factor(%)|
+   16        7.10
+   17        1.00
+   18        1.00
+   19        1.00
+ 
+ Start| Finish| Control    |
+  Hour|   Hour|    Type    |
+      8     18 On-Off
+ Light zone 3
+ Average of  1 user specified daylight factor photocell types.
+ There are  4 source surfaces for daylighting in the zone.
+ 
+ Set   |Switch-off |Minimum dimming|Minimal elec|Switch-off
+ point |light level|light output   |light output|delay time
+  400.0         1.4          0.10          0.10         0
+ 
+ % of |Sensor|Calculation   |
+ whole|number|type          |
+  0.33      1 User defined DF
+ 
+ Sensor|   X  |   Y  |   Z  |  DX |  DY |  DZ |
+ number|      |      |      |     |     |     |
+      1  32.50  15.50   5.10  0.00  0.00  1.00
+ 
+ 
+ Source  | Daylight |
+ surface | factor(%)|
+   16        6.00
+   17        6.00
+   18        6.00
+   19        6.00
+ 
+ Start| Finish| Control    |
+  Hour|   Hour|    Type    |
+      8     18 Always On
  Shading patterns have not yet been calculated.
  
  
@@ -549,46 +778,46 @@ of this during unoccupied. Occupied is 8h00-17h00 M-F. 1 person per
 4.646m^2 in office so 53 people here. Ventilation should be
 0.00944m^3/person/second. Infil at 0.5 ach
  
-Daytype   Gain Type    Period Sensible  Latent     Radiant    Convec
-          No.  label   Hours  Magn.(W)  Magn.(W)   Fraction   Fraction
-weekdays    1 OccuptW    0- 7      0.0      0.0       0.50       0.50
-weekdays    2 OccuptW    7- 8    477.0    238.5       0.50       0.50
-weekdays    3 OccuptW    8- 9   3339.0   1669.5       0.50       0.50
-weekdays    4 OccuptW    9-12   4770.0   2385.0       0.50       0.50
-weekdays    5 OccuptW   12-13   2385.0   1192.5       0.50       0.50
-weekdays    6 OccuptW   13-14   3339.0   1669.5       0.50       0.50
-weekdays    7 OccuptW   14-16   4770.0   2385.5       0.50       0.50
-weekdays    8 OccuptW   16-17   4054.0   2027.0       0.50       0.50
-weekdays    9 OccuptW   17-18   2385.0   1192.5       0.50       0.50
-weekdays   10 OccuptW   18-19    954.0    477.0       0.50       0.50
-weekdays   11 OccuptW   19-24      0.0      0.0       0.50       0.50
-weekdays   12 LightsW    0- 7    264.6      0.0       0.50       0.50
-weekdays   13 LightsW    7- 8   1323.0      0.0       0.50       0.50
-weekdays   14 LightsW    8-12   2646.0      0.0       0.50       0.50
-weekdays   15 LightsW   12-13   2116.8      0.0       0.50       0.50
-weekdays   16 LightsW   13-17   2646.0      0.0       0.50       0.50
-weekdays   17 LightsW   17-18   2116.8      0.0       0.50       0.50
-weekdays   18 LightsW   18-19   1323.0      0.0       0.50       0.50
-weekdays   19 LightsW   19-24    264.6      0.0       0.50       0.50
-weekdays   20 EquiptW    0- 7    992.5      0.0       0.50       0.50
-weekdays   21 EquiptW    7- 8   1191.0      0.0       0.50       0.50
-weekdays   22 EquiptW    8-12   1885.8      0.0       0.50       0.50
-weekdays   23 EquiptW   12-13   1985.0      0.0       0.50       0.50
-weekdays   24 EquiptW   13-18   1885.8      0.0       0.50       0.50
-weekdays   25 EquiptW   18-19   1588.0      0.0       0.50       0.50
-weekdays   26 EquiptW   19-24    992.5      0.0       0.50       0.50
-saturday    1 OccuptW    0- 9      0.0      0.0       0.50       0.50
-saturday    2 OccuptW    9-12    954.0    238.5       0.50       0.50
-saturday    3 OccuptW   12-24      0.0      0.0       0.50       0.50
-saturday    4 LightsW    0- 9    264.6      0.0       0.50       0.50
-saturday    5 LightsW    9-12   2646.0      0.0       0.50       0.50
-saturday    6 LightsW   12-24    264.6      0.0       0.50       0.50
-saturday    7 EquiptW    0- 9    595.5      0.0       0.50       0.50
-saturday    8 EquiptW    9-12    992.5      0.0       0.50       0.50
-saturday    9 EquiptW   12-24    595.5      0.0       0.50       0.50
-sunday      1 OccuptW    0-24      0.0      0.0       0.50       0.50
-sunday      2 LightsW    0-24    251.9      0.0       0.50       0.50
-sunday      3 EquiptW    0-24    595.0      0.0       0.50       0.50
+Daytype   Gain Label     Type    Unit Period Sensible  Latent     Radiant    Convec
+          No.                          Hours Magn.(W)  Magn.(W)   Fraction   Fraction
+weekdays    1 Occupt     people    W    0- 7      0.0      0.0       0.50       0.50
+weekdays    2 Occupt     people    W    7- 8    477.0    238.5       0.50       0.50
+weekdays    3 Occupt     people    W    8- 9   3339.0   1669.5       0.50       0.50
+weekdays    4 Occupt     people    W    9-12   4770.0   2385.0       0.50       0.50
+weekdays    5 Occupt     people    W   12-13   2385.0   1192.5       0.50       0.50
+weekdays    6 Occupt     people    W   13-14   3339.0   1669.5       0.50       0.50
+weekdays    7 Occupt     people    W   14-16   4770.0   2385.5       0.50       0.50
+weekdays    8 Occupt     people    W   16-17   4054.0   2027.0       0.50       0.50
+weekdays    9 Occupt     people    W   17-18   2385.0   1192.5       0.50       0.50
+weekdays   10 Occupt     people    W   18-19    954.0    477.0       0.50       0.50
+weekdays   11 Occupt     people    W   19-24      0.0      0.0       0.50       0.50
+weekdays   12 Lights     lighting  W    0- 7    264.6      0.0       0.50       0.50
+weekdays   13 Lights     lighting  W    7- 8   1323.0      0.0       0.50       0.50
+weekdays   14 Lights     lighting  W    8-12   2646.0      0.0       0.50       0.50
+weekdays   15 Lights     lighting  W   12-13   2116.8      0.0       0.50       0.50
+weekdays   16 Lights     lighting  W   13-17   2646.0      0.0       0.50       0.50
+weekdays   17 Lights     lighting  W   17-18   2116.8      0.0       0.50       0.50
+weekdays   18 Lights     lighting  W   18-19   1323.0      0.0       0.50       0.50
+weekdays   19 Lights     lighting  W   19-24    264.6      0.0       0.50       0.50
+weekdays   20 Equipt     equipment W    0- 7    992.5      0.0       0.50       0.50
+weekdays   21 Equipt     equipment W    7- 8   1191.0      0.0       0.50       0.50
+weekdays   22 Equipt     equipment W    8-12   1885.8      0.0       0.50       0.50
+weekdays   23 Equipt     equipment W   12-13   1985.0      0.0       0.50       0.50
+weekdays   24 Equipt     equipment W   13-18   1885.8      0.0       0.50       0.50
+weekdays   25 Equipt     equipment W   18-19   1588.0      0.0       0.50       0.50
+weekdays   26 Equipt     equipment W   19-24    992.5      0.0       0.50       0.50
+saturday    1 Occupt     people    W    0- 9      0.0      0.0       0.50       0.50
+saturday    2 Occupt     people    W    9-12    954.0    238.5       0.50       0.50
+saturday    3 Occupt     people    W   12-24      0.0      0.0       0.50       0.50
+saturday    4 Lights     lighting  W    0- 9    264.6      0.0       0.50       0.50
+saturday    5 Lights     lighting  W    9-12   2646.0      0.0       0.50       0.50
+saturday    6 Lights     lighting  W   12-24    264.6      0.0       0.50       0.50
+saturday    7 Equipt     equipment W    0- 9    595.5      0.0       0.50       0.50
+saturday    8 Equipt     equipment W    9-12    992.5      0.0       0.50       0.50
+saturday    9 Equipt     equipment W   12-24    595.5      0.0       0.50       0.50
+sunday      1 Occupt     people    W    0-24      0.0      0.0       0.50       0.50
+sunday      2 Lights     lighting  W    0-24    251.9      0.0       0.50       0.50
+sunday      3 Equipt     equipment W    0-24    595.0      0.0       0.50       0.50
  
  ____________________________________________________________
  
@@ -631,6 +860,92 @@ frm_north frm_wst_1 frm_wst_2 south_frm
  
  
  Casual gains are controlled in this zone.
+ 
+ Zone  4
+ Casual gain type for control during weekdays     =   2
+ Casual gain type for control during saturday     =   2
+ Casual gain type for control during sunday       =   2
+ Light zone 1
+ Average of  1 user specified daylight factor photocell types.
+ There are  4 source surfaces for daylighting in the zone.
+ 
+ Set   |Switch-off |Minimum dimming|Minimal elec|Switch-off
+ point |light level|light output   |light output|delay time
+  400.0         1.4          0.10          0.10         0
+ 
+ % of |Sensor|Calculation   |
+ whole|number|type          |
+  0.33      1 User defined DF
+ 
+ Sensor|   X  |   Y  |   Z  |  DX |  DY |  DZ |
+ number|      |      |      |     |     |     |
+      1  17.50   9.50   5.10  0.00  0.00  1.00
+ 
+ 
+ Source  | Daylight |
+ surface | factor(%)|
+   16        1.00
+   17        1.00
+   18        1.00
+   19        6.40
+ 
+ Start| Finish| Control    |
+  Hour|   Hour|    Type    |
+      8     18 On-Off
+ Light zone 2
+ Average of  1 user specified daylight factor photocell types.
+ There are  4 source surfaces for daylighting in the zone.
+ 
+ Set   |Switch-off |Minimum dimming|Minimal elec|Switch-off
+ point |light level|light output   |light output|delay time
+  400.0         1.4          0.10          0.10         0
+ 
+ % of |Sensor|Calculation   |
+ whole|number|type          |
+  0.33      1 User defined DF
+ 
+ Sensor|   X  |   Y  |   Z  |  DX |  DY |  DZ |
+ number|      |      |      |     |     |     |
+      1  17.50  24.00   5.10  0.00  0.00  1.00
+ 
+ 
+ Source  | Daylight |
+ surface | factor(%)|
+   16        7.10
+   17        1.00
+   18        1.00
+   19        1.00
+ 
+ Start| Finish| Control    |
+  Hour|   Hour|    Type    |
+      8     18 On-Off
+ Light zone 3
+ Average of  1 user specified daylight factor photocell types.
+ There are  4 source surfaces for daylighting in the zone.
+ 
+ Set   |Switch-off |Minimum dimming|Minimal elec|Switch-off
+ point |light level|light output   |light output|delay time
+  400.0         1.4          0.10          0.10         0
+ 
+ % of |Sensor|Calculation   |
+ whole|number|type          |
+  0.33      1 User defined DF
+ 
+ Sensor|   X  |   Y  |   Z  |  DX |  DY |  DZ |
+ number|      |      |      |     |     |     |
+      1  17.50  15.50   5.10  0.00  0.00  1.00
+ 
+ 
+ Source  | Daylight |
+ surface | factor(%)|
+   16        6.00
+   17        6.00
+   18        6.00
+   19        6.00
+ 
+ Start| Finish| Control    |
+  Hour|   Hour|    Type    |
+      8     18 Always On
  Shading patterns have not yet been calculated.
  
  
@@ -656,46 +971,46 @@ of this during unoccupied. Occupied is 8h00-17h00 M-F. 1 person per
 4.646m^2 in office so 51 people here. Ventilation should be
 0.00944m^3/person/second. Infil at 0.5 ach
  
-Daytype   Gain Type    Period Sensible  Latent     Radiant    Convec
-          No.  label   Hours  Magn.(W)  Magn.(W)   Fraction   Fraction
-weekdays    1 OccuptW    0- 7      0.0      0.0       0.50       0.50
-weekdays    2 OccuptW    7- 8    477.0    238.5       0.50       0.50
-weekdays    3 OccuptW    8- 9   3339.0   1669.5       0.50       0.50
-weekdays    4 OccuptW    9-12   4770.0   2385.0       0.50       0.50
-weekdays    5 OccuptW   12-13   2385.0   1192.5       0.50       0.50
-weekdays    6 OccuptW   13-14   3339.0   1669.5       0.50       0.50
-weekdays    7 OccuptW   14-16   4770.0   2385.5       0.50       0.50
-weekdays    8 OccuptW   16-17   4054.0   2027.0       0.50       0.50
-weekdays    9 OccuptW   17-18   2385.0   1192.5       0.50       0.50
-weekdays   10 OccuptW   18-19    954.0    477.0       0.50       0.50
-weekdays   11 OccuptW   19-24      0.0      0.0       0.50       0.50
-weekdays   12 LightsW    0- 7    264.6      0.0       0.50       0.50
-weekdays   13 LightsW    7- 8   1323.0      0.0       0.50       0.50
-weekdays   14 LightsW    8-12   2646.0      0.0       0.50       0.50
-weekdays   15 LightsW   12-13   2116.8      0.0       0.50       0.50
-weekdays   16 LightsW   13-17   2646.0      0.0       0.50       0.50
-weekdays   17 LightsW   17-18   2116.8      0.0       0.50       0.50
-weekdays   18 LightsW   18-19   1323.0      0.0       0.50       0.50
-weekdays   19 LightsW   19-24    264.6      0.0       0.50       0.50
-weekdays   20 EquiptW    0- 7    992.5      0.0       0.50       0.50
-weekdays   21 EquiptW    7- 8   1191.0      0.0       0.50       0.50
-weekdays   22 EquiptW    8-12   1885.8      0.0       0.50       0.50
-weekdays   23 EquiptW   12-13   1985.0      0.0       0.50       0.50
-weekdays   24 EquiptW   13-18   1885.8      0.0       0.50       0.50
-weekdays   25 EquiptW   18-19   1588.0      0.0       0.50       0.50
-weekdays   26 EquiptW   19-24    992.5      0.0       0.50       0.50
-saturday    1 OccuptW    0- 9      0.0      0.0       0.50       0.50
-saturday    2 OccuptW    9-12    954.0    238.5       0.50       0.50
-saturday    3 OccuptW   12-24      0.0      0.0       0.50       0.50
-saturday    4 LightsW    0- 9    264.6      0.0       0.50       0.50
-saturday    5 LightsW    9-12   2646.0      0.0       0.50       0.50
-saturday    6 LightsW   12-24    264.6      0.0       0.50       0.50
-saturday    7 EquiptW    0- 9    595.5      0.0       0.50       0.50
-saturday    8 EquiptW    9-12    992.5      0.0       0.50       0.50
-saturday    9 EquiptW   12-24    595.5      0.0       0.50       0.50
-sunday      1 OccuptW    0-24      0.0      0.0       0.50       0.50
-sunday      2 LightsW    0-24    251.9      0.0       0.50       0.50
-sunday      3 EquiptW    0-24    595.0      0.0       0.50       0.50
+Daytype   Gain Label     Type    Unit Period Sensible  Latent     Radiant    Convec
+          No.                          Hours Magn.(W)  Magn.(W)   Fraction   Fraction
+weekdays    1 Occupt     people    W    0- 7      0.0      0.0       0.50       0.50
+weekdays    2 Occupt     people    W    7- 8    477.0    238.5       0.50       0.50
+weekdays    3 Occupt     people    W    8- 9   3339.0   1669.5       0.50       0.50
+weekdays    4 Occupt     people    W    9-12   4770.0   2385.0       0.50       0.50
+weekdays    5 Occupt     people    W   12-13   2385.0   1192.5       0.50       0.50
+weekdays    6 Occupt     people    W   13-14   3339.0   1669.5       0.50       0.50
+weekdays    7 Occupt     people    W   14-16   4770.0   2385.5       0.50       0.50
+weekdays    8 Occupt     people    W   16-17   4054.0   2027.0       0.50       0.50
+weekdays    9 Occupt     people    W   17-18   2385.0   1192.5       0.50       0.50
+weekdays   10 Occupt     people    W   18-19    954.0    477.0       0.50       0.50
+weekdays   11 Occupt     people    W   19-24      0.0      0.0       0.50       0.50
+weekdays   12 Lights     lighting  W    0- 7    264.6      0.0       0.50       0.50
+weekdays   13 Lights     lighting  W    7- 8   1323.0      0.0       0.50       0.50
+weekdays   14 Lights     lighting  W    8-12   2646.0      0.0       0.50       0.50
+weekdays   15 Lights     lighting  W   12-13   2116.8      0.0       0.50       0.50
+weekdays   16 Lights     lighting  W   13-17   2646.0      0.0       0.50       0.50
+weekdays   17 Lights     lighting  W   17-18   2116.8      0.0       0.50       0.50
+weekdays   18 Lights     lighting  W   18-19   1323.0      0.0       0.50       0.50
+weekdays   19 Lights     lighting  W   19-24    264.6      0.0       0.50       0.50
+weekdays   20 Equipt     equipment W    0- 7    992.5      0.0       0.50       0.50
+weekdays   21 Equipt     equipment W    7- 8   1191.0      0.0       0.50       0.50
+weekdays   22 Equipt     equipment W    8-12   1885.8      0.0       0.50       0.50
+weekdays   23 Equipt     equipment W   12-13   1985.0      0.0       0.50       0.50
+weekdays   24 Equipt     equipment W   13-18   1885.8      0.0       0.50       0.50
+weekdays   25 Equipt     equipment W   18-19   1588.0      0.0       0.50       0.50
+weekdays   26 Equipt     equipment W   19-24    992.5      0.0       0.50       0.50
+saturday    1 Occupt     people    W    0- 9      0.0      0.0       0.50       0.50
+saturday    2 Occupt     people    W    9-12    954.0    238.5       0.50       0.50
+saturday    3 Occupt     people    W   12-24      0.0      0.0       0.50       0.50
+saturday    4 Lights     lighting  W    0- 9    264.6      0.0       0.50       0.50
+saturday    5 Lights     lighting  W    9-12   2646.0      0.0       0.50       0.50
+saturday    6 Lights     lighting  W   12-24    264.6      0.0       0.50       0.50
+saturday    7 Equipt     equipment W    0- 9    595.5      0.0       0.50       0.50
+saturday    8 Equipt     equipment W    9-12    992.5      0.0       0.50       0.50
+saturday    9 Equipt     equipment W   12-24    595.5      0.0       0.50       0.50
+sunday      1 Occupt     people    W    0-24      0.0      0.0       0.50       0.50
+sunday      2 Lights     lighting  W    0-24    251.9      0.0       0.50       0.50
+sunday      3 Equipt     equipment W    0-24    595.0      0.0       0.50       0.50
  
  ____________________________________________________________
  
@@ -739,6 +1054,92 @@ frm_north frm_est_1 frm_est_2 south_frm
  
  
  Casual gains are controlled in this zone.
+ 
+ Zone  5
+ Casual gain type for control during weekdays     =   2
+ Casual gain type for control during saturday     =   2
+ Casual gain type for control during sunday       =   2
+ Light zone 1
+ Average of  1 user specified daylight factor photocell types.
+ There are  4 source surfaces for daylighting in the zone.
+ 
+ Set   |Switch-off |Minimum dimming|Minimal elec|Switch-off
+ point |light level|light output   |light output|delay time
+  400.0         1.4          0.10          0.10         0
+ 
+ % of |Sensor|Calculation   |
+ whole|number|type          |
+  0.33      1 User defined DF
+ 
+ Sensor|   X  |   Y  |   Z  |  DX |  DY |  DZ |
+ number|      |      |      |     |     |     |
+      1  32.50   9.50  12.80  0.00  0.00  1.00
+ 
+ 
+ Source  | Daylight |
+ surface | factor(%)|
+   17        1.00
+   18        1.00
+   19        1.00
+   20        6.40
+ 
+ Start| Finish| Control    |
+  Hour|   Hour|    Type    |
+      8     18 On-Off
+ Light zone 2
+ Average of  1 user specified daylight factor photocell types.
+ There are  4 source surfaces for daylighting in the zone.
+ 
+ Set   |Switch-off |Minimum dimming|Minimal elec|Switch-off
+ point |light level|light output   |light output|delay time
+  400.0         1.4          0.10          0.10         0
+ 
+ % of |Sensor|Calculation   |
+ whole|number|type          |
+  0.33      1 User defined DF
+ 
+ Sensor|   X  |   Y  |   Z  |  DX |  DY |  DZ |
+ number|      |      |      |     |     |     |
+      1  32.50  24.00  12.80  0.00  0.00  1.00
+ 
+ 
+ Source  | Daylight |
+ surface | factor(%)|
+   17        7.00
+   18        1.00
+   19        1.00
+   20        1.00
+ 
+ Start| Finish| Control    |
+  Hour|   Hour|    Type    |
+      8     18 On-Off
+ Light zone 3
+ Average of  1 user specified daylight factor photocell types.
+ There are  4 source surfaces for daylighting in the zone.
+ 
+ Set   |Switch-off |Minimum dimming|Minimal elec|Switch-off
+ point |light level|light output   |light output|delay time
+  400.0         1.4          0.10          0.10         0
+ 
+ % of |Sensor|Calculation   |
+ whole|number|type          |
+  0.33      1 User defined DF
+ 
+ Sensor|   X  |   Y  |   Z  |  DX |  DY |  DZ |
+ number|      |      |      |     |     |     |
+      1  32.50  15.50  12.80  0.00  0.00  1.00
+ 
+ 
+ Source  | Daylight |
+ surface | factor(%)|
+   17        6.00
+   18        6.00
+   19        6.00
+   20        6.00
+ 
+ Start| Finish| Control    |
+  Hour|   Hour|    Type    |
+      8     18 Always On
  Shading patterns have not yet been calculated.
  
  
@@ -764,46 +1165,46 @@ of this during unoccupied. Occupied is 8h00-17h00 M-F. 1 person per
 4.646m^2 in office so 53 people in this room. Ventilation should be
 0.00944m^3/person/second. Infil at 0.5 ach
  
-Daytype   Gain Type    Period Sensible  Latent     Radiant    Convec
-          No.  label   Hours  Magn.(W)  Magn.(W)   Fraction   Fraction
-weekdays    1 OccuptW    0- 7      0.0      0.0       0.50       0.50
-weekdays    2 OccuptW    7- 8    477.0    238.5       0.50       0.50
-weekdays    3 OccuptW    8- 9   3339.0   1669.5       0.50       0.50
-weekdays    4 OccuptW    9-12   4770.0   2385.0       0.50       0.50
-weekdays    5 OccuptW   12-13   2385.0   1192.5       0.50       0.50
-weekdays    6 OccuptW   13-14   3339.0   1669.5       0.50       0.50
-weekdays    7 OccuptW   14-16   4770.0   2385.5       0.50       0.50
-weekdays    8 OccuptW   16-17   4054.0   2027.0       0.50       0.50
-weekdays    9 OccuptW   17-18   2385.0   1192.5       0.50       0.50
-weekdays   10 OccuptW   18-19    954.0    477.0       0.50       0.50
-weekdays   11 OccuptW   19-24      0.0      0.0       0.50       0.50
-weekdays   12 LightsW    0- 7    264.6      0.0       0.50       0.50
-weekdays   13 LightsW    7- 8   1323.0      0.0       0.50       0.50
-weekdays   14 LightsW    8-12   2646.0      0.0       0.50       0.50
-weekdays   15 LightsW   12-13   2116.8      0.0       0.50       0.50
-weekdays   16 LightsW   13-17   2646.0      0.0       0.50       0.50
-weekdays   17 LightsW   17-18   2116.8      0.0       0.50       0.50
-weekdays   18 LightsW   18-19   1323.0      0.0       0.50       0.50
-weekdays   19 LightsW   19-24    264.6      0.0       0.50       0.50
-weekdays   20 EquiptW    0- 7    992.5      0.0       0.50       0.50
-weekdays   21 EquiptW    7- 8   1191.0      0.0       0.50       0.50
-weekdays   22 EquiptW    8-12   1885.8      0.0       0.50       0.50
-weekdays   23 EquiptW   12-13   1985.0      0.0       0.50       0.50
-weekdays   24 EquiptW   13-18   1885.8      0.0       0.50       0.50
-weekdays   25 EquiptW   18-19   1588.0      0.0       0.50       0.50
-weekdays   26 EquiptW   19-24    992.5      0.0       0.50       0.50
-saturday    1 OccuptW    0- 9      0.0      0.0       0.50       0.50
-saturday    2 OccuptW    9-12    954.0    238.5       0.50       0.50
-saturday    3 OccuptW   12-24      0.0      0.0       0.50       0.50
-saturday    4 LightsW    0- 9    264.6      0.0       0.50       0.50
-saturday    5 LightsW    9-12   2646.0      0.0       0.50       0.50
-saturday    6 LightsW   12-24    264.6      0.0       0.50       0.50
-saturday    7 EquiptW    0- 9    595.5      0.0       0.50       0.50
-saturday    8 EquiptW    9-12    992.5      0.0       0.50       0.50
-saturday    9 EquiptW   12-24    595.5      0.0       0.50       0.50
-sunday      1 OccuptW    0-24      0.0      0.0       0.50       0.50
-sunday      2 LightsW    0-24    251.9      0.0       0.50       0.50
-sunday      3 EquiptW    0-24    595.0      0.0       0.50       0.50
+Daytype   Gain Label     Type    Unit Period Sensible  Latent     Radiant    Convec
+          No.                          Hours Magn.(W)  Magn.(W)   Fraction   Fraction
+weekdays    1 Occupt     people    W    0- 7      0.0      0.0       0.50       0.50
+weekdays    2 Occupt     people    W    7- 8    477.0    238.5       0.50       0.50
+weekdays    3 Occupt     people    W    8- 9   3339.0   1669.5       0.50       0.50
+weekdays    4 Occupt     people    W    9-12   4770.0   2385.0       0.50       0.50
+weekdays    5 Occupt     people    W   12-13   2385.0   1192.5       0.50       0.50
+weekdays    6 Occupt     people    W   13-14   3339.0   1669.5       0.50       0.50
+weekdays    7 Occupt     people    W   14-16   4770.0   2385.5       0.50       0.50
+weekdays    8 Occupt     people    W   16-17   4054.0   2027.0       0.50       0.50
+weekdays    9 Occupt     people    W   17-18   2385.0   1192.5       0.50       0.50
+weekdays   10 Occupt     people    W   18-19    954.0    477.0       0.50       0.50
+weekdays   11 Occupt     people    W   19-24      0.0      0.0       0.50       0.50
+weekdays   12 Lights     lighting  W    0- 7    264.6      0.0       0.50       0.50
+weekdays   13 Lights     lighting  W    7- 8   1323.0      0.0       0.50       0.50
+weekdays   14 Lights     lighting  W    8-12   2646.0      0.0       0.50       0.50
+weekdays   15 Lights     lighting  W   12-13   2116.8      0.0       0.50       0.50
+weekdays   16 Lights     lighting  W   13-17   2646.0      0.0       0.50       0.50
+weekdays   17 Lights     lighting  W   17-18   2116.8      0.0       0.50       0.50
+weekdays   18 Lights     lighting  W   18-19   1323.0      0.0       0.50       0.50
+weekdays   19 Lights     lighting  W   19-24    264.6      0.0       0.50       0.50
+weekdays   20 Equipt     equipment W    0- 7    992.5      0.0       0.50       0.50
+weekdays   21 Equipt     equipment W    7- 8   1191.0      0.0       0.50       0.50
+weekdays   22 Equipt     equipment W    8-12   1885.8      0.0       0.50       0.50
+weekdays   23 Equipt     equipment W   12-13   1985.0      0.0       0.50       0.50
+weekdays   24 Equipt     equipment W   13-18   1885.8      0.0       0.50       0.50
+weekdays   25 Equipt     equipment W   18-19   1588.0      0.0       0.50       0.50
+weekdays   26 Equipt     equipment W   19-24    992.5      0.0       0.50       0.50
+saturday    1 Occupt     people    W    0- 9      0.0      0.0       0.50       0.50
+saturday    2 Occupt     people    W    9-12    954.0    238.5       0.50       0.50
+saturday    3 Occupt     people    W   12-24      0.0      0.0       0.50       0.50
+saturday    4 Lights     lighting  W    0- 9    264.6      0.0       0.50       0.50
+saturday    5 Lights     lighting  W    9-12   2646.0      0.0       0.50       0.50
+saturday    6 Lights     lighting  W   12-24    264.6      0.0       0.50       0.50
+saturday    7 Equipt     equipment W    0- 9    595.5      0.0       0.50       0.50
+saturday    8 Equipt     equipment W    9-12    992.5      0.0       0.50       0.50
+saturday    9 Equipt     equipment W   12-24    595.5      0.0       0.50       0.50
+sunday      1 Occupt     people    W    0-24      0.0      0.0       0.50       0.50
+sunday      2 Lights     lighting  W    0-24    251.9      0.0       0.50       0.50
+sunday      3 Equipt     equipment W    0-24    595.0      0.0       0.50       0.50
  
  ____________________________________________________________
  
@@ -847,6 +1248,90 @@ frm_north frm_wst_1 frm_wst_2 south_frm
  
  
  Casual gains are controlled in this zone.
+ 
+ Zone  6
+ Casual gain type for control during weekdays     =   2
+ Casual gain type for control during saturday     =   2
+ Casual gain type for control during sunday       =   2
+ Light zone 1
+ Average of  1 user specified daylight factor photocell types.
+ There are  4 source surfaces for daylighting in the zone.
+ 
+ Set   |Switch-off |Minimum dimming|Minimal elec|Switch-off
+ point |light level|light output   |light output|delay time
+  400.0         1.4          0.10          0.10         0
+ 
+ % of |Sensor|Calculation   |
+ whole|number|type          |
+  0.33      1 User defined DF
+ 
+ Sensor|   X  |   Y  |   Z  |  DX |  DY |  DZ |
+ number|      |      |      |     |     |     |
+      1  17.50   9.50  12.80  0.00  0.00  1.00
+ 
+ 
+ Source  | Daylight |
+ surface | factor(%)|
+   17        1.00
+   18        1.00
+   19        1.00
+   20        6.40
+ 
+ Start| Finish| Control    |
+  Hour|   Hour|    Type    |
+      8     18 On-Off
+ Light zone 2
+ Average of  1 user specified daylight factor photocell types.
+ There are  4 source surfaces for daylighting in the zone.
+ 
+ Set   |Switch-off |Minimum dimming|Minimal elec|Switch-off
+ point |light level|light output   |light output|delay time
+  400.0         1.4          0.10          0.10         0
+ 
+ % of |Sensor|Calculation   |
+ whole|number|type          |
+  0.33      1 User defined DF
+ 
+ Sensor|   X  |   Y  |   Z  |  DX |  DY |  DZ |
+ number|      |      |      |     |     |     |
+      1  17.50  24.00  12.80  0.00  0.00  1.00
+ 
+ 
+ Source  | Daylight |
+ surface | factor(%)|
+   17        7.10
+   18        1.00
+   19        1.00
+ 
+ Start| Finish| Control    |
+  Hour|   Hour|    Type    |
+      8     18 On-Off
+ Light zone 3
+ Average of  1 user specified daylight factor photocell types.
+ There are  4 source surfaces for daylighting in the zone.
+ 
+ Set   |Switch-off |Minimum dimming|Minimal elec|Switch-off
+ point |light level|light output   |light output|delay time
+  400.0         1.4          0.10          0.10         0
+ 
+ % of |Sensor|Calculation   |
+ whole|number|type          |
+  0.33      1 User defined DF
+ 
+ Sensor|   X  |   Y  |   Z  |  DX |  DY |  DZ |
+ number|      |      |      |     |     |     |
+      1  17.50  15.50  12.80  0.00  0.00  1.00
+ 
+ 
+ Source  | Daylight |
+ surface | factor(%)|
+   17        6.00
+   18        6.00
+   19        6.00
+ 
+ Start| Finish| Control    |
+  Hour|   Hour|    Type    |
+      8     18 Always On
  Shading patterns have not yet been calculated.
  
  
@@ -872,46 +1357,46 @@ of this during unoccupied. Occupied is 8h00-17h00 M-F with diversity.
 1 person per 4.646m^2 in office so 51 people in this room. Ventilation
 should be 0.00944m^3/person/second. I
  
-Daytype   Gain Type    Period Sensible  Latent     Radiant    Convec
-          No.  label   Hours  Magn.(W)  Magn.(W)   Fraction   Fraction
-weekdays    1 OccuptW    0- 7      0.0      0.0       0.50       0.50
-weekdays    2 OccuptW    7- 8    477.0    238.5       0.50       0.50
-weekdays    3 OccuptW    8- 9   3339.0   1669.5       0.50       0.50
-weekdays    4 OccuptW    9-12   4770.0   2385.0       0.50       0.50
-weekdays    5 OccuptW   12-13   2385.0   1192.5       0.50       0.50
-weekdays    6 OccuptW   13-14   3339.0   1669.5       0.50       0.50
-weekdays    7 OccuptW   14-16   4770.0   2385.5       0.50       0.50
-weekdays    8 OccuptW   16-17   4054.0   2027.0       0.50       0.50
-weekdays    9 OccuptW   17-18   2385.0   1192.5       0.50       0.50
-weekdays   10 OccuptW   18-19    954.0    477.0       0.50       0.50
-weekdays   11 OccuptW   19-24      0.0      0.0       0.50       0.50
-weekdays   12 LightsW    0- 7    264.6      0.0       0.50       0.50
-weekdays   13 LightsW    7- 8   1323.0      0.0       0.50       0.50
-weekdays   14 LightsW    8-12   2646.9      0.0       0.50       0.50
-weekdays   15 LightsW   12-13   2117.5      0.0       0.50       0.50
-weekdays   16 LightsW   13-17   2646.9      0.0       0.50       0.50
-weekdays   17 LightsW   17-18   2117.5      0.0       0.50       0.50
-weekdays   18 LightsW   18-19   1323.4      0.0       0.50       0.50
-weekdays   19 LightsW   19-24    264.6      0.0       0.50       0.50
-weekdays   20 EquiptW    0- 7    992.0      0.0       0.50       0.50
-weekdays   21 EquiptW    7- 8   1191.0      0.0       0.50       0.50
-weekdays   22 EquiptW    8-12   1885.2      0.0       0.50       0.50
-weekdays   23 EquiptW   12-13   1985.2      0.0       0.50       0.50
-weekdays   24 EquiptW   13-18   1885.2      0.0       0.50       0.50
-weekdays   25 EquiptW   18-19   1588.2      0.0       0.50       0.50
-weekdays   26 EquiptW   19-24    992.0      0.0       0.50       0.50
-saturday    1 OccuptW    0- 9      0.0      0.0       0.50       0.50
-saturday    2 OccuptW    9-12    954.0    477.0       0.50       0.50
-saturday    3 OccuptW   12-24      0.0      0.0       0.50       0.50
-saturday    4 LightsW    0- 9     25.1      0.0       0.50       0.50
-saturday    5 LightsW    9-12    251.9      0.0       0.50       0.50
-saturday    6 LightsW   12-24     25.1      0.0       0.50       0.50
-saturday    7 EquiptW    0- 9    595.0      0.0       0.50       0.50
-saturday    8 EquiptW    9-12    992.6      0.0       0.50       0.50
-saturday    9 EquiptW   12-24    595.0      0.0       0.50       0.50
-sunday      1 OccuptW    0-24      0.0      0.0       0.50       0.50
-sunday      2 LightsW    0-24    251.9      0.0       0.50       0.50
-sunday      3 EquiptW    0-24    595.0      0.0       0.50       0.50
+Daytype   Gain Label     Type    Unit Period Sensible  Latent     Radiant    Convec
+          No.                          Hours Magn.(W)  Magn.(W)   Fraction   Fraction
+weekdays    1 Occupt     people    W    0- 7      0.0      0.0       0.50       0.50
+weekdays    2 Occupt     people    W    7- 8    477.0    238.5       0.50       0.50
+weekdays    3 Occupt     people    W    8- 9   3339.0   1669.5       0.50       0.50
+weekdays    4 Occupt     people    W    9-12   4770.0   2385.0       0.50       0.50
+weekdays    5 Occupt     people    W   12-13   2385.0   1192.5       0.50       0.50
+weekdays    6 Occupt     people    W   13-14   3339.0   1669.5       0.50       0.50
+weekdays    7 Occupt     people    W   14-16   4770.0   2385.5       0.50       0.50
+weekdays    8 Occupt     people    W   16-17   4054.0   2027.0       0.50       0.50
+weekdays    9 Occupt     people    W   17-18   2385.0   1192.5       0.50       0.50
+weekdays   10 Occupt     people    W   18-19    954.0    477.0       0.50       0.50
+weekdays   11 Occupt     people    W   19-24      0.0      0.0       0.50       0.50
+weekdays   12 Lights     lighting  W    0- 7    264.6      0.0       0.50       0.50
+weekdays   13 Lights     lighting  W    7- 8   1323.0      0.0       0.50       0.50
+weekdays   14 Lights     lighting  W    8-12   2646.9      0.0       0.50       0.50
+weekdays   15 Lights     lighting  W   12-13   2117.5      0.0       0.50       0.50
+weekdays   16 Lights     lighting  W   13-17   2646.9      0.0       0.50       0.50
+weekdays   17 Lights     lighting  W   17-18   2117.5      0.0       0.50       0.50
+weekdays   18 Lights     lighting  W   18-19   1323.4      0.0       0.50       0.50
+weekdays   19 Lights     lighting  W   19-24    264.6      0.0       0.50       0.50
+weekdays   20 Equipt     equipment W    0- 7    992.0      0.0       0.50       0.50
+weekdays   21 Equipt     equipment W    7- 8   1191.0      0.0       0.50       0.50
+weekdays   22 Equipt     equipment W    8-12   1885.2      0.0       0.50       0.50
+weekdays   23 Equipt     equipment W   12-13   1985.2      0.0       0.50       0.50
+weekdays   24 Equipt     equipment W   13-18   1885.2      0.0       0.50       0.50
+weekdays   25 Equipt     equipment W   18-19   1588.2      0.0       0.50       0.50
+weekdays   26 Equipt     equipment W   19-24    992.0      0.0       0.50       0.50
+saturday    1 Occupt     people    W    0- 9      0.0      0.0       0.50       0.50
+saturday    2 Occupt     people    W    9-12    954.0    477.0       0.50       0.50
+saturday    3 Occupt     people    W   12-24      0.0      0.0       0.50       0.50
+saturday    4 Lights     lighting  W    0- 9     25.1      0.0       0.50       0.50
+saturday    5 Lights     lighting  W    9-12    251.9      0.0       0.50       0.50
+saturday    6 Lights     lighting  W   12-24     25.1      0.0       0.50       0.50
+saturday    7 Equipt     equipment W    0- 9    595.0      0.0       0.50       0.50
+saturday    8 Equipt     equipment W    9-12    992.6      0.0       0.50       0.50
+saturday    9 Equipt     equipment W   12-24    595.0      0.0       0.50       0.50
+sunday      1 Occupt     people    W    0-24      0.0      0.0       0.50       0.50
+sunday      2 Lights     lighting  W    0-24    251.9      0.0       0.50       0.50
+sunday      3 Equipt     equipment W    0-24    595.0      0.0       0.50       0.50
  
  ____________________________________________________________
  
@@ -980,21 +1465,21 @@ Core space schedules - 1 person per 18.58m^2 (2 in entry), lighting at
 hours, 20% plug loads un-occup hours. As base case assume not tight
 fit doors (1ach) with 2ach during occupi
  
-Daytype   Gain Type    Period Sensible  Latent     Radiant    Convec
-          No.  label   Hours  Magn.(W)  Magn.(W)   Fraction   Fraction
-weekdays    1 OccuptW    0- 8      0.0      0.0       0.50       0.50
-weekdays    2 OccuptW    8-17    180.0     90.0       0.50       0.50
-weekdays    3 OccuptW   17-24      0.0      0.0       0.50       0.50
-weekdays    4 LightsW    0- 8     60.0      0.0       0.50       0.50
-weekdays    5 LightsW    8-17    600.0      0.0       0.50       0.50
-weekdays    6 LightsW   17-24     60.0      0.0       0.50       0.50
-weekdays    7 EquiptW    0- 8    140.0      0.0       0.50       0.50
-weekdays    8 EquiptW    8-17    700.0      0.0       0.50       0.50
-weekdays    9 EquiptW   17-24    140.0      0.0       0.50       0.50
-saturday    1 LightsW    0-24     60.0      0.0       0.50       0.50
-saturday    2 EquiptW    0-24    140.0      0.0       0.50       0.50
-sunday      1 LightsW    0-24     60.0      0.0       0.50       0.50
-sunday      2 EquiptW    0-24    140.0      0.0       0.50       0.50
+Daytype   Gain Label     Type    Unit Period Sensible  Latent     Radiant    Convec
+          No.                          Hours Magn.(W)  Magn.(W)   Fraction   Fraction
+weekdays    1 Occupt     people    W    0- 8      0.0      0.0       0.50       0.50
+weekdays    2 Occupt     people    W    8-17    180.0     90.0       0.50       0.50
+weekdays    3 Occupt     people    W   17-24      0.0      0.0       0.50       0.50
+weekdays    4 Lights     lighting  W    0- 8     60.0      0.0       0.50       0.50
+weekdays    5 Lights     lighting  W    8-17    600.0      0.0       0.50       0.50
+weekdays    6 Lights     lighting  W   17-24     60.0      0.0       0.50       0.50
+weekdays    7 Equipt     equipment W    0- 8    140.0      0.0       0.50       0.50
+weekdays    8 Equipt     equipment W    8-17    700.0      0.0       0.50       0.50
+weekdays    9 Equipt     equipment W   17-24    140.0      0.0       0.50       0.50
+saturday    1 Lights     lighting  W    0-24     60.0      0.0       0.50       0.50
+saturday    2 Equipt     equipment W    0-24    140.0      0.0       0.50       0.50
+sunday      1 Lights     lighting  W    0-24     60.0      0.0       0.50       0.50
+sunday      2 Equipt     equipment W    0-24    140.0      0.0       0.50       0.50
  
  ____________________________________________________________
  
@@ -1048,21 +1533,21 @@ Core space schedules - 1 person per 18.58m^2 (2 people), lighting at
 1W/ft^2 (10.76 m^2). Plug loads at 13.45 W/m^2.  10% lights un-occup
 hours, 20% plug loads un-occup hours. .
  
-Daytype   Gain Type    Period Sensible  Latent     Radiant    Convec
-          No.  label   Hours  Magn.(W)  Magn.(W)   Fraction   Fraction
-weekdays    1 OccuptW    0- 8      0.0      0.0       0.50       0.50
-weekdays    2 OccuptW    8-17    180.0     90.0       0.50       0.50
-weekdays    3 OccuptW   17-24      0.0      0.0       0.50       0.50
-weekdays    4 LightsW    0- 8     51.0      0.0       0.50       0.50
-weekdays    5 LightsW    8-17    516.0      0.0       0.50       0.50
-weekdays    6 LightsW   17-24     51.0      0.0       0.50       0.50
-weekdays    7 EquiptW    0- 8    129.0      0.0       0.50       0.50
-weekdays    8 EquiptW    8-17    645.0      0.0       0.50       0.50
-weekdays    9 EquiptW   17-24    129.0      0.0       0.50       0.50
-saturday    1 LightsW    0-24     51.0      0.0       0.50       0.50
-saturday    2 EquiptW    0-24    129.0      0.0       0.50       0.50
-sunday      1 LightsW    0-24     51.0      0.0       0.50       0.50
-sunday      2 EquiptW    0-24    129.0      0.0       0.50       0.50
+Daytype   Gain Label     Type    Unit Period Sensible  Latent     Radiant    Convec
+          No.                          Hours Magn.(W)  Magn.(W)   Fraction   Fraction
+weekdays    1 Occupt     people    W    0- 8      0.0      0.0       0.50       0.50
+weekdays    2 Occupt     people    W    8-17    180.0     90.0       0.50       0.50
+weekdays    3 Occupt     people    W   17-24      0.0      0.0       0.50       0.50
+weekdays    4 Lights     lighting  W    0- 8     51.0      0.0       0.50       0.50
+weekdays    5 Lights     lighting  W    8-17    516.0      0.0       0.50       0.50
+weekdays    6 Lights     lighting  W   17-24     51.0      0.0       0.50       0.50
+weekdays    7 Equipt     equipment W    0- 8    129.0      0.0       0.50       0.50
+weekdays    8 Equipt     equipment W    8-17    645.0      0.0       0.50       0.50
+weekdays    9 Equipt     equipment W   17-24    129.0      0.0       0.50       0.50
+saturday    1 Lights     lighting  W    0-24     51.0      0.0       0.50       0.50
+saturday    2 Equipt     equipment W    0-24    129.0      0.0       0.50       0.50
+sunday      1 Lights     lighting  W    0-24     51.0      0.0       0.50       0.50
+sunday      2 Equipt     equipment W    0-24    129.0      0.0       0.50       0.50
  
  ____________________________________________________________
  
@@ -1120,21 +1605,21 @@ Core space schedules - 1 person per 18.58m^2 (5.8 people), lighting at
 1W/ft^2 (10.76 m^2). Plug loads at 13.45 W/m^2.  10% lights un-occup
 hours, 20% plug loads un-occup hours. .
  
-Daytype   Gain Type    Period Sensible  Latent     Radiant    Convec
-          No.  label   Hours  Magn.(W)  Magn.(W)   Fraction   Fraction
-weekdays    1 OccuptW    0- 8      0.0      0.0       0.50       0.50
-weekdays    2 OccuptW    8-17    522.0    261.0       0.50       0.50
-weekdays    3 OccuptW   17-24      0.0      0.0       0.50       0.50
-weekdays    4 LightsW    0- 8    140.2      0.0       0.50       0.50
-weekdays    5 LightsW    8-17   1419.0      0.0       0.50       0.50
-weekdays    6 LightsW   17-24    140.2      0.0       0.50       0.50
-weekdays    7 EquiptW    0- 8    354.8      0.0       0.50       0.50
-weekdays    8 EquiptW    8-17   1773.8      0.0       0.50       0.50
-weekdays    9 EquiptW   17-24    354.8      0.0       0.50       0.50
-saturday    1 LightsW    0-24    140.2      0.0       0.50       0.50
-saturday    2 EquiptW    0-24    354.8      0.0       0.50       0.50
-sunday      1 LightsW    0-24    140.2      0.0       0.50       0.50
-sunday      2 EquiptW    0-24    354.8      0.0       0.50       0.50
+Daytype   Gain Label     Type    Unit Period Sensible  Latent     Radiant    Convec
+          No.                          Hours Magn.(W)  Magn.(W)   Fraction   Fraction
+weekdays    1 Occupt     people    W    0- 8      0.0      0.0       0.50       0.50
+weekdays    2 Occupt     people    W    8-17    522.0    261.0       0.50       0.50
+weekdays    3 Occupt     people    W   17-24      0.0      0.0       0.50       0.50
+weekdays    4 Lights     lighting  W    0- 8    140.2      0.0       0.50       0.50
+weekdays    5 Lights     lighting  W    8-17   1419.0      0.0       0.50       0.50
+weekdays    6 Lights     lighting  W   17-24    140.2      0.0       0.50       0.50
+weekdays    7 Equipt     equipment W    0- 8    354.8      0.0       0.50       0.50
+weekdays    8 Equipt     equipment W    8-17   1773.8      0.0       0.50       0.50
+weekdays    9 Equipt     equipment W   17-24    354.8      0.0       0.50       0.50
+saturday    1 Lights     lighting  W    0-24    140.2      0.0       0.50       0.50
+saturday    2 Equipt     equipment W    0-24    354.8      0.0       0.50       0.50
+sunday      1 Lights     lighting  W    0-24    140.2      0.0       0.50       0.50
+sunday      2 Equipt     equipment W    0-24    354.8      0.0       0.50       0.50
  
  ____________________________________________________________
  
@@ -1182,21 +1667,21 @@ Core space schedules - 1 person per 18.58m^2 (2 people), lighting at
 1W/ft^2 (10.76 m^2). Plug loads at 13.45 W/m^2.  10% lights un-occup
 hours, 20% plug loads un-occup hours. .
  
-Daytype   Gain Type    Period Sensible  Latent     Radiant    Convec
-          No.  label   Hours  Magn.(W)  Magn.(W)   Fraction   Fraction
-weekdays    1 OccuptW    0- 8      0.0      0.0       0.50       0.50
-weekdays    2 OccuptW    8-17    180.0     90.0       0.50       0.50
-weekdays    3 OccuptW   17-24      0.0      0.0       0.50       0.50
-weekdays    4 LightsW    0- 8     51.0      0.0       0.50       0.50
-weekdays    5 LightsW    8-17    516.0      0.0       0.50       0.50
-weekdays    6 LightsW   17-24     51.0      0.0       0.50       0.50
-weekdays    7 EquiptW    0- 8    129.0      0.0       0.50       0.50
-weekdays    8 EquiptW    8-17    645.0      0.0       0.50       0.50
-weekdays    9 EquiptW   17-24    129.0      0.0       0.50       0.50
-saturday    1 LightsW    0-24     51.0      0.0       0.50       0.50
-saturday    2 EquiptW    0-24    129.0      0.0       0.50       0.50
-sunday      1 LightsW    0-24     51.0      0.0       0.50       0.50
-sunday      2 EquiptW    0-24    129.0      0.0       0.50       0.50
+Daytype   Gain Label     Type    Unit Period Sensible  Latent     Radiant    Convec
+          No.                          Hours Magn.(W)  Magn.(W)   Fraction   Fraction
+weekdays    1 Occupt     people    W    0- 8      0.0      0.0       0.50       0.50
+weekdays    2 Occupt     people    W    8-17    180.0     90.0       0.50       0.50
+weekdays    3 Occupt     people    W   17-24      0.0      0.0       0.50       0.50
+weekdays    4 Lights     lighting  W    0- 8     51.0      0.0       0.50       0.50
+weekdays    5 Lights     lighting  W    8-17    516.0      0.0       0.50       0.50
+weekdays    6 Lights     lighting  W   17-24     51.0      0.0       0.50       0.50
+weekdays    7 Equipt     equipment W    0- 8    129.0      0.0       0.50       0.50
+weekdays    8 Equipt     equipment W    8-17    645.0      0.0       0.50       0.50
+weekdays    9 Equipt     equipment W   17-24    129.0      0.0       0.50       0.50
+saturday    1 Lights     lighting  W    0-24     51.0      0.0       0.50       0.50
+saturday    2 Equipt     equipment W    0-24    129.0      0.0       0.50       0.50
+sunday      1 Lights     lighting  W    0-24     51.0      0.0       0.50       0.50
+sunday      2 Equipt     equipment W    0-24    129.0      0.0       0.50       0.50
  
  ____________________________________________________________
  
@@ -1262,46 +1747,46 @@ of this during unoccupied. Occupied is 8h00-17h00 M-F. 1 person per
 4.646m^2 in office so 26 people in this part of 2nd floor. Ventilation
 should be 0.00944m^3/person/second.
  
-Daytype   Gain Type    Period Sensible  Latent     Radiant    Convec
-          No.  label   Hours  Magn.(W)  Magn.(W)   Fraction   Fraction
-weekdays    1 OccuptW    0- 7      0.0      0.0       0.50       0.50
-weekdays    2 OccuptW    7- 8    238.5    119.6       0.50       0.50
-weekdays    3 OccuptW    8- 9   1669.5    834.4       0.50       0.50
-weekdays    4 OccuptW    9-12   2385.0   1192.2       0.50       0.50
-weekdays    5 OccuptW   12-13   1192.5    596.1       0.50       0.50
-weekdays    6 OccuptW   13-14   1669.5    834.4       0.50       0.50
-weekdays    7 OccuptW   14-16   2385.0   1192.2       0.50       0.50
-weekdays    8 OccuptW   16-17   2027.2   1013.0       0.50       0.50
-weekdays    9 OccuptW   17-18   1192.5    596.1       0.50       0.50
-weekdays   10 OccuptW   18-19    477.0    238.2       0.50       0.50
-weekdays   11 OccuptW   19-24      0.0      0.0       0.50       0.50
-weekdays   12 LightsW    0- 7    132.3      0.0       0.50       0.50
-weekdays   13 LightsW    7- 8    661.5      0.0       0.50       0.50
-weekdays   14 LightsW    8-12   1323.0      0.0       0.50       0.50
-weekdays   15 LightsW   12-13   1058.4      0.0       0.50       0.50
-weekdays   16 LightsW   13-17   1323.0      0.0       0.50       0.50
-weekdays   17 LightsW   17-18   1058.4      0.0       0.50       0.50
-weekdays   18 LightsW   18-19    661.5      0.0       0.50       0.50
-weekdays   19 LightsW   19-24    132.3      0.0       0.50       0.50
-weekdays   20 EquiptW    0- 7    496.2      0.0       0.50       0.50
-weekdays   21 EquiptW    7- 8    595.5      0.0       0.50       0.50
-weekdays   22 EquiptW    8-12    942.9      0.0       0.50       0.50
-weekdays   23 EquiptW   12-13    992.5      0.0       0.50       0.50
-weekdays   24 EquiptW   13-18    942.9      0.0       0.50       0.50
-weekdays   25 EquiptW   18-19    794.0      0.0       0.50       0.50
-weekdays   26 EquiptW   19-24    496.2      0.0       0.50       0.50
-saturday    1 OccuptW    0- 9      0.0      0.0       0.50       0.50
-saturday    2 OccuptW    9-12    477.0    238.2       0.50       0.50
-saturday    3 OccuptW   12-24      0.0      0.0       0.50       0.50
-saturday    4 LightsW    0- 9    132.3      0.0       0.50       0.50
-saturday    5 LightsW    9-12   1323.0      0.0       0.50       0.50
-saturday    6 LightsW   12-24    132.3      0.0       0.50       0.50
-saturday    7 EquiptW    0- 9    297.8      0.0       0.50       0.50
-saturday    8 EquiptW    9-12    496.2      0.0       0.50       0.50
-saturday    9 EquiptW   12-24    297.8      0.0       0.50       0.50
-sunday      1 OccuptW    0-24      0.0      0.0       0.50       0.50
-sunday      2 LightsW    0-24    125.9      0.0       0.50       0.50
-sunday      3 EquiptW    0-24    297.5      0.0       0.50       0.50
+Daytype   Gain Label     Type    Unit Period Sensible  Latent     Radiant    Convec
+          No.                          Hours Magn.(W)  Magn.(W)   Fraction   Fraction
+weekdays    1 Occupt     people    W    0- 7      0.0      0.0       0.50       0.50
+weekdays    2 Occupt     people    W    7- 8    238.5    119.6       0.50       0.50
+weekdays    3 Occupt     people    W    8- 9   1669.5    834.4       0.50       0.50
+weekdays    4 Occupt     people    W    9-12   2385.0   1192.2       0.50       0.50
+weekdays    5 Occupt     people    W   12-13   1192.5    596.1       0.50       0.50
+weekdays    6 Occupt     people    W   13-14   1669.5    834.4       0.50       0.50
+weekdays    7 Occupt     people    W   14-16   2385.0   1192.2       0.50       0.50
+weekdays    8 Occupt     people    W   16-17   2027.2   1013.0       0.50       0.50
+weekdays    9 Occupt     people    W   17-18   1192.5    596.1       0.50       0.50
+weekdays   10 Occupt     people    W   18-19    477.0    238.2       0.50       0.50
+weekdays   11 Occupt     people    W   19-24      0.0      0.0       0.50       0.50
+weekdays   12 Lights     lighting  W    0- 7    132.3      0.0       0.50       0.50
+weekdays   13 Lights     lighting  W    7- 8    661.5      0.0       0.50       0.50
+weekdays   14 Lights     lighting  W    8-12   1323.0      0.0       0.50       0.50
+weekdays   15 Lights     lighting  W   12-13   1058.4      0.0       0.50       0.50
+weekdays   16 Lights     lighting  W   13-17   1323.0      0.0       0.50       0.50
+weekdays   17 Lights     lighting  W   17-18   1058.4      0.0       0.50       0.50
+weekdays   18 Lights     lighting  W   18-19    661.5      0.0       0.50       0.50
+weekdays   19 Lights     lighting  W   19-24    132.3      0.0       0.50       0.50
+weekdays   20 Equipt     equipment W    0- 7    496.2      0.0       0.50       0.50
+weekdays   21 Equipt     equipment W    7- 8    595.5      0.0       0.50       0.50
+weekdays   22 Equipt     equipment W    8-12    942.9      0.0       0.50       0.50
+weekdays   23 Equipt     equipment W   12-13    992.5      0.0       0.50       0.50
+weekdays   24 Equipt     equipment W   13-18    942.9      0.0       0.50       0.50
+weekdays   25 Equipt     equipment W   18-19    794.0      0.0       0.50       0.50
+weekdays   26 Equipt     equipment W   19-24    496.2      0.0       0.50       0.50
+saturday    1 Occupt     people    W    0- 9      0.0      0.0       0.50       0.50
+saturday    2 Occupt     people    W    9-12    477.0    238.2       0.50       0.50
+saturday    3 Occupt     people    W   12-24      0.0      0.0       0.50       0.50
+saturday    4 Lights     lighting  W    0- 9    132.3      0.0       0.50       0.50
+saturday    5 Lights     lighting  W    9-12   1323.0      0.0       0.50       0.50
+saturday    6 Lights     lighting  W   12-24    132.3      0.0       0.50       0.50
+saturday    7 Equipt     equipment W    0- 9    297.8      0.0       0.50       0.50
+saturday    8 Equipt     equipment W    9-12    496.2      0.0       0.50       0.50
+saturday    9 Equipt     equipment W   12-24    297.8      0.0       0.50       0.50
+sunday      1 Occupt     people    W    0-24      0.0      0.0       0.50       0.50
+sunday      2 Lights     lighting  W    0-24    125.9      0.0       0.50       0.50
+sunday      3 Equipt     equipment W    0-24    297.5      0.0       0.50       0.50
  
  ____________________________________________________________
  
@@ -1371,46 +1856,46 @@ of this during unoccupied. Occupied is 8h00-17h00 M-F. 1 person per
 4.646m^2 in offices so 26 people. Ventilation should be
 0.00944m^3/person/second. Infil at 0.5 ach
  
-Daytype   Gain Type    Period Sensible  Latent     Radiant    Convec
-          No.  label   Hours  Magn.(W)  Magn.(W)   Fraction   Fraction
-weekdays    1 OccuptW    0- 7      0.0      0.0       0.50       0.50
-weekdays    2 OccuptW    7- 8    238.5    119.6       0.50       0.50
-weekdays    3 OccuptW    8- 9   1669.5    834.4       0.50       0.50
-weekdays    4 OccuptW    9-12   2385.0   1192.2       0.50       0.50
-weekdays    5 OccuptW   12-13   1192.5    596.1       0.50       0.50
-weekdays    6 OccuptW   13-14   1669.5    834.4       0.50       0.50
-weekdays    7 OccuptW   14-16   2385.0   1192.2       0.50       0.50
-weekdays    8 OccuptW   16-17   2027.2   1013.0       0.50       0.50
-weekdays    9 OccuptW   17-18   1192.5    596.1       0.50       0.50
-weekdays   10 OccuptW   18-19    477.0    238.2       0.50       0.50
-weekdays   11 OccuptW   19-24      0.0      0.0       0.50       0.50
-weekdays   12 LightsW    0- 7    132.3      0.0       0.50       0.50
-weekdays   13 LightsW    7- 8    661.5      0.0       0.50       0.50
-weekdays   14 LightsW    8-12   1323.0      0.0       0.50       0.50
-weekdays   15 LightsW   12-13   1058.4      0.0       0.50       0.50
-weekdays   16 LightsW   13-17   1323.0      0.0       0.50       0.50
-weekdays   17 LightsW   17-18   1058.4      0.0       0.50       0.50
-weekdays   18 LightsW   18-19    661.5      0.0       0.50       0.50
-weekdays   19 LightsW   19-24    132.3      0.0       0.50       0.50
-weekdays   20 EquiptW    0- 7    496.2      0.0       0.50       0.50
-weekdays   21 EquiptW    7- 8    595.5      0.0       0.50       0.50
-weekdays   22 EquiptW    8-12    942.9      0.0       0.50       0.50
-weekdays   23 EquiptW   12-13    992.5      0.0       0.50       0.50
-weekdays   24 EquiptW   13-18    942.9      0.0       0.50       0.50
-weekdays   25 EquiptW   18-19    794.0      0.0       0.50       0.50
-weekdays   26 EquiptW   19-24    496.2      0.0       0.50       0.50
-saturday    1 OccuptW    0- 9      0.0      0.0       0.50       0.50
-saturday    2 OccuptW    9-12    477.0    238.2       0.50       0.50
-saturday    3 OccuptW   12-24      0.0      0.0       0.50       0.50
-saturday    4 LightsW    0- 9    132.3      0.0       0.50       0.50
-saturday    5 LightsW    9-12   1323.0      0.0       0.50       0.50
-saturday    6 LightsW   12-24    132.3      0.0       0.50       0.50
-saturday    7 EquiptW    0- 9    297.8      0.0       0.50       0.50
-saturday    8 EquiptW    9-12    496.2      0.0       0.50       0.50
-saturday    9 EquiptW   12-24    297.8      0.0       0.50       0.50
-sunday      1 OccuptW    0-24      0.0      0.0       0.50       0.50
-sunday      2 LightsW    0-24    125.9      0.0       0.50       0.50
-sunday      3 EquiptW    0-24    297.5      0.0       0.50       0.50
+Daytype   Gain Label     Type    Unit Period Sensible  Latent     Radiant    Convec
+          No.                          Hours Magn.(W)  Magn.(W)   Fraction   Fraction
+weekdays    1 Occupt     people    W    0- 7      0.0      0.0       0.50       0.50
+weekdays    2 Occupt     people    W    7- 8    238.5    119.6       0.50       0.50
+weekdays    3 Occupt     people    W    8- 9   1669.5    834.4       0.50       0.50
+weekdays    4 Occupt     people    W    9-12   2385.0   1192.2       0.50       0.50
+weekdays    5 Occupt     people    W   12-13   1192.5    596.1       0.50       0.50
+weekdays    6 Occupt     people    W   13-14   1669.5    834.4       0.50       0.50
+weekdays    7 Occupt     people    W   14-16   2385.0   1192.2       0.50       0.50
+weekdays    8 Occupt     people    W   16-17   2027.2   1013.0       0.50       0.50
+weekdays    9 Occupt     people    W   17-18   1192.5    596.1       0.50       0.50
+weekdays   10 Occupt     people    W   18-19    477.0    238.2       0.50       0.50
+weekdays   11 Occupt     people    W   19-24      0.0      0.0       0.50       0.50
+weekdays   12 Lights     lighting  W    0- 7    132.3      0.0       0.50       0.50
+weekdays   13 Lights     lighting  W    7- 8    661.5      0.0       0.50       0.50
+weekdays   14 Lights     lighting  W    8-12   1323.0      0.0       0.50       0.50
+weekdays   15 Lights     lighting  W   12-13   1058.4      0.0       0.50       0.50
+weekdays   16 Lights     lighting  W   13-17   1323.0      0.0       0.50       0.50
+weekdays   17 Lights     lighting  W   17-18   1058.4      0.0       0.50       0.50
+weekdays   18 Lights     lighting  W   18-19    661.5      0.0       0.50       0.50
+weekdays   19 Lights     lighting  W   19-24    132.3      0.0       0.50       0.50
+weekdays   20 Equipt     equipment W    0- 7    496.2      0.0       0.50       0.50
+weekdays   21 Equipt     equipment W    7- 8    595.5      0.0       0.50       0.50
+weekdays   22 Equipt     equipment W    8-12    942.9      0.0       0.50       0.50
+weekdays   23 Equipt     equipment W   12-13    992.5      0.0       0.50       0.50
+weekdays   24 Equipt     equipment W   13-18    942.9      0.0       0.50       0.50
+weekdays   25 Equipt     equipment W   18-19    794.0      0.0       0.50       0.50
+weekdays   26 Equipt     equipment W   19-24    496.2      0.0       0.50       0.50
+saturday    1 Occupt     people    W    0- 9      0.0      0.0       0.50       0.50
+saturday    2 Occupt     people    W    9-12    477.0    238.2       0.50       0.50
+saturday    3 Occupt     people    W   12-24      0.0      0.0       0.50       0.50
+saturday    4 Lights     lighting  W    0- 9    132.3      0.0       0.50       0.50
+saturday    5 Lights     lighting  W    9-12   1323.0      0.0       0.50       0.50
+saturday    6 Lights     lighting  W   12-24    132.3      0.0       0.50       0.50
+saturday    7 Equipt     equipment W    0- 9    297.8      0.0       0.50       0.50
+saturday    8 Equipt     equipment W    9-12    496.2      0.0       0.50       0.50
+saturday    9 Equipt     equipment W   12-24    297.8      0.0       0.50       0.50
+sunday      1 Occupt     people    W    0-24      0.0      0.0       0.50       0.50
+sunday      2 Lights     lighting  W    0-24    125.9      0.0       0.50       0.50
+sunday      3 Equipt     equipment W    0-24    297.5      0.0       0.50       0.50
  
  ____________________________________________________________
  
@@ -1471,46 +1956,46 @@ of this during unoccupied. Occupied is 8h00-17h00 M-F. 1 person per
 4.646m^2 in office so 14 people here. Ventilation is
 0.00944m^3/person/s. Infil at 0.5 ach
  
-Daytype   Gain Type    Period Sensible  Latent     Radiant    Convec
-          No.  label   Hours  Magn.(W)  Magn.(W)   Fraction   Fraction
-weekdays    1 OccuptW    0- 7      0.0      0.0       0.50       0.50
-weekdays    2 OccuptW    7- 8    125.9     62.5       0.50       0.50
-weekdays    3 OccuptW    8- 9    881.5    440.4       0.50       0.50
-weekdays    4 OccuptW    9-12   1259.3    629.8       0.50       0.50
-weekdays    5 OccuptW   12-13    629.6    314.4       0.50       0.50
-weekdays    6 OccuptW   13-14    881.5    440.4       0.50       0.50
-weekdays    7 OccuptW   14-16   1259.3    629.8       0.50       0.50
-weekdays    8 OccuptW   16-17   1070.4    535.9       0.50       0.50
-weekdays    9 OccuptW   17-18    629.6    314.4       0.50       0.50
-weekdays   10 OccuptW   18-19    251.9    125.0       0.50       0.50
-weekdays   11 OccuptW   19-24      0.0      0.0       0.50       0.50
-weekdays   12 LightsW    0- 7     69.9      0.0       0.50       0.50
-weekdays   13 LightsW    7- 8    349.3      0.0       0.50       0.50
-weekdays   14 LightsW    8-12    698.5      0.0       0.50       0.50
-weekdays   15 LightsW   12-13    558.8      0.0       0.50       0.50
-weekdays   16 LightsW   13-17    698.5      0.0       0.50       0.50
-weekdays   17 LightsW   17-18    558.8      0.0       0.50       0.50
-weekdays   18 LightsW   18-19    349.3      0.0       0.50       0.50
-weekdays   19 LightsW   19-24     69.9      0.0       0.50       0.50
-weekdays   20 EquiptW    0- 7    262.0      0.0       0.50       0.50
-weekdays   21 EquiptW    7- 8    314.4      0.0       0.50       0.50
-weekdays   22 EquiptW    8-12    497.9      0.0       0.50       0.50
-weekdays   23 EquiptW   12-13    524.0      0.0       0.50       0.50
-weekdays   24 EquiptW   13-18    497.9      0.0       0.50       0.50
-weekdays   25 EquiptW   18-19    419.2      0.0       0.50       0.50
-weekdays   26 EquiptW   19-24    262.0      0.0       0.50       0.50
-saturday    1 OccuptW    0- 9      0.0      0.0       0.50       0.50
-saturday    2 OccuptW    9-12    251.9    125.0       0.50       0.50
-saturday    3 OccuptW   12-24      0.0      0.0       0.50       0.50
-saturday    4 LightsW    0- 9     69.9      0.0       0.50       0.50
-saturday    5 LightsW    9-12    698.5      0.0       0.50       0.50
-saturday    6 LightsW   12-24     69.9      0.0       0.50       0.50
-saturday    7 EquiptW    0- 9    157.2      0.0       0.50       0.50
-saturday    8 EquiptW    9-12    262.0      0.0       0.50       0.50
-saturday    9 EquiptW   12-24    157.2      0.0       0.50       0.50
-sunday      1 OccuptW    0-24      0.0      0.0       0.50       0.50
-sunday      2 LightsW    0-24     66.5      0.0       0.50       0.50
-sunday      3 EquiptW    0-24    157.1      0.0       0.50       0.50
+Daytype   Gain Label     Type    Unit Period Sensible  Latent     Radiant    Convec
+          No.                          Hours Magn.(W)  Magn.(W)   Fraction   Fraction
+weekdays    1 Occupt     people    W    0- 7      0.0      0.0       0.50       0.50
+weekdays    2 Occupt     people    W    7- 8    125.9     62.5       0.50       0.50
+weekdays    3 Occupt     people    W    8- 9    881.5    440.4       0.50       0.50
+weekdays    4 Occupt     people    W    9-12   1259.3    629.8       0.50       0.50
+weekdays    5 Occupt     people    W   12-13    629.6    314.4       0.50       0.50
+weekdays    6 Occupt     people    W   13-14    881.5    440.4       0.50       0.50
+weekdays    7 Occupt     people    W   14-16   1259.3    629.8       0.50       0.50
+weekdays    8 Occupt     people    W   16-17   1070.4    535.9       0.50       0.50
+weekdays    9 Occupt     people    W   17-18    629.6    314.4       0.50       0.50
+weekdays   10 Occupt     people    W   18-19    251.9    125.0       0.50       0.50
+weekdays   11 Occupt     people    W   19-24      0.0      0.0       0.50       0.50
+weekdays   12 Lights     lighting  W    0- 7     69.9      0.0       0.50       0.50
+weekdays   13 Lights     lighting  W    7- 8    349.3      0.0       0.50       0.50
+weekdays   14 Lights     lighting  W    8-12    698.5      0.0       0.50       0.50
+weekdays   15 Lights     lighting  W   12-13    558.8      0.0       0.50       0.50
+weekdays   16 Lights     lighting  W   13-17    698.5      0.0       0.50       0.50
+weekdays   17 Lights     lighting  W   17-18    558.8      0.0       0.50       0.50
+weekdays   18 Lights     lighting  W   18-19    349.3      0.0       0.50       0.50
+weekdays   19 Lights     lighting  W   19-24     69.9      0.0       0.50       0.50
+weekdays   20 Equipt     equipment W    0- 7    262.0      0.0       0.50       0.50
+weekdays   21 Equipt     equipment W    7- 8    314.4      0.0       0.50       0.50
+weekdays   22 Equipt     equipment W    8-12    497.9      0.0       0.50       0.50
+weekdays   23 Equipt     equipment W   12-13    524.0      0.0       0.50       0.50
+weekdays   24 Equipt     equipment W   13-18    497.9      0.0       0.50       0.50
+weekdays   25 Equipt     equipment W   18-19    419.2      0.0       0.50       0.50
+weekdays   26 Equipt     equipment W   19-24    262.0      0.0       0.50       0.50
+saturday    1 Occupt     people    W    0- 9      0.0      0.0       0.50       0.50
+saturday    2 Occupt     people    W    9-12    251.9    125.0       0.50       0.50
+saturday    3 Occupt     people    W   12-24      0.0      0.0       0.50       0.50
+saturday    4 Lights     lighting  W    0- 9     69.9      0.0       0.50       0.50
+saturday    5 Lights     lighting  W    9-12    698.5      0.0       0.50       0.50
+saturday    6 Lights     lighting  W   12-24     69.9      0.0       0.50       0.50
+saturday    7 Equipt     equipment W    0- 9    157.2      0.0       0.50       0.50
+saturday    8 Equipt     equipment W    9-12    262.0      0.0       0.50       0.50
+saturday    9 Equipt     equipment W   12-24    157.2      0.0       0.50       0.50
+sunday      1 Occupt     people    W    0-24      0.0      0.0       0.50       0.50
+sunday      2 Lights     lighting  W    0-24     66.5      0.0       0.50       0.50
+sunday      3 Equipt     equipment W    0-24    157.1      0.0       0.50       0.50
  
  ____________________________________________________________
  
@@ -1571,46 +2056,46 @@ of this during unoccupied. Occupied is 8h00-17h00 M-F. 1 person per
 4.646m^2 in office so 14 people here. Ventilation 0.00944m^3/person/s.
 Infil at 0.5 ach
  
-Daytype   Gain Type    Period Sensible  Latent     Radiant    Convec
-          No.  label   Hours  Magn.(W)  Magn.(W)   Fraction   Fraction
-weekdays    1 OccuptW    0- 7      0.0      0.0       0.50       0.50
-weekdays    2 OccuptW    7- 8    125.9     62.5       0.50       0.50
-weekdays    3 OccuptW    8- 9    881.5    440.4       0.50       0.50
-weekdays    4 OccuptW    9-12   1259.3    629.8       0.50       0.50
-weekdays    5 OccuptW   12-13    629.6    314.4       0.50       0.50
-weekdays    6 OccuptW   13-14    881.5    440.4       0.50       0.50
-weekdays    7 OccuptW   14-16   1259.3    629.8       0.50       0.50
-weekdays    8 OccuptW   16-17   1070.4    535.9       0.50       0.50
-weekdays    9 OccuptW   17-18    629.6    314.4       0.50       0.50
-weekdays   10 OccuptW   18-19    251.9    125.0       0.50       0.50
-weekdays   11 OccuptW   19-24      0.0      0.0       0.50       0.50
-weekdays   12 LightsW    0- 7     69.9      0.0       0.50       0.50
-weekdays   13 LightsW    7- 8    349.3      0.0       0.50       0.50
-weekdays   14 LightsW    8-12    698.5      0.0       0.50       0.50
-weekdays   15 LightsW   12-13    558.8      0.0       0.50       0.50
-weekdays   16 LightsW   13-17    698.5      0.0       0.50       0.50
-weekdays   17 LightsW   17-18    558.8      0.0       0.50       0.50
-weekdays   18 LightsW   18-19    349.3      0.0       0.50       0.50
-weekdays   19 LightsW   19-24     69.9      0.0       0.50       0.50
-weekdays   20 EquiptW    0- 7    262.0      0.0       0.50       0.50
-weekdays   21 EquiptW    7- 8    314.4      0.0       0.50       0.50
-weekdays   22 EquiptW    8-12    497.9      0.0       0.50       0.50
-weekdays   23 EquiptW   12-13    524.0      0.0       0.50       0.50
-weekdays   24 EquiptW   13-18    497.9      0.0       0.50       0.50
-weekdays   25 EquiptW   18-19    419.2      0.0       0.50       0.50
-weekdays   26 EquiptW   19-24    262.0      0.0       0.50       0.50
-saturday    1 OccuptW    0- 9      0.0      0.0       0.50       0.50
-saturday    2 OccuptW    9-12    251.9    125.0       0.50       0.50
-saturday    3 OccuptW   12-24      0.0      0.0       0.50       0.50
-saturday    4 LightsW    0- 9     69.9      0.0       0.50       0.50
-saturday    5 LightsW    9-12    698.5      0.0       0.50       0.50
-saturday    6 LightsW   12-24     69.9      0.0       0.50       0.50
-saturday    7 EquiptW    0- 9    157.2      0.0       0.50       0.50
-saturday    8 EquiptW    9-12    262.0      0.0       0.50       0.50
-saturday    9 EquiptW   12-24    157.2      0.0       0.50       0.50
-sunday      1 OccuptW    0-24      0.0      0.0       0.50       0.50
-sunday      2 LightsW    0-24     66.5      0.0       0.50       0.50
-sunday      3 EquiptW    0-24    157.1      0.0       0.50       0.50
+Daytype   Gain Label     Type    Unit Period Sensible  Latent     Radiant    Convec
+          No.                          Hours Magn.(W)  Magn.(W)   Fraction   Fraction
+weekdays    1 Occupt     people    W    0- 7      0.0      0.0       0.50       0.50
+weekdays    2 Occupt     people    W    7- 8    125.9     62.5       0.50       0.50
+weekdays    3 Occupt     people    W    8- 9    881.5    440.4       0.50       0.50
+weekdays    4 Occupt     people    W    9-12   1259.3    629.8       0.50       0.50
+weekdays    5 Occupt     people    W   12-13    629.6    314.4       0.50       0.50
+weekdays    6 Occupt     people    W   13-14    881.5    440.4       0.50       0.50
+weekdays    7 Occupt     people    W   14-16   1259.3    629.8       0.50       0.50
+weekdays    8 Occupt     people    W   16-17   1070.4    535.9       0.50       0.50
+weekdays    9 Occupt     people    W   17-18    629.6    314.4       0.50       0.50
+weekdays   10 Occupt     people    W   18-19    251.9    125.0       0.50       0.50
+weekdays   11 Occupt     people    W   19-24      0.0      0.0       0.50       0.50
+weekdays   12 Lights     lighting  W    0- 7     69.9      0.0       0.50       0.50
+weekdays   13 Lights     lighting  W    7- 8    349.3      0.0       0.50       0.50
+weekdays   14 Lights     lighting  W    8-12    698.5      0.0       0.50       0.50
+weekdays   15 Lights     lighting  W   12-13    558.8      0.0       0.50       0.50
+weekdays   16 Lights     lighting  W   13-17    698.5      0.0       0.50       0.50
+weekdays   17 Lights     lighting  W   17-18    558.8      0.0       0.50       0.50
+weekdays   18 Lights     lighting  W   18-19    349.3      0.0       0.50       0.50
+weekdays   19 Lights     lighting  W   19-24     69.9      0.0       0.50       0.50
+weekdays   20 Equipt     equipment W    0- 7    262.0      0.0       0.50       0.50
+weekdays   21 Equipt     equipment W    7- 8    314.4      0.0       0.50       0.50
+weekdays   22 Equipt     equipment W    8-12    497.9      0.0       0.50       0.50
+weekdays   23 Equipt     equipment W   12-13    524.0      0.0       0.50       0.50
+weekdays   24 Equipt     equipment W   13-18    497.9      0.0       0.50       0.50
+weekdays   25 Equipt     equipment W   18-19    419.2      0.0       0.50       0.50
+weekdays   26 Equipt     equipment W   19-24    262.0      0.0       0.50       0.50
+saturday    1 Occupt     people    W    0- 9      0.0      0.0       0.50       0.50
+saturday    2 Occupt     people    W    9-12    251.9    125.0       0.50       0.50
+saturday    3 Occupt     people    W   12-24      0.0      0.0       0.50       0.50
+saturday    4 Lights     lighting  W    0- 9     69.9      0.0       0.50       0.50
+saturday    5 Lights     lighting  W    9-12    698.5      0.0       0.50       0.50
+saturday    6 Lights     lighting  W   12-24     69.9      0.0       0.50       0.50
+saturday    7 Equipt     equipment W    0- 9    157.2      0.0       0.50       0.50
+saturday    8 Equipt     equipment W    9-12    262.0      0.0       0.50       0.50
+saturday    9 Equipt     equipment W   12-24    157.2      0.0       0.50       0.50
+sunday      1 Occupt     people    W    0-24      0.0      0.0       0.50       0.50
+sunday      2 Lights     lighting  W    0-24     66.5      0.0       0.50       0.50
+sunday      3 Equipt     equipment W    0-24    157.1      0.0       0.50       0.50
  
  ____________________________________________________________
  
@@ -1666,21 +2151,21 @@ Core space schedules - 1 person per 18.58m^2 (2 in this room),
 lighting at 1W/ft^2 (10.76 m^2). Plug loads at 13.45 W/m^2.  10%
 lights un-occup hours, 20% plug loads un-occup hours. .
  
-Daytype   Gain Type    Period Sensible  Latent     Radiant    Convec
-          No.  label   Hours  Magn.(W)  Magn.(W)   Fraction   Fraction
-weekdays    1 OccuptW    0- 8      0.0      0.0       0.50       0.50
-weekdays    2 OccuptW    8-17    180.0     90.0       0.50       0.50
-weekdays    3 OccuptW   17-24      0.0      0.0       0.50       0.50
-weekdays    4 LightsW    0- 8     60.0      0.0       0.50       0.50
-weekdays    5 LightsW    8-17    600.0      0.0       0.50       0.50
-weekdays    6 LightsW   17-24     60.0      0.0       0.50       0.50
-weekdays    7 EquiptW    0- 8    140.0      0.0       0.50       0.50
-weekdays    8 EquiptW    8-17    700.0      0.0       0.50       0.50
-weekdays    9 EquiptW   17-24    140.0      0.0       0.50       0.50
-saturday    1 LightsW    0-24     60.0      0.0       0.50       0.50
-saturday    2 EquiptW    0-24    140.0      0.0       0.50       0.50
-sunday      1 LightsW    0-24     60.0      0.0       0.50       0.50
-sunday      2 EquiptW    0-24    140.0      0.0       0.50       0.50
+Daytype   Gain Label     Type    Unit Period Sensible  Latent     Radiant    Convec
+          No.                          Hours Magn.(W)  Magn.(W)   Fraction   Fraction
+weekdays    1 Occupt     people    W    0- 8      0.0      0.0       0.50       0.50
+weekdays    2 Occupt     people    W    8-17    180.0     90.0       0.50       0.50
+weekdays    3 Occupt     people    W   17-24      0.0      0.0       0.50       0.50
+weekdays    4 Lights     lighting  W    0- 8     60.0      0.0       0.50       0.50
+weekdays    5 Lights     lighting  W    8-17    600.0      0.0       0.50       0.50
+weekdays    6 Lights     lighting  W   17-24     60.0      0.0       0.50       0.50
+weekdays    7 Equipt     equipment W    0- 8    140.0      0.0       0.50       0.50
+weekdays    8 Equipt     equipment W    8-17    700.0      0.0       0.50       0.50
+weekdays    9 Equipt     equipment W   17-24    140.0      0.0       0.50       0.50
+saturday    1 Lights     lighting  W    0-24     60.0      0.0       0.50       0.50
+saturday    2 Equipt     equipment W    0-24    140.0      0.0       0.50       0.50
+sunday      1 Lights     lighting  W    0-24     60.0      0.0       0.50       0.50
+sunday      2 Equipt     equipment W    0-24    140.0      0.0       0.50       0.50
  
  ____________________________________________________________
  
@@ -1730,8 +2215,8 @@ Daytype    Period     Infiltration     Ventilation     From Source
 Notes:
 no operations notes (yet)
  
-Daytype   Gain Type    Period Sensible  Latent     Radiant    Convec
-          No.  label   Hours  Magn.(W)  Magn.(W)   Fraction   Fraction
+Daytype   Gain Label     Type    Unit Period Sensible  Latent     Radiant    Convec
+          No.                          Hours Magn.(W)  Magn.(W)   Fraction   Fraction
  
  ____________________________________________________________
  
@@ -1865,8 +2350,8 @@ Notes:
 nothing happens in the roof, but there is 0.5 ach infiltration all
 days and all hours as a basic assumption.
  
-Daytype   Gain Type    Period Sensible  Latent     Radiant    Convec
-          No.  label   Hours  Magn.(W)  Magn.(W)   Fraction   Fraction
+Daytype   Gain Label     Type    Unit Period Sensible  Latent     Radiant    Convec
+          No.                          Hours Magn.(W)  Magn.(W)   Fraction   Fraction
  
  ____________________________________________________________
  
@@ -1906,8 +2391,8 @@ Daytype    Period     Infiltration     Ventilation     From Source
 Notes:
 no operations notes (yet)
  
-Daytype   Gain Type    Period Sensible  Latent     Radiant    Convec
-          No.  label   Hours  Magn.(W)  Magn.(W)   Fraction   Fraction
+Daytype   Gain Label     Type    Unit Period Sensible  Latent     Radiant    Convec
+          No.                          Hours Magn.(W)  Magn.(W)   Fraction   Fraction
  
  ____________________________________________________________
  
@@ -1947,8 +2432,8 @@ Daytype    Period     Infiltration     Ventilation     From Source
 Notes:
 no operations notes (yet)
  
-Daytype   Gain Type    Period Sensible  Latent     Radiant    Convec
-          No.  label   Hours  Magn.(W)  Magn.(W)   Fraction   Fraction
+Daytype   Gain Label     Type    Unit Period Sensible  Latent     Radiant    Convec
+          No.                          Hours Magn.(W)  Magn.(W)   Fraction   Fraction
  
  ____________________________________________________________
  
@@ -1969,12 +2454,12 @@ Daytype   Gain Type    Period Sensible  Latent     Radiant    Convec
  
  Details of opaque construction: roof and overall thickness  0.161
  
- Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
-      |db  |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
- Ext    47    3.0    40.000  7800.   502. 0.82 0.72 19200.  0.00 Grey ptd steel : Grey ptd steel
-    2    0   25.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
-    3  212  130.0     0.190   960.   950. 0.90 0.55    15.  0.68 Roof insulation board : Roof insulation board
- Int    42    3.0    50.000  7800.   502. 0.12 0.20 19200.  0.00 Steel : Steel
+ Layer|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
+      |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
+ Ext     3.0    40.000  7800.   502. 0.82 0.72 19200.  0.00 Grey ptd steel : Grey ptd steel
+    2   25.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
+    3  130.0     0.190   960.   950. 0.90 0.55    15.  0.68 Roof insulation board : Roof insulation board
+ Int     3.0    50.000  7800.   502. 0.12 0.20 19200.  0.00 Steel : Steel
  ISO 6946 U values (horiz/upward/downward heat flow)=  0.976  1.006  0.940 (partition)  0.897
  
 Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  0.97
@@ -1984,14 +2469,14 @@ Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  0.97
  
  Details of opaque construction: ext_wall linked to ext_wall_r & with overall thickness  0.300
  
- Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
-      |db  |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
- Ext     6  100.0     0.960  2000.   650. 0.90 0.70    25.  0.10 Lt brown brick : Lt brown brick
-    2    0   10.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
-    3    2  100.0     0.440  1500.   650. 0.90 0.65    15.  0.23 Breeze block : Breeze block
-    4  214   75.0     0.030    25.  1000. 0.90 0.30    67.  2.50 EPS : EPS
-    5    0   10.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
- Int   108    5.0     0.190   950.   840. 0.91 0.22    11.  0.03 White ptd Gypboard : White ptd Gypboard
+ Layer|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
+      |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
+ Ext   100.0     0.960  2000.   650. 0.90 0.70    25.  0.10 Lt brown brick : Lt brown brick
+    2   10.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
+    3  100.0     0.440  1500.   650. 0.90 0.65    15.  0.23 Breeze block : Breeze block
+    4   75.0     0.030    25.  1000. 0.90 0.30    67.  2.50 EPS : EPS
+    5   10.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
+ Int     5.0     0.190   950.   840. 0.91 0.22    11.  0.03 White ptd Gypboard : White ptd Gypboard
  ISO 6946 U values (horiz/upward/downward heat flow)=  0.297  0.300  0.293 (partition)  0.289
  
 Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  0.30
@@ -2001,11 +2486,11 @@ Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  0.30
  
  Details of transparent construction: double_glz with DC_8074_04nb optics and overall thickness  0.020
  
- Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
-      |db  |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
- Ext   243    4.0     1.050  2500.   750. 0.83 0.05 19200.  0.00 4mm clear float : 4mm clear float with placeholder single layer optics
-    2    0   12.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
- Int   243    4.0     1.050  2500.   750. 0.83 0.05 19200.  0.00 4mm clear float : 4mm clear float with placeholder single layer optics
+ Layer|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
+      |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
+ Ext     4.0     1.050  2500.   750. 0.83 0.05 19200.  0.00 4mm clear float : 4mm clear float with placeholder single layer optics
+    2   12.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
+ Int     4.0     1.050  2500.   750. 0.83 0.05 19200.  0.00 4mm clear float : 4mm clear float with placeholder single layer optics
  ISO 6946 U values (horiz/upward/downward heat flow)=  2.877  3.148  2.580 (partition)  2.285
  
 Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  2.80
@@ -2024,11 +2509,11 @@ Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  2.80
  
  Details of opaque construction: partn_ltw and overall thickness  0.049
  
- Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
-      |db  |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
- Ext   108   12.0     0.190   950.   840. 0.91 0.22    11.  0.06 White ptd Gypboard : White ptd Gypboard
-    2    0   25.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
- Int   108   12.0     0.190   950.   840. 0.91 0.22    11.  0.06 White ptd Gypboard : White ptd Gypboard
+ Layer|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
+      |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
+ Ext    12.0     0.190   950.   840. 0.91 0.22    11.  0.06 White ptd Gypboard : White ptd Gypboard
+    2   25.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
+ Int    12.0     0.190   950.   840. 0.91 0.22    11.  0.06 White ptd Gypboard : White ptd Gypboard
  ISO 6946 U values (horiz/upward/downward heat flow)=  2.144  2.292  1.975 (partition)  1.798
  
 Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  2.10
@@ -2038,31 +2523,31 @@ Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  2.10
  
  Details of opaque construction: foundation and overall thickness  1.480
  
- Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
-      |db  |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
- Ext   263  250.0     1.280  1460.   879. 0.90 0.85     5.  0.20 Common_earth : Common_earth
-    2  263  250.0     1.280  1460.   879. 0.90 0.85     5.  0.20 Common_earth : Common_earth
-    3  263  250.0     1.280  1460.   879. 0.90 0.85     5.  0.20 Common_earth : Common_earth
-    4  263  250.0     1.280  1460.   879. 0.90 0.85     5.  0.20 Common_earth : Common_earth
-    5  263  250.0     1.280  1460.   879. 0.90 0.85     5.  0.20 Common_earth : Common_earth
-    6  262  100.0     0.520  2050.   184. 0.90 0.85     2.  0.19 Gravel based : Gravel based
-    7  205   25.0     0.030    30.   837. 0.90 0.50    90.  0.83 Polyurethane foam board : Polyurethane foam board
-    8   32  100.0     1.400  2100.   653. 0.90 0.65    19.  0.07 Heavy mix concrete : Heavy mix concrete
- Int   228    5.0     0.060   160.  2500. 0.90 0.85    10.  0.08 Grey loop pile synth : Grey loop pile synth
+ Layer|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
+      |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
+ Ext   250.0     1.280  1460.   879. 0.90 0.85     5.  0.20 Common_earth : Common_earth
+    2  250.0     1.280  1460.   879. 0.90 0.85     5.  0.20 Common_earth : Common_earth
+    3  250.0     1.280  1460.   879. 0.90 0.85     5.  0.20 Common_earth : Common_earth
+    4  250.0     1.280  1460.   879. 0.90 0.85     5.  0.20 Common_earth : Common_earth
+    5  250.0     1.280  1460.   879. 0.90 0.85     5.  0.20 Common_earth : Common_earth
+    6  100.0     0.520  2050.   184. 0.90 0.85     2.  0.19 Gravel based : Gravel based
+    7   25.0     0.030    30.   837. 0.90 0.50    90.  0.83 Polyurethane foam board : Polyurethane foam board
+    8  100.0     1.400  2100.   653. 0.90 0.65    19.  0.07 Heavy mix concrete : Heavy mix concrete
+ Int     5.0     0.060   160.  2500. 0.90 0.85    10.  0.08 Grey loop pile synth : Grey loop pile synth
  ISO 6946 U values (horiz/upward/downward heat flow)=  0.430  0.435  0.422 (partition)  0.414
  
-Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  0.47
+Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  0.43
  External surface admittance Y=  3.92  w=  1.56 decrement factor f=  0.60  phi=  1.21 surface factor f=  0.60  phi=  1.21
  Partition admittance Y=  3.92  w=  1.56 surface factor f=  0.60  phi=  1.21
  Total area of foundation is    540.00
  
  Details of opaque construction: inter_flr linked to inter_flrev & with overall thickness  0.110
  
- Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
-      |db  |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
- Ext    42    3.0    50.000  7800.   502. 0.12 0.20 19200.  0.00 Steel : Steel
-    2   32  101.6     1.400  2100.   653. 0.90 0.65    19.  0.07 Heavy mix concrete : Heavy mix concrete
- Int   228    5.0     0.060   160.  2500. 0.90 0.85    10.  0.08 Grey loop pile synth : Grey loop pile synth
+ Layer|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
+      |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
+ Ext     3.0    50.000  7800.   502. 0.12 0.20 19200.  0.00 Steel : Steel
+    2  101.6     1.400  2100.   653. 0.90 0.65    19.  0.07 Heavy mix concrete : Heavy mix concrete
+ Int     5.0     0.060   160.  2500. 0.90 0.85    10.  0.08 Grey loop pile synth : Grey loop pile synth
  ISO 6946 U values (horiz/upward/downward heat flow)=  3.068  3.379  2.733 (partition)  2.404
  
 Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  2.98
@@ -2072,11 +2557,11 @@ Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  2.98
  
  Details of opaque construction: inter_flrev linked to inter_flr & with overall thickness  0.110
  
- Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
-      |db  |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
- Ext   228    5.0     0.060   160.  2500. 0.90 0.85    10.  0.08 Grey loop pile synth : Grey loop pile synth
-    2   32  101.6     1.400  2100.   653. 0.90 0.65    19.  0.07 Heavy mix concrete : Heavy mix concrete
- Int    42    3.0    50.000  7800.   502. 0.12 0.20 19200.  0.00 Steel : Steel
+ Layer|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
+      |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
+ Ext     5.0     0.060   160.  2500. 0.90 0.85    10.  0.08 Grey loop pile synth : Grey loop pile synth
+    2  101.6     1.400  2100.   653. 0.90 0.65    19.  0.07 Heavy mix concrete : Heavy mix concrete
+ Int     3.0    50.000  7800.   502. 0.12 0.20 19200.  0.00 Steel : Steel
  ISO 6946 U values (horiz/upward/downward heat flow)=  3.068  3.379  2.733 (partition)  2.404
  
 Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  2.98
@@ -2086,9 +2571,9 @@ Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  2.98
  
  Details of opaque construction: ceiling_dr and overall thickness  0.010
  
- Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
-      |db  |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
-    1  150   10.0     0.030   290.  2000. 0.90 0.60     8.  0.33 Ceiling (mineral) : Ceiling (mineral)
+ Layer|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
+      |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
+    1   10.0     0.030   290.  2000. 0.90 0.60     8.  0.33 Ceiling (mineral) : Ceiling (mineral)
  ISO 6946 U values (horiz/upward/downward heat flow)=  1.987  2.113  1.840 (partition)  1.685
  
 Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  1.95
@@ -2098,9 +2583,9 @@ Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  1.95
  
  Details of opaque construction: window_frame and overall thickness  0.025
  
- Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
-      |db  |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
-    1   69   25.0     0.190   700.  2390. 0.90 0.65    12.  0.13 Oak (radial) : Oak (radial)
+ Layer|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
+      |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
+    1   25.0     0.190   700.  2390. 0.90 0.65    12.  0.13 Oak (radial) : Oak (radial)
  ISO 6946 U values (horiz/upward/downward heat flow)=  3.316  3.682  2.928 (partition)  2.554
  
 Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  3.21
@@ -2110,11 +2595,11 @@ Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  3.21
  
  Details of opaque construction: gl_frame and overall thickness  0.029
  
- Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
-      |db  |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
- Ext    46    4.0   210.000  2700.   880. 0.82 0.72 19200.  0.00 Grey cotd aluminium : Grey cotd aluminium
-    2    0   20.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
- Int    46    5.0   210.000  2700.   880. 0.82 0.72 19200.  0.00 Grey cotd aluminium : Grey cotd aluminium
+ Layer|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
+      |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
+ Ext     4.0   210.000  2700.   880. 0.82 0.72 19200.  0.00 Grey cotd aluminium : Grey cotd aluminium
+    2   20.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
+ Int     5.0   210.000  2700.   880. 0.82 0.72 19200.  0.00 Grey cotd aluminium : Grey cotd aluminium
  ISO 6946 U values (horiz/upward/downward heat flow)=  2.941  3.225  2.631 (partition)  2.325
  
 Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  2.86
