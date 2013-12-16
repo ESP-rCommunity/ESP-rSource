@@ -1,5 +1,5 @@
-*connections for 1BR_4in_block_p2h_warm
-*Date Wed Apr 18 11:25:12 2012
+*connections for 1BR_4in_block_p1m_cool
+*Date Mon Dec 16 07:32:51 2013
     231   # number of connections
    1   1   0   0   0  #    1 front_a in stairs is External
    1   2   0   0   0  #    2 front_b in stairs is External
