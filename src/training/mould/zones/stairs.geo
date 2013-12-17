@@ -1,41 +1,49 @@
-# geometry of stairs defined in: stairs.geo
-GEN  stairs                 # type   zone name
-      12       8   0.000    # vertices, surfaces, rotation angle 
-#  X co-ord, Y co-ord, Z co-ord 
-      0.000     1.500     0.000  # vert  1
-      1.500     1.500     0.000  # vert  2
-      1.500     4.000     0.000  # vert  3
-      0.000     4.000     0.000  # vert  4
-      0.000     1.500     2.200  # vert  5
-      1.500     1.500     2.200  # vert  6
-      1.500     4.000     2.200  # vert  7
-      0.000     4.000     2.200  # vert  8
-      0.000     3.000     2.200  # vert  9
-      0.000     2.000     2.200  # vert 10
-      1.500     2.000     2.200  # vert 11
-      1.500     3.000     2.200  # vert 12
-# no of vertices followed by list of associated vert
-   4,  1,  2,  6,  5,
-   6,  2,  3,  7, 12, 11,  6,
-   4,  3,  4,  8,  7,
-   6,  4,  1,  5, 10,  9,  8,
-   4,  5,  6, 11, 10,
-   4,  4,  3,  2,  1,
-   4, 10, 11, 12,  9,
-   4,  9, 12,  7,  8,
-# number of default windows within each surface 
-  0, 0, 0, 0, 0, 0, 0, 0,
-# surfaces indentation (m)
- 0.000 0.000 0.000 0.000 0.000 0.000 0.000 0.000
-    1   6   0   0    # default insolation distribution
-# surface attributes follow: 
-# id  surface      geom  loc/  mlc db       environment
-# no  name         type  posn  name         other side
-  1, bin           OPAQ  VERT  ext_part     bin_c          
-  2, hall          OPAQ  VERT  int_part     hall_1         
-  3, livrm         OPAQ  VERT  int_part     liv_room       
-  4, west          OPAQ  VERT  ext_part     SIMILAR        
-  5, bathrm        OPAQ  CEIL  ceiling      bathrm         
-  6, floor         OPAQ  FLOR  grnd_floor   GROUND         
-  7, whc           OPAQ  CEIL  ceiling      w_heat_c       
-  8, north_beds    OPAQ  CEIL  ceiling      hall_2         
+*Geometry 1.1,GEN,stairs # tag version, format, zone name
+*date Sun Dec  8 16:04:12 2013  # latest file modification 
+stairs describes a
+# tag, X co-ord, Y co-ord, Z co-ord
+*vertex,0.00000,1.50000,0.00000  #   1
+*vertex,1.50000,1.50000,0.00000  #   2
+*vertex,1.50000,4.00000,0.00000  #   3
+*vertex,0.00000,4.00000,0.00000  #   4
+*vertex,0.00000,1.50000,2.20000  #   5
+*vertex,1.50000,1.50000,2.20000  #   6
+*vertex,1.50000,4.00000,2.20000  #   7
+*vertex,0.00000,4.00000,2.20000  #   8
+*vertex,0.00000,3.00000,2.20000  #   9
+*vertex,0.00000,2.00000,2.20000  #  10
+*vertex,1.50000,2.00000,2.20000  #  11
+*vertex,1.50000,3.00000,2.20000  #  12
+# 
+# tag, number of vertices followed by list of associated vert
+*edges,4,1,2,6,5  #  1
+*edges,6,2,3,7,12,11,6  #  2
+*edges,4,3,4,8,7  #  3
+*edges,6,4,1,5,10,9,8  #  4
+*edges,4,5,6,11,10  #  5
+*edges,4,4,3,2,1  #  6
+*edges,4,10,11,12,9  #  7
+*edges,4,9,12,7,8  #  8
+# 
+# surf attributes:
+#  surf name, surf position VERT/CEIL/FLOR/SLOP/UNKN
+#  child of (surface name), useage (pair of tags) 
+#  construction name, optical name
+#  boundary condition tag followed by two data items
+*surf,bin,VERT,-,-,-,ext_part,OPAQUE,ANOTHER,01,03  #   1 ||< stairs:bin_c
+*surf,hall,VERT,-,-,-,int_part,OPAQUE,ANOTHER,03,04  #   2 ||< stairs:hall_1
+*surf,livrm,VERT,-,-,-,int_part,OPAQUE,ANOTHER,05,01  #   3 ||< stairs:liv_room
+*surf,west,VERT,-,-,-,ext_part,OPAQUE,SIMILAR,00,00  #   4 ||< identical environment
+*surf,bathrm,CEIL,-,-,-,ceiling,OPAQUE,ANOTHER,06,08  #   5 ||< stairs:bathrm
+*surf,floor,FLOR,-,-,-,grnd_floor,OPAQUE,GROUND,01,00  #   6 ||< ground profile  1
+*surf,whc,CEIL,-,-,-,ceiling,OPAQUE,ANOTHER,08,06  #   7 ||< floor:w_heat_c
+*surf,north_beds,CEIL,-,-,-,ceiling,OPAQUE,ANOTHER,09,10  #   8 ||< stairs:hall_2
+# 
+*insol,1,6,0,0  # default insolation distribution
+# 
+# shading directives
+*shad_calc,none  # no temporal shading requested
+# 
+*insol_calc,none  # no insolation requested
+# 
+*base_list,1,6,     3.75 0  # zone base list

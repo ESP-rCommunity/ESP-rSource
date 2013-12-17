@@ -1,5 +1,5 @@
 *connections for coupl_coef
-*Date Fri Aug 24 15:46:43 2012
+*Date Sun Dec  8 14:26:41 2013
      11   # number of connections
    1   1   0   0   0  #    1 Frame_bot in fac_zone_c1 is External
    1   2   1   0   0  #    2 Right_wall in fac_zone_c1 >|< Identical environment

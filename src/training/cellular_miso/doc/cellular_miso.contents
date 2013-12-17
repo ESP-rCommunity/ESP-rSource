@@ -1,7 +1,7 @@
 Synopsis
  
 Synopsis of the model MISO control model see log file for more details defined
-in cellular_miso.cfg generated on Thu Aug  8 11:35:07 2013. Notes associated
+in cellular_miso.cfg generated on Sun Dec  8 13:26:19 2013. Notes associated
 with the model are in ../doc/cellular_miso.log
  
 The model is located at latitude   46.00 with a longitude difference of   0.00
@@ -85,7 +85,7 @@ capacity 0.0W max cooling capacity 300.0W min cooling capacity 0.0W. Heating set
  Zone to contol loop linkages:
  zone ( 1) manager_a    << control  1
  zone ( 2) manager_b    << control  1
- zone ( 3) corridor      << control  1
+ zone ( 3) corridor     << control  1
  
  Flow control includes  6 loops.
 no flow control description supplied
@@ -204,7 +204,7 @@ The model includes an air flow network.
    # Node      Fluid   Node Type           Height Temperature    Data_1       Data_2
    1 manager_a    air   internal & unknown    1.5000   20.000     (-)     0.000  vol   40.501
    2 manager_b    air   internal & unknown    1.5000   20.000     (-)     0.000  vol   40.501
-   3 corridor      air   internal & unknown    1.5000   20.000     (-)     0.000  vol   18.300
+   3 corridor     air   internal & unknown    1.5000   20.000     (-)     0.000  vol   18.300
    4 man_alow     air   boundary & wind ind   1.0000   0.0000     coef    5.000  azim 180.000
    5 man_ahi      air   boundary & wind ind   2.9000   0.0000     coef    5.000  azim 180.000
    6 man_blow     air   boundary & wind ind   1.0000   0.0000     coef    5.000  azim 180.000
@@ -227,9 +227,9 @@ The model includes an air flow network.
     2 man_ahi       0.000   manager_a     1.400   crack           2.900   2.900
     3 man_blow      0.000   manager_b    -0.500   crack           1.000   1.000
     4 man_bhi       0.000   manager_b     1.400   crack           2.900   2.900
-    5 manager_a    -1.400   corridor      -1.400   crack           0.100   0.100
-    6 manager_b    -1.400   corridor      -1.400   crack           0.100   0.100
-    7 corid_left    0.000   corridor       0.000   grill           1.500   1.500
+    5 manager_a    -1.400   corridor     -1.400   crack           0.100   0.100
+    6 manager_b    -1.400   corridor     -1.400   crack           0.100   0.100
+    7 corid_left    0.000   corridor      0.000   grill           1.500   1.500
     8 corid_left    0.000   manager_a     0.000   fan_8lps        1.500   1.500
     9 corid_left    0.000   manager_b     0.000   fan_8lps        1.500   1.500
    10 corid_left    0.000   manager_a     0.000   fan_8lps        1.500   1.500
@@ -238,7 +238,7 @@ thermal zone to air flow node mapping:
 thermal zone -> air flow node
 manager_a    -> manager_a
 manager_b    -> manager_b
-corridor      -> corridor
+corridor     -> corridor
  
  
  ____________________________________________________________
@@ -247,7 +247,7 @@ ID Zone         Volume|          Surface
    Name         m^3   | No. Opaque  Transp  ~Floor
  1 manager_a      40.5  13    62.2     9.8    13.5  manager describes cellular office on left
  2 manager_b      40.5  13    62.2     9.8    13.5  manager_b describes right office
- 3 corridor        18.3  14    45.8     9.0     8.4  corridor describes passage adjacent to offices
+ 3 corridor       18.3  14    45.8     9.0     8.4  corridor describes passage adjacent to offices
    all            99.   40    170.     29.     35.
  
  
@@ -470,9 +470,9 @@ sunday      6 Lights     lighting  W   20-24      0.0      0.0    0.30    0.70  
  Layer|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
       |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
  Ext     4.0   210.000  2700.   880. 0.82 0.72 19200.  0.00 grey cotd alum : Grey coated aluminium
-    2   80.0     0.040    12.   840. 0.90 0.65    30.  2.00 glass fibre quilt : Glass Fibre Quilt
+    2   80.0     0.040    12.   840. 0.90 0.65    30.  2.00 glass fibre quilt : Glass Fibre Quilt (non-hygroscopic)
  Int     4.0   210.000  2700.   880. 0.82 0.72 19200.  0.00 grey cotd alum : Grey coated aluminium
- ISO 6946 U values (horizontal/upward/downward heat flow)=  0.461  0.467  0.452 (partition)  0.442
+ ISO 6946 U values (horiz/upward/downward heat flow)=  0.461  0.467  0.452 (partition)  0.442
  
 Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  0.46
  External surface admittance Y=  0.81  w=  3.41 decrement factor f=  0.94  phi=  0.31 surface factor f=  0.94  phi=  0.31
@@ -484,7 +484,7 @@ Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  0.46
  Layer|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
       |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
     1   25.0     0.190   700.  2390. 0.90 0.65    12.  0.13 oak : Oak (radial cut)
- ISO 6946 U values (horizontal/upward/downward heat flow)=  3.316  3.682  2.928 (partition)  2.554
+ ISO 6946 U values (horiz/upward/downward heat flow)=  3.316  3.682  2.928 (partition)  2.554
  
 Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  3.21
  External surface admittance Y=  3.33  w=  0.61 decrement factor f=  0.61  phi=  0.40 surface factor f=  0.61  phi=  0.40
@@ -498,7 +498,7 @@ Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  3.21
  Ext     6.0     0.760  2710.   837. 0.83 0.05 19200.  0.01 plate glass : Plate glass with placeholder single layer optics
     2   12.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
  Int     6.0     0.760  2710.   837. 0.83 0.05 19200.  0.01 plate glass : Plate glass with placeholder single layer optics
- ISO 6946 U values (horizontal/upward/downward heat flow)=  2.811  3.069  2.527 (partition)  2.243
+ ISO 6946 U values (horiz/upward/downward heat flow)=  2.811  3.069  2.527 (partition)  2.243
  
 Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  2.73
  External surface admittance Y=  2.81  w=  0.63 decrement factor f=  0.67  phi=  0.31 surface factor f=  0.67  phi=  0.31
@@ -522,8 +522,8 @@ Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  2.73
     2  140.0     1.400  2100.   653. 0.90 0.65    19.  0.10 heavy mix concrete : Heavy mix concrete
     3   50.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
     4   19.0     0.150   800.  2093. 0.91 0.65    96.  0.13 chipboard : Chipboard
- Int     6.0     0.060   186.  1360. 0.90 0.60    10.  0.10 Wilton : Wilton weave wool carpet
- ISO 6946 U values (horizontal/upward/downward heat flow)=  1.500  1.570  1.415 (partition)  1.321
+ Int     6.0     0.060   186.  1360. 0.90 0.60    10.  0.10 Wilton : Wilton weave wool carpet (organic-hygroscopic)
+ ISO 6946 U values (horiz/upward/downward heat flow)=  1.500  1.570  1.415 (partition)  1.321
  
 Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  1.48
  External surface admittance Y=  2.11  w=  1.43 decrement factor f=  0.77  phi=  0.46 surface factor f=  0.77  phi=  0.46
@@ -534,9 +534,9 @@ Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  1.48
  
  Layer|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
       |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
- Ext   100.0     0.040   250.   840. 0.90 0.30     4.  2.50 glasswool : Glasswool (generic)
+ Ext   100.0     0.040   250.   840. 0.90 0.30     4.  2.50 glasswool : Glasswool (generic) (non-hygroscopic)
  Int    10.0     0.030   290.  2000. 0.90 0.60     8.  0.33 ceiling mineral : Ceiling acoustic tile (mineral fibre based)
- ISO 6946 U values (horizontal/upward/downward heat flow)=  0.333  0.336  0.329 (partition)  0.323
+ ISO 6946 U values (horiz/upward/downward heat flow)=  0.333  0.336  0.329 (partition)  0.323
  
 Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  0.33
  External surface admittance Y=  0.82  w=  3.17 decrement factor f=  0.94  phi=  0.30 surface factor f=  0.94  phi=  0.30
@@ -547,12 +547,12 @@ Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  0.33
  
  Layer|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
       |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
- Ext    13.0     0.190   950.   840. 0.91 0.22    11.  0.07 white gypboard : White painted Gypboard
+ Ext    13.0     0.190   950.   840. 0.91 0.22    11.  0.07 white gypboard : White painted Gypboard (inorganic-porous)
     2   50.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
     3  100.0     0.510  1400.  1000. 0.90 0.65    10.  0.20 block inner : Block inner (3% mc)
     4   50.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
- Int    13.0     0.190   950.   840. 0.91 0.22    11.  0.07 white gypboard : White painted Gypboard
- ISO 6946 U values (horizontal/upward/downward heat flow)=  1.186  1.230  1.133 (partition)  1.072
+ Int    13.0     0.190   950.   840. 0.91 0.22    11.  0.07 white gypboard : White painted Gypboard (inorganic-porous)
+ ISO 6946 U values (horiz/upward/downward heat flow)=  1.186  1.230  1.133 (partition)  1.072
  
 Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  1.17
  External surface admittance Y=  2.38  w=  1.44 decrement factor f=  0.74  phi=  0.54 surface factor f=  0.74  phi=  0.54
@@ -563,10 +563,10 @@ Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  1.17
  
  Layer|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
       |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
- Ext    12.0     0.190   950.   840. 0.91 0.22    11.  0.06 white gypboard : White painted Gypboard
+ Ext    12.0     0.190   950.   840. 0.91 0.22    11.  0.06 white gypboard : White painted Gypboard (inorganic-porous)
     2   50.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
- Int    12.0     0.190   950.   840. 0.91 0.22    11.  0.06 white gypboard : White painted Gypboard
- ISO 6946 U values (horizontal/upward/downward heat flow)=  2.144  2.292  1.975 (partition)  1.798
+ Int    12.0     0.190   950.   840. 0.91 0.22    11.  0.06 white gypboard : White painted Gypboard (inorganic-porous)
+ ISO 6946 U values (horiz/upward/downward heat flow)=  2.144  2.292  1.975 (partition)  1.798
  
 Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  2.10
  External surface admittance Y=  2.15  w=  0.62 decrement factor f=  0.75  phi=  0.21 surface factor f=  0.75  phi=  0.21

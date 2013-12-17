@@ -2,14 +2,14 @@ Represents separate on off setpoint for heating and cooling. Heating on below 18
 * Building
 this is a variant of the base case set of assumptions for testing a different control scheme in manager_a and manager_b.
    3  # No. of functions
-* Control function
+* Control function    1
 # senses the temperature of the current zone.
     0    0    0    0  # sensor data
 # actuates air point of the current zone
     0    0    0  # actuator data
-    1 # No. day types
+    1  # all daytypes
     1  365  # valid Sun-01-Jan - Sun-31-Dec
-     3  # No. of periods in day
+     3  # No. of periods in day: weekdays    
     0    2   0.000  # ctl type, law (free floating), start @
       0.  # No. of data items
     0   10   7.000  # ctl type, law (separate ON/OFF flux), start @
@@ -17,14 +17,14 @@ this is a variant of the base case set of assumptions for testing a different co
   1500.000 1500.000 18.000 20.000 26.000 24.000
     0    2  19.000  # ctl type, law (free floating), start @
       0.  # No. of data items
-* Control function
+* Control function    2
 # senses the temperature of the current zone.
     0    0    0    0  # sensor data
 # actuates air point of the current zone
     0    0    0  # actuator data
-    1 # No. day types
+    1  # all daytypes
     1  365  # valid Sun-01-Jan - Sun-31-Dec
-     3  # No. of periods in day
+     3  # No. of periods in day: weekdays    
     0    2   0.000  # ctl type, law (free floating), start @
       0.  # No. of data items
     0   14   7.000  # ctl type, law (floating control), start @
@@ -32,14 +32,14 @@ this is a variant of the base case set of assumptions for testing a different co
   20.000 2.000 1.000 2.000 24.000 2.000 1.000 1.000 1000.000 0.000 1.000 1000.000 0.000 1.000
     0    2  19.000  # ctl type, law (free floating), start @
       0.  # No. of data items
-* Control function
+* Control function    3
 # senses the temperature of the current zone.
     0    0    0    0  # sensor data
 # actuates air point of the current zone
     0    0    0  # actuator data
-    1 # No. day types
+    1  # all daytypes
     1  365  # valid Sun-01-Jan - Sun-31-Dec
-     3  # No. of periods in day
+     3  # No. of periods in day: weekdays    
     0    2   0.000  # ctl type, law (free floating), start @
       0.  # No. of data items
     0    1   7.000  # ctl type, law (basic control), start @

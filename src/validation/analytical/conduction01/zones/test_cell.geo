@@ -1,35 +1,41 @@
-# geometry of test_cell defined in: ../zones/test_cell.geo
-GEN  test_cell  Test Cell  # type, name, descr
-       8       6   0.000    # vertices, surfaces, rotation angle
-#  X co-ord, Y co-ord, Z co-ord
-      0.00000     0.00000     0.00000  # vert   1
-      1.00000     0.00000     0.00000  # vert   2
-      1.00000     1.00000     0.00000  # vert   3
-      0.00000     1.00000     0.00000  # vert   4
-      0.00000     0.00000     1.00000  # vert   5
-      1.00000     0.00000     1.00000  # vert   6
-      1.00000     1.00000     1.00000  # vert   7
-      0.00000     1.00000     1.00000  # vert   8
-# no of vertices followed by list of associated vert
-   4,  1,  2,  6,  5,
-   4,  2,  3,  7,  6,
-   4,  3,  4,  8,  7,
-   4,  4,  1,  5,  8,
-   4,  5,  6,  7,  8,
-   4,  1,  4,  3,  2,
-# number of default windows within each surface 
-   0  0  0  0  0  0
-# surfaces indentation (m)
- 0.000 0.000 0.000 0.000 0.000 0.000
-    3   0   0   0    # default insolation distribution
-# surface attributes follow: 
-# id  surface      geom  loc/  mlc db       environment
-# no  name         type  posn  name         other side
-  1, Surf-1        OPAQ  VERT  intern_wall  CONSTANT       
-  2, Surf-2        OPAQ  VERT  intern_wall  CONSTANT       
-  3, Surf-3        OPAQ  VERT  intern_wall  CONSTANT       
-  4, Surf-4        OPAQ  VERT  intern_wall  CONSTANT       
-  5, Surf-5        OPAQ  CEIL  intern_wall  CONSTANT       
-  6, Surf-6        OPAQ  FLOR  intern_wall  CONSTANT       
-# base
-   6   0   0   0     1.00
+*Geometry 1.1,GEN,test_cell # tag version, format, zone name
+*date Sun Dec  8 17:33:17 2013  # latest file modification 
+Test Cell
+# tag, X co-ord, Y co-ord, Z co-ord
+*vertex,0.00000,0.00000,0.00000  #   1
+*vertex,1.00000,0.00000,0.00000  #   2
+*vertex,1.00000,1.00000,0.00000  #   3
+*vertex,0.00000,1.00000,0.00000  #   4
+*vertex,0.00000,0.00000,1.00000  #   5
+*vertex,1.00000,0.00000,1.00000  #   6
+*vertex,1.00000,1.00000,1.00000  #   7
+*vertex,0.00000,1.00000,1.00000  #   8
+# 
+# tag, number of vertices followed by list of associated vert
+*edges,4,1,2,6,5  #  1
+*edges,4,2,3,7,6  #  2
+*edges,4,3,4,8,7  #  3
+*edges,4,4,1,5,8  #  4
+*edges,4,5,6,7,8  #  5
+*edges,4,1,4,3,2  #  6
+# 
+# surf attributes:
+#  surf name, surf position VERT/CEIL/FLOR/SLOP/UNKN
+#  child of (surface name), useage (pair of tags) 
+#  construction name, optical name
+#  boundary condition tag followed by two data items
+*surf,Surf-1,VERT,-,-,-,intern_wall,OPAQUE,CONSTANT,00,00  #   1 ||< constant @  0dC &   0W rad
+*surf,Surf-2,VERT,-,-,-,intern_wall,OPAQUE,CONSTANT,00,00  #   2 ||< constant @  0dC &   0W rad
+*surf,Surf-3,VERT,-,-,-,intern_wall,OPAQUE,CONSTANT,00,00  #   3 ||< constant @  0dC &   0W rad
+*surf,Surf-4,VERT,-,-,-,intern_wall,OPAQUE,CONSTANT,00,00  #   4 ||< constant @  0dC &   0W rad
+*surf,Surf-5,CEIL,-,-,-,intern_wall,OPAQUE,CONSTANT,00,00  #   5 ||< constant @  0dC &   0W rad
+*surf,Surf-6,FLOR,-,-,-,intern_wall,OPAQUE,CONSTANT,00,00  #   6 ||< constant @  0dC &   0W rad
+# 
+*insol,3,0,0,0  # default insolation distribution
+# 
+# shading directives
+*shad_calc,none  # no temporal shading requested
+# 
+*insol_calc,none  # no insolation requested
+# 
+*base_list,1,6,     1.00 0  # zone base list

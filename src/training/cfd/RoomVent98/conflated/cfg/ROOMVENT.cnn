@@ -1,5 +1,5 @@
 *connections for ROOMVENT
-*Date Tue Aug 28 10:38:41 2012
+*Date Sun Dec  8 16:53:42 2013
       6   # number of connections
    1   1   0   0   0  #    1 south in bottom is External
    1   2   5   0   0  #    2 east in bottom is adiabatic

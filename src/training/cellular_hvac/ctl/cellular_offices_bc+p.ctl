@@ -7,7 +7,7 @@ link between zones and plant component enabled with free float in corridor
     0    0    0    0  # sensor data
 # actuates air point of the current zone
     0    0    0  # actuator data
-    1 # No. day types
+    1  # all daytypes
     1  365  # valid Sat-01-Jan - Sun-31-Dec
      1  # No. of periods in day: weekdays    
     0    2   0.000  # ctl type, law (free floating), start @
@@ -17,7 +17,7 @@ link between zones and plant component enabled with free float in corridor
     1    0    0    0  # sensor data
 # actuates the air point in manager_a.
     1    0    0  # actuator data
-    1 # No. day types
+    1  # all daytypes
     1  365  # valid Sat-01-Jan - Sun-31-Dec
      1  # No. of periods in day: weekdays    
     0    6   0.000  # ctl type, law (flux zone/plant), start @
@@ -28,7 +28,7 @@ link between zones and plant component enabled with free float in corridor
     2    0    0    0  # sensor data
 # actuates the air point in manager_b.
     2    0    0  # actuator data
-    1 # No. day types
+    1  # all daytypes
     1  365  # valid Sat-01-Jan - Sun-31-Dec
      1  # No. of periods in day: weekdays    
     0    6   0.000  # ctl type, law (flux zone/plant), start @
@@ -44,7 +44,7 @@ PID control of flux injection of heating coil cooling at cooling coil and the fa
    -1   17    1    0    0  # sensor 
 # plant component  10:re-heat_coil @ node no.  1
    -1   10    1    0  # actuator 
-    1 # No. day types
+    1  # all daytypes
     1  365  # valid Sat-01-Jan - Sun-31-Dec
      3  # No. of periods in day: weekdays    
     0    0   0.000  # ctl type, law (period off), start @
@@ -59,7 +59,7 @@ PID control of flux injection of heating coil cooling at cooling coil and the fa
    -1   17    1    0    0  # sensor 
 # plant component   8:cooling_coil @ node no.  1
    -1    8    1    0  # actuator 
-    3 # No. day types
+    3 # No. day types using dates of validity
     1  120  # valid Sat-01-Jan - Sun-30-Apr
      3  # No. of periods in day: weekdays    
     0    0   0.000  # ctl type, law (period off), start @
@@ -92,7 +92,7 @@ PID control of flux injection of heating coil cooling at cooling coil and the fa
    -1    5    1    0    0  # sensor 
 # plant component   4:prehtg_coil @ node no.  1
    -1    4    1    0  # actuator 
-    1 # No. day types
+    1  # all daytypes
     1  365  # valid Sat-01-Jan - Sun-31-Dec
      1  # No. of periods in day: weekdays    
     0    1   0.000  # ctl type, law (PID flux control.), start @
@@ -103,7 +103,7 @@ PID control of flux injection of heating coil cooling at cooling coil and the fa
    -1   17    1    0    0  # sensor 
 # plant component  12:fan1 @ node no.  1
    -1   12    1    0  # actuator 
-    3 # No. day types
+    3 # No. day types using dates of validity
     1  120  # valid Sat-01-Jan - Sun-30-Apr
      3  # No. of periods in day: weekdays    
     1    8   0.000  # ctl type, law (On-Off control.), start @
@@ -136,7 +136,7 @@ PID control of flux injection of heating coil cooling at cooling coil and the fa
    -1   17    1    0    0  # sensor 
 # plant component  18:fan2 @ node no.  1
    -1   18    1    0  # actuator 
-    3 # No. day types
+    3 # No. day types using dates of validity
     1  120  # valid Sat-01-Jan - Sun-30-Apr
      3  # No. of periods in day: weekdays    
     1    8   0.000  # ctl type, law (On-Off control.), start @
@@ -169,7 +169,7 @@ PID control of flux injection of heating coil cooling at cooling coil and the fa
    -1   17    1    0    0  # sensor 
 # plant component   6:humidifier @ node no.  1
    -1    6    1    0  # actuator 
-    1 # No. day types
+    1  # all daytypes
     1  365  # valid Sat-01-Jan - Sun-31-Dec
      3  # No. of periods in day: weekdays    
    11    0   0.000  # ctl type, law (period off), start @
