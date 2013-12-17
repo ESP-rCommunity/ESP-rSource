@@ -2,7 +2,7 @@
 *date Tue Dec 17 20:00:06 2013  # latest file modification 
 # operations of office defined in: 
 # ../zones/office.opr
-small office for two people, 200 W lighting 9-5
+Infiltration is 0.3 ach all hours all days.
 # control(no control of air flow  ), low mid & high setpoints 
    0     0.000     0.000   100.000
      1   # number of flow periods in day type: weekday     

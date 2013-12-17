@@ -2,7 +2,7 @@
 *date Tue Dec 17 20:00:06 2013  # latest file modification 
 # operations of roof_space defined in: 
 # ../zones/roof_space.opr
-ceiling void with partial lighting gains from below
+ceiling void with no infiltration or ventilation from other zones.
 # control(no control of air flow  ), low mid & high setpoints 
    0     0.000     0.000   100.000
      0   # number of flow periods in day type: weekday     

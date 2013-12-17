@@ -2,7 +2,7 @@
 *date Tue Dec 17 20:00:05 2013  # latest file modification 
 # operations of reception defined in: 
 # ../zones/reception.opr
-office space with 5 people and 600W lights 9-5
+Infiltration 0.3 ach all hours all days. Ventilation from 2nd zone at 1ach.
 # control(no control of air flow  ), low mid & high setpoints 
    0     0.000     0.000   100.000
      1   # number of flow periods in day type: weekday     
