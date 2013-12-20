@@ -931,6 +931,17 @@ C Present day.
         read(iClim,rec=irec,iostat=istat,err=1000)
      &    (idif(j),itmp(j),idnr(j),ivel(j),idir(j),ihum(j),j=1,24)
 
+C If humidity is greater than 100 this may cause problems at simulation
+C time and cause simulation to stop without warning
+        do 211 j=1,24
+          if(ihum(j).gt.100.)then
+            write(outs,'(A)')'Relative humidity in climate file > 100'
+            call edisp(itu,outs)
+            write(outs,'(A)')'This may cause simulation to fail'
+            call edisp(itu,outs)
+          endif
+ 211    continue
+
 C Note: future year may correspond to another climate file
 C If this is a multi-year simulation, we may need to  open the
 C approprate climate file.

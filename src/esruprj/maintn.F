@@ -40,7 +40,7 @@ C IER=0 OK, IER=1 problem.
 #include "net_flow.h"
 #include "tdf2.h"
       COMMON/OUTIN/IUOUT,IUIN
-      COMMON/TDFGH2/GTYPES(24),GMENUS(24)
+      COMMON/TDFGH2/GTYPES(MTI),GMENUS(MTI)
       COMMON/TDFG1/GAIDE,GHELP(MHEL),GDHDRT(3),GMH
       common/TDFADDC/iadcols,deftabu(9)
       COMMON/HDAT/IHREC(MIT)

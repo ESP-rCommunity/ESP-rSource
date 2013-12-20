@@ -94,7 +94,6 @@ C Temporarily use same file unit as profiles db.
       NDNAM(0)='    '
       fndegc=20.0
       imix=3
-      LTMP=' '
 
       if(IPRODB.eq.IFIL+6)then
         IUM=IPRODB
@@ -520,10 +519,11 @@ C << to a graphic network flow file.
             endif
   42      continue
           if(.not.found)then
-            call usrmsg(
-     &       ' No linkages set between the mass flow nodes and the',
-     &       ' thermal zones; please supply these.','W')
-            goto 10
+            CALL EASKAB(
+     &        'No linkages set between the mass flow nodes and the',
+     &        'thermal zones. Link now?','Yes','No',
+     &        IW,nbhelp)
+              if(IW.eq.1)goto 10
           endif
         endif
 
@@ -1329,10 +1329,6 @@ C MOD - 'A' - Add
 C       'D' - Delete
 C       'E' - Edit
 C       'C' - Copy
-
-C     ICONS = connectivity matrix; ie. ICONS(I,J) holds number of
-C             connections between nodes I and J
-
       SUBROUTINE MFLDES(MOD,ICON)
 
 #include "net_flow.h"
@@ -1349,7 +1345,6 @@ C             connections between nodes I and J
       COMMON/MFLW10/NODPS(MCNN),HGTPS(MCNN),NODNE(MCNN),HGTNE(MCNN),
      &              ITPCON(MCNN),NDSCNN(MCNN,MCNS)
 
-      DIMENSION ICONS(MCNN,MCNN)
       CHARACTER outs*124
       CHARACTER LTPCMP*60,CMNAM*12,NDNAM*12,MOD*1
       LOGICAL OK,dok,DMFCON
@@ -1361,21 +1356,15 @@ C For help messages
 
       helpinsub='MFLDES'  ! set for subroutine
 
-C Zeroise ICONS
-      DO 5 I=1,MCNN
-      DO 5 J=1,MCNN
-        ICONS(I,J)=0
-    5 CONTINUE
-
       IF(MOD.EQ.'A'.OR.MOD.EQ.'E')THEN
         IF(MOD.EQ.'A')THEN
           IFCN=NCNN+1
         ELSEIF(MOD.EQ.'E')THEN
           IFCN=ICON
         ENDIF
+
 C Allow a node to be added, checked for uniqueness, matching fluid 
 C types and return data. 
-
   19    IF(MOD.EQ.'E')THEN
           WRITE(OUTS,'(A,A12,A)')
      &'  First (+ve) node: (currently ',NDNAM(NODPS(IFCN)),')'
@@ -1671,7 +1660,6 @@ C Warn if current wind reduction factor is zero
 C Calculation model ?
    11 helptopic='wind_reduction_opts'
       call gethelptext(helpinsub,helptopic,nbhelp)
-      ICALC=0
       CALL EASKABCD('Which calculation model: ','(see help)',
      &  'Input a value','Powerlaw','Logarithmic','LBL model',
      &  ICLC,nbhelp)
@@ -1829,7 +1817,6 @@ C << should mode Z be visible when user first enters flow facility? >>
 #include "geometry.h"
 #include "schedule.h"
 #include "net_flow.h"
-#include "esprdbfile.h"
 
       COMMON/FILEP/IFIL
       COMMON/OUTIN/IUOUT,IUIN

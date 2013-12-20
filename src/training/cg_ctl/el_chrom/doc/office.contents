@@ -1,7 +1,7 @@
 Synopsis
  
 Synopsis of the model Tower office with electrochromic glazing and daylight
-linking control defined in office.cfg generated on Fri Aug 24 15:51:50 2012.
+linking control defined in office.cfg generated on Sun Dec  8 15:53:01 2013.
 Notes associated with the model are in ../doc/job.notes
  
 The model is located at latitude   52.00 with a longitude difference of   0.00
@@ -32,7 +32,7 @@ An Integrated Performance View is incomplete or missing.
  
 Databases associated with the model:
  standard pressure distr: pressc.db1
- standard materials     : constr_db1.materialdb
+ standard materials     : material.db4.a
  constructions          : ../dbs/multicon.db
  standard plant comp    : plantc.db1
  standard event profiles: profiles.db1.a
@@ -48,13 +48,12 @@ proj cntrl
  
 Zones control includes  1 functions.
 no descrip
+Details of control loops referenced in the model:
  
  The sensor for function  1 senses the temperature of the current zone.
  The actuator for function  1 is air point of the current zone
  The following day types are defined:
-weekday
-saturday
-sunday
+weekday     saturday    sunday
  Day type weekday control has  3 periods.
  Per|Start|Sensing  |Actuating  | Control law description
    1  0.00 db temp   > flux      basic control: max heating capacity 90000.0W min
@@ -99,8 +98,8 @@ ID Zone         Volume|          Surface
  area of 94.5m^2 & approx floor area of 20.3m^2
  office-s describes a
  There is 13.500m2 of exposed surface area, 13.500m2 of which is vertical.
- Outside walls are 31.112 % of floor area & avg U of 1.899 & UA of 11.961
- Glazing is 35.555 % of floor & 53.333 % facade with avg U of 1.382 & UA of 9.9490
+ Outside walls are 31.112 % of floor area & average U of 1.899 & UA of 11.961
+ Glazing is 35.555 % of floor & 53.333 % facade with average U of 1.382 & UA of 9.9490
  
  A summary of the surfaces in office-s( 1) follows:
  
@@ -135,6 +134,34 @@ ID Zone         Volume|          Surface
  
  Casual gains are controlled in this zone.
  
+ Zone  1
+ Casual gain type for control during weekday      =   2
+ Casual gain type for control during saturday     =   0
+ Casual gain type for control during sunday       =   0
+ Light zone 1
+ Average of  1 daylight coefficient photocell types.
+ 
+ Set   |Switch-off |Minimum dimming|Minimal elec|Switch-off
+ point |light level|light output   |light output|delay time
+  300.0         1.1          0.10          0.30         0
+ 
+ % of |Sensor|Calculation   |
+ whole|number|type          |
+  1.00      1 Daylight coeff.
+ 
+ Sensor|   X  |   Y  |   Z  |  DX |  DY |  DZ |  DC|
+ number|      |      |      |     |     |     |    |
+      1   7.75   4.00  32.99  0.00  0.00 -1.00   1
+ 
+ 
+ Start| Finish| Control    |
+  Hour|   Hour|    Type    |
+      8     18 Dimming-closd loop
+ 
+ Night | Control|
+ Calib.|   Slope|
+   41.7-0.02000
+ 
  
  Air schedule notes:
 300W lighting (with electic details) 8-18hr
@@ -152,17 +179,17 @@ sunday     1  0 - 24    0.50  0.0084    0.00  0.0000   0     0.00
 Notes:
 300W lighting (with electic details) 8-18hr
  
-Daytype   Gain Type    Period Sensible  Latent  Radiant  Convec p.f +/-  Power Voltage Phase
-          No.  label   Hours  Magn.(W)  Magn.(W) Frac     Frac    (-) (-)    (W)    (V) (rgb)
-weekday     1 OccuptW    0- 8     0.0     0.0      0.5      0.5    0.00  0    0.0    0.0  1
-weekday     2 OccuptW    8-18   225.0   165.0      0.4      0.6    0.00  0    0.0    0.0  1
-weekday     3 OccuptW   18-24     0.0     0.0      0.5      0.5    0.00  0    0.0    0.0  1
-weekday     4 LightsW    0- 8     0.0     0.0      0.5      0.5    0.00  0    0.0    0.0  1
-weekday     5 LightsW    8-18   300.0     0.0      0.5      0.5    0.85  1  300.0  240.0  1
-weekday     6 LightsW   18-24     0.0     0.0      0.5      0.5    0.00  0    0.0    0.0  1
-weekday     7 EquiptW    0- 8     0.0     0.0      0.5      0.5    0.00  0    0.0    0.0  1
-weekday     8 EquiptW    8-18   300.0     0.0      0.4      0.6    0.00  0    0.0    0.0  1
-weekday     9 EquiptW   18-24     0.0     0.0      0.5      0.5    0.00  0    0.0    0.0  1
+Daytype   Gain Label    Type    Unit Period Sensible  Latent  Radiant  Convec   p.f +/-  Power Voltage Phase
+          No.                        Hours  Magn.(W) Magn.(W) Frac     Frac     (-) (-)    (W)    (V) (rgb)
+weekday     1 Occupt     people    W    0- 8      0.0      0.0    0.50    0.50    0.00  0    0.0    0.0  1
+weekday     2 Occupt     people    W    8-18    225.0    165.0    0.40    0.60    0.00  0    0.0    0.0  1
+weekday     3 Occupt     people    W   18-24      0.0      0.0    0.50    0.50    0.00  0    0.0    0.0  1
+weekday     4 Lights     lighting  W    0- 8      0.0      0.0    0.50    0.50    0.00  0    0.0    0.0  1
+weekday     5 Lights     lighting  W    8-18    300.0      0.0    0.50    0.50    0.85  1  300.0  240.0  1
+weekday     6 Lights     lighting  W   18-24      0.0      0.0    0.50    0.50    0.00  0    0.0    0.0  1
+weekday     7 Equipt     equipment W    0- 8      0.0      0.0    0.50    0.50    0.00  0    0.0    0.0  1
+weekday     8 Equipt     equipment W    8-18    300.0      0.0    0.40    0.60    0.00  0    0.0    0.0  1
+weekday     9 Equipt     equipment W   18-24      0.0      0.0    0.50    0.50    0.00  0    0.0    0.0  1
  
  ____________________________________________________________
  
@@ -171,8 +198,8 @@ weekday     9 EquiptW   18-24     0.0     0.0      0.5      0.5    0.00  0    0.
  area of 94.5m^2 & approx floor area of 20.3m^2
  office-w describes a
  There is 13.500m2 of exposed surface area, 13.500m2 of which is vertical.
- Outside walls are 31.112 % of floor area & avg U of 1.899 & UA of 11.961
- Glazing is 35.555 % of floor & 53.333 % facade with avg U of 1.382 & UA of 9.9490
+ Outside walls are 31.112 % of floor area & average U of 1.899 & UA of 11.961
+ Glazing is 35.555 % of floor & 53.333 % facade with average U of 1.382 & UA of 9.9490
  
  A summary of the surfaces in office-w( 2) follows:
  
@@ -207,6 +234,34 @@ weekday     9 EquiptW   18-24     0.0     0.0      0.5      0.5    0.00  0    0.
  
  Casual gains are controlled in this zone.
  
+ Zone  2
+ Casual gain type for control during weekday      =   2
+ Casual gain type for control during saturday     =   0
+ Casual gain type for control during sunday       =   0
+ Light zone 1
+ Average of  1 daylight coefficient photocell types.
+ 
+ Set   |Switch-off |Minimum dimming|Minimal elec|Switch-off
+ point |light level|light output   |light output|delay time
+  300.0         1.1          0.10          0.30         0
+ 
+ % of |Sensor|Calculation   |
+ whole|number|type          |
+  1.00      1 Daylight coeff.
+ 
+ Sensor|   X  |   Y  |   Z  |  DX |  DY |  DZ |  DC|
+ number|      |      |      |     |     |     |    |
+      1   4.00   7.75  32.99  0.00  0.00 -1.00   2
+ 
+ 
+ Start| Finish| Control    |
+  Hour|   Hour|    Type    |
+      8     18 Dimming-closd loop
+ 
+ Night | Control|
+ Calib.|   Slope|
+   41.7-0.02000
+ 
  Uses same operations as zone office-s
  
  ____________________________________________________________
@@ -216,8 +271,8 @@ weekday     9 EquiptW   18-24     0.0     0.0      0.5      0.5    0.00  0    0.
  area of 94.5m^2 & approx floor area of 20.3m^2
  office-n describes a
  There is 13.500m2 of exposed surface area, 13.500m2 of which is vertical.
- Outside walls are 31.111 % of floor area & avg U of 1.898 & UA of 11.961
- Glazing is 35.555 % of floor & 53.333 % facade with avg U of 1.382 & UA of 9.9490
+ Outside walls are 31.111 % of floor area & average U of 1.898 & UA of 11.961
+ Glazing is 35.555 % of floor & 53.333 % facade with average U of 1.382 & UA of 9.9490
  
  A summary of the surfaces in office-n( 3) follows:
  
@@ -252,6 +307,34 @@ weekday     9 EquiptW   18-24     0.0     0.0      0.5      0.5    0.00  0    0.
  
  Casual gains are controlled in this zone.
  
+ Zone  3
+ Casual gain type for control during weekday      =   2
+ Casual gain type for control during saturday     =   0
+ Casual gain type for control during sunday       =   0
+ Light zone 1
+ Average of  1 daylight coefficient photocell types.
+ 
+ Set   |Switch-off |Minimum dimming|Minimal elec|Switch-off
+ point |light level|light output   |light output|delay time
+  300.0         1.1          0.10          0.30         0
+ 
+ % of |Sensor|Calculation   |
+ whole|number|type          |
+  1.00      1 Daylight coeff.
+ 
+ Sensor|   X  |   Y  |   Z  |  DX |  DY |  DZ |  DC|
+ number|      |      |      |     |     |     |    |
+      1   7.75  11.50  32.99  0.00  0.00 -1.00   3
+ 
+ 
+ Start| Finish| Control    |
+  Hour|   Hour|    Type    |
+      8     18 Dimming-closd loop
+ 
+ Night | Control|
+ Calib.|   Slope|
+   41.7-0.02000
+ 
  Uses same operations as zone office-s
  
  ____________________________________________________________
@@ -261,8 +344,8 @@ weekday     9 EquiptW   18-24     0.0     0.0      0.5      0.5    0.00  0    0.
  area of 94.5m^2 & approx floor area of 20.3m^2
  office-e describes a
  There is 13.500m2 of exposed surface area, 13.500m2 of which is vertical.
- Outside walls are 31.111 % of floor area & avg U of 1.898 & UA of 11.961
- Glazing is 35.555 % of floor & 53.333 % facade with avg U of 1.382 & UA of 9.9490
+ Outside walls are 31.111 % of floor area & average U of 1.898 & UA of 11.961
+ Glazing is 35.555 % of floor & 53.333 % facade with average U of 1.382 & UA of 9.9490
  
  A summary of the surfaces in office-e( 4) follows:
  
@@ -297,6 +380,34 @@ weekday     9 EquiptW   18-24     0.0     0.0      0.5      0.5    0.00  0    0.
  
  Casual gains are controlled in this zone.
  
+ Zone  4
+ Casual gain type for control during weekday      =   2
+ Casual gain type for control during saturday     =   0
+ Casual gain type for control during sunday       =   0
+ Light zone 1
+ Average of  1 daylight coefficient photocell types.
+ 
+ Set   |Switch-off |Minimum dimming|Minimal elec|Switch-off
+ point |light level|light output   |light output|delay time
+  300.0         1.1          0.10          0.30         0
+ 
+ % of |Sensor|Calculation   |
+ whole|number|type          |
+  1.00      1 Daylight coeff.
+ 
+ Sensor|   X  |   Y  |   Z  |  DX |  DY |  DZ |  DC|
+ number|      |      |      |     |     |     |    |
+      1  11.50   7.75  32.99  0.00  0.00 -1.00   4
+ 
+ 
+ Start| Finish| Control    |
+  Hour|   Hour|    Type    |
+      8     18 Dimming-closd loop
+ 
+ Night | Control|
+ Calib.|   Slope|
+   41.7-0.02000
+ 
  Uses same operations as zone office-s
  
  ____________________________________________________________
@@ -306,17 +417,17 @@ weekday     9 EquiptW   18-24     0.0     0.0      0.5      0.5    0.00  0    0.
  In contact with ground 0.00m2.
  There is 54.000m2 of outside surface area, 54.000m2 of which is vertical.
  
- Outside walls are 31.111 % of floor area & avg U of 1.899 & UA of 47.843 & max MLC thickness 0.136
- Glazing is 35.555 % of floor & 53.333 % facade with avg U of 1.382 & UA of 39.796
+ Outside walls are 31.111 % of floor area & average U of 1.899 & UA of 47.843 & max MLC thickness 0.136
+ Glazing is 35.555 % of floor & 53.333 % facade with average U of 1.382 & UA of 39.796
  
  ____________________________________________________________
  Multi-layer constructions used:
  
  Details of opaque construction: Floor and overall thickness  0.200
  
- Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
-      |db  |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
-    1   32  200.0     1.400  2100.   653. 0.90 0.65    19.  0.14 Heavy mix concrete : Heavy mix concrete
+ Layer|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
+      |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
+    1  200.0     1.400  2100.   653. 0.90 0.65    19.  0.14 heavy mix concrete : Heavy mix concrete
  ISO 6946 U values (horiz/upward/downward heat flow)=  3.196  3.535  2.834 (partition)  2.482
  
 Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  3.10
@@ -326,9 +437,9 @@ Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  3.10
  
  Details of opaque construction: Ceiling and overall thickness  0.200
  
- Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
-      |db  |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
-    1   32  200.0     1.400  2100.   653. 0.90 0.65    19.  0.14 Heavy mix concrete : Heavy mix concrete
+ Layer|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
+      |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
+    1  200.0     1.400  2100.   653. 0.90 0.65    19.  0.14 heavy mix concrete : Heavy mix concrete
  ISO 6946 U values (horiz/upward/downward heat flow)=  3.196  3.535  2.834 (partition)  2.482
  
 Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  3.10
@@ -338,12 +449,12 @@ Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  3.10
  
  Details of opaque construction: Sparel-pan and overall thickness  0.136
  
- Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
-      |db  |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
- Ext   241    6.0     0.700  3500.   837. 0.83 0.05 19200.  0.01 Glass block : Glass block with placeholder single layer optics
-    2    0    5.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
-    3  211  115.0     0.040   250.   840. 0.90 0.30     4.  2.88 Glasswool : Glasswool
- Int   107   10.0     0.190   950.   840. 0.91 0.50    11.  0.05 Gypsum plasterboard : Gypsum plasterboard
+ Layer|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
+      |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
+ Ext     6.0     0.700  3500.   837. 0.83 0.05 19200.  0.01 glass block : Glass block with placeholder single layer optics
+    2    5.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
+    3  115.0     0.040   250.   840. 0.90 0.30     4.  2.88 glasswool : Glasswool (generic) (non-hygroscopic)
+ Int    10.0     0.190   950.   840. 0.91 0.50    11.  0.05 gypsum plasterboard : Gypsum plasterboard (generic) (inorganic-porous)
  ISO 6946 U values (horiz/upward/downward heat flow)=  0.305  0.308  0.302 (partition)  0.297
  
 Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  0.30
@@ -353,9 +464,9 @@ Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  0.30
  
  Details of opaque construction: Frame and overall thickness  0.005
  
- Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
-      |db  |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
-    1   43    5.0   210.000  2700.   880. 0.22 0.20 19200.  0.00 Aluminium : Aluminium
+ Layer|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
+      |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
+    1    5.0   210.000  2700.   880. 0.22 0.20 19200.  0.00 aluminium : Aluminium
  ISO 6946 U values (horiz/upward/downward heat flow)=  5.882  7.142  4.761 (partition)  3.846
  
 Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  5.55
@@ -365,10 +476,10 @@ Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  5.55
  
  Details of opaque construction: Int_wall and overall thickness  0.162
  
- Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
-      |db  |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
- Ext     2  150.0     0.440  1500.   650. 0.90 0.65    15.  0.34 Breeze block : Breeze block
- Int   103   12.0     0.180   800.   837. 0.91 0.60     9.  0.07 Perlite plasterboard : Perlite plasterboard
+ Layer|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
+      |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
+ Ext   150.0     0.440  1500.   650. 0.90 0.65    15.  0.34 breeze block : Breeze block (inorganic-porous)
+ Int    12.0     0.180   800.   837. 0.91 0.60     9.  0.07 perlite plasterboard : Perlite plasterboard (inorganic-porous)
  ISO 6946 U values (horiz/upward/downward heat flow)=  1.731  1.826  1.619 (partition)  1.498
  
 Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  1.70
@@ -378,11 +489,11 @@ Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  1.70
  
  Details of transparent construction: Glazing with EC_50/40-clr optics and overall thickness  0.030
  
- Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
-      |db  |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
- Ext   242   12.0     0.760  2710.   837. 0.83 0.05 19200.  0.02 Plate glass : Plate glass with placeholder single layer optics
-    2    0   12.0     0.000     0.     0. 0.99 0.99     1.  0.53 air  0.53 0.53 0.53
- Int   242    6.0     0.760  2710.   837. 0.83 0.05 19200.  0.01 Plate glass : Plate glass with placeholder single layer optics
+ Layer|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
+      |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
+ Ext    12.0     0.760  2710.   837. 0.83 0.05 19200.  0.02 plate glass : Plate glass with placeholder single layer optics
+    2   12.0     0.000     0.     0. 0.99 0.99     1.  0.53 air  0.53 0.53 0.53
+ Int     6.0     0.760  2710.   837. 0.83 0.05 19200.  0.01 plate glass : Plate glass with placeholder single layer optics
  ISO 6946 U values (horiz/upward/downward heat flow)=  1.382  1.442  1.309 (partition)  1.229
  
 Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  1.36

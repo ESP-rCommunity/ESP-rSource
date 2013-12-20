@@ -140,6 +140,7 @@ C  itrc the level of reporting (zero is quiet).
 
 #include "plant.h"
 #include "building.h"
+#include "net_flow.h"
 #include "geometry.h"
 #include "esprdbfile.h"
 #include "gencompDB.h"
@@ -174,11 +175,15 @@ C Electrical details for specified plant components
       common/elpcp/NPEL,PFP(mpcom),IPFP(mpcom),PWRP(mpcom),
      &BVOLTP(mpcom),IPHP(mpcom)
 
+      COMMON/AFN/IAIRN,LAPROB,ICAAS(MCOM)
+      CHARACTER LAPROB*72
+
 C Common for new format component database
       COMMON/NCDBFORM/ICDBF
 
       COMMON/IsTRNSYS/Is_TRNSYS(MPCOM)
-
+      integer ncomp,ncon
+      COMMON/C1/NCOMP,NCON
 
       LOGICAL close,FOUNDNUM(10),Is_TRNSYS
       CHARACTER OUTSTR*124,OUTS*124,word*20,LLTMP*144,cmsg*24
@@ -763,6 +768,15 @@ C Check if there is a plant fluid flow network available: 0 = no
         IF(IER.NE.0)RETURN
         K=0
         CALL EGETWI(OUTSTR,K,IFLWN,0,1,'W','plant fluid index',IER)
+
+C If there is a fluid flow network linked there is possibility that the
+C building side is not linked with the flow network determine this to be
+C true if there are no building side zones linked with fluid flow nodes
+C If building side is not linked then set IAIRN to 0
+        IAIRN=0
+        DO 43 ICOMP=1,NCOMP
+	  IF(ICAAS(ICOMP).GT.0)IAIRN=1
+  43    CONTINUE
         IF(IFLWN.EQ.0) goto 606
 
 C If version 2 file then skip read of duplicated mass flow information

@@ -1,7 +1,7 @@
 Synopsis
  
 Synopsis of the model Daylight factors used to switch artificial lights.
-defined in cg_ctl.cfg generated on Fri Aug 24 16:11:44 2012. Notes associated
+defined in cg_ctl.cfg generated on Sun Dec  8 15:57:06 2013. Notes associated
 with the model are in ../doc/cg_ctl.log
  
 The model is located at latitude   52.00 with a longitude difference of   0.00
@@ -32,7 +32,7 @@ An Integrated Performance View is incomplete or missing.
  
 Databases associated with the model:
  standard pressure distr: pressc.db1
- standard materials     : constr_db1.materialdb
+ standard materials     : material.db4.a
  constructions          : ../dbs/multicon.db1
  standard plant comp    : plantc.db1
  standard event profiles: profiles.db1.a
@@ -54,9 +54,9 @@ ID Zone         Volume|          Surface
  area of 94.0m^2 & approx floor area of 20.0m^2
  room describes a
  There is 94.000m2 of exposed surface area, 54.000m2 of which is vertical.
- Outside walls are 348.40 % of floor area & avg U of 0.520 & UA of 36.252
- Flat roof is 100.00 % of floor area & avg U of 0.433 & UA of 8.6579
- Glazing is 21.600 % of floor & 8.0000 % facade with avg U of 2.811 & UA of 12.142
+ Outside walls are 348.40 % of floor area & average U of 0.520 & UA of 36.252
+ Flat roof is 100.00 % of floor area & average U of 0.433 & UA of 8.6579
+ Glazing is 21.600 % of floor & 8.0000 % facade with average U of 2.811 & UA of 12.142
  
  A summary of the surfaces in room( 1) follows:
  
@@ -78,6 +78,57 @@ ID Zone         Volume|          Surface
  
  Casual gains are controlled in this zone.
  
+ Zone  1
+ Casual gain type for control during weekday      =   2
+ Casual gain type for control during saturday     =   0
+ Casual gain type for control during sunday       =   0
+ Light zone 1
+ Average of  4 analytical daylight factor photocell types.
+ 
+ Set   |Switch-off |Minimum dimming|Minimal elec|Switch-off
+ point |light level|light output   |light output|delay time
+  500.0         1.5          0.10          0.10         0
+ 
+ % of |Sensor|Calculation   |
+ whole|number|type          |
+  0.50      4 Analytical DF
+ 
+ Sensor|   X  |   Y  |   Z  |  DX |  DY |  DZ |
+ number|      |      |      |     |     |     |
+      1   2.00   2.00   0.90  0.00  0.00  1.00
+      2   2.00   3.00   0.90  0.00  0.00  1.00
+      3   3.00   2.00   0.90  0.00  0.00  1.00
+      4   3.00   3.00   0.90  0.00  0.00  1.00
+ 
+ 
+ Start| Finish| Control    |
+  Hour|   Hour|    Type    |
+      8     16 Dimming - ideal
+ Light zone 2
+ Average of  1 user specified daylight factor photocell types.
+ There are  1 source surfaces for daylighting in the zone.
+ 
+ Set   |Switch-off |Minimum dimming|Minimal elec|Switch-off
+ point |light level|light output   |light output|delay time
+  500.0         1.0          1.00          1.00         0
+ 
+ % of |Sensor|Calculation   |
+ whole|number|type          |
+  0.50      1 User defined DF
+ 
+ Sensor|   X  |   Y  |   Z  |  DX |  DY |  DZ |
+ number|      |      |      |     |     |     |
+      1   2.00   4.00   0.90  0.00  0.00  1.00
+ 
+ 
+ Source  | Daylight |
+ surface | factor(%)|
+    7        1.50
+ 
+ Start| Finish| Control    |
+  Hour|   Hour|    Type    |
+      8     16 On-Off probability
+ 
  
  Air schedule notes:
 two brief periods of occupancy and lights on weekdays
@@ -95,18 +146,18 @@ sunday     1  0 - 24    0.50  0.0083    0.00  0.0000   0     0.00
 Notes:
 two brief periods of occupancy and lights on weekdays
  
-Daytype   Gain Type    Period Sensible  Latent  Radiant  Convec p.f +/-  Power Voltage Phase
-          No.  label   Hours  Magn.(W)  Magn.(W) Frac     Frac    (-) (-)    (W)    (V) (rgb)
-weekday     1 OccuptW    0- 8     0.0     0.0      0.5      0.5    0.00  0    0.0    0.0  1
-weekday     2 OccuptW    8-11  1890.0  1215.0      0.8      0.2    0.00  0    0.0    0.0  1
-weekday     3 OccuptW   11-14     0.0     0.0      0.5      0.5    0.00  0    0.0    0.0  1
-weekday     4 OccuptW   14-16  1890.0  1215.0      0.8      0.2    0.00  0    0.0    0.0  1
-weekday     5 OccuptW   16-24     0.0     0.0      0.5      0.5    0.00  0    0.0    0.0  1
-weekday     6 LightsW    0- 8     0.0     0.0      0.5      0.5    0.00  0    0.0    0.0  1
-weekday     7 LightsW    8-11   864.0     0.0      0.4      0.6    0.90  1  864.0  240.0  1
-weekday     8 LightsW   11-14     0.0     0.0      0.5      0.5    0.00  0    0.0    0.0  1
-weekday     9 LightsW   14-16   864.0     0.0      0.4      0.6    0.90  1  864.0  240.0  1
-weekday    10 LightsW   16-24     0.0     0.0      0.5      0.5    0.00  0    0.0    0.0  1
+Daytype   Gain Label    Type    Unit Period Sensible  Latent  Radiant  Convec   p.f +/-  Power Voltage Phase
+          No.                        Hours  Magn.(W) Magn.(W) Frac     Frac     (-) (-)    (W)    (V) (rgb)
+weekday     1 Occupt     people    W    0- 8      0.0      0.0    0.50    0.50    0.00  0    0.0    0.0  1
+weekday     2 Occupt     people    W    8-11   1890.0   1215.0    0.80    0.20    0.00  0    0.0    0.0  1
+weekday     3 Occupt     people    W   11-14      0.0      0.0    0.50    0.50    0.00  0    0.0    0.0  1
+weekday     4 Occupt     people    W   14-16   1890.0   1215.0    0.80    0.20    0.00  0    0.0    0.0  1
+weekday     5 Occupt     people    W   16-24      0.0      0.0    0.50    0.50    0.00  0    0.0    0.0  1
+weekday     6 Lights     lighting  W    0- 8      0.0      0.0    0.50    0.50    0.00  0    0.0    0.0  1
+weekday     7 Lights     lighting  W    8-11    864.0      0.0    0.40    0.60    0.90  1  864.0  240.0  1
+weekday     8 Lights     lighting  W   11-14      0.0      0.0    0.50    0.50    0.00  0    0.0    0.0  1
+weekday     9 Lights     lighting  W   14-16    864.0      0.0    0.40    0.60    0.90  1  864.0  240.0  1
+weekday    10 Lights     lighting  W   16-24      0.0      0.0    0.50    0.50    0.00  0    0.0    0.0  1
  
  ____________________________________________________________
  
@@ -115,9 +166,9 @@ weekday    10 LightsW   16-24     0.0     0.0      0.5      0.5    0.00  0    0.
  area of 94.0m^2 & approx floor area of 20.0m^2
  un_ctl_room describes a
  There is 94.000m2 of exposed surface area, 54.000m2 of which is vertical.
- Outside walls are 348.40 % of floor area & avg U of 0.520 & UA of 36.252
- Flat roof is 100.00 % of floor area & avg U of 0.433 & UA of 8.6579
- Glazing is 21.600 % of floor & 8.0000 % facade with avg U of 2.811 & UA of 12.142
+ Outside walls are 348.40 % of floor area & average U of 0.520 & UA of 36.252
+ Flat roof is 100.00 % of floor area & average U of 0.433 & UA of 8.6579
+ Glazing is 21.600 % of floor & 8.0000 % facade with average U of 2.811 & UA of 12.142
  
  A summary of the surfaces in un_ctl_room( 2) follows:
  
@@ -155,16 +206,16 @@ sunday     1  0 - 24    0.50  0.0083    0.00  0.0000   0     0.00
 Notes:
 864W lighting 8-16hr
  
-Daytype   Gain Type    Period Sensible  Latent  Radiant  Convec p.f +/-  Power Voltage Phase
-          No.  label   Hours  Magn.(W)  Magn.(W) Frac     Frac    (-) (-)    (W)    (V) (rgb)
-weekday     1 OccuptW    0- 8     0.0     0.0      0.5      0.5    0.00  0    0.0    0.0  1
-weekday     2 OccuptW    8-11  1890.0  1215.0      0.8      0.2    0.00  0    0.0    0.0  1
-weekday     3 OccuptW   11-14     0.0     0.0      0.5      0.5    0.00  0    0.0    0.0  1
-weekday     4 OccuptW   14-16  1890.0  1215.0      0.8      0.2    0.00  0    0.0    0.0  1
-weekday     5 OccuptW   16-24     0.0     0.0      0.5      0.5    0.00  0    0.0    0.0  1
-weekday     6 LightsW    0- 8     0.0     0.0      0.5      0.5    0.00  0    0.0    0.0  1
-weekday     7 LightsW    8-16   864.0     0.0      0.4      0.6    0.90  1  864.0  240.0  1
-weekday     8 LightsW   16-24     0.0     0.0      0.5      0.5    0.00  0    0.0    0.0  1
+Daytype   Gain Label    Type    Unit Period Sensible  Latent  Radiant  Convec   p.f +/-  Power Voltage Phase
+          No.                        Hours  Magn.(W) Magn.(W) Frac     Frac     (-) (-)    (W)    (V) (rgb)
+weekday     1 Occupt     people    W    0- 8      0.0      0.0    0.50    0.50    0.00  0    0.0    0.0  1
+weekday     2 Occupt     people    W    8-11   1890.0   1215.0    0.80    0.20    0.00  0    0.0    0.0  1
+weekday     3 Occupt     people    W   11-14      0.0      0.0    0.50    0.50    0.00  0    0.0    0.0  1
+weekday     4 Occupt     people    W   14-16   1890.0   1215.0    0.80    0.20    0.00  0    0.0    0.0  1
+weekday     5 Occupt     people    W   16-24      0.0      0.0    0.50    0.50    0.00  0    0.0    0.0  1
+weekday     6 Lights     lighting  W    0- 8      0.0      0.0    0.50    0.50    0.00  0    0.0    0.0  1
+weekday     7 Lights     lighting  W    8-16    864.0      0.0    0.40    0.60    0.90  1  864.0  240.0  1
+weekday     8 Lights     lighting  W   16-24      0.0      0.0    0.50    0.50    0.00  0    0.0    0.0  1
  
  ____________________________________________________________
  
@@ -173,23 +224,23 @@ weekday     8 LightsW   16-24     0.0     0.0      0.5      0.5    0.00  0    0.
  In contact with ground 0.00m2.
  There is 188.00m2 of outside surface area, 108.00m2 of which is vertical.
  
- Outside walls are 348.40 % of floor area & avg U of 0.520 & UA of 72.504 & max MLC thickness 0.174
- Flat roof is 100.00 % of floor area & avg U of 0.433 & UA of 17.316
- Glazing is 21.600 % of floor & 8.0000 % facade with avg U of 2.811 & UA of 24.284
+ Outside walls are 348.40 % of floor area & average U of 0.520 & UA of 72.504 & max MLC thickness 0.174
+ Flat roof is 100.00 % of floor area & average U of 0.433 & UA of 17.316
+ Glazing is 21.600 % of floor & 8.0000 % facade with average U of 2.811 & UA of 24.284
  
  ____________________________________________________________
  Multi-layer constructions used:
  
  Details of opaque construction: grnd_floor and overall thickness  0.625
  
- Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
-      |db  |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
- Ext   263  250.0     1.280  1460.   879. 0.90 0.85     5.  0.20 Common earth : Common earth
-    2  262  150.0     0.520  2050.   184. 0.90 0.85     2.  0.29 Gravel based : Gravel based
-    3   32  150.0     1.400  2100.   653. 0.90 0.65    19.  0.11 Heavy mix concrete : Heavy mix concrete
-    4    0   50.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
-    5   67   19.0     0.150   800.  2093. 0.91 0.65    96.  0.13 Chipboard : Chipboard
- Int   221    6.0     0.060   186.  1360. 0.90 0.60    10.  0.10 Wilton : Wilton
+ Layer|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
+      |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
+ Ext   250.0     1.280  1460.   879. 0.90 0.85     5.  0.20 earth std : Common_earth
+    2  150.0     0.520  2050.   184. 0.90 0.85     2.  0.29 gravel based : Gravel based (non-hygroscopic)
+    3  150.0     1.400  2100.   653. 0.90 0.65    19.  0.11 heavy mix concrete : Heavy mix concrete
+    4   50.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
+    5   19.0     0.150   800.  2093. 0.91 0.65    96.  0.13 chipboard : Chipboard
+ Int     6.0     0.060   186.  1360. 0.90 0.60    10.  0.10 Wilton : Wilton weave wool carpet (organic-hygroscopic)
  ISO 6946 U values (horiz/upward/downward heat flow)=  0.864  0.887  0.835 (partition)  0.802
  
 Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  0.86
@@ -199,11 +250,11 @@ Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  0.86
  
  Details of transparent construction: dbl_glz with DCF7671_06nb optics and overall thickness  0.024
  
- Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
-      |db  |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
- Ext   242    6.0     0.760  2710.   837. 0.83 0.05 19200.  0.01 Plate glass : Plate glass with placeholder single layer optics
-    2    0   12.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
- Int   242    6.0     0.760  2710.   837. 0.83 0.05 19200.  0.01 Plate glass : Plate glass with placeholder single layer optics
+ Layer|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
+      |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
+ Ext     6.0     0.760  2710.   837. 0.83 0.05 19200.  0.01 plate glass : Plate glass with placeholder single layer optics
+    2   12.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
+ Int     6.0     0.760  2710.   837. 0.83 0.05 19200.  0.01 plate glass : Plate glass with placeholder single layer optics
  ISO 6946 U values (horiz/upward/downward heat flow)=  2.811  3.069  2.527 (partition)  2.243
  
 Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  2.73
@@ -222,12 +273,12 @@ Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  2.73
  
  Details of opaque construction: roof and overall thickness  0.111
  
- Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
-      |db  |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
- Ext    43    3.0   210.000  2700.   880. 0.22 0.20 19200.  0.00 Aluminium : Aluminium
-    2    0   25.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
-    3  281   80.0     0.040    12.   840. 0.90 0.65    30.  2.00 Glass Fibre Quilt : Glass Fibre Quilt
- Int    43    3.0   210.000  2700.   880. 0.22 0.20 19200.  0.00 Aluminium : Aluminium
+ Layer|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
+      |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
+ Ext     3.0   210.000  2700.   880. 0.22 0.20 19200.  0.00 aluminium : Aluminium
+    2   25.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
+    3   80.0     0.040    12.   840. 0.90 0.65    30.  2.00 glass fibre quilt : Glass Fibre Quilt (non-hygroscopic)
+ Int     3.0   210.000  2700.   880. 0.22 0.20 19200.  0.00 aluminium : Aluminium
  ISO 6946 U values (horiz/upward/downward heat flow)=  0.427  0.433  0.420 (partition)  0.412
  
 Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  0.43
@@ -237,14 +288,14 @@ Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  0.43
  
  Details of opaque construction: ext_wall and overall thickness  0.174
  
- Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
-      |db  |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
- Ext    43    3.0   210.000  2700.   880. 0.22 0.20 19200.  0.00 Aluminium : Aluminium
-    2    0   25.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
-    3  281   80.0     0.040    12.   840. 0.90 0.65    30.  2.00 Glass Fibre Quilt : Glass Fibre Quilt
-    4   43    3.0   210.000  2700.   880. 0.22 0.20 19200.  0.00 Aluminium : Aluminium
-    5    0   50.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
- Int   104   13.0     0.420  1200.   837. 0.91 0.50    11.  0.03 Gypsum plaster : Gypsum plaster
+ Layer|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
+      |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
+ Ext     3.0   210.000  2700.   880. 0.22 0.20 19200.  0.00 aluminium : Aluminium
+    2   25.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
+    3   80.0     0.040    12.   840. 0.90 0.65    30.  2.00 glass fibre quilt : Glass Fibre Quilt (non-hygroscopic)
+    4    3.0   210.000  2700.   880. 0.22 0.20 19200.  0.00 aluminium : Aluminium
+    5   50.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
+ Int    13.0     0.420  1200.   837. 0.91 0.50    11.  0.03 gypsum plaster : Gypsum based plaster (inorganic-porous)
  ISO 6946 U values (horiz/upward/downward heat flow)=  0.394  0.398  0.387 (partition)  0.380
  
 Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  0.39
