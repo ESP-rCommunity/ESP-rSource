@@ -1,5 +1,5 @@
-*connections for 3BR_semi_timber_p2m_warm
-*Date Sat Dec 21 18:08:12 2013
+*connections for 3BR_semi_timber_p1m_c
+*Date Sat Dec 21 17:58:31 2013
     182   # number of connections
    1   1   0   0   0  #    1 ptn_other in lower_bath is External
    1   2   0   0   0  #    2 fac_a in lower_bath is External
