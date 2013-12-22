@@ -193,6 +193,12 @@ C Active domain common.
 C Common for electrical file.
       COMMON/ENTFILE/ENTFLNAM,IENTXIST
 
+C Common for results file names (ag@20131221)
+      common/spflres/sblres(MSPS),sflres(MSPS),splres(MSPS),
+     &  smstres(MSPS),selres(MSPS),sipvres
+      character sblres*72,sflres*72,splres*72
+      character smstres*72,selres*72,sipvres*72
+
 C Additional commons for SHOCC.
 
 C ZBASEA    - area of base (m^2)
@@ -233,6 +239,15 @@ C SHOCCshzFile - path to SHOCC .shz file for each SHOCC'd zone
 
 C H3Kreporting object
       CHARACTER*128 H3K_rep_NAME, H3K_rep_value
+
+C Array of strings, string index and root name length for split of
+C h3k (.csv) results file path (ag@20131221)
+      CHARACTER*32 LocalWords(12)
+      integer*8 iRootLen
+      integer IW
+
+C Root file name for h3k (.csv) output
+      character*72 cOutputRoot
 
 C Expected finish time variables.
       character*24 ectime
@@ -1437,7 +1452,7 @@ C For 3D zone model, close the associated files.
               ENDIF
 
 C CFC output
-C             call CFCoutput(icomp)
+C             call CFCoutputH3K(icomp)
 
    40       continue
 
@@ -1904,8 +1919,21 @@ C The following code is used to process and export
 C the data collected by the reporting object.
 C
 C Any changes to this code should be made within
-C the H3Kreports demarcaration comments
-      CALL GenerateOutput
+C the H3Kreports demarcaration comments.
+C
+C Set the .csv output root file name to the root file name of the 
+C building results library file.
+      call GETTOKENS(sblres(1),IW,LocalWords)
+      iRootLen=lnblnk(LocalWords(IW))
+
+C     -4 implies a 3-letter ending and the "."; a more general solution
+C     would be preferable
+      iRootLen=iRootLen-4
+
+      write(cOutputRoot,'(A)')LocalWords(IW)(1:iRootLen)
+
+      CALL GenerateOutput(cOutputRoot(1:iRootLen))
+cx      CALL GenerateOutput
 C........H3Kreports.(SUMMARY).end........................
 
 

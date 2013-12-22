@@ -88,7 +88,7 @@ struct stVariableInfo{
    int Multiplier; //used for quickrun only
 };
 
-//Used by the TimeStepVecto to store details about each timestep
+//Used by the TimeStepVector to store details about each timestep
 struct stTimeStep{
    int Step;
    int Hour;
@@ -229,6 +229,16 @@ class TReportsManager
 
       // Clean-up files
       void Cleanup();
+    
+      /**
+       * Return the current status of h3k output file name (enabled/disabled)
+       */
+      bool UseResFilenameRoot();
+    
+      /**
+       * set CSV file name string
+       */
+      void setCSVFileName(const std::string& sFileName);
 
    private:
       //contains all variables found in h3kmodule.f90
@@ -311,6 +321,9 @@ class TReportsManager
       // list of transform targets.
       std::vector<std::string> m_xsl_targets;
 
+      // file names for output    
+      std::string sCSVFileName;
+
       /**
       * Flags for results post-processing options
       */
@@ -330,6 +343,7 @@ class TReportsManager
       bool bDumpDictionary;
       bool bSortOutput;
       bool bIndexDatabase;
+      bool bUseResFilenameRoot;
 
       bool bStyleSheetGood;
       bool bLinkStyleSheet;
