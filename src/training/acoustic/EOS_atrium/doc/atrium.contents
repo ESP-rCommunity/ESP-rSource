@@ -1,8 +1,8 @@
 Synopsis
  
 Synopsis of the model Room acoustics assessment exemplar: see documentation
-defined in EOS_atrium.cfg generated on Thu Aug 23 16:47:49 2012. Notes
-associated with the model are in EOS.notes
+defined in EOS_atrium.cfg generated on Sat Dec 14 23:01:56 2013. Notes
+associated with the model are in ../doc/EOS.notes
  
 The model is located at latitude   46.00 with a longitude difference of  -6.00
 from the local time meridian. The year used in simulations is 1967 and
@@ -47,7 +47,7 @@ An Integrated Performance View is incomplete or missing.
  
 Databases associated with the model:
  standard pressure distr: pressc.db1
- standard materials     : constr_db2.materialdb
+ standard materials     : material.db4.a
  constructions          : ../databases/EOSmlc.db1
  standard plant comp    : plantc.db1
  standard event profiles: profiles.db1.a
@@ -205,40 +205,40 @@ ID Zone         Volume|          Surface
  area of 274.m^2 & approx floor area of 84.2m^2
  F4_hall describes a...
  There is 101.76m2 of exposed surface area, 36.905m2 of which is vertical.
- Outside walls are 12.663 % of floor area & avg U of 0.302 & UA of 3.2156
- Flat roof is 52.578 % of floor area & avg U of 0.747 & UA of 33.065
- Glazing is 31.177 % of floor & 71.115 % facade with avg U of 0.700 & UA of 18.384
- Skylights are 24.471 % of floor area & avg U of 0.716 & UA of 14.739
+ Outside walls are 12.663 % of floor area & average U of 0.302 & UA of 3.2156
+ Flat roof is 52.578 % of floor area & average U of 0.747 & UA of 33.065
+ Glazing is 31.177 % of floor & 71.115 % facade with average U of 0.700 & UA of 18.384
+ Skylights are 24.471 % of floor area & average U of 0.716 & UA of 14.739
  
  A summary of the surfaces in F4_hall( 1) follows:
  
- Sur| Area  |Azim|Elev| surface    | geometry | construction |environment
-    | m^2   |deg |deg | name       |type |loca| name         |other side
-  1  6.46    180.  -0. F4_420       OPAQUE VERT Int_wall     ||< identical environment
-  2  9.40    180.   0. F4_419       OPAQUE VERT Int_wall     ||< identical environment
-  3  12.1    180.   0. F4_418       OPAQUE VERT Int_wall     ||< identical environment
-  4  6.46      0.   0. F4_421       OPAQUE VERT Int_wall     ||< identical environment
-  5  9.40      0.   0. F4_422       OPAQUE VERT Int_wall     ||< identical environment
-  6  12.1      0.   0. F4_423       OPAQUE VERT Int_wall     ||< identical environment
-  7  0.816   180.   0. Win_420      eos_in VERT dbl_glz_int  ||< identical environment
-  8  1.26    180.   0. Win_419      eos_in VERT dbl_glz_int  ||< identical environment
-  9  1.67    180.   0. Win_418      eos_in VERT dbl_glz_int  ||< identical environment
- 10  0.816     0.   0. Win_421      eos_in VERT dbl_glz_int  ||< identical environment
- 11  1.26      0.   0. Win_422      eos_in VERT dbl_glz_int  ||< identical environment
- 12  1.67      0.   0. Win_423      eos_in VERT dbl_glz_int  ||< identical environment
- 13  50.6      0. -90. floor_P4     OPAQUE FLOR F-P_down     ||< identical environment
- 14  2.05    180.   0. Esc_P4_s     OPAQUE VERT Base_up      ||< identical environment
- 15  1.03    270.   0. Esc_P4_o     OPAQUE VERT Base_up      ||< identical environment
- 16  2.05      0.  -0. Esc_P4_n     OPAQUE VERT Base_up      ||< identical environment
- 17  33.6      0. -90. Esc4_Esc3    SC_898 FLOR fictious     ||< Esc3_Esc4:F3_hall
- 18  3.64    270.   0. F4_west_1    Superg VERT Superglass   ||< external
- 19  3.64    270.   0. F4_west_2    Superg VERT Superglass   ||< external
- 20  10.7    270.   0. F4_west      OPAQUE VERT Facade       ||< external
- 21  19.0     90.  -0. F4_East      Superg VERT Superglass   ||< external
- 22  20.6      0.  90. Esc4_atrium  Superg CEIL Superglass   ||< external
- 23  31.2      0.  90. F4_roof      OPAQUE CEIL roof         ||< external
- 24  19.3      0.  90. Abs_ceil     OPAQUE CEIL roof_abs     ||< identical environment
- 25  13.0      0.  90. Opaque_roof  OPAQUE CEIL roof         ||< external
+ Sur| Area  |Azim|Elev| surface    |    geometry       | construction |environment
+    | m^2   |deg |deg | name       |optical|locat| use | name         |other side
+  1  6.46    180.  -0. F4_420       OPAQUE   VERT -     Int_wall     ||< identical environment
+  2  9.40    180.   0. F4_419       OPAQUE   VERT -     Int_wall     ||< identical environment
+  3  12.1    180.   0. F4_418       OPAQUE   VERT -     Int_wall     ||< identical environment
+  4  6.46      0.   0. F4_421       OPAQUE   VERT -     Int_wall     ||< identical environment
+  5  9.40      0.   0. F4_422       OPAQUE   VERT -     Int_wall     ||< identical environment
+  6  12.1      0.   0. F4_423       OPAQUE   VERT -     Int_wall     ||< identical environment
+  7  0.816   180.   0. Win_420      eos_int_ VERT -     dbl_glz_int  ||< identical environment
+  8  1.26    180.   0. Win_419      eos_int_ VERT -     dbl_glz_int  ||< identical environment
+  9  1.67    180.   0. Win_418      eos_int_ VERT -     dbl_glz_int  ||< identical environment
+ 10  0.816     0.   0. Win_421      eos_int_ VERT -     dbl_glz_int  ||< identical environment
+ 11  1.26      0.   0. Win_422      eos_int_ VERT -     dbl_glz_int  ||< identical environment
+ 12  1.67      0.   0. Win_423      eos_int_ VERT -     dbl_glz_int  ||< identical environment
+ 13  50.6      0. -90. floor_P4     OPAQUE   FLOR -     F-P_down     ||< identical environment
+ 14  2.05    180.   0. Esc_P4_s     OPAQUE   VERT -     Base_up      ||< identical environment
+ 15  1.03    270.   0. Esc_P4_o     OPAQUE   VERT -     Base_up      ||< identical environment
+ 16  2.05      0.  -0. Esc_P4_n     OPAQUE   VERT -     Base_up      ||< identical environment
+ 17  33.6      0. -90. Esc4_Esc3    SC_8985_ FLOR -     fictious     ||< Esc3_Esc4:F3_hall
+ 18  3.64    270.   0. F4_west_1    Supergla VERT -     Superglass   ||< external
+ 19  3.64    270.   0. F4_west_2    Supergla VERT -     Superglass   ||< external
+ 20  10.7    270.   0. F4_west      OPAQUE   VERT -     Facade       ||< external
+ 21  19.0     90.  -0. F4_East      Supergla VERT -     Superglass   ||< external
+ 22  20.6      0.  90. Esc4_atrium  Supergla CEIL -     Superglass   ||< external
+ 23  31.2      0.  90. F4_roof      OPAQUE   CEIL -     roof         ||< external
+ 24  19.3      0.  90. Abs_ceil     OPAQUE   CEIL -     roof_abs     ||< identical environment
+ 25  13.0      0.  90. Opaque_roof  OPAQUE   CEIL -     roof         ||< external
  
  
  All surfaces will receive diffuse insolation (if shading not calculated).
@@ -253,8 +253,8 @@ ID Zone         Volume|          Surface
 Notes:
 nil_operations
  
-Daytype   Gain Type    Period Sensible  Latent     Radiant    Convec
-          No.  label   Hours  Magn.(W)  Magn.(W)   Fraction   Fraction
+Daytype   Gain Label     Type    Unit Period Sensible  Latent     Radiant    Convec
+          No.                          Hours Magn.(W)  Magn.(W)   Fraction   Fraction
  
  ____________________________________________________________
  
@@ -263,37 +263,37 @@ Daytype   Gain Type    Period Sensible  Latent     Radiant    Convec
  area of 274.m^2 & approx floor area of 84.2m^2
  F3_hall describes a...
  There is 36.905m2 of exposed surface area, 36.905m2 of which is vertical.
- Outside walls are 12.663 % of floor area & avg U of 0.302 & UA of 3.2156
- Glazing is 31.177 % of floor & 71.115 % facade with avg U of 0.700 & UA of 18.384
+ Outside walls are 12.663 % of floor area & average U of 0.302 & UA of 3.2156
+ Glazing is 31.177 % of floor & 71.115 % facade with average U of 0.700 & UA of 18.384
  
  A summary of the surfaces in F3_hall( 2) follows:
  
- Sur| Area  |Azim|Elev| surface    | geometry | construction |environment
-    | m^2   |deg |deg | name       |type |loca| name         |other side
-  1  6.46    180.  -0. F3_320       OPAQUE VERT Int_wall     ||< identical environment
-  2  9.40    180.   0. F3_319       OPAQUE VERT Int_wall     ||< identical environment
-  3  12.1    180.   0. F3_318       OPAQUE VERT Int_wall     ||< identical environment
-  4  6.46      0.   0. F3_321       OPAQUE VERT Int_wall     ||< identical environment
-  5  9.40      0.   0. F3_322       OPAQUE VERT Int_wall     ||< identical environment
-  6  12.1      0.   0. F3_323       OPAQUE VERT Int_wall     ||< identical environment
-  7  0.816   180.   0. Win_320      eos_in VERT dbl_glz_int  ||< identical environment
-  8  1.26    180.   0. Win_319      eos_in VERT dbl_glz_int  ||< identical environment
-  9  1.67    180.   0. Win_318      eos_in VERT dbl_glz_int  ||< identical environment
- 10  0.816     0.   0. Win_321      eos_in VERT dbl_glz_int  ||< identical environment
- 11  1.26      0.   0. Win_322      eos_in VERT dbl_glz_int  ||< identical environment
- 12  1.67      0.   0. Win_323      eos_in VERT dbl_glz_int  ||< identical environment
- 13  50.6      0. -90. floor_P3     OPAQUE FLOR F-P_down     ||< identical environment
- 14  2.05    180.   0. Esc_P3_s     OPAQUE VERT Base_up      ||< identical environment
- 15  1.02    270.   0. Esc_P3_o     OPAQUE VERT Base_up      ||< identical environment
- 16  2.05      0.  -0. Esc_P3_n     OPAQUE VERT Base_up      ||< identical environment
- 17  33.6      0. -90. Esc_base1    SC_898 FLOR fictious     ||< Esc3_Esc4:F2_hall
- 18  3.64    270.   0. F3_west_1    Superg VERT Superglass   ||< external
- 19  3.64    270.   0. F3_west_2    Superg VERT Superglass   ||< external
- 20  10.7    270.   0. F3_west      OPAQUE VERT Facade       ||< external
- 21  19.0     90.  -0. F3_East      Superg VERT Superglass   ||< external
- 22  33.6      0.  90. Esc3_Esc4    SC_898 CEIL fictious     ||< Esc4_Esc3:F4_hall
- 23  31.2      0.  90. F3_P4        OPAQUE CEIL cor_ceil     ||< identical environment
- 24  19.3      0.  90. Abs_ceil     OPAQUE CEIL Base_up      ||< identical environment
+ Sur| Area  |Azim|Elev| surface    |    geometry       | construction |environment
+    | m^2   |deg |deg | name       |optical|locat| use | name         |other side
+  1  6.46    180.  -0. F3_320       OPAQUE   VERT -     Int_wall     ||< identical environment
+  2  9.40    180.   0. F3_319       OPAQUE   VERT -     Int_wall     ||< identical environment
+  3  12.1    180.   0. F3_318       OPAQUE   VERT -     Int_wall     ||< identical environment
+  4  6.46      0.   0. F3_321       OPAQUE   VERT -     Int_wall     ||< identical environment
+  5  9.40      0.   0. F3_322       OPAQUE   VERT -     Int_wall     ||< identical environment
+  6  12.1      0.   0. F3_323       OPAQUE   VERT -     Int_wall     ||< identical environment
+  7  0.816   180.   0. Win_320      eos_int_ VERT -     dbl_glz_int  ||< identical environment
+  8  1.26    180.   0. Win_319      eos_int_ VERT -     dbl_glz_int  ||< identical environment
+  9  1.67    180.   0. Win_318      eos_int_ VERT -     dbl_glz_int  ||< identical environment
+ 10  0.816     0.   0. Win_321      eos_int_ VERT -     dbl_glz_int  ||< identical environment
+ 11  1.26      0.   0. Win_322      eos_int_ VERT -     dbl_glz_int  ||< identical environment
+ 12  1.67      0.   0. Win_323      eos_int_ VERT -     dbl_glz_int  ||< identical environment
+ 13  50.6      0. -90. floor_P3     OPAQUE   FLOR -     F-P_down     ||< identical environment
+ 14  2.05    180.   0. Esc_P3_s     OPAQUE   VERT -     Base_up      ||< identical environment
+ 15  1.02    270.   0. Esc_P3_o     OPAQUE   VERT -     Base_up      ||< identical environment
+ 16  2.05      0.  -0. Esc_P3_n     OPAQUE   VERT -     Base_up      ||< identical environment
+ 17  33.6      0. -90. Esc_base1    SC_8985_ FLOR -     fictious     ||< Esc3_Esc4:F2_hall
+ 18  3.64    270.   0. F3_west_1    Supergla VERT -     Superglass   ||< external
+ 19  3.64    270.   0. F3_west_2    Supergla VERT -     Superglass   ||< external
+ 20  10.7    270.   0. F3_west      OPAQUE   VERT -     Facade       ||< external
+ 21  19.0     90.  -0. F3_East      Supergla VERT -     Superglass   ||< external
+ 22  33.6      0.  90. Esc3_Esc4    SC_8985_ CEIL -     fictious     ||< Esc4_Esc3:F4_hall
+ 23  31.2      0.  90. F3_P4        OPAQUE   CEIL -     cor_ceil     ||< identical environment
+ 24  19.3      0.  90. Abs_ceil     OPAQUE   CEIL -     Base_up      ||< identical environment
  
  
  All surfaces will receive diffuse insolation (if shading not calculated).
@@ -308,8 +308,8 @@ Daytype   Gain Type    Period Sensible  Latent     Radiant    Convec
 Notes:
 nil_operations
  
-Daytype   Gain Type    Period Sensible  Latent     Radiant    Convec
-          No.  label   Hours  Magn.(W)  Magn.(W)   Fraction   Fraction
+Daytype   Gain Label     Type    Unit Period Sensible  Latent     Radiant    Convec
+          No.                          Hours Magn.(W)  Magn.(W)   Fraction   Fraction
  
  ____________________________________________________________
  
@@ -318,37 +318,37 @@ Daytype   Gain Type    Period Sensible  Latent     Radiant    Convec
  area of 274.m^2 & approx floor area of 84.2m^2
  F2_hall describes a...
  There is 36.905m2 of exposed surface area, 36.905m2 of which is vertical.
- Outside walls are 12.663 % of floor area & avg U of 0.302 & UA of 3.2156
- Glazing is 31.177 % of floor & 71.115 % facade with avg U of 0.700 & UA of 18.384
+ Outside walls are 12.663 % of floor area & average U of 0.302 & UA of 3.2156
+ Glazing is 31.177 % of floor & 71.115 % facade with average U of 0.700 & UA of 18.384
  
  A summary of the surfaces in F2_hall( 3) follows:
  
- Sur| Area  |Azim|Elev| surface    | geometry | construction |environment
-    | m^2   |deg |deg | name       |type |loca| name         |other side
-  1  6.46    180.  -0. F3_320       OPAQUE VERT Int_wall     ||< identical environment
-  2  9.40    180.   0. F3_319       OPAQUE VERT Int_wall     ||< identical environment
-  3  12.1    180.   0. F3_318       OPAQUE VERT Int_wall     ||< identical environment
-  4  6.46    360.   0. F3_321       OPAQUE VERT Int_wall     ||< identical environment
-  5  9.40    360.   0. F3_322       OPAQUE VERT Int_wall     ||< identical environment
-  6  12.1    360.   0. F3_323       OPAQUE VERT Int_wall     ||< identical environment
-  7  0.816   180.   0. Win_320      eos_in VERT dbl_glz_int  ||< identical environment
-  8  1.26    180.   0. Win_319      eos_in VERT dbl_glz_int  ||< identical environment
-  9  1.67    180.   0. Win_318      eos_in VERT dbl_glz_int  ||< identical environment
- 10  0.816     0.   0. Win_321      eos_in VERT dbl_glz_int  ||< identical environment
- 11  1.26      0.   0. Win_322      eos_in VERT dbl_glz_int  ||< identical environment
- 12  1.67      0.   0. Win_323      eos_in VERT dbl_glz_int  ||< identical environment
- 13  50.6      0. -90. floor_P3     OPAQUE FLOR F-P_down     ||< identical environment
- 14  2.05    180.   0. Esc_P3_s     OPAQUE VERT Base_up      ||< identical environment
- 15  1.03    270.   0. Esc_P3_o     OPAQUE VERT Base_up      ||< identical environment
- 16  2.05      0.  -0. Esc_P3_n     OPAQUE VERT Base_up      ||< identical environment
- 17  33.6      0. -90. Esc_base1    SC_898 FLOR fictious     ||< Esc3_Esc4:F1_hall
- 18  3.64    270.   0. F3_west_1    Superg VERT Superglass   ||< external
- 19  3.64    270.   0. F3_west_2    Superg VERT Superglass   ||< external
- 20  10.7    270.   0. F3_west      OPAQUE VERT Facade       ||< external
- 21  19.0     90.  -0. F3_East      Superg VERT Superglass   ||< external
- 22  33.6      0.  90. Esc3_Esc4    SC_898 CEIL fictious     ||< Esc_base1:F3_hall
- 23  31.2      0.  90. F3_P4        OPAQUE CEIL cor_ceil     ||< identical environment
- 24  19.3      0.  90. Abs_ceil     OPAQUE CEIL Base_up      ||< identical environment
+ Sur| Area  |Azim|Elev| surface    |    geometry       | construction |environment
+    | m^2   |deg |deg | name       |optical|locat| use | name         |other side
+  1  6.46    180.  -0. F3_320       OPAQUE   VERT -     Int_wall     ||< identical environment
+  2  9.40    180.   0. F3_319       OPAQUE   VERT -     Int_wall     ||< identical environment
+  3  12.1    180.   0. F3_318       OPAQUE   VERT -     Int_wall     ||< identical environment
+  4  6.46    360.   0. F3_321       OPAQUE   VERT -     Int_wall     ||< identical environment
+  5  9.40    360.   0. F3_322       OPAQUE   VERT -     Int_wall     ||< identical environment
+  6  12.1    360.   0. F3_323       OPAQUE   VERT -     Int_wall     ||< identical environment
+  7  0.816   180.   0. Win_320      eos_int_ VERT -     dbl_glz_int  ||< identical environment
+  8  1.26    180.   0. Win_319      eos_int_ VERT -     dbl_glz_int  ||< identical environment
+  9  1.67    180.   0. Win_318      eos_int_ VERT -     dbl_glz_int  ||< identical environment
+ 10  0.816     0.   0. Win_321      eos_int_ VERT -     dbl_glz_int  ||< identical environment
+ 11  1.26      0.   0. Win_322      eos_int_ VERT -     dbl_glz_int  ||< identical environment
+ 12  1.67      0.   0. Win_323      eos_int_ VERT -     dbl_glz_int  ||< identical environment
+ 13  50.6      0. -90. floor_P3     OPAQUE   FLOR -     F-P_down     ||< identical environment
+ 14  2.05    180.   0. Esc_P3_s     OPAQUE   VERT -     Base_up      ||< identical environment
+ 15  1.03    270.   0. Esc_P3_o     OPAQUE   VERT -     Base_up      ||< identical environment
+ 16  2.05      0.  -0. Esc_P3_n     OPAQUE   VERT -     Base_up      ||< identical environment
+ 17  33.6      0. -90. Esc_base1    SC_8985_ FLOR -     fictious     ||< Esc3_Esc4:F1_hall
+ 18  3.64    270.   0. F3_west_1    Supergla VERT -     Superglass   ||< external
+ 19  3.64    270.   0. F3_west_2    Supergla VERT -     Superglass   ||< external
+ 20  10.7    270.   0. F3_west      OPAQUE   VERT -     Facade       ||< external
+ 21  19.0     90.  -0. F3_East      Supergla VERT -     Superglass   ||< external
+ 22  33.6      0.  90. Esc3_Esc4    SC_8985_ CEIL -     fictious     ||< Esc_base1:F3_hall
+ 23  31.2      0.  90. F3_P4        OPAQUE   CEIL -     cor_ceil     ||< identical environment
+ 24  19.3      0.  90. Abs_ceil     OPAQUE   CEIL -     Base_up      ||< identical environment
  
  
  All surfaces will receive diffuse insolation (if shading not calculated).
@@ -363,8 +363,8 @@ Daytype   Gain Type    Period Sensible  Latent     Radiant    Convec
 Notes:
 nil_operations
  
-Daytype   Gain Type    Period Sensible  Latent     Radiant    Convec
-          No.  label   Hours  Magn.(W)  Magn.(W)   Fraction   Fraction
+Daytype   Gain Label     Type    Unit Period Sensible  Latent     Radiant    Convec
+          No.                          Hours Magn.(W)  Magn.(W)   Fraction   Fraction
  
  ____________________________________________________________
  
@@ -373,37 +373,37 @@ Daytype   Gain Type    Period Sensible  Latent     Radiant    Convec
  area of 274.m^2 & approx floor area of 84.2m^2
  F1_hall describes a...
  There is 36.905m2 of exposed surface area, 36.905m2 of which is vertical.
- Outside walls are 12.663 % of floor area & avg U of 0.302 & UA of 3.2156
- Glazing is 31.177 % of floor & 71.115 % facade with avg U of 0.700 & UA of 18.384
+ Outside walls are 12.663 % of floor area & average U of 0.302 & UA of 3.2156
+ Glazing is 31.177 % of floor & 71.115 % facade with average U of 0.700 & UA of 18.384
  
  A summary of the surfaces in F1_hall( 4) follows:
  
- Sur| Area  |Azim|Elev| surface    | geometry | construction |environment
-    | m^2   |deg |deg | name       |type |loca| name         |other side
-  1  6.46    180.  -0. F3_320       OPAQUE VERT Int_wall     ||< identical environment
-  2  9.40    180.   0. F3_319       OPAQUE VERT Int_wall     ||< identical environment
-  3  12.1    180.   0. F3_318       OPAQUE VERT Int_wall     ||< identical environment
-  4  6.46      0.   0. F3_321       OPAQUE VERT Int_wall     ||< identical environment
-  5  9.40      0.   0. F3_322       OPAQUE VERT Int_wall     ||< identical environment
-  6  12.1      0.   0. F3_323       OPAQUE VERT Int_wall     ||< identical environment
-  7  0.816   180.   0. Win_320      eos_in VERT dbl_glz_int  ||< identical environment
-  8  1.26    180.   0. Win_319      eos_in VERT dbl_glz_int  ||< identical environment
-  9  1.67    180.   0. Win_318      eos_in VERT dbl_glz_int  ||< identical environment
- 10  0.816     0.   0. Win_321      eos_in VERT dbl_glz_int  ||< identical environment
- 11  1.26      0.   0. Win_322      eos_in VERT dbl_glz_int  ||< identical environment
- 12  1.67      0.   0. Win_323      eos_in VERT dbl_glz_int  ||< identical environment
- 13  50.6      0. -90. floor_P3     OPAQUE FLOR F-P_down     ||< identical environment
- 14  2.05    180.   0. Esc_P3_s     OPAQUE VERT Base_up      ||< identical environment
- 15  1.02    270.   0. Esc_P3_o     OPAQUE VERT Base_up      ||< identical environment
- 16  2.05      0.  -0. Esc_P3_n     OPAQUE VERT Base_up      ||< identical environment
- 17  33.6      0. -90. Esc_base1    SC_898 FLOR fictious     ||< Esc3_Esc4:F0_hall
- 18  3.64    270.   0. F3_west_1    Superg VERT Superglass   ||< external
- 19  3.64    270.   0. F3_west_2    Superg VERT Superglass   ||< external
- 20  10.7    270.   0. F3_west      OPAQUE VERT Facade       ||< external
- 21  19.0     90.  -0. F3_East      Superg VERT Superglass   ||< external
- 22  33.6      0.  90. Esc3_Esc4    SC_898 CEIL fictious     ||< Esc_base1:F2_hall
- 23  31.2      0.  90. F3_P4        OPAQUE CEIL cor_ceil     ||< identical environment
- 24  19.3      0.  90. Abs_ceil     OPAQUE CEIL Base_up      ||< identical environment
+ Sur| Area  |Azim|Elev| surface    |    geometry       | construction |environment
+    | m^2   |deg |deg | name       |optical|locat| use | name         |other side
+  1  6.46    180.  -0. F3_320       OPAQUE   VERT -     Int_wall     ||< identical environment
+  2  9.40    180.   0. F3_319       OPAQUE   VERT -     Int_wall     ||< identical environment
+  3  12.1    180.   0. F3_318       OPAQUE   VERT -     Int_wall     ||< identical environment
+  4  6.46      0.   0. F3_321       OPAQUE   VERT -     Int_wall     ||< identical environment
+  5  9.40      0.   0. F3_322       OPAQUE   VERT -     Int_wall     ||< identical environment
+  6  12.1      0.   0. F3_323       OPAQUE   VERT -     Int_wall     ||< identical environment
+  7  0.816   180.   0. Win_320      eos_int_ VERT -     dbl_glz_int  ||< identical environment
+  8  1.26    180.   0. Win_319      eos_int_ VERT -     dbl_glz_int  ||< identical environment
+  9  1.67    180.   0. Win_318      eos_int_ VERT -     dbl_glz_int  ||< identical environment
+ 10  0.816     0.   0. Win_321      eos_int_ VERT -     dbl_glz_int  ||< identical environment
+ 11  1.26      0.   0. Win_322      eos_int_ VERT -     dbl_glz_int  ||< identical environment
+ 12  1.67      0.   0. Win_323      eos_int_ VERT -     dbl_glz_int  ||< identical environment
+ 13  50.6      0. -90. floor_P3     OPAQUE   FLOR -     F-P_down     ||< identical environment
+ 14  2.05    180.   0. Esc_P3_s     OPAQUE   VERT -     Base_up      ||< identical environment
+ 15  1.02    270.   0. Esc_P3_o     OPAQUE   VERT -     Base_up      ||< identical environment
+ 16  2.05      0.  -0. Esc_P3_n     OPAQUE   VERT -     Base_up      ||< identical environment
+ 17  33.6      0. -90. Esc_base1    SC_8985_ FLOR -     fictious     ||< Esc3_Esc4:F0_hall
+ 18  3.64    270.   0. F3_west_1    Supergla VERT -     Superglass   ||< external
+ 19  3.64    270.   0. F3_west_2    Supergla VERT -     Superglass   ||< external
+ 20  10.7    270.   0. F3_west      OPAQUE   VERT -     Facade       ||< external
+ 21  19.0     90.  -0. F3_East      Supergla VERT -     Superglass   ||< external
+ 22  33.6      0.  90. Esc3_Esc4    SC_8985_ CEIL -     fictious     ||< Esc_base1:F2_hall
+ 23  31.2      0.  90. F3_P4        OPAQUE   CEIL -     cor_ceil     ||< identical environment
+ 24  19.3      0.  90. Abs_ceil     OPAQUE   CEIL -     Base_up      ||< identical environment
  
  
  All surfaces will receive diffuse insolation (if shading not calculated).
@@ -418,8 +418,8 @@ Daytype   Gain Type    Period Sensible  Latent     Radiant    Convec
 Notes:
 nil_operations
  
-Daytype   Gain Type    Period Sensible  Latent     Radiant    Convec
-          No.  label   Hours  Magn.(W)  Magn.(W)   Fraction   Fraction
+Daytype   Gain Label     Type    Unit Period Sensible  Latent     Radiant    Convec
+          No.                          Hours Magn.(W)  Magn.(W)   Fraction   Fraction
  
  ____________________________________________________________
  
@@ -428,37 +428,37 @@ Daytype   Gain Type    Period Sensible  Latent     Radiant    Convec
  area of 274.m^2 & approx floor area of 84.2m^2
  F0_hall describes a...
  There is 36.905m2 of exposed surface area, 36.905m2 of which is vertical.
- Outside walls are 12.663 % of floor area & avg U of 0.302 & UA of 3.2156
- Glazing is 31.177 % of floor & 71.115 % facade with avg U of 0.700 & UA of 18.384
+ Outside walls are 12.663 % of floor area & average U of 0.302 & UA of 3.2156
+ Glazing is 31.177 % of floor & 71.115 % facade with average U of 0.700 & UA of 18.384
  
  A summary of the surfaces in F0_hall( 5) follows:
  
- Sur| Area  |Azim|Elev| surface    | geometry | construction |environment
-    | m^2   |deg |deg | name       |type |loca| name         |other side
-  1  6.46    180.  -0. F3_320       OPAQUE VERT Int_wall     ||< identical environment
-  2  9.40    180.   0. F3_319       OPAQUE VERT Int_wall     ||< identical environment
-  3  12.1    180.   0. F3_318       OPAQUE VERT Int_wall     ||< identical environment
-  4  6.46      0.   0. F3_321       OPAQUE VERT Int_wall     ||< identical environment
-  5  9.40      0.   0. F3_322       OPAQUE VERT Int_wall     ||< identical environment
-  6  12.1      0.   0. F3_323       OPAQUE VERT Int_wall     ||< identical environment
-  7  0.816   180.   0. Win_320      eos_in VERT dbl_glz_int  ||< identical environment
-  8  1.26    180.   0. Win_319      eos_in VERT dbl_glz_int  ||< identical environment
-  9  1.67    180.   0. Win_318      eos_in VERT dbl_glz_int  ||< identical environment
- 10  0.816     0.   0. Win_321      eos_in VERT dbl_glz_int  ||< identical environment
- 11  1.26      0.   0. Win_322      eos_in VERT dbl_glz_int  ||< identical environment
- 12  1.67      0.   0. Win_323      eos_in VERT dbl_glz_int  ||< identical environment
- 13  50.6      0. -90. floor_P3     OPAQUE FLOR concrete     ||< identical environment
- 14  2.05    180.   0. Esc_P3_s     OPAQUE VERT Base_up      ||< identical environment
- 15  1.03    270.   0. Esc_P3_o     OPAQUE VERT Base_up      ||< identical environment
- 16  2.05      0.  -0. Esc_P3_n     OPAQUE VERT Base_up      ||< identical environment
- 17  33.6      0. -90. Esc_base1    OPAQUE FLOR concrete     ||< identical environment
- 18  3.64    270.   0. F3_west_1    Superg VERT Superglass   ||< external
- 19  3.64    270.   0. F3_west_2    Superg VERT Superglass   ||< external
- 20  10.7    270.   0. F3_west      OPAQUE VERT Facade       ||< external
- 21  19.0     90.  -0. F3_East      Superg VERT Superglass   ||< external
- 22  33.6      0.  90. Esc3_Esc4    SC_898 CEIL fictious     ||< Esc_base1:F1_hall
- 23  31.2      0.  90. F3_P4        OPAQUE CEIL cor_ceil     ||< identical environment
- 24  19.3      0.  90. Abs_ceil     OPAQUE CEIL Base_up      ||< identical environment
+ Sur| Area  |Azim|Elev| surface    |    geometry       | construction |environment
+    | m^2   |deg |deg | name       |optical|locat| use | name         |other side
+  1  6.46    180.  -0. F3_320       OPAQUE   VERT -     Int_wall     ||< identical environment
+  2  9.40    180.   0. F3_319       OPAQUE   VERT -     Int_wall     ||< identical environment
+  3  12.1    180.   0. F3_318       OPAQUE   VERT -     Int_wall     ||< identical environment
+  4  6.46      0.   0. F3_321       OPAQUE   VERT -     Int_wall     ||< identical environment
+  5  9.40      0.   0. F3_322       OPAQUE   VERT -     Int_wall     ||< identical environment
+  6  12.1      0.   0. F3_323       OPAQUE   VERT -     Int_wall     ||< identical environment
+  7  0.816   180.   0. Win_320      eos_int_ VERT -     dbl_glz_int  ||< identical environment
+  8  1.26    180.   0. Win_319      eos_int_ VERT -     dbl_glz_int  ||< identical environment
+  9  1.67    180.   0. Win_318      eos_int_ VERT -     dbl_glz_int  ||< identical environment
+ 10  0.816     0.   0. Win_321      eos_int_ VERT -     dbl_glz_int  ||< identical environment
+ 11  1.26      0.   0. Win_322      eos_int_ VERT -     dbl_glz_int  ||< identical environment
+ 12  1.67      0.   0. Win_323      eos_int_ VERT -     dbl_glz_int  ||< identical environment
+ 13  50.6      0. -90. floor_P3     OPAQUE   FLOR -     concrete     ||< identical environment
+ 14  2.05    180.   0. Esc_P3_s     OPAQUE   VERT -     Base_up      ||< identical environment
+ 15  1.03    270.   0. Esc_P3_o     OPAQUE   VERT -     Base_up      ||< identical environment
+ 16  2.05      0.  -0. Esc_P3_n     OPAQUE   VERT -     Base_up      ||< identical environment
+ 17  33.6      0. -90. Esc_base1    OPAQUE   FLOR -     concrete     ||< identical environment
+ 18  3.64    270.   0. F3_west_1    Supergla VERT -     Superglass   ||< external
+ 19  3.64    270.   0. F3_west_2    Supergla VERT -     Superglass   ||< external
+ 20  10.7    270.   0. F3_west      OPAQUE   VERT -     Facade       ||< external
+ 21  19.0     90.  -0. F3_East      Supergla VERT -     Superglass   ||< external
+ 22  33.6      0.  90. Esc3_Esc4    SC_8985_ CEIL -     fictious     ||< Esc_base1:F1_hall
+ 23  31.2      0.  90. F3_P4        OPAQUE   CEIL -     cor_ceil     ||< identical environment
+ 24  19.3      0.  90. Abs_ceil     OPAQUE   CEIL -     Base_up      ||< identical environment
  
  
  All surfaces will receive diffuse insolation (if shading not calculated).
@@ -473,8 +473,8 @@ Daytype   Gain Type    Period Sensible  Latent     Radiant    Convec
 Notes:
 nil_operations
  
-Daytype   Gain Type    Period Sensible  Latent     Radiant    Convec
-          No.  label   Hours  Magn.(W)  Magn.(W)   Fraction   Fraction
+Daytype   Gain Label     Type    Unit Period Sensible  Latent     Radiant    Convec
+          No.                          Hours Magn.(W)  Magn.(W)   Fraction   Fraction
  
  ____________________________________________________________
  
@@ -483,19 +483,19 @@ Daytype   Gain Type    Period Sensible  Latent     Radiant    Convec
  area of 41.4m^2 & approx floor area of 5.33m^2
  Elev_0 describes elevator at first floor
  There is 19.095m2 of exposed surface area, 19.095m2 of which is vertical.
- Outside walls are 358.26 % of floor area & avg U of 0.288 & UA of 5.4953
- Ground contact is 100.00 % of floor area & avg U of 2.869 & perimeter 6.7000
+ Outside walls are 358.26 % of floor area & average U of 0.288 & UA of 5.4953
+ Ground contact is 100.00 % of floor area & average U of 2.869 & perimeter 6.7000
  
  A summary of the surfaces in Elev_0( 6) follows:
  
- Sur| Area  |Azim|Elev| surface    | geometry | construction |environment
-    | m^2   |deg |deg | name       |type |loca| name         |other side
-  1  11.7     90.  -0. Surf-1       OPAQUE VERT Int_wall     ||< identical environment
-  2  3.70      0.   0. Surf-2       OPAQUE VERT Facade_vent  ||< external
-  3  11.7    270.   0. Surf-3       OPAQUE VERT Facade_vent  ||< external
-  4  3.71    180.  -0. Surf-4       OPAQUE VERT Facade_vent  ||< external
-  5  5.33      0.  90. Surf-5       SC_898 CEIL fictious     ||< Surf-6:Elev_1
-  6  5.33      0. -90. Surf-6       OPAQUE FLOR concrete     ||< ground profile  1
+ Sur| Area  |Azim|Elev| surface    |    geometry       | construction |environment
+    | m^2   |deg |deg | name       |optical|locat| use | name         |other side
+  1  11.7     90.  -0. Surf-1       OPAQUE   VERT -     Int_wall     ||< identical environment
+  2  3.70      0.   0. Surf-2       OPAQUE   VERT -     Facade_vent  ||< external
+  3  11.7    270.   0. Surf-3       OPAQUE   VERT -     Facade_vent  ||< external
+  4  3.71    180.  -0. Surf-4       OPAQUE   VERT -     Facade_vent  ||< external
+  5  5.33      0.  90. Surf-5       SC_8985_ CEIL -     fictious     ||< Surf-6:Elev_1
+  6  5.33      0. -90. Surf-6       OPAQUE   FLOR -     concrete     ||< ground profile  1
  
  
  All surfaces will receive diffuse insolation (if shading not calculated).
@@ -510,8 +510,8 @@ Daytype   Gain Type    Period Sensible  Latent     Radiant    Convec
 Notes:
 nil_operations
  
-Daytype   Gain Type    Period Sensible  Latent     Radiant    Convec
-          No.  label   Hours  Magn.(W)  Magn.(W)   Fraction   Fraction
+Daytype   Gain Label     Type    Unit Period Sensible  Latent     Radiant    Convec
+          No.                          Hours Magn.(W)  Magn.(W)   Fraction   Fraction
  
  ____________________________________________________________
  
@@ -520,18 +520,18 @@ Daytype   Gain Type    Period Sensible  Latent     Radiant    Convec
  area of 41.4m^2 & approx floor area of 5.33m^2
  Elev_1 describes a...
  There is 19.095m2 of exposed surface area, 19.095m2 of which is vertical.
- Outside walls are 358.26 % of floor area & avg U of 0.288 & UA of 5.4953
+ Outside walls are 358.26 % of floor area & average U of 0.288 & UA of 5.4953
  
  A summary of the surfaces in Elev_1( 7) follows:
  
- Sur| Area  |Azim|Elev| surface    | geometry | construction |environment
-    | m^2   |deg |deg | name       |type |loca| name         |other side
-  1  11.7     90.  -0. Surf-1       OPAQUE VERT Int_wall     ||< identical environment
-  2  3.71    360.   0. Surf-2       OPAQUE VERT Facade_vent  ||< external
-  3  11.7    270.   0. Surf-3       OPAQUE VERT Facade_vent  ||< external
-  4  3.71    180.  -0. Surf-4       OPAQUE VERT Facade_vent  ||< external
-  5  5.33      0.  90. Surf-5       SC_898 CEIL fictious     ||< Surf-6:Elev_2
-  6  5.33      0. -90. Surf-6       SC_898 FLOR fictious     ||< Surf-5:Elev_0
+ Sur| Area  |Azim|Elev| surface    |    geometry       | construction |environment
+    | m^2   |deg |deg | name       |optical|locat| use | name         |other side
+  1  11.7     90.  -0. Surf-1       OPAQUE   VERT -     Int_wall     ||< identical environment
+  2  3.71    360.   0. Surf-2       OPAQUE   VERT -     Facade_vent  ||< external
+  3  11.7    270.   0. Surf-3       OPAQUE   VERT -     Facade_vent  ||< external
+  4  3.71    180.  -0. Surf-4       OPAQUE   VERT -     Facade_vent  ||< external
+  5  5.33      0.  90. Surf-5       SC_8985_ CEIL -     fictious     ||< Surf-6:Elev_2
+  6  5.33      0. -90. Surf-6       SC_8985_ FLOR -     fictious     ||< Surf-5:Elev_0
  
  
  All surfaces will receive diffuse insolation (if shading not calculated).
@@ -546,8 +546,8 @@ Daytype   Gain Type    Period Sensible  Latent     Radiant    Convec
 Notes:
 nil_operations
  
-Daytype   Gain Type    Period Sensible  Latent     Radiant    Convec
-          No.  label   Hours  Magn.(W)  Magn.(W)   Fraction   Fraction
+Daytype   Gain Label     Type    Unit Period Sensible  Latent     Radiant    Convec
+          No.                          Hours Magn.(W)  Magn.(W)   Fraction   Fraction
  
  ____________________________________________________________
  
@@ -556,18 +556,18 @@ Daytype   Gain Type    Period Sensible  Latent     Radiant    Convec
  area of 41.4m^2 & approx floor area of 5.33m^2
  Elev_2 describes a...
  There is 19.095m2 of exposed surface area, 19.095m2 of which is vertical.
- Outside walls are 358.25 % of floor area & avg U of 0.288 & UA of 5.4953
+ Outside walls are 358.25 % of floor area & average U of 0.288 & UA of 5.4953
  
  A summary of the surfaces in Elev_2( 8) follows:
  
- Sur| Area  |Azim|Elev| surface    | geometry | construction |environment
-    | m^2   |deg |deg | name       |type |loca| name         |other side
-  1  11.7     90.  -0. Surf-1       OPAQUE VERT Int_wall     ||< identical environment
-  2  3.71      0.   0. Surf-2       OPAQUE VERT Facade_vent  ||< external
-  3  11.7    270.   0. Surf-3       OPAQUE VERT Facade_vent  ||< external
-  4  3.71    180.  -0. Surf-4       OPAQUE VERT Facade_vent  ||< external
-  5  5.33      0.  90. Surf-5       SC_898 CEIL fictious     ||< Surf-6:Elev_3
-  6  5.33      0. -90. Surf-6       SC_898 FLOR fictious     ||< Surf-5:Elev_1
+ Sur| Area  |Azim|Elev| surface    |    geometry       | construction |environment
+    | m^2   |deg |deg | name       |optical|locat| use | name         |other side
+  1  11.7     90.  -0. Surf-1       OPAQUE   VERT -     Int_wall     ||< identical environment
+  2  3.71      0.   0. Surf-2       OPAQUE   VERT -     Facade_vent  ||< external
+  3  11.7    270.   0. Surf-3       OPAQUE   VERT -     Facade_vent  ||< external
+  4  3.71    180.  -0. Surf-4       OPAQUE   VERT -     Facade_vent  ||< external
+  5  5.33      0.  90. Surf-5       SC_8985_ CEIL -     fictious     ||< Surf-6:Elev_3
+  6  5.33      0. -90. Surf-6       SC_8985_ FLOR -     fictious     ||< Surf-5:Elev_1
  
  
  All surfaces will receive diffuse insolation (if shading not calculated).
@@ -582,8 +582,8 @@ Daytype   Gain Type    Period Sensible  Latent     Radiant    Convec
 Notes:
 nil_operations
  
-Daytype   Gain Type    Period Sensible  Latent     Radiant    Convec
-          No.  label   Hours  Magn.(W)  Magn.(W)   Fraction   Fraction
+Daytype   Gain Label     Type    Unit Period Sensible  Latent     Radiant    Convec
+          No.                          Hours Magn.(W)  Magn.(W)   Fraction   Fraction
  
  ____________________________________________________________
  
@@ -592,18 +592,18 @@ Daytype   Gain Type    Period Sensible  Latent     Radiant    Convec
  area of 41.4m^2 & approx floor area of 5.33m^2
  Elev_3 describes a...
  There is 19.095m2 of exposed surface area, 19.095m2 of which is vertical.
- Outside walls are 358.26 % of floor area & avg U of 0.288 & UA of 5.4953
+ Outside walls are 358.26 % of floor area & average U of 0.288 & UA of 5.4953
  
  A summary of the surfaces in Elev_3( 9) follows:
  
- Sur| Area  |Azim|Elev| surface    | geometry | construction |environment
-    | m^2   |deg |deg | name       |type |loca| name         |other side
-  1  11.7     90.  -0. Surf-1       OPAQUE VERT Int_wall     ||< identical environment
-  2  3.71      0.   0. Surf-2       OPAQUE VERT Facade_vent  ||< external
-  3  11.7    270.   0. Surf-3       OPAQUE VERT Facade_vent  ||< external
-  4  3.71    180.  -0. Surf-4       OPAQUE VERT Facade_vent  ||< external
-  5  5.33      0.  90. Surf-5       SC_898 CEIL fictious     ||< Surf-6:Elev_4
-  6  5.33      0. -90. Surf-6       SC_898 FLOR fictious     ||< Surf-5:Elev_2
+ Sur| Area  |Azim|Elev| surface    |    geometry       | construction |environment
+    | m^2   |deg |deg | name       |optical|locat| use | name         |other side
+  1  11.7     90.  -0. Surf-1       OPAQUE   VERT -     Int_wall     ||< identical environment
+  2  3.71      0.   0. Surf-2       OPAQUE   VERT -     Facade_vent  ||< external
+  3  11.7    270.   0. Surf-3       OPAQUE   VERT -     Facade_vent  ||< external
+  4  3.71    180.  -0. Surf-4       OPAQUE   VERT -     Facade_vent  ||< external
+  5  5.33      0.  90. Surf-5       SC_8985_ CEIL -     fictious     ||< Surf-6:Elev_4
+  6  5.33      0. -90. Surf-6       SC_8985_ FLOR -     fictious     ||< Surf-5:Elev_2
  
  
  All surfaces will receive diffuse insolation (if shading not calculated).
@@ -618,8 +618,8 @@ Daytype   Gain Type    Period Sensible  Latent     Radiant    Convec
 Notes:
 nil_operations
  
-Daytype   Gain Type    Period Sensible  Latent     Radiant    Convec
-          No.  label   Hours  Magn.(W)  Magn.(W)   Fraction   Fraction
+Daytype   Gain Label     Type    Unit Period Sensible  Latent     Radiant    Convec
+          No.                          Hours Magn.(W)  Magn.(W)   Fraction   Fraction
  
  ____________________________________________________________
  
@@ -628,19 +628,19 @@ Daytype   Gain Type    Period Sensible  Latent     Radiant    Convec
  area of 41.4m^2 & approx floor area of 5.33m^2
  Elev_4 describes a...
  There is 24.425m2 of exposed surface area, 19.095m2 of which is vertical.
- Outside walls are 358.25 % of floor area & avg U of 0.288 & UA of 5.4953
- Flat roof is 100.00 % of floor area & avg U of 3.139 & UA of 16.731
+ Outside walls are 358.25 % of floor area & average U of 0.288 & UA of 5.4953
+ Flat roof is 100.00 % of floor area & average U of 3.139 & UA of 16.731
  
  A summary of the surfaces in Elev_4(10) follows:
  
- Sur| Area  |Azim|Elev| surface    | geometry | construction |environment
-    | m^2   |deg |deg | name       |type |loca| name         |other side
-  1  11.7     90.  -0. Surf-1       OPAQUE VERT Int_wall     ||< identical environment
-  2  3.70      0.   0. Surf-2       OPAQUE VERT Facade_vent  ||< external
-  3  11.7    270.   0. Surf-3       OPAQUE VERT Facade_vent  ||< external
-  4  3.71    180.  -0. Surf-4       OPAQUE VERT Facade_vent  ||< external
-  5  5.33      0.  90. Surf-5       OPAQUE CEIL concrete     ||< external
-  6  5.33      0. -90. Surf-6       SC_898 FLOR fictious     ||< Surf-5:Elev_3
+ Sur| Area  |Azim|Elev| surface    |    geometry       | construction |environment
+    | m^2   |deg |deg | name       |optical|locat| use | name         |other side
+  1  11.7     90.  -0. Surf-1       OPAQUE   VERT -     Int_wall     ||< identical environment
+  2  3.70      0.   0. Surf-2       OPAQUE   VERT -     Facade_vent  ||< external
+  3  11.7    270.   0. Surf-3       OPAQUE   VERT -     Facade_vent  ||< external
+  4  3.71    180.  -0. Surf-4       OPAQUE   VERT -     Facade_vent  ||< external
+  5  5.33      0.  90. Surf-5       OPAQUE   CEIL -     concrete     ||< external
+  6  5.33      0. -90. Surf-6       SC_8985_ FLOR -     fictious     ||< Surf-5:Elev_3
  
  
  All surfaces will receive diffuse insolation (if shading not calculated).
@@ -655,8 +655,8 @@ Daytype   Gain Type    Period Sensible  Latent     Radiant    Convec
 Notes:
 nil_operations
  
-Daytype   Gain Type    Period Sensible  Latent     Radiant    Convec
-          No.  label   Hours  Magn.(W)  Magn.(W)   Fraction   Fraction
+Daytype   Gain Label     Type    Unit Period Sensible  Latent     Radiant    Convec
+          No.                          Hours Magn.(W)  Magn.(W)   Fraction   Fraction
  
  ____________________________________________________________
  
@@ -665,11 +665,11 @@ Daytype   Gain Type    Period Sensible  Latent     Radiant    Convec
  In contact with ground 5.3300m2.
  There is 350.19m2 of outside surface area, 280.00m2 of which is vertical.
  
- Outside walls are 33.242 % of floor area & avg U of 0.293 & UA of 43.554 & max MLC thickness 0.350
- Flat roof is 11.080 % of floor area & avg U of 1.004 & UA of 49.796
- Glazing is 29.321 % of floor & 46.866 % facade with avg U of 0.700 & UA of 91.919
- Skylights are 4.6028 % of floor area & avg U of 0.716 & UA of 14.739
- Ground contact is 1.1909 % of floor area & avg U of 2.869 & perimeter 6.7000 & max MLC thickness 0.250
+ Outside walls are 33.242 % of floor area & average U of 0.293 & UA of 43.554 & max MLC thickness 0.350
+ Flat roof is 11.080 % of floor area & average U of 1.004 & UA of 49.796
+ Glazing is 29.321 % of floor & 46.866 % facade with average U of 0.700 & UA of 91.919
+ Skylights are 4.6028 % of floor area & average U of 0.716 & UA of 14.739
+ Ground contact is 1.1909 % of floor area & average U of 2.869 & perimeter 6.7000 & max MLC thickness 0.250
  CIBSE ground beta! 1.591 dt 0.933 Ufleft 0.506 Ufright 1.850 Uf 0.936 R extra @ virtual layer 0.720
  
  ____________________________________________________________
@@ -677,11 +677,11 @@ Daytype   Gain Type    Period Sensible  Latent     Radiant    Convec
  
  Details of transparent construction: dbl_glz_int with eos_int_win optics and overall thickness  0.073
  
- Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
-      |db  |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
- Ext   243    6.0     1.050  2500.   750. 0.83 0.05 19200.  0.01 4mm clear float : 4mm clear float with placeholder single layer optics
-    2    0   61.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
- Int   243    6.0     1.050  2500.   750. 0.83 0.05 19200.  0.01 4mm clear float : 4mm clear float with placeholder single layer optics
+ Layer|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
+      |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
+ Ext     6.0     1.050  2500.   750. 0.83 0.05 19200.  0.01 clear float : clear float glass with optics from UK national method datase for 3 m
+    2   61.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
+ Int     6.0     1.050  2500.   750. 0.83 0.05 19200.  0.01 clear float : clear float glass with optics from UK national method datase for 3 m
  ISO 6946 U values (horiz/upward/downward heat flow)=  2.862  3.131  2.568 (partition)  2.276
  
 Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  2.78
@@ -700,15 +700,15 @@ Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  2.78
  
  Details of opaque construction: roof_abs and overall thickness  0.630
  
- Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
-      |db  |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
- Ext    86   60.0     0.360  1840.   840. 0.90 0.60     2.  0.17 Gravel : Gravel
-    2  161   10.0     0.500  1700.  1000. 0.90 0.90  1000.  0.02 Bitumen felt : Bitumen felt
-    3  212  160.0     0.190   960.   950. 0.90 0.55    15.  0.84 Roof insulation board : Roof insulation board
-    4   32  220.0     1.400  2100.   653. 0.90 0.65    19.  0.16 Heavy mix concrete : Heavy mix concrete
-    5    0  150.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
-    6  216   20.0     0.040   105.  1800. 0.90 0.60     1.  0.50 Mineral fibre : Mineral fibre
- Int    62   10.0     0.080   600.  2000. 0.91 0.70   110.  0.13 Hardboard (medium) : Hardboard (medium)
+ Layer|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
+      |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
+ Ext    60.0     0.360  1840.   840. 0.90 0.60     2.  0.17 gravel : Gravel (non-hygroscopic)
+    2   10.0     0.500  1700.  1000. 0.90 0.90  1000.  0.02 bitumen felt : Bitumen felt (organic hygroscopic)
+    3  160.0     0.190   960.   950. 0.90 0.55    15.  0.84 roof insulation bd : Roof insulation board
+    4  220.0     1.400  2100.   653. 0.90 0.65    19.  0.16 heavy mix concrete : Heavy mix concrete
+    5  150.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
+    6   20.0     0.040   105.  1800. 0.90 0.60     1.  0.50 mineral fibre : Mineral fibre (non-hygroscopic)
+ Int    10.0     0.080   600.  2000. 0.91 0.70   110.  0.13 Hardboard medium : Hardboard (medium density)
  ISO 6946 U values (horiz/upward/downward heat flow)=  0.465  0.471  0.456 (partition)  0.446
  
 Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  0.46
@@ -718,13 +718,13 @@ Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  0.46
  
  Details of opaque construction: roof and overall thickness  0.460
  
- Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
-      |db  |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
- Ext    86   60.0     0.360  1840.   840. 0.90 0.60     2.  0.17 Gravel : Gravel
-    2  161   10.0     0.500  1700.  1000. 0.90 0.90  1000.  0.02 Bitumen felt : Bitumen felt
-    3  212  160.0     0.190   960.   950. 0.90 0.55    15.  0.84 Roof insulation board : Roof insulation board
-    4   32  220.0     1.400  2100.   653. 0.90 0.65    19.  0.16 Heavy mix concrete : Heavy mix concrete
- Int   127   10.0     0.790  1329.  1000. 0.91 0.50    19.  0.01 Rendering (8% mc) : Rendering (8% mc)
+ Layer|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
+      |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
+ Ext    60.0     0.360  1840.   840. 0.90 0.60     2.  0.17 gravel : Gravel (non-hygroscopic)
+    2   10.0     0.500  1700.  1000. 0.90 0.90  1000.  0.02 bitumen felt : Bitumen felt (organic hygroscopic)
+    3  160.0     0.190   960.   950. 0.90 0.55    15.  0.84 roof insulation bd : Roof insulation board
+    4  220.0     1.400  2100.   653. 0.90 0.65    19.  0.16 heavy mix concrete : Heavy mix concrete
+ Int    10.0     0.790  1329.  1000. 0.91 0.50    19.  0.01 rendering not-dry : Rendering (8% mc) (inorganic-porous)
  ISO 6946 U values (horiz/upward/downward heat flow)=  0.731  0.747  0.710 (partition)  0.686
  
 Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  0.73
@@ -734,13 +734,13 @@ Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  0.73
  
  Details of opaque construction: Int_wall and overall thickness  0.083
  
- Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
-      |db  |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
- Ext    42    6.0    50.000  7800.   502. 0.12 0.20 19200.  0.00 Steel : Steel
-    2  107   12.0     0.190   950.   840. 0.91 0.50    11.  0.06 Gypsum plasterboard : Gypsum plasterboard
-    3  216   47.0     0.040   105.  1800. 0.90 0.60     1.  1.17 Mineral fibre : Mineral fibre
-    4  107   12.0     0.190   950.   840. 0.91 0.50    11.  0.06 Gypsum plasterboard : Gypsum plasterboard
- Int    42    6.0    50.000  7800.   502. 0.12 0.20 19200.  0.00 Steel : Steel
+ Layer|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
+      |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
+ Ext     6.0    50.000  7800.   502. 0.12 0.20 19200.  0.00 steel : Steel
+    2   12.0     0.190   950.   840. 0.91 0.50    11.  0.06 gypsum plasterboard : Gypsum plasterboard (generic) (inorganic-porous)
+    3   47.0     0.040   105.  1800. 0.90 0.60     1.  1.17 mineral fibre : Mineral fibre (non-hygroscopic)
+    4   12.0     0.190   950.   840. 0.91 0.50    11.  0.06 gypsum plasterboard : Gypsum plasterboard (generic) (inorganic-porous)
+ Int     6.0    50.000  7800.   502. 0.12 0.20 19200.  0.00 steel : Steel
  ISO 6946 U values (horiz/upward/downward heat flow)=  0.680  0.694  0.662 (partition)  0.640
  
 Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  0.67
@@ -750,9 +750,9 @@ Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  0.67
  
  Details of transparent construction: fictious with SC_8985_04nb optics and overall thickness  0.001
  
- Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
-      |db  |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
-    1  245    1.0    20.000    10.    10. 0.99 0.01 19200.  0.00 fict : fict with placeholder single layer optics
+ Layer|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
+      |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
+    1    1.0    20.000    10.    10. 0.99 0.01 19200.  0.00 fict : fictitious material (almost not there) with matching single layer optics
  ISO 6946 U values (horiz/upward/downward heat flow)=  5.881  7.140  4.761 (partition)  3.845
  
 Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  5.55
@@ -769,11 +769,11 @@ Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  5.55
  
  Details of transparent construction: Superglass with Superglass optics and overall thickness  0.031
  
- Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
-      |db  |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
- Ext   243    4.0     1.050  2500.   750. 0.83 0.05 19200.  0.00 4mm clear float : 4mm clear float with placeholder single layer optics
-    2    0   23.0     0.000     0.     0. 0.99 0.99     1.  1.25 air  1.25 1.25 1.25
- Int   243    4.0     1.050  2500.   750. 0.83 0.05 19200.  0.00 4mm clear float : 4mm clear float with placeholder single layer optics
+ Layer|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
+      |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
+ Ext     4.0     1.050  2500.   750. 0.83 0.05 19200.  0.00 clear float : clear float glass with optics from UK national method datase for 3 m
+    2   23.0     0.000     0.     0. 0.99 0.99     1.  1.25 air  1.25 1.25 1.25
+ Int     4.0     1.050  2500.   750. 0.83 0.05 19200.  0.00 clear float : clear float glass with optics from UK national method datase for 3 m
  ISO 6946 U values (horiz/upward/downward heat flow)=  0.700  0.716  0.681 (partition)  0.659
  
 Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  0.70
@@ -792,12 +792,12 @@ Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  0.70
  
  Details of opaque construction: Facade and overall thickness  0.300
  
- Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
-      |db  |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
- Ext   127   20.0     0.790  1329.  1000. 0.91 0.50    19.  0.03 Rendering (8% mc) : Rendering (8% mc)
-    2  216  120.0     0.040   105.  1800. 0.90 0.60     1.  3.00 Mineral fibre : Mineral fibre
-    3   32  150.0     1.400  2100.   653. 0.90 0.65    19.  0.11 Heavy mix concrete : Heavy mix concrete
- Int   127   10.0     0.790  1329.  1000. 0.91 0.50    19.  0.01 Rendering (8% mc) : Rendering (8% mc)
+ Layer|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
+      |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
+ Ext    20.0     0.790  1329.  1000. 0.91 0.50    19.  0.03 rendering not-dry : Rendering (8% mc) (inorganic-porous)
+    2  120.0     0.040   105.  1800. 0.90 0.60     1.  3.00 mineral fibre : Mineral fibre (non-hygroscopic)
+    3  150.0     1.400  2100.   653. 0.90 0.65    19.  0.11 heavy mix concrete : Heavy mix concrete
+ Int    10.0     0.790  1329.  1000. 0.91 0.50    19.  0.01 rendering not-dry : Rendering (8% mc) (inorganic-porous)
  ISO 6946 U values (horiz/upward/downward heat flow)=  0.302  0.304  0.298 (partition)  0.294
  
 Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  0.30
@@ -807,10 +807,10 @@ Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  0.30
  
  Details of opaque construction: F-P_down and overall thickness  0.040
  
- Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
-      |db  |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
- Ext    72   30.0     0.150   700.  1420. 0.90 0.65   576.  0.20 Plywood 700d : Plywood 700d
- Int   225   10.0     0.060   160.  2500. 0.90 0.65    10.  0.17 Synthetic carpet : Synthetic carpet
+ Layer|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
+      |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
+ Ext    30.0     0.150   700.  1420. 0.90 0.65   576.  0.20 plywood 700d : Plywood (700 density)
+ Int    10.0     0.060   160.  2500. 0.90 0.65    10.  0.17 synthetic carpet : Synthetic carpet (non-hygroscopic)
  ISO 6946 U values (horiz/upward/downward heat flow)=  1.863  1.974  1.734 (partition)  1.596
  
 Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  1.83
@@ -820,12 +820,12 @@ Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  1.83
  
  Details of opaque construction: Base_up and overall thickness  0.400
  
- Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
-      |db  |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
- Ext    32  220.0     1.400  2100.   653. 0.90 0.65    19.  0.16 Heavy mix concrete : Heavy mix concrete
-    2    0  150.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
-    3  216   20.0     0.040   105.  1800. 0.90 0.60     1.  0.50 Mineral fibre : Mineral fibre
- Int    62   10.0     0.080   600.  2000. 0.91 0.70   110.  0.13 Hardboard (medium) : Hardboard (medium)
+ Layer|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
+      |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
+ Ext   220.0     1.400  2100.   653. 0.90 0.65    19.  0.16 heavy mix concrete : Heavy mix concrete
+    2  150.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
+    3   20.0     0.040   105.  1800. 0.90 0.60     1.  0.50 mineral fibre : Mineral fibre (non-hygroscopic)
+ Int    10.0     0.080   600.  2000. 0.91 0.70   110.  0.13 Hardboard medium : Hardboard (medium density)
  ISO 6946 U values (horiz/upward/downward heat flow)=  0.891  0.916  0.860 (partition)  0.825
  
 Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  0.88
@@ -835,13 +835,13 @@ Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  0.88
  
  Details of opaque construction: Facade_vent and overall thickness  0.350
  
- Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
-      |db  |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
- Ext    83   30.0     2.000  2500.   880. 0.90 0.46    38.  0.01 White marble : White marble
-    2    0   40.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
-    3  216  120.0     0.040   105.  1800. 0.90 0.60     1.  3.00 Mineral fibre : Mineral fibre
-    4   32  150.0     1.400  2100.   653. 0.90 0.65    19.  0.11 Heavy mix concrete : Heavy mix concrete
- Int   127   10.0     0.790  1329.  1000. 0.91 0.50    19.  0.01 Rendering (8% mc) : Rendering (8% mc)
+ Layer|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
+      |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
+ Ext    30.0     2.000  2500.   880. 0.90 0.46    38.  0.01 white marble : White marble (inorganic-porous)
+    2   40.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
+    3  120.0     0.040   105.  1800. 0.90 0.60     1.  3.00 mineral fibre : Mineral fibre (non-hygroscopic)
+    4  150.0     1.400  2100.   653. 0.90 0.65    19.  0.11 heavy mix concrete : Heavy mix concrete
+ Int    10.0     0.790  1329.  1000. 0.91 0.50    19.  0.01 rendering not-dry : Rendering (8% mc) (inorganic-porous)
  ISO 6946 U values (horiz/upward/downward heat flow)=  0.288  0.290  0.285 (partition)  0.281
  
 Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  0.29
@@ -851,9 +851,9 @@ Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  0.29
  
  Details of opaque construction: concrete and overall thickness  0.250
  
- Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
-      |db  |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
-    1   32  250.0     1.400  2100.   653. 0.90 0.65    19.  0.18 Heavy mix concrete : Heavy mix concrete
+ Layer|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
+      |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
+    1  250.0     1.400  2100.   653. 0.90 0.65    19.  0.18 heavy mix concrete : Heavy mix concrete
  ISO 6946 U values (horiz/upward/downward heat flow)=  2.869  3.139  2.574 (partition)  2.280
  
 Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  2.79
@@ -863,10 +863,10 @@ Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  2.79
  
  Details of opaque construction: cor_ceil and overall thickness  0.230
  
- Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
-      |db  |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
- Ext    32  220.0     1.400  2100.   653. 0.90 0.65    19.  0.16 Heavy mix concrete : Heavy mix concrete
- Int   127   10.0     0.790  1329.  1000. 0.91 0.50    19.  0.01 Rendering (8% mc) : Rendering (8% mc)
+ Layer|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
+      |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
+ Ext   220.0     1.400  2100.   653. 0.90 0.65    19.  0.16 heavy mix concrete : Heavy mix concrete
+ Int    10.0     0.790  1329.  1000. 0.91 0.50    19.  0.01 rendering not-dry : Rendering (8% mc) (inorganic-porous)
  ISO 6946 U values (horiz/upward/downward heat flow)=  2.943  3.228  2.633 (partition)  2.327
  
 Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  2.86
