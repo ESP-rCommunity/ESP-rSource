@@ -2832,7 +2832,6 @@ C...........Select slat orientation
 
 C ************* EDMLDB 
 C EDMLDB Display data with a common constructions (MLC) file.
-C ITRU unit number  for user output, IER=0 OK, IER=1 problem.
 C Information is available via common block MLC. 
 C Overload MLC information on whether the construction is
 C opaque or transparent and if the latter include the optical property
@@ -2847,6 +2846,12 @@ C id string.
 #include "material.h"
       
       integer lnblnk  ! function definition
+
+C Passed parameters
+      integer itrc    ! non-zero if trace active
+      logical chgdb   ! if constructions altered
+      integer ier     ! IER 0 OK IER 1 or 2 problem
+      integer isel    ! returns zero is nothing edited otherwise the item
 
 C MPN is max number of tranparent glazings per multilayer construction
 C If this parameter is changed also change it in subroutine GVALUE
@@ -2867,7 +2872,7 @@ C If this parameter is changed also change it in subroutine GVALUE
       integer matarrayindex ! the indes within matdatarray
 
       LOGICAL OK,DOK,CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,ISZERO,CFCDBOK
-      logical moddb,chgdb,layermatch,closemat1,closemat2
+      logical moddb,layermatch,closemat1,closemat2
       logical unixok
 
       CHARACTER KEY*1,T12*12,T12OTH*12,T14*14,T34*34,T72*72
@@ -2900,7 +2905,7 @@ C Set folder separator (fs) to \ or / as required.
       endif
 
       IER=0
-      ISEL=0
+      ISEL=0  ! reset
       moddb = .false.
       chgdb=.false.
       matarrayindex=0
@@ -3483,7 +3488,7 @@ C << recode later to avoid goto statement >>
         CALL EPMENSV
         CALL EDWALL(ITRC,IFOC,moddb,jump,IER)
         CALL EPMENRC
-        ISEL=IFOC
+        ISEL=IFOC  ! pass back what was edited
         chgdb=moddb
         if(jump.eq.0)then
           continue
