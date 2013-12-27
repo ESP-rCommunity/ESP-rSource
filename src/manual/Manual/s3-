@@ -617,15 +617,15 @@ Stage	Instruction	Comments
 1	T{
 Edit the primitives database for constructional materials.
 T}	T{
-The default primitives database is a `corporate' database
+The default materials database is a `corporate' database
 which you have permission to access but not to modify.  If
 you require a personal version you will need to copy it
 into one of your own directories.  The command is
 .br
-\fIcp  /usr/esru/esp-r/databases/constr.db1.a  constr.db1.a\fP  From
+\fIcp  /usr/esru/esp-r/databases/constr_db1.materialdb  constr_db1.materialdb\fP  From
 the "Project Manager" menu you can then enter the "Database maintenance"
 facility and select the "Materials" item giving
-the name as \fIconstr.db1.a\fP  You may now add, delete and edit materials
+the name as \fIconstr_db1.materialdb\fP  You may now add, delete and edit materials
 to this private database
 without affecting other users.
 T}

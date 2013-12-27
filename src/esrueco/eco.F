@@ -97,7 +97,7 @@ C Defaults and paths
       character*96 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF
       COMMON/DEFLT2/DFCFG,DFCTL,DEFRLB,DAFRES,DAPROB,DPNF
       common/rpath/path
-      COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
+      COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,CFCDBOK
 
 C For exporting to file
       COMMON/exporttg/xfile,tg,delim
@@ -144,7 +144,7 @@ C Name of current application
       integer matarrayindex ! the indes within matdatarray
       logical closemat1,closemat2
 
-      LOGICAL OK,CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,SelSurf
+      LOGICAL OK,CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,SelSurf,CFCDBOK
       LOGICAL MODIFY,MODLEN,MODBND,XST,chdb,BCFOK,unixok
 
       DIMENSION ITEM(18) 

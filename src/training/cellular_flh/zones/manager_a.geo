@@ -54,16 +54,16 @@ manager describes cellular office on left
 #  construction name, optical name
 #  boundary condition tag followed by two data items
 *surf,pt_general,VERT,-,-,-,gyp_gyp_ptn,OPAQUE,ANOTHER,02,01  #   1 ||< pt_general:manager_b
-*surf,part_frame,VERT,-,-,-,insul_frame,OPAQUE,ANOTHER,03,08  #   2 ||< part_frame:coridor
-*surf,door,VERT,-,-,-,door,OPAQUE,ANOTHER,03,06  #   3 ||< door:coridor
+*surf,part_frame,VERT,-,-,-,insul_frame,OPAQUE,ANOTHER,03,08  #   2 ||< part_frame:corridor
+*surf,door,VERT,-,-,-,door,OPAQUE,ANOTHER,03,06  #   3 ||< door:corridor
 *surf,pt_other,VERT,-,-,-,gyp_gyp_ptn,OPAQUE,SIMILAR,00,00  #   4 ||< identical environment
 *surf,ceiling,CEIL,-,-,-,ceiling_scrd,OPAQUE,ANOTHER,05,06  #   5 ||< floor_ma:ceiling_slb
 *surf,floor,FLOR,-,-,-,screed,OPAQUE,ANOTHER,04,06  #   6 ||< floor_ma:floor
 *surf,spandral,VERT,-,-,-,insul_frame,OPAQUE,EXTERIOR,0,0  #   7 ||< external
 *surf,frame,VERT,-,-,-,insul_frame,OPAQUE,EXTERIOR,0,0  #   8 ||< external
 *surf,glazing,VERT,-,-,-,dbl_glz,DCF7671_06nb,EXTERIOR,0,0  #   9 ||< external
-*surf,part_glaz,VERT,-,-,-,dbl_glz,DCF7671_06nb,ANOTHER,03,09  #  10 ||< part_glaz:coridor
-*surf,ptn_corid,VERT,-,-,-,gyp_gyp_ptn,OPAQUE,ANOTHER,03,07  #  11 ||< ptn_corid:coridor
+*surf,part_glaz,VERT,-,-,-,dbl_glz,DCF7671_06nb,ANOTHER,03,09  #  10 ||< part_glaz:corridor
+*surf,ptn_corid,VERT,-,-,-,gyp_gyp_ptn,OPAQUE,ANOTHER,03,07  #  11 ||< ptn_corid:corridor
 *surf,pt_other_a,VERT,-,-,-,gyp_gyp_ptn,OPAQUE,SIMILAR,00,00  #  12 ||< identical environment
 *surf,pt_other_b,VERT,-,-,-,gyp_gyp_ptn,OPAQUE,SIMILAR,00,00  #  13 ||< identical environment
 # 

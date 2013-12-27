@@ -1,0 +1,36 @@
+*Operations 2.0
+*date Sun Dec  8 13:31:17 2013  # latest file modification 
+# operations of corridor defined in: 
+# ../zones/corridor.opr
+half a person and 50-100W lighting weekdays 10W weekends with electrical properties
+# control(no control of air flow  ), low mid & high setpoints 
+   0     0.000     0.000     0.000
+     0   # number of flow periods in day type: weekdays    
+     0   # number of flow periods in day type: saturday    
+     0   # number of flow periods in day type: sunday      
+     6   # number of casual gains in day type: weekdays    
+# slot, period, sensible, latent, rad_frac, conv_frac, pf, +/-, power, volt, phase
+   1,   0,   8,      0.0,      0.0,  0.600,   0.400, 0.00, 0,    0.0,    0.0, 1
+   1,   8,  20,    100.0,     50.0,  0.600,   0.400, 0.00, 0,    0.0,    0.0, 1
+   1,  20,  24,      0.0,      0.0,  0.600,   0.400, 0.00, 0,    0.0,    0.0, 1
+   2,   0,   8,     50.0,      0.0,  0.300,   0.700, 0.90, 1,   50.0,  220.0, 1
+   2,   8,  20,    100.0,      0.0,  0.300,   0.700, 0.90, 1,  100.0,  220.0, 1
+   2,  20,  24,     50.0,      0.0,  0.300,   0.700, 0.90, 1,   50.0,  220.0, 1
+     6   # number of casual gains in day type: saturday    
+# slot, period, sensible, latent, rad_frac, conv_frac, pf, +/-, power, volt, phase
+   1,   0,   8,      0.0,      0.0,  0.600,   0.400, 0.00, 0,    0.0,    0.0, 1
+   1,   8,  20,    100.0,     50.0,  0.600,   0.400, 0.00, 0,    0.0,    0.0, 1
+   1,  20,  24,      0.0,      0.0,  0.600,   0.400, 0.00, 0,    0.0,    0.0, 1
+   2,   0,   8,      0.0,      0.0,  0.300,   0.700, 0.90, 1,   10.0,  220.0, 1
+   2,   8,  20,     10.0,      0.0,  0.300,   0.700, 0.90, 1,   10.0,  220.0, 1
+   2,  20,  24,      0.0,      0.0,  0.300,   0.700, 0.90, 1,   10.0,  220.0, 1
+     6   # number of casual gains in day type: sunday      
+# slot, period, sensible, latent, rad_frac, conv_frac, pf, +/-, power, volt, phase
+   1,   0,   8,      0.0,      0.0,  0.600,   0.400, 0.00, 0,    0.0,    0.0, 1
+   1,   8,  20,    100.0,     50.0,  0.600,   0.400, 0.00, 0,    0.0,    0.0, 1
+   1,  20,  24,      0.0,      0.0,  0.600,   0.400, 0.00, 0,    0.0,    0.0, 1
+   2,   0,   8,      0.0,      0.0,  0.300,   0.700, 0.90, 1,   10.0,  220.0, 1
+   2,   8,  20,     10.0,      0.0,  0.300,   0.700, 0.90, 1,   10.0,  220.0, 1
+   2,  20,  24,      0.0,      0.0,  0.300,   0.700, 0.90, 1,   10.0,  220.0, 1
+# Labels for gains 
+ Occupt       Lights       Equipt      

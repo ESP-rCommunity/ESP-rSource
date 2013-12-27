@@ -23,7 +23,6 @@ C Boston, MA 02111-1307 USA.
 #include "building.h"
 #include "net_flow.h"
 #include "control.h"
-#include "blc25_open_windows.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FCLSOL/ICFP,IDTYPP,IPERP
@@ -31,38 +30,13 @@ C Boston, MA 02111-1307 USA.
       COMMON/MFLCTL/IRY,IRM,IRD,IRH,FLWTIM,IHOUR,IYD,IFYD,ILYD,IPROG
       common/caleni/nbdaytype,nbcaldays(MDTY),icalender(365)
       INTEGER NBDAYTYPE,NBCALDAYS,ICALENDER,NIN
-      
-      common/mflow1/nnod,ncmp,ncnn     
-      integer nnod, ncmp, ncnn
-      
-      
+
       character outs*124
 
-C ESP-r time data:
-      common/simtim/ihrp,ihrf,idyp,idyf,idwp,idwf,nsinc,its      
-      integer nsinc                               ! Simulation increment (-)
-      integer ihrp,ihrf,idyp,idyf,idwp,idwf,its   ! Not used. 
-C Reference
-      logical bFlowConnToOutside
-      integer iZone ! Dummy variable 
-      
-      
-      InitializeCtlPos: do i=1,ncnn
-        
+      do 102 i=1,MCNN
         ctlpos(i)=1.0
-        
-        if ( bBCL25FlowControlsActive(i) .and.
-     &       bFlowConnToOutside(i,iZone) .and.
-     &       nsinc > 1 ) then 
-          
-              ctlpos(i) = fBCL25FlowControlSignal(i) 
-            
-        endif 
+ 102  continue
 
-      enddo InitializeCtlPos
- 
-      
- 
 C Return if no mass flow control function active
       IF(NCC.EQ.0) GOTO 999
 
@@ -138,6 +112,10 @@ C Nicol control algorithm
 C PI controller
         ELSE IF(IFCLAW(ICFP,IDTYPP,IPERP).EQ.5)THEN
           CALL FCL05
+ 
+C Plant network slave
+        ELSE IF(IFCLAW(ICFP,IDTYPP,IPERP).EQ.6)THEN
+          CALL FCL06
  
 C New controllers inserted here!
         ELSE
@@ -1264,4 +1242,45 @@ C Controlling a component.
   1     continue
       endif
  9595 RETURN
+      END
+
+C *******  FCL06 Plant network slave
+C Actuates a mass flow network component or connection based on the 
+C output of a given plant network control loop. Complication is caused
+C because flow controllers output a ratio CTLPOS which is from 0 to 1
+C but plant controllers may output larger or smaller (absolute) numbers
+C This controller has been used with the following plant control laws:
+C PCL08 (on/off)
+C PCL05 (Proportional)
+C PCL14 (multisensor of plant loops)
+      SUBROUTINE FCL06
+      
+#include "net_flow.h"
+#include "building.h"
+#include "control.h"
+
+      COMMON/FCLSOL/ICFP,IDTYPP,IPERP
+      COMMON/mfctl/ctlpos(MCNN)
+      COMMON/PLNFMN/ACTFRAC(MCF)
+      COMMON/MFLOW1/NNOD,NCMP,NCNN
+      COMMON/MFLW10/NODPS(MCNN),HGTPS(MCNN),NODNE(MCNN),HGTNE(MCNN),
+     &              ITPCON(MCNN),NDSCNN(MCNN,MCNS)
+
+C Get plant loop number 
+      IPLN=nint(FMISCD(ICFP,IDTYPP,IPERP,2))
+
+C Set value to output of this plant loop
+C Controlling a connection.
+      if(ifan(ICFP,1).eq.-3)then
+          CTLPOS(ifan(icfp,2))=ACTFRAC(IPLN)
+
+C Controlling a component.
+      else
+        do 1 icnn=1,ncnn
+          if(ifan(icfp,2).eq.ITPCON(ICNN))CTLPOS(icnn)=ACTFRAC(IPLN)
+  1     continue
+      endif
+c      write(97,*)icfp,actfrac(ipln)
+c      if(icfp.eq.5)write(905,*)ifan(icfp,2),ctlpos(ifan(icfp,2))
+      RETURN
       END

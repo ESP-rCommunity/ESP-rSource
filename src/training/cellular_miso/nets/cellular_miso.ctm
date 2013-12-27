@@ -19,7 +19,7 @@ CO2
 #node,node no.,initial conc.
 manager_a      1   0.000500
 manager_b      2   0.000500
-coridor        3   0.000500
+corridor        3   0.000500
 SECTION_5
 #component based information
 #all filter efficiencies other than nought are listed
@@ -37,4 +37,4 @@ SECTION_7
 #node,node no.,no. of source/sink models linked,model no
 manager_a      1   1 1                                                                                                                           
 manager_b      2   1 2                                                                                                                           
-coridor        3   0                                                                                                                             
+corridor        3   0                                                                                                                             

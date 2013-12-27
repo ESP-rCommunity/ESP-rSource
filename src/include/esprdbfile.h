@@ -8,10 +8,14 @@ C parameters for generic databases
 C MGDB - (integer) number of generic databases
 C MGCL - (integer) number of categories in a generic database
 C MGIT - (integer) number of items in a generic database
-      integer MGDB,MGCL,MGIT 
+C MGCL_CFC - (integer) number of categories in a CFClayers database
+C MGIT_CFC - (integer) number of iterms in a CFClayers database
+      integer MGDB,MGCL,MGIT, MGCL_CFC, MGIT_CFC
       parameter (MGDB=13)
       parameter (MGCL=36)
       parameter (MGIT=600)
+      parameter (MGCL_CFC=200) ! need to accommodate no. of IGDB glazing entries
+      parameter (MGIT_CFC=6000) ! need to accommodate no. of IGDB glazing entries
 
 C Array of generic database file names (72 char).
       common/gendbf/gendbfn(MGDB)
@@ -41,10 +45,10 @@ C Array of integers indicating whether common files are defined via
 C an absolute path (zero), local path (one), standard path (2)
       common/whichdbpath/ipathapres,ipathoptdb,ipathpcdb,ipathprodb,
      &                   ipathmat,ipathmul,ipathclim,ipathsbem,
-     &                   ipathmsc,ipathmould
+     &                   ipathmsc,ipathmould,ipathcfc
       integer ipathapres,ipathoptdb,ipathpcdb,ipathprodb,
      &                   ipathmat,ipathmul,ipathclim,ipathsbem,
-     &                   ipathmsc,ipathmould
+     &                   ipathmsc,ipathmould,ipathcfc
 
 C Array of integers representing file unit numbers of databases
       integer iapres  ! file unit of wind pressure coefficients
@@ -54,7 +58,9 @@ C Array of integers representing file unit numbers of databases
       integer ifmat   ! file unit number of common materials
       integer ifmul   ! file unit number of common constructions
       integer iclim   ! file unit number of climate file
-      common/idbunit/iapres,ioptdb,ipcdb,iprodb,ifmat,ifmul,iclim
+      integer icfcdb  ! file unit number of cfc database file
+      common/idbunit/iapres,ioptdb,ipcdb,iprodb,ifmat,ifmul,iclim,
+     &               icfcdb
       
 C LAPRES - (144 char) common wind pressure coefficients
       common/APRES/LAPRES
@@ -89,6 +95,10 @@ C LFMOULD - (144 char) mould isopleths file name
 C LCLIM - (144 char) climate file name associated with the model
       COMMON/C22/LCLIM
       character LCLIM*144
+      
+C LCFCDB - (144 char) CFC db file name associated with the model
+      COMMON/CFCDB/LCFCDB
+      character LCFCDB*144
 
 C Active components database MCMPDBFL (144 char).
       CHARACTER MCMPDBFL*144
@@ -101,12 +111,13 @@ C DOPTDB - default optics (144 char), DPRFDB - default events (144 char)
 C DPCDB - default plant components (144 char), DSBEM - default UK SBEM (144 char)
 C DMCMPDBFL - default active components (144 char),
 C dmdbnam - default mould ispleths
+C DCFCDB - default CFClayers (144 char)
       COMMON/DEFLT1/DCLIM,DAPRES,DFCON,DFMUL,DOPTDB,DPRFDB,DPCDB,DSBEM,
-     &  DMCMPDBFL,dmdbnam
+     &  DMCMPDBFL,dmdbnam, DCFCDB
       character DFMUL*144
       character DOPTDB*144,DPRFDB*144,DAPRES*144,DPCDB*144
       character DSBEM*144,DCLIM*144,DFCON*144,DMCMPDBFL*144
-      character dmdbnam*144
+      character dmdbnam*144, DCFCDB*144
 
 C LSBEM - (144 char) SBEM building type and systems db file name
       COMMON/SBEM00/LSBEM

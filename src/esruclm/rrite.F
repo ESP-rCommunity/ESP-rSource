@@ -255,11 +255,11 @@ C For help messages
 
       helpinsub='SITEDIT'  ! set for MAIN
 
-C Ask for the year (2001 convenintly has monday on 1 Jan).
+C Ask for the year (2007 convenintly has monday on 1 Jan).
       helptopic='what_is_the_year'
       call gethelptext(helpinsub,helptopic,nbhelp)
       CALL EASKI(IYEAR,' ',' What is the year ? ',
-     &         1900,'F',2015,'W',2001,'year',IER,nbhelp)
+     &         1900,'F',2051,'W',2007,'year',IER,nbhelp)
       ICYEAR=IYEAR
 
 C Now transfer to the weather file.

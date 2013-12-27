@@ -1,33 +1,41 @@
-# geometry of w_heat_c defined in: w_heat_c.geo
-GEN  w_heat_c               # type   zone name
-       8       6   0.000    # vertices, surfaces, rotation angle 
-#  X co-ord, Y co-ord, Z co-ord 
-      1.500     2.000     2.200  # vert  1
-      1.500     3.000     2.200  # vert  2
-      0.000     3.000     2.200  # vert  3
-      0.000     2.000     2.200  # vert  4
-      1.500     2.000     4.400  # vert  5
-      1.500     3.000     4.400  # vert  6
-      0.000     3.000     4.400  # vert  7
-      0.000     2.000     4.400  # vert  8
-# no of vertices followed by list of associated vert
-   4,  1,  2,  6,  5,
-   4,  2,  3,  7,  6,
-   4,  3,  4,  8,  7,
-   4,  4,  1,  5,  8,
-   4,  5,  6,  7,  8,
-   4,  4,  3,  2,  1,
-# number of default windows within each surface 
-  0, 0, 0, 0, 0, 0,
-# surfaces indentation (m)
- 0.000 0.000 0.000 0.000 0.000 0.000
-    1   6   0   0    # default insolation distribution
-# surface attributes follow: 
-# id  surface      geom  loc/  mlc db       environment
-# no  name         type  posn  name         other side
-  1, hall2         OPAQ  VERT  int_doors    hall_2         
-  2, hall2_2       OPAQ  VERT  int_part     hall_2         
-  3, west_part     OPAQ  VERT  ext_part     SIMILAR        
-  4, bathrm        OPAQ  VERT  int_part     bathrm         
-  5, ceiling       OPAQ  CEIL  loft_ceil    loft           
-  6, floor         OPAQ  FLOR  upper_flor   stairs         
+*Geometry 1.1,GEN,w_heat_c # tag version, format, zone name
+*date Sun Dec  8 16:04:12 2013  # latest file modification 
+w_heat_c describes a
+# tag, X co-ord, Y co-ord, Z co-ord
+*vertex,1.50000,2.00000,2.20000  #   1
+*vertex,1.50000,3.00000,2.20000  #   2
+*vertex,0.00000,3.00000,2.20000  #   3
+*vertex,0.00000,2.00000,2.20000  #   4
+*vertex,1.50000,2.00000,4.40000  #   5
+*vertex,1.50000,3.00000,4.40000  #   6
+*vertex,0.00000,3.00000,4.40000  #   7
+*vertex,0.00000,2.00000,4.40000  #   8
+# 
+# tag, number of vertices followed by list of associated vert
+*edges,4,1,2,6,5  #  1
+*edges,4,2,3,7,6  #  2
+*edges,4,3,4,8,7  #  3
+*edges,4,4,1,5,8  #  4
+*edges,4,5,6,7,8  #  5
+*edges,4,4,3,2,1  #  6
+# 
+# surf attributes:
+#  surf name, surf position VERT/CEIL/FLOR/SLOP/UNKN
+#  child of (surface name), useage (pair of tags) 
+#  construction name, optical name
+#  boundary condition tag followed by two data items
+*surf,hall2,VERT,-,-,-,int_doors,OPAQUE,ANOTHER,09,06  #   1 ||< whc2:hall_2
+*surf,hall2_2,VERT,-,-,-,int_part,OPAQUE,ANOTHER,09,05  #   2 ||< whc:hall_2
+*surf,west_part,VERT,-,-,-,ext_part,OPAQUE,SIMILAR,00,00  #   3 ||< identical environment
+*surf,bathrm,VERT,-,-,-,int_part,OPAQUE,ANOTHER,06,03  #   4 ||< wh_cup:bathrm
+*surf,ceiling,CEIL,-,-,-,loft_ceil,OPAQUE,ANOTHER,11,09  #   5 ||< wh_cup:loft
+*surf,floor,FLOR,-,-,-,upper_flor,OPAQUE,ANOTHER,02,07  #   6 ||< whc:stairs
+# 
+*insol,1,6,0,0  # default insolation distribution
+# 
+# shading directives
+*shad_calc,none  # no temporal shading requested
+# 
+*insol_calc,none  # no insolation requested
+# 
+*base_list,1,6,     1.50 0  # zone base list

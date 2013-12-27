@@ -1,6 +1,6 @@
 C tdf2.h Parameters for TDF program, May 2010 version.
 
-      INTEGER MIT,MTABC,MHEL,MBITS,MGAT,MGAR,MGAI,MALT,MHTS
+      INTEGER MIT,MTABC,MHEL,MBITS,MGAT,MGAR,MGAI,MALT,MHTS,MTI
 
 C Allowed number of tabular entries in the TDF file. For large
 C models there may be one item per zone so this should reflect
@@ -31,6 +31,9 @@ C Maximum number of text alternatives in a text field.
 C Maximum number of timesteps in an hour.
       PARAMETER (MHTS=60)
       
+C Array size for maximum items available of temporal definition
+      PARAMETER (MTI=26)
+
 C Related to TDF header.
       integer NWPR   ! Number of words per record in the TAB file.
       integer NITDF  ! Total number of instances in the TDF db.
@@ -126,9 +129,13 @@ C is the 6th item in the temporal file.
       integer ISURTMEAS ! if non-zero measured surface T available for viewing
       integer IMFNTDFP  ! if non-zero measured fluid mass flow node node pressure
       integer IMFNTDFF  ! flag set to 1 if measured pressure data is present
+      integer IPERVSEN  ! if non-zero holds sensor state
+      integer IStorageHeater  ! Holds column number for zone linked to 
+                              ! grid charging schedule for storage heater
       COMMON/TDFFLG2/IALLCLM,ICASUAL(MCOM),IZIVENT(MCOM),IRAIRVL(MCOM),
      &       ISETPTT(MCOM),ICTLSTA(MCOM),ISKYLUX,IDBTEXT,IWINDVL,
      &       IWINDDR,IRELHUM,IDIFHSL,IDIRSOL,IGLOHSL,IOBJVEL,IOBJDIR,
      &       ISKYTMP,IGLOVRT,ICASUAL3(MCOM),IACTIV(MCOM),
      &       IBIDIRS(MCOM,MS),IVERSOL(MCOM,MS),IHTCLSETP(MCOM),
-     &       IDBTZNM(MCOM),ISURTMEAS(MCOM,MS),IMFNTDFP(MNOD),IMFNTDFF
+     &       IDBTZNM(MCOM),ISURTMEAS(MCOM,MS),IMFNTDFP(MNOD),IMFNTDFF,
+     &       IPERVSEN,IStorageHeater(MCOM)

@@ -97,14 +97,14 @@ C Defaults.
 C Significant figure reporting limit (NSIGFIG).
       common/SFIG/NSIGFIG
 
-      COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
+      COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,CFCDBOK
       
 C Name of current application
       common/APPNAME/cAppName
       
       character cAppName*12      
       
-      LOGICAL     CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
+      LOGICAL     CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,CFCDBOK
 
       integer fstgrp,fstsur,lstsur,strtgr
       logical browse

@@ -1,8 +1,8 @@
 *Operations 2.1
-*date Thu Dec 27 13:55:47 2012  # latest file modification 
+*date Thu Nov  7 16:19:04 2013  # latest file modification 
 # operations of hall defined in: 
 # ../zones/hall.opr
-There is 2ach infiltration all hours.
+There is 1 ach infiltration all hours.
 # control(no control of air flow  ), low mid & high setpoints 
    0     0.000     0.000     0.000
      1   # number of flow periods in day type: weekdays    

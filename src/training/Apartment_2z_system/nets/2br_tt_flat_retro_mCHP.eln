@@ -1,0 +1,78 @@
+* FileVersion
+      1.00
+* electrical network
+# ESP-r Electrical network file created with configuration file:
+  3br_tt_det_retro_ASHP.cfg
+# Network description:
+  Network for detached house 2010
+* net type 
+  balanced
+* base power value (all nodes)
+     1000.00
+* phase angles (for each phase)
+      0.00    120.00    240.00
+# List and details of nodes in the network
+* nodes
+    5
+# Index  Node name   Phase type   Phase Node type         Base volt
+    1  cons_unit     1-phase         1  fixed_V           220.00    0
+    2  liv           1-phase         1  variable          220.00    0
+    3  non_liv       1-phase         1  variable          220.00    0
+    4  PV            1-phase         1  variable          220.00    0
+    5  mCHP          1-phase         1  variable          220.00    0
+** end nodes
+# List and details of load and generator connections to nodes
+* hybrid components
+    2
+# Component          Component     Phase         Connects to nodes    location
+# Index  type        name          type          pha1 pha2 pha3       data
+    1  spmaterial    PV_array      1-phase         4    0    0     1    0    0
+# description:
+  none
+# Number of additional data items:
+    0
+# Component          Component     Phase         Connects to nodes    location
+# Index  type        name          type          pha1 pha2 pha3       data
+    2  plant         mCHP          1-phase         5    0    0     1    0    0
+# plt comp node connections   DC node id   AC node id
+    1    0    0
+# description:
+  none
+# Number of additional data items:
+    0
+** end hybrid
+# List and details of power only components
+* power-only components
+    0
+** end power-only 
+# Listing and Description of components connecting the nodes
+* connecting components
+    2
+# Index db  Component     Phase
+#       ref name          type
+    1    2  1ph_cable     1-phase
+# description: 
+  none
+# Number of additional data items:
+    6
+   0.48000E-02   0.10000E-04   0.48000E-02   0.10000E-04    0.0000        10.000
+# Index db  Component     Phase
+#       ref name          type
+    2    2  inv_loss      1-phase
+# description: 
+  Loss from PV inverter
+# Number of additional data items:
+    6
+   0.75000       0.10000E-04   0.75000       0.10000E-04    0.0000        1.0000
+** end connecting components
+# Connections between nodes in the network 
+* connections
+    4
+# Connection        Phases  Connection  Start nodes       End nodes
+# Index type        1 2 3   component   pha1 pha2 pha3    pha1 pha2 pha3
+    1  1-phase      1 0 0     1         1    0    0       2    0    0
+    2  1-phase      1 0 0     1         1    0    0       3    0    0
+    3  1-phase      1 0 0     2         1    0    0       4    0    0
+    4  1-phase      1 0 0     1         5    0    0       1    0    0
+** end connections
+** electrical network end

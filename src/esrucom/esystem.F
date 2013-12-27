@@ -615,6 +615,7 @@ C Note: escdef must come after scan of .esprc file.
       write(LSBEM,'(a)')  DSBEM(1:lnblnk(DSBEM))  ! assign default SBEM db
       write(MCMPDBFL,'(a)') DMCMPDBFL(1:lnblnk(DMCMPDBFL))
       write(lfmould,'(a)') dmdbnam(1:lnblnk(dmdbnam))
+      write(LCFCDB,'(a)') DCFCDB(1:lnblnk(DCFCDB))
 
 C Clear the model common blocks.
       call clrprb
@@ -987,6 +988,16 @@ C set the lapres common block string via call to findwhichdbpath.
       elseif(WORD(1:7).eq.'*stdprs')then
         ipathapres=2  ! standard folder for pressure coef database
         CALL EGETRM(LOUTSTR,K,LAPRES,'W','pressure db',IER)
+
+      elseif(WORD(1:6).eq.'*cfcdb')then
+        CALL EGETRM(LOUTSTR,K,lworking,'W','CFClayers db',IER)
+
+C Process the file name following *cfcdb and depending on its path
+C set the LCFCDB common block string via call to findwhichdbpath.
+        call findwhichdbpath('cfc',lworking,ier)
+      elseif(WORD(1:9).eq.'*stdcfcdb')then
+        CALL EGETRM(LOUTSTR,K,LCFCDB,'W','CFClayers db',IER)
+        ipathcfc=2  ! standard folder for material database
 
       elseif(WORD(1:4).eq.'*evn')then
         CALL EGETRM(LOUTSTR,K,lworking,'W','profiles db',IER)
@@ -1577,7 +1588,7 @@ C Read and store the comments into the HELP array for later display.
         endif
 
       elseif(WORD(1:5).eq.'*year')then
-        CALL EGETWI(LOUTSTR,K,IYEAR,1900,2020,'W','year',IER)
+        CALL EGETWI(LOUTSTR,K,IYEAR,1900,2051,'W','year',IER)
 
 C Perform check that calendar day types correspond with simulation year.
 C The logic below assumes that the first three day types are still weekday
@@ -2083,12 +2094,12 @@ C Set flag indicating if set describes a multi-year period
           CALL EGETWI(OUTSTR,K,isstmon(iss),1,12,'W','start month',IER)
           if ( bMY_sim_sps )
      &      CALL EGETWI(OUTSTR,K,iMY_Period_Start_years(iss),
-     &                 1800,2100,'W','start year',IER)
+     &                 1900,2100,'W','start year',IER)
           CALL EGETWI(OUTSTR,K,isfnday(iss),1,31,'W','end day',IER)
           CALL EGETWI(OUTSTR,K,isfnmon(iss),1,12,'W','end month',IER)          
           if ( bMY_sim_sps )
      &      CALL EGETWI(OUTSTR,K,iMY_Period_end_years(iss),
-     &                 1800,2100,'W','end year',IER)
+     &                 1900,2100,'W','end year',IER)
 
           
 C Opportunity for improvenemt: Should error trap duplicate
@@ -3687,6 +3698,7 @@ C       =  'prs' for pressure coef, 'sbm' for UK SBEM database,
 C       =  'mat' for common materials, 'evn' for event profiles
 C       =  'mul' for common constructions, 'msc' for active components
 C       =  'mld' for mould isopleths, 'clm' for weather
+C       =  'cfc' for cfc layers
       subroutine findwhichdbpath(topic,file,ier)
       implicit none
 #include "esprdbfile.h"
@@ -3745,6 +3757,9 @@ C Local model dbs folder.
           elseif(topic(1:3).eq.'clm')then
             ipathclim=1  ! local folder for weather
             write(LCLIM,'(a)') file(1:lnwkg) ! assign directly
+          elseif(topic(1:3).eq.'cfc')then
+            ipathcfc=1  ! local folder for CFC
+            write(LCFCDB,'(a)') file(1:lnwkg) ! assign directly
           endif
         elseif(file(1:lndbp).eq.standarddbpath(1:lndbp))then
 
@@ -3779,6 +3794,9 @@ C The initial part of database path matches so save the file name w/o path.
           elseif(topic(1:3).eq.'clm')then
             ipathclim=2
             write(LCLIM,'(a)') file(lndbp+2:lnwkg) ! without path
+          elseif(topic(1:3).eq.'cfc')then
+            ipathcfc=2
+            write(LCFCDB,'(a)') file(lndbp+2:lnwkg) ! without path
           endif
         elseif(file(1:lnclmp).eq.standardclmpath(1:lnclmp))then
 
@@ -3818,6 +3836,9 @@ C The initial part of the weather path matches save the file name w/o path.
           elseif(topic(1:3).eq.'clm')then
             ipathclim=0
             write(LCLIM,'(a)') file(1:lnwkg) ! assign directly
+          elseif(topic(1:3).eq.'cfc')then
+            ipathcfc=0
+            write(LCFCDB,'(a)') file(1:lnwkg) ! assign directly
           endif
         endif
       else
@@ -3852,6 +3873,9 @@ C The initial part of the weather path matches save the file name w/o path.
           elseif(topic(1:3).eq.'clm')then
             ipathclim=1  ! local folder for weather
             write(LCLIM,'(a)') file(1:lnwkg) ! assign directly
+          elseif(topic(1:3).eq.'cfc')then
+            ipathcfc=1  ! local folder for CFC
+            write(LCFCDB,'(a)') file(1:lnwkg) ! assign directly
           endif
         elseif(file(1:lndbp).eq.standarddbpath(1:lndbp))then
           if(topic(1:3).eq.'opt')then
@@ -3884,6 +3908,9 @@ C The initial part of the weather path matches save the file name w/o path.
           elseif(topic(1:3).eq.'clm')then
             ipathclim=2
             write(LCLIM,'(a)') file(lndbp+2:lnwkg) ! without path
+          elseif(topic(1:3).eq.'cfc')then
+            ipathcfc=2
+            write(LCFCDB,'(a)') file(lndbp+2:lnwkg) ! without path
           endif
         elseif(file(1:lnclmp).eq.standardclmpath(1:lnclmp))then
           if(topic(1:3).eq.'clm')then
@@ -3921,6 +3948,9 @@ C The initial part of the weather path matches save the file name w/o path.
           elseif(topic(1:3).eq.'clm')then
             ipathclim=0
             write(LCLIM,'(a)') file(1:lnwkg) ! assign directly
+          elseif(topic(1:3).eq.'cfc')then
+            ipathcfc=0
+            write(LCFCDB,'(a)') file(1:lnwkg) ! assign directly
           endif
         endif
       endif

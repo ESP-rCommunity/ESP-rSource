@@ -1028,9 +1028,9 @@ C of tokens in variable ND.
           XOB(icomp,I)=VX
           YOB(icomp,I)=VY
           ZOB(icomp,I)=VZ
-          CALL EGETWR(OUTSTR,K,VX,0., 99.,'W','obs X dis',IER)
-          CALL EGETWR(OUTSTR,K,VY,0., 99.,'W','obs Y dis',IER)
-          CALL EGETWR(OUTSTR,K,VZ,0., 99.,'W','obs Z dis',IER)
+          CALL EGETWR(OUTSTR,K,VX,0.,150.,'W','obs X dis',IER)
+          CALL EGETWR(OUTSTR,K,VY,0.,150.,'W','obs Y dis',IER)
+          CALL EGETWR(OUTSTR,K,VZ,0.,150.,'W','obs Z dis',IER)
           DXOB(icomp,I)=VX
           DYOB(icomp,I)=VY
           DZOB(icomp,I)=VZ

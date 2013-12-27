@@ -1,5 +1,5 @@
 # composite construction db defined in ../dbs/SERT.constrdb
-# based on materials db ../dbs/constr.db2.a
+# based on materials db ../dbs/constr_db2..materialdb
    7     # no of composites 
 # layers  description   optics name   symmetry tag
     3    wall          OPAQ  OPAQUE        NONSYMMETRIC  

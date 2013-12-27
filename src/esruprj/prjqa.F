@@ -160,7 +160,7 @@ C A set of possible image formats (see config file) and
 C matching executables. For normal image viewing take the first option.
       common/showimg/imgtyp,fmttag(5),fmtexe(5)
       INTEGER :: imgtyp
-      common/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
+      common/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,CFCDBOK
 
 C iSlr_half_hr_flg value = 0 :hour-centered; =1 : half-hour centered.
       common/CWEC_SOL/iSlr_half_hr_flg
@@ -184,7 +184,7 @@ C bridgelen was calculated in subroutine suredgeadj
 
       real plen  ! combined length of standard and metal facade perimeter
 
-      logical CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
+      logical CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,CFCDBOK
 
 C Remember if each zone is fully attributed.
       logical attribok(MCOM)
@@ -1399,7 +1399,7 @@ C if verbose print periods, seasons and ratios as well.
               ieripv=0  ! there is an IPV assessment
             endif
           else
-	    ipvaction='ipv'
+            ipvaction='ipv'
             call ripvdat(IFCFG,lipvdatf,ipvaction,ieripv)  ! this returns a value for ieripv
             call edisp(itu,' ')
           endif
@@ -2716,7 +2716,7 @@ C So if the model is mixed then force an upgrade. If the
 C igupgrade was set to 2 in preferences also force an upgrade.
         forceupgrade=.false.
         do 777 iz=1,ncomp
-          if(gversion(iz).gt.1.0) forceupgrade=.true.
+          if(gversion(iz).lt.1.1) forceupgrade=.true.  ! found older geo
   777   continue
         if(forceupgrade.and.igupgrade.eq.0) igupgrade=2
         if(igupgrade.eq.2) forceupgrade=.true.
@@ -3005,7 +3005,7 @@ C be a black string or as 'internal'.
             continue
           else
             IUO=IFIL+1
-	    ipvaction='ipv'
+            ipvaction='ipv'
             call ripvdat(IUO,lipvdatf,ipvaction,ier)
           endif
           icfgv=4   ! set to current version.

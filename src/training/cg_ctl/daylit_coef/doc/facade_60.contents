@@ -1,7 +1,7 @@
 Synopsis
  
 Synopsis of the model Example for casual gain control - Daylight coefficient
-defined in facade_60.cfg generated on Fri Aug 24 16:01:54 2012. Notes
+defined in facade_60.cfg generated on Sun Dec  8 15:47:22 2013. Notes
 associated with the model are in ../doc/job.notes
  
 The model is located at latitude   48.17 with a longitude difference of   2.12
@@ -36,13 +36,12 @@ proj cntrl
  
 Zones control includes  1 functions.
 no descrip
+Details of control loops referenced in the model:
  
  The sensor for function  1 senses the temperature of the current zone.
  The actuator for function  1 is air point of the current zone
  The following day types are defined:
-weekdays
-saturday
-sunday
+weekdays    saturday    sunday
  Day type weekdays control has  3 periods.
  Per|Start|Sensing  |Actuating  | Control law description
    1  0.00 db temp   > flux      basic control: max heating capacity 20000.0W min
@@ -81,8 +80,8 @@ ID Zone         Volume|          Surface
  area of 102.m^2 & approx floor area of 20.3m^2
  fac_zone_c1 describes a...
  There is 15.300m2 of exposed surface area, 15.300m2 of which is vertical.
- Outside walls are 42.370 % of floor area & avg U of 1.151 & UA of 9.8743
- Glazing is 33.185 % of floor & 43.922 % facade with avg U of 1.624 & UA of 10.913
+ Outside walls are 42.370 % of floor area & average U of 1.151 & UA of 9.8743
+ Glazing is 33.185 % of floor & 43.922 % facade with average U of 1.624 & UA of 10.913
  
  A summary of the surfaces in fac_zone_c1( 1) follows:
  
@@ -112,6 +111,53 @@ Window_bot Window_top
  Period  1: from  8 to 18 sensing total radiation setpoint @  300.00 alt solar 0.040 0.038 0.034 0.023 0.010
  
  Casual gains are controlled in this zone.
+ 
+ Zone  1
+ Casual gain type for control during weekdays     =   2
+ Casual gain type for control during saturday     =   0
+ Casual gain type for control during sunday       =   0
+ Light zone 1
+ Average of  1 daylight coefficient photocell types.
+ 
+ Set   |Switch-off |Minimum dimming|Minimal elec|Switch-off
+ point |light level|light output   |light output|delay time
+  320.0         1.5          0.10          0.30         0
+ 
+ % of |Sensor|Calculation   |
+ whole|number|type          |
+  1.00      1 Daylight coeff.
+ 
+ Sensor|   X  |   Y  |   Z  |  DX |  DY |  DZ |  DC|
+ number|      |      |      |     |     |     |    |
+      1   3.25   4.00   3.40  0.00  0.00 -1.00   1
+ 
+ 
+ Start| Finish| Control    |
+  Hour|   Hour|    Type    |
+      8     18 Dimming-int. reset
+ 
+ Night | Control|
+ Calib.|   Slope|
+   44.5-0.02780
+ Light zone 2
+ Average of  1 daylight coefficient photocell types.
+ 
+ Set   |Switch-off |Minimum dimming|Minimal elec|Switch-off
+ point |light level|light output   |light output|delay time
+  500.0         1.5          0.10          0.10         0
+ 
+ % of |Sensor|Calculation   |
+ whole|number|type          |
+  0.00      1 Daylight coeff.
+ 
+ Sensor|   X  |   Y  |   Z  |  DX |  DY |  DZ |  DC|
+ number|      |      |      |     |     |     |    |
+      1   3.25   4.00   0.90  0.00  0.00  1.00   2
+ 
+ 
+ Start| Finish| Control    |
+  Hour|   Hour|    Type    |
+      8     18 Always Off
 Block X- Y- Z- coords DX- DY- DZ- values Orient Opacity
   1     0.9     0.7     0.0     0.1     0.3     3.4     0.0     0.0 1.00 recess_w Facade_top
   2     5.5     0.7     0.0     0.1     0.3     3.4     0.0     0.0 1.00 recess_e Facade_top
@@ -144,17 +190,17 @@ sunday     1  0 - 24    0.50  0.0096    0.00  0.0000   0     0.00
 Notes:
 344W lighting
  
-Daytype   Gain Type    Period Sensible  Latent     Radiant    Convec
-          No.  label   Hours  Magn.(W)  Magn.(W)   Fraction   Fraction
-weekdays    1 OccuptW    0- 8      0.0      0.0       0.50       0.50
-weekdays    2 OccuptW    8-18    225.0    165.0       0.40       0.60
-weekdays    3 OccuptW   18-24      0.0      0.0       0.50       0.50
-weekdays    4 LightsW    0- 8      0.0      0.0       0.50       0.50
-weekdays    5 LightsW    8-18    344.0      0.0       0.50       0.50
-weekdays    6 LightsW   18-24      0.0      0.0       0.50       0.50
-weekdays    7 EquiptW    0- 8      0.0      0.0       0.50       0.50
-weekdays    8 EquiptW    8-18    300.0      0.0       0.40       0.60
-weekdays    9 EquiptW   18-24      0.0      0.0       0.50       0.50
+Daytype   Gain Label     Type    Unit Period Sensible  Latent     Radiant    Convec
+          No.                          Hours Magn.(W)  Magn.(W)   Fraction   Fraction
+weekdays    1 Occupt     people    W    0- 8      0.0      0.0       0.50       0.50
+weekdays    2 Occupt     people    W    8-18    225.0    165.0       0.40       0.60
+weekdays    3 Occupt     people    W   18-24      0.0      0.0       0.50       0.50
+weekdays    4 Lights     lighting  W    0- 8      0.0      0.0       0.50       0.50
+weekdays    5 Lights     lighting  W    8-18    344.0      0.0       0.50       0.50
+weekdays    6 Lights     lighting  W   18-24      0.0      0.0       0.50       0.50
+weekdays    7 Equipt     equipment W    0- 8      0.0      0.0       0.50       0.50
+weekdays    8 Equipt     equipment W    8-18    300.0      0.0       0.40       0.60
+weekdays    9 Equipt     equipment W   18-24      0.0      0.0       0.50       0.50
  
  ____________________________________________________________
  
@@ -163,17 +209,17 @@ weekdays    9 EquiptW   18-24      0.0      0.0       0.50       0.50
  In contact with ground 0.00m2.
  There is 15.300m2 of outside surface area, 15.300m2 of which is vertical.
  
- Outside walls are 42.370 % of floor area & avg U of 1.151 & UA of 9.8743 & max MLC thickness 0.450
- Glazing is 33.185 % of floor & 43.922 % facade with avg U of 1.624 & UA of 10.913
+ Outside walls are 42.370 % of floor area & average U of 1.151 & UA of 9.8743 & max MLC thickness 0.450
+ Glazing is 33.185 % of floor & 43.922 % facade with average U of 1.624 & UA of 10.913
  
  ____________________________________________________________
  Multi-layer constructions used:
  
  Details of opaque construction: Floor and overall thickness  0.200
  
- Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
-      |db  |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
-    1   32  200.0     1.400  2100.   653. 0.90 0.65    19.  0.14 Heavy mix concrete : Heavy mix concrete
+ Layer|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
+      |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
+    1  200.0     1.400  2100.   653. 0.90 0.65    19.  0.14 Heavy mix concrete : Heavy mix concrete
  ISO 6946 U values (horiz/upward/downward heat flow)=  3.196  3.535  2.834 (partition)  2.482
  
 Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  3.10
@@ -183,11 +229,11 @@ Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  3.10
  
  Details of transparent construction: dbl_gl_up with DBL_glz_6nb1 optics and overall thickness  0.024
  
- Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
-      |db  |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
- Ext   242    6.0     0.760  2710.   837. 0.83 0.05 19200.  0.01 Plate glass : Plate glass with placeholder single layer optics
-    2    0   12.0     0.000     0.     0. 0.99 0.99     1.  0.43 air  0.43 0.43 0.43
- Int   242    6.0     0.760  2710.   837. 0.83 0.05 19200.  0.01 Plate glass : Plate glass with placeholder single layer optics
+ Layer|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
+      |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
+ Ext     6.0     0.760  2710.   837. 0.83 0.05 19200.  0.01 Plate glass : Plate glass with placeholder single layer optics
+    2   12.0     0.000     0.     0. 0.99 0.99     1.  0.43 air  0.43 0.43 0.43
+ Int     6.0     0.760  2710.   837. 0.83 0.05 19200.  0.01 Plate glass : Plate glass with placeholder single layer optics
  ISO 6946 U values (horiz/upward/downward heat flow)=  1.624  1.707  1.525 (partition)  1.417
  
 Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  1.60
@@ -206,9 +252,9 @@ Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  1.60
  
  Details of opaque construction: Ceiling and overall thickness  0.200
  
- Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
-      |db  |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
-    1   32  200.0     1.400  2100.   653. 0.90 0.65    19.  0.14 Heavy mix concrete : Heavy mix concrete
+ Layer|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
+      |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
+    1  200.0     1.400  2100.   653. 0.90 0.65    19.  0.14 Heavy mix concrete : Heavy mix concrete
  ISO 6946 U values (horiz/upward/downward heat flow)=  3.196  3.535  2.834 (partition)  2.482
  
 Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  3.10
@@ -218,12 +264,12 @@ Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  3.10
  
  Details of opaque construction: Facade_bot and overall thickness  0.136
  
- Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
-      |db  |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
- Ext   241    6.0     0.700  3500.   837. 0.83 0.05 19200.  0.01 Glass block : Glass block with placeholder single layer optics
-    2    0    5.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
-    3  211  115.0     0.040   250.   840. 0.90 0.30     4.  2.88 Glasswool : Glasswool
- Int   107   10.0     0.190   950.   840. 0.91 0.50    11.  0.05 Gypsum plasterboard : Gypsum plasterboard
+ Layer|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
+      |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
+ Ext     6.0     0.700  3500.   837. 0.83 0.05 19200.  0.01 Glass block : Glass block with placeholder single layer optics
+    2    5.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
+    3  115.0     0.040   250.   840. 0.90 0.30     4.  2.88 Glasswool : Glasswool
+ Int    10.0     0.190   950.   840. 0.91 0.50    11.  0.05 Gypsum plasterboard : Gypsum plasterboard
  ISO 6946 U values (horiz/upward/downward heat flow)=  0.305  0.308  0.302 (partition)  0.297
  
 Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  0.30
@@ -233,12 +279,12 @@ Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  0.30
  
  Details of opaque construction: Facade_top and overall thickness  0.450
  
- Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
-      |db  |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
- Ext    81   75.0     1.830  2200.   712. 0.90 0.60    29.  0.04 Sandstone : Sandstone
-    2    0   50.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
-    3  211   50.0     0.040   250.   840. 0.90 0.30     4.  1.25 Glasswool : Glasswool
- Int    32  275.0     1.400  2100.   653. 0.90 0.65    19.  0.20 Heavy mix concrete : Heavy mix concrete
+ Layer|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
+      |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
+ Ext    75.0     1.830  2200.   712. 0.90 0.60    29.  0.04 Sandstone : Sandstone
+    2   50.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
+    3   50.0     0.040   250.   840. 0.90 0.30     4.  1.25 Glasswool : Glasswool
+ Int   275.0     1.400  2100.   653. 0.90 0.65    19.  0.20 Heavy mix concrete : Heavy mix concrete
  ISO 6946 U values (horiz/upward/downward heat flow)=  0.547  0.556  0.536 (partition)  0.522
  
 Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  0.54
@@ -248,11 +294,11 @@ Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  0.54
  
  Details of opaque construction: Frame and overall thickness  0.020
  
- Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
-      |db  |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
- Ext    43    5.0   210.000  2700.   880. 0.22 0.20 19200.  0.00 Aluminium : Aluminium
-    2    0   10.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
- Int    43    5.0   210.000  2700.   880. 0.22 0.20 19200.  0.00 Aluminium : Aluminium
+ Layer|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
+      |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
+ Ext     5.0   210.000  2700.   880. 0.22 0.20 19200.  0.00 Aluminium : Aluminium
+    2   10.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
+ Int     5.0   210.000  2700.   880. 0.22 0.20 19200.  0.00 Aluminium : Aluminium
  ISO 6946 U values (horiz/upward/downward heat flow)=  2.941  3.225  2.631 (partition)  2.325
  
 Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  2.86
@@ -262,10 +308,10 @@ Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  2.86
  
  Details of opaque construction: Int_wall and overall thickness  0.162
  
- Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
-      |db  |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
- Ext     2  150.0     0.440  1500.   650. 0.90 0.65    15.  0.34 Breeze block : Breeze block
- Int   103   12.0     0.180   800.   837. 0.91 0.60     9.  0.07 Perlite plasterboard : Perlite plasterboard
+ Layer|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
+      |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
+ Ext   150.0     0.440  1500.   650. 0.90 0.65    15.  0.34 Breeze block : Breeze block
+ Int    12.0     0.180   800.   837. 0.91 0.60     9.  0.07 Perlite plasterboard : Perlite plasterboard
  ISO 6946 U values (horiz/upward/downward heat flow)=  1.731  1.826  1.619 (partition)  1.498
  
 Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  1.70
@@ -275,11 +321,11 @@ Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  1.70
  
  Details of transparent construction: dbl_glz_low with DBL_glz_6nb2 optics and overall thickness  0.024
  
- Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
-      |db  |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
- Ext   242    6.0     0.760  2710.   837. 0.83 0.05 19200.  0.01 Plate glass : Plate glass with placeholder single layer optics
-    2    0   12.0     0.000     0.     0. 0.99 0.99     1.  0.43 air  0.43 0.43 0.43
- Int   242    6.0     0.760  2710.   837. 0.83 0.05 19200.  0.01 Plate glass : Plate glass with placeholder single layer optics
+ Layer|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
+      |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
+ Ext     6.0     0.760  2710.   837. 0.83 0.05 19200.  0.01 Plate glass : Plate glass with placeholder single layer optics
+    2   12.0     0.000     0.     0. 0.99 0.99     1.  0.43 air  0.43 0.43 0.43
+ Int     6.0     0.760  2710.   837. 0.83 0.05 19200.  0.01 Plate glass : Plate glass with placeholder single layer optics
  ISO 6946 U values (horiz/upward/downward heat flow)=  1.624  1.707  1.525 (partition)  1.417
  
 Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  1.60

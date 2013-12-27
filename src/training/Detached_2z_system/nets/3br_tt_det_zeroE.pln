@@ -1,0 +1,528 @@
+ESP-r plant file version 2 written on: Fri Sep  6 15:27:37 2013
+# Project title:
+                                                                        
+# Total no. of specified components and simulation type
+   27    2
+#->   1, Air Source Heat Pump connecting to WCH system; 1 node model             
+  ASHP             102
+    1        # Component has   1 control variable(s).
+   0.0000000    
+   36     5
+       110.00     #   1 Component total mass (kg)                                       
+       2000.0     #   2 Mass weighted average specific heat (J/kgK)                     
+       1.6000     #   3 Heat loss modulus (W/K)                                         
+       3.0000     #   4 COP model [1 fixed;2 - Carnot efficiency; 3- quadratic; 3-cubic]
+       6.3972     #   5 COP empirical coefficient a0 (-)                                
+     -0.10220     #   6 COP empirical coefficient a1 (-)                                
+      0.50000E-03 #   7 COP empirical coefficient a2 (-)                                
+       0.0000     #   8 COP empirical coefficient a3 (-)                                
+       3.0000     #   9 Compressor Model                                                
+       2.0020     #  10 Compressor empirical coefficient a0 (-)                         
+      0.12700E-01 #  11 Compressor empirical coefficient a1 (-)                         
+       0.0000     #  12 Compressor empirical coefficient a2 (-)                         
+       0.0000     #  13 Compressor empirical coefficient a3 (-)                         
+      0.90000     #  14 Compressor pf (-)                                               
+       95.000     #  15 Pump rating (W)                                                 
+      0.90000     #  16 Pump pf (-)                                                     
+      0.26000     #  17 Flowrate at rated pump power (l/s)                              
+       220.00     #  18 Fan power (W)                                                   
+      0.90000     #  19 Fan pf (-)                                                      
+       10.000     #  20 Controller power (W)                                            
+       1.0000     #  21 Controller pf (-)                                               
+       90.000     #  22 Tout max (degC)                                                 
+       70.000     #  23 Tin max (degC)                                                  
+       5.0000     #  24 Defrost cycle trigger ambient temp (degC)                       
+       0.0000     #  25 Defrost cycle time calc (0 - no defrost 1-user def 2-f(RH))     
+      -6.0000     #  26 Defrost cycle  calc coefficient b0 or time (-)                  
+      0.16000     #  27 Defrost cycle  calc coefficient b1 (-)                          
+       40.000     #  28 Defrost cycle  lockout time (mins)                              
+       2.0000     #  29 Min defrost time (mins)                                         
+       10.000     #  30 Max defrost time (mins)                                         
+       0.0000     #  31 Temp compensation on/off (0-off 1-on)                           
+       60.000     #  32 Nominal water return temperature (Deg C)                        
+       10.000     #  33 Nominal water return deadband (Deg C)                           
+       3.0000     #  34 Temp compensation start temperature [Deg C]                     
+       17.000     #  35 Temp compensation end temperature (-)                           
+      -1.3000     #  36 Temp compensation gradient c1 (-)                               
+# Component electrical details.
+  0.700   1      2.000    230.000   1
+#->   2, variable speed domestic WCH pump; 1 node model                          
+  f_pump            98
+    1        # Component has   1 control variable(s).
+   0.0000000    
+    6
+       5.0000     #   1 Component total mass (kg)                                       
+       2250.0     #   2 Mass weighted average specific heat (J/kgK)                     
+      0.20000     #   3 UA modulus from wall to environment (W/K)                       
+       20.000     #   4 Rated total absorbed power (W)                                  
+      0.40000     #   5 Rated mass flow rate (m^3/s)                                    
+      0.80000     #   6 Overall efficiency (-)                                          
+#->   3, WCH pipe converging 2-leg junction; 1 node model                        
+  pump_bpass_cvg    14
+    0        # Component has   0 control variable(s).
+    3
+      0.10000     #   1 Component total mass (kg)                                       
+       2250.0     #   2 Mass weighted average specific heat (J/kgK)                     
+      0.20000E-01 #   3 UA modulus from wall to environment (W/K)                       
+#->   4, WCH 3-port valve; 3 node model; flow divert control                     
+  DHW_divert       112
+    1        # Component has   1 control variable(s).
+   1.0000000    
+    3
+       1.0000     #   1 Component total mass (kg)                                       
+       500.00     #   2 Mass weighted average specific heat (J/kgK)                     
+       3.5000     #   3 UA modulus (W/K)                                                
+#->   5, Stratified tank with 2 immersed HXs; 3 node model                       
+  DHW_tank         104
+    0        # Component has   0 control variable(s).
+   25
+      0.50000     #   1 Tank volume (m3)                                                
+       1.5000     #   2 Tank height (m)                                                 
+      -1.0000     #   3 Tank perimeter (m; -1 if cylindrical)                           
+      0.10000     #   4 Height of flow inlet (m)                                        
+       1.5000     #   5 Height of flow outlet (m)                                       
+       1.0000     #   6 Tank heat loss coefficient (W/m2-K)                             
+       0.0000     #   7 Additional destratification conductivity (W/m-K)                
+       30.000     #   8 Number of nodes                                                 
+       5.0000     #   9 Internal time steps per simulation time step                    
+       20.000     #  10 Initial temperature of tank (C)                                 
+       100.00     #  11 Boiling temperature of fluid (C)                                
+       1.5000     #  12 Height of first immersed HX inlet (m)                           
+       1.0000     #  13 Height of first immersed HX outlet (m)                          
+      0.34000E-01 #  14 Inside diameter of first immersed HX coil (m)                   
+      0.38000E-01 #  15 Outside diameter of first immersed HX coil (m)                  
+      0.35100     #  16 Diameter of first immersed HX coil (m)                          
+      0.56000E-01 #  17 Pitch of first immersed HX coil (distance from one loop to the n
+       40.000     #  18 Thermal conductivity of first immersed HX coil material (W/m/K) 
+      0.60000     #  19 eight of second immersed HX inlet (m)                           
+      0.10000     #  20 Height of second immersed HX outlet (m)                         
+      0.34000E-01 #  21 Inside diameter of second immersed HX coil (m)                  
+      0.38000E-01 #  22 Outside diameter of second immersed HX coil (m)                 
+      0.35100     #  23 Diameter of second immersed HX coil (m)                         
+      0.56000E-01 #  24 Pitch of second immersed HX coil (distance from one loop to the 
+       40.000     #  25 Thermal conductivity of second immersed HX coil material (W/m/K)
+#->   6, Stochastic hot water draw connecting to WCH system; 1 node model        
+  DHW_draw         105
+    0        # Component has   0 control variable(s).
+   47
+       120.00     #   1 Nominal daily hot water draw (l)                                
+       10.000     #   2 Seasonal variation of hot water draw (%)                        
+       28.000     #   3 Phase shift of seasonal variation (W/K)                         
+       3.0000     #   4 Number of holiday periods                                       
+       1.0000     #   5 Holiday period [1] start DOY                                    
+       3.0000     #   6 Holiday period [1] end DOY                                      
+       181.00     #   7 Holiday period [2] start DOY                                    
+       193.00     #   8 Holiday period [2] end DOY                                      
+       357.00     #   9 Holiday period [3] start DOY                                    
+       365.00     #  10 Holiday period [3] end DOY                                      
+       5.0000     #  11 Number of concurrent draw periods (start@0.0)                   
+       0.0000     #  12 Draw period start time                                          
+       5.0000     #  13 Fraction of daily draw taken in period (%)                      
+       6.0000     #  14 Draw period start time                                          
+       50.000     #  15 Fraction of daily draw taken in period (%)                      
+       9.0000     #  16 Draw period start time                                          
+       5.0000     #  17 Fraction of daily draw taken in period (%)                      
+       17.000     #  18 Draw period start time                                          
+       35.000     #  19 Fraction of daily draw taken in period (%)                      
+       23.000     #  20 Draw period start time                                          
+       5.0000     #  21 Fraction of daily draw taken in period (%)                      
+       4.0000     #  22 Number of distinct draw types (-)                               
+       14.000     #  23 Fraction of daily draw for this type (%)                        
+       1.0000     #  24 Draw volume flow rate (l/min)                                   
+       2.0000     #  25 Flow rate standard deviation (l/min)                            
+       1.0000     #  26 Nominal duration (min)                                          
+       1.0000     #  27 Draw weekday probability modifier (-)                           
+       1.0000     #  28 Draw weekend probability modifier (-)                           
+       36.000     #  29 Fraction of daily draw for this type (%)                        
+       6.0000     #  30 Draw volume flow rate (l/min)                                   
+       2.0000     #  31 Flow rate standard deviation (l/min)                            
+       1.0000     #  32 Nominal duration (min)                                          
+       1.0000     #  33 Draw weekday probability modifier (-)                           
+       1.0000     #  34 Draw weekend probability modifier (-)                           
+       10.000     #  35 Fraction of daily draw for this type (%)                        
+       12.000     #  36 Draw volume flow rate (l/min)                                   
+      0.20000     #  37 Flow rate standard deviation (l/min)                            
+       10.000     #  38 Nominal duration (min)                                          
+      0.70000     #  39 Draw weekday probability modifier (-)                           
+       1.4000     #  40 Draw weekend probability modifier (-)                           
+       40.000     #  41 Fraction of daily draw for this type (%)                        
+       8.0000     #  42 Draw volume flow rate (l/min)                                   
+      0.40000     #  43 Flow rate standard deviation (l/min)                            
+       5.0000     #  44 Nominal duration (min)                                          
+       1.0000     #  45 Draw weekday probability modifier (-)                           
+       1.0000     #  46 Draw weekend probability modifier (-)                           
+       1234.0     #  47 Random number generator seed (-)                                
+#->   7, WCH pipe; 1 node model                                                  
+  flow_loss         13
+    0        # Component has   0 control variable(s).
+    6
+       2.0000     #   1 Component total mass (kg)                                       
+       2250.0     #   2 Mass weighted average specific heat (J/kgK)                     
+       2.0000     #   3 UA modulus from wall to environment (W/K)                       
+      0.15000E-01 #   4 Hydraulic diameter of pipe (m)                                  
+       5.0000     #   5 Length of pipe section (m)                                      
+      0.17670E-03 #   6 Cross sectional face area (m^2)                                 
+#->   8, WCH 3-port valve; 3 node model; flow divert control                     
+  hcoil_3PDV       112
+    1        # Component has   1 control variable(s).
+   1.0000000    
+    3
+       1.0000     #   1 Component total mass (kg)                                       
+       500.00     #   2 Mass weighted average specific heat (J/kgK)                     
+       3.5000     #   3 UA modulus (W/K)                                                
+#->   9, WCH pipe converging 2-leg junction; 1 node model                        
+  coil_3PDV_mrg     14
+    0        # Component has   0 control variable(s).
+    3
+      0.10000     #   1 Component total mass (kg)                                       
+       2250.0     #   2 Mass weighted average specific heat (J/kgK)                     
+      0.20000E-01 #   3 UA modulus from wall to environment (W/K)                       
+#->  10, WCH pipe converging 2-leg junction; 1 node model                        
+  coil_DHW_mrg      14
+    0        # Component has   0 control variable(s).
+    3
+      0.10000     #   1 Component total mass (kg)                                       
+       2250.0     #   2 Mass weighted average specific heat (J/kgK)                     
+      0.20000E-01 #   3 UA modulus from wall to environment (W/K)                       
+#->  11, WCH pipe; 1 node model                                                  
+  return_loss       13
+    0        # Component has   0 control variable(s).
+    6
+       2.0000     #   1 Component total mass (kg)                                       
+       2250.0     #   2 Mass weighted average specific heat (J/kgK)                     
+       2.0000     #   3 UA modulus from wall to environment (W/K)                       
+      0.15000E-01 #   4 Hydraulic diameter of pipe (m)                                  
+       5.0000     #   5 Length of pipe section (m)                                      
+      0.17670E-03 #   6 Cross sectional face area (m^2)                                 
+#->  12, variable speed domestic WCH pump; 1 node model                          
+  sol_pump          98
+    1        # Component has   1 control variable(s).
+   0.0000000    
+    6
+       5.0000     #   1 Component total mass (kg)                                       
+       2250.0     #   2 Mass weighted average specific heat (J/kgK)                     
+      0.20000     #   3 UA modulus from wall to environment (W/K)                       
+       5.0000     #   4 Rated total absorbed power (W)                                  
+      0.60000E-01 #   5 Rated mass flow rate (m^3/s)                                    
+      0.80000     #   6 Overall efficiency (-)                                          
+#->  13, Simplified flat plate solar collector, 1 node model                     
+  Collector_A       84
+    0        # Component has   0 control variable(s).
+   36
+       3.3330     #   1 Collector area (m2)                                             
+       2.0000     #   2 Type of efficiency equ. (1=North-American,2=European)           
+      0.69400     #   3 Constant coef. of efficiency equ. (-)                           
+       4.8500     #   4 Linear coef. of efficiency equ. (W/m2/C)                        
+       0.0000     #   5 Quadratic coef. of efficiency equ. (W/m2/C2)                    
+      0.38000E-01 #   6 Collector test flow rate (kg/s)                                 
+       4200.0     #   7 Heat capacitance of fluid used for test (J/kg/C)                
+       1.0000     #   8 Inc. angle correction (=1 Fit,=2 Interpolation)                 
+      0.20000     #   9 Inc. angle equation linear term coef. (-)                       
+       0.0000     #  10 Inc. angle equation quadratic term coef. (-)                    
+       5.0000     #  11 Number of data pairs for inc angle correction (-)               
+       0.0000     #  12 1st inc. angle correction data pair angle (Deg)                 
+       1.0000     #  13 1st inc. angle correction data pair factor (-)                  
+       30.000     #  14 2nd inc. angle correction data pair angle (Deg)                 
+      0.99400     #  15 2nd inc. angle correction data pair factor (-)                  
+       45.000     #  16 3rd inc. angle correction data pair angle (Deg)                 
+      0.96400     #  17 3rd inc. angle correction data pair factor                      
+       60.000     #  18 4th inc. angle correction data pair angle (Deg)                 
+      0.82800     #  19 4th inc. angle correction data pair factor (-)                  
+       70.000     #  20 5th inc. angle correction data pair angle (Deg)                 
+      0.74000     #  21 5th inc. angle correction data pair factor (-)                  
+       0.0000     #  22 6th inc. angle correction data pair angle (Deg)                 
+       1.0000     #  23 6th inc. angle correction data pair factor (-)                  
+       0.0000     #  24 7th inc. angle correction data pair angle (Deg)                 
+       1.0000     #  25 7th inc. angle correction data pair factor (-)                  
+       0.0000     #  26 8th inc. angle correction data pair angle (Deg)                 
+       1.0000     #  27 8th inc. angle correction data pair factor (-)                  
+       0.0000     #  28 9th inc. angle correction data pair angle (Deg)                 
+       1.0000     #  29 9th inc. angle correction data pair factor (-)                  
+       0.0000     #  30 10th inc. angle correction data pair angle (Deg)                
+       1.0000     #  31 10th inc. angle correction data pair factor (-)                 
+       41.000     #  32 Collector slope (deg. from horizontal)                          
+       180.00     #  33 Collector azimuth (deg., N=0, E=90)                             
+       50.000     #  34 Mass fraction of propylene glycol (%)                           
+       60.000     #  35 Mass of collector (kg)                                          
+       4200.0     #  36 Collector average capacitance (J/kg-C)                          
+#->  14, Simplified flat plate solar collector, 1 node model                     
+  Collector_B       84
+    0        # Component has   0 control variable(s).
+   36
+       3.3330     #   1 Collector area (m2)                                             
+       2.0000     #   2 Type of efficiency equ. (1=North-American,2=European)           
+      0.69400     #   3 Constant coef. of efficiency equ. (-)                           
+       4.8500     #   4 Linear coef. of efficiency equ. (W/m2/C)                        
+       0.0000     #   5 Quadratic coef. of efficiency equ. (W/m2/C2)                    
+      0.38000E-01 #   6 Collector test flow rate (kg/s)                                 
+       4200.0     #   7 Heat capacitance of fluid used for test (J/kg/C)                
+       1.0000     #   8 Inc. angle correction (=1 Fit,=2 Interpolation)                 
+      0.20000     #   9 Inc. angle equation linear term coef. (-)                       
+       0.0000     #  10 Inc. angle equation quadratic term coef. (-)                    
+       5.0000     #  11 Number of data pairs for inc angle correction (-)               
+       0.0000     #  12 1st inc. angle correction data pair angle (Deg)                 
+       1.0000     #  13 1st inc. angle correction data pair factor (-)                  
+       30.000     #  14 2nd inc. angle correction data pair angle (Deg)                 
+      0.99400     #  15 2nd inc. angle correction data pair factor (-)                  
+       45.000     #  16 3rd inc. angle correction data pair angle (Deg)                 
+      0.96400     #  17 3rd inc. angle correction data pair factor                      
+       60.000     #  18 4th inc. angle correction data pair angle (Deg)                 
+      0.82800     #  19 4th inc. angle correction data pair factor (-)                  
+       70.000     #  20 5th inc. angle correction data pair angle (Deg)                 
+      0.74000     #  21 5th inc. angle correction data pair factor (-)                  
+       0.0000     #  22 6th inc. angle correction data pair angle (Deg)                 
+       1.0000     #  23 6th inc. angle correction data pair factor (-)                  
+       0.0000     #  24 7th inc. angle correction data pair angle (Deg)                 
+       1.0000     #  25 7th inc. angle correction data pair factor (-)                  
+       0.0000     #  26 8th inc. angle correction data pair angle (Deg)                 
+       1.0000     #  27 8th inc. angle correction data pair factor (-)                  
+       0.0000     #  28 9th inc. angle correction data pair angle (Deg)                 
+       1.0000     #  29 9th inc. angle correction data pair factor (-)                  
+       0.0000     #  30 10th inc. angle correction data pair angle (Deg)                
+       1.0000     #  31 10th inc. angle correction data pair factor (-)                 
+       41.000     #  32 Collector slope (deg. from horizontal)                          
+       180.00     #  33 Collector azimuth (deg., N=0, E=90)                             
+       50.000     #  34 Mass fraction of propylene glycol (%)                           
+       60.000     #  35 Mass of collector (kg)                                          
+       4200.0     #  36 Collector average capacitance (J/kg-C)                          
+#->  15, Simplified flat plate solar collector, 1 node model                     
+  Collector_C       84
+    0        # Component has   0 control variable(s).
+   36
+       3.3330     #   1 Collector area (m2)                                             
+       2.0000     #   2 Type of efficiency equ. (1=North-American,2=European)           
+      0.69400     #   3 Constant coef. of efficiency equ. (-)                           
+       4.8500     #   4 Linear coef. of efficiency equ. (W/m2/C)                        
+       0.0000     #   5 Quadratic coef. of efficiency equ. (W/m2/C2)                    
+      0.38000E-01 #   6 Collector test flow rate (kg/s)                                 
+       4200.0     #   7 Heat capacitance of fluid used for test (J/kg/C)                
+       1.0000     #   8 Inc. angle correction (=1 Fit,=2 Interpolation)                 
+      0.20000     #   9 Inc. angle equation linear term coef. (-)                       
+       0.0000     #  10 Inc. angle equation quadratic term coef. (-)                    
+       5.0000     #  11 Number of data pairs for inc angle correction (-)               
+       0.0000     #  12 1st inc. angle correction data pair angle (Deg)                 
+       1.0000     #  13 1st inc. angle correction data pair factor (-)                  
+       30.000     #  14 2nd inc. angle correction data pair angle (Deg)                 
+      0.99400     #  15 2nd inc. angle correction data pair factor (-)                  
+       45.000     #  16 3rd inc. angle correction data pair angle (Deg)                 
+      0.96400     #  17 3rd inc. angle correction data pair factor                      
+       60.000     #  18 4th inc. angle correction data pair angle (Deg)                 
+      0.82800     #  19 4th inc. angle correction data pair factor (-)                  
+       70.000     #  20 5th inc. angle correction data pair angle (Deg)                 
+      0.74000     #  21 5th inc. angle correction data pair factor (-)                  
+       0.0000     #  22 6th inc. angle correction data pair angle (Deg)                 
+       1.0000     #  23 6th inc. angle correction data pair factor (-)                  
+       0.0000     #  24 7th inc. angle correction data pair angle (Deg)                 
+       1.0000     #  25 7th inc. angle correction data pair factor (-)                  
+       0.0000     #  26 8th inc. angle correction data pair angle (Deg)                 
+       1.0000     #  27 8th inc. angle correction data pair factor (-)                  
+       0.0000     #  28 9th inc. angle correction data pair angle (Deg)                 
+       1.0000     #  29 9th inc. angle correction data pair factor (-)                  
+       0.0000     #  30 10th inc. angle correction data pair angle (Deg)                
+       1.0000     #  31 10th inc. angle correction data pair factor (-)                 
+       41.000     #  32 Collector slope (deg. from horizontal)                          
+       180.00     #  33 Collector azimuth (deg., N=0, E=90)                             
+       50.000     #  34 Mass fraction of propylene glycol (%)                           
+       60.000     #  35 Mass of collector (kg)                                          
+       4200.0     #  36 Collector average capacitance (J/kg-C)                          
+#->  16, variable speed domestic WCH pump; 1 node model                          
+  hw_pump           98
+    1        # Component has   1 control variable(s).
+  0.15000001    
+    6
+       5.0000     #   1 Component total mass (kg)                                       
+       2250.0     #   2 Mass weighted average specific heat (J/kgK)                     
+      0.20000     #   3 UA modulus from wall to environment (W/K)                       
+       20.000     #   4 Rated total absorbed power (W)                                  
+      0.40000     #   5 Rated mass flow rate (m^3/s)                                    
+      0.80000     #   6 Overall efficiency (-)                                          
+#->  17, Stratified tank with 1 immersed HX; 2 node model                        
+  buff_tank        103
+    0        # Component has   0 control variable(s).
+   18
+      0.50000     #   1 Tank volume (m3)                                                
+       1.5000     #   2 Tank height (m)                                                 
+      -1.0000     #   3 Tank perimeter (m; -1 if cylindrical)                           
+       1.5000     #   4 Height of flow inlet (m)                                        
+       0.0000     #   5 Height of flow outlet (m)                                       
+       1.0000     #   6 Tank heat loss coefficient (W/m2-K)                             
+       0.0000     #   7 Additional destratification conductivity (W/m-K)                
+       20.000     #   8 Number of nodes                                                 
+       5.0000     #   9 Internal time steps per simulation time step                    
+       20.000     #  10 Initial temperature of tank (C)                                 
+       100.00     #  11 Boiling temperature of fluid (C)                                
+       0.0000     #  12 Height of immersed HX inlet (m)                                 
+       1.5000     #  13 Height of immersed HX outlet (m)                                
+      0.34000E-01 #  14 Inside diameter of immersed HX coil (m)                         
+      0.38000E-01 #  15 Outside diameter of immersed HX coil (m)                        
+      0.35100     #  16 Diameter of immersed HX coil (m)                                
+      0.56000E-01 #  17 Pitch of immersed HX coil (distance from one loop to the next) (
+       40.000     #  18 Thermal conductivity of immersed HX coil material (W/m/K)       
+#->  18, air duct; 1 node model                                                  
+  in_duct            6
+    0        # Component has   0 control variable(s).
+    6
+       9.2500     #   1 Component total mass (kg)                                       
+       500.00     #   2 Mass weighted average specific heat (J/kgK)                     
+       14.000     #   3 UA modulus (W/K)                                                
+      0.12500     #   4 Hydraulic diameter of duct (m)                                  
+       5.0000     #   5 Length of duct section (m)                                      
+      0.12270E-01 #   6 Cross sectional face area (m^2)                                 
+#->  19, air/air basic heat exchanger; 2 node model                              
+  heat_ex           94
+    0        # Component has   0 control variable(s).
+    5
+       10.000     #   1 Component total mass (kg)                                       
+       1000.0     #   2 Mass weighted average specific heat (J/kgK)                     
+       7.0000     #   3 UA modulus (W/K)                                                
+       80.000     #   4 Heat exchanger effectiveness (%)                                
+       0.0000     #   5 Moisture recovery (%)                                           
+#->  20, centrifugal fan, 1 node model ; flow control                            
+  s_fan              3
+    1        # Component has   1 control variable(s).
+  2.55999994E-02
+    6
+       5.0000     #   1 Component total mass (kg)                                       
+       500.00     #   2 Mass weighted average specific heat (J/kgK)                     
+       7.0000     #   3 UA modulus (W/K)                                                
+       18.000     #   4 Rated total absorbed power (W)                                  
+      0.50000E-01 #   5 Rated volume flow rate (m^3/s)                                  
+      0.80000     #   6 Overall efficiency (-)                                          
+#->  21, centrifugal fan, 1 node model ; flow control                            
+  ex_fan             3
+    1        # Component has   1 control variable(s).
+  2.50000004E-02
+    6
+       5.0000     #   1 Component total mass (kg)                                       
+       500.00     #   2 Mass weighted average specific heat (J/kgK)                     
+       7.0000     #   3 UA modulus (W/K)                                                
+       18.000     #   4 Rated total absorbed power (W)                                  
+      0.50000E-01 #   5 Rated volume flow rate (m^3/s)                                  
+      0.80000     #   6 Overall efficiency (-)                                          
+#->  22, air duct; 1 node model                                                  
+  ex_duct            6
+    0        # Component has   0 control variable(s).
+    6
+       9.2500     #   1 Component total mass (kg)                                       
+       500.00     #   2 Mass weighted average specific heat (J/kgK)                     
+       14.000     #   3 UA modulus (W/K)                                                
+      0.12500     #   4 Hydraulic diameter of duct (m)                                  
+       5.0000     #   5 Length of duct section (m)                                      
+      0.12270E-01 #   6 Cross sectional face area (m^2)                                 
+#->  23, air heating coil fed by WCH system; 3 node model                        
+  h_coil            21
+    0        # Component has   0 control variable(s).
+    9
+       5.0000     #   1 Component total mass (kg)                                       
+       500.00     #   2 Average specific heat of solids (J/kgK)                         
+       3.5000     #   3 UA modulus (node 1 to surroundings) (W/K)                       
+       1.0000     #   4 Mass of water encapsulated in component (kg)                    
+       15.000     #   5 Coil outside (air) heat transfer area (m^2)                     
+      0.33000     #   6 Coil inside (water) heat transfer area (m^2)                    
+      0.25000E-01 #   7 Coil face area (m^2)                                            
+      0.10000E-02 #   8 Metal thermal resistance (m^2K/W)                               
+      0.12000E-01 #   9 Internal tube diameter (m)                                      
+#->  24, air duct; 1 node model                                                  
+  sup_duct_l         6
+    0        # Component has   0 control variable(s).
+    6
+       9.2500     #   1 Component total mass (kg)                                       
+       500.00     #   2 Mass weighted average specific heat (J/kgK)                     
+       14.000     #   3 UA modulus (W/K)                                                
+      0.12500     #   4 Hydraulic diameter of duct (m)                                  
+       5.0000     #   5 Length of duct section (m)                                      
+      0.12270E-01 #   6 Cross sectional face area (m^2)                                 
+#->  25, air duct; 1 node model                                                  
+  sup_duct_n         6
+    0        # Component has   0 control variable(s).
+    6
+       9.2500     #   1 Component total mass (kg)                                       
+       500.00     #   2 Mass weighted average specific heat (J/kgK)                     
+       14.000     #   3 UA modulus (W/K)                                                
+      0.12500     #   4 Hydraulic diameter of duct (m)                                  
+       5.0000     #   5 Length of duct section (m)                                      
+      0.12270E-01 #   6 Cross sectional face area (m^2)                                 
+#->  26, air mixing box or converging junction; 1 node model                     
+  ex_plen            1
+    0        # Component has   0 control variable(s).
+    3
+       1.0000     #   1 Component total mass (kg)                                       
+       500.00     #   2 Mass weighted average specific heat (J/kgK)                     
+       3.5000     #   3 UA modulus (W/K)                                                
+#->  27, Stratified tank with 1 immersed HX; 2 node model                        
+  GWHR_tank        103
+    0        # Component has   0 control variable(s).
+   18
+      0.50000     #   1 Tank volume (m3)                                                
+       1.5000     #   2 Tank height (m)                                                 
+      -1.0000     #   3 Tank perimeter (m; -1 if cylindrical)                           
+       1.5000     #   4 Height of flow inlet (m)                                        
+       0.0000     #   5 Height of flow outlet (m)                                       
+       1.0000     #   6 Tank heat loss coefficient (W/m2-K)                             
+       0.0000     #   7 Additional destratification conductivity (W/m-K)                
+       20.000     #   8 Number of nodes                                                 
+       5.0000     #   9 Internal time steps per simulation time step                    
+       20.000     #  10 Initial temperature of tank (C)                                 
+       100.00     #  11 Boiling temperature of fluid (C)                                
+       0.0000     #  12 Height of immersed HX inlet (m)                                 
+       1.5000     #  13 Height of immersed HX outlet (m)                                
+      0.34000E-01 #  14 Inside diameter of immersed HX coil (m)                         
+      0.38000E-01 #  15 Outside diameter of immersed HX coil (m)                        
+      0.35100     #  16 Diameter of immersed HX coil (m)                                
+      0.56000E-01 #  17 Pitch of immersed HX coil (distance from one loop to the next) (
+       40.000     #  18 Thermal conductivity of immersed HX coil material (W/m/K)       
+# The following is a list of component connections.
+ 37          # Total number of connections
+# receiving       node  conncn sending          node  diversion  suppl1   suppl2
+# component              type  component                ratio
+  f_pump            1     3     ASHP              1    0.000                 #  1
+  pump_bpass_cvg    1     3     ASHP              1    1.000                 #  2
+  pump_bpass_cvg    1     3     f_pump            1    1.000                 #  3
+  buff_tank         1     3     return_loss       1    1.000                 #  4
+  ASHP              1     3     buff_tank         2    1.000                 #  5
+  hw_pump           1     3     buff_tank         1    1.000                 #  6
+  DHW_divert        1     3     hw_pump           1    1.000                 #  7
+  DHW_tank          1     3     GWHR_tank         2    1.000                 #  8
+  GWHR_tank         1     3     DHW_tank          1    0.800                 #  9
+  DHW_draw          1     3     GWHR_tank         1    1.000                 # 10
+  GWHR_tank         2     3     DHW_draw          1    1.000                 # 11
+  flow_loss         1     3     DHW_divert        3    1.000                 # 12
+  DHW_tank          2     3     DHW_divert        2    1.000                 # 13
+  hcoil_3PDV        1     3     flow_loss         1    1.000                 # 14
+  h_coil            2     3     s_fan             1    1.000                 # 15
+  coil_3PDV_mrg     1     3     hcoil_3PDV        3    1.000                 # 16
+  coil_3PDV_mrg     1     3     h_coil            3    1.000                 # 17
+  coil_DHW_mrg      1     3     DHW_tank          2    1.000                 # 18
+  coil_DHW_mrg      1     3     coil_3PDV_mrg     1    1.000                 # 19
+  return_loss       1     3     coil_DHW_mrg      1    1.000                 # 20
+  buff_tank         2     3     pump_bpass_cvg    1    1.000                 # 21
+  sol_pump          1     3     DHW_tank          3    1.000                 # 22
+  Collector_A       1     3     sol_pump          1    1.000                 # 23
+  Collector_B       1     3     Collector_A       1    1.000                 # 24
+  Collector_C       1     3     Collector_B       1    1.000                 # 25
+  DHW_tank          3     3     Collector_C       1    1.000                 # 26
+  h_coil            3     3     hcoil_3PDV        2    1.000                 # 27
+  heat_ex           1     3     in_duct           1    1.000                 # 28
+  s_fan             1     3     heat_ex           1    1.000                 # 29
+  ex_plen           1     4     sup_duct_l        1    1.000     1.00        # 30
+  ex_plen           1     4     sup_duct_n        1    1.000     2.00        # 31
+  heat_ex           2     3     ex_fan            1    1.000                 # 32
+  ex_duct           1     3     heat_ex           2    1.000                 # 33
+  in_duct           1     4     s_fan             1    1.000     0.00        # 34
+  ex_fan            1     3     ex_plen           1    1.000                 # 35
+  sup_duct_l        1     3     h_coil            2    0.333                 # 36
+  sup_duct_n        1     3     h_coil            2    0.667                 # 37
+# The following is a list of containment temperatures.
+  9          # Total number of containments
+# Component       cont type        suppl1     suppl2    suppl3
+  ASHP                3             2.00000   0.00000   0.00000
+  flow_loss           3             2.00000   0.00000   0.00000
+  return_loss         3             2.00000   0.00000   0.00000
+  DHW_tank            3             2.00000   0.00000   0.00000
+  Collector_A         0             0.00000   0.00000   0.00000
+  Collector_B         0             0.00000   0.00000   0.00000
+  Collector_C         0             0.00000   0.00000   0.00000
+  buff_tank           3             2.00000   0.00000   0.00000
+  GWHR_tank           3             2.00000   0.00000   0.00000
+# No mass flow network defined.
+    0

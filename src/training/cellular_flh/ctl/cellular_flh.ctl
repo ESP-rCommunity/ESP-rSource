@@ -2,14 +2,14 @@ Ideal floor heating control for dual office model. Weekdays normal office hours,
 * Building
 Heat injected in floor zone with high hc coef, controlled via multi-sensor inject in floor (heat to ~30C) to heat manager_a to ~21C. Cooling (summer) via chilled ceiling (cooled to ~16C) to keep zone ~26C.
    3  # No. of functions
-* Control function
+* Control function    1
 # senses dry bulb temperature in manager_a.
     1    0    0    0  # sensor data
 # actuates air point of the current zone
     0    0    0  # actuator data
-    0 # No. day types
+    0 # day types follow calendar  3
     1  365  # valid Sun-01-Jan - Sun-31-Dec
-     3  # No. of periods in day
+     3  # No. of periods in day: weekdays    
     0    1   0.000  # ctl type, law (basic control), start @
       7.  # No. of data items
   2500.000 0.000 2500.000 0.000 15.000 26.000 0.000
@@ -20,7 +20,7 @@ Heat injected in floor zone with high hc coef, controlled via multi-sensor injec
       7.  # No. of data items
   2500.000 0.000 2500.000 0.000 15.000 26.000 0.000
     1  365  # valid Sun-01-Jan - Sun-31-Dec
-     3  # No. of periods in day
+     3  # No. of periods in day: saturday    
     0    1   0.000  # ctl type, law (basic control), start @
       7.  # No. of data items
   2500.000 0.000 2500.000 0.000 15.000 26.000 0.000
@@ -30,18 +30,18 @@ Heat injected in floor zone with high hc coef, controlled via multi-sensor injec
     0    2  17.000  # ctl type, law (free floating), start @
       0.  # No. of data items
     1  365  # valid Sun-01-Jan - Sun-31-Dec
-     1  # No. of periods in day
+     1  # No. of periods in day: sunday      
     0    1   0.000  # ctl type, law (basic control), start @
       7.  # No. of data items
   2500.000 0.000 2500.000 0.000 10.000 30.000 0.000
-* Control function
+* Control function    2
 # senses dry bulb temperature in manager_a.
     1    0    0    0  # sensor data
 # actuates the air point in floor.
     4    0    0  # actuator data
-    0 # No. day types
+    0 # day types follow calendar  3
     1  365  # valid Sun-01-Jan - Sun-31-Dec
-     3  # No. of periods in day
+     3  # No. of periods in day: weekdays    
     0   19   0.000  # ctl type, law (senses dry bulb temperature in manager_a.), start @
      13.  # No. of data items
   2000.000 0.000 0.000 0.000 35.000 100.000 1.000 1.000 0.000 0.000 0.000 21.000 100.000
@@ -52,7 +52,7 @@ Heat injected in floor zone with high hc coef, controlled via multi-sensor injec
      13.  # No. of data items
   2000.000 0.000 0.000 0.000 28.000 100.000 1.000 1.000 0.000 0.000 0.000 18.000 100.000
     1  365  # valid Sun-01-Jan - Sun-31-Dec
-     3  # No. of periods in day
+     3  # No. of periods in day: saturday    
     0   19   0.000  # ctl type, law (senses dry bulb temperature in manager_a.), start @
      13.  # No. of data items
   2000.000 0.000 0.000 0.000 28.000 100.000 1.000 1.000 0.000 0.000 0.000 18.000 100.000
@@ -63,7 +63,7 @@ Heat injected in floor zone with high hc coef, controlled via multi-sensor injec
      13.  # No. of data items
   2000.000 0.000 0.000 0.000 28.000 100.000 1.000 1.000 0.000 0.000 0.000 18.000 100.000
     1  365  # valid Sun-01-Jan - Sun-31-Dec
-     3  # No. of periods in day
+     3  # No. of periods in day: sunday      
     0   19   0.000  # ctl type, law (senses dry bulb temperature in manager_a.), start @
      13.  # No. of data items
   2000.000 0.000 0.000 0.000 28.000 100.000 1.000 1.000 0.000 0.000 0.000 18.000 100.000
@@ -73,14 +73,14 @@ Heat injected in floor zone with high hc coef, controlled via multi-sensor injec
     0    2  17.000  # ctl type, law (free floating), start @
      13.  # No. of data items
   2000.000 0.000 0.000 0.000 28.000 100.000 1.000 1.000 0.000 0.000 0.000 18.000 100.000
-* Control function
+* Control function    3
 # senses dry bulb temperature in ceiling_slb.
     5    0    0    0  # sensor data
 # actuates the air point in ceiling_slb.
     5    0    0  # actuator data
-    0 # No. day types
+    0 # day types follow calendar  3
     1  365  # valid Sun-01-Jan - Sun-31-Dec
-     3  # No. of periods in day
+     3  # No. of periods in day: weekdays    
     0   19   0.000  # ctl type, law (senses dry bulb temperature in manager_a.), start @
      13.  # No. of data items
   0.000 0.000 2000.000 0.000 0.000 16.000 1.000 1.000 0.000 0.000 0.000 0.000 26.000
@@ -91,7 +91,7 @@ Heat injected in floor zone with high hc coef, controlled via multi-sensor injec
      13.  # No. of data items
   0.000 0.000 2000.000 0.000 0.000 18.000 1.000 1.000 0.000 0.000 0.000 0.000 28.000
     1  365  # valid Sun-01-Jan - Sun-31-Dec
-     3  # No. of periods in day
+     3  # No. of periods in day: saturday    
     0   19   0.000  # ctl type, law (senses dry bulb temperature in manager_a.), start @
      13.  # No. of data items
   0.000 0.000 2000.000 0.000 0.000 16.000 1.000 1.000 0.000 0.000 0.000 0.000 26.000
@@ -102,7 +102,7 @@ Heat injected in floor zone with high hc coef, controlled via multi-sensor injec
      13.  # No. of data items
   0.000 0.000 2000.000 0.000 0.000 18.000 1.000 1.000 0.000 0.000 0.000 0.000 28.000
     1  365  # valid Sun-01-Jan - Sun-31-Dec
-     3  # No. of periods in day
+     3  # No. of periods in day: sunday      
     0   19   0.000  # ctl type, law (senses dry bulb temperature in manager_a.), start @
      13.  # No. of data items
   0.000 0.000 2000.000 0.000 0.000 16.000 1.000 1.000 0.000 0.000 0.000 0.000 26.000

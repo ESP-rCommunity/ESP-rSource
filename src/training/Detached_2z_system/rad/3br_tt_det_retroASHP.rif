@@ -1,0 +1,23 @@
+# Radiance RIF file: 3br_tt_det_retroASHP.rif
+#e2r_gen_view   0 -1
+#e2r_glaz_type   1
+view= std -vtv -vp   -14.088  -12.151   16.271 -vd   1.0000  0.0000  0.0000 -vu 0 0 1 -vh 8.0 -vv 6.0 -vs 0 -vl 0
+view= init -vtv -vp  -10.1028 -21.9205  9.0812 -vd   0.43358 0.7977 -0.1639 -vu 0 0 1 -vh 30  -vv 30 -vo 0 -va 0 -vs 0 -vl 0
+scene= 3br_tt_det_retroASHP_Extern.sky
+scene= 3br_tt_det_retroASHP_Extern-glz.rad
+scene= 3br_tt_det_retroASHP_Extern.mat
+scene= 3br_tt_det_retroASHP_Extern-out.rad
+scene= 3br_tt_det_retroASHP_Extern-in.rad
+UP= Z
+QUALITY= Medium
+DETAIL= High  
+VARIABILITY= High  
+RESOLUTION=   800
+INDIRECT=  2
+PENUMBRAS= True 
+REPORT=    1
+render=  -av 10.6 10.6 10.6
+ZONE= Exterior   -14.09   18.45  -12.15   20.39   -0.01   16.27
+OPTFILE= 3br_tt_det_retroASHP_Extern.opt
+OCTREE= 3br_tt_det_retroASHP_Extern.oct
+PICTURE= 3br_tt_det_retroASHP_Extern

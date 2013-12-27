@@ -1113,7 +1113,7 @@ C                 external temperature (for use in MZLS3).
       SUBROUTINE MZVENT(ICOMP)
       
       USE AIM2_InputData, ONLY:iAIM2
-      USE AIM2_TIMESTEP, ONLY:AIM2_CONTROL_conductance
+      USE AIM2_TIMESTEP, ONLY:AIM2_CONTROL
       
       IMPLICIT NONE
 
@@ -1246,11 +1246,6 @@ c      real rTempnotioOverheat
      &     flowi,flowv
 
 C      CHARACTER*2   cZone_Chars ! Padded zone number (two digits)
-
-      logical bFindAFN600Coupling  ! Function determining if 
-                                   ! air-flow network has a 
-                                   ! MF600 coupling component for 
-                                   ! this zone. 
       
 C Logical flags for indicating which air flow model is in use.      
       logical :: bOPR, bAFN, bAIM2, bNoFlow
@@ -1637,15 +1632,6 @@ C to the above priority table.
             ! afn/opr
             if ( iAIM2 == 1 .and. .not. AreWindowsOpen(iComp) ) then
               bAIM2 = .true. 
-              
-              ! Test if this zone has a MF600 coupling connecting 
-              ! air-flow network to AIM2 model:
-              if ( bFindAFN600Coupling(iComp) ) then 
-                ! Yes, AIM2 infiltration will be imposed on air-flow 
-                ! network
-                bAIM2 = .false. 
-                bAFN  = .true. 
-              endif 
             elseif ( bAfnZoneActive(iComp) ) then
               bAFN = .true. 
             else
@@ -1736,7 +1722,7 @@ C========================================================================
        
           ! Conductance of infiltration returned for that zone
           ! If the zone was not specified in the AIM-2 file then it will return a zero
-          CALL AIM2_CONTROL_conductance(ICOMP,ZONE_infil_cond)
+          CALL AIM2_CONTROL(ICOMP,ZONE_infil_cond)
         
           ! Assign this to ESP-r's standard infiltration conductance variable `CVIF' so that these
           ! loads are reflected in ESP-r's zonal energy balances.      

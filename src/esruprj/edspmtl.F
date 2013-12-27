@@ -363,7 +363,7 @@ C << rewrite logic using G6 common block >>
       COMMON/RAY3/MODIFY,MODLEN,MODBND
       common/MFLDOC/DEPRE(MPRD) 
       COMMON/RAY6/LINSTY(MCON)
-      COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
+      COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,CFCDBOK
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
 
 C Special materials file flag
@@ -384,7 +384,7 @@ C sstr in spdesc.
       dimension spdesc(90)
 
       logical ok,dok, SPREPT
-      LOGICAL CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
+      LOGICAL CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,CFCDBOK
       LOGICAL MODIFY,MODLEN,MODBND
       integer header,footer
       character outs*124,spmlabel*16,item*32,spitem*32,entflnam*72

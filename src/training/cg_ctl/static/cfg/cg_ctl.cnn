@@ -1,5 +1,5 @@
 *connections for cg_ctl
-*Date Fri Aug 24 16:11:41 2012
+*Date Sun Dec  8 15:57:11 2013
      14   # number of connections
    1   1   0   0   0  #    1 Surf-1 in room is External
    1   2   0   0   0  #    2 Surf-2 in room is External

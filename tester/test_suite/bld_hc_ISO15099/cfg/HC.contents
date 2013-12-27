@@ -30,7 +30,7 @@ The climate used is: LONDON GATWICK IWEC WMO 037760 and is held in:
  
 Databases associated with the model:
  pressure distributions : /usr/esru/esp-r/databases/pressc.db1
- materials              : /usr/esru/esp-r/databases/constr.db1.a
+ materials              : /usr/esru/esp-r/databases/constr_db1.materialdb
  constructions          : /usr/esru/esp-r/databases/multicon.db1
  plant components       : /usr/esru/esp-r/databases/plantc.db1
  event profiles         : /usr/esru/esp-r/databases/profiles.db2

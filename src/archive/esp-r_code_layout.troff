@@ -343,7 +343,6 @@ src
 |-- esruplt     source code for plant component solver
 |-- esruprj     source code for the project manager module
 |-- esrures     source code for the results analysis module
-|-- esrurun     source code for converting 3rd party descriptions into ESP-r models
 |-- esruvew     source code for a hidden line wire-frame viewer
 |-- esruvld     source code for validation and uncertainty studies
 |-- include     header files for fortran and c code

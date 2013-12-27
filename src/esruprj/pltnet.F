@@ -1366,7 +1366,7 @@ C same opening logic as in eddb.F and moplnt.F
      &       lpcdb(1:lnblnk(lpcdb))  ! prepend db folder path
          endif
          istat=0
-	 call EFOPRAN(ipcdb,lltmp,irecln,1,istat)
+         call EFOPRAN(ipcdb,lltmp,irecln,1,istat)
 
 C Check for error on opening.
          if(istat.lt.0) then

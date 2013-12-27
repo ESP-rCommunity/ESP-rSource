@@ -46,15 +46,15 @@ dbl_glz  polygon  manager_b:glazing
   
 # skipping transparent surface: manager_b:part_glaz                                                                         
   
-# coridor Surface defs..
+# corridor Surface defs..
   
-# skipping fict surface: coridor:right_fict                                                                                 
+# skipping fict surface: corridor:right_fict                                                                                 
   
-# skipping fict surface: coridor:left_fict                                                                                  
+# skipping fict surface: corridor:left_fict                                                                                  
   
   
 #@mkillum e=dbl_glz d=48 s=32
-dbl_glz  polygon  coridor:part_glaz
+dbl_glz  polygon  corridor:part_glaz
 0 
 0 
  12
@@ -64,7 +64,7 @@ dbl_glz  polygon  coridor:part_glaz
     1.30000    4.55000    0.10000
   
 #@mkillum e=dbl_glz d=48 s=32
-dbl_glz  polygon  coridor:part_glazb
+dbl_glz  polygon  corridor:part_glazb
 0 
 0 
  12

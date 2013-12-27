@@ -659,7 +659,7 @@ C Reporting:
   42          continue
               IF(IER.NE.0)GOTO 99
             ENDIF
-			
+
 C Set building-side function generator flag.
             if(ibsn(ii,1).eq.-6)then
                bfngn=.true.
@@ -2111,7 +2111,8 @@ C Low level I/O error. Close file before exiting.
 
 C Issue with the zone - loop links.
  109  continue
-      write(outs,'(a)') 'warning zone - control loop links issue!'
+      write(outs,'(2a)') 'Warning reading zone - control loop links! ',
+     &  'Number of zones & control links differ.'
       if(dll)then
         dllsubr='EZCTLR'
         dllmesg=outs

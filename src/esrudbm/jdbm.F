@@ -81,14 +81,14 @@ C Significant figure reporting limit (NSIGFIG).
 
 C Backup of documentation (for editing) bkdoc is the text, 
 C bkdoctyp = "dd","cd","id" for db doc, cat doc and item doc.
-      COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
+      COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,CFCDBOK
       
 C Name of current application
       common/APPNAME/cAppName
       
       character cAppName*12      
       
-      LOGICAL        CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
+      LOGICAL        CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,CFCDBOK
       LOGICAL OK,dok,statusok
       LOGICAL moddb,unixok,browse,status
 

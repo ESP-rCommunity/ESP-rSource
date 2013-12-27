@@ -46,7 +46,7 @@ floor is a thin zone representing piping for floor heating
 *surf,Surf-6,FLOR,-,-,-,structure,OPAQUE,CONSTANT,20,00  #   5 ||< constant @ 20dC &   0W rad
 *surf,floor_ma,CEIL,-,-,-,screed_rev,OPAQUE,ANOTHER,01,06  #   6 ||< floor:manager_a
 *surf,floor_mb,CEIL,-,-,-,screed_rev,OPAQUE,ANOTHER,02,06  #   7 ||< floor:manager_b
-*surf,floor_cor,CEIL,-,-,-,screed_rev,OPAQUE,ANOTHER,03,05  #   8 ||< floor:coridor
+*surf,floor_cor,CEIL,-,-,-,screed_rev,OPAQUE,ANOTHER,03,05  #   8 ||< floor:corridor
 *surf,filler,CEIL,-,-,-,screed_rev,OPAQUE,ADIABATIC,0,0  #   9 ||< adiabatic
 # 
 *insol,3,0,0,0  # default insolation distribution

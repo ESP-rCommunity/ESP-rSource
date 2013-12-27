@@ -90,8 +90,6 @@ prj:
 	cd $(SRCdir)/esruprj; $(MAKE)
 res: 
 	cd $(SRCdir)/esrures; $(MAKE)
-run: 
-	cd $(SRCdir)/esrurun; $(MAKE)
 vew: 
 	cd $(SRCdir)/esruvew; $(MAKE)
 stats: 
@@ -119,7 +117,6 @@ clean:
 	cd $(SRCdir)/esrupdb; $(MAKE) clean
 	cd $(SRCdir)/esruprj; $(MAKE) clean
 	cd $(SRCdir)/esrures; $(MAKE) clean
-	cd $(SRCdir)/esrurun; $(MAKE) clean
 	cd $(SRCdir)/esruvew; $(MAKE) clean
 	cd $(SRCdir)/esrustats; $(MAKE) clean
 	cd $(SRCdir)/harmonizer; $(MAKE) clean
@@ -148,7 +145,6 @@ strip:
 	cd $(SRCdir)/esrupdb; $(MAKE) strip
 	cd $(SRCdir)/esruprj; $(MAKE) strip
 	cd $(SRCdir)/esrures; $(MAKE) strip
-	cd $(SRCdir)/esrurun; $(MAKE) strip
 	cd $(SRCdir)/esruvew; $(MAKE) strip
 	cd $(SRCdir)/esrustats; $(MAKE) strip
 
@@ -173,7 +169,6 @@ InstBins:
 	cd $(SRCdir)/esrupdb; $(MAKE) ESPBinDir=${ESPBinDir} EXE=${EXE} install
 	cd $(SRCdir)/esruprj; $(MAKE) ESPBinDir=${ESPBinDir} EXE=${EXE} install
 	cd $(SRCdir)/esrures; $(MAKE) ESPBinDir=${ESPBinDir} EXE=${EXE} install
-	cd $(SRCdir)/esrurun; $(MAKE) ESPBinDir=${ESPBinDir} EXE=${EXE} install
 	cd $(SRCdir)/esruvew; $(MAKE) ESPBinDir=${ESPBinDir} EXE=${EXE} install
 	cd $(SRCdir)/esrustats; $(MAKE) ESPBinDir=${ESPBinDir} EXE=${EXE} install
 	cd $(SRCdir)/harmonizer; $(MAKE) ESPBinDir=${ESPBinDir} EXE=${EXE} install

@@ -713,7 +713,10 @@ C Now that we know the construction try and work out the optics.
         elseif(tmpsot(1:4).eq.'CFC ')then
           write(SOTF(ISN),'(a)') 'CFC '    !write CFC
           if(havec24) write(SSOTF(icn),'(a)') 'CFC '
-        elseif(tmpsot(1:4).ne.'OPAQ'.and.tmpsot(1:4).ne.'CFC ')then
+        elseif(tmpsot(1:4).eq.'CFC2')then
+          write(SOTF(ISN),'(a)') 'CFC2'    !write CFC2
+          if(havec24) write(SSOTF(icn),'(a)') 'CFC2'
+        elseif(tmpsot(1:4).ne.'OPAQ'.and.tmpsot(1:3).ne.'CFC')then
 
 C We need to find the name of the optical set for the construction.
 C If there is a matching MLC entry attempt to discover
@@ -990,7 +993,7 @@ C If surface `flor` not included in the list add it.
             endif
           endif
         endif
-        if (SOTF(ijj)(1:4).ne.'OPAQ'.and.SOTF(ijj)(1:4).ne.'CFC '.and.
+        if (SOTF(ijj)(1:4).ne.'OPAQ'.and.SOTF(ijj)(1:3).ne.'CFC'.and.
      &      SOTHER(ijj,1)(1:8).eq.'EXTERIOR') then
           ZTRANA(ICOMP)=ZTRANA(ICOMP)+SNA(ijj)
         endif
@@ -1184,7 +1187,7 @@ C set it to TRAN within the legacy geometry file.
         IF(SSOTF(icc)(1:2).EQ.'  ')then
           SSOTF(icc)='OPAQUE'
         ELSEIF(SSOTF(icc)(1:4).EQ.'OPAQ'.OR.
-     &         SSOTF(icc)(1:4).EQ.'CFC ')then
+     &         SSOTF(icc)(1:3).EQ.'CFC')then
           continue
         ELSE
           SSOTF(icc)='TRAN'
@@ -1809,7 +1812,10 @@ C Surface optics set name or OPAQ/TRAN, allow for spaces.
             elseif(WORD(1:4).eq.'CFC ')then
               write(SOTF(NS),'(a)') 'CFC '  ! write CFC
               if(havec24) write(SSOTF(icn),'(a)') 'CFC '
-            elseif(WORD(1:4).ne.'OPAQ'.and.WORD(1:4).ne.'CFC ')then
+            elseif(WORD(1:4).eq.'CFC2')then
+              write(SOTF(NS),'(a)') 'CFC2'  ! write CFC2
+              if(havec24) write(SSOTF(icn),'(a)') 'CFC2'
+            elseif(WORD(1:4).ne.'OPAQ'.and.WORD(1:3).ne.'CFC')then
 
 C This token could be the name of the optical property. Find out if it
 C matches then name of the optical set for the construction.
@@ -2145,8 +2151,9 @@ C zone obstructions file or are held in this geometry file.
 C If iobs() = 0 then no obstructions yet defined so the value should
 C be incremented to iobs() = 2.
           if(iobs(icomp).eq.1)then
-            call usrmsg(
-     &      'There is a zone obstructions file as well as block',
+            write(outs,'(3a)') 'In zone ',zname(icomp),
+     &        ' there is a zone obstructions file as well as block'
+            call usrmsg(outs(1:lnblnk(outs)),
      &      'definitions in this geometry file. Skipping data.','W')
           endif 
 
@@ -2176,9 +2183,9 @@ C formats depending on whether the key is '*obs' or '*obs3'.
             XOB(icomp,nbo)=VX
             YOB(icomp,nbo)=VY
             ZOB(icomp,nbo)=VZ
-            CALL EGETWR(LOUTSTR,K,VX,0., 99.,'W','obs X dis',IER)
-            CALL EGETWR(LOUTSTR,K,VY,0., 99.,'W','obs Y dis',IER)
-            CALL EGETWR(LOUTSTR,K,VZ,0., 99.,'W','obs Z dis',IER)
+            CALL EGETWR(LOUTSTR,K,VX,0.,150.,'W','obs X dis',IER)
+            CALL EGETWR(LOUTSTR,K,VY,0.,150.,'W','obs Y dis',IER)
+            CALL EGETWR(LOUTSTR,K,VZ,0.,150.,'W','obs Z dis',IER)
             DXOB(icomp,nbo)=VX
             DYOB(icomp,nbo)=VY
             DZOB(icomp,nbo)=VZ
@@ -2302,9 +2309,9 @@ C standard obstruction block when converted into a GB1 common block.
             XOB(icomp,nbo)=VX
             YOB(icomp,nbo)=VY
             ZOB(icomp,nbo)=VZ
-            CALL EGETWR(LOUTSTR,K,VX,0., 99.,'W','obs X dis',IER)
-            CALL EGETWR(LOUTSTR,K,VY,0., 99.,'W','obs Y dis',IER)
-            CALL EGETWR(LOUTSTR,K,VZ,0., 99.,'W','obs Z dis',IER)
+            CALL EGETWR(LOUTSTR,K,VX,0.,150.,'W','obs X dis',IER)
+            CALL EGETWR(LOUTSTR,K,VY,0.,150.,'W','obs Y dis',IER)
+            CALL EGETWR(LOUTSTR,K,VZ,0.,150.,'W','obs Z dis',IER)
             DXOB(icomp,nbo)=VX
             DYOB(icomp,nbo)=VY
             DZOB(icomp,nbo)=VZ
@@ -2403,7 +2410,7 @@ C If surface `flor` not included in the list add it.
             endif
           endif
         endif
-        if (SOTF(ijj)(1:4).ne.'OPAQ'.and.SOTF(ijj)(1:4).ne.'CFC '.and.
+        if (SOTF(ijj)(1:4).ne.'OPAQ'.and.SOTF(ijj)(1:3).ne.'CFC'.and.
      &      SOTHER(ijj,1)(1:8).eq.'EXTERIOR') then
           ZTRANA(ICOMP)=ZTRANA(ICOMP)+SNA(ijj)
         endif
@@ -5225,8 +5232,8 @@ C returns an index to the matching zone.  If no match then returns 0.
 
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
-      COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
-      LOGICAL        CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
+      COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,CFCDBOK
+      LOGICAL        CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,CFCDBOK
       CHARACTER ZN*12
       character*(*) STRING
 

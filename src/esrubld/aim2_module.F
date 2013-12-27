@@ -24,7 +24,7 @@ C This file contains the module AIM2 which contains the data for
 C the following routines related to the AIM-2 infiltration model.
 C These routines are invoked prior to bps commencing its time-step simulation:
 
-C   AIM2_H2KDefaults	    Initializes generic house data 
+C   AIM2_H2KDefaults        Initializes generic house data 
 C   AIM2_READIN             Reads the data contained in the .aim file.
 C   AIM2_SETVARS            Controls calc of time-invariant data for AIM-2 model.
 C   AIM2_HOUSE_VOLUME       Calculates house volume.
@@ -210,8 +210,8 @@ C but rather treated with different approach.
 
 C File version (used in report functions)
       REAL :: fAIM2VersionNumber
-	
-C Initialization flag	
+
+C Initialization flag
       LOGICAL :: AIM2_Initialized 
 
 C Air flow when windows open (ACH)
@@ -351,7 +351,7 @@ C     Flags indicating whether "fireplace #1" and "fireplace #2" exist.
       LOGICAL :: H2K_fireplace1  
       LOGICAL :: H2K_fireplace2
         
-	
+
 C     Flags indicating presence of primary ("1" suffix) and secondary ("2" suffix)
 C     DHW systems.
       LOGICAL :: H2K_DHW1_exist
@@ -373,7 +373,7 @@ C     indoors (true) or outdoors (false).
 C     Flag indicating whether primary DHW system is a solar collector. Interface
 C     does not allow secondary system to be solar.
       LOGICAL :: H2K_DHW1_solar
-	
+
 
       END MODULE AIM2_H2K_DUMMY 
 C ********************************************************************************
@@ -1408,12 +1408,12 @@ C indicates the foundation type, but uses a different numbering
 C scheme than H2K's generic foundation description.
 
 C INPUTS:
-C	ifound  The index number of the foundation under consideration.
-C       H2K_found_type  The H2K foundation type flag.
-C       H2K_found_depth  The depth of the foundation as input by the user.
+C   ifound  The index number of the foundation under consideration.
+C   H2K_found_type  The H2K foundation type flag.
+C   H2K_found_depth  The depth of the foundation as input by the user.
 
 C OUTPUTS:
-C	j  The foundation type index corresponding to the `LeakDis' array.
+C   j  The foundation type index corresponding to the `LeakDis' array.
 C --------------------------------------------------------------------------------
 
       SUBROUTINE AIM2_SETJ(ifound,j)
@@ -2386,8 +2386,8 @@ C Common blocks
 
       IF (ALLOCATED(AIM2_infil_to_zones)) THEN
 C Debig AIM2      
-C        WRITE(*,*)'AIM2_infil_to_zones',AIM2_infil_to_zones      	
-	DEALLOCATE(AIM2_infil_to_zones, STAT=deallocatestatus)
+C        WRITE(*,*)'AIM2_infil_to_zones',AIM2_infil_to_zones
+        DEALLOCATE(AIM2_infil_to_zones, STAT=deallocatestatus)
         IF (deallocatestatus.NE.0) THEN
           CALL EDISP(IUOUT,
      &       ' Problem with deallocation of AIM2_infil_to_zones array')
@@ -2396,7 +2396,7 @@ C        WRITE(*,*)'AIM2_infil_to_zones',AIM2_infil_to_zones
 
       IF (ALLOCATED(AIM2_zone_infil)) THEN
 C Debig AIM2      
-C        WRITE(*,*)'AIM2_zone_infil',AIM2_zone_infil      	
+C        WRITE(*,*)'AIM2_zone_infil',AIM2_zone_infil
         DEALLOCATE(AIM2_zone_infil, STAT=deallocatestatus)
         IF (deallocatestatus.NE.0) THEN
           CALL EDISP(IUOUT,
@@ -2433,7 +2433,6 @@ C **********************************************************************
       blockdata OpenWindows
       implicit none 
       include "building.h"
-      include "net_flow.h"
       include "blc25_open_windows.h"
       
       data bWindowsOpen  / mcom * .false. /

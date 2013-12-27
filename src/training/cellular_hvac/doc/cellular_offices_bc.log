@@ -22,7 +22,7 @@ The model includes a plant network with 18 components from plantc.db1
  
 Databases associated with the model:
  standard pressure distr: pressc.db1
- materials              : ../dbs/cellular.materials.a
+ materials              : cellular.materialdb
  constructions          : ../dbs/cellular.constrdb
  standard plant comp    : plantc.db1
  standard event profiles: profiles.db1.a

@@ -6,7 +6,7 @@ Date: Mon Aug  1 10:11:58 2005
 For: 
 Project reference: 
 Notes: This is a variant of the standard side-by-side cellular offices
-which has been extended to support analysis of contaminate distribution.
+which has been extended to support analysis of contaminant distribution.
 _____________________________
 
 There are several model configuration files in this folder:
@@ -27,7 +27,7 @@ The site exposure is typical city centre and the ground reflectance is 0.20.
  
 Databases associated with the model:
  pressure distributions : pressc.db1
- materials              : ../dbs/cellular.materials.a
+ materials              : cellular.materialdb
  constructions          : ../dbs/cellular.constrdb
  plant components       : plantc.db1
  event profiles         : /usr/esru/esp-r/databases/profiles.db1.a
@@ -38,7 +38,7 @@ ID Zone         Volume|          Surface
    Name         m^3   | No. Opaque  Transp  ~Floor
  1 manager_a      40.5  13    62.2     9.8    13.5  manager describes cellular office on left
  2 manager_b      40.5  13    62.2     9.8    13.5  manager_b describes right office
- 3 coridor        18.3  14    45.8     9.0     8.4  coridor describes passage adjacent to offices
+ 3 corridor        18.3  14    45.8     9.0     8.4  corridor describes passage adjacent to offices
    all            99.   40    170.     29.     35.
  
 

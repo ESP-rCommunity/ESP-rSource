@@ -63,13 +63,13 @@ C                             data for validity.
       common/fctl4/iasocc(MCF,mcmp),nfsup(MCF)
 
       common/user/browse
-      COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
+      COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,CFCDBOK
       common/calena/calename,calentag(MDTY),calendayname(MDTY)
       character calename*32,calentag*12,calendayname*32
       common/caleni/nbdaytype,nbcaldays(MDTY),icalender(365)
       INTEGER nbdaytype,nbcaldays,icalender
      
-      LOGICAL        CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
+      LOGICAL        CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,CFCDBOK
 
 C mptback is pointer from position in display list to the control loop.
 C ipeerptbk is pointer from position in display to day type.
@@ -184,7 +184,7 @@ C If user wishes to deselect current control reset file name to
 C blank, call ezctli to clear commons and save the configuration file.
       if(iclkok.eq.1)then
         if(cfgok.and.(.NOT.browse))then
-	  call ezctli
+          call ezctli
           LCTLF='  '
           CALL EMKCFG('-',IER)
           call usrmsg(' ',' ','-')
@@ -213,7 +213,7 @@ C If the user supplied a blank file then this is the same as
 C de-referencing the file.
             call edisp(iuout,
      &        'A blank control file name returned. Clearing data.') 
-	    call ezctli
+            call ezctli
             LCTLF='  '
             CALL EMKCFG('-',IER)
             goto 44
@@ -223,7 +223,7 @@ C de-referencing the file.
 C If the user did not select a file then this is the same as
 C de-referencing the file. 
           call edisp(iuout,'No control file selected. Clearing data.') 
-	  call ezctli
+          call ezctli
           LCTLF='  '
           CALL EMKCFG('-',IER)
           goto 44
@@ -1818,7 +1818,7 @@ C string to remind the user.
               icsn(2)=nint(cm(ndx+1))
               icsn(3)=nint(cm(ndx+2))
               icsn(4)=nint(cm(ndx+3))
-	      icsn(5)=0
+              icsn(5)=0
               SSTR=' '
               call decodesensor(0,icsn,SSTR,SSTRB,ier)
               call edisp(iuout,SSTR)
@@ -1868,7 +1868,7 @@ C string to remind the user.
             icsn(2)=nint(cm(ndx+1))
             icsn(3)=nint(cm(ndx+2))
             icsn(4)=nint(cm(ndx+3))
-	    icsn(5)=0
+            icsn(5)=0
             SSTR=' '
             call decodesensor(0,icsn,SSTR,SSTRB,ier)
             call edisp(iuout,SSTR)
@@ -1938,7 +1938,7 @@ C string to remind the user.
               icsn(2)=nint(cm(ndx+1))
               icsn(3)=nint(cm(ndx+2))
               icsn(4)=nint(cm(ndx+3))
-	      icsn(5)=0
+              icsn(5)=0
               SSTR=' '
               call decodesensor(0,icsn,SSTR,SSTRB,ier)
               call edisp(iuout,SSTR)
@@ -1984,7 +1984,7 @@ C string to remind the user.
             icsn(2)=nint(cm(ndx+1))
             icsn(3)=nint(cm(ndx+2))
             icsn(4)=nint(cm(ndx+3))
-	    icsn(5)=0
+            icsn(5)=0
             SSTR=' '
             call decodesensor(0,icsn,SSTR,SSTRB,ier)
             call edisp(iuout,SSTR)
@@ -2220,7 +2220,7 @@ C string to remind the user.
               icsn(2)=nint(cm(ndx+1))
               icsn(3)=nint(cm(ndx+2))
               icsn(4)=nint(cm(ndx+3))
-	      icsn(5)=0
+              icsn(5)=0
               SSTR=' '
               call decodesensor(0,icsn,SSTR,SSTRB,ier)
               call edisp(iuout,SSTR)
@@ -2247,7 +2247,7 @@ C << air node to sense.
             icsn(2)=nint(cm(ndx+1))
             icsn(3)=nint(cm(ndx+2))
             icsn(4)=nint(cm(ndx+3))
-	    icsn(5)=0
+            icsn(5)=0
             SSTR=' '
             call decodesensor(0,icsn,SSTR,SSTRB,ier)
             call edisp(iuout,SSTR)
@@ -3361,8 +3361,8 @@ C support
 C Following controllers sense one or more (already defined) control
 C loops 
          PSALT(14)='Multi-sensor (senses loops)'
-         PSALT(17)='Idealised optimal start control'
-         PSALT(18)='Idealised optimal stop control'
+         PSALT(17)='Idealised optimum start control'
+         PSALT(18)='Idealised optimum stop control'
 
         write(outs,'(a,a)')' Current control law: ',
      &                      PSALT(IPCLAW(II,JJ,KK))
@@ -3993,7 +3993,7 @@ C Outside temperature compensation controller
           CALL EGETWR(HOLD,K,cm(13),1.,1.,'-','connection no. 2 ',IER)
           if(ier.ne.0)goto 131
 
-C Optimal start controller
+C Idealised optimum start controller
         elseif(IPCLAW(II,JJ,KK).eq.17)then
           helptopic='ideal_optimal_start'
           call gethelptext(helpinsub,helptopic,nbhelp)
@@ -4002,7 +4002,7 @@ C Optimal start controller
           call edisp(iuout,HOLD)
           CALL EASKI(NCLP,' ',' No. of control loops to sense ',
      &      2,'-',4,'-',2,'no. of misc data items',IER,nbhelp)
-          cm(1)=real(NCLP+2)
+          cm(1)=real(NCLP+3)
           call edisp(iuout,' ')
           call edisp(iuout,'current control parameters are:')
           call edisp(iuout,' sensed control loop(s)')
@@ -4025,10 +4025,12 @@ C Optimal start controller
           write(hold,'(2f5.2)')cm(nclp+2),cm(nclp+3)
           CALL EASKS(HOLD,
      &    'period no. to optimise, time to come up to temperature',
-     &    '(see help)',70,HOLD,'ideal optimum start ctrlr',IER,nbhelp)
+     &    'overriding loop number if any (zero otherwise) (see help)',
+     &    70,HOLD,'ideal optimum start ctrlr',IER,nbhelp)
           K=0
           CALL EGETWR(HOLD,K,cm(NCLP+2),1.,1.,'-','period no.',IER)
           CALL EGETWR(HOLD,K,cm(NCLP+3),1.,1.,'-','time',IER)
+          CALL EGETWR(HOLD,K,cm(NCLP+4),1.,1.,'-','overriding loop',IER)
           IF(IER.NE.0)GOTO 112
 
 C Get sensor and actuator detail from loop that is to be optimised
@@ -4037,7 +4039,7 @@ C Get sensor and actuator detail from loop that is to be optimised
             IPSN(II,IDIN)=IPSN(IOTHER,IDIN)
  113      CONTINUE
 
-C Optimal stop controller
+C Idealised optimum stop controller
         elseif(IPCLAW(II,JJ,KK).eq.18)then
           helptopic='ideal_optimal_stop'
           call gethelptext(helpinsub,helptopic,nbhelp)
@@ -4046,7 +4048,7 @@ C Optimal stop controller
           call edisp(iuout,HOLD)
           CALL EASKI(NCLP,' ',' No. of control loops to sense ',
      &      2,'-',4,'-',2,'no. of misc data items',IER,nbhelp)
-          cm(1)=real(NCLP+2)
+          cm(1)=real(NCLP+3)
           call edisp(iuout,' ')
           call edisp(iuout,'current control parameters are:')
           call edisp(iuout,' sensed control loop(s)')
@@ -4070,11 +4072,12 @@ C Optimal stop controller
           write(hold,'(2f5.2)')cm(nclp+2),cm(nclp+3)
           CALL EASKS(HOLD,
      &    'period no. to optimise, acceptable temperature revision at ',
-     &    'the end of this period (see help)',
+     &    'the end of this period, overriding loop (zero if absent)',
      &    70,HOLD,'ideal optimum stop ctrlr',IER,nbhelp)
           K=0
           CALL EGETWR(HOLD,K,cm(NCLP+2),1.,1.,'-','period no.',IER)
           CALL EGETWR(HOLD,K,cm(NCLP+3),1.,1.,'-','time',IER)
+          CALL EGETWR(HOLD,K,cm(NCLP+4),1.,1.,'-','time',IER)
           IF(IER.NE.0)GOTO 212
 
 C Get sensor and actuator detail from loop that is to be optimised
@@ -5790,9 +5793,9 @@ C Build up text strings for the menu.
       elseif(icfoc.eq.6)then
         helptopic='actlocation_CFC'
         call gethelptext(helpinsub,helptopic,nbhelp)
-        WRITE(VERT(1),'(a)')'a shading layer ON/OFF state          '
-        WRITE(VERT(2),'(a)')'b slat angle of slat-type shade       '
-        WRITE(VERT(3),'(a)')'c shade ON/OFF & slat angle (schedule)'
+        WRITE(VERT(1),'(a)')'a shading layer ON/OFF                '
+        WRITE(VERT(2),'(a)')'b slat angle of Venetian blind        '
+        WRITE(VERT(3),'(a)')'c shade ON/OFF (& slat angle) schedule'
         WRITE(VERT(4),'(a)')'  ------------------------------------'
       endif
       DO 10 L=1,ILEN
@@ -6009,7 +6012,7 @@ C Ask for CFC type in selected zone.
 C Check that selected CFC type contains a shading layer.
         shd_xst=.false.
         do 1001 ilayer=1,ncfc_el(ian2, ian3)
-          if(icfcltp(ian2,ian3,ilayer).ge.2)shd_xst=.true.
+          if(icfcltp(ian2,ian3,ilayer).gt.iGlazing)shd_xst=.true.
  1001   continue 
         if(.not.shd_xst)then
             SELECT=.false.
@@ -6105,7 +6108,7 @@ C if isn1.eq.-3 then no supplemental.
 
       elseif(ivert.eq.2.and.(icfoc.eq.6))then
 C Complex Fenestration      
-C       ian1 = actuator type (0 - shade ON/OFF, 1 - slat angle 2- both (for schedule) )
+C       ian1 = actuator type (0 - shade ON/OFF, 1 - slat angle 2- schedule )
 C       ian2 = zone index
 C       ian3 = CFC type index for selected zone
 
@@ -6125,11 +6128,11 @@ C Ask for CFC type in selected zone.
 C Check that slat-type shade exists for selected CFC type.
         vb_xst=.false.
         do 1002 ilayer=1,ncfc_el(ian2, ian3)
-          if(icfcltp(ian2,ian3,ilayer).ge.2)vb_xst=.true.
+          if(icfcltp(ian2,ian3,ilayer).eq.iVenBlind)vb_xst=.true.
  1002   continue 
         if(.not.vb_xst)then
             SELECT=.false.
-            CALL USRMSG(' Slat type shading layer not found, ',
+            CALL USRMSG(' Venetian blind shading layer not found, ',
      &       'please select another CFC type','W')
      
             CALL EPMENRC
@@ -6156,14 +6159,14 @@ C Ask for the specific zone.
 C Ask for CFC type in selected zone.   
         call askCFCtype(ian2,ian3,IER)
       
-C Check that slat-type shade exists for selected CFC type.
-        vb_xst=.false.
+C Check that shade exists for selected CFC type.
+        shd_xst=.false.
         do 1003 ilayer=1,ncfc_el(ian2, ian3)
-          if(icfcltp(ian2,ian3,ilayer).ge.2)vb_xst=.true.
+          if(icfcltp(ian2,ian3,ilayer).gt.iGlazing)shd_xst=.true.
  1003   continue 
-        if(.not.vb_xst)then
+        if(.not.shd_xst)then
             SELECT=.false.
-            CALL USRMSG(' Slat type shading layer not found, ',
+            CALL USRMSG(' Shading layer not found, ',
      &       'please select another CFC type','W')
      
             CALL EPMENRC

@@ -593,7 +593,7 @@ C IMFCTP is fluid through corresponding mfs connection (1=air, 2=water)
             IF((IMFCTP.EQ.1.AND.
      &          ICONTP(IPCON).NE.11.AND.ICONTP(IPCON).NE.21).OR.
      &         (IMFCTP.EQ.2.AND.
-     &          ICONTP(IPCON).NE.10.AND.ICONTP(IPCON).NE.20)) GOTO 992
+     &          ICONTP(IPCON).NE.10.AND.ICONTP(IPCON).NE.20)) continue !GOTO 992
          END IF
    84    CONTINUE
       END IF
@@ -714,14 +714,14 @@ C Note that PCONDR is set to 1 in case fluid mass flow solver active
             call edisp(iuout,outs)
   905       format(' exit mass diversion ratio erroneous : ',f10.5)
             GOTO 999
-         ELSE IF(ZDR(IPNOD).GT.0..AND.ZDR(IPNOD).LT.1.) THEN
+         ELSE IF(ZDR(IPNOD).GT.0..AND.(ZDR(IPNOD)-1.).gT.1.e-4) THEN
             write(outs,906) ipcmp,icnod
             call edisp(iuout,outs)
   906       format(' MZPMXT warning: component ',i5,' node ',i5)
             write(outs,907) zdr(ipnod)
             call edisp(iuout,outs)
   907       format(' exit mass diversion ratios do not summate',
-     &                     ' to unity, but ',f10.5)
+     &                     ' to unity, but ',f15.10)
          ELSE IF(ZDR(IPNOD).LT.SMALL.AND.ICNOD.NE.1) THEN
             write(outs,908) ipcmp,icnod
             call edisp(iuout,outs)

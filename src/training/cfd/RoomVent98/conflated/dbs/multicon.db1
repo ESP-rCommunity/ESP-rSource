@@ -1,5 +1,5 @@
 # composite construction db defined in ./multicon.db1
-# based on materials db /usr/esru/esp-r/databases/constr.db1.a
+# based on materials db material.db4.a
    23     # no of composites 
 # layers  description   optics name   symmetry tag
     3    d_glz         TRAN  DCF7671_06nb  SYMMETRIC     

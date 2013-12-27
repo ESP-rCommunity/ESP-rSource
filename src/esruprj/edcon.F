@@ -64,9 +64,9 @@ C geometry.h provides commons G0/G2/c20/precz.
      &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS,ITPPSW
       COMMON/RAY3/MODIFY,MODLEN,MODBND
       common/user/browse
-      COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
+      COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,CFCDBOK
 
-      LOGICAL OK,DOK,CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
+      LOGICAL OK,DOK,CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,CFCDBOK
       LOGICAL MODIFY,MODLEN,MODBND,browse,savereturn
 
       DIMENSION VERT(35),libcmt(MTMC)
@@ -162,31 +162,30 @@ C Read in the related geometry file into common.
 
 C Scan through the geometry file and if more than 3 construction
 C attributes have not been set then advise the user to use the
-C geometry facility first. But not if we're running in silent mode!
-      if ( .not. quiet ) then 
-        ig=0
-        DO 11 I=1,NZSUR(icomp)
-          icn1=izstocn(icomp,i)
-          if(icn1.eq.0)then
-            ig=ig+1
-          else
-            if(SSMLCN(icn1)(1:4).EQ.'UNKN')ig=ig+1
-          endif
-  11    CONTINUE
-        if(ig.gt.3)then
-          helptopic='many_not_attributed'
-          call gethelptext(helpinsub,helptopic,nbhelp)
-          CALL PHELPD('unknowns atrib in constr',nbhelp,'-',0,0,IER)
-          CALL EASKAB(outs,'Options:',
+C geometry facility first.
+      ig=0
+      DO 11 I=1,NZSUR(icomp)
+        icn1=izstocn(icomp,i)
+        if(icn1.eq.0)then
+          ig=ig+1
+        else
+          if(SSMLCN(icn1)(1:4).EQ.'UNKN')ig=ig+1
+        endif
+  11  CONTINUE
+      if(ig.gt.3)then
+        helptopic='many_not_attributed'
+        call gethelptext(helpinsub,helptopic,nbhelp)
+        CALL PHELPD('unknowns atrib in constr',nbhelp,'-',0,0,IER)
+        CALL EASKAB(outs,'Options:',
      &    'supply construction attributes now',
      &    'cancel',IWA,nbhelp)
-          if(IWA.EQ.1)then
-            continue
-          else
-            return
-          endif
+        if(IWA.EQ.1)then
+          continue
+        else
+          return
         endif
-      endif 
+      endif
+
 C On entry display the current zone. Reset all surface lines to std.
       nzg=1
       nznog(1)=ICOMP
@@ -207,10 +206,8 @@ C On entry display the current zone. Reset all surface lines to std.
       endif
 
 C Read construction file into common.
-      if ( .not. quiet ) then 
-        helptopic='pre_zone_constructions'
-        call gethelptext(helpinsub,helptopic,nbhelp)
-      endif 
+      helptopic='pre_zone_constructions'
+      call gethelptext(helpinsub,helptopic,nbhelp)
   42  CONTINUE
       IF(again.or.LTHRM(ICOMP)(1:1).EQ.' '.OR.
      &            LTHRM(ICOMP)(1:7).EQ.'UNKNOWN')THEN
@@ -302,7 +299,7 @@ C        write(6,*) icn1,SSOTF(icn1),ITMCFL(ICOMP,IS),inoti
           endif
         endif
         IF(SSOTF(icn1)(1:4).NE.'OPAQ'.AND.
-     &     SSOTF(icn1)(1:4).NE.'CFC ')TFOUND=.TRUE.
+     &     SSOTF(icn1)(1:3).NE.'CFC')TFOUND=.TRUE.
         IF(ITMCFL(ICOMP,IS).GT.0)TFOUND=.TRUE.
   60  CONTINUE
       IF(.NOT.TFOUND)THEN
@@ -361,7 +358,7 @@ C Now, check to see if there are any CFC surfaces and assemble ICFCFL index.
       CFCFOUND=.FALSE.
       DO 611 IS=1,NZSUR(icomp)
         icn1=izstocn(icomp,is)
-        if(SSOTF(icn1)(1:4).EQ.'CFC ')then
+        if(SSOTF(icn1)(1:3).EQ.'CFC')then
             CFCFOUND=.TRUE.
             icfcfl(icomp,is)=1 !assign 1 by default
         else
@@ -512,7 +509,6 @@ C various databases.
         call gethelptext(helpinsub,helptopic,nbhelp)
         CALL PHELPD('zone geom file section',nbhelp,'-',0,0,IER)
       ELSEIF(IVERT.EQ.(MVERT-2))THEN
-
 C Save data and then return to menu.
          savereturn=.true.
          goto 43
@@ -532,7 +528,7 @@ C TMC details, check that something transparent first.
         DO 71 IS=1,NZSUR(icomp)
           icn1=izstocn(icomp,is)
           IF(SSOTF(icn1)(1:4).NE.'OPAQ'.AND.
-     &      SSOTF(icn1)(1:4).NE.'CFC ')TFOUND=.TRUE.
+     &      SSOTF(icn1)(1:3).NE.'CFC')TFOUND=.TRUE.
   71    CONTINUE
         IF(TFOUND)THEN
           CALL EPMENSV
@@ -618,7 +614,7 @@ C If any of the surfaces are transparent save this info.
       DO 61 IS=1,NZSUR(icomp)
         icn1=izstocn(icomp,is)
         IF(SSOTF(icn1)(1:4).NE.'OPAQ'.AND.
-     &            SSOTF(icn1)(1:4).NE.'CFC ')TFOUND=.TRUE.
+     &            SSOTF(icn1)(1:3).NE.'CFC')TFOUND=.TRUE.
         IF(ITMCFL(ICOMP,IS).GT.0)TFOUND=.TRUE.
   61  CONTINUE
       IF(TFOUND)THEN
@@ -650,10 +646,11 @@ C If any of the surfaces are CFCs then save this info.
       CFCFOUND=.FALSE.
       DO 612 IS=1,NZSUR(icomp)
         icn1=izstocn(icomp,is)
-        IF(SSOTF(icn1)(1:4).EQ.'CFC ')CFCFOUND=.TRUE.
+        IF(SSOTF(icn1)(1:3).EQ.'CFC')CFCFOUND=.TRUE.
         IF(icfcfl(ICOMP,IS).GT.0)CFCFOUND=.TRUE.
  612  CONTINUE
-      IF(CFCFOUND.and.icfc(icomp).ne.0)THEN
+      IF(CFCFOUND)THEN
+        icfc(icomp) = 1
         CALL makeCFCfile(ICOMP,IER)
         IF(IER.EQ.1)THEN
             icfc(icomp)=0
@@ -724,6 +721,7 @@ C IER=1 problem. Make use of construction information in common MLC.
 C esprdbfile.h supplies the following:
 C LFMAT,IFMAT,LFMUL,IFMUL (for materials and constructions database)
 #include "material.h"
+#include "CFC_common.h"
 
 C      integer lnblnk  ! function definition
 
@@ -753,6 +751,10 @@ C Material properties.
 
       LOGICAL closemat1,closemat2
 
+C CFClayers db properties
+      integer cfcarrayindex
+      logical closecfc1
+
       DIMENSION ISD(25)
       CHARACTER ISD*56
       CHARACTER KEY*1,HOLD*48,TOPTIC*12,optic*12
@@ -780,13 +782,25 @@ C with ier=1.
         return
       endif
 
+C Establish if CFC layer data arrays have been filled. If not return
+C with ier=1.
+      call eclose(cfcver,1.1,0.01,closecfc1)
+      if(closecfc1)then
+        continue
+      else
+        call usrmsg('The CFC layer arrays are incomplete so editing',
+     &    'of surface attributes not allowed.','W')
+        ier=1
+        return
+      endif
+
 C Setup text for menu.
    12 INODA=-3
       icn1=izstocn(icomp,isur)
    13 write(ISD(1),'(A,A)') '  surface name    : ',SSNAME(icn1)
       if(SSOTF(icn1)(1:4).eq.'OPAQ'.or.
      &   SSOTF(icn1)(1:4).eq.'TRAN'.or.
-     &   SSOTF(icn1)(1:4).eq.'CFC ')then
+     &   SSOTF(icn1)(1:3).eq.'CFC')then
         write(ISD(2),'(A,A)') 'a surface type    : ',SSOTF(icn1)(1:12)
       else
         WRITE(ISD(2),'(A,A)') 'a optical set name: ',SSOTF(icn1)(1:12)
@@ -801,11 +815,16 @@ C Setup text for menu.
       endif
       ISD(5)='  ______________________________________ '
 
-C Surface properties.
-      WRITE(ISD(6),22)EMISI(ISUR),EMISE(ISUR)
+C Surface properties. If CFC, don't write out emiss and abs.
+      IF(SSOTF(icn1)(1:3).EQ.'CFC') THEN
+        ISD(6)='                                          '
+        ISD(7)='                                          '
+      ELSE
+        WRITE(ISD(6),22)EMISI(ISUR),EMISE(ISUR)
    22 FORMAT('c emissivity   inside face: ',F5.3,' other face: ',F5.3)
-      WRITE(ISD(7),23)ABSI(ISUR),ABSE(ISUR)
+        WRITE(ISD(7),23)ABSI(ISUR),ABSE(ISUR)
    23 FORMAT('d absorptivity inside face: ',F5.3,' other face: ',F5.3)
+      ENDIF
       ISD(8)='  ______________________________________ '
       M=8
 
@@ -815,9 +834,16 @@ C Find composite which matches.
 
 C For each layer.
       M=M+1
-      ISD(M)=' lyr|Material     |Thick|Conduc-|Density|Specific|Air  '
-      M=M+1
-      ISD(M)='    |name         |metre|tivity |       |heat    |gap R'
+      IF(SSOTF(icn1)(1:4).EQ.'CFC2') THEN
+        ISD(M)=' lyr|CFCl|Thick|Conduc-|Density|Specific'
+        M=M+1
+        ISD(M)='    |db  |metre|tivity |       |heat    '
+      ELSE
+        ISD(M)=' lyr|Mat|Thick|Conduc-|Density|Specific|Air  '
+        M=M+1
+        ISD(M)='    |db |metre|tivity |       |heat    |gap R'
+      ENDIF
+
       DO 45 IE=1,NE(ISUR)
         M=M+1
         CALL EMKEY(M,KEY,IER)
@@ -829,26 +855,43 @@ C Multilayer construction has not been defined.
  346      FORMAT(A1,I4,'  --   ',F6.3,3F8.2)
         ELSE
 
-          matarrayindex=IPRMAT(ICF,IE)   ! which materials array index
-          if(matopaq(matarrayindex)(1:1).eq.'g'.or.
-     &       matopaq(matarrayindex)(1:1).eq.'h'.or.
-     &       matarrayindex.eq.0)then
+          check_CFC2_or_MLC:
+     &    IF(SSOTF(icn1)(1:4).EQ.'CFC2') THEN
+            cfcarrayindex=ITMCFCDB(ICF,IE)
+
+            if(cfcarrayindex.eq.0)then
+              WRITE(ISD(M),'(a1,i3,a)')KEY,IE,
+     &          ' confused CFC layer reference'
+            else
+              WRITE(ISD(M),44)KEY,IE,cfcitmindex(ITMCFCDB(ICF,IE)),
+     &          THK(ISUR,IE),CON(ISUR,IE),DEN(ISUR,IE),SHT(ISUR,IE)
+  44          FORMAT(A1,I3,I4,F6.3,3F8.2)
+            endif
+
+          ELSE ! check_CFC2_or_MLC
+
+            matarrayindex=IPRMAT(ICF,IE)   ! which materials array index
+            if(matopaq(matarrayindex)(1:1).eq.'g'.or.
+     &         matopaq(matarrayindex)(1:1).eq.'h'.or.
+     &         matarrayindex.eq.0)then
 
 C Find air gap resistance for this layer. 
-            DO IGG=1,NAIRG(ISUR)
-              IF(IPAIRG(ISUR,IGG).EQ.IE)R=RAIRG(ISUR,IGG)
-              WRITE(ISD(M),48)KEY,IE,' gap          ',
-     &          THK(ISUR,IE),CON(ISUR,IE),DEN(ISUR,IE),SHT(ISUR,IE),R
-  48          FORMAT(A1,I3,A,F6.3,3F8.2,F6.2)
-            ENDDO
-          elseif(matarrayindex.lt.0)then
-            WRITE(ISD(M),'(a1,i3,a)')KEY,IE,
-     &        ' confused material reference'
-          else
-            WRITE(ISD(M),46)KEY,IE,matname(matarrayindex)(1:12),
-     &        THK(ISUR,IE),CON(ISUR,IE),DEN(ISUR,IE),SHT(ISUR,IE)
-  46        FORMAT(A1,I3,1x,a,1x,F6.3,3F8.2)
-          endif
+              DO IGG=1,NAIRG(ISUR)
+                IF(IPAIRG(ISUR,IGG).EQ.IE)R=RAIRG(ISUR,IGG)
+                WRITE(ISD(M),48)KEY,IE,IPR(ICF,IE),THK(ISUR,IE),
+     &            CON(ISUR,IE),DEN(ISUR,IE),SHT(ISUR,IE),R
+  48            FORMAT(A1,I3,I4,F6.3,3F8.2,F6.2)
+              ENDDO
+            elseif(matarrayindex.lt.0)then
+              WRITE(ISD(M),'(a1,i3,a)')KEY,IE,
+     &          ' confused material reference'
+            else
+              WRITE(ISD(M),46)KEY,IE,IPR(ICF,IE),THK(ISUR,IE),
+     &          CON(ISUR,IE),DEN(ISUR,IE),SHT(ISUR,IE)
+  46          FORMAT(A1,I3,I4,F6.3,3F8.2)
+            endif       
+          ENDIF check_CFC2_or_MLC
+
         ENDIF
   45  CONTINUE
       M=M+1
@@ -898,7 +941,7 @@ C Additional option to choose CFC type.
           ino=2
         elseif(SSOTF(icn1)(1:4).eq.'UNKN')then
           ino=1
-        elseif(SSOTF(icn1)(1:4).eq.'CFC ')then
+        elseif(SSOTF(icn1)(1:3).eq.'CFC')then
           ino=3
         else
           ino=2
@@ -915,7 +958,11 @@ C Additional option to choose CFC type.
         ELSEIF(ino.EQ.2)THEN
           SSOTF(icn1)='TRAN'
         ELSEIF(ino.EQ.3)THEN
-          SSOTF(icn1)='CFC '
+          if(SSOTF(icn1)(1:4).eq.'CFC ')then
+            SSOTF(icn1)='CFC '
+          elseif(SSOTF(icn1)(1:4).eq.'CFC2')then
+            SSOTF(icn1)='CFC2'
+          endif
         ELSEIF(ino.EQ.4)THEN
           GOTO 12
         ENDIF
@@ -945,6 +992,10 @@ C the OPAQUE/TRANSPARENT flag as well.
             SSOTF(icn1)='CFC '
             ITMCFL(ICOMP,ISUR)=0
           endif
+          if(mlctype(IC)(1:4).EQ.'CFC2')then
+            SSOTF(icn1)='CFC2'
+            ITMCFL(ICOMP,ISUR)=0
+          endif
         ELSE
 
 C User selected UNKNOWN so reset variables
@@ -963,43 +1014,70 @@ C gaps in preparation of scan.
 
 C Gather information about each layer via materials data structures.
         DO 223, IL=1,LAYERS(IC)
-          matarrayindex=IPRMAT(IC,IL)   ! which materials array index
+
+          check_CFC2_or_MLC_2:
+     &    IF(SSOTF(icn1)(1:4).EQ.'CFC2') THEN
+
+            cfcarrayindex=ITMCFCDB(IC,IL)
+            if(cfcarrayindex.gt.0)then
+              DBCON=cfcdbcon(cfcarrayindex)
+              DBDEN=cfcdbden(cfcarrayindex)
+              DBSHT=cfcdbsht(cfcarrayindex)
+              if(CFCshdtp(cfcarrayindex).eq.iGasGap)then
+                NAIRG(ISUR)=NAIRG(ISUR)+1
+                IPAIRG(ISUR,NAIRG(ISUR))=IL
+C...............Gap resistance is not used for CFCs, but gap layer position
+C...............information is, so set to arbitrary non-zero value.
+                RAIRG(ISUR,NAIRG(ISUR))=0.001          
+              endif
+            endif
+
+C CFC emissivity and absorptivity calclated elsewhere so set to 0.0
+            E=0.0
+            A=0.0
+
+          ELSE ! check_CFC2_or_MLC_2
+
+            matarrayindex=IPRMAT(IC,IL)   ! which materials array index
 
 C And if matarrayindex is zero then resetn dbcon dbden dbsht.
-          if(matopaq(matarrayindex)(1:1).eq.'g'.or.
-     &       matopaq(matarrayindex)(1:1).eq.'h'.or.
-     &       matarrayindex.eq.0)then
-            DBCON=0.0; DBDEN=0.0; DBSHT=0.0
-            E=0.99; A=0.99
+            if(matopaq(matarrayindex)(1:1).eq.'g'.or.
+     &         matopaq(matarrayindex)(1:1).eq.'h'.or.
+     &         matarrayindex.eq.0)then
+              DBCON=0.0; DBDEN=0.0; DBSHT=0.0
+              E=0.99; A=0.99
 
 C Update array NAIRG.
-            if(NAIRG(ISUR)+1.gt.MGP)then
-              call usrmsg(
+              if(NAIRG(ISUR)+1.gt.MGP)then
+                call usrmsg(
      &          'As defined, this composite contains more air gaps',
      &          ' then allowed - please change your description','W')
-            else
-              NAIRG(ISUR)=NAIRG(ISUR)+1
-              IPAIRG(ISUR,NAIRG(ISUR))=IL
-              IF(SSVFC(icn1)(1:4).EQ.'VERT')THEN
-                 RAIRG(ISUR,NAIRG(ISUR))=DRAIR(IC,IL,1)
-              ELSEIF(SSVFC(icn1)(1:4).EQ.'FLOR'.OR.
-     &               SSVFC(icn1)(1:4).EQ.'CEIL')THEN
-                 RAIRG(ISUR,NAIRG(ISUR))=DRAIR(IC,IL,2)
-              ELSE
-                 RAIRG(ISUR,NAIRG(ISUR))=DRAIR(IC,IL,3)
-              ENDIF
-            endif
-          elseif(matarrayindex.lt.0)then
-            call edisp(iuout,
+              else
+                NAIRG(ISUR)=NAIRG(ISUR)+1
+                IPAIRG(ISUR,NAIRG(ISUR))=IL
+                IF(SSVFC(icn1)(1:4).EQ.'VERT')THEN
+                   RAIRG(ISUR,NAIRG(ISUR))=DRAIR(IC,IL,1)
+                ELSEIF(SSVFC(icn1)(1:4).EQ.'FLOR'.OR.
+     &                 SSVFC(icn1)(1:4).EQ.'CEIL')THEN
+                   RAIRG(ISUR,NAIRG(ISUR))=DRAIR(IC,IL,2)
+                ELSE
+                   RAIRG(ISUR,NAIRG(ISUR))=DRAIR(IC,IL,3)
+                ENDIF
+              endif
+            elseif(matarrayindex.lt.0)then
+              call edisp(iuout,
      &  'One material reference is confused or has a duplicate name.')
-            goto 12
-          else
-            DBCON=matdbcon(matarrayindex)
-            DBDEN=matdbden(matarrayindex)
-            DBSHT=matdbsht(matarrayindex)
-            E=matdbine(matarrayindex)
-            A=matdbina(matarrayindex)
-          endif
+              goto 12
+            else
+              DBCON=matdbcon(matarrayindex)
+              DBDEN=matdbden(matarrayindex)
+              DBSHT=matdbsht(matarrayindex)
+              E=matdbine(matarrayindex)
+              A=matdbina(matarrayindex)
+            endif
+
+          ENDIF check_CFC2_or_MLC_2
+
           IF(IER.EQ.1)RETURN
 
           CON(ISUR,IL)=DBCON
@@ -1016,23 +1094,25 @@ C Assign surface properties.
   223   CONTINUE
         MODGEO=.TRUE.
       ELSEIF(INODA.EQ.6)THEN
-
+        IF(SSOTF(icn1)(1:3).NE.'CFC') THEN
 C Emissivity.
 C << todo take advantage of the out/in data within the material arrays. >>
-        CALL EASKR(EMISI(ISUR),' ','Inside emissivity  ?',
+          CALL EASKR(EMISI(ISUR),' ','Inside emissivity  ?',
      &    0.01,'W',0.99,'W',0.8,'inside emissivity',IER,nbhelp)
-        CALL EASKR(EMISE(ISUR),' ','Outside emissivity ?',
+          CALL EASKR(EMISE(ISUR),' ','Outside emissivity ?',
      &    0.01,'W',0.99,'W',0.8,'outside emissivity',IER,nbhelp)
-        MODCON=.TRUE.
+          MODCON=.TRUE.
+        ENDIF
       ELSEIF(INODA.EQ.7)THEN
-
+        IF(SSOTF(icn1)(1:3).NE.'CFC') THEN
 C Absorptivity.
 C << todo take advantage of the out/in data within the material arrays. >>
-        CALL EASKR(ABSI(ISUR),' ',' Inside absorptivity ? ',
+          CALL EASKR(ABSI(ISUR),' ',' Inside absorptivity ? ',
      &    0.01,'W',0.99,'W',0.8,'inside absorptivity',IER,nbhelp)
-        CALL EASKR(ABSE(ISUR),' ',' Outside absorptivity? ',
+          CALL EASKR(ABSE(ISUR),' ',' Outside absorptivity? ',
      &    0.01,'W',0.99,'W',0.8,'outside absorptivity',IER,nbhelp)
-        MODCON=.TRUE.
+          MODCON=.TRUE.
+        ENDIF
       ELSEIF(INODA.GT.10.AND.INODA.LT.IPT1)THEN
 
 C Edit thermophysical properties. Inform caviats on
@@ -1086,6 +1166,7 @@ C zone construction file with minimum intervention by the user.
 #include "geometry.h"
 #include "esprdbfile.h"
 #include "material.h"
+#include "CFC_common.h"
 
 C Parameters
       integer icomp  ! zone number
@@ -1103,13 +1184,17 @@ C Parameters
       COMMON/T2/CON(MS,ME),DEN(MS,ME),SHT(MS,ME),THK(MS,ME)
 
       COMMON/T4/EMISI(MS),EMISE(MS),ABSI(MS),ABSE(MS)
-      COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
+      COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,CFCDBOK
 
 C Material properties.
       integer matarrayindex ! the indes within matdatarray
 
-      LOGICAL CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
+      LOGICAL CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,CFCDBOK
       logical closemat1,closemat2
+
+C CFClayer db properties
+      integer cfcarrayindex
+      logical closecfc1
 
       CHARACTER outs*124
 
@@ -1151,6 +1236,18 @@ C with ier=1.
         return
       endif
 
+C Establish if CFC layer data arrays have been filled. If not return
+C with ier=1.
+      call eclose(cfcver,1.1,0.01,closecfc1)
+      if(closecfc1)then
+        continue
+      else
+        call usrmsg('The CFC layer arrays are incomplete so zone',
+     &    'construction attributes cannot be written.','W')
+        ier=1
+        return
+      endif
+
  244  DO 10 IS=1,NZSUR(icomp)
         ioc=IZSTOCN(ICOMP,is)
         if(ioc.eq.0)then
@@ -1181,6 +1278,10 @@ C << The logic for dealing with TRAN/OPAQ needs to be updated! >>
               SSOTF(ioc)='CFC '
               ITMCFL(ICOMP,IS)=0
             endif
+            if(mlctype(ISEL)(1:4).EQ.'CFC2')then
+              SSOTF(ioc)='CFC2'
+              ITMCFL(ICOMP,IS)=0
+            endif
 
 C Remember this change by saving the file.
             MODGEO=.TRUE.
@@ -1207,46 +1308,71 @@ C the material was not found and must be asked for.
 
 C Gather information about each layer. Read in the materials info.
         DO 23, IL=1,LAYERS(IC)
-          matarrayindex=IPRMAT(IC,IL)   ! which materials array index
+
+          check_CFC2_or_MLC:
+     &    If(SSOTF(ioc)(1:4).EQ.'CFC2')THEN      
+            
+            cfcarrayindex=ITMCFCDB(IC,IL)
+            if(cfcarrayindex.gt.0)then
+              DBCON=cfcdbcon(cfcarrayindex)
+              DBDEN=cfcdbden(cfcarrayindex)
+              DBSHT=cfcdbsht(cfcarrayindex)
+              if(CFCshdtp(cfcarrayindex).eq.iGasGap)then
+                NAIRG(IS)=NAIRG(IS)+1
+                IPAIRG(IS,NAIRG(IS))=IL
+C...............Gap resistance is not used for CFCs, but gap layer position
+C...............information is, so set to arbitrary non-zero value.
+                RAIRG(IS,NAIRG(IS))=0.001          
+              endif
+            endif
+
+C CFC emissivity and absorptivity calclated elsewhere so set to 0.0
+            E=0.0
+            A=0.0
+
+          ELSE ! check_CFC2_or_MLC
+            matarrayindex=IPRMAT(IC,IL)   ! which materials array index
 
 C And if matarrayindex is zero then resetn dbcon dbden dbsht.
-          if(matopaq(matarrayindex)(1:1).eq.'g'.or.
-     &       matopaq(matarrayindex)(1:1).eq.'h'.or.
-     &       matarrayindex.eq.0)then
-            DBCON=0.0; DBDEN=0.0; DBSHT=0.0
-            E=0.99; A=0.99
+            if(matopaq(matarrayindex)(1:1).eq.'g'.or.
+     &         matopaq(matarrayindex)(1:1).eq.'h'.or.
+     &         matarrayindex.eq.0)then
+              DBCON=0.0; DBDEN=0.0; DBSHT=0.0
+              E=0.99; A=0.99
 
 C Debug            write(6,*) 'EDZCON',ic,il,DRAIR(IC,IL,1),
 C     &        DRAIR(IC,IL,2),DRAIR(IC,IL,3)
 
 C Deal with air gap resistance if layer is a gap.
-            if(NAIRG(IS)+1.gt.MGP)then
-              call usrmsg(
+              if(NAIRG(IS)+1.gt.MGP)then
+                call usrmsg(
      &          'This construction contains more air gaps than',
      &          'allowed - please change your description','W')
+              else
+                NAIRG(IS)=NAIRG(IS)+1
+                IPAIRG(IS,NAIRG(IS))=IL
+                IF(SSVFC(ioc)(1:4).EQ.'VERT')THEN
+                  RAIRG(IS,NAIRG(IS))=DRAIR(IC,IL,1)
+                ELSEIF(SSVFC(ioc)(1:4).EQ.'FLOR'.OR.
+     &                 SSVFC(ioc)(1:4).EQ.'CEIL')THEN
+                  RAIRG(IS,NAIRG(IS))=DRAIR(IC,IL,2)
+                ELSE
+                  RAIRG(IS,NAIRG(IS))=DRAIR(IC,IL,3)
+                ENDIF
+              endif
+            elseif(matarrayindex.lt.0)then
+              DBCON=0.0; DBDEN=0.0; DBSHT=0.0
+              E=0.99; A=0.99
+              continue  ! can't deal with a confused material
             else
-              NAIRG(IS)=NAIRG(IS)+1
-              IPAIRG(IS,NAIRG(IS))=IL
-              IF(SSVFC(ioc)(1:4).EQ.'VERT')THEN
-                RAIRG(IS,NAIRG(IS))=DRAIR(IC,IL,1)
-              ELSEIF(SSVFC(ioc)(1:4).EQ.'FLOR'.OR.
-     &               SSVFC(ioc)(1:4).EQ.'CEIL')THEN
-                RAIRG(IS,NAIRG(IS))=DRAIR(IC,IL,2)
-              ELSE
-                RAIRG(IS,NAIRG(IS))=DRAIR(IC,IL,3)
-              ENDIF
+              DBCON=matdbcon(matarrayindex)
+              DBDEN=matdbden(matarrayindex)
+              DBSHT=matdbsht(matarrayindex)
+              E=matdbine(matarrayindex)
+              A=matdbina(matarrayindex)
             endif
-          elseif(matarrayindex.lt.0)then
-            DBCON=0.0; DBDEN=0.0; DBSHT=0.0
-            E=0.99; A=0.99
-            continue  ! can't deal with a confused material
-          else
-            DBCON=matdbcon(matarrayindex)
-            DBDEN=matdbden(matarrayindex)
-            DBSHT=matdbsht(matarrayindex)
-            E=matdbine(matarrayindex)
-            A=matdbina(matarrayindex)
-          endif
+
+          ENDIF check_CFC2_or_MLC
 
           CON(IS,IL)=DBCON
           DEN(IS,IL)=DBDEN
@@ -1513,7 +1639,7 @@ C to 0.
       DO 10 IS=1,NZSUR(icomp)
         icn1=izstocn(icomp,is)
         IF(SSOTF(icn1)(1:4).EQ.'OPAQ'.OR.
-     &     SSOTF(icn1)(1:4).EQ.'CFC ')THEN
+     &     SSOTF(icn1)(1:3).EQ.'CFC')THEN
           ITMCFL(ICOMP,IS)=0
           GOTO 10
         ENDIF

@@ -1127,7 +1127,7 @@ C There is a calendar of day types defined read its name.
         wkd1=wkday(idwe1)
         wkd2=wkday(idwe2)
       elseif(WORD(1:5).eq.'*year')then
-        CALL EGETWI(OUTSTR,K,IYEAR,1900,2020,'W','year',IER)
+        CALL EGETWI(OUTSTR,K,IYEAR,1900,2051,'W','year',IER)
       elseif(WORD(1:4).eq.'*img')then
 
 C An image file. If this is a version 4 file then there will be

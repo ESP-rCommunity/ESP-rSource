@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# For use on sun/linux/cygwin/mingw/OS X/Windows platforms.
+# For use on Raspberry Pi/sun/linux/cygwin/mingw/OS X/Windows platforms.
 #
 # This script handles installation of ESP-r executables,
 # databases, training and reference materials.
@@ -94,7 +94,7 @@ enable_cosim="no"          # Co-simulation with TRNSYS
 extendedDebug="no"         # Enable agressive debugging / warnings /FPE?
 use_intel="no"             # Use intel compilers?
 skip_ish_calcs="no"        # Skip update of exemplar shading files?
-reuse_ish_calcs="no"       # if yes limit re-calculation of exemplar shading files?
+reuse_ish_calcs="yes"      # if yes speedup creation of exemplar shading files?
 clean="yes"                # Clean object files?
 unversioned="no"           # Check svn for versioning info?
 
@@ -105,7 +105,7 @@ unversioned="no"           # Check svn for versioning info?
 # Buildable targets:
 programs="aco b2e bps dbm dfs cdb c2e clm e2r ecnv eco grd ish mfs mld mrt pdb prj res stats vew"
 # (bld plt, net are not currently built)
-# (net, run, stats are not currently built)
+# (net, stats are not currently built)
 
 # Add leading and trailing spaces for regexp matching
 programs=" ${programs} "
@@ -850,8 +850,8 @@ if [ "$mode" = "interactive" ]; then
         echo "Please answer yes or no (y/n)."
     fi
       case "${install_dbs}" in
-      yes) echo " Install ESP-r database files? (y/n) [y]";;
-      *)   echo " Install ESP-r database files? (y/n) [n]";;
+      yes) echo " Install ESP-r database files (needed if installing training models) ? (y/n) [y]";;
+      *)   echo " Install ESP-r database files (needed if installing training models) ? (y/n) [n]";;
     esac
 
     read B
@@ -977,6 +977,11 @@ case $xLibs in
                 if [ -d /usr/lib/arm-linux-gnueabihf ] ; then
                   X11_found="yes"
                   XINSTALLDIR="/usr/lib/arm-linux-gnueabihf"
+                fi;;
+              armv7l)
+                if [ -d /usr/lib/X11 ] ; then
+                  X11_found="yes"
+                  XINSTALLDIR="/usr/lib/X11"
                 fi;;
               *)
                 if [ -d /usr/X11R6/lib/X11 ] ; then
@@ -1118,6 +1123,7 @@ case $platform in
           i686)    fDefType="-DLIN";;
           x86_64)  fDefType="-DLIN";;
           armv6l)  fDefType="-DLIN";;
+          armv7l)  fDefType="-DLIN";;
         esac;;
    cygwin)     fDefType="-DCYGW";;
    mac) case $machine in
@@ -1226,6 +1232,7 @@ case $xLibs in
          i86pc) ULIBS="$ULIBS -lxesru -L${XINSTALLDIR}/lib -lX11";;
          i686) ULIBS="$ULIBS -lxesru -L${XINSTALLDIR}/lib -lX11";;
          armv6l) ULIBS="$ULIBS -lxesru -L${XINSTALLDIR} -lX11";;
+         armv7l) ULIBS="$ULIBS -lxesru -L${XINSTALLDIR} -lX11";;
          x86_64) case $platform in
                  mac) ULIBS="$ULIBS -lxesru -L${XINSTALLDIR}/lib -lX11";;
                  *) ULIBS="$ULIBS -lxesru -L${XINSTALLDIR}/lib64 -lX11";;        
@@ -1301,6 +1308,7 @@ case $platform in
    mac)      LD_FLAGS="";;
    *)  case $machine in
       armv6l) LD_FLAGS="-Wl,--reduce-memory-overheads";;
+      armv7l) LD_FLAGS="-Wl,--reduce-memory-overheads";;
       *)      LD_FLAGS="-Wl,--reduce-memory-overheads";;
       esac;;
 esac
@@ -1984,7 +1992,8 @@ if [ -f esrupdb/pdb ] ; then
   PDB=${SRCdir}/esrupdb/pdb
 fi
 echo " "
-echo -n " Installing esprc and default (configuration files) into ${ESPdir}..."
+echo " Installing esprc and default (configuration files) into ${ESPdir}..."
+echo " "
 
 #-----------------------------
 # Write out default ESP-r file
@@ -2050,6 +2059,7 @@ if [ "${LinkDB}" = "yes" ]; then
   echo "*icdb ${DBInstDir}/databases/icons.db1" >> ${ESPdir}/default
   echo "*mldb ${DBInstDir}/databases/mould.db1" >> ${ESPdir}/default
   echo "*sbem ${DBInstDir}/databases/SBEM.db1" >> ${ESPdir}/default
+  echo "*cfcdb ${DBInstDir}/databases/CFClayers.db1.a" >> ${ESPdir}/default
 
 fi
 
@@ -2138,6 +2148,85 @@ fi
 echo "*end" >> ${ESPdir}/esprc
 
 echo " Done."
+
+##### Install databases
+
+if [ "$install_dbs" = "yes" ]; then
+
+echo " "
+echo " Installing standard databases. This may take some time."
+
+  # remove existing binary databases
+  echo -n "   - Removing existing databases..."
+  rm -f ${DESTdir}/esp-r/databases/*
+  rm -f ${DESTdir}/esp-r/climate/clm67
+  rm -f ${DESTdir}/esp-r/databases/test.res
+  echo " Done."
+  # Construction databases. Note constr_db1.materialdb and constr_db2.materialdb
+  # are subsets of constr_db3.materialdb. Perhaps they can be merged into a single file?
+  echo -n "   - Copying materials databases..."
+  cp ${SRCdir}/databases/ccht_constr.db1 ${DESTdir}/esp-r/databases/ccht_constr.db1
+  cp ${SRCdir}/databases/ccht-optics.db1 ${DESTdir}/esp-r/databases/ccht-optics.db1
+  cp ${SRCdir}/databases/ccht_na_constr.db1 ${DESTdir}/esp-r/databases/ccht_na_constr.db1
+  cp ${SRCdir}/databases/ccht_material.ascii ${DESTdir}/esp-r/databases/ccht_material.ascii
+  cp ${SRCdir}/databases/constr.db1.a ${DESTdir}/esp-r/databases/constr.db1.a
+  cp ${SRCdir}/databases/constr_db1.materialdb ${DESTdir}/esp-r/databases/constr_db1.materialdb
+  cp ${SRCdir}/databases/constr.db2.a ${DESTdir}/esp-r/databases/constr.db2.a
+  cp ${SRCdir}/databases/constr_db2.materialdb ${DESTdir}/esp-r/databases/constr_db2.materialdb
+  cp ${SRCdir}/databases/constr.db3.a ${DESTdir}/esp-r/databases/constr.db3.a
+  cp ${SRCdir}/databases/constr_db3.materialdb ${DESTdir}/esp-r/databases/constr_db3.materialdb
+  cp ${SRCdir}/databases/cellular.materialdb ${DESTdir}/esp-r/databases/cellular.materialdb
+  cp ${SRCdir}/databases/north_american.materialdb.a ${DESTdir}/esp-r/databases/north_american.materialdb.a
+  cp ${SRCdir}/databases/north_american.materialdb.a ${DESTdir}/esp-r/databases/north_american.materialdb
+  cp ${SRCdir}/databases/north_american.constrdb ${DESTdir}/esp-r/databases/north_american.constrdb
+  cp ${SRCdir}/databases/material.db3.a ${DESTdir}/esp-r/databases/material.db3.a
+  cp ${SRCdir}/databases/material.db4.a ${DESTdir}/esp-r/databases/material.db4.a
+  cp ${SRCdir}/databases/CFClayers.db1.a ${DESTdir}/esp-r/databases/CFClayers.db1.a
+
+  cp ${SRCdir}/databases/SBEM.db1 ${DESTdir}/esp-r/databases/SBEM.db1
+  cp ${SRCdir}/databases/UK_notional.constrdb ${DESTdir}/esp-r/databases/UK_notional.constrdb
+  cp ${SRCdir}/databases/profiles.db1.a ${DESTdir}/esp-r/databases/profiles.db1.a
+  cp ${SRCdir}/databases/profiles.db2.a ${DESTdir}/esp-r/databases/profiles.db2.a
+  echo " Done."
+
+   cd ${SRCdir}/databases
+
+   echo -n "   - Creating binary plant components databases..."
+
+   # pdb convert: [ source file ] [ dest. file ] [ dest folder ]
+   pdb_convert plantc.db1.a plantc.db1 ${DESTdir}/esp-r/databases
+   pdb_convert plantc.db2.a plantc.db2 ${DESTdir}/esp-r/databases
+   pdb_convert plantc.tt.a  plantc.tt  ${DESTdir}/esp-r/databases
+   echo " Done."
+
+   echo -n "   - Creating binary climate databases "
+   cd ${SRCdir}/climate
+   cp climatelist ${DESTdir}/esp-r/climate
+   sed -e 's|/usr/esru/esp-r|'"${ESPdir}"'|' ${SRCdir}/climate/climatelist > ${ESPdir}/climate/climatelist
+   cp README ${DESTdir}/esp-r/climate/Readme
+   cp README_IWEC ${DESTdir}/esp-r/climate/Readme_iwec
+
+
+   #Find all assci files (we use the convention of .a)
+   for file in *.a
+   do
+     #Assign asscii file to variable.
+     CLIM_a=${file}
+     #Create binary file name by cutting off the .a suffix.
+     CLIM_b=`echo $file |  sed 's/\.a$//g'`
+     #Convert.
+     clim_convert ${ESPdir}/climate/${CLIM_b} ${CLIM_a}
+   done
+   echo " Done."
+
+   cd ${SRCdir}/databases
+   echo -n "   - Copying ASCII databases..."
+   cp components.db1 ccht_mlc.db multicon.db1 multicon.db2 multicon.db3 multicon.db4 north_american.constrdb optics.db1 optics.db2 optics.db3 ccht-optics.db1 mould.db1 pressc.db1 mscomp.db1 mscomp.db2 *.desc ${DESTdir}/esp-r/databases
+   echo " Done."
+
+fi
+
+##### End Install databases
 
 #---------------------------------------
 # Write out training files.
@@ -2322,84 +2411,6 @@ zzz
 fi
 
 ##### End Install training, manual & tutorial files.
-
-##### Install databases
-
-if [ "$install_dbs" = "yes" ]; then
-
-echo " "
-echo " Installing standard databases. This may take some time."
-
-  # remove existing binary databases
-  echo -n "   - Removing existing databases..."
-  rm -f ${DESTdir}/esp-r/databases/*
-  rm -f ${DESTdir}/esp-r/climate/clm67
-  rm -f ${DESTdir}/esp-r/databases/test.res
-  echo " Done."
-  # Construction databases. Note constr.db1 and constr.db2 are subsets
-  # of constr.db3. Perhaps they can be merged into a single file?
-  echo -n "   - Creating binary materials databases..."
-  ./bin/materials_db_conv databases constr.db1.a ${DESTdir}/esp-r/databases/constr.db1 >/dev/null
-  ./bin/materials_db_conv databases constr.db2.a ${DESTdir}/esp-r/databases/constr.db2 >/dev/null
-  ./bin/materials_db_conv databases constr.db3.a ${DESTdir}/esp-r/databases/constr.db3 >/dev/null
-  ./bin/materials_db_conv databases north_american.materialdb.a ${DESTdir}/esp-r/databases/north_american.materialdb >/dev/null
-  cp ${SRCdir}/databases/ccht_constr.db1 ${DESTdir}/esp-r/databases/ccht_constr.db1
-  cp ${SRCdir}/databases/ccht_na_constr.db1 ${DESTdir}/esp-r/databases/ccht_na_constr.db1
-  cp ${SRCdir}/databases/ccht_material.ascii ${DESTdir}/esp-r/databases/ccht_material.ascii
-  cp ${SRCdir}/databases/constr.db1.a ${DESTdir}/esp-r/databases/constr.db1.a
-  cp ${SRCdir}/databases/constr_db1.materialdb ${DESTdir}/esp-r/databases/constr_db1.materialdb
-  cp ${SRCdir}/databases/constr.db2.a ${DESTdir}/esp-r/databases/constr.db2.a
-  cp ${SRCdir}/databases/constr_db2.materialdb ${DESTdir}/esp-r/databases/constr_db2.materialdb
-  cp ${SRCdir}/databases/constr.db3.a ${DESTdir}/esp-r/databases/constr.db3.a
-  cp ${SRCdir}/databases/constr_db3.materialdb ${DESTdir}/esp-r/databases/constr_db3.materialdb
-  cp ${SRCdir}/databases/north_american.materialdb.a ${DESTdir}/esp-r/databases/north_american.materialdb.a
-  cp ${SRCdir}/databases/material.db3.a ${DESTdir}/esp-r/databases/material.db3.a
-
-  cp ${SRCdir}/databases/SBEM.db1 ${DESTdir}/esp-r/databases/SBEM.db1
-  cp ${SRCdir}/databases/UK_notional.constrdb ${DESTdir}/esp-r/databases/UK_notional.constrdb
-  cp ${SRCdir}/databases/profiles.db1.a ${DESTdir}/esp-r/databases/profiles.db1.a
-  cp ${SRCdir}/databases/profiles.db2.a ${DESTdir}/esp-r/databases/profiles.db2.a
-  echo " Done."
-
-   cd ${SRCdir}/databases
-
-   echo -n "   - Creating binary plant components databases..."
-
-   # pdb convert: [ source file ] [ dest. file ] [ dest folder ]
-   pdb_convert plantc.db1.a plantc.db1 ${DESTdir}/esp-r/databases
-   pdb_convert plantc.db2.a plantc.db2 ${DESTdir}/esp-r/databases
-   pdb_convert plantc.tt.a  plantc.tt  ${DESTdir}/esp-r/databases
-   echo " Done."
-
-   echo -n "   - Creating binary climate databases "
-   cd ${SRCdir}/climate
-   cp climatelist ${DESTdir}/esp-r/climate
-   sed -e 's|/usr/esru/esp-r|'"${ESPdir}"'|' ${SRCdir}/climate/climatelist > ${ESPdir}/climate/climatelist
-   cp README ${DESTdir}/esp-r/climate/Readme
-   cp README_IWEC ${DESTdir}/esp-r/climate/Readme_iwec
-
-
-   #Find all assci files (we use the convention of .a)
-   for file in *.a
-   do
-     #Assign asscii file to variable.
-     CLIM_a=${file}
-     #Create binary file name by cutting off the .a suffix.
-     CLIM_b=`echo $file |  sed 's/\.a$//g'`
-     #Convert.
-     clim_convert ${ESPdir}/climate/${CLIM_b} ${CLIM_a}
-   done
-   echo " Done."
-
-   cd ${SRCdir}/databases
-   echo -n "   - Copying ASCII databases..."
-   cp components.db1 ccht_mlc.db multicon.db1 multicon.db2 multicon.db3 multicon.db4 north_american.constrdb optics.db1 optics.db2 optics.db3 ccht-optics.db1 mould.db1 pressc.db1 mscomp.db1 mscomp.db2 *.desc ${DESTdir}/esp-r/databases
-   echo " Done."
-
-fi
-
-##### End Install databases
-
 ##### If xml support requested install the XSLT files.
 if [ "$xml_support" = "yes" ]; then
 echo " "

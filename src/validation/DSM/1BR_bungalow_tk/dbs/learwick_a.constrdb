@@ -1,5 +1,6 @@
 # composite construction db defined in ../dbs/learwick_a.constrdb
-# based on materials db material.db3.a
+# based on materials db material.db4.a
+# and based on CFClayers db /home/jon/esru_jwh/esp-r/databases/CFClayers.db1.a
    58     # no of composites 
 # layers  description  type  optics name   symmetry tag
     6    Extwall_ti    OPAQ  OPAQUE        NONSYMMETRIC  
@@ -7,16 +8,16 @@
    68    0.0210  weatherboard : Weatherboard (source does not clarify what it is)
     0    0.0500  gap  0.170 0.170 0.170
    76    0.0095  plywood sheathing : Plywood sheathing (UK code)
-  294    0.1400  Mineral wool batt 100mm : Insulation (Mineral wool batt default 100mm)
+  294    0.1400  Mineral wool batt : Insulation (Mineral wool batt k=0.04) (non-hygrosco
     0    0.0250  gap  0.170 0.170 0.170
   112    0.0125  Plasterboard (UK code) : Plasterboard (UK code)
 # layers  description  type  optics name   symmetry tag
     5    Partywall_ti  OPAQ  OPAQUE        SYMMETRIC     
 # material ref thickness (m) description & air gap R
   112    0.0300  Plasterboard (UK code) : Plasterboard (UK code)
-  293    0.0500  Min wool quilt 50mm tb : Studwork
+  293    0.0500  Min wool quilt betwnstuds : Min wool quilt between studwork
     0    0.0760  gap  0.170 0.170 0.170
-  293    0.0500  Min wool quilt 50mm tb : Studwork
+  293    0.0500  Min wool quilt betwnstuds : Min wool quilt between studwork
   112    0.0300  Plasterboard (UK code) : Plasterboard (UK code)
 # layers  description  type  optics name   symmetry tag
     3    Parttim       OPAQ  OPAQUE        SYMMETRIC     
@@ -27,38 +28,38 @@
 # layers  description  type  optics name   symmetry tag
     4    Floorti_low   OPAQ  OPAQUE        Ceilti_crl    
 # material ref thickness (m) description & air gap R
-  294    0.1600  Mineral wool batt 100mm : Insulation (Mineral wool batt default 100mm)
+  294    0.1600  Mineral wool batt : Insulation (Mineral wool batt k=0.04) (non-hygrosco
     0    0.0270  gap  0.170 0.170 0.170
    67    0.0190  chipboard : Chipboard
    65    0.0100  flooring : Flooring (source does not clarify what it is)
 # layers  description  type  optics name   symmetry tag
     7    Floorti_up    OPAQ  OPAQUE        Ceilti_low    
 # material ref thickness (m) description & air gap R
-  111    0.0125  Plasterboard (ceiling) : Plasterboard Gypsum (10 mm) (UK code)
+  111    0.0125  Plasterboard (ceiling) : Plasterboard Gypsum ceiling (UK code)
     0    0.1800  gap  0.170 0.170 0.170
-  293    0.0500  Min wool quilt 50mm tb : Studwork
+  293    0.0500  Min wool quilt betwnstuds : Min wool quilt between studwork
   303    0.0150  fibreboard 250kg : Porous wood fiberboard 250 kg/m3 from IBO PassivHaus
-  293    0.0600  Min wool quilt 50mm tb : Studwork
+  293    0.0600  Min wool quilt betwnstuds : Min wool quilt between studwork
    67    0.0190  chipboard : Chipboard
    65    0.0100  flooring : Flooring (source does not clarify what it is)
 # layers  description  type  optics name   symmetry tag
     4    Floorti_int   OPAQ  OPAQUE        Ceilti_int    
 # material ref thickness (m) description & air gap R
-  111    0.0125  Plasterboard (ceiling) : Plasterboard Gypsum (10 mm) (UK code)
+  111    0.0125  Plasterboard (ceiling) : Plasterboard Gypsum ceiling (UK code)
     0    0.2000  gap  0.170 0.170 0.170
    67    0.0190  chipboard : Chipboard
    65    0.0100  flooring : Flooring (source does not clarify what it is)
 # layers  description  type  optics name   symmetry tag
     2    Roof          OPAQ  OPAQUE        NONSYMMETRIC  
 # material ref thickness (m) description & air gap R
-  142    0.0127  concrete tile : Concrete tile
+  142    0.0127  concrete tile : Concrete tile (inorganic-porous)
    76    0.0180  plywood sheathing : Plywood sheathing (UK code)
 # layers  description  type  optics name   symmetry tag
     3    Window_ext    TRAN  DC_8074_04nb  SYMMETRIC     
 # material ref thickness (m) description & air gap R
-  243    0.0040  clear float : 4mm clear float glass with optics from UK national method
+  243    0.0040  clear float : clear float glass with optics from UK national method dat
     0    0.0160  gap  0.170 0.170 0.170
-  243    0.0040  clear float : 4mm clear float glass with optics from UK national method
+  243    0.0040  clear float : clear float glass with optics from UK national method dat
 # layers  description  type  optics name   symmetry tag
     1    Window_frme   OPAQ  OPAQUE        SYMMETRIC     
 # material ref thickness (m) description & air gap R
@@ -66,11 +67,11 @@
 # layers  description  type  optics name   symmetry tag
     1    Glazint_glas  TRAN  SCF8783_06nb  SYMMETRIC     
 # material ref thickness (m) description & air gap R
-  243    0.0060  clear float : 4mm clear float glass with optics from UK national method
+  243    0.0060  clear float : clear float glass with optics from UK national method dat
 # layers  description  type  optics name   symmetry tag
     1    Glazint_panl  OPAQ  OPAQUE        SYMMETRIC     
 # material ref thickness (m) description & air gap R
-    1    0.1000  Paviour brick : Paviour brick
+    1    0.1000  Paviour brick : Paviour brick (inorganic-porous)
 # layers  description  type  optics name   symmetry tag
     1    Door_ext      OPAQ  OPAQUE        SYMMETRIC     
 # material ref thickness (m) description & air gap R
@@ -88,13 +89,13 @@
 # layers  description  type  optics name   symmetry tag
     1    Door_fire     OPAQ  OPAQUE        SYMMETRIC     
 # material ref thickness (m) description & air gap R
-   80    0.0440  MDF : MDF based on info in IBO PassivHaus
+   80    0.0440  MDF : MDF based on info in IBO PassivHaus (diffusion guessed)
 # layers  description  type  optics name   symmetry tag
     6    Extwall_st    OPAQ  OPAQUE        NONSYMMETRIC  
 # material ref thickness (m) description & air gap R
-  127    0.0150  rendering not-dry : Rendering (8% mc)
-   82    0.3000  red granite : Red granite
-   82    0.3000  red granite : Red granite
+  127    0.0150  rendering not-dry : Rendering (8% mc) (inorganic-porous)
+   82    0.3000  red granite : Red granite (inorganic-porous)
+   82    0.3000  red granite : Red granite (inorganic-porous)
     0    0.0750  gap  0.170 0.170 0.170
   296    0.0750  PUR : notional floor UK material
   112    0.0127  Plasterboard (UK code) : Plasterboard (UK code)
@@ -103,11 +104,11 @@
 # material ref thickness (m) description & air gap R
   112    0.0127  Plasterboard (UK code) : Plasterboard (UK code)
     0    0.0380  gap  0.170 0.170 0.170
-  102    0.0120  light plaster : Light weight plaster
+  102    0.0120  light plaster : Light weight plaster (inorganic-porous)
    36    0.1000  concrete block : concrete block (milton keynes)
     0    0.0500  gap  0.170 0.170 0.170
    36    0.1000  concrete block : concrete block (milton keynes)
-  102    0.0120  light plaster : Light weight plaster
+  102    0.0120  light plaster : Light weight plaster (inorganic-porous)
     0    0.0380  gap  0.170 0.170 0.170
   112    0.0127  Plasterboard (UK code) : Plasterboard (UK code)
 # layers  description  type  optics name   symmetry tag
@@ -124,11 +125,11 @@
     0    0.0670  gap  0.170 0.170 0.170
    40    0.1500  Concrete med density (1800) : Blockwork (UK code)
     0    0.0500  gap  0.170 0.170 0.170
-  111    0.0127  Plasterboard (ceiling) : Plasterboard Gypsum (10 mm) (UK code)
+  111    0.0127  Plasterboard (ceiling) : Plasterboard Gypsum ceiling (UK code)
 # layers  description  type  optics name   symmetry tag
     5    Floor_st      OPAQ  OPAQUE        NONSYMMETRIC  
 # material ref thickness (m) description & air gap R
-  205    0.0500  Polyurethane foam bd : Polyurethane foam board
+  205    0.0500  Polyurethane foam bd : Polyurethane foam board (non-hygroscopic)
    40    0.1500  Concrete med density (1800) : Blockwork (UK code)
     0    0.0500  gap  0.170 0.170 0.170
    67    0.0220  chipboard : Chipboard
@@ -150,27 +151,27 @@
   263    0.2500  earth std : Common_earth
   263    0.2500  earth std : Common_earth
   263    0.2500  earth std : Common_earth
-  262    0.1000  gravel based : Gravel based
+  262    0.1000  gravel based : Gravel based (non-hygroscopic)
 # layers  description  type  optics name   symmetry tag
     3    Parttim_wet   OPAQ  OPAQUE        SYMMETRIC     
 # material ref thickness (m) description & air gap R
   112    0.0125  Plasterboard (UK code) : Plasterboard (UK code)
-  293    0.0880  Min wool quilt 50mm tb : Studwork
+  293    0.0880  Min wool quilt betwnstuds : Min wool quilt between studwork
   112    0.0125  Plasterboard (UK code) : Plasterboard (UK code)
 # layers  description  type  optics name   symmetry tag
     5    Roof_stairs   OPAQ  OPAQUE        NONSYMMETRIC  
 # material ref thickness (m) description & air gap R
-  142    0.0127  concrete tile : Concrete tile
+  142    0.0127  concrete tile : Concrete tile (inorganic-porous)
    76    0.0180  plywood sheathing : Plywood sheathing (UK code)
-  294    0.1500  Mineral wool batt 100mm : Insulation (Mineral wool batt default 100mm)
+  294    0.1500  Mineral wool batt : Insulation (Mineral wool batt k=0.04) (non-hygrosco
     0    0.0380  gap  0.170 0.170 0.170
-  111    0.0125  Plasterboard (ceiling) : Plasterboard Gypsum (10 mm) (UK code)
+  111    0.0125  Plasterboard (ceiling) : Plasterboard Gypsum ceiling (UK code)
 # layers  description  type  optics name   symmetry tag
     7    Extwall_stw   OPAQ  OPAQUE        NONSYMMETRIC  
 # material ref thickness (m) description & air gap R
-  127    0.0150  rendering not-dry : Rendering (8% mc)
-   82    0.3000  red granite : Red granite
-   82    0.3000  red granite : Red granite
+  127    0.0150  rendering not-dry : Rendering (8% mc) (inorganic-porous)
+   82    0.3000  red granite : Red granite (inorganic-porous)
+   82    0.3000  red granite : Red granite (inorganic-porous)
     0    0.0750  gap  0.170 0.170 0.170
   296    0.0750  PUR : notional floor UK material
    76    0.0180  plywood sheathing : Plywood sheathing (UK code)
@@ -180,7 +181,7 @@
 # material ref thickness (m) description & air gap R
   112    0.0127  Plasterboard (UK code) : Plasterboard (UK code)
     0    0.0150  gap  0.170 0.170 0.170
-  295    0.0600  Min wool quilt 60mm : Insulation (Min wool quilt default 60 mm)
+  295    0.0600  Min wool quilt 1030spht : Insulation (Min wool quilt with 1030 sp. ht.)
    76    0.0180  plywood sheathing : Plywood sheathing (UK code)
   112    0.0127  Plasterboard (UK code) : Plasterboard (UK code)
 # layers  description  type  optics name   symmetry tag
@@ -188,106 +189,106 @@
 # material ref thickness (m) description & air gap R
   112    0.0127  Plasterboard (UK code) : Plasterboard (UK code)
    76    0.0180  plywood sheathing : Plywood sheathing (UK code)
-  295    0.0600  Min wool quilt 60mm : Insulation (Min wool quilt default 60 mm)
+  295    0.0600  Min wool quilt 1030spht : Insulation (Min wool quilt with 1030 sp. ht.)
     0    0.0150  gap  0.170 0.170 0.170
   112    0.0127  Plasterboard (UK code) : Plasterboard (UK code)
 # layers  description  type  optics name   symmetry tag
     6    Floor_stc     OPAQ  OPAQUE        NONSYMMETRIC  
 # material ref thickness (m) description & air gap R
-  205    0.0500  Polyurethane foam bd : Polyurethane foam board
+  205    0.0500  Polyurethane foam bd : Polyurethane foam board (non-hygroscopic)
    40    0.1500  Concrete med density (1800) : Blockwork (UK code)
     0    0.0500  gap  0.170 0.170 0.170
    67    0.0220  chipboard : Chipboard
-  224    0.0100  cellular rub underlay : Cellular rubber carpet underlay
-  225    0.0050  synthetic carpet : Synthetic carpet
+  224    0.0100  cellular rub underlay : Cellular rubber carpet underlay (non-hygroscopi
+  225    0.0050  synthetic carpet : Synthetic carpet (non-hygroscopic)
 # layers  description  type  optics name   symmetry tag
     5    Floorti_lowc  OPAQ  OPAQUE        Ceilti_crlc   
 # material ref thickness (m) description & air gap R
-  294    0.1600  Mineral wool batt 100mm : Insulation (Mineral wool batt default 100mm)
+  294    0.1600  Mineral wool batt : Insulation (Mineral wool batt k=0.04) (non-hygrosco
     0    0.0270  gap  0.170 0.170 0.170
    67    0.0190  chipboard : Chipboard
-  224    0.0100  cellular rub underlay : Cellular rubber carpet underlay
-  225    0.0050  synthetic carpet : Synthetic carpet
+  224    0.0100  cellular rub underlay : Cellular rubber carpet underlay (non-hygroscopi
+  225    0.0050  synthetic carpet : Synthetic carpet (non-hygroscopic)
 # layers  description  type  optics name   symmetry tag
     4    Ceilti_crl    OPAQ  OPAQUE        Floorti_low   
 # material ref thickness (m) description & air gap R
    65    0.0100  flooring : Flooring (source does not clarify what it is)
    67    0.0190  chipboard : Chipboard
     0    0.0270  gap  0.170 0.170 0.170
-  294    0.1600  Mineral wool batt 100mm : Insulation (Mineral wool batt default 100mm)
+  294    0.1600  Mineral wool batt : Insulation (Mineral wool batt k=0.04) (non-hygrosco
 # layers  description  type  optics name   symmetry tag
     5    Ceilti_crlc   OPAQ  OPAQUE        Floorti_lowc  
 # material ref thickness (m) description & air gap R
-  225    0.0050  synthetic carpet : Synthetic carpet
-  224    0.0100  cellular rub underlay : Cellular rubber carpet underlay
+  225    0.0050  synthetic carpet : Synthetic carpet (non-hygroscopic)
+  224    0.0100  cellular rub underlay : Cellular rubber carpet underlay (non-hygroscopi
    67    0.0190  chipboard : Chipboard
     0    0.0270  gap  0.170 0.170 0.170
-  294    0.1600  Mineral wool batt 100mm : Insulation (Mineral wool batt default 100mm)
+  294    0.1600  Mineral wool batt : Insulation (Mineral wool batt k=0.04) (non-hygrosco
 # layers  description  type  optics name   symmetry tag
     8    Floorti_upc   OPAQ  OPAQUE        Ceilti_lowc   
 # material ref thickness (m) description & air gap R
-  111    0.0125  Plasterboard (ceiling) : Plasterboard Gypsum (10 mm) (UK code)
+  111    0.0125  Plasterboard (ceiling) : Plasterboard Gypsum ceiling (UK code)
     0    0.1800  gap  0.170 0.170 0.170
-  293    0.0500  Min wool quilt 50mm tb : Studwork
+  293    0.0500  Min wool quilt betwnstuds : Min wool quilt between studwork
   303    0.0150  fibreboard 250kg : Porous wood fiberboard 250 kg/m3 from IBO PassivHaus
-  293    0.0600  Min wool quilt 50mm tb : Studwork
+  293    0.0600  Min wool quilt betwnstuds : Min wool quilt between studwork
    67    0.0190  chipboard : Chipboard
-  224    0.0100  cellular rub underlay : Cellular rubber carpet underlay
-  225    0.0050  synthetic carpet : Synthetic carpet
+  224    0.0100  cellular rub underlay : Cellular rubber carpet underlay (non-hygroscopi
+  225    0.0050  synthetic carpet : Synthetic carpet (non-hygroscopic)
 # layers  description  type  optics name   symmetry tag
     7    Ceilti_low    OPAQ  OPAQUE        Floorti_up    
 # material ref thickness (m) description & air gap R
    65    0.0100  flooring : Flooring (source does not clarify what it is)
    67    0.0190  chipboard : Chipboard
-  293    0.0600  Min wool quilt 50mm tb : Studwork
+  293    0.0600  Min wool quilt betwnstuds : Min wool quilt between studwork
   303    0.0150  fibreboard 250kg : Porous wood fiberboard 250 kg/m3 from IBO PassivHaus
-  293    0.0500  Min wool quilt 50mm tb : Studwork
+  293    0.0500  Min wool quilt betwnstuds : Min wool quilt between studwork
     0    0.1800  gap  0.170 0.170 0.170
-  111    0.0125  Plasterboard (ceiling) : Plasterboard Gypsum (10 mm) (UK code)
+  111    0.0125  Plasterboard (ceiling) : Plasterboard Gypsum ceiling (UK code)
 # layers  description  type  optics name   symmetry tag
     8    Ceilti_lowc   OPAQ  OPAQUE        Floorti_upc   
 # material ref thickness (m) description & air gap R
-  225    0.0050  synthetic carpet : Synthetic carpet
-  224    0.0100  cellular rub underlay : Cellular rubber carpet underlay
+  225    0.0050  synthetic carpet : Synthetic carpet (non-hygroscopic)
+  224    0.0100  cellular rub underlay : Cellular rubber carpet underlay (non-hygroscopi
    67    0.0190  chipboard : Chipboard
-  293    0.0600  Min wool quilt 50mm tb : Studwork
+  293    0.0600  Min wool quilt betwnstuds : Min wool quilt between studwork
   303    0.0150  fibreboard 250kg : Porous wood fiberboard 250 kg/m3 from IBO PassivHaus
-  293    0.0500  Min wool quilt 50mm tb : Studwork
+  293    0.0500  Min wool quilt betwnstuds : Min wool quilt between studwork
     0    0.1800  gap  0.170 0.170 0.170
-  111    0.0125  Plasterboard (ceiling) : Plasterboard Gypsum (10 mm) (UK code)
+  111    0.0125  Plasterboard (ceiling) : Plasterboard Gypsum ceiling (UK code)
 # layers  description  type  optics name   symmetry tag
     2    Ceilti_up     OPAQ  OPAQUE        Floorti_rf    
 # material ref thickness (m) description & air gap R
-  294    0.3000  Mineral wool batt 100mm : Insulation (Mineral wool batt default 100mm)
-  111    0.0125  Plasterboard (ceiling) : Plasterboard Gypsum (10 mm) (UK code)
+  294    0.3000  Mineral wool batt : Insulation (Mineral wool batt k=0.04) (non-hygrosco
+  111    0.0125  Plasterboard (ceiling) : Plasterboard Gypsum ceiling (UK code)
 # layers  description  type  optics name   symmetry tag
     5    Floorti_intc  OPAQ  OPAQUE        Ceilti_intc   
 # material ref thickness (m) description & air gap R
-  111    0.0125  Plasterboard (ceiling) : Plasterboard Gypsum (10 mm) (UK code)
+  111    0.0125  Plasterboard (ceiling) : Plasterboard Gypsum ceiling (UK code)
     0    0.2000  gap  0.170 0.170 0.170
    67    0.0190  chipboard : Chipboard
-  224    0.0100  cellular rub underlay : Cellular rubber carpet underlay
-  225    0.0050  synthetic carpet : Synthetic carpet
+  224    0.0100  cellular rub underlay : Cellular rubber carpet underlay (non-hygroscopi
+  225    0.0050  synthetic carpet : Synthetic carpet (non-hygroscopic)
 # layers  description  type  optics name   symmetry tag
     4    Ceilti_int    OPAQ  OPAQUE        Floorti_int   
 # material ref thickness (m) description & air gap R
    65    0.0100  flooring : Flooring (source does not clarify what it is)
    67    0.0190  chipboard : Chipboard
     0    0.2000  gap  0.170 0.170 0.170
-  111    0.0125  Plasterboard (ceiling) : Plasterboard Gypsum (10 mm) (UK code)
+  111    0.0125  Plasterboard (ceiling) : Plasterboard Gypsum ceiling (UK code)
 # layers  description  type  optics name   symmetry tag
     5    Ceilti_intc   OPAQ  OPAQUE        Floorti_intc  
 # material ref thickness (m) description & air gap R
-  225    0.0050  synthetic carpet : Synthetic carpet
-  224    0.0100  cellular rub underlay : Cellular rubber carpet underlay
+  225    0.0050  synthetic carpet : Synthetic carpet (non-hygroscopic)
+  224    0.0100  cellular rub underlay : Cellular rubber carpet underlay (non-hygroscopi
    67    0.0190  chipboard : Chipboard
     0    0.2000  gap  0.170 0.170 0.170
-  111    0.0125  Plasterboard (ceiling) : Plasterboard Gypsum (10 mm) (UK code)
+  111    0.0125  Plasterboard (ceiling) : Plasterboard Gypsum ceiling (UK code)
 # layers  description  type  optics name   symmetry tag
     2    Floorti_rf    OPAQ  OPAQUE        Ceilti_up     
 # material ref thickness (m) description & air gap R
-  111    0.0125  Plasterboard (ceiling) : Plasterboard Gypsum (10 mm) (UK code)
-  294    0.3000  Mineral wool batt 100mm : Insulation (Mineral wool batt default 100mm)
+  111    0.0125  Plasterboard (ceiling) : Plasterboard Gypsum ceiling (UK code)
+  294    0.3000  Mineral wool batt : Insulation (Mineral wool batt k=0.04) (non-hygrosco
 # layers  description  type  optics name   symmetry tag
     1    Crawl_wall    OPAQ  OPAQUE        SYMMETRIC     
 # material ref thickness (m) description & air gap R
@@ -295,73 +296,73 @@
 # layers  description  type  optics name   symmetry tag
     4    conc_blck_rn  OPAQ  OPAQUE        NONSYMMETRIC  
 # material ref thickness (m) description & air gap R
-  128    0.0300  aged rendering : Aged Rendering
+  128    0.0300  aged rendering : Aged Rendering (inorganic-porous)
    36    0.2250  concrete block : concrete block (milton keynes)
     0    0.0130  gap  0.170 0.170 0.170
-  101    0.0300  dense plaster : Dense plaster
+  101    0.0300  dense plaster : Dense plaster (inorganic-porous)
 # layers  description  type  optics name   symmetry tag
     4    conc_mu_rn    OPAQ  OPAQUE        NONSYMMETRIC  
 # material ref thickness (m) description & air gap R
-  128    0.0300  aged rendering : Aged Rendering
-  294    0.0500  Mineral wool batt 100mm : Insulation (Mineral wool batt default 100mm)
+  128    0.0300  aged rendering : Aged Rendering (inorganic-porous)
+  294    0.0500  Mineral wool batt : Insulation (Mineral wool batt k=0.04) (non-hygrosco
    32    0.2550  heavy mix concrete : Heavy mix concrete
-  101    0.0300  dense plaster : Dense plaster
+  101    0.0300  dense plaster : Dense plaster (inorganic-porous)
 # layers  description  type  optics name   symmetry tag
     6    pwcon_blck_r  OPAQ  OPAQUE        NONSYMMETRIC  
 # material ref thickness (m) description & air gap R
-  128    0.0300  aged rendering : Aged Rendering
+  128    0.0300  aged rendering : Aged Rendering (inorganic-porous)
    36    0.1120  concrete block : concrete block (milton keynes)
     0    0.0600  gap  0.170 0.170 0.170
    36    0.1120  concrete block : concrete block (milton keynes)
     0    0.0130  gap  0.170 0.170 0.170
-  101    0.0300  dense plaster : Dense plaster
+  101    0.0300  dense plaster : Dense plaster (inorganic-porous)
 # layers  description  type  optics name   symmetry tag
     6    incon_blck_r  OPAQ  OPAQUE        NONSYMMETRIC  
 # material ref thickness (m) description & air gap R
-  128    0.0300  aged rendering : Aged Rendering
+  128    0.0300  aged rendering : Aged Rendering (inorganic-porous)
    36    0.1120  concrete block : concrete block (milton keynes)
-  211    0.0850  glasswool : Glasswool (generic)
+  211    0.0850  glasswool : Glasswool (generic) (non-hygroscopic)
    36    0.1120  concrete block : concrete block (milton keynes)
     0    0.0130  gap  0.170 0.170 0.170
-  101    0.0300  dense plaster : Dense plaster
+  101    0.0300  dense plaster : Dense plaster (inorganic-porous)
 # layers  description  type  optics name   symmetry tag
     3    intcnc_block  OPAQ  OPAQUE        SYMMETRIC     
 # material ref thickness (m) description & air gap R
-  101    0.0300  dense plaster : Dense plaster
+  101    0.0300  dense plaster : Dense plaster (inorganic-porous)
    36    0.1120  concrete block : concrete block (milton keynes)
-  101    0.0300  dense plaster : Dense plaster
+  101    0.0300  dense plaster : Dense plaster (inorganic-porous)
 # layers  description  type  optics name   symmetry tag
     5    tk_block_rn   OPAQ  OPAQUE        NONSYMMETRIC  
 # material ref thickness (m) description & air gap R
-  128    0.0280  aged rendering : Aged Rendering
+  128    0.0280  aged rendering : Aged Rendering (inorganic-porous)
    36    0.1020  concrete block : concrete block (milton keynes)
    70    0.0180  plywood 560d : Plywood (generic 560 density)
     0    0.0500  gap  0.190 0.190 0.190
-  108    0.0180  white gypboard : White paintedd Gypboard
+  108    0.0180  white gypboard : White painted Gypboard (inorganic-porous)
 # layers  description  type  optics name   symmetry tag
     5    tk_block_et   OPAQ  OPAQUE        NONSYMMETRIC  
 # material ref thickness (m) description & air gap R
-  128    0.0280  aged rendering : Aged Rendering
+  128    0.0280  aged rendering : Aged Rendering (inorganic-porous)
    36    0.1020  concrete block : concrete block (milton keynes)
    70    0.0180  plywood 560d : Plywood (generic 560 density)
-  294    0.0500  Mineral wool batt 100mm : Insulation (Mineral wool batt default 100mm)
-  108    0.0180  white gypboard : White paintedd Gypboard
+  294    0.0500  Mineral wool batt : Insulation (Mineral wool batt k=0.04) (non-hygrosco
+  108    0.0180  white gypboard : White painted Gypboard (inorganic-porous)
 # layers  description  type  optics name   symmetry tag
     2    Floortk_rf    OPAQ  OPAQUE        Ceiltk_up     
 # material ref thickness (m) description & air gap R
-  111    0.0125  Plasterboard (ceiling) : Plasterboard Gypsum (10 mm) (UK code)
-  294    0.1500  Mineral wool batt 100mm : Insulation (Mineral wool batt default 100mm)
+  111    0.0125  Plasterboard (ceiling) : Plasterboard Gypsum ceiling (UK code)
+  294    0.1500  Mineral wool batt : Insulation (Mineral wool batt k=0.04) (non-hygrosco
 # layers  description  type  optics name   symmetry tag
     2    Ceiltk_up     OPAQ  OPAQUE        Floortk_rf    
 # material ref thickness (m) description & air gap R
-  294    0.1500  Mineral wool batt 100mm : Insulation (Mineral wool batt default 100mm)
-  111    0.0125  Plasterboard (ceiling) : Plasterboard Gypsum (10 mm) (UK code)
+  294    0.1500  Mineral wool batt : Insulation (Mineral wool batt k=0.04) (non-hygrosco
+  111    0.0125  Plasterboard (ceiling) : Plasterboard Gypsum ceiling (UK code)
 # layers  description  type  optics name   symmetry tag
     3    Floortk_lowc  OPAQ  OPAQUE        Ceiltk_crlc   
 # material ref thickness (m) description & air gap R
    67    0.0190  chipboard : Chipboard
-  224    0.0100  cellular rub underlay : Cellular rubber carpet underlay
-  225    0.0050  synthetic carpet : Synthetic carpet
+  224    0.0100  cellular rub underlay : Cellular rubber carpet underlay (non-hygroscopi
+  225    0.0050  synthetic carpet : Synthetic carpet (non-hygroscopic)
 # layers  description  type  optics name   symmetry tag
     2    Floortk_low   OPAQ  OPAQUE        Ceiltk_crl    
 # material ref thickness (m) description & air gap R
@@ -375,20 +376,20 @@
 # layers  description  type  optics name   symmetry tag
     3    Ceiltk_crlc   OPAQ  OPAQUE        Floortk_lowc  
 # material ref thickness (m) description & air gap R
-  225    0.0050  synthetic carpet : Synthetic carpet
-  224    0.0100  cellular rub underlay : Cellular rubber carpet underlay
+  225    0.0050  synthetic carpet : Synthetic carpet (non-hygroscopic)
+  224    0.0100  cellular rub underlay : Cellular rubber carpet underlay (non-hygroscopi
    67    0.0190  chipboard : Chipboard
 # layers  description  type  optics name   symmetry tag
     4    Flrettk_lowc  OPAQ  OPAQUE        Clettk_crlc   
 # material ref thickness (m) description & air gap R
-  294    0.1000  Mineral wool batt 100mm : Insulation (Mineral wool batt default 100mm)
+  294    0.1000  Mineral wool batt : Insulation (Mineral wool batt k=0.04) (non-hygrosco
    67    0.0190  chipboard : Chipboard
-  224    0.0100  cellular rub underlay : Cellular rubber carpet underlay
-  225    0.0050  synthetic carpet : Synthetic carpet
+  224    0.0100  cellular rub underlay : Cellular rubber carpet underlay (non-hygroscopi
+  225    0.0050  synthetic carpet : Synthetic carpet (non-hygroscopic)
 # layers  description  type  optics name   symmetry tag
     3    Flrettk_low   OPAQ  OPAQUE        Cltetk_crl    
 # material ref thickness (m) description & air gap R
-  294    0.1000  Mineral wool batt 100mm : Insulation (Mineral wool batt default 100mm)
+  294    0.1000  Mineral wool batt : Insulation (Mineral wool batt k=0.04) (non-hygrosco
    67    0.0190  chipboard : Chipboard
    65    0.0100  flooring : Flooring (source does not clarify what it is)
 # layers  description  type  optics name   symmetry tag
@@ -396,12 +397,11 @@
 # material ref thickness (m) description & air gap R
    65    0.0100  flooring : Flooring (source does not clarify what it is)
    67    0.0190  chipboard : Chipboard
-  294    0.1000  Mineral wool batt 100mm : Insulation (Mineral wool batt default 100mm)
+  294    0.1000  Mineral wool batt : Insulation (Mineral wool batt k=0.04) (non-hygrosco
 # layers  description  type  optics name   symmetry tag
     4    Cltetk_crlc   OPAQ  OPAQUE        Flrettk_lowc  
 # material ref thickness (m) description & air gap R
-  225    0.0050  synthetic carpet : Synthetic carpet
-  224    0.0100  cellular rub underlay : Cellular rubber carpet underlay
+  225    0.0050  synthetic carpet : Synthetic carpet (non-hygroscopic)
+  224    0.0100  cellular rub underlay : Cellular rubber carpet underlay (non-hygroscopi
    67    0.0190  chipboard : Chipboard
-  294    0.1000  Mineral wool batt 100mm : Insulation (Mineral wool batt default 100mm)
- 
+  294    0.1000  Mineral wool batt : Insulation (Mineral wool batt k=0.04) (non-hygrosco

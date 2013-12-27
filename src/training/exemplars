@@ -281,9 +281,13 @@
 *cfg	/usr/esru/esp-r/training/plant/ahu/cfg/ahu_hum.cfg
 *root	/usr/esru/esp-r/training/plant/ahu
 *item
-*name	... with wet central heating system
-*cfg	/usr/esru/esp-r/training/plant/wch/cfg/wch.cfg
-*root	/usr/esru/esp-r/training/plant/wch
+*name	... with wet central (WC) heating system & DHW draw
+*cfg	/usr/esru/esp-r/training/Apartment_2z_system/cfg/2br_tt_flat.cfg
+*root	/usr/esru/esp-r/training/Apartment_2z_system
+*item
+*name	... with 2010 constructions WC heating system & DHW draw
+*cfg	/usr/esru/esp-r/training/Apartment_2z_system/cfg/2br_tt_flat_2010.cfg
+*root	/usr/esru/esp-r/training/Apartment_2z_system
 *item
 *name   ... with ventilation heat recovery
 *cfg    /usr/esru/esp-r/training/plant/ahu/cfg/vent_recovery.cfg
@@ -330,6 +334,10 @@
 *name	thermophysical property substitution
 *cfg	/usr/esru/esp-r/training/constr/tp_sub/cfg/bld_tp_sub.cfg
 *root	/usr/esru/esp-r/training/constr/tp_sub
+*item
+*name	Modern 2BR flat with Passive House constructions
+*cfg	/usr/esru/esp-r/training/Apartment_2z_system/cfg/2br_tt_flat_ph.cfg
+*root	/usr/esru/esp-r/training/Apartment_2z_system
 *item
 *name   transparent insulation
 *cfg    /usr/esru/esp-r/training/constr/adapt/cfg/tim.cfg

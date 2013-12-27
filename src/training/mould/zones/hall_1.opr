@@ -1,15 +1,15 @@
-*Operations 1.0
-*date Thu Jul 29 14:52:19 2004  # latest file modification 
+*Operations 2.0
+*date Sun Dec  8 16:04:18 2013  # latest file modification 
 # operations of hall_1 defined in: 
 # ../zones/hall_1.opr
-nil_operations  # description
+nil_operations
 # control(no control of air flow  ), low mid & high setpoints 
    0     0.000     0.000   100.000
-     0   # no Weekday flow periods
-     0   # no Saturday flow periods
-     0   # no Sunday flow periods 
-     0   # no Weekday casual gains 
-     0   # no Saturday casual gains 
-     0   # no Sunday casual gains 
-# Labels for gain types 
- Occupt Lights Equipt
+     0   # number of flow periods in day type: weekday     
+     0   # number of flow periods in day type: saturday    
+     0   # number of flow periods in day type: sunday      
+     0   # number of casual gains in day type: weekday     
+     0   # number of casual gains in day type: saturday    
+     0   # number of casual gains in day type: sunday      
+# Labels for gains 
+ Occupt       Lights       Equipt      

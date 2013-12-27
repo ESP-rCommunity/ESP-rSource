@@ -1,138 +1,139 @@
-# composite construction db defined in ../databases/burdie.mdb
-# based on materials db constr.db1.a
+# composite construction db defined in ../dbs/burdie.mdb
+# based on materials db material.db4.a
+# and based on CFClayers db CFClayers.db1.a
    24     # no of composites 
-# layers  description   optics name   symmetry tag
+# layers  description  type  optics name   symmetry tag
     1    glazing       TRAN  SC_8985_04nb  SYMMETRIC     
-# mat ref thickness (m) mat descr & air gap R
-  242    0.0040  Plate glass : Plate glass with placeholder single layer optics
-# layers  description   optics name   symmetry tag
+# material ref thickness (m) description & air gap R
+  242    0.0040  plate glass : Plate glass with placeholder single layer optics
+# layers  description  type  optics name   symmetry tag
     5    ext_wall_low  OPAQ  OPAQUE        NONSYMMETRIC  
-# mat ref thickness (m) mat descr & air gap R
-  121    0.0380  Lightweight concrete screed : Lightweight concrete screed
-    0    0.0320  air  0.170 0.170 0.170
-  211    0.0670  Glasswool : Glasswool
-    0    0.0320  air  0.170 0.170 0.170
-  103    0.0100  Perlite plasterboard : Perlite plasterboard
-# layers  description   optics name   symmetry tag
+# material ref thickness (m) description & air gap R
+  121    0.0380  ltwt_conc_screed : Lightweight conc screed (inorganic-porous)
+    0    0.0320  gap  0.170 0.170 0.170
+  211    0.0670  glasswool : Glasswool (generic) (non-hygroscopic)
+    0    0.0320  gap  0.170 0.170 0.170
+  103    0.0100  perlite plasterboard : Perlite plasterboard (inorganic-porous)
+# layers  description  type  optics name   symmetry tag
     4    floor_1       OPAQ  OPAQUE        NONSYMMETRIC  
-# mat ref thickness (m) mat descr & air gap R
-  263    0.1000  Common earth : Common earth
-   82    0.1000  Red granite : Red granite
-   32    0.0500  Heavy mix concrete : Heavy mix concrete
-  124    0.0500  Cement screed : Cement screed
-# layers  description   optics name   symmetry tag
+# material ref thickness (m) description & air gap R
+  263    0.1000  earth std : Common_earth
+   82    0.1000  red granite : Red granite (inorganic-porous)
+   32    0.0500  heavy mix concrete : Heavy mix concrete
+  124    0.0500  cement screed : Cement screed (inorganic-porous)
+# layers  description  type  optics name   symmetry tag
     3    intern_wall   OPAQ  OPAQUE        SYMMETRIC     
-# mat ref thickness (m) mat descr & air gap R
-  103    0.0125  Perlite plasterboard : Perlite plasterboard
-    2    0.1500  Breeze block : Breeze block
-  103    0.0120  Perlite plasterboard : Perlite plasterboard
-# layers  description   optics name   symmetry tag
+# material ref thickness (m) description & air gap R
+  103    0.0125  perlite plasterboard : Perlite plasterboard (inorganic-porous)
+    2    0.1500  breeze block : Breeze block (inorganic-porous)
+  103    0.0120  perlite plasterboard : Perlite plasterboard (inorganic-porous)
+# layers  description  type  optics name   symmetry tag
     1    door          OPAQ  OPAQUE        SYMMETRIC     
-# mat ref thickness (m) mat descr & air gap R
-   71    0.0300  Softwood : Softwood
-# layers  description   optics name   symmetry tag
+# material ref thickness (m) description & air gap R
+   71    0.0300  softwood : Softwood (generic)
+# layers  description  type  optics name   symmetry tag
     6    grnd_floor    OPAQ  OPAQUE        NONSYMMETRIC  
-# mat ref thickness (m) mat descr & air gap R
-  263    0.2500  Common earth : Common earth
-  262    0.1500  Gravel based : Gravel based
-   32    0.1500  Heavy mix concrete : Heavy mix concrete
-    0    0.0500  air  0.170 0.170 0.170
-   67    0.0190  Chipboard : Chipboard
-  221    0.0060  Wilton : Wilton
-# layers  description   optics name   symmetry tag
+# material ref thickness (m) description & air gap R
+  263    0.2500  earth std : Common_earth
+  262    0.1500  gravel based : Gravel based (non-hygroscopic)
+   32    0.1500  heavy mix concrete : Heavy mix concrete
+    0    0.0500  gap  0.170 0.170 0.170
+   67    0.0190  chipboard : Chipboard
+  221    0.0060  Wilton : Wilton weave wool carpet (organic-hygroscopic)
+# layers  description  type  optics name   symmetry tag
     2    roof          OPAQ  OPAQUE        NONSYMMETRIC  
-# mat ref thickness (m) mat descr & air gap R
-   42    0.0030  Steel : Steel
-  207    0.0010  PVC : PVC
-# layers  description   optics name   symmetry tag
+# material ref thickness (m) description & air gap R
+   42    0.0030  steel : Steel
+  207    0.0010  PVC : PVC (non-hygroscopic)
+# layers  description  type  optics name   symmetry tag
     1    int_doors     OPAQ  OPAQUE        SYMMETRIC     
-# mat ref thickness (m) mat descr & air gap R
-   69    0.0250  Oak (radial) : Oak (radial)
-# layers  description   optics name   symmetry tag
+# material ref thickness (m) description & air gap R
+   69    0.0250  oak : Oak (radial cut)
+# layers  description  type  optics name   symmetry tag
     3    partition     OPAQ  OPAQUE        SYMMETRIC     
-# mat ref thickness (m) mat descr & air gap R
-  104    0.0130  Gypsum plaster : Gypsum plaster
-    0    0.0570  air  0.170 0.170 0.170
-  104    0.0130  Gypsum plaster : Gypsum plaster
-# layers  description   optics name   symmetry tag
+# material ref thickness (m) description & air gap R
+  104    0.0130  gypsum plaster : Gypsum based plaster (inorganic-porous)
+    0    0.0570  gap  0.170 0.170 0.170
+  104    0.0130  gypsum plaster : Gypsum based plaster (inorganic-porous)
+# layers  description  type  optics name   symmetry tag
     3    ceiling_rev   OPAQ  OPAQUE        ceiling       
-# mat ref thickness (m) mat descr & air gap R
-  150    0.0100  Ceiling (mineral) : Ceiling (mineral)
-    0    0.1000  air  0.170 0.170 0.170
-   65    0.0150  Flooring : Flooring
-# layers  description   optics name   symmetry tag
+# material ref thickness (m) description & air gap R
+  150    0.0100  ceiling mineral : Ceiling acoustic tile (mineral fibre based)
+    0    0.1000  gap  0.170 0.170 0.170
+   65    0.0150  flooring : Flooring (source does not clarify what it is)
+# layers  description  type  optics name   symmetry tag
     6    ext_wall_up   OPAQ  OPAQUE        ext_wall_upr  
-# mat ref thickness (m) mat descr & air gap R
-   42    0.0010  Steel : Steel
-  121    0.0380  Lightweight concrete screed : Lightweight concrete screed
-    0    0.0320  air  0.170 0.170 0.170
-  211    0.0670  Glasswool : Glasswool
-    0    0.0320  air  0.170 0.170 0.170
-  103    0.0100  Perlite plasterboard : Perlite plasterboard
-# layers  description   optics name   symmetry tag
+# material ref thickness (m) description & air gap R
+   42    0.0010  steel : Steel
+  121    0.0380  ltwt_conc_screed : Lightweight conc screed (inorganic-porous)
+    0    0.0320  gap  0.170 0.170 0.170
+  211    0.0670  glasswool : Glasswool (generic) (non-hygroscopic)
+    0    0.0320  gap  0.170 0.170 0.170
+  103    0.0100  perlite plasterboard : Perlite plasterboard (inorganic-porous)
+# layers  description  type  optics name   symmetry tag
     2    ceil_loft     OPAQ  OPAQUE        ceil_loft_r   
-# mat ref thickness (m) mat descr & air gap R
-  211    0.0150  Glasswool : Glasswool
-  103    0.0100  Perlite plasterboard : Perlite plasterboard
-# layers  description   optics name   symmetry tag
+# material ref thickness (m) description & air gap R
+  211    0.0150  glasswool : Glasswool (generic) (non-hygroscopic)
+  103    0.0100  perlite plasterboard : Perlite plasterboard (inorganic-porous)
+# layers  description  type  optics name   symmetry tag
     6    ext_wall_upr  OPAQ  OPAQUE        ext_wall_up   
-# mat ref thickness (m) mat descr & air gap R
-  103    0.0100  Perlite plasterboard : Perlite plasterboard
-    0    0.0320  air  0.170 0.170 0.170
-  211    0.0670  Glasswool : Glasswool
-    0    0.0320  air  0.170 0.170 0.170
-  121    0.0380  Lightweight concrete screed : Lightweight concrete screed
-   42    0.0010  Steel : Steel
-# layers  description   optics name   symmetry tag
+# material ref thickness (m) description & air gap R
+  103    0.0100  perlite plasterboard : Perlite plasterboard (inorganic-porous)
+    0    0.0320  gap  0.170 0.170 0.170
+  211    0.0670  glasswool : Glasswool (generic) (non-hygroscopic)
+    0    0.0320  gap  0.170 0.170 0.170
+  121    0.0380  ltwt_conc_screed : Lightweight conc screed (inorganic-porous)
+   42    0.0010  steel : Steel
+# layers  description  type  optics name   symmetry tag
     1    soffit        OPAQ  OPAQUE        SYMMETRIC     
-# mat ref thickness (m) mat descr & air gap R
-   67    0.0150  Chipboard : Chipboard
-# layers  description   optics name   symmetry tag
+# material ref thickness (m) description & air gap R
+   67    0.0150  chipboard : Chipboard
+# layers  description  type  optics name   symmetry tag
     2    ceil_loft_r   OPAQ  OPAQUE        ceil_loft     
-# mat ref thickness (m) mat descr & air gap R
-  103    0.0100  Perlite plasterboard : Perlite plasterboard
-  211    0.0150  Glasswool : Glasswool
-# layers  description   optics name   symmetry tag
+# material ref thickness (m) description & air gap R
+  103    0.0100  perlite plasterboard : Perlite plasterboard (inorganic-porous)
+  211    0.0150  glasswool : Glasswool (generic) (non-hygroscopic)
+# layers  description  type  optics name   symmetry tag
     1    steel_sheet   OPAQ  OPAQUE        SYMMETRIC     
-# mat ref thickness (m) mat descr & air gap R
-   42    0.0010  Steel : Steel
-# layers  description   optics name   symmetry tag
+# material ref thickness (m) description & air gap R
+   42    0.0010  steel : Steel
+# layers  description  type  optics name   symmetry tag
     3    ceiling       OPAQ  OPAQUE        ceiling_rev   
-# mat ref thickness (m) mat descr & air gap R
-   65    0.0150  Flooring : Flooring
-    0    0.1000  air  0.170 0.170 0.170
-  150    0.0100  Ceiling (mineral) : Ceiling (mineral)
-# layers  description   optics name   symmetry tag
+# material ref thickness (m) description & air gap R
+   65    0.0150  flooring : Flooring (source does not clarify what it is)
+    0    0.1000  gap  0.170 0.170 0.170
+  150    0.0100  ceiling mineral : Ceiling acoustic tile (mineral fibre based)
+# layers  description  type  optics name   symmetry tag
     2    air_gap_extr  OPAQ  OPAQUE        air_gap_ext   
-# mat ref thickness (m) mat descr & air gap R
-  121    0.0380  Lightweight concrete screed : Lightweight concrete screed
-   42    0.0010  Steel : Steel
-# layers  description   optics name   symmetry tag
+# material ref thickness (m) description & air gap R
+  121    0.0380  ltwt_conc_screed : Lightweight conc screed (inorganic-porous)
+   42    0.0010  steel : Steel
+# layers  description  type  optics name   symmetry tag
     2    air_gap_int   OPAQ  OPAQUE        air_gap_intr  
-# mat ref thickness (m) mat descr & air gap R
-  211    0.0670  Glasswool : Glasswool
-  103    0.0100  Perlite plasterboard : Perlite plasterboard
-# layers  description   optics name   symmetry tag
+# material ref thickness (m) description & air gap R
+  211    0.0670  glasswool : Glasswool (generic) (non-hygroscopic)
+  103    0.0100  perlite plasterboard : Perlite plasterboard (inorganic-porous)
+# layers  description  type  optics name   symmetry tag
     2    air_gap_intr  OPAQ  OPAQUE        air_gap_int   
-# mat ref thickness (m) mat descr & air gap R
-  103    0.0100  Perlite plasterboard : Perlite plasterboard
-  211    0.0670  Glasswool : Glasswool
-# layers  description   optics name   symmetry tag
+# material ref thickness (m) description & air gap R
+  103    0.0100  perlite plasterboard : Perlite plasterboard (inorganic-porous)
+  211    0.0670  glasswool : Glasswool (generic) (non-hygroscopic)
+# layers  description  type  optics name   symmetry tag
     2    air_gap_ext   OPAQ  OPAQUE        air_gap_extr  
-# mat ref thickness (m) mat descr & air gap R
-   42    0.0010  Steel : Steel
-  121    0.0380  Lightweight concrete screed : Lightweight concrete screed
-# layers  description   optics name   symmetry tag
+# material ref thickness (m) description & air gap R
+   42    0.0010  steel : Steel
+  121    0.0380  ltwt_conc_screed : Lightweight conc screed (inorganic-porous)
+# layers  description  type  optics name   symmetry tag
     2    t_bridge      OPAQ  OPAQUE        t_bridge_r    
-# mat ref thickness (m) mat descr & air gap R
-   42    0.0030  Steel : Steel
-  103    0.0100  Perlite plasterboard : Perlite plasterboard
-# layers  description   optics name   symmetry tag
+# material ref thickness (m) description & air gap R
+   42    0.0030  steel : Steel
+  103    0.0100  perlite plasterboard : Perlite plasterboard (inorganic-porous)
+# layers  description  type  optics name   symmetry tag
     2    t_bridge_r    OPAQ  OPAQUE        t_bridge      
-# mat ref thickness (m) mat descr & air gap R
-  103    0.0100  Perlite plasterboard : Perlite plasterboard
-   42    0.0030  Steel : Steel
-# layers  description   optics name   symmetry tag
+# material ref thickness (m) description & air gap R
+  103    0.0100  perlite plasterboard : Perlite plasterboard (inorganic-porous)
+   42    0.0030  steel : Steel
+# layers  description  type  optics name   symmetry tag
     1    collector     OPAQ  OPAQUE        SYMMETRIC     
-# mat ref thickness (m) mat descr & air gap R
-  203    0.0500  UF foam : UF foam
+# material ref thickness (m) description & air gap R
+  203    0.0500  UF foam : UF foam (non-hygroscopic)

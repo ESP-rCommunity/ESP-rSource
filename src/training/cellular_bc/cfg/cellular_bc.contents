@@ -64,17 +64,17 @@ Seasons (as found in climatelist file):
  
 Metric                zones area scaling weight  type name
  1 Resultant T (degC)    3   35.40 1.000 1.000 comfort ocup_zones
-Zones: manager_a manager_b coridor
+Zones: manager_a manager_b corridor
  2 Zone db T (degC)    3   35.40 1.000 1.000 ZndbT dbt_zones
-Zones: manager_a manager_b coridor
+Zones: manager_a manager_b corridor
  3 Infiltration (W)    3   35.40 1.000 1.000 Infil infil_zones
-Zones: manager_a manager_b coridor
+Zones: manager_a manager_b corridor
  
 Demand set,  nb zones, floor area, scaling factor
  1 offices        2   27.00 1.000
 Zones: manager_a manager_b
  2 other          1    8.40 1.000
-Zones: coridor
+Zones: corridor
  
  
 Databases associated with the model:
@@ -134,7 +134,7 @@ capacity 2500.0W min cooling capacity 0.0W. Heating setpoint 10.00C cooling setp
  Zone to contol loop linkages:
  zone ( 1) manager_a    << control  1
  zone ( 2) manager_b    << control  1
- zone ( 3) coridor      << control  1
+ zone ( 3) corridor      << control  1
  
  ____________________________________________________________
  
@@ -142,7 +142,7 @@ ID Zone         Volume|          Surface
    Name         m^3   | No. Opaque  Transp  ~Floor
  1 manager_a      40.5  13    62.2     9.8    13.5  manager describes cellular office on left
  2 manager_b      40.5  13    62.2     9.8    13.5  manager_b describes right office
- 3 coridor        18.3  14    45.8     9.0     8.4  coridor describes passage adjacent to offices
+ 3 corridor        18.3  14    45.8     9.0     8.4  corridor describes passage adjacent to offices
    all            99.   40    170.     29.     35.
  
  
@@ -159,16 +159,16 @@ ID Zone         Volume|          Surface
  Sur| Area  |Azim|Elev| surface    |    geometry       | construction |environment
     | m^2   |deg |deg | name       |optical|locat| use | name         |other side
   1  13.5     90.   0. pt_general   OPAQUE   VERT -     gyp_gyp_ptn  ||< pt_general:manager_b
-  2  0.920   360.   0. part_frame   OPAQUE   VERT -     insul_frame  ||< part_frame:coridor
-  3  2.32    360.   0. door         OPAQUE   VERT -     door         ||< door:coridor
+  2  0.920   360.   0. part_frame   OPAQUE   VERT -     insul_frame  ||< part_frame:corridor
+  3  2.32    360.   0. door         OPAQUE   VERT -     door         ||< door:corridor
   4  6.00    270.   0. pt_other     OPAQUE   VERT -     gyp_gyp_ptn  ||< identical environment
   5  13.5      0.  90. ceiling      OPAQUE   CEIL -     ceiling      ||< identical environment
   6  13.5      0. -90. floor        OPAQUE   FLOR -     susp_flr_re  ||< identical environment
   7  2.70    180.   0. spandral     OPAQUE   VERT -     insul_frame  ||< external
   8  0.980   180.   0. frame        OPAQUE   VERT -     insul_frame  ||< external
   9  5.32    180.   0. glazing      DCF7671_ VERT -     dbl_glz      ||< external
- 10  4.48    360.   0. part_glaz    DCF7671_ VERT -     dbl_glz      ||< part_glaz:coridor
- 11  1.28    360.   0. ptn_corid    OPAQUE   VERT -     gyp_gyp_ptn  ||< ptn_corid:coridor
+ 10  4.48    360.   0. part_glaz    DCF7671_ VERT -     dbl_glz      ||< part_glaz:corridor
+ 11  1.28    360.   0. ptn_corid    OPAQUE   VERT -     gyp_gyp_ptn  ||< ptn_corid:corridor
  12  0.450   270.   0. pt_other_a   OPAQUE   VERT -     gyp_gyp_ptn  ||< identical environment
  13  7.05    270.   0. pt_other_b   OPAQUE   VERT -     gyp_gyp_ptn  ||< identical environment
  
@@ -242,16 +242,16 @@ Number of sunday       casual gains=  0
  Sur| Area  |Azim|Elev| surface    |    geometry       | construction |environment
     | m^2   |deg |deg | name       |optical|locat| use | name         |other side
   1  13.5    270.   0. pt_general   OPAQUE   VERT -     gyp_gyp_ptn  ||< pt_general:manager_a
-  2  0.920   360.   0. part_frame   OPAQUE   VERT -     insul_frame  ||< part_frameb:coridor
-  3  2.32    360.   0. door         OPAQUE   VERT -     door         ||< door_b:coridor
+  2  0.920   360.   0. part_frame   OPAQUE   VERT -     insul_frame  ||< part_frameb:corridor
+  3  2.32    360.   0. door         OPAQUE   VERT -     door         ||< door_b:corridor
   4  6.00     90.   0. pt_other     OPAQUE   VERT -     gyp_gyp_ptn  ||< identical environment
   5  13.5      0.  90. ceiling      OPAQUE   CEIL -     ceiling      ||< identical environment
   6  13.5      0. -90. floor        OPAQUE   FLOR -     susp_flr_re  ||< identical environment
   7  2.70    180.   0. spandral     OPAQUE   VERT -     insul_frame  ||< external
   8  0.980   180.   0. frame        OPAQUE   VERT -     insul_frame  ||< external
   9  5.32    180.   0. glazing      DCF7671_ VERT -     dbl_glz      ||< external
- 10  4.48    360.   0. part_glaz    DCF7671_ VERT -     dbl_glz      ||< part_glazb:coridor
- 11  1.28      0.   0. ptn_corid    OPAQUE   VERT -     gyp_gyp_ptn  ||< ptn_coridb:coridor
+ 10  4.48    360.   0. part_glaz    DCF7671_ VERT -     dbl_glz      ||< part_glazb:corridor
+ 11  1.28      0.   0. ptn_corid    OPAQUE   VERT -     gyp_gyp_ptn  ||< ptn_coridb:corridor
  12  0.450    90.   0. pt_other_a   OPAQUE   VERT -     gyp_gyp_ptn  ||< identical environment
  13  7.05     90.   0. pt_other_b   OPAQUE   VERT -     gyp_gyp_ptn  ||< identical environment
  
@@ -308,12 +308,12 @@ Number of sunday       casual gains=  0
  
  ____________________________________________________________
  
- Zone coridor ( 3) is composed of 14 surfaces and 32 vertices.
+ Zone corridor ( 3) is composed of 14 surfaces and 32 vertices.
  It encloses a volume of 18.3m^3 of space, with a total surface
  area of 54.8m^2 & approx floor area of 8.42m^2
- coridor describes passage adjacent to offices
+ corridor describes passage adjacent to offices
  
- A summary of the surfaces in coridor( 3) follows:
+ A summary of the surfaces in corridor( 3) follows:
  
  Sur| Area  |Azim|Elev| surface    |    geometry       | construction |environment
     | m^2   |deg |deg | name       |optical|locat| use | name         |other side
@@ -454,11 +454,11 @@ Wkd  6 LightsWm2 20 - 24      0.0      0.0       0.50       0.50
  
  Layer|Prim|Thick |Conduc-|Density|Specif|IR  |Solr|Diffu| R    |Descr
       |db  |(mm)  |tivity |       |heat  |emis|abs |resis|m^2K/W
- Ext   108   13.0     0.190   950.   840. 0.91 0.22    11.  0.07 white gypboard : White paintedd Gypboard
+ Ext   108   13.0     0.190   950.   840. 0.91 0.22    11.  0.07 white gypboard : White painted Gypboard
     2    0   50.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
     3   28  100.0     0.510  1400.  1000. 0.90 0.65    10.  0.20 block inner : Block inner (3% mc)
     4    0   50.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
- Int   108   13.0     0.190   950.   840. 0.91 0.22    11.  0.07 white gypboard : White paintedd Gypboard
+ Int   108   13.0     0.190   950.   840. 0.91 0.22    11.  0.07 white gypboard : White painted Gypboard
  ISO 6946 U values (horiz/upward/downward heat flow)=  1.186  1.230  1.133 (partition)  1.072
  Total area of gyp_blk_ptn is     18.30
  
@@ -466,8 +466,8 @@ Wkd  6 LightsWm2 20 - 24      0.0      0.0       0.50       0.50
  
  Layer|Prim|Thick |Conduc-|Density|Specif|IR  |Solr|Diffu| R    |Descr
       |db  |(mm)  |tivity |       |heat  |emis|abs |resis|m^2K/W
- Ext   108   12.0     0.190   950.   840. 0.91 0.22    11.  0.06 white gypboard : White paintedd Gypboard
+ Ext   108   12.0     0.190   950.   840. 0.91 0.22    11.  0.06 white gypboard : White painted Gypboard
     2    0   50.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
- Int   108   12.0     0.190   950.   840. 0.91 0.22    11.  0.06 white gypboard : White paintedd Gypboard
+ Int   108   12.0     0.190   950.   840. 0.91 0.22    11.  0.06 white gypboard : White painted Gypboard
  ISO 6946 U values (horiz/upward/downward heat flow)=  2.144  2.292  1.975 (partition)  1.798
  Total area of gyp_gyp_ptn is     59.42

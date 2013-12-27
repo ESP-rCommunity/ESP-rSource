@@ -1,5 +1,5 @@
 # composite construction db defined in ../dbs/multicon.db2
-# based on materials db /usr/esru/esp-r/databases/constr.db2.a
+# based on materials db /usr/esru/esp-r/databases/constr_db2.materialdb
    37     # no of composites 
 # layers  description   optics name   symmetry tag
     4    extern_wall   OPAQ  OPAQUE        NONSYMMETRIC  

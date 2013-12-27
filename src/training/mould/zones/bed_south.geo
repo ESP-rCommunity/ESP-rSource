@@ -1,43 +1,51 @@
-# geometry of bed_south defined in: bed_south.geo
-GEN  bed_south              # type   zone name
-      14       8   0.000    # vertices, surfaces, rotation angle 
-#  X co-ord, Y co-ord, Z co-ord 
-      3.000     0.000     2.200  # vert  1
-      6.000     0.000     2.200  # vert  2
-      6.000     3.000     2.200  # vert  3
-      3.000     3.000     2.200  # vert  4
-      3.000     0.000     4.400  # vert  5
-      6.000     0.000     4.400  # vert  6
-      6.000     3.000     4.400  # vert  7
-      3.000     3.000     4.400  # vert  8
-      3.000     2.000     2.200  # vert  9
-      3.000     2.000     4.400  # vert 10
-      4.000     0.000     3.000  # vert 11
-      5.200     0.000     3.000  # vert 12
-      5.200     0.000     4.000  # vert 13
-      4.000     0.000     4.000  # vert 14
-# no of vertices followed by list of associated vert
-  10,  1,  2,  6,  5,  1, 11, 14, 13, 12, 11,
-   4,  2,  3,  7,  6,
-   4,  3,  4,  8,  7,
-   4,  9,  1,  5, 10,
-   5,  5,  6,  7,  8, 10,
-   5,  4,  3,  2,  1,  9,
-   4,  4,  9, 10,  8,
-   4, 11, 12, 13, 14,
-# number of default windows within each surface 
-  0, 0, 0, 0, 0, 0, 0, 0,
-# surfaces indentation (m)
- 0.000 0.000 0.000 0.000 0.000 0.000 0.000 0.000
-    1   6   0   0    # default insolation distribution
-# surface attributes follow: 
-# id  surface      geom  loc/  mlc db       environment
-# no  name         type  posn  name         other side
-  1, south         OPAQ  VERT  ext_wall     EXTERIOR       
-  2, east          OPAQ  VERT  ext_part     SIMILAR        
-  3, north_bed     OPAQ  VERT  int_part     north_beds     
-  4, bathrm        OPAQ  VERT  int_part     bathrm         
-  5, roof          OPAQ  CEIL  loft_ceil    loft           
-  6, floor         OPAQ  FLOR  upper_flor   kitchen        
-  7, hall_2        OPAQ  VERT  int_part     hall_2         
-  8, window        TRAN  VERT  single_glaz  EXTERIOR       
+*Geometry 1.1,GEN,bed_south # tag version, format, zone name
+*date Sun Dec  8 16:04:12 2013  # latest file modification 
+bed_south describes a
+# tag, X co-ord, Y co-ord, Z co-ord
+*vertex,3.00000,0.00000,2.20000  #   1
+*vertex,6.00000,0.00000,2.20000  #   2
+*vertex,6.00000,3.00000,2.20000  #   3
+*vertex,3.00000,3.00000,2.20000  #   4
+*vertex,3.00000,0.00000,4.40000  #   5
+*vertex,6.00000,0.00000,4.40000  #   6
+*vertex,6.00000,3.00000,4.40000  #   7
+*vertex,3.00000,3.00000,4.40000  #   8
+*vertex,3.00000,2.00000,2.20000  #   9
+*vertex,3.00000,2.00000,4.40000  #  10
+*vertex,4.00000,0.00000,3.00000  #  11
+*vertex,5.20000,0.00000,3.00000  #  12
+*vertex,5.20000,0.00000,4.00000  #  13
+*vertex,4.00000,0.00000,4.00000  #  14
+# 
+# tag, number of vertices followed by list of associated vert
+*edges,10,1,2,6,5,1,11,14,13,12,11  #  1
+*edges,4,2,3,7,6  #  2
+*edges,4,3,4,8,7  #  3
+*edges,4,9,1,5,10  #  4
+*edges,5,5,6,7,8,10  #  5
+*edges,5,4,3,2,1,9  #  6
+*edges,4,4,9,10,8  #  7
+*edges,4,11,12,13,14  #  8
+# 
+# surf attributes:
+#  surf name, surf position VERT/CEIL/FLOR/SLOP/UNKN
+#  child of (surface name), useage (pair of tags) 
+#  construction name, optical name
+#  boundary condition tag followed by two data items
+*surf,south,VERT,-,-,-,ext_wall,OPAQUE,EXTERIOR,0,0  #   1 ||< external
+*surf,east,VERT,-,-,-,ext_part,OPAQUE,SIMILAR,00,00  #   2 ||< identical environment
+*surf,north_bed,VERT,-,-,-,int_part,OPAQUE,ANOTHER,10,03  #   3 ||< bed_s:north_beds
+*surf,bathrm,VERT,-,-,-,int_part,OPAQUE,ANOTHER,06,02  #   4 ||< s_bed:bathrm
+*surf,roof,CEIL,-,-,-,loft_ceil,OPAQUE,ANOTHER,11,07  #   5 ||< Loft_sbed:loft
+*surf,floor,FLOR,-,-,-,upper_flor,OPAQUE,ANOTHER,04,05  #   6 ||< bed_1:kitchen
+*surf,hall_2,VERT,-,-,-,int_part,OPAQUE,ANOTHER,09,02  #   7 ||< south_beds:hall_2
+*surf,window,VERT,-,-,-,single_glaz,SC_8985_04nb,EXTERIOR,0,0  #   8 ||< external
+# 
+*insol,1,6,0,0  # default insolation distribution
+# 
+# shading directives
+*shad_calc,none  # no temporal shading requested
+# 
+*insol_calc,none  # no insolation requested
+# 
+*base_list,1,6,     9.00 0  # zone base list

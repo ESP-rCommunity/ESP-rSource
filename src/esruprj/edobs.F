@@ -288,7 +288,7 @@ C List details of obstructions.
           write(outs,'(2a)')
      &      'Block X- Y- Z- coords DX- DY- DZ- values Orient Opacity ',
      &      'Name Material'
-	  call edisp(iuout,outs)
+          call edisp(iuout,outs)
           DO 9995 I=1,nbobs(icomp)
             lnbn=LNBLOCKNAME(icomp,I)
             lnbm=LNBLOCKMAT(icomp,I)
@@ -528,7 +528,7 @@ C To delete the last obstruction, dereference the file and exit.
         ELSEIF(IW.EQ.1)THEN
           IF(nbobs(icomp)+1.LE.MB)THEN
             nbobs(icomp)=nbobs(icomp)+1
-	    nbo=nbobs(icomp)
+            nbo=nbobs(icomp)
             XOB(icomp,nbo)=1.0
             YOB(icomp,nbo)=1.0
             ZOB(icomp,nbo)=0.0
@@ -558,7 +558,7 @@ C To delete the last obstruction, dereference the file and exit.
           ENDIF
 
 C Edit the new block, first hilight the obstruction.
-	  nbo=nbobs(icomp)
+          nbo=nbobs(icomp)
           ITOBS = nbo
           CALL EPMENSV      ! save state of the calling menue
    77     CALL ADJVIEW(IER) ! redraw the model
@@ -581,7 +581,7 @@ C If user asked for next or prior obstruction reset nbo and call again.
         elseif(IW.EQ.3)THEN
 
 C Copy obstruction.
-	  nbo=nbobs(icomp)
+          nbo=nbobs(icomp)
           CALL EPMENSV
           INPIC=1
           CALL EPICKS(INPIC,IVALB,' ','Copy which obstruction:',
@@ -618,7 +618,7 @@ C time for copy use zeros, otherwise re-present the previous values.
             CALL EGETWR(HOLDS,K,VALY,-99.,99.,'W','Y tr',IER)
             CALL EGETWR(HOLDS,K,VALZ,-99.,99.,'W','Z tr',IER)
             if(ier.ne.0)goto 243
-	    nbo=nbobs(icomp)
+            nbo=nbobs(icomp)
             XOB(icomp,nbo)=XOB(icomp,IFOC)+VALX
             YOB(icomp,nbo)=YOB(icomp,IFOC)+VALY
             ZOB(icomp,nbo)=ZOB(icomp,IFOC)+VALZ
@@ -646,7 +646,7 @@ C time for copy use zeros, otherwise re-present the previous values.
             else
               CALL MKGOMST(IUF,ZOBS(ICOMP),ICOMP,IER)
             endif
-	    nbo=nbobs(icomp)
+            nbo=nbobs(icomp)
             ITOBS = nbo
             CALL EPMENSV       ! save the calling menu layout
   78        CALL ADJVIEW(IER)  ! redraw wireframe
@@ -1209,7 +1209,11 @@ C geometry files.
           VERT(21)=                 '< jump to previous obstruction  '
           VERT(22)=                 '                                '
         endif
-        VERT(23)                  = '* convert to general polygons   '
+        if(newgeo)then
+          VERT(23)                = '* convert to general polygons   '
+        else
+          VERT(23)                = '  not applicable                '
+        endif
         VERT(24)                  = '? help                          '
         VERT(25)                  = '- exit                          '
       else
@@ -1423,7 +1427,7 @@ C If newer geometry file offer a 2nd axis of rotation.
           CALL EASKR(VX,MSG,' Block Y rotation (see help)? ',
      &       -180.0,'W',180.0,'W',0.0,'block Y rotation',IER,nbhelp)
           if(ier.ne.0)goto 45
-	  call eclose(VX,0.0,0.1,close)
+          call eclose(VX,0.0,0.1,close)
           if(.NOT.close)then
             BANGOB(ICOMP,IB,2)=VX
             BLOCKTYP(ICOMP,IB)='obs3'   ! alter the type if non-zero
@@ -1498,7 +1502,7 @@ C Convert current obstruction block into general polygon obstruction.
             YBP(ICOMP,IB,ibe)=YB(ibe)
             ZBP(ICOMP,IB,ibe)=ZB(ibe)
   56      continue
-	  
+  
           BLOCKTYP(ICOMP,IB)='obsp'
           DXOB(ICOMP,IB)=0.0  ! reset unused data
           DYOB(ICOMP,IB)=0.0
@@ -1513,7 +1517,7 @@ C Convert current obstruction block into general polygon obstruction.
           MODIFY=.TRUE.
           call warnmod(ICOMP,'ob+')
           GOTO 92
-	  
+  
         ELSEIF(IVERT.EQ.24)THEN
           helptopic='obstruction_prism'
           call gethelptext(helpinsub,helptopic,nbhelp)

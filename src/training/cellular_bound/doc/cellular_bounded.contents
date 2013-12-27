@@ -1,8 +1,8 @@
 Synopsis
  
 Synopsis of the model Two adjacent cellular offices with upper and lower
-bounding zones defined in cellular_bounded.cfg generated on Wed Oct 17
-10:37:05 2012. Notes associated with the model are in
+bounding zones defined in cellular_bounded.cfg generated on Thu Aug  8
+10:59:02 2013. Notes associated with the model are in
 ../doc/cellular_bounded.log
  
 The model is located at latitude   46.00 with a longitude difference of   0.00
@@ -67,24 +67,24 @@ Seasons (as found in climatelist file):
  
 Metric                zones area scaling weight  type name
  1 Resultant T (degC)    3   35.40 1.000 1.000 comfort ocup_zones
-Zones: manager_a manager_b coridor
+Zones: manager_a manager_b corridor
  2 Zone db T (degC)    3   35.40 1.000 1.000 ZndbT dbt_zones
-Zones: manager_a manager_b coridor
+Zones: manager_a manager_b corridor
  3 Infiltration (W)    3   35.40 1.000 1.000 Infil infil_zones
-Zones: manager_a manager_b coridor
+Zones: manager_a manager_b corridor
  
 Demand set,  nb zones, floor area, scaling factor
  1 offices        2   27.00 1.000
 Zones: manager_a manager_b
  2 other          1    8.40 1.000
-Zones: coridor
+Zones: corridor
  3 piping         2  115.10 1.000
 Zones: floor_below ceiling_abv
  
  
 Databases associated with the model:
  standard pressure distr: pressc.db1
- materials              : ../dbs/cellular.materials.a
+ standard materials     : cellular.materialdb
  constructions          : ../dbs/cellular_flh.constrdb
  standard plant comp    : plantc.db1
  standard event profiles: profiles.db1.a
@@ -96,22 +96,21 @@ Databases associated with the model:
  
 The model includes ideal controls as follows:
 Control description:
-Ideal control for dual office model. Weekdays normal office hours,
-saturday reduced occupied hours, sunday stand-by only. One person per
-office, 100W lighting and 150W small power. Tighter setpoints for
-manager_b (so the mean control in boundary_up
+Ideal control for dual office model. Weekdays normal office hours, saturday
+reduced occupied hours, sunday stand-by only. One person per office, 100W
+lighting and 150W small power. Tighter setpoints for manager_b (so the mean
+control in boundary_up
  
 Zones control includes  4 functions.
 The floor_below zone is controlled to the temperature of the suspended ceiling
 zone (to act as a boundary). The boundary_up zone is controlled to the mean
 temperature of manager_a and manager_b.
+Details of control loops referenced in the model:
  
  The sensor for function  1 senses the temperature of the current zone.
  The actuator for function  1 is air point of the current zone
  The following day types are defined:
-weekdays
-saturday
-sunday
+weekdays    saturday    sunday
  Day type weekdays control has  3 periods.
  Per|Start|Sensing  |Actuating  | Control law description
    1  0.00 db temp   > flux      basic control: max heating capacity 2500.0W min heating
@@ -159,9 +158,7 @@ in manager_a. & senses dry bulb T in manager_b.
  The sensor for function  4 senses the temperature of the current zone.
  The actuator for function  4 is air point of the current zone
  The following day types are defined:
-weekdays
-saturday
-sunday
+weekdays    saturday    sunday
  Day type weekdays control has  3 periods.
  Per|Start|Sensing  |Actuating  | Control law description
    1  0.00 db temp   > flux      basic control: max heating capacity 2500.0W min heating
@@ -191,7 +188,7 @@ capacity 0.0W max cooling capacity 2500.0W min cooling capacity 0.0W. Heating se
  Zone to contol loop linkages:
  zone ( 1) manager_a    << control  1
  zone ( 2) manager_b    << control  4
- zone ( 3) coridor      << control  1
+ zone ( 3) corridor      << control  1
  zone ( 4) floor_below  << control  2
  zone ( 5) ceiling_abv  << control  0
  zone ( 6) boundary_up  << control  3
@@ -202,7 +199,7 @@ ID Zone         Volume|          Surface
    Name         m^3   | No. Opaque  Transp  ~Floor
  1 manager_a      40.5  13    62.2     9.8    13.5  manager describes cellular office on left
  2 manager_b      40.5  13    62.2     9.8    13.5  manager_b describes right office
- 3 coridor        18.3  14    45.8     9.0     8.4  coridor describes passage adjacent to offices
+ 3 corridor        18.3  14    45.8     9.0     8.4  corridor describes passage adjacent to offices
  4 floor_below    16.9   9    79.4     0.0    47.3  floor_below is a thin zone representing ceiling void below
  5 ceiling_abv    16.9   9    79.4     0.0    67.7  ceiling_abv is a suspended ceiling above occupied space
  6 boundary_up    16.9   6    79.4     0.0    33.8  boundary_up is a boundary zone above suspended ceiling
@@ -222,16 +219,16 @@ ID Zone         Volume|          Surface
  Sur| Area  |Azim|Elev| surface    |    geometry       | construction |environment
     | m^2   |deg |deg | name       |optical|locat| use | name         |other side
   1  13.5     90.   0. pt_general   OPAQUE   VERT -     gyp_gyp_ptn  ||< pt_general:manager_b
-  2  0.920   360.   0. part_frame   OPAQUE   VERT -     insul_frame  ||< part_frame:coridor
-  3  2.32      0.   0. door         OPAQUE   VERT -     door         ||< door:coridor
+  2  0.920   360.   0. part_frame   OPAQUE   VERT -     insul_frame  ||< part_frame:corridor
+  3  2.32      0.   0. door         OPAQUE   VERT -     door         ||< door:corridor
   4  6.00    270.   0. pt_other     OPAQUE   VERT -     gyp_gyp_ptn  ||< identical environment
   5  13.5      0.  90. ceiling      OPAQUE   CEIL -     ceiling      ||< floor_ma:ceiling_abv
   6  13.5      0. -90. floor        OPAQUE   FLOR -     structure    ||< floor_ma:floor_below
   7  2.70    180.   0. spandral     OPAQUE   VERT -     insul_frame  ||< external
   8  0.980   180.   0. frame        OPAQUE   VERT -     insul_frame  ||< external
   9  5.32    180.   0. glazing      DCF7671_ VERT -     dbl_glz      ||< external
- 10  4.48      0.   0. part_glaz    DCF7671_ VERT -     dbl_glz      ||< part_glaz:coridor
- 11  1.28    360.   0. ptn_corid    OPAQUE   VERT -     gyp_gyp_ptn  ||< ptn_corid:coridor
+ 10  4.48      0.   0. part_glaz    DCF7671_ VERT -     dbl_glz      ||< part_glaz:corridor
+ 11  1.28    360.   0. ptn_corid    OPAQUE   VERT -     gyp_gyp_ptn  ||< ptn_corid:corridor
  12  0.450   270.   0. pt_other_a   OPAQUE   VERT -     gyp_gyp_ptn  ||< identical environment
  13  7.05    270.   0. pt_other_b   OPAQUE   VERT -     gyp_gyp_ptn  ||< identical environment
  
@@ -259,34 +256,34 @@ Notes:
 manager a has some diversity of occupancy  lights at 10W/m2 and small
 power on weekdays at 5W/m2
  
-Daytype   Gain Type    Period Sensible  Latent     Radiant    Convec
-          No.  label   Hours  Magn.(W)  Magn.(W)   Fraction   Fraction
-weekdays    1 OccuptW    0- 7      0.0      0.0       0.50       0.50
-weekdays    2 OccuptW    7- 8     20.0     10.0       0.60       0.40
-weekdays    3 OccuptW    8- 9     60.0     30.0       0.60       0.40
-weekdays    4 OccuptW    9-12    100.0     50.0       0.60       0.40
-weekdays    5 OccuptW   12-14     65.0     32.5       0.60       0.40
-weekdays    6 OccuptW   14-17    100.0     50.0       0.60       0.40
-weekdays    7 OccuptW   17-24      0.0      0.0       0.50       0.50
-weekdays    8 LightsWm2  0- 8      0.0      0.0       0.50       0.50
-weekdays    9 LightsWm2  8-18     10.0      0.0       0.30       0.70
-weekdays   10 LightsWm2 18-24      0.0      0.0       0.50       0.50
-weekdays   11 EquiptWm2  0- 8      0.0      0.0       0.50       0.50
-weekdays   12 EquiptWm2  8-18      5.0      0.0       0.40       0.60
-weekdays   13 EquiptWm2 18-24      0.0      0.0       0.50       0.50
-saturday    1 OccuptW    0- 7      0.0      0.0       0.50       0.50
-saturday    2 OccuptW    7- 8     20.0     10.0       0.50       0.50
-saturday    3 OccuptW    8- 9     60.0     30.0       0.50       0.50
-saturday    4 OccuptW    9-12    100.0     50.0       0.50       0.50
-saturday    5 OccuptW   12-14     65.0     32.5       0.50       0.50
-saturday    6 OccuptW   14-17    100.0     50.0       0.50       0.50
-saturday    7 OccuptW   17-24      0.0      0.0       0.50       0.50
-saturday    8 LightsWm2  0- 8      0.0      0.0       0.50       0.50
-saturday    9 LightsWm2  8-12     10.0      0.0       0.30       0.70
-saturday   10 LightsWm2 12-24      0.0      0.0       0.50       0.50
-saturday   11 EquiptWm2  0-24      0.0      0.0       0.50       0.50
-sunday      1 LightsWm2  0-24      0.0      0.0       0.50       0.50
-sunday      2 EquiptWm2  0-24      0.0      0.0       0.50       0.50
+Daytype   Gain Label     Type    Unit Period Sensible  Latent     Radiant    Convec
+          No.                          Hours Magn.(W)  Magn.(W)   Fraction   Fraction
+weekdays    1 Occupt     people    W    0- 7      0.0      0.0       0.50       0.50
+weekdays    2 Occupt     people    W    7- 8     20.0     10.0       0.60       0.40
+weekdays    3 Occupt     people    W    8- 9     60.0     30.0       0.60       0.40
+weekdays    4 Occupt     people    W    9-12    100.0     50.0       0.60       0.40
+weekdays    5 Occupt     people    W   12-14     65.0     32.5       0.60       0.40
+weekdays    6 Occupt     people    W   14-17    100.0     50.0       0.60       0.40
+weekdays    7 Occupt     people    W   17-24      0.0      0.0       0.50       0.50
+weekdays    8 Lights     lighting  Wm2  0- 8      0.0      0.0       0.50       0.50
+weekdays    9 Lights     lighting  Wm2  8-18     10.0      0.0       0.30       0.70
+weekdays   10 Lights     lighting  Wm2 18-24      0.0      0.0       0.50       0.50
+weekdays   11 Equipt     equipment Wm2  0- 8      0.0      0.0       0.50       0.50
+weekdays   12 Equipt     equipment Wm2  8-18      5.0      0.0       0.40       0.60
+weekdays   13 Equipt     equipment Wm2 18-24      0.0      0.0       0.50       0.50
+saturday    1 Occupt     people    W    0- 7      0.0      0.0       0.50       0.50
+saturday    2 Occupt     people    W    7- 8     20.0     10.0       0.50       0.50
+saturday    3 Occupt     people    W    8- 9     60.0     30.0       0.50       0.50
+saturday    4 Occupt     people    W    9-12    100.0     50.0       0.50       0.50
+saturday    5 Occupt     people    W   12-14     65.0     32.5       0.50       0.50
+saturday    6 Occupt     people    W   14-17    100.0     50.0       0.50       0.50
+saturday    7 Occupt     people    W   17-24      0.0      0.0       0.50       0.50
+saturday    8 Lights     lighting  Wm2  0- 8      0.0      0.0       0.50       0.50
+saturday    9 Lights     lighting  Wm2  8-12     10.0      0.0       0.30       0.70
+saturday   10 Lights     lighting  Wm2 12-24      0.0      0.0       0.50       0.50
+saturday   11 Equipt     equipment Wm2  0-24      0.0      0.0       0.50       0.50
+sunday      1 Lights     lighting  Wm2  0-24      0.0      0.0       0.50       0.50
+sunday      2 Equipt     equipment Wm2  0-24      0.0      0.0       0.50       0.50
  
  ____________________________________________________________
  
@@ -303,16 +300,16 @@ sunday      2 EquiptWm2  0-24      0.0      0.0       0.50       0.50
  Sur| Area  |Azim|Elev| surface    |    geometry       | construction |environment
     | m^2   |deg |deg | name       |optical|locat| use | name         |other side
   1  13.5    270.   0. pt_general   OPAQUE   VERT -     gyp_gyp_ptn  ||< pt_general:manager_a
-  2  0.920   360.   0. part_frame   OPAQUE   VERT -     insul_frame  ||< part_frameb:coridor
-  3  2.32      0.   0. door         OPAQUE   VERT -     door         ||< door_b:coridor
+  2  0.920   360.   0. part_frame   OPAQUE   VERT -     insul_frame  ||< part_frameb:corridor
+  3  2.32      0.   0. door         OPAQUE   VERT -     door         ||< door_b:corridor
   4  6.00     90.   0. pt_other     OPAQUE   VERT -     gyp_gyp_ptn  ||< identical environment
   5  13.5      0.  90. ceiling      OPAQUE   CEIL -     ceiling      ||< floor_mb:ceiling_abv
   6  13.5      0. -90. floor        OPAQUE   FLOR -     structure    ||< floor_mb:floor_below
   7  2.70    180.   0. spandral     OPAQUE   VERT -     insul_frame  ||< external
   8  0.980   180.   0. frame        OPAQUE   VERT -     insul_frame  ||< external
   9  5.32    180.   0. glazing      DCF7671_ VERT -     dbl_glz      ||< external
- 10  4.48      0.   0. part_glaz    DCF7671_ VERT -     dbl_glz      ||< part_glazb:coridor
- 11  1.28      0.   0. ptn_corid    OPAQUE   VERT -     gyp_gyp_ptn  ||< ptn_coridb:coridor
+ 10  4.48      0.   0. part_glaz    DCF7671_ VERT -     dbl_glz      ||< part_glazb:corridor
+ 11  1.28      0.   0. ptn_corid    OPAQUE   VERT -     gyp_gyp_ptn  ||< ptn_coridb:corridor
  12  0.450    90.   0. pt_other_a   OPAQUE   VERT -     gyp_gyp_ptn  ||< identical environment
  13  7.05     90.   0. pt_other_b   OPAQUE   VERT -     gyp_gyp_ptn  ||< identical environment
  
@@ -340,43 +337,43 @@ Notes:
 manager_b occupancy has some diversity of occupancy lights at 10W/m2
 and small power on weekdays at 5W/m2
  
-Daytype   Gain Type    Period Sensible  Latent     Radiant    Convec
-          No.  label   Hours  Magn.(W)  Magn.(W)   Fraction   Fraction
-weekdays    1 OccuptW    0- 7      0.0      0.0       0.50       0.50
-weekdays    2 OccuptW    7- 8     20.0     10.0       0.60       0.40
-weekdays    3 OccuptW    8- 9     60.0     30.0       0.60       0.40
-weekdays    4 OccuptW    9-12    100.0     50.0       0.60       0.40
-weekdays    5 OccuptW   12-14     65.0     32.5       0.60       0.40
-weekdays    6 OccuptW   14-17    100.0     50.0       0.60       0.40
-weekdays    7 OccuptW   17-24      0.0      0.0       0.50       0.50
-weekdays    8 LightsWm2  0- 8      0.0      0.0       0.50       0.50
-weekdays    9 LightsWm2  8-18     10.0      0.0       0.30       0.70
-weekdays   10 LightsWm2 18-24      0.0      0.0       0.50       0.50
-weekdays   11 EquiptWm2  0- 8      0.0      0.0       0.50       0.50
-weekdays   12 EquiptWm2  8-18      5.0      0.0       0.40       0.60
-weekdays   13 EquiptWm2 18-24      0.0      0.0       0.50       0.50
-saturday    1 OccuptW    0- 7      0.0      0.0       0.50       0.50
-saturday    2 OccuptW    7- 8     20.0     10.0       0.50       0.50
-saturday    3 OccuptW    8- 9     60.0     30.0       0.50       0.50
-saturday    4 OccuptW    9-12    100.0     50.0       0.50       0.50
-saturday    5 OccuptW   12-14     65.0     32.5       0.50       0.50
-saturday    6 OccuptW   14-17    100.0     50.0       0.50       0.50
-saturday    7 OccuptW   17-24      0.0      0.0       0.50       0.50
-saturday    8 LightsWm2  0- 8      0.0      0.0       0.50       0.50
-saturday    9 LightsWm2  8-12     10.0      0.0       0.30       0.70
-saturday   10 LightsWm2 12-24      0.0      0.0       0.50       0.50
-saturday   11 EquiptWm2  0-24      0.0      0.0       0.50       0.50
-sunday      1 LightsWm2  0-24      0.0      0.0       0.50       0.50
-sunday      2 EquiptWm2  0-24      0.0      0.0       0.50       0.50
+Daytype   Gain Label     Type    Unit Period Sensible  Latent     Radiant    Convec
+          No.                          Hours Magn.(W)  Magn.(W)   Fraction   Fraction
+weekdays    1 Occupt     people    W    0- 7      0.0      0.0       0.50       0.50
+weekdays    2 Occupt     people    W    7- 8     20.0     10.0       0.60       0.40
+weekdays    3 Occupt     people    W    8- 9     60.0     30.0       0.60       0.40
+weekdays    4 Occupt     people    W    9-12    100.0     50.0       0.60       0.40
+weekdays    5 Occupt     people    W   12-14     65.0     32.5       0.60       0.40
+weekdays    6 Occupt     people    W   14-17    100.0     50.0       0.60       0.40
+weekdays    7 Occupt     people    W   17-24      0.0      0.0       0.50       0.50
+weekdays    8 Lights     lighting  Wm2  0- 8      0.0      0.0       0.50       0.50
+weekdays    9 Lights     lighting  Wm2  8-18     10.0      0.0       0.30       0.70
+weekdays   10 Lights     lighting  Wm2 18-24      0.0      0.0       0.50       0.50
+weekdays   11 Equipt     equipment Wm2  0- 8      0.0      0.0       0.50       0.50
+weekdays   12 Equipt     equipment Wm2  8-18      5.0      0.0       0.40       0.60
+weekdays   13 Equipt     equipment Wm2 18-24      0.0      0.0       0.50       0.50
+saturday    1 Occupt     people    W    0- 7      0.0      0.0       0.50       0.50
+saturday    2 Occupt     people    W    7- 8     20.0     10.0       0.50       0.50
+saturday    3 Occupt     people    W    8- 9     60.0     30.0       0.50       0.50
+saturday    4 Occupt     people    W    9-12    100.0     50.0       0.50       0.50
+saturday    5 Occupt     people    W   12-14     65.0     32.5       0.50       0.50
+saturday    6 Occupt     people    W   14-17    100.0     50.0       0.50       0.50
+saturday    7 Occupt     people    W   17-24      0.0      0.0       0.50       0.50
+saturday    8 Lights     lighting  Wm2  0- 8      0.0      0.0       0.50       0.50
+saturday    9 Lights     lighting  Wm2  8-12     10.0      0.0       0.30       0.70
+saturday   10 Lights     lighting  Wm2 12-24      0.0      0.0       0.50       0.50
+saturday   11 Equipt     equipment Wm2  0-24      0.0      0.0       0.50       0.50
+sunday      1 Lights     lighting  Wm2  0-24      0.0      0.0       0.50       0.50
+sunday      2 Equipt     equipment Wm2  0-24      0.0      0.0       0.50       0.50
  
  ____________________________________________________________
  
- Zone coridor ( 3) is composed of 14 surfaces and 32 vertices.
+ Zone corridor ( 3) is composed of 14 surfaces and 32 vertices.
  It encloses a volume of 18.3m^3 of space, with a total surface
  area of 54.8m^2 & approx floor area of 8.42m^2
- coridor describes passage adjacent to offices
+ corridor describes passage adjacent to offices
  
- A summary of the surfaces in coridor( 3) follows:
+ A summary of the surfaces in corridor( 3) follows:
  
  Sur| Area  |Azim|Elev| surface    |    geometry       | construction |environment
     | m^2   |deg |deg | name       |optical|locat| use | name         |other side
@@ -416,26 +413,26 @@ Notes:
 half a person and 50-100W lighting weekdays 10W weekends with
 electrical properties
  
-Daytype   Gain Type    Period Sensible  Latent  Radiant  Convec p.f +/-  Power Voltage Phase
-          No.  label   Hours  Magn.(W)  Magn.(W) Frac     Frac    (-) (-)    (W)    (V) (rgb)
-weekdays    1 OccuptW    0- 8     0.0     0.0      0.6      0.4    0.00  0    0.0    0.0  1
-weekdays    2 OccuptW    8-20   100.0    50.0      0.6      0.4    0.00  0    0.0    0.0  1
-weekdays    3 OccuptW   20-24     0.0     0.0      0.6      0.4    0.00  0    0.0    0.0  1
-weekdays    4 LightsW    0- 8    50.0     0.0      0.3      0.7    0.90  1   50.0  220.0  1
-weekdays    5 LightsW    8-20   100.0     0.0      0.3      0.7    0.90  1  100.0  220.0  1
-weekdays    6 LightsW   20-24    50.0     0.0      0.3      0.7    0.90  1   50.0  220.0  1
-saturday    1 OccuptW    0- 8     0.0     0.0      0.6      0.4    0.00  0    0.0    0.0  1
-saturday    2 OccuptW    8-20   100.0    50.0      0.6      0.4    0.00  0    0.0    0.0  1
-saturday    3 OccuptW   20-24     0.0     0.0      0.6      0.4    0.00  0    0.0    0.0  1
-saturday    4 LightsW    0- 8     0.0     0.0      0.3      0.7    0.90  1   10.0  220.0  1
-saturday    5 LightsW    8-20    10.0     0.0      0.3      0.7    0.90  1   10.0  220.0  1
-saturday    6 LightsW   20-24     0.0     0.0      0.3      0.7    0.90  1   10.0  220.0  1
-sunday      1 OccuptW    0- 8     0.0     0.0      0.6      0.4    0.00  0    0.0    0.0  1
-sunday      2 OccuptW    8-20   100.0    50.0      0.6      0.4    0.00  0    0.0    0.0  1
-sunday      3 OccuptW   20-24     0.0     0.0      0.6      0.4    0.00  0    0.0    0.0  1
-sunday      4 LightsW    0- 8     0.0     0.0      0.3      0.7    0.90  1   10.0  220.0  1
-sunday      5 LightsW    8-20    10.0     0.0      0.3      0.7    0.90  1   10.0  220.0  1
-sunday      6 LightsW   20-24     0.0     0.0      0.3      0.7    0.90  1   10.0  220.0  1
+Daytype   Gain Label    Type    Unit Period Sensible  Latent  Radiant  Convec   p.f +/-  Power Voltage Phase
+          No.                        Hours  Magn.(W) Magn.(W) Frac     Frac     (-) (-)    (W)    (V) (rgb)
+weekdays    1 Occupt     people    W    0- 8      0.0      0.0    0.60    0.40    0.00  0    0.0    0.0  1
+weekdays    2 Occupt     people    W    8-20    100.0     50.0    0.60    0.40    0.00  0    0.0    0.0  1
+weekdays    3 Occupt     people    W   20-24      0.0      0.0    0.60    0.40    0.00  0    0.0    0.0  1
+weekdays    4 Lights     lighting  W    0- 8     50.0      0.0    0.30    0.70    0.90  1   50.0  220.0  1
+weekdays    5 Lights     lighting  W    8-20    100.0      0.0    0.30    0.70    0.90  1  100.0  220.0  1
+weekdays    6 Lights     lighting  W   20-24     50.0      0.0    0.30    0.70    0.90  1   50.0  220.0  1
+saturday    1 Occupt     people    W    0- 8      0.0      0.0    0.60    0.40    0.00  0    0.0    0.0  1
+saturday    2 Occupt     people    W    8-20    100.0     50.0    0.60    0.40    0.00  0    0.0    0.0  1
+saturday    3 Occupt     people    W   20-24      0.0      0.0    0.60    0.40    0.00  0    0.0    0.0  1
+saturday    4 Lights     lighting  W    0- 8      0.0      0.0    0.30    0.70    0.90  1   10.0  220.0  1
+saturday    5 Lights     lighting  W    8-20     10.0      0.0    0.30    0.70    0.90  1   10.0  220.0  1
+saturday    6 Lights     lighting  W   20-24      0.0      0.0    0.30    0.70    0.90  1   10.0  220.0  1
+sunday      1 Occupt     people    W    0- 8      0.0      0.0    0.60    0.40    0.00  0    0.0    0.0  1
+sunday      2 Occupt     people    W    8-20    100.0     50.0    0.60    0.40    0.00  0    0.0    0.0  1
+sunday      3 Occupt     people    W   20-24      0.0      0.0    0.60    0.40    0.00  0    0.0    0.0  1
+sunday      4 Lights     lighting  W    0- 8      0.0      0.0    0.30    0.70    0.90  1   10.0  220.0  1
+sunday      5 Lights     lighting  W    8-20     10.0      0.0    0.30    0.70    0.90  1   10.0  220.0  1
+sunday      6 Lights     lighting  W   20-24      0.0      0.0    0.30    0.70    0.90  1   10.0  220.0  1
  
  ____________________________________________________________
  
@@ -457,7 +454,7 @@ sunday      6 LightsW   20-24     0.0     0.0      0.3      0.7    0.90  1   10.
   5  33.9      0. -90. Surf-6       OPAQUE   FLOR -     ceiling_rev  ||< constant @ 20dC &   0W rad
   6  13.5      0.  90. floor_ma     OPAQUE   CEIL -     structure    ||< floor:manager_a
   7  13.5      0.  90. floor_mb     OPAQUE   CEIL -     structure    ||< floor:manager_b
-  8  6.10      0.  90. floor_cor    OPAQUE   CEIL -     structure    ||< floor:coridor
+  8  6.10      0.  90. floor_cor    OPAQUE   CEIL -     structure    ||< floor:corridor
   9  0.755     0.  90. filler       OPAQUE   CEIL -     structure    ||< adiabatic
  
  
@@ -477,8 +474,8 @@ Daytype    Period     Infiltration     Ventilation     From Source
 Notes:
 no operations notes (yet)
  
-Daytype   Gain Type    Period Sensible  Latent     Radiant    Convec
-          No.  label   Hours  Magn.(W)  Magn.(W)   Fraction   Fraction
+Daytype   Gain Label     Type    Unit Period Sensible  Latent     Radiant    Convec
+          No.                          Hours Magn.(W)  Magn.(W)   Fraction   Fraction
  
  ____________________________________________________________
  
@@ -500,7 +497,7 @@ Daytype   Gain Type    Period Sensible  Latent     Radiant    Convec
   5  33.9      0.  90. upper        OPAQUE   CEIL -     structure    ||< base:boundary_up
   6  13.5      0. -90. floor_ma     OPAQUE   FLOR -     ceiling_rev  ||< ceiling:manager_a
   7  13.5      0. -90. floor_mb     OPAQUE   FLOR -     ceiling_rev  ||< ceiling:manager_b
-  8  6.10      0. -90. floor_cor    OPAQUE   FLOR -     ceiling_rev  ||< ceiling:coridor
+  8  6.10      0. -90. floor_cor    OPAQUE   FLOR -     ceiling_rev  ||< ceiling:corridor
   9  0.755     0. -90. filler       OPAQUE   FLOR -     ceiling_rev  ||< adiabatic
  
  
@@ -523,23 +520,23 @@ sunday     1  0 - 24    0.50  0.0024    0.00  0.0000   0     0.00
 Notes:
 heat from ceiling mounted lights represented as 3W/m3. 0.5 ach assumed.
  
-Daytype   Gain Type    Period Sensible  Latent     Radiant    Convec
-          No.  label   Hours  Magn.(W)  Magn.(W)   Fraction   Fraction
-weekdays    1 OccuptW    0-24      0.0      0.0       0.50       0.50
-weekdays    2 LightsWm2  0- 7      0.0      0.0       0.50       0.50
-weekdays    3 LightsWm2  7-18      3.0      0.0       0.50       0.50
-weekdays    4 LightsWm2 18-24      0.0      0.0       0.50       0.50
-weekdays    5 EquiptW    0-24      0.0      0.0       0.50       0.50
-saturday    1 OccuptW    0-24      0.0      0.0       0.50       0.50
-saturday    2 LightsWm2  0- 8      0.0      0.0       0.50       0.50
-saturday    3 LightsWm2  8-12      3.0      0.0       0.50       0.50
-saturday    4 LightsWm2 12-24      0.0      0.0       0.50       0.50
-saturday    5 EquiptW    0-24      0.0      0.0       0.50       0.50
-sunday      1 OccuptW    0-24      0.0      0.0       0.50       0.50
-sunday      2 LightsWm2  0- 9      0.0      0.0       0.50       0.50
-sunday      3 LightsWm2  9-12      3.0      0.0       0.50       0.50
-sunday      4 LightsWm2 12-24      0.0      0.0       0.50       0.50
-sunday      5 EquiptW    0-24      0.0      0.0       0.50       0.50
+Daytype   Gain Label     Type    Unit Period Sensible  Latent     Radiant    Convec
+          No.                          Hours Magn.(W)  Magn.(W)   Fraction   Fraction
+weekdays    1 Occupt     people    W    0-24      0.0      0.0       0.50       0.50
+weekdays    2 Lights     lighting  Wm2  0- 7      0.0      0.0       0.50       0.50
+weekdays    3 Lights     lighting  Wm2  7-18      3.0      0.0       0.50       0.50
+weekdays    4 Lights     lighting  Wm2 18-24      0.0      0.0       0.50       0.50
+weekdays    5 Equipt     equipment W    0-24      0.0      0.0       0.50       0.50
+saturday    1 Occupt     people    W    0-24      0.0      0.0       0.50       0.50
+saturday    2 Lights     lighting  Wm2  0- 8      0.0      0.0       0.50       0.50
+saturday    3 Lights     lighting  Wm2  8-12      3.0      0.0       0.50       0.50
+saturday    4 Lights     lighting  Wm2 12-24      0.0      0.0       0.50       0.50
+saturday    5 Equipt     equipment W    0-24      0.0      0.0       0.50       0.50
+sunday      1 Occupt     people    W    0-24      0.0      0.0       0.50       0.50
+sunday      2 Lights     lighting  Wm2  0- 9      0.0      0.0       0.50       0.50
+sunday      3 Lights     lighting  Wm2  9-12      3.0      0.0       0.50       0.50
+sunday      4 Lights     lighting  Wm2 12-24      0.0      0.0       0.50       0.50
+sunday      5 Equipt     equipment W    0-24      0.0      0.0       0.50       0.50
  
  ____________________________________________________________
  
@@ -583,17 +580,17 @@ Notes:
 Flow schedules imported. This bounding zone is to be controlled to
 match conditions in office space and so no details are required.
  
-Daytype   Gain Type    Period Sensible  Latent     Radiant    Convec
-          No.  label   Hours  Magn.(W)  Magn.(W)   Fraction   Fraction
-weekdays    1 OccuptW    0-24      0.0      0.0       0.50       0.50
-weekdays    2 LightsW    0-24      0.0      0.0       0.50       0.50
-weekdays    3 EquiptW    0-24      0.0      0.0       0.40       0.60
-saturday    1 OccuptW    0-24      0.0      0.0       0.50       0.50
-saturday    2 LightsW    0-24      0.0      0.0       0.50       0.50
-saturday    3 EquiptW    0-24      0.0      0.0       0.40       0.60
-sunday      1 OccuptW    0-24      0.0      0.0       0.50       0.50
-sunday      2 LightsW    0-24      0.0      0.0       0.50       0.50
-sunday      3 EquiptW    0-24      0.0      0.0       0.40       0.60
+Daytype   Gain Label     Type    Unit Period Sensible  Latent     Radiant    Convec
+          No.                          Hours Magn.(W)  Magn.(W)   Fraction   Fraction
+weekdays    1 Occupt     people    W    0-24      0.0      0.0       0.50       0.50
+weekdays    2 Lights     lighting  W    0-24      0.0      0.0       0.50       0.50
+weekdays    3 Equipt     equipment W    0-24      0.0      0.0       0.40       0.60
+saturday    1 Occupt     people    W    0-24      0.0      0.0       0.50       0.50
+saturday    2 Lights     lighting  W    0-24      0.0      0.0       0.50       0.50
+saturday    3 Equipt     equipment W    0-24      0.0      0.0       0.40       0.60
+sunday      1 Occupt     people    W    0-24      0.0      0.0       0.50       0.50
+sunday      2 Lights     lighting  W    0-24      0.0      0.0       0.50       0.50
+sunday      3 Equipt     equipment W    0-24      0.0      0.0       0.40       0.60
  
  ____________________________________________________________
  
@@ -610,14 +607,14 @@ sunday      3 EquiptW    0-24      0.0      0.0       0.40       0.60
  
  Details of opaque construction: extern_wall and overall thickness  0.412
  
- Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
-      |db  |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
- Ext     6  100.0     0.960  2000.   650. 0.90 0.70    25.  0.10 lt brown brick : Light brown brick
-    2  211  150.0     0.040   250.   840. 0.90 0.30     4.  3.75 glasswool : Glasswool (generic)
-    3    0   50.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
-    4   22  100.0     0.240   750.  1000. 0.90 0.65    10.  0.42 aerated conc block : Aerated concrete block
- Int   108   12.0     0.190   950.   840. 0.91 0.22    11.  0.06 white gypboard : White paintedd Gypboard
- ISO 6946 U values (horiz/upward/downward heat flow)=  0.214  0.215  0.212 (partition)  0.210
+ Layer|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
+      |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
+ Ext   100.0     0.960  2000.   650. 0.90 0.70    25.  0.10 lt brown brick : Light brown brick
+    2  150.0     0.040   250.   840. 0.90 0.30     4.  3.75 glasswool : Glasswool (generic)
+    3   50.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
+    4  100.0     0.240   750.  1000. 0.90 0.65    10.  0.42 aerated conc block : Aerated concrete block
+ Int    12.0     0.190   950.   840. 0.91 0.22    11.  0.06 white gypboard : White painted Gypboard
+ ISO 6946 U values (horizontal/upward/downward heat flow)=  0.214  0.215  0.212 (partition)  0.210
  
 Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  0.21
  External surface admittance Y=  2.85  w=  2.24 decrement factor f=  0.74  phi=  0.99 surface factor f=  0.74  phi=  0.99
@@ -626,12 +623,12 @@ Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  0.21
  
  Details of opaque construction: insul_frame and overall thickness  0.088
  
- Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
-      |db  |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
- Ext    46    4.0   210.000  2700.   880. 0.82 0.72 19200.  0.00 grey cotd alum : Grey coated aluminium
-    2  281   80.0     0.040    12.   840. 0.90 0.65    30.  2.00 glass fibre quilt : Glass Fibre Quilt
- Int    46    4.0   210.000  2700.   880. 0.82 0.72 19200.  0.00 grey cotd alum : Grey coated aluminium
- ISO 6946 U values (horiz/upward/downward heat flow)=  0.461  0.467  0.452 (partition)  0.442
+ Layer|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
+      |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
+ Ext     4.0   210.000  2700.   880. 0.82 0.72 19200.  0.00 grey cotd alum : Grey coated aluminium
+    2   80.0     0.040    12.   840. 0.90 0.65    30.  2.00 glass fibre quilt : Glass Fibre Quilt
+ Int     4.0   210.000  2700.   880. 0.82 0.72 19200.  0.00 grey cotd alum : Grey coated aluminium
+ ISO 6946 U values (horizontal/upward/downward heat flow)=  0.461  0.467  0.452 (partition)  0.442
  
 Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  0.46
  External surface admittance Y=  0.81  w=  3.41 decrement factor f=  0.94  phi=  0.31 surface factor f=  0.94  phi=  0.31
@@ -640,10 +637,10 @@ Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  0.46
  
  Details of opaque construction: door and overall thickness  0.025
  
- Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
-      |db  |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
-    1   69   25.0     0.190   700.  2390. 0.90 0.65    12.  0.13 oak : Oak (radial cut)
- ISO 6946 U values (horiz/upward/downward heat flow)=  3.316  3.682  2.928 (partition)  2.554
+ Layer|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
+      |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
+    1   25.0     0.190   700.  2390. 0.90 0.65    12.  0.13 oak : Oak (radial cut)
+ ISO 6946 U values (horizontal/upward/downward heat flow)=  3.316  3.682  2.928 (partition)  2.554
  
 Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  3.21
  External surface admittance Y=  3.33  w=  0.61 decrement factor f=  0.61  phi=  0.40 surface factor f=  0.61  phi=  0.40
@@ -652,12 +649,12 @@ Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  3.21
  
  Details of transparent construction: dbl_glz with DCF7671_06nb optics and overall thickness  0.024
  
- Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
-      |db  |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
- Ext   242    6.0     0.760  2710.   837. 0.83 0.05 19200.  0.01 plate glass : Plate glass with placeholder single layer optics
-    2    0   12.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
- Int   242    6.0     0.760  2710.   837. 0.83 0.05 19200.  0.01 plate glass : Plate glass with placeholder single layer optics
- ISO 6946 U values (horiz/upward/downward heat flow)=  2.811  3.069  2.527 (partition)  2.243
+ Layer|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
+      |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
+ Ext     6.0     0.760  2710.   837. 0.83 0.05 19200.  0.01 plate glass : Plate glass with placeholder single layer optics
+    2   12.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
+ Int     6.0     0.760  2710.   837. 0.83 0.05 19200.  0.01 plate glass : Plate glass with placeholder single layer optics
+ ISO 6946 U values (horizontal/upward/downward heat flow)=  2.811  3.069  2.527 (partition)  2.243
  
 Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  2.73
  External surface admittance Y=  2.81  w=  0.63 decrement factor f=  0.67  phi=  0.31 surface factor f=  0.67  phi=  0.31
@@ -675,11 +672,11 @@ Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  2.73
  
  Details of opaque construction: ceiling linked to ceiling_rev & with overall thickness  0.110
  
- Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
-      |db  |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
- Ext   211  100.0     0.040   250.   840. 0.90 0.30     4.  2.50 glasswool : Glasswool (generic)
- Int   150   10.0     0.030   290.  2000. 0.90 0.60     8.  0.33 ceiling mineral : Ceiling acoustic tile (mineral fibre based)
- ISO 6946 U values (horiz/upward/downward heat flow)=  0.333  0.336  0.329 (partition)  0.323
+ Layer|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
+      |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
+ Ext   100.0     0.040   250.   840. 0.90 0.30     4.  2.50 glasswool : Glasswool (generic)
+ Int    10.0     0.030   290.  2000. 0.90 0.60     8.  0.33 ceiling mineral : Ceiling acoustic tile (mineral fibre based)
+ ISO 6946 U values (horizontal/upward/downward heat flow)=  0.333  0.336  0.329 (partition)  0.323
  
 Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  0.33
  External surface admittance Y=  0.82  w=  3.17 decrement factor f=  0.94  phi=  0.30 surface factor f=  0.94  phi=  0.30
@@ -688,11 +685,11 @@ Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  0.33
  
  Details of opaque construction: ceiling_rev linked to ceiling & with overall thickness  0.110
  
- Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
-      |db  |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
- Ext   150   10.0     0.030   290.  2000. 0.90 0.60     8.  0.33 ceiling mineral : Ceiling acoustic tile (mineral fibre based)
- Int   211  100.0     0.040   250.   840. 0.90 0.30     4.  2.50 glasswool : Glasswool (generic)
- ISO 6946 U values (horiz/upward/downward heat flow)=  0.333  0.336  0.329 (partition)  0.323
+ Layer|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
+      |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
+ Ext    10.0     0.030   290.  2000. 0.90 0.60     8.  0.33 ceiling mineral : Ceiling acoustic tile (mineral fibre based)
+ Int   100.0     0.040   250.   840. 0.90 0.30     4.  2.50 glasswool : Glasswool (generic)
+ ISO 6946 U values (horizontal/upward/downward heat flow)=  0.333  0.336  0.329 (partition)  0.323
  
 Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  0.33
  External surface admittance Y=  0.68  w=  2.79 decrement factor f=  0.94  phi=  0.22 surface factor f=  0.94  phi=  0.22
@@ -701,14 +698,14 @@ Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  0.33
  
  Details of opaque construction: gyp_blk_ptn and overall thickness  0.226
  
- Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
-      |db  |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
- Ext   108   13.0     0.190   950.   840. 0.91 0.22    11.  0.07 white gypboard : White paintedd Gypboard
-    2    0   50.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
-    3   28  100.0     0.510  1400.  1000. 0.90 0.65    10.  0.20 block inner : Block inner (3% mc)
-    4    0   50.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
- Int   108   13.0     0.190   950.   840. 0.91 0.22    11.  0.07 white gypboard : White paintedd Gypboard
- ISO 6946 U values (horiz/upward/downward heat flow)=  1.186  1.230  1.133 (partition)  1.072
+ Layer|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
+      |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
+ Ext    13.0     0.190   950.   840. 0.91 0.22    11.  0.07 white gypboard : White painted Gypboard
+    2   50.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
+    3  100.0     0.510  1400.  1000. 0.90 0.65    10.  0.20 block inner : Block inner (3% mc)
+    4   50.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
+ Int    13.0     0.190   950.   840. 0.91 0.22    11.  0.07 white gypboard : White painted Gypboard
+ ISO 6946 U values (horizontal/upward/downward heat flow)=  1.186  1.230  1.133 (partition)  1.072
  
 Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  1.17
  External surface admittance Y=  2.38  w=  1.44 decrement factor f=  0.74  phi=  0.54 surface factor f=  0.74  phi=  0.54
@@ -717,12 +714,12 @@ Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  1.17
  
  Details of opaque construction: gyp_gyp_ptn and overall thickness  0.074
  
- Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
-      |db  |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
- Ext   108   12.0     0.190   950.   840. 0.91 0.22    11.  0.06 white gypboard : White paintedd Gypboard
-    2    0   50.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
- Int   108   12.0     0.190   950.   840. 0.91 0.22    11.  0.06 white gypboard : White paintedd Gypboard
- ISO 6946 U values (horiz/upward/downward heat flow)=  2.144  2.292  1.975 (partition)  1.798
+ Layer|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
+      |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
+ Ext    12.0     0.190   950.   840. 0.91 0.22    11.  0.06 white gypboard : White painted Gypboard
+    2   50.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
+ Int    12.0     0.190   950.   840. 0.91 0.22    11.  0.06 white gypboard : White painted Gypboard
+ ISO 6946 U values (horizontal/upward/downward heat flow)=  2.144  2.292  1.975 (partition)  1.798
  
 Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  2.10
  External surface admittance Y=  2.15  w=  0.62 decrement factor f=  0.75  phi=  0.21 surface factor f=  0.75  phi=  0.21
@@ -731,10 +728,10 @@ Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  2.10
  
  Details of opaque construction: structure and overall thickness  0.100
  
- Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
-      |db  |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
-    1    1  100.0     0.960  2000.   840. 0.93 0.70    12.  0.10 paviour brick : Paviour brick
- ISO 6946 U values (horiz/upward/downward heat flow)=  3.647  4.096  3.183 (partition)  2.746
+ Layer|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
+      |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
+    1  100.0     0.960  2000.   840. 0.93 0.70    12.  0.10 paviour brick : Paviour brick
+ ISO 6946 U values (horizontal/upward/downward heat flow)=  3.647  4.096  3.183 (partition)  2.746
  
 Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  3.52
  External surface admittance Y=  4.65  w=  1.25 decrement factor f=  0.50  phi=  1.38 surface factor f=  0.50  phi=  1.38

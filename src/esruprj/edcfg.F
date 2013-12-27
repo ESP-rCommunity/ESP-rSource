@@ -137,10 +137,10 @@ C Uncertainty.
       INTEGER :: NICNN,ICNS,ICNE,ICNNT,ICNSP,ICNEP,NCONWP,idatrdom
       REAL ::CNWNP
 
-      common/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
+      common/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,CFCDBOK
       COMMON/CONTM0/NCONTM,NOCNTM,CONTMNAM(MCONTM)
       INTEGER :: NCONTM,NOCNTM
-      logical DOK,OK,CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
+      logical DOK,OK,CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,CFCDBOK
       logical MODIFY,MODLEN,MODBND,browse
       logical xst,clkok,havefile,unixok
       LOGICAL GON,SON,concat,remote
@@ -1262,7 +1262,7 @@ C output, IER=0 indicates no error.
       common/MOIST02/LMOIST(MCOM)
       common/cfdfil/LCFD(MCOM),IFCFD(MCOM)
 
-      common/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
+      common/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,CFCDBOK
 
       COMMON/AFN/IAIRN,LAPROB,ICAAS(MCOM)
       COMMON/PRECTC/ITMCFL(MCOM,MS),TMCT(MCOM,MTMC,5),
@@ -1271,7 +1271,7 @@ C output, IER=0 indicates no error.
       common/caleni/nbdaytype,nbcaldays(MDTY),icalender(365)
       INTEGER NBDAYTYPE,NBCALDAYS,ICALENDER
 
-      logical OK,CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,context
+      logical OK,CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,context,CFCDBOK
       logical MODIFY,MODLEN,MODBND,concat,browse,QUIET
       logical XST,OKOB,OKZT,OKZR
       logical BLDG3D,ZONE3D,MSTROK,MSTRZN,OKC,dok,clkok
@@ -2159,7 +2159,8 @@ C point to it, otherwise offer option to browse for an existing file.
           if(irop.eq.1)then
 
 C Read in source operations and write out to file for new zone.
-C Also update lodlabel commons before writing out.
+C Also update lodlabel commons before writing out. If the version
+C is greater or equal 21 then additional data structures should be copied.
             CALL ERPFREE(IUF,ISTAT)
             CALL EROPER(0,iuout,IUF,IC,IER)
    91       CALL EASKS(DFILE,' New zone operations file name:',
@@ -2180,10 +2181,37 @@ C Also update lodlabel commons before writing out.
               IVU(ncomp)=IVU(ic); TAU(ncomp)=TAU(ic)
               ACIH(ncomp)=ACIH(ic); ACVH(ncomp)=ACVH(ic)
               IVH(ncomp)=IVH(ic); TAH(ncomp)=TAH(ic)
-C << revise for more casual gains >>
+
+C Copy labels for the gains.
               lodlabel(ncomp,1)=lodlabel(ic,1)  ! revise to be in a loop
               lodlabel(ncomp,2)=lodlabel(ic,2)
               lodlabel(ncomp,3)=lodlabel(ic,3)
+              lodlabel(ncomp,4)=lodlabel(ic,4)
+
+C If ip3ver >= 21 copy caskeytype and associated information.
+C << could this be put in a loop? >>
+              if(ip3ver(ic).ge.21)then
+                caskeytype(ncomp,1)=caskeytype(ic,1)
+                lodslot(ncomp,1)=lodslot(ic,1)
+                lodatr1(ncomp,1)=lodatr1(ic,1)
+                lodatr2(ncomp,1)=lodatr2(ic,1)
+                caskeytype(ncomp,2)=caskeytype(ic,2)
+                lodslot(ncomp,2)=lodslot(ic,2)
+                lodatr1(ncomp,2)=lodatr1(ic,2)
+                lodatr2(ncomp,2)=lodatr2(ic,2)
+                caskeytype(ncomp,3)=caskeytype(ic,3)
+                lodslot(ncomp,3)=lodslot(ic,3)
+                lodatr1(ncomp,3)=lodatr1(ic,3)
+                lodatr2(ncomp,3)=lodatr2(ic,3)
+                caskeytype(ncomp,4)=caskeytype(ic,4)
+                lodslot(ncomp,4)=lodslot(ic,4)
+                lodatr1(ncomp,4)=lodatr1(ic,4)
+                lodatr2(ncomp,4)=lodatr2(ic,4)
+                caskeytype(ncomp,5)=caskeytype(ic,5)
+                lodslot(ncomp,5)=lodslot(ic,5)
+                lodatr1(ncomp,5)=lodatr1(ic,5)
+                lodatr2(ncomp,5)=lodatr2(ic,5)
+              endif
               CALL ERPFREE(IUF,ISTAT)
               CALL EMKOPER(IUF,LPROJ(NCOMP),NCOMP,IER)
             else
@@ -3285,8 +3313,8 @@ C Defaults.
       character*96 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF
       common/DEFLT2/DFCFG,DFCTL,DEFRLB,DAFRES,DAPROB,DPNF
 
-      common/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
-      logical XST,OK,DOK,CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
+      common/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,CFCDBOK
+      logical XST,OK,DOK,CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,CFCDBOK
       logical MODIFY,MODLEN,MODBND,browse
       logical confirm,ckpath,itisanexemplar
       logical unixok,prob

@@ -129,7 +129,7 @@ C IPV description via ipvdata.h.
       common/RAY2/ITDSP,ITBND,ITEPT,ITZNM,ITSNM,ITVNO,ITORG,ITSNR,
      &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS,ITPPSW
       common/RAY3/MODIFY,MODLEN,MODBND
-      common/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
+      common/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,CFCDBOK
 
 C Uncertainty.
       COMMON/UA1/LUALF,LCNG(MNCNG),LLOC(MNIL)
@@ -147,7 +147,7 @@ C Name of current application
       character cAppName*12
 
       integer iverb     ! verbosity passed on command line
-      logical OK,CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,MODSIT
+      logical OK,CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,MODSIT,CFCDBOK
       logical MODIFY,MODLEN,MODBND,browse,confirm,XST,ckpath
       logical unixok,Vldtng,changedit
       logical itisanexemplar  ! passed to newprb to ensure browse mode.
@@ -603,6 +603,10 @@ C Temporal information on channel IFIL+7.
 C Text/graphic feedback redirection on channel ifil +9 
       ixunit = ifil + 9
 
+C CFClayers on channel IFIL+10.
+      icfcdb = ifil + 10
+      write(LCFCDB,'(a)') DCFCDB(1:lnblnk(DCFCDB))
+
 C Project log and contents.
       lmodellog='project.notes'
       lmodelqa='UNKNOWN'
@@ -810,7 +814,7 @@ C Find the index of the MLC which matches each surface.
               ssmlcindex(icn1)=0  ! assume no matching MLC          
               do 5 ii=1,nmlc
                 if(SSMLCN(icn1)(1:12).eq.mlcname(ii)(1:12)) then
-                  ssmlcindex(icn1)=ii   ! remember MLC index     
+                  ssmlcindex(icn1)=ii   ! remember MLC index  
                 endif
   5           continue
  9994       continue
@@ -1490,10 +1494,10 @@ C to include the path and create a string to drive the modules.
       common/IPVF/lipvdatf
 
 C Typical seasons and default simulation periods. Isset is the
-C current seasons set, nsset number of sets, Isauto (0=use info as
-C defaults 1=autoexec mode), istcnst (startup days), isbnstep (building
-C timesteps/hr), ispnstep (plant timesteps/hr), issave (results save
-C level).
+C current seasons set, nsset number of similar parameter sets,
+C Isauto (0=use info as defaults 1=autoexec mode),
+C istcnst (startup days), isbnstep (building timesteps/hr),
+C ispnstep (plant timesteps/hr), issave (results save level).
       common/spmfxst/ispmxist,spflnam
       common/spfldes/spfdescr(MSPS)
       common/spflper/isstday(MSPS),isstmon(MSPS),isfnday(MSPS),
@@ -2120,11 +2124,9 @@ C Select an existing set, create a new one or cancel.
           call gethelptext(helpinsub,helptopic,nbhelp)
           CALL PHELPD('Simulation sets',nbhelp,'-',0,0,IER)
           goto 170
-        elseif(IRT.eq.ic-2.and.nsset.lt.5)then
+        elseif(IRT.eq.ic-2.and.nsset.lt.MSPS)then
 
 C It is possible to add another set so ask user and set file names.
-C << note this probably should check to see if there is an IPV >>
-C << description first >>
           de='win'
           CALL EASKS(de,' ','Name for set?',8,'win','set name',
      &      IER,nbhelp)
@@ -2158,14 +2160,22 @@ C << description first >>
           endif
           modparms=.true.
           goto 170
+        elseif(IRT.eq.ic-2.and.nsset.ge.MSPS)then
+          call usrmsg('At the limit of simulation parameter sets',
+     &      'Unable to add another.','W')
+          goto 170
         elseif(IRT.ge.1.and.IRT.le.nsset)then
-          isset=IRT
+          isset=IRT  ! choose an existing set
         endif
         call scntcnst(TDM,istd,TCM,ISTC)
       elseif(MITEM.eq.25.and.INO.EQ.2)then
 
 C If there is an IPV descripton and this set is one,
 C do not allow this set name to be changed.
+
+C << see if this logic can be relaxed or altered so that
+C << IPV can co-exist with lots of parameter sets.
+
         if(nipvassmt.eq.nsset)then
           call usrmsg('IPV set name is pre-defined,','.','W')
         else
