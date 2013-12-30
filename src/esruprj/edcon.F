@@ -162,30 +162,31 @@ C Read in the related geometry file into common.
 
 C Scan through the geometry file and if more than 3 construction
 C attributes have not been set then advise the user to use the
-C geometry facility first.
-      ig=0
-      DO 11 I=1,NZSUR(icomp)
-        icn1=izstocn(icomp,i)
-        if(icn1.eq.0)then
-          ig=ig+1
-        else
-          if(SSMLCN(icn1)(1:4).EQ.'UNKN')ig=ig+1
-        endif
-  11  CONTINUE
-      if(ig.gt.3)then
-        helptopic='many_not_attributed'
-        call gethelptext(helpinsub,helptopic,nbhelp)
-        CALL PHELPD('unknowns atrib in constr',nbhelp,'-',0,0,IER)
-        CALL EASKAB(outs,'Options:',
+C geometry facility first. But not if we're running in silent mode!
+      if ( .not. quiet ) then 
+        ig=0
+        DO 11 I=1,NZSUR(icomp)
+          icn1=izstocn(icomp,i)
+          if(icn1.eq.0)then
+            ig=ig+1
+          else
+            if(SSMLCN(icn1)(1:4).EQ.'UNKN')ig=ig+1
+          endif
+  11    CONTINUE
+        if(ig.gt.3)then
+          helptopic='many_not_attributed'
+          call gethelptext(helpinsub,helptopic,nbhelp)
+          CALL PHELPD('unknowns atrib in constr',nbhelp,'-',0,0,IER)
+          CALL EASKAB(outs,'Options:',
      &    'supply construction attributes now',
      &    'cancel',IWA,nbhelp)
-        if(IWA.EQ.1)then
-          continue
-        else
-          return
+          if(IWA.EQ.1)then
+            continue
+          else
+            return
+          endif
         endif
-      endif
-
+      endif 
 C On entry display the current zone. Reset all surface lines to std.
       nzg=1
       nznog(1)=ICOMP
@@ -206,8 +207,10 @@ C On entry display the current zone. Reset all surface lines to std.
       endif
 
 C Read construction file into common.
-      helptopic='pre_zone_constructions'
-      call gethelptext(helpinsub,helptopic,nbhelp)
+      if ( .not. quiet ) then 
+        helptopic='pre_zone_constructions'
+        call gethelptext(helpinsub,helptopic,nbhelp)
+      endif 
   42  CONTINUE
       IF(again.or.LTHRM(ICOMP)(1:1).EQ.' '.OR.
      &            LTHRM(ICOMP)(1:7).EQ.'UNKNOWN')THEN

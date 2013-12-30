@@ -135,7 +135,7 @@ C     RESRMX - maximum relative residual (relative to SAFLW for NDWREL)
       character outs*124,outw*254
       CHARACTER NDNAM*12,CONTMNAM*12
       LOGICAL ACTCNN,close
-
+      character outlong*1000
       IOK=1
       NDWABS=1
       NDWREL=1
@@ -271,6 +271,10 @@ C and partial derivative dFlow/d(dPressure)
             CALL MF420C(ICNN,DP,DFDDP)
           ELSE IF(ITCN.EQ.460) THEN
             CALL MF460C(ICNN,DP,DFDDP)
+          ELSE IF(ITCN.EQ.600) THEN
+            CALL MF600_AIM2_coupling(ICNN,DP,DFDDP)
+          ELSE IF(ITCN.EQ.610) THEN
+            CALL MF610_circ_fan_coupling(ICNN,DP,DFDDP)            
           ELSE
             call edisp(IMFTU,' MFSOLV: unresolvable error !')
             call epwait

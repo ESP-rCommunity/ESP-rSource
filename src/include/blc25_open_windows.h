@@ -9,7 +9,21 @@ C-----------------------------------------------------------------------
                                     ! should be used to characterize air
                                     ! exchange
                                     
-      common /blc25/ bWindowsOpen, iAirFlowModel
+      logical bBCL25FlowControlsActive(mcnn) ! Flag indicating blc25 
+                                             ! or similar control is 
+                                             ! taking over flow mfs 
+                                             ! controls for this zone 
+                              
+      real fBCL25FlowControlSignal(mcnn)     ! Control position determined
+                                             ! by blc25 (0->1)      
+
+      integer iBCL25Mode(MCOM) 
+                                             
+      common /bcl25/ bWindowsOpen, 
+     &               iAirFlowModel, 
+     &               bBCL25FlowControlsActive,
+     &               fBCL25FlowControlSignal,
+     &               iBCL25Mode 
       
 C Named constants 
       integer iNoFlow                ! Flag for no model
@@ -40,4 +54,16 @@ C Named constants
       
       real fCondFreeCool(mcom)      ! Conductivity assoc. with 
                                     ! free-cooling
+
+
+ 
+      integer iHeating
+      integer iCooling 
+      integer iFreeFloatWindowsClosed
+      integer iFreeFloatWindowsOpen
+      parameter ( iHeating                = 0, 
+     &            iCooling                = 1, 
+     &            iFreeFloatWindowsClosed = 2, 
+     &            iFreeFloatWindowsOpen   = 3 )
+    
 

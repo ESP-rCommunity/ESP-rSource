@@ -1304,6 +1304,7 @@ C   1 - should exist, message & error -301 if not.
 C   2 - should not exist, error 300 & message if exists.
 C   3 - if exists use otherwise create.
 C   4 - if exists ask user before overwriting otherwise create.
+C   5 - if exists, overwrite, otherwise create. 
 C IER is the error status (0 is OK).
 C If the path is other than `./' but is not `/usr/esru' then
 C concatenate path with sfile.
@@ -1392,6 +1393,7 @@ C overwritten with a file by the same name.
           OPEN(IUN,FILE=longtfile,ACCESS='SEQUENTIAL',
      &            STATUS='OLD',IOSTAT=ISTAT)
           DOK=.true.
+          
           H(1)='The displayed file exists. Please confirm if you '
           H(2)='want to overwrite it. A no allows you to rename.'
           H(3)='You might want to rename the current file, if '
@@ -1429,6 +1431,17 @@ C Close the initial file before asking the user for new file.
           OPEN(IUN,FILE=longtfile,ACCESS='SEQUENTIAL',
      &            STATUS='NEW',IOSTAT=ISTAT)
         ENDIF
+      ELSEIF (IEXIST .EQ. 5 ) then 
+C Delete it if it exists, otherwise recreate
+        IF(XST)THEN
+          OPEN(IUN,FILE=longtfile,ACCESS='SEQUENTIAL',
+     &            STATUS='OLD',IOSTAT=ISTAT)
+          DOK=.true.
+          CALL EFDELET(IUN,ISTAT)
+        ENDIF 
+        OPEN(IUN,FILE=longtfile,ACCESS='SEQUENTIAL',
+     &          STATUS='NEW',IOSTAT=ISTAT)
+
       ELSE
         IER=1
         RETURN

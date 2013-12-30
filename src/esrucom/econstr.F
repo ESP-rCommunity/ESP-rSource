@@ -354,7 +354,7 @@ C Open any existing file by this name (CONFIL),
 C (ask user for confirmation to over-write) or create a new file.
 C If in quiet mode then file should exist.
       IF(QUIET) THEN
-        CALL EFOPSEQ(IFILT,CONFIL,1,IER)
+        CALL EFOPSEQ(IFILT,CONFIL,5,IER)
       ELSE
         CALL EFOPSEQ(IFILT,CONFIL,4,IER)
       ENDIF
