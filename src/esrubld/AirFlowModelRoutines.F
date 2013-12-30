@@ -167,8 +167,7 @@ C
 C-----------------------------------------------------------------------
 C
       logical function bFlowConnToOutside(iFlowConnection,
-     &                                    iCoupledZone,
-     &                                    iSearchType      )
+     &                                    iCoupledZone )
       implicit none
       
       include "building.h"
@@ -178,7 +177,7 @@ C
       integer iFlowConnection !- index of connection under consideration
                               !  (input)
       integer iCoupledZone    !- Index of coupled zone (if any, output)
-      integer iSearchType     !- Connection type to search for 
+      integer iSearchType     !- Connection type to search for (not used)
       
 C.....ESP-r commons 
 
@@ -600,6 +599,7 @@ C.....ESP-r commons
       common/mflw10/nodps(mcnn),hgtps(mcnn),nodne(mcnn),hgtne(mcnn),
      &              itpcon(mcnn),ndscnn(mcnn,mcns)
       
+          
       
       integer nodps  , ! Indicies of positive coupled nodes
      &        nodne  , ! Indicies of negative coupled nodes
@@ -614,10 +614,9 @@ C.....ESP-r commons
       integer nnod, ncmp, ncnn
      
       common/mflow3/ndfld(mnod),ndtyp(mnod),hnod(mnod),supnod(mnod,mnds)
-      integer ndfld, ndtyp, hnod, supnod      
-     
-     
-     
+      integer ndfld, ndtyp
+      real hnod, supnod      
+          
       common/afn/iAirN,lAprob,icaas(mcom)
       integer iAirN, iCaas ! Flag for air flow network, map 
                            ! between network nodes and building zones
@@ -771,9 +770,7 @@ C.....ESP-r commons
       integer isdcmp, isdcnn, itpcmp  ! Not used       
       
       real fRhoAir
-C.....Named constants       
-      real fSMALL 
-      PARAMETER       (fSMALL=1.0E-15)
+
 
 C.....indicies of positive and negative nodes. 
       integer iPositiveNode
@@ -909,9 +906,6 @@ C.....ESP-r commons
       
       double precision PRES, RESID, SAFLW ! Other flow data (not used)
 
-C.....Named constants       
-      real fSMALL 
-      PARAMETER       (fSMALL=1.0E-15)
 
 C.....indicies of positive and negative nodes. 
       integer iPositiveNode
