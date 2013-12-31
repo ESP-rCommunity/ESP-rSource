@@ -35,3 +35,11 @@ C-----------------------------------------------------------------------
 
       return
       end
+      
+C.....      
+      subroutine IMS_ConvertP10Data(iSystem)
+      implicit none
+      integer iSystem
+      return
+      end 
+      

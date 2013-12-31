@@ -63,7 +63,8 @@ BPS_OBJECTS = bps.o adaptconf1.o adaptconf2.o adjb.o adjp.o ascii_mat.o \
 	  solar_collectors.o ground_temp_mains.o Lookup_data.o readTrnsys.o trnsys_wrapper.o trnsys_lib.o \
 	  tank_intank_hx.o mains_temp_draw_profiles.o stratified_tank.o SiteUtilities.o RE-H2-ctl.o \
 	  ncm_overheating.o complex_fenestration.o editCFC.o NCHE.o stratified_tank_1HX.o stratified_tank_2HX.o \
-	  AirFlowModelRoutines.o Res_elec_Ctl.o harmonizer_timing.o qrun.o azalt.o
+	  AirFlowModelRoutines.o Res_elec_Ctl.o harmonizer_timing.o qrun.o azalt.o hvacinput_versioned.o Int_Mech_Sys.o
+
 
 MODULES = aim2.mod aim2_calcdata.mod aim2_h2k_dummy.mod aim2_inputdata.mod aim2_timestep.mod start_up.mod parse_command_line.mod \
           h3kmodule.f90
@@ -471,6 +472,9 @@ CentralVentSys.F:
 hvacinput.F:
 	rm -f hvacinput.F
 	ln -s $(CETCdir)/hvacinput.F .
+hvacinput_versioned.F:
+	rm -f hvacinput_versioned.F
+	ln -s $(CETCdir)/hvacinput_versioned.F .
 hvacsim.F:
 	rm -f hvacsim.F
 	ln -s $(CETCdir)/hvacsim.F .
@@ -726,7 +730,9 @@ harmonizer_dummy.F:
 ESPrTrnsysData.F:
 	rm -f ESPrTrnsysData.F
 	ln -s $(COSIMdir)/ESPrTrnsysData.F .
-
+Int_Mech_Sys.F:
+	rm -f Int_Mech_Sys.F
+	ln -s $(PLTdir)/Int_Mech_Sys.F .
 
 strip:
 	@if [ -f $(PROG) ]; then strip $(PROG); fi
@@ -774,4 +780,5 @@ clean:
 	ground_temp_mains.F readTrnsys.F trnsys_wrapper.F trnsys_lib.F \
 	tank_intank_hx.F mains_temp_draw_profiles.F stratified_tank.F \
 	complex_fenestration.F editCFC.F NCHE.F stratified_tank_1HX.F stratified_tank_2HX.F \
-	AirFlowModelRoutines.F Res_elec_Ctl.F h3kmodule.f90 qrun.F azalt.F
+	AirFlowModelRoutines.F Res_elec_Ctl.F h3kmodule.f90 qrun.F azalt.F hvacinput_versioned.F Int_Mech_Sys.F
+
