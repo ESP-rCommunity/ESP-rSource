@@ -451,11 +451,11 @@ Materials db
    This holds the density, specific heat, conductivity, diffusion
    resistance, surface absorptivity and surface emissivity of
    materials such as brick, concrete, metal, wood, glass etc. The
-   database is held in a binary representation for rapid access
-   although an ASCII version may be generated (and vice versa) to
-   enable transfer between different operating systems. Database
-   entities are accessed via an associated index.  The standard
-   version of this database resides is ~esru/esp-r/databases/constr_db1.materialdb.
+   database data is held in common memory after scanning the
+   ASCII common materials file. Database entities are acessed
+   via name (so names need to be unique).  The standard versions
+   reside in ~esru/esp-r/databases/ with either *.materialdb
+   or material.db?.a forms.
 
    In the case of a project where measured thermophysical
    properties are available or bespoke materials are being used,
