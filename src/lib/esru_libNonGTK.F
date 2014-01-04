@@ -3146,9 +3146,10 @@ C context is 124 characters.
       common/textbuf/dispbuf(500)
       common/textbufl/indexbuf,lnbuf(500)
       CHARACTER*(*) MSG
+      CHARACTER*144 MYMSG
       CHARACTER WWMSG*144,dispbuf*144
       logical unixok
-
+   
 C Function determining if HOT3000 features enabled?
       logical bH3KExtentionsActive
 C Temporarily set ICOUT.
@@ -3156,16 +3157,29 @@ C Temporarily set ICOUT.
 
 C Create matching string to pass to wwlib.c and hold in dispbuf.
 C Use logic similar to that in egdisp.
-      lnm=max0(1,lnblnk(MSG))
-      lcc = MIN0(lnm,144)
-      if(lcc.eq.0) lcc=1
-      write(WWMSG,'(a)',iostat=ios,err=1)MSG(1:lcc)
+      lnm=lnblnk(MSG)
+
+      if (lnm == 0 ) then 
+      
+        write(myMSG, '(a)' ) " "
+        lcc = 1
+        lnm = 1
+        
+      else 
+
+        lcc = MIN0(lnm,144)
+        lnm = lcc 
+        write(myMSG,'(a)',iostat=ios,err=1) MSG(1:lcc)
+        
+      endif 
+      
+
 
       if(indexbuf.lt.500)then
         indexbuf=indexbuf+1
         lnbuf(indexbuf)=lcc
         dispbuf(indexbuf)='  '
-        write(dispbuf(indexbuf),'(a)') MSG(1:lcc)
+        write(dispbuf(indexbuf),'(a)') myMSG(1:lcc)
       else
         do 42 i=1,499
           dispbuf(i)=dispbuf(i+1)
@@ -3173,12 +3187,12 @@ C Use logic similar to that in egdisp.
   42    continue
         lnbuf(indexbuf)=lcc
         dispbuf(indexbuf)='  '
-        write(dispbuf(indexbuf),'(a)') MSG(1:lcc)
+        write(dispbuf(indexbuf),'(a)') myMSG(1:lcc)
       endif
       IF(MMOD.EQ.8.AND.ITRU.NE.IUOUT)THEN
 
 C If trace channel etc then just write to file.
-        WRITE(ITRU,'(A)',iostat=ios,err=1)MSG(1:lnm)
+        WRITE(ITRU,'(A)',iostat=ios,err=1)myMSG(1:lnm)
       ELSEIF(MMOD.EQ.8.AND.ITRU.EQ.IUOUT)THEN
           LINE=LIMTTY-LIMIT
           LIMIT=LIMIT-1
@@ -3190,17 +3204,17 @@ C If trace channel etc then just write to file.
 C Write this to error channel if user specified channel = ICOUT
 C otherwise redirect to user display.
         IF(ITRU.EQ.ICOUT)THEN
-          WRITE(ICOUT,'(A)',iostat=ios,err=1)MSG(1:lnm)
+          WRITE(ICOUT,'(A)',iostat=ios,err=1)myMSG(1:lnm)
         ELSE
-          WRITE(ITRU,'(A)',iostat=ios,err=1)MSG(1:lnm)
+          WRITE(ITRU,'(A)',iostat=ios,err=1)myMSG(1:lnm)
         ENDIF
       ELSE
 
 C Write this to standard text window.
-        WRITE(ITRU,'(A)',iostat=ios,err=1)MSG(1:lnm)
+        WRITE(ITRU,'(A)',iostat=ios,err=1)myMSG(1:lnm)
 c.......write console output (ITRU=6) to file       
         if(ITRU.eq.6 .and. bH3KExtentionsActive() )then
-            call redir_console_output_to_file(MSG(1:lnm)//CHAR(0))
+            call redir_console_output_to_file(myMSG(1:lnm)//CHAR(0))
         endif
       ENDIF
 
