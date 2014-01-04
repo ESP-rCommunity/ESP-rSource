@@ -187,6 +187,7 @@ C geometry facility first. But not if we're running in silent mode!
           endif
         endif
       endif 
+      
 C On entry display the current zone. Reset all surface lines to std.
       nzg=1
       nznog(1)=ICOMP
@@ -212,6 +213,8 @@ C Read construction file into common.
         call gethelptext(helpinsub,helptopic,nbhelp)
       endif 
   42  CONTINUE
+  
+  
       IF(again.or.LTHRM(ICOMP)(1:1).EQ.' '.OR.
      &            LTHRM(ICOMP)(1:7).EQ.'UNKNOWN')THEN
 
@@ -228,7 +231,10 @@ C Construction file name not yet specified.
         ENDIF
       ENDIF
 
+
+
       call FINDFIL(LTHRM(ICOMP),XST)
+      
       if(XST)then
         IF(QUIET) THEN
           CALL EDZCON(ICOMP,MODGEO,MODCON,IER)
@@ -256,8 +262,11 @@ C Construction file name not yet specified.
 
 C If in quiet mode: the file should exist => error if we are here.
         IF (QUIET) THEN
-          CALL PHELPD('file error',nbhelp,'-',0,0,IER)
-          RETURN
+          !CALL PHELPD('file error',nbhelp,'-',0,0,IER)
+          
+          CALL EDZCON(ICOMP,MODGEO,MODCON,IER)          
+          
+          
         ELSE
           write(outs,'(1x,A,A)')LTHRM(ICOMP)(:lnblnk(LTHRM(ICOMP))),
      &        ' not found!'
