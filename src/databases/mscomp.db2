@@ -14,7 +14,7 @@
 # The categories of special components currently supported in the database
 # categories 1-5 are reserved for building integrated renewables all other
 # categories are for active materials
-8
+9
 crystalline PV model
 amorphous PV model
 simple PV model
@@ -23,6 +23,7 @@ wind turbines
 thermocromic glazing
 phase change material
 evaporating surface
+Thermochromic glazing
 *ENDCATEGORY
 *SPECMATL
 *IDDATA
@@ -548,6 +549,29 @@ Qev = Ev*(Hvap-Hsl) (W)
 
 Hvap is the enthalpy of the vapour at the surface temperature
 Hsl is the enthalpy of liquid water at the surface temperature
+
+*ENDTEXT
+*SPECMATL
+*IDDATA
+# Category | Assoc. special 
+#            material model no 
+     9            51
+*DESC
+Thermochromic_gl  
+*SPECDATA
+ 4                   
+ 75.0     temperature at minimum transmission, Tmint (degC);
+ 24.0     temperature at maximum transmission, Tmaxt (degC);
+ 45.09    minimum transmission as a % of max transmission;
+ 1        associated layer number in TMC.      
+*TEXT
+Thermochromic properties (linear variation with temperature. 
+The defaults are taken from properties derived from WINDOW7.
+The thermochromic glass in WINDOW7 database was used.
+45% is the % of the min/max transmitance at 0 degrees.
+This percentage (for the material in WINDOW7 database) can
+drop down to about 34% at 80 degrees but the transmission 
+values are really low at those angles.
 
 *ENDTEXT
 *SPECMATL
