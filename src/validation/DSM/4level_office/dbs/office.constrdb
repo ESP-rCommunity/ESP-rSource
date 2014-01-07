@@ -1,5 +1,6 @@
 # composite construction db defined in ../dbs/office.constrdb
 # based on materials db ../dbs/impact_mat.db2.a
+# and based on CFClayers db CFClayers.db1.a
    18     # no of composites 
 # layers  description  type  optics name   symmetry tag
     4    roof          OPAQ  OPAQUE        NONSYMMETRIC  

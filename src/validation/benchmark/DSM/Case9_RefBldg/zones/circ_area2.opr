@@ -1,5 +1,5 @@
-*Operations 2.0
-*date Mon Jul 28 16:30:20 2008  # latest file modification 
+*Operations 2.1
+*date Mon Dec 16 07:10:37 2013  # latest file modification 
 # operations of circ_area2 defined in: 
 # ../zones/circ_area2.opr
 no operations notes (yet)
@@ -8,20 +8,25 @@ no operations notes (yet)
      0   # number of flow periods in day type: weekdays    
      0   # number of flow periods in day type: saturday    
      0   # number of flow periods in day type: sunday      
+*casual
+no operations notes (yet)
+# casual user-label type-key-word slot attributes
+*type Occupt       people            1  0  0
+*type Lights       lighting          2  0  0
+*type Equipt       equipment         3  0  0
+*end_type 
      3   # number of casual gains in day type: weekdays    
-# type, start, stop, sens, latent, rad_frac, conv_frac
-    1,   0,  24,      0.0,      0.0, 0.500, 0.500
-    2,   0,  24,      0.0,      0.0, 0.500, 0.500
-    3,   0,  24,      0.0,      0.0, 0.400, 0.600
+# slot, period, sensible, latent, rad_frac, conv_frac
+   1,   0,  24,      0.0,      0.0,  0.500,  0.500
+   2,   0,  24,      0.0,      0.0,  0.500,  0.500
+   3,   0,  24,      0.0,      0.0,  0.400,  0.600
      3   # number of casual gains in day type: saturday    
-# type, start, stop, sens, latent, rad_frac, conv_frac
-    1,   0,  24,      0.0,      0.0, 0.500, 0.500
-    2,   0,  24,      0.0,      0.0, 0.500, 0.500
-    3,   0,  24,      0.0,      0.0, 0.400, 0.600
+# slot, period, sensible, latent, rad_frac, conv_frac
+   1,   0,  24,      0.0,      0.0,  0.500,  0.500
+   2,   0,  24,      0.0,      0.0,  0.500,  0.500
+   3,   0,  24,      0.0,      0.0,  0.400,  0.600
      3   # number of casual gains in day type: sunday      
-# type, start, stop, sens, latent, rad_frac, conv_frac
-    1,   0,  24,      0.0,      0.0, 0.500, 0.500
-    2,   0,  24,      0.0,      0.0, 0.500, 0.500
-    3,   0,  24,      0.0,      0.0, 0.400, 0.600
-# Labels for gain types 
- Occupt Lights Equipt
+# slot, period, sensible, latent, rad_frac, conv_frac
+   1,   0,  24,      0.0,      0.0,  0.500,  0.500
+   2,   0,  24,      0.0,      0.0,  0.500,  0.500
+   3,   0,  24,      0.0,      0.0,  0.400,  0.600

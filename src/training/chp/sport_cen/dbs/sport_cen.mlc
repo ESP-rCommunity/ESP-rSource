@@ -1,105 +1,106 @@
 # composite construction db defined in ../dbs/sport_cen.mlc
-# based on materials db constr_db2.materialdb
+# based on materials db material.db4.a
+# and based on CFClayers db CFClayers.db1.a
    14     # no of composites 
 # layers  description  type  optics name   symmetry tag
     3    d_glz         TRAN  DCF7671_06nb  SYMMETRIC     
 # material ref thickness (m) description & air gap R
-  242    0.0060  Plate glass : Plate glass with placeholder single layer optics
+  242    0.0060  plate glass : Plate glass with placeholder single layer optics
     0    0.0120  gap  0.170 0.170 0.170
-  242    0.0060  Plate glass : Plate glass with placeholder single layer optics
+  242    0.0060  plate glass : Plate glass with placeholder single layer optics
 # layers  description  type  optics name   symmetry tag
     4    extern_wall   OPAQ  OPAQUE        NONSYMMETRIC  
 # material ref thickness (m) description & air gap R
-    4    0.1000  Outer leaf brick : Outer leaf brick
-  211    0.0750  Glasswool : Glasswool
+    4    0.1000  outer leaf brick : Outer leaf brick (inorganic-porous)
+  211    0.0750  glasswool : Glasswool (generic) (non-hygroscopic)
     0    0.0500  gap  0.170 0.170 0.170
-    2    0.1000  Breeze block : Breeze block
+    2    0.1000  breeze block : Breeze block (inorganic-porous)
 # layers  description  type  optics name   symmetry tag
     3    intern_wall   OPAQ  OPAQUE        SYMMETRIC     
 # material ref thickness (m) description & air gap R
-  103    0.0120  Perlite plasterboard : Perlite plasterboard
-    2    0.1500  Breeze block : Breeze block
-  103    0.0120  Perlite plasterboard : Perlite plasterboard
+  103    0.0120  perlite plasterboard : Perlite plasterboard (inorganic-porous)
+    2    0.1500  breeze block : Breeze block (inorganic-porous)
+  103    0.0120  perlite plasterboard : Perlite plasterboard (inorganic-porous)
 # layers  description  type  optics name   symmetry tag
     1    door          OPAQ  OPAQUE        SYMMETRIC     
 # material ref thickness (m) description & air gap R
-   69    0.0250  Oak (radial) : Oak (radial)
+   69    0.0250  oak : Oak (radial cut)
 # layers  description  type  optics name   symmetry tag
     7    g_flr_entry   OPAQ  OPAQUE        NONSYMMETRIC  
 # material ref thickness (m) description & air gap R
-  263    0.0500  Common_earth : Common_earth
-  262    0.0500  Gravel based : Gravel based
-   32    0.0750  Heavy mix concrete : Heavy mix concrete
-   32    0.0750  Heavy mix concrete : Heavy mix concrete
-  216    0.1000  Mineral fibre : Mineral fibre
-   67    0.0190  Chipboard : Chipboard
-  221    0.0060  Wilton : Wilton
+  263    0.0500  earth std : Common_earth
+  262    0.0500  gravel based : Gravel based (non-hygroscopic)
+   32    0.0750  heavy mix concrete : Heavy mix concrete
+   32    0.0750  heavy mix concrete : Heavy mix concrete
+  216    0.1000  mineral fibre : Mineral fibre (non-hygroscopic)
+   67    0.0190  chipboard : Chipboard
+  221    0.0060  Wilton : Wilton weave wool carpet (organic-hygroscopic)
 # layers  description  type  optics name   symmetry tag
     4    roof          OPAQ  OPAQUE        NONSYMMETRIC  
 # material ref thickness (m) description & air gap R
-   43    0.0030  Aluminium : Aluminium
+   43    0.0030  aluminium : Aluminium
     0    0.0250  gap  0.170 0.170 0.170
-  281    0.0800  Glass Fibre Quilt : Glass Fibre Quilt
-   43    0.0030  Aluminium : Aluminium
+  281    0.0800  glass fibre quilt : Glass Fibre Quilt (non-hygroscopic)
+   43    0.0030  aluminium : Aluminium
 # layers  description  type  optics name   symmetry tag
     5    entry_floor   OPAQ  OPAQUE        NONSYMMETRIC  
 # material ref thickness (m) description & air gap R
-  263    0.0500  Common_earth : Common_earth
-  262    0.0500  Gravel based : Gravel based
-   32    0.0750  Heavy mix concrete : Heavy mix concrete
-   32    0.0750  Heavy mix concrete : Heavy mix concrete
-   83    0.0240  White marble : White marble
+  263    0.0500  earth std : Common_earth
+  262    0.0500  gravel based : Gravel based (non-hygroscopic)
+   32    0.0750  heavy mix concrete : Heavy mix concrete
+   32    0.0750  heavy mix concrete : Heavy mix concrete
+   83    0.0240  white marble : White marble (inorganic-porous)
 # layers  description  type  optics name   symmetry tag
     1    int_doors     OPAQ  OPAQUE        SYMMETRIC     
 # material ref thickness (m) description & air gap R
-   69    0.0250  Oak (radial) : Oak (radial)
+   69    0.0250  oak : Oak (radial cut)
 # layers  description  type  optics name   symmetry tag
     5    partition     OPAQ  OPAQUE        SYMMETRIC     
 # material ref thickness (m) description & air gap R
-  104    0.0130  Gypsum plaster : Gypsum plaster
+  104    0.0130  gypsum plaster : Gypsum based plaster (inorganic-porous)
     0    0.0500  gap  0.170 0.170 0.170
-   28    0.1000  Block inner (3% mc) : Block inner (3% mc)
+   28    0.1000  block inner : Block inner (3% mc)
     0    0.0500  gap  0.170 0.170 0.170
-  104    0.0130  Gypsum plaster : Gypsum plaster
+  104    0.0130  gypsum plaster : Gypsum based plaster (inorganic-porous)
 # layers  description  type  optics name   symmetry tag
     5    susp_floor    OPAQ  OPAQUE        susp_flr_re   
 # material ref thickness (m) description & air gap R
-  148    0.0030  P.V.C./asbestos : P.V.C./asbestos
-  124    0.0190  Cement screed : Cement screed
-   32    0.0700  Heavy mix concrete : Heavy mix concrete
-   32    0.0700  Heavy mix concrete : Heavy mix concrete
-   42    0.0040  Steel : Steel
+  148    0.0030  P.V.C./asbestos : P.V.C./asbestos (impermeable)
+  124    0.0190  cement screed : Cement screed (inorganic-porous)
+   32    0.0700  heavy mix concrete : Heavy mix concrete
+   32    0.0700  heavy mix concrete : Heavy mix concrete
+   42    0.0040  steel : Steel
 # layers  description  type  optics name   symmetry tag
     5    susp_flr_re   OPAQ  OPAQUE        susp_floor    
 # material ref thickness (m) description & air gap R
-   42    0.0040  Steel : Steel
-   32    0.0700  Heavy mix concrete : Heavy mix concrete
-   32    0.0700  Heavy mix concrete : Heavy mix concrete
-  124    0.0190  Cement screed : Cement screed
-  148    0.0030  P.V.C./asbestos : P.V.C./asbestos
+   42    0.0040  steel : Steel
+   32    0.0700  heavy mix concrete : Heavy mix concrete
+   32    0.0700  heavy mix concrete : Heavy mix concrete
+  124    0.0190  cement screed : Cement screed (inorganic-porous)
+  148    0.0030  P.V.C./asbestos : P.V.C./asbestos (impermeable)
 # layers  description  type  optics name   symmetry tag
     3    int_part      OPAQ  OPAQUE        SYMMETRIC     
 # material ref thickness (m) description & air gap R
-  103    0.0120  Perlite plasterboard : Perlite plasterboard
+  103    0.0120  perlite plasterboard : Perlite plasterboard (inorganic-porous)
     0    0.0250  gap  0.170 0.170 0.170
-  103    0.0120  Perlite plasterboard : Perlite plasterboard
+  103    0.0120  perlite plasterboard : Perlite plasterboard (inorganic-porous)
 # layers  description  type  optics name   symmetry tag
     7    hall_floor    OPAQ  OPAQUE        NONSYMMETRIC  
 # material ref thickness (m) description & air gap R
-  263    0.0500  Common_earth : Common_earth
-  262    0.0500  Gravel based : Gravel based
-   32    0.0750  Heavy mix concrete : Heavy mix concrete
-   32    0.0750  Heavy mix concrete : Heavy mix concrete
-  216    0.1000  Mineral fibre : Mineral fibre
-   67    0.0190  Chipboard : Chipboard
-   61    0.0300  Block (wood) : Block (wood)
+  263    0.0500  earth std : Common_earth
+  262    0.0500  gravel based : Gravel based (non-hygroscopic)
+   32    0.0750  heavy mix concrete : Heavy mix concrete
+   32    0.0750  heavy mix concrete : Heavy mix concrete
+  216    0.1000  mineral fibre : Mineral fibre (non-hygroscopic)
+   67    0.0190  chipboard : Chipboard
+   61    0.0300  wood block : Block (wood)
 # layers  description  type  optics name   symmetry tag
     7    oth_ground    OPAQ  OPAQUE        NONSYMMETRIC  
 # material ref thickness (m) description & air gap R
-  263    0.0500  Common_earth : Common_earth
-  262    0.0500  Gravel based : Gravel based
-   32    0.0750  Heavy mix concrete : Heavy mix concrete
-   32    0.0750  Heavy mix concrete : Heavy mix concrete
-  216    0.1000  Mineral fibre : Mineral fibre
-   67    0.0190  Chipboard : Chipboard
-  148    0.0030  P.V.C./asbestos : P.V.C./asbestos
+  263    0.0500  earth std : Common_earth
+  262    0.0500  gravel based : Gravel based (non-hygroscopic)
+   32    0.0750  heavy mix concrete : Heavy mix concrete
+   32    0.0750  heavy mix concrete : Heavy mix concrete
+  216    0.1000  mineral fibre : Mineral fibre (non-hygroscopic)
+   67    0.0190  chipboard : Chipboard
+  148    0.0030  P.V.C./asbestos : P.V.C./asbestos (impermeable)

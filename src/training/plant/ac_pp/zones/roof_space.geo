@@ -1,5 +1,5 @@
 *Geometry 1.1,GEN,roof_space # tag version, format, zone name
-*date Tue Jul 21 08:10:06 2009  # latest file modification 
+*date Wed Dec 11 08:22:14 2013  # latest file modification 
 roof_space describes a...
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,0.00000,0.00000,3.00000  #   1
@@ -30,8 +30,8 @@ roof_space describes a...
 #  child of (surface name), useage (pair of tags) 
 #  construction name, optical name
 #  boundary condition tag followed by two data items
-*surf,Ceiling_r,FLOR,-,-,-,ceiling_rev,OPAQUE,ANOTHER,01,08  #   1 ||< ceiling:reception
-*surf,Ceiling_o,FLOR,-,-,-,ceiling_rev,OPAQUE,ANOTHER,02,05  #   2 ||< Ceiling:office
+*surf,Ceiling_r,FLOR,-,-,-,ceiling,OPAQUE,ANOTHER,01,08  #   1 ||< ceiling:reception
+*surf,Ceiling_o,FLOR,-,-,-,ceiling,OPAQUE,ANOTHER,02,05  #   2 ||< Ceiling:office
 *surf,s_roof,SLOP,-,-,-,roof_1,OPAQUE,EXTERIOR,0,0  #   3 ||< external
 *surf,Fire_wall,VERT,-,-,-,extern_wall,OPAQUE,CONSTANT,12,00  #   4 ||< constant @ 12dC &   0W rad
 *surf,North_wall,VERT,-,-,-,extern_wall,OPAQUE,EXTERIOR,0,0  #   5 ||< external

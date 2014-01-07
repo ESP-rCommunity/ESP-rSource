@@ -1,8 +1,8 @@
 Synopsis
  
-This is a synopsis of the model Basic multi-zone model with PID system ctl,
-recirc fan. defined in bld_recirc.cfg-pid generated on Mon Jan 17 16:37:28
-2011. Notes associated with the model are in bld_basic.log
+This is a synopsis of the model Basic multi-zone model with PID plant control
+and network flow. defined in bld_basic.cfg-pid generated on Mon Jan 17
+16:27:50 2011. Notes associated with the model are in bld_basic.log
  
 The model is located at latitude   51.70 with a longitude difference of  -0.50
 from the local time meridian. The year used in simulations is 1967 and
@@ -114,7 +114,7 @@ Control description:
 simple building
  
 Zones control includes  1 functions.
-convective heating via system components with PID controller and bypass
+convective heating via component heater and PID control
  
  The sensor for function  1 senses dry bulb temperature in reception.
  The actuator for function  1 is the air point in reception.
@@ -132,59 +132,29 @@ component 5 and extract node 1.
  zone ( 3) roof_space   << control  0
  
  Plant control includes  1 loops.
-implements a component heater over 3 periods
+senses condition in extract duct and enables PID control
  
- The sensor for function  1 senses dry bulb temperature in reception.
+ The sensor for function  1 senses var in compt.  5:extract_duct @ node no.  1
  The actuator for function  1 is plant component   3:heating_coil @ node no.  1
  There have been  1 day types defined.
  Day type  1 is valid Sun-01-Jan to Sun-31-Dec, 1967 with  3 periods.
  Per|Start|Sensing  |Actuating  | Control law       | Data
-   1  0.00 dry bulb   > flux     PID flux control.   1.0 7000.0 0.0 14.0 8.0 1.0 1080.0 1.0 70.0
-non-recursive postnl mode 1.0 max capacity 7000.0W min capacity 0.00W setpoint 14.00C
+   1  0.00 dry bulb   > flux     PID flux control.   1.0 7000.0 0.0 16.0 8.0 1.0 1080.0 1.0 70.0
+non-recursive postnl mode 1.0 max capacity 7000.0W min capacity 0.00W setpoint 16.00C
 Tmp range 8.00C Intrg act [s] 1080.0 Deriv act [s] 70.0
    2  7.00 dry bulb   > flux     PID flux control.   1.0 10000.0 0.0 21.0 8.0 1.0 1080.0 1.0 70.0
 non-recursive postnl mode 1.0 max capacity 10000.0W min capacity 0.00W setpoint 21.00C
 Tmp range 8.00C Intrg act [s] 1080.0 Deriv act [s] 70.0
-   3 18.00 dry bulb   > flux     PID flux control.   1.0 7000.0 0.0 14.0 8.0 1.0 1080.0 1.0 70.0
-non-recursive postnl mode 1.0 max capacity 7000.0W min capacity 0.00W setpoint 14.00C
+   3 18.00 dry bulb   > flux     PID flux control.   1.0 7000.0 0.0 16.0 8.0 1.0 1080.0 1.0 70.0
+non-recursive postnl mode 1.0 max capacity 7000.0W min capacity 0.00W setpoint 16.00C
 Tmp range 8.00C Intrg act [s] 1080.0 Deriv act [s] 70.0
- 
- Flow control includes  3 loops.
-implements a damper via control of two separate paths
- 
- The sensor for function  1 sensor node(s) not yet defined
- The actuator for function  1 is flow component:   9 damper2
- There have been  1 day types defined.
- Day type  1 is valid Sun-01-Jan to Sun-31-Dec, 1967 with  1 periods.
- Per|Start|Sensing  |Actuating  | Control law       | Data
-   1  0.00 delt T > flow         proportional + hyst 0.0 10.0 20.0 90.0 0.0
-proportional + hysteresis: signal lower limit 0.00 valve lower limit (%)10.0 signal
-upper limit 20.00 valve upper limit (%) 90.0 dS 0.00.
- 
- The sensor for function  2 sensor node(s) not yet defined
- The actuator for function  2 is flow component:   8 damper1
- There have been  1 day types defined.
- Day type  1 is valid Sun-01-Jan to Sun-31-Dec, 1967 with  1 periods.
- Per|Start|Sensing  |Actuating  | Control law       | Data
-   1  0.00 delt T > flow         proportional + hyst 0.0 90.0 20.0 10.0 0.0
-proportional + hysteresis: signal lower limit 0.00 valve lower limit (%)90.0 signal
-upper limit 20.00 valve upper limit (%) 10.0 dS 0.00.
- 
- The sensor for function  3 sensor node(s) not yet defined
- The actuator for function  3 is flow component:  10 damper3
- There have been  1 day types defined.
- Day type  1 is valid Sun-01-Jan to Sun-31-Dec, 1967 with  1 periods.
- Per|Start|Sensing  |Actuating  | Control law       | Data
-   1  0.00 delt T > flow         proportional + hyst 0.0 10.0 20.0 90.0 0.0
-proportional + hysteresis: signal lower limit 0.00 valve lower limit (%)10.0 signal
-upper limit 20.00 valve upper limit (%) 90.0 dS 0.00.
  ____________________________________________________________
  
 The model includes an air flow network.
  
  Flow network description.
  
-  12 nodes,  10 components,  14 connections;     wind reduction =  0.482
+   7 nodes,   4 components,   6 connections;     wind reduction =  0.482
    # Node      Fluid   Node Type           Height Temperature    Data_1       Data_2
    1 north        air   boundary & wind ind   2.0000   0.0000     coef    1.000  azim   0.000
    2 east         air   boundary & wind ind   2.0000   0.0000     coef    1.000  azim  90.000
@@ -193,11 +163,6 @@ The model includes an air flow network.
    5 roof         air   internal & unknown    3.0000   20.000     (-)     0.000  vol   49.000
    6 recep        air   internal & unknown    1.0000   20.000     (-)     0.000  vol  144.000
    7 offic        air   internal & unknown    1.0000   20.000     (-)     0.000  vol   48.000
-   8 mixing       air   internal & unknown    0.0000   20.000     (-)     0.000  vol    0.000
-   9 sup_fan      air   internal & unknown    0.0000   20.000     (-)     0.000  vol    0.000
-  10 extract      air   internal & unknown    0.0000   20.000     (-)     0.000  vol    0.000
-  11 ext_fan      air   internal & unknown    0.0000   20.000     (-)     0.000  vol    0.000
-  12 exhaust      air   internal & unknown    0.0000   20.000     (-)     0.000  vol    0.000
  
  Component    Type C+ L+ Description
  
@@ -213,32 +178,6 @@ The model includes an air flow network.
  roofv         110  2  0 Specific air flow opening           m = rho.f(A,dP)
  Fluid  1.0 opening area (m)  0.020
  
- fan            30  2  0 Constant vol. flow rate component   m = rho.a
- Fluid  1.0 flow rate (m^3/s)  0.25000
- 
- 5m_duct       210  6  0 General flow conduit component      m = rho.f(D,A,L,k,SCi)
-   Fluid, hydr diam, x-sect, conduit ln, roughness, loss fac.
-  1.0    0.070    0.063    5.000    0.000    0.000
- 
- 10m_duct      210  6  0 General flow conduit component      m = rho.f(D,A,L,k,SCi)
-   Fluid, hydr diam, x-sect, conduit ln, roughness, loss fac.
-  1.0    0.070    0.063   10.000    0.000    0.000
- 
- damper1       410  7  0 General flow corrector component    m = rho.f(comp, signal)
-   Fluid, density, pres dif, lin/log, open & closed vol flow,
-   low validity limit
-  1.0    1.200  100.000    1.000    0.250    0.010   10.000
- 
- damper2       410  7  0 General flow corrector component    m = rho.f(comp, signal)
-   Fluid, density, pres dif, lin/log, open & closed vol flow,
-   low validity limit
-  1.0    1.200  100.000    1.000    0.250    0.010   10.000
- 
- damper3       410  7  0 General flow corrector component    m = rho.f(comp, signal)
-   Fluid, density, pres dif, lin/log, open & closed vol flow,
-   low validity limit
-  1.0    1.200  100.000    1.000    0.250    0.010   10.000
- 
     # +Node         dHght   -Node         dHght   Component       Z @+    Z @-
     1 north         0.000   roof          0.000   roofv           2.000   3.000
     2 south         0.000   roof          0.000   soffit          2.000   3.000
@@ -246,14 +185,6 @@ The model includes an air flow network.
     4 west          0.000   recep         0.000   drcrk           2.000   1.000
     5 west          0.000   offic         0.000   wincrk          2.000   1.000
     6 offic         0.000   recep         0.000   drcrk           1.000   1.000
-    7 north        -1.000   mixing        1.000   damper1         1.000   1.000
-    8 mixing        0.000   sup_fan       0.000   fan             0.000   0.000
-    9 sup_fan       0.500   recep        -0.500   10m_duct        0.500   0.500
-   10 recep        -0.500   extract       0.500   10m_duct        0.500   0.500
-   11 extract       0.000   ext_fan       0.000   fan             0.000   0.000
-   12 ext_fan       0.000   exhaust       0.000   5m_duct         0.000   0.000
-   13 exhaust       0.000   mixing        0.000   damper2         0.000   0.000
-   14 exhaust       1.000   north        -1.000   damper3         1.000   1.000
 thermal zone to air flow node mapping:
 thermal zone -> air flow node
 reception    -> recep
@@ -263,7 +194,7 @@ roof_space   -> roof
  
 The model includes a plant network.
  
- The plant network contains  8 components from plantc.db1
+ The plant network contains  7 components from plantc.db1
  
  Component: inlet_duct ( 1) code  1, db reference  6
  No Control data
@@ -286,7 +217,7 @@ The model includes a plant network.
  Overall efficiency (-)                             :  0.70000
  
  Component: heating_coil ( 3) code  3, db reference  5
- Control data:10000.000
+ Control data: 5000.000
  Modified parameters for heating_coil
  Component total mass (kg)                          :   15.000
  Mass weighted average specific heat (J/kgK)        :   1000.0
@@ -332,42 +263,29 @@ The model includes a plant network.
  Length of duct section (m)                         :   5.0000
  Cross sectional face area (m^2)                    :  0.12270E-01
  
- Component: mix_box ( 8) code  8, db reference  1
- No Control data
- Modified parameters for mix_box
- Component total mass (kg)                          :   1.0000
- Mass weighted average specific heat (J/kgK)        :   500.00
- UA modulus (W/K)                                   :   3.5000
- 
- Nb of plant component connections:  9
+ Nb of plant component connections:  7
  Con receiving component node type sending component node
  
-  1 inlet_duct node 1 (zone air or ambient.) supply_fan node 1 details:     0.50    0.00    0.00
-  1 inlet_duct node 1 (zone air or ambient.) supply_fan node 1 details:     0.50    0.00    0.00
+  1 inlet_duct node 1 (zone air or ambient.) supply_fan node 1 details:     1.00    0.00    0.00
+  1 inlet_duct node 1 (zone air or ambient.) supply_fan node 1 details:     1.00    0.00    0.00
  
-  2 mix_box node 1 (from another component.) inlet_duct node 1 details:     1.00    0.00    0.00
-  2 mix_box node 1 (from another component.) inlet_duct node 1 details:     1.00    0.00    0.00
+  2 supply_fan node 1 (from another component.) inlet_duct node 1 details:     1.00    0.00    0.00
+  2 supply_fan node 1 (from another component.) inlet_duct node 1 details:     1.00    0.00    0.00
  
-  3 mix_box node 1 (from another component.) exhaust_duct node 1 details:     0.50    0.00    0.00
-  3 mix_box node 1 (from another component.) exhaust_duct node 1 details:     0.50    0.00    0.00
+  3 heating_coil node 1 (from another component.) supply_fan node 1 details:     1.00    0.00    0.00
+  3 heating_coil node 1 (from another component.) supply_fan node 1 details:     1.00    0.00    0.00
  
-  4 supply_fan node 1 (from another component.) mix_box node 1 details:     1.00    0.00    0.00
-  4 supply_fan node 1 (from another component.) mix_box node 1 details:     1.00    0.00    0.00
+  4 supply_duct node 1 (from another component.) heating_coil node 1 details:     1.00    0.00    0.00
+  4 supply_duct node 1 (from another component.) heating_coil node 1 details:     1.00    0.00    0.00
  
-  5 heating_coil node 1 (from another component.) supply_fan node 1 details:     1.00    0.00    0.00
-  5 heating_coil node 1 (from another component.) supply_fan node 1 details:     1.00    0.00    0.00
+  5 extract_duct node 1 (zone air or ambient.) supply_duct node 1 details:     1.00    1.00    0.00
+  5 extract_duct node 1 (zone air or ambient.) supply_duct node 1 details:     1.00    1.00    0.00
  
-  6 supply_duct node 1 (from another component.) heating_coil node 1 details:     1.00    0.00    0.00
-  6 supply_duct node 1 (from another component.) heating_coil node 1 details:     1.00    0.00    0.00
+  6 extract_fan node 1 (from another component.) extract_duct node 1 details:     1.00    0.00    0.00
+  6 extract_fan node 1 (from another component.) extract_duct node 1 details:     1.00    0.00    0.00
  
-  7 extract_duct node 1 (zone air or ambient.) supply_duct node 1 details:     1.00    1.00    0.00
-  7 extract_duct node 1 (zone air or ambient.) supply_duct node 1 details:     1.00    1.00    0.00
- 
-  8 extract_fan node 1 (from another component.) extract_duct node 1 details:     1.00    0.00    0.00
-  8 extract_fan node 1 (from another component.) extract_duct node 1 details:     1.00    0.00    0.00
- 
-  9 exhaust_duct node 1 (from another component.) extract_fan node 1 details:     1.00    0.00    0.00
-  9 exhaust_duct node 1 (from another component.) extract_fan node 1 details:     1.00    0.00    0.00
+  7 exhaust_duct node 1 (from another component.) extract_fan node 1 details:     1.00    0.00    0.00
+  7 exhaust_duct node 1 (from another component.) extract_fan node 1 details:     1.00    0.00    0.00
  
  No of component containments =  7
   Component      | Containment descr. | Type
@@ -385,9 +303,6 @@ The model includes a plant network.
  6  extract_fan     zone: roof_space       3 details:     3.00    0.00    0.00
  
  7  exhaust_duct    zone: roof_space       3 details:     3.00    0.00    0.00
- 
-  plant inter-connection/fluid flow  connection mapping :
-   7   7  13   8   9   9  10  11  12   0
  
  ____________________________________________________________
  

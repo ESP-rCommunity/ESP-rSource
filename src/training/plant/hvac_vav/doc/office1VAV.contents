@@ -1,7 +1,7 @@
 Synopsis
  
 Synopsis of the model multizone VAV with explicit plant defined in
-office1VAV.cfg generated on Mon Aug 27 16:10:37 2012. Notes associated with
+office1VAV.cfg generated on Sat Dec 14 22:10:35 2013. Notes associated with
 the model are in ../doc/office1.notes
  
 The model is located at latitude   45.00 with a longitude difference of   0.00
@@ -32,7 +32,7 @@ An Integrated Performance View is incomplete or missing.
  
 Databases associated with the model:
  standard pressure distr: pressc.db1
- standard materials     : constr_db2.materialdb
+ standard materials     : material.db4.a
  constructions          : ../dbs/assemblies.db
  standard plant comp    : plantc.db1
  standard event profiles: profiles.db1.a
@@ -48,6 +48,7 @@ proj cntrl
  
 Zones control includes  2 functions.
 no descrip
+Details of control loops referenced in the model:
  
  The sensor for function  1 senses dry bulb temperature in west.
  The actuator for function  1 is the air point in west.
@@ -210,7 +211,7 @@ The model includes a plant network.
  
  The plant network contains 11 components from plantc.db1
  
- Component: duct_in ( 1) code  1, db reference  6
+ Component: duct_in ( 1) code  1, db reference   6
  No Control data
  Modified parameters for duct_in
  Component total mass (kg)                          :   9.2500
@@ -220,7 +221,7 @@ The model includes a plant network.
  Length of duct section (m)                         :   10.000
  Cross sectional face area (m^2)                    :  0.20000
  
- Component: fan_s ( 2) code  2, db reference  3
+ Component: fan_s ( 2) code  2, db reference   3
  Control data:    2.000
  Modified parameters for fan_s
  Component total mass (kg)                          :   10.000
@@ -230,7 +231,7 @@ The model includes a plant network.
  Rated volume flow rate (m^3/s)                     :   2.0000
  Overall efficiency (-)                             :  0.70000
  
- Component: cooling_coil ( 3) code  3, db reference  8
+ Component: cooling_coil ( 3) code  3, db reference   8
  Control data:    0.000
  Modified parameters for cooling_coil
  Component total mass (kg)                          :   40.000
@@ -243,7 +244,7 @@ The model includes a plant network.
  Internal tube diameter (m)                         :  0.15000E-01
  Inlet water temperature (C)                        :   10.000
  
- Component: duct_s ( 4) code  4, db reference  6
+ Component: duct_s ( 4) code  4, db reference   6
  No Control data
  Modified parameters for duct_s
  Component total mass (kg)                          :   9.2500
@@ -253,21 +254,21 @@ The model includes a plant network.
  Length of duct section (m)                         :   20.000
  Cross sectional face area (m^2)                    :  0.20000
  
- Component: vav_reheat_e ( 5) code  5, db reference  5
+ Component: vav_reheat_e ( 5) code  5, db reference   5
  Control data:    0.000
  Modified parameters for vav_reheat_e
  Component total mass (kg)                          :   15.000
  Mass weighted average specific heat (J/kgK)        :   1000.0
  UA modulus (W/K)                                   :   3.5000
  
- Component: vav_reheat_w ( 6) code  6, db reference  5
+ Component: vav_reheat_w ( 6) code  6, db reference   5
  Control data:    0.000
  Modified parameters for vav_reheat_w
  Component total mass (kg)                          :   15.000
  Mass weighted average specific heat (J/kgK)        :   1000.0
  UA modulus (W/K)                                   :   3.5000
  
- Component: duct_e_w ( 7) code  7, db reference  6
+ Component: duct_e_w ( 7) code  7, db reference   6
  No Control data
  Modified parameters for duct_e_w
  Component total mass (kg)                          :   9.2500
@@ -277,7 +278,7 @@ The model includes a plant network.
  Length of duct section (m)                         :   5.0000
  Cross sectional face area (m^2)                    :  0.11000
  
- Component: duct_e_e ( 8) code  8, db reference  6
+ Component: duct_e_e ( 8) code  8, db reference   6
  No Control data
  Modified parameters for duct_e_e
  Component total mass (kg)                          :   9.2500
@@ -287,14 +288,14 @@ The model includes a plant network.
  Length of duct section (m)                         :   5.0000
  Cross sectional face area (m^2)                    :  0.11000
  
- Component: ext_junct ( 9) code  9, db reference  1
+ Component: ext_junct ( 9) code  9, db reference   1
  No Control data
  Modified parameters for ext_junct
  Component total mass (kg)                          :   1.0000
  Mass weighted average specific heat (J/kgK)        :   500.00
  UA modulus (W/K)                                   :   3.5000
  
- Component: fan_e (10) code 10, db reference  3
+ Component: fan_e (10) code 10, db reference   3
  Control data:    2.000
  Modified parameters for fan_e
  Component total mass (kg)                          :   10.000
@@ -304,7 +305,7 @@ The model includes a plant network.
  Rated volume flow rate (m^3/s)                     :   2.0000
  Overall efficiency (-)                             :  0.70000
  
- Component: duct_exh (11) code 11, db reference  6
+ Component: duct_exh (11) code 11, db reference   6
  No Control data
  Modified parameters for duct_exh
  Component total mass (kg)                          :   9.2500
@@ -318,39 +319,27 @@ The model includes a plant network.
  Con receiving component node type sending component node
  
   1 duct_in node 1 (zone air or ambient.) fan_s node 1 details:     1.00    0.00    0.00
-  1 duct_in node 1 (zone air or ambient.) fan_s node 1 details:     1.00    0.00    0.00
  
-  2 fan_s node 1 (from another component.) duct_in node 1 details:     1.00    0.00    0.00
   2 fan_s node 1 (from another component.) duct_in node 1 details:     1.00    0.00    0.00
  
   3 cooling_coil node 1 (from another component.) fan_s node 1 details:     1.00    0.00    0.00
-  3 cooling_coil node 1 (from another component.) fan_s node 1 details:     1.00    0.00    0.00
  
-  4 duct_s node 1 (from another component.) cooling_coil node 1 details:     1.00    0.00    0.00
   4 duct_s node 1 (from another component.) cooling_coil node 1 details:     1.00    0.00    0.00
  
   5 vav_reheat_e node 1 (from another component.) duct_s node 1 details:     0.50    0.00    0.00
-  5 vav_reheat_e node 1 (from another component.) duct_s node 1 details:     0.50    0.00    0.00
  
-  6 vav_reheat_w node 1 (from another component.) duct_s node 1 details:     0.50    0.00    0.00
   6 vav_reheat_w node 1 (from another component.) duct_s node 1 details:     0.50    0.00    0.00
  
   7 duct_e_w node 1 (zone air or ambient.) vav_reheat_w node 1 details:     1.00    1.00    0.00
-  7 duct_e_w node 1 (zone air or ambient.) vav_reheat_w node 1 details:     1.00    1.00    0.00
  
-  8 duct_e_e node 1 (zone air or ambient.) vav_reheat_e node 1 details:     1.00    2.00    0.00
   8 duct_e_e node 1 (zone air or ambient.) vav_reheat_e node 1 details:     1.00    2.00    0.00
  
   9 ext_junct node 1 (from another component.) duct_e_w node 1 details:     1.00    0.00    0.00
-  9 ext_junct node 1 (from another component.) duct_e_w node 1 details:     1.00    0.00    0.00
  
- 10 ext_junct node 1 (from another component.) duct_e_e node 1 details:     1.00    0.00    0.00
  10 ext_junct node 1 (from another component.) duct_e_e node 1 details:     1.00    0.00    0.00
  
  11 fan_e node 1 (from another component.) ext_junct node 1 details:     1.00    0.00    0.00
- 11 fan_e node 1 (from another component.) ext_junct node 1 details:     1.00    0.00    0.00
  
- 12 duct_exh node 1 (from another component.) fan_e node 1 details:     1.00    0.00    0.00
  12 duct_exh node 1 (from another component.) fan_e node 1 details:     1.00    0.00    0.00
  
  No of component containments =  1
@@ -376,9 +365,9 @@ ID Zone         Volume|          Surface
  area of 489.m^2 & approx floor area of 150.m^2
  south facing perimeter zone
  There is 258.00m2 of exposed surface area, 108.00m2 of which is vertical.
- Outside walls are 53.333 % of floor area & avg U of 0.543 & UA of 43.417
- Flat roof is 100.00 % of floor area & avg U of 0.462 & UA of 69.258
- Glazing is 18.667 % of floor & 25.926 % facade with avg U of 3.167 & UA of 88.667
+ Outside walls are 53.333 % of floor area & average U of 0.543 & UA of 43.417
+ Flat roof is 100.00 % of floor area & average U of 0.462 & UA of 69.258
+ Glazing is 18.667 % of floor & 25.926 % facade with average U of 3.167 & UA of 88.667
  
  A summary of the surfaces in west( 1) follows:
  
@@ -392,6 +381,27 @@ ID Zone         Volume|          Surface
   6  150.      0. -90. floor        OPAQUE   FLOR -     conc_deck    ||< adiabatic
   7  28.0    270.   0. glazing      DCF7447_ VERT -     window_NECB  ||< external
  
+ Vertices ( index X Y Z) in the zone...
+*vertex   1     0.00000    30.00000     0.00000
+*vertex   2     0.00000     0.00000     0.00000
+*vertex   3     5.00000     0.00000     0.00000
+*vertex   4     5.00000    30.00000     0.00000
+*vertex   5     0.00000    30.00000     2.70000
+*vertex   6     0.00000     0.00000     2.70000
+*vertex   7     5.00000     0.00000     2.70000
+*vertex   8     5.00000    30.00000     2.70000
+*vertex   9     0.00000    29.00000     1.00000
+*vertex  10     0.00000     1.00000     1.00000
+*vertex  11     0.00000     1.00000     2.00000
+*vertex  12     0.00000    29.00000     2.00000
+ Number of vertices followed by list of associated vert
+*edges,10,1,2,6,5,1,9,12,11,10,9   west
+*edges,4,2,3,7,6   south
+*edges,4,3,4,8,7   internal
+*edges,4,4,1,5,8   north
+*edges,4,5,6,7,8   ceiling
+*edges,4,1,4,3,2   floor
+*edges,4,9,10,11,12   glazing
  
  All surfaces will receive diffuse insolation (if shading not calculated).
  No shading analysis requested.
@@ -422,38 +432,38 @@ on weekdays a complex pattern of occupants lights and equipment is
 used on saturday and sunday the loads are constant (and low) Note the
 ramp-down on weekday evenings.
  
-Daytype   Gain Type    Period Sensible  Latent     Radiant    Convec
-          No.  label   Hours  Magn.(W)  Magn.(W)   Fraction   Fraction
-weekday     1 OccuptW    0- 6      0.0      0.0       0.50       0.50
-weekday     2 OccuptW    6- 7     78.0      0.0       0.30       0.70
-weekday     3 OccuptW    7- 8    546.0      0.0       0.30       0.70
-weekday     4 OccuptW    8-11    702.0      0.0       0.30       0.70
-weekday     5 OccuptW   11-13    390.0      0.0       0.30       0.70
-weekday     6 OccuptW   13-16    702.0      0.0       0.30       0.70
-weekday     7 OccuptW   16-17    546.0      0.0       0.30       0.70
-weekday     8 OccuptW   17-19    234.0      0.0       0.30       0.70
-weekday     9 OccuptW   19-22     78.0      0.0       0.30       0.70
-weekday    10 OccuptW   22-24      0.0      0.0       0.50       0.50
-weekday    11 LightsWm2  0- 6      0.9      0.0       0.60       0.40
-weekday    12 LightsWm2  6- 7      5.4      0.0       0.60       0.40
-weekday    13 LightsWm2  7- 8     14.4      0.0       0.60       0.40
-weekday    14 LightsWm2  8-16     16.2      0.0       0.60       0.40
-weekday    15 LightsWm2 16-17     14.4      0.0       0.60       0.40
-weekday    16 LightsWm2 17-18      9.0      0.0       0.60       0.40
-weekday    17 LightsWm2 18-20      5.4      0.0       0.60       0.40
-weekday    18 LightsWm2 20-22      1.8      0.0       0.60       0.40
-weekday    19 LightsWm2 22-24      0.9      0.0       0.60       0.40
-weekday    20 EquiptWm2  0- 6      1.5      0.0       0.25       0.75
-weekday    21 EquiptWm2  6- 7      2.2      0.0       0.25       0.75
-weekday    22 EquiptWm2  7- 8      6.0      0.0       0.25       0.75
-weekday    23 EquiptWm2  8-17      6.8      0.0       0.25       0.75
-weekday    24 EquiptWm2 17-18      3.8      0.0       0.25       0.75
-weekday    25 EquiptWm2 18-20      2.2      0.0       0.25       0.75
-weekday    26 EquiptWm2 20-24      1.5      0.0       0.25       0.75
-saturday    1 LightsWm2  0-24      0.9      0.0       0.60       0.40
-saturday    2 EquiptWm2  0-24      1.5      0.0       0.25       0.75
-sunday      1 LightsWm2  0-24      0.9      0.0       0.60       0.40
-sunday      2 EquiptWm2  0-24      1.5      0.0       0.25       0.75
+Daytype   Gain Label     Type    Unit Period Sensible  Latent     Radiant    Convec
+          No.                          Hours Magn.(W)  Magn.(W)   Fraction   Fraction
+weekday     1 Occupt     people    W    0- 6      0.0      0.0       0.50       0.50
+weekday     2 Occupt     people    W    6- 7     78.0      0.0       0.30       0.70
+weekday     3 Occupt     people    W    7- 8    546.0      0.0       0.30       0.70
+weekday     4 Occupt     people    W    8-11    702.0      0.0       0.30       0.70
+weekday     5 Occupt     people    W   11-13    390.0      0.0       0.30       0.70
+weekday     6 Occupt     people    W   13-16    702.0      0.0       0.30       0.70
+weekday     7 Occupt     people    W   16-17    546.0      0.0       0.30       0.70
+weekday     8 Occupt     people    W   17-19    234.0      0.0       0.30       0.70
+weekday     9 Occupt     people    W   19-22     78.0      0.0       0.30       0.70
+weekday    10 Occupt     people    W   22-24      0.0      0.0       0.50       0.50
+weekday    11 Lights     lighting  Wm2  0- 6      0.9      0.0       0.60       0.40
+weekday    12 Lights     lighting  Wm2  6- 7      5.4      0.0       0.60       0.40
+weekday    13 Lights     lighting  Wm2  7- 8     14.4      0.0       0.60       0.40
+weekday    14 Lights     lighting  Wm2  8-16     16.2      0.0       0.60       0.40
+weekday    15 Lights     lighting  Wm2 16-17     14.4      0.0       0.60       0.40
+weekday    16 Lights     lighting  Wm2 17-18      9.0      0.0       0.60       0.40
+weekday    17 Lights     lighting  Wm2 18-20      5.4      0.0       0.60       0.40
+weekday    18 Lights     lighting  Wm2 20-22      1.8      0.0       0.60       0.40
+weekday    19 Lights     lighting  Wm2 22-24      0.9      0.0       0.60       0.40
+weekday    20 Equipt     equipment Wm2  0- 6      1.5      0.0       0.25       0.75
+weekday    21 Equipt     equipment Wm2  6- 7      2.2      0.0       0.25       0.75
+weekday    22 Equipt     equipment Wm2  7- 8      6.0      0.0       0.25       0.75
+weekday    23 Equipt     equipment Wm2  8-17      6.8      0.0       0.25       0.75
+weekday    24 Equipt     equipment Wm2 17-18      3.8      0.0       0.25       0.75
+weekday    25 Equipt     equipment Wm2 18-20      2.2      0.0       0.25       0.75
+weekday    26 Equipt     equipment Wm2 20-24      1.5      0.0       0.25       0.75
+saturday    1 Lights     lighting  Wm2  0-24      0.9      0.0       0.60       0.40
+saturday    2 Equipt     equipment Wm2  0-24      1.5      0.0       0.25       0.75
+sunday      1 Lights     lighting  Wm2  0-24      0.9      0.0       0.60       0.40
+sunday      2 Equipt     equipment Wm2  0-24      1.5      0.0       0.25       0.75
  
  ____________________________________________________________
  
@@ -462,9 +472,9 @@ sunday      2 EquiptWm2  0-24      1.5      0.0       0.25       0.75
  area of 489.m^2 & approx floor area of 150.m^2
  south facing perimeter zone
  There is 258.00m2 of exposed surface area, 108.00m2 of which is vertical.
- Outside walls are 53.333 % of floor area & avg U of 0.543 & UA of 43.417
- Flat roof is 100.00 % of floor area & avg U of 0.462 & UA of 69.258
- Glazing is 18.667 % of floor & 25.926 % facade with avg U of 3.167 & UA of 88.667
+ Outside walls are 53.333 % of floor area & average U of 0.543 & UA of 43.417
+ Flat roof is 100.00 % of floor area & average U of 0.462 & UA of 69.258
+ Glazing is 18.667 % of floor & 25.926 % facade with average U of 3.167 & UA of 88.667
  
  A summary of the surfaces in east( 2) follows:
  
@@ -478,6 +488,27 @@ sunday      2 EquiptWm2  0-24      1.5      0.0       0.25       0.75
   6  150.      0. -90. floor        OPAQUE   FLOR -     conc_deck    ||< adiabatic
   7  28.0     90.   0. glazing      DCF7447_ VERT -     window_NECB  ||< external
  
+ Vertices ( index X Y Z) in the zone...
+*vertex   1    10.00000     0.00000     0.00000
+*vertex   2    10.00000    30.00000     0.00000
+*vertex   3     5.00000    30.00000     0.00000
+*vertex   4     5.00000     0.00000     0.00000
+*vertex   5    10.00000     0.00000     2.70000
+*vertex   6    10.00000    30.00000     2.70000
+*vertex   7     5.00000    30.00000     2.70000
+*vertex   8     5.00000     0.00000     2.70000
+*vertex   9    10.00000     1.00000     1.00000
+*vertex  10    10.00000    29.00000     1.00000
+*vertex  11    10.00000    29.00000     2.00000
+*vertex  12    10.00000     1.00000     2.00000
+ Number of vertices followed by list of associated vert
+*edges,10,1,2,6,5,1,9,12,11,10,9   east
+*edges,4,2,3,7,6   north
+*edges,4,3,4,8,7   internal
+*edges,4,4,1,5,8   south
+*edges,4,5,6,7,8   ceiling
+*edges,4,1,4,3,2   floor
+*edges,4,9,10,11,12   glazing
  
  All surfaces will receive diffuse insolation (if shading not calculated).
  No shading analysis requested.
@@ -509,20 +540,20 @@ sunday      2 EquiptWm2  0-24      1.5      0.0       0.25       0.75
  In contact with ground 0.00m2.
  There is 516.00m2 of outside surface area, 216.00m2 of which is vertical.
  
- Outside walls are 53.333 % of floor area & avg U of 0.543 & UA of 86.834 & max MLC thickness 0.158
- Flat roof is 100.00 % of floor area & avg U of 0.462 & UA of 138.52
- Glazing is 18.667 % of floor & 25.926 % facade with avg U of 3.167 & UA of 177.33
+ Outside walls are 53.333 % of floor area & average U of 0.543 & UA of 86.834 & max MLC thickness 0.158
+ Flat roof is 100.00 % of floor area & average U of 0.462 & UA of 138.52
+ Glazing is 18.667 % of floor & 25.926 % facade with average U of 3.167 & UA of 177.33
  
  ____________________________________________________________
  Multi-layer constructions used:
  
  Details of transparent construction: window_NECB with DCF7447_06nb optics and overall thickness  0.024
  
- Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
-      |db  |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
- Ext   242    6.0     0.760  2710.   837. 0.83 0.05 19200.  0.01 Plate glass : Plate glass with placeholder single layer optics
-    2    0   12.0     0.000     0.     0. 0.99 0.99     1.  0.13 air  0.13 0.13 0.13
- Int   242    6.0     0.760  2710.   837. 0.83 0.05 19200.  0.01 Plate glass : Plate glass with placeholder single layer optics
+ Layer|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
+      |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
+ Ext     6.0     0.760  2710.   837. 0.83 0.05 19200.  0.01 plate glass : Plate glass with placeholder single layer optics
+    2   12.0     0.000     0.     0. 0.99 0.99     1.  0.13 air  0.13 0.13 0.13
+ Int     6.0     0.760  2710.   837. 0.83 0.05 19200.  0.01 plate glass : Plate glass with placeholder single layer optics
  ISO 6946 U values (horiz/upward/downward heat flow)=  3.167  3.499  2.811 (partition)  2.464
  
 Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  3.07
@@ -541,11 +572,11 @@ Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  3.07
  
  Details of opaque construction: wall_NECB and overall thickness  0.158
  
- Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
-      |db  |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
- Ext     4  100.0     0.960  2000.   650. 0.90 0.93    25.  0.10 Outer leaf brick : Outer leaf brick
-    2  205   45.0     0.030    30.   837. 0.90 0.50    90.  1.50 Polyurethane foam board : Polyurethane foam board
- Int   107   13.0     0.190   950.   840. 0.91 0.50    11.  0.07 Gypsum plasterboard : Gypsum plasterboard
+ Layer|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
+      |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
+ Ext   100.0     0.960  2000.   650. 0.90 0.93    25.  0.10 outer leaf brick : Outer leaf brick (inorganic-porous)
+    2   45.0     0.030    30.   837. 0.90 0.50    90.  1.50 Polyurethane foam bd : Polyurethane foam board (non-hygroscopic)
+ Int    13.0     0.190   950.   840. 0.91 0.50    11.  0.07 gypsum plasterboard : Gypsum plasterboard (generic) (inorganic-porous)
  ISO 6946 U values (horiz/upward/downward heat flow)=  0.543  0.552  0.531 (partition)  0.517
  
 Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  0.54
@@ -555,9 +586,9 @@ Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  0.54
  
  Details of opaque construction: conc_deck and overall thickness  0.200
  
- Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
-      |db  |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
-    1   26  200.0     0.960  1800.   840. 0.90 0.65    18.  0.21 No fines concrete : No fines concrete
+ Layer|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
+      |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
+    1  200.0     0.960  1800.   840. 0.90 0.65    18.  0.21 no fines concrete : No fines concrete
  ISO 6946 U values (horiz/upward/downward heat flow)=  2.643  2.871  2.390 (partition)  2.135
  
 Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  2.58
@@ -567,9 +598,9 @@ Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  2.58
  
  Details of opaque construction: partition and overall thickness  0.013
  
- Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
-      |db  |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
-    1  107   13.0     0.190   950.   840. 0.91 0.50    11.  0.07 Gypsum plasterboard : Gypsum plasterboard
+ Layer|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
+      |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
+    1   13.0     0.190   950.   840. 0.91 0.50    11.  0.07 gypsum plasterboard : Gypsum plasterboard (generic) (inorganic-porous)
  ISO 6946 U values (horiz/upward/downward heat flow)=  4.194  4.798  3.592 (partition)  3.045
  
 Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  4.03
@@ -579,12 +610,12 @@ Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  4.03
  
  Details of opaque construction: roof_NECB and overall thickness  0.178
  
- Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
-      |db  |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
- Ext   162   10.0     0.190   960.   837. 0.90 0.90    15.  0.05 Roofing felt : Roofing felt
-    2   32  100.0     1.400  2100.   653. 0.90 0.65    19.  0.07 Heavy mix concrete : Heavy mix concrete
-    3  205   55.0     0.030    30.   837. 0.90 0.50    90.  1.83 Polyurethane foam board : Polyurethane foam board
- Int   107   13.0     0.190   950.   840. 0.91 0.50    11.  0.07 Gypsum plasterboard : Gypsum plasterboard
+ Layer|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
+      |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
+ Ext    10.0     0.190   960.   837. 0.90 0.90    15.  0.05 roofing felt : Roofing felt (impermeable)
+    2  100.0     1.400  2100.   653. 0.90 0.65    19.  0.07 heavy mix concrete : Heavy mix concrete
+    3   55.0     0.030    30.   837. 0.90 0.50    90.  1.83 Polyurethane foam bd : Polyurethane foam board (non-hygroscopic)
+ Int    13.0     0.190   950.   840. 0.91 0.50    11.  0.07 gypsum plasterboard : Gypsum plasterboard (generic) (inorganic-porous)
  ISO 6946 U values (horiz/upward/downward heat flow)=  0.455  0.462  0.447 (partition)  0.437
  
 Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  0.45

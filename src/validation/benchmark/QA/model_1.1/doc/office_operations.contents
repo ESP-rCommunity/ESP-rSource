@@ -1,8 +1,8 @@
 Synopsis
  
 Synopsis of the model Model to compare operational infil & vent and with
-controls defined in office_operations.cfg generated on Mon Sep  3 13:27:04
-2012. Notes associated with the model are in ../doc/office_operations.log
+controls defined in office_operations.cfg generated on Tue Dec 17 20:09:13
+2013. Notes associated with the model are in ../doc/office_operations.log
  
 The model is located at latitude   38.10 with a longitude difference of  -1.90
 from the local time meridian. The year used in simulations is 2000 and
@@ -37,7 +37,7 @@ Images    :   0
  
 Simulations to be undertaken:
 ____simulations ( 1)____________days descrip___
-annual Wed-03-May to Tue-09-May   7  annual run
+annual Wed-03-May to Tue-09-May   7 annual run
  
 display day Tue-02-May.
 display day Wed-03-May.
@@ -79,8 +79,8 @@ Temporal data is available for this model.
  
 Databases associated with the model:
  standard pressure distr: pressc.db1
- standard materials     : material.db3.a
- constructions          : ../dbs/office_operations_constr.db2
+ standard materials     : material.db4.a
+ constructions          : ../dbs/office_operations.constrdb
  standard plant comp    : plantc.db1
  standard event profiles: profiles.db1.a
  standard optical prop  : optics.db2
@@ -95,6 +95,7 @@ free float except for office hours - 20C heating 24C cooling
  
 Zones control includes  1 functions.
 no zone control description supplied
+Details of control loops referenced in the model:
  
  The sensor for function  1 senses the temperature of the current zone.
  The actuator for function  1 is air point of the current zone
@@ -172,22 +173,22 @@ Notes:
 one person typical office pattern ramping up from 7-9am weekdays and
 saturdays. No lights or small power included.
  
-Daytype   Gain Type    Period Sensible  Latent     Radiant    Convec
-          No.  label   Hours  Magn.(W)  Magn.(W)   Fraction   Fraction
-weekdays    1 OccuptW    0- 7      0.0      0.0       0.50       0.50
-weekdays    2 OccuptW    7- 8     20.0     10.0       0.50       0.50
-weekdays    3 OccuptW    8- 9     60.0     30.0       0.50       0.50
-weekdays    4 OccuptW    9-12    100.0     50.0       0.50       0.50
-weekdays    5 OccuptW   12-14     65.0     32.5       0.50       0.50
-weekdays    6 OccuptW   14-17    100.0     50.0       0.50       0.50
-weekdays    7 OccuptW   17-24      0.0      0.0       0.50       0.50
-saturday    1 OccuptW    0- 7      0.0      0.0       0.50       0.50
-saturday    2 OccuptW    7- 8     20.0     10.0       0.50       0.50
-saturday    3 OccuptW    8- 9     60.0     30.0       0.50       0.50
-saturday    4 OccuptW    9-12    100.0     50.0       0.50       0.50
-saturday    5 OccuptW   12-14     65.0     32.5       0.50       0.50
-saturday    6 OccuptW   14-17    100.0     50.0       0.50       0.50
-saturday    7 OccuptW   17-24      0.0      0.0       0.50       0.50
+Daytype   Gain Label     Type    Unit Period Sensible  Latent     Radiant    Convec
+          No.                          Hours Magn.(W)  Magn.(W)   Fraction   Fraction
+weekdays    1 Occupt     people    W    0- 7      0.0      0.0       0.50       0.50
+weekdays    2 Occupt     people    W    7- 8     20.0     10.0       0.50       0.50
+weekdays    3 Occupt     people    W    8- 9     60.0     30.0       0.50       0.50
+weekdays    4 Occupt     people    W    9-12    100.0     50.0       0.50       0.50
+weekdays    5 Occupt     people    W   12-14     65.0     32.5       0.50       0.50
+weekdays    6 Occupt     people    W   14-17    100.0     50.0       0.50       0.50
+weekdays    7 Occupt     people    W   17-24      0.0      0.0       0.50       0.50
+saturday    1 Occupt     people    W    0- 7      0.0      0.0       0.50       0.50
+saturday    2 Occupt     people    W    7- 8     20.0     10.0       0.50       0.50
+saturday    3 Occupt     people    W    8- 9     60.0     30.0       0.50       0.50
+saturday    4 Occupt     people    W    9-12    100.0     50.0       0.50       0.50
+saturday    5 Occupt     people    W   12-14     65.0     32.5       0.50       0.50
+saturday    6 Occupt     people    W   14-17    100.0     50.0       0.50       0.50
+saturday    7 Occupt     people    W   17-24      0.0      0.0       0.50       0.50
  
  ____________________________________________________________
  
@@ -228,11 +229,12 @@ one person typical office pattern ramping up from 7-9am weekdays and
 saturdays. No lights or small power included. Use temperature ctl of
 infiltration - 1ach at 21C
  Control: infil only: zone temp
- Lower/Middle/High temp setpoints:   19.00  21.00  23.00
-                    Infil. ac/h m^3/s  Vent. ac/h m^3/s  from  data
- Lower range data     0.100  0.0011     0.000  0.0000    0     0.000
- Middle range data    1.000  0.0113     0.000  0.0000    0     0.000
- High range data      2.000  0.0225     0.000  0.0000    0     0.000
+ Control Setpoint  Infiltration     Ventilation    Source  temp
+ range             ac/h   m^3/s     ac/h   m^3/s   index   degC
+ Lower    19.00    0.100  0.0011     0.000  0.0000    0     0.000
+ Nominal between 19.0 &  21.0 based on period data.
+ Middle   21.00    1.000  0.0113     0.000  0.0000    0     0.000
+ High     23.00    2.000  0.0225     0.000  0.0000    0     0.000
  
 Scheduled air infiltration and ventilation:
 Daytype    Period     Infiltration     Ventilation     From Source
@@ -246,22 +248,22 @@ one person typical office pattern ramping up from 7-9am weekdays and
 saturdays. No lights or small power included. Use temperature ctl of
 infiltration - 1ach at 21C
  
-Daytype   Gain Type    Period Sensible  Latent     Radiant    Convec
-          No.  label   Hours  Magn.(W)  Magn.(W)   Fraction   Fraction
-weekdays    1 OccuptW    0- 7      0.0      0.0       0.50       0.50
-weekdays    2 OccuptW    7- 8     20.0     10.0       0.50       0.50
-weekdays    3 OccuptW    8- 9     60.0     30.0       0.50       0.50
-weekdays    4 OccuptW    9-12    100.0     50.0       0.50       0.50
-weekdays    5 OccuptW   12-14     65.0     32.5       0.50       0.50
-weekdays    6 OccuptW   14-17    100.0     50.0       0.50       0.50
-weekdays    7 OccuptW   17-24      0.0      0.0       0.50       0.50
-saturday    1 OccuptW    0- 7      0.0      0.0       0.50       0.50
-saturday    2 OccuptW    7- 8     20.0     10.0       0.50       0.50
-saturday    3 OccuptW    8- 9     60.0     30.0       0.50       0.50
-saturday    4 OccuptW    9-12    100.0     50.0       0.50       0.50
-saturday    5 OccuptW   12-14     65.0     32.5       0.50       0.50
-saturday    6 OccuptW   14-17    100.0     50.0       0.50       0.50
-saturday    7 OccuptW   17-24      0.0      0.0       0.50       0.50
+Daytype   Gain Label     Type    Unit Period Sensible  Latent     Radiant    Convec
+          No.                          Hours Magn.(W)  Magn.(W)   Fraction   Fraction
+weekdays    1 Occupt     people    W    0- 7      0.0      0.0       0.50       0.50
+weekdays    2 Occupt     people    W    7- 8     20.0     10.0       0.50       0.50
+weekdays    3 Occupt     people    W    8- 9     60.0     30.0       0.50       0.50
+weekdays    4 Occupt     people    W    9-12    100.0     50.0       0.50       0.50
+weekdays    5 Occupt     people    W   12-14     65.0     32.5       0.50       0.50
+weekdays    6 Occupt     people    W   14-17    100.0     50.0       0.50       0.50
+weekdays    7 Occupt     people    W   17-24      0.0      0.0       0.50       0.50
+saturday    1 Occupt     people    W    0- 7      0.0      0.0       0.50       0.50
+saturday    2 Occupt     people    W    7- 8     20.0     10.0       0.50       0.50
+saturday    3 Occupt     people    W    8- 9     60.0     30.0       0.50       0.50
+saturday    4 Occupt     people    W    9-12    100.0     50.0       0.50       0.50
+saturday    5 Occupt     people    W   12-14     65.0     32.5       0.50       0.50
+saturday    6 Occupt     people    W   14-17    100.0     50.0       0.50       0.50
+saturday    7 Occupt     people    W   17-24      0.0      0.0       0.50       0.50
  
  ____________________________________________________________
  
@@ -302,11 +304,12 @@ one person typical office pattern ramping up from 7-9am weekdays and
 saturdays. No lights or small power included. Infil is sensitive to
 wind speed - 0.1ach <1ms, 1ach >3ms, 2ach >4ms.
  Control: vent only: wind speed
- Lower/Middle/High temp setpoints:    1.00   3.00   4.00
-                    Infil. ac/h m^3/s  Vent. ac/h m^3/s  from  data
- Lower range data     0.100  0.0011     0.000  0.0000    0     0.000
- Middle range data    1.000  0.0113     0.000  0.0000    0     0.000
- High range data      2.000  0.0225     0.000  0.0000    0     0.000
+ Control Setpoint  Infiltration     Ventilation    Source  temp
+ range             ac/h   m^3/s     ac/h   m^3/s   index   degC
+ Lower     1.00    0.100  0.0011     0.000  0.0000    0     0.000
+ Nominal between  1.0 &   3.0 based on period data.
+ Middle    3.00    1.000  0.0113     0.000  0.0000    0     0.000
+ High      4.00    2.000  0.0225     0.000  0.0000    0     0.000
  
 Scheduled air infiltration and ventilation:
 Daytype    Period     Infiltration     Ventilation     From Source
@@ -320,22 +323,22 @@ one person typical office pattern ramping up from 7-9am weekdays and
 saturdays. No lights or small power included. Infil is sensitive to
 wind speed - 0.1ach <1ms, 1ach >3ms, 2ach >4ms.
  
-Daytype   Gain Type    Period Sensible  Latent     Radiant    Convec
-          No.  label   Hours  Magn.(W)  Magn.(W)   Fraction   Fraction
-weekdays    1 OccuptW    0- 7      0.0      0.0       0.50       0.50
-weekdays    2 OccuptW    7- 8     20.0     10.0       0.50       0.50
-weekdays    3 OccuptW    8- 9     60.0     30.0       0.50       0.50
-weekdays    4 OccuptW    9-12    100.0     50.0       0.50       0.50
-weekdays    5 OccuptW   12-14     65.0     32.5       0.50       0.50
-weekdays    6 OccuptW   14-17    100.0     50.0       0.50       0.50
-weekdays    7 OccuptW   17-24      0.0      0.0       0.50       0.50
-saturday    1 OccuptW    0- 7      0.0      0.0       0.50       0.50
-saturday    2 OccuptW    7- 8     20.0     10.0       0.50       0.50
-saturday    3 OccuptW    8- 9     60.0     30.0       0.50       0.50
-saturday    4 OccuptW    9-12    100.0     50.0       0.50       0.50
-saturday    5 OccuptW   12-14     65.0     32.5       0.50       0.50
-saturday    6 OccuptW   14-17    100.0     50.0       0.50       0.50
-saturday    7 OccuptW   17-24      0.0      0.0       0.50       0.50
+Daytype   Gain Label     Type    Unit Period Sensible  Latent     Radiant    Convec
+          No.                          Hours Magn.(W)  Magn.(W)   Fraction   Fraction
+weekdays    1 Occupt     people    W    0- 7      0.0      0.0       0.50       0.50
+weekdays    2 Occupt     people    W    7- 8     20.0     10.0       0.50       0.50
+weekdays    3 Occupt     people    W    8- 9     60.0     30.0       0.50       0.50
+weekdays    4 Occupt     people    W    9-12    100.0     50.0       0.50       0.50
+weekdays    5 Occupt     people    W   12-14     65.0     32.5       0.50       0.50
+weekdays    6 Occupt     people    W   14-17    100.0     50.0       0.50       0.50
+weekdays    7 Occupt     people    W   17-24      0.0      0.0       0.50       0.50
+saturday    1 Occupt     people    W    0- 7      0.0      0.0       0.50       0.50
+saturday    2 Occupt     people    W    7- 8     20.0     10.0       0.50       0.50
+saturday    3 Occupt     people    W    8- 9     60.0     30.0       0.50       0.50
+saturday    4 Occupt     people    W    9-12    100.0     50.0       0.50       0.50
+saturday    5 Occupt     people    W   12-14     65.0     32.5       0.50       0.50
+saturday    6 Occupt     people    W   14-17    100.0     50.0       0.50       0.50
+saturday    7 Occupt     people    W   17-24      0.0      0.0       0.50       0.50
  
  ____________________________________________________________
  
@@ -387,22 +390,22 @@ Notes:
 one person typical office pattern ramping up from 7-9am weekdays and
 saturdays. No lights or small power included.
  
-Daytype   Gain Type    Period Sensible  Latent     Radiant    Convec
-          No.  label   Hours  Magn.(W)  Magn.(W)   Fraction   Fraction
-weekdays    1 OccuptW    0- 7      0.0      0.0       0.50       0.50
-weekdays    2 OccuptW    7- 8     20.0     10.0       0.50       0.50
-weekdays    3 OccuptW    8- 9     60.0     30.0       0.50       0.50
-weekdays    4 OccuptW    9-12    100.0     50.0       0.50       0.50
-weekdays    5 OccuptW   12-14     65.0     32.5       0.50       0.50
-weekdays    6 OccuptW   14-17    100.0     50.0       0.50       0.50
-weekdays    7 OccuptW   17-24      0.0      0.0       0.50       0.50
-saturday    1 OccuptW    0- 7      0.0      0.0       0.50       0.50
-saturday    2 OccuptW    7- 8     20.0     10.0       0.50       0.50
-saturday    3 OccuptW    8- 9     60.0     30.0       0.50       0.50
-saturday    4 OccuptW    9-12    100.0     50.0       0.50       0.50
-saturday    5 OccuptW   12-14     65.0     32.5       0.50       0.50
-saturday    6 OccuptW   14-17    100.0     50.0       0.50       0.50
-saturday    7 OccuptW   17-24      0.0      0.0       0.50       0.50
+Daytype   Gain Label     Type    Unit Period Sensible  Latent     Radiant    Convec
+          No.                          Hours Magn.(W)  Magn.(W)   Fraction   Fraction
+weekdays    1 Occupt     people    W    0- 7      0.0      0.0       0.50       0.50
+weekdays    2 Occupt     people    W    7- 8     20.0     10.0       0.50       0.50
+weekdays    3 Occupt     people    W    8- 9     60.0     30.0       0.50       0.50
+weekdays    4 Occupt     people    W    9-12    100.0     50.0       0.50       0.50
+weekdays    5 Occupt     people    W   12-14     65.0     32.5       0.50       0.50
+weekdays    6 Occupt     people    W   14-17    100.0     50.0       0.50       0.50
+weekdays    7 Occupt     people    W   17-24      0.0      0.0       0.50       0.50
+saturday    1 Occupt     people    W    0- 7      0.0      0.0       0.50       0.50
+saturday    2 Occupt     people    W    7- 8     20.0     10.0       0.50       0.50
+saturday    3 Occupt     people    W    8- 9     60.0     30.0       0.50       0.50
+saturday    4 Occupt     people    W    9-12    100.0     50.0       0.50       0.50
+saturday    5 Occupt     people    W   12-14     65.0     32.5       0.50       0.50
+saturday    6 Occupt     people    W   14-17    100.0     50.0       0.50       0.50
+saturday    7 Occupt     people    W   17-24      0.0      0.0       0.50       0.50
  
  ____________________________________________________________
  
@@ -419,13 +422,13 @@ saturday    7 OccuptW   17-24      0.0      0.0       0.50       0.50
  
  Details of opaque construction: extern_wall and overall thickness  0.412
  
- Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
-      |db  |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
- Ext     6  100.0     0.960  2000.   650. 0.90 0.70    25.  0.10 Lt brown brick : Light brown brick
-    2  211  150.0     0.040   250.   840. 0.90 0.30     4.  3.75 glasswool : Glasswool (generic)
-    3    0   50.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
-    4   22  100.0     0.240   750.  1000. 0.90 0.65    10.  0.42 aerated conc block : Aerated concrete block
- Int   108   12.0     0.190   950.   840. 0.91 0.22    11.  0.06 white gypboard : White painted Gypboard
+ Layer|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
+      |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
+ Ext   100.0     0.960  2000.   650. 0.90 0.70    25.  0.10 Lt brown brick : Light brown brick (inorganic-porous)
+    2  150.0     0.040   250.   840. 0.90 0.30     4.  3.75 glasswool : Glasswool (generic) (non-hygroscopic)
+    3   50.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
+    4  100.0     0.240   750.  1000. 0.90 0.65    10.  0.42 aerated conc block : Aerated concrete block (inorganic-porous)
+ Int    12.0     0.190   950.   840. 0.91 0.22    11.  0.06 white gypboard : White painted Gypboard (inorganic-porous)
  ISO 6946 U values (horiz/upward/downward heat flow)=  0.214  0.215  0.212 (partition)  0.210
  
 Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  0.21
@@ -435,11 +438,11 @@ Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  0.21
  
  Details of opaque construction: insul_frame and overall thickness  0.088
  
- Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
-      |db  |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
- Ext    46    4.0   210.000  2700.   880. 0.82 0.72 19200.  0.00 grey cotd alum : Grey coated aluminium
-    2  281   80.0     0.040    12.   840. 0.90 0.65    30.  2.00 glass fibre quilt : Glass Fibre Quilt
- Int    46    4.0   210.000  2700.   880. 0.82 0.72 19200.  0.00 grey cotd alum : Grey coated aluminium
+ Layer|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
+      |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
+ Ext     4.0   210.000  2700.   880. 0.82 0.72 19200.  0.00 grey cotd alum : Grey coated aluminium
+    2   80.0     0.040    12.   840. 0.90 0.65    30.  2.00 glass fibre quilt : Glass Fibre Quilt (non-hygroscopic)
+ Int     4.0   210.000  2700.   880. 0.82 0.72 19200.  0.00 grey cotd alum : Grey coated aluminium
  ISO 6946 U values (horiz/upward/downward heat flow)=  0.461  0.467  0.452 (partition)  0.442
  
 Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  0.46
@@ -449,9 +452,9 @@ Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  0.46
  
  Details of opaque construction: door and overall thickness  0.025
  
- Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
-      |db  |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
-    1   69   25.0     0.190   700.  2390. 0.90 0.65    12.  0.13 oak : Oak (radial cut)
+ Layer|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
+      |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
+    1   25.0     0.190   700.  2390. 0.90 0.65    12.  0.13 oak : Oak (radial cut)
  ISO 6946 U values (horiz/upward/downward heat flow)=  3.316  3.682  2.928 (partition)  2.554
  
 Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  3.21
@@ -461,11 +464,11 @@ Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  3.21
  
  Details of transparent construction: dbl_glz with DCF7671_06nb optics and overall thickness  0.024
  
- Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
-      |db  |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
- Ext   242    6.0     0.760  2710.   837. 0.83 0.05 19200.  0.01 plate glass : Plate glass with placeholder single layer optics
-    2    0   12.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
- Int   242    6.0     0.760  2710.   837. 0.83 0.05 19200.  0.01 plate glass : Plate glass with placeholder single layer optics
+ Layer|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
+      |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
+ Ext     6.0     0.760  2710.   837. 0.83 0.05 19200.  0.01 plate glass : Plate glass with placeholder single layer optics
+    2   12.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
+ Int     6.0     0.760  2710.   837. 0.83 0.05 19200.  0.01 plate glass : Plate glass with placeholder single layer optics
  ISO 6946 U values (horiz/upward/downward heat flow)=  2.811  3.069  2.527 (partition)  2.243
  
 Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  2.73
@@ -482,15 +485,15 @@ Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  2.73
     3  0.117 0.124 0.127 0.112 0.077
  Total area of dbl_glz is     41.44
  
- Details of opaque construction: susp_flr_re linked to susp_floor   & with overall thickness  0.219
+ Details of opaque construction: susp_flr_re linked to susp_floor & with overall thickness  0.219
  
- Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
-      |db  |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
- Ext    42    4.0    50.000  7800.   502. 0.12 0.20 19200.  0.00 steel : Steel
-    2   32  140.0     1.400  2100.   653. 0.90 0.65    19.  0.10 heavy mix concrete : Heavy mix concrete
-    3    0   50.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
-    4   67   19.0     0.150   800.  2093. 0.91 0.65    96.  0.13 chipboard : Chipboard
- Int   221    6.0     0.060   186.  1360. 0.90 0.60    10.  0.10 Wilton : Wilton weave wool carpet
+ Layer|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
+      |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
+ Ext     4.0    50.000  7800.   502. 0.12 0.20 19200.  0.00 steel : Steel
+    2  140.0     1.400  2100.   653. 0.90 0.65    19.  0.10 heavy mix concrete : Heavy mix concrete
+    3   50.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
+    4   19.0     0.150   800.  2093. 0.91 0.65    96.  0.13 chipboard : Chipboard
+ Int     6.0     0.060   186.  1360. 0.90 0.60    10.  0.10 Wilton : Wilton weave wool carpet (organic-hygroscopic)
  ISO 6946 U values (horiz/upward/downward heat flow)=  1.500  1.570  1.415 (partition)  1.321
  
 Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  1.48
@@ -498,12 +501,12 @@ Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  1.48
  Partition admittance Y=  2.46  w=  2.85 surface factor f=  0.81  phi=  0.95
  Total area of susp_flr_re is     54.00
  
- Details of opaque construction: ceiling linked to ceiling_rev  & with overall thickness  0.110
+ Details of opaque construction: ceiling linked to ceiling_rev & with overall thickness  0.110
  
- Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
-      |db  |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
- Ext   211  100.0     0.040   250.   840. 0.90 0.30     4.  2.50 glasswool : Glasswool (generic)
- Int   150   10.0     0.030   290.  2000. 0.90 0.60     8.  0.33 ceiling mineral : Ceiling acoustic tile (mineral fibre based)
+ Layer|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
+      |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
+ Ext   100.0     0.040   250.   840. 0.90 0.30     4.  2.50 glasswool : Glasswool (generic) (non-hygroscopic)
+ Int    10.0     0.030   290.  2000. 0.90 0.60     8.  0.33 ceiling mineral : Ceiling acoustic tile (mineral fibre based)
  ISO 6946 U values (horiz/upward/downward heat flow)=  0.333  0.336  0.329 (partition)  0.323
  
 Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  0.33
@@ -513,11 +516,11 @@ Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  0.33
  
  Details of opaque construction: gyp_gyp_ptn and overall thickness  0.074
  
- Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
-      |db  |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
- Ext   108   12.0     0.190   950.   840. 0.91 0.22    11.  0.06 white gypboard : White painted Gypboard
-    2    0   50.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
- Int   108   12.0     0.190   950.   840. 0.91 0.22    11.  0.06 white gypboard : White painted Gypboard
+ Layer|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
+      |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
+ Ext    12.0     0.190   950.   840. 0.91 0.22    11.  0.06 white gypboard : White painted Gypboard (inorganic-porous)
+    2   50.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
+ Int    12.0     0.190   950.   840. 0.91 0.22    11.  0.06 white gypboard : White painted Gypboard (inorganic-porous)
  ISO 6946 U values (horiz/upward/downward heat flow)=  2.144  2.292  1.975 (partition)  1.798
  
 Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  2.10
