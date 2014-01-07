@@ -269,7 +269,7 @@ C materials db.
 
             CALL EGETWI(OUTSTR,K,ITMCFCDB(I,IL),-1,MGIT_CFC,'F',
      &        'CFClayer db index',IER)
-            CALL EGETWR(OUTSTR,K,DTHK(I,IL),0.0001,0.5,'W',
+            CALL EGETWR(OUTSTR,K,DTHK(I,IL),0.0001,3.0,'W',
      &        'layer thickness',IER)
 
 C Increment thickness of MLC.
@@ -338,7 +338,7 @@ C -99 which requires further logic in order to locate the relevant
 C material properties.
           CALL EGETWI(OUTSTR,K,IPR(I,IL),-99,600,'F',
      &        'materials db index',IER)
-          CALL EGETWR(OUTSTR,K,DTHK(I,IL),0.0001,0.5,'W',
+          CALL EGETWR(OUTSTR,K,DTHK(I,IL),0.0001,3.0,'W',
      &        'layer thickness',IER)
 
 C Increment thickness of MLC.

@@ -26,16 +26,18 @@ C      parameter (iMAXTokenCount = iHPTokenCount)
      &fHPTokenVals(max_sys,iHPTokenCount),
      &iDataCount(max_sys),
      &cTokens(max_sys,iMAXTokenCount),
-     &fTokenVals(max_sys,iMAXTokenCount),
+     &fTokenVals(max_sys,iMAXTokenCount),cTokenVals,
      &iUnit_Function(max_sys), 
      &bHVACVersion2
      
 
       character*72 cFurnaceTokenNames(iFurnaceTokenCount),
      &             cBaseboardTokenNames,
-     &             cP10_IMSTokenNames, cHPTokenNames, cTokens
+     &             cP10_IMSTokenNames, cHPTokenNames, cTokens,
+     &              cTokenVals(max_sys,iMAXTokenCount)
       real fFurnaceTokenVals, fBaseboardTokenVals, fP10_IMSTokenVals,
      &     fHPTokenVals, fTokenVals
+     &     
       integer iUnit_Function
       logical bHVACVersion2
 

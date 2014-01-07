@@ -12,7 +12,9 @@ C (JWH remove continuation lines based on F90 warnings)
      & economizer_ind_temp_setpoint(max_sys),
      & economizer_out_temp_limitcon(max_sys),
      & economizer_out_enth_limitcon(max_sys),
-     & outdoor_fan_power(max_sys)
+     & outdoor_fan_power(max_sys),
+     & iHeatPumpType(max_sys)
+     
 
 c Real variables in heat pump input data
       REAL ss_cop,time_constant,shrr,cutoff_temp,bfr,ahp,bhp,chp,dhp 
@@ -23,6 +25,8 @@ c Real variables in heat pump input data
       REAL economizer_out_enth_limitcon
       REAL outdoor_fan_power
 
+      
+            
 c Integer variables in heat pump input data
       INTEGER itemp_control
       INTEGER ibackup_heat 
@@ -30,6 +34,17 @@ c Integer variables in heat pump input data
       INTEGER icooling_type
       INTEGER isys_num_heating 
       INTEGER ieconomizer_control
+
+      INTEGER iHeatPumpType
+      
+      INTEGER, PARAMETER :: iASHP_typical       = 1 
+      INTEGER, PARAMETER :: iASHP_good          = 2 
+      INTEGER, PARAMETER :: iASHP_poor          = 3 
+      INTEGER, PARAMETER :: iASHP_CCASHP_CEF    = 4 
+      INTEGER, PARAMETER :: iASHP_CCASHP_CCHT   = 5 
+      INTEGER, PARAMETER :: iASHP_CCASHP_MANUF  = 6 
+      
+   
 
 c Common for air-conditioner output
       common/output_acsystem/

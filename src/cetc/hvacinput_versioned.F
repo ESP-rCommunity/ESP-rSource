@@ -1292,12 +1292,15 @@ C.............Attempt to read token name
      &           cLnWords(1)(1:min(72,lnblnk(cLnWords(1))))
 
 C.............Attempt to read token value
+              
               fTokenVals(iSystem,iData) = fCtoR_err(
      &               cLnWords(2),
      &               'interpreting token "'
      &                  //cLnWords(2)(1:lnblnk(cLnWords(2)))//'"',
      &               bConvErr)
 
+
+     
               if ( bConvErr ) then
 
                 call HVACinput_RepErr( iFileLine,
@@ -1338,7 +1341,6 @@ C...........Line must have 2 words: Token Value
 C.............Increment system data counter
               iMiscParamCount(iSystem) = iMiscParamCount(iSystem) + 1
               iParam = iMiscParamCount(iSystem)
-
 C.............Attempt to read token name
               write(cMiscTokens(iSystem,iParam), '(A)')
      &           cLnWords(1)(1:min(72,lnblnk(cLnWords(1))))
@@ -1346,7 +1348,9 @@ C.............Attempt to read token name
 C.............Attempt to read token value
               write(cMiscVals(iSystem,iParam), '(A)')
      &           cLnWords(2)(1:min(72,lnblnk(cLnWords(2))))
+     
 
+                
             endif
 C-----------------------------------------------------------------------
 C         Default case: if line does not start with a known keyword and
@@ -2492,6 +2496,8 @@ C-----------------------------------------------------------------------
 C     Local variables
 C-----------------------------------------------------------------------
       character*248 cMsg  ! Message buffer
+      character*72  cTokenVal ! Buffer. 
+      character*72 cHVAC_FindCToken 
       logical bFound      ! Search result
       integer iToken_1    ! Counter
       integer iToken_2    ! Counter
@@ -2517,7 +2523,7 @@ C     Parse data in fDataBlock.
 C
 C     ASHP models expect X inputs
 C       - mode of operation (1-heating; 2-cooling)
-C       - units performance (1-typical; 2-good; 3-poor)
+C       - unit's performance (1-typical; 2-good; 3-poor)
 C       - steady-state capacity
 C       - steady-state COP
 C       - circulation fan flow rate
@@ -2578,30 +2584,69 @@ C-----------------------------------------------------------------------
            isys_type(iSystem) = 4
 
       else 
-
-     
-        isys_type(iSystem) = int( fHVAC_FindTokenNoLimits(
-     &                          iSystem,
+        
+        cTokenVal = cHVAC_FindCToken( iSystem,
      &                          'performance',
      &                          'heat pump performance characteristics',
      &                          bRequired,
-     &                          bFound ) )
 
-        if ( bFound                .and.
-     &     isys_type(iSystem) /= 1 .and.
-     &     isys_type(iSystem) /= 2 .and.
-     &     isys_type(iSystem) /= 3 ) then
+
+     &                          bFound       )
+        
+        if ( bFound .and. 
+
+
+
+     &         ( cTokenVal(1:7) .ne. 'typical'              .and.
+     &           cTokenVal(1:4) .ne. 'good'                 .and.
+     &           cTokenVal(1:4) .ne. 'poor'                 .and.
+     &           cTokenVal(1:11).ne. 'CCASHP-CCHT'          .and.
+     &           cTokenVal(1:10).ne. 'CCASHP-CEF'           .and.
+     &           cTokenVal(1:19).ne. 'CCASHP-MANUFACTURER'  
+     &         )
+     &     ) THEN 
+     
           write (cMsg, '(A,A,I2,A)' )
      &    ' Error interpreting "performance" token ',
      &    'for HVAC system # ',
      &    iSystem,
      &    '. Value must be one of the following:'
           call edisp248( iUout, cMsg, 80 )
-          call edisp248( iUout,'   - 1  (typical unit)',80)
-          call edisp248( iUout,'   - 2  (good unit)',   80)
-          call edisp248( iUout,'   - 3  (poor unit)',   80)
+          call edisp248( iUout,'   - typical      (typical unit)',80)
+          call edisp248( iUout,'   - good         (good unit)',   80)
+          call edisp248( iUout,'   - poor         (poor unit)',   80)
 
+          call edisp248( iUout,'   - CCASHP-CCHT  (Cold-climate ASHP '
+     &                     // 'using CCHT performance test data)',80)
+          call edisp248( iUout,'   - CCASHP-MANUFACTURER ', 80)
+          call edisp248( iUout,'                  (Cold-climate ASHP '
+     &                     // 'using data supplied by Manufacturer)',80)
+     
+C.........Set error flag
+          bParseError = .true.     
+     
         else
+          select case ( cTokenVal(1:19) )
+          case('typical            ') 
+            isys_type(iSystem)=iASHP_typical   
+            bParseError = .true.     
+            iHeatPumpType(iSystem) = iASHP_typical
+          case('good               ') 
+            isys_type(iSystem)=iASHP_good      
+            iHeatPumpType(iSystem) = iASHP_good
+          case('poor               ') 
+            isys_type(iSystem)=iASHP_poor      
+            iHeatPumpType(iSystem) = iASHP_poor
+          case('CCASHP-CEF         ') 
+            isys_type(iSystem)=iASHP_good 
+            iHeatPumpType(iSystem) = iASHP_CCASHP_CEF
+          case('CCASHP-CCHT        ') 
+            isys_type(iSystem)=iASHP_good
+            iHeatPumpType(iSystem) = iASHP_CCASHP_CCHT
+          case('CCASHP-MANUFACTURER') 
+            isys_type(iSystem)=iASHP_good
+            iHeatPumpType(iSystem) = iASHP_CCASHP_MANUF
+          end select 
           call ASHP_COEFF(iSystem)
         end if
 
@@ -3216,6 +3261,7 @@ C-----------------------------------------------------------------------
       real fLLimit, fULimit, fTokenVal
       character*72 cTokenVal
 
+
       fLLimit = 0.
       fULimit = 0.
 
@@ -3230,6 +3276,7 @@ C-----------------------------------------------------------------------
      &                     fTokenVal,
      &                     cTokenVal,
      &                     bInLimits)
+
 
       write( cHVAC_FindCToken, '(A)' )  cTokenVal(1:72)
 
@@ -3316,6 +3363,7 @@ C...........Do tokens match?
      &          ) then
 C.............Yes! Recover value
               fTokenVal = fTokenVals( iSystem, iData)
+
 
 C.............Set 'found' result
               bFound = .true.

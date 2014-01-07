@@ -394,7 +394,7 @@ c As per a conversation with Andrew Morrison of Caneta, the heat pump can operat
 c both heating and cooling mode in the same seasaon. For days where there is a heating
 c load and no cooling load, dQ will be a function of daily_heat_load and COP.
 
-       if (GSHP_COP .eq. 0.0 ) then
+       if (GSHP_COP .lt. 0.01 ) then
          WRITE(IUOUT,*) ' Error GSHPSIM: COP is zero '
          return
        else
@@ -412,8 +412,9 @@ c is calculated every timestep from the heat pump calculation. This value has be
 c load averaged for the ground loop calculation.
 
            COP = daily_GSHP_COP(load_weighted_GSHP_COP,daily_heat_load)
+         
+           dQ(iPeriod) = - daily_heat_load/1000. * (1. - 1./COP)
 
-           dQ(iPeriod) = - daily_heat_load/1000. * (1 - 1/COP)
 
 c For days where there is a cooling load and no heating load, dQ
 c will be a function of daily_cool_load and COP.
@@ -425,7 +426,7 @@ c load averaged for the ground loop calculation, so we will not account for the
 c COP when the load is zero.
              COP = daily_GSHP_COP(load_weighted_GSHP_COP,
      &                            daily_cool_load)   
-             dQ(iPeriod) = daily_cool_load/1000. * (1 + 1/COP) 
+             dQ(iPeriod) = daily_cool_load/1000. * (1. + 1./COP) 
 
          else
 c For days where there are both heating and cooling loads and no cooling load, dQ
@@ -439,8 +440,9 @@ c COP when the load is zero.
              COP_cool = daily_GSHP_COP(load_weighted_GSHP_cop,
      &                                 daily_cool_load)
 
-             dQ(iPeriod) = - daily_heat_load/1000. * (1 - 1/COP_heat) +
-     &                     daily_cool_load/1000. * (1 + 1/COP_cool)
+             dQ(iPeriod) = - daily_heat_load/1000.  
+     &                      * (1. - 1./COP_heat) +
+     &                     daily_cool_load/1000. * (1. + 1./COP_cool)
          endif 
        endif 
  
@@ -545,8 +547,8 @@ C ----------------------  Variable Definitions ------------------------
 C -----      Variable Initilizations
       PI = ACOS(-1.0)
         
-      Depth_cum = 0                  ! Depth accumulation (m)
-      Dmean = 0
+      Depth_cum = 0.                  ! Depth accumulation (m)
+      Dmean = 0.
 
 
 C ---------------------------  Main Program  --------------------------
@@ -562,22 +564,22 @@ C ----- Determine mean diffusivity for given bore depth Dbottom
          ENDIF
          Depth_cum = Depth_cum + Depth(m)
          Dmean = Dmean + (Depth(m) * (0.75 * Dw(m) + 0.25 * Ds(m))
-     &         / (2 * (Dbottom - Dtop)))
+     &         / (2. * (Dbottom - Dtop)))
 
  107  CONTINUE      ! End of Nsoil LOOP
 
 C ----- Calculate Resistivity of Pipe and Grout
 C ----- CAMNET 1992, (Eq. A.6)
       ODeq   = SQRT(2.0) * OD                         ! Outside Diameter RMS
-      Rpipe  = LOG(OD / ID) / (2 * PI * Kpipe)       ! mK/W
-      Rgrout = LOG(Dbore / ODeq)/(2 * PI * Kgrout)  ! mK/W
+      Rpipe  = LOG(OD / ID) / (2.* PI * Kpipe)       ! mK/W
+      Rgrout = LOG(Dbore / ODeq)/(2. * PI * Kgrout)  ! mK/W
         
 
 C ----- For Multi-Year Analysis, Calc. Dummy Variable 
 C ----- For time and energy arrays 
       iTime = iPeriod - INT((iPeriod - 1)/Period) * Period
-      dTtot = 0
-      Wattj = 0
+      dTtot = 0.
+      Wattj = 0.
 
 C ----- jPeriod loop accumulates properties from beginning of precond. to iPeriod
 C ----- Note: dTtot is only variable altered in jPer loop and used outside
@@ -587,7 +589,7 @@ C ----- Note: dTtot is only variable altered in jPer loop and used outside
 C ------- Subroutine will initialize jPeriod, timej, jTime variables
           CALL J_set (jPer, Period, jPeriod, iPeriod, 
      &                jTime, timej, TimeDay)
-          sum = 0  ! set sum to zero (Denominator of Tinc)
+          sum = 0.  ! set sum to zero (Denominator of Tinc)
 
 C --------- Calculate soil properties Rinf and RS  **
           DO 120 m = 1, Nsoil  ! m = soil layer      
@@ -598,14 +600,14 @@ C --------- Calculate soil properties Rinf and RS  **
 
 C --------- Hart & Couvillion, Earth-Coupled Heat Transfer, 1986 (EQ 2-8)
 C --------- Far-field radius in metres
-            Rinf = 4 * SQRT(Dsoil * timej)  
+            Rinf = 4. * SQRT(Dsoil * timej)  
               
 C --------- Hart & Couvillion, Earth-Coupled Heat Transfer, 1986 (EQ 3-3)
 C --------- Far-field resistance
             RS = (PWRFOR(0.5 * OD / Rinf))/(2.0 * PI * Ksoil)
 
 C --------- Calculate LM/LS for Period iPeriod,jPeriod,m  **
-            X = (OD / 2) / Rinf
+            X = (OD / 2.) / Rinf
             Y = SP / Rinf
  
             IF (Y .GE. 1) THEN
@@ -614,11 +616,11 @@ C --------- Calculate LM/LS for Period iPeriod,jPeriod,m  **
                LMLSHE = 1 + PWRFOR(Y) / PWRFOR(X)
             ENDIF
   
-            IF (Y .GE. 2) THEN
+            IF (Y .GE. 2.) THEN
                LMLST = 1.0
             ELSE
-               LMLST = 1.0/(1.0 - (0.5 * SINACOS(Y / 2) *
-     &                 PWRFOR(Y / 2) /PWRFOR(X)))
+               LMLST = 1.0/(1.0 - (0.5 * SINACOS(Y / 2.) *
+     &                 PWRFOR(Y / 2.) /PWRFOR(X)))
             ENDIF
            
             LMLS = LMLST*LMLSHE
@@ -635,7 +637,7 @@ C---------- CAMNET 1992, (Denominator of Eq A.4)
 
 C-------- Calculate (Tf-Tinf)Total  
           Wattj_1 = Wattj
-          Wattj = dQ(jPeriod) * (1000 / (TimeDay * 24))
+          Wattj = dQ(jPeriod) * (1000. / (TimeDay * 24.))
 
 C-------- CAMNET 1992, (Eq A.4)
           dTinc = (Wattj - Wattj_1) / sum
@@ -645,7 +647,7 @@ C-------- CAMNET 1992, (Eq A.4)
   110 CONTINUE ! Move to next 'previous' Period, End of jPer Loop
 
 
-        kWj = dQ(iPeriod) / (TimeDay * 24)
+        kWj = dQ(iPeriod) / (TimeDay * 24.)
 
 C ----- Set appropriate values for ground temperature amplitude and average
 C ----- If the gshp input data file has no version number or has a 0. version 
@@ -663,19 +665,19 @@ C ----- ground temperature parameters will be based on weather file and Moore mo
         
 C ----- Calculate Tinf for period i  **
 C ----- Hart & Couvillion, Earth-Coupled Heat Transfer, 1986 (EQ 10-3)
-        a = - sqrt(PI / (365 * 24 * 3600 * Dmean))
+        a = - sqrt(PI / (365. * 24. * 3600. * Dmean))
 C ----- Hart & Couvillion, Earth-Coupled Heat Transfer, 1986 (EQ 10-3)        
-        b = 2 * PI / 365 * (Day -  Dayo)
+        b = 2. * PI / 365. * (Day -  Dayo)
 C ----- Hart & Couvillion, Earth-Coupled Heat Transfer, 1986 (EQ 10-4)
         dTinf = (Gshp_Ground_Temp_Amp * exp(a * Dtop))/
-     &    (2 * a * (Dbottom - Dtop))
+     &    (2. * a * (Dbottom - Dtop))
      &  * (COS(b + a * Dtop)+ SIN(b + a * Dtop))
 
 C ----- **** Calculate EWT ****
         Tfluid = dTtot + dTinf + Gshp_Ground_Temp_Avg
 
 
-        EWT = Tfluid - (kWj / 2) / (Flow / 1000 * Cp * Density)
+        EWT = Tfluid - (kWj / 2.) / (Flow / 1000. * Cp * Density)
 
 c Check to ensure that circulating fluid does not freeze, the entering water
 c temperature should not drop below -10 degrees Celcius (note: this fluid is 
@@ -1121,7 +1123,7 @@ C ----- - **** Calculate EWT ****
   95    CONTINUE  ! Go to second pipe burial depth
       
 C------ ** Calculate EWT **
-      EWT = Tfluid - (kWi / 2) / (Flow / 1000 * Cp * Density)     
+      EWT = Tfluid - (kWi / 2.) / (Flow / 1000 * Cp * Density)     
 
 c Check to ensure that circulating fluid does not freeze, the entering water
 c temperature should not drop below -10 degrees Celcius (note: this fluid is 
@@ -1289,13 +1291,13 @@ C -------- to select best formula.  This is checked in PWRFOR Subroutine
               space = Ncount-Pcount
               LMLSHE(Ncount) = 
      &              LMLSHE(Ncount) + PWRFOR(space * Y) / powerx
-              DENOM = DENOM - 0.5 * SINACOS(space * Y / 2)
-     &                  * PWRFOR(space * Y / 2) / powerx
+              DENOM = DENOM - 0.5 * SINACOS(space * Y / 2.)
+     &                  * PWRFOR(space * Y / 2.) / powerx
                 ELSEIF (Pcount .GT. Ncount) THEN
                space = Pcount-Ncount
                 LMLSHE(Ncount) = 
      &              LMLSHE(Ncount) + PWRFOR(space * Y) / powerx
-              DENOM = DENOM - 0.5 * SINACOS(space * Y / 2)
+              DENOM = DENOM - 0.5 * SINACOS(space * Y / 2.)
      &                  * PWRFOR(space * Y / 2) / powerx
               ENDIF
 
@@ -1326,7 +1328,7 @@ C ------- CAMNET 1992, (Denominator of Eq A.5)
         sum = pipe_length / ((RS * LMLS) + Rpipe)  
 
         Wattj_1 = Wattj
-        Wattj = dQ(jPeriod) * (1000 / (TimeDay * 24))
+        Wattj = dQ(jPeriod) * (1000. / (TimeDay * 24))
 
 C ------- CAMNET 1992, (Eq A.5)
         dTinc = (Wattj - Wattj_1) / sum      ! * (1-K1-K2) NOTE: This was not 
@@ -1336,13 +1338,13 @@ C ------- CAMNET 1992, (Eq A.5)
               ! End of jPer Loop
 
 
-       kWi = dQ(iPeriod) / (TimeDay * 24)
+       kWi = dQ(iPeriod) / (TimeDay * 24.)
 
 C ----- Calculate Tinf for period i
 C ----- Hart & Couvillion, Earth-Coupled Heat Transfer, 1986 (EQ 10-6):       
-        a = - sqrt(PI / (365 * 24 * 3600 * Dmean))
+        a = - sqrt(PI / (365. * 24 * 3600. * Dmean))
 C ----- Hart & Couvillion, Earth-Coupled Heat Transfer, 1986 (EQ 10-6):
-        b = 2 * PI / 365 * (Day -  Dayo)
+        b = 2 * PI / 365. * (Day -  Dayo)
 C ----- Hart & Couvillion, Earth-Coupled Heat Transfer, 1986 (EQ 10-6):
 
 C ----- Set appropriate values for ground temperature amplitude and average
@@ -1513,7 +1515,7 @@ c *********************************************************************
        REAL Lm, Layer_top, Layer_bot 
        INTEGER m, Icount, Nsoil
         
-       Layer_top = 0        
+       Layer_top = 0.        
        DO 700 Icount = 1, m-1
           Layer_top = Layer_top + Depth(Icount) !Calc. Depth of Layers' top
  700   CONTINUE ! Endo of m-1 loop
@@ -1521,7 +1523,7 @@ c *********************************************************************
        IF (Nsoil .EQ. m) Depth(m) = Dbottom - Layer_top
           Layer_bot = Layer_top + Depth(m)      ! Depth of Layers' bottom    
           IF (Layer_bot .LE. Dtop) THEN
-             Lm = 0
+             Lm = 0.
           ELSE IF ((Layer_bot .GT. Dtop).AND.(Layer_top .LT. Dtop)) THEN 
              IF (Dbottom .LT. Layer_bot) THEN
                 Lm = 2.0*(Dbottom-Dtop)*Utube
@@ -1532,9 +1534,9 @@ c *********************************************************************
              Lm = 0.0              
           ELSE
              IF (Dbottom .LT. Layer_bot) THEN
-                Lm = 2*(Dbottom-Layer_top)*Utube
+                Lm = 2.*(Dbottom-Layer_top)*Utube
              ELSE
-                Lm = 2*Depth(m)*Utube
+                Lm = 2.*Depth(m)*Utube
              ENDIF
           ENDIF
 
@@ -1592,15 +1594,15 @@ c *********************************************************************
        REAL SINACOS, PWRFOR
        REAL OD, Rinf, BD, K1, K2, X, Y
       
-        X = OD / 2 / Rinf
+        X = OD / 2. / Rinf
         Y = BD / Rinf
 
-        IF (Y .GE. 0.5) K1 = 0
+        IF (Y .GE. 0.5) K1 = 0.
 C ------- Hart & Couvillion, Earth-Coupled Heat Transfer, 1986 (EQ 9-14):
-        IF (Y .LT. 0.5) K1 = PWRFOR(2 * Y) / PWRFOR(X)
-        IF (Y .GE. 1) K2 = 0
+        IF (Y .LT. 0.5) K1 = PWRFOR(2. * Y) / PWRFOR(X)
+        IF (Y .GE. 1.) K2 = 0.
 C ------- Hart & Couvillion, Earth-Coupled Heat Transfer, 1986 (EQ 9-13):
-        IF (Y .LT. 1) K2 = 0.5 * SINACOS (Y) * PWRFOR(Y) / PWRFOR(X)
+        IF (Y .LT. 1.) K2 = 0.5 * SINACOS (Y) * PWRFOR(Y) / PWRFOR(X)
 
        RETURN
        END
@@ -1624,7 +1626,7 @@ c *********************************************************************
         PI = ACOS(-1.0)
         To = Tfluid - kWi*1000.0 / (L / Rpipe)
 
-        IF (To .LT. 0) THEN
+        IF (To .LT. 0.) THEN
 C --------- CAMNET 1992, (Eq A.32)
            Xice = (OD / 2.0) / (5.34 * BD)
            dTotot = dTtot - kWi * 1000.0 * Rpipe / L
@@ -1633,11 +1635,11 @@ C --------- CAMNET 1992, (Eq A.32)
            Rice = 5.34 * BD / exp((-(dTinf + Tmean) / dTotot * 
      &          PWRFOR(Xice)) + 0.981755)
 
-           if (Rice .gt. -1E-4) then
+           if (Rice .gt. -1.E-4) then
              Tfluid = Tfluid
            else
 C --------- CAMNET 1992, (Eq A.34)
-           RSice = PWRFOR(0.5 * OD / Rice) / (2 * PI * Kice)
+           RSice = PWRFOR(0.5 * OD / Rice) / (2. * PI * Kice)
              Tfluid = kWi * 1000.0 / (L / (RSice + Rpipe))
            endif
 
@@ -1673,8 +1675,9 @@ C  Inputs must be dimensionless
 
          PWRFOR = Log(1/X)-0.981755
          DO 500 N = 1, series
-            PWRFOR = PWRFOR + ((-1)**(N+1))/REAL(2*N*FACT(N)) * 
-     &               (2*X)**(2*N)
+            PWRFOR = PWRFOR + ((-1.)**(real(N)+1.))
+     &                            /(2.*real(N)*FACT(N)) * 
+     &               (2.*X)**(2.*real(N))
  500     CONTINUE
 
          IF (X .GE. 1.0) PWRFOR = 0.0
@@ -1780,14 +1783,14 @@ C Local Variables
 
       REAL SS_EER
       REAL EER
-       if (GSHP_HP_mode .ge. 0) then
+       if (GSHP_HP_mode .ge. 0.) then
 c For water-source and ground-source heat pumps in heating mode, the correlating
 c coefficients are,
         a_cop = 1.00098
         b_cop = 0.01756
         c_cop = -0.00011
         cop = ss_cop
-     &   * (a_cop + b_cop * local_EWT + c_cop * local_EWT**2)
+     &   * (a_cop + b_cop * local_EWT + c_cop * local_EWT**2.)
 
 c For systems in cooling mode, the reference provides the correlations for the
 c Energy Efficiency Rating or EER. The conversion between COP and EER is 3.413 But/W hr,
@@ -1801,7 +1804,7 @@ c The conversion between COP and EER is as follows:
 c For water-source and ground-source heat pumps in cooling mode, the correlating 
 c coefficients are,
         EER = ss_EER
-     &  * (a_EER + b_EER * local_EWT + c_EER * local_EWT**2)
+     &  * (a_EER + b_EER * local_EWT + c_EER * local_EWT**2.)
 c and then,
         cop = EER / 3.413
       endif
@@ -1865,7 +1868,7 @@ c GSHP_HP_mode = -1, the correlating coefficients are:
       endif
 
 c Set total capacity of water-source or ground-source heat pump. 
-      cap = ss_cap * (a_cap + b_cap * EWT + c_cap * EWT**2)
+      cap = ss_cap * (a_cap + b_cap * EWT + c_cap * EWT**2.)
       GSHP_CAP = cap
 
       return
@@ -1991,7 +1994,7 @@ c screen
        endif
 
 c The circulating fluid pump input (GSHP_pump_input) in W is:
-       GSHP_pump_input = 0.16 * (GSHP_CAP / 3517) * 4.22 * 
+       GSHP_pump_input = 0.16 * (GSHP_CAP / 3517.) * 4.22 * 
      &                   (HP_pressure_drop + runout_press_drop +
      &                   ((pipe_length / GSHP_CAP)* circ_press_drop) +
      &                   runout_fit_drop + circ_fit_drop)
@@ -2051,13 +2054,15 @@ c The load-weighted average ground heat exchanger COP is the sum of the timestep
 c COP divided by the timestep load over the simulation day - calculated below. If
 c there is no load for that timestep, then do not include it in the calculation.
 
+      
+
        if (load .gt. 0.0) then
          load_weighted_GSHP_COP = load_weighted_GSHP_COP + 
      &                          (cop * load)/NTSTEP
        else
          load_weighted_GSHP_COP = load_weighted_GSHP_COP
        endif
-       
+      
        return
        end
 

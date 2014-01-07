@@ -140,24 +140,6 @@ C      integer GSHP_HP_mode,GCEP_HP_mode
      &     ASHP_COP,cop,time_step,TIME_INTERVAL,ASHP_ENERGY,ASHP_PLF,
      &     total_sys_heat_cap
 
-c The simulation procedure of the energy consumption of the air-source
-c heat pump system depends on the initial estimate of the part-load ratio 
-c plrhp and the temperature control strategy employed. Given this information
-c it is also possible to estimate the energy consumption of the backup 
-c heating system.
-
-c Check whether the outdoor temperature is below the minimum operating
-c temperature of the heat pump. In this case the heat pump is off and the 
-c full load is satisfied by the backup heat source if it has enough 
-c capacity. The minimum temperature is based on the default in the DOE-2
-c computer program
-      ashp_temp_min = -12.22
-      if(TP.lt.ashp_temp_min) then
-c Estimate the plr of the backup heat source
-        plrb = PLR(heating_load,ss_capacity(ibackup_sys_num(isys)),
-     &         fan_power(isys),ifan_operation(isys))
-      endif
-
 
 c GSHP 
 c If the system being modelled is a GSHP, then the capacity
@@ -177,13 +159,37 @@ c entering water temperature.
         ss_heat_pump_cap = GSHP_CAP(ss_capacity(isys),GCEP_EWT,
      &                              GCEP_HP_mode)
       else
+
+c The simulation procedure of the energy consumption of the air-source
+c heat pump system depends on the initial estimate of the part-load ratio 
+c plrhp and the temperature control strategy employed. Given this information
+c it is also possible to estimate the energy consumption of the backup 
+c heating system.
+
+c Check whether the outdoor temperature is below the minimum operating
+c temperature of the heat pump. In this case the heat pump is off and the 
+c full load is satisfied by the backup heat source if it has enough 
+c capacity. The minimum temperature is based on the default in the DOE-2
+c computer program
+        ashp_temp_min = cutoff_temp(isys)
+
+        if(TP.lt.ashp_temp_min) then
+c Estimate the plr of the backup heat source
+          ss_heat_pump_cap = 0. 
+          plrb = PLR(heating_load,ss_capacity(ibackup_sys_num(isys)),
+     &           fan_power(isys),ifan_operation(isys))
+     
+        else 
 c Steady-state heat pump capacity accounting for the effect of the outdoor
 c temperature
-        ss_heat_pump_cap = ASHP_CAP(ss_capacity(isys),TP,
-     &                     flow_rate(isys),
-     &                     flow_rate_r(isys),ifan_operation(isys))
+          ss_heat_pump_cap = ASHP_CAP(ss_capacity(isys),TP,
+     &                       flow_rate(isys),
+     &                       flow_rate_r(isys),ifan_operation(isys),
+     &                       cutoff_temp(isys))
+
+
+        endif 
       endif
-c GCEP (end)
 
 C Save actual capacity of heat-pump system
       fH3KActualCapacity(iSYS) = ss_heat_pump_cap
@@ -444,9 +450,7 @@ c entering water temperature.
          GCEP_HEAT_COP = cop
        else
 c Set COP of heat pump
-         cop = ASHP_COP(ss_cop(isys),TP,flow_rate(isys),
-     &                 flow_rate_r(isys),
-     &                 ifan_operation(isys))
+         cop = ASHP_COP(isys,TP)
        endif
 c GCEP (end) 
 
@@ -599,42 +603,144 @@ c OUTPUTS:
 c       ASHP_COP   steady-state cop of the heat pump at outdoor
 c                  temperature tout
 c **********************************************************************
-      REAL FUNCTION ASHP_COP(ss_cop,tout,flow_rate,flow_rate_r,
-     &                       ifan_operation)
-
+      REAL FUNCTION ASHP_COP(iSys,tout)
       IMPLICIT NONE
-
+      include "building.h"
+      include "hvac_parameters.h"
+      include "hvac_common.h"
+      include "ashp_common.h"
 c Variables passed in call
-      REAL ss_cop,tout,flow_rate,flow_rate_r
 
-      INTEGER ifan_operation
+      REAL tout, cop
 
-c Local variables
-      REAL a_cop,b_cop,c_cop,d_cop,e_cop,cop
- 
+      real temp_corr
+      
+      INTEGER iSys 
+
+
 c Set the coefficients for the steady-state C.O.P. correlation 
 c of the heat pump
-      a_cop = 0.846394
-      b_cop = 0.018819
-      c_cop = -6.37288e-5
-      d_cop = -9.165897e-6
-      e_cop = -1.99907e-8
+      real, parameter :: a_cop = 0.846394
+      real, parameter :: b_cop = 0.018819
+      real, parameter :: c_cop = -6.37288e-5
+      real, parameter :: d_cop = -9.165897e-6
+      real, parameter :: e_cop = -1.99907e-8
 
 c Set the steady-state C.O.P. for the current time step
 c Equation 2 in Air-source heat pump by Haddad
-      cop = ss_cop * (a_cop + b_cop * tout + c_cop * tout**2 +
-     &d_cop * tout**3 + e_cop * tout**4)
+      cop = ss_cop(iSys) * (a_cop + b_cop * tout + c_cop * tout**2 +
+     &                      d_cop * tout**3 + e_cop * tout**4)
+
+      
+      if ( iHeatPumpType(iSys) == iASHP_typical  .or.
+     &     iHeatPumpType(iSys) == iASHP_good     .or.
+     &     iHeatPumpType(iSys) == iASHP_poor    ) then 
+           
+        cop = ss_cop(isys) 
+     &               * (a_cop + b_cop * tout + c_cop * tout**2 +
+     &                  d_cop * tout**3 + e_cop * tout**4)           
+           
+      elseif ( iHeatPumpType(iSys) == iASHP_CCASHP_CEF ) then 
+
+C This is a hard-coded Performance curve for a Cold-climate ASHP 
+C inferred from manufactuer's literature. It assumes the COP 
+C varies linerally between 3.19 (at 15oC) and 1.4 (at -25 oC). 
+C This configuration was used in the original NRCan ANZEH optimiation
+C work. 
+      
+        cop = 1.4 + (tout - (-25.) ) / ( 15. - ( -25. ) ) 
+     &            * ( 3.19 - 1.4 ) 
+      
+        if ( COP < 1.4 ) COP = 1.4
+        if ( COP > 3.19) COP = 3.19
+      
+      elseif ( iHeatPumpType(iSys) == iASHP_CCASHP_CCHT ) then 
+      
+        temp_corr = tout
+        if ( temp_corr < - 21. ) temp_corr = -21.
+        if ( temp_corr >   5.  ) temp_corr =   5.
+
+C This is a hard-coded performance curve for a cold-cliamte ASHP 
+C developed from testing at CCHT. It 
+C has three parts: 
+C
+C   1. When -21oC < tout < 5oC, performance is provided by an 
+C      4th-order polynomial based on a regression to measured data
+C      collected at CCHT. The data 
+C   
+C   2. Above 5oC, performance is held constant at its 5oC value 
+C      ( approx 3.4 ).
+C 
+C   3. Below -21 oC, performance is held constant at its -21oC 
+C      value. 
+C
+C The data reflects 'full-load' performance; it must be combined 
+C with the part-load factor (See ASHP_PLF and ASHP_PLF_OFFCYC_CORR).
+C When combined with these other factors, agreement is excellent 
+C with the CCHT test data. 
+
+        cop =    1.42418e-005 * temp_corr ** 4 
+     &         + 0.000687606  * temp_corr ** 3 
+     &         + 0.0116993    * temp_corr ** 2 
+     &         + 0.145709     * temp_corr  
+     &         + 3.06098
+
+      elseif ( iHeatPumpType(iSys) == iASHP_CCASHP_MANUF ) then  
+         
+C This is a hard-coded performance curve for a cold-climate ASHP 
+C developed from detailed data supplied by the manufacturer. It 
+C has three parts: 
+C 
+C
+C   1. When -35oC < tout < 5oC, performance is provided by an 
+C      8th-order polynomial based on a regression to manufacturer 
+C      published test data. 
+C   
+C   2. Above 5oC, performance is held constant at its 5oC value 
+C      ( approx 3.4 ).
+C 
+C   3. Below -35 oC, performance is held constant at its -35 oC 
+C      value. 
+C
+C Parts 2 and 3 are somewhat moot because the HP is usually disabled as 
+C tout -> -30oC, and most homes need little heat when the temperature is 
+C above 5oC. 
+C   
+C       
+           
+        temp_corr = tout
+        if ( temp_corr < - 35. ) temp_corr = -35.
+        if ( temp_corr >   15. ) temp_corr =   5.           
+                  
+        cop =    4.02222e-011 * temp_corr ** 8.0 
+     &        +  4.37853e-009 * temp_corr ** 7.0
+     &        +  1.50595e-007 * temp_corr ** 6.0 
+     &        +  6.84488e-007 * temp_corr ** 5.0 
+     &        -  5.71379e-005 * temp_corr ** 4.0 
+     &        -  0.000781647  * temp_corr ** 3.0 
+     &        +  0.00480432   * temp_corr ** 2.0 
+     &        +  0.142471     * temp_corr 
+     &        + 2.60172		  	           
+ 
+            
+           
+       else 
+       
+         ! Shouldn't happen as iHeatPumpType is set programmically. 
+       
+       endif 
+          
 
 c Correct heat pump for the effect of flow rate in case there is a 
 c circulation fan
-      if(ifan_operation.ne.0) then
-        call ASHP_COP_FLOW_CORR(cop,flow_rate,flow_rate_r)
+      if(ifan_operation(iSys).ne.0) then
+        call ASHP_COP_FLOW_CORR(cop,flow_rate(iSys),flow_rate_r(iSys))
       endif
 
       ASHP_COP = cop
 
       return
-      end
+      end function ASHP_COP
 
 c *********************************************************************
 c *********************************************************************
@@ -878,7 +984,7 @@ c The step for the initial estimate of the part-load ratio of the
 c heat pump is 0.001. In case an initial estimate does not lead to a
 c solution then that initial estimate is incremented by 0.001 at this
 c point
-        x(2) = 0.001 * icounter
+        x(2) = 0.001 * real(icounter)
         x(5) = ahp(isys) + bhp(isys) * x(2) + chp(isys) * x(2)**2 +
      &  dhp(isys) * x(2)**3
         x(1) = x(2) / x(5)
