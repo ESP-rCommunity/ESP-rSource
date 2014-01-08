@@ -1,5 +1,6 @@
 # composite construction db defined in ../dbs/stone_1890.constrdb
 # based on materials db ../dbs/stone_1890.materialdb
+# and based on CFClayers db CFClayers.db1.a
    56     # no of composites 
 # layers  description  type  optics name   symmetry tag
     4    extern_wall   OPAQ  OPAQUE        NONSYMMETRIC  

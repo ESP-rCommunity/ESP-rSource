@@ -1,7 +1,7 @@
 Synopsis
  
 Synopsis of the model retail building, single storey 7.5m high defined in
-retail_unit.cfg generated on Mon Sep  3 09:25:04 2012. Notes associated with
+retail_unit.cfg generated on Sun Dec 15 21:52:02 2013. Notes associated with
 the model are in ../doc/retail_unit.log
  
 The model is located at latitude   51.48 with a longitude difference of  -0.45
@@ -89,8 +89,10 @@ sales_area    0.00        1  defaultDHW_generator
 storage       0.00        1  defaultDHW_generator
  
 Zone to activity occupants makeup air sensible latent casual
-sales_area uses  10 Sales area - general :  72.6 occ & makeup 2613.6 m3/h  0.53 ach & occ sen  5082.W  7.70W/m2 lat 5082.W  7.70W/m2.
-storage uses   3 Storage area :  37.4 occ & makeup 1346.4 m3/h  0.53 ach & occ sen  2618.W  7.70W/m2 lat 2618.W  7.70W/m2.
+sales_area uses  10 Sales area - general :  72.6 occupants & makeup air  2613.6 m3/h  0.53 ach &
+occupant sen  5082.W  7.70W/m2 lat  5082.W  7.70W/m2.
+storage uses   3 Storage area :  37.4 occupants & makeup air  1346.4 m3/h  0.53 ach & occupant sen
+ 2618.W  7.70W/m2 lat  2618.W  7.70W/m2.
  
 Zone to lighting type linkage
 User_defined Zone sales_area uses heat gains from lights of (W/m2 per 100 lux):   5.20
@@ -100,7 +102,7 @@ An Integrated Performance View is incomplete or missing.
  
 Databases associated with the model:
  standard pressure distr: pressc.db1
- standard materials     : material.db3.a
+ standard materials     : material.db4.a
  constructions          : ../dbs/retail_unit.constrdb
  standard plant comp    : plantc.db1
  standard event profiles: profiles.db1.a
@@ -122,11 +124,11 @@ ID Zone         Volume|          Surface
  area of 2120.m^2 & approx floor area of 660.m^2
  sales_area describes a sales area
  There is 810.00m2 of exposed surface area, 150.00m2 of which is vertical.
- Outside walls are 13.635 % of floor area & avg U of 0.347 & UA of 31.216
- Flat roof is 86.000 % of floor area & avg U of 0.396 & UA of 224.85
- Glazing is 9.0920 % of floor & 40.005 % facade with avg U of 5.875 & UA of 352.57
- Skylights are 14.000 % of floor area & avg U of 2.355 & UA of 217.61
- Ground contact is 100.00 % of floor area & avg U of 0.249 & perimeter 20.000
+ Outside walls are 13.635 % of floor area & average U of 0.347 & UA of 31.216
+ Flat roof is 86.000 % of floor area & average U of 0.396 & UA of 224.85
+ Glazing is 9.0920 % of floor & 40.005 % facade with average U of 5.875 & UA of 352.57
+ Skylights are 14.000 % of floor area & average U of 2.355 & UA of 217.61
+ Ground contact is 100.00 % of floor area & average U of 0.249 & perimeter 20.000
  
  A summary of the surfaces in sales_area( 1) follows:
  
@@ -163,17 +165,17 @@ Daytype    Period     Infiltration     Ventilation     From Source
 Notes:
 no operations notes (yet)
  
-Daytype   Gain Type    Period Sensible  Latent     Radiant    Convec
-          No.  label   Hours  Magn.(W)  Magn.(W)   Fraction   Fraction
-weekdays    1 OccuptW    0-24      0.0      0.0       0.50       0.50
-weekdays    2 LightsW    0-24      0.0      0.0       0.50       0.50
-weekdays    3 EquiptW    0-24      0.0      0.0       0.40       0.60
-saturday    1 OccuptW    0-24      0.0      0.0       0.50       0.50
-saturday    2 LightsW    0-24      0.0      0.0       0.50       0.50
-saturday    3 EquiptW    0-24      0.0      0.0       0.40       0.60
-sunday      1 OccuptW    0-24      0.0      0.0       0.50       0.50
-sunday      2 LightsW    0-24      0.0      0.0       0.50       0.50
-sunday      3 EquiptW    0-24      0.0      0.0       0.40       0.60
+Daytype   Gain Label     Type    Unit Period Sensible  Latent     Radiant    Convec
+          No.                          Hours Magn.(W)  Magn.(W)   Fraction   Fraction
+weekdays    1 Occupt     people    W    0-24      0.0      0.0       0.50       0.50
+weekdays    2 Lights     lighting  W    0-24      0.0      0.0       0.50       0.50
+weekdays    3 Equipt     equipment W    0-24      0.0      0.0       0.40       0.60
+saturday    1 Occupt     people    W    0-24      0.0      0.0       0.50       0.50
+saturday    2 Lights     lighting  W    0-24      0.0      0.0       0.50       0.50
+saturday    3 Equipt     equipment W    0-24      0.0      0.0       0.40       0.60
+sunday      1 Occupt     people    W    0-24      0.0      0.0       0.50       0.50
+sunday      2 Lights     lighting  W    0-24      0.0      0.0       0.50       0.50
+sunday      3 Equipt     equipment W    0-24      0.0      0.0       0.40       0.60
  
  ____________________________________________________________
  
@@ -182,10 +184,10 @@ sunday      3 EquiptW    0-24      0.0      0.0       0.40       0.60
  area of 1240.m^2 & approx floor area of 340.m^2
  storage describes a storage area in retail unit
  There is 490.00m2 of exposed surface area, 150.00m2 of which is vertical.
- Outside walls are 44.118 % of floor area & avg U of 0.805 & UA of 120.77
- Flat roof is 86.000 % of floor area & avg U of 0.396 & UA of 115.83
- Skylights are 14.000 % of floor area & avg U of 2.355 & UA of 112.10
- Ground contact is 100.00 % of floor area & avg U of 0.249 & perimeter 20.000
+ Outside walls are 44.118 % of floor area & average U of 0.805 & UA of 120.77
+ Flat roof is 86.000 % of floor area & average U of 0.396 & UA of 115.83
+ Skylights are 14.000 % of floor area & average U of 2.355 & UA of 112.10
+ Ground contact is 100.00 % of floor area & average U of 0.249 & perimeter 20.000
  
  A summary of the surfaces in storage( 2) follows:
  
@@ -224,17 +226,17 @@ Daytype    Period     Infiltration     Ventilation     From Source
 Notes:
 no operations notes (yet)
  
-Daytype   Gain Type    Period Sensible  Latent     Radiant    Convec
-          No.  label   Hours  Magn.(W)  Magn.(W)   Fraction   Fraction
-weekdays    1 OccuptW    0-24      0.0      0.0       0.50       0.50
-weekdays    2 LightsW    0-24      0.0      0.0       0.50       0.50
-weekdays    3 EquiptW    0-24      0.0      0.0       0.40       0.60
-saturday    1 OccuptW    0-24      0.0      0.0       0.50       0.50
-saturday    2 LightsW    0-24      0.0      0.0       0.50       0.50
-saturday    3 EquiptW    0-24      0.0      0.0       0.40       0.60
-sunday      1 OccuptW    0-24      0.0      0.0       0.50       0.50
-sunday      2 LightsW    0-24      0.0      0.0       0.50       0.50
-sunday      3 EquiptW    0-24      0.0      0.0       0.40       0.60
+Daytype   Gain Label     Type    Unit Period Sensible  Latent     Radiant    Convec
+          No.                          Hours Magn.(W)  Magn.(W)   Fraction   Fraction
+weekdays    1 Occupt     people    W    0-24      0.0      0.0       0.50       0.50
+weekdays    2 Lights     lighting  W    0-24      0.0      0.0       0.50       0.50
+weekdays    3 Equipt     equipment W    0-24      0.0      0.0       0.40       0.60
+saturday    1 Occupt     people    W    0-24      0.0      0.0       0.50       0.50
+saturday    2 Lights     lighting  W    0-24      0.0      0.0       0.50       0.50
+saturday    3 Equipt     equipment W    0-24      0.0      0.0       0.40       0.60
+sunday      1 Occupt     people    W    0-24      0.0      0.0       0.50       0.50
+sunday      2 Lights     lighting  W    0-24      0.0      0.0       0.50       0.50
+sunday      3 Equipt     equipment W    0-24      0.0      0.0       0.40       0.60
  
  ____________________________________________________________
  
@@ -243,11 +245,11 @@ sunday      3 EquiptW    0-24      0.0      0.0       0.40       0.60
  In contact with ground 1000.0m2.
  There is 1300.0m2 of outside surface area, 300.00m2 of which is vertical.
  
- Outside walls are 23.999 % of floor area & avg U of 0.633 & UA of 151.98 & max MLC thickness 0.327
- Flat roof is 86.000 % of floor area & avg U of 0.396 & UA of 340.69
- Glazing is 6.0007 % of floor & 20.002 % facade with avg U of 5.875 & UA of 352.57
- Skylights are 14.000 % of floor area & avg U of 2.355 & UA of 329.71
- Ground contact is 100.00 % of floor area & avg U of 0.249 & perimeter 40.000 & max MLC thickness 1.050
+ Outside walls are 23.999 % of floor area & average U of 0.633 & UA of 151.98 & max MLC thickness 0.327
+ Flat roof is 86.000 % of floor area & average U of 0.396 & UA of 340.69
+ Glazing is 6.0007 % of floor & 20.002 % facade with average U of 5.875 & UA of 352.57
+ Skylights are 14.000 % of floor area & average U of 2.355 & UA of 329.71
+ Ground contact is 100.00 % of floor area & average U of 0.249 & perimeter 40.000 & max MLC thickness 1.050
  CIBSE ground beta!50.000 dt 6.422 Ufleft 0.018 Ufright 3.237 Uf 0.059 R extra @ virtual layer12.813
  
  ____________________________________________________________
@@ -255,16 +257,16 @@ sunday      3 EquiptW    0-24      0.0      0.0       0.40       0.60
  
  Details of opaque construction: Sol_grnd_not and overall thickness  1.050
  
- Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
-      |db  |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
- Ext   268  150.0     1.500  1500.  2085. 0.90 0.70     5.  0.10 Clay underfloor 750 mm : Clay underfloor default 750 mm
-    2  268  200.0     1.500  1500.  2085. 0.90 0.70     5.  0.13 Clay underfloor 750 mm : Clay underfloor default 750 mm
-    3  268  200.0     1.500  1500.  2085. 0.90 0.70     5.  0.13 Clay underfloor 750 mm : Clay underfloor default 750 mm
-    4  268  200.0     1.500  1500.  2085. 0.90 0.70     5.  0.13 Clay underfloor 750 mm : Clay underfloor default 750 mm
-    5    9   25.0     0.770  1700.   940. 0.90 0.65    12.  0.03 Brick slips 25 mm : Brick 25 mm (UK code)
-    6   39  100.0     1.350  2000.  1000. 0.90 0.70    13.  0.07 Cast concrete 100 mm : Cast concrete 100 mm (UK code)
-    7  289  125.0     0.040    15.  1000. 0.90 0.70    30.  3.13 EPS 80mm : EPS 80mm
- Int   129   50.0     0.410  1200.  1000. 0.91 0.70    19.  0.12 Screed 50mm : Flooring screed 50mm (UK code)
+ Layer|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
+      |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
+ Ext   150.0     1.500  1500.  2085. 0.90 0.70     5.  0.10 Clay underfloor : Clay underfloor layer (inorganic-porous)
+    2  200.0     1.500  1500.  2085. 0.90 0.70     5.  0.13 Clay underfloor : Clay underfloor layer (inorganic-porous)
+    3  200.0     1.500  1500.  2085. 0.90 0.70     5.  0.13 Clay underfloor : Clay underfloor layer (inorganic-porous)
+    4  200.0     1.500  1500.  2085. 0.90 0.70     5.  0.13 Clay underfloor : Clay underfloor layer (inorganic-porous)
+    5   25.0     0.770  1700.   940. 0.90 0.65    12.  0.03 Brick slips : Brick slips thin cladding typically 25mm (UK code) (inorganic-porous
+    6  100.0     1.350  2000.  1000. 0.90 0.70    13.  0.07 Cast concrete (UK) : Cast concrete (UK code)
+    7  125.0     0.040    15.  1000. 0.90 0.70    30.  3.13 EPS k 0.04 : EPS k=0.04 (non-hygroscopic)
+ Int    50.0     0.410  1200.  1000. 0.91 0.70    19.  0.12 Screed (UK code) : Flooring screed typically 50mm thick (UK code)
  ISO 6946 U values (horiz/upward/downward heat flow)=  0.249  0.250  0.246 (partition)  0.243
  
 Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  0.25
@@ -274,13 +276,13 @@ Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  0.25
  
  Details of opaque construction: Wall_EW_noti and overall thickness  0.327
  
- Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
-      |db  |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
- Ext    10  102.0     0.770  1700.  1000. 0.90 0.70    12.  0.13 Brick outer leaf : Brick (UK code)
-    2  294   90.0     0.040    25.  1000. 0.90 0.70    30.  2.25 Mineral wool batt 100mm : Insulation (Mineral wool batt default 100mm)
-    3   40  100.0     1.130  1800.  1008. 0.90 0.70    13.  0.09 Concrete med density (1800) : Blockwork (UK code)
-    4    0   22.0     0.000     0.     0. 0.99 0.99     1.  0.18 air  0.18 0.18 0.18
- Int   112   13.0     0.210   900.  1000. 0.91 0.70    11.  0.06 Plasterboard (UK code) : Plasterboard (UK code)
+ Layer|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
+      |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
+ Ext   102.0     0.770  1700.  1000. 0.90 0.70    12.  0.13 Brick outer leaf : Brick (UK code) (inorganic-porous)
+    2   90.0     0.040    25.  1000. 0.90 0.70    30.  2.25 Mineral wool batt : Insulation (Mineral wool batt k=0.04) (non-hygroscopic)
+    3  100.0     1.130  1800.  1008. 0.90 0.70    13.  0.09 Concrete med density (1800) : Blockwork (UK code)
+    4   22.0     0.000     0.     0. 0.99 0.99     1.  0.18 air  0.18 0.18 0.18
+ Int    13.0     0.210   900.  1000. 0.91 0.70    11.  0.06 Plasterboard (UK code) : Plasterboard (UK code)
  ISO 6946 U values (horiz/upward/downward heat flow)=  0.347  0.351  0.342 (partition)  0.336
  
 Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  0.35
@@ -290,9 +292,9 @@ Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  0.35
  
  Details of transparent construction: Not_DisplayG with dispGlz_not optics and overall thickness  0.006
  
- Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
-      |db  |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
-    1  250    6.0    30.000  2500.   750. 0.84 0.06 19200.  0.00 dispGlz_not_modCond : 6 mm clear glass (copy of 6 mm clear glass)
+ Layer|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
+      |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
+    1    6.0    30.000  2500.   750. 0.84 0.06 19200.  0.00 dispGlz_not_modCond : 6 mm clear glass used as display glazing for UK code complia
  ISO 6946 U values (horiz/upward/downward heat flow)=  5.875  7.133  4.757 (partition)  3.843
  
 Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  5.55
@@ -309,11 +311,11 @@ Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  5.55
  
  Details of transparent construction: window_Not_G with Glaz_notiona optics and overall thickness  0.024
  
- Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
-      |db  |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
- Ext   247    4.0     1.050  2500.   750. 0.40 0.06 19200.  0.00 REF A CLEAR LO 6MM : optics from UK national method datase Low-e coated not tinted
-    2    0   16.0     0.000     0.     0. 0.99 0.99     1.  0.28 air  0.28 0.28 0.28
- Int   249    4.0     1.050  2500.   750. 0.10 0.06 19200.  0.00 LoE CLEAR 6MM : optics from UK national method datase Low-e coated not tinted
+ Layer|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
+      |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
+ Ext     4.0     1.050  2500.   750. 0.40 0.06 19200.  0.00 REF A CLEAR LO : optics for 6mm glass from UK national method datase Low-e coated
+    2   16.0     0.000     0.     0. 0.99 0.99     1.  0.28 air  0.28 0.28 0.28
+ Int     4.0     1.050  2500.   750. 0.10 0.06 19200.  0.00 LoE CLEAR : optics for 6mm glass from UK national method datase Low-e coated not t
  ISO 6946 U values (horiz/upward/downward heat flow)=  2.200  2.355  2.022 (partition)  1.836
  
 Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  2.15
@@ -332,11 +334,11 @@ Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  2.15
  
  Details of opaque construction: Vehicle_door and overall thickness  0.022
  
- Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
-      |db  |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
- Ext    51    1.0    60.000  7800.   502. 0.12 0.20 19200.  0.00 steelSheedSBEM : Steel sheed SBEM
-    2  216   20.0     0.040   105.  1800. 0.90 0.60     1.  0.50 mineral fibre : Mineral fibre
- Int    51    1.0    60.000  7800.   502. 0.12 0.20 19200.  0.00 steelSheedSBEM : Steel sheed SBEM
+ Layer|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
+      |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
+ Ext     1.0    60.000  7800.   502. 0.12 0.20 19200.  0.00 steelSheedSBEM : Steel sheed SBEM
+    2   20.0     0.040   105.  1800. 0.90 0.60     1.  0.50 mineral fibre : Mineral fibre (non-hygroscopic)
+ Int     1.0    60.000  7800.   502. 0.12 0.20 19200.  0.00 steelSheedSBEM : Steel sheed SBEM
  ISO 6946 U values (horiz/upward/downward heat flow)=  1.492  1.562  1.408 (partition)  1.316
  
 Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  1.47
@@ -346,12 +348,12 @@ Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  1.47
  
  Details of opaque construction: Fl_roof_noti and overall thickness  0.178
  
- Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
-      |db  |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
- Ext   323    8.0     0.130   290.  1300. 0.90 0.90    10.  0.06 virtual_loft_space : for notional building loft space air 12mm)
-    2  281  150.0     0.040    12.   840. 0.90 0.65    30.  3.75 glass fibre quilt : Glass Fibre Quilt
-    3  156   10.0     1.500  2100.  1000. 0.90 0.70  1000.  0.01 Tiles Concrete 10 mm : Tiles
- Int   110    9.5     0.210   900.  1000. 0.91 0.26    11.  0.05 Plasterboard (wallboard) : Internal finish (UK code)
+ Layer|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
+      |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
+ Ext     8.0     0.130   290.  1300. 0.90 0.90    10.  0.06 virtual_loft_space : for UK notional building loft space air 12mm
+    2  150.0     0.040    12.   840. 0.90 0.65    30.  3.75 glass fibre quilt : Glass Fibre Quilt (non-hygroscopic)
+    3   10.0     1.500  2100.  1000. 0.90 0.70  1000.  0.01 Tiles Concrete : Tiles Concrete typically 10mm thick (inorganic-porous)
+ Int     9.5     0.210   900.  1000. 0.91 0.26    11.  0.05 Plasterboard (wallboard) : Internal finish (UK code) (inorganic-porous)
  ISO 6946 U values (horiz/upward/downward heat flow)=  0.248  0.250  0.245 (partition)  0.243
  
 Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  0.25
@@ -361,11 +363,11 @@ Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  0.25
  
  Details of opaque construction: party_wall_n and overall thickness  0.036
  
- Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
-      |db  |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
- Ext   112   13.0     0.210   900.  1000. 0.91 0.70    11.  0.06 Plasterboard (UK code) : Plasterboard (UK code)
-    2  293    9.7     0.050    12.  1000. 0.90 0.70    30.  0.19 Min wool quilt 50mm tb : Studwork
- Int   112   13.0     0.210   900.  1000. 0.91 0.70    11.  0.06 Plasterboard (UK code) : Plasterboard (UK code)
+ Layer|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
+      |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
+ Ext    13.0     0.210   900.  1000. 0.91 0.70    11.  0.06 Plasterboard (UK code) : Plasterboard (UK code)
+    2    9.7     0.050    12.  1000. 0.90 0.70    30.  0.19 Min wool quilt betwnstuds : Min wool quilt between studwork
+ Int    13.0     0.210   900.  1000. 0.91 0.70    11.  0.06 Plasterboard (UK code) : Plasterboard (UK code)
  ISO 6946 U values (horiz/upward/downward heat flow)=  2.050  2.184  1.895 (partition)  1.731
  
 Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  2.01
@@ -375,11 +377,11 @@ Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  2.01
  
  Details of opaque construction: frame_notion and overall thickness  0.210
  
- Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
-      |db  |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
- Ext    43  100.0   210.000  2700.   880. 0.22 0.20 19200.  0.00 aluminium : Aluminium
-    2    0   10.0     0.000     0.     0. 0.99 0.99     1.  0.28 air  0.28 0.28 0.28
- Int    43  100.0   210.000  2700.   880. 0.22 0.20 19200.  0.00 aluminium : Aluminium
+ Layer|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
+      |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
+ Ext   100.0   210.000  2700.   880. 0.22 0.20 19200.  0.00 aluminium : Aluminium
+    2   10.0     0.000     0.     0. 0.99 0.99     1.  0.28 air  0.28 0.28 0.28
+ Int   100.0   210.000  2700.   880. 0.22 0.20 19200.  0.00 aluminium : Aluminium
  ISO 6946 U values (horiz/upward/downward heat flow)=  2.193  2.348  2.016 (partition)  1.832
  
 Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  2.15

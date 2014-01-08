@@ -1,64 +1,65 @@
 # composite construction db defined in ../dbs/systems.mlc
-# based on materials db /usr/esru/esp-r/databases/constr_db2.materialdb
+# based on materials db material.db4.a
+# and based on CFClayers db CFClayers.db1.a
    10     # no of composites 
-# layers  description   optics name   symmetry tag
+# layers  description  type  optics name   symmetry tag
     1    block_part    OPAQ  OPAQUE        SYMMETRIC     
-# mat ref thickness (m) mat descr & air gap R
-   28    0.1000  Block inner (3% mc) : Block inner (3% mc)
-# layers  description   optics name   symmetry tag
+# material ref thickness (m) description & air gap R
+   28    0.1000  block inner : Block inner (3% mc)
+# layers  description  type  optics name   symmetry tag
     4    ext_wall      OPAQ  OPAQUE        NONSYMMETRIC  
-# mat ref thickness (m) mat descr & air gap R
-    4    0.1000  Outer leaf brick : Outer leaf brick
-    0    0.0250  air  0.170 0.170 0.170
-  201    0.0500  Fibreboard : Fibreboard
-   29    0.1400  Foamed inner block (3%mc) : Foamed inner block (3%mc)
-# layers  description   optics name   symmetry tag
+# material ref thickness (m) description & air gap R
+    4    0.1000  outer leaf brick : Outer leaf brick (inorganic-porous)
+    0    0.0250  gap  0.170 0.170 0.170
+  201    0.0500  fibreboard : Fibreboard
+   29    0.1400  foamed inner blk : Foamed inner block (3%mc)
+# layers  description  type  optics name   symmetry tag
     1    door          OPAQ  OPAQUE        SYMMETRIC     
-# mat ref thickness (m) mat descr & air gap R
-   69    0.0250  Oak (radial) : Oak (radial)
-# layers  description   optics name   symmetry tag
+# material ref thickness (m) description & air gap R
+   69    0.0250  oak : Oak (radial cut)
+# layers  description  type  optics name   symmetry tag
     3    dbl_glz       TRAN  DCF7671_06nb  SYMMETRIC     
-# mat ref thickness (m) mat descr & air gap R
-  242    0.0060  Plate glass : Plate glass with placeholder single layer optics
-    0    0.0120  air  0.170 0.170 0.170
-  242    0.0060  Plate glass : Plate glass with placeholder single layer optics
-# layers  description   optics name   symmetry tag
+# material ref thickness (m) description & air gap R
+  242    0.0060  plate glass : Plate glass with placeholder single layer optics
+    0    0.0120  gap  0.170 0.170 0.170
+  242    0.0060  plate glass : Plate glass with placeholder single layer optics
+# layers  description  type  optics name   symmetry tag
     3    roof          OPAQ  OPAQUE        NONSYMMETRIC  
-# mat ref thickness (m) mat descr & air gap R
-  141    0.0200  Clay tile : Clay tile
-    0    0.0250  air  0.170 0.170 0.170
-   70    0.0120  Plywood : Plywood
-# layers  description   optics name   symmetry tag
+# material ref thickness (m) description & air gap R
+  141    0.0200  clay tile : Clay tile (inorganic-porous)
+    0    0.0250  gap  0.170 0.170 0.170
+   70    0.0120  plywood 560d : Plywood (generic 560 density)
+# layers  description  type  optics name   symmetry tag
     2    ceiling       OPAQ  OPAQUE        ceiling_rev   
-# mat ref thickness (m) mat descr & air gap R
-  211    0.1500  Glasswool : Glasswool
-  104    0.0120  Gypsum plaster : Gypsum plaster
-# layers  description   optics name   symmetry tag
+# material ref thickness (m) description & air gap R
+  211    0.1500  glasswool : Glasswool (generic) (non-hygroscopic)
+  104    0.0120  gypsum plaster : Gypsum based plaster (inorganic-porous)
+# layers  description  type  optics name   symmetry tag
     2    ceiling_rev   OPAQ  OPAQUE        ceiling       
-# mat ref thickness (m) mat descr & air gap R
-  104    0.0120  Gypsum plaster : Gypsum plaster
-  211    0.1500  Glasswool : Glasswool
-# layers  description   optics name   symmetry tag
+# material ref thickness (m) description & air gap R
+  104    0.0120  gypsum plaster : Gypsum based plaster (inorganic-porous)
+  211    0.1500  glasswool : Glasswool (generic) (non-hygroscopic)
+# layers  description  type  optics name   symmetry tag
     6    floor         OPAQ  OPAQUE        NONSYMMETRIC  
-# mat ref thickness (m) mat descr & air gap R
-  263    0.2000  Common_earth : Common_earth
-  263    0.2000  Common_earth : Common_earth
-   86    0.1000  Gravel : Gravel
-   32    0.1000  Heavy mix concrete : Heavy mix concrete
-  124    0.0250  Cement screed : Cement screed
-  141    0.0050  Clay tile : Clay tile
-# layers  description   optics name   symmetry tag
+# material ref thickness (m) description & air gap R
+  263    0.2000  earth std : Common_earth
+  263    0.2000  earth std : Common_earth
+   86    0.1000  gravel : Gravel (non-hygroscopic)
+   32    0.1000  heavy mix concrete : Heavy mix concrete
+  124    0.0250  cement screed : Cement screed (inorganic-porous)
+  141    0.0050  clay tile : Clay tile (inorganic-porous)
+# layers  description  type  optics name   symmetry tag
     6    passg_floor   OPAQ  OPAQUE        NONSYMMETRIC  
-# mat ref thickness (m) mat descr & air gap R
-  263    0.2000  Common_earth : Common_earth
-  263    0.2000  Common_earth : Common_earth
-   86    0.1000  Gravel : Gravel
-   32    0.1000  Heavy mix concrete : Heavy mix concrete
-  124    0.0250  Cement screed : Cement screed
-  221    0.0060  Wilton : Wilton
-# layers  description   optics name   symmetry tag
+# material ref thickness (m) description & air gap R
+  263    0.2000  earth std : Common_earth
+  263    0.2000  earth std : Common_earth
+   86    0.1000  gravel : Gravel (non-hygroscopic)
+   32    0.1000  heavy mix concrete : Heavy mix concrete
+  124    0.0250  cement screed : Cement screed (inorganic-porous)
+  221    0.0060  Wilton : Wilton weave wool carpet (organic-hygroscopic)
+# layers  description  type  optics name   symmetry tag
     3    colct_frame   OPAQ  OPAQUE        NONSYMMETRIC  
-# mat ref thickness (m) mat descr & air gap R
-   42    0.0030  Steel : Steel
-  211    0.0750  Glasswool : Glasswool
-   42    0.0040  Steel : Steel
+# material ref thickness (m) description & air gap R
+   42    0.0030  steel : Steel
+  211    0.0750  glasswool : Glasswool (generic) (non-hygroscopic)
+   42    0.0040  steel : Steel

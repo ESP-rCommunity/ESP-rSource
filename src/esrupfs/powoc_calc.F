@@ -154,6 +154,10 @@ C-----Lithium Ion Battery (Li-on)
       elseif ( itype .eq. 22 ) then
          CALL POWOC_CETC_Battery(IPWC)
 
+C-----Electric Vehicle Model (EV)
+      elseif ( itype .eq. 23 ) then
+         CALL POWOC_EVEHICLE(IPWC)
+
 C-----Add support for other power-only components here.
 c     ELSEIF (ITYPE==??) THEN
 

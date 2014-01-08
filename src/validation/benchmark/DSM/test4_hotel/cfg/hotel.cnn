@@ -1,5 +1,5 @@
 *connections for hotel
-*Date Thu Aug 30 12:59:11 2012
+*Date Sun Dec 15 13:00:07 2013
     702   # number of connections
    1   1   0   0   0  #    1 south in eating_area is External
    1   2   0   0   0  #    2 north in eating_area is External

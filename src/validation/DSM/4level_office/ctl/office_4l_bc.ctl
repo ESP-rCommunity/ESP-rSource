@@ -83,7 +83,7 @@ Office base case zone controls (setback is treated as a separate ECM)
     1  365  # valid Mon-01-Jan - Mon-31-Dec
      1  # No. of periods in day: weekdays    
     0    1   0.000  # ctl type, law (basic control), start @
-     7.  # No. of data items
+      7.  # No. of data items
   20000.000 0.000 20000.000 0.000 18.000 28.000 0.000
 # Function:Zone links
  1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,3

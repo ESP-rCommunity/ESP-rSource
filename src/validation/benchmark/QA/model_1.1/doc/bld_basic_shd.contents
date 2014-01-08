@@ -1,7 +1,7 @@
 Synopsis
  
 Synopsis of the model Basic 3 zone model with shading. defined in
-bld_basic_shd.cfg generated on Mon Sep  3 13:22:48 2012. Notes associated with
+bld_basic_shd.cfg generated on Tue Dec 17 20:24:20 2013. Notes associated with
 the model are in ../doc/bld_basic_shd.log
  
 The model is located at latitude   51.70 with a longitude difference of  -0.51
@@ -47,8 +47,8 @@ An Integrated Performance View is incomplete or missing.
  
 Databases associated with the model:
  standard pressure distr: pressc.db1
- standard materials     : material.db3.a
- constructions          : ../dbs/multicon.db2
+ standard materials     : material.db4.a
+ constructions          : ../dbs/bld_basic.constrdb
  standard plant comp    : plantc.db1
  standard event profiles: profiles.db1.a
  standard optical prop  : optics.db2
@@ -63,13 +63,12 @@ simple building
  
 Zones control includes  1 functions.
 convective heating, ideal control + cooling to 24C
+Details of control loops referenced in the model:
  
  The sensor for function  1 senses the temperature of the current zone.
  The actuator for function  1 is air point of the current zone
  The following day types are defined:
-weekday
-saturday
-sunday
+weekday     saturday    sunday
  Day type weekday control has  4 periods.
  Per|Start|Sensing  |Actuating  | Control law description
    1  0.00 db temp   > flux      free floating
@@ -149,11 +148,12 @@ Block X- Y- Z- coords DX- DY- DZ- values Orient Opacity
   9     9.3     2.0     1.0     0.0     0.3     1.3    90.0     0.0 1.00 east_l extern_wall
  10     9.3     4.0     1.0     0.0     0.3     1.3    90.0     0.0 1.00 east_r extern_wall
  
- Shading patterns have been calculated for this zone.
+ Shading patterns have not yet been calculated.
  
  
  Air schedule notes:
-office space with 5 people and 600W lights 9-5
+Infiltration 0.3 ach all hours all days. Ventilation from 2nd zone at
+1ach.
  Control: no control of air flow
  
 Scheduled air infiltration and ventilation:
@@ -166,19 +166,19 @@ sunday     1  0 - 24    0.30  0.0120    1.00  0.0400   2     0.00
 Notes:
 office space with 5 people and 600W lights 9-5
  
-Daytype   Gain Type    Period Sensible  Latent     Radiant    Convec
-          No.  label   Hours  Magn.(W)  Magn.(W)   Fraction   Fraction
-weekday     1 OccuptW    0- 9      0.0      0.0       0.50       0.50
-weekday     2 OccuptW    9-17    540.0    300.0       0.20       0.80
-weekday     3 OccuptW   17-24      0.0      0.0       0.50       0.50
-weekday     4 LightsW    0- 9      0.0      0.0       0.50       0.50
-weekday     5 LightsW    9-17    600.0      0.0       0.14       0.00
-weekday     6 LightsW   17-24      0.0      0.0       0.50       0.50
-weekday     7 EquiptW    0- 9    800.0      0.0       0.20       0.80
-weekday     8 EquiptW    9-17   1250.0      0.0       0.20       0.80
-weekday     9 EquiptW   17-24    800.0      0.0       0.20       0.80
-saturday    1 EquiptW    0-24    800.0      0.0       0.20       0.80
-sunday      1 EquiptW    0-24    800.0      0.0       0.20       0.80
+Daytype   Gain Label     Type    Unit Period Sensible  Latent     Radiant    Convec
+          No.                          Hours Magn.(W)  Magn.(W)   Fraction   Fraction
+weekday     1 Occupt     people    W    0- 9      0.0      0.0       0.50       0.50
+weekday     2 Occupt     people    W    9-17    540.0    300.0       0.20       0.80
+weekday     3 Occupt     people    W   17-24      0.0      0.0       0.50       0.50
+weekday     4 Lights     lighting  W    0- 9      0.0      0.0       0.50       0.50
+weekday     5 Lights     lighting  W    9-17    600.0      0.0       0.14       0.00
+weekday     6 Lights     lighting  W   17-24      0.0      0.0       0.50       0.50
+weekday     7 Equipt     equipment W    0- 9    800.0      0.0       0.20       0.80
+weekday     8 Equipt     equipment W    9-17   1250.0      0.0       0.20       0.80
+weekday     9 Equipt     equipment W   17-24    800.0      0.0       0.20       0.80
+saturday    1 Equipt     equipment W    0-24    800.0      0.0       0.20       0.80
+sunday      1 Equipt     equipment W    0-24    800.0      0.0       0.20       0.80
  
  ____________________________________________________________
  
@@ -213,7 +213,7 @@ sunday      1 EquiptW    0-24    800.0      0.0       0.20       0.80
  
  
  Air schedule notes:
-small office for two people, 200 W lighting 9-5
+Infiltration is 0.3 ach all hours all days.
  Control: no control of air flow
  
 Scheduled air infiltration and ventilation:
@@ -226,14 +226,14 @@ sunday     1  0 - 24    0.30  0.0040    1.00  0.0133   1     0.00
 Notes:
 small office for two people, 200 W lighting 9-5
  
-Daytype   Gain Type    Period Sensible  Latent     Radiant    Convec
-          No.  label   Hours  Magn.(W)  Magn.(W)   Fraction   Fraction
-weekday     1 OccuptW    0- 9      0.0      0.0       0.50       0.50
-weekday     2 OccuptW    9-17    180.0    100.0       0.20       0.80
-weekday     3 OccuptW   17-24      0.0      0.0       0.50       0.50
-weekday     4 LightsW    0- 9      0.0      0.0       0.50       0.50
-weekday     5 LightsW    9-17    200.0      0.0       0.14       0.00
-weekday     6 LightsW   17-24      0.0      0.0       0.50       0.50
+Daytype   Gain Label     Type    Unit Period Sensible  Latent     Radiant    Convec
+          No.                          Hours Magn.(W)  Magn.(W)   Fraction   Fraction
+weekday     1 Occupt     people    W    0- 9      0.0      0.0       0.50       0.50
+weekday     2 Occupt     people    W    9-17    180.0    100.0       0.20       0.80
+weekday     3 Occupt     people    W   17-24      0.0      0.0       0.50       0.50
+weekday     4 Lights     lighting  W    0- 9      0.0      0.0       0.50       0.50
+weekday     5 Lights     lighting  W    9-17    200.0      0.0       0.14       0.00
+weekday     6 Lights     lighting  W   17-24      0.0      0.0       0.50       0.50
  
  ____________________________________________________________
  
@@ -264,7 +264,7 @@ weekday     6 LightsW   17-24      0.0      0.0       0.50       0.50
  
  
  Air schedule notes:
-ceiling void with partial lighting gains from below
+ceiling void with no infiltration or ventilation from other zones.
  Control: no control of air flow
  
 Scheduled air infiltration and ventilation:
@@ -274,13 +274,13 @@ Daytype    Period     Infiltration     Ventilation     From Source
 Notes:
 ceiling void with partial lighting gains from below
  
-Daytype   Gain Type    Period Sensible  Latent     Radiant    Convec
-          No.  label   Hours  Magn.(W)  Magn.(W)   Fraction   Fraction
-weekday     1 LightsW    0- 9      0.0      0.0       0.50       0.50
-weekday     2 LightsW    9-17    800.0      0.0       0.51       0.35
-weekday     3 LightsW   17-24      0.0      0.0       0.50       0.50
-saturday    1 OccuptW    0-24      0.0      0.0       0.50       0.50
-sunday      1 OccuptW    0-24      0.0      0.0       0.50       0.50
+Daytype   Gain Label     Type    Unit Period Sensible  Latent     Radiant    Convec
+          No.                          Hours Magn.(W)  Magn.(W)   Fraction   Fraction
+weekday     1 Lights     lighting  W    0- 9      0.0      0.0       0.50       0.50
+weekday     2 Lights     lighting  W    9-17    800.0      0.0       0.51       0.35
+weekday     3 Lights     lighting  W   17-24      0.0      0.0       0.50       0.50
+saturday    1 Occupt     people    W    0-24      0.0      0.0       0.50       0.50
+sunday      1 Occupt     people    W    0-24      0.0      0.0       0.50       0.50
  
  ____________________________________________________________
  
@@ -300,12 +300,12 @@ sunday      1 OccuptW    0-24      0.0      0.0       0.50       0.50
  
  Details of opaque construction: extern_wall and overall thickness  0.325
  
- Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
-      |db  |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
- Ext     6  100.0     0.960  2000.   650. 0.90 0.70    25.  0.10 Lt brown brick : Light brown brick
-    2  211   75.0     0.040   250.   840. 0.90 0.30     4.  1.88 glasswool : Glasswool (generic)
-    3    0   50.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
- Int     2  100.0     0.440  1500.   650. 0.90 0.65    15.  0.23 breeze block : Breeze block
+ Layer|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
+      |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
+ Ext   100.0     0.960  2000.   650. 0.90 0.70    25.  0.10 Lt brown brick : Light brown brick (inorganic-porous)
+    2   75.0     0.040   250.   840. 0.90 0.30     4.  1.88 glasswool : Glasswool (generic) (non-hygroscopic)
+    3   50.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
+ Int   100.0     0.440  1500.   650. 0.90 0.65    15.  0.23 breeze block : Breeze block (inorganic-porous)
  ISO 6946 U values (horiz/upward/downward heat flow)=  0.393  0.397  0.387 (partition)  0.379
  
 Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  0.39
@@ -315,9 +315,9 @@ Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  0.39
  
  Details of opaque construction: door and overall thickness  0.025
  
- Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
-      |db  |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
-    1   69   25.0     0.190   700.  2390. 0.90 0.65    12.  0.13 oak : Oak (radial cut)
+ Layer|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
+      |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
+    1   25.0     0.190   700.  2390. 0.90 0.65    12.  0.13 oak : Oak (radial cut)
  ISO 6946 U values (horiz/upward/downward heat flow)=  3.316  3.682  2.928 (partition)  2.554
  
 Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  3.21
@@ -327,11 +327,11 @@ Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  3.21
  
  Details of transparent construction: d_glz with DCF7671_06nb optics and overall thickness  0.024
  
- Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
-      |db  |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
- Ext   242    6.0     0.760  2710.   837. 0.83 0.05 19200.  0.01 plate glass : Plate glass with placeholder single layer optics
-    2    0   12.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
- Int   242    6.0     0.760  2710.   837. 0.83 0.05 19200.  0.01 plate glass : Plate glass with placeholder single layer optics
+ Layer|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
+      |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
+ Ext     6.0     0.760  2710.   837. 0.83 0.05 19200.  0.01 plate glass : Plate glass with placeholder single layer optics
+    2   12.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
+ Int     6.0     0.760  2710.   837. 0.83 0.05 19200.  0.01 plate glass : Plate glass with placeholder single layer optics
  ISO 6946 U values (horiz/upward/downward heat flow)=  2.811  3.069  2.527 (partition)  2.243
  
 Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  2.73
@@ -350,11 +350,11 @@ Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  2.73
  
  Details of transparent construction: dbl_glz with DCF7671_06nb optics and overall thickness  0.024
  
- Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
-      |db  |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
- Ext   242    6.0     0.760  2710.   837. 0.83 0.05 19200.  0.01 plate glass : Plate glass with placeholder single layer optics
-    2    0   12.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
- Int   242    6.0     0.760  2710.   837. 0.83 0.05 19200.  0.01 plate glass : Plate glass with placeholder single layer optics
+ Layer|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
+      |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
+ Ext     6.0     0.760  2710.   837. 0.83 0.05 19200.  0.01 plate glass : Plate glass with placeholder single layer optics
+    2   12.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
+ Int     6.0     0.760  2710.   837. 0.83 0.05 19200.  0.01 plate glass : Plate glass with placeholder single layer optics
  ISO 6946 U values (horiz/upward/downward heat flow)=  2.811  3.069  2.527 (partition)  2.243
  
 Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  2.73
@@ -373,12 +373,12 @@ Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  2.73
  
  Details of opaque construction: roof_1 and overall thickness  0.120
  
- Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
-      |db  |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
- Ext   162   12.0     0.190   960.   837. 0.90 0.90    15.  0.06 roofing felt : Roofing felt
-    2   21   50.0     0.380  1200.   653. 0.90 0.65     6.  0.13 light mix concrete : Light mix concrete
-    3    0   50.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
- Int   151    8.0     0.380  1120.   840. 0.90 0.60    12.  0.02 ceiling (plaster) : Ceiling (plaster)
+ Layer|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
+      |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
+ Ext    12.0     0.190   960.   837. 0.90 0.90    15.  0.06 roofing felt : Roofing felt (impermeable)
+    2   50.0     0.380  1200.   653. 0.90 0.65     6.  0.13 light mix concrete : Light mix concrete (inorganic-porous)
+    3   50.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
+ Int     8.0     0.380  1120.   840. 0.90 0.60    12.  0.02 ceiling (plaster) : Ceiling (plaster) (inorganic-porous)
  ISO 6946 U values (horiz/upward/downward heat flow)=  1.799  1.902  1.678 (partition)  1.548
  
 Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  1.77
@@ -388,12 +388,12 @@ Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  1.77
  
  Details of opaque construction: floor_1 and overall thickness  0.300
  
- Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
-      |db  |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
- Ext   263  100.0     1.280  1460.   879. 0.90 0.85     5.  0.08 earth std : Common_earth
-    2   82  100.0     2.900  2650.   900. 0.90 0.55    77.  0.03 red granite : Red granite
-    3   32   50.0     1.400  2100.   653. 0.90 0.65    19.  0.04 heavy mix concrete : Heavy mix concrete
- Int   124   50.0     1.400  2100.   650. 0.91 0.65    19.  0.04 cement screed : Cement screed
+ Layer|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
+      |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
+ Ext   100.0     1.280  1460.   879. 0.90 0.85     5.  0.08 earth std : Common_earth
+    2  100.0     2.900  2650.   900. 0.90 0.55    77.  0.03 red granite : Red granite (inorganic-porous)
+    3   50.0     1.400  2100.   653. 0.90 0.65    19.  0.04 heavy mix concrete : Heavy mix concrete
+ Int    50.0     1.400  2100.   650. 0.91 0.65    19.  0.04 cement screed : Cement screed (inorganic-porous)
  ISO 6946 U values (horiz/upward/downward heat flow)=  2.825  3.086  2.538 (partition)  2.252
  
 Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  2.75
@@ -401,12 +401,12 @@ Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  2.75
  Partition admittance Y=  5.94  w=  1.56 surface factor f=  0.45  phi=  2.62
  Total area of floor_1 is     64.00
  
- Details of opaque construction: ceiling linked to ceiling_rev  & with overall thickness  0.110
+ Details of opaque construction: ceiling linked to ceiling_rev & with overall thickness  0.110
  
- Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
-      |db  |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
- Ext   211  100.0     0.040   250.   840. 0.90 0.30     4.  2.50 glasswool : Glasswool (generic)
- Int   150   10.0     0.030   290.  2000. 0.90 0.60     8.  0.33 ceiling mineral : Ceiling acoustic tile (mineral fibre based)
+ Layer|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
+      |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
+ Ext   100.0     0.040   250.   840. 0.90 0.30     4.  2.50 glasswool : Glasswool (generic) (non-hygroscopic)
+ Int    10.0     0.030   290.  2000. 0.90 0.60     8.  0.33 ceiling mineral : Ceiling acoustic tile (mineral fibre based)
  ISO 6946 U values (horiz/upward/downward heat flow)=  0.333  0.336  0.329 (partition)  0.323
  
 Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  0.33
@@ -414,12 +414,12 @@ Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  0.33
  Partition admittance Y=  0.92  w=  4.35 surface factor f=  0.96  phi=  0.40
  Total area of ceiling is     64.00
  
- Details of opaque construction: ceiling_rev linked to ceiling      & with overall thickness  0.110
+ Details of opaque construction: ceiling_rev linked to ceiling & with overall thickness  0.110
  
- Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
-      |db  |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
- Ext   150   10.0     0.030   290.  2000. 0.90 0.60     8.  0.33 ceiling mineral : Ceiling acoustic tile (mineral fibre based)
- Int   211  100.0     0.040   250.   840. 0.90 0.30     4.  2.50 glasswool : Glasswool (generic)
+ Layer|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
+      |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
+ Ext    10.0     0.030   290.  2000. 0.90 0.60     8.  0.33 ceiling mineral : Ceiling acoustic tile (mineral fibre based)
+ Int   100.0     0.040   250.   840. 0.90 0.30     4.  2.50 glasswool : Glasswool (generic) (non-hygroscopic)
  ISO 6946 U values (horiz/upward/downward heat flow)=  0.333  0.336  0.329 (partition)  0.323
  
 Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  0.33
@@ -429,13 +429,13 @@ Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  0.33
  
  Details of opaque construction: gyp_blk_ptn and overall thickness  0.226
  
- Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
-      |db  |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
- Ext   108   13.0     0.190   950.   840. 0.91 0.22    11.  0.07 white gypboard : White painted Gypboard
-    2    0   50.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
-    3   28  100.0     0.510  1400.  1000. 0.90 0.65    10.  0.20 block inner : Block inner (3% mc)
-    4    0   50.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
- Int   108   13.0     0.190   950.   840. 0.91 0.22    11.  0.07 white gypboard : White painted Gypboard
+ Layer|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
+      |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
+ Ext    13.0     0.190   950.   840. 0.91 0.22    11.  0.07 white gypboard : White painted Gypboard (inorganic-porous)
+    2   50.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
+    3  100.0     0.510  1400.  1000. 0.90 0.65    10.  0.20 block inner : Block inner (3% mc)
+    4   50.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
+ Int    13.0     0.190   950.   840. 0.91 0.22    11.  0.07 white gypboard : White painted Gypboard (inorganic-porous)
  ISO 6946 U values (horiz/upward/downward heat flow)=  1.186  1.230  1.133 (partition)  1.072
  
 Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  1.17
@@ -445,11 +445,11 @@ Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  1.17
  
  Details of opaque construction: gyp_gyp_ptn and overall thickness  0.074
  
- Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
-      |db  |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
- Ext   108   12.0     0.190   950.   840. 0.91 0.22    11.  0.06 white gypboard : White painted Gypboard
-    2    0   50.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
- Int   108   12.0     0.190   950.   840. 0.91 0.22    11.  0.06 white gypboard : White painted Gypboard
+ Layer|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
+      |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
+ Ext    12.0     0.190   950.   840. 0.91 0.22    11.  0.06 white gypboard : White painted Gypboard (inorganic-porous)
+    2   50.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
+ Int    12.0     0.190   950.   840. 0.91 0.22    11.  0.06 white gypboard : White painted Gypboard (inorganic-porous)
  ISO 6946 U values (horiz/upward/downward heat flow)=  2.144  2.292  1.975 (partition)  1.798
  
 Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  2.10

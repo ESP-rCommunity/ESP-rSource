@@ -1,7 +1,7 @@
 Synopsis
  
 Synopsis of the model Ventilation system with mech inlet (restricted) and mech
-extract defined in vent_det.cfg generated on Mon Aug 27 16:36:55 2012. Notes
+extract defined in vent_det.cfg generated on Sat Dec 14 22:27:08 2013. Notes
 associated with the model are in ../doc/vent_det.log
  
 The model is located at latitude   51.70 with a longitude difference of  -0.50
@@ -32,8 +32,8 @@ An Integrated Performance View is incomplete or missing.
  
 Databases associated with the model:
  standard pressure distr: pressc.db1
- standard materials     : material.db3.a
- standard constructions : multicon.db3
+ standard materials     : material.db4.a
+ standard constructions : multicon.db4
  standard plant comp    : plantc.db1
  standard event profiles: profiles.db1.a
  standard optical prop  : optics.db1
@@ -62,7 +62,7 @@ The model includes a plant network.
  
  The plant network contains 12 components from plantc.db1
  
- Component: duct_ret_a ( 1) code  1, db reference  6
+ Component: duct_ret_a ( 1) code  1, db reference   6
  No Control data
  Modified parameters for duct_ret_a
  Component total mass (kg)                          :   3.7000
@@ -72,7 +72,7 @@ The model includes a plant network.
  Length of duct section (m)                         :   2.0000
  Cross sectional face area (m^2)                    :  0.12270E-01
  
- Component: duct_reb_b ( 2) code  2, db reference  6
+ Component: duct_reb_b ( 2) code  2, db reference   6
  No Control data
  Modified parameters for duct_reb_b
  Component total mass (kg)                          :   1.8500
@@ -82,14 +82,14 @@ The model includes a plant network.
  Length of duct section (m)                         :   1.0000
  Cross sectional face area (m^2)                    :  0.12270E-01
  
- Component: mixing_box ( 3) code  3, db reference  1
+ Component: mixing_box ( 3) code  3, db reference   1
  No Control data
  Modified parameters for mixing_box
  Component total mass (kg)                          :   0.0000
  Mass weighted average specific heat (J/kgK)        :   0.0000
  UA modulus (W/K)                                   :   0.0000
  
- Component: duct_mix_fan ( 4) code  4, db reference  6
+ Component: duct_mix_fan ( 4) code  4, db reference   6
  No Control data
  Modified parameters for duct_mix_fan
  Component total mass (kg)                          :   9.2500
@@ -99,7 +99,7 @@ The model includes a plant network.
  Length of duct section (m)                         :   5.0000
  Cross sectional face area (m^2)                    :  0.12270E-01
  
- Component: exh_fan ( 5) code  5, db reference  3
+ Component: exh_fan ( 5) code  5, db reference   3
  Control data:    0.060
  Modified parameters for exh_fan
  Component total mass (kg)                          :   10.000
@@ -109,7 +109,7 @@ The model includes a plant network.
  Rated volume flow rate (m^3/s)                     :  0.10000
  Overall efficiency (-)                             :  0.70000
  
- Component: exh_duct ( 6) code  6, db reference  6
+ Component: exh_duct ( 6) code  6, db reference   6
  No Control data
  Modified parameters for exh_duct
  Component total mass (kg)                          :   5.5000
@@ -119,7 +119,7 @@ The model includes a plant network.
  Length of duct section (m)                         :   3.0000
  Cross sectional face area (m^2)                    :  0.12270E-01
  
- Component: inlet_duct ( 7) code  7, db reference  6
+ Component: inlet_duct ( 7) code  7, db reference   6
  No Control data
  Modified parameters for inlet_duct
  Component total mass (kg)                          :   9.2500
@@ -129,7 +129,7 @@ The model includes a plant network.
  Length of duct section (m)                         :   5.0000
  Cross sectional face area (m^2)                    :  0.12270E-01
  
- Component: supply_fan ( 8) code  8, db reference  3
+ Component: supply_fan ( 8) code  8, db reference   3
  Control data:    0.060
  Modified parameters for supply_fan
  Component total mass (kg)                          :   10.000
@@ -139,14 +139,14 @@ The model includes a plant network.
  Rated volume flow rate (m^3/s)                     :  0.10000
  Overall efficiency (-)                             :  0.70000
  
- Component: heater ( 9) code  9, db reference  5
+ Component: heater ( 9) code  9, db reference   5
  Control data: 3000.000
  Modified parameters for heater
  Component total mass (kg)                          :   0.0000
  Mass weighted average specific heat (J/kgK)        :   0.0000
  UA modulus (W/K)                                   :   0.0000
  
- Component: supply_duct (10) code 10, db reference  6
+ Component: supply_duct (10) code 10, db reference   6
  No Control data
  Modified parameters for supply_duct
  Component total mass (kg)                          :   1.8500
@@ -156,7 +156,7 @@ The model includes a plant network.
  Length of duct section (m)                         :   1.0000
  Cross sectional face area (m^2)                    :  0.12270E-01
  
- Component: zone_b (11) code 11, db reference 25
+ Component: zone_b (11) code 11, db reference  25
  Control data: -500.000
  Modified parameters for zone_b
  Component total mass (kg)                          :   7560.0
@@ -168,7 +168,7 @@ The model includes a plant network.
  Outside heat transfer coefficient (W/m^2K)         :   18.000
  Outside air infiltration (ACH)                     :   0.0000
  
- Component: zone_a (12) code 12, db reference 25
+ Component: zone_a (12) code 12, db reference  25
  Control data:-1000.000
  Modified parameters for zone_a
  Component total mass (kg)                          :   10920.
@@ -184,42 +184,29 @@ The model includes a plant network.
  Con receiving component node type sending component node
  
   1 inlet_duct node 1 (zone air or ambient.) supply_fan node 1 details:     1.00    0.00    0.00
-  1 inlet_duct node 1 (zone air or ambient.) supply_fan node 1 details:     1.00    0.00    0.00
  
-  2 supply_fan node 1 (from another component.) inlet_duct node 1 details:     1.00    0.00    0.00
   2 supply_fan node 1 (from another component.) inlet_duct node 1 details:     1.00    0.00    0.00
  
   3 heater node 1 (from another component.) supply_fan node 1 details:     1.00    0.00    0.00
-  3 heater node 1 (from another component.) supply_fan node 1 details:     1.00    0.00    0.00
  
-  4 supply_duct node 1 (from another component.) heater node 1 details:     1.00    0.00    0.00
   4 supply_duct node 1 (from another component.) heater node 1 details:     1.00    0.00    0.00
  
   5 zone_b node 2 (from another component.) supply_duct node 1 details:     0.50    0.00    0.00
-  5 zone_b node 2 (from another component.) supply_duct node 1 details:     0.50    0.00    0.00
  
-  6 zone_a node 2 (from another component.) supply_duct node 1 details:     0.50    0.00    0.00
   6 zone_a node 2 (from another component.) supply_duct node 1 details:     0.50    0.00    0.00
  
   7 duct_ret_a node 1 (from another component.) zone_a node 2 details:     1.00    0.00    0.00
-  7 duct_ret_a node 1 (from another component.) zone_a node 2 details:     1.00    0.00    0.00
  
-  8 duct_reb_b node 1 (from another component.) zone_b node 2 details:     1.00    0.00    0.00
   8 duct_reb_b node 1 (from another component.) zone_b node 2 details:     1.00    0.00    0.00
  
   9 mixing_box node 1 (from another component.) duct_ret_a node 1 details:     1.00    0.00    0.00
-  9 mixing_box node 1 (from another component.) duct_ret_a node 1 details:     1.00    0.00    0.00
  
- 10 mixing_box node 1 (from another component.) duct_reb_b node 1 details:     1.00    0.00    0.00
  10 mixing_box node 1 (from another component.) duct_reb_b node 1 details:     1.00    0.00    0.00
  
  11 duct_mix_fan node 1 (from another component.) mixing_box node 1 details:     1.00    0.00    0.00
- 11 duct_mix_fan node 1 (from another component.) mixing_box node 1 details:     1.00    0.00    0.00
  
  12 exh_fan node 1 (from another component.) duct_mix_fan node 1 details:     1.00    0.00    0.00
- 12 exh_fan node 1 (from another component.) duct_mix_fan node 1 details:     1.00    0.00    0.00
  
- 13 exh_duct node 1 (from another component.) exh_fan node 1 details:     0.80    0.00    0.00
  13 exh_duct node 1 (from another component.) exh_fan node 1 details:     0.80    0.00    0.00
  
  No of component containments = 12

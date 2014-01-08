@@ -1,5 +1,5 @@
-*connections for office_4l_bc1
-*Date Mon Apr  9 22:40:06 2012
+*connections for office_4l_bc
+*Date Mon Dec 16 15:02:33 2013
     343   # number of connections
    1   1   0   0   0  #    1 east in office_e_0 is External
    1   2   0   0   0  #    2 north_1 in office_e_0 is External

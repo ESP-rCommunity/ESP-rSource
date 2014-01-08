@@ -1,44 +1,45 @@
-# composite construction db defined in ../dbs/SERT.constrdb
-# based on materials db ../dbs/constr_db2.materialdb
-   7     # no of composites 
-# layers  description   optics name   symmetry tag
+# composite construction db defined in ../dbs/I5C2.constrdb
+# based on materials db material.db4.a
+# and based on CFClayers db CFClayers.db1.a
+    7     # no of composites 
+# layers  description  type  optics name   symmetry tag
     3    wall          OPAQ  OPAQUE        NONSYMMETRIC  
-# mat ref thickness (m) mat descr & air gap R
-  107    0.0290  Gypsum plasterboard : Gypsum plasterboard
-  211    0.3000  Glasswool : Glasswool
-    1    0.2000  Paviour brick : Paviour brick
-# layers  description   optics name   symmetry tag
+# material ref thickness (m) description & air gap R
+  107    0.0290  gypsum plasterboard : Gypsum plasterboard (generic) (inorganic-porous)
+  211    0.3000  glasswool : Glasswool (generic) (non-hygroscopic)
+    1    0.2000  Paviour brick : Paviour brick (inorganic-porous)
+# layers  description  type  optics name   symmetry tag
     3    partition     OPAQ  OPAQUE        SYMMETRIC     
-# mat ref thickness (m) mat descr & air gap R
-  107    0.0144  Gypsum plasterboard : Gypsum plasterboard
-    0    0.0500  air  0.170 0.170 0.170
-  107    0.0144  Gypsum plasterboard : Gypsum plasterboard
-# layers  description   optics name   symmetry tag
+# material ref thickness (m) description & air gap R
+  107    0.0144  gypsum plasterboard : Gypsum plasterboard (generic) (inorganic-porous)
+    0    0.0500  gap  0.170 0.170 0.170
+  107    0.0144  gypsum plasterboard : Gypsum plasterboard (generic) (inorganic-porous)
+# layers  description  type  optics name   symmetry tag
     3    roof          OPAQ  OPAQUE        NONSYMMETRIC  
-# mat ref thickness (m) mat descr & air gap R
-  211    0.3500  Glasswool : Glasswool
-  107    0.0130  Gypsum plasterboard : Gypsum plasterboard
-  102    0.0030  Light plaster : Light plaster
-# layers  description   optics name   symmetry tag
+# material ref thickness (m) description & air gap R
+  211    0.3500  glasswool : Glasswool (generic) (non-hygroscopic)
+  107    0.0130  gypsum plasterboard : Gypsum plasterboard (generic) (inorganic-porous)
+  102    0.0030  light plaster : Light weight plaster (inorganic-porous)
+# layers  description  type  optics name   symmetry tag
     3    floor         OPAQ  OPAQUE        NONSYMMETRIC  
-# mat ref thickness (m) mat descr & air gap R
-  215    0.3000  Expanded PVC : Expanded PVC
-   71    0.0075  Softwood : Softwood
-  221    0.0050  Wilton : Wilton
-# layers  description   optics name   symmetry tag
+# material ref thickness (m) description & air gap R
+  215    0.3000  expanded PVC : Expanded PVC (non-hygroscopic)
+   71    0.0075  softwood : Softwood (generic)
+  221    0.0050  Wilton : Wilton weave wool carpet (organic-hygroscopic)
+# layers  description  type  optics name   symmetry tag
     3    glazing       TRAN  DCF7447_06nb  SYMMETRIC     
-# mat ref thickness (m) mat descr & air gap R
-  246    0.0060  6mm CF Low_e : Glass with placeholder single layer optics
-    0    0.0180  air  0.750 0.750 0.750
-  246    0.0060  6mm CF Low_e : Glass with placeholder single layer optics
-# layers  description   optics name   symmetry tag
+# material ref thickness (m) description & air gap R
+  246    0.0060  low_e glass : CF Low_e glass with placeholder single layer optics
+    0    0.0180  gap  0.750 0.750 0.750
+  246    0.0060  low_e glass : CF Low_e glass with placeholder single layer optics
+# layers  description  type  optics name   symmetry tag
     2    therm-brdg    OPAQ  OPAQUE        SYMMETRIC     
-# mat ref thickness (m) mat descr & air gap R
-   70    0.0020  Plywood : Plywood
-   70    0.0020  Plywood : Plywood
-# layers  description   optics name   symmetry tag
+# material ref thickness (m) description & air gap R
+   70    0.0020  plywood 560d : Plywood (generic 560 density)
+   70    0.0020  plywood 560d : Plywood (generic 560 density)
+# layers  description  type  optics name   symmetry tag
     3    door          OPAQ  OPAQUE        SYMMETRIC     
-# mat ref thickness (m) mat descr & air gap R
-   70    0.0050  Plywood : Plywood
-  211    0.0300  Glasswool : Glasswool
-   70    0.0050  Plywood : Plywood
+# material ref thickness (m) description & air gap R
+   70    0.0050  plywood 560d : Plywood (generic 560 density)
+  211    0.0300  glasswool : Glasswool (generic) (non-hygroscopic)
+   70    0.0050  plywood 560d : Plywood (generic 560 density)

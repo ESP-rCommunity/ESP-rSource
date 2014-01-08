@@ -1,5 +1,5 @@
 *Geometry 1.1,GEN,reception # tag version, format, zone name
-*date Tue Jul 21 08:23:45 2009  # latest file modification 
+*date Wed Dec 11 08:49:09 2013  # latest file modification 
 reception describes a...
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,1.00000,1.00000,0.00000  #   1
@@ -65,7 +65,7 @@ reception describes a...
 *surf,part_a,VERT,-,-,-,gyp_gyp_ptn,OPAQUE,ANOTHER,02,02  #   5 ||< part_a:office
 *surf,part_b,VERT,-,-,-,gyp_gyp_ptn,OPAQUE,ANOTHER,02,01  #   6 ||< part_b:office
 *surf,west,VERT,-,-,-,extern_wall,OPAQUE,EXTERIOR,0,0  #   7 ||< external
-*surf,ceiling,CEIL,-,-,-,ceiling,OPAQUE,ANOTHER,03,01  #   8 ||< Ceiling_r:roof_space
+*surf,ceiling,CEIL,-,-,-,ceiling_rev,OPAQUE,ANOTHER,03,01  #   8 ||< Ceiling_r:roof_space
 *surf,floor,FLOR,-,-,-,floor_1,OPAQUE,CONSTANT,20,00  #   9 ||< constant @ 20dC &   0W rad
 *surf,glz_s,VERT,south,-,-,dbl_glz,DCF7671_06nb,EXTERIOR,0,0  #  10 ||< external
 *surf,door_p,VERT,pasg,-,-,door,OPAQUE,SIMILAR,00,00  #  11 ||< identical environment
