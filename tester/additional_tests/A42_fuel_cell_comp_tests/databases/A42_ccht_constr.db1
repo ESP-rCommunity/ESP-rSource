@@ -1,0 +1,118 @@
+# composite construction db defined in ../databases/ccht_constr.db1
+# based on materials db ../databases/ccht_materialdb
+# and based on CFClayers db CFClayers.db1.a patched ccht_wall layer 4 and ccht_window air gap resistance to match zone files.
+   18     # no of composites 
+# layers  description  type  optics name   symmetry tag
+    5    ccht_wall     OPAQ  OPAQUE        ccht_wall_r   
+# material ref thickness (m) description & air gap R
+    4    0.1000  Outer leaf brick : Outer leaf brick
+    0    0.0250  gap  0.170 0.170 0.170
+   67    0.0110  Chipboard : Chipboard
+  281    0.1030  Glass Fibre Quilt : Glass Fibre Quilt
+   72    0.0120  Plywood 700d : Plywood 700d
+# layers  description  type  optics name   symmetry tag
+    3    ccht_window   TRAN  ccht-win      SYMMETRIC     
+# material ref thickness (m) description & air gap R
+  242    0.0030  Plate glass : Plate glass with placeholder single layer optics
+    0    0.0130  gap  0.468 0.468 0.468
+  242    0.0030  Plate glass : Plate glass with placeholder single layer optics
+# layers  description  type  optics name   symmetry tag
+    1    slab_floor    OPAQ  OPAQUE        SYMMETRIC     
+# material ref thickness (m) description & air gap R
+   21    0.2500  Light mix : Light mix
+# layers  description  type  optics name   symmetry tag
+    2    foundation_   OPAQ  OPAQUE        NONSYMMETRIC  
+# material ref thickness (m) description & air gap R
+   21    0.2000  Light mix : Light mix
+  107    0.0135  Gypsum plasterboard : Gypsum plasterboard
+# layers  description  type  optics name   symmetry tag
+    3    ceiling       OPAQ  OPAQUE        ceiling_r     
+# material ref thickness (m) description & air gap R
+  107    0.0127  Gypsum plasterboard : Gypsum plasterboard
+  219    0.2500  Thermalite turbo block : Thermalite turbo block
+   72    0.0250  Plywood 700d : Plywood 700d
+# layers  description  type  optics name   symmetry tag
+    5    ccht_wall_r   OPAQ  OPAQUE        ccht_wall     
+# material ref thickness (m) description & air gap R
+   72    0.0120  Plywood 700d : Plywood 700d
+  281    0.1030  Glass Fibre Quilt : Glass Fibre Quilt
+   67    0.0110  Chipboard : Chipboard
+    0    0.0250  gap  0.170 0.170 0.170
+    4    0.1000  Outer leaf brick : Outer leaf brick
+# layers  description  type  optics name   symmetry tag
+    4    floors        OPAQ  OPAQUE        floors_r      
+# material ref thickness (m) description & air gap R
+  225    0.0150  Synthetic carpet : Synthetic carpet
+   65    0.0250  Flooring : Flooring
+    0    0.1000  gap  0.170 0.170 0.170
+   70    0.0170  Plywood : Plywood
+# layers  description  type  optics name   symmetry tag
+    4    floors_r      OPAQ  OPAQUE        floors        
+# material ref thickness (m) description & air gap R
+   70    0.0170  Plywood : Plywood
+    0    0.1000  gap  0.170 0.170 0.170
+   65    0.0250  Flooring : Flooring
+  225    0.0150  Synthetic carpet : Synthetic carpet
+# layers  description  type  optics name   symmetry tag
+    1    int_doors     OPAQ  OPAQUE        SYMMETRIC     
+# material ref thickness (m) description & air gap R
+   69    0.0250  Oak (radial) : Oak (radial)
+# layers  description  type  optics name   symmetry tag
+    3    ext_doors     OPAQ  OPAQUE        SYMMETRIC     
+# material ref thickness (m) description & air gap R
+  283    0.0050  light steel door : light steel door
+  205    0.0250  Polyurethane foam board : Polyurethane foam board
+  283    0.0050  light steel door : light steel door
+# layers  description  type  optics name   symmetry tag
+    2    asphalt       OPAQ  OPAQUE        NONSYMMETRIC  
+# material ref thickness (m) description & air gap R
+  163    0.0050  Asphalt mastic roofing : Asphalt mastic roofing
+   72    0.0120  Plywood 700d : Plywood 700d
+# layers  description  type  optics name   symmetry tag
+    3    int_partitn   OPAQ  OPAQUE        SYMMETRIC     
+# material ref thickness (m) description & air gap R
+  107    0.0125  Gypsum plasterboard : Gypsum plasterboard
+    0    0.0250  gap  0.170 0.170 0.170
+  107    0.0125  Gypsum plasterboard : Gypsum plasterboard
+# layers  description  type  optics name   symmetry tag
+    3    ceiling_r     OPAQ  OPAQUE        ceiling       
+# material ref thickness (m) description & air gap R
+   72    0.0250  Plywood 700d : Plywood 700d
+  219    0.2500  Thermalite turbo block : Thermalite turbo block
+  107    0.0127  Gypsum plasterboard : Gypsum plasterboard
+# layers  description  type  optics name   symmetry tag
+    1    fictitious    TRAN  SC_fictit     SYMMETRIC     
+# material ref thickness (m) description & air gap R
+  284    0.0050  fictitious : fictitious
+# layers  description  type  optics name   symmetry tag
+    5    exp_flr       OPAQ  OPAQUE        exp_flr_r     
+# material ref thickness (m) description & air gap R
+  225    0.0150  Synthetic carpet : Synthetic carpet
+   65    0.0250  Flooring : Flooring
+  281    0.1400  Glass Fibre Quilt : Glass Fibre Quilt
+    0    0.1000  gap  0.170 0.170 0.170
+   70    0.0170  Plywood : Plywood
+# layers  description  type  optics name   symmetry tag
+    5    exp_flr_r     OPAQ  OPAQUE        exp_flr       
+# material ref thickness (m) description & air gap R
+   70    0.0170  Plywood : Plywood
+    0    0.1000  gap  0.170 0.170 0.170
+  281    0.1400  Glass Fibre Quilt : Glass Fibre Quilt
+   65    0.0250  Flooring : Flooring
+  225    0.0150  Synthetic carpet : Synthetic carpet
+# layers  description  type  optics name   symmetry tag
+    5    wall_tb       OPAQ  OPAQUE        wall_tb_r     
+# material ref thickness (m) description & air gap R
+    4    0.1000  Outer leaf brick : Outer leaf brick
+    0    0.0250  gap  0.170 0.170 0.170
+   67    0.0110  Chipboard : Chipboard
+  285    0.1400  Glass Fibre Thermal Bridging : Glass Fibre Thermal Bridging
+   72    0.0120  Plywood 700d : Plywood 700d
+# layers  description  type  optics name   symmetry tag
+    5    wall_tb_r     OPAQ  OPAQUE        wall_tb       
+# material ref thickness (m) description & air gap R
+   72    0.0120  Plywood 700d : Plywood 700d
+  285    0.1400  Glass Fibre Thermal Bridging : Glass Fibre Thermal Bridging
+   67    0.0110  Chipboard : Chipboard
+    0    0.0250  gap  0.170 0.170 0.170
+    4    0.1000  Outer leaf brick : Outer leaf brick
