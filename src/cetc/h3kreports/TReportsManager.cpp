@@ -1,7 +1,7 @@
 #include "TReportsManager.h"
 
 #define DEBUG 1
-#define TRACE_VARIABLE 120
+//#define TRACE_VARIABLE 120
 /* ********************************************************************
 ** Tips for troubleshooting a variable:
 ** For tracing a variable define the TRACE_VARIABLE, run a simulation and
@@ -172,7 +172,7 @@ char* ReplaceChar(char *str,const char *insert, int start, int end, char cDelimi
 
    pchlenght = pch-str;
 
-   //create a space fro the insert, sizeof of the insert
+   //create a space for the insert, sizeof of the insert
    memmove(pch+insertlenght-1,pch,strlenght-pchlenght+1);
 
    //insert the characters
@@ -660,7 +660,7 @@ extern "C"
 
    /* ********************************************************************
    ** Method:   set_report_simulation_info
-   ** Purpose:  Called by the fortran code to pass the a simulation
+   ** Purpose:  Called by the fortran code to pass the simulation
    **           information
    ** Params:   iStartday - start day in a 365 day year format
    **                        (example:  Feb 1st --> 32) **no leap year **
@@ -682,15 +682,15 @@ extern "C"
 
    /* ********************************************************************
    ** Method:   set_report_variable()
-   ** Purpose:  Called by the fortran code to pass the a Report Variable
-   **             definition, id, description, to the C++ containers
-   ** Params:     sVariableName -  The Unique xml path location to where the data is to be stored.
-                  sMetaName -  The metatag to be added. (usually 'units' is used)
-                  sMetaValue - The value for the above metatag (Usually the unit type, like
-                       (W) for watts)
-                  sDescription - A detailed description of the variable being reported on.
-                       Will be outputted with the dictionary.
-                  *Length - The length of the corrosponding char arrays.
+   ** Purpose:  Called by the fortran code to pass the Report Variable
+   **           definition, id, description, to the C++ containers
+   ** Params:   sVariableName -  The Unique xml path location to where the data is to be stored.
+                sMetaName -  The metatag to be added. (usually 'units' is used)
+                sMetaValue - The value for the above metatag (Usually the unit type, like
+                     (W) for watts)
+                sDescription - A detailed description of the variable being reported on.
+                     Will be outputted with the dictionary.
+                *Length - The length of the corrosponding char arrays.
    ** Returns:  N/A, changes the information in memory
    ** Author:   Claude Lamarche
    ** Mod Date: 2011-06-27
@@ -766,25 +766,33 @@ extern "C"
    }
 
 
-
    /* ********************************************************************
    ** Method:   generate_output()
    ** Purpose:  Called by the fortran code to start the report generation
+   **           and sets the csv file name.
    ** Scope:    Public
-   ** Params:   N/A
+   ** Params:   sRootName = root name of simulation results file
+   **           iNameLength = length of root name
    ** Returns:  N/A
    ** Author:   Claude Lamarche
-   ** Mod Date: 2011-07-14
+   ** Modified: Achim Geissler
+   ** Mod Date: 2013-12-21
    ** ***************************************************************** */
-   void generate_output__()
+   void generate_output__( char *sRootName, int iNameLength )
    {
-      TReportsManager::Instance()->GenerateOutput();
+        std::string sFileName;
+        std::string sRoot = std::string(sRootName, iNameLength);
+        sFileName = sRoot + ".csv";
+        TReportsManager::Instance()->setCSVFileName(sFileName);
+
+        TReportsManager::Instance()->GenerateOutput();
    }
    //dummy call to the generate_output__
-   void generate_output_()
+   void generate_output_( char *sRootName, int iNameLength )
    {
-      generate_output__();
+        generate_output__(sRootName, iNameLength);
    }
+
 
    /* ********************************************************************
    ** Method:   report_next_time_step()
@@ -917,6 +925,7 @@ TReportsManager::TReportsManager(  )
    m_iYearCount = 0;
    bReports_Enabled = false;
    m_bSeasonalRun = false;
+   bUseResFilenameRoot = false;
 
 
    //remove the out.csv and out.db3 on init since the save_to_disk
@@ -1153,7 +1162,7 @@ void TReportsManager::AddToVariableInfoList(int id,const char* sVarName, const c
 ** Scope:    public
 ** Purpose:  Populate meta variable data
 ** Note:     ** avoid the use of this method where possible ** this method
-**           is not as efficient as declaring the varaible descriptor
+**           is not as efficient as declaring the variable descriptor
 **           in the h3kmodule.f90
 ** Params:   int id - identifier for the variable
 **           sDelimiter - the wild char (makes up the map key with id)
@@ -1342,6 +1351,35 @@ void TReportsManager::AddNewSeason(int iSeason_index,float fHtgMultiplier,float 
    m_SeasonMultipliersList[iSeason_index-1].Gen = fGenMultiplier;
 }
 
+/* ********************************************************************
+ ** Method:   UseResFilenameRoot
+ ** Scope:    public
+ ** Purpose:  Returns state of boolean
+ ** Params:   N/A
+ ** Returns:  boolean
+ ** Author:   Achim Geissler
+ ** Mod Date: 2013-12-21
+ ** ***************************************************************** */
+bool TReportsManager::UseResFilenameRoot(){
+   return bUseResFilenameRoot;
+}
+
+/* ********************************************************************
+ ** Method:   setCSVFileName
+ ** Scope:    public
+ ** Purpose:  Sets CSV file name string, defaults to "out.csv"
+ ** Params:   sFileName = file name string
+ ** Returns:  N/A
+ ** Author:   Achim Geissler
+ ** Mod Date: 2013-12-21
+ ** ***************************************************************** */
+void TReportsManager::setCSVFileName(const std::string& sFileName){
+    if (bUseResFilenameRoot) {
+      sCSVFileName=sFileName;
+    } else {
+      sCSVFileName="out.csv";
+    }
+}
 
 /* ********************************************************************
 ** Method:   SetVarAdditionalInfo
@@ -1537,6 +1575,11 @@ void TReportsManager::GenerateOutput(){
    DBManager *objDBManager;
    int i, iBinIndex;
 
+   // Remove old .csv file if bUseResFilenameRoot is true
+   if (bUseResFilenameRoot) {
+     remove(sCSVFileName.c_str());
+   }
+
    //Loop through all collection variables
    i = 0;
 
@@ -1635,7 +1678,13 @@ void TReportsManager::GenerateOutput(){
 
    //Print to CSV file
    if(bOutStepCSV)
-      OutputCSVData("out.csv",sortedMapKeylist);
+   {
+      if (bUseResFilenameRoot) {
+        OutputCSVData(sCSVFileName.c_str(),sortedMapKeylist);
+      } else {
+        OutputCSVData("out.csv",sortedMapKeylist);
+      }
+   }
 
    //Print the summary data
    OutputTXTsummary("out.summary",sortedMapKeylist);
@@ -1646,7 +1695,7 @@ void TReportsManager::GenerateOutput(){
 ** Method:   GenerateStepOutput()
 ** Scope:    private
 ** Purpose:  Method used to push the step output in an incremental
-**           fashion to avoid too large of a merory footprint.
+**           fashion to avoid too large of a memory footprint.
 **           This is controlled by the save_to_disk input.xml option
 **           and triggers by the AddTimeStepList routine
 ** Notes:    Since the variable number may grow during a simulation
@@ -1694,7 +1743,13 @@ void TReportsManager::GenerateStepOutput(unsigned long lStepCount){
 
    //Output the steps
    if(bOutStepCSV)
-      OutputCSVData("out.csv", sortedMapKeylist);
+   {
+      if (bUseResFilenameRoot) {
+          OutputCSVData(sCSVFileName.c_str(),sortedMapKeylist);
+      } else {
+          OutputCSVData("out.csv",sortedMapKeylist);
+      }
+   }
 
    //Output to the database
    if(bOutStepDB)
@@ -1947,7 +2002,7 @@ void TReportsManager::OutputSQLiteData(DBManager *objDBManager)
                   {
                      //for W->J, convert result calculated in GJ
                      if (bIsWatt)
-                        dTotal = (ptrBin->Sum() * m_fMinutePerTimeStep * 60. ) / 1e09;
+                        dTotal = (ptrBin->Sum() * m_fMinutePerTimeStep * 60. ) / 1.e09;
                      else
                         dTotal = ptrBin->Sum() * m_fMinutePerTimeStep * 60.;
 
@@ -2584,7 +2639,7 @@ void TReportsManager::OutputCSVData(const char *sFileName, stSortedMapKeyRef sor
                sTemp+= itDataMap->second.getVariableMetaValue();
             else
                sTemp+= itInfoMap->second.MetaValue;
-            sTemp+= ", ";
+            sTemp+= ", "; // trailing "," should be avoided (how?) ag@20131221
 
             if(isInit)
             {
@@ -2670,7 +2725,7 @@ void TReportsManager::OutputCSVData(const char *sFileName, stSortedMapKeyRef sor
 
 
 /* ********************************************************************
-** Method:   OutputDictionary()
+** Method:   InjectVariableToCSV()
 ** Scope:    private
 ** Purpose:  Used only when save_to_disk is true, this method will insert
 **           and initialize a variable that would have came into existance
@@ -2802,8 +2857,9 @@ void TReportsManager::OutputDictionary(const char* sFileName, stSortedMapKeyRef 
          //fprintf(pFile,"%s\n  %s%s\",\"%s\"\n",
          //        sVarName,itDataMap->first.delimiters.c_str(),
          //        itInfoMap->second.Description, itInfoMap->second.MetaValue);
+         //fprintf(pFile,"%s \n  [%s, Units: %s]\n\n",
 
-         fprintf(pFile,"%s \n  [%s, Units: %s]\n\n",
+         fprintf(pFile,"%s [%s, Units: %s]\n",
                  sVarName,
                  itInfoMap->second.Description, 
                  itInfoMap->second.MetaValue);
@@ -3004,6 +3060,9 @@ void TReportsManager::ParseConfigFile( const std::string& filePath  )
   // Dictionary output
   m_params["output_dictionary"] = inputXML.GetFirstNodeValue("output_dictionary", inputXML.RootNode());
 
+  // Output file name root = results file name root?
+  m_params["use_resfilenameroot"] = inputXML.GetFirstNodeValue("use_resfilenameroot", inputXML.RootNode());
+
   // Save to disk, save_to_disk max attribute
   m_params["save_to_disk"] = inputXML.GetFirstNodeValue("save_to_disk", inputXML.RootNode());
   m_params["save_to_disk_every"] = inputXML.GetFirstAttributeValue("save_to_disk","every").c_str();
@@ -3140,15 +3199,23 @@ void TReportsManager::SetFlags(){
     bReportStartup = false;
   }
 
-   // Dictionary output: true/false(default)
-   if ( m_params["output_dictionary"] == "true" ){
-      bDumpDictionary = true;
-   }
-   else
-   {
-      m_params["output_dictionary"] = "false";
-      bDumpDictionary = false;
-   }
+  // Dictionary output: true/false(default)
+  if ( m_params["output_dictionary"] == "true" ){
+     bDumpDictionary = true;
+  }
+  else
+  {
+     m_params["output_dictionary"] = "false";
+     bDumpDictionary = false;
+  }
+
+  // Output file name root = results file name root?
+  if ( m_params["use_resfilenameroot"] == "true" ){
+    bUseResFilenameRoot = true;
+  }else{
+    m_params["use_resfilenameroot"] = "false";
+    bUseResFilenameRoot = false;
+  }
 
   // Timestep averaging
   if ( m_params["time_step_averaging"] == "false" ){
