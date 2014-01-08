@@ -950,7 +950,7 @@ C If file exists read it and enter editing facility after
 C check to see if it is local or standard or absolute path.
         if(XST)then
           call findwhichdbpath('mat',lltmp,ier)
-          goto 44
+          goto 44  ! process the file
         else
           call edisp(iuout,
      &    'No file to browse/edit. Please use another option.')
@@ -967,7 +967,7 @@ C the materials.
         lltmp='  '
         call usecommondbsfile('mat',numhelp,lltmp,istat,moddb)
         if(istat.eq.0.and.moddb)then
-          goto 44
+          goto 44  ! process the file
         else
           goto 60
         endif
@@ -1158,7 +1158,7 @@ C expects to be passed the expanded file name.
         CALL ASKOK(' ','Browse or edit new file?',OK,dok,nbhelp)
         if(OK)then
           moddb=.true.
-          goto 44
+          goto 44  ! process the file
         endif
 
       elseif(isw.eq.4)then
@@ -1176,7 +1176,7 @@ C reflect it is local.
           LFMAT=lprev
           goto 60  ! cancel detected, restore name and redisplay menu.
         elseif(istat.eq.0)then
-          goto 44
+          goto 44  ! process the file
         endif
 
       elseif(isw.eq.6)then
@@ -1332,7 +1332,7 @@ C the materials.
         lltmp='  '
         call usemodeldbsfile('mat',numhelp,lltmp,istat,moddb)
         if(istat.eq.0.and.moddb)then
-          goto 44
+          goto 44  ! process the file
         else
           goto 60
         endif
@@ -1352,7 +1352,7 @@ C If user requests, copy one of those files to the model folder.
           LFMAT=lprev
           goto 60  ! cancel detected, restore name and redisplay menu.
         elseif(istat.eq.0)then
-          goto 44
+          goto 44  ! process the file
         endif
 
       endif
@@ -1461,6 +1461,7 @@ C moddb is from version manager
 C modcon signals change in constructions.
 C APP is 4 character file name modifier (from version facility)
 C     if blank then no file name change implied.
+C Unused variables commented out.
 
       SUBROUTINE EDDBCFC(moddb,modcon,APP)
 #include "building.h"
@@ -1473,7 +1474,8 @@ C     if blank then no file name change implied.
       common/FILEP/IFIL
       common/OUTIN/IUOUT,IUIN
 
-      common/rpath/path
+C      character path*72
+C      common/rpath/path
 
 C Default ESP-r distribution path.
       common/deflt4/dinstpath
@@ -1481,21 +1483,21 @@ C Default ESP-r distribution path.
       common/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,CFCDBOK
 
       logical CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,CFCDBOK
-      logical moddb,modcon,copydef,clkok,chgdb
-      logical closemat1,closemat2
+      logical moddb,modcon,copydef,chgdb
+C      logical clkok,closemat2,DOK,OK
+      logical closemat1
 
-      character LLTMP*144,LTMP*92
+C      character LTMP*92,LLTMPFL*144
       character fs*1
-      character DFILE*144,LLASCI*144,LLTMPFL*144
+      character LLTMP*144
       character lprev*144
       character longtfile*144
-      character lworking*144
       character dirpath*72
 
       CHARACTER APP*4
 C      CHARACTER outs248*248
-      LOGICAL OK,XST,DOK,concat
-      character dinstpath*60,path*72
+      LOGICAL XST,concat
+      character dinstpath*60
 
 C Local strings for user selections dependent on graphic library.
       integer lndbp   ! for length of standard path
@@ -1511,7 +1513,7 @@ C For help messages
       helpinsub='EDDBCFC'  ! set for subroutine
 
 C Clear string buffers.
-      ltmp=' '
+C      ltmp=' '
       lltmp=' '
 
 C Set folder separator (fs) to \ or / as required.
@@ -1940,9 +1942,9 @@ C Write ASCII version from the common blocks.
       return
 
 C Error messages.
-   13 CALL USRMSG(' Write error to ascii CFC layers db ',LLTMPFL,'W')
-      IER=1
-      return
+C   13 CALL USRMSG(' Write error to ascii CFC layers db ',LLTMPFL,'W')
+C      IER=1
+C      return
       end
 
 
@@ -2807,6 +2809,7 @@ C warn the user when attempting to update that file.
 #include "building.h"
 #include "model.h"
 #include "esprdbfile.h"
+#include "geometry.h"
 #include "material.h"
       
       integer lnblnk  ! function definition
@@ -2817,6 +2820,12 @@ C      character path*72
 
 C Default esp-r distribution path.
       common/deflt4/dinstpath
+      integer ncomp,ncon
+      COMMON/C1/NCOMP,NCON
+      integer IZSTOCN
+      COMMON/C24/IZSTOCN(MCOM,MS)
+      integer ifil
+      COMMON/FILEP/IFIL
 
       common/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,CFCDBOK
       logical CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,CFCDBOK
@@ -2836,6 +2845,7 @@ C Local strings for user selections dependent on graphic library.
       logical unixok  ! to check for path file separators
       logical allowbrowse ! future option
       integer iglib  ! for detecting GTK or X11
+      integer icomp,icn1,ii,i  ! for use in updataing ssmlcindex
 
 C For help messages
       character helpinsub*24 ! subroutine name
@@ -2999,7 +3009,7 @@ C the constructions.
         lltmp='  '
         call usecommondbsfile('mlc',numhelp,lltmp,istat,moddb)
         if(istat.eq.0.and.moddb)then
-          goto 44
+          goto 44  ! process the file
         else
           goto 60
         endif
@@ -3059,7 +3069,7 @@ C Scan the new file and use the editing facility.
         dok=.true.
         CALL ASKOK('  ','Browse or edit new file?',OK,dok,nbhelp)
         if(OK)then
-          goto 44
+          goto 44  ! process the file
         endif
 
       elseif(isw.eq.4.or.isw.eq.6)then
@@ -3078,7 +3088,7 @@ C Update common to reflect it is local.
           LFMUL=lprev
           goto 60  ! cancel detected, restore name and redisplay menu.
         elseif(istat.eq.0)then
-          goto 44
+          goto 44  ! process the file
         endif
 
       elseif(isw.eq.3)then
@@ -3090,7 +3100,7 @@ C the constructions.
         lltmp='  '
         call usemodeldbsfile('mlc',numhelp,lltmp,istat,moddb)
         if(istat.eq.0.and.moddb)then
-          goto 44
+          goto 44  ! process the file
         else
           goto 60
         endif
@@ -3109,7 +3119,7 @@ C and copy that file into the model.
           LFMUL=lprev
           goto 60  ! cancel detected, restore name and redisplay menu.
         elseif(istat.eq.0)then
-          goto 44
+          goto 44  ! process the file
         endif
       endif
 
@@ -3143,6 +3153,25 @@ C the ascii version and if it exists, offer to convert it.
         return
       endif
       MLDBOK=.TRUE.
+
+C If a changed MLC need to re-scan for matching MLC array index
+C for surfaces to support subsequent rebuilding of the zone
+C construction files.
+      do 30 ICOMP=1,NCOMP
+        call georead(IFIL+1,LGEOM(ICOMP),ICOMP,1,iuout,ier)
+
+C Find the index of the MLC which matches each surface.
+        DO 9994 I=1,NZSUR(icomp)
+          icn1=izstocn(icomp,i)
+          ssmlcindex(icn1)=0  ! assume no matching MLC          
+          do 5 ii=1,nmlc
+            if(SSMLCN(icn1)(1:12).eq.mlcname(ii)(1:12)) then
+              ssmlcindex(icn1)=ii   ! remember MLC index  
+            endif
+  5       continue
+ 9994   continue
+ 30   continue
+
       call tstamp('>','PRJ: enter construction db')
       CALL EDMLDB(ITRC,modmlc,IER,ISEL)
       if(IER.EQ.1)then
@@ -3881,7 +3910,7 @@ C Calendar.
       INTEGER :: icalender,nbcaldays,nbdaytype
 
       CHARACTER DFILE*72,LLASCI*144,ltmp*96,lguess*144
-      character longtfile*144,longtafile*144,longtfiledos*144
+      character longtfile*144,longtafile*144
       character message*48,longtmp*144
       CHARACTER DOIT*248,ldoit*300
       CHARACTER fs*1,TMODE*8,CLMLOC*30,LCOPY*144
