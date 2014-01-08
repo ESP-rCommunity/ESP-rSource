@@ -23,7 +23,6 @@ ducted wind turbine
 thermocromic glazing
 phase change material
 evaporating surface
-Thermochromic glazing
 *ENDCATEGORY
 *SPECMATL
 *IDDATA
@@ -494,8 +493,8 @@ Hsl is the enthalpy of liquid water at the surface temperature
 Thermochromic_gl  
 *SPECDATA
  4                   
- 75.0     temperature at minimum transmission, Tmint (degC);
  24.0     temperature at maximum transmission, Tmaxt (degC);
+ 75.0     temperature at minimum transmission, Tmint (degC);
  45.09    minimum transmission as a % of max transmission;
  1        associated layer number in TMC.      
 *TEXT
