@@ -1,6 +1,6 @@
 # composite construction db defined in ../databases/ccht_constr.db1
 # based on materials db ../databases/ccht_materialdb
-# and based on CFClayers db CFClayers.db1.a patched ccht_wall layer 4 and ccht_window air gap resistance to match zone files.
+# and based on CFClayers db CFClayers.db1.a patched ccht_wall layer 4 and ccht_window air gap resistance and exp_flr insul thick to match zone files.
    18     # no of composites 
 # layers  description  type  optics name   symmetry tag
     5    ccht_wall     OPAQ  OPAQUE        ccht_wall_r   
@@ -26,10 +26,12 @@
    21    0.2000  Light mix : Light mix
   107    0.0135  Gypsum plasterboard : Gypsum plasterboard
 # layers  description  type  optics name   symmetry tag
-    3    ceiling       OPAQ  OPAQUE        ceiling_r     
+    5    ceiling       OPAQ  OPAQUE        ceiling_r     
 # material ref thickness (m) description & air gap R
   107    0.0127  Gypsum plasterboard : Gypsum plasterboard
-  219    0.2500  Thermalite turbo block : Thermalite turbo block
+  219    0.2056  Thermalite turbo block : Thermalite turbo block
+  219    0.2056  Thermalite turbo block : Thermalite turbo block
+  219    0.2055  Thermalite turbo block : Thermalite turbo block
    72    0.0250  Plywood 700d : Plywood 700d
 # layers  description  type  optics name   symmetry tag
     5    ccht_wall_r   OPAQ  OPAQUE        ccht_wall     
@@ -75,10 +77,12 @@
     0    0.0250  gap  0.170 0.170 0.170
   107    0.0125  Gypsum plasterboard : Gypsum plasterboard
 # layers  description  type  optics name   symmetry tag
-    3    ceiling_r     OPAQ  OPAQUE        ceiling       
+    5    ceiling_r     OPAQ  OPAQUE        ceiling       
 # material ref thickness (m) description & air gap R
    72    0.0250  Plywood 700d : Plywood 700d
-  219    0.2500  Thermalite turbo block : Thermalite turbo block
+  219    0.2056  Thermalite turbo block : Thermalite turbo block
+  219    0.2056  Thermalite turbo block : Thermalite turbo block
+  219    0.2055  Thermalite turbo block : Thermalite turbo block
   107    0.0127  Gypsum plasterboard : Gypsum plasterboard
 # layers  description  type  optics name   symmetry tag
     1    fictitious    TRAN  SC_fictit     SYMMETRIC     
@@ -89,7 +93,7 @@
 # material ref thickness (m) description & air gap R
   225    0.0150  Synthetic carpet : Synthetic carpet
    65    0.0250  Flooring : Flooring
-  281    0.1400  Glass Fibre Quilt : Glass Fibre Quilt
+  281    0.0920  Glass Fibre Quilt : Glass Fibre Quilt
     0    0.1000  gap  0.170 0.170 0.170
    70    0.0170  Plywood : Plywood
 # layers  description  type  optics name   symmetry tag
@@ -97,7 +101,7 @@
 # material ref thickness (m) description & air gap R
    70    0.0170  Plywood : Plywood
     0    0.1000  gap  0.170 0.170 0.170
-  281    0.1400  Glass Fibre Quilt : Glass Fibre Quilt
+  281    0.0920  Glass Fibre Quilt : Glass Fibre Quilt
    65    0.0250  Flooring : Flooring
   225    0.0150  Synthetic carpet : Synthetic carpet
 # layers  description  type  optics name   symmetry tag
