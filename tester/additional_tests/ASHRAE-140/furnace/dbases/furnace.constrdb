@@ -1,5 +1,5 @@
 # composite construction db defined in ../../dbases/furnace.constrdb
-# based on materials db ../../dbases/constr.db1.a
+# based on materials db ../../dbases/furnace.materialdb
 # and based on CFClayers db CFClayers.db1.a edited roof to match
    23     # no of composites 
 # layers  description  type  optics name   symmetry tag

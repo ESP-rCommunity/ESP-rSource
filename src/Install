@@ -2169,7 +2169,6 @@ echo " Installing standard databases. This may take some time."
   cp ${SRCdir}/databases/ccht-optics.db1 ${DESTdir}/esp-r/databases/ccht-optics.db1
   cp ${SRCdir}/databases/ccht_na_constr.db1 ${DESTdir}/esp-r/databases/ccht_na_constr.db1
   cp ${SRCdir}/databases/ccht_material.ascii ${DESTdir}/esp-r/databases/ccht_material.ascii
-  cp ${SRCdir}/databases/constr.db1.a ${DESTdir}/esp-r/databases/constr.db1.a
   cp ${SRCdir}/databases/constr_db1.materialdb ${DESTdir}/esp-r/databases/constr_db1.materialdb
   cp ${SRCdir}/databases/constr_db2.materialdb ${DESTdir}/esp-r/databases/constr_db2.materialdb
   cp ${SRCdir}/databases/constr.db3.a ${DESTdir}/esp-r/databases/constr.db3.a

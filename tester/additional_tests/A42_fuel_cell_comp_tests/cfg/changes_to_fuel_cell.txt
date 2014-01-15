@@ -13,10 +13,8 @@ Summary of changes:
   and multicon.db1). A better match was found in ccht databases, however
   the ccht_wall and ccht_window values still differed and model variants 
   were created that give a close match to almost all of the constructions 
-  except for the properties of ccht_window and the ceiling construction 
-  for which are unknown in any current database.
-  Backup versions of main_second.com and main_second.tmc roof.con 
-  and garage.con were made to guard against likely overwrites. 
+  except for the optical properties of ccht_window.
+  Backup versions of main_main_second.tmc made to guard against overwrites. 
 - It would appear that a number of the models in the additional
   tests folders have orphaned zone construction files which have
   no equivalent common database entries. Such models are at risk

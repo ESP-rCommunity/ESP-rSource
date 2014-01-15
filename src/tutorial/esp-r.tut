@@ -464,33 +464,62 @@ Materials db
 
 A portion of a Materials db follows.
 
-# Materials db defined as constr.db1.a
-   15    #  number of classifications
-# class|no elements|description
-    1    5   Brick
-    1   Paviour brick
-# conductivity, density, spec heat, solar abs, lw emis, diffusion resist.
-        0.960, 2000.000,  840.000,  0.930,  0.700,     12.000
-    2   Breeze block
-        0.440, 1500.000,  650.000,  0.900,  0.650,     15.000
-    3   Inner leaf brick
-        0.620, 1800.000,  840.000,  0.930,  0.700,     29.000
-    4   Outer leaf brick
-        0.960, 2000.000,  650.000,  0.900,  0.930,     25.000
-    5   Vermiculite insulating
-        0.270,  700.000,  840.000,  0.900,  0.650,     12.000
-# class|no elements|description
-    2   12   Concrete
-   21   Light mix
-        0.380, 1200.000,  653.000,  0.900,  0.650,      6.000
-   22   Aerated block
-        0.240,  750.000, 1000.000,  0.900,  0.650,     10.000
-   23   Aerated concrete
-        0.160,  500.000,  840.000,  0.900,  0.650,     13.000
-   24   Refractory insulating
-        0.250,   10.000,  837.000,  0.900,  0.650,     12.000
-   25   Vermiculite aggregate
-        0.170,  450.000,  837.000,  0.900,  0.650,     12.000
+*Materials 1.1
+*date,Thu Aug  8 10:16:03 2013
+# materials database defined in cellular.materialdb
+*doc,ESP-r Materials based on materials constr_db3.materialdb
+18  # number of classifications
+#  
+# Materials have the following attributes:
+#  conductivity (W/(m-K), density (kg/m**3) specific heat (J/(kg-K)
+#  emissivity out (-) emissivity in (-)
+#  absorptivity out (-) absorptivity in (-)
+#  diffusion resistance (MNs g^-1m^-1)
+#  default thickness (mm)
+#  flag [-] legacy [o] opaque [t] transparent
+#       [g] gas or air gap
+#  
+# Transparent material additonal attributes:
+#  longwave tran (-) solar direct tran (-) solar reflec out (-) solar refled in (-)
+#  visable tran (-) visable reflec out (-) visable reflec in (-) colour rendering (-)
+#  
+# Gas material additional attributes:
+#  air gap resistance for vert horiz other
+#  
+# class index |nb items|description (32 char)
+*class, 1,11,Brick
+Category ( 1) Brick includes a range of brick types. Most are inorganic-porous.
+*item,Paviour brick,  1, 1,Paviour brick (inorganic-porous)
+0.960,2000.000,840.000,0.930,0.930,0.700,0.700,12.000,100.0,-
+*item,breeze block,  2, 1,Breeze block (inorganic-porous)
+0.440,1500.000,650.000,0.900,0.900,0.650,0.650,15.000,100.0,-
+*item,inner leaf brick,  3, 1,Inner leaf brick (inorganic-porous)
+0.620,1800.000,840.000,0.930,0.930,0.700,0.700,29.000,100.0,-
+*item,outer leaf brick,  4, 1,Outer leaf brick (inorganic-porous)
+0.960,2000.000,650.000,0.900,0.900,0.930,0.930,25.000,100.0,-
+*item,vermic insul brk,  5, 1,Vermiculite insulating brick (inorganic-porous)
+0.270,700.000,840.000,0.900,0.900,0.650,0.650,12.000,100.0,-
+*item,Lt brown brick,  6, 1,Light brown brick (inorganic-porous)
+0.960,2000.000,650.000,0.900,0.900,0.700,0.700,25.000,100.0,-
+*item,brick (MK),  7, 1,Brick (milton keyns)
+0.840,1700.000,800.000,0.900,0.900,0.700,0.700,25.000,100.0,-
+*item,refractory_brick,  8, 1,Vermiculite refractory brick (www.matweb.com search)
+0.120,375.000,940.000,0.900,0.900,0.650,0.650,12.000,100.0,-
+*item,Brick slips,  9, 1,Brick slips thin cladding typically 25mm (UK code)
+0.770,1700.000,940.000,0.900,0.900,0.650,0.650,12.000,25.0,-
+*item,Brick outer leaf, 10, 1,Brick (UK code) (inorganic-porous)
+0.770,1700.000,1000.000,0.900,0.900,0.700,0.700,12.000,102.0,-
+*item,brick honeycomb, 11, 1,Brick extruded honeycomb from IBO PassivHaus
+0.270,800.000,1000.000,0.900,0.900,0.700,0.700,35.000,102.0,-
+# class index |nb items|description (32 char)
+*class, 2,20,Concrete
+Category ( 2) Concrete includes a mix of concrete types from heavy weight...
+*item,light mix concrete, 21, 2,Light mix concrete (inorganic-porous)
+0.380,1200.000,653.000,0.900,0.900,0.650,0.650,6.000,100.0,-
+*item,aerated conc block, 22, 2,Aerated concrete block (inorganic-porous)
+0.240,750.000,1000.000,0.900,0.900,0.650,0.650,10.000,100.0,-
+*item,aerated concrete, 23, 2,Aerated concrete (inorganic-porous)
+
    . . . .
 
 
@@ -522,29 +551,22 @@ Constructions db
    This database is held in ASCII format and an example listing
    follows.
 
-# Construction db defined as test.mlc
-# based on Materials db /usr/esru/esp-r/databases/constr.db1.a
-    6     # no of composites
-# layers  description   optics
-    3    d_glz         TRAN  DCF7671_06nb
-# db ref  thick   db name & air gap R
-  242     0.006  Plate
-    0     0.012  air  0.170 0.170 0.170
-  242     0.006  Plate
-# layers  description   optics
-    4    extern_wall   OPAQ  OPAQUE
-# db ref  thick   db name & air gap R
-    4     0.100  Outer leaf
-  211     0.075  Glasswool
-    0     0.050  air  0.170 0.170 0.170
-    2     0.100  Breeze block
-# layers  description   optics
-    4    roof_1        OPAQ  OPAQUE
-# db ref  thick   db name & air gap R
-  162     0.012  Roofing felt
-   21     0.050  Light mix
-    0     0.050  air  0.170 0.170 0.170
-  151     0.008  Ceiling (plaster)
+# composite construction db defined in ./multicon.db3
+# based on materials db ./material.db3.a
+   48     # no of composites 
+# layers  description   optics name   symmetry tag
+    4    extern_wall   OPAQ  OPAQUE        NONSYMMETRIC  
+# mat ref thickness (m) mat descr & air gap R
+    6    0.1000  Lt brown brick : Light brown brick
+  211    0.0750  glasswool : Glasswool (generic)
+    0    0.0500  air  0.170 0.170 0.170
+    2    0.1000  breeze block : Breeze block
+# layers  description   optics name   symmetry tag
+    3    insul_mtl_p   OPAQ  OPAQUE        NONSYMMETRIC  
+# mat ref thickness (m) mat descr & air gap R
+   46    0.0040  grey cotd alum : Grey coated aluminium
+  281    0.0800  glass fibre quilt : Glass Fibre Quilt
+   47    0.0040  wt cotd alum : White coated aluminium
   . . . .
 
 
