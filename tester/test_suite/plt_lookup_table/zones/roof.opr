@@ -1,21 +1,21 @@
-*Operations 1.0
-*date Wed Jan 30 14:40:24 2008  # latest file modification 
+*Operations 2.0
+*date Thu Jan 16 07:46:04 2014  # latest file modification 
 # operations of roof defined in: 
-# ../zones_detailed/roof.opr
+# ../zones/roof.opr
 one air change all hours of all days throughout the year.
 # control(no control of air flow  ), low mid & high setpoints 
    0     0.000     0.000     0.000
-     1   # no Weekday flow periods
-# Wkd: start, stop, infil, ventil, source, data
+     1   # number of flow periods in day type: weekday     
+# start, stop, infil, ventil, source, data
    0, 24,    1.000    0.000    0    0.000
-     1   # no Saturday flow periods
-# Sat: start, stop, infil, ventil, source, data
+     1   # number of flow periods in day type: saturday    
+# start, stop, infil, ventil, source, data
    0, 24,    1.000    0.000    0    0.000
-     1   # no Sunday flow periods 
-# Sun: start, stop, infil, ventil, source, data
+     1   # number of flow periods in day type: sunday      
+# start, stop, infil, ventil, source, data
    0, 24,    1.000    0.000    0    0.000
-     0   # no Weekday casual gains 
-     0   # no Saturday casual gains 
-     0   # no Sunday casual gains 
-# Labels for gain types 
- Occupt Lights Equipt
+     0   # number of casual gains in day type: weekday     
+     0   # number of casual gains in day type: saturday    
+     0   # number of casual gains in day type: sunday      
+# Labels for gains 
+ Occupt       Lights       Equipt      
