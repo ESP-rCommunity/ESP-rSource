@@ -27,11 +27,15 @@ C type choices available and returns its index as IFG.  It uses a call
 C to subroutine gendat to populate the TDFGH2 common blocks.
 C IER=0 OK, IER=1 problem.
       SUBROUTINE EBRSTAB(IFG,IER)
+#include "building.h"
+#include "net_flow.h"
+#include "tdf2.h"
+
       character h*72
       common/pophelp/h(60)
       COMMON/TDFGH1/NITEMS
-      COMMON/TDFGH2/GTYPES(24),GMENUS(24)
-      DIMENSION ISGGT(28),IVAL(28)
+      COMMON/TDFGH2/GTYPES(MTI),GMENUS(MTI)
+      DIMENSION ISGGT(MTI+4),IVAL(MTI+4)
       LOGICAL FOUND
       CHARACTER GMENUS*24,GTYPES*8
       CHARACTER KEY*1,ISGGT*36,FOCUS*8
@@ -97,7 +101,7 @@ C Related to generic items. See __ for details.
 C  GTYPES(): 8 char generic type tag for type of processing and info.
 C  GMENUS(): 24 char descriptive text for use in selection menus.
       COMMON/TDFGH1/NITEMS
-      COMMON/TDFGH2/GTYPES(24),GMENUS(24)
+      COMMON/TDFGH2/GTYPES(MTI),GMENUS(MTI)
 
 C Related to generic ITEMS.
 C  GAIDE: 40 char description of the generic item.
@@ -129,7 +133,7 @@ C       GMH='2,1,0,0,1,0,-999.0'
       LOGICAL FOUND
 
 C Pick up the arrays used for displaying current generic items.
-      NITEMS=24
+      NITEMS=MTI
       GTYPES(1) ='ALLCLMT'
       GMENUS(1) ='Climate data (all six):'
       GTYPES(2) ='DBTEXTT'
@@ -180,8 +184,12 @@ C SURTM is not used by the simulator, res will graph/list it.
       GMENUS(22)='Surface T (to display):'
       GTYPES(23)='NODPRESS'
       GMENUS(23)='Flow node press Pa:    '
-      GTYPES(24)='ELECPWR'
-      GMENUS(24)='Real & reactive power: '
+      GTYPES(24)='NODPRESS'
+      GMENUS(24)='Node Press Pa: '
+      GTYPES(25)='PERCTRL'
+      GMENUS(25)='Pervasive ctrl:'
+      GTYPES(26)='CTRLCAP'
+      GMENUS(26)='Plant capacity:'
 
 C If not looking for a specific item then return.
       IF(FOCUS(1:7).EQ.'ALLCLMT')THEN
@@ -598,20 +606,54 @@ C Measured node pressure (for reporting in res): one data item.
         FOUND=.TRUE.
       ELSEIF(FOCUS(1:7).EQ.'ELECPWR')THEN
 
-C Real & reactive power for electrical networks: two data items.
-        GAIDE   ='Real & reactive power (W)'
-        GHELP(1)='Electrical equipment has both a real and reactive'
-        GHELP(2)='power value depending on its power factor. You can'
-        GHELP(3)='specify sources or demands via this item.'        
-        GMH='3,2,0,0,2,0,-999.9'
-        GDHDRT(1)='   time  | Real power|Reactive pwr'
-        GDHDRT(2)='   of day| (W)       |  (W)       '
-        GDHDRT(3)='Real:react power (W):'
-        GMF(1)='REAL,1,0.0,0.0,900000.0'
-        MGMA(1)='Real power (W): '
-        GMF(2)='REAL,2,0.0,0.0,900000.0'
-        MGMA(2)='Reactive power (W): '
+      ELSEIF(FOCUS(1:7).EQ.'PERCTRL')THEN
+
+C Pervasive control: mnps data items (defined in bcl32)
+        GAIDE   ='State of control parameters 0/1'
+        GHELP(1)='State of control parameters '
+        GHELP(2)='(on/off)'
+        GMH='2,5,0,0,5,0,-999.0'
+        GDHDRT(1)='   time  |sensor|sensor|sensor|sensor|sensor|'
+        GDHDRT(2)='   of day|  1   |  2   |  3   |  4   |  5   |'
+        GDHDRT(3)='Pervasive controller'
+        GMF(1)='REAL,1,0.0,0.0,1.0'
+        GMF(2)='REAL,2,0.0,0.0,1.0'
+        GMF(3)='REAL,3,0.0,0.0,1.0'
+        GMF(4)='REAL,4,0.0,0.0,1.0'
+        GMF(5)='REAL,5,0.0,0.0,1.0'
+        MGMA(1)='State of sensor 1  (0/1): '
+        MGMA(2)='State of sensor 2  (0/1): '
+        MGMA(3)='State of sensor 3  (0/1): '
+        MGMA(4)='State of sensor 4  (0/1): '
+        MGMA(5)='State of sensor 5  (0/1): '
         FOUND=.TRUE.
+
+      ELSEIF(FOCUS(1:7).EQ.'CTRLCAP')THEN
+
+C Explicit Storage Heater for NINES project charge schedule 
+        GAIDE   ='Grid charging schedule'
+        GHELP(1)='Electric power input to  '
+        GHELP(2)='storage heater zone'
+        GMH='2,3,4,0,3,0,-999.0'
+        GDHDRT(1)='   time  |sched-|Upper |Lower '
+        GDHDRT(2)='   of day|ule   |set pt|set pt'
+        GDHDRT(3)='Grid charge schedule'
+        GMF(1)='REAL,1,0.0,0.0,5000.0'
+        GMF(2)='REAL,2,0.0,0.0,10.0'
+        GMF(3)='REAL,3,0.0,0.0,50.0'
+        GMF(4)='REAL,4,0.0,0.0,50.0'
+        GMF(5)='REAL,5,0.0,0.0,5000.0'
+        GMF(6)='REAL,6,0.0,0.0,800.0'
+        GMF(7)='REAL,7,0.0,0.0,100.0'
+        MGMA(1)='Maximum charge input (Watts) '
+        MGMA(2)='Number of cores'
+        MGMA(3)='Dead band on upper set point'
+        MGMA(4)='Dead band on lower set point'
+        MGMA(5)='Grid charge input (watts)'
+        MGMA(6)='Upper temperature set point'
+        MGMA(7)='Lower temperature set point'
+        FOUND=.TRUE.
+
       ELSEIF(FOCUS(1:4).EQ.'ALL ')THEN
         RETURN
 

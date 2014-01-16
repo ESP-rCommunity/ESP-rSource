@@ -5,7 +5,7 @@ C Strathclyde, Glasgow Scotland, 2001.
 C ESP-r is free software.  You can redistribute it and/or
 C modify it under the terms of the GNU General Public
 C License as published by the Free Software Foundation 
-C (version 2 orlater).
+C (version 2 or later).
 
 C ESP-r is distributed in the hope that it will be useful
 C but WITHOUT ANY WARRANTY; without even the implied
@@ -56,6 +56,10 @@ C      BCL27:  storage heater model controlling zone flux injection
 C      BCL28:  room heat injector complimentary to BCL27
 C      BCL29:  Simple idealized controller based on BCL01 with 
 C              limited support for free-cooling
+C      BCL30:  A heat injection extraction controller from temporal
+C      BCL31:  A heat transfer controller from given node of one zone
+C              to air point node of another zone
+C      BCL32:  A multi-criteria controller to model pervasive control
 C      BCL99:  constructional thermo-physical property variation.
 C      MZRCPL: mixed temperature iteration.
 C      ZRHCTL: relative humidity controlling routine.
@@ -244,7 +248,21 @@ C CL28 storage heater model controlling zone flux injection
       
 C CL29: Interface to BCL01_extended with free-cooling activated
       case (29) 
-        call BCL01_extended(IER, .true.) 
+        call BCL01_extended(IER,1) 
+      
+C CL30 A heat injection extraction controller from temporal
+      case (30)
+        call BCL01_extended(IER,2) 
+      
+C CL31 heat transfer controller from given node of a zone to air point
+C node of another zone
+      case (31)
+        call BCL31
+      
+C CL32 A multi-criteria controller that gets its inputs from an external
+C file and provides control based on the state of these inputs
+      case (32)
+        call BCL32
       
 C New control laws should be inserted here.
       case default 
@@ -863,6 +881,7 @@ C  Compute future time-row 'mixed' temperature but
 C  assuming present time-row surface temperatures.
     7 CALL MZMIXT(IICOMP,TMRT,TMIX)
       ITYPE=IBCLAW(ICF,IDTYP,IPER)
+      if(itype.eq.31)goto 6
       GOTO(8,9,11,12),ITYPE
       GOTO 99
 
@@ -1098,8 +1117,9 @@ C Temperature too high: extract fixed cooling.
 
 C ******************** BCL01
 C BCL01 is a legacy interface to BCL01_extended, which also offers 
-C a symplistic 'free-cool' algorithm. To enable legacy behavior, it 
-C invokes BCL01_extended with the free-cooling flag set to .false.
+C a simplistic 'free-cool' algorithm or reading flux from temporal.
+C To enable legacy behavior, it invokes BCL01_extended with the 
+C behaviour flag set to 0
 C
       SUBROUTINE BCL01(IER)
       implicit none 
@@ -1107,12 +1127,15 @@ C
 C.....Error flag
       integer IER
       
-C.....Flag for invoking free-cooling capabilities 
-      logical bFreeCool
-      bFreeCool = .false. 
+C Behaviour flag 
+C IBehaviour = 0 legacy 
+C            = 1 free cooling activited
+C            = 2 read flux injection from temporal
+      integer IBehaviour 
+      IBehaviour = 0     
       
 C.....Interface to extended BCL01       
-      call BCL01_extended(IER,bFreeCool)
+      call BCL01_extended(IER,IBehaviour)
       
       return 
       end 
@@ -1121,7 +1144,7 @@ C.....Interface to extended BCL01
 C ******************** BCL01_extended
 C Basic controller with symplistic free-cooling capabilities available
 C as an option.
-      SUBROUTINE BCL01_extended(IER,bFreeCool)
+      SUBROUTINE BCL01_extended(IER,IBehaviour)
       implicit none 
           
       include "building.h"
@@ -1129,11 +1152,12 @@ C as an option.
       include "hvac_common.h"
       include "control.h"
       include "blc25_open_windows.h"
+      include "net_flow.h"
+      include "tdf2.h"
 
       integer IER ! Error flag
       
-      logical bFreeCool ! logical flag indicating if free-cooling 
-                        ! capabilities are to be invoked.
+      integer IBehaviour 
 
       COMMON/TC/ITC,ICNT
       integer ITC, ICNT 
@@ -1263,12 +1287,16 @@ C External functions
       real PCRH2
       real DEWPT
 
-      
+C Variables
+      integer ifoc,itrc,isd,Imax(MCF),Imin(MCF),N_cores
+      real val(MBITS+2)
+      real T_hi,T_lo,T_core,Qmax,T_lo_db !,T_hi_db
+
 C Check to see if running in dll mode.
       call isadll(dll)
 
 C Fatal error test.
-      IF(BMISCD(ICF,IDTYP,IPER,1).LT.6.)GOTO 99
+      IF(IBehaviour.ne.2.and.BMISCD(ICF,IDTYP,IPER,1).LT.6.)GOTO 99
 
 C Trace output.
       IF(ITC.GT.0.AND.NSINC.GE.ITC.AND.NSINC.LE.ITCF.AND.
@@ -1324,7 +1352,7 @@ C Set minimum heating capacity.
 C Set maximum cooling capacity.
       if(cont_fun_cool_cap(IICOMP).gt.0.
      &  .and. 
-     &  .not. bFreeCool )then
+     &  .not. (IBehaviour.EQ.1) )then
         QCM = - cont_fun_cool_cap(IICOMP)
       else
         QCM = -BMISCD(ICF,IDTYP,IPER,4)
@@ -1346,7 +1374,7 @@ C performance.
       bZoneCooled(iicomp) = .true.
 
 C Set free cooling flag for zone to true. 
-      if(bFreeCool)bFreeCoolCtl(iicomp) = .true.
+      if(IBehaviour.EQ.1)bFreeCoolCtl(iicomp) = .true.
 
 C Setpoints must be between 10oC and 30oC for passive solar computations
       if ( fHeatSetpoint(iicomp).lt.10.0 .or.
@@ -1368,7 +1396,7 @@ C Get temperature threshold for free-cooling estimates. Free cooling
 C is available if the sum of the outdoor temperature (TF) and the 
 C free-cooling threshold (fFreeCoolTemp) is less than the zone 
 C temperature (TFA(iComp)). 
-      if ( bFreeCool ) then 
+      if ( IBehaviour.EQ.1 ) then 
         fFreeCoolTemp=BMISCD(ICF,IDTYP,IPER,8)
 C Note that free cooling temperature must be greater than zero 
 C to ensure that mass-balance calculation is stable.
@@ -1382,7 +1410,8 @@ C MZVAPC, where the zone humidity and moisture content is calculated.
 C (note: humidity control and simplistic free-cooling are mutually 
 C  exclusive.) 
       IRHCT(IICOMP)=0
-      IF(INT(BMISCD(ICF,IDTYP,IPER,1)).GT.7 .and. .not. bFreeCool )THEN
+      IF(INT(BMISCD(ICF,IDTYP,IPER,1)).GT.7 .and. .not. 
+     & (IBehaviour.EQ.1) )THEN
 
 C Upper relative humidity set point (%).
         RHSPTU(IICOMP)=BMISCD(ICF,IDTYP,IPER,8)
@@ -1484,8 +1513,46 @@ c              WRITE(*,*)'New heating and cooling set point',HSP,CSP
         IRHCT(IICOMP)=0
       ENDIF
 
-C Check if control is required and return if setpoints are met.
+C Read heating capacity from temporal
+      if(IBehaviour.eq.2)then
+        if(nsinc.eq.1)then 
+          Imax(ICF)=0 ; Imin(ICF)=0 ! deadband book-keeping
+        endif
+        T_core=TFA(iicomp)
 
+C Read static tdf items
+        IFOC=IStorageHeater(iicomp)
+        Qmax=tmar(ifoc,1)            ! maximum charging
+        N_cores=NINT(tmar(ifoc,2))   ! number of cores
+        if(N_cores.lt.1)N_cores=1    
+c        T_hi_db=tmar(ifoc,3)         ! high set point dead band
+        T_lo_db=tmar(ifoc,4)         !  low set point dead band
+
+C Read charging information and set up heat injection to space
+        if(ifoc.gt.0)then
+          CALL RCTDFB(itrc,btimef,VAL,ISD,IFOC,IER)
+          QHM=val(isd)/N_cores
+          T_hi=val(isd+1)
+          T_lo=val(isd+2)
+          if(T_core.lt.T_lo)Imax(ICF)=1
+          if(T_core.gt.(T_lo+T_lo_db))Imax(ICF)=0
+          if(T_core.gt.T_hi)Imin(ICF)=1
+          if(T_core.lt.(T_hi-T_lo_db))Imin(ICF)=0
+          if(Imax(ICF).eq.1)then
+            QHM=Qmax/N_cores
+          endif
+          if(Imin(ICF).eq.1)then
+            QHM=0.0
+          endif
+        else
+          QHM=0.
+        endif
+        QHN=0.
+        HSP=1000.
+        CSP=1000.1
+      endif
+
+C Check if control is required and return if setpoints are met.  	  
 C << however if standby losses are enabled then alternative logic
 C << is required to inject the standby losses.    
       IF(TCTL.LE.CSP.AND.TCTL.GE.HSP)RETURN
@@ -1566,7 +1633,7 @@ C    1. free cooling is enabled
 C    2. Cooling is requested.
 C    3. Outdoor temperatue < ( zone temp - free cooling threshold )
 C
-      if ( bFreeCool    .and. 
+      if ( (IBehaviour.EQ.1)    .and. 
      &     fQTotal < 0. .and. 
      &     TF < ( TFA(IICOMP) - fFreeCoolTemp ) ) then 
 
@@ -1581,7 +1648,7 @@ C                              [ Free Cooling Load (W) ]
 C    conductivity (W/K) =  ------------------------------------
 C                          [ Zone temp (K) - Outdoor Temp (K) ]
 
-        fCondFreeCool(IICOMP) = -1.*(fQFreeCool / ( TFA(IICOMP) - TF)) 
+c        fCondFreeCool(IICOMP) = -1.*(fQFreeCool / ( TFA(IICOMP) - TF)) 
 
 C ( Note that the the free cooling threshold (fFreeCoolTemp) must 
 C   be greater than 2, and the denomenator will never be zero. )
@@ -1594,7 +1661,7 @@ C No free cooling.
         
         bFreeCoolActive = .false. 
         
-        fCondFreeCool(IICOMP) = 0.
+c        fCondFreeCool(IICOMP) = 0.
       
 C Do we have enough heating/cooling capacity? 
         if ( fQTotal > 0. ) then
@@ -2343,6 +2410,7 @@ C QCMAX : maximum cooling flux allowed (W)
       COMMON/FVALA/TFA(MCOM),QFA(MCOM)
       COMMON/FVALS/TFS(MCOM,MS),QFS(MCOM)
       COMMON/FVALC/TFC(MCOM,MS,MN),QFC(MCOM)
+      COMMON/C11/NCONT,IPCC(MPCOM),INDCP(MPCOM),CNTDAT(MPCOM,3)
 
       DIMENSION ICPL(MPCOM,2),IXTC(MPCOM,2)
 
@@ -2629,11 +2697,23 @@ C Determine airflow out of zone assuming volume balance.
 
 C Adjust total airflow leaving zone.
          ZMBI(IICOMP,4)=ZMBI(IICOMP,4)+AFEX
+
+C Add/subtract heat from all components contained to a zone
+      ELSEIF(ISIND.EQ.7)then
+	q=0.0
+	do icont=1,ncont            ! for all containments
+	  ipcomp=ipcc(icont)        ! get plant component index
+	  if(indcp(icont).eq.3)then ! if contained to a zone
+	    if(nint(cntdat(icont,1)).eq.iicomp)then ! if contained to this zone
+              q=q+qdata(ipcomp)  ! add component heat gain/loss to zone
+            endif
+          endif
+        enddo
       ELSE
-         call edisp(itu,' BCL06: fatal error on calculation type.')
-         call epwait
-         call epagend
-         STOP
+        call edisp(itu,' BCL06: fatal error on calculation type.')
+        call epwait
+        call epagend
+        STOP
       END IF
 
 C Limit Q if necessary.
@@ -2649,26 +2729,26 @@ C in construction.
 C Assign future time row temperature and heat flux.
       TFUT=(BB3-BB2*Q)/BB1
       QFUT=Q
+      QPLN=QFUT
 
 C Check if actuator will input mix of radiant/convective flux
 C Set IPLT to 1 in case of heating and to 2 in case of cooling.
       IF (Q.GE.0.) THEN
         IPLT=1
-        QMX=QHMAX
-        QMN=0.
+c        QMX=QHMAX
+c        QMN=0.
       ELSE
         IPLT=2
-        QMX=QCMAX
-        QMN=0.
+c        QMX=QCMAX
+c        QMN=0.
       END IF
       TCONT=TFUT
 
-C Note flux max, min argument to this call set to QFUT (instead of QMX),
-C and QFUT instead of QMN to prevent unessesary iteration, 
+C Note flux max, min argument to this call set to QPLN (instead of QMX
+C and QMN) to prevent unessesary iteration, 
 C which had previously led to plant/building flux mismatch.
-C Reverted by JWH to use QMX and QMN pending investigation by Nick Kelly.
       IF(IBAN(ICF,1).EQ.-2) CALL MZRCPL(IICOMP,BB1,BB2,BB3,TCONT,0.05,
-     &                                  IPLT,QMX,QMN,TFUT,QFUT)
+     &                                  IPLT,QPLN,QPLN,TFUT,QFUT)
 
 C Trace output.
       IF(ITC.GT.0.AND.NSINC.GE.ITC.AND.NSINC.LE.ITCF.AND.
@@ -2931,11 +3011,8 @@ C with limit constraints.
       COMMON/TRACE/ITCF,ITRACE(MTRACE),IZNTRC(MCOM),ITU
       COMMON/SIMTIM/IHRP,IHRF,IDYP,IDYF,IDWP,IDWF,NSINC,ITS
       COMMON/BTIME/BTIMEP,BTIMEF
-
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/PSTSOL/ICF,IDTYP,IPER,BB1,BB2,BB3,IICOMP,TNP,QFUT,TFUT
-      COMMON/PERS/ISD1,ISM1,ISD2,ISM2,ISDS,ISDF,NTSTEP
-
       COMMON/CLIMI/QFP,QFF,TP,TF,QDP,QDF,VP,VF,DP,DF,HP,HF
       COMMON/MBINFO/ZMBI(MCOM,4)
       COMMON/CLIMHG/HEXTP,HEXTF,GEXTP,GEXTF
@@ -5728,8 +5805,8 @@ C                                   [ Free Cooling Load (W) ]
 C.......conductivity (W/K) =  ------------------------------------
 C                             [ Zone temp (K) - Outdoor Temp (K) ]
 C
-        fCondFreeCool(IICOMP) = (fFreeCoolDelivered(IICOMP)
-     &                         / ( TFA(IICOMP) - TF))
+c        fCondFreeCool(IICOMP) = (fFreeCoolDelivered(IICOMP)
+c     &                         / ( TFA(IICOMP) - TF))
  
 		QFUT = -1.0 * fFreeCoolDelivered(IICOMP)
 
@@ -6139,8 +6216,8 @@ C Is this capacity available ?
 C Temp. too high, cool to CSP.
     1 Q=(BB3-BB1*CSP)/BB2
 *      IPLT=2
-      QMX=QCM
-      QMN=QCN
+c      QMX=QCM
+c      QMN=QCN
 *      TCONT=CSP
 
 C Is this available ?
@@ -7050,8 +7127,6 @@ C losing heat to the room i.e. standing losses).
      &T_core,T_air_point,heatGain,gradient,constant
       logical charging,allowHeating
 
-      character*3 State
-
 C Trace output
       IF(ITC.GT.0.AND.NSINC.GE.ITC.AND.NSINC.LE.ITCF.AND.
      &   ITRACE(41).NE.0) then
@@ -7128,21 +7203,17 @@ C Determine heat loss from heater to room
           if(T_core.LT.T_changeover_charging)then
             gradient=gradChargeActive1
             constant=interceptChargeActive1
-            State='ACL'
           else
             gradient=gradChargeActive2
             constant=interceptChargeActive2
-            State='ACH'
           endif
         else                                    ! Not Charging
           if(T_core.LT.T_changeover_notcharging)then
             gradient=gradNotChargeActive1
             constant=interceptNotChargeActive1
-            State='ANL'
           else
             gradient=gradNotChargeActive2
             constant=interceptNotChargeActive2
-            State='ANH'
           endif
         endif
       else                                      ! Passive
@@ -7150,21 +7221,17 @@ C Determine heat loss from heater to room
           if(T_core.LT.T_changeover_charging)then
             gradient=gradChargePassive1
             constant=interceptChargePassive1
-            State='PCL'
           else
             gradient=gradChargePassive2
             constant=interceptChargePassive2
-            State='PCH'
           endif
         else                                    ! Not Charging
           if(T_core.LT.T_changeover_notcharging)then
             gradient=gradNotChargePassive1
             constant=interceptNotChargePassive1
-            State='PNL'
           else
             gradient=gradNotChargePassive2
             constant=interceptNotChargePassive2
-            State='PNH'
           endif
         endif
       endif
@@ -7182,7 +7249,7 @@ C Determine QFUT
       TFUT=(BB3-BB2*QFUT)/BB1
 
 C Debug ...
-C      write(96,*)nsinc,btimef,T_core,heatGain,heatLoss(6),qfut,state        
+C      write(96,*)nsinc,btimef,T_core,heatGain,heatLoss(6),qfut
 
 C Trace output.
       IF(ITC.GT.0.AND.NSINC.GE.ITC.AND.NSINC.LE.ITCF.AND.
@@ -7232,7 +7299,6 @@ C to the heater
       real heatLoss
    
       character outs*124
-      INTEGER IZ
 
 C Trace output
       IF(ITC.GT.0.AND.NSINC.GE.ITC.AND.NSINC.LE.ITCF.AND.
@@ -7265,6 +7331,453 @@ C Trace output.
       STOP
       END
       
+C ******************** bcl31
+C This controller injects heat from a given node of a number of zones to
+C the air point of the actuated zone
+      SUBROUTINE BCL31
+      implicit none
+#include "building.h"
+#include "control.h"
+
+      COMMON/TC/ITC,ICNT
+      INTEGER ITC,ICNT
+
+      COMMON/TRACE/ITCF,ITRACE(MTRACE),IZNTRC(MCOM),ITU
+      INTEGER ITCF,ITRACE,IZNTRC,itu
+
+      COMMON/SIMTIM/IHRP,IHRF,IDYP,IDYF,IDWP,IDWF,NSINC,ITS
+      INTEGER IHRP,IHRF,IDYP,IDYF,IDWP,IDWF,NSINC,ITS
+
+      COMMON/BTIME/BTIMEP,BTIMEF
+      REAL BTIMEP,BTIMEF
+
+      COMMON/PSTSOL/ICF,IDTYP,IPER,BB1,BB2,BB3,IICOMP,TNP,QFUT,TFUT
+      real BB1,BB2,BB3,TNP,QFUT,TFUT
+      integer ICF,IDTYP,IPER,IICOMP
+
+      character outs*124
+      INTEGER IZ
+
+      INTEGER noZones,iZoneNo(MCOM),iSurfNo(MCOM)
+      real htc(MCOM),area(MCOM)
+
+      COMMON/FVALA/TFA(MCOM),QFA(MCOM)
+      real TFA,QFA
+
+      COMMON/FVALC/TFC(MCOM,MS,MN),QFC(MCOM)
+      real TFC,QFC
+
+C Heat lost from zone surface if zone represents quantum storage heater
+      COMMON/QBCL31/QX31S(MCOM,MS,2),QX31V(MCOM,2),QX31Vcon(MCOM,2)
+      real QX31S      ! Surface heat loss from storage heater
+      real QX31V      ! "ventilation" (air flow) heat loss W
+      real QX31Vcon   ! ventilation conductance W/K
+      
+      real setPoint,TCTL,flowRateON,flowRateOFF,QFUTS,QFUTV !,dt,height
+      integer ier
+
+C Trace output
+      IF(ITC.GT.0.AND.NSINC.GE.ITC.AND.NSINC.LE.ITCF.AND.
+     &   ITRACE(41).NE.0) then
+        call edisp(itu,' ')
+        call edisp(itu,' Entering subroutine BCL31')
+        CALL DAYCLK(IDYP,BTIMEF,ITU)
+      endif
+
+c Fatal error test
+c      IF(NINT(BMISCD(ICF,IDTYP,IPER,1)).NE.12)GOTO 99
+
+C Determine zone, surface, heat transfer coefficient and area
+      noZones=(NINT(BMISCD(ICF,IDTYP,IPER,1))-3)/4
+      do 30 iz=1,noZones
+        iZoneNo(iz) = nint(BMISCD(ICF,IDTYP,IPER,4*iz-2))
+        iSurfNo(iz) = nint(BMISCD(ICF,IDTYP,IPER,4*iz-1))
+        htc(iz)     = BMISCD(ICF,IDTYP,IPER,4*iz)
+        area(iz)    = BMISCD(ICF,IDTYP,IPER,4*iz+1)
+
+C Use Alamdari and Hammond convective coefficients model
+c        DT=ABS(TFC(iZoneNo(iz),iSurfNo(iz),1)-TFA(iicomp))
+C Assume heater is at a temperature of ~40C
+c        DT=ABS(40.-TFA(iicomp))
+c        HEIGHT=1.0
+c        HTC(IZ)=2.5*((1.50*((DT/HEIGHT)**0.25))**6.0
+c     &     +(1.23*((DT)**(1.0/3.0)))**6.0)**(1.0/6.0)
+ 30   continue
+      setPoint = BMISCD(ICF,IDTYP,IPER,4*noZones+2)
+      flowRateOFF = BMISCD(ICF,IDTYP,IPER,4*noZones+3) ! kg/s
+      flowRateON = BMISCD(ICF,IDTYP,IPER,4*noZones+4) ! kg/s
+
+C Determine sensed temperature.
+      CALL CFVAR(TCTL,IER)
+      if(ier.eq.2)then
+        write(6,*)'ERROR BCL31: setpoint not found'
+        return
+      endif
+
+C Determine surface heat losses from these zones = QX31S
+C these heats are gained by the zone where actuation takes place = QFUT
+C      T2 = TFC(iZoneNo(iz),iSurfNo(iz),1) 
+C      T1 = TFA(iicomp)
+      QFUT=0.0
+      qfuts=0.0
+      QFUTV=0.0
+      do 40 iz=1,noZones
+
+C Surface heat loss from Explicit Storage Heater
+C Set present time row values equal to future 
+        QX31S(iZoneNo(iz),iSurfNo(iz),1)=
+     &    QX31S(iZoneNo(iz),iSurfNo(iz),2)
+
+C Calculate future time row values
+        QX31S(iZoneNo(iz),iSurfNo(iz),2)=htc(iz)*area(iz)*
+     &  (TFC(iZoneNo(iz),iSurfNo(iz),1)-TFA(iicomp))
+        if(QX31S(iZoneNo(iz),iSurfNo(iz),2).lt.0.)
+     &  QX31S(iZoneNo(iz),iSurfNo(iz),2)=0.0
+        QFUTS=QFUTS+QX31S(iZoneNo(iz),iSurfNo(iz),2)
+        QFUTS=0.0 ! for now add surface loss to air point
+
+C Ventilation heat loss from Explicit Storage Heater
+C Set present time row values equal to future 
+        QX31V(iZoneNo(iz),1)=QX31V(iZoneNo(iz),2)
+        QX31Vcon(iZoneNo(iz),1)=QX31Vcon(iZoneNo(iz),2)
+
+C Lose ventilation heat from these zones
+        QX31Vcon(iZoneNo(iz),2)=flowRateOFF*1006.
+        if(tctl.lt.setPoint)then
+          QX31Vcon(iZoneNo(iz),2)=(flowRateOFF+flowRateON)*1006.
+        endif
+        QX31V(iZoneNo(iz),2)=
+     &    QX31Vcon(iZoneNo(iz),2)*(TFA(iZoneNo(iz))-TFA(iicomp))
+     &    +QX31S(iZoneNo(iz),iSurfNo(iz),2) ! lose surface heat from
+                                            ! the air point for now
+C Integrate over all zones representative of the storage heater
+        QFUTV=QFUTV+QX31V(iZoneNo(iz),2)
+        QX31V(iZoneNo(iz),2)=-1.*QX31V(iZoneNo(iz),2)
+ 40   continue
+
+C Determine QFUT 
+      QFUT=QFUTS+QFUTV
+      TFUT=(BB3-BB2*QFUT)/BB1
+
+C Debug...
+c      write(6,*)QFUT,setPoint,tctl
+
+C Trace output.
+      IF(ITC.GT.0.AND.NSINC.GE.ITC.AND.NSINC.LE.ITCF.AND.
+     &   ITRACE(41).NE.0) THEN
+         write(outs,'(A,F10.3,A,F10.3)')
+     &     ' Qfuture= ',QFUT,' Tfuture= ',TFUT
+         call edisp(itu,outs)
+         call edisp(itu,' Leaving subroutine BCL31')
+      END IF
+
+      RETURN
+      END
+
+C ******************** bcl32
+C Bespoke controller for CHP system developed for the project: 
+C TEDDI - Building Management Linking Energy Demand.
+C This controller acts based on the states of a number of sensors
+C (maximum being MNPS). The states of these sensors are read in from tdf
+C and from the state of a thermal store 
+      SUBROUTINE BCL32
+      implicit none
+#include "building.h"
+#include "net_flow.h"
+c#include "tdf2.h"
+#include "control.h"
+
+c      common/trc/itrc
+c      integer itrc
+      
+      common/btime/btimep,btimef
+      real btimep,btimef
+
+      COMMON/PSTSOL/ICF,IDTYP,IPER,BB1,BB2,BB3,IICOMP,TNP,QFUT,TFUT
+      real BB1,BB2,BB3,TNP,QFUT,TFUT
+      integer ICF,IDTYP,IPER,IICOMP
+      COMMON/SIMTIM/IHRP,IHRF,IDYP,IDYF,IDWP,IDWF,NSINC,ITS
+      integer IHRP,IHRF,IDYP,IDYF,IDWP,IDWF,NSINC,ITS
+      
+C TPA(MCOM),           ! - present zone air point temperature (oC)
+C QPA(MCOM)            ! - zone air point heat injection (W)
+      COMMON/PVALA/TPA(MCOM),QPA(MCOM)
+      REAL TPA, QPA
+      COMMON/FVALA/TFA(MCOM),QFA(MCOM)
+      REAL TFA,QFA
+
+      COMMON/PERS/ISD1,ISM1,ISD2,ISM2,ISDS,ISDF,NTSTEP
+      integer ISD1,ISM1,ISD2,ISM2,ISDS,ISDF,NTSTEP
+
+      COMMON/BCLCHP/StoreCap,znElecCasGain(MCOM),kounter
+      real StoreCap,znElecCasGain
+      integer kounter
+
+      common/QCHP/QCHP(MCOM),iStartZone,iEndZone
+      real QCHP
+      integer iStartZone,iEndZone
+      logical bInStartup
+      
+C Local variables
+      real HmaxCHP,HminCHP,HTPR,maxStoreCap !,VAL,locval
+      real H_CHPtoZones,H_fromStore,H_conventional,H_toStore,H_CHP
+      real P_toGrid,P_fromGrid,P_CHP
+      real H_required,P_required
+      integer I,n,mnps,nCHPctl !,IFOC,IER,ISD,IZN(MCOM),j
+      logical setOn
+      real HSRS,X,Aa,Ab,Ac,Ba,Bb,Bc,Ca,Cb,Cc,Da,Db,Dc,fFirstCubicRoot
+      real etaHeat,etaElec,FSAS,FSAS_ONT,FSAS_OFT,FSASN,Xmin,HTPRmin
+      real totCostCHPEnergy,costGrid,costFeedin,costNaturalGas
+      real totCostConvEnergy,etaBoiler,costCHPHeat
+      real costConvheat,costConvPower,costCHPPower,PminCHP
+      real PFromCHP,HFromCHP
+
+      parameter (mnps=5) ! max number of pervasive sensors
+      DIMENSION nCHPctl(mnps) !,VAL(MTABC+2),locval(mnps)
+
+C Hardwired variables
+C Quadratic coefficients for various CHP performance curves 
+C as functions of power generated (y = ax^2 + bx + c)
+      Aa = -0.008 ! Equation A Fuel cost 
+      Ab = 443.4
+      Ac = 80.61
+      Ba = 29.2   ! Equation B Total heat supplied  
+      Bb = 160.3
+      Bc = 49.55
+      Ca = -8.737 ! Equation C Electric efficiency
+      Cb = 21.24
+      Cc = 18.02
+      Da = 0.825  ! Equation D Heat to power ratio
+      Db = -1.675
+      Dc = 2.343
+      HSRS = 0.666666 ! heat supply rate of store as fraction of CHP supply rate
+      FSAS = 0.5     ! Fraction store is available before CHP comes on
+                     ! after FSAS_OT
+      FSASN = 0.9    ! Fraction store is available outside of FSAS On
+                     ! and off times
+      FSAS_ONT = 7.0   ! FSAS On time e.g. 6.0 = 6a.m.
+      FSAS_OFT = 21.0  ! FSAS Off time e.g. 6.0 = 6a.m.
+      
+C Initialise variables
+      if(nsinc.le.2)then
+        StoreCap=0.
+      endif
+      HmaxCHP     = BMISCD(ICF,IDTYP,IPER,2) ! maximum heat available from CHP
+      HminCHP     = BMISCD(ICF,IDTYP,IPER,3) ! minimum heat available from CHP
+      maxStoreCap = BMISCD(ICF,IDTYP,IPER,4) ! maximum store capacity
+      iStartZone  = nint(BMISCD(ICF,IDTYP,IPER,5)) ! start of zone number served from CHP
+      iEndZone    = nint(BMISCD(ICF,IDTYP,IPER,6)) ! end of zone number served from CHP
+
+C Calculate minimum electrical power of CHP unit as fraction of maximum from HminCHP
+      Xmin = fFirstCubicRoot(0.,Ba,Bb,bc-HminCHP/1000., 0.01) ! power generated
+      HTPRmin = Da*Xmin*Xmin + Db*Xmin + Dc
+      PminCHP = HminCHP/HTPRmin
+
+!C Get data from tdf, financial incentive to turn on locval(4) and
+!C export to grid possible locval(5)
+!      IFOC=IPERVSEN
+!      CALL RCTDFB(itrc,btimef,VAL,ISD,IFOC,IER)
+!      write(6,*)itrc,ifoc,btimef,(val(i),i=1,6)
+!
+!C First three controls are set further below so init to zero just now
+!      DO 1 I=1,mnps
+!        if(i.ge.4)then
+!          nCHPctl(i)=0
+!          locval(i)=val(isd+i-1)
+!          nCHPctl(i)=NINT(locval(i))
+!        else
+!          nCHPctl(i)=0
+!	endif
+! 1    CONTINUE
+!c      write(6,*)btimef,(locval(i),i=1,5)
+!
+      nCHPctl(1)=0 
+      nCHPctl(2)=0 
+      nCHPctl(3)=0 
+      nCHPctl(4)=0 
+      nCHPctl(5)=0
+
+C Get required heat and electrical power
+      H_required=0.0
+      P_required=0.0
+      do 3 i=iStartZone,iEndZone
+c        H_required=H_required+QCHP(i)
+C Hard code H_required (alternatively take it from blibsv but that
+C excludes startup 
+        H_required = H_required + (QPA(I)+QFA(I))*0.5
+
+        P_required=P_required+znElecCasGain(i)
+ 3    continue
+      P_required = 0.1 * P_required ! CHP only supplies 10th of power
+        
+C Make CHP control
+C Setup 1st pervasive sensor state i.e. is zone heat demand > min CHP capacity? 
+C 1 for Yes, 0 for No
+      if(H_required.GT.HminCHP)nCHPctl(1)=1
+      
+C Setup 2nd pervasive sensor state i.e. is heat storage available?
+C 1 for Yes, 0 for No
+      if(btimef.gt.FSAS_ONT.and.btimef.le.FSAS_OFT)then
+        if((maxStoreCap*FSAS-storeCap).gt.1.)nCHPctl(2)=1
+      else
+        if((maxStoreCap*FSASN-storeCap).gt.1.)nCHPctl(2)=1
+      endif
+
+C Setup 3rd pervasive sensor state i.e. is zone power demand > min CHP capacity
+C Set power requirement determinant of CHP unit
+C 1 for Yes, 0 for No
+      if(P_required.gt.(PminCHP))nCHPctl(3)=1
+
+C Setup 4th pervasive sensor state i.e. is it financially suitable to turn on CHP
+C i.e. is TotCostConvEnergy > TotCostCHPEnergy
+C 1 for Yes, 0 for No
+C First initialise electricity price
+      if(btimef.gt.6..and.btimef.lt.23.)then
+        costGrid     = 10.581 ! pence/kWh
+      else
+        costGrid     = 5.911  ! pence/kWh
+      endif
+      costFeedin     = 4.5    ! pence/kWh
+      costNaturalGas = 11.3   ! pence/kWh
+      etaBoiler      = 0.875  ! Boiler efficiency
+      
+C Now determine cost of heating and power using conventional sources
+      if(H_required.LT.HmaxCHP)then
+        HFromCHP=H_required ! Heat required for zones excluding store
+      else
+        HFromCHP=HmaxCHP
+      endif      
+      X = fFirstCubicRoot(0.,Ba,Bb,bc-HFromCHP/1000., 0.01) ! power generated
+      HTPR    = Da*X*X + Db*X + Dc ! Heat to Power ratio
+c      etaElec = (Ca*X*X + Cb*X + Cc)/100. ! Electrical efficiency
+      etaHeat = (HFromCHP/1000.)/(Aa*X*X + Ab*X + Ac) ! Thermal efficiency
+      PFromCHP = HFromCHP/HTPR
+
+C Debug...
+c      write(6,*)btimef,H_required,HFromCHP,x,htpr,
+c     &etaelec,etaheat
+
+      costConvHeat = HFromCHP*costNaturalGas/etaBoiler
+      costConvPower = P_required*costGrid
+      totCostConvEnergy = costConvHeat + costConvPower
+
+C Determine cost of heating and power using CHP
+      costCHPHeat = HFromCHP*costNaturalGas/etaHeat
+      if(P_required.GT.PFromCHP)then ! no power is exported
+        costCHPPower = (P_required - PFromCHP)*costGrid
+      else ! power will be exported
+        costCHPPower = (P_required - PFromCHP)*costFeedin ! this is -ve cost i.e. net savings 
+      endif
+      totCostCHPEnergy = costCHPHeat + costCHPPower
+      
+C Apply 4th pervasive sensor control logic
+      if(totCostCHPEnergy.LT.totCostConvEnergy)nCHPctl(4)=1
+
+C Setup 5th pervasive sensor state i.e. is power export available
+C 1 for Yes, 0 for No
+      nCHPctl(5)=1 ! export always available
+
+C Work out control index n which is the decimal representation of binary control 
+C sensors state (1 or 0)
+      n=nCHPctl(1)+2*nCHPctl(2)+4*nCHPctl(3)+
+     &             8*nCHPctl(4)+16*nCHPctl(5)
+      setOn=.false.
+
+C Set CHP unit on/off based on control matrix 
+C Original control matrix ON Codes
+c      if(n.eq.5.or.n.eq.6.or.n.eq.7.or.n.eq.13.or.n.eq.14
+c     &.or.n.eq.15.or.n.eq.17.or.n.eq.18.or.n.eq.19.or.n.eq.21
+c     &.or.n.eq.22.or.n.eq.23.or.n.eq.29
+c     &.or.n.eq.30.or.n.eq.31)setOn=.true.
+     
+C 1st modification to ON codes based on running solely on cost
+C differential basis (i.e. ON only when there is financial incentive to
+C turn ON
+      if(n.eq.9.or.n.eq.10.or.n.eq.11.or.n.eq.13.or.n.eq.14
+     &.or.n.eq.15.or.n.eq.25.or.n.eq.26.or.n.eq.27.or.n.eq.29
+     &.or.n.eq.30.or.n.eq.31)setOn=.true.
+     
+C Apply control logic
+      H_CHPtoZones=0.
+      H_fromStore=0.
+      H_toStore=0.
+      P_toGrid=0.
+      P_fromGrid=0.
+
+C Supply H_CHPtoZones and H_toStore
+      if(setOn)then
+        if(H_required.gt.HmaxCHP)then
+          H_CHPtoZones = HmaxCHP
+          H_toStore = 0.
+        else
+          H_CHPtoZones = H_required
+          H_toStore = HmaxCHP - H_CHPtoZones
+        endif
+      else
+        H_CHPtoZones = 0.
+        H_toStore = 0.
+      endif
+
+C Set H_fromStore
+C Supply heat from store but only a fraction of how much the CHP system
+C can deliver this is an approximation to limit the rate at which heat 
+C can be supplied from the store
+C Heat may be supplied from store H_CHPtoZones is less than H_required
+      if(H_required.gt.H_CHPtoZones)then
+        H_fromStore = H_required - H_CHPtoZones
+        if((H_fromStore*3600/NTSTEP).gt.storeCap)then
+          H_fromStore = storeCap/(3600/NTSTEP)
+        endif
+        if(H_fromStore.gt.(HmaxCHP*HSRS)) H_fromStore = HmaxCHP*HSRS
+      endif
+
+C Supply conventional heat
+      H_conventional = H_required - H_fromStore - H_CHPtoZones
+      if(H_conventional.lt.0)H_conventional = 0.
+
+C Supply heat from/to store
+      storeCap = storeCap + (- H_fromStore + H_toStore)*(3600/NTSTEP)
+
+C Get power generated assuming CHP unit is heat led
+      H_CHP = H_CHPtoZones + H_toStore ! total heat supplied from CHP
+      X = fFirstCubicRoot(0.,Ba,Bb,bc, 0.01) ! power generated
+      HTPR    = Da*X*X + Db*X + Dc ! Heat to Power ratio
+      etaElec = Ca*X*X + Cb*X + Cc ! Electrical efficiency
+      etaHeat = Aa*X*X + Ab*X + Ac ! Thermal efficiency
+
+C Get power generated as percentage from equation B above      
+      P_CHP = H_CHP/HTPR
+      if(P_required.lt.P_CHP)then
+        P_toGrid = P_CHP - P_required
+      else
+        P_fromGrid = P_required - P_CHP
+      endif
+
+C Debug...
+c      if(btimef.lt.2.)write(6,*)NbOnStates,(iOnCodes(i),i=1,nbOnStates)
+c      write(6,*)BTIMEF,(locval(i),i=1,5)
+c      write(6,*)BTIMEF,NIZN,HmaxCHP,HminCHP,HTPR,StoreCap,
+c     &(izn(i),i=1,18)
+      if(.not.bInStartup())then
+c      if(mod(kounter,30).eq.0)
+      if(kounter.eq.0)
+     &write(96,*)'Time,H_required,H_CHPtoZones,H_toStore,H_fromStore,H_c
+     &onventional,H_CHP,storeCapacity,P_required,P_CHP,P_toGrid,P_fromGr
+     &id,CHPHeatSupply,CHPPowerSupply,H_req > HminCHP,Store available,P_
+     &req > PminCHP,off peak,grid available,Control index'
+      kounter=kounter+1
+      write(96,*)btimef,',',H_required,',',H_CHPtoZones,',',H_toStore,
+     &',',H_fromStore,',',H_conventional,',',H_CHP,',',
+c     &storeCap/(3600/NTSTEP),',',
+     &storeCap,',',
+     &P_required,',',P_CHP,',',P_toGrid,',',P_fromGrid,',',H_CHP/etaHeat
+     &,',',H_CHP*etaElec/etaHeat,',',nCHPctl(1),
+     &',',nCHPctl(2),',',nCHPctl(3),',',nCHPctl(4),',',nCHPctl(5),',',n
+      endif
+
+      RETURN
+      END
+
 C ******************** BCL99
 C BCL99 modifies the thermo-physical properties of up to three 
 C multi-layered construction(s).
@@ -7314,7 +7827,6 @@ C LFMAT,IFMAT,LFMUL,IFMUL (for materials and constructions database)
       common/BSCTL/ITPREP(MCOM,MTMC),ICZN,IMDB(3),IGLZ(3)
 
 C Material properties.
-      integer legmat  ! local variable for legacy index.
       integer matarrayindex ! the indes within matdatarray
       logical closemat1,closemat2
 

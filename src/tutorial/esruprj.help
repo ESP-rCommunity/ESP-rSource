@@ -1702,8 +1702,8 @@ C          CALL EASKI(I3,' ','Which bidirectional set to use (1-40)?',
 'Optionally an additional control loop can be specified. If this'
 'loop is active then BDATA item number is reset to a user defined'
 'static value, if you dont want to specify an optional loop leave'
-'its value = 0'
-' '
+'its value = 0. If optional loop no has a negative value, BDATA is set'
+'as with a positive value but CDATA is also set to 1 '
 'The TPMPI mode of operation becomes active if cycle time is'
 'set to be more than zero.'
 ' '
@@ -1737,6 +1737,8 @@ C          CALL EASKI(I3,' ','Which bidirectional set to use (1-40)?',
 'it this loop is active then BDATA item number is '
 'reset to a user defined static value, if you dont'
 'want to specify an optional loop leave its value = 0'
+'If optional loop number has a negative value, BDATA is set'
+'as with a positive value but CDATA is also set to 1 '
 *enditem
           CALL EASKS(HOLD,'alpha, beta, gamma',
           CALL EASKS(HOLD,'nominal1, nominal, max, min, BDATA',

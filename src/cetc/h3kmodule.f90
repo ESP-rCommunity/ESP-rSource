@@ -4561,15 +4561,17 @@ CONTAINS
    !           This method signals the end of a simulation, the c++
    !           code will then generate the requested output specified in
    !           the input.xml file.
-   ! Params:   none
+   ! Params:   cName = output file name for .csv
    ! Returns:  N/A
    ! Author:   Claude Lamarche
    ! Mod Date: 2011-07-04
    ! ********************************************************************
-   Subroutine GenerateOutput()
+   Subroutine GenerateOutput( cName )
+      character(len=*), intent(in) :: cName
+
       if (isH3KEnabled()) then
          !Call c++
-         call generate_output()
+         call generate_output( cName )
       endif
 
       !Terminate the report call the c++

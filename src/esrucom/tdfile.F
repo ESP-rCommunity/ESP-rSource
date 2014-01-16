@@ -194,6 +194,25 @@ C Check if fluid mass flow network pressures are to be assigned
  980            continue
               endif
 
+C Check if pervasive sensors are present
+              if(DBTASK(itd1)(1:7).eq.'PERCTRL')then
+                IPERVSEN=ITD1
+              endif
+
+C Check if grid charging of storage heaters is scheduled
+              if(DBTASK(itd1)(1:7).eq.'CTRLCAP')then
+		do 801 itd3=1,ncomp
+		  if(DBZN(itd1)(1:12).eq.zname(itd3)(1:12))then
+		    do 802 itd4=1,ndata
+		      iln=lnblnk(tag(itd4))
+		      if(tag(itd4)(1:iln).eq.dbtag(itd1)(1:iln))then
+                        IStorageHeater(itd3)=ITD4
+                      endif
+ 802		    continue
+		  endif
+ 801		continue	     
+              endif
+
 C Check if temporal item association is to a control loop. Loop through each
 C control function to see if multiple loops reference the same tdf item.
 C << note that isetptt should be dimensioned MCF >>

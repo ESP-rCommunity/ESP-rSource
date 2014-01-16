@@ -2062,6 +2062,15 @@ C Ask for node name if flow network is present
               write(DBZN(ITE),'(a)')ndnam(inpk(1))(1:12)
               write(DBSN(ITE),'(a)')'No surf reqd'
             endif
+          elseif(TTYPE(it)(1:8).eq.'CTRLCAP')then
+
+C Ask which zone is linked to charging schedule
+            call askzone(ic,izdef,
+     &      ' Related zone for grid charging schedule?',
+     &      'Related zone','-','Charging schedule for which zone?',ier)
+            IF(IC.EQ.0.OR.IC.EQ.-1)GOTO 354
+            write(DBZN(ITE),'(a)') zname(IC)(1:12)
+            DBSN(ITE)='ALL' 
           else
             DBZN(ITE)='ALL'
             DBSN(ITE)='ALL'            

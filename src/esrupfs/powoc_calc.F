@@ -158,10 +158,6 @@ C-----Electric Vehicle Model (EV)
       elseif ( itype .eq. 23 ) then
          CALL POWOC_EVEHICLE(IPWC)
 
-C-----Boundary Profile from TDF (EV)
-      elseif ( itype .eq. 24 ) then
-         CALL POWOC_TDF_PROF(IPWC)
-
 C-----Add support for other power-only components here.
 c     ELSEIF (ITYPE==??) THEN
 

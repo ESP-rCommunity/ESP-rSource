@@ -39,9 +39,9 @@ foreach i ( Install Makefile Readme common_list Version )
 end
 echo "validation"
 /usr/bin/echo looking at validation $1/validation
-/usr/bin/diff -r validation $1/validation | egrep '(diff|Only)' >>dele
+/usr/bin/diff -r validation $1/validation | egrep -w '(diff|Only)' >>dele
 echo "traininig"
 /usr/bin/echo looking at training $1/training
-/usr/bin/diff -r training $1/training | egrep '(diff|Only)' >>dele
+/usr/bin/diff -r training $1/training | egrep -w '(diff|Only)' >>dele
 grep -v .svn dele > mydiff
 rm -f dele

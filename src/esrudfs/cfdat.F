@@ -1513,8 +1513,8 @@ C gridding process requires 3 small numbers to be multiplied and
 C this can cause problems. If CFD grid visualisation fails try
 C altering SMALL to 1.E-12.
       GREAT=1.E+20
-      SMALL=1.E-20   ! standard
-C      SMALL=1.E-12  ! alternative
+C      SMALL=1.E-20   ! standard
+      SMALL=1.E-12  ! alternative
       GRAV=9.81
 
 C Fluid properties.

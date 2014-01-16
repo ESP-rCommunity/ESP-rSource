@@ -165,6 +165,7 @@ if [ $arg_1 == 'model' ] || [ $arg_1 == 'automatic' ] ; then
         touch '../tmp/models/zones/livI'$i'C'$c'.con' '../tmp/models/zones/livI'$i'C'$c'.tmc' '../tmp/models/zones/nlivI'$i'C'$c'.con' '../tmp/models/zones/nlivI'$i'C'$c'.tmc'
 cd ../tmp/models/cfg
 prj -mode text -file 'X1I'$i'A1C'$c'S1O1L1.cfg'  << XXX
+n
 m
 c
 b

@@ -3361,8 +3361,8 @@ C support
 C Following controllers sense one or more (already defined) control
 C loops 
          PSALT(14)='Multi-sensor (senses loops)'
-         PSALT(17)='Idealised optimal start control'
-         PSALT(18)='Idealised optimal stop control'
+         PSALT(17)='Idealised optimum start control'
+         PSALT(18)='Idealised optimum stop control'
 
         write(outs,'(a,a)')' Current control law: ',
      &                      PSALT(IPCLAW(II,JJ,KK))
@@ -3993,7 +3993,7 @@ C Outside temperature compensation controller
           CALL EGETWR(HOLD,K,cm(13),1.,1.,'-','connection no. 2 ',IER)
           if(ier.ne.0)goto 131
 
-C Optimal start controller
+C Idealised optimum start controller
         elseif(IPCLAW(II,JJ,KK).eq.17)then
           helptopic='ideal_optimal_start'
           call gethelptext(helpinsub,helptopic,nbhelp)
@@ -4002,7 +4002,7 @@ C Optimal start controller
           call edisp(iuout,HOLD)
           CALL EASKI(NCLP,' ',' No. of control loops to sense ',
      &      2,'-',4,'-',2,'no. of misc data items',IER,nbhelp)
-          cm(1)=real(NCLP+2)
+          cm(1)=real(NCLP+3)
           call edisp(iuout,' ')
           call edisp(iuout,'current control parameters are:')
           call edisp(iuout,' sensed control loop(s)')
@@ -4025,10 +4025,12 @@ C Optimal start controller
           write(hold,'(2f5.2)')cm(nclp+2),cm(nclp+3)
           CALL EASKS(HOLD,
      &    'period no. to optimise, time to come up to temperature',
-     &    '(see help)',70,HOLD,'ideal optimum start ctrlr',IER,nbhelp)
+     &    'overriding loop number if any (zero otherwise) (see help)',
+     &    70,HOLD,'ideal optimum start ctrlr',IER,nbhelp)
           K=0
           CALL EGETWR(HOLD,K,cm(NCLP+2),1.,1.,'-','period no.',IER)
           CALL EGETWR(HOLD,K,cm(NCLP+3),1.,1.,'-','time',IER)
+          CALL EGETWR(HOLD,K,cm(NCLP+4),1.,1.,'-','overriding loop',IER)
           IF(IER.NE.0)GOTO 112
 
 C Get sensor and actuator detail from loop that is to be optimised
@@ -4037,7 +4039,7 @@ C Get sensor and actuator detail from loop that is to be optimised
             IPSN(II,IDIN)=IPSN(IOTHER,IDIN)
  113      CONTINUE
 
-C Optimal stop controller
+C Idealised optimum stop controller
         elseif(IPCLAW(II,JJ,KK).eq.18)then
           helptopic='ideal_optimal_stop'
           call gethelptext(helpinsub,helptopic,nbhelp)
@@ -4046,7 +4048,7 @@ C Optimal stop controller
           call edisp(iuout,HOLD)
           CALL EASKI(NCLP,' ',' No. of control loops to sense ',
      &      2,'-',4,'-',2,'no. of misc data items',IER,nbhelp)
-          cm(1)=real(NCLP+2)
+          cm(1)=real(NCLP+3)
           call edisp(iuout,' ')
           call edisp(iuout,'current control parameters are:')
           call edisp(iuout,' sensed control loop(s)')
@@ -4070,11 +4072,12 @@ C Optimal stop controller
           write(hold,'(2f5.2)')cm(nclp+2),cm(nclp+3)
           CALL EASKS(HOLD,
      &    'period no. to optimise, acceptable temperature revision at ',
-     &    'the end of this period (see help)',
+     &    'the end of this period, overriding loop (zero if absent)',
      &    70,HOLD,'ideal optimum stop ctrlr',IER,nbhelp)
           K=0
           CALL EGETWR(HOLD,K,cm(NCLP+2),1.,1.,'-','period no.',IER)
           CALL EGETWR(HOLD,K,cm(NCLP+3),1.,1.,'-','time',IER)
+          CALL EGETWR(HOLD,K,cm(NCLP+4),1.,1.,'-','time',IER)
           IF(IER.NE.0)GOTO 212
 
 C Get sensor and actuator detail from loop that is to be optimised
