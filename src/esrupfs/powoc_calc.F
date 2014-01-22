@@ -158,6 +158,10 @@ C-----Electric Vehicle Model (EV)
       elseif ( itype .eq. 23 ) then
          CALL POWOC_EVEHICLE(IPWC)
 
+C-----Boundary Profile from TDF (EV)
+      elseif ( itype .eq. 24 ) then
+         CALL POWOC_TDF_PROF(IPWC)
+
 C-----Add support for other power-only components here.
 c     ELSEIF (ITYPE==??) THEN
 
@@ -259,7 +263,7 @@ C-------------------------------------------------------------------------------
 
 C.....Get .fcl filename and scaling factor
       write (cFile_Name, '(A)') POWCDATS(IPWC,1)
-      fScale_Factor = POWCDAT(IPWC,1)
+      fScale_Factor = NINT(POWCDAT(IPWC,1))
 
 C.....Recover loads
 
@@ -435,6 +439,81 @@ C-------------------------------------------------------------------------------
       RETURN
       END
 
+
+C ***********************************POWOC_TDF_PROF********************************************
+C Reads real and reactive power flow [rofiles from the temporal database and assigns them  
+C to the electrical network model. Positive numbers indicate a load, negative values imply that 
+C power is being injected into the network.   
+C 
+      SUBROUTINE POWOC_TDF_PROF(IPWC)
+
+#include "building.h"
+#include "net_flow.h"
+#include "power.h"
+#include "tdf2.h"
+
+C---------------------------------------------------------------------------------
+C Common holding the power-only component description read from the electric
+C network input file.
+C---------------------------------------------------------------------------------
+      COMMON/POWC/NPOWCOM,POWCOMNO(MPOWCOM),POWCOMID(MPOWCOM),
+     &POWCOMPHTYP(MPOWCOM),POWCONEN(MPOWCOM,MPHAS),
+     &NPOWCDAT(MPOWCOM),NPOWCDATS(MPOWCOM),POWCDAT(MPOWCOM,MPWDAT)
+
+C---------------------------------------------------------------------------------
+C Common holding the name of the non-HVAC loads file specified in the electric
+C network input file (other variables in this common not used here).
+C---------------------------------------------------------------------------------
+      COMMON/ECNAMES/ENODNAM(MENOD),HYCOMNAM(MHYCOM),
+     &HYCOMTYPSTR(MHYCOM),POWCOMNAM(MPOWCOM),POWCDATS(MPOWCOM,MPCDS),
+     &CONECOMNAM(MCONECOM)
+
+C---------------------------------------------------------------------------------
+C Common holding power generation and loads data for power-only components.
+C---------------------------------------------------------------------------------
+      COMMON/ENETPOWC/PPOWOC(MPOWCOM),QPOWOC(MPOWCOM),
+     &VPOWC(MPOWCOM)
+
+C Electrical model time
+      COMMON/ENETIME/ENETIMEF,ENETIMEP
+C---------------------------------------------------------------------------------
+C Declarations for common block variables.
+C---------------------------------------------------------------------------------
+      dimension VAL(MBITS+2)
+
+      INTEGER      NPOWCOM, POWCOMNO, POWCOMID, POWCOMPHTYP, POWCONEN,
+     &             NPOWCDAT, NPOWCDATS,  IPWC, IFOC, ISD
+      REAL         Scale_Factor,POWCDAT, VAL, time, ITRC
+      REAL         PPOWOC, QPOWOC, RPOW, QPOW, ENETIMEF, ENETIMEP
+      COMPLEX      VPOWC
+
+      CHARACTER*12 ENODNAM, HYCOMTYPSTR, HYCOMNAM, POWCOMNAM,CONECOMNAM
+      CHARACTER*72 POWCDATS
+
+      
+
+C Set up data associated with the temporal file read. 
+C numerical data from POWCDAT(IPWC,?)
+C string data from POWCDATS(IPWC,1)
+      time=ENETIMEF
+      IFOC=NINT(POWCDAT(IPWC,1)) ! entity number in the tdf database where the information is located
+      SCALE_FACTOR=POWCDAT(IPWC,2)
+      CALL RCTDFB(ITRC,time,VAL,ISD,IFOC,IER)
+
+
+C Read data from the temporal file  
+      RPOW = VAL(ISD)
+      QPOW = VAL(ISD+1)
+
+
+
+C Assign real and reactive power flows to the electrical 
+      PPOWOC(IPWC) = -1.*RPOW*Scale_Factor
+      QPOWOC(IPWC) = -1.*QPOW*Scale_Factor
+
+
+      RETURN
+      END
 
 
 C *********************************************************************************************

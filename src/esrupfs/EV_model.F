@@ -790,10 +790,10 @@ c      CHARGE_KWH(IPWC)=0.0
 C Assign the power flows to the electrical network.
       IF(CHARGE_EFF(IPWC).GT.1.0E-06)THEN
 C Account for charge/discharge inefficiency
-        PPOWOC(IPWC)=(1000.*CHARGE_KWH(IPWC)/(ENETSTP/3600.))/
+        PPOWOC(IPWC)=(-1000.*CHARGE_KWH(IPWC)/(ENETSTP/3600.))/
      &(CHARGE_EFF(IPWC)/100.)
       ELSE
-        PPOWOC(IPWC)=1000.*CHARGE_KWH(IPWC)/(ENETSTP/3600.)
+        PPOWOC(IPWC)=-1000.*CHARGE_KWH(IPWC)/(ENETSTP/3600.)
       ENDIF
       QPOWOC(IPWC)=0.
 

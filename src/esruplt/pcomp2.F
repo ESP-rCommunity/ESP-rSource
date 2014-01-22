@@ -5613,8 +5613,17 @@ C water outlet temperature and ambient temperature compensation can be applied [
 
       COMMON/ASHPvar3/CallforHeat,InDeadB,DefrostLock,InDefrost
 
+C Electrical details for specified plant components
+      common/pcelflg/ipcelf(mpcom)
+      common/elpcp/NPEL,PFP(mpcom),IPFP(mpcom),PWRP(mpcom),
+     &BVOLTP(mpcom),IPHP(mpcom)
+
       REAL SMALL
       PARAMETER (SMALL=1.0E-20)
+
+      REAL PFP,PWRP,BVOLTP,PWRQ,PA,PQ
+
+      INTEGER ipcelf,NPEL,IPFP,IPHP,IEMODEL
 
       LOGICAL CallforHeat,InDeadB,DefrostLock,InDefrost
 
@@ -5880,6 +5889,13 @@ C Establish heat loss modulus
 C Calculate the electrical demand of the device assumung the controller is ON.
         CtlPower=CtlRating
         TotRealPower=CompPower+CtlPower
+
+C Save the real power draw for use in an electrical power flow simulation. 
+         PWRP(IPCOMP)=-ABS(TotRealPower)
+         IEMODEL=1
+         CALL EMACH(IPCOMP,IEMODEL,PWRP(IPCOMP),PQ,PA)
+         PWRQ=PQ
+
 
 c Calculate the compressor power draw.
         CompressPower=CompPower-(PumpPower+FanPower+CtlPower)

@@ -43,6 +43,9 @@ C ******************************************************************************
 
       COMMON/TRC/ITRC
 
+C Default library name. 
+      COMMON/ABSRESLIB2/EFILEABS
+
 C Electrical network results library details.
       COMMON/ENELIBRC/IELFIL,IELIBHL,IELIBW,IELSTREC,NETS,NTSREC,NHREC,
      &NPREC
@@ -52,8 +55,9 @@ C Electrical network results library details.
       INTEGER IELFIL,IELIBHL,IELIBW,IELSTREC,NETS,NTSREC,NHREC,
      &NPREC,IFOCUS
 
-      CHARACTER LTMP*72,ELRFLNAM*72,DFILE*72,ITEM*25,MMODE*1
-      LOGICAL OK,dok
+      CHARACTER LTMP*144,ELRFLNAM*144,DFILE*144,ITEM*25,MMODE*1,
+     &EFILEABS*144
+      LOGICAL OK,dok,XST
       integer NITMS,INO ! max items and current menu item
 
 C For help messages
@@ -69,34 +73,48 @@ C << to be done >>
       IER=0
     1 CALL EDISP(IUOUT,' ')
       LTMP=' '
+      IF(EFILEABS(1:2).NE.'  '.AND.EFILEABS(1:3).NE.'UNK')THEN
+        LTMP=EFILEABS(1:LNBLNK(EFILEABS))
+      ENDIF
       ELRFLNAM=' '
       DFILE='libe'
+      LLEN=LNBLNK(ltmp)
+      IF(LLEN.LT.72)LLEN=72
       helptopic='res_electrical_res_lib'
       call gethelptext(helpinsub,helptopic,nbhelp)
-      CALL EASKS(LTMP,' Electrical results library name ? ',
-     &      ' ',72,DFILE,'library file',IER,nbhelp)
-      WRITE(ELRFLNAM,'(A72)') LTMP
+      CALL EASKF(ltmp,'Electrical library name ? ',' ',LLEN,DFILE,
+     &        'electrical library file',IER,nbhelp)
+      ELRFLNAM=LTMP(1:LNBLNK(LTMP))
       CALL USRMSG(' ',' ','-')
       IER=0 
 
+      INQUIRE (FILE=ELRFLNAM,EXIST=XST)
+      IF(XST)THEN
+
 C Set the record length and file number
-      IELIBW=MELIBW
-      IELFIL=IFIL+MADFIL 
-      IELIBHL=MELIBH
+        IELIBW=MELIBW
+        IELFIL=IFIL+MADFIL 
+        IELIBHL=MELIBH
 
 C Open the electrical simulation results file
-       CALL EFOPRAN(IELFIL,ELRFLNAM,IELIBW,1,IER)
-       IF(IER.LT.0) then
-        dok=.false.
-        helptopic='res_electrical_res_lib'
-        call gethelptext(helpinsub,helptopic,nbhelp)
+         CALL EFOPRAN(IELFIL,ELRFLNAM,IELIBW,1,IER)
+         IF(IER.LT.0) then
+          dok=.false.
+          helptopic='res_electrical_res_lib'
+          call gethelptext(helpinsub,helptopic,nbhelp)
         CALL ASKOK(' Error opening the electrical library.',
      &    'Do you want to try again ?',OK,dok,nbhelp)
-        IF(OK)THEN
-          GOTO 2
-        ELSE
-          RETURN
+          IF(OK)THEN
+            GOTO 1
+          ELSE
+            RETURN
+          ENDIF
         ENDIF
+      ELSE
+        CALL ASKOK(' Cannot find this file.',
+     &    'Do you want to try again ?',OK,dok,nbhelp)
+        IF(.NOT.OK)RETURN
+        GOTO 1
       ENDIF
 
 C Compare the file with library header, warn if inconsistent
