@@ -1,8 +1,8 @@
-*Operations 2.0
-*date Tue Aug 30 07:23:29 2011  # latest file modification 
-# operations of stair_1 defined in: 
+*Operations 2.1
+*date Sat Dec 21 19:22:52 2013  # latest file modification 
+# operations of lifts defined in: 
 # ../zones/stairs.opr
-constant lighting no equipment  6 people when occup 2 when unoccupied
+Infiltration is 0.25 ach all day types.
 # control(no control of air flow  ), low mid & high setpoints 
    0     0.000     0.000     0.000
      1   # number of flow periods in day type: weekdays    
@@ -23,41 +23,46 @@ constant lighting no equipment  6 people when occup 2 when unoccupied
      1   # number of flow periods in day type: new_staff   
 # start, stop, infil, ventil, source, data
    0, 24,    0.250    0.000    0    0.000
+*casual
+constant lighting no equipment  6 people when occup 2 when unoccupied
+# casual user-label type-key-word slot attributes
+*type Occupt       people            1  0  0
+*type Lights       lighting          2  0  0
+*type Equipt       equipment         3  0  0
+*end_type 
      5   # number of casual gains in day type: weekdays    
-# type, start, stop, sens, latent, rad_frac, conv_frac
-    1,   0,   8,    200.0,    100.0, 0.500, 0.500
-    1,   8,  19,    600.0,    300.0, 0.500, 0.500
-    1,  19,  24,    200.0,    100.0, 0.500, 0.500
-    2,   0,  24,    200.0,      0.0, 0.500, 0.500
-    3,   0,  24,      0.0,      0.0, 0.500, 0.500
+# slot, period, sensible, latent, rad_frac, conv_frac
+   1,   0,   8,    200.0,    100.0,  0.500,  0.500
+   1,   8,  19,    600.0,    300.0,  0.500,  0.500
+   1,  19,  24,    200.0,    100.0,  0.500,  0.500
+   2,   0,  24,    200.0,      0.0,  0.500,  0.500
+   3,   0,  24,      0.0,      0.0,  0.500,  0.500
      3   # number of casual gains in day type: saturday    
-# type, start, stop, sens, latent, rad_frac, conv_frac
-    1,   0,  24,    200.0,    100.0, 0.500, 0.500
-    2,   0,  24,    200.0,      0.0, 0.500, 0.500
-    3,   0,  24,      0.0,      0.0, 0.500, 0.500
+# slot, period, sensible, latent, rad_frac, conv_frac
+   1,   0,  24,    200.0,    100.0,  0.500,  0.500
+   2,   0,  24,    200.0,      0.0,  0.500,  0.500
+   3,   0,  24,      0.0,      0.0,  0.500,  0.500
      3   # number of casual gains in day type: sunday      
-# type, start, stop, sens, latent, rad_frac, conv_frac
-    1,   0,  24,    200.0,    100.0, 0.500, 0.500
-    2,   0,  24,    200.0,      0.0, 0.500, 0.500
-    3,   0,  24,      0.0,      0.0, 0.500, 0.500
+# slot, period, sensible, latent, rad_frac, conv_frac
+   1,   0,  24,    200.0,    100.0,  0.500,  0.500
+   2,   0,  24,    200.0,      0.0,  0.500,  0.500
+   3,   0,  24,      0.0,      0.0,  0.500,  0.500
      3   # number of casual gains in day type: holiday     
-# type, start, stop, sens, latent, rad_frac, conv_frac
-    1,   0,  24,    200.0,    100.0, 0.500, 0.500
-    2,   0,  24,    200.0,    100.0, 0.500, 0.500
-    3,   0,  24,      0.0,      0.0, 0.500, 0.500
+# slot, period, sensible, latent, rad_frac, conv_frac
+   1,   0,  24,    200.0,    100.0,  0.500,  0.500
+   2,   0,  24,    200.0,    100.0,  0.500,  0.500
+   3,   0,  24,      0.0,      0.0,  0.500,  0.500
      5   # number of casual gains in day type: out-of-term 
-# type, start, stop, sens, latent, rad_frac, conv_frac
-    1,   0,   7,    100.0,     50.0, 0.500, 0.500
-    1,   7,  18,    200.0,    100.0, 0.500, 0.500
-    1,  18,  24,    100.0,     50.0, 0.500, 0.500
-    2,   0,  24,    200.0,      0.0, 0.500, 0.500
-    3,   0,  24,      0.0,      0.0, 0.500, 0.500
+# slot, period, sensible, latent, rad_frac, conv_frac
+   1,   0,   7,    100.0,     50.0,  0.500,  0.500
+   1,   7,  18,    200.0,    100.0,  0.500,  0.500
+   1,  18,  24,    100.0,     50.0,  0.500,  0.500
+   2,   0,  24,    200.0,      0.0,  0.500,  0.500
+   3,   0,  24,      0.0,      0.0,  0.500,  0.500
      5   # number of casual gains in day type: new_staff   
-# type, start, stop, sens, latent, rad_frac, conv_frac
-    1,   0,   8,    150.0,     80.0, 0.500, 0.500
-    1,   8,  19,    800.0,    400.0, 0.500, 0.500
-    1,  19,  24,    200.0,    100.0, 0.500, 0.500
-    2,   0,  24,    200.0,      0.0, 0.500, 0.500
-    3,   0,  24,      0.0,      0.0, 0.500, 0.500
-# Labels for gain types 
- Occupt Lights Equipt
+# slot, period, sensible, latent, rad_frac, conv_frac
+   1,   0,   8,    150.0,     80.0,  0.500,  0.500
+   1,   8,  19,    800.0,    400.0,  0.500,  0.500
+   1,  19,  24,    200.0,    100.0,  0.500,  0.500
+   2,   0,  24,    200.0,      0.0,  0.500,  0.500
+   3,   0,  24,      0.0,      0.0,  0.500,  0.500

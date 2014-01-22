@@ -1,8 +1,8 @@
-*Operations 1.0
-*date Mon Feb 13 07:20:05 2012  # latest file modification 
+*Operations 2.1
+*date Sat Dec 21 19:04:16 2013  # latest file modification 
 # operations of cold_store defined in: 
 # ../zones/cold_store.opr
-Cold storage prior to stocking shelves and cabinets 0 deg
+One air change all days all hours.
 # control(no control of air flow  ), low mid & high setpoints 
    0     0.000     0.000     0.000
      1   # number of flow periods in day type: weekdays    
@@ -14,32 +14,37 @@ Cold storage prior to stocking shelves and cabinets 0 deg
      1   # number of flow periods in day type: sunday      
 # start, stop, infil, ventil, source, data
    0, 24,    1.000    0.000    0    0.000
+*casual
+Cold storage prior to stocking shelves and cabinets 0 deg
+# casual user-label type-key-word slot attributes
+*type Occupt       people            1  0  0
+*type Lights       lighting          2  0  0
+*type Equipt       equipment         3  0  0
+*end_type 
      7   # number of casual gains in day type: weekdays    
-# type, start, stop, sens, latent, rad_frac, conv_frac
-    1,   0,   9,    135.0,    101.3, 0.200, 0.800
-    1,   9,  19,   1282.5,    945.0, 0.200, 0.800
-    1,  19,  24,    135.0,    101.3, 0.200, 0.800
-   -2,   0,   7,      3.2,      0.0, 0.200, 0.800
-   -2,   7,  19,      6.4,      0.0, 0.200, 0.800
-   -2,  19,  24,      3.2,      0.0, 0.200, 0.800
-   -3,   0,  24,      6.0,      0.0, 0.200, 0.800
+# slot, period, sensible, latent, rad_frac, conv_frac
+   1,   0,   9,    135.0,    101.3,  0.200,  0.800
+   1,   9,  19,   1282.5,    945.0,  0.200,  0.800
+   1,  19,  24,    135.0,    101.3,  0.200,  0.800
+  -2,   0,   7,      3.2,      0.0,  0.200,  0.800
+  -2,   7,  19,      6.4,      0.0,  0.200,  0.800
+  -2,  19,  24,      3.2,      0.0,  0.200,  0.800
+  -3,   0,  24,      6.0,      0.0,  0.200,  0.800
      7   # number of casual gains in day type: saturday    
-# type, start, stop, sens, latent, rad_frac, conv_frac
-    1,   0,   9,    135.0,    101.3, 0.200, 0.800
-    1,   9,  19,   1282.5,    945.0, 0.200, 0.800
-    1,  19,  24,    135.0,    101.3, 0.200, 0.800
-   -2,   0,   7,      3.2,      0.0, 0.200, 0.800
-   -2,   7,  19,      6.4,      0.0, 0.200, 0.800
-   -2,  19,  24,      3.2,      0.0, 0.200, 0.800
-   -3,   0,  24,      6.0,      0.0, 0.200, 0.800
+# slot, period, sensible, latent, rad_frac, conv_frac
+   1,   0,   9,    135.0,    101.3,  0.200,  0.800
+   1,   9,  19,   1282.5,    945.0,  0.200,  0.800
+   1,  19,  24,    135.0,    101.3,  0.200,  0.800
+  -2,   0,   7,      3.2,      0.0,  0.200,  0.800
+  -2,   7,  19,      6.4,      0.0,  0.200,  0.800
+  -2,  19,  24,      3.2,      0.0,  0.200,  0.800
+  -3,   0,  24,      6.0,      0.0,  0.200,  0.800
      7   # number of casual gains in day type: sunday      
-# type, start, stop, sens, latent, rad_frac, conv_frac
-    1,   0,   9,    128.3,      0.0, 0.200, 0.800
-    1,   9,  19,   1282.5,      0.0, 0.200, 0.800
-    1,  19,  24,    128.3,      0.0, 0.200, 0.800
-   -2,   0,   7,      3.2,      0.0, 0.200, 0.800
-   -2,   7,  19,      6.4,      0.0, 0.200, 0.800
-   -2,  19,  24,      3.2,      0.0, 0.200, 0.800
-   -3,   0,  24,      6.0,      0.0, 0.200, 0.800
-# Labels for gain types 
- Occupt Lights Equipt
+# slot, period, sensible, latent, rad_frac, conv_frac
+   1,   0,   9,    128.3,      0.0,  0.200,  0.800
+   1,   9,  19,   1282.5,      0.0,  0.200,  0.800
+   1,  19,  24,    128.3,      0.0,  0.200,  0.800
+  -2,   0,   7,      3.2,      0.0,  0.200,  0.800
+  -2,   7,  19,      6.4,      0.0,  0.200,  0.800
+  -2,  19,  24,      3.2,      0.0,  0.200,  0.800
+  -3,   0,  24,      6.0,      0.0,  0.200,  0.800

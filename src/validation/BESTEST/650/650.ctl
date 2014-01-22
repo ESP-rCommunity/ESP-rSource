@@ -1,15 +1,15 @@
-proj cntrl  # overall descr
+proj cntrl
 * Building
-no descrip  # bld descr 
+no descrip
    1  # No. of functions
-* Control function
+* Control function    1
 # senses the temperature of the current zone.
     0    0    0    0  # sensor data
 # actuates air point of the current zone
     0    0    0  # actuator data
-    1 # No. day types
-    1  365  # valid Tue  1 Jan - Tue 31 Dec
-     3  # No. of periods in day
+    1  # all daytypes
+    1  365  # valid Tue-01-Jan - Tue-31-Dec
+     3  # No. of periods in day: weekday     
     0    2   0.000  # ctl type, law (free floating), start @
       0.  # No. of data items
     0    1   7.000  # ctl type, law (basic control), start @
