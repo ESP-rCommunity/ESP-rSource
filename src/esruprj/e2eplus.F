@@ -5,7 +5,7 @@ C Strathclyde, Glasgow Scotland, 2001.
 C ESP-r is free software.  You can redistribute it and/or
 C modify it under the terms of the GNU General Public
 C License as published by the Free Software Foundation 
-C (version 2 orlater).
+C (version 2 or later).
 
 C ESP-r is distributed in the hope that it will be useful
 C but WITHOUT ANY WARRANTY; without even the implied
@@ -18,8 +18,8 @@ C License along with ESP-r. If not, write to the Free
 C Software Foundation, Inc., 59 Temple Place, Suite 330,
 C Boston, MA 02111-1307 USA.
 
-C ESRU EnergyPlus translator to version 1.4 to version 3.0.
-C Current source version Dec 2010.
+C ESRU EnergyPlus translator to version 3.0 to version 6.0 or 7.2.
+C Current source version Nov 2013.
 
 C E2eplus: Inside and outside materials and composition and schedules generation.
 
@@ -125,6 +125,7 @@ C surface can be resolved into a quad).
       integer ier
       integer ich,iedg ! loop variable
       integer icc,iccc ! array index
+      integer ISTCMIN  ! for minimum warmup
 
 C << need to revise OPT to be 32 char >>
       character optndx*12,nameiprndx*25,OPT*12,com*1,sim*1
@@ -143,7 +144,7 @@ C << need to revise OPT to be 32 char >>
       dimension jvn1(MV)
 
       logical found,close,close1,foundmlc
-      logical closea
+      logical closea,closeb,closec,closed,closee
       logical haveobs,haveish,havehc,haveusrgrnd,havestdgrnd,XST
       logical loadonday,ok,dok
       logical newgeo  ! to use for testing if new/old geometry file
@@ -181,10 +182,18 @@ C Check the version number and set iver as well as a character variable
 C to represent a 2 char or 4 char indentation.
       iver = 00
       call eclose(ver,3.0,0.001,closea)
-      if(closea)then
-        iver = 30; indent = '    '
-      else
-        call usrmsg('Only V3. IDF files recognized',' ','W')
+      call eclose(ver,4.0,0.001,closeb)
+      call eclose(ver,5.0,0.001,closec)
+      call eclose(ver,6.0,0.001,closed)
+      call eclose(ver,7.2,0.001,closee)
+      if(closea) iver = 30; indent = '    '
+      if(closeb) iver = 40; indent = '    '
+      if(closec) iver = 50; indent = '    '
+      if(closed) iver = 60; indent = '    '
+      if(closee) iver = 72; indent = '    '
+      if(iver.eq.0)then
+        call usrmsg('Only V3.0 4.0 5.0 6.0 7.2 IDF files recognized',
+     &    ' ','W')
         return
       endif
 
@@ -237,7 +246,19 @@ C Write header of file.
       WRITE(ioout,'(a)',iostat=ios,err=2)  ' '
       if(iver.eq.30)then
         WRITE(ioout,'(5a)',iostat=ios,err=2) '  VERSION',com,'3.0',sim,
-     &  '   !- Version Identifier (for testing)'
+     &  '   !- Version Identifier'
+      elseif(iver.eq.40)then
+        WRITE(ioout,'(5a)',iostat=ios,err=2) '  VERSION',com,'4.0',sim,
+     &  '   !- Version Identifier'
+      elseif(iver.eq.50)then
+        WRITE(ioout,'(5a)',iostat=ios,err=2) '  VERSION',com,'5.0',sim,
+     &  '   !- Version Identifier'
+      elseif(iver.eq.60)then
+        WRITE(ioout,'(5a)',iostat=ios,err=2) '  VERSION',com,'6.0',sim,
+     &  '   !- Version Identifier'
+      elseif(iver.eq.72)then
+        WRITE(ioout,'(5a)',iostat=ios,err=2) '  VERSION',com,'7.2',sim,
+     &  '   !- Version Identifier'
       endif
       WRITE(ioout,'(a)',iostat=ios,err=2) ' '
       WRITE(ioout,'(2a)',iostat=ios,err=2) '  Building',com
@@ -305,14 +326,26 @@ C blocks, otherwise set to `MinimalShadowing`.
       endif
 
 C Interpret warmup days. Use simulation parameter set value or calculate
-C via call to scntcnst.
+C via call to scntcnst. If newer idf also write out minimum warmup.
       if(nsset.gt.0)then
         WRITE(ioout,'(a,i2,2a)',iostat=ios,err=2) indent,isstup,sim,
      &    '   !- Maximum Number of Warmup Days (from sim param set)'
       else
          call scntcnst(TDM,istd,TCM,ISTC)
-        WRITE(ioout,'(a,i2,2a)',iostat=ios,err=2) indent,ISTC,sim,
+        if(iver.le.40)then
+          WRITE(ioout,'(a,i2,2a)',iostat=ios,err=2) indent,ISTC,sim,
      &      '   !- Maximum Number of Warmup Days (from MLC TCM)'
+        elseif(iver.gt.40)then
+          WRITE(ioout,'(a,i2,2a)',iostat=ios,err=2) indent,ISTC,com,
+     &      '   !- Maximum Number of Warmup Days (from MLC TCM)'
+          if(ISTC.gt.4)then
+            ISTCMIN=ISTC/2
+          else
+            ISTCMIN=1
+          endif
+          WRITE(ioout,'(a,i2,2a)',iostat=ios,err=2) indent,ISTCMIN,sim,
+     &      '   !- Minimum Number of Warmup Days (from MLC TCM)'
+        endif
       endif
 
 C Interpret timesteps. Use simulation parameter set value if <= 6 or set to one.
@@ -344,23 +377,36 @@ C << note there is also a zone field to over-ride >>
         WRITE(ioout,'(4a)',iostat=ios,err=2) indent,'Detailed',sim,
      &    '   !- [please check equivalent ESP-r HC regime]'
       else
-        WRITE(ioout,'(4a)',iostat=ios,err=2) indent,'Detailed',sim,
-     &    '   !- Algorithm (default)'
+
+C Newer idf files use TARP as default rather than Detailed.
+        if(iver.le.30)then
+          WRITE(ioout,'(4a)',iostat=ios,err=2) indent,'Detailed',sim,
+     &      '   !- Algorithm (default)'
+        else
+          WRITE(ioout,'(4a)',iostat=ios,err=2) indent,'TARP',sim,
+     &      '   !- Algorithm'
+        endif
       endif
 
       WRITE(ioout,'(a)',iostat=ios,err=2) ' '
       WRITE(ioout,'(2a)',iostat=ios,err=2) 
      &  'SurfaceConvectionAlgorithm:Outside',com
-      WRITE(ioout,'(4a)',iostat=ios,err=2) indent,'Detailed',sim,
-     &  '   !- Algorithm (default)'
+      if(iver.le.30)then
+        WRITE(ioout,'(4a)',iostat=ios,err=2) indent,'Detailed',sim,
+     &    '   !- Algorithm (default)'
+      else
+        WRITE(ioout,'(4a)',iostat=ios,err=2) indent,'TARP',sim,
+     &    '   !- Algorithm (default)'
+      endif
 
 C Solution - assume no moisture solution.
       WRITE(ioout,'(a)',iostat=ios,err=2) ' '
-      if(iver.eq.30)then
+      if(iver.le.30)then
         WRITE(ioout,'(2a)',iostat=ios,err=2) 
      &    '  HeatBalanceAlgorithm,ConductionTransferFunction',sim
-      else
-
+      elseif(iver.gt.30)then
+        WRITE(ioout,'(2a)',iostat=ios,err=2) 
+     &    '  HeatBalanceAlgorithm,ConductionTransferFunction',sim
       endif
 
 C Interpret shading calculations. If shading used in ESP-r then
@@ -372,7 +418,7 @@ C set to 28 days, otherwise set zero=default.
      &    '   !- (to match ESP-r ish period)'
       else
         WRITE(ioout,'(4a)',iostat=ios,err=2) indent,'20',sim,
-     &    '   !- (default frequency of calculation)'
+     &    '   !- Calculation frequency'
       endif
 
 C Run control - set all fields to no so only run period is assessed.
@@ -389,10 +435,12 @@ C Run control - set all fields to no so only run period is assessed.
 
 C Interpret run period. Use simulation parameter set values or set default.
       WRITE(ioout,'(a)',iostat=ios,err=2) ' '
-      if(iver.eq.30)then
+      if(iver.le.30)then
         WRITE(ioout,'(2a)',iostat=ios,err=2) '  RunPeriod',com
-      else
-
+      elseif(iver.gt.30)then
+        WRITE(ioout,'(2a)',iostat=ios,err=2) '  RunPeriod',com
+        WRITE(ioout,'(3a)',iostat=ios,err=2) indent,com,
+     &    '   !- Name'
       endif
       if(nsset.gt.0)then
         WRITE(ioout,'(a,i2,a,i2,2a)',iostat=ios,err=2) indent,
@@ -911,32 +959,39 @@ C Typical schedule types.
       WRITE(ioout,'(a)',iostat=ios,err=7) ' '
       WRITE(ioout,'(a)',iostat=ios,err=7) 
      &  '!- ============= typical schedule types'
-      if(iver.eq.30)then
+      if(iver.le.30)then
         WRITE(ioout,'(5a)',iostat=ios,err=7) '  ScheduleTypeLimits',
      &    com,'Any Number',sim,'   !- Name'
       else
-
+        WRITE(ioout,'(5a)',iostat=ios,err=7) '  ScheduleTypeLimits',
+     &    com,'Any Number',sim,'   !- Name'
       endif
-      if(iver.eq.30)then
+      if(iver.le.30)then
         WRITE(ioout,'(9a)',iostat=ios,err=7) '  ScheduleTypeLimits',
      &    com,'Fraction',com,
      &    '0.0:1.0',com,'Continuous',sim,'  !- Name Range Numeric Type'
       else
-
+        WRITE(ioout,'(11a)',iostat=ios,err=7) '  ScheduleTypeLimits',
+     &    com,'Fraction',com,'0.0',com,'1.0',com,
+     &    'Continuous',sim,'  !- Name Range Numeric Type'
       endif
-      if(iver.eq.30)then
+      if(iver.le.30)then
         WRITE(ioout,'(9a)',iostat=ios,err=7) '  ScheduleTypeLimits',
      &    com,'Temperature type',com,
      &    '-60:20.0',com,'Continuous',sim,' !- Name Range Numeric Type'
       else
-
+        WRITE(ioout,'(11a)',iostat=ios,err=7) '  ScheduleTypeLimits',
+     &    com,'Temperature type',com,'-60',com,'20.0',com,
+     &    'Continuous',sim,' !- Name Range Numeric Type'
       endif
-      if(iver.eq.30)then
+      if(iver.le.30)then
         WRITE(ioout,'(9a)',iostat=ios,err=7) '  ScheduleTypeLimits',
      &    com,'On/Off type',com,
      &    '0.0:40.0',com,'Discrete',sim,'   !- Name Range Numeric Type'
       else
-
+        WRITE(ioout,'(11a)',iostat=ios,err=7) '  ScheduleTypeLimits',
+     &    com,'On/Off type',com,'0.0',com,'40.0',com,
+     &    'Discrete',sim,'   !- Name Range Numeric Type'
       endif
 
 C Write out a generic nothing-is-happening schedule for zones which
@@ -1502,15 +1557,15 @@ C Now write out the people.
      &    zname(mz)(1:lnzname(mz)),com,'   !- Zone Name'
         WRITE(ioout,'(6a)',iostat=ios,err=5) '    ',
      &    zname(mz)(1:lnzname(mz)),' ',lodlabel(mz,1),com,
-     &    '   !- Number of people schedule'
+     &    '   !- Number of People Schedule Name'
         WRITE(ioout,'(3a)',iostat=ios,err=7) '    people',com,
-     &    '   !- Number of people calculation method'
+     &    '   !- Number of People Calculation Method'
         WRITE(ioout,'(a,F7.3,2a)',iostat=ios,err=7) '    ',vpeople,
-     &    com,'   !- Number of people'
+     &    com,'   !- Number of People'
         WRITE(ioout,'(3a)',iostat=ios,err=7) '    ',com,
      &    '   !- People per Zone Floor Area {person/m2}'
         WRITE(ioout,'(3a)',iostat=ios,err=7) '    ',com,
-     &    '   !- Zone Floor Area per person {m2/person}'
+     &    '   !- Zone Floor Area per Person {m2/person}'
 
 C Set radiant as earlier scan
 C Further logic required if there is more than one radiant/convective split.
@@ -1520,7 +1575,11 @@ C Further logic required if there is more than one radiant/convective split.
      &    '  !- Sensible Heat Fraction'
         WRITE(ioout,'(5a)',iostat=ios,err=5) '    ',
      &    'Activity level ',zname(mz)(1:lnzname(mz)),com,
-     &    '   !- Activity level schedule name (W/person)'
+     &    '   !- Activity Level Schedule Name (W/person)'
+        if(iver.gt.50)then
+          WRITE(ioout,'(3a)',iostat=ios,err=5) '    ',com,
+     &      '   !- Carbon Dioside Generation Rate {m3/s-W}'
+        endif
         WRITE(ioout,'(3a)',iostat=ios,err=7) '    ',com,
      &    '   !- Enable ASHRAE 55 Comfort Warnings'
         WRITE(ioout,'(3a)',iostat=ios,err=5) '    ZoneAveraged',com,
@@ -1528,13 +1587,13 @@ C Further logic required if there is more than one radiant/convective split.
         WRITE(ioout,'(3a)',iostat=ios,err=5) indent,com,
      &    '  !- Surface Name/Angle Factor List Name'
         WRITE(ioout,'(3a)',iostat=ios,err=5) indent,com,
-     &    '  !- Work Efficiency SCHEDULE Name (0.0-1.0,real)'
+     &    '  !- Work Efficiency Schedule Name (0.0-1.0,real)'
         WRITE(ioout,'(3a)',iostat=ios,err=5) indent,com,
-     &    '  !- Clothing Insulation SCHEDULE Name (real)'
+     &    '  !- Clothing Insulation Schedule Name (real)'
         WRITE(ioout,'(3a)',iostat=ios,err=5) indent,com,
-     &    '  !- Air Velocity SCHEDULE Name (units m/s, real)'
+     &    '  !- Air Velocity Schedule Name (units m/s, real)'
         WRITE(ioout,'(3a)',iostat=ios,err=5) indent,sim,
-     &    '  !- Thermal Comfort Report Type R1'
+     &    '  !- Thermal Comfort Model 1 Type'
 
 C Include the sensible fraction of the total.  If using this put it just
 C after the Fraction Radiant line in place of auto.
@@ -2306,17 +2365,31 @@ C depending on whether 'obs' or 'obs3'.
       call edisp(iuout,'Completed export of data to EnergyPlus.')
 
 C Reports - report details and dxf for surfaces
-      WRITE(ioout,'(a)',iostat=ios,err=2) ' '
-      WRITE(ioout,'(2a)',iostat=ios,err=2) '  Output:Reports',com
-      WRITE(ioout,'(8a)',iostat=ios,err=2) indent,'Surfaces',com,
-     &  'Details',com,'ThickPolyline',sim,
-     &  '   !- Type, Name and Specifications for reports'
+      if(iver.le.30)then
+        WRITE(ioout,'(a)',iostat=ios,err=2) ' '
+        WRITE(ioout,'(2a)',iostat=ios,err=2) '  Output:Reports',com
+        WRITE(ioout,'(8a)',iostat=ios,err=2) indent,'Surfaces',com,
+     &    'Details',com,'ThickPolyline',sim,
+     &    '   !- Type, Name and Specifications for reports'
      
-      WRITE(ioout,'(a)',iostat=ios,err=2) ' '
-      WRITE(ioout,'(2a)',iostat=ios,err=2) '  Output:Reports',com
-      WRITE(ioout,'(8a)',iostat=ios,err=2) indent,'Surfaces',com,
-     &  'DXF',com,'ThickPolyline',sim,
-     &  '   !- Type, Name and Specifications for reports'
+        WRITE(ioout,'(a)',iostat=ios,err=2) ' '
+        WRITE(ioout,'(2a)',iostat=ios,err=2) '  Output:Reports',com
+        WRITE(ioout,'(8a)',iostat=ios,err=2) indent,'Surfaces',com,
+     &    'DXF',com,'ThickPolyline',sim,
+     &    '   !- Type, Name and Specifications for reports'
+      else
+
+C From version 4.0 onwards different syntax.
+        WRITE(ioout,'(a)',iostat=ios,err=2) ' '
+        WRITE(ioout,'(7a)',iostat=ios,err=2)'  Output:Surfaces:List',
+     &    com,'Details',com,'ThickPolyline',sim,
+     &    '   !- Type, Name and Specifications for reports'
+     
+        WRITE(ioout,'(a)',iostat=ios,err=2) ' '
+        WRITE(ioout,'(7a)',iostat=ios,err=2)'  Output:Surfaces:Drawing',
+     &    com,'DXF',com,'ThickPolyline',sim,
+     &    '   !- Type, Name and Specifications for reports'
+      endif
 
 C Include directive for EnergyPlus to dump out additional diagnotics
 C for geometry. 
@@ -2328,6 +2401,7 @@ C Include minimal meters: ambient db and zone air temperatures.
       WRITE(ioout,'(a)',iostat=ios,err=2) ' '
       WRITE(ioout,'(8a)',iostat=ios,err=2) '  Output:Variable',com,
      &  '*',com,'outdoor dry bulb',com,'hourly',sim
+      WRITE(ioout,'(a)',iostat=ios,err=2) ' '
       WRITE(ioout,'(8a)',iostat=ios,err=2) '  Output:Variable',com,
      &  '*',com,'Zone Mean Air Temperature',com,'hourly',sim
 

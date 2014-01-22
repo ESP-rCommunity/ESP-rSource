@@ -429,8 +429,9 @@ C Export to EnergyPlus IDF file (work in progress)
 
         ever=3.0
         evert=ever
-        CALL EASKR(evert,'EnergyPlus IDF file version?','(3.0)',
-     &    3.0,'F',3.0,'F',1.4,'file version',IERI,nbhelp)
+        CALL EASKR(evert,'EnergyPlus IDF file version?',
+     &    '(3.0 4.0 5.0 6.0 7.2)',
+     &    3.0,'F',7.3,'F',6.0,'file version',IERI,nbhelp)
         if(ieri.eq.-3)then
           continue
         else
