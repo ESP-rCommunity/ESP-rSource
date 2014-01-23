@@ -1,7 +1,7 @@
 Synopsis
  
 Synopsis of the model Base case three zone model with mass flow defined in
-ahu.cfg generated on Wed Dec 11 15:25:40 2013. Notes associated with the model
+ahu.cfg generated on Fri Jan 17 08:27:08 2014. Notes associated with the model
 are in ../doc/ahu.log
  
 The model is located at latitude   51.70 with a longitude difference of  -0.50
@@ -32,8 +32,8 @@ An Integrated Performance View is incomplete or missing.
  
 Databases associated with the model:
  standard pressure distr: pressc.db1
- standard materials     : material.db4.a
- constructions          : ../dbs/multicon.db1
+ standard materials     : constr_db3.materialdb
+ standard constructions : multicon.db1
  standard plant comp    : plantc.db1
  standard event profiles: profiles.db1.a
  standard optical prop  : optics.db1
@@ -240,36 +240,6 @@ ID Zone         Volume|          Surface
  12  2.50    270.   0. door_a       OPAQUE   VERT -     door         ||< door_a:office
  13  2.50    270.   0. door_w       OPAQUE   VERT -     door         ||< external
  
- Vertices ( index X Y Z) in the zone...
-vertex   1    1.00000    1.00000    0.00000   vertex  16    8.00000    1.00000    1.00000
-vertex   2    9.00000    1.00000    0.00000   vertex  17    8.00000    1.00000    2.25000
-vertex   3    9.00000    4.50000    0.00000   vertex  18    2.00000    1.00000    2.25000
-vertex   4    9.00000    9.00000    0.00000   vertex  19    9.00000    5.00000    0.00000
-vertex   5    5.00000    9.00000    0.00000   vertex  20    9.00000    6.00000    0.00000
-vertex   6    5.00000    5.00000    0.00000   vertex  21    9.00000    6.00000    2.50000
-vertex   7    1.00000    5.00000    0.00000   vertex  22    9.00000    5.00000    2.50000
-vertex   8    1.00000    1.00000    3.00000   vertex  23    5.00000    7.00000    0.00000
-vertex   9    9.00000    1.00000    3.00000   vertex  24    5.00000    6.00000    0.00000
-vertex  10    9.00000    4.50000    3.00000   vertex  25    5.00000    6.00000    2.50000
-vertex  11    9.00000    9.00000    3.00000   vertex  26    5.00000    7.00000    2.50000
-vertex  12    5.00000    9.00000    3.00000   vertex  27    1.00000    3.00000    0.00000
-vertex  13    5.00000    5.00000    3.00000   vertex  28    1.00000    2.00000    0.00000
-vertex  14    1.00000    5.00000    3.00000   vertex  29    1.00000    2.00000    2.50000
-vertex  15    2.00000    1.00000    1.00000   vertex  30    1.00000    3.00000    2.50000
- Number of vertices followed by list of associated vert
-*edges,10,1,2,9,8,1,15,18,17,16,15   south
-*edges,4,2,3,10,9   east
-*edges,8,3,19,22,21,20,4,11,10   passage
-*edges,4,4,5,12,11   north
-*edges,8,5,23,26,25,24,6,13,12   part_a
-*edges,4,6,7,14,13   part_b
-*edges,8,7,27,30,29,28,1,8,14   west
-*edges,7,8,9,10,11,12,13,14   ceiling
-*edges,13,1,28,27,7,6,24,23,5,4,20,19,3,2   floor
-*edges,4,15,16,17,18   glz_s
-*edges,4,19,20,21,22   door_p
-*edges,4,23,24,25,26   door_a
-*edges,4,27,28,29,30   door_w
  
  All surfaces will receive diffuse insolation (if shading not calculated).
  No shading analysis requested.
@@ -323,27 +293,6 @@ sunday      1 Equipt     equipment W    0-24    800.0      0.0       0.20       
   6  16.0      0. -90. Floor        OPAQUE   FLOR -     floor_1      ||< ground profile  1
   7  2.50     90.   0. door_a       OPAQUE   VERT -     door         ||< door_a:reception
  
- Vertices ( index X Y Z) in the zone...
-*vertex   1     1.00000     5.00000     0.00000
-*vertex   2     5.00000     5.00000     0.00000
-*vertex   3     5.00000     9.00000     0.00000
-*vertex   4     1.00000     9.00000     0.00000
-*vertex   5     1.00000     5.00000     3.00000
-*vertex   6     5.00000     5.00000     3.00000
-*vertex   7     5.00000     9.00000     3.00000
-*vertex   8     1.00000     9.00000     3.00000
-*vertex   9     5.00000     6.00000     0.00000
-*vertex  10     5.00000     7.00000     0.00000
-*vertex  11     5.00000     7.00000     2.50000
-*vertex  12     5.00000     6.00000     2.50000
- Number of vertices followed by list of associated vert
-*edges,4,1,2,6,5   part_b
-*edges,8,2,9,12,11,10,3,7,6   part_a
-*edges,4,3,4,8,7   North_w
-*edges,4,4,1,5,8   West_w
-*edges,4,5,6,7,8   Ceiling
-*edges,6,1,4,3,10,9,2   Floor
-*edges,4,9,10,11,12   door_a
  
  Solar insolation focused on surface Floor        (if shading not calculated).
  No shading analysis requested.
@@ -395,28 +344,6 @@ weekday     6 Lights     lighting  W   17-24      0.0      0.0       0.50       
   6  59.3    270.  81. Roof         OPAQUE   SLOP -     roof_1       ||< external
   7  17.0      0. -90. soffit       OPAQUE   FLOR -     ceiling_rev  ||< external
  
- Vertices ( index X Y Z) in the zone...
-*vertex   1     0.00000     0.00000     3.00000
-*vertex   2     9.00000     0.00000     3.00000
-*vertex   3     9.00000     9.00000     3.00000
-*vertex   4     0.00000     9.00000     3.00000
-*vertex   5     5.00000     9.00000     3.00000
-*vertex   6     0.00000     5.00000     3.00000
-*vertex   7     9.00000     5.00000     4.50000
-*vertex   8     9.00000     9.00000     4.50000
-*vertex   9     5.00000     5.00000     3.00000
-*vertex  10     9.00000     1.00000     3.00000
-*vertex  11     1.00000     1.00000     3.00000
-*vertex  12     1.00000     5.00000     3.00000
-*vertex  13     1.00000     9.00000     3.00000
- Number of vertices followed by list of associated vert
-*edges,6,12,9,5,3,10,11   Ceiling_r
-*edges,4,13,5,9,12   Ceiling_o
-*edges,3,1,2,7   s_roof
-*edges,5,2,10,3,8,7   Fire_wall
-*edges,5,3,5,13,4,8   North_wall
-*edges,5,1,7,8,4,6   Roof
-*edges,8,4,13,12,11,10,2,1,6   soffit
  
  All surfaces will receive diffuse insolation (if shading not calculated).
  No shading analysis requested.
@@ -464,9 +391,9 @@ sunday      1 Occupt     people    W    0-24      0.0      0.0       0.50       
  
  Layer|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
       |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
- Ext     6.0     0.760  2710.   837. 0.83 0.05 19200.  0.01 plate glass : Plate glass with placeholder single layer optics
+ Ext     6.0     0.760  2710.   837. 0.83 0.05 19200.  0.01 Plate glass : Plate glass with placeholder single layer optics
     2   12.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
- Int     6.0     0.760  2710.   837. 0.83 0.05 19200.  0.01 plate glass : Plate glass with placeholder single layer optics
+ Int     6.0     0.760  2710.   837. 0.83 0.05 19200.  0.01 Plate glass : Plate glass with placeholder single layer optics
  ISO 6946 U values (horiz/upward/downward heat flow)=  2.811  3.069  2.527 (partition)  2.243
  
 Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  2.73
@@ -487,10 +414,10 @@ Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  2.73
  
  Layer|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
       |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
- Ext   100.0     0.960  2000.   650. 0.90 0.93    25.  0.10 outer leaf brick : Outer leaf brick (inorganic-porous)
-    2   75.0     0.040   250.   840. 0.90 0.30     4.  1.88 glasswool : Glasswool (generic) (non-hygroscopic)
+ Ext   100.0     0.960  2000.   650. 0.90 0.93    25.  0.10 Outer leaf brick : Outer leaf brick
+    2   75.0     0.040   250.   840. 0.90 0.30     4.  1.88 Glasswool : Glasswool
     3   50.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
- Int   100.0     0.440  1500.   650. 0.90 0.65    15.  0.23 breeze block : Breeze block (inorganic-porous)
+ Int   100.0     0.440  1500.   650. 0.90 0.65    15.  0.23 Breeze block : Breeze block
  ISO 6946 U values (horiz/upward/downward heat flow)=  0.393  0.397  0.387 (partition)  0.379
  
 Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  0.39
@@ -502,10 +429,10 @@ Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  0.39
  
  Layer|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
       |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
- Ext    12.0     0.190   960.   837. 0.90 0.90    15.  0.06 roofing felt : Roofing felt (impermeable)
-    2   50.0     0.380  1200.   653. 0.90 0.65     6.  0.13 light mix concrete : Light mix concrete (inorganic-porous)
+ Ext    12.0     0.190   960.   837. 0.90 0.90    15.  0.06 Roofing felt : Roofing felt
+    2   50.0     0.380  1200.   653. 0.90 0.65     6.  0.13 Light mix concrete : Light mix concrete
     3   50.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
- Int     8.0     0.380  1120.   840. 0.90 0.60    12.  0.02 ceiling (plaster) : Ceiling (plaster) (inorganic-porous)
+ Int     8.0     0.380  1120.   840. 0.90 0.60    12.  0.02 Ceiling (plaster) : Ceiling (plaster)
  ISO 6946 U values (horiz/upward/downward heat flow)=  1.799  1.902  1.678 (partition)  1.548
  
 Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  1.77
@@ -517,10 +444,10 @@ Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  1.77
  
  Layer|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
       |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
- Ext   100.0     1.280  1460.   879. 0.90 0.85     5.  0.08 earth std : Common_earth
-    2  100.0     2.900  2650.   900. 0.90 0.55    77.  0.03 red granite : Red granite (inorganic-porous)
-    3   50.0     1.400  2100.   653. 0.90 0.65    19.  0.04 heavy mix concrete : Heavy mix concrete
- Int    50.0     1.400  2100.   650. 0.91 0.65    19.  0.04 cement screed : Cement screed (inorganic-porous)
+ Ext   100.0     1.280  1460.   879. 0.90 0.85     5.  0.08 Common_earth : Common_earth
+    2  100.0     2.900  2650.   900. 0.90 0.55    77.  0.03 Red granite : Red granite
+    3   50.0     1.400  2100.   653. 0.90 0.65    19.  0.04 Heavy mix concrete : Heavy mix concrete
+ Int    50.0     1.400  2100.   650. 0.91 0.65    19.  0.04 Cement screed : Cement screed
  ISO 6946 U values (horiz/upward/downward heat flow)=  2.825  3.086  2.538 (partition)  2.252
  
 Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  2.75
@@ -532,8 +459,8 @@ Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  2.75
  
  Layer|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
       |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
- Ext   150.0     0.440  1500.   650. 0.90 0.65    15.  0.34 breeze block : Breeze block (inorganic-porous)
- Int    12.0     0.180   800.   837. 0.91 0.60     9.  0.07 perlite plasterboard : Perlite plasterboard (inorganic-porous)
+ Ext   150.0     0.440  1500.   650. 0.90 0.65    15.  0.34 Breeze block : Breeze block
+ Int    12.0     0.180   800.   837. 0.91 0.60     9.  0.07 Perlite plasterboard : Perlite plasterboard
  ISO 6946 U values (horiz/upward/downward heat flow)=  1.731  1.826  1.619 (partition)  1.498
  
 Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  1.70
@@ -545,7 +472,7 @@ Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  1.70
  
  Layer|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
       |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
-    1   25.0     0.190   700.  2390. 0.90 0.65    12.  0.13 oak : Oak (radial cut)
+    1   25.0     0.190   700.  2390. 0.90 0.65    12.  0.13 Oak (radial) : Oak (radial)
  ISO 6946 U values (horiz/upward/downward heat flow)=  3.316  3.682  2.928 (partition)  2.554
  
 Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  3.21
@@ -557,9 +484,9 @@ Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  3.21
  
  Layer|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
       |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
- Ext    12.0     0.180   800.   837. 0.91 0.60     9.  0.07 perlite plasterboard : Perlite plasterboard (inorganic-porous)
+ Ext    12.0     0.180   800.   837. 0.91 0.60     9.  0.07 Perlite plasterboard : Perlite plasterboard
     2   25.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
- Int    12.0     0.180   800.   837. 0.91 0.60     9.  0.07 perlite plasterboard : Perlite plasterboard (inorganic-porous)
+ Int    12.0     0.180   800.   837. 0.91 0.60     9.  0.07 Perlite plasterboard : Perlite plasterboard
  ISO 6946 U values (horiz/upward/downward heat flow)=  2.113  2.256  1.948 (partition)  1.775
  
 Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  2.07
@@ -571,8 +498,8 @@ Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  2.07
  
  Layer|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
       |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
- Ext   100.0     0.040   250.   840. 0.90 0.30     4.  2.50 glasswool : Glasswool (generic) (non-hygroscopic)
- Int    10.0     0.030   290.  2000. 0.90 0.60     8.  0.33 ceiling mineral : Ceiling acoustic tile (mineral fibre based)
+ Ext   100.0     0.040   250.   840. 0.90 0.30     4.  2.50 Glasswool : Glasswool
+ Int    10.0     0.030   290.  2000. 0.90 0.60     8.  0.33 Ceiling (mineral) : Ceiling (mineral)
  ISO 6946 U values (horiz/upward/downward heat flow)=  0.333  0.336  0.329 (partition)  0.323
  
 Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  0.33
@@ -584,8 +511,8 @@ Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  0.33
  
  Layer|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
       |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
- Ext    10.0     0.030   290.  2000. 0.90 0.60     8.  0.33 ceiling mineral : Ceiling acoustic tile (mineral fibre based)
- Int   100.0     0.040   250.   840. 0.90 0.30     4.  2.50 glasswool : Glasswool (generic) (non-hygroscopic)
+ Ext    10.0     0.030   290.  2000. 0.90 0.60     8.  0.33 Ceiling (mineral) : Ceiling (mineral)
+ Int   100.0     0.040   250.   840. 0.90 0.30     4.  2.50 Glasswool : Glasswool
  ISO 6946 U values (horiz/upward/downward heat flow)=  0.333  0.336  0.329 (partition)  0.323
  
 Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  0.33

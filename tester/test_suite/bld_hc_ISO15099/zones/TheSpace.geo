@@ -1,35 +1,41 @@
-# geometry of TheSpace defined in: ../zones/TheSpace.geo
-GEN  TheSpace  TheSpace describes a dummy office space behind a double facade  # type, name, descr
-       8       6   0.000    # vertices, surfaces, rotation angle
-#  X co-ord, Y co-ord, Z co-ord
-      0.00000     0.00000     0.00000  # vert   1
-      4.50000     0.00000     0.00000  # vert   2
-      4.50000     6.00000     0.00000  # vert   3
-      0.00000     6.00000     0.00000  # vert   4
-      0.00000     0.00000     3.50000  # vert   5
-      4.50000     0.00000     3.50000  # vert   6
-      4.50000     6.00000     3.50000  # vert   7
-      0.00000     6.00000     3.50000  # vert   8
-# no of vertices followed by list of associated vert
-   4,  1,  2,  6,  5,
-   4,  2,  3,  7,  6,
-   4,  3,  4,  8,  7,
-   4,  4,  1,  5,  8,
-   4,  5,  6,  7,  8,
-   4,  1,  4,  3,  2,
-# unused index
- 0,0,0,0,0,0
-# surfaces indentation (m)
- 0.00,0.00,0.00,0.00,0.00,0.00
-    3   0   0   0    # default insolation distribution
-# surface attributes follow: 
-# id  surface      geom  loc/  construction environment
-# no  name         type  posn  name         other side
-  1, iCW           TRAN  VERT  dbl_glz      ANOTHER        
-  2, Wall-2        OPAQ  VERT  mass_part    SIMILAR        
-  3, Wall-3        OPAQ  VERT  mass_part    SIMILAR        
-  4, Wall-4        OPAQ  VERT  mass_part    SIMILAR        
-  5, hungCeil      OPAQ  CEIL  susp_ceil    ANOTHER        
-  6, Base-6        OPAQ  FLOR  susp_flr_re  ANOTHER        
-# base
-  6  0  0  0  0  0    27.00 0
+*Geometry 1.1,GEN,TheSpace # tag version, format, zone name
+*date Wed Jan 15 08:34:35 2014  # latest file modification 
+TheSpace describes a dummy office space behind a double facade
+# tag, X co-ord, Y co-ord, Z co-ord
+*vertex,0.00000,0.00000,0.00000  #   1
+*vertex,4.50000,0.00000,0.00000  #   2
+*vertex,4.50000,6.00000,0.00000  #   3
+*vertex,0.00000,6.00000,0.00000  #   4
+*vertex,0.00000,0.00000,3.50000  #   5
+*vertex,4.50000,0.00000,3.50000  #   6
+*vertex,4.50000,6.00000,3.50000  #   7
+*vertex,0.00000,6.00000,3.50000  #   8
+# 
+# tag, number of vertices followed by list of associated vert
+*edges,4,1,2,6,5  #  1
+*edges,4,2,3,7,6  #  2
+*edges,4,3,4,8,7  #  3
+*edges,4,4,1,5,8  #  4
+*edges,4,5,6,7,8  #  5
+*edges,4,1,4,3,2  #  6
+# 
+# surf attributes:
+#  surf name, surf position VERT/CEIL/FLOR/SLOP/UNKN
+#  child of (surface name), useage (pair of tags) 
+#  construction name, optical name
+#  boundary condition tag followed by two data items
+*surf,iCW,VERT,-,-,-,dbl_glz,DCF7671_06nb,ANOTHER,03,03  #   1 ||< iCW:TheChannel
+*surf,Wall-2,VERT,-,-,-,mass_part,OPAQUE,SIMILAR,00,00  #   2 ||< identical environment
+*surf,Wall-3,VERT,-,-,-,mass_part,OPAQUE,SIMILAR,00,00  #   3 ||< identical environment
+*surf,Wall-4,VERT,-,-,-,mass_part,OPAQUE,SIMILAR,00,00  #   4 ||< identical environment
+*surf,hungCeil,CEIL,-,-,-,susp_ceil,OPAQUE,ANOTHER,02,06  #   5 ||< hungCeil:hungCeiling
+*surf,Base-6,FLOR,-,-,-,susp_flr_re,OPAQUE,ANOTHER,02,05  #   6 ||< Ceil:hungCeiling
+# 
+*insol,3,0,0,0  # default insolation distribution
+# 
+# shading directives
+*shad_calc,none  # no temporal shading requested
+# 
+*insol_calc,none  # no insolation requested
+# 
+*base_list,1,6,    27.00 0  # zone base list

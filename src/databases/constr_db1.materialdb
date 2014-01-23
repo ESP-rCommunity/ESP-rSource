@@ -1,7 +1,7 @@
 *Materials 1.2
 *date,Wed Aug  8 15:03:55 2012
 # materials database defined in ../dbs/constr_db1.materialdb
-*doc,ESP-r Materials direct replacement for constr.db1.a. GAP air marked as a gas. Glass category items have place holder single layer optics.
+*doc,ESP-r Materials older subset of material.db3.a. GAP air marked as a gas. Glass category items have place holder single layer optics.
 16  # number of classifications
 #  
 # Materials have the following attributes:

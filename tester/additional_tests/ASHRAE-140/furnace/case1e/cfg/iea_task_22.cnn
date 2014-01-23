@@ -1,5 +1,5 @@
-*connections  for iea_test_house
-*Date Mon Aug 27 15:54:20 2007
+*connections for iea_test_house
+*Date Tue Jan 14 17:32:24 2014
       6   # number of connections
    1   1   0   0   0  #    1 wall-1 in zone1 is External
    1   2   0   0   0  #    2 wall-2 in zone1 is External
