@@ -254,7 +254,7 @@ C the whole period of the database if the instance is TABULAR.
         ixmax = ixmin + (NTSPH*24)
       else
         ixmin=(igbdoy-itdbdoy)*NTSPH*24
-        ixmax= ixmin + ((igedoy-igbdoy)*NTSPH*24)
+        ixmax= ixmin + (((igedoy-igbdoy)+1)*NTSPH*24)
       endif
       iperiod=ixmax-ixmin
       XMAX=FLOAT(ixmax)
