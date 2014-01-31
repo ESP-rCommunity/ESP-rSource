@@ -173,8 +173,7 @@ c capacity. The minimum temperature is based on the default in the DOE-2
 c computer program
         ashp_temp_min = cutoff_temp(isys)
 
-        write (*,*) "ASHP -> ", TP , ashp_temp_min 
-
+        
         if(TP.lt.ashp_temp_min) then
 c Estimate the plr of the backup heat source
           ss_heat_pump_cap = 0. 

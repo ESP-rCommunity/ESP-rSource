@@ -189,7 +189,13 @@ c----56--1---------2---------3---------4---------5---------6---------7---------8
       REAL   fLitresforNumOccupants
 
 c This calulates the amount of water  used based on the the number of occupants
-        fLitresforNumOccupants = 85.0 + ( 35.0 * fNumOfOccupants )
+        if ( bDefinedLoad ) then 
+          fLitresforNumOccupants = fDailyDrawVolL
+        else
+          fLitresforNumOccupants = 85.0 + ( 35.0 * fNumOfOccupants )
+        endif
+        
+      
 c This normalises the water draw based on a standard usage temperature (currently a parameter
 c of 60C. This is from B.Bradley'd H2KDHW.F line 254.
         fNormalizedDailyWaterDraw = ( 0.75
@@ -1396,7 +1402,12 @@ C Declarations for local variables and variables passed in common blocks.
       real val
       INTEGER  iTankNumber
       logical error_flag, close, close2, close3
-
+      integer iFileLine           ! Line number in file
+      character*248 cLnWords(124) ! words on the line
+      character*248 cLnBuffer 
+      integer iWordCount
+      integer iEGetArrW
+      real fCtoR_err             ! Convert a char to a real
 
 C Set the version number
       fDHWVersionNumber = 0.
@@ -1457,22 +1468,50 @@ c-------if there is no version number, continue with reading dhw data
         iNumberOfTanks = IVAL
       endif
 
-C Read  fNumOfOccupants of DHW.
+C Read  Next line. Could contain # of occupants, or *LoadData. fNumOfOccupants of DHW
       if(.not. error_flag) then
-        CALL STRIPC(IUNIT,OUTSTR,0,ND,1,' DHW data',IER)
+      
+        call LStripc_LN (iUnit, cLnBuffer, 0, ND, 0,
+     &            'DHW data',
+     &             IER, iFileLine)      
+      
+        OUTSTR = cLnBuffer(1:124)
+      
         IF(IER.NE.0) error_flag = .true.
         K=0
       endif
-
-      if(.not. error_flag) then
-        CALL EGETWR(OUTSTR,K,VAL,0.,100.,'F',' fNumOfOccupants ',IER)
-        if(IER.NE.0)then
-          call edisp(IUOUT,' Cannot read DHW fNumOfOccupants.')
-          error_flag = .true.
-        endif
-        fNumOfOccupants = VAL
-      endif
-
+      
+      if ( OUTSTR(1:9) == '*LoadData' ) then 
+      
+        bDefinedLoad = .true. 
+        
+C.......Format is: *LoadData <#-of-occupants>  <Litres-Per-Day> 
+C.......
+        iWordCount = iEGetArrW ( cLnBuffer, cLnWords )
+        
+        fNumOfOccupants = fCtoR_err(
+     &               cLnWords(2),
+     &               'Intrepreting number of occupants',
+     &               error_flag)
+      
+        fDailyDrawVolL = fCtoR_err(
+     &               cLnWords(3),
+     &               'Intrepreting number of occupants',
+     &               error_flag)
+      
+      
+      else 
+      
+          if(.not. error_flag) then
+            CALL EGETWR(OUTSTR,K,VAL,0.,100.,'F',' fNumOfOccupants '
+     &                 ,IER)
+            if(IER.NE.0)then
+              call edisp(IUOUT,' Cannot read DHW fNumOfOccupants.')
+              error_flag = .true.
+            endif
+            fNumOfOccupants = VAL
+          endif
+      endif 
 c ***********************************************************************
 c This ground temperature information (fDHW_ground_temp_avg and
 c fDHW_ground_temp_amp) is read in and used in the calculations only

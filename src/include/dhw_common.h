@@ -12,7 +12,7 @@ c Global DHW Variables
      &  fWaterDrawCurveHourly,fWaterDrawCurveTotal,
      &  sDHW_InputFileName,fDHW_ground_temp_avg,
      &  fDHW_ground_temp_amp,iDHW_ground_temp_cal_flag,
-     &  fHPRoomLoad
+     &  fHPRoomLoad, bDefinedLoad, fDailyDrawVolL
 
 C iDay    Contains the day of the year number.
 C iMonth  Contains the Month Number.
@@ -25,6 +25,7 @@ C             supplied in the dhw or internally calculated
       INTEGER iDay,iMonth,iNTSTEP,iNumberOfTanks,
      &        iDHW_ground_temp_cal_flag
 
+      real fDailyDrawVolL
      
       real     fHPRoomLoad  ! Heat transferred to room 
       
@@ -48,6 +49,8 @@ c This is used to normalize the demand. ie demand for hour(1) = 9/239.0*Actual d
 
        CHARACTER*72 sDHW_InputFileName
 
+C......Flag indicating that a specific water load has been defined.
+       logical bDefinedLoad
 
 
        COMMON/DHW_TANK_DATA/
