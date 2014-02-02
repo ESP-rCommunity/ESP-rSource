@@ -2,7 +2,7 @@
 *date Tue Feb 28 10:49:58 2012  # latest file modification 
 # operations of Cafe defined in: 
 # ../zones/Cafe_r5.opr
-Occupants are transient lights and small power 3:12Wm2 and 7:20Wm2. power. Infiltration via doors.
+Occupants are transient lights and small power 3:12Wm2 and 7:20Wm2. power. Infiltration via doors on weekdays.
 # control(no control of air flow  ), low mid & high setpoints 
    0     0.000     0.000     0.000
      1   # number of flow periods in day type: weekdays    

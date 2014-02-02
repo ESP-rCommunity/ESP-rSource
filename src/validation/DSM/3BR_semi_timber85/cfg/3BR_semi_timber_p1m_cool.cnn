@@ -1,0 +1,185 @@
+*connections for 3BR_semi_timber_p1m_c
+*Date Sat Dec 21 17:58:31 2013
+    182   # number of connections
+   1   1   0   0   0  #    1 ptn_other in lower_bath is External
+   1   2   0   0   0  #    2 fac_a in lower_bath is External
+   1   3   0   0   0  #    3 sill_v in lower_bath is External
+   1   4   0   0   0  #    4 fac_b in lower_bath is External
+   1   5   3   2   3  #    5 ptn_ent_a in lower_bath >|< ptn_bath_a in entry
+   1   6   3   2   2  #    6 door_ent in lower_bath >|< door_bath in entry
+   1   7   3   2   1  #    7 ptn_ent_b in lower_bath >|< ptn_bath_b in entry
+   1   8   3   3  13  #    8 ptn_liv in lower_bath >|< ptn_bath in living
+   1   9   3   7   6  #    9 lbath_ceil in lower_bath >|< br1_floor in up_br_one
+   1  10   3  11   1  #   10 lbath_floor in lower_bath >|< lbath_floor in crawl
+   1  11   0   0   0  #   11 head in lower_bath is External
+   1  12   0   0   0  #   12 frame in lower_bath is External
+   1  13   0   0   0  #   13 glazing in lower_bath is External
+   2   1   3   1   7  #   14 ptn_bath_b in entry >|< ptn_ent_b in lower_bath
+   2   2   3   1   6  #   15 door_bath in entry >|< door_ent in lower_bath
+   2   3   3   1   5  #   16 ptn_bath_a in entry >|< ptn_ent_a in lower_bath
+   2   4   0   0   0  #   17 facade_a in entry is External
+   2   5   0   0   0  #   18 ent_door in entry is External
+   2   6   0   0   0  #   19 facade_b in entry is External
+   2   7   3   9   1  #   20 door_und_st in entry >|< door_hall in below_str
+   2   8   3   3  17  #   21 ptn_liv_c in entry >|< ptn_hall_c in living
+   2   9   3   3  16  #   22 door_liv in entry >|< door_hall in living
+   2  10   3   3  15  #   23 ptn_liv_b in entry >|< ptn_hall_b in living
+   2  11   3   3  14  #   24 ptn_liv_a in entry >|< ptn_hall_a in living
+   2  12   3   5  12  #   25 ceil_entry in entry >|< psg_floor in upstair_pa
+   2  13   3  11   2  #   26 entry_floor in entry >|< entry_floor in crawl
+   2  14   3   9   6  #   27 landing in entry >|< Top-8 in below_str
+   2  15   3   9   8  #   28 steps in entry >|< steps in below_str
+   2  16   3   9   9  #   29 up_steps in entry >|< up_steps in below_str
+   2  17   0   0   0  #   30 land_wall in entry is External
+   2  18   3   3  31  #   31 side_wall in entry >|< above_str in living
+   2  19   3   2  20  #   32 banister in entry >|< xbanister in entry
+   2  20   3   2  19  #   33 xbanister in entry >|< banister in entry
+   2  21   3   5  17  #   34 fict in entry >|< fict in upstair_pa
+   2  22   3   5  24  #   35 fict_b in entry >|< fict_b in upstair_pa
+   2  23   3   9  10  #   36 low_banist in entry >|< low_banist in below_str
+   2  24   3   6   4  #   37 ceil_wc in entry >|< wc_floor in upper_wc
+   3   1   0   0   0  #   38 no_facde_a in living is External
+   3   2   0   0   0  #   39 nor_sill in living is External
+   3   3   0   0   0  #   40 nor_facade_b in living is External
+   3   4   1   0   0  #   41 ptn_other_a in living >|< Identical environment
+   3   5   1   0   0  #   42 ptn_other_b in living >|< Identical environment
+   3   6   1   0   0  #   43 ptn_other_c in living >|< Identical environment
+   3   7   0   0   0  #   44 so_facade_a in living is External
+   3   8   0   0   0  #   45 so_sill_a in living is External
+   3   9   0   0   0  #   46 so_facade_b in living is External
+   3  10   0   0   0  #   47 so_facade_c in living is External
+   3  11   0   0   0  #   48 so_sill_b in living is External
+   3  12   0   0   0  #   49 so_facade_d in living is External
+   3  13   3   1   8  #   50 ptn_bath in living >|< ptn_liv in lower_bath
+   3  14   3   2  11  #   51 ptn_hall_a in living >|< ptn_liv_a in entry
+   3  15   3   2  10  #   52 ptn_hall_b in living >|< ptn_liv_b in entry
+   3  16   3   2   9  #   53 door_hall in living >|< door_liv in entry
+   3  17   3   2   8  #   54 ptn_hall_c in living >|< ptn_liv_c in entry
+   3  18   3   4  11  #   55 liv_ceiling in living >|< br2_floor in up_br2
+   3  19   3  11   3  #   56 liv_floor in living >|< liv_floor in crawl
+   3  20   0   0   0  #   57 head_a in living is External
+   3  21   0   0   0  #   58 frame_a in living is External
+   3  22   0   0   0  #   59 glaz_a in living is External
+   3  23   0   0   0  #   60 head_b in living is External
+   3  24   0   0   0  #   61 frame_b in living is External
+   3  25   0   0   0  #   62 glaz_b in living is External
+   3  26   0   0   0  #   63 head_c in living is External
+   3  27   0   0   0  #   64 frame_c in living is External
+   3  28   0   0   0  #   65 glaz_c in living is External
+   3  29   3   9   4  #   66 lower_ptn in living >|< Wall-6 in below_str
+   3  30   3   9   5  #   67 ptn_below in living >|< Wall-7 in below_str
+   3  31   3   2  18  #   68 above_str in living >|< side_wall in entry
+   3  32   3   7  16  #   69 liv_ceil_a in living >|< br_floor_k in up_br_one
+   3  33   3   8  11  #   70 ceil_liv_br3 in living >|< br3_floor in up_br_three
+   3  34   3   8  17  #   71 ceil_br3_b in living >|< br3_flr_a in up_br_three
+   3  35   3   5  25  #   72 ceil_hall in living >|< psg_fl_liv in upstair_pa
+   4   1   3   8  12  #   73 ptn_br in up_br2 >|< ptn_br in up_br_three
+   4   2   3   5  15  #   74 ptn_hall in up_br2 >|< Wall-3 in upstair_pa
+   4   3   3   5   3  #   75 door_hall in up_br2 >|< door_br2 in upstair_pa
+   4   4   3   5  14  #   76 ptn_hall_b in up_br2 >|< ptn_hall_a in upstair_pa
+   4   5   3   5  13  #   77 ptn_sloped in up_br2 >|< ptn_sloped in upstair_pa
+   4   6   0   0   0  #   78 low_fac_a in up_br2 is External
+   4   7   0   0   0  #   79 frame in up_br2 is External
+   4   8   0   0   0  #   80 low_fac_b in up_br2 is External
+   4   9   1   0   0  #   81 side_wall in up_br2 >|< Identical environment
+   4  10   0   0   0  #   82 sloped_roof in up_br2 is External
+   4  11   3   3  18  #   83 br2_floor in up_br2 >|< liv_ceiling in living
+   4  12   0   0   0  #   84 sky_frame in up_br2 is External
+   4  13   0   0   0  #   85 sky_lt in up_br2 is External
+   4  14   0   0   0  #   86 glaz_low in up_br2 is External
+   4  15   3  10   1  #   87 br2_ceiling in up_br2 >|< br2_ceiling in roof_space
+   5   1   3   6   5  #   88 ptn_wc_a in upstair_pa >|< ptn_wc_a in upper_wc
+   5   2   0   0   0  #   89 low_facade in upstair_pa is External
+   5   3   3   4   3  #   90 door_br2 in upstair_pa >|< door_hall in up_br2
+   5   4   3   8   5  #   91 ptn_br3_a in upstair_pa >|< ptn_psg_b in up_br_three
+   5   5   3   8   4  #   92 door_br3 in upstair_pa >|< door_psg in up_br_three
+   5   6   3   8   3  #   93 ptn_br3_b in upstair_pa >|< ptn_psg_a in up_br_three
+   5   7   3   7  10  #   94 door_br1 in upstair_pa >|< door_br1 in up_br_one
+   5   8   3   7  11  #   95 ptn_br1 in upstair_pa >|< ptn_br1a in up_br_one
+   5   9   3   6   6  #   96 ptn_wc_b in upstair_pa >|< ptn_wc_b in upper_wc
+   5  10   3   6   7  #   97 door_wc_b in upstair_pa >|< door_wc_b in upper_wc
+   5  11   3   6   8  #   98 ptn_wc_c in upstair_pa >|< ptn_wc_c in upper_wc
+   5  12   3   2  12  #   99 psg_floor in upstair_pa >|< ceil_entry in entry
+   5  13   3   4   5  #  100 ptn_sloped in upstair_pa >|< ptn_sloped in up_br2
+   5  14   3   4   4  #  101 ptn_hall_a in upstair_pa >|< ptn_hall_b in up_br2
+   5  15   3   4   2  #  102 Wall-3 in upstair_pa >|< ptn_hall in up_br2
+   5  16   0   0   0  #  103 slop_ceil in upstair_pa is External
+   5  17   3   2  21  #  104 fict in upstair_pa >|< fict in entry
+   5  18   0   0   0  #  105 fac_sloped in upstair_pa is External
+   5  19   1   0   0  #  106 struc_a in upstair_pa >|< Identical environment
+   5  20   3  10   2  #  107 ceil_staur in upstair_pa >|< ceil_staur in roof_space
+   5  21   1   0   0  #  108 struc_c in upstair_pa >|< Identical environment
+   5  22   0   0   0  #  109 frame in upstair_pa is External
+   5  23   0   0   0  #  110 glaz in upstair_pa is External
+   5  24   3   2  22  #  111 fict_b in upstair_pa >|< fict_b in entry
+   5  25   3   3  35  #  112 psg_fl_liv in upstair_pa >|< ceil_hall in living
+   6   1   3   7   7  #  113 ptn_br1 in upper_wc >|< ptn_br1 in up_br_one
+   6   2   0   0   0  #  114 facade in upper_wc is External
+   6   3   3   7   8  #  115 ptn_br1_a in upper_wc >|< ptn_br1_a in up_br_one
+   6   4   3   2  24  #  116 wc_floor in upper_wc >|< ceil_wc in entry
+   6   5   3   5   1  #  117 ptn_wc_a in upper_wc >|< ptn_wc_a in upstair_pa
+   6   6   3   5   9  #  118 ptn_wc_b in upper_wc >|< ptn_wc_b in upstair_pa
+   6   7   3   5  10  #  119 door_wc_b in upper_wc >|< door_wc_b in upstair_pa
+   6   8   3   5  11  #  120 ptn_wc_c in upper_wc >|< ptn_wc_c in upstair_pa
+   6   9   3  10   3  #  121 wc_ceiling in upper_wc >|< wc_ceiling in roof_space
+   7   1   0   0   0  #  122 side_wall in up_br_one is External
+   7   2   0   0   0  #  123 low_fac_a in up_br_one is External
+   7   3   0   0   0  #  124 low_frame in up_br_one is External
+   7   4   0   0   0  #  125 low_fac_b in up_br_one is External
+   7   5   0   0   0  #  126 sloped_roof in up_br_one is External
+   7   6   3   1   9  #  127 br1_floor in up_br_one >|< lbath_ceil in lower_bath
+   7   7   3   6   1  #  128 ptn_br1 in up_br_one >|< ptn_br1 in upper_wc
+   7   8   3   6   3  #  129 ptn_br1_a in up_br_one >|< ptn_br1_a in upper_wc
+   7   9   3   8   2  #  130 ptn_br3 in up_br_one >|< ptn_br1 in up_br_three
+   7  10   3   5   7  #  131 door_br1 in up_br_one >|< door_br1 in upstair_pa
+   7  11   3   5   8  #  132 ptn_br1a in up_br_one >|< ptn_br1 in upstair_pa
+   7  12   3  10   4  #  133 br1_ceiling in up_br_one >|< br1_ceiling in roof_space
+   7  13   0   0   0  #  134 low_glz in up_br_one is External
+   7  14   0   0   0  #  135 sky_frame in up_br_one is External
+   7  15   0   0   0  #  136 sky_glz in up_br_one is External
+   7  16   3   3  32  #  137 br_floor_k in up_br_one >|< liv_ceil_a in living
+   8   1   0   0   0  #  138 low_fac_a in up_br_three is External
+   8   2   3   7   9  #  139 ptn_br1 in up_br_three >|< ptn_br3 in up_br_one
+   8   3   3   5   6  #  140 ptn_psg_a in up_br_three >|< ptn_br3_b in upstair_pa
+   8   4   3   5   5  #  141 door_psg in up_br_three >|< door_br3 in upstair_pa
+   8   5   3   5   4  #  142 ptn_psg_b in up_br_three >|< ptn_br3_a in upstair_pa
+   8   6   1   0   0  #  143 ptn_other in up_br_three >|< Identical environment
+   8   7   0   0   0  #  144 low_fac_c in up_br_three is External
+   8   8   0   0   0  #  145 low_frame in up_br_three is External
+   8   9   0   0   0  #  146 low_fac_b in up_br_three is External
+   8  10   0   0   0  #  147 sloped_roof in up_br_three is External
+   8  11   3   3  33  #  148 br3_floor in up_br_three >|< ceil_liv_br3 in living
+   8  12   3   4   1  #  149 ptn_br in up_br_three >|< ptn_br in up_br2
+   8  13   3  10   5  #  150 br3_ceiling in up_br_three >|< br3_ceiling in roof_space
+   8  14   0   0   0  #  151 low_glz in up_br_three is External
+   8  15   0   0   0  #  152 sky_frame in up_br_three is External
+   8  16   0   0   0  #  153 sky_glz in up_br_three is External
+   8  17   3   3  34  #  154 br3_flr_a in up_br_three >|< ceil_br3_b in living
+   9   1   3   2   7  #  155 door_hall in below_str >|< door_und_st in entry
+   9   2   0   0   0  #  156 ext_right in below_str is External
+   9   3   0   0   0  #  157 ext_bk in below_str is External
+   9   4   3   3  29  #  158 Wall-6 in below_str >|< lower_ptn in living
+   9   5   3   3  30  #  159 Wall-7 in below_str >|< ptn_below in living
+   9   6   3   2  14  #  160 Top-8 in below_str >|< landing in entry
+   9   7   3  11   4  #  161 Base-9 in below_str >|< Base-9 in crawl
+   9   8   3   2  15  #  162 steps in below_str >|< steps in entry
+   9   9   3   2  16  #  163 up_steps in below_str >|< up_steps in entry
+   9  10   3   2  23  #  164 low_banist in below_str >|< low_banist in entry
+  10   1   3   4  15  #  165 br2_ceiling in roof_space >|< br2_ceiling in up_br2
+  10   2   3   5  20  #  166 ceil_staur in roof_space >|< ceil_staur in upstair_pa
+  10   3   3   6   9  #  167 wc_ceiling in roof_space >|< wc_ceiling in upper_wc
+  10   4   3   7  12  #  168 br1_ceiling in roof_space >|< br1_ceiling in up_br_one
+  10   5   3   8  13  #  169 br3_ceiling in roof_space >|< br3_ceiling in up_br_three
+  10   6   0   0   0  #  170 r1 in roof_space is External
+  10   7   0   0   0  #  171 wc_side_wall in roof_space is External
+  10   8   0   0   0  #  172 side_wall in roof_space is External
+  10   9   0   0   0  #  173 r2 in roof_space is External
+  11   1   3   1  10  #  174 lbath_floor in crawl >|< lbath_floor in lower_bath
+  11   2   3   2  13  #  175 entry_floor in crawl >|< entry_floor in entry
+  11   3   3   3  19  #  176 liv_floor in crawl >|< liv_floor in living
+  11   4   3   9   7  #  177 Base-9 in crawl >|< Base-9 in below_str
+  11   5   0   0   0  #  178 front in crawl is External
+  11   6   0   0   0  #  179 right in crawl is External
+  11   7   0   0   0  #  180 back in crawl is External
+  11   8   0   0   0  #  181 left in crawl is External
+  11   9   4   1   0  #  182 ground in crawl >|< ground profile 1

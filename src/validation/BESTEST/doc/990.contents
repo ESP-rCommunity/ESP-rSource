@@ -1,7 +1,7 @@
 Synopsis
  
-Synopsis of the model Default beginning defined in 990.cfg generated on Wed
-Aug 29 13:18:15 2012. Notes associated with the model are in
+Synopsis of the model Default beginning defined in 990.cfg generated on Sat
+Dec 21 22:16:09 2013. Notes associated with the model are in
 ../doc/README990.txt
  
 The model is located at latitude   39.80 with a longitude difference of   0.10
@@ -16,9 +16,9 @@ Simulationist address: not yet defined
 Simulationist city: not yet defined
 Simulationist postcode: not yet defined
  
-The climate is: denver and is held in: ../climate/drycold.esp with hour
-centred solar data.
- annual weather         : ../climate/drycold.esp
+The climate is: denver and is held in: drycold.esp with hour centred solar
+data.
+ standard annual weather: drycold.esp
 Calculated ground temp at 0.5m depth
 -0.26265 -1.2460 0.49803 3.2272 10.366 15.875 19.590 20.721 18.795 14.518 8.8017 3.4982
 Calculated ground temp at 1.0m depth
@@ -53,6 +53,7 @@ proj cntrl
  
 Zones control includes  1 functions.
 no descrip
+Details of control loops referenced in the model:
  
  The sensor for function  1 senses the temperature of the current zone.
  The actuator for function  1 is air point of the current zone
@@ -79,28 +80,30 @@ ID Zone         Volume|          Surface
  area of 172.m^2 & approx floor area of 48.0m^2
  990 describes a...
  There is 85.800m2 of exposed surface area, 37.800m2 of which is vertical.
- Outside walls are 56.250 % of floor area & avg U of 0.508 & UA of 13.720
- Flat roof is 100.00 % of floor area & avg U of 0.319 & UA of 15.320
- Glazing is 22.500 % of floor & 28.571 % facade with avg U of 2.986 & UA of 32.253
- Ground contact is 178.75 % of floor area & avg U of 0.448 & perimeter 0.00
+ Outside walls are 56.250 % of floor area & average U of 0.508 & UA of 13.720
+ Flat roof is 100.00 % of floor area & average U of 0.319 & UA of 15.320
+ Glazing is 22.500 % of floor & 28.571 % facade with average U of 2.986 & UA of 32.253
+ Ground contact is 178.75 % of floor area & average U of 0.448 & perimeter 0.00
  
  A summary of the surfaces in 990( 1) follows:
  
- Sur| Area  |Azim|Elev| surface    | geometry | construction |environment
-    | m^2   |deg |deg | name       |type |loca| name         |other side
-  1  10.8    180.   0. S-Ground     OPAQUE VERT GroundWall   ||< user def grnd profile  1
-  2  8.10     90.   0. E-Ground     OPAQUE VERT GroundWall   ||< user def grnd profile  1
-  3  10.8      0.   0. N-Ground     OPAQUE VERT GroundWall   ||< user def grnd profile  1
-  4  8.10    270.   0. W-Ground     OPAQUE VERT GroundWall   ||< user def grnd profile  1
-  5  10.8    180.   0. Window       DG_Bes VERT dg_glazing   ||< external
-  6  8.10     90.   0. E-Wall       OPAQUE VERT HW_extwall   ||< external
-  7  10.8      0.   0. N-Wall       OPAQUE VERT HW_extwall   ||< external
-  8  8.10    270.   0. W-Wall       OPAQUE VERT HW_extwall   ||< external
-  9  48.0      0.  90. Roof         OPAQUE CEIL HWroof       ||< external
- 10  48.0      0. -90. Floor        OPAQUE FLOR HWfloor      ||< user def grnd profile  1
+ Sur| Area  |Azim|Elev| surface    |    geometry       | construction |environment
+    | m^2   |deg |deg | name       |optical|locat| use | name         |other side
+  1  10.8    180.   0. S-Ground     OPAQUE   VERT -     GroundWall   ||< user def grnd profile  1
+  2  8.10     90.   0. E-Ground     OPAQUE   VERT -     GroundWall   ||< user def grnd profile  1
+  3  10.8      0.   0. N-Ground     OPAQUE   VERT -     GroundWall   ||< user def grnd profile  1
+  4  8.10    270.   0. W-Ground     OPAQUE   VERT -     GroundWall   ||< user def grnd profile  1
+  5  10.8    180.   0. Window       DG_Beste VERT -     dg_glazing   ||< external
+  6  8.10     90.   0. E-Wall       OPAQUE   VERT -     HW_extwall   ||< external
+  7  10.8      0.   0. N-Wall       OPAQUE   VERT -     HW_extwall   ||< external
+  8  8.10    270.   0. W-Wall       OPAQUE   VERT -     HW_extwall   ||< external
+  9  48.0      0.  90. Roof         OPAQUE   CEIL -     HWroof       ||< external
+ 10  48.0      0. -90. Floor        OPAQUE   FLOR -     HWfloor      ||< user def grnd profile  1
  
  
  An hourly solar radiation distribution is used for this zone.
+ Insolation sources (all applicable):
+Window
  
  
  Explicit viewfactors have been derived for this zone.
@@ -121,11 +124,11 @@ sunday     1  0 - 24    0.41  0.0148    0.00  0.0000   0     0.00
 Notes:
 Nothing written yet.
  
-Daytype   Gain Type    Period Sensible  Latent     Radiant    Convec
-          No.  label   Hours  Magn.(W)  Magn.(W)   Fraction   Fraction
-weekday     1 EquiptW    0-24    200.0      0.0       0.60       0.40
-saturday    1 EquiptW    0-24    200.0      0.0       0.60       0.40
-sunday      1 EquiptW    0-24    200.0      0.0       0.60       0.40
+Daytype   Gain Label     Type    Unit Period Sensible  Latent     Radiant    Convec
+          No.                          Hours Magn.(W)  Magn.(W)   Fraction   Fraction
+weekday     1 Equipt     equipment W    0-24    200.0      0.0       0.60       0.40
+saturday    1 Equipt     equipment W    0-24    200.0      0.0       0.60       0.40
+sunday      1 Equipt     equipment W    0-24    200.0      0.0       0.60       0.40
  
  ____________________________________________________________
  
@@ -134,10 +137,10 @@ sunday      1 EquiptW    0-24    200.0      0.0       0.60       0.40
  In contact with ground 85.800m2.
  There is 85.800m2 of outside surface area, 37.800m2 of which is vertical.
  
- Outside walls are 56.250 % of floor area & avg U of 0.508 & UA of 13.720 & max MLC thickness 0.171
- Flat roof is 100.00 % of floor area & avg U of 0.319 & UA of 15.320
- Glazing is 22.500 % of floor & 28.571 % facade with avg U of 2.986 & UA of 32.253
- Ground contact is 178.75 % of floor area & avg U of 0.448 & perimeter 0.00 & max MLC thickness 1.087
+ Outside walls are 56.250 % of floor area & average U of 0.508 & UA of 13.720 & max MLC thickness 0.171
+ Flat roof is 100.00 % of floor area & average U of 0.319 & UA of 15.320
+ Glazing is 22.500 % of floor & 28.571 % facade with average U of 2.986 & UA of 32.253
+ Ground contact is 178.75 % of floor area & average U of 0.448 & perimeter 0.00 & max MLC thickness 1.087
  CIBSE ground beta!85.800 dt 3.582 Ufleft 0.011 Ufright 4.334 Uf 0.048 R extra @ virtual layer18.772
  
  ____________________________________________________________
@@ -145,11 +148,11 @@ sunday      1 EquiptW    0-24    200.0      0.0       0.60       0.40
  
  Details of transparent construction: dg_glazing with DG_Bestest optics and overall thickness  0.019
  
- Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
-      |db  |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
- Ext    18    3.2     1.060  2500.   750. 0.90 0.90    12.  0.00 glass_0.9_0.9 : glass_0.9_0.9
-    2    0   13.0     0.000     0.     0. 0.99 0.99     1.  0.16 air  0.16 0.16 0.16
- Int    18    3.0     1.060  2500.   750. 0.90 0.90    12.  0.00 glass_0.9_0.9 : glass_0.9_0.9
+ Layer|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
+      |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
+ Ext     3.2     1.060  2500.   750. 0.90 0.90    12.  0.00 glass_0.9_0.9 : glass_0.9_0.9
+    2   13.0     0.000     0.     0. 0.99 0.99     1.  0.16 air  0.16 0.16 0.16
+ Int     3.0     1.060  2500.   750. 0.90 0.90    12.  0.00 glass_0.9_0.9 : glass_0.9_0.9
  ISO 6946 U values (horiz/upward/downward heat flow)=  2.986  3.280  2.668 (partition)  2.354
  
 Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  2.90
@@ -168,11 +171,11 @@ Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  2.90
  
  Details of opaque construction: HW_extwall and overall thickness  0.171
  
- Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
-      |db  |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
- Ext    22    9.0     0.140   530.   900. 0.90 0.60    12.  0.06 wood_sid_0.9_0.6 : wood_sid_0.9_0.6
-    2   42   61.5     0.040    10.  1400. 0.90 0.90    12.  1.54 Foam_insulation : Foam_insulation
- Int    41  100.0     0.510  1400.  1000. 0.90 0.60    12.  0.20 Concr_Block_0.9_0.6 : Concr_Block_0.9_0.6
+ Layer|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
+      |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
+ Ext     9.0     0.140   530.   900. 0.90 0.60    12.  0.06 wood_sid_0.9_0.6 : wood_sid_0.9_0.6
+    2   61.5     0.040    10.  1400. 0.90 0.90    12.  1.54 Foam_insulation : Foam_insulation
+ Int   100.0     0.510  1400.  1000. 0.90 0.60    12.  0.20 Concr_Block_0.9_0.6 : Concr_Block_0.9_0.6
  ISO 6946 U values (horiz/upward/downward heat flow)=  0.508  0.516  0.498 (partition)  0.486
  
 Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  0.51
@@ -182,13 +185,13 @@ Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  0.51
  
  Details of opaque construction: HWfloor and overall thickness  1.087
  
- Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
-      |db  |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
- Ext    44  250.0     0.040    10.  1400. 0.90 0.90    12.  6.25 HW_floor_insulation : HW_floor_insulation
-    2   44  250.0     0.040    10.  1400. 0.90 0.90    12.  6.25 HW_floor_insulation : HW_floor_insulation
-    3   44  250.0     0.040    10.  1400. 0.90 0.90    12.  6.25 HW_floor_insulation : HW_floor_insulation
-    4   44  257.0     0.040    10.  1400. 0.90 0.90    12.  6.43 HW_floor_insulation : HW_floor_insulation
- Int    43   80.0     1.130  1400.  1000. 0.90 0.60    12.  0.07 Con_Slab_fl_0.9_0.6 : Con_Slab_fl_0.9_0.6
+ Layer|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
+      |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
+ Ext   250.0     0.040    10.  1400. 0.90 0.90    12.  6.25 HW_floor_insulation : HW_floor_insulation
+    2  250.0     0.040    10.  1400. 0.90 0.90    12.  6.25 HW_floor_insulation : HW_floor_insulation
+    3  250.0     0.040    10.  1400. 0.90 0.90    12.  6.25 HW_floor_insulation : HW_floor_insulation
+    4  257.0     0.040    10.  1400. 0.90 0.90    12.  6.43 HW_floor_insulation : HW_floor_insulation
+ Int    80.0     1.130  1400.  1000. 0.90 0.60    12.  0.07 Con_Slab_fl_0.9_0.6 : Con_Slab_fl_0.9_0.6
  ISO 6946 U values (horiz/upward/downward heat flow)=  0.039  0.039  0.039 (partition)  0.039
  
 Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  0.04
@@ -198,11 +201,11 @@ Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  0.04
  
  Details of opaque construction: HWroof and overall thickness  0.141
  
- Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
-      |db  |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
- Ext    22   19.0     0.140   530.   900. 0.90 0.60    12.  0.14 wood_sid_0.9_0.6 : wood_sid_0.9_0.6
-    2    5  111.8     0.040    12.   840. 0.90 0.90    12.  2.80 fibreglass : fibreglass
- Int    21   10.0     0.160   950.   840. 0.90 0.60    12.  0.06 P_board_0.9_0.6 : P_board_0.9_0.6
+ Layer|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
+      |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
+ Ext    19.0     0.140   530.   900. 0.90 0.60    12.  0.14 wood_sid_0.9_0.6 : wood_sid_0.9_0.6
+    2  111.8     0.040    12.   840. 0.90 0.90    12.  2.80 fibreglass : fibreglass
+ Int    10.0     0.160   950.   840. 0.90 0.60    12.  0.06 P_board_0.9_0.6 : P_board_0.9_0.6
  ISO 6946 U values (horiz/upward/downward heat flow)=  0.316  0.319  0.312 (partition)  0.307
  
 Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  0.32
@@ -212,12 +215,12 @@ Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  0.32
  
  Details of opaque construction: GroundWall and overall thickness  0.970
  
- Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
-      |db  |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
- Ext    81  300.0     1.300  1500.   800. 0.90 0.60    10.  0.23 Soil : Soil
-    2   81  300.0     1.300  1500.   800. 0.90 0.60    10.  0.23 Soil : Soil
-    3   81  270.0     1.300  1500.   800. 0.90 0.60    10.  0.21 Soil : Soil
- Int    41  100.0     0.510  1400.  1000. 0.90 0.60    12.  0.20 Concr_Block_0.9_0.6 : Concr_Block_0.9_0.6
+ Layer|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
+      |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
+ Ext   300.0     1.300  1500.   800. 0.90 0.60    10.  0.23 Soil : Soil
+    2  300.0     1.300  1500.   800. 0.90 0.60    10.  0.23 Soil : Soil
+    3  270.0     1.300  1500.   800. 0.90 0.60    10.  0.21 Soil : Soil
+ Int   100.0     0.510  1400.  1000. 0.90 0.60    12.  0.20 Concr_Block_0.9_0.6 : Concr_Block_0.9_0.6
  ISO 6946 U values (horiz/upward/downward heat flow)=  0.966  0.995  0.930 (partition)  0.889
  
 Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  0.96

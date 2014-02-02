@@ -1,37 +1,43 @@
-# geometry of 960_back defined in: ../960/960_back.geo
-GEN  960_back  960_back describes a...  # type, name, descr
-      10       6   0.000    # vertices, surfaces, rotation angle
-#  X co-ord, Y co-ord, Z co-ord
-      0.00000     0.00000     0.00000  # vert   1
-      8.00000     0.00000     0.00000  # vert   2
-      0.00000     0.00000     2.70000  # vert   3
-      8.00000     0.00000     2.70000  # vert   4
-      0.00000     6.00000     0.00000  # vert   5
-      8.00000     6.00000     0.00000  # vert   6
-      0.00000     6.00000     2.70000  # vert   7
-      8.00000     6.00000     2.70000  # vert   8
-      4.00000     0.00000     2.70000  # vert   9
-      4.00000     0.00000     0.00000  # vert  10
-# no of vertices followed by list of associated vert
-   4,  2,  6,  8,  4,
-   4,  6,  5,  7,  8,
-   4,  5,  1,  3,  7,
-   5,  3,  9,  4,  8,  7,
-   5,  5,  6,  2, 10,  1,
-   6,  1, 10,  2,  4,  9,  3,
-# unused index
- 0,0,0,0,0,0
-# surfaces indentation (m)
- 0.00,0.00,0.00,0.00,0.00,0.00
-    1   5   0   0    # default insolation distribution
-# surface attributes follow: 
-# id  surface      geom  loc/  construction environment
-# no  name         type  posn  name         other side
-  1, East_Wall     OPAQ  VERT  LWextwall7   EXTERIOR       
-  2, North_Wall    OPAQ  VERT  LWextwall7   EXTERIOR       
-  3, West_Wall     OPAQ  VERT  LWextwall7   EXTERIOR       
-  4, Roof          OPAQ  CEIL  LWroof7      EXTERIOR       
-  5, Floor         OPAQ  FLOR  LWfloor7     GROUND         
-  6, CommonWall    OPAQ  VERT  CommonWalll  960_sun        
-# base
-  5  0  0  0  0  0    48.00
+*Geometry 1.1,GEN,960_back # tag version, format, zone name
+*date Sat Dec 21 22:16:31 2013  # latest file modification 
+960_back describes a...
+# tag, X co-ord, Y co-ord, Z co-ord
+*vertex,0.00000,0.00000,0.00000  #   1
+*vertex,8.00000,0.00000,0.00000  #   2
+*vertex,0.00000,0.00000,2.70000  #   3
+*vertex,8.00000,0.00000,2.70000  #   4
+*vertex,0.00000,6.00000,0.00000  #   5
+*vertex,8.00000,6.00000,0.00000  #   6
+*vertex,0.00000,6.00000,2.70000  #   7
+*vertex,8.00000,6.00000,2.70000  #   8
+*vertex,4.00000,0.00000,2.70000  #   9
+*vertex,4.00000,0.00000,0.00000  #  10
+# 
+# tag, number of vertices followed by list of associated vert
+*edges,4,2,6,8,4  #  1
+*edges,4,6,5,7,8  #  2
+*edges,4,5,1,3,7  #  3
+*edges,5,3,9,4,8,7  #  4
+*edges,5,5,6,2,10,1  #  5
+*edges,6,1,10,2,4,9,3  #  6
+# 
+# surf attributes:
+#  surf name, surf position VERT/CEIL/FLOR/SLOP/UNKN
+#  child of (surface name), useage (pair of tags) 
+#  construction name, optical name
+#  boundary condition tag followed by two data items
+*surf,East_Wall,VERT,-,-,-,LWextwall7,OPAQUE,EXTERIOR,0,0  #   1 ||< external
+*surf,North_Wall,VERT,-,-,-,LWextwall7,OPAQUE,EXTERIOR,0,0  #   2 ||< external
+*surf,West_Wall,VERT,-,-,-,LWextwall7,OPAQUE,EXTERIOR,0,0  #   3 ||< external
+*surf,Roof,CEIL,-,-,-,LWroof7,OPAQUE,EXTERIOR,0,0  #   4 ||< external
+*surf,Floor,FLOR,-,-,-,LWfloor7,OPAQUE,GROUND,00,01  #   5 ||< user def grnd profile  1
+*surf,CommonWall,VERT,-,-,-,CommonWalll,OPAQUE,ANOTHER,02,03  #   6 ||< CommonWall:960_sun
+# 
+*insol,1,5,0,0  # default insolation distribution
+# 
+# shading directives
+*shad_calc,none  # no temporal shading requested
+# 
+*insol_calc,none  # no insolation requested
+# 
+*base_list,1,5,    48.00 0  # zone base list

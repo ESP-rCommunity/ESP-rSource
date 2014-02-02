@@ -1642,14 +1642,22 @@ C Reset itemstd to the item to be edited.
           DBTASK(ITE)=TTYPE(it)
 
 C Depending on the type of the data, ask for associated zone.
-          if(TTYPE(it)(1:6).eq.'CASUAL')then
+          if(TTYPE(it)(1:6).eq.'CASUAL'.or.
+     &       TTYPE(it)(1:7).eq.'ELECPWR')then
             IC=-1
  250        izdef=0
-            call askzone(ic,izdef,' Related zone for casual gains?',
-     &      'Related zone','-','Casual gains requires a zone.',ier)
+            if(TTYPE(it)(1:6).eq.'CASUAL')then
+              call askzone(ic,izdef,'Related zone for casual gains?',
+     &        'Related zone','-','Casual gains requires a zone.',ier)
+            elseif(TTYPE(it)(1:7).eq.'ELECPWR')then
+              call askzone(ic,izdef,
+     &        'Related zone for electrical power?','Related zone',
+     &        '-','Electrical real & reactive requires a zone.',ier)
+            endif
             IF(IC.EQ.0.OR.IC.EQ.-1)GOTO 250
             write(DBZN(ITE),'(a)') zname(IC)(1:12)
-            DBSN(ITE)='ALL' 
+            DBSN(ITE)='ALL'
+
           elseif(TTYPE(it)(1:6).eq.'ZIVENT')then
 
 C Use DBZN to indicate that tdf ventilation associated with a zone.
@@ -1738,9 +1746,7 @@ C copy data into cm variables for later editing.
                 if(ieri.eq.-3) goto 42
                 izdef=iban(ispl,1)
                 ibsn(ispl,1)=izdef
-                ibsn(ispl,2)=0
-                ibsn(ispl,3)=0
-                ibsn(ispl,4)=0
+                ibsn(ispl,2)=0; ibsn(ispl,3)=0; ibsn(ispl,4)=0
                 cm(2)=bmiscd(ispl,1,1,2)
                 cm(3)=bmiscd(ispl,1,1,3)
               elseif(irtc.eq.3)then
@@ -1765,9 +1771,7 @@ C Add another controls
               ispl=ncf+1
               ncf=ncf+1
               ibsn(ispl,1)=0
-              ibsn(ispl,2)=0
-              ibsn(ispl,3)=0
-              ibsn(ispl,4)=0
+              ibsn(ispl,2)=0; ibsn(ispl,3)=0; ibsn(ispl,4)=0
               if(TTYPE(it)(1:6).eq.'ACTIVI')then
                 cm(2)=5.0
                 cm(3)=6.0
@@ -1778,12 +1782,9 @@ C Add another controls
             endif
 
             ibsn(ispl,1)=IC
-            iban(ispl,1)=IC
-            iban(ispl,2)=0
-            iban(ispl,3)=0
+            iban(ispl,1)=IC; iban(ispl,2)=0; iban(ispl,3)=0
             nbcdt(ispl)=1
-            ibcdv(ispl,1,1)=1
-            ibcdv(ispl,1,2)=365
+            ibcdv(ispl,1,1)=1; ibcdv(ispl,1,2)=365
             nbcdp(ispl,1)=1
             tbcps(ispl,1,1)=0.0
             ibctyp(ispl,1,1)=0
@@ -1875,9 +1876,7 @@ C copy data into cm variables for later editing.
                 if(ieri.eq.-3) goto 42
                 izdef=iban(ispl,1)
                 ibsn(ispl,1)=izdef
-                ibsn(ispl,2)=0
-                ibsn(ispl,3)=0
-                ibsn(ispl,4)=0
+                ibsn(ispl,2)=0; ibsn(ispl,3)=0; ibsn(ispl,4)=0
                 cm(2)=bmiscd(ispl,1,1,2)
                 cm(3)=bmiscd(ispl,1,1,3)
                 cm(4)=bmiscd(ispl,1,1,4)
@@ -1912,13 +1911,9 @@ C Add another controls
               ispl=ncf+1
               ncf=ncf+1
               ibsn(ispl,1)=0
-              ibsn(ispl,2)=0
-              ibsn(ispl,3)=0
-              ibsn(ispl,4)=0
-              cm(2)=5000.0
-              cm(3)=0.0
-              cm(4)=5000.0
-              cm(5)=0.0
+              ibsn(ispl,2)=0; ibsn(ispl,3)=0; ibsn(ispl,4)=0
+              cm(2)=5000.0; cm(3)=0.0
+              cm(4)=5000.0; cm(5)=0.0
               izdef=0
             endif
             if(ispl.le.9)then
@@ -1935,25 +1930,18 @@ C even though cm(8) - cm(13) does not seem to be used set them.
      &        'Related zone','-','Set point requires a zone.',ier)
             IF(IC.EQ.0.OR.IC.EQ.-1)GOTO 255
             ibsn(ispl,1)=IC
-            iban(ispl,1)=IC
-            iban(ispl,2)=0
-            iban(ispl,3)=0
+            iban(ispl,1)=IC; iban(ispl,2)=0; iban(ispl,3)=0
             nbcdt(ispl)=1
-            ibcdv(ispl,1,1)=1
-            ibcdv(ispl,1,2)=365
+            ibcdv(ispl,1,1)=1; ibcdv(ispl,1,2)=365
             nbcdp(ispl,1)=1
             tbcps(ispl,1,1)=0.0
             ibctyp(ispl,1,1)=0
             ibclaw(ispl,1,1)=11
             cm(1)=12.0
-            cm(6)=1.0
-            cm(7)=3.0
-            cm(8)=-5.0
-            cm(9)=ITE
-            cm(10)=0.0
-            cm(11)=0.0
-            cm(12)=1.0
-            cm(13)=0.0
+            cm(6)=1.0;  cm(7)=3.0
+            cm(8)=-5.0; cm(9)=ITE
+            cm(10)=0.0; cm(11)=0.0
+            cm(12)=1.0; cm(13)=0.0
 
 C Confirm capacities.
   53        WRITE(HOLD,'(4f8.0)')cm(2),cm(3),cm(4),cm(5)

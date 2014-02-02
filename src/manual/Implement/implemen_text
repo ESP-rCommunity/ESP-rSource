@@ -196,7 +196,7 @@ _
 ~esru/src/esp-r/training	training exemplars
 ~esru/src/esp-r/manual	ESP-r manual
 ~esru/esp-r/climate	clm67 (other climate files should be placed here)
-~esru/esp-r/databases	constr.db1.a, plantc.db1, pressc.db1 & profiles.db1
+~esru/esp-r/databases	material.db3.a, plantc.db1, pressc.db1 & profiles.db1
 ~esru/esp-r/defaults	links to default files
 ~esru/esp-r/include	include files for ESP-r
 ~esru/esp-r/binsh	shell scripts for ESP-r

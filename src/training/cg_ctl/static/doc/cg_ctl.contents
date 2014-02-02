@@ -1,7 +1,7 @@
 Synopsis
  
 Synopsis of the model Daylight factors used to switch artificial lights.
-defined in cg_ctl.cfg generated on Sun Dec  8 15:57:06 2013. Notes associated
+defined in cg_ctl.cfg generated on Fri Jan 17 08:46:20 2014. Notes associated
 with the model are in ../doc/cg_ctl.log
  
 The model is located at latitude   52.00 with a longitude difference of   0.00
@@ -32,8 +32,8 @@ An Integrated Performance View is incomplete or missing.
  
 Databases associated with the model:
  standard pressure distr: pressc.db1
- standard materials     : material.db4.a
- constructions          : ../dbs/multicon.db1
+ standard materials     : constr_db3.materialdb
+ standard constructions : multicon.db1
  standard plant comp    : plantc.db1
  standard event profiles: profiles.db1.a
  standard optical prop  : optics.db1
@@ -235,12 +235,12 @@ weekday     8 Lights     lighting  W   16-24      0.0      0.0    0.50    0.50  
  
  Layer|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
       |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
- Ext   250.0     1.280  1460.   879. 0.90 0.85     5.  0.20 earth std : Common_earth
-    2  150.0     0.520  2050.   184. 0.90 0.85     2.  0.29 gravel based : Gravel based (non-hygroscopic)
-    3  150.0     1.400  2100.   653. 0.90 0.65    19.  0.11 heavy mix concrete : Heavy mix concrete
+ Ext   250.0     1.280  1460.   879. 0.90 0.85     5.  0.20 Common_earth : Common_earth
+    2  150.0     0.520  2050.   184. 0.90 0.85     2.  0.29 Gravel based : Gravel based
+    3  150.0     1.400  2100.   653. 0.90 0.65    19.  0.11 Heavy mix concrete : Heavy mix concrete
     4   50.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
-    5   19.0     0.150   800.  2093. 0.91 0.65    96.  0.13 chipboard : Chipboard
- Int     6.0     0.060   186.  1360. 0.90 0.60    10.  0.10 Wilton : Wilton weave wool carpet (organic-hygroscopic)
+    5   19.0     0.150   800.  2093. 0.91 0.65    96.  0.13 Chipboard : Chipboard
+ Int     6.0     0.060   186.  1360. 0.90 0.60    10.  0.10 Wilton : Wilton weave wool carpet
  ISO 6946 U values (horiz/upward/downward heat flow)=  0.864  0.887  0.835 (partition)  0.802
  
 Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  0.86
@@ -252,9 +252,9 @@ Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  0.86
  
  Layer|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
       |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
- Ext     6.0     0.760  2710.   837. 0.83 0.05 19200.  0.01 plate glass : Plate glass with placeholder single layer optics
+ Ext     6.0     0.760  2710.   837. 0.83 0.05 19200.  0.01 Plate glass : Plate glass with placeholder single layer optics
     2   12.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
- Int     6.0     0.760  2710.   837. 0.83 0.05 19200.  0.01 plate glass : Plate glass with placeholder single layer optics
+ Int     6.0     0.760  2710.   837. 0.83 0.05 19200.  0.01 Plate glass : Plate glass with placeholder single layer optics
  ISO 6946 U values (horiz/upward/downward heat flow)=  2.811  3.069  2.527 (partition)  2.243
  
 Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  2.73
@@ -275,10 +275,10 @@ Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  2.73
  
  Layer|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
       |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
- Ext     3.0   210.000  2700.   880. 0.22 0.20 19200.  0.00 aluminium : Aluminium
+ Ext     3.0   210.000  2700.   880. 0.22 0.20 19200.  0.00 Aluminium : Aluminium
     2   25.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
-    3   80.0     0.040    12.   840. 0.90 0.65    30.  2.00 glass fibre quilt : Glass Fibre Quilt (non-hygroscopic)
- Int     3.0   210.000  2700.   880. 0.22 0.20 19200.  0.00 aluminium : Aluminium
+    3   80.0     0.040    12.   840. 0.90 0.65    30.  2.00 Glass Fibre Quilt : Glass Fibre Quilt
+ Int     3.0   210.000  2700.   880. 0.22 0.20 19200.  0.00 Aluminium : Aluminium
  ISO 6946 U values (horiz/upward/downward heat flow)=  0.427  0.433  0.420 (partition)  0.412
  
 Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  0.43
@@ -290,12 +290,12 @@ Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  0.43
  
  Layer|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
       |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
- Ext     3.0   210.000  2700.   880. 0.22 0.20 19200.  0.00 aluminium : Aluminium
+ Ext     3.0   210.000  2700.   880. 0.22 0.20 19200.  0.00 Aluminium : Aluminium
     2   25.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
-    3   80.0     0.040    12.   840. 0.90 0.65    30.  2.00 glass fibre quilt : Glass Fibre Quilt (non-hygroscopic)
-    4    3.0   210.000  2700.   880. 0.22 0.20 19200.  0.00 aluminium : Aluminium
+    3   80.0     0.040    12.   840. 0.90 0.65    30.  2.00 Glass Fibre Quilt : Glass Fibre Quilt
+    4    3.0   210.000  2700.   880. 0.22 0.20 19200.  0.00 Aluminium : Aluminium
     5   50.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
- Int    13.0     0.420  1200.   837. 0.91 0.50    11.  0.03 gypsum plaster : Gypsum based plaster (inorganic-porous)
+ Int    13.0     0.420  1200.   837. 0.91 0.50    11.  0.03 Gypsum plaster : Gypsum plaster
  ISO 6946 U values (horiz/upward/downward heat flow)=  0.394  0.398  0.387 (partition)  0.380
  
 Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  0.39

@@ -807,14 +807,14 @@ assumed to be independent of incidence angle.
 box center;
 lbw(5.5i).
 T{
-During zone construction
-file creation it is normal to refer to the materials and
+During zone construction file creation
+it is normal to refer to the materials and
 composite constructions' databases. The former database is
-named constr_db1.materialdb and the latter will have a name assigned by the
-user at the time of its creation. A windows' database can
-also be accessed. This is named window.db1.
-These databases must be assigned via the 0DEFDB command of the
-main \fIesp-r\fP menu prior to commencing zone construction file creation or
+named with a .materialdb ending and the latter will have a name assigned by the
+user at the time of its creation. An optics' database can
+also be accessed. These tend to be named optics.???.
+These databases names are held in the model configuration file and
+scanned prior to commencing zone construction file creation or
 editing.
 T}
 .TE

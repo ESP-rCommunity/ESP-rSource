@@ -240,7 +240,7 @@ control the makeup air fan roughly on occupancy
 * Control mass    1
 # senses node (1) Sales
    -4    1    0    0  # sensor data
-# actuates flow connection:  26 vent_mix - Sales via makeup300p
+# actuates flow connection:  26 vent_mix - Sales via makeup400p
    -3   26    0  # actuator data
     1  # all daytypes
     1  365  # valid Sat-01-Jan - Sat-31-Dec
@@ -257,7 +257,7 @@ control the makeup air fan roughly on occupancy
 * Control mass    2
 # senses node (2) Refrig
    -4    2    0    0  # sensor data
-# actuates flow connection:  27 vent_mix - Refrig via makeup50p
+# actuates flow connection:  27              -              via unknown component.
    -3   27    0  # actuator data
     1  # all daytypes
     1  365  # valid Sat-01-Jan - Sat-31-Dec
@@ -274,7 +274,7 @@ control the makeup air fan roughly on occupancy
 * Control mass    3
 # senses node (5) Cafe
    -4    5    0    0  # sensor data
-# actuates flow connection:  28 vent_mix - Cafe via makeup20p
+# actuates flow connection:  28              -              via unknown component.
    -3   28    0  # actuator data
     1  # all daytypes
     1  365  # valid Sat-01-Jan - Sat-31-Dec
@@ -291,7 +291,7 @@ control the makeup air fan roughly on occupancy
 * Control mass    4
 # senses node (4) Office1
    -4    4    0    0  # sensor data
-# actuates flow connection:  29 vent_mix - Office1 via makeup10p
+# actuates flow connection:  29              -              via unknown component.
    -3   29    0  # actuator data
     1  # all daytypes
     1  365  # valid Sat-01-Jan - Sat-31-Dec
@@ -308,7 +308,7 @@ control the makeup air fan roughly on occupancy
 * Control mass    5
 # senses node (6) Office3
    -4    6    0    0  # sensor data
-# actuates flow connection:  30 vent_mix - Office3 via makeup10p
+# actuates flow connection:  30              -              via unknown component.
    -3   30    0  # actuator data
     1  # all daytypes
     1  365  # valid Sat-01-Jan - Sat-31-Dec
@@ -325,7 +325,7 @@ control the makeup air fan roughly on occupancy
 * Control mass    6
 # senses node (8) Staff_traing
    -4    8    0    0  # sensor data
-# actuates flow connection:  31 vent_mix - Staff_traing via makeup10p
+# actuates flow connection:  31              -              via unknown component.
    -3   31    0  # actuator data
     1  # all daytypes
     1  365  # valid Sat-01-Jan - Sat-31-Dec

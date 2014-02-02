@@ -45,6 +45,7 @@ C routines.
       COMMON/INITL/INIT1,INIT2
       COMMON/RESLIB/RFILE,PFILE,MSTRFILE,LAFRES
       COMMON/ABSRESLIB/RFILEABS,PFILEABS,MSTRFILEABS,LAFRESABS
+      COMMON/ABSRESLIB2/EFILEABS
       common/rpath/path
       common/rcmd/lcmdfl
       COMMON/LIBOK/IBLIB,IFLIB,ICLIB,IELIB,IPLIB
@@ -63,6 +64,7 @@ C Simulator parameters.
       character LTMP*72,outs*124,outs248*248
       character rfile*72,PFILE*72,MSTRFILE*72,LAFRES*72
       character RFILEABS*144,PFILEABS*144,MSTRFILEABS*144,LAFRESABS*144
+      character EFILEABS*144
       character path*72,lcmdfl*144,ltmpc*144,lpath*72
       logical XST
       LOGICAL     spfileok,perok,tstepok,saveok,autook,exitok,startupok
@@ -139,8 +141,10 @@ C instanciate LAFRESABS and set PFILEABS to ltmpc.
           if(ltmpc(lrf3:lrf).eq.'.res')then
             write(LAFRESABS,'(2a)') ltmpc(1:lrf4),'.mfr'
             write(PFILEABS,'(2a)') ltmpc(1:lrf4),'.plr'
+            write(EFILEABS,'(2a)') ltmpc(1:lrf4),'.elr'
           elseif(ltmpc(lrf3:lrf).eq.'.plr')then
             write(LAFRESABS,'(2a)') ltmpc(1:lrf4),'.mfr'
+            write(EFILEABS,'(2a)') ltmpc(1:lrf4),'.elr'
             write(PFILEABS,'(a)') ltmpc(1:lrf)
           else
             continue

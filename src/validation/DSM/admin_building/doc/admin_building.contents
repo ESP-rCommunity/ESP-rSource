@@ -1,7 +1,7 @@
 Synopsis
  
 Synopsis of the model Administrative building and service centre defined in
-admin_building.cfg generated on Wed Oct  3 15:52:52 2012. Notes associated
+admin_building.cfg generated on Sat Dec 21 19:38:52 2013. Notes associated
 with the model are in admin_building.log
  
 The model is located at latitude   53.48 with a longitude difference of  -1.00
@@ -32,7 +32,7 @@ An Integrated Performance View is incomplete or missing.
  
 Databases associated with the model:
  standard pressure distr: pressc.db1
- materials              : ../dbs/admin_building.materialdb
+ standard materials     : material.db4.a
  constructions          : ../dbs/admin_building.constrdb
  standard plant comp    : plantc.db1
  standard event profiles: profiles.db2.a
@@ -197,7 +197,7 @@ ID Zone         Volume|          Surface
  
  
  Air schedule notes:
-constant lighting no equipment  6 people when occup 2 when unoccupied
+Infiltration is 0.25 ach all day types.
  Control: no control of air flow
  
 Scheduled air infiltration and ventilation:
@@ -213,37 +213,37 @@ new_staff  1  0 - 24    0.25  0.0842    0.00  0.0000   0     0.00
 Notes:
 constant lighting no equipment  6 people when occup 2 when unoccupied
  
-Daytype   Gain Type    Period Sensible  Latent     Radiant    Convec
-          No.  label   Hours  Magn.(W)  Magn.(W)   Fraction   Fraction
-weekdays    1 OccuptW    0- 8    200.0    100.0       0.50       0.50
-weekdays    2 OccuptW    8-19    600.0    300.0       0.50       0.50
-weekdays    3 OccuptW   19-24    200.0    100.0       0.50       0.50
-weekdays    4 LightsW    0-24    200.0      0.0       0.50       0.50
-weekdays    5 EquiptW    0-24      0.0      0.0       0.50       0.50
+Daytype   Gain Label     Type    Unit Period Sensible  Latent     Radiant    Convec
+          No.                          Hours Magn.(W)  Magn.(W)   Fraction   Fraction
+weekdays    1 Occupt     people    W    0- 8    200.0    100.0       0.50       0.50
+weekdays    2 Occupt     people    W    8-19    600.0    300.0       0.50       0.50
+weekdays    3 Occupt     people    W   19-24    200.0    100.0       0.50       0.50
+weekdays    4 Lights     lighting  W    0-24    200.0      0.0       0.50       0.50
+weekdays    5 Equipt     equipment W    0-24      0.0      0.0       0.50       0.50
  
-saturday    1 OccuptW    0-24    200.0    100.0       0.50       0.50
-saturday    2 LightsW    0-24    200.0      0.0       0.50       0.50
-saturday    3 EquiptW    0-24      0.0      0.0       0.50       0.50
+saturday    1 Occupt     people    W    0-24    200.0    100.0       0.50       0.50
+saturday    2 Lights     lighting  W    0-24    200.0      0.0       0.50       0.50
+saturday    3 Equipt     equipment W    0-24      0.0      0.0       0.50       0.50
  
-sunday      1 OccuptW    0-24    200.0    100.0       0.50       0.50
-sunday      2 LightsW    0-24    200.0      0.0       0.50       0.50
-sunday      3 EquiptW    0-24      0.0      0.0       0.50       0.50
+sunday      1 Occupt     people    W    0-24    200.0    100.0       0.50       0.50
+sunday      2 Lights     lighting  W    0-24    200.0      0.0       0.50       0.50
+sunday      3 Equipt     equipment W    0-24      0.0      0.0       0.50       0.50
  
-holiday     1 OccuptW    0-24    200.0    100.0       0.50       0.50
-holiday     2 LightsW    0-24    200.0    100.0       0.50       0.50
-holiday     3 EquiptW    0-24      0.0      0.0       0.50       0.50
+holiday     1 Occupt     people    W    0-24    200.0    100.0       0.50       0.50
+holiday     2 Lights     lighting  W    0-24    200.0    100.0       0.50       0.50
+holiday     3 Equipt     equipment W    0-24      0.0      0.0       0.50       0.50
  
-out-of-ter  1 OccuptW    0- 7    100.0     50.0       0.50       0.50
-out-of-ter  2 OccuptW    7-18    200.0    100.0       0.50       0.50
-out-of-ter  3 OccuptW   18-24    100.0     50.0       0.50       0.50
-out-of-ter  4 LightsW    0-24    200.0      0.0       0.50       0.50
-out-of-ter  5 EquiptW    0-24      0.0      0.0       0.50       0.50
+out-of-ter  1 Occupt     people    W    0- 7    100.0     50.0       0.50       0.50
+out-of-ter  2 Occupt     people    W    7-18    200.0    100.0       0.50       0.50
+out-of-ter  3 Occupt     people    W   18-24    100.0     50.0       0.50       0.50
+out-of-ter  4 Lights     lighting  W    0-24    200.0      0.0       0.50       0.50
+out-of-ter  5 Equipt     equipment W    0-24      0.0      0.0       0.50       0.50
  
-new_staff   1 OccuptW    0- 8    150.0     80.0       0.50       0.50
-new_staff   2 OccuptW    8-19    800.0    400.0       0.50       0.50
-new_staff   3 OccuptW   19-24    200.0    100.0       0.50       0.50
-new_staff   4 LightsW    0-24    200.0      0.0       0.50       0.50
-new_staff   5 EquiptW    0-24      0.0      0.0       0.50       0.50
+new_staff   1 Occupt     people    W    0- 8    150.0     80.0       0.50       0.50
+new_staff   2 Occupt     people    W    8-19    800.0    400.0       0.50       0.50
+new_staff   3 Occupt     people    W   19-24    200.0    100.0       0.50       0.50
+new_staff   4 Lights     lighting  W    0-24    200.0      0.0       0.50       0.50
+new_staff   5 Equipt     equipment W    0-24      0.0      0.0       0.50       0.50
  
  
  ____________________________________________________________
@@ -446,8 +446,7 @@ new_staff   5 EquiptW    0-24      0.0      0.0       0.50       0.50
  
  
  Air schedule notes:
-nothing happens in this zone in terms of occupants lights and small
-power. There is 0.1ach infiltration or ventilation.
+There is 0.1ach infiltration or ventilation.
  Control: no control of air flow
  
 Scheduled air infiltration and ventilation:
@@ -462,33 +461,33 @@ new_staff  1  0 - 24    0.10  0.0074    0.00  0.0000   0     0.00
  
 Notes:
 nothing happens in this zone in terms of occupants lights and small
-power. There is 0.1ach infiltration or ventilation.
+power.
  
-Daytype   Gain Type    Period Sensible  Latent     Radiant    Convec
-          No.  label   Hours  Magn.(W)  Magn.(W)   Fraction   Fraction
-weekdays    1 OccuptW    0-24      0.0      0.0       0.50       0.50
-weekdays    2 LightsW    0-24      0.0      0.0       0.50       0.50
-weekdays    3 EquiptW    0-24      0.0      0.0       0.50       0.50
+Daytype   Gain Label     Type    Unit Period Sensible  Latent     Radiant    Convec
+          No.                          Hours Magn.(W)  Magn.(W)   Fraction   Fraction
+weekdays    1 Occupt     people    W    0-24      0.0      0.0       0.50       0.50
+weekdays    2 Lights     lighting  W    0-24      0.0      0.0       0.50       0.50
+weekdays    3 Equipt     equipment W    0-24      0.0      0.0       0.50       0.50
  
-saturday    1 OccuptW    0-24      0.0      0.0       0.50       0.50
-saturday    2 LightsW    0-24      0.0      0.0       0.50       0.50
-saturday    3 EquiptW    0-24      0.0      0.0       0.50       0.50
+saturday    1 Occupt     people    W    0-24      0.0      0.0       0.50       0.50
+saturday    2 Lights     lighting  W    0-24      0.0      0.0       0.50       0.50
+saturday    3 Equipt     equipment W    0-24      0.0      0.0       0.50       0.50
  
-sunday      1 OccuptW    0-24      0.0      0.0       0.50       0.50
-sunday      2 LightsW    0-24      0.0      0.0       0.50       0.50
-sunday      3 EquiptW    0-24      0.0      0.0       0.50       0.50
+sunday      1 Occupt     people    W    0-24      0.0      0.0       0.50       0.50
+sunday      2 Lights     lighting  W    0-24      0.0      0.0       0.50       0.50
+sunday      3 Equipt     equipment W    0-24      0.0      0.0       0.50       0.50
  
-holiday     1 OccuptW    0-24      0.0      0.0       0.50       0.50
-holiday     2 LightsW    0-24      0.0      0.0       0.50       0.50
-holiday     3 EquiptW    0-24      0.0      0.0       0.50       0.50
+holiday     1 Occupt     people    W    0-24      0.0      0.0       0.50       0.50
+holiday     2 Lights     lighting  W    0-24      0.0      0.0       0.50       0.50
+holiday     3 Equipt     equipment W    0-24      0.0      0.0       0.50       0.50
  
-out-of-ter  1 OccuptW    0-24      0.0      0.0       0.50       0.50
-out-of-ter  2 LightsW    0-24      0.0      0.0       0.50       0.50
-out-of-ter  3 EquiptW    0-24      0.0      0.0       0.50       0.50
+out-of-ter  1 Occupt     people    W    0-24      0.0      0.0       0.50       0.50
+out-of-ter  2 Lights     lighting  W    0-24      0.0      0.0       0.50       0.50
+out-of-ter  3 Equipt     equipment W    0-24      0.0      0.0       0.50       0.50
  
-new_staff   1 OccuptW    0-24      0.0      0.0       0.50       0.50
-new_staff   2 LightsW    0-24      0.0      0.0       0.50       0.50
-new_staff   3 EquiptW    0-24      0.0      0.0       0.50       0.50
+new_staff   1 Occupt     people    W    0-24      0.0      0.0       0.50       0.50
+new_staff   2 Lights     lighting  W    0-24      0.0      0.0       0.50       0.50
+new_staff   3 Equipt     equipment W    0-24      0.0      0.0       0.50       0.50
  
  
  ____________________________________________________________
@@ -729,7 +728,7 @@ Block X- Y- Z- coords DX- DY- DZ- values Orient Opacity
  
  
  Air schedule notes:
-lighting at 8W/m2 equipment 2 W/m2 people 1 per 15m2
+Infiltration is 0.25 ach all day types.
  Control: no control of air flow
  
 Scheduled air infiltration and ventilation:
@@ -745,59 +744,59 @@ new_staff  1  0 - 24    0.25  0.1081    0.00  0.0000   0     0.00
 Notes:
 lighting at 8W/m2 equipment 2 W/m2 people 1 per 15m2
  
-Daytype   Gain Type    Period Sensible  Latent     Radiant    Convec
-          No.  label   Hours  Magn.(W)  Magn.(W)   Fraction   Fraction
-weekdays    1 Occuptm2p  0- 8    100.0      0.0       0.50       0.50
-weekdays    2 Occuptm2p  8-19     15.0      0.0       0.50       0.50
-weekdays    3 Occuptm2p 19-24    100.0      0.0       0.50       0.50
-weekdays    4 LightsWm2  0- 8      2.0      0.0       0.50       0.50
-weekdays    5 LightsWm2  8-19      8.0      0.0       0.50       0.50
-weekdays    6 LightsWm2 19-24      0.0      0.0       0.50       0.50
-weekdays    7 EquiptWm2  0- 8      1.0      0.0       0.50       0.50
-weekdays    8 EquiptWm2  8-19      2.0      0.0       0.50       0.50
-weekdays    9 EquiptWm2 19-24      1.0      0.0       0.50       0.50
+Daytype   Gain Label     Type    Unit Period Sensible  Latent     Radiant    Convec
+          No.                          Hours Magn.(W)  Magn.(W)   Fraction   Fraction
+weekdays    1 Occupt     people    m2p  0- 8    100.0      0.0       0.50       0.50
+weekdays    2 Occupt     people    m2p  8-19     15.0      0.0       0.50       0.50
+weekdays    3 Occupt     people    m2p 19-24    100.0      0.0       0.50       0.50
+weekdays    4 Lights     lighting  Wm2  0- 8      2.0      0.0       0.50       0.50
+weekdays    5 Lights     lighting  Wm2  8-19      8.0      0.0       0.50       0.50
+weekdays    6 Lights     lighting  Wm2 19-24      0.0      0.0       0.50       0.50
+weekdays    7 Equipt     equipment Wm2  0- 8      1.0      0.0       0.50       0.50
+weekdays    8 Equipt     equipment Wm2  8-19      2.0      0.0       0.50       0.50
+weekdays    9 Equipt     equipment Wm2 19-24      1.0      0.0       0.50       0.50
  
-saturday    1 Occuptm2p  0-24    100.0      0.0       0.50       0.50
-saturday    2 LightsWm2  0- 8      2.0      0.0       0.50       0.50
-saturday    3 LightsWm2  8-19      8.0      0.0       0.50       0.50
-saturday    4 LightsWm2 19-24      0.0      0.0       0.50       0.50
-saturday    5 EquiptWm2  0- 8      1.0      0.0       0.50       0.50
-saturday    6 EquiptWm2  8-19      2.0      0.0       0.50       0.50
-saturday    7 EquiptWm2 19-24      1.0      0.0       0.50       0.50
+saturday    1 Occupt     people    m2p  0-24    100.0      0.0       0.50       0.50
+saturday    2 Lights     lighting  Wm2  0- 8      2.0      0.0       0.50       0.50
+saturday    3 Lights     lighting  Wm2  8-19      8.0      0.0       0.50       0.50
+saturday    4 Lights     lighting  Wm2 19-24      0.0      0.0       0.50       0.50
+saturday    5 Equipt     equipment Wm2  0- 8      1.0      0.0       0.50       0.50
+saturday    6 Equipt     equipment Wm2  8-19      2.0      0.0       0.50       0.50
+saturday    7 Equipt     equipment Wm2 19-24      1.0      0.0       0.50       0.50
  
-sunday      1 Occuptm2p  0-24    100.0      0.0       0.50       0.50
-sunday      2 LightsWm2  0- 8      2.0      0.0       0.50       0.50
-sunday      3 LightsWm2  8-19      4.0      0.0       0.50       0.50
-sunday      4 LightsWm2 19-24      0.0      0.0       0.50       0.50
-sunday      5 EquiptWm2  0- 8      1.0      0.0       0.50       0.50
-sunday      6 EquiptWm2  8-19      2.0      0.0       0.50       0.50
-sunday      7 EquiptWm2 19-24      1.0      0.0       0.50       0.50
+sunday      1 Occupt     people    m2p  0-24    100.0      0.0       0.50       0.50
+sunday      2 Lights     lighting  Wm2  0- 8      2.0      0.0       0.50       0.50
+sunday      3 Lights     lighting  Wm2  8-19      4.0      0.0       0.50       0.50
+sunday      4 Lights     lighting  Wm2 19-24      0.0      0.0       0.50       0.50
+sunday      5 Equipt     equipment Wm2  0- 8      1.0      0.0       0.50       0.50
+sunday      6 Equipt     equipment Wm2  8-19      2.0      0.0       0.50       0.50
+sunday      7 Equipt     equipment Wm2 19-24      1.0      0.0       0.50       0.50
  
-holiday     1 Occuptm2p  0-24    100.0      0.0       0.50       0.50
-holiday     2 LightsWm2  0- 8      2.0      0.0       0.50       0.50
-holiday     3 LightsWm2  8-19      2.0      0.0       0.50       0.50
-holiday     4 LightsWm2 19-24      0.0      0.0       0.50       0.50
-holiday     5 EquiptWm2  0- 8      1.0      0.0       0.50       0.50
-holiday     6 EquiptWm2  8-19      2.0      0.0       0.50       0.50
-holiday     7 EquiptWm2 19-24      1.0      0.0       0.50       0.50
+holiday     1 Occupt     people    m2p  0-24    100.0      0.0       0.50       0.50
+holiday     2 Lights     lighting  Wm2  0- 8      2.0      0.0       0.50       0.50
+holiday     3 Lights     lighting  Wm2  8-19      2.0      0.0       0.50       0.50
+holiday     4 Lights     lighting  Wm2 19-24      0.0      0.0       0.50       0.50
+holiday     5 Equipt     equipment Wm2  0- 8      1.0      0.0       0.50       0.50
+holiday     6 Equipt     equipment Wm2  8-19      2.0      0.0       0.50       0.50
+holiday     7 Equipt     equipment Wm2 19-24      1.0      0.0       0.50       0.50
  
-out-of-ter  1 Occuptm2p  0-24    100.0      0.0       0.50       0.50
-out-of-ter  2 LightsWm2  0- 8      2.0      0.0       0.50       0.50
-out-of-ter  3 LightsWm2  8-19      2.0      0.0       0.50       0.50
-out-of-ter  4 LightsWm2 19-24      0.0      0.0       0.50       0.50
-out-of-ter  5 EquiptWm2  0- 8      1.0      0.0       0.50       0.50
-out-of-ter  6 EquiptWm2  8-19      2.0      0.0       0.50       0.50
-out-of-ter  7 EquiptWm2 19-24      1.0      0.0       0.50       0.50
+out-of-ter  1 Occupt     people    m2p  0-24    100.0      0.0       0.50       0.50
+out-of-ter  2 Lights     lighting  Wm2  0- 8      2.0      0.0       0.50       0.50
+out-of-ter  3 Lights     lighting  Wm2  8-19      2.0      0.0       0.50       0.50
+out-of-ter  4 Lights     lighting  Wm2 19-24      0.0      0.0       0.50       0.50
+out-of-ter  5 Equipt     equipment Wm2  0- 8      1.0      0.0       0.50       0.50
+out-of-ter  6 Equipt     equipment Wm2  8-19      2.0      0.0       0.50       0.50
+out-of-ter  7 Equipt     equipment Wm2 19-24      1.0      0.0       0.50       0.50
  
-new_staff   1 Occuptm2p  0- 8    100.0      0.0       0.50       0.50
-new_staff   2 Occuptm2p  8-19     12.0      0.0       0.50       0.50
-new_staff   3 Occuptm2p 19-24    100.0      0.0       0.50       0.50
-new_staff   4 LightsWm2  0- 8      2.0      0.0       0.50       0.50
-new_staff   5 LightsWm2  8-19      8.0      0.0       0.50       0.50
-new_staff   6 LightsWm2 19-24      2.0      0.0       0.50       0.50
-new_staff   7 EquiptWm2  0- 8      1.0      0.0       0.50       0.50
-new_staff   8 EquiptWm2  8-19      2.0      0.0       0.50       0.50
-new_staff   9 EquiptWm2 19-24      1.0      0.0       0.50       0.50
+new_staff   1 Occupt     people    m2p  0- 8    100.0      0.0       0.50       0.50
+new_staff   2 Occupt     people    m2p  8-19     12.0      0.0       0.50       0.50
+new_staff   3 Occupt     people    m2p 19-24    100.0      0.0       0.50       0.50
+new_staff   4 Lights     lighting  Wm2  0- 8      2.0      0.0       0.50       0.50
+new_staff   5 Lights     lighting  Wm2  8-19      8.0      0.0       0.50       0.50
+new_staff   6 Lights     lighting  Wm2 19-24      2.0      0.0       0.50       0.50
+new_staff   7 Equipt     equipment Wm2  0- 8      1.0      0.0       0.50       0.50
+new_staff   8 Equipt     equipment Wm2  8-19      2.0      0.0       0.50       0.50
+new_staff   9 Equipt     equipment Wm2 19-24      1.0      0.0       0.50       0.50
  
  
  ____________________________________________________________
@@ -903,7 +902,7 @@ Block X- Y- Z- coords DX- DY- DZ- values Orient Opacity
  
  
  Air schedule notes:
-lighting at 10W/m2 equipment 5 W/m2 people 1 per 10m2
+Infiltration is 0.25 ach all day types.
  Control: no control of air flow
  
 Scheduled air infiltration and ventilation:
@@ -919,59 +918,59 @@ new_staff  1  0 - 24    0.25  0.0109    0.00  0.0000   0     0.00
 Notes:
 lighting at 10W/m2 equipment 5 W/m2 people 1 per 10m2
  
-Daytype   Gain Type    Period Sensible  Latent     Radiant    Convec
-          No.  label   Hours  Magn.(W)  Magn.(W)   Fraction   Fraction
-weekdays    1 Occuptm2p  0- 8    100.0      0.0       0.50       0.50
-weekdays    2 Occuptm2p  8-19     10.0      0.0       0.50       0.50
-weekdays    3 Occuptm2p 19-24    100.0      0.0       0.50       0.50
-weekdays    4 LightsWm2  0- 8      2.0      0.0       0.50       0.50
-weekdays    5 LightsWm2  8-19     10.0      0.0       0.50       0.50
-weekdays    6 LightsWm2 19-24      0.0      0.0       0.50       0.50
-weekdays    7 EquiptWm2  0- 8      2.0      0.0       0.50       0.50
-weekdays    8 EquiptWm2  8-19      5.0      0.0       0.50       0.50
-weekdays    9 EquiptWm2 19-24      7.0      0.0       0.50       0.50
+Daytype   Gain Label     Type    Unit Period Sensible  Latent     Radiant    Convec
+          No.                          Hours Magn.(W)  Magn.(W)   Fraction   Fraction
+weekdays    1 Occupt     people    m2p  0- 8    100.0      0.0       0.50       0.50
+weekdays    2 Occupt     people    m2p  8-19     10.0      0.0       0.50       0.50
+weekdays    3 Occupt     people    m2p 19-24    100.0      0.0       0.50       0.50
+weekdays    4 Lights     lighting  Wm2  0- 8      2.0      0.0       0.50       0.50
+weekdays    5 Lights     lighting  Wm2  8-19     10.0      0.0       0.50       0.50
+weekdays    6 Lights     lighting  Wm2 19-24      0.0      0.0       0.50       0.50
+weekdays    7 Equipt     equipment Wm2  0- 8      2.0      0.0       0.50       0.50
+weekdays    8 Equipt     equipment Wm2  8-19      5.0      0.0       0.50       0.50
+weekdays    9 Equipt     equipment Wm2 19-24      7.0      0.0       0.50       0.50
  
-saturday    1 Occuptm2p  0-24    100.0      0.0       0.50       0.50
-saturday    2 LightsWm2  0- 8      2.0      0.0       0.50       0.50
-saturday    3 LightsWm2  8-19      2.0      0.0       0.50       0.50
-saturday    4 LightsWm2 19-24      0.0      0.0       0.50       0.50
-saturday    5 EquiptWm2  0- 8      2.0      0.0       0.50       0.50
-saturday    6 EquiptWm2  8-19      2.0      0.0       0.50       0.50
-saturday    7 EquiptWm2 19-24      4.0      0.0       0.50       0.50
+saturday    1 Occupt     people    m2p  0-24    100.0      0.0       0.50       0.50
+saturday    2 Lights     lighting  Wm2  0- 8      2.0      0.0       0.50       0.50
+saturday    3 Lights     lighting  Wm2  8-19      2.0      0.0       0.50       0.50
+saturday    4 Lights     lighting  Wm2 19-24      0.0      0.0       0.50       0.50
+saturday    5 Equipt     equipment Wm2  0- 8      2.0      0.0       0.50       0.50
+saturday    6 Equipt     equipment Wm2  8-19      2.0      0.0       0.50       0.50
+saturday    7 Equipt     equipment Wm2 19-24      4.0      0.0       0.50       0.50
  
-sunday      1 Occuptm2p  0-24    100.0      0.0       0.50       0.50
-sunday      2 LightsWm2  0- 8      2.0      0.0       0.50       0.50
-sunday      3 LightsWm2  8-19      2.0      0.0       0.50       0.50
-sunday      4 LightsWm2 19-24      0.0      0.0       0.50       0.50
-sunday      5 EquiptWm2  0- 8      2.0      0.0       0.50       0.50
-sunday      6 EquiptWm2  8-19      2.0      0.0       0.50       0.50
-sunday      7 EquiptWm2 19-24      2.0      0.0       0.50       0.50
+sunday      1 Occupt     people    m2p  0-24    100.0      0.0       0.50       0.50
+sunday      2 Lights     lighting  Wm2  0- 8      2.0      0.0       0.50       0.50
+sunday      3 Lights     lighting  Wm2  8-19      2.0      0.0       0.50       0.50
+sunday      4 Lights     lighting  Wm2 19-24      0.0      0.0       0.50       0.50
+sunday      5 Equipt     equipment Wm2  0- 8      2.0      0.0       0.50       0.50
+sunday      6 Equipt     equipment Wm2  8-19      2.0      0.0       0.50       0.50
+sunday      7 Equipt     equipment Wm2 19-24      2.0      0.0       0.50       0.50
  
-holiday     1 Occuptm2p  0-24    100.0      0.0       0.50       0.50
-holiday     2 LightsWm2  0- 8      2.0      0.0       0.50       0.50
-holiday     3 LightsWm2  8-19      2.0      0.0       0.50       0.50
-holiday     4 LightsWm2 19-24      0.0      0.0       0.50       0.50
-holiday     5 EquiptWm2  0- 8      2.0      0.0       0.50       0.50
-holiday     6 EquiptWm2  8-19      2.0      0.0       0.50       0.50
-holiday     7 EquiptWm2 19-24      2.0      0.0       0.50       0.50
+holiday     1 Occupt     people    m2p  0-24    100.0      0.0       0.50       0.50
+holiday     2 Lights     lighting  Wm2  0- 8      2.0      0.0       0.50       0.50
+holiday     3 Lights     lighting  Wm2  8-19      2.0      0.0       0.50       0.50
+holiday     4 Lights     lighting  Wm2 19-24      0.0      0.0       0.50       0.50
+holiday     5 Equipt     equipment Wm2  0- 8      2.0      0.0       0.50       0.50
+holiday     6 Equipt     equipment Wm2  8-19      2.0      0.0       0.50       0.50
+holiday     7 Equipt     equipment Wm2 19-24      2.0      0.0       0.50       0.50
  
-out-of-ter  1 Occuptm2p  0-24    100.0      0.0       0.50       0.50
-out-of-ter  2 LightsWm2  0- 8      2.0      0.0       0.50       0.50
-out-of-ter  3 LightsWm2  8-19      2.0      0.0       0.50       0.50
-out-of-ter  4 LightsWm2 19-24      0.0      0.0       0.50       0.50
-out-of-ter  5 EquiptWm2  0- 8      2.0      0.0       0.50       0.50
-out-of-ter  6 EquiptWm2  8-19      2.0      0.0       0.50       0.50
-out-of-ter  7 EquiptWm2 19-24      2.0      0.0       0.50       0.50
+out-of-ter  1 Occupt     people    m2p  0-24    100.0      0.0       0.50       0.50
+out-of-ter  2 Lights     lighting  Wm2  0- 8      2.0      0.0       0.50       0.50
+out-of-ter  3 Lights     lighting  Wm2  8-19      2.0      0.0       0.50       0.50
+out-of-ter  4 Lights     lighting  Wm2 19-24      0.0      0.0       0.50       0.50
+out-of-ter  5 Equipt     equipment Wm2  0- 8      2.0      0.0       0.50       0.50
+out-of-ter  6 Equipt     equipment Wm2  8-19      2.0      0.0       0.50       0.50
+out-of-ter  7 Equipt     equipment Wm2 19-24      2.0      0.0       0.50       0.50
  
-new_staff   1 Occuptm2p  0- 8    100.0      0.0       0.50       0.50
-new_staff   2 Occuptm2p  8-19      8.0      0.0       0.50       0.50
-new_staff   3 Occuptm2p 19-24    100.0      0.0       0.50       0.50
-new_staff   4 LightsWm2  0- 8      2.0      0.0       0.50       0.50
-new_staff   5 LightsWm2  8-19     10.0      0.0       0.50       0.50
-new_staff   6 LightsWm2 19-24      2.0      0.0       0.50       0.50
-new_staff   7 EquiptWm2  0- 8      4.0      0.0       0.50       0.50
-new_staff   8 EquiptWm2  8-19      8.0      0.0       0.50       0.50
-new_staff   9 EquiptWm2 19-24      4.0      0.0       0.50       0.50
+new_staff   1 Occupt     people    m2p  0- 8    100.0      0.0       0.50       0.50
+new_staff   2 Occupt     people    m2p  8-19      8.0      0.0       0.50       0.50
+new_staff   3 Occupt     people    m2p 19-24    100.0      0.0       0.50       0.50
+new_staff   4 Lights     lighting  Wm2  0- 8      2.0      0.0       0.50       0.50
+new_staff   5 Lights     lighting  Wm2  8-19     10.0      0.0       0.50       0.50
+new_staff   6 Lights     lighting  Wm2 19-24      2.0      0.0       0.50       0.50
+new_staff   7 Equipt     equipment Wm2  0- 8      4.0      0.0       0.50       0.50
+new_staff   8 Equipt     equipment Wm2  8-19      8.0      0.0       0.50       0.50
+new_staff   9 Equipt     equipment Wm2 19-24      4.0      0.0       0.50       0.50
  
  
  ____________________________________________________________
@@ -1099,7 +1098,7 @@ Block X- Y- Z- coords DX- DY- DZ- values Orient Opacity
  
  
  Air schedule notes:
-lighting at 10W/m2 equipment 8 W/m2 people 1 per 10m2
+Infiltration is 0.25 ach all day types.
  Control: no control of air flow
  
 Scheduled air infiltration and ventilation:
@@ -1115,59 +1114,59 @@ new_staff  1  0 - 24    0.25  0.0378    0.00  0.0000   0     0.00
 Notes:
 lighting at 10W/m2 equipment 8 W/m2 people 1 per 10m2
  
-Daytype   Gain Type    Period Sensible  Latent     Radiant    Convec
-          No.  label   Hours  Magn.(W)  Magn.(W)   Fraction   Fraction
-weekdays    1 Occuptm2p  0- 8    100.0      0.0       0.50       0.50
-weekdays    2 Occuptm2p  8-19     10.0      0.0       0.50       0.50
-weekdays    3 Occuptm2p 19-24    100.0      0.0       0.50       0.50
-weekdays    4 LightsWm2  0- 8      2.0      0.0       0.50       0.50
-weekdays    5 LightsWm2  8-19     10.0      0.0       0.50       0.50
-weekdays    6 LightsWm2 19-24      0.0      0.0       0.50       0.50
-weekdays    7 EquiptWm2  0- 8      2.0      0.0       0.50       0.50
-weekdays    8 EquiptWm2  8-19      8.0      0.0       0.50       0.50
-weekdays    9 EquiptWm2 19-24      6.0      0.0       0.50       0.50
+Daytype   Gain Label     Type    Unit Period Sensible  Latent     Radiant    Convec
+          No.                          Hours Magn.(W)  Magn.(W)   Fraction   Fraction
+weekdays    1 Occupt     people    m2p  0- 8    100.0      0.0       0.50       0.50
+weekdays    2 Occupt     people    m2p  8-19     10.0      0.0       0.50       0.50
+weekdays    3 Occupt     people    m2p 19-24    100.0      0.0       0.50       0.50
+weekdays    4 Lights     lighting  Wm2  0- 8      2.0      0.0       0.50       0.50
+weekdays    5 Lights     lighting  Wm2  8-19     10.0      0.0       0.50       0.50
+weekdays    6 Lights     lighting  Wm2 19-24      0.0      0.0       0.50       0.50
+weekdays    7 Equipt     equipment Wm2  0- 8      2.0      0.0       0.50       0.50
+weekdays    8 Equipt     equipment Wm2  8-19      8.0      0.0       0.50       0.50
+weekdays    9 Equipt     equipment Wm2 19-24      6.0      0.0       0.50       0.50
  
-saturday    1 Occuptm2p  0-24    100.0      0.0       0.50       0.50
-saturday    2 LightsWm2  0- 8      2.0      0.0       0.50       0.50
-saturday    3 LightsWm2  8-19      2.0      0.0       0.50       0.50
-saturday    4 LightsWm2 19-24      0.0      0.0       0.50       0.50
-saturday    5 EquiptWm2  0- 8      2.0      0.0       0.50       0.50
-saturday    6 EquiptWm2  8-19      4.0      0.0       0.50       0.50
-saturday    7 EquiptWm2 19-24      4.0      0.0       0.50       0.50
+saturday    1 Occupt     people    m2p  0-24    100.0      0.0       0.50       0.50
+saturday    2 Lights     lighting  Wm2  0- 8      2.0      0.0       0.50       0.50
+saturday    3 Lights     lighting  Wm2  8-19      2.0      0.0       0.50       0.50
+saturday    4 Lights     lighting  Wm2 19-24      0.0      0.0       0.50       0.50
+saturday    5 Equipt     equipment Wm2  0- 8      2.0      0.0       0.50       0.50
+saturday    6 Equipt     equipment Wm2  8-19      4.0      0.0       0.50       0.50
+saturday    7 Equipt     equipment Wm2 19-24      4.0      0.0       0.50       0.50
  
-sunday      1 Occuptm2p  0-24    100.0      0.0       0.50       0.50
-sunday      2 LightsWm2  0- 8      2.0      0.0       0.50       0.50
-sunday      3 LightsWm2  8-19      2.0      0.0       0.50       0.50
-sunday      4 LightsWm2 19-24      0.0      0.0       0.50       0.50
-sunday      5 EquiptWm2  0- 8      2.0      0.0       0.50       0.50
-sunday      6 EquiptWm2  8-19      4.0      0.0       0.50       0.50
-sunday      7 EquiptWm2 19-24      2.0      0.0       0.50       0.50
+sunday      1 Occupt     people    m2p  0-24    100.0      0.0       0.50       0.50
+sunday      2 Lights     lighting  Wm2  0- 8      2.0      0.0       0.50       0.50
+sunday      3 Lights     lighting  Wm2  8-19      2.0      0.0       0.50       0.50
+sunday      4 Lights     lighting  Wm2 19-24      0.0      0.0       0.50       0.50
+sunday      5 Equipt     equipment Wm2  0- 8      2.0      0.0       0.50       0.50
+sunday      6 Equipt     equipment Wm2  8-19      4.0      0.0       0.50       0.50
+sunday      7 Equipt     equipment Wm2 19-24      2.0      0.0       0.50       0.50
  
-holiday     1 Occuptm2p  0-24    100.0      0.0       0.50       0.50
-holiday     2 LightsWm2  0- 8      2.0      0.0       0.50       0.50
-holiday     3 LightsWm2  8-19      2.0      0.0       0.50       0.50
-holiday     4 LightsWm2 19-24      0.0      0.0       0.50       0.50
-holiday     5 EquiptWm2  0- 8      2.0      0.0       0.50       0.50
-holiday     6 EquiptWm2  8-19      4.0      0.0       0.50       0.50
-holiday     7 EquiptWm2 19-24      2.0      0.0       0.50       0.50
+holiday     1 Occupt     people    m2p  0-24    100.0      0.0       0.50       0.50
+holiday     2 Lights     lighting  Wm2  0- 8      2.0      0.0       0.50       0.50
+holiday     3 Lights     lighting  Wm2  8-19      2.0      0.0       0.50       0.50
+holiday     4 Lights     lighting  Wm2 19-24      0.0      0.0       0.50       0.50
+holiday     5 Equipt     equipment Wm2  0- 8      2.0      0.0       0.50       0.50
+holiday     6 Equipt     equipment Wm2  8-19      4.0      0.0       0.50       0.50
+holiday     7 Equipt     equipment Wm2 19-24      2.0      0.0       0.50       0.50
  
-out-of-ter  1 Occuptm2p  0-24    100.0      0.0       0.50       0.50
-out-of-ter  2 LightsWm2  0- 8      2.0      0.0       0.50       0.50
-out-of-ter  3 LightsWm2  8-19      2.0      0.0       0.50       0.50
-out-of-ter  4 LightsWm2 19-24      0.0      0.0       0.50       0.50
-out-of-ter  5 EquiptWm2  0- 8      2.0      0.0       0.50       0.50
-out-of-ter  6 EquiptWm2  8-19      4.0      0.0       0.50       0.50
-out-of-ter  7 EquiptWm2 19-24      2.0      0.0       0.50       0.50
+out-of-ter  1 Occupt     people    m2p  0-24    100.0      0.0       0.50       0.50
+out-of-ter  2 Lights     lighting  Wm2  0- 8      2.0      0.0       0.50       0.50
+out-of-ter  3 Lights     lighting  Wm2  8-19      2.0      0.0       0.50       0.50
+out-of-ter  4 Lights     lighting  Wm2 19-24      0.0      0.0       0.50       0.50
+out-of-ter  5 Equipt     equipment Wm2  0- 8      2.0      0.0       0.50       0.50
+out-of-ter  6 Equipt     equipment Wm2  8-19      4.0      0.0       0.50       0.50
+out-of-ter  7 Equipt     equipment Wm2 19-24      2.0      0.0       0.50       0.50
  
-new_staff   1 Occuptm2p  0- 8    100.0      0.0       0.50       0.50
-new_staff   2 Occuptm2p  8-19      8.0      0.0       0.50       0.50
-new_staff   3 Occuptm2p 19-24    100.0      0.0       0.50       0.50
-new_staff   4 LightsWm2  0- 8      2.0      0.0       0.50       0.50
-new_staff   5 LightsWm2  8-19     10.0      0.0       0.50       0.50
-new_staff   6 LightsWm2 19-24      2.0      0.0       0.50       0.50
-new_staff   7 EquiptWm2  0- 8      4.0      0.0       0.50       0.50
-new_staff   8 EquiptWm2  8-19      8.0      0.0       0.50       0.50
-new_staff   9 EquiptWm2 19-24      4.0      0.0       0.50       0.50
+new_staff   1 Occupt     people    m2p  0- 8    100.0      0.0       0.50       0.50
+new_staff   2 Occupt     people    m2p  8-19      8.0      0.0       0.50       0.50
+new_staff   3 Occupt     people    m2p 19-24    100.0      0.0       0.50       0.50
+new_staff   4 Lights     lighting  Wm2  0- 8      2.0      0.0       0.50       0.50
+new_staff   5 Lights     lighting  Wm2  8-19     10.0      0.0       0.50       0.50
+new_staff   6 Lights     lighting  Wm2 19-24      2.0      0.0       0.50       0.50
+new_staff   7 Equipt     equipment Wm2  0- 8      4.0      0.0       0.50       0.50
+new_staff   8 Equipt     equipment Wm2  8-19      8.0      0.0       0.50       0.50
+new_staff   9 Equipt     equipment Wm2 19-24      4.0      0.0       0.50       0.50
  
  
  ____________________________________________________________
@@ -1362,7 +1361,7 @@ Block X- Y- Z- coords DX- DY- DZ- values Orient Opacity
  
  
  Air schedule notes:
-lighting at 10W/m2 dryer equipment 4 W/m2 people 1 per 10m2
+Infiltration is 0.25 ach all day types.
  Control: no control of air flow
  
 Scheduled air infiltration and ventilation:
@@ -1378,59 +1377,59 @@ new_staff  1  0 - 24    0.25  0.0156    0.00  0.0000   0     0.00
 Notes:
 lighting at 10W/m2 dryer equipment 4 W/m2 people 1 per 10m2
  
-Daytype   Gain Type    Period Sensible  Latent     Radiant    Convec
-          No.  label   Hours  Magn.(W)  Magn.(W)   Fraction   Fraction
-weekdays    1 Occuptm2p  0- 8    100.0      0.0       0.50       0.50
-weekdays    2 Occuptm2p  8-19     10.0      0.0       0.50       0.50
-weekdays    3 Occuptm2p 19-24    100.0      0.0       0.50       0.50
-weekdays    4 LightsWm2  0- 8      2.0      0.0       0.50       0.50
-weekdays    5 LightsWm2  8-19     10.0      0.0       0.50       0.50
-weekdays    6 LightsWm2 19-24      0.0      0.0       0.50       0.50
-weekdays    7 EquiptWm2  0- 8      2.0      0.0       0.50       0.50
-weekdays    8 EquiptWm2  8-19      4.0      0.0       0.50       0.50
-weekdays    9 EquiptWm2 19-24      2.0      0.0       0.50       0.50
+Daytype   Gain Label     Type    Unit Period Sensible  Latent     Radiant    Convec
+          No.                          Hours Magn.(W)  Magn.(W)   Fraction   Fraction
+weekdays    1 Occupt     people    m2p  0- 8    100.0      0.0       0.50       0.50
+weekdays    2 Occupt     people    m2p  8-19     10.0      0.0       0.50       0.50
+weekdays    3 Occupt     people    m2p 19-24    100.0      0.0       0.50       0.50
+weekdays    4 Lights     lighting  Wm2  0- 8      2.0      0.0       0.50       0.50
+weekdays    5 Lights     lighting  Wm2  8-19     10.0      0.0       0.50       0.50
+weekdays    6 Lights     lighting  Wm2 19-24      0.0      0.0       0.50       0.50
+weekdays    7 Equipt     equipment Wm2  0- 8      2.0      0.0       0.50       0.50
+weekdays    8 Equipt     equipment Wm2  8-19      4.0      0.0       0.50       0.50
+weekdays    9 Equipt     equipment Wm2 19-24      2.0      0.0       0.50       0.50
  
-saturday    1 Occuptm2p  0-24    100.0      0.0       0.50       0.50
-saturday    2 LightsWm2  0- 8      2.0      0.0       0.50       0.50
-saturday    3 LightsWm2  8-19      8.0      0.0       0.50       0.50
-saturday    4 LightsWm2 19-24      0.0      0.0       0.50       0.50
-saturday    5 EquiptWm2  0- 8      2.0      0.0       0.50       0.50
-saturday    6 EquiptWm2  8-19      4.0      0.0       0.50       0.50
-saturday    7 EquiptWm2 19-24      1.0      0.0       0.50       0.50
+saturday    1 Occupt     people    m2p  0-24    100.0      0.0       0.50       0.50
+saturday    2 Lights     lighting  Wm2  0- 8      2.0      0.0       0.50       0.50
+saturday    3 Lights     lighting  Wm2  8-19      8.0      0.0       0.50       0.50
+saturday    4 Lights     lighting  Wm2 19-24      0.0      0.0       0.50       0.50
+saturday    5 Equipt     equipment Wm2  0- 8      2.0      0.0       0.50       0.50
+saturday    6 Equipt     equipment Wm2  8-19      4.0      0.0       0.50       0.50
+saturday    7 Equipt     equipment Wm2 19-24      1.0      0.0       0.50       0.50
  
-sunday      1 Occuptm2p  0-24    100.0      0.0       0.50       0.50
-sunday      2 LightsWm2  0- 8      2.0      0.0       0.50       0.50
-sunday      3 LightsWm2  8-19      4.0      0.0       0.50       0.50
-sunday      4 LightsWm2 19-24      0.0      0.0       0.50       0.50
-sunday      5 EquiptWm2  0- 8      1.0      0.0       0.50       0.50
-sunday      6 EquiptWm2  8-19      2.0      0.0       0.50       0.50
-sunday      7 EquiptWm2 19-24      1.0      0.0       0.50       0.50
+sunday      1 Occupt     people    m2p  0-24    100.0      0.0       0.50       0.50
+sunday      2 Lights     lighting  Wm2  0- 8      2.0      0.0       0.50       0.50
+sunday      3 Lights     lighting  Wm2  8-19      4.0      0.0       0.50       0.50
+sunday      4 Lights     lighting  Wm2 19-24      0.0      0.0       0.50       0.50
+sunday      5 Equipt     equipment Wm2  0- 8      1.0      0.0       0.50       0.50
+sunday      6 Equipt     equipment Wm2  8-19      2.0      0.0       0.50       0.50
+sunday      7 Equipt     equipment Wm2 19-24      1.0      0.0       0.50       0.50
  
-holiday     1 Occuptm2p  0-24    100.0      0.0       0.50       0.50
-holiday     2 LightsWm2  0- 8      2.0      0.0       0.50       0.50
-holiday     3 LightsWm2  8-19      2.0      0.0       0.50       0.50
-holiday     4 LightsWm2 19-24      0.0      0.0       0.50       0.50
-holiday     5 EquiptWm2  0- 8      1.0      0.0       0.50       0.50
-holiday     6 EquiptWm2  8-19      2.0      0.0       0.50       0.50
-holiday     7 EquiptWm2 19-24      1.0      0.0       0.50       0.50
+holiday     1 Occupt     people    m2p  0-24    100.0      0.0       0.50       0.50
+holiday     2 Lights     lighting  Wm2  0- 8      2.0      0.0       0.50       0.50
+holiday     3 Lights     lighting  Wm2  8-19      2.0      0.0       0.50       0.50
+holiday     4 Lights     lighting  Wm2 19-24      0.0      0.0       0.50       0.50
+holiday     5 Equipt     equipment Wm2  0- 8      1.0      0.0       0.50       0.50
+holiday     6 Equipt     equipment Wm2  8-19      2.0      0.0       0.50       0.50
+holiday     7 Equipt     equipment Wm2 19-24      1.0      0.0       0.50       0.50
  
-out-of-ter  1 Occuptm2p  0-24    100.0      0.0       0.50       0.50
-out-of-ter  2 LightsWm2  0- 8      2.0      0.0       0.50       0.50
-out-of-ter  3 LightsWm2  8-19      2.0      0.0       0.50       0.50
-out-of-ter  4 LightsWm2 19-24      0.0      0.0       0.50       0.50
-out-of-ter  5 EquiptWm2  0- 8      1.0      0.0       0.50       0.50
-out-of-ter  6 EquiptWm2  8-19      2.0      0.0       0.50       0.50
-out-of-ter  7 EquiptWm2 19-24      1.0      0.0       0.50       0.50
+out-of-ter  1 Occupt     people    m2p  0-24    100.0      0.0       0.50       0.50
+out-of-ter  2 Lights     lighting  Wm2  0- 8      2.0      0.0       0.50       0.50
+out-of-ter  3 Lights     lighting  Wm2  8-19      2.0      0.0       0.50       0.50
+out-of-ter  4 Lights     lighting  Wm2 19-24      0.0      0.0       0.50       0.50
+out-of-ter  5 Equipt     equipment Wm2  0- 8      1.0      0.0       0.50       0.50
+out-of-ter  6 Equipt     equipment Wm2  8-19      2.0      0.0       0.50       0.50
+out-of-ter  7 Equipt     equipment Wm2 19-24      1.0      0.0       0.50       0.50
  
-new_staff   1 Occuptm2p  0- 8    100.0      0.0       0.50       0.50
-new_staff   2 Occuptm2p  8-19      8.0      0.0       0.50       0.50
-new_staff   3 Occuptm2p 19-24    100.0      0.0       0.50       0.50
-new_staff   4 LightsWm2  0- 8      2.0      0.0       0.50       0.50
-new_staff   5 LightsWm2  8-19     10.0      0.0       0.50       0.50
-new_staff   6 LightsWm2 19-24      2.0      0.0       0.50       0.50
-new_staff   7 EquiptWm2  0- 8      2.0      0.0       0.50       0.50
-new_staff   8 EquiptWm2  8-19      4.0      0.0       0.50       0.50
-new_staff   9 EquiptWm2 19-24      1.0      0.0       0.50       0.50
+new_staff   1 Occupt     people    m2p  0- 8    100.0      0.0       0.50       0.50
+new_staff   2 Occupt     people    m2p  8-19      8.0      0.0       0.50       0.50
+new_staff   3 Occupt     people    m2p 19-24    100.0      0.0       0.50       0.50
+new_staff   4 Lights     lighting  Wm2  0- 8      2.0      0.0       0.50       0.50
+new_staff   5 Lights     lighting  Wm2  8-19     10.0      0.0       0.50       0.50
+new_staff   6 Lights     lighting  Wm2 19-24      2.0      0.0       0.50       0.50
+new_staff   7 Equipt     equipment Wm2  0- 8      2.0      0.0       0.50       0.50
+new_staff   8 Equipt     equipment Wm2  8-19      4.0      0.0       0.50       0.50
+new_staff   9 Equipt     equipment Wm2 19-24      1.0      0.0       0.50       0.50
  
  
  ____________________________________________________________
@@ -1605,8 +1604,7 @@ Block X- Y- Z- coords DX- DY- DZ- values Orient Opacity
  
  
  Air schedule notes:
-nothing happens in this zone in terms of occupants lights and small
-power. There is not infiltration or ventilation.
+There is 0.25 ach infiltration and no ventilation.
  Control: no control of air flow
  
 Scheduled air infiltration and ventilation:
@@ -1621,33 +1619,33 @@ new_staff  1  0 - 24    0.25  0.0622    0.00  0.0000   0     0.00
  
 Notes:
 nothing happens in this zone in terms of occupants lights and small
-power. There is not infiltration or ventilation.
+power.
  
-Daytype   Gain Type    Period Sensible  Latent     Radiant    Convec
-          No.  label   Hours  Magn.(W)  Magn.(W)   Fraction   Fraction
-weekdays    1 OccuptW    0-24      0.0      0.0       0.50       0.50
-weekdays    2 LightsW    0-24      0.0      0.0       0.50       0.50
-weekdays    3 EquiptW    0-24      0.0      0.0       0.50       0.50
+Daytype   Gain Label     Type    Unit Period Sensible  Latent     Radiant    Convec
+          No.                          Hours Magn.(W)  Magn.(W)   Fraction   Fraction
+weekdays    1 Occupt     people    W    0-24      0.0      0.0       0.50       0.50
+weekdays    2 Lights     lighting  W    0-24      0.0      0.0       0.50       0.50
+weekdays    3 Equipt     equipment W    0-24      0.0      0.0       0.50       0.50
  
-saturday    1 OccuptW    0-24      0.0      0.0       0.50       0.50
-saturday    2 LightsW    0-24      0.0      0.0       0.50       0.50
-saturday    3 EquiptW    0-24      0.0      0.0       0.50       0.50
+saturday    1 Occupt     people    W    0-24      0.0      0.0       0.50       0.50
+saturday    2 Lights     lighting  W    0-24      0.0      0.0       0.50       0.50
+saturday    3 Equipt     equipment W    0-24      0.0      0.0       0.50       0.50
  
-sunday      1 OccuptW    0-24      0.0      0.0       0.50       0.50
-sunday      2 LightsW    0-24      0.0      0.0       0.50       0.50
-sunday      3 EquiptW    0-24      0.0      0.0       0.50       0.50
+sunday      1 Occupt     people    W    0-24      0.0      0.0       0.50       0.50
+sunday      2 Lights     lighting  W    0-24      0.0      0.0       0.50       0.50
+sunday      3 Equipt     equipment W    0-24      0.0      0.0       0.50       0.50
  
-holiday     1 OccuptW    0-24      0.0      0.0       0.50       0.50
-holiday     2 LightsW    0-24      0.0      0.0       0.50       0.50
-holiday     3 EquiptW    0-24      0.0      0.0       0.50       0.50
+holiday     1 Occupt     people    W    0-24      0.0      0.0       0.50       0.50
+holiday     2 Lights     lighting  W    0-24      0.0      0.0       0.50       0.50
+holiday     3 Equipt     equipment W    0-24      0.0      0.0       0.50       0.50
  
-out-of-ter  1 OccuptW    0-24      0.0      0.0       0.50       0.50
-out-of-ter  2 LightsW    0-24      0.0      0.0       0.50       0.50
-out-of-ter  3 EquiptW    0-24      0.0      0.0       0.50       0.50
+out-of-ter  1 Occupt     people    W    0-24      0.0      0.0       0.50       0.50
+out-of-ter  2 Lights     lighting  W    0-24      0.0      0.0       0.50       0.50
+out-of-ter  3 Equipt     equipment W    0-24      0.0      0.0       0.50       0.50
  
-new_staff   1 OccuptW    0-24      0.0      0.0       0.50       0.50
-new_staff   2 LightsW    0-24      0.0      0.0       0.50       0.50
-new_staff   3 EquiptW    0-24      0.0      0.0       0.50       0.50
+new_staff   1 Occupt     people    W    0-24      0.0      0.0       0.50       0.50
+new_staff   2 Lights     lighting  W    0-24      0.0      0.0       0.50       0.50
+new_staff   3 Equipt     equipment W    0-24      0.0      0.0       0.50       0.50
  
  
  ____________________________________________________________
@@ -2309,7 +2307,7 @@ Block X- Y- Z- coords DX- DY- DZ- values Orient Opacity
  
  
  Air schedule notes:
-lighting at 10W/m2 equipment 8 W/m2 people 1 per 10m2
+Infiltration is 0.25 ach all day types.
  Control: no control of air flow
  
 Scheduled air infiltration and ventilation:
@@ -2325,59 +2323,59 @@ new_staff  1  0 - 24    0.25  0.0103    0.00  0.0000   0     0.00
 Notes:
 lighting at 10W/m2 equipment 8 W/m2 people 1 per 10m2
  
-Daytype   Gain Type    Period Sensible  Latent     Radiant    Convec
-          No.  label   Hours  Magn.(W)  Magn.(W)   Fraction   Fraction
-weekdays    1 Occuptm2p  0- 8    100.0      0.0       0.50       0.50
-weekdays    2 Occuptm2p  8-19     10.0      0.0       0.50       0.50
-weekdays    3 Occuptm2p 19-24    100.0      0.0       0.50       0.50
-weekdays    4 LightsWm2  0- 8      2.0      0.0       0.50       0.50
-weekdays    5 LightsWm2  8-19     10.0      0.0       0.50       0.50
-weekdays    6 LightsWm2 19-24      0.0      0.0       0.50       0.50
-weekdays    7 EquiptWm2  0- 8      2.0      0.0       0.50       0.50
-weekdays    8 EquiptWm2  8-19      8.0      0.0       0.50       0.50
-weekdays    9 EquiptWm2 19-24      6.0      0.0       0.50       0.50
+Daytype   Gain Label     Type    Unit Period Sensible  Latent     Radiant    Convec
+          No.                          Hours Magn.(W)  Magn.(W)   Fraction   Fraction
+weekdays    1 Occupt     people    m2p  0- 8    100.0      0.0       0.50       0.50
+weekdays    2 Occupt     people    m2p  8-19     10.0      0.0       0.50       0.50
+weekdays    3 Occupt     people    m2p 19-24    100.0      0.0       0.50       0.50
+weekdays    4 Lights     lighting  Wm2  0- 8      2.0      0.0       0.50       0.50
+weekdays    5 Lights     lighting  Wm2  8-19     10.0      0.0       0.50       0.50
+weekdays    6 Lights     lighting  Wm2 19-24      0.0      0.0       0.50       0.50
+weekdays    7 Equipt     equipment Wm2  0- 8      2.0      0.0       0.50       0.50
+weekdays    8 Equipt     equipment Wm2  8-19      8.0      0.0       0.50       0.50
+weekdays    9 Equipt     equipment Wm2 19-24      6.0      0.0       0.50       0.50
  
-saturday    1 Occuptm2p  0-24    100.0      0.0       0.50       0.50
-saturday    2 LightsWm2  0- 8      2.0      0.0       0.50       0.50
-saturday    3 LightsWm2  8-19      2.0      0.0       0.50       0.50
-saturday    4 LightsWm2 19-24      0.0      0.0       0.50       0.50
-saturday    5 EquiptWm2  0- 8      2.0      0.0       0.50       0.50
-saturday    6 EquiptWm2  8-19      4.0      0.0       0.50       0.50
-saturday    7 EquiptWm2 19-24      4.0      0.0       0.50       0.50
+saturday    1 Occupt     people    m2p  0-24    100.0      0.0       0.50       0.50
+saturday    2 Lights     lighting  Wm2  0- 8      2.0      0.0       0.50       0.50
+saturday    3 Lights     lighting  Wm2  8-19      2.0      0.0       0.50       0.50
+saturday    4 Lights     lighting  Wm2 19-24      0.0      0.0       0.50       0.50
+saturday    5 Equipt     equipment Wm2  0- 8      2.0      0.0       0.50       0.50
+saturday    6 Equipt     equipment Wm2  8-19      4.0      0.0       0.50       0.50
+saturday    7 Equipt     equipment Wm2 19-24      4.0      0.0       0.50       0.50
  
-sunday      1 Occuptm2p  0-24    100.0      0.0       0.50       0.50
-sunday      2 LightsWm2  0- 8      2.0      0.0       0.50       0.50
-sunday      3 LightsWm2  8-19      2.0      0.0       0.50       0.50
-sunday      4 LightsWm2 19-24      0.0      0.0       0.50       0.50
-sunday      5 EquiptWm2  0- 8      2.0      0.0       0.50       0.50
-sunday      6 EquiptWm2  8-19      4.0      0.0       0.50       0.50
-sunday      7 EquiptWm2 19-24      2.0      0.0       0.50       0.50
+sunday      1 Occupt     people    m2p  0-24    100.0      0.0       0.50       0.50
+sunday      2 Lights     lighting  Wm2  0- 8      2.0      0.0       0.50       0.50
+sunday      3 Lights     lighting  Wm2  8-19      2.0      0.0       0.50       0.50
+sunday      4 Lights     lighting  Wm2 19-24      0.0      0.0       0.50       0.50
+sunday      5 Equipt     equipment Wm2  0- 8      2.0      0.0       0.50       0.50
+sunday      6 Equipt     equipment Wm2  8-19      4.0      0.0       0.50       0.50
+sunday      7 Equipt     equipment Wm2 19-24      2.0      0.0       0.50       0.50
  
-holiday     1 Occuptm2p  0-24    100.0      0.0       0.50       0.50
-holiday     2 LightsWm2  0- 8      2.0      0.0       0.50       0.50
-holiday     3 LightsWm2  8-19      2.0      0.0       0.50       0.50
-holiday     4 LightsWm2 19-24      0.0      0.0       0.50       0.50
-holiday     5 EquiptWm2  0- 8      2.0      0.0       0.50       0.50
-holiday     6 EquiptWm2  8-19      4.0      0.0       0.50       0.50
-holiday     7 EquiptWm2 19-24      2.0      0.0       0.50       0.50
+holiday     1 Occupt     people    m2p  0-24    100.0      0.0       0.50       0.50
+holiday     2 Lights     lighting  Wm2  0- 8      2.0      0.0       0.50       0.50
+holiday     3 Lights     lighting  Wm2  8-19      2.0      0.0       0.50       0.50
+holiday     4 Lights     lighting  Wm2 19-24      0.0      0.0       0.50       0.50
+holiday     5 Equipt     equipment Wm2  0- 8      2.0      0.0       0.50       0.50
+holiday     6 Equipt     equipment Wm2  8-19      4.0      0.0       0.50       0.50
+holiday     7 Equipt     equipment Wm2 19-24      2.0      0.0       0.50       0.50
  
-out-of-ter  1 Occuptm2p  0-24    100.0      0.0       0.50       0.50
-out-of-ter  2 LightsWm2  0- 8      2.0      0.0       0.50       0.50
-out-of-ter  3 LightsWm2  8-19      2.0      0.0       0.50       0.50
-out-of-ter  4 LightsWm2 19-24      0.0      0.0       0.50       0.50
-out-of-ter  5 EquiptWm2  0- 8      2.0      0.0       0.50       0.50
-out-of-ter  6 EquiptWm2  8-19      4.0      0.0       0.50       0.50
-out-of-ter  7 EquiptWm2 19-24      2.0      0.0       0.50       0.50
+out-of-ter  1 Occupt     people    m2p  0-24    100.0      0.0       0.50       0.50
+out-of-ter  2 Lights     lighting  Wm2  0- 8      2.0      0.0       0.50       0.50
+out-of-ter  3 Lights     lighting  Wm2  8-19      2.0      0.0       0.50       0.50
+out-of-ter  4 Lights     lighting  Wm2 19-24      0.0      0.0       0.50       0.50
+out-of-ter  5 Equipt     equipment Wm2  0- 8      2.0      0.0       0.50       0.50
+out-of-ter  6 Equipt     equipment Wm2  8-19      4.0      0.0       0.50       0.50
+out-of-ter  7 Equipt     equipment Wm2 19-24      2.0      0.0       0.50       0.50
  
-new_staff   1 Occuptm2p  0- 8    100.0      0.0       0.50       0.50
-new_staff   2 Occuptm2p  8-19      8.0      0.0       0.50       0.50
-new_staff   3 Occuptm2p 19-24    100.0      0.0       0.50       0.50
-new_staff   4 LightsWm2  0- 8      2.0      0.0       0.50       0.50
-new_staff   5 LightsWm2  8-19     10.0      0.0       0.50       0.50
-new_staff   6 LightsWm2 19-24      2.0      0.0       0.50       0.50
-new_staff   7 EquiptWm2  0- 8      4.0      0.0       0.50       0.50
-new_staff   8 EquiptWm2  8-19      8.0      0.0       0.50       0.50
-new_staff   9 EquiptWm2 19-24      4.0      0.0       0.50       0.50
+new_staff   1 Occupt     people    m2p  0- 8    100.0      0.0       0.50       0.50
+new_staff   2 Occupt     people    m2p  8-19      8.0      0.0       0.50       0.50
+new_staff   3 Occupt     people    m2p 19-24    100.0      0.0       0.50       0.50
+new_staff   4 Lights     lighting  Wm2  0- 8      2.0      0.0       0.50       0.50
+new_staff   5 Lights     lighting  Wm2  8-19     10.0      0.0       0.50       0.50
+new_staff   6 Lights     lighting  Wm2 19-24      2.0      0.0       0.50       0.50
+new_staff   7 Equipt     equipment Wm2  0- 8      4.0      0.0       0.50       0.50
+new_staff   8 Equipt     equipment Wm2  8-19      8.0      0.0       0.50       0.50
+new_staff   9 Equipt     equipment Wm2 19-24      4.0      0.0       0.50       0.50
  
  
  ____________________________________________________________
@@ -2671,7 +2669,7 @@ Block X- Y- Z- coords DX- DY- DZ- values Orient Opacity
  
  
  Air schedule notes:
-lighting at 10W/m2 equipment 12 W/m2 people 1 per 8m2
+Infiltration is 0.25 ach all day types.
  Control: no control of air flow
  
 Scheduled air infiltration and ventilation:
@@ -2687,59 +2685,59 @@ new_staff  1  0 - 24    0.25  0.0037    0.00  0.0000   0     0.00
 Notes:
 lighting at 10W/m2 equipment 12 W/m2 people 1 per 8m2
  
-Daytype   Gain Type    Period Sensible  Latent     Radiant    Convec
-          No.  label   Hours  Magn.(W)  Magn.(W)   Fraction   Fraction
-weekdays    1 Occuptm2p  0- 8    100.0      0.0       0.50       0.50
-weekdays    2 Occuptm2p  8-19      8.0      0.0       0.50       0.50
-weekdays    3 Occuptm2p 19-24    100.0      0.0       0.50       0.50
-weekdays    4 LightsWm2  0- 8      2.0      0.0       0.50       0.50
-weekdays    5 LightsWm2  8-19     10.0      0.0       0.50       0.50
-weekdays    6 LightsWm2 19-24      0.0      0.0       0.50       0.50
-weekdays    7 EquiptWm2  0- 8      5.0      0.0       0.50       0.50
-weekdays    8 EquiptWm2  8-19     12.0      0.0       0.50       0.50
-weekdays    9 EquiptWm2 19-24      6.0      0.0       0.50       0.50
+Daytype   Gain Label     Type    Unit Period Sensible  Latent     Radiant    Convec
+          No.                          Hours Magn.(W)  Magn.(W)   Fraction   Fraction
+weekdays    1 Occupt     people    m2p  0- 8    100.0      0.0       0.50       0.50
+weekdays    2 Occupt     people    m2p  8-19      8.0      0.0       0.50       0.50
+weekdays    3 Occupt     people    m2p 19-24    100.0      0.0       0.50       0.50
+weekdays    4 Lights     lighting  Wm2  0- 8      2.0      0.0       0.50       0.50
+weekdays    5 Lights     lighting  Wm2  8-19     10.0      0.0       0.50       0.50
+weekdays    6 Lights     lighting  Wm2 19-24      0.0      0.0       0.50       0.50
+weekdays    7 Equipt     equipment Wm2  0- 8      5.0      0.0       0.50       0.50
+weekdays    8 Equipt     equipment Wm2  8-19     12.0      0.0       0.50       0.50
+weekdays    9 Equipt     equipment Wm2 19-24      6.0      0.0       0.50       0.50
  
-saturday    1 Occuptm2p  0-24    100.0      0.0       0.50       0.50
-saturday    2 LightsWm2  0- 8      2.0      0.0       0.50       0.50
-saturday    3 LightsWm2  8-19      2.0      0.0       0.50       0.50
-saturday    4 LightsWm2 19-24      0.0      0.0       0.50       0.50
-saturday    5 EquiptWm2  0- 8      4.0      0.0       0.50       0.50
-saturday    6 EquiptWm2  8-19     12.0      0.0       0.50       0.50
-saturday    7 EquiptWm2 19-24      4.0      0.0       0.50       0.50
+saturday    1 Occupt     people    m2p  0-24    100.0      0.0       0.50       0.50
+saturday    2 Lights     lighting  Wm2  0- 8      2.0      0.0       0.50       0.50
+saturday    3 Lights     lighting  Wm2  8-19      2.0      0.0       0.50       0.50
+saturday    4 Lights     lighting  Wm2 19-24      0.0      0.0       0.50       0.50
+saturday    5 Equipt     equipment Wm2  0- 8      4.0      0.0       0.50       0.50
+saturday    6 Equipt     equipment Wm2  8-19     12.0      0.0       0.50       0.50
+saturday    7 Equipt     equipment Wm2 19-24      4.0      0.0       0.50       0.50
  
-sunday      1 Occuptm2p  0-24    100.0      0.0       0.50       0.50
-sunday      2 LightsWm2  0- 8      2.0      0.0       0.50       0.50
-sunday      3 LightsWm2  8-19      2.0      0.0       0.50       0.50
-sunday      4 LightsWm2 19-24      0.0      0.0       0.50       0.50
-sunday      5 EquiptWm2  0- 8      2.0      0.0       0.50       0.50
-sunday      6 EquiptWm2  8-19      4.0      0.0       0.50       0.50
-sunday      7 EquiptWm2 19-24      2.0      0.0       0.50       0.50
+sunday      1 Occupt     people    m2p  0-24    100.0      0.0       0.50       0.50
+sunday      2 Lights     lighting  Wm2  0- 8      2.0      0.0       0.50       0.50
+sunday      3 Lights     lighting  Wm2  8-19      2.0      0.0       0.50       0.50
+sunday      4 Lights     lighting  Wm2 19-24      0.0      0.0       0.50       0.50
+sunday      5 Equipt     equipment Wm2  0- 8      2.0      0.0       0.50       0.50
+sunday      6 Equipt     equipment Wm2  8-19      4.0      0.0       0.50       0.50
+sunday      7 Equipt     equipment Wm2 19-24      2.0      0.0       0.50       0.50
  
-holiday     1 Occuptm2p  0-24    100.0      0.0       0.50       0.50
-holiday     2 LightsWm2  0- 8      2.0      0.0       0.50       0.50
-holiday     3 LightsWm2  8-19      2.0      0.0       0.50       0.50
-holiday     4 LightsWm2 19-24      0.0      0.0       0.50       0.50
-holiday     5 EquiptWm2  0- 8      2.0      0.0       0.50       0.50
-holiday     6 EquiptWm2  8-19      4.0      0.0       0.50       0.50
-holiday     7 EquiptWm2 19-24      2.0      0.0       0.50       0.50
+holiday     1 Occupt     people    m2p  0-24    100.0      0.0       0.50       0.50
+holiday     2 Lights     lighting  Wm2  0- 8      2.0      0.0       0.50       0.50
+holiday     3 Lights     lighting  Wm2  8-19      2.0      0.0       0.50       0.50
+holiday     4 Lights     lighting  Wm2 19-24      0.0      0.0       0.50       0.50
+holiday     5 Equipt     equipment Wm2  0- 8      2.0      0.0       0.50       0.50
+holiday     6 Equipt     equipment Wm2  8-19      4.0      0.0       0.50       0.50
+holiday     7 Equipt     equipment Wm2 19-24      2.0      0.0       0.50       0.50
  
-out-of-ter  1 Occuptm2p  0-24    100.0      0.0       0.50       0.50
-out-of-ter  2 LightsWm2  0- 8      2.0      0.0       0.50       0.50
-out-of-ter  3 LightsWm2  8-19      2.0      0.0       0.50       0.50
-out-of-ter  4 LightsWm2 19-24      0.0      0.0       0.50       0.50
-out-of-ter  5 EquiptWm2  0- 8      2.0      0.0       0.50       0.50
-out-of-ter  6 EquiptWm2  8-19      4.0      0.0       0.50       0.50
-out-of-ter  7 EquiptWm2 19-24      2.0      0.0       0.50       0.50
+out-of-ter  1 Occupt     people    m2p  0-24    100.0      0.0       0.50       0.50
+out-of-ter  2 Lights     lighting  Wm2  0- 8      2.0      0.0       0.50       0.50
+out-of-ter  3 Lights     lighting  Wm2  8-19      2.0      0.0       0.50       0.50
+out-of-ter  4 Lights     lighting  Wm2 19-24      0.0      0.0       0.50       0.50
+out-of-ter  5 Equipt     equipment Wm2  0- 8      2.0      0.0       0.50       0.50
+out-of-ter  6 Equipt     equipment Wm2  8-19      4.0      0.0       0.50       0.50
+out-of-ter  7 Equipt     equipment Wm2 19-24      2.0      0.0       0.50       0.50
  
-new_staff   1 Occuptm2p  0- 8    100.0      0.0       0.50       0.50
-new_staff   2 Occuptm2p  8-19      8.0      0.0       0.50       0.50
-new_staff   3 Occuptm2p 19-24    100.0      0.0       0.50       0.50
-new_staff   4 LightsWm2  0- 8      2.0      0.0       0.50       0.50
-new_staff   5 LightsWm2  8-19     10.0      0.0       0.50       0.50
-new_staff   6 LightsWm2 19-24      2.0      0.0       0.50       0.50
-new_staff   7 EquiptWm2  0- 8      6.0      0.0       0.50       0.50
-new_staff   8 EquiptWm2  8-19     12.0      0.0       0.50       0.50
-new_staff   9 EquiptWm2 19-24      4.0      0.0       0.50       0.50
+new_staff   1 Occupt     people    m2p  0- 8    100.0      0.0       0.50       0.50
+new_staff   2 Occupt     people    m2p  8-19      8.0      0.0       0.50       0.50
+new_staff   3 Occupt     people    m2p 19-24    100.0      0.0       0.50       0.50
+new_staff   4 Lights     lighting  Wm2  0- 8      2.0      0.0       0.50       0.50
+new_staff   5 Lights     lighting  Wm2  8-19     10.0      0.0       0.50       0.50
+new_staff   6 Lights     lighting  Wm2 19-24      2.0      0.0       0.50       0.50
+new_staff   7 Equipt     equipment Wm2  0- 8      6.0      0.0       0.50       0.50
+new_staff   8 Equipt     equipment Wm2  8-19     12.0      0.0       0.50       0.50
+new_staff   9 Equipt     equipment Wm2 19-24      4.0      0.0       0.50       0.50
  
  
  ____________________________________________________________
@@ -5698,9 +5696,9 @@ fac_fr_a fac_fr_b fac_fr_c fac_fr_d fac_fr_e fac_fr_f fac_fr_g
  
  Details of opaque construction: door and overall thickness  0.025
  
- Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
-      |db  |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
-    1   69   25.0     0.190   700.  2390. 0.90 0.65    12.  0.13 oak : Oak (radial cut)
+ Layer|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
+      |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
+    1   25.0     0.190   700.  2390. 0.90 0.65    12.  0.13 oak : Oak (radial cut)
  ISO 6946 U values (horiz/upward/downward heat flow)=  3.316  3.682  2.928 (partition)  2.554
  
 Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  3.21
@@ -5710,16 +5708,16 @@ Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  3.21
  
  Details of opaque construction: foundation and overall thickness  1.300
  
- Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
-      |db  |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
- Ext   263  200.0     1.280  1460.   879. 0.90 0.85     5.  0.16 earth std : Common_earth
-    2  263  200.0     1.280  1460.   879. 0.90 0.85     5.  0.16 earth std : Common_earth
-    3  263  200.0     1.280  1460.   879. 0.90 0.85     5.  0.16 earth std : Common_earth
-    4  263  200.0     1.280  1460.   879. 0.90 0.85     5.  0.16 earth std : Common_earth
-    5  263  200.0     1.280  1460.   879. 0.90 0.85     5.  0.16 earth std : Common_earth
-    6   82  100.0     2.900  2650.   900. 0.90 0.55    77.  0.03 red granite : Red granite
-    7   32  100.0     1.400  2100.   653. 0.90 0.65    19.  0.07 heavy mix concrete : Heavy mix concrete
- Int    32  100.0     1.400  2100.   653. 0.90 0.65    19.  0.07 heavy mix concrete : Heavy mix concrete
+ Layer|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
+      |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
+ Ext   200.0     1.280  1460.   879. 0.90 0.85     5.  0.16 earth std : Common_earth
+    2  200.0     1.280  1460.   879. 0.90 0.85     5.  0.16 earth std : Common_earth
+    3  200.0     1.280  1460.   879. 0.90 0.85     5.  0.16 earth std : Common_earth
+    4  200.0     1.280  1460.   879. 0.90 0.85     5.  0.16 earth std : Common_earth
+    5  200.0     1.280  1460.   879. 0.90 0.85     5.  0.16 earth std : Common_earth
+    6  100.0     2.900  2650.   900. 0.90 0.55    77.  0.03 red granite : Red granite (inorganic-porous)
+    7  100.0     1.400  2100.   653. 0.90 0.65    19.  0.07 heavy mix concrete : Heavy mix concrete
+ Int   100.0     1.400  2100.   653. 0.90 0.65    19.  0.07 heavy mix concrete : Heavy mix concrete
  ISO 6946 U values (horiz/upward/downward heat flow)=  0.886  0.910  0.856 (partition)  0.821
  
 Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  0.88
@@ -5729,9 +5727,9 @@ Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  0.88
  
  Details of transparent construction: fictitious with SC_fictit optics and overall thickness  0.004
  
- Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
-      |db  |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
-    1  245    4.0    20.000    10.    10. 0.99 0.01 19200.  0.00 fict : fictitious material (almost not there) with matching single layer optics
+ Layer|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
+      |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
+    1    4.0    20.000    10.    10. 0.99 0.01 19200.  0.00 fict : fictitious material (almost not there) with matching single layer optics
  ISO 6946 U values (horiz/upward/downward heat flow)=  5.875  7.133  4.757 (partition)  3.843
  
 Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  5.55
@@ -5748,12 +5746,12 @@ Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  5.55
  
  Details of opaque construction: top_pln linked to flr_ov_pln & with overall thickness  0.037
  
- Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
-      |db  |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
- Ext   228    5.0     0.060   160.  2500. 0.90 0.85    10.  0.08 grey loop pile : Grey loop pile synthetic carpet
-    2   42    2.0    50.000  7800.   502. 0.12 0.20 19200.  0.00 steel : Steel
-    3   91   28.0     0.170  1000.  1300. 0.90 0.70    55.  0.16 HighDensityParticleBd : HDF based on info in Handbook of Heat Transfer by Thomas I
- Int    42    2.0    50.000  7800.   502. 0.12 0.20 19200.  0.00 steel : Steel
+ Layer|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
+      |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
+ Ext     5.0     0.060   160.  2500. 0.90 0.85    10.  0.08 grey loop pile : Grey loop pile synthetic carpet (non-hygroscopic)
+    2    2.0    50.000  7800.   502. 0.12 0.20 19200.  0.00 steel : Steel
+    3   28.0     0.170  1000.  1300. 0.90 0.70    55.  0.16 HighDensityParticleBd : HDF based on info in Handbook of Heat Transfer by Thomas I
+ Int     2.0    50.000  7800.   502. 0.12 0.20 19200.  0.00 steel : Steel
  ISO 6946 U values (horiz/upward/downward heat flow)=  2.392  2.577  2.183 (partition)  1.968
  
 Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  2.34
@@ -5763,12 +5761,12 @@ Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  2.34
  
  Details of opaque construction: flr_ov_pln linked to top_pln & with overall thickness  0.037
  
- Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
-      |db  |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
- Ext    42    2.0    50.000  7800.   502. 0.12 0.20 19200.  0.00 steel : Steel
-    2   91   28.0     0.170  1000.  1300. 0.90 0.70    55.  0.16 HighDensityParticleBd : HDF based on info in Handbook of Heat Transfer by Thomas I
-    3   42    2.0    50.000  7800.   502. 0.12 0.20 19200.  0.00 steel : Steel
- Int   228    5.0     0.060   160.  2500. 0.90 0.85    10.  0.08 grey loop pile : Grey loop pile synthetic carpet
+ Layer|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
+      |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
+ Ext     2.0    50.000  7800.   502. 0.12 0.20 19200.  0.00 steel : Steel
+    2   28.0     0.170  1000.  1300. 0.90 0.70    55.  0.16 HighDensityParticleBd : HDF based on info in Handbook of Heat Transfer by Thomas I
+    3    2.0    50.000  7800.   502. 0.12 0.20 19200.  0.00 steel : Steel
+ Int     5.0     0.060   160.  2500. 0.90 0.85    10.  0.08 grey loop pile : Grey loop pile synthetic carpet (non-hygroscopic)
  ISO 6946 U values (horiz/upward/downward heat flow)=  2.392  2.577  2.183 (partition)  1.968
  
 Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  2.34
@@ -5778,9 +5776,9 @@ Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  2.34
  
  Details of opaque construction: slab_275 and overall thickness  0.275
  
- Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
-      |db  |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
-    1   34  275.0     1.400  2100.   653. 0.90 0.21    19.  0.20 white ptd concrete : White painted heavy mix concrete
+ Layer|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
+      |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
+    1  275.0     1.400  2100.   653. 0.90 0.21    19.  0.20 white ptd concrete : White painted heavy mix concrete
  ISO 6946 U values (horiz/upward/downward heat flow)=  2.729  2.972  2.460 (partition)  2.191
  
 Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  2.66
@@ -5790,15 +5788,15 @@ Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  2.66
  
  Details of opaque construction: spandrel_x and overall thickness  0.167
  
- Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
-      |db  |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
- Ext   243    6.0     1.050  2500.   750. 0.83 0.05 19200.  0.01 clear float : 4mm clear float glass with optics from UK national method datase for
-    2    0   12.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
-    3  243    6.0     1.050  2500.   750. 0.83 0.05 19200.  0.01 clear float : 4mm clear float glass with optics from UK national method datase for
-    4    0  101.0     0.000     0.     0. 0.99 0.99     1.  0.20 air  0.20 0.20 0.20
-    5   42    1.2    50.000  7800.   502. 0.12 0.20 19200.  0.00 steel : Steel
-    6  211   40.0     0.040   250.   840. 0.90 0.30     4.  1.00 glasswool : Glasswool (generic)
- Int    42    1.0    50.000  7800.   502. 0.12 0.20 19200.  0.00 steel : Steel
+ Layer|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
+      |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
+ Ext     6.0     1.050  2500.   750. 0.83 0.05 19200.  0.01 clear float : clear float glass with optics from UK national method datase for 3 m
+    2   12.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
+    3    6.0     1.050  2500.   750. 0.83 0.05 19200.  0.01 clear float : clear float glass with optics from UK national method datase for 3 m
+    4  101.0     0.000     0.     0. 0.99 0.99     1.  0.20 air  0.20 0.20 0.20
+    5    1.2    50.000  7800.   502. 0.12 0.20 19200.  0.00 steel : Steel
+    6   40.0     0.040   250.   840. 0.90 0.30     4.  1.00 glasswool : Glasswool (generic) (non-hygroscopic)
+ Int     1.0    50.000  7800.   502. 0.12 0.20 19200.  0.00 steel : Steel
  ISO 6946 U values (horiz/upward/downward heat flow)=  0.645  0.657  0.628 (partition)  0.609
  
 Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  0.64
@@ -5808,11 +5806,11 @@ Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  0.64
  
  Details of opaque construction: mull_90 and overall thickness  0.078
  
- Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
-      |db  |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
- Ext    46    4.0   210.000  2700.   880. 0.82 0.72 19200.  0.00 grey cotd alum : Grey coated aluminium
-    2    0   70.0     0.000     0.     0. 0.99 0.99     1.  0.20 air  0.20 0.20 0.20
- Int    46    4.0   210.000  2700.   880. 0.82 0.72 19200.  0.00 grey cotd alum : Grey coated aluminium
+ Layer|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
+      |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
+ Ext     4.0   210.000  2700.   880. 0.82 0.72 19200.  0.00 grey cotd alum : Grey coated aluminium
+    2   70.0     0.000     0.     0. 0.99 0.99     1.  0.20 air  0.20 0.20 0.20
+ Int     4.0   210.000  2700.   880. 0.82 0.72 19200.  0.00 grey cotd alum : Grey coated aluminium
  ISO 6946 U values (horiz/upward/downward heat flow)=  2.702  2.941  2.439 (partition)  2.174
  
 Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  2.63
@@ -5822,11 +5820,11 @@ Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  2.63
  
  Details of opaque construction: roof_0.2 and overall thickness  0.505
  
- Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
-      |db  |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
- Ext    87   50.0     0.960  1800.  1000. 0.90 0.60     2.  0.05 chippings : Chippings
-    2  220  180.0     0.040    38.  1450. 0.90 0.30   350.  4.50 XPS CO2 foamed : XPS extruded polystyrene foamed with Co2 from IBO PassivHaus
- Int    34  275.0     1.400  2100.   653. 0.90 0.21    19.  0.20 white ptd concrete : White painted heavy mix concrete
+ Layer|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
+      |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
+ Ext    50.0     0.960  1800.  1000. 0.90 0.60     2.  0.05 chippings : Chippings (non-hygroscopic)
+    2  180.0     0.040    38.  1450. 0.90 0.30   350.  4.50 XPS CO2 foamed : XPS extruded polystyrene foamed with Co2 from IBO PassivHaus (non
+ Int   275.0     1.400  2100.   653. 0.90 0.21    19.  0.20 white ptd concrete : White painted heavy mix concrete
  ISO 6946 U values (horiz/upward/downward heat flow)=  0.203  0.205  0.202 (partition)  0.200
  
 Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  0.20
@@ -5836,11 +5834,11 @@ Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  0.20
  
  Details of opaque construction: gyp_aco_gyp and overall thickness  0.108
  
- Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
-      |db  |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
- Ext   108   24.0     0.190   950.   840. 0.91 0.22    11.  0.13 white gypboard : White painted Gypboard
-    2  202   60.0     0.100   500.  1000. 0.90 0.50     5.  0.60 woodwool : Woodwool
- Int   108   24.0     0.190   950.   840. 0.91 0.22    11.  0.13 white gypboard : White painted Gypboard
+ Layer|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
+      |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
+ Ext    24.0     0.190   950.   840. 0.91 0.22    11.  0.13 white gypboard : White painted Gypboard (inorganic-porous)
+    2   60.0     0.100   500.  1000. 0.90 0.50     5.  0.60 woodwool : Woodwool (organic-hygroscopic)
+ Int    24.0     0.190   950.   840. 0.91 0.22    11.  0.13 white gypboard : White painted Gypboard (inorganic-porous)
  ISO 6946 U values (horiz/upward/downward heat flow)=  0.978  1.007  0.941 (partition)  0.899
  
 Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  0.97
@@ -5850,15 +5848,15 @@ Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  0.97
  
  Details of opaque construction: stone_m_ell and overall thickness  0.405
  
- Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
-      |db  |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
- Ext    81   40.0     1.830  2200.   712. 0.90 0.60    29.  0.02 sandstone : Sandstone
-    2    0   25.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
-    3  220   90.0     0.040    38.  1450. 0.90 0.30   350.  2.25 XPS CO2 foamed : XPS extruded polystyrene foamed with Co2 from IBO PassivHaus
-    4    0  100.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
-    5   35  120.0     0.510  1400.  1000. 0.90 0.25    10.  0.24 block white ptd : block white painted inner (3% mc)
-    6    0   10.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
- Int    63   20.0     0.130   900.  2000. 0.91 0.70   140.  0.15 Hardboard std : Hardboard (standard density)
+ Layer|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
+      |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
+ Ext    40.0     1.830  2200.   712. 0.90 0.60    29.  0.02 sandstone : Sandstone
+    2   25.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
+    3   90.0     0.040    38.  1450. 0.90 0.30   350.  2.25 XPS CO2 foamed : XPS extruded polystyrene foamed with Co2 from IBO PassivHaus (non
+    4  100.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
+    5  120.0     0.510  1400.  1000. 0.90 0.25    10.  0.24 block white ptd : block white painted inner (3% mc)
+    6   10.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
+ Int    20.0     0.130   900.  2000. 0.91 0.70   140.  0.15 Hardboard std : Hardboard (standard density)
  ISO 6946 U values (horiz/upward/downward heat flow)=  0.299  0.302  0.296 (partition)  0.291
  
 Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  0.30
@@ -5868,11 +5866,11 @@ Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  0.30
  
  Details of opaque construction: stone_atr_pt and overall thickness  0.280
  
- Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
-      |db  |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
- Ext    81   40.0     1.830  2200.   712. 0.90 0.60    29.  0.02 sandstone : Sandstone
-    2    0  200.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
- Int    81   40.0     1.830  2200.   712. 0.90 0.60    29.  0.02 sandstone : Sandstone
+ Layer|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
+      |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
+ Ext    40.0     1.830  2200.   712. 0.90 0.60    29.  0.02 sandstone : Sandstone
+    2  200.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
+ Int    40.0     1.830  2200.   712. 0.90 0.60    29.  0.02 sandstone : Sandstone
  ISO 6946 U values (horiz/upward/downward heat flow)=  2.606  2.827  2.360 (partition)  2.111
  
 Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  2.54
@@ -5882,9 +5880,9 @@ Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  2.54
  
  Details of opaque construction: inside_kw_el and overall thickness  0.040
  
- Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
-      |db  |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
-    1   81   40.0     1.830  2200.   712. 0.90 0.60    29.  0.02 sandstone : Sandstone
+ Layer|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
+      |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
+    1   40.0     1.830  2200.   712. 0.90 0.60    29.  0.02 sandstone : Sandstone
  ISO 6946 U values (horiz/upward/downward heat flow)=  5.212  6.178  4.313 (partition)  3.548
  
 Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  4.95
@@ -5894,13 +5892,13 @@ Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  4.95
  
  Details of opaque construction: stone_cast linked to stone_cast_i & with overall thickness  0.540
  
- Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
-      |db  |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
- Ext    81   40.0     1.830  2200.   712. 0.90 0.60    29.  0.02 sandstone : Sandstone
-    2    0   50.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
-    3  220  100.0     0.040    38.  1450. 0.90 0.30   350.  2.50 XPS CO2 foamed : XPS extruded polystyrene foamed with Co2 from IBO PassivHaus
-    4    0  100.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
- Int    34  250.0     1.400  2100.   653. 0.90 0.21    19.  0.18 white ptd concrete : White painted heavy mix concrete
+ Layer|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
+      |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
+ Ext    40.0     1.830  2200.   712. 0.90 0.60    29.  0.02 sandstone : Sandstone
+    2   50.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
+    3  100.0     0.040    38.  1450. 0.90 0.30   350.  2.50 XPS CO2 foamed : XPS extruded polystyrene foamed with Co2 from IBO PassivHaus (non
+    4  100.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
+ Int   250.0     1.400  2100.   653. 0.90 0.21    19.  0.18 white ptd concrete : White painted heavy mix concrete
  ISO 6946 U values (horiz/upward/downward heat flow)=  0.311  0.314  0.308 (partition)  0.303
  
 Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  0.31
@@ -5910,13 +5908,13 @@ Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  0.31
  
  Details of opaque construction: stone_vent and overall thickness  0.514
  
- Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
-      |db  |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
- Ext    81   40.0     1.830  2200.   712. 0.90 0.60    29.  0.02 sandstone : Sandstone
-    2    0  240.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
-    3  220  110.0     0.040    38.  1450. 0.90 0.30   350.  2.75 XPS CO2 foamed : XPS extruded polystyrene foamed with Co2 from IBO PassivHaus
-    4    0  100.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
- Int   108   24.0     0.190   950.   840. 0.91 0.22    11.  0.13 white gypboard : White painted Gypboard
+ Layer|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
+      |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
+ Ext    40.0     1.830  2200.   712. 0.90 0.60    29.  0.02 sandstone : Sandstone
+    2  240.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
+    3  110.0     0.040    38.  1450. 0.90 0.30   350.  2.75 XPS CO2 foamed : XPS extruded polystyrene foamed with Co2 from IBO PassivHaus (non
+    4  100.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
+ Int    24.0     0.190   950.   840. 0.91 0.22    11.  0.13 white gypboard : White painted Gypboard (inorganic-porous)
  ISO 6946 U values (horiz/upward/downward heat flow)=  0.293  0.296  0.290 (partition)  0.286
  
 Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  0.29
@@ -5926,13 +5924,13 @@ Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  0.29
  
  Details of opaque construction: stone_gyp and overall thickness  0.324
  
- Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
-      |db  |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
- Ext    81   40.0     1.830  2200.   712. 0.90 0.60    29.  0.02 sandstone : Sandstone
-    2    0   50.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
-    3  220  110.0     0.040    38.  1450. 0.90 0.30   350.  2.75 XPS CO2 foamed : XPS extruded polystyrene foamed with Co2 from IBO PassivHaus
-    4    0  100.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
- Int   108   24.0     0.190   950.   840. 0.91 0.22    11.  0.13 white gypboard : White painted Gypboard
+ Layer|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
+      |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
+ Ext    40.0     1.830  2200.   712. 0.90 0.60    29.  0.02 sandstone : Sandstone
+    2   50.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
+    3  110.0     0.040    38.  1450. 0.90 0.30   350.  2.75 XPS CO2 foamed : XPS extruded polystyrene foamed with Co2 from IBO PassivHaus (non
+    4  100.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
+ Int    24.0     0.190   950.   840. 0.91 0.22    11.  0.13 white gypboard : White painted Gypboard (inorganic-porous)
  ISO 6946 U values (horiz/upward/downward heat flow)=  0.293  0.296  0.290 (partition)  0.286
  
 Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  0.29
@@ -5942,13 +5940,13 @@ Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  0.29
  
  Details of opaque construction: stone_masnry and overall thickness  0.410
  
- Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
-      |db  |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
- Ext    81   40.0     1.830  2200.   712. 0.90 0.60    29.  0.02 sandstone : Sandstone
-    2    0   50.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
-    3  220  100.0     0.040    38.  1450. 0.90 0.30   350.  2.50 XPS CO2 foamed : XPS extruded polystyrene foamed with Co2 from IBO PassivHaus
-    4    0  100.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
- Int    35  120.0     0.510  1400.  1000. 0.90 0.25    10.  0.24 block white ptd : block white painted inner (3% mc)
+ Layer|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
+      |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
+ Ext    40.0     1.830  2200.   712. 0.90 0.60    29.  0.02 sandstone : Sandstone
+    2   50.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
+    3  100.0     0.040    38.  1450. 0.90 0.30   350.  2.50 XPS CO2 foamed : XPS extruded polystyrene foamed with Co2 from IBO PassivHaus (non
+    4  100.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
+ Int   120.0     0.510  1400.  1000. 0.90 0.25    10.  0.24 block white ptd : block white painted inner (3% mc)
  ISO 6946 U values (horiz/upward/downward heat flow)=  0.306  0.309  0.302 (partition)  0.298
  
 Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  0.31
@@ -5958,9 +5956,9 @@ Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  0.31
  
  Details of opaque construction: conc_250 and overall thickness  0.250
  
- Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
-      |db  |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
-    1   34  250.0     1.400  2100.   653. 0.90 0.21    19.  0.18 white ptd concrete : White painted heavy mix concrete
+ Layer|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
+      |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
+    1  250.0     1.400  2100.   653. 0.90 0.21    19.  0.18 white ptd concrete : White painted heavy mix concrete
  ISO 6946 U values (horiz/upward/downward heat flow)=  2.869  3.139  2.574 (partition)  2.280
  
 Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  2.79
@@ -5970,9 +5968,9 @@ Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  2.79
  
  Details of opaque construction: masny_at_st and overall thickness  0.150
  
- Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
-      |db  |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
-    1   35  150.0     0.510  1400.  1000. 0.90 0.25    10.  0.29 block white ptd : block white painted inner (3% mc)
+ Layer|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
+      |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
+    1  150.0     0.510  1400.  1000. 0.90 0.25    10.  0.29 block white ptd : block white painted inner (3% mc)
  ISO 6946 U values (horiz/upward/downward heat flow)=  2.155  2.304  1.984 (partition)  1.805
  
 Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  2.11
@@ -5982,12 +5980,12 @@ Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  2.11
  
  Details of opaque construction: stone_eldon and overall thickness  0.224
  
- Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
-      |db  |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
- Ext    81   40.0     1.830  2200.   712. 0.90 0.60    29.  0.02 sandstone : Sandstone
-    2    0   50.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
-    3  220  110.0     0.040    38.  1450. 0.90 0.30   350.  2.75 XPS CO2 foamed : XPS extruded polystyrene foamed with Co2 from IBO PassivHaus
- Int   108   24.0     0.190   950.   840. 0.91 0.22    11.  0.13 white gypboard : White painted Gypboard
+ Layer|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
+      |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
+ Ext    40.0     1.830  2200.   712. 0.90 0.60    29.  0.02 sandstone : Sandstone
+    2   50.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
+    3  110.0     0.040    38.  1450. 0.90 0.30   350.  2.75 XPS CO2 foamed : XPS extruded polystyrene foamed with Co2 from IBO PassivHaus (non
+ Int    24.0     0.190   950.   840. 0.91 0.22    11.  0.13 white gypboard : White painted Gypboard (inorganic-porous)
  ISO 6946 U values (horiz/upward/downward heat flow)=  0.309  0.312  0.305 (partition)  0.300
  
 Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  0.31
@@ -5997,11 +5995,11 @@ Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  0.31
  
  Details of transparent construction: db_lpasol with DSF4554_06nb optics and overall thickness  0.032
  
- Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
-      |db  |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
- Ext   243    6.0     1.050  2500.   750. 0.83 0.05 19200.  0.01 clear float : 4mm clear float glass with optics from UK national method datase for
-    2    0   20.0     0.000     0.     0. 0.99 0.99     1.  0.53 air  0.53 0.53 0.53
- Int   243    6.0     1.050  2500.   750. 0.83 0.05 19200.  0.01 clear float : 4mm clear float glass with optics from UK national method datase for
+ Layer|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
+      |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
+ Ext     6.0     1.050  2500.   750. 0.83 0.05 19200.  0.01 clear float : clear float glass with optics from UK national method datase for 3 m
+    2   20.0     0.000     0.     0. 0.99 0.99     1.  0.53 air  0.53 0.53 0.53
+ Int     6.0     1.050  2500.   750. 0.83 0.05 19200.  0.01 clear float : clear float glass with optics from UK national method datase for 3 m
  ISO 6946 U values (horiz/upward/downward heat flow)=  1.402  1.463  1.327 (partition)  1.245
  
 Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  1.38
@@ -6020,13 +6018,13 @@ Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  1.38
  
  Details of opaque construction: stone_cast_i linked to stone_cast & with overall thickness  0.540
  
- Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
-      |db  |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
- Ext    34  250.0     1.400  2100.   653. 0.90 0.21    19.  0.18 white ptd concrete : White painted heavy mix concrete
-    2    0  100.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
-    3  220  100.0     0.040    38.  1450. 0.90 0.30   350.  2.50 XPS CO2 foamed : XPS extruded polystyrene foamed with Co2 from IBO PassivHaus
-    4    0   50.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
- Int    81   40.0     1.830  2200.   712. 0.90 0.60    29.  0.02 sandstone : Sandstone
+ Layer|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
+      |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
+ Ext   250.0     1.400  2100.   653. 0.90 0.21    19.  0.18 white ptd concrete : White painted heavy mix concrete
+    2  100.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
+    3  100.0     0.040    38.  1450. 0.90 0.30   350.  2.50 XPS CO2 foamed : XPS extruded polystyrene foamed with Co2 from IBO PassivHaus (non
+    4   50.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
+ Int    40.0     1.830  2200.   712. 0.90 0.60    29.  0.02 sandstone : Sandstone
  ISO 6946 U values (horiz/upward/downward heat flow)=  0.311  0.314  0.308 (partition)  0.303
  
 Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  0.31
@@ -6036,13 +6034,13 @@ Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  0.31
  
  Details of opaque construction: stone_stone and overall thickness  0.410
  
- Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
-      |db  |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
- Ext    81   40.0     1.830  2200.   712. 0.90 0.60    29.  0.02 sandstone : Sandstone
-    2    0   50.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
-    3  220   80.0     0.040    38.  1450. 0.90 0.30   350.  2.00 XPS CO2 foamed : XPS extruded polystyrene foamed with Co2 from IBO PassivHaus
-    4    0  200.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
- Int    81   40.0     1.830  2200.   712. 0.90 0.60    29.  0.02 sandstone : Sandstone
+ Layer|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
+      |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
+ Ext    40.0     1.830  2200.   712. 0.90 0.60    29.  0.02 sandstone : Sandstone
+    2   50.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
+    3   80.0     0.040    38.  1450. 0.90 0.30   350.  2.00 XPS CO2 foamed : XPS extruded polystyrene foamed with Co2 from IBO PassivHaus (non
+    4  200.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
+ Int    40.0     1.830  2200.   712. 0.90 0.60    29.  0.02 sandstone : Sandstone
  ISO 6946 U values (horiz/upward/downward heat flow)=  0.392  0.396  0.386 (partition)  0.378
  
 Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  0.39
@@ -6052,9 +6050,9 @@ Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  0.39
  
  Details of transparent construction: glaz_ptn with SCF8477_10nb optics and overall thickness  0.010
  
- Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
-      |db  |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
-    1  242   10.0     0.760  2710.   837. 0.83 0.05 19200.  0.01 plate glass : Plate glass with placeholder single layer optics
+ Layer|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
+      |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
+    1   10.0     0.760  2710.   837. 0.83 0.05 19200.  0.01 plate glass : Plate glass with placeholder single layer optics
  ISO 6946 U values (horiz/upward/downward heat flow)=  5.460  6.529  4.481 (partition)  3.661
  
 Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  5.18
@@ -6071,11 +6069,11 @@ Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  5.18
  
  Details of opaque construction: stn_stair linked to vd_stn_stair & with overall thickness  0.390
  
- Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
-      |db  |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
- Ext    81   40.0     1.830  2200.   712. 0.90 0.60    29.  0.02 sandstone : Sandstone
-    2    0  100.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
- Int    34  250.0     1.400  2100.   653. 0.90 0.21    19.  0.18 white ptd concrete : White painted heavy mix concrete
+ Layer|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
+      |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
+ Ext    40.0     1.830  2200.   712. 0.90 0.60    29.  0.02 sandstone : Sandstone
+    2  100.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
+ Int   250.0     1.400  2100.   653. 0.90 0.21    19.  0.18 white ptd concrete : White painted heavy mix concrete
  ISO 6946 U values (horiz/upward/downward heat flow)=  1.850  1.959  1.723 (partition)  1.586
  
 Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  1.82
@@ -6085,11 +6083,11 @@ Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  1.82
  
  Details of opaque construction: vd_stn_stair linked to stn_stair & with overall thickness  0.390
  
- Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
-      |db  |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
- Ext    34  250.0     1.400  2100.   653. 0.90 0.21    19.  0.18 white ptd concrete : White painted heavy mix concrete
-    2    0  100.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
- Int    81   40.0     1.830  2200.   712. 0.90 0.60    29.  0.02 sandstone : Sandstone
+ Layer|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
+      |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
+ Ext   250.0     1.400  2100.   653. 0.90 0.21    19.  0.18 white ptd concrete : White painted heavy mix concrete
+    2  100.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
+ Int    40.0     1.830  2200.   712. 0.90 0.60    29.  0.02 sandstone : Sandstone
  ISO 6946 U values (horiz/upward/downward heat flow)=  1.850  1.959  1.723 (partition)  1.586
  
 Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  1.82
@@ -6099,13 +6097,13 @@ Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  1.82
  
  Details of opaque construction: gyp_ins_gyp and overall thickness  0.258
  
- Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
-      |db  |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
- Ext   108   24.0     0.190   950.   840. 0.91 0.22    11.  0.13 white gypboard : White painted Gypboard
-    2    0   50.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
-    3  220  110.0     0.040    38.  1450. 0.90 0.30   350.  2.75 XPS CO2 foamed : XPS extruded polystyrene foamed with Co2 from IBO PassivHaus
-    4    0   50.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
- Int   108   24.0     0.190   950.   840. 0.91 0.22    11.  0.13 white gypboard : White painted Gypboard
+ Layer|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
+      |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
+ Ext    24.0     0.190   950.   840. 0.91 0.22    11.  0.13 white gypboard : White painted Gypboard (inorganic-porous)
+    2   50.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
+    3  110.0     0.040    38.  1450. 0.90 0.30   350.  2.75 XPS CO2 foamed : XPS extruded polystyrene foamed with Co2 from IBO PassivHaus (non
+    4   50.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
+ Int    24.0     0.190   950.   840. 0.91 0.22    11.  0.13 white gypboard : White painted Gypboard (inorganic-porous)
  ISO 6946 U values (horiz/upward/downward heat flow)=  0.285  0.287  0.281 (partition)  0.278
  
 Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  0.28
@@ -6115,34 +6113,34 @@ Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  0.28
  
  Details of opaque construction: heated_slb and overall thickness  1.255
  
- Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
-      |db  |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
- Ext   263  200.0     1.280  1460.   879. 0.90 0.85     5.  0.16 earth std : Common_earth
-    2  263  200.0     1.280  1460.   879. 0.90 0.85     5.  0.16 earth std : Common_earth
-    3  263  200.0     1.280  1460.   879. 0.90 0.85     5.  0.16 earth std : Common_earth
-    4  263  200.0     1.280  1460.   879. 0.90 0.85     5.  0.16 earth std : Common_earth
-    5   82  100.0     2.900  2650.   900. 0.90 0.55    77.  0.03 red granite : Red granite
-    6   32  100.0     1.400  2100.   653. 0.90 0.65    19.  0.07 heavy mix concrete : Heavy mix concrete
-    7   32  100.0     1.400  2100.   653. 0.90 0.65    19.  0.07 heavy mix concrete : Heavy mix concrete
-    8  220   75.0     0.040    38.  1450. 0.90 0.30   350.  1.88 XPS CO2 foamed : XPS extruded polystyrene foamed with Co2 from IBO PassivHaus
-    9  124   75.0     1.400  2100.   650. 0.91 0.65    19.  0.05 cement screed : Cement screed
- Int   229    5.0     0.060   160.  2500. 0.90 0.90    10.  0.08 grey cord synth : Grey cord synthetic carpet
+ Layer|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
+      |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
+ Ext   200.0     1.280  1460.   879. 0.90 0.85     5.  0.16 earth std : Common_earth
+    2  200.0     1.280  1460.   879. 0.90 0.85     5.  0.16 earth std : Common_earth
+    3  200.0     1.280  1460.   879. 0.90 0.85     5.  0.16 earth std : Common_earth
+    4  200.0     1.280  1460.   879. 0.90 0.85     5.  0.16 earth std : Common_earth
+    5  100.0     2.900  2650.   900. 0.90 0.55    77.  0.03 red granite : Red granite (inorganic-porous)
+    6  100.0     1.400  2100.   653. 0.90 0.65    19.  0.07 heavy mix concrete : Heavy mix concrete
+    7  100.0     1.400  2100.   653. 0.90 0.65    19.  0.07 heavy mix concrete : Heavy mix concrete
+    8   75.0     0.040    38.  1450. 0.90 0.30   350.  1.88 XPS CO2 foamed : XPS extruded polystyrene foamed with Co2 from IBO PassivHaus (non
+    9   75.0     1.400  2100.   650. 0.91 0.65    19.  0.05 cement screed : Cement screed (inorganic-porous)
+ Int     5.0     0.060   160.  2500. 0.90 0.90    10.  0.08 grey cord synth : Grey cord synthetic carpet (non-hygroscopic)
  ISO 6946 U values (horiz/upward/downward heat flow)=  0.335  0.338  0.331 (partition)  0.325
  
-Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  0.37
+Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  0.33
  External surface admittance Y=  3.80  w=  2.00 decrement factor f=  0.65  phi=  1.38 surface factor f=  0.65  phi=  1.38
  Partition admittance Y=  3.80  w=  2.00 surface factor f=  0.65  phi=  1.38
  Total area of heated_slb is    507.42
  
  Details of opaque construction: gyp_blk_ptn and overall thickness  0.226
  
- Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
-      |db  |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
- Ext   108   13.0     0.190   950.   840. 0.91 0.22    11.  0.07 white gypboard : White painted Gypboard
-    2    0   50.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
-    3   28  100.0     0.510  1400.  1000. 0.90 0.65    10.  0.20 block inner : Block inner (3% mc)
-    4    0   50.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
- Int   108   13.0     0.190   950.   840. 0.91 0.22    11.  0.07 white gypboard : White painted Gypboard
+ Layer|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
+      |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
+ Ext    13.0     0.190   950.   840. 0.91 0.22    11.  0.07 white gypboard : White painted Gypboard (inorganic-porous)
+    2   50.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
+    3  100.0     0.510  1400.  1000. 0.90 0.65    10.  0.20 block inner : Block inner (3% mc)
+    4   50.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
+ Int    13.0     0.190   950.   840. 0.91 0.22    11.  0.07 white gypboard : White painted Gypboard (inorganic-porous)
  ISO 6946 U values (horiz/upward/downward heat flow)=  1.186  1.230  1.133 (partition)  1.072
  
 Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  1.17
@@ -6152,13 +6150,13 @@ Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  1.17
  
  Details of opaque construction: glz_block and overall thickness  0.244
  
- Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
-      |db  |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
- Ext   242    6.0     0.760  2710.   837. 0.83 0.05 19200.  0.01 plate glass : Plate glass with placeholder single layer optics
-    2    0   12.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
-    3  242    6.0     0.760  2710.   837. 0.83 0.05 19200.  0.01 plate glass : Plate glass with placeholder single layer optics
-    4    0  100.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
- Int    35  120.0     0.510  1400.  1000. 0.90 0.25    10.  0.24 block white ptd : block white painted inner (3% mc)
+ Layer|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
+      |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
+ Ext     6.0     0.760  2710.   837. 0.83 0.05 19200.  0.01 plate glass : Plate glass with placeholder single layer optics
+    2   12.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
+    3    6.0     0.760  2710.   837. 0.83 0.05 19200.  0.01 plate glass : Plate glass with placeholder single layer optics
+    4  100.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
+ Int   120.0     0.510  1400.  1000. 0.90 0.25    10.  0.24 block white ptd : block white painted inner (3% mc)
  ISO 6946 U values (horiz/upward/downward heat flow)=  1.314  1.368  1.248 (partition)  1.175
  
 Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  1.30
