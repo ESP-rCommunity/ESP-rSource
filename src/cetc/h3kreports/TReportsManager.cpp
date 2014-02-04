@@ -46,6 +46,37 @@ char* StringValue(char* sDestination, float f)
   return sDestination;
 }
 
+
+///convert double f to string
+char* StringValueSci(char* sDestination, double f)
+{
+   #ifdef _WIN32
+      _snprintf(sDestination, 255, "%e", f);
+   #endif
+
+   #ifndef _WIN32
+      snprintf(sDestination, 255, "%e", f);
+   #endif
+
+  return sDestination;
+}
+
+///convert float f to string
+char* StringValueSci(char* sDestination, float f)
+{
+   #ifdef _WIN32
+      _snprintf(sDestination, 255, "%e", f);
+   #endif
+
+   #ifndef _WIN32
+      snprintf(sDestination, 255, "%e", f);
+   #endif
+
+  return sDestination;
+}
+
+
+
 ///check if a file exists
 bool Exists(const char* sFilename)
 {
@@ -1899,13 +1930,13 @@ void TReportsManager::OutputTXTsummary(const char *sFileName, stSortedMapKeyRef 
             sVarName = itDataMap->second.sVarName;
 
             //push to output stream
-            summaryFile << sVarName << "::Total_Average " << StringValue(buffer,ptrBin->TotalAverage()) << " " << sMetaValue << "\n";
-            summaryFile << sVarName << "::Active_Average " << StringValue(buffer,ptrBin->ActiveAverage()) << " " << sMetaValue << "\n";
+            summaryFile << sVarName << "::Total_Average " << StringValueSci(buffer,ptrBin->TotalAverage()) << " " << sMetaValue << "\n";
+            summaryFile << sVarName << "::Active_Average " << StringValueSci(buffer,ptrBin->ActiveAverage()) << " " << sMetaValue << "\n";
 
             if(ptrBin->ActiveTimesteps() > 0)
             {
-               summaryFile << sVarName << "::Maximum " << StringValue(buffer,ptrBin->Max()) << " " << sMetaValue << "\n";
-               summaryFile << sVarName << "::Minimum " << StringValue(buffer,ptrBin->Min()) << " " << sMetaValue << "\n";
+               summaryFile << sVarName << "::Maximum " << StringValueSci(buffer,ptrBin->Max()) << " " << sMetaValue << "\n";
+               summaryFile << sVarName << "::Minimum " << StringValueSci(buffer,ptrBin->Min()) << " " << sMetaValue << "\n";
             }
             else
             {
