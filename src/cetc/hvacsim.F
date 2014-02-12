@@ -654,6 +654,7 @@ C-----------------------------------------------------------------------
               GSHPHeatOrCool: 
      &        if ( iunit_function(i) == iFuncHeating ) then
 
+              if (bDebug) write (*,*) "                > GSHP / heat"
 
 C.............If the HVAC system under consideration (do 10 loop) is a GSHP, then
 C.............call to the GSHP_load subroutine to sum the daily heating and cooling
@@ -671,11 +672,19 @@ C...............Call the air-source heat pump subroutine
 C...............The amount of pumping power required for the circulation of the fluid
 C...............through the ground loop and into the heat pump must be calculated.
                 heat_pump_cap = ss_capacity(i)
-                pump_energy(i) = GSHP_pump_power(heat_pump_cap)
-
-
+                
+                if ( sys_energy(i) > 1 ) then 
+                    pump_energy(i)= GSHP_pump_power(heat_pump_cap)
+                else 
+                    pump_energy(i) = 0.
+                endif 
+                
+                
+                
               else
               
+              
+              if (bDebug) write (*,*) "                > GSHP / cool"
 C...............For a ground-source heat pump system in cooling mode, first call the
 C...............subroutine to calculate the correlation coefficients for the GSHP in cooling
 C...............mode. Once GSHP_COOL_COEFF is called, the same ASHP cooling routines are used -
@@ -691,19 +700,35 @@ C...............Is there a space sensible cooling load or ventilation load for h
                   cooling_vent_yes = .false.
                 endif
 
-
+ 
               
-                
+                if ( bDebug ) 
+     &             write (*,*) "                > call cool-coef "  
                 call GSHP_COOL_COEFF(i)
+                if ( bDebug ) 
+     &             write (*,*) "                > call cool-cooling "                  
                 call ASHP_COOLING(i,cooling_load,cooling_vent_yes,
      &                            sys_energy(i),fPLR(i),fPLF(i) )
 
                 heat_pump_cap = ss_capacity(i)
-                pump_energy(i)=GSHP_pump_power(heat_pump_cap)
+                if ( sys_energy(i) > 1 ) then 
+                    pump_energy(i)= GSHP_pump_power(heat_pump_cap)
+                else 
+                    pump_energy(i) = 0.
+                endif 
 
 
               endif GSHPHeatOrCool
 
+                if ( bDebug ) then 
+                 write (*,*) "                > finish cool", i   
+                 write (*,*) "                > load:",cooling_load
+                 write (*,*) "                > ener:",sys_energy(i)
+     &                             /3600.," (W)"
+                 write (*,*) "                > COP: ",cooling_load/
+     &                                  (sys_energy(i)/3600.+0.0001)
+                endif 
+             
 C-----------------------------------------------------------------------                        
 C           GCEP varient of  ground source HP: heating or cooling 
 C-----------------------------------------------------------------------                                    
@@ -1942,7 +1967,7 @@ C-------------------------------------------------------------------------
      &                      =    fH3KSumEnergyUseElec( iUseSpaceCool )
      &                         + fH3KStorePrimaryEC(i)
 
-
+ 
         end select H3K_fuel_select
 
 C.......Append auxilary enery use (if any) to electric total:
@@ -1954,7 +1979,7 @@ C.......Append auxilary enery use (if any) to electric total:
         fH3KSumEnergyUseElec( iUseSpaceCool )
      &                      =    fH3KSumEnergyUseElec( iUseSpaceCool )
      &                         + fH3KStorePumpEC(i)
-
+            
         endif suppress_this_system
 
       enddo HVAC_system_report_loop_B
