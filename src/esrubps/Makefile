@@ -62,7 +62,7 @@ BPS_OBJECTS = bps.o adaptconf1.o adaptconf2.o adjb.o adjp.o ascii_mat.o \
 	  Annex42_fuel_cell.o shocc_dummy.o ADS_storage_tanks.o ADS_storage_unit.o ADS_controller.o \
 	  solar_collectors.o ground_temp_mains.o Lookup_data.o readTrnsys.o trnsys_wrapper.o trnsys_lib.o \
 	  tank_intank_hx.o mains_temp_draw_profiles.o stratified_tank.o SiteUtilities.o RE-H2-ctl.o \
-	  ncm_overheating.o complex_fenestration.o editCFC.o NCHE.o stratified_tank_1HX.o stratified_tank_2HX.o \
+	  ncm_overheating.o CFC_opt_props.o CFC_thermal_and_aux.o editCFC.o NCHE.o stratified_tank_1HX.o stratified_tank_2HX.o \
 	  AirFlowModelRoutines.o Res_elec_Ctl.o harmonizer_timing.o qrun.o azalt.o
 
 MODULES = aim2.mod aim2_calcdata.mod aim2_h2k_dummy.mod aim2_inputdata.mod aim2_timestep.mod start_up.mod parse_command_line.mod \
@@ -696,9 +696,12 @@ mains_temp_draw_profiles.F:
 stratified_tank.F:
 	rm -f stratified_tank.F
 	ln -s $(PLTdir)/stratified_tank.F .
-complex_fenestration.F:
-	rm -f complex_fenestration.F
-	ln -s $(BLDdir)/complex_fenestration.F .
+CFC_opt_props.F:
+	rm -f CFC_opt_props.F
+	ln -s $(BLDdir)/CFC_opt_props.F .
+CFC_thermal_and_aux.F:
+	rm -f CFC_thermal_and_aux.F
+	ln -s $(BLDdir)/CFC_thermal_and_aux.F .
 editCFC.F:
 	rm -f editCFC.F
 	ln -s $(PRJdir)/editCFC.F .
@@ -776,5 +779,5 @@ clean:
 	ADS_storage_tanks.F ADS_storage_unit.F ADS_controller.F solar_collectors.F \
 	ground_temp_mains.F readTrnsys.F trnsys_wrapper.F trnsys_lib.F \
 	tank_intank_hx.F mains_temp_draw_profiles.F stratified_tank.F \
-	complex_fenestration.F editCFC.F NCHE.F stratified_tank_1HX.F stratified_tank_2HX.F \
+	CFC_opt_props.F CFC_thermal_and_aux.F editCFC.F NCHE.F stratified_tank_1HX.F stratified_tank_2HX.F \
 	AirFlowModelRoutines.F Res_elec_Ctl.F h3kmodule.f90 qrun.F azalt.F

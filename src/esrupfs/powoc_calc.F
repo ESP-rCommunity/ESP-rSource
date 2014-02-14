@@ -158,6 +158,10 @@ C-----Electric Vehicle Model (EV)
       elseif ( itype .eq. 23 ) then
          CALL POWOC_EVEHICLE(IPWC)
 
+C-----Boundary Profile from TDF (EV)
+      elseif ( itype .eq. 24 ) then
+         CALL POWOC_TDF_PROF(IPWC)
+
 C-----Add support for other power-only components here.
 c     ELSEIF (ITYPE==??) THEN
 
@@ -493,7 +497,7 @@ C numerical data from POWCDAT(IPWC,?)
 C string data from POWCDATS(IPWC,1)
       time=ENETIMEF
       IFOC=NINT(POWCDAT(IPWC,1)) ! entity number in the tdf database where the information is located
-      SCALE_FACTOR=POWCDAT(IPWC,1)
+      SCALE_FACTOR=POWCDAT(IPWC,2)
       CALL RCTDFB(ITRC,time,VAL,ISD,IFOC,IER)
 
 

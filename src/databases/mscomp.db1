@@ -598,6 +598,7 @@ HVAC electrical loads
 Transformation and network losses
 Off-site loads and generation
 Batteries and EV
+Profile-based loads
 *ENDCATEGORY
 *POWOCOMP
 *IDDATA
@@ -935,6 +936,21 @@ Electric vehicle
 *TEXT
 Electric vehicle model, for use in vehicle-to-home or grid simulations. Calibrates using 2013 UK DfT
 road transport data.
+*ENDTEXT
+*END
+*POWOCOMP
+*IDDATA
+# Category | Assoc. special
+#            power only model no
+     7            24
+*DESC
+Profile from TDF
+*SPECDATA
+2	 0
+3.0      Entity id number in tdf database.
+1.0      Profile scaling factor (-).
+*TEXT
+Component that reads text from a temporal data file. 
 *ENDTEXT
 *END
 *POWOCOMP
