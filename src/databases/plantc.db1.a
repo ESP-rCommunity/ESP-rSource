@@ -7266,7 +7266,7 @@ signal set point                                                          0.
     Adata items   :   2    Bdata items   :  30    Cdata items   :   1
  ADATA variables:
     1 Component total mass (kg)
-      Value =    50.000        Range (Min Max):     50.000        50.000
+      Value =    04.000        Range (Min Max):     01.000        50.000
     2 Mass weighted average specific heat (J/kgK)
       Value =    1000.0        Range (Min Max):     1000.0        1000.0
  BDATA variables:
@@ -7275,7 +7275,7 @@ signal set point                                                          0.
     2 dump load fraction
       Value =    0.0000        Range (Min Max):     0.0000        1.0000
     3 BS 4947/EN 437 gas specification (enter 20 for G20)
-      Value =   20             Range (Min Max):    20            20 
+      Value =   20.0           Range (Min Max):    20.0          20.0
     4 boiler lock out time (min)
       Value =    3.0000        Range (Min Max):     0.0000        5.0000
     5 Boiler heat loss to surroundings UA (W/K)
@@ -7289,43 +7289,43 @@ signal set point                                                          0.
     9 Constant supply water temperature for DHW for combi boiler (degC)
       Value =    50.000        Range (Min Max):     0.0000        0.0000
    10 Upper boiler temperature limit (C)
-      Value =    95.000        Range (Min Max):     95.000        95.000
+      Value =    80.000        Range (Min Max):     95.000        95.000
    11 Lower limit of modulating range  (%) (0 for ON/OFF boiler)
       Value =    30.000        Range (Min Max):     30.000        30.000
    12 Lower limit of total differential  (%) (0 for ON/OFF boiler)
       Value =    1.0000        Range (Min Max):     1.0000        1.0000
    13 coeff for % CO2 equation (constant)
-      Value =    8.6628        Range (Min Max):     8.6628        8.6628
+      Value =    7.7027        Range (Min Max):     7.7027        7.7027
    14 coeff for % CO2 equation (firingRate^1)   
-      Value =  -0.28661        Range (Min Max):   -0.28661      -0.28661
+      Value =   0.05220        Range (Min Max):    0.0522        0.05220
    15 coeff for % CO2 equation (firingRate^2)   
-      Value =   0.38650E-02    Range (Min Max):    0.38650E-02   0.38650E-02
+      Value =  -0.71800E-03    Range (Min Max):   -0.71800E-03  -0.71800E-03
    16 coeff for % CO2 equation (firingRate^3)   
-      Value =   -1.8676        Range (Min Max):   -0.18676E-04  -0.18676E-04
+      Value =    0.3360E-05    Range (Min Max):    0.33600E-05   0.33600E-05
    17 coeff for delta temp to flue equation (constant)
-      Value =    8.6628        Range (Min Max):     8.6628        8.6628
+      Value =    2.9010        Range (Min Max):     2.9010        2.9010
    18 coeff for delta temp to flue equation (firingRate^1)   
-      Value =  -0.28661        Range (Min Max):   -0.28661      -0.28661
+      Value =   0.8840E-01     Range (Min Max):    0.88400E-01   0.88400E-01
    19 coeff for delta temp to flue equation (firingRate^2)   
-      Value =   0.38650E-02    Range (Min Max):    0.38650E-02   0.38650E-02
+      Value =  -0.83600E-03    Range (Min Max):   -0.83600E-03  -0.83600E-03
    20 coeff for delta temp to flue equation (firingRate^3)   
-      Value =   -1.8676        Range (Min Max):   -0.18676E-04  -0.18676E-04
+      Value =    0.1240E-04    Range (Min Max):    0.12406E-04   0.12406E-04
    21 Design excess air ratio
-      Value =    1.2000        Range (Min Max):     0.0000        2.0000
+      Value =    0.5000        Range (Min Max):     0.0000        2.0000
    22 First pre-purge time (seconds)
-      Value =    20.000        Range (Min Max):     0.0000        0.0000
+      Value =    10.000        Range (Min Max):     0.0000        0.0000
    23 First pre-purge fan rate as % of maximum
       Value =    100.00        Range (Min Max):     0.0000        0.0000
    24 Secoond pre-purge time (seconds)
-      Value =    10.000        Range (Min Max):     0.0000        0.0000
+      Value =    03.000        Range (Min Max):     0.0000        0.0000
    25 Second pre-purge fan rate as % of maximum
-      Value =    50.000        Range (Min Max):     0.0000        0.0000
+      Value =    70.000        Range (Min Max):     0.0000        0.0000
    26 Ignition stabilisation time (seconds)
-      Value =    30.000        Range (Min Max):     0.0000        0.0000
+      Value =    10.000        Range (Min Max):     0.0000        0.0000
    27 Firing rate during ignition stabilisation as % of maximum
       Value =    70.000        Range (Min Max):     0.0000        0.0000
    28 Anticycle time (seconds)
-      Value =    300.00        Range (Min Max):     0.0000        0.0000
+      Value =    217.00        Range (Min Max):     0.0000        0.0000
    29 Firing rate during anticycling as % of maximum
       Value =    30.000        Range (Min Max):     0.0000        0.0000
    30 Maximum Ramp up gradient (degC/minute)
