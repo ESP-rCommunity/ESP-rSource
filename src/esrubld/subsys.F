@@ -254,9 +254,12 @@ C  difference between the external ambient and surface temperatures.
 #include "site.h"
 #include "geometry.h"
 #include "CFC_common.h"
+#include "net_flow.h"
+#include "tdf2.h"
       
       integer lnblnk  ! function definition
 
+      common/trc/itrc
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/TC/ITC,ICNT
       COMMON/TRACE/ITCF,ITRACE(MTRACE),IZNTRC(MCOM),ITU
@@ -328,7 +331,9 @@ c This common block is used to define the sky temperature calculation method
       DIMENSION PROPB(8),PROPS(8),PROPG(8)
       DIMENSION TBLD(MS),HROF(MS)
       DIMENSION QELWFC(MS)
+      DIMENSION VAL(MBITS+2)
       logical closer,close
+      integer itrc
 
       DATA ZEROK/273.15/,SBC/5.6697E-08/
 
@@ -590,6 +595,7 @@ C Radiation from the atmosphere:
 
 C Assume the atmosphere is a black body emitter:
         TSKY=(RSKY/SBC)**0.25
+        TSKYBM=TSKY
       ELSEIF(iExt_longwave_flg.EQ.1)THEN
 
 C Use Clarke's calculation
@@ -644,6 +650,20 @@ C Clear sky temperature as in bld #5.4 (after Swinbank).
         TCS=TCSKY-ZEROK
         TSKY=TCSKY
       ENDIF
+
+C If sky temperature is to be read from a temporal file then
+C set it here.
+      IF(ISKYTMP.gt.0)THEN
+        itdi=ISKYTMP
+        IFOC=itdi
+        CALL RCTDFB(itrc,btimef,VAL,ISD,IFOC,IER)
+        TSKY=VAL(ISD)+273.15   ! convert from C to K
+        write(outs,'(a,F7.1,a,F7.1,a)')'MZELWE: measured sky temp (',
+     &   TSKY,' (degK) ',TSKY-ZEROK ,'(C) as been imposed.'
+        call edisp(iuout,outs)
+        TTMPRL=TSKY   ! remember for trace report
+      ENDIF
+
       IF(TSKY.LT.200.0.OR.TSKY.GT.325.0)then
        write(outs,'(a,F7.1,a)')'MZELWE: a dubious sky temperature(',
      &   TSKY,' (degK)) has been calculated.'
@@ -1040,6 +1060,12 @@ C Cloudy sky temperature as JC Book.
       call edisp(itu,outs)
       write(outs,'(A,F6.1)') '   Irradiance,glob (Eglob,h) = ',QT
       call edisp(itu,outs)
+      IF(ISKYTMP.gt.0)then
+        write(outs,'(A,F6.2)') '   Tsky(Martin Berdahl) = ',TSKYBM-ZEROK
+        call edisp(itu,outs)
+        write(outs,'(A,F6.1)') '   Imposed sky temp = ',TTMPRL-ZEROK
+        call edisp(itu,outs)
+      endif
       call edisp(itu,
      &' Surface   Tbld   Q(ext.lwr)   Tsur  Coeff.  Tblack Angle Delta')
       NC=NCONST(ICOMP)

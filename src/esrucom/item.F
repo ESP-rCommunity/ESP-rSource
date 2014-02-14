@@ -165,7 +165,7 @@ C Pick up the arrays used for displaying current generic items.
       GTYPES(15)='HTCLSETP'
       GMENUS(15)='Heat & Cool set points:'
       GTYPES(16)='SKYTMPT'
-      GMENUS(16)='Sky temp (NotAvail):   '  ! not yet implemented
+      GMENUS(16)='Sky temp (degC):       '
       GTYPES(17)='OBJROTT'
       GMENUS(17)='Object rotate:         '
       GTYPES(18)='ACTIVITY'
@@ -448,7 +448,7 @@ C Control state: two data item.
       ELSEIF(FOCUS(1:7).EQ.'SKYTMPT')THEN
         GAIDE   ='Sky temp (C)    '
         GHELP(1)='Sky temperature (C) (measured).'
-        GHELP(2)='NOT YET IMPLEMENTED IN SIMULATOR'
+        GHELP(2)='WORK IN PROGRESS'
         GMH='2,1,0,0,1,0,-999.0'
         GDHDRT(1)='   time  | sky temper- '
         GDHDRT(2)='   of day| ature (C)   ' 
