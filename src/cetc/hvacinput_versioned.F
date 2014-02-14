@@ -1373,15 +1373,16 @@ C     Now loop through systems and validate data.
 C-----------------------------------------------------------------------
       system_loop: do iSystem = 1, num_hvac_sys
 
-         ! Debugging statements
-
-!          print*, "System: ", iSystem
-!          do iData = 1, iDataCount(iSystem)
-!             print*, "TV: ",
-!      &      cTokens(iSystem, iData)(1:lnblnk(cTokens(iSystem,iData))),
-!      &      " --- ", fTokenVals(iSystem,iData)
-
-!          enddo
+!----------------------------------------------------------------------      
+!         Debugging statements
+!         print*, "System: ", iSystem
+!         do iData = 1, iDataCount(iSystem)
+!            print*, "TV: ",
+!    &       cTokens(iSystem, iData)(1:lnblnk(cTokens(iSystem,iData))),
+!    &       " --- ", fTokenVals(iSystem,iData)
+!
+!         enddo
+!----------------------------------------------------------------------
 
 C-----------------------------------------------------------------------
 C       Parse and validate data and miscellaneous parameter blocks.
@@ -2679,6 +2680,8 @@ C-----------------------------------------------------------------------
      &       bFound,
      &       bInLimits )
 
+         print*, "> ss_COP(",iSystem,")=",ss_COP(iSystem)
+     
 C-----------------------------------------------------------------------
 C     Read circulation fan flow rate
 C-----------------------------------------------------------------------
@@ -2822,7 +2825,27 @@ C-----------------------------------------------------------------------
      &       0.0, 1.0e07,
      &       bFound,
      &       bInLimits )
-
+     
+C-----------------------------------------------------------------------
+C     Read circulation pump power
+C-----------------------------------------------------------------------
+    
+      fGSHP_circ_pump_power(iSystem) = fHVAC_FindTokenWithLimits
+     &     ( iSystem,
+     &       'gshp-circ-pump-power',
+     &       'Circulation pump power for GSHP',
+     &       bNotRequired,
+     &       0.0, 1.0e07,
+     &       bFound,
+     &       bInLimits )
+      if ( bFound ) then 
+        bGSHP_circ_pump_spec(iSystem) = .true.
+        
+      else 
+         bGSHP_circ_pump_spec(iSystem) = .false.
+      endif 
+      write(*,*) "> circ",iSystem, fGSHP_circ_pump_power(iSystem) 
+     
 C-----------------------------------------------------------------------
 C     Check fan location during rating keyword
 C-----------------------------------------------------------------------
@@ -3760,7 +3783,8 @@ C-----------------------------------------------------------------------
      &                      'economizer-OA-temp-limit   ',
      &                      'economizer-OA-enth-limit   ',
      &                      'sys-num-for-heating-mode   ',
-     &                      'ctl-file-function-num      '  /
+     &                      'ctl-file-function-num      ',
+     &                      'gshp-circ-pump-power       '/
 
       data (cBaseboardTokenNames(iName),iName=1,iBaseboardTokenCount)
      &                          / 'circ-fan-mode  ',

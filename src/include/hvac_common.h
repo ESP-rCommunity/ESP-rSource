@@ -40,6 +40,9 @@ C      parameter (iMAXTokenCount = iHPTokenCount)
      &     
       integer iUnit_Function
       logical bHVACVersion2
+      
+      logical bGSHP_circ_pump_spec
+      real fGSHP_circ_pump_power
 
       common/HVAC_INPUT_DATA/site_altitude, num_hvac_sys,
      &ihvac_type(max_hvac_types), ipriority(max_sys),
@@ -58,7 +61,8 @@ C      parameter (iMAXTokenCount = iHPTokenCount)
      &sys_zone_cap_frac_ret_air(max_sys,mcom),
      &cSys_Name(max_sys), iSys_Function(max_sys), iSys_Backup(max_sys),
      &cSys_Backup(max_sys),bFan_AutoSized(max_sys),
-     &bFan_Auto_AutoSized(max_sys), bFan_Rated_AutoSized(max_sys)
+     &bFan_Auto_AutoSized(max_sys), bFan_Rated_AutoSized(max_sys),
+     &bGSHP_circ_pump_spec(max_sys), fGSHP_circ_pump_power(max_sys)
 
       common/HVAC_fuel_type/iFuel_type(max_sys)
 

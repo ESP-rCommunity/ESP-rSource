@@ -397,6 +397,7 @@ c load and no cooling load, dQ will be a function of daily_heat_load and COP.
        if (GSHP_COP .lt. 0.01 ) then
          WRITE(IUOUT,*) ' Error GSHPSIM: COP is zero '
          return
+         stop
        else
 
 c If both the daily heating and the daily cooling loads are zero, then the ground 
@@ -1908,14 +1909,19 @@ c OUTPUTS:
 c       GSHP_pump_power   circulating fluid pump power, J
 c ********************************************************************** 
 
-      REAL FUNCTION GSHP_pump_power(GSHP_CAP)
+      REAL FUNCTION GSHP_pump_power(GSHP_CAP,iSystem)
 
 
 C       USE GSHP_INPUT
       IMPLICIT NONE
-#include "hvac_parameters.h"
-#include "gshp_common.h"
+      include "building.h"
+      include "hvac_parameters.h"
+      include "hvac_common.h"
+      include "gshp_common.h"
 
+      
+      integer iSystem 
+      
 c Common for the number of time steps per hour
        COMMON/PERS/ISD1,ISM1,ISD2,ISM2,ISDS,ISDF,NTSTEP
 
@@ -1934,6 +1940,12 @@ c Local variables
        REAL circ_fit_drop, circ_press_drop
        REAL GSHP_pump_input
 
+       
+       
+       SPEC_POWER: if ( bGSHP_circ_pump_spec(iSystem) ) then 
+           ! Manual overide for Specified GSHP pump power.
+           GSHP_pump_input = fGSHP_circ_pump_power(iSystem)
+       else 
 
 c The pumping power required depends on the configuration of the ground loop, the
 c system capacity and the pressure drop across the loop.
@@ -1998,10 +2010,13 @@ c The circulating fluid pump input (GSHP_pump_input) in W is:
      &                   (HP_pressure_drop + runout_press_drop +
      &                   ((pipe_length / GSHP_CAP)* circ_press_drop) +
      &                   runout_fit_drop + circ_fit_drop)
+     
 
+       endif SPEC_POWER
 c The pump power in Joules is then a function of the simulation time step
        time_step = 3600. / float(NTSTEP)
 
+                
        GSHP_pump_power = GSHP_pump_input * time_step
 
        return

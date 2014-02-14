@@ -140,7 +140,7 @@ C Dimensions of token/data arrays for version 2+ format.
       integer iBaseboardTokenCount
       parameter (iBaseboardTokenCount = 4)
       integer iHPTokenCount
-      parameter (iHPTokenCount = 24)
+      parameter (iHPTokenCount = 25)
       integer iMAXTokenCount
       parameter (iMAXTokenCount = iHPTokenCount)
 

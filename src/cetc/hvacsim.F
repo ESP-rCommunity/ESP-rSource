@@ -674,13 +674,11 @@ C...............through the ground loop and into the heat pump must be calculate
                 heat_pump_cap = ss_capacity(i)
                 
                 if ( sys_energy(i) > 1 ) then 
-                    pump_energy(i)= GSHP_pump_power(heat_pump_cap)
+                    pump_energy(i)= GSHP_pump_power(heat_pump_cap,i)
                 else 
                     pump_energy(i) = 0.
                 endif 
-                
-                
-                
+               
               else
               
               
@@ -712,11 +710,11 @@ C...............Is there a space sensible cooling load or ventilation load for h
 
                 heat_pump_cap = ss_capacity(i)
                 if ( sys_energy(i) > 1 ) then 
-                    pump_energy(i)= GSHP_pump_power(heat_pump_cap)
+                    pump_energy(i)= GSHP_pump_power(heat_pump_cap,i)
                 else 
                     pump_energy(i) = 0.
                 endif 
-
+                 
 
               endif GSHPHeatOrCool
 
