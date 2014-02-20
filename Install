@@ -70,7 +70,8 @@ echo " at any time by pressing <control> c."
 # Set default settings.
 mode="interactive"         # Interactive/silent installation
                            # (silent mode isn't yet supported)
-SRCdir=`pwd`               # Source Directory
+HOMEdir=`pwd`
+SRCdir="${HOMEdir}/src"               # Source Directory
 DESTdir=/usr/esru          # Target Directory
 COSIMdir=" "			   # Harmonizer install directory
 xml_support=prompt         # support for XML output
@@ -1635,9 +1636,11 @@ if [ "$mode" = "interactive" ]; then
 fi
 
 
+
 echo " "
 echo " Installing ESP-r system. This may take some time."
-
+echo " Moving to ${SRCdir}..."
+cd ${SRCdir}
 #--------------------------------------------------------------
 # Get SVN build info for versioning purposes.
 #--------------------------------------------------------------
