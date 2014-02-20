@@ -1,5 +1,0 @@
-#!/bin/csh -fb
-set CONFIG=$1
-set VERSION=$2
-$VERSION/bps -file $CONFIG -mode text -p mayweek silent
-

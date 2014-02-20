@@ -1,9 +1,0 @@
-# site obstruction file defined in Crossway.obs
-# associated with zone geometry file Crossway.geo
-# and referenced by zone utility file Crossway.utl
-  46.000  -6.000    # latitude & longitude
-    1    # no obstruction blocks
-# origin  X   Y   Z   width  depth  height  angle  descr
-    1.000    1.000    0.000   1.000   1.000   1.000    0.0  First         # block  1
-# grid opq X  opq Z
-    15    15

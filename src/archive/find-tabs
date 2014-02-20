@@ -1,2 +1,0 @@
-#! /bin/sh
-find . -name "*.F" |  egrep -v "(\.svn|CVS)" | while read a; do echo " ======= $a ======= "; cat $a | sed 's/\t/<TAB>/g' | grep --colour=tty "<TAB>"; done
