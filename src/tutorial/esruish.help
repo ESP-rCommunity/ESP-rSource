@@ -1,0 +1,369 @@
+*help_text ish
+*subroutine winshd
+*item winshd ashrae_window_calcs
+'The ish module includes the ASHRAE window calculation'
+'method so that you can compare the standard calculations'
+'against that of the ASHRAE method.'
+'  '
+'There are several input parameters:'
+'  Width of a vertical, rectangular window in metres.'
+'  Height of a vertical, rectangular window in metres.'
+'  '
+'For overhangs (horizontal rectangular features located at'
+'the top of windows) there are several input parameters:'
+'  Overhang depth in metres.'
+'  Overhang distance from top of window in metres.'
+'  Overhang extension past left window edge in metres.'
+'  Overhang extension past right window edge in metres.'
+'  Dimension, in metres, of any vertical feature located'
+'  at both ends of the overhang.'
+'  '
+'The ASHRAE method also supports vertical fins at the left or'
+'right of the window and these are defined via:'
+'  Depth of the fin (m)'
+'  Extension (m) above the top of the window'
+'  Distance from window to the fin (m)'
+'  A stop-short distance (m) from the bottom of the window'
+'  (if the fin extends below the window this does not count)'
+
+*enditem
+      call easkr(shdx(1),' ','Window width?',
+      call easkr(shdx(2),' ','Window height?',
+      call askok(' ','Is there an overhang?',ok,dok,2)
+      call easkr(shdx(3),'Overhang:','depth?',
+      call easkr(shdx(4),'Overhang:',
+      call easkr(shdx(5),'Overhang:',
+      call easkr(shdx(6),'Overhang:',
+      call easkr(shdx(7),'Overhang:',
+      call askok(' ','Is there a left-side fin?',ok,dok,2)
+      call easkr(shdx(8),'Left side fin:','depth?',
+      call easkr(shdx(9),'Left side fin:',
+      call easkr(shdx(10),'Left side fin:',
+      call easkr(shdx(11),'Left side fin:',
+      call askok(' ','Is there a right-side fin?',ok,dok,2)
+      call easkr(shdx(12),'Right side fin:','depth?',
+      call easkr(shdx(13),'Right side fin:',
+      call easkr(shdx(14),'Right side fin:',
+      call easkr(shdx(15),'Right side fin:',
+*item winshd ashrae_window_orien
+'The azimuth angle is measured clockwise from North'
+'in degrees.'
+'  '
+'And lastly you will be asked for the month that you want to'
+'undertake the ASHRAE calculation for (January = 1 etc.).'
+'  '
+'And you must also specify the day of the month (a number'
+'between 1 and 28, 29, 30 or 31 as appropriate_.'
+
+*enditem
+      call easkr(wazi,' ','Window azimuth?',
+      call easki(im,' ','Computation month number?',
+      call easki(id,' ','Day of the month?',
+*subroutine graph
+*item graph ish_graphing_hour
+'Give the hour as an integer between 1 and 24.'
+'  '
+'You will be asked if you want to continue to the next'
+'hour (until you say no or the sun is below the horizon).'
+'  '
+'You will be asked if you want to look at the predictions'
+'for other surfaces.'
+*enditem
+      call easki(ih,' ','Output start hour?',
+      call askok(' ','Next hour?',ok,dok,0)
+      call askok(' ','Consider another surface?',ok,dok,0)
+*subroutine inscon
+*item inscon inscon_actions
+'The insolation calculations require a number of directives.'
+'If these have not been embedded in the zone geometry file'
+'you will be asked to supply the directives:'
+'  '
+'  The surfaces which act as sources of sunlight must be'
+'  selected or the computations cannot be performed.'
+'  '
+'  The months to be calculated must be specified as an'
+'  integer value between 1 and 12. For each month a'
+'  24 hour calculation of internal surface insolation'
+'  distribution will be undertaken for the day of average'
+'  solar declination.'
+*enditem
+         call askok('No surfaces specified!','Re-specify?',
+         call easki(mons,' ','Start month number?',
+         call easki(monf,' ','End month number?',
+*item ish ish_model_cfg_file
+'The Model Configuration File holds the definition'
+'of the building/plant to be simulated, including the'
+'names of all constituent files. If the name given'
+'matches an existing file it will be read and the'
+'data therein made available for use.'
+*enditem
+               call easkf(ltmp,'Model Configuration file?',' ',
+*item ish view_from_sun_or_plan
+'The site plan shows zones (marked [Target]) and'
+'obstructions (marked [Bn] where n is the block'
+'number). '
+'  '
+'The view from the sun places the viewer at a distance'
+'of 1 km from [Target].  What you can see the sun can see'
+'and what you cannot see is in shadow!'
+'  '
+'You will be asked if you want to shift time to the next'
+'hour and view the model again.'
+'  '
+'If the sun goes below the horizon you will be asked what'
+'you want to do.'
+*enditem
+         call easkab(' ','View:','plan','from sun',iw,4)
+               call easkab(' ','View:','next hour','exit',iw,0)
+               call easkab('View point below horizon!',' ',
+*item ish what_kind_of_sky
+'There are two types of sky condition which the ish module is'
+'able to deal with:'
+'  istropic skys (uniform diffuse radiation)'
+'  anisotropic skys (diffuse radiation depends on the portion of'
+'    the sky dome).'
+'  '
+'If you select an anisotropic sky diffuse calculations will take'
+'more time to complete.'
+*enditem
+         call easkab(' ','Sky type:','isotropic','anisotropic',iw,0)
+*item ish request_to_overwrite
+'The Zone Shading & Insolation file already'
+'contains data. New computations can overwrite'
+'these data or another file may be created.'
+'  '
+'To be safe select the create new db if you are doing shading!'
+'  '
+'If you have just done a shading calculation and are proceeding'
+'to do an insolation calculation then choose UPDATE.'
+*enditem
+               call easkabc('Zone Shading & Insolation db has data!',
+*item ish synopsis_period_options
+'The month is specified as an integer with'
+'January = 1, February = 2 and so on.'
+' '
+'You will be given the option of looking at subsequent months data.'
+*enditem
+  202       call easki(mon,' ','Computation month number?',
+               call easkab(' ','Consider another month?','yes',
+*item ish graph_period_options
+'The month is specified as an integer with'
+'January = 1, February = 2 and so on.'
+*enditem
+  203       call easki(mon,' ','Computation month number?',
+               call easkab(' ','Consider another month?','yes',
+*item ish export_import_choice
+'The Zone Shading & Insolation data is also held'
+'in a ASCII version for transport between different'
+'computer types.'
+'  '
+'You will be asked for the name of the file to export or import.'
+*enditem
+           call easkabc('Zone Shading & Insolation db has data!',
+             call easks(exportfile,' ','Export file name?',72,
+             call easks(exportfile,' ','Import file name?',72,
+*item ish request_to_delete_trans
+'Zone transitional shading files were used to'
+'store intermediate shading results for use in'
+'any subsequent insolation analysis. Normally,'
+'these do not need to be retained and you may'
+'delete them.'
+*enditem
+            call askok(' ','Delete zone transitional shading file(s)?',
+*subroutine shdprb
+*item shdprb obs_not_associated
+'Where obstructions are not associated with a zone,'
+'external surface shading cannot be calculated.'
+'  '
+'Note that it is still possible to calculate internal'
+'surface insolation for such zones and it may increase the'
+'resolution of your model to do an insolation calculation.'
+*enditem
+            call easkab('No Zone Obstructions file found!','Options:',
+*subroutine opendb
+*item opendb warning_about_bin_mat
+'It is likely that the Materials db associated with'
+'this model is for use under a different operating'
+'system. ESP-r will attempt to locate an ASCII version'
+'of this database and, if successful, convert it to'
+'the required binary format if you agree.'
+'  '
+'The Materials db holds the thermo-physical properties'
+'of a range of materials. An ascii version of this db'
+'may be used to transfer the contents between operating'
+'systems that have incompatible binary representations'
+'(e.g. Unix and Windows).'
+*enditem
+            CALL EASKS(LASCI,' ','Materials database (ASCII)?',
+*subroutine pickssur
+*item pickssur diffuse_shading_request
+'In some cases (for example in specific validation tests'
+'or when comparing shading results with more simplified'
+'approaches) it may be necessary to exclude the effect'
+'of diffuse shading. In most cases, diffuse shading '
+'should be included.'
+*enditem
+      call easkab(' ','Diffuse shading options:',
+*item pickssur surface_selection_notes
+'A shading analysis computes the temporal patterns of'
+'shading on exterior surfaces, while an insolation'
+'analysis tracks the direct solar radiation entering'
+'a zone to determine the distribution between internal'
+'surfaces. When selecting the surfaces to include, note'
+'that:'
+'  + for the case of shading, the surface must be external'
+'    and belong to a zone that has an associated Zone'
+'    Obstructions file; and'
+'  + for the case of insolation, the surface must be'
+'    transparent. If it is an internal surface it will'
+'    be processed as if external.'
+'  '
+'You will be asked to pick one, several or all surfaces for'
+'inclusion in the analysis.'
+*enditem
+         call easkabc(' ','Shading options:',
+         call easkabc(' ','Insolation options:',
+         call epicks(inpic,ivals,' ','Surface(s) to include',
+         call epicks(inpic,ivals,' ','Surface to View',
+*subroutine askday
+*item askday specify_day_of_year
+'The date is either specified as a day and month number or'
+'as a year day in Julian notation (Jan 1 = 1, Dec 31 = 365).'
+*enditem
+         call easki(ijday,' ','Year day?',
+         call easki(imo,' ', 'Month number?',
+         call easki(ido,' ', 'Day of the month?',
+*subroutine shdcon
+*item shdcon shdcon_actions
+'As shading calculations are undertake you may be asked for'
+'several directives (if they were not recorded in the zone'
+'geometry file).'
+'  '
+'Fisrt we need to know which surfaces should be included in'
+'the calculations. There are filters applied so that only'
+'those surfaces which face the outside are presented.'
+'  '
+'If no surfaces are applicable or selected then the computations'
+'cannot be performed.'
+'  '
+'The period of the assessment must also be defined if it has'
+'not already been specified. You will be asked for a number'
+'between 1 and 12. For each month a 24 hour claculation'
+'of direct and diffuse shading on external surfaces will'
+'be undertaken for the day of average solar declination'
+'in the month.'
+*enditem
+         call askok('No surfaces selected!','Re-specify?',
+         call easki(mons,' ','Start month number?',
+         call easki(monf,' ','End month number?',
+*subroutine ssave
+*item ssave data_already_exists
+'This month has previously been processed. You may wish'
+'to overwrite the shading data with the new calculation'
+'results. Note however that it is possibly safer to replace'
+'the Zone Shading & Insolation db with a new one.'
+*enditem
+      call askok(outs,'OK to overwrite?',ok,dok,4)
+*subroutine isave
+*item isave data_already_exists
+'This month has previously been processed. You may'
+'wish to update the insolation data with the new'
+'calculation results. Where this will result in'
+'the replacement of existing entries you may wish'
+'to replace the current Zone Shading & Insolation db'
+'with a new one.'
+*enditem
+         call askok(outs,'OK to overwrite/append?',ok,dok,6)
+*subroutine sifops
+*item sifops respond_to_empty_shd
+'The current shading file is empty. You can fill it with'
+'data from an ascii version of the file (if you have one)'
+'otherwise you should cancel your request.'
+' '
+'If the ASCII shading file has several months of data the  '
+'subsequent months will be scanned. '
+'  '
+'You are expected to know the contents of the ASCII'
+'that you are about to import and you will be asked to'
+'specify the months to import.'
+*enditem
+        call easkabc('Zone Shading & Insolation db is empty!',
+ 22       call easki(mnth,' ','Month number to start importing?',1,
+*item sifops month_of_interest
+'Specify the month as an integer where Jan=1, Dec=12 etc.'
+*enditem
+    1 call easki(mnth,' ','Month number of interest?',1,'F',12,
+*item sifops ish_export_list_shading
+'There are several options available:'
+' * list option tabulates the shading and insolation'
+'   factors as held for the specified month, '
+'  '
+' * edit option allows these factors to be altered'
+'   you will be asked to identify the surface for which'
+'   the shading or insulation data is to be altered.'
+'   The edit dialog presents factors for the first 12 hours'
+'   and then the last 12 hours of the day.'
+'   The first factors are direct shading, next you can edit'
+'   the diffuse shading. You will then have the option to'
+'   do this for other surfaces.'
+'   After each editing session you will be asked if you want'
+'   to save the data (otherwise it will be lost).'
+'  '
+' * export option transfers shading factors to a text'
+'   file (where it might be edited or reviewed) or for'
+'   trasfser to an operating system with a different binary'
+'   file representation.'
+'  '
+' * import option ...'
+'  '
+'After calculations are completed, during a normal exit'
+'from the ish module a backup ASCII file will normally be'
+'created. If it is not then used the export option. '
+'  '
+*enditem
+      call easkatog(' ','Options:','list','edit','export','import',
+      call easki(isur,' ','Surface number?',
+      call easks(hold,outs,'01:00-12:00; edit as required:',
+      call easks(hold,outs,'13:00-24:00; edit as required:',
+      call easks(hold,outs,'01:00-12:00; edit as required:',
+      call easks(hold,outs,'13:00-24:00; edit as required:',
+      call askok(' ','Edit another surface?',ok,dok,1)
+      call askok(' ','Update Shading & Insolation db?',ok,dok,2)
+*item sifops shading_export_options
+'The contents of the binary representation of shading and insulation'
+'factors for the zone are not human readable and do not transfer'
+'easily between computing platforms. The export option allows'
+'the current contents and calculation to be saved to a file.'
+' '
+'The export file is an ASCII equivalent and can be later used'
+'as an import file for the data on the other operating system.'
+'Many users give it a name similar to that of the binary file'
+'name.'
+'  '
+'You will have the option to include further months of data in the'
+'file.'
+'  '
+'If your task is to importing shading and insolation data that you'
+'have edited pay particular attention to whether the information'
+'is read correctly. You will be asked whether you want to save the'
+'newly imported data into the binary file.'
+*enditem
+         call easks(expfil,' ','Export file name?',72,'siexp.txt',
+   15    call askok(' ','Continue with next month?',ok,dok,1)
+   17    call easks(expfil,' ','Import file name?',72,'siimp.txt',
+         call askok(' ','Update zone shading & insolation db?',
+         call askok(' ','Update zone shading & insolation db?',
+         call askok(' ','Update zone shading & insolation db?',
+         call askok(' ','Consider another month and/or output option?',
+*subroutine shsynp
+*item shsynp
+*enditem
+        call askok(' ','Consider next surface?',ok,dok,0)
+*subroutine shadsynp
+*item shadsynp
+*enditem
+        call askok(' ','Consider next surface?',ok,dok,0)
+*subroutine insynp
+*item insynp
+*enditem
+           call askok(' ','Consider next surface?',ok,dok,0)
