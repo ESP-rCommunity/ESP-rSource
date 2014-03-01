@@ -4360,7 +4360,7 @@ CONTAINS
    ! ********************************************************************
    ! Subroutine: AddToReportWild2
    ! Scope:    Private, accessible only through AddToReport interface
-   ! Purpose:  Wrapper to the C++ call add_to_report_wild1(int,float,char*,char*)
+   ! Purpose:  Wrapper to the C++ call add_to_report_wild2(int,float,char*,char*)
    !           Use this subroutine to send information to the xml and
    !           replace two '*' character in the Variable name with the
    !           passed in value.
@@ -4383,7 +4383,7 @@ CONTAINS
    ! ********************************************************************
    ! Subroutine: AddToReportWild3
    ! Scope:    Private, accessible only through AddToReport interface
-   ! Purpose:  Wrapper to the C++ call add_to_report_wild1(int,float,char*,char*,char*)
+   ! Purpose:  Wrapper to the C++ call add_to_report_wild3(int,float,char*,char*,char*)
    !           Use this subroutine to send information to the xml and
    !           replace three '*' character in the Variable name with the
    !           passed in value.
@@ -4399,7 +4399,7 @@ CONTAINS
 
       !Call c++
       if (isH3KEnabled()) then
-         call add_to_report_wild3(iIdentifier, rValue, cWild1,cWild2,cWild3)
+         call add_to_report_wild3(iIdentifier, rValue, cWild1, cWild2, cWild3)
       endif
    End Subroutine AddToReportWild3
 
@@ -4430,7 +4430,7 @@ CONTAINS
    ! ********************************************************************
    ! Subroutine: AddToReportDetailsWild1
    ! Scope:    Private, accessible only through AddToReportDetails interface
-   ! Purpose:  Wrapper to the C++ call add_to_report_details
+   ! Purpose:  Wrapper to the C++ call add_to_report_details_wild1
    !           Use this subroutine to send dynamic report description.
    !           When possible you should avoid the use of these
    !           familly of routines (performance reason).
@@ -4453,7 +4453,7 @@ CONTAINS
    ! ********************************************************************
    ! Subroutine: AddToReportDetailsWild2
    ! Scope:    Private, accessible only through AddToReportDetails interface
-   ! Purpose:  Wrapper to the C++ call add_to_report_details
+   ! Purpose:  Wrapper to the C++ call add_to_report_details_wild2
    !           Use this subroutine to send dynamic report description.
    !           When possible you should avoid the use of these
    !           familly of routines (performance reason).
@@ -4476,7 +4476,7 @@ CONTAINS
    ! ********************************************************************
    ! Subroutine: AddToReportDetailsWild3
    ! Scope:    Private, accessible only through AddToReportDetails interface
-   ! Purpose:  Wrapper to the C++ call add_to_report_details
+   ! Purpose:  Wrapper to the C++ call add_to_report_details_wild3
    !           Use this subroutine to send dynamic report description.
    !           When possible you should avoid the use of these
    !           familly of routines (performance reason).

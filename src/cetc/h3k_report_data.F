@@ -649,6 +649,9 @@ C.......the so called inward flowing fraction (IFF).
       endif reset_building_totals
 
 
+C << switch for zone name output here?
+C    - how to pad?
+C >>
 C.....Pad zone index to 'XX'
       if ( iZone .gt. 9 ) then
          write (cZone_Chars,'(I2)') iZone

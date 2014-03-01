@@ -377,7 +377,7 @@ extern "C"
    }
 
    /* ********************************************************************
-   ** Method:   add_to_report_wild_
+   ** Method:   add_to_report_wild3_
    ** Purpose:  Called by the Fortran code to pass data value for a
    **           specified variable
    ** Params:   iIdentifier - pointer to a fortran integer*4
@@ -398,6 +398,10 @@ extern "C"
                           int strLen2,int strLen3){
       char temp[strLen1+strLen2+strLen3+3];
 
+      /* extract actual string length (non-NULL characters) here? Will
+         (probably) be necessary for switching "zone_*" and "<<zone-name>>"
+         output!
+       */
       //Kludge: quick way to build a * delimited string with the params
       memcpy(temp,sWild1,strLen1);
       temp[strLen1] = '*';
@@ -414,7 +418,7 @@ extern "C"
    }
 
    /* ********************************************************************
-   ** Method:   add_to_report_wild_
+   ** Method:   add_to_report_wild2_
    ** Purpose:  Called by the Fortran code to pass data value for a
    **           specified variable
    ** Params:   iIdentifier - pointer to a fortran integer*4
@@ -450,7 +454,7 @@ extern "C"
 
 
    /* ********************************************************************
-   ** Method:   add_to_report_wild_
+   ** Method:   add_to_report_wild1_
    ** Purpose:  Called by the Fortran code to pass data value for a
    **           specified variable
    ** Params:   iIdentifier - pointer to a fortran integer*4
