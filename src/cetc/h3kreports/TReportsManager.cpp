@@ -384,7 +384,7 @@ extern "C"
    **           fValue - pointer to a fortran real
    **           sWild_ - pointers to fortran strings
    **           strLen_ - lenght of the passed in strings
-   ** Note:     It's important to ensure that the strings are send from
+   ** Note:     It's important to ensure that the strings are sent from
    **           Fortran without spaces (correctly allocated).  The trim
    **           routine could be added to the corresponding h3kmodule.f90
    **           wrapper if this is problematic.  This was left out for
@@ -398,10 +398,26 @@ extern "C"
                           int strLen2,int strLen3){
       char temp[strLen1+strLen2+strLen3+3];
 
-      /* extract actual string length (non-NULL characters) here? Will
-         (probably) be necessary for switching "zone_*" and "<<zone-name>>"
-         output!
+      /* extract actual string length (non-NULL characters) for
+        switching "zone_*" and "<<zone-name>>" output!
        */
+      char * pch;
+
+      pch=strchr(sWild1,' ');
+      if(pch!=NULL) {
+        strLen1=pch-sWild1;
+      }
+
+      pch=strchr(sWild2,' ');
+      if(pch!=NULL) {
+        strLen2=pch-sWild2;
+      }
+
+      pch=strchr(sWild3,' ');
+      if(pch!=NULL) {
+        strLen3=pch-sWild3;
+      }
+
       //Kludge: quick way to build a * delimited string with the params
       memcpy(temp,sWild1,strLen1);
       temp[strLen1] = '*';
@@ -425,7 +441,7 @@ extern "C"
    **           fValue - pointer to a fortran real
    **           sWild_ - pointers to fortran strings
    **           strLen_ - lenght of the passed in strings
-   ** Note:     It's important to ensure that the strings are send from
+   ** Note:     It's important to ensure that the strings are sent from
    **           Fortran without spaces (correctly allocated).  The trim
    **           routine could be added to the corresponding h3kmodule.f90
    **           wrapper if this is problematic.  This was left out for
@@ -439,11 +455,44 @@ extern "C"
 
       char temp[strLen1+strLen2+2];
 
+     /* extract actual string length (non-NULL characters) for 
+        switching "zone_*" and "<<zone-name>>" output!
+      *
+
+      printf("\n\n");
+      printf("sWild1=%s,  ",sWild1);
+             for(int i=0;i<strLen1;i++){
+               printf("%02x ", sWild1[i]);
+             }
+      printf(", len=%d\n",strLen1);
+
+      printf("sWild2=%s,  ",sWild2);
+      for(int i=0;i<strLen2;i++){
+        printf("%02x ", sWild2[i]);
+      }
+      printf(", len=%d\n",strLen1);
+
+      printf("\n");
+*/
+      char * pch;
+
+      pch=strchr(sWild1,' ');
+      if(pch!=NULL) {
+        strLen1=pch-sWild1;
+      }
+
+      pch=strchr(sWild2,' ');
+      if(pch!=NULL) {
+        strLen2=pch-sWild2;
+      }
       //Kludge: quick way to build a * delimited string with the params
       memcpy(temp,sWild1,strLen1);
       temp[strLen1] = '*';
       memcpy(temp+strLen1+1,sWild2,strLen2);
       temp[strLen1+strLen2+1] = '\0';
+
+//      printf("temp=%s\n",temp);
+//      printf("\n");
 
       TReportsManager::Instance()->AddToReportDataList(*iIdentifier,temp,*fValue);
    }
@@ -472,6 +521,16 @@ extern "C"
    ** ***************************************************************** */
    void add_to_report_wild1__(int* iIdentifier,float* fValue,char* sWild1,int strLen1){
       char temp[strLen1+1];
+
+     /* extract actual string length (non-NULL characters) for
+        switching "zone_*" and "<<zone-name>>" output!
+      */
+      char * pch;
+
+      pch=strchr(sWild1,' ');
+      if(pch!=NULL) {
+        strLen1=pch-sWild1;
+      }
 
       //Kludge: quick way to build a string with the params
       memcpy(temp,sWild1,strLen1);
@@ -688,7 +747,8 @@ extern "C"
    ** Method:   set_report_variable()
    ** Purpose:  Called by the fortran code to pass the Report Variable
    **           definition, id, description, to the C++ containers
-   ** Params:   sVariableName -  The Unique xml path location to where the data is to be stored.
+   ** Params:   sVariableName - The Unique xml "path location" (the value of '%VariableName'
+                                as defined in h3kmodule.f90) to where the data is to be stored.
                 sMetaName -  The metatag to be added. (usually 'units' is used)
                 sMetaValue - The value for the above metatag (Usually the unit type, like
                      (W) for watts)
@@ -708,6 +768,7 @@ extern "C"
 
       //This will terminate the fortran string with NUL character
       //Making this character array in memory a valid c format.
+
       sVariableName[*iVariableNameLength] = '\0';
       sMetaType[*iMetatypeLength] = '\0';
       sMetaValue[*iMetaValueLength] = '\0';

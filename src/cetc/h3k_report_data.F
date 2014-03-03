@@ -356,7 +356,8 @@ C.....Local variables
       parameter ( SBC=56.7E-9 )
 
 C.....DECLARATIONS for H3Kreporting object
-      CHARACTER*2   cZone_Chars, cSurf_Chars, cNode_Chars
+      CHARACTER*5 cZone_Chars
+      character*2 cSurf_Chars, cNode_Chars
 
       CHARACTER*128 ZONE_LABEL
 
