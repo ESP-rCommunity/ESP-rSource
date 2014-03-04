@@ -118,7 +118,7 @@ C is the 6th item in the temporal file.
       integer IGLOHSL   ! if non-zero ambient global horiz solar used
       integer IOBJVEL   ! if non-zero model has velocity ( )
       integer IOBJDIR   ! if non-zero model has direction ( )
-      integer ISKYTMP   ! if non-zero measured sky temperature (not yet used)
+      integer ISKYTMP   ! if non-zero measured sky temperature (in progress)
       integer IGLOVRT   ! if non-zero vertical global solar is used
       integer ICASUAL3  ! if non-zero separate casual gains are used
       integer IACTIV    ! if non-zero a zone activity pattern is used

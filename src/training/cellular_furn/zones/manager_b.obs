@@ -1,9 +1,0 @@
-# site obstruction file defined in ../zones/manager_b.obs
-# associated with zone geometry file ../zones/manager_b.geo
- 0. 0.   # dummy values for site position
-    2    # no obstruction blocks
-# origin X Y Z, width, depth, height, rot angle, descr, material
-6.100 2.700 0.010 0.900 0.700 2.000 0.000 cab_a insul_frame # block 1
-6.100 3.700 0.010 0.900 0.700 2.000 0.000 cab_b insul_frame # block 2
-# grid opq X opq Z
-    15    15
