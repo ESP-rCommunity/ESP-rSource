@@ -4380,22 +4380,27 @@ C Commons.
       character txtspm*72	!- description of data item
 
 C Local variables.
-      character*2 cZone_Chars, cSurf_Chars, cNode_Chars
+      character*12 cZone_Chars, cSurf_Chars
+      character*2  cNode_Chars
       integer ndat,idat
 
 C References.
       integer lnblnk
 
 C Pad index to 'XX'.
-      if(iZone.gt.9)then
-         write(cZone_Chars,'(i2)')iZone
+      if ( iZone .gt. 9 ) then
+cx           write (cZone_Chars,'(I2)') iZone
+        write (cZone_Chars,'(A,I2)') 'zone_',iZone
       else
-         write(cZone_Chars,'(a,i1)') '0',iZone
+cx           write (cZone_Chars,'(A,I1)') '0', iZone
+        write (cZone_Chars,'(A,I1)') 'zone_0',iZone
       endif
-      if(isurf.gt.9)then
-         write(cSurf_Chars,'(i2)')isurf
+      if ( iSurf .gt. 9 ) then
+cx          write (cSurf_Chars,'(I2)') iSurf
+        write (cSurf_Chars,'(A,I2)') 'surface_',iSurf
       else
-         write(cSurf_Chars,'(a,i1)') '0',isurf
+cx          write (cSurf_Chars,'(A,I1)') '0', iSurf
+        write (cSurf_Chars,'(A,I1)') 'surface_0',iSurf
       endif
       if(inode.gt.9)then
          write(cNode_Chars,'(i2)')inode
@@ -4410,13 +4415,13 @@ C Output available PCM layer data.
          Call AddToReport(rvBuiSpm%Identifier,
      &      dataspm(ispmnod,idat),
      &      spmlabel(ispmnod)(1:lnblnk(spmlabel(ispmnod))),
-     &      '/z' // cZone_Chars // '/s' // cSurf_Chars
+     &      '/' // cZone_Chars // '/' // cSurf_Chars
      &   // '/nd' // cNode_Chars,
      &      strspm(ispmnod,idat)(1:lnblnk(strspm(ispmnod,idat))))
 
          Call AddToReportDetails(rvBuiSpm%Identifier,
      &      spmlabel(ispmnod)(1:lnblnk(spmlabel(ispmnod))),
-     &      '/z' // cZone_Chars // '/s' // cSurf_Chars
+     &      '/' // cZone_Chars // '/' // cSurf_Chars
      &   // '/nd' // cNode_Chars,
      &      strspm(ispmnod,idat)(1:lnblnk(strspm(ispmnod,idat))),
      &      'units',

@@ -2280,7 +2280,7 @@ C ********************************************************************
       real pi,r, omega_v, omega_h
 
 C.....DECLARATIONS for H3Kreporting object
-      CHARACTER*2   cZone_Chars, cSurf_Chars
+      CHARACTER*12   cZone_Chars, cSurf_Chars
 
       pi = 4.0 * ATAN(1.0)
       r=pi/180.
@@ -2292,16 +2292,20 @@ C.....Horizontal profile angle
       
 C.....Pad zone index to 'XX'
       if ( ICOMP .gt. 9 ) then
-        write (cZone_Chars,'(I2)') ICOMP
+cx        write (cZone_Chars,'(I2)') ICOMP
+        write (cZone_Chars,'(A,I2)') 'zone_',ICOMP
       else
-        write (cZone_Chars,'(A,I1)') '0', ICOMP
+cx        write (cZone_Chars,'(A,I1)') '0', ICOMP
+        write (cZone_Chars,'(A,I1)') 'zone_0', ICOMP
       endif
 
 C.....Pad surface index to 'XX'
       if ( ISURF .gt. 9 ) then
-        write (cSurf_Chars,'(I2)') ISURF
+cx        write (cSurf_Chars,'(I2)') ISURF
+        write (cSurf_Chars,'(A,I2)') 'surface_',ISURF
       else
-        write (cSurf_Chars,'(A,I1)') '0', ISURF
+cx        write (cSurf_Chars,'(A,I1)') '0', ISURF
+        write (cSurf_Chars,'(A,I1)') 'surface_0', ISURF
       endif
 
 c      call AddToReport(
@@ -2928,8 +2932,9 @@ C      real slat_angleX
       real solrad_dir               ! incident direct solar radiation [W/m2] - returned by sub. get_incident_solrad
       real solrad_diff              ! incident diffuse solar radiation [W/m2] - returned by sub. get_incident_solrad
       character msgout*124
-      character*2 cZone_Chars, cCFC_Chars
-      
+      character*12 cZone_Chars
+      character*2  cCFC_Chars
+
 C Prior to initiating control logic, set the default slat angle and 
 C shading state for the next time step in all zones and all CFC types
 C containing a shade layer.    
@@ -3255,11 +3260,14 @@ C Make slat angle and shade state available in H3KReports.
         IF (icfc(i)==1) THEN                        ! Check if there are CFCs in this zone.
           DO 44 j = 1, ncfc(i)                      ! Examine each type of CFC in zone.
 
-            if ( i > 9 ) then                       ! Tag output with zone number (pad to 'XX' format).
-              write( cZone_Chars, '(I2)' ) i
+C...........Pad zone index to 'XX'
+            if ( ICOMP .gt. 9 ) then
+cx              write (cZone_Chars,'(I2)') ICOMP
+              write (cZone_Chars,'(A,I2)') 'zone_',ICOMP
             else
-              write( cZone_Chars, '(A,I1)' ) '0', i
-            end if
+cx              write (cZone_Chars,'(A,I1)') '0', ICOMP
+              write (cZone_Chars,'(A,I1)') 'zone_0', ICOMP
+            endif
             if ( j > 9 ) then                       ! Tag output with CFC type.
               write( cCFC_Chars, '(I2)' ) j
             else

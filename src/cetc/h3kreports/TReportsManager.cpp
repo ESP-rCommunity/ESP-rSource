@@ -457,23 +457,7 @@ extern "C"
 
      /* extract actual string length (non-NULL characters) for 
         switching "zone_*" and "<<zone-name>>" output!
-      *
-
-      printf("\n\n");
-      printf("sWild1=%s,  ",sWild1);
-             for(int i=0;i<strLen1;i++){
-               printf("%02x ", sWild1[i]);
-             }
-      printf(", len=%d\n",strLen1);
-
-      printf("sWild2=%s,  ",sWild2);
-      for(int i=0;i<strLen2;i++){
-        printf("%02x ", sWild2[i]);
-      }
-      printf(", len=%d\n",strLen1);
-
-      printf("\n");
-*/
+      */
       char * pch;
 
       pch=strchr(sWild1,' ');
@@ -490,9 +474,6 @@ extern "C"
       temp[strLen1] = '*';
       memcpy(temp+strLen1+1,sWild2,strLen2);
       temp[strLen1+strLen2+1] = '\0';
-
-//      printf("temp=%s\n",temp);
-//      printf("\n");
 
       TReportsManager::Instance()->AddToReportDataList(*iIdentifier,temp,*fValue);
    }

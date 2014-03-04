@@ -356,8 +356,9 @@ C.....Local variables
       parameter ( SBC=56.7E-9 )
 
 C.....DECLARATIONS for H3Kreporting object
-      CHARACTER*5 cZone_Chars
-      character*2 cSurf_Chars, cNode_Chars
+      CHARACTER*12 cZone_Chars   ! zname(MCOM)
+      Character*12 cSurf_Chars   ! sname(MCOM,MS)
+      character*2  cNode_Chars
 
       CHARACTER*128 ZONE_LABEL
 
@@ -649,17 +650,19 @@ C.......the so called inward flowing fraction (IFF).
 
       endif reset_building_totals
 
-
-C << switch for zone name output here?
-C    - how to pad?
-C >>
-C.....Pad zone index to 'XX'
-      if ( iZone .gt. 9 ) then
-         write (cZone_Chars,'(I2)') iZone
-      else
-        write (cZone_Chars,'(A,I1)') '0', iZone
-      endif
-
+C.....Switch for zone name output here
+cx      if (bZoneNames) then
+cx        write (cZone_Chars,'(A)') zname(iZone)(1:lnzname(iZone))
+cx      else
+C.......Pad zone index to 'XX'
+        if ( iZone .gt. 9 ) then
+cx           write (cZone_Chars,'(I2)') iZone
+           write (cZone_Chars,'(A,I2)') 'zone_',iZone
+        else
+cx           write (cZone_Chars,'(A,I1)') '0', iZone
+           write (cZone_Chars,'(A,I1)') 'zone_0',iZone
+        endif
+cx      endif ! bZoneNames
 
 C----------------------------------------------------------------------
 C.....Determine control function for current zone.
@@ -816,13 +819,24 @@ C-----------------------------------------------------------------------
 
       zone_surface_loop: do iSurface = 1, nzsur(iZone)
 
+C << the following would ideally require that surface name lengths
+C    are stored in a common like zone name lengths ... filled in
+C    georead() (egeometry.F line 1750 ff.)/ egomin() (egeometry.F line 594)? >>
+
+C.....Switch for surface name output here
+cx      if (bSurfaceNames) then
+cx        write (cSurf_Chars,'(A)')
+cx     &          sname(iZone,iSurface)(1:lnsname(iZone,iSurface))
+cx      else
 C.......Pad surface index to 'XX'
         if ( iSurface .gt. 9 ) then
-          write (cSurf_Chars,'(I2)') iSurface
+cx          write (cSurf_Chars,'(I2)') iSurface
+          write (cSurf_Chars,'(A,I2)') 'surface_',iSurface
         else
-          write (cSurf_Chars,'(A,I1)') '0', iSurface
+cx          write (cSurf_Chars,'(A,I1)') '0', iSurface
+          write (cSurf_Chars,'(A,I1)') 'surface_0',iSurface
         endif
-
+cx      endif ! bSurfaceNames
 
 
 C-----------------------------------------------------------------------
@@ -2123,9 +2137,11 @@ C.......be almagamated. Alex has adopted a slightly more efficient
 C.......method of writing out the variable names, which the code
 C.......below should also make use of.
          if ( iSurface .gt. 9 ) then
-            write(cSurf_Chars, '(I2)') iSurface
+cx            write(cSurf_Chars, '(I2)') iSurface
+            write(cSurf_Chars, '(A,I2)') 'surface_',iSurface
          else
-            write(cSurf_Chars, '(A,I1)') '0', iSurface
+cx            write(cSurf_Chars, '(A,I1)') '0', iSurface
+            write(cSurf_Chars, '(A,I1)') 'surface_0', iSurface
          endif
 
 C........Surface temperature
