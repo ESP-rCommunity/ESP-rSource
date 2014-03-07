@@ -651,9 +651,9 @@ C.......the so called inward flowing fraction (IFF).
       endif reset_building_totals
 
 C.....Switch for zone name output here
-cx      if (bZoneNames) then
-cx        write (cZone_Chars,'(A)') zname(iZone)(1:lnzname(iZone))
-cx      else
+      if (ReportBoolConfig("use_zonenames")) then
+        write (cZone_Chars,'(A)') zname(iZone)(1:lnzname(iZone))
+      else
 C.......Pad zone index to 'XX'
         if ( iZone .gt. 9 ) then
 cx           write (cZone_Chars,'(I2)') iZone
@@ -662,7 +662,7 @@ cx           write (cZone_Chars,'(I2)') iZone
 cx           write (cZone_Chars,'(A,I1)') '0', iZone
            write (cZone_Chars,'(A,I1)') 'zone_0',iZone
         endif
-cx      endif ! bZoneNames
+      endif ! use_zonenames
 
 C----------------------------------------------------------------------
 C.....Determine control function for current zone.
@@ -824,7 +824,7 @@ C    are stored in a common like zone name lengths ... filled in
 C    georead() (egeometry.F line 1750 ff.)/ egomin() (egeometry.F line 594)? >>
 
 C.....Switch for surface name output here
-cx      if (bSurfaceNames) then
+cx      if (ReportBoolConfig ("use_surfacenames")) then
 cx        write (cSurf_Chars,'(A)')
 cx     &          sname(iZone,iSurface)(1:lnsname(iZone,iSurface))
 cx      else

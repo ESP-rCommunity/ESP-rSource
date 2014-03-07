@@ -222,6 +222,11 @@ class TReportsManager
       bool ToggleConfig(std::string cParam);
 
       /**
+      * Report an on-off configuration parameter
+      */
+      bool ReportBoolConfig(std::string cParam);
+
+      /**
       * Update configuration file with new options
       */
       void UpdateConfigFile();

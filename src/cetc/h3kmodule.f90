@@ -53,6 +53,10 @@ MODULE h3kmodule
          character(len=*), intent(in)::cVariable
       end function rep_toggle_config
 
+      logical function rep_bool_config(cVariable)
+         character(len=*), intent(in)::cVariable
+      end function rep_bool_config
+
       character(50) function rep_report_config(cDescription)
          character(len=*), intent(in)::cDescription
       end function rep_report_config
@@ -4748,6 +4752,27 @@ CONTAINS
 
       ReportToggleConfig = lRtn
    End Function ReportToggleConfig
+
+   ! ********************************************************************
+   ! Function: ReportBoolConfig
+   ! Purpose:  Wrapper to the c++ call rep_bool_config, method that
+   !           reports boolean configuration,
+   ! Params:   cVariable - xml variable tag name to toggle
+   ! Returns:  true/false according to setting of variable
+   ! Author:   Achim Geissler
+   ! Mod Date: 2014-03-07
+   ! ********************************************************************
+   logical Function ReportBoolConfig(cVariable)
+      character(len=*), intent(in)::cVariable
+      logical::lRtn = .false.
+
+      !call the c++
+      if (isH3KEnabled()) Then
+         lRtn = rep_bool_config(cVariable)
+      endif
+
+      ReportBoolConfig = lRtn
+   End Function ReportBoolConfig
 
    ! ********************************************************************
    ! Function: SetAdditionalValues

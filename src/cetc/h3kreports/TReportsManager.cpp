@@ -333,6 +333,19 @@ extern "C"
        return rep_toggle_config__(sParam, iNameLength);
     }
 
+   /**
+    * Report the status of an on-off configuration parameter
+    */
+    bool rep_bool_config__(char* sParam, int iNameLength){
+
+      std::string paramName = std::string(sParam, iNameLength);
+
+      return TReportsManager::Instance()->ReportBoolConfig(paramName);
+    }
+    bool rep_bool_config_(char* sParam, int iNameLength)
+    {
+      return rep_bool_config__(sParam, iNameLength);
+    }
 
     /**
      *   Write out configuration file with new options
@@ -3137,6 +3150,12 @@ void TReportsManager::ParseConfigFile( const std::string& filePath  )
   // Output file name root = results file name root?
   m_params["use_resfilenameroot"] = inputXML.GetFirstNodeValue("use_resfilenameroot", inputXML.RootNode());
 
+  // Output zone names?
+  m_params["use_zonenames"] = inputXML.GetFirstNodeValue("use_zonenames", inputXML.RootNode());
+
+  // Output file name root = results file name root?
+  m_params["use_surfacenames"] = inputXML.GetFirstNodeValue("use_surfacenames", inputXML.RootNode());
+
   // Save to disk, save_to_disk max attribute
   m_params["save_to_disk"] = inputXML.GetFirstNodeValue("save_to_disk", inputXML.RootNode());
   m_params["save_to_disk_every"] = inputXML.GetFirstAttributeValue("save_to_disk","every").c_str();
@@ -3430,6 +3449,23 @@ bool TReportsManager::ToggleConfig(std::string cParam){
    }
 
    return bSuccess;
+}
+
+/**
+ *   Report boolean value of requested parameter (true/false)
+ *
+ */
+bool TReportsManager::ReportBoolConfig(std::string cParam){
+  bool bReturn;
+
+  //boolean type settings, true/false
+  if ( m_params [ cParam ] == "true" ){
+    bReturn = true;
+  }else{
+    bReturn = false;
+  }
+
+  return bReturn;
 }
 
 /**
