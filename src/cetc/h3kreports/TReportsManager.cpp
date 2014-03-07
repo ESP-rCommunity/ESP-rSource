@@ -972,6 +972,8 @@ TReportsManager::TReportsManager(  )
    bReports_Enabled = false;
    m_bSeasonalRun = false;
    bUseResFilenameRoot = false;
+   bUseZoneNames = false;
+   bUseSurfaceNames = false;
 
 
    //remove the out.csv and out.db3 on init since the save_to_disk
@@ -1408,6 +1410,32 @@ void TReportsManager::AddNewSeason(int iSeason_index,float fHtgMultiplier,float 
  ** ***************************************************************** */
 bool TReportsManager::UseResFilenameRoot(){
    return bUseResFilenameRoot;
+}
+
+/* ********************************************************************
+ ** Method:   UseZoneNames
+ ** Scope:    public
+ ** Purpose:  Returns state of boolean
+ ** Params:   N/A
+ ** Returns:  boolean
+ ** Author:   Achim Geissler
+ ** Mod Date: 2014-03-07
+ ** ***************************************************************** */
+bool TReportsManager::UseZoneNames(){
+  return bUseZoneNames;
+}
+
+/* ********************************************************************
+ ** Method:   UseSurfaceNames
+ ** Scope:    public
+ ** Purpose:  Returns state of boolean
+ ** Params:   N/A
+ ** Returns:  boolean
+ ** Author:   Achim Geissler
+ ** Mod Date: 2014-03-07
+ ** ***************************************************************** */
+bool TReportsManager::UseSurfaceNames(){
+  return bUseSurfaceNames;
 }
 
 /* ********************************************************************
@@ -3261,6 +3289,22 @@ void TReportsManager::SetFlags(){
   }else{
     m_params["use_resfilenameroot"] = "false";
     bUseResFilenameRoot = false;
+  }
+
+  // Output zone names (instead of zone_xx)?
+  if ( m_params["use_zonenames"] == "true" ){
+    bUseZoneNames = true;
+  }else{
+    m_params["use_zonenames"] = "false";
+    bUseZoneNames = false;
+  }
+
+  // Output surface names (instead of surface_xx)?
+  if ( m_params["use_surfacenames"] == "true" ){
+    bUseSurfaceNames = true;
+  }else{
+    m_params["use_surfacenames"] = "false";
+    bUseSurfaceNames = false;
   }
 
   // Timestep averaging
