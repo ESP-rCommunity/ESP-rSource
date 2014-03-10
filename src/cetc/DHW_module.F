@@ -183,11 +183,13 @@ c----56--1---------2---------3---------4---------5---------6---------7---------8
 #include "dhw_common.h"
 #include "ground_temp_mains_common.h"
 
+  
+
       common/simtim/ihrp,ihrf,idyp,idyf,idwp,idwf,nsinc,its
       INTEGER   ihrp,ihrf,idyp,idyf,idwp,idwf,nsinc,its
       REAL   fNormalizedDailyWaterDraw
       REAL   fLitresforNumOccupants
-
+      integer h3k_month
 c This calulates the amount of water  used based on the the number of occupants
         if ( bDefinedLoad ) then 
           fLitresforNumOccupants = fDailyDrawVolL
@@ -198,6 +200,8 @@ c This calulates the amount of water  used based on the the number of occupants
       
 c This normalises the water draw based on a standard usage temperature (currently a parameter
 c of 60C. This is from B.Bradley'd H2KDHW.F line 254.
+        iMonth = h3k_month(real(idyp)+real(ihrp)/24)
+
         fNormalizedDailyWaterDraw = ( 0.75
      &                   * fLitresforNumOccupants
      &                   * ( (fUsageTemp
