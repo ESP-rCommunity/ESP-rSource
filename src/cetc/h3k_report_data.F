@@ -656,10 +656,8 @@ C.....Switch for zone name output here
       else
 C.......Pad zone index to 'XX'
         if ( iZone .gt. 9 ) then
-cx           write (cZone_Chars,'(I2)') iZone
            write (cZone_Chars,'(A,I2)') 'zone_',iZone
         else
-cx           write (cZone_Chars,'(A,I1)') '0', iZone
            write (cZone_Chars,'(A,I1)') 'zone_0',iZone
         endif
       endif ! use_zonenames
@@ -824,20 +822,17 @@ C    are stored in a common like zone name lengths ... filled in
 C    georead() (egeometry.F line 1750 ff.)/ egomin() (egeometry.F line 594)? >>
 
 C.....Switch for surface name output here
-cx      if (ReportBoolConfig ("use_surfacenames")) then
-cx        write (cSurf_Chars,'(A)')
-cx     &          sname(iZone,iSurface)(1:lnsname(iZone,iSurface))
-cx      else
+      if (ReportBoolConfig ("use_surfacenames")) then
+        write (cSurf_Chars,'(A)')
+     &          sname(iZone,iSurface)(1:lnsname(iZone,iSurface))
+      else
 C.......Pad surface index to 'XX'
         if ( iSurface .gt. 9 ) then
-cx          write (cSurf_Chars,'(I2)') iSurface
           write (cSurf_Chars,'(A,I2)') 'surface_',iSurface
         else
-cx          write (cSurf_Chars,'(A,I1)') '0', iSurface
           write (cSurf_Chars,'(A,I1)') 'surface_0',iSurface
         endif
-cx      endif ! bSurfaceNames
-
+      endif ! use_surfacenames
 
 C-----------------------------------------------------------------------
 C       Report total short wave radiation on this surface.

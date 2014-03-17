@@ -590,9 +590,10 @@ C 1, Surf-1        OPAQ  VERT  UNKN         EXTERIOR
           CALL EGETWI(loutstr,K,ISN,1,NSUR,'F','surface no',IER)
           IF(IER.NE.0)GOTO 44        
         
-C Recover Surface name        
+C Recover Surface name and set surface name length
           SNAME(ICOMP,ISN)=loutstr(6:17)
-        
+          lnsname(ICOMP,ISN)=lnblnk(SNAME(ICOMP,ISN)) ! update string length
+
 C Recover specified optics
           write(tmpsot,'(a)') loutstr(20:23)        
         
@@ -635,6 +636,7 @@ C Read surface number from iWordCount
 
 C Recover Surface name
             SNAME(ICOMP,ISN) = cLnWords(2)(1:12)            
+            lnsname(ICOMP,ISN)=lnblnk(SNAME(ICOMP,ISN)) ! update string length
 
 C Recover optics specification
             tmpsot = cLnWords(3)(1:4)          
@@ -1749,6 +1751,7 @@ C   UNKNOWN,i,j     where i is 0 and j is 0
 C Surface name, allow for future spaces in name.
             CALL EGETP(LOUTSTR,K,WORD,'W','surface name',IER)
             write(SNAME(ICOMP,NS),'(a)') WORD(1:lnblnk(WORD))
+            lnsname(ICOMP,NS)=lnblnk(SNAME(ICOMP,NS)) ! update string length
             if(havec24)then
               write(ssname(icn),'(a)') WORD(1:lnblnk(WORD))
             endif
@@ -2638,6 +2641,7 @@ C to write out.
           lsml=lnblnk(SSMLCN(icc))
           lspa=lnblnk(SSPARENT(icc))
           lsna=lnblnk(SSNAME(icc))
+          lnsname=lsna   ! update surface name length common
           lsot=lnblnk(SSOTF(icc))
           loth=lnblnk(OTHSTR)
 
@@ -4018,18 +4022,19 @@ C equation echo warnings.
         N = NVER(i)
         ierr=0
         call PLEQN(XX,YY,ZZ,N,CG,EQN,IERR)
-	lln=lnblnk(ssname(icc)) 
-	if(ierr.ne.0.and.itrc.gt.0)then
+        lln=lnblnk(ssname(icc))
+        lnsname=lln  ! update surface name length common
+        if(ierr.ne.0.and.itrc.gt.0)then
           if(ierr.eq.1)then
-	    write(outs,'(5a)') ' Surface ',ssname(icc)(1:lln),
+            write(outs,'(5a)') ' Surface ',ssname(icc)(1:lln),
      &        ' in ',zname(icomp)(1:lnzname(icomp)),
      &        ' not enough points for plneqn.'
           elseif(ierr.eq.-1)then
-	    write(outs,'(5a)') ' Surface ',ssname(icc)(1:lln),
+            write(outs,'(5a)') ' Surface ',ssname(icc)(1:lln),
      &        ' in ',zname(icomp)(1:lnzname(icomp)),
      &        ' issue with unit vector in plneqn.'
           else
-	    write(outs,'(5a)') ' Surface ',ssname(icc)(1:lln),
+            write(outs,'(5a)') ' Surface ',ssname(icc)(1:lln),
      &        ' in ',zname(icomp)(1:lnzname(icomp)),
      &        ' issue in plneqn.'
           endif
@@ -4045,9 +4050,10 @@ C reported as a larger number.
      &      - EQN(4)
           if(distance.gt.ofby) ofby=distance
   64    continue
-	lln=lnblnk(ssname(icc)) 
-	if(ofby.gt.0.01.and.itrc.gt.0)then
-	  write(outs,'(5a,F6.4,a)') ' Surface ',ssname(icc)(1:lln),
+        lln=lnblnk(ssname(icc))
+        lnsname=lln  ! update surface name length common
+        if(ofby.gt.0.01.and.itrc.gt.0)then
+          write(outs,'(5a,F6.4,a)') ' Surface ',ssname(icc)(1:lln),
      &      ' in ',zname(icomp)(1:lnzname(icomp)),
      &      ' is warped by ',ofby,
      &      'm. Please check via surface transforms.'
@@ -5011,6 +5017,7 @@ C logic as in subroutine updatesvfc.
             IF(I.LE.9)WRITE(SNAME(ICOMP,I),'(A5,I1)') 'Surf-',I
             IF(I.GT.9)WRITE(SNAME(ICOMP,I),'(A5,I2)') 'Surf-',I
           endif
+          lnsname(ICOMP,I)=lnblnk(SNAME(ICOMP,I)) ! update string length
           SOTHER(I,1)='UNKNOWN'
           SOTHER(I,2)='0'
           SOTHER(I,3)='0'
@@ -5052,6 +5059,7 @@ C Set flags for wall/celing/floor
           IF(I.LE.9)WRITE(SNAME(ICOMP,I),'(A5,I1)') 'Surf-',I
           IF(I.GT.9)WRITE(SNAME(ICOMP,I),'(A5,I2)') 'Surf-',I
         endif
+        lnsname(ICOMP,I)=lnblnk(SNAME(ICOMP,I)) ! update string length
         SOTHER(I,1)='UNKNOWN'
         SOTHER(I,2)='0'
         SOTHER(I,3)='0'
