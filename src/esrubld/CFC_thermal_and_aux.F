@@ -2268,6 +2268,7 @@ C ********************************************************************
       IMPLICIT NONE
 
 #include "building.h"
+#include "geometry.h"    ! for zname
 #include "CFC_common.h"
 
       COMMON/SUNPOS/SAZI,SALT,ISUNUP
@@ -2309,10 +2310,10 @@ C    georead() (egeometry.F line 1750 ff.)/ egomin() (egeometry.F line 594)? >>
 C.....Switch for surface name output here
 cx      if (ReportBoolConfig ("use_surfacenames")) then
 cx        write (cSurf_Chars,'(A)')
-cx     &          sname(iZone,iSurface)(1:lnsname(icomp,isurf))
+cx     &          sname(iZone,isurf)(1:lnsname(icomp,isurf))
 cx      else
 C.......Pad surface index to 'XX'
-        if ( iSurface .gt. 9 ) then
+        if ( isurf .gt. 9 ) then
 cx          write (cSurf_Chars,'(I2)') iSurface
           write (cSurf_Chars,'(A,I2)') 'surface_',isurf
         else
@@ -2885,6 +2886,7 @@ C ********************************************************************
       use h3kmodule
       IMPLICIT NONE
 #include "building.h"
+#include "geometry.h"    ! for zname
 #include "control.h"
 #include "CFC_common.h"
       COMMON/OUTIN/IUOUT,IUIN
