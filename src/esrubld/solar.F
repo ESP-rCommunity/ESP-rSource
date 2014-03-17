@@ -401,7 +401,7 @@ C rows respectively.
       logical znotair
 
 C.....DECLARATIONS for H3Kreporting object
-      CHARACTER*2   cZone_Chars, cSurf_Chars
+      CHARACTER*12   cZone_Chars, cSurf_Chars
 
       ZAREA=zonetotsurfacearea(ICOMP)
 
@@ -1623,19 +1623,34 @@ C Apply shading factor to external incident radiation
             EXDIFSKY(I) = SKYDIF(I)*(1.-POFF)
             EXDIFGRD(I) = GRDDIF(I)*(1.-POFF)
 
-C...........Pad zone index to 'XX'
-c            if ( ICOMP .gt. 9 ) then
-c              write (cZone_Chars,'(I2)') ICOMP
+C...........Switch for zone name output here
+c            if (ReportBoolConfig("use_zonenames")) then
+c              write (cZone_Chars,'(A)') zname(icomp)(1:lnzname(icomp))
 c            else
-c              write (cZone_Chars,'(A,I1)') '0', ICOMP
-c            endif
+C.............Pad zone index to 'XX'
+c              if ( icomp .gt. 9 ) then
+c                write (cZone_Chars,'(A,I2)') 'zone_',icomp
+c              else
+c                write (cZone_Chars,'(A,I1)') 'zone_0',icomp
+c              endif
+c            endif ! use_zonenames
 
-C...........Pad surface index to 'XX'
-c            if ( I .gt. 9 ) then
-c              write (cSurf_Chars,'(I2)') I
+C << the following would ideally require that surface name lengths
+C    are stored in a common like zone name lengths ... filled in
+C    georead() (egeometry.F line 1750 ff.)/ egomin() (egeometry.F line 594)? >>
+
+C...........Switch for surface name output here
+c            if (ReportBoolConfig ("use_surfacenames")) then
+c              write (cSurf_Chars,'(A)')
+c      &          sname(iZone,iSurface)(1:lnsname(icomp,isurf))
 c            else
-c              write (cSurf_Chars,'(A,I1)') '0', I
-c            endif
+C.............Pad surface index to 'XX'
+c              if ( iSurface .gt. 9 ) then
+c                write (cSurf_Chars,'(A,I2)') 'surface_',isurf
+c              else
+c                write (cSurf_Chars,'(A,I1)') 'surface_0',isurf
+c              endif
+c            endif ! use_surfacenames
 
 c            call AddToReport(
 c     &         rvSolarIncidentDirect%identifier,

@@ -4387,21 +4387,35 @@ C Local variables.
 C References.
       integer lnblnk
 
-C Pad index to 'XX'.
-      if ( iZone .gt. 9 ) then
-cx           write (cZone_Chars,'(I2)') iZone
-        write (cZone_Chars,'(A,I2)') 'zone_',iZone
+C.....Switch for zone name output here
+      if (ReportBoolConfig("use_zonenames")) then
+        write (cZone_Chars,'(A)') zname(iZone)(1:lnzname(iZone))
       else
-cx           write (cZone_Chars,'(A,I1)') '0', iZone
-        write (cZone_Chars,'(A,I1)') 'zone_0',iZone
-      endif
-      if ( iSurf .gt. 9 ) then
-cx          write (cSurf_Chars,'(I2)') iSurf
-        write (cSurf_Chars,'(A,I2)') 'surface_',iSurf
-      else
-cx          write (cSurf_Chars,'(A,I1)') '0', iSurf
-        write (cSurf_Chars,'(A,I1)') 'surface_0',iSurf
-      endif
+C.......Pad zone index to 'XX'
+        if ( iZone .gt. 9 ) then
+           write (cZone_Chars,'(A,I2)') 'zone_',iZone
+        else
+           write (cZone_Chars,'(A,I1)') 'zone_0',iZone
+        endif
+      endif ! use_zonenames
+
+C << the following would ideally require that surface name lengths
+C    are stored in a common like zone name lengths ... filled in
+C    georead() (egeometry.F line 1750 ff.)/ egomin() (egeometry.F line 594)? >>
+
+C.....Switch for surface name output here
+cx      if (ReportBoolConfig ("use_surfacenames")) then
+cx        write (cSurf_Chars,'(A)')
+cx     &          sname(iZone,iSurface)(1:lnsname(icomp,isurf))
+cx      else
+C.......Pad surface index to 'XX'
+        if ( iSurf .gt. 9 ) then
+          write (cSurf_Chars,'(A,I2)') 'surface_',iSurf
+        else
+          write (cSurf_Chars,'(A,I1)') 'surface_0',iSurf
+        endif
+c      endif ! use_surfacenames
+
       if(inode.gt.9)then
          write(cNode_Chars,'(i2)')inode
       else
