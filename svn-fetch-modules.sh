@@ -30,9 +30,11 @@ if [ "${NotAnSvnWorkingCopy}" != "" ] ; then
  if [ "${NotAGitRepo}" == "" ] ; then 
  
    echo "     ${Path} appears to be a git repository!" 
-   echo "     Run 'git submodule update --recursive' to import submodules."
+   echo "     Run: "
+   echo "       git submodule init "
+   echo "       git submodule update "
    echo 
- 
+   
  fi 
  
  echo "  -> svn-fetch-modules.pl: Quitting.  "
@@ -57,7 +59,7 @@ fi
 
   if [ ! -d ./databases ]; then
     echo "Checking out data and climate files via svn...-> databases.." 
-    svn co https://github.com/ESP-rCommunity/ESP-rDatabases/trunk ./databases
+    svn co https://github.com/ESP-rCommunity/ESP-rDatabases/trunk ./data
 
   else 
   echo "Refreshing databases..."
@@ -79,8 +81,8 @@ fi
     cd .. 
   fi 
 
-  echo "Setting svn ignore properities for databasesm, doc, models..."
-  svn propset svn:ignore "databases
+  echo "Setting svn ignore properties for databasesm, doc, models..."
+  svn propset svn:ignore "data
   doc
   models" .
 
