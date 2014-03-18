@@ -817,10 +817,6 @@ C-----------------------------------------------------------------------
 
       zone_surface_loop: do iSurface = 1, nzsur(iZone)
 
-C << the following would ideally require that surface name lengths
-C    are stored in a common like zone name lengths ... filled in
-C    georead() (egeometry.F line 1750 ff.)/ egomin() (egeometry.F line 594)? >>
-
 C.....Switch for surface name output here
       if (ReportBoolConfig ("use_surfacenames")) then
         write (cSurf_Chars,'(A)')
@@ -2131,13 +2127,18 @@ C.......contributions overlap in functionality, and they should
 C.......be almagamated. Alex has adopted a slightly more efficient
 C.......method of writing out the variable names, which the code
 C.......below should also make use of.
-         if ( iSurface .gt. 9 ) then
-cx            write(cSurf_Chars, '(I2)') iSurface
-            write(cSurf_Chars, '(A,I2)') 'surface_',iSurface
-         else
-cx            write(cSurf_Chars, '(A,I1)') '0', iSurface
-            write(cSurf_Chars, '(A,I1)') 'surface_0', iSurface
-         endif
+C.......Switch for surface name output here
+        if (ReportBoolConfig ("use_surfacenames")) then
+          write (cSurf_Chars,'(A)')
+     &            sname(iZone,iSurface)(1:lnsname(iZone,iSurface))
+        else
+C.........Pad surface index to 'XX'
+          if ( iSurface .gt. 9 ) then
+            write (cSurf_Chars,'(A,I2)') 'surface_',iSurface
+          else
+            write (cSurf_Chars,'(A,I1)') 'surface_0',iSurface
+          endif
+        endif ! use_surfacenames
 
 C........Surface temperature
 C........->Report data
