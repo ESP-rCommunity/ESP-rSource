@@ -71,7 +71,8 @@ echo " at any time by pressing <control> c."
 mode="interactive"         # Interactive/silent installation
                            # (silent mode isn't yet supported)
 HOMEdir=`pwd`
-SRCdir="${HOMEdir}/src"               # Source Directory
+SRCdir="${HOMEdir}/src"    # Source Directory
+DBdir="${HOMEdir}/data"    # one below Database Directory
 DESTdir=/usr/esru          # Target Directory
 COSIMdir=" "			   # Harmonizer install directory
 xml_support=prompt         # support for XML output
@@ -2168,28 +2169,28 @@ echo " Installing standard databases. This may take some time."
   # Construction databases. Note constr_db1.materialdb and constr_db2.materialdb
   # are subsets of constr_db3.materialdb. Perhaps they can be merged into a single file?
   echo -n "   - Copying materials databases..."
-  cp ${SRCdir}/databases/ccht_constr.db1 ${DESTdir}/esp-r/databases/ccht_constr.db1
-  cp ${SRCdir}/databases/ccht-optics.db1 ${DESTdir}/esp-r/databases/ccht-optics.db1
-  cp ${SRCdir}/databases/ccht_na_constr.db1 ${DESTdir}/esp-r/databases/ccht_na_constr.db1
-  cp ${SRCdir}/databases/ccht_material.ascii ${DESTdir}/esp-r/databases/ccht_material.ascii
-  cp ${SRCdir}/databases/constr_db1.materialdb ${DESTdir}/esp-r/databases/constr_db1.materialdb
-  cp ${SRCdir}/databases/constr_db2.materialdb ${DESTdir}/esp-r/databases/constr_db2.materialdb
-  cp ${SRCdir}/databases/constr_db3.materialdb ${DESTdir}/esp-r/databases/constr_db3.materialdb
-  cp ${SRCdir}/databases/cellular.materialdb ${DESTdir}/esp-r/databases/cellular.materialdb
-  cp ${SRCdir}/databases/north_american.materialdb.a ${DESTdir}/esp-r/databases/north_american.materialdb.a
-  cp ${SRCdir}/databases/north_american.materialdb.a ${DESTdir}/esp-r/databases/north_american.materialdb
-  cp ${SRCdir}/databases/north_american.constrdb ${DESTdir}/esp-r/databases/north_american.constrdb
-  cp ${SRCdir}/databases/material.db3.a ${DESTdir}/esp-r/databases/material.db3.a
-  cp ${SRCdir}/databases/material.db4.a ${DESTdir}/esp-r/databases/material.db4.a
-  cp ${SRCdir}/databases/CFClayers.db1.a ${DESTdir}/esp-r/databases/CFClayers.db1.a
+  cp ${DBdir}/databases/ccht_constr.db1 ${DESTdir}/esp-r/databases/ccht_constr.db1
+  cp ${DBdir}/databases/ccht-optics.db1 ${DESTdir}/esp-r/databases/ccht-optics.db1
+  cp ${DBdir}/databases/ccht_na_constr.db1 ${DESTdir}/esp-r/databases/ccht_na_constr.db1
+  cp ${DBdir}/databases/ccht_material.ascii ${DESTdir}/esp-r/databases/ccht_material.ascii
+  cp ${DBdir}/databases/constr_db1.materialdb ${DESTdir}/esp-r/databases/constr_db1.materialdb
+  cp ${DBdir}/databases/constr_db2.materialdb ${DESTdir}/esp-r/databases/constr_db2.materialdb
+  cp ${DBdir}/databases/constr_db3.materialdb ${DESTdir}/esp-r/databases/constr_db3.materialdb
+  cp ${DBdir}/databases/cellular.materialdb ${DESTdir}/esp-r/databases/cellular.materialdb
+  cp ${DBdir}/databases/north_american.materialdb.a ${DESTdir}/esp-r/databases/north_american.materialdb.a
+  cp ${DBdir}/databases/north_american.materialdb.a ${DESTdir}/esp-r/databases/north_american.materialdb
+  cp ${DBdir}/databases/north_american.constrdb ${DESTdir}/esp-r/databases/north_american.constrdb
+  cp ${DBdir}/databases/material.db3.a ${DESTdir}/esp-r/databases/material.db3.a
+  cp ${DBdir}/databases/material.db4.a ${DESTdir}/esp-r/databases/material.db4.a
+  cp ${DBdir}/databases/CFClayers.db1.a ${DESTdir}/esp-r/databases/CFClayers.db1.a
 
-  cp ${SRCdir}/databases/SBEM.db1 ${DESTdir}/esp-r/databases/SBEM.db1
-  cp ${SRCdir}/databases/UK_notional.constrdb ${DESTdir}/esp-r/databases/UK_notional.constrdb
-  cp ${SRCdir}/databases/profiles.db1.a ${DESTdir}/esp-r/databases/profiles.db1.a
-  cp ${SRCdir}/databases/profiles.db2.a ${DESTdir}/esp-r/databases/profiles.db2.a
+  cp ${DBdir}/databases/SBEM.db1 ${DESTdir}/esp-r/databases/SBEM.db1
+  cp ${DBdir}/databases/UK_notional.constrdb ${DESTdir}/esp-r/databases/UK_notional.constrdb
+  cp ${DBdir}/databases/profiles.db1.a ${DESTdir}/esp-r/databases/profiles.db1.a
+  cp ${DBdir}/databases/profiles.db2.a ${DESTdir}/esp-r/databases/profiles.db2.a
   echo " Done."
 
-   cd ${SRCdir}/databases
+   cd ${DBdir}/databases
 
    echo -n "   - Creating binary plant components databases..."
 
@@ -2200,9 +2201,9 @@ echo " Installing standard databases. This may take some time."
    echo " Done."
 
    echo -n "   - Creating binary climate databases "
-   cd ${SRCdir}/climate
+   cd ${DBdir}/climate
    cp climatelist ${DESTdir}/esp-r/climate
-   sed -e 's|/usr/esru/esp-r|'"${ESPdir}"'|' ${SRCdir}/climate/climatelist > ${ESPdir}/climate/climatelist
+   sed -e 's|/usr/esru/esp-r|'"${ESPdir}"'|' ${DBdir}/climate/climatelist > ${ESPdir}/climate/climatelist
    cp README ${DESTdir}/esp-r/climate/Readme
    cp README_IWEC ${DESTdir}/esp-r/climate/Readme_iwec
 
@@ -2219,7 +2220,7 @@ echo " Installing standard databases. This may take some time."
    done
    echo " Done."
 
-   cd ${SRCdir}/databases
+   cd ${DBdir}/databases
    echo -n "   - Copying ASCII databases..."
    cp components.db1 ccht_mlc.db multicon.db1 multicon.db2 multicon.db3 multicon.db4 north_american.constrdb optics.db1 optics.db2 optics.db3 ccht-optics.db1 mould.db1 pressc.db1 mscomp.db1 mscomp.db2 *.desc ${DESTdir}/esp-r/databases
    echo " Done."
