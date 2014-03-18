@@ -223,13 +223,14 @@ c common block Ground_Temp
         fDHW_ground_temp_amp = Temp_Ground_Amp
       endif
 
+     
       fDHW_ColdMainTemp =
      &     fDHW_LimitMeanGroundTemp() 
      &     + 3.0 
      &     + fDHW_DepthAmplitudeMod()
      &     * fDHW_ground_temp_amp
      &     * SIN(PI/6*(REAL(iMonth) + REAL(iDHW_GroundOffset())))
-
+        
       return
       END
 
