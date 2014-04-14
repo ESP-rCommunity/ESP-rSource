@@ -552,8 +552,6 @@ C Instantiate defaults for the surfaces to be read in.
 
       icn1=izstocn(icomp,1)
       if(icn1.gt.0)then
-C Debug.
-C        call edisp(iuout,'Subsequent geometry scan...')
       endif
 
       DO 42 I=1,NZSUR(ICOMP)
@@ -703,10 +701,6 @@ C Check if there is a matching MLC name for given construction and which one it 
           if(ICF.gt.0)then
             ssthick(icn)=THKMLC(icf)
 
-C Debug.
-C            write(outs,'(a,2i3,f7.3)') 'set thick of ',icf,icn,
-C     &        ssthick(icn)
-C            call edisp(iuout,outs)
           endif
         endif
 
@@ -1717,8 +1711,6 @@ C can probably be filled. Each surface needs to be tested
 C in case the master list is corrupt.
             icn1=izstocn(icomp,1)
             if(icn1.gt.0)then
-C Debug.
-C              call edisp(iuout,'Subsequent geometry 1.1 scan...')
             endif
           endif
           if(NS.le.MS)then
@@ -1809,10 +1801,6 @@ C Because many names may start similarly, check against actual widths.
               if(ICF.gt.0)then
                 ssthick(icn)=THKMLC(icf)
 
-C Debug.
-C                write(outs,'(a,2i3,f7.2)') 'set thick of ',icf,icn,
-C     &            ssthick(icn)
-C                call edisp(iuout,outs)
               endif
             endif
 
@@ -3075,9 +3063,6 @@ C Do a B angle of rotation first. No Y changes required.
 C X(1) and X(4) do not change. 
 C X(2) and X(3) change based on DX length.
 
-C Debug.
-C      write(6,*) CB
-C      write(6,*) DX
 
       X(2)=X(1)+(DX*CB); X(3)=X(4)+(DX*CB)
 
@@ -3102,9 +3087,6 @@ C Do an A angle of rotation. No Z changes required.
 C X(1) does not change.       
 C X(2) changes based on [X(2)-X(1)] length
 
-C Debug.
-C      write(6,*) CA
-C      write(6,*) DX
 
       X(2)=X(1)+(CB*DX)*CA
       X(3)=X(2)-(SA*DY)
@@ -3123,16 +3105,6 @@ C Y(1) does not change.
       Y(8)=Y(4)-(SB*DZ)*SA
       Y(7)=Y(8)+((CB*DX)*SA)           
 
-C Debug      
-C      write(6,*) 'x1: ',X(1),'...','y1: ',Y(1),'...','z1: ',Z(1)
-C      write(6,*) 'x2: ',X(2),'...','y2: ',Y(2),'...','z2: ',Z(2)
-C      write(6,*) 'x3: ',X(3),'...','y3: ',Y(3),'...','z3: ',Z(3)
-C      write(6,*) 'x4: ',X(4),'...','y4: ',Y(4),'...','z4: ',Z(4)
-C      write(6,*) 'x5: ',X(5),'...','y5: ',Y(5),'...','z5: ',Z(5)
-C      write(6,*) 'x6: ',X(6),'...','y6: ',Y(6),'...','z6: ',Z(6)      
-C      write(6,*) 'x7: ',X(7),'...','y7: ',Y(7),'...','z7: ',Z(7)      
-C      write(6,*) 'x8: ',X(8),'...','y8: ',Y(8),'...','z8: ',Z(8)      
-C End debug          
 
 C Number the vertices in each face.  Vertical faces numbered anticlockwise
 C from bottom left-hand point when face viewed from the outside.  Ceiling
@@ -3317,9 +3289,6 @@ C Do a B angle of rotation first. No Y changes required.
 C XB(1) and XB(4) do not change. 
 C XB(2) and XB (3) change based on DX length.
 
-C Debug.
-C      write(6,*) CB
-C      write(6,*) DX
 
       XB(2)=XB(1)+(DX*CB); XB(3)=XB(4)+(DX*CB)
 
@@ -3344,9 +3313,6 @@ C Do an A angle of rotation. No Z changes required.
 C XB(1) does not change.       
 C XB(2) changes based on [XB(2)-XB(1)] length
 
-C Debug.
-C      write(6,*) CA
-C      write(6,*) DX
 
       XB(2)=XB(1)+(CB*DX)*CA
       XB(3)=XB(2)-(SA*DY)
@@ -3365,17 +3331,6 @@ C YB(1) does not change.
       YB(8)=YB(4)-(SB*DZ)*SA
       YB(7)=YB(8)+((CB*DX)*SA)           
 
-C Debug      
-C      write(6,*) 'xb1: ',XB(1),'...','yb1: ',YB(1),'...','zb1: ',ZB(1)
-C      write(6,*) 'xb2: ',XB(2),'...','yb2: ',YB(2),'...','zb2: ',ZB(2)
-C      write(6,*) 'xb3: ',XB(3),'...','yb3: ',YB(3),'...','zb3: ',ZB(3)
-C      write(6,*) 'xb4: ',XB(4),'...','yb4: ',YB(4),'...','zb4: ',ZB(4)
-C      write(6,*) 'xb5: ',XB(5),'...','yb5: ',YB(5),'...','zb5: ',ZB(5)
-C      write(6,*) 'xb6: ',XB(6),'...','yb6: ',YB(6),'...','zb6: ',ZB(6)      
-C      write(6,*) 'xb7: ',XB(7),'...','yb7: ',YB(7),'...','zb7: ',ZB(7)      
-C      write(6,*) 'xb8: ',XB(8),'...','yb8: ',YB(8),'...','zb8: ',ZB(8)      
-
-C End debug          
 
 C Number the vertices in each face anticlockwise from the bottom
 C left-hand point when face viewed from the outside.  Top is
@@ -4052,8 +4007,6 @@ C Link back to start vertex.
         endif
         SSPERIM(icc)=SSPERIM(icc)+vdis
 
-C Debug.
-C        write(6,*) 'perimeter of ',ssname(icc),icc,' is ',ssperim(icc)
 
 C Derive the equation of the polygon, if problems generating the
 C equation echo warnings.
@@ -4394,9 +4347,6 @@ C in order to see if edge if vertical or horizontal.
                         call eclose(ux,0.00,0.002,closeux)
                         call eclose(uy,0.00,0.002,closeuy)
                         call eclose(uz,0.00,0.002,closeuz)
-C Debug.
-C                        write(outs,*) ux,closeux,uy,closeuy,uz,closeuz
-C                        call edisp(iuout,outs)
 
 C Six is lintel above window or door so both surfaces must face
 C the outside and face the same direction and one must be the
@@ -4472,10 +4422,6 @@ C Use ratio calculation to get point 100mm away.
 C                        distb = crow(VA,VB)  ! dist offset-to-offset
                         distc = crow(VAA,VBB)! dist slight offset-to-offset
 
-C Debug.
-C                        write(outs,'(9f7.2)') dista,distb,distc,
-C     &                    pa(1),va(1),vaa(1),pb(1),vb(1),vbb(1)
-C                        call edisp(iuout,outs)
 
 C If dista is greater than distc then concave.
                         if(dista.lt.distc)then
@@ -4596,10 +4542,6 @@ C Parent attribute has not yet been defined so do some checking.
 C If the two surfaces have the same number of edges then it is
 C likely that these are duplicate surfaces. 
                 if(NVER(iosurf).eq.NVER(isurf))then
-
-C Debug
-C                  write(6,*) 'Probable dup surfaces ',iosurf,isurf,
-C     &              NVER(iosurf),NVER(isurf)
 
                   continue
                 else
@@ -4823,10 +4765,6 @@ C If isur and jsur both have the same number of edges then it is likely
 C that we have duplicate surfaces.
             if(NVER(JSUR).eq.NVER(ISUR))then
 
-C Debug.
-C              write(6,*) 'Probable dup surfaces ',jsur,isur,
-C     &          NVER(jsur),NVER(isur)
-
               goto 105   ! jump to just before 102
             endif
           endif
@@ -4847,11 +4785,6 @@ C<< Division mod 360 may be a more generic way for angle checking
           if(closeazi.and.closeelv)then
 
             SSPARENT(JCC)=SSNAME(ICC)
-C Debug.
-C            WRITE(6,*)'Parent of ',jcc,' ',SSNAME(JCC),' is ',icc,' ',
-C     &        SSPARENT(JCC),' Matched vertices= ',ICOMVER(JSUR),
-C     &        ' No of vertices in child= ',NVER(JSUR)
-C            write(6,*)' '
 
 C Having found a child add it to the list of children of
 C the parent surface.
@@ -4859,10 +4792,6 @@ C the parent surface.
             ichild(iCC,nbchild(iCC))=jCC ! remember child connection
             iparent(JCC)=icc   ! remember childs parent connection
 
-C Debug...
-C            WRITE(6,*)'Child of ',SSNAME(ICC),' is ',
-C     &        jcc,' parent of ',SSNAME(JCC),' is ',
-C     &        SSNAME(iparent(JCC))
           endif
  105      continue    ! jump point in case of dups
  102    CONTINUE
@@ -4950,10 +4879,6 @@ C Now fill grand children commons
             IGCHILD(ICC,IGCD)=KCC    ! remember grandchild connection
             NBGCHILD(ICC)=NBGCHILD(ICC)+1  ! increment nb granchildren
             igparent(KCC)=icc   ! remember grandchilds grandparent connection
-
-C Debug.
-C            write(6,*) ' parent ',icc,' child ',JCC,' childs child ',
-C     &        KCC,' grandparent is ',igparent(KCC)
  203      CONTINUE
  202    CONTINUE
  201  CONTINUE

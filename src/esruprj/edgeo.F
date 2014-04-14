@@ -91,7 +91,9 @@ C prec17 common is described in geometry.h.
       COMMON/RAY6/LINSTY(MCON)
       common/user/browse
 
-
+      integer ncub,ivfok
+      real XOC,YOC,ZOC,DXC,DYC,DZC,CANG
+      character CUBN*6
       COMMON/MRTC/NCUB,XOC(MCUB),YOC(MCUB),ZOC(MCUB),DXC(MCUB),
      &            DYC(MCUB),DZC(MCUB),CANG(MCUB),IVFOK(MCUB),CUBN(MCUB)
 
@@ -107,7 +109,7 @@ C prec17 common is described in geometry.h.
       CHARACTER ITEMS*33,ITEMSS*32,trnalt*33,outs*124
       character T64*64,D64*64
       CHARACTER LAPROB*72
-      character SN*12,CUBN*6,act*1
+      character SN*12,act*1
       character SIGSTR*12,fs*1,t16a*16,t16b*16,t16c*16,msgv*42
       character TOSMLCN*32  ! to remember other side mlc name
       character TOOPT*32    ! to remember other side optics
@@ -2929,6 +2931,7 @@ C Pased parameters
       DIMENSION cog(3),cogo(3),COG1(3),COG2(3),COG3(3)
       integer iocog  ! loop counter for detecting close surfaces
       integer ifound,ifoundc ! how many close surfaces and which one
+      integer icontinue  ! to control while loop
       CHARACTER*33 ISD(25)
       CHARACTER DESCRC*25,outs*124,CXSTR*78
       CHARACTER SALT*33,SN*12,SN2*12,T14*14
@@ -3190,8 +3193,12 @@ C If in graphic mode draw the points on top of standard drawing.
       if(MMOD.lt.8)then
         continue
       else
+        icontinue=1
+        iloop=0
         numv=NVER(IS)
-        do iloop=1,numv
+        do while (icontinue.ne.0)
+          iloop=iloop+1  ! increment iloop until = numv then jump out
+          if(iloop.eq.numv) icontinue=0
           iwhich=jvn(is,iloop)
           if(iwhich.gt.0.and.iwhich.le.MTV)then
             COG1(1)=X(iwhich); COG1(2)=Y(iwhich); COG1(3)=Z(iwhich)
@@ -3206,7 +3213,7 @@ C If in graphic mode draw the points on top of standard drawing.
             if(greyok)call winscl('-',iicol)
             call forceflush()
           endif
-        enddo  ! of iloop
+        enddo  ! of while loop
       endif
 
 C Help text for the menu.

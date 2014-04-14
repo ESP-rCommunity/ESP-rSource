@@ -607,7 +607,6 @@ C Measured node pressure (for reporting in res): one data item.
         GMF(1)='REAL,1,0.0,-50.0,50.0'
         MGMA(1)='Measured node press(Pa): '
         FOUND=.TRUE.
-      ELSEIF(FOCUS(1:7).EQ.'ELECPWR')THEN
 
       ELSEIF(FOCUS(1:7).EQ.'PERCTRL')THEN
 

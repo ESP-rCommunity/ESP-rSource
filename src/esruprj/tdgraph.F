@@ -43,18 +43,21 @@ C Parameters for eline calls.
       DIMENSION IFSYM(MBITS)
       logical colok
       logical use14
+      integer icontinue,icontinue2  ! to control while loops
+      integer iloop,iloop2          ! for loops
+
 #ifdef OSI
       integer igwid,igheight  ! for use with axiscale
       integer iside,isize,ifont     ! passed to viewtext
       integer iid1,iid2,iilastx,iilasty,iix,iiy
       integer iicol
-      integer iigl,iigr,iigt,iigb,iigw,iigwh
+      integer iigl,iigr,iigt,iigb
 #else
       integer*8 igwid,igheight  ! for use with axiscale
       integer*8 iside,isize,ifont     ! passed to viewtext
       integer*8 iid1,iid2,iilastx,iilasty,iix,iiy
       integer*8 iicol
-      integer*8 iigl,iigr,iigt,iigb,iigw,iigwh
+      integer*8 iigl,iigr,iigt,iigb
 #endif
 
 C Start drawing; first header
@@ -70,7 +73,7 @@ C Check if can draw in colour.
       if(nzonec.ge.6)colok=.true.
 
 C Cast values for horaxis.
-      iigl=igl; iigr=igr; iigt=igt; iigb=igb; iigw=igw; iigwh=igwh
+      iigl=igl; iigr=igr; iigt=igt; iigb=igb
 
 C Title strings.
       WRITE(etext,'(A,A)')  ' TDF file: ',LTDF(1:50)
@@ -97,10 +100,16 @@ C Must generalise this for various numbers of period fields.
       else
         use14=.false.
       endif
+
+C User a while loop to traverse the item columns.
+      icontinue=1
       M=0
-      DO 60 J=ISFLDS,IEFLDS
+      iloop=ISFLDS-1
+      do while (icontinue.ne.0)
+        iloop=iloop+1  ! increment iloop until = IEFLDS then jump out
+        if(iloop.eq.IEFLDS) icontinue=0
         M=M+1
-        WRITE(temp,'(A)')TDFDES(IFOC,J)
+        WRITE(temp,'(A)')TDFDES(IFOC,iloop)
         temp2=temp(1:14)
         temp3=temp(1:9)
 
@@ -243,7 +252,7 @@ C Reset colour to black.
           call winscl('-',iicol)
         endif
         call forceflush()
-   60 CONTINUE
+      enddo  ! of while loop
 
 C Scale and draw axes.
 C To scale the vertical axis it will be necessary to scan through
@@ -405,8 +414,12 @@ C      CALL horaxis(XMIN,XMAX,iigl,iigr,iigb,Xadd,xsc,1,LABEL2)
 
       IEFLDS=NTBITS(IFOC)+NTSTAT(IFOC)
       ISFLDS=IEFLDS-NTBITS(IFOC)+1
+      icontinue=1
       M=0
-      DO 66 J=ISFLDS,IEFLDS
+      iloop=ISFLDS-1
+      do while (icontinue.ne.0)
+        iloop=iloop+1  ! increment iloop until = IEFLDS then jump out
+        if(iloop.eq.IEFLDS) icontinue=0
         M=M+1
 C If plotting colours for different lines set this.
         if(colok)then
@@ -415,47 +428,52 @@ C If plotting colours for different lines set this.
         endif
 
 C Scan TAB columns. Depending on which field use different symbol.
-        IF(ITDFTR(IFOC,J).NE.2)THEN
+        IF(ITDFTR(IFOC,iloop).NE.2)THEN
           ITREC=ixmin+49
           CALL ERTABU(ITRC,ITREC,IER)
-          VAL=TABU(ITCOL(IFOC,J))
+          VAL=TABU(ITCOL(IFOC,iloop))
           iix=igl+INT((1.+Xadd)*xsc)
           iiy=igb-INT((VAL+Yadd)*ysc)
           call eline (iix,iiy, LNMVAB)
           iilastx=iix
           iilasty=iiy
 
-          DO 55 IP=ixmin+1,ixmax
-            ITREC=IP+49
+C Use while loop to traverse the records in temporal.
+          icontinue2=1
+          iloop2=ixmin
+          do while (icontinue2.ne.0)
+            iloop2=iloop2+1  ! increment iloop2 until = ixmax then jump out
+            if(iloop2.eq.ixmax) icontinue2=0
+            ITREC=iloop2+49
             CALL ERTABU(ITRC,ITREC,IER)
-            VAL=TABU(ITCOL(IFOC,J))
-            iix=igl+INT((REAL(IP)+Xadd)*xsc)
+            VAL=TABU(ITCOL(IFOC,iloop))
+            iix=igl+INT((REAL(iloop2)+Xadd)*xsc)
             iiy=igb-INT((VAL+Yadd)*ysc)
             call eline (iilastx,iilasty, LNMVAB)
             call eline (iix,iiy, LNDRAB)
             iilastx=iix
             iilasty=iiy
             if(iperiod.gt.200.and.iperiod.le.500)then
-              IR=INT(AMOD(REAL(IP),REAL(NTSPH*4)))
-              IF(IR.EQ.0)CALL esymbol(iix,iiy,IFSYM(J-ISFLDS+1),0)
+              IR=INT(AMOD(REAL(iloop2),REAL(NTSPH*4)))
+              IF(IR.EQ.0)CALL esymbol(iix,iiy,IFSYM(iloop-ISFLDS+1),0)
             elseif(iperiod.gt.500.and.iperiod.le.1000)then
-              IR=INT(AMOD(REAL(IP),REAL(NTSPH*12)))
-              IF(IR.EQ.0)CALL esymbol(iix,iiy,IFSYM(J-ISFLDS+1),0)
+              IR=INT(AMOD(REAL(iloop2),REAL(NTSPH*12)))
+              IF(IR.EQ.0)CALL esymbol(iix,iiy,IFSYM(iloop-ISFLDS+1),0)
             elseif(iperiod.gt.1000)then
-              IR=INT(AMOD(REAL(IP),REAL(NTSPH*24)))
-              IF(IR.EQ.0)CALL esymbol(iix,iiy,IFSYM(J-ISFLDS+1),0)
+              IR=INT(AMOD(REAL(iloop2),REAL(NTSPH*24)))
+              IF(IR.EQ.0)CALL esymbol(iix,iiy,IFSYM(iloop-ISFLDS+1),0)
             else
-              IR=INT(AMOD(REAL(IP),REAL(NTSPH)))
-              IF(IR.EQ.0)CALL esymbol(iix,iiy,IFSYM(J-ISFLDS+1),0)
+              IR=INT(AMOD(REAL(iloop2),REAL(NTSPH)))
+              IF(IR.EQ.0)CALL esymbol(iix,iiy,IFSYM(iloop-ISFLDS+1),0)
             endif
-   55     CONTINUE
+          enddo  ! of while loop2
         ENDIF
         if(colok)then
           iicol=0
           call winscl('-',iicol)
         endif
         call forceflush()
-   66 CONTINUE
+      enddo  ! of while loop
 
       RETURN
 

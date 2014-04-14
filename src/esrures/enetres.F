@@ -40,6 +40,7 @@ C ******************************************************************************
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/FILEP/IFIL
       COMMON/ELRFIL/ELRFLNAM
+      character ELRFLNAM*144
 
       COMMON/TRC/ITRC
 
@@ -55,7 +56,7 @@ C Electrical network results library details.
       INTEGER IELFIL,IELIBHL,IELIBW,IELSTREC,NETS,NTSREC,NHREC,
      &NPREC,IFOCUS
 
-      CHARACTER LTMP*144,ELRFLNAM*144,DFILE*144,ITEM*25,MMODE*1,
+      CHARACTER LTMP*144,DFILE*144,ITEM*25,MMODE*1,
      &EFILEABS*144
       LOGICAL OK,dok,XST
       integer NITMS,INO ! max items and current menu item

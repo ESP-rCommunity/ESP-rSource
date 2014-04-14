@@ -91,7 +91,7 @@ C Explicit use of pophelp required because of dynamic generation.
       CHARACTER GMF*32,MGMA*32,TTAG*12,TTAIDE*36
       CHARACTER IPD*64,CSTR*54,DESCR*7,DESCR1*10,TPROMP*42
       CHARACTER*5 DESCRH,DESCRD
-      CHARACTER outs*124,LINE*72,OLINE*72,itypes*34,msgl2*48
+      CHARACTER outs*124,LINE*72,OLINE*72,msgl2*48
       logical changed,clkok,textalt,edited,XST
       character*35 ITEMS(9)      
       CHARACTER DFILE*96,tfile*96
@@ -99,9 +99,9 @@ C Explicit use of pophelp required because of dynamic generation.
       integer IPDL,INODA,nitms,INO  ! max items and current menu item
 
 #ifdef OSI
-      integer impxe,impye,iw,imw,irpxe,irpye,inoe,ipflge,iuresp  ! for use with evwmenu and updmenu
+      integer imw  ! for use with vwmenu
 #else
-      integer*8 impxe,impye,iw,imw,irpxe,irpye,inoe,ipflge,iuresp  ! for use with evwmenu and updmenu
+      integer*8 imw  ! for use with vwmenu
 #endif
 
 C For help messages
@@ -313,27 +313,13 @@ C Help text for this menu.
 
       INODA=-2
       write(head,'(a,a,2x,a)') ' Tabular: ',TMENU(IFOC),TTYPE(IFOC)
-      if(MMOD.ge.8)then
-        iw=LEN(IPD(1))
-        write(itypes,9)
-   9    format(34('-'))
-        call updmenu(IPD,itypes,IPDL,iw)
-        inoe=INODA   ! assign to local passed parameters
-        impxe=0   
-        impye=0   
-        irpxe=0
-        irpye=0
-        ipflge=ipflg
-        call evwmenu(head,impxe,impye,imw,irpxe,irpye,inoe,ipflge,
-     &    iuresp)
-#ifdef OSI
-        INODA=inoe  !  cast back from returned parameter
-#else
-        INODA=int(inoe)  !  cast back to integer from returned parameter
-#endif
+      if(MMOD.EQ.8)then
+        impx=0
+        impy=0
+        CALL VWMENU(head,IPD,IPDL,impx,impy,imw,irpx,irpy,INODA)
       else
         CALL EMENU(head,IPD,IPDL,INODA)
-      endif 
+      endif
 
       IF(INODA.EQ.IPDL)THEN
         RETURN
@@ -436,26 +422,13 @@ C Define the beginning and ending dates for the TDF display.
             edited = .true.
           elseif(IWI.eq.2)then
             head=' Select insertion point'
-            if(MMOD.ge.8)then
-              iw=LEN(IPD(1))
-              write(itypes,9)
-              call updmenu(IPD,itypes,IPDL,iw)
-              inoe=INODA   ! assign to local passed parameters
-              impxe=0   
-              impye=0   
-              irpxe=0
-              irpye=0
-              ipflge=ipflg
-              call evwmenu(head,impxe,impye,imw,irpxe,irpye,inoe,
-     &          ipflge,iuresp)
-#ifdef OSI
-              INODA=inoe  !  cast back from returned parameter
-#else
-              INODA=int(inoe)  !  cast back to integer from returned parameter
-#endif
+            if(MMOD.EQ.8)then
+              impx=0
+              impy=0
+              CALL VWMENU(head,IPD,IPDL,impx,impy,imw,irpx,irpy,INODA)
             else
               CALL EMENU(head,IPD,IPDL,INODA)
-            endif 
+            endif
             CALL KEYIND(IPDL,INODA,IWHICH,INOUT)
             IPS=IWHICH
 
