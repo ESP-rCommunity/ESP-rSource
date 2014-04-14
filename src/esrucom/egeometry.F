@@ -4235,11 +4235,7 @@ C duplicate edge is found also remember it.
               endif
               kee=JVN(isurf,n)
 
-C Debug.
               if(itrc.gt.1)then
-C                write(outs,'(a,i3,a,4i3)') 'edges for conn ',icc,
-C     &            ' are ',jes,jee,kes,kee
-C                call edisp(iuout,outs)
               endif
 
               if(jes.EQ.kes.AND.jee.EQ.kee)then
@@ -4247,11 +4243,7 @@ C                call edisp(iuout,outs)
                 iedgdup(icc,m)=1
                 iedgdup(icc,n)=1
 
-C Debug...
                 if(itrc.gt.1)then
-C                  write(outs,*) 'dupl edges for conn ',icc,' is ',
-C     &              iedgdup(icc,m),' m n ',m,n
-C                  call edisp(iuout,outs)
                 endif
               endif
   41        continue   ! inner loop vertices in surf

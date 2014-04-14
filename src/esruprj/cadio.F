@@ -590,7 +590,6 @@ C Ask user which format of CAD file will be scanned in.
 
 C If there is a currently loaded model then convert it.
       if(NCOMP.gt.0.and.cadfmt(1:3).eq.'DXF')then
-
         call tstamp('>','PRJ: start CAD')
         doit = ' '
         CALL EASKS(LFIL,' Put current model into DXF file named: ',

@@ -538,7 +538,7 @@ C Help text for this menu.
 
       IF (airtight_type.EQ.1) THEN
         ITEM(1)='a Blower door test (CGSB) ***'
-      ELSE 
+      ELSE
         ITEM(1)='a Blower door test (CGSB)  '
       ENDIF
 
@@ -1046,50 +1046,50 @@ C Help text for this menu.
         ITEM(1)='a Open sea,fetch > 5 km     ***'
       ELSE
         ITEM(1)='a Open sea,fetch > 5 km        '
-      END IF 
-      
+      END IF
+
       IF (TerrainSelection.EQ.2) THEN
         ITEM(2)='b Mud flats,no vegetation   ***'
       ELSE
         ITEM(2)='b Mud flats,no vegetation      '
-      END IF 
-      
+      END IF
+
       IF (TerrainSelection.EQ.3) THEN
         ITEM(3)='c Open flat terrain, grass  ***'
       ELSE
         ITEM(3)='c Open flat terrain, grass     '
-      END IF 
-      
+      END IF
+
       IF (TerrainSelection.EQ.4) THEN
         ITEM(4)='d Low crops, x/H > 20       ***'
       ELSE
         ITEM(4)='d Low crops, x/H > 20          '
-      END IF 
-      
+      END IF
+
       IF (TerrainSelection.EQ.5) THEN
         ITEM(5)='e High crops, scattered obst ***'
       ELSE
         ITEM(5)='e High crops, scattered obst    '
-      END IF 
-      
+      END IF
+
       IF (TerrainSelection.EQ.6) THEN
         ITEM(6)='f Parkland, bushes, x/H ~ 10 ***'
       ELSE
         ITEM(6)='f Parkland, bushes, x/H ~ 10    '
-      END IF 
-      
+      END IF
+
       IF (TerrainSelection.EQ.7) THEN
         ITEM(7)='g Suburban, forest           ***'
       ELSE
         ITEM(7)='g Suburban, forest              '
-      END IF 
-      
+      END IF
+
       IF (TerrainSelection.EQ.8) THEN
         ITEM(8)='h City centre                ***'
       ELSE
         ITEM(8)='h City centre                   '
-      END IF 
-     
+      END IF
+
       ITEM(9)='- Help         '
       ITEM(10)='- Exit         '
       NITEMS=10
@@ -1184,8 +1184,8 @@ C Help text for this menu.
         ITEM(5)='e Complete (large buildings) ***'
       ELSE
         ITEM(5)='e Complete (large buildings)    '
-      END IF 
-      
+      END IF
+
       ITEM(6)='- Help         '
       ITEM(7)='- Exit         '
       NITEMS=7
@@ -1719,7 +1719,7 @@ C Write the number of the reference zone.
 
 C Write the number of zones in model that will receive infiltration, followed by the
 C indices of the zones that receive infiltration.
-      WRITE(OutString,'(I3)')AIM2_num_zones_infil
+      WRITE(OutString,'(I3)') AIM2_num_zones_infil
       DO zoneindex=1,AIM2_num_zones_infil
         TempString = OutString
         WRITE(OutString,'(A, I3)') TempString(1:lnblnk(TempString)),
@@ -1730,16 +1730,16 @@ C Pad the string out to line up formatting
       PadString = '                                               '
       TempString = OutString
       WRITE(OutString,'(A,A,A)') TempString(1:lnblnk(TempString)),
-     &      PadString(1:padlength), 
+     &      PadString(1:padlength),
      &      '# Total number of zones receiving infil; '
       TempString = OutString
       WRITE(OutString,'(2A)') TempString(1:lnblnk(TempString)),
      &      ' indices of zones receiving infil'
-      WRITE(AIM2_FUnit,'(A)')OutString
+      WRITE(AIM2_FUnit,'(A)') OutString
 C Write zone number of basement,crawlspace and attic
       OutString = '# Index of basement, crawlspace & attic zones'
       TempString = OutString
-      WRITE(OutString,'(2A)')TempString(1:lnblnk(TempString)),
+      WRITE(OutString,'(2A)') TempString(1:lnblnk(TempString)),
      &      ' (=0 if none)'
       WRITE(AIM2_FUnit,'(3I3,31x,A)') AIM2_basement_zone,
      &      AIM2_CrawlSpace_zone,AIM2_attic_zone,OutString

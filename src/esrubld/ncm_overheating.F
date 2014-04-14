@@ -19,7 +19,9 @@ C Software Foundation, Inc., 59 Temple Place, Suite 330,
 C Boston, MA 02111-1307 USA.
 
 C This file includes:
-C  RegOveheat calculates the risk of overheating based on criteria for UK NCM method.  
+C  RegOveheat   Multiple model generating facility for the UK NCM. This
+C              subroutine generates the stripped, notional, typical and 
+C           reference models. Runs simulations and extracts results.
 
 C ********************* RegOveheat
 C RegOveheat calculates the risk of overheating based on criteria for

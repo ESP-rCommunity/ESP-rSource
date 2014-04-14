@@ -1379,6 +1379,9 @@ C Call matrix handling routines depending on the location
 C of the control point node.
                   CALL MTXCTL(ICOMP)
 
+C Call optical control here as well
+                  call mzoctl(icomp)
+
 C Call the zone moisture calculations controller.
                   IF(MSTRZN(ICOMP))CALL MZMSTR(ICOMP)
                 ENDIF

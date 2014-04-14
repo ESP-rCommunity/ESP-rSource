@@ -1725,8 +1725,6 @@ C                        (in MODULE FC_ELEC_LOADS)
 C    IFCloads            unit number of binary file containing time-series of electrical
 C                        loads (in MODULE FC_ELEC_LOADS)
 C -------------------------------------------------------------------------------------------
-C << in order to use real and reactive power from temporal file is there any
-C << logic that needs to be added here >>
 
       SUBROUTINE FC_eloads_convert
       IMPLICIT NONE
