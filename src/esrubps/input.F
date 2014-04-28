@@ -726,12 +726,12 @@ C In silent running mode, notify user and terminate simulation.
           write(currentfile,'(a)') LCFCDB(1:lnblnk(LCFCDB))
 
           if(ipathcfc.eq.0.or.ipathcfc.eq.1)then
-            call rascicfc(ICFCDB,LCFCDB,IER)  ! try current ascii format
+c            call rascicfc(ICFCDB,LCFCDB,IER)  ! try current ascii format
           elseif(ipathcfc.eq.2)then
             lndbp=lnblnk(standarddbpath)
             write(lworking,'(3a)') standarddbpath(1:lndbp),fs,
      &        LCFCDB(1:lnblnk(LCFCDB))
-            call rascicfc(ICFCDB,lworking,IER)  ! try current ascii format
+c            call rascicfc(ICFCDB,lworking,IER)  ! try current ascii format
           endif
 
           if(ier.eq.0)then
@@ -768,7 +768,7 @@ C Use file unit IAPROB to read db.
         endif
       else
         write(currentfile,'(a)') lfmul(1:lnblnk(lfmul))
-        CALL ERMLDB(0,iuout,IER)
+c        CALL ERMLDB(0,iuout,IER)
         if(IER.NE.0)then
           outs='Problem during reading of construction database.'
           if(dll)then
