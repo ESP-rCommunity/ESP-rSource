@@ -1,5 +1,5 @@
 C This file is part of the ESP-r system.
-C Copyright CANMET Energy Technology Centre
+C Copyright CANMET Energy Technology CentreCVSSupplyTemp
 C Natural Resources Canada, Government of Canada
 C 2004. Please Contact Ian Beausoliel-Morrison for details
 C concerning licensing.
@@ -53,6 +53,10 @@ c
 c
          Call FANS_NO_HR ( iFun, T )
 c
+
+      Else If ( iCVSType .eq. 4 ) then ! IMS 
+
+
       Endif
 c ---
 c     Write (Msg,'(a,2f8.1)') 'MECH_VENT_INIT - HRVeff',
@@ -104,10 +108,15 @@ c     Implicit None
       real fTempTol
       parameter ( fTempTol = 0.5 )
 
+      real  fVentFlow,
+     &                       fVentLoad,
+     &                       fVaporChangeRate,
+     &                       fVentPower
+      
       
       real fVentM3pS_natural
       real, parameter :: fACHpHour_ERSreq = 0.3 
-      real FlowRate      
+      real FlowRate      , SupplyTemp
       
 
       save J, iFun, i, iCycle
@@ -154,7 +163,7 @@ C ERS 'magic' method: Operate HRV to ensure that natural + mechanical
 C ventilation 0.3 ACH per hour as HOT2000 assumes during ERS calculations.
            
            FlowRate = Max ( CVSSupplyRate, CVSExhaustRate ) / 1000. ! L/s --> m3/s
-    
+           MCP = FlowRate * 1006. * 1.177
            fVentPLR = 
      &           ( ( fACHpHour_ERSreq * AIM2_house_vol / 3600. )
      &                          - fAIM2_TotalHouseInfil )
@@ -198,6 +207,24 @@ c
             Call FANS_NO_HR ( iFun, T, fVentPLR )
 c
 c ---
+         Else If ( iCVSType .eq. 4 ) Then ! ! IMS hrv
+c
+
+            call IMS_CharVentilation(1,              
+     &                       3,                      
+     &                       fVentFlow,              
+     &                       fVentLoad,              
+     &                       fVaporChangeRate,       
+     &                       SupplyTemp,
+     &                       fVentPower)             
+                                                     
+C           print*, "CVS: IMS flow: ", fVentFlow
+C           print*, "CVS: IMS temp: ", SupplyTemp, "(/)", T
+
+            FlowRate = fVentFlow  / 1000. 
+            CVSSupplyTemp = SupplyTemp
+            MCP = FlowRate * 1006. * 1.177
+
          Endif
 c
       Endif ! End of Zone 1 calculations
@@ -225,9 +252,11 @@ C Check to ensure memory has been allocated
 c
 c --- Air heat loss rate for zone
 c
+         
+
          HLR = MCP * ( TFA(iComp) - CVSSupplyTemp ) * ZoneFraction 
      &             * fVentPLR
-
+     
 c
 c --- Convert air heat loss rate into an equivalent conductance (to outdoors)
 C For the zone called, assign the zone's calculated CVS infiltration conductance
