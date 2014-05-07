@@ -98,17 +98,17 @@ c Declare local variables
       
 c Simulation time step
       time_step = 3600. / float(NTSTEP)
-!      write (*,*) " ---------- Fan --------------------------"
-!      write(*,*) "isys", isys
-!      write(*,*) "plfp, plfb", plfp, plfb
-!      write(*,*) "plrp, plrb", plrp, plrb
-!      write(*,*) "ihvac_type(isys)", ihvac_type(isys) 
-!      write(*,*) "iunit_function(isys)",iunit_function(isys)
-!      write(*,*) "ifan_operation(isys)", ifan_operation(isys)
-!      if ( ibackup_sys_num(isys) > 0 ) then 
+      !write (*,*) " ---------- Fan --------------------------"
+      !write(*,*) "isys", isys
+      !write(*,*) "plfp, plfb", plfp, plfb
+      !write(*,*) "plrp, plrb", plrp, plrb
+      !write(*,*) "ihvac_type(isys)", ihvac_type(isys) 
+      !write(*,*) "iunit_function(isys)",iunit_function(isys)
+      !write(*,*) "ifan_operation(isys)", ifan_operation(isys)
+      if ( ibackup_sys_num(isys) > 0 ) then 
 !      write(*,*) "ibac_operation(isys)", 
 !     &               ifan_operation(ibackup_sys_num(isys)) 
-!      endif 
+      endif 
       FanMode: if ( ifan_operation(isys) == 0 ) then 
 c if there is no circulation fan, set power to zero. 
         fHVAC_PL_primary = 0.      
@@ -154,6 +154,7 @@ C normally
       
       FanCtlLoopActive: if ( bSysHasFanCtlLoop(iSys) ) then
 
+              
 C.......Primary system fan requirement and power consumption 
 
 C.......High-speed (on) 
@@ -162,9 +163,9 @@ C.......High-speed (on)
         
 C.......Low-speed stage is not fully supported as of yet.         
         fFanSysPLR_lo(iSys)    = 0.
-        fFanSysPower_lo(iSys)  = 0.
+        fFanSysPower_lo(iSys)  = fan_power_low(iSys)
         
-C.......Off. Setting fan_power_auto to nonzero --- which is possible
+C.......Off. Setting fan_power_auto to non-zero --- which is possible
 C.......with the AC models---approximates 2-stage continuious operation. 
         fFanSysPower_off(iSys) = fan_power_auto(iSys)
         

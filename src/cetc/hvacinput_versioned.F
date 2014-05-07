@@ -1974,6 +1974,24 @@ C-----------------------------------------------------------------------
      &       bInLimits )
      
 C-----------------------------------------------------------------------
+C     IMS daily water volume     
+C-----------------------------------------------------------------------     
+      fIMS_DHW_Water_volume_LpDay(iSystem) 
+     &   = fHVAC_FindTokenWithLimits(
+     &       iSystem,
+     &       'dhw-water-vol-lpday',
+     &      'IMS daily water volume (L/day)',
+     &       bNotRequired,
+     &       0.0, 1000.,
+     &       bFound,
+     &       bInLimits )
+     
+      if ( .not. bFound ) then 
+        fIMS_DHW_Water_volume_LpDay(iSystem) = 190 ! Default water draw!
+      endif 
+      
+     
+C-----------------------------------------------------------------------
 C     Controls power
 C-----------------------------------------------------------------------
       fIMS_ControlsPower(iSystem)
@@ -2187,6 +2205,23 @@ C.......If fan has been specified, read fan power.
           fan_power( iSystem ) = Fan_AutoSize_Improved( iSystem )
           bFan_AutoSized(iSystem) = .true.
         endif 
+        
+C.......If fan has been specified, read low-speed power 
+        fan_power_low(iSystem) = fHVAC_FindTokenWithLimits
+     &   ( iSystem,
+     &     'circ-fan-power-low',
+     &     'baseboard circulation fan power at low speed ',
+     &     bNotRequired,
+     &     0.0, 1.0e07,
+     &     bFound,
+     &     bInLimits )
+
+        if ( .not. bFound ) then
+          fan_power_low ( iSystem ) =  fan_power( iSystem )
+        endif 
+        
+        
+        
 
       else
 
@@ -2432,7 +2467,24 @@ C.....Indoor fan power
         bFan_AutoSized(iSystem) = .true.
       endif
 
+C.....If fan has been specified, read low-speed power 
+      fan_power_low(iSystem) = fHVAC_FindTokenWithLimits
+     & ( iSystem,
+     &   'circ-fan-power-low',
+     &   'furnace circulation fan power at low speed ',
+     &   bNotRequired,
+     &   0.0, 1.0e07,
+     &   bFound,
+     &   bInLimits )
 
+     
+      if ( .not. bFound ) then
+        fan_power_low ( iSystem ) =  fan_power( iSystem )
+      endif 
+      
+      
+      
+      
 C.....Draft fan power
       draft_fan_power(iSystem) = fHVAC_FindTokenWithLimits(
      &                           iSystem,
@@ -2680,7 +2732,7 @@ C-----------------------------------------------------------------------
      &       bFound,
      &       bInLimits )
 
-         print*, "> ss_COP(",iSystem,")=",ss_COP(iSystem)
+
      
 C-----------------------------------------------------------------------
 C     Read circulation fan flow rate
@@ -2794,7 +2846,22 @@ C.....Fan_AutoSize_Improved routine to estimate its value
         fan_power(iSystem) = Fan_AutoSize_Improved(iSystem)
         bFan_AutoSized(iSystem) = .true.
       endif
+C.....If fan has been specified, read low-speed power 
+      fan_power_low(iSystem) = fHVAC_FindTokenWithLimits
+     & ( iSystem,
+     &   'circ-fan-power-low',
+     &   'heat pump circulation fan power at low speed ',
+     &   bNotRequired,
+     &   0.0, 1.0e07,
+     &   bFound,
+     &   bInLimits )
 
+      if ( .not. bFound ) then
+        fan_power_low ( iSystem ) =  fan_power( iSystem )
+      endif 
+      
+      
+      
 C-----------------------------------------------------------------------
 C     Read circulation fan rated power
 C-----------------------------------------------------------------------
@@ -3745,19 +3812,21 @@ C-----------------------------------------------------------------------
      &                          'vent-EA-fan-power-H  ',
      &                          'controls-power       ',
      &                          'circ-fan-power       ',
-     &                          'vent-SRE             ' /
+     &                          'vent-SRE             ',
+     &                          'dhw-water-vol-lpday  ' /
      
 
 
       data (cFurnaceTokenNames(iName),iName=1,iFurnaceTokenCount)
-     &                         /'furnace-type    ',
-     &                          'capacity        ',
-     &                          'efficiency      ',
-     &                          'circ-fan-mode   ',
-     &                          'circ-fan-power  ',
-     &                          'draft-fan-power ',
-     &                          'pilot-power     ',
-     &                          'duct-system-flag'  /
+     &                         /'furnace-type       ',
+     &                          'capacity           ',
+     &                          'efficiency         ',
+     &                          'circ-fan-mode      ',
+     &                          'circ-fan-power     ',
+     &                          'circ-fan-power-low ',
+     &                          'draft-fan-power    ',
+     &                          'pilot-power        ',
+     &                          'duct-system-flag   '  /
 
       data (cHPTokenNames(iName),iName=1,iHPTokenCount)
      &                   /  'performance                ',
@@ -3768,6 +3837,7 @@ C-----------------------------------------------------------------------
      &                      'circ-fan-rated-flow        ',
      &                      'circ-fan-position          ',
      &                      'circ-fan-power             ',
+     &                      'circ-fan-power-low         ',     
      &                      'outdoor-fan-power          ',
      &                      'fan-power-in-auto          ',
      &                      'circ-fan-rated-position    ',
@@ -3787,9 +3857,10 @@ C-----------------------------------------------------------------------
      &                      'gshp-circ-pump-power       '/
 
       data (cBaseboardTokenNames(iName),iName=1,iBaseboardTokenCount)
-     &                          / 'circ-fan-mode  ',
-     &                            'circ-fan-power ',
-     &                            'capacity       ',
-     &                            'efficiency     '  /
+     &                          / 'circ-fan-mode      ',
+     &                            'circ-fan-power     ',
+     &                            'circ-fan-power-low ',     
+     &                            'capacity           ',
+     &                            'efficiency         '  /
 
       end blockdata initialize_tokens

@@ -1,18 +1,6 @@
 c Common for hvac system input data. These variables are used for hvac systems
 c modeled ideally
 
-C      integer iFurnaceTokenCount
-C      parameter (iFurnaceTokenCount = 7)
-C      integer iIMSTokenCount
-C      parameter (iIMSTokenCount = 1)
-C      integer iBaseboardTokenCount
-C      parameter (iBaseboardTokenCount = 4)
-C      integer iHPTokenCount
-C
-C      parameter (iHPTokenCount = 23)
-C      integer iMAXTokenCount
-C      parameter (iMAXTokenCount = iHPTokenCount)
-
 
       common/HVAC_parsing/iHVACFileVersion,
      &bParseError,
@@ -50,6 +38,7 @@ C      parameter (iMAXTokenCount = iHPTokenCount)
      &ss_capacity(max_sys), flow_rate(max_sys),
      &flow_rate_r(max_sys), ifan_operation(max_sys),
      &ifan_position(max_sys), fan_power(max_sys),
+     &fan_power_low(max_sys), 
      &fan_power_auto(max_sys), ifan_position_r(max_sys),
      &fan_power_r(max_sys), draft_fan_power(max_sys),
      &isys_zone_num(max_sys,mcom), iduct_sys_flag(max_sys),
@@ -134,9 +123,8 @@ c Declare real parameters in HVAC_INPUT_DATA common
       REAL 
      &site_altitude, ss_capacity, flow_rate, flow_rate_r,
      &fan_power, fan_power_auto, fan_power_r, draft_fan_power,
-     &sys_zone_cap_frac, 
+     &sys_zone_cap_frac, fan_power_low,
 
-      
 
 C....Variable flow rate [m3/s] as a function of the number of calling zones
      &var_flow_rate,

@@ -98,5 +98,5 @@
       PARAMETER ( fTankHeight = 1.28 )     !Estm. tank height in meters
       REAL  fFreductFactor
       PARAMETER ( fFreductFactor = 0.93 )  !Freduct factor used in H2K sim runs only
-      REAL  iH2K
+      integer  iH2K
       PARAMETER ( iH2K = 0 )   !Set to 0 to run in H3k mode or 1 for H2k Mode

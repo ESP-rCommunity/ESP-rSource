@@ -377,13 +377,16 @@ C  - fVentFlow:        Ventilation flow rate (kg/s)
 C  - fVentLoad:        Thermal load associated with ventilation (W)
 C  - fVaporChangeRate: Total rate of change in building air-point
 C                      mosture balance (kg/s)
+C  - Supply air temperature. 
 C
 C=======================================================================
       subroutine IMS_CharVentilation(iSystem,
      &                               iVentMode,
      &                               fVentFlow,
      &                               fVentLoad,
-     &                               fVaporChangeRate)
+     &                               fVaporChangeRate,
+     &                               fDBTemp_supply,
+     &                               fVentPower)
       implicit none
 #include "building.h"
 #include "hvac_parameters.h"
@@ -399,6 +402,7 @@ C-----------------------------------------------------------------------
       integer iVentMode       ! Ventilation mode. 
       real fVaporChangeRate   ! Rate of change in zone moisture balance
                               !  (kg/s)
+      real fVentPower 
 C-----------------------------------------------------------------------
 C     ESP-r commons
 C-----------------------------------------------------------------------
@@ -462,6 +466,7 @@ C.....Climatic and Zone conditions
       real fQVentLoad          ! Additional space-heating load
                                !   associated with ventilation (W)
 
+                               
 C.....Initialization flag for h3kreprots module
       logical bH3KReportsInitialized(max_sys)
       save bH3KReportsInitialized
@@ -523,7 +528,6 @@ C-----------------------------------------------------------------------
 C            Compute ventilation thermal load and resulting moisture
 C            balance.
 C-----------------------------------------------------------------------
-
 
 C.........Collect outside and return-air temperatures, humidity ratios
 
@@ -806,7 +810,10 @@ C-----------------------------------------------------------------------
 C.........Shouldn't happen, as iVentMode is trapped above
 
       end select vent_mode_ND
-
+      
+C.........Return ventilation power consumption: 
+      
+      fVentPower = fIMS_VentPower(iSystem, iVentMode)
 C-----------------------------------------------------------------------
 C     Now report data to h3kreports facility
 C-----------------------------------------------------------------------
@@ -891,7 +898,9 @@ C=======================================================================
      &                                fOutFuelPower,
      &                                fOutElecPower,
      &                                fOutFanPower,
-     &                                fOutVentPower, 
+     &                                fOutVentPower,
+     &                                fOutAuxPower,
+     &                                fOutTS_FanOp,  
      &                                fOutAddGains )
 
       implicit none
@@ -915,7 +924,10 @@ C-----------------------------------------------------------------------
       real fOutAddGains        ! Additional heat injection/extraction
                                !   that is not accounted for in space-
                                !   heating load (W)
-
+      real fOutAuxPower        !
+      real fOutTS_FanOp  
+      real fOutFanLowPower
+      real fOutFanHighPower
 C-----------------------------------------------------------------------
 C     ESP-r commons
 C-----------------------------------------------------------------------
@@ -1687,74 +1699,83 @@ C-----------------------------------------------------------------------
       fOutFanPower = fFanPower
      &                  * ( fTS_FracSpaceH + fTS_FracSpaceWaterH )
 
+     
+C.....Collect other data about fan for use by fan control loop code
+C.....in HVACsim
+     
       fOutVentPower = fIMS_VentPower(iSystem, iVentMode)
 
+      
+C.....Fraction of time that IMS needs fan to be on:      
+      fOutTS_FanOp = fTS_FracSpaceH + fTS_FracSpaceWaterH
+
+      
 C-----------------------------------------------------------------------
 C     Debugging:
 C-----------------------------------------------------------------------
-! 
-!       print*, "IMS: space heating load:", fSpaceHLoad
-!       print*, "     SH PLR            :", fPLR_SpaceH
-!       print*, "     SH eff            :", fSpaceHEff
-!       print*, "     SH fan power      :", fFanPower
-!       print*, "     SH aux power      :", fAuxPower
-!       print*, "     SH elec power     :", fSpaceHPower
-!       print*, "     SH fuel power     :", fQFuel_SH
-!       print*, "     SH deficit        :", fQSpaceH_deficit
-!       print*, "     Additional xfer   :", fAddGains
-!       print*, "     water heating load:", fWaterHLoad
-!       print*, "     WH flue/skin ratio:",
-!      &                             fIMS_FlueSkinLossRatio(iSystem)
-!       print*, "     WH Skin loss      :", fIMS_WaterHSkinLoss(iSystem)
-!       print*, "     WH PLR            :", fPLR_WaterH
-!       print*, "     WH Eff            :", fWaterHEff
-!       print*, "     WH Power          :", fWaterHPower
-!       print*, "     WH Fuel power     :", fQFuel_WH
-!       print*, "     Vent Power        :",
-!      &                             fIMS_VentPower(iSystem,iVentMode)
-!       print*, "     Vent Flow         :",
-!      &                             fIMS_VentFlow(iSystem,iVentMode)
-!       print*, "     Vent Load         :", fVentLoad
-!       print*, "     Zone HR           :", fHR_zone
-!       print*, "     Amb  HR           :", fHR_amb
-! 
-!       print*, "     EA Mf Dry         :", fMEA_dry
-!       print*, "     EA Mf Vap         :", fMEA_vap
-!       print*, "     FA MF Dry         :", fMFA_dry
-!       print*, "     FA MF Vap         :", fMFA_vap
-!       print*, "     FA MF UL          :", fMFA_dry_UL
-!       print*, "     FA MF LL          :", fMFA_dry_LL
-! 
-!       print*, "     Temp Zone         :", fDBTemp_zone
-!       print*, "     Temp OA           :", fDBTemp_amb
-!       print*, "     Temp Exhaust      :", fDBTemp_exhaust
-!       print*, "     Temp Supply       :", fDBTemp_supply
-!       print*, "     dMV/dt            :", fVaporChangeRate
-! 
+ 
+!     print*, "IMS: space heating load:", fSpaceHLoad
+!     print*, "     SH PLR            :", fPLR_SpaceH
+!     print*, "     SH eff            :", fSpaceHEff
+!     print*, "     SH fan power      :", fFanPower
+!     print*, "     SH aux power      :", fAuxPower
+!     print*, "     SH elec power     :", fSpaceHPower
+!     print*, "     SH fuel power     :", fQFuel_SH
+!     print*, "     SH deficit        :", fQSpaceH_deficit
+!     !print*, "     Additional xfer   :", fAddGains
+!     print*, "     water heating load:", fWaterHLoad
+!     print*, "     WH flue/skin ratio:",
+!    &                             fIMS_FlueSkinLossRatio(iSystem)
+!     print*, "     WH Skin loss      :", fIMS_WaterHSkinLoss(iSystem)
+!     print*, "     WH PLR            :", fPLR_WaterH
+!     print*, "     WH Eff            :", fWaterHEff
+!     print*, "     WH Power          :", fWaterHPower
+!     print*, "     WH Fuel power     :", fQFuel_WH
+!     print*, "     Vent Power        :",
+!    &                             fIMS_VentPower(iSystem,iVentMode)
+!     print*, "     Vent Flow         :",
+!    &                             fIMS_VentFlow(iSystem,iVentMode)
+      !print*, "     Vent Load         :", fVentLoad
+      !print*, "     Zone HR           :", fHR_zone
+      !print*, "     Amb  HR           :", fHR_amb
+ 
+      !print*, "     EA Mf Dry         :", fMEA_dry
+      !print*, "     EA Mf Vap         :", fMEA_vap
+      !print*, "     FA MF Dry         :", fMFA_dry
+      !print*, "     FA MF Vap         :", fMFA_vap
+      !print*, "     FA MF UL          :", fMFA_dry_UL
+      !print*, "     FA MF LL          :", fMFA_dry_LL
+ 
+      !print*, "     Temp Zone         :", fDBTemp_zone
+      !print*, "     Temp OA           :", fDBTemp_amb
+      !print*, "     Temp Exhaust      :", fDBTemp_exhaust
+      !print*, "     Temp Supply       :", fDBTemp_supply
+      !print*, "     dMV/dt            :", fVaporChangeRate
+ 
 
 C-----------------------------------------------------------------------
 C     Now report data to h3kreports facility
 C-----------------------------------------------------------------------
 
-      h3kreports_init:
-     &if ( .not. bH3KReportsInitialized ( iSystem ) ) then
-
-        if ( iSystem > 9 ) then
-          cFormat = '(A,I2,A)'
-
-        else
-          cFormat = '(A,I1,A)'
-        endif
-
-        write (cRootName(iSystem),cFormat)
-     &        'plant/CETC_HVAC/system_' , iSystem,
-     &        '(IMS)'
-
-        iStrLen(iSystem) = lnblnk( cRootName( iSystem ) )
-
-        bH3KReportsInitialized ( iSystem ) = .true.
-
-      endif h3kreports_init
+C     h3kreports_init:
+C    &if ( .not. bH3KReportsInitialized ( iSystem ) ) then
+C
+C       if ( iSystem > 9 ) then
+C         cFormat = '(A,I2,A)'
+C
+C       else
+C         cFormat = '(A,I1,A)'
+C       endif
+C
+C       write (cRootName(iSystem),cFormat)
+C    &        'plant/CETC_HVAC/system_' , iSystem,
+C    &        '(IMS)'
+C
+C       iStrLen(iSystem) = lnblnk( cRootName( iSystem ) )
+C
+C       bH3KReportsInitialized ( iSystem ) = .true.
+C
+C     endif h3kreports_init
 
 C     call add_to_xml_reporting(
 C    &    fSpaceHLoad,

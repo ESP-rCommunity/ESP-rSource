@@ -181,6 +181,7 @@ C Combined ventilation and circulation fan PLR (0->1)
       
 C Max power for fan-control-loop (W) 
       real fFanMaxPower_hi, fFanMaxPower_lo, fFanPower, fSysFanPower
+      real fFanPowerVent
       
 C Number of zones (ncomp)
       common/c1/ncomp,ncon
@@ -250,20 +251,40 @@ c Local integer variables
 c Logical variable for whether there is space cooling load or ventilation load
       LOGICAL cooling_vent_yes,closea,closeb
 
+C Function for picking up fan power for IMS
+      real fIMS_Interpolate
+        
+      
 C IMS variables
-      real fIMS_SpaceHLoad        ! Space heating load (W)
-      real fIMS_WaterHLoad        ! Water heating load (W)
-      real fIMS_WaterHDuration    ! Duration of water heating load (s)
-      real fIMS_FuelUseRate       ! Fuel use (kg/s)
-      real fIMS_ElecUseRate       ! Electricity use (W)
-      real fIMS_FanUse            ! Fan power consumption (W)
-      real fIMS_VentUse           ! Ventilation power consumption (W)
-      real fIMS_VentFlowRate      ! IMS ventilation flow (kg/s)
-      real fIMS_VentLoad          ! Thermal load associated with vent. (W)
-      real fIMS_AddGains          ! Heat added/removed from zones
-                                  !   by IMS fans/systems/ventilation (W)
-      real fIMS_VaporChange       ! Moisture balance assoc. w/ IMS (kg/s)
+      real fRepIMS_SpaceHLoad        ! Space heating losad (W)
+      real fRepIMS_WaterHLoad        ! Water heating load (W)
+      real fRepIMS_WaterHDuration    ! Duration of water heating load (s)
+      real fRepIMS_FuelUseRate       ! Fuel use (kg/s)
+      real fRepIMS_ElecUseRate       ! Electricity use (W)
+      real fRepIMS_FanUse            ! Fan power consumption (W)
+      real fRepIMS_VentUse           ! Ventilation power consumption (W)
+      real fRepIMS_VentFlowRate      ! IMS ventilation flow (kg/s)
+      real fRepIMS_VentLoad          ! Thermal load associated with vent. (W)
+      real fRepIMS_AddGains          ! Heat added/removed from zones
+                                     !   by IMS fans/systems/ventilation (W)
+      real fRepIMS_VaporChange       ! Moisture balance assoc. w/ IMS (kg/s)
 
+      real fRepIMS_FanPower
+      real fRepIMS_AuxPower
+      real fRepIMS_VentPower
+      real fRepIMS_TS_fan_fraction 
+      real fRepIMS_WaterDraw
+      
+      
+C.....Parameters used by IMS model to recovery water draws. 
+      real fDHW_WaterDraw_byVolume
+      real bLoadIsDefined
+      real fTempHWT
+      real fTempUsage 
+      real fTempColdSupply
+      
+      
+      
 C.....H3Kreports.(HVAC_ELEC_DEC).start......................
 C.....DECLARATIONS for H3Kreporting object
       CHARACTER*128 H3K_rep_NAME
@@ -327,7 +348,17 @@ C.....Storage varaibles used to rationalize H3Kreports reporting
 
       real fPLR_back_temp
       real fPLF_back_temp
-
+      
+      
+      
+      
+C.....variables for computing fan power with fan control loop.s       
+      integer iPLRRows, iThisRow       
+      integer iPLRResolution 
+      parameter (iPLRResolution = 10) 
+      real fFanSHCPower(iPLRResolution)       
+      real fFanPowerSysIncremental(max_sys) 
+      logical bFanCont
 !
 ! C.....Storage for reporting corresponding for heating/cooling heatpump
 ! C.....systems
@@ -518,6 +549,8 @@ C     the zones being served by the HVAC system.
 
       
       HVAC_primary_sys_loop: do i=1, num_hvac_sys
+      
+      
 C.......Characterize primary systems first. Back-up systems handled in 
 C.......A second loop below.       
         IfPrimary: if ( ipriority(i) .eq. 1 ) then  
@@ -812,33 +845,97 @@ C-----------------------------------------------------------------------
             case (iSysIMS_P10) 
             
             
-C             Collect space and water heating loads.
-              fIMS_SpaceHLoad     = heating_load  ! W
-              fIMS_WaterHLoad     = 0.0 !20000.0  ! W
-              fIMS_WaterHDuration = 0.0 !1800.0   ! Seconds
+C.............Collect space and water heating loads.
+              fRepIMS_SpaceHLoad     = heating_load  ! W
+
+              if (bDebug ) then 
+                write(*,*) "reported IMS DHW VOLUME: ", 
+     &           fIMS_DHW_Water_volume_LpDay(i)
+              endif 
+
+C.............Get water volume for this hour. 
+              fTempHWT = 55.
+              fTempUsage = 60.
+             
+             
+C.............Volume drawn during the hour. (L)            
+              fRepIMS_WaterDraw  = 
+     &           fDHW_WaterDraw_byVolume(
+     &                   fIMS_DHW_Water_volume_LpDay(i),
+     &                   .true.,
+     &                   fTempHWT,
+     &                   fTempUsage,
+     &                   fTempColdSupply      )               
+
+              if (bDebug) 
+     &          write(*,*) " IMS->VOL/h ", fRepIMS_WaterDraw 
+     
+     
+C.............Duration of draw. Assume average over hr for now. 
+C.............IMS code seems to report wrong PLR for DHW. 
+              fRepIMS_WaterHDuration = 3600. ! fRepIMS_WaterDraw / 5. * 60.
               
-C             Superviosry routine for IMS characteriztion
-              call IMS_CharPerformance ( i,
-     &                                   iMode_LowVent,
-     &                                   fIMS_SpaceHLoad,
-     &                                   fIMS_WaterHLoad,
-     &                                   fIMS_WaterHDuration,
-     &                                   fIMS_FuelUseRate,
-     &                                   fIMS_ElecUseRate,
-     &                                   fIMS_FanUse,
-     &                                   fIMS_VentUse,
-     &                                   fIMS_AddGains )
+C.............Compute water heating power, in Watts:   
+              if ( fRepIMS_WaterDraw > 0.1 ) then    
+              fRepIMS_WaterHLoad = 
+     &            fRepIMS_WaterDraw * ( fTempHWT - fTempColdSupply )
+     &            * 4186. ! SH of water, use function later. 
+     &            / fRepIMS_WaterHDuration
+              else 
+                fRepIMS_WaterDraw = 0.
+              endif 
+               
+     
+              !write (*,*) "IMS DHW : draw      ", fRepIMS_WaterDraw
+              !write (*,*) "IMS DHW : duration  ", fRepIMS_WaterHDuration 
+              !write (*,*) "IMS DHW : load      ", fRepIMS_WaterHLoad
+              !write (*,*) "IMS SH  : load      ", fRepIMS_SpaceHLoad
+C             Supervisory routine for IMS characteriztion. 
+C             Here we call the routine with the 'no-vent' spec. 
+C             Ventilation power is characterized separately.
+              call IMS_CharPerformance ( i,                       
+     &                                   iMode_NoVent,            
+     &                                   fRepIMS_SpaceHLoad,         
+     &                                   fRepIMS_WaterHLoad,         
+     &                                   fRepIMS_WaterHDuration,     
+     &                                   fRepIMS_FuelUseRate,        
+     &                                   fRepIMS_ElecUseRate,        
+     &                                   fRepIMS_FanPower,             
+     &                                   fRepIMS_VentPower,            
+     &                                   fRepIMS_AuxPower, 
+     &                                   fRepIMS_TS_fan_fraction,    
+     &                                   fRepIMS_AddGains )          
+                                                                  
+              fFanSysPLR_hi(i) = fRepIMS_TS_fan_fraction
+              fFanSysPower_hi(i) = fRepIMS_FanPower + fRepIMS_AuxPower
+              
+              fFanSysPower_lo(i) = fRepIMS_AuxPower +       
+     &               fIMS_Interpolate( i,
+     &                                 0.05,
+     &                                 iIMSVar_SpaceHFanPower ) ! (W)  
+              
               
 C.......      Translate IMS outputs into hvac-friendly params.
-              sys_energy(i) =  fIMS_FuelUseRate
-              fHeat_energy  =  fIMS_FuelUseRate
+              sys_energy(i) =  fRepIMS_FuelUseRate*3600 ! (J)
+              fHeat_energy  =  fRepIMS_FuelUseRate
               fP_pilot_energy = 0.0
-              fan_energy(i) = fIMS_FanUse
+              fan_energy(i) = fRepIMS_FanUse
               
+              
+              
+              
+              !write (*,*) "IMS ALL : fuelpower  ", fRepIMS_FuelUseRate
+              if (bDebug) write(*,*) "--------------------------------"
+              if (bDebug) write(*,*) "      IMS DATA (", i,")"
+              if (bDebug) write(*,*) "--------------------------------"
+
+              if (bDebug) write(*,*) " +FAN - PLR:", fFanSysPLR_hi(i)
+              if (bDebug) write(*,*) " +FAN P Lo :", fFanSysPower_lo(i)
+              if (bDebug) write(*,*) " +FAN P Hi :", fFanSysPower_hi(i)             
               
 C             Save additional gains.
               bIdealHVACSysGain(i) = .true.
-              fIdealHVACSysAddGain( i ) = fIMS_AddGains
+              fIdealHVACSysAddGain( i ) = fRepIMS_AddGains
 C             Assume additional gains are 100% convective, as they
 C             may include a 'space-heating deficit' during periods
 C             of extended DHW loads.
@@ -854,8 +951,7 @@ C.........Check to see if heating systems have back-up, and
 C.........store remainder of unmet load for back-up calculation 
           if ( bDebug) write (*,*) 
      &    "              done."
-
-          
+         
      
           SaveBackupLoad: 
      &    if ( iUnit_Function(i)  == iFuncHeating .and. 
@@ -894,7 +990,7 @@ C-----------------------------------------------------------------------
 C     Loop through systems a second time, and determine energy 
 C     consumption of backup systems 
 C-----------------------------------------------------------------------      
-      
+
 
       HVAC_backup_sys_loop: do i=1, num_hvac_sys
 
@@ -963,14 +1059,21 @@ C-----------------------------------------------------------------------
 
         endif IfBackup
       
+     
       enddo HVAC_backup_sys_loop
       
 C-----------------------------------------------------------------------
-C       Loop through HVAC systems again, and characterize fan operation 
+C       Loop through HVAC systems again, and characterize fan operation.
+C       If a component is connected to a fan ctl loop, this block is 
+C       skipped, and the next one is used to characterize fan power. 
 C-----------------------------------------------------------------------        
         HVAC_Fan_Loop: do i = 1, num_hvac_sys
+       
+          if ( bDebug ) write (*,*) "++++++++++ Calling FAN for ", i
+        
 C.........Characterize primary systems.        
-          if ( ipriority(i) == 1 ) then 
+          if( ipriority(i) == 1 .and. 
+     &           iHVAC_type(i) .ne. iSysIMS_P10 )then 
         
 C...........Get index and PLR/PLF for backup system, if defined.
             if ( ibackup_heat(i) /= 0 ) then  
@@ -979,7 +1082,7 @@ C...........Get index and PLR/PLF for backup system, if defined.
 
               fPLR_back_temp = fPLR(iBackup)
               fPLF_back_temp = fPLF(iBackup)
-
+ 
             else 
 
               fPLR_back_temp = 0.
@@ -990,78 +1093,215 @@ C...........Get index and PLR/PLF for backup system, if defined.
             est_fan_energy = FAN_ENERGY_CON(i,fPLR(i),fPLR_back_temp,
      &                                        fPLF(i),fPLF_back_temp )
 
-            
+     
+                 
      
 C           Note: fan_energy returns 0 if the fan-control-loop is 
 C                 active. In this case, fan-power will be estimated
 C                 after all hvac systems are characterized.           
-            if ( .not. bSysHasFanCtlLoop(i) ) 
-     &            fan_energy(i) = est_fan_energy   
+            fan_energy(i) = est_fan_energy   
+            
+                if ( bDebug ) write(*,*) "Data from FAN(): ", i 
+                if ( bDebug ) write(*,*) 
+     &               "  +> Fan PLR h:    ",fFanSysPLR_hi(i)
+     
+                if ( bDebug ) write(*,*) 
+     &               "  +> Fan PWR h:    ",fFanSysPower_hi(i)     
+     
+                if ( bDebug ) write(*,*) 
+     &               "  +> Fan PWR l:    ",fFanSysPower_lo(i)              
+            
 
           endif 
         
         
         enddo HVAC_Fan_Loop
-      
+
+        if (bDebug) write(*,*) "--------------------------------"
+        if (bDebug) write(*,*) "      FAN CONTROL BLOCK --------"
+        if (bDebug) write(*,*) "--------------------------------"
 C-----------------------------------------------------------------------
 C       Alternatively, HVAC systems specified in the hvac file with the 
-C       '*fan-ctl-loop' tag have controls interlocked with ventilation.
-C       Characterize these loops now. 
+C       '*fan-ctl-loop' tag have controls interlocked with ventilation,
+C       and matching heating / cooling devices. Characterize these 
+C       loops now. 
 C-----------------------------------------------------------------------              
         FanCtlLoop: do iFanLoop = 1, max_fan_loops
         
 C.........Is this loop active?
-!          print*, "> fan loop ", iFanLoop , "?", 
-!     &             bFanCtlLoopActive(iFanLoop)
+ 
+          if ( bDebug ) write(*,*)  "> fan loop ", iFanLoop , "?", 
+     &             bFanCtlLoopActive(iFanLoop)
           LoopActive: if ( bFanCtlLoopActive(iFanLoop ) ) then 
            
+C...........Zero PLR array.            
+            do iThisRow =1, iPLRResolution
+                
+              fFanSHCPower(iThisRow) = 0 
+                
+            enddo 
+              
+            bFanCont = .false.   
             fFanTotPLR      = 0.
             fFanMaxPower_hi = 0.
             fFanMaxPower_lo = 0. 
             iNumSystemsOnLoop = 0
-          
+
+            
 C...........Loop though all systems, and find components connected
-C...........to this loop
+C...........to this loop. Save highest fan power consumption 
+            HVAC_FanPowerSearch: do i = 1, num_hvac_sys
+
+              if ( bSysHasFanCtlLoop(i) .and. 
+     &             iFanControlLoop(i) == iFanLoop ) then 
+
+
+                if ( bDebug ) write(*,*) "Connected System: ", i 
+                if ( bDebug ) write(*,*) 
+     &               "  + Fan PLR h:    ",fFanSysPLR_hi(i)
+     
+                if ( bDebug ) write(*,*) 
+     &               "  + Fan PWR h:    ",fFanSysPower_hi(i)     
+     
+                if ( bDebug ) write(*,*) 
+     &               "  + Fan PWR l:    ",fFanSysPower_lo(i)      
+     
+                if ( fFanSysPower_lo(i) > fFanMaxPower_lo ) 
+     &               fFanMaxPower_lo = fFanSysPower_lo(i)     
+     
+                if ( iFan_Operation(i) == iFan_Cont ) bFanCont=.true.      
+     
+              endif 
+            
+            
+
+            
+            enddo HVAC_FanPowerSearch
+            if (bDebug) write (*,*) 
+     &          " > Search Fan power lo:", fFanMaxPower_lo
+C...........Add ventilaton air distribution requirements to 
+C...........vent draw. Compute number of slots that coorespond 
+C...........to vent PLR.
+
+            if ( bFanCont ) then 
+                iPLRRows = iPLRResolution 
+C...............Save ventilation power for use later.                 
+                fFanPowerVent = fFanMaxPower_lo * 1.0
+            else 
+                iPLRRows =  nint ( fVentPLR 
+     &                               * float (iPLRResolution) ) 
+C...............Save ventilation power for use later.      
+                fFanPowerVent = fFanMaxPower_lo * fVentPLR 
+            endif
+
+            
+C...........Set power consumption in those slots to equal 
+C...........system low operation. 
+            do iThisRow =1, iPLRRows 
+               
+               if ( fFanSHCPower(iThisRow) < fFanMaxPower_lo ) then
+                    fFanSHCPower(iThisRow) = fFanMaxPower_lo
+               endif 
+
+            enddo      
+
+
+            
+C...........Loop though all systems, and find components connected
+C...........to this loop. Add incremental fan power used by these 
+C...........components to the fan power array. 
             HVAC_FanCtlLoop: do i = 1, num_hvac_sys
+              
+              fFanPowerSysIncremental(i) = 0. 
               
               if ( bSysHasFanCtlLoop(i) .and. 
      &             iFanControlLoop(i) == iFanLoop ) then 
 
-C...............Increment system counter
+C...............Increment system counter. Not sure this is used.
                 iNumSystemsOnLoop = iNumSystemsOnLoop + 1 
-                   
-C...............Add up part-load ratios (includes back-up)                
-                fFanTotPLR = fFanTotPLR + fFanSysPLR_hi(i)
-              
-C...............Collect maximum power req'd in high and low (or off) 
-C...............operation 
-                if ( fFanSysPower_hi(i) > fFanMaxPower_hi ) 
-     &               fFanMaxPower_hi = fFanSysPower_hi(i) 
 
-                if ( fFanSysPower_lo(i) > fFanMaxPower_lo ) 
-     &               fFanMaxPower_lo = fFanSysPower_lo(i)
-     
               
+C...............Compute # of rows needed in fan power array 
+C...............for this units PLR.                    
+                iPLRRows =  nint ( fFanSysPLR_hi(i) 
+     &                               * float (iPLRResolution) )  
+
+C...............Loop through those rows, and add incremental fan 
+C...............power.  
+
+
+                TheseRows: do iThisRow =1, iPLRRows 
+
+                
+                  if ( fFanSHCPower(iThisRow) 
+     &                          < fFanSysPower_hi(i) ) then
+
+     
+     
+     
+C....................Save incremental power.                      
+                     fFanPowerSysIncremental(i) = 
+     &                 fFanPowerSysIncremental(i) +  
+     &                   (  fFanSysPower_hi(i) 
+     &                           - fFanSHCPower(iThisRow) )
+     &                  / float ( iPLRResolution) 
+                     
+C....................Update this array row.                      
+                     fFanSHCPower(iThisRow) = fFanSysPower_hi(i)
+                     
+
+                     
+                  endif 
+                
+                enddo TheseRows
+                
+                
+                
+                   
               endif 
               
             enddo HVAC_FanCtlLoop
               
-C...........Add ventilation requirements to PLR computation
-            
-            fCirc_and_Vent_PLR = max ( fFanTotPLR, fVentPLR)
+C...........All systems & Ventilation characterized. Now compute 
+C...........total fan use. 
 
-            !print*, "FANPLRs:", fFanTotPLR, fVentPLR, fCirc_and_Vent_PLR 
+            fFanPower = 0. 
+            
+            do iThisRow =1, iPLRResolution
+            
+C................Save incremental power.                      
+                 fFanPower = fFanPower + 
+     &               fFanSHCPower(iThisRow) 
+     &              / float ( iPLRResolution) 
+                                  
+           
+            enddo             
+            
+    
+       
             
             
-            if ( fCirc_and_Vent_PLR > 1. ) 
-     &           fCirc_and_Vent_PLR = 1. 
+            
+            if (bDebug) then 
+            
+              write (*,*) " Vent PLR: ", fVentPLR 
+            
+              do iThisRow =1, iPLRResolution
+                write (*,*) " fFanSHCPower(",iThisRow,")=", 
+     &          fFanSHCPower(iThisRow)                           
+              enddo              
+            
+            endif 
      
-C...........Now estimate total circulation fan power according to 
-C...........circulation and ventilation requirements. (W) 
-            fFanPower =  fFanMaxPower_hi * fCirc_and_Vent_PLR 
-     &                 + fFanMaxPower_lo * (1.- fCirc_and_Vent_PLR )
+            if ( bDebug ) write (*,*) 
+     &           "    ->>>>>>> FAN POWER: ", fFanPower
 
-            !print *, "    ->>>>>>> P:", fCirc_and_Vent_PLR , fFanPower
+            if ( bDebug ) write (*,*) 
+     &           "    ->>>>>>> VNT POWER: ", fFanPowerVent
+   
+ 
+     
+     
      
 C...........Fan power is computed! Loop through the hvac systems 
 C...........again and save fan power to fan_energy arrays
@@ -1071,24 +1311,13 @@ C...........again and save fan power to fan_energy arrays
      &        if ( bSysHasFanCtlLoop(i) .and. 
      &            iFanControlLoop(i) == iFanLoop ) then             
 
-C...............System fan power is porportional to PLR of 
-C...............the given sytem, if systems are operating.             
-                if ( fFanTotPLR > 0.0001 ) then 
-                 
-                  fSysFanPower = 
-     &              fFanPower * fFanSysPLR_hi(i) / fFanTotPLR
-      
-                else 
-C.................If heating/cooling systems aren't operating (circ
-C.................fan required for ventilation purposes only), split 
-C.................circ fan power between systems. This is imperfect, 
-C.................but the HVAC models don't provide a means of tracking 
-C.................ventilation requirements.          
-     
-                  fSysFanPower = fFanPower / real (iNumSystemsOnLoop) 
-     
-                endif 
+            
+                fSysFanPower = fFanPowerSysIncremental(i)
 
+            if ( bDebug ) write (*,*) 
+     &           "    ->>>>>>> SYS POWER: ", fSysFanPower, i              
+      
+  
 C...............Fan_energy is in joules, convert from watts.                    
                 fan_energy(i) = fSysFanPower * time_step
             
@@ -1102,8 +1331,6 @@ C...............Fan_energy is in joules, convert from watts.
         enddo FanCtlLoop
 
         
-         
-         
 C-----------------------------------------------------------------------
 C      Code for reporting/storing data in h3kreports!
 C-----------------------------------------------------------------------         
@@ -1117,24 +1344,26 @@ C.........Heating systems
      &    ",,,,,,,,,,,,,,Storing data for system ", i
           if ( bDebug) write (*,*) 
      &    "              Report: Iunit func ", iUnit_Function(i), 
-     &    "(?",iFuncHeating,")"
+     &    "(heating=",iFuncHeating,")"
      
           RepHeatingCooling:     
      &    if ( iUnit_Function(i) == iFuncHeating ) then 
                       
             fH3KStorePLRH(i)       = fPLR(i)
             
-          if ( bDebug) write (*,*) 
-     &    "              Storing: PriEH ", fH3KStorePrimaryEH(i),
-     &                                     sys_energy(i), time_step
-          
-            
             ! Variables ending in _energy are in joules. Convert to watts. 
-            fH3KStoreFanEH(i)      = fan_energy(i)    / time_step
+            fH3KStoreFanEH(i)      = fan_energy(i)    / time_step                                                           = fan_energy(i)    / time_step
             fH3KStoreDraftE(i)     = draft_energy(i)  / time_step      ! Zero for HP, baseboard
             fH3KStorePrimaryEH(i)  = sys_energy(i)    / time_step      
             fH3KStorePilotE(i)     = pilot_energy(i)  / time_step      ! Zero for HP, baseboard
             fH3KStorePumpEH(i)     = pump_energy(i)   / time_step      ! Zero for combustion systems, ASHP
+
+          if ( bDebug) write (*,*) 
+     &    "              Storing: PriEHa", fH3KStorePrimaryEH(i),
+     &                                     sys_energy(i), time_step
+          
+            
+
             
           if ( bDebug) write (*,*) 
      &    "              Storing: FanEH ", fH3KStoreFanEH(i),
@@ -1306,9 +1535,7 @@ C-------------------------------------------------------------------------------
             FCctl_gshp_pump       = pump_energy(i)  / time_step
           
           endif 
-          
-
-
+   
           CheckForGains: if ( bIdealHVACSysGain (i) ) then
 
 C     Loop through each serviced zone
@@ -1508,7 +1735,7 @@ C.....Set fan energy to zero
 
       HVAC_system_report_loop_B: do i = 1, num_hvac_sys
   
-      
+        if (bdebug) write(*,*) "----------- LOOP HVAC SYS  : ", i
       
 C.......Check if system is cooling portion of heating heatpump system,
 C.......and if so, suppress system report.
@@ -1666,6 +1893,9 @@ C...........Efficiency:
 C.........P.10 --- presently unsupported
           case ( iSysIMS_P10 )
 
+C...........Set end-use flag
+            iSysEndUse = iUseSpaceHeat          
+          
 C.........Heat-pumps.
           case ( iSysASHP, iSysGSHP, iSysGSHP_GCEP )
 
@@ -1903,6 +2133,11 @@ C-------------------------------------------------------------------------
 C       Report energy use by fuel type, and store for aggregation
 C       with site-wide fuel use.
 C-------------------------------------------------------------------------
+        if ( bDebug ) write (*,*) 
+     &            " REPORT BY FUEL TYPE ", 
+     &            "> system: ", i, "Fuel type", ifuel_type(i),
+     &            " END USE: ", iSysEndUse
+        
         H3K_fuel_select: select case ( ifuel_type(i) )
 
           case ( iSoftWood )
@@ -1936,6 +2171,8 @@ C-------------------------------------------------------------------------
 
           case ( iOil )
 
+
+          
            fH3KSumEnergyUseOil( iSysEndUse )
      &                          =    fH3KSumEnergyUseOil( iSysEndUse )
      &                             + fH3KStorePrimaryEH(i)
@@ -1947,7 +2184,8 @@ C-------------------------------------------------------------------------
      &                          =    fH3KSumEnergyUseGas( iSysEndUse )
      &                             + fH3KStorePrimaryEH(i)
      &                             + fH3KStorePilotE(i)
-
+     
+           
           case ( iPropane )
 
            fH3KSumEnergyUsePropane( iSysEndUse )
@@ -1982,8 +2220,14 @@ C.......Append auxilary enery use (if any) to electric total:
 
       enddo HVAC_system_report_loop_B
 
+  
+      
 C Store fan electricity use in circulation/ventilation (W)
-      fH3KSumEnergyUseElec( iUseHRV ) = fH3KSumFanEnergy
+
+
+
+
+      fH3KSumEnergyUseElec( iUseHRV ) = fFanPowerVent
 
 C Report fan power consumption and heat gains
 
@@ -1996,6 +2240,13 @@ C.......Fan energy
 
         Call AddToReport(rvPltHvacCrcHeatTrn%Identifier,
      &   fH3KSumFanEnergy)
+     
+     
+C Store aggregate electricity use for reporting in Site Utility facilitity.
+      fSUFuelEnergyUse( iElectricity,iUseHRV ) = fFanPowerVent
+
+  
+     
 
 C Store aggregate fuel/electricity use for reporting in Site Utility facilitity.
       report_use_loop: do iSysEndUse = 1, iNumUses

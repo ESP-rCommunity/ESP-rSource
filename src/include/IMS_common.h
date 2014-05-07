@@ -162,6 +162,10 @@ C.....Ventilation heat recovery efficiency:
 C.....Temperature for outdoor defrost conditions
       real fIMS_VentDefrostTemp(max_sys)
 
+      
+C.....DHW-daily water volume. 
+      real fIMS_DHW_Water_volume_LpDay(max_sys)      
+      
 C.....Column names for user-specified boundary conditions:
 C.....  DHW volumetric flow rate
       logical bIMS_DHWLoadsDefinedInBCD(max_sys)
@@ -207,4 +211,5 @@ C.....General model input common
      &   bIMS_DHWLoadsDefinedInBCD,
      &   bIMS_SHLoadsDefinedInBCD,
      &   cIMS_BcdSHLoad,
-     &   cIMS_BcdDhwLoadDuration
+     &   cIMS_BcdDhwLoadDuration,
+     &   fIMS_DHW_Water_volume_LpDay

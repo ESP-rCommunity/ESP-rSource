@@ -134,13 +134,13 @@ c Maximum number of fuels. This sets the size of the array ifuel_type
 
 C Dimensions of token/data arrays for version 2+ format.
       integer iFurnaceTokenCount
-      parameter (iFurnaceTokenCount = 8)
+      parameter (iFurnaceTokenCount = 9)
       integer iP10_IMSTokenCount
-      parameter (iP10_IMSTokenCount = 21)
+      parameter (iP10_IMSTokenCount = 22)
       integer iBaseboardTokenCount
-      parameter (iBaseboardTokenCount = 4)
+      parameter (iBaseboardTokenCount = 5)
       integer iHPTokenCount
-      parameter (iHPTokenCount = 25)
+      parameter (iHPTokenCount = 26)
       integer iMAXTokenCount
       parameter (iMAXTokenCount = iHPTokenCount)
 

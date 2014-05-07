@@ -77,7 +77,7 @@ c Read central ventilation system type.
 c
       If ( iErr .eq. 0 ) Then
          k = 0
-         Call MSG_EGETWI ( OUTSTR, k, iVal, 1, 3, 'F',
+         Call MSG_EGETWI ( OUTSTR, k, iVal, 1, 4, 'F',
      x ' central ventilation system type', IUOUT, iErr )
       Endif
 c
@@ -367,6 +367,47 @@ c
 c ---
 c        Else
 c No central ventilation system (None)
+         ElseIf ( iCVSType .eq. 4 ) Then ! IMS: 
+         
+           ! MVNT routines provide control for IMS HRV, but 
+           ! the HRV is decribed elsewhere. Read control params.  
+           
+c ---
+c # CVS temperature control data (flag,low temperature trip, high temperature trip)
+c 7   0.    0.  # flag 3 = Temperature controlled, or 1,2,4,5,6,7 = N/A
+C                      8 = ERS assumptions: Natural + mech ventilation = 0.3 ACH/hour
+C                      9 = 8hr/day average operation (1/3 of every hour)
+C
+            If ( iErr .eq. 0 ) Then
+               Call STRIPC ( iUnit, OUTSTR, 0, ND, 1,
+     x ' CVS temperature control data', iErr )
+            Endif
+c
+            If ( iErr .eq. 0 ) Then
+               k = 0
+               Call MSG_EGETWI ( OUTSTR, k, iVal, 1, 9, 'F',
+     x ' CVS temperature control flag', IUOUT, iErr )
+            Endif
+c
+            If ( iErr .eq. 0 ) Then
+c
+               iCVSOpType = iVal
+c
+               If ( iCVSOpType .eq. 3 ) Then
+c
+                  Call MSG_EGETWR ( OUTSTR, k, VAL, -999., 999., 'F',
+     x ' CVS-low temperature trip', IUOUT, iErr)
+                  rCVSLowTempTrip = VAL
+c
+                  If ( iErr .eq. 0 ) Then
+                     Call MSG_EGETWR ( OUTSTR, k, VAL, -999., 999., 'F',
+     x ' CVS-high temperature trip', IUOUT, iErr)
+                     rCVSHighTempTrip = VAL
+                  Endif
+               Endif
+            Endif           
+
+
          Endif
 c
 c --- Other fans

@@ -176,7 +176,32 @@ c       REAL    fWaterDraw                   Litres/Timestep
 c
 c----56--1---------2---------3---------4---------5---------6---------7---------8
       FUNCTION fDHW_WaterDraw()
-
+      IMPLICIT NONE 
+#include "building.h"
+#include "dhw_parameters.h"
+#include "dhw_common.h"
+#include "ground_temp_mains_common.h"
+      
+      real fDHW_WaterDraw_byVolume, fDummy
+      
+      fDHW_WaterDraw = fDHW_WaterDraw_byVolume(fDailyDrawVolL,
+     &                                 bDefinedLoad,
+     &                                 fHotSupplyTemp,
+     &                                 fUsageTemp,
+     &                                 fDummy )
+      
+      
+      
+      
+      return 
+      end function fDHW_WaterDraw
+      
+      real FUNCTION fDHW_WaterDraw_byVolume(DrawVolL,
+     &                                 bLoadIsDefined,
+     &                                 fTempHWT,
+     &                                 fTempUsage,
+     &                                 fTempColdSupply) 
+      
       IMPLICIT NONE
 #include "building.h"
 #include "dhw_parameters.h"
@@ -190,39 +215,54 @@ c----56--1---------2---------3---------4---------5---------6---------7---------8
       REAL   fNormalizedDailyWaterDraw
       REAL   fLitresforNumOccupants
       integer h3k_month
+      real DrawVolL, fTempHWT, fTempUsage, fTempColdSupply
+      logical bLoadIsDefined
+      
 c This calulates the amount of water  used based on the the number of occupants
-        if ( bDefinedLoad ) then 
-          fLitresforNumOccupants = fDailyDrawVolL
+        if ( bLoadIsDefined ) then 
+          fLitresforNumOccupants = DrawVolL
         else
           fLitresforNumOccupants = 85.0 + ( 35.0 * fNumOfOccupants )
         endif
         
-      
+        !write(*,*) "fLitresforNumOccupants ", fLitresforNumOccupants 
 c This normalises the water draw based on a standard usage temperature (currently a parameter
 c of 60C. This is from B.Bradley'd H2KDHW.F line 254.
         iMonth = h3k_month(real(idyp)+real(ihrp)/24)
-
+        !write(*,*) "iMonth", iMonth
+        fTempColdSupply = fDHW_ColdMainTemp(iMonth)
+        
         fNormalizedDailyWaterDraw = ( 0.75
      &                   * fLitresforNumOccupants
-     &                   * ( (fUsageTemp
+     &                   * ( (fTempUsage
      &                           - fDHW_ColdMainTemp(iMonth))
-     &                   / (fHotSupplyTemp
+     &                   / (fTempHWT
      &                          - fDHW_ColdMainTemp(iMonth)) )
      &                   + 0.25 * fLitresforNumOccupants )
 
+!     write (*,*) " DHW: ih2k ", iH2k , bLoadIsDefined, DrawVolL, 
+!    & fTempUsage, fTempHWT,
+!    & fNormalizedDailyWaterDraw, fDHW_ColdMainTemp(iMonth), 
+!    & REAL(iNTSTEP)
+     
       IF (iH2K.eq.1) then ! treat it like H2K
-        fDHW_WaterDraw = fNormalizedDailyWaterDraw
+        fDHW_WaterDraw_byVolume
+     &        = fNormalizedDailyWaterDraw
      &                  /fHoursInDay / REAL(iNTSTEP)
 
-
+   
       ELSE   !Treat it with water demand curve contained in fWaterDrawCurveHourly(24).
 c This formula will first obtain the percentage of total daily water which has been drawn in that hour.
-        fDHW_WaterDraw = fWaterDrawCurveHourly(ihrp)
+        fDHW_WaterDraw_byVolume
+     &        = fWaterDrawCurveHourly(ihrp)
      &                 / fWaterDrawCurveTotal
 c Then this will muliply it by the actual water draw and divide it by the time step slice.
      &                   * fNormalizedDailyWaterDraw / REAL(iNTSTEP)
       ENDIF
 
+      
+C      write (*,*) "fHoursInDay:", fHoursInDay
+C      write (*,*) "fWaterDrawCurveTotal", fWaterDrawCurveTotal
 c Note the draw is considered instantaneous ie flow = infinite during draw period
 
 C Save water draw volume in (l/s)
@@ -237,8 +277,12 @@ C
 
 C Save supply and delivery temperatures (oC)
         fDHW_H3K_supply_temp = fDHW_ColdMainTemp(iMonth)
-        fDHW_H3K_delivery_temp = fHotSupplyTemp
+        fDHW_H3K_delivery_temp = fTempHWT
 
+C        write (*,*) " fDHW_WaterDrawbV :", fDHW_WaterDraw_byVolume
+C        write (*,*) " fDHW_WaterDraw h2k :", fDHW_H3K_water_draw
+C        write (*,*) " fDHW 33k supp temp" , fDHW_H3K_supply_temp
+C        write (*,*) " fDHW 33k delv temp" , fDHW_H3K_delivery_temp
       END
 
 
@@ -1195,20 +1239,52 @@ C Declarations for local variables and variables passed in common blocks.
       character cfgroot*24,LCFGF*72
       integer IFCFG
 
-C Check to see if DHW is required.
-      IF (iDHW_Flag.ne.1) then
-        RETURN
-      ENDIF
+C Define default draw profile 
+
+      fWaterDrawCurveHourly(1) = 9.
+      fWaterDrawCurveHourly(2) = 7.
+      fWaterDrawCurveHourly(3) = 0.
+      fWaterDrawCurveHourly(4) = 0.
+      fWaterDrawCurveHourly(5) = 0.
+      fWaterDrawCurveHourly(6) = 0.
+      fWaterDrawCurveHourly(7) = 0.
+      fWaterDrawCurveHourly(8) = 8.
+      fWaterDrawCurveHourly(9) = 18.
+      fWaterDrawCurveHourly(10) = 15.
+      fWaterDrawCurveHourly(11) = 16.
+      fWaterDrawCurveHourly(12) = 16.
+      fWaterDrawCurveHourly(13) = 14.
+      fWaterDrawCurveHourly(14) = 13.
+      fWaterDrawCurveHourly(15) = 12.
+      fWaterDrawCurveHourly(16) = 10.
+      fWaterDrawCurveHourly(17) = 9.
+      fWaterDrawCurveHourly(18) = 10.
+      fWaterDrawCurveHourly(19) = 12.
+      fWaterDrawCurveHourly(20) = 16.
+      fWaterDrawCurveHourly(21) = 17.
+      fWaterDrawCurveHourly(22) = 14.
+      fWaterDrawCurveHourly(23) = 12.
+      fWaterDrawCurveHourly(24) = 11.
+
+      fWaterDrawCurveTotal = 239.0
+          
+      
+C Initialise to default values.
 
       iNTSTEP = ntstep
 
       fRoomTemp = 20.0
 
 
-C Initialise to default values.
+
       fOldAverageWaterTemp =  55.0
       fOldFinalWaterTemp =  55.0
       fOldStandbyTankLosses  = 0.0
+
+C Check to see if DHW is required.
+      IF (iDHW_Flag.ne.1) then
+        RETURN
+      ENDIF
 
       fUA = fDHW_UA()
 
@@ -1223,32 +1299,6 @@ C and daily DHW load is defined in the DHW input file, so skip the next section.
 
 c This water draw curve was taken from the CSA f379.1-88 Solar Domestic Hot Water Systems.
       else
-          fWaterDrawCurveHourly(1) = 9.
-          fWaterDrawCurveHourly(2) = 7.
-          fWaterDrawCurveHourly(3) = 0.
-          fWaterDrawCurveHourly(4) = 0.
-          fWaterDrawCurveHourly(5) = 0.
-          fWaterDrawCurveHourly(6) = 0.
-          fWaterDrawCurveHourly(7) = 0.
-          fWaterDrawCurveHourly(8) = 8.
-          fWaterDrawCurveHourly(9) = 18.
-          fWaterDrawCurveHourly(10) = 15.
-          fWaterDrawCurveHourly(11) = 16.
-          fWaterDrawCurveHourly(12) = 16.
-          fWaterDrawCurveHourly(13) = 14.
-          fWaterDrawCurveHourly(14) = 13.
-          fWaterDrawCurveHourly(15) = 12.
-          fWaterDrawCurveHourly(16) = 10.
-          fWaterDrawCurveHourly(17) = 9.
-          fWaterDrawCurveHourly(18) = 10.
-          fWaterDrawCurveHourly(19) = 12.
-          fWaterDrawCurveHourly(20) = 16.
-          fWaterDrawCurveHourly(21) = 17.
-          fWaterDrawCurveHourly(22) = 14.
-          fWaterDrawCurveHourly(23) = 12.
-          fWaterDrawCurveHourly(24) = 11.
-
-          fWaterDrawCurveTotal = 239.0
 
       endif check_DHW_draws_in_file
       RETURN
