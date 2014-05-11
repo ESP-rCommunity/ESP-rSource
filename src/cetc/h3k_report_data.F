@@ -4006,11 +4006,11 @@ C.........Loop through all interconnections in a flow network
             if (NODPS(jj) .eq. ii) THEN ! only look for positive side conn. of cur. node
                i_neg = NODNE(jj) ! the node on the other side of the conn.
 
-               write(Connect_Name,'(A,A,A,A,A,A)')
+               write(Connect_Name,'(A,A,A,A,A)')
      &             NDNAM(ii)(1:NDNAM_len),'->',
      &             NDNAM(i_neg)(1:LNBLNK(NDNAM(i_neg))),
-     &             ' (via ',
-     &             CMNAM(ITPCON(jj))(1:LNBLNK(CMNAM(ITPCON(jj)))),')'
+     &             '_via_',
+     &             CMNAM(ITPCON(jj))(1:LNBLNK(CMNAM(ITPCON(jj))))
 
                connect_len = LNBLNK(Connect_name)
        ! pressure drop between nodes of connection ***********************
