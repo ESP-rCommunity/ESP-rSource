@@ -32,8 +32,7 @@ clim_convert()  # converts climate dbs from iwec.a to binary formats
 
 TargetName=`echo $2 |  sed 's/\.a$//g'`
 printf "\r                                                                            "
-printf "\r   - Creating binary climate databases [${TargetName}]..."
-
+printf "\r   - Creating binary climate databases [${TargetName}] ..."
 rm -f $1
 $CLM -mode text -file $1 -act asci2bin silent $2  >/dev/null 2>/dev/null
 
@@ -71,8 +70,7 @@ echo " at any time by pressing <control> c."
 mode="interactive"         # Interactive/silent installation
                            # (silent mode isn't yet supported)
 HOMEdir=`pwd`
-SRCdir="${HOMEdir}/src"    # Source Directory
-DBdir="${HOMEdir}/data"    # one below Database Directory
+SRCdir="${HOMEdir}/src"               # Source Directory
 DESTdir=/usr/esru          # Target Directory
 COSIMdir=" "			   # Harmonizer install directory
 xml_support=prompt         # support for XML output
@@ -97,8 +95,22 @@ extendedDebug="no"         # Enable agressive debugging / warnings /FPE?
 use_intel="no"             # Use intel compilers?
 skip_ish_calcs="no"        # Skip update of exemplar shading files?
 reuse_ish_calcs="yes"      # if yes speedup creation of exemplar shading files?
-clean="yes"                # Clean object files?
+clean="no"                # Clean object files?
 unversioned="no"           # Check svn for versioning info?
+
+#-----------------------------------------------------------
+# Directories for new module config
+#-----------------------------------------------------------
+
+DATdir="${HOMEdir}/data"
+CLMdir="${DATdir}/climate"
+DBSdir="${DATdir}/databases"
+MODdir="${HOMEdir}/models"
+TRAdir="${MODdir}/training"
+VALdir="${MODdir}/validation"
+
+
+
 
 #-----------------------------------------------------------
 # List of targets understood by bps
@@ -1643,16 +1655,51 @@ echo " Installing ESP-r system. This may take some time."
 echo " Moving to ${SRCdir}..."
 cd ${SRCdir}
 #--------------------------------------------------------------
-# Get SVN build info for versioning purposes.
+# Get build info for versioning purposes.
 #--------------------------------------------------------------
 
- echo -n "    - gathering versioning information from svn..."
 
+
+
+ echo -n "    - gathering version information ("
+ 
+ # Find out if this is svn or git.  
+
+NotAnSvnWorkingCopy=`svn info 2>&1 | grep "is not a working copy"`
+NotAGitRepo=`git status 2>&1 | grep "fatal: Not a git repository"`
+ 
+#echo "> SVN query > ${NotAnSvnWorkingCopy} <" 
+#echo "> GIT query > ${NotAGitRepo} <"
+ 
+ 
+if [ "${NotAnSvnWorkingCopy}" != "" ] && 
+   [ "${NotAGitRepo}"         != "" ] ; then 
+   
+   VersioningScheme="none" 
+
+else
+
+  if [ "${NotAnSvnWorkingCopy}" == "" ]; then 
+  
+    VersioningScheme="svn" 
+    
+  else 
+   
+    VersioningScheme="git"
+  
+  fi 
+
+   
+fi    
+ 
+echo -n "${VersioningScheme})..."
+ 
+ 
  # Ensure that build information is always recompiled into
  # every binary - touch common file version.F, and delete
  # library/object files.
  touch ${SRCdir}/lib/version.F >/dev/null 2>&1
- rm ${SRCdir}/lib/libversion.a  ${SRCdir}/lib/version.o >/dev/null 2>&1
+ #rm ${SRCdir}/lib/libversion.a  ${SRCdir}/lib/version.o >/dev/null 2>&1
 
  # Get time of build
  time=`date`
@@ -1665,88 +1712,30 @@ cd ${SRCdir}
 
 
  # Digest version information in Version text file
- release=`cat ${SRCdir}/Version | grep "ESP-r release " | sed "s/ESP-r release //g"`
+ release=`cat ${HOMEdir}/Version | grep "ESP-r release " | sed "s/ESP-r release //g"`
 
- 
- # Try to collect svn information
- svn_info_command="svn info"
- svn_status_command="svn status"
-
- # For debugging...
- # svn_info_command="cat ~/svn_info.txt"
- # svn_status_command="cat ~svn_status.txt"
-
- if [ "$unversioned" == "no" ]; then
-   svnrevision=`$svn_info_command 2>&1 | grep "^Revision:"`
-   svnnotfound=`$svn_info_command 2>&1 | grep "command not found"`
-   notworkingcopy=`$svn_info_command 2>&1 | grep "is not a working copy"`
-   URL=`$svn_info_command 2>&1 | grep "^URL" | sed "s/URL: //g"`
-   URLcvsdude=` echo $URL | grep "https*://espr.svn[0-9]*.cvsdude.com/esp-r/"`
-   URLesprcentral=` echo $URL | grep "https*://[a-zA-Z0-9]*@*esp-r.net/esp-r/"`
- else
-   svnnotfound="yes"
- fi
-
- 
- # Ensure that the URL is from ESP-r central. Code built from
- # other repositories is to be designated 'unversioned'
-
- if [ "$unversioned"    == "yes" ]
-    [ "$svnnotfound"    != "" ]    ||
-    [ "$notworkingcopy" != "" ] ||
-    [ "$svnrevision"    ==  "" ] ;   then
-   versioned_repository="no";
- else
-   if [ "$URLcvsdude" != "" ] || [ "$URLesprcentral"  != "" ]; then
-     versioned_repository="yes"
-   else
-     versioned_repository="no"
-   fi
- fi
+ ## Check 
  
 
- # If svn is available and repository is under versioning,
- # get misc svn information
- if [ "$versioned_repository" = "yes" ]; then
-   revision_number=`$svn_info_command 2>&1 | grep "^Revision" | sed "s/Revision: //g"`
+ if [ "${VersioningScheme}" == "svn" ]; then 
+ 
+    echo " " 
 
-   # Get branch name: Strip ESP-r.net/espr/esp-r portion of url
-   branch_name=`echo $URL | sed "s/^.*\/esp-r\///g"`
+    
 
-   # Strip leading 'branches', if any
-   branch_name=`echo $branch_name | sed "s/branches\///g"`
-   # Strip trailing 'src'
-   branch_name=`echo $branch_name | sed "s/\/src//g"`
 
-   # Now determine if URL describes development branch, a sub-branch,
-   # or the trunk
+    
+    
+    
+ fi # END SVN block 
 
-   # Default version to sub-branch...
-   source="Sub-branch"
-
-   if [ "$branch_name" = "trunk" ]; then
-     source="Trunk"
-   fi
-
-   if [ "$branch_name" = "development_branch" ]; then
-     source="Development branch"
-   fi
-
-   # Use svn status to deterine if repository has
-   # been locally modified (denoted by M/G/C status)
-   #
-   svn_status=`$svn_status_command 2>&1 | grep "^[MGC]" `
-   if [ "$svn_status" != "" ]; then
-    state="Locally modified"
-   else
-    state="Vanilla"
-   fi
-
-   echo " Done."
- else
-   echo " Unavailable!"
- fi
-
+   
+ if [ "${VersioningScheme}" == "git" ]; then
+   
+      # Add code here.
+      echo " "
+   
+ fi 
 
 #--------------------------------------------------------------
 # Now write out build information into automatically generated
@@ -1841,6 +1830,9 @@ cd ${SRCdir}
 # Now write a gnome desktop file so an icon can be used to start prj
 # other variants may be required for other display managers
 #--------------------------------------------------------------
+# Delete prior to writing anew, as it seems to be appended ...
+  rm ${HOME}/esp-r.desktop
+
   echo "       "                                                          >> ${HOME}/esp-r.desktop
   echo "[Desktop Entry]"                                                  >> ${HOME}/esp-r.desktop
   echo "Version=1.0"                                                      >> ${HOME}/esp-r.desktop
@@ -1908,10 +1900,10 @@ do
    if [ -r $result ]; then
      if [ "${make_msg_file}" != "" ]; then
        echo " Deleting $result " >> $make_msg_file
-       rm $result >> $make_msg_file 2>&1
+       #rm $result >> $make_msg_file 2>&1
      else
        echo -n " Deleting $result "
-       rm $result
+       #rm $result
      fi
    fi
    
@@ -2169,28 +2161,29 @@ echo " Installing standard databases. This may take some time."
   # Construction databases. Note constr_db1.materialdb and constr_db2.materialdb
   # are subsets of constr_db3.materialdb. Perhaps they can be merged into a single file?
   echo -n "   - Copying materials databases..."
-  cp ${DBdir}/databases/ccht_constr.db1 ${DESTdir}/esp-r/databases/ccht_constr.db1
-  cp ${DBdir}/databases/ccht-optics.db1 ${DESTdir}/esp-r/databases/ccht-optics.db1
-  cp ${DBdir}/databases/ccht_na_constr.db1 ${DESTdir}/esp-r/databases/ccht_na_constr.db1
-  cp ${DBdir}/databases/ccht_material.ascii ${DESTdir}/esp-r/databases/ccht_material.ascii
-  cp ${DBdir}/databases/constr_db1.materialdb ${DESTdir}/esp-r/databases/constr_db1.materialdb
-  cp ${DBdir}/databases/constr_db2.materialdb ${DESTdir}/esp-r/databases/constr_db2.materialdb
-  cp ${DBdir}/databases/constr_db3.materialdb ${DESTdir}/esp-r/databases/constr_db3.materialdb
-  cp ${DBdir}/databases/cellular.materialdb ${DESTdir}/esp-r/databases/cellular.materialdb
-  cp ${DBdir}/databases/north_american.materialdb.a ${DESTdir}/esp-r/databases/north_american.materialdb.a
-  cp ${DBdir}/databases/north_american.materialdb.a ${DESTdir}/esp-r/databases/north_american.materialdb
-  cp ${DBdir}/databases/north_american.constrdb ${DESTdir}/esp-r/databases/north_american.constrdb
-  cp ${DBdir}/databases/material.db3.a ${DESTdir}/esp-r/databases/material.db3.a
-  cp ${DBdir}/databases/material.db4.a ${DESTdir}/esp-r/databases/material.db4.a
-  cp ${DBdir}/databases/CFClayers.db1.a ${DESTdir}/esp-r/databases/CFClayers.db1.a
+  echo -n "  (${DATdir} - ${DESTdir}/esp-r/databases/ ) "
+  cp ${DATdir}/databases/ccht_constr.db1 ${DESTdir}/esp-r/databases/ccht_constr.db1
+  cp ${DATdir}/databases/ccht-optics.db1 ${DESTdir}/esp-r/databases/ccht-optics.db1
+  cp ${DATdir}/databases/ccht_na_constr.db1 ${DESTdir}/esp-r/databases/ccht_na_constr.db1
+  cp ${DATdir}/databases/ccht_material.ascii ${DESTdir}/esp-r/databases/ccht_material.ascii
+  cp ${DATdir}/databases/constr_db1.materialdb ${DESTdir}/esp-r/databases/constr_db1.materialdb
+  cp ${DATdir}/databases/constr_db2.materialdb ${DESTdir}/esp-r/databases/constr_db2.materialdb
+  cp ${DATdir}/databases/constr_db3.materialdb ${DESTdir}/esp-r/databases/constr_db3.materialdb
+  cp ${DATdir}/databases/cellular.materialdb ${DESTdir}/esp-r/databases/cellular.materialdb
+  cp ${DATdir}/databases/north_american.materialdb.a ${DESTdir}/esp-r/databases/north_american.materialdb.a
+  cp ${DATdir}/databases/north_american.materialdb.a ${DESTdir}/esp-r/databases/north_american.materialdb
+  cp ${DATdir}/databases/north_american.constrdb ${DESTdir}/esp-r/databases/north_american.constrdb
+  cp ${DATdir}/databases/material.db3.a ${DESTdir}/esp-r/databases/material.db3.a
+  cp ${DATdir}/databases/material.db4.a ${DESTdir}/esp-r/databases/material.db4.a
+  cp ${DATdir}/databases/CFClayers.db1.a ${DESTdir}/esp-r/databases/CFClayers.db1.a
 
-  cp ${DBdir}/databases/SBEM.db1 ${DESTdir}/esp-r/databases/SBEM.db1
-  cp ${DBdir}/databases/UK_notional.constrdb ${DESTdir}/esp-r/databases/UK_notional.constrdb
-  cp ${DBdir}/databases/profiles.db1.a ${DESTdir}/esp-r/databases/profiles.db1.a
-  cp ${DBdir}/databases/profiles.db2.a ${DESTdir}/esp-r/databases/profiles.db2.a
+  cp ${DATdir}/databases/SBEM.db1 ${DESTdir}/esp-r/databases/SBEM.db1
+  cp ${DATdir}/databases/UK_notional.constrdb ${DESTdir}/esp-r/databases/UK_notional.constrdb
+  cp ${DATdir}/databases/profiles.db1.a ${DESTdir}/esp-r/databases/profiles.db1.a
+  cp ${DATdir}/databases/profiles.db2.a ${DESTdir}/esp-r/databases/profiles.db2.a
   echo " Done."
 
-   cd ${DBdir}/databases
+   cd ${DATdir}/databases
 
    echo -n "   - Creating binary plant components databases..."
 
@@ -2201,26 +2194,27 @@ echo " Installing standard databases. This may take some time."
    echo " Done."
 
    echo -n "   - Creating binary climate databases "
-   cd ${DBdir}/climate
+   cd ${DATdir}/climate
    cp climatelist ${DESTdir}/esp-r/climate
-   sed -e 's|/usr/esru/esp-r|'"${ESPdir}"'|' ${DBdir}/climate/climatelist > ${ESPdir}/climate/climatelist
+   sed -e 's|/usr/esru/esp-r|'"${ESPdir}"'|' ${DATdir}/climate/climatelist > ${ESPdir}/climate/climatelist
    cp README ${DESTdir}/esp-r/climate/Readme
    cp README_IWEC ${DESTdir}/esp-r/climate/Readme_iwec
 
 
-   #Find all assci files (we use the convention of .a)
+   #Find all ascii files (we use the convention of .a)
    for file in *.a
    do
-     #Assign asscii file to variable.
+     #Assign ascii file to variable.
      CLIM_a=${file}
      #Create binary file name by cutting off the .a suffix.
      CLIM_b=`echo $file |  sed 's/\.a$//g'`
      #Convert.
-     clim_convert ${ESPdir}/climate/${CLIM_b} ${CLIM_a}
+     clim_convert ${DATdir}/climate/${CLIM_b} ${CLIM_a}
+     mv ${DATdir}/climate/${CLIM_b} ${DESTdir}/esp-r/climate/
    done
    echo " Done."
 
-   cd ${DBdir}/databases
+   cd ${DATdir}/databases
    echo -n "   - Copying ASCII databases..."
    cp components.db1 ccht_mlc.db multicon.db1 multicon.db2 multicon.db3 multicon.db4 north_american.constrdb optics.db1 optics.db2 optics.db3 ccht-optics.db1 mould.db1 pressc.db1 mscomp.db1 mscomp.db2 *.desc ${DESTdir}/esp-r/databases
    echo " Done."
@@ -2245,7 +2239,6 @@ if [ "$install_training" = "yes" ]; then
      echo " Done."
 
      echo -n "   - Updating materials and climate databases in training models..."
-     cd ${SRCdir}
 
      # Note: We're dumping the output to /dev/null, which will suppress
      #       error messsages that would otherwise warn the user if a
@@ -2255,38 +2248,40 @@ if [ "$install_training" = "yes" ]; then
      #       message.
      #
      #       In the future, we could wrap the database conversion commands
-     #       in a low-level script that would silently invoke prj/clm/pdb/ish,
+     #       in a low-level scriqptqpt that would silently invoke prj/clm/pdb/ish,
      #       check if the target binary database was actually created, and
      #       verify its intregity. The script could then stop when an error
      #       was encountered, and provide meaningful output to the user.
      #
      #       Maybe someday...
 
-     cd ${SRCdir}/training/cg_ctl/daylit_coef/cfg
+     cd ${MODdir}/training/cg_ctl/daylit_coef/cfg
      $CLM -mode text -file dec94_clm -act asci2bin silent dec94_clm.a >/dev/null
-     cd ${SRCdir}/training/Temporal_Clm
+     cd ${MODdir}/training/Temporal_Clm
      $CLM -mode text -file 15265.climate -act asci2bin 15265.climate.a >/dev/null
-     cd ${SRCdir}
+     cd ${MODdir}
      echo " Done."
      echo -n "   - Updating climate databases in validation models..."
-     cd ${SRCdir}/validation/CEN/13791/databases
+     cd ${MODdir}/validation/CEN/13791/databases
      $CLM -mode text -file Cond.clm -act asci2bin silent Cond.clm.a >/dev/null
      $CLM -mode text -file WM_A.clm -act asci2bin silent WM_A.clm.a >/dev/null
      $CLM -mode text -file WM_B.clm -act asci2bin silent WM_B.clm.a >/dev/null
-     cd ${SRCdir}
+     cd ${MODdir}
      echo " Done."
      echo -n "   - Copying training and validation models..."
-     cp -r ${SRCdir}/training ${ESPdir}/training
-     sed -e 's|/usr/esru/esp-r|'"${ESPdir}"'|' ${SRCdir}/training/exemplars > ${ESPdir}/training/exemplars
-     cp -r ${SRCdir}/validation ${ESPdir}/validation
-     sed -e 's|/usr/esru/esp-r|'"${ESPdir}"'|' ${SRCdir}/validation/stds_list > ${ESPdir}/validation/stds_list
+     cp -r ${MODdir}/training ${ESPdir}/training
+     sed -e 's|/usr/esru/esp-r|'"${ESPdir}"'|' ${MODdir}/training/exemplars > ${ESPdir}/training/exemplars
+     cp -r ${MODdir}/validation ${ESPdir}/validation
+     sed -e 's|/usr/esru/esp-r|'"${ESPdir}"'|' ${MODdir}/validation/stds_list > ${ESPdir}/validation/stds_list
      echo " Done."
      echo -n "   - Removing versioning information from training and validation files..."
      find  ${ESPdir}/training -name "\.svn" | xargs rm -fr
+     find  ${ESPdir}/training -name "\.git" | xargs rm -fr
      find  ${ESPdir}/validation -name "\.svn" | xargs rm -fr
+     find  ${ESPdir}/validation -name "\.git" | xargs rm -fr
      echo " Done."
      echo -n "   - Removing binary database from training models ..."
-     cd ${SRCdir}/
+     cd ${MODdir}/
      rm -f training/cg_ctl/daylit_coef/cfg/dec94_clm
      rm -f validation/CEN/13791/databases/WM_A.clm
      rm -f validation/CEN/13791/databases/WM_B.clm
@@ -2296,7 +2291,7 @@ if [ "$install_training" = "yes" ]; then
   #
   # Scan training and validation folders for configuration files.
   #
-
+  cd ${MODdir}/
   echo "   - Updating model shading and database records..."
   cfgnames=(`find ./training ./validation -name "*.cfg" -print`)
   # Count cfg files
@@ -2335,14 +2330,25 @@ if [ "$install_training" = "yes" ]; then
 
           if [ "${reuse_ish_calcs}" = "no" ]; then
             printf "\r      -> model ${cfgnum}/${cfgcount} (${file}); zone ${ish_processed_count}/${ish_tag_count}"
-            $ISH -mode text -file ${file:2} -zone ${isi[$((i+1))]} -act update_silent > /dev/null
+            $ISH -mode text -file ${file:2} -zone ${isi[$((i+1))]} -act update_silent 
             shdfile=${file%/*}/${isi[$((i+3))]}
-            mv -f ${shdfile} ${ESPdir}/${shdfile}
+            cp -f ${shdfile} ${ESPdir}/${shdfile}
+            echo ">>> 1 |${shdfile} > ${ESPdir}/${shdfile} " 
+            exit
+
+ 
           elif [ "${reuse_ish_calcs}" = "yes" ]; then
             printf "\r      -> model ${cfgnum}/${cfgcount} (${file}); zone ${ish_processed_count}/${ish_tag_count}"
             $ISH -mode text -file ${file:2} -zone ${isi[$((i+1))]} -act useupdate_silent > /dev/null
             shdfile=${file%/*}/${isi[$((i+3))]}
-            mv -f ${shdfile} ${ESPdir}/${shdfile}
+            cp -f ${shdfile} ${ESPdir}/${shdfile}
+                echo ">>> 2 |${shdfile} > ${ESPdir}/${shdfile} " 
+            if [ -r ${ESPdir}/${shdfile} ]; then 
+                $ISH -mode text -file ${file:2} -zone ${isi[$((i+1))]} -act useupdate_silent 
+                exit 
+            fi
+                
+
           fi
         fi
       fi
@@ -2402,11 +2408,11 @@ zzz
   cp -r ${SRCdir}/manual/* ${ESPdir}/manual
   echo " Done."
 
-  echo -n "   - Installing tutorial files..."
-  rm -rf ${ESPdir}/tutorial
-  mkdir ${ESPdir}/tutorial
-  cp -r ${SRCdir}/tutorial/*.tut ${ESPdir}/tutorial
-  echo " Done."
+#  echo -n "   - Installing tutorial files..."
+#  rm -rf ${ESPdir}/tutorial
+#  mkdir ${ESPdir}/tutorial
+#  cp -r ${SRCdir}/tutorial/*.tut ${ESPdir}/tutorial
+#  echo " Done."
 
 
 fi
