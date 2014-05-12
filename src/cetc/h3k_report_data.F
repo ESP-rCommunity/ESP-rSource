@@ -3574,13 +3574,13 @@ C.....is handy for testing
       do iElec_node = 1, nenod
 
          if (iElec_node .le. 9) then
-            WRITE (node_num, '(A,I1);')
+            WRITE (node_num, '(A,I1)')
      &           '00', iElec_node
          elseif(iElec_node .le. 99) then
-            WRITE (node_num, '(A,I2);')
+            WRITE (node_num, '(A,I2)')
      &           '0', iElec_node
          else
-            WRITE (node_num, '(I3);')
+            WRITE (node_num, '(I3)')
      &           iElec_node
          endif
 
