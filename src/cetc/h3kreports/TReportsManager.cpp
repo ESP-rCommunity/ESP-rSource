@@ -404,7 +404,8 @@ extern "C"
    **           speed reasons
    ** Returns:  N/A
    ** Author:   Claude Lamarche
-   ** Mod Date: 2011-07-15
+   ** Mod Auth: Achim Geissler
+   ** Mod Date: 2014-05-12
    ** ***************************************************************** */
    void add_to_report_wild3__(int* iIdentifier,float* fValue,char* sWild1,
                           char* sWild2,char* sWild3,int strLen1,
@@ -415,20 +416,42 @@ extern "C"
         switching "zone_*" and "<<zone-name>>" output!
        */
       char * pch;
+      int strlen_mod;
 
+      strlen_mod=strLen1;
       pch=strchr(sWild1,' ');
       if(pch!=NULL) {
-        strLen1=pch-sWild1;
+        strlen_mod=pch-sWild1;
       }
 
+     /* strLen1 should only be shortened, never made longer!
+      */
+      if (strlen_mod < strLen1) {
+        strLen1 = strlen_mod;
+      }
+
+      strlen_mod=strLen2;
       pch=strchr(sWild2,' ');
       if(pch!=NULL) {
-        strLen2=pch-sWild2;
+        strlen_mod=pch-sWild2;
       }
 
+     /* strLen2 should only be shortened, never made longer!
+      */
+      if (strlen_mod < strLen2) {
+        strLen2 = strlen_mod;
+      }
+
+      strlen_mod=strLen3;
       pch=strchr(sWild3,' ');
       if(pch!=NULL) {
-        strLen3=pch-sWild3;
+        strlen_mod=pch-sWild3;
+      }
+
+     /* strLen3 should only be shortened, never made longer!
+      */
+      if (strlen_mod < strLen3) {
+        strLen3 = strlen_mod;
       }
 
       //Kludge: quick way to build a * delimited string with the params
@@ -461,7 +484,8 @@ extern "C"
    **           speed reasons
    ** Returns:  N/A
    ** Author:   Claude Lamarche
-   ** Mod Date: 2011-07-15
+   ** Mod Auth: Achim Geissler
+   ** Mod Date: 2014-05-12
    ** ***************************************************************** */
    void add_to_report_wild2__(int* iIdentifier,float* fValue,char* sWild1,
                           char* sWild2,int strLen1,int strLen2){
@@ -472,16 +496,32 @@ extern "C"
         switching "zone_*" and "<<zone-name>>" output!
       */
       char * pch;
+      int strlen_mod;
 
+      strlen_mod=strLen1;
       pch=strchr(sWild1,' ');
       if(pch!=NULL) {
-        strLen1=pch-sWild1;
+        strlen_mod=pch-sWild1;
       }
 
+     /* strLen1 should only be shortened, never made longer!
+      */
+      if (strlen_mod < strLen1) {
+        strLen1 = strlen_mod;
+      }
+
+      strlen_mod=strLen2;
       pch=strchr(sWild2,' ');
       if(pch!=NULL) {
-        strLen2=pch-sWild2;
+        strlen_mod=pch-sWild2;
       }
+
+     /* strLen2 should also only be shortened, never made longer!
+      */
+      if (strlen_mod < strLen2) {
+        strLen2 = strlen_mod;
+      }
+
       //Kludge: quick way to build a * delimited string with the params
       memcpy(temp,sWild1,strLen1);
       temp[strLen1] = '*';
@@ -511,7 +551,8 @@ extern "C"
    **           speed reasons
    ** Returns:  N/A
    ** Author:   Claude Lamarche
-   ** Mod Date: 2011-07-15
+   ** Mod Auth: Achim Geissler
+   ** Mod Date: 2014-05-12
    ** ***************************************************************** */
    void add_to_report_wild1__(int* iIdentifier,float* fValue,char* sWild1,int strLen1){
       char temp[strLen1+1];
@@ -520,10 +561,18 @@ extern "C"
         switching "zone_*" and "<<zone-name>>" output!
       */
       char * pch;
+      int strlen_mod;
 
+      strlen_mod=strLen1;
       pch=strchr(sWild1,' ');
       if(pch!=NULL) {
-        strLen1=pch-sWild1;
+        strlen_mod=pch-sWild1;
+      }
+
+     /* strLen1 should only be shortened, never made longer!
+      */
+      if (strlen_mod < strLen1) {
+        strLen1 = strlen_mod;
       }
 
       //Kludge: quick way to build a string with the params
