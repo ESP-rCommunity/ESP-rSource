@@ -866,6 +866,9 @@ C-----------------------------------------------------------------------
       include "building.h"
       include "net_flow.h"
 
+      real fFanEffectivePLR
+      common/FanCtl/fFanEffectivePLR 
+      
 C.....Passed parameters
       integer iConnection     ! Index of connection 
       double precision fDeltaP         ! Pressure difference across component (Pa)
@@ -927,8 +930,10 @@ C.....Start calculations: Get positive and negative nodes:
       iNegativeNode = NODNE(iConnection)
       
       iComponent = itpcon( iConnection )
-      fFlow = supcmp ( iComponent, 2 ) 
+      
+C.....Quick patch to connect flow to HVAC fan.       
 
+      fFlow = supcmp ( iComponent, 2 ) * fFanEffectivePLR
       
       Flw1(iConnection) = dble( fFlow ) * RHON(iPositiveNode)
       Flw2(iConnection) = dble(-fFlow ) * RHON(iPositiveNode)

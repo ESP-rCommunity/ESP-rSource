@@ -183,6 +183,9 @@ C Max power for fan-control-loop (W)
       real fFanMaxPower_hi, fFanMaxPower_lo, fFanPower, fSysFanPower
       real fFanPowerVent
       
+      real fFanEffectivePLR
+      common/FanCtl/fFanEffectivePLR 
+      
 C Number of zones (ncomp)
       common/c1/ncomp,ncon
       integer ncomp, ncon
@@ -1169,6 +1172,10 @@ C...........to this loop. Save highest fan power consumption
                 if ( fFanSysPower_lo(i) > fFanMaxPower_lo ) 
      &               fFanMaxPower_lo = fFanSysPower_lo(i)     
      
+                if ( fFanSysPower_hi(i) > fFanMaxPower_hi ) 
+     &               fFanMaxPower_hi = fFanSysPower_hi(i)      
+     
+     
                 if ( iFan_Operation(i) == iFan_Cont ) bFanCont=.true.      
      
               endif 
@@ -1279,8 +1286,7 @@ C................Save incremental power.
             
     
        
-            
-            
+        
             
             if (bDebug) then 
             
@@ -1292,15 +1298,19 @@ C................Save incremental power.
               enddo              
             
             endif 
-     
+            
             if ( bDebug ) write (*,*) 
      &           "    ->>>>>>> FAN POWER: ", fFanPower
 
             if ( bDebug ) write (*,*) 
      &           "    ->>>>>>> VNT POWER: ", fFanPowerVent
    
+            if ( bDebug ) write (*,*) 
+     &           "    ->>>>>>> MAX POWER: ", fFanMaxPower_hi   
  
-     
+            fFanEffectivePLR = 
+     &          (fFanPower) / fFanMaxPower_hi
+ 
      
      
 C...........Fan power is computed! Loop through the hvac systems 

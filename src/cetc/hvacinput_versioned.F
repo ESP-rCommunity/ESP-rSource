@@ -2911,7 +2911,7 @@ C-----------------------------------------------------------------------
       else 
          bGSHP_circ_pump_spec(iSystem) = .false.
       endif 
-      write(*,*) "> circ",iSystem, fGSHP_circ_pump_power(iSystem) 
+
      
 C-----------------------------------------------------------------------
 C     Check fan location during rating keyword
