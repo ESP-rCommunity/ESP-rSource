@@ -1394,6 +1394,8 @@ C.....comparison
       if ( fTS_FracSpaceH > 1.0 ) fTS_FracSpaceH = 1.0
       if ( fTS_FracSpaceH < 0.0 ) fTS_FracSpaceH = 0.0
 
+
+      
 C-----------------------------------------------------------------------
 C     If sum of time step fraction spent in space and water heating modes
 C     is greater than unity, the unit must spend some time in a combined
@@ -1408,7 +1410,12 @@ C-----------------------------------------------------------------------
         fTS_FracSpaceH_unadj = fTS_FracSpaceH
         fTS_FracSpaceH = 1.0 - fTS_FracWaterH
         fTS_FracWaterH = 1.0 - fTS_FracSpaceH_unadj
-
+    
+        
+C.......Possibly reset SH load if the unit is in combined 
+C.......SH & water heating model for the entire timestep.         
+        call eclose ( fTS_FracSpaceH, 0.0, 0.001, bNoSpaceHLoad )
+        
 C.......Fraction of timestep for which there is no demand
 C.......on IMS unit:
         fTS_NoDemand = 0.0
@@ -1523,6 +1530,8 @@ C-----------------------------------------------------------------------
 C       First, estimate the part-load ratio. See eqn. 25 in
 C       Ferguson et al. (2007)
 C-----------------------------------------------------------------------
+
+
         fPLR_SpaceH = ( fSpaceHLoad )
      &                      / fIMS_SpaceHCapacity(iSystem)
      &                      / fTS_FracSpaceH ! (-)
