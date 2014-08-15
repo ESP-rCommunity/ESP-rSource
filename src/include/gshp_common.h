@@ -7,7 +7,7 @@ C Copyright CETC 2001
 C This common declares and initializes all the general input data required for the
 C GSHP simulation.
 C---------------------------------------------------------------------------------
-      common/GSHP_INPUT/igshp_type,ID,OD,Kpipe,pipe_length,
+      common/GSHP_INPUT/igshp_type,IDdia,OD,Kpipe,pipe_length,
      & Density,Cp,Flow,Tmean,Atemp,DAYo
 
 C--------------------------------------------------------------------------------
@@ -22,7 +22,7 @@ C conductivity, heat exchanger length, fluid density, specific heat, and flow
 C rate, and soil temperatures.
 C---------------------------------------------------------------------------------
 C [mm]
-      REAL  ID             
+      REAL  IDdia            
 C [mm]
       REAL  OD           
 C [W/mK]       
