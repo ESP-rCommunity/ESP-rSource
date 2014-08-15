@@ -678,7 +678,7 @@ C identical for each GSHP calculation and are found in the GSHP input file.
 C These variables are saved in the USE module GSHP_INPUT.
 C
 C  INPUTS:
-C    ID           Inside diameter of pipe, m
+C    IDdia         Inside diameter of pipe, m
 C    OD           Outside diameter of pipe, m
 C    Kpipe        Conductivity of pipe, W/mK
 C    pipe_length  Length of pipe, m
@@ -736,8 +736,8 @@ C and calls edisp when errors occur.
        IF ( IER .eq. 0 ) THEN       
           K = 0
           CALL MSG_EGETWR(OUTSTR,K,val,0.,1000.,'F','ID',IUOUT, IER)          
-          ID = val
-          ID = ID/1000        ! Convert to metres
+          IDdia = val
+          IDdia = IDdia/1000        ! Convert to metres
        ENDIF
 
 C Read in the GSHP pipe outside diameter         
@@ -746,7 +746,7 @@ C Read in the GSHP pipe outside diameter
           OD = val
           OD = OD/1000        ! Convert to metres
        ENDIF
-
+       
 C Read in the GSH pipe conductivity
        IF ( IER .eq. 0 ) THEN
           CALL MSG_EGETWR(OUTSTR,K,val,0.,10.,'F','Kpipe',IUOUT, IER)

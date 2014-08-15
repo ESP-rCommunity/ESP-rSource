@@ -350,7 +350,7 @@ C **********************************************************************
 #include "building.h"
 C Initiates reading of global variables (common for all)
 #include "hvac_parameters.h"
-#include "gshp_common.h"
+#include "gshp_common.h" 
 
       COMMON/OUTIN/IUOUT,IUIN
       INTEGER IUOUT,IUIN
@@ -467,6 +467,7 @@ c If the system is a horizontal slinky, call SL_INPUT
 
 c Once the ground loop is completed, set COP as well as the heating and cooling loads
 c to zero, so that the next day's sum will begin at zero.
+
        load_weighted_GSHP_COP = 0.0
        daily_heat_load = 0.0
        daily_cool_load = 0.0
@@ -568,11 +569,11 @@ C ----- Determine mean diffusivity for given bore depth Dbottom
      &         / (2. * (Dbottom - Dtop)))
 
  107  CONTINUE      ! End of Nsoil LOOP
-
+ 
 C ----- Calculate Resistivity of Pipe and Grout
 C ----- CAMNET 1992, (Eq. A.6)
       ODeq   = SQRT(2.0) * OD                         ! Outside Diameter RMS
-      Rpipe  = LOG(OD / ID) / (2.* PI * Kpipe)       ! mK/W
+      Rpipe  = LOG(OD / IDdia) / (2.* PI * Kpipe)       ! mK/W
       Rgrout = LOG(Dbore / ODeq)/(2. * PI * Kgrout)  ! mK/W
         
 
@@ -641,6 +642,7 @@ C-------- Calculate (Tf-Tinf)Total
           Wattj = dQ(jPeriod) * (1000. / (TimeDay * 24.))
 
 C-------- CAMNET 1992, (Eq A.4)
+          dTinc = (Wattj - Wattj_1) / sum
           dTinc = (Wattj - Wattj_1) / sum
           dTtot = dTtot + dTinc
 
@@ -779,7 +781,7 @@ C ----- Dmean = weighted average over 12 months (summer 25%, winter 75%)
       Dmean = 0.75 * Dw + 0.25 * Ds
 
 C ----- Hart & Couvillion, Earth-Coupled Heat Transfer, 1986 (EQ 1-2)
-      Rpipe = LOG(OD / ID) / (2 * PI * Kpipe)  ! mK/W
+      Rpipe = LOG(OD / IDdia) / (2 * PI * Kpipe)  ! mK/W
       
       
 C ----- For Multi-Year Analysis, Calc. Dummy Variable
@@ -983,7 +985,7 @@ C ----- Dmean = weighted average over 12 months (summer = 25%, winter = 75%)
       Dmean = 0.75 * Dw + 0.25 * Ds        
       
 C ----- Hart & Couvillion, Earth-Coupled Heat Transfer, 1986 (EQ 1-2):
-      Rpipe = LOG(OD / ID) / (2 * PI * Kpipe) ! mK/W
+      Rpipe = LOG(OD / IDdia) / (2 * PI * Kpipe) ! mK/W
 
 C ----- Difference in depth of piping
       SP = ABS(PD1 - PD2)            
@@ -1229,7 +1231,7 @@ C ----- Dmean = weighted average over 12 months (summer = 25%, winter 75%)
       Dmean = 0.75 * Dw + 0.25 * Ds
       
 C ----- Hart & Couvillion, Earth-Coupled Heat Transfer, 1986 (EQ 1-2):
-      Rpipe = LOG(OD / ID) / (2 * PI * Kpipe) ! mK/W
+      Rpipe = LOG(OD / IDdia) / (2 * PI * Kpipe) ! mK/W
 
 
 C ----- For Multi-Year Analysis, Calc. Dummy Variable
@@ -2072,12 +2074,14 @@ c there is no load for that timestep, then do not include it in the calculation.
       
 
        if (load .gt. 0.0) then
+             
          load_weighted_GSHP_COP = load_weighted_GSHP_COP + 
      &                          (cop * load)/NTSTEP
        else
+
          load_weighted_GSHP_COP = load_weighted_GSHP_COP
        endif
-      
+         
        return
        end
 
@@ -2107,6 +2111,7 @@ c **********************************************************************
 
 c The daily system coefficient of performance is equal to the daily laod-
 c weighted COP multiplied by the load.
+
        daily_GSHP_COP = cop / load
 
        return
