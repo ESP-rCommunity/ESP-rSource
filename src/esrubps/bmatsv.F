@@ -524,6 +524,8 @@ C.....->Set flags indicating if h3kreports should (re)initialize
 88       continue
         bFirst_call_fan = .true.
         bFirst_call_hrv = .true.
+c ---   27-08-2014: Patrice Pinel: Added variable to report Energy revovery ventilation
+        bFirst_call_erv = .true.
         bFirst_call_dhw = .true.
         WRITE(H3K_rep_NAME,'(A)')'minutes_per_step'
         WRITE(H3K_rep_VALUE,'(f7.3)') 60./real(ntstep)
