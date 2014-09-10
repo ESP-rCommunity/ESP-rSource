@@ -2268,6 +2268,7 @@ C ********************************************************************
       IMPLICIT NONE
 
 #include "building.h"
+#include "geometry.h"    ! for zname
 #include "CFC_common.h"
 
       COMMON/SUNPOS/SAZI,SALT,ISUNUP
@@ -2280,7 +2281,7 @@ C ********************************************************************
       real pi,r, omega_v, omega_h
 
 C.....DECLARATIONS for H3Kreporting object
-      CHARACTER*2   cZone_Chars, cSurf_Chars
+      CHARACTER*12   cZone_Chars, cSurf_Chars
 
       pi = 4.0 * ATAN(1.0)
       r=pi/180.
@@ -2290,19 +2291,36 @@ C.....Vertical profile angle
 C.....Horizontal profile angle
       omega_h = SAZI-PAZI(ICOMP,ISURF)
       
-C.....Pad zone index to 'XX'
-      if ( ICOMP .gt. 9 ) then
-        write (cZone_Chars,'(I2)') ICOMP
+C.....Switch for zone name output here
+      if (ReportBoolConfig("use_zonenames")) then
+        write (cZone_Chars,'(A)') zname(icomp)(1:lnzname(icomp))
       else
-        write (cZone_Chars,'(A,I1)') '0', ICOMP
-      endif
+C.......Pad zone index to 'XX'
+        if ( icomp .gt. 9 ) then
+           write (cZone_Chars,'(A,I2)') 'zone_',icomp
+        else
+           write (cZone_Chars,'(A,I1)') 'zone_0',icomp
+        endif
+      endif ! use_zonenames
 
-C.....Pad surface index to 'XX'
-      if ( ISURF .gt. 9 ) then
-        write (cSurf_Chars,'(I2)') ISURF
-      else
-        write (cSurf_Chars,'(A,I1)') '0', ISURF
-      endif
+C << the following would ideally require that surface name lengths
+C    are stored in a common like zone name lengths ... filled in
+C    georead() (egeometry.F line 1750 ff.)/ egomin() (egeometry.F line 594)? >>
+
+C.....Switch for surface name output here
+cx      if (ReportBoolConfig ("use_surfacenames")) then
+cx        write (cSurf_Chars,'(A)')
+cx     &          sname(iZone,isurf)(1:lnsname(icomp,isurf))
+cx      else
+C.......Pad surface index to 'XX'
+        if ( isurf .gt. 9 ) then
+cx          write (cSurf_Chars,'(I2)') iSurface
+          write (cSurf_Chars,'(A,I2)') 'surface_',isurf
+        else
+cx          write (cSurf_Chars,'(A,I1)') '0', iSurface
+          write (cSurf_Chars,'(A,I1)') 'surface_0',isurf
+        endif
+cx      endif ! use_surfacenames
 
 c      call AddToReport(
 c     &         rvCFCazimuth%identifier,
@@ -2868,6 +2886,7 @@ C ********************************************************************
       use h3kmodule
       IMPLICIT NONE
 #include "building.h"
+#include "geometry.h"    ! for zname
 #include "control.h"
 #include "CFC_common.h"
       COMMON/OUTIN/IUOUT,IUIN
@@ -2912,6 +2931,7 @@ C      real slat_angleX
       integer nperiods        ! number of periods in control daytype
       integer iperiod         ! control period
       integer icomp           ! zone index
+      integer iZone           ! zone index for zone loops
       integer icfctp          ! CFC type index
       integer iact1, iact2, iact3   ! actuator details
       integer isen1, isen2, isen3   ! sensor details
@@ -2928,8 +2948,9 @@ C      real slat_angleX
       real solrad_dir               ! incident direct solar radiation [W/m2] - returned by sub. get_incident_solrad
       real solrad_diff              ! incident diffuse solar radiation [W/m2] - returned by sub. get_incident_solrad
       character msgout*124
-      character*2 cZone_Chars, cCFC_Chars
-      
+      character*12 cZone_Chars
+      character*2  cCFC_Chars
+
 C Prior to initiating control logic, set the default slat angle and 
 C shading state for the next time step in all zones and all CFC types
 C containing a shade layer.    
@@ -3251,15 +3272,22 @@ C Save slat angle and shade state for use in future time-step.
   33  continue
 
 C Make slat angle and shade state available in H3KReports.
-      DO 43 i = 1, ncomp                            ! Examine each zone in turn.
-        IF (icfc(i)==1) THEN                        ! Check if there are CFCs in this zone.
-          DO 44 j = 1, ncfc(i)                      ! Examine each type of CFC in zone.
-
-            if ( i > 9 ) then                       ! Tag output with zone number (pad to 'XX' format).
-              write( cZone_Chars, '(I2)' ) i
+      DO 43 iZone = 1, ncomp                        ! Examine each zone in turn.
+        IF (icfc(iZone)==1) THEN                    ! Check if there are CFCs in this zone.
+C.........Switch for zone name output here
+          if (ReportBoolConfig("use_zonenames")) then
+            write (cZone_Chars,'(A)') zname(iZone)(1:lnzname(iZone))
+          else
+C...........Pad zone index to 'XX'
+            if ( iZone .gt. 9 ) then
+              write (cZone_Chars,'(A,I2)') 'zone_',iZone
             else
-              write( cZone_Chars, '(A,I1)' ) '0', i
-            end if
+              write (cZone_Chars,'(A,I1)') 'zone_0',iZone
+            endif
+          endif ! use_zonenames
+
+          DO 44 j = 1, ncfc(iZone)                  ! Examine each type of CFC in zone.
+
             if ( j > 9 ) then                       ! Tag output with CFC type.
               write( cCFC_Chars, '(I2)' ) j
             else
@@ -3268,13 +3296,13 @@ C Make slat angle and shade state available in H3KReports.
 
             call AddToReport (                      ! Report control state.
      &             rvCFCShadeCtl%Identifier,
-     &             float( i_shd(i,j) ),
+     &             float( i_shd(iZone,j) ),
      &             cZone_Chars,
      &             cCFC_Chars )
 
             call AddToReport (                      ! Report slat angle.
      &             rvCFCSlatAngle%Identifier,
-     &             vb_phiNew(i,j),
+     &             vb_phiNew(iZone,j),
      &             cZone_Chars,
      &             cCFC_Chars )
 

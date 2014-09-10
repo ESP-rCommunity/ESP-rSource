@@ -4364,6 +4364,7 @@ C facilities. Created by Achim Geissler, June 17 2008.
       implicit none
 
 #include "building.h"
+#include "geometry.h"  ! for zname
 
 C Parameters.
       integer iZone,iNode,iSurf,ispmnod
@@ -4380,23 +4381,42 @@ C Commons.
       character txtspm*72	!- description of data item
 
 C Local variables.
-      character*2 cZone_Chars, cSurf_Chars, cNode_Chars
+      character*12 cZone_Chars, cSurf_Chars
+      character*2  cNode_Chars
       integer ndat,idat
 
 C References.
       integer lnblnk
 
-C Pad index to 'XX'.
-      if(iZone.gt.9)then
-         write(cZone_Chars,'(i2)')iZone
+C.....Switch for zone name output here
+      if (ReportBoolConfig("use_zonenames")) then
+        write (cZone_Chars,'(A)') zname(iZone)(1:lnzname(iZone))
       else
-         write(cZone_Chars,'(a,i1)') '0',iZone
-      endif
-      if(isurf.gt.9)then
-         write(cSurf_Chars,'(i2)')isurf
-      else
-         write(cSurf_Chars,'(a,i1)') '0',isurf
-      endif
+C.......Pad zone index to 'XX'
+        if ( iZone .gt. 9 ) then
+           write (cZone_Chars,'(A,I2)') 'zone_',iZone
+        else
+           write (cZone_Chars,'(A,I1)') 'zone_0',iZone
+        endif
+      endif ! use_zonenames
+
+C << the following would ideally require that surface name lengths
+C    are stored in a common like zone name lengths ... filled in
+C    georead() (egeometry.F line 1750 ff.)/ egomin() (egeometry.F line 594)? >>
+
+C.....Switch for surface name output here
+cx      if (ReportBoolConfig ("use_surfacenames")) then
+cx        write (cSurf_Chars,'(A)')
+cx     &          sname(iZone,iSurface)(1:lnsname(icomp,isurf))
+cx      else
+C.......Pad surface index to 'XX'
+        if ( iSurf .gt. 9 ) then
+          write (cSurf_Chars,'(A,I2)') 'surface_',iSurf
+        else
+          write (cSurf_Chars,'(A,I1)') 'surface_0',iSurf
+        endif
+c      endif ! use_surfacenames
+
       if(inode.gt.9)then
          write(cNode_Chars,'(i2)')inode
       else
@@ -4410,13 +4430,13 @@ C Output available PCM layer data.
          Call AddToReport(rvBuiSpm%Identifier,
      &      dataspm(ispmnod,idat),
      &      spmlabel(ispmnod)(1:lnblnk(spmlabel(ispmnod))),
-     &      '/z' // cZone_Chars // '/s' // cSurf_Chars
+     &      '/' // cZone_Chars // '/' // cSurf_Chars
      &   // '/nd' // cNode_Chars,
      &      strspm(ispmnod,idat)(1:lnblnk(strspm(ispmnod,idat))))
 
          Call AddToReportDetails(rvBuiSpm%Identifier,
      &      spmlabel(ispmnod)(1:lnblnk(spmlabel(ispmnod))),
-     &      '/z' // cZone_Chars // '/s' // cSurf_Chars
+     &      '/' // cZone_Chars // '/' // cSurf_Chars
      &   // '/nd' // cNode_Chars,
      &      strspm(ispmnod,idat)(1:lnblnk(strspm(ispmnod,idat))),
      &      'units',

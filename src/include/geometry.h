@@ -37,6 +37,9 @@ C Surface attributes for the current zone.
       COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS,3),
      &          SUSE(MS,2),SPARENT(MS)
 
+      integer lnsname,lnsotf ! length of sname and sotf strings
+      common/G5LN/lnsname(MCOM,MS),lnsotf(MS)
+
 C Surface polygon information for the current zone.
       real X,Y,Z   ! coordinate in space (m)
       integer NSUR ! number of surfaces in the zone

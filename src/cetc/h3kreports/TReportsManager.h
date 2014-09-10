@@ -222,6 +222,11 @@ class TReportsManager
       bool ToggleConfig(std::string cParam);
 
       /**
+      * Report an on-off configuration parameter
+      */
+      bool ReportBoolConfig(std::string cParam);
+
+      /**
       * Update configuration file with new options
       */
       void UpdateConfigFile();
@@ -234,7 +239,17 @@ class TReportsManager
        * Return the current status of h3k output file name (enabled/disabled)
        */
       bool UseResFilenameRoot();
-    
+
+      /**
+       * Return the current status of h3k output zone names (enabled/disabled)
+       */
+      bool UseZoneNames();
+
+      /**
+       * Return the current status of h3k output surface names (enabled/disabled)
+       */
+      bool UseSurfaceNames();
+
       /**
        * set CSV file name string
        */
@@ -344,6 +359,8 @@ class TReportsManager
       bool bSortOutput;
       bool bIndexDatabase;
       bool bUseResFilenameRoot;
+      bool bUseZoneNames;
+      bool bUseSurfaceNames;
 
       bool bStyleSheetGood;
       bool bLinkStyleSheet;

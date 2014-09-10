@@ -356,7 +356,9 @@ C.....Local variables
       parameter ( SBC=56.7E-9 )
 
 C.....DECLARATIONS for H3Kreporting object
-      CHARACTER*2   cZone_Chars, cSurf_Chars, cNode_Chars
+      CHARACTER*12 cZone_Chars   ! zname(MCOM)
+      Character*12 cSurf_Chars   ! sname(MCOM,MS)
+      character*2  cNode_Chars
 
       CHARACTER*128 ZONE_LABEL
 
@@ -648,14 +650,17 @@ C.......the so called inward flowing fraction (IFF).
 
       endif reset_building_totals
 
-
-C.....Pad zone index to 'XX'
-      if ( iZone .gt. 9 ) then
-         write (cZone_Chars,'(I2)') iZone
+C.....Switch for zone name output here
+      if (ReportBoolConfig("use_zonenames")) then
+        write (cZone_Chars,'(A)') zname(iZone)(1:lnzname(iZone))
       else
-        write (cZone_Chars,'(A,I1)') '0', iZone
-      endif
-
+C.......Pad zone index to 'XX'
+        if ( iZone .gt. 9 ) then
+           write (cZone_Chars,'(A,I2)') 'zone_',iZone
+        else
+           write (cZone_Chars,'(A,I1)') 'zone_0',iZone
+        endif
+      endif ! use_zonenames
 
 C----------------------------------------------------------------------
 C.....Determine control function for current zone.
@@ -812,14 +817,18 @@ C-----------------------------------------------------------------------
 
       zone_surface_loop: do iSurface = 1, nzsur(iZone)
 
+C.....Switch for surface name output here
+      if (ReportBoolConfig ("use_surfacenames")) then
+        write (cSurf_Chars,'(A)')
+     &          sname(iZone,iSurface)(1:lnsname(iZone,iSurface))
+      else
 C.......Pad surface index to 'XX'
         if ( iSurface .gt. 9 ) then
-          write (cSurf_Chars,'(I2)') iSurface
+          write (cSurf_Chars,'(A,I2)') 'surface_',iSurface
         else
-          write (cSurf_Chars,'(A,I1)') '0', iSurface
+          write (cSurf_Chars,'(A,I1)') 'surface_0',iSurface
         endif
-
-
+      endif ! use_surfacenames
 
 C-----------------------------------------------------------------------
 C       Report total short wave radiation on this surface.
@@ -2118,11 +2127,18 @@ C.......contributions overlap in functionality, and they should
 C.......be almagamated. Alex has adopted a slightly more efficient
 C.......method of writing out the variable names, which the code
 C.......below should also make use of.
-         if ( iSurface .gt. 9 ) then
-            write(cSurf_Chars, '(I2)') iSurface
-         else
-            write(cSurf_Chars, '(A,I1)') '0', iSurface
-         endif
+C.......Switch for surface name output here
+        if (ReportBoolConfig ("use_surfacenames")) then
+          write (cSurf_Chars,'(A)')
+     &            sname(iZone,iSurface)(1:lnsname(iZone,iSurface))
+        else
+C.........Pad surface index to 'XX'
+          if ( iSurface .gt. 9 ) then
+            write (cSurf_Chars,'(A,I2)') 'surface_',iSurface
+          else
+            write (cSurf_Chars,'(A,I1)') 'surface_0',iSurface
+          endif
+        endif ! use_surfacenames
 
 C........Surface temperature
 C........->Report data
@@ -3558,13 +3574,13 @@ C.....is handy for testing
       do iElec_node = 1, nenod
 
          if (iElec_node .le. 9) then
-            WRITE (node_num, '(A,I1);')
+            WRITE (node_num, '(A,I1)')
      &           '00', iElec_node
          elseif(iElec_node .le. 99) then
-            WRITE (node_num, '(A,I2);')
+            WRITE (node_num, '(A,I2)')
      &           '0', iElec_node
          else
-            WRITE (node_num, '(I3);')
+            WRITE (node_num, '(I3)')
      &           iElec_node
          endif
 
@@ -3990,11 +4006,11 @@ C.........Loop through all interconnections in a flow network
             if (NODPS(jj) .eq. ii) THEN ! only look for positive side conn. of cur. node
                i_neg = NODNE(jj) ! the node on the other side of the conn.
 
-               write(Connect_Name,'(A,A,A,A,A,A)')
+               write(Connect_Name,'(A,A,A,A,A)')
      &             NDNAM(ii)(1:NDNAM_len),'->',
      &             NDNAM(i_neg)(1:LNBLNK(NDNAM(i_neg))),
-     &             ' (via ',
-     &             CMNAM(ITPCON(jj))(1:LNBLNK(CMNAM(ITPCON(jj)))),')'
+     &             '_via_',
+     &             CMNAM(ITPCON(jj))(1:LNBLNK(CMNAM(ITPCON(jj))))
 
                connect_len = LNBLNK(Connect_name)
        ! pressure drop between nodes of connection ***********************
