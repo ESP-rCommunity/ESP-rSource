@@ -103,15 +103,21 @@ C exist, confirm with user that this is to hold a new description.
       IF(IER.NE.0) GOTO 20
       write(currentfile,'(a)') LAPROB(1:lnblnk(LAPROB))
 
-C If the first record does not contain valid data then
-C file is regarded as being empty.
-      CALL STRIPC(IFPRB,OUTSTR,0,ND,1,'mass file line 1',IER)
-      IF(IER.NE.0)RETURN
-      K=0
-      CALL EGETWI(OUTSTR,K,NNOD,0,MNOD,'F','number of nodes',IER)
-      CALL EGETWI(OUTSTR,K,NCMP,0,MCMP,'F','number of component',IER)
-      CALL EGETWI(OUTSTR,K,NCNN,0,MCNN,'F','number of connection',IER)
-      IF(IER.EQ.1)GOTO 20
+C Read the file header and check for first-line tag. If 4 items
+C then an older file so rewind the file and call emfread.
+      CALL STRIPC(IFPRB,OUTSTR,99,ND,0,'1st line of file',IER)
+      IF(ND.GE.4)THEN
+        K=0
+        CALL EGETWI(OUTSTR,K,NNOD,0,MNOD,'F','number of nodes',IER)
+        CALL EGETWI(OUTSTR,K,NCMP,0,MCMP,'F','number of component',IER)
+        CALL EGETWI(OUTSTR,K,NCNN,0,MCNN,'F','number of connection',IER)
+        IF(IER.EQ.1)GOTO 20
+        IAIRN=1  ! indicate legacy file
+      ELSE
+
+C It is probably a graphic flow description.
+        IAIRN=2  ! indicate graphic file
+      ENDIF
 
 C Assign wind pressure distribution file and read NPRE. If for some
 C reason IAPRES is still zero then set to 11.

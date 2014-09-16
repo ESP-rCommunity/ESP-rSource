@@ -878,6 +878,11 @@ void esymbol_(x,y,sym,size)
     case 32 : 		/* dot 2 pix wide, 2 pix high */
       drawswl(ix-1,iy-1,ix+1,iy-1);
       drawswl(ix-1,iy,ix+1,iy); break;
+    case 33 : 		/* dot 4 pix wide, 4 pix high */
+      drawswl(ix-2,iy-2,ix+2,iy-2);
+      drawswl(ix-2,iy-1,ix+2,iy-1);
+      drawswl(ix-2,iy,ix+2,iy);
+      drawswl(ix-2,iy+1,ix+2,iy+1); break;
     default : 		/* big dot 2 pix wide, 3 pix high */
       drawswl(ix-1,iy-1,ix+1,iy-1);
       drawswl(ix-1,iy,ix+1,iy);

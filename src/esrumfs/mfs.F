@@ -93,6 +93,8 @@ C Defaults.
 
 C Activation of connections
       COMMON/ACT/ACTCNN(MCNN)
+      character*72 LAPROB
+      common/AFN/IAIRN,LAPROB,ICAAS(MCOM)
 
 C Once per hour storage of results, averaged over that hour.
       common/c6/indcfg
@@ -120,6 +122,7 @@ C Name of current application
       integer iglib   ! if 1 then X11, if 2 then GTK, if 3 then text only.
       integer IWM     ! for radio button
       integer NITMS,INO ! max items and current menu item
+      integer lnafn   ! length of flow network file name
 
 #ifdef OSI
       integer iigl,iigr,iigt,iigb,iigw,iigwh
@@ -152,6 +155,7 @@ C Initialize global common data.
       IDAYF=0
       IDAYL=0
       IAPRES=11
+      LAPROB = '  '  ! clear name of flow network
 
       cAppName = 'mfs'
 
@@ -172,6 +176,19 @@ C Export (grtool) file information.
       iuj = 20
       delim='-'
       call parpsf(MODL,iappw,iappx,iappy,inf)
+
+C If the command line file name something other than UNKNOWN
+C remember it.
+      lnafn = lnblnk(inf)
+      if(inf(1:4).ne.'UNKN')then
+        if(lnafn.le.72)then
+          write(LAPROB,'(a)')inf(1:lnafn)
+        else
+          write(LAPROB,'(a)')inf(1:72)
+          call usrmsg('The file name passed in command line was',
+     &      'greater than 72 characters. Might be a problem.','W')
+        endif
+      endif
 
 C File unit numbers.
       IFPRB=10
@@ -334,9 +351,15 @@ C All subsequent tstamp messages will be appended to root journal.
         call tstamp('>',outs)
       endif
 
-C Scan the defaults file for default configuration.
+C Scan the defaults file for default pressure and weather.
 C Make temporary use of file unit IUA.
  902  call escdef(IUA,IER)
+
+C Use defaults for pressure coef and weather if they are available.
+      if(ier.eq.0)then
+        write(LAPRES,'(a)') DAPRES(1:lnblnk(DAPRES))
+        write(LCLIM,'(a)')  DCLIM(1:lnblnk(DCLIM))
+      endif
 
 C Fill valid component type arrays
 C Set defaults for iteration parameters, Pstack calculation model,

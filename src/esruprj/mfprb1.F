@@ -52,7 +52,19 @@ C LPRFDB,IPRODB (for event profile database)
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/MFLWPR/NPRE,FPRE(MPOS,MPRD)
       COMMON/AFN/IAIRN,LAPROB,ICAAS(MCOM)
-      
+
+C To signal to MFWRIT that globals are available from graphic network.
+C Currently set .FALSE.
+      logical haveglobal
+      COMMON/MFLOW11/haveglobal
+ 
+C Simulation preferences as per simcon.F in esrubps, some of which filled via
+C in the menu below.
+C << work in progress >>
+C      COMMON/MFSINC/MFBSNC
+C      COMMON/MFCALC/IPSMOD,MSLVTP
+C      COMMON/MFLITR/MAXITF,FERREL,FERMFL,PMAX,STEFFR,MFTRAC,ITER,IOK
+     
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
       COMMON/MFLOW1/NNOD,NCMP,NCNN
@@ -127,7 +139,7 @@ C unix and non-unix machine types).
       LTMP=LAPROB
       helptopic='flow_network_file_name'
       call gethelptext(helpinsub,helptopic,nbhelp)
-      CALL EASKSCMD(LTMP,' Flow network file ?',
+      CALL EASKSCMD(LTMP,'Flow network file ?',
      &  ' ','dereference',clkok,72,' ','flow network file',IER,nbhelp)
       call usrmsg(' ',' ','- ')
 
@@ -136,10 +148,7 @@ C blank and update the configuration file.
       if(clkok)then
         if(cfgok.and.(.NOT.browse))then
           LAPROB='  '
-          NNOD=0
-          NCMP=0
-          NCNN=0
-          IAIRN=0
+          NNOD=0; NCMP=0; NCNN=0; IAIRN=0
           do 88 i=1,ncomp
             ICAAS(i)=0
   88      continue
@@ -367,8 +376,7 @@ C Transfer data to fluid flow file and return to main menu.
           CALL EFOPSEQ(IUM,LAPROB,4,IER)
           IF(IER.NE.0)goto 78
 
-C << Note need a check so network flow file data is not written
-C << to a graphic network flow file.
+          haveglobal=.FALSE.  ! global preferences not yet available
           CALL MFWRIT(IUM)
           CALL ERPFREE(IUM,ISTAT)
         ENDIF
@@ -467,8 +475,7 @@ C Free the file after writing it.
         CALL EFOPSEQ(IUM,LAPROB,4,IER)
         IF(IER.NE.0)goto 80
 
-C << Note need a check so network flow file data is not written
-C << to a graphic network flow file.
+        haveglobal=.FALSE.  ! global preferences not yet available
         CALL MFWRIT(IUM)
         CALL ERPFREE(IUM,ISTAT)
         OUTS=' '
@@ -500,8 +507,7 @@ C Ask if changes need to be saved
           CALL EFOPSEQ(IUM,LAPROB,4,IER)
           IF(IER.NE.0)goto 81
 
-C << Note need a check so network flow file data is not written
-C << to a graphic network flow file.
+          haveglobal=.FALSE.  ! global preferences not yet available
           CALL MFWRIT(IUM)
           CALL ERPFREE(IUM,ISTAT)
           OUTS=' '

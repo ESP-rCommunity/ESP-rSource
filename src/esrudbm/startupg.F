@@ -318,10 +318,6 @@ C Caputre text buffer to a file, capextf is in wwlib.c
         CALL EGETW(OUTSTR,K,cadfmt,'W','cad fnt',IER)
         write(outs,'(a,a,2x,a,2x,a)')' Local CAD: ',cadlbl,cadexe,cadfmt
         if(itrc.gt.0)call edisp(iuout,outs)
-      elseif(WORD(1:13).eq.'*tutorial_app')then
-
-C Tutorial application depreciated.
-        continue
       elseif(WORD(1:8).eq.'*journal')then
 
 C Turn journaling on/off.
@@ -1461,7 +1457,7 @@ C Display detailed build information and then quit
         elseif(argument(1:4).eq.'-act')then
           i=i+1
           call getarg(i,act)
-	  if(act(1:6).eq.'rotate')then
+          if(act(1:6).eq.'rotate')then
             i=i+1
             call getarg(i,argument)
             read(argument,*,IOSTAT=IOS,ERR=2)data1
@@ -1481,7 +1477,7 @@ C Display detailed build information and then quit
             i=i+1
             call getarg(i,argument)
             read(argument,*,IOSTAT=IOS,ERR=2)data3
-	  endif
+          endif
         endif
         goto 41
 

@@ -753,7 +753,7 @@ C      common/imagf/imgfmt(MIMG),imgfoc(MIMG),limgfil(MIMG),imgdoc(MIMG)
 
 C Strings for dos version of rootp and upath and a double quote.
       character rootpdos*84,upathdos*72,rootpath*72,modelroot*72
-      character dq*1,fs*1,thecfgis*72
+      character dq*1,fs*1,thecfgis*72,cfgcfg*42
       character lltmp*144,lguess*144,dguess*144
       logical XST,unixok
       integer NCOG,ICOG,NCO,ICO,icod ! max items and current menu item
@@ -829,6 +829,7 @@ C Clear group related help and length of menu.
       inl=0
       igrsel=0
       icod=0
+      cfgcfg='  '
 
  12   CALL STRIPC(iexfil,OUTSTR,0,ND,0,'group id',IER)
       if(ier.ne.0)goto 901
@@ -1202,6 +1203,10 @@ C folder in the path of the exemplar.
                     endif
   342             continue
   343             continue
+
+C The balance of the exemplar string after the cfg_root.
+                  write(cfgcfg,'(a)') exemplar(ilex+lcfgr:lex)
+                  write(6,*) cfgcfg,' ',ilex+lcfgr,lex
                   call isunix(unixok)
                   if(unixok)then
 
@@ -1221,12 +1226,13 @@ C folder does not exist then need to create it.
                     call pausems(100)
 
 C Make up the command to copy from the exemplar source folder to the
-C users defined destination.
+C users defined destination. If we add cfgcfg to lltmp we should have
+C the folder where the model cfg file is located.
                     write(doit,'(5a)') 'cp -r ',rootp(1:lnblnk(rootp)),
      &                fs,'*  ',lltmp(1:lnblnk(lltmp))
                   else
 
-C If lnblankrp or lnblankup is one then there are no spaces in the 
+C Non-unix, if lnblankrp or lnblankup is one then there are no spaces in the 
 C string so double quotes are not required.  Change any '/'
 C in rootp and upath to '\'. 
                     rootpdos=' '
@@ -1310,7 +1316,7 @@ C There are no blanks in either source or destination strings.
      &                  rootpdos(1:lnrp),fs,'*  ',
      &                  upathdos(1:lnup),fs
                     endif
-                  endif
+                  endif  ! of non-unix
 
 C If trace is verbose echo the command.
                   if(itrc.gt.0)then
@@ -1321,14 +1327,11 @@ C If trace is verbose echo the command.
                   call runit(doit,'-')
                   if(unixok)then
 
-C If Unix-like then append tail of exemplar string to the users selected
-C path to get the new exemplar name.  Since this has already been
-C taken into account in the users suggested folder location we need
-C to add lcfgr from ilex to get the correct place to write
-C the remaining path characters into the file name.
-                    ilex=ilex+lcfgr
+C If Unix-like then append tail of exemplar string (cfgcfg) to the users selected
+C path to get the new exemplar name.
                     write(exemplar,'(2a)') lltmp(1:lnblnk(lltmp)),
-     &                exemplar(ilex:lnblnk(exemplar))
+     &                cfgcfg(1:lnblnk(cfgcfg))
+                    write(6,*) exemplar
                   else
 
 C If Windows based then append cfg & cfg file string to the path to make

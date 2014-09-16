@@ -53,6 +53,9 @@ C esprdbfile.h supplies the following:
 C LAPRES,IAPRES (for window pressure databases)
 C LPRFDB,IPRODB (for event profile database)
 
+C espriou.h provides current file.
+#include "espriou.h"
+
 C Function definition
       INTEGER :: lnblnk
       
@@ -93,6 +96,8 @@ C Plant network.
 C Defaults.
       character*96 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF
       common/DEFLT2/DFCFG,DFCTL,DEFRLB,DAFRES,DAPROB,DPNF
+      character DFCFD*72,DECMPDBFL*72,DICONDBFL*72
+      COMMON/DEFLT3/DFCFD,DECMPDBFL,DICONDBFL
 
 C Uncertainty.
       COMMON/UA1/LUALF,LCNG(MNCNG),LLOC(MNIL)
@@ -114,36 +119,23 @@ C Uncertainty.
       COMMON/NWKVEW/SCALF,VIEWCEN(3),VIEWLIM(6),IVIEW
       REAL :: SCALF,VIEWCEN,VIEWLIM
       INTEGER :: IVIEW
-      COMMON/NWKSTR/NWKNAM,NWKDSC,NWKFLNAM,NWKTYPSTR(MNWKTYP)
-      COMMON/ICONDBNAM/ICONDBFL      
-      COMMON/DEFLT3/DFCFD,DECMPDBFL,DICONDBFL
+      COMMON/NWKSTR/NWKNAM,NWKDSC,NWKTYPSTR(MNWKTYP)
+      CHARACTER NWKNAM*72,NWKDSC*72,NWKTYPSTR*12
+      COMMON/ICONDBNAM/ICONDBFL
+      character ICONDBFL*72
       COMMON/NWKTYP/INWKTYP,vergnf
+      INTEGER :: inwktyp
       REAL :: vergnf
       COMMON/NWKGRDL/GON,SON
-      COMMON/NWKICN/NNICN,ICONTP(MICN),XYZICON(MICN,3),NICONATR(MICN),
-     & ATRICN(MICN,MIATRB,3),ATRTAG(MICN,MIATRB,5),ATRMENU(MICN,MIATRB),
-     & NCONP(MICN),CONCP(MICN,MCNP,2),ICNCT(MICN,MCNP),
-     & VCICON(MICN,MICNV,3),IVEICN(MICN,MICNE,5),NIVC(MICN),
-     & NIVE(MICN),NIVD(MICN),IVDOT(MICN,MICND,4),NIVA(MICN),
-     & IVARC(MICN,MICND,7),NIVL(MICN),IVLBL(MICN,MICND,3),NIVT(MICN)
-      INTEGER :: NNICN,ICONTP,NICONATR,NCONP,ICNCT,IVEICN,NIVC,NIVE,NIVD
-      INTEGER :: IVDOT,NIVA,IVARC,NIVL,IVLBL,NIVT
-      REAL :: XYZICON,CONCP,VCICON
+      LOGICAL GON,SON
      
-      COMMON/NWKCON/NICNN,ICNS(MNCNN),ICNE(MNCNN),ICNNT(MNCNN),
-     & ICNSP(MNCNN),ICNEP(MNCNN),CNWNP(MNCNN,MCIP,3),
-     & NCONWP(MNCNN),idatrdom(MNCNN),ddtagatr(MNCNN,MIATRB,5),
-     & ddatrib(MNCNN,MIATRB,3),ddmenuatr(MNCNN,MIATRB)
-      INTEGER :: NICNN,ICNS,ICNE,ICNNT,ICNSP,ICNEP,NCONWP,idatrdom
-      REAL ::CNWNP
-
       common/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,CFCDBOK
       COMMON/CONTM0/NCONTM,NOCNTM,CONTMNAM(MCONTM)
       INTEGER :: NCONTM,NOCNTM
       logical DOK,OK,CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,CFCDBOK
       logical MODIFY,MODLEN,MODBND,browse
       logical xst,clkok,havefile,unixok
-      LOGICAL GON,SON,concat,remote
+      LOGICAL concat,remote
       integer iglib   ! to test for X11 interface
 
       dimension ITEMS(30)
@@ -158,11 +150,7 @@ C Uncertainty.
       character selres*72,entflnam*72
       character DEPRE*40,dstmp*24,tab*1,outsn*124,outsd*124
       character CXITM*48,outs*124,fs*1
-      CHARACTER*72 NWKNAM,NWKDSC,NWKFLNAM,ICONDBFL
-      character ATRTAG*12,ATRMENU*32,ATRICN*12,NWKTYPSTR*12
-      character ddtagatr*12,ddmenuatr*32,ddatrib*12
       character CONTMNAM*12
-      character*72 DFCFD,DECMPDBFL,DICONDBFL
       character ltpath*72,filen*72
       character t144*144    ! for passing to erprcdb
       integer ictl
@@ -173,7 +161,7 @@ C Uncertainty.
       
       INTEGER :: itrc,itru,i,ic,icc,istat
       INTEGER :: iacc,icfoc,iclkok,idindcfg
-      INTEGER :: ientxist,iier,im,ino,inwktyp,ios,ipedit,ipass,is
+      INTEGER :: ientxist,iier,im,ino,ios,ipedit,ipass,is
       INTEGER :: isindcfg,iuf,ium,iuo,iv,iver,iw,iz
       INTEGER :: iser,lenlfil,ln,ltrf,nets,nitems
       REAL :: szlow,szcog,szhigh
@@ -266,18 +254,17 @@ C are active.
         ITEMS(8)='d plant & systems            '
       endif
 
-C Check flags for air flow type
-      IF ((iairn.lt.1).AND.(iAIM2.EQ.0)) THEN
+C Check flags for air flow type. << How does the reference to iAIM2
+C work? if iAIM2=0 then the next line tests for iAIM2=1
+      IF (iairn.lt.1) THEN
         IF (iAIM2.EQ.1) THEN
           ITEMS(9)='e empirical air infiltration'
         ELSE 
           ITEMS(9)='e air flow                  '
         ENDIF
       ELSE
-        if(iairn.eq.1)then
-          ITEMS(9)='e network flow (menu)       '
-        elseif(iairn.eq.2)then
-          ITEMS(9)='e network flow (graphic)    '
+        if(iairn.ge.1)then
+          ITEMS(9)='e network flow (defined)       '
         else
           ITEMS(9)='e network flow              '
         endif
@@ -683,16 +670,46 @@ C If an error has been encountered then reset the configuration type.
       ELSEIF(INO.EQ.9)THEN
 
 C Flow description.
+ 
+C An air flow network is either an existing legacy file or a graphic 
+C network file. If none exists create via graphics or if user asks 
+C to create a new network.
         helptopic='submenu_flow_options'
         call gethelptext(helpinsub,helptopic,nbhelp)
-        call EASKATOG('Define air flow via:',' ',
-     &    'empirical air infiltration model','schedule',
-     &     'flow network (menu)','flow network (graphic)',
-     &    'cancel',' ',' ',IW,nbhelp)
+        if(IAIRN.eq.0)then
+          call EASKABCD('Define air flow via:',' ',
+     &      'empirical air infiltration model','via schedule',
+     &      'flow network','cancel',IW,nbhelp)
+        elseif(IAIRN.eq.1)then
+          XST=.false.
+          call FINDFIL(LAPROB,XST)
+          if(XST) then
+            call edisp(iuout,' ')
+            call edisp(iuout,'The current legacy flow network is:')
+            call edisp(iuout,LAPROB)
+          endif
+          call EASKATOG('Define air flow via:',' ',
+     &      'empirical air infiltration model','via schedule',
+     &      'flow network (defined)','new flow network',
+     &      'cancel',' ',' ',IW,nbhelp)
+        elseif(IAIRN.eq.2)then
+          XST=.false.
+          call FINDFIL(LAPROB,XST)
+          if(XST) then
+            call edisp(iuout,' ')
+            call edisp(iuout,'The current flow network is:')
+            call edisp(iuout,LAPROB)
+          endif
+          call EASKATOG('Define air flow via:',' ',
+     &      'empirical air infiltration model','via schedule',
+     &      'flow network (defined)','new flow network',
+     &      'cancel',' ',' ',IW,nbhelp)
+        endif
 
-C Use AIM2 interface     
+C Use AIM2 interface and jump back.     
         airflowtype: IF(IW.EQ.1)THEN
           CALL AIM2_Interface()
+          goto 3
         ELSE IF(IW.EQ.2)THEN airflowtype 
 
 C Operation file creation and editing. Set IVER to zero to signal
@@ -709,232 +726,311 @@ C Loop back and see if another zone is requested.
           GOTO 250
         ELSEIF(IW.EQ.3)THEN airflowtype
           call tstamp('>','PRJ: enter fluid network')
-          IAIRN=1
-          call MFPROB(IER)
+          if(IAIRN.eq.0)then  ! none defined ask user text or graphic
+            iacc=2
+            CALL EASKABC('Descriptive method to employ:',' ',
+     &        'menus & lists','graphic tool','continue',iacc,nbhelp)
+            if(iacc.eq.1)then
+              IAIRN=1
+              LAPROB='UNKN'
+              call MFPROB(IER)
+              goto 3   ! jump back
+            elseif(iacc.eq.2)then
+              IAIRN=2
+              LAPROB='UNKN'
+              continue
+            else
+              goto 3   ! jump back
+            endif
+          elseif(IAIRN.eq.1)then
+            call MFPROB(IER)
+            goto 3   ! jump back
+          elseif(IAIRN.eq.2)then
+            continue
+          endif
         elseif(IW.eq.4)then airflowtype
 
-C Guess graphic network flow file. If file has yet to be named then base
-C it on cfgroot and place it in the netpth folder (differienciate between
-C unix and non-unix machine types).
-          IAIRN=2
-          if(LAPROB(1:2).eq.'  '.or.LAPROB(1:4).eq.'UNKN')then
-            if(unixok)then
-              if(netpth(1:2).eq.'  '.or.netpth(1:2).eq.'./')then
-                WRITE(LAPROB,'(2a)')cfgroot(1:lnblnk(cfgroot)),'.gnf'
-              else
-                WRITE(LAPROB,'(4a)') netpth(1:lnblnk(netpth)),fs,
-     &          cfgroot(1:lnblnk(cfgroot)),'.gnf'
-              endif
+C User asked for a new flow network, confirm their approach.
+          iacc=2
+          CALL EASKABC('Descriptive method to employ:',' ',
+     &      'menus & lists','graphic tool','continue',iacc,nbhelp)
+          if(iacc.eq.1)then
+
+C There might already be an existing LAPROB, the new name needs
+C not to clash with it so make a  *m.afn variant.
+            if(LAPROB(1:2).eq.'  '.or.LAPROB(1:4).eq.'UNKN')then
+              IAIRN=1
+              LAPROB='UNKN'
             else
-              if(netpth(1:2).eq.'  '.or.(ichar(netpth(1:1)).eq.46
-     &          .and.ichar(netpth(2:2)).eq.92))then
-                WRITE(LAPROB,'(2a)')cfgroot(1:lnblnk(cfgroot)),'.gnf'
-              else
-                WRITE(LAPROB,'(4a)') netpth(1:lnblnk(netpth)),fs,
-     &            cfgroot(1:lnblnk(cfgroot)),'.gnf'
+              lenlfil=lnblnk(LAPROB)
+              if(LAPROB(lenlfil-3:lenlfil).eq.'.afn')then
+                write(ltmp,'(2a)',iostat=ios,err=13)
+     &            LAPROB(1:lenlfil-4),'m.afn'
+                LAPROB=ltmp
               endif
             endif
+            call MFPROB(IER)
+            goto 3   ! jump back after defining network
+          elseif(iacc.eq.2)then
+
+C There might already be an existing LAPROB, the new name needs
+C not to clash with it so make a *g.afn variant.
+            if(LAPROB(1:2).eq.'  '.or.LAPROB(1:4).eq.'UNKN')then
+              IAIRN=2
+              LAPROB='UNKN'
+            else
+              lenlfil=lnblnk(LAPROB)
+              if(LAPROB(lenlfil-3:lenlfil).eq.'.afn')then
+                write(ltmp,'(2a)',iostat=ios,err=13)
+     &            LAPROB(1:lenlfil-4),'g.afn'
+                LAPROB=ltmp
+              endif
+            endif
+          else
+            goto 3   ! jump back
           endif
-          LFIL=LAPROB
+        ELSEIF(IW.EQ.5)THEN airflowtype
+          GOTO 3     ! jump back
+        END IF airflowtype
+
+C If LAPROB not known or a new one requested setu graphic network flow file based
+C ion cfgroot and place it in the netpth folder (differienciate between
+C unix and non-unix machine types) and generate matching name for the summary
+C file that enet uses.
+        if(LAPROB(1:2).eq.'  '.or.LAPROB(1:4).eq.'UNKN')then
+          if(unixok)then
+            if(netpth(1:2).eq.'  '.or.netpth(1:2).eq.'./')then
+              WRITE(LAPROB,'(2a)')cfgroot(1:lnblnk(cfgroot)),'.afn'
+              WRITE(ltmp,'(2a)')cfgroot(1:lnblnk(cfgroot)),'.summary'
+            else
+              WRITE(LAPROB,'(4a)') netpth(1:lnblnk(netpth)),fs,
+     &          cfgroot(1:lnblnk(cfgroot)),'.afn'
+              WRITE(ltmp,'(4a)') netpth(1:lnblnk(netpth)),fs,
+     &          cfgroot(1:lnblnk(cfgroot)),'.summary'
+            endif
+          else
+            if(netpth(1:2).eq.'  '.or.(ichar(netpth(1:1)).eq.46.and.
+     &         ichar(netpth(2:2)).eq.92))then
+              WRITE(LAPROB,'(2a)')cfgroot(1:lnblnk(cfgroot)),'.afn'
+              WRITE(ltmp,'(2a)')cfgroot(1:lnblnk(cfgroot)),'.summary'
+            else
+              WRITE(LAPROB,'(4a)') netpth(1:lnblnk(netpth)),fs,
+     &          cfgroot(1:lnblnk(cfgroot)),'.afn'
+              WRITE(ltmp,'(4a)') netpth(1:lnblnk(netpth)),fs,
+     &          cfgroot(1:lnblnk(cfgroot)),'.summary'
+            endif
+          endif
+          write(6,*) 'LAPROB ',LAPROB(1:lnblnk(LAPROB))
+          write(6,*) 'ltmp ',ltmp(1:lnblnk(ltmp))
+        else
+
+C Non-blank name. Set a matching .summary file.
+          lenlfil=lnblnk(LAPROB)
+          if(LAPROB(lenlfil-3:lenlfil).eq.'.gnf')then
+            write(ltmp,'(2a)',iostat=ios,err=13)
+     &        LAPROB(1:lenlfil-3),'summary'
+          elseif(LAPROB(lenlfil-3:lenlfil).eq.'.afn')then
+            write(ltmp,'(2a)',iostat=ios,err=13)
+     &        LAPROB(1:lenlfil-3),'summary'
+          else
+            write(ltmp,'(2a)',iostat=ios,err=13)
+     &        LAPROB(1:lenlfil),'.summary'
+          endif
+          write(6,*) 'LAPROB ',LAPROB(1:lnblnk(LAPROB))
+          write(6,*) 'ltmp is',ltmp(1:lnblnk(ltmp))
+        endif
 
 C Graphic network. Create a summary file of zone domain information
-C for `net` to use. Begin by reading current pressure database by
+C for `enet` to use. Begin by reading current pressure database by
 C passing a black string to erprcdeb. Write to unit number 42.
-          call tstamp('>','PRJ: export to graphic agent')
-          t144='  '
-          CALL ERPRCDB(t144,0,3,IER)
-          if (ier.ne.0) THEN
-            CALL EDISP(IUOUT,
-     &        'Error opening pressure coefficients db!.')
-            call edisp(iuout,' ')
-            goto 3
-          endif 
-          lenlfil=lnblnk(LFIL)
-          write(ltmp,'(2a)',iostat=ios,err=13)
-     &      LFIL(1:lenlfil-4),'.summary'
-          CALL EFOPSEQ(42,ltmp,4,IER)
-          tab=','
-          call dstamp(dstmp)
-          write(42,'(3a)',iostat=ios,err=13) '*Synopsis',tab,
-     &      'for_flow'
-          write(42,'(3a)',iostat=ios,err=13) '*Date',tab,dstmp
-          write(42,'(3A)',iostat=ios,err=13) '*cfg',tab,
-     &      LCFGF(1:lnblnk(LCFGF))
-          write(42,'(2a,i3)',iostat=ios,err=13) '*Pressures',tab,
-     &      NPRE
-          do 201 IM=1,NPRE
-            write(42,'(a)') DEPRE(IM)
-  201     continue
-          write(42,'(a)',iostat=ios,err=13) '*End_Pressures'
-          write(42,'(2a,i3,a)',iostat=ios,err=13) '*Zones',tab,
-     &       NCOMP,' # name, volume, centre @ XYZ'
-          do 97 IZ=1,NCOMP
-            write(outsn,'(a,1x,f7.1,3f8.3)') 
+        call tstamp('>','PRJ: export to graphic agent')
+        t144='  '
+        CALL ERPRCDB(t144,0,3,IER)
+        if (ier.ne.0) THEN
+          CALL EDISP(IUOUT,
+     &      'Error opening pressure coefficients db!.')
+          call edisp(iuout,' ')
+          goto 3
+        endif
+
+C Start writing to the .summary file. Silently overwrite any existing
+C file by that name.
+        write(currentfile,'(a)') ltmp(1:lnblnk(ltmp))
+        CALL EFOPSEQ(42,ltmp,3,IER)
+        tab=','
+        call dstamp(dstmp)
+        write(42,'(3a)',iostat=ios,err=13) '*Synopsis',tab,
+     &    'for_flow'
+        write(42,'(3a)',iostat=ios,err=13) '*Date',tab,dstmp
+        write(42,'(3A)',iostat=ios,err=13) '*cfg',tab,
+     &    LCFGF(1:lnblnk(LCFGF))
+        write(42,'(3A)',iostat=ios,err=13) '*afn',tab,
+     &    LAPROB(1:lnblnk(LAPROB))
+        write(42,'(2a,i3)',iostat=ios,err=13) '*Pressures',tab,
+     &    NPRE
+        do 201 IM=1,NPRE
+          write(42,'(a)') DEPRE(IM)
+  201   continue
+        write(42,'(a)',iostat=ios,err=13) '*End_Pressures'
+        write(42,'(2a,i3,a)',iostat=ios,err=13) '*Zones',tab,
+     &    NCOMP,' # name, volume, centre @ XYZ'
+        do 97 IZ=1,NCOMP
+          write(outsn,'(a,1x,f7.1,3f8.3)') 
      &      zname(IZ),VOL(IZ),ZCOG(IZ,1),ZCOG(IZ,2),ZCOG(IZ,3)
-            call SDELIM(outsn,outsd,'C',IW)
-            write(42,'(a)') outsd(1:lnblnk(outsd))
-  97      continue
-          write(42,'(a)',iostat=ios,err=13) '*End_Zones'
+          call SDELIM(outsn,outsd,'C',IW)
+          write(42,'(a)') outsd(1:lnblnk(outsd))
+  97    continue
+        write(42,'(a)',iostat=ios,err=13) '*End_Zones'
 
 C Write surface attributes that might be of interest. Find
 C lowest and highest point and cog of surface.
-          write(42,'(2a,i4,2a)',iostat=ios,err=13) '*Surfaces',tab,NCON,
-     &      ' # connection, description, area, azimuth, elevation, ',
-     &      ' Z Min/COG/Max'
-          DO 930 IZ = 1,NCOMP
-            call georead(IUF,LGEOM(IZ),IZ,1,iuout,IER)
-            DO 931 IS = 1,NSUR
-              szlow= 1000.0
-              szcog= 0.0
-              szhigh= -1000.0
-              do 932 IV = 1, NVER(is)
-                if(Z(JVN(is,iv)).lt.szlow) szlow = Z(JVN(is,iv))
-                if(Z(JVN(is,iv)).gt.szhigh) szhigh = Z(JVN(is,iv))
-                szcog = szcog + Z(JVN(is,iv))
-  932         continue
-              szcog = szcog / real(nver(is))
-              icc=IZSTOCN(IZ,IS)
-              CALL CONXMENU(icc,CXITM)
-              write(outsn,'(a,1x,a,1x,6f9.3)',iostat=ios,err=13) 
-     &          zname(IZ),SSNAME(icc),SSNA(icc),SSPAZI(icc),
-     &          SSPELV(icc),szlow,szcog,szhigh
-              call SDELIM(outsn,outsd,'C',IW)
-              write(42,'(3a)',iostat=ios,err=13)
-     &          CXITM(1:lnblnk(CXITM)),tab,outsd(1:lnblnk(outsd))
- 931        continue
- 930      continue
-          write(42,'(a)',iostat=ios,err=13) '*End_Surfaces'
-          CALL ERPFREE(42,ios)
-          DFILE='network_flow.gnf'
-          CALL EASKS(LFIL,' ','Network graphics file?',72,
-     &      DFILE,'network file open',IER,nbhelp)
+        write(42,'(2a,i4,2a)',iostat=ios,err=13) '*Surfaces',tab,NCON,
+     &    ' # connection, description, area, azimuth, elevation, ',
+     &    ' Z Min/COG/Max'
+        DO 930 IZ = 1,NCOMP
+          call georead(IUF,LGEOM(IZ),IZ,1,iuout,IER)
+          DO 931 IS = 1,NSUR
+            szlow= 1000.0
+            szcog= 0.0
+            szhigh= -1000.0
+            do 932 IV = 1, NVER(is)
+              if(Z(JVN(is,iv)).lt.szlow) szlow = Z(JVN(is,iv))
+              if(Z(JVN(is,iv)).gt.szhigh) szhigh = Z(JVN(is,iv))
+              szcog = szcog + Z(JVN(is,iv))
+  932       continue
+            szcog = szcog / real(nver(is))
+            icc=IZSTOCN(IZ,IS)
+            CALL CONXMENU(icc,CXITM)
+            write(outsn,'(a,1x,a,1x,6f9.3)',iostat=ios,err=13) 
+     &        zname(IZ),SSNAME(icc),SSNA(icc),SSPAZI(icc),
+     &        SSPELV(icc),szlow,szcog,szhigh
+            call SDELIM(outsn,outsd,'C',IW)
+            write(42,'(3a)',iostat=ios,err=13)
+     &        CXITM(1:lnblnk(CXITM)),tab,outsd(1:lnblnk(outsd))
+ 931      continue
+ 930    continue
+        write(42,'(a)',iostat=ios,err=13) '*End_Surfaces'
+        CALL ERPFREE(42,ios)
 
-C Check if this file exists. If it does not fill a few of the
+C Check if graphic file exists. If it does not fill a few of the
 C graphic network commons and write out a minimal file for
 C a flow domain.
-          XST=.false.
-          call FINDFIL(LFIL,XST)
-          if(.not.xst) then
-            call usrmsg('Creating a NEW minimal graphic network',
-     &        'file for flow.','P')
-            write(NWKDSC,'(2a)') 'Flow network for ',
-     &        cfgroot(1:lnblnk(cfgroot))
-            INWKTYP=2
-            NWKTYPSTR(INWKTYP)='Flow'
-            ICONDBFL=DICONDBFL
-            IVIEW=1
+        XST=.false.
+        call FINDFIL(LAPROB,XST)
+        if(.not.xst) then
+          call usrmsg('Creating a NEW minimal graphic network',
+     &      'file for flow.','P')
+          write(NWKDSC,'(2a)') 'Flow network for ',
+     &      cfgroot(1:lnblnk(cfgroot))
+          INWKTYP=2
+          NWKTYPSTR(INWKTYP)='Flow'
+          ICONDBFL=DICONDBFL  ! set default icon file
+          IVIEW=1
+          VIEWCEN(1)=5.0; VIEWCEN(2)=5.0; VIEWCEN(3)=3.0
+          GRSPC(1)=0.5; GRSPC(2)=0.5; GRSPC(3)=1.0
+          SON=.true.
+          GON=.true.
+          NNICN=0; NICNN=0
+          IM=1
+          call NETWRITE(IM)
+        else
 
-C << TODO: take viewcen from wireframe view information. >>
-            VIEWCEN(1)=5.0
-            VIEWCEN(2)=5.0
-            VIEWCEN(3)=3.0
-            GRSPC(1)=0.5
-            GRSPC(2)=0.5
-            GRSPC(3)=1.0
-            SON=.true.
-            GON=.true.
-            NNICN=0
-            NICNN=0
-            IM=1
-            NWKFLNAM=LFIL
-            call NETWRITE(IM)
-          endif
+C The file exists continue.
+          continue
+        endif
 
-C append path to new command line depending on whether Unix or Dos.
-          call isunix(unixok)
-          if(unixok)then
-            call addpath(LFIL,longtfile,concat)
-          else
+C Append path to new command line depending on whether Unix or Dos.
+        call isunix(unixok)
+        if(unixok)then
+          call addpath(LAPROB,longtfile,concat)
+        else
 
 C If running on a non-unix machine see if there are spaces in the name
 C and change any / to \.
-            call addpath(LFIL,longtfile,concat)
-            call cmdfiledos(longtfile,longtfiledos,ier)
-            longtfile=' '
-            longtfile=longtfiledos
-          endif
+          call addpath(LAPROB,longtfile,concat)
+          call cmdfiledos(longtfile,longtfiledos,ier)
+          longtfile=' '
+          longtfile=longtfiledos
+        endif
 
-C Run the `net` module with graphic network file.
-          write(doit,'(2a)')'net -file ',longtfile(1:lnblnk(longtfile))
-          call runit(doit,'-')
+C Run the `net` module and pass it graphic network file.
+        write(doit,'(2a)')'enet -mode graphic -file ',
+     &    longtfile(1:lnblnk(longtfile))
+        call edisp(iuout,doit)
+        call runit(doit,'-')
 
-          call edisp(iuout,'You will be asked to confirm the name of')
-          call edisp(iuout,'the graphic flow network file produced by')
-          call edisp(iuout,'the `net` program.')
-          call edisp(iuout,' ')
-          if(LFIL(1:2).ne.'  '.and.LFIL(1:7).ne.'UNKNOWN')then
-            NWKFLNAM=LFIL
-          else
-            NWKFLNAM=DFILE
-          endif
-          if(IPRODB.eq.IFIL+6)then
-            IUM=IPRODB
-          else
-            IUM=IFIL+6
-          endif
+C On return from enet display a message
+        call edisp(iuout,'You will be asked to confirm the names of')
+        call edisp(iuout,'the text and graphic flow network files')
+        call edisp(iuout,'produced by the `enet` program.')
+        call edisp(iuout,' ')
+        if(IPRODB.eq.IFIL+6)then
+          IUM=IPRODB
+        else
+          IUM=IFIL+6
+        endif
 
 C Free file unit IUM, initiat network flow commons, read the graphic
 C network file (asking user the confirm name), convert into flow
 C network commons and list out those commons.
-          CALL ERPFREE(IUM,ISTAT)
-          CALL MFCDAT
-          CALL NETREAD(IUM,'R',IER)
-          CALL NETTOFLW(ier)
-          call mflist(iuout)
+        CALL ERPFREE(IUM,ISTAT)
+        CALL MFCDAT
+        CALL NETREAD(IUM,'R',IER)
+        if(ier.ne.0)then
+          write(6,*) 'error state on return from enet ',ier
+        endif
+        CALL NETTOFLW(ier)
+        if(ier.ne.0)then
+          write(6,*) 'error state on filling common blocks ',ier
+        endif
+        call mflist(iuout)
+
+C << TODO look at the attributes of the nodes to see
+C << if we can find a matching associated zone
 
 C Link nodes and zones.
-          DO 33 IZ=1,NCOMP
-            if(ICAAS(IZ).gt.0)then
-              write(outs,'(3A)')zname(IZ)(1:lnzname(IZ)),
-     &          'is currently linked to:',NDNAM(ICAAS(IZ))
-              CALL EASKABC(outs,' ','ok',
-     &          'select another','free link',iacc,nbhelp)
-              if(iacc.eq.1)then
-                goto 33
-              elseif(iacc.eq.2)then
-                IC=0
-                call ASKRNOD('available nodes','-',IC,IER)
-                ICAAS(IZ)=IC
-              else
-                ICAAS(IZ)=0
-              endif
+        DO 33 IZ=1,NCOMP
+          if(ICAAS(IZ).gt.0)then
+            write(outs,'(3A)')zname(IZ)(1:lnzname(IZ)),
+     &        ' is currently linked to: ',NDNAM(ICAAS(IZ))
+            CALL EASKABC(outs,' ','ok',
+     &        'select another','free link',iacc,nbhelp)
+            if(iacc.eq.1)then
+              goto 33
+            elseif(iacc.eq.2)then
+              IC=0
+              call ASKRNOD('available nodes','-',IC,IER)
+              ICAAS(IZ)=IC
             else
-              write(outs,'(A,A)') zname(IZ)(1:lnzname(IZ)),
-     &          'has no mass flow node.'
-              CALL EASKAB(outs,' ','ok','select a node',iacc,nbhelp)
-              if(iacc.eq.1)then
-                ICAAS(IZ)=0
-              elseif(iacc.eq.2)then
-                IC=0
-                call ASKRNOD('available nodes','-',IC,IER)
-                ICAAS(IZ)=IC
-              endif
+              ICAAS(IZ)=0
             endif
-  33        CONTINUE
+          else
+            write(outs,'(2A)') zname(IZ)(1:lnzname(IZ)),
+     &        ' has no mass flow node.'
+            CALL EASKAB(outs,' ','ok','select a node',iacc,nbhelp)
+            if(iacc.eq.1)then
+              ICAAS(IZ)=0
+            elseif(iacc.eq.2)then
+              IC=0
+              call ASKRNOD('available nodes','-',IC,IER)
+              ICAAS(IZ)=IC
+            endif
+          endif
+  33    CONTINUE
 
 C Save the configuration file so that connections and graphic mass flow
-C network are know.
-            dok=.true.
-            CALL ASKOK('Save graphic flow network links to zones',
-     &        'in the configuration file?',OK,dok,nbhelp)
-            IF(OK)then
-              IAIRN=2
-              LAPROB=NWKFLNAM
-              call edisp(iuout,'Updating configuration flow links...')
-              CALL EMKCFG('-',IER)
-              call edisp(iuout,
-     &                  'Updating configuration flow links...done.')
-              call edisp(iuout,' ')
-            endif
-
-C << version with external agent >>
-C        elseif(IW.eq.4)then
-C          call tstamp('>','PRJ: export to java agent')
-C          doit = '/usr/esru/bin/flow_agent.sh'
-C          call runit(doit,'-')
-        ELSEIF(IW.EQ.5)THEN airflowtype
-         GOTO 3 
-        END IF airflowtype
+C network are know. Note: the bottom of the cfg file will hold the name
+C of the text based file (for use in bps and res).
+        dok=.true.
+        CALL ASKOK('Save flow network node links to zones',
+     &    'in the model configuration file?',OK,dok,nbhelp)
+        IF(OK)then
+          IAIRN=2
+          call edisp(iuout,'Updating configuration flow links...')
+          CALL EMKCFG('-',IER)
+          call edisp(iuout,'Updating configuration flow links...done.')
+          call edisp(iuout,' ')
+        endif
       ELSEIF(INO.EQ.10)THEN
 
 C Electrical network description.
@@ -3563,22 +3659,6 @@ C        write(6,*) 'd iaccess is ',iaccess,icerr,ifold,t144
           write(subpath,'(3a)',IOSTAT=ios,ERR=14) 
      &      odir(1:lnblnk(odir)),fs,t144(1:lnblnk(t144))
      
-#ifdef OSX
-C In OSX slightly different logic. If path ls ./ then standard logic
-C works. If path begins with /usr/esru then no need to prepend odir.
-          if(path(1:2).eq.'./')then
-            continue
-          elseif(path(1:9).eq.'/usr/esru')then
-            subpath=' '
-            write(subpath,'(a)',IOSTAT=ios,ERR=14) path(1:lnblnk(path))
-          else
-            continue
-          endif
-
-C Debug.
-C          write(6,*) ' subpath of folder is ',subpath(1:lnblnk(subpath))
-
-#endif
 #ifdef MINGW
 C In MINGW slightly different logic. If path ls ./ then standard logic
 C works. If path begins C:/ or D:/ or E:/ or F:/ no need to prepend odir.
@@ -3742,15 +3822,13 @@ C name as that the user entered.
      &              'The overall path is more than 96 char.',
      &              'Suggest relocating model.','W')
                   write(t96,'(6a)',IOSTAT=ios,ERR=20) 
-     &              LTMP(1:lcfgr),fs,'cfg',
-     &              fs,LTMP(1:lcfgr),'.cfg'
+     &              LTMP(1:lcfgr),fs,'cfg',fs,LTMP(1:lcfgr),'.cfg'
                 endif
               elseif(lwcfgr.le.4)then
                 write(cfgroot,'(a)',IOSTAT=ios,ERR=13) 
      &            WORDS(IW)(1:lwcfgr)
                 write(t96,'(6a)',IOSTAT=ios,ERR=20) 
-     &            LTMP(1:lcfgr),fs,'cfg',fs,
-     &            LTMP(1:lcfgr),'.cfg'
+     &            LTMP(1:lcfgr),fs,'cfg',fs,LTMP(1:lcfgr),'.cfg'
               endif
               if((t96(1:2).ne.'  ').and.(t96(1:4).ne.'UNKN'))then
                 XST=.false.

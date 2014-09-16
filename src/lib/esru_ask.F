@@ -411,6 +411,14 @@ C        write(6,*) 'the module is ',module,' request to initialise only'
         if(initonly.eq.0)then
           CALL PHELPD('vwf opening',17,'-',0,0,IER)
         endif
+      elseif(module(1:3).eq.'net'.or.module(1:4).eq.'enet')then
+        H(1)='Welcome to the ESP-r graphic network tool. '
+        H(2)=' '
+        h(3)='You can access a description of the facilities and hints'
+        h(4)='for use in the menu ? options. '
+        if(initonly.eq.0)then
+          CALL PHELPD('enet opening',4,'-',0,0,IER)
+        endif
       elseif(module(1:3).eq.'pdb')then
         h(1) =' The MENU commands have the following meaning :'
         h(2) =' '

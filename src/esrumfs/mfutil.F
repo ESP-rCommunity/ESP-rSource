@@ -33,7 +33,8 @@ C     MFSTFL
 
 C ************* MFLOAD
 C This subroutine uses MFREAD of MFPROB of ESRUmfs to read data from
-C a mass flow network description file; all data transfer unformatted
+C a mass flow network description file (IAIRN=1) or via NETREAD if
+C a graphic definition; all data transfer unformatted
 C Performs some validity checks similar to what is done by the
 C subroutines MFNDES, MFCDES and MFLDES of MFPROB of ESRUmfs
 
@@ -42,6 +43,7 @@ C             connections between nodes I and J
 
       SUBROUTINE MFLOAD(IFPRB,IER)
 
+#include "building.h"
 #include "net_flow.h"
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/MFLOW1/NNOD,NCMP,NCNN
@@ -52,16 +54,28 @@ C             connections between nodes I and J
       COMMON/MFLW10/NODPS(MCNN),HGTPS(MCNN),NODNE(MCNN),HGTNE(MCNN),
      &              ITPCON(MCNN),NDSCNN(MCNN,MCNS)
       COMMON/MFLWPR/NPRE,FPRE(MPOS,MPRD)
+      COMMON/AFN/IAIRN,LAPROB,ICAAS(MCOM)
+      INTEGER :: iairn,icaas
 
       DIMENSION    ICONS(MCNN,MCNN)
       character outs*124
       CHARACTER NDNAM*12
+      CHARACTER LAPROB*72
 
-C Read the fluid flow description file
+C Read the fluid flow description file depending on the value
+C of iairn.
+      write(6,*) iairn,laprob
       IV=1
       IER=0
       REWIND(IFPRB,ERR=998)
-      CALL EMFREAD(IFPRB,IER)
+      if(iairn.eq.1)then
+        CALL EMFREAD(IFPRB,IER)
+      elseif(iairn.eq.2)then
+
+C Scan the graphics file and then convert to flow common blocks.
+        CALL NETREAD(IFPRB,'S',IER)
+        CALL NETTOFLW(ier)
+      endif
       IF(IER.NE.0)then
         call usrmsg(' Problem finding flow network description',
      &    'or there were problems found while scanning it.','W')
@@ -121,9 +135,11 @@ C Look for a component type 220, 230, 240, 250
    62 ICNN=ICNN+1
       ICMP=ITPCON(ICNN)
       ICMPTP=ITPCMP(ICMP)
-      IS12=INT(SUPCMP(ICMP,12))
-      IS11=INT(SUPCMP(ICMP,11))
-      IS6 =INT(SUPCMP(ICMP,6))
+
+C Variables not (yet) used.
+C      IS12=INT(SUPCMP(ICMP,12))
+C      IS11=INT(SUPCMP(ICMP,11))
+C      IS6 =INT(SUPCMP(ICMP,6))
       IF(ICMPTP.EQ.220.OR.ICMPTP.EQ.230.OR.
      &   ICMPTP.EQ.240.OR.ICMPTP.EQ.250) THEN
          GOTO 63

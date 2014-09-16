@@ -82,17 +82,20 @@ C Currently only one node plotted.
 
       integer iglib   ! if 1 then X11, if 2 then GTK, if 3 then text only.
       integer NITMS,INO ! max items and current menu item
+      real x0,y0,x1,y1  ! to avoid in-line calculations
 
 #ifdef OSI
       integer igwid,igheight  ! for use with axiscale
       integer iside,isize,ifont     ! passed to viewtext
       integer iigl,iigr,iigt,iigb,iigw,iigwh
       integer iiw1,iiw2,iiw3,iiw4,iimenu
+      integer iix1,iiy1,iix,ijx,iiy,iiylast
 #else
       integer*8 igwid,igheight  ! for use with axiscale
       integer*8 iside,isize,ifont     ! passed to viewtext
       integer*8 iigl,iigr,iigt,iigb,iigw,iigwh
       integer*8 iiw1,iiw2,iiw3,iiw4,iimenu
+      integer*8 iix1,iiy1,iix,ijx,iiy,iiylast
 #endif
 
 C For help messages
@@ -398,12 +401,14 @@ C Assign flows; leaving flow is plotted +ve.
       call viewtext(etext,iside,isize,ifont)
 
 C Draw a pairs of labels and line types at top of the graph.
-      WRITE(temp,'(A,A12,A,A1)')'Node ',NDNAM(NDONUM),' leaving',nterm
+      WRITE(temp,'(4A)')'Node ',NDNAM(NDONUM),' leaving',nterm
       CALL wstxpt(igl+60,igt-20,temp)
-      call eswline(igl+20,igt-25,igl+50,igt-25)
-      WRITE(temp,'(A,A12,A,A1)')'Node ',NDNAM(NDONUM),' entering',nterm
+      iix=igl+20; iiy=igt-25; iix1=igl+50; iiy1=igt-25
+      call eswline(iix,iiy,iix1,iiy1)
+      WRITE(temp,'(4A)')'Node ',NDNAM(NDONUM),' entering',nterm
       CALL wstxpt(igl+60,igt-40,temp)
-      call edwline(igl+20,igt-45,igl+50,igt-45)
+      iix=igl+20; iiy=igt-45; iix1=igl+50; iiy1=igt-45
+      call edwline(iix,iiy,iix1,iiy1)
 
 C Scale and draw axes.
       XMIN=0.
@@ -421,39 +426,59 @@ C Establish step size (in hour) in X-direction.
       STPX=1./FLOAT(NTSPH)
 
 C Plot line for FLWSUT, move to first postion draw it.
-      call u2pixel(0.5*STPX,FLWSUT(1),ix,iy)
-      call u2pixel((STPX+.5*STPX),FLWSUT(1),ix1,iy1)
-      call eswline(ix,iy,ix1,iy1)
-      iylast=iy
+      x0=0.5*STPX; y0=FLWSUT(1)
+      call u2pixel(x0,y0,ix,iy)
+      iix=ix; iiy=iy
+      x1=STPX+.5*STPX; y1=FLWSUT(1)
+      call u2pixel(x1,y1,ix1,iy1)
+      iix1=ix1; iiy1=iy1
+      call eswline(iix,iiy,iix1,iiy1)
+      iylast=iy; iiylast=iiy
+      call forceflush()
 
 C Loop through each of the succeeding points in a stair-step pattern.
 C Continue from the last flow value to the current and then horizontal
 C for the current value to the end of the timestep.
       DO 62 I=1,ICOUNT
         TI=FLOAT(I)*STPX
-        call u2pixel((TI-.5*STPX),FLWSUT(I),ix,iy)
-        call eswline(ix,iylast,ix,iy)
-        call u2pixel((TI+.5*STPX),FLWSUT(I),ix1,iy1)
-        call eswline(ix,iy,ix1,iy1)
-        iylast=iy
+        x0=TI-.5*STPX; y0=FLWSUT(I)
+        call u2pixel(x0,y0,ix,iy)
+        iix=ix; iiy=iy
+        call eswline(iix,iiylast,iix,iiy)
+        x1=TI+.5*STPX; y1=FLWSUT(I)
+        call u2pixel(x1,y1,ix1,iy1)
+        iix1=ix1; iiy1=iy1
+        call eswline(iix,iiy,iix1,iiy1)
+        iylast=iy; iiylast=iiy
+        call forceflush()
    62 CONTINUE
 
 C Plot double thick line for FLWSIN, move to first postion draw it.
-      call u2pixel((0.5*STPX),FLWSIN(1),ix,iy)
-      call u2pixel((STPX+.5),FLWSIN(1),ix1,iy)
-      call edwline(ix,iy,ix1,iy)
-      iylast=iy
+      x0=0.5*STPX; y0=FLWSIN(1)
+      call u2pixel(x0,y0,ix,iy)
+      ijx=ix; iiy=iy
+      x1=STPX+.5; y1=FLWSIN(1)
+      call u2pixel(x1,y1,ix1,iy)
+      iix1=ix1; iiy=iy
+      call edwline(ijx,iiy,iix1,iiy)
+      iylast=iy;iiylast=iiy
+      call forceflush()
 
 C Loop through each of the succeeding points in a stair-step pattern.
 C Continue from the last flow value to the current and then horizontal
 C for the current value to the end of the timestep.
       DO 64 I=1,ICOUNT
         TI=FLOAT(I)*STPX
-        call u2pixel((TI-.5*STPX),FLWSIN(I),ix,iy)
-        call edwline(ix,iylast,ix,iy)
-        call u2pixel((TI+.5*STPX),FLWSIN(I),ix1,iy)
-        call edwline(ix,iy,ix1,iy)
-        iylast=iy
+        x0=TI-.5*STPX; y0=FLWSIN(I)
+        call u2pixel(x0,y0,ix,iy)
+        ijx=ix; iiy=iy
+        call edwline(ijx,iiylast,ijx,iiy)
+        x1=TI+.5*STPX; y1=FLWSIN(I)
+        call u2pixel(x1,y1,ix1,iy)
+        iix1=ix1; iiy=iy
+        call edwline(ijx,iiy,iix1,iiy)
+        iylast=iy;iiylast=iiy
+        call forceflush()
    64 CONTINUE
 
 C Return to menu.

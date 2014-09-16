@@ -186,8 +186,6 @@ C ANOTZERO: Function returns non zero value with the same sign (sngl precision).
 C  ASKTIM:  Enquire month and day and time (real for view).
 C  SOLAIR:  Returns solair temperature.
 C  LISTAS:  General read & display of an ascii file.
-C  SHOWMEH: Extracts additional help text matching the key OTHER from
-C           an external file
 C  SDELIM:  Replaces blanks in a string A with alternative delimiter.
 C  EDDISP:  As edisp with text separated with current delimiter.
 C EDISP248 Displays a 248 char block of text (text or graphic).
@@ -7136,92 +7134,6 @@ C End of file encountered, close the file and return to menu.
       CALL ERPFREE(IUNIT,ISTAT)
       return
       end
-
-C ************************ SHOWMEH
-C SHOWMEH extracts additional help text matching the key OTHER from
-C an external file (LTUT) and returns it in exh along with the
-C number of lines (nhi) and their maximum width (ihw).
-      SUBROUTINE SHOWMEH(IFTUT,LTUT,OTHER,nhi,ihw,exh,IER)
-
-      common/OUTIN/IUOUT,IUIN
-      dimension exh(60)
-      CHARACTER*(*) OTHER
-      CHARACTER exh*72,ltut*72,TOPIK*17,outstr*124
-      logical XST
-      integer ltf  ! position of last character in the string.
-
-C Regenerate the topic string to match.
-      TOPIK=' '
-      WRITE(TOPIK,'(A5,A)')'*tut_',OTHER(1:12)
-      if(iftut.NE.0)CALL ERPFREE(iftut,ISTAT)
-      XST=.FALSE.
-      ltf=max(1,LNBLNK(ltut))
-      INQUIRE (FILE=ltut(1:ltf),EXIST=XST)
-      if(XST)then
-        open(iftut,FILE=ltut(1:lnblnk(ltut)),ACCESS='SEQUENTIAL',
-     &    STATUS='OLD',IOSTAT=IOS)
-        if(IOS.ne.0)goto 82
-      endif
-
-C Loop until the topic found or end of file encountered.
-C If the first character is a # then read the next line from the file.
-      IIER=0
-    8 READ(iftut,10,IOSTAT=ios,ERR=2,END=102)OUTSTR
-   10 FORMAT(A124)
-      IF(OUTSTR(1:1).EQ.'#')THEN
-        GOTO 8
-      ELSE
-
-C Look for particular topic and read/display until next "*tut_".
-        IF(OUTSTR(1:17).EQ.TOPIK)THEN
-          nhi = 0
-          IHW=0
-   85     READ(iftut,10,IOSTAT=IOS,ERR=2,END=102)OUTSTR
-          IF(OUTSTR(1:1).EQ.'#')then
-            GOTO 85
-          elseif(OUTSTR(1:5).eq.'*tut_')THEN
-            GOTO 82
-          else
-            nhi = nhi +1
-            if(nhi.lt.60)then
-              WRITE(exh(nhi),'(A)',iostat=ios,err=1)OUTSTR(1:72)
-              IX=max(1,LNBLNK(exh(nhi)))
-              IF(IX.GT.IHW)IHW=IX
-              GOTO 85
-            else
-              goto 82
-            endif
-          endif
-        ELSE
-          GOTO 8
-        ENDIF
-      endif
-   82 call edisp(iuout,' ')
-      CALL ERPFREE(IFTUT,ISTAT)
-      return
-
-   1  if(IOS.eq.2)then
-        call edisp(iuout,
-     &  'showmeh: permission error writing additional help messages.')
-      else
-        call edisp(iuout,
-     &    'showmeh: error writing additional help messages.')
-      endif
-      return
-   2  if(IOS.eq.2)then
-        call edisp(iuout,
-     &  'showmeh: permission error writing show me more message')
-      else
-        call edisp(iuout,
-     &    'showmeh: error writing show me more message')
-      endif
-      return
-
-  102 IER=0
-      call edisp(iuout,' End of supplemental information file. ')
-      CALL ERPFREE(IFTUT,ISTAT)
-      return
-      END
 
 C ********************* SDELIM
 C SDELIM replaces blanks in a string A with alternative delimiter and

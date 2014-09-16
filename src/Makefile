@@ -2,8 +2,8 @@
 # (see README file before installing).
 SRCdir=`pwd`
 
-PROGRAMS = aco bps c2e cdb clm dbm dfs e2r ecnv eco grd harmonizer ish mfs \
-	   mld mrt net pdb prj res run vew stats
+PROGRAMS = aco bps c2e cdb clm dbm dfs e2r ecnv eco enet grd harmonizer ish mfs \
+	   mld mrt pdb prj res run vew stats
 
 allX11: libX11 $(PROGRAMS)
 allGTK: libGTK $(PROGRAMS)
@@ -82,7 +82,7 @@ mld:
 	cd $(SRCdir)/esrumld; $(MAKE)
 mrt: 
 	cd $(SRCdir)/esrumrt; $(MAKE)
-net: 
+enet: 
 	cd $(SRCdir)/esrunet; $(MAKE)
 pdb: 
 	cd $(SRCdir)/esrupdb; $(MAKE)

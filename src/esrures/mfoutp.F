@@ -1139,13 +1139,14 @@ C Create string description for time of maximum occurrance.
           write (XT,'(a,a,a)')DESCR(1:6),'@',DESCRH
 
 C Create string description for time of minimum occurrance.
+C Flow data in m^3/s or kg/s deserves 3 decimal places.
           MINDOY=INT(TMIN(I)/24.)+IODS
           TMINHR=AMOD(TMIN(I),24.)
           call STDATE(IYEAR,MINDOY,DESCR,DESCR1)
           call EDTIME(TMINHR,DESCRH,DESCRD,TIMER)
           write (NT,'(a,a,a)')DESCR(1:6),'@',DESCRH
           t20=GMFLABEL(I)
-          write (outs,'(a,1x,2(f7.2,2x,a12,2x),2(f7.2,3x))') t20,
+          write (outs,'(a,1x,2(f7.3,2x,a12,2x),1x,2(f7.3,3x))') t20,
      &      FMAX(I),XT,FMIN(I),NT,FAVE(I),FSTD(I)
           call eddisp(itru,outs)
  210    continue
@@ -1183,7 +1184,7 @@ C Create string description for time of minimum occurrance.
           write (NT,'(a,a,a)')DESCR(1:6),'@',DESCRH
           AYAB=float(IQHRS(I))*float(NOUT)/float(NTS)
           t20=GMFLABEL(I)
-          write (outs,'(a,1x,2(f7.2,2x,a12,1x),2f9.2)') t20,
+          write (outs,'(a,1x,2(f7.3,2x,a12,1x),2f9.3)') t20,
      &      FMAX(I),XT,FMIN(I),NT,FAVE(I),AYAB
           call eddisp(itru,outs)
 
@@ -1225,7 +1226,7 @@ C Create string description for time of minimum occurrance.
           write (NT,'(a,a,a)')DESCR(1:6),'@',DESCRH
           AYAB=float(IQHRS(I))*float(NOUT)/float(NTS)
           t20=GMFLABEL(I)
-          write (outs,'(a,1x,2(f7.2,2x,a12,1x),2f9.2)') t20,
+          write (outs,'(a,1x,2(f7.3,2x,a12,1x),2f9.3)') t20,
      &      FMAX(I),XT,FMIN(I),NT,FAVE(I),AYAB
           call eddisp(itru,outs)
 

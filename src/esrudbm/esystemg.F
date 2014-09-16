@@ -207,7 +207,8 @@ C IZSTOCN - for each zone:surface a pointer to connection index.
       COMMON/MFLOW1/NNOD,NCMP,NCNN
       INTEGER :: NNOD,NCMP,NCNN
       COMMON/MFLOW2/NDNAM(0:MNOD)
-      COMMON/NWKSTR/NWKNAM,NWKDSC,NWKFLNAM,NWKTYPSTR(MNWKTYP)
+      COMMON/NWKSTR/NWKNAM,NWKDSC,NWKTYPSTR(MNWKTYP)
+      CHARACTER NWKNAM*72,NWKDSC*72,NWKTYPSTR*12
 
 C Temporal definition commons.
 C DBTAG (12 char) tag of temporal entity associated with model.
@@ -474,8 +475,7 @@ C iSlr_half_hr_flg value = 0 :hour-centered; =1 : half-hour centered.
       character limgpth*24,ldocpth*24,lcfgroot*32,lpath*72
       character path*72,lupath*72
       character namez*12,namen*12
-      CHARACTER*72 NWKNAM,NWKDSC,NWKFLNAM
-      character NWKTYPSTR*12,bidirfile*72,bidirname*12
+      character bidirfile*72,bidirname*12
       CHARACTER CONTMNAM*12,CNTMDESC*124,cntmfil*72
       character calename*32,calentag*12,calendayname*32
       character LWndSupp*72
@@ -2248,7 +2248,6 @@ C then an older file so rewind the file and then call emfread.
 C Found a graphic network file, scan it (silently) and then convert it
 C into network flow common blocks.
           IAIRN = 2
-          NWKFLNAM=LAPROB
           CALL ERPFREE(IUF,ISTAT)
           call NETREAD(IUF,'S',IER)
           CALL NETTOFLW(ier)

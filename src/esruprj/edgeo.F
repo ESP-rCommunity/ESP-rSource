@@ -91,6 +91,11 @@ C prec17 common is described in geometry.h.
       COMMON/RAY6/LINSTY(MCON)
       common/user/browse
 
+C To signal to MFWRIT that globals are available from graphic network.
+C Currently set true if graphic network file, false otherwise.
+      logical haveglobal
+      COMMON/MFLOW11/haveglobal
+
       integer ncub,ivfok
       real XOC,YOC,ZOC,DXC,DYC,DZC,CANG
       character CUBN*6
@@ -660,9 +665,13 @@ C the flow network.
             CALL EFOPSEQ(IUM,LAPROB,3,IER)
             if(IER.eq.0)then
 
-C << Note need a check so network flow file data is not written
-C << to a graphic network flow file. Also need a way to update
-C << graphic network flow file to reflect changes in zone volume.
+C << Need a way to update graphic network flow file to reflect
+C << changes in zone volume.
+              if(IAIRN.eq.1)then
+                haveglobal=.FALSE.
+              elseif(IAIRN.eq.2)then
+                haveglobal=.TRUE.
+              endif
               CALL MFWRIT(IUM)
               CALL ERPFREE(IUM,ISTAT)
             endif
@@ -827,9 +836,12 @@ C any flow network node associated with this zone.
               CALL EFOPSEQ(IUM,LAPROB,3,IER)
               if(IER.eq.0)then
 
-C << Note need a check so network flow file data is not written
-C << to a graphic network flow file. Also need a way to update
-C << graphic network flow file to reflect changes in zone volume.
+C << Need a way to update graphic network flow file to reflect changes in zone volume.
+                if(IAIRN.eq.1)then
+                  haveglobal=.FALSE.
+                elseif(IAIRN.eq.2)then
+                  haveglobal=.TRUE.
+                endif
                 CALL MFWRIT(IUM)
                 CALL ERPFREE(IUM,ISTAT)
               endif
@@ -2338,10 +2350,11 @@ C the flow network.
             endif
             CALL EFOPSEQ(IUM,LAPROB,3,IER)
             if(IER.eq.0)then
-
-C << Note need a check so network flow file data is not written
-C << to a graphic network flow file. Also need a way to update
-C << graphic network flow file to reflect changes in zone volume.
+              if(IAIRN.eq.1)then
+                haveglobal=.FALSE.
+              elseif(IAIRN.eq.2)then
+                haveglobal=.TRUE.
+              endif
               CALL MFWRIT(IUM)
               CALL ERPFREE(IUM,ISTAT)
             endif
@@ -2931,6 +2944,7 @@ C Pased parameters
       DIMENSION cog(3),cogo(3),COG1(3),COG2(3),COG3(3)
       integer iocog  ! loop counter for detecting close surfaces
       integer ifound,ifoundc ! how many close surfaces and which one
+      integer icontinue  ! to control while loop
       CHARACTER*33 ISD(25)
       CHARACTER DESCRC*25,outs*124,CXSTR*78
       CHARACTER SALT*33,SN*12,SN2*12,T14*14
@@ -2944,11 +2958,11 @@ C Strings for surface attributes to pass to insrec.
       character rsparent*12
       real XO1,ZO1  ! to prevent name clash in geometry.h
       integer ISDN,INODA ! max items and current menu item
-      integer mnulen,iwhich2,nv   ! multi column lines
+      integer mnulen,iwhich,iwhich2,numv   ! multi column lines
       logical greyok,odd   ! for display of vertex info
       logical closecog,closea     ! to check for nearby surfaces
       integer lnsa,lnsb    ! lengths for surface names
-      integer ii           ! for loop
+      integer ii,iloop         ! for loop
       character message*48,t248*248
 
 C For help messages
@@ -2990,21 +3004,21 @@ C start with the vertices associated with the surface.
       write(SN,'(a12)') SNAME(ICOMP,IS)
       write(message,'(2a)') ' Vertices (X Y Z) used by ',SN
       call edisp(iuout,message)
-      NV=NVER(IS)
+      numv=NVER(IS)
 
 C See if an even or odd number of items in list.
-      im=MOD(NV,2)
+      im=MOD(numv,2)
       odd=.false.
       if(im.eq.1) odd=.true.
-      if(nv.lt.8)then
-        do 960 i=1,nv
+      if(numv.lt.8)then
+        do 960 i=1,numv
           iwhich=jvn(is,i)
           write(outs,'(a,i3,3f11.5)') ' vertex ',iwhich,X(iwhich),
      &      Y(iwhich),Z(iwhich)
           call edisp(iuout,outs)
   960   continue
       else
-        MNULEN=(NV/2)
+        MNULEN=(numv/2)
         DO 193 K=1,MNULEN
           iwhich=jvn(is,k)
           iwhich2=jvn(is,k+mnulen)
@@ -3014,8 +3028,8 @@ C See if an even or odd number of items in list.
           call edisp(iuout,outs)
   193   CONTINUE
         IF(odd)THEN
-          WRITE(outs,'(a,i3,3f11.5)') ' vertex ',nv,X(nv),
-     &      Y(nv),Z(nv)
+          WRITE(outs,'(a,i3,3f11.5)') ' vertex ',numv,X(numv),
+     &      Y(numv),Z(numv)
           call edisp(iuout,outs)
         ENDIF
       endif
@@ -3025,7 +3039,7 @@ C statement should be kept up to date with MV changes.
       write(SN,'(a12)') SNAME(ICOMP,IS)
       write(message,'(2a)') ' Vertices associated with ',SN
       call edisp(iuout,message)
-      WRITE(t248,'(42I4)')(JVN(is,j),J=1,nv)
+      WRITE(t248,'(42I4)')(JVN(is,j),J=1,numv)
       call edisp248(iuout,t248,90)
 
 C Force redraw of zone on entry to highlight focus surface.
@@ -3192,21 +3206,27 @@ C If in graphic mode draw the points on top of standard drawing.
       if(MMOD.lt.8)then
         continue
       else
-        NV=NVER(IS)
-        do 961 i=1,nv
-          iwhich=jvn(is,i)
-          COG1(1)=X(iwhich); COG1(2)=Y(iwhich); COG1(3)=Z(iwhich)
-          CALL VECTRN(COG1,TEMAT,COG2,IER)
-          CALL VECTRN(COG2,ETSMAT,COG3,IER)
-          call u2pixel(COG3(1),COG3(2),iix,iiy)
-          iicol=0
-          if(greyok)call winscl('z',iicol)
-          call esymbol(iix,iiy,24,1)
-          call VERTLBL(iix,iiy,iwhich,ier)
-          iicol=0
-          if(greyok)call winscl('-',iicol)
-          call forceflush()
-  961   continue
+        icontinue=1
+        iloop=0
+        numv=NVER(IS)
+        do while (icontinue.ne.0)
+          iloop=iloop+1  ! increment iloop until = numv then jump out
+          if(iloop.eq.numv) icontinue=0
+          iwhich=jvn(is,iloop)
+          if(iwhich.gt.0.and.iwhich.le.MTV)then
+            COG1(1)=X(iwhich); COG1(2)=Y(iwhich); COG1(3)=Z(iwhich)
+            CALL VECTRN(COG1,TEMAT,COG2,IER)
+            CALL VECTRN(COG2,ETSMAT,COG3,IER)
+            call u2pixel(COG3(1),COG3(2),iix,iiy)
+            iicol=0
+            if(greyok)call winscl('z',iicol)
+            call esymbol(iix,iiy,24,1)
+            call VERTLBL(iix,iiy,iwhich,ier)
+            iicol=0
+            if(greyok)call winscl('-',iicol)
+            call forceflush()
+          endif
+        enddo  ! of while loop
       endif
 
 C Help text for the menu.
