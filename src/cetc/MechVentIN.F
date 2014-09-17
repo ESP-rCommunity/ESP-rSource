@@ -30,6 +30,7 @@ c ---
 
 c
       Implicit None
+#include "building.h"
 #include "Ventilation_Data.h"
 c
 c Declarations for local variables and variables passed in common blocks.
@@ -77,7 +78,8 @@ c Read central ventilation system type.
 c
       If ( iErr .eq. 0 ) Then
          k = 0
-         Call MSG_EGETWI ( OUTSTR, k, iVal, 1, 3, 'F',
+c --- 27-08-2014: Patrice Pinel: Changed  maximum value of iVal from 3 to 4 to allow for read in of CVS type 4 (ERV)
+         Call MSG_EGETWI ( OUTSTR, k, iVal, 1, 4, 'F',
      x ' central ventilation system type', IUOUT, iErr )
       Endif
 c
@@ -87,39 +89,56 @@ c --- Central ventilation system type DEFINED
          iCVSType = iVal
 c ---
 c
-         If ( iCVSType .eq. 2 ) Then ! HRV
+c --- 27-08-2014: Patrice Pinel: Changed if statement to allow for type 4 (ERV) input read-in
+c        If ( iCVSType .eq. 2 ) Then ! HRV
+         If ( iCVSType == 2 .or. iCVSType == 4) Then ! HRV or ERV
 c
-            Call STRIPC (iUnit, OUTSTR, 0, ND, 1,' HRV HighT test data',
+            Call STRIPC (iUnit, OUTSTR, 0, ND, 1,' HVI HSP test data',
      x                   iErr)
 c
             If ( iErr .eq. 0 ) Then
-c
-c --- HRV test data (temperature C, efficiency %, fan + preheater power watts)
-c 0.     80.0    117.
+c --- 27-08-2014: Patrice Pinel: Updated comments to reflect new HRV/ERV data inputs aligned with HVI testing standards
+c --- HRV test data (temperature C, SRE(%) , power consumed watts)
+c --- ERV test data (temperature C, SRE(%) , LRMT(frac), power consumed watts)
 c Set 1: "high" temperature
                k = 0
                i = 1
                Call MSG_EGETWR ( OUTSTR, k, VAL, -99., 99., 'F',
      x ' "high" temperature', IUOUT, iErr)
-               HRVTest(i,1) = VAL
+               If ( iCVSType == 2 ) HRVTest(i,1) = VAL
+               If ( iCVSType == 4 ) ERVTest(i,1) = VAL
             Endif
 c
             If ( iErr .eq. 0 ) Then
                Call MSG_EGETWR ( OUTSTR, k, VAL, 0., 99.9, 'F',
      x ' efficiency ', IUOUT, iErr)
-               HRVTest(i,2) = VAL
+               If ( iCVSType == 2 ) HRVTest(i,2) = VAL
+               If ( iCVSType == 4 ) ERVTest(i,2) = VAL
             Endif
 c
-            If ( iErr .eq. 0 ) Then
-               Call MSG_EGETWR ( OUTSTR, k, VAL, 0., 25000., 'F',
-     x ' fan + preheater power watts', IUOUT, iErr)
-               HRVTest(i,3) = VAL
-            Endif
-c --- Continue HRV test data (varies with model, type, rated flow rate
+            If ( iCVSType == 2 ) Then ! HRV, read in power consumption
+               If ( iErr .eq. 0 ) Then
+                  Call MSG_EGETWR ( OUTSTR, k, VAL, 0., 25000., 'F',
+     x ' power consumption data', IUOUT, iErr)
+                  HRVTest(i,3) = VAL
+               Endif
+            Else ! ERV, read in LRMT and power consumption
+               If ( iErr .eq. 0 ) Then
+                  Call MSG_EGETWR ( OUTSTR, k, VAL, 0., 1., 'F',
+     x ' LRMT data', IUOUT, iErr)
+                  ERVTest(i,3) = VAL
+               Endif
+               If ( iErr .eq. 0 ) Then
+                  Call MSG_EGETWR ( OUTSTR, k, VAL, 0., 25000., 'F',
+     x ' power consumption data', IUOUT, iErr)
+                  ERVTest(i,4) = VAL
+               Endif
+            Endif			   
+c --- Continue HVI test data (varies with model, type, rated flow rate
 c
             If ( iErr .eq. 0 ) Then
                Call STRIPC ( iUnit, OUTSTR, 0, ND, 1,
-     x ' HRV Low T test data', iErr )
+     x ' HVI Low T test data', iErr )
             Endif
 c Set 2: "low" temperature
             If ( iErr .eq. 0 ) Then
@@ -127,32 +146,48 @@ c Set 2: "low" temperature
                i = 2
                Call MSG_EGETWR ( OUTSTR, k, VAL, -99., 99., 'F',
      x ' "low" temperature', IUOUT, iErr)
-               HRVTest(i,1) = VAL
+               If ( iCVSType == 2 ) HRVTest(i,1) = VAL
+               If ( iCVSType == 4 ) ERVTest(i,1) = VAL
+			   
             Endif
 c
             If ( iErr .eq. 0 ) Then
                Call MSG_EGETWR ( OUTSTR, k, VAL, 0., 99.9, 'F',
-     x ' efficiency ', IUOUT, iErr)
-               HRVTest(i,2) = VAL
+     x ' SRE ', IUOUT, iErr)
+               If ( iCVSType == 2 ) HRVTest(i,2) = VAL
+               If ( iCVSType == 4 ) ERVTest(i,2) = VAL
             Endif
 c
-            If ( iErr .eq. 0 ) Then
-               Call MSG_EGETWR ( OUTSTR, k, VAL, 0., 25000., 'F',
-     x ' fan + preheater power watts', IUOUT, iErr)
-               HRVTest(i,3) = VAL
+            If ( iCVSType == 2 ) Then ! HRV, read in power consumption
+               If ( iErr .eq. 0 ) Then
+                  Call MSG_EGETWR ( OUTSTR, k, VAL, 0., 25000., 'F',
+     x ' power consumption data', IUOUT, iErr)
+                  HRVTest(i,3) = VAL
+                Endif
+            Else ! ERV, read in LRMT and power consumption
+               If ( iErr .eq. 0 ) Then
+                  Call MSG_EGETWR ( OUTSTR, k, VAL, 0., 1., 'F',
+     x ' LRMT data', IUOUT, iErr)
+                  ERVTest(i,3) = VAL
+               Endif
+               If ( iErr .eq. 0 ) Then
+                  Call MSG_EGETWR ( OUTSTR, k, VAL, 0., 25000., 'F',
+     x ' power consumption data', IUOUT, iErr)
+                  ERVTest(i,4) = VAL
+               Endif
             Endif
 c
 c ---  Central ventilation system supply flow rate (L/s)
 c
             If ( iErr .eq. 0 ) Then
                Call STRIPC ( iUnit, OUTSTR, 0, ND, 1,
-     x ' HRV Supply/Exhaust flow rate', iErr )
+     x ' HRV/ERV Supply/Exhaust flow rate', iErr )
             Endif
 c
             If ( iErr .eq. 0 ) Then
                k = 0
                Call MSG_EGETWR ( OUTSTR, k, VAL, 0., 25000., 'F',
-     x ' HRV Supply/Exhaust flow rate', IUOUT, iErr)
+     x ' HRV/ERV Supply/Exhaust flow rate', IUOUT, iErr)
 c
 c HRV assumed to be BALANCED, supply = exhaust flow rate
                CVSSupplyRate = VAL
@@ -165,7 +200,7 @@ c ---  HRV total cooling efficiency
 c
             If ( iErr .eq. 0 ) Then
                Call STRIPC ( iUnit, OUTSTR, 0, ND, 1,
-     x ' HRV total cooling efficiency', iErr )
+     x ' HRV/ERV total cooling efficiency', iErr )
             Endif
 c
             If ( iErr .eq. 0 ) Then
@@ -219,88 +254,88 @@ c
                   Endif
                Endif
             Endif
-c --- HRV duct data
+c --- HRV/ERV duct data
 c Location,Type,Sealing, Length(m), Diameter(mm),Insul.RSI
             If ( iErr .eq. 0 ) Then
                Call STRIPC ( iUnit, OUTSTR, 0, ND, 1,
-     x ' HRV supply duct data', iErr )
+     x ' HRV/ERV supply duct data', iErr )
             Endif
 c
             If ( iErr .eq. 0 ) Then
                k = 0
                Call MSG_EGETWI ( OUTSTR, k, iVal, 1, 4, 'F',
-     x ' HRV supply duct location', IUOUT, iErr )
+     x ' HRV/ERV supply duct location', IUOUT, iErr )
                IntDD(1,1) = iVal
             Endif
 c
             If ( iErr .eq. 0 ) Then
                Call MSG_EGETWI ( OUTSTR, k, iVal, 1, 3, 'F',
-     x ' HRV supply duct type', IUOUT, iErr )
+     x ' HRV/ERV supply duct type', IUOUT, iErr )
                IntDD(1,2) = iVal
             Endif
 c
             If ( iErr .eq. 0 ) Then
                Call MSG_EGETWI ( OUTSTR, k, iVal, 1, 3, 'F',
-     x ' HRV supply duct sealing', IUOUT, iErr )
+     x ' HRV/ERV supply duct sealing', IUOUT, iErr )
                IntDD(1,3) = iVal
             Endif
             If ( iErr .eq. 0 ) Then
                Call MSG_EGETWR ( OUTSTR, k, VAL, 0., 999., 'F',
-     x ' HRV supply duct length', IUOUT, iErr)
+     x ' HRV/ERV supply duct length', IUOUT, iErr)
                RealDD(1,1) = VAL
             Endif
             If ( iErr .eq. 0 ) Then
                Call MSG_EGETWR ( OUTSTR, k, VAL, 0., 9999., 'F',
-     x ' HRV supply duct diameter', IUOUT, iErr)
+     x ' HRV/ERV supply duct diameter', IUOUT, iErr)
                RealDD(1,2) = VAL
             Endif
             If ( iErr .eq. 0 ) Then
                Call MSG_EGETWR ( OUTSTR, k, VAL, 0., 999., 'F',
-     x ' HRV supply duct Insul.', IUOUT, iErr)
+     x ' HRV/ERV supply duct Insul.', IUOUT, iErr)
                RealDD(1,3) = VAL
             Endif
 c
-c --- HRV Exhaust duct
+c --- HRV/ERV Exhaust duct
 c
             If ( iErr .eq. 0 ) Then
                Call STRIPC ( iUnit, OUTSTR, 0, ND, 1,
-     x ' HRV exhaust duct data', iErr )
+     x ' HRV/ERV exhaust duct data', iErr )
             Endif
 c
             If ( iErr .eq. 0 ) Then
                k = 0
                Call MSG_EGETWI ( OUTSTR, k, iVal, 1, 4, 'F',
-     x ' HRV exhaust duct location', IUOUT, iErr )
+     x ' HRV/ERV exhaust duct location', IUOUT, iErr )
                IntDD(2,1) = iVal
             Endif
 c
             If ( iErr .eq. 0 ) Then
                Call MSG_EGETWI ( OUTSTR, k, iVal, 1, 3, 'F',
-     x ' HRV exhaust duct type', IUOUT, iErr )
+     x ' HRV/ERV exhaust duct type', IUOUT, iErr )
                IntDD(2,2) = iVal
             Endif
 c
             If ( iErr .eq. 0 ) Then
                Call MSG_EGETWI ( OUTSTR, k, iVal, 1, 3, 'F',
-     x ' HRV exhaust duct sealing', IUOUT, iErr )
+     x ' HRV/ERV exhaust duct sealing', IUOUT, iErr )
                IntDD(2,3) = iVal
             Endif
 c
             If ( iErr .eq. 0 ) Then
                Call MSG_EGETWR ( OUTSTR, k, VAL, 0., 999., 'F',
-     x ' HRV exhaust duct length', IUOUT, iErr)
+     x ' HRV/ERV exhaust duct length', IUOUT, iErr)
                RealDD(2,1) = VAL
             Endif
 c
             If ( iErr .eq. 0 ) Then
                Call MSG_EGETWR ( OUTSTR, k, VAL, 0., 9999., 'F',
-     x ' HRV exhaust duct diameter', IUOUT, iErr)
+     x ' HRV/ERV exhaust duct diameter', IUOUT, iErr)
                RealDD(2,2) = VAL
             Endif
 c
             If ( iErr .eq. 0 ) Then
                Call MSG_EGETWR ( OUTSTR, k, VAL, 0., 999., 'F',
-     x ' HRV exhaust duct Insul.', IUOUT, iErr)
+     x ' HRV/ERV exhaust duct Insul.', IUOUT, iErr)
                RealDD(2,3) = VAL
             Endif
 c           Write(OUTSTR,'(a,f8.1,i3)')' MechVentIN: HRV ED insul=',VAL,
@@ -446,6 +481,7 @@ c
 C      USE Ventilation_data
 c
       IMPLICIT NONE
+#include "building.h"
 #include "Ventilation_Data.h"
       Integer i, j
       INTEGER ICRAWL_SPACE_ZONE
@@ -488,8 +524,11 @@ c
       TotalPower = 0.
       ExhaustFanPower = 0.
       PreheaterPower = 0.
-      HRVSupDuctHG = 0.
-      HRVExhDuctHG = 0.
+c --- 27-08-2014: Patrice Pinel: Changed  HRVSupDuctHG and  HRVExhDuctHG for CVSSupDuctHG and CVSExhDuctHG
+      !HRVSupDuctHG = 0.
+      !HRVExhDuctHG = 0.
+      CVSSupDuctHG = 0.
+      CVSExhDuctHG = 0.
       CVSSupplyTemp = 0.
       iOtherFans = 1
       OtherFansSupplyRate = 0.
