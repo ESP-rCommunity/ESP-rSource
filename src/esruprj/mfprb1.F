@@ -1201,6 +1201,8 @@ C Then call appropriate supplementary data input subroutine.
           CALL MF010I(IFCMP,IERL)
         ELSE IF(ITPCMP(IFCMP).EQ. 11) THEN
           CALL MF011I(IFCMP,IERL)
+        ELSE IF(ITPCMP(IFCMP).EQ. 12) THEN
+          CALL MF012I(IFCMP,IERL)
         ELSE IF(ITPCMP(IFCMP).EQ. 15) THEN
           CALL MF015I(IFCMP,IERL)
         ELSE IF(ITPCMP(IFCMP).EQ. 17) THEN

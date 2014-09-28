@@ -13200,6 +13200,26 @@ Another mode is to scan the zone operations file and to compose'
 *enditem
       CALL PHELPD('comp 11',17,'-',0,0,IER)
   43  CALL EASKS(hold,
+subroutine MF012I
+*item MF012I flow_cmp_012
+'Type 12 is a power law volume flow resistance (see'
+'component type 10 for basic description).'
+'This component additionally has a max flow rate and'
+'can optionally be closed when this flow rate is reached.'
+'This behaviour is for window-frame vents with storm'
+'protection devices.'
+'  '
+'  (m = rho . a . dP^b [m^3/s]) '
+' '
+'Supplemental data: '
+'  (1) fluid type (1=air, 2=water), '
+'  (2) flow coef a, '
+'  (3) flow exponent b,'
+'  (4) max flow rate,'
+'  (5) switch 0 (max val) or 1 (close at max val)'
+*enditem
+      CALL EASKAB(prompt,'(help for synopsis)','air','water',IW,14)
+  43  CALL EASKS(hold,
 *subroutine MF015I
 *item MF015I flow_cmp_015
 'Type 15 is a power law mass flow resistance component.'
