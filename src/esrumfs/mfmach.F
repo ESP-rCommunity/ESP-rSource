@@ -802,7 +802,7 @@ cc      implicit none
       FCOF=SUPCMP(ICMP,2)
       FEXP=SUPCMP(ICMP,3)
       FMAX=SUPCMP(ICMP,4)
-      ISWT=SUPCMP(ICMP,5)
+      ISWT=int(SUPCMP(ICMP,5))
 
 C If DELP > 0 , flow is +ve; ie +ve side to -ve side.
       IF(DELP.GE.0) THEN
@@ -817,7 +817,17 @@ C         or (ISWT=1) set flow to zero (close component)
           ENDIF
         endif
       ELSE
-        FLW1(ICNN)=-RHON(IDNE)*FCOF*(DABS(DELP)**FEXP)*ctlpos(icnn)
+        ! do not change reference density in this component
+        FLW1(ICNN)=-RHON(IDPS)*FCOF*(DABS(DELP)**FEXP)*ctlpos(icnn)
+C       If FLW1 > FMAX then either hold constant (ISWT=0)
+        if (dabs(FLW1(ICNN)).gt.FMAX) then
+          if (ISWT.eq.0) then
+            FLW1(ICNN)=-RHON(IDPS)*FMAX 
+C         or (ISWT=1) set flow to zero (close component)
+          ELSE
+            FLW1(ICNN)=0.
+          ENDIF
+        endif
       END IF
 
       FLW2(ICNN)=0.
