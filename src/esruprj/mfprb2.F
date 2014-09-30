@@ -204,9 +204,8 @@ C Flow coefficients, max flow and type switch.
       write(hold,'(4f11.5)')SUPCMP(ICMP,2),SUPCMP(ICMP,3),
      &  SUPCMP(ICMP,4),SUPCMP(ICMP,5)
   43  CALL EASKS(hold,
-     & 'Coef `a` and exp. `b` in Q=a.dP^b(m^3/s),',
-     & '`max flow`/`dp` (m^3/s)/(Pa),',
-     & 'switch ? (help for synopsis)',
+     & 'Coef `a` and exp. `b` in Q=a.dP^b(m^3/s), `max flow`/`dp`',
+     & ' (m^3/s)/(Pa), switch ? (help for synopsis)',
      & 48,' 0.001  0.67  0.01  0. ','comp 12',
      & IER,nbhelp)
       K=0
