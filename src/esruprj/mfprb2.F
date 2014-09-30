@@ -204,14 +204,15 @@ C Flow coefficients, max flow and type switch.
       write(hold,'(4f11.5)')SUPCMP(ICMP,2),SUPCMP(ICMP,3),
      &  SUPCMP(ICMP,4),SUPCMP(ICMP,5)
   43  CALL EASKS(hold,
-     & 'Coef `a` and exp. `b` in Q=a.dP^b(m^3/s), `max flow` (m^3/s),',
+     & 'Coef `a` and exp. `b` in Q=a.dP^b(m^3/s),',
+     & '`max flow`/`dp` (m^3/s)/(Pa),',
      & 'switch ? (help for synopsis)',
      & 48,' 0.001  0.67  0.01  0. ','comp 12',
      & IER,nbhelp)
       K=0
       CALL EGETWR(hold,K,VAL2,0.,99999.,'W','coef a',IER)
       CALL EGETWR(hold,K,VAL3,0.,99999.,'W','exp b',IER)
-      CALL EGETWR(hold,K,VAL4,0.,99999.,'W','max flow',IER)
+      CALL EGETWR(hold,K,VAL4,0.,99999.,'W','max flow/dp',IER)
       CALL EGETWR(hold,K,VAL5,0.,1.1,'W','switch',IER)
       IF(IER.NE.0) GOTO 43
       SUPCMP(ICMP,2)=VAL2

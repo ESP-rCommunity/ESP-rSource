@@ -13204,8 +13204,12 @@ subroutine MF012I
 *item MF012I flow_cmp_012
 'Type 12 is a power law volume flow resistance (see'
 'component type 10 for basic description).'
-'This component additionally has a max flow rate and'
-'can optionally be closed when this flow rate is reached.'
+'This component additionally has a max flow rate or pressure
+'difference setpoint. In mode "0" the component returns the
+'max flow rate given, if the actual flow rate is greater. In mode
+'"1", the component is closed (flow rate = zero), if max dp is
+'exceeded.'
+' '
 'This behaviour is for window-frame vents with storm'
 'protection devices.'
 '  '
@@ -13215,8 +13219,8 @@ subroutine MF012I
 '  (1) fluid type (1=air, 2=water), '
 '  (2) flow coef a, '
 '  (3) flow exponent b,'
-'  (4) max flow rate,'
-'  (5) switch 0 (max val) or 1 (close at max val)'
+'  (4) max flow rate (switch=0) or dp setpoint (switch=1),'
+'  (5) switch 0 (max val) or 1 (close at dp setpoint)'
 *enditem
       CALL EASKAB(prompt,'(help for synopsis)','air','water',IW,14)
   43  CALL EASKS(hold,

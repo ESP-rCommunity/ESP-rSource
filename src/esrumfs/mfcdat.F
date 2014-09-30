@@ -37,7 +37,7 @@ C      123456789 123456789 123456789 123456789 123456789 1234567890
      &'Self regulating vent for 15 or 30 m3/h at 20 Pa             '
       IVALCM(3)=12
       LVALCM(3)=
-     &'Pwr law vol. flow cmp w/ max flw.       m = rho.a.dP^b      '
+     &'Pwr law vol. flow cmp w/ max flw. or dp max m = rho.a.dP^b  '
       IVALCM(4)=15
       LVALCM(4)=
      &'Power law mass flow component       m = a.dP^b              '

@@ -531,7 +531,7 @@ C or closing-setpoint.
         if(SUPCMP(ICMP,3).LT.0.)
      &    call MFERR(ICMP,' Negative flow exponent not allowed.',IER)
         if(SUPCMP(ICMP,4).LT.0.)
-     &    call MFERR(ICMP,' Negative max. flow setpnt not allowed.',IER)
+     &    call MFERR(ICMP,' Negative flow/dp setpnt not allowed.',IER)
         if((SUPCMP(ICMP,5).LT.0.).or.(SUPCMP(ICMP,5).GT.1.))
      &    call MFERR(ICMP,' Switch 0 or 1!',IER)
 
