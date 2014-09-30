@@ -772,8 +772,9 @@ C                                     1 dp > dp_switch=>close device
 C
 C Author: A. Geissler
 C Creation Date: 24 Sept. 2014
+C Changed by: A. Geissler
+C Change Date: 30 Sept. 2014
 C
-
       SUBROUTINE MF012C(ICNN,DELP,DERIV)
 cc      implicit none
 #include "net_flow.h"
@@ -809,12 +810,13 @@ C If DELP > 0 , flow is +ve; ie +ve side to -ve side.
       IF(DELP.GE.0) THEN
         FLW1(ICNN)=RHON(IDPS)*FCOF*(DELP**FEXP)*ctlpos(icnn)
         if (ISWT.eq.0) then
-C         If FLW1 > FMAX then either hold constant (ISWT=0)
+C         If FLW1 > FMAX then hold constant at FMAX
           if (FLW1(ICNN).gt.FMAX) then
               FLW1(ICNN)=RHON(IDPS)*FMAX
           endif
 
         ELSE ! ISWT.eq.1
+C         If DELP > FMAX then close component
           IF (DELP.gt.FMAX) THEN
               FLW1(ICNN)=0.
           ENDIF
@@ -822,12 +824,13 @@ C         If FLW1 > FMAX then either hold constant (ISWT=0)
       ELSE
         FLW1(ICNN)=-RHON(IDNE)*FCOF*(DABS(DELP)**FEXP)*ctlpos(icnn)
         if (ISWT.eq.0) then
-C         If FLW1 > FMAX then either hold constant (ISWT=0)
+C         If FLW1 > FMAX then hold constant at FMAX
           if (dabs(FLW1(ICNN)).gt.FMAX) then
               FLW1(ICNN)=-RHON(IDNE)*FMAX
           endif
 
         ELSE ! ISWT.eq.1
+C         If DELP > FMAX then close component
           IF (DABS(DELP).gt.FMAX) THEN
             FLW1(ICNN)=0.
           ENDIF
