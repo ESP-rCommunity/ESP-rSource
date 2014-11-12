@@ -517,8 +517,25 @@ C Type 11 - trickle ventilator (see notes in esrumfs/mfmach.F MF011C).
         endif
         if(SUPCMP(ICMP,3).LE.0.)
      &    call MFERR(ICMP,' Number of devices cannot be zero.',IER)
-      ELSE IF(ITPCMP(ICMP).EQ. 15) THEN
 
+      ELSE IF(ITPCMP(ICMP).EQ. 12) THEN
+C Type 12 power law volume flow resistance component with upper limit
+C or closing-setpoint.
+        if(NSDC.EQ.6.OR.NSDC.EQ.12)CALL CNTERR(ICMP,5)
+        if((NSDC.NE.5).OR.ISDCNN(ICMP).NE.0)
+     &    call MFERR(ICMP,' Number of suppl data items incorrect.',IER)
+        if(IS1.LT.1.OR.IS1.GT.2)
+     &    call MFERR(ICMP,' Fluid type must be 1 or 2. ',IER)
+        if(SUPCMP(ICMP,2).LT.0.)
+     &    call MFERR(ICMP,' Negative flow coef not allowed.',IER)
+        if(SUPCMP(ICMP,3).LT.0.)
+     &    call MFERR(ICMP,' Negative flow exponent not allowed.',IER)
+        if(SUPCMP(ICMP,4).LT.0.)
+     &    call MFERR(ICMP,' Negative flow/dp setpnt not allowed.',IER)
+        if((SUPCMP(ICMP,5).LT.0.).or.(SUPCMP(ICMP,5).GT.1.))
+     &    call MFERR(ICMP,' Switch 0 or 1!',IER)
+
+      ELSE IF(ITPCMP(ICMP).EQ. 15) THEN
 C Type 15 power law mass flow resistance component.
         if(NSDC.EQ.4.OR.NSDC.EQ.10)CALL CNTERR(ICMP,3)
         if((NSDC.NE.3).OR.ISDCNN(ICMP).NE.0)then
@@ -1004,6 +1021,13 @@ C Provide a heading string for each different component type.
         ELSE IF(ITPCMP(ICMP).EQ. 11) THEN
           WRITE(outs,'(a,F4.1,2(a,G12.5))')' Fluid ',SUPCMP(ICMP,1),
      &      ' Rated flow ',SUPCMP(ICMP,2),' Nb devices ',SUPCMP(ICMP,3)
+          CALL EDISP(itru,outs)
+          written=.true.
+        ELSE IF(ITPCMP(ICMP).EQ. 12) THEN
+          WRITE(outs,'(a,F4.1,3(a,G12.5),a,F4.1)')
+     &      ' Fluid ',SUPCMP(ICMP,1),
+     &      ' coef a ',SUPCMP(ICMP,2),' exponent b ',SUPCMP(ICMP,3),
+     &      ' max val ',SUPCMP(ICMP,4),' switch val',SUPCMP(ICMP,5)
           CALL EDISP(itru,outs)
           written=.true.
         ELSE IF(ITPCMP(ICMP).EQ. 15) THEN

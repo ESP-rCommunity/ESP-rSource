@@ -1230,6 +1230,11 @@ c Mechanical ventilation systems.
 C Declare local variables used to store the conductances caused by
 C mechanical ventilation and infiltration.
       REAL ZONE_mechvent_cond,ZONE_infil_cond
+c --- 27-08-2014: Patrice Pinel: Added parameters to the mechanical ventilation model
+c --- Equivalent ambient air flow rate corresponding to moisture flow rate tntering the zone
+      REAL ZONE_mechvent_moistFlow
+c --- Mechanical ventilation air flow rate
+      REAL ZONE_mechvent_airFlow
 
       REAL, PARAMETER :: SMALL=1.0E-15
 
@@ -1278,6 +1283,12 @@ C Logical flags for indicating which air flow model is in use.
       
 C      Used to check if windows are open or not for AIM
       LOGICAL AreWindowsOpen
+
+c --- 28-08-2014: Patrice Pinel: Initialise mechanical ventilation variables to zero
+c --- This way, nothing will be changed if MECH_VENT_CONTROL is not called
+	ZONE_mechvent_cond = 0.
+	ZONE_mechvent_moistFlow = 0.
+	ZONE_mechvent_airFlow = 0.
 
 C  Initialise.
       IF(NSINC.EQ.1)X3(ICOMP)=0.0
@@ -1765,9 +1776,14 @@ C even when the windows are open.
 C The mechanical ventilation model has its own logic to determine its rates (e.g. HRV)
 C or whether it is on/off
 
-        ZONE_mechvent_cond = 0.                    ! Reset mech vent conductance.
+c --- 27-08-2014: Patrice Pinel: Moved this initialisation to the begining of the routine to ensure nul values are assigned if MECH_VENT_CONTROL is not called
+        !ZONE_mechvent_cond = 0.                    ! Reset mech vent conductance.
         IF( iMech.eq.1) THEN      ! f77 syntax since this file also used by bld.
-          CALL MECH_VENT_CONTROL(ICOMP,ZONE_mechvent_cond) ! Conductance of mech vent returned.
+c --- 27-08-2014: Patrice Pinel: Added a parameter to the mechanical ventilation model
+          !CALL MECH_VENT_CONTROL(ICOMP,ZONE_mechvent_cond) ! Conductance of mech vent returned.
+          CALL MECH_VENT_CONTROL(ICOMP,ZONE_mechvent_cond, 
+     &                           ZONE_mechvent_moistFlow,
+     $                           ZONE_mechvent_airFlow)
           CVIF = CVIF + ZONE_mechvent_cond
         ENDIF
 
@@ -1915,8 +1931,14 @@ C no node in the current zone.
 
 C Check infiltration.
          IF(CVIF.GT.0.0) THEN
-           ZMBI(ICOMP,1)=CVIF/1006.
-           ZMBI(ICOMP,4)=ZMBI(ICOMP,4)+ZMBI(ICOMP,1)
+c --- 27-08-2014: Patrice Pinel: Replace ZONE_mechvent_cond/1006 by ZONE_mechvent_moistFlow in calculation of moisture flow
+           !ZMBI(ICOMP,1)=CVIF/1006.
+           ZMBI(ICOMP,1) = (CVIF-ZONE_mechvent_cond)/1006. 
+     &                      + ZONE_mechvent_moistFlow
+c --- 27-08-2014: Patrice Pinel: This is the flow rate of dry air coming out of the zone and so should reflect the real vantilation flow rate
+           ZMBI(ICOMP,4)=ZMBI(ICOMP,4)+ZMBI(ICOMP,1) 
+     &                                - ZONE_mechvent_moistFlow
+     &                                + ZONE_mechvent_airFlow
          END IF
 
 C Check zone coupled ventilation, If no zone coupled ventilation
@@ -1989,8 +2011,10 @@ C Output computed results.
       write(outs,'(2(a,f12.4))') ' ZCVENT = ',ZCVENT(ICOMP),
      &                           ' ACH    = ',ACH(ICOMP)
       call edisp(itu,outs)
-
-      flowi=CVIF/1006.0		! infiltration mass flow rate
+      
+c --- 27-08-2014: Patrice Pinel: Replace ZONE_mechvent_cond/1006 by ZONE_mechvent_moistFlow in calculation of moisture flow
+      !flowi=CVIF/1006.0		! infiltration mass flow rate
+      flowi = (CVIF-ZONE_mechvent_cond)/1006. + ZONE_mechvent_airFlow
       flowv=CVVF/1006.0		! ventilation mass flow rate
       if(znotair(ICOMP)) then
          flowi=flowi*1006.0/zfldc

@@ -25,6 +25,7 @@ C     MFSOLV
 C     MFNPDV
 C     MF010C
 C     MF011C  Air inlet device self-adjustable, (polinomial)
+C     MF012C  Window vent type opening (power law, derived from type 10)
 C     MF015C
 C     MF017C
 C     MF020C
@@ -229,6 +230,8 @@ C and partial derivative dFlow/d(dPressure)
             CALL MF010C(ICNN,DP,DFDDP)
           ELSE IF(ITCN.EQ. 11) THEN
             CALL MF011C(ICNN,DP,DFDDP)
+          ELSE IF(ITCN.EQ. 12) THEN
+            CALL MF012C(ICNN,DP,DFDDP)
           ELSE IF(ITCN.EQ. 15) THEN
             CALL MF015C(ICNN,DP,DFDDP)
           ELSE IF(ITCN.EQ. 17) THEN
@@ -749,6 +752,99 @@ C If DELP > 0 , flow is +ve; ie +ve side to -ve side.
 C If component is closed the derivative is set equal to zero.
       if((dabs(delp).gt.DBLE(small)).and.((dabs(flw1(icnn))+
      &    dabs(flw2(icnn))).lt.DBLE(small))) deriv=0.0
+
+      RETURN
+      END
+
+C ************* MF012C
+C Fluid mass flow calculation routine for flow component type:
+C Power law volume flow resistance (m = rho.a.dP^b) with max flow
+C rate or cut-off pressure difference. This component allows the
+C representation of various window-frame integrated vents, e.g.
+C Trocal AirTronic, AT15-100.
+C
+C            SUPCMP(ICMP,1) - fluid type (1=air, 2=water)
+C     FCOF = SUPCMP(ICMP,2) - flow coefficient a (m^3/s/Pa^b)
+C     FEXP = SUPCMP(ICMP,3) - flow exponent b (-)
+C     FMAX = SUPCMP(ICMP,4) - max flow rate (m^3/s)/dp_switch
+C     ISWT = SUPCMP(ICMP,5) - switch, 0 max flow rate,
+C                                     1 dp > dp_switch=>close device
+C
+C Author: A. Geissler
+C Creation Date: 24 Sept. 2014
+C
+
+      SUBROUTINE MF012C(ICNN,DELP,DERIV)
+cc      implicit none
+#include "net_flow.h"
+
+      COMMON/mfctl/ctlpos(MCNN)
+      COMMON/MFLOW5/RHON(MNOD)
+      COMMON/MFLOW9/ITPCMP(MCMP),ISDCMP(MCMP),ISDCNN(MCMP),
+     &              SUPCMP(MCMP,MCMS)
+      COMMON/MFLW10/NODPS(MCNN),HGTPS(MCNN),NODNE(MCNN),HGTNE(MCNN),
+     &              ITPCON(MCNN),NDSCNN(MCNN,MCNS)
+      COMMON/MFLRES/FLW1(MCNN),FLW2(MCNN),PRES(MNOD),
+     &              RESID(MNOD),SAFLW(MNOD)
+
+      DOUBLE PRECISION FLW1,FLW2,PRES,RESID,SAFLW
+      DOUBLE PRECISION DELP,DERIV
+
+      integer IDPS,IDNE,ICMP,ISWT
+
+      real FCOF,FEXP,FMAX
+
+      PARAMETER       (SMALL=1.0E-15)
+
+      IDPS=NODPS(ICNN)
+      IDNE=NODNE(ICNN)
+      ICMP=ITPCON(ICNN)
+
+      FCOF=SUPCMP(ICMP,2)
+      FEXP=SUPCMP(ICMP,3)
+      FMAX=SUPCMP(ICMP,4)
+      ISWT=int(SUPCMP(ICMP,5))
+
+C If DELP > 0 , flow is +ve; ie +ve side to -ve side.
+      IF(DELP.GE.0) THEN
+        FLW1(ICNN)=RHON(IDPS)*FCOF*(DELP**FEXP)*ctlpos(icnn)
+        if (ISWT.eq.0) then
+C         If FLW1 > FMAX then either hold constant (ISWT=0)
+          if (FLW1(ICNN).gt.FMAX) then
+              FLW1(ICNN)=RHON(IDPS)*FMAX
+          endif
+
+        ELSE ! ISWT.eq.1
+          IF (DELP.gt.FMAX) THEN
+              FLW1(ICNN)=0.
+          ENDIF
+        endif
+      ELSE
+        FLW1(ICNN)=-RHON(IDNE)*FCOF*(DABS(DELP)**FEXP)*ctlpos(icnn)
+        if (ISWT.eq.0) then
+C         If FLW1 > FMAX then either hold constant (ISWT=0)
+          if (dabs(FLW1(ICNN)).gt.FMAX) then
+              FLW1(ICNN)=-RHON(IDNE)*FMAX
+          endif
+
+        ELSE ! ISWT.eq.1
+          IF (DABS(DELP).gt.FMAX) THEN
+            FLW1(ICNN)=0.
+          ENDIF
+        endif
+      END IF
+
+      FLW2(ICNN)=0.
+
+      IF(DABS(DELP).GT.DBLE(SMALL)) THEN
+         DERIV=FEXP*FLW1(ICNN)/DELP
+      ELSE
+         CALL MFNPDV(ICNN,DELP,DERIV)
+      END IF
+
+C If component is closed the derivative is set equal to zero.
+      if((dabs(delp).gt.DBLE(small)).and.((dabs(flw1(icnn))+
+     & dabs(flw2(icnn))).lt.DBLE(small))) deriv=0.0
 
       RETURN
       END

@@ -3574,13 +3574,13 @@ C.....is handy for testing
       do iElec_node = 1, nenod
 
          if (iElec_node .le. 9) then
-            WRITE (node_num, '(A,I1);')
+            WRITE (node_num, '(A,I1)')
      &           '00', iElec_node
          elseif(iElec_node .le. 99) then
-            WRITE (node_num, '(A,I2);')
+            WRITE (node_num, '(A,I2)')
      &           '0', iElec_node
          else
-            WRITE (node_num, '(I3);')
+            WRITE (node_num, '(I3)')
      &           iElec_node
          endif
 
@@ -4006,11 +4006,11 @@ C.........Loop through all interconnections in a flow network
             if (NODPS(jj) .eq. ii) THEN ! only look for positive side conn. of cur. node
                i_neg = NODNE(jj) ! the node on the other side of the conn.
 
-               write(Connect_Name,'(A,A,A,A,A,A)')
+               write(Connect_Name,'(A,A,A,A,A)')
      &             NDNAM(ii)(1:NDNAM_len),'->',
      &             NDNAM(i_neg)(1:LNBLNK(NDNAM(i_neg))),
-     &             ' (via ',
-     &             CMNAM(ITPCON(jj))(1:LNBLNK(CMNAM(ITPCON(jj)))),')'
+     &             '_via_',
+     &             CMNAM(ITPCON(jj))(1:LNBLNK(CMNAM(ITPCON(jj))))
 
                connect_len = LNBLNK(Connect_name)
        ! pressure drop between nodes of connection ***********************

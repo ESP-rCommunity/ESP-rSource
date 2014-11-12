@@ -2300,7 +2300,8 @@ if [ "$install_training" = "yes" ]; then
   for file in "${cfgnames[@]}"; do
     cfgnum=$((${cfgnum} + 1))
     printf "      -> model ${cfgnum}/${cfgcount} (${file})"
-  #  echo FILE: $file
+  # echo FILE: $file
+
   #
   # Create a list of zone ref numbers and isi files in this cfg file
   #
@@ -2327,25 +2328,14 @@ if [ "$install_training" = "yes" ]; then
 
           if [ "${reuse_ish_calcs}" = "no" ]; then
             printf "\r      -> model ${cfgnum}/${cfgcount} (${file}); zone ${ish_processed_count}/${ish_tag_count}"
-            $ISH -mode text -file ${file:2} -zone ${isi[$((i+1))]} -act update_silent 
+            $ISH -mode text -file ${file:2} -zone ${isi[$((i+1))]} -act update_silent > /dev/null
             shdfile=${file%/*}/${isi[$((i+3))]}
-            cp -f ${shdfile} ${ESPdir}/${shdfile}
-            echo ">>> 1 |${shdfile} > ${ESPdir}/${shdfile} " 
-            exit
-
- 
+            mv -f ${shdfile} ${ESPdir}/${shdfile}
           elif [ "${reuse_ish_calcs}" = "yes" ]; then
             printf "\r      -> model ${cfgnum}/${cfgcount} (${file}); zone ${ish_processed_count}/${ish_tag_count}"
             $ISH -mode text -file ${file:2} -zone ${isi[$((i+1))]} -act useupdate_silent > /dev/null
             shdfile=${file%/*}/${isi[$((i+3))]}
-            cp -f ${shdfile} ${ESPdir}/${shdfile}
-                echo ">>> 2 |${shdfile} > ${ESPdir}/${shdfile} " 
-            if [ -r ${ESPdir}/${shdfile} ]; then 
-                $ISH -mode text -file ${file:2} -zone ${isi[$((i+1))]} -act useupdate_silent 
-                exit 
-            fi
-                
-
+            mv -f ${shdfile} ${ESPdir}/${shdfile}
           fi
         fi
       fi
