@@ -711,6 +711,7 @@ C Set simulation toggles.
 #include "building.h"
 #include "geometry.h"
 #include "plant.h"
+#include "power.h"
 #include "net_flow.h"
 #include "UserSimulationToggles.h"
 
@@ -742,9 +743,7 @@ C Tolerance for iteration of hydrogen flow matrix
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
 
-C Common for electrical file 
-      COMMON/ENTFILE/ENTFLNAM,IENTXIST
-      INTEGER :: ispmxist,ientxist
+      INTEGER :: ispmxist
 
 
       COMMON/GRSD100/IndxSt
@@ -792,7 +791,7 @@ c This common block is used to define the sky temperature calculation method
                                    ! 4 = Swinbank (clear - uses dry bulb T);                  
                                    ! 5 = Swinbank (clear - uses wet bulb T);       
                                                                                                                                                     
-      CHARACTER*72 LAPROB,vsnam,lfil,entflnam
+      CHARACTER*72 LAPROB,vsnam,lfil
       CHARACTER*40 ITEMG(34)
       character SALT*51,spflnam*72,outs*124
       character HCALT*42

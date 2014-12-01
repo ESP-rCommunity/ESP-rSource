@@ -72,8 +72,9 @@ C *********************************************************************
       use h3kmodule
       IMPLICIT NONE
 #include "BATTERY.h"
-#include "power.h"
 #include "building.h"
+#include "plant.h"
+#include "power.h"
 
 C External functions.
       integer lnblnk
@@ -99,53 +100,10 @@ C      COMMON/OUTIN/IUOUT,IUIN
 C      INTEGER iuout            !- write unit number
 C      INTEGER iuin             !- read unit number
 
-C Common holding the power-only component description read from the electric
-C network input file.
-       COMMON/POWC/NPOWCOM,POWCOMNO(MPOWCOM),POWCOMID(MPOWCOM),
-     & POWCOMPHTYP(MPOWCOM),POWCONEN(MPOWCOM,MPHAS),
-     & NPOWCDAT(MPOWCOM),NPOWCDATS(MPOWCOM),POWCDAT(MPOWCOM,MPWDAT)
-       integer npowcom        !- number of power-only components
-       integer powcomno       !- the power-only component reference number
-       integer powcomid       !- power-only component database id number
-       integer powcomphtyp    !- power-only component phase type
-       integer powconen       !- nodes connected to the power-only component
-       integer npowcdat       !- number of data items associated with the power-only component
-       integer npowcdats      !- number of string data items associated with the power-only component
-       real    powcdat        !- power-only component numerical data item
-
        COMMON/FVALA/TFA(MCOM),QFA(MCOM)
        real    tfa            !- air node temperature, future time-row
        real    qfa            !- energy injected at air node, future time-row
 
-
-C Common block storing electrical domain time-row data for additional data items.
-      common / Enet_Power_Time_Row_Data /
-     &    iPow_Time_Row_Count,
-     &    fPow_Time_Row_Present,
-     &    fPow_Time_Row_Future
-      integer iPow_Time_Row_Count ( MPOWCOM ) ! # of additional data items associated with power-only component.
-      real fPow_Time_Row_Present ( MPOWCOM, MEnet_Time_Row_MAX ) ! Component present time-row data
-      real fPow_Time_Row_Future ( MPOWCOM, MEnet_Time_Row_MAX ) ! Component future time-row data
-
-
-C Common holding power generation and loads data for power-only components.
-      COMMON/ENETPOWC/PPOWOC(MPOWCOM),QPOWOC(MPOWCOM),
-     &VPOWC(MPOWCOM)
-      real    ppowoc         !-real power generated/load for power-only component
-      real    qpowoc         !-reactive power generated/load for power-only component
-      complex vpowc          !-voltage of power only component
-
-
-C Node and component names
-      COMMON/ECNAMES/ENODNAM(MENOD),HYCOMNAM(MHYCOM),
-     &HYCOMTYPSTR(MHYCOM),POWCOMNAM(MPOWCOM),POWCDATS(MPOWCOM,MPCDS),
-     &CONECOMNAM(MCONECOM)
-      character ENODNAM*12        !-string holding electrical node name
-      character HYCOMNAM*12       !-string holding hybrid component name
-      character HYCOMTYPSTR*12    !-string containing the hybrid component type
-      character POWCOMNAM*12      !-string holding the power-only component name
-      character POWCDATS*72       !-string data item for a power-only component
-      character CONECOMNAM*12     !-string containing connecting component name
 
 C Common block holding information on the battery's current operation.
 C This will be used by the RE-H2 controller for the time being.  A more
@@ -600,22 +558,10 @@ C
 C *********************************************************************
       SUBROUTINE InitSimulation(IPWC, batTempInit, batDODInit)
       IMPLICIT NONE
+#include "building.h"
+#include "plant.h"
 #include "power.h"
 #include "BATTERY.h"
-
-C Common holding the power-only component description read from the electric
-C network input file.
-       COMMON/POWC/NPOWCOM,POWCOMNO(MPOWCOM),POWCOMID(MPOWCOM),
-     & POWCOMPHTYP(MPOWCOM),POWCONEN(MPOWCOM,MPHAS),
-     & NPOWCDAT(MPOWCOM),NPOWCDATS(MPOWCOM),POWCDAT(MPOWCOM,MPWDAT)
-       integer npowcom        !- number of power-only components
-       integer powcomno       !- the power-only component reference number
-       integer powcomid       !- power-only component database id number
-       integer powcomphtyp    !- power-only component phase type
-       integer powconen       !- nodes connected to the power-only component
-       integer npowcdat       !- number of data items associated with the power-only component
-       integer npowcdats      !- number of string data items associated with the power-only component
-       real    powcdat        !- power-only component numerical data item
 
 C PARAMETERS FROM SIGNATURE
        REAL batTempInit, batDODInit
@@ -693,22 +639,10 @@ C *********************************************************************
       SUBROUTINE InitTimeStep(IPWC,batTFinal,DODFinal,batTInit,DODInit,
      &                          dtTStep)
       IMPLICIT NONE
+#include "building.h"
+#include "plant.h"
 #include "power.h"
 #include "BATTERY.h"
-
-C Common holding the power-only component description read from the electric
-C network input file.
-       COMMON/POWC/NPOWCOM,POWCOMNO(MPOWCOM),POWCOMID(MPOWCOM),
-     & POWCOMPHTYP(MPOWCOM),POWCONEN(MPOWCOM,MPHAS),
-     & NPOWCDAT(MPOWCOM),NPOWCDATS(MPOWCOM),POWCDAT(MPOWCOM,MPWDAT)
-       integer npowcom        !- number of power-only components
-       integer powcomno       !- the power-only component reference number
-       integer powcomid       !- power-only component database id number
-       integer powcomphtyp    !- power-only component phase type
-       integer powconen       !- nodes connected to the power-only component
-       integer npowcdat       !- number of data items associated with the power-only component
-       integer npowcdats      !- number of string data items associated with the power-only component
-       real    powcdat        !- power-only component numerical data item
 
 C PARAMETERS FROM SIGNATURE
       REAL batTFinal,DODFinal,batTInit,DODInit,dtTStep
@@ -837,25 +771,13 @@ C *********************************************************************
       REAL FUNCTION FreeVoltage(IPWC,batDOD)
       IMPLICIT NONE
 #include "BATTERY.h"
+#include "building.h"
+#include "plant.h"
 #include "power.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       INTEGER iuout          !- write unit number
       INTEGER iuin           !- read unit number
-
-C Common holding the power-only component description read from the electric
-C network input file.
-      COMMON/POWC/NPOWCOM,POWCOMNO(MPOWCOM),POWCOMID(MPOWCOM),
-     &POWCOMPHTYP(MPOWCOM),POWCONEN(MPOWCOM,MPHAS),
-     &NPOWCDAT(MPOWCOM),NPOWCDATS(MPOWCOM),POWCDAT(MPOWCOM,MPWDAT)
-      integer npowcom        !- number of power-only components
-      integer powcomno       !- the power-only component reference number
-      integer powcomid       !- power-only component database id number
-      integer powcomphtyp    !- power-only component phase type
-      integer powconen       !- nodes connected to the power-only component
-      integer npowcdat       !- number of data items associated with the power-only component
-      integer npowcdats      !- number of string data items associated with the power-only component
-      real    powcdat        !- power-only component numerical data item
 
 C Common holding NSINC (no of building time step increments) for debugging only
        COMMON/SIMTIM/IHRP,IHRF,IDYP,IDYF,IDWP,IDWF,NSINC,ITS
@@ -946,25 +868,13 @@ C
 C *********************************************************************
       REAL FUNCTION BatteryCap(IPWC,batTemp)
       IMPLICIT NONE
+#include "building.h"
+#include "plant.h"
 #include "power.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       INTEGER iuout          !- write unit number
       INTEGER iuin           !- read unit number
-
-C Common holding the power-only component description read from the electric
-C network input file.
-      COMMON/POWC/NPOWCOM,POWCOMNO(MPOWCOM),POWCOMID(MPOWCOM),
-     &POWCOMPHTYP(MPOWCOM),POWCONEN(MPOWCOM,MPHAS),
-     &NPOWCDAT(MPOWCOM),NPOWCDATS(MPOWCOM),POWCDAT(MPOWCOM,MPWDAT)
-      integer npowcom        !- number of power-only components
-      integer powcomno       !- the power-only component reference number
-      integer powcomid       !- power-only component database id number
-      integer powcomphtyp    !- power-only component phase type
-      integer powconen       !- nodes connected to the power-only component
-      integer npowcdat       !- number of data items associated with the power-only component
-      integer npowcdats      !- number of string data items associated with the power-only component
-      real    powcdat        !- power-only component numerical data item
 
 C PARAMETERS FROM SIGNATURE
       REAL batTemp
@@ -1026,25 +936,13 @@ C
 C *********************************************************************
       REAL FUNCTION BatteryRInt(IPWC,batTemp,batDOD,batI,batMode)
       IMPLICIT NONE
+#include "building.h"
+#include "plant.h"
 #include "power.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       INTEGER iuout          !- write unit number
       INTEGER iuin           !- read unit number
-
-C Common holding the power-only component description read from the electric
-C network input file.
-      COMMON/POWC/NPOWCOM,POWCOMNO(MPOWCOM),POWCOMID(MPOWCOM),
-     &POWCOMPHTYP(MPOWCOM),POWCONEN(MPOWCOM,MPHAS),
-     &NPOWCDAT(MPOWCOM),NPOWCDATS(MPOWCOM),POWCDAT(MPOWCOM,MPWDAT)
-      integer npowcom        !- number of power-only components
-      integer powcomno       !- the power-only component reference number
-      integer powcomid       !- power-only component database id number
-      integer powcomphtyp    !- power-only component phase type
-      integer powconen       !- nodes connected to the power-only component
-      integer npowcdat       !- number of data items associated with the power-only component
-      integer npowcdats      !- number of string data items associated with the power-only component
-      real    powcdat        !- power-only component numerical data item
 
 C PARAMETERS FROM SIGNATURE
       REAL batTemp,batDOD,batI
@@ -1139,26 +1037,14 @@ C -IPWC: power-only component index number
 ! *********************************************************************
       REAL FUNCTION MaxCurrent(IPWC,batTemp,DODInit,batMode,dtTStep)
       IMPLICIT NONE
+#include "building.h"
+#include "plant.h"
 #include "power.h"
 #include "BATTERY.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       INTEGER iuout          !- write unit number
       INTEGER iuin           !- read unit number
-
-C Common holding the power-only component description read from the electric
-C network input file.
-      COMMON/POWC/NPOWCOM,POWCOMNO(MPOWCOM),POWCOMID(MPOWCOM),
-     &POWCOMPHTYP(MPOWCOM),POWCONEN(MPOWCOM,MPHAS),
-     &NPOWCDAT(MPOWCOM),NPOWCDATS(MPOWCOM),POWCDAT(MPOWCOM,MPWDAT)
-      integer npowcom        !- number of power-only components
-      integer powcomno       !- the power-only component reference number
-      integer powcomid       !- power-only component database id number
-      integer powcomphtyp    !- power-only component phase type
-      integer powconen       !- nodes connected to the power-only component
-      integer npowcdat       !- number of data items associated with the power-only component
-      integer npowcdats      !- number of string data items associated with the power-only component
-      real    powcdat        !- power-only component numerical data item
 
 C PARAMETERS FROM SIGNATURE
       REAL batTemp,DODInit,dtTStep
@@ -1346,26 +1232,14 @@ C *********************************************************************
       REAL FUNCTION PowForCur(IPWC,batTemp,DODInit,batMode,dtTStep,
      &                        batCur)
       IMPLICIT NONE
+#include "building.h"
+#include "plant.h"
 #include "BATTERY.h"
 #include "power.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       INTEGER iuout          !- write unit number
       INTEGER iuin           !- read unit number
-
-C Common holding the power-only component description read from the electric
-C network input file.
-      COMMON/POWC/NPOWCOM,POWCOMNO(MPOWCOM),POWCOMID(MPOWCOM),
-     &POWCOMPHTYP(MPOWCOM),POWCONEN(MPOWCOM,MPHAS),
-     &NPOWCDAT(MPOWCOM),NPOWCDATS(MPOWCOM),POWCDAT(MPOWCOM,MPWDAT)
-      integer npowcom        !- number of power-only components
-      integer powcomno       !- the power-only component reference number
-      integer powcomid       !- power-only component database id number
-      integer powcomphtyp    !- power-only component phase type
-      integer powconen       !- nodes connected to the power-only component
-      integer npowcdat       !- number of data items associated with the power-only component
-      integer npowcdats      !- number of string data items associated with the power-only component
-      real    powcdat        !- power-only component numerical data item
 
 C PARAMETERS FROM SIGNATURE
       REAL batTemp, DODInit, dtTStep, batCur
@@ -1475,26 +1349,14 @@ C *********************************************************************
       REAL FUNCTION CurForPow(IPWC,batTemp,DODInit,batMode,dtTStep,
      &                        batPow)
       IMPLICIT NONE
+#include "building.h"
+#include "plant.h"
 #include "power.h"
 #include "BATTERY.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       INTEGER iuout          !- write unit number
       INTEGER iuin           !- read unit number
-
-C Common holding the power-only component description read from the electric
-C network input file.
-      COMMON/POWC/NPOWCOM,POWCOMNO(MPOWCOM),POWCOMID(MPOWCOM),
-     &POWCOMPHTYP(MPOWCOM),POWCONEN(MPOWCOM,MPHAS),
-     &NPOWCDAT(MPOWCOM),NPOWCDATS(MPOWCOM),POWCDAT(MPOWCOM,MPWDAT)
-      integer npowcom        !- number of power-only components
-      integer powcomno       !- the power-only component reference number
-      integer powcomid       !- power-only component database id number
-      integer powcomphtyp    !- power-only component phase type
-      integer powconen       !- nodes connected to the power-only component
-      integer npowcdat       !- number of data items associated with the power-only component
-      integer npowcdats      !- number of string data items associated with the power-only component
-      real    powcdat        !- power-only component numerical data item
 
 C PARAMETERS FROM SIGNATURE
       REAL batTemp, DODInit, dtTStep, batPow
@@ -1607,22 +1469,10 @@ C *********************************************************************
       REAL FUNCTION InternalHeat(IPWC,batTemp,DODInit,batMode,dtTStep,
      &                           batCur)
       IMPLICIT NONE
+#include "building.h"
+#include "plant.h"
 #include "power.h"
 #include "BATTERY.h"
-
-C Common holding the power-only component description read from the electric
-C network input file.
-      COMMON/POWC/NPOWCOM,POWCOMNO(MPOWCOM),POWCOMID(MPOWCOM),
-     &POWCOMPHTYP(MPOWCOM),POWCONEN(MPOWCOM,MPHAS),
-     &NPOWCDAT(MPOWCOM),NPOWCDATS(MPOWCOM),POWCDAT(MPOWCOM,MPWDAT)
-      integer npowcom        !- number of power-only components
-      integer powcomno       !- the power-only component reference number
-      integer powcomid       !- power-only component database id number
-      integer powcomphtyp    !- power-only component phase type
-      integer powconen       !- nodes connected to the power-only component
-      integer npowcdat       !- number of data items associated with the power-only component
-      integer npowcdats      !- number of string data items associated with the power-only component
-      real    powcdat        !- power-only component numerical data item
 
 C PARAMETERS FROM SIGNATURE
       REAL batTemp,DODInit,batCur,dtTStep
@@ -1685,21 +1535,9 @@ C *********************************************************************
       REAL FUNCTION BatFinalTemp(IPWC,batTempInit,dtTStep,pIntHeat,
      &                           pHeaters,zoneTemp)
       IMPLICIT NONE
+#include "building.h"
+#include "plant.h"
 #include "power.h"
-
-C Common holding the power-only component description read from the electric
-C network input file.
-      COMMON/POWC/NPOWCOM,POWCOMNO(MPOWCOM),POWCOMID(MPOWCOM),
-     &POWCOMPHTYP(MPOWCOM),POWCONEN(MPOWCOM,MPHAS),
-     &NPOWCDAT(MPOWCOM),NPOWCDATS(MPOWCOM),POWCDAT(MPOWCOM,MPWDAT)
-      integer npowcom        !- number of power-only components
-      integer powcomno       !- the power-only component reference number
-      integer powcomid       !- power-only component database id number
-      integer powcomphtyp    !- power-only component phase type
-      integer powconen       !- nodes connected to the power-only component
-      integer npowcdat       !- number of data items associated with the power-only component
-      integer npowcdats      !- number of string data items associated with the power-only component
-      real    powcdat        !- power-only component numerical data item
 
 C PARAMETERS FROM SIGNATURE
       REAL batTempInit,dtTStep,pIntHeat,pHeaters,zoneTemp
@@ -1821,22 +1659,10 @@ C
 C *********************************************************************
       REAL Function AvgVolt(IPWC,batTemp,DODInit,batMode,dtTStep,batCur)
       IMPLICIT NONE
+#include "building.h"
+#include "plant.h"
 #include "power.h"
 #include "BATTERY.h"
-
-C Common holding the power-only component description read from the electric
-C network input file.
-      COMMON/POWC/NPOWCOM,POWCOMNO(MPOWCOM),POWCOMID(MPOWCOM),
-     &POWCOMPHTYP(MPOWCOM),POWCONEN(MPOWCOM,MPHAS),
-     &NPOWCDAT(MPOWCOM),NPOWCDATS(MPOWCOM),POWCDAT(MPOWCOM,MPWDAT)
-      integer npowcom        !- number of power-only components
-      integer powcomno       !- the power-only component reference number
-      integer powcomid       !- power-only component database id number
-      integer powcomphtyp    !- power-only component phase type
-      integer powconen       !- nodes connected to the power-only component
-      integer npowcdat       !- number of data items associated with the power-only component
-      integer npowcdats      !- number of string data items associated with the power-only component
-      real    powcdat        !- power-only component numerical data item
 
 C PARAMETERS FROM SIGNATURE
       REAL batTemp,DODInit,dtTStep,batCur
@@ -1945,21 +1771,9 @@ C
 C *********************************************************************
       REAL FUNCTION GetNeededHeat(IPWC,batTIni,dtTStep,batTFin,zoneT)
       IMPLICIT NONE
+#include "building.h"
+#include "plant.h"
 #include "power.h"
-
-C Common holding the power-only component description read from the electric
-C network input file.
-      COMMON/POWC/NPOWCOM,POWCOMNO(MPOWCOM),POWCOMID(MPOWCOM),
-     &POWCOMPHTYP(MPOWCOM),POWCONEN(MPOWCOM,MPHAS),
-     &NPOWCDAT(MPOWCOM),NPOWCDATS(MPOWCOM),POWCDAT(MPOWCOM,MPWDAT)
-      integer npowcom        !- number of power-only components
-      integer powcomno       !- the power-only component reference number
-      integer powcomid       !- power-only component database id number
-      integer powcomphtyp    !- power-only component phase type
-      integer powconen       !- nodes connected to the power-only component
-      integer npowcdat       !- number of data items associated with the power-only component
-      integer npowcdats      !- number of string data items associated with the power-only component
-      real    powcdat        !- power-only component numerical data item
 
 C PARAMETERS FROM SIGNATURE
       REAL batTIni,dtTStep,batTFin,zoneT
@@ -2160,25 +1974,13 @@ c *********************************************************************
      &                    maxC,maxP,pLoad,pBat,pHeaters,
      &                    batVolt,batTFin,batDODFin,batCur,pIntHeat)
       IMPLICIT NONE
+#include "building.h"
+#include "plant.h"
 #include "power.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       INTEGER iuout          !- write unit number
       INTEGER iuin           !- read unit number
-
-C Common holding the power-only component description read from the electric
-C network input file.
-      COMMON/POWC/NPOWCOM,POWCOMNO(MPOWCOM),POWCOMID(MPOWCOM),
-     &POWCOMPHTYP(MPOWCOM),POWCONEN(MPOWCOM,MPHAS),
-     &NPOWCDAT(MPOWCOM),NPOWCDATS(MPOWCOM),POWCDAT(MPOWCOM,MPWDAT)
-      integer npowcom        !- number of power-only components
-      integer powcomno       !- the power-only component reference number
-      integer powcomid       !- power-only component database id number
-      integer powcomphtyp    !- power-only component phase type
-      integer powconen       !- nodes connected to the power-only component
-      integer npowcdat       !- number of data items associated with the power-only component
-      integer npowcdats      !- number of string data items associated with the power-only component
-      real    powcdat        !- power-only component numerical data item
 
 C PARAMETERS FROM SIGNATURE
       REAL batTIni,zoneT,DODIni,dtTStep,maxC,maxP,pLoad,
@@ -2373,25 +2175,13 @@ C *********************************************************************
      &                       maxC,maxP,pLoad,pBat,pHeaters,
      &                       batVolt,batTFin,batDODFin,batCur,pIntHeat)
       IMPLICIT NONE
+#include "building.h"
+#include "plant.h"
 #include "power.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       INTEGER iuout          !- write unit number
       INTEGER iuin           !- read unit number
-
-C Common holding the power-only component description read from the electric
-C network input file.
-      COMMON/POWC/NPOWCOM,POWCOMNO(MPOWCOM),POWCOMID(MPOWCOM),
-     &POWCOMPHTYP(MPOWCOM),POWCONEN(MPOWCOM,MPHAS),
-     &NPOWCDAT(MPOWCOM),NPOWCDATS(MPOWCOM),POWCDAT(MPOWCOM,MPWDAT)
-      integer npowcom        !- number of power-only components
-      integer powcomno       !- the power-only component reference number
-      integer powcomid       !- power-only component database id number
-      integer powcomphtyp    !- power-only component phase type
-      integer powconen       !- nodes connected to the power-only component
-      integer npowcdat       !- number of data items associated with the power-only component
-      integer npowcdats      !- number of string data items associated with the power-only component
-      real    powcdat        !- power-only component numerical data item
 
 C PARAMETERS FROM SIGNATURE
       REAL batTIni,zoneT,DODIni,dtTStep,maxC,maxP,pLoad,pBat,pHeaters,
@@ -2613,25 +2403,13 @@ C -IPWC: power-only component index number
       IMPLICIT NONE
 C     THIS FUNCTION MAY BE REPLACED BY THE MaxCurrent FUNCTION LATER
 
+#include "building.h"
+#include "plant.h"
 #include "power.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       INTEGER iuout          !- write unit number
       INTEGER iuin           !- read unit number
-
-C Common holding the power-only component description read from the electric
-C network input file.
-      COMMON/POWC/NPOWCOM,POWCOMNO(MPOWCOM),POWCOMID(MPOWCOM),
-     &POWCOMPHTYP(MPOWCOM),POWCONEN(MPOWCOM,MPHAS),
-     &NPOWCDAT(MPOWCOM),NPOWCDATS(MPOWCOM),POWCDAT(MPOWCOM,MPWDAT)
-      integer npowcom        !- number of power-only components
-      integer powcomno       !- the power-only component reference number
-      integer powcomid       !- power-only component database id number
-      integer powcomphtyp    !- power-only component phase type
-      integer powconen       !- nodes connected to the power-only component
-      integer npowcdat       !- number of data items associated with the power-only component
-      integer npowcdats      !- number of string data items associated with the power-only component
-      real    powcdat        !- power-only component numerical data item
 
 C PARAMETERS FROM SIGNATURE
       REAL batTemp,DODInit,dtTStep
@@ -2774,26 +2552,14 @@ C *********************************************************************
       SUBROUTINE BatteryLife(IPWC,dtTStep,batMode,batCurFin,
      &         batTemp,DODEnd)
       IMPLICIT NONE
+#include "building.h"
+#include "plant.h"
 #include "power.h"
 #include "BATTERY.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       INTEGER iuout          !- write unit number
       INTEGER iuin           !- read unit number
-
-C Common holding the power-only component description read from the electric
-C network input file.
-      COMMON/POWC/NPOWCOM,POWCOMNO(MPOWCOM),POWCOMID(MPOWCOM),
-     &POWCOMPHTYP(MPOWCOM),POWCONEN(MPOWCOM,MPHAS),
-     &NPOWCDAT(MPOWCOM),NPOWCDATS(MPOWCOM),POWCDAT(MPOWCOM,MPWDAT)
-      integer npowcom        !- number of power-only components
-      integer powcomno       !- the power-only component reference number
-      integer powcomid       !- power-only component database id number
-      integer powcomphtyp    !- power-only component phase type
-      integer powconen       !- nodes connected to the power-only component
-      integer npowcdat       !- number of data items associated with the power-only component
-      integer npowcdats      !- number of string data items associated with the power-only component
-      real    powcdat        !- power-only component numerical data item
 
 C PARAMETERS FROM SIGNATURE
       REAL dtTStep,batCurFin,batTemp,DODEnd
@@ -2982,26 +2748,14 @@ C
 C *********************************************************************
       REAL FUNCTION OCV_VRB(IPWC,batDOD, current, batMode)
       IMPLICIT NONE
+#include "building.h"
+#include "plant.h"
 #include "power.h"
 #include "BATTERY.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       INTEGER iuout          !- write unit number
       INTEGER iuin           !- read unit number
-
-C Common holding the power-only component description read from the electric
-C network input file.
-      COMMON/POWC/NPOWCOM,POWCOMNO(MPOWCOM),POWCOMID(MPOWCOM),
-     &POWCOMPHTYP(MPOWCOM),POWCONEN(MPOWCOM,MPHAS),
-     &NPOWCDAT(MPOWCOM),NPOWCDATS(MPOWCOM),POWCDAT(MPOWCOM,MPWDAT)
-      integer npowcom        !- number of power-only components
-      integer powcomno       !- the power-only component reference number
-      integer powcomid       !- power-only component database id number
-      integer powcomphtyp    !- power-only component phase type
-      integer powconen       !- nodes connected to the power-only component
-      integer npowcdat       !- number of data items associated with the power-only component
-      integer npowcdats      !- number of string data items associated with the power-only component
-      real    powcdat        !- power-only component numerical data item
 
 C Common holding NSINC (no of building time step increments) for debugging only
        COMMON/SIMTIM/IHRP,IHRF,IDYP,IDYF,IDWP,IDWF,NSINC,ITS
@@ -3179,25 +2933,13 @@ C
 C *********************************************************************
       REAL FUNCTION RInt_VRB(IPWC,batTemp,batDOD,batI,batMode)
       IMPLICIT NONE
+#include "building.h"
+#include "plant.h"
 #include "power.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       INTEGER iuout          !- write unit number
       INTEGER iuin           !- read unit number
-
-C Common holding the power-only component description read from the electric
-C network input file.
-      COMMON/POWC/NPOWCOM,POWCOMNO(MPOWCOM),POWCOMID(MPOWCOM),
-     &POWCOMPHTYP(MPOWCOM),POWCONEN(MPOWCOM,MPHAS),
-     &NPOWCDAT(MPOWCOM),NPOWCDATS(MPOWCOM),POWCDAT(MPOWCOM,MPWDAT)
-      integer npowcom        !- number of power-only components
-      integer powcomno       !- the power-only component reference number
-      integer powcomid       !- power-only component database id number
-      integer powcomphtyp    !- power-only component phase type
-      integer powconen       !- nodes connected to the power-only component
-      integer npowcdat       !- number of data items associated with the power-only component
-      integer npowcdats      !- number of string data items associated with the power-only component
-      real    powcdat        !- power-only component numerical data item
 
 C PARAMETERS FROM SIGNATURE
       REAL batTemp,batDOD,batI
@@ -3277,22 +3019,10 @@ C
 C *********************************************************************
       REAL Function FinalDOD_VRB(IPWC,DODIni,batMode,dtTStep,batCur)
       IMPLICIT NONE
+#include "building.h"
+#include "plant.h"
 #include "power.h"
 #include "BATTERY.h"
-
-C Common holding the power-only component description read from the electric
-C network input file.
-      COMMON/POWC/NPOWCOM,POWCOMNO(MPOWCOM),POWCOMID(MPOWCOM),
-     &POWCOMPHTYP(MPOWCOM),POWCONEN(MPOWCOM,MPHAS),
-     &NPOWCDAT(MPOWCOM),NPOWCDATS(MPOWCOM),POWCDAT(MPOWCOM,MPWDAT)
-      integer npowcom        !- number of power-only components
-      integer powcomno       !- the power-only component reference number
-      integer powcomid       !- power-only component database id number
-      integer powcomphtyp    !- power-only component phase type
-      integer powconen       !- nodes connected to the power-only component
-      integer npowcdat       !- number of data items associated with the power-only component
-      integer npowcdats      !- number of string data items associated with the power-only component
-      real    powcdat        !- power-only component numerical data item
 
 C PARAMETERS FROM SIGNATURE
       REAL DODIni,dtTStep,batCur
@@ -3367,21 +3097,9 @@ C *********************************************************************
      &                       maxC,maxP,pLoad,pBat,pHeaters,pParasitic,
      &                       batVolt,batTFin,batDODFin,batCur,pIntHeat)
       IMPLICIT NONE
+#include "building.h"
+#include "plant.h"
 #include "power.h"
-
-C Common holding the power-only component description read from the electric
-C network input file.
-      COMMON/POWC/NPOWCOM,POWCOMNO(MPOWCOM),POWCOMID(MPOWCOM),
-     &POWCOMPHTYP(MPOWCOM),POWCONEN(MPOWCOM,MPHAS),
-     &NPOWCDAT(MPOWCOM),NPOWCDATS(MPOWCOM),POWCDAT(MPOWCOM,MPWDAT)
-      integer npowcom        !- number of power-only components
-      integer powcomno       !- the power-only component reference number
-      integer powcomid       !- power-only component database id number
-      integer powcomphtyp    !- power-only component phase type
-      integer powconen       !- nodes connected to the power-only component
-      integer npowcdat       !- number of data items associated with the power-only component
-      integer npowcdats      !- number of string data items associated with the power-only component
-      real    powcdat        !- power-only component numerical data item
 
 C PARAMETERS FROM SIGNATURE
       REAL batTIni,zoneT,DODIni,dtTStep,maxC,maxP,pLoad,pBat,pHeaters,
@@ -3476,25 +3194,13 @@ c *********************************************************************
      &                    maxC,maxP,pLoad,pBat,pHeaters,pParasitic,
      &                    batVolt,batTFin,batDODFin,batCur,pIntHeat)
       IMPLICIT NONE
+#include "building.h"
+#include "plant.h"
 #include "power.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       INTEGER iuout          !- write unit number
       INTEGER iuin           !- read unit number
-
-C Common holding the power-only component description read from the electric
-C network input file.
-      COMMON/POWC/NPOWCOM,POWCOMNO(MPOWCOM),POWCOMID(MPOWCOM),
-     &POWCOMPHTYP(MPOWCOM),POWCONEN(MPOWCOM,MPHAS),
-     &NPOWCDAT(MPOWCOM),NPOWCDATS(MPOWCOM),POWCDAT(MPOWCOM,MPWDAT)
-      integer npowcom        !- number of power-only components
-      integer powcomno       !- the power-only component reference number
-      integer powcomid       !- power-only component database id number
-      integer powcomphtyp    !- power-only component phase type
-      integer powconen       !- nodes connected to the power-only component
-      integer npowcdat       !- number of data items associated with the power-only component
-      integer npowcdats      !- number of string data items associated with the power-only component
-      real    powcdat        !- power-only component numerical data item
 
 C PARAMETERS FROM SIGNATURE
       REAL batTIni,zoneT,DODIni,dtTStep,maxC,maxP,pLoad,pBat,pHeaters,
@@ -3612,26 +3318,14 @@ C
 C *********************************************************************
       REAL FUNCTION BatteryCap_Lion(IPWC,batTemp,batCur)
       IMPLICIT NONE
+#include "building.h"
+#include "plant.h"
 #include "power.h"
 #include "BATTERY.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       INTEGER iuout          !- write unit number
       INTEGER iuin           !- read unit number
-
-C Common holding the power-only component description read from the electric
-C network input file.
-      COMMON/POWC/NPOWCOM,POWCOMNO(MPOWCOM),POWCOMID(MPOWCOM),
-     &POWCOMPHTYP(MPOWCOM),POWCONEN(MPOWCOM,MPHAS),
-     &NPOWCDAT(MPOWCOM),NPOWCDATS(MPOWCOM),POWCDAT(MPOWCOM,MPWDAT)
-      integer npowcom        !- number of power-only components
-      integer powcomno       !- the power-only component reference number
-      integer powcomid       !- power-only component database id number
-      integer powcomphtyp    !- power-only component phase type
-      integer powconen       !- nodes connected to the power-only component
-      integer npowcdat       !- number of data items associated with the power-only component
-      integer npowcdats      !- number of string data items associated with the power-only component
-      real    powcdat        !- power-only component numerical data item
 
 C PARAMETERS FROM SIGNATURE
       REAL batTemp, batCur
@@ -3705,25 +3399,13 @@ C
 C *********************************************************************
       REAL FUNCTION temp_factor_lion(IPWC,batTemp)
       IMPLICIT NONE
+#include "building.h"
+#include "plant.h"
 #include "power.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       INTEGER iuout          !- write unit number
       INTEGER iuin           !- read unit number
-
-C Common holding the power-only component description read from the electric
-C network input file.
-      COMMON/POWC/NPOWCOM,POWCOMNO(MPOWCOM),POWCOMID(MPOWCOM),
-     &POWCOMPHTYP(MPOWCOM),POWCONEN(MPOWCOM,MPHAS),
-     &NPOWCDAT(MPOWCOM),NPOWCDATS(MPOWCOM),POWCDAT(MPOWCOM,MPWDAT)
-      integer npowcom        !- number of power-only components
-      integer powcomno       !- the power-only component reference number
-      integer powcomid       !- power-only component database id number
-      integer powcomphtyp    !- power-only component phase type
-      integer powconen       !- nodes connected to the power-only component
-      integer npowcdat       !- number of data items associated with the power-only component
-      integer npowcdats      !- number of string data items associated with the power-only component
-      real    powcdat        !- power-only component numerical data item
 
 C PARAMETERS FROM SIGNATURE
       REAL batTemp
@@ -3825,25 +3507,13 @@ C
 C *********************************************************************
       REAL FUNCTION rate_factor_lion(IPWC,batCur)
       IMPLICIT NONE
+#include "building.h"
+#include "plant.h"
 #include "power.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       INTEGER iuout          !- write unit number
       INTEGER iuin           !- read unit number
-
-C Common holding the power-only component description read from the electric
-C network input file.
-      COMMON/POWC/NPOWCOM,POWCOMNO(MPOWCOM),POWCOMID(MPOWCOM),
-     &POWCOMPHTYP(MPOWCOM),POWCONEN(MPOWCOM,MPHAS),
-     &NPOWCDAT(MPOWCOM),NPOWCDATS(MPOWCOM),POWCDAT(MPOWCOM,MPWDAT)
-      integer npowcom        !- number of power-only components
-      integer powcomno       !- the power-only component reference number
-      integer powcomid       !- power-only component database id number
-      integer powcomphtyp    !- power-only component phase type
-      integer powconen       !- nodes connected to the power-only component
-      integer npowcdat       !- number of data items associated with the power-only component
-      integer npowcdats      !- number of string data items associated with the power-only component
-      real    powcdat        !- power-only component numerical data item
 
 C PARAMETERS FROM SIGNATURE
       REAL batCur
@@ -3946,25 +3616,13 @@ C
 C *********************************************************************
       REAL FUNCTION OCV_Lion(IPWC,batDOD,batTemp)
       IMPLICIT NONE
+#include "building.h"
+#include "plant.h"
 #include "power.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       INTEGER iuout          !- write unit number
       INTEGER iuin           !- read unit number
-
-C Common holding the power-only component description read from the electric
-C network input file.
-      COMMON/POWC/NPOWCOM,POWCOMNO(MPOWCOM),POWCOMID(MPOWCOM),
-     &POWCOMPHTYP(MPOWCOM),POWCONEN(MPOWCOM,MPHAS),
-     &NPOWCDAT(MPOWCOM),NPOWCDATS(MPOWCOM),POWCDAT(MPOWCOM,MPWDAT)
-      integer npowcom        !- number of power-only components
-      integer powcomno       !- the power-only component reference number
-      integer powcomid       !- power-only component database id number
-      integer powcomphtyp    !- power-only component phase type
-      integer powconen       !- nodes connected to the power-only component
-      integer npowcdat       !- number of data items associated with the power-only component
-      integer npowcdats      !- number of string data items associated with the power-only component
-      real    powcdat        !- power-only component numerical data item
 
 C Common holding NSINC (no of building time step increments) for debugging only
        COMMON/SIMTIM/IHRP,IHRF,IDYP,IDYF,IDWP,IDWF,NSINC,ITS
@@ -4072,25 +3730,13 @@ C
 C *********************************************************************
       REAL FUNCTION RInt_Lion(IPWC,batDOD,batMode,batCur)
       IMPLICIT NONE
+#include "building.h"
+#include "plant.h"
 #include "power.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       INTEGER iuout          !- write unit number
       INTEGER iuin           !- read unit number
-
-C Common holding the power-only component description read from the electric
-C network input file.
-      COMMON/POWC/NPOWCOM,POWCOMNO(MPOWCOM),POWCOMID(MPOWCOM),
-     &POWCOMPHTYP(MPOWCOM),POWCONEN(MPOWCOM,MPHAS),
-     &NPOWCDAT(MPOWCOM),NPOWCDATS(MPOWCOM),POWCDAT(MPOWCOM,MPWDAT)
-      integer npowcom        !- number of power-only components
-      integer powcomno       !- the power-only component reference number
-      integer powcomid       !- power-only component database id number
-      integer powcomphtyp    !- power-only component phase type
-      integer powconen       !- nodes connected to the power-only component
-      integer npowcdat       !- number of data items associated with the power-only component
-      integer npowcdats      !- number of string data items associated with the power-only component
-      real    powcdat        !- power-only component numerical data item
 
 C PARAMETERS FROM SIGNATURE
       REAL batDOD, batCur
@@ -4193,25 +3839,13 @@ c *********************************************************************
       REAL FUNCTION voltage_offset_temp(IPWC,batTemp)
 
       IMPLICIT NONE
+#include "building.h"
+#include "plant.h"
 #include "power.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       INTEGER iuout          !- write unit number
       INTEGER iuin           !- read unit number
-
-C Common holding the power-only component description read from the electric
-C network input file.
-      COMMON/POWC/NPOWCOM,POWCOMNO(MPOWCOM),POWCOMID(MPOWCOM),
-     &POWCOMPHTYP(MPOWCOM),POWCONEN(MPOWCOM,MPHAS),
-     &NPOWCDAT(MPOWCOM),NPOWCDATS(MPOWCOM),POWCDAT(MPOWCOM,MPWDAT)
-      integer npowcom        !- number of power-only components
-      integer powcomno       !- the power-only component reference number
-      integer powcomid       !- power-only component database id number
-      integer powcomphtyp    !- power-only component phase type
-      integer powconen       !- nodes connected to the power-only component
-      integer npowcdat       !- number of data items associated with the power-only component
-      integer npowcdats      !- number of string data items associated with the power-only component
-      real    powcdat        !- power-only component numerical data item
 
 C PARAMETERS FROM SIGNATURE
       REAL batTemp
@@ -4329,6 +3963,8 @@ c *********************************************************************
      &                    hiVoltLion,loVoltLion,hiTempLion,loTempLion,
      &                    gas_constant, cycles_used_Lion)
       IMPLICIT NONE
+#include "building.h"
+#include "plant.h"
 #include "power.h"
 
       COMMON/OUTIN/IUOUT,IUIN
@@ -4337,20 +3973,6 @@ c *********************************************************************
 
       common/pctstp/ntstpp
       integer ntstpp            ! number of plant timesteps / building timestep
-
-C Common holding the power-only component description read from the electric
-C network input file.
-      COMMON/POWC/NPOWCOM,POWCOMNO(MPOWCOM),POWCOMID(MPOWCOM),
-     &POWCOMPHTYP(MPOWCOM),POWCONEN(MPOWCOM,MPHAS),
-     &NPOWCDAT(MPOWCOM),NPOWCDATS(MPOWCOM),POWCDAT(MPOWCOM,MPWDAT)
-      integer npowcom        !- number of power-only components
-      integer powcomno       !- the power-only component reference number
-      integer powcomid       !- power-only component database id number
-      integer powcomphtyp    !- power-only component phase type
-      integer powconen       !- nodes connected to the power-only component
-      integer npowcdat       !- number of data items associated with the power-only component
-      integer npowcdats      !- number of string data items associated with the power-only component
-      real    powcdat        !- power-only component numerical data item
 
 C PARAMETERS FROM SIGNATURE (see routine comments for description)
       REAL batTIni,zoneT,DODIni,dtTStep,maxC,maxP,pLoad,pBat,pHeaters,

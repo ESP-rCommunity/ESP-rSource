@@ -138,6 +138,8 @@ C Glasgow, UK.
 
       subroutine spmcmp1(icomp,ispmnod)
 #include "building.h"
+#include "plant.h"
+#include "power.h"
 
 C N.B. All parameters comply with the Fortran implicit naming convention
 C except where explicitly redefined.
@@ -145,7 +147,6 @@ C except where explicitly redefined.
       common/tc/itc,icnt
       common/trace/itcf,itrace(mtrace),izntrc(mcom),itu
       common/simtim/ihrp,ihrf,idyp,idyf,idwp,idwf,nsinc,its
-      common/enetspm/pspm(mspmnod),qspm(mspmnod),vspm(mspmnod)
       common/resspm/ndatspm(mspmnod),dataspm(mspmnod,8),
      &         strspm(mspmnod,8),unitspm(mspmnod,8),txtspm(mspmnod,8)
       common/zonspmf/zspmf1(mcom),zspmf2(mcom)
@@ -167,7 +168,6 @@ C except where explicitly redefined.
       real isc,imp,k,io,il,imod,iiter
       character spmlabel*16,outs*124,spflnam*72,strspm*16,unitspm*16,
      &          txtspm*72
-      complex vspm
 
 C Explicit definitions.
       REAL VOC,VMP,QREF,TREF,SCELL,PBRCH,EMPV,VALF,
@@ -447,14 +447,14 @@ C    1 - nominal panel efficiency (%).
 
       subroutine spmcmp2(icomp,ispmnod)
 #include "building.h"
+#include "plant.h"
+#include "power.h"
 
 C N.B. All parameters comply with the Fortran implicit naming convention
 C except where explicitly redefined.
       common/tc/itc,icnt
       common/trace/itcf,itrace(mtrace),izntrc(mcom),itu
       common/simtim/ihrp,ihrf,idyp,idyf,idwp,idwf,nsinc,its
-      common/enetspm/pspm(mspmnod),qspm(mspmnod),
-     &               vspm(mspmnod)
       common/resspm/ndatspm(mspmnod),dataspm(mspmnod,8),
      &         strspm(mspmnod,8),unitspm(mspmnod,8),txtspm(mspmnod,8)
       common/zonspmf/zspmf1(mcom),zspmf2(mcom)
@@ -474,7 +474,6 @@ C except where explicitly redefined.
      &                                                    exshadf(ms)
 
       real neff
-      complex vspm
       character spmlabel*16, outs*124,spflnam*72,strspm*16,unitspm*16,
      &          txtspm*72
 
@@ -598,6 +597,7 @@ C   15 - default turbulence intensity (-)
 #include "plant.h"
 #include "net_flow.h"
 #include "esprdbfile.h"
+#include "power.h"
 
 C N.B. All parameters comply with the Fortran implicit naming
 C convention except where explicitly redefined.
@@ -607,8 +607,6 @@ C convention except where explicitly redefined.
       common/trace/itcf,itrace(mtrace),izntrc(mcom),itu
       common/simtim/ihrp,ihrf,idyp,idyf,idwp,idwf,nsinc,its
       common/pers/isd1,ism1,isd2,ism2,isds,isdf,ntstep
-      common/enetspm/pspm(mspmnod),qspm(mspmnod),
-     &vspm(mspmnod)
       common/resspm/ndatspm(mspmnod),dataspm(mspmnod,8),
      &         strspm(mspmnod,8),unitspm(mspmnod,8),txtspm(mspmnod,8)
       common/zonspmf/zspmf1(mcom),zspmf2(mcom)
@@ -623,7 +621,6 @@ C convention except where explicitly redefined.
       common/climi/qfp,qff,tp,tf,qdp,qdf,vp,vf,dp,df,hp,hf
 
       real minu,maxu,minv,maxv,inc
-      complex vspm
       logical unixok
 
       character spmlabel*16,outs*124,spflnam*72,laprob*72,strspm*16,
@@ -1201,6 +1198,8 @@ C        ageing, soiling, snow cover,blocking diodes and wiring.
       implicit none
 
 #include "building.h"
+#include "plant.h"
+#include "power.h"
 
       integer icomp		!- zone number
       integer ispmnod		!- special material node index
@@ -1212,11 +1211,6 @@ C I/O.
       integer iuin		!- read unit number
 
 C Special materials.
-      common/enetspm/pspm(mspmnod),qspm(mspmnod),vspm(mspmnod)
-      real pspm			!- real power of special material
-      real qspm			!- reactive power load/generation of special material
-      complex vspm		!- voltage of special material node
-
       common/resspm/ndatspm(mspmnod),dataspm(mspmnod,8),
      &         strspm(mspmnod,8),unitspm(mspmnod,8),txtspm(mspmnod,8)
       integer   ndatspm		!- number of data items for special material
@@ -1885,9 +1879,10 @@ C   11 - default turbulence intensity (-)
 
       subroutine spmcmp6(icomp,ispmnod)
 #include "building.h"
-C #include "plant.h"
+#include "plant.h"
 #include "net_flow.h"
 C #include "esprdbfile.h"
+#include "power.h"
 
 C N.B. All parameters comply with the Fortran implicit naming
 C convention except where explicitly redefined.
@@ -1895,8 +1890,6 @@ C convention except where explicitly redefined.
       common/trace/itcf,itrace(mtrace),izntrc(mcom),itu
       common/simtim/ihrp,ihrf,idyp,idyf,idwp,idwf,nsinc,its
       common/pers/isd1,ism1,isd2,ism2,isds,isdf,ntstep
-      common/enetspm/pspm(mspmnod),qspm(mspmnod),
-     &vspm(mspmnod)
       common/resspm/ndatspm(mspmnod),dataspm(mspmnod,8),
      &         strspm(mspmnod,8),unitspm(mspmnod,8),txtspm(mspmnod,8)
       common/zonspmf/zspmf1(mcom),zspmf2(mcom)
@@ -1910,7 +1903,6 @@ C convention except where explicitly redefined.
       real minu,minv,inc
       real hdwti,tarea,pvcoeff,ciwspd,ratewspd,refh,turbi
       integer nturb,iloc,iwstat,iprof
-      complex vspm
 
       character spmlabel*16,outs*124,spflnam*72,strspm*16,
      &          unitspm*16,txtspm*72

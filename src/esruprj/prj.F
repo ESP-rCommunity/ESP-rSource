@@ -1471,6 +1471,8 @@ C simula commissions technical assessments and analysis.
       subroutine simula(ier)
 #include "building.h"
 #include "model.h"
+#include "plant.h"
+#include "power.h"
 #include "sbem.h"
 #include "ipvdata.h"
 #include "net_flow.h"
@@ -1508,7 +1510,6 @@ C ispnstep (plant timesteps/hr), issave (results save level).
       integer noimg  ! number of images
       integer iton   ! zero if images not yet shown, one if yes
       common/imagfi/noimg,iton
-      COMMON/ENTFILE/ENTFLNAM,IENTXIST
       common/user/browse
 
       dimension ITEMS(25)
@@ -1516,7 +1517,7 @@ C ispnstep (plant timesteps/hr), issave (results save level).
       character doit*248,tmode*8,ITEMS*34,key*1
       character sblres*72,sflres*72,splres*72,smstres*72,sipvres*72
       character selres*72,spflnam*72,longtfile*144,longtfiledos*144
-      CHARACTER*72 LAPROB,ENTFLNAM,lipvdatf
+      CHARACTER*72 LAPROB,lipvdatf
       character cr*32,spfdescr*8,ipvaction*3
 
 C dd is character array for selecting simulation parameter sets.

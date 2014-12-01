@@ -109,18 +109,14 @@ C are available: the default Newton-Raphson solution and the simpler but slower
 C Gauss-Siedel solution (used mainly as a reference solver).
 
       SUBROUTINE ENETMATX
-#include "power.h"
 #include "building.h"
+#include "plant.h"
+#include "power.h"
 
 C Trace
       COMMON/TC/ITC,ICNT
       COMMON/TRACE/ITCF,ITRACE(MTRACE),IZNTRC(MCOM),ITU
       COMMON/SIMTIM/IHRP,IHRF,IDYP,IDYF,IDWP,IDWF,NSINC,ITS
-
-C The electrical nodes
-      COMMON/ENOD/NENOD,ENODNO(MENOD),ENODPHTYP(MENOD),
-     &ENODPH(MENOD),ENODTYP(MENOD),ENODBASEV(MENOD),
-     &ENODBASEP
 
 C The electrical network solution parameters.
       COMMON/ENETSIMP/ENETMAXI,ENETSLVT,ENETVCVG,ENETACVG,ENETVLIM,
@@ -128,10 +124,10 @@ C The electrical network solution parameters.
 
       COMMON/OUTIN/IUOUT,IUIN
 
-      INTEGER ENETMAXI,ENETSLVT,ENODCVGF,IENTER,NENOD,
-     &ENODNO,ENODPHTYP,ENODPH,ENODTYP
+      INTEGER ENETMAXI,ENETSLVT,ENODCVGF
+      INTEGER IENTER
 
-      REAL ENETVCVG,ENETACVG,ENETVLIM,ENODBASEV,ENODBASEP
+      REAL ENETVCVG,ENETACVG,ENETVLIM
 
       LOGICAL CVGCHK
 
@@ -245,14 +241,14 @@ C Subroutine ENETSETIM sets the electrical network simulation time variables ENE
 C and ENETIMEP based on the simulation type.
 C
       SUBROUTINE ENETSETIM
+#include "building.h"
+#include "plant.h"
+#include "power.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/C6/INDCFG
-      COMMON/ENETIME/ENETIMEF,ENETIMEP
       COMMON/BTIME/BTIMEP,BTIMEF
       COMMON/PTIME/PTIMEP,PTIMEF  
-
-      COMMON/ENETDELTAT/IETSET,ENETSTP
 
       COMMON/PERS/ISD1,ISM1,ISD2,ISM2,ISDS,ISDF,NTSTEP
       COMMON/PCTSTP/NTSTPP
@@ -330,8 +326,9 @@ C ******************************************************************************
 
       SUBROUTINE EJMTXSET
 
-#include "power.h"
 #include "building.h"
+#include "plant.h"
+#include "power.h"
       
       integer lnblnk  ! function definition
 
@@ -340,31 +337,12 @@ C Trace
       COMMON/TRACE/ITCF,ITRACE(MTRACE),IZNTRC(MCOM),ITU
       COMMON/SIMTIM/IHRP,IHRF,IDYP,IDYF,IDWP,IDWF,NSINC,ITS
 
-C The electrical network
-      COMMON/ENET/ENTYPE
-
-C The electrical nodes
-      COMMON/ENOD/NENOD,ENODNO(MENOD),ENODPHTYP(MENOD),
-     &ENODPH(MENOD),ENODTYP(MENOD),ENODBASEV(MENOD),
-     &ENODBASEP
-
-C The per-unit nodal boundary conditions
-      COMMON/ENODBCPU/PENODPU(MENOD),QENODPU(MENOD)
-
-C The array of driving port and transfer admittances
-      COMMON/YARRY/NYELM,YADM(MENOD,MENOD)
-
 C The electrical network jacobian solution matrix
       COMMON/ENETMTRX/JACOBEL(MJROW,MJCOL),EMATJZ(MJROW),
      &EDELTA(MJROW)
 
 
-C The PER-UNIT electrical network state variables used in the iteration
-      COMMON/ENETVPU/VOLTPUP(MENOD),VOLTPUF(MENOD)
-
-      COMPLEX VOLTPUP,VOLTPUF,YADM,SUMVY,SENODPU
-      INTEGER NENOD,ENODNO,ENODPHTYP,ENODPH,ENODTYP,ENTYPE,NYELM
-      REAL ENODBASEV,ENODBASEP,PENODPU,QENODPU
+      COMPLEX SUMVY,SENODPU
       DOUBLE PRECISION JACOBEL,EMATJZ,EDELTA
 
       CHARACTER OUTS*124
@@ -609,56 +587,34 @@ C network power flow.
 
       SUBROUTINE ENETGAUS
 
-#include "power.h"
 #include "building.h"
 #include "plant.h"
+#include "power.h"
 
 C Trace
       COMMON/TC/ITC,ICNT
       COMMON/TRACE/ITCF,ITRACE(MTRACE),IZNTRC(MCOM),ITU
       COMMON/SIMTIM/IHRP,IHRF,IDYP,IDYF,IDWP,IDWF,NSINC,ITS
 
-
-C The electrical nodes
-      COMMON/ENOD/NENOD,ENODNO(MENOD),ENODPHTYP(MENOD),
-     &ENODPH(MENOD),ENODTYP(MENOD),ENODBASEV(MENOD),
-     &ENODBASEP
-
-C The per-unit nodal boundary conditions
-      COMMON/ENODBCPU/PENODPU(MENOD),QENODPU(MENOD)
-
-C The array of driving port and transfer admittances
-      COMMON/YARRY/NYELM,YADM(MENOD,MENOD)
-
-C The PER-UNIT electrical network state variables used in the iteration
-      COMMON/ENETVPU/VOLTPUP(MENOD),VOLTPUF(MENOD)
-
       COMMON/ENETSIMP/ENETMAXI,ENETSLVT,ENETVCVG,ENETACVG,ENETVLIM,
      &ENODCVGF(MENOD),CVGCHK
 
-      REAL PENODPU,QENODPU,ENETVLIMPU,ENODBASEV,ENODBASEP,ENETVCVG,
-     &ENETACVG,ENETVLIM
-      COMPLEX VOLTPUP,VOLTPUF,YADM,ENODAP,ENODI
-      INTEGER NYELM,NENOD,ENODNO,ENODPHTYP,ENODPH,ENODTYP,
-     &ENETSLVT,ENODCVGF,ENETMAXI
+      REAL ENETVLIMPU,ENETVCVG,ENETACVG,ENETVLIM
+      COMPLEX ENODAP,ENODI
       LOGICAL CLOSE,CVGCHK
       CHARACTER*124 OUTS
 
 C Hybrid components that calculate nodal voltages
       COMMON/calcV_LOC/iplant_calcV_LOC(MENOD),iPV_calcV_LOC(MENOD)
 
-C Special materials
-      COMMON/ENETSPM/PSPM(MSPMNOD),QSPM(MSPMNOD),
-     &VSPM(MSPMNOD)
-
 C Plant component electrical data
       common/elpcp/NPEL,PFP(mpcom),IPFP(mpcom),PWRP(mpcom),
      &BVOLTP(mpcom),IPHP(mpcom)
 
 C Typecasting
-      COMPLEX VSPM
-      REAL PSPM,QSPM,PFP,PWRP,BVOLTP
+      REAL PFP,PWRP,BVOLTP
       INTEGER iplant_calcV_LOC,iPV_calcV_LOC,NPEL,IPFP,IPHP
+      INTEGER ENETMAXI,ENETSLVT,ENODCVGF
 
 
 C Trace.
@@ -758,25 +714,14 @@ C network power flow.
 
       SUBROUTINE ENETNEWR(MODE)
 
-#include "power.h"
 #include "building.h"
 #include "plant.h"
+#include "power.h"
 
 C Trace
       COMMON/TC/ITC,ICNT
       COMMON/TRACE/ITCF,ITRACE(MTRACE),IZNTRC(MCOM),ITU
       COMMON/SIMTIM/IHRP,IHRF,IDYP,IDYF,IDWP,IDWF,NSINC,ITS
-
-C The electrical network
-      COMMON/ENET/ENTYPE
-
-C The electrical nodes
-      COMMON/ENOD/NENOD,ENODNO(MENOD),ENODPHTYP(MENOD),
-     &ENODPH(MENOD),ENODTYP(MENOD),ENODBASEV(MENOD),
-     &ENODBASEP
-
-C The PER-UNIT electrical network state variables used in the iteration
-      COMMON/ENETVPU/VOLTPUP(MENOD),VOLTPUF(MENOD)
 
 C The electrical network jacobian solution matrix
       COMMON/ENETMTRX/JACOBEL(MJROW,MJCOL),EMATJZ(MJROW),
@@ -789,26 +734,18 @@ C Plant component electrical data
       common/elpcp/NPEL,PFP(mpcom),IPFP(mpcom),PWRP(mpcom),
      &BVOLTP(mpcom),IPHP(mpcom)
 
-C Special materials
-      COMMON/ENETSPM/PSPM(MSPMNOD),QSPM(MSPMNOD),
-     &VSPM(MSPMNOD)
-
 C Hybrid components that calculate nodal voltages
       COMMON/calcV_LOC/iplant_calcV_LOC(MENOD),iPV_calcV_LOC(MENOD)
 
       DIMENSION RJACOBEL(MJROW,MJCOL),REMATJZ(MJROW),INDX(MJROW)
 
       DOUBLE PRECISION JACOBEL,EMATJZ,EDELTA,RJACOBEL,REMATJZ
-      REAL ENETVLIMPU,ENODBASEV,ENODBASEP,ENETVCVG,ENETACVG,ENETVLIM,
-     &MVDELT
-      COMPLEX VOLTPUP,VOLTPUF
-      INTEGER NENOD,ENODNO,ENODPHTYP,ENODPH,ENODTYP,ENETMAXI,
-     &ENETSLVT,ENODCVGF,ENTYPE
+      REAL ENETVLIMPU,ENETVCVG,ENETACVG,ENETVLIM,MVDELT
       CHARACTER*1 MODE
       LOGICAL CVGCHK
-      REAL PSPM,QSPM,PFP,PWRP,BVOLTP
-      COMPLEX VSPM
+      REAL PFP,PWRP,BVOLTP
       INTEGER iplant_calcV_LOC,iPV_calcV_LOC,NPEL,IPFP,IPHP
+      INTEGER ENETMAXI,ENETSLVT,ENODCVGF
 
 
 C Solve the basic matrix equation:
@@ -960,42 +897,25 @@ C has converged, based on the ctiteria set by the user in ENETPARAM
 
       SUBROUTINE ENETCOVG
 
-#include "power.h"
 #include "building.h"
+#include "plant.h"
+#include "power.h"
 
 C Trace
       COMMON/TC/ITC,ICNT
       COMMON/TRACE/ITCF,ITRACE(MTRACE),IZNTRC(MCOM),ITU
       COMMON/SIMTIM/IHRP,IHRF,IDYP,IDYF,IDWP,IDWF,NSINC,ITS
 
-C The electrical nodes
-      COMMON/ENOD/NENOD,ENODNO(MENOD),ENODPHTYP(MENOD),
-     &ENODPH(MENOD),ENODTYP(MENOD),ENODBASEV(MENOD),
-     &ENODBASEP
-
-C The per-unit nodal boundary conditions
-      COMMON/ENODBCPU/PENODPU(MENOD),QENODPU(MENOD)
-
-C The PER-UNIT electrical network state variables used in the iteration
-      COMMON/ENETVPU/VOLTPUP(MENOD),VOLTPUF(MENOD)
-
-
-C The array of driving port and transfer admittances
-      COMMON/YARRY/NYELM,YADM(MENOD,MENOD)
-
       COMMON/ENETSIMP/ENETMAXI,ENETSLVT,ENETVCVG,ENETACVG,ENETVLIM,
      &ENODCVGF(MENOD),CVGCHK
 
-      REAL ENETVCVG,ENETACVG,ENETVLIM,ENODBASEV,ENODBASEP,
-     &PENODPU,QENODPU
+      REAL ENETVCVG,ENETACVG,ENETVLIM
 
-      COMPLEX VOLTPUP,VOLTPUF,YADM,SUMVY,SENODPU
-
-      INTEGER NENOD,ENODNO,ENODPHTYP,ENODPH,ENODTYP,ENETMAXI,ENETSLVT,
-     &ENODCVGF,NYELM
+      COMPLEX SUMVY,SENODPU
 
 C Set the convergence flag to true
       LOGICAL CVGCHK
+      INTEGER ENETMAXI,ENETSLVT,ENODCVGF
 
       CVGCHK=.TRUE.
 

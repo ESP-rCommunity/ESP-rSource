@@ -83,6 +83,8 @@ C geometry.h provides commons G0/G2/G4/G5/c20/precz.
 #include "schedule.h"
 C derived.h are derived areas and U values for zones and the model
 #include "derived.h"
+#include "plant.h"
+#include "power.h"
 
       COMMON/AFN/IAIRN,LAPROB,ICAAS(MCOM)
       INTEGER :: iairn,icaas
@@ -205,8 +207,7 @@ C Configuration control.
 
 C Special materials & electrical network files.
       common/spmfxst/ispmxist,spflnam
-      common/entfile/entflnam, ientxist
-      INTEGER :: ispmxist,ientxist
+      INTEGER :: ispmxist
 C Path to SHOCC input files
 C bSHOCCed     - logical flag whether project has SHOCC input
 C bZoneSHOCCed - logical array whether zones have SHOCC input
@@ -260,7 +261,7 @@ C door width and height.
       CHARACTER*72 L3DCVS,L3DCNC,L3DNDC,L3DTAQ,LMOIST
       character hvacfile*72,LBSIMP*72
       character ctldoc*248,lctlf*72
-      character GTGEOM*72,GTNAME*15,spflnam*72,entflnam*72,lipvdatf*72
+      character GTGEOM*72,GTNAME*15,spflnam*72,lipvdatf*72
       character*10 wkd1, wkd2
       character sblres*72,sflres*72,splres*72,smstres*72,sipvres*72
       character selres*72,spfdescr*8
@@ -724,6 +725,8 @@ C see if there are images associated with descriptive buttons.
       subroutine cfgtogg(icfg_type,icfgz,icfgn,icfgc,icfgdfn,
      &                             iicfgz,iicfgn,iicfgc,iicfgdfn)
 #include "building.h"
+#include "plant.h"
+#include "power.h"
 
 C Passed parameters because these are also used by c function opencfg
 #ifdef OSI
@@ -747,7 +750,6 @@ C Passed parameters because these are also used by c function opencfg
       COMMON/cfdfil/LCFD(MCOM),IFCFD(MCOM)
       common/AFN/IAIRN,LAPROB,ICAAS(MCOM)
       common/cctlnm/ctldoc,lctlf
-      common/entfile/entflnam, ientxist
       character imgfmt*4  ! GIF XBMP TIF JPG
       character imgfoc*4  ! FZON FNET FCTL FDFS
       character limgfil*72  ! file name (extend to 144 char)
@@ -758,7 +760,7 @@ C Passed parameters because these are also used by c function opencfg
       integer iton   ! zero if images not yet shown, one if yes
       common/imagfi/noimg,iton
 
-      CHARACTER ctldoc*248,lctlf*72,LCFD*72,entflnam*72
+      CHARACTER ctldoc*248,lctlf*72,LCFD*72
       character LAPROB*72
 
       icfg_type = INDCFG
@@ -827,6 +829,9 @@ C ***** Notice that an active description button has been pressed.
 #include "model.h"
 #include "net_flow.h"
 #include "control.h"
+#include "plant.h"
+#include "power.h"
+
       common/pophelp/h(60)
 
       integer ncomp,ncon
@@ -834,7 +839,6 @@ C ***** Notice that an active description button has been pressed.
       COMMON/C23/IFPNF,LPNF
       COMMON/AFN/IAIRN,LAPROB,ICAAS(MCOM)
       COMMON/cfdfil/LCFD(MCOM),IFCFD(MCOM)
-      common/entfile/entflnam, ientxist
 
 C Control
       common/cctlnm/ctldoc,lctlf
@@ -847,7 +851,6 @@ C Images.
       COMMON/CONTM0/NCONTM,NOCNTM,CONTMNAM(MCONTM)
 
       character h*72,act*1
-      character entflnam*72
       CHARACTER LCFD*72
       CHARACTER LAPROB*72,LPNF*72,CNTMFIL*72
       CHARACTER ctldoc*248,lctlf*72

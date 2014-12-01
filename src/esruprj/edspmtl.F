@@ -338,6 +338,7 @@ C Data items.
 #include "building.h"
 #include "model.h"
 #include "geometry.h"
+#include "plant.h"
 #include "power.h"
 #include "epara.h"
 #include "esprdbfile.h"
@@ -368,7 +369,6 @@ C << rewrite logic using G6 common block >>
 
 C Special materials file flag
       common/spmfxst/ispmxist,spflnam
-      common/entfile/entflnam, ientxist
 
       integer matarrayindex ! the indes within matdatarray
       logical closemat1,closemat2
@@ -387,7 +387,7 @@ C sstr in spdesc.
       LOGICAL CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,CFCDBOK
       LOGICAL MODIFY,MODLEN,MODBND
       integer header,footer
-      character outs*124,spmlabel*16,item*32,spitem*32,entflnam*72
+      character outs*124,spmlabel*16,item*32,spitem*32
       CHARACTER NAM*72,PNAM*20,spdefnam*16,labl*16
       CHARACTER DADESC*72,spitem2*32
       CHARACTER spflnam*72,spdesc*72

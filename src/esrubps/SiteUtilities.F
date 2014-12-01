@@ -406,15 +406,6 @@ C.....ESP commons
       real fReportDHWLoad                ! DHW load computed by a plant
                                          ! component (W)
 
-      ! Power only components
-      common/powc/npowcom,powcomno(mpowcom),powcomid(mpowcom),
-     &  powcomphtyp(mpowcom),powconen(mpowcom,mphas),
-     &  npowcdat(mpowcom),npowcdats(mpowcom),powcdat(mpowcom,mpwdat)
-      integer      npowcom, ! Number of power only component models
-     &  powcomno, powcomid, powcomphtyp, powconen, ! not used
-     &  npowcdat, npowcdats ! not used
-      real         powcdat ! not used
-
       ! Zone information
       common/c1/ncomp,ncon
       integer ncomp          ! number of zones
@@ -1054,15 +1045,6 @@ C.....ESP commons
       integer nPComp                     ! # of plant component models
       integer nci                        ! not used
       real CData                         ! not used
-
-      ! Power only components
-      common/powc/npowcom,powcomno(mpowcom),powcomid(mpowcom),
-     &  powcomphtyp(mpowcom),powconen(mpowcom,mphas),
-     &  npowcdat(mpowcom),npowcdats(mpowcom),powcdat(mpowcom,mpwdat)
-      integer      npowcom, ! Number of power only component models
-     &  powcomno, powcomid, powcomphtyp, powconen, ! not used
-     &  npowcdat, npowcdats ! not used
-      real         powcdat ! not used
 
       ! Zone information
       common/c1/ncomp,ncon

@@ -3354,63 +3354,11 @@ C*******************************************************************************
 
 C     Load misc. named parameters:
 C       total_load / hvac_load / occupant_load / cluster_load / total_gen
+#include "building.h"
+#include "plant.h"
 #include "CETC_definitions.h"
 #include "power.h"
 
-C The electrical nodes common
-      common/enod/
-     &     nenod,
-     &     enodno(menod),
-     &     enodphtyp(menod),
-     &     enodph(menod),
-     &     enodtyp(menod),
-     &     enodbasev(menod),
-     &     enodbasep
-      integer nenod                 ! number of nodes in elec network
-      integer enodno                ! not used in current context
-      integer enodphtyp             ! not used in current context
-      integer enodph                ! not used in current context
-      integer enodtyp               ! not used in current context
-      real enodbasev                ! not used in current context
-      real enodbasep                ! not used in current context
-
-
-
-C The elec net load, generated and transmitted nodal power flows (SI)
-      common/enodlgt/
-     &     penodl(menod),
-     &     qenodl(menod),
-     &     penodg(menod),
-     &     qenodg(menod),
-     &     penodt(menod),
-     &     qenodt(menod)
-
-      real penodl     ! real load
-      real qenodl     ! reactive load
-      real penodg     ! real generated power
-      real qenodg     ! reactive generated power
-      real penodt     ! real transmitted power
-      real qenodt     ! reactive transmitted power
-
-
-C---------------------------------------------------------------------
-C     Hybird Componenet data
-C---------------------------------------------------------------------
-      COMMON/HYBE/
-     &     nHYBcom,
-     &     HYBCOMNO,
-     &     HYCOMTYP,
-     &     HYCOMPHTYP,
-     &     HYCONEN,
-     &     HYLOC,
-     &     NHYBDAT,
-     &     HYBDAT
-
-      integer nHYBcom
-      integer NHYBDAT(MHYCOM)
-      integer HYBCOMNO(MHYCOM), HYCOMTYP(MHYCOM),  HYCOMPHTYP(MHYCOM)
-      integer HYCONEN(MHYCOM,MPHAS), HYLOC(MHYCOM,MPHAS)
-      real HYBDAT(MHYCOM,MHYDAT)
 
 C---------------------------------------------------------------------
 C     HOT3000 Storage common blocks used for plant->electrical network
@@ -3423,42 +3371,6 @@ C---------------------------------------------------------------------
 C.....Real power from hybrid & power only components
       REAL Hybrid_Power_Real, Elec_Power_Real
 
-C---------------------------------------------------------------------------------
-C Common holding the power-only component description read from the electric
-C network input file.
-C---------------------------------------------------------------------------------
-      COMMON/POWC/NPOWCOM,POWCOMNO(MPOWCOM),POWCOMID(MPOWCOM),
-     &POWCOMPHTYP(MPOWCOM),POWCONEN(MPOWCOM,MPHAS),
-     &NPOWCDAT(MPOWCOM),NPOWCDATS(MPOWCOM),POWCDAT(MPOWCOM,MPWDAT)
-
-C---------------------------------------------------------------------------------
-C Common holding power generation and loads data for power-only components.
-C---------------------------------------------------------------------------------
-      COMMON/ENETPOWC/PPOWOC(MPOWCOM),QPOWOC(MPOWCOM),
-     &VPOWC(MPOWCOM)
-
-      INTEGER      NPOWCOM, POWCOMNO, POWCOMID, POWCOMPHTYP, POWCONEN,
-     &             NPOWCDAT, NPOWCDATS
-      REAL         POWCDAT
-      REAL         PPOWOC, QPOWOC
-      COMPLEX      VPOWC
-C---------------------------------------------------------------------------------
-C     Names for electrial network comoponents
-C---------------------------------------------------------------------------------
-
-      COMMON/ECNAMES/ENODNAM(MENOD),HYCOMNAM(MHYCOM),
-     &HYCOMTYPSTR(MHYCOM),POWCOMNAM(MPOWCOM),POWCDATS(MPOWCOM,MPCDS),
-     &CONECOMNAM(MCONECOM)
-
-      CHARACTER*12 ENODNAM,HYCOMTYPSTR,HYCOMNAM,
-     &POWCOMNAM,CONECOMNAM
-      CHARACTER*72 POWCDATS
-
-C---------------------------------------------------------------------------------
-C Common holding nodal voltages (actual voltages, not "per unit" voltages.
-C---------------------------------------------------------------------------------
-      COMMON/ENODSLV/ENODVLT(MENOD)
-      COMPLEX ENODVLT
 
 C---------------------------------------------------------------------------------
 C     local varibles

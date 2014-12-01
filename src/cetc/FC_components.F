@@ -636,7 +636,7 @@ C ------------------------------------------------------------------------------
 #include "building.h"
 #include "CETC_definitions.h"
 #include "SOFC.h"
-
+#include "power.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       INTEGER  IUOUT,IUIN
@@ -698,10 +698,6 @@ C ------------------------------------------------------------------------------
      &     IPHP          ! phase component is connected to -> dummy variable
       INTEGER NPEL,IPFP(mpcom),IPHP(mpcom)
       REAL PFP(mpcom),PWRP(mpcom),BVOLTP(mpcom)
-
-      COMMON/ENTFILE/ENTFLNAM, IENTXIST
-      CHARACTER*72 ENTFLNAM  ! Electrical networks filename.
-      INTEGER IENTXIST       ! Elec netowrks flag. True if > 0
 
 C The COMMON variables below are used by the modified fuel cell model when
 C it is connected to an adsorption storage unit.

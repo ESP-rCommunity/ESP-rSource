@@ -190,9 +190,6 @@ C simulation is still in the startup period
 C Active domain common.
       common/ACTDOM/CFDOK
 
-C Common for electrical file.
-      COMMON/ENTFILE/ENTFLNAM,IENTXIST
-
 C Common for results file names (ag@20131221)
       common/spflres/sblres(MSPS),sflres(MSPS),splres(MSPS),
      &  smstres(MSPS),selres(MSPS),sipvres
@@ -223,7 +220,7 @@ C SHOCCshzFile - path to SHOCC .shz file for each SHOCC'd zone
       character SHOCCshlFile*72,SHOCCshzFile*72
 
       character outs*124
-      character*72 LCFD,ENTFLNAM
+      character*72 LCFD
       CHARACTER*72 L3DCVS,L3DCNC,L3DNDC,L3DTAQ,L3DNDD,L3DTLW,L3DLWV
       CHARACTER*72 LGDCVS,LGDCNC,LGDNDC,LGDNDD,LGDTAQ
 

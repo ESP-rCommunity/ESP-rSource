@@ -397,7 +397,7 @@ C CGCTL - gain control fraction (zone, present/future, gain type)
 
       SUBROUTINE MZCASG(ICOMP)
 #include "building.h"
-
+#include "plant.h"
 C geometry.h provides commons G0/G1/G2/G4/prec2/prec17/precz.
 #include "geometry.h"
 #include "schedule.h"

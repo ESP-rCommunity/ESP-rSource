@@ -78,6 +78,8 @@ C MMGFUN controls all UK NCM related tasks
 #include "site.h"
 #include "ipvdata.h"
 #include "schedule.h"
+#include "plant.h"
+#include "power.h"
 
       integer lnblnk  ! function definition
 
@@ -172,10 +174,6 @@ C MMGFUN controls all UK NCM related tasks
       common/spmfxst/ispmxist,spflnam
       INTEGER ISPMXIST
       CHARACTER spflnam*72
-
-      common/entfile/entflnam,ientxist
-      INTEGER :: ientxist
-      CHARACTER entflnam*72
 
       common/IPVF/lipvdatf
       CHARACTER*72 LIPVDATF

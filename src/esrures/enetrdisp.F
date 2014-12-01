@@ -36,6 +36,8 @@ C
 C
       SUBROUTINE ENETGRPH(MODE)
 
+#include "building.h"
+#include "plant.h"
 #include "power.h"
       
       integer lnblnk  ! function definition
@@ -536,6 +538,8 @@ C Combine the data decriptor and units to form the complete label.
 C ************************************************************************************
       SUBROUTINE ENETTBL(MODE)
 
+#include "building.h"
+#include "plant.h"
 #include "power.h"
       
       integer lnblnk  ! function definition
@@ -852,6 +856,8 @@ C MOGEHED outputs the appropriate header information for the electrical
 C network corresponding to graphical result display.
 
       SUBROUTINE MOGEHED
+#include "building.h"
+#include "plant.h"
 #include "power.h"
       
       integer lnblnk  ! function definition
@@ -977,6 +983,8 @@ C  ***********************************************************************
 
       SUBROUTINE ENRFILT
 
+#include "building.h"
+#include "plant.h"
 #include "power.h"
 #include "epara.h"
       

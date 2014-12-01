@@ -53,6 +53,7 @@ C QLAT   - latent load for present (1) and future (2) time step.
 #include "net_flow.h"
 #include "tdf2.h"
 #include "sbem.h"
+#include "plant.h"
 #include "power.h"
 #include "dhw_parameters.h"
 #include "dhw_common.h"
@@ -71,7 +72,6 @@ C QLAT   - latent load for present (1) and future (2) time step.
 
 C Zone lighting and power commons.
       COMMON/ELECFLG/IELF(MCOM)
-      COMMON/ENETZONE/PEZON(MCOM,MGTY),QEZON(MCOM,MGTY)
 
 C Zone casual gain control data.
       COMMON/CGCIN2N/NCGTC(MCOM,MDTY),NLITZ(MCOM),IDFST(MCOM,MLCOM),
@@ -217,7 +217,6 @@ C It excludes start-up timesteps
       CHARACTER outs*124, DSTR*10
       character*10 wkd1, wkd2
       logical traceok,closea
-      REAL PEZON,QEZON
       
 C Declation of heat gain from h3k models.
 c      REAL H3K_HeatGainsFromModels(ICOMP)

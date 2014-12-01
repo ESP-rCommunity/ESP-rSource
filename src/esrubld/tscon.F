@@ -1168,6 +1168,8 @@ C generation plant component.  Further, it presumes that the
 C DG component is controlled with subroutine DG_controller.
 
       SUBROUTINE TSCON7(plant_elec_converged)
+#include "building.h"
+#include "plant.h"
 #include "power.h"
 #include "CETC_definitions.h" 
 C------------------------------------------------------------------------------
@@ -1177,19 +1179,6 @@ C------------------------------------------------------------------------------
 C-----Electrical load that DG unit responds to (W) 
       common/TSCON7dat/plt_elec_load,plt_elec_gen,plt_elec_balance
       real plt_elec_load, plt_elec_gen, plt_elec_balance
-
-C-----Solution variables from electric power flow domain.
-      COMMON/ENETDER/PENETIMP,QENETIMP,PENETLOD,QENETLOD,PENETGEN,
-     &QENETGEN,PENETRN,QENETRN,ENETIPF,ENETGPF,ENETLPF,ENETLOS,
-     &PENETPHL(MPHAS),QENETPHL(MPHAS),PENETPHG(MPHAS),
-     &QENETPHG(MPHAS),PENETPHI(MPHAS),QENETPHI(MPHAS)
-
-C------------------------------------------------------------------------------
-C Type declarations for variables passed within common blocks.
-C------------------------------------------------------------------------------
-      REAL PENETIMP,QENETIMP,PENETLOD,QENETLOD,PENETGEN,QENETGEN,
-     &PENETRN,QENETRN,ENETIPF,ENETGPF,ENETLPF,ENETLOS,PENETPHL,QENETPHL,
-     &PENETPHG,QENETPHG,PENETPHI,QENETPHI
 
 C H2-dep_controller: start
 C Flag for convergence of the hydrogen/electric controller's plant

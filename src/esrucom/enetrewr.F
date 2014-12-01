@@ -97,7 +97,9 @@ C EENOD        - end node(s)
 C
 C *********************************************************************
       SUBROUTINE ENETREAD(MODE)
-
+      implicit none
+#include "building.h"
+#include "plant.h"
 #include "power.h"
 #include "espriou.h"
 C Common Blocks
@@ -107,51 +109,6 @@ C Common Blocks
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
       COMMON/POPHELP/H(60)
-
-C Common for electrical file 
-      COMMON/ENTFILE/ENTFLNAM,IENTXIST
-
-C The electrical network
-      COMMON/ENET/ENTYPE
-
-C More network-related info
-      COMMON/ENETMSC/PHASEANG(MPHAS)
-
-C The electrical nodes
-      COMMON/ENOD/NENOD,ENODNO(MENOD),ENODPHTYP(MENOD),
-     &ENODPH(MENOD),ENODTYP(MENOD),ENODBASEV(MENOD),
-     &ENODBASEP
-
-C The connected hybrid components
-      COMMON/HYBE/NHYBCOM,HYBCOMNO(MHYCOM),HYCOMTYP(MHYCOM),
-     &HYCOMPHTYP(MHYCOM),HYCONEN(MHYCOM,MPHAS),HYLOC(MHYCOM,MPHAS),
-     &NHYBDAT(MHYCOM),HYBDAT(MHYCOM,MHYDAT)
-
-C The connected power only components
-      COMMON/POWC/NPOWCOM,POWCOMNO(MPOWCOM),POWCOMID(MPOWCOM),
-     &POWCOMPHTYP(MPOWCOM),POWCONEN(MPOWCOM,MPHAS),
-     &NPOWCDAT(MPOWCOM),NPOWCDATS(MPOWCOM),POWCDAT(MPOWCOM,MPWDAT)
-
-C The connecting components
-      COMMON/CONCOM/NCONECOM,CONECOMNO(MCONECOM),CONECOMID(MCONECOM),
-     &CONECOMPHTYP(MCONECOM),NCONECOMDAT(MCONECOM),
-     &CONECOMDAT(MCONECOM,MCCDAT)
-
-C The electrical network topology
-      COMMON/ECONN/NECON,ECONO(MECON),CONPHTYP(MECON),
-     &CONPH(MECON,MPHAS),CCNO(MECON),SENOD(MECON,MPHAS),
-     &EENOD(MECON,MPHAS)
-
-C The descriptive strings
-      COMMON/ECDESC/ENTYPESTR(MENTYP),PHTYPSTR(MPHATY),ENDESC,
-     &ENODTYPSTR(MENOD),HYDESC(MHYCOM),CONECOMDESC(MCONECOM),
-     &POWCOMDESC(MPOWCOM)
-     
-     
-C Node and component names
-      COMMON/ECNAMES/ENODNAM(MENOD),HYCOMNAM(MHYCOM),
-     &HYCOMTYPSTR(MHYCOM),POWCOMNAM(MPOWCOM),POWCDATS(MPOWCOM,MPCDS),
-     &CONECOMNAM(MCONECOM)
 
 C Hybrid components that calculate nodal voltages
       COMMON/calcV_LOC/iplant_calcV_LOC(MENOD),iPV_calcV_LOC(MENOD)
@@ -168,38 +125,20 @@ C   where i is the power-only component index.
       integer PCU_id         !- id number of the PCU power-only component model
       parameter( PCU_id = 20 )
 
-
-C Plant component node connections
-C iplt_conn_nodes holds the number of nodes the plant component is connected to
-C   (1 or 2). If connected to two nodes it is assumed one is AC and the other DC
-C   variable set to zero for hybrid components that are not plant components.
-      common/pltnds/iplt_conn_nodes(MHYCOM),iplt_dcnode_id(MHYCOM),
-     &              iplt_acnode_id(MHYCOM)
-      integer  iplt_conn_nodes
-      integer  iplt_dcnode_id        !- node index of the DC node the plant component connects to
-      integer  iplt_acnode_id        !- node index of the AC node the plant component connects to
-
 C Type casting (all varaiables and arrays cast explicitly)
-      INTEGER NENOD,ENODNO,ENODPHTYP,ENODPH,ENODTYP,NHYBCOM,HYBCOMNO,
-     &HYCOMTYP,HYCOMPHTYP,HYCONEN,HYLOC,NHYBDAT,NPOWCOM,POWCOMNO,
-     &POWCOMID,POWCOMPHTYP,POWCONEN,NPOWCDAT,NPOWCDATS,NCONECOM,
-     &CONPH,CONECOMNO,CONECOMID,CONECOMPHTYP,NCONECOMDAT,NECON,
-     &ECONO,CONPHTYP,CCNO,SENOD,EENOD,iplant_calcV_LOC,iPV_calcV_LOC
+      INTEGER iplant_calcV_LOC,iPV_calcV_LOC
 
-      INTEGER IENTXIST,ENTYPE,IUOUT,IUIN,IFIL,IEUNIT,IVAL,I,J,IPHV,K,
+      INTEGER IUOUT,IUIN,IFIL,IEUNIT,IVAL,I,J,IPHV,K,
      &INODE,IHYB,IPWC,IPCDS,ICNC,ICON,ILOCT,IPHN,IDLC,INC
-     
-      REAL PHASEANG,ENODBASEV,ENODBASEP,HYBDAT,POWCDAT,BIG,
-     &CONECOMDAT,VAL,RVHY,RVPC,RVCC
+      integer IER,ND,IVPC,IPH
+
+      REAL BIG, VAL,RVHY,RVPC,RVCC
 
       real fENFVersionNum         !- version number of electrical network file
 
 C Characters
       CHARACTER MODE*1
-      CHARACTER ENTYPESTR*12,ENODTYPSTR*12,ENODNAM*12,HYCOMTYPSTR*12
-      character HYCOMNAM*12,POWCOMNAM*12,CONECOMNAM*12,PHTYPSTR*12
-      CHARACTER ENDESC*72,HYDESC*72,POWCOMDESC*72,POWCDATS*72
-      character CONECOMDESC*72,ENTFLNAM*72,LFIL*72,DEFLNAM*72,H*72
+      character LFIL*72,DEFLNAM*72,H*72
       character OUTSTR*124,OUTS*124
 
       LOGICAL OK,DOK,CONT
@@ -1011,6 +950,7 @@ C *********************************************************************
 
 #include "building.h"
 #include "model.h"
+#include "plant.h"
 #include "power.h"
       
       integer lnblnk  ! function definition
@@ -1020,50 +960,6 @@ C Common Blocks
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
       COMMON/POPHELP/H(60)
-
-C Common for electrical file 
-      COMMON/ENTFILE/ENTFLNAM,IENTXIST
-
-C The electrical network
-      COMMON/ENET/ENTYPE
-
-C More network-related info
-      COMMON/ENETMSC/PHASEANG(MPHAS)
-
-C The electrical nodes
-      COMMON/ENOD/NENOD,ENODNO(MENOD),ENODPHTYP(MENOD),
-     &ENODPH(MENOD),ENODTYP(MENOD),ENODBASEV(MENOD),
-     &ENODBASEP
-
-C The connected hybrid components
-      COMMON/HYBE/NHYBCOM,HYBCOMNO(MHYCOM),HYCOMTYP(MHYCOM),
-     &HYCOMPHTYP(MHYCOM),HYCONEN(MHYCOM,MPHAS),HYLOC(MHYCOM,MPHAS),
-     &NHYBDAT(MHYCOM),HYBDAT(MHYCOM,MHYDAT)
-
-C The connected power only components
-      COMMON/POWC/NPOWCOM,POWCOMNO(MPOWCOM),POWCOMID(MPOWCOM),
-     &POWCOMPHTYP(MPOWCOM),POWCONEN(MPOWCOM,MPHAS),
-     &NPOWCDAT(MPOWCOM),NPOWCDATS(MPOWCOM),POWCDAT(MPOWCOM,MPWDAT)
-
-C The connecting components
-      COMMON/CONCOM/NCONECOM,CONECOMNO(MCONECOM),CONECOMID(MCONECOM),
-     &CONECOMPHTYP(MCONECOM),NCONECOMDAT(MCONECOM),
-     &CONECOMDAT(MCONECOM,MCCDAT)
-
-C The electrical network topology
-      COMMON/ECONN/NECON,ECONO(MECON),CONPHTYP(MECON),
-     &CONPH(MECON,MPHAS),CCNO(MECON),SENOD(MECON,MPHAS),
-     &EENOD(MECON,MPHAS)
-
-C The descriptive strings
-      COMMON/ECDESC/ENTYPESTR(MENTYP),PHTYPSTR(MPHATY),ENDESC,
-     &ENODTYPSTR(MENOD),HYDESC(MHYCOM),CONECOMDESC(MCONECOM),
-     &POWCOMDESC(MPOWCOM)
-     
-C Node and component names
-      COMMON/ECNAMES/ENODNAM(MENOD),HYCOMNAM(MHYCOM),
-     &HYCOMTYPSTR(MHYCOM),POWCOMNAM(MPOWCOM),POWCDATS(MPOWCOM,MPCDS),
-     &CONECOMNAM(MCONECOM)
 
 C Hybrid components that calculate nodal voltages
       COMMON/calcV_LOC/iplant_calcV_LOC(MENOD),iPV_calcV_LOC(MENOD)
@@ -1076,33 +972,16 @@ C unit (a power-only component model)
       parameter( PCU_id = 20 )
 
 
-C Plant component node connections
-      common/pltnds/iplt_conn_nodes(MHYCOM),iplt_dcnode_id(MHYCOM),
-     &              iplt_acnode_id(MHYCOM)
-      integer  iplt_conn_nodes       !- (see note in ENETREWR)
-      integer  iplt_dcnode_id        !- node index of the DC node the plant component connects to
-      integer  iplt_acnode_id        !- node index of the AC node the plant component connects to
-
-
 C Type casting (all varaiables and arrays cast explicitly)
-      INTEGER NENOD,ENODNO,ENODPHTYP,ENODPH,ENODTYP,NHYBCOM,HYBCOMNO,
-     &HYCOMTYP,HYCOMPHTYP,HYCONEN,HYLOC,NHYBDAT,NPOWCOM,POWCOMNO,
-     &POWCOMID,POWCOMPHTYP,POWCONEN,NPOWCDAT,NPOWCDATS,NCONECOM,
-     &CONPH,CONECOMNO,CONECOMID,CONECOMPHTYP,NCONECOMDAT,NECON,
-     &ECONO,CONPHTYP,CCNO,SENOD,EENOD,iplant_calcV_LOC,iPV_calcV_LOC
+      INTEGER iplant_calcV_LOC,iPV_calcV_LOC
 
-      INTEGER IENTXIST,ENTYPE,IUOUT,IUIN,IFIL,IEUNIT,I,J,K,
+      INTEGER IUOUT,IUIN,IFIL,IEUNIT,I,J,K,
      &INODE,IHYB,IPWC,ICNC,ICON,IPHN,IDLC,INC
      
-      REAL PHASEANG,ENODBASEV,ENODBASEP,HYBDAT,POWCDAT,CONECOMDAT
-
       real fENFVersionNum            !-version number of electrical network file
 
 C Characters
-      CHARACTER*12 ENTYPESTR,ENODTYPSTR,ENODNAM,HYCOMTYPSTR,HYCOMNAM,
-     &POWCOMNAM,CONECOMNAM,PHTYPSTR
-      CHARACTER*72 ENDESC,HYDESC,POWCOMDESC,POWCDATS,CONECOMDESC,
-     &ENTFLNAM,LFIL,DEFLNAM,H
+      CHARACTER*72 LFIL,DEFLNAM,H
       CHARACTER OUTS*124,longtfile*144
       LOGICAL CONCAT
 

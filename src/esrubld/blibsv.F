@@ -651,6 +651,8 @@ C#include "cfd.h"
 #include "control.h"
 #include "net_flow.h"
 #include "tdf2.h"
+#include "plant.h"
+#include "power.h"
 
       COMMON/TC/ITC,ICNT
 
@@ -732,7 +734,6 @@ C BEMS interaction time for results dump.
 
       COMMON/GR1D01/NNDS,NNDZ(MCOM),NNDC(MCOM,MS),NNDL(MCOM,MS,ME)
 
-      COMMON/ENETZONE/PEZON(MCOM,MGTY),QEZON(MCOM,MGTY)
       COMMON/ENETZONP/ZONPPP(MCOM),ZONQPP(MCOM)
       COMMON/ENETZONF/ZONPP(MCOM),ZONQP(MCOM)
       COMMON/ZONSPMF/ZSPMF1(MCOM),ZSPMF2(MCOM)
@@ -796,8 +797,6 @@ C Thermal bridge common block is described in esruprj/edgeo.F
 C This declaration is required to support the bugfix noted below
       logical bInStartup        ! <- function for determining if simulation
                                 !    is in startup
-
-      REAL PEZON,QEZON
 
 C Common for occupant/lighting/equipment sensible convective, sensible
 C radiant and latent W for future and present in each zone.

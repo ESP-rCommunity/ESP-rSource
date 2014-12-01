@@ -1468,7 +1468,9 @@ C LPRFDB,IPRODB (for event profile database)
 C LFMAT,IFMAT,LFMUL,IFMUL (for materials and constructions database)
 C ICLIM,LCLIM (for climate file)
 #include "schedule.h"
-      
+#include "plant.h"
+#include "power.h"
+
       integer lnblnk  ! function definition
 
       common/OUTIN/IUOUT,IUIN
@@ -1509,8 +1511,7 @@ C ICLIM,LCLIM (for climate file)
       LOGICAL :: MSTROK,MSTRZN
       common/MOIST02/LMOIST(MCOM)
       common/spmfxst/ispmxist,spflnam
-      common/entfile/entflnam, ientxist
-      INTEGER :: ispmxist,ientxist
+      INTEGER :: ispmxist
       COMMON/UA1/LUALF,LCNG(MNCNG),LLOC(MNIL)
       character imgfmt*4  ! GIF XBMP TIF JPG
       character imgfoc*4  ! FZON FNET FCTL FDFS
@@ -1543,7 +1544,7 @@ C The string buffer doit and option used for tar command.
       character fs*1
       character LTMPFL*72
       character LF*72,LFL*144
-      CHARACTER spflnam*72,entflnam*72
+      CHARACTER spflnam*72
       CHARACTER*72 L3DCVS,L3DCNC,L3DNDC,L3DTAQ
       character LLASCI*144
       character hvacfile*72,LBSIMP*72

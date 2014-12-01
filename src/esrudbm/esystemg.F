@@ -156,6 +156,8 @@ C espriou.h provides currentfile and defdbfl.
 #include "roam.h"
 #include "ipvdata.h"
 #include "schedule.h"
+#include "plant.h"
+#include "power.h"
       INTEGER, PARAMETER :: MSTMC=20
       
       integer lnblnk  ! function definition
@@ -249,10 +251,9 @@ C Initial view.
       INTEGER :: initvt
       REAL :: EYEMI,VIEWMI,ANGI
 
-C Special materials & electrical network files.
+C Special materials file.
       common/spmfxst/ispmxist,spflnam
-      common/entfile/entflnam, ientxist
-      INTEGER :: ispmxist,ientxist
+      INTEGER :: ispmxist
 
 C Non-linear thermophysical properties.
       COMMON/VTHP18/LNLTHP
@@ -459,7 +460,7 @@ C iSlr_half_hr_flg value = 0 :hour-centered; =1 : half-hour centered.
       CHARACTER DBTAG*12,DBTASK*12,DBZN*15,phrase*64,DBSN*15
       character WORD2*20,msgl2*48
       CHARACTER CTLDOC*248,LCTLF*72,LOCUTIL*72
-      CHARACTER spflnam*72,entflnam*72,lipvdatf*72
+      CHARACTER spflnam*72,lipvdatf*72
       character GTGEOM*72,GTNAME*15
       CHARACTER ectime*24,wkd1*10,wkd2*10,naco*40,type*4
       character*10 wkday(7)

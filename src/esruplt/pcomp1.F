@@ -191,20 +191,16 @@ C Loop through each component to see if calculation is necessary.
 C Subroutine mach1 calcuates the reactive power component and
 C voltage vector of a plant component from power factor information.  
       SUBROUTINE EMACH001(IPCOMP,PR,PQ,PA)
-
+#include "building.h"
 #include "plant.h"
+#include "power.h"
 
 C Common block for load flow simulation
 C Plant
-      COMMON/ENETPCOMP/PPCMP(MPCOM),QPCMP(MPCOM),
-     &VCMP(MPCOM)
-
       common/elpcp/NPEL,PFP(mpcom),IPFP(mpcom),PWRP(mpcom),
      &BVOLTP(mpcom),IPHP(mpcom)
 
       LOGICAL CLOSE
-      
-      COMPLEX VCMP
 
 C Calculate the reactive power component. And save to load flow
 C simulation common.
@@ -233,19 +229,11 @@ C holding the load flow simulation data to zero.
 
       SUBROUTINE EMACH002(ipcomp,plt_dc_pwr,plt_ac_pwr)
       implicit none
+#include "building.h"
 #include "plant.h"
+#include "power.h"
 
 C ESP-r COMMON blocks
-
-      COMMON/ENETPCOMP/PPCMP(MPCOM),QPCMP(MPCOM),VCMP(MPCOM)
-      real    ppcmp       !- real power consumption of plant component
-      real    qpcmp       !- reactive power consumption of plant component
-      complex vcmp        !- voltage of plant component
-
-      COMMON/enetpcomp2/pdcpower(mpcom),pacpower(mpcom)
-      real    pdcpower    !- dc power load/generation of plant component
-      real    pacpower    !- ac power load/generation of plant component
-
 C Passed variables
       integer ipcomp      !- plant component index
       real    plt_dc_pwr  !- dc power/load generation associated with plant component
@@ -275,8 +263,8 @@ C     BDATA: none
 C     CDATA: none
 
       SUBROUTINE CMP01C(IPCOMP,COUT,ISTATS)
-#include "plant.h"
 #include "building.h"
+#include "plant.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/TC/ITC,ICNT
@@ -530,7 +518,7 @@ C Assume steam is added at 100C and cools sensibly to the temperature of
 C the humidifier component.
            Q=PCDATF(IPCOMP,1)*2010.*(100.-CSVF(IPCOMP,1))
            
-C	   hv=PCDATF(IPCOMP,1)*2454.
+C   hv=PCDATF(IPCOMP,1)*2454.
 C           H1=ENTHP2(CONVAR(ICON1,1),G1)
 C           H2=H1+HV
 C           H12=ENTHP2(CONVAR(ICON1,1),G2)
@@ -643,14 +631,14 @@ C Check that DXR does not exceed availabe vapour rate
 C Store added water vapour rate future value for energy balance usage
          PCDATF(IPCOMP,1)=COUT(3)
          PCQF(INOD1)=Q
-	 
+ 
 C Establish the energy needed to produce the steam assuming and inlet
 C temperature of 10C (m*Hv)
          IF(IHMOD.EQ.1)THEN
-	   QH=0.0
-	 ELSEIF(IHMOD.EQ.2)THEN
-	   QH=CDATA(IPCOMP,1)*((2256.7*1000.)+(4200.*90.))
-	 ENDIF
+           QH=0.0
+         ELSEIF(IHMOD.EQ.2)THEN
+           QH=CDATA(IPCOMP,1)*((2256.7*1000.)+(4200.*90.))
+         ENDIF
       END IF
 C Save plant additional output.      
       napdat(IPCOMP)=3
@@ -1869,7 +1857,7 @@ c Trace output
          write(itu,*) ' 1 node (ISV=21) A/C damper'
          write(itu,*) ' Matrix node(s) ',inod1
          write(itu,*) ' Connection(s)  ',icon1
-	 write(itu,*) ' Auxilliary     ',icon_aux
+         write(itu,*) ' Auxilliary     ',icon_aux
          if(istats.eq.1) then
             write(itu,*) ' CM     = ',cm,' (J/K)'
             write(itu,*) ' C1     = ',c1,' (W/K)'
@@ -1878,8 +1866,8 @@ c Trace output
             write(itu,*) ' UA     = ',ua,' (W/K)'
             write(itu,*) ' PCNTMF = ',pcntmf(ipcomp),' (C)'
             write(itu,*) ' CDATA  = ',cdata(ipcomp,1)
-	    write(itu,*) ' TMDR   = ',tmdr(ipcomp,1)
-	    write(itu,*) ' pcondr = ',pcondr(icon_aux)
+            write(itu,*) ' TMDR   = ',tmdr(ipcomp,1)
+            write(itu,*) ' pcondr = ',pcondr(icon_aux)
          end if
          write(itu,*) ' Matrix coefficients for ISTATS = ',istats
          nitms=3
@@ -3040,7 +3028,7 @@ C Mark current air temperatures and second phase flow of node 2 for iteration
             CSVI(INOD1,1)=CSVF(INOD1,1)
             ICSV(INOD2,1)=1
             CSVI(INOD2,1)=CSVF(INOD2,1)
-	    ICSV(INOD2,3)=1
+            ICSV(INOD2,3)=1
             CSVI(INOD2,3)=CSVF(INOD2,3)
             AMFR1=PCONDR(ICON1)*CONVAR(ICON1,2)
             AMFR2=PCONDR(ICON2)*CONVAR(ICON2,2)
@@ -3065,7 +3053,7 @@ C And finally calcultate heat transferred between air streams Q
 
 C Set the moisture recovery
          w_vap_recov=BDATA(IPCOMP,2)/100.0
-	  
+  
 C Establish heat capacity of component mass CM (J/K), and
 C fluid heat capacity rate(s) C (W/K), ie. SUM(mass flow * specific heat)
          CM=ADATA(IPCOMP,1)*ADATA(IPCOMP,2)/2
@@ -3143,7 +3131,7 @@ C 2nd phase mass (ie. vapour) balance coefficients
          COUT(6)=-w_vap_recov*(PCONDR(ICON2)*CONVAR(ICON2,3)-
      &PCONDR(ICON1)*CONVAR(ICON1,3))
 
-	 
+ 
 C Check whether air temperature is below dew point TDEW, if so
 C issue warning that condensation is likely to occur
 C First establish TDW1 and TDW2; assume present moisture contents
@@ -3194,7 +3182,7 @@ C Trace output
             WRITE(ITU,*) ' Cratio = ',CRAT,' (-) '
             WRITE(ITU,*) ' EFF    = ',EFF,' (-) '
             WRITE(ITU,*) ' Q      = ',Q,' (W)'
-	    WRITE(ITU,*) ' Vapour recovered    = ',
+            WRITE(ITU,*) ' Vapour recovered    = ',
      &       w_vap_recov*(PCONDR(ICON2)*CONVAR(ICON2,3)-
      &PCONDR(ICON1)*CONVAR(ICON1,3)),' (-) '
          END IF

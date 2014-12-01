@@ -136,38 +136,7 @@ C*******************************************************************************
 #include "power.h"
 C CETC named constants 
 #include "CETC_definitions.h" 
-C---------------------------------------------------------------------
-C     Hybird Componenet data
-C---------------------------------------------------------------------
-      COMMON/HYBE/
-C     Number of Hybrid Components
-     &     nHYBcom,
-C     index of component.
-     &     HYBCOMNO(MHYCOM),
-C     Type of component.
-     &     HYCOMTYP(MHYCOM),
-C     Phase type of component.
-     &     HYCOMPHTYP(MHYCOM),
-C     Nodes connected to component. 
-     &     HYCONEN(MHYCOM,MPHAS),
-C     Location of component. 
-     &     HYLOC(MHYCOM,MPHAS),
-C    Number of data for component.
-     &     NHYBDAT(MHYCOM),
-C    misc. data for component.
-     &     HYBDAT(MHYCOM,MHYDAT)
 
-C---------------------------------------------------------------------
-C     Zone casual gain power consumption variables. 
-C---------------------------------------------------------------------
-C     Real power (W)
-C     Reactive power (W)
-      COMMON/ENETZONE/PEZON(MCOM,MGTY),QEZON(MCOM,MGTY)
-C---------------------------------------------------------------------
-C     Plant component  power consumption variables. 
-C---------------------------------------------------------------------
-C     Real Power (W), reactive power, Complex power vector.
-      COMMON/ENETPCOMP/PPCMP(MPCOM),QPCMP(MPCOM),VCMP(MPCOM)
 C---------------------------------------------------------------------
 C     Common for writing data 
 C---------------------------------------------------------------------
@@ -182,20 +151,6 @@ C---------------------------------------------------------------------
      &     Hybrid_Power_Real(MHYCOM), ! Hybrid real power
      &     Elec_Power_Real(MHYCOM)   ! Power only component real power    
       REAL Hybrid_Power_Real, Elec_Power_Real
-
-C---------------------------------------------------------------------------------
-C Common holding the power-only component description read from the electric
-C network input file.
-C---------------------------------------------------------------------------------
-      COMMON/POWC/NPOWCOM,POWCOMNO(MPOWCOM),POWCOMID(MPOWCOM),
-     &POWCOMPHTYP(MPOWCOM),POWCONEN(MPOWCOM,MPHAS),
-     &NPOWCDAT(MPOWCOM),NPOWCDATS(MPOWCOM),POWCDAT(MPOWCOM,MPWDAT)
-
-C---------------------------------------------------------------------------------
-C Common holding power generation and loads data for power-only components.
-C---------------------------------------------------------------------------------
-      COMMON/ENETPOWC/PPOWOC(MPOWCOM),QPOWOC(MPOWCOM),
-     &VPOWC(MPOWCOM)
 
 
 C---------------------------------------------------------------------
@@ -228,12 +183,6 @@ C---------------------------------------------------------------------
 C---------------------------------------------------------------------
 C    local  Plant component  power consumption variables. 
 C---------------------------------------------------------------------
-C     Type casting 
-      INTEGER NHYBCOM,HYBCOMNO,HYCOMTYP,HYCOMPHTYP,HYCONEN,HYLOC,NHYBDAT
-      
-C     Type casting
-      REAL PEZON,QEZON,PPCMP,QPCMP,HYBDAT
-      COMPLEX VCMP
       
       CHARACTER*124 OUTS
 C Pointers to various components / loads
@@ -245,13 +194,6 @@ C Pointers to various components / loads
       INTEGER iLoadIndex
 
       REAL    fElec_net_result
-
-      INTEGER      NPOWCOM, POWCOMNO, POWCOMID, POWCOMPHTYP, POWCONEN,
-     &             NPOWCDAT, NPOWCDATS
-      REAL         POWCDAT
-      REAL         PPOWOC, QPOWOC
-      COMPLEX      VPOWC
-
 
       integer iPOWCO            ! counter
 

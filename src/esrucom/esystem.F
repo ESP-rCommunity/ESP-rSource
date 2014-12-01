@@ -151,6 +151,8 @@ C      common/aim2def/iAIM2,LAIM2
 #include "building.h"
 #include "model.h"
 #include "site.h"
+#include "plant.h"
+#include "power.h"
 
 C geometry.h provides commons G0/G1/G2/prec2/precz/c20.
 #include "geometry.h"
@@ -299,10 +301,9 @@ C Initial view.
       REAL :: angi,EYEMI,VIEWMI
       INTEGER :: initvt
 
-C Special materials & electrical network files.
+C Special materials file.
       common/spmfxst/ispmxist,spflnam
-      common/entfile/entflnam, ientxist
-      INTEGER :: ispmxist,ientxist
+      INTEGER :: ispmxist
 
 C Non-linear thermophysical properties.
       COMMON/VTHP18/LNLTHP
@@ -523,7 +524,7 @@ C Simulation parameters
       CHARACTER DBTAG*12,DBTASK*12,DBZN*15,DBSN*15
       character WORD2*20,msgl2*48
       CHARACTER CTLDOC*248,LCTLF*72
-      CHARACTER spflnam*72,entflnam*72,lipvdatf*72
+      CHARACTER spflnam*72,lipvdatf*72
       character GTGEOM*72
       CHARACTER ectime*24,wkd1*10,wkd2*10,naco*40,type*4
       character*10 wkday(7)

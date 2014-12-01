@@ -1663,7 +1663,9 @@ C << add logic to allow for two extreme seasons
 #include "building.h"
 #include "model.h"
 #include "ipvdata.h"
-      
+#include "plant.h"
+#include "power.h"
+
       integer lnblnk  ! function definition
 
       COMMON/FILEP/IFIL
@@ -1683,12 +1685,11 @@ C Simulation parameter sets.
       common/spfldat/nsset,isset,isstup,isbnstep,ispnstep,issave,isavgh
       common/spflres/sblres(MSPS),sflres(MSPS),splres(MSPS),
      &  smstres(MSPS),selres(MSPS),sipvres
-      COMMON/ENTFILE/ENTFLNAM,IENTXIST
 
       character act*6,lipvdatf*72,cr*32,tag*3
       character sblres*72,sflres*72,splres*72,smstres*72,sipvres*72
       character selres*72,spfdescr*8
-      CHARACTER LAPROB*72,ENTFLNAM*72
+      CHARACTER LAPROB*72
       logical MSTROK,MSTRZN
 
       if(nipvassmt.eq.1.or.nipvassmt.eq.3.or.nipvassmt.eq.5)then

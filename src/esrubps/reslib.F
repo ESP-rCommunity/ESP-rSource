@@ -72,7 +72,6 @@ C      common/rpath/path
 
 C Electrical results library name. 
       COMMON/ENETRES/ERESLIB
-      COMMON/ENTFILE/ENTFLNAM,IENTXIST
 
 C Electrical network results library details.
       COMMON/ENELIBRC/IELFIL,IELIBHL,IELIBW,IELSTREC,NETS,NTSREC,NHREC,
@@ -90,7 +89,7 @@ C Active domain common.
 
       character outs*124,ltmp*72,longtfile*144
 C      character path*72
-      character*72 LAPROB,ENTFLNAM,ERESLIB,CFRESF
+      character*72 LAPROB,ERESLIB,CFRESF
       character RFILE*72,PFILE*72,MSTRFILE*72,LAFRES*72
       dimension iflg(MCOM)
 

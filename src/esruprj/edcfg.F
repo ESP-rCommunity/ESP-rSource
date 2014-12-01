@@ -52,6 +52,8 @@ C geometry.h provides commons G0/G1/G2/G7/prec2/precz.
 C esprdbfile.h supplies the following:
 C LAPRES,IAPRES (for window pressure databases)
 C LPRFDB,IPRODB (for event profile database)
+#include "plant.h"
+#include "power.h"
 
 C Function definition
       INTEGER :: lnblnk
@@ -100,7 +102,6 @@ C Uncertainty.
       INTEGER :: nsset,isset,isstup,isbnstep,ispnstep,issave,isavgh
       common/spflres/sblres(MSPS),sflres(MSPS),splres(MSPS),
      &  smstres(MSPS),selres(MSPS),sipvres
-      common/entfile/entflnam,ientxist
 
       COMMON/MFLWPR/NPRE,FPRE(MPOS,MPRD)
       INTEGER :: NPRE
@@ -155,7 +156,7 @@ C Uncertainty.
       character*72 DCNN,ltmp
       character tmode*8,doit*248
       character sblres*72,sflres*72,splres*72,smstres*72,sipvres*72
-      character selres*72,entflnam*72
+      character selres*72
       character DEPRE*40,dstmp*24,tab*1,outsn*124,outsd*124
       character CXITM*48,outs*124,fs*1
       CHARACTER*72 NWKNAM,NWKDSC,NWKFLNAM,ICONDBFL
@@ -173,7 +174,7 @@ C Uncertainty.
       
       INTEGER :: itrc,itru,i,ic,icc,istat
       INTEGER :: iacc,icfoc,iclkok,idindcfg
-      INTEGER :: ientxist,iier,im,ino,inwktyp,ios,ipedit,ipass,is
+      INTEGER :: iier,im,ino,inwktyp,ios,ipedit,ipass,is
       INTEGER :: isindcfg,iuf,ium,iuo,iv,iver,iw,iz
       INTEGER :: iser,lenlfil,ln,ltrf,nets,nitems
       REAL :: szlow,szcog,szhigh

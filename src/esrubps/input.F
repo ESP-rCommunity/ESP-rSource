@@ -187,6 +187,7 @@ C default file names for databases
 
 #include "material.h"
 #include "plant.h"
+#include "power.h"
 #include "net_flow.h"
 #include "dhw_common.h"
 #include "MultiYear_simulations.h"
@@ -235,9 +236,7 @@ C to read from the temporal file if already known.
       integer iknowrec,itdflastrec,itdfprevrec
       common/tdfhash/iknowrec(87600,4),itdflastrec,itdfprevrec
 
-C Common for electrical file 
-      COMMON/ENTFILE/ENTFLNAM,IENTXIST
-      INTEGER :: ispmxist,ientxist
+      INTEGER :: ispmxist
 
 C Defaults.
       character*96 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF
@@ -289,7 +288,7 @@ C For reading in of bi-directional data.
       CHARACTER OUTSTR*124,MODE*4
       CHARACTER outs*124,louts*248,spsname*8,L144*144
       CHARACTER outs248*248,LCMDFL*144
-      character*72 laprob,path,ENTFLNAM
+      character*72 laprob,path
       character dllsubr*12,dllmesg*124,bidirfile*72,bidirname*12
 
 C HVAC AIM-2
@@ -1713,6 +1712,8 @@ C ********************** USESPS
 C USESPS uses configuration presimuilation data.
       SUBROUTINE USESPS(name,IER)
 #include "building.h"
+#include "plant.h"
+#include "power.h"
 #include "MultiYear_simulations.h"
       
       integer lnblnk  ! function definition
@@ -1736,7 +1737,6 @@ C Once per hour storage of results, averaged over that hour.
 C lafres  - fluid flow network results file
       COMMON/RESLIB/RFILE,PFILE,MSTRFILE,LAFRES
       COMMON/ENETRES/ERESLIB
-      COMMON/ENTFILE/ENTFLNAM,IENTXIST
       common/dllerr/dllsubr,dllmesg
 
       COMMON/SPFL/spfileok,perok,tstepok,saveok,autook,exitok,startupok
@@ -1746,7 +1746,7 @@ C lafres  - fluid flow network results file
       logical dll,match
 
       character RFILE*72,PFILE*72,MSTRFILE*72,LAFRES*72
-      character*72 ENTFLNAM,ERESLIB
+      character*72 ERESLIB
       character outs*124, outs2*124
       character sblres*72,sflres*72,splres*72,smstres*72,sipvres*72
       character selres*72,spfdescr*8,name*8
