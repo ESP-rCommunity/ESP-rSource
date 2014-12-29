@@ -570,7 +570,7 @@ C.............interpret keyword.
 
                 ifuel_type(iSystem) = iMixedWood
 				
-              elseif ( cLnWords(2)(1:7) == 'pellets ') then
+              elseif ( cLnWords(2)(1:8) == 'pellets ') then
 
                 ifuel_type(iSystem) = iWoodPellets	
 		

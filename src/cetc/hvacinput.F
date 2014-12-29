@@ -1653,6 +1653,7 @@ c 	=2 natural gas
 c 	=3 oil
 c	=4 propane
 c 	=5 wood
+c   =8 wood pellets
 
 c The furnace types associated with each of the values of parameter
 c isys_type are:
@@ -1670,8 +1671,7 @@ c 	=11 mid efficiency
 c 	=12 electric forced-air
 c	=13 wood furnace
 c	=14 oil furnace
-
-
+ 
 c** Electric (type =1) can have systypes = 12**
 c For electric furnaces
       if(ifuel_type(isys).eq.1) then
@@ -1775,9 +1775,10 @@ c For propane induced draft furnaces
           df(isys) = -0.176241
          endif
 
-c** Wood (type =5) can have sys_types = 1,2,13**
+c** Wood (types =5,6,7,8) can have sys_types = 1,2,13**
 c For wood furnaces
-      elseif(ifuel_type(isys).eq.5) then
+      elseif(ifuel_type(isys).eq.5 .or. ifuel_type(isys).eq.6 .or. 
+     &       ifuel_type(isys).eq.7 .or. ifuel_type(isys).eq.8) then
 
 c For advanced air tight wood furnace
           if(isys_type.eq.1) then
