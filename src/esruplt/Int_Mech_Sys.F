@@ -1440,7 +1440,7 @@ C.....on IMS unit:
      &                   - fTS_FracWaterH
      &                   - fTS_FracSpaceWaterH
 
-      if ( fTS_NoDemand < 0 ) fTS_NoDemand = 0.0
+      if ( fTS_NoDemand < 0. ) fTS_NoDemand = 0.0
 
 C-----------------------------------------------------------------------
 C     Begin characterization of water heating operation
