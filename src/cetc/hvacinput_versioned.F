@@ -543,7 +543,8 @@ C.............   "gas"
 C.............   "oil"
 C.............   "propane"
 C.............   "wood"
-
+C.............   "pellets"            JMP-Added Dec 23/14 for Northern simulations.
+ 
 
 C.............Default priority flag to OK
               bSysFuelOK(iSystem) = .true.
@@ -568,7 +569,11 @@ C.............interpret keyword.
               elseif ( cLnWords(2)(1:5) == 'wood ') then
 
                 ifuel_type(iSystem) = iMixedWood
+				
+              elseif ( cLnWords(2)(1:8) == 'pellets ') then
 
+                ifuel_type(iSystem) = iWoodPellets	
+		
               else
 
                 bSysFuelOK(iSystem) = .false.
@@ -598,6 +603,10 @@ C.............interpret keyword.
 
                 write (cMsg, '(A)')
      &    '     - "wood"'
+                call edisp248(iuout,cMsg,80)
+				
+                write (cMsg, '(A)')
+     &    '     - "pellets"'
                 call edisp248(iuout,cMsg,80)
 
               endif fuel_parse !<- matches if ( cLnWords(2)(1:12) == 'elec'

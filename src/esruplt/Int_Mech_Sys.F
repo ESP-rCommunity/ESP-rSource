@@ -1414,7 +1414,7 @@ C-----------------------------------------------------------------------
         
 C.......Possibly reset SH load if the unit is in combined 
 C.......SH & water heating model for the entire timestep.         
-        call eclose ( fTS_FracSpaceH, 0.0, 0.001, bNoSpaceHLoad )
+C        call eclose ( fTS_FracSpaceH, 0.0, 0.001, bNoSpaceHLoad )
         
 C.......Fraction of timestep for which there is no demand
 C.......on IMS unit:
@@ -1534,7 +1534,8 @@ C-----------------------------------------------------------------------
 
         fPLR_SpaceH = ( fSpaceHLoad )
      &                      / fIMS_SpaceHCapacity(iSystem)
-     &                      / fTS_FracSpaceH ! (-)
+     &                      / ( fTS_FracSpaceH 
+     &                           + fTS_FracSpaceWaterH ) ! (-)
 
         if ( fPLR_SpaceH > 1.0 ) fPLR_SpaceH = 1.0
         if ( fPLR_SpaceH < 0.0 ) fPLR_SpaceH = 0.0
@@ -1652,6 +1653,8 @@ C.......capacity. Compute actual fuel energy used.
       
       endif SWH_burner_capacity_exceeded
 
+      
+      
 C-----------------------------------------------------------------------
 C     Compute space-heating thermal output 
 C-----------------------------------------------------------------------
@@ -1723,31 +1726,34 @@ C-----------------------------------------------------------------------
 C     Debugging:
 C-----------------------------------------------------------------------
  
-!     print*, "IMS: space heating load:", fSpaceHLoad
-!     print*, "     SH PLR            :", fPLR_SpaceH
-!     print*, "     SH eff            :", fSpaceHEff
-!     print*, "     SH fan power      :", fFanPower
-!     print*, "     SH aux power      :", fAuxPower
-!     print*, "     SH elec power     :", fSpaceHPower
-!     print*, "     SH fuel power     :", fQFuel_SH
-!     print*, "     SH deficit        :", fQSpaceH_deficit
-!     !print*, "     Additional xfer   :", fAddGains
-!     print*, "     water heating load:", fWaterHLoad
-!     print*, "     WH flue/skin ratio:",
-!    &                             fIMS_FlueSkinLossRatio(iSystem)
-!     print*, "     WH Skin loss      :", fIMS_WaterHSkinLoss(iSystem)
-!     print*, "     WH PLR            :", fPLR_WaterH
-!     print*, "     WH Eff            :", fWaterHEff
-!     print*, "     WH Power          :", fWaterHPower
-!     print*, "     WH Fuel power     :", fQFuel_WH
-!     print*, "     Vent Power        :",
-!    &                             fIMS_VentPower(iSystem,iVentMode)
-!     print*, "     Vent Flow         :",
-!    &                             fIMS_VentFlow(iSystem,iVentMode)
+      ! print*, "IMS: space heating load:", fSpaceHLoad
+      !print*, "     SH PLR            :", fPLR_SpaceH
+      ! print*, "     SH eff            :", fSpaceHEff
+       
+      ! print*, "     SH fan power      :", fFanPower
+       
+      ! print*, "     SH aux power      :", fAuxPower
+       
+      !print*, "     SH elec power     :", fSpaceHPower
+      !print*, "     SH fuel power     :", fQFuel_SH
+      !print*, "     SH deficit        :", fQSpaceH_deficit
+      !print*, "     Additional xfer   :", fAddGains
+      !print*, "     water heating load:", fWaterHLoad
+      !print*, "     WH flue/skin ratio:",
+      !&                             fIMS_FlueSkinLossRatio(iSystem)
+      !print*, "     WH Skin loss      :", fIMS_WaterHSkinLoss(iSystem)
+      !print*, "     WH PLR            :", fPLR_WaterH
+      !print*, "     WH Eff            :", fWaterHEff
+      !print*, "     WH Power          :", fWaterHPower
+      !print*, "     WH Fuel power     :", fQFuel_WH
+      !print*, "     Vent Power        :",
+      !&                             fIMS_VentPower(iSystem,iVentMode)
+      !print*, "     Vent Flow         :",
+      ! &                             fIMS_VentFlow(iSystem,iVentMode)
       !print*, "     Vent Load         :", fVentLoad
       !print*, "     Zone HR           :", fHR_zone
       !print*, "     Amb  HR           :", fHR_amb
- 
+      !
       !print*, "     EA Mf Dry         :", fMEA_dry
       !print*, "     EA Mf Vap         :", fMEA_vap
       !print*, "     FA MF Dry         :", fMFA_dry
