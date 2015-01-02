@@ -57,10 +57,10 @@ C     These heating values were pulled from Hot2000 source code by
 C     Brian Bradley (NRCan).
 C
 C     WOOD:
-C      - Hardwood:    30.5  GJ/cord (17738 MJ/Tonne)
-C      - Softwood:    18.49 GJ/cord (10753 MJ/Tonne)
-C      - Mixed wood:  24.0  GJ/cord (13956 MJ/Tonne)
-C      - pellets                    (19800 MJ/Tonne)
+C      - Hardwood:    30.5  GJ/cord (17738 MJ/Tonne)   
+C      - Softwood:    18.49 GJ/cord (10753 MJ/Tonne)   
+C      - Mixed wood:  24.0  GJ/cord (13956 MJ/Tonne)   
+C      - pellets                    (19800 MJ/Tonne)   
 C
 C     NATURAL GAS:    26.8392 M3/GJ
 C     OIL:            25.9578 L/GJ
@@ -81,14 +81,14 @@ C.....PROPANE: Convert W->L
       data fFuelConversionFactor(iPropane) / 39.065E-09 /
 
 C.....Hardwood: Convert W->Tonne
-      data fFuelConversionFactor(iHardWood) / 17.738E-09 /
+      data fFuelConversionFactor(iHardWood) / 5.63761E-11 /
 
 C.....Softwood: Convert W->Tonne
-      data fFuelConversionFactor(iSoftWood) / 10.753E-09 /
+      data fFuelConversionFactor(iSoftWood) / 9.29973E-11 /
 
 C.....Mixed Wood: Convert W->Tonne
-      data fFuelConversionFactor(iMixedWood) / 13.956E-09 /
+      data fFuelConversionFactor(iMixedWood) / 7.16538E-11 /
 
-C.....Wood Pellets 
-      data fFuelConversionFactor(iWoodPellets) / 19.0800E-09 /
+C.....Wood Pellets Convert W->Tonne
+      data fFuelConversionFactor(iWoodPellets) / 5.0505E-11 /
 

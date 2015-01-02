@@ -1779,7 +1779,6 @@ c** Wood (types =5,6,7,8) can have sys_types = 1,2,13**
 c For wood furnaces
       elseif(ifuel_type(isys).eq.5 .or. ifuel_type(isys).eq.6 .or. 
      &       ifuel_type(isys).eq.7 .or. ifuel_type(isys).eq.8) then
-
 c For advanced air tight wood furnace
           if(isys_type.eq.1) then
             af(isys) = 1.008
