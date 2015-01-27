@@ -775,7 +775,7 @@ C true if there are no building side zones linked with fluid flow nodes
 C If building side is not linked then set IAIRN to 0
         IAIRN=0
         DO 43 ICOMP=1,NCOMP
-	  IF(ICAAS(ICOMP).GT.0)IAIRN=1
+          IF(ICAAS(ICOMP).GT.0)IAIRN=1
   43    CONTINUE
         IF(IFLWN.EQ.0) goto 606
 

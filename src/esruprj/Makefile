@@ -264,9 +264,6 @@ readTrnsys.F:
 h3kmodule.f90:
 	rm -f h3kmodule.f90
 	ln -s $(CETCdir)/h3kmodule.f90 .
-h3kmodule.f90:
-	rm -f h3kmodule.f90
-	ln -s $(CETCdir)/h3kmodule.f90 .
 qrun.F:
 	rm -f qrun.F
 	ln -s $(COMdir)/qrun.F

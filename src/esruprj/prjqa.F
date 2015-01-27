@@ -2070,15 +2070,16 @@ C Put odd vertex in right column.
           endif
 
           call edisp(itu,
-     &    ' Number of vertices followed by list of associated vert')
+     &' Number of vertices followed by list, name & perimeter length')
           DO 970 I = 1,NZSUR(izz)
             icc=izstocn(izz,i)        ! find connection
             lsna=lnblnk(SSNAME(icc))  ! get length of surf name
             write(louts,'(a,42I4)') '*edges ',NVER(I),
      &        (JVN(I,J),J=1,NVER(I))
             call SDELIM(louts,loutsd,'C',IW)  ! make comma separated
-            write(outs248,'(3a)') 
-     &        loutsd(1:lnblnk(loutsd)),'   ',SSNAME(icc)(1:lsna)
+            write(outs248,'(3a,f8.3,a)') 
+     &        loutsd(1:lnblnk(loutsd)),'   ',SSNAME(icc)(1:lsna),
+     &        SSPERIM(icc),'m perimeter'
             call edisp248(itu,outs248,100)
  970      CONTINUE
 

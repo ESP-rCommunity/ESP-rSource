@@ -350,15 +350,15 @@ C Clear pre-simulation sets.
         isstmon(i)=0
         isfnday(i)=0
         isfnmon(i)=0
-	seahddwk(i)=0.0
-	seacddwk(i)=0.0
-	seahddtot(i)=0.0
+        seahddwk(i)=0.0
+        seacddwk(i)=0.0
+        seahddtot(i)=0.0
         seacddtot(i)=0.0
-	wkdiff(i)=0.0
-	iwkbest(i)=0
-	iwkbstrt(i)=0
+        wkdiff(i)=0.0
+        iwkbest(i)=0
+        iwkbstrt(i)=0
         wkheatdd(i)=0.0
-	wkcooldd(i)=0.0
+        wkcooldd(i)=0.0
   39  continue
 
 C Clear IPV strings and number of assessmments.
@@ -2647,8 +2647,8 @@ C from the 1m offset.The tollerance is currently set to 5mm.
         CALL ORTTRN(X(I),Y(I),Z(I),TMAT,X1,Y1,ZZZ,IERR)
         call eclose(ZZZ,offset,0.005,close)
         if(.NOT.close)then
-	  ivoff=ivoff+1   ! increment number of vertices off by more than 5mm
-	  differ=offset-ZZZ
+          ivoff=ivoff+1   ! increment number of vertices off by more than 5mm
+          differ=offset-ZZZ
           if(abs(differ).gt.abs(ofby))then  ! keep track of largest diff
             iwhich=i
             ofby=differ

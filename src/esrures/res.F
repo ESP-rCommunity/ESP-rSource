@@ -1031,6 +1031,16 @@ C Depending on computer type set integer size of passed parameters.
       return
       end
 
+      subroutine Find_season_parameters()
+      return
+      end
+
+      SUBROUTINE BASESIMP_INPUTS(ICOMP,IER)
+      integer icomp,ier
+      return
+      end
+
+
 C In support of floating point exceptions. Comment out for NON SOLAIRS.
 #ifdef SUN
 #ifdef F90

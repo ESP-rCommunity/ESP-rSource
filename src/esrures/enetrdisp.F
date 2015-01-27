@@ -917,8 +917,9 @@ C Setup and pass in parameters to win3d.
         call startbuffer()
       ENDIF
 
-      WRITE(ETEXT,'(A,1X,A)') 'Electrical results output from ',
-     &ELRFLNAM(1:LNBLNK(ELRFLNAM))
+C Prevent buffer overflow.
+      lnerl=MIN0(LNBLNK(ELRFLNAM),107)
+      WRITE(ETEXT,'(A,1X,A)') 'Electrical from ',ELRFLNAM(1:lnerl)
       iside=1
       isize=0
       ifont=1

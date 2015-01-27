@@ -2403,17 +2403,17 @@ C Electrical data flag and elctrical data.
       RADC(IDTY,jx)=RADCX
       CONC(IDTY,jx)=CONCX
       if(ielf(icomp).ne.0)then
-	ipf(IDTY,jx)=ipfX
-	iphas(IDTY,jx)=iphasX
-	pf(IDTY,jx)=pfX
-	pwr(IDTY,jx)=pwrX
-	bvolt(IDTY,jx)=bvoltX
+        ipf(IDTY,jx)=ipfX
+        iphas(IDTY,jx)=iphasX
+        pf(IDTY,jx)=pfX
+        pwr(IDTY,jx)=pwrX
+        bvolt(IDTY,jx)=bvoltX
       else
-	ipf(IDTY,jx)=0
-	iphas(IDTY,jx)=1
-	pf(IDTY,jx)=0.0
-	pwr(IDTY,jx)=0.0
-	bvolt(IDTY,jx)=0.0
+        ipf(IDTY,jx)=0
+        iphas(IDTY,jx)=1
+        pf(IDTY,jx)=0.0
+        pwr(IDTY,jx)=0.0
+        bvolt(IDTY,jx)=0.0
       endif
       return
       end
@@ -3037,10 +3037,10 @@ C Initialise the air flows and casual gains to zero for new day type
 
 C Make initial three gain periods (0-24) for occupancy, lights and small
 C power. 
-	  DO 400 I=1,NCAS(NBDAYTYPE)
-	    ICGT(NBDAYTYPE,I)=I
-	    ICGF(NBDAYTYPE,I)=24
- 400	  CONTINUE
+          DO 400 I=1,NCAS(NBDAYTYPE)
+            ICGT(NBDAYTYPE,I)=I
+            ICGF(NBDAYTYPE,I)=24
+ 400      CONTINUE
 
 C Write zone operations file.
           ip3ver(icomp)=2

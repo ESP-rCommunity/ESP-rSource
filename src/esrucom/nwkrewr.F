@@ -22,6 +22,7 @@ C The routines for reading and writing a network graphics file are
 C contained in this file: 
 C   NETREAD - reads the network graphics file and can be called with 
 C             mode 'S' - silent and mode 'R' - reporting mode.
+C   NETTOFLW -Convert from graphic network file to network flow common blocks.
 C   NETWRITE- writes the network graphics file.
 C   NWKINIT - initialisation for network common blocks. 
 
@@ -33,6 +34,7 @@ C file. MODE = `S` to read silently. INUNIT is the file unit to use
 C when reading the file.
       SUBROUTINE NETREAD(INUNIT,MODE,IER)
 
+#include "building.h"
 #include "gnetwk.h"
 #include "espriou.h"
 C espriou.h provides currentfile.
@@ -43,49 +45,47 @@ C Graphics and ESP-r default commons
       COMMON/OUTIN/IUOUT,IUIN
 
       COMMON/POPHELP/H(60)
+      COMMON/AFN/IAIRN,LAPROB,ICAAS(MCOM)
+      CHARACTER LAPROB*72
 
 C Selected entity (component and connection) common
       COMMON/NWKSEL/ISEL(MICN),CSEL(MNCNN)
+      LOGICAL ISEL,CSEL
 
-C Icon commons
-      COMMON/NWKICN/NNICN,ICONTP(MICN),XYZICON(MICN,3),NICONATR(MICN),
-     & ATRICN(MICN,MIATRB,3),ATRTAG(MICN,MIATRB,5),ATRMENU(MICN,MIATRB),
-     & NCONP(MICN),CONCP(MICN,MCNP,2),ICNCT(MICN,MCNP),
-     & VCICON(MICN,MICNV,3),IVEICN(MICN,MICNE,5),NIVC(MICN),
-     & NIVE(MICN),NIVD(MICN),IVDOT(MICN,MICND,4),NIVA(MICN),
-     & IVARC(MICN,MICND,7),NIVL(MICN),IVLBL(MICN,MICND,3),NIVT(MICN)
+C Icon commons via gnetwk.h
+C << NWICNME still needs to be saved and written in network file >>
 
-      COMMON/NWKICS/NWICNM(MICN),NWICNHIS(MICN),NWICNLBL(MICN,MICND),
-     & NWICNTXT(MICN,60)
-
-C Connection commons
-      COMMON/NWKCON/NICNN,ICNS(MNCNN),ICNE(MNCNN),ICNNT(MNCNN),
-     & ICNSP(MNCNN),ICNEP(MNCNN),CNWNP(MNCNN,MCIP,3),
-     & NCONWP(MNCNN),idatrdom(MNCNN),ddtagatr(MNCNN,MIATRB,5),
-     & ddatrib(MNCNN,MIATRB,3),ddmenuatr(MNCNN,MIATRB)
-
-C Global attributes commons (associated with igatrdom(),dgtagatr(),
-C     &  dgatrib(),dgmenuatr() passed back via scanicondb call.
+C Global attributes commons (associated with igatrdom,dgtagatr(),
+C     &  dgatrib(),dgmenuatr()) passed back via scanicondb call.
       COMMON/NWKGLOB/idgatrdom,ddgtagatr(MIATRB,5),
      & ddgatrib(MIATRB,3),ddgmenuatr(MIATRB)
+      character ddgtagatr*12,ddgmenuatr*32,ddgatrib*12
+
+C If working with a flow network, keep track of how many icons are
+C nodes and components.
+      integer NBFNODES ! number of flow nodes
+      integer NBFCOMP  ! number of flow components
+      COMMON/NWKGFLOW/NBFNODES,NBFCOMP
 
 C Grid commons
       COMMON/NWKGRD/GRMAX(3),GRSPC(3),GRLYRH(MLYRS)
       COMMON/NWKVEW/SCALF,VIEWCEN(3),VIEWLIM(6),IVIEW
-      COMMON/NWKSTR/NWKNAM,NWKDSC,NWKFLNAM,NWKTYPSTR(MNWKTYP)
+      COMMON/NWKSTR/NWKNAM,NWKDSC,NWKTYPSTR(MNWKTYP)
+      CHARACTER NWKNAM*72,NWKDSC*72,NWKTYPSTR*12
       COMMON/NWKTYP/INWKTYP,vergnf
+      integer INWKTYP
+      real vergnf
       COMMON/NWKGRDL/GON,SON
+      LOGICAL GON,SON
       COMMON/ICONDBNAM/ICONDBFL
+      character ICONDBFL*72
 
       CHARACTER OUTS*124,OUTSTR*124,WORD*24,WORD1*24,WORD2*24,WORD3*40
-      CHARACTER*72 NWKNAM,NWKDSC,NWKFLNAM,ICONDBFL,DFILE
-      CHARACTER NWICNM*12,NWICNHIS*40,NWICNLBL*4,NWKTYPSTR*12
-      character NWICNTXT*72
+      CHARACTER*72 DFILE
+      character GRTAG*12  ! first token in an attribute line
       CHARACTER LFIL*72,H*72,MODE*1,ectime*24,PHRASE*48
-      character ATRTAG*12,ATRMENU*32,ATRICN*12
-      character ddtagatr*12,ddmenuatr*32,ddatrib*12
-      character ddgtagatr*12,ddgmenuatr*32,ddgatrib*12
-      LOGICAL ISEL,CSEL,GON,SON,CONT,OK,dok
+      LOGICAL CONT,OK,dok
+      integer iftype  ! to cast string to an index
 
 C Set a local counter for the number of icons INNINC. 
       INNICN=0
@@ -93,8 +93,8 @@ C Set a local counter for the number of icons INNINC.
 
 C Open the file with user defined or existing filename
   2   DFILE='UNKNOWN'
-      IF(NWKFLNAM(1:3).NE.'   '.AND.NWKFLNAM(1:3).NE.'UNK')THEN
-        LFIL=NWKFLNAM
+      IF(LAPROB(1:3).NE.'   '.AND.LAPROB(1:3).NE.'UNK')THEN
+        LFIL=LAPROB
       ELSE
         LFIL='UNKNOWN'
       ENDIF
@@ -106,7 +106,7 @@ C Open the file with user defined or existing filename
         CALL EASKS(LFIL,' Network graphics description file? ',' ',72,
      &    DFILE,' file open',IER,4)
         IF(LFIL(1:3).NE.'   '.AND.LFIL(1:3).NE.'UNK') THEN
-          NWKFLNAM=LFIL
+          LAPROB=LFIL
         ELSE
           dok=.true.
           h(1)='You gave a blank file name or UNKNOWN for the name. '
@@ -122,7 +122,7 @@ C Open the file with user defined or existing filename
 C Read in silently.
         IF(LFIL(1:3).NE.'   '.AND.LFIL(1:3).NE.'UNK') THEN
           WRITE(OUTS,'(3A)')' Reading network graphics ...',
-     &      NWKFLNAM(1:LNBLNK(NWKFLNAM)),'.'
+     &      LAPROB(1:LNBLNK(LAPROB)),'.'
           CALL USRMSG(OUTS,' ','-')
         ELSE
           CALL EDISP(IUOUT,'Warning: network graphics filename was')
@@ -132,7 +132,7 @@ C Read in silently.
       ENDIF
 
 C Open the network graphics file.
-      CALL EFOPSEQ(INUNIT,NWKFLNAM,1,IER)
+      CALL EFOPSEQ(INUNIT,LAPROB,1,IER)
       IF(IER.EQ.-301) THEN
         IF(MODE.NE.'S') THEN
           WRITE(OUTS,'(3A)')
@@ -166,10 +166,9 @@ C Open the network graphics file.
           RETURN
         ENDIF
       ENDIF
-      write(currentfile,'(a)') NWKFLNAM(1:lnblnk(NWKFLNAM))
+      write(currentfile,'(a)') LAPROB(1:lnblnk(LAPROB))
 
 C Read the file header and check for first-line tag.
-C << need a common block for vergnf >>
       CALL STRIPC(INUNIT,OUTSTR,99,ND,0,'1st line of gnf',IER)
       IF(IER.NE.0) CONT=.FALSE. 
       IF(OUTSTR(1:18).EQ.'*Graphical_network')THEN
@@ -372,13 +371,8 @@ C order of icons warning user if the order is not as expected.
         endif  
 
 C Begin counting number of vertices, edges, dots, attachment boxes in this icon.     
-        NIVC(I)=0
-        NIVE(I)=0
-        NCONP(I)=0
-        NIVD(I)=0
-        NIVA(I)=0
-        NIVL(I)=0
-        NIVT(I)=0
+        NIVC(I)=0; NIVE(I)=0; NCONP(I)=0; NIVD(I)=0
+        NIVA(I)=0; NIVL(I)=0
 
 C Get the (user edited) icon name.
         CALL EGETW(OUTSTR,K,WORD2,'W','gnf icon name',IER)
@@ -398,16 +392,20 @@ c        WRITE(*,*)'selection state',IS
         IF(IS.GT.0) ISEL(I)=.TRUE.
         IF(IER.NE.0) CONT=.FALSE.
       elseif(WORD(1:5).eq.'*Text')then
+
+C This section in older files, read till *End_Text
   23    CALL STRIPC(INUNIT,OUTSTR,99,ND,0,'gnf icon text',IER)
         IF(IER.NE.0) CONT=.FALSE.
         if(OUTSTR(1:9).eq.'*End_Text')then
           continue
         else
-          NIVT(I)=NIVT(I)+1
-          JJ=NIVT(I)
-          write(NWICNTXT(I,JJ),'(a)') OUTSTR(1:72)
           goto 23
         endif
+      elseif(WORD(1:5).eq.'*Menu')then
+
+C The phrase associated with the icon when selected.
+        CALL EGETRM(OUTSTR,K,PHRASE,'W','icon select menu',IER)
+        write(NWICNME(I),'(a)') PHRASE(1:36)
       elseif(WORD(1:10).eq.'*Attribute')then
  445    CALL STRIPC(INUNIT,OUTSTR,99,ND,0,'gnf attribute',IER)
         IF(IER.NE.0) CONT=.FALSE.
@@ -418,6 +416,7 @@ c        WRITE(*,*)'selection state',IS
           JJ=NICONATR(I)
           K=0
           CALL EGETW(OUTSTR,K,WORD,'W','gnf icon grp tags',IER)
+          write(GRTAG,'(a)')WORD(1:12)   ! remember the group tag
           IF(IER.NE.0) CONT=.FALSE.
           write(ATRTAG(I,JJ,1),'(a)')WORD(1:12)
           CALL EGETW(OUTSTR,K,WORD,'W','gnf atrib data type',IER)
@@ -427,9 +426,26 @@ c        WRITE(*,*)'selection state',IS
           write(ATRTAG(I,JJ,4),'(a)')WORD2(1:12)
           IF(IER.NE.0) CONT=.FALSE.
           if(WORD(1:4).eq.'intg'.or.WORD(1:4).eq.'INTG')then
-            write(ATRTAG(I,JJ,2),'(a)')WORD(1:12)
+             write(ATRTAG(I,JJ,2),'(a)')WORD(1:12)
             CALL EGETW(OUTSTR,K,WORD,'W','intg value',IER)
             write(ATRICN(I,JJ,1),'(a)') WORD(1:12)
+
+C If we are working with a flow network attempt to identify whether the
+C icon is associated with a node or a component and increment the counters.
+            if(INWKTYP.eq.2.and.JJ.eq.1)then
+              if(GRTAG(1:4).eq.'Flow'.or.GRTAG(1:4).eq.'flow')then
+                read(WORD,*,iostat=ios,ERR=99) iftype  ! flow node or component type
+                if(iftype.lt.0)then
+                  continue
+                elseif(iftype.ge.0.and.iftype.le.3)then
+                  NBFNODES=NBFNODES+1
+                else
+                  NBFCOMP=NBFCOMP+1
+                endif
+              endif
+            endif
+  99        continue  ! if trouble reading iftype
+C << consider depreciating the min and max >>
             CALL EGETW(OUTSTR,K,WORD,'W','intg min',IER)
             write(ATRICN(I,JJ,2),'(a)') WORD(1:12)
             CALL EGETW(OUTSTR,K,WORD,'W','intg max',IER)
@@ -485,7 +501,7 @@ C Get the vertex co-ordinates.
         VCICON(I,J,1)=VAL
         CALL EGETWR(OUTSTR,K,VAL,-10.0,999.,'W','gnf vertex Y',IER)
         VCICON(I,J,2)=VAL
-        CALL EGETWR(OUTSTR,K,VAL,0.0,999.,'W','gnf vertex Z',IER)
+        CALL EGETWR(OUTSTR,K,VAL,-10.0,999.,'W','gnf vertex Z',IER)
         VCICON(I,J,3)=VAL   
         IF(IER.NE.0) CONT=.FALSE.
       elseif(WORD(1:5).eq.'*Edge')then
@@ -747,31 +763,19 @@ C Convert from graphic network file to network flow common blocks.
 C Graphics and ESP-r default commons
       COMMON/OUTIN/IUOUT,IUIN
 
-C Icon commons
-      COMMON/NWKICN/NNICN,ICONTP(MICN),XYZICON(MICN,3),NICONATR(MICN),
-     & ATRICN(MICN,MIATRB,3),ATRTAG(MICN,MIATRB,5),ATRMENU(MICN,MIATRB),
-     & NCONP(MICN),CONCP(MICN,MCNP,2),ICNCT(MICN,MCNP),
-     & VCICON(MICN,MICNV,3),IVEICN(MICN,MICNE,5),NIVC(MICN),
-     & NIVE(MICN),NIVD(MICN),IVDOT(MICN,MICND,4),NIVA(MICN),
-     & IVARC(MICN,MICND,7),NIVL(MICN),IVLBL(MICN,MICND,3),NIVT(MICN)
-
-      COMMON/NWKICS/NWICNM(MICN),NWICNHIS(MICN),NWICNLBL(MICN,MICND),
-     & NWICNTXT(MICN,60)
-
-C Connection commons
-      COMMON/NWKCON/NICNN,ICNS(MNCNN),ICNE(MNCNN),ICNNT(MNCNN),
-     & ICNSP(MNCNN),ICNEP(MNCNN),CNWNP(MNCNN,MCIP,3),
-     & NCONWP(MNCNN),idatrdom(MNCNN),ddtagatr(MNCNN,MIATRB,5),
-     & ddatrib(MNCNN,MIATRB,3),ddmenuatr(MNCNN,MIATRB)
-
+C Icon commons via gnetwk.h
 C Global attributes commons (associated with igatrdom(),dgtagatr(),
 C     &  dgatrib(),dgmenuatr() passed back via scanicondb call.
       COMMON/NWKGLOB/idgatrdom,ddgtagatr(MIATRB,5),
      & ddgatrib(MIATRB,3),ddgmenuatr(MIATRB)
+      character ddgtagatr*12,ddgmenuatr*32,ddgatrib*12
 
 C Grid commons
-      COMMON/NWKSTR/NWKNAM,NWKDSC,NWKFLNAM,NWKTYPSTR(MNWKTYP)
+      COMMON/NWKSTR/NWKNAM,NWKDSC,NWKTYPSTR(MNWKTYP)
+      CHARACTER NWKNAM*72,NWKDSC*72,NWKTYPSTR*12
       COMMON/NWKTYP/INWKTYP,vergnf
+      INTEGER inwktyp
+      REAL vergnf
 
       COMMON/MFLOW1/NNOD,NCMP,NCNN
       COMMON/MFLOW2/NDNAM(0:MNOD)
@@ -792,7 +796,10 @@ C icontoflow() is a pointer from icon to flow node (positive) or flow
 C component (negative).
 C icnisnode(MNCNN) toggle where .true. means icon index is
 C associated with a flow node.
-      common/NWKFLW/icontoflow(MNCNN),icnisnode(MNCNN)
+C inodetoicon() points from mfs node to icon
+C icomptoicon() points from mfs component to icon
+      common/NWKFLW/icontoflow(MNCNN),icnisnode(MNCNN),
+     &  inodetoicon(MNCNN),icomptoicon(MNCNN)
 
 C logical icnused(MNCNN) is a toggle for marking halves of icon connections
 C which have been combined into one flow icon.
@@ -802,13 +809,9 @@ C Height difference attribute at an icon connection.
       dimension deltah(MNCNN)
 
       CHARACTER OUTS*124,OUTSTR*124
-      CHARACTER*72 NWKNAM,NWKDSC,NWKFLNAM
-      CHARACTER NWICNM*12,NWICNHIS*40,NWICNLBL*4,NWKTYPSTR*12
-      character NWICNTXT*72,LVALCM*60
-      character ATRTAG*12,ATRMENU*32,ATRICN*12
-      character ddtagatr*12,ddmenuatr*32,ddatrib*12
-      character ddgtagatr*12,ddgmenuatr*32,ddgatrib*12
-      logical foundloc,icnused,icnisnode,close,modify,ok
+      character LVALCM*60
+      logical foundloc,icnused,icnisnode,close
+C     logical modify,ok
 
       DIMENSION NDID(MNOD)
       CHARACTER NDID*12,CMNAM*12,NDNAM*12
@@ -832,7 +835,7 @@ C for relevant information for network flow.
 C In some cases relationships found while creating flow network
 C commons requires icon commons to be updated. Use modify to
 C signal this and check at the end of the conversion.
-      modify=.false.
+C      modify=.false.
 
 C Establish the short network flow description for each of the
 C components (typically done in EMFREAD).
@@ -847,7 +850,7 @@ C as been defined. If it has not set WRED.
      &       ddgtagatr(I,2)(1:4).eq.'real')then
             read(ddgatrib(I,1),*,IOSTAT=IOS,ERR=1001) WRED
           else
-            WRED=0.5
+            WRED=1.0
           endif
   22    continue
       endif
@@ -868,8 +871,9 @@ C pressure (two). Cast string to integer for index of node type or component typ
             NNOD=NNOD+1
             NDNAM(NNOD)=NWICNM(I)
             NDTYP(NNOD)=iv
-            icontoflow(I)=NNOD
+            icontoflow(I)=NNOD  ! pointer for connection
             icnisnode(I)=.true.
+            inodetoicon(NNOD)=i ! reverse pointer
             write(atrerr,'(6a)') 'atributes=',ATRICN(I,1,1),
      &        ATRICN(I,2,1),ATRICN(I,3,1),ATRICN(I,4,1),ATRICN(I,5,1)
             if(NDTYP(NNOD).eq.0)then
@@ -910,8 +914,9 @@ C Find matching network flow component text descriptor and remember it.
             IF(IC.LT.MCMV) GOTO 31
    45       LTPCMP(NCMP)=LVALCM(IC)
 
-            icontoflow(I)=NCMP*(-1)
+            icontoflow(I)=NCMP*(-1)  ! pointer for connection
             icnisnode(I)=.false.
+            icomptoicon(NCMP)=i      ! reverse pointer
             if(ITPCMP(NCMP).eq.10)then
               ISDCMP(NCMP)=3
             elseif(ITPCMP(NCMP).eq.15)then
@@ -977,7 +982,7 @@ C Assign icon Z value if different to hnod().
                   call eclose(HNOD(NNOD),XYZICON(I,3),0.01,close)
                   if(.NOT.close)then
                     XYZICON(I,3)=HNOD(NNOD)
-                    modify=.true.
+C                    modify=.true.
                   endif
                 else
 
@@ -987,7 +992,7 @@ C icon Z value
                   call eclose(HVAL,XYZICON(I,3),0.01,close)
                   if(.NOT.close)then
                     XYZICON(I,3)=HVAL
-                    modify=.true.
+C                    modify=.true.
                   endif
                 endif
               elseif(ATRTAG(I,ijj,2)(1:4).eq.'intg')then
@@ -1234,6 +1239,7 @@ C tool. The routine can be called using two modes:
 C 1 - save current file in the current location with the current filename (if any).
 C 2 - save the current file with a specified location and name.
       SUBROUTINE NETWRITE(IMODE)
+#include "building.h"
 #include "gnetwk.h"
       
       integer lnblnk  ! function definition
@@ -1241,48 +1247,46 @@ C 2 - save the current file with a specified location and name.
 C Graphics and ESP-r default commons
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
+      COMMON/AFN/IAIRN,LAPROB,ICAAS(MCOM)
+      CHARACTER LAPROB*72
 
 C Selected entity (component and connection) common
       COMMON/NWKSEL/ISEL(MICN),CSEL(MNCNN)
+      LOGICAL ISEL,CSEL
 
-C Icon commons
-      COMMON/NWKICN/NNICN,ICONTP(MICN),XYZICON(MICN,3),NICONATR(MICN),
-     & ATRICN(MICN,MIATRB,3),ATRTAG(MICN,MIATRB,5),ATRMENU(MICN,MIATRB),
-     & NCONP(MICN),CONCP(MICN,MCNP,2),ICNCT(MICN,MCNP),
-     & VCICON(MICN,MICNV,3),IVEICN(MICN,MICNE,5),NIVC(MICN),
-     & NIVE(MICN),NIVD(MICN),IVDOT(MICN,MICND,4),NIVA(MICN),
-     & IVARC(MICN,MICND,7),NIVL(MICN),IVLBL(MICN,MICND,3),NIVT(MICN)
-
-      COMMON/NWKICS/NWICNM(MICN),NWICNHIS(MICN),NWICNLBL(MICN,MICND),
-     & NWICNTXT(MICN,60) 
-
-C Connection commons
-      COMMON/NWKCON/NICNN,ICNS(MNCNN),ICNE(MNCNN),ICNNT(MNCNN),
-     & ICNSP(MNCNN),ICNEP(MNCNN),CNWNP(MNCNN,MCIP,3),
-     & NCONWP(MNCNN),idatrdom(MNCNN),ddtagatr(MNCNN,MIATRB,5),
-     & ddatrib(MNCNN,MIATRB,3),ddmenuatr(MNCNN,MIATRB)
+C Icon commons via gnetwk.h
+C << NWICNME still needs to be saved and written in network file >>
 
 C Global attributes commons (associated with igatrdom(),dgtagatr(),
 C     &  dgatrib(),dgmenuatr() passed back via scanicondb call.
       COMMON/NWKGLOB/idgatrdom,ddgtagatr(MIATRB,5),
      & ddgatrib(MIATRB,3),ddgmenuatr(MIATRB)
+      character ddgtagatr*12,ddgatrib*12,ddgmenuatr*32
 
 C Grid commons
       COMMON/NWKGRD/GRMAX(3),GRSPC(3),GRLYRH(MLYRS)
       COMMON/NWKVEW/SCALF,VIEWCEN(3),VIEWLIM(6),IVIEW
-      COMMON/NWKSTR/NWKNAM,NWKDSC,NWKFLNAM,NWKTYPSTR(MNWKTYP)
+      COMMON/NWKSTR/NWKNAM,NWKDSC,NWKTYPSTR(MNWKTYP)
+      CHARACTER NWKNAM*72,NWKDSC*72,NWKTYPSTR*12
       COMMON/NWKTYP/INWKTYP,vergnf
+      INTEGER inwktyp
+      REAL vergnf
       COMMON/NWKGRDL/GON,SON
+      LOGICAL GON,SON
       COMMON/ICONDBNAM/ICONDBFL
+      CHARACTER*72 ICONDBFL
 
-      CHARACTER*72 NWKNAM,NWKDSC,NWKFLNAM,ICONDBFL,DFILE,LFIL
-      CHARACTER NWICNM*12,NWKTYPSTR*12,NWICNHIS*40
+      CHARACTER*72 DFILE,LFIL
       CHARACTER OUTS*124,tab*1,dstmp*24,ts12*12,te12*12
-      character NWICNLBL*4,NWICNTXT*72,longtfile*144
-      character ATRTAG*12,ATRMENU*32,ATRICN*12
-      character ddtagatr*12,ddmenuatr*32,ddatrib*12
-      character ddgtagatr*12,ddgmenuatr*32,ddgatrib*12
-      LOGICAL ISEL,CSEL,CONCAT,GON,SON
+      character longtfile*144
+      LOGICAL CONCAT
+      character iconphrase*40
+C      character tagatr*12,menuatr*32,atrib*12,ICDNAM*12
+C      dimension tagatr(MIATRB,5),atrib(MIATRB,3),menuatr(MIATRB)
+
+C WORDSS array of string tokens from each NWICHNIS.
+C      CHARACTER*32 WORDSS(12)
+
 
 C << CSEL, ICONTP() not written out >>
 
@@ -1290,14 +1294,13 @@ C Open the file to be written, if 'save-as' offer existing file
 C name for editing.
       tab=','
       DFILE='net_graphics_file.gnf'
-      IF(IMODE.EQ.1.AND.NWKFLNAM(1:3).NE.'UNK')THEN
-        LFIL=NWKFLNAM(1:LNBLNK(NWKFLNAM))    
+      IF(IMODE.EQ.1.AND.LAPROB(1:3).NE.'UNK')THEN
+        LFIL=LAPROB(1:LNBLNK(LAPROB))    
       ELSE
-C        LFIL=DFILE(1:LNBLNK(DFILE))
-        LFIL=NWKFLNAM(1:LNBLNK(NWKFLNAM))
-        CALL EASKS(LFIL,' ',' Graphical network filename ?',72,
+        LFIL=LAPROB(1:LNBLNK(LAPROB))
+        CALL EASKS(LFIL,' ',' Graphical network filename?',72,
      &  DFILE,' elec file',IER,8)
-        IF(LFIL(1:2).NE.'  ') NWKFLNAM=LFIL
+        IF(LFIL(1:2).NE.'  ') LAPROB=LFIL
       ENDIF
 
 C Add the networks path to the filename if required.
@@ -1306,19 +1309,17 @@ C << Why call addpath at this point? >>
       CALL ADDPATH(LFIL,LONGTFILE,CONCAT)
       IF(CONCAT) LFIL=LONGTFILE(1:72)
 
-
-C Open the file 
+C Open the file. 
       INUNIT=IFIL+1
-      CALL EFOPSEQ(INUNIT,NWKFLNAM,4,IER)
+      CALL EFOPSEQ(INUNIT,LAPROB,4,IER)
       IF(IER.NE.0) THEN
-        WRITE(OUTS,'(A,A,A)') ' Problem opening ',
-     &  NWKFLNAM(1:LNBLNK(NWKFLNAM)),' aborting write.'
+        WRITE(OUTS,'(3A)') ' Problem opening ',
+     &    LAPROB(1:LNBLNK(LAPROB)),' aborting write.'
         CALL EDISP(IUOUT,OUTS)
         RETURN
       ENDIF
    
 C Write out the general network data and current view parameters
-C << Need a common block to hold version number >>
         vergnf=1.2
       WRITE(INUNIT,'(A,f4.1)',iostat=ios,err=1)'*Graphical_network',
      &  vergnf
@@ -1376,8 +1377,19 @@ C Current network state
      &    ' # Snap on '   
       endif 
 
-C Write out any global attributes for this domain.
-      if(idgatrdom.gt.0)then
+C Write out any global attributes for this domain. If flow there is always
+C a wind pressure reduction. If nothing specified write out default data.
+C Newer files may also include flow solution preferences.
+      if(idgatrdom.eq.0)then
+        idgatrdom=1
+        write(INUNIT,'(2a,i2)',iostat=ios,err=1) '*Attribute_global',
+     &    tab,idgatrdom
+        write(INUNIT,'(17a)',iostat=ios,err=1) '*flow',tab,'real',
+     &    tab,'-',tab,'-',tab,'1.0',tab,'0.0',tab,'10.0',tab,'user',
+     &    tab,'wind pressure reduction factor'
+        write(INUNIT,'(a)',iostat=ios,err=1) '*End_global_attribute'
+
+      elseif(idgatrdom.gt.0)then
         write(INUNIT,'(2a,i2)',iostat=ios,err=1) '*Attribute_global',
      &    tab,idgatrdom
         do 212 J=1,idgatrdom
@@ -1430,15 +1442,14 @@ C graphic entities (edges, dots, internal labels, arcs etc.)
           write(INUNIT,'(2a,i2,5a,i1,a)',iostat=ios,err=1) '*Icon',tab,
      &      I,tab,NWICNM(I)(1:l2),tab,NWICNHIS(I)(1:l3),tab,ISL,
      &      ' # name (user & icon db) & state (selected)'
-        endif 
-        if(NIVT(I).ge.1)then
-          write(INUNIT,'(a)',iostat=ios,err=1) '*Text'
-          do 11 J=1,NIVT(I)
-            l3=lnblnk(NWICNTXT(I,J))
-            write(INUNIT,'(a)',iostat=ios,err=1) NWICNTXT(I,J)(1:l3)
-  11      continue
-          write(INUNIT,'(a)',iostat=ios,err=1) '*End_Text'
-        endif 
+        endif
+
+C Write NWICNME as documentation.
+        lnnw=lnblnk(NWICNME(I))
+        write(INUNIT,'(3a)',iostat=ios,err=1) '*Menu',tab,
+     &    NWICNME(I)(1:lnnw)
+
+C Write attributes.
         write(INUNIT,'(2a,i2)',iostat=ios,err=1) '*Attribute',
      &    tab,NICONATR(I)
         if(NICONATR(I).gt.0)then
@@ -1576,7 +1587,7 @@ C Close the file and exit
 
 C Inform the user of  a sucessful write
       OUTS=' '
-      WRITE(OUTS,'(A,A)') 'Written graphical network file ',NWKFLNAM
+      WRITE(OUTS,'(2A)') 'Written graphical network file ',LAPROB
       CALL EDISP(IUOUT,OUTS)
 
 Close the file and return
@@ -1601,51 +1612,35 @@ C NWKINIT is the initialisation for network common blocks.
 
 #include "gnetwk.h"
 
-C Icon commons
-      COMMON/NWKICN/NNICN,ICONTP(MICN),XYZICON(MICN,3),NICONATR(MICN),
-     & ATRICN(MICN,MIATRB,3),ATRTAG(MICN,MIATRB,5),ATRMENU(MICN,MIATRB),
-     & NCONP(MICN),CONCP(MICN,MCNP,2),ICNCT(MICN,MCNP),
-     & VCICON(MICN,MICNV,3),IVEICN(MICN,MICNE,5),NIVC(MICN),
-     & NIVE(MICN),NIVD(MICN),IVDOT(MICN,MICND,4),NIVA(MICN),
-     & IVARC(MICN,MICND,7),NIVL(MICN),IVLBL(MICN,MICND,3),NIVT(MICN)
-  
-      COMMON/NWKICS/NWICNM(MICN),NWICNHIS(MICN),NWICNLBL(MICN,MICND),
-     & NWICNTXT(MICN,60) 
+C Icon commons via gnetwk.h
 
-C Connection commons
-      COMMON/NWKCON/NICNN,ICNS(MNCNN),ICNE(MNCNN),ICNNT(MNCNN),
-     & ICNSP(MNCNN),ICNEP(MNCNN),CNWNP(MNCNN,MCIP,3),
-     & NCONWP(MNCNN),idatrdom(MNCNN),ddtagatr(MNCNN,MIATRB,5),
-     & ddatrib(MNCNN,MIATRB,3),ddmenuatr(MNCNN,MIATRB)
-
-C Global attributes commons (associated with igatrdom(),dgtagatr(),
+C Global attributes commons (associated with igatrdom,dgtagatr(),
 C     &  dgatrib(),dgmenuatr() passed back via scanicondb call.
       COMMON/NWKGLOB/idgatrdom,ddgtagatr(MIATRB,5),
      & ddgatrib(MIATRB,3),ddgmenuatr(MIATRB)
+      character ddgtagatr*12,ddgmenuatr*32,ddgatrib*12
 
 C Grid commons
       COMMON/NWKGRD/GRMAX(3),GRSPC(3),GRLYRH(MLYRS)
       COMMON/NWKGRDL/GON,SON
+      LOGICAL GON,SON
       COMMON/NWKVEW/SCALF,VIEWCEN(3),VIEWLIM(6),IVIEW
-      COMMON/NWKSTR/NWKNAM,NWKDSC,NWKFLNAM,NWKTYPSTR(MNWKTYP)
+      COMMON/NWKSTR/NWKNAM,NWKDSC,NWKTYPSTR(MNWKTYP)
+      CHARACTER NWKNAM*72,NWKDSC*72,NWKTYPSTR*12
       COMMON/ICONDBNAM/ICONDBFL      
+      character ICONDBFL*72
       COMMON/NWKTYP/INWKTYP,vergnf
+      INTEGER inwktyp
+      REAL vergnf
 
 C Icon rotation angle
       COMMON/IROT/ROTA
 
 C Selected entity (component and connection) common
       COMMON/NWKSEL/ISEL(MICN),CSEL(MNCNN)
+      LOGICAL ISEL,CSEL
       COMMON/DEFLT3/DFCFD,DECMPDBFL,DICONDBFL
-
-      CHARACTER*72 NWKNAM,NWKDSC,NWKFLNAM,ICONDBFL
-      CHARACTER NWICNM*12,NWKTYPSTR*12,NWICNHIS*40,NWICNLBL*4
-      character NWICNTXT*72
-      character ATRTAG*12,ATRMENU*32,ATRICN*12
-      character ddtagatr*12,ddmenuatr*32,ddatrib*12
-      character ddgtagatr*12,ddgmenuatr*32,ddgatrib*12
-      character*72 DFCFD,DECMPDBFL,DICONDBFL
-      LOGICAL GON,SON,ISEL,CSEL
+      character DFCFD*72,DECMPDBFL*72,DICONDBFL*72
 
 C Initialise the location of the icons
       ICONDBFL=DICONDBFL
@@ -1718,9 +1713,6 @@ C Clear icon data.
         NICONATR(I)=0
         NWICNM(I)=' '
         NWICNHIS(I)=' '
-        do 36 k=1,60
-          NWICNTXT(I,K)=' '
-  36    continue
         do 35 j=1,MICND
           NWICNLBL(I,J)=' '
   35    continue
@@ -1760,9 +1752,7 @@ C Clear the icon drawing data.
 C Clear connection data.
       NICNN=0
       DO 30 I=1,MNCNN
-        ICNS(I)=0
-        ICNE(I)=0        
-        ICNNT(I)=0 
+        ICNS(I)=0; ICNE(I)=0; ICNNT(I)=0 
         CSEL(I)=.FALSE.
         DO 33 J=1,MCIP
           CNWNP(I,J,1)=0.0
@@ -1773,25 +1763,19 @@ C Clear connection data.
         idatrdom(I)=0
         idgatrdom=0
         do 49 J=1,MIATRB
-          ddtagatr(I,J,1)=' '
-          ddtagatr(I,J,2)=' '
-          ddtagatr(I,J,3)=' '
-          ddtagatr(I,J,4)=' '
+          ddtagatr(I,J,1)=' '; ddtagatr(I,J,2)=' '
+          ddtagatr(I,J,3)=' '; ddtagatr(I,J,4)=' '
           ddtagatr(I,J,5)=' '
-          ddatrib(I,J,1)=' '
-          ddatrib(I,J,2)=' '
+          ddatrib(I,J,1)=' '; ddatrib(I,J,2)=' '
           ddatrib(I,J,3)=' '
           ddmenuatr(I,J)=' '
-          ddgtagatr(J,1)=' '
-          ddgtagatr(J,2)=' '
-          ddgtagatr(J,3)=' '
-          ddgtagatr(J,4)=' '
+          ddgtagatr(J,1)=' '; ddgtagatr(J,2)=' '
+          ddgtagatr(J,3)=' '; ddgtagatr(J,4)=' '
           ddgtagatr(J,5)=' '
-          ddgatrib(J,1)=' '
-          ddgatrib(J,2)=' '
+          ddgatrib(J,1)=' '; ddgatrib(J,2)=' '
           ddgatrib(J,3)=' '
           ddgmenuatr(J)=' '
-  49    continue     
+  49    continue    
   30  CONTINUE
 
       RETURN

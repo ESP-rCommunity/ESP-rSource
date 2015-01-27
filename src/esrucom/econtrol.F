@@ -1684,7 +1684,7 @@ C Reporting:
 
         nn=nocdt(ii)  ! a zero says use all day types
         if(nn.eq.0)nn=nbdaytype
-        do 200 j=1,nn
+        do 200 j=1,nn ! NUMBER OF DAY TYPES
           jj=j
           CALL STRIPC(IUNIT,OUTSTR,2,ND,1,'validity',IER)
           IF(IER.NE.0)GOTO 99
@@ -1705,7 +1705,7 @@ C Reporting:
           IF(IER.NE.0)GOTO 99
 
           LL=NOCDP(II,JJ)
-          DO 300 K=1,LL
+          DO 300 K=1,LL ! NUMBER OF PERIODS
             KK=K
             CALL STRIPC(IUNIT,OUTSTR,0,ND,1,'control',IER)
             IF(IER.NE.0)GOTO 99

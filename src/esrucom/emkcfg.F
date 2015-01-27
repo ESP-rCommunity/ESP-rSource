@@ -725,15 +725,15 @@ C Diffuse shading flag.
      &    iexcludediff_flag,'  # diffuse shading is excluded'
       endif      
       
-C Flag for quick run method	  
+C Flag for quick run method  
       if(iQuick_run.eq.0)then
         WRITE(IFCFG,'(A,i2,A)',IOSTAT=IOS,ERR=2) '*quick_run  ',
      &    iQuick_run,'  # no'
       else
         WRITE(IFCFG,'(A,i2,A)',IOSTAT=IOS,ERR=2) '*quick_run  ',
      &    iQuick_run,'  # yes'
-      endif	  
-	  
+      endif  
+  
 C SHOCC: library file.
       IF ( bSHOCCed ) then
          WRITE(IFCFG,'(3A)',IOSTAT=IOS,ERR=2) '*shl  ',
@@ -1033,7 +1033,7 @@ C it in the configuration file.
 C Use call mkipvdat to write into the cfg file and then clear name of
 C the external IPV file (also notify the user they can remove it).
           ipvaction='cfg'
-	  if(ipvform.eq.0) ipvform=2  ! if format not defined set to tab separated
+          if(ipvform.eq.0) ipvform=2  ! if format not defined set to tab separated
           call mkipvdat(ifcfg,LCFGF,ipvaction)
           lipvdatf='internal'  ! ensure old file name is no longer referenced
         endif

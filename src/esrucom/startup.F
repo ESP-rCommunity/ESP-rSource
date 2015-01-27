@@ -1473,10 +1473,6 @@ C Caputre text buffer to a file, capextf is in wwlib.c
         CALL EGETW(OUTSTR,K,cadfmt,'W','cad fnt',IER)
         write(outs,'(a,a,2x,a,2x,a)')' Local CAD: ',cadlbl,cadexe,cadfmt
         if(itrc.gt.1)call edisp(iuout,outs)
-      elseif(WORD(1:13).eq.'*tutorial_app')then
-
-C Tutorial application depreciated.
-        continue
       elseif(WORD(1:8).eq.'*journal')then
 
 C Turn journaling on/off.
@@ -1990,6 +1986,9 @@ C parpsfh: Help message for several of the command line parsers.
         call edisp(iuout,'  Use: [-mode {text|graphic}]')
         call edisp(iuout,'       [-file <configuration file>]')
         call edisp(iuout,'       [-zone <name|index>]')
+      elseif(appn(1:3).eq.'net')then
+        call edisp(iuout,'The graphic network layout tool. ')
+        call edisp(iuout,'  Use: [-mode {text|graphic}]')
       elseif(appn(1:3).eq.'pdb')then
         call edisp(iuout,'The plant components database manager. ')
         call edisp(iuout,'  Use: [-mode {text|graphic}]')

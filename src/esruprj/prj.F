@@ -252,8 +252,8 @@ C  ifil+6 (databases and mass flow), ifil+7 (temporal )
 C  ifil+8 (  ), ifil+9 file export, ifil+10 (AIM and DHW and journal)
 C  ifil+11 (external help text), ifil+19 ifil+20 ifil+21 anlyt.
 
-C Recover command line parameters (terminal, size, config file, zone
-C focus and actions arguments).
+C Recover command line parameters (terminal, size (iappx) position (iappx iappy),
+C config file, zone focus and actions arguments).
       call parsprj(MODL,iappw,iappx,iappy,inf,inz,act,d1,d2,d3,iverb)
       itrc=iverb    ! set trace level after call to parsprj
       IFDAY=2
@@ -4276,6 +4276,11 @@ C Path to model and command line file (if any).
       common/cctlnm/ctldoc,lctlf
       common/AFN/IAIRN,LAPROB,ICAAS(MCOM)
 
+C To signal to MFWRIT that globals are available from graphic network.
+C Currently set true if graphic network file, false otherwise.
+      logical haveglobal
+      COMMON/MFLOW11/haveglobal
+
       COMMON/cfdfil/LCFD(MCOM),IFCFD(MCOM)
       COMMON/ICFNOD/ICFD,ICP
       COMMON/CONTM/CNTMFIL,CNTMDESC,NTSTEPC
@@ -5333,13 +5338,15 @@ C then an older file so rewind the file and call emfread.
           IF(ND.GE.4)THEN
             REWIND(IUM,ERR=999)
             CALL EMFREAD(IUM,IIER)
+            haveglobal=.FALSE.  ! a text-based flow network file
           elseif((ND.eq.1.or.ND.eq.2).and.
      &          OUTSTR(1:18).EQ.'*Graphical_network')then
 
 C Found a graphic network file, advise user and exit.
             call usrmsg(
      &      'This file is a graphic network file rather than a',
-     &      'flow network file!','W')
+     &      'flow network file!','W') 
+            haveglobal=.TRUE.  ! a graphic network file
           endif
           CALL MFWRIT(IUM)
         ENDIF

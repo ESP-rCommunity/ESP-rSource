@@ -23,7 +23,6 @@ C  dinterval   :- determins the tic interval for an axis as well
 C                 as the number of decimal places.
 C  vrtaxis     :- draws a vertical axis with tic marks and labels.
 C  horaxis     :- draws a horizontal axis with tic marks and labels.
-C  captut      :- tutorial indicator
 C  captextf    :- text feedback capture
 C  captexgf    :- graphic feedback capture
 C  updcapt     :- notify for capture button
@@ -371,6 +370,18 @@ C      write(6,*) opta
       return
       end
 
+      subroutine earc(x,y,rad,ang1,ang2,operation)
+      return
+      end
+
+      subroutine nwkgflg(ngf)
+      return
+      end
+
+      subroutine nwksmod(sel,con,dat)
+      return
+      end
+
       subroutine edline(ixy,iy1,ix2,iy2,ipdis)
       return
       end
@@ -473,10 +484,6 @@ C      subroutine refreshenv
 C      return
 C      end
 
-      subroutine opentutorial
-      return
-      end
-
       subroutine opencpw
       return
       end
@@ -513,11 +520,6 @@ C      end
       end
 
       subroutine capexall(cmd)
-      character*(*) cmd
-      return
-      end
-
-      subroutine captut(cmd)
       character*(*) cmd
       return
       end

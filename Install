@@ -108,6 +108,7 @@ DBSdir="${DBSdir}/databases"
 MODdir="${HOMEdir}/models"
 TRAdir="${MODdir}/training"
 VALdir="${MODdir}/validation"
+DOCdir="${HOMEdir}/doc"
 
 
 
@@ -117,9 +118,8 @@ VALdir="${MODdir}/validation"
 #-----------------------------------------------------------
 
 # Buildable targets:
-programs="aco b2e bps dbm dfs cdb c2e clm e2r ecnv eco grd ish mfs mld mrt pdb prj res stats vew"
-# (bld plt, net are not currently built)
-# (net, stats are not currently built)
+programs="aco b2e bps dbm dfs cdb c2e clm e2r ecnv eco enet grd ish mfs mld mrt pdb prj res stats vew"
+# (bld plt are not currently built)
 
 # Add leading and trailing spaces for regexp matching
 programs=" ${programs} "
@@ -644,9 +644,9 @@ if [ "$mode" = "interactive" ]; then
          echo " "
          echo " The libxml2 library does not appear to be installed"
          echo " on this system. The library could not be found in"
-         echo " /usr/include or /usr/local/include. Support for  "
-         echo " experimental XML output will be disabled, but the "
-         echo " rest of the ESP-r installation will proceed normally. "
+         echo " /usr/include or /usr/local/include. Support for XML"
+         echo " output will be disabled, but the rest of the ESP-r"
+         echo " installation will proceed normally. "
       else
          # Libraries were found. Prompt user for inclusion.
          B="none"
@@ -657,7 +657,7 @@ if [ "$mode" = "interactive" ]; then
                echo "Please answer yes or no (y/n)."
             fi
             echo " "
-            echo " Install with experimental XML output support? This may "
+            echo " Install with XML output support? This may "
             case "${xml_support}" in
               yes) echo " significantly increase simulation run-time. (y/n) [y]";;
               *)   echo " significantly increase simulation run-time. (y/n) [n]";;
@@ -722,8 +722,8 @@ if [ "$mode" = "interactive" ]; then
    else
       # XML not available on platform.
       echo " "
-      echo " Experimental XML output support. is presently not  "
-      echo " available on ${platform}. XML support disabled."
+      echo " XML output support. is presently not available "
+      echo " on ${platform}. XML support disabled."
       xml_support="no"
    fi
 else
@@ -1888,6 +1888,7 @@ do
      enableSQLite | disableSQLite ) result="${SRCdir}/lib/libSQLite.a"  ;;
      ecnv)   result="${SRCdir}/esrucnv/ecnv${EXE}"      ;;
      vew)    result="${SRCdir}/esruvew/viewer${EXE}"      ;;
+     enet)    result="${SRCdir}/esrunet/enet${EXE}"      ;;
      bpsdll) result="${SRCdir}/esrubps/bps.dll"   ;;
      harmonizer) result="${SRCdir}/harmonizer/harmonizer.exe"   ;;
      harmonizerdll) result="${SRCdir}/harmonizer/harmonizer.dll"   ;;
@@ -2178,6 +2179,8 @@ echo " Installing standard databases. This may take some time."
   cp ${DATdir}/databases/UK_notional.constrdb ${DESTdir}/esp-r/databases/UK_notional.constrdb
   cp ${DATdir}/databases/profiles.db1.a ${DESTdir}/esp-r/databases/profiles.db1.a
   cp ${DATdir}/databases/profiles.db2.a ${DESTdir}/esp-r/databases/profiles.db2.a
+  cp ${DATdir}/databases/icons.db1 ${DESTdir}/esp-r/databases/icons.db1
+  cp ${DATdir}/databases/flow_icons.db6 ${DESTdir}/esp-r/databases/flow_icons.db6
   echo " Done."
 
    cd ${DATdir}/databases
@@ -2245,7 +2248,7 @@ if [ "$install_training" = "yes" ]; then
      #       message.
      #
      #       In the future, we could wrap the database conversion commands
-     #       in a low-level scriqptqpt that would silently invoke prj/clm/pdb/ish,
+     #       in a low-level script that would silently invoke prj/clm/pdb/ish,
      #       check if the target binary database was actually created, and
      #       verify its intregity. The script could then stop when an error
      #       was encountered, and provide meaningful output to the user.
@@ -2392,19 +2395,13 @@ zzz
   echo -n "   - Installing manual files..."
   rm -rf ${ESPdir}/manual
   mkdir ${ESPdir}/manual
-  cp -r ${SRCdir}/manual/* ${ESPdir}/manual
+  cp -r ${DOCdir}/manual/* ${ESPdir}/manual
   echo " Done."
-
-#  echo -n "   - Installing tutorial files..."
-#  rm -rf ${ESPdir}/tutorial
-#  mkdir ${ESPdir}/tutorial
-#  cp -r ${SRCdir}/tutorial/*.tut ${ESPdir}/tutorial
-#  echo " Done."
 
 
 fi
 
-##### End Install training, manual & tutorial files.
+##### End Install training, manual files.
 ##### If xml support requested install the XSLT files.
 if [ "$xml_support" = "yes" ]; then
 echo " "

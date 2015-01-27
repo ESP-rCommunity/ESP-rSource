@@ -633,7 +633,7 @@ C array of duplicate checking names and materials data.
 
         matver = 1.1   ! set initial version of database.
         CALL EGETWR(OUTSTR,K,VAL(1),1.0,1.2,'-','db mat version',IER)
-	if(VAL(1).gt.1.0) matver = VAL(1)
+        if(VAL(1).gt.1.0) matver = VAL(1)
         call eclose(matver,1.1,0.001,closemat1)
         call eclose(matver,1.2,0.001,closemat2)
       else

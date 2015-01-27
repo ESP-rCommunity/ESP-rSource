@@ -103,7 +103,7 @@ C     &           IPC2(MPCON),IPN2(MPCON),PCONDR(MPCON),PCONSD(MPCON,2)
       CHARACTER*72 LAPROB
       character outs*124
       character lworking*144,fs*1
-      logical concat,xst,unixok,close
+      logical unixok
 
       PARAMETER (SMALL=1.0E-15)
 

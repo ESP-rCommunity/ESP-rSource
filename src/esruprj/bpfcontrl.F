@@ -2592,8 +2592,8 @@ C The writing pattern here is taken from the flow controls
           endif
         else
           WRITE(outs,'(a,i3,a)')' For period',KK,' define...'
-          call edisp(iuout,outs)
         endif
+        call edisp(iuout,outs)
         call edisp(iuout,' ')
 
 C Optics controller.  Set type to same as initial for this optics
@@ -5707,19 +5707,19 @@ C For help messages
 C Initialise zone menu variables based on window size. 
 C IVERT is the menu position, MVERT the current number of menu lines.
    3  SELECT=.FALSE.
-      if(icfoc.eq.0)then
+      if(icfoc.eq.0)then      ! Zone actuator
         MHEAD=3
-      elseif(icfoc.eq.1)then
+      elseif(icfoc.eq.1)then  ! Plant actuator
         MHEAD=2
-      elseif(icfoc.eq.2)then
+      elseif(icfoc.eq.2)then  ! Mass flow actuator
         MHEAD=3
-      elseif(icfoc.eq.3)then
+      elseif(icfoc.eq.3)then  ! Global actuator
         MHEAD=2
-      elseif(icfoc.eq.4)then
+      elseif(icfoc.eq.4)then  ! Power flow actuator
         MHEAD=2
-      elseif(icfoc.eq.5)then
+      elseif(icfoc.eq.5)then  ! Optical actuator
         MHEAD=1
-      elseif(icfoc.eq.6)then
+      elseif(icfoc.eq.6)then  ! CFC actuator
         MHEAD=3
       endif
       MCTL=3

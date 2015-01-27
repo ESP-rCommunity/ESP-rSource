@@ -2,30 +2,28 @@
 # Local definitions for ESP-r system.
 # 
 # Graphic capture of rectangular area: tag, label(<=20 char), command
-*gprn	rectangular dump	import
+*gprn,rectangular dump,import
 # Text print: tag, label(<=20 char), file
-*tprn	Text dump	/tmp/tx_dump 
+*tprn,Text dump,/tmp/tx_dump 
 # Graphic screen dump: tag, label(<=20 char), command
-*gxwd	screen dump	import -window root 
+*gxwd,screen dump,import -window root 
 # Active CAD packages: tag, label(<=20 char), executable(<=20 char)
-*cad	CAD package	xzip	ZIP
+*cad,CAD package,xzip,ZIP
 # Image display: tag, image type(<=4 char), executable(<=20 char)
-*image_display	TIF	xv
-*image_display	XBMP	xv
-*image_display	GIF	xv
-*image_display	XWD	xwud -in 
-# tutorial application
-*tutorial_app	Tutorial	netscape http://www.esru.strath.ac.uk &
+*image_display,TIF,display
+*image_display,XBMP,display
+*image_display,GIF,display
+*image_display,XWD,display 
 # User actions journal: <ON|OFF>
-*journal	OFF
+*journal,OFF
 # Text editor: tag, label(<=20 char), executable(<=20 char)
-*editor	RAL editor	xten
+*editor,editor,nedit
 # Report generation tool: tag, label(<=20 char), executable(<=20 char)
-*report_gen	Reporting tool	xfs
+*report_gen,Reporting tool,xfs
 # Location of examplars: tag, label(<=20 char), file name(<=72 char)
-*exemplars	Exemplars	/usr/esru/esp-r/training/exemplars
+*exemplars,Exemplars,/usr/esru/esp-r/training/exemplars
 # Location of validation test folders: tag, label(<=20 char), file name(<=72 char)
 *validation_stds,Validation standards,/usr/esru/esp-r/validation/stds_list
 # Location of default databases: tag, label(<=20 char), file name(<=72 char)
-*db_defaults	Defaults	/usr/esru/esp-r/default
+*db_defaults,Defaults,/usr/esru/esp-r/default
 *end

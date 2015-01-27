@@ -14,8 +14,6 @@
 *image_display	XBMP	xv
 *image_display	GIF	xv
 *image_display	XWD	xwud -in 
-# tutorial application
-*tutorial_app	Tutorial	netscape http://www.esru.strath.ac.uk &
 # User actions journal: <ON|OFF>
 *journal	OFF
 # Text editor: tag, label(<=20 char), executable(<=20 char)

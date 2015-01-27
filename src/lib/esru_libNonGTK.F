@@ -3669,7 +3669,11 @@ C Control paging of pop-up help.
           MPM = 1
         ELSE
           IPFLG=1
-          PAGE=(FLOAT(IST+MIFULL-1)/FLOAT(MIFULL))
+          if(MIFULL.eq.0)then
+            PAGE=1.0
+          else
+            PAGE=(FLOAT(IST+MIFULL-1)/FLOAT(MIFULL))
+          endif
           IF(PAGE.LT.1.0)PAGE=1.0
           IPM=INT(PAGE)
           PAGE=(FLOAT(ILEN)/FLOAT(MIFULL))

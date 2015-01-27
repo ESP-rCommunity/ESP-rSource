@@ -2605,9 +2605,9 @@ C Warn user if cell number starts/stops wrongly
         ENDIF
  1    CONTINUE
 
-C Debug if itrc is greather than one and NON DOS.
+C Debug if itrc is greather than two and NON DOS.
       call isunix(unixok)
-      IF(ITRC.GT.1.and.unixok)THEN
+      IF(ITRC.GT.2.and.unixok)THEN
         do iz=1,ntcz
           write(6,*)'ixzst ',(ixzst(ix,iz),ix=1,ntcx)
         enddo

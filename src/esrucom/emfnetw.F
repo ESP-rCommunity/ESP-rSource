@@ -159,15 +159,24 @@ C     IOK    - flag indicating successful iteration process
      &              ITPCON(MCNN),NDSCNN(MCNN,MCNS)
       COMMON/MFLCLM/DRYB,QDIF,QDNR,IRVH,WDIR,WSPD,WRED
 
+C To signal that simulation preferences (globals in graphic
+C network file) are available at the end of the file.
+      logical haveglobal
+      COMMON/MFLOW11/haveglobal
+
+C Simulation preferences as per simcon.F in esrubps, to allow the user to
+C alter preferences. Typically filled with standard values.
+      COMMON/MFSINC/MFBSNC
+      COMMON/MFCALC/IPSMOD,MSLVTP
+      COMMON/MFLITR/MAXITF,FERREL,FERMFL,PMAX,STEFFR,MFTRAC,ITER,IOK
+
       DIMENSION RVA(MCMS),NDID(MNOD)
       CHARACTER OUTSTR*124,WORD*20,NODID*12,NDID*12,CMPID*12,OUTS*124
       CHARACTER LVALCM*60,LTPCMP*60,CMNAM*12,NDNAM*12
 
 C 'Reset' error indicator and clear node names.
       IER=0
-      INOD=0
-      ICMP=0
-      ICNN=0
+      INOD=0; ICMP=0; ICNN=0
       do 9 i=1,MNOD
         NDNAM(i)=' '
   9   continue
@@ -449,6 +458,46 @@ C Check if fluid type identical to fluid type of node on 'one' side.
     
   43  CONTINUE
 
+C There may be supplemental data for simulation preferences. Attempt
+C to read tag:data lines until the end of the file.
+      CALL STRIPC(IFPRB,OUTSTR,99,ND,0,'preferences',IER)
+C      write(6,*) 'prefs ',OUTSTR(1:lnblnk(OUTSTR))
+      if(ier.ne.0)then
+        ier=0   ! reset error state
+        return
+      endif
+      if(ND.eq.0) return
+      k=0
+      CALL EGETW(OUTSTR,K,WORD,'W','preference tag',IER)
+      if(WORD(1:7).eq.'*IPSMOD')then
+        CALL EGETWI(OUTSTR,K,IPSMOD,0,0,'-','pref IPSMOD',IER)
+        haveglobal=.TRUE.  ! remember this
+      elseif(WORD(1:7).eq.'*MFBSNC')then
+        CALL EGETWI(OUTSTR,K,MFBSNC,0,0,'-','pref MFBSNC',IER)
+        haveglobal=.TRUE.  ! remember this
+      elseif(WORD(1:7).eq.'*MSLVTP')then
+        CALL EGETWI(OUTSTR,K,MSLVTP,0,0,'-','pref MSLVTP',IER)
+        haveglobal=.TRUE.  ! remember this
+      elseif(WORD(1:7).eq.'*MFTRAC')then
+        CALL EGETWI(OUTSTR,K,MFTRAC,0,0,'-','pref MFTRAC',IER)
+        haveglobal=.TRUE.  ! remember this
+      endif
+
+C Note: some variables in the commons are not included and are currently
+C set to the standard values used in bps.
+      MAXITF=100    ! iteration limit as per bps
+      FERREL=0.01   ! relative error as per bps
+      FERMFL=0.0005 ! abs error as per bps
+      PMAX=50.0     ! max pressure correction
+      STEFFR= -0.5  ! ratio of successive pressure corrections
+
+C Debug.
+C      write(6,*) 'MFBSNC',MFBSNC
+C      write(6,*) 'IPSMOD MSLVTP',IPSMOD,MSLVTP
+C      write(6,*) 'MAXITF FERREL FERMFL PMAX STEFFR MFTRAC'
+C      write(6,*)  MAXITF,FERREL,FERMFL,PMAX,STEFFR,MFTRAC
+      goto 43  ! attempt to read another line
+
   100 RETURN
 
 C Error trap on read error
@@ -536,6 +585,7 @@ C or closing-setpoint.
      &    call MFERR(ICMP,' Switch 0 or 1!',IER)
 
       ELSE IF(ITPCMP(ICMP).EQ. 15) THEN
+
 C Type 15 power law mass flow resistance component.
         if(NSDC.EQ.4.OR.NSDC.EQ.10)CALL CNTERR(ICMP,3)
         if((NSDC.NE.3).OR.ISDCNN(ICMP).NE.0)then
@@ -1339,7 +1389,10 @@ C msg if in verbose mode (ivbs=1).
       END
 
 C ********************* MFWRIT
-C MFWRIT Fluid flow model file: dump data to file.
+C MFWRIT Fluid flow model file: dump common block data to file.
+C If called from graphic network (haveglobal true) simulation 
+C parameters also included at end of the file
+
       SUBROUTINE MFWRIT(IFPRB)
 
 #include "net_flow.h"
@@ -1352,9 +1405,22 @@ C MFWRIT Fluid flow model file: dump data to file.
      &              SUPCMP(MCMP,MCMS)
       COMMON/MFLW10/NODPS(MCNN),HGTPS(MCNN),NODNE(MCNN),HGTNE(MCNN),
      &              ITPCON(MCNN),NDSCNN(MCNN,MCNS)
+
+C To signal to MFWRIT that globals are available from graphic network.
+      logical haveglobal
+      COMMON/MFLOW11/haveglobal
+
+C Simulation preferences as per simcon.F in esrubps, some of which filled via a
+C graphic network file.
+      COMMON/MFSINC/MFBSNC
+      COMMON/MFCALC/IPSMOD,MSLVTP
+      COMMON/MFLITR/MAXITF,FERREL,FERMFL,PMAX,STEFFR,MFTRAC,ITER,IOK
+
       COMMON/MFLCLM/DRYB,QDIF,QDNR,IRVH,WDIR,WSPD,WRED
 
       CHARACTER LTPCMP*60,CMNAM*12,NDNAM*12
+
+C      write(6,*) 'haveglobal',haveglobal
 
       REWIND(IFPRB,ERR=999)
 
@@ -1370,15 +1436,15 @@ C      IF(NNOD.EQ.0) GOTO 999
      &       '   Height    Temperature    Data_1       Data_2')
 
       DO 30 INOD=1,NNOD
-      IF(ITND(INOD).EQ.0) THEN
-         WRITE(IFPRB,1030,IOSTAT=IOS,ERR=999)
+        IF(ITND(INOD).EQ.0) THEN
+          WRITE(IFPRB,1030,IOSTAT=IOS,ERR=999)
      &         NDNAM(INOD),NDFLD(INOD),NDTYP(INOD),HNOD(INOD),
      &         TNOD(INOD),SUPNOD(INOD,1),SUPNOD(INOD,2)
-      ELSE
-         WRITE(IFPRB,10301,IOSTAT=IOS,ERR=999)
+        ELSE
+          WRITE(IFPRB,10301,IOSTAT=IOS,ERR=999)
      &         NDNAM(INOD),NDFLD(INOD),NDTYP(INOD),HNOD(INOD),
      &         NDNAM(ITND(INOD)),SUPNOD(INOD,1),SUPNOD(INOD,2)
-      END IF
+        END IF
    30 CONTINUE
  1030 FORMAT(1X,A12,I5,I5,1X,G12.5,1X,G12.5,   1X,G12.5,1X,G12.5)
 10301 FORMAT(1X,A12,I5,I5,1X,G12.5,1X,3X,A12,3X,1X,G12.5,1X,G12.5)
@@ -1404,6 +1470,7 @@ C << are used. Probably does not have to be written.
  1060 FORMAT(' +Node         dHght   -Node         dHght',
      &'   via Component')
 
+C Implied do loop in the write statement for connections.
       WRITE(IFPRB,1070,IOSTAT=IOS,ERR=999)
      &     (NDNAM(NODPS(ICNN)),HGTPS(ICNN),
      &      NDNAM(NODNE(ICNN)),HGTNE(ICNN),

@@ -353,9 +353,9 @@ C to write less than 72 char into NAM
           IF(ND.GT.2)THEN
             CALL EGETRM(OUTSTR,K,RSTR,'W','layer name:gap R',IER)
             lex=MIN0(LNBLNK(RSTR),72)
-	    write(NAM,'(a)')RSTR(1:lex)
+            write(NAM,'(a)')RSTR(1:lex)
             lex=MIN0(LNBLNK(RSTR),124)
-	    write(LAYDESC(I,IL),'(a)')RSTR(1:lex)
+            write(LAYDESC(I,IL),'(a)')RSTR(1:lex)
 
 C Generally we want to assign values to the IPRMAT array so for each legacy 
 C IPR. NOTE: in case there are multiple items with the same characters
@@ -462,7 +462,7 @@ C And check the matarray index in case this is a gap and assign values.
               if(matarrayindex.gt.0)then
 
 C If g air gap and version 1.2 then assign DRAIR
-	        if(matopaq(matarrayindex)(1:1).eq.'g'.or.
+                if(matopaq(matarrayindex)(1:1).eq.'g'.or.
      &             matopaq(matarrayindex)(1:1).eq.'h')then
                   if(closemat2)then
                     DRAIR(I,IL,1)=matgapares(matarrayindex,1)

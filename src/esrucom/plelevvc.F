@@ -256,7 +256,7 @@ C by each of the edge points.
      &        'unknown surface.','P')
           endif
 
-	  k=NZNVER(icc)
+          k=NZNVER(icc)
           do 50 l=2,k
             iupdown=-302
             isym=0

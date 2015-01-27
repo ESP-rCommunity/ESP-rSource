@@ -257,11 +257,12 @@ C IZSTOCN - for each zone:surface a pointer to connection index.
       COMMON/MFLOW1/NNOD,NCMP,NCNN
       INTEGER :: NNOD,NCMP,NCNN
       COMMON/MFLOW2/NDNAM(0:MNOD)
-      COMMON/NWKSTR/NWKNAM,NWKDSC,NWKFLNAM,NWKTYPSTR(MNWKTYP)
+      COMMON/NWKSTR/NWKNAM,NWKDSC,NWKTYPSTR(MNWKTYP)
+      CHARACTER NWKNAM*72,NWKDSC*72,NWKTYPSTR*12
 
 C Defaults for some of the obscure files.
       COMMON/DEFLT3/DFCFD,DECMPDBFL,DICONDBFL
-      character*72 DFCFD,DECMPDBFL,DICONDBFL
+      character DFCFD*72,DECMPDBFL*72,DICONDBFL*72
 
 C DBTAG (12 char) tag of temporal entity associated with model.
 C DBTASK (12 char) the type of temporal entity (which determines what
@@ -538,8 +539,7 @@ C Simulation parameters
       character limgpth*24,ldocpth*24,lcfgroot*32,lpath*72
       character path*72,lupath*72
       character namez*12,namen*12
-      CHARACTER*72 NWKNAM,NWKDSC,NWKFLNAM
-      character NWKTYPSTR*12,bidirfile*72,bidirname*12
+      character bidirfile*72,bidirname*12
       CHARACTER CONTMNAM*12,CNTMDESC*124,cntmfil*72
       character calename*32,calentag*12,calendayname*32
       character LWndSupp*72
@@ -1691,12 +1691,12 @@ C call ripvdat for data within the cfg file.
           CALL ERPFREE(IUTDF,ISTAT)
           call FINDFIL(lipvdatf,XST)
           if(XST)then
-      ipvact='ipv'
+            ipvact='ipv'
             call ripvdat(IUTDF,lipvdatf,ipvact,ier)
             CALL ERPFREE(IUTDF,ISTAT)
           endif
         elseif(ND.ge.3)then
-  
+
 C The IPV data line needs to be scanned prior to calling ripvdat
 C for the rest of the data.
           K=0
@@ -2974,7 +2974,7 @@ C obstructions files. If this is the case then scan them.
               endif
             endif
           else
-	    
+    
 C If MODE='ALL ' also scan obstruction blocks from zone
 C obstruction file if older model.
             call egomin(iuf,LGEOM(ICOMP),ICOMP,1,0,itru,ier)
@@ -3003,7 +3003,7 @@ C obstruction file if older model.
 
 C Call to zgupdate is after connection lists established.
           call zgupdate(0,icomp,ier)
-	    
+    
 C If MODE='ALL ' also find co-planer surfaces & edges of similar materials. 
           if(MODE(1:3).eq.'ALL'.or.MODE(1:3).eq.'all')then
             call suredgeadj(itrc,'-',icomp,ier)
@@ -3159,7 +3159,6 @@ C then an older file so rewind the file and then call emfread.
 C Found a graphic network file, scan it (silently) and then convert it
 C into network flow common blocks.
           IAIRN = 2
-          NWKFLNAM=LAPROB
           CALL ERPFREE(IUF,ISTAT)
           call NETREAD(IUF,'S',IER)
           CALL NETTOFLW(ier)

@@ -213,6 +213,10 @@ C Flush current table through IUOUT or to a file
      &              ' returning to start of reporting...','W')
         GOTO 10
       endif
+
+C If icout was lost reset to text feedback prior to checking for
+C output to file.
+      if(icout.eq.0)icout=iuout
       itru = icout
       if(ixopen.eq.1)then
         itru = ixunit
@@ -376,7 +380,8 @@ C ICLIM,LCLIM (for climate file)
 
       DOUBLE PRECISION FLW1,FLW2,PRES,RESID,SAFLW
 
-      PARAMETER (MCOLT=21)
+C 248 character buffer suppors ~15 columns of data.
+      PARAMETER (MCOLT=15)
       DIMENSION VOL(MCOLT)
 
       character rfile*72,PFILE*72,MSTRFILE*72,LAFRES*72
@@ -390,6 +395,7 @@ C ICLIM,LCLIM (for climate file)
       DIMENSION  COLCNT(MCOLT),ICOLIX(MCOLT,2)
       logical OK,dok
       integer NITMS,INO ! max items and current menu item
+      integer lnb       ! width of output line
 
 C For help messages
       character helpinsub*24 ! subroutine name
@@ -403,7 +409,7 @@ C For help messages
       NCOL=1
       COLHDS(1)='# Julian date '
       FORMHD='(A14,1X,       (1X,A14)     )'
-      FORMCL='(3X,F8.4,4X,   (2X,G11.4,2X))'
+      FORMCL='(3X,F8.4,4X,   (2X,G11.5,2X))'
       WRITE(FORMHD(13:15),1000) MCOLT
       WRITE(FORMCL(13:15),1000) MCOLT-1
  1000 FORMAT(I3)
@@ -528,8 +534,9 @@ C Add one or more connections to the table
         NCOL=NCOL+1
         ICOLIX(NCOL,1)=2
         ICOLIX(NCOL,2)=ICNN
+
         write(COLHDS(NCOL),'(1X,A6,A1,A6)')
-     &NDNAM(IS)(1:6),'-',NDNAM(IE)(1:6)
+     &        NDNAM(IS)(1:6),'-',NDNAM(IE)(1:6)
 
         write(outs,'(1X,A12,A12,A)') NDNAM(IS),NDNAM(IE),
      &                           ' added to the display list.'
@@ -600,8 +607,12 @@ C Explain option
       GOTO 10
 
 
-C Flush current table through IUOUT or to a file
-   90 itru = icout
+C Flush current table through IUOUT or to a file. If icout
+C was lost reset to text feedback prior to checking for
+C output to file.
+   90 continue
+      if(icout.eq.0)icout=iuout
+      itru = icout
       if(ixopen.eq.1)then
         itru = ixunit
         call edisp(iuout,' Output will be directed to file... ')
@@ -624,10 +635,20 @@ C First general table info and column headers
       ELSE
          WRITE(outs,10902) ' 1/hr '
       END IF
+
       call edisp(itru,outs)
 10902 FORMAT('# Table: nodes pres in Pa; connection flow rates in ',A6)
-      WRITE(outs,FORMHD) (COLHDS(ICOL),ICOL=1,NCOL)
-      call edisp(itru,outs)
+      WRITE(louts,FORMHD) (COLHDS(ICOL),ICOL=1,NCOL)
+      lnb=MIN0(lnblnk(louts),124)
+      if(lnb.lt.124)then
+        call edisp(itru,louts(1:lnb))
+      else
+        if(ixopen.eq.1)then
+          call edisp248(itru,louts,240)
+        else
+          call edisp248(itru,louts,124)
+        endif
+      endif
 
 C Position read-pointer at first record of simulation day IDAYF
       CALL MFSKIP(IFRES,NNOD,NCNN,IFYD,IDAYF,IER)
@@ -739,9 +760,19 @@ C Volume flow rate (m^3/hr or 1/hr).
       END IF
    96 CONTINUE
 
-C Flush this line of the table
-      WRITE(outs,FORMCL) (COLCNT(ICOL), ICOL=1,NCOL)
-      call edisp(itru,outs)
+C Flush this line of the table.
+C << no check has been made that characters fit within buffer >>
+      WRITE(louts,FORMCL) (COLCNT(ICOL), ICOL=1,NCOL)
+      lnb=MIN0(lnblnk(louts),124)
+      if(lnb.lt.124)then
+        call edisp(itru,louts(1:lnb))
+      else
+        if(ixopen.eq.1)then
+          call edisp248(itru,louts,240)
+        else
+          call edisp248(itru,louts,124)
+        endif
+      endif
 
 C End of time step loop
    99 CONTINUE
