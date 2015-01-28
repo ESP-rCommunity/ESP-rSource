@@ -173,9 +173,11 @@ C=======================================================================
       integer iRVId; !Report Variable Identifier
 
       real fAllEnergyUse( iNumUses ) 
+      real fAllFossilUse( iNumUses )
       
       do iEndUse=1, iNumUses  
         fAllEnergyUse(iEndUse) = 0.
+        fAllFossilUse(iEndUse) = 0.
       enddo 
       
 C.....Fuel loop:
@@ -259,6 +261,11 @@ C.......end-use loop:
           fAllEnergyUse(iEndUse) = 
      &       fAllEnergyUse(iEndUse) + fEndUseEnergyUse( iFuel, iEndUse)
               
+          if (iFuel .NE. iElectricity) then
+            fAllFossilUse(iEndUse) =
+     &        fAllFossilUse(iEndUse) + fEndUseEnergyUse( iFuel, iEndUse)
+          endif
+          
         enddo 
 
         call eclose ( fAllEnergyUse(iEndUse),
@@ -275,6 +282,19 @@ C.......end-use loop:
      &         fAllEnergyUse(iEndUse),
      &         "all_fuels",
      &         cUseName(iEndUse)(1:iUseNameLen(iEndUse)))
+            
+        call AddToReportWild2(
+     &         rvTEnergyQty%Identifier,
+     &         fEndUseEnergyUse( iElectricity, iEndUse),
+     &         "electricity",
+     &         cUseName(iEndUse)(1:iUseNameLen(iEndUse)))
+             
+        call AddToReportWild2(
+     &         rvTEnergyQty%Identifier,
+     &         fAllFossilUse(iEndUse),
+     &         "fossil_fuels",
+     &         cUseName(iEndUse)(1:iUseNameLen(iEndUse)))
+
         endif
         enddo use_loop      
       
