@@ -117,7 +117,7 @@ c     Implicit None
       real fVentM3pS_natural
       real, parameter :: fACHpHour_ERSreq = 0.3 
       real FlowRate      , SupplyTemp
-      
+      real fVentRate 
 
       save J, iFun, i, iCycle
       save T, HLR, DeltaT, ZoneFraction
@@ -164,10 +164,15 @@ C ventilation 0.3 ACH per hour as HOT2000 assumes during ERS calculations.
            
            FlowRate = Max ( CVSSupplyRate, CVSExhaustRate ) / 1000. ! L/s --> m3/s
            MCP = FlowRate * 1006. * 1.177
-           fVentPLR = 
+           
+           fVentRate = 
      &           ( ( fACHpHour_ERSreq * AIM2_house_vol / 3600. )
      &                          - fAIM2_TotalHouseInfil )
-     &         / FlowRate
+     
+          if ( fVentRate < 25.  ) fVentRate = 25.
+          if ( fVentRate > 100. ) fVentRate = 100.
+          
+          fVentPLR =  fVentRate    / FlowRate
      
            
            if ( fVentPLR > 1. ) fVentPLR = 1.
