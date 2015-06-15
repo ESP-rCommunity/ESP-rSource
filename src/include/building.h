@@ -33,7 +33,7 @@ C Construction.
       PARAMETER (ME=20)		!- Elements/construction. - Increased from 8 to 20 to support CFCs - (Bart Lomanowski)
       PARAMETER (MN=50)		!- Nodes/construction.    - Increased from 35 to 50 to support CFCs - (Bart Lomanowski)
       PARAMETER (MGP=10)	!- Air gaps/construction. - Increased from 3 to 10 to support CFCs - (Bart Lomanowski)
-      PARAMETER (MMLC=200)	!- Multilayered constructions in model.
+      PARAMETER (MMLC=300)	!- Multilayered constructions in model. - Increased from 200 to 300 to support optimization
       PARAMETER (MHCV=MN+ME)	!- Control volumes per construction.
 
 C Glazing.
