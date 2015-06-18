@@ -8,13 +8,13 @@ C  impact of the size of dfs and bps.
 C Small version jwh may 2013
 C
 C  Maximum number of cells in x direction (usual setting NTCELX=14)
-      INTEGER, PARAMETER :: NTCELX=14
+      INTEGER, PARAMETER :: NTCELX=18
 C  Maximum number of cells in y direction (usual setting NTCELY=14)
-      INTEGER, PARAMETER :: NTCELY=14
+      INTEGER, PARAMETER :: NTCELY=18
 C  Maximum number of cells in z direction (usual setting NTCELZ=14)
-      INTEGER, PARAMETER :: NTCELZ=14
+      INTEGER, PARAMETER :: NTCELZ=18
 C  Maximum number between ntcelx, ntcely and ntcelz (usual setting MCEL1D=14)
-      INTEGER, PARAMETER :: MCEL1D=14
+      INTEGER, PARAMETER :: MCEL1D=18
 C  Maximum number of new mfs connections created for CFD domain (usual setting MCFND=20)
       INTEGER, PARAMETER :: MCFND=20
 C  Maximum number of gridding regions per axis (usual setting MNREG=20)

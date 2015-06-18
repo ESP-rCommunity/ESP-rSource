@@ -523,7 +523,7 @@ C include the three air gap resistance values.
      &            matdbcon(J),matdbden(J),matdbsht(J),matdboute(J),
      &            matdbine(J),matdbouta(J),matdbina(J),matdbdrv(J),
      &            matdbthick(J),' ',matopaq(J)
-	      elseif(closemat2)then
+              elseif(closemat2)then
                 write(outs,'(f13.4,2F9.3,4f6.3,f10.3,F6.1,2a,3f7.4)')
      &            matdbcon(J),matdbden(J),matdbsht(J),matdboute(J),
      &            matdbine(J),matdbouta(J),matdbina(J),matdbdrv(J),
@@ -531,12 +531,12 @@ C include the three air gap resistance values.
      &            matgapares(J,2),matgapares(J,2)
               endif
             elseif(matopaq(J)(1:1).eq.'h')then
-	      if(closemat1)then
+              if(closemat1)then
                 write(outs,'(f13.4,2F9.3,4f6.3,f10.3,F6.1,2a)')
      &            matdbcon(J),matdbden(J),matdbsht(J),matdboute(J),
      &            matdbine(J),matdbouta(J),matdbina(J),matdbdrv(J),
      &            matdbthick(J),' ',matopaq(J)
-	      elseif(closemat2)then
+              elseif(closemat2)then
                 write(outs,'(f13.4,2F9.3,4f6.3,f10.3,F6.1,2a,3f7.4)')
      &            matdbcon(J),matdbden(J),matdbsht(J),matdboute(J),
      &            matdbine(J),matdbouta(J),matdbina(J),matdbdrv(J),

@@ -49,6 +49,7 @@ C IC = zone number (if in dfs set to 1)
      3            SEW(ntcelx),SNS(ntcely),SHL(ntcelz),
      4            XU(ntcelx),YV(ntcely),ZW(ntcelz)
       COMMON/ALL/NI,NJ,NK,NIM1,NJM1,NKM1,NIM2,NJM2,NKM2
+      COMMON/CFDVIS/ISHSB,ISHAO,IFACES,ISHBLK
 
       CHARACTER ITEM(16)*32
       character outs*124,ETEXT*30
@@ -169,10 +170,13 @@ C << how about an option to place grid on one face only ?? >>
         elseif(iwo.eq.4)then
           call VGRID3D('zn ','xyg',ic)
         endif
+        ISHSB=0
+        ISHAO=0
+        ISHBLK=0
+        IFACES=-iwo
       ELSEIF(INO.EQ.6.and.GRMODE)THEN
 
 C 3D gridding with zone geometry and solids.
-C << does not appear to draw the solids yet >>
         CALL EASKABCD('Options for 3D gridding:',' ','all faces',
      &    'south->north','east->west','high->low',IWO,nbhelp)
         if(iwo.eq.1)then
@@ -185,10 +189,13 @@ C << does not appear to draw the solids yet >>
           call VGRID3D('zn ','xyg',ic)
         endif
         call VSB3D(0,ic)
+        ISHSB=1
+        ISHAO=0
+        ISHBLK=0
+        IFACES=-iwo
       ELSEIF(INO.EQ.7.and.GRMODE)THEN
 
 C 3D gridding with zone geometry and solids and openings.
-C << does not appear to draw the openings yet >>
         CALL EASKABCD('Options for 3D gridding:',' ','all faces',
      &    'south->north','east->west','high->low',IWO,nbhelp)
         if(iwo.eq.1)then
@@ -201,7 +208,12 @@ C << does not appear to draw the openings yet >>
           call VGRID3D('zn ','xyg',ic)
         endif
         call VSB3D(0,ic)
-        call VAO3D(0)
+        call VAO3D(0,ic) 
+        call VSBL3D(0,ic)  ! for testing of blockages
+        ISHSB=1
+        ISHAO=1
+        ISHBLK=1
+        IFACES=-iwo
       ELSEIF(INO.EQ.8.and.GRMODE)THEN
 
 C 3D gridding without zone geometry.
@@ -216,6 +228,10 @@ C 3D gridding without zone geometry.
         elseif(iwo.eq.4)then
           call VGRID3D('---','xyg',ic)
         endif
+        ISHSB=0
+        ISHAO=0
+        ISHBLK=0
+        IFACES=iwo
       ELSEIF(INO.EQ.9.and.GRMODE)THEN
 
 C 3D gridding without zone geometry and with solids.
@@ -231,10 +247,13 @@ C 3D gridding without zone geometry and with solids.
           call VGRID3D('---','xyg',ic)
         endif
         call VSB3D(0,ic)
+        ISHSB=1
+        ISHAO=0
+        ISHBLK=0
+        IFACES=iwo
       ELSEIF(INO.EQ.10.and.GRMODE)THEN
 
 C 3D gridding without zone geometry and with solids and openings.
-C << does not appear to draw the openings yet >>
         CALL EASKABCD('Options for 3D gridding:',' ','all faces',
      &    'south->north','east->west','high->low',IWO,nbhelp)
         if(iwo.eq.1)then
@@ -247,7 +266,12 @@ C << does not appear to draw the openings yet >>
           call VGRID3D('---','xyg',ic)
         endif
         call VSB3D(0,ic)
-        call VAO3D(0)
+        call VAO3D(0,ic)
+        call VSBL3D(0,ic)  ! for testing of blockages
+        ISHSB=1
+        ISHAO=1
+        ISHBLK=1
+        IFACES=iwo
       ELSEIF(INO.EQ.12)THEN
 
 C Text listings
@@ -569,6 +593,7 @@ C izone is the index of the zone to be drawin (if zero do not bother`).
      2            DZHP(ntcelz),DZPL(ntcelz),
      3            SEW(ntcelx),SNS(ntcely),SHL(ntcelz),
      4            XU(ntcelx),YV(ntcely),ZW(ntcelz)
+      COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
 
       DIMENSION  AX(MPL),AY(MPL),AZ(MPL),IANXT(MPL)
       DIMENSION  BX(MPL),BY(MPL),BZ(MPL),IBNXT(MPL)
@@ -623,7 +648,9 @@ C Setup and pass in parameters to win3d.
       igheight=igwh
 
 C Get bounds for image.
-      call bndobj(0,IER)
+      if (nzg.gt.0) then
+        call bndobj(0,IER)
+      endif
       HANG=ANG/2.0
       HITH=1.0
       YON=1300.0
@@ -945,7 +972,7 @@ C ********************* VSB3D *********************
 C VSB3D - draws the solid boundaries - highlighting the chosen one.
       SUBROUTINE VSB3D(ISBHL,izone)
 #include "building.h"
-#include "geometry.h"
+C #include "geometry.h"
 #include "cfd.h"
 #include "prj3dv.h"
       
@@ -964,10 +991,11 @@ C VSB3D - draws the solid boundaries - highlighting the chosen one.
      &              JSBi(MNSBZ,MNZ),JSBf(MNSBZ,MNZ),
      &              KSBi(MNSBZ,MNZ),KSBf(MNSBZ,MNZ),
      &              ISUFLC(MNSBZ,MNZ),IWSB(MNSBZ,MNZ),SSB(MNSBZ,MNZ),
-     &              SSBHC(MNSBZ,MNZ),
+     &              SSBHC(MNSBZ,MNZ),IVOLNSB(MNSBZ,MNZ),
      &              ITCtype(MNSBZ,MNZ),icTREF(MNSBZ,MNZ)
+      common/KEYVOLN/VOLNAME(MNVLS,MNZ),VCsurf(MNVLS,MNZ)
 
-      character LLOCAT*1,outs*124,temp*4
+      character LLOCAT*4,outs*124,temp*12
 #ifdef OSI
       integer iixs,iiys,iix,iiy
 #else
@@ -975,6 +1003,8 @@ C VSB3D - draws the solid boundaries - highlighting the chosen one.
 #endif
       real XPP,YPP,ZPP  ! points taking into account zone minimum
       real XX,YY,ZZ
+
+      character VOLNAME*12, VCsurf*12
 
 C Check in graphics mode.
       IF(MMOD.ne.8) return
@@ -987,7 +1017,7 @@ C Draw round solid boundaries and last character of label.
         write (LLOCAT,'(a)') outs(lnblnk(outs):lnblnk(outs))
         K=0
         call EGETWI(LLOCAT,K,ILOCAT,1,6,'F',
-     &                                  'Illegal surface orient.',IER)
+     &    'Illegal surface orient.',IER)
         if (ILOCAT.eq.1.or.ILOCAT.eq.2) then
           if (ILOCAT.eq.2) then
             MNOD=NI
@@ -1060,12 +1090,17 @@ C Transform local coords to screen coords and draw box around boundary.
           call forceflush()
 
 C Label in center of boundary.
-          YY=(YV(JSBi(Isbn,ICFD))+YV(JSBf(Isbn,ICFD)))/2.
-          ZZ=(ZW(KSBi(Isbn,ICFD))+ZW(KSBf(Isbn,ICFD)))/2.
-          CALL ORTTRN(XU(MNOD),YY,ZZ,TEMAT,X0,Y0,Z0,IERR)
+          XX=ZXMN(izone)+XU(MNOD)
+          YY=ZYMN(izone)+(YV(JSBi(Isbn,ICFD))+YV(JSBf(Isbn,ICFD)))/2.
+          ZZ=ZZMN(izone)+(ZW(KSBi(Isbn,ICFD))+ZW(KSBf(Isbn,ICFD)))/2.
+          CALL ORTTRN(XX,YY,ZZ,TEMAT,X0,Y0,Z0,IERR)
           CALL ORTTRN(X0,Y0,Z0,ETSMAT,X1,Y1,Z1,IERR)
           call u2pixel(X1,Y1,iix,iiy)
-          write (temp,'(a,i2)') 'SB',Isbn
+
+          write (temp,'(a)')VOLNAME(IVOLNSB(Isbn,ICFD),ICFD)
+     &                     (1:LNBLNK(VOLNAME(IVOLNSB(Isbn,ICFD),ICFD)))
+
+c          write (temp,'(a,i2)') 'SB',Isbn
           CALL wstxpt(iix,iiy,temp)
           call forceflush()
 
@@ -1141,12 +1176,15 @@ C Transform local coords to screen coords and draw box around boundary.
           call forceflush()
 
 C Label in center of boundary.
-          XX=(XU(ISBi(Isbn,ICFD))+XU(ISBf(Isbn,ICFD)))/2.
-          ZZ=(ZW(KSBi(Isbn,ICFD))+ZW(KSBf(Isbn,ICFD)))/2.
-          CALL ORTTRN(XX,YV(MNOD),ZZ,TEMAT,X0,Y0,Z0,IERR)
+          XX=ZXMN(izone)+(XU(ISBi(Isbn,ICFD))+XU(ISBf(Isbn,ICFD)))/2.
+          YY=ZYMN(izone)+YV(MNOD)
+          ZZ=ZZMN(izone)+(ZW(KSBi(Isbn,ICFD))+ZW(KSBf(Isbn,ICFD)))/2.
+          CALL ORTTRN(XX,YY,ZZ,TEMAT,X0,Y0,Z0,IERR)
           CALL ORTTRN(X0,Y0,Z0,ETSMAT,X1,Y1,Z1,IERR)
           call u2pixel(X1,Y1,iix,iiy)
-          write (temp,'(a,i2)') 'SB',Isbn
+c          write (temp,'(a,i2)') 'SB',Isbn
+          write (temp,'(a)')VOLNAME(IVOLNSB(Isbn,ICFD),ICFD)
+     &                     (1:LNBLNK(VOLNAME(IVOLNSB(Isbn,ICFD),ICFD)))
           CALL wstxpt(iix,iiy,temp)
           call forceflush()
         elseif (ILOCAT.eq.5.or.ILOCAT.eq.6) then
@@ -1224,12 +1262,15 @@ C Transform local coords to screen coords and draw box around boundary.
           call forceflush()
 
 C Label in center of boundary.
-          XX=(XU(ISBi(Isbn,ICFD))+XU(ISBf(Isbn,ICFD)))/2.
-          YY=(YV(JSBi(Isbn,ICFD))+YV(JSBf(Isbn,ICFD)))/2.
-          CALL ORTTRN(XX,YY,ZW(MNOD),TEMAT,X0,Y0,Z0,IERR)
+          XX=ZXMN(izone)+(XU(ISBi(Isbn,ICFD))+XU(ISBf(Isbn,ICFD)))/2.
+          YY=ZYMN(izone)+(YV(JSBi(Isbn,ICFD))+YV(JSBf(Isbn,ICFD)))/2.
+          ZZ=ZZMN(izone)+ZW(MNOD)
+          CALL ORTTRN(XX,YY,ZZ,TEMAT,X0,Y0,Z0,IERR)
           CALL ORTTRN(X0,Y0,Z0,ETSMAT,X1,Y1,Z1,IERR)
           call u2pixel(X1,Y1,iix,iiy)
-          write (temp,'(a,i2)') 'SB',Isbn
+          write (temp,'(a)')VOLNAME(IVOLNSB(Isbn,ICFD),ICFD)
+     &                     (1:LNBLNK(VOLNAME(IVOLNSB(Isbn,ICFD),ICFD)))
+c          write (temp,'(a,i2)') 'SB',Isbn
           CALL wstxpt(iix,iiy,temp)
           call forceflush()
         endif
@@ -1241,7 +1282,7 @@ C Label in center of boundary.
 
 C ********************* VAO3D *********************
 C VAO3D - draws the air openings - highlighting the chosen one.
-      SUBROUTINE VAO3D(IOPENHL)
+      SUBROUTINE VAO3D(IOPENHL,izone)
 #include "building.h"
 #include "cfd.h"
 #include "prj3dv.h"
@@ -1263,9 +1304,14 @@ C VAO3D - draws the air openings - highlighting the chosen one.
      &             KOPENf(MCFND,MNZ),FIXM(MCFND,MNZ),
      &             FIXT(MCFND,MNZ),FIXC(MCFND,MNZ),
      &             FIXK(MCFND,MNZ),FIXE(MCFND,MNZ),
-     &             IWOPEN(MCFND,MNZ),ICFDCN(MCFND,MNZ),ICNACT(MCFND,MNZ)
+     &             IWOPEN(MCFND,MNZ),ICFDCN(MCFND,MNZ),
+     &             ICNACT(MCFND,MNZ),IVOLN(MCFND,MNZ)
+      common/KEYVOLN/VOLNAME(MNVLS,MNZ),VCsurf(MNVLS,MNZ)
+      common/KEYVOLS/NVOL(MNZ),IVOLF(MNVLS,MNZ),IVCELLS(MNVLS,MNZ,2),
+     &               JVCELLS(MNVLS,MNZ,2),KVCELLS(MNVLS,MNZ,2)
 
-      character LLOCAT*1,outs*124,temp*4
+      character LLOCAT*4,outs*124,temp*12
+      character VOLNAME*12, VCsurf*12
 #ifdef OSI
       integer iixs,iiys,iix,iiy
 #else
@@ -1279,7 +1325,8 @@ C Check in graphics mode.
 
 C Draw round solid boundaries and last character of label.
       do 70 Iaop=1,NOPEN(ICFD)
-        write (outs,'(i10)') IWOPEN(Iaop,ICFD)
+c        write (outs,'(i10)') IWOPEN(Iaop,ICFD)
+        write (outs,'(i10)') IVOLF(IVOLN(Iaop,ICFD),ICFD)
         write (LLOCAT,'(a)') outs(lnblnk(outs):lnblnk(outs))
         K=0
         call EGETWI(LLOCAT,K,ILOCAT,1,6,'F',
@@ -1293,12 +1340,16 @@ C Draw round solid boundaries and last character of label.
 
 C In YZ plane.
 C Transform local coords to screen coords and draw box around boundary.
-          CALL ORTTRN(XU(MNOD),YV(JOPENi(Iaop,ICFD)),
-     &                      ZW(KOPENi(Iaop,ICFD)),TEMAT,X0,Y0,Z0,IERR)
+          XX=ZXMN(izone)+XU(MNOD)
+          YY=ZYMN(izone)+YV(JOPENi(Iaop,ICFD))
+          ZZ=ZZMN(izone)+ZW(KOPENi(Iaop,ICFD))
+          CALL ORTTRN(XX,YY,ZZ,TEMAT,X0,Y0,Z0,IERR)
           CALL ORTTRN(X0,Y0,Z0,ETSMAT,X1,Y1,Z1,IERR)
           call u2pixel(X1,Y1,iixs,iiys)
-          CALL ORTTRN(XU(MNOD),YV(JOPENf(Iaop,ICFD)+1),
-     &                      ZW(KOPENi(Iaop,ICFD)),TEMAT,X0,Y0,Z0,IERR)
+          XX=ZXMN(izone)+XU(MNOD)
+          YY=ZYMN(izone)+YV(JOPENf(Iaop,ICFD)+1)
+          ZZ=ZZMN(izone)+ZW(KOPENi(Iaop,ICFD))
+          CALL ORTTRN(XX,YY,ZZ,TEMAT,X0,Y0,Z0,IERR)
           CALL ORTTRN(X0,Y0,Z0,ETSMAT,X1,Y1,Z1,IERR)
           call u2pixel(X1,Y1,iix,iiy)
           if (Iaop.eq.IOPENHL) then
@@ -1307,10 +1358,13 @@ C Transform local coords to screen coords and draw box around boundary.
             call eswline(iixs,iiys,iix,iiy)
           endif
           call forceflush()
+
           iixs=iix
           iiys=iiy
-          CALL ORTTRN(XU(MNOD),YV(JOPENf(Iaop,ICFD)+1),
-     &                      ZW(KOPENf(Iaop,ICFD)+1),TEMAT,X0,Y0,Z0,IERR)
+          XX=ZXMN(izone)+XU(MNOD)
+          YY=ZYMN(izone)+YV(JOPENf(Iaop,ICFD)+1)
+          ZZ=ZZMN(izone)+ZW(KOPENf(Iaop,ICFD)+1)
+          CALL ORTTRN(XX,YY,ZZ,TEMAT,X0,Y0,Z0,IERR)
           CALL ORTTRN(X0,Y0,Z0,ETSMAT,X1,Y1,Z1,IERR)
           call u2pixel(X1,Y1,iix,iiy)
           if (Iaop.eq.IOPENHL) then
@@ -1319,10 +1373,13 @@ C Transform local coords to screen coords and draw box around boundary.
             call eswline(iixs,iiys,iix,iiy)
           endif
           call forceflush()
+
           iixs=iix
           iiys=iiy
-          CALL ORTTRN(XU(MNOD),YV(JOPENi(Iaop,ICFD)),
-     &                      ZW(KOPENf(Iaop,ICFD)+1),TEMAT,X0,Y0,Z0,IERR)
+          XX=ZXMN(izone)+XU(MNOD)
+          YY=ZYMN(izone)+YV(JOPENi(Iaop,ICFD))
+          ZZ=ZZMN(izone)+ZW(KOPENf(Iaop,ICFD)+1)
+          CALL ORTTRN(XX,YY,ZZ,TEMAT,X0,Y0,Z0,IERR)
           CALL ORTTRN(X0,Y0,Z0,ETSMAT,X1,Y1,Z1,IERR)
           call u2pixel(X1,Y1,iix,iiy)
           if (Iaop.eq.IOPENHL) then
@@ -1331,10 +1388,13 @@ C Transform local coords to screen coords and draw box around boundary.
             call eswline(iixs,iiys,iix,iiy)
           endif
           call forceflush()
+
           iixs=iix
           iiys=iiy
-          CALL ORTTRN(XU(MNOD),YV(JOPENi(Iaop,ICFD)),
-     &                      ZW(KOPENi(Iaop,ICFD)),TEMAT,X0,Y0,Z0,IERR)
+          XX=ZXMN(izone)+XU(MNOD)
+          YY=ZYMN(izone)+YV(JOPENi(Iaop,ICFD))
+          ZZ=ZZMN(izone)+ZW(KOPENi(Iaop,ICFD))
+          CALL ORTTRN(XX,YY,ZZ,TEMAT,X0,Y0,Z0,IERR)
           CALL ORTTRN(X0,Y0,Z0,ETSMAT,X1,Y1,Z1,IERR)
           call u2pixel(X1,Y1,iix,iiy)
           if (Iaop.eq.IOPENHL) then
@@ -1345,12 +1405,16 @@ C Transform local coords to screen coords and draw box around boundary.
           call forceflush()
 
 C Label in center of boundary.
-          Y=(YV(JOPENi(Iaop,ICFD))+YV(JOPENf(Iaop,ICFD)))/2.
-          Z=(ZW(KOPENi(Iaop,ICFD))+ZW(KOPENf(Iaop,ICFD)))/2.
-          CALL ORTTRN(XU(MNOD),Y,Z,TEMAT,X0,Y0,Z0,IERR)
+          XX=ZXMN(izone)+XU(MNOD)
+          YY=ZYMN(izone)+
+     &                 (YV(JOPENi(Iaop,ICFD))+YV(JOPENf(Iaop,ICFD)))/2.
+          ZZ=ZZMN(izone)+
+     &                 (ZW(KOPENi(Iaop,ICFD))+ZW(KOPENf(Iaop,ICFD)))/2.
+          CALL ORTTRN(XX,YY,ZZ,TEMAT,X0,Y0,Z0,IERR)
           CALL ORTTRN(X0,Y0,Z0,ETSMAT,X1,Y1,Z1,IERR)
           call u2pixel(X1,Y1,iix,iiy)
-          write (temp,'(a,i2)') 'AO',Iaop
+          write (temp,'(a)')VOLNAME(IVOLN(Iaop,ICFD),ICFD)
+     &                       (1:LNBLNK(VOLNAME(IVOLN(Iaop,ICFD),ICFD)))
           CALL wstxpt(iix,iiy,temp)
           call forceflush()
 
@@ -1363,12 +1427,16 @@ C Label in center of boundary.
 
 C In XZ plane.
 C Transform local coords to screen coords and draw box around boundary.
-          CALL ORTTRN(XU(IOPENi(Iaop,ICFD)),YV(MNOD),
-     &                      ZW(KOPENi(Iaop,ICFD)),TEMAT,X0,Y0,Z0,IERR)
+          XX=ZXMN(izone)+XU(IOPENi(Iaop,ICFD))
+          YY=ZYMN(izone)+YV(MNOD)
+          ZZ=ZZMN(izone)+ZW(KOPENi(Iaop,ICFD))
+          CALL ORTTRN(XX,YY,ZZ,TEMAT,X0,Y0,Z0,IERR)
           CALL ORTTRN(X0,Y0,Z0,ETSMAT,X1,Y1,Z1,IERR)
           call u2pixel(X1,Y1,iixs,iiys)
-          CALL ORTTRN(XU(IOPENf(Iaop,ICFD)+1),YV(MNOD),
-     &                      ZW(KOPENi(Iaop,ICFD)),TEMAT,X0,Y0,Z0,IERR)
+          XX=ZXMN(izone)+XU(IOPENf(Iaop,ICFD)+1)
+          YY=ZYMN(izone)+YV(MNOD)
+          ZZ=ZZMN(izone)+ZW(KOPENi(Iaop,ICFD))
+          CALL ORTTRN(XX,YY,ZZ,TEMAT,X0,Y0,Z0,IERR)
           CALL ORTTRN(X0,Y0,Z0,ETSMAT,X1,Y1,Z1,IERR)
           call u2pixel(X1,Y1,iix,iiy)
           if (Iaop.eq.IOPENHL) then
@@ -1377,10 +1445,13 @@ C Transform local coords to screen coords and draw box around boundary.
             call eswline(iixs,iiys,iix,iiy)
           endif
           call forceflush()
+
           iixs=iix
           iiys=iiy
-          CALL ORTTRN(XU(IOPENf(Iaop,ICFD)+1),YV(MNOD),
-     &                      ZW(KOPENf(Iaop,ICFD)+1),TEMAT,X0,Y0,Z0,IERR)
+          XX=ZXMN(izone)+XU(IOPENf(Iaop,ICFD)+1)
+          YY=ZYMN(izone)+YV(MNOD)
+          ZZ=ZZMN(izone)+ZW(KOPENf(Iaop,ICFD)+1)
+          CALL ORTTRN(XX,YY,ZZ,TEMAT,X0,Y0,Z0,IERR)
           CALL ORTTRN(X0,Y0,Z0,ETSMAT,X1,Y1,Z1,IERR)
           call u2pixel(X1,Y1,iix,iiy)
           if (Iaop.eq.IOPENHL) then
@@ -1389,10 +1460,13 @@ C Transform local coords to screen coords and draw box around boundary.
             call eswline(iixs,iiys,iix,iiy)
           endif
           call forceflush()
+
           iixs=iix
           iiys=iiy
-          CALL ORTTRN(XU(IOPENi(Iaop,ICFD)),YV(MNOD),
-     &                      ZW(KOPENf(Iaop,ICFD)+1),TEMAT,X0,Y0,Z0,IERR)
+          XX=ZXMN(izone)+XU(IOPENi(Iaop,ICFD))
+          YY=ZYMN(izone)+YV(MNOD)
+          ZZ=ZZMN(izone)+ZW(KOPENf(Iaop,ICFD)+1)
+          CALL ORTTRN(XX,YY,ZZ,TEMAT,X0,Y0,Z0,IERR)
           CALL ORTTRN(X0,Y0,Z0,ETSMAT,X1,Y1,Z1,IERR)
           call u2pixel(X1,Y1,iix,iiy)
           if (Iaop.eq.IOPENHL) then
@@ -1401,10 +1475,13 @@ C Transform local coords to screen coords and draw box around boundary.
             call eswline(iixs,iiys,iix,iiy)
           endif
           call forceflush()
+
           iixs=iix
           iiys=iiy
-          CALL ORTTRN(XU(IOPENi(Iaop,ICFD)),YV(MNOD),
-     &                      ZW(KOPENi(Iaop,ICFD)),TEMAT,X0,Y0,Z0,IERR)
+          XX=ZXMN(izone)+XU(IOPENi(Iaop,ICFD))
+          YY=ZYMN(izone)+YV(MNOD)
+          ZZ=ZZMN(izone)+ZW(KOPENi(Iaop,ICFD))
+          CALL ORTTRN(XX,YY,ZZ,TEMAT,X0,Y0,Z0,IERR)
           CALL ORTTRN(X0,Y0,Z0,ETSMAT,X1,Y1,Z1,IERR)
           call u2pixel(X1,Y1,iix,iiy)
           if (Iaop.eq.IOPENHL) then
@@ -1415,12 +1492,16 @@ C Transform local coords to screen coords and draw box around boundary.
           call forceflush()
 
 C Label in center of boundary.
-          X=(XU(IOPENi(Iaop,ICFD))+XU(IOPENf(Iaop,ICFD)))/2.
-          Z=(ZW(KOPENi(Iaop,ICFD))+ZW(KOPENf(Iaop,ICFD)))/2.
-          CALL ORTTRN(X,YV(MNOD),Z,TEMAT,X0,Y0,Z0,IERR)
+          XX=ZXMN(izone)+
+     &                 (XU(IOPENi(Iaop,ICFD))+XU(IOPENf(Iaop,ICFD)))/2.
+          YY=ZYMN(izone)+YV(MNOD)
+          ZZ=ZZMN(izone)+
+     &                 (ZW(KOPENi(Iaop,ICFD))+ZW(KOPENf(Iaop,ICFD)))/2.
+          CALL ORTTRN(XX,YY,ZZ,TEMAT,X0,Y0,Z0,IERR)
           CALL ORTTRN(X0,Y0,Z0,ETSMAT,X1,Y1,Z1,IERR)
           call u2pixel(X1,Y1,iix,iiy)
-          write (temp,'(a,i2)') 'AO',Iaop
+          write (temp,'(a)')VOLNAME(IVOLN(Iaop,ICFD),ICFD)
+     &                       (1:LNBLNK(VOLNAME(IVOLN(Iaop,ICFD),ICFD)))
           CALL wstxpt(iix,iiy,temp)
           call forceflush()
         elseif (ILOCAT.eq.5.or.ILOCAT.eq.6) then
@@ -1432,12 +1513,16 @@ C Label in center of boundary.
 
 C In XY plane.
 C Transform local coords to screen coords and draw box around boundary.
-          CALL ORTTRN(XU(IOPENi(Iaop,ICFD)),YV(JOPENi(Iaop,ICFD)),
-     &                                   ZW(MNOD),TEMAT,X0,Y0,Z0,IERR)
+          XX=ZXMN(izone)+XU(IOPENi(Iaop,ICFD))
+          YY=ZYMN(izone)+YV(JOPENi(Iaop,ICFD))
+          ZZ=ZZMN(izone)+ZW(MNOD)
+          CALL ORTTRN(XX,YY,ZZ,TEMAT,X0,Y0,Z0,IERR)
           CALL ORTTRN(X0,Y0,Z0,ETSMAT,X1,Y1,Z1,IERR)
           call u2pixel(X1,Y1,iixs,iiys)
-          CALL ORTTRN(XU(IOPENf(Iaop,ICFD)+1),YV(JOPENi(Iaop,ICFD)),
-     &                                   ZW(MNOD),TEMAT,X0,Y0,Z0,IERR)
+          XX=ZXMN(izone)+XU(IOPENf(Iaop,ICFD)+1)
+          YY=ZYMN(izone)+YV(JOPENi(Iaop,ICFD))
+          ZZ=ZZMN(izone)+ZW(MNOD)
+          CALL ORTTRN(XX,YY,ZZ,TEMAT,X0,Y0,Z0,IERR)
           CALL ORTTRN(X0,Y0,Z0,ETSMAT,X1,Y1,Z1,IERR)
           call u2pixel(X1,Y1,iix,iiy)
           if (Iaop.eq.IOPENHL) then
@@ -1446,10 +1531,13 @@ C Transform local coords to screen coords and draw box around boundary.
             call eswline(iixs,iiys,iix,iiy)
           endif
           call forceflush()
+
           iixs=iix
           iiys=iiy
-          CALL ORTTRN(XU(IOPENf(Iaop,ICFD)+1),YV(JOPENf(Iaop,ICFD)+1),
-     &                                   ZW(MNOD),TEMAT,X0,Y0,Z0,IERR)
+          XX=ZXMN(izone)+XU(IOPENf(Iaop,ICFD)+1)
+          YY=ZYMN(izone)+YV(JOPENf(Iaop,ICFD)+1)
+          ZZ=ZZMN(izone)+ZW(MNOD)
+          CALL ORTTRN(XX,YY,ZZ,TEMAT,X0,Y0,Z0,IERR)
           CALL ORTTRN(X0,Y0,Z0,ETSMAT,X1,Y1,Z1,IERR)
           call u2pixel(X1,Y1,iix,iiy)
           if (Iaop.eq.IOPENHL) then
@@ -1458,10 +1546,13 @@ C Transform local coords to screen coords and draw box around boundary.
             call eswline(iixs,iiys,iix,iiy)
           endif
           call forceflush()
+
           iixs=iix
           iiys=iiy
-          CALL ORTTRN(XU(IOPENi(Iaop,ICFD)),YV(JOPENf(Iaop,ICFD)+1),
-     &                                   ZW(MNOD),TEMAT,X0,Y0,Z0,IERR)
+          XX=ZXMN(izone)+XU(IOPENi(Iaop,ICFD))
+          YY=ZYMN(izone)+YV(JOPENf(Iaop,ICFD)+1)
+          ZZ=ZZMN(izone)+ZW(MNOD)
+          CALL ORTTRN(XX,YY,ZZ,TEMAT,X0,Y0,Z0,IERR)
           CALL ORTTRN(X0,Y0,Z0,ETSMAT,X1,Y1,Z1,IERR)
           call u2pixel(X1,Y1,iix,iiy)
           if (Iaop.eq.IOPENHL) then
@@ -1470,10 +1561,13 @@ C Transform local coords to screen coords and draw box around boundary.
             call eswline(iixs,iiys,iix,iiy)
           endif
           call forceflush()
+
           iixs=iix
           iiys=iiy
-          CALL ORTTRN(XU(IOPENi(Iaop,ICFD)),YV(JOPENi(Iaop,ICFD)),
-     &                                   ZW(MNOD),TEMAT,X0,Y0,Z0,IERR)
+          XX=ZXMN(izone)+XU(IOPENi(Iaop,ICFD))
+          YY=ZYMN(izone)+YV(JOPENi(Iaop,ICFD))
+          ZZ=ZZMN(izone)+ZW(MNOD)
+          CALL ORTTRN(XX,YY,ZZ,TEMAT,X0,Y0,Z0,IERR)
           CALL ORTTRN(X0,Y0,Z0,ETSMAT,X1,Y1,Z1,IERR)
           call u2pixel(X1,Y1,iix,iiy)
           if (Iaop.eq.IOPENHL) then
@@ -1484,12 +1578,16 @@ C Transform local coords to screen coords and draw box around boundary.
           call forceflush()
 
 C Label in center of boundary.
-          X=(XU(IOPENi(Iaop,ICFD))+XU(IOPENf(Iaop,ICFD)))/2.
-          Y=(YV(JOPENi(Iaop,ICFD))+YV(JOPENf(Iaop,ICFD)))/2.
-          CALL ORTTRN(X,Y,ZW(MNOD),TEMAT,X0,Y0,Z0,IERR)
+          XX=ZXMN(izone)+
+     &                 (XU(IOPENi(Iaop,ICFD))+XU(IOPENf(Iaop,ICFD)))/2.
+          YY=ZYMN(izone)+
+     &                 (YV(JOPENi(Iaop,ICFD))+YV(JOPENf(Iaop,ICFD)))/2.
+          ZZ=ZZMN(izone)+ZW(MNOD)
+          CALL ORTTRN(XX,YY,ZZ,TEMAT,X0,Y0,Z0,IERR)
           CALL ORTTRN(X0,Y0,Z0,ETSMAT,X1,Y1,Z1,IERR)
           call u2pixel(X1,Y1,iix,iiy)
-          write (temp,'(a,i2)') 'AO',Iaop
+          write (temp,'(a)')VOLNAME(IVOLN(Iaop,ICFD),ICFD)
+     &                       (1:LNBLNK(VOLNAME(IVOLN(Iaop,ICFD),ICFD)))
           CALL wstxpt(iix,iiy,temp)
           call forceflush()
         endif
@@ -1497,6 +1595,193 @@ C Label in center of boundary.
 
       return
       end
+
+C ********************* VSBL3D *********************
+C VSBL3D - draws blockages - highlighting the chosen one.
+C << currently only draws in the 3D view not individual sections >>
+      SUBROUTINE VSBL3D(ISBL,izone)
+#include "building.h"
+C #include "geometry.h"
+#include "cfd.h"
+#include "prj3dv.h"
+      
+C      integer lnblnk  ! function definition
+
+      COMMON/SPAD/MMOD,LIMIT,LIMTTY
+
+C      COMMON/ALL/NI,NJ,NK,NIM1,NJM1,NKM1,NIM2,NJM2,NKM2
+      COMMON/GEOM/XP(ntcelx),YP(ntcely),ZP(ntcelz),
+     1            DXEP(ntcelx),DXPW(ntcelx),DYNP(ntcely),DYPS(ntcely),
+     2            DZHP(ntcelz),DZPL(ntcelz),
+     3            SEW(ntcelx),SNS(ntcely),SHL(ntcelz),
+     4            XU(ntcelx),YV(ntcely),ZW(ntcelz)
+      COMMON/ICFNOD/ICFD,ICP
+      common/KEYVOLS/NVOL(MNZ),IVOLF(MNVLS,MNZ),IVCELLS(MNVLS,MNZ,2),
+     &               JVCELLS(MNVLS,MNZ,2),KVCELLS(MNVLS,MNZ,2)
+
+C integer NBLK() is the number of blockages in each domain
+C integer INBLK() points to the volume which defines the blockage shape
+C integer NSSO() is the number of small supply openings in each domain
+C integer INSSO() point to the volume which defines the small supply shape
+      common/blksso/NBLK(MNZ),INBLK(MNVLS,MNZ),NSSO(MNZ),
+     &          INSSO(MNVLS,MNZ)
+
+      character temp*4
+
+C Arrays iixv iiyv iizz are the 8 coords of a box in the usual order.
+#ifdef OSI
+      integer iixs,iiys,iix,iiy,iixv(8),iiyv(8)
+#else
+      integer*8 iixs,iiys,iix,iiy,iixv(8),iiyv(8)
+#endif
+      real XPP,YPP,ZPP  ! points taking into account zone minimum
+      real XX,YY,ZZ
+
+C Check in graphics mode.
+      IF(MMOD.ne.8) return
+
+      if(NBLK(ICFD).eq.0) return
+
+C Decode the block identity.
+      do 70 iblk=1,NBLK(ICFD)
+        indxvol=INBLK(iblk,ICFD)
+
+C Find the cells for this volume (without shift).
+        Ii=IVCELLS(indxvol,ICFD,1)
+        If=IVCELLS(indxvol,ICFD,2)
+        Ji=JVCELLS(indxvol,ICFD,1)
+        Jf=JVCELLS(indxvol,ICFD,2)
+        Ki=KVCELLS(indxvol,ICFD,1)
+        Kf=KVCELLS(indxvol,ICFD,2)
+
+C Debug echo the coordinates of the blockage.
+C        xd=XU(If+1)-XU(Ii)
+C        write(6,*) 'cords X are:',XU(Ii),XU(If+1),xd
+C        yd=YV(Jf+1)-YV(Ji)
+C        write(6,*) 'cords Y are:',YV(Ji),YV(Jf+1),yd
+C        zd=ZW(Kf+1)-ZW(Ki)
+C        write(6,*) 'cords Z are:',ZW(Ki),ZW(Kf+1),zd
+
+C Transform local coords to screen coords and remember.
+C Lower front left hand corner of blockage.
+        XPP=ZXMN(izone)+XU(Ii)
+        YPP=ZYMN(izone)+YV(Ji)
+        ZPP=ZZMN(izone)+ZW(Ki)
+        CALL ORTTRN(XPP,YPP,ZPP,TEMAT,X0,Y0,Z0,IERR)
+        CALL ORTTRN(X0,Y0,Z0,ETSMAT,X1,Y1,Z1,IERR)
+        call u2pixel(X1,Y1,iixs,iiys)
+        iixv(1)=iixs; iiyv(1)=iiys
+
+C Lower front right hand corner of blockage.
+        XPP=ZXMN(izone)+XU(If+1) 
+        YPP=ZYMN(izone)+YV(Ji)
+        ZPP=ZZMN(izone)+ZW(Ki)
+        CALL ORTTRN(XPP,YPP,ZPP,TEMAT,X0,Y0,Z0,IERR)
+        CALL ORTTRN(X0,Y0,Z0,ETSMAT,X1,Y1,Z1,IERR)
+        call u2pixel(X1,Y1,iix,iiy)
+        iixv(2)=iix; iiyv(2)=iiy
+
+C Lower back right hand corner of blockage.
+        XPP=ZXMN(izone)+XU(If+1) 
+        YPP=ZYMN(izone)+YV(Jf+1)
+        ZPP=ZZMN(izone)+ZW(Ki)
+        CALL ORTTRN(XPP,YPP,ZPP,TEMAT,X0,Y0,Z0,IERR)
+        CALL ORTTRN(X0,Y0,Z0,ETSMAT,X1,Y1,Z1,IERR)
+        call u2pixel(X1,Y1,iix,iiy)
+        iixv(3)=iix; iiyv(3)=iiy
+
+C Lower back left hand corner of blockage.
+        XPP=ZXMN(izone)+XU(Ii)
+        YPP=ZYMN(izone)+YV(Jf+1)
+        ZPP=ZZMN(izone)+ZW(Ki)
+        CALL ORTTRN(XPP,YPP,ZPP,TEMAT,X0,Y0,Z0,IERR)
+        CALL ORTTRN(X0,Y0,Z0,ETSMAT,X1,Y1,Z1,IERR)
+        call u2pixel(X1,Y1,iixs,iiys)
+        iixv(4)=iixs; iiyv(4)=iiys
+
+C Upper back left corner of blockage.
+        XPP=ZXMN(izone)+XU(Ii)
+        YPP=ZYMN(izone)+YV(Jf+1)
+        ZPP=ZZMN(izone)+ZW(Kf+1)
+        CALL ORTTRN(XPP,YPP,ZPP,TEMAT,X0,Y0,Z0,IERR)
+        CALL ORTTRN(X0,Y0,Z0,ETSMAT,X1,Y1,Z1,IERR)
+        call u2pixel(X1,Y1,iix,iiy)
+        iixv(5)=iix; iiyv(5)=iiy
+
+C Upper front left corner of blockage
+        XPP=ZXMN(izone)+XU(Ii)
+        YPP=ZYMN(izone)+YV(Ji)
+        ZPP=ZZMN(izone)+ZW(Kf+1)
+        CALL ORTTRN(XPP,YPP,ZPP,TEMAT,X0,Y0,Z0,IERR)
+        CALL ORTTRN(X0,Y0,Z0,ETSMAT,X1,Y1,Z1,IERR)
+        call u2pixel(X1,Y1,iix,iiy)
+        iixv(6)=iix; iiyv(6)=iiy
+
+C Upper front right corner of blockage.
+        XPP=ZXMN(izone)+XU(If+1)
+        YPP=ZYMN(izone)+YV(Ji)
+        ZPP=ZZMN(izone)+ZW(Kf+1)
+        CALL ORTTRN(XPP,YPP,ZPP,TEMAT,X0,Y0,Z0,IERR)
+        CALL ORTTRN(X0,Y0,Z0,ETSMAT,X1,Y1,Z1,IERR)
+        call u2pixel(X1,Y1,iix,iiy)
+        iixv(7)=iix; iiyv(7)=iiy
+
+C Upper back right corner of blockage.
+        XPP=ZXMN(izone)+XU(If+1)
+        YPP=ZYMN(izone)+YV(Jf+1)
+        ZPP=ZZMN(izone)+ZW(Kf+1)
+        CALL ORTTRN(XPP,YPP,ZPP,TEMAT,X0,Y0,Z0,IERR)
+        CALL ORTTRN(X0,Y0,Z0,ETSMAT,X1,Y1,Z1,IERR)
+        call u2pixel(X1,Y1,iix,iiy)
+        iixv(8)=iix; iiyv(8)=iiy
+        call forceflush()
+
+C Label in center of blockage.
+        XX=ZXMN(izone)+XU(If+1)
+        YY=ZYMN(izone)+YV(Ji)
+        ZZ=ZZMN(izone)+ZW(Kf+1)
+        CALL ORTTRN(XX,YY,ZZ,TEMAT,X0,Y0,Z0,IERR)
+        CALL ORTTRN(X0,Y0,Z0,ETSMAT,X1,Y1,Z1,IERR)
+        call u2pixel(X1,Y1,iix,iiy)
+        write (temp,'(a,i2)') 'Bl',IBLK
+        CALL wstxpt(iix,iiy,temp)
+        call forceflush()
+
+C Draw around blockage in single or double lines is the usual order.
+        if (iblk.eq.ISBL) then
+          call edwline(iixv(1),iiyv(1),iixv(2),iiyv(2))
+          call edwline(iixv(2),iiyv(2),iixv(3),iiyv(3))
+          call edwline(iixv(3),iiyv(3),iixv(4),iiyv(4))
+          call edwline(iixv(4),iiyv(4),iixv(1),iiyv(1))
+          call edwline(iixv(5),iiyv(5),iixv(6),iiyv(6))
+          call edwline(iixv(6),iiyv(6),iixv(7),iiyv(7))
+          call edwline(iixv(7),iiyv(7),iixv(8),iiyv(8))
+          call edwline(iixv(8),iiyv(8),iixv(5),iiyv(5))
+          call edwline(iixv(1),iiyv(1),iixv(6),iiyv(6))
+          call edwline(iixv(2),iiyv(2),iixv(7),iiyv(7))
+          call edwline(iixv(3),iiyv(3),iixv(8),iiyv(8))
+          call edwline(iixv(4),iiyv(4),iixv(5),iiyv(5))
+        else
+          call eswline(iixv(1),iiyv(1),iixv(2),iiyv(2))
+          call eswline(iixv(2),iiyv(2),iixv(3),iiyv(3))
+          call eswline(iixv(3),iiyv(3),iixv(4),iiyv(4))
+          call eswline(iixv(4),iiyv(4),iixv(1),iiyv(1))
+          call eswline(iixv(5),iiyv(5),iixv(6),iiyv(6))
+          call eswline(iixv(6),iiyv(6),iixv(7),iiyv(7))
+          call eswline(iixv(7),iiyv(7),iixv(8),iiyv(8))
+          call eswline(iixv(8),iiyv(8),iixv(5),iiyv(5))
+          call eswline(iixv(1),iiyv(1),iixv(6),iiyv(6))
+          call eswline(iixv(2),iiyv(2),iixv(7),iiyv(7))
+          call eswline(iixv(3),iiyv(3),iixv(8),iiyv(8))
+          call eswline(iixv(4),iiyv(4),iixv(5),iiyv(5))
+        endif
+        call forceflush()
+
+ 70   continue
+
+      return
+      end
+
 
 
 

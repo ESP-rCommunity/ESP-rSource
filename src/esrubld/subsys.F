@@ -1286,9 +1286,9 @@ C      Used to check if windows are open or not for AIM
 
 c --- 28-08-2014: Patrice Pinel: Initialise mechanical ventilation variables to zero
 c --- This way, nothing will be changed if MECH_VENT_CONTROL is not called
-	ZONE_mechvent_cond = 0.
-	ZONE_mechvent_moistFlow = 0.
-	ZONE_mechvent_airFlow = 0.
+        ZONE_mechvent_cond = 0.
+        ZONE_mechvent_moistFlow = 0.
+        ZONE_mechvent_airFlow = 0.
 
 C  Initialise.
       IF(NSINC.EQ.1)X3(ICOMP)=0.0
@@ -1565,7 +1565,7 @@ c         else
 
 C Trap 0 volumes in case notional building is not properly generated.
           call eclose(VOL(ICOMP),0.0,0.001,closeto0)
-          closetozero: if(closeto0)then	      
+          closetozero: if(closeto0)then      
             write(outs,'(2A)')' Volume of 0 found in zone: ',
      &      zname(ICOMP)
             call edisp(itu,outs)
@@ -1798,20 +1798,26 @@ C N.B. TIA? holds the normalised (to external air temperature)
 C ventilation conductance in case a fluid flow network exists
 C (for use in zone-coupled flow calculation only).
 
-C At this stage the ventilation conductance as determined in
-C subroutine mzvenc of precal.F assumes that zones are air
-C filled. These conductances need to be modified for zones
-C that contain another fluid.
-        cvair=0.33
-        cvother=1000.0*zfldC/3600.0
+C Now calculate a correction factor xmod to apply to ventilation
+C conductances that have not already taken into account the different 
+C properties of non-air fluids.
+C Note that 0.33 comes from (1006 J/kgK * 1.177 kg/m^3 / 3600 s/h)
+C ie. properties of air as hardwired in mzvenc of precal.F,
+C where conductances are initially calculated for the bOPR and bAIM2 cases.
+
+        cvair=0.33  
+        cvother=zfldD*zfldC/3600.0
         xmod=1.
-        IF(znotair(ICOMP))xmod=cvother/cvair	 ! zone is not air filled
+        IF(znotair(ICOMP))xmod=cvother/cvair  ! zone is not air filled
 
 C Computation of ventilation depends on wether the air flow network is active.      
         AssignVent: if ( bAFN ) then 
 
-C Collect data from air flow module.         
-          CF   = fAfnCondVent(iComp) * xmod
+C Collect data from air flow module.
+
+C Note that xmod is not required for this case, as fluid properties
+C are taken into account in the mfs module.      
+          CF   = fAfnCondVent(iComp)
           CVVF = CF
           ICF = iAfnIndex(iComp)
           TAF = fAfnCondNorm(iComp)
@@ -1821,6 +1827,7 @@ C Collect data from air flow module.
 C Impose computed conductance for scheduled ventilation for .opr or 
 C .aim2 case. 
 
+C Note that xmod is required for this case
           CV1=CVVN(ID1,ICOMP,IT1)*xmod
           CV2=CVVN(ID2,ICOMP,IT2)*xmod
           IC2=ICCN(ID2,ICOMP,IT2)
@@ -2013,9 +2020,9 @@ C Output computed results.
       call edisp(itu,outs)
       
 c --- 27-08-2014: Patrice Pinel: Replace ZONE_mechvent_cond/1006 by ZONE_mechvent_moistFlow in calculation of moisture flow
-      !flowi=CVIF/1006.0		! infiltration mass flow rate
+      !flowi=CVIF/1006.0        ! infiltration mass flow rate
       flowi = (CVIF-ZONE_mechvent_cond)/1006. + ZONE_mechvent_airFlow
-      flowv=CVVF/1006.0		! ventilation mass flow rate
+      flowv=CVVF/1006.0         ! ventilation mass flow rate
       if(znotair(ICOMP)) then
          flowi=flowi*1006.0/zfldc
          flowv=flowv*1006.0/zfldc
@@ -2582,7 +2589,7 @@ C It excludes start-up timesteps
       do 1 im=1,12
         zonAuxil(im,icomp)=0.
         m2zonAuxil(im,icomp)=0.
-  	fmonthAuxil_ncm_Energy(im,icomp)=0.
+        fmonthAuxil_ncm_Energy(im,icomp)=0.
  1    continue
       iactvalue=theactivityindex(ICOMP)
 

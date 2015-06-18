@@ -166,6 +166,11 @@ C iSlr_half_hr_flg value = 0 :hour-centered; =1 : half-hour centered.
       common/CWEC_SOL/iSlr_half_hr_flg
       integer iSlr_half_hr_flg
 
+C CFD common blocks.
+      CHARACTER LCFD*72
+      integer IFCFD
+      common/cfdfil/LCFD(MCOM),IFCFD(MCOM)
+
 C Thermal bridges.
       integer nbrdg, ibrdg
       real psi,lngth,losspercent,totheatloss,thbrpercent
@@ -2255,6 +2260,15 @@ C then rescan that zone file with verbose setting.
               endif
             endif
           endif
+
+C Note cfd descriptions, rescan the zone file with verbose setting.
+          if(LCFD(ivz)(1:7).eq.'UNKNOWN')then
+            continue
+          else
+            call edisp(itu,'  ')
+            iitrc=2
+            call DFDREAD(ivz,iitrc,itu,ier)
+          endif 
         endif
 
 C Check for mismatch in surface attributes and boundary conditions.

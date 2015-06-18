@@ -247,10 +247,17 @@ C Note: temp character t13 is 1 char wider than zname().
         CALL VECTRN(COG1,TEMAT,COG2,IER)
         CALL VECTRN(COG2,ETSMAT,COG3,IER)
         call u2pixel(COG3(1),COG3(2),iix,iiy)
-        write(t13,'(A)')zname(nznog(IZ))
+
+C Note call to textpixwidth corrupts t13 so need to
+C re-create t13 after textpixwidth call.
+        t13=' '
+        write(t13,'(A)')zname(nznog(IZ))(1:lnzname(nznog(IZ)))
+        IF(IFS.GT.0)CALL winfnt(NAMEFT+1)
         call textpixwidth(t13,ipixw)
+        write(t13,'(A)')zname(nznog(IZ))(1:lnzname(nznog(IZ)))
         iixc = iix - (ipixw/2)
         CALL wstxpt(iixc,iiy,t13)
+        IF(IFS.GT.0)CALL winfnt(IFS)
         call forceflush()
       ENDIF
       IF(ier.NE.0)RETURN

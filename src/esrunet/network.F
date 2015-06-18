@@ -2893,7 +2893,7 @@ C Do any internal labels in smallest font in the specified colour.
           call forceflush()
   12    CONTINUE
           
-C Write on the label.
+C Write on the label and recreate LABL after textpixwidth call.
         WRITE(LABL,'(A12)') NWICNM(ICN)
 
 C Also check that the label is within the view limits, write
@@ -2906,6 +2906,7 @@ C it in black and use a smaller font if the scale is less than 1.
         endif
         call textpixwidth(LABL,ipixw)
         iixlc = iixl - (ipixw/2)
+        WRITE(LABL,'(A12)') NWICNM(ICN)
         if(iglib.eq.1)then
           if(SCALF.lt.1.0.and.IFS.GT.0)CALL winfnt(IFS)
         elseif(iglib.eq.2)then

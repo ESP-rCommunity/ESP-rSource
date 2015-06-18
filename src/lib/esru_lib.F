@@ -6997,7 +6997,8 @@ C ********************** ANOTZERO **********************
 C ANOTZERO returns a non zero value with the same sign.
       REAL FUNCTION ANOTZERO(A)
 
-      SMALL=1E-19
+C      SMALL=1E-19
+      SMALL=1E-12
 
       if (abs(A).lt.(SMALL)) then
 

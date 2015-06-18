@@ -551,7 +551,7 @@ C imgtyp  Output image type.
       common/flvimg/imgtyp,IMOPTS
       common/flvcol/ISOPT(6),IBGOPT(6),SCmin,SCmax
       common/EQTION3/CALLMA(MNZ),CALPOL(MCTM,MNZ),POLNAM(MCTM,MNZ),NCTM,
-     &      JHUMINDX
+     &      JHUMINDX,URFC(MCTM)
       LOGICAL CALPOL,CALLMA
       character name*12,BITITL*5,LBITrt*12,outs*124,t24*24
       CHARACTER POLNAM*12,ITEM(MCTM+2)*18
@@ -700,7 +700,7 @@ C  results in format for use in the flow visualization routines.
 #include "cfd.h"
 
       COMMON/FILEP/IFIL
-      COMMON/ICFCHN/ICFMON,ICFTMP,ICFLIB
+      COMMON/ICFCHN/ICFMON(MNZ),ICFTMP,ICFLIB
 
       COMMON/ALL/NI,NJ,NK,NIM1,NJM1,NKM1,NIM2,NJM2,NKM2
       COMMON/VARf/Uf(ntcelx,ntcely,ntcelz),Vf(ntcelx,ntcely,ntcelz),
@@ -822,7 +822,7 @@ C  results in format for use in the flow visualization routines.
       SUBROUTINE GETVECLIB(vecfil)
 #include "cfd.h"
 
-      COMMON/ICFCHN/ICFMON,ICFTMP,ICFLIB
+      COMMON/ICFCHN/ICFMON(MNZ),ICFTMP,ICFLIB
 
       COMMON/ALL/NI,NJ,NK,NIM1,NJM1,NKM1,NIM2,NJM2,NKM2
       COMMON/TEMPf/Tf(ntcelx,ntcely,ntcelz),GAMH(ntcelx,ntcely,ntcelz),

@@ -103,22 +103,55 @@ C      INTEGER IDAY,IDTY  ! uncomment if code near line 285 changes
 
       COMMON/zfluid/znotair(mcom),zfldK,zfldD,zfldC,zfldA,
      &              zSWAp(mcom),zSWAf(mcom)
-      logical znotair
+      logical znotair,isnotair
+C SAACI is the opposite of ICAAS
+C ie. maps flow network nodes onto building zones
+C this is needed to correctly reference array znotair
+      DIMENSION SAACI(NNOD)
+      integer SAACI
 
-C Initialise AMFR.
+C Initialise AMFR and SAACI.
       DO 12 JNOD=1,NNOD
+        SAACI(JNOD)=0
         DO 10 INOD=1,NNOD
           AMFR(INOD,JNOD)=0.
    10   CONTINUE
    12 CONTINUE
 
+C Populate SAACI
+      DO 21 ICOMP=1,NCOMP
+        DO 22 INOD=1,NNOD
+          IF(ICAAS(ICOMP).EQ.INOD) THEN
+            SAACI(INOD)=ICOMP
+          END IF
+   22   CONTINUE
+   21 CONTINUE
+
 C Sum flows to each node; we are only interested in receiving zones
 C of connections with the same fluid type.
       DO 20 ICNN=1,NCNN
-        if(znotair(ITPCON(ICNN)).and.
-     &     INT(SUPCMP(ITPCON(ICNN),1)).NE.2)goto 20
-        if(.not.znotair(ITPCON(ICNN)).and.
-     &     INT(SUPCMP(ITPCON(ICNN),1)).NE.1)goto 20
+C If node and flow component associated with connection
+C do not match in fluid type, skip connection. Note that nodes 
+C either side of connection should have already been checked for 
+C fluid compatability.
+
+C Check SAACI for 0 value, as this will throw up an error if used to
+C reference znotair.
+        if(SAACI(NODPS(ICNN)).eq.0)then
+C If SAACI is zero, it means NODPS(ICNN) is not associated with a 
+C building zone. In this case check the fluid type in node data instead
+C of znotair.
+          if(NDFLD(NODPS(ICNN)).ne.1)then
+            isnotair=.TRUE.
+          else
+            isnotair=.FALSE.
+          endif
+        else
+          isnotair=znotair(SAACI(NODPS(ICNN)))
+        endif
+        IF((isnotair).AND.(INT(SUPCMP(ITPCON(ICNN),1)).NE.2))goto 20
+        IF((.NOT.isnotair).AND.(INT(SUPCMP(ITPCON(ICNN),1)).NE.1))
+     &                                                          goto 20
         IF(FLW1(ICNN).GT.0.) THEN
           IDSND=NODPS(ICNN)
           IDREC=NODNE(ICNN)
@@ -282,6 +315,7 @@ C the infiltration load.
         DO 40 INOD=1,NNOD
           call eclose(AMFR(INOD,JNOD),0.00,0.001,close)
           IF(INOD.EQ.JNOD.OR.close) GOTO 40
+c          IF(INOD.EQ.JNOD) GOTO 40
             CVV=CVV+AMFR(INOD,JNOD)*CP
             IF(ABS(TF).GT.DBLE(SMALL)) THEN
               CVVM=CVVM+AMFR(INOD,JNOD)*CP*REAL(TNDL(INOD))/TF

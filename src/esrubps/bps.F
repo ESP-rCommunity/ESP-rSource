@@ -258,18 +258,18 @@ C Path to model and command line file (if any).
       common/user/browse
 
 C CFD output channels.
-      COMMON/ICFCHN/ICFMON,ICFTMP,ICFLIB
+      COMMON/ICFCHN/ICFMON(MNZ),ICFTMP,ICFLIB
       common/CFDres/photon,flwvis
 
 C CFD results library.
       common/CFDSV/IRECPC,ICFDSV,IEQSV(5+MCTM)
-
 C CFD visualisation.
       common/flvpar/Lflpar(MCOM)
       COMMON/ACT/ACTCNN(MCNN)
-
 C CFD small openings.
       common/SSOinit/areaSSO
+C CFD coupling toggles
+      common/CFDTOGS/ACCON,CFD2BLD,CFD2MFS
 
 C Project journal on/off, unit number, cmd, file name.
       common/journopt/journio,iuj,journcmd,jfile
@@ -347,6 +347,7 @@ C Flags for multi-year simulation menus
       integer iglib   ! if 1 then X11, if 2 then GTK, if 3 then text only.
       integer ier
       integer NITMS,INO  ! max items and current menu item
+      integer ACCON,CFD2BLD,CFD2MFS
 
 #ifdef OSI
       integer iigl,iigr,iigt,iigb,iigw,iigwh
@@ -432,6 +433,11 @@ C CFD results library: IRECPC=current record; ICFDSV=results version
 
 C Flag indicating that CFD `small opening' areas have not yet been calculated.
       areaSSO = .FALSE.
+
+C Default CFD coupling toggles.
+      ACCON=1   ! Adaptive Conflation Controller active
+      CFD2BLD=1 ! 1-way CFD-building conflation
+      CFD2MFS=2 ! 2-way CFD-mass flow network conflation
 
 C Illuminance values held in database.
       NDBENT=0
@@ -524,7 +530,8 @@ C at begining for details. These must not be changed elsewhere.
       ITF3=IFIL+16
       IMSTR=IFIL+17
       ICFLIB=IFIL+18
-      ICFMON=IFIL+19
+C ICFMON assignment moved to MZUTIL, in case there are multiple CFD 
+C domains   
       ICFTMP=IFIL+20
       nochan=ifil+23
       ISTemp=IFIL+60

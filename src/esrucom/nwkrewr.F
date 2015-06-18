@@ -1280,12 +1280,12 @@ C Grid commons
       CHARACTER OUTS*124,tab*1,dstmp*24,ts12*12,te12*12
       character longtfile*144
       LOGICAL CONCAT
-      character iconphrase*40
-C      character tagatr*12,menuatr*32,atrib*12,ICDNAM*12
-C      dimension tagatr(MIATRB,5),atrib(MIATRB,3),menuatr(MIATRB)
+      character iconphrase*40,category*12
+      character tagatr*12,menuatr*32,atrib*12,ICDNAM*12
+      dimension tagatr(MIATRB,5),atrib(MIATRB,3),menuatr(MIATRB)
 
 C WORDSS array of string tokens from each NWICHNIS.
-C      CHARACTER*32 WORDSS(12)
+      CHARACTER*32 WORDSS(12)
 
 
 C << CSEL, ICONTP() not written out >>

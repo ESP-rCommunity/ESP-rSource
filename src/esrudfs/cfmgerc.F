@@ -30,7 +30,7 @@ C CFMNGE - Invoke CFD routine and print output files. (version for cfd module)
       common/outin/iuout,iuin
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
 
-      COMMON/ICFCHN/ICFMON,ICFTMP,ICFLIB
+      COMMON/ICFCHN/ICFMON(MNZ),ICFTMP,ICFLIB
       common/utlcom/photon,matlab,textout,flwvis,xslice,yslice,zslice
       common/slicom/islice,jslice,kslice
 
@@ -45,7 +45,7 @@ C CFMNGE - Invoke CFD routine and print output files. (version for cfd module)
      &              JSBi(MNSBZ,MNZ),JSBf(MNSBZ,MNZ),
      &              KSBi(MNSBZ,MNZ),KSBf(MNSBZ,MNZ),
      &              ISUFLC(MNSBZ,MNZ),IWSB(MNSBZ,MNZ),SSB(MNSBZ,MNZ),
-     &              SSBHC(MNSBZ,MNZ),
+     &              SSBHC(MNSBZ,MNZ),IVOLNSB(MNSBZ,MNZ),
      &              ITCtype(MNSBZ,MNZ),icTREF(MNSBZ,MNZ)
 
 C Flow visualization common blocks.
@@ -107,7 +107,7 @@ C Set up boundary conditions which are independent of the airflow.
       CALL INOUT
 
 C Invoke CFD simulation.
-      ifl=ICFMON
+      ifl=ICFMON(ICFD)
       IF(NSINC.EQ.1)call efopseq(ifl,CFTRFL(ICFD),3,ier)
       CALL CFCALC(NSINC,TSTEP,IMFACT,IBLACT,CONVER)
 

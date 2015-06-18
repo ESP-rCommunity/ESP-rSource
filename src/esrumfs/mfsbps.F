@@ -315,7 +315,8 @@ C CFD-related data.
      &             KOPENf(MCFND,MNZ),FIXM(MCFND,MNZ),
      &             FIXT(MCFND,MNZ),FIXC(MCFND,MNZ),
      &             FIXK(MCFND,MNZ),FIXE(MCFND,MNZ),
-     &             IWOPEN(MCFND,MNZ),ICFDCN(MCFND,MNZ),ICNACT(MCFND,MNZ)
+     &             IWOPEN(MCFND,MNZ),ICFDCN(MCFND,MNZ),
+     &             ICNACT(MCFND,MNZ),IVOLN(MCFND,MNZ)
 
       COMMON/zfluid/znotair(mcom),zfldK,zfldD,zfldC,zfldA,
      &              zSWAp(mcom),zSWAf(mcom)
@@ -452,7 +453,11 @@ C Calculate node fluid densities.
    40 CONTINUE
 
 C Calculate connections stack pressure based on previous
-C flow direction.
+C flow direction if IPSMOD=1, using averaged densities
+C if IPSMOD=2.
+C Note that in sensitive networks, such as a thermosyphon network,
+C experience has shown that IPSMOD should be 2 to prevent 
+C oscillation of mass flow rates.
       DO 50 ICNN=1,NCNN
         IDPS=NODPS(ICNN)
         IDNE=NODNE(ICNN)

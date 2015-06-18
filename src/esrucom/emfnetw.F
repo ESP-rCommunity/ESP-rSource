@@ -1479,6 +1479,13 @@ C Implied do loop in the write statement for connections.
      &      ICNN=1,NCNN)
  1070 FORMAT(1X,A12,F7.3,3X,A12,F7.3,3X,A12,3X,A12,1X,A12)
 
+C If simulation preferences were defined write tag:data at end of the file.
+      if(haveglobal)then
+        write(IFPRB,'(a,i2,a)') '*IPSMOD',IPSMOD,'  # stack calc'
+        write(IFPRB,'(a,i2,a)') '*MFBSNC',MFBSNC,'  # timing'
+        write(IFPRB,'(a,i2,a)') '*MSLVTP',MSLVTP,'  # flow solution'
+        write(IFPRB,'(a,i2,a)') '*MFTRAC',MFTRAC,'  # trace level'
+      endif
   100 RETURN
 
 C Error trap on write error

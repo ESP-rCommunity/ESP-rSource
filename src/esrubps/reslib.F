@@ -78,7 +78,7 @@ C Electrical network results library details.
      &NPREC
 
 C CFD unit nos.
-      COMMON/ICFCHN/ICFMON,ICFTMP,ICFLIB
+      COMMON/ICFCHN/ICFMON(MNZ),ICFTMP,ICFLIB
 
 C Active domain common.
       common/ACTDOM/CFDOK

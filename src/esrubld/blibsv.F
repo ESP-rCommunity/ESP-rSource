@@ -2661,7 +2661,7 @@ C -- Shortwave radiation. Test if TMC.
 
 C -- Energy stored.
           qstore(ICOMP,ISFN,1)=qstore(ICOMP,ISFN,2)
-	! qstore = density * spec heat * A * thickness / 2 * temp of node * num of time steps per hr / 3600 s/h
+          ! qstore = density * spec heat * A * thickness / 2 * temp of node * num of time steps per hr / 3600 s/h
           qstore(ICOMP,ISFN,2)=THRMLI(ICOMP,ISFN,1,2)*
      &                         THRMLI(ICOMP,ISFN,1,3)*sna(ICOMP,ISFN)*
      &                   (DELXE/2.)*tfc(ICOMP,ISFN,1)*real(ntstep)/3600.

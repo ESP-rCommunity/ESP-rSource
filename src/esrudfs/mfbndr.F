@@ -80,7 +80,8 @@ C ********************* MFBNDR *********************
       COMMON/AFN/IAIRN,LAPROB,ICAAS(MCOM)
 
       COMMON/CFDMFS1/ICFDNOD(MNZ),ICFDCNN(MNVLS,MNZ)
-      COMMON/CFDMFS2/MFNEWN(MNVLS,MNZ),NFNDN,NCFDOPNO(MNVLS,MNZ)
+      COMMON/CFDMFS2/MFNEWN(MNVLS,MNZ),NFNDN,NCFDOPNO(MNVLS,MNZ),
+     &               NFNPDN(MNZ)
       COMMON/CFDMFS4/VOLVELOLD(MNVLS,MNZ),VOLTEMPOLD(MNVLS,MNZ),
      1 VOLHUMOLD(MNVLS,MNZ),VOLDIROLD(MNVLS,MNZ,2),IVTYPEOLD(MNVLS,MNZ)
       COMMON/MFCFD/NCNRMV,ICNRMV(MCFND,MNZ),NCNON,ICNON(2*MCFND,MNZ)
@@ -136,7 +137,7 @@ C Initialise the massflows to/from CFD domain to mfs dry run values
 
 C Calculate connections stack pressure based on previous
 C flow direction.
- 102    DO 5011 ICNN=1,NCNN
+ 102  DO 5011 ICNN=1,NCNN
         IDPS=NODPS(ICNN)
         IDNE=NODNE(ICNN)
         IF(IPSMOD.EQ.1) THEN
@@ -318,7 +319,8 @@ C cfd-mfs iterations are done.
      &             KOPENf(MCFND,MNZ),FIXM(MCFND,MNZ),
      &             FIXT(MCFND,MNZ),FIXC(MCFND,MNZ),
      &             FIXK(MCFND,MNZ),FIXE(MCFND,MNZ),
-     &             IWOPEN(MCFND,MNZ),ICFDCN(MCFND,MNZ),ICNACT(MCFND,MNZ)
+     &             IWOPEN(MCFND,MNZ),ICFDCN(MCFND,MNZ),
+     &             ICNACT(MCFND,MNZ),IVOLN(MCFND,MNZ)
       COMMON/VARf/Uf(ntcelx,ntcely,ntcelz),Vf(ntcelx,ntcely,ntcelz),
      1            Wf(ntcelx,ntcely,ntcelz),
      2            P(ntcelx,ntcely,ntcelz),PP(ntcelx,ntcely,ntcelz),
@@ -340,7 +342,8 @@ C cfd-mfs iterations are done.
 
       COMMON/MFCFD/NCNRMV,ICNRMV(MCFND,MNZ),NCNON,ICNON(2*MCFND,MNZ)
       COMMON/ACT/ACTCNN(MCNN)
-      COMMON/CFDMFS2/MFNEWN(MNVLS,MNZ),NFNDN,NCFDOPNO(MNVLS,MNZ)
+      COMMON/CFDMFS2/MFNEWN(MNVLS,MNZ),NFNDN,NCFDOPNO(MNVLS,MNZ),
+     &               NFNPDN(MNZ)
       COMMON/CFDMFS1/ICFDNOD(MNZ),ICFDCNN(MNVLS,MNZ)
       COMMON/MFCALC/IPSMOD,MSLVTP
       

@@ -106,15 +106,9 @@ C Check if Unix-based or DOS based.
       longpause=.true.     ! initially use longer pause
 
 C General image option flags for use with cadjview.
-      ITDSP=1
-      ITBND=1
-      ITEPT=0
-      ITZNM=0
-      ITSNM=0
-      ITVNO=1
-      ITORG=1
-      ITSNR=1
-      ITGRD=1
+      ITDSP=1; ITBND=1; ITEPT=0
+      ITZNM=0; ITSNM=0; ITVNO=1
+      ITORG=1; ITSNR=1; ITGRD=1
       GRDIS=0.0
       ITRC=0
 
@@ -160,10 +154,11 @@ C failed searches brought to users attention.
       OTHEROK=.TRUE.
       MODIFY=.FALSE.
 
-C CACC is the tolerance between two vertices, IACC is the number
-C of corners beyond tolerance which are allowed,
+C CACC is the tolerance between two vertices. Can be user adjusted.
+C << and what about angle tolerance between surface normals >>
+C IACC is the number of corners beyond tolerance which are allowed,
 C DACC is the line degree tolerance for setting of corners.
-      CACC=0.025
+      CACC=0.025  ! initial assumptions
       IACC=0
       DACC=5.0
       DCNN=' '
@@ -203,7 +198,7 @@ C surface attribute.
     3 INO=-4
       write(ITEMS1(1),'(a,i4,a)')' Connections (',ncon,')'
       ITEMS1(2)=   '  ______________________      '
-      ITEMS1(3)=   'b set vertex `close` tolerance'
+      ITEMS1(3)=   'b set vertex [close] tolerance'
       ITEMS1(4)=   '  confirm if (already marked):'
       if(M1SKP)then
         ITEMS1(5)= 'c   marked as identical : No  '
@@ -291,8 +286,7 @@ C Help text for this menu.
 C If user has defined problem and perhaps resized the display then
 C redraw the problem image.
       if(MODIFY)then
-        MODBND=.TRUE.
-        MODLEN=.TRUE.
+        MODBND=.TRUE.; MODLEN=.TRUE.
         NZONES=NCOMP
         nzg=NZONES
         DO 44 I=1,nzg

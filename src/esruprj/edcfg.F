@@ -138,6 +138,7 @@ C Uncertainty.
       logical xst,clkok,havefile,unixok
       LOGICAL concat,remote
       integer iglib   ! to test for X11 interface
+      integer iappwpc ! application height as % of nominal size
 
       dimension ITEMS(30)
       character LUALF*72,LCNG*15,LLOC*15
@@ -821,8 +822,8 @@ C file that enet uses.
      &          cfgroot(1:lnblnk(cfgroot)),'.summary'
             endif
           endif
-          write(6,*) 'LAPROB ',LAPROB(1:lnblnk(LAPROB))
-          write(6,*) 'ltmp ',ltmp(1:lnblnk(ltmp))
+C          write(6,*) 'LAPROB ',LAPROB(1:lnblnk(LAPROB))
+C          write(6,*) 'ltmp ',ltmp(1:lnblnk(ltmp))
         else
 
 C Non-blank name. Set a matching .summary file.
@@ -837,8 +838,8 @@ C Non-blank name. Set a matching .summary file.
             write(ltmp,'(2a)',iostat=ios,err=13)
      &        LAPROB(1:lenlfil),'.summary'
           endif
-          write(6,*) 'LAPROB ',LAPROB(1:lnblnk(LAPROB))
-          write(6,*) 'ltmp is',ltmp(1:lnblnk(ltmp))
+C          write(6,*) 'LAPROB ',LAPROB(1:lnblnk(LAPROB))
+C          write(6,*) 'ltmp is',ltmp(1:lnblnk(ltmp))
         endif
 
 C Graphic network. Create a summary file of zone domain information
@@ -1270,10 +1271,15 @@ C and or forward slashes.
 
 C If prj initial size is a % of default pass this on to child with
 C an offset from prj start position.
-        if(iappw.gt.0.and.iappw.le.200)then
+        if(iappw.eq.630)then
+          iappwpc=100
+        else
+          iappwpc=nint(100.0*(real(iappw)/630.0))  ! reconstitute %
+        endif
+        if(iappwpc.gt.0.and.iappwpc.le.200)then
           if(havefile)then
             write(doit,'(3a,3i4,3a)') 'res -mode ',tmode,
-     &        ' -s ',iappw,iappx+35,iappy+45,' -file ',
+     &        ' -s ',iappwpc,iappx+35,iappy+45,' -file ',
      &        longtfile(1:lnblnk(longtfile)),' & '
           else
             write(doit,'(3a,3i4,a)') 'res -mode ',tmode,
@@ -1328,6 +1334,7 @@ C output, IER=0 indicates no error.
 #include "material.h"
 #include "schedule.h"
 #include "prj3dv.h"
+#include "cfd.h"
       
       integer lnblnk  ! function definition
 
@@ -1349,6 +1356,7 @@ C output, IER=0 indicates no error.
 
       common/user/browse
       common/appw/iappw,iappx,iappy
+      integer iappw,iappx,iappy
       common/cctlnm/ctldoc,lctlf
       integer icascf
       common/cctl/icascf(mcom)
@@ -1368,12 +1376,17 @@ C output, IER=0 indicates no error.
       common/caleni/nbdaytype,nbcaldays(MDTY),icalender(365)
       INTEGER NBDAYTYPE,NBCALDAYS,ICALENDER
 
+      common/ndcfd/ncfdnd,icfdnd(MNZ),NCONF
+      COMMON/ICFNOD/ICFD,ICP
+      INTEGER NCFDND,ICFDND,NCONF,ICFD,ICP
+
       logical OK,CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,context,CFCDBOK
       logical MODIFY,MODLEN,MODBND,concat,browse,QUIET
       logical XST,OKOB,OKZT,OKZR
       logical BLDG3D,ZONE3D,MSTROK,MSTRZN,OKC,dok,clkok
       logical unixok
       logical silent
+      integer iappwpc ! application height as % of nominal size
 
 C Flag noting whether casual gain periods are currently sorted.
       logical sorted,problem
@@ -3164,12 +3177,14 @@ C If browsing do not offer inclusion option.
           IF(OK)then
             call usrmsg(' Including CFD domain...',' ','-')
             CALL EMKCFG('-',IER)
+            IF(ICFD.GT.NCONF)NCONF=NCONF+1
             call usrmsg(' Including CFD domain...done.',' ','-')
           else
             IFCFD(IC)=0 
             LCFD(IC)='UNKNOWN'
             call usrmsg(' Dereferencing CFD domain...',' ','-')
             CALL EMKCFG('-',IER)
+            IF(ICFD.LE.NCONF)NCONF=NCONF-1
             call usrmsg(' Dereferencing CFD domain...done.',' ','-')
           endif
         endif
@@ -3325,9 +3340,14 @@ C Confirm file names.
           call terminalmode(childterminal,tmode)
           CALL ADDPATH(LCFGF,longtfile,CONCAT)
           call tstamp('>','PRJ: edit adaptive gridding')
-          if(iappw.gt.0.and.iappw.le.200)then
+          if(iappw.eq.630)then
+            iappwpc=100
+          else
+            iappwpc=nint(100.0*(real(iappw)/630.0))  ! reconstitute %
+          endif
+          if(iappwpc.gt.0.and.iappwpc.le.200)then
             write(doit,'(3a,3i4,5a)') 'grd -mode ',tmode,
-     &        ' -s ',iappw,iappx+10,iappy+40,' -file ',
+     &        ' -s ',iappwpc,iappx+10,iappy+40,' -file ',
      &        longtfile(1:lnblnk(longtfile)),' -zone ',
      &        ZN(1:lnblnk(ZN)),' &'
           else
@@ -3416,22 +3436,14 @@ C Defaults.
       logical confirm,ckpath,itisanexemplar
       logical unixok,prob
       
-      integer nboflistf  ! how many folders or file names passed
-      integer listfoldertype   ! zero if unused one if folder two if file
-      integer lenlistfolder    ! width of each string
-      character*72 listfolder  ! array of folder or file names
-      common/listfold/nboflistf,listfoldertype(MFFOLD),
-     &                lenlistfolder(MFFOLD),listfolder(MFFOLD)
-
-      dimension ivlist(MFFOLD)
-      character*70 listfc70(MFFOLD)
       character*32 WORDS(12)
 
       character path*72,LCMDFL*144,LTMP*144,GTGEOM*72
-      character MODE*4,fs*1,outs*124
+      character MODE*4,fs*1,outs*124,msg*96
       character OUTSTR*124,ctldoc*248,LCTLF*72,t96*96,t144*144,ETEXT*82
       character sfile*144,odir*84,subpath*84
-      character action*3,GTNAME*15
+      character fstring*144,ppath*72,filen*72
+      character GTNAME*15
       CHARACTER dinstpath*60,dirpath*72
 
 C Passed parameters for cfgtogg
@@ -3478,6 +3490,7 @@ C Set folder separator (fs) to \ or / as required.
       endif
       t96='  '
       t144='  '
+      msg='  '
 
 C Ask for source file name and if the file exists then read it;
 C otherwise make general defaults and allow input from scratch.
@@ -3639,6 +3652,15 @@ C Debug.
 C      write(6,*) 'c iaccess is ',iaccess,icerr,ifold,LCMDFL
 
       if(ifold.eq.0.and.icerr.eq.0)then
+
+C It is a file. Attempt to call fdpwdtocfg to see if there is
+C a pwdtocfg in it.
+        write(fstring,'(a)') LCMDFL(1:lnblnk(LCMDFL))
+        call fdpwdtocfg(fstring,ppath,filen)
+C        write(6,*) 'fs ',fstring(1:lnblnk(fstring))
+C        write(6,*) 'pp ',ppath(1:lnblnk(ppath))
+C        write(6,*) 'fi ',filen(1:lnblnk(filen))
+C        write(6,*) 'lc ',lcfgf(1:lnblnk(lcfgf))
         CALL ERPFREE(IFCFG,ISTAT)
         call FINDFIL(LCFGF,XST)
       elseif(ifold.eq.1.and.icerr.eq.0)then
@@ -3653,6 +3675,13 @@ C configuration files.
 C Debug.
 C        write(6,*) 'd iaccess is ',iaccess,icerr,ifold,t144
         if(ifold.eq.1.and.icerr.eq.0)then
+
+C What we found was a folder cfg so t144 is equivalent to pwdtocfg.
+          write(pwdtocfg,'(a)') t144(1:lnblnk(t144))
+          lnpwdc=lnblnk(pwdtocfg)  ! remember its length
+
+C The next lines take the model folder name passed in the
+C command line to build up the model root name.
           lex=MIN0(lnblnk(LCMDFL),32)
           write(cfgroot,'(a)',IOSTAT=ios,ERR=13) LCMDFL(1:lex)
           subpath=' '
@@ -3678,59 +3707,30 @@ C works. If path begins C:/ or D:/ or E:/ or F:/ no need to prepend odir.
             continue
           endif
 #endif
-          write(outs,*,IOSTAT=ios,ERR=16) 'models in folder ',subpath
-          call edisp(iuout,outs)
 
-C Re-establish action and file separator prior to call to getfileslist.
-          action='cfg'
-          if(unixok)then
-            fs = char(47)
-          else
-            fs = char(92)
-          endif
-          call getfileslist(subpath,action,nlistf)
-          call printfileslist(outs,'p')
+C Use standard call to discover if there are cfg files in the subpath
+C folder and which (sfile) the user has selected.
+          call discovercfg(subpath,sfile,ier)
 
-C Try to use information gathered from file scan.
-          if(nlistf.gt.0)then
-            ix=1
-            do 76 ij=1,nlistf
-              listfc70(ij)=' '
-              lex=lenlistfolder(ij)
-              if(lex.gt.70) lex=70
-              if(lex.le.1)then
-                write(listfc70(ij),'(a)') '  '
-              else
-                write(listfc70(ij),'(a)') listfolder(ij)(1:lex)
-              endif
-              if(lex.gt.maxw) maxw=lex  ! ensure widest string can be displayed
-  76        continue
-            if(maxw.gt.70) maxw=70  ! ensure list fits
-            if(maxw.lt.15) maxw=15  ! ensure title can be seen
-            CALL EPICKS(IX,ivlist,outs,' ',
-     &        maxw,nboflistf,listfc70,'Available files',IER,nbhelp)
-            if(ix.eq.1)then
-              write(t144,'(3a)',IOSTAT=ios,ERR=17)
-     &          LCMDFL(1:lnblnk(LCMDFL)),fs,'cfg'
-              write(sfile,'(3a)',IOSTAT=ios,ERR=17) 
-     &          t144(1:lnblnk(t144)),fs,
-     &          listfolder(ivlist(ix))(1:lenlistfolder(ivlist(ix)))
+C Return from discovercfg and derive the path and LCFGF portions
+C of the string sfile.
+          if(ier.eq.0)then
+            call fdroot(sfile,path,LCFGF)
 
 C Debug.
-C              write(6,*) 'sfile is ',sfile
+            write(6,*) 'sfile is ',sfile(1:lnblnk(sfile))
+            write(6,*) 'path is ',path(1:lnblnk(path))
+            write(6,*) 'pwdtocfg is ',pwdtocfg(1:lnblnk(pwdtocfg))
+            write(6,*) 'lcfgf is ',LCFGF(1:lnblnk(LCFGF))
 
-              call fdroot(sfile,path,LCFGF)
-              CALL ERPFREE(IFCFG,ISTAT)
-              call FINDFIL(LCFGF,XST)
-            endif
+            CALL ERPFREE(IFCFG,ISTAT)
+            call FINDFIL(LCFGF,XST)
           endif
         endif
       else
-        if(lnblnk(LCMDFL).le.72)then
-          write(LCFGF,'(a)',IOSTAT=ios,ERR=18) LCMDFL(1:lnblnk(LCMDFL))
-        else
-          write(LCFGF,'(a)',IOSTAT=ios,ERR=18) LCMDFL(1:72)
-        endif
+        write(LCFGF,'(a)',IOSTAT=ios,ERR=18) LCMDFL(1:lnblnk(LCMDFL))
+        CALL ERPFREE(IFCFG,ISTAT)
+        call FINDFIL(LCFGF,XST)
       endif
 
 C If not initially found check for if root name only given. Parse
@@ -4108,20 +4108,6 @@ C Error messages.
       endif
       IER=1
       return
-   16 if(IOS.eq.2)then
-        CALL USRMSG('No permission to write outs',outs,'W')
-      else
-        CALL USRMSG('String write error in outs',outs,'W')
-      endif
-      IER=1
-      return
-   17 if(IOS.eq.2)then
-        CALL LUSRMSG('No permission to write t144',t144,'W')
-      else
-        CALL LUSRMSG('String write error in t144',t144,'W')
-      endif
-      IER=1
-      return
    18 if(IOS.eq.2)then
         CALL LUSRMSG('No permission to write LCFGF',LCFGF,'W')
       else
@@ -4148,7 +4134,7 @@ C Error messages.
 
 C ***** visualz
 C visualz drives visualisation process - hidden line or raytracing.
-C << this duplicates opts within the model export facility >>
+C It duplicates opts within the model export facility.
 C << it would be clearer if all model I/O happened there >>
       subroutine visualz(act,ier)
 #include "building.h"
@@ -4159,18 +4145,20 @@ C << it would be clearer if all model I/O happened there >>
       common/OUTIN/IUOUT,IUIN
       common/FILEP/IFIL
       common/appw/iappw,iappx,iappy
+      integer iappw,iappx,iappy
       integer childterminal  ! picks up mmod from starting of prj
       common/childt/childterminal
       common/user/browse
       character path*72
       common/rpath/path
-      logical concat,OK,DOK,browse,XST,deref,unixok
+      logical concat,OK,DOK,browse,XST,deref,unixok,modcfg
       character dradcf*72,OUTSTR*124,outs*124,outs248*248
       character dvfil*72,ltmp*72
-      character doit*144,tmode*8,act*1
+      character doit*248,tmode*8,act*1
       character fs*1
       character longtfile*144,longtfiledos*144,L144*144,lltmp*144
       character brw*8   ! to signal model is being browsed
+      integer iappwpc ! application height as % of nominal size
 
 C For help messages
       character helpinsub*24 ! subroutine name
@@ -4193,22 +4181,17 @@ C Set folder separator (fs) to \ or / as required.
   11  if(act.eq.'V')then
 
 C Construct a 'VIEWER' format file.  First get file name. Take
-C into account the current model path and whether it is in
-C a remote folder.
-        iw=0
-        if(path(1:2).ne.'./'.and.path(1:2).ne.'  ')then
-          write(outs,'(A,A)') 'The current path is: ',path
-          call edisp(iuout,outs)
-          CALL EASKAB('The model is in a remote folder.',
-     &    'Place exported file in:','current path','local folder',
-     &    IW,nbhelp)
-        endif
-        if(iw.eq.1)then
-          write(L144,'(4a)') path(1:lnblnk(path)),fs,
-     &      LCFGF(1:lnblnk(LCFGF)),'.vew'
+C into account the application start and model path.
+        if(pwdtocfg(1:1).eq.'!')then
+          write(L144,'(4a)')path(1:lnblnk(path)),fs,
+     &      cfgroot(1:lnblnk(cfgroot)),'.vew'
         else
-          write(L144,'(3a)') './',LCFGF(1:lnblnk(LCFGF)),'.vew'
+          write(L144,'(6a)') pwdinitial(1:lnpwdi),fs,
+     &      pwdtocfg(1:lnblnk(pwdtocfg)),fs,
+     &      cfgroot(1:lnblnk(cfgroot)),'.vew'
         endif
+C Debug write(6,*) 'c l144 is ',L144(1:lnblnk(L144))
+
         dvfil='std.vew'
         doit = ' '
 
@@ -4259,9 +4242,14 @@ C Get logical name of child process terminal type and create a
 C string to drive VIEWER.
           doit = ' '
           call terminalmode(childterminal,tmode)
-          if(iappw.gt.0.and.iappw.le.200)then
+          if(iappw.eq.630)then
+            iappwpc=100
+          else
+            iappwpc=nint(100.0*(real(iappw)/630.0))  ! reconstitute %
+          endif
+          if(iappwpc.gt.0.and.iappwpc.le.200)then
             write(doit,'(3a,3i4,3a)') 'viewer -mode ',tmode,
-     &        ' -s ',iappw,iappx+25,iappy+20,' -file ',
+     &        ' -s ',iappwpc,iappx+25,iappy+20,' -file ',
      &        lltmp(1:lnblnk(lltmp)),' &'
           else
             write(doit,'(5a)') 'viewer -mode ',tmode,
@@ -4325,9 +4313,14 @@ C to include the path and create a string to drive e2r.
 
 C If prj initial size is a % of default, pass this on to child with
 C an offset from prj start position.
-        if(iappw.gt.0.and.iappw.le.200)then
+        if(iappw.eq.630)then
+          iappwpc=100
+        else
+          iappwpc=nint(100.0*(real(iappw)/630.0))  ! reconstitute %
+        endif
+        if(iappwpc.gt.0.and.iappwpc.le.200)then
           write(doit,'(3a,3i4,4a)') 'e2r -mode ',tmode,
-     &      ' -s ',iappw,iappx+35,iappy+40,' -file ',
+     &      ' -s ',iappwpc,iappx+35,iappy+40,' -file ',
      &      longtfile(1:lnblnk(longtfile)),brw,' &'
         else
           write(doit,'(6a)') 'e2r -mode ',tmode,

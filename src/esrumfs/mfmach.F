@@ -110,6 +110,7 @@ C     RESRMX - maximum relative residual (relative to SAFLW for NDWREL)
       COMMON/ACT/ACTCNN(MCNN)
       COMMON/MFLOW1/NNOD,NCMP,NCNN
       COMMON/MFLOW3/NDFLD(MNOD),NDTYP(MNOD),HNOD(MNOD),SUPNOD(MNOD,MNDS)
+      COMMON/MFLOW5/RHON(MNOD)
       COMMON/MFLOW9/ITPCMP(MCMP),ISDCMP(MCMP),ISDCNN(MCMP),
      &              SUPCMP(MCMP,MCMS)
       COMMON/MFLW10/NODPS(MCNN),HGTPS(MCNN),NODNE(MCNN),HGTNE(MCNN),
@@ -123,6 +124,10 @@ C     RESRMX - maximum relative residual (relative to SAFLW for NDWREL)
       COMMON/CONTM0/NCONTM,NOCNTM,CONTMNAM(MCONTM)
       COMMON/mfctl/ctlpos(MCNN)
       common/btime/btimep,btimef
+      COMMON/zfluid/znotair(mcom),zfldK,zfldD,zfldC,zfldA,
+     &              zSWAp(mcom),zSWAf(mcom)
+      COMMON/AFN/IAIRN,LAPROB,ICAAS(MCOM)
+      COMMON/C1/NCOMP,NCON
 
       PARAMETER       (SMALL=1.0E-15)
       PARAMETER       (RLARG=1.0E+15)
@@ -132,10 +137,12 @@ C     RESRMX - maximum relative residual (relative to SAFLW for NDWREL)
       DOUBLE PRECISION DFDDP,DP,FLW1old(MCNN),FLW2old(MCNN)
       DOUBLE PRECISION FLWA,HPJMTX(MNOD,MNOD),HPRC(MNOD)
       DOUBLE PRECISION PJMTX(MNOD,MNOD),PRC(MNOD),RELAX(MNOD),RHS(MNOD)
-      DOUBLE PRECISION RESR,RESAMX,RESRMX
-      character outs*124,outw*254
+      DOUBLE PRECISION RESR,RESAMX,RESRMX,RESID_temp
+      character outs*124,outw*248
       CHARACTER NDNAM*12,CONTMNAM*12
-      LOGICAL ACTCNN,close
+      LOGICAL ACTCNN,close,znotair
+      character LAPROB*72
+      integer ncomp,ncon
 
       IOK=1
       NDWABS=1
@@ -330,10 +337,22 @@ C Make sure that: SMALL < | RESID / SAFLW | < RLARG
           RESR=RESID(INOD)/SAFLW(INOD)
         END IF
 
+C << TEMPORARY >>
+C Instantiate and correct absolute residual for non-air fluids.
+        DO ICOMP=1,NCOMP
+          IF(ICAAS(ICOMP).eq.INOD)THEN
+            IF (znotair(ICOMP)) THEN
+              RESID_temp=RESID(INOD)*1.177/zfldD
+            ELSE
+              RESID_temp=RESID(INOD)
+            ENDIF
+          ENDIF
+        ENDDO
+
 C Update worst node values if this is the worst node up to now
-        IF(DABS(RESID(INOD)).GT.DABS(RESAMX)) THEN
+        IF(DABS(RESID_temp).GT.DABS(RESAMX)) THEN
           NDWABS=INOD
-          RESAMX=RESID(INOD)
+          RESAMX=RESID_temp
         END IF
         IF(DABS(RESR).GT.DABS(RESRMX)) THEN
           NDWREL=INOD
@@ -372,7 +391,7 @@ C Write trace output if applicable
 
 C If RESRMX or RESID(NDWABS) within tolerance, stop iteration
       IF(DABS(RESRMX).LE.FERREL.OR.
-     &   DABS(RESID(NDWABS)).LE.FERMFL) GOTO 100
+     &   DABS(RESAMX).LE.FERMFL)GOTO 100
 
 C If maximum number of iterations reached, IOK=0 and stop iteration
       IF(ITER.GE.MAXITF) THEN
@@ -386,13 +405,14 @@ C Start with generating more trace output if applicable
         call edisp(IMFTU,' PJMTX matrix')
         DO 60 I=1,NNOD
           WRITE(outw,*) (PJMTX(I,J),J=1,NNOD)
-          call edisp(IMFTU,outw)
+          call edisp248(IMFTU,outw)
           DO 60 J=1,NNOD
             HPJMTX(I,J)=PJMTX(I,J)
    60   CONTINUE
         call edisp(IMFTU,' RESID vector')
         WRITE(outw,*) (RESID(I),I=1,NNOD)
-        call edisp(IMFTU,outw)
+        call edisp248(IMFTU,outw)
+        
       END IF
 
 C Set right hand side of matrix equation {PJMTX} {PRC} = {RESID}
@@ -448,7 +468,7 @@ C If trace output then dump solution vector
       IF(MFTRAC.GE.3) THEN
          call edisp(IMFTU,'  PRC solution vector')
          WRITE(outw,*) (PRC(I),I=1,NNOD)
-         call edisp(IMFTU,outw)
+         call edisp248(IMFTU,outw)
 
 C Dump {RHS} recalculated from {HPJMTX}*{PRC}
          WRITE(IMFTU,*) ' RHS vector recalculated from PJMTX * PRC'
@@ -458,7 +478,7 @@ C Dump {RHS} recalculated from {HPJMTX}*{PRC}
          RHS(I)=RHS(I)+HPJMTX(I,J)*PRC(J)
    65    CONTINUE
          WRITE(outw,*) (RHS(I),I=1,NNOD)
-         call edisp(IMFTU,outw)
+         call edisp248(IMFTU,outw)
       END IF
 
 C Revise pressure correction vector by Steffensen's method to

@@ -57,7 +57,12 @@ C  EASKSUR: Presents a list of surfaces in a zone IZONE.
 C  asksnode: Presents a list of layers/nodes within a surface.
 C  FLNAME: Provides a name for a defined file type.
 C  ZSID:   Returns a compact description in ZSDESC of the zone:surface.
-C ZNARLIST takes an array (list) of zone indices and returns descr string.
+C ZNARLIST: Takes an array (list) of zone indices and returns descr string.
+C discovercfg: Provides a list of model cfg files within a passed folder
+C              and allows user to select passing back full path & name.
+C FDPWDTOCFG: Figures out the path between where an application was started
+C             and the model cfg folder (pwdtocfg).
+
 
 C ************* CLRPRB
 C CLRPRB clears the zone based memory in preparation for reading
@@ -2431,13 +2436,13 @@ C If error, return transformed points same as initial.
         CALL EDISP(ITRU,' Transforming coords: ')
         ipos=1
         call arlist(ipos,NB,XT,MV,'S',out96,loutlen,itrunc)
-        WRITE(outs,'(a,20F7.3)') ' X coords:',out96(1:loutlen)
+        WRITE(outs,'(a,a)') ' X coords:',out96(1:loutlen)
         CALL EDISP(ITRU,outs)
         call arlist(ipos,NB,YT,MV,'S',out96,loutlen,itrunc)
-        WRITE(outs,'(a,20F7.3)') ' Y coords:',out96(1:loutlen)
+        WRITE(outs,'(a,a)') ' Y coords:',out96(1:loutlen)
         CALL EDISP(ITRU,outs)
         call arlist(ipos,NB,ZT,MV,'S',out96,loutlen,itrunc)
-        WRITE(outs,'(a,20F7.3)') ' Z coords:',out96(1:loutlen)
+        WRITE(outs,'(a,a)') ' Z coords:',out96(1:loutlen)
         CALL EDISP(ITRU,outs)
       ENDIF
 
@@ -4229,6 +4234,259 @@ C Trap for I/O errors.
       ierr=1
       return
       END
+
+C -------- discovercfg
+C Discovercfg provides a list of model cfg files within a passed
+C folder and returns full path of selected in sfile. If user did
+C not select ier is -1, if there were no matching files ier is -2
+C and ier = 1 was an error in composition. 
+      subroutine discovercfg(subpath,sfile,ier)
+#include "espriou.h"
+#include "building.h"
+#include "model.h"
+      character subpath*84 ! folder to scan for cfg
+      character sfile*144  ! full path of cfg file name selected
+
+C Local variables.
+      character action*3,fs*1
+      character outs*124,t144*144
+      logical unixok
+
+      common/OUTIN/IUOUT,IUIN
+    
+      integer nboflistf  ! how many folders or file names passed
+      integer listfoldertype   ! zero if unused one if folder two if file
+      integer lenlistfolder    ! width of each string
+      character*72 listfolder  ! array of folder or file names
+      common/listfold/nboflistf,listfoldertype(MFFOLD),
+     &                lenlistfolder(MFFOLD),listfolder(MFFOLD)
+
+      dimension ivlist(MFFOLD)
+      character*70 listfc70(MFFOLD)
+      character*70 listfc70s(MFFOLD)
+      character*72 listfolders(MFFOLD)  ! for sorted
+      integer lenlistfolders(MFFOLD)    ! for sorted
+
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='discovercfg'  ! set for subroutine
+
+C Echo search criteria.
+      write(outs,*,IOSTAT=ios,ERR=16) 'models in folder ',subpath
+      call edisp(iuout,outs)
+
+C Re-establish action and file separator prior to call to getfileslist.
+      action='cfg'
+      call isunix(unixok)
+      if(unixok)then
+        fs = char(47)
+      else
+        fs = char(92)
+      endif
+      call getfileslist(subpath,action,nlistf)
+      call printfileslist(outs,'p')
+
+C Try to use information gathered from file scan.
+      if(nlistf.gt.0)then
+        ix=1
+        do 76 ij=1,nlistf
+          listfc70(ij)=' '
+          lex=lenlistfolder(ij)
+          if(lex.gt.70) lex=70
+          if(lex.le.1)then
+            write(listfc70(ij),'(a)') '  '
+          else
+            write(listfc70(ij),'(a)') listfolder(ij)(1:lex)
+          endif
+          if(lex.gt.maxw) maxw=lex  ! ensure widest string can be displayed
+  76    continue
+        if(maxw.gt.70) maxw=70  ! ensure list fits
+        if(maxw.lt.15) maxw=15  ! ensure title can be seen
+
+C Sort both file name lists.
+        do ij=1,nlistf
+          listfc70s(ij)=listfc70(ij)
+          listfolders(ij)=listfolder(ij)
+        enddo
+        call SORTSTRA(listfc70s,nlistf)
+        call SORTSTRA(listfolders,nlistf)
+        do ij=1,nlistf
+C          write(6,*) ij,' ',listfc70s(ij)
+          lenlistfolders(ij)=lnblnk(listfolders(ij))
+        enddo
+
+C Select from the list. If prj was started in model cfg folder
+C (pwdtocfg = !) write with pwdinitial, otherwise also include
+C the pwdtocfg part of the path.
+        write(6,*) 'pwdtocfg is ',pwdtocfg
+        CALL EPICKS(IX,ivlist,outs,' ',
+     &    maxw,nboflistf,listfc70s,'Available files',IER,nbhelp)
+        if(ix.eq.1)then
+          if(pwdtocfg(1:1).eq.'!')then
+            write(sfile,'(3a)',IOSTAT=ios,ERR=17) 
+     &        pwdinitial(1:lnpwdi),fs,
+     &        listfolders(ivlist(ix))(1:lenlistfolders(ivlist(ix)))
+          else
+            write(sfile,'(5a)',IOSTAT=ios,ERR=17) 
+     &        pwdinitial(1:lnpwdi),fs,pwdtocfg(1:lnpwdc),fs,
+     &        listfolders(ivlist(ix))(1:lenlistfolders(ivlist(ix)))
+          endif
+        else
+          sfile='UNKNOWN'
+          ier=-1   ! user did not select
+        endif
+      else
+        sfile='UNKNOWN'
+        ier=-2   ! no matching files found
+      endif
+
+C Debug.
+      write(6,*) 'sfile is ',sfile(1:lnblnk(sfile))
+      return
+
+C Error conditions.
+   16 if(IOS.eq.2)then
+        CALL USRMSG('No permission to write outs',outs,'W')
+      else
+        CALL USRMSG('String write error in outs',outs,'W')
+      endif
+      IER=1
+      return
+   17 if(IOS.eq.2)then
+        CALL LUSRMSG('No permission to write sfile',sfile,'W')
+      else
+        CALL LUSRMSG('String write error in sfile',sfile,'W')
+      endif
+      IER=1
+      return
+      end
+
+C ******* FDPWDTOCFG
+C FDPWDTOCFG: Given a file name (fstring) and using the current value
+C of pwdinitial (if applications have established this via a 
+C call usrdir(pwdinitial) as they start) then this checks if fstring
+C contains a (pwdtocfg) and a file name (filen). Begins with similar 
+C logic to fdroot from esru_lib.F and filen should be the same as
+C the file name returned in fdroot.  
+C fdpwdtocfg updates the common block variable pwdtocfg.
+
+C Ppath is returned for information purposes << consider removing this >>
+      SUBROUTINE fdpwdtocfg(fstring,ppath,filen)
+#include "espriou.h"
+#include "building.h"
+#include "model.h"
+
+      COMMON/OUTIN/IUOUT,IUIN
+      CHARACTER*(*) ppath,filen,fstring
+C      character fstring*72
+      character fs*1
+      character testpwdtocfg*72
+      logical unixok
+      integer ilbfstr  ! last actual char in fstring
+      integer ipos     ! the leftward moving character position
+      integer ilstr    ! declaired length of fstring
+      integer ilenfilen ! declaired length of filen to be returned
+      integer ilenpath ! declaired length of path to be returned
+
+C Set fileseparator depending on OS.
+      call isunix(unixok)
+      if(unixok)then
+        fs = char(47)
+      else
+        fs = char(92)
+      endif
+
+C Clear variables and get string lengths.
+      filen = ' '
+      ilbfstr = lnblnk(fstring)
+      ipos = ilbfstr
+      ilstr = LEN(fstring)
+      ilenfilen = LEN(filen)
+      ilenpath = LEN(ppath)
+
+C Loop backwards from last non-blank character until a separator is found.
+ 344  continue
+      ipos=ipos-1
+      if(fstring(ipos:ipos).eq.fs)then
+        filen = ' '
+        write(filen,'(a)',IOSTAT=IOS,ERR=1) fstring(ipos+1:ilbfstr)
+        ppath = ' '
+        if(ipos.gt.ilenpath)then
+          write(ppath,'(a)',IOSTAT=IOS,ERR=1) fstring(1:ilenpath)
+        else
+          write(ppath,'(a)',IOSTAT=IOS,ERR=1) fstring(1:ipos)
+        endif
+        continue
+      elseif(fstring(ipos:ipos).eq.'/')then
+        filen = ' '
+        write(filen,'(a)',IOSTAT=IOS,ERR=1) fstring(ipos+1:ilbfstr)
+        ppath = ' '
+        if(ipos.gt.ilenpath)then
+          write(ppath,'(a)',IOSTAT=IOS,ERR=1) fstring(1:ilenpath)
+        else
+          write(ppath,'(a)',IOSTAT=IOS,ERR=1) fstring(1:ipos)
+        endif
+        continue
+      else
+
+C Arrived at the first character. There have been no file separators
+C so filen is fstring (truncated if necessary) and the path becomes
+C the equivalent of where-i-am-now.
+        if(ipos.eq.1)then
+C          call edisp(iuout,'No folder separator found.')
+          if(ilstr.ge.ilenfilen)then
+            filen = ' '
+            write(filen,'(a)',IOSTAT=IOS,ERR=1)fstring(1:ilenfilen)
+            write(ppath,'(a1,a1)',IOSTAT=IOS,ERR=1) '.',fs
+            continue
+          elseif(ilstr.lt.ilenfilen)then
+            write(filen,'(a)')fstring(1:lnblnk(fstring))
+            write(ppath,'(a1,a1)',IOSTAT=IOS,ERR=1) '.',fs
+            continue
+          endif
+        elseif(ipos.gt.1)then
+          goto 344   ! read some more
+        endif
+      endif
+
+C Now see about comparing pwdinitial with the initial portion of
+C ppath to derive pwdtocfg. Start at left and work to the end of
+C pwdinitial looking for the same characters.
+      loop=0
+  345 continue
+      loop=loop+1
+      if(ppath(loop:loop).eq.pwdinitial(loop:loop))then
+        if(loop.lt.lnpwdi) goto 345
+        if(loop.eq.lnpwdi.and.ipos.gt.lnpwdi)then
+          write(pwdtocfg,'(a)') ppath(loop+1:ipos)
+          lnpwdc=lnblnk(pwdtocfg)
+          write(6,*) ipos,loop,lnpwdi,lnpwdc,ppath(1:lnblnk(ppath))
+          write(6,*) 'pwdtocfg ',pwdtocfg(1:lnblnk(pwdtocfg))
+        elseif(loop.eq.lnpwdi.and.ipos.eq.lnpwdi)then
+          write(pwdtocfg,'(a)') '!'
+        endif
+        return
+      else
+C << not sure >>
+      endif
+
+      return
+
+   1  if(IOS.eq.2)then
+        call edisp(iuout,
+     &  'fdpwdtocfg: permission error composing path or file.')
+        call edisp(iuout,fstring)
+      else
+        call edisp(iuout,
+     &    'fdpwdtocfg: error composing path or file from string.')
+        call edisp(iuout,fstring)
+      endif
+      return
+      end
+      
 
 C ******************** DeallocateAllArrays ****************************
 C *********************************************************************

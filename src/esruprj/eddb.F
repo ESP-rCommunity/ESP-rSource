@@ -1964,6 +1964,7 @@ C     if blank then no file name change implied.
 
       common/OUTIN/IUOUT,IUIN
       common/appw/iappw,iappx,iappy
+      integer iappw,iappx,iappy
       integer childterminal  ! picks up mmod from starting of prj
       common/childt/childterminal
       common/rpath/path
@@ -1978,6 +1979,7 @@ C      CHARACTER outs248*248
       LOGICAL CLKOK,OK,COPYDEF,MODDB,XST,DOK,concat
       character dinstpath*60,path*72,tmode*8
       character dirpath*72
+      integer iappwpc ! application %
 
 C Local strings for user selections dependent on graphic library.
       CHARACTER ZPDESC*25
@@ -2411,9 +2413,14 @@ C Get logical name of child process terminal type and create a string to drive p
         call tstamp('>','PRJ: start pdb')
         doit = ' '
         call terminalmode(childterminal,tmode)
-        if(iappw.gt.0.and.iappw.le.200)then
+        if(iappw.eq.630)then
+          iappwpc=100
+        else
+          iappwpc=nint(100.0*(real(iappw)/630.0))  ! reconstitute %
+        endif
+        if(iappwpc.gt.0.and.iappwpc.le.200)then
           write(doit,'(3a,3i4,3a)') 'pdb -mode ',tmode,
-     &      ' -s ',iappw,iappx+10,iappy+40,' -file ',
+     &      ' -s ',iappwpc,iappx+10,iappy+40,' -file ',
      &      longtfile(1:lnblnk(longtfile)),' &'
         else
           write(doit,'(5a)') 'pdb -mode ',tmode,
@@ -3898,6 +3905,7 @@ C espriou.h provides currentfile.
       COMMON/C1/NCOMP,NCON
 
       common/appw/iappw,iappx,iappy
+      integer iappw,iappx,iappy
       COMMON/PERC/ID1,IM1,IT1,ID2,IM2,IT2,IDS,IDF,INEW
       common/rpath/path
       COMMON/CLMDT1/CLMLOC
@@ -3926,6 +3934,7 @@ C Calendar.
       integer icreport  ! to signal that calendar has been updated.
       integer IDOL,IDAYNUM,IMTHNUM,IDWKNUM,IDTYY  ! for correcting calendar
       logical closelat,closelong,clkok,usercreatednew
+      integer iappwpc ! application %
 
 C For help messages
       character helpinsub*24 ! subroutine name
@@ -4044,9 +4053,14 @@ C << update to deal with dos paths >>
         elseif(ipathclim.eq.2)then
           longtfile=llclmdb
         endif
-        if(iappw.gt.0.and.iappw.le.200)then
+        if(iappw.eq.630)then
+          iappwpc=100
+        else
+          iappwpc=nint(100.0*(real(iappw)/630.0))  ! reconstitute %
+        endif
+        if(iappwpc.gt.0.and.iappwpc.le.200)then
           write(doit,'(3a,3i4,2a)') 'clm -mode ',tmode,
-     &        ' -s ',iappw,iappx+10,iappy+10,' -file ',
+     &        ' -s ',iappwpc,iappx+10,iappy+10,' -file ',
      &        longtfile(1:lnblnk(longtfile))
         else
           write(doit,'(4a)') 'clm -mode ',tmode,' -file ',
@@ -4634,9 +4648,14 @@ C Debug.
         elseif(ipathclim.eq.2)then
           longtfile=llclmdb
         endif
-        if(iappw.gt.0.and.iappw.le.200)then
+        if(iappw.eq.630)then
+          iappwpc=100
+        else
+          iappwpc=nint(100.0*(real(iappw)/630.0))  ! reconstitute %
+        endif
+        if(iappwpc.gt.0.and.iappwpc.le.200)then
           write(doit,'(3a,3i4,2a)') 'clm -mode ',tmode,
-     &      ' -s ',iappw,iappx+10,iappy+10,' -file ',
+     &      ' -s ',iappwpc,iappx+10,iappy+10,' -file ',
      &      longtfile(1:lnblnk(longtfile))
         else
           write(doit,'(4a)') 'clm -mode ',tmode,' -file ',
@@ -5017,6 +5036,7 @@ C is via a text editor.
       common/FILEP/IFIL
       common/OUTIN/IUOUT,IUIN
       common/appw/iappw,iappx,iappy
+      integer iappw,iappx,iappy
       integer childterminal  ! picks up mmod from starting of prj
       common/childt/childterminal
 
@@ -5034,6 +5054,7 @@ C      character path*72
       LOGICAL OK,COPYDEF,MODDB,XST,DOK,concat
       character dinstpath*60,dirpath*72
       character tmode*8
+      integer iappwpc ! application %
 
 C Local strings for user selections dependent on graphic library.
       integer lndbp   ! for length of standard path
@@ -5229,9 +5250,14 @@ C reflect it is local.
 C Start the mould utility.
         doit = ' '
         call terminalmode(childterminal,tmode)
-        if(iappw.gt.0.and.iappw.le.200)then
+        if(iappw.eq.630)then
+          iappwpc=100
+        else
+          iappwpc=nint(100.0*(real(iappw)/630.0))  ! reconstitute %
+        endif
+        if(iappwpc.gt.0.and.iappwpc.le.200)then
           write(doit,'(3a,3i4,3a)') 'mld -mode ',tmode,
-     &      ' -s ',iappw,iappx+10,iappy+40,' -file ',
+     &      ' -s ',iappwpc,iappx+10,iappy+40,' -file ',
      &      longtfile(1:lnblnk(longtfile)),' &'
         else
           write(doit,'(5a)') 'mld -mode ',tmode,

@@ -2065,10 +2065,12 @@ C Ask for node name if flow network is present
           elseif(TTYPE(it)(1:8).eq.'CTRLCAP')then
 
 C Ask which zone is linked to charging schedule
+            IC=-1
+ 356        izdef=0
             call askzone(ic,izdef,
      &      ' Related zone for grid charging schedule?',
      &      'Related zone','-','Charging schedule for which zone?',ier)
-            IF(IC.EQ.0.OR.IC.EQ.-1)GOTO 354
+            IF(IC.EQ.0.OR.IC.EQ.-1)GOTO 356
             write(DBZN(ITE),'(a)') zname(IC)(1:12)
             DBSN(ITE)='ALL' 
           else

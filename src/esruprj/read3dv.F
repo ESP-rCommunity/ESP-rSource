@@ -217,10 +217,17 @@ C Note: temp character t13 is 1 char wider than zname().
           ier=-6
         endif
         call u2pixel(COG3(1),COG3(2),iix,iiy)
-        write(t13,'(A)')zname(nznog(IZ))
+
+C Note call to textpixwidth corrupts t13 so need to
+C re-create t13 after textpixwidth call.
+        t13=' '
+        write(t13,'(A)')zname(nznog(IZ))(1:lnzname(nznog(IZ)))
         call textpixwidth(t13,ipixw)
+        IF(IFS.GT.0)CALL winfnt(NAMEFT+1)
+        write(t13,'(A)')zname(nznog(IZ))(1:lnzname(nznog(IZ)))
         iid4 = iix - (ipixw/2)
         CALL wstxpt(iid4,iiy,t13)
+        IF(IFS.GT.0)CALL winfnt(IFS)
       ENDIF
 
 C << how to treat errors? >>

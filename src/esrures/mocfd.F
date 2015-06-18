@@ -32,7 +32,7 @@ C MOCFD
       COMMON/FILEP/IFIL
       common/CFDSV/IRECPC,ICFDSV,IEQSV(5+MCTM)
       common/EQTION3/CALLMA(MNZ),CALPOL(MCTM,MNZ),POLNAM(MCTM,MNZ),NCTM,
-     &      JHUMINDX
+     &      JHUMINDX,URFC(MCTM)
 
       character LTMP*72,POLNAM*12
       character path*72,LCMDFL*144,ltmpc*144
@@ -146,7 +146,7 @@ C RCFDLIBH - read CFD library
       COMMON/cfdsmper/ICDYS,ICDYF,CFTS,CFTF
       COMMON/cfdhsh/NCFDSZ,NRCFDOM(MNZ)
       common/EQTION3/CALLMA(MNZ),CALPOL(MCTM,MNZ),POLNAM(MCTM,MNZ),NCTM,
-     &      JHUMINDX
+     &      JHUMINDX,URFC(MCTM)
       common/CFDSV/IRECPC,ICFDSV,IEQSV(5+MCTM)
       
 C NCDOM - number of CFD domains
@@ -886,7 +886,7 @@ C      use first timestep of output period)
      1             RESORT,NSWPT,URFT,FSDTT,PRANDL,PFUN
       COMMON/LOCAGE/AGEf(ntcelx,ntcely,ntcelz) 
       common/EQTION3/CALLMA(MNZ),CALPOL(MCTM,MNZ),POLNAM(MCTM,MNZ),NCTM,
-     &      JHUMINDX
+     &      JHUMINDX,URFC(MCTM)
       COMMON/CFDPOL/POLCONCp(MCTM,ntcelx,ntcely,ntcelz),
      1              POLCONCf(MCTM,ntcelx,ntcely,ntcelz)
 

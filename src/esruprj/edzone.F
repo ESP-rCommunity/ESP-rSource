@@ -1865,6 +1865,8 @@ C     = 'in '  interactive new
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
       common/appw/iappw,iappx,iappy
+      integer iappw,iappx,iappy
+      integer iappwpc ! application %
 
       CHARACTER ZN*12,longtfile*144,longtfiledos*144
       character TMODE*8,outs*248,DOIT*248
@@ -1904,6 +1906,13 @@ C and change any / to \.
         call cmdfiledos(longtfile,longtfiledos,ier)
         longtfile=' '
         longtfile=longtfiledos
+      endif
+
+C Get application % nopminal size.
+      if(iappw.eq.630)then
+        iappwpc=100
+      else
+        iappwpc=nint(100.0*(real(iappw)/630.0))  ! reconstitute %
       endif
 
       if(act(1:3).eq.'sr ')then
@@ -1950,9 +1959,9 @@ C Interactive recalculate of zone shading if there is an existing
 C shading file. If prj initial size is a % of default pass this\
 C on to child with an offset from prj start position.
         if(XST)then
-          if(iappw.gt.0.and.iappw.le.200)then
+          if(iappwpc.gt.0.and.iappwpc.le.200)then
             write(doit,'(3a,3i4,5a)') 'ish -mode ',
-     &          tmode,' -s ',iappw,iappx+15,iappy+50,' -file ',
+     &          tmode,' -s ',iappwpc,iappx+15,iappy+50,' -file ',
      &          longtfile(1:lnblnk(longtfile)),' -zone ',
      &          ZN(1:lnz),' -act recalculate'
           else
@@ -1974,9 +1983,9 @@ C on to child with an offset from prj start position.
 C Interactive recalculate of zone shading without checking if
 C a shading file exists. If prj initial size is a % of default
 C pass this on to child with an offset from prj start position.
-        if(iappw.gt.0.and.iappw.le.200)then
+        if(iappwpc.gt.0.and.iappwpc.le.200)then
           write(doit,'(3a,3i4,5a)') 'ish -mode ',
-     &        tmode,' -s ',iappw,iappx+15,iappy+50,' -file ',
+     &        tmode,' -s ',iappwpc,iappx+15,iappy+50,' -file ',
      &        longtfile(1:lnblnk(longtfile)),' -zone ',
      &        ZN(1:lnz),' -act recalculate'
         else
@@ -1993,9 +2002,9 @@ C pass this on to child with an offset from prj start position.
       elseif(act(1:3).eq.'in ')then
 
 C Interactive shading calculation for a new shading database.
-        if(iappw.gt.0.and.iappw.le.200)then
+        if(iappwpc.gt.0.and.iappwpc.le.200)then
           write(doit,'(3a,3i4,4a)') 'ish -mode ',tmode,
-     &      ' -s ',iappw,iappx+15,iappy+50,' -file ',
+     &      ' -s ',iappwpc,iappx+15,iappy+50,' -file ',
      &      longtfile(:lnblnk(longtfile)),' -zone ',
      &      ZN(1:lnblnk(ZN))
         else

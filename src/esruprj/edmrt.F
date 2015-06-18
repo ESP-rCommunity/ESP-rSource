@@ -53,6 +53,8 @@ C will have been defined prior to calling edmrt.
      &            DYC(MCUB),DZC(MCUB),CANG(MCUB),IVFOK(MCUB),CUBN(MCUB)
       COMMON/MRTF/FFL(MCUB,6,MSM),VEWF(MS,MS)
       common/appw/iappw,iappx,iappy
+      integer iappw,iappx,iappy
+      integer iappwpc ! application %
 
       DIMENSION VERT(35)
       DIMENSION SNA(MS),PAZI(MS),PELV(MS)
@@ -139,6 +141,8 @@ C << update logic to use alternative source for ZOA rather than call zinfo >>
   111 CONTINUE
       if(silent)then
         if(IVF(ICOMP).eq.1)then
+
+C There should be an existing viewfactor file.
           call FINDFIL(LVIEW(ICOMP),XST)
           if(XST)then
             call edisp(iuout,' Opened existing viewfactor file.')
@@ -160,6 +164,8 @@ C << update logic to use alternative source for ZOA rather than call zinfo >>
             endif
           endif
         elseif(IVF(ICOMP).eq.0)then
+
+C Need to create a boilerplat file.
           VFILE=LVIEW(ICOMP)
           CALL usrmsg('Creating initial viewfactor file...',vfile,'-')
           CALL EMKMRT(LVIEW(ICOMP),LGEOM(ICOMP),NZSUR(ICOMP),IUF,
@@ -202,9 +208,14 @@ C and change any / to \.
 
 C If prj initial size is a % of default pass this on to child with
 C an offset from prj start position.
-          if(iappw.gt.0.and.iappw.le.200)then
+          if(iappw.eq.630)then
+            iappwpc=100
+          else
+            iappwpc=nint(100.0*(real(iappw)/630.0))  ! reconstitute %
+          endif
+          if(iappwpc.gt.0.and.iappwpc.le.200)then
             write(doit,'(3a,3i4,4a)') 'espvwf -mode ',tmode,
-     &        ' -s ',iappw,iappx+20,iappy+30,' -file ',
+     &        ' -s ',iappwpc,iappx+20,iappy+30,' -file ',
      &        longtfile(:lnblnk(longtfile)),' -zone ',ZN(1:lnblnk(ZN))
           else
             write(doit,'(6a)') 'espvwf -mode ',tmode,
@@ -546,9 +557,14 @@ C and change any / to \.
 
 C If prj initial size is a % of default pass this on to child with
 C an offset from prj start position.
-          if(iappw.gt.0.and.iappw.le.200)then
+          if(iappw.eq.630)then
+            iappwpc=100
+          else
+            iappwpc=nint(100.0*(real(iappw)/630.0))  ! reconstitute %
+          endif
+          if(iappwpc.gt.0.and.iappwpc.le.200)then
             write(doit,'(3a,3i4,5a)') 'espvwf -mode ',tmode,
-     &        ' -s ',iappw,iappx+20,iappy+30,' -file ',
+     &        ' -s ',iappwpc,iappx+20,iappy+30,' -file ',
      &        longtfile(:lnblnk(longtfile)),' -zone ',ZN(1:lnblnk(ZN)),
      &        ' &'
           else

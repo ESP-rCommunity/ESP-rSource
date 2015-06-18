@@ -70,7 +70,7 @@ C CFD common blocks.
       common/param2/TITLE(MNZ),CFTRFL(MNZ),LPHI(MNZ)
       COMMON/SIMT/TSTEP,NSINC
       COMMON/ICFNOD/ICFD,ICP
-      COMMON/ICFCHN/ICFMON,ICFTMP,ICFLIB
+      COMMON/ICFCHN/ICFMON(MNZ),ICFTMP,ICFLIB
 
 C Flow visualization common blocks.
       COMMON/VISFIL/LVEC,LBIT
@@ -98,9 +98,22 @@ C Name of current application
       common/APPNAME/cAppName
       character cAppName*12
 
-      CHARACTER*24 ITEM(10)
+C For number of openings NOPEN
+      COMMON/NDMAP/NOPEN(MNZ),MFNODE(MCFND,MNZ),IOPENi(MCFND,MNZ),
+     &             IOPENf(MCFND,MNZ),JOPENi(MCFND,MNZ),
+     &             JOPENf(MCFND,MNZ),KOPENi(MCFND,MNZ),
+     &             KOPENf(MCFND,MNZ),FIXM(MCFND,MNZ),
+     &             FIXT(MCFND,MNZ),FIXC(MCFND,MNZ),
+     &             FIXK(MCFND,MNZ),FIXE(MCFND,MNZ),
+     &             IWOPEN(MCFND,MNZ),ICFDCN(MCFND,MNZ),
+     &             ICNACT(MCFND,MNZ),IVOLN(MCFND,MNZ)
+
+C Saved state of the visualisation
+      COMMON/CFDVIS/ISHSB,ISHAO,IFACES,ISHBLK
+
+      CHARACTER*24 ITEM(11)
       CHARACTER inf*144,LCFD*72,DFCFD*72,Lflpar*72
-      character path*72,longtfile*144
+      character path*72,longtfile*144,ETEXT*82
       CHARACTER doit*248,tmode*8,outs*124,fs*1,outstr*124
       CHARACTER*72 TITLE,CFTRFL,LPHI,RESFL,WORD
       integer islice,jslice,kslice
@@ -120,6 +133,7 @@ C Name of current application
       integer iglib   ! if 1 then X11, if 2 then GTK, if 3 then text only.
       integer NITMS,INO,INOt,INO1,INO2  ! max items and current menu item
       integer itplots
+      integer ISHSB,ISHAO,IFACES
 
 C For help messages
       character helpinsub*24 ! subroutine name
@@ -131,10 +145,13 @@ C For help messages
       integer iigl,iigr,iigt,iigb,iigw,iigwh
       integer iiw1,iiw2,iiw3,iiw4,iimenu
       integer iicapture,iiazi    ! to pass to updcapt updazi
+      integer iside,isize,ifont
+
 #else
       integer*8 iigl,iigr,iigt,iigb,iigw,iigwh
       integer*8 iiw1,iiw2,iiw3,iiw4,iimenu
       integer*8 iicapture,iiazi    ! to pass to updcapt updazi
+      integer*8 iside,isize,ifont
 #endif
 
 C Clear 'conflated only' commons.
@@ -147,6 +164,11 @@ C Clear 'conflated only' commons.
 
 C Set defaults.
       GGDH=.false.
+
+C defaults for visualisation
+      ISHSB=1
+      ISHAO=1
+      IFACES=1
 
 C Clear all arrays.
       call ezero
@@ -176,6 +198,10 @@ C Default image format is 2d screen plot.
 
 C Default SIMOK: simulation failed.
       SIMOK=.FALSE.
+
+C CFD component number and building/mass flow component.
+      ICFD=1
+      ICP=1
 
 C File units.
       IUOUT=6
@@ -393,6 +419,9 @@ C return to the main menu.
       XST=.FALSE.
       INQUIRE (FILE=LCFD(1),EXIST=XST)
       IF(XST)THEN
+C Set currentfile
+        write(currentfile,'(a)')LCFD(1)(1:LNBLNK(LCFD(1)))
+
         CALL EFOPSEQ(IFL,LCFD(1),1,IER)
 
 C Only one zone possible so set IZ to 1.
@@ -400,7 +429,7 @@ C Only one zone possible so set IZ to 1.
         CALL STRIPC(IFL,OUTSTR,0,ND,1,'dfd line 1',IER)
         if(OUTSTR(1:7).eq.'*DFS V2')then
           CALL ERPFREE(IFL,ISTAT)
-          call DFDREAD(IZ,2,iuout,IER)
+          call DFDREAD(IZ,0,iuout,IER)
         elseif(OUTSTR(1:15).eq.'DFS DESCRIPTION')then
           CALL ERPFREE(IFL,ISTAT)
           CALL EFOPSEQ(IFL,LCFD(1),1,IER)
@@ -415,11 +444,15 @@ C plot grid.
         CALL INICNT
         CALL GRID(ier)
         call VGRID3D('---','xyz',iz)
-        call VSB3D(0)
-        call VAO3D(0)
+        call VSB3D(0,iz)
+        call VAO3D(0,iz)
       ELSE
         INPOK=.FALSE.
       ENDIF
+
+C Initialise gridding parameters
+      CALL INICNT
+      CALL GRID(ier)
 
 C Let the user pick a menu item.
    10 INO=-4
@@ -431,12 +464,44 @@ C Let the user pick a menu item.
       ITEM(6) =' ____________________'
       ITEM(7) ='e Results analysis   '
       ITEM(8) =' ____________________'
-      ITEM(9) ='? Help '
-      ITEM(10)='- Quit '
-      NITMS=10
+      ITEM(9) ='f Model details      '
+      ITEM(10) ='? Help '
+      ITEM(11)='- Quit '
+      NITMS=11
 
 C Use askabout to instanciate the initial help messages (2nd parameter is one).
       call askabout('dfs ',1)
+
+C Plot grid
+      IF(MMOD.EQ.8)THEN
+        if(abs(IFACES).eq.1)then
+          call VGRID3D('---','xyz',iz)
+        elseif(abs(IFACES).eq.2)then
+          call VGRID3D('---','xzg',iz)
+        elseif(abs(IFACES).eq.3)then
+          call VGRID3D('---','yzg',iz)
+        elseif(abs(IFACES).eq.4)then
+          call VGRID3D('---','xyg',iz)
+        endif
+        if (ISHSB.eq.1) then
+          call VSB3D(0,IZ)
+        endif
+        if (ISHAO.eq.1) then
+          do 765 iaop=1,NOPEN(IZ)
+            call VAO3D(iaop,iz)
+  765     continue
+c Comment the above 3 lines and un-comment the line below
+c to remove bold lines around openings
+c        call VAO3D(0,iz))        
+        endif
+      
+        WRITE(etext,'(2A)')'Model: ',
+     &    TITLE(IZ)(1:lnblnk(TITLE(IZ)))
+        iside=1
+        isize=1
+        ifont=1
+        call viewtext(etext,iside,isize,ifont)
+      ENDIF
 
       CALL EMENU(' dfs',ITEM,NITMS,INO)
       IF(INO.EQ.1)THEN
@@ -456,6 +521,7 @@ C << Note: array index 1 is hard coded below! >>
           CALL EDISP(IUOUT,'Domain flow definition file not found. ')
           GOTO 289
         else
+          write(currentfile,'(a)')LCFD(1)(1:LNBLNK(LCFD(1)))
           CALL EFOPSEQ(IFL,LCFD(1),1,IER)
 
 C Only one zone possible so set IZ to 1.
@@ -463,7 +529,7 @@ C Only one zone possible so set IZ to 1.
           CALL STRIPC(IFL,OUTSTR,0,ND,1,'dfd line 1',IER)
           if(OUTSTR(1:7).eq.'*DFS V2')then
             CALL ERPFREE(IFL,ISTAT)
-            call DFDREAD(IZ,2,iuout,IER)
+            call DFDREAD(IZ,0,iuout,IER)
           elseif(OUTSTR(1:15).eq.'DFS DESCRIPTION')then
             CALL ERPFREE(IFL,ISTAT)
             CALL EFOPSEQ(IFL,LCFD(1),1,IER)
@@ -473,13 +539,6 @@ C Only one zone possible so set IZ to 1.
         ENDIF
         IF(IER.EQ.0)THEN
           INPOK=.TRUE.
-
-C plot grid.
-          CALL INICNT
-          CALL GRID(ier)
-          call VGRID3D('---','xyz',iz)
-          call VSB3D(0)
-          call VAO3D(0)
         ELSE
           INPOK=.FALSE.
         ENDIF
@@ -556,24 +615,31 @@ C Setup and pass in parameters to win3d.
           igw=int(iigw); igwh=int(iigwh)
           call startbuffer()
         endif
-        CALL EASKAB('  ','What kind of simulation is?',
-     &    'Steady','Transient',IW,nbhelp)
-        IF(IW.EQ.1)then
-          TIMAX=1.0E20
-          TSTEP=1.0E20
-          GOTO 60
-        ENDIF
-   50   V=TIMAX/3600.0
-        CALL EASKR(V,'  ','Simulation period (h) ? ',
-     &    1E-5,'F',0.0,'-',24.0,'Simulation period',IER,nbhelp)
-        IF(IER.NE.0) GOTO 50
-        TIMAX=V*3600.0
 
-   51   V=TSTEP/3600.0
-        CALL EASKR(V,'  ','Simulation time-step (h) ? ',
-     &    1E-6,'F',TIMAX,'F',1.0,'Simulation time-step',IER,nbhelp)
-        IF(IER.NE.0) GOTO 51
-        TSTEP=V*3600.0
+C Asking user about steady or transient is confusing as the
+C transient option is the same thing over and over. Hide this
+C option as it might only be of interest to experts.
+        TIMAX=1.0E20
+        TSTEP=1.0E20
+
+C        CALL EASKAB('  ','What kind of simulation is?',
+C     &    'Steady','Transient',IW,nbhelp)
+C        IF(IW.EQ.1)then
+C          TIMAX=1.0E20
+C          TSTEP=1.0E20
+C          GOTO 60
+C        ENDIF
+C   50   V=TIMAX/3600.0
+C        CALL EASKR(V,'  ','Simulation period (h) ? ',
+C     &    1E-5,'F',0.0,'-',24.0,'Simulation period',IER,nbhelp)
+C        IF(IER.NE.0) GOTO 50
+C        TIMAX=V*3600.0
+
+C   51   V=TSTEP/3600.0
+C        CALL EASKR(V,'  ','Simulation time-step (h) ? ',
+C     &    1E-6,'F',TIMAX,'F',1.0,'Simulation time-step',IER,nbhelp)
+C        IF(IER.NE.0) GOTO 51
+C        TSTEP=V*3600.0
 
    60   NSINC=0
         TIME=0.0
@@ -812,10 +878,58 @@ C Hard wire as elsewhere in dfs code for one esp-r thermal zone only.
         ENDIF
         GOTO 20
       ELSEIF(INO.EQ.9)THEN
+C Report model details by re-reading input file with trace output.
+        call usrmsg('Reporting details for model file: ',LCFD(1),'-')
+        CALL ERPFREE(IFL,ISTAT)
+        INQUIRE (FILE=LCFD(1),EXIST=XST)
+        IF(.NOT.XST)THEN
+          CALL EDISP(IUOUT,'  ')
+          CALL EDISP(IUOUT,'Domain flow definition file not defined. ')
+          CALL EDISP(IUOUT,
+     &                'Please choose a model file with menu option a.')
+          GOTO 10
+        else
+          write(currentfile,'(a)')LCFD(1)(1:LNBLNK(LCFD(1)))
+          CALL EFOPSEQ(IFL,LCFD(1),1,IER)
+
+C Only one zone possible so set IZ to 1.
+          IZ=1
+          CALL STRIPC(IFL,OUTSTR,0,ND,1,'dfd line 1',IER)
+          if(OUTSTR(1:7).eq.'*DFS V2')then
+            CALL ERPFREE(IFL,ISTAT)
+            call DFDREAD(IZ,2,iuout,IER)
+          elseif(OUTSTR(1:15).eq.'DFS DESCRIPTION')then
+            CALL ERPFREE(IFL,ISTAT)
+            CALL EFOPSEQ(IFL,LCFD(1),1,IER)
+            CALL CFDDTA(itrc,iuout,IZ,IBLD,IMFS,IER)
+            CALL ERPFREE(IFL,ISTAT)
+          ENDIF
+        ENDIF
+        IF(IER.EQ.0)THEN
+          INPOK=.TRUE.
+
+C plot grid.
+c          CALL INICNT
+c          CALL GRID(ier)
+c          call VGRID3D('---','xyz',iz)
+c          call VSB3D(0,iz)
+c          call VAO3D(0,iz)
+c          IF(MMOD.EQ.8)THEN
+c          WRITE(etext,'(2A)')'Model: ',
+c     &        TITLE(IZ)(1:lnblnk(TITLE(IZ)))
+c            iside=1
+c            isize=1
+c            ifont=1
+c            call viewtext(etext,iside,isize,ifont)
+c          ENDIF
+        ELSE
+          INPOK=.FALSE.
+        ENDIF
+      ELSEIF(INO.EQ.10)THEN
 
 C Help via the askabout facility in esru_ask.F The zero requests display
         call askabout('dfs ',0)
-      ELSEIF(INO.EQ.10)THEN
+      ELSEIF(INO.EQ.11)THEN
 
 C Finish simulation.
 C Should the results files be removed ?
@@ -826,10 +940,10 @@ C Should the results files be removed ?
      &    OK,dok,nbhelp)
         if (OK) then
           CALL EFDELET(ICFLIB,ISTAT)
-          CALL EFDELET(ICFMON,ISTAT)
+          CALL EFDELET(ICFMON(ICFD),ISTAT)
         else
           CALL ERPFREE(ICFLIB,ISTAT)
-          CALL ERPFREE(ICFMON,ISTAT)
+          CALL ERPFREE(ICFMON(ICFD),ISTAT)
         endif
 
 C Should the cfd temporary file be removed ?

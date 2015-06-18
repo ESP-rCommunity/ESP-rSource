@@ -2,6 +2,13 @@ C This header relates to high level model entities in ESP-r. It is
 C dependant on building.h and should follow building.h so that
 C parameters will have been defined.
 
+C Current working directory (where prj was started) and from pwd
+C into the cfg folder
+      character pwdinitial*84,pwdtocfg*72
+      common/pwdinit/pwdinitial,pwdtocfg
+      integer lnpwdi,lnpwdc  ! lengths of these paths
+      common/pwdlnint/lnpwdi,lnpwdc
+
 C Configuration file information.
       integer icfgv  ! version of configuration file which determines
                      ! the format and contents of the file:

@@ -80,6 +80,11 @@ C Path to model.
       common/user/browse
       common/rpath/path
       common/rcmd/LCMDFL
+      character runpath*72  ! path for working files
+      common/expath/runpath
+
+      integer lnrp  ! length of runpath
+      common/expathl/lnrp
 
 C Indicator of possible focus zone.
       common/rzone/inzone
@@ -122,6 +127,7 @@ C Name of current application
 
       character cVnum*16      ! returned from ESPrVersionNum
       character pagestitle*42 ! for banner title via epages call
+      character ppath*72,filen*72
 
       integer iglib   ! if 1 then X11, if 2 then GTK, if 3 then text only.
 #ifdef OSI
@@ -349,6 +355,20 @@ C     &    mdispl,nifgrey,ncset,ngset,nzonec
       ENDIF
       CALL ESPrVersion("summary",cAppName,IUOUT)
 
+C Remember where vwf was started (pwdinitial). If within model
+C cfg folder then set pwdtocfg to !
+      pwdinitial='  '  ! clear common
+      pwdtocfg='  '    ! and from pwd into cfg folder
+      call usrdir(pwdinitial)
+      lnpwdi=lnblnk(pwdinitial)
+      write(6,*) 'vwf the pwd command is ',pwdinitial(1:lnpwdi)
+C      write(6,*) lnpwdi,lnpwdi-2,' ',pwdinitial(lnpwdi-2:lnpwdi)
+      if(pwdinitial(lnpwdi-2:lnpwdi).eq.'cfg')then
+        pwdtocfg='!'             ! signal no need to append this
+        lnpwdc=lnblnk(pwdtocfg)  ! remember its length
+        write(6,*) 'vwf working in model cfg folder'
+      endif
+
 C Find the user's home folder then get user's custom settings.
       call usrhome(upath)
       if(unixok)then
@@ -365,7 +385,7 @@ C All subsequent tstamp messages will be appended to root journal.
         uname=' '
         call usrname(uname)
         cjfile=' '
-        write(cjfile,'(a,a1,a,a,a)')upath(1:lnblnk(upath)),fs,'.',
+        write(cjfile,'(5a)')upath(1:lnblnk(upath)),fs,'.',
      &    uname(1:lnblnk(uname)),'cur_j'
         there=.false.
         INQUIRE(FILE=cjfile,EXIST=there)
@@ -440,20 +460,41 @@ C successful then scan all the zones via ZDATA.
       if(LCMDFL(1:2).ne.'  '.and.LCMDFL(1:4).ne.'UNKN')then
         INQUIRE (FILE=LCMDFL,EXIST=XST)
         if(XST)then
+
+C See if there is a pwdtocfg which can be recovered from within
+C the command line file.
+          call fdpwdtocfg(LCMDFL,ppath,filen)
+          write(6,*) 'pwdtocfg ',pwdtocfg(1:lnblnk(pwdtocfg))
+C          write(6,*) 'pp ',ppath(1:lnblnk(ppath))
+C          write(6,*) 'fi ',filen(1:lnblnk(filen))
+
           call fdroot(LCMDFL,path,LCFGF)
           call edisp(iuout,' ')
           call edisp(iuout,' Scanning the model description')
           MODE='ALL '
           CALL ERSYS(LCFGF,IFCFG,IAIRP,MODE,0,IER)
           if(IER.eq.0)then
+
+C Where is zones folder in relation to where vwf was started?
+            if(pwdtocfg(1:1).eq.'!')then
+              write(runpath,'(2a)') zonepth(1:lnblnk(zonepth)),fs
+              lnrp=lnblnk(runpath)  ! remember this
+            else
+              write(runpath,'(3a)') pwdtocfg(2:lnblnk(pwdtocfg)),
+     &          zonepth(1:lnblnk(zonepth)),fs
+              lnrp=lnblnk(runpath)  ! remember this
+C              write(6,*) 'lnrp ',lnrp,pwdtocfg
+              write(6,*) 'runpath ',runpath
+            endif
+
             CFGOK=.TRUE.
             numberofzones=ncomp
             IF(MMOD.EQ.8)call updwire(numberofzones)
             CALL ZDATA (ITRC,IER,int(numberofzones),ISFSUM)
 
 C Open scratch file now that path is known. Extend the name of the
-C vwf file. If this file exists
-C then remove it before opening a new scratch file.
+C vwf file. If this file exists then remove it before opening a
+C new scratch file.
             if(browse)then
               call usrmsg('You do not own the current model and so are',
      &                    'not allowed to calculate viewfactors.','W')
@@ -461,7 +502,7 @@ C then remove it before opening a new scratch file.
             else
               if(unixok)then
                 fs = char(47)
-                write(LTMPFL,'(4a)') path(1:lnblnk(path)),fs,
+                write(LTMPFL,'(3a)') runpath(1:lnrp),
      &            cfgroot(1:lnblnk(cfgroot)),'.mrt'
                 INQUIRE (FILE=LTMPFL(1:lnblnk(LTMPFL)),EXIST=XST)
                 if(XST)then
@@ -479,7 +520,9 @@ C then remove it before opening a new scratch file.
                 call edisp(iuout,LTMPFL)
               else
                 fs = char(92)
-                write(LTMPFL,'(4a)') path(1:lnblnk(path)),fs,
+C                write(LTMPFL,'(4a)') path(1:lnblnk(path)),fs,
+C     &            cfgroot(1:lnblnk(cfgroot)),'.mrt'
+                write(LTMPFL,'(4a)') runpath(1:lnrp),fs,
      &            cfgroot(1:lnblnk(cfgroot)),'.mrt'
                 INQUIRE (FILE=LTMPFL(1:lnblnk(LTMPFL)),EXIST=XST)
                 if(XST)then
@@ -576,6 +619,13 @@ C name with the full path.
         IF(L144(1:2).EQ.'  '.or.L144(1:4).eq.'UNKN')GOTO 289
         call st2file(L144,LCMDFL)
 
+C See if there is a pwdtocfg which can be recovered from within
+C the command line file.
+        call fdpwdtocfg(LCMDFL,ppath,filen)
+        write(6,*) 'pwdtocfg ',pwdtocfg(1:lnblnk(pwdtocfg))
+C        write(6,*) 'pp ',ppath(1:lnblnk(ppath))
+C        write(6,*) 'fi ',filen(1:lnblnk(filen))
+
 C Find the path and local file name.
         call fdroot(LCMDFL,path,LCFGF)
         call edisp(iuout,' ')
@@ -583,6 +633,19 @@ C Find the path and local file name.
         MODE='ALL '
         CALL ERSYS(LCFGF,IFCFG,IAIRP,MODE,0,IER)
         if(IER.eq.0)then
+
+C Where is zones folder in relation to where vwf was started?
+          if(pwdtocfg(1:1).eq.'!')then
+            write(runpath,'(2a)') zonepth(1:lnblnk(zonepth)),fs
+            lnrp=lnblnk(runpath)  ! remember this
+          else
+            write(runpath,'(3a)') pwdtocfg(2:lnblnk(pwdtocfg)),
+     &        zonepth(1:lnblnk(zonepth)),fs
+            lnrp=lnblnk(runpath)  ! remember this
+C            write(6,*) 'lnrp ',lnrp,pwdtocfg
+            write(6,*) 'runpath ',runpath
+          endif
+
           CFGOK=.TRUE.
           numberofzones=ncomp
           IF(MMOD.EQ.8) call updwire(numberofzones)
@@ -593,7 +656,9 @@ C Find the path and local file name.
 C Open scratch file now that path is known.
           if(unixok)then
             fs = char(47)
-            write(LTMPFL,'(4a)') path(1:lnblnk(path)),fs,
+C            write(LTMPFL,'(4a)') path(1:lnblnk(path)),fs,
+C     &        cfgroot(1:lnblnk(cfgroot)),'.mrt'
+            write(LTMPFL,'(3a)') runpath(1:lnrp),
      &        cfgroot(1:lnblnk(cfgroot)),'.mrt'
             INQUIRE (FILE=LTMPFL(1:lnblnk(LTMPFL)),EXIST=XST)
             if(XST)then
@@ -611,7 +676,9 @@ C Open scratch file now that path is known.
             call edisp(iuout,LTMPFL)
           else
             fs = char(92)
-            write(LTMPFL,'(4a)') path(1:lnblnk(upath)),fs,
+C            write(LTMPFL,'(4a)') path(1:lnblnk(upath)),fs,
+C     &        cfgroot(1:lnblnk(cfgroot)),'.mrt'
+            write(LTMPFL,'(4a)') runpath(1:lnrp),fs,
      &        cfgroot(1:lnblnk(cfgroot)),'.mrt'
             INQUIRE (FILE=LTMPFL(1:lnblnk(LTMPFL)),EXIST=XST)
             if(XST)then
@@ -1075,9 +1142,18 @@ C Grid Error
 C ***** Dummy display of images.
       subroutine imgdisp(iforce,focus,ier)
       character focus*4
-
       return
       end
+
+      subroutine Find_season_parameters()
+      return
+      end
+
+      SUBROUTINE BASESIMP_INPUTS(ICOMP,IER)
+      integer icomp,ier
+      return
+      end
+
 
 C In support of floating point exceptions.
 #ifdef SUN

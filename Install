@@ -109,7 +109,7 @@ MODdir="${HOMEdir}/models"
 TRAdir="${MODdir}/training"
 VALdir="${MODdir}/validation"
 DOCdir="${HOMEdir}/doc"
-
+SCRIPTdir="${HOMEdir}/src/bin"
 
 
 
@@ -457,6 +457,7 @@ if [ "$platform" = "auto-detect" ]; then
       [ "$architecture" != "MINGW32_NT-5.0" ] &&
       [ "$architecture" != "MINGW32_NT-5.2" ] &&
       [ "$architecture" != "MINGW32_NT-6.1" ] &&
+      [ "$architecture" != "MSYS_NT-6.1" ] &&
       [ "$architecture" != "Darwin" ] &&
       [ "$architecture" != "SunOS" ]; then
       platform="prompt";
@@ -569,7 +570,7 @@ if [ "$platform" = "auto-detect" ]; then
    case $architecture in
       Linux)                           platform="linux";;
       CYGWIN_NT-5.2  | CYGWIN_NT-5.1  | CYGWIN_NT-5.0  | CYGWIN_NT-6.0 | CYGWIN_NT-6.1 | CYGWIN_NT-6.1-WOW64 ) platform="cygwin";;
-      MINGW32_NT-6.1 | MINGW32_NT-5.2 | MINGW32_NT-5.1 | MINGW32_NT-5.0 ) platform="mingw";;
+      MINGW32_NT-6.1 | MINGW32_NT-5.2 | MINGW32_NT-5.1 | MINGW32_NT-5.0 | MSYS_NT-6.1 ) platform="mingw";;
       Darwin)                          platform="mac";;
       SunOS)                           platform="sun";;
    esac
@@ -2398,7 +2399,16 @@ zzz
   cp -r ${DOCdir}/manual/* ${ESPdir}/manual
   echo " Done."
 
-
+  echo -n "   - Installing common scripts..."
+  rm -rf ${ESPdir}/scripts
+  mkdir ${ESPdir}/scripts
+  cp ${SCRIPTdir}/link_to_bash ${ESPdir}/scripts/
+  cp ${SCRIPTdir}/link_to ${ESPdir}/scripts/
+  cp ${SCRIPTdir}/Linux_model_2dos ${ESPdir}/scripts/
+  cp ${SCRIPTdir}/Linux_model_to_dos ${ESPdir}/scripts/
+  cp ${SCRIPTdir}/OSX_model_to_dos ${ESPdir}/scripts/
+  cp ${SCRIPTdir}/dos_model_to_linux ${ESPdir}/scripts/
+  echo " Done."
 fi
 
 ##### End Install training, manual files.

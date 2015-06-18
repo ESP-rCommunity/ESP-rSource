@@ -1522,6 +1522,7 @@ C MZUTIL reads additional zone descriptions if active.
 #include "model.h"
 #include "cfd.h"
 #include "CFC_common.h"
+#include "espriou.h"
 C espriou.h provides currentfile.
 
       common/trc/itrc
@@ -1535,7 +1536,9 @@ C espriou.h provides currentfile.
       common/ndcfd/NCFDND,ICFDND(MNZ),NCONF
       common/bsmtdef/iBSIMP(MCOM),LBSIMP(MCOM)
       COMMON/cfcall/icfcal(MNZ)
-      COMMON/ACCrec/IACC
+      COMMON/ACCrec/IACC(MNZ)
+      COMMON/ICFCHN/ICFMON(MNZ),ICFTMP,ICFLIB
+      common/param2/TITLE(MNZ),CFTRFL(MNZ),LPHI(MNZ)
 
 C Active domain common.
       common/ACTDOM/CFDOK
@@ -1548,9 +1551,9 @@ C Residential hydrogen cogen: control file
       character*72 resh2flnam   !- name of file containing residential hydrogen cogen
                                 !- controller inputs
 
-      CHARACTER OUTSTR*124
+      CHARACTER OUTSTR*124,outs*72
       CHARACTER*72 LCFD
-      CHARACTER*72 lfil
+      CHARACTER*72 lfil,CFTRFL,TITLE,LPHI
       CHARACTER*72 LBSIMP
 c      character dllsubr*12,dllmesg*124
 
@@ -1614,14 +1617,6 @@ C CFD domanin.
       IF(ABS(IFCFD(ICOMP)).GT.0)THEN
         ICP=ICOMP
 
-C If adaptive conflation control is active, then open a file to record
-C the actions of the controller.
-        if (ABS(IFCFD(ICOMP)).eq.4.or.ABS(IFCFD(ICOMP)).eq.5) then
-          lfil='ACC-actions.rec'
-          IACC = IFIL + 29
-          call efopseq(IACC,lfil,4,ier)
-        endif
-
 C Set the flags that indicate whether there is thermal conflation
 C and whether there is air-flow conflation.  These flags affect how
 C the .dfd file is read in.  Five conflation mechanisms
@@ -1645,6 +1640,8 @@ C Read CFD configuration file and set length scales basd on ESP-r standard
 C geometry model.
         if(ICFDND(ICFD).EQ.ICOMP) then
           IFL=IFIL+1
+C set currentfile
+          write(currentfile,'(a)')LCFD(ICOMP)(1:LNBLNK(LCFD(ICOMP)))
           CALL EFOPSEQ(IFL,LCFD(ICOMP),1,IER)
           CALL STRIPC(IFL,OUTSTR,0,ND,1,'dfd line 1',IER)
           if(OUTSTR(1:15).eq.'DFS DESCRIPTION')then
@@ -1655,6 +1652,34 @@ C geometry model.
           endif
           CALL CFDLENS
           CFDOK=.true.
+
+C Open CFD monitoring file
+          ICFMON(ICFD) = IFIL + 19 + (ICFD-1)*100
+C Debug
+C          write(6,*) 'MZUTIL (ICFD,CFTRFL,ICFMON)',ICFD,
+C     &      CFTRFL(ICFD),ICFMON(ICFD)
+          call efopseq(ICFMON(ICFD),CFTRFL(ICFD),3,ier)
+          if(ier.ne.0)then
+            write(outs,'(a,i2,a)') 
+     &        'Error opening CFD monitoring file for domain ',ICFD,'.'
+            call edisp(iuout,outs)
+          endif            
+
+C If adaptive conflation control is active, then open a file to record
+C the actions of the controller.
+          if (ABS(IFCFD(ICOMP)).eq.4.or.ABS(IFCFD(ICOMP)).eq.5) then
+            write(lfil,'(a12,i2.2,a4)')'ACC-actions_',icfd,
+     &        '.rec'
+            IACC(ICFD) = IFIL + 29 + (ICFD-1)*100
+C Debug
+C            write(6,*) 'MZUTIL (ICFD,lfil,IACC)',ICFD,lfil,iacc(ICFD)
+            call efopseq(IACC(ICFD),lfil,4,ier)
+            if(ier.ne.0)then
+              write(outs,'(a,i2,a)') 
+     &          'Error opening ACC-actions file for domain ',ICFD,'.'
+              call edisp(iuout,outs)
+            endif  
+          endif
 
 C Initialize counter to indicate that CFD has not yet been invoked. This
 C will be incremented each time CFD is called for this zone.

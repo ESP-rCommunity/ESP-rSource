@@ -47,7 +47,7 @@ C      bcl19:  multi-sensor basic control.
 C      BCL20:  evaporative source.
 C      BCL21:  master/slave control.
 C      BCL22:  VAV cooling with CAV heating.
-C      BCL23:  match sensed value elsewhere.
+C      BCL23:  heating & cooling setpoints from temporal.
 C      BCL24:  adaptive human comfort model.
 C      BCL25_open_windows: switch between different 
 C             air flow computation methods.
@@ -895,7 +895,13 @@ C Control data is established from the BMISCD array.
       QHL=BMISCD(ICF,IDTYP,IPER,3)
       QC=-BMISCD(ICF,IDTYP,IPER,4)
       QCL=-BMISCD(ICF,IDTYP,IPER,5)
-      IF(TMIX.LE.TU.AND.TMIX.GE.TL)GOTO 81
+      IF(TMIX.LE.TU.AND.TMIX.GE.TL)THEN 
+C << This line added to prevent function inheriting
+C    value of T from previous invocation if this
+C    clause is true. >>
+        T=TFUT
+        GOTO 81
+      ENDIF
 
 C Is 'mixed' temperature too high ?
       IF(TMIX.GT.TU)GOTO 13
@@ -2700,11 +2706,11 @@ C Adjust total airflow leaving zone.
 
 C Add/subtract heat from all components contained to a zone
       ELSEIF(ISIND.EQ.7)then
-	q=0.0
-	do icont=1,ncont            ! for all containments
-	  ipcomp=ipcc(icont)        ! get plant component index
-	  if(indcp(icont).eq.3)then ! if contained to a zone
-	    if(nint(cntdat(icont,1)).eq.iicomp)then ! if contained to this zone
+        q=0.0
+        do icont=1,ncont            ! for all containments
+          ipcomp=ipcc(icont)        ! get plant component index
+          if(indcp(icont).eq.3)then ! if contained to a zone
+            if(nint(cntdat(icont,1)).eq.iicomp)then ! if contained to this zone
               q=q+qdata(ipcomp)  ! add component heat gain/loss to zone
             endif
           endif

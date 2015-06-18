@@ -45,7 +45,8 @@ C SPMCMP52 - saturated surface with evaporation;
 C SPMCMP53 - phase change material model 1;
 C SPMCMP54 - phase change material model 2;
 C SPMCMP55 - phase change material model 3;
-C SPMCMP56 - phase change material model 4 (with sub-cooling).
+C SPMCMP56 - phase change material model 4 (with sub-cooling);
+C SPMCMP57 - phase change material model 5 (with sub-cooling).
 
       subroutine spmmod(icomp)
 #include "building.h"
@@ -2428,10 +2429,10 @@ C a phase change material (PCM) are adjusted to represent the latent
 C heat stored within the material during melting and released during
 C solidification. The phase transition is represented by an apparent
 C heat capacity (appsht), which is equal to the sum of specific (shtsol)
-C and latent (lht) heat, with the latter established as a linear
+C and latent (lht) heat capacity, with the latter established as a linear
 C function of temperature (tfcm) in the phase change temperature range
-C (tsoli-tmelt): lht=shtliqa*tfcm+shtliqb (where shtliqa is given as 0,
-C lht will be constant over the phase change temperature range).
+C (tsoli-tmelt): lht=shtliqa*tfcm+shtliqb; where shtliqa is given as 0,
+C lht = shtliqb.
 
 C Defining data as read from spmdat:
 C    1 - melting temperature, tmelt (degC);
@@ -2441,6 +2442,7 @@ C    4 - conductivity in liquid phase, conliq (W/m.degC);
 C    5 - specific heat in all phases, shtsol (J/kg.degC);
 C    6 - latent heat coefficient, shtliqa (J/kg.degC^2);
 C    7 - latent heat coefficient, shtliqb (J/kg.degC).
+
 
       subroutine spmcmp53(icomp,ispmnod)
 #include "building.h"
@@ -2483,6 +2485,8 @@ C Phase change material.
       character spmlabel*16,spflnam*72,outs*124,strspm*16,unitspm*16,
      &          txtspm*72
       logical close
+      real val1,val2,val3,val4,val5,val6,val7
+     &                   val8,val9,val10,val11  ! to pass as parameters
 
 C PCM layer pointers.
       if(icomp.ne.ispmloc(ispmnod,1))then
@@ -2546,16 +2550,33 @@ C ... and apparent heat capacity (J/kg.degC):
 c  appsht = shtsol + lht
 C   where lht = 0                      for tsoli < tfcm < tmelt (solid or liquid phase);
 C             = shtliqa*tfcm + shtliqb for tmelt < tfcm < tsoli (mixed phase).
-         if(tfcm.lt.tmelt)then
-            appcon=consol
-            appsht=shtsol
-         elseif(tfcm.gt.tsoli)then
-            appcon=conliq
-            appsht=shtsol
-         else
-            appcon=(consol+conliq)/2.
-            appsht=shtsol+(shtliqa*tfcm+shtliqb)
-         endif
+C         if(tfcm.lt.tmelt)then
+C            appcon=consol
+C            appsht=shtsol
+C         elseif(tfcm.gt.tsoli)then
+C            appcon=conliq
+C            appsht=shtsol
+C         else
+C            appcon=(consol+conliq)/2.
+C            appsht=shtsol+(shtliqa*tfcm+shtliqb)
+C        endif
+
+         imethod=1
+         val1=tsoli
+         val2=tmelt
+         val3=shtsol
+         val4=consol
+         val5=conliq
+         val6=shtliqa
+         val7=shtliqb
+         val8=0.0
+         val9=0.0
+         val10=0.0
+         val11=0.0
+         call maxlatent(imethod,tfcm,tpcm,val1,val2,val3,val4,
+     &           val5,val6,val7,val8,val9,val10,
+     &            val11,appcon,appsht,spcmf)
+
 
 C Parameters for xml output.
          Rtot=Rtot+efthk/appcon
@@ -2706,43 +2727,45 @@ C time step.
          pcmshts(icomp,isurf,nloc)=pcmsht
 
 C Maximum latent heat (J/kg).
-         shtliq=(shtliqa*tsoli+shtliqb)
+C         shtliq=(shtliqa*tsoli+shtliqb)
 
 C Latent heat stored (J) in part of the PCM layer represented by
 C node nloc.
-         if(tfcm.lt.tmelt)then
-            spcmf=0.0
-         elseif(tfcm.gt.tsoli)then
-            call eclose(shtliqa,0.00,0.001,close)
-            if(close)then
-               spcmf=(shtliq-shtsol)*(tsoli-tmelt)*
-     &             thrmli(icomp,isurf,ielem,2)*sna(icomp,isurf)*efthk
-            else
-               spcmf=0.5*(shtliq-shtsol)*(tsoli-tmelt)*
-     &             thrmli(icomp,isurf,ielem,2)*sna(icomp,isurf)*efthk
-            endif
-         else
-            call eclose(shtliqa,0.00,0.001,close)
-            if(close)then
-               spcmf=(appsht-shtsol)*(tfcm-tmelt)*
-     &             thrmli(icomp,isurf,ielem,2)*sna(icomp,isurf)*efthk
-            else
-               spcmf=0.5*(appsht-shtsol)*(tfcm-tmelt)*
-     &             thrmli(icomp,isurf,ielem,2)*sna(icomp,isurf)*efthk
-            endif
-         endif
+C         if(tfcm.lt.tmelt)then
+C            spcmf=0.0
+C         elseif(tfcm.gt.tsoli)then
+C            call eclose(shtliqa,0.00,0.001,close)
+C            if(close)then
+C               spcmf=shtliq*(tsoli-tmelt)*
+C     &             thrmli(icomp,isurf,ielem,2)*sna(icomp,isurf)*efthk
+C            else
+C               spcmf=0.5*shtliq*(tsoli-tmelt)*
+C     &             thrmli(icomp,isurf,ielem,2)*sna(icomp,isurf)*efthk
+C            endif
+C         else
+C            call eclose(shtliqa,0.00,0.001,close)
+C            if(close)then
+C               spcmf=(appsht-shtsol)*(tfcm-tmelt)*
+C     &             thrmli(icomp,isurf,ielem,2)*sna(icomp,isurf)*efthk
+C            else
+C               spcmf=0.5*(appsht-shtsol)*(tfcm-tmelt)*
+C     &             thrmli(icomp,isurf,ielem,2)*sna(icomp,isurf)*efthk
+C            endif
+C         endif
 
 C Save node-related heat stored.
-         spcm(icomp,isurf,nloc)=spcmf
+C         spcm(icomp,isurf,nloc)=spcmf
+
    10 continue
 
 C Save total PCM heat stored.
-      spcmtf=spcm(icomp,isurf,inode-1)+spcm(icomp,isurf,inode)+
-     &                                      spcm(icomp,isurf,inode+1)
+C      spcmtf=spcm(icomp,isurf,inode-1)+spcm(icomp,isurf,inode)+
+C     &                                      spcm(icomp,isurf,inode+1)
+
 
 C Results output.
       ndatspm(ispmnod)=4
-      if(nsinc.le.1)then
+	if(nsinc.le.1)then
          strspm(ispmnod,1)='/AppCON'
          unitspm(ispmnod,1)='(W/(m.degC))'
          txtspm(ispmnod,1)='Average conductivity of PCM layer'
@@ -2758,7 +2781,8 @@ C Results output.
          strspm(ispmnod,4)='/PCMFAC'
          unitspm(ispmnod,4)='(-)'
          txtspm(ispmnod,4)='PCMFAC of middle node'
-      endif
+	endif
+
 
       if(Rtot.gt.0)dataspm(ispmnod,1)=THKsum/Rtot
       if(THKsum.gt.0)dataspm(ispmnod,2)=sumSHTTHK
@@ -2816,6 +2840,220 @@ C Trace output.
 
   999 return
       end
+
+C ***************** maxlatent
+C Return the maximum latent heat based on different equations.
+C variable returned is shtliq
+      subroutine maxlatent(imethod,tfcm,tpcm,val1,val2,val3,val4,
+     &           val5,val6,val7,val8,val9,val10,
+     &            val11,appcon,appsht,spcmf)
+
+      integer imethod  ! method to use
+      real tfcm        ! PCM node temperature
+      real tpcm        ! PCM node temperature
+      real val1,val2,val3,val4,val5,val6     ! passed parameters
+      real val7,val8,val9,val10,val11        ! passed parameters
+      real appcon      ! calculated conductivity (W/m.degC)
+      real appsht      ! calculated apparent heat capacity (J/kg.degC)
+      real spcmf       ! calculated stored latent heat (J/kg)
+C Variables for all methods
+      real tsoli       ! solification temperature (degC)
+      real tmelt       ! melting temperature (degC)
+      real shtsol      ! sensible heat capacity in solid phase (J/kg.degC)
+      real consol      ! conductivity in solid phase (W/m.degC)
+      real conliq      ! conductivity in liquid phase (W/m.degC)
+      real shtliq      ! maximum stored latetn heat (J/kg)
+
+C Local variables.
+C Method 1
+      real shtliqa     ! a coeficient of linear eqn (J/kg.degC^2)
+      real shtliqb     ! b coefficient (J/kg.degC)
+C Method 2
+      real sht2        ! sensible heat capacity in liquid phase
+      real shtl        ! latent heat of the PCM (J/kg.degC).
+      real shta        ! parameter a of latent heat of the PCM
+      real shtb        ! parameter b of latent heat of the PCM
+      real c1          ! parameter c1 of latent heat of the PCM
+C Method 3
+      real shtc        ! coefficient c for apparent heat equation
+      real shtd        ! coefficient d for apparent heat equation
+      real shte        ! coefficient e for apparent heat equation
+      real shtf        ! coefficient f for apparent heat equation
+
+
+C Latent heat stored (J/kg).
+      if(imethod.eq.1)then ! use logic of SPMCMP53
+
+        tsoli  =val1
+        tmelt  =val2
+        shtsol =val3
+        consol =val4
+        conliq =val5
+        shtliqa=val6
+        shtliqb=val7
+        shtliq=(0.5*shtliqa*(tsoli+tmelt)+shtliqb)*(tsoli-tmelt)
+	if(tfcm.lt.tmelt)then
+          appcon=consol
+          appsht=shtsol
+          spcmf=0.0
+        elseif(tfcm.gt.tsoli)then
+          appcon=conliq
+          appsht=shtsol
+          spcmf=shtliq
+        else
+          appcon=(consol+conliq)/2.0
+          appsht=shtsol+(shtliqa*tfcm+shtliqb)
+          spcmf=(0.5*shtliqa*(tfcm+tmelt)+shtliqb)*(tfcm-tmelt)
+        endif
+
+      elseif(imethod.eq.2)then ! use logic of SPMCMP54
+        tsoli =val1
+        tmelt =val2
+        shtsol=val3
+        consol=val4
+        conliq=val5
+        sht2  =val6
+        shtl  =val7
+        shta=-shtb*tsoli+1.00002397*log(shtl)-0.271249489
+        shtb=0.76224
+        c1=exp(shta)
+        shtliq=(c1/shtb)*(exp(shtb*tsoli)-exp(shtb*tmelt))/1000
+	if(tfcm.lt.tmelt)then
+          appcon=consol
+          appsht=shtsol
+          spcmf=0.0
+        elseif(tfcm.gt.tsoli)then
+          appcon=conliq
+          appsht=sht2
+          spcmf=shtliq
+        else
+          appcon=(spcmf/shtliq)*conliq+((shtliq-spcmf)/shtliq)*consol
+          appsht=c1*exp(shtb*tfcm)+shtsol
+          spcmf=((c1/shtb)*exp(shtb*tfcm)-
+     &                                (c1/shtb)*exp(shtb*tmelt))/1000
+        endif
+      
+      elseif(imethod.eq.3)then ! use logic of SPMCMP55
+        tsoli =val1
+        tmelt =val2
+        shtsol=val3
+        consol=val4
+        conliq=val5
+        sht2  =val6
+        shta  =val7
+        shtb  =val8
+        shtc  =val9
+        shtd  =val10
+        shte  =val11
+C Time invariant coefficients for integration 
+C of c(T)=(a+cT+eT**2)/(1+bT+dT**2) equation.
+        c1=2*shta*(shtd**2)+(shtb**2)*shte-shtb*shtc*shtd-2*shtd*shte
+        c2=2*shtd/sqrt((-(shtb**2)+4*shtd))
+        c3=shtb/(sqrt(-shtb**2+4*shtd))
+        c4=(shtd**2)*(sqrt(-shtb**2+4*shtd))
+        c5=(shtc*shtd-shtb*shte)
+        c6=shtb
+        c7=shtd
+        c8=2*(shtd**2)
+        c9=shte/shtd
+
+C Maximum value of latent heat, shtliq (J/kg), i.e. integration
+C of c(t) equation from tmelt to tsoli.
+        shtliq1=((c1*atan(c2*tsoli+c3))/c4)-((c1*atan(c2*tmelt+c3))/c4)
+        shtliq2=((c5*log(1.0E+0+c6*tsoli+c7*(tsoli**2.0)))/c8)-
+     &        ((c5*log(1.0E+0+c6*tmelt+c7*(tmelt**2.0)))/c8)
+        shtliq3=c9*(tsoli-tmelt)
+        shtliq=(shtliq1+shtliq2+shtliq3)/1.0E+03
+        if(tfcm.lt.tmelt)then
+          appcon=consol
+          appsht=shtsol
+          spcmf=0.0
+        elseif(tfcm.gt.tsoli)then
+          appcon=conliq
+          appsht=sht2
+          spcmf=shtliq
+        else
+          appcon=(spcmf/shtliq)*conliq+((shtliq-spcmf)/shtliq)*consol
+          appsht=((shta+shtc*tfcm+shte*(tfcm**2))
+     &                      /(1.0E0+shtb*tfcm+shtd*(tfcm**2)))+shtsol
+          spcmf1=(c1*atan(c2*tfcm+c3))/c4-(c1*atan(c2*tmelt+c3))/c4
+          spcmf2=(c5*log(1.0E+0+c6*tfcm+c7*(tfcm**2.0)))/c8-
+     &                 (c5*log(1.0E+0+c6*tmelt+c7*(tmelt**2.0)))/c8
+          spcmf3=c9*tfcm-c9*tmelt
+          spcmf4=spcmf1+spcmf2+spcmf3
+          spcmf=spcmf4/1.0E+03
+        endif
+
+      elseif(imethod.eq.4)then ! use logic of SPMCMP57
+        tsoli  =val1
+        tmelt  =val2
+        shtsol =val3
+        consol =val4
+        conliq =val5
+        shtliqa=val6
+        shtliqb=val7
+        tsoli2= val8
+        tmelt2= val9
+        shtliqc=val10
+        shtliqd=val11
+
+	if(tfcm.gt.tpcm)then ! heating
+          shtliq=(0.5*shtliqa*(tsoli+tmelt)+shtliqb)*(tsoli-tmelt)
+          if(tfcm.lt.tmelt)then
+            appcon=consol
+            appsht=shtsol
+            spcmf=0.0000000001
+          elseif(tfcm.gt.tsoli)then
+            appcon=conliq
+            appsht=shtsol
+            spcmf=shtliq
+          else 
+            appcon=(spcmf/shtliq)*conliq+((shtliq-spcmf)/shtliq)*consol
+            appsht=shtsol+(shtliqa*tfcm+shtliqb)
+            spcmf=(0.5*shtliqa*(tfcm+tmelt)+shtliqb)*(tfcm-tmelt)
+          endif
+        elseif(tfcm.lt.tpcm)then ! cooling
+          shtliq=(0.5*shtliqc*(tsoli2+tmelt2)+shtliqd)*
+     &                                  (tsoli2-tmelt2)
+          if(tfcm.lt.tmelt2)then
+            appcon=consol
+            appsht=shtsol
+            spcmf=0.0000000001
+          elseif(tfcm.gt.tsoli2)then
+            appcon=conliq
+            appsht=shtsol
+            spcmf=shtliq
+          else
+            appcon=(spcmf/shtliq)*conliq+((shtliq-spcmf)/shtliq)*consol
+            appsht=shtsol+(shtliqc*tfcm+shtliqd)
+            spcmf=(0.5*shtliqc*(tfcm+tmelt2)+shtliqd)*(tfcm-tmelt2)
+          endif
+        else                  ! constant temperature
+          if(tfcm.lt.tmelt2)then                
+            appcon=consol
+            appsht=shtsol
+            spcmf=0.0000000001
+          elseif(tfcm.gt.tsoli)then
+            appcon=conliq
+            appsht=shtsol
+            spcmf=shtliq
+          else 
+            if(tfcm.lt.tpcm)then
+              appcon=(spcmf/shtliq)*conliq+((shtliq-spcmf)/shtliq)*consol
+              appsht=shtsol+(shtliqc*tfcm+shtliqd)
+              spcmf=(0.5*shtliqc*(tfcm+tmelt2)+shtliqd)*(tfcm-tmelt2)
+            else
+              shtliq=(0.5*shtliqa*(tsoli+tmelt)+shtliqb)*(tsoli-tmelt)
+              appcon=(spcmf/shtliq)*conliq+((shtliq-spcmf)/shtliq)*consol
+              appsht=shtsol+(shtliqa*tfcm+shtliqb)
+              spcmf=(0.5*shtliqa*(tfcm+tmelt)+shtliqb)*(tfcm-tmelt)
+            endif
+          endif
+        endif
+      endif
+      return   ! finished
+      end
+
 
 C ***************** SPMCMP54 *****************
 C A model of phase change material taken from the PhD thesis of
@@ -2879,18 +3117,19 @@ C Conductivity in solid and liquid state (W/m.degC).
       conliq=spmdat(ispmnod,4)
 
 C Specific heat capacity in solid and liquid state (J/kg.degC).
+      c1=exp(shta)
       shtsol=spmdat(ispmnod,5)
       sht2=spmdat(ispmnod,6)
 
 C Latent heat of the PCM (J/kg.degC).
       shtl=spmdat(ispmnod,7)
-      shtb=0.76224
-      shta=-shtb*tsoli+1.00002397*log(shtl)-0.271249489
-      c1=exp(shta)
+C      shtb=0.76224
+C      shta=-shtb*tsoli+1.00002397*log(shtl)-0.271249489
+C      c1=exp(shta)
 
 C Maximum value of latent heat, shtliq (J/kg), i.e. integration
 C of c(t) equation from tmelt to tsoli.
-      shtliq=(c1/shtb)*(exp(shtb*tsoli)-exp(shtb*tmelt))/1000
+C      shtliq=(c1/shtb)*(exp(shtb*tsoli)-exp(shtb*tmelt))/1000
 
 C Initialisations for xml output.
       Rtot = 0.0
@@ -2935,17 +3174,33 @@ C  appsht = shtsol          for tfcm < tmelt (solid phase);
 C         = sht2            for tfcm > tsoli (liquid phase);
 C         = c1*exp(shtb*tfcm)+shtsol
 C                           for tmelt < tfcm < tsoli (mixed phase).
-         if(tfcm.lt.tmelt)then
-            appcon=consol
-            appsht=shtsol
-         elseif(tfcm.gt.tsoli)then
-            appcon=conliq
-            appsht=sht2
-         else
-            spcmc=spcm(icomp,isurf,nloc)
-            appcon=(spcmc/shtliq)*conliq+((shtliq-spcmc)/shtliq)*consol
-            appsht=c1*exp(shtb*tfcm)+shtsol
-         endif
+C         if(tfcm.lt.tmelt)then
+C            appcon=consol
+C            appsht=shtsol
+C         elseif(tfcm.gt.tsoli)then
+C            appcon=conliq
+C            appsht=sht2
+C         else
+C            spcmc=spcm(icomp,isurf,nloc)
+C            appcon=(spcmc/shtliq)*conliq+((shtliq-spcmc)/shtliq)*consol
+C            appsht=c1*exp(shtb*tfcm)+shtsol
+C         endif
+
+         imethod=2
+         val1=tsoli
+         val2=tmelt
+         val3=shtsol
+         val4=consol
+         val5=conliq
+         val6=sht2
+         val7=shtl
+         val8=0.0
+         val9=0.0
+         val10=0.0
+         val11=0.0
+         call maxlatent(imethod,tfcm,tpcm,val1,val2,val3,val4,
+     &           val5,val6,val7,val8,val9,val10,
+     &            val11,appcon,appsht,spcmf)
 
 C Parameters for xml output.
          Rtot=Rtot+efthk/appcon
@@ -3095,22 +3350,22 @@ C time step.
 
 C Calculate the value of latent heat stored (J) in part of the PCM
 C layer represented by node nloc.
-         if(tfcm.lt.tmelt)then
-            spcmf=0.0
-         elseif(tfcm.gt.tsoli)then
-            spcmf=shtliq
-         else
-            spcmf=((c1/shtb)*exp(shtb*tfcm)-
-     &                                (c1/shtb)*exp(shtb*tmelt))/1000
-         endif
+C         if(tfcm.lt.tmelt)then
+C            spcmf=0.0
+C         elseif(tfcm.gt.tsoli)then
+C            spcmf=shtliq
+C         else
+C            spcmf=((c1/shtb)*exp(shtb*tfcm)-
+C     &                                (c1/shtb)*exp(shtb*tmelt))/1000
+C         endif
 
 C Save node-related heat stored.
-         spcm(icomp,isurf,nloc)=spcmf
+C         spcm(icomp,isurf,nloc)=spcmf
 10    continue
 
 C Save total PCM heat stored.
-      spcmtf=spcm(icomp,isurf,inode-1)+spcm(icomp,isurf,inode)+
-     &                                      spcm(icomp,isurf,inode+1)
+C      spcmtf=spcm(icomp,isurf,inode-1)+spcm(icomp,isurf,inode)+
+C     &                                      spcm(icomp,isurf,inode+1)
 
 C Results output.
       ndatspm(ispmnod)=4
@@ -3258,23 +3513,23 @@ C Coefficients for apparent heat equation: c(T)=(a+cT+eT**2)/(1+bT+dT**2)
       shte=spmdat(ispmnod,11)
 
 C Time invariant coefficients for integration of c(T) equation.
-      c1=2*shta*(shtd**2)+(shtb**2)*shte-shtb*shtc*shtd-2*shtd*shte
-      c2=2*shtd/sqrt((-(shtb**2)+4*shtd))
-      c3=shtb/(sqrt(-shtb**2+4*shtd))
-      c4=(shtd**2)*(sqrt(-shtb**2+4*shtd))
-      c5=(shtc*shtd-shtb*shte)
-      c6=shtb
-      c7=shtd
-      c8=2*(shtd**2)
-      c9=shte/shtd
+C      c1=2*shta*(shtd**2)+(shtb**2)*shte-shtb*shtc*shtd-2*shtd*shte
+C      c2=2*shtd/sqrt((-(shtb**2)+4*shtd))
+C      c3=shtb/(sqrt(-shtb**2+4*shtd))
+C      c4=(shtd**2)*(sqrt(-shtb**2+4*shtd))
+C      c5=(shtc*shtd-shtb*shte)
+C      c6=shtb
+C      c7=shtd
+C      c8=2*(shtd**2)
+C      c9=shte/shtd
 
 C Maximum value of latent heat, shtliq (J/kg), i.e. integration
 C of c(t) equation from tmelt to tsoli.
-      shtliq1=((c1*atan(c2*tsoli+c3))/c4)-((c1*atan(c2*tmelt+c3))/c4)
-      shtliq2=((c5*log(1.0E+0+c6*tsoli+c7*(tsoli**2.0)))/c8)-
-     &        ((c5*log(1.0E+0+c6*tmelt+c7*(tmelt**2.0)))/c8)
-      shtliq3=c9*(tsoli-tmelt)
-      shtliq=(shtliq1+shtliq2+shtliq3)/1.0E+03
+C      shtliq1=((c1*atan(c2*tsoli+c3))/c4)-((c1*atan(c2*tmelt+c3))/c4)
+C      shtliq2=((c5*log(1.0E+0+c6*tsoli+c7*(tsoli**2.0)))/c8)-
+C     &        ((c5*log(1.0E+0+c6*tmelt+c7*(tmelt**2.0)))/c8)
+C      shtliq3=c9*(tsoli-tmelt)
+C      shtliq=(shtliq1+shtliq2+shtliq3)/1.0E+03
 
 C Initialisations for xml output.
       Rtot = 0.0
@@ -3307,18 +3562,34 @@ C is intra-construction and tfs if located at the internal surface.
          endif
 
 C Current value of conductivity and specific heat:
-         if(tfcm.lt.tmelt)then
-            appcon=consol
-            appsht=shtsol
-         elseif(tfcm.gt.tsoli)then
-            appcon=conliq
-            appsht=sht2
-         else
-            spcmc=spcm(icomp,isurf,nloc)
-            appcon=(spcmc/shtliq)*conliq+((shtliq-spcmc)/shtliq)*consol
-            appsht=((shta+shtc*tfcm+shte*(tfcm**2))
-     &                      /(1.0E0+shtb*tfcm+shtd*(tfcm**2)))+shtsol
-         endif
+C         if(tfcm.lt.tmelt)then
+C            appcon=consol
+C            appsht=shtsol
+C         elseif(tfcm.gt.tsoli)then
+C            appcon=conliq
+C            appsht=sht2
+C         else
+C            spcmc=spcm(icomp,isurf,nloc)
+C            appcon=(spcmc/shtliq)*conliq+((shtliq-spcmc)/shtliq)*consol
+C            appsht=((shta+shtc*tfcm+shte*(tfcm**2))
+C     &                      /(1.0E0+shtb*tfcm+shtd*(tfcm**2)))+shtsol
+C         endif
+
+         imethod=3
+         val1=tsoli
+         val2=tmelt
+         val3=shtsol
+         val4=consol
+         val5=conliq
+         val6=sht2
+         val7=shta
+         val8=shtb
+         val9=shtc
+         val10=shtd
+         val11=shte
+         call maxlatent(imethod,tfcm,tpcm,val1,val2,val3,val4,
+     &           val5,val6,val7,val8,val9,val10,
+     &            val11,appcon,appsht,spcmf)
 
 C Parameters for xml output.
          Rtot=Rtot+efthk/appcon
@@ -3470,26 +3741,26 @@ C time step.
 
 C Calculate the value of latent heat stored (J) in part of the PCM
 C layer represented by node nloc.
-         if(tfcm.lt.tmelt)then
-            spcmf=0.0
-         elseif(tfcm.gt.tsoli)then
-            spcmf=shtliq
-         else
-            spcmf1=(c1*atan(c2*tfcm+c3))/c4-(c1*atan(c2*tmelt+c3))/c4
-            spcmf2=(c5*log(1.0E+0+c6*tfcm+c7*(tfcm**2.0)))/c8-
-     &                 (c5*log(1.0E+0+c6*tmelt+c7*(tmelt**2.0)))/c8
-            spcmf3=c9*tfcm-c9*tmelt
-            spcmf4=spcmf1+spcmf2+spcmf3
-            spcmf=spcmf4/1.0E+03
-         endif
+C         if(tfcm.lt.tmelt)then
+C            spcmf=0.0
+C         elseif(tfcm.gt.tsoli)then
+C            spcmf=shtliq
+C         else
+C            spcmf1=(c1*atan(c2*tfcm+c3))/c4-(c1*atan(c2*tmelt+c3))/c4
+C            spcmf2=(c5*log(1.0E+0+c6*tfcm+c7*(tfcm**2.0)))/c8-
+C     &                 (c5*log(1.0E+0+c6*tmelt+c7*(tmelt**2.0)))/c8
+C            spcmf3=c9*tfcm-c9*tmelt
+C            spcmf4=spcmf1+spcmf2+spcmf3
+C            spcmf=spcmf4/1.0E+03
+C         endif
 
 C Save node-related heat stored.
-         spcm(icomp,isurf,nloc)=spcmf
+C         spcm(icomp,isurf,nloc)=spcmf
 10    continue
 
 C Save total PCM heat stored.
-      spcmtf=spcm(icomp,isurf,inode-1)+spcm(icomp,isurf,inode)+
-     &                                      spcm(icomp,isurf,inode+1)
+C      spcmtf=spcm(icomp,isurf,inode-1)+spcm(icomp,isurf,inode)+
+C     &                                      spcm(icomp,isurf,inode+1)
 
 C Results output.
       ndatspm(ispmnod)=4
@@ -4438,4 +4709,481 @@ C Output available PCM layer data.
       enddo
 
       return
+      end
+
+C ***************** SPMCMP57 *****************
+C A model of phase change material based on the apparent heat capacity
+C method. The  thermal properties of a construction layer defined as
+C a phase change material (PCM) are adjusted to represent the latent
+C heat stored within the material during melting and released during
+C solidification. The phase transition is represented by an apparent
+C heat capacity (appsht), which is equal to the sum of specific (shtsol)
+C and latent (lht) heat capacity, with the latter established as a linear
+C function of temperature (tfcm) in the phase change temperature range
+C (tsoli-tmelt): lht=shtliqa*tfcm+shtliqb, when temperature is rising 
+C and for cooling (tsoli2-tmelt2): lht=shtliqc*tfcm+shtliqd; 
+
+C Defining data as read from spmdat:
+C    1 - melting temperature (heating), tmelt (degC);
+C    2 - solidification temperature (heating), tsoli (degC);
+C    3 - conductivity in solid phase, consol (W/m.degC);
+C    4 - conductivity in liquid phase, conliq (W/m.degC);
+C    5 - specific heat in all phases, shtsol (J/kg.degC);
+C    6 - latent heat coefficient, shtliqa (J/kg.degC^2);
+C    7 - latent heat coefficient, shtliqb (J/kg.degC);
+C    8 - melting temperature (cooling), tmelt2 (degC);
+C    9 - solidification temperature (cooling), tsoli2 (degC);
+C    10 - latent heat coefficient, shtliqa (J/kg.degC^2);
+C    11 - latent heat coefficient, shtliqb (J/kg.degC).
+C 
+C Possibilities for calculation of a,b,c,d coefficients:
+C CASE 1
+C apparent heat capacity - appsht(tcmf) constant value in phase change
+C temperature range 
+C laten heat stored - spcmf(tcmf) linear function 
+C than a and b calculated as:
+C a=0 
+c b=shtliq/(tsoli-tmelt) (shtliq - entire latent heat of phase change)
+C
+C appsht (J/(kg.degC)
+C         ^ 
+C         |                       
+C         |    ________       
+C         |    .       .
+C         |    .       .
+C         |    .       .
+C   shtsol|____.       .__________
+C         |                   
+C         |-------------------------> tcmf (degC) 
+C            tmelt   tsoli
+C
+C   spcmf (J/kg)
+C         ^ 
+C         |           .            
+C         |          /.     
+C         |         / .   
+C         |        /  . 
+C         |       /   . 
+C         |      /    .     
+C         |     /     .  
+C         |____/      .__________
+C         |                   
+C         |-------------------------> tcmf (degC) 
+C            tmelt   tsoli
+C CASE 2
+C apparent heat capacity - appsht(tcmf) increasing linear function 
+C laten heat stored - spcmf(tcmf) parabolic function opens up
+C than a and b calculated as:
+C a=2*shtliq/(tsoli-tmelt)**2 (shtliq - entire latent heat of phase change)
+c b=-a*tmelt
+C
+C appsht (J/(kg.degC)
+C         ^ 
+C         |           .            
+C         |          /.     
+C         |         / .   
+C         |        /  . 
+C         |       /   . 
+C         |      /    .     
+C         |     /     .  
+C   shtsol|____/      .__________
+C         |                   
+C         |-------------------------> tcmf (degC) 
+C            tmelt   tsoli
+C
+C   spcmf (J/kg)
+C         ^ 
+C         |                      .    
+C         |                     .
+C         |                    .   
+C         |                   .    
+C         |                 .    
+C         |               .         
+C         |            .       
+C         |____.    .    
+C         |------------------------> tcmf (degC)
+C            tmelt              tsoli
+C
+C CASE 3
+C apparent heat capacity - appsht(tcmf) decreasing linear function 
+C laten heat stored - spcmf(tcmf) parabolic function opens down
+C than a and b calculated as:
+C a=-2*shtliq/(tsoli-tmelt)**2 (shtliq - entire latent heat of phase change)
+c b=a*tsoli
+C 
+C appsht (J/(kg.degC)
+C         ^ 
+C         |    .            
+C         |    .\
+C         |    . \
+C         |    .  \
+C         |    .   \
+C         |    .    \
+C         |    .     \
+C   shtsol|____.      \____
+C         |                   
+C         |-------------------------> tcmf (degC)
+C            tmelt   tsoli
+C
+C   spcmf (J/kg)
+C         ^ 
+C         |                  .   .    
+C         |              .     
+C         |           .   
+C         |         .   
+C         |       .    
+C         |      .         
+C         |     .       
+C         |____.      
+C         |------------------------> tcmf (degC)
+C            tmelt              tsoli
+
+      subroutine spmcmp57(icomp,ispmnod)
+#include "building.h"
+
+C N.B. All parameters comply with the Fortran implicit naming convention
+C except where explicitly redefined.
+      common/outin/iuout,iuin
+      common/tc/itc,icnt
+      common/trace/itcf,itrace(mtrace),izntrc(mcom),itu
+      common/simtim/ihrp,ihrf,idyp,idyf,idwp,idwf,nsinc,its
+      common/pvalc/tpc(mcom,ms,mn),qpc(mcom)
+      common/pvals/tps(mcom,ms),qps(mcom)
+      common/fvalc/tfc(mcom,ms,mn),qfc(mcom)
+      common/fvals/tfs(mcom,ms),qfs(mcom)
+      common/zonspmf/zspmf1(mcom),zspmf2(mcom)
+
+C thrmli(icomp,isurf,ielem,1) = conductivity
+C thrmli(icomp,isurf,ielem,2) = density
+C thrmli(icomp,isurf,ielem,3) = specific heat
+C thrmli(icomp,isurf,ielem,4) = thickness
+      common/vthp14/thrmli(mcom,ms,me,7)
+      common/prec1/sna(mcom,ms)
+      common/prec9/nconst(mcom),nelts(mcom,ms),ngaps(mcom,ms),
+     &             npgap(mcom,ms,mgp)
+      common/prec13/c(mcom,ms,mn,2),qc(mcom,ms,mn)
+      common/pers/isd1,ism1,isd2,ism2,isds,isdf,ntstep
+      common/vthp15/vcp(ms,mn,2),qcp(ms,mn)
+      common/vthp16/vcf(ms,mn,2),qcf(ms,mn)
+      common/resspm/ndatspm(mspmnod),dataspm(mspmnod,8),
+     &         strspm(mspmnod,8),unitspm(mspmnod,8),txtspm(mspmnod,8)
+
+C Special materials.
+      common/spmfxst/ispmxist,spflnam
+      common/spmatl/nspmnod,ispmloc(mspmnod,3),ispmtyp(mspmnod,2),
+     &              nnodat(mspmnod),spmdat(mspmnod,mspmdat)
+      common/spmatlbl/spmlabel(mspmnod)
+
+C Phase change material.
+      common/pcm02/spcm(mcom,ms,mn),spcmtf,spcmtp
+      common/pcm03/pcmfac(mcom,ms,mn),pcmshts(mcom,ms,mn)
+
+      character spmlabel*16,spflnam*72,outs*124,strspm*16,unitspm*16,
+     &          txtspm*72
+      logical close
+      real val1,val2,val3,val4,val5,val6,val7
+     &                   val8,val9,val10,val11  ! to pass as parameters
+
+C PCM layer pointers.
+      if(icomp.ne.ispmloc(ispmnod,1))then
+         write(outs,*)'SPMAT53 fatal error: incorrect zone assignment!'
+         call edisp(iuout,outs)
+         stop
+      endif
+      isurf=ispmloc(ispmnod,2)
+      inode=ispmloc(ispmnod,3)
+      ielem=nint(real(inode)/2.)
+
+C Melting and solidification temperatures (degC).
+      tmelt=spmdat(ispmnod,1)
+      tsoli=spmdat(ispmnod,2)
+      tmelt2=spmdat(ispmnod,8)
+      tsoli2=spmdat(ispmnod,9)
+
+C Conductivity in solid and liquid phase (W/m.degC).
+      consol=spmdat(ispmnod,3)
+      conliq=spmdat(ispmnod,4)
+
+C Specific heat capacity (J/kg.degC).
+      shtsol=spmdat(ispmnod,5)
+
+C Latent heat coefficients (J/kg.degC^2 & J/kg.degC respectively).
+      shtliqa=spmdat(ispmnod,6)
+      shtliqb=spmdat(ispmnod,7)
+      shtliqc=spmdat(ispmnod,10)
+      shtliqd=spmdat(ispmnod,11)
+
+C Initialisations for xml output.
+      Rtot=0.0
+      THKsum=0.0
+      sumSHTTHK=0.0
+
+C Process the 3 nodes of the PCM layer.
+      spcmtf=0.0
+      do 10 iphnl=1,3
+         if(iphnl.eq.1)then
+            nloc=inode-1
+            efthk=thrmli(icomp,isurf,ielem,4)*0.25
+         elseif(iphnl.eq.2)then
+            nloc=inode
+            efthk=thrmli(icomp,isurf,ielem,4)*0.5
+         elseif(iphnl.eq.3)then
+            nloc=inode+1
+            efthk=thrmli(icomp,isurf,ielem,4)*0.25
+         endif
+         THKsum=THKsum+efthk		!- total PCM thickness
+
+C Establish temperature of the PCM material node from tfc if the node
+C is intra-construction and tfs if located at the internal surface.
+         if(iphnl.eq.3.and.ielem.eq.nelts(icomp,isurf))then
+            tfcm=tfs(icomp,isurf)
+            tpcm=tps(icomp,isurf)
+         else
+            tfcm=tfc(icomp,isurf,nloc)
+            tpcm=tpc(icomp,isurf,nloc)
+         endif
+
+         imethod=4
+         val1=tsoli
+         val2=tmelt
+         val3=shtsol
+         val4=consol
+         val5=conliq
+         val6=shtliqa
+         val7=shtliqb
+         val8=tsoli2
+         val9=tmelt2
+         val10=shtliqc
+         val11=shtliqd
+         call maxlatent(imethod,tfcm,tpcm,val1,val2,val3,val4,
+     &           val5,val6,val7,val8,val9,val10,
+     &            val11,appcon,appsht,spcmf)
+
+
+C Parameters for xml output.
+         Rtot=Rtot+efthk/appcon
+         sumSHTTHK=sumSHTTHK+appsht
+
+C Establish present value of factp and pcmshtp as last used value
+C of factf and pcmsht respectively.
+         factp=pcmfac(icomp,isurf,nloc)
+         pcmshtp=pcmshts(icomp,isurf,nloc)
+         if(nsinc.eq.1)then
+            factp=0
+         endif
+
+C Calculate new factf; this is used below to remove original values
+C of PCM layer conductivity and specific heat as used to establish the
+C self- and cross- coupling coefficients of the nodal energy balance
+C equations, and substitute the new values as established above. An
+C adjusted factf is required where the PCM node separates the PCM layer
+C from a non-PCM layer.
+         pcmcon=appcon/consol
+         pcmsht=appsht/shtsol
+         factf=pcmcon/pcmsht
+
+C Modify present and future value of 'c' and 'qc' coefficients (i.e.
+C coeficients of nodal energy balance equations.
+         x1=1./pcmshtp
+         if(nsinc.eq.1)then
+            x1=0
+         endif
+         x2=1./pcmsht
+         if(iphnl.eq.1.and.ielem.eq.1)then			!- outermost node
+            vcp(isurf,nloc,1)=c(icomp,isurf,nloc,1)*x1
+            vcp(isurf,nloc,2)=c(icomp,isurf,nloc,2)*factp
+            qcp(isurf,nloc)=qc(icomp,isurf,nloc)*x1
+            vcf(isurf,nloc,1)=c(icomp,isurf,nloc,1)*x2
+            vcf(isurf,nloc,2)=c(icomp,isurf,nloc,2)*factf
+            qcf(isurf,nloc)=qc(icomp,isurf,nloc)*x2
+         elseif(iphnl.eq.2)then					!- centre node
+            vcp(isurf,nloc,1)=c(icomp,isurf,nloc,1)*factp
+            vcp(isurf,nloc,2)=c(icomp,isurf,nloc,2)*factp
+            qcp(isurf,nloc)=qc(icomp,isurf,nloc)*x1
+            vcf(isurf,nloc,1)=c(icomp,isurf,nloc,1)*factf
+            vcf(isurf,nloc,2)=c(icomp,isurf,nloc,2)*factf
+            qcf(isurf,nloc)=qc(icomp,isurf,nloc)*x2
+         elseif(iphnl.eq.3.and.ielem.eq.nelts(icomp,isurf))then	!- internal surface node
+            vcp(isurf,nloc,1)=c(icomp,isurf,nloc,1)*factp
+            vcp(isurf,nloc,2)=c(icomp,isurf,nloc,2)*x1
+            qcp(isurf,nloc)=qc(icomp,isurf,nloc)*x1
+            vcf(isurf,nloc,1)=c(icomp,isurf,nloc,1)*factf
+            vcf(isurf,nloc,2)=c(icomp,isurf,nloc,2)*x2
+            qcf(isurf,nloc)=qc(icomp,isurf,nloc)*x2
+         elseif(iphnl.eq.1.or.iphnl.eq.3)then			!- interface node
+
+C Redefine modification factors to take account of weighted node
+C thermal capacity.
+            if(iphnl.eq.1)then
+               iouter=ielem
+               iinner=ielem-1
+            else
+               iinner=ielem
+               iouter=ielem+1
+            endif
+
+C Original averaged capacity before adjustment.
+            capouter=thrmli(icomp,isurf,iouter,2)*
+     &                               thrmli(icomp,isurf,iouter,3)*
+     &                               (thrmli(icomp,isurf,iouter,4)/2.)
+            capinner=thrmli(icomp,isurf,iinner,2)*
+     &                               thrmli(icomp,isurf,iinner,3)*
+     &                               (thrmli(icomp,isurf,iinner,4)/2.)
+
+C Cater for an adjacent air gap.
+            ians1=0
+            ians2=0
+            if(ngaps(icomp,isurf).ne.0)then
+               if(iphnl.eq.1)then
+                  do igap=1,ngaps(icomp,isurf)
+                     if(iinner.eq.npgap(icomp,isurf,igap))then
+                        capinner=1.3*1005.5*
+     &                               (thrmli(icomp,isurf,iinner,4)/2.)
+                        ians1=1
+                     endif
+                  enddo
+               elseif(iphnl.eq.3)then
+                  do igap=1,ngaps(icomp,isurf)
+                     if(iouter.eq.npgap(icomp,isurf,igap))then
+                        capouter=1.3*1005.5*
+     &                               (thrmli(icomp,isurf,iouter,4)/2.)
+                        ians2=1
+                     endif
+                  enddo
+               endif
+            endif
+            cap=capouter+capinner
+
+C Average capacity utilising new PCM apparent specific heat.
+            capouter=thrmli(icomp,isurf,iouter,2)*
+     &                               appsht*
+     &                               (thrmli(icomp,isurf,iouter,4)/2.)
+            capinner=thrmli(icomp,isurf,iinner,2)*
+     &                               thrmli(icomp,isurf,iinner,3)*
+     &                               (thrmli(icomp,isurf,iinner,4)/2.)
+            if(iphnl.eq.1.and.ians1.eq.1)then
+               capinner=1.3*1005.5*(thrmli(icomp,isurf,iinner,4)/2.)
+            elseif(iphnl.eq.3.and.ians2.eq.1)then
+               capouter=1.3*1005.5*(thrmli(icomp,isurf,iouter,4)/2.)
+            endif
+            capPCM=capouter+capinner
+
+C capPCM value at previous time step.
+            capouter=thrmli(icomp,isurf,iouter,2)*
+     &                               pcmshtp*shtsol*
+     &                               (thrmli(icomp,isurf,iouter,4)/2.)
+            capinner=thrmli(icomp,isurf,iinner,2)*
+     &                               thrmli(icomp,isurf,iinner,3)*
+     &                               (thrmli(icomp,isurf,iinner,4)/2.)
+            if(iphnl.eq.1.and.ians1.eq.1)then
+               capinner=1.3*1005.5*(thrmli(icomp,isurf,iinner,4)/2.)
+            elseif(iphnl.eq.3.and.ians2.eq.1)then
+               capouter=1.3*1005.5*(thrmli(icomp,isurf,iouter,4)/2.)
+            endif
+            capPCMp=capouter+capinner
+
+            x1=cap/capPCMp
+            x2=cap/capPCM
+            xfactp=factp*pcmshtp*x1
+            xfactf=pcmcon*x2
+            if(iphnl.eq.3)then
+               vcp(isurf,nloc,1)=c(icomp,isurf,nloc,1)*xfactp
+               vcp(isurf,nloc,2)=c(icomp,isurf,nloc,2)*x1
+               qcp(isurf,nloc)=qc(icomp,isurf,nloc)*x1
+               vcf(isurf,nloc,1)=c(icomp,isurf,nloc,1)*xfactf
+               vcf(isurf,nloc,2)=c(icomp,isurf,nloc,2)*x2
+               qcf(isurf,nloc)=qc(icomp,isurf,nloc)*x2
+            elseif(iphnl.eq.1.and.ians1.eq.1)then
+               vcp(isurf,nloc,1)=c(icomp,isurf,nloc,1)*x1
+               vcp(isurf,nloc,2)=c(icomp,isurf,nloc,2)*xfactp
+               qcp(isurf,nloc)=qc(icomp,isurf,nloc)*x1
+               vcf(isurf,nloc,1)=c(icomp,isurf,nloc,1)*x2
+               vcf(isurf,nloc,2)=c(icomp,isurf,nloc,2)*xfactf
+               qcf(isurf,nloc)=qc(icomp,isurf,nloc)*x2
+            endif
+         endif
+
+C Save factf and pcmsht for use as factp and pcmshtp at next
+C time step.
+         pcmfac(icomp,isurf,nloc)=factf
+         pcmshts(icomp,isurf,nloc)=pcmsht
+
+   10 continue
+
+C Results output.
+      ndatspm(ispmnod)=4
+C	if(nsinc.le.1)then
+         strspm(ispmnod,1)='/AppCON'
+         unitspm(ispmnod,1)='(W/(m.degC))'
+         txtspm(ispmnod,1)='Average conductivity of PCM layer'
+
+         strspm(ispmnod,2)='/SHCtot'
+         unitspm(ispmnod,2)='(J/kg)'
+         txtspm(ispmnod,2)='Total heat stored in PCM'
+
+         strspm(ispmnod,3)='/SHCarea'
+         unitspm(ispmnod,3)='(J/m^2)'
+         txtspm(ispmnod,3)='Heat stored per PCM area'
+
+         strspm(ispmnod,4)='/PCMFAC'
+         unitspm(ispmnod,4)='(-)'
+         txtspm(ispmnod,4)='PCMFAC of middle node'
+C	endif
+
+
+      if(Rtot.gt.0)dataspm(ispmnod,1)=THKsum/Rtot
+      if(THKsum.gt.0)dataspm(ispmnod,2)=sumSHTTHK
+      dataspm(ispmnod,3)=(spcmtp+spcmtf)/2.0
+      spcmtp=spcmtf
+      dataspm(ispmnod,4)=pcmfac(icomp,isurf,inode)
+
+C As a temporary measure, use zone-related variable, zspmf1, for
+C for results library storage. Output is limited to one special
+C material per zone.
+      zspmf1(ispmloc(ispmnod,1))=dataspm(ispmnod,1)
+
+C XML output.
+      call PCM_to_h3k(icomp,inode,isurf,ispmnod)
+
+C Trace output.
+      if(itc.le.0.or.nsinc.lt.itc.or.ispmxist.eq.0)goto 999
+      if(itrace(19).eq.0.or.nsinc.gt.itcf.or.
+     &   izntrc(icomp).ne.1) goto 999
+      write(outs,'(a,a)') 'Trace output from SPMCMP53 for ',
+     &                                              spmlabel(ispmnod)
+      call edisp(itu,outs)
+      write(outs,'(a,5(2x,i4))')
+     &        'Affected zone, surface and node: ',ispmloc(ispmnod,1),
+     &                       ispmloc(ispmnod,2),inode-1,inode,inode+1
+      call edisp(itu,outs)
+            write(outs,'(a,i3)') 'Outermost node (',inode-1,')'
+      call edisp(itu,' ')
+      do iphnl=1,3
+         if(iphnl.eq.1)then
+            call edisp(itu,outs)
+            write(outs,'(a,1x,f10.2)') 'Temperature ',tfcm,' deg.C'
+            call edisp(itu,outs)
+            write(outs,'(a,1x,f10.2)') 'Heat stored (future time row)',
+     &                                  spcm(icomp,isurf,inode-1),' J'
+            call edisp(itu,outs)
+         elseif(iphnl.eq.2)then
+            write(outs,'(a,i3)') 'Middle node (',inode,')'
+            call edisp(itu,outs)
+            write(outs,'(a,1x,f10.2)') 'Temperature ',tfcm,' deg.C'
+            call edisp(itu,outs)
+            write(outs,'(a,1x,f10.2)') 'Heat stored (future time row)',
+     &                                  spcm(icomp,isurf,inode),' J'
+            call edisp(itu,outs)
+         else
+            write(outs,'(a,i3)') 'Intermost node (',inode+1,')'
+            call edisp(itu,outs)
+            write(outs,'(a,1x,f10.2)') 'Temperature ',tfcm,' deg.C'
+            call edisp(itu,outs)
+            write(outs,'(a,1x,f10.2)') 'Heat stored (future time row)',
+     &                                  spcm(icomp,isurf,inode+1),' J'
+            call edisp(itu,outs)
+         endif
+      enddo
+
+  999 return
       end

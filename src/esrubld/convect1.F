@@ -74,6 +74,8 @@ C ******************** MZCONV ********************
 C Indicies of simulation toggles for inside and outside hc coef.
       common/hcthry/ihct,icorexhct
 
+      COMMON/calcdCFD/mICORcfd(MCOM),mHCcfd(MCOM)
+
       character outs*124,LCFD*72
 
 C Iterate through each zone.
@@ -81,15 +83,9 @@ C Iterate through each zone.
 
 C Interrogate the configuration to decide which surface-convection approaches to
 C apply for each `interior' building surface of the zone.
-        CALL INTERR(ICOMP)
-
-C Invoke CFD if there is `surface conflation' between the thermal domain
-C and CFD. Set flag indicating HCs have not been calculated by CFD for the
-C current zone for the current time step: this will be reset if CFD is invoked.
-        mHCcfd = 0
-        IF( ABS(IFCFD(ICOMP)).eq.1 .or. 
-     &      (ABS(IFCFD(ICOMP)).ge.4 .and. ABS(IFCFD(ICOMP)).le.7) )THEN
-          CALL SURFCONF(ICOMP,mHCcfd)
+C This may have already been done if CFD was invoked, check this first.
+        IF (mICORcfd(ICOMP).EQ.0) THEN
+          CALL INTERR(ICOMP)
         ENDIF
 
 C Iterate through each multi-layer construction.
@@ -124,7 +120,7 @@ C---------Calculate the HTC using one of the empirical correlations.
           HCIF(ICOMP,ISUR)=HC
 C---------Decide whether to use the HTC calculated by the empirical correlation
 C---------or the HTC calculated by CFD.
-          IF(mHCcfd.EQ.1) CALL ASSESS(ICOMP,ISUR)
+          IF(mHCcfd(ICOMP).EQ.1) CALL ASSESS(ICOMP,ISUR)
 
 C Calculate the HTC for `outside' surface of the mlc using empirical correlations.
 C The `outside' surface of the mlc may face the exterior environment, the ground,

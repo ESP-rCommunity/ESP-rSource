@@ -33,5 +33,5 @@ C  Maximum number of contaminants that can be modelled (Set equal to
 C  INTEGER, PARAMETER :: MCONTM in net_flow.h, if this is changed also change MCONTM)
       INTEGER, PARAMETER :: MCTM=4
 C Maximum frequency of residuals plotting during CFD solutions
-      INTEGER, PARAMETER :: MFRP=100
+      INTEGER, PARAMETER :: MFRP=1000
 

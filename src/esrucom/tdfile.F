@@ -224,12 +224,21 @@ C << note that isetptt should be dimensioned MCF >>
                     if(DBTASK(ITD1)(1:6).eq.'SETPTT')then
 
 C Search instances in temporal file to find match(s).
-                      DO 81 itd4=1,NDATA
+                      DO itd4=1,NDATA
                         IF(TAG(itd4)(1:lnblnk(TAG(itd4))).EQ.
      &                    DBTAG(itd1)(1:lnblnk(DBTAG(itd1))))THEN
                           ISETPTT(itd3)=itd4
                         ENDIF
-  81                  CONTINUE
+                      ENDDO
+                    elseif(DBTASK(ITD1)(1:8).eq.'HTCLSETP')then
+
+C Search instances in temporal file to find match(s).
+                      DO itd4=1,NDATA
+                        IF(TAG(itd4)(1:lnblnk(TAG(itd4))).EQ.
+     &                    DBTAG(itd1)(1:lnblnk(DBTAG(itd1))))THEN
+                          IHTCLSETP(itd3)=itd4
+                        ENDIF
+                      ENDDO
                     endif
                   endif
   80            continue
@@ -241,6 +250,7 @@ C            write(6,*)'ISETPTT',ISETPTT
 C            write(6,*)'ICASUAL',ICASUAL
 C            write(6,*)'ICASUAL3',ICASUAL3
 C            write(6,*)'ICTLSTA',ICTLSTA
+C            write(6,*)'IHTCLSETP',IHTCLSETP
 
           endif
         endif
@@ -1079,7 +1089,7 @@ C espriou.h provides current file.
 
       CHARACTER*72 AFIL,tdaide
       CHARACTER act*1
-      CHARACTER outs*124
+      CHARACTER outs*144
       character outstr*248,LOUTSTR*1000,WORD*20,TMP*4,tail*8,msgl2*86
       integer ier
       real toler  ! what is half of the timestep

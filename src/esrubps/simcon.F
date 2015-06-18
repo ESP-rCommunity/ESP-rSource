@@ -25,6 +25,7 @@ C  MZSIML   Sets the final simulation parameters prior to simulation.
 C  SIMTOG   Set simulation toggles
 C  MSTTOG   Set moisture flow toggles.
 C  STMTOG   Set building construction structured mesh toggles.
+C  CFDTOG   Set CFD coupling toggles.
 C  MZSPER   Definition of simulation period.
 C  MZSIMH   Lists the current simulator parameters (dates, save option etc.)
 C  MZTRAC   Define quantities to be traced.
@@ -731,6 +732,9 @@ C Set simulation toggles.
 C Tolerance for iteration of hydrogen flow matrix 
       common/PITER_H2/fH2_iteration_tolerance
       real fH2_iteration_tolerance
+
+C Some of these variables may have been set in the mass flow
+C network file.
       COMMON/MFSINC/MFBSNC
       COMMON/MFCALC/IPSMOD,MSLVTP
       COMMON/MFLITR/MAXITF,FERREL,FERMFL,PMAX,STEFFR,MFTRAC,ITER,IOK
@@ -762,6 +766,10 @@ C  zSWA - shortwave absorption (W).
       COMMON/zfluid/znotair(mcom),zfldK,zfldD,zfldC,zfldA,
      &              zSWAp(mcom),zSWAf(mcom)
       LOGICAL znotair
+
+      common/ACTDOM/CFDOK
+
+      logical CFDOK
 
 C Treatment of solar radiation data in weather file
 C ESP-r operates on hourly-centered data. That is, the amount of solar
@@ -876,7 +884,11 @@ C Make up strings for the current set of toggles.
         ITEMG(12)=  'k Mass flow timestep >> 1 per zone_step '
       endif
       ITEMG(13)=    '  ________________________________      '
-      ITEMG(14)=    'l                                       '
+      if(CFDOK)then
+        ITEMG(14)=  'l CFD options                  '
+      else
+        ITEMG(14)=  'l CFD options (NA)             '
+      endif
       if(ICLMFL.eq.0) then
         ITEMG(15)=  'm Climate interpolation >> ON           '
       elseif(ICLMFL.eq.1) then
@@ -1067,7 +1079,11 @@ C This is over-ruled in case of plant fluid simulation
           MFBSNC=IW-1
         ENDIF
       elseif(INO.eq.14)then
-
+        if(CFDOK)then
+          call CFDTOG
+        else
+          call edisp(iuout,'No CFD domain defined for current model.')
+        endif
       elseif(INO.eq.15)then
         call tstamp('>','SIM: edit climate interpolation')
         helptopic='toggle_clm_interpolation'
@@ -2629,5 +2645,121 @@ c added Save level 5 information
       endif
 
    12 return
+      end
+
+C ******************** CFDTOG
+C Set CFD coupling toggles.
+
+      subroutine CFDTOG
+#include "cfd.h"
+
+      COMMON/OUTIN/IUOUT,IUIN
+      COMMON/CFDTOGS/ACCON,CFD2BLD,CFD2MFS
+      COMMON/GGDH/GENB1(ntcelx,ntcely,ntcelz),GGDH
+
+      integer ACCON,CFD2BLD,CFD2MFS
+      logical GGDH
+
+      CHARACTER ITEMG(10)*40 
+      integer NITMS,INO  ! max items and current menu item
+
+C For help messages
+      character helpinsub*24   ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='CFDTOG'  ! set for cfiles
+      
+ 10   INO=-4
+      ITEMG(1)=    ' ---------- COUPLING OPTIONS ---------- '
+      if(ACCON.eq.1)then
+        ITEMG(2)=  'a Adaptive turbulence model >> On       '
+      elseif(ACCON.eq.0)then
+        ITEMG(2)=  'a Adaptive turbulence model >> Off      '
+      else
+        call edisp(iuout,'Unrecognized value of ACCON')
+        return
+      endif
+      if(ACCON.eq.1)then
+        if(CFD2BLD.eq.1)then
+          ITEMG(3)='b Allow CFD to set air-surf. flux >> No '
+        elseif(CFD2BLD.eq.2)then
+          ITEMG(3)='b Allow CFD to set air-surf. flux >> Yes'
+        else
+          call edisp(iuout,'Unrecognized value of CFD2BLD')
+          return
+        endif
+      else
+        ITEMG(3)=  'b Allow CFD to set air-surf. flux >> NA '
+      endif
+      if(CFD2MFS.eq.1)then
+        ITEMG(4)=  'c Allow CFD-MFS iteration >> No         '
+      elseif(CFD2MFS.eq.2)then
+        ITEMG(4)=  'c Allow CFD-MFS iteration >> Yes        '
+      else
+        call edisp(iuout,'Unrecognized value of CFD2MFS')
+        return
+      endif
+      ITEMG(5)=    ' ----------- SOLVER OPTIONS ----------- '
+      if (GGDH) then
+        ITEMG(6)=  'd General Gradient Diffusion Hyp. >> On '
+      else
+        ITEMG(6)=  'd General Gradient Diffusion Hyp. >> Off'
+      endif
+      ITEMG(7)=    '  ________________________________      '
+      ITEMG(8)=    '? help                                  '
+      ITEMG(9)=    '- exit to simulation toggles menu       '
+      NITMS=9
+
+C Help text for this menu.
+      helptopic='cfd_coupling_toggles'
+      call gethelptext(helpinsub,helptopic,nbhelp)
+
+      CALL EMENU('CFD coupling toggles',ITEMG,NITMS,INO)
+
+      if(INO.eq.2)then
+        IF(ACCON.eq.1)then
+C Turn ACC off.
+          ACCON=0
+        else
+C Turn ACC on.
+          ACCON=1
+        endif
+      elseif((INO.eq.3).and.(ACCON.eq.1))then
+        if(CFD2BLD.eq.1)then
+C 2-way CFD-BLD conflation.
+          CFD2BLD=2
+        else
+C 1-way CFD-BLD conflation.
+          CFD2BLD=1
+        endif
+      elseif(INO.eq.4)then
+        if(CFD2MFS.eq.2)then
+C 1-way CFD-MFS conflation.
+          CFD2MFS=1
+        else
+C 2-way CFD-MFS conflation.
+          CFD2MFS=2
+        endif
+      elseif(INO.eq.6)then
+        if(.not.GGDH)then
+C GGDH on.
+          GGDH=.TRUE.
+        else
+C GGDH off.
+          GGDH=.FALSE.
+        endif
+      elseif(INO.eq.(NITMS-1))then
+C Help.
+        helptopic='cfd_coupling_toggles'
+        call gethelptext(helpinsub,helptopic,nbhelp)
+        CALL PHELPD('CFD coupling toggles',nbhelp,'-',0,0,IER)
+      elseif(INO.eq.NITMS)then
+C Return to simulation toggles menu.
+        return
+      endif
+
+C Redisplay menu.
+      goto 10
       end
  
