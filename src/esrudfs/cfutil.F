@@ -404,6 +404,8 @@ C Call with parameter "IFRAME" which is the time step!
 
       integer IFRAME
 
+      real Uftmp,Vftmp,Wftmp
+
 C 'lflname' is the name of the current output file
       character lflname*72
 
@@ -478,7 +480,12 @@ C Continue with velocity
       do 104 k=2,nk-1
         do 104 j=2,nj-1
           do 104 i=2,ni-1
-            write(IUNIT,201)Uf(I,J,K),Vf(I,J,K),Wf(I,J,K)
+C Velocity grid is offset from scalar grid (see GRIDGEO in cfgrid.F).
+C Interpolate velocity vector components to take account of this.
+            Uftmp=0.5*(Uf(i,j,k)+Uf(i+1,j,k))
+            Vftmp=0.5*(Vf(i,j,k)+Vf(i,j+1,k))
+            Wftmp=0.5*(Wf(i,j,k)+Wf(i,j,k+1))
+            write(IUNIT,201)Uftmp,Vftmp,Wftmp
  104  continue
 
 C Formats
