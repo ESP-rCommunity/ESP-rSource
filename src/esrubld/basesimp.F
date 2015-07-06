@@ -72,6 +72,9 @@ C Limits for parameter values to be read in
      &     fMaxFoundWidth, fMinInsulRSI,  fMaxInsulRSI, fMinSoilCond,
      &     fMaxSoilCond, fMinWaterTable, fMaxWaterTable
       logical close,close1,close99
+	  
+      real  bLengTemp 
+	  
 
 C This subroutine is called once for each zone which has a BASESIMP foundation.
 C The data are read from the BASESIMP input data file (.bsm file) and placed
@@ -240,8 +243,10 @@ C Read foundation width.
 
 C Check that width is not greater than length.
       if(bsWIDT(icomp) .gt. bsLENG(icomp)) then
-        t60=' Foundation width cannot be greater than length '
-        goto 1000
+         bLengTemp = bsWIDT(icomp)
+	     bsWIDT(icomp) = bsLENG(icomp)
+	     bsLENG(icomp) = bLengTemp
+	  
       endif
 
 C Read overlap length for "combination" insulation. Data must be always be
