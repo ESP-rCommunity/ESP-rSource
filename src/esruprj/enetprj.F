@@ -2049,15 +2049,15 @@ C Loop through each casual gain and determine if it is applicable or not.
 
 C << see if data structures can be updated! 
 
-          IF(NBDAYTYPE.GT.3)THEN
-            CALL EDISP(IUOUT,'More than three day types are not')
-            CALL EDISP(IUOUT,'supported for hybrid power components')
-            CALL EDISP(IUOUT,'Warning generated from subroutine EDEHYB')
-          ENDIF
+cx          IF(NBDAYTYPE.GT.3)THEN
+cx            CALL EDISP(IUOUT,'More than three day types are not')
+cx            CALL EDISP(IUOUT,'supported for hybrid power components')
+cx            CALL EDISP(IUOUT,'Warning generated from subroutine EDEHYB')
+cx          ENDIF
           DO 500 IDTY=1,3
             ITAG=0
             DO 501 I=1,MC
-              IF(ICGT(IDTY,I).EQ.1)ITAG=1
+              IF((ICGT(IDTY,I).EQ.1).or.(ICGT(IDTY,I).EQ.-1)) ITAG=1
               IF(ITAG.EQ.1.AND.IAPPF(IDTY).EQ.0)THEN
                 TMPTYPSTR(IDTY)=' '
                 IF(LODLABEL(IZ,IDTY)(1:6).NE.'Occupt')THEN

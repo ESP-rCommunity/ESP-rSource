@@ -2173,12 +2173,13 @@ C Report flux/m^2.
           IGETNO(NGET,1)=25
           IGETNO(NGET,6)=-104
           IGETNO(NGET,7)=10
-          SUFFIX=' ExSolAb'
+          SUFFIX=' ExSolIn'
           if(IROC.eq.0)then
             if (ISM.eq.0) then
               SLABEL(NGET)='Surface solar incid outside (W)'
               LNSLABEL(NGET)=31
             else
+              IGETNO(NGET,8)=3 ! see unit code in table.F, line 447 ff. **?
               SLABEL(NGET)='Surf solar incid outside (W/m^2)'
               LNSLABEL(NGET)=32
             endif

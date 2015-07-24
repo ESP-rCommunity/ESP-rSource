@@ -40,7 +40,8 @@ C            electrical network. The admittance is usually the inverse of the co
 C            impedance of the linkage between the nodes. However, when conductors are
 C            mutually coupled (i.e. overhead lines), the calculation of the admittance
 C            is more convoluted. All admittance values as calculated in PER-UNIT.
-C ENETADMY - calculates the self-admittance and branch admittances for each node            C            in the electrical network. 
+C ENETADMY - calculates the self-admittance and branch admittances for each node
+C            in the electrical network.
 C ENETPARAM- this routine allows the user to set up the electrical power flow solution
 C            parameters.
 C     
@@ -588,7 +589,8 @@ C Trace
 C Write out the calculated impedance values
           WRITE(ITU,*)' '
 
-          WRITE(ITU,*)' Calculated impedance values for component',ICCN
+          WRITE(ITU,*)' Calculated impedance values for '
+     &      ,'connecting component ',ICCN
           WRITE(ITU,*)' Component type',CONECOMID(ICCN)
           WRITE(ITU,*)' No. of calculated impedance values',NCONZ(ICCN)
           INC=2
@@ -609,7 +611,8 @@ C Write out the calculated impedance values
 
 C Error message
  1001 WRITE(OUTS,*) 
-     &'ERROR: ENETCBAZ incorrect no. of data items specified for conn '
+     &'ERROR: ENETCBAZ incorrect no. of data items specified for conn'
+     &,'ecting component '
      &,ICCN
       CALL EDISP(itu,outs)
       CALL EPWAIT

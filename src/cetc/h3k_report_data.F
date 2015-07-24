@@ -3573,6 +3573,8 @@ C.....Power-only component flux
 C.....Call RE-H2-CTL reporting function
       call RESH2_Ctl_PostProcess()
 
+C.....Call RES (elec) Ctl reporting function
+      call RES_elec_ctl_PostProcess()
 
       return
       end

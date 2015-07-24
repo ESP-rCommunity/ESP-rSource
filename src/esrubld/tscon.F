@@ -1187,6 +1187,13 @@ C control signals.
       logical bResH2_ctl_unconverged
 C H2-dep_controller: end 
 
+C RES (elec) dep_controller: start
+C Flag for convergence of the renewable energy system (elec) electric controller's plant
+C control signals.
+      common / reselec_ctl_status / bRESElec_ctl_unconverged
+      logical bRESElec_ctl_unconverged  !-logical flag indicating additional iterations req'd
+C RES (elec) dep_controller: end
+
 C------------------------------------------------------------------------------
 C Type declarations for local variables.
 C------------------------------------------------------------------------------
@@ -1207,7 +1214,7 @@ C load. This load was an estimate only: the actual electrical load is
 C calculated by the electrical solution domain, which is invoked following
 C convergence of the plant domain.  Compare the estimated load from the plant
 C domain to that calculated by the electrical domain.  If they differ by more
-C than 1 W then force another iteration through the plant and electrical
+C than 2 W then force another iteration through the plant and electrical
 C domains.
 C------------------------------------------------------------------------------
 
@@ -1244,7 +1251,8 @@ C Interation control for Hydrogen systems (experimental)
       IF( .not. CLOSEa .OR.
      &    .not. CLOSEb .OR.
      &    .not. CLOSEc .OR.
-     &    bResH2_ctl_unconverged )THEN
+     &    bResH2_ctl_unconverged .OR.
+     &    bRESElec_ctl_unconverged )THEN
 C H2-dep_controller:end
 
 C      IF( .not. CLOSEa .OR.

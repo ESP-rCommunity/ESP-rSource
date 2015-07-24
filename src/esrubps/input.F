@@ -1550,7 +1550,14 @@ C Residential hydrogen cogen: control file
                                 !- cogen controller is specified
       character*72 resh2flnam   !- name of file containing residential hydrogen cogen
                                 !- controller inputs
-
+C Experimental renewable energy system (elec) controller
+C Input file information
+      common/reselecctl/ireselecctl,reselecflnam
+      integer ireselecctl       !- flag indicating that file required by renewable energy
+                                !- system controller is specified
+      character*72 reselecflnam !- name of file containing renewable energy system
+                                !- controller inputs
+                                
       CHARACTER OUTSTR*124,outs*72
       CHARACTER*72 LCFD
       CHARACTER*72 lfil,CFTRFL,TITLE,LPHI
@@ -1586,6 +1593,15 @@ C Residential hydrogen cogen : control file
          call RESH2_Ctl_Read
       endif
 C H2-dep_controller: end
+
+C RES (elec) controller: start
+C Experimental renewable energy system (elec) controller. 
+C Use with caution
+      if ( (ireselecctl .eq. 1) .and. (ICOMP.eq.1) ) then
+C        Read control file (once)
+         call RES_elec_ctl_Read
+      endif
+C RES (elec) controller: end
 
 C If zone TMC file read it in.
       IF(ITW(ICOMP).EQ.1)then

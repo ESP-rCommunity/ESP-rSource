@@ -51,8 +51,7 @@ C-------------------------------------------------------------------------------
      & hiVoltLion,
      & loTempLion,
      & hiTempLion,
-     & cycles_used_Lion,
-     & batDemandP_Lion
+     & cycles_used_Lion
 
 C---------------------------------------------------------------------------------
 C Declaration of variable type and definition
@@ -141,12 +140,4 @@ C Vanadium redox
 C Lithium-ion
       INTEGER lion
       PARAMETER (lion = 22)
-
-C-----------------------------------------
-C Res electric control flags and parameters
-C-----------------------------------------
-C These variables are invoked by Res_elec_Ctl.F in the cetc
-C folder to assign a battery demand if and only if its a li-on battery type
-
-      REAL batDemandP_Lion
 

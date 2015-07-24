@@ -232,7 +232,15 @@ C SHOCCshzFile - path to SHOCC .shz file for each SHOCC'd zone
      &                SHOCCshzFile(mcom)
       logical bSHOCCed,bZoneSHOCCed
       character SHOCCshlFile*72,SHOCCshzFile*72
-      
+
+C Renewable energy system (elec) control file
+C Input file information
+      common/reselecctl/ireselecctl,reselecflnam
+      integer ireselecctl       !- flag indicating that file required by renewable energy
+                                !- system controller is specified
+      character*72 reselecflnam !- name of file containing renewable energy system
+                                !- controller inputs
+C RES (elec): end
 
 C Fuel cell.
       common/Fcell/iFClds,LFClds
@@ -766,6 +774,17 @@ C Write control file if known.
       else
         WRITE(IFCFG,'(2a)',IOSTAT=IOS,ERR=2) '*ctl  ',
      &    LCTLF(1:lnblnk(LCTLF))
+      endif
+
+C Write optional additional control files here to keep directly
+C control-functionality files close together
+C Residential hydrogen cogen control file
+cx ... could/should be added here, surely?
+
+C Renewable energy system (elec) controller control file
+      if(ireselecctl.gt.0.and.reselecflnam(1:2).ne.'  ')then
+        WRITE(IFCFG,'(2A)',IOSTAT=IOS,ERR=2) '*resel  ',
+     &    reselecflnam(1:lnblnk(reselecflnam))
       endif
 
 C Write model contents file if known.

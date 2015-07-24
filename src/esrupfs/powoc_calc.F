@@ -395,7 +395,7 @@ C-------------------------------------------------------------------------------
 
 
 C ***********************************POWOC_TDF_PROF********************************************
-C Reads real and reactive power flow [rofiles from the temporal database and assigns them  
+C Reads real and reactive power flow profiles from the temporal database and assigns them
 C to the electrical network model. Positive numbers indicate a load, negative values imply that 
 C power is being injected into the network.   
 C 

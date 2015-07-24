@@ -38,6 +38,7 @@ C
 C  This is the common interface for the following power-only components:
 C                ID = 17 (lead-acid battery)
 C                ID = 21 (VRB)
+C                ID = 22 (Li-Ion)
 C
 C - The lead-acid battery model includes a crude thermal mass model of battery temperature
 C   evolution as well as an optional thermal management system composed of electric resistances
@@ -189,8 +190,7 @@ C     is not considered. It is put here for the reference of future improvement.
 
       ELSEIF(POWCOMID(IPWC) .EQ. lion) THEN !Lithium-ion battery
          iZoneIndex = INT(powcdat(IPWC,72))
-         batDemandP = batDemandP_Lion !This is to read the battery load specificied
-                                      !Specifically by Res_elec_Ctl.F
+
 C-----Add support for other battery types
 C     ELSEIF (POWCOMID(IPWC) .EQ.??) THEN
       ENDIF
@@ -296,14 +296,14 @@ C       This should not be possible !!
      &                dtTStep,maxPBatCharge)
         batLoad = ChargePower
 
-      ENDIF
+      ENDIF ! (mandChargeCycle .NE. 1)
 
-C-------Assign maxPBatCharge and maxPBat Discharge to a common block variable
-C-------so that the maximum charge rate and maximum discharge rate
-C-------of the battery can be transposed outside this subroutine.  This is an inelegant
-C-------solution that should be replaced with a more generalized approach in the future.
-        maxPBatCharge_common = maxPBatCharge
-        maxPBatDischarge_common = maxPBatDischarge
+C-----Assign maxPBatCharge and maxPBat Discharge to a common block variable
+C-----so that the maximum charge rate and maximum discharge rate
+C-----of the battery can be transposed outside this subroutine.  This is an inelegant
+C-----solution that should be replaced with a more generalized approach in the future.
+      maxPBatCharge_common = maxPBatCharge
+      maxPBatDischarge_common = maxPBatDischarge
 
       IF(batMode .EQ. 1 .OR. batMode .EQ. 2 ) THEN  ! Discharge or idle
          maxCBat = maxCBatDischarge
@@ -384,6 +384,7 @@ C Save variables that are required by control sensors.
       iPow_Time_Row_Count(IPWC) = 2                         ! # of additional data
       fPow_Time_Row_Future(IPWC,1) = (1. - batDODFin)*100.  ! battery SOC, %
       fPow_Time_Row_Future(IPWC,2) = batTFin                ! battery temperature
+cx      fPow_Time_Row_Future(IPWC,3) = maxPBatDischarge       ! max discharge rate (alternative to _common)
 
 C power returned/taken to meet the demand
       IF ( batMode .EQ. 1 .OR. batMode .EQ. 2 ) THEN  ! discharge
@@ -578,7 +579,7 @@ C ************** Initialisation
        batTempInit = POWCDAT(IPWC,9)
        batDODInit = POWCDAT(IPWC,10)
 
-       IF( POWCOMID(IPWC) .EQ. 17) THEN      ! Lead-acid battery
+       IF( POWCOMID(IPWC) .EQ. pba) THEN      ! Lead-acid battery
          lifeUseFactor = 0
          batLifeUsed = 0.
          cumBatLifeUsed = 0.
@@ -591,7 +592,12 @@ C ************** Initialisation
          batTempInit = POWCDAT(IPWC,9)
          batDODInit = POWCDAT(IPWC,10)
          mandChargeCycle = 0 ! This is to get by a road block set by the lead acid later
-         cycles_used_Lion = 0 ! This is the amount of cycles the cell has used for degradation
+         if (abuseFlag.eq.0) then
+           cycles_used_Lion = 0 ! This is the amount of cycles the cell has used for degradation
+                                ! if abuseFlag is set .ne.0 (in Res_elec_Ctl.F, approx. line 1000),
+                                ! the value is not changed, here!
+         endif
+cx         write(*,*)"*** cycles_used_Lion=",cycles_used_Lion
          loVoltLion = 0 ! These are flags initially set to zero to check that Li-on battery is within
          hiVoltLion = 0 ! safe limits
          loTempLion = 0
@@ -834,7 +840,7 @@ C     charge cycle, because then the voltage is expected to surpass the batMaxVo
       IF (FreeVoltage .GT. batMaxVolt) THEN
         if (mandChargeCycle .NE. 1) then
           WRITE(IUOUT,*) 'Warning Battery Model: Free voltage above ',
-     &                  ' max in function FreeVoltage', (NSINC)
+     &                  'max in function FreeVoltage', (NSINC)
           FreeVoltage = batMaxVolt
         endif
       ELSEIF(FreeVoltage .LT. batMinVolt) THEN
@@ -1157,8 +1163,8 @@ C           at the end of the time step
 
 C           Make sure the current does not exceed the maximum allowable current
             batCurrent = MIN(batCurrent,batMaxCur)
-         ENDIF  ! DOD
-      ELSE  !Discharge
+         ENDIF  ! Depth Of Discharge below lower limit
+      ELSE  ! Discharge
          IF ((DODEnd .GT. upperBoundDOD) .OR.
      &      (batCurrent>FreeVAvg/2.0/RIntAvg)) THEN
          ! DOD exceeds limit -> current too high   or
@@ -3360,8 +3366,12 @@ C     Account for degradation
       IF (cycles_used_Lion .LE. POWCDAT(IPWC,81)) THEN ! Battery is still in useful life region
         cellCap = (1.-0.2*cycles_used_Lion/POWCDAT(IPWC,81))
      &    *cellCapRef
-      ELSE ! The battery is beyond useful life and if falling off
-        cellCap = (8.8-.8*cycles_used_Lion/POWCDAT(IPWC,81))
+      ELSE ! The battery is beyond useful life and is falling off
+cx        cellCap = (8.8-.8*cycles_used_Lion/POWCDAT(IPWC,81))
+cx     &    *cellCapRef
+cx                <<add parameter "degradation factor" to change degradation
+cx                  in post-useful life phase ??>>
+        cellCap = (0.8-0.8*(1.-POWCDAT(IPWC,81)/cycles_used_Lion))
      &    *cellCapRef
       ENDIF
 
@@ -4060,22 +4070,18 @@ C         The needed energy in watts to return to safe points
      &                   'Convergeance in Lion_BMS hiVoltage flag'
         ENDIF
 
-        IF (batMode_or .NE. 1) THEN ! Originally in charge or idle mode, cant happen
-                                    ! to bring into safe limits
-
-C         Re-evaluate the max current and power that you could discharge now that you changed modes
+        IF (batMode_or .NE. 1) THEN
+C         Originally in charge or idle mode. Re-evaluate the max current
+C         and power that you could discharge now that you changed modes
           maxC = MaxCurrent(IPWC,batTIni,DODIni,batMode,dtTStep)
           maxP = PowForCur(IPWC,batTIni,DODIni,batMode,dtTStep,
      &                             maxC)
+        endif
 
-        ELSE ! Battery in discharge or idle determine how much excess power the batt needs to dump
+        IF (pLoad_or .GE. pLoad) THEN ! What can be offered exceeds what needs to be dumped
+          pLoad = pLoad_or !assign load back to original because it is enough to safely return battery
 
-          IF (pLoad_or .GE. pLoad) THEN ! What can be offered exceeds what needs to be dumped
-            pLoad = pLoad_or !assign load back to original because it is enough to safely return battery
-
-          ELSE ! What can be offered doesn't exceed and some will dump to the grid
-
-          ENDIF
+        ELSE ! What can be offered doesn't exceed and some will dump to the grid
 
         ENDIF
 
@@ -4111,9 +4117,9 @@ C safe limits
 
 C         Re-evaluate the max current and power that you could discharge now that you changed modes
           maxC = MaxCurrent(IPWC,batTIni,DODIni,batMode,dtTStep)
-          maxP = PowForCur(IPWC,batTIni,DODIni,batMode,dtTStep,
-     &                             maxC)
+          maxP = PowForCur(IPWC,batTIni,DODIni,batMode,dtTStep,maxC)
 
+C << logic most likely also flawed, as with hiVolt above ... >>
         ELSE ! Battery in charge or idle determine how much excess power the batt needs to charge
 
           IF (pLoad_or .GE. pLoad) THEN ! What can be offered exceeds what needs to be dumped
@@ -4375,7 +4381,8 @@ C POWCDAT (IPWC,21): E2
 C POWCDAT (IPWC,22): E1
 C POWCDAT (IPWC,23): E0
 C---------------------------
-C Rint as a function of DOD at REFERENCE CURRENT of a single cell Rint(DOD) = Rint5*DOD^5 +  Rint4*DOD^4 + Rint3*DOD^3 + Rint2*DOD^2 + Rint1*DOD + Rint0
+C Rint as a function of DOD at REFERENCE CURRENT of a single cell
+C        Rint(DOD) = Rint5*DOD^5 +  Rint4*DOD^4 + Rint3*DOD^3 + Rint2*DOD^2 + Rint1*DOD + Rint0
 C This is determined by polyfitting the difference between the OCV and Vref divided
 C by the reference current using the OCV DOD scale (see Neil Saldanha's thesis for more info)
 C---------------------------

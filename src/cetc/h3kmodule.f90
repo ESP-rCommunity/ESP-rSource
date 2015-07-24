@@ -301,7 +301,10 @@ MODULE h3kmodule
    !Used by RE-H2-ctl.F
    Type(ReportVariable) :: rvCtrlReH2NPwElAct,rvCtrlReH2NPwBattChrg,rvCtrlReH2NPwBattDschrg, &
          rvCtrlReH2NPwPEMFCAct
-
+!@@@@@
+   !Used by RES_elec_Ctl.F
+   Type(ReportVariable) :: rvRESElecCtlScenario
+!@@@@@
    !Used by hvacsim.F
    Type(ReportVariable) :: rvPltHvacComFuelAmnt,rvPltHvacFuelEnPilot,rvPltHvacEff, &
          rvPltHvacCOPHeat,rvPltHvacCOPCool,rvPltHvacFuelEnHeat,rvPltHvacPrtLdHeat, &
@@ -3468,6 +3471,13 @@ CONTAINS
       rvCtrlReH2NPwPEMFCAct%VariableType = '(W)'
       rvCtrlReH2NPwPEMFCAct%Description = 'Balance on AC bus when PEMFC is responding to loads'
       Call AddVariable(rvCtrlReH2NPwPEMFCAct)
+
+      !Used by RES_elec_Ctl.F
+      rvRESElecCtlScenario%VariableName = 'control/res_elec_ctl/ctl_scenario'
+      rvRESElecCtlScenario%MetaType = 'units'
+      rvRESElecCtlScenario%VariableType = '(-)'
+      rvRESElecCtlScenario%Description = 'Control scenario in RES elec control function'
+      Call AddVariable(rvRESElecCtlScenario)
 
       !Used by hvacsim.F
       rvPltHvacComFuelAmnt%VariableName = 'plant/ideal_hvac_models/component_*/fuel_use/*/amount'

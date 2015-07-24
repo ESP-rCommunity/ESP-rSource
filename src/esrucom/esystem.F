@@ -477,6 +477,15 @@ C Residential hydrogen cogen: control file
                                 !- controller inputs
 C H2-dep_controller: end
 
+C Renewable energy system (elec) control file
+C Input file information
+      common/reselecctl/ireselecctl,reselecflnam
+      integer ireselecctl       !- flag indicating that file required by renewable energy
+                                !- system controller is specified
+      character*72 reselecflnam !- name of file containing renewable energy system
+                                !- controller inputs
+C RES (elec): end
+
 C Flag for multi-year simulation definition
       logical bMY_sim_sps
 
@@ -1938,6 +1947,13 @@ C back out when when the cfg file is saved, but
 C we won't do anything else at present.
         CALL EGETRM(LOUTSTR,K,resh2flnam,'W','res h2 ctl',IER)
         iresh2ctl = 1
+
+      elseif(WORD(1:6).eq.'*resel')then
+
+C Renewable energy system (elec) controller control file
+C The RES (elec) system controller code is experimental. 
+        CALL EGETRM(LOUTSTR,K,reselecflnam,'W','res elec ctl',IER)
+        ireselecctl = 1
 
       elseif(WORD(1:4).eq.'*tdf')then
 
