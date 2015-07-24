@@ -62,6 +62,8 @@ C espriou.h provides currentfile.
 #include "schedule.h"
 C derived.h are derived areas and U values for zones and the model
 #include "derived.h"
+#include "plant.h"
+#include "power.h"
       
       integer lnblnk  ! function definition
 
@@ -117,6 +119,20 @@ C LPNF (72 char) plant network file name.
       INTEGER :: iairn,icaas
       COMMON/MFLOW2/NDNAM(0:MNOD)
 
+C ISPMXIST is the existance flag for special materials
+      common/spmfxst/ispmxist,spflnam
+      common/spmatl/nspmnod,ispmloc(mspmnod,3),ispmtyp(mspmnod,2),
+     &              nnodat(mspmnod),spmdat(mspmnod,mspmdat)
+      common/spmatlbl/spmlabel(mspmnod)
+
+      integer :: ispmxist,nspmnod,ispmloc,ispmtyp,nnodat
+      character :: spflnam*72,spmlabel*16
+      real :: spmdat
+
+      dimension itypenum(mspmnod),numoftyp(mspmnod)
+      integer :: itypenum,countspmtyp,numoftyp
+
+      integer :: istoreIUOUT,ispm,iTMCidx
 
 C Variables for weekdays, and weekends.
 C Assume: Mon=1, Tue=2, Wed=3, Thu=4, Fri=5, Sat=6, Sun=7
@@ -236,6 +252,7 @@ C Initial assumption is verbose for each topic that is included
 C in the current model. A -1 means not applicable
       integer siteinfo,databaseinfo,contextinfo,controlinfo,netinfo
       integer plantinfo,geominfo,schedinfo,zoneextrainfo,fileinfo
+      integer spminfo,enetinfo
       integer destination
 
       integer iercl  ! error state returned for scanning climate list.
@@ -316,7 +333,12 @@ C Check if Unix-based or DOS based.
         controlinfo=2  ! if control used set to verbose
       else
         controlinfo=-1
-      endif 
+      endif
+      if(ispmxist.gt.0)then
+        spminfo=2      ! if a special materials file is included, set to verbose
+      else
+        spminfo=-1
+      endif
       if(IAIRN.ge.1)then
         netinfo=2      ! if a network included set to verbose
       else
@@ -326,6 +348,11 @@ C Check if Unix-based or DOS based.
         plantinfo=2   ! if plant included in model set to verbose
       else
         plantinfo=-1
+      endif
+      if(IENTXIST.gt.0)then
+        enetinfo=2      ! if an electrical network is included, set to verbose
+      else
+        enetinfo=-1
       endif
       if(ncomp.gt.0)then
         geominfo=2
@@ -1590,6 +1617,72 @@ C Databases associated with the model. First print the file names.
         endif
       endif
 
+C===============================================================
+C Special materials associated with the model, if any
+      if (spminfo.gt.0) then
+        WRITE(outs,240)
+        call edisp(itu,outs) ! write separation line
+        WRITE(outs248,'(2A)')' Special materials file : ',
+     &                             spflnam(1:lnblnk(spflnam))
+        call edisp(itu,' ') ! empty line
+        call edisp248(itu,outs248,100)
+C       Initialize special material common data
+        call SPMINIT
+C       Write out some info on special materials
+        call edisp(itu,
+     &        '  Details of special materials in the model:')
+        call edisp(itu,
+     &        '  Type  | Number of entries ')
+
+        countspmtyp=1
+        numoftyp(countspmtyp)=0
+        do i=1,nspmnod
+          itypenum(countspmtyp)=ispmtyp(i,1)
+          if (itypenum(countspmtyp) .eq. ispmtyp(i,1)) then
+            numoftyp(countspmtyp) = numoftyp(countspmtyp) + 1
+          else
+            countspmtyp = countspmtyp + 1
+          endif
+        enddo ! loop through spm nodes
+        do i=1,countspmtyp
+          write(outs248,'(a,I4,a,I4)')'  ',itypenum(i),
+     &                                 '  |      ',numoftyp(i)
+          call edisp248(itu,outs248,100)
+        enddo ! output "statistics"
+
+        call edisp(itu,' ') ! empty line
+
+C Report detailed
+        if (spminfo.gt.1) then ! verbose mode
+          do 33 ispm=1,nspmnod
+            if (ispm.eq.1) then ! write header only once
+              WRITE(OUTS,'(3A)')
+     &        ' No. Label            Zone         Surface     ',
+     &        ' Construction Node',
+     &        ' Type  Num Data    '
+              CALL EDISP(itu,OUTS)
+            endif
+
+C << could be enhanced with type-specific output of some data, e.g. nominal
+C    power for PV and total latent heat capacity for PCM ... >>
+
+C Obtain transparent surface index (>0) related to PV module location.
+            iTMCidx=ITMCFL(ispmloc(ispm,1),ispmloc(ispm,2))
+
+            WRITE(OUTS,1111)ispm,spmlabel(ispm),zname(ispmloc(ispm,1)),
+     &        sname(ispmloc(ispm,1),ispmloc(ispm,2)),
+     &        SSMLCN(izstocn(ivals(ispmloc(ispm,1)),ispmloc(ispm,2))),
+     &        ispmloc(ispm,3),
+     &        (merge('Trn','Opq',iTMCidx.gt.0)),nnodat(ispm)
+ 1111       FORMAT(1X,I3,1X,A16,1X,A12,1X,A12,1X,A12,1X,I3,3X,A3,3X,I3)
+            CALL EDISP(itu,OUTS)
+
+  33      continue ! loop through all spm entries
+
+          call edisp(itu,' ') ! empty line
+        endif ! verbose mode
+      endif ! Special materials file
+
 C Control in the model
       if(controlinfo.gt.0)then
 
@@ -1718,13 +1811,31 @@ C If there is a plant network, scan it and report.
             call edisp(itu,'The model includes a plant network.')
             call pltcfg(ifpnf,iunit1,itu,1)
 C copy number of nodes in each plant component from node_count to
-C nnodes: This is necessary because the nnodes common blocak (pcdat)
+C nnodes: This is necessary because the nnodes common block (pcdat)
 C is defined differently in bps, and the pltcfg.F file cannot be
 C built as part of bps if it includes the prj pcdat common.
             call CopyPltNodeCounts()
           endif
         endif
       endif
+
+C If there is an electrical network, scan it and report.
+      if (enetinfo.gt.0) then
+        call edisp(itu,' ')
+        WRITE(outs,240)
+        call edisp(itu,outs) ! write separation line
+        WRITE(outs248,'(2A)')' Electrical network file: ',
+     &      ENTFLNAM(1:lnblnk(ENTFLNAM))
+        call edisp(itu,' ') ! blank line
+        call edisp248(itu,outs248,100)
+cx        call edisp(itu,' ') ! blank line
+
+        istoreIUOUT=IUOUT
+        IUOUT=itu
+        CALL ENETREAD('Q')
+        IUOUT=istoreIUOUT
+
+      endif ! Electrical network info
 
 C Jump if no zones.
       if(inpic.eq.0) goto 57

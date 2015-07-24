@@ -25,8 +25,11 @@ C           into the common blocks.
 C  ENETWRITE is the routine which writes out an electrical network description
 C           file.
 
-C The routine can be called in three modes 'R'-read and report 'N'-read silently. 
-C 'S'-read silently and don't ask questions. 
+C The routine ENETREAD can be called in four modes
+C    'R'   -read and report with user interaction
+C    'Q'   -read and report w/o user interaction (silent, for QA output)
+C    'N'   -read silently.
+C    'S'   -read silently and don't ask questions.
 
 C A description of the electrical network variables follows:
 
@@ -139,7 +142,7 @@ C Type casting (all varaiables and arrays cast explicitly)
 C Characters
       CHARACTER MODE*1
       character LFIL*72,DEFLNAM*72,H*72
-      character OUTSTR*124,OUTS*124
+      character OUTS248*248,OUTSTR*124,OUTS*124
 
       LOGICAL OK,DOK,CONT
 
@@ -147,6 +150,20 @@ C Characters
       DIMENSION IVPC(3)          !- array used to read PCU sending node and receiving node
 
       PARAMETER (BIG=1E+15)
+
+C Fill the network type string array
+      ENTYPESTR(1)='d.c.' 
+      ENTYPESTR(2)='1-phase' 
+      ENTYPESTR(3)='multi-phase'
+      ENTYPESTR(4)='balanced' 
+      ENTYPESTR(5)='mixed' 
+
+C Fill the phase type string array
+      PHTYPSTR(1)='d.c.' 
+      PHTYPSTR(2)='1-phase' 
+      PHTYPSTR(3)='2-phase' 
+      PHTYPSTR(4)='3-phase' 
+      PHTYPSTR(5)='balanced'
 
 C Set the logical variable to allow reading
       CONT=.TRUE.
@@ -182,12 +199,14 @@ C Open the file with user defined or existing filename
 
 C Read in silently.
         IF(LFIL(1:3).NE.'   '.AND.LFIL(1:3).NE.'UNK') THEN
-          WRITE(OUTS,'(A,A)')' Reading electrical network ...',
-     &ENTFLNAM(1:LNBLNK(ENTFLNAM))
-          CALL USRMSG(OUTS,' ','-')
+          If (MODE.NE.'Q') THEN
+            WRITE(OUTS,'(A,A)')' Reading electrical network ...',
+     &        ENTFLNAM(1:LNBLNK(ENTFLNAM))
+            CALL USRMSG(OUTS,' ','-')
+          ENDIF
         ELSE
           CALL EDISP(IUOUT,'Warning: electrical network filename was')
-          CALL EDISP(IUOUT,'blank - network has not been read in')
+          CALL EDISP(IUOUT,'blank - network has not been read in (1)')
           RETURN
         ENDIF
       ENDIF
@@ -209,7 +228,7 @@ C Open the electrical network file.
           ENDIF
         ELSE
           CALL EDISP(IUOUT,'Warning: electrical network filename was')
-          CALL EDISP(IUOUT,'blank - network has not been read in')
+          CALL EDISP(IUOUT,'blank - network has not been read in (2)')
           RETURN
         ENDIF
       ELSEIF(IER.NE.0.AND.IER.NE.-301) THEN
@@ -225,10 +244,12 @@ C Open the electrical network file.
         ENDIF
       ENDIF
 
-      CALL EDISP(IUOUT,' ')    
-      WRITE(OUTS,'(A,A)') 
-     &' Opened electrical network file: ',LFIL(1:LNBLNK(LFIL)) 
-      CALL USRMSG(OUTS,' ','-')  
+      if (MODE.NE.'Q') then
+        CALL EDISP(IUOUT,' ')
+        WRITE(OUTS,'(A,A)')
+     &   ' Opened electrical network file: ',LFIL(1:LNBLNK(LFIL))
+        CALL USRMSG(OUTS,' ','-')
+      endif
       write(currentfile,'(a)') LFIL(1:lnblnk(LFIL))
         
 C Read the rest of the file.
@@ -245,13 +266,13 @@ C Read the file version number (implemented in April 2005), if applicable
 C Read the file data
       elseif(OUTSTR(1:6).EQ.'* elec') then
         CALL STRIPC(IEUNIT,OUTSTR,99,ND,0,'check file',IER)
-        CALL EDISP(IUOUT,' ')
 
 C Echo the .cfg file associated with the electrical network file.
         IF(MODE.EQ.'R') THEN
           WRITE(OUTS,'(2A)')
      &      ' Electrical network file associated with: ',
      &      OUTSTR(1:LNBLNK(OUTSTR))
+          CALL EDISP(IUOUT,' ')
           CALL EDISP(IUOUT,OUTS)
         ENDIF
 
@@ -261,11 +282,11 @@ C Read the electrical network description
 
 C Reporting 
         WRITE(ENDESC,'(A)') OUTSTR(3:72)
-        IF(MODE.EQ.'R') THEN
+        IF(MODE.EQ.'R'.or.MODE.eq.'Q') THEN
           CALL EDISP(IUOUT,' ')
-          WRITE(OUTS,'(A)') ' Description: '
+          WRITE(OUTS,'(A)')  ' Description: '
           CALL EDISP(IUOUT,OUTS)
-          WRITE(OUTS,'(A)') ENDESC
+          WRITE(OUTS,'(2A)') '    ', ENDESC
           CALL EDISP(IUOUT,OUTS)
         ENDIF
       ELSEIF(OUTSTR(1:5).EQ.'* net') THEN
@@ -289,7 +310,7 @@ C Reporting
           RETURN 
         ENDIF 
         WRITE(ENTYPESTR,'(A)')OUTSTR(1:12)
-        IF(MODE.EQ.'R') THEN
+        IF(MODE.EQ.'R'.or.MODE.eq.'Q') THEN
           CALL EDISP(IUOUT,' ')
           WRITE(OUTS,'(A,A)') ' Network type: ',
      &      OUTSTR(1:LNBLNK(OUTSTR))          
@@ -316,9 +337,9 @@ C Read the phase angles
   23    CONTINUE
 
 C Reporting
-        IF(MODE.EQ.'R') THEN
+        IF(MODE.EQ.'R'.or.MODE.eq.'Q') THEN
           CALL EDISP(IUOUT,' ')
-          WRITE(OUTS,'(A)') 'Phase angles for each phase:'
+          WRITE(OUTS,'(A)') ' Phase angles for each phase:'
           CALL EDISP(IUOUT,OUTS)
           WRITE(OUTS,'(10(2X,F7.2))') (PHASEANG(IPH),IPH=1,MPHAS)
           CALL EDISP(IUOUT,OUTS) 
@@ -333,7 +354,7 @@ C Read in the nodal data
         CALL EGETWI(OUTSTR,K,IVAL,0,MENOD,'W','no. nodes',IER)
         IF(IER.NE.0) CONT=.FALSE.     
         NENOD=IVAL
-        IF(MODE.EQ.'R') THEN
+        IF(MODE.EQ.'R'.or.MODE.eq.'Q') THEN
           CALL EDISP(IUOUT,' ')
           WRITE(OUTS,'(A,I3)') ' Number of electrical nodes: ', NENOD
           CALL EDISP(IUOUT,OUTS)
@@ -389,20 +410,24 @@ C (if applicable).
           ENDIF
 
 C Reporting
-          IF(MODE.EQ.'R') THEN
-            WRITE(OUTS,'(A,A)')
-     &      ' Node no.  Node name    Phase type  Phase Node type    ',
-     &      'Base volt      Comp'
-            CALL EDISP(IUOUT,OUTS)   
+          IF(MODE.EQ.'R'.or.MODE.eq.'Q') THEN
+            if (INODE.eq.1) then ! write header only once
+              WRITE(OUTS,'(A,A)')
+     &        ' Node no.  Node name     Phase type  Phase  Node type',
+     &        '      Base volt '
+cx     &        '      Base volt      Comp'
+              CALL EDISP(IUOUT,OUTS)
+            endif
             WRITE(OUTS,1111) ENODNO(INODE),ENODNAM(INODE),
      &      PHTYPSTR(ENODPHTYP(INODE)),ENODPH(INODE),ENODTYPSTR(INODE),
      &      ENODBASEV(INODE)
- 1111       FORMAT(5X,I3,2X,A12,2X,A12,2X,I3,2X,A12,2X,F10.2)
+ 1111       FORMAT(4X,I3,4X,A12,2X,A12,2X,I3,2X,A12,2X,F10.2)
             CALL EDISP(IUOUT,OUTS)
           ENDIF
           CONT=.TRUE.
   30    CONTINUE
 
+C =====================================================================
 C Read the hybrid component data
       ELSEIF(OUTSTR(1:6).EQ.'* hybr') THEN
         CONT=.TRUE. 
@@ -411,7 +436,7 @@ C Read the hybrid component data
         K=0
         CALL EGETWI(OUTSTR,K,IVAL,0,MHYCOM,'W','int. hyb',IER)
         NHYBCOM=IVAL
-        IF(MODE.EQ.'R') THEN
+        IF(MODE.EQ.'R'.or.MODE.eq.'Q') THEN
           CALL EDISP(IUOUT,' ')
           WRITE(OUTS,'(A,I3)')' Number of hybrid components: ',NHYBCOM
           CALL EDISP(IUOUT,OUTS)
@@ -561,9 +586,30 @@ C Reporting
               ENDIF
             ENDIF
           ENDIF
+
+C Condensed reporting on hybrid components for QA report
+          IF (MODE.eq.'Q') THEN
+            if (IHYB.eq.1) then ! output header line only once
+cx              CALL EDISP(IUOUT,' ')
+              WRITE(OUTS,'(2A)')
+     &          ' No. Type         Name         Phase type  ',
+     &          ' Nodal connections                       Comp. loc.'
+              CALL EDISP(IUOUT,OUTS)
+            endif
+
+            WRITE(OUTS,1212) HYBCOMNO(IHYB),HYCOMTYPSTR(IHYB),
+     &        HYCOMNAM(IHYB),PHTYPSTR(HYCOMPHTYP(IHYB)),
+     &        (merge(ENODNAM(HYCONEN(IHYB,I)),'     0      ',
+     &                       HYCONEN(IHYB,I).gt.0),I=1,3),
+     &        (HYLOC(IHYB,J),J=1,3)
+ 1212       FORMAT(1X,I3,1X,A12,1X,A12,1X,A12,
+     &               3(1X,A12),3(2X,I3))
+            CALL EDISP(IUOUT,OUTS)
+          ENDIF
+
  40     CONTINUE 
 
-          
+C ====================================================================
 C Read the power only component data
       ELSEIF(OUTSTR(1:6).EQ.'* powe')THEN
         CONT=.TRUE.
@@ -572,7 +618,7 @@ C Read the power only component data
         K=0
         CALL EGETWI(OUTSTR,K,IVAL,0,MHYCOM,'W','int. powc',IER)
         NPOWCOM=IVAL
-        IF(MODE.EQ.'R') THEN
+        IF(MODE.EQ.'R'.or.MODE.eq.'Q') THEN
           CALL EDISP(IUOUT,' ')
           WRITE(OUTS,'(A,I3)')
      &    ' Number of power only components: ',NPOWCOM
@@ -732,8 +778,33 @@ C             call edisp(iuout,' ')
              endif
           endif
 
- 50     CONTINUE
+C Condensed output for QA report
+          if (MODE.eq.'Q') then
+            if (IPWC.eq.1) then ! write header line only once
+cx              CALL EDISP(IUOUT,' ')
+              WRITE(OUTS248,'(3A)')
+     &         ' No. i.d. Name         Phase type  ',
+     &         ' Connected to nodes                      => PCU     ',
+     &         '  PCU =>      Description'
+              CALL EDISP(IUOUT,OUTS248)
+            endif
+            WRITE(OUTS248,1215)
+     &        POWCOMNO(IPWC),POWCOMID(IPWC),POWCOMNAM(IPWC),
+     &        PHTYPSTR(POWCOMPHTYP(IPWC)),
+     &        (merge(ENODNAM(POWCONEN(IPWC,I)),'     0      ',
+     &                     POWCONEN(IPWC,I).gt.0),I=1,MPHAS),
+     &        (merge(ENODNAM(PCUNODE(IPWC,1)),'     -      ',
+     &                     PCUNODE(IPWC,1).gt.0)),
+     &        (merge(ENODNAM(PCUNODE(IPWC,2)),'     -      ',
+     &                     PCUNODE(IPWC,2).gt.0)),POWCOMDESC(IPWC)
+ 1215       FORMAT(1X,I3,1X,I3,2X,A12,1X,A12,3(1X,A12),2(1X,A12),1X,A)
+            CALL EDISP(IUOUT,OUTS248)
+
+          endif
+
+ 50     CONTINUE ! loop through all powoc
     
+C======================================================================
 C Read the connecting component data
       ELSEIF(OUTSTR(1:12).EQ.'* connecting')THEN
         CONT=.TRUE.
@@ -742,7 +813,7 @@ C Read the connecting component data
         K=0
         CALL EGETWI(OUTSTR,K,IVAL,0,MCONECOM,'W','int. powc',IER)
         NCONECOM=IVAL
-        IF(MODE.EQ.'R') THEN
+        IF(MODE.EQ.'R'.or.MODE.eq.'Q') THEN
           CALL EDISP(IUOUT,' ')
           WRITE(OUTS,'(A,I3)')
      &    ' Number of connecting components: ',NCONECOM
@@ -836,8 +907,25 @@ C Reporting
             ENDIF
           ENDIF
 
- 60     CONTINUE 
+C Condensed output for QA report
+          if (MODE.eq.'Q') then
+            if (ICNC.eq.1) then ! output header only once
+cx              CALL EDISP(IUOUT,' ')
+              WRITE(OUTS,'(A)')
+     &         ' No. i.d. Name         Phase type   Description'
+              CALL EDISP(IUOUT,OUTS)
+            endif
+            WRITE(OUTS,1217)CONECOMNO(ICNC),CONECOMID(ICNC),
+     &              CONECOMNAM(ICNC),PHTYPSTR(CONECOMPHTYP(ICNC)),
+     &              CONECOMDESC(ICNC)
+ 1217       FORMAT(1X,I3,1X,I3,2X,A12,1X,A12,1X,A)
+            CALL EDISP(IUOUT,OUTS)
 
+          endif
+
+ 60     CONTINUE ! loop through all connecting components
+
+C ================================================================
 C Read the network topology
       ELSE IF(OUTSTR(1:13).EQ.'* connections') THEN
         CONT=.TRUE.
@@ -846,20 +934,20 @@ C Read the network topology
         K=0
         CALL EGETWI(OUTSTR,K,IVAL,0,MECON,'W','int. ncon',IER)
         NECON=IVAL
-        IF(MODE.EQ.'R') THEN
+        IF(MODE.EQ.'R'.or.MODE.eq.'Q') THEN
           CALL EDISP(IUOUT,' ')
           WRITE(OUTS,'(A,I3)')
      &    ' Number of connections: ',NECON
           CALL EDISP(IUOUT,OUTS)
         ENDIF
 
+C Loop through all connections
         DO 70 ICON=1,NECON
           CALL STRIPC(IEUNIT,OUTSTR,99,ND,0,'con dat',IER)
           IF(IER.NE.0) CONT=.FALSE.
           K=0 
           CALL EGETWI(OUTSTR,K,IVAL,0,MCONECOM,'W','hybc no.',IER)
           ECONO(ICON)=IVAL
-
 
 C Read and decode the connection phase type     
           CALL EGETW(OUTSTR,K,OUTS,'W','phase. type',IER)
@@ -908,15 +996,40 @@ C Reporting
             CALL EDISP(IUOUT,OUTS)
             WRITE(OUTS,1119) 
      &      (SENOD(ICON,I),I=1,MPHAS),'to ->',(EENOD(ICON,J),J=1,MPHAS)
- 1119       FORMAT(1X,3(I3,2X),A5,2X,3(I3,2X)) 
-            CALL EDISP(IUOUT,OUTS)         
-          ENDIF  
+ 1119       FORMAT(1X,3(I3,2X),A5,2X,3(I3,2X))
+            CALL EDISP(IUOUT,OUTS)
+          ENDIF
+
+C Condensed reporting for QA output
+          IF(MODE.eq.'Q') THEN
+            if (ICON.eq.1) then ! output header only once
+cx              CALL EDISP(IUOUT,' ')
+              WRITE(OUTS,'(3A)')
+     &          ' No.  Type         Phase  Comp.       ',
+     &          ' Connects                              ',
+     &          '   '
+              CALL EDISP(IUOUT,OUTS)
+            endif
+            WRITE(OUTS,1121) ECONO(ICON),PHTYPSTR(CONPHTYP(ICON)),
+     &      (CONPH(ICON,I),I=1,3),CONECOMNAM(CCNO(ICON)),
+     &      (merge(ENODNAM(SENOD(ICON,J)),'     0      ',
+     &                     SENOD(ICON,J).gt.0),J=1,MPHAS),'to ->',
+     &      (merge(ENODNAM(EENOD(ICON,J)),'     0      ',
+     &                     EENOD(ICON,J).gt.0),J=1,MPHAS)
+ 1121       FORMAT(1X,I3,2X,A12,1X,I1,1X,I1,1X,I1,2X,A12,
+     &           1X,3(A12,1X),A5,1X,3(A12,1X))
+            CALL EDISP(IUOUT,OUTS)
+          ENDIF
+
  70     CONTINUE 
 
+C=======================================================================
 C End of file reached and sucessful read
       ELSE IF(OUTSTR(1:6).EQ.'** ele') THEN
-        WRITE(OUTS,'(A)') ' File read successfully.'
-        CALL USRMSG(OUTS,' ','-')   
+        if (MODE.ne.'Q') then
+          WRITE(OUTS,'(A)') ' File read successfully.'
+          CALL USRMSG(OUTS,' ','-')
+        endif
         IENTXIST=1
         CLOSE(IEUNIT)
         RETURN
