@@ -141,7 +141,7 @@ C*******************************************************************************
 #include "power.h"
 #include "CETC_definitions.h"
 C provides pba, vrb and lion
-#include "Battery.h"
+#include "BATTERY.h"
 
 C---------------------------------------------------------------------
 C     Common for writing data 
