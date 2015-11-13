@@ -67,10 +67,10 @@ C *********************************************************************
       SUBROUTINE GRDSRF(IZ,IDRW1,IDRW2)
 #include "building.h"
 #include "geometry.h"
+#include "prj3dv.h"
       integer iCountWords
 
       COMMON/OUTIN/IUOUT,IUIN
-      COMMON/RAY3/MODIFY,MODLEN,MODBND
 
       COMMON/PREC8/SLAT,SLON
 
@@ -81,7 +81,7 @@ C *********************************************************************
       COMMON/GR3D03/NLINB(MS),NLIND(MS),NLINA(MS)
       COMMON/GR3D10/XMINS(MS),XMAXS(MS),ZMINS(MS),ZMAXS(MS)
 
-      LOGICAL SRFOK,MODIFY,MODBND,MODLEN
+      LOGICAL SRFOK
 
       DIMENSION ITEM(12),IVALS(MS)
       CHARACTER SSRF*12,ITEMS(MS)*17,CORDNT*24
@@ -128,7 +128,7 @@ C Help text for this menu.
 
 C If user has defined problem and perhaps resized the display then
 C redraw the problem image.
-      IF(MODIFY)CALL GRAAPH(IDRW1,IDRW2)
+      IF(MODIFYVIEW)CALL GRAAPH(IDRW1,IDRW2)
       CALL USRMSG(' ',' ','-')
       CALL EMENU('     Surface Gridding',ITEM,MITEM,INO)
 
@@ -139,7 +139,7 @@ C redraw the problem image.
       ELSEIF(INO.EQ.5)THEN
 
 C Select the surface.
-        IF(IDRW1.NE.2.OR.IDRW2.NE.IZ.OR.MODIFY)THEN
+        IF(IDRW1.NE.2.OR.IDRW2.NE.IZ.OR.MODIFYVIEW)THEN
           IDRW1=2
           IDRW2=IZ
           CALL GRAAPH(IDRW1,IDRW2)
@@ -223,7 +223,7 @@ C  Add vertical gridding line.
 
 C Clear last gridding line 
         IF(INDXS(IS).EQ.3)THEN
-          IF(NLINA(IS).GT.NLIND(IS).OR.MODIFY)THEN
+          IF(NLINA(IS).GT.NLIND(IS).OR.MODIFYVIEW)THEN
             CALL DELINE(IS)
 
 C Draw the elevation view for the selected surface.
@@ -935,10 +935,10 @@ C *********************************************************************
       SUBROUTINE GRDEDG(IZ,IDRW1,IDRW2)
 #include "building.h"
 #include "geometry.h"
+#include "prj3dv.h"
       integer iCountWords
 
       COMMON/OUTIN/IUOUT,IUIN
-      COMMON/RAY3/MODIFY,MODLEN,MODBND
       COMMON/PREC8/SLAT,SLON
       integer IZSTOCN
       COMMON/C24/IZSTOCN(MCOM,MS)
@@ -947,7 +947,7 @@ C *********************************************************************
       COMMON/GR3D24/ISFEDG(MEZ,2),IVXEDG(MEZ,2)
       COMMON/GR3D27/NDZE(MEZ),DZE(MEZ,MZE)
 
-      LOGICAL EDGOK,MODIFY,MODLEN,MODBND
+      LOGICAL EDGOK
 
       DIMENSION ITEM(17),IVALS(MEZ)
       CHARACTER*72 LINDSC,DISCR
@@ -1001,7 +1001,7 @@ C Help text for this menu.
       call gethelptext(helpinsub,helptopic,nbhelp)
 
 C Draw the appropriate graph.
-      IF(MODIFY)CALL GRAAPH(IDRW1,IDRW2)
+      IF(MODIFYVIEW)CALL GRAAPH(IDRW1,IDRW2)
       CALL USRMSG(' ',' ','-')
       CALL EMENU('       Edge Gridding',ITEM,MITEM,INO)
       IF(.NOT.EDGOK.AND.INO.GE.7.AND.INO.LE.9)THEN
@@ -1011,7 +1011,7 @@ C trap un-acceptable selections.
       ELSEIF(INO.EQ.6)THEN
 
 C Define the zone.
-        IF(IDRW1.NE.2.OR.IDRW2.NE.IZ.OR.MODIFY)THEN
+        IF(IDRW1.NE.2.OR.IDRW2.NE.IZ.OR.MODIFYVIEW)THEN
           IDRW1=2
           IDRW2=IZ
           CALL GRAAPH(IDRW1,IDRW2)
@@ -1036,7 +1036,7 @@ C Show the edge selection menu.
         IF(IEG.GT.0.AND.IEG.LE.NUMEDG)THEN
 
 C Draw the selected edge.
-          IF(IDRW1.NE.4.OR.IDRW2.NE.IEG.OR.MODIFY)THEN
+          IF(IDRW1.NE.4.OR.IDRW2.NE.IEG.OR.MODIFYVIEW)THEN
             IDRW1=4
             IDRW2=IEG
             CALL GRAAPH(IDRW1,IDRW2)
@@ -1339,11 +1339,11 @@ C *********************************************************************
       SUBROUTINE CONEDG(IZ,IEG)
 #include "building.h"
 #include "geometry.h"
+#include "prj3dv.h"
       integer iCountWords
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
-      COMMON/RAY3/MODIFY,MODLEN,MODBND
       integer IZSTOCN
       COMMON/C24/IZSTOCN(MCOM,MS)
       COMMON/PREC8/SLAT,SLON
@@ -1354,7 +1354,7 @@ C *********************************************************************
       COMMON/GR3D27/NDZE(MEZ),DZE(MEZ,MZE)
       COMMON/GR3D28/ITPEDG(MEZ,MZE,MZE,MZE)
 
-      LOGICAL OK,DOK,MODIFY,MODLEN,MODBND,chdb
+      LOGICAL OK,DOK,chdb
 
       DIMENSION ITEM(14),IUDLR(5)
 
@@ -1405,7 +1405,7 @@ C Help for this menu.
       call gethelptext(helpinsub,helptopic,nbhelp)
 
 C Draw the appropriate graph.
-      IF(MODIFY)CALL GRAAPH(IDRW1,IDRW2)
+      IF(MODIFYVIEW)CALL GRAAPH(IDRW1,IDRW2)
       CALL USRMSG(' ',' ','-')
       CALL EMENU('    Edge  Construction',ITEM,MITEM,INO)
 
@@ -1945,9 +1945,9 @@ C *********************************************************************
       SUBROUTINE GRDCRN(IZ,IDRW1,IDRW2)
 #include "building.h"
 #include "geometry.h"
+#include "prj3dv.h"
       integer iCountWords
 
-      COMMON/RAY3/MODIFY,MODLEN,MODBND
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/OUTIN/IUOUT,IUIN
       integer IZSTOCN
@@ -1958,7 +1958,7 @@ C *********************************************************************
       COMMON/GR3D34/ISFCRN(MCZ,3),IVXCRN(MCZ)
       COMMON/GR3D37/NDZC(MEZ),DZC(MEZ,MZE)
 
-      LOGICAL CRNOK,MODIFY,MODLEN,MODBND
+      LOGICAL CRNOK
 
       DIMENSION IVALS(MCZ)
       CHARACTER*72 DISCR
@@ -2015,7 +2015,7 @@ C Help text for this menu.
       call gethelptext(helpinsub,helptopic,nbhelp)
 
 C Draw the appropriate graph.
-      IF(MODIFY)CALL GRAAPH(IDRW1,IDRW2)
+      IF(MODIFYVIEW)CALL GRAAPH(IDRW1,IDRW2)
       CALL USRMSG(' ',' ','-')
       CALL EMENU('     Corner  Gridding',ITEM,MITEM,INO)
 
@@ -2025,7 +2025,7 @@ C Trap the un-acceptable selections.
       ELSEIF(INO.EQ.7)THEN
 
 C Define the corner.
-        IF(IDRW1.NE.2.OR.IDRW2.NE.IZ.OR.MODIFY)THEN
+        IF(IDRW1.NE.2.OR.IDRW2.NE.IZ.OR.MODIFYVIEW)THEN
           IDRW1=2
           IDRW2=IZ
           CALL GRAAPH(IDRW1,IDRW2)
@@ -2050,7 +2050,7 @@ C Show the surface selection menu.
         IF(ICR.GT.0.AND.ICR.LE.NUMCRN)THEN
 
 C Draw the selected corner.
-          IF(IDRW1.NE.5.OR.IDRW2.NE.ICR.OR.MODIFY)THEN
+          IF(IDRW1.NE.5.OR.IDRW2.NE.ICR.OR.MODIFYVIEW)THEN
             IDRW1=5
             IDRW2=ICR
             CALL GRAAPH(IDRW1,IDRW2)
@@ -2357,11 +2357,11 @@ C *********************************************************************
       SUBROUTINE CONCRN(IZ,ICR)
 #include "building.h"
 #include "geometry.h"
+#include "prj3dv.h"
       integer iCountWords
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
-      COMMON/RAY3/MODIFY,MODLEN,MODBND
       integer IZSTOCN
       COMMON/C24/IZSTOCN(MCOM,MS)
       COMMON/PREC8/SLAT,SLON
@@ -2372,7 +2372,7 @@ C *********************************************************************
       COMMON/GR3D37/NDZC(MEZ),DZC(MEZ,MZE)
       COMMON/GR3D38/ITPCRN(MCZ,MZE,MZE,MZE)
 
-      LOGICAL OK,DOK,MODIFY,MODLEN,MODBND,chdb
+      LOGICAL OK,DOK,chdb
 
       DIMENSION ITEM(15),IUDLR(5)
 
@@ -2426,7 +2426,7 @@ C Help text for this menu.  << to here >>
       call gethelptext(helpinsub,helptopic,nbhelp)
 
 C Draw the appropriate graph.
-      IF(MODIFY)CALL GRAAPH(IDRW1,IDRW2)
+      IF(MODIFYVIEW)CALL GRAAPH(IDRW1,IDRW2)
       CALL USRMSG(' ',' ','-')
       CALL EMENU('    Corner  Construction',ITEM,MITEM,INO)
       IF(INO.EQ.7)THEN

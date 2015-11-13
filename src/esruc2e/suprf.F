@@ -257,17 +257,17 @@ c                    .07 > ZH  > .93  (if RbH =/= 1)
 c example:
 c CALL CPRELH (.65, 7.5, 2., 2.0274, 999, 0)
 c***********************************************************************
-	COMMON /ERROR/ERF
-	INTEGER erf
-	INTEGER KEY
+        COMMON /ERROR/ERF
+        INTEGER erf
+        INTEGER KEY
 
         parameter (Nmax=30,Lmax=4,Nval1=6,Nval2=5)
         REAL ZH,PAD,RbH,polR(lmax,Nmax)
 
         REAL A1(Nval1),A2(Nval2),CORP1,CORP2,COREL1,COREL2
-	INTEGER K,K1,L,L1,N
+        INTEGER K,K1,L,L1,N
 
-	REAL COREL
+        REAL COREL
 
 c reference values for ZH
         DATA A1/.09,.27,.42,.59,.76,.92/
@@ -396,30 +396,30 @@ c reference values for PAD
         polR( 3,30)=-0.0398886018
         polR( 4,30)= 0.0214510001
 
-	IF (RbH.EQ.1.) GO TO 100
+        IF (RbH.EQ.1.) GO TO 100
 
 c check the position of ZH and PAD in relation to the reference
 c values (A1,A2) and calculate the pointer number to search the 
 c proper coefficients for the polinomial equation (polR)  
-	K=0
-	L=0
-	N=0
+        K=0
+        L=0
+        N=0
         DO 10 I=1,Nval1
-	   IF (ZH.NE.A1(I)) GO TO 10
-	   K=I
+          IF (ZH.NE.A1(I)) GO TO 10
+            K=I
 10      CONTINUE
         if (ZH.lt.A1(1))K=1
         if (ZH.gt.A1(Nval1)) K=Nval1
 
         DO 20 J=1,Nval2
-	   IF (PAD.NE.A2(J)) GO TO 20
-	   L=J
+          IF (PAD.NE.A2(J)) GO TO 20
+          L=J
 20      CONTINUE
 
         IF (K.NE.0.AND.L.NE.0) N=(K-1)*Nval2+L
-	IF (N.NE.0) GO TO 200
-	IF (K.NE.0) GO TO 300
-	IF (L.NE.0) GO TO 400
+        IF (N.NE.0) GO TO 200
+        IF (K.NE.0) GO TO 300
+        IF (L.NE.0) GO TO 400
 
 c when ZH and PAD are both different from  reference values
         CALL SEARCH (A1,ZH,Nval1,K1)
@@ -429,15 +429,15 @@ c when ZH and PAD are both different from  reference values
 
         CALL CORPANS (RbH,polR,Nmax,Lmax,N,CORP1)
         CALL CORPANS (RbH,polR,Nmax,Lmax,N+1,CORP2)
-	CALL LININT (PAD,A2(L1),A2(L1+1),CORP1,CORP2,COREL1)
+        CALL LININT (PAD,A2(L1),A2(L1+1),CORP1,CORP2,COREL1)
 
         N=K1*Nval2+L1
 
         CALL CORPANS (RbH,polR,Nmax,Lmax,N,CORP1)
         CALL CORPANS (RbH,polR,Nmax,Lmax,N+1,CORP2)
-	CALL LININT (PAD,A2(L1),A2(L1+1),CORP1,CORP2,COREL2)
-	CALL LININT (ZH,A1(K1),A1(K1+1),COREL1,COREL2,COREL)
-	GO TO 999
+        CALL LININT (PAD,A2(L1),A2(L1+1),CORP1,CORP2,COREL2)
+        CALL LININT (ZH,A1(K1),A1(K1+1),COREL1,COREL2,COREL)
+        GO TO 999
 
 c when only ZH is different from reference value
 400     CALL SEARCH (A1,ZH,Nval1,K1)
@@ -446,8 +446,8 @@ c when only ZH is different from reference value
 
         CALL CORPANS (RbH,polR,Nmax,Lmax,N,CORP1)
         CALL CORPANS (RbH,polR,Nmax,Lmax,N+4,CORP2)
-	CALL LININT (ZH,A1(K1),A1(K1+1),CORP1,CORP2,COREL)
-	GO TO 999
+        CALL LININT (ZH,A1(K1),A1(K1+1),CORP1,CORP2,COREL)
+        GO TO 999
 
 c when only PAD is different from reference value 
 300     CALL SEARCH (A2,PAD,Nval2,L1)
@@ -456,12 +456,12 @@ c when only PAD is different from reference value
 
         CALL CORPANS (RbH,polR,Nmax,Lmax,N,CORP1)
         CALL CORPANS (RbH,polR,Nmax,Lmax,N+1,CORP2)
-	CALL LININT (PAD,A2(L1),A2(L1+1),CORP1,CORP2,COREL)
-	GO TO 999
+        CALL LININT (PAD,A2(L1),A2(L1+1),CORP1,CORP2,COREL)
+        GO TO 999
 
 c when ZH and PAD are equal to reference values
 200     CALL CORPANS (RbH,polR,Nmax,Lmax,N,COREL)
-	GO TO 999
+        GO TO 999
 
 c when RbH = 1
 100     COREL = 1.0       
@@ -504,9 +504,9 @@ c                    .07 > ZH  > .93  (if FAR =/= 1)
 c example:
 c CALL CPFARL (.6, 2., 7.5, .72007, 999, 0)
 c***********************************************************************
-	COMMON /ERROR/ERF
-	INTEGER erf
-	INTEGER KEY
+        COMMON /ERROR/ERF
+        INTEGER erf
+        INTEGER KEY
  
         parameter (Nmax=6,Lmax=9,Nval=6)
         REAL ZH,PAD,FAR,polF(Lmax,Nmax)
@@ -514,7 +514,7 @@ c***********************************************************************
         REAL A1(Nval),CORP1,CORP2
         INTEGER K,K1,L,N
 
-	REAL COFAR
+        REAL COFAR
 
 c reference values for ZH
         DATA A1/.083,.25,.417,.59,.75,.92/
@@ -535,51 +535,51 @@ c COFAR as fitting function of FAR and PAD
      &    0.304574, +0.50833, -0.0385091, -0.0284582, -0.00378569,
      &  -0.00306442, +0.00100574,-0.000405361,+0.00011848/
 
-	IF (FAR.NE.1..AND.PAD.GT.12.5) THEN
-	   WRITE (ERF,*)  'PAD out of range (0-12.5)'
-	   KEY=1
-	   RETURN 1      
-	ENDIF
+        IF (FAR.NE.1..AND.PAD.GT.12.5) THEN
+          WRITE (ERF,*)  'PAD out of range (0-12.5)'
+          KEY=1
+          RETURN 1      
+        ENDIF
 
-	IF (FAR.EQ.1.) GO TO 100
+        IF (FAR.EQ.1.) GO TO 100
 
 c check the position of ZH  in relation to the reference
 c values (A1) and calculate the pointer number to search the
 c proper coefficients (polF) for the fitting equations
-	K=0
-	L=0
-	N=0
+        K=0
+        L=0
+        N=0
         DO 10 I=1,Nval
-	   IF (ZH.NE.A1(I)) GO TO 10
-	   K=I
+          IF (ZH.NE.A1(I)) GO TO 10
+          K=I
 10      CONTINUE
 
         if (ZH.lt.A1(1))K=1
         if (ZH.gt.A1(Nval)) K=Nval
 
         IF (K.NE.0) N=K
-	IF (N.NE.0) GO TO 200
+        IF (N.NE.0) GO TO 200
 
 c when ZH is different from  reference values
-	CALL SEARCH (A1,ZH,6,K1)
+        CALL SEARCH (A1,ZH,6,K1)
         N=K1
         CALL CORSUP (FAR,PAD,polF,Nmax,Lmax,N,CORP1)
         CALL CORSUP (FAR,PAD,polF,Nmax,Lmax,N+1,CORP2)
         CALL LININT (ZH,A1(K1),A1(K1+1),CORP1,CORP2,COFAR)
-	GO TO 999
+        GO TO 999
 
 c when ZH is  equal to reference values
 
 200     CALL CORSUP (FAR,PAD,polF,Nmax,Lmax,N,COFAR)
-	GO TO 999
+        GO TO 999
 
 c when FAR= 1
 100     COFAR = 1.0       
 
 999     CONTINUE
 
-	RETURN
-	END
+        RETURN
+        END
 
 
         SUBROUTINE SARROOF (ZH,SAR,PAD,COSAR,*,KEY)
@@ -628,11 +628,11 @@ c example:
 c CALL SARROOF (.65, 2., 7.5, 1.5385, 999, 0)
 c***********************************************************************
 
-	COMMON /ERROR/ERF
+        COMMON /ERROR/ERF
         common /silmode/ issilent
         logical issilent
         INTEGER erf
-	INTEGER KEY
+        INTEGER KEY
  
         parameter (Nmax=7,Lmax=9,Nval=7)
         REAL ZH,PAD,SAR,polS(Lmax,Nmax)
@@ -667,19 +667,19 @@ c COSAR as fitting function of SAR
 c check the position of ZH  in relation to the reference
 c values (A1) and calculate the pointer number to search the
 c proper coefficients (polS) for the fitting equations
-	K=0
-	L=0
-	N=0
+        K=0
+        L=0
+        N=0
         DO 10 I=1,Nval
-	   IF (ZH.NE.A1(I)) GO TO 10
-	   K=I
+          IF (ZH.NE.A1(I)) GO TO 10
+          K=I
 10      CONTINUE
 
         if (ZH.lt.A1(1))k=1
         if (ZH.gt.A1(Nval))k=Nval
 
         IF (K.NE.0) N=K
-	IF (N.NE.0) GO TO 200
+        IF (N.NE.0) GO TO 200
 
 c when ZH is different from  reference values
         CALL SEARCH (A1,ZH,Nval,K1)
@@ -687,19 +687,19 @@ c when ZH is different from  reference values
         CALL CORSUP (SAR,PAD,polS,Nmax,Lmax,N,CORP1)
         CALL CORSUP (SAR,PAD,polS,Nmax,Lmax,N+1,CORP2)
         CALL LININT (ZH,A1(K1),A1(K1+1),CORP1,CORP2,COSAR)
-	GO TO 999
+        GO TO 999
 
 c when ZH is  equal to reference values
 200     CALL CORSUP (SAR,PAD,polS,Nmax,Lmax,N,COSAR)
-	GO TO 999
+        GO TO 999
 
 c when SAR= 1
 100     COSAR = 1.0
 
 999     CONTINUE
 
-	RETURN
-	END
+        RETURN
+        END
 
 
         SUBROUTINE HORROOF (ZH,teta,XL,COHOR)
@@ -762,12 +762,12 @@ c yelding COHOR as fitting function of XL
 c check the position of ZH and TETA in relation to the reference
 c values (A1,A2) and calculate the pointer number to search the 
 c proper coefficients for the polinomial equation (polH)
-	K=0
-	L=0
-	N=0
+        K=0
+        L=0
+        N=0
         DO 10 I=1,Nval1
            IF (ZH.NE.A1(I)) GO TO 10
-	   K=I
+           K=I
 10      CONTINUE
 
         if (ZH.lt.A1(1))k=1
@@ -775,13 +775,13 @@ c proper coefficients for the polinomial equation (polH)
 
         DO 20 J=1,Nval2
            IF (teta.NE.A2(J)) GO TO 20
-	   L=J
+           L=J
 20      CONTINUE
 
         IF (K.NE.0.AND.L.NE.0) N=(K-1)*Nval2+L
-	IF (N.NE.0) GO TO 200
-	IF (K.NE.0) GO TO 300
-	IF (L.NE.0) GO TO 400
+        IF (N.NE.0) GO TO 200
+        IF (K.NE.0) GO TO 300
+        IF (L.NE.0) GO TO 400
 
 c when ZH and teta are both different from  reference values
         CALL SEARCH (A1,ZH,Nval1,K1)
@@ -799,7 +799,7 @@ c when ZH and teta are both different from  reference values
         CALL CORPANS (XL,POLH,Nmax,Lmax,N+1,CORP2)
         CALL LININT (teta,A2(L1),A2(L1+1),CORP1,CORP2,COHOR2)
         CALL LININT (ZH,A1(K1),A1(K1+1),COHOR1,COHOR2,COHOR)
-	GO TO 999
+        GO TO 999
 
 c when only ZH is different from reference value
 400     CALL SEARCH (A1,ZH,Nval1,K1)
@@ -809,7 +809,7 @@ c when only ZH is different from reference value
         CALL CORPANS (XL,POLH,Nmax,Lmax,N,CORP1)
         CALL CORPANS (XL,POLH,Nmax,Lmax,N+4,CORP2)
         CALL LININT (ZH,A1(K1),A1(K1+1),CORP1,CORP2,COHOR)
-	GO TO 999
+        GO TO 999
 
 c when only teta is different from reference value
 300     CALL SEARCH (A2,teta,Nval2,L1)
@@ -819,19 +819,19 @@ c when only teta is different from reference value
         CALL CORPANS (XL,POLH,Nmax,Lmax,N,CORP1)
         CALL CORPANS (XL,POLH,Nmax,Lmax,N+1,CORP2)
         CALL LININT (teta,A2(L1),A2(L1+1),CORP1,CORP2,COHOR)
-	GO TO 999
+        GO TO 999
 
 c when ZH and teta are equal to reference values
 200     CALL CORPANS (XL,POLH,Nmax,Lmax,N,COHOR)
-	GO TO 999
+        GO TO 999
 
 c when XL = 1 and teta=0.
 100     COHOR = 1.0
 
 999     CONTINUE
 
-	RETURN
-	END
+        RETURN
+        END
 
 
         SUBROUTINE PHISING (ZH,teta,PHI,COHOR)
@@ -1023,25 +1023,25 @@ c calculate COHOR
 c check the position of TETA and ZH in relation to the reference
 c values (A1,A2) and calculate the pointer number to search the 
 c proper coefficients for the polinomial equation (polH)
-	K=0
-	L=0
-	N=0
+        K=0
+        L=0
+        N=0
         DO 10 I=1,Nval1
            IF (teta.NE.A1(I)) GO TO 10
-	   K=I
+           K=I
 10      CONTINUE
 
         DO 20 J=1,Nval2
            IF (ZH.NE.A2(J)) GO TO 20
-	   L=J
+           L=J
 20      CONTINUE
         if (ZH.lt.A2(1))L=1
         if (ZH.gt.A2(Nval2))L=Nval2
 
         IF (K.NE.0.AND.L.NE.0) N=(K-1)*Nval2+L
-	IF (N.NE.0) GO TO 200
-	IF (K.NE.0) GO TO 300
-	IF (L.NE.0) GO TO 400
+        IF (N.NE.0) GO TO 200
+        IF (K.NE.0) GO TO 300
+        IF (L.NE.0) GO TO 400
 
 c when ZH and teta are both different from  reference values
         CALL SEARCH (A1,teta,Nval1,K1)
@@ -1059,7 +1059,7 @@ c when ZH and teta are both different from  reference values
         CALL CORPANS (PHI,POLH,Nmax,Lmax,N+1,CORP2)
         CALL LININT (ZH,A2(L1),A2(L1+1),CORP1,CORP2,COHOR2)
         CALL LININT (teta,A1(K1),A1(K1+1),COHOR1,COHOR2,COHOR)
-	GO TO 999
+        GO TO 999
 
 c when only teta is different from reference value
 400     CALL SEARCH (A1,teta,Nval1,K1)
@@ -1069,7 +1069,7 @@ c when only teta is different from reference value
         CALL CORPANS (PHI,POLH,Nmax,Lmax,N,CORP1)
         CALL CORPANS (PHI,POLH,Nmax,Lmax,N+4,CORP2)
         CALL LININT (teta,A1(K1),A1(K1+1),CORP1,CORP2,COHOR)
-	GO TO 999
+        GO TO 999
 
 c when only ZH is different from reference value
 300     CALL SEARCH (A2,ZH,Nval2,L1)
@@ -1079,18 +1079,18 @@ c when only ZH is different from reference value
         CALL CORPANS (PHI,POLH,Nmax,Lmax,N,CORP1)
         CALL CORPANS (PHI,POLH,Nmax,Lmax,N+1,CORP2)
         CALL LININT (ZH,A2(L1),A2(L1+1),CORP1,CORP2,COHOR)
-	GO TO 999
+        GO TO 999
 
 c when ZH and teta are equal to reference values
 200     CALL CORPANS (PHI,POLH,Nmax,Lmax,N,COHOR)
-	GO TO 999
+        GO TO 999
 
 c when PHI = 1
 100     COHOR = 1.0
 
 999     CONTINUE
-	RETURN
-	END
+        RETURN
+        END
 
 
         SUBROUTINE PHIXSIN(ZH,teta,PHI,XL,COHOR)
@@ -1267,25 +1267,25 @@ c calculate COHOR
 c check the position of TETA and ZH in relation to the reference
 c values (A1,A2) and calculate the pointer number to search the 
 c proper coefficients for the polinomial equation (polH)
-	K=0
-	L=0
-	N=0
+        K=0
+        L=0
+        N=0
         DO 10 I=1,Nval1
            IF (teta.NE.A1(I)) GO TO 10
-	   K=I
+           K=I
 10      CONTINUE
 
         DO 20 J=1,Nval2
            IF (ZH.NE.A2(J)) GO TO 20
-	   L=J
+           L=J
 20      CONTINUE
         if (ZH.lt.A2(1))L=1
         if (ZH.gt.A2(Nval2))L=Nval2
 
         IF (K.NE.0.AND.L.NE.0) N=(K-1)*Nval2+L
-	IF (N.NE.0) GO TO 200
-	IF (K.NE.0) GO TO 300
-	IF (L.NE.0) GO TO 400
+        IF (N.NE.0) GO TO 200
+        IF (K.NE.0) GO TO 300
+        IF (L.NE.0) GO TO 400
 
 c when ZH and teta are both different from  reference values
         CALL SEARCH (A1,teta,Nval1,K1)
@@ -1303,7 +1303,7 @@ c when ZH and teta are both different from  reference values
         CALL CORSUP (PHI,XL,POLH,Nmax,Lmax,N+1,CORP2)
         CALL LININT (ZH,A2(L1),A2(L1+1),CORP1,CORP2,COHOR2)
         CALL LININT (teta,A1(K1),A1(K1+1),COHOR1,COHOR2,COHOR)
-	GO TO 999
+        GO TO 999
 
 c when only teta is different from reference value
 400     CALL SEARCH (A1,teta,Nval1,K1)
@@ -1313,7 +1313,7 @@ c when only teta is different from reference value
         CALL CORSUP (PHI,XL,POLH,Nmax,Lmax,N,CORP1)
         CALL CORSUP (PHI,XL,POLH,Nmax,Lmax,N+4,CORP2)
         CALL LININT (teta,A1(K1),A1(K1+1),CORP1,CORP2,COHOR)
-	GO TO 999
+        GO TO 999
 
 c when only ZH is different from reference value
 300     CALL SEARCH (A2,ZH,Nval2,L1)
@@ -1323,18 +1323,18 @@ c when only ZH is different from reference value
         CALL CORSUP (PHI,XL,POLH,Nmax,Lmax,N,CORP1)
         CALL CORSUP (PHI,XL,POLH,Nmax,Lmax,N+1,CORP2)
         CALL LININT (ZH,A2(L1),A2(L1+1),CORP1,CORP2,COHOR)
-	GO TO 999
+        GO TO 999
 
 c when ZH and teta are equal to reference values
 200     CALL CORSUP (PHI,XL,POLH,Nmax,Lmax,N,COHOR)
-	GO TO 999
+        GO TO 999
 
 c when PHI = 1
 100     COHOR = 1.0
 
 999     CONTINUE
-	RETURN
-	END
+        RETURN
+        END
 
 
         SUBROUTINE PHIDOUB (ZH,teta,PHI,COHOR)
@@ -1481,25 +1481,25 @@ c calculate COHOR
 c check the position of TETA and ZH in relation to the reference
 c values (A1,A2) and calculate the pointer number to search the 
 c proper coefficients for the polinomial equation (polH)
-	K=0
-	L=0
-	N=0
+        K=0
+        L=0
+        N=0
         DO 10 I=1,Nval1
            IF (teta.NE.A1(I)) GO TO 10
-	   K=I
+           K=I
 10      CONTINUE
 
         DO 20 J=1,Nval2
            IF (ZH.NE.A2(J)) GO TO 20
-	   L=J
+           L=J
 20      CONTINUE
         if (ZH.lt.A2(1))L=1
         if (ZH.gt.A2(Nval2))L=Nval2
 
         IF (K.NE.0.AND.L.NE.0) N=(K-1)*Nval2+L
-	IF (N.NE.0) GO TO 200
-	IF (K.NE.0) GO TO 300
-	IF (L.NE.0) GO TO 400
+        IF (N.NE.0) GO TO 200
+        IF (K.NE.0) GO TO 300
+        IF (L.NE.0) GO TO 400
 
 c when ZH and teta are both different from  reference values
         CALL SEARCH (A1,teta,Nval1,K1)
@@ -1517,7 +1517,7 @@ c when ZH and teta are both different from  reference values
         CALL CORPANS (PHI,POLH,Nmax,Lmax,N+1,CORP2)
         CALL LININT (ZH,A2(L1),A2(L1+1),CORP1,CORP2,COHOR2)
         CALL LININT (teta,A1(K1),A1(K1+1),COHOR1,COHOR2,COHOR)
-	GO TO 999
+        GO TO 999
 
 c when only teta is different from reference value
 400     CALL SEARCH (A1,teta,Nval1,K1)
@@ -1527,7 +1527,7 @@ c when only teta is different from reference value
         CALL CORPANS (PHI,POLH,Nmax,Lmax,N,CORP1)
         CALL CORPANS (PHI,POLH,Nmax,Lmax,N+4,CORP2)
         CALL LININT (teta,A1(K1),A1(K1+1),CORP1,CORP2,COHOR)
-	GO TO 999
+        GO TO 999
 
 c when only ZH is different from reference value
 300     CALL SEARCH (A2,ZH,Nval2,L1)
@@ -1537,18 +1537,18 @@ c when only ZH is different from reference value
         CALL CORPANS (PHI,POLH,Nmax,Lmax,N,CORP1)
         CALL CORPANS (PHI,POLH,Nmax,Lmax,N+1,CORP2)
         CALL LININT (ZH,A2(L1),A2(L1+1),CORP1,CORP2,COHOR)
-	GO TO 999
+        GO TO 999
 
 c when ZH and teta are equal to reference values
 200     CALL CORPANS (PHI,POLH,Nmax,Lmax,N,COHOR)
-	GO TO 999
+        GO TO 999
 
 c when PHI = 1
 100     COHOR = 1.0
 
 999     CONTINUE
-	RETURN
-	END
+        RETURN
+        END
 
 
         SUBROUTINE PHIXDOU(ZH,teta,PHI,XL,COHOR)
@@ -1743,25 +1743,25 @@ c calculate COHOR
 c check the position of TETA and ZH in relation to the reference
 c values (A1,A2) and calculate the pointer number to search the 
 c proper coefficients for the polinomial equation (polH)
-	K=0
-	L=0
-	N=0
+        K=0
+        L=0
+        N=0
         DO 10 I=1,Nval1
            IF (teta.NE.A1(I)) GO TO 10
-	   K=I
+           K=I
 10      CONTINUE
 
         DO 20 J=1,Nval2
            IF (ZH.NE.A2(J)) GO TO 20
-	   L=J
+           L=J
 20      CONTINUE
         if (ZH.lt.A2(1))L=1
         if (ZH.gt.A2(Nval2)) L=Nval2
 
         IF (K.NE.0.AND.L.NE.0) N=(K-1)*Nval2+L
-	IF (N.NE.0) GO TO 200
-	IF (K.NE.0) GO TO 300
-	IF (L.NE.0) GO TO 400
+        IF (N.NE.0) GO TO 200
+        IF (K.NE.0) GO TO 300
+        IF (L.NE.0) GO TO 400
 
 c when ZH and teta are both different from  reference values
         CALL SEARCH (A1,teta,Nval1,K1)
@@ -1779,7 +1779,7 @@ c when ZH and teta are both different from  reference values
         CALL CORSUP (PHI,XL,POLH,Nmax,Lmax,N+1,CORP2)
         CALL LININT (ZH,A2(L1),A2(L1+1),CORP1,CORP2,COHOR2)
         CALL LININT (teta,A1(K1),A1(K1+1),COHOR1,COHOR2,COHOR)
-	GO TO 999
+        GO TO 999
 
 c when only teta is different from reference value
 400     CALL SEARCH (A1,teta,Nval1,K1)
@@ -1789,7 +1789,7 @@ c when only teta is different from reference value
         CALL CORSUP (PHI,XL,POLH,Nmax,Lmax,N,CORP1)
         CALL CORSUP (PHI,XL,POLH,Nmax,Lmax,N+4,CORP2)
         CALL LININT (teta,A1(K1),A1(K1+1),CORP1,CORP2,COHOR)
-	GO TO 999
+        GO TO 999
 
 c when only ZH is different from reference value
 300     CALL SEARCH (A2,ZH,Nval2,L1)
@@ -1799,15 +1799,15 @@ c when only ZH is different from reference value
         CALL CORSUP (PHI,XL,POLH,Nmax,Lmax,N,CORP1)
         CALL CORSUP (PHI,XL,POLH,Nmax,Lmax,N+1,CORP2)
         CALL LININT (ZH,A2(L1),A2(L1+1),CORP1,CORP2,COHOR)
-	GO TO 999
+        GO TO 999
 
 c when ZH and teta are equal to reference values
 200     CALL CORSUP (PHI,XL,POLH,Nmax,Lmax,N,COHOR)
-	GO TO 999
+        GO TO 999
 
 c when PHI = 1
 100     COHOR = 1.0
 
 999     CONTINUE
-	RETURN
-	END
+        RETURN
+        END

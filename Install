@@ -64,6 +64,11 @@ echo " Please consult the README file before commencing "
 echo " installation.  This script will rebuild the ESP-r"
 echo " modules on your system.  You can abort this process"
 echo " at any time by pressing <control> c."
+echo " "
+echo " Some ESP-r facilities make use of Radiance to cal-"
+echo " culate lighting levels. Versions 3R9-4R2 have been"
+echo " tested."
+echo " "
 
 
 # Set default settings.
@@ -357,7 +362,7 @@ if [ $help -eq 1 ]; then
   echo " "
   echo " Notes:"
   echo " "
-  echo " 1. The latest ESP-r release (11.11) no longer compiles with GCC3 / g77"
+  echo " 1. The latest ESP-r release (12.3) no longer compiles with GCC3 / g77"
   echo "    which are now regarded as obsolete. Use GCC4 / gFortran compilers"
   echo "    instead. The current reference version is GCC 4.3.2"
   echo " "
@@ -1682,7 +1687,7 @@ else
 
   if [ "${NotAnSvnWorkingCopy}" == "" ]; then 
   
-    VersioningScheme="svn" 
+    VersioningScheme="svn"
     
   else 
    
@@ -1690,7 +1695,6 @@ else
   
   fi 
 
-   
 fi    
  
 echo -n "${VersioningScheme})..."
@@ -1720,13 +1724,9 @@ echo -n "${VersioningScheme})..."
 
  if [ "${VersioningScheme}" == "svn" ]; then 
  
-    echo " " 
-
-    
-
-
-    
-    
+    versioned_repository="yes"
+    revision_number=`svn info 2>&1 | grep "Revision:"`
+    echo "Revision: ${revision_number}" 
     
  fi # END SVN block 
 
@@ -2044,8 +2044,8 @@ if [ "${LinkDB}" = "yes" ]; then
   # Default database file locations?
   echo "*clm ${DBInstDir}/climate/clm67" >> ${ESPdir}/default
   echo "*prs ${DBInstDir}/databases/pressc.db1" >> ${ESPdir}/default
-  echo "*prm ${DBInstDir}/databases/material.db3.a" >> ${ESPdir}/default
-  echo "*mlc ${DBInstDir}/databases/multicon.db3" >> ${ESPdir}/default
+  echo "*prm ${DBInstDir}/databases/material.db4.a" >> ${ESPdir}/default
+  echo "*mlc ${DBInstDir}/databases/multicon.db4" >> ${ESPdir}/default
   echo "*opt ${DBInstDir}/databases/optics.db2" >> ${ESPdir}/default
   echo "*evn ${DBInstDir}/databases/profiles.db2.a" >> ${ESPdir}/default
   echo "*pdb ${DBInstDir}/databases/plantc.db1" >> ${ESPdir}/default
@@ -2182,6 +2182,7 @@ echo " Installing standard databases. This may take some time."
   cp ${DATdir}/databases/profiles.db2.a ${DESTdir}/esp-r/databases/profiles.db2.a
   cp ${DATdir}/databases/icons.db1 ${DESTdir}/esp-r/databases/icons.db1
   cp ${DATdir}/databases/flow_icons.db6 ${DESTdir}/esp-r/databases/flow_icons.db6
+  cp ${DATdir}/databases/predefined.db1 ${DESTdir}/esp-r/databases/predefined.db1
   echo " Done."
 
    cd ${DATdir}/databases

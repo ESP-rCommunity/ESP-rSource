@@ -1002,7 +1002,7 @@ void esru_wire_ctl ( void)
    GtkWidget *ViewPerspective, *ViewPlan, *ViewEastElev, *ViewNorthElev;
    GtkWidget *zone_button[MCOM];
    GtkWidget *IncludeAll, *IncludeSurfaces, *IncludeExternal, *IncludePartition;
-   GtkWidget *IncludeSimilar, *IncludeSurObsGrnd, *IncludeGrnd;
+   GtkWidget *IncludeSimilar, *IncludeSurObsGrnd, *IncludeGrnd, *IncludeSurObs, *IncludeSurVis;
    GtkWidget *HighDefault, *HighConstr, *HighOpaque, *HighTrans, *HighPartAtt;
 
    gint izone, itchar, ichar, result;
@@ -1221,7 +1221,7 @@ void esru_wire_ctl ( void)
    hbox = gtk_hbox_new (FALSE, 1);
 /*    gtk_container_add (GTK_CONTAINER (hbox),label); this causes a GTK warning about a label widget inside a table */
 
-   IncludeAll = gtk_radio_button_new_with_label (NULL,"Surf+Obs");
+   IncludeAll = gtk_radio_button_new_with_label (NULL,"Surf+Obs+Vis");
    gtk_container_add (GTK_CONTAINER (hbox),IncludeAll);
    if (cray2_.ITDSP == 0) {
      gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(IncludeAll), TRUE);
@@ -1255,6 +1255,16 @@ void esru_wire_ctl ( void)
    gtk_container_add (GTK_CONTAINER (hbox),IncludeGrnd);
    if (cray2_.ITDSP == 6) {
      gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(IncludeGrnd), TRUE);
+   }
+   IncludeSurObs = gtk_radio_button_new_with_label_from_widget (GTK_RADIO_BUTTON (IncludeAll), "Surf+Obs");
+   gtk_container_add (GTK_CONTAINER (hbox),IncludeSurObs);
+   if (cray2_.ITDSP == 7) {
+     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(IncludeSurObs), TRUE);
+   }
+   IncludeSurVis = gtk_radio_button_new_with_label_from_widget (GTK_RADIO_BUTTON (IncludeAll), "Surf+Vis");
+   gtk_container_add (GTK_CONTAINER (hbox),IncludeSurVis);
+   if (cray2_.ITDSP == 8) {
+     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(IncludeSurVis), TRUE);
    }
 
    gtk_table_attach_defaults (GTK_TABLE (table), hbox, 1, 2, 1, 2);
@@ -1355,6 +1365,10 @@ void esru_wire_ctl ( void)
            cray2_.ITDSP = 5;}
          if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (IncludeGrnd)) == TRUE) {
            cray2_.ITDSP = 6;}
+         if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (IncludeSurObs)) == TRUE) {
+           cray2_.ITDSP = 7;}
+         if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (IncludeSurVis)) == TRUE) {
+           cray2_.ITDSP = 8;}
 
          if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (HighDefault)) == TRUE) {
            cray2_.ITHLS = 0;}
@@ -1391,8 +1405,9 @@ void esru_wire_ctl ( void)
 
          // pass back to the fortran the numbers that a user might have changed and invoke updated view (in the fortran)
          chgeye_(&cimage_.EYEM[0],&cimage_.EYEM[1],&cimage_.EYEM[2],&cimage_.VIEWM[0],&cimage_.VIEWM[1],
-           &cimage_.VIEWM[2],&cimage_.ANG,&cray2_.ITZNM,&cray2_.ITSNM,&cray2_.ITVNO,&cray2_.ITOBS,&cray2_.ITSNR,&cray2_.ITGRD,
-           &cray2_.ITORG,&cray2_.GRDIS,&cray2_.ITBND,&cray2_.ITDSP,&cray2_.ITHLS,&cray2_.ITHLZ,&cray2_.ITPPSW);
+           &cimage_.VIEWM[2],&cimage_.ANG,&cray2_.ITZNM,&cray2_.ITSNM,&cray2_.ITVNO,&cray2_.ITOBS,&cray2_.ITVIS,
+           &cray2_.ITVOBJ,&cray2_.ITSNR,&cray2_.ITGRD,&cray2_.ITORG,&cray2_.GRDIS,&cray2_.ITBND,&cray2_.ITDSP,
+           &cray2_.ITHLS,&cray2_.ITHLZ,&cray2_.ITPPSW);
 
          no_valid_event = FALSE;
          break;
@@ -1448,6 +1463,10 @@ void esru_wire_ctl ( void)
            cray2_.ITDSP = 5;}
          if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (IncludeGrnd)) == TRUE) {
            cray2_.ITDSP = 6;}
+         if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (IncludeSurObs)) == TRUE) {
+           cray2_.ITDSP = 7;}
+         if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (IncludeSurVis)) == TRUE) {
+           cray2_.ITDSP = 8;}
 
          if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (HighDefault)) == TRUE) {
            cray2_.ITHLS = 0;}
@@ -1480,8 +1499,9 @@ void esru_wire_ctl ( void)
 
          // pass back to the fortran the numbers that a user might have changed and invoke updated view (in the fortran)
          chgeye_(&cimage_.EYEM[0],&cimage_.EYEM[1],&cimage_.EYEM[2],&cimage_.VIEWM[0],&cimage_.VIEWM[1],
-           &cimage_.VIEWM[2],&cimage_.ANG,&cray2_.ITZNM,&cray2_.ITSNM,&cray2_.ITVNO,&cray2_.ITOBS,&cray2_.ITSNR,&cray2_.ITGRD,
-           &cray2_.ITORG,&cray2_.GRDIS,&cray2_.ITBND,&cray2_.ITDSP,&cray2_.ITHLS,&cray2_.ITHLZ,&cray2_.ITPPSW);
+           &cimage_.VIEWM[2],&cimage_.ANG,&cray2_.ITZNM,&cray2_.ITSNM,&cray2_.ITVNO,&cray2_.ITOBS,&cray2_.ITVIS,
+           &cray2_.ITVOBJ,&cray2_.ITSNR,&cray2_.ITGRD,&cray2_.ITORG,&cray2_.GRDIS,&cray2_.ITBND,&cray2_.ITDSP,
+           &cray2_.ITHLS,&cray2_.ITHLZ,&cray2_.ITPPSW);
 
          esru_ask_wire();	/* re-instanciate the help associated with this interface */
          break;

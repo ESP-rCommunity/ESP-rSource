@@ -107,9 +107,16 @@ C soltrn is singular layer solar transmittance (normal)
 C solrefl is singular layer solar reflectance (normal)
 C vistrn is singular layer visible trans (normal)
 C visrefl is singular layer visible reflectance (normal)
+C deniprndx density of each material
+C areaiprndx total area of each material (use half for partitions)
+C kgiprndx total mass of each material used
+C << logic ?? for multiple layers of the same thing ?? >>
+      real thkiprndx,riair,soltrn,solrefl,vistrn,visrefl
+      real deniprndx,areaiprndx,kgiprndx
       dimension iprndx(100),thkiprndx(100),optndx(100),iglassndx(100)
       dimension riair(100),soltrn(100),solrefl(100),vistrn(100)
-      dimension visrefl(100),nameiprndx(100)
+      dimension visrefl(100),nameiprndx(100),deniprndx(100)
+      dimension areaiprndx(100),kgiprndx(100),sphtiprndx(100)
 
 C Each construction needs to remember, for each layer the index
 C of the material that was created or found for it.
@@ -121,6 +128,7 @@ C surface can be resolved into a quad).
       DIMENSION COORD(MV,3)
       real ver  ! file version passed to subroutine
       real rfr   ! local var for radiant fraction
+      real kg,mlckg    ! for mass calculations
       integer iver     ! file version as integer
       integer ier
       integer ich,iedg ! loop variable
@@ -222,6 +230,10 @@ C and constructions used in the model.
         solrefl(ii)=0.0
         vistrn(ii)=0.0
         visrefl(ii)=0.0
+        deniprndx(ii)=0.0   ! density of material
+        areaiprndx(ii)=0.0  ! area of material
+        sphtiprndx(ii)=0.0  ! specific heat of material
+        kgiprndx(ii)=0.0    ! weight of material
         nameiprndx(ii)=' '
         optndx(ii)=' '
         iconmatpointer(ii,1)=0
@@ -664,6 +676,8 @@ C If not already known add it to the list.
               iij=iij+1
               iprndx(iij)=IPRMAT(INO,IL)
               thkiprndx(iij)=DTHK(ino,IL)
+              deniprndx(iij)=matdbden(iprndx(iij))
+              sphtiprndx(iij)=matdbsht(iprndx(iij))
               if(opt(1:6).eq.'OPAQUE')then
                 iglassndx(iij)=0
                 optndx(iij)=OPT
@@ -704,6 +718,8 @@ C First material (which will never be air).
             iij=iij+1
             iprndx(iij)=IPRMAT(INO,IL)
             thkiprndx(iij)=DTHK(ino,IL)
+            deniprndx(iij)=matdbden(iprndx(iij))
+            sphtiprndx(iij)=matdbsht(iprndx(iij))
             if(opt(1:6).eq.'OPAQUE')then
               iglassndx(iij)=0
               optndx(iij)=OPT
@@ -921,6 +937,8 @@ C Now for each construction.
      &  '!- ======= CONSTRUCTION ======'
 
       do 36 ino = 1,NMLC
+        cxm=0.0
+        mlckg=0.0
         mlc_name=mlcname(ino)(1:12)
         call mlcrefs(mlc_name,areamlc,tareamlc,foundmlc)
         if(.NOT.foundmlc) goto 36
@@ -936,7 +954,20 @@ C Now for each construction.
           else
             layname=nameiprndx(iconmatpointer(ino,IL))
           endif 
-          layl=lnblnk(layname)   
+          layl=lnblnk(layname)
+
+C Increment the area of material, show intermediate calcs.
+C Note used in EnergyPlus but useful for QA.
+C Assume area of the layer is same as total area of the MLC
+C within the model.
+          areaiprndx(ilamat)=areaiprndx(ilamat)+tareamlc
+          kg=tareamlc*DTHK(ino,il)*deniprndx(ilamat)
+          mlckg=mlckg+kg   ! add up kg for the mlc
+          cxm=cxm+(kg*sphtiprndx(ilamat))
+          kgiprndx(ilamat)=kgiprndx(ilamat)+kg
+          write(6,*) 'material ',layname,ilamat,tareamlc,
+     &      DTHK(ino,il),deniprndx(ilamat),kg,kgiprndx(ilamat),
+     &      areaiprndx(ilamat),sphtiprndx(ilamat),kg*sphtiprndx(ilamat)
           if(il.eq.1)then
             if(il.eq.LAYERS(INO))then
               WRITE(ioout,'(4a)',iostat=ios,err=4) indent,
@@ -953,7 +984,27 @@ C Now for each construction.
      &        layname(1:layl),com,'   !- Layer ',IL
           endif
   37    continue
+
+C For each MLC report J/degC capacitance.
+        WRITE(ioout,'(3a,F7.3,a,F7.3,a,F9.3,a)',iostat=ios,err=4) 
+     &    '!- ',mlc_name(1:lnblnk(mlc_name)),com,tareamlc,com,mlckg,
+     &    com,cxm/1000.0,' !- m2 kg kJ/degC'    
+        WRITE(6,'(3a,F7.3,a,F7.3,a,F9.3,a)',iostat=ios,err=4) 
+     &    '!- ',mlc_name(1:lnblnk(mlc_name)),com,tareamlc,com,
+     &    mlckg,com,cxm/1000.0,' !- m2 kg kJ/degC'    
   36  continue
+  
+C Summary of materials found.
+      WRITE(ioout,'(a)',iostat=ios,err=4) 
+     &  '!- ======= Material summary ======'
+      do ij = 1,nmat
+        write(6,*)'!- ',nameiprndx(ij),ij,areaiprndx(ij),
+     &   kgiprndx(ij),' name index area kg'
+        write(ioout,*)'!- ',nameiprndx(ij),ij,areaiprndx(ij),
+     &   kgiprndx(ij),' name index area kg'
+      enddo
+      WRITE(ioout,'(a)',iostat=ios,err=4) 
+     &  '!- ============='
 
 C Typical schedule types.
       WRITE(ioout,'(a)',iostat=ios,err=7) ' '

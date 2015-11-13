@@ -36,6 +36,7 @@ C instead uses the VCOORD coordinates.
 
 C geometry.h provides commons G0/G2/precz/GS5/GS6.
 #include "geometry.h"
+#include "prj3dv.h"
       
       integer lnblnk  ! function definition
 
@@ -48,9 +49,6 @@ C geometry.h provides commons G0/G2/precz/GS5/GS6.
 
       integer izstocn
       common/c24/izstocn(mcom,ms)
-      COMMON/RAY2/ITDSP,ITBND,ITEPT,ITZNM,ITSNM,ITVNO,ITORG,ITSNR,
-     &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS,ITPPSW
-      COMMON/RAY5/ZCOG(MCOM,3),XMN,YMN,ZMN,XMX,YMX,ZMX
       integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
       integer ifs,itfs,imfs

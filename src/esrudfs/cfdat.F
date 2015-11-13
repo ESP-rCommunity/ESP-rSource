@@ -2051,7 +2051,6 @@ C  with the origin at the lower southwest corner of the CFD domain.
 #include "geometry.h"
 #include "prj3dv.h"
 
-      COMMON/RAY5/ZCOG(MCOM,3),XMN,YMN,ZMN,XMX,YMX,ZMX
       COMMON/ALL/NI,NJ,NK,NIM1,NJM1,NKM1,NIM2,NJM2,NKM2
       COMMON/GEOM/XP(ntcelx),YP(ntcely),ZP(ntcelz),
      1            DXEP(ntcelx),DXPW(ntcelx),DYNP(ntcely),DYPS(ntcely),
@@ -2071,7 +2070,7 @@ C k directions.
       Ymax = YV(NJ)
       Zmax = ZW(NK)
 
-C Set values in RAY5
+C Set values in RAY5 of prj3dv.h
       XMN=0.
       XMX=Xmax
       YMN=0.

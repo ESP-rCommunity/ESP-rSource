@@ -53,10 +53,6 @@ C      COMMON/OUTIN/IUOUT,IUIN
 
       integer IZSTOCN
       COMMON/C24/IZSTOCN(MCOM,MS)
-      COMMON/RAY2/ITDSP,ITBND,ITEPT,ITZNM,ITSNM,ITVNO,ITORG,ITSNR,
-     &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS,ITPPSW
-      COMMON/RAY5/ZCOG(MCOM,3),XMN,YMN,ZMN,XMX,YMX,ZMX
-      COMMON/RAY6/LINSTY(MCON)
       common/appcols/mdispl,nifgrey,ncset,ngset,nzonec
 
 C VCOORD : X,Y & Z coordinates in model (via geometry.h).
@@ -169,7 +165,12 @@ C and then go on to the normal objects. After this point ISTOK is .FALSE.
 C If obstructions are to be drawn read the obstruction file, transform
 C the obstruction description into a gen body and plot them out
 C before going on to the surfaces in the zone itself.
-      IF(ITDSP.EQ.0.or.ITDSP.eq.5)CALL DRAWOBS(nznog(IZ),ier)
+      IF(ITDSP.EQ.0.or.ITDSP.eq.5.or.ITDSP.eq.7)then
+        CALL DRAWOBS(nznog(IZ),ier)
+      ENDIF
+
+C Also draw visual entities if ITDSP set to zero or six.
+      IF(ITDSP.EQ.0.or.ITDSP.eq.6)CALL DRAWVIS(nznog(IZ),ier)
 
 C If zone names are to be displayed place near the centre of zone.
 C For clarity use larger font and then restore font to normal size.

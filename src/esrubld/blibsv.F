@@ -1705,7 +1705,7 @@ C stop. This will later be replaced by a dedicated call to res.
 C Debug.
 C            WRITE(*,'(A,I2)') 'Dumpimg BEMS data ..... Zone ',ICOMP
             WRITE(60,*) '#Zone  Day  Time   Temperature '
-	    
+    
             CALL ECLOSE(BTIMEF,1.000,0.001,CLOSE)
             IF(CLOSE)THEN
               WRITE(60,'(I6,1X,F8.4,1X,F8.4,1X,F8.4)') 

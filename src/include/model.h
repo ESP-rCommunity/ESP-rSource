@@ -107,3 +107,20 @@ C Anchor - named and typed concept with associated list of surfaces.
       integer ialoc     ! number of links for each anchor
       integer lstanchr  ! connection index for each anchor link
       common/anchorb/IALOC(20),lstanchr(20,99)
+
+C IES files to associate with entities passed to Radiance. Up to
+C 10 can be associated with a model. The iesname is the root on to which
+C variants for control will be created e.g. root arran_led -> arran_led100
+C arran_led075 arran_led050 etc. are managed.
+      integer nbofies       ! number of IES files
+      character iesname*12  ! short root name to associate with IES data set 
+      character iesmenu*32  ! menu entry for IES
+      character iesfile*72  ! IES file
+      character iesalong*1  ! length along axis X or Y or Z
+      common/ies/nbofies,iesname(10),iesmenu(10),iesfile(10),
+     &  iesalong(10)
+      real ieslen,ieswid,iesht ! length width height of IES entity
+      common/iesdim/ieslen(10),ieswid(10),iesht(10)
+      integer iespercents   ! number steps of on percentages
+      real iessteps         ! percentage for each step
+      common/ieson/iespercents(10),iessteps(10,5)

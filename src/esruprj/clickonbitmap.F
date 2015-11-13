@@ -108,6 +108,7 @@ C an object has been saved the set justentered to false.
       integer MITEM,INO ! max items and current menu item
       real blkopaq      ! opacity of obstruction
 
+C << TODO trackview needs to use ii variables >>
 #ifdef OSI
       integer iixs1,iiys1,iixs2,iiys2,iixtn1,iiytn1,iixtn2,iiytn2
       integer iixx1,iiyy1,iid1,iid2,iid3,iid4
@@ -141,12 +142,8 @@ C (optional gridding defined), xbmload (has bitmap been loaded), trimmed
 C has only part of bitmap been displayed, xbmsnap (snap to grid if xbmgrid
 C is true).
       newgeo=.false.  ! assume older format geometry.
-      xbmorigin=.false.
-      xbmnorth=.false.
-      xbmscale=.false.
-      xbmgrid=.false.
-      xbmload=.false.
-      trimmed=.false.
+      xbmorigin=.false.; xbmnorth=.false.; xbmscale=.false.
+      xbmgrid=.false.; xbmload=.false.; trimmed=.false.
       xbmsnap=.false.
 
 C Set true to signal that user wants to add another zone.
@@ -170,12 +167,7 @@ C   inpmode: 8 = nothing (not enough toggles set to do this yet)
 
 C Assumed initial number of walls for extruded floor
 C plan case(NW), initial base Z (z1) initial top (z2).
-      NW=0
-      Z1=0.
-      Z2=2.4
-      Y1=0.0
-      X1=0.0
-      other=0.1
+      NW=0; Z1=0.0; Z2=2.4; Y1=0.0; X1=0.0; other=0.1
 
 C nbobs() is the number of obstruction blocks. NBL is number of
 C historical points for prior blocks (NBL = nbobs*3 because each
@@ -204,17 +196,13 @@ C uyoffset is the user coord at the bottom of the bitmap.
 
 C viewlim(1) and viewlim(2) are the user unit left and right boundaries and
 C viewlim(3) and viewlim(4) are the lower and upper boundaries.
-      viewlim(1)=0.0
-      viewlim(2)=0.0
-      viewlim(3)=0.0
-      viewlim(4)=0.0
+      viewlim(1)=0.0; viewlim(2)=0.0; viewlim(3)=0.0; viewlim(4)=0.0
+      
 C VIEWLIM(6)     - current view limits (x1,x2,y1,y2,z1,z2)
 
 C Gridding flag indicating the density of the grid.
       iwmg=0
-      GRSPC(1)=0.0
-      GRSPC(2)=0.0
-      GRSPC(3)=0.0
+      GRSPC(1)=0.0; GRSPC(2)=0.0; GRSPC(3)=0.0
 
 C Vertices and pixels (clear list of pixels for vertices and corners).
       INVERT=0
@@ -497,8 +485,7 @@ C Offer to start another object.
 
 C Clear and start new zone or ground topology or obstruction.
         if(inpmode.eq.6)then
-          NGT=0
-          NGTV=0
+          NGT=0; NGTV=0
           if(gtgeom(1:4).eq.'UNKN'.or.gtgeom(1:2).eq.'  ')then
             write(ltmp,'(2a)') cfgroot(1:lnblnk(cfgroot)),'.grnd'
           else
@@ -559,11 +546,8 @@ C Ask for initial block name.
           S12='blk_'
           CALL EASKS(S12,' ','Initail name for obstructions?',
      &      12,'obstruction','Block name',IER,nbhelp)
-          INVERT=0
-          NBFREL=0
-          nbobs(icomp)=0
-          NOX(icomp)=MOX
-          NOZ(icomp)=MOZ
+          INVERT=0; NBFREL=0; nbobs(icomp)=0
+          NOX(icomp)=MOX; NOZ(icomp)=MOZ
           ZN='obstructions'
         else
 
@@ -1231,10 +1215,7 @@ C stuff goes through the add-another facility in the main menu.
           elseif(inpt.eq.5)then
             INVERT=0; inpmode = inpt
           elseif(inpt.eq.6)then
-            NW=0
-            INVERT=0
-            NGT=0
-            NGTV=0
+            NW=0; INVERT=0; NGT=0; NGTV=0
             if(gtgeom(1:4).eq.'UNKN'.or.gtgeom(1:2).eq.'  ')then
               write(ltmp,'(2a)') cfgroot(1:lnblnk(cfgroot)),'.grnd'
             else
@@ -1258,9 +1239,7 @@ C stuff goes through the add-another facility in the main menu.
             endif
             inpmode = inpt
           elseif(inpt.eq.7)then
-            NW=0
-            INVERT=0
-            NBFREL=0
+            NW=0; INVERT=0; NBFREL=0
             inpmode = inpt
           elseif(inpt.eq.8)then
             continue
@@ -1744,24 +1723,15 @@ C zone geometry file can be created.
               JVN(1,1)=1; JVN(1,2)=2; JVN(1,3)=3
               NZTV(icomp)=NTV
               SNAME(ICOMP,1)='first'
-              SOTF(1)='OPAQUE'
-              SMLCN(1)='UNKN'
-              SVFC(1)='FLOR'
-              SOTHER(1,1)='UNKNOWN'
-              SOTHER(1,2)='0'
-              SOTHER(1,3)='0'
-              SUSE(1,1)='-'
-              SUSE(1,2)='-'
-              SPARENT(1)='-'
+              SOTF(1)='OPAQUE'; SMLCN(1)='UNKN'; SVFC(1)='FLOR'
+              SOTHER(1,1)='UNKNOWN'; SOTHER(1,2)='0'; SOTHER(1,3)='0'
+              SUSE(1,1)='-'; SUSE(1,2)='-'; SPARENT(1)='-'
 
 C Update the connection list for an initial surface.
               ICCC=NCON
               ICCC=ICCC+1
-              IC1(ICCC)=ICOMP
-              IE1(ICCC)=1
-              ICT(ICCC)=0
-              IC2(ICCC)=0
-              IE2(ICCC)=0
+              IC1(ICCC)=ICOMP; IE1(ICCC)=1; ICT(ICCC)=0
+              IC2(ICCC)=0; IE2(ICCC)=0
               SSNAME(iccc)=SNAME(ICOMP,1)
               SSOTF(iccc)=SOTF(1)
               SSMLCN(iccc)=SMLCN(1)

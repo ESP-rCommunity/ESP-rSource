@@ -5111,7 +5111,7 @@ C help text blocks for the current control domain.
         WRITE(VERT(4),'(a)') 'c   incident radiation at ext. surface'
         WRITE(VERT(5),'(a)') 'd senses lux levels                   '
         WRITE(VERT(6),'(a)') '  ------------------------------------'
-      elseif(icfoc.eq.6)then    ! complex fenistration
+      elseif(icfoc.eq.6)then    ! complex fenestration
         helptopic='senslocation_CFC'
         call gethelptext(helpinsub,helptopic,nbhelp)
         WRITE(VERT(1),'(a)') 'a sensor not used (schedule only)     '

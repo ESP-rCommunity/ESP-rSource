@@ -40,6 +40,7 @@ C ITRU = unit number for user output, IER=0 OK, IER=1 problem.
 
 C geometry.h provides commons G0/G1 and G2.
 #include "geometry.h"
+#include "prj3dv.h"
       
       integer lnblnk  ! function definition
 
@@ -57,13 +58,9 @@ C Parameters passed
       common/user/browse
 
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
-      COMMON/RAY2/ITDSP,ITBND,ITEPT,ITZNM,ITSNM,ITVNO,ITORG,ITSNR,
-     &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS,ITPPSW
-      COMMON/RAY3/MODIFY,MODLEN,MODBND
-      COMMON/RAY6/LINSTY(MCON)
       COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,CFCDBOK
       LOGICAL        CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,dok,CFCDBOK
-      LOGICAL MODIFY,MODLEN,MODBND,UPDGEO,browse,modcfg,close,updoth
+      LOGICAL UPDGEO,browse,modcfg,close,updoth
 
 C TOTHER is a temporary array for manipulating SSOTHER.
 C SO is a tempporary array to hold current surface SSOTHER.
@@ -82,7 +79,7 @@ C For help messages
 C Set for redraw if image on first entry (if refresh set to after
 C each edit). Set flag for updating geometry file (for changed
 C surface attribute.
-      MODIFY=.TRUE.
+      MODIFYVIEW=.TRUE.
       MODLEN=.TRUE.
       MODBND=.TRUE.
       modcfg=.false.
@@ -115,7 +112,7 @@ C Remember the topology attributes for reference zone.
         write(TOTHER(IJ,2),'(a)') SSOTHER(ICN,2)
         write(TOTHER(IJ,3),'(a)') SSOTHER(ICN,3)
   322 continue
-      MODIFY=.TRUE.
+      MODIFYVIEW=.TRUE.
       MODBND=.TRUE.
       UPDGEO=.FALSE.
 
@@ -141,15 +138,8 @@ C has not a type 3 then don`t highlight.
       endif
 
 C General image option flags.
-      ITDSP=1
-      ITBND=1
-      ITEPT=0
-      ITZNM=0
-      ITSNM=0
-      ITVNO=1
-      ITORG=1
-      ITSNR=1
-      ITGRD=1
+      ITDSP=1; ITBND=1; ITEPT=0; ITZNM=0; ITSNM=0
+      ITVNO=1; ITORG=1; ITSNR=1; ITGRD=1
       GRDIS=0.0
       ITPPSW=0
 
@@ -227,7 +217,7 @@ C menu so that can return to where we were. Also connected surface.
 
 C Reset all surface lines to std width except for current
 C and display both zones.
-        MODIFY=.TRUE.
+        MODIFYVIEW=.TRUE.
         MODBND=.TRUE.
         CALL INLNST(1)
         LINSTY(IFOC)=2
@@ -236,7 +226,7 @@ C and display both zones.
         nznog(2)=IZ
         izgfoc=IC1(IFOC)
         CALL ADJVIEW(IER)
-        MODIFY=.TRUE.
+        MODIFYVIEW=.TRUE.
         MODBND=.TRUE.
 
         IS=1

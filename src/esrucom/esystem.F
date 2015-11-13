@@ -271,6 +271,10 @@ C DBZN (15 char) name of the zone or control etc it is associated with.
 C DBSN (15 char) name of the surface within the associated zone.
        COMMON/TDFFLG0/DBTAG(MIT),DBTASK(MIT),DBZN(MIT),DBSN(MIT)
 
+C Instruction to pause assessment to allow rescan of a zone operation file.
+      integer ipausecas   ! zero no pause non-zero pause 
+      common/pausecas/ipausecas(MCOM)
+
 C Configuration control.
 C ctldoc (248 char) - Overall control notes. If equal to 'none'
 C                   then no control is imposed.
@@ -502,7 +506,10 @@ C 'simulation toggles' menu.
 C iSlr_half_hr_flg value = 0 :hour-centered; =1 : half-hour centered.
       common/CWEC_SOL/iSlr_half_hr_flg
       integer iSlr_half_hr_flg,idty
-      
+
+C Radiance processor cores.
+      integer radcores
+      common/radcor/radcores
 
       INTEGER IRNCMD,IRNCMF
       INTEGER ICREPORT,IDOL,IDAYNUM,IMTHNUM,IDWKNUM,IDTYY
@@ -561,12 +568,13 @@ C Simulation parameters
       logical unixok  ! to check for database path file separators
       integer itru    ! unit for output
       integer iflag   ! for error traps
-      
+      integer loop    ! for looping     
       INTEGER :: id1,id2,id3,id4,icon,icomp,icc,i,ia,ibrowse,ierv
       INTEGER :: im1,im2,im3,im4,iier,irec,ipos,ios,inod,inisz,igrdp
       INTEGER :: irva,is,iset_start,k,kv,iwarn,j,iv,iva,iunit,iunit1,lc
       INTEGER :: itwpr,itrunc,iss,isva,istat,n,m,items,lastcc
       INTEGER :: lcfgl,lcfgr,louts,ncn,nd
+      real    :: vp1,vp2,vp3,vp4,vp5  ! for ies control points
 
 #ifdef OSI
       integer iincomp,iincon  ! to pass nb zones connections to c code
@@ -692,6 +700,7 @@ C Wind-generated electricity
 
 C Clear zone related files.
       do 43 i=1,MCOM
+        ipausecas(i)=0  ! unmark pause to re-scan zone operation file
         continue
    43 continue
 
@@ -842,6 +851,63 @@ C embedded in the configuration file.
           CALL EGETRM(OUTSTR,K,bsmpth,'W','path to BASESIMP',IER)
           IF(IER.NE.0)goto 1
           goto 34
+        elseif(WORD(1:8).eq.'*radcore')then
+          CALL EGETWI(OUTSTR,K,radcores,1,4,'F','radiance cores',IER)
+          IF(IER.NE.0)goto 1
+          goto 34
+        elseif(WORD(1:4).eq.'*ies')then
+
+C IES data to pass to radiance. Read until *endies. Currently 10 entities
+C are supported.
+          CALL EGETWI(OUTSTR,K,nbofies,1,10,'F','IES entries',IER)
+          IF(IER.NE.0)goto 1
+          loop=0
+  335     CALL STRIPC(IUC,OUTSTR,99,ND,1,'IES tag data',IER)
+          K=0
+          CALL EGETW(OUTSTR,K,WORD,'W','IES header tags',IFLAG)
+          if(WORD(1:8).eq.'*nameies')then
+            loop=loop+1    ! increment loop
+            CALL EGETW(OUTSTR,K,iesname(loop),'W','IES name',IFLAG)
+            CALL EGETRM(OUTSTR,K,iesmenu(loop),'W','IES menu',IER)
+          elseif(WORD(1:7).eq.'*iesraw')then
+            CALL EGETRM(OUTSTR,K,iesfile(loop),'W','IES file',IER)
+          elseif(WORD(1:8).eq.'*fixture')then
+            CALL EGETWR(OUTSTR,K,ieslen(loop),0.,0.,'-','IESlen',IER)
+            CALL EGETWR(OUTSTR,K,ieswid(loop),0.,0.,'-','IESwid',IER)
+            CALL EGETWR(OUTSTR,K,iesht(loop),0.,0.,'-','IESht',IER)
+            CALL EGETW(OUTSTR,K,iesalong(loop),'W','along axs',IFLAG)
+          elseif(WORD(1:7).eq.'*ctlies')then
+            CALL EGETWI(OUTSTR,K,iespercents(loop),1,5,'F',
+     &        'nb ies pc',IER)
+            vp1=0.0; vp2=0.0; vp3=0.0; vp4=0.0; vp5=0.0
+            if(iespercents(loop).eq.1)then
+              CALL EGETWR(OUTSTR,K,vp1,0.,1.,'-','IES step 1',IER)
+            elseif(iespercents(loop).eq.2)then
+              CALL EGETWR(OUTSTR,K,vp1,0.,1.,'-','IES step 1',IER)
+              CALL EGETWR(OUTSTR,K,vp2,0.,1.,'-','IES step 2',IER)
+            elseif(iespercents(loop).eq.3)then
+              CALL EGETWR(OUTSTR,K,vp1,0.,1.,'-','IES step 1',IER)
+              CALL EGETWR(OUTSTR,K,vp2,0.,1.,'-','IES step 2',IER)
+              CALL EGETWR(OUTSTR,K,vp3,0.,1.,'-','IES step 3',IER)
+            elseif(iespercents(loop).eq.4)then
+              CALL EGETWR(OUTSTR,K,vp1,0.,1.,'-','IES step 1',IER)
+              CALL EGETWR(OUTSTR,K,vp2,0.,1.,'-','IES step 2',IER)
+              CALL EGETWR(OUTSTR,K,vp3,0.,1.,'-','IES step 3',IER)
+              CALL EGETWR(OUTSTR,K,vp4,0.,1.,'-','IES step 4',IER)
+            elseif(iespercents(loop).eq.5)then
+              CALL EGETWR(OUTSTR,K,vp1,0.,1.,'-','IES step 1',IER)
+              CALL EGETWR(OUTSTR,K,vp2,0.,1.,'-','IES step 2',IER)
+              CALL EGETWR(OUTSTR,K,vp3,0.,1.,'-','IES step 3',IER)
+              CALL EGETWR(OUTSTR,K,vp4,0.,1.,'-','IES step 4',IER)
+              CALL EGETWR(OUTSTR,K,vp5,0.,1.,'-','IES step 5',IER)
+            endif
+            iessteps(loop,1)=vp1; iessteps(loop,2)=vp2
+            iessteps(loop,3)=vp3; iessteps(loop,4)=vp4
+            iessteps(loop,5)=vp5
+          elseif(WORD(1:7).eq.'*endies')then
+            goto 34   ! read another tag
+          endif
+          goto 335    ! read more ies data lines
         elseif(WORD(1:5).eq.'*indx')then
           CALL EGETWI(OUTSTR,K,INDCFG,0,3,'F','config index',IER)
           IF(IER.NE.0)goto 1
@@ -1446,9 +1512,6 @@ C There is a calendar of day types defined read its name.
 
 C For each day of the year read from the 365 indicies into the
 C icalender array.
-C << how about allowing 1 day type - that would be the case
-C << for a hosptal that was used 365 days a year.
-
           CALL EGETWI(OUTSTR,K,NBDAYTYPE,3,MDTY,'W','day types',IER)
           CALL EGETWIA(IUC,IRCC,365,0,10,'W','calendar day types',IER)
           DO 118 KV=1,365
@@ -2516,6 +2579,11 @@ C Zone file names.
           IF(IER.NE.0) GOTO 1
         elseif(WORD(1:4).eq.'*opr')then
           LPROJ(icomp)=text(1:72)
+        elseif(WORD(1:9).eq.'*pausecas')then
+
+C Flag to pause assessment at each timestep to allow for
+C a zone casual gain to be adapted. No impact if tag missing.
+          ipausecas(icomp)=1
         elseif(WORD(1:4).eq.'*geo')then
           LGEOM(icomp)=text(1:72)
         elseif(WORD(1:4).eq.'*con')then

@@ -31,6 +31,7 @@ C exportcad: controls model export facilities.
 
 #include "building.h"
 #include "model.h"
+#include "prj3dv.h"
       
       integer lnblnk  ! function definition
 
@@ -47,15 +48,15 @@ C exportcad: controls model export facilities.
       common/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,CFCDBOK
       COMMON/exporttg/xfile,tg,delim
       COMMON/exporttgi/ixopen,ixloc,ixunit
-      COMMON/RAY3/MODIFY,MODLEN,MODBND
 
       logical OK,DOK,CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,concat,CFCDBOK
-      logical MODIFY,MODLEN,MODBND,unixok,browse
+      logical unixok,browse
       integer iappwpc ! application height as % of nominal size
 
       DIMENSION ITEMS1(11)
 
-      character LFIL*72,path*72
+      character LFIL*72,path*72,ltmp*72
+      character dradcf*72   ! default name
       character ITEMS1*34,doit*248,outs*124,outs248*248
       character tmode*12
       character xfile*144,tg*1,delim*1,ffile*72,dvfil*72
@@ -65,6 +66,7 @@ C exportcad: controls model export facilities.
       character fs*1
       logical oke,modcfg
       integer NITMS,INO1 ! max items and current menu item
+      integer lnradcf,lnltmp  ! lengths of file names
 
 C Passed parameters for cfgtogg
 #ifdef OSI
@@ -313,14 +315,21 @@ C on the model root name. Take into account where prj was started.
      &        cfgroot(1:lnblnk(cfgroot)),fs,'rad'
             call usrmsg('Creating folder for radiance model:',doit,'P')
             call runit(doit,'-')
+
+C And update radpath. The L144 is for future use of EASKXORGTKF
+            write(radpth,'(3a)') '..',fs,'rad'
             modcfg=.true.
           endif
 
           if(lradcf(1:7).eq.'UNKNOWN')then
             write(lradcf,'(2a)') cfgroot(1:lnblnk(cfgroot)),'.rcf'
+C            write(L144,'(8a)')path(1:lnblnk(path)),fs,'..',fs,'rad',
+C     &        fs,cfgroot(1:lnblnk(cfgroot)),'.rcf'
             modcfg=.true.
           endif
         else
+
+C Prj has not been invoked from within the model cfg folder.
           if(radpth(1:3).eq.'./ '.or.radpth(1:3).eq.'.\\ ')then
             CALL PHELPD('visu-rad-warning',7,'-',0,0,IER)
             write(radpth,'(3a)')'..',fs,'rad'
@@ -328,13 +337,36 @@ C on the model root name. Take into account where prj was started.
      &        pwdtocfg(1:lnblnk(pwdtocfg)),fs,'..',fs,'rad'
             call usrmsg('Creating folder for radiance model:',doit,'P')
             call runit(doit,'-')
+
+C And update radpath. The L144 is for future use of EASKXORGTKF
+            write(radpth,'(3a)') '..',fs,'rad'
             modcfg=.true.
           endif
 
           if(lradcf(1:7).eq.'UNKNOWN')then
             write(lradcf,'(2a)') cfgroot(1:lnblnk(cfgroot)),'.rcf'
+C            write(L144,'(10a)') pwdinitial(1:lnpwdi),fs,
+C     &        pwdtocfg(1:lnblnk(pwdtocfg)),fs,'..',fs,'rad',fs,
+C     &        cfgroot(1:lnblnk(cfgroot)),'.rcf'
             modcfg=.true.
           endif
+        endif
+
+C Check rcf name and contents of file on return from e2r.
+ 319    ltmp=lradcf
+        dradcf='scene.rcf'
+        CALL EASKS(ltmp,' Radiance scene file for this model?',
+     &    '  ',72,dradcf,'Radiance scene file name',IER,nbhelp)
+        if(ltmp.eq.' ')goto 319 
+
+C rcf name OK and differs from prior name, update cfg file and start e2r.
+        lnradcf=lnblnk(lradcf)
+        lnltmp=lnblnk(ltmp)
+        if(ltmp(1:lnltmp).eq.lradcf(1:lnradcf))then
+          continue
+        else
+          modcfg=.true.
+          lradcf = ltmp
         endif
 
 C RADIANCE creation. Starts e2r with current configuration file.
@@ -402,7 +434,7 @@ C If user canceled the wireframe export loop back.
             goto 33
           endif
           call usrmsg('sending wireframe... ',' ','-')
-          MODIFY=.TRUE.
+          MODIFYVIEW=.TRUE.
           CALL ADJVIEW(IER)
           call cfgtogg(icfg_type,icfgz,icfgn,icfgc,icfgdfn,
      &                 iicfgz,iicfgn,iicfgc,iicfgdfn)
@@ -417,7 +449,7 @@ C If user canceled the wireframe export loop back.
 C Toggle the wirefram export file closed.
           call usrmsg('sending wireframe...done.',' ','-')
           call ctlexp(xfile,ixopen,ixloc,ixunit,'G','Wire frame',IER)
-          MODIFY=.TRUE.
+          MODIFYVIEW=.TRUE.
 
 C Check if conversion to xfig wanted.
           dok=.true.

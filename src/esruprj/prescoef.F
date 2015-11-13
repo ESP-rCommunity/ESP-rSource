@@ -37,9 +37,9 @@ C required by CPCALC to calculate pressure coefficients around
 C a building.
       subroutine cpcdat
 #include "building.h"
+#include "prj3dv.h"
       common/CPCALC/icpcon,ble,bwi,bhi,blox,bloy,bloz,orient,irt,ra,
      &              sbh,pad,wvpe
-      COMMON/RAY5/ZCOG(MCOM,3),XMN,YMN,ZMN,XMX,YMX,ZMX
       common/pophelp/h(60)
       dimension ITEMS(15)
       character items*36,h*72,hold*32
@@ -352,14 +352,10 @@ C should calculate pressure coefficients.
       integer IZSTOCN
       COMMON/C24/IZSTOCN(MCOM,MS)
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
-      COMMON/RAY2/ITDSP,ITBND,ITEPT,ITZNM,ITSNM,ITVNO,ITORG,ITSNR,
-     &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS,ITPPSW
-      COMMON/RAY3/MODIFY,MODLEN,MODBND
-      COMMON/RAY6/LINSTY(MCON)
       common/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,CFCDBOK
       common/CPCALC2/FICOCP
 
-      LOGICAL MODIFY,MODLEN,MODBND,OK,dok
+      LOGICAL OK,dok
       logical CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,CFCDBOK
 
       DIMENSION VERT(35),COMPS(MPCP),IVAL(MPCP)
@@ -580,7 +576,7 @@ C Manual input of cordinates.
           nzg=1
           nznog(1)=IC
           izgfoc=IC
-          MODIFY=.TRUE.
+          MODIFYVIEW=.TRUE.
           MODLEN=.TRUE.
           MODBND=.TRUE.
           CALL ESCZONE(IC)
@@ -601,7 +597,7 @@ C Set all surfaces to standard line width and surface being
 C selected to a thick line.
           ITVNO=0
           ITSNM=0
-          MODIFY=.TRUE.
+          MODIFYVIEW=.TRUE.
           CALL INLNST(1)
           CALL SURADJ(IC,ISO,IE,TMP,IZC,ISC,ICXX,DESCRC)
           LINSTY(ICXX)=2
@@ -712,7 +708,7 @@ C  transparent surface of the zone
                 nzg=1
                 nznog(1)=IZU
                 izgfoc=IZU
-                MODIFY=.TRUE.
+                MODIFYVIEW=.TRUE.
                 CALL ESCZONE(IZU)
                 CALL BNDOBJ(0,IER)
                 CALL ERCZONE(IZU)

@@ -127,9 +127,6 @@ C IPV description via ipvdata.h.
       common/wkdtyp/idwe1,idwe2,wkd1,wkd2
       common/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
       common/gzonpik/izgfoc,nzg,nznog(mcom)
-      common/RAY2/ITDSP,ITBND,ITEPT,ITZNM,ITSNM,ITVNO,ITORG,ITSNR,
-     &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS,ITPPSW
-      common/RAY3/MODIFY,MODLEN,MODBND
       common/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,CFCDBOK
 
 C Uncertainty.
@@ -149,7 +146,7 @@ C Name of current application
 
       integer iverb     ! verbosity passed on command line
       logical OK,CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,MODSIT,CFCDBOK
-      logical MODIFY,MODLEN,MODBND,browse,confirm,XST,ckpath
+      logical browse,confirm,XST,ckpath
       logical unixok,Vldtng,changedit
       logical itisanexemplar  ! passed to newprb to ensure browse mode.
 
@@ -913,7 +910,7 @@ C focus on that zone.  If 'inzone' = 'UNKNOWN' or 0 present a list.
           call zindex(inzone,index)
           if(index.le.0)then
             if(indcfg.ne.2.and.indcfg.ne.0)then
-              MODIFY=.TRUE.
+              MODIFYVIEW=.TRUE.
               MODBND=.TRUE.
               MODLEN=.TRUE.
               nzg=NCOMP
@@ -969,7 +966,7 @@ C Pass information to C library code if running in graphic mode.
 
 C Change focus to zone but do not act on any ianother jump command.
             CALL EDZONE(ITRC,index,ianother,IER)
-            MODIFY=.TRUE.
+            MODIFYVIEW=.TRUE.
           endif
         endif
       endif
@@ -1053,7 +1050,7 @@ C to draw the model.
       elseif(indcfg.eq.0)then
         CALL USRMSG(' ',' ','-')
       else
-        if(CFGOK.AND.MODIFY)then
+        if(CFGOK.AND.MODIFYVIEW)then
           MODBND=.TRUE.
           MODLEN=.TRUE.
           ITSNM=1
@@ -1996,19 +1993,11 @@ C          call usrmsg('Beginning CFD only assessment via',doit,'-')
 C Visual simulation.  Starts e2r with configuration file. Depending on
 C if Unix or Windows setup the appropriate path.
 
-C If browsing pass this information to e2r.
-        if(browse)then
-          if(itrc.gt.1)then
-            brw = ' -v -b yes'
-          else
-            brw = ' -b yes'
-          endif
+C Set browse to no for e2r.
+        if(itrc.gt.1)then
+          brw = ' -v -b no '
         else
-          if(itrc.gt.1)then
-            brw = ' -v -b no '
-          else
-            brw = ' -b no '
-          endif
+          brw = ' -b no '
         endif
 
         call tstamp('>','PRJ: beginning e2r')

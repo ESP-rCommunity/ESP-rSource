@@ -60,6 +60,7 @@ C QLAT   - latent load for present (1) and future (2) time step.
 #include "OffsiteUtilitiesPublic.h"
 #include "h3k_report_data.h"
 
+      common/filep/ifil
       common/tc/itc,icnt
       common/trc/itrc
       common/trace/itcf,itrace(mtrace),izntrc(mcom),itu
@@ -79,7 +80,8 @@ C Zone casual gain control data.
      & UX(MCOM,MLCOM,MDF),UY(MCOM,MLCOM,MDF),UH(MCOM,MLCOM,MDF),
      & SETPT(MCOM,MLCOM),SYSPER(MCOM,MLCOM),SOFFLL(MCOM,MLCOM),
      & IOFFDT(MCOM,MLCOM),SMLOUT(MCOM,MLCOM),SMEOUT(MCOM,MLCOM)
-      COMMON/CGCIN3/ICGCS(MCOM),ICGCF(MCOM),
+
+      COMMON/CGCIN3/ICGCS(MCOM,MDTY),ICGCF(MCOM,MDTY),
      & ICGCFL(MCOM,MLCOM),SPELEC(MCOM,MLCOM),SLOPEM(MCOM,MLCOM)
 
 C Switch off delay time memory common block
@@ -176,6 +178,10 @@ C ICGCTL - pointer to controlled gain type.
       common/CASGNSE/ELQ(MCOM,MDTY,MGTY,MGPER,MPHAS),
      &               ELR(MCOM,MDTY,MGTY,MGPER,MPHAS)
 
+C Instruction to pause assessment to allow rescan of a zone operation file.
+      integer ipausecas   ! zero no pause non-zero pause 
+      common/pausecas/ipausecas(MCOM)
+
 C Variables used in trace.
       common/CASGNTRC/QP(MCOM,2,MC,MPHAS),RP(MCOM,2,MC,MPHAS)
 
@@ -268,6 +274,8 @@ C.....Named constants for timerows
       integer imonth_iter !looping variable for months 1 - 12
       integer idayn  
       logical closer
+      logical OK,DOK
+      logical bInStartup  ! logical function returning true if in startup period
 
 C Trace output ?
       traceok = .true.
@@ -361,13 +369,22 @@ C Determine future timerow casual gain multiplier CGCTL(2,ICGCTL(ICOMP)).
 C Set switch-off delay time memory to "zero" before start of the
 C new day control period:
           IT=int(btimef)
-          if (IT.EQ.ICGCS(ICOMP)) then
+          if (IT.EQ.ICGCS(ICOMP,IDAY)) then
             do 20 N=1,NLITZ(ICOMP)
               IDTM(ICOMP,N)=0
 20          continue
           endif
+
           IPOINT=0
-          if (IT.GT.ICGCS(ICOMP).AND.IT.LE.ICGCF(ICOMP)) IPOINT=1
+
+C Noticed if control period start is 8h00 nothing happens until 9h00
+C This does not work well for shorter timesteps.
+C          if (IT.GT.ICGCS(ICOMP,IDAY).AND.
+C     &         IT.LE.ICGCF(ICOMP,IDAY)) IPOINT=1
+
+C Check time as in 933 below so for multiple timesteps per hour.
+          if (btimef.GT.float(ICGCS(ICOMP,IDAY)).AND.
+     &        btimef.LE.float(ICGCF(ICOMP,IDAY))) IPOINT=1
           if (IPOINT.NE.0) then
             call INTLUM(ICOMP,FRAC)  ! get the fraction of control
             CGCTL(ICOMP,2,ICGCTL(ICOMP))=FRAC
@@ -381,7 +398,7 @@ C Update SHOCC-calculated equipment loads.
 C Use data from one of three sources.
 C NB tdf and time step file should have electrical data added to the 
 C definition.
-C << adapt to work with other gain type >>
+
       if(ICASUAL(icomp).ne.0)then
 
 C Data in temporal database (aggregate convective, radiant and
@@ -756,7 +773,31 @@ C First find total number of simulation period timesteps including start-up peri
 
       else
 
-       ! Rrocess HOT3000 base loads here
+C Data in zone operations file. For each casual gain type set gain for current period.
+C Check if ipausecas is non-zero for this zone and we are after the startup period.
+C If so pop-up a dialog for the user and if they agree call eroper and MZCASG for this 
+C zone to refresh common CASGNS. (Note this probably does not yet alter infiltration or
+C ventilation values in the zone).
+        if(ipausecas(icomp).eq.1)then
+          if (bInStartup())then
+            continue
+          else
+            CALL DAYCLK(IDYP,BTIMEF,iuout)
+            write(outs,'(4a)') 'For ',zname(icomp),
+     &        ' rescan operation file: ',LPROJ(icomp)(1:36)
+            DOK=.false.
+            CALL ASKOK(OUTS,'Confirm?',OK,DOK,nbhelp)
+            if(ok)then
+              iunit=ifil+1
+              iitrc=1
+              CALL EROPER(IITRC,ITU,IUNIT,icomp,IER)
+              CALL MZCASG(icomp)
+              write(6,*) 'called eroper & mzcasg for ',icomp,btimef
+            endif
+          endif
+        endif
+
+       ! Process HOT3000 base loads here
        IF(bH3KExtentionsActive().and.iH3K_Base_Loads(icomp).eq.1)then
 
          ! ** NOTE: latent gains 
@@ -879,9 +920,7 @@ C For each casual gain type set gain for current period.
 C First initialize SHOCC commons to -1, i.e. assume no SHOCC-calulated loads
 C the following 'fetchloads' subroutine will override '-1' if SHOCC
 C does indeed calculate loads.
-          shcon=-1.
-          shrad=-1.
-          shlat=-1.
+          shcon=-1.0; shrad=-1.0; shlat=-1.
                     
           call fetchloads(icomp,lodlabel(icomp,ign),
      &      len(lodlabel(icomp,ign)),shcon,shrad,shlat)
@@ -1238,14 +1277,14 @@ C Zone casual gain control data.
      & UX(MCOM,MLCOM,MDF),UY(MCOM,MLCOM,MDF),UH(MCOM,MLCOM,MDF),
      & SETPT(MCOM,MLCOM),SYSPER(MCOM,MLCOM),SOFFLL(MCOM,MLCOM),
      & IOFFDT(MCOM,MLCOM),SMLOUT(MCOM,MLCOM),SMEOUT(MCOM,MLCOM)
-      COMMON/CGCIN3/ICGCS(MCOM),ICGCF(MCOM),
+      COMMON/CGCIN3/ICGCS(MCOM,MDTY),ICGCF(MCOM,MDTY),
      & ICGCFL(MCOM,MLCOM),SPELEC(MCOM,MLCOM),SLOPEM(MCOM,MLCOM)
 
 C Daylight coefficient common block data definition:
       COMMON/DCOEF/NDCFP,NDCFS(MDCFP),DCOEF(MDCFP,MDCFS,MDCFV),
      & IDCFID(MCOM,MLCOM,MDF)
 
-C Daylight factor data (see dayfac.f).
+C Daylight factor data (see dayfac.F).
       COMMON/DAYF/NDF(MCOM,MLCOM),DFDAT(MCOM,MLCOM,MGT,MDF),
      & AZIJL(MCOM,MGT),SUMDF(MCOM,MLCOM,MDF),NUDWIN(MCOM)
 
@@ -1283,6 +1322,7 @@ C Illuminance database.
       character outs*124,doit*124,outstr*124
 
       character*72 LTMPFL,LTMPFLA,OUTCMD
+      character e2redit*8
 
       logical nog,close,closea,closeb,closec,closed,closee,closef
       logical closeg,closeh,closei,instart,neglum,XST
@@ -1292,6 +1332,7 @@ C Definition of sun altitude for daylight coefficient method:
       data alt/6.,18.,30.,42.,54.,66.,78.,90./
 
       iunit=ifil+1
+      e2redit='NONE'
 
 C Trace output ?
       IFT=1
@@ -1552,9 +1593,6 @@ C in pre-calculation period (via call to bInStartup):
         if (bInStartup())then
           instart=.true.
         endif
-C        IF((ISSNY.EQ.1.AND.IDYP.EQ.365.AND.IHRP.EQ.24.AND.ISDS.EQ.1)
-C     &    .OR.(ISSNY.EQ.0.AND.(IDYP.GE.ISDS.OR.
-C     &        (IDYP.EQ.ISDS-1.AND.IHRP.EQ.24))))instart=.false.
         if(closea.OR.(SALT.LT.0.).OR.(IDYP.LT.ISDS).OR.instart)then
           suma=0.
           DO 21 I=1,NDF(ICOMP,N)
@@ -1597,6 +1635,7 @@ C Check if sensor values already in illuminance database and set accuracies.
             QDRACC=5.
 
             write (66,*) ' ***  Solar data for this timestep *** '
+            CALL DAYCLK(IDYP,BTIMEF,66)
             write (66,'(4f9.1,i3)') SALT,RSAZI,QDIR,QDIF,IBLIND
 
 C Calculate differences.  Blind state MUST match.
@@ -1724,8 +1763,19 @@ C Calculate regression coefficients GRADQR and GRADQF.
 
 C Call e2r to calculate illuminances.
 C ** Set this as the default treatment **
+
+C << for coupling with casual gain control should write out control
+C << state information into the transfer file.
             ILLDBM=0
             if (ILLDBM.eq.0) then
+
+C If there are IES entities in the model tell e2r to invoke editing
+C of the IES transforms file.
+              if(nbofies.gt.0)then
+                e2redit='YES'
+              else
+                e2redit='NO'
+              endif
 
 C Create transfer file (format: .PID.tmp) LTMPFL is the file name (passed
 C to e2r) and  LTMPFLA is the absolute path/ file name.
@@ -1741,19 +1791,23 @@ C to e2r) and  LTMPFLA is the absolute path/ file name.
                 call EFDELET(IUNIT,ISTAT)
               endif
               call FPOPEN(IUNIT,ISTAT,1,2,LTMPFLA)
-              write (OUTCMD,'(4f9.1,i3)') SALT,RSAZI,QDIR,QDIF,IBLIND
+              write (OUTCMD,'(4f9.1,i3,2a)') SALT,RSAZI,QDIR,QDIF,
+     &          IBLIND,' ',e2redit
               write (IUNIT,'(a)') OUTCMD
               call ERPFREE(IUNIT,ISTAT)
               write(doit,'(3a,i3,3a)')'e2r -file ',
      &          LCFGF(:lnblnk(LCFGF)),' -purpose Coupling -zone ',
-     &          ICOMP,' -act ',LTMPFL(:lnblnk(LTMPFL)),' -mode text'
+     &          ICOMP,' -act Calculate -actf ',LTMPFL(:lnblnk(LTMPFL)),
+     &          ' -mode text'
 
 C Debug.
-C              write(6,'(3a,i3,3a)')'e2r -file ',
-C     &          LCFGF(:lnblnk(LCFGF)),' -purpose Coupling -zone ',
-C     &          ICOMP,' -act ',LTMPFL(:lnblnk(LTMPFL)),' -mode text'
-
-              call edisp(icout,'Lighting simulation has now commenced.')
+              write(6,'(3a,i3,3a)')'e2r -file ',
+     &          LCFGF(:lnblnk(LCFGF)),' -purpose Coupling -zone ',
+     &          ICOMP,' -act Calculate -actf ',LTMPFL(:lnblnk(LTMPFL)),
+     &          ' -mode text'
+              write(outs,'(a,f8.3,a,i3,a)') 'Lighting simulation @ ',
+     &          BTIMEF,' for zone',ICOMP,' commenced.'
+              call edisp(icout,outs)
               call runit(doit,'-')
 
 C Create new entry in illuminance database.
@@ -2136,6 +2190,20 @@ C Case of On/Off with chosen lighting systems and sensors.
   807     FORMAT(' Light zone ',I1,' ON/OFF Daylight coef, ZFRAC=',F5.2)
           call edisp(itu,outs)
         endif
+
+C If in coupling mode then write to the text feedback the controlled fraction
+C so the next timestep the user can edit the IES xforms file to match. 
+        IF(IDFST(ICOMP,N).EQ.4)then
+          write(outs,'(a,F9.2)') 
+     &      'COUPLING ADJUSTMENT next timestep after:',btimef
+          call edisp(iuout,outs)
+          call edisp(6,outs)
+          WRITE(outs,'(a,i2,a,i1,a,F5.2)') 'In zone ',icomp,
+     &      ' & light zone ',N,'edit xform for fixture faction to ',
+     &      ZFRAC(N)
+          call edisp(iuout,outs)
+          call edisp(6,outs)
+        ENDIF
 
 C Update corresponding SHOCC lighting (if existing).
         call updatelighting(icomp,n,zelum(n),btimep,btimef)

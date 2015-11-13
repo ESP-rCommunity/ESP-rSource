@@ -45,6 +45,7 @@ C geometry.h provides commons G0/G2/c20/precz.
 #include "epara.h"
 #include "sbem.h"
 #include "CFC_common.h"
+#include "prj3dv.h"
 
       integer lnblnk  ! function definition
 
@@ -60,14 +61,11 @@ C geometry.h provides commons G0/G2/c20/precz.
       common/PRECT4/TOPTIC(MCOM,MTMC)
       COMMON/TMCB1/IBCMT(MCOM,MTMC)
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
-      COMMON/RAY2/ITDSP,ITBND,ITEPT,ITZNM,ITSNM,ITVNO,ITORG,ITSNR,
-     &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS,ITPPSW
-      COMMON/RAY3/MODIFY,MODLEN,MODBND
       common/user/browse
       COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,CFCDBOK
 
       LOGICAL OK,DOK,CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,CFCDBOK
-      LOGICAL MODIFY,MODLEN,MODBND,browse,savereturn
+      LOGICAL browse,savereturn
 
       DIMENSION VERT(35),libcmt(MTMC)
 
@@ -190,7 +188,7 @@ C On entry display the current zone. Reset all surface lines to std.
       nzg=1
       nznog(1)=ICOMP
       izgfoc=ICOMP
-      MODIFY=.TRUE.
+      MODIFYVIEW=.TRUE.
       MODLEN=.TRUE.
       MODBND=.TRUE.
       again=.false.

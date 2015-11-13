@@ -243,19 +243,19 @@ C init =0 INITIALISE INPUT, 1 ADD MORE DATA.
       end
 
       subroutine chgeye(EVX,EVY,EVZ,VX,VY,VZ,EAN,JITZNM,JITSNM,JITVNO,
-     &   JITOBS,JITSNR,JITGRD,JITORG,DIS,JITBND,JITDSP,JITHLS,JITHLZ,
-     &   JITPPSW)
+     &   JITOBS,JITVIS,JITVOBJ,JITSNR,JITGRD,JITORG,GDIS,JITBND,JITDSP,
+     &   JITHLS,JITHLZ,JITPPSW)
 
 C Passed paramters.
       real EVX,EVY,EVZ,VX,VY,VZ,EAN,DIS
 
 C Depending on computer type set integer size of passed parameters.
 #ifdef OSI
-      integer JITZNM,JITSNM,JITVNO,JITOBS,JITSNR,JITGRD,JITORG
-      integer JITBND,JITDSP,JITHLS,JITHLZ,JITPPSW
+      integer JITZNM,JITSNM,JITVNO,JITOBS,JITVIS,JITVOBJ,JITSNR,JITGRD
+      integer JITORG,JITBND,JITDSP,JITHLS,JITHLZ,JITPPSW
 #else
-      integer*8 JITZNM,JITSNM,JITVNO,JITOBS,JITSNR,JITGRD,JITORG
-      integer*8 JITBND,JITDSP,JITHLS,JITHLZ,JITPPSW
+      integer*8 JITZNM,JITSNM,JITVNO,JITOBS,JITVIS,JITVOBJ,JITSNR
+      integer*8 JITGRD,JITORG,JITBND,JITDSP,JITHLS,JITHLZ,JITPPSW
 #endif     
       return
       end
@@ -339,11 +339,13 @@ C ***** dummy routine for c code active descriptions buttons.
 
 C Dummy routines from common3dv.F
       SUBROUTINE ADJVIEW(IER)
+      integer ier
       ier=0
       return
       end
 
       SUBROUTINE EMKVIEW(IUO,CFGOK,IER)
+      integer IUO,IER
       logical cfgok
       ier=0
       return
@@ -356,6 +358,7 @@ C Dummy routines from common3dv.F
       end
 
       SUBROUTINE INLNST(ITYP)
+      integer ityp
       return
       end
 

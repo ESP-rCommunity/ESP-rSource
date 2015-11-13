@@ -635,7 +635,7 @@ C Formulate the apparent boundary power flow associated with the node.
 
 C Check for division by zero - fatal error.
 C << ECLOSE expects a real rather than a complex >>
-        CALL ECLOSE(CABS(YADM(INOD,INOD)),0.0,1E-6,CLOSE)
+        CALL ECLOSE(real(CABS(YADM(INOD,INOD))),0.0,1E-6,CLOSE)
         IF(CLOSE)THEN
           CALL EDISP(IUOUT,'Fatal error: ENETGAUS division by zero')
           WRITE(OUTS,*) 'Node ',INOD

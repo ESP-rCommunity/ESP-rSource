@@ -75,8 +75,13 @@ back into the community.
 Version-controlled source code
 ------------------------------
 The ESP-r source code is stored on a publicly-accessible repository
-at <https://github.com/ESP-rCommunity. On the site look for the
-download zip button.
+at <https://github.com/ESP-rCommunity. To checkout the full repository
+issue the following command:
+
+git clone --recurse-submodules https://github.com/ESP-rCommunity/ESP-rSource.git ESP-rCentral
+
+The download zip button may not include all of the documentation and
+example models.
 
 You can learn more about accessing the ESP-r repository here:
 
@@ -113,13 +118,17 @@ suites has proven robust, and you can use it with confidence on
 these systems.  OSX is similar to Linux in the build process (see
 the notes in the doc/manual/OS/Apple folder). ESP-r can also be 
 build on Windows via Cygwin or MSYS2 (see the doc/manual/OS/Cygwin
-or doc/manual/OS/Native_windows). 
+or doc/manual/OS/Native_windows).
+
+Some facilities of ESP-r use the Radiance lighting simulation
+suite to carry out tasks. Radiance can be downloaded from
+<radsite.lbl.gov/radiance/>. The release of July 2014 4.2
+as rad4R2all.tar.gz works with ESP-r.
 
 
 Architectures
 -------------
-ESP-r is presently only supported on 32 bit systems.
-Installations on MinGW and OS X are regarded as 'beta'.
+ESP-r is presently supported on 32 and 64 bit systems.
 
  -----------------------------------------------------------
                       Linux   Cygwin  MSYS2    OS X
@@ -136,7 +145,7 @@ Compilers
 ---------
 Compilation of ESP-r is presently supported with
 the following compiler sets:
-  - GCC 4.4 4.5 4.6 4.7 4.8 4.9 (gcc, g++ and gfortran)
+  - GCC 4.4 - 4.9 (gcc, g++ and gfortran)
 
 Graphics libraries
 ------------------
@@ -193,7 +202,7 @@ Local installations
 
   1. Run the command:
 
-          $ ./Install -d <path/to/esp-r>
+          $ ./Install -d <path/to/esp-r> --gcc4
 
      Where <path/to/esp-r> describes the desired
      installation directory. For instance,

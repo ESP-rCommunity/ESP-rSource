@@ -57,6 +57,7 @@ C LPRFDB,IPRODB (for event profile database)
 
 C espriou.h provides current file.
 #include "espriou.h"
+#include "prj3dv.h"
 
 C Function definition
       INTEGER :: lnblnk
@@ -73,14 +74,6 @@ C Function definition
       common/childt/childterminal
       common/gzonpik/izgfoc,nzg,nznog(mcom)
       INTEGER :: izgfoc,nzg,nznog
-      COMMON/RAY2/ITDSP,ITBND,ITEPT,ITZNM,ITSNM,ITVNO,ITORG,ITSNR,
-     &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS,ITPPSW
-      REAL :: GRDIS
-      INTEGER :: ITDSP,ITBND,ITEPT,ITZNM,ITSNM,ITVNO,ITORG,ITSNR
-      INTEGER :: ITOBS,ITHLS,ITHLZ,ITGRD,ITPPSW
-      common/RAY3/MODIFY,MODLEN,MODBND
-      COMMON/RAY5/ZCOG(MCOM,3),XMN,YMN,ZMN,XMX,YMX,ZMX
-      REAL :: ZCOG,XMN,YMN,ZMN,XMX,YMX,ZMX
       
       INTEGER :: ncomp,ncon
       common/C1/NCOMP,NCON
@@ -134,7 +127,7 @@ C Uncertainty.
       COMMON/CONTM0/NCONTM,NOCNTM,CONTMNAM(MCONTM)
       INTEGER :: NCONTM,NOCNTM
       logical DOK,OK,CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,CFCDBOK
-      logical MODIFY,MODLEN,MODBND,browse
+      logical browse
       logical xst,clkok,havefile,unixok
       LOGICAL concat,remote
       integer iglib   ! to test for X11 interface
@@ -346,7 +339,7 @@ C redraw the model image.
           CALL EMENU('Browse/ Edit/ Simulate',ITEMS,nitems,INO)
         endif
       else
-        if(CFGOK.AND.MODIFY)then
+        if(CFGOK.AND.MODIFYVIEW)then
           MODBND=.TRUE.
           MODLEN=.TRUE.
           ITSNM=1
@@ -1344,9 +1337,6 @@ C output, IER=0 indicates no error.
       integer childterminal  ! picks up mmod from starting of prj
       common/childt/childterminal
       common/gzonpik/izgfoc,nzg,nznog(mcom)
-      common/RAY2/ITDSP,ITBND,ITEPT,ITZNM,ITSNM,ITVNO,ITORG,ITSNR,
-     &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS,ITPPSW
-      common/RAY3/MODIFY,MODLEN,MODBND
      
       integer ncomp,ncon
       common/C1/NCOMP,NCON
@@ -1370,8 +1360,21 @@ C output, IER=0 indicates no error.
       common/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,CFCDBOK
 
       COMMON/AFN/IAIRN,LAPROB,ICAAS(MCOM)
+
+C Commons related to tmc files (to support copy function).
       COMMON/PRECTC/ITMCFL(MCOM,MS),TMCT(MCOM,MTMC,5),
      &       TMCA(MCOM,MTMC,ME,5),TMCREF(MCOM,MTMC),TVTR(MCOM,MTMC)
+      COMMON/PRECT2/TMCT2(MCOM,MTMC,5,MBP),TMCA2(MCOM,MTMC,ME,5,MBP),
+     &              TVTR2(MCOM,MTMC,MBP)
+      COMMON/PRECT3/NTMC,NGLAZ(MTMC)
+      character TOPTIC*12
+      common/PRECT4/TOPTIC(MCOM,MTMC)
+      COMMON/TMCB1/IBCMT(MCOM,MTMC)
+      COMMON/TMCB2/NBCTMC(MCOM,MTMC),IBCST(MCOM,MBP,MTMC),
+     &             IBCFT(MCOM,MBP,MTMC),IBCSUR(MCOM,MTMC)
+      COMMON/TMCB3/NBCTT(MCOM,MBP,MTMC),BACTPT(MCOM,MBP,MTMC)
+
+      common/BSCTL/ITPREP(MCOM,MTMC),ICZN,IMDB(3),IGLZ(3)
 
       common/caleni/nbdaytype,nbcaldays(MDTY),icalender(365)
       INTEGER NBDAYTYPE,NBCALDAYS,ICALENDER
@@ -1380,8 +1383,26 @@ C output, IER=0 indicates no error.
       COMMON/ICFNOD/ICFD,ICP
       INTEGER NCFDND,ICFDND,NCONF,ICFD,ICP
 
+C Zone casual gain control data.
+      character cgcdesc*64
+      common/CGCIND/cgcdesc(MCOM)
+      COMMON/CGCIN2N/NCGTC(MCOM,MDTY),NLITZ(MCOM),IDFST(MCOM,MLCOM),
+     & CGX(MCOM,MLCOM,MDF),CGY(MCOM,MLCOM,MDF),CGH(MCOM,MLCOM,MDF),
+     & UX(MCOM,MLCOM,MDF),UY(MCOM,MLCOM,MDF),UH(MCOM,MLCOM,MDF),
+     & SETPT(MCOM,MLCOM),SYSPER(MCOM,MLCOM),SOFFLL(MCOM,MLCOM),
+     & IOFFDT(MCOM,MLCOM),SMLOUT(MCOM,MLCOM),SMEOUT(MCOM,MLCOM)
+      COMMON/CGCIN3/ICGCS(MCOM,MDTY),ICGCF(MCOM,MDTY),
+     & ICGCFL(MCOM,MLCOM),SPELEC(MCOM,MLCOM),SLOPEM(MCOM,MLCOM)
+
+      COMMON/DAYF/NDF(MCOM,MLCOM),DFDAT(MCOM,MLCOM,MGT,MDF),
+     & AZIJL(MCOM,MGT),SUMDF(MCOM,MLCOM,MDF),NUDWIN(MCOM)
+
+C Daylight coefficient common block data definition:
+      COMMON/DCOEF/NDCFP,NDCFS(MDCFP),DCOEF(MDCFP,MDCFS,MDCFV),
+     & IDCFID(MCOM,MLCOM,MDF)
+
       logical OK,CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,context,CFCDBOK
-      logical MODIFY,MODLEN,MODBND,concat,browse,QUIET
+      logical concat,browse,QUIET
       logical XST,OKOB,OKZT,OKZR
       logical BLDG3D,ZONE3D,MSTROK,MSTRZN,OKC,dok,clkok
       logical unixok
@@ -1403,7 +1424,7 @@ C Flag noting whether casual gain periods are currently sorted.
       character*72 L3DCVS,L3DCNC,L3DNDC,L3DTAQ,LMOIST
       character SFIL*72
       CHARACTER jsmlcn*32,jsvfc*4,jsotf*32,jsother*24,jsname*12
-      character jsparent*12,jsuse*8
+      character jsparent*12,jsuse*12
       character doit*248,tmode*8,DSFIL*72,ZN*12
       character outs*124,outs248*248
       character ctldoc*248,LCTLF*72,lctmp*72,longtfile*144
@@ -1480,14 +1501,14 @@ C Begin with high level menu.
       ITEMS(11)  ='f shading & insolation          '   
       ITEMS(12)  ='g convection coefficients       ' 
       ITEMS(13)  ='h view factors & radiant sensors'
-      ITEMS(14)  ='i casual gain control           '
+      ITEMS(14)  ='i casual gain (lighting) control'
       ITEMS(15)  ='j computational fluid dynamics  '
       ITEMS(16)  ='k adaptive gridding & moisture  '
       ITEMS(17)  =' _____________________________  '    
       ITEMS(18)  =' .... Special components ....   '
       ITEMS(19)  ='m integrated renewables'
       ITEMS(20)  ='n active materials              '
-      ITEMS(21)  ='o advanced optics               '
+      ITEMS(21)  ='o advanced surface/fixture optic'
       ITEMS(22)  =' _____________________________  '
       ITEMS(23)  ='* global tasks                  '
       ITEMS(24)  ='? help                          '
@@ -1496,7 +1517,7 @@ C Begin with high level menu.
 
 C If user has defined model and perhaps resized the display then
 C redraw the model image.
-      if(CFGOK.AND.MODIFY)then
+      if(CFGOK.AND.MODIFYVIEW)then
         MODBND=.TRUE.
         MODLEN=.TRUE.
         ITSNM=1
@@ -1585,7 +1606,7 @@ C Perform the global transform interactively.
           silent= .false.
           call globaltransform(valx,valy,valz,inpic,ivals,
      &      silent,itru,ier) 
-          MODIFY=.TRUE.
+          MODIFYVIEW=.TRUE.
           MODBND=.TRUE.
 
         elseif(IRT.eq.2)then
@@ -1622,7 +1643,7 @@ C Implement the rotations for the selected zones.
             call globalrotate(val,x1,y1,inpic,ivals,silent,itru,ier)
 
           endif
-          MODIFY=.TRUE.
+          MODIFYVIEW=.TRUE.
           MODBND=.TRUE.
 
         elseif(IRT.eq.3)then
@@ -2169,9 +2190,47 @@ C Also update lodlabel commons before writing out.
               if(ITW(IC).eq.1)then
 
 C Update itmcfl for the new zone.
+                NTMC=0
                 do 61 ISS=1,NZSUR(NCOMP)
                   ITMCFL(NCOMP,ISS)=ITMCFL(IC,ISS)
+                  IF(ITMCFL(IC,ISS).GT.NTMC)NTMC=ITMCFL(IC,ISS)
    61           continue
+                DO ISST=1,NTMC
+                  TOPTIC(NCOMP,ISST)=TOPTIC(IC,ISST)
+                  TMCT(NCOMP,ISST,1)=TMCT(IC,ISST,1)
+                  TMCT(NCOMP,ISST,2)=TMCT(IC,ISST,2)
+                  TMCT(NCOMP,ISST,3)=TMCT(IC,ISST,3)
+                  TMCT(NCOMP,ISST,4)=TMCT(IC,ISST,4)
+                  TMCT(NCOMP,ISST,5)=TMCT(IC,ISST,5)
+                  TVTR(NCOMP,ISST)=TVTR(IC,ISST)
+                  IBCMT(NCOMP,ISST)=IBCMT(IC,ISST)
+                  NBCTMC(NCOMP,ISST)=NBCTMC(IC,ISST)
+                  IBCSUR(NCOMP,ISST)=IBCSUR(IC,ISST)
+                  ITPREP(NCOMP,ISST)=ITPREP(IC,ISST)
+                  DO ISSTGL=1,NGLAZ(ISST)
+                   DO J5=1,5
+                    TMCA(NCOMP,ISST,ISSTGL,J5)=TMCA(IC,ISST,ISSTGL,J5)
+                   ENDDO ! of J5
+                  ENDDO  ! of ISSTGL
+                  DO IBC=1,NBCTMC(IC,ISST)
+                    IBCST(NCOMP,IBC,ISST)=IBCST(IC,IBC,ISST)
+                    IBCFT(NCOMP,IBC,ISST)=IBCFT(IC,IBC,ISST)
+                    NBCTT(NCOMP,IBC,ISST)=NBCTT(IC,IBC,ISST)
+                    BACTPT(NCOMP,IBC,ISST)=BACTPT(IC,IBC,ISST)
+                    TMCT2(NCOMP,IBC,1,ISST)=TMCT2(IC,IBC,1,ISST)
+                    TMCT2(NCOMP,IBC,2,ISST)=TMCT2(IC,IBC,2,ISST)
+                    TMCT2(NCOMP,IBC,3,ISST)=TMCT2(IC,IBC,3,ISST)
+                    TMCT2(NCOMP,IBC,4,ISST)=TMCT2(IC,IBC,4,ISST)
+                    TMCT2(NCOMP,IBC,5,ISST)=TMCT2(IC,IBC,5,ISST)
+                    TVTR2(NCOMP,IBC,ISST)=TVTR2(IC,IBC,ISST)
+                    DO ISSTGL=1,NGLAZ(ISST)
+                     DO J5=1,5
+                      TMCA2(NCOMP,IBC,ISSTGL,J5,ISST)=
+     &                  TMCA2(IC,IBC,ISSTGL,J5,ISST)
+                     ENDDO ! of J5
+                    ENDDO  ! of ISSTGL
+                  ENDDO  ! of IBC
+                ENDDO    ! of ISST
                 CALL EASKS(DFILE,' ','New zone tmc file name:',
      &            72,'new.tmc','tmc file',IER,nbhelp)
                 if(DFILE(1:2).NE.'  ')then
@@ -2434,13 +2493,57 @@ C See if the source zone has a casual gain control file.
      &          zname(NCOMP)(1:lnzname(NCOMP)),'.cgc'
             endif
             if(irop.eq.1)then
-              CALL ERPFREE(IUF,ISTAT)
+              IUNIT=IFIL+1
+              CALL ERPFREE(IUNIT,ISTAT)
               call ercgcf(0,iuout,LCGCIN(IC),IC,ier)
+
    93         CALL EASKS(DFILE,' ','Zone CG file name?',
-     &           72,'new.vwf','casual gain control file',IER,nbhelp)
+     &           72,'new.cgc','casual gain control file',IER,nbhelp)
               IF(DFILE.NE.' ')THEN
+
+C Copy across the common block variables to the new zone.
                 LCGCIN(NCOMP)=DFILE
                 ICGC(NCOMP)=1
+                cgcdesc(NCOMP)=cgcdesc(IC)
+                DO IDTY=1,nbdaytype
+                  NCGTC(NCOMP,IDTY)=NCGTC(IC,IDTY)
+                  ICGCS(NCOMP,IDTY)=ICGCS(IC,IDTY)
+                  ICGCF(NCOMP,IDTY)=ICGCF(IC,IDTY)
+                ENDDO  ! of IDTY
+                NLITZ(NCOMP)=NLITZ(IC)
+                NUDWIN(NCOMP)=NUDWIN(IC)
+                DO NLZ=1,NLITZ(IC)
+                  SETPT(NCOMP,NLZ)=SETPT(IC,NLZ)
+                  SOFFLL(NCOMP,NLZ)=SOFFLL(IC,NLZ)
+                  SMLOUT(NCOMP,NLZ)=SMLOUT(IC,NLZ)
+                  SMEOUT(NCOMP,NLZ)=SMEOUT(IC,NLZ)
+                  IOFFDT(NCOMP,NLZ)=IOFFDT(IC,NLZ)
+                  SYSPER(NCOMP,NLZ)=SYSPER(IC,NLZ)
+                  IDFST(NCOMP,NLZ)=IDFST(IC,NLZ)
+                  ICGCFL(NCOMP,NLZ)=ICGCFL(IC,NLZ)
+                  SPELEC(NCOMP,NLZ)=SPELEC(IC,NLZ)
+                  SLOPEM(NCOMP,NLZ)=SLOPEM(IC,NLZ)
+                  SPELEC(NCOMP,NLZ)=SPELEC(IC,NLZ)
+                  SLOPEM(NCOMP,NLZ)=SLOPEM(IC,NLZ)
+                  NDF(NCOMP,NLZ)=NDF(IC,NLZ)
+                  DO JLZ=1,NDF(IC,NLZ)
+                    CGX(NCOMP,NLZ,JLZ)=CGX(IC,NLZ,JLZ)
+                    CGY(NCOMP,NLZ,JLZ)=CGY(IC,NLZ,JLZ)
+                    CGH(NCOMP,NLZ,JLZ)=CGH(IC,NLZ,JLZ)
+                    UX(NCOMP,NLZ,JLZ)=UX(IC,NLZ,JLZ)
+                    UY(NCOMP,NLZ,JLZ)=UY(IC,NLZ,JLZ)
+                    UH(NCOMP,NLZ,JLZ)=UH(IC,NLZ,JLZ)
+                    IDCFID(NCOMP,NLZ,JLZ)=IDCFID(IC,NLZ,JLZ)
+                  ENDDO  ! of JLZ
+                  do IL=1,NUDWIN(IC)
+                    do IW = 1, NZSUR(ic)
+                      do L=1,NDF(IC,NLZ)
+                        DFDAT(NCOMP,NLZ,IW,L)=DFDAT(IC,NLZ,IW,L)
+                      enddo  ! of L
+                    enddo    ! of IW
+                  enddo      ! of IL
+                ENDDO    ! of NLZ
+                 
                 CALL ERPFREE(IUF,ISTAT)
                 call CASCTMK(LCGCIN(NCOMP),NCOMP,'-',IER)
               else
@@ -2547,7 +2650,7 @@ C writing out configuration file.
 
 C Update the configuration file.
           CALL EMKCFG('-',IER)
-          MODIFY=.TRUE.
+          MODIFYVIEW=.TRUE.
           MODBND=.TRUE.
           IC = -1
           GOTO 3
@@ -2582,7 +2685,7 @@ C Obstructions are alread in common - no need to scan.
 C Present zone detail editing menu.
         ianother=0
  443    CALL EDZONE(ITRC,IC,ianother,IER)
-        MODIFY=.TRUE.
+        MODIFYVIEW=.TRUE.
 
 C If user asked for next or prior zone reset IC and call again.
         if(ianother.eq.0)then
@@ -2714,7 +2817,7 @@ C Operation file creation and editing.
         call askzone(ic,izdef,' ','Zone Operations Selection',
      &            'o','Zone index for operations.',ier)
         IF(IC.EQ.0.OR.IC.EQ.-1)then
-          MODIFY=.TRUE.
+          MODIFYVIEW=.TRUE.
           GOTO 3
         endif
         if(IC.eq.99)then
@@ -2995,7 +3098,7 @@ C If browsing, do not save files but allow ish to be started.
         IUO=IFIL+1
         call tstamp('>','PRJ: enter hc file')
         CALL HCFMK(ITRU,IUO,IC,IER)
-        MODIFY=.TRUE.
+        MODIFYVIEW=.TRUE.
 
 C Loop back and see if another zone is requested.
         IC=-1
@@ -3128,19 +3231,30 @@ C     &        ' Dereferencing casual gain control file...done.',' ','-')
      &        'In browse mode so nothing to do.','P')
             goto 252
           endif
-          CALL EASKABC(' ','Casual gain control options:',
-     &      'create or open','dereference','cancel',irpt,nbhelp)
-          if(irpt.eq.1)then
-            IUF=IFIL+1
-            call EDCASCTL(ITRC,IC,IER)
-          elseif(irpt.eq.2)then
-            ICGC(IC)=0
-            LCGCIN(IC)='UNKNOWN'
-C            call usrmsg(
-C     &        ' Dereferencing casual gain control file...',' ','-')
-            CALL EMKCFG('-',IER)
-C            call usrmsg(
-C     &        ' Dereferencing casual gain control file...done.',' ','-')
+          if(ICGC(IC).eq.0)then
+            CALL EASKAB(' ','Casual gain control options:',
+     &        'create','cancel',irpt,nbhelp)
+            if(irpt.eq.1)then
+              IUF=IFIL+1
+              call EDCASCTL(ITRC,IC,IER)
+            elseif(irpt.eq.2)then
+              goto 252
+            endif
+          else
+            CALL EASKABCD(' ','Casual gain control options:',
+     &        'create new','open exising','dereference','cancel',
+     &        irpt,nbhelp)
+            if(irpt.eq.1)then
+              IUF=IFIL+1
+              call EDCASCTL(ITRC,IC,IER)
+            elseif(irpt.eq.2)then
+              IUF=IFIL+1
+              call EDCASCTL(ITRC,IC,IER)
+           elseif(irpt.eq.3)then
+              ICGC(IC)=0
+              LCGCIN(IC)='UNKNOWN'
+              CALL EMKCFG('-',IER)
+            endif
           endif
         endif
 
@@ -3164,7 +3278,7 @@ C CFD.
 
         IUF=IFIL+1
         call cfdcomp(ic,iuf,ier)
-        MODIFY=.TRUE.
+        MODIFYVIEW=.TRUE.
 
 C If browsing do not offer inclusion option.
         if(browse)then
@@ -3371,8 +3485,16 @@ C Call active materials menu.
 
       elseif(INO.EQ.21)THEN
 
-C Call advanced (bidirectional) optics.
-        call edbioptics()
+C Call advanced (bidirectional) optics or IES data management.
+        CALL EASKABC(' ','Advanced options options:',
+     &    'surface bidirectional optics','IES data for lighting',
+     &    'cancel ?',IRTP,nbhelp)
+        if(IRTP.eq.1)then
+          call edbioptics()
+        else
+          call setupies()
+        endif
+
       ELSE
 
 C Fall through case.
@@ -3415,7 +3537,6 @@ C espriou.h for parameter MFFOLD
       common/cctlnm/ctldoc,lctlf
       common/OUTIN/IUOUT,IUIN
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
-      common/RAY3/MODIFY,MODLEN,MODBND
      
       integer ncomp,ncon
       common/C1/NCOMP,NCON
@@ -3432,7 +3553,7 @@ C Defaults.
 
       common/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,CFCDBOK
       logical XST,OK,DOK,CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,CFCDBOK
-      logical MODIFY,MODLEN,MODBND,browse
+      logical browse
       logical confirm,ckpath,itisanexemplar
       logical unixok,prob
       
@@ -4046,7 +4167,7 @@ C Scan the model topology and report on any problems encountered.
         endif
 
         CFGOK=.TRUE.
-        MODIFY=.TRUE.
+        MODIFYVIEW=.TRUE.
         MODLEN=.TRUE.
       ELSE
 
@@ -4155,10 +4276,11 @@ C << it would be clearer if all model I/O happened there >>
       character dradcf*72,OUTSTR*124,outs*124,outs248*248
       character dvfil*72,ltmp*72
       character doit*248,tmode*8,act*1
-      character fs*1
+      character fs*1,tfile*72
       character longtfile*144,longtfiledos*144,L144*144,lltmp*144
       character brw*8   ! to signal model is being browsed
-      integer iappwpc ! application height as % of nominal size
+      integer iappwpc   ! application height as % of nominal size
+      integer lnradcf,lnltmp  ! lengths of file names
 
 C For help messages
       character helpinsub*24 ! subroutine name
@@ -4227,6 +4349,7 @@ C and change any / to \.
      &    longtfile(1:lnblnk(longtfile)),' -of viewer -out ',
      &    lltmp(1:lnblnk(lltmp))
         call usrmsg('starting conversion via',doit,'-')
+        write(6,*) doit(1:lnblnk(doit))
         call runit(doit,'-')
 
 C Tell user about the new file.
@@ -4262,45 +4385,77 @@ C string to drive VIEWER.
 
       elseif(act.eq.'R')then
 
-C If in browse mode then run e2r and return, otherwise check rcf name
-C and contents of file on return from e2r.
-
-C If browsing pass this information to e2r.
-        if(browse)then
-          brw = ' -b yes'
-        else
-          brw = ' -b no '
-        endif
-        if(.NOT.browse)then
-
-C Some small esp-r models may have all files in the same folder. If
-C that is the case then it is probably not safe to create a separate
-C rad folder. All need multi-folder models will have a rad folder.
-
+C Assume model is multi-folder with a rad folder.
 C Set rcf name if unknown and set default name. If path for radiance
-C files is ./ then update this to ../rad and create a folder.
-          if(lradcf(1:7).eq.'UNKNOWN')then
-            write(lradcf,'(a,a)') cfgroot(1:lnblnk(cfgroot)),'.rcf'
-          else
-            if(radpth(1:3).eq.'./ '.or.radpth(1:3).eq.'.\\ ')then
-              CALL PHELPD('visu-rad-warning',7,'-',0,0,IER)
-            endif
-          endif
+C files is ./ then update this to ../rad, create a folder. And
+C proceed on the basis that the rcf file will be in the rad folder.
+        modcfg=.false.
+        if(pwdtocfg(1:1).eq.'!')then
           if(radpth(1:3).eq.'./ '.or.radpth(1:3).eq.'.\\ ')then
+            CALL PHELPD('visu-rad-warning',7,'-',0,0,IER)
             write(radpth,'(3a)')'..',fs,'rad'
             write(doit,'(4a)') 'mkdir ',
      &        cfgroot(1:lnblnk(cfgroot)),fs,'rad'
             call usrmsg('Creating folder for radiance model:',doit,'P')
             call runit(doit,'-')
-          endif
- 319      ltmp=lradcf
-          dradcf='scene.rcf'
-          CALL EASKS(ltmp,' Radiance scene file for this model?',
-     &     '  ',72,dradcf,'Radiance scene file name',IER,nbhelp)
-          if(ltmp.eq.' ')goto 319 
 
-C rcf name OK, therefore save cfg file and start e2r.
+C And update radpath. The L144 is for future use of EASKXORGTKF
+            write(radpth,'(3a)') '..',fs,'rad'
+            modcfg=.true.
+          endif
+
+          if(lradcf(1:7).eq.'UNKNOWN')then
+            write(lradcf,'(2a)') cfgroot(1:lnblnk(cfgroot)),'.rcf'
+C            write(L144,'(8a)')path(1:lnblnk(path)),fs,'..',fs,'rad',
+C     &        fs,cfgroot(1:lnblnk(cfgroot)),'.rcf'
+            modcfg=.true.
+          endif
+        else
+
+C Prj has not been invoked from within the model cfg folder.
+          if(radpth(1:3).eq.'./ '.or.radpth(1:3).eq.'.\\ ')then
+            CALL PHELPD('visu-rad-warning',7,'-',0,0,IER)
+            write(radpth,'(3a)')'..',fs,'rad'
+            write(doit,'(8a)') 'mkdir ',pwdinitial(1:lnpwdi),fs,
+     &        pwdtocfg(1:lnblnk(pwdtocfg)),fs,'..',fs,'rad'
+            call usrmsg('Creating folder for radiance model:',doit,'P')
+            call runit(doit,'-')
+
+C And update radpath.
+            write(radpth,'(3a)') '..',fs,'rad'
+            modcfg=.true.
+          endif
+
+          if(lradcf(1:7).eq.'UNKNOWN')then
+            write(lradcf,'(2a)') cfgroot(1:lnblnk(cfgroot)),'.rcf'
+C            write(L144,'(10a)') pwdinitial(1:lnpwdi),fs,
+C     &        pwdtocfg(1:lnblnk(pwdtocfg)),fs,'..',fs,'rad',fs,
+C     &        cfgroot(1:lnblnk(cfgroot)),'.rcf'
+            modcfg=.true.
+          endif
+        endif
+        dvfil='std.rcf'
+
+C Check rcf name and contents of file on return from e2r.
+C Set browsing no.
+        brw = ' -b no '
+
+ 319    ltmp=lradcf
+        dradcf='scene.rcf'
+        CALL EASKS(ltmp,' Radiance scene file for this model?',
+     &    '  ',72,dradcf,'Radiance scene file name',IER,nbhelp)
+        if(ltmp.eq.' ')goto 319 
+
+C rcf name OK and differs from prior name, update cfg file and start e2r.
+        lnradcf=lnblnk(lradcf)
+        lntmp=lnblnk(ltmp)
+        if(ltmp(1:lntmp).eq.lradcf(1:lnradcf))then
+          continue
+        else
+          modcfg=.true.
           lradcf = ltmp
+        endif
+        if(modcfg)then
           call tstamp('>','PRJ: save configuration (with rcf file)')
           CALL EMKCFG('-',IER)
         endif
@@ -4335,14 +4490,33 @@ C an offset from prj start position.
 C Check if radiance scene file exists. If not or zero length or not correct 
 C file type then dereference it from the cfg file. The alternative location
 C for the scene file is in ../rad if user owned the model.  
-        if(.NOT.browse)then
-          IRCFG=IFIL+1
-          call ERPFREE(IRCFG,ISTAT)
-          XST=.FALSE.
-          deref=.FALSE.
-          call FINDFIL(lradcf,XST)
+        IRCFG=IFIL+1
+        call ERPFREE(IRCFG,ISTAT)
+        XST=.FALSE.
+        deref=.FALSE.
+C        write(6,*) 'expecting ',lradcf(1:lnblnk(lradcf))
+        call FINDFIL(lradcf,XST)
+        if(XST)then
+          CALL EFOPSEQ(IRCFG,lradcf,1,IER)
+
+C If end of file encountered on first line then remove the file.
+          if(IER.eq.-301)then
+            call EFDELET(IRCFG,ISTAT)
+            deref=.true.
+          else
+            CALL STRIPC(IRCFG,OUTSTR,99,ND,1,'line 1',IER)
+            if (OUTSTR(1:13).ne.'*ESP-r visual')deref=.true.
+            call ERPFREE(IRCFG,ISTAT)
+          endif
+        else
+
+C Check for it within the model rad folder. If so copy it
+C to the model cfg folder.
+          write(tfile,'(3a)')radpth(1:lnblnk(radpth)),fs,
+     &      LRADCF(1:lnblnk(LRADCF))
+          call FINDFIL(tfile,XST)
           if(XST)then
-            CALL EFOPSEQ(IRCFG,lradcf,1,IER)
+            CALL EFOPSEQ(IRCFG,tfile,1,IER)
 
 C If end of file encountered on first line then remove the file.
             if(IER.eq.-301)then
@@ -4353,21 +4527,30 @@ C If end of file encountered on first line then remove the file.
               if (OUTSTR(1:13).ne.'*ESP-r visual')deref=.true.
               call ERPFREE(IRCFG,ISTAT)
             endif
+
+C Found it and good so just point to the file in ../rad folder
+C and update the cfg file to remember this.
+            if(.NOT.deref)then
+              write(lradcf,'(a)') tfile(1:lnblnk(tfile))
+              call tstamp('>','PRJ: save configuration (no rcf file)')
+              CALL EMKCFG('-',IER)
+            endif
           else
             deref=.true.
           endif
-          if(deref)then
+        endif
+        if(deref)then
 
 C Problem with rcf file therefore dereference it.
-            call usrmsg(
-     &        'Could not find scene file so dereferencing it.',' ','W')
-            lradcf='UNKNOWN'
-            call tstamp('>','PRJ: save configuration (no rcf file)')
-            CALL EMKCFG('-',IER)
-          else
+          call usrmsg(
+     &      'Could not find scene file so dereferencing it.',' ','W')
+          lradcf='UNKNOWN'
+          call tstamp('>','PRJ: save configuration (no rcf file)')
+          CALL EMKCFG('-',IER)
+        else
 
 C << Place to associate images (when logic ready.) >>
-          endif
+
         endif
       endif
       return

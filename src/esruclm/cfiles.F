@@ -256,6 +256,7 @@ C with the radiation flag set appropriately after the file has been
 C read in.
       SUBROUTINE COLTOBCLM(ITRU,LASCI,IUNIT,IDS,IDF,IER)
 #include "esprdbfile.h"
+#include "espriou.h"
 
       COMMON/OUTIN/IUOUT,IUIN
 
@@ -309,7 +310,9 @@ C Clear column association.
         ITUNITS(I)=0
    27 CONTINUE
       IMSTL=1
-      IDS=1; IDF=365; iwidest=0; IREAD=0
+      iwidest=0; IREAD=0
+      if(IDS.eq.0)IDS=1    ! if not already set
+      if(IDF.eq.0)IDF=365 
 
 C Display the initial lines of the file for the user.
 
@@ -596,6 +599,7 @@ C method which equation set to use.
 C Re-open the file and read how ever many lines prior to the data
 C that the user requested.
         CALL EFOPSEQ(IUNIT,LASCI,1,IER)
+        write(currentfile,'(a)') LASCI(1:lnblnk(LASCI))
         N=0
    70   N=N+1
         CALL STRIPC(IUNIT,OUTSTR,0,ND,1,'line 1',IER)
@@ -617,14 +621,15 @@ C Read one hour's data from ASCII file into outstr. Loop through
 C each of the possible columns and if it matches one of the weather
 C data columns defined by the user read and convert the correct
 C data format. If not a match just read the word and try the 
-C next column.
+C next column. If reached EOF then jump to end of loop.
             CALL STRIPC(IUNIT,OUTSTR,0,ND,1,'weather data',IER)
+            if(ier.ne.0) goto 20  ! EOF detected
             K=0
             do 6 N1=1,iwidest   ! loop through the possible columns
               if(N1.eq.IMSTC(1))then
                 if(ITUNITS(1).eq.0)then
                   CALL EGETWR(OUTSTR,K,DIF,0.0,0.0,'-',
-     &              'dif w/m2 reak',IER)
+     &              'dif w/m2 real',IER)
                   ICLM(J,1)= NINT(DIF)
                 elseif(ITUNITS(1).eq.1)then
                   CALL EGETWI(OUTSTR,K,IDIF,0,0,'-','dif w/m2 int',IER)

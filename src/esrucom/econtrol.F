@@ -3478,7 +3478,7 @@ C          call edisp248(6,message,80)
           cm(4)=fmiscd(II,JJ,KK,4)
           cm(5)=fmiscd(II,JJ,KK,5)
           cm(6)=fmiscd(II,JJ,KK,6)
-          write(lmsg,'(a,f7.2,a,f4.1,a,f6.2,a,f5.1,a,f6.2,a)') 
+          write(lmsg,'(a,f7.2,a,f5.1,a,f6.2,a,f5.1,a,f6.2,a)') 
      &      ' proportional + hysteresis: signal lower limit ',cm(2),
      &      ' valve lower limit (%)',cm(3),' signal upper limit ',
      &      cm(4),' valve upper limit (%)',cm(5),' dS ',cm(6),'.'

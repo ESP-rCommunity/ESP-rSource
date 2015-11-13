@@ -41,16 +41,15 @@ C ***************************  MENUSG  ********************************
 C MENUSG displays the strucrured gridding menu.
 C *********************************************************************
       SUBROUTINE MENUSG(ITRC)
+#include "building.h"
+#include "prj3dv.h"
 
       COMMON/FILEP/IFIL
-      COMMON/RAY2/ITDSP,ITBND,ITEPT,ITZNM,ITSNM,ITVNO,ITORG,ITSNR,
-     &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS,ITPPSW
-      COMMON/RAY3/MODIFY,MODLEN,MODBND
 
       COMMON/GRSD100/IndxSt
       COMMON/GRSD101/LGrdSt
 
-      LOGICAL ZONOK,MODIFY,MODBND,MODLEN,OK,DOK,SAVEOK,XST
+      LOGICAL ZONOK,OK,DOK,SAVEOK,XST
 
       CHARACTER ITEM(13)*26,SZN*15
       CHARACTER*72 LGrdSt
@@ -67,7 +66,7 @@ C For help messages
       IZ=0
       IUNIT=IFIL+1
       ZONOK=.FALSE.
-      MODIFY=.FALSE.
+      MODIFYVIEW=.FALSE.
       SAVEOK=.FALSE.
 
 C General image option flags.
@@ -109,7 +108,7 @@ C Help text for menu.
       call gethelptext(helpinsub,helptopic,nbhelp)
 
 C Draw the appropriate graph.
-      IF(MODIFY)CALL GRAAPH(IDRW1,IDRW2)
+      IF(MODIFYVIEW)CALL GRAAPH(IDRW1,IDRW2)
       CALL USRMSG(' ',' ','-')
       CALL EMENU('  Structured Gridding',ITEM,MITEM,INO)
 
@@ -121,7 +120,7 @@ C Trap un-accepted options.
       ELSEIF(INO.EQ.1)THEN
 
 C Select the zone.
-        IF(IDRW1.NE.1.OR.MODIFY)THEN
+        IF(IDRW1.NE.1.OR.MODIFYVIEW)THEN
           IDRW1=1
           IDRW2=0
           CALL GRAAPH(IDRW1,IDRW2)

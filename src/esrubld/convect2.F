@@ -97,7 +97,7 @@ C Commons added for ISO 15099 algorithm
       CHARACTER LAPROB*72
 
       character outs*124
-      logical dotrace
+      logical dotrace,close
 
       real veloc
 
@@ -130,6 +130,8 @@ C be superceeded by user specifications.
 
 C######   VERTICAL SURFACES   ##################################################
 C Alamdari and Hammond.
+        call eclose(HEIGHT,0.0,0.01,close)
+        if(close) HEIGHT = 1.0  ! reset hight if close to zero
         HC=((1.50*((DT/HEIGHT)**0.25))**6.0
      &     +(1.23*((DT)**(1.0/3.0)))**6.0)**(1.0/6.0)
         if(dotrace)then
@@ -254,6 +256,8 @@ C Mixed convection model using Fisher `thesis' correlation
 C for radial ceiling diffusers and Alamdari & Hammond's correlation.
 C Combination of HC depends on whether buoyant and mechanical forces
 C assist (iassist=1) or oppose (iassist=-1).
+        call eclose(HEIGHT,0.0,0.01,close)
+        if(close) HEIGHT = 1.0  ! reset hight if close to zero
         ACH = Vdot(ICOMP)*3600./VOL(ICOMP)
         HCFish = -0.199 + 0.190*ACH**0.8
         HCforc = HCFish*ADJREF(ICOMP,ISUR)

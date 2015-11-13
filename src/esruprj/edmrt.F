@@ -31,6 +31,7 @@ C will have been defined prior to calling edmrt.
 #include "model.h"
 #include "geometry.h"
 #include "epara.h"
+#include "prj3dv.h"
       
       integer lnblnk  ! function definition
 
@@ -43,8 +44,6 @@ C will have been defined prior to calling edmrt.
       integer IZSTOCN
       COMMON/C24/IZSTOCN(MCOM,MS)
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
-      COMMON/RAY3/MODIFY,MODLEN,MODBND
-      COMMON/RAY5/ZCOG(MCOM,3),XMN,YMN,ZMN,XMX,YMX,ZMX
 
       integer ncub,ivfok
       real XOC,YOC,ZOC,DXC,DYC,DZC,CANG
@@ -58,7 +57,7 @@ C will have been defined prior to calling edmrt.
 
       DIMENSION VERT(35)
       DIMENSION SNA(MS),PAZI(MS),PELV(MS)
-      LOGICAL MODIFY,MODLEN,MODBND,concat,cfgmod,browse,clkok,XST
+      LOGICAL concat,cfgmod,browse,clkok,XST
       logical silent,unixok
       CHARACTER VERT*46,LTMP*72
       character VFILE*72,head*32,outs*124,KEY*1,ETEXT*82
@@ -126,7 +125,7 @@ C Set VEWF array in preparation for editing or silent creation.
       call georead(IUF,LGEOM(ICOMP),ICOMP,1,IUOUT,IER)
 
 C << update logic to use alternative source for ZOA rather than call zinfo >>
-      CALL ZINFO(SNA,ZOA,PAZI,PELV,ZVOL)
+      CALL ZINFO(SNA,ZOA,PAZI,PELV,ZVOL,'q')
       NS=NZSUR(ICOMP)
       DO 111 I=1,NS
         II=I
@@ -318,7 +317,7 @@ C drawn and remember number of surfaces to pass to sensor file.
       nzg=1
       nznog(1)=ICOMP
       izgfoc=ICOMP
-      MODIFY=.TRUE.
+      MODIFYVIEW=.TRUE.
       MODLEN=.TRUE.
       MODBND=.TRUE.
       CALL ESCZONE(ICOMP)
@@ -465,7 +464,7 @@ C Add a sensor.
           DZC(NCUB)=0.1
           CANG(NCUB)=0.
           write(CUBN(NCUB),'(A,I2.2)')'sen_',NCUB
-          MODIFY=.TRUE.
+          MODIFYVIEW=.TRUE.
         ELSE
           CALL USRMSG(' ',' Too many sensors defined!','W')
         ENDIF
@@ -524,7 +523,7 @@ C use in area weighted computation.
 
 C << Rewrite logic to use G7 common blocks rather than call zinfo. >>
 
-          CALL ZINFO(SNA,ZOA,PAZI,PELV,ZVOL)
+          CALL ZINFO(SNA,ZOA,PAZI,PELV,ZVOL,'q')
           NS=NZSUR(icomp)
           DO 11 I=1,NS
             II=I
@@ -620,6 +619,7 @@ C EDMRTS: Edit details of a MRT sensor block.
 #include "building.h"
 #include "model.h"
 #include "geometry.h"
+#include "prj3dv.h"
       
       integer lnblnk  ! function definition
 
@@ -632,11 +632,9 @@ C EDMRTS: Edit details of a MRT sensor block.
      &            DYC(MCUB),DZC(MCUB),CANG(MCUB),IVFOK(MCUB),CUBN(MCUB)
 
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
-      COMMON/RAY3/MODIFY,MODLEN,MODBND
       DIMENSION VERT(15)
       CHARACTER VERT*28,MSG*72,S6*6,head*30
       character ETEXT*82
-      LOGICAL MODIFY,MODLEN,MODBND
       integer NITMS,IVERT ! max items and current menu item
 
 C Passed parameters for cfgtogg
@@ -670,7 +668,7 @@ C For help messages
 
 C Initial menu entry setup.
       write(head,'(A,A)')'  MRT details: ',zname(ICOMP)
-      MODIFY=.FALSE.
+      MODIFYVIEW=.FALSE.
    92 IER=0
       IVERT=-3
 
@@ -723,49 +721,49 @@ C Now display the menu.
         CALL EASKR(XOC(ICUB),MSG,'Origin X coordinate?',
      &       -999.9,'W',999.9,'W',1.0,'origin X coord',IER,nbhelp)
         IVFOK(icub)=0
-        MODIFY=.TRUE.
+        MODIFYVIEW=.TRUE.
         MODLEN=.TRUE.
       ELSEIF(IVERT.EQ.2)THEN
         CALL EASKR(YOC(ICUB),MSG,' Origin Y coordinate?',
      &       -999.9,'W',999.9,'W',1.0,'origin X coord',IER,nbhelp)
         IVFOK(icub)=0
-        MODIFY=.TRUE.
+        MODIFYVIEW=.TRUE.
         MODLEN=.TRUE.
       ELSEIF(IVERT.EQ.3)THEN
         CALL EASKR(ZOC(ICUB),MSG,'Origin Z coordinate?',
      &       -999.9,'W',999.9,'W',1.0,'origin X coord',IER,nbhelp)
-        MODIFY=.TRUE.
+        MODIFYVIEW=.TRUE.
         MODLEN=.TRUE.
       ELSEIF(IVERT.EQ.4)THEN
         CALL EASKR(DXC(ICUB),MSG,' Sensor width? ',
      &       0.001,'W',99.9,'W',1.0,'sensor X dimension',IER,nbhelp)
         IVFOK(icub)=0
-        MODIFY=.TRUE.
+        MODIFYVIEW=.TRUE.
         MODLEN=.TRUE.
       ELSEIF(IVERT.EQ.5)THEN
         CALL EASKR(DYC(ICUB),MSG,' Sensor depth? ',
      &       0.001,'W',99.9,'W',1.0,'sensor Y dimension',IER,nbhelp)
         IVFOK(icub)=0
-        MODIFY=.TRUE.
+        MODIFYvIEW=.TRUE.
         MODLEN=.TRUE.
       ELSEIF(IVERT.EQ.6)THEN
         CALL EASKR(DZC(ICUB),MSG,' Sensor height? ',
      &       0.001,'W',99.9,'W',1.0,'sensor Z dimension',IER,nbhelp)
         IVFOK(icub)=0
-        MODIFY=.TRUE.
+        MODIFYVIEW=.TRUE.
         MODLEN=.TRUE.
       ELSEIF(IVERT.EQ.7)THEN
         CALL EASKR(CANG(ICUB),MSG,' Sensor rotation? ',
      &       -359.0,'W',359.0,'W',0.0,'sensor rotation',IER,nbhelp)
         IVFOK(icub)=0
-        MODIFY=.TRUE.
+        MODIFYVIEW=.TRUE.
         MODLEN=.TRUE.
       ELSEIF(IVERT.EQ.8)THEN
         S6=' '
         CALL EASKS(S6,' ',' Name of MRT sensor ? ',
      &    6,'sensor','sensor name',IER,nbhelp)
         IF(S6.NE.' ')CUBN(ICUB)=S6
-        MODIFY=.TRUE.
+        MODIFYVIEW=.TRUE.
       ELSEIF(IVERT.EQ.10)THEN
         helptopic='mrt_sensor_dimensions'
         call gethelptext(helpinsub,helptopic,nbhelp)

@@ -571,6 +571,7 @@ C
 #include "esprdbfile.h"
 C esprdbfile.h supplies the following:
 C LAPRES,IAPRES (for window pressure databases)
+#include "prj3dv.h"
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
       
@@ -590,16 +591,11 @@ C LAPRES,IAPRES (for window pressure databases)
       COMMON/AFN/IAIRN,LAPROB,ICAAS(MCOM)
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
 
-      COMMON/RAY2/ITDSP,ITBND,ITEPT,ITZNM,ITSNM,ITVNO,ITORG,ITSNR,
-     &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS,ITPPSW
-      COMMON/RAY3/MODIFY,MODLEN,MODBND
-      COMMON/RAY5/ZCOG(MCOM,3),XMN,YMN,ZMN,XMX,YMX,ZMX
-
       CHARACTER outs*124,prt*60,DEPRE*40
       CHARACTER NDNAM*12,NODID*12,T12*12
       CHARACTER LAPROB*72,t72*72,t144*144
       CHARACTER PCITM(35)*42,KEY*1,MOD*1
-      LOGICAL MODIFY,MODLEN,MODBND,OK,dok
+      LOGICAL OK,dok
       integer IVV  ! for radio button
       integer NITMS,IVERT ! max items and current menu item
 
@@ -702,17 +698,9 @@ C Get associated zone volume and height if type 0 or 1.
 C Redraw the bluiding in the graphic screen.
             MODBND=.TRUE.
             MODLEN=.TRUE.
-            ITDSP=1
-            ITBND=1
-            ITEPT=0
-            ITZNM=0
-            ITSNM=1
-            ITVNO=1
-            ITORG=0
-            ITSNR=1
-            ITGRD=1
-            GRDIS=0.0
-            ITPPSW=0
+            ITDSP=1; ITBND=1; ITEPT=0; ITZNM=0
+            ITSNM=1; ITVNO=1; ITORG=0; ITSNR=1
+            ITGRD=1; GRDIS=0.0; ITPPSW=0
             nzg=NCOMP
             if(nzg.gt.0)then
               DO 44 I=1,nzg
@@ -798,17 +786,9 @@ C Allow the user to determine the surface associated with this node.
 C Redraw the building in the graphic screen.
           MODBND=.TRUE.
           MODLEN=.TRUE.
-          ITDSP=1
-          ITBND=1
-          ITEPT=0
-          ITZNM=0
-          ITSNM=1
-          ITVNO=1
-          ITORG=0
-          ITSNR=1
-          ITGRD=1
-          GRDIS=0.0
-          ITPPSW=0
+          ITDSP=1; ITBND=1; ITEPT=0; ITZNM=0
+          ITSNM=1; ITVNO=1; ITORG=0; ITSNR=1
+          ITGRD=1; GRDIS=0.0; ITPPSW=0
           nzg=NCOMP
           if(nzg.gt.0)then
             DO 45 I=1,nzg
@@ -829,7 +809,7 @@ C (Re)Set all surfaces to standard line width.
 
 C General image option flags.
           call georead(IFIL+1,LGEOM(IZ),IZ,0,ITRU,IER)
-          MODIFY=.TRUE.
+          MODIFYVIEW=.TRUE.
           MODBND=.TRUE.
           CALL INLNST(1)
           ITZNM=0
@@ -1631,20 +1611,17 @@ C Fluid flow model file: edit or input wind speed reduction factor
 #include "building.h"
 #include "model.h"
 #include "geometry.h"
+#include "prj3dv.h"
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
       integer IZSTOCN
       COMMON/C24/IZSTOCN(MCOM,MS)
       COMMON/MFLCLM/DRYB,QDIF,QDNR,IRVH,WDIR,WSPD,WRED
 
-      COMMON/RAY5/ZCOG(MCOM,3),XMN,YMN,ZMN,XMX,YMX,ZMX
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
-      COMMON/RAY2/ITDSP,ITBND,ITEPT,ITZNM,ITSNM,ITVNO,ITORG,ITSNR,
-     &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS,ITPPSW
-      COMMON/RAY3/MODIFY,MODLEN,MODBND
 
       CHARACTER outs*124
-      LOGICAL OK,dok,MODIFY,MODLEN,MODBND
+      LOGICAL OK,dok
 
 C For help messages
       character helpinsub*24 ! subroutine name
@@ -1696,19 +1673,11 @@ C Allow the user to select the roof of the building
 
 C General image option flags.
 C << might want to save current values for later recovery >>
-      ITDSP=1
-      ITBND=1
-      ITEPT=0
-      ITZNM=0
-      ITSNM=0
-      ITVNO=1
-      ITORG=1
-      ITSNR=1
-      ITGRD=1
-      GRDIS=0.0
-      ITPPSW=0
+      ITDSP=1; ITBND=1; ITEPT=0; ITZNM=0; ITSNM=0
+      ITVNO=1; ITORG=1; ITSNR=1
+      ITGRD=1; GRDIS=0.0; ITPPSW=0
 
-      MODIFY=.TRUE.
+      MODIFYVIEW=.TRUE.
       MODBND=.TRUE.
       CALL INLNST(1)
       ITVNO=0
@@ -1716,7 +1685,7 @@ C << might want to save current values for later recovery >>
       nznog(1)=ISZONE
       izgfoc=ISZONE
       CALL ADJVIEW(IER)
-      MODIFY=.TRUE.
+      MODIFYVIEW=.TRUE.
       MODBND=.TRUE.
 
       ISO=1
@@ -1825,11 +1794,11 @@ C << should mode Z be visible when user first enters flow facility? >>
 #include "geometry.h"
 #include "schedule.h"
 #include "net_flow.h"
+#include "prj3dv.h"
 
       COMMON/FILEP/IFIL
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/AFN/IAIRN,LAPROB,ICAAS(MCOM)
-      COMMON/RAY5/ZCOG(MCOM,3),XMN,YMN,ZMN,XMX,YMX,ZMX
       
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
@@ -1846,10 +1815,6 @@ C << should mode Z be visible when user first enters flow facility? >>
      &              SUPCMP(MCMP,MCMS)
       COMMON/MFLW10/NODPS(MCNN),HGTPS(MCNN),NODNE(MCNN),HGTNE(MCNN),
      &              ITPCON(MCNN),NDSCNN(MCNN,MCNS)
-      COMMON/RAY2/ITDSP,ITBND,ITEPT,ITZNM,ITSNM,ITVNO,ITORG,ITSNR,
-     &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS,ITPPSW
-      COMMON/RAY3/MODIFY,MODLEN,MODBND
-      COMMON/RAY6/LINSTY(MCON)
 
       common/caleni/nbdaytype,nbcaldays(MDTY),icalender(365)
       INTEGER NBDAYTYPE,NBCALDAYS,ICALENDER
@@ -1868,7 +1833,7 @@ C associated with the largest ventilation rate.
       integer icompforinf,icompforvent,isrczforvent
       real finfmax,fvntmax
 
-      LOGICAL MODIFY,MODLEN,MODBND,XST
+      LOGICAL XST
       logical closevz,closeiz,close,foundit
       character NDNAM*12, outs*124, MODE*1
       character LAPROB*72
@@ -1982,14 +1947,9 @@ C Redraw the affected zones in the graphic screen.
   44          CONTINUE
 
               MODBND=.TRUE.
-              MODIFY=.TRUE.
-              ITDSP=1
-              ITBND=1
-              ITEPT=0
-              ITZNM=0
-              ITSNM=1
-              ITORG=0
-              ITGRD=1
+              MODIFYVIEW=.TRUE.
+              ITDSP=1; ITBND=1; ITEPT=0; ITZNM=0; 
+              ITSNM=1; ITORG=0; ITGRD=1
               LINSTY(ICN)=2
               nzg=2
               nznog(1)=IC1(ICN)

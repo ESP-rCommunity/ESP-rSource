@@ -59,15 +59,13 @@ C IER=0 indicates no error.
 #include "cfd.h"
 #include "espriou.h"
 C #include "esprdbfile.h"
+#include "prj3dv.h"
       
       integer lnblnk  ! function definition
 
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       common/OUTIN/IUOUT,IUIN
       common/gzonpik/izgfoc,nzg,nznog(mcom)
-      common/RAY2/ITDSP,ITBND,ITEPT,ITZNM,ITSNM,ITVNO,ITORG,ITSNR,
-     &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS,ITPPSW
-C      common/RAY3/MODIFY,MODLEN,MODBND
       COMMON/DEFLT3/DFCFD,DECMPDBFL,DICONDBFL
       common/cfdfil/LCFD(MCOM),IFCFD(MCOM)
       COMMON/ICFNOD/ICFD,ICP
@@ -79,7 +77,6 @@ C      common/RAY3/MODIFY,MODLEN,MODBND
 
       logical origin,xgrid,ygrid,zgrid,zegrid,ortho
       logical OK,dok,XST,CFDsave
-C      logical MODIFY,MODLEN,MODBND
 
       character OUTSTR*124,WORD*124,ETEXT*82,ZNGEO*3
       CHARACTER ITEM(12)*34
@@ -393,9 +390,6 @@ C IER=0 indicates no error.
       integer menuchw,igl,igr,igt,igb,igw,igwh
       common/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
       common/gzonpik/izgfoc,nzg,nznog(mcom)
-      common/RAY2/ITDSP,ITBND,ITEPT,ITZNM,ITSNM,ITVNO,ITORG,ITSNR,
-     &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS,ITPPSW
-      common/RAY3/MODIFY,MODLEN,MODBND
 
 C NREG(1,*) is X, NREG(2,*) is Y, NREG(3,*) is west, NREG(4,*) is east
 C (the east (4,*) is for curvilinear gridding).
@@ -421,7 +415,7 @@ C Arrays for sorting domains from (see code for comments).
       dimension ZS(MTV),ZSI(MTV),ZSS(MTV)
 
       LOGICAL CALLU,CALLV,CALLW,CALLT,CALLC,KEMDL,BUOY,BOUSSI
-      logical MODIFY,MODLEN,MODBND,close,griderr
+      logical close,griderr
       logical origin,xgrid,ygrid,zgrid,zegrid,ortho
       LOGICAL ZEROT,ZandKE,MITzero,vclose
 
@@ -505,7 +499,7 @@ C to be refreshed.
           CALL ESCZONE(izone)
           CALL BNDOBJ(0,IER)
           CALL ERCZONE(izone)
-          MODIFY=.TRUE.; MODLEN=.TRUE.; MODBND=.TRUE.
+          MODIFYVIEW=.TRUE.; MODLEN=.TRUE.; MODBND=.TRUE.
           itvno=0
           itznm=1
           itsnm=1
@@ -749,7 +743,7 @@ C to be refreshed.
           CALL ESCZONE(izone)
           CALL BNDOBJ(0,IER)
           CALL ERCZONE(izone)
-          MODIFY=.TRUE.; MODLEN=.TRUE.; MODBND=.TRUE.
+          MODIFYVIEW=.TRUE.; MODLEN=.TRUE.; MODBND=.TRUE.
           itvno=0
           itsnm=0
           CALL INLNST(1)
@@ -1961,16 +1955,13 @@ C #include "model.h"
 C #include "geometry.h"
 #include "cfd.h"
 #include "epara.h"
+#include "prj3dv.h"
 
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
 C      COMMON/FILEP/IFIL
 C      integer menuchw,igl,igr,igt,igb,igw,igwh
 C      common/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
 C      common/gzonpik/izgfoc,nzg,nznog(mcom)
-
-C      common/RAY2/ITDSP,ITBND,ITEPT,ITZNM,ITSNM,ITVNO,ITORG,ITSNR,
-C     &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS,ITPPSW
-C      common/RAY3/MODIFY,MODLEN,MODBND
 
       COMMON/ICFNOD/ICFD,ICP
       common/cfdconf/ICFBLD(MNZ),ICFMFS(MNZ)
@@ -2011,7 +2002,6 @@ C      common/RAY3/MODIFY,MODLEN,MODBND
       character zngeo*3,etext*82
       CHARACTER*72 TITLE,CFTRFL,LPHI
       logical origin,xgrid,ygrid,zgrid,zegrid,ortho
-C      logical MODIFY,MODLEN,MODBND
 
 C      integer iglib   ! if 1 then X11, if 2 then GTK, if 3 then text only.
       integer INB     ! for radio button
@@ -4287,14 +4277,10 @@ C gridding generation.
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
-      COMMON/RAY2/ITDSP,ITBND,ITEPT,ITZNM,ITSNM,ITVNO,ITORG,ITSNR,
-     &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS,ITPPSW
-      COMMON/RAY3/MODIFY,MODLEN,MODBND
 
 C Curvilinear boundary vertex numbers.
       common/CLVTXNO/ivxhigh(MV),ivxlow(MV),ihigh,ilow
 
-      LOGICAL MODIFY,MODLEN,MODBND
       logical clkok,found
 
       DIMENSION COG1(3),COG2(3),COG3(3),JJVN(MV)
@@ -4320,7 +4306,7 @@ C Tell the user the rules of selection.
       CALL PHELPD('gen start popup',nbhelp,'-',0,0,IER)
 
 C Redraw the zone with vertices.
-      MODIFY=.TRUE.
+      MODIFYVIEW=.TRUE.
       MODBND=.TRUE.
       CALL INLNST(1)
       ITVNO=0

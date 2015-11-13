@@ -13,7 +13,7 @@ PROG = prj$(EXE)
 
 .SUFFIXES: .o .F
 .F.o:
-	$(MFC) $(FFLAGS)  $(BUILD_OPTIONS) -c $<
+	$(MFC) $(FFLAGS) $(BUILD_OPTIONS) -c $<
 
 %.o : %.f90
 	$(MCC) $(FFLAGS) -c $<
@@ -34,7 +34,7 @@ OBJECTS = prj.o anlytc.o arrow.o ascii_mat.o basesimp.o \
 	  ground_temp_mains.o gtopol.o h3k_utils.o hcfmk.o hvacgui.o initalc.o insert.o item.o \
 	  maintn.o mcdbscn.o mfcdat.o mfelst.o mfnmsc.o mfprb1.o mfprb2.o mfrlst.o \
 	  mksbem.o MultiYear_climate.o mvalid.o \
-	  net2pdf.o newnet.o nwkrewr.o plelevvc.o pltcfg.o pltnet.o prescoef.o \
+	  net2pdf.o newnet.o nwkrewr.o plelevvc.o pltcfg.o pltnet.o predefinedwr.o prescoef.o \
 	  prjdmds.o prjfmk.o prjqa.o psychro.o rcdblist.o read3dv.o readTrnsys.o \
 	  rwipv.o rwroam.o rwsbem.o sendd.o sendflt.o senrwl.o sensa.o \
 	  setup.o sort.o spmisc.o stndrds.o tdfedit.o tdfile.o tdgraph.o \

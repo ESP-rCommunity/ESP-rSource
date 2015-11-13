@@ -26,13 +26,13 @@ C (set equal to 2* or greater than MS in building.h, because of current
 C method of specification of solid boundary conditions from building
 C surfaces)
       INTEGER, PARAMETER :: MNSBZ=160
-C  Maximum number of zones with CFD (usual setting MNZ=1)
-      INTEGER, PARAMETER :: MNZ=1
+C  Maximum number of zones with CFD (usual setting MNZ=4)
+      INTEGER, PARAMETER :: MNZ=2
 C  Maximum number of key volumes (usual setting MNVLS=120)
       INTEGER, PARAMETER :: MNVLS=120
 C  Maximum number of contaminants that can be modelled (Set equal to
 C  INTEGER, PARAMETER :: MCONTM in net_flow.h, if this is changed also change MCONTM)
       INTEGER, PARAMETER :: MCTM=4
 C Maximum frequency of residuals plotting during CFD solutions
-      INTEGER, PARAMETER :: MFRP=100
+      INTEGER, PARAMETER :: MFRP=1000
 

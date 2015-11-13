@@ -2588,8 +2588,8 @@ C Local
       logical CLOSE
       
       PI = 4.0 * ATAN(1.0)  ! pattern used in AZALT
-      SAZI1=0.      ! set initial values
-      SALT1=0.
+      SAZI1=0.0      ! set initial values
+      SALT1=0.0
       ISUNUP=1
       R=PI/180.0    ! compute radians
       DAY=FLOAT(ID) ! cast julian day to local
@@ -2606,7 +2606,7 @@ c Compute declination.
       SDEC=SIN(DEC*R)
       CDEC=COS(DEC*R)
 
-c Compute solar altitude.
+c Compute solar altitude. If SALT < 0.1 degree assume sun not yet up.
       TIME=HOUR+(EQT+SLON/15.0)
       TIMCOE=15.0*(12.0-TIME)
       CDTIME=COS(TIMCOE*R)
@@ -2615,7 +2615,7 @@ c Compute solar altitude.
       SSLAT=SIN(SLAT*R)
       CSLAT=COS(SLAT*R)
       SALT=ASIN(SSLAT*SDEC+CSLAT*CDEC*CDTIME)/R
-      IF(SALT.LT.0.0)goto 1
+      IF(SALT.LT.0.1)goto 1
 
 C Solar aziumth.
       AZMUTH=(CDEC*SABST)/ECOSD(SALT)
@@ -6638,12 +6638,22 @@ C ************* runit
 C runit: Execute a command string, in text (runs in a new xterm) or graphics
 C mode.  Assumes that command string terminates in a '&' if the
 C user wishes to run in background mode. For minGW xterm is not used.
+
+C WARNING - possible OS dependency:
+C runit invokes the command. system() is a C function which
+C works well on MSYS and Linux while execute_command_line is
+C a gfortran facility which works on MSYS2. If runit is not 
+C working then try switching bweteen these options.
       subroutine runit(cmd,tg)
       common/OUTIN/IUOUT,IUIN
       character*(*) cmd,tg
-      character tmp*248,tmode*4
+      character tmp*300,tmode*4,message*248
+      character dq*1
       integer system
       logical unixok
+      integer i
+
+      dq = char(34)  ! double quote
 
 C Find if Unix or NT.
       call isunix(unixok)
@@ -6654,28 +6664,51 @@ C Find if Unix or NT.
         if(tmode(1:4).eq.'text')then
           LN=max(1,lnblnk(cmd))
           write(tmp,'(a,a)') 'xterm -e ',cmd(1:LN)
-          i = system(tmp)
+C          i = system(tmp)
+         call execute_command_line (tmp, exitstat=i)
         else
-          i = system(cmd)
+C          i = system(cmd)
+          call execute_command_line (cmd, exitstat=i)
         endif
         if(i.gt.0.and.i.le.126)then
           call edisp(iuout,'task terminated with an error condition')
+          LN=max(1,lnblnk(cmd))
+          write(tmp,'(a,i3,2a)') 'status ',i,' ',cmd(1:LN)
+          call edisp248(iuout,tmp,90)
         elseif(i.eq.127)then
           call edisp(iuout,'task requested was unknown.')
+          LN=max(1,lnblnk(cmd))
+          write(tmp,'(a,i3,2a)') 'status ',i,' ',cmd(1:LN)
+          call edisp248(iuout,tmp,90)
         endif
         return
       else
         LN=lnblnk(cmd)
         if (cmd(LN:LN).eq."&") then
-          write (tmp,'(2a)') 'start ',cmd(1:LN-1)
+          write (tmp,'(4a)') dq,'start ',cmd(1:LN-1),dq
           write (cmd,'(a)') tmp(1:lnblnk(tmp))
+          call edisp248(iuout,cmd,90)
+        else
+          write (tmp,'(3a)') dq,cmd(1:LN),dq
+          write (cmd,'(a)') tmp(1:lnblnk(tmp))
+          call edisp248(iuout,cmd,90)
         endif
-        i = system(cmd)
+
+C        i = system(cmd)
+        call execute_command_line (cmd, exitstat=i)
         if(i.gt.0.and.i.le.126)then
           call edisp(iuout,'task terminated with an error condition')
+          LN=lnblnk(cmd)
+          write(tmp,'(a,i3,2a)') 'status ',i,' ',cmd(1:LN)
+          call edisp248(iuout,tmp,90)
         elseif(i.eq.127)then
           call edisp(iuout,'task requested was unknown.')
+          LN=lnblnk(cmd)
+          write(tmp,'(a,i3,2a)') 'status ',i,' ',cmd(1:LN)
+          call edisp248(iuout,tmp,90)
         endif
+
+C An even older method of asking OS to do some work.
 C        call cissue(cmd,ifail)
         return
       endif
@@ -7465,16 +7498,17 @@ C clrtextbuf clears the text buffer common blocks.
 C ********* UPDVIEW
 C UPDVIEW is called from C code in esru_x.c or esp-r.c with values to 
 C update commonblocks GFONT, VIEWPX and SPAD. Set REFRESH=true.
-C Set MODIFY=true to force any wire-frame images to be redrawn.
+C Set MODIFYVIEW=true to force any wire-frame images to be redrawn.
       subroutine updview(ifsc,itfsc,imfsc,ilc,irc,itc,ibc,iwc,ihc,lttyc)
+#include "building.h"
+#include "prj3dv.h"
+
       integer ifs,itfs,imfs
       COMMON/GFONT/IFS,ITFS,IMFS
       integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/FRESH/refrsh
-      COMMON/RAY3/MODIFY,MODLEN,MODBND
-      LOGICAL MODIFY,MODLEN,MODBND
       logical refrsh
 
       IFS=ifsc
@@ -7489,7 +7523,7 @@ C Set MODIFY=true to force any wire-frame images to be redrawn.
       LIMTTY=lttyc
       LIMIT=1
       refrsh=.TRUE.
-      MODIFY=.TRUE.
+      MODIFYVIEW=.TRUE.
 
       return
       end

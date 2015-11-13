@@ -603,6 +603,8 @@ C ------------------------------------------------------------------------------
 #include "plant.h"
 #include "power.h"
 
+      integer lnblnk
+
       common/outin/iuout,iuin
 
 C---------------------------------------------------------------------------------
@@ -981,6 +983,8 @@ C ------------------------------------------------------------------------------
 #include "building.h"
 #include "plant.h"
 #include "power.h"
+
+      integer lnblnk
 
       common/OUTIN/IUOUT,IUIN
 

@@ -20,16 +20,18 @@
   ITORG origin toggle: display = 0, hidden = 1
   ITSNR surf normal toggle: display = 0, hidden = 1.
   ITOBS obstruction toggle: not yet enabled.
+  ITVIS visual entity
+  ITVOBJ visual object
   ITHLS highlight toggle: normal 0, constr 1, trans/opaq 2, part atrib 3
   ITGRD grid toggle: display = 0, hidden = 1
   ITVNO vertex toggle: display = 0, hidden = 1
   ITPPSW current view - perspective/plan/south/west
   COMMON/RAY2/ITDSP,ITBND,ITEPT,ITZNM,ITSNM,ITVNO,ITORG,ITSNR,
-     &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS,ITPPSW
+     &        ITOBS,ITVIS,ITVOBJ,ITHLS,ITHLZ,ITGRD,GRDIS,ITPPSW
 */
 
 struct {
-  long int ITDSP,ITBND,ITEPT,ITZNM,ITSNM,ITVNO,ITORG,ITSNR,ITOBS,ITHLS,ITHLZ,ITGRD;
+  long int ITDSP,ITBND,ITEPT,ITZNM,ITSNM,ITVNO,ITORG,ITSNR,ITOBS,ITVIS,ITVOBJ,ITHLS,ITHLZ,ITGRD;
   float GRDIS;
   long int ITPPSW;
 } cray2_;

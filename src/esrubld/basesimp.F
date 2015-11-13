@@ -66,7 +66,7 @@ C (20 x 20 meters).
       character outs*124,OUTSTR*124,dllsubr*12,dllmesg*124,t60*60
       logical dll
 
-      REAL fBASESIMPVersionNumber	! version number of BASESIMP input file
+      REAL fBASESIMPVersionNumber  ! version number of BASESIMP input file
 C Limits for parameter values to be read in
       REAL fMinFoundLength, fMaxFoundLength, fMinFoundWidth,
      &     fMaxFoundWidth, fMinInsulRSI,  fMaxInsulRSI, fMinSoilCond,
@@ -942,7 +942,7 @@ C weather file and Moore model.
       endif
 
 C Steady component of below-grade heat loss (W).
-	  Qbgavg = Sbgavg(icon) *
+      Qbgavg = Sbgavg(icon) *
      &             ( TBSAVG-basesimp_grd_temp_avg )
 
 C Time-varying component of below-grade heat loss (W). `time' measures the

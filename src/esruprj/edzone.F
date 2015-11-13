@@ -47,9 +47,6 @@ C Use geometry for common g0/g1/g2/g4/g5/g6/g7/prec16/precz/c20.
       COMMON/FILEP/IFIL
       COMMON/OUTIN/IUOUT,IUIN
 
-      Logical MODIFY,MODLEN,MODBND
-      COMMON/RAY3/MODIFY,MODLEN,MODBND
-      
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
@@ -158,12 +155,8 @@ C Allow user choices of beginning as a simple shape (with image feedback).
      &  'rectangular plan','polygon plan','general 3D',
      &  'bitmap',ishape,nbhelp)
  144  IF(ishape.eq.1)THEN
-        XO1=0.
-        YO1=0.
-        ZO1=0.
-        DX1=5.0
-        DY1=3.0
-        DZ1=2.7
+        XO1=0.0; YO1=0.0; ZO1=0.0
+        DX1=5.0; DY1=3.0; DZ1=2.7
         helptopic='zone_initial_rect'
         call gethelptext(helpinsub,helptopic,nbhelp)
         HOLD=' '
@@ -203,9 +196,7 @@ C Pass in critical dimensions and expect the data back via common G1.
         NSUR=6
         IUZBASEA(icomp)=0
         IBASES(ICOMP,1)=6
-        MODBND=.TRUE.
-        MODIFY=.TRUE.
-        MODLEN=.TRUE.
+        MODBND=.TRUE.; MODIFYVIEW=.TRUE.; MODLEN=.TRUE.
         iZBFLG(ICOMP)=0
       ELSEIF(ishape.eq.2)THEN
 
@@ -260,9 +251,7 @@ C and expect the data back via common G1. And ESCROT also acts on G1.
         NSUR=NW+2
         IUZBASEA(icomp)=0
         IBASES(ICOMP,1)=NSUR
-        MODBND=.TRUE.
-        MODIFY=.TRUE.
-        MODLEN=.TRUE.
+        MODBND=.TRUE.; MODIFYVIEW=.TRUE.; MODLEN=.TRUE.
         iZBFLG(ICOMP)=0
       ENDIF
 
@@ -277,11 +266,8 @@ C Update the connection list and hash.
         ICCC=NCON
         DO 32 ICC=1,NSUR
           ICCC=ICCC+1
-          IC1(ICCC)=ICOMP
-          IE1(ICCC)=ICC
-          ICT(ICCC)=-1   ! mark as unknown at this time.
-          IC2(ICCC)=0
-          IE2(ICCC)=0
+          IC1(ICCC)=ICOMP; IE1(ICCC)=ICC; ICT(ICCC)=-1   ! mark as unknown at this time.
+          IC2(ICCC)=0; IE2(ICCC)=0
           SSNAME(iccc)=SNAME(icomp,icc)
           SSOTF(iccc)=SOTF(icc)
           SSMLCN(iccc)=SMLCN(icc)
@@ -289,8 +275,7 @@ C Update the connection list and hash.
           SSOTHER(iccc,1)=SOTHER(icc,1)
           SSOTHER(iccc,2)=SOTHER(icc,2)
           SSOTHER(iccc,3)=SOTHER(icc,3)
-          SSUSE(iccc,1)=SUSE(icc,1)
-          SSUSE(iccc,2)=SUSE(icc,2)
+          SSUSE(iccc,1)=SUSE(icc,1); SSUSE(iccc,2)=SUSE(icc,2)
           SSPARENT(iccc)=SPARENT(icc)
           IZSTOCN(icomp,icc)=iccc
    32   CONTINUE
@@ -313,45 +298,24 @@ C User will begin with a minimal GEN body.
         CALL EGETWR(HOLD,K,X0,0.,0.,'-','X origin',IER)
         CALL EGETWR(HOLD,K,Y0,0.,0.,'-','Y origin',IER)
         CALL EGETWR(HOLD,K,Z0,0.,0.,'-','Z origin',IER)
-        X(1)=X0+2.0
-        Y(1)=Y0
-        Z(1)=Z0
-        X(2)=X0
-        Y(2)=Y0
-        Z(2)=Z0
-        X(3)=X0
-        Y(3)=Y0+2.0
-        Z(3)=Z0
-        X(4)=X0+2.0
-        Y(4)=Y0+2.0
-        Z(4)=Z0
+        X(1)=X0+2.0; Y(1)=Y0; Z(1)=Z0
+        X(2)=X0; Y(2)=Y0; Z(2)=Z0
+        X(3)=X0; Y(3)=Y0+2.0; Z(3)=Z0
+        X(4)=X0+2.0; Y(4)=Y0+2.0; Z(4)=Z0
         NVER(1)=4
-        JVN(1,1)=1
-        JVN(1,2)=2
-        JVN(1,3)=3
-        JVN(1,4)=4
+        JVN(1,1)=1; JVN(1,2)=2; JVN(1,3)=3; JVN(1,4)=4
         NZTV(icomp)=NTV
         SNAME(ICOMP,1)='first'
-        SOTF(1)='OPAQUE'
-        SMLCN(1)='UNKN'
-        SVFC(1)='FLOR'
-        SOTHER(1,1)='UNKNOWN'
-        SOTHER(1,2)='0'
-        SOTHER(1,3)='0'
-        SUSE(1,1)='-'
-        SUSE(1,2)='-'
-        SPARENT(1)='-'
-        IUZBASEA(icomp)=0
-        IBASES(ICOMP,1)=1
+        SOTF(1)='OPAQUE'; SMLCN(1)='UNKN'; SVFC(1)='FLOR'
+        SOTHER(1,1)='UNKNOWN'; SOTHER(1,2)='0'; SOTHER(1,3)='0'
+        SUSE(1,1)='-'; SUSE(1,2)='-'; SPARENT(1)='-'
+        IUZBASEA(icomp)=0; IBASES(ICOMP,1)=1
 
 C Update the connection list and hash for initial surface.
         ICCC=NCON
         ICCC=ICCC+1
-        IC1(ICCC)=ICOMP
-        IE1(ICCC)=1
-        ICT(ICCC)=-1  ! mark as unknown
-        IC2(ICCC)=0
-        IE2(ICCC)=0
+        IC1(ICCC)=ICOMP; IE1(ICCC)=1; ICT(ICCC)=-1  ! mark as unknown
+        IC2(ICCC)=0; IE2(ICCC)=0
         SSNAME(iccc)=SNAME(ICOMP,1)
         SSOTF(iccc)=SOTF(1)
         SSMLCN(iccc)=SMLCN(1)
@@ -364,9 +328,7 @@ C Update the connection list and hash for initial surface.
         SSPARENT(iccc)=SPARENT(1)
         IZSTOCN(icomp,1)=iccc
         NCON=ICCC
-        MODBND=.TRUE.
-        MODIFY=.TRUE.
-        MODLEN=.TRUE.
+        MODBND=.TRUE.; MODIFYVIEW=.TRUE.; MODLEN=.TRUE.
         iZBFLG(icomp)=0
       elseif(ishape.eq.4)then
 
@@ -409,9 +371,7 @@ C High level info for all cases except clickonbitmap.
       endif
       CTYPE(icomp)='GEN '
       NDP(ICOMP)=3
-      IDPN(ICOMP,1)=0
-      IDPN(ICOMP,2)=0
-      IDPN(ICOMP,3)=0
+      IDPN(ICOMP,1)=0; IDPN(ICOMP,2)=0; IDPN(ICOMP,3)=0
       NZSUR(ICOMP)=NSUR  ! update nzsur() it is needed by zgupdate.
       NZTV(ICOMP)=NTV
 
@@ -992,7 +952,6 @@ C espriou.h provides currentfile.
      &       TMCA(MCOM,MTMC,ME,5),TMCREF(MCOM,MTMC),TVTR(MCOM,MTMC)
       COMMON/AFN/IAIRN,LAPROB,ICAAS(MCOM)
       COMMON/MFLOW2/NDNAM(0:MNOD)
-      COMMON/RAY5/ZCOG(MCOM,3),XMN,YMN,ZMN,XMX,YMX,ZMX
 
       LOGICAL DOK,OK,XST,changed,OKC,OKM,modopr,browse
       logical newgeo  ! to use for testing if new/old geometry file.
@@ -1426,6 +1385,9 @@ C Re-establish link between zone/surfaces and connections.
  335  continue
 
 C Ask if user wishes to remove all files related to the zone.
+C << place to take into account where prj was invoked and the
+C << path to the model cfg folder.
+
       dok=.false.
       helptopic='zone_delete_files'
       call gethelptext(helpinsub,helptopic,nbhelp)
@@ -2073,10 +2035,13 @@ C Report length of line. Use method of Ward/Radiance in fvect.c
         endif
       endif
       if(vdis.ne.0.0)then
+
+C The original C code returned the square of distance
+C so unpack via sqrt call.
         d2l=(vdis1-(vdis+vdis1-vdis2)*
      &      (vdis+vdis1-vdis2)/vdis/4.0)
-        if(abs(d2l).lt.0.003)then
-          offset=d2l
+        if(abs(d2l).lt.0.00003)then
+          offset=d2l   ! if really small d2l
         else
           offset=SQRT(d2l)
         endif

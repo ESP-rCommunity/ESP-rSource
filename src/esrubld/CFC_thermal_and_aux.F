@@ -2268,7 +2268,8 @@ C ********************************************************************
       IMPLICIT NONE
 
 #include "building.h"
-#include "geometry.h"    ! for zname
+C geometry.h for zname.
+#include "geometry.h"
 #include "CFC_common.h"
 
       COMMON/SUNPOS/SAZI,SALT,ISUNUP
@@ -2886,7 +2887,8 @@ C ********************************************************************
       use h3kmodule
       IMPLICIT NONE
 #include "building.h"
-#include "geometry.h"    ! for zname
+C Use geometry.h for zname
+#include "geometry.h"
 #include "control.h"
 #include "CFC_common.h"
       COMMON/OUTIN/IUOUT,IUIN

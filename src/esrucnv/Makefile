@@ -17,14 +17,13 @@ PROG = ecnv$(EXE)
 
 MODULE_OBJECTS = h3kmodule.o startup.o aim2_module.o
 
-OBJECTS = ecnv.o ascii_mat.o basesimp.o basesimp_inputs.o \
-	  bscoeff.o bscoeff_extended.o c2fdum.o ctread.o \
+OBJECTS = ecnv.o ascii_mat.o c2fdum.o ctread.o \
 	  CDBPlugins.o CDBCommon.o CDBExplore.o dossupport.o \
 	  e2vrml.o e2vdxf.o edatabase.o egeometry.o egtgeom.o \
 	  emfnetw.o emkcfg.o enetmisc.o enetrewr.o eroper.o esru_misc.o \
 	  esystem.o filelist.o item.o low_lev.o mfcdat.o mid_lev.o \
 	  nwkrewr.o pltcfg.o readTrnsys.o rwipv.o rwsbem.o sort.o \
-	  tdfile.o wwxfig.o azalt.o qrun.o
+	  tdfile.o wwxfig.o
       
 MODULES = aim2.mod aim2_calcdata.mod aim2_h2k_dummy.mod aim2_inputdata.mod start_up.mod \
 	parse_command_line.mod h3kmodule.mod
@@ -38,18 +37,6 @@ aim2_module.F:
 ascii_mat.F:
 	rm -f ascii_mat.F
 	ln -s $(COMdir)/ascii_mat.F .
-basesimp.F:
-	rm -f basesimp.F
-	ln -s $(BLDdir)/basesimp.F .
-basesimp_inputs.F:
-	rm -f basesimp_inputs.F
-	ln -s $(PRJdir)/basesimp_inputs.F .
-bscoeff.F:
-	rm -f bscoeff.F
-	ln -s $(BLDdir)/bscoeff.F .
-bscoeff_extended.F:
-	rm -f bscoeff_extended.F
-	ln -s $(CETCdir)/bscoeff_extended.F .
 CDBPlugins.F:
 	rm -f CDBPlugins.F
 	ln -s $(CDBdir)/CDBPlugins.F .
@@ -131,12 +118,6 @@ startup.F:
 tdfile.F:
 	rm -f tdfile.F
 	ln -s $(COMdir)/tdfile.F .
-azalt.F:
-	rm -f azalt.F
-	ln -s $(COMdir)/azalt.F .
-qrun.F:
-	rm -f qrun.F
-	ln -s $(COMdir)/qrun.F .
 h3kmodule.f90:
 	rm -f h3kmodule.f90
 	ln -s $(CETCdir)/h3kmodule.f90 .
@@ -149,9 +130,8 @@ install:
 
 clean:
 	rm -f core $(PROG) $(PROG).exe $(MODULE_OBJECTS) $(OBJECTS) $(MODULES) \
-	aim2_module.F ascii_mat.F basesimp.F basesimp_inputs.F bscoeff.F bscoeff_extended.F \
-	CDBPlugins.F CDBCommon.F CDBExplore.F \
+	aim2_module.F ascii_mat.F CDBPlugins.F CDBCommon.F CDBExplore.F \
 	c2fdum.F ctread.F dossupport.F edatabase.F egeometry.F egtgeom.F \
 	emfnetw.F emkcfg.F enetmisc.F enetrewr.F eroper.F esru_misc.F esystem.F \
 	filelist.F item.F mfcdat.F nwkrewr.F pltcfg.F readTrnsys.F rwipv.F rwsbem.F \
-	sort.F startup.F tdfile.F azalt.F qrun.F h3kmodule.f90
+	sort.F startup.F tdfile.F h3kmodule.f90

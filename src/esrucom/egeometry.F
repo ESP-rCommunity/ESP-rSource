@@ -31,6 +31,7 @@ C  ERECC:   Converts REC (rectilinear) into a G1 description.
 C  ERECC3A: Converts REC (rectilinear with 2 rotations) into a G1 common block.
 C  CNVBLK:  Converts REC (rectilinear) into GB1 common block.
 C  CNVBLK3A:Converts REC (rectilinear with 2 rotations) into GB1 common block.
+C  CNVVISP: converts a six sided visual 'visp' into GB1 common block.
 C  EREGC:   Converts REG into a GEN description.
 C  ESCROT:  Rotate a zone by ANG degrees around point x1,y1.
 C  SURINFO: Display surface details and attributes in a tabular format.
@@ -978,7 +979,11 @@ C Now close geometry data file.
 C If base area has not yet been calculated, do this now and calculate 
 C transparent area for surfaces connected to external boundary conditions.
 C Get surface areas via call to zinfo.
-      call zinfo(sna,zoa,pazi,pelv,zvol)
+      if(ITRC.ne.0)then
+        call zinfo(sna,zoa,pazi,pelv,zvol,'-')
+      else
+        call zinfo(sna,zoa,pazi,pelv,zvol,'q')
+      endif
       vol(icomp)=zvol
       zonetotsurfacearea(icomp)=zoa
       ZTRANA(ICOMP)=0.
@@ -1366,12 +1371,7 @@ C    The 2nd array index for frames is CLOSED CRACK OPEN SASH BIDIR
 
 C    The first array index for a surface which the user wishes to 
 C    mark as an air supply or extract is 'GRILL':
-C    The 2nd array index for grills is SOURCE EXTRACT
-
-C    A suface which represents a fire smoke vent location is marked
-C    with 'SMOKEVNT' and the 2nd array index is un-used. For code
-C    complience such surfaces would be converted to the relevant
-C    wall or roof construction.
+C    The 2nd array index for grills is CLOSED CRACK INLET EXTRACT OPEN
 
 C    The opaque portion of roofs are maked as 'ROOF' and the 2nd
 C    array index is 'FLAT' (0-20 degree incline) or 'PITCHED'. Note
@@ -1440,6 +1440,7 @@ C GS7/GS8 are defined in geometry.h
       logical havec24
       logical optcorrected   ! set to true if optics corrected
       integer nbo   ! local value of nbobs
+      integer nbv   ! local value of nbvis
       integer lsn   ! length of currentfile
       integer lno,lnow     ! length of optics name
       integer lstrs,lstrd  ! length of mlc names
@@ -1609,6 +1610,8 @@ C is short, but will be extended to 248 char.
         zsize(icomp,1)=0.0
         zsize(icomp,2)=0.0
         zsize(icomp,3)=0.0
+        nbvis(icomp)=0  ! clear number of visual entities
+        NBVOBJ(icomp)=0 ! clear number of objects (collections of entities)
 
 C Next look for *vertex lines, incrementing the value of NTV
 C as each of these lines is scanned. If the tag is *edges then
@@ -2351,8 +2354,201 @@ C << not yet implemented >>
           endif
         elseif(WORD(1:13).eq.'*visual_start')then
 
-C << to be done >> 
-          goto 62
+C Read another line to get the visual entities. There are slightly different
+C formats depending on whether the key is '*vis', '*vis3', 'visp'.
+   73     CALL LSTRIPC(IUNIT,LOUTSTR,99,ND,0,'*vis tags',IER)
+          k=0
+          CALL EGETP(LOUTSTR,K,phrase,'W','visual tag',IER)
+          if(phrase(1:5).eq.'*vis3')then
+            nbvis(icomp)=nbvis(icomp)+1
+            nbv=nbvis(icomp)
+            CALL EGETWR(LOUTSTR,K,VX,-999.,998.,'W','vis X org',IER)
+            CALL EGETWR(LOUTSTR,K,VY,-999.,998.,'W','vis Y org',IER)
+            CALL EGETWR(LOUTSTR,K,VZ, -99., 99.,'W','vis Z org',IER)
+            XOV(icomp,nbv)=VX
+            YOV(icomp,nbv)=VY
+            ZOV(icomp,nbv)=VZ
+            CALL EGETWR(LOUTSTR,K,VX,0.,150.,'W','vis X dis',IER)
+            CALL EGETWR(LOUTSTR,K,VY,0.,150.,'W','vis Y dis',IER)
+            CALL EGETWR(LOUTSTR,K,VZ,0.,150.,'W','vis Z dis',IER)
+            DXOV(icomp,nbv)=VX
+            DYOV(icomp,nbv)=VY
+            DZOV(icomp,nbv)=VZ
+            CALL EGETWR(LOUTSTR,K,VX,-359.,359.,'W','vis rot ang a',IER)
+            BANGOV(icomp,nbv,1)=VX
+            CALL EGETWR(LOUTSTR,K,VX,-359.,359.,'W','vis rot ang b',IER)
+            BANGOV(icomp,nbv,2)=VX
+            CALL EGETWR(LOUTSTR,K,VX,-359.,359.,'W','vis rot ang c',IER)
+            BANGOV(icomp,nbv,3)=VX
+            if(ND.ge.13)then  ! if enough items for opacity
+              CALL EGETWR(LOUTSTR,K,VX,0.,1.,'W','vis opacity',IER)
+              OPOV(icomp,nbv)=VX
+            else
+              OPOV(icomp,nbv)=1.0  ! set to opaque if not specified
+            endif
+            CALL EGETW(LOUTSTR,K,WORD,'W','vis blk name',IFLAG)
+            VISNAME(icomp,nbv)=WORD(1:12)
+            LNVISNAME(icomp,nbv)=lnblnk(VISNAME(icomp,nbo))
+
+C The name of the construction might contain spaces so use EGETP.
+            CALL EGETP(LOUTSTR,K,WORD,'W','vis mat name',IFLAG)
+            write(VISMAT(icomp,nbv),'(a)') WORD(1:lnblnk(WORD))
+            LNVISMAT(icomp,nbv)=lnblnk(VISMAT(icomp,nbv))
+            VISTYP(icomp,nbv)='vis3'
+            goto 73    ! check if there is another
+
+          elseif(phrase(1:5).eq.'*visp')then
+
+C A general polygon visual to be associated with the current zone.
+C The first line includes (current fixed) integer number of vertices
+C followed by number of faces and the name and material.
+C The 2nd line has the first 4 coordinates and the 3rd line has the 
+C next 4 coordinates. The surface and edge ordering is as obsp. 
+            nbvis(icomp)=nbvis(icomp)+1
+            nbv=nbvis(icomp)
+            CALL EGETWI(LOUTSTR,K,ival,8,8,'F','vis nb vertices',IER)
+            CALL EGETWI(LOUTSTR,K,ival,6,6,'F','vis nb faces',IER)
+            if(ND.ge.6)then  ! if enough items for opacity
+              CALL EGETWR(LOUTSTR,K,VX,0.,1.,'W','vis opacity',IER)
+              OPOV(icomp,nbv)=VX
+            else
+              OPOV(icomp,nbv)=1.0  ! set to opaque if not specified
+            endif
+            CALL EGETW(LOUTSTR,K,WORD,'W','vis blk name',IFLAG)
+            write(VISNAME(icomp,nbv),'(a)') WORD(1:lnblnk(WORD))
+            LNVISNAME(icomp,nbv)=lnblnk(VISNAME(icomp,nbv))
+            CALL EGETW(LOUTSTR,K,WORD,'W','vis mat name',IFLAG)
+            write(VISMAT(icomp,nbv),'(a)') WORD(1:lnblnk(WORD))
+            LNVISMAT(icomp,nbv)=lnblnk(VISMAT(icomp,nbv))
+            VISTYP(icomp,nbv)='visp'
+
+            CALL LSTRIPC(IUNIT,LOUTSTR,99,ND,1,'first 4 coord',IER)
+            IF(IER.NE.0)goto 1002
+            K=0
+            CALL EGETWR(LOUTSTR,K,val1,-999.,998.,'W','XVP 1',IER)
+            XVP(icomp,nbv,1)=val1
+            CALL EGETWR(LOUTSTR,K,val1,-999.,998.,'W','YVP 1',IER)
+            YVP(icomp,nbv,1)=val1
+            CALL EGETWR(LOUTSTR,K,val1,-999.,998.,'W','ZVP 1',IER)
+            ZVP(icomp,nbv,1)=val1
+            CALL EGETWR(LOUTSTR,K,val1,-999.,998.,'W','XVP 2',IER)
+            XVP(icomp,nbv,2)=val1
+            CALL EGETWR(LOUTSTR,K,val1,-999.,998.,'W','YVP 2',IER)
+            YVP(icomp,nbv,2)=val1
+            CALL EGETWR(LOUTSTR,K,val1,-999.,998.,'W','ZVP 2',IER)
+            ZVP(icomp,nbv,2)=val1
+            CALL EGETWR(LOUTSTR,K,val1,-999.,998.,'W','XVP 3',IER)
+            XVP(icomp,nbv,3)=val1
+            CALL EGETWR(LOUTSTR,K,val1,-999.,998.,'W','YVP 3',IER)
+            YVP(icomp,nbv,3)=val1
+            CALL EGETWR(LOUTSTR,K,val1,-999.,998.,'W','ZVP 3',IER)
+            ZVP(icomp,nbv,3)=val1
+            CALL EGETWR(LOUTSTR,K,val1,-999.,998.,'W','XVP 4',IER)
+            XVP(icomp,nbv,4)=val1
+            CALL EGETWR(LOUTSTR,K,val1,-999.,998.,'W','YVP 4',IER)
+            YVP(icomp,nbv,4)=val1
+            CALL EGETWR(LOUTSTR,K,val1,-999.,998.,'W','ZVP 4',IER)
+            ZVP(icomp,nbv,4)=val1
+
+            CALL LSTRIPC(IUNIT,LOUTSTR,99,ND,1,'2nd 4 coord',IER)
+            IF(IER.NE.0)goto 1002
+            K=0
+            CALL EGETWR(LOUTSTR,K,val1,-999.,998.,'W','XVP 5',IER)
+            XVP(icomp,nbv,5)=val1
+            CALL EGETWR(LOUTSTR,K,val1,-999.,998.,'W','YVP 5',IER)
+            YVP(icomp,nbv,5)=val1
+            CALL EGETWR(LOUTSTR,K,val1,-999.,998.,'W','ZVP 5',IER)
+            ZVP(icomp,nbv,5)=val1
+            CALL EGETWR(LOUTSTR,K,val1,-999.,998.,'W','XVP 6',IER)
+            XVP(icomp,nbv,6)=val1
+            CALL EGETWR(LOUTSTR,K,val1,-999.,998.,'W','YVP 6',IER)
+            YVP(icomp,nbv,6)=val1
+            CALL EGETWR(LOUTSTR,K,val1,-999.,998.,'W','ZVP 6',IER)
+            ZVP(icomp,nbv,6)=val1
+            CALL EGETWR(LOUTSTR,K,val1,-999.,998.,'W','XVP 7',IER)
+            XVP(icomp,nbv,7)=val1
+            CALL EGETWR(LOUTSTR,K,val1,-999.,998.,'W','YVP 7',IER)
+            YVP(icomp,nbv,7)=val1
+            CALL EGETWR(LOUTSTR,K,val1,-999.,998.,'W','ZVP 7',IER)
+            ZVP(icomp,nbv,7)=val1
+            CALL EGETWR(LOUTSTR,K,val1,-999.,998.,'W','XVP 8',IER)
+            XVP(icomp,nbv,8)=val1
+            CALL EGETWR(LOUTSTR,K,val1,-999.,998.,'W','YVP 8',IER)
+            YVP(icomp,nbv,8)=val1
+            CALL EGETWR(LOUTSTR,K,val1,-999.,998.,'W','ZVP 8',IER)
+            ZVP(icomp,nbv,8)=val1
+            goto 73
+
+          elseif(phrase(1:4).eq.'*vis')then
+
+            nbvis(icomp)=nbvis(icomp)+1
+            nbv=nbvis(icomp)
+            CALL EGETWR(LOUTSTR,K,VX,-999.,998.,'W','vis X org',IER)
+            CALL EGETWR(LOUTSTR,K,VY,-999.,998.,'W','vis Y org',IER)
+            CALL EGETWR(LOUTSTR,K,VZ, -99., 99.,'W','vis Z org',IER)
+            XOV(icomp,nbv)=VX
+            YOV(icomp,nbv)=VY
+            ZOV(icomp,nbv)=VZ
+            CALL EGETWR(LOUTSTR,K,VX,0.,150.,'W','vis X dis',IER)
+            CALL EGETWR(LOUTSTR,K,VY,0.,150.,'W','vis Y dis',IER)
+            CALL EGETWR(LOUTSTR,K,VZ,0.,150.,'W','vis Z dis',IER)
+            DXOV(icomp,nbv)=VX
+            DYOV(icomp,nbv)=VY
+            DZOV(icomp,nbv)=VZ
+            CALL EGETWR(LOUTSTR,K,VX,-359.,359.,'W','vis rot ang',IER)
+            BANGOV(icomp,nbv,1)=VX
+            BANGOV(icomp,nbv,2)=0.0   ! there is no 2nd rotation
+            BANGOV(icomp,nbv,3)=0.0   ! there is no 3rd rotation
+            if(ND.ge.11)then  ! if enough items for opacity
+              CALL EGETWR(LOUTSTR,K,VX,0.,1.,'W','vis opacity',IER)
+              OPOV(icomp,nbv)=VX
+            else
+              OPOV(icomp,nbv)=1.0  ! set to opaque if not specified
+            endif
+            CALL EGETW(LOUTSTR,K,WORD,'W','vis blk name',IFLAG)
+            VISNAME(icomp,nbv)=WORD(1:12)
+            LNVISNAME(icomp,nbv)=lnblnk(VISNAME(icomp,nbv))
+
+C The name of the visual material might contain spaces so use EGETP.
+            CALL EGETP(LOUTSTR,K,WORD,'W','vis mat name',IFLAG)
+            write(VISMAT(icomp,nbv),'(a)') WORD(1:lnblnk(WORD))
+            LNVISMAT(icomp,nbv)=lnblnk(VISMAT(icomp,nbv))
+            VISTYP(icomp,nbv)='vis '
+            goto 73
+
+          elseif(phrase(1:8).eq.'*vobject')then
+
+C Collection of entities making up an object.
+C *vobject,rubish-bskt,square wood rubish bin,4,basket_bk,basket_fr,basket_lf,basket_rt
+            NBVOBJ(icomp)=NBVOBJ(icomp)+1
+            nbvo=NBVOBJ(icomp)
+            CALL EGETW(LOUTSTR,K,WORD,'W','vis obj name',IFLAG)
+            VOBJNAME(icomp,nbvo)=WORD(1:12)
+            LNVOBJNAME(icomp,nbvo)=lnblnk(VOBJNAME(icomp,nbvo))
+            CALL EGETP(LOUTSTR,K,WORD,'W','vis obj desc',IFLAG)
+            write(VOBJDESC(icomp,nbvo),'(a)') WORD(1:lnblnk(WORD))
+            LNVOBJDESC(icomp,nbvo)=lnblnk(VOBJDESC(icomp,nbvo))
+            CALL EGETWI(LOUTSTR,K,ival,1,12,'F','nb vis entities',IER)
+            NBVOBJLIST(icomp,nbvo)=ival
+            do ibvo = 1,ival 
+             CALL EGETW(LOUTSTR,K,WORD,'W','entity name',IFLAG)
+             write(VOBJLIST(icomp,nbvo,ibvo),'(a)')WORD(1:lnblnk(WORD))
+             LNVOBJLIST(icomp,nbvo,ibvo)=
+     &         lnblnk(VOBJLIST(icomp,nbvo,ibvo))
+            enddo  ! ibvo
+C Debug.
+C            write(6,*) 'vis obj ',icomp,nbvo,ival,VOBJNAME(icomp,nbvo),
+C     &        LNVOBJNAME(icomp,nbvo),VOBJDESC(icomp,nbvo),
+C     &        LNVOBJDESC(icomp,nbvo),
+C     &        VOBJLIST(icomp,nbvo,1),LNVOBJLIST(icomp,nbvo,1),
+C     &        VOBJLIST(icomp,nbvo,2),LNVOBJLIST(icomp,nbvo,2)
+            goto 73
+          elseif(phrase(1:11).eq.'*end_visual')then
+            goto 62
+          endif
+
+          goto 62   ! not recognised so jump
+
         elseif(WORD(1:22).eq.'*zone_viewfactor_start')then
 
 C << to be done >> 
@@ -2397,7 +2593,7 @@ C Now close geometry data file.
 C If base area has not yet been calculated, do this now and calculate 
 C transparent area for surfaces connected to external boundary.
 C Get surface areas via call to zinfo.
-      call zinfo(sna,zoa,pazi,pelv,zvol)
+      call zinfo(sna,zoa,pazi,pelv,zvol,'q')
       vol(ICOMP)=zvol
       zonetotsurfacearea(ICOMP)=zoa
       ZTRANA(ICOMP)=0.
@@ -2520,7 +2716,7 @@ C Obstruction blocks common GS5/GS6 is found in geometry.h.
 
       CHARACTER GENFIL*72
       character outs*144,outsd*144,outs72*72,OTHSTR*30
-      character louts*248,loutsd*248
+      character louts*248,loutsd*248,outs2*144
       character tab*1    ! separator
       character dstmp*24
       character phrase*36 ! for thermal bridge tag
@@ -2530,6 +2726,7 @@ C Obstruction blocks common GS5/GS6 is found in geometry.h.
       integer  lspa           ! string length of sparent()
       integer lsna            ! string length of sname()
       integer lsot            ! string length of soft()
+      integer luse1,luse2     ! string length of ssuse()
       logical newgeo  ! to use for testing if new/old geometry file.
       logical havebrdge ! to use for thermal bridge existance.
       logical hasobstr  !  true if IOBS() is set to 1 and NB > 0
@@ -2644,6 +2841,8 @@ C to write out.
           lnsname=lsna   ! update surface name length common
           lsot=lnblnk(SSOTF(icc))
           loth=lnblnk(OTHSTR)
+          luse1=lnblnk(SSUSE(icc,1))
+          luse2=lnblnk(SSUSE(icc,2))
 
 C Traps for possible blank strings if data structure corrupted.
           if(SSVFC(icc)(1:4).eq.'    ') SSVFC(icc)='UNKN'
@@ -2651,10 +2850,10 @@ C Traps for possible blank strings if data structure corrupted.
           if(SSPARENT(icc)(1:2).eq.'  ') SSPARENT(icc)='-'
           WRITE(outs,'(20a)',IOSTAT=ios,ERR=13) '*surf ',
      &      SSNAME(icc)(1:lsna),' ',SSVFC(icc),' ',
-     &      SSPARENT(icc)(1:lspa),' ',SSUSE(icc,1),' ',SSUSE(icc,2),
-     &      ' ',SSMLCN(icc)(1:lsml),' ',SSOTF(icc)(1:lsot),' ',
-     &      SSOTHER(icc,1)(1:lso),' ',SSOTHER(icc,2)(1:lso2),
-     &      ' ',SSOTHER(icc,3)(1:lso3)
+     &      SSPARENT(icc)(1:lspa),' ',SSUSE(icc,1)(1:luse1),' ',
+     &      SSUSE(icc,2)(1:luse2),' ',SSMLCN(icc)(1:lsml),' ',
+     &      SSOTF(icc)(1:lsot),' ',SSOTHER(icc,1)(1:lso),' ',
+     &      SSOTHER(icc,2)(1:lso2),' ',SSOTHER(icc,3)(1:lso3)
           call SDELIM(outs,outsd,'C',IW)
           write(ifilg,'(2a,i3,2a)',IOSTAT=IOS,ERR=13) 
      &      outsd(1:lnblnk(outsd)),'  # ',I,' ',OTHSTR(1:loth)
@@ -2823,9 +3022,9 @@ C geometry file also write the NOX and NOZ values.
         write(ifilg,'(a)',IOSTAT=IOS,ERR=13) '#  *obs = obstructions'
         write(ifilg,'(2a,i3,i3,a)',IOSTAT=IOS,ERR=13) 
      &  '*block_start',tab,NOX(icomp),NOZ(icomp),' # geometric blocks'
-        do 89 ib=1,nbobs(icomp)
+        do ib=1,nbobs(icomp)
           if(BLOCKTYP(icomp,ib)(1:4).eq.'obs3')then
-            WRITE(outs,'(2a,9F9.3,F6.2,1X,A,1X,A)',IOSTAT=ios,ERR=13) 
+            WRITE(outs,'(2a,9F9.4,F6.2,1X,A,1X,A)',IOSTAT=ios,ERR=13) 
      &        '*obs3',tab,XOB(icomp,ib),YOB(icomp,ib),ZOB(icomp,ib),
      &        DXOB(icomp,ib),DYOB(icomp,ib),DZOB(icomp,ib),
      &        BANGOB(icomp,ib,1),BANGOB(icomp,ib,2),BANGOB(icomp,ib,3),
@@ -2842,7 +3041,7 @@ C geometry file also write the NOX and NOZ values.
      &        outsd(1:lnblnk(outsd)),'  # block ',ib,
      &        ' coords follow:'
 
-            WRITE(outs,'(12F9.3)',IOSTAT=ios,ERR=13) 
+            WRITE(outs,'(12F9.4)',IOSTAT=ios,ERR=13) 
      &        XBP(icomp,ib,1),YBP(icomp,ib,1),ZBP(icomp,ib,1),
      &        XBP(icomp,ib,2),YBP(icomp,ib,2),ZBP(icomp,ib,2),
      &        XBP(icomp,ib,3),YBP(icomp,ib,3),ZBP(icomp,ib,3),
@@ -2851,7 +3050,7 @@ C geometry file also write the NOX and NOZ values.
             write(ifilg,'(2A)',IOSTAT=IOS,ERR=13) 
      &        outsd(1:lnblnk(outsd)),'  # 1-4 '
 
-            WRITE(outs,'(12F9.3)',IOSTAT=ios,ERR=13) 
+            WRITE(outs,'(12F9.4)',IOSTAT=ios,ERR=13) 
      &        XBP(icomp,ib,5),YBP(icomp,ib,5),ZBP(icomp,ib,5),
      &        XBP(icomp,ib,6),YBP(icomp,ib,6),ZBP(icomp,ib,6),
      &        XBP(icomp,ib,7),YBP(icomp,ib,7),ZBP(icomp,ib,7),
@@ -2861,7 +3060,7 @@ C geometry file also write the NOX and NOZ values.
      &        outsd(1:lnblnk(outsd)),'  # 5-8 '
 
           elseif(BLOCKTYP(icomp,ib)(1:4).eq.'obs ')then
-            WRITE(outs,'(2a,7F9.3,F6.2,1X,A,1X,A)',IOSTAT=ios,ERR=13) 
+            WRITE(outs,'(2a,7F9.4,F6.2,1X,A,1X,A)',IOSTAT=ios,ERR=13) 
      &        '*obs',tab,XOB(icomp,ib),YOB(icomp,ib),ZOB(icomp,ib),
      &        DXOB(icomp,ib),DYOB(icomp,ib),DZOB(icomp,ib),
      &        BANGOB(icomp,ib,1),OPOB(icomp,ib),BLOCKNAME(icomp,ib),
@@ -2870,8 +3069,100 @@ C geometry file also write the NOX and NOZ values.
             write(ifilg,'(2a,i3)',IOSTAT=IOS,ERR=13) 
      &        outsd(1:lnblnk(outsd)),'  # block ',ib
           endif
-  89    continue
+        enddo  !  ib
         write(ifilg,'(a)',IOSTAT=IOS,ERR=13) '*end_block'
+      endif
+
+C Visual entities are in the next section.
+C << be aware that spaces in materials names might be lost! >>
+      if(nbvis(icomp).gt.0)then
+        write(ifilg,'(a)',IOSTAT=IOS,ERR=13) '# '
+        write(ifilg,'(a)',IOSTAT=IOS,ERR=13) '# visual entities:'
+        write(ifilg,'(a)',IOSTAT=IOS,ERR=13) '#  *vis = visual blocks'
+        write(ifilg,'(a)',IOSTAT=IOS,ERR=13) '#  *vis3 = visual 3 axis'
+        write(ifilg,'(a)',IOSTAT=IOS,ERR=13) '#  *visp = visual polys'
+        write(ifilg,'(a)',IOSTAT=IOS,ERR=13) '*visual_start'
+        do ib=1,nbvis(icomp)
+          if(VISTYP(icomp,ib)(1:4).eq.'vis3')then
+            WRITE(outs,'(2a,9F10.4,F6.2,1X,A,1X,A)',IOSTAT=ios,ERR=13) 
+     &        '*vis3',tab,XOV(icomp,ib),YOV(icomp,ib),ZOV(icomp,ib),
+     &        DXOV(icomp,ib),DYOV(icomp,ib),DZOV(icomp,ib),
+     &        BANGOV(icomp,ib,1),BANGOV(icomp,ib,2),BANGOV(icomp,ib,3),
+     &        OPOV(icomp,ib),VISNAME(icomp,ib),VISMAT(icomp,ib)
+            call SDELIM(outs,outsd,'C',IW)
+            write(ifilg,'(2a,i3)',IOSTAT=IOS,ERR=13) 
+     &        outsd(1:lnblnk(outsd)),'  # visual block ',ib
+          elseif(VISTYP(icomp,ib)(1:4).eq.'visp')then
+            WRITE(outs,'(2a,F6.2,1X,A,1X,A)',IOSTAT=ios,ERR=13) 
+     &        '*visp',' 8 6 ',OPOV(icomp,ib),VISNAME(icomp,ib),
+     &        VISMAT(icomp,ib)
+            call SDELIM(outs,outsd,'C',IW)
+            write(ifilg,'(2a,i3,a)',IOSTAT=IOS,ERR=13) 
+     &        outsd(1:lnblnk(outsd)),'  # visual ',ib,
+     &        ' coords follow:'
+
+            WRITE(outs,'(12F9.4)',IOSTAT=ios,ERR=13) 
+     &        XVP(icomp,ib,1),YVP(icomp,ib,1),ZVP(icomp,ib,1),
+     &        XVP(icomp,ib,2),YVP(icomp,ib,2),ZVP(icomp,ib,2),
+     &        XVP(icomp,ib,3),YVP(icomp,ib,3),ZVP(icomp,ib,3),
+     &        XVP(icomp,ib,4),YVP(icomp,ib,4),ZVP(icomp,ib,4)
+            call SDELIM(outs,outsd,'C',IW)
+            write(ifilg,'(2A)',IOSTAT=IOS,ERR=13) 
+     &        outsd(1:lnblnk(outsd)),'  # 1-4 '
+
+            WRITE(outs,'(12F9.4)',IOSTAT=ios,ERR=13) 
+     &        XVP(icomp,ib,5),YVP(icomp,ib,5),ZVP(icomp,ib,5),
+     &        XVP(icomp,ib,6),YVP(icomp,ib,6),ZVP(icomp,ib,6),
+     &        XVP(icomp,ib,7),YVP(icomp,ib,7),ZVP(icomp,ib,7),
+     &        XVP(icomp,ib,8),YVP(icomp,ib,8),ZVP(icomp,ib,8)
+            call SDELIM(outs,outsd,'C',IW)
+            write(ifilg,'(2A)',IOSTAT=IOS,ERR=13) 
+     &        outsd(1:lnblnk(outsd)),'  # 5-8 '
+
+          elseif(VISTYP(icomp,ib)(1:4).eq.'vis ')then
+            WRITE(outs,'(2a,7F10.4,F6.2,1X,A,1X,A)',IOSTAT=ios,ERR=13) 
+     &        '*vis',tab,XOV(icomp,ib),YOV(icomp,ib),ZOV(icomp,ib),
+     &        DXOV(icomp,ib),DYOV(icomp,ib),DZOV(icomp,ib),
+     &        BANGOV(icomp,ib,1),OPOV(icomp,ib),VISNAME(icomp,ib),
+     &        VISMAT(icomp,ib)
+            call SDELIM(outs,outsd,'C',IW)
+            write(ifilg,'(2a,i3)',IOSTAT=IOS,ERR=13) 
+     &        outsd(1:lnblnk(outsd)),'  # visual ',ib
+          endif
+        enddo   ! ib
+
+C If there are objects (collections of entities) write them. Because there
+C may be spaces in VOBJDESC take care.
+        if(NBVOBJ(icomp).gt.0)then
+          do ib=1,NBVOBJ(icomp)
+            WRITE(outs,'(6a,i2,a)',IOSTAT=ios,ERR=13) 
+     &        '*vobject',tab,VOBJNAME(icomp,ib)(1:LNVOBJNAME(icomp,ib)),
+     &        tab,VOBJDESC(icomp,ib)(1:LNVOBJDESC(icomp,ib)),tab,
+     &        NBVOBJLIST(icomp,ib),tab
+
+C Append the list of visual entities comma separated. Similar to logic
+C in esru_lib.F subroutine aslist.
+            outs2=' '; ix=1; ixl=0
+            do ibo=1,NBVOBJLIST(icomp,ib)
+              lna=LNVOBJLIST(icomp,ib,ibo)
+              if(lna.eq.1)then
+                ixl=ix
+              else
+                ixl=ix+(lna-1)
+              endif
+              write(outs2(ix:ixl),'(a)')VOBJLIST(icomp,ib,ibo)(1:lna)
+              if(ibo.lt.NBVOBJLIST(icomp,ib))then
+                write(outs2(ixl+1:ixl+1),'(a)') ','
+                ix=ix+lna+1
+              else
+                ix=ix+lna+1
+              endif
+            enddo  ! of ibo
+            write(ifilg,'(2a)',IOSTAT=IOS,ERR=13) 
+     &        outs(1:lnblnk(outs)),outs2(1:lnblnk(outs2))
+          enddo    ! of ib
+        endif      ! of nbvobj
+        write(ifilg,'(a)',IOSTAT=IOS,ERR=13) '*end_visual'
       endif
 
 C If file written with this source and the version number is 1.0
@@ -3371,7 +3662,7 @@ C (below).
       END
 
 C ******************** CNVBLKP 
-C CNVBLK3A converts a six sided obstuction 'obsp' into GB1 common block.
+C CNVBLKP converts a six sided obstuction 'obsp' into GB1 common block.
 C The first 8 point of common block GB1 are filled and the standard
 C JVNB edges are filled.
       SUBROUTINE CNVBLKP(IZ,IB)
@@ -3391,6 +3682,64 @@ C Parameters
         XB(I)=XBP(IZ,IB,I)
         YB(I)=YBP(IZ,IB,I)
         ZB(I)=ZBP(IZ,IB,I)
+  20  CONTINUE
+
+C Number the vertices in each face anticlockwise from the bottom
+C left-hand point when face viewed from the outside.  Top is
+C numbered anitclockwise from point 5 and when viewed from the outside.
+C base is numbered anticlockwise from point 1 when viewed from outside 
+C (below).
+      DO 30 I=1,NSB
+        IF(I.LE.4)THEN
+          DO 40 J=1,4
+            IF(J.LE.2)THEN
+              IF(J.EQ.1)JVNB(I,J)=I
+              IF(J.NE.1)JVNB(I,J)=I+1
+              IF(I.EQ.4.AND.J.EQ.2)JVNB(I,J)=1
+            ELSE
+              JVNB(I,J)=8+I-J
+              IF(I.EQ.4.AND.J.EQ.3)JVNB(I,J)=5
+            ENDIF
+   40     CONTINUE
+        ELSEIF(I.EQ.6)THEN
+          JVNB(I,1)=1
+          DO 50 J=2,4
+            K=6-J
+            JVNB(I,J)=K
+   50     CONTINUE
+        ELSEIF(I.EQ.5)THEN
+          K=I-1
+          DO 60 J=1,4
+            K=K+1
+            JVNB(I,J)=K
+   60     CONTINUE
+        ENDIF
+   30 CONTINUE
+      RETURN
+      END
+
+
+C ******************** CNVVISP 
+C CNVVISP converts a six sided visual 'visp' into GB1 common block.
+C The first 8 point of common block GB1 are filled and the standard
+C JVNB edges are filled.
+      SUBROUTINE CNVVISP(IZ,IB)
+#include "building.h"
+#include "geometry.h"
+
+C Parameters
+      integer iz,ib  ! IZ is the zone index and IB is the block inde
+            
+      real XB,YB,ZB
+      integer JVNB
+      COMMON/GB1/XB(12),YB(12),ZB(12),JVNB(6,4)
+      integer NSB     ! number of sides
+     
+      NSB=6
+      DO 20 I=1,8
+        XB(I)=XVP(IZ,IB,I)
+        YB(I)=YVP(IZ,IB,I)
+        ZB(I)=ZVP(IZ,IB,I)
   20  CONTINUE
 
 C Number the vertices in each face anticlockwise from the bottom
@@ -3577,21 +3926,21 @@ C Surface summary: print header, followed by surface information.
 C Write header based on current version number.
       if(newgeo)then
         write(outstr,'(2a)')
-     &    ' Sur| Area  |Azim|Elev| surface    |    geometry       |',
-     &    ' construction |environment'
+     &  ' Sur| Area  |Azim|Elev| surface    |    geometry            ',
+     &  '      | construction |environment'
         call edisp(ITRU,OUTSTR)
         write(outstr,'(2a)')
-     &    '    | m^2   |deg |deg | name       |optical|locat| use |',
-     &    ' name         |other side '
+     &  '    | m^2   |deg |deg | name       |optical|locat| use      ',
+     &  '      | name         |other side '
         call edisp(ITRU,OUTSTR)
       else
         write(outstr,'(2a)')
-     &    ' Sur| Area  |Azim|Elev| surface    | geometry |',
-     &    ' construction |environment'
+     &  ' Sur| Area  |Azim|Elev| surface    | geometry |',
+     &  ' construction |environment'
         call edisp(ITRU,OUTSTR)
         write(outstr,'(2a)')
-     &    '    | m^2   |deg |deg | name       |type |loca|',
-     &    ' name         |other side '
+     &  '    | m^2   |deg |deg | name       |type |loca|',
+     &  ' name         |other side '
         call edisp(ITRU,OUTSTR)
       endif
       if(.NOT.context)then
@@ -3600,10 +3949,11 @@ C Write header based on current version number.
 
           call SIGFIG(SSNA(ic),NSIGFIG,RNO,SIGSTR,LSTR)
           if(newgeo)then
- 895        FORMAT(I3,2X,A7,F5.0,F5.0,1X,A,1X,A,1X,A,1X,A,1X,A,2X,A)
+ 895        FORMAT(I3,2X,A,F5.0,F5.0,1X,A,1X,A,1X,A,1X,A,1X,A,1X,A,2X,A)
             WRITE(OUTSTR,895)I,SIGSTR(1:7),SSPAZI(ic),SSPELV(ic),
      &        SSNAME(ic),SSOTF(ic)(1:8),SSVFC(ic)(1:4),
-     &        SSUSE(ic,1)(1:5),SSMLCN(ic)(1:12),SSOTHER(ic,1)(1:15)
+     &        SSUSE(ic,1)(1:8),SSUSE(ic,2)(1:8),SSMLCN(ic)(1:12),
+     &        SSOTHER(ic,1)(1:15)
           else
  894        FORMAT(I3,2X,A7,F5.0,F5.0,1X,A12,1X,A6,1X,A4,1X,A12,2X,A13)
             WRITE(OUTSTR,894)I,SIGSTR(1:7),SSPAZI(ic),SSPELV(ic),
@@ -3620,8 +3970,8 @@ C Write header based on current version number.
           if(newgeo)then
             WRITE(OUTSTR,795)I,SIGSTR(1:7),SSPAZI(ic),SSPELV(ic),
      &      SSNAME(ic),SSOTF(ic)(1:8),SSVFC(ic)(1:4),
-     &      SSUSE(ic,1)(1:5),SSMLCN(ic)(1:12),OTHSTR
- 795        FORMAT(I3,2X,A7,F5.0,F5.0,1X,A,1X,A,1X,A,1X,A,1X,A,1X,A)
+     &      SSUSE(ic,1)(1:8),SSUSE(ic,2)(1:8),SSMLCN(ic)(1:12),OTHSTR
+ 795      FORMAT(I3,2X,A7,F5.0,F5.0,1X,A,1X,A,1X,A,1X,A,1X,A,1X,A,1X,A)
           else
             WRITE(OUTSTR,794)I,SIGSTR(1:7),SSPAZI(ic),SSPELV(ic),
      &      SSNAME(ic),SSOTF(ic)(1:6),SSVFC(ic),SSMLCN(ic)(1:12),OTHSTR
@@ -3778,7 +4128,7 @@ C Report data to required number of significant figures.
 C ********************** ZINFO
 C 'ZINFO' takes data from the zone geometry commons G1,G2,G3 and returns
 C several derived values.
-      SUBROUTINE ZINFO(SNA,ZOA,PAZI,PELV,ZVOL)
+      SUBROUTINE ZINFO(SNA,ZOA,PAZI,PELV,ZVOL,act)
 #include "building.h"
 #include "geometry.h"
 #include "sbem.h"
@@ -3791,6 +4141,7 @@ C Parameters
       real PELV ! returned plane elevation angle
       dimension PAZI(MS),PELV(MS)
       real ZVOL ! returned zone bounded volume
+      character act*1  ! q is quiet  - includes warnings
 
       DIMENSION XSUM(MS),YSUM(MS),ZSUM(MS)
       LOGICAL CLOSE
@@ -3892,7 +4243,7 @@ C << also - why not include surface tilt angle?
       ZVOL=ABS(V)
 
 C Check for small volume.
-      IF(ZVOL.LE.0.00001)THEN
+      IF(ZVOL.LE.0.00001.and.act.eq.'-')THEN
         CALL USRMSG(' Negative or zero zone volume detected. Vertex', 
      &    ' information may be in error or surfaces incomplete.','W')
         RETURN
@@ -4990,7 +5341,7 @@ C Parameters
 C Begin with default assumptions for each surface then overwrite
 C this if user supplied information exists.  Gather misc zone infor-
 C mation so make a probable guess at locations.
-      CALL ZINFO(SNA,ZOA,PAZI,PELV,ZVOL)
+      CALL ZINFO(SNA,ZOA,PAZI,PELV,ZVOL,'q')
       if(ISUR.eq.0)then
         DO 44 I=1,NSUR
           SOTF(I)='OPAQUE'

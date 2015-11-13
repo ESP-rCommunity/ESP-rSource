@@ -1354,7 +1354,7 @@ C ------------------------------------------------------------------------------
       REAL TIMSEC
 
       COMMON/OUTIN/IUOUT,IUIN
-      INTEGERIUOUT,IUIN
+      INTEGER IUOUT,IUIN
 
 C---------------------------------------------------------------------------------
 C Declare local variables.

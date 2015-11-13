@@ -42,6 +42,7 @@ C control file.
 
 C geometry.h provides commons G0/G2/precz.
 #include "geometry.h"
+#include "prj3dv.h"
       
       integer lnblnk  ! function definition
 
@@ -50,9 +51,6 @@ C geometry.h provides commons G0/G2/precz.
       common/user/browse
 
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
-      COMMON/RAY2/ITDSP,ITBND,ITEPT,ITZNM,ITSNM,ITVNO,ITORG,ITSNR,
-     &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS,ITPPSW
-      COMMON/RAY3/MODIFY,MODLEN,MODBND
       COMMON/HCFP/IHCFP,ST(MP),EN(MP),HCI(MP,MS),HCE(MP,MS),
      &            ICTL(MP),IHCI(MP,MS),IHCE(MP,MS),CVdata(MP,MS,8)
 
@@ -60,7 +58,7 @@ C geometry.h provides commons G0/G2/precz.
       character HFILE*72,head*33
       CHARACTER ITEM(31)*33
       character OUTSTR*124,outs*124
-      logical OK,dok,MODIFY,MODLEN,MODBND,modcfg,XST,clkok,browse
+      logical OK,dok,modcfg,XST,clkok,browse
       integer NITEMS,INO ! max items and current menu item
 
 C Short and long descriptions of correlations.
@@ -258,7 +256,7 @@ C and jump back if hc facility entered in error.
 
 C Display the reference zone.
       call georead(IUF,LGEOM(ICOMP),ICOMP,0,iuout,IER)
-      MODIFY=.TRUE.
+      MODIFYVIEW=.TRUE.
       MODBND=.TRUE.
 
 C Reset all surface lines to standard width. Include surface
@@ -1542,6 +1540,7 @@ C EHCMAN controls manual creation/editing of convection file.
       CHARACTER*32 ITEM(13)
       integer NITEMS,INO ! max items and current menu item
       integer ihcfpt    ! for local editing.
+      real valin,valout ! for initial values
 
 C Short and long descriptions of correlations.
       character hcshtdescr*32  ! short description
@@ -1579,9 +1578,10 @@ C Help text for this menu.
       IF(INO.EQ.1)then
 
 C Create from scratch. Initialise values to default value before
-C calling editing routine.
+C calling editing routine. If fixed coefficients allow user to
+C specify inside or outside or both values, otherwise set to default.
         ihcfpt=ihcfp
-        CALL EASKI(ihcftp,' ',' Number of control periods ?',
+        CALL EASKI(ihcfpt,' ',' Number of control periods ?',
      &          1,'F',MP,'F',1,'no periods',IERI,nbhelp)
         if(ieri.eq.-3)then
           goto 20
@@ -1589,29 +1589,93 @@ C calling editing routine.
           ihcfp=ihcfpt
         endif
         NS=NZSUR(icomp)
+        IW=1
+        CALL EASKATOG('calculation control (see help):',' ',
+     &    'fixed coefficients','fixed correlations','adaptive cor',
+     &    'CEN coef','cancel',' ',' ',IW,nbhelp)
+        if(IW.eq.2.or.IW.eq.3.or.IW.eq.4)then
+          valin= -1.0
+          valout= -1.0
+        elseif(iw.eq.5)then
+          goto 20
+        else
+
+C Confirm use of default Alamdahri or an alternative for inside hc.
+          CALL EASKABCD('Initial HC assumptions for all hours.',
+     &    'Options:','default inside & outside',
+     &    'user inside default outside','user inside and outside',
+     &    'cancel',INZOPT,nbhelp)
+          if(INZOPT.eq.1)then
+            valin= -1.0
+            valout= -1.0
+          elseif(INZOPT.eq.2)then
+            valin= -1.0
+            CALL EASKR(valin,' ','Initial inside coef [W/m2/degC]:',
+     &        0.,'F',1000.,'F',-1.0,'inside hc',IER,nbhelp)
+            valout= -1.0
+          elseif(INZOPT.eq.3)then
+            valin= -1.0
+            CALL EASKR(valin,' ','Initial inside coef [W/m2/degC]:',
+     &      0.,'F',1000.,'F',-1.0,'inside hc',IER,nbhelp)
+            valout= -1.0
+            CALL EASKR(valout,' ','Initial outside coef [W/m2/degC]:',
+     &      0.,'F',1000.,'F',-1.0,'outside hc',IER,nbhelp)
+          elseif(INZOPT.eq.4)then
+            ihcfp=0  ! reset
+            goto 20
+          endif
+        endif
         DO 250 I = 1,IHCFP
+          ICTL(I) = iw
           hcfpdescr(I) = 'User specified convection coefficients'
           do 251 J = 1,NS
-            HCI(I,J) = -1.0
-            HCE(I,J) = -1.0
+            HCI(I,J) = valin
+            HCE(I,J) = valout
             IHCI(I,J) = -1
             IHCE(I,J) = -1
             do 253 jj=1,8
               CVdata(I,J,jj) = 0.
   253       continue
   251     continue
+
+C << why call this - this is for subsequent editing >>
           call EPHCF(ICOMP,I,NS,IER)
   250   CONTINUE
+        goto 20  ! redisplay the menue
 
       ELSEIF(INO.EQ.4)then
 
-C Add control period,
+C Add control period. Ask about defaults or not.
         if(IHCFP.lt.MP)then
+
+C Confirm use of default Alamdahri or an alternative for inside hc.
+          CALL EASKABCD('Initial HC assumptions for all hours.',
+     &    'Options:','default inside & outside',
+     &    'user inside default outside','user inside and outside',
+     &    'cancel',INZOPT,nbhelp)
+          if(INZOPT.eq.1)then
+            valin= -1.0
+            valout= -1.0
+          elseif(INZOPT.eq.2)then
+            valin= -1.0
+            CALL EASKR(valin,' ','Initial inside coef [W/m2/degC]:',
+     &        0.,'F',1000.,'F',-1.0,'inside hc',IER,nbhelp)
+            valout= -1.0
+          elseif(INZOPT.eq.3)then
+            valin= -1.0
+            CALL EASKR(valin,' ','Initial inside coef [W/m2/degC]:',
+     &        0.,'F',1000.,'F',-1.0,'inside hc',IER,nbhelp)
+            valout= -1.0
+            CALL EASKR(valout,' ','Initial outside coef [W/m2/degC]:',
+     &        0.,'F',1000.,'F',-1.0,'outside hc',IER,nbhelp)
+          elseif(INZOPT.eq.4)then
+            goto 20
+          endif
           IHCFP = IHCFP + 1
           IN = IHCFP
           do 252 J = 1,NS
-            HCI(IN,J)= -1.0
-            HCE(IN,J)= -1.0
+            HCI(IN,J)= valin
+            HCE(IN,J)= valout
             IHCI(IN,J) = -1
             IHCE(IN,J) = -1
             do 254 jj=1,8
@@ -1957,7 +2021,7 @@ C NS is the number of surface in the zone << why pass this value? >>
       COMMON/HCCEN/CENLOC(MP,14)
       integer IZSTOCN
       COMMON/C24/IZSTOCN(MCOM,MS)
-      character outs*124,SN*12,SNH*16,ITEM(MS+5)*32,KEY*1
+      character outs*124,SN*12,SNH*16,ITEM(MS+5)*34,KEY*1
       CHARACTER stuff*10
       character hcfpdescr*72
       logical close,ok,dok
@@ -2028,7 +2092,7 @@ C current menu line index. Build up text strings for the menu.
             M=M+1
             icc=izstocn(iz,l)
             CALL EMKEY(L,KEY,IER)
-            WRITE(ITEM(M),'(a,1x,3a,2f6.2)') KEY,SSNAME(icc),' ',
+            WRITE(ITEM(M),'(a,1x,3a,2f7.2)') KEY,SSNAME(icc),' ',
      &        SSVFC(icc),HCI(IN,L),HCE(IN,L)
           ENDIF
    10   CONTINUE
@@ -2740,8 +2804,10 @@ C Convection coefficients - read one for each surface (inside face)
 C and then read one for each surface (other side face). Note that
 C the `use default value` indicator is -1 to allow that in range
 C checking.
-            CALL EGETWRA(IUF,HCIA,NS,-1.,99.,'W','inside face hc',IER)
-            CALL EGETWRA(IUF,HCEA,NS,-1.,99.,'W','other face hc',IER)
+            CALL EGETWRA(IUF,HCIA,NS,-1.,1000.,'W',
+     &        'fixed inside face hc',IER)
+            CALL EGETWRA(IUF,HCEA,NS,-1.,1000.,'W',
+     &        'fixed other face hc',IER)
             DO 114 KV=1,NS
               HCI(I,KV)=HCIA(KV)
               HCE(I,KV)=HCEA(KV)
@@ -2863,7 +2929,8 @@ C held in a *.htc file.
 
       character outs*124
       character hcfpdescr*72
-      logical indefault,outdefault
+      logical indefault,outdefault   ! default treatment
+      logical inuser,outuser         ! user defined
 
 C Short and long descriptions of correlations.
       character hcshtdescr*32  ! short description

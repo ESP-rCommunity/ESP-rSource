@@ -63,9 +63,6 @@ C IEEE callback (Solaris)
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
       common/appcols/mdispl,nifgrey,ncset,ngset,nzonec
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
-      COMMON/RAY2/ITDSP,ITBND,ITEPT,ITZNM,ITSNM,ITVNO,ITORG,ITSNR,
-     &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS,ITPPSW
-      COMMON/RAY3/MODIFY,MODLEN,MODBND
 
       COMMON/MRTF/FFL(MCUB,6,MSM),VEWF(MS,MS)
       COMMON /CELLS/ NCELL(MSM), NCPT(MSM), IGFACT
@@ -116,7 +113,7 @@ C Name of current application
 
       DIMENSION ITEM(19)
       LOGICAL GEOLOAD,MRTLOAD,tmrt,temperr,ATR,context
-      LOGICAL MODIFY,MODLEN,MODBND,XST,unixok,there
+      LOGICAL XST,unixok,there
       character outs*124,outs248*248,MODE*4
       CHARACTER OUTSTR*124,ITEM*29
       CHARACTER DFILE*72,inf*144,LCMDFL*144
@@ -929,7 +926,7 @@ C Determine geometry bounds and force it to be drawn.
       CALL ESCZONE(ICOMP)
       CALL BNDOBJ(1,IER)
       CALL ERCZONE(ICOMP)
-      MODIFY=.TRUE.
+      MODIFYVIEW=.TRUE.
       MODLEN=.TRUE.
       izgfoc=ICOMP
       CALL ADJVIEW(IER)

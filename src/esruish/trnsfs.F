@@ -332,15 +332,15 @@ C Trace output.
          write(outs,9995)dx,dy,dz
  9995    format('DX= ',f10.1,'; DY= ',f10.1,'; DZ= ',f10.1)
          call edisp(icout,outs)
-         write(outs,9994)dist,angl
- 9994    format('DIST= ',F10.1,'; ANGL= ',F10.1)
+         write(outs,9994)dist,angl,tsr
+ 9994    format('DIST= ',F10.1,'; ANGL= ',F10.2,'TSR= ',f9.3)
          call edisp(icout,outs)
          call edisp(icout,' ')
          write(outs,9993)sazi1,sazi2
- 9993    format('Solar azimuth of ',f8.1,' transforms to ',f6.1)
+ 9993    format('Solar azimuth of ',f8.2,' transforms to ',f7.2)
          call edisp(icout,outs)
          write(outs,9992)salt1,salt2
- 9992    format('Solar altitude of  ',f6.1,' transforms to ',f6.1)
+ 9992    format('Solar altitude of  ',f7.2,' transforms to ',f7.2)
          call edisp(icout,outs)
       endif
       return

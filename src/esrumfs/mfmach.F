@@ -405,13 +405,13 @@ C Start with generating more trace output if applicable
         call edisp(IMFTU,' PJMTX matrix')
         DO 60 I=1,NNOD
           WRITE(outw,*) (PJMTX(I,J),J=1,NNOD)
-          call edisp248(IMFTU,outw)
+          call edisp248(IMFTU,outw,100)
           DO 60 J=1,NNOD
             HPJMTX(I,J)=PJMTX(I,J)
    60   CONTINUE
         call edisp(IMFTU,' RESID vector')
         WRITE(outw,*) (RESID(I),I=1,NNOD)
-        call edisp248(IMFTU,outw)
+        call edisp248(IMFTU,outw,100)
         
       END IF
 
@@ -468,7 +468,7 @@ C If trace output then dump solution vector
       IF(MFTRAC.GE.3) THEN
          call edisp(IMFTU,'  PRC solution vector')
          WRITE(outw,*) (PRC(I),I=1,NNOD)
-         call edisp248(IMFTU,outw)
+         call edisp248(IMFTU,outw,100)
 
 C Dump {RHS} recalculated from {HPJMTX}*{PRC}
          WRITE(IMFTU,*) ' RHS vector recalculated from PJMTX * PRC'
@@ -478,7 +478,7 @@ C Dump {RHS} recalculated from {HPJMTX}*{PRC}
          RHS(I)=RHS(I)+HPJMTX(I,J)*PRC(J)
    65    CONTINUE
          WRITE(outw,*) (RHS(I),I=1,NNOD)
-         call edisp248(IMFTU,outw)
+         call edisp248(IMFTU,outw,100)
       END IF
 
 C Revise pressure correction vector by Steffensen's method to
@@ -535,7 +535,6 @@ C Output message. If solution failed over-ride MFTRAC.
            call edisp(IMFTU,outs)
         endif
       ELSE
-        WRITE(outs,1100) IRD,IRM,FLWTIM,ITER,'failed    '
         WRITE(outs,1100) IRD,IRM,FLWTIM,ITER,'failed    '
         call edisp(IMFTU,outs)
         call edisp(IMFTU,' ')

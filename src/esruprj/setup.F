@@ -42,14 +42,19 @@ C geometry.h provides commons G0 and G2.
 C Initial view.
       common/initv/initvt,EYEMI(3),VIEWMI(3),ANGI
 
+C Radiance processor cores.
+      integer radcores
+      common/radcor/radcores
+
       logical OK,DOK,MODSIT,browse,defview,unixok
       logical closea,closeb,closec,closed,concat
-      dimension ITEMS1(14)
+      dimension ITEMS1(15)
       character LFIL*96,longtfile*144,llitem*144,longtfiledos*144
       character ITEMS1*47,doit*248,tedlbl*20,teditor*20
       character tmode*8,hold32*32
       character ureturn*8  ! info back from silentread
       integer NITMS,INO1 ! max items and current menu item
+      integer iradcores
 
 C For help messages
       character helpinsub*24 ! subroutine name
@@ -120,13 +125,14 @@ C Display of time of day.
         ITEMS1(11)='l upgrade files >> save current format        '
       endif
       ITEMS1(12)  ='* test button (esp-r meta file scan)          '
-      ITEMS1(13) ='? help                                        '
-      ITEMS1(14) ='- exit this menu                              '
+      ITEMS1(13)  ='r cores available to Radiance                 '
+      ITEMS1(14)  ='? help                                        '
+      ITEMS1(15)  ='- exit this menu                              '
 
 C Help text for menu.
       helptopic='setup_date_format'
       call gethelptext(helpinsub,helptopic,nbhelp)
-      NITMS=14
+      NITMS=15
       CALL EMENU('Tool preferences',ITEMS1,NITMS,INO1)
       IF(INO1.EQ.1)THEN
 
@@ -137,22 +143,15 @@ C Wire frame view point.
         if(IW.EQ.1)then
 
 C Set eye point at standard place and viewed point at cog.
-          EYEMI(1)=-100.
-          EYEMI(2)=-100.
-          EYEMI(3)=100.
+          EYEMI(1)=-100.0; EYEMI(2)=-100.0; EYEMI(3)=100.
           call bndobj(0,ier)
-          VIEWMI(1)=VIEWM(1)
-          VIEWMI(2)=VIEWM(2)
-          VIEWMI(3)=VIEWM(3)
+          VIEWMI(1)=VIEWM(1); VIEWMI(2)=VIEWM(2); VIEWMI(3)=VIEWM(3)
           ANGI=40.
           initvt=0
           MODSIT=.true.
         elseif(IW.EQ.2)then
-          EYEMI(1)=EYEM(1)
-          EYEMI(2)=EYEM(2)
-          EYEMI(3)=EYEM(3)
-          VIEWMI(1)=VIEWM(1)
-          VIEWMI(2)=VIEWM(2)
+          EYEMI(1)=EYEM(1); EYEMI(2)=EYEM(2); EYEMI(3)=EYEM(3)
+          VIEWMI(1)=VIEWM(1); VIEWMI(2)=VIEWM(2)
           VIEWMI(3)=VIEWM(3)
           ANGI=ANG
           initvt=1
@@ -244,6 +243,7 @@ C then check for spaces in name and change / to \.
         write(doit,'(a,2x,a,a)') teditor(1:lnblnk(teditor)),
      &    longtfile(1:lnblnk(longtfile)),' &'
         call runit(doit,tmode)
+        
       ELSEIF(INO1.EQ.6)THEN
 
 C Edit the installed file `defaults'.
@@ -337,6 +337,7 @@ C then check for spaces in name and change / to \.
         write(doit,'(a,2x,a,a)') teditor(1:lnblnk(teditor)),
      &    longtfile(1:lnblnk(longtfile)),' &'
         call runit(doit,tmode)
+        
       ELSEIF(INO1.EQ.9)THEN
 
 C Edit the installed file `exemplars'.
@@ -373,6 +374,7 @@ C then check for spaces in name and change / to \.
 C Toggle trace/feedback level.
         ITRC=ITRC+1
         IF(ITRC.GT.2)ITRC=0
+
       ELSEIF(INO1.EQ.11)THEN
 
 C Toggle file format upgrade opinion.
@@ -388,6 +390,7 @@ C Toggle file format upgrade opinion.
             igupgrade=0
           endif
         endif
+        
       ELSEIF(INO1.EQ.12)THEN
 
 C Test button for ESP-r meta file read testing.
@@ -425,13 +428,28 @@ C If vi then spawn a new window to do the editing in.
         elseif(IW.eq.4)then
           continue
         endif
+        
       ELSEIF(INO1.EQ.13)THEN
 
-C User asked for help.
-      helptopic='setup_date_format'
-      call gethelptext(helpinsub,helptopic,nbhelp)
-      CALL PHELPD('general preferences',nbhelp,'-',0,0,IER)
+C Set number of processor cores available to radiance.
+        iradcores=radcores
+        CALL EASKI(iradcores,' ',
+     &    'Processor cores available for Radiance?',
+     &       1,'F',4,'W',ITCNST,'rad cores',IERI,nbhelp)
+        if(ieri.eq.-3)then
+          continue
+        else
+          radcores=iradcores
+        endif 
+
       ELSEIF(INO1.EQ.14)THEN
+
+C User asked for help.
+        helptopic='setup_date_format'
+        call gethelptext(helpinsub,helptopic,nbhelp)
+        CALL PHELPD('general preferences',nbhelp,'-',0,0,IER)
+        
+      ELSEIF(INO1.EQ.15)THEN
         RETURN
       else
         goto 33

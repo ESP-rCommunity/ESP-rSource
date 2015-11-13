@@ -518,7 +518,7 @@ C Assume steam is added at 100C and cools sensibly to the temperature of
 C the humidifier component.
            Q=PCDATF(IPCOMP,1)*2010.*(100.-CSVF(IPCOMP,1))
            
-C   hv=PCDATF(IPCOMP,1)*2454.
+C           hv=PCDATF(IPCOMP,1)*2454.
 C           H1=ENTHP2(CONVAR(ICON1,1),G1)
 C           H2=H1+HV
 C           H12=ENTHP2(CONVAR(ICON1,1),G2)

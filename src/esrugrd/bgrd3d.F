@@ -39,11 +39,9 @@ C *********************************************************************
       SUBROUTINE MENU3D(ITRC)
 #include "building.h"
 #include "geometry.h"
+#include "prj3dv.h"
 
       COMMON/FILEP/IFIL
-      COMMON/RAY2/ITDSP,ITBND,ITEPT,ITZNM,ITSNM,ITVNO,ITORG,ITSNR,
-     &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS,ITPPSW
-      COMMON/RAY3/MODIFY,MODLEN,MODBND
 
       COMMON/GR3D01/INDXS(MS),THKS(MS),DCOSS(MS,3,3)
       COMMON/GR3D21/NUMEDG,INDXE(MEZ),DCOSE(MEZ,3,3)
@@ -56,7 +54,7 @@ C *********************************************************************
       COMMON/GR3D100/BLDG3D,ZONE3D(MCOM)
       COMMON/GR3D108/L3DCVS(MCOM),L3DCNC(MCOM),L3DNDC(MCOM),L3DTAQ(MCOM)
 
-      LOGICAL ZONOK,MODIFY,MODBND,MODLEN,OK,DOK,BLDG3D,ZONE3D,XST
+      LOGICAL ZONOK,OK,DOK,BLDG3D,ZONE3D,XST
 
       CHARACTER ITEM(15)*26,SZN*15
       CHARACTER*72 L3DCVS,L3DCNC,L3DNDC,L3DTAQ
@@ -74,7 +72,7 @@ C For help messages
       IZ=0
       IUNIT=IFIL+1
       ZONOK=.FALSE.
-      MODIFY=.FALSE.
+      MODIFYVIEW=.FALSE.
 
 C General image option flags.
       ITDSP=1
@@ -118,7 +116,7 @@ C Help text for this menu.
       call gethelptext(helpinsub,helptopic,nbhelp)
 
 C Draw the appropriate graph.
-      IF(MODIFY)CALL GRAAPH(IDRW1,IDRW2)
+      IF(MODIFYVIEW)CALL GRAAPH(IDRW1,IDRW2)
       CALL USRMSG(' ',' ','-')
       CALL EMENU('   Multi-Gridding',ITEM,MITEM,INO)
       IF(.NOT.ZONOK.AND.((INO.GE.3.AND.INO.LE.6).OR.INO.EQ.13))THEN
@@ -130,7 +128,7 @@ C Trap un-accepted options.
       ELSEIF(INO.EQ.1)THEN
 
 C Select the zone.
-        IF(IDRW1.NE.1.OR.MODIFY)THEN
+        IF(IDRW1.NE.1.OR.MODIFYVIEW)THEN
           IDRW1=1
           IDRW2=0
           CALL GRAAPH(IDRW1,IDRW2)
@@ -298,10 +296,8 @@ C ***************************    DFNCMP    ****************************
 C DFNCMP displays the components definition menu.
 C *********************************************************************
       SUBROUTINE DFNCMP(IZ,SZN,IDRW1,IDRW2)
-
-      COMMON/RAY3/MODIFY,MODLEN,MODBND
-
-      LOGICAL     MODIFY,MODLEN,MODBND
+#include "building.h"
+#include "prj3dv.h"
 
       DIMENSION ITEM(8)
 
@@ -325,7 +321,7 @@ C For help messages
       ITEM(7)='? help                    '
       ITEM(8)='- Exit                    '
       MITEM=8
-      IF(IDRW1.NE.2.OR.MODIFY)THEN
+      IF(IDRW1.NE.2.OR.MODIFYVIEW)THEN
         IDRW1=2
         IDRW2=IZ
         CALL GRAAPH(IDRW1,IDRW2)
@@ -366,10 +362,8 @@ C **************************    DFNCNC     ****************************
 C DFNCNC displays the connections definition menu.
 C *********************************************************************
       SUBROUTINE DFNCNC(ICOMP,SZN,IDRW1,IDRW2)
-
-      COMMON/RAY3/MODIFY,MODLEN,MODBND
-
-      LOGICAL     MODIFY,MODLEN,MODBND
+#include "building.h"
+#include "prj3dv.h"
 
       CHARACTER ITEM(9)*26,SZN*15
 
@@ -391,7 +385,7 @@ C For help messages
       ITEM(8)='? help                    '
       ITEM(9)='- Exit                    '
       MITEM=9
-      IF(IDRW1.NE.2.OR.MODIFY)THEN
+      IF(IDRW1.NE.2.OR.MODIFYVIEW)THEN
         IDRW1=2
         IDRW2=ICOMP
         CALL GRAAPH(IDRW1,IDRW2)

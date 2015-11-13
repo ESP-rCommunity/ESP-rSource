@@ -1881,61 +1881,61 @@ C 5 = insect screen
 C check that the highest value of icfcltp <= 5 (either slat-type
 C blind, insect screen, drape blind, roller blind or glazing) 
 
-      do 90 j=1,ncfc_el(icomp,i)
+        do 90 j=1,ncfc_el(icomp,i)
              if(IVA(j).GE.2 .AND. IVA(j).LE.5)then
-				
-                        nshade_layers=nshade_layers+1
-		    
-                        if(IVA(j).eq.iVenBlind)then
 
-                              vb_xst = .true.
-				
-                        elseif(IVA(j).eq.iPleatedDrape)then
-				
-                              drp_xst = .true.
-				
-                        elseif(IVA(j).eq.iRollerBlind)then
-				
-                              rld_xst = .true.
+                 nshade_layers=nshade_layers+1
+    
+                 if(IVA(j).eq.iVenBlind)then
 
-                        elseif(IVA(j).eq.iInsectScreen)then
-				
-                              bug_xst = .true.
-					
-                        endif
-		    
+                     vb_xst = .true.
+
+                 elseif(IVA(j).eq.iPleatedDrape)then
+
+                     drp_xst = .true.
+
+                 elseif(IVA(j).eq.iRollerBlind)then
+
+                     rld_xst = .true.
+
+                 elseif(IVA(j).eq.iInsectScreen)then
+
+                     bug_xst = .true.
+
+                 endif
+    
              elseif(IVA(j).gt.5)then
                
-                        call edisp(itru,' ')
-                        call edisp(itru,
-     &         	' CFC layer type index cannot exceed 5.')
-                        GOTO 1002
+                 call edisp(itru,' ')
+                 call edisp(itru,
+     &             ' CFC layer type index cannot exceed 5.')
+                 GOTO 1002
              
-                  end if
+              end if
              
-                   icfcltp(icomp,i,j)=IVA(j)
-			 
+              icfcltp(icomp,i,j)=IVA(j)
+ 
    90 continue
 
       if(nshade_layers.gt.1)then
-	  
-            do 110 j=1,ncfc_el(icomp,i)-2
-			
-                  if(IVA(j).gt.1.AND.IVA(j+2).gt.1)then
-			
-				call edisp(itru,' ')
-				call edisp(itru,
-     &      	' Detected two adjacent blind layers.')
-				GOTO 1002
-			
-                  end if
+  
+      do 110 j=1,ncfc_el(icomp,i)-2
 
-  110 	continue 	
+         if(IVA(j).gt.1.AND.IVA(j+2).gt.1)then
+
+           call edisp(itru,' ')
+           call edisp(itru,
+     &       ' Detected two adjacent blind layers.')
+           GOTO 1002
+
+         end if
+
+  110 continue 
 
       elseif(nshade_layers.eq.0)then
       
             vb_xst = .false.
-            drp_xst = .false.	
+            drp_xst = .false.
             rld_xst = .false.
             bug_xst = .false.
       
@@ -1953,16 +1953,16 @@ C Reporting
         CALL EDISP(ITRU,' Layer      type index')
         
         DO 91, j=1,ncfc_el(icomp,i)
-			
+
             WRITE(OUTS,'(1X,i5,2X,i4)')i,icfcltp(icomp,i,j)
             CALL EDISP(ITRU,OUTS)
-			
+
    91   CONTINUE
       
         ENDIF
 
       if(ncfc_el(icomp,i).eq.1)goto 81
-	
+
 C Read gas gap properties
       do 100 ie=2,ncfc_el(icomp,i),2
 
@@ -2004,7 +2004,7 @@ C Read gas gap properties
 
 C Reporting
       IF(ITRC.GT.0)THEN
-	  
+  
         CALL EDISP(ITRU,' ')
         WRITE(OUTS,'(A,I2,A,I2,A)')
      &   ' For CFC type ',I,' ,layer ',ie,' , gas mix. properties:'
@@ -2044,7 +2044,7 @@ C    vb_wr     = slat w/r ratio
 C    vb_t      = thickness [mm]
 C    vb_VorH   = slat orientation ("HORZ" OR "VERT")
   81  if(vb_xst)then
-	
+
       CALL STRIPC(IUA,OUTSTR,99,ND,1,'slat-type blind attributes',IER)
       IF(IER.NE.0)GOTO 1001
       K=0
@@ -2074,8 +2074,8 @@ C    vb_VorH   = slat orientation ("HORZ" OR "VERT")
       
       CALL EGETWR(OUTSTR,K,VAL,0.0,300.,'W',
      &      'slat thickness (mm)',IER)
-      vb_t(icomp,i)=VAL	
-	
+      vb_t(icomp,i)=VAL
+
 C Reporting
       IF(ITRC.GT.0)THEN
       
@@ -2111,11 +2111,11 @@ C    drp_s      = drape spacing [mm]
       CALL EGETWR(OUTSTR,K,VAL,1.0,300.,'W','pleat width(mm)',
      &              IER)
       drp_w(ICOMP,i)=VAL
-	  
+  
       CALL EGETWR(OUTSTR,K,VAL,1.0,300.,'W','pleat spacing(mm)',
      &              IER)
       drp_s(ICOMP,i)=VAL
-	  
+  
       IF(ITRC.GT.0)THEN
       
             CALL EDISP(ITRU,' Drape attributes:')
@@ -2134,7 +2134,7 @@ C If insect screen exists then read drape attributes:
 C Read insect screen descriptors (for type 5 cfc layer):
 C    bug_d      = wire diameter [mm]
 C    bug_s      = wire pitch [mm]
-C    bug_Emis	= wire emissivity
+C    bug_Emis   = wire emissivity
 
       if(bug_xst)then
   
@@ -2147,7 +2147,7 @@ C    bug_Emis	= wire emissivity
       CALL EGETWR(OUTSTR,K,VAL,1.0,300.,'W','wire diameter(mm)',
      &              IER)
       bug_d(ICOMP,i)=VAL
-	  
+  
       CALL EGETWR(OUTSTR,K,VAL,1.0,300.,'W','wire pitch(mm)',
      &              IER)
       bug_s(ICOMP,i)=VAL
@@ -2155,7 +2155,7 @@ C    bug_Emis	= wire emissivity
       CALL EGETWR(OUTSTR,K,VAL,0.0,1.0,'W','wire emissivity',
      &              IER)
       bug_Emis(ICOMP,i)=VAL
-	  
+  
       IF(ITRC.GT.0)THEN 
 
             CALL EDISP(ITRU,' Insect screen attributes:')
@@ -2168,8 +2168,8 @@ C    bug_Emis	= wire emissivity
 
       ENDIF
 
-      end if	  
-	  
+      end if  
+  
    80 continue
 
 c Free file.

@@ -331,8 +331,8 @@ C COMMONS FOR CFC type CONSTRUCTIONS
      &      transBB_S(mcom,ms),transD_S(mcom,ms),refl_S(mcom,ms),
      &      issur_self_shd(mcom,ms),proang_s(mcom,mcfc,ms),
      &      qtmca_ext(mcom,ms,mn),omega_v_s(mcom,mcfc,ms),
-     &	omega_h_s(mcom,mcfc,ms)
-	 
+     &      omega_h_s(mcom,mcfc,ms)
+ 
       real RadIncDirS,RadIncDifS,transBB_S,transD_S,refl_S
       real proang_s,qtmca_ext,omega_v_s,omega_h_s
       integer issur_self_shd
@@ -915,13 +915,14 @@ C Update thermophysical properties here - we know the control state
 C so call bcl99 to update thermophysical props of controlled windows.
       ICALL=0
       DO 66 I=1,NC
-
-C Debug.
-C        write(6,'(a,2i4)') 'Blind state: ',IBOFOT(ICOMP,I),
-C     &                                       NBPONT(ICOMP,I)
-
         ITMC=ITMCFL(ICOMP,I)
         if(ITMC.GT.0)then
+
+C Debug.
+C        write(6,'(a,7i4)') 'Blind state: ',ICOMP,I,IBOFOT(ICOMP,I),
+C     &    NBPONT(ICOMP,I),ITMC,ITPREP(ICOMP,ITMC),
+C     &    IBCMT(ICOMP,ITMC)
+
           if(ITPREP(ICOMP,ITMC).gt.0)then
             if(IBCMT(ICOMP,ITMC).EQ.1) then
 
@@ -1383,7 +1384,7 @@ C Set a local flag if bidirectional data available for this surface.
         IBIDIR=NSTMCFL(IZSTOCN(ICOMP,I))
 
         icfctp=icfcfl(icomp,i)              !CFC type
-		
+
 C Bidirectional case
         if(IBIDIR.NE.0)then
 
@@ -1720,13 +1721,13 @@ C..............and absorbed fluxes in each CFC layer.
              temp1=0.
              temp2=0.
              temp3=0.
-		 
+ 
              proang_s(icomp,icfctp,i)=-1.    !save profile angle for CFC output, -1 indicates self shaded
 
 C Determine diffuse-diffuse solar properties for
 C each CFC layer. Incidence and profile angles set to 0 since self-shaded.
              call cfc_eff_opt_prop(icomp,i,icfctp,temp1,temp2,
-     &		 temp3)
+     &         temp3)
 
 C............Check whether sky and ground diffuse calc. is requested
              if(i_ground_sky_diff_calc.eq.1)then
@@ -2613,7 +2614,7 @@ C Solar radiation values are Global and Diffuse Horizontal.
       IF(QD.GT.1353.0)goto 2
       IF(QD.LT.0.0)goto 3
       goto 1
-    2 IF(SALT.GT.12.0)goto 4
+    2 IF(SALT.GT.13.0)goto 4
       IF(ICOMP.GT.1)goto 5
 
 C Warning : high direct normal.
@@ -2638,7 +2639,7 @@ C horizontal.
       QD=0.0
       goto 1
 
-C FATAL ERROR: direct normal > solar constant & altitude > 10deg
+C FATAL ERROR: direct normal > solar constant & altitude > 13deg
     4 CALL DAYCLK(IDYP,BTIMEF,iuout)
       write(outs,'(a,I7,a,F6.1,a)')' MZSINT fatal: @',NSINC,
      &  ' direct n.',QD,' > solar constant '

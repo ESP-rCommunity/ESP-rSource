@@ -52,6 +52,7 @@ C                 insolation source. The latter is held
 C                 in common.
       common/outin/iuout,iuin
       common/filep/ifil
+      COMMON/SPAD/MMOD,LIMIT,LIMTTY
 
       character ltrns*72
       integer multic,mons,monf
@@ -103,7 +104,7 @@ C Make up help text for following dialogs.
       helptopic='inscon_actions'
       call gethelptext(helpinsub,helptopic,nbhelp)
     
-C Check that at least one surface has been chosen or gleaned
+C Check that at least one transparent surface has been chosen or gleaned
 C from the zone geometry file.
       icont=0
       do 70 i=1,nzsur(icomp)

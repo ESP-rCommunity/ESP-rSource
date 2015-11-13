@@ -7593,7 +7593,7 @@ C Calculate minimum electrical power of CHP unit as fraction of maximum from Hmi
 !          nCHPctl(i)=NINT(locval(i))
 !        else
 !          nCHPctl(i)=0
-!	endif
+!      endif
 ! 1    CONTINUE
 !c      write(6,*)btimef,(locval(i),i=1,5)
 !

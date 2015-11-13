@@ -5,7 +5,7 @@ C Strathclyde, Glasgow Scotland, 2001.
 C ESP-r is free software.  You can redistribute it and/or
 C modify it under the terms of the GNU General Public
 C License as published by the Free Software Foundation 
-C (version 2 orlater).
+C (version 2 or later).
 
 C ESP-r is distributed in the hope that it will be useful
 C but WITHOUT ANY WARRANTY; without even the implied
@@ -53,6 +53,10 @@ C << what about including common zndata in this manipulation? >>
       integer lnblnk  ! function definition
       integer iCountWords
 
+C Passed parameters:
+      integer itrc,icomp,iwhich,iscopt,ier
+      character ACTION*1,MODE*1
+
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/FILEP/IFIL
       COMMON/OUTIN/IUOUT,IUIN
@@ -64,11 +68,7 @@ C << what about including common zndata in this manipulation? >>
       COMMON/C24/IZSTOCN(MCOM,MS)
       common/appcols/mdispl,nifgrey,ncset,ngset,nzonec
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
-      COMMON/RAY2/ITDSP,ITBND,ITEPT,ITZNM,ITSNM,ITVNO,ITORG,ITSNR,
-     &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS,ITPPSW
-      COMMON/RAY3/MODIFY,MODLEN,MODBND
-      COMMON/RAY5/ZCOG(MCOM,3),XMN,YMN,ZMN,XMX,YMX,ZMX
-      LOGICAL MODIFY,MODLEN,MODBND,closex,closey
+      LOGICAL closex,closey
       COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,CFCDBOK
       LOGICAL     OK,CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,CFCDBOK
       logical same,clkok,found,DOK,DDOK,nameok,matchver
@@ -84,14 +84,15 @@ C << what about including common zndata in this manipulation? >>
       integer foundonepos ! position of shared vertex in parent jvn array
       integer iotherzone ! the other zone needing to be updated
       integer ipkany,izc ! for use with pickssur
+      integer ijvn       ! to count selected points
 
       dimension X1(MV),Y1(MV),Z1(MV),jvn1(MV),XT(MV),YT(MV),ZT(MV)
       dimension jvn2(MV)  ! dummy array for sorti call
       DIMENSION COG1(3),COG2(3),COG3(3),JJVN(MV),ispk(MS)
 
       CHARACTER SNAME1*12,SMLCN1*32,SVFC1*4,SOTF1*32,SNAMED*12
-      character SUSE11*8,SUSE12*8
-      CHARACTER ACTION*1,MODE*1,outs*124,SN*12,SN2*12
+      character SUSE11*12,SUSE12*12
+      CHARACTER outs*124,SN*12,SN2*12
       character ZSDES*28,T14*14,D14*14
       character HOLD*72,hold64*64,holds*36,t248*248
 C      character guesstype*24  ! for context of surface addition
@@ -101,10 +102,11 @@ C      character guesstype*24  ! for context of surface addition
       integer icmpall  ! to signal request to compare all names
       integer ltrace   ! local trace
 
+C Trackview should require iixx,iiyy.
 #ifdef OSI
-      integer iix,iiy,ixd,iyd,iicol
+      integer iix,iiy,ixd,iyd,iicol,iixx,iiyy
 #else
-      integer*8 iix,iiy,ixd,iyd,iicol
+      integer*8 iix,iiy,ixd,iyd,iicol,iixx,iiyy
 #endif
 
 C For help messages
@@ -119,18 +121,15 @@ C For help messages
       endif
 
       IER=0
+      
+C Clear local variables.
       DDOK=.false.
       newgeo=.false.  ! assume older format geometry.
-      vdis=0.0
-      valx=0.0
-      valy=0.0
-      valz=0.0
+      vdis=0.0; valx=0.0; valy=0.0; valz=0.0
       angr=0.0
       same=.true.
       clkok=.false.
-      IOK=0
-      IRV=1
-      IZC=0
+      IOK=0; IRV=1; IZC=0
 
       IF(ACTION.EQ.'D')THEN
 
@@ -162,9 +161,7 @@ C << to re-read. several steps required before this is possible.
      &            iuout,IER)
 
 C Adjust the data structures.
-              ICT(IXU)=-1
-              IC2(IXU)=0
-              IE2(IXU)=0
+              ICT(IXU)=-1; IC2(IXU)=0; IE2(IXU)=0
               SSOTHER(IXU,1)='UNKNOWN'
               SSOTHER(IXU,2)='0'
               SSOTHER(IXU,3)='0'
@@ -255,9 +252,7 @@ C update IE1 for surfaces > IWHICH otherwise just compact IC1 & IE1.
             IC1(IX)=IC1(IX+1)
             IE1(IX)=IE1(IX+1)
           ENDIF
-          ICT(IX)=ICT(IX+1)
-          IC2(IX)=IC2(IX+1)
-          IE2(IX)=IE2(IX+1)
+          ICT(IX)=ICT(IX+1); IC2(IX)=IC2(IX+1); IE2(IX)=IE2(IX+1)
           SSNAME(ix)=SSNAME(IX+1)
           SSOTF(IX)=SSOTF(IX+1)
           SSMLCN(IX)=SSMLCN(IX+1)
@@ -542,7 +537,7 @@ C because the next child vertex to be deleted has a smaller index.
 
 C If in automatic mode 
         if(MODE.eq.'A')then
-          MODIFY=.TRUE.
+          MODIFYVIEW=.TRUE.
           return
         endif
       ELSEIF(ACTION.EQ.'C')THEN
@@ -588,7 +583,7 @@ C Reset all surface lines in donor zone.
           else
             call emkgeo(IFIL+1,LGEOM(ICOMP),ICOMP,3,IER)
           endif
-          MODIFY=.TRUE.
+          MODIFYVIEW=.TRUE.
           MODBND=.TRUE.
           CALL INLNST(1)
           itsnm=0
@@ -596,7 +591,7 @@ C Reset all surface lines in donor zone.
           nznog(1)=IZC   ! alter focus to the other zone
           izgfoc=ICOMP
           CALL ADJVIEW(IER)
-          MODIFY=.TRUE.
+          MODIFYVIEW=.TRUE.
           MODBND=.TRUE.
         endif
 
@@ -844,7 +839,7 @@ C Rotate around a point in the surface.
         endif
 
 C After transforms, append new surface vertices to zone list if
-C they are unique, check with user if close, otherwise link the
+C they are unique, check with user if 5-10mm, otherwise link the
 C new surface to an existing vetex.
   166   continue
         do 143 ix = 1,NVER1
@@ -856,15 +851,25 @@ C new surface to an existing vetex.
               call eclose3(X1(ix),Y1(ix),Z1(ix),X(ixx),Y(ixx),Z(ixx),
      &          0.010,closey)
               if(closex)then
-                found=.true.
+                found=.true.  ! close enough to auto match
                 match=ixx
                 goto 145
               endif
               if(closey)then
-                dok=.true.
+
+C Feedback to the user about using existing vertex.
+                write(outs,'(a,i3,a,3f8.3,a,i3,a,3f8.3)')
+     &            'New vertex ',ix,' @',X1(ix),Y1(ix),Z1(ix),
+     &            ' is close to existing vertex',iix,' @',
+     &            X(ixx),Y(ixx),Z(ixx)
+                call edisp(iuout,outs)
+                dok=.false.
                 call askok('New point 5-10mm from an existing vertex.',
-     &            'Skip it?',found,dok,nbhelp)
-                goto 145
+     &            'Use existing vertex?',found,dok,nbhelp)
+                if(found)then
+                  match=ixx
+                  goto 145
+                endif
               endif
   144       continue
 
@@ -876,9 +881,7 @@ C add a new vertex to the end of the zone list.
               NTV=NTV+1
               NZTV(icomp)=NTV
               JVN(NSUR,ix)=NTV
-              X(NTV)=X1(ix)
-              Y(NTV)=Y1(ix)
-              Z(NTV)=Z1(ix)
+              X(NTV)=X1(ix); Y(NTV)=Y1(ix); Z(NTV)=Z1(ix)
               VCOORD(ICOMP,ntv,1)=X1(ix)
               VCOORD(ICOMP,ntv,2)=Y1(ix)
               VCOORD(ICOMP,ntv,3)=Z1(ix)
@@ -1034,7 +1037,8 @@ C Rescan the other zone before returning.
           goto 191   ! jump back and process next surface
         endif
         MODBND=.TRUE.
-        MODIFY=.TRUE.
+        MODIFYVIEW=.TRUE.
+        
       ELSEIF(ACTION.EQ.'A')THEN
 
 C Create a new surface, set as many defaults as possible. Because
@@ -1090,7 +1094,9 @@ C present editing of vertices with the option for mouse.
               NVER(NSUR)=NV
             elseif(ISCOPT.eq.1)then
 
-C User has specified clicking from mouse so just do that.
+C User has specified clicking from mouse so just do that. By definition
+C the 2nd and 3rd items in trackview should follow the pattern in edgeo.F
+C near line 8261 but that does not seem to work here. Strange.
               clkok=.true.
             endif
             if(clkok)then
@@ -1098,28 +1104,30 @@ C User has specified clicking from mouse so just do that.
               call edisp(iuout,
      &          'Select points via cursor...type `e` to finish.')
   46          CALL trackview(ii,ixx,iyy)
+              iixx=ixx; iiyy=iyy
               if(ii.eq.69.or.ii.eq.101)goto 47
               found=.false.
               do 45 i=1,NTV
-                COG1(1)=X(I)
-                COG1(2)=Y(I)
-                COG1(3)=Z(I)
+                COG1(1)=X(I); COG1(2)=Y(I); COG1(3)=Z(I)
                 CALL VECTRN(COG1,TEMAT,COG2,IER)
                 CALL VECTRN(COG2,ETSMAT,COG3,IER)
                 call u2pixel(COG3(1),COG3(2),iix,iiy)
-                ixd=iix-ixx
-                iyd=iiy-iyy
+                ixd=iix-iixx
+                iyd=iiy-iiyy
+C Debug
+C                write(6,'(9i5)') i,iixx,iiyy,ixx,iyy,iix,iiy,ixd,iyd
                 if(abs(ixd).lt.5.and.abs(iyd).lt.5)then
                   if(found)then
                     call edisp(iuout,'Close points...try again.')
                     goto 46
                   endif
                   WRITE(outs,'(a,i5,a,i5,a,i3)')' The point @ x=',ixx,
-     &                                ' & y=',iyy,' matches vertex ',i
+     &              ' & y=',iyy,' matches vertex ',i
                   call edisp(iuout,outs)
                   found=.true.
                   ijvn=ijvn+1
                   jjvn(ijvn)=i
+C                  write(6,*) ijvn,i,jjvn(ijvn)
 
 C Highight the matching vertex.
                   iicol=0
@@ -1134,7 +1142,7 @@ C Highight the matching vertex.
               if(.NOT.found)goto 46
   47          if(ijvn.lt.3)then
                 call edisp(iuout,'Not enough points to make a surface.')
-                 goto 41
+                goto 41
               endif
 
 C Clear the string buffer, write into it the list of vertices that were
@@ -1206,7 +1214,7 @@ C Update the connection list. Move all others up and then insert with
 C default values. (allow verbose trace (3rd parameter in addedsurf).
         ltrace=1
         call addedsurf(icomp,icon,ltrace,ier)
-        MODIFY=.TRUE.
+        MODIFYVIEW=.TRUE.
       endif
 
       RETURN
@@ -1241,9 +1249,6 @@ C   for new position, IER is -3 user aborted action.
       COMMON/C24/IZSTOCN(MCOM,MS)
 
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
-      COMMON/RAY2/ITDSP,ITBND,ITEPT,ITZNM,ITSNM,ITVNO,ITORG,ITSNR,
-     &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS,ITPPSW
-      COMMON/RAY3/MODIFY,MODLEN,MODBND
 
       character constr*12,act*2,mode*1,OPT*12
       character outs*124,SN*12
@@ -1254,7 +1259,6 @@ C   for new position, IER is -3 user aborted action.
       DIMENSION  AX(MPL),AY(MPL),AZ(MPL),IANXT(MPL)
       DIMENSION  BX(MPL),BY(MPL),BZ(MPL),IBNXT(MPL)
       DIMENSION  SBBOX(3,2)
-      LOGICAL MODIFY,MODLEN,MODBND
       logical newgeo  ! to use for testing if new/old geometry file.
 
 #ifdef OSI
@@ -1271,9 +1275,7 @@ C For help messages
       helpinsub='ADDMASS'  ! set for subroutine
 
 C Set first coord at origin (lower left).
-      XXW(1) = VALOX
-      YYW(1) = VALOY
-      ZZW(1) = VALOZ
+      XXW(1) = VALOX; YYW(1) = VALOY; ZZW(1) = VALOZ
 
 C Set PI and RAD.
       PI = 4.0 * ATAN(1.0)
@@ -1293,37 +1295,23 @@ C Set second coord along DDX metres at AANG-90.
           x3 = XYDIS*SIN(RYAZI)
           y3 = XYDIS*COS(RYAZI)
         ENDIF
-        XXW(2)=x3+XXW(1)
-        YYW(2)=y3+YYW(1)
-        ZZW(2)=z3+ZZW(1)
+        XXW(2)=x3+XXW(1); YYW(2)=y3+YYW(1); ZZW(2)=z3+ZZW(1)
 
 C Third point is as second with Z adjusted. Fourth point is as first with
 C Z adjusted.
-        XXW(3)=XXW(2)
-        YYW(3)=YYW(2)
-        ZZW(3)=ZZW(2)+DDZ
-        XXW(4)=XXW(1)
-        YYW(4)=YYW(1)
-        ZZW(4)=ZZW(1)+DDZ
+        XXW(3)=XXW(2); YYW(3)=YYW(2); ZZW(3)=ZZW(2)+DDZ
+        XXW(4)=XXW(1); YYW(4)=YYW(1); ZZW(4)=ZZW(1)+DDZ
 
       elseif(act(1:1).eq.'H'.or.act(1:1).eq.'h')then
-        XXW(2) = VALOX+DDX
-        YYW(2) = VALOY
-        ZZW(2) = VALOZ
-        XXW(3) = VALOX+DDX
-        YYW(3) = VALOY+DDZ
-        ZZW(3) = VALOZ
-        XXW(4) = VALOX
-        YYW(4) = VALOY+DDZ
-        ZZW(4) = VALOZ
+        XXW(2) = VALOX+DDX; YYW(2) = VALOY; ZZW(2) = VALOZ
+        XXW(3) = VALOX+DDX; YYW(3) = VALOY+DDZ; ZZW(3) = VALOZ
+        XXW(4) = VALOX; YYW(4) = VALOY+DDZ; ZZW(4) = VALOZ
 
 C Now rotate around the first coordinate.
         if(AANG.LT.-.01.OR.AANG.GT..01)then
           A=-AANG*PI/180.
-          CA=COS(A)
-          SA=SIN(A)
-          XX1=XXW(1)
-          YY1=YYW(1)
+          CA=COS(A); SA=SIN(A)
+          XX1=XXW(1); YY1=YYW(1)
           DO 200 I=1,4
             XXX=XXW(I)-XX1
             YYY=YYW(I)-YY1
@@ -1408,7 +1396,7 @@ C Confirm opening.
         if(INVT.eq.2)then
           ITVNO=0
           ITSNM=0
-          MODIFY=.TRUE.
+          MODIFYVIEW=.TRUE.
           CALL INLNST(1)
           nzg=1
           nznog(1)=ICOMP
@@ -1450,7 +1438,6 @@ C Remember the reverse order of vertices for matching surface.
       JVNM(2)= JVN(NSUR,1)
       JVNM(3)= JVN(NSUR,4)
       JVNM(4)= JVN(NSUR,3)
-
       NTV=NTV+4
       NZTV(icomp)=NTV
 
@@ -1564,7 +1551,9 @@ C   using this index negate the index of the first surface and
 C   pass back in ier.
       SUBROUTINE ADDVERT(icomp,NUM,ACTION,IER)
 #include "building.h"
+#include "model.h"
 #include "geometry.h"
+#include "prj3dv.h"
 
 C Parameters passed.
       integer icomp  ! the focus zone
@@ -1574,15 +1563,19 @@ C Parameters passed.
                          ! Q for quiet delete
       integer ier    ! zero is ok non-zero see note above
 
+      COMMON/FILEP/IFIL
       COMMON/OUTIN/IUOUT,IUIN
-      COMMON/RAY3/MODIFY,MODLEN,MODBND
-      COMMON/RAY5/ZCOG(MCOM,3),XMN,YMN,ZMN,XMX,YMX,ZMX
-      LOGICAL MODIFY,MODLEN,MODBND,check,found,closex,closey
+      integer IZSTOCN
+      COMMON/C24/IZSTOCN(MCOM,MS)
+      LOGICAL check,found,closex,closey
       logical ok,dok,matchver
 
       DIMENSION ISASSO(MS),X1(MV),Y1(MV),Z1(MV)
       CHARACTER OUTSTR*124,HOLD*36,outs*124
       integer iier  ! local variable for use in can't delete
+      integer icc   ! for connection number
+      logical changedgeo  ! to signal need to write geom file.
+      logical newgeo  ! version of geom file
 
 C For help messages
       character helpinsub*24 ! subroutine name
@@ -1592,6 +1585,7 @@ C For help messages
       helpinsub='ADDVERT'  ! set for subroutine
 
       check = .false.
+      changedgeo = .false.
       iier = 0
 
       if(NUM.eq.0)then
@@ -1630,17 +1624,18 @@ C it is then it should not be delted so set iier
             else
               iier=ISASSO(1)*(-1)
             endif
-            MODIFY=.TRUE.  ! needed to preserve zone bounds
+            MODIFYVIEW=.TRUE.  ! needed to preserve zone bounds
           ELSE
 
 C Vertex is free of connections so loop through the vertices in each
 C surface and any JNV larger than IWHICH should be decremented by one.
-
-C << ? should NZJVN be updated as well? >>
+C Update as NZJVN well.
             DO 792 IS=1,NSUR
+              icc=IZSTOCN(icomp,is)
               DO 794 IV=1,NVER(IS)
                 IF(JVN(IS,IV).GT.IWHICH)THEN
                   JVN(IS,IV)=JVN(IS,IV)-1
+                  NZJVN(icc,IV)=JVN(IS,IV)
                 ENDIF
   794         CONTINUE
   792       CONTINUE
@@ -1656,10 +1651,12 @@ C IWHICH into the next lower one and also update VCOORD.
               VCOORD(ICOMP,ivv,3)=VCOORD(ICOMP,ivv+1,3)
   791       CONTINUE
 
-C Finally decrement NTV.
-            NTV=NTV-1
-            NZTV(icomp)=NTV
-            MODIFY=.TRUE.  ! signal a change
+C Finally decrement NZTV and NTV.
+            NZTV(icomp)=NZTV(icomp)-1
+            NTV=NZTV(icomp)
+            changedgeo = .true.
+            MODIFYVIEW=.TRUE.  ! signal a change
+            check = .true.
           ENDIF
         ENDIF
 
@@ -1704,10 +1701,20 @@ C or if 10mm check with user, otherwise continue.
                 goto 145
               endif
               if(closey)then
-                dok=.true.
+
+C Feedback to the user about using existing vertex.
+                write(outs,'(a,i3,a,3f8.3,a,i3,a,3f8.3)')
+     &            'New vertex ',ix,' @',X1(ix),Y1(ix),Z1(ix),
+     &            ' is close to existing vertex',ix,' @',
+     &            X(ixx),Y(ixx),Z(ixx)
+                call edisp(iuout,outs)
+                dok=.false.
                 call askok('New point 5-10mm from an existing vertex.',
-     &            'Skip it?',found,dok,nbhelp)
-                goto 145
+     &            'Use existing vertex?',found,dok,nbhelp)
+                if(found)then
+                  match=ixx  !  match is not yet used
+                  goto 145
+                endif
               endif
   144       continue
 
@@ -1716,8 +1723,9 @@ C add a new vertex to the end of the zone list and update vcoord.
   145       if(found)then
               continue
             else
-              NTV=NTV+1
-              NZTV(icomp)=NTV
+              changedgeo = .true.
+              NZTV(icomp)=NZTV(icomp)+1
+              NTV=NZTV(icomp)
               X(NTV)=X1(ix)
               Y(NTV)=Y1(ix)
               Z(NTV)=Z1(ix)
@@ -1792,7 +1800,7 @@ C Surface (ivj) vertex list has been updated. Go on to next surface.
             endif
           endif
   143   continue
-        MODIFY=.TRUE.
+        MODIFYVIEW=.TRUE.
         check = .true.
       elseif(ACTION.eq.'C'.or.ACTION.eq.'c')then
 
@@ -1839,8 +1847,9 @@ C add a new vertex to the end of the zone list and update vcoord.
   245     if(found)then
             continue
           else
-            NTV=NTV+1
-            NZTV(icomp)=NTV
+            NZTV(icomp)=NZTV(icomp)+1
+            NTV=NZTV(icomp)
+            changedgeo = .true.
             X(NTV)=X1(1)
             Y(NTV)=Y1(1)
             Z(NTV)=Z1(1)
@@ -1910,7 +1919,7 @@ C Surface (ivj) vertex list has been updated. Go on to next surface.
   346       continue
           endif
         endif
-        MODIFY=.TRUE.
+        MODIFYVIEW=.TRUE.
         check = .true.
       endif
       if(check)then
@@ -1924,8 +1933,21 @@ C Check to see if new vertex is beyond current bounds of zone.
         IF(MODBND)MODLEN=.TRUE.
       endif
 
+C If we modified the geometry then write it out because subsequent
+C calls to ADJVIEW will rescan this geometry file and undo the
+C changes.
+      if(changedgeo)then
+        call eclose(gversion(icomp),1.1,0.01,newgeo)
+        if(newgeo)then
+          call geowrite(IFIL+2,LGEOM(ICOMP),ICOMP,iuout,3,IER)
+        else
+          call emkgeo(IFIL+2,LGEOM(ICOMP),ICOMP,3,IER)
+        endif
+        call zgupdate(0,icomp,ier)
+      endif
+
 C If change in vertex detected then update common G7
-      if(MODIFY)then
+      if(MODIFYVIEW)then
         call zgupdate(0,icomp,ier)
       endif
 
@@ -2126,7 +2148,7 @@ C Parameters
       integer is         ! surface number
       character act*2    ! user supplied action
       real XO1,ZO1,XW,ZH ! X and Z offset width and height of opening
-      character rsname*12,rsotf*32,rsmlcn*32,rsuse1*8,rsuse2*8
+      character rsname*12,rsotf*32,rsmlcn*32,rsuse1*12,rsuse2*12
       character rsparent*12
       integer IER        ! zero is ok
 
@@ -2145,11 +2167,7 @@ C door width and height.
       common/ginsert/defwininsert,defdoorwidth,defdoorheight
 
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
-      COMMON/RAY2/ITDSP,ITBND,ITEPT,ITZNM,ITSNM,ITVNO,ITORG,ITSNR,
-     &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS,ITPPSW
-      COMMON/RAY3/MODIFY,MODLEN,MODBND
-      COMMON/RAY6/LINSTY(MCON)
-      LOGICAL MODIFY,MODLEN,MODBND,OK,dok,matchver
+      LOGICAL OK,dok,matchver
       logical newgeo  ! to use for testing if new/old geometry file.
 
       DIMENSION  XX(MV),YY(MV),ZZ(MV)
@@ -2239,7 +2257,7 @@ C If in a silent mode, set all surfaces to standard line width and
 C surface being edited to a thick line if currently in graphics mode.
         ITVNO=0
         ITSNM=0
-        MODIFY=.TRUE.
+        MODIFYVIEW=.TRUE.
         if(MMOD.EQ.8)then
           CALL INLNST(1)
           CALL SURADJ(ICOMP,IS,IE,TMP,IZC,ISC,IC,DESCRC)
@@ -2310,7 +2328,7 @@ C Set all surfaces to standard line width and surface being
 C edited to a thick line if currently in graphics mode.
       ITVNO=0
       ITSNM=0
-      MODIFY=.TRUE.
+      MODIFYVIEW=.TRUE.
       if(MMOD.EQ.8)then
         CALL INLNST(1)
         CALL SURADJ(ICOMP,IS,IE,TMP,IZC,ISC,IC,DESCRC)
@@ -2756,7 +2774,6 @@ C No other hole so link to first vertex of surface.
           NVER(IS)=NVER(IS)+loop6
           NTV=NTV+loop
           NZTV(icomp)=NTV
-
           if(loop.eq.4)then
             JVN(IS,NNV+1)=JVN(IS,1)
             JVN(IS,NNV+2)=NTV-3
@@ -2834,7 +2851,7 @@ C Signal to update the image if not in one of the silent modes.
      &     act(1:2).eq.'sp')then
           continue
         else
-          MODIFY=.TRUE.
+          MODIFYVIEW=.TRUE.
         endif
         call edisp(iuout,' ')
 
@@ -2957,7 +2974,7 @@ C Update the image if in non-silent mode
      &     act(1:2).eq.'sp')then
           continue
         else
-          MODIFY=.TRUE.
+          MODIFYVIEW=.TRUE.
         endif
         call edisp(iuout,' ')
 
@@ -3053,7 +3070,7 @@ C further modifications.
       else
         CALL PHELPD('surface details',nbhelp,'-',0,0,IER)
       endif
-      MODIFY=.TRUE.
+      MODIFYVIEW=.TRUE.
 
       RETURN
       END
@@ -3075,8 +3092,7 @@ C it work on surface of most orientations.
       real XMIN,YMIN,XMAX,YMAX
 
 C Set maximum values to zero.
-      XYMAX = 0
-      ZMAX = 0
+      XYMAX = 0.0; ZMAX = 0.0
 
 C Transform surface into into site coordinates in the
 C surface of the plane. Make up XX,YY,ZZ to pass across to the
@@ -3098,10 +3114,8 @@ C Find transformation matrices that normalise face.
 
 C Transform all points in surface and find lower left corner
 C and the upper right corner.
-      XMIN=100.0
-      YMIN=100.0
-      XMAX=0.0
-      YMAX=0.0
+      XMIN=100.0; YMIN=100.0
+      XMAX=0.0; YMAX=0.0
       DO 300 I=1,N
         CALL ORTTRN(XX(I),YY(I),ZZ(I),TMAT,X1,Y1,ZZZ,IERR)
         IF(X1.LT.XMIN)XMIN=X1

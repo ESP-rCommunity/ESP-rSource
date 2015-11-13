@@ -40,6 +40,7 @@ C essentially a copy of trnsf1.
 #include "geometry.h"
 
       common/tracech/icout
+      common/tc/itc,icnt
       common/pangl/pazi(ms),pelv(ms),ptilt(ms)
       common/trnsf/a(5),b(3),c(5),xor,yor,zor
       common/g1t/xft(mv),zft(mv)
@@ -54,7 +55,7 @@ C essentially a copy of trnsf1.
 
 C If trace requested enable writing.
       tok=.false.
-      if(icout.eq.33)tok=.true.
+      if(icout.eq.33.and.itc.eq.2)tok=.true.
 
       pi=4.0*atan(1.0)
       r=pi/180.
@@ -148,18 +149,18 @@ C Trace output.
          call edisp(icout,outs)
          call edisp(icout,' ')
          call edisp(icout,'Axis translations & rotations:')
-         write(outs,'(a,2x,3f8.1)')'X, Y & Z translations -',
+         write(outs,'(a,2x,3f8.2)')'X, Y & Z translations -',
      &                             xor,yor,zor
          call edisp(icout,outs)
-         write(outs,'(a,2x,3f8.1)')
+         write(outs,'(a,2x,3f8.2)')
      &         'X (BE), Y (GA) & Z (AL) rotations -',be/r,ga/r,al/r
          call edisp(icout,outs)
          call edisp(icout,'ZXY transform equation coefficients:')
-         write(outs,'(a,2x,5f8.2)')'A -',(a(i),i=1,5)
+         write(outs,'(a,2x,5f8.3)')'A -',(a(i),i=1,5)
          call edisp(icout,outs)
-         write(outs,'(a,2x,5f8.2)')'B -',(b(i),i=1,3)
+         write(outs,'(a,2x,5f8.3)')'B -',(b(i),i=1,3)
          call edisp(icout,outs)
-         write(outs,'(a,2x,5f8.2)')'C -',(c(i),i=1,5)
+         write(outs,'(a,2x,5f8.3)')'C -',(c(i),i=1,5)
          call edisp(icout,outs)
          call edisp(icout,
      &     'Original XYZ coordinates:    Transformed X`Y`Z` coords:')
@@ -168,7 +169,7 @@ C Trace output.
            xs=vcoord(izone,ip,1)
            ys=vcoord(izone,ip,2)
            zs=vcoord(izone,ip,3)
-           write(outs,'(i2,2x,3f8.2,2x,3f8.2)')
+           write(outs,'(i2,2x,3f8.3,2x,3f8.3)')
      &       i,xs,ys,zs,xft(i),yft(i),zft(i)
            call edisp(icout,outs)
  9995    continue
@@ -187,6 +188,7 @@ C routine is essentially a copy of trnsf2 used for shading.
 
       common/outin/iuout,iuin
       common/tracech/icout
+      common/tc/itc,icnt
       common/trnsf/a(5),b(3),c(5),xor,yor,zor
       common/sangl1/sazi1,salt1
       common/sangl2/sazi2,salt2
@@ -196,7 +198,7 @@ C routine is essentially a copy of trnsf2 used for shading.
 
 C If trace requested enable writing.
       tok=.false.
-      if(icout.eq.33)tok=.true.
+      if(icout.eq.33.and.itc.eq.2)tok=.true.
 
       pi=4.0*atan(1.0)
       r=pi/180.
@@ -322,10 +324,10 @@ C Trace output.
  9998    format('Intermediate calculations:')
          call edisp(icout,outs)
          write(outs,9997)x1,y1,z1,x2,y2,z2
- 9997    format('X1,Y1,Z1= ',3f8.1,'; X2,Y2,Z2= ',3f8.1)
+ 9997    format('X1,Y1,Z1= ',3f8.2,'; X2,Y2,Z2= ',3f8.1)
          call edisp(icout,outs)
          write(outs,9996)xt1,yt1,zt1,xt2,yt2,zt2
- 9996    format('XT1,YT1,ZT1= ',3f8.1,'; XT2,YT2,ZT2= ',3f8.1)
+ 9996    format('XT1,YT1,ZT1= ',3f8.2,'; XT2,YT2,ZT2= ',3f8.1)
          call edisp(icout,outs)
          write(outs,9995)dx,dy,dz
  9995    format('DX= ',f8.1,'; DY= ',f8.1,'; DZ= ',f8.1)
@@ -358,11 +360,14 @@ C instead of obstruction block surface vertices.
       integer izone  ! current zone
       integer intsur ! index if internal surface
       integer ipass
-      real xxw,yyx,zzw ! window grid point
+      real xxw,yyx,zzw ! source glazing surface grid point
 
       common/tracech/icout
+      common/tc/itc,icnt
       common/trnsf/a(5),b(3),c(5),xor,yor,zor
       common/sangl2/sazi2,salt2
+
+C Point (xyz) projection.
       common/proji/xp,yp,zp
       common/save3i/ta1,ta2,ca1,xmult,eta1,eta2
 
@@ -373,7 +378,7 @@ C instead of obstruction block surface vertices.
 
 C If verbose trace requested enable writing.
       tok=.false.
-      if(icout.eq.33)tok=.true.
+      if(icout.eq.33.and.itc.eq.2)tok=.true.
 
 C Jump to projection if after first entry for current source
 C surface.
@@ -436,15 +441,16 @@ C Trace output (only for 1st grid point in source surface).
      &     ZSDES(1:lnzsn),' (',intsur,') for hour ',ihr,'.'
          call edisp(icout,outs)
          call edisp(icout,' ')
-         write(outs,'(a,3f8.1)')'x,y,z    coordinates:',xxw,yyw,zzw
+         write(outs,'(a,3f8.2)')'x,y,z glazing coordinates:',xxw,yyw,zzw
          call edisp(icout,outs)
-         write(outs,'(a,3f8.1)')'x`,y`,z` coordinates:',xt,yt,zt
+         write(outs,'(a,3f8.2)')'x`,y`,z`      coordinates:',xt,yt,zt
          call edisp(icout,outs)
          write(outs,9998)eta1,eta2,ta1,ta2
  9998    format('Pseudo solar angles: eta1= ',f7.1,'; eta2= ',f7.1,
      &     '; ta1= ',f7.1,'; ta2= ',f7.1)
          call edisp(icout,outs)
-         write(outs,'(a,3f8.1)')'xp,yp,zp coordinates:',xp,yp,zp
+         write(outs,'(a,3f8.2)')'xp,yp,zp proj coordinates:',
+     &     xp,yp,zp
          call edisp(icout,outs)
       endif
       return

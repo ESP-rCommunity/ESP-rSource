@@ -41,47 +41,47 @@ c
 c Example:
 c CALL CPVEWI (.28, 7.5, 2., 1.5, 2., 45., .65, .35, .39, *999, 0)
 c***********************************************************************
-	COMMON /ERROR/ERF
-	INTEGER erf
-	INTEGER KEY
+        COMMON /ERROR/ERF
+        INTEGER erf
+        INTEGER KEY
  
-	REAL VeEXP,PAD,RbH,FAR,SAR,AnbW,ZH,XL
-	REAL CPREF,COBOL,COPAD,COREL,COFAR,COSAR,COHOR
-	REAL CP
+        REAL VeEXP,PAD,RbH,FAR,SAR,AnbW,ZH,XL
+        REAL CPREF,COBOL,COPAD,COREL,COFAR,COSAR,COHOR
+        REAL CP
    
 c calculate the reference value of CP(zh)
-	CPREF = -2.381082*ZH**3.+2.89756*ZH**2.
+        CPREF = -2.381082*ZH**3.+2.89756*ZH**2.
      &  -.774649*ZH+0.745543
 
 c calculate the correction coefficient for the Boundary Layer
-	CALL CPBOUL (ZH,VeEXP,COBOL,*999,KEY)
+        CALL CPBOUL (ZH,VeEXP,COBOL,*999,KEY)
 
 c calculate the correction coefficient for the Surrounding Area Density
-	CALL CPDENS (ZH,PAD,COPAD,*999,KEY)
-	   
+        CALL CPDENS (ZH,PAD,COPAD,*999,KEY)
+   
 c calculate the correction coefficient for the Relative Height
-	CALL CPRELH (ZH,PAD,RbH,COREL,*999,KEY)
-	     COREL = COREL/RbH**(VeEXP*2.)
+        CALL CPRELH (ZH,PAD,RbH,COREL,*999,KEY)
+        COREL = COREL/RbH**(VeEXP*2.)
 
 c calculate the correction coefficients for the Frontal Aspect Ratio
-	CALL CPASPF (ZH,FAR,PAD,COFAR,*999,KEY)
+        CALL CPASPF (ZH,FAR,PAD,COFAR,*999,KEY)
 
 c calculate the correction coefficients for the Side Aspect Ratio
-	CALL CPASPS (ZH,SAR,PAD,COSAR,*999,KEY)
+        CALL CPASPS (ZH,SAR,PAD,COSAR,*999,KEY)
 
 c calculate the correction coefficient for the Horizontal Distribution
 c in relation to the Wind Angle
-	CALL CPHORG (ZH,AnbW,XL,COHOR)
+        CALL CPHORG (ZH,AnbW,XL,COHOR)
 
 c calculate the CP value for the surface point(link) on the wall
-	CP = CPREF*COBOL*COPAD*COREL*COFAR*COSAR*COHOR
-		
+        CP = CPREF*COBOL*COPAD*COREL*COFAR*COSAR*COHOR
+ 
 999     continue
-	RETURN
-	END
+        RETURN
+        END
 
 
-	SUBROUTINE CPVELE (VeEXP,PAD,RbH,FAR,SAR,AnbW,ZH,XL,CP,*,KEY)
+        SUBROUTINE CPVELE (VeEXP,PAD,RbH,FAR,SAR,AnbW,ZH,XL,CP,*,KEY)
 c  pass parameter  # =        1   2   3   4   5    
 c        6   7 8   9   10    11
 c************************************************************************
@@ -117,68 +117,68 @@ c
 c Example:
 c CALL CPVELE (.28, 7.5, 2., 2., 1.5, 135.,.6, .5, -.07, 999, 0)
 c***********************************************************************
-	COMMON /ERROR/ERF
+        COMMON /ERROR/ERF
         common /silmode/ issilent
         logical issilent
         INTEGER erf
-	INTEGER KEY
+        INTEGER KEY
  
-	REAL VeEXP,PAD,RbH,FAR,SAR,AnbW,ZH,XL
-	REAL CPREF,COBOL,COPAD,COREL,COFAR,COSAR,COHOR
-	REAL CP
+        REAL VeEXP,PAD,RbH,FAR,SAR,AnbW,ZH,XL
+        REAL CPREF,COBOL,COPAD,COREL,COFAR,COSAR,COHOR
+        REAL CP
        
 c error return
-	   IF (XL.lt.0..or.XL.gt.1.) then
-              if (.not.issilent) then
-                 WRITE (ERF,*)  'XL out of range (0.- 1.)'
-              end if
-              KEY=1
-	      RETURN 1
-	   ENDIF 
-	   IF (ZH.lt.0..or.ZH.gt.1.) then
-              if (.not.issilent) then
-                 WRITE (ERF,*)  'ZH out of range (0.- 1.)'
-              end if
-              KEY=1
-	      RETURN 1
-	   ENDIF 
+        IF (XL.lt.0..or.XL.gt.1.) then
+          if (.not.issilent) then
+             WRITE (ERF,*)  'XL out of range (0.- 1.)'
+          end if
+          KEY=1
+          RETURN 1
+        ENDIF 
+        IF (ZH.lt.0..or.ZH.gt.1.) then
+           if (.not.issilent) then
+             WRITE (ERF,*)  'ZH out of range (0.- 1.)'
+           end if
+           KEY=1
+           RETURN 1
+        ENDIF 
 
 c calculate the reference value of CP(zh)
-	CPREF = -0.079239*ZH**3 +0.542317*ZH**2 -0.496769*ZH -0.331533
+        CPREF = -0.079239*ZH**3 +0.542317*ZH**2 -0.496769*ZH -0.331533
 
 c calculate the correction coefficient for the Boundary Layer
-	CALL CPBOLL (ZH,VeEXP,COBOL,*999,KEY)
+        CALL CPBOLL (ZH,VeEXP,COBOL,*999,KEY)
 
 c calculate the correction coefficient for the Surrounding Area Density
-	CALL CPDENL (ZH,PAD,COPAD,*999,KEY)
-	   
+        CALL CPDENL (ZH,PAD,COPAD,*999,KEY)
+   
 c calculate the correction coefficient for the Relative Height
-	CALL CPRELL (ZH,PAD,RbH,COREL,*999,KEY)
-	     COREL = COREL/RbH**(VeEXP*2.)
+        CALL CPRELL (ZH,PAD,RbH,COREL,*999,KEY)
+        COREL = COREL/RbH**(VeEXP*2.)
 
 c calculate the correction coefficients for the Frontal Aspect Ratio
-	CALL CPFARL (ZH,FAR,PAD,COFAR,*999,KEY)
+        CALL CPFARL (ZH,FAR,PAD,COFAR,*999,KEY)
 
 c calculate the correction coefficients for the Side Aspect Ratio
-	CALL CPSARL (ZH,SAR,PAD,COSAR,*999,KEY)
+        CALL CPSARL (ZH,SAR,PAD,COSAR,*999,KEY)
 
 c calculate the correction coefficient for the Horizontal Distribution
 c in relation to the Wind Angle
-	CALL CPHORL (ZH,AnbW,XL,COHOR)
-	if (ZH.lt..2) COHOR = COHOR*.86     
-	if (ZH.ge..2.and.ZH.lt..4) COHOR = COHOR*.83
-	if (ZH.ge..4.and.ZH.lt..6) COHOR = COHOR*.73
-	if (ZH.ge..6.and.ZH.lt..8) COHOR = COHOR*.64
-	if (ZH.ge..8) COHOR = COHOR*.61
+        CALL CPHORL (ZH,AnbW,XL,COHOR)
+        if (ZH.lt..2) COHOR = COHOR*.86     
+        if (ZH.ge..2.and.ZH.lt..4) COHOR = COHOR*.83
+        if (ZH.ge..4.and.ZH.lt..6) COHOR = COHOR*.73
+        if (ZH.ge..6.and.ZH.lt..8) COHOR = COHOR*.64
+        if (ZH.ge..8) COHOR = COHOR*.61
 
 c calculate the CP value for the surface point(link) on the wall
-	CP = CPREF*COBOL*COPAD*COREL*COFAR*COSAR*COHOR
-		
-999     continue
-	RETURN
-	END
+        CP = CPREF*COBOL*COPAD*COREL*COFAR*COSAR*COHOR
 
-	SUBROUTINE CPROOF (VeEXP,PAD,RbH,FAR,SAR,AnbW,ZH,XL,Islope,Phi,
+999     continue
+        RETURN
+        END
+
+        SUBROUTINE CPROOF (VeEXP,PAD,RbH,FAR,SAR,AnbW,ZH,XL,Islope,Phi,
      &CP,*,KEY)
 c************************************************************************
 c Purpose: this routine calculates the Surface Wind Pressure Coefficient
@@ -210,7 +210,7 @@ c
 c Example:
 c CALL CPROOF (.28, 7.5, 2., 1.5, 2., 45., .65, .35, .39, *999, 0)
 c***********************************************************************
-	COMMON /ERROR/ERF
+        COMMON /ERROR/ERF
         common /silmode/ issilent
         logical issilent
         INTEGER erf
@@ -233,20 +233,20 @@ c******** CFANG as fitting function of teta
      & -0.0000130316,- 0.0000126886  /
 
 c error return
-	   IF (XL.lt.0..or.XL.gt.1.) then
-              if (.not.issilent) then
-                 WRITE (ERF,*)  'XL out of range (0.- 1.)'
-              end if
-              KEY=1
-	      RETURN 1
-	   ENDIF 
-	   IF (ZH.lt.0..or.ZH.gt.1.) then
-              if (.not.issilent) then
-                 WRITE (ERF,*)  'ZH out of range (0.- 1.)'
-              end if
-              KEY=1
-	      RETURN 1
-           ENDIF
+        IF (XL.lt.0..or.XL.gt.1.) then
+          if (.not.issilent) then
+             WRITE (ERF,*)  'XL out of range (0.- 1.)'
+          end if
+          KEY=1
+          RETURN 1
+        ENDIF 
+        IF (ZH.lt.0..or.ZH.gt.1.) then
+          if (.not.issilent) then
+            WRITE (ERF,*)  'ZH out of range (0.- 1.)'
+          end if
+          KEY=1
+          RETURN 1
+        ENDIF
 
         teta=-AnbW
    
@@ -281,7 +281,7 @@ c calculate the correction coefficient for the Boundary Layer
 
 c calculate the correction coefficient for the Surrounding Area Density
         CALL DENROOF (ZH,PAD,COPAD,*999,KEY)
-	   
+   
 c calculate the correction coefficient for the Relative Height
         CALL RELHROOF (ZH,PAD,RbH,COREL,*999,KEY)
              COREL = COREL/RbH**(VeEXP*2.)
@@ -327,7 +327,7 @@ c in relation to the Wind Angle
          ENDIF
 c calculate the CP value for the surface point(link) on the wall
         CP = CPREF*COBOL*COPAD*COREL*COFAR*COSAR*COHOR
-		
+
 999     continue
         RETURN
-	END
+        END

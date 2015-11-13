@@ -259,6 +259,12 @@ C door width and height.
       real defwininsert,defdoorwidth,defdoorheight
       common/ginsert/defwininsert,defdoorwidth,defdoorheight
 
+C Radiance processor cores.
+      integer radcores
+      common/radcor/radcores
+
+C IES lighting distribution files from model.h
+
       CHARACTER LCFD*72
       CHARACTER*72 LAPROB,LPNF
 
@@ -274,6 +280,7 @@ C door width and height.
       LOGICAL BLDG3D,ZONE3D,MSTROK,MSTRZN
      
       INTEGER :: i,icc,ibe,ibu,j,ixs,ix,iivu,isystcurrent,imu
+      INTEGER :: ies
  
       call tstamp('>','PRJ: clearing model commons')
       
@@ -294,15 +301,8 @@ C Initial assumption is no SHOCC files.
       LGDTAQ='UNKNOWN'
       LGRD1D='UNKNOWN'
       LNLTHP='UNKNOWN'
-      zonepth='./'
-      netpth='./'
-      ctlpth='./'
-      aimpth='./'
-      imgpth='./'
-      radpth='./'
-      dbspth='./'
-      bsmpth='./'
-      hvacpth='./'
+      zonepth='./'; netpth='./'; ctlpth='./'; aimpth='./'
+      imgpth='./'; radpth='./'; dbspth='./'; bsmpth='./'; hvacpth='./'
       lradcf='UNKNOWN'
       cfgroot=' '
       LCTLF='UNKNOWN'
@@ -337,14 +337,11 @@ C HOT3000: AIM-2.
       CALL AIM2_ClearAll
 
 C Clear pre-simulation sets.
-      nsset= 0
-      isstup= 0
-      isbnstep= 0
-      ispnstep= 0
+      nsset= 0; isstup= 0; isbnstep= 0; ispnstep= 0
       isavgh=0
       issave= -1
       sipvres=' '
-      do 39 i=1,MSPS
+      do i=1,MSPS
         spfdescr(i)=' '
         sblres(i)=' '
         sflres(i)=' '
@@ -364,70 +361,39 @@ C Clear pre-simulation sets.
         iwkbstrt(i)=0
         wkheatdd(i)=0.0
         wkcooldd(i)=0.0
-  39  continue
+      enddo  ! of I
 
 C Clear IPV strings and number of assessmments.
-      ipvtitl=' '
-      ipvvers=' '
-      ipvsynop=' '
-      ipvsimu=' '
-      nipvassmt=0
-      nipvdispjd=0
-      ipvastjd(1)=0
-      ipvafnjd(1)=0
-      ipvdispjd(1)=0
+      ipvtitl=' '; ipvvers=' '; ipvsynop=' '; ipvsimu=' '
+      nipvassmt=0; nipvdispjd=0
+      ipvastjd(1)=0; ipvafnjd(1)=0; ipvdispjd(1)=0
 
 C Clear anchors.
       NALOC=0
-      do 40 i=1,20
+      do i=1,20
         ALOCLBL(i)='undefined'
         ALOCTYP(i)='unkn'
         IALOC(i)=0
-        do 400 j=1,99
+        do j=1,99
           lstanchr(i,j)=0
-  400   continue
-  40  continue
+        enddo   ! of j
+      enddo     ! of i
 
 C Set initial primary conversions and emissions.
       ipconv=0
-      pcnvht=1.0
-      pcnvcl=1.0
-      pcnvlt=1.0
-      pcnvfn=1.0
-      pcnvhw=1.0
-      phtco2=0.0
-      phtnox=0.0
-      phtsox=0.0
-      pclco2=0.0
-      pclnox=0.0
-      pclsox=0.0
-      pltco2=0.0
-      pltnox=0.0
-      pltsox=0.0
-      pfnco2=0.0
-      pfnnox=0.0
-      pfnsox=0.0
-      pspco2=0.0
-      pspnox=0.0
-      pspsox=0.0
-      phwco2=0.0
-      phwnox=0.0
-      phwsox=0.0
+      pcnvht=1.0; pcnvcl=1.0; pcnvlt=1.0; pcnvfn=1.0; pcnvhw=1.0
+      phtco2=0.0; phtnox=0.0; phtsox=0.0; pclco2=0.0; pclnox=0.0
+      pclsox=0.0; pltco2=0.0; pltnox=0.0; pltsox=0.0; pfnco2=0.0
+      pfnnox=0.0; pfnsox=0.0; pspco2=0.0; pspnox=0.0; pspsox=0.0
+      phwco2=0.0; phwnox=0.0; phwsox=0.0
 
 C Initial data for CPCALC.
       icpcon=0
-      ble=0.00
-      bwi=0.00
-      bhi=0.00
-      blox=0.00
-      bloy=0.00
-      bloz=0.00
+      ble=0.00; bwi=0.00; bhi=0.00
+      blox=0.00; bloy=0.00; bloz=0.00
       orient=0.00
       irt=0
-      ra=0.00
-      sbh=0.00
-      pad=0.00
-      wvpe=0.00
+      ra=0.00; sbh=0.00; pad=0.00; wvpe=0.00
 
 C Clear derived model areas and U-values.
       xfloor = 0.0; xexposed = 0.0; xvexposed = 0.0
@@ -439,27 +405,24 @@ C Clear derived model areas and U-values.
       xareaslproof = 0.0; xareafltroof = 0.0; xareaskylt = 0.0
 
 C Initialize the indices.
-      INTHPS=.FALSE.
-      IGR1D=.FALSE.
-      GRND3D=.FALSE.
-      BLDG3D=.FALSE.
-      MSTROK=.FALSE.
+      INTHPS=.FALSE.; IGR1D=.FALSE.; GRND3D=.FALSE.
+      BLDG3D=.FALSE.; MSTROK=.FALSE.
 
 C Assume there is not BSim-CFD conflation in any of the zones.
       NCONF=0
-      do 5 i=1,MNZ
+      do i=1,MNZ
         icfdnd(i)=0
-  5   continue
+      enddo  ! of i
 
 C Clear image related data.
       noimg=0
       iton=0
-      do 6,IX=1,MIMG
+      do IX=1,MIMG
         imgfmt(IX)=' '
         imgfoc(IX)=' '
         limgfil(IX)=' '
         imgdoc(IX)='-'
-  6   continue
+      enddo  ! of IX
 
       IAIRN=0
       LAPROB='UNKNOWN'
@@ -468,6 +431,7 @@ C Clear image related data.
       SLAT=50.
       sitelongdif=0.0
       SLON=0.
+      radcores = 1  ! assume only 1 core for use by Radiance
 
 C Assumptions about doors and windows.
       defwininsert=15.0
@@ -486,24 +450,14 @@ C Zone level common blocks.
       do 42 IX = 1,MCOM
 
 C Per-zone areas and U-values.
-        uavgtran(IX) = 0.0
-        uavwall(IX) = 0.0
-        uavslproof(IX) = 0.0
-        uavfltroof(IX) = 0.0
-        uavgsky(IX) = 0.0
-        uavground(IX) = 0.0
-        areatran(IX) = 0.0
-        areawall(IX) = 0.0
-        areaslproof(IX) = 0.0
-        areafltroof(IX) = 0.0
-        areaskylt(IX) = 0.0
-        areaground(IX) = 0.0
-        exposed(IX) = 0.0
-        vexposed(IX) = 0.0
-        izsfloor(IX) = 0
-        izsceil(IX) = 0
+        uavgtran(IX) = 0.0; uavwall(IX) = 0.0; uavslproof(IX) = 0.0
+        uavfltroof(IX) = 0.0; uavgsky(IX) = 0.0; uavground(IX) = 0.0
+        areatran(IX) = 0.0; areawall(IX) = 0.0; areaslproof(IX) = 0.0
+        areafltroof(IX)= 0.0; areaskylt(IX)= 0.0; areaground(IX)= 0.0
+        exposed(IX) = 0.0; vexposed(IX) = 0.0
+        izsfloor(IX) = 0; izsceil(IX) = 0
 
-        do 43 IXS = 1,MS
+        do IXS = 1,MS
           SNAME(IX,IXS)=' '   ! clear surface name
           zboundarytype(IX,IXS,1)=0  ! clear surface boundary
           zboundarytype(IX,IXS,2)=0
@@ -511,16 +465,16 @@ C Per-zone areas and U-values.
           zhasglaze(ix,ixs)=0.0
           zhasdoor(ix,ixs)=0.0
           isznbedges(ix,ixs)=0
-          do 54 iivu=1,MV
+          do iivu=1,MV
             iszlist(ix,ixs,iivu)=0
             szcoords(ix,ixs,1)=0.0
             szcoords(ix,ixs,2)=0.0
             szcoords(ix,ixs,3)=0.0
-  54      continue
-   43   continue
+          enddo  ! of iivu
+        enddo    ! if IXS
 
 C Clear obstructions in all zones.
-        do 55 ibu=1,MB
+        do ibu=1,MB
           XOB(ix,ibu) = 0.0
           YOB(ix,ibu) = 0.0
           ZOB(ix,ibu) = 0.0
@@ -536,12 +490,51 @@ C Clear obstructions in all zones.
           BLOCKMAT(ix,ibu) = ' '
           LNBLOCKMAT(ix,ibu) = 0
           BLOCKTYP(ix,ibu) = 'obs '
-          do 56 ibe=1,8
+          do ibe=1,8
             XBP(ix,ibu,ibe)=0.0
             YBP(ix,ibu,ibe)=0.0
             ZBP(ix,ibu,ibe)=0.0
-  56      continue
-  55    continue
+          enddo  ! of ibe
+        enddo    ! of ibu
+
+C Clear visual entities in all zones.
+        nbvis(ix) = 0
+        do ibu=1,MB
+          XOV(ix,ibu) = 0.0
+          YOV(ix,ibu) = 0.0
+          ZOV(ix,ibu) = 0.0
+          DXOV(ix,ibu) = 0.0
+          DYOV(ix,ibu) = 0.0
+          DZOV(ix,ibu) = 0.0
+          BANGOV(ix,ibu,1) = 0.0
+          BANGOV(ix,ibu,2) = 0.0
+          BANGOV(ix,ibu,3) = 0.0
+          OPOV(ix,ibu)=0.0
+          VISNAME(ix,ibu) = ' '
+          LNVISNAME(ix,ibu) = 0
+          VISMAT(ix,ibu) = ' '
+          LNVISMAT(ix,ibu) = 0
+          VISTYP(ix,ibu) = 'vis '
+          do ibe=1,8
+            XVP(ix,ibu,ibe)=0.0
+            YVP(ix,ibu,ibe)=0.0
+            ZVP(ix,ibu,ibe)=0.0
+          enddo  ! of ibe
+        enddo    ! of ibu
+
+C Clear visual objects in all zones.
+        NBVOBJ(ix)=0
+        do ibu=1,12
+          VOBJNAME(ix,ibu) = ' '
+          LNVOBJNAME(ix,ibu) = 0
+          VOBJDESC(ix,ibu) = ' '
+          LNVOBJDESC(ix,ibu) = 0
+          NBVOBJLIST(ix,ibu) = 0
+          do ibe=1,12
+            VOBJLIST(ix,ibu,ibe) = ' '
+            LNVOBJLIST(ix,ibu,ibe) = 0
+          enddo  ! of ibe
+        enddo    ! of ibu
 
 C Clear SHOCC zone information as well.
         bZoneSHOCCed(IX)=.false.
@@ -552,28 +545,17 @@ C Clear SHOCC zone information as well.
         NBWALLS(IX)=0
         NCCODE(IX)=0
         NDP(IX)=3
-        IDPN(IX,1)=0
-        IDPN(IX,2)=0
-        IDPN(IX,3)=0
+        IDPN(IX,1)=0; IDPN(IX,2)=0; IDPN(IX,3)=0
         CTYPE(IX)=' '
         shape(IX)=' '
         gversion(ix)=1.0
-        rotateit(ix,1)=0.0
-        rotateit(ix,2)=0.0
-        rotateit(ix,3)=0.0
-        rotateit(ix,4)=0.0
-        rotateit(ix,5)=0.0
-        rotateit(ix,6)=0.0
-        zorigin(ix,1)=0.0
-        zorigin(ix,2)=0.0
-        zorigin(ix,3)=0.0
-        zsize(ix,1)=0.0
-        zsize(ix,2)=0.0
-        zsize(ix,3)=0.0
-        znbglz(ix) = 0
-        znbdoor(ix) = 0
-        znbmass(ix) = 0
-        do 158 imu=1,4
+        rotateit(ix,1)=0.0; rotateit(ix,2)=0.0
+        rotateit(ix,3)=0.0; rotateit(ix,4)=0.0
+        rotateit(ix,5)=0.0; rotateit(ix,6)=0.0
+        zorigin(ix,1)=0.0; zorigin(ix,2)=0.0; zorigin(ix,3)=0.0
+        zsize(ix,1)=0.0; zsize(ix,2)=0.0; zsize(ix,3)=0.0
+        znbglz(ix) = 0; znbdoor(ix) = 0; znbmass(ix) = 0
+        do imu=1,4
           zdatamass(ix,imu,1)=0.0
           zdatamass(ix,imu,2)=0.0
           zdatamass(ix,imu,3)=0.0
@@ -584,7 +566,7 @@ C Clear SHOCC zone information as well.
           ztextmass(ix,imu,1)=' '
           ztextmass(ix,imu,2)=' '
           ztextmass(ix,imu,3)=' '
-  158   continue
+        enddo  ! if imu
         zdesc(IX)=' '
         lnzdesc(IX)=0
         zname(IX)=' '
@@ -630,7 +612,7 @@ C HOT3000: BASESIMP.
    42 continue
 
 C Clear the connection list.
-      DO 32 ICC=1,MCON
+      DO ICC=1,MCON
         IC1(ICC)=0
         IE1(ICC)=0
         ICT(ICC)=-1   ! Set to -1 to signal connection type is not yet defined.
@@ -652,7 +634,7 @@ C Clear the connection list.
         sspelv(icc)=0.0
         ssperim(icc)=0.0
         ssthick(icc)=0.0
-   32 CONTINUE
+      ENDDO  ! of ICC
       icfgv=4  ! set cfg file version to latest type
       NCON=0
       ncomp=0
@@ -660,23 +642,23 @@ C Clear the connection list.
       groundrefl=0.2
       groundreflmodel=1
       snowgroundrefl=0.4
-      DO 60 I=1,12
+      DO I=1,12
         groundreflmonth(I)=groundrefl
         dayswithsnow(I)=0
-   60 CONTINUE
+      ENDDO  ! of I
       SNFNAM=' '
 
 C Clear the linear thermal bridges variables
-      DO 3 I=1,16
-        DO 2 IX=1,MCOM
+      DO I=1,16
+        DO IX=1,MCOM
           psi(IX,I) = 0.0
           lngth(IX,I) = 0.0
           losspercent(IX) = 0.0
           thbrpercent = 0.0
           totheatloss(ix) = 0.0
           uavtotal(ix) = 0.0
-    2   CONTINUE
-    3 CONTINUE
+        ENDDO  ! of IX
+      ENDDO    ! of I
 
 C Clear sbem string arrays (from sbem.h).
       pjname=' not yet defined'
@@ -703,25 +685,34 @@ C Clear sbem string arrays (from sbem.h).
       insurer_Company=' not yet defined'
       policyNumberInsurance=' not yet defined'
       pjLevComplexity='Undefined'
-      do 4 isystCurrent=1,MNS
+      do isystCurrent=1,MNS
         ductwork(isystCurrent)='No, use default leakage'
         AHUleakage(isystCurrent)='No, use default leakage'
         duct_tDLd(isystCurrent)=0.15
         AHU_tDLd(isystCurrent)=0.06
- 4    continue
+      enddo  ! of isystCurrent
 
 C Also integers from sbem.h
-      Y_inspect=2010
-      M_inspect=1
-      D_inspect=1
-      S_Yinsur=2010
-      S_Minsur=1
-      S_Dinsur=1
-      E_Yinsur=2011
-      E_Minsur=1
-      E_Dinsur=1
+      Y_inspect=2010; M_inspect=1; D_inspect=1
+      S_Yinsur=2010; S_Minsur=1; S_Dinsur=1
+      E_Yinsur=2011; E_Minsur=1; E_Dinsur=1
       pi_limit=0
       INOTI=0  ! assume we have an original model
+
+C Clear IES data files (see model.h for details).
+      nbofies=0
+      do ies=1,10
+        iesname(ies)='  '
+        iesmenu(ies)='  '
+        iesfile(ies)='  '
+        iesalong='X'
+        ieslen(ies)=0.0
+        ieswid(ies)=0.0
+        iesht(ies)=0.0
+        iespercents(ies)=1
+        iessteps(ies,1)=100; iessteps(ies,2)=1;
+        iessteps(ies,3)=1; iessteps(ies,4)=1; iessteps(ies,5)=1
+      enddo  ! of ies
       return
       end
 
@@ -801,27 +792,27 @@ C Loop through all zones to see if there is a domain flow description.
       else
         if(icfgz.ne.0)then
           iicfgz=0
-          do 49 img=1,noimg
+          do img=1,noimg
               if(imgfoc(img)(1:4).eq.'FZON')iicfgz=iicfgz+1
-  49      continue
+          enddo ! of img
         endif
         if(icfgn.ne.0)then
           iicfgn=0
-          do 48 img=1,noimg
+          do img=1,noimg
               if(imgfoc(img)(1:4).eq.'FNET')iicfgn=iicfgn+1
-  48      continue
+          enddo ! of img
         endif
         if(icfgc.ne.0)then
           iicfgc=0
-          do 47 img=1,noimg
+          do img=1,noimg
               if(imgfoc(img)(1:4).eq.'FCTL')iicfgc=iicfgc+1
-  47      continue
+          enddo  ! of img
         endif
         if(icfgdfn.ne.0)then
           iicfgdfn=0
-          do 46 img=1,noimg
+          do img=1,noimg
               if(imgfoc(img)(1:4).eq.'FDFS')iicfgdfn=iicfgdfn+1
-  46      continue
+          enddo  ! of img
         endif
       endif
 
@@ -2686,7 +2677,7 @@ C G4 G5 into SG1 SG2 SG3 SG4 SG5.
      &           SOTHER1(MS,3),SUSE1(MS,2),SPARENT1(MS)
 
       CHARACTER CTYPE1*4,SOTHER1*24,SNAME1*12,SMLCN1*32
-      CHARACTER SVFC1*4,SOTF1*32,SUSE1*8,SPARENT1*12
+      CHARACTER SVFC1*4,SOTF1*32,SUSE1*12,SPARENT1*12
 
 C Loop through all data and copy their contents into a parallel common
 C block for later recovery.
@@ -2742,7 +2733,7 @@ C G4 G5 from SG1 SG2 SG3 SG4 SG5.
      &           SOTHER1(MS,3),SUSE1(MS,2),SPARENT1(MS)
 
       CHARACTER CTYPE1*4,SOTHER1*24,SNAME1*12,SMLCN1*32
-      CHARACTER SVFC1*4,SOTF1*32,SUSE1*8,SPARENT1*12
+      CHARACTER SVFC1*4,SOTF1*32,SUSE1*12,SPARENT1*12
 
 C Loop through all data and copy their contents into a parallel common
 C block for later recovery.
@@ -4273,6 +4264,8 @@ C For help messages
       integer nbhelp     ! number of help lines found
 
       helpinsub='discovercfg'  ! set for subroutine
+      helptopic='cfg_avail_files'
+      call gethelptext(helpinsub,helptopic,nbhelp)
 
 C Echo search criteria.
       write(outs,*,IOSTAT=ios,ERR=16) 'models in folder ',subpath

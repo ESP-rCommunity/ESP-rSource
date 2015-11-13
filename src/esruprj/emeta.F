@@ -479,7 +479,7 @@ C hasname (string array) the surface name for each surface (so fillsur does not 
       logical anunknownmlc ! if true then there was an unknown MLC
 
 C Strings for surface attributes to pass to insrec.
-      character rsname*12,rsotf*32,rsmlcn*32,rsuse1*8,rsuse2*8
+      character rsname*12,rsotf*32,rsmlcn*32,rsuse1*12,rsuse2*12
       character rsparent*12
       integer newsurf   ! index of surface when adding door/glazing
       integer ibcs      ! connection associated with base surface

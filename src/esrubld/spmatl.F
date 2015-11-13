@@ -4700,7 +4700,8 @@ C facilities. Created by Achim Geissler, June 17 2008.
       implicit none
 
 #include "building.h"
-#include "geometry.h"  ! for zname
+C for zname
+#include "geometry.h"
 
 C Parameters.
       integer iZone,iNode,iSurf,ispmnod

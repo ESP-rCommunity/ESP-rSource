@@ -306,13 +306,13 @@ C may have a different value defined for the above variables
 
       character outs*124
 
-!	This is the conversion used to go from AC/h (from *.opr file) to W/K (effective conductivity)
+!     This is the conversion used to go from AC/h (from *.opr file) to W/K (effective conductivity)
       A=0.33*VOL(ICOMP)
-!	A = (1006 J/kgK * 1.177 kg/m^3 / 3600 s/h) * (m^3/AC)
-!	First term on RHS in brackets is 0.33 Wh/Km^3
-!	Second term on RHS in brackets is Zone_Volume m^3/AC
-!	This results A = 0.33 * Vol with units of (Wh per Kelvin Air-Change)
-!	The file reads in AC/h and when it is multiplied by A results in W/K
+!     A = (1006 J/kgK * 1.177 kg/m^3 / 3600 s/h) * (m^3/AC)
+!     First term on RHS in brackets is 0.33 Wh/Km^3
+!     Second term on RHS in brackets is Zone_Volume m^3/AC
+!     This results A = 0.33 * Vol with units of (Wh per Kelvin Air-Change)
+!     The file reads in AC/h and when it is multiplied by A results in W/K
 
 C << what about temporal zone infil and vent? should this require a return? >>
       NDTY=NBDAYTYPE

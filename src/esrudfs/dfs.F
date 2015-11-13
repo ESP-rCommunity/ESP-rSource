@@ -52,9 +52,6 @@ C if these are 0 then use default values.
       common/childt/childterminal
       integer ifs,itfs,imfs
       COMMON/GFONT/IFS,ITFS,IMFS
-      common/RAY2/ITDSP,ITBND,ITEPT,ITZNM,ITSNM,ITVNO,ITORG,ITSNR,
-     &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS,ITPPSW
-
       COMMON/ALL/NI,NJ,NK,NIM1,NJM1,NKM1,NIM2,NJM2,NKM2
       common/INCALC/INCALU,INCALV,INCALW,INCALK,INCALD,INCALT,
      1              IZEROT,IZanKE,IMITZ
@@ -976,6 +973,11 @@ C Dummy subroutine needed to compile (called from library code).
       SUBROUTINE PLELEV(direc)
       CHARACTER direc*1
 
+      return
+      end
+
+      SUBROUTINE BASESIMP_INPUTS(ICOMP,IER)
+      integer icomp,ier
       return
       end
 

@@ -64,6 +64,7 @@ C derived.h are derived areas and U values for zones and the model
 #include "derived.h"
 #include "plant.h"
 #include "power.h"
+#include "prj3dv.h"
       
       integer lnblnk  ! function definition
 
@@ -94,7 +95,6 @@ C LPNF (72 char) plant network file name.
       INTEGER :: IZSTOCN
       COMMON/C24/IZSTOCN(MCOM,MS)
 
-      common/RAY3/MODIFY,MODLEN,MODBND
       COMMON/exporttg/xfile,tg,delim
       COMMON/exporttgi/ixopen,ixloc,ixunit
       INTEGER :: ixopen,ixloc,ixunit
@@ -157,7 +157,7 @@ C Assume: Mon=1, Tue=2, Wed=3, Thu=4, Fri=5, Sat=6, Sun=7
 
       COMMON/TDFFLG0/DBTAG(MIT),DBTASK(MIT),DBZN(MIT),DBSN(MIT)
 
-      logical found,XST,apply,MODIFY,MODLEN,MODBND,duplicate
+      logical found,XST,apply,duplicate
       logical bndrysxc,context,bound
 
 C External text editor.
@@ -934,7 +934,7 @@ C 'any horizontal','any orien.','cancel'.
               elseif(ins4.eq.2)then
                 if(SSMLCN(icc)(1:4).ne.'UNKN')apply=.false.
               elseif(ins4.eq.3)then
-                if(SSMLCN(icc)(1:4).eq.'UNKN')apply=.false.
+                if(SSMLCN(icc)(1:4).eq.'UNKN')apply=.false. 
                 if(SSMLCN(icc)(1:12).ne.mlcname(ISEL)(1:12))then
                   apply=.false.
                 endif
@@ -963,7 +963,7 @@ C If writing to file call ctlexp to close it and switch back to text feedback.
           call ctlexp(xfile,ixopen,ixloc,ixunit,'T','geom text',IER)
           destination=0
         endif
-        MODIFY=.TRUE.
+        MODIFYVIEW=.TRUE.
         MODBND=.TRUE.
       elseif(ino.eq.19)then
         fileinfo=fileinfo+1
@@ -1108,11 +1108,11 @@ C Generate the QA report.
       call dstamp(dstmp)
       call edisp(itu,'Synopsis')
       call edisp(itu,' ')
-      write(outs248,'(9A)') 'Synopsis of the model ',
+      write(outs248,'(8A)') 'Synopsis of the model ',
      &  modeltitle(1:lnblnk(modeltitle)),' defined in ',
      &  LCFGF(1:lnblnk(LCFGF)),' generated on ',
-     &  dstmp,'. Notes associated with the model',
-     &  ' are in ',lmodellog(1:lnblnk(lmodellog))
+     &  dstmp,'. Associated notes are in ',
+     &  lmodellog(1:lnblnk(lmodellog))
       call edisp248(itu,outs248,80)
       call edisp(itu,' ')
 
@@ -2121,14 +2121,14 @@ C Setup phrases for the menu and for editing length and psi values.
               endif
               do 89 itbmenu=1,8
                 if(nbrdg(izz).gt.0)then
-                  do 90 itb=1,nbrdg(izz)
+                  do itb=1,nbrdg(izz)
                     if(itbmenu.eq.ibrdg(izz,itb))then
                       WRITE(TBRIDGE,'(a,2F10.4)') 
      &                  phrasemenu(itbmenu),
      &                  psi(izz,itb),lngth(izz,itb)
                       call edisp(itu,TBRIDGE)
                     endif
-  90              continue
+                  enddo  ! of itb
                 endif
   89          continue
               if(nbrdg(izz).gt.0)then   
@@ -2137,14 +2137,14 @@ C Setup phrases for the menu and for editing length and psi values.
               endif
               do 189 itbmenu=9,16
                 if(nbrdg(izz).gt.0)then   
-                  do 190 itb=1,nbrdg(izz)
+                  do itb=1,nbrdg(izz)
                     if(itbmenu.eq.ibrdg(izz,itb))then
                       WRITE(TBRIDGE,'(a,2F10.4)') 
      &                  phrasemenu(itbmenu),
      &                  psi(izz,itb),lngth(izz,itb)
                       call edisp(itu,TBRIDGE)
                     endif
- 190              continue
+                  enddo  ! of itb
                 endif
  189          continue
               if(losspercent(izz).gt.0.0) then
@@ -2163,19 +2163,19 @@ C See if an even or odd number of items in list.
           if(im.eq.1) odd=.true.
           call edisp(itu,' Vertices ( index X Y Z) in the zone...')
           if(NZTV(izz).lt.20)then
-            DO 960 I = 1,NZTV(izz)
+            DO I = 1,NZTV(izz)
               WRITE(outs,'(a,i3,3F12.5,a,i3)')'*vertex ',I,
      &          X(I),Y(I),Z(I)
               call edisp(itu,outs)
-960         CONTINUE
+            enddo  ! of I
           else
             MNULEN=(NZTV(izz)/2)
-            DO 193 K=1,MNULEN
+            DO K=1,MNULEN
               WRITE(outs,'(a,i3,3f11.5,a,i3,3f11.5)') 'vertex ',k,
      &        X(k),Y(k),Z(k),'   vertex ',K+MNULEN,
      &        X(K+MNULEN),Y(K+MNULEN),Z(K+MNULEN)
               call edisp(itu,outs)
-  193       CONTINUE
+            enddo  ! of K
 
 C Put odd vertex in right column.
             if(odd)then
@@ -2187,7 +2187,7 @@ C Put odd vertex in right column.
 
           call edisp(itu,
      &' Number of vertices followed by list, name & perimeter length')
-          DO 970 I = 1,NZSUR(izz)
+          DO I = 1,NZSUR(izz)
             icc=izstocn(izz,i)        ! find connection
             lsna=lnblnk(SSNAME(icc))  ! get length of surf name
             write(louts,'(a,42I4)') '*edges ',NVER(I),
@@ -2197,7 +2197,7 @@ C Put odd vertex in right column.
      &        loutsd(1:lnblnk(loutsd)),'   ',SSNAME(icc)(1:lsna),
      &        SSPERIM(icc),'m perimeter'
             call edisp248(itu,outs248,100)
- 970      CONTINUE
+          enddo  ! of I
 
 C If thermal bridges are associated with a surface then report this.
 C Loop each surface in zone, and for each surface each edged and if
@@ -2206,24 +2206,24 @@ C ibridgeshr(connection,edge) is non-zero add to howmanytbedges array.
             do 971 I = 1,NZSUR(izz)
               icc=izstocn(izz,i)        ! find connection
               lsna=lnblnk(SSNAME(icc))  ! get length of surf name
-              do 973,j=1,16
+              do j=1,16
                 howmanytbedges(j)=0
-  973         continue
+              enddo  ! of j
               haveedgebrdge=.false.
-              do 972 j=1,NVER(I)
+              do j=1,NVER(I)
                 if(ibridgeshr(icc,j).ne.0)then
                   howmanytbedges(ibridgeshr(icc,j))=
      &              howmanytbedges(ibridgeshr(icc,j))+1
                   haveedgebrdge=.true.
                 endif
- 972          continue
+              enddo  ! of j
 
 C If at least one thermal bridge for surface report it. Keep writing
 C into outs248 for each non-zero bridges.
               if(haveedgebrdge)then
                 write(outs248,'(2a)') SSNAME(icc)(1:lsna),' bridges: '
                 lk=lnblnk(outs248)+2
-                do 974 k=1,16
+                do k=1,16
                   if(howmanytbedges(k).gt.0)then
                     lnk=lnblnk(phraselen(k))
                     lnkn=lk+lnk+1
@@ -2231,7 +2231,7 @@ C into outs248 for each non-zero bridges.
      &                phraselen(k)(1:lnk),','
                     lk=lnkn+1
                   endif
- 974            continue
+                enddo  ! of k
                 call edisp248(itu,outs248,100)
               endif
  971        continue
@@ -2288,7 +2288,7 @@ C Remind user of standard optics as well as the alternatives.
                 write(outs,'(a,5f6.3)') ' Standard optic solar trans:',
      &            (TMCT(IVALS(IZ),I,M),M=1,5)
                 call edisp(itu,outs)
-                DO 2021 KK=1,NBCTMC(IVALS(IZ),I)
+                DO KK=1,NBCTMC(IVALS(IZ),I)
                   if(NBCTT(IVALS(IZ),KK,I).eq.0)then
                     msg=' sensing total radiation'
                   elseif(NBCTT(IVALS(IZ),KK,I).eq.1)then
@@ -2308,7 +2308,7 @@ C Remind user of standard optics as well as the alternatives.
      &              ' setpoint @ ',BACTPT(IVALS(IZ),KK,I),' alt solar',
      &              (TMCT2(IVALS(IZ),I,M,KK),M=1,5)
                   CALL EDISP(itu,OUTS)
- 2021           continue
+                enddo  ! of kk
               endif
  2020       continue
             call edisp(itu,' ')
@@ -2330,25 +2330,46 @@ C then rescan that zone file with verbose setting.
           if(IOBS(ivz).gt.0.and.nbobs(ivz).gt.0)then
             call edisp(itu,
      &   'Block X- Y- Z- coords DX- DY- DZ- values Orient Opacity')
-            DO 9995 I=1,nbobs(ivz)
+            DO I=1,nbobs(ivz)
               llbm=LNBLOCKMAT(ivz,I)
               llbn=LNBLOCKNAME(ivz,I)
               if(BLOCKTYP(ivz,I)(1:4).eq.'obs '.or.
      &           BLOCKTYP(ivz,I)(1:4).eq.'obs3')then
-                WRITE(OUTS,9994)I,XOB(ivz,I),YOB(ivz,I),ZOB(ivz,I),
+                WRITE(OUTS,'(I3,8F8.1,F5.2,4a)') I,
+     &            XOB(ivz,I),YOB(ivz,I),ZOB(ivz,I),
      &            DXOB(ivz,I),DYOB(ivz,I),DZOB(ivz,I),
-     &            BANGOB(ivz,I,1),BANGOB(ivz,I,2),OPOB(ivz,I),
-     &            BLOCKNAME(ivz,I)(1:llbn),BLOCKMAT(ivz,I)(1:llbm)
- 9994           FORMAT(I3,8F8.1,F5.2,' ',a,' ',a)
+     &            BANGOB(ivz,I,1),BANGOB(ivz,I,2),OPOB(ivz,I),' ',
+     &            BLOCKNAME(ivz,I)(1:llbn),' ',BLOCKMAT(ivz,I)(1:llbm)
                 call edisp(itu,OUTS)
               else
                 WRITE(OUTS,'(i3,a,44x,3a)')I,' user defined coords ',
      &            BLOCKNAME(ivz,I)(1:llbn),' ',BLOCKMAT(ivz,I)(1:llbm)
                 call edisp(itu,OUTS)
               endif
- 9995       CONTINUE
+            enddo  ! of i
             CALL EDISP(itu,' ')
           endif
+
+          if(nbvis(ivz).gt.0)then
+            call edisp(itu,'visual type name    composition')
+            do i=1,nbvis(ivz)
+              llbm=LNVISMAT(ivz,i)
+              llbn=LNVISNAME(ivz,i)
+              if(VISTYP(ivz,i)(1:4).eq.'vis ')then
+                WRITE(outs,'(4A)')' vis 1rot  ',
+     &            VISNAME(ivz,i)(1:llbn),' ',VISMAT(ivz,i)(1:llbm)
+              elseif(VISTYP(ivz,i)(1:4).eq.'vis3')then
+                WRITE(outs,'(4A)')' vis 3rot  ',
+     &            VISNAME(ivz,i)(1:llbn),' ',VISMAT(ivz,i)(1:llbm)
+              elseif(VISTYP(ivz,i)(1:4).eq.'visp')then
+                WRITE(outs,'(4A)')' vis poly  ',
+     &            VISNAME(ivz,i)(1:llbn),' ',VISMAT(ivz,i)(1:llbm)
+              endif
+              call edisp(itu,outs)
+            enddo  ! of iv
+            CALL EDISP(itu,' ')
+          endif
+
           if(ISI(ivz).EQ.1)then
             call FINDFIL(LSHAD(ivz),XST)
             if(XST)then
@@ -2359,6 +2380,7 @@ C then rescan that zone file with verbose setting.
      &          ' Shading patterns have not yet been calculated.')
             endif
           endif
+
           if(IHC(ivz).EQ.1)then
             if(zoneextrainfo.eq.1)then
               call edisp(itu,
@@ -2452,7 +2474,7 @@ C as an earlier one.
             ilcot=0
             duplicate=.false.
             if(IZ.gt.1)then
-              do 99 IZO=1,IZ
+              do IZO=1,IZ
                 lcot=LPROJ(IVALS(IZO))
                 if(lco(1:lnblnk(lco)).eq.lcot(1:lnblnk(lcot)))then
                   if(IZO.ne.IZ)then
@@ -2461,7 +2483,7 @@ C as an earlier one.
                     goto 101
                   endif
                 endif
-  99          continue
+              enddo  ! of izo
             endif
  101        if(duplicate.and.ilcot.ne.0)then
               write(outs,'(2a)') ' Uses same operations as zone ',
@@ -2503,9 +2525,9 @@ C Report code complience information for the project. Do this only
 C if the zones are fully attributed.
       if(zoneextrainfo.ge.1)then
         allattribok=.true.
-        do 699 ijk=1,INPIC
+        do ijk=1,INPIC
           if(.NOT.attribok(IVALS(IJK))) allattribok=.false.
- 699    continue
+        enddo  ! of ijk
         if(.NOT.allattribok)then
           call edisp(itu,'  ')
           call edisp(itu,'Project AU reporting not included because')
@@ -2637,7 +2659,7 @@ C set to 'verbose all' then include all of them.
         call edisp(itu,' Multi-layer constructions used:')
 C Debug.
 C        write(6,*) 'nmlc is ',nmlc,databaseinfo
-        do 342 imlc=1,nmlc
+        do imlc=1,nmlc
           found=.false.
           mlc_name=mlcname(imlc)(1:12)
           call mlcrefs(mlc_name,areamlc,tareamlc,found)
@@ -2658,7 +2680,12 @@ C        write(6,*) 'nmlc is ',nmlc,databaseinfo
               call edisp(itu,outs)
             endif
           endif
-  342   continue
+        enddo  ! of imlc
+
+C << materials used portion of the report: for each find the: >>
+C << total area in model, then use the thickness and density to >>
+C << report on kg of each >>
+
       endif
 
 C If writing to file call ctldumpt to close it and switch back to text feedback.

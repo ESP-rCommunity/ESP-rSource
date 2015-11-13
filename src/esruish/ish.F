@@ -118,9 +118,6 @@ C IEEE callback (Solaris)
       integer ifs,itfs,imfs
       common/gfont/ifs,itfs,imfs
       common/gzonpik/izgfoc,nzg,nznog(mcom)
-      common/ray2/itdsp,itbnd,itept,itznm,itsnm,itvno,itorg,itsnr,
-     &            itobs,ithls,ithlz,itgrd,grdis,itppsw
-      common/ray3/modify,modlen,modbnd
       common/fopened/cfgok,mldbok,matdbok,ctlok,optkok,CFCDBOK
       integer mon,isc,iyd
       common/contr/mon,isc(ms),iyd
@@ -172,11 +169,12 @@ C Name of current application.
       character pagestitle*42 ! for banner title via epages call
 
       logical silent,unixok,there,context,existing
-      logical modify,modlen,modbnd,xst
+      logical xst
       logical ok,dok,cfgok,mldbok,matdbok,ctlok,optkok,CFCDBOK
       logical user_recalc  ! user requested recalculation
       logical loaded_existing  ! to signal working with existing shd file
       logical changed_existing  ! to signal existing shd file updated
+      dimension iva(ms)
 
       integer iglib   ! if 1 then X11, if 2 then GTK, if 3 then text only.
       integer lnshd   ! length of current shading file string.
@@ -920,6 +918,8 @@ C If user toggles trace a 2nd time then we are in detailed mode
          items(20)=             'm trace output >> fort.33 '
       elseif(itc.eq.2)then
          items(20)=             'm trace output+ >> fort.33'
+      elseif(itc.eq.3)then
+         items(20)=             'm trace output++>> fort.33'
       endif
       if(ixopen.eq.1)then
          items(21)='> outputs >> file       '
@@ -1075,7 +1075,7 @@ C the day and time, compute the positon and update the view.
                eyem(2)=y1
                eyem(3)=z1
                itsnm=1
-               modify=.true.
+               modifyview=.true.
                modlen=.true.
                nzg=1
                nznog(1)=icomp
@@ -1551,6 +1551,7 @@ C  ifstat = 8  new file filled via import of ascii file
 #include "building.h"
 #include "model.h"
 #include "geometry.h"
+#include "prj3dv.h"
       
       integer lnblnk  ! function definition
 
@@ -1559,14 +1560,13 @@ C  ifstat = 8  new file filled via import of ascii file
       common/filep/ifil
 
       common/gzonpik/izgfoc,nzg,nznog(mcom)
-      common/ray3/modify,modlen,modbnd
       common/ract/paction
       integer iobstrtrace  ! set to non-zero if already written
       common/obstrc/iobstrtrace(mcom,mb)
 
       character exportfile*72,paction*16,outs*124
 
-      logical modify,modlen,modbnd,silent,xst
+      logical silent,xst
 
 C For help messages
       character helpinsub*24 ! subroutine name
@@ -1682,7 +1682,7 @@ C Determine it's bounds for future comparison. Force it to be drawn.
          call esczone(icomp)
          call bndobj(0,ier)
          call erczone(icomp)
-         modify=.true.
+         modifyview=.true.
          modlen=.true.
          modbnd=.true.
          nzg=1
@@ -1929,7 +1929,15 @@ C Open optical Properties db and read into common.
       return
       end
 
+C Dummy routines.
+      subroutine Find_season_parameters()
+      return
+      end
 
+      SUBROUTINE BASESIMP_INPUTS(ICOMP,IER)
+      integer icomp,ier
+      return
+      end
 
 C In support of floating point exceptions.
 #ifdef SUN

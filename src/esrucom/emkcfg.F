@@ -287,6 +287,10 @@ C If 0 then the calculation includes diffuse shading.
       integer iexcludediff_flag
       common/excludediff/iexcludediff_flag
 
+C Radiance processor cores.
+      integer radcores
+      common/radcor/radcores
+
       CHARACTER*72 LBSIMP,hvacfile,LFClds
 
       CHARACTER LAPROB*72
@@ -334,6 +338,7 @@ C Control for writing out multi-climate sim presets
       integer ipos    ! position in flow node string buffer
       integer lnouts   ! location at end of flow node string buffer
       integer lnipv   ! location at end of the external IPV file
+      integer loop    ! for looping
       
       INTEGER :: ier,i,ia,iav,icc,icd,id1,id2,id3,id4,im1,im2,im3,im4
       INTEGER :: ij,img,ios,iss,iuf,iw,j,l,lcfgl,lcfgr,lct,lctn,loutlen
@@ -525,6 +530,27 @@ C Begin writing the file with version number in the header.
      &  '  # path to hvac files'
       WRITE(IFCFG,'(3a)',IOSTAT=IOS,ERR=3) '*bsmpth ',bsmpth,
      &  '  # path to BASESIMP files'
+      WRITE(IFCFG,'(A,i2,a)',IOSTAT=IOS,ERR=3) '*radcore ',radcores,
+     &  '  # number of cores available to Radiance'
+
+C If there are IES data files and entities associated with the model:
+      if(nbofies.gt.0)then
+        write(IFCFG,'(a,i2,a)',IOSTAT=IOS,ERR=3) '*ies ',nbofies,
+     &    '  # number of IES entities'
+        do loop=1,nbofies
+          write(IFCFG,'(4a)',IOSTAT=IOS,ERR=3) '*nameies ',
+     &      iesname(loop)(1:lnblnk(iesname(loop))),', ',iesmenu(loop)
+           write(IFCFG,'(3a)',IOSTAT=IOS,ERR=3) '*iesraw ',
+     &       iesfile(loop)(1:lnblnk(iesfile(loop))),'   # raw data'
+          write(IFCFG,'(a,3F7.3,3a)') '*fixture ',ieslen(loop),
+     &      ieswid(loop),iesht(loop),' ',iesalong(loop),
+     &      '  #  length width height'
+          write(IFCFG,'(a,i2,5f5.2)',IOSTAT=IOS,ERR=3) '*ctlies ',
+     &      iespercents(loop),(iessteps(loop,I),I=1,iespercents(loop))
+        enddo   ! of loop
+        write(IFCFG,'(a)',IOSTAT=IOS,ERR=3) '*endies '
+      endif
+
       WRITE(IFCFG,'(A,i4,a)',IOSTAT=IOS,ERR=3) '*indx ',INDCFG,
      &  indxcmt(1:lnblnk(indxcmt))
   30  FORMAT('# ESRU system configuration defined by file ',/,'# ',A)
