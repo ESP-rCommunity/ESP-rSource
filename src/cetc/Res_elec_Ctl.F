@@ -52,7 +52,7 @@ C  RES_elec_storage_ctl:   The main control routine. This routine is called in
 C                          esrupfs/enetsolv.F, subroutine ENETSOLV and manages the control
 C                          schemes available.
 C
-C  simple_ctl              Basic (simple) control (currently a constant load on battery)
+C  simple_ctl              Basic (simple) control
 C
 C  low_cost                Control based on algorithm to minimise cost. Reads time step
 C                          data on electricity costs from an external file ...
@@ -78,27 +78,46 @@ C
 C-----------------------------------------------------------------------------------------
       SUBROUTINE RES_elec_storage_ctl
       IMPLICIT NONE
+#include "building.h"
+#include "plant.h"
+#include "power.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       INTEGER IUOUT           !-write unit number
       INTEGER IUIN            !-read unit number
 
+C ESP-r COMMONs
+       COMMON/SIMTIM/IHRP,IHRF,IDYP,IDYF,IDWP,IDWF,NSINC,ITS
+       INTEGER IHRP            !-hour of present time-step
+       INTEGER IHRF            !-hour of future time-step
+       INTEGER IDYP            !-year day number of present day
+       INTEGER IDYF            !-year day number of future day
+       INTEGER IDWP            !-day of the week of present day
+       INTEGER IDWF            !-day of the week of future day
+       INTEGER NSINC           !-number of building-side time increments
+                               !-since start of simulation
+       INTEGER ITS             !-current building time-step within
+                               !-current hour
+
 C Input file information
       common/reselecctl/iResElecCtl,ResElecFlnam
-      integer ireselecctl       !- flag indicating that file required by renewable energy
-                                !- system controller is specified
-      character*72 reselecflnam !- name of file containing renewable energy system
-                                !- controller inputs
+      integer ireselecctl       !- Flag indicating that file required by renewable energy
+                                !- System controller is specified
+      character*72 reselecflnam !- Name of file containing renewable energy system
+                                !- Controller inputs
 
       common / reselec_ctl_status / bRESElec_ctl_unconverged
       logical bRESElec_ctl_unconverged         !-logical flag indicating additional iterations req'd
 
 C Basic RES (elec) controller inputs
-      common/reselec/RES_elec_ctl_mode, RES_elec_ctl_scenario
+      common/reselec/RES_elec_ctl_mode, RES_elec_ctl_scenario, NumBat
       integer RES_elec_ctl_mode     ! control mode 1, 2 or 3 << Note: currently only 2 is coded >>
       integer RES_elec_ctl_scenario ! control scenario active
+      integer NumBat                !- Number of batteries in system
 
 C Local variables
+      integer IPWC
+
       character*125 outstr
 
 C-----------------------------------------------------------------------------------------
@@ -109,6 +128,23 @@ C........Controller is not in use. Set flag preventing iteration
          bResElec_ctl_unconverged = .false.
       else ! closes at end of subroutine!
 C........Controller is in use.
+
+C      Count number of batteries ...
+       if (NSINC .eq. 1) then
+         NumBat=0
+
+         do 5 IPWC=1,NPOWCOM
+
+           IF( (POWCOMID(IPWC).EQ.pba) .or.  ! Lead-acid battery
+     &         (POWCOMID(IPWC).EQ.vrb) .or.  ! VRB
+     &         (POWCOMID(IPWC).EQ.lion)      ! Lithium-ion battery
+     &       ) THEN
+C            Battery found
+             NumBat = NumBat +1
+           ENDIF
+
+5        continue
+       endif
 
 C <<   lion (and pba) battery behaviour very questionable for short time steps -
 C      must a time step integration/lag occur for timesteps below a certain
@@ -138,13 +174,14 @@ C=============================== simple control mode ===========================
 C This routine applies a power draw according to data from a file.
 C
 C Options:
-C 1) battery is connected with a POWOC of type 12, data is read from ".fcl" file
-C    with a maximum resolution of 12 entries per hour (5-min-data)
+C 1) battery/ies is/are connected with a POWOC of type 12, data is read
+C    from ".fcl" file with a maximum resolution of 12 entries per hour
+C    (5-min-data); load is evenly distributed across batteries in system.
 C
-C 2) battery is connected with a POWOC of type 24, data is read from TDF file
-C    with a maximum resolution according to TDF specs (1-min-data tested)
-C
-C <<< common "battery_state" allows for only one battery in a given system!! >>>
+C 2) battery/ies is/are connected with a POWOC of type 24, data is read
+C    from TDF file with a maximum resolution according to TDF specs
+C    (1-min-data tested); load is evenly distributed across batteries
+C    in system.
 C
 C This control mode is meant mostly for testing / debugging purposes.
 C
@@ -156,6 +193,12 @@ C===============================================================================
 #include "plant.h"
 #include "power.h"
 #include "BATTERY.h"
+
+C Basic RES (elec) controller inputs
+      common/reselec/RES_elec_ctl_mode, RES_elec_ctl_scenario, NumBat
+      integer RES_elec_ctl_mode     ! control mode 1, 2 or 3 << Note: currently only 2 is coded >>
+      integer RES_elec_ctl_scenario ! control scenario active
+      integer NumBat                !- Number of batteries in system
 
 C External load determined in subroutine POWOC_Outside_ld
 C (Power only component type 12)
@@ -184,13 +227,15 @@ C         which POWOC is connected to the same node as the battery
 C               Current POWOC is connected to battery
                 if (POWCOMID(IPWCLD) .EQ. 12) then
 C                 load is being read from .fcl file
-C                 'house_load' is negative!
-                  batDemandP = -house_load
+C                 'house_load' is negative! Split load evenly between
+C                 batteries in system
+                  batDemandP(IPWC) = -house_load/real(NumBat)
 
                 elseif (POWCOMID(IPWCLD) .eq. 24) then
 C                 Load is being read from TDF file
-C                 'PPOWOC()' is negative!
-                  batDemandP = -PPOWOC(IPWCLD)
+C                 'PPOWOC()' is negative! Split load evenly between
+C                 batteries in system
+                  batDemandP(IPWC) = -PPOWOC(IPWCLD)/real(NumBat)
                 endif
               endif
    16       continue ! loop through phases
@@ -222,8 +267,8 @@ C===============================================================================
 #include "CETC_definitions.h"
 
 C Common block holding information on the battery's current operation.
-      COMMON/battery_op_data/maxPBatCharge_common,
-     &   maxPBatDischarge_common, RE_H2_control_scenario
+      COMMON/battery_op_data/maxPBatCharge_common(MPOWCOM),
+     &   maxPBatDischarge_common(MPOWCOM), RE_H2_control_scenario
       REAL maxPBatCharge_common    ! Maximum charge rate of battery (W) as determined
                                    ! for mode of operation at previous calulcation (charge or discharge).
       REAL maxPBatDischarge_common ! Maximum discharge rate of battery (W) as determined
@@ -235,9 +280,10 @@ C Common block holding information on the battery's current operation.
       logical bRESElec_ctl_unconverged  !-logical flag indicating additional iterations req'd
 
 C Basic RES (elec) controller inputs
-      common/reselec/RES_elec_ctl_mode, RES_elec_ctl_scenario
+      common/reselec/RES_elec_ctl_mode, RES_elec_ctl_scenario, NumBat
       integer RES_elec_ctl_mode     ! control mode 1, 2 or 3 << Note: currently only 2 is coded >>
       integer RES_elec_ctl_scenario ! control scenario active
+      integer NumBat                !- Number of batteries in system
 
 C Various RES (elec) controller inputs
       common/reselec_setpts/SOC_PV_ON,SOC_PV_OFF,
@@ -339,17 +385,17 @@ cx        batDODMax = ??
       ENDIF
 
 C     Depth of discharge '0' with tolerance 0.005 (0.5%) is viewed as "full"
-      call eclose(batDODFin,0.,0.005, bBatteryFull)
+      call eclose(batDOD(IPWC_battery),0.,0.005, bBatteryFull)
 
 C     Check against depth of discharge 'batDODMax', for which battery is
 C     considered "empty"
-      call eclose(batDODFin,batDODMax,0.01,bBatteryEmpty)
+      call eclose(batDOD(IPWC_battery),batDODMax,0.01,bBatteryEmpty)
 
 C----------------------------------------------------------------------------------------
 C     Save battery data from last call
 C----------------------------------------------------------------------------------------
 
-      fBatDemandP_old = batDemandP
+      fBatDemandP_old = batDemandP(IPWC_battery)
 
 C-----------------------------------------------------------------------------------------
 C Sense power generation from PCU that is connected between PV and DC bus.  This
@@ -488,7 +534,8 @@ C             Refund rate for export to grid is high
             else
 C             Refund for export to grid is low
 
-              if (P_available .le. maxPBatCharge_common) then
+              if (P_available .le.
+     &                        maxPBatCharge_common(IPWC_battery)) then
                 RES_elec_ctl_scenario = 3
 C               Charge battery with all available power
                 batDemandP = -1.0*P_available
@@ -497,8 +544,9 @@ C               Charge battery with all available power
                 RES_elec_ctl_scenario = 4
 C               Charge battery until full, then export excess energy
 C               available to grid (-ve is charge)
-                batDemandP = -1.0*maxPBatCharge_common
-                export_to_grid = P_available - maxPBatCharge_common
+                batDemandP = -1.0*maxPBatCharge_common(IPWC_battery)
+                export_to_grid = P_available
+     &                          - maxPBatCharge_common(IPWC_battery)
 
               endif ! available .le. capacity
             endif ! grid_refund_high
@@ -520,7 +568,8 @@ C             from grid
 
             else
 C             Electricity from grid is expensive!
-              if (P_residual .le. maxPBatDischarge_common) then
+              if (P_residual .le.
+     &                      maxPBatDischarge_common(IPWC_battery)) then
                 RES_elec_ctl_scenario = 6
 C               Available battery capacity can cover load in this time step
 C               grid electricity is expensive, so use battery to cover 
@@ -530,8 +579,9 @@ C               residual load
                 RES_elec_ctl_scenario = 7
 C               Grid electricity is expensive, use battery as far as it goes,
 C               then import remaining energy required from grid
-                batDemandP = maxPBatDischarge_common
-                import_from_grid = P_residual - maxPBatDischarge_common
+                batDemandP = maxPBatDischarge_common(IPWC_battery)
+                import_from_grid = P_residual
+     &                        - maxPBatDischarge_common(IPWC_battery)
               endif ! residual .le. capacity
             endif ! grid_rate_low
 
@@ -554,7 +604,8 @@ C           Grid electricity is cheap, so use grid
 
           else
 
-            if (P_total_load .le. maxPBatDischarge_common) then
+            if (P_total_load .le.
+     &                  maxPBatDischarge_common(IPWC_battery)) then
               RES_elec_ctl_scenario = 10
 C             Grid electricity is expensive, so use battery
               batDemandP = P_total_load
@@ -563,8 +614,8 @@ C             Grid electricity is expensive, so use battery
               RES_elec_ctl_scenario = 11
 C             Grid electricity is expensive, so discharge battery until empty,
 C             then import remaining energy required from grid
-              batDemandP = maxPBatDischarge_common
-cx              import_from_grid = P_total_load - maxPBatDischarge_common
+              batDemandP = maxPBatDischarge_common(IPWC_battery)
+cx              import_from_grid = P_total_load - maxPBatDischarge_common(IPWC_battery)
 
             endif ! E_ges .lt. capacity
           endif ! grid_rate_low
@@ -585,9 +636,9 @@ C*** DEBUG ===
      &     ', PVgen=',PV_power_to_DCbus,
 c     &     ', BatFull ?',bBatteryFull,
 c     &     ', BatEmpty?',bBatteryEmpty,
-     &     ', batDODFin=',batDODFin,
+     &     ', batDOD(',IPWC_battery,')=',batDOD(IPWC_battery),
      &     ', Ctl-scen=',RES_elec_ctl_scenario,
-     &     ', batDemandP=',batDemandP
+     &     ', batDemandP(',IPWC_battery,')=',batDemandP(IPWC_battery)
       endif
 C ====
 
@@ -675,9 +726,10 @@ C Input file information
                                 !- controller inputs
 
 C Basic RES (elec) controller inputs
-      common/reselec/RES_elec_ctl_mode, RES_elec_ctl_scenario
+      common/reselec/RES_elec_ctl_mode, RES_elec_ctl_scenario, NumBat
       integer RES_elec_ctl_mode     ! control mode 1, 2 or 3 << Note: currently only 2 is coded >>
       integer RES_elec_ctl_scenario ! control scenario active
+      integer NumBat                !- Number of batteries in system
 
 C Power-only component information for RES (elec) control
       common/reselec_powoc/IPWC_PVPCU,IPWC_gridconn,IPWC_ACDC,
@@ -825,6 +877,8 @@ C     Read control mode dependant inputs ...
       !-------------------------------!
       if (RES_elec_ctl_mode .eq. 1) then
 C       << no further action necessary, to date >>
+
+CC << multiple battery system ?? add some input here?? >>
 
       !-------------------------------!
       ! Mode 2                        !
@@ -1197,9 +1251,18 @@ C Input file information
                                 !- controller inputs
 
 C Basic RES (elec) controller inputs
-      common/reselec/RES_elec_ctl_mode, RES_elec_ctl_scenario
+      common/reselec/RES_elec_ctl_mode, RES_elec_ctl_scenario, NumBat
       integer RES_elec_ctl_mode     ! control mode 1, 2 or 3 << Note: currently only 2 is coded >>
       integer RES_elec_ctl_scenario ! control scenario active
+      integer NumBat                !- Number of batteries in system
+
+C Power-only component information for RES (elec) control
+      common/reselec_powoc/IPWC_PVPCU,IPWC_gridconn,IPWC_ACDC,
+     &                   IPWC_battery
+      integer   IPWC_PVPCU      !-index number of PCU that is connected between the PV and the DC bus
+      integer   IPWC_gridconn   !-index number of the grid-connection power-only component
+      integer   IPWC_ACDC       !-index number of the DC-AC converter (a PCU power-only component)
+      integer   IPWC_battery    !-index number of the battery power-only component
 
 C Electric node information
       common/reselec_enode/IENOD_ACbus,IENOD_DCbus
@@ -1218,18 +1281,22 @@ C 'Network interaction'
       logical DEBUG
       DEBUG = .false.  ! toggle debug mode
 
-C Return if RESElec control not active.
+C     Return if RESElec control not active.
       if ( iRESElecCtl .ne. 1 ) return
 
-C Get power balance on AC bus (balance = generation + load, loads are -ive)
-C
+C     Get power balance on AC bus
+C     (balance = generation + load, loads are -ive)
+
       fNetworkBalance = penodg(IENOD_ACbus) + penodl(IENOD_ACbus)
 
-      IF (mandChargeCycle .EQ. 1) THEN
-C When the battery performs a mandatory charge mode, the direction of flow of power through the
-C DC/AC converter could be reversed. This will not be possible with the electric current network.
-C Instead of changing the electric network, the potential load of the DC node (node 1) is added to the
-C network balance of the AC node (node 3) using an average efficiency of the then AC/DC convertor of 98%.
+      IF (mandChargeCycle(IPWC_battery) .EQ. 1) THEN
+C       When the battery performs a mandatory charge mode, the direction
+C       of flow of power through the DC/AC converter could be reversed.
+C       This will not be possible with the electric current network.
+C       Instead of changing the electric network, the potential load of
+C       the DC node (node 1) is added to the network balance of the AC
+C       node (node 3) using an average efficiency of the then AC/DC
+C       converter of 98%.
         IENOD_DCBUS = 1
         fNetworkBalance = fNetworkBalance +
      &               (penodg(IENOD_DCbus) + penodl(IENOD_DCbus))/0.98

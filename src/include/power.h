@@ -353,6 +353,33 @@ C Declarations for common block variables.
       integer npowcdats      !- number of string data items associated with the power-only component
       real    powcdat        !- power-only component numerical data item
 
+C---------------------------
+C Power-only component "Battery" type signatures
+C---------------------------
+C Lead acid
+      INTEGER pba
+      PARAMETER (pba = 17)
+C Vanadium redox
+      INTEGER vrb
+      PARAMETER (vrb = 21)
+C Lithium-ion
+      INTEGER lion
+      PARAMETER (lion = 22)
+
+C-------------------------------------------------
+C Battery constants
+
+C   Faraday constant
+      REAL Faraday_constant
+      PARAMETER (Faraday_constant = 96485.)
+
+C   Standard potential of Vanadium Redox Battery (VRB), V
+      REAL VRB_E0
+      PARAMETER (VRB_E0 = 1.259)
+
+C    Gas constant
+      REAL gas_constant
+      PARAMETER (gas_constant = 8.314)
 
 C---------------------------------------------------------------------------------
 C Common holding the node and component names defined in the electric

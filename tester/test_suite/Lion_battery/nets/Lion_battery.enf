@@ -72,7 +72,7 @@
   Test of applying .fcl file as a power-only component
 # no. of additional data items:
     1    1
-    1.0000
+    0.1000
   ../nets/input.fcl
 ** end power-only 
 # Listing and Description of components connecting the nodes
