@@ -328,7 +328,7 @@ C only IPS1=-1,-5, or -6 sensor allows a signal other than temperature
       IF(IPS1.NE.-1.AND.IPS1.NE.-5.AND.IPS1.NE.-6
      &             .AND.(ICLCTP.NE.0.AND.ICLCTP.NE.1
      &             .AND.ICLCTP.NE.12.AND.ICLCTP.NE.18
-     &             .AND.ICLCTP.NE.41))then
+     &             .AND.ICLCTP.NE.41.AND.ICLCTP.NE.14))then
          call edisp(iuout,
      &    ' CLVAR: invalid sensor for plant loop controller type ')
          call epwait

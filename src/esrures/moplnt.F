@@ -92,10 +92,10 @@ C this clash.
       common/ntype/isv(mpcom,mnodec)
       COMMON/SYSLABEL/SPLABEL(MSYSRS),GPLABEL(MSYSRS)
 
-      dimension mcomp(mpcom), ipcndx(mpcom), ivals(15)
+      dimension mcomp(mpcom), ipcndx(mpnode), ivals(15)
       CHARACTER ITEM(26)*23
       character outs*124,xfile*144,tg*1,delim*1,MTITLE*22
-      character pcname*15,pcnam1(mpcom)*15,adopdsc*30
+      character pcname*15,pcnam1(mpnode)*15,adopdsc*30
       character aoutstr(15)*30
       character SPLABEL*32,GPLABEL*20,SUFFIX*6,PREFIX*14
       integer IWM  ! for radio button
