@@ -634,6 +634,19 @@
 'If you choose to include CFD you can specify the period'
 'when CFD solutions will be active. This is useful if your'
 'focus is to investigate flows during a specific period.'
+' '
+'In simulations, times run 1.0 - 24.99... for each day.'
+'Examples:'
+'  REAL TIME            | ESP-r TIME'
+'  00:00 (start of day) | 1.0       '
+'  23:59 (end of day)   | 24.99     '
+'  12:45                | 13.75     '
+' '
+'If the ACC is active, you can specifiy whether to use default or'
+'user-specified relaxation factors in the preliminary simulations.'
+'Defaults should be sufficient for most simulations, however if'
+'you are experiencing convergence problems with the preliminary'
+'simulations try using the user-specified relaxation factors instead.'
 *enditem
         CALL ASKOK(' Do you want activate the CFD model during the',
         CALL ASKOK(' Do you want activate the CFD model during the',

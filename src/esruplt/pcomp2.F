@@ -4885,6 +4885,8 @@ C            2 Inter-node fluid heat capacity rate (W/K)
       COMMON/PCRES/QDATA(MPCOM),PCAOUT(MPCOM,MPCRES),napdat(mpcom)
       REAL QDATA,PCAOUT
       INTEGER NAPDAT
+
+C Does not match size of LOCAL1 in CMP46C!
       COMMON/LOCAL1/ISET,PHIMAX
       INTEGER ISET
       REAL PHIMAX

@@ -2600,24 +2600,39 @@ C Optics controller.  Set type to same as initial for this optics
 C function (ie. all periods are the same).
         ictyp=IOCTYP(II,1,1)
         IOCTYP(II,JJ,KK)=ictyp
-        write(outs,'(a,i3)')' Current controller type: ',ictyp
-        call edisp(iuout,outs)
-        call edisp(iuout,
+        if(ictyp.eq.2)then
+          write(outs,'(a,i3)')' Current controller type: ',ictyp
+          call edisp(iuout,outs)
+          call edisp(iuout,
      &      'Note: to change this re-edit the optics sensor')
-
+        endif
         ino=iclaw
         idno=2
         write(outs,'(a,i3,a)')'Select a control law (currently: ',
      &    iclaw,')'
         call MENUATOL(outs,' Available laws',
-     &   'a switch optics above setpoint (NA)',
+     &   'a switch optics ',
      &   'b switch bidirectional sets (setp. & set)',' ',' ',' ',' ',
      &   ' ',' ',' ',' ',' ',' ',ino,idno,nbhelp)
         iclaw=ino
         IOCLAW(II,JJ,KK)=iclaw
 
-C Exclude here control law 1 as it is not available at the moment
-        if(ioclaw(II,JJ,KK).ne.1)then
+        if(ioclaw(II,JJ,KK).eq.1)then
+  61      CALL EASKR(tcps,' ',' Period start time ? ',
+     &      0.,'F',24.,'F',0.,'control start',IER,nbhelp)
+          if(KK.GT.1)then
+            IF(tocps(II,JJ,KK-1).GE.tcps)then
+              call usrmsg(' Periods out of order..',' ','W')
+              GOTO 61
+            endif
+          else
+            CALL ECLOSE(tcps,0.0,0.001,close1)
+            IF(.NOT.close1)then
+              call usrmsg(' ',' First control must begin @ 0','W')
+              GOTO 61
+            endif
+          endif
+        elseif(ioclaw(II,JJ,KK).eq.2)then
   62      CALL EASKR(tcps,' ',' Period start time ? ',
      &      0.,'F',24.,'F',0.,'control start',IER,nbhelp)
           if(KK.GT.1)then
@@ -2636,20 +2651,26 @@ C Exclude here control law 1 as it is not available at the moment
 
 C Ask for miscel. data.
         if(ioclaw(II,JJ,KK).eq.1)then
-C          cm(1)=2.
-C          cm(2)=10.0
-C          CALL EASKR(cm(2),' Set point:',' ',
-C     &      -1000.,'F',1000.,'F',10.,'setpoint',IER,nbhelp) 
-
-C Similar logic as the EDWINO Subroutine
-C          noptz=nopt        
-C          IX=1
-C          CALL EPICKS(IX,IGVAL,' ',' Glazing types: ',
-C     &      52,noptz,GS,'raw opticals (to use above setpoint)',
-C     &      IER,nbhelp)
-C          cm(3)=IGVAL(1)
-          WRITE(outs,'(a)')' This option is not currently available. '
+          call edisp(iuout,
+     &    'Parameters for this option need to be set in constructions')
+          call edisp(iuout,
+     &    'menu and only times of activation can be set in controls')
+          call edisp(iuout,
+     &    'If not done already set up transparent property replace-')
+          call edisp(iuout,
+     &    'ment set in constructions menu for optical property ')
+          call edisp(iuout,
+     &    'substitution. Only define here whether optical control is')
+          call edisp(iuout,
+     &    'ON or OFF and do not define sensor or actuator')
           call edisp(iuout,outs)
+          cm(1)=1
+          CALL EASKAB('Is optical control active in this period?',' ',
+     &        'No','Yes',iad,nbhelp)
+          cm(2)=real(iad - 1)
+          ioan(ii,1)=-98
+          iosn(ii,1)=-98
+          iosn(ii,2)=1 ! so range checking does not give an error
         elseif(ioclaw(II,JJ,KK).eq.2)then
 C          cm(1)=12.
 C          cm(2)=10.0

@@ -10,7 +10,7 @@ C Type declarations:
       integer MSPMNO, MSRC
 
 C Maximum number of nodes, components, connections.
-      PARAMETER (MNOD=70,MCMP=80,MCNN=199)
+      PARAMETER (MNOD=80,MCMP=80,MCNN=199)
 C Maximum number of node supplementary data items
       PARAMETER (MNDS=2)
 C Number of valid fluid flow component types

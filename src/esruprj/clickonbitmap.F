@@ -108,23 +108,24 @@ C an object has been saved the set justentered to false.
       integer MITEM,INO ! max items and current menu item
       real blkopaq      ! opacity of obstruction
 
-C << TODO trackview needs to use ii variables >>
 #ifdef OSI
       integer iixs1,iiys1,iixs2,iiys2,iixtn1,iiytn1,iixtn2,iiytn2
       integer iixx1,iiyy1,iid1,iid2,iid3,iid4
       integer iixx2,iiyy2,iixx3,iiyy3,iix,iiy
+      integer iixx,iiyy,iizz,iik
       integer iicol
       integer iigl,iigr,iigt,iigb,iigw,iigwh
-      integer iiw1,iiw2,iiw3,iiw4,iimenu
+      integer iiw1,iiw2,iiw3,iiw4,iimenu,iixo,iiyo
       integer iixoffset,iiyoffset,iiwidth,iihight
       integer iixbul,iiybul,iixblr,iiyblr,iilix,iiliy
 #else
       integer*8 iixs1,iiys1,iixs2,iiys2,iixtn1,iiytn1,iixtn2,iiytn2
       integer*8 iixx1,iiyy1,iid1,iid2,iid3,iid4
       integer*8 iixx2,iiyy2,iixx3,iiyy3,iix,iiy
+      integer*8 iixx,iiyy,iizz,iik
       integer*8 iicol
       integer*8 iigl,iigr,iigt,iigb,iigw,iigwh
-      integer*8 iiw1,iiw2,iiw3,iiw4,iimenu
+      integer*8 iiw1,iiw2,iiw3,iiw4,iimenu,iixo,iiyo
       integer*8 iixoffset,iiyoffset,iiwidth,iihight
       integer*8 iixbul,iiybul,iixblr,iiyblr,iilix,iiliy
 #endif
@@ -839,7 +840,7 @@ C After loading the bitmap populate the display with corners, north,
 C origin if these have been defined.
 
 C Debug.
-              write(6,*) 'bitmap drawn at ',ixbul,iybul,ixblr,iyblr
+C              write(6,*) 'bitmap drawn at ',ixbul,iybul,ixblr,iyblr
               iicol=0
               call winscl('z',iicol)
               iid1=ixbul; iid2=iybul;
@@ -924,14 +925,18 @@ C Origin within the bitmap.
      &      ' ','-')
           iicol=0
           call winscl('z',iicol)
-          CALL trackview(ii,ixo,iyo)
-          iid1=ixo; iid2=iyo;
+          CALL trackview(iik,iixo,iiyo)
+
+C Debug
+          write(6,*) 'origin track click',iik,iixo,iiyo
+          iid1=int(iixo); iid2=int(iiyo);
+          ixo=int(iixo); iyo=int(iiyo);
           call esymbol(iid1,iid2,24,1)
           write(temp6,'(A)')'Origin'
-          iix=ixo+5; iiy=iyo-5;
+          iix=iixo+5; iiy=iiyo-5;
           CALL wstxpt(iix,iiy,temp6)
           call winscl('-',iicol)
-          write(outs,'(a,2i6)')' origin X Y pixels =',ixo,iyo
+          write(outs,'(a,2i6)')' origin X Y pixels =',iixo,iiyo
           call edisp(iuout,outs)
           call usrmsg(' ',' ','-')
           xbmorigin=.true.
@@ -953,11 +958,12 @@ C North.
      &      ' ','-')
           iicol=0
           call winscl('z',iicol)
-          CALL trackview(ii,ixtn1,iytn1)
-          iid1=ixtn1; iid2=iytn1;
+          CALL trackview(iik,iixtn1,iiytn1)
+          ixtn1=int(iixtn1); iytn1=int(iiytn1)
+          iid1=int(iixtn1); iid2=int(iiytn1)
           call esymbol(iid1,iid2,11,1)
-          CALL trackview(ii,ixtn2,iytn2)
-          iid1=ixtn2; iid2=iytn2;
+          CALL trackview(iik,iixtn2,iiytn2)
+          iid1=int(iixtn2); iid2=int(iiytn2);
           call esymbol(iid1,iid2,18,1)
           iid1=ixtn1; iid2=iytn1; iid3=ixtn2; iid4=iytn2;
           call edwline(iid1,iid2,iid3,iid4)
@@ -985,25 +991,26 @@ C Scaling of a known line. Ask for two points and distance.
      &      'two points along a known line... ','-')
           iicol=0
           call winscl('z',iicol)
-          CALL trackview(ii,ixs1,iys1)
-          iid1=ixs1; iid2=iys1;
-          call esymbol(iid1,iid2,11,1)
-          CALL trackview(ii,ixs2,iys2)
-          iid1=ixs1; iid2=iys2;
-          call esymbol(iid1,iid2,11,2)
+
+C Get the pixel locations iixs1,iiys1 and iixs2,iiys2
+          CALL trackview(iik,iixs1,iiys1)
+          call esymbol(iixs1,iiys1,11,1)
+          CALL trackview(iik,iixs2,iiys2)
+          call esymbol(iixs2,iiys2,11,2)
           call winscl('-',iicol)
           call usrmsg(' ',' ','-')
-          disn=1.
+          disn=1.0
           CALL EASKR(disn,' ','Distance (metres) between points?',
      &      0.0001,'W',0.,'-',0.1,'dist',IER,nbhelp)
-          vdis= crowxyz(float(ixs1),float(iys1),0.0,float(ixs2),
-     &      float(iys2),0.0)
+          vdis= crowxyz(float(iixs1),float(iiys1),0.0,float(iixs2),
+     &      float(iiys2),0.0)
+          write(outs,*) 'pixels between points ',vdis
+          call edisp(iuout,outs)
           factor=vdis/disn
           write(outs,*)' There are ',factor,' pixels per metre.'
           call edisp(iuout,outs)
           iicol=0
           call winscl('z',iicol)
-          iixs1=ixs1; iiys1=iys1; iixs2=ixs2; iiys2=iys2;
           call eswline(iixs1,iiys1,iixs2,iiys2)
 
 C Try test point along screen Y and check for angle between it and the
@@ -1027,13 +1034,13 @@ C point nominated. No transform is yet applied.
           endif
 
 C Report where the two scaling points were.
-          pxs=float(ixs1-ixo)/factor
-          pys=float(iyo-iys1)/factor
+          pxs=float(iixs1-iixo)/factor
+          pys=float(iiyo-iiys1)/factor
           write(outs,'(a,f8.3,a,f8.3)') 'First scale point at X',pxs,
      &      ' Y ',pys
           call edisp(iuout,outs)
-          pxs=float(ixs2-ixo)/factor
-          pys=float(iyo-iys2)/factor
+          pxs=float(iixs2-iixo)/factor
+          pys=float(iiyo-iiys2)/factor
           write(outs,'(a,f8.3,a,f8.3)') '2nd scale point at X',pxs,
      &      ' Y ',pys
           call edisp(iuout,outs)
@@ -1044,7 +1051,7 @@ C in the width of the bitmap, Uxoffset is the user coord at the left of the bitm
 C uyoffset is the user coord at the bottom of the bitmap.
           bituwidth=float(ixblr-ixbul)/factor
           bituheight=float(iyblr-iybul)/factor
-          uxoffset=float(ixbul-ixo)/factor
+          uxoffset=float(ixbul-iixo)/factor
           uyoffset=float(iyo-iyblr)/factor
 
 C For purposes of drawing a grid find the nearest metre in the X and Y
@@ -1373,18 +1380,21 @@ C Adding vertices to the zone, if colour monitor use green colour.
           endif
           if(trimmed)call edisp(iuout,'and type `p` to pan bitmap.')
  146      if(inpmode.eq.1.or.inpmode.eq.2.or.inpmode.eq.6)then
-            CALL trackview(ii,ixx,iyy)
+            CALL trackview(iik,iixx,iiyy)
+            ixx=int(iixx); iyy=int(iiyy)
           elseif(inpmode.eq.4)then
-            CALL trackview(ii,ixx,izz)
+            CALL trackview(iik,iixx,iizz)
+            ixx=int(iixx); izz=int(iizz)
           elseif(inpmode.eq.5)then
-            CALL trackview(ii,iyy,izz)
+            CALL trackview(iik,iiyy,iizz)
+            iyy=int(iiyy); izz=int(iizz)
           endif
 
 C If user typed `e` then complete the process.
-          if(ii.eq.69.or.ii.eq.101)goto 147
+          if(iik.eq.69.or.iik.eq.101)goto 147
 
 C Toggle on/off the snap-to grid.
-          if(ii.eq.83.or.ii.eq.115)then
+          if(iik.eq.83.or.iik.eq.115)then
             if(xbmgrid)then
               if(xbmsnap)then
                 xbmsnap=.false.
@@ -1400,7 +1410,7 @@ C Toggle on/off the snap-to grid.
           endif
 
 C If user typed `p` or `P` then do panning until user says done and then continue.
-          if(ii.eq.80.or.ii.eq.112)then
+          if(iik.eq.80.or.iik.eq.112)then
             if(trimmed)then
               helptopic='click_pan_options'
               call gethelptext(helpinsub,helptopic,nbhelp)
@@ -1436,7 +1446,7 @@ C Refresh current bitmap and overlayed information.
 
 C If user typed `d` or `D` then delete the latest coordinate. Then
 C refresh current bitmap and overlayed information.
-          if(ii.eq.67.or.ii.eq.100)then
+          if(iik.eq.67.or.iik.eq.100)then
             if(INVERT.gt.1)then
               INVERT=INVERT-1
               call edisp(iuout,'Last vertex deleted. Refreshing...')
@@ -1457,10 +1467,10 @@ C If snap-to is true then find nearest user unit and cast back to pixels.
             tpx=float(ixx-ixo)/factor
             tpy=float(iyo-iyy)/factor
           elseif(inpmode.eq.4)then
-            tpx=float(ixx-ixo)/factor
+            tpx=float(ixx-iixo)/factor
             tpy=float(iyo-izz)/factor
           elseif(inpmode.eq.5)then
-            tpx=float(iyy-ixo)/factor
+            tpx=float(iyy-iixo)/factor
             tpy=float(iyo-izz)/factor
           endif
 
@@ -1876,13 +1886,14 @@ C bitmap to be panned if necessary during the process.
           endif
           if(trimmed)call edisp(iuout,'type `p` to pan bitmap.')
           NW=0
- 246      CALL trackview(ii,ixx,iyy)
+ 246      CALL trackview(iik,iixx,iiyy)
+          ixx=int(iixx); iyy=int(iiyy)
 
 C If user typed `e` or `E` then complete the process.
-          if(ii.eq.69.or.ii.eq.101)goto 247
+          if(iik.eq.69.or.iik.eq.101)goto 247
 
 C Toggle on/off the snap-to grid.
-          if(ii.eq.83.or.ii.eq.115)then
+          if(iik.eq.83.or.iik.eq.115)then
             if(xbmgrid)then
               if(xbmsnap)then
                 xbmsnap=.false.
@@ -1898,7 +1909,7 @@ C Toggle on/off the snap-to grid.
           endif
 
 C If user typed `p` or `P` then allow for panning and then continue.
-          if(ii.eq.80.or.ii.eq.112)then
+          if(iik.eq.80.or.iik.eq.112)then
             if(trimmed)then
               helptopic='click_pan_options'
               call gethelptext(helpinsub,helptopic,nbhelp)
@@ -1931,7 +1942,7 @@ C Refresh current bitmap and overlayed information.
           endif
 
 C If user typed `d` or `D` then delete the previous coordinate.
-          if(ii.eq.67.or.ii.eq.100)then
+          if(iik.eq.67.or.iik.eq.100)then
             if(NW.gt.1)then
               NW=NW-1
               call edisp(iuout,'Last corner deleted. Refreshing...')
@@ -2296,13 +2307,14 @@ C at the back corner from the front edge. No provision for rotation.
 
 C Pick up the origin of the block and/or instruction to end the
 C input or pan the bitmap.
- 346      CALL trackview(ii,ixx1,iyy1)
+ 346      CALL trackview(iik,iixx1,iiyy1)
+          ixx1=int(iixx1); iyy1=int(iiyy1)
 
 C If user typed `e` then complete the process.
-          if(ii.eq.69.or.ii.eq.101)goto 347
+          if(iik.eq.69.or.iik.eq.101)goto 347
 
 C Toggle on/off the snap-to grid.
-          if(ii.eq.83.or.ii.eq.115)then
+          if(iik.eq.83.or.iik.eq.115)then
             if(xbmgrid)then
               if(xbmsnap)then
                 xbmsnap=.false.
@@ -2318,7 +2330,7 @@ C Toggle on/off the snap-to grid.
           endif
 
 C If user typed `p` or `P` then do panning until user says done and then continue.
-          if(ii.eq.80.or.ii.eq.112)then
+          if(iik.eq.80.or.iik.eq.112)then
             if(trimmed)then
  348          helptopic='click_pan_options'
               call gethelptext(helpinsub,helptopic,nbhelp)
@@ -2353,8 +2365,10 @@ C Refresh current bitmap and overlayed information.
           endif
 
 C Pick up the next two points
-          CALL trackview(ii,ixx2,iyy2)
-          CALL trackview(ii,ixx3,iyy3)
+          CALL trackview(iik,iixx2,iiyy2)
+          ixx2=int(iixx2); iyy2=int(iiyy2)
+          CALL trackview(iik,iixx3,iiyy3)
+          ixx3=int(iixx3); iyy3=int(iiyy3)
 
 C Convert three points.
           tpx1=float(ixx1-ixo)/factor

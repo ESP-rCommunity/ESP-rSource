@@ -71,6 +71,7 @@ C ********************* MFBNDR *********************
 
       COMMON/MFLOW1/NNOD,NCMP,NCNN
       COMMON/MFLOW3/NDFLD(MNOD),NDTYP(MNOD),HNOD(MNOD),SUPNOD(MNOD,MNDS)
+      COMMON/MFLOW4/ITND(MNOD),TNOD(MNOD)
       COMMON/MFLOW5/RHON(MNOD)
       COMMON/MFLW10/NODPS(MCNN),HGTPS(MCNN),NODNE(MCNN),HGTNE(MCNN),
      &              ITPCON(MCNN),NDSCNN(MCNN,MCNS)
@@ -88,11 +89,13 @@ C ********************* MFBNDR *********************
       COMMON/ACT/ACTCNN(MCNN)
       COMMON/MFCALC/IPSMOD,MSLVTP
 
-      DOUBLE PRECISION FLW1,FLW2,PRES,RESID,SAFLW,PSTACK,HDP,HDV,HFL
+      DOUBLE PRECISION FLW1,FLW2,PRES,RESID,SAFLW,PSTACK,HDP,HDV,HFL,
+     *                 FLWNET
       LOGICAL ACTCNN,FOUND,FIRST,areaSSO
       CHARACTER*12 NDNAM,CMNAM
       CHARACTER LTPCMP*60
       CHARACTER LAPROB*72
+      integer TMPNODN
 
       INITL=INTL
 
@@ -118,6 +121,7 @@ C Initialise the massflows to/from CFD domain to mfs dry run values
             DO 1978 N=1,NFNDN
               IF(NODPS(I).EQ.MFNEWN(N,ICFD).AND.NODNE(I).EQ.JNOD)THEN
                 FLW1(I)=FLW1(ICN)
+                FLW2(I)=FLW2(ICN)
               ENDIF
  1978       CONTINUE
  1977     CONTINUE
@@ -128,6 +132,7 @@ C Initialise the massflows to/from CFD domain to mfs dry run values
             DO 1980 N=1,NFNDN
               IF(NODNE(I).EQ.MFNEWN(N,ICFD).AND.NODPS(I).EQ.JNOD)THEN
                 FLW1(I)=FLW1(ICN)
+                FLW2(I)=FLW2(ICN)
               ENDIF
  1980       CONTINUE
  1979     CONTINUE
@@ -159,7 +164,7 @@ C flow direction.
 
 C Impose massflows to the CFD domain as velocity type boundary condition
       IOPNO=1
-      FLOWIN=0.0
+c      FLOWIN=0.0
       DO 570 IV=1,NVOL(ICFD)
         IF(IV.EQ.NCFDOPNO(IOPNO,ICFD))THEN
 
@@ -169,12 +174,13 @@ C Get massflow node (opn_nod) associated with this CFD opening
 C Get connection of this node with the node external to CFD domain (JNOD)
 C INDEX=-1 means flow is going out of CFD domain and vice versa
           DO 571 ICNN=1,NCNN
+            FLWNET=FLW1(ICNN)+FLW2(ICNN)
             IF(NODPS(ICNN).EQ.INOD.AND.NODNE(ICNN).LE.(NNOD-NFNDN)
      &         .AND.NODNE(ICNN).NE.ICFDNOD(ICFD))THEN
               JNOD=NODNE(ICNN)
-              IF(FLW1(ICNN).GT.0.0)THEN
+              IF(FLWNET.GT.0.0)THEN
                 INDEX=-1
-              ELSEIF(FLW1(ICNN).LE.0.0)THEN
+              ELSEIF(FLWNET.LE.0.0)THEN
                 INDEX=1
               ENDIF
               GOTO 1010
@@ -182,9 +188,9 @@ C INDEX=-1 means flow is going out of CFD domain and vice versa
      &             .AND.NODPS(ICNN).NE.ICFDNOD(ICFD))THEN
               JNOD=NODPS(ICNN)
               ICN=ICNN
-              IF(FLW1(ICNN).GT.0.0)THEN
+              IF(FLWNET.GT.0.0)THEN
                 INDEX=1
-              ELSEIF(FLW1(ICNN).LE.0.0)THEN
+              ELSEIF(FLWNET.LE.0.0)THEN
                 INDEX=-1
               ENDIF
               GOTO 1010
@@ -204,10 +210,10 @@ C Set this boundary condition to velocity depending on flow in/out
 C Areas of all opening type boundary conditions have already been set
 C in DEFINESSO so there is no need to set VOLArea
             IVTYPE(IV,ICFD)=11
-            FLOW=REAL(FLW1(ICNN))
+            FLOW=REAL(FLWNET)
             IF(INDEX.EQ.1)THEN
               VOLVel(IV,ICFD)=ABS(FLOW)/VOLArea(IV,ICFD)
-              FLOWIN=FLOWIN+VOLVel(IV,ICFD)
+c              FLOWIN=FLOWIN+VOLVel(IV,ICFD)
             ELSEIF(INDEX.EQ.-1)THEN
               VOLVel(IV,ICFD)=-ABS(FLOW)/VOLArea(IV,ICFD)
             ENDIF
@@ -217,15 +223,27 @@ C Get zone db temp of zone from which air is entering
             DO 572 IZN=1,MCOM
               IF(ICAAS(IZN).EQ.JNOD)THEN
                 TMPRTR=0.5*(TPA(IZN)+TFA(IZN))
-                FOUND=.TRUE.
+                FOUND=.TRUE. 
               ENDIF
  572        CONTINUE
 
 C If zone not found air is entering from ambient
+C << Cannot assume this, what about internal known nodes? >>
             IF(.NOT.FOUND)THEN
-              tmp=0.0
-              call gettemp(tmp)
-              TMPRTR=tmp
+C Find sending node.
+              if (FLOW.gt.0.) then ! net flow NODPS -> NODNE
+                TMPNODN=NODPS(ICNN)
+              else                 ! net flow NODNE -> NODPS
+                TMPNODN=NODNE(ICNN)
+              endif
+              IF((NDTYP(TMPNODN).EQ.2.AND.NINT(SUPNOD(TMPNODN,2)).EQ.1)
+     &          .OR.NDTYP(TMPNODN).EQ.3) then ! external temp
+                call gettemp(TMPRTR)
+              ELSEIF(ITND(TMPNODN).GT.0) then ! temp from another node
+                TMPRTR=TNOD(ITND(TMPNODN))
+              ELSE                            ! constant temp
+                TMPRTR=TNOD(TMPNODN)
+              ENDIF
             ENDIF
             VOLTemp(IV,ICFD)=TMPRTR
 
@@ -240,20 +258,29 @@ C<< To include direction components and humidity
 
 C Normalise all flowrates so that equal mass flows into and out of CFD
 C domain. This is done by totalling all airflow to/from CFD domain 
-c (which should total to zero) and arbitariraly adding any residual to 
-C the first velocity type boundary condition
-      FIRST=.FALSE.
+c (which should total to zero) and distributing any residual over all
+c openings.
+c      FIRST=.FALSE.
+      IX=0
       FLOWCORR=0.0
       DO 580 IV=1,NVOL(ICFD)
         IF(IVTYPE(IV,ICFD).EQ.11)THEN
-          IF(.NOT.FIRST)THEN
-            IFST=IV
-            FIRST=.TRUE.
-          ENDIF
-          FLOWCORR=FLOWCORR+VOLVel(IV,ICFD)*VOLArea(IV,ICFD)
+c          IF(.NOT.FIRST)THEN
+c            IFST=IV
+c            FIRST=.TRUE.
+c          ENDIF
+c          FLOWCORR=FLOWCORR+VOLVel(IV,ICFD)*VOLArea(IV,ICFD)
+          IX=IX+1
+          FLOWCORR=FLOWCORR+VOLVel(IV,ICFD)*VolArea(IV,ICFD)
         ENDIF
  580  CONTINUE
-      VOLVel(IFST,ICFD)=VOLVel(IFST,ICFD)-FLOWCORR/VOLArea(IFST,ICFD)
+c      VOLVel(IFST,ICFD)=VOLVel(IFST,ICFD)-FLOWCORR/VOLArea(IFST,ICFD)
+      if (IX.gt.0) FLOWCORR=FLOWCORR/real(IX)
+      DO 581 IV=1,NVOL(ICFD)
+        IF(IVTYPE(IV,ICFD).EQ.11)THEN
+          VOLVel(IV,ICFD)=VOLVel(IV,ICFD)-FLOWCORR/VOLArea(IV,ICFD)
+        ENDIF
+ 581  CONTINUE
 
 C Update common block variables that are originally updated in NEW2OLD
       CALL NEW2OLD
@@ -278,8 +305,8 @@ C Deactivate CFD massflow connections
       DO 201 IC=1,NCONF
         DO 202 N=1,NCNON
           ACTCNN(ICNON(N,IC))=.FALSE.
-  202    CONTINUE
-  201  CONTINUE
+  202   CONTINUE
+  201 CONTINUE
 
       CALL MFSOLV
 
@@ -307,6 +334,7 @@ C and if massflows and pressures from this run are within a tolerance of
 C the previous run values ICORROK=0 else ICORROK=3 and more mutual 
 C cfd-mfs iterations are done.
       SUBROUTINE MFSCORR(ICORROK)
+#include "building.h"
 #include "net_flow.h"
 #include "cfd.h"
       COMMON/ICFNOD/ICFD,ICP
@@ -346,6 +374,11 @@ C cfd-mfs iterations are done.
      &               NFNPDN(MNZ)
       COMMON/CFDMFS1/ICFDNOD(MNZ),ICFDCNN(MNVLS,MNZ)
       COMMON/MFCALC/IPSMOD,MSLVTP
+
+C Commons for trace.
+      COMMON/TC/ITC,ICNT
+      COMMON/TRACE/ITCF,ITRACE(MTRACE),IZNTRC(MCOM),ITU
+      COMMON/SIMTIM/IHRP,IHRF,IDYP,IDYF,IDWP,IDWF,NSINC,ITS
       
       DOUBLE PRECISION FLW1,FLW2,PRES,RESID,SAFLW,FLW1OLD(MCNN)
       DOUBLE PRECISION FLW2OLD(MCNN),PSTACK,HDP,HDV,HFL
@@ -353,8 +386,19 @@ C cfd-mfs iterations are done.
       CHARACTER*12 VOLNAME,NDNAM
       REAL PRSROLD(MNOD)
 
+C Adjust pressure tol from 0.001 to 0.1.
       PARAMETER(TOLM=0.001)
-      PARAMETER(TOLP=0.001)
+      PARAMETER(TOLP=0.1)
+
+C Check if CFD-MFS trace output is requested.
+C ITRC: If 0, no trace. If >0, unit number.
+      ITRC=0
+      if (ITRACE(44).gt.0) then
+C Check if we are within trace period.
+        if (NSINC.ge.ITC.and.NSINC.le.ITCF) then
+          ITRC=ITU
+        endif
+      endif
 
 C Remember previous flow network values to compare against new run
       DO 1983 ICNN=1,NCNN
@@ -371,8 +415,11 @@ C Get average pressure in the CFD domain
       DO 100 I=2,NIM1
         DO 1001 J=2,NJM1
           DO 1002 K=2,NKM1
+C Find total pressure
+            PRESSURE=PRESSURE+P(I,J,K)
+            NCIO=NCIO+1
 
-C First check for blockages
+C Check for blockages
             IF(NBLK(ICFD).GT.0) THEN 
               DO 2006 IVO=1,NBLK(ICFD)
                 IV=INBLK(IVO,ICFD) 
@@ -383,14 +430,11 @@ C First check for blockages
                 IF(OK) THEN 
 
 C Cell is within the blockage 
+                  PRESSURE=PRESSURE-P(I,J,K)
                   NCIO=NCIO-1
                 ENDIF
  2006         CONTINUE
             ENDIF
-
-C Find total pressure
-            PRESSURE=PRESSURE+P(I,J,K)
-            NCIO=NCIO+1
  1002     CONTINUE
  1001   CONTINUE
  100  CONTINUE
@@ -465,7 +509,7 @@ C Activate conflated network
       DO 21 IC=1,NCONF
         DO 2001 N=1,NCNRMV
           ACTCNN(ICNRMV(N,IC))=.FALSE.
- 2001    CONTINUE
+ 2001   CONTINUE
  21   CONTINUE
 
 C Call massflow solver
@@ -478,19 +522,67 @@ C Deactivate conflated network
       DO 201 IC=1,NCONF
         DO 202 N=1,NCNON
           ACTCNN(ICNON(N,IC))=.FALSE.
-  202    CONTINUE
-  201  CONTINUE
+  202   CONTINUE
+  201 CONTINUE
 
 C Now check against previous flow rates and pressures and return with 
 C information if within tolerance or not
       JCHK=0
+C Trace output.
+      if (ITRC.gt.0) then
+        CALL MFOUTP(ITRC)
+        write(ITRC,'(a)')' '
+        write(ITRC,'(a,f6.3)')' Mass flow tolerance = ',TOLM
+      endif
       DO 1985 I=1,NCNN
-        IF(ABS(REAL(FLW1(I)-FLW1OLD(I))).GT.TOLM)JCHK=1
+        rtmp=ABS(REAL(FLW1(I)-FLW1OLD(I)))
+C Trace output.
+        if (ITRC.gt.0) then
+          write(ITRC,'(a,i2.2,a,f6.3)')' Flow connection ',I,
+     &      ' mass flow rate, current less previous = ',rtmp
+          if (rtmp.gt.TOLM) then
+            JCHK=1
+            write(ITRC,'(a)')'* NOT WITHIN TOLERANCE'
+          else
+            write(ITRC,'(a)')'* WITHIN TOLERANCE'
+          endif
+        else
+          if(rtmp.gt.TOLM)JCHK=1
+        endif
  1985 CONTINUE
+C Trace output.
+      if (ITRC.gt.0) then
+        write(ITRC,'(a)')' '
+        write(ITRC,'(a,f6.3)')' Pressure tolerance = ',TOLP
+      endif
       DO 1986 INOD=1,NNOD
-        IF(ABS(REAL(PRES(INOD)-PRSROLD(INOD))).GT.TOLP)JCHK=1
- 1986 CONTINUE
-      IF(JCHK.EQ.0)ICORROK=0
+        rtmp=ABS(REAL(PRES(INOD)-PRSROLD(INOD)))
+C Trace output.
+        if (ITRC.gt.0) then
+          write(ITRC,'(a,i2.2,a,f6.3)')' Flow node ',INOD,
+     &      ' pressure, current less previous = ',rtmp
+          if (rtmp.gt.TOLP) then
+            JCHK=1
+            write(ITRC,'(a)')'* NOT WITHIN TOLERANCE'
+          else
+            write(ITRC,'(a)')'* WITHIN TOLERANCE'
+          endif
+        else
+          if(rtmp.gt.TOLP)JCHK=1
+        endif
+ 1986 CONTINUE      
+C Trace output.
+      if (ITRC.gt.0) then
+        write(ITRC,'(a)')' '
+        if (JCHK.eq.0) then
+          ICORROK=0
+          write(ITRC,'(a)')'** CONVERGED'
+        else
+          write(ITRC,'(a)')'** NOT CONVERGED'
+        endif
+      else
+        IF(JCHK.EQ.0)ICORROK=0
+      endif
 
       RETURN
       END

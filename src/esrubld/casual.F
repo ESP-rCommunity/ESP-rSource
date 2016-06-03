@@ -105,8 +105,9 @@ C and is used for code related to UK NCM method
       COMMON/COE34L/QLAT(MCOM)
       COMMON/GRSD130/QCASRS(MCOM)
 
-      COMMON/BCLCHP/StoreCap,znElecCasGain(MCOM)
+      COMMON/BCLCHP/StoreCap,znElecCasGain(MCOM),kounter
       real StoreCap,znElecCasGain
+      integer kounter
 
 C Common for occupant/lighting/equipment sensible convective, sensible
 C radiant and latent W for future and present in each zone.

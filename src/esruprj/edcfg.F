@@ -4585,13 +4585,7 @@ C      of obstruction data.
       common/FILEP/IFIL
       integer iuout,iuin
       common/OUTIN/IUOUT,IUIN
-      
-      integer ncub,ivfok
-      real XOC,YOC,ZOC,DXC,DYC,DZC,CANG
-      character CUBN*6
-      COMMON/MRTC/NCUB,XOC(MCUB),YOC(MCUB),ZOC(MCUB),DXC(MCUB),
-     &            DYC(MCUB),DZC(MCUB),CANG(MCUB),IVFOK(MCUB),CUBN(MCUB)
-      
+            
       logical newgeo  ! to use for testing if new/old geometry file.
       
       character*72 LTMP
@@ -4651,9 +4645,9 @@ C Depending on the nature of the change update the common block pmchange.
 
 C Transform any MRT sensors associated with this zone.
           if (IVF(IICOMP).eq.1) then
-            NCUB = 0
+C            NCUB(IICOMP) = 0
             CALL ERMRT(ITRC,ITRU,IUF,LVIEW(IICOMP),IICOMP,IER)
-            if (NCUB.gt.0) then
+            if (NCUB(IICOMP).gt.0) then
               if(silent)then
                 ok= .true.
               else
@@ -4663,7 +4657,7 @@ C Transform any MRT sensors associated with this zone.
      &            OK,dok,nbhelp)
               endif
               if (OK) then
-                do 73 ij=1,NCUB
+                do 73 ij=1,NCUB(IICOMP)
                   XOC(ij)=XOC(ij)+VALX
                   YOC(ij)=YOC(ij)+VALY
                   ZOC(ij)=ZOC(ij)+VALZ
@@ -4774,12 +4768,6 @@ C user can un-do this action.
       common/FILEP/IFIL
       integer iuout,iuin
       common/OUTIN/IUOUT,IUIN
-
-      integer ncub,ivfok
-      real XOC,YOC,ZOC,DXC,DYC,DZC,CANG
-      character CUBN*6
-      COMMON/MRTC/NCUB,XOC(MCUB),YOC(MCUB),ZOC(MCUB),DXC(MCUB),
-     &            DYC(MCUB),DZC(MCUB),CANG(MCUB),IVFOK(MCUB),CUBN(MCUB)
       
       logical newgeo  ! to use for testing if new/old geometry file.
       
@@ -4841,9 +4829,9 @@ C Depending on the nature of the change update the common block pmchange.
 
 C Rotate any MRT sensors associated with this zone.
           if (IVF(IICOMP).eq.1) then
-            NCUB = 0
+C            NCUB(IICOMP) = 0
             CALL ERMRT(ITRC,ITRU,IUF,LVIEW(IICOMP),IICOMP,IER)
-            if (NCUB.gt.0) then
+            if (NCUB(IICOMP).gt.0) then
               if(silent)then
                 ok= .true.
               else
@@ -4856,7 +4844,7 @@ C Rotate any MRT sensors associated with this zone.
                 A=-VAL*PI/180.
                 CA=COS(A)
                 SA=SIN(A)
-                do 76 ij=1,NCUB
+                do 76 ij=1,NCUB(IICOMP)
                   XXX=XOC(ij)-X1
                   YYY=YOC(ij)-Y1
                   XR=XXX*CA+YYY*SA

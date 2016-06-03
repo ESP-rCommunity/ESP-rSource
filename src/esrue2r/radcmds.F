@@ -682,6 +682,8 @@ C defview generates a new default view.
       real dvangv,dvangh ! vertical and horizontal default viewing angles
       integer ier  ! for use with call to mkrif
       integer ita2 ! file unit for use with mkrif
+      logical short ! briefer format
+      logical okfore,okaft ! for near zero cuts
 
       ITA2=IFIL+7
 
@@ -716,12 +718,33 @@ C and set the default viewing angles to 1.2 factor.
      &    OYMX,OZMX,eang)
         dvangv=eang*1.2
         dvangh=eang*1.2
-
+        if(rvpx.lt.99.0.and.rvpy.lt.99.0.and.rvpz.lt.99.0)then
+	  short=.true.
+        else
+	  short=.false.
+        endif
+        call eclose(cutfor,0.0,0.1,okfore)
+        call eclose(cutaft,0.0,0.1,okaft)
+ 
         call AZ2UV(dvazim,dvelev,vdx,vdy,vdz)
-        write(vewcmds(1),'(a,3F8.2,a,3F8.4,a,3F7.3,4(a,F6.2))') 
-     &       '-vtv -vp ',rvpx,rvpy,rvpz,' -vd ',vdx,vdy,vdz,
+        if(short)then
+          if(okfore.and.okaft)then
+            write(vewcmds(1),'(a,3F6.2,a,3F6.3,a,3F5.2,2(a,F5.1),a)') 
+     &       '-vtv -vp',rvpx,rvpy,rvpz,' -vd',vdx,vdy,vdz,
+     &       ' -vu ',vux,vuy,vuz,' -vh ',dvangh,' -vv ',dvangv,
+     &       ' -vs 0 -vl 0 -vo 0 -va 0'
+          else
+            write(vewcmds(1),'(a,3F6.2,a,3F6.3,a,3F5.2,4(a,F5.1))') 
+     &       '-vtv -vp',rvpx,rvpy,rvpz,' -vd',vdx,vdy,vdz,
      &       ' -vu ',vux,vuy,vuz,' -vh ',dvangh,' -vv ',dvangv,
      &       ' -vs 0 -vl 0 -vo ',cutfor,' -va ',cutaft
+          endif
+        else
+          write(vewcmds(1),'(a,3F8.2,a,3F6.3,a,3F5.2,4(a,F5.1))') 
+     &       '-vtv -vp',rvpx,rvpy,rvpz,' -vd',vdx,vdy,vdz,
+     &       ' -vu ',vux,vuy,vuz,' -vh ',dvangh,' -vv ',dvangv,
+     &       ' -vs 0 -vl 0 -vo ',cutfor,' -va ',cutaft
+        endif
         rvewsh(1) = 'def'
         indxvew=1
         ipckvew=1
@@ -822,6 +845,9 @@ C Ask if an animation required.
 C If glare put it to file.
         IWDQ=2
       endif
+
+C Note the time.
+      call tstamp('m','Start processing of image.')
       if(IWDQ.eq.1)then
       
 C If in unix then use interactive rendering. If Native Windows do
@@ -1233,7 +1259,11 @@ C Debug/trace.
           write(icout,*) doit(1:lnblnk(doit))
         endif
         call edisp(iuout,'Look in the text window for progress.')
+
+C Note the time.
+        call tstamp('m','Invoking Radiance.')
         call runit(doit,'-')
+        call tstamp('m','Radiance completed.')
         if (ITP.eq.1)call dispimage(1)
       endif
 
@@ -2012,6 +2042,7 @@ C << Make this into a subroutine? >>
 C Debug.
 C      write(6,*) 'render options ',lnblnk(rendopt)
 C      write(6,*) rendopt(1:lnblnk(rendopt))
+C      write(6,*) vewcmds(ipckvew)
 
 C Compose standard image command (this is typically what the
 C rad -e xx.rif would have created). If pfilt is needed un-comment

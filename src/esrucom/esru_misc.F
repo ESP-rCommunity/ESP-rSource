@@ -173,6 +173,12 @@ C Moisture.
       common/MOIST01/MSTROK,MSTRZN(MCOM)
       common/MOIST02/LMOIST(MCOM)
 
+C Water filled zones.
+      COMMON/zfluid/znotair(mcom),zfldK,zfldD,zfldC,zfldA,
+     &              zSWAp(mcom),zSWAf(mcom)
+      real zfldK,zfldD,zfldC,zfldA,zSWAp,zSWAf
+      LOGICAL znotair
+
 C Ground topology.
       COMMON/GTFIL/GTGEOM
       COMMON/GT/GTNAME
@@ -438,6 +444,9 @@ C Assumptions about doors and windows.
       defdoorwidth=0.8
       defdoorheight=2.1
 
+C Water properties for water filled zones (std values).
+      zfldK=0.6; zfldD=998.2; zfldC=4190.0; zfldA=0.0
+
 C Season data.
       ihaveseason=0
       ia1wins=0; ia1winf=0; ia1sprs=0; ia1sprf=0
@@ -456,6 +465,9 @@ C Per-zone areas and U-values.
         areafltroof(IX)= 0.0; areaskylt(IX)= 0.0; areaground(IX)= 0.0
         exposed(IX) = 0.0; vexposed(IX) = 0.0
         izsfloor(IX) = 0; izsceil(IX) = 0
+        znotair(ix)=.FALSE.  ! assumption of air filled
+        zSWAp(ix)=0.0; zSWAf(ix)=0.0
+        ncub(ix)=0  ! clear number of mrt sensors in each zone
 
         do IXS = 1,MS
           SNAME(IX,IXS)=' '   ! clear surface name
@@ -474,6 +486,7 @@ C Per-zone areas and U-values.
         enddo    ! if IXS
 
 C Clear obstructions in all zones.
+C << clear all mrt sensors in all zones. >>
         do ibu=1,MB
           XOB(ix,ibu) = 0.0
           YOB(ix,ibu) = 0.0
@@ -1209,7 +1222,7 @@ C Close site file.
 
 C ************* ERMRT
 C ERMRT Read the MRT sensor definition file. IC is the zone index
-C (for use in mrt).  IER=0 OK, IER=1 problem.
+C (for use in mrt).  IER=0 OK, IER=1 problem IER=3 surface mismatch.
       SUBROUTINE ERMRT(ITRC,ITRU,IUF,LMRT,IC,IER)
 #include "building.h"
 #include "geometry.h"
@@ -1219,11 +1232,6 @@ C (for use in mrt).  IER=0 OK, IER=1 problem.
 
       common/TOTAL/nsurmf, NGRID, NTRPOL
       
-      integer ncub,ivfok
-      real XOC,YOC,ZOC,DXC,DYC,DZC,CANG
-      character CUBN*6
-      common/MRTC/NCUB,XOC(MCUB),YOC(MCUB),ZOC(MCUB),DXC(MCUB),
-     &            DYC(MCUB),DZC(MCUB),CANG(MCUB),IVFOK(MCUB),CUBN(MCUB)
       common/MRTF/FFL(MCUB,6,MSM),VEWF(MS,MS)
       common /cube5/fstgrp,fstsur,lstsur,strtgr
 
@@ -1286,10 +1294,15 @@ C currently not used - mrt accesses configuration file.
         LGEO='UNKNOWN'
       endif
 
-C Read number of sensors.
+C Read number of mrt sensors.
+C << NCUB is implied in newer geometry files so check if this number disagrees.
+C << NZS needs to be checked against what is in the geometry file. If it does
+C << not agree then should rebuild either with zeros or with area weighted and
+C << re-establish mrt blocks if they exist in geo file.
       CALL STRIPC(IUF,OUTSTR,0,ND,1,'no sensors & surfs',IER)
       K=0
-      CALL EGETWI(OUTSTR,K,NCUB,0,MCUB,'F','number mrt sensors',IER)
+      CALL EGETWI(OUTSTR,K,NCUBF,0,MCUB,'F',
+     &  'number mrt sensors in vwf file',IER)
       CALL EGETWI(OUTSTR,K,NZS,1,MS,'F','number mrt zone surfs',IER)
       CALL EGETWI(OUTSTR,K,IZINDX,1,MCOM,'F','mrt zone index',IER)
       if(ier.ne.0)return
@@ -1309,7 +1322,9 @@ C Read number of sensors.
           return
         endif
       endif
+
       if(NZS.ne.NZSUR(ic))then
+
         write(outs,'(3a)') LMRT(1:lnblnk(LMRT)),
      &    ' has different surface count to zone geometry.'
         if(dll)then
@@ -1320,11 +1335,21 @@ C Read number of sensors.
           return
         else
           call edisp(itru,outs)
-          IER=1
+          IER=3  ! signal mismatch
           CALL ERPFREE(iuf,ISTAT)
           return
         endif
       endif
+      
+C Test for number of MRT sensors. If zero in this file but NCUB(IC) is
+C non-zero then do not update NCUB. If > zero and NCUB(IC) is zero then do
+C update NCUB(IC).
+      if(NCUBF.eq.0.and.NCUB(IC).gt.0)then
+        continue
+      elseif(NCUBF.gt.0.and.NCUB(IC).eq.0)then
+        NCUB(IC)=NCUBF
+      endif
+
       DO 330 I = 1,NZS
 
 C Read surface data line(s).
@@ -1341,7 +1366,7 @@ C Skip past the row sums.
   331 CONTINUE
 
 C Write out trace if requested.
-C MS senstive, change is MS>90.
+C MS senstive, change is MS>99.
       if(itrc.gt.0)then
         call edisp(itru,' Black body view factors')
         if(NZS.le.22)then
@@ -1352,26 +1377,37 @@ C MS senstive, change is MS>90.
           call edisp(itru,outs)
           write(outs,'(4X,22I5)')(I,I=23,NZS)
           call edisp(itru,outs)
-        elseif(NZS.ge.45.and.NZS.le.68)then
+        elseif(NZS.ge.45.and.NZS.le.66)then
           write(outs,'(4X,22I5)')(I,I=1,22)
           call edisp(itru,outs)
           write(outs,'(4X,22I5)')(I,I=23,44)
           call edisp(itru,outs)
           write(outs,'(4X,22I5)')(I,I=45,NZS)
           call edisp(itru,outs)
-        elseif(NZS.ge.69.and.NZS.le.90)then
+        elseif(NZS.ge.67.and.NZS.le.88)then
           write(outs,'(4X,22I5)')(I,I=1,22)
           call edisp(itru,outs)
           write(outs,'(4X,22I5)')(I,I=23,44)
           call edisp(itru,outs)
-          write(outs,'(4X,22I5)')(I,I=45,68)
+          write(outs,'(4X,22I5)')(I,I=45,66)
+          call edisp(itru,outs)
+          write(outs,'(4X,22I5)')(I,I=67,NZS)
+          call edisp(itru,outs)
+        elseif(NZS.ge.89.and.NZS.le.110)then
+          write(outs,'(4X,22I5)')(I,I=1,22)
+          call edisp(itru,outs)
+          write(outs,'(4X,22I5)')(I,I=23,44)
+          call edisp(itru,outs)
+          write(outs,'(4X,22I5)')(I,I=45,66)
+          call edisp(itru,outs)
+          write(outs,'(4X,22I5)')(I,I=67,88)
           call edisp(itru,outs)
           write(outs,'(4X,22I5)')(I,I=69,NZS)
           call edisp(itru,outs)
         endif
         call edisp(itru,' ')
 
-C MS senstive, change is MS>90.
+C MS senstive, change if MS>99.
         DO 9994 I=1,NZS
           if(NZS.le.22)then
             write(outs,9993)I,(VEWF(I,J),J=1,NZS)
@@ -1382,28 +1418,39 @@ C MS senstive, change is MS>90.
             call edisp(itru,outs)
             write(outs,'(1x,22F5.2)')(VEWF(I,J),J=23,NZS)
             call edisp(itru,outs)
-          elseif(NZS.ge.45.and.NZS.le.68)then
+          elseif(NZS.ge.45.and.NZS.le.66)then
             write(outs,9993)I,(VEWF(I,J),J=1,22)
             call edisp(itru,outs)
             write(outs,'(1x,22F5.2)')(VEWF(I,J),J=23,44)
             call edisp(itru,outs)
             write(outs,'(1x,22F5.2)')(VEWF(I,J),J=45,NZS)
             call edisp(itru,outs)
-          elseif(NZS.ge.45.and.NZS.le.90)then
+          elseif(NZS.ge.67.and.NZS.le.88)then
             write(outs,9993)I,(VEWF(I,J),J=1,22)
             call edisp(itru,outs)
             write(outs,'(1x,22F5.2)')(VEWF(I,J),J=23,44)
             call edisp(itru,outs)
-            write(outs,'(1x,22F5.2)')(VEWF(I,J),J=45,68)
+            write(outs,'(1x,22F5.2)')(VEWF(I,J),J=45,66)
             call edisp(itru,outs)
-            write(outs,'(1x,22F5.2)')(VEWF(I,J),J=69,NZS)
+            write(outs,'(1x,22F5.2)')(VEWF(I,J),J=67,NZS)
+            call edisp(itru,outs)
+          elseif(NZS.ge.89.and.NZS.le.110)then
+            write(outs,9993)I,(VEWF(I,J),J=1,22)
+            call edisp(itru,outs)
+            write(outs,'(1x,22F5.2)')(VEWF(I,J),J=23,44)
+            call edisp(itru,outs)
+            write(outs,'(1x,22F5.2)')(VEWF(I,J),J=45,66)
+            call edisp(itru,outs)
+            write(outs,'(1x,22F5.2)')(VEWF(I,J),J=67,88)
+            call edisp(itru,outs)
+            write(outs,'(1x,22F5.2)')(VEWF(I,J),J=89,NZS)
             call edisp(itru,outs)
           endif
  9994   CONTINUE
       endif
 
 C If there are sensors continue.
-      if(NCUB.eq.0)goto 100
+      if(NCUB(IC).eq.0)goto 100
 
 C If next line is *MRT_SENSOR
       CALL STRIPC(IUF,OUTSTR,0,ND,1,'line 1',IER)
@@ -1433,7 +1480,7 @@ C reference to a standard zone!!!!
       nsurmf=NZS+6
 
 C Clear array of view factors from each cube to geometry.
-      do 40 i=1,NCUB
+      do 40 i=1,NCUB(IC)
         do 41 iv=1,6
           do 42 j=1,nsurmf
             ffl(i,iv,j)=0.
@@ -1444,7 +1491,7 @@ C Clear array of view factors from each cube to geometry.
 C Read each sensor block. If no name then assign the sensor index
 C as the name via internal read. If FOCUS is the same as the current
 C sensor name then read the viewfactors and exit.
-      DO 10 I=1,NCUB
+      DO 10 I=1,NCUB(IC)
         CALL STRIPC(IUF,OUTSTR,99,ND,1,'sensor block',IER)
         IF(IER.NE.0)return
         IF(ND.EQ.8.OR.ND.EQ.9)THEN
@@ -1508,11 +1555,6 @@ C act character*1 if 'a' then area weighted, if 'r' ray traced.
 
       integer lnblnk  ! function definition
 
-      integer ncub,ivfok
-      real XOC,YOC,ZOC,DXC,DYC,DZC,CANG
-      character CUBN*6
-      common/MRTC/NCUB,XOC(MCUB),YOC(MCUB),ZOC(MCUB),DXC(MCUB),
-     &            DYC(MCUB),DZC(MCUB),CANG(MCUB),IVFOK(MCUB),CUBN(MCUB)
       COMMON/MRTF/FFL(MCUB,6,MSM),VEWF(MS,MS)
 
       dimension rval(MS)
@@ -1539,7 +1581,7 @@ C Write out the file data.
       WRITE(IUF,'(A,A)',IOSTAT=IOS,ERR=14)'*GEOM  ',
      &  LGEOM(1:lnblnk(LGEOM))
       WRITE(IUF,'(3I4,A)',IOSTAT=IOS,ERR=14)
-     &  NCUB,NZS,ICOMP,
+     &  NCUB(ICOMP),NZS,ICOMP,
      &  '   # numb mrt sensors, numb zone surfs, zone index'
       if(act.eq.'a')then
         WRITE(IUF,'(A)',IOSTAT=IOS,ERR=14)
@@ -1575,12 +1617,12 @@ C because it might influence use of view factors in bps.
 462   CONTINUE
 
 C If there are any cubes the save this information as well.
-      if(NCUB.eq.0)goto 999
+      if(NCUB(ICOMP).eq.0)goto 999
       WRITE(IUF,'(A)',IOSTAT=IOS,ERR=14) '*MRT_SENSOR'
       WRITE(IUF,'(A)',IOSTAT=IOS,ERR=14)
      & '# OK, Xorig, Yorig, Zorig,   DX,    DY,    DZ, rotation,  name'
 
-      DO 1180 I=1,NCUB
+      DO 1180 I=1,NCUB(ICOMP)
         WRITE(IUF,34)IVFOK(I),XOC(I),YOC(I),ZOC(I),DXC(I),DYC(I),
      &    DZC(I),CANG(I),CUBN(I),I
   34    FORMAT(I4,6F7.3,F7.1,2X,A6,'   # sensor ',I2)
@@ -4456,8 +4498,9 @@ C pwdinitial looking for the same characters.
         if(loop.eq.lnpwdi.and.ipos.gt.lnpwdi)then
           write(pwdtocfg,'(a)') ppath(loop+1:ipos)
           lnpwdc=lnblnk(pwdtocfg)
-          write(6,*) ipos,loop,lnpwdi,lnpwdc,ppath(1:lnblnk(ppath))
-          write(6,*) 'pwdtocfg ',pwdtocfg(1:lnblnk(pwdtocfg))
+C Debug
+C          write(6,*) ipos,loop,lnpwdi,lnpwdc,ppath(1:lnblnk(ppath))
+C          write(6,*) 'pwdtocfg ',pwdtocfg(1:lnblnk(pwdtocfg))
         elseif(loop.eq.lnpwdi.and.ipos.eq.lnpwdi)then
           write(pwdtocfg,'(a)') '!'
         endif

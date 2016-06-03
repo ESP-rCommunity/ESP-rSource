@@ -364,7 +364,8 @@ C position. Confirm the lat, long, request day and time,
 C compute positon and update the view.
       doanim=.false.
       write(outs,'(A,F6.2,A,F6.2)')
-     &  ' Current latitude = ',SLAT,', longitude difference = ',SLON
+     &  ' Current latitude = ',SLAT,
+     &  ', longitude difference from time meridian=',SLON
       call edisp(iuout,' ')
       call edisp(iuout,outs)
       if(isunhour.eq.0)then
@@ -1050,20 +1051,16 @@ C DRWSEN loads the geometric description within an MRT sensor file
 C into common block BG1 and then converts into viewing coords,
 C clips the image and draws it.
 C IER is returned as non-zero if there is a problem.
-      SUBROUTINE DRWSEN(ier)
+      SUBROUTINE DRWSEN(iz,ier)
 #include "building.h"
 #include "prj3dv.h"
+#include "geometry.h"
 
 C Passed parameter.
       integer ier
       
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/GB1/XB(12),YB(12),ZB(12),JVNB(6,4)
-      integer ncub,ivfok
-      real XOC,YOC,ZOC,DXC,DYC,DZC,CANG
-      character CUBN*6
-      COMMON/MRTC/NCUB,XOC(MCUB),YOC(MCUB),ZOC(MCUB),DXC(MCUB),
-     &            DYC(MCUB),DZC(MCUB),CANG(MCUB),IVFOK(MCUB),CUBN(MCUB)
 
 C Local arrays.
       real AX,AY,AZ,BX,BY,BZ,SBBOX,COG1,COG2,COG3
@@ -1082,8 +1079,8 @@ C Local arrays.
 C If not in graphic mode return.
       if(MMOD.lt.8)return
 
-      if(NCUB.eq.0)return
-      DO 301 IB=1,NCUB
+      if(NCUB(iz).eq.0)return
+      DO 301 IB=1,NCUB(iz)
         CALL CNVBLK(XOC(IB),YOC(IB),ZOC(IB),DXC(IB),DYC(IB),DZC(IB),
      &    CANG(IB))
 
@@ -1174,6 +1171,130 @@ C Complete the polygon.
           call forceflush()
  1000   CONTINUE
   301 CONTINUE
+
+      RETURN
+      END
+
+
+C **************** DRWBB
+C DRWBB previews a bounding box as described by current contents of
+C common block GB1. Also shows labels passed. Similar to code in the
+C subroutine DRWSEN.
+C IER is returned as non-zero if there is a problem.
+      SUBROUTINE DRWBB(bbname,ier)
+#include "building.h"
+#include "prj3dv.h"
+
+C Passed parameter.
+      character bbname*12  ! preview name
+      integer ier
+      
+      COMMON/SPAD/MMOD,LIMIT,LIMTTY
+      COMMON/GB1/XB(12),YB(12),ZB(12),JVNB(6,4)
+
+C Local arrays.
+      real AX,AY,AZ,BX,BY,BZ,SBBOX,COG1,COG2,COG3
+      integer IANXT,IBNXT
+      DIMENSION  AX(MV),AY(MV),AZ(MV),IANXT(MV)
+      DIMENSION  BX(MV),BY(MV),BZ(MV),IBNXT(MV)
+      DIMENSION  SBBOX(3,2),COG1(3),COG2(3),COG3(3)
+#ifdef OSI
+      integer iix,iiy,iixlast,iiylast,iid2
+#else
+      integer*8 iix,iiy,iixlast,iiylast,iid2
+#endif     
+
+      CHARACTER temp*13
+
+C If not in graphic mode return.
+      if(MMOD.lt.8)return
+
+C Place sensor names near first vertex.
+C Transform the location into eyepoint and then screen coords.
+      COG1(1)=XB(1)
+      COG1(2)=YB(1)
+      COG1(3)=ZB(1)
+      CALL VECTRN(COG1,TEMAT,COG2,IER)
+      CALL VECTRN(COG2,ETSMAT,COG3,IER)
+      call u2pixel(COG3(1),COG3(2),iix,iiy)
+      write(temp,'(A)')bbname
+      iid2=iiy+8
+      CALL wstxpt(iix,iid2,temp)
+
+C Continue on with surfaces in the sensor.
+C Copy polygon for sensor surface I into structure AX AY AZ
+C where IANXT = Index of 'next' point. Clear IANXT & IBNXT arrays.
+      do 1101 J = 1,MV
+        IANXT(J) = 0
+        IBNXT(J) = 0
+ 1101 continue
+
+C There are 4 initial vertices per block side and 6 sides.
+      NAP=4
+      DO 1000 I=1,6
+        DO 1100 J = 1,NAP
+          K = JVNB(I,J)
+          AX(J) = XB(K)
+          AY(J) = YB(K)
+          AZ(J) = ZB(K)
+          IANXT(J) = J + 1
+ 1100   CONTINUE
+        IANXT(4) = 1
+
+C Transform block polygon to EYE co-ordinates.
+        CALL MATPOLS(NAP,AX,AY,AZ,IANXT,TEMAT,SBBOX,
+     &               NBP,BX,BY,BZ,IBNXT,IERR)
+
+C Generate clipping flags and clip geometry in eye coords.
+C If ISTAT =  0 : totally inside frustrum
+C If ISTAT =  1 : totally outside frustrum
+C If ISTAT = -1 : straddles frustrum
+        call CLIPSUR(NBP,BX,BY,BZ,ISTAT)
+        IF (ISTAT .EQ. 1) THEN
+          GOTO  1000
+        ELSEIF (ISTAT .EQ. -1) THEN
+          IBPNT=1
+          CALL CUTSUR(NB1,NBP,IBPNT,BX,BY,BZ,IBNXT,ISTAT)
+        ENDIF
+
+C If there are no edges to draw then jump.
+        if(NB1.eq.0)goto 1000
+
+C Multiply each vertex by ETSMAT (Eye to Screen Matrix).
+C First move to the beginning (as passed back from CUTSUR).
+        IP = IABS(IBPNT)
+        CALL ORTTRN(BX(IP),BY(IP),BZ(IP),ETSMAT,AAX,AAY,AAZ,IERR)
+        call u2pixel(AAX,AAY,iix,iiy)
+        iixlast=iix   ! cast for edline call
+        iiylast=iiy
+
+C If IP1 is ever negative then jump to a later point.
+        IP1 = IBNXT(IP)
+        if(IP1.lt.1)IP1 = IBNXT(IP+1)
+        if(IP1.lt.1)IP1 = IBNXT(IP+2)
+
+ 351    CONTINUE
+        CALL ORTTRN(BX(IP1),BY(IP1),BZ(IP1),ETSMAT,AAX,AAY,AAZ,IERR)
+        call u2pixel(AAX,AAY,iix,iiy)
+        call eswline(iixlast,iiylast,iix,iiy)
+        call forceflush()
+
+C Repeat until next point is the first, remember position and skip
+C past any -1 values of IBNXT, save IP1 as IPT for testing.
+        IPT = IP1
+        IP1 = IBNXT(IP1)
+        if(IP1.lt.1)IP1 = IBNXT(IPT+1)
+        if(IP1.lt.1)IP1 = IBNXT(IPT+2)
+        iixlast=iix   ! cast for edline call
+        iiylast=iiy
+        IF(IP1 .NE. IP) GOTO 351
+
+C Complete the polygon.
+        CALL ORTTRN(BX(IP),BY(IP),BZ(IP),ETSMAT,AAX,AAY,AAZ,IERR)
+        call u2pixel(AAX,AAY,iix,iiy)
+        call eswline(iixlast,iiylast,iix,iiy)
+        call forceflush()
+ 1000 CONTINUE
 
       RETURN
       END

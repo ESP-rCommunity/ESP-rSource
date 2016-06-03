@@ -1857,6 +1857,7 @@ C Create the sill obstruction.
       write(BLOCKMAT(icomp,nbo),'(a)') mat(1:lnblnk(mat))
       LNBLOCKMAT(icomp,nbo)=lnblnk(mat)
       BLOCKTYP(icomp,nbo)='obs '
+      OPOB(icomp,nbo)=1.0  ! initial assumption opaque
 
 C If newer geometry file it may include obstructions.
       if(newgeo)then
@@ -2275,20 +2276,20 @@ C Rotation choices.
               A=-ANGR*PI/180.
               CA=COS(A)
               SA=SIN(A)
-              do 86 ij=1,INPIC
+              do ij=1,INPIC
                 IFOC=IVALB(ij)
                 XXX=XOV(ICOMP,IFOC)-X1; YYY=YOV(ICOMP,IFOC)-Y1
                 XR=XXX*CA+YYY*SA; YR=YYY*CA-XXX*SA
                 XOV(ICOMP,IFOC)=XR+X1; YOV(ICOMP,IFOC)=YR+Y1
                 BANGOV(ICOMP,IFOC,1)=BANGOV(ICOMP,IFOC,1)+ANGR
-                do 89 ibe=1,8
+                do ibe=1,8
                   XXX=XVP(icomp,IFOC,ibe)-X1
                   YYY=YVP(icomp,IFOC,ibe)-Y1
                   XR=XXX*CA+YYY*SA; YR=YYY*CA-XXX*SA
                   XVP(icomp,IFOC,ibe)=XR+X1
                   YVP(icomp,IFOC,ibe)=YR+Y1
-  89            continue
-  86          continue
+                enddo  ! of ibe
+              enddo    ! of ij
             endif
             MODIFYVIEW=.TRUE.
           elseif(IBOPT.eq.2)then
@@ -2314,17 +2315,17 @@ C time for copy use zeros, otherwise re-present the previous values.
             CALL EGETWR(HOLDS,K,VALY,-50.0,50.0,'W','Y off',IER)
             CALL EGETWR(HOLDS,K,VALZ,-50.0,50.0,'W','Z off',IER)
             if(ier.ne.0)goto 152
-            do 87 ij=1,INPIC
+            do ij=1,INPIC
               IFOC=IVALB(ij)
               XOV(icomp,IFOC)=XOV(icomp,IFOC)+VALX
               YOV(icomp,IFOC)=YOV(icomp,IFOC)+VALY
               ZOV(icomp,IFOC)=ZOV(icomp,IFOC)+VALZ
-              do 88 ibe=1,8
+              do ibe=1,8
                 XVP(icomp,IFOC,ibe)=XVP(icomp,IFOC,ibe)+VALX
                 YVP(icomp,IFOC,ibe)=YVP(icomp,IFOC,ibe)+VALY
                 ZVP(icomp,IFOC,ibe)=ZVP(icomp,IFOC,ibe)+VALZ
-  88          continue
-  87        continue
+              enddo  ! of ibe
+            enddo    ! of ij
             MODIFYVIEW=.TRUE.
           endif
           if(.NOT.anothercopy) anothercopy=.true.  ! something transformed
@@ -2339,9 +2340,15 @@ C Manage the list.
      &      'add','delete','copy','continue',' ',' ',' ',IW,nbhelp)
           IF(IW.EQ.1)THEN
 
-C Add a compound object. Ask for a name, description.
+C Add a compound object. Ask for a name, description. Check that
+C we are not adding more complexity then the model can hold.
+C Logic dependent on geometry.h array size for GSVOBJN common.
             call edisp(iuout,'Work in progress')
-            newobj=NBVOBJ(icomp)+1
+            if(NBVOBJ(icomp)+1.gt.20)then
+              call edisp(iuout,'Cannot add more visual objects.')
+              goto 92
+            endif
+           newobj=NBVOBJ(icomp)+1
             S12='  '
             CALL EASKS(S12,' ',' Name of copied compound visual? ',
      &        12,'cabinet','visual name',IER,nbhelp)
@@ -2357,7 +2364,7 @@ C Add a compound object. Ask for a name, description.
               LNVOBJDESC(ICOMP,newobj)=lnblnk(S32)
             endif
 
-C Present a list of available entities to select from.
+C Present a list of available compound visuals to select from.
             CALL EPMENSV
             INPIC=12
             CALL EPICKS(INPIC,IVALB,' ','Associated visual(s):',
@@ -2391,7 +2398,67 @@ C Present editing facilitiy for this new compound object.
             goto 92
 
           ELSEIF(IW.EQ.2)THEN
-            call edisp(iuout,'Work in progress')
+
+C Delete a compound visual and its associated visual primitives.
+            call edisp(iuout,'Work in progress...')
+            CALL EPMENSV
+            INPIC=1
+            nbobj=NBVOBJ(icomp)
+            CALL EPICKS(INPIC,IVALB,' ','Delete which compound object:',
+     &        30,nbobj,PICKO,'compound delete options',IER,nbhelp)
+            CALL EPMENRC
+            IFOC=IVALB(1)
+
+C Loop through the associated entities and delete them. Compact
+C the arrays from the point of the visual.
+            do J=1,NBVOBJLIST(ICOMP,ifoc)
+              do K=1,nbvis(icomp)
+                if(VOBJLIST(ICOMP,IFOC,J)(1:12).eq.
+     &             VISNAME(icomp,K)(1:12))then
+                  write(6,*) 'deleting ',VISNAME(icomp,k)
+                  ID=K
+                  DO IDV=ID,nbvis(icomp)-1
+                    XOV(icomp,IDV)=XOV(icomp,IDV+1)
+                    YOV(icomp,IDV)=YOV(icomp,IDV+1)
+                    ZOV(icomp,IDV)=ZOV(icomp,IDV+1)
+                    DXOV(icomp,IDV)=DXOV(icomp,IDV+1)
+                    DYOV(icomp,IDV)=DYOV(icomp,IDV+1)
+                    DZOV(icomp,IDV)=DZOV(icomp,IDV+1)
+                    BANGOV(icomp,IDV,1)=BANGOV(icomp,IDV+1,1)
+                    BANGOV(icomp,IDV,2)=BANGOV(icomp,IDV+1,2)
+                    BANGOV(icomp,IDV,3)=BANGOV(icomp,IDV+1,3)
+                    OPOV(icomp,IDV)=OPOV(icomp,IDV+1)
+                    VISNAME(icomp,IDV)=VISNAME(icomp,IDV+1)
+                    LNVISNAME(icomp,IDV)=LNVISNAME(icomp,IDV+1)
+                    VISMAT(icomp,IDV)=VISMAT(icomp,IDV+1)
+                    LNVISMAT(icomp,IDV)=LNVISMAT(icomp,IDV+1)
+                    VISTYP(icomp,IDV)=VISTYP(icomp,IDV+1)
+                    do ibe=1,8
+                      XVP(icomp,IDV,ibe)=XVP(icomp,IDV+1,ibe)
+                      YVP(icomp,IDV,ibe)=YVP(icomp,IDV+1,ibe)
+                      ZVP(icomp,IDV,ibe)=ZVP(icomp,IDV+1,ibe)
+                    enddo  ! of ibe
+                  enddo    ! of idv
+                  nbvis(icomp)=nbvis(icomp)-1
+                endif
+              enddo        ! of K
+            enddo          ! of J
+
+C Now compact the list of compound objects.
+            ID=IFOC
+            DO IDV=ID,NBVOBJ(icomp)-1
+              VOBJNAME(icomp,idv)=VOBJNAME(icomp,idv+1)
+              VOBJDESC(icomp,idv)=VOBJDESC(icomp,idv+1)
+              LNVOBJNAME(icomp,idv)=LNVOBJNAME(icomp,idv+1)
+              LNVOBJDESC(icomp,idv)=LNVOBJDESC(icomp,idv+1)
+              do ibe=1,NBVOBJLIST(icomp,idv)
+                VOBJLIST(icomp,idv,ibe)=VOBJLIST(icomp,idv+1,ibe)
+                LNVOBJLIST(icomp,idv,ibe)=LNVOBJLIST(icomp,idv+1,ibe)
+              enddo
+              NBVOBJLIST(icomp,idv)=NBVOBJLIST(icomp,idv+1)
+            ENDDO
+            NBVOBJ(icomp)=NBVOBJ(icomp)-1
+            MODIFYVIEW=.TRUE.
             goto 92
           ELSEIF(IW.EQ.3)THEN
             nbobj=NBVOBJ(icomp)
@@ -2435,23 +2502,26 @@ C Ask description of copied compound object.
             NBVOBJLIST(ICOMP,newobj)=NBVOBJLIST(ICOMP,ifoc)
 
 C Ask for single character to prepend to copied associated entities.
-            CALL EASKABCD(' Character to pre-pend to copied entities:',
-     &        ' ',' a ',' b ',' c ',' d ',IBOPT,nbhelp)
+            CALL EASKATOG(' Character to pre-pend to copied entities:',
+     &      ' ',' a ',' b ',' c ',' d ',' e ',' f ',' g ',IBOPT,nbhelp)
             if(ibopt.eq.1)pre='a'
             if(ibopt.eq.2)pre='b'
             if(ibopt.eq.3)pre='c'
             if(ibopt.eq.4)pre='d'
+            if(ibopt.eq.5)pre='e'
+            if(ibopt.eq.6)pre='f'
+            if(ibopt.eq.7)pre='g'
 
 C Loop through the current entities, adapt name for the copy and gradually
 C add to the list of entities as well as to the list associated with the
 C new compound object.
-            do J=1,NBVOBJLIST(ICOMP,newobj)
+            do JJ=1,NBVOBJLIST(ICOMP,newobj)
               newname=' '
-              write(newname,'(2a)') pre,VOBJLIST(ICOMP,ifoc,J)(1:11) ! make up new name
-              write(VOBJLIST(ICOMP,newobj,J),'(a)') newname  ! assign it
-              LNVOBJLIST(ICOMP,newobj,J)= lnblnk(newname)    ! remember length
+              write(newname,'(2a)') pre,VOBJLIST(ICOMP,ifoc,JJ)(1:11) ! make up new name
+              write(VOBJLIST(ICOMP,newobj,JJ),'(a)') newname  ! assign it
+              LNVOBJLIST(ICOMP,newobj,JJ)= lnblnk(newname)    ! remember length
               do K=1,nbvis(icomp)
-                if(VOBJLIST(ICOMP,IFOC,J)(1:12).eq.
+                if(VOBJLIST(ICOMP,IFOC,JJ)(1:12).eq.
      &             VISNAME(icomp,K)(1:12))then
                   nbvis(icomp)=nbvis(icomp)+1  ! increment count nbvis and set nbo
                   nbo=nbvis(icomp)
@@ -2474,10 +2544,10 @@ C new compound object.
                     XVP(icomp,nbo,ibe)=XVP(icomp,K,ibe)
                     YVP(icomp,nbo,ibe)=YVP(icomp,K,ibe)
                     ZVP(icomp,nbo,ibe)=ZVP(icomp,K,ibe)
-                  enddo
+                  enddo  ! of ibe
                 endif
-              enddo  ! of K
-            enddo    ! of J
+              enddo      ! of K
+            enddo        ! of JJ
             NBVOBJ(icomp)=newobj
 
 C Save the new compound and visuals to geometry file and
@@ -2508,17 +2578,18 @@ C +- Visual.
      &      'add','delete','copy','continue',' ',' ',' ',IW,nbhelp)
           IF(IW.EQ.2)THEN
 
-C Build up text strings for the delete menu. 
+C Build up text strings for the delete menu. Constrain how many can be
+C deleted at one time.
             CALL EPMENSV
-            INPIC=MAX0(nbobs(icomp)-2,4)
+            INPIC=MAX0(nbvis(icomp)-2,8)
             CALL EPICKS(INPIC,IVALB,' ','Delete which visual(s):',
      &        30,nbvis(icomp),PICKV,' delete options',IER,nbhelp)
             CALL EPMENRC
             if(inpic.gt.0)then
-              do 143 ijb=1,INPIC
+              do ijb=1,INPIC
                 ID=IVALB(ijb)
                 if(ID.eq.0)GOTO 92
-                DO 791 IDV=ID,nbvis(icomp)-1
+                DO IDV=ID,nbvis(icomp)-1
                   XOV(icomp,IDV)=XOV(icomp,IDV+1)
                   YOV(icomp,IDV)=YOV(icomp,IDV+1)
                   ZOV(icomp,IDV)=ZOV(icomp,IDV+1)
@@ -2534,14 +2605,14 @@ C Build up text strings for the delete menu.
                   VISMAT(icomp,IDV)=VISMAT(icomp,IDV+1)
                   LNVISMAT(icomp,IDV)=LNVISMAT(icomp,IDV+1)
                   VISTYP(icomp,IDV)=VISTYP(icomp,IDV+1)
-                  do 792 ibe=1,8
+                  do ibe=1,8
                     XVP(icomp,IDV,ibe)=XVP(icomp,IDV+1,ibe)
                     YVP(icomp,IDV,ibe)=YVP(icomp,IDV+1,ibe)
                     ZVP(icomp,IDV,ibe)=ZVP(icomp,IDV+1,ibe)
-  792             continue
-  791           CONTINUE
+                  enddo  ! of ibe
+                enddo    ! of idv
                 nbvis(icomp)=nbvis(icomp)-1
-  143         continue
+              enddo      ! of ijb
             endif
             MODIFYVIEW=.TRUE.
           ELSEIF(IW.EQ.1)THEN
@@ -2642,11 +2713,11 @@ C time for copy use zeros, otherwise re-present the previous values.
               VISMAT(icomp,nbo)=VISMAT(icomp,IFOC)
               LNVISMAT(icomp,nbo)=LNVISMAT(icomp,IFOC)
               VISTYP(icomp,nbo)=VISTYP(icomp,IFOC)
-              do 245 ibe=1,8
+              do ibe=1,8
                 XVP(icomp,nbo,ibe)=XVP(icomp,IFOC,ibe)+VALX
                 YVP(icomp,nbo,ibe)=YVP(icomp,IFOC,ibe)+VALY
                 ZVP(icomp,nbo,ibe)=ZVP(icomp,IFOC,ibe)+VALZ
-  245         continue
+              enddo  ! of ibe
               MODIFYVIEW=.TRUE.
               if(.NOT.anothercopy) anothercopy=.true.  ! something copied
 

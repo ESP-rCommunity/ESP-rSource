@@ -4295,7 +4295,7 @@ C Suitable for use with controller types 0,35,36,37,38,39.
       COMMON/SIMTIM/IHRP,IHRF,IDYP,IDYF,IDWP,IDWF,NSINC,ITS
       COMMON/PERS/ISD1,ISM1,ISD2,ISM2,ISDS,ISDF,NTSTEP
       COMMON/CLIMI/QFP,QFF,TP,TF,QDP,QDF,VP,VF,DP,DF,HP,HF
-      COMMON/OPTCTL/IRWIND,IRWLAS,IRWCNT,IRWCSV,IRWCHP,IRWCHN,IRWCHG,
+      COMMON/OPTRCTL/IRWIND,IRWLAS,IRWCNT,IRWCSV,IRWCHP,IRWCHN,IRWCHG,
      &LGCTIN,INITCT,STFUT,STPRES,STPAS1,STPAS2,IRWFNL,TCTLSV
       COMMON/TS6/idysv,ihrsv,irwcou,tsclaw,rewnd,nsncv1,nsncv2,pasone
 
@@ -4303,7 +4303,7 @@ C Suitable for use with controller types 0,35,36,37,38,39.
       
       CHARACTER OUTS*124
 
-C COMMON BLOCK VARIABLES FOR OPTCTL:-
+C COMMON BLOCK VARIABLES FOR OPTRCTL:-
 C     IRWIND = FLAG INDICATING REWIND CALLED FOR,
 C     IRWLAS = MEMORY FOR PREVIOUS REWIND OPERATION,
 C     IRWCNT = NUMBER OF REWIND OPERATIONS,
@@ -4558,7 +4558,7 @@ C Suitable for use with controller types 0,35,36,37,38,39.
       COMMON/SIMTIM/IHRP,IHRF,IDYP,IDYF,IDWP,IDWF,NSINC,ITS
       COMMON/PERS/ISD1,ISM1,ISD2,ISM2,ISDS,ISDF,NTSTEP
       COMMON/TS6/idysv,ihrsv,irwcou,tsclaw,rewnd,nsncv1,nsncv2,pasone
-      COMMON/OPTCTL/IRWIND,IRWLAS,IRWCNT,IRWCSV,IRWCHP,IRWCHN,IRWCHG,
+      COMMON/OPTRCTL/IRWIND,IRWLAS,IRWCNT,IRWCSV,IRWCHP,IRWCHN,IRWCHG,
      &LGCTIN,INITCT,STFUT,STPRES,STPAS1,STPAS2,IRWFNL,TCTLSV    
 C Where:
 C     IRWIND = flag indicating that a time rewind is required.
@@ -6118,6 +6118,9 @@ C the initial time column.
       if(IACTIV(ICF).ne.0)then
         itdi=IACTIV(ICF)
       elseif(IHTCLSETP(ICF).ne.0)then
+
+C For heating and cooling setpoints these will be linked to control loops
+C and the itdi index will be from the IHTCLSETP array.
         itdi=IHTCLSETP(ICF) 
       endif
 
@@ -6782,6 +6785,7 @@ C      COMMON/PREC1/SNA(MCOM,MS)
       COMMON/FVALA/TFA(MCOM),QFA(MCOM)
       COMMON/zfluid/znotair(mcom),zfldK,zfldD,zfldC,zfldA,
      &              zSWAp(mcom),zSWAf(mcom)
+      real zfldK,zfldD,zfldC,zfldA,zSWAp,zSWAf
       logical znotair
       CHARACTER OUTS*124
       logical close5

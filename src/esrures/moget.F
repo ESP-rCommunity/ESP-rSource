@@ -466,11 +466,9 @@ C Pre calculated data (filtered).
 C Comfort parameters and hash table.
       common/cmftpar/WVEL,ACTL,CLO,iocut,iocuset,ioucpz(MCOM,72)
       
-C MRT Sensors.
-      common/MRTC/NCUB,XOC(MCUB),YOC(MCUB),ZOC(MCUB),DXC(MCUB),
-     &            DYC(MCUB),DZC(MCUB),CANG(MCUB),IVFOK(MCUB),CUBN(MCUB)
+C MRT Sensors via geometry.h.
 
-      CHARACTER ITEM(35)*24, MTITLE*22, values*20, CUBN*6
+      CHARACTER ITEM(35)*24, MTITLE*22, values*20
       CHARACTER ITEMS(18)*23
       CHARACTER ITEMC(25)*24
       character xfile*144,tg*1,delim*1
@@ -500,9 +498,9 @@ C Note: 60 is the maximum number of items associated with an anchor point.
 
       logical SLIST,NLIST,MRTLIST,AGRLIST,OKL,dok,ok
 #ifdef OSI
-      integer iid1,iid2
+      integer iid1,iid2,iik,iixx,iiyy
 #else
-      integer*8 iid1,iid2
+      integer*8 iid1,iid2,iik,iixx,iiyy
 #endif
 
       logical dmdsok,xst
@@ -3495,11 +3493,11 @@ C If there are no labels or some label start at first, if more than 5 exit.
         endif
 
 C Find out point where text should be drawn.
-        CALL trackview(ii,ix,iy)
-        lblpx(igrl)=ix
-        lblpy(igrl)=iy
+        CALL trackview(iik,iixx,iiyy)
+        lblpx(igrl)=int(iixx)
+        lblpy(igrl)=int(iiyy)
+        iid1=int(iixx); iid2=int(iiyy);
         t24=grlbl(igrl)
-        iid1=lblpx(igrl); iid2=lblpy(igrl);
         call wstxpt(iid1,iid2,t24)
         dok=.false.
         CALL ASKOK('Include another user supplied label?',' ',OKL,dok,

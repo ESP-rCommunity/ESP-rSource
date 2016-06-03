@@ -153,7 +153,7 @@ C Significant figure reporting limit.
 C Name of current application.
       common/appname/cAppName
 
-      dimension month(12),items(24),isadd(12),ishd(12),iavdec(12)
+      dimension month(12),items(25),isadd(12),ishd(12),iavdec(12)
       character*72 lname,tbase
       character items*26,cAppName*12
       character month*3,outs*124,outs248*248,etext*70,ltmp*144
@@ -169,11 +169,12 @@ C Name of current application.
       character pagestitle*42 ! for banner title via epages call
 
       logical silent,unixok,there,context,existing
-      logical xst
+      logical xst,freshshading
       logical ok,dok,cfgok,mldbok,matdbok,ctlok,optkok,CFCDBOK
       logical user_recalc  ! user requested recalculation
       logical loaded_existing  ! to signal working with existing shd file
       logical changed_existing  ! to signal existing shd file updated
+      logical allsurf,allmonths
       dimension iva(ms)
 
       integer iglib   ! if 1 then X11, if 2 then GTK, if 3 then text only.
@@ -239,6 +240,7 @@ C ifcfg  - system configuration file
       zn='UNKNOWN'
       user_recalc=.false.
       changed_existing=.false.
+      freshshading=.false.  ! assume we have not asked for a new shading calc
       
       call parsish(modl,iappw,iappx,iappy,inf,inz,pact,pascif)
 
@@ -274,20 +276,12 @@ C Initial coordinates for eye point, viewing point and angle of view.
       ang=40.
 
 C Image option flags.
-      itdsp=0
-      itbnd=1
-      itept=0
-      itznm=0
-      itsnm=0
-      itvno=1
-      itorg=1
-      itsnr=0
-      itgrd=1
-      grdis=0.0
+      itdsp=0; itbnd=1; itept=0
+      itznm=0; itsnm=0
+      itvno=1; itorg=1; itsnr=0
+      itgrd=1; grdis=0.0
       itppsw=0
-      ifs=1
-      itfs=1
-      imfs=1
+      ifs=1; itfs=1; imfs=1
 
 C If your compiler does not support floating-point arithmetic
 C according to ANSI/IEEE Std 754-1985 comment out the following code.
@@ -308,14 +302,14 @@ C                or: Sun-4 f77.
 C Initialise terminal and flags.
       mmod=modl
       if(iappw.eq.0.and.iappx.eq.0.and.iappy.eq.0)then
-         iappw=530
+         iappw=550
          iappx=75
          iappy=170
       else
          if(iappx.le.0)iappx=75
          if(iappy.le.0)iappy=170
          if(iappw.le.200)then
-            iappwi=int(530*iappw*0.01)
+            iappwi=int(550*iappw*0.01)
             iappw=iappwi
          elseif(iappw.gt.200)then
             continue
@@ -340,9 +334,7 @@ C monitor size.
 
 C Set initial font sizes (imfs is for graphs, ifs for dialog & text
 C feedback).
-         imfs=1
-         ifs=1
-         itfs=1
+         imfs=1; ifs=1; itfs=1
          call userfonts(ifs,itfs,imfs)
       else
          limtty=16
@@ -604,6 +596,11 @@ C of paction (so that we do not do a recursive asci->bin->ascii.
                  loaded_existing=.true.
                elseif(istat.eq.1)then
                  loaded_existing=.false.
+
+C If iobs > 0 then have obstructions and thus a fresh shading will
+C be done. But if no shading allow for an insolation only calculation
+C to have the option of update or new db.
+                 if(iobs(icomp).gt.0)freshshading=.true.  ! a new shading file & calc
                elseif(istat.eq.8)then
 
 C A new binary file was created from an existing ascii so
@@ -654,6 +651,7 @@ C asci2bin.
                 if(istat.eq.0)then
                   continue
                 elseif(istat.eq.1)then
+                  freshshading=.true.  ! a new shading file & calc
                   continue
                 else
                   call edisp(iuout,'problem setting up new file.')
@@ -706,7 +704,7 @@ C starting conversion.
                if(istat.eq.0)then
                  continue
                elseif(istat.eq.1)then
-                 continue
+                 freshshading=.true.  ! a new shading file & calc
                else
                  call edisp(iuout,'problem setting up new file.')
                  ier = 1
@@ -775,7 +773,7 @@ C starting calculations.
                if(istat.eq.0)then
                  continue
                elseif(istat.eq.1)then
-                 continue
+                 freshshading=.true.  ! a new shading file & calc
                else
                  call edisp(iuout,'problem with setting up new file.')
                endif
@@ -927,8 +925,9 @@ C If user toggles trace a 2nd time then we are in detailed mode
          items(21)='> outputs >> screen     '
       endif
       items(22)=                '! browse zone surfaces    '
-      items(23)=                '? help                    '
-      items(24)=                '- exit Shading/Insolation '
+      items(23)=                '* test                    '
+      items(24)=                '? help                    '
+      items(25)=                '- exit Shading/Insolation '
 
 C If zone has not been selected disallow calculations and views.
       if(zn(1:4).eq.'UNKN')then
@@ -940,7 +939,7 @@ C If zone has not been selected disallow calculations and views.
          items(17)=              'l  ...                    '
          items(18)=              'm  ...                    '
       endif
-      nitems = 24
+      nitems = 25
 
 C Use askabout to instantiate the initial help messages
 C (2nd parameter is 1).
@@ -1027,6 +1026,7 @@ C the zone's name as root, ask whether to use it.
            loaded_existing=.true.
          elseif(istat.eq.1)then
            loaded_existing=.false.
+           freshshading=.true.  ! a new shading file & calc
          elseif(istat.eq.8)then
            loaded_existing=.true.
          endif
@@ -1131,6 +1131,7 @@ C Calculate direct and diffuse shading on specified external surfaces.
 
 C If there is already data in the file ask user what to do.
             existing=.false.
+            freshshading=.false.  ! reset prior requested a new file
             irec=1
             read(ifilsi,rec=irec,iostat=istat,err=30)(ishd(i),i=1,12),
      &                                               (isadd(i),i=1,12)
@@ -1146,6 +1147,7 @@ C If there is already data in the file ask user what to do.
                if(iw.eq.1)then
                   continue
                elseif(iw.eq.2)then
+                  freshshading=.true.  ! requested a new file
                   maxrec=24
                   if(nzsur(icomp).gt.24)maxrec=nzsur(icomp)
                   call erpfree(ifilsi,istst)
@@ -1172,6 +1174,8 @@ C If there is already data in the file ask user what to do.
                elseif(iw.eq.3)then
                   goto 201
                endif
+            else
+               freshshading=.true.  ! its a new file
             endif
             call tstamp('>','Ish: start shading computation')
             call shdcon(icomp,ier,'i')
@@ -1195,9 +1199,20 @@ C in the zone transitional shading file or from common blocks).
             call tstamp('>','Ish: shading synopsis')
             if(mons.gt.12) mons=1  ! if mons was clobbered reset
             mon=mons
-  202       call easki(mon,' ','Computation month number?',
-     &        1,'F',12,'F',1,'month number',ier,nbhelp)
-            if(ier.ne.0)goto 201
+
+C If output to file auto yes for user questions about months.
+            allsurf=.false.; allmonths=.false.; dok=.true.
+            if(ixopen.eq.1)then
+              call askok(' ','Report all months?',allmonths,dok,0)
+              call askok(' ','Report all surfaces?',allsurf,dok,0)
+            endif
+  202       if(allmonths)then
+              continue
+            else
+              call easki(mon,' ','Computation month number?',
+     &          1,'F',12,'F',1,'month number',ier,nbhelp)
+              if(ier.ne.0)goto 201
+            endif
             call eday(iavdec(mon),mon,iyd)
     
 C If there is a transitional shading file then use it when composing
@@ -1219,7 +1234,7 @@ C shading file.
      &          tbase(:lnblnk(tbase)),' used.'
               call edisp(iuout,outs)
               call retrv1(icomp)
-              call shsynp(icomp)
+              call shsynp(icomp,allsurf)
        
             else
 
@@ -1229,12 +1244,17 @@ C Shading synopsis is based on common block information.
             endif
 
             if(mon.lt.12)then
-               call easkab(' ','Consider another month?','yes',
-     &                     'no',iw,nbhelp)
-               if(iw.eq.1)then
-                  mon=mon+1
-                  goto 202
-               endif
+               if(allmonths)then
+                 mon=mon+1
+                 goto 202
+               else
+                 call easkab(' ','Consider next month?','yes',
+     &                       'no',iw,nbhelp)
+                 if(iw.eq.1)then
+                    mon=mon+1
+                    goto 202
+                 endif
+              endif
             endif
          endif
 
@@ -1284,7 +1304,9 @@ C file.
          endif
 
 C Calculate insolation of internal surfaces due to specified external 
-C source surfaces.
+C source surfaces.  If we have just done a shading analysis on a new
+C zone shading file then for insolation we should not be asking about
+C an update at this point.  Find a way to do this
       elseif(inos.eq.14)then
          if(zn(1:4).eq.'UNKN')then
             call edisp(iuout,'Select a zone first!')
@@ -1300,11 +1322,16 @@ C source surfaces.
                if(ishd(i).ne.0.or.isadd(i).ne.0)existing=.true.
    20       continue
             if(existing)then
-               helptopic='request_to_overwrite'
-               call gethelptext(helpinsub,helptopic,nbhelp)
-               call easkabc('Zone Shading & Insolation db has data!',
-     &           'Options:','update','create new db','cancel',
-     &           iw,nbehlp)
+               if(freshshading)then
+                 iw=1  ! just did shading will only need to update for insolation
+                 freshshading=.false.  ! reset logic
+               else
+                 helptopic='request_to_overwrite'
+                 call gethelptext(helpinsub,helptopic,nbhelp)
+                 call easkabc('Zone Shading & Insolation db has data!',
+     &             'Options:','update','create new db','cancel',
+     &             iw,nbehlp)
+               endif
                if(iw.eq.1)then
                   continue
                elseif(iw.eq.2)then
@@ -1357,21 +1384,38 @@ C held in the zone shading & insolation db.)
             call tstamp('>','Ish: list insolation synopsis')
             if(mons.gt.12) mons=1  ! if mons was clobbered reset
             mon=mons
-            helptopic='synopsis_period_options'
-            call gethelptext(helpinsub,helptopic,nbhelp)
-  204       call easki(mon,' ','Month number?',
-     &        1,'F',12,'F',1,'ins comp month',ier,nbhelp)
-            if(ier.ne.0)goto 201
+
+C If output to file auto yes for user questions about months
+C as well as surfaces.
+            allsurf=.false.; allmonths=.false.; dok=.true.
+            if(ixopen.eq.1)then
+              call askok(' ','Report all months?',allmonths,dok,0)
+              call askok(' ','Report all surfaces?',allsurf,dok,0)
+            endif
+  204       if(allmonths)then
+              continue
+            else
+              helptopic='synopsis_period_options'
+              call gethelptext(helpinsub,helptopic,nbhelp)
+              call easki(mon,' ','Month number?',
+     &          1,'F',12,'F',1,'ins comp month',ier,nbhelp)
+              if(ier.ne.0)goto 201
+            endif
             call eday(iavdec(mon),mon,iyd)
 
             call sifrd(icomp,mon,ier)
-            call insynp(icomp,'i')   ! allow user to control surfaces seen
+            call insynp(icomp,'i',allsurf) ! allow user to control surfaces seen
             if(mon.lt.12)then
-               call easkab(' ','Consider another month?','yes',
-     &                     'no',iw,nbhelp)
-               if(iw.eq.1)then
-                  mon=mon+1
-                  goto 204
+               if(allmonths)then
+                 mon=mon+1
+                 goto 204
+               else
+                 call easkab(' ','Consider another month?','yes',
+     &                       'no',iw,nbhelp)
+                 if(iw.eq.1)then
+                    mon=mon+1
+                    goto 204
+                 endif
                endif
             endif
          endif
@@ -1428,6 +1472,7 @@ C Set trace level displayed in opening menu and main menu.
            icout=iuout
          elseif(itc.eq.1.or.itc.eq.2)then
            icout=33
+           write(icout,*) 'Trace output for shading itc is',itc
          endif
 
 C Redirect synoptic outputs and result of ASHRAE method to a
@@ -1445,14 +1490,61 @@ C Surface summary: print header, followed by surface information.
          context=.false.
          call surinfo(icomp,iuout,context)
 
-C Help via the askabout facility in esru_ask.F - 0 requests display.
       elseif(inos.eq.23)then
+
+C Test button for 3Ds.
+        ivrpt=0
+        CALL EASKABCD(' Wireframe display options:',' ',
+     &    'overlay shading on wireframe','overlay insolation',
+     &  'diffuse test','continue',ivrpt,nbhelp)
+        if(ivrpt.eq.1)then
+
+C Ask for month then suggest avg day for that month and then
+C the sunrise hour.
+          imon=1
+          call easki(imon,' ','Month number?',
+     &     1,'F',12,'F',1,'month number',ier,nbhelp)
+          igday=iavdec(imon)
+          call easki(igday,' ','Day of month?',
+     &     1,'F',30,'F',1,'day number',ier,nbhelp)
+          call eday(igday,imon,iiyd)
+          ksu=0
+          do i=1,24
+            if(ksu.eq.0)then
+              stime=float(i)
+              call eazalts(stime,iiyd,slat,slon,isunup,sazi,salt)
+              if(isunup.eq.1)ksu=i
+            endif
+          enddo ! of i
+          vtime= float(ksu)
+          call easkr(vtime,' ','Time of day?',
+     &     0.0,'F',99.0,'W',2.0,'time',ier,nbhelp)
+          call easki(its,' ','Index of focus surface?',
+     &      1,'F',36,'F',1,'surf index',ier,nbhelp)
+          nox(icomp)=20; noz(icomp)=20
+          call mesh3d(icomp,its,'-')
+          call shadeview3d(icomp,imon,igday,vtime,its,ier)
+        elseif(ivrpt.eq.2)then
+          continue
+        elseif(ivrpt.eq.3)then
+
+C Test of diffuse and self-shading.
+          call easki(its,' ','Index of focus surface?',
+     &      1,'F',36,'F',1,'surf index',ier,nbhelp)
+          nox(icomp)=20; noz(icomp)=20
+          call mesh3d(icomp,its,'t')
+        elseif(ivrpt.eq.4)then
+          continue
+        endif
+      elseif(inos.eq.24)then
+
+C Help via the askabout facility in esru_ask.F - 0 requests display.
          call askabout('ish ',0)
 
 C Exit program: if nothing has been done, delete the transitional
 C shading file; if a single or multi-month calculation has been done
 C then offer to save or delete.
-      elseif(inos.eq.24)then
+      elseif(inos.eq.25)then
          iunit=ifil
          if(multic.eq.0)then
             call efdelet(iunit,istat)

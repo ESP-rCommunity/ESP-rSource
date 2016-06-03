@@ -189,6 +189,7 @@ C point projections in new coordinate system in trnsf3.
       subroutine trnsf2(ihr)
 
       common/tracech/icout
+      common/tc/itc,icnt
       common/trnsf/a(5),b(3),c(5),xor,yor,zor
       common/sangl1/sazi1,salt1
       common/sangl2/sazi2,salt2
@@ -196,13 +197,17 @@ C point projections in new coordinate system in trnsf3.
       character outs*124
       logical tok
 
-C If trace requested enable writing.
+C If writing fort.33 file and verbose then include this.
       tok=.false.
-      if(icout.eq.33)tok=.true.
+      if(icout.eq.33.and.itc.eq.2)tok=.true.
 
       pi=4.0*atan(1.0)
       r=pi/180.0
-      tsr=sin(salt1*r)/cos(salt1*r)
+      if(salt1.gt.0.1)then
+        tsr=sin(salt1*r)/cos(salt1*r)
+      else
+        tsr=1.0 ! << ? >>
+      endif
 
 C Establish a line from the site origin to a point 'far'
 C away at the appropriate solar angles (sazi1 and salt1).
@@ -504,6 +509,7 @@ C Parameter
       integer ibn ! index of block
 
       common/tracech/icout
+      common/tc/itc,icnt
       common/obs/xc(8),yc(8),zc(8)
       integer iobstrtrace  ! set to non-zero if already written
       common/obstrc/iobstrtrace(mcom,mb)
@@ -512,10 +518,10 @@ C Parameter
       character outs*124
       logical tok
 
-C If the trace unit is 33 and this obstruction has not already
-C been reported on set tok to true.
+C If the trace unit is 33 and verbose and this obstruction has not
+C already been reported on set tok to true.
       tok=.false.
-      if(icout.eq.33)then
+      if(icout.eq.33.and.itc.eq.2)then
         if(iobstrtrace(iz,ibn).eq.0) tok=.true.
       endif
       

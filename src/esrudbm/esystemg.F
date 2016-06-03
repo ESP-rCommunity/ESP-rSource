@@ -139,6 +139,7 @@ C LPRFDB,IPRODB (for event profile database)
 C LFMAT,IFMAT,LFMUL,IFMUL (for materials and constructions database)
 C ICLIM,LCLIM (for climate file)
 C LSBEM (for SBEM database)
+C LPREDEF (for predefined objects)
 C default file names for databases
 
 #include "net_flow.h"
@@ -2783,6 +2784,9 @@ C Set OS and check that standarddbpath has been set.
           elseif(topic(1:3).eq.'sbm')then
             ipathsbem=1  ! local folder for UK SBEM database
             write(lsbem,'(a)') file(1:lnwkg) ! assign directly
+          elseif(topic(1:3).eq.'pre')then
+            ipathpredef=1  ! local folder for predefined objects
+            write(lpredef,'(a)') file(1:lnwkg) ! assign directly
           endif
         elseif(file(1:lndbp).eq.standarddbpath(1:lndbp))then
 
@@ -2799,6 +2803,9 @@ C The initial part of the path matches so only save the file name w/o path.
           elseif(topic(1:3).eq.'sbm')then
             ipathsbem=2
             write(lsbem,'(a)') file(lndbp+2:lnwkg) ! without path
+          elseif(topic(1:3).eq.'pre')then
+            ipathpredef=2
+            write(lpredef,'(a)') file(lndbp+2:lnwkg) ! without path
           endif
         else
           if(topic(1:3).eq.'opt')then
@@ -2813,6 +2820,9 @@ C The initial part of the path matches so only save the file name w/o path.
           elseif(topic(1:3).eq.'sbm')then
             ipathsbem=0  ! local folder for UK SBEM database
             write(lsbem,'(a)') file(1:lnwkg) ! assign directly
+          elseif(topic(1:3).eq.'pre')then
+            ipathpredef=0  ! local folder for predefined obj database
+            write(lpredef,'(a)') file(1:lnwkg) ! assign directly
           endif
         endif
       else
@@ -2829,6 +2839,9 @@ C The initial part of the path matches so only save the file name w/o path.
           elseif(topic(1:3).eq.'sbm')then
             ipathsbem=1  ! local folder for UK SBEM database
             write(lsbem,'(a)') file(1:lnwkg) ! assign directly
+          elseif(topic(1:3).eq.'pre')then
+            ipathpredef=1  ! local folder for predefined obj database
+            write(lpredef,'(a)') file(1:lnwkg) ! assign directly
           endif
         elseif(file(1:lndbp).eq.standarddbpath(1:lndbp))then
           if(topic(1:3).eq.'opt')then
@@ -2843,6 +2856,9 @@ C The initial part of the path matches so only save the file name w/o path.
           elseif(topic(1:3).eq.'sbm')then
             ipathsbem=2
             write(lsbem,'(a)') file(lndbp+2:lnwkg) ! without path
+          elseif(topic(1:3).eq.'pre')then
+            ipathpredef=2
+            write(lpredef,'(a)') file(lndbp+2:lnwkg) ! without path
           endif
         else
           if(topic(1:3).eq.'opt')then
@@ -2857,7 +2873,10 @@ C The initial part of the path matches so only save the file name w/o path.
           elseif(topic(1:3).eq.'sbm')then
             ipathsbem=0
             write(lsbem,'(a)') file(1:lnwkg) ! assign directly
-          endif
+          elseif(topic(1:3).eq.'pre')then
+            ipathpredef=0
+            write(lpredef,'(a)') file(1:lnwkg) ! assign directly
+         endif
         endif
       endif
 
@@ -2875,6 +2894,9 @@ C        write(6,*) 'findwhichdbpath ipath is ',ipathapres
       elseif(topic(1:3).eq.'sbm')then
 C        write(6,*) lsbem
 C        write(6,*) 'findwhichdbpath ipath is ',ipathsbem
+      elseif(topic(1:3).eq.'pre')then
+C        write(6,*) lpredef
+C        write(6,*) 'findwhichdbpath ipath is ',ipathpredef
       endif
 
       return

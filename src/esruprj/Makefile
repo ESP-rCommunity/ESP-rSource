@@ -35,7 +35,7 @@ OBJECTS = prj.o anlytc.o arrow.o ascii_mat.o basesimp.o \
 	  maintn.o mcdbscn.o mfcdat.o mfelst.o mfnmsc.o mfprb1.o mfprb2.o mfrlst.o \
 	  mksbem.o MultiYear_climate.o mvalid.o \
 	  net2pdf.o newnet.o nwkrewr.o plelevvc.o pltcfg.o pltnet.o predefinedwr.o prescoef.o \
-	  prjdmds.o prjfmk.o prjqa.o psychro.o rcdblist.o read3dv.o readTrnsys.o \
+	  predef3dv.o prjdmds.o prjfmk.o prjqa.o psychro.o rcdblist.o read3dv.o readTrnsys.o \
 	  rwipv.o rwroam.o rwsbem.o sendd.o sendflt.o senrwl.o sensa.o \
 	  setup.o sort.o spmisc.o stndrds.o tdfedit.o tdfile.o tdgraph.o \
 	  hvacinput.o qrun.o\

@@ -36,7 +36,7 @@ C Boston, MA 02111-1307 USA.
      &imdn(mould)
       common/iopnmld/iopmld
       common/mdbase/mdbnam
-      character mdbnam*72
+      character mdbnam*144
 
       common/OUTIN/IUOUT,IUIN
       common/SHOUT/ICOUT

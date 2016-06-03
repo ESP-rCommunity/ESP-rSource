@@ -402,7 +402,7 @@ C Newer idf files use TARP as default rather than Detailed.
 
       WRITE(ioout,'(a)',iostat=ios,err=2) ' '
       WRITE(ioout,'(2a)',iostat=ios,err=2) 
-     &  'SurfaceConvectionAlgorithm:Outside',com
+     &  '  SurfaceConvectionAlgorithm:Outside',com
       if(iver.le.30)then
         WRITE(ioout,'(4a)',iostat=ios,err=2) indent,'Detailed',sim,
      &    '   !- Algorithm (default)'
@@ -436,7 +436,7 @@ C set to 28 days, otherwise set zero=default.
 C Run control - set all fields to no so only run period is assessed.
       WRITE(ioout,'(a)',iostat=ios,err=2) ' '
       if(haveish)then
-        WRITE(ioout,'(2a)',iostat=ios,err=2) 'RUN CONTROL',com
+        WRITE(ioout,'(2a)',iostat=ios,err=2) '  SimulationControl',com
       else
         WRITE(ioout,'(2a)',iostat=ios,err=2) '  SimulationControl',com
       endif
@@ -551,6 +551,7 @@ C profile is being used. EnergyPlus can only take one so if
 C there is more than one referenced warn the user. There is
 C no equivalent to NRCan BASESIMP but there is a ground temperature
 C calculation module in EnergyPlus.
+C << if none then perhaps use what is printed out in the QA report
       WRITE(ioout,'(a)',iostat=ios,err=2) ' '
       WRITE(ioout,'(2a)',iostat=ios,err=2) 
      &  '  Site:GroundTemperature:BuildingSurface',com
@@ -1799,6 +1800,9 @@ C If there are no children remember all coordinates.
 
 C There one or more grand children of this surface. Warn
 C the user.
+C << logic might assume that child surfaces are glazing when in
+C << fact they might be frames with glazing inside. Check the
+C << surface use attribute if the child is type FRAME.
             if(ichild(icc,1).gt.0.and.igchild(icc,1).gt.0)then
               write(outs,*) 'Surface ',SSNAME(icc),
      &          ' has a child named ',SSNAME(ichild(icc,1)),
@@ -2094,8 +2098,19 @@ C the name of the ESP-r parent surface.
             endif
             WRITE(ioout,'(4a)',iostat=ios,err=6) indent,
      &        ZSDES(1:lnblnk(ZSDES)),com,'   !- Building Surface Name'
-            WRITE(ioout,'(3a)',iostat=ios,err=6) indent,com,
-     &        '   !- Outside Boundary Condition Object'
+
+C Internal glazing also needs to say what is the surface on the other side.
+            if(ic2(icc).eq.0.or.ie2(icc).eq.0)then  ! if unknown zone & surface
+              WRITE(ioout,'(3a)',iostat=ios,err=6) indent,com,
+     &          '   !- Outside Boundary Condition Object'
+            else  ! if known zone & surface
+              call zsid(ic2(icc),ie2(icc),ZSDES,ZSDESC,ZSDESS)
+              WRITE(ioout,'(4a)',iostat=ios,err=6) indent,
+     &          ZSDES(1:lnblnk(ZSDES)),com,
+     &          '   !- Outside Boundary Condition Object'
+            endif
+C            WRITE(ioout,'(3a)',iostat=ios,err=6) indent,com,
+C     &        '   !- Outside Boundary Condition Object'
 
 C Also include viewfactor to ground value depending on orientation.
             WRITE(ioout,'(a)',iostat=ios,err=6) 
@@ -2384,11 +2399,13 @@ C depending on whether 'obs' or 'obs3'.
               CALL CNVBLKP(mz,IB) ! convert obsp type.
             endif
 
+C To avoid possible duplicate names pre-pend the zone name to block.
             do 302 ibs=1,6   ! for each of the 6 surfaces of block
               WRITE(ioout,'(a)',iostat=ios,err=6) ' '
               WRITE(ioout,'(2a)',iostat=ios,err=6) 
-     &          'Surface:Shading:Detached:Building',com
-              WRITE(ioout,'(2a,i1,2a)',iostat=ios,err=6) indent,
+     &          'Shading:Building:Detailed',com
+              WRITE(ioout,'(4a,i1,2a)',iostat=ios,err=6) indent,
+     &          zname(mz)(1:lnzname(mz)),':',
      &          BLOCKNAME(mz,ib)(1:LNBLOCKNAME(mz,ib)),ibs,com,
      &          '   !- User Supplied Surface Name'
               WRITE(ioout,'(5a)',iostat=ios,err=6) indent,com,

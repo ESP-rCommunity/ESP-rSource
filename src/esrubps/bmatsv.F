@@ -1249,10 +1249,19 @@ C Do this by resetting IFCFD variable this is then checked below.
                     IFCFD(ICP)=0
                   endif
                 endif
-                IF(IDYP.GE.ICFDYS.AND.IDYP.LE.ICFDYF)THEN
-                  IF(btimef.GT.CFTIMS.AND.btimef.LE.CFTIMF)THEN
-                    IFCFD(ICP)=ICFAUX(ICP)
-                  ELSEIF(btimef.GT.CFTIMF)THEN
+
+C 1st clause: Present day is within defined range.
+                IF((IDYP.GE.ICFDYS.AND.IDYP.LE.ICFDYF).or.
+
+C 2nd clause: Future time is the first time step of CFD start day, but
+C             present time is still the previous day.
+C             May need results for this time step.
+     &    (IDYP.eq.(ICFDYS-1).and.CFTIMS.eq.1.0.and.btimef.eq.1.0))THEN
+
+                  IF(btimef.GE.CFTIMS.and.abs(IFCFD(ICP)).eq.0)THEN
+C Ensure IFCFD is negative, necessary for SURFCONF.
+                    IFCFD(ICP)=-abs(ICFAUX(ICP))
+                  ELSEIF(btimef.GT.CFTIMF.and.IDYP.eq.ICFDYF)THEN
                     IFCFD(ICP)=0
                     ICFAUX(ICP)=0
                     if(outs.eq.'not yet')then
@@ -1265,6 +1274,7 @@ C Do this by resetting IFCFD variable this is then checked below.
                     endif
                   ENDIF
                 ENDIF
+
               ENDIF
 C Set flag indicating that surface-convection correlation indices have
 C not yet been calculated.
@@ -1433,6 +1443,9 @@ C Set the present heat variables equal to the future values.
 C Call matrix handling routines depending on the location
 C of the control point node.
                   CALL MTXCTL(ICOMP)
+
+C Call optical control here as well
+                  call mzoctl(icomp)
 
 C Call the zone moisture calculations controller.
                   IF(MSTRZN(ICOMP))CALL MZMSTR(ICOMP)
@@ -1962,7 +1975,7 @@ C SUN F90 has spotty support for cpu_time intrinsic
 C write out simulation runtime - useful for investating the impact
 C of modifications on simulation times.
       CALL cpu_time(sec_b)
-      write(outs,'(A,F7.2,A)')
+      write(outs,'(A,F9.1,A)')
      &     'Simulation cpu runtime: ',sec_b-sec_a,' seconds'
       CALL EDISP(IOUTS,' ')
       CALL EDISP(IUOUT,outs)

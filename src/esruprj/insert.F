@@ -104,9 +104,9 @@ C      character guesstype*24  ! for context of surface addition
 
 C Trackview should require iixx,iiyy.
 #ifdef OSI
-      integer iix,iiy,ixd,iyd,iicol,iixx,iiyy
+      integer iix,iiy,ixd,iyd,iicol,iixx,iiyy,iik
 #else
-      integer*8 iix,iiy,ixd,iyd,iicol,iixx,iiyy
+      integer*8 iix,iiy,ixd,iyd,iicol,iixx,iiyy,iik
 #endif
 
 C For help messages
@@ -1094,18 +1094,15 @@ C present editing of vertices with the option for mouse.
               NVER(NSUR)=NV
             elseif(ISCOPT.eq.1)then
 
-C User has specified clicking from mouse so just do that. By definition
-C the 2nd and 3rd items in trackview should follow the pattern in edgeo.F
-C near line 8261 but that does not seem to work here. Strange.
+C User has specified clicking from mouse so just do that.
               clkok=.true.
             endif
             if(clkok)then
               ijvn=0
               call edisp(iuout,
      &          'Select points via cursor...type `e` to finish.')
-  46          CALL trackview(ii,ixx,iyy)
-              iixx=ixx; iiyy=iyy
-              if(ii.eq.69.or.ii.eq.101)goto 47
+  46          CALL trackview(iik,iixx,iiyy)
+              if(iik.eq.69.or.iik.eq.101)goto 47
               found=.false.
               do 45 i=1,NTV
                 COG1(1)=X(I); COG1(2)=Y(I); COG1(3)=Z(I)
@@ -1115,14 +1112,14 @@ C near line 8261 but that does not seem to work here. Strange.
                 ixd=iix-iixx
                 iyd=iiy-iiyy
 C Debug
-C                write(6,'(9i5)') i,iixx,iiyy,ixx,iyy,iix,iiy,ixd,iyd
+C               write(6,'(10i5)') i,iik,iixx,iiyy,ixx,iyy,iix,iiy,ixd,iyd
                 if(abs(ixd).lt.5.and.abs(iyd).lt.5)then
                   if(found)then
                     call edisp(iuout,'Close points...try again.')
                     goto 46
                   endif
-                  WRITE(outs,'(a,i5,a,i5,a,i3)')' The point @ x=',ixx,
-     &              ' & y=',iyy,' matches vertex ',i
+                  WRITE(outs,'(a,i5,a,i5,a,i3)')' The point @ x=',iixx,
+     &              ' & y=',iiyy,' matches vertex ',i
                   call edisp(iuout,outs)
                   found=.true.
                   ijvn=ijvn+1
@@ -1136,7 +1133,7 @@ C Highight the matching vertex.
                   iicol=0
                   if(greyok)call winscl('-',iicol)
                   call forceflush()
-                  goto 46
+                  goto 46   ! wait for another click or `e`
                 endif
   45          continue
               if(.NOT.found)goto 46

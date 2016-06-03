@@ -234,20 +234,30 @@ C LNVISNAME,LNVISMAT - length of strings.
       integer LNVISNAME,LNVISMAT
       common/GSVLN/LNVISNAME(MCOM,MB),LNVISMAT(MCOM,MB)
 
-C Group visual items to create a visual objects (up to a dozen) from
-C up to a dozen visual primitives.
+C Group visual items to create a visual objects (up to 20) from
+C up to 14 visual primitives.
 C VOBJNAME (12 char) name of visual object
 C VOBJDESC (32 char) description of visual object
-C VOBJLIST (12 char) associated (up to 12) visual blocks
+C VOBJLIST (12 char) associated (up to 14) visual blocks
 C LNVOBJNAME,LNVOBJDESC,LNVOBJLIST - length of strings.
 C NBVOBJ - number of visual objects in each zone
 C NBVOJBLIST - number of primitives in ojbect
       character VOBJNAME*12,VOBJDESC*32,VOBJLIST*12
-      common/GSVOBJN/VOBJNAME(MCOM,12),VOBJDESC(MCOM,12),
-     &  VOBJLIST(MCOM,12,12)
+      common/GSVOBJN/VOBJNAME(MCOM,20),VOBJDESC(MCOM,20),
+     &  VOBJLIST(MCOM,20,14)
       integer NBVOBJ,LNVOBJNAME,LNVOBJDESC,LNVOBJLIST,NBVOBJLIST
-      common/GSVOBJI/NBVOBJ(MCOM),LNVOBJNAME(MCOM,12),
-     &  LNVOBJDESC(MCOM,12),LNVOBJLIST(MCOM,12,12),NBVOBJLIST(MCOM,12)
+      common/GSVOBJI/NBVOBJ(MCOM),LNVOBJNAME(MCOM,20),
+     &  LNVOBJDESC(MCOM,20),LNVOBJLIST(MCOM,20,14),NBVOBJLIST(MCOM,20)
+
+C MRT sensors for the model.
+      integer ncub  ! for each zone number of mrt sensors
+      integer ivfok
+      real XOC,YOC,ZOC,DXC,DYC,DZC,CANG
+      character CUBN*6
+      common/MRTC/NCUB(MCOM),XOC(MCUB),YOC(MCUB),
+     &  ZOC(MCUB),DXC(MCUB),DYC(MCUB),
+     &  DZC(MCUB),CANG(MCUB),IVFOK(MCUB),CUBN(MCUB)
+
 
 C The following section hold arrays associated with each zone connection
 C in the model. These data structures are typically used when the model

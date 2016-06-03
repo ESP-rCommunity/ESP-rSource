@@ -320,9 +320,11 @@ C CFD-related data.
 
       COMMON/zfluid/znotair(mcom),zfldK,zfldD,zfldC,zfldA,
      &              zSWAp(mcom),zSWAf(mcom)
+      real zfldK,zfldD,zfldC,zfldA,zSWAp,zSWAf
+      LOGICAL znotair
 
       DOUBLE PRECISION FLW1,FLW2,HDP,HDV,HFL,PRES,PSTACK,RESID,SAFLW
-      LOGICAL MFSAVE,dotrace,znotair
+      LOGICAL MFSAVE,dotrace
       CHARACTER LAPROB*72,LCFD*72
       character outs*124
       logical bInStartup

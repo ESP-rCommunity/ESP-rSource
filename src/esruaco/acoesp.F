@@ -288,13 +288,14 @@ C Read database if not already done.
       NComPik=0
 
 C Otherwise select the constructions from a list of names.
+C << Copy mlcname array into a local array for use with epicks >>
       call edisp(iuout,' Composite(s) selection... ')
       call edisp(iuout,'  ')
  7    helptopic='aco_constr_to_include'
       call gethelptext(helpinsub,helptopic,nbhelp)
       INPIC=NMLC
       CALL EPICKS(INPIC,IVALZ,' ','Which constructions to include:',
-     &  20,NMLC,Desc,' Composite(s) list',IDerr,nbhelp)
+     &  20,NMLC,mlcname,' Composite(s) list',IDerr,nbhelp)
 
 C Check for errors (if => exit sub).
       if (IDerr.ne.0) RETURN

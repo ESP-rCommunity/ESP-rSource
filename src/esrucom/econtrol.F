@@ -1632,7 +1632,10 @@ C Read optical functions information and perform checks.
 
 C Range checking.
 C<<<<<<<<CHECK THE -5 HERE - It may just need to be 0 >>>>>>>>>
-        if(iosn(ii,1).lt.-5.or.iosn(ii,1).gt.mcom)goto 1003
+C -98 is optical property substitution type.
+        if(iosn(ii,1).lt.-5.or.iosn(ii,1).gt.mcom)then
+          if(iosn(ii,1).ne.-98)goto 1003
+        endif
 
 C Reporting: Get a string describing the current sensor based on common.
         IF(ITRC.GE.1)THEN
@@ -1646,7 +1649,8 @@ C Reporting: Get a string describing the current sensor based on common.
         CALL STRIPC(IUNIT,OUTSTR,99,ND,1,'actuator',IER)
         IF(IER.NE.0)GOTO 99
         KG=0
-        CALL EGETWI(OUTSTR,KG,IV,-5,MCOM,'F','actuator 1st',IER)
+C -98 is optical property substitution type.
+        CALL EGETWI(OUTSTR,KG,IV,-98,MCOM,'-','actuator 1st',IER)
         IOAN(II,1)=IV
         CALL EGETWI(OUTSTR,KG,IV,0,MCOM,'F','actuator 2nd',IER)
         IOAN(II,2)=IV
@@ -1656,7 +1660,10 @@ C Reporting: Get a string describing the current sensor based on common.
 
 C Range checking.
 C<<<<<<<<<FIX THE RANGE CHECK HERE >>>>>>>>>>>>>
-        if(ioan(ii,1).lt.-5.or.ioan(ii,1).gt.MS)goto 1005
+C -98 is optical property substitution type.
+        if(ioan(ii,1).lt.-5.or.ioan(ii,1).gt.MS)then
+          if(ioan(ii,1).ne.-98)goto 1005
+        endif
 
 C Reporting: Get a string describing the actuator based on common block.
         IF(ITRC.GE.1)THEN
@@ -2538,12 +2545,22 @@ C<<< Remember also to change it in subroutine ezctlc >>>>>>>>>>>>>
         icsn(2)=IOSN(II,2)
         icsn(3)=IOSN(II,3)
         icsn(4)=IOSN(II,4)
-        call decodesensor(icfoc,icsn,SSTR,SSTRB,ier)
+        if(icsn(1).eq.-98)then
+          write(sstr,'(2a)')
+     &    'is not required as loop only sets time when ',
+     &    'optical property substitution is active'
+        else
+          call decodesensor(icfoc,icsn,SSTR,SSTRB,ier)
+        endif
       ELSEIF(WHICH.EQ.'A'.OR.WHICH.EQ.'a')THEN
 
 C Actuator.
 C <<<Confirm this with bpfcontrl.F>>>>>>>>>>>>>>>>
         SSTR='undefined actuator    '
+        if(ioan(ii,1).eq.-98)then
+          write(sstr,'(a)')
+     &    'not required because control loop only sets time '
+        endif
         IF(IOAN(II,1).eq.-5)THEN
 C<<<<Probably IOAN does not need a 3rd item. >>>>
           if(IOAN(II,2).gt.0)then
@@ -2559,7 +2576,8 @@ C<<<<Probably IOAN does not need a 3rd item. >>>>
       ELSEIF(WHICH.EQ.'T'.OR.WHICH.EQ.'t')THEN
 
 C Control type.
-        SSTR='bidirectional set  '
+        if(ioclaw(II,JJ,KK).eq.1)SSTR='switch optics  '
+        if(ioclaw(II,JJ,KK).eq.2)SSTR='bidirectional set  '
       ELSEIF(WHICH.EQ.'L'.OR.WHICH.EQ.'l')THEN
 
 C Ideal Control law.
@@ -3688,53 +3706,59 @@ C This code is not activated yet from bpfcontrol.F
 C Only law 2 for bidirectional data will be used at the moment (May 2008) 
           SSTR= 'optical switching '
           msg1=' optical switching:'
+          cm(2)=omiscd(II,JJ,KK,2)
+          if(nint(cm(2)).eq.1)write(lmsg,'(a)')
+     &    ' Optical property substitution is ON'
+          if(nint(cm(2)).eq.0)write(lmsg,'(a)')
+     &    ' Optical property substitution is OFF'
+          call SDELIM(lmsg,message,'S',IW)
         elseif(IOCLAW(II,JJ,KK).eq.2)then
           SSTR= 'bidirectional set '
           msg1='bidirectional set:'
+          cm(1)=omiscd(II,JJ,KK,1)
+          cm(2)=omiscd(II,JJ,KK,2)
+          cm(3)=omiscd(II,JJ,KK,3)         
+          cm(4)=omiscd(II,JJ,KK,4)
+          cm(5)=omiscd(II,JJ,KK,5)
+          cm(6)=omiscd(II,JJ,KK,6) 
+          cm(7)=omiscd(II,JJ,KK,7)
+          cm(8)=omiscd(II,JJ,KK,8)
+          cm(9)=omiscd(II,JJ,KK,9) 
+          cm(10)=omiscd(II,JJ,KK,10)
+          cm(11)=omiscd(II,JJ,KK,11)
+          cm(12)=omiscd(II,JJ,KK,12) 
+          cm(13)=omiscd(II,JJ,KK,13)
+          write(lmsg,'(a,f9.2,2a,f9.2,a,f7.3,a)') 
+     &    ' Sensed values are:',cm(2),',',
+     &    'above this value and below or equal to:',cm(4),
+     &    'optical properties number:',cm(3),' will be used.'
+          call SDELIM(lmsg,message,'S',IW)
+          write(lmsg,'(a,f9.2,2a,f9.2,a,f7.3,a)') 
+     &    ' Sensed values are:',cm(4),',',
+     &    'above this value and below or equal to:',cm(6),
+     &    'optical properties number:',cm(5),' will be used.'
+          call SDELIM(lmsg,message,'S',IW)
+          write(lmsg,'(a,f9.2,2a,f9.2,a,f7.3,a)') 
+     &    ' Sensed values are:',cm(6),',',
+     &    'above this value and below or equal to:',cm(8),
+     &    'optical properties number:',cm(7),' will be used.'
+          call SDELIM(lmsg,message,'S',IW)
+          write(lmsg,'(a,f9.2,2a,f9.2,a,f7.3,a)') 
+     &    ' Sensed values are:',cm(8),',',
+     &    'above this value and below or equal to:',cm(10),
+     &    'optical properties number:',cm(9),' will be used.'
+          call SDELIM(lmsg,message,'S',IW)
+          write(lmsg,'(a,f9.2,2a,f9.2,a,f7.3,a)') 
+     &    ' Sensed values are:',cm(10),',',
+     &    'above this value and below or equal to:',cm(12),
+     &    'optical properties number:',cm(11),' will be used.'
+          call SDELIM(lmsg,message,'S',IW)
+          write(lmsg,'(a,f9.2,2a,f7.3,a)') 
+     &    ' Sensed values are:',cm(12),',',
+     &    'above this value optical properties number:',cm(13),
+     &    ' will be used.'
+          call SDELIM(lmsg,message,'S',IW)
         endif
-        cm(1)=omiscd(II,JJ,KK,1)
-        cm(2)=omiscd(II,JJ,KK,2)
-        cm(3)=omiscd(II,JJ,KK,3)         
-        cm(4)=omiscd(II,JJ,KK,4)
-        cm(5)=omiscd(II,JJ,KK,5)
-        cm(6)=omiscd(II,JJ,KK,6) 
-        cm(7)=omiscd(II,JJ,KK,7)
-        cm(8)=omiscd(II,JJ,KK,8)
-        cm(9)=omiscd(II,JJ,KK,9) 
-        cm(10)=omiscd(II,JJ,KK,10)
-        cm(11)=omiscd(II,JJ,KK,11)
-        cm(12)=omiscd(II,JJ,KK,12) 
-        cm(13)=omiscd(II,JJ,KK,13)
-        write(lmsg,'(a,f9.2,2a,f9.2,a,f7.3,a)') 
-     &  ' Sensed values are:',cm(2),',',
-     &  'above this value and below or equal to:',cm(4),
-     &  'optical properties number:',cm(3),' will be used.'
-        call SDELIM(lmsg,message,'S',IW)
-        write(lmsg,'(a,f9.2,2a,f9.2,a,f7.3,a)') 
-     &  ' Sensed values are:',cm(4),',',
-     &  'above this value and below or equal to:',cm(6),
-     &  'optical properties number:',cm(5),' will be used.'
-        call SDELIM(lmsg,message,'S',IW)
-        write(lmsg,'(a,f9.2,2a,f9.2,a,f7.3,a)') 
-     &  ' Sensed values are:',cm(6),',',
-     &  'above this value and below or equal to:',cm(8),
-     &  'optical properties number:',cm(7),' will be used.'
-        call SDELIM(lmsg,message,'S',IW)
-        write(lmsg,'(a,f9.2,2a,f9.2,a,f7.3,a)') 
-     &  ' Sensed values are:',cm(8),',',
-     &  'above this value and below or equal to:',cm(10),
-     &  'optical properties number:',cm(9),' will be used.'
-        call SDELIM(lmsg,message,'S',IW)
-        write(lmsg,'(a,f9.2,2a,f9.2,a,f7.3,a)') 
-     &  ' Sensed values are:',cm(10),',',
-     &  'above this value and below or equal to:',cm(12),
-     &  'optical properties number:',cm(11),' will be used.'
-        call SDELIM(lmsg,message,'S',IW)
-        write(lmsg,'(a,f9.2,2a,f7.3,a)') 
-     &  ' Sensed values are:',cm(12),',',
-     &  'above this value optical properties number:',cm(13),
-     &  ' will be used.'
-        call SDELIM(lmsg,message,'S',IW)
         return
       endif
 
@@ -3901,7 +3925,8 @@ C Write the initial part of the control followed by description.
 C For zone, plant, flow and global controls list out the verbose 
 C decoding of the control law attributes.  Note that edisp248 is
 C able to work with strings longer than 248 characters.
-          if(icfoc.eq.0.or.icfoc.eq.1.or.icfoc.eq.2.or.icfoc.eq.3)then
+          if(icfoc.eq.0.or.icfoc.eq.1.or.icfoc.eq.2.or.icfoc.eq.3.or.
+     &    icfoc.eq.5)then
             call edisp248(itru,outs400,90)
           endif
         elseif(NITEMS.eq.0)then

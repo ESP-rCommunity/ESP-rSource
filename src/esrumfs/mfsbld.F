@@ -103,7 +103,9 @@ C      INTEGER IDAY,IDTY  ! uncomment if code near line 285 changes
 
       COMMON/zfluid/znotair(mcom),zfldK,zfldD,zfldC,zfldA,
      &              zSWAp(mcom),zSWAf(mcom)
+      real zfldK,zfldD,zfldC,zfldA,zSWAp,zSWAf
       logical znotair,isnotair
+      
 C SAACI is the opposite of ICAAS
 C ie. maps flow network nodes onto building zones
 C this is needed to correctly reference array znotair

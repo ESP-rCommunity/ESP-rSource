@@ -347,9 +347,9 @@ C          the MIT 0-eqn model with coarse convergence parameters.
      &              ISUFLC(MNSBZ,MNZ),IWSB(MNSBZ,MNZ),SSB(MNSBZ,MNZ),
      &              SSBHC(MNSBZ,MNZ),IVOLNSB(MNSBZ,MNZ),
      &              ITCtype(MNSBZ,MNZ),icTREF(MNSBZ,MNZ)
-      COMMON/LINRFC/URFCU(MNZ),URFCV(MNZ),URFCW(MNZ),URFCP(MNZ),
-     &              URFCT(MNZ),URFCK(MNZ),URFCE(MNZ),URFCVS(MNZ),
-     &              URFCC(MNZ,MCTM)
+      COMMON/LINRFC2/URFCU2(MNZ),URFCV2(MNZ),URFCW2(MNZ),URFCP2(MNZ),
+     &              URFCT2(MNZ),URFCK2(MNZ),URFCE2(MNZ),URFCVS2(MNZ),
+     &              URFCC2(MNZ,MCTM)
       COMMON/ICFNOD/ICFD,ICP
       COMMON/FVALA/TFA(MCOM),QFA(MCOM)
       common/fvisgo/gophrun
@@ -427,22 +427,20 @@ C     &  MAXITR(ICFD)
       LRENORM = .FALSE.
 
 C Set the relaxation factors at safe levels to ensure a converged solution.
-C <<Use user specified values if lower. Cannot edit vars in common though>>
-
 C Back up user set values in local variables.
-      URFCU_LBU=URFCU(ICFD)
-      URFCV_LBU=URFCV(ICFD)
-      URFCW_LBU=URFCW(ICFD)
-      URFCP_LBU=URFCP(ICFD)
-      URFCT_LBU=URFCT(ICFD)
-      URFCVS_LBU=URFCVS(ICFD)
+      URFCU_LBU=URFCU2(ICFD)
+      URFCV_LBU=URFCV2(ICFD)
+      URFCW_LBU=URFCW2(ICFD)
+      URFCP_LBU=URFCP2(ICFD)
+      URFCT_LBU=URFCT2(ICFD)
+      URFCVS_LBU=URFCVS2(ICFD)
       
-      URFCU(ICFD) = 0.1
-      URFCV(ICFD) = 0.1
-      URFCW(ICFD) = 0.1
-      URFCP(ICFD) = 0.1
-      URFCT(ICFD) = 0.5
-      URFCVS(ICFD) = 0.5
+      URFCU2(ICFD) = 0.1
+      URFCV2(ICFD) = 0.1
+      URFCW2(ICFD) = 0.1
+      URFCP2(ICFD) = 0.1
+      URFCT2(ICFD) = 0.5
+      URFCVS2(ICFD) = 0.5
 
 C Record ACC actions (begin).
       IF( abs(IFCFD(ICP)).eq.4 .or. abs(IFCFD(ICP)).eq.5)THEN
@@ -462,13 +460,14 @@ C Gopher run complete.
 C Restore user set values.
       MAXITR(ICFD)=MAXITR_LBU
       SRMAX(ICFD)=SRMAX_LBU
-      URFCU(ICFD)=URFCU_LBU
-      URFCV(ICFD)=URFCV_LBU
-      URFCW(ICFD)=URFCW_LBU
-      URFCP(ICFD)=URFCP_LBU
-      URFCT(ICFD)=URFCT_LBU
-      URFCVS(ICFD)=URFCVS_LBU
 
+      URFCU2(ICFD)=URFCU_LBU
+      URFCV2(ICFD)=URFCV_LBU
+      URFCW2(ICFD)=URFCW_LBU
+      URFCP2(ICFD)=URFCP_LBU
+      URFCT2(ICFD)=URFCT_LBU
+      URFCVS2(ICFD)=URFCVS_LBU
+      
       RETURN
       END
 

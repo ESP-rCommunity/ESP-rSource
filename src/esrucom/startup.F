@@ -1669,6 +1669,8 @@ C << make a pass sorting out these default file names >>
         write(DSBEM,'(2a)') di(1:min(ln,51)),'/databases/SBEM.db1'
         write(DCFCDB,'(2a)') di(1:min(ln,51)),
      &    '/databases/cfclayers.db1.a'
+        write(DPREDEF,'(2a)') di(1:min(ln,51)),
+     &    '/databases/predefined.db1'
       else
 C        dinstpath = 'c:/esru/esp-r'
         write(dinstpath,'(a)') instpath(1:lnblnk(instpath))
@@ -1702,6 +1704,8 @@ C        dinstpath = 'c:/esru/esp-r'
         write(DSBEM,'(2a)') di(1:min(ln,51)),'/databases/SBEM.db1'
         write(DCFCDB,'(2a)') di(1:min(ln,51)),
      &    '/databases/cfclayers.db1.a'
+        write(DPREDEF,'(2a)') di(1:min(ln,51)),
+     &    '/databases/predefined.db1'
       endif
 
 C << ?? Should there be default values for constructions? >>

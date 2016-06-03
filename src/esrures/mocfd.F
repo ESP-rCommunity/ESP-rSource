@@ -431,8 +431,19 @@ C Try again.
 C Generate images.
 C Loop through each timestep. 
 C Calculate number of time steps for output, set output frame and
-C redefine name of image.
-        NCTS=int((float(ICDYOF-ICDYOS)*24.0+CFTOF-CFTOS)*float(NTS))
+C redefine name of image. As for temperature range.
+        if(imgtyp.eq.0.or.imgtyp.eq.3)then
+          t24='30.0 0.0'
+ 204      helptopic='contaminant_scale_req'
+          call gethelptext(helpinsub,helptopic,nbhelp)
+          call EASKS(t24,'  ',
+     &      'max and min Temp:',24,'50.0 0.0','scale',IER,nbhelp)
+          K=0
+          call EGETWR(t24,K,SCmax,0.,0.,'-','maximum',IER)
+          call EGETWR(t24,K,SCmin,0.,0.,'-','minimum',IER)
+          if (SCmax.lt.SCmin) goto 204
+        endif
+        NCTS=int((float(ICDYOF-ICDYOS)*24.0+CFTOF-CFTOS)*float(NTS))+1
         if (NCTS.gt.0) then
           do 48 IM=1,Nview(ICOMP)
             ISOPT(IM)=-1
@@ -800,13 +811,13 @@ C Check that CFD active at this time.
           call edisp(iuout,'Time is outside simulated period.')
           goto 10
         elseif (IDAY.eq.ICDYS.and.IDAY.eq.ICDYF.and.
-     &          TIME.lt.CFTS.and.TIME.ge.CFTF) then
+     &          TIME.lt.CFTS.and.TIME.gt.CFTF) then
           call edisp(iuout,'Time outside simulated period. Try again.')
           goto 10
         elseif (IDAY.eq.ICDYS.and.TIME.lt.CFTS) then
           call edisp(iuout,'Time is before start time. Try again.')
           goto 10
-        elseif (IDAY.eq.ICDYF.and.TIME.ge.CFTF) then
+        elseif (IDAY.eq.ICDYF.and.TIME.gt.CFTF) then
           call edisp(iuout,'Time is after finish time. Try again.')
           goto 10
         endif
@@ -837,7 +848,7 @@ C Check that CFD active at this time.
         elseif (ICDYOS.eq.ICDYS.and.CFTOS.lt.CFTS) then
           call edisp(iuout,'Time is before start.')
           goto 20
-        elseif (ICDYOF.eq.ICDYF.and.CFTOF.ge.CFTF) then
+        elseif (ICDYOF.eq.ICDYF.and.CFTOF.gt.CFTF) then
           call edisp(iuout,'Time is after finish.')
           goto 20
         elseif (ICDYOS.eq.ICDYS.and.ICDYOF.eq.ICDYF.and.

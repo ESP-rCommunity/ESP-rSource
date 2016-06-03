@@ -2025,7 +2025,7 @@ C espriou.h provides current file.
       
       logical unixok
       character outs*124,fs*1
-      character lltmp*144,loutstr*144
+      character lltmp*144,loutstr*248
       character t12*12,t32*32,t2*2,hold*32,doitl*256
       character WORD*48
       character subpath*72,action*3

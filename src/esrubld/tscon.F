@@ -707,7 +707,7 @@ C TSCON6 checks if `rewind` operation is required for type 6 TSC.
       common/simtim/ihrp,ihrf,idyp,idyf,idwp,idwf,nsinc,its
 
       COMMON/TS6/idysv,ihrsv,irwcou,tsclaw,rewnd,nsncv1,nsncv2,pasone
-      COMMON/OPTCTL/IRWIND,IRWLAS,IRWCNT,IRWCSV,IRWCHP,IRWCHN,IRWCHG,
+      COMMON/OPTRCTL/IRWIND,IRWLAS,IRWCNT,IRWCSV,IRWCHP,IRWCHN,IRWCHG,
      &LGCTIN,INITCT,STFUT,STPRES,STPAS1,STPAS2,IRWFNL,TCTLSV
 
       logical rewnd,irew,tsclaw,pasone

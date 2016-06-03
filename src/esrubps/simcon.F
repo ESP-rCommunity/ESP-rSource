@@ -382,6 +382,7 @@ C Tolerance for iteration of hydrogen flow matrix
 
       COMMON/zfluid/znotair(mcom),zfldK,zfldD,zfldC,zfldA,
      &              zSWAp(mcom),zSWAf(mcom)
+      real zfldK,zfldD,zfldC,zfldA,zSWAp,zSWAf
       LOGICAL znotair
 
       CHARACTER*72 vsnam
@@ -464,10 +465,10 @@ C Initialize user defined plant side convergence params to default values
    
      
 
-C Initialise all zones to air-filled
-      do 114 iwz=1,mcom
-        znotair(iwz)=.false.
- 114  continue
+C Initialise all zones to air-filled (done in esystem.F)
+C      do 114 iwz=1,mcom
+C        znotair(iwz)=.false.
+C 114  continue
 
 C Initialise reading in of vertical solar data.
       VTSOL=.false.
@@ -765,6 +766,7 @@ C  zflsA - total shortwave absorptivity;
 C  zSWA - shortwave absorption (W).
       COMMON/zfluid/znotair(mcom),zfldK,zfldD,zfldC,zfldA,
      &              zSWAp(mcom),zSWAf(mcom)
+      real zfldK,zfldD,zfldC,zfldA,zSWAp,zSWAf
       LOGICAL znotair
 
       common/ACTDOM/CFDOK
@@ -1753,6 +1755,7 @@ C askaboutcfd confirms simulation periods for CFD assessments.
       subroutine askaboutcfd
 
 #include "building.h"
+#include "cfd.h"
       COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/PERS/ISD1,ISM1,ISD2,ISM2,ISDS,ISDF,NTSTEP
@@ -1766,9 +1769,11 @@ C Active domain common.
 C CFD commons.
       COMMON/cfdfil/LCFD(MCOM),IFCFD(MCOM)
       COMMON/CFSEUP/CFTIMS,CFTIMF,ICFDYS,ICFDYF,ICFAUX(MCOM)
+      common/ndcfd/ncfdnd,icfdnd(MNZ),NCONF
       character outs*124,LCFD*72
       logical OK,dok
       logical CFDOK
+      integer preRF_DorU
 
 C For help messages
       character helpinsub*24   ! subroutine name
@@ -1813,20 +1818,35 @@ C        write(6,*) isd1,ism1,isds,isd2,ism2,isdf
           call edisp(iuout,' Start/Finish days out of order.')
           goto 40
         endif
+        if (ICFDYS.lt.ISDS) then
+          call edisp(iuout,' Start day is before simulation start day.')
+          goto 40
+        endif
+        if (ICFDYF.gt.ISDF) then
+          call edisp
+     &             (iuout,' Finish day is after simulation finish day.')
+          goto 40
+        endif
 
-        CFTIMS=0.0
-        CFTIMF=24.0
+        if (ICFDYS.eq.ISDS) then
+          rtmp=1.0
+        else
+          rtmp=0.0
+        endif
+        CFTIMS=rtmp
+        CFTIMF=23.99
   50    write(outs,'(a)')'For the first day CFD is active specify'
-       CALL EASKR(CFTIMS,outs,'starting hour ',
-     &   0.0,'F',24.,'F',0.0,'Decimal fraction',IER,nbhelp)
+        CALL EASKR(CFTIMS,outs,'starting hour ',
+     &    rtmp,'F',23.99,'F',rtmp,'Decimal fraction',IER,nbhelp)
+        if (CFTIMS.gt.24.0) CFTIMS=CFTIMS-24.0
         write(outs,'(a)')'For the last day CFD is active specify'
         CALL EASKR(CFTIMF,outs,'finishing hour ',
-     &    0.0,'F',24.,'F',24.0,'Decimal fraction',IER,nbhelp)
+     &    0.0,'F',23.99,'F',23.99,'Decimal fraction',IER,nbhelp)
         if ((ICFDYF.eq.ICFDYS).and.(CFTIMF.lt.CFTIMS)) then
           call edisp(iuout,' Start/Finish hours out of order.')
           goto 50
         endif
-      
+
         DO 30 IC=1,NCOMP
           ICFAUX(IC)=IFCFD(IC)
           IFCFD(IC)=0
@@ -2259,7 +2279,7 @@ C Common for libsv3 trace
       COMMON/enbal/nsurf,insurf(MS)
 
       dimension IVALS(MCOM)
-      CHARACTER*29 ITEM(33)
+      CHARACTER*29 ITEM(35)
       character outs*124,dtrace*72,ltrace*72
       logical OK,dok
       integer NITEMS,INO  ! max items and current menu item
@@ -2302,10 +2322,12 @@ C For help messages
       ITEM(27)='3 control functions          '
       ITEM(28)='4 time-step controller       '
       ITEM(29)='5 network flow (asci results)'
-      ITEM(30)='  ___________________________'
-      ITEM(31)='/ clear trace selections     '
-      ITEM(32)='? help                       '
-      ITEM(33)='- exit                       '
+      ITEM(30)='6 Not applicable             '
+      ITEM(31)='7 CFD-MFS iteration          '
+      ITEM(32)='  ___________________________'
+      ITEM(33)='/ clear trace selections     '
+      ITEM(34)='? help                       '
+      ITEM(35)='- exit                       '
 
 C Initilise trace output facility.
       ITC=0
@@ -2339,7 +2361,7 @@ C Case for plant only.
  9990 CONTINUE
       GOTO 9988
 
- 9989 NITEMS=33
+ 9989 NITEMS=35
       call tstamp('>','SIM: use selective trace')
 
 C Help text for this menu.
@@ -2351,7 +2373,7 @@ C Help text for this menu.
       IF(INO.LE.0)then
         ino=-1
         goto 4
-      elseif(INO.EQ.30)then
+      elseif(INO.EQ.NITEMS-3)then
         ino=-1
         goto 4
       elseif(INO.eq.NITEMS)then
@@ -2486,7 +2508,13 @@ C If all plant turn on related traces as well.
         ITRACE(7)=1
         call edisp(iuout,'Selected network flow ascii trace.')
         goto 4
-      elseif(ino.eq.31)then
+C      elseif(ino.eq.30)then
+C        II=43
+C        call edisp(iuout,'Selected CFD cell velocities trace.')
+      elseif(ino.eq.31) then
+        II=44
+        call edisp(iuout,'Selected CFD-MFS iteration trace.')
+      elseif(ino.eq.NITEMS-2)then
 
 C Clear all selections.
         call edisp(iuout,'Selected CLEAR ALL trace.')

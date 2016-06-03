@@ -140,6 +140,8 @@ C ******* Default views formation.
       LOGICAL XST,OK,DOK
       logical addview   ! mark we are working a new view
       logical redraw
+      logical short     ! for shorter format
+      logical okfore,okaft ! for near zero cuts
 
       DIMENSION ITEM(19),IVALS(MCOM),VALT(20),IVALV(20)
 
@@ -155,10 +157,12 @@ C ******* Default views formation.
       integer igwid,igheight  ! for use with axiscale
       integer iupdown,isym    ! passed to etplot
       integer iigl,iigr,iigt,iigb,iigw,iigwh
+      integer iix,iiy,iixx,iiyy,iik
 #else
       integer*8 igwid,igheight  ! for use with axiscale
       integer*8 iupdown,isym    ! passed to etplot
       integer*8 iigl,iigr,iigt,iigb,iigw,iigwh
+      integer iix,iiy,iixx,iiyy,iik
 #endif
 
 C For help messages
@@ -279,8 +283,8 @@ C          write (lview,'(2a)') runpath(1:lnblnk(runpath)),
 C     &     lltmp(1:lnblnk(lltmp))
 
 C debug
-          write(6,*) 'l144 ',l144(1:lnblnk(l144))
-          write(6,*) 'lltmp ',lltmp(1:lnblnk(lltmp))
+C          write(6,*) 'l144 ',l144(1:lnblnk(l144))
+C          write(6,*) 'lltmp ',lltmp(1:lnblnk(lltmp))
           CALL ERPFREE(ITA2,ISTAT)
 
 C Read a radiance view point file and make sure that the
@@ -650,11 +654,11 @@ C Select point from plan or current perspective.
             call linescale(iigl,Xadd,sca,iigb,Yadd,sca)
 
 C << implemented in GTK? >>
-            CALL trackview(ii,ix,iy)
+            CALL trackview(iik,iix,iiy)
 
 C Transform back from mouse position to actual coordinate.
-            ex=((FLOAT(ix-igl)/sca)-Xadd)
-            ey=((FLOAT(igb-iy)/sca)-Yadd)
+            ex=((FLOAT(iix-igl)/sca)-Xadd)
+            ey=((FLOAT(igb-iiy)/sca)-Yadd)
             iupdown=0; isym=6
             call etplot(ex,ey,iupdown,isym)
             call forceflush()
@@ -936,21 +940,71 @@ C vertical axis...
       elseif(INO.EQ.16)then
 
 C If an existing view then just update, if a new view then
-C extend the list and the view command.
+C extend the list and the view command. If viewed point is
+C near origin can use shorter format.
+        if(rvpx.lt.99.0.and.rvpy.lt.99.0.and.rvpz.lt.99.0)then
+	  short=.true.
+        else
+	  short=.false.
+        endif
+        call eclose(cutfor,0.0,0.1,okfore)
+        call eclose(cutaft,0.0,0.1,okaft)
         if(addview)then
           indxvew = indxvew +1
           addview=.false.  ! turn off the toggle
           rvewsh(indxvew) = trvewsh  ! remember new name
-          write(doit,'(a,3F8.2,a,3F8.4,a,3F6.3,4(a,F6.2))') 
-     &      '-vtv -vp',rvpx,rvpy,rvpz,' -vd ',vdx,vdy,vdz,
-     &      ' -vu ',vux,vuy,vuz,' -vh ',angh,' -vv ',angv,
-     &      ' -vs 0 -vl 0 -vo ',cutfor,' -va ',cutaft
+          if(short)then
+            if(okfore.and.okaft)then
+              write(doit,'(a,3F6.2,a,3F6.3,a,3F5.2,2(a,F5.1),a)') 
+     &        '-vtv -vp',rvpx,rvpy,rvpz,' -vd',vdx,vdy,vdz,
+     &        ' -vu ',vux,vuy,vuz,' -vh ',angh,' -vv ',angv,
+     &        ' -vs 0 -vl 0 -vo 0 -va 0'
+            else
+              write(doit,'(a,3F6.2,a,3F6.3,a,3F5.2,4(a,F5.1))') 
+     &        '-vtv -vp',rvpx,rvpy,rvpz,' -vd',vdx,vdy,vdz,
+     &        ' -vu ',vux,vuy,vuz,' -vh ',angh,' -vv ',angv,
+     &        ' -vs 0 -vl 0 -vo ',cutfor,' -va ',cutaft
+            endif
+          else
+            if(okfore.and.okaft)then
+              write(doit,'(a,3F8.2,a,3F6.3,a,3F5.2,2(a,F5.1),a)') 
+     &        '-vtv -vp',rvpx,rvpy,rvpz,' -vd',vdx,vdy,vdz,
+     &        ' -vu ',vux,vuy,vuz,' -vh ',angh,' -vv ',angv,
+     &        ' -vs 0 -vl 0 -vo 0 -va 0'
+            else
+              write(doit,'(a,3F8.2,a,3F6.3,a,3F5.2,4(a,F5.1))') 
+     &        '-vtv -vp',rvpx,rvpy,rvpz,' -vd',vdx,vdy,vdz,
+     &        ' -vu ',vux,vuy,vuz,' -vh ',angh,' -vv ',angv,
+     &        ' -vs 0 -vl 0 -vo ',cutfor,' -va ',cutaft
+            endif
+          endif
           WRITE(vewcmds(indxvew),'(a)') doit  ! new cmd
         else
-          write(doit,'(a,3F8.2,a,3F8.4,a,3F6.3,4(a,F6.2))') 
-     &      '-vtv -vp',rvpx,rvpy,rvpz,' -vd ',vdx,vdy,vdz,
-     &      ' -vu ',vux,vuy,vuz,' -vh ',angh,' -vv ',angv,
-     &      ' -vs 0 -vl 0 -vo ',cutfor,' -va ',cutaft
+          if(short)then
+            if(okfore.and.okaft)then
+              write(doit,'(a,3F6.2,a,3F6.3,a,3F5.2,2(a,F5.1),a)') 
+     &        '-vtv -vp',rvpx,rvpy,rvpz,' -vd',vdx,vdy,vdz,
+     &        ' -vu ',vux,vuy,vuz,' -vh ',angh,' -vv ',angv,
+     &        ' -vs 0 -vl 0 -vo 0 -va 0'
+            else
+              write(doit,'(a,3F6.2,a,3F6.3,a,3F5.2,4(a,F5.1))') 
+     &        '-vtv -vp',rvpx,rvpy,rvpz,' -vd',vdx,vdy,vdz,
+     &        ' -vu ',vux,vuy,vuz,' -vh ',angh,' -vv ',angv,
+     &        ' -vs 0 -vl 0 -vo ',cutfor,' -va ',cutaft
+            endif
+          else
+            if(okfore.and.okaft)then
+              write(doit,'(a,3F8.2,a,3F6.3,a,3F5.2,2(a,F5.1),a)') 
+     &        '-vtv -vp',rvpx,rvpy,rvpz,' -vd',vdx,vdy,vdz,
+     &        ' -vu ',vux,vuy,vuz,' -vh ',angh,' -vv ',angv,
+     &        ' -vs 0 -vl 0 -vo 0 -va 0'
+            else
+              write(doit,'(a,3F8.2,a,3F6.3,a,3F5.2,4(a,F5.1))') 
+     &        '-vtv -vp',rvpx,rvpy,rvpz,' -vd',vdx,vdy,vdz,
+     &        ' -vu ',vux,vuy,vuz,' -vh ',angh,' -vv ',angv,
+     &        ' -vs 0 -vl 0 -vo ',cutfor,' -va ',cutaft
+            endif
+          endif
           WRITE(vewcmds(ipckvew),'(a)') doit  ! current cmd
         endif
         IFC=3

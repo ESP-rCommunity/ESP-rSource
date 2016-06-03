@@ -1121,8 +1121,8 @@ C Site information.
         write(outs248,'(a,f7.2,a,f6.2,2a,i4,5a)') 
      &    'The model is located at latitude ',sitelat,
      &    ' with a longitude difference of ',sitelongdif,
-     &    ' from the local time meridian. The year used in',
-     &    ' simulations is ',IYEAR,' and weekends occur on ', 
+     &    ' from the local time meridian (east +ve). The year used',
+     &    ' in simulations is ',IYEAR,' and weekends occur on ', 
      &     wkd1(1:lnblnk(wkd1)),' and ',wkd2(1:lnblnk(wkd2)),'.'
         call edisp248(itu,outs248,80)
         if(siteexposureindex.eq.1)then
@@ -1603,6 +1603,16 @@ C Databases associated with the model. First print the file names.
         elseif(ipathsbem.eq.2)then
           WRITE(outs248,'(2a)')' standard UK NCM data   : ',
      &      LSBEM(1:lnblnk(LSBEM))
+          call edisp248(itu,outs248,100)   
+        endif
+
+        if(ipathpredef.eq.0.or.ipathpredef.eq.1)then
+          WRITE(outs248,'(2a)')' predefined objects     : ',
+     &      LPREDEF(1:lnblnk(LPREDEF))
+          call edisp248(itu,outs248,100)   
+        elseif(ipathpredef.eq.2)then
+          WRITE(outs248,'(2a)')' standard predefined obj: ',
+     &      LPREDEF(1:lnblnk(LPREDEF))
           call edisp248(itu,outs248,100)   
         endif
 

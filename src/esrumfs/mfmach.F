@@ -126,6 +126,9 @@ C     RESRMX - maximum relative residual (relative to SAFLW for NDWREL)
       common/btime/btimep,btimef
       COMMON/zfluid/znotair(mcom),zfldK,zfldD,zfldC,zfldA,
      &              zSWAp(mcom),zSWAf(mcom)
+      real zfldK,zfldD,zfldC,zfldA,zSWAp,zSWAf
+      LOGICAL znotair
+
       COMMON/AFN/IAIRN,LAPROB,ICAAS(MCOM)
       COMMON/C1/NCOMP,NCON
 
@@ -140,7 +143,7 @@ C     RESRMX - maximum relative residual (relative to SAFLW for NDWREL)
       DOUBLE PRECISION RESR,RESAMX,RESRMX,RESID_temp
       character outs*124,outw*248
       CHARACTER NDNAM*12,CONTMNAM*12
-      LOGICAL ACTCNN,close,znotair
+      LOGICAL ACTCNN,close
       character LAPROB*72
       integer ncomp,ncon
 

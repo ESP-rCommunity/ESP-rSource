@@ -1323,9 +1323,9 @@ C It is assumed that contextual help will have been setup before
 C calling this subroutine.
 
 #ifdef OSI
-      integer iix,iiy,ixd,iyd
+      integer iix,iiy,iixx,iiyy,ixd,iyd,iik
 #else
-      integer*8 iix,iiy,ixd,iyd
+      integer*8 iix,iiy,iixx,iiyy,ixd,iyd,iik
 #endif
 
 C Initialise vertex list menu size variables based on window size.
@@ -1418,8 +1418,8 @@ C Use mouse to select existing vertices.
 
 C Return pixel position of mouse click, check if key `e` or `E` was
 C hit and then loop through each of the vertices for something close.
-  46      CALL trackview(ii,ixx,iyy)
-          if(ii.eq.69.or.ii.eq.101)goto 47
+  46      CALL trackview(iik,iixx,iiyy)
+          if(iik.eq.69.or.iik.eq.101)goto 47
           found=.false.
           do 45 i=1,NGTV
             COG1(1)=XGT(I)
@@ -1428,8 +1428,8 @@ C hit and then loop through each of the vertices for something close.
             CALL VECTRN(COG1,TEMAT,COG2,IER)
             CALL VECTRN(COG2,ETSMAT,COG3,IER)
             call u2pixel(COG3(1),COG3(2),iix,iiy)
-            ixd=iix-ixx
-            iyd=iiy-iyy
+            ixd=iix-iixx
+            iyd=iiy-iiyy
             if(abs(ixd).lt.5.and.abs(iyd).lt.5)then
               if(found)then
                 call edisp(iuout,'Close points...try again.')
@@ -1990,9 +1990,9 @@ C Method checks for minimally linked vertices.
       character holds*36,SNAME1*6,SNAMED*6,SMLCN1*32
       integer IRT  ! for radio button
 #ifdef OSI
-      integer iix,iiy,ixd,iyd
+      integer iix,iiy,iixx,iiyy,ixd,iyd,iik
 #else
-      integer*8 iix,iiy,ixd,iyd
+      integer*8 iix,iiy,iixx,iiyy,ixd,iyd,iik
 #endif
 
 C For help messages
@@ -2303,8 +2303,8 @@ C the individual vertex numbers from the list.
             ijvn=0
             call edisp(iuout,
      &        'Select points via cursor...type `e` to finish.')
-  46        CALL trackview(ii,ixx,iyy)
-            if(ii.eq.69.or.ii.eq.101)goto 47
+  46        CALL trackview(iik,iixx,iiyy)
+            if(iik.eq.69.or.iik.eq.101)goto 47
             found=.false.
             do 45 i=1,NGTV
               COG1(1)=XGT(I)
@@ -2313,8 +2313,8 @@ C the individual vertex numbers from the list.
               CALL VECTRN(COG1,TEMAT,COG2,IER)
               CALL VECTRN(COG2,ETSMAT,COG3,IER)
               call u2pixel(COG3(1),COG3(2),iix,iiy)
-              ixd=iix-ixx
-              iyd=iiy-iyy
+              ixd=iix-iixx
+              iyd=iiy-iiyy
               if(abs(ixd).lt.5.and.abs(iyd).lt.5)then
                 if(found)then
                   call edisp(iuout,'Close points...try again.')

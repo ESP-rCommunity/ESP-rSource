@@ -1272,9 +1272,9 @@ c      real rTempnotioOverheat
 
       COMMON/zfluid/znotair(mcom),zfldK,zfldD,zfldC,zfldA,
      &              zSWAp(mcom),zSWAf(mcom)
+      real zfldK,zfldD,zfldC,zfldA,zSWAp,zSWAf
       logical znotair
-      real zfldK,zfldD,zfldC,zfldA,zSWAp,zSWAf,cvair,cvother,xmod,
-     &     flowi,flowv
+      real cvair,cvother,xmod,flowi,flowv
 
 C      CHARACTER*2   cZone_Chars ! Padded zone number (two digits)
       

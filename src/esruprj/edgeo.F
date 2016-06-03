@@ -52,6 +52,7 @@ C esprdbfile.h supplies the following:
 C LPRFDB,IPRODB (for event profile database)
 C LFMAT,IFMAT,LFMUL,IFMUL (for materials and constructions database)
 #include "material.h"
+#include "predefined.h"
 
       integer lnblnk  ! function definition
       integer igraphiclib  ! external definition
@@ -93,20 +94,23 @@ C Currently set true if graphic network file, false otherwise.
       logical haveglobal
       COMMON/MFLOW11/haveglobal
 
-      integer ncub,ivfok
-      real XOC,YOC,ZOC,DXC,DYC,DZC,CANG
-      character CUBN*6
-      COMMON/MRTC/NCUB,XOC(MCUB),YOC(MCUB),ZOC(MCUB),DXC(MCUB),
-     &            DYC(MCUB),DZC(MCUB),CANG(MCUB),IVFOK(MCUB),CUBN(MCUB)
+C Water filled zones.
+      COMMON/zfluid/znotair(mcom),zfldK,zfldD,zfldC,zfldA,
+     &              zSWAp(mcom),zSWAf(mcom)
+      real zfldK,zfldD,zfldC,zfldA,zSWAp,zSWAf
+      LOGICAL znotair
+
+C Hc coefficients
+      COMMON/HCFP/IHCFP,ST(MP),EN(MP),HCI(MP,MS),HCE(MP,MS),
+     &            ICTL(MP),IHCI(MP,MS),IHCE(MP,MS),CVdata(MP,MS,8)
+      common/HCFPHI/hcfpdescr(MP)
+      character hcfpdescr*72
 
       LOGICAL browse,context
       COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,CFCDBOK
       LOGICAL DOK,OK,CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,CFCDBOK
 
-C Use for preview of predefined object.
-      COMMON/GB1/XB(12),YB(12),ZB(12),JVNB(6,4)
-
-      DIMENSION IVALS(MS),ITEMS(30),ITEMSS(MS),IVALSS(MS),jvn1(MV)
+      DIMENSION IVALS(MS),ITEMS(31),ITEMSS(MS),IVALSS(MS),jvn1(MV)
       DIMENSION SALT(10),trnalt(17),IVLST(MTV)
       CHARACTER HEAD*32,SALT*33,hold*36
       CHARACTER DESCRC*25
@@ -120,7 +124,8 @@ C Use for preview of predefined object.
       character TOOPT*32    ! to remember other side optics
       character use1*12,use2*12 ! return strings from selectuse
       character guesstype*24  ! for multi selection of surface use
-
+      character lltmp*144
+      character HFILE*72  ! initial name for hc file
       logical MODGEO,bound,attribok,zbzero,close,bndry,nameok,XST
       logical showother,updoth,firstin,unixok
       logical newgeo  ! to use for testing if new/old geometry file.
@@ -141,34 +146,17 @@ C Use for preview of predefined object.
       integer lnssmlc,lnmlcn,lnsym
 
 C Predefined entity variables.
-      integer numcat      ! how many categoris found
-      integer numitems    ! how many items found
-      character cats*32   ! category menu entries
-      character names*12  ! list ofnames of objects
       character name*12   ! the object name to pass to PREDEFEMBED
-      character menus*32  ! list of menu entries
+      character objmenu*32 !menu for selected object
       character prec*1    ! character to pre-pend to names
-      dimension cats(2),names(32),menus(32)
-      real bounding(32,3) ! width, depth, height
-      real objbb(3)
-      real objorg(3)      ! origin of predefined.     
+
+      real objbb(3),DX,DY,DZ
       character predef*144,temp*12
-      integer loop,loop2,loop3
-      real AX,AY,AZ,BX,BY,BZ,SBBOX,COG1,COG2,COG3
-      integer IANXT,IBNXT
-      DIMENSION  AX(MV),AY(MV),AZ(MV),IANXT(MV)
-      DIMENSION  BX(MV),BY(MV),BZ(MV),IBNXT(MV)
-      DIMENSION  SBBOX(3,2),COG1(3),COG2(3),COG3(3)
       
 C For help messages
       character helpinsub*24 ! subroutine name
       character helptopic*24 ! string (unique) for topic
       integer nbhelp     ! number of help lines found
-#ifdef OSI
-      integer iix,iiy,iixlast,iiylast,iid2
-#else
-      integer*8 iix,iiy,iixlast,iiylast,iid2
-#endif     
 
       helpinsub='EDZONE'  ! set for subroutine
 
@@ -336,29 +324,33 @@ C        write(6,*) 'ssmlcindex ',ioc,ssmlcindex(ioc)
         if(SOTHER(I,1)(1:4).eq.'UNKN')attribok=.false.
         if(SMLCN(I)(1:4).eq.'UNKN')attribok=.false.
         if(SVFC(I).eq.'FLOR')then
-
-C If the user has edited the floor area cellular_hi_res.rcf(one) then continue or selected it
-C via a sub-set of applicable surfaces (two), otherwise
-C get area by adding up ibases list, otherwise search for `flor` surfaces.
-          if(IUZBASEA(icomp).eq.1)then
-            continue
-          elseif(IUZBASEA(icomp).eq.2)then
-            continue
+          if(SUSE(i,1)(1:5).eq.'FURNI')then
+            continue  ! ignore horizontal surfaces marked as furniture.
           else
 
-C Check each of the surfaces in the ibases list. If surface `flor` not
-C included in the list add it.
-            if(i.eq.ibases(icomp,1).or.i.eq.ibases(icomp,2).or.
-     &         i.eq.ibases(icomp,3).or.i.eq.ibases(icomp,4).or.
-     &         i.eq.ibases(icomp,5).or.I.eq.ibases(icomp,6).or.
-     &         i.eq.ibases(icomp,7).or.I.eq.ibases(icomp,8).or.
-     &         i.eq.ibases(icomp,9).or.I.eq.ibases(icomp,10))then
-              ZBASEA(ICOMP)=ZBASEA(ICOMP)+SSNA(ioc)
+C If the user has edited the floor area cellular_hi_res.rcf(one) then continue or 
+C selected it via a sub-set of applicable surfaces (two), otherwise
+C get area by adding up ibases list, otherwise search for `flor` surfaces.
+            if(IUZBASEA(icomp).eq.1)then
+              continue
+            elseif(IUZBASEA(icomp).eq.2)then
+              continue
             else
-              lastlist=lastlist+1
-              if(lastlist.le.10)then
-                IBASES(ICOMP,lastlist)=I
+
+C Check each of the surfaces in the ibases list. If surface `flor` and
+C not FURNI is not included in the list add it.
+              if(i.eq.ibases(icomp,1).or.i.eq.ibases(icomp,2).or.
+     &           i.eq.ibases(icomp,3).or.i.eq.ibases(icomp,4).or.
+     &           i.eq.ibases(icomp,5).or.I.eq.ibases(icomp,6).or.
+     &           i.eq.ibases(icomp,7).or.I.eq.ibases(icomp,8).or.
+     &           i.eq.ibases(icomp,9).or.I.eq.ibases(icomp,10))then
                 ZBASEA(ICOMP)=ZBASEA(ICOMP)+SSNA(ioc)
+              else
+                lastlist=lastlist+1
+                if(lastlist.le.10)then
+                  IBASES(ICOMP,lastlist)=I
+                  ZBASEA(ICOMP)=ZBASEA(ICOMP)+SSNA(ioc)
+                endif
               endif
             endif
           endif
@@ -391,13 +383,13 @@ C Check to see if a non `FLOR` surface has been included in ibases.
 C If previously calculated base area, compare with current area calculation
 C and inform user if it has changed.
       if(IUZBASEA(icomp).eq.0)then
-        CALL ECLOSE(ZBASEA(ICOMP),FLA,0.001,close)
+        CALL ECLOSE(ZBASEA(ICOMP),FLA,0.01,close)
         if(.NOT.close)then
 
 C Debug.
           call SIGFIG(ZBASEA(ICOMP),NSIGFIG,RNO,SIGSTR,LSTR)
           write(outs,'(3a)') 
-     &        'Base/floor area is ',SIGSTR(1:LSTR),'m^2.'
+     &'Base/floor area is now',SIGSTR(1:LSTR),'m^2. Check menu option c'
           call edisp(iuout,outs)
         endif
       endif
@@ -593,28 +585,33 @@ C Interface to BASESIMP and visual entity definitions for this zone.
       ITEMS(ITEMC+14)='k BASESIMP defiitions          '
       ITEMS(ITEMC+15)='l visual entities (Radiance)   '
       ITEMS(ITEMC+16)='m predefined entities          '
-      ITEMS(ITEMC+17)='  _____________________________'
-      ITEMS(ITEMC+18)='* list zone & surface details  '
-      ITEMS(ITEMC+19)='> save                         '
+      if(znotair(ICOMP))then
+        ITEMS(ITEMC+17)='n >> zone is water filled      '
+      else
+        ITEMS(ITEMC+17)='n >> zone is air filled        '
+      endif
+      ITEMS(ITEMC+18)='  _____________________________'
+      ITEMS(ITEMC+19)='* list zone & surface details  '
+      ITEMS(ITEMC+20)='> save                         '
       IF(ITRC.EQ.0)THEN
-        ITEMS(ITEMC+20)='t reporting >> silent  '
+        ITEMS(ITEMC+21)='t reporting >> silent  '
       ELSEIF(ITRC.EQ.1)THEN
-        ITEMS(ITEMC+20)='t reporting >> summary '
+        ITEMS(ITEMC+21)='t reporting >> summary '
       ELSEIF(ITRC.EQ.2)THEN
-        ITEMS(ITEMC+20)='t reporting >> detailed'
+        ITEMS(ITEMC+21)='t reporting >> detailed'
       ENDIF
       if(icomp.gt.1.and.icomp.lt.NCOMP)then
-        ITEMS(ITEMC+21)='< jump to previous zone      '
-        ITEMS(ITEMC+22)='> jump to next zone          '
+        ITEMS(ITEMC+22)='< jump to previous zone      '
+        ITEMS(ITEMC+23)='> jump to next zone          '
       elseif(icomp.eq.1)then
-        ITEMS(ITEMC+21)='                             '
-        ITEMS(ITEMC+22)='> jump to next zone          '        
-      elseif(icomp.eq.NCOMP)then
-        ITEMS(ITEMC+21)='< jump to previous zone      '
         ITEMS(ITEMC+22)='                             '
+        ITEMS(ITEMC+23)='> jump to next zone          '        
+      elseif(icomp.eq.NCOMP)then
+        ITEMS(ITEMC+22)='< jump to previous zone      '
+        ITEMS(ITEMC+23)='                             '
       endif
-      ITEMS(ITEMC+23)='? help                         '
-      ITEMS(ITEMC+24)='- exit this menu               '
+      ITEMS(ITEMC+24)='? help                         '
+      ITEMS(ITEMC+25)='- exit this menu               '
 
       WRITE(HEAD,'(A,I2,A)')'Zone ',ICOMP,' Geometry'
 
@@ -646,10 +643,10 @@ C Help text for this menu.
       call gethelptext(helpinsub,helptopic,nbhelp)
 
 C Menu for zone geometry.
-      NITMS=ITEMC+24
+      NITMS=ITEMC+25
       CALL EMENU(HEAD,ITEMS,NITMS,INO)
 
-      IF(INO.EQ.ITEMC+24)THEN
+      IF(INO.EQ.ITEMC+25)THEN
         if(browse)return
         if(MODGEO)then
           DOK=.false.
@@ -1544,11 +1541,15 @@ C zone rotation may require boundary nodes to be updated.
           call warnmod(ICOMP,'str')
 
 C Rotate any MRT sensors associated with this zone.
+C Test the error return from ermrt call.
           if (IVF(ICOMP).eq.1) then
-            NCUB = 0
             call edisp(iuout,' Viewfactors prior to transform.')
             CALL ERMRT(ITRC,iuout,IFIL+2,LVIEW(ICOMP),ICOMP,IER)
-            if (NCUB.gt.0) then
+            if(ier.eq.3)then
+              call usrmsg('zone surface mrt surfs mismatch',' ','W')
+            endif
+
+            if (NCUB(ICOMP).gt.0) then
               dok=.true.
               call askok('Apply this rotation to MRT sensors',
      &                   'associated with this zone? ',OK,dok,nbhelp)
@@ -1558,7 +1559,7 @@ C Depending on which point of rotation for the zone the
 C rotation point x1 and y1 will have been set above.
                 PI = 4.0 * ATAN(1.0)
                 A=-VAL*PI/180.0; CA=COS(A); SA=SIN(A)
-                do 76 ij=1,NCUB
+                do 76 ij=1,NCUB(ICOMP)
                   XXX=XOC(ij)-X1; YYY=YOC(ij)-Y1
                   XR=XXX*CA+YYY*SA; YR=YYY*CA-XXX*SA
                   XOC(ij)=XR+X1; YOC(ij)=YR+Y1
@@ -1750,15 +1751,19 @@ C If user has not canceled then perform the transform.
           call warnmod(ICOMP,'str')
 
 C Transform any MRT sensors associated with this zone.
+C << if newer geometry file also write new sensor data >>
+C Test the error return from ermrt call.
           if (IVF(ICOMP).eq.1) then
-            NCUB = 0
             CALL ERMRT(ITRC,iuout,IFIL+2,LVIEW(ICOMP),ICOMP,IER)
-            if (NCUB.gt.0) then
+            if(ier.eq.3)then
+              write(6,*) 'zone surface mrt surfs mismatch'
+            endif
+            if (NCUB(ICOMP).gt.0) then
               dok=.true.
               call askok('Apply this transform to MRT sensors',
      &                   'associated with this zone? ',ok,dok,nbhelp)
               if (OK) then
-                do ij=1,NCUB
+                do ij=1,NCUB(ICOMP)
                   XOC(ij)=XOC(ij)+VALX
                   YOC(ij)=YOC(ij)+VALY
                   ZOC(ij)=ZOC(ij)+VALZ
@@ -1923,173 +1928,238 @@ C zone what are associated with BASESIMP
       ELSEIF(INO.EQ.ITEMC+15)THEN
 
 C Visual entities.
+
+C << Note if someone transforms an existing visual entity it might be
+C << linked to mass surfaces which are not transformed. What to remember
+C << in order also shift the associated surfaces.
+C << What about another token in the visual line??
+
         CALL EDVIS(iuout,ICOMP,IER)
       ELSEIF(INO.EQ.ITEMC+16)THEN
 
 C Predefined entities.
 C To avoid name clashes adapt the names of visual entities and
-C compound visuals that are being imported.
-        iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
-        if(iglib.eq.1.or.iglib.eq.3)then
-          CALL EASKF(predef,'Predefined objects file ?',
-     &     ' ',96,'predefined.db1','predefined file',IER,nbhelp)
-        else
-          CALL EASKF(predef,'Predefined objects file ?',
-     &      ' ',96,'predefined.db1','predefined file',IER,nbhelp)
+C compound visuals that are being imported. If nothing was selected
+C jump.
+        call choosepredef(name,objmenu,objbb,ier)
+        if(ier.eq.1)then
+          call usrmsg('Predefined objects not found or the file',
+     &                'was corrupt','W')
+          goto 3
+        elseif(ier.eq.2)then
+          goto 3
         endif
-        CALL PREDEFSCAN(IFIL+2,predef,numcat,cats,numitems,
-     &    names,menus,bounding,IER)
-        write(6,*) 'number of predefined ',numitems
-        ITEMSS(I)=' '
-        do loop=1,numitems
-          write(ITEMSS(loop),'(A)')menus(loop)
-        enddo
- 422    inpick=1
-        CALL EPICKS(INPICK,IVALS,'Available predefined objects',
-     &    'Select none to abort.',32,numitems,ITEMSS,
-     &    'Available predefined objects.',IER,nbhelp)
-        if(inpick.gt.0)then
 
-C Have we used this predefined object earlier? If so pass PREDEFEMBED
-C information on how to adjust the names of what will be added.
+C Take into account path to the db.
+        lndbp=lnblnk(standarddbpath)
+        if(ipathpredef.eq.0.or.ipathpredef.eq.1)then
+          predef=LPREDEF  ! use as is
+        elseif(ipathpredef.eq.2)then
+          write(predef,'(3a)') standarddbpath(1:lndbp),fs,
+     &      LPREDEF(1:lnblnk(LPREDEF))  ! prepend db folder path
+        endif
+C        write(predef,'(a)') lpredef(1:96)
+        DX=0.0; DY=0.0; DZ=0.0
 
-C Ask where to place it (get new origin) and then use GB1
+C Ask where to place it (get offsets and rotation) and then use GB1
 C to temporarily draw it.
-          ifoc=IVALS(inpick)
-          call edisp(iuout,'  ')
-          write(outs,'(3a)')'bounding box of ',menus(ifoc),' is.'
-          call edisp(iuout,outs)
-          write(outs,'(3f7.3,a)') bounding(ifoc,1),
-     &      bounding(ifoc,2),bounding(ifoc,3),'XYZm'
-          call edisp(iuout,outs)
-          VALR=0.
-          CALL EASKR(VALR,' Object rotation (+ = anticlockwise)',
-     &      'around its lower left corner:',
-     &      -359.0,'W',359.0,'W',0.0,'rotation',IER,nbhelp)
-          hold = ' 0.000  0.000  0.000    '
-          CALL EASKS(HOLD,'Place object origin @ (X Y Z metres)',
-     &      'i.e. within the room: ',
-     &      36,' 0. 0. 0.','transforms XYZ',IER,nbhelp)
-          K=0
-          CALL EGETWR(HOLD,K,VALX,-99.,99.,'W','X tr',IER)
-          CALL EGETWR(HOLD,K,VALY,-99.,99.,'W','Y tr',IER)
-          CALL EGETWR(HOLD,K,VALZ,-99.,99.,'W','Z tr',IER)
-          objorg(1)=VALX; objorg(2)=VALY; objorg(3)=VALZ
-          objbb(1)=bounding(ifoc,1)
-          objbb(2)=bounding(ifoc,2)
-          objbb(3)=bounding(ifoc,3)
-          CALL CNVBLK(objorg(1),objorg(2),objorg(3),objbb(1),objbb(2),
-     &      objbb(3),VALR)
- 
-C Place object name near first vertex.
-C Transform the location into eyepoint and then screen coords.
-          COG1(1)=XB(1); COG1(2)=YB(1); COG1(3)=ZB(1)
-          CALL VECTRN(COG1,TEMAT,COG2,IER)
-          CALL VECTRN(COG2,ETSMAT,COG3,IER)
-          call u2pixel(COG3(1),COG3(2),iix,iiy)
-          write(temp,'(A)')names(ifoc)
-          iid2=iiy+8
-          CALL wstxpt(iix,iid2,temp)
+        call edisp(iuout,'  ')
+        write(outs,'(3a)')'bounding box of ',objmenu,' is:'
+        call edisp(iuout,outs)
+        write(outs,'(3f7.3,a)') objbb(1),objbb(2),objbb(3),' XYZm'
+        call edisp(iuout,outs)
+        VALR=0.
+ 423    CALL EASKR(VALR,' Object rotation (+ = anticlockwise)',
+     &    'around its lower left corner:',
+     &    -359.0,'W',359.0,'W',0.0,'rotation',IER,nbhelp)
+        write(hold,'(3f8.4)') objorg(1),objorg(2),objorg(3)
+        CALL EASKS(HOLD,'Place object origin @ (X Y Z metres)',
+     &    'i.e. within the room: ',
+     &    36,' 0. 0. 0.','transforms XYZ',IER,nbhelp)
+        K=0
+        CALL EGETWR(HOLD,K,DX,-99.,99.,'W','X tr',IER)
+        CALL EGETWR(HOLD,K,DY,-99.,99.,'W','Y tr',IER)
+        CALL EGETWR(HOLD,K,DZ,-99.,99.,'W','Z tr',IER)
+        CALL CNVBLK(DX,DY,DZ,objbb(1),objbb(2),objbb(3),VALR)
 
-C Continue on with surfaces in the sensor.
-C Copy polygon for sensor surface I into structure AX AY AZ
-C where IANXT = Index of 'next' point. Clear IANXT & IBNXT arrays.
-          do loop2 = 1,MV
-            IANXT(loop2) = 0; IBNXT(loop2) = 0
-          enddo
+C Scan into commons and write out a QA report.
+        call RPREDEFCOM(IFA,predef,name,IER)
+        lltmp=' '
+        CALL OBJQA(iunit,lltmp,'QA',IER) 
 
-C There are 4 initial vertices per block side and 6 sides.
-          NAP=4
-          DO 1000 I=1,6
-            DO loop3 = 1,NAP
-              K = JVNB(I,loop3)
-              AX(loop3) = XB(K)
-              AY(loop3) = YB(K)
-              AZ(loop3) = ZB(K)
-              IANXT(loop3) = loop3 + 1
-            enddo
-            IANXT(4) = 1
+C Peview the bounding box of the object via DRWBB.
+        write(temp,'(A)')name
+        call drwbb(temp,ier)
 
-C Transform block polygon to EYE co-ordinates.
-            CALL MATPOLS(NAP,AX,AY,AZ,IANXT,TEMAT,SBBOX,
-     &        NBP,BX,BY,BZ,IBNXT,IERR)
-
-C Generate clipping flags and clip geometry in eye coords.
-            call CLIPSUR(NBP,BX,BY,BZ,ISTAT)
-            IF (ISTAT .EQ. 1) THEN
-              GOTO  1000
-            ELSEIF (ISTAT .EQ. -1) THEN
-              IBPNT=1
-              CALL CUTSUR(NB1,NBP,IBPNT,BX,BY,BZ,IBNXT,ISTAT)
-            ENDIF
-
-C If there are no edges to draw then jump.
-            if(NB1.eq.0)goto 1000
-
-C Multiply each vertex by ETSMAT (Eye to Screen Matrix).
-C First move to the beginning (as passed back from CUTSUR).
-            IP = IABS(IBPNT)
-            CALL ORTTRN(BX(IP),BY(IP),BZ(IP),ETSMAT,AAX,AAY,AAZ,IERR)
-            call u2pixel(AAX,AAY,iix,iiy)
-            iixlast=iix; iiylast=iiy   ! cast for edline call
-
-C If IP1 is ever negative then jump to a later point.
-            IP1 = IBNXT(IP)
-            if(IP1.lt.1)IP1 = IBNXT(IP+1)
-            if(IP1.lt.1)IP1 = IBNXT(IP+2)
-
- 351        CONTINUE
-            CALL ORTTRN(BX(IP1),BY(IP1),BZ(IP1),ETSMAT,AAX,AAY,AAZ,IERR)
-            call u2pixel(AAX,AAY,iix,iiy)
-            call eswline(iixlast,iiylast,iix,iiy)
-            call forceflush()
-
-C Repeat until next point is the first, remember position and skip
-C past any -1 values of IBNXT, save IP1 as IPT for testing.
-            IPT = IP1; IP1 = IBNXT(IP1)
-            if(IP1.lt.1)IP1 = IBNXT(IPT+1)
-            if(IP1.lt.1)IP1 = IBNXT(IPT+2)
-            iixlast=iix; iiylast=iiy   ! cast for edline call
-            IF(IP1 .NE. IP) GOTO 351
-
-C Complete the polygon.
-            CALL ORTTRN(BX(IP),BY(IP),BZ(IP),ETSMAT,AAX,AAY,AAZ,IERR)
-            call u2pixel(AAX,AAY,iix,iiy)
-            call eswline(iixlast,iiylast,iix,iiy)
-            call forceflush()
- 1000     CONTINUE
-          CALL EASKABC('Options for predefined object: ',' ',
-     &      'apply transform and merge','revise transform','cancel',
-     &      IW,nbhelp)
-          if (IW.eq.1) then
+        CALL EASKABC('Options for predefined object: ',' ',
+     &    'apply transform and merge','revise transform','cancel',
+     &    IW,nbhelp)
+        if (IW.eq.1) then
 
 C Ask for single character to prepend to copied associated entities.
-            CALL EASKABCD(' Character to pre-pend to copied entities:',
-     &        ' ',' a ',' b ',' c ',' d ',IBOPT,nbhelp)
-            if(ibopt.eq.1)prec='a'
-            if(ibopt.eq.2)prec='b'
-            if(ibopt.eq.3)prec='c'
-            if(ibopt.eq.4)prec='d'
-            write(name,'(a)') names(ifoc)  ! name to pass across
-            write(6,*) 'about to enter for ',name
-            call PREDEFEMBED(IFIL+2,predef,ICOMP,objorg(1),objorg(2),
-     &        objorg(3),VALR,name,prec,IER)
-          elseif (IW.eq.2) then
-            goto 422   ! test another location
-          elseif (IW.eq.3) then
-            continue
-          endif
+          CALL EASKATOG(' Character to pre-pend to copied entities:',
+     &    ' ',' a ',' b ',' c ',' d ',' e ',' f ',' g ',IBOPT,nbhelp)
+          if(ibopt.eq.1)prec='a'
+          if(ibopt.eq.2)prec='b'
+          if(ibopt.eq.3)prec='c'
+          if(ibopt.eq.4)prec='d'
+          if(ibopt.eq.5)prec='e'
+          if(ibopt.eq.6)prec='f'
+          if(ibopt.eq.7)prec='g'
+          call PREDEFEMBED(IFIL+2,predef,ICOMP,DX,DY,DZ,VALR,name,
+     &      prec,IER)
+        elseif (IW.eq.2) then
+          goto 423   ! adapt location
+        elseif (IW.eq.3) then
+          continue
+        endif
 
 C Signal that the wireframe image needs to be redrawn.
-          MODIFYVIEW=.TRUE.; MODLEN=.TRUE.; MODBND=.TRUE.
+        MODIFYVIEW=.TRUE.; MODLEN=.TRUE.; MODBND=.TRUE.
 
 C As mass surfaces would be added save the model cfd and cnn files.
-          if(cfgok.and.(.NOT.browse))then
-            CALL EMKCFG('-',IER)
+        if(cfgok.and.(.NOT.browse))then
+          CALL EMKCFG('-',IER)
+        endif
+      ELSEIF(INO.EQ.ITEMC+17)THEN
+
+C Toggle between air filled and water filled. Update zone hc
+C file to reflect this change or create a zone hc file for water
+C filled state.
+        if(znotair(ICOMP))then
+          DOK=.false.
+          CALL ASKOK(' ',
+     &      'Switch from water filled to air filled?',OK,DOK,nbhelp)
+          if(OK)then
+            znotair(ICOMP)=.false.
+
+C Scan any existing hc file, reset the inside coeff to -1 and write
+C out the file.
+            IF(IHC(ICOMP).EQ.1)THEN
+              call FINDFIL(LHCCO(ICOMP),XST)
+              IF(XST)THEN
+                call ehtcff(LHCCO(ICOMP),IFIL+2,ITRU,IER)
+                if(ier.eq.0)then
+
+C Fill with default for inside face.
+                  DO I = 1,IHCFP
+                    ICTL(I) = 1
+                    hcfpdescr(I) = 'Default convection coefficients'
+                    do J = 1,NZSUR(icomp)
+                      HCI(I,J) = -1.0
+                      HCE(I,J) = -1.0
+                      IHCI(I,J) = -1
+                      IHCE(I,J) = -1
+                      do jj=1,8
+                        CVdata(I,J,jj) = 0.
+                      enddo  ! of jj
+                    enddo    ! of j
+                  enddo      ! of i
+                  CALL EMKHTC(LHCCO(ICOMP),ICOMP,IFIL+2,ITRU,IER)
+                  call usrmsg('Updated zone hc file with default hc',
+     &              'coefficients at inside and outside face.','W')
+                else
+                  call usrmsg('Problem reading conv regime for zone.',
+     &                        'returning with no action taken.','W')
+                  ier=0
+                  goto 3
+                endif
+              else
+                call usrmsg('Could not find conv regime for zone.',
+     &                      'returning with no action taken.','W')
+                ier=0
+                goto 3
+              endif
+            endif
+            if(cfgok.and.(.NOT.browse))then
+              CALL EMKCFG('-',IER)
+            endif
+          endif
+        else
+          DOK=.false.
+          CALL ASKOK(' ',
+     &      'Switch from air filled to water filled?',OK,DOK,nbhelp)
+          if(OK)then
+            znotair(ICOMP)=.true.
+
+C Scan any existing hc file, reset the inside coeff to 999 and write
+C out the file.
+            IF(IHC(ICOMP).EQ.1)THEN
+              call FINDFIL(LHCCO(ICOMP),XST)
+              IF(XST)THEN
+                call ehtcff(LHCCO(ICOMP),IFIL+2,ITRU,IER)
+                if(ier.eq.0)then
+
+C Fill with high hc for inside face.
+                  DO I = 1,IHCFP
+                    ICTL(I) = 1
+                    hcfpdescr(I)= 'Water filled convection coefficients'
+                    do J = 1,NZSUR(icomp)
+                      HCI(I,J) = 999.0
+                      HCE(I,J) = -1.0
+                      IHCI(I,J) = -1
+                      IHCE(I,J) = -1
+                      do jj=1,8
+                        CVdata(I,J,jj) = 0.
+                      enddo  ! of jj
+                    enddo    ! of j
+                  enddo      ! of i
+                  CALL EMKHTC(LHCCO(ICOMP),ICOMP,IFIL+2,ITRU,IER)
+                  call usrmsg('Updated zone hc file with water hc',
+     &              'coefficients at inside face.','W')
+                else
+                  call usrmsg('Problem reading conv regime for zone.',
+     &                        'returning with no action taken.','W')
+                  ier=0
+                  goto 3
+                endif
+              else
+                call usrmsg('Could not find conv regime for zone.',
+     &                      'returning with no action taken.','W')
+                ier=0
+                goto 3
+              endif
+            else
+
+C Create a hc file for this zone.
+              IHC(ICOMP)=1
+              IHCFP=1
+              if(zonepth(1:2).eq.'  '.or.zonepth(1:2).eq.'./')then
+                WRITE(HFILE,'(2A)')zname(ICOMP)(1:lnzname(ICOMP)),'.htc'
+              else
+                WRITE(HFILE,'(4A)') zonepth(1:lnblnk(zonepth)),'/',
+     &          zname(ICOMP)(1:lnzname(ICOMP)),'.htc'
+              endif
+
+              LHCCO(ICOMP)=HFILE
+              call edisp(iuout,'Creating hc file for water filled.')
+              call edisp(iuout,HFILE)
+
+C Fill with high hc for inside face.
+              DO I = 1,IHCFP
+                ICTL(I) = 1
+                hcfpdescr(I)= 'Water filled convection coefficients'
+                do J = 1,NZSUR(icomp)
+                  HCI(I,J) = 999.0
+                  HCE(I,J) = -1.0
+                  IHCI(I,J) = -1
+                  IHCE(I,J) = -1
+                  do jj=1,8
+                    CVdata(I,J,jj) = 0.
+                  enddo  ! of jj
+                enddo    ! of j
+              enddo      ! of i
+              CALL EMKHTC(LHCCO(ICOMP),ICOMP,IFIL+2,ITRU,IER)
+              call usrmsg('Created zone hc file with water hc',
+     &              'coefficients at inside face.','W')
+            endif
+            if(cfgok.and.(.NOT.browse))then
+              CALL EMKCFG('-',IER)
+            endif
           endif
         endif
 
-      ELSEIF(INO.EQ.ITEMC+18)THEN
+      ELSEIF(INO.EQ.ITEMC+19)THEN
 
 C Surface summary: print header, followed by surface information.
 C And also report other zone summary fields as in the QA report.
@@ -2355,7 +2425,7 @@ C Check if user wishes to see construction details as well.
           endif
         endif
 
-      ELSEIF(INO.EQ.ITEMC+19)THEN
+      ELSEIF(INO.EQ.ITEMC+20)THEN
 
 C Ask for name of file to put updated information into.
         helptopic='geometry_main_menu'
@@ -2387,13 +2457,13 @@ C Ask for name of file to put updated information into.
         CALL EMKCFG('-',IER)
         MODGEO=.FALSE.
 
-      ELSEIF(INO.EQ.ITEMC+20)THEN
+      ELSEIF(INO.EQ.ITEMC+21)THEN
 
 C Toggle trace level.
         ITRC=ITRC+1
         IF(ITRC.GT.2)ITRC=0
 
-      ELSEIF(INO.EQ.ITEMC+21)THEN
+      ELSEIF(INO.EQ.ITEMC+22)THEN
 
 C Jump to previous zone after processing any remaining tasks.
         ianother=-1
@@ -2443,7 +2513,7 @@ C Report on model contiguity changes.
         call sumrchg(ICOMP,'r',silent)
         return
 
-      ELSEIF(INO.EQ.ITEMC+22)THEN
+      ELSEIF(INO.EQ.ITEMC+23)THEN
 
 C Jump to next zone after processing any remaining tasks.
         ianother=1
@@ -2494,7 +2564,7 @@ C Report on model contiguity changes.
         call sumrchg(ICOMP,'r',silent)
         return
 
-      ELSEIF(INO.EQ.ITEMC+23)THEN
+      ELSEIF(INO.EQ.ITEMC+24)THEN
 
 C Produce help text for the menu.
         helptopic='geometry_main_menu'
@@ -5517,7 +5587,7 @@ C ITRU = unit number for user output, IER=0 OK, IER=1 problem.
       LOGICAL MODGEO,ok,dok,match,matchver
       logical withinbox  ! true if point within bounding box.
 
-      DIMENSION VERT(35),IVLST(MTV),ITEMP(MTV),COG1(3),COG2(3),COG3(3)
+      DIMENSION VERT(35),IVLST(MTV),ITEMP(MTV)
       DIMENSION VP(3),EQN(4),XX(MV),YY(MV),ZZ(MV)
       dimension IVALS(MCOM)
       DIMENSION ISASSO(MS)
@@ -5531,19 +5601,13 @@ C ITRU = unit number for user output, IER=0 OK, IER=1 problem.
       integer iwhich2,lastv2
       integer iwhich3
       integer  iclkok  ! to allow jump to previous or next vertex
-      logical greyok,found,closex,closey,closez
+      logical found,closex,closey,closez
       real CX,CY,CZ  ! XYZ of selected verticies
       dimension CX(10),CY(10),CZ(10)
       integer im,k,mnulen   ! multi column lines
       logical odd   ! for display of vertex info
       logical newgeo  ! to use for testing if new/old geometry file.
       logical writeagain ! in case geometry file needs updating 
-
-#ifdef OSI
-      integer iix,iiy,iicol
-#else
-      integer*8 iix,iiy,iicol
-#endif
 
 C For help messages
       character helpinsub*24 ! subroutine name
@@ -5552,11 +5616,6 @@ C For help messages
 
       helpinsub='EDVERT'  ! set for subroutine
 
-C Initial values for vertex at angle facility.
-      greyok=.false.
-      if(nifgrey.gt.4)then
-        greyok=.true.
-      endif
       V1=1.0; AZ=0.0; EL=0.0
       x3=0.0; y3=0.0; z3=0.0
       anotherone=.false.
@@ -5974,9 +6033,9 @@ C Ask if it should be added.
                     CALL EGETWR(HOLD,K,Y(ntv),-999.,999.,'W','Y cd',IER)
                     CALL EGETWR(HOLD,K,Z(ntv),-9.9,999.9,'W','Z cd',IER)
                     if(ier.ne.0)goto 136
-                    VCOORD(ICOMP,ntv,1)=x3
-                    VCOORD(ICOMP,ntv,2)=y3
-                    VCOORD(ICOMP,ntv,3)=z3
+                    VCOORD(ICOMP,ntv,1)=x(ntv)
+                    VCOORD(ICOMP,ntv,2)=y(ntv)
+                    VCOORD(ICOMP,ntv,3)=z(ntv)
                   elseif(INVT.eq.3)then
                     goto 147
                   endif
@@ -6406,9 +6465,9 @@ C applied to the 'a' 'c' and 'f' options.
               CALL EGETWR(HOLD,K,Y(ntv),-999.,999.,'W','Y cd',IER)
               CALL EGETWR(HOLD,K,Z(ntv),-9.9,999.9,'W','Z cd',IER)
               if(ier.ne.0)goto 43
-              VCOORD(ICOMP,ntv,1)=x3
-              VCOORD(ICOMP,ntv,2)=y3
-              VCOORD(ICOMP,ntv,3)=z3
+              VCOORD(ICOMP,ntv,1)=x(ntv)
+              VCOORD(ICOMP,ntv,2)=y(ntv)
+              VCOORD(ICOMP,ntv,3)=z(ntv)
             elseif(INVT.eq.3)then
               goto 3
             endif
@@ -6688,9 +6747,9 @@ C Present vertex coords for editing then parse data from HOLD.
               CALL EGETWR(HOLD,K,Y(IFOC),-999.9,999.9,'W','Y cord',IER)
               CALL EGETWR(HOLD,K,Z(IFOC),-9.9,999.9,'W','Z cord',IER)
               if(ier.ne.0)goto 1146
-              VCOORD(ICOMP,IFOC,1)=x3
-              VCOORD(ICOMP,IFOC,2)=y3
-              VCOORD(ICOMP,IFOC,3)=z3
+              VCOORD(ICOMP,IFOC,1)=x(ifoc)
+              VCOORD(ICOMP,IFOC,2)=y(ifoc)
+              VCOORD(ICOMP,IFOC,3)=z(ifoc)
               if(newgeo)then
                 call geowrite(IFIL+2,LGEOM(ICOMP),ICOMP,iuout,3,IER)
               else
@@ -6962,9 +7021,9 @@ C allow for jump to previous or next.
         CALL EGETWR(HOLD,K,Y(IFOC),-999.9,999.9,'W','Y cord',IER)
         CALL EGETWR(HOLD,K,Z(IFOC),-9.9,999.9,'W','Z cord',IER)
         if(ier.ne.0)goto 42
-        VCOORD(ICOMP,IFOC,1)=x3
-        VCOORD(ICOMP,IFOC,2)=y3
-        VCOORD(ICOMP,IFOC,3)=z3
+        VCOORD(ICOMP,IFOC,1)=x(ifoc)
+        VCOORD(ICOMP,IFOC,2)=y(ifoc)
+        VCOORD(ICOMP,IFOC,3)=z(ifoc)
         if(newgeo)then
           call geowrite(IFIL+2,LGEOM(ICOMP),ICOMP,iuout,3,IER)
         else
@@ -8231,9 +8290,9 @@ C Parameters passed.
 
 C Trackview needs iixx,iiyy.
 #ifdef OSI
-      integer iix,iiy,ixd,iyd,iicol,iixx,iiyy
+      integer iix,iiy,ixd,iyd,iicol,iixx,iiyy,iik
 #else
-      integer*8 iix,iiy,ixd,iyd,iicol,iixx,iiyy
+      integer*8 iix,iiy,ixd,iyd,iicol,iixx,iiyy,iik
 #endif
 
 C Initialise vertex list menu size variables based on window size.
@@ -8256,6 +8315,7 @@ C Also clear tagged items list (IVLST).
    40 CONTINUE
 
 C Initial menu entry setup.
+C << is there something better to use then NTV ? >>
       CALL USRMSG(PROMPT1,PROMPT2,'-')
    92 ILEN=NTV
       IVERT=-3
@@ -8329,16 +8389,19 @@ C Use mouse to select existing vertices.
 
 C Return pixel position of mouse click, check if key `e` or `E` was
 C hit and then loop through each of the vertices for something close.
-  46      CALL trackview(ii,ixx,iyy)
-          if(ii.eq.69.or.ii.eq.101)goto 47
+C In this code block trackview is correctly using iixx and iiyy.
+  46      CALL trackview(iik,iixx,iiyy)
+          if(iik.eq.69.or.iik.eq.101)goto 47
           found=.false.
           do 45 i=1,NTV
             COG1(1)=X(I); COG1(2)=Y(I); COG1(3)=Z(I)
             CALL VECTRN(COG1,TEMAT,COG2,IER)
             CALL VECTRN(COG2,ETSMAT,COG3,IER)
             call u2pixel(COG3(1),COG3(2),iix,iiy)
-            ixd=iix-ixx
-            iyd=iiy-iyy
+            ixd=iix-iixx
+            iyd=iiy-iiyy
+C Debug
+C            write(6,'(7i5)') i,iixx,iiyy,iix,iiy,ixd,iyd
             if(abs(ixd).lt.5.and.abs(iyd).lt.5)then
               if(found)then
                 call edisp(iuout,'Close points...try again.')
@@ -8969,11 +9032,16 @@ C get surface areas via call to zinfo.
         do 43 ijj=1,NSUR
           if(SVFC(ijj).eq.'FLOR')then
 
-C If surface `flor` not included in the list add it.
-            lastlist=lastlist+1
-            if(lastlist.le.6)then
-              IBASES(ICOMP,lastlist)=ijj
-              ZBASEA(ICOMP)=ZBASEA(ICOMP)+SNA(ijj)
+C If surface `flor` not included in the list add it if the
+C USE is something other than FURNI.
+            if(SUSE(ijj,1)(1:5).eq.'FURNI')then
+              continue
+            else
+              lastlist=lastlist+1
+              if(lastlist.le.6)then
+                IBASES(ICOMP,lastlist)=ijj
+                ZBASEA(ICOMP)=ZBASEA(ICOMP)+SNA(ijj)
+              endif
             endif
           endif
   43    continue

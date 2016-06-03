@@ -53,11 +53,6 @@ C IEEE callback (Solaris)
       COMMON/FIL/IOFIL,IFPOL
       COMMON/FATRIB/ATR
 
-      integer ncub,ivfok
-      real XOC,YOC,ZOC,DXC,DYC,DZC,CANG
-      character CUBN*6
-      COMMON/MRTC/NCUB,XOC(MCUB),YOC(MCUB),ZOC(MCUB),DXC(MCUB),
-     &            DYC(MCUB),DZC(MCUB),CANG(MCUB),IVFOK(MCUB),CUBN(MCUB)
       COMMON/MRT2/GEOLOAD,MRTLOAD
       integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
@@ -447,7 +442,7 @@ c Initial assumptions on griddivision and patch division.
       nsurmf = 0
       NGRID = 0
       NTRPOL = 0
-      NCUB = 0
+      NCUBF = 0   ! ?? when is geometry scanned ??
       MRTLOAD=.FALSE.
       GEOLOAD=.FALSE.
 
@@ -775,7 +770,7 @@ C of rectangular body.
           CALL USRMSG(' ',' Please select a zone!','W')
           GOTO 10
         endif
-        if(NCUB.eq.0)then
+        if(NCUB(ICOMP).eq.0)then
           call usrmsg(' No MRT sensors defined in this viewfactor ',
      &      ' file... Please select another zone.','W')
           goto 10
@@ -883,7 +878,10 @@ C Clear VEWF array in preparation for editing.
                 VEWF(I,J)=0.
   232         CONTINUE
   231       CONTINUE
-            NCUB=0
+
+C If geometry file included mrt sensors use them when creating
+C this new file.
+C            NCUB(ICOMP)=0
             CALL EMKMRT(LVIEW(icomp),LGEOM(ICOMP),NZSUR(ICOMP),
      &        IUF,ICOMP,'v',IER)
           elseif(irt.eq.3)then
@@ -902,9 +900,14 @@ C lstsur as if a calculation had just been performed.
         GEOLOAD=.TRUE.
         CALL FILEIN(ITRC,IUOUT,IER)
       else
+
+C There was not vwf file so create one filled with zeros.
         LVIEW(icomp)=VFILE
         IVF(ICOMP)=1
-        NCUB=0
+
+C If mrt sensors known from geometry file include them when creating
+C this new file.
+C        NCUB(ICOMP)=0
 
         CALL edisp(iuout,' ')
         CALL edisp(iuout,' Creating file full of zeros.....')
@@ -930,9 +933,9 @@ C Determine geometry bounds and force it to be drawn.
       MODLEN=.TRUE.
       izgfoc=ICOMP
       CALL ADJVIEW(IER)
-      if(ncub.gt.0)then
+      if(ncub(ICOMP).gt.0)then
         CALL ESCZONE(ICOMP)
-        CALL DRWSEN(ier)
+        CALL DRWSEN(ICOMP,ier)
         CALL ERCZONE(ICOMP)
       endif
       goto 10
@@ -1037,6 +1040,14 @@ C the polygon.
             ff(i,j)=ff(i,j)/(ncell(i)*PI)
           else
             ff(i,j)=ff(i,j)/den
+          endif
+
+C If an individual ff is > 1.0 reset it because it is impossible
+C and causes havoc when attempting to re-read the vwf file.
+          if(ff(i,j).gt.1.00)then
+            write(outs,*) 'resetting ff(ij)',ff(i,j),' to 0.999'
+            call edisp(iuout,outs)
+            ff(i,j)=0.999
           endif
           rowsum(i)=rowsum(i)+ff(i,j)
 

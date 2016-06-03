@@ -151,7 +151,7 @@ C GCASR is a low level routine to read zone casual radiant flux values
 C from the results library for a given day and zone.
 C Given IDAY, IZONE returns QCASR (within common GVAL) if save level 2 - 4.
 C CALLS: GFIXED
-
+C NOTE: icjump nzsur+1
       SUBROUTINE GCASR(IDAY,IZONE,ISET)
 #include "building.h"
 #include "geometry.h"
@@ -175,7 +175,7 @@ C GCASC is a low level routine to read zone casual convective flux values
 C from the results library for a given day and zone, ISAVE 2 - 4 only.
 C Given IDAY, IZONE returns values in the array QCASC (in common GVAL).
 C CALLS: GFIXED
-
+C NOTE: icjump nzsur+2
       SUBROUTINE GCASC(IDAY,IZONE,ISET)
 #include "building.h"
 #include "geometry.h"
@@ -198,7 +198,7 @@ C GZRH is a low level routine to read zone relative humidity values
 C from the results library for a given day and zone, ISAVE 2 - 4 only.
 C Given IDAY, IZONE returns values in common GVAL.
 C CALLS: GFIXED
-
+C NOTE: icjump nzsur+3
       SUBROUTINE GZRH(IDAY,IZONE,ISET)
 #include "building.h"
 #include "geometry.h"
@@ -221,7 +221,7 @@ C GZDP is a low level routine to read zone dew point values.
 C from the results library for a given day and zone, ISAVE 2 - 4 only.
 C Given IDAY, IZONE returns values in common GVAL.
 C CALLS: GFIXED
-
+C NOTE: icjump nzsur+3
       SUBROUTINE GZDP(IDAY,IZONE,ISET)
 #include "building.h"
 #include "geometry.h"
@@ -266,7 +266,7 @@ C GZLLH read zone humidification load from the results
 C library for a given day and zone, ISAVE 2 - 4 only.
 C Given IDAY, IZONE returns values in (in common GVAL).
 C CALLS: GFIXED
-
+C NOTE: icjump nzsur+4
       SUBROUTINE GZLLH(IDAY,IZONE,ISET)
 #include "building.h"
 #include "geometry.h"
@@ -297,7 +297,7 @@ C GZLLC reads zone dehumidification load from the results
 C library for a given day and zone, ISAVE 2 - 4 only.
 C Given IDAY, IZONE returns values in (in common GVAL).
 C CALLS: GFIXED
-
+C NOTE: icjump nzsur+4
       SUBROUTINE GZLLC(IDAY,IZONE,ISET)
 #include "building.h"
 #include "geometry.h"
@@ -328,7 +328,7 @@ C ******************** GZLL ********************
 C GZLL reads the zone latent load, ISAVE 2 - 4 only.
 C Given IDAY, IZONE returns values in (in common GVAL).
 C CALLS: GFIXED
-
+C NOTE: icjump nzsur+4
       SUBROUTINE GZLL(IDAY,IZONE,ISET)
 #include "building.h"
 #include "geometry.h"
@@ -353,7 +353,7 @@ C ******************** GZSPM1 ********************
 C GZSPM1 reads the special materials output, ISAVE 2 - 4 only.
 C Given IDAY, IZONE returns values in (in common GVAL).
 C CALLS: GFIXED
-
+C NOTE: icjump nzsur+6
       SUBROUTINE GZSPM1(IDAY,IZONE,ISET)
 #include "building.h"
 #include "geometry.h"
@@ -378,7 +378,7 @@ C ******************** GZSPM2 ********************
 C GZSPM2 reads the special materials output, ISAVE 2 - 4 only.
 C Given IDAY, IZONE returns values in (in common GVAL).
 C CALLS: GFIXED
-
+C NOTE: icjump nzsur+7
       SUBROUTINE GZSPM2(IDAY,IZONE,ISET)
 #include "building.h"
 #include "geometry.h"
@@ -549,7 +549,7 @@ C GTMCON is a low level routine to read control point temperature
 C from the results library for a given day and zone for ISAVE=1 - 4.
 C Given IDAY, IZONE returns values for each timestep in common GVAL.
 C CALLS: MOREC1 MOREC2
-
+C NOTE: icjump nzsur+5
       SUBROUTINE GTMCON(IDAY,IZONE,ISET)
 #include "building.h"
 #include "geometry.h"
@@ -574,7 +574,7 @@ C ******************** GOUTOPQ ********************
 C GOUTOPQ is a low level routine to read outside opaque convection
 C from the results library for a given day and zone for ISAVE=2 - 4.
 C Given IDAY, IZONE returns values for each timestep in common GVAL.
-
+C NOTE: icjump nzsur+6
       SUBROUTINE GOUTOPQ(IDAY,IZONE,ISET)
 #include "building.h"
 #include "geometry.h"
@@ -598,6 +598,7 @@ C ******************** GOUTTRN ********************
 C GOUTTRN is a low level routine to read outside trn convection
 C from the results library for a given day and zone for ISAVE=2 - 4.
 C Given IDAY, IZONE returns values for each timestep in common GVAL.
+C NOTE: icjump nzsur+7
 
       SUBROUTINE GOUTTRN(IDAY,IZONE,ISET)
 #include "building.h"
@@ -622,7 +623,7 @@ C ******************** GOPQIN ********************
 C GOPQIN is a low level routine to read inside opaque convection
 C from the results library for a given day and zone for ISAVE=2 - 4.
 C Given IDAY, IZONE returns values for each timestep in common GVAL.
-
+C NOTE: icjump nzsur+6
       SUBROUTINE GOPQIN(IDAY,IZONE,ISET)
 #include "building.h"
 #include "geometry.h"
@@ -646,7 +647,7 @@ C ******************** GTRNIN ********************
 C GTRNIN is a low level routine to read inside trn convection
 C from the results library for a given day and zone for ISAVE=2 - 4.
 C Given IDAY, IZONE returns values for each timestep in common GVAL.
-
+C NOTE: icjump nzsur+7
       SUBROUTINE GTRNIN(IDAY,IZONE,ISET)
 #include "building.h"
 #include "geometry.h"
@@ -695,6 +696,7 @@ C GQV1 is a low level routine to read zone infiltration
 C from the results library for a given day and zone, ISAVE 2 - 4 only.
 C Given IDAY, IZONE, ISFN  returns values at each timestep in common GVAL.
 C CALLS: GFIXED
+C NOTE: icjump nzsur+3
 
       SUBROUTINE GQV1(IDAY,IZONE,ISET)
 #include "building.h"
@@ -719,6 +721,7 @@ C GQV2 is a low level routine to read interzone ventilation
 C from the results library for a given day and zone, ISAVE 2 - 4 only.
 C Given IDAY, IZONE, ISFN  returns values at each timestep in common GVAL.
 C CALLS: GFIXED
+C NOTE: icjump nzsur+4
 
       SUBROUTINE GQV2(IDAY,IZONE,ISET)
 #include "building.h"
@@ -1161,7 +1164,7 @@ C GTBR reads flux associated with thermal bridges in a zone
 C from results library for a given day and zone.
 C Given IDAY, IZONE returns value at each time step in common GVAL.
 C CALLS: GFIXED
-
+C NOTE: icjump nzsur+12
       SUBROUTINE GTBR(IDAY,IZONE,ISET)
 #include "building.h"
 #include "geometry.h"
@@ -1191,7 +1194,7 @@ C GAIRSTOR reads heat stored in the zone air node (due to temp fluxuations)
 C from results library for a given day and zone.
 C Given IDAY, IZONE returns value at each time step in common GVAL.
 C CALLS: GFIXED
-
+C NOTE: icjump nzsur+12
       SUBROUTINE GAIRSTOR(IDAY,IZONE,ISET)
 #include "building.h"
 #include "geometry.h"
@@ -1728,7 +1731,7 @@ C ISET is the results set number to be scanned.
 
       character outs*124
 
-      DIMENSION XD(MZS)
+      DIMENSION XD(MZS+12)
 
       IUNIT=IFIL
 

@@ -1589,7 +1589,7 @@ C specify inside or outside or both values, otherwise set to default.
           ihcfp=ihcfpt
         endif
         NS=NZSUR(icomp)
-        IW=1
+        IW=1   ! assume fixed coefficients.
         CALL EASKATOG('calculation control (see help):',' ',
      &    'fixed coefficients','fixed correlations','adaptive cor',
      &    'CEN coef','cancel',' ',' ',IW,nbhelp)
@@ -1625,6 +1625,9 @@ C Confirm use of default Alamdahri or an alternative for inside hc.
             goto 20
           endif
         endif
+
+C For each period set inside and outside coefficients, clear
+C CVdata array.
         DO 250 I = 1,IHCFP
           ICTL(I) = iw
           hcfpdescr(I) = 'User specified convection coefficients'

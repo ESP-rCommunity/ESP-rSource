@@ -774,9 +774,9 @@ C *********************************************************************
       COMMON/GR3D27/NDZE(MEZ),DZE(MEZ,MZE)
       COMMON/GR3D31/NUMCRN,INDXC(MCZ),DCOSC(MCZ,3,3)
       COMMON/GR3D34/ISFCRN(MCZ,3),IVXCRN(MCZ)
-      COMMON/GR3D35/NDXC(MEZ),DXC(MEZ,MZE)
-      COMMON/GR3D36/NDYC(MEZ),DYC(MEZ,MZE)
-      COMMON/GR3D37/NDZC(MEZ),DZC(MEZ,MZE)
+      COMMON/GR3D35/NDXC(MEZ),DXCV(MEZ,MZE)
+      COMMON/GR3D36/NDYC(MEZ),DYCV(MEZ,MZE)
+      COMMON/GR3D37/NDZC(MEZ),DZCV(MEZ,MZE)
       COMMON/GR3D42/NVLN(MS,MLS),IVLN(MS,MLS,MLS)
       COMMON/GR3D43/XINT(MS,MGV),ZINT(MS,MGV),NCVS(MS,MGV)
       COMMON/GR3D51/NUMSS,IBDYSS(MSSZ,2),ILNBSS(MSSZ,2),IVRTSS(MSSZ,2)
@@ -1214,17 +1214,17 @@ C Add the X -intervals associated with the corner.
           XVALU=0.
           IF(ISFEDG(IEG,1).EQ.ISFCRN(ICN,1))THEN
             DO 560 IX=1,NDXC(ICN)
-              XVALU=XVALU+DXC(ICN,IX)
+              XVALU=XVALU+DXCV(ICN,IX)
               CALL ADDECX(IEC,XVALU)
   560       CONTINUE
           ELSEIF(ISFEDG(IEG,1).EQ.ISFCRN(ICN,2))THEN
             DO 570 IY=1,NDYC(ICN)
-              XVALU=XVALU+DYC(ICN,IY)
+              XVALU=XVALU+DYCV(ICN,IY)
               CALL ADDECX(IEC,XVALU)
   570       CONTINUE
           ELSEIF(ISFEDG(IEG,1).EQ.ISFCRN(ICN,3))THEN
             DO 580 IDZ=1,NDZC(ICN)
-              XVALU=XVALU+DZC(ICN,IDZ)
+              XVALU=XVALU+DZCV(ICN,IDZ)
               CALL ADDECX(IEC,XVALU)
   580       CONTINUE
           ENDIF
@@ -1233,17 +1233,17 @@ C Add the Y -intervals associated with the corner.
           YVALU=0.
           IF(ISFEDG(IEG,2).EQ.ISFCRN(ICN,1))THEN
             DO 590 IX=1,NDXC(ICN)
-              YVALU=YVALU+DXC(ICN,IX)
+              YVALU=YVALU+DXCV(ICN,IX)
               CALL ADDECY(IEC,YVALU)
   590       CONTINUE
           ELSEIF(ISFEDG(IEG,2).EQ.ISFCRN(ICN,2))THEN
             DO 600 IY=1,NDYC(ICN)
-              YVALU=YVALU+DYC(ICN,IY)
+              YVALU=YVALU+DYCV(ICN,IY)
               CALL ADDECY(IEC,YVALU)
   600       CONTINUE
           ELSEIF(ISFEDG(IEG,2).EQ.ISFCRN(ICN,3))THEN
             DO 610 IDZ=1,NDZC(ICN)
-              YVALU=YVALU+DZC(ICN,IDZ)
+              YVALU=YVALU+DZCV(ICN,IDZ)
               CALL ADDECY(IEC,YVALU)
   610       CONTINUE
           ENDIF

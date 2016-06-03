@@ -64,6 +64,9 @@ C CFMNGE - Manages CFD calcs and results output when BSim and CFD are conflated.
       common/SOLVER/ILISOL
       common/CFDTOGS/ACCON,CFD2BLD,CFD2MFS
 
+C Commons for trace.
+      COMMON/TC/ITC,ICNT
+      COMMON/TRACE/ITCF,ITRACE(MTRACE),IZNTRC(MCOM),ITU
       common/fvisgo/gophrun
       logical gophrun
 
@@ -86,12 +89,37 @@ C cfd-mfs convergence.
       TSTEP=3600.0/float(ntstep)
       LKTR=1
 
+C Check if CFD-MFS trace output is requested.
+C ITRC: If 0, no trace. If >0, unit number.
+      ITRC=0
+      if (ITRACE(44).gt.0) then
+C Check if we are within trace period.
+        if (NSINC.ge.ITC.and.NSINC.le.ITCF) then
+C If ACC is active, only print header and increment trace counter on
+C gopher run.
+          if((abs(IBLACT).ge.4).and.(abs(IBLACT).le.5))then
+            if (gophrun) then
+              call edisp(ITU,' ')
+              write(outs,'(a,i5)')' CFMNGE/MFSCORR: Trace output ',ICNT
+              call edisp(ITU,outs)
+              ICNT=ICNT+1
+            endif
+          else
+            call edisp(ITU,' ')
+            write(outs,'(a,i5)')' CFMNGE/MFSCORR: Trace output ',ICNT
+            call edisp(ITU,outs)
+            ICNT=ICNT+1
+          endif
+          ITRC=ITU
+        endif
+      endif
+
 C Hardwire version of LISOLV to use.
       ILISOL=3
 
 C Increment counter that keeps track of how many times CFD has been invoked
 C for this zone, but only on the gopher run if the ACC is active.
-      if((abs(IBLACT).ge.4).or.(abs(IBLACT).le.5))then
+      if((abs(IBLACT).ge.4).and.(abs(IBLACT).le.5))then
         if(gophrun)icfcal(ICFD)=icfcal(ICFD)+1
       else
         icfcal(ICFD)=icfcal(ICFD)+1
@@ -160,6 +188,11 @@ C Calculate areas of solid boundaries.
       CALL CFAREA(NCONST(ICP))
 
 C Invoke CFD simulation.
+
+C This line, if uncommented, will force preliminary simulations to
+C use one way CFD-MFS conflation.
+c      if(((abs(IBLACT).ge.4).and.(abs(IBLACT).le.5)).and.gophrun)goto 255
+
 C Activate mfs-cfd coupling via MFBNDR if airflow network is defined.
       IF(ICFMFS(ICFD).EQ.1)THEN
         IF(NCONF.GT.1)THEN
@@ -186,19 +219,32 @@ C One way conflation.
 C This code should never execute.
           CALL EDISP(IUOUT,
      &      'CFMNGE: Error configuring mfs-cfd conflation')
-          GOTO 257
+          GOTO 258
         ENDIF
       ELSE
 C No CFD-MFS conflation.
         CALL CFCALC(NSINC,TSTEP,IMFACT,IBLACT,CONVER)
-        GOTO 257
+        GOTO 258
       ENDIF
 
  254  IF(LKTR.EQ.1)CALL MFBNDR(1)
+C Trace output.
+      if (ITRC.gt.0) then
+        write(ITRC,'(a)')'*** DRY MFS RESULTS (before iteration) ***'
+        write(ITRC,'(a)')' '
+        CALL MFOUTP(ITRC)
+      endif
  256  CALL MFBNDR(2)      
       CALL CFCALC(NSINC,TSTEP,IMFACT,IBLACT,CONVER)
       IF(CONVER)THEN
         IPOK=3
+C Trace output.
+        if (ITRC.gt.0) then
+          write(ITRC,'(a)')' '
+          write(ITRC,'(a,i2.2,a)')
+     &      '*** CONFLATED MFS RESULTS (at iteration ',LKTR,') ***'
+          write(ITRC,'(a)')' '
+        endif
         CALL MFBNDR(IPOK)
         IF(IPOK.EQ.0)THEN
           write(outs,'(A,I4,A)')'Got mfs-cfd mutual convergence in '
@@ -221,15 +267,33 @@ C No CFD-MFS conflation.
         CALL MFBNDR(0)
         GOTO 257
       ENDIF
-      GOTO 257
+      GOTO 258
 
  255  CALL MFBNDR(1)
+C Trace output.
+      if (ITRC.gt.0) then
+        write(ITRC,'(a)')'*** MFS RESULTS (imposed on CFD) ***'
+        write(ITRC,'(a)')' '
+        CALL MFOUTP(ITRC)
+      endif
       CALL MFBNDR(2)
       CALL CFCALC(NSINC,TSTEP,IMFACT,IBLACT,CONVER)
       CALL MFBNDR(0)
 
+      GOTO 258
+C CFD-MFS trace output delimeters.
+ 257  if (ITRC.gt.0) then
+        write(ITRC,'(a)')' '
+        if (gophrun) then
+          write(ITRC,'(a)')'*** PRELIMINARY SIMULATION DONE ***'
+        else
+          write(ITRC,'(a)')'*** TIME STEP DONE ***'
+        endif
+        write(ITRC,'(a)')' '
+      endif
+
 C Convection coefficients.
- 257  DO 100 I=1,NCONST(ICP)
+ 258  DO 100 I=1,NCONST(ICP)
         icon=IZSTOCN(icp,i)
         SFNAM(I)=SSNAME(icon)
  100  CONTINUE
@@ -305,76 +369,72 @@ C them: this decision is made by subroutine ASSESS.
 C Don't invoke CFD if this is the first time step.
       IF(NSINC.gt.1) THEN
 
-C Only invoke CFD during the start-up period if requested by user.
-        IF(.NOT.( IFCFD(ICOMP).LE.-1.AND.IDYP.LT.ISDS) ) THEN
-
 C Determine which CFD domain number (ie. icfd) the current building zone
 C corresponds to, set common variable ICFD, then invoke CFD. Following the CFD 
 C run, set the flag indicating that CFD has been run in `surface conflation' 
 C mode and that there are CFD-calculated HCs for this zone for the current time 
 C step.
-          ICP=ICOMP
-          do 30 iconf=1,NCONF            
-            if( icfdnd(iconf).eq.ICOMP )then
-              ICFD=iconf
-            endif
-   30     continue
+        ICP=ICOMP
+        do 30 iconf=1,NCONF            
+          if( icfdnd(iconf).eq.ICOMP )then
+            ICFD=iconf
+          endif
+   30   continue
 C Debug.
-C          write(6,*) 'SURFCONF (ICP,ICOMP,icfd)',ICP,ICOMP,icfd
+C        write(6,*) 'SURFCONF (ICP,ICOMP,icfd)',ICP,ICOMP,icfd
 
 C If more than one CFD domain, inform the user which one it is simulating.
-          if(NCONF.gt.1)then
-            call INTSTR(ICFD,ICFDSTR,ICFDLN,IER)
-            if(IER.ne.0)goto 123
-            call INTSTR(ICP,ICPSTR,ICPLN,IER)
-            if(IER.ne.0)goto 123       
-            write(outs,'(5a)')'*** CFD DOMAIN ',ICFDSTR(1:ICFDLN),
+        if(NCONF.gt.1)then
+          call INTSTR(ICFD,ICFDSTR,ICFDLN,IER)
+          if(IER.ne.0)goto 123
+          call INTSTR(ICP,ICPSTR,ICPLN,IER)
+          if(IER.ne.0)goto 123       
+          write(outs,'(5a)')'*** CFD DOMAIN ',ICFDSTR(1:ICFDLN),
      &        ' (representing building zone ',ICPSTR(1:ICPLN),') ***'
-            call edisp(IUOUT,outs)
-          endif
+          call edisp(IUOUT,outs)
+        endif
 
 C Initialize the thermophysical variables and some gridding data.
-  123     CALL INICNT     
+  123   CALL INICNT     
 
 C Flag indicating that CFD `small opening' areas have not yet been calculated
 C for this domain.
-          areaSSO = .FALSE.
+        areaSSO = .FALSE.
 
 C If the user has requested adaptive control over the conflation, then
 C invoke the controller to assess and prepare for the CFD run (i.e. adaptive
 C conflation control). Otherwise, just call CFD with the user's input settings
 C (i.e. uncontrolled).
-          if(abs(IFCFD(ICOMP)).ge.4.and.abs(IFCFD(ICOMP)).le.7)then
-            CALL ADAPCONF
-          endif
+        if(abs(IFCFD(ICOMP)).ge.4.and.abs(IFCFD(ICOMP)).le.7)then
+          CALL ADAPCONF
+        endif
 
 C Record ACC actions (begin).
-          IF(abs(IFCFD(ICOMP)).eq.4.or.abs(IFCFD(ICOMP)).eq.5)THEN
-            write(IACC(icfd),*)
-            write(IACC(icfd),*) 'Commencing final CFD simulation.'
+        IF(abs(IFCFD(ICOMP)).eq.4.or.abs(IFCFD(ICOMP)).eq.5)THEN
+          write(IACC(icfd),*)
+          write(IACC(icfd),*) 'Commencing final CFD simulation.'
 C Record ACC actions (end).
-            call edisp(IUOUT,'Commencing adapted CFD simulation.')
-          ELSE
-            CALL edisp(IUOUT,'Commencing CFD simulation.')
-          ENDIF
+          call edisp(IUOUT,'Commencing adapted CFD simulation.')
+        ELSE
+          CALL edisp(IUOUT,'Commencing CFD simulation.')
+        ENDIF
 
-          CALL CFMNGE(ICOMP,icfd)
+        CALL CFMNGE(ICOMP,icfd)
 
 C Examine the spacing of the next-to-wall grid points in terms of the
 C dimensionless distance (y+). These results are used when conditional
 C two-way adaptive conflation is active.
-          CALL CHKSPC
+        CALL CHKSPC
 
 C Set the flag to indicate that there are CFD calculated convection
 C coefficients for the current time-step (thermal domain's convection routines
 C decide what to do with the coefficients).
-          mHCcfd(ICOMP) = 1
+        mHCcfd(ICOMP) = 1
       
-C Save solution information (if past start-up period).
+C Save solution information (IFCFD wil be negative if past start-up period).
 C Calculate current simulation timestep. - possibly use to synchornise results.
-          if(IDYP.GE.ISDS) call cfdlib
+        if(IFCFD(ICP).lt.0) call cfdlib
 
-        ENDIF
       ENDIF
 
       RETURN

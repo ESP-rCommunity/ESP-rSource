@@ -50,7 +50,7 @@ C Attempt to read in rview file, note it is assumed to be one line.
       endif
       write(currentfile,'(a)') tfile(1:lnblnk(tfile))
 
-      CALL STRIPC(ITA2,OUTSTR,99,ND,1,'view line',IER)
+      CALL LSTRIPC(ITA2,OUTSTR,99,ND,1,'view line',IER)
       IF(IER.eq.2)ier=0
       K=0
       CALL EGETW(OUTSTR,K,WORD,'W','rview',IFLAG)
@@ -112,13 +112,13 @@ C with rvu.
 
       call edisp(iuout,' ')
       if(usevtv)then
-        write(outs,'(a,3F8.2,a,3F7.3,a,3F6.3,4(a,F6.2))') 
-     &    'rview -vtv -vp ',rvpx,rvpy,rvpz,' -vd ',vdx,vdy,vdz,
+        write(outs,'(a,3F8.2,a,3F6.3,a,3F6.3,4(a,F5.1))') 
+     &    'rview -vtv -vp ',rvpx,rvpy,rvpz,' -vd',vdx,vdy,vdz,
      &    ' -vu ',vux,vuy,vuz,' -vh ',angh,' -vv ',angv,
      &    ' -vs 0 -vl 0 -vo ',cutfor,' -va ',cutaft
       else
-        write(outs,'(a,3F8.2,a,3F7.3,a,3F6.3,4(a,F6.2))') 
-     &    'rview -vtl -vp ',rvpx,rvpy,rvpz,' -vd ',vdx,vdy,vdz,
+        write(outs,'(a,3F8.2,a,3F6.3,a,3F6.3,4(a,F5.1))') 
+     &    'rview -vtl -vp ',rvpx,rvpy,rvpz,' -vd',vdx,vdy,vdz,
      &    ' -vu ',vux,vuy,vuz,' -vh ',angh,' -vv ',angv,
      &    ' -vs 0 -vl 0 -vo ',cutfor,' -va ',cutaft
       endif
@@ -331,7 +331,7 @@ C IERR=1 if a scene file is missing.
       COMMON/C1/NCOMP,NCON
 
       character tvewsh*10,tvewcmds*146
-      character OUTS*124,OUTSTR*200,WORD*20,tfile*72
+      character OUTS*124,OUTSTR*248,WORD*20,tfile*72
       character tsc*72,tword*10,file*72,RVB*1
 
       IERR=0
@@ -391,7 +391,7 @@ C Close and then re-open the file.
       call FPOPEN(ITA2,ISTAT,1,1,tfile)
 
 C Now loop looking for key words and data.
- 42   CALL STRIPC(ITA2,OUTSTR,99,ND,0,'rif line',IFLAG)
+ 42   CALL LSTRIPC(ITA2,OUTSTR,99,ND,0,'rif line',IFLAG)
       IF(IFLAG.ne.0)goto 900
       K=0
       CALL EGETW(OUTSTR,K,WORD,'-','key word',IFLAG)
@@ -461,8 +461,10 @@ C the ending characters of the file.
         CALL EGETW(OUTSTR,K,tvewsh,'-','shrt vew',IFLAG)
         CALL EGETRM(OUTSTR,K,tvewcmds,'W','view cmds',IER)
         indxvew=indxvew+1
-        rvewsh(indxvew)=tvewsh
-        vewcmds(indxvew)=tvewcmds
+        write(rvewsh(indxvew),'(a)') tvewsh(1:lnblnk(tvewsh))
+        write(vewcmds(indxvew),'(a)')tvewcmds(1:lnblnk(tvewcmds))
+C        write(6,*) 'reading rif file'
+C        write(6,*) vewcmds(indxvew)
 
 C Echo and save render settings.
       elseif(word(1:7).eq.'render=')then
@@ -584,6 +586,9 @@ C Materials file.
         write(ITA2,'(a,a)')'scene= ',matfil(1:lnblnk(matfil))
       endif
 
+C Added shell command for modish.pl
+      call system("./fix.sh")
+       
 C Outside description file.
       write (tfile,'(2a)') runpath(1:lnrp),rofil(1:lnblnk(rofil))
       INQUIRE(FILE=tfile,EXIST=XST)

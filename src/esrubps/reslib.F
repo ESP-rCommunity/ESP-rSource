@@ -175,11 +175,11 @@ C the user will be asked to confirm the results file name (and path)
 
 C Note: the initial assumption of the record width of the zone results 
 C file is based on nzrl equal to MZRL (defined in building.h as MCOM+12
-C if MCOM>MS with a minimum width of 40 to allow for file names to be
-C held and air gap data to be written). Some records are written with 
-C values for all current zones, some are for all surfaces in the zone 
-C plus up to 12 other values. One set of records in MZLS1 is 5*MGP width 
-C which is currently 40.
+C if MCOM>MS or MS+12 if MS>MCOM and with a minimum width of 40 to 
+C allow for file names to be held and air gap data to be written). 
+C Some records are written with values for all current zones, some 
+C are for all surfaces in the zone plus up to 12 other values. One set
+C of records in MZLS1 is 5*MGP width which is currently 40.
       iminwid=40
       iswid=0
       DO 150 I = 1,NCOMP

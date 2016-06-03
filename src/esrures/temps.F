@@ -189,8 +189,6 @@ C IOPT - specific temperature differences.
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
 
-      COMMON/MRTC/NCUB,XOC(MCUB),YOC(MCUB),ZOC(MCUB),DXC(MCUB),
-     &            DYC(MCUB),DZC(MCUB),CANG(MCUB),IVFOK(MCUB),CUBN(MCUB)
       common/MRTF/FFL(MCUB,6,MSM),VEWF(MS,MS)
 
       COMMON/SIMPIK/ISIM,ISTADD,ID1,IM1,ID2,IM2,ISDS,ISDF,NTS,ISAVE
@@ -199,7 +197,7 @@ C IOPT - specific temperature differences.
 
       DIMENSION XD(MZS),surarea(6),stemp(6)
 
-      character outs*124,LMRT*72,CUBN*6
+      character outs*124,LMRT*72
 
 C Recover sensor vievfactors.
       IUF=IFIL+1

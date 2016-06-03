@@ -1618,9 +1618,9 @@ C For help messages
       integer nbhelp     ! number of help lines found
 
 #ifdef OSI
-      integer impx,impy,iwem,iii,iix,iiy,iipx,iipy  ! for use with trackview
+      integer impx,impy,iwem,iix,iiy,iik  ! for use with trackview
 #else
-      integer*8 impx,impy,iwe,iii,iix,iiy,iipx,iipy ! for use with trackview
+      integer*8 impx,impy,iwe,iix,iiy,iik ! for use with trackview
 #endif
 
       helpinsub='NETIDATR'  ! set for subroutine
@@ -1632,10 +1632,8 @@ C For help messages
       elseif(INWKTYP.eq.4)then
         CALL USRMSG('Click on the control entity to edit',' ','-')
       endif
-      CALL TRACKVIEW(iii,iix,iiy)
-      IIPX=IIX
-      IIPY=IIY
-      CALL PIXEL2U(IIPX,IIPY,GX,GY)
+      CALL TRACKVIEW(iik,iix,iiy)
+      CALL PIXEL2U(IIX,IIY,GX,GY)
       CGX=GX
       CGY=GY
       CLOSEX=.FALSE.

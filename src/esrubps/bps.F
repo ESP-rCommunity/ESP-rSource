@@ -619,7 +619,7 @@ C Open the text display box equal to LIMTTY if MMOD = 8.
         if(iglib.eq.1)then
 
 C Setup and pass in parameters to win3d.
-          iiw1=16; iiw2=16; iiw3=4; iiw4=3; iimenu=menuchw
+          iiw1=15; iiw2=15; iiw3=5; iiw4=3; iimenu=menuchw
           iigl=igl; iigr=igr; iigt=igt; iigb=igb; iigw=igw; iigwh=igwh
           CALL win3d(iimenu,iiw1,iiw2,iiw3,iiw4,
      &      iigl,iigr,iigt,iigb,iigw,iigwh)
@@ -630,7 +630,7 @@ C Setup and pass in parameters to win3d.
           iicapture=1
           call updcapt(iicapture)
         elseif(iglib.eq.2)then
-          iiw1=16; iiw2=16; iiw3=5; iiw4=4; iimenu=menuchw
+          iiw1=15; iiw2=15; iiw3=5; iiw4=4; iimenu=menuchw
           iigl=igl; iigr=igr; iigt=igt; iigb=igb; iigw=igw; iigwh=igwh
           CALL win3d(iimenu,iiw1,iiw2,iiw3,iiw4,
      &      iigl,iigr,iigt,iigb,iigw,iigwh)

@@ -552,21 +552,21 @@ C Choices based on the value of shape.
         return
       endif
       IF(ishape.eq.1)THEN
-        XOC=zorigin(icomp,1)
-        YOC=zorigin(icomp,2)
-        ZOC=zorigin(icomp,3)
-        DXC=zsize(icomp,1)
-        DYC=zsize(icomp,2)
-        DZC=zsize(icomp,3)
+        XOCB=zorigin(icomp,1)
+        YOCB=zorigin(icomp,2)
+        ZOCB=zorigin(icomp,3)
+        DXCB=zsize(icomp,1)
+        DYCB=zsize(icomp,2)
+        DZCB=zsize(icomp,3)
 
 C Pending rotation angle and set point to origin of the zone.
         ANGR=rotateit(ICOMP,1)
-        rotateit(ICOMP,2)=XOC
-        rotateit(ICOMP,3)=YOC
+        rotateit(ICOMP,2)=XOCB
+        rotateit(ICOMP,3)=YOCB
 
 C Convert box into a gen description. Pass in critical dimensions
 C and expect the data back via common G1.
-        CALL ERECC(XOC,YOC,ZOC,DXC,DYC,DZC,ANGR)
+        CALL ERECC(XOCB,YOCB,ZOCB,DXCB,DYCB,DZCB,ANGR)
         rotateit(ICOMP,4)=rotateit(ICOMP,1)   ! remmeber the pending rotation
         rotateit(ICOMP,5)=rotateit(ICOMP,2)   ! and the origin of the zone
         rotateit(ICOMP,6)=rotateit(ICOMP,3)
@@ -843,7 +843,7 @@ C parent surface.  Later add logic to better place the door..
             newsurf=nsur+1
             isurf=ids
             CALL SURLEHI(isurf,XYMAX,ZMAX)  ! get width of parent
-            XOC=XYMAX-(zhasdoor(icomp,ids)+0.3)
+            XOCB=XYMAX-(zhasdoor(icomp,ids)+0.3)
             ZOC=0.0
             XW=zhasdoor(icomp,ids)
             if(ZMAX.gt.2.3)then
@@ -878,7 +878,7 @@ C section of the construction attributes.
             rsuse1='DOOR'
             rsuse2='CLOSED'
             write(rsparent,'(a)') sname(icomp,isurf)
-            call INSREC(0,iuout,ICOMP,isurf,act,XOC,ZOC,XW,ZH,
+            call INSREC(0,iuout,ICOMP,isurf,act,XOCB,ZOCB,XW,ZH,
      &        rsname,rsotf,rsmlcn,rsuse1,rsuse2,rsparent,IER)
 
 C Connection information needs to be updated.
@@ -936,7 +936,7 @@ C the parent surface as a percentage of area.
             newsurf=nsur+1
             isurf=ids
             act='sp'
-            XOC=zhasglaze(icomp,ids)
+            XOCB=zhasglaze(icomp,ids)
             ZOC=0.0
             XW=0.0
             ZH=0.0
@@ -966,7 +966,7 @@ C section of the construction attributes.
             rsuse1='C-WINDOW'
             rsuse2='CLOSED'
             write(rsparent,'(a)') sname(icomp,isurf)
-            call INSREC(0,iuout,ICOMP,isurf,act,XOC,ZOC,XW,ZH,
+            call INSREC(0,iuout,ICOMP,isurf,act,XOCB,ZOCB,XW,ZH,
      &        rsname,rsotf,rsmlcn,rsuse1,rsuse2,rsparent,IER)
 
 C Connection information needs to be updated.
@@ -1040,6 +1040,11 @@ C Next, if there are mass pairs to add make standard calls to insert them.
           call geowrite(IFIL+2,LGEOM(ICOMP),ICOMP,iuout,3,IER)
   79    continue
       endif
+
+C Predefined objects - task to decide how these might be represented
+C in meta file (if at all).
+C << work to be done >>
+
       CALL EMKCFG('-',IER)
 
 C If no errors then proceed to create constructions files. The

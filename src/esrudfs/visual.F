@@ -525,7 +525,9 @@ C Set common data (and parameters passed directly).
           hWscal=HTSCvw(ICOMP,IM)
 
 C Create image.
-          call FTV(ICOMP,IM,ISUR,ilayer,name)
+C          write(6,*) 'ICOMP,IM,ISUR,ilayer,name,frame',
+C     &      ICOMP,IM,ISUR,ilayer,name,IFRAME
+          call FTV(ICOMP,IM,ISUR,ilayer,name,IFRAME)
         endif
  10   continue
 
@@ -539,7 +541,7 @@ C ISUR    Viewing direction: 3=north, 2=east, 1=south, 4=west, 5=top, 6=bottom.
 C ilayer  Layer of CFD cells to view.
 C imgtyp  Output image type.
 
-      subroutine FTV(ICOMP,IM,ISUR,ilayer,name)
+      subroutine FTV(ICOMP,IM,ISUR,ilayer,name,IFRAME)
 #include "building.h"
 #include "cfd.h"
       
@@ -584,8 +586,20 @@ C co-ordinate system of the face under consideration.
 C Image type dependent code.
       if (imgtyp.eq.0) then
 
-C Default to screen.
-        call MAKS2d(ISUR,ilayer,name)
+C Default to screen. Pass IFRAME to figure out displayed time.
+C For first frame ask for temperature range.
+C        if(IFRAME.eq.1)then
+C          t24='30.0 0.0'
+C 204      helptopic='contaminant_scale_req'
+C          call gethelptext(helpinsub,helptopic,nbhelp)
+C          call EASKS(t24,'  ',
+C     &      'max and min Temp:',24,'50.0 0.0','scale',IER,nbhelp)
+C          K=0
+C          call EGETWR(t24,K,SCmax,0.,0.,'-','maximum',IER)
+C          call EGETWR(t24,K,SCmin,0.,0.,'-','minimum',IER)
+C          if (SCmax.lt.SCmin) goto 204
+C        endif
+        call MAKS2d(ISUR,ilayer,name,IFRAME)
 
       elseif (imgtyp.eq.1.or.imgtyp.eq.2) then 
 
@@ -686,8 +700,8 @@ C Create a X-bitmap file.
         endif
       elseif (imgtyp.eq.3) then 
 
-C Create a screen3d image
-        call MAKS3d
+C Create a screen3d image << use IFRAME >>
+        call MAKS3d(IFRAME)
       endif
 
       return

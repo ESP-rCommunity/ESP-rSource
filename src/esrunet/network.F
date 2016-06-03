@@ -1472,9 +1472,9 @@ C WORDSS array of string tokens from each NWICHNIS.
       integer iglib   ! if 1 then X11, if 2 then GTK, if 3 then text only.
 
 #ifdef OSI
-      integer iii,iix,iiy,iipx,iipy  ! for use with trackview
+      integer iii,iix,iiy  ! for use with trackview
 #else
-      integer*8 iii,iix,iiy,iipx,iipy  ! for use with trackview
+      integer*8 iii,iix,iiy  ! for use with trackview
 #endif
 
 
@@ -1515,8 +1515,7 @@ C If no mouse need to provide alternative logic requesting position.
              CALL USRMSG('Click on the control entity to copy',' ','-')
             endif
             CALL TRACKVIEW(iii,iix,iiy)
-            IIPX=iix; IIPY=iiy
-            CALL PIXEL2U(IIPX,IIPY,GX,GY)
+            CALL PIXEL2U(IIX,IIY,GX,GY)
             CGX=GX; CGY=GY
           else
             hold = ' 1.000  1.000  1.000    '
@@ -1551,9 +1550,7 @@ C Place it one the drawing area.
               if(iglib.eq.1)then
                 CALL USRMSG('Now position it on the screen',' ','-')
                 CALL TRACKVIEW(iii,iix,iiy)
-                IIPX=iix
-                IIPY=iiy
-                CALL PIXEL2U(IIPX,IIPY,GX,GY)
+                CALL PIXEL2U(IIX,IIY,GX,GY)
                 CGXC=GX
                 CGYC=GY
               else
@@ -1998,8 +1995,7 @@ C mouse click then ask for X Y Z.
         if(iglib.eq.1)then
           CALL USRMSG('Now position it on the screen',' ','-')
           CALL TRACKVIEW(iii,iix,iiy)
-          IIPX=iix; IIPY=iiy
-          CALL PIXEL2U(IIPX,IIPY,GX,GY)
+          CALL PIXEL2U(IIX,IIY,GX,GY)
           CGX=GX; CGY=GY
         else
           hold = ' 1.000  1.000  1.000    '
@@ -2102,8 +2098,7 @@ C had imode set to zero).
      &         '-')
             endif
             CALL TRACKVIEW(iii,iix,iiy)
-            IIPX=iix; IIPY=iiy
-            CALL PIXEL2U(IIPX,IIPY,GX,GY)
+            CALL PIXEL2U(IIX,IIY,GX,GY)
             CGX=GX; CGY=GY
           else
 
@@ -2201,7 +2196,6 @@ C        call NETIDATR(ier)
            CALL USRMSG('Click on the control entity to edit',' ','-')
           endif
           CALL TRACKVIEW(iii,iix,iiy)
-          IIPX=iix; IIPY=iiy
           CALL PIXEL2U(IIX,IIY,GX,GY)
           CGX=GX; CGY=GY
         else
@@ -2300,7 +2294,6 @@ C find the icon within 0.3m of this.
            CALL USRMSG('Click on the control entity to list',' ','-')
           endif
           CALL TRACKVIEW(iii,iix,iiy)
-          IIPX=iix; IIPY=iiy
           CALL PIXEL2U(IIX,IIY,GX,GY)
           CGX=GX; CGY=GY
         else
@@ -2435,9 +2428,9 @@ C associated with a flow node.
       integer iglib   ! if 1 then X11, if 2 then GTK, if 3 then text only.
 
 #ifdef OSI
-      integer iii,iix,iiy,iipx,iipy,iiwx,iiwy ! for use with trackview
+      integer iii,iix,iiy,iiwx,iiwy ! for use with trackview
 #else
-      integer*8 iii,iix,iiy,iipx,iipy,iiwx,iiwy  ! for use with trackview
+      integer*8 iii,iix,iiy,iiwx,iiwy  ! for use with trackview
 #endif
 
 C For help messages
@@ -2523,7 +2516,6 @@ C << why 0.5m here and 0.2m below? >>
      &  '(you will be asked to confirm this action).','-')
         if(iglib.eq.1)then
           CALL TRACKVIEW(iii,iix,iiy)
-          IIPX=iix; IIPY=iiy
           CALL PIXEL2U(IIX,IIY,GX,GY)
           CGX=GX; CGY=GY
         else
@@ -2608,8 +2600,7 @@ C the list of way-points for one within 0.25m in the X and Y.
      &    'what to edit.','-')
         if(iglib.eq.1)then
           CALL TRACKVIEW(iii,iiwx,iiwy)
-          IIPX=iiwx; IIPY=iiwy
-          CALL PIXEL2U(IIPX,IIPY,GX,GY)
+          CALL PIXEL2U(IIWX,IIWY,GX,GY)
           CGX=GX; CGY=GY
         else
           helptopic='position_manual'

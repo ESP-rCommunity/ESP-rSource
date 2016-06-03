@@ -196,10 +196,10 @@ C Common block for the window model.
      &     fACSetPoint, 
      &     bWindowControlFlag,
      &     iWindowControlZone,
-     &     bWindowsAreOpen,
      &     fDeltaTInttoExt,
-     &     fWindowLowSetpoint
-          
+     &     fWindowLowSetpoint,
+     &     bWindowsAreOpen
+         
 
 C     Exterior Temperature at which and below the windows could open.  
       REAL fWindowSetpoint
@@ -215,7 +215,7 @@ C     The flag which indicates the window feature is active.
 
 C     Common block variable to tell other routines that the windows are open. 
 C     (This saves processor time)
-      LOGICAL bWindowsAreOpen
+      LOGICAL bWindowsAreOpen(MCOM) !Array to store the window position for each zone
 
 C     The DeltaT that is used to detemine if cooling can be used from the outside.
 C     Thus Windows could be open when DeltaT >= Zone Temp - ExteriorTemp
@@ -234,7 +234,7 @@ C     Debug file for win.res. Note: using same unit number as hvac.res!!!
 C     get current timestep information
       CALL EDAYR(idyp,IDAYN,imonth)
       
-      if (bWindowsAreOpen) then 
+      if (bWindowsAreOpen(iWindowControlZone)) then 
          iwindowflag = 1
       else
          iwindowflag = 0  

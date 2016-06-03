@@ -291,6 +291,12 @@ C Radiance processor cores.
       integer radcores
       common/radcor/radcores
 
+C Zone fluid.
+      COMMON/zfluid/znotair(mcom),zfldK,zfldD,zfldC,zfldA,
+     &              zSWAp(mcom),zSWAf(mcom)
+      real zfldK,zfldD,zfldC,zfldA,zSWAp,zSWAf
+      LOGICAL znotair
+
       CHARACTER*72 LBSIMP,hvacfile,LFClds
 
       CHARACTER LAPROB*72
@@ -686,7 +692,6 @@ C reflect whether the standard database folder is being used.
 
 C UK SBEM database has the option of two different syntax to
 C reflect whether the standard database folder is being used.
-C      IF(ISBEM.GE.1)THEN
         if(ipathsbem.eq.0.or.ipathsbem.eq.1)then
           WRITE(IFCFG,'(2a)',IOSTAT=IOS,ERR=2) '*sbem  ',
      &      LSBEM(1:lnblnk(LSBEM))
@@ -694,7 +699,16 @@ C      IF(ISBEM.GE.1)THEN
           WRITE(IFCFG,'(2a)',IOSTAT=IOS,ERR=2) '*stdsbem  ',
      &      LSBEM(1:lnblnk(LSBEM))
         endif
-C      ENDIF
+
+C Predefined objects database has the option of two different syntax to
+C reflect whether the standard database folder is being used.
+        if(ipathpredef.eq.0.or.ipathpredef.eq.1)then
+          WRITE(IFCFG,'(2a)',IOSTAT=IOS,ERR=2) '*predef  ',
+     &      LPREDEF(1:lnblnk(LPREDEF))
+        elseif(ipathpredef.eq.2)then
+          WRITE(IFCFG,'(2a)',IOSTAT=IOS,ERR=2) '*stdpredef  ',
+     &      LPREDEF(1:lnblnk(LPREDEF))
+        endif
 
 C HVAC
       IF (ihvacflag.EQ.1)then
@@ -982,6 +996,11 @@ C and used by various facilities.
 
       WRITE(IFCFG,'(a,I4,a)',IOSTAT=IOS,ERR=2) '*year  ',
      &  IYEAR,' # assessment year'
+
+C Write standard assumptions for water in zones.
+      WRITE(IFCFG,'(a,f4.1,3f7.1,a)',IOSTAT=IOS,ERR=2) 
+     &  '*water_in_zones',zfldK,zfldD,zfldC,zfldA,
+     &  ' # water cond density spec ht shortwave abs'
 
 C If SBEM compliance checking is active write name of NCM file if
 C it is something other than UNKNOWN.
@@ -1365,8 +1384,13 @@ C Fabric portion of description.
       WRITE(IFCFG,'(I7,A)',IOSTAT=IOS,ERR=2) NCOMP,'  # no of zones'
 
       DO 920 I = 1,NCOMP
-        WRITE(IFCFG,'(A,I3,2A)',IOSTAT=IOS,ERR=2)
-     &    '*zon ',NCCODE(I),'   # reference for ',zname(I)
+        if(znotair(I))then  ! if water filled
+          WRITE(IFCFG,'(A,I3,2A)',IOSTAT=IOS,ERR=2)
+     &      '*zon ',NCCODE(I),' Water  # reference for ',zname(I)
+        else
+          WRITE(IFCFG,'(A,I3,2A)',IOSTAT=IOS,ERR=2)
+     &      '*zon ',NCCODE(I),'   # reference for ',zname(I)
+        endif
         WRITE(IFCFG,'(3A)',IOSTAT=IOS,ERR=2)
      &    '*opr ',LPROJ(I)(1:LNBLNK(LPROJ(I))),'  # schedules'
         WRITE(IFCFG,'(3A)',IOSTAT=IOS,ERR=2)

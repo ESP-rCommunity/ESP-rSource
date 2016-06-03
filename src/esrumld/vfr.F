@@ -25,6 +25,8 @@ C writes the recovered data to array GOTDAT
 
 #include "building.h"
 #include "mould.h"
+C espriou.h provides current file.
+#include "espriou.h"
       
       integer lnblnk  ! function definition
 
@@ -43,9 +45,9 @@ C writes the recovered data to array GOTDAT
       integer ncomp  ! this might clash with common c1 so revise
 
 #ifdef OSI
-      integer ipos,isize      ! for use with etlabel
+      integer ipos,isize,iix,iiy     ! for use with etlabel
 #else
-      integer*8 ipos,isize      ! for use with etlabel
+      integer*8 ipos,isize,iix,iiy      ! for use with etlabel
 #endif
 
 C For help messages
@@ -62,6 +64,7 @@ C For help messages
       CALL EASKS(FILENM,'moisture result file name ?',
      &    ' ',72,'HUMIDITY','moisture file name',IER,nbhelp)
       OPEN(23,FILE=FILENM,STATUS='OLD')
+      write(currentfile,'(a)') FILENM(1:lnblnk(FILENM))
       helptopic='option_to_plot_or_write'
       call gethelptext(helpinsub,helptopic,nbhelp)
       call easkab('Do you want to '
@@ -158,6 +161,8 @@ C re-scan the first line.
       call etlabel(txt,xmax/2+xmin/2,ymax+4.,ipos,isize)
 
    10 CONTINUE
+
+C Scan the moisture results file.
       DO 20 ICOMP=1,NAZ
         IF(ICOMP.EQ.IZ)THEN
           CALL STRIPC(23,OUTSTR,99,ITEMS,1,'relative humidity',IER)
@@ -202,8 +207,8 @@ C Check the point is within bounds
             if(TS.GT.Xmax.OR.TS.LT.Xmin) ibound=0
             if(RH.GT.Ymax.OR.RH.LT.Ymin) ibound=0            
             if(iw.eq.1.and.ibound.eq.1) then
-              call u2pixel(TS,RH,ix,iy)
-              call ecirc(ix,iy,2,0) 
+              call u2pixel(TS,RH,iix,iiy)
+              call ecirc(iix,iiy,2,0) 
             endif            
             if(iw.eq.2) WRITE(24,'(F10.5,2X,F5.1,2X,F5.1)')TIM,RH,TS
             ITS=ITS+1

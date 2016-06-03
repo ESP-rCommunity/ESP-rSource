@@ -182,9 +182,9 @@ C air flow reporting.
 
       logical CLIST,NLIST,CNLST,CRLST,OKL,dok,CTLST
 #ifdef OSI
-      integer iid1,iid2
+      integer iid1,iid2,iixx,iiyy,iik
 #else
-      integer*8 iid1,iid2
+      integer*8 iid1,iid2,iixx,iiyy,iik
 #endif
 
 C For help messages
@@ -1010,15 +1010,11 @@ C If there are no labels or some label start at first, if more than 9 exit.
           endif
 
 C Find out point where text should be drawn.
-          CALL trackview(ii,ix,iy)
-          lblpx(igrl)=ix
-          lblpy(igrl)=iy
+          CALL trackview(iik,iixx,iiyy)
+          lblpx(igrl)=int(iixx)
+          lblpy(igrl)=int(iiyy)
+          iid1=int(iixx); iid2=int(iiyy);
           t24=grlbl(igrl)
-#ifdef OSI
-          iid1=int(lblpx(igrl)); iid2=int(lblpy(igrl));
-#else
-          iid1=lblpx(igrl); iid2=lblpy(igrl);
-#endif
           call wstxpt(iid1,iid2,t24)
           dok=.true.
           CALL ASKOK('Include another user supplied label?',' ',

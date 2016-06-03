@@ -40,7 +40,7 @@ C  iCountWords: Counts the number of space/tab/comma-separated
 C           words in a string.
 
 C  isadll:  Checks if module is being used as a dll (silent running).
-C  isunix:  Checks if machine type is Unix or NT.
+C  isunix:  Checks if machine type is Unix or NT/W7.
 C  usrhome: Returns user's home directory.
 C  usrname: Returns user's login name.
 C  usrdir:  Returns user's current directory.
@@ -6647,7 +6647,7 @@ C working then try switching bweteen these options.
       subroutine runit(cmd,tg)
       common/OUTIN/IUOUT,IUIN
       character*(*) cmd,tg
-      character tmp*300,tmode*4,message*248
+      character tmp*360,tmode*4,message*248
       character dq*1
       integer system
       logical unixok

@@ -426,9 +426,7 @@ C........Electricity generated off-site
      &          ) THEN 
               fElec_net_result = fElec_net_result + PPOWOC(iPOWCO)
           ENDIF
-
         ENDIF ! < - matches if (iPOWOC .ne. iExclude_Ele_Comp) then
-
       END DO
 
 C     Store the absolute value of the energy consumption in the returned variable.

@@ -35,9 +35,10 @@ C of lines to include in the text portion of the display.
       integer ifs,itfs,imfs
       COMMON/GFONT/IFS,ITFS,IMFS
 
-      CHARACTER*72 ETEXT,GTEXT
+      CHARACTER*108 ETEXT,GTEXT
       CHARACTER*30 CLMLOC
       character PERST1*14,PERST2*44,PERST3*44
+      character minu*1,second*1,longdms*14,latdms*14
 
       integer iglib   ! if 1 then X11, if 2 then GTK, if 3 then text only.
 #ifdef OSI
@@ -52,6 +53,8 @@ C of lines to include in the text portion of the display.
 
 C If in type 8 terminal make the text display area larger before
 C displaying the following data ( but only clear it if LINES != LIMTTY)
+      minu = CHAR(39)
+      second = CHAR(34)
       if(LIMTTY.NE.LINES.AND.MMOD.EQ.8)then
         iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
         if(iglib.eq.1)then
@@ -79,20 +82,57 @@ C Setup and pass in parameters to win3d.
           continue
         endif
       endif
-      ACLAT=ABS(CLAT)
-      ACLONG=ABS(CLONG)
-      IF(CLONG.LT.0.0.AND.CLAT.GE.0.0)then
-        WRITE(ETEXT,102)CLMLOC,ACLAT,ACLONG,IYEAR
- 102    FORMAT(' Weather analysis:',1X,A30,':',F6.2,'N',F6.2,'W :',I5)
-      elseif(CLONG.GE.0.0.AND.CLAT.LT.0.0)then
-        WRITE(ETEXT,103)CLMLOC,ACLAT,ACLONG,IYEAR
- 103    FORMAT(' Weather analysis:',1X,A30,':',F6.2,'S',F6.2,'E :',I5)
-      elseif(CLONG.LT.0.0.AND.CLAT.LT.0.0)then
-        WRITE(ETEXT,104)CLMLOC,ACLAT,ACLONG,IYEAR
- 104    FORMAT(' Weather analysis:',1X,A30,':',F6.2,'S',F6.2,'W :',I5)
+
+C Get longitude in degrees minutes and seconds.
+      ILONG=INT(CLONG)                 ! integer portion of degrees
+      FRAM=abs(clong)-abs(real(ilong)) ! fraction portion of degrees
+      FRAD2=FRAM*60                    ! into minutes
+      ILONGM=INT(FRAD2)                ! integer part of minutes
+      FRAS=abs(FRAD2)-abs(real(ilongm))! fraction portion of minutes
+      FRAS2=FRAS*60                    ! seconds
+      if(clong.gt.0.0)then
+        write(longdms,'(i2,a,i2,a,f4.1,a)')
+     &    ILONG,'deg ',ILONGM,minu,FRAS2,second
       else
-        WRITE(ETEXT,101)CLMLOC,ACLAT,ACLONG,IYEAR
- 101    FORMAT(' Weather analysis:',1X,A30,':',F6.2,'N',F6.2,'E :',I5)
+        write(longdms,'(i3,a,i2,a,f4.1,a)')
+     &    ILONG,'deg',ILONGM,minu,FRAS2,second
+      endif
+
+C Get latitude in degrees minutes and seconds.
+      ILAT=INT(CLAT)                  ! integer portion of degrees
+      FRAM=abs(clat)-abs(real(ilat))  ! fraction portion of degrees
+      FRAD2=FRAM*60                   ! into minutes
+      ILATM=INT(FRAD2)                ! integer part of minutes
+      FRAS=abs(FRAD2)-abs(real(ilatm))! fraction portion of minutes
+      FRAS2=FRAS*60                   ! seconds
+      if(clat.ge.0.0)then
+        write(latdms,'(i2,a,i2,a,f4.1,a)')
+     &    ILAT,'deg ',ILATM,minu,FRAS2,second
+      else
+        write(latdms,'(i3,a,i2,a,f4.1,a)')
+     &    ILAT,'deg',ILATM,minu,FRAS2,second
+      endif
+      lnclmloc=lnblnk(clmloc)
+      IF(CLONG.LT.0.0.AND.CLAT.GE.0.0)then
+        WRITE(ETEXT,102)CLMLOC(1:lnclmloc),
+     &    CLAT,latdms,CLONG,longdms,IYEAR
+ 102    FORMAT(' Weather:',1X,A,':',
+     &    F6.2,' (',a,')N ',F6.2,' (',a,')W :',I5)
+      elseif(CLONG.GE.0.0.AND.CLAT.LT.0.0)then
+        WRITE(ETEXT,103)CLMLOC(1:lnclmloc),
+     &    CLAT,latdms,CLONG,longdms,IYEAR
+ 103    FORMAT(' Weather:',1X,A,':',
+     &    F6.2,' (',a,')S ',F6.2,' (',a,')E :',I5)
+      elseif(CLONG.LT.0.0.AND.CLAT.LT.0.0)then
+        WRITE(ETEXT,104)CLMLOC(1:lnclmloc),
+     &    CLAT,latdms,CLONG,longdms,IYEAR
+ 104    FORMAT(' Weather:',1X,A,':',
+     &    F6.2,' (',a,')S ',F6.2,' (',a,')W :',I5)
+      else
+        WRITE(ETEXT,101)CLMLOC(1:lnclmloc),
+     &    CLAT,latdms,CLONG,longdms,IYEAR
+ 101    FORMAT(' Weather:',1X,A,':',
+     &    F6.2,' (',a,')N ',F6.2,' (',a,')E :',I5)
       endif
       GTEXT=ETEXT
       if(MMOD.gt.0)then
@@ -136,9 +176,10 @@ C Display heading for weather graph.
       integer ifs,itfs,imfs
       COMMON/GFONT/IFS,ITFS,IMFS
 
-      CHARACTER*72 ETEXT,GTEXT
+      CHARACTER*96 ETEXT,GTEXT
       CHARACTER*30 CLMLOC
       character PERST1*14,PERST2*44,PERST3*44
+      character minu*1,second*1,longdms*12,latdms*12
       integer onleft  ! number of left axis
       integer onright ! number of right axis
 
@@ -153,6 +194,8 @@ C Display heading for weather graph.
       integer*8 iiw1,iiw2,iiw3,iiw4,iimenu
 #endif
 
+      minu = CHAR(39)
+      second = CHAR(34)
       IF(MMOD.EQ.8)THEN
         iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
         if(iglib.eq.1)then
@@ -255,18 +298,57 @@ C Setup and pass in parameters to win3d.
       ENDIF
       ACLAT=ABS(CLAT)
       ACLONG=ABS(CLONG)
-      IF(CLONG.LT.0.0.AND.CLAT.GE.0.0)then
-        WRITE(ETEXT,102)CLMLOC,ACLAT,ACLONG,IYEAR
- 102    FORMAT(' Weather analysis:',1X,A30,':',F6.2,'N',F6.2,'W :',I5)
-      elseif(CLONG.GE.0.0.AND.CLAT.LT.0.0)then
-        WRITE(ETEXT,103)CLMLOC,ACLAT,ACLONG,IYEAR
- 103    FORMAT(' Weather analysis:',1X,A30,':',F6.2,'S',F6.2,'E :',I5)
-      elseif(CLONG.LT.0.0.AND.CLAT.LT.0.0)then
-        WRITE(ETEXT,104)CLMLOC,ACLAT,ACLONG,IYEAR
- 104    FORMAT(' Weather analysis:',1X,A30,':',F6.2,'S',F6.2,'W :',I5)
+
+C Get longitude in degrees minutes and seconds.
+      ILONG=INT(CLONG)                 ! integer portion of degrees
+      FRAM=abs(clong)-abs(real(ilong)) ! fraction portion of degrees
+      FRAD2=FRAM*60                    ! into minutes
+      ILONGM=INT(FRAD2)                ! integer part of minutes
+      FRAS=abs(FRAD2)-abs(real(ilongm))! fraction portion of minutes
+      FRAS2=FRAS*60                    ! seconds
+      if(clong.gt.0.0)then
+        write(longdms,'(i2,a,i2,a,f4.1,a)')
+     &    ILONG,'d ',ILONGM,minu,FRAS2,second
       else
-        WRITE(ETEXT,101)CLMLOC,ACLAT,ACLONG,IYEAR
- 101    FORMAT(' Weather analysis:',1X,A30,':',F6.2,'N',F6.2,'E :',I5)
+        write(longdms,'(i3,a,i2,a,f4.1,a)')
+     &    ILONG,'d',ILONGM,minu,FRAS2,second
+      endif
+
+C Get latitude in degrees minutes and seconds.
+      ILAT=INT(CLAT)                  ! integer portion of degrees
+      FRAM=abs(clat)-abs(real(ilat))  ! fraction portion of degrees
+      FRAD2=FRAM*60                   ! into minutes
+      ILATM=INT(FRAD2)                ! integer part of minutes
+      FRAS=abs(FRAD2)-abs(real(ilatm))! fraction portion of minutes
+      FRAS2=FRAS*60                   ! seconds
+      if(clat.ge.0.0)then
+        write(latdms,'(i2,a,i2,a,f4.1,a)')
+     &    ILAT,'d ',ILATM,minu,FRAS2,second
+      else
+        write(latdms,'(i3,a,i2,a,f4.1,a)')
+     &    ILAT,'d',ILATM,minu,FRAS2,second
+      endif
+      lnclmloc=lnblnk(clmloc)
+      IF(CLONG.LT.0.0.AND.CLAT.GE.0.0)then
+        WRITE(ETEXT,102)CLMLOC(1:lnclmloc),
+     &    ACLAT,latdms,CLONG,longdms,IYEAR
+ 102    FORMAT(' Weather:',1X,A,':',
+     &    F6.2,' (',a,')N ',F6.2,' (',a,')W :',I5)
+      elseif(CLONG.GE.0.0.AND.CLAT.LT.0.0)then
+        WRITE(ETEXT,103)CLMLOC(1:lnclmloc),
+     &    ACLAT,latdms,CLONG,longdms,IYEAR
+ 103    FORMAT(' Weather:',1X,A,':',
+     &    F6.2,' (',a,')S ',F6.2,' (',a,')E :',I5)
+      elseif(CLONG.LT.0.0.AND.CLAT.LT.0.0)then
+        WRITE(ETEXT,104)CLMLOC(1:lnclmloc),
+     &    ACLAT,latdms,CLONG,longdms,IYEAR
+ 104    FORMAT(' Weather:',1X,A,':',
+     &    F6.2,' (',a,')S ',F6.2,' (',a,')W :',I5)
+      else
+        WRITE(ETEXT,101)CLMLOC(1:lnclmloc),
+     &    ACLAT,latdms,CLONG,longdms,IYEAR
+ 101    FORMAT(' Weather:',1X,A,':',
+     &    F6.2,' (',a,')N ',F6.2,' (',a,')E :',I5)
       endif
       GTEXT=ETEXT
       if(MMOD.gt.0)then

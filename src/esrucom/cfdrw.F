@@ -1088,6 +1088,7 @@ C Read in volume name, type and geometry.
             TYPE='UNKN  '
             IVOLF(IV,ICFD)=0
             IER=1
+            call edisp(itu,OUTSTR)
             call usrmsg('Did not recognise volume type:',WORD,'W')
           endif
           CALL EGETWI(OUTSTR,K,IVALS,0,NTCX,'F','I start cell',IER)
@@ -1161,6 +1162,7 @@ C Read data and match to volume with same name.
                 IVTYPE(IV,ICFD)=3
               else
                 IER=1
+                call edisp(itu,OUTSTR)
                 call usrmsg('Did not recognise BC type:',WORD,'W')
               endif
               if (ND.gt.3) then
@@ -1498,6 +1500,7 @@ C Following code not really necessary.
 
             else
               IER=1
+              call edisp(itu,OUTSTR)
               call usrmsg('Did not recognise BC type: ',WORD,'W')
             endif
           endif
@@ -2489,10 +2492,13 @@ C Passed parameters.
       COMMON/ACT/ACTCNN(MCNN)
       COMMON/CFDMFS2/MFNEWN(MNVLS,MNZ),NFNDN,NCFDOPNO(MNVLS,MNZ),
      &               NFNPDN(MNZ)
+      COMMON/MFLRES/FLW1(MCNN),FLW2(MCNN),PRES(MNOD),
+     &              RESID(MNOD),SAFLW(MNOD)
 
       character*12 LCFND,LEXND,LCOMPNT,CMNAM,NDNAM
       character LTPCMP*60,outs*124,CHECKER1*12,OPNO*10,ICFDSTR*10
       LOGICAL OK,ACTCNN
+      double precision FLW1,FLW2,PRES,RESID,SAFLW
 
 C Debug
 c      WRITE(6,*)'CFMFSU IV,IND,ICN,OPENNAM',IV,IND,ICN,OPENNAM
@@ -2557,6 +2563,7 @@ C opening
       HNOD(NNOD)=HNOD(IND)
       ITND(NNOD)=IND
       TNOD(NNOD)=TNOD(IND)
+      PRES(NNOD)=0.
 
 C Hold information about this new node in common also hold the CFD
 C opening type boundary condition that this node is representative of

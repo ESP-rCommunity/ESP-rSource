@@ -47,6 +47,7 @@ C LPRFDB,IPRODB (for event profile database)
 C LFMAT,IFMAT,LFMUL,IFMUL (for materials and constructions database)
 C ICLIM,LCLIM (for climate file)
 C LSBEM (SBEM database)
+C LPREDEF (predefined objects)
 C default file names for databases
 #include "material.h"
 #include "espriou.h"
@@ -615,6 +616,8 @@ C Set optical, mould event profiles etc. to default file names.
       ipathmsc=0
       write(LSBEM,'(a)')  DSBEM(1:lnblnk(DSBEM))  ! assign default SBEM db
       ipathsbem=0
+      write(LPREDEF,'(a)')  DPREDEF(1:lnblnk(DPREDEF))  ! assign default SBEM db
+      ipathpredef=0
 
 C Temporal information on channel IFIL+7.
       IUTDF=IFIL+7

@@ -166,6 +166,7 @@ C LFMAT,IFMAT,LFMUL,IFMUL (for materials and constructions database)
 C ICLIM,LCLIM (for climate file)
 C LSBEM (for SBEM database)
 C MCMPDBFL (Misc components)
+C LPREDEF (for predefined objects)
 C default file names for databases
 
       include "net_flow.h"
@@ -511,6 +512,17 @@ C Radiance processor cores.
       integer radcores
       common/radcor/radcores
 
+C Zone fluid.
+C  zfldK - conductivity;
+C  zfldD - density;
+C  zfldC - specific heat capacity;
+C  zflsA - total shortwave absorptivity;
+C  zSWA - shortwave absorption (W).
+      COMMON/zfluid/znotair(mcom),zfldK,zfldD,zfldC,zfldA,
+     &              zSWAp(mcom),zSWAf(mcom)
+      real zfldK,zfldD,zfldC,zfldA,zSWAp,zSWAf
+      LOGICAL znotair
+
       INTEGER IRNCMD,IRNCMF
       INTEGER ICREPORT,IDOL,IDAYNUM,IMTHNUM,IDWKNUM,IDTYY
       INTEGER iCount, jCount      !- counters
@@ -537,9 +549,9 @@ C Simulation parameters
       CHARACTER*72 LAPROB,LPNF
       character lworking*144
       CHARACTER*72 L3DCVS,L3DCNC,L3DNDC,L3DTAQ,LMOIST,LGrdSt
-      CHARACTER WORD*20,NODID*12,CXSTR*78
+      CHARACTER WORD*20,WORD2*20,NODID*12,CXSTR*78
       CHARACTER DBTAG*12,DBTASK*12,DBZN*15,DBSN*15
-      character WORD2*20,msgl2*48
+      character msgl2*48
       CHARACTER CTLDOC*248,LCTLF*72
       CHARACTER spflnam*72,lipvdatf*72
       character GTGEOM*72
@@ -634,6 +646,7 @@ C Note: escdef must come after scan of .esprc file.
       write(MCMPDBFL,'(a)') DMCMPDBFL(1:lnblnk(DMCMPDBFL))
       write(lfmould,'(a)') dmdbnam(1:lnblnk(dmdbnam))
       write(LCFCDB,'(a)') DCFCDB(1:lnblnk(DCFCDB))
+      write(LPREDEF,'(a)') DPREDEF(1:lnblnk(DPREDEF))
 
 C Clear the model common blocks.
       call clrprb
@@ -697,6 +710,9 @@ C Initialise day types
 C Wind-generated electricity
       iWndSupp = 0
       LWndSupp =' '
+
+C Water properties for water filled zones (set std values).
+      zfldK=0.6; zfldD=998.2; zfldC=4190.0; zfldA=0.0
 
 C Clear zone related files.
       do 43 i=1,MCOM
@@ -1144,6 +1160,21 @@ C        write(6,*) ' ersys ipathpcdb is ',ipathpcdb
       elseif(WORD(1:7).eq.'*stdpdb')then
         ipathpcdb=2  ! standard folder for plant template database
         CALL EGETRM(LOUTSTR,K,LPCDB,'W','plant template db',IER)
+      elseif(WORD(1:7).eq.'*predef')then
+        CALL EGETRM(LOUTSTR,K,lworking,'W','predefined obj db',IER)
+
+C Process the file name folloing *predef and depending on its path
+C set the LPREDEF common block string via call to findwhichdbpath.
+        call findwhichdbpath('pre',lworking,ier)
+
+C Debug.
+        write(6,*) lworking
+        write(6,*) lpredef
+        write(6,*) ' ersys ipathpredef is ',ipathpredef
+
+      elseif(WORD(1:10).eq.'*stdpredef')then
+        ipathpredef=2  ! standard folder for predefined objects database
+        CALL EGETRM(LOUTSTR,K,LPREDEF,'W','predefined db',IER)
       elseif(WORD(1:5).eq.'*sbem')then
 
 C Process the file name following *sbem and depending on its path
@@ -1701,6 +1732,15 @@ C user might have setup a calendar that should not be overwritten.
           CALL EDISP(IUOUT,
      &      'Simulation year and calendar mismatch rectified')
         endif
+      elseif(WORD(1:15).eq.'*water_in_zones')then
+
+C Water filled zones. Get general parameters.
+        K=16
+        CALL EGETWR(LOUTSTR,K,zfldK,0.,0.,'-','wtr cond',IER)
+        CALL EGETWR(LOUTSTR,K,zfldD,0.,0.,'-','wtr dens',IER)
+        CALL EGETWR(LOUTSTR,K,zfldC,0.,0.,'-','wtr spec ht',IER)
+        CALL EGETWR(LOUTSTR,K,zfldA,0.,0.,'-','wtr sw abs',IER)
+
       elseif(WORD(1:5).eq.'*img ')then
 
 C An image file. If this is a version 4 file then there will be
@@ -2560,7 +2600,7 @@ C Reporting.
 C Zone file names.
       icomp=0
    46 if(icfgv.eq.3.or.icfgv.eq.4)then
-        CALL STRIPC(IUC,OUTSTR,0,ND,1,'zone data',IER)
+        CALL STRIPC(IUC,OUTSTR,99,ND,1,'zone data',IER)
         IF(IER.NE.0)goto 1
         K=0
         CALL EGETW(OUTSTR,K,WORD,'W','tags',IFLAG)
@@ -2574,9 +2614,27 @@ C Zone file names.
           OK3DNDC=.FALSE.
           OK3DTAQ=.FALSE.
           icomp=icomp+1
-          K=0
-          CALL EGETWI(text,K,NCCODE(ICOMP),1,100,'W','zone index',IER)
+          K=5
+          CALL EGETWI(OUTSTR,K,NCCODE(ICOMP),1,100,'W','zone index',IER)
           IF(IER.NE.0) GOTO 1
+
+C If the line includes water or Water then set to true and also
+C set the fluid K D C A. This should reduce need to go into simulation
+C toggles to set water filled zones.
+          if(ND.gt.2)then
+            CALL EGETW(OUTSTR,K,WORD2,'W','air or water',IFLAG)
+            if(WORD2(1:5).eq.'water'.or.WORD2(1:5).eq.'Water')then
+C Debug.
+              write(6,*) 'zone ',NCCODE(ICOMP),' is water filled.'
+              znotair(icomp)=.TRUE.
+              zfldK=0.6; zfldD=998.2; zfldC=4190.0; zfldA=0.0
+              zSWAp(icomp)=0.0; zSWAf(icomp)=0.0
+            else
+              znotair(icomp)=.FALSE.  ! usual assumption of air filled
+            endif
+          else
+            znotair(icomp)=.FALSE.  ! usual assumption of air filled
+          endif
         elseif(WORD(1:4).eq.'*opr')then
           LPROJ(icomp)=text(1:72)
         elseif(WORD(1:9).eq.'*pausecas')then
@@ -3817,6 +3875,9 @@ C Local model dbs folder.
           elseif(topic(1:3).eq.'pdb')then
             ipathpcdb=1  ! local folder for plant database
             write(LPCDB,'(a)') file(1:lnwkg) ! assign directly
+          elseif(topic(1:3).eq.'pre')then
+            ipathpredef=1  ! local folder for predefined objects
+            write(lpredef,'(a)') file(1:lnwkg) ! assign directly
           elseif(topic(1:3).eq.'prs')then
             ipathapres=1  ! local folder for pressure distributions
             write(lapres,'(a)') file(1:lnwkg) ! assign directly
@@ -3854,6 +3915,9 @@ C The initial part of database path matches so save the file name w/o path.
           elseif(topic(1:3).eq.'pdb')then
             ipathpcdb=2
             write(LPCDB,'(a)')  file(lndbp+2:lnwkg)  ! without path
+          elseif(topic(1:3).eq.'pre')then
+            ipathpredef=2
+            write(lpredef,'(a)') file(lndbp+2:lnwkg)  ! without path
           elseif(topic(1:3).eq.'prs')then
             ipathapres=2
             write(lapres,'(a)') file(lndbp+2:lnwkg)  ! without path
@@ -3896,6 +3960,9 @@ C The initial part of the weather path matches save the file name w/o path.
           elseif(topic(1:3).eq.'pdb')then
             ipathpcdb=0
             write(LPCDB,'(a)')  file(1:lnwkg)  ! assign directly
+          elseif(topic(1:3).eq.'pre')then
+            ipathpredef=0
+            write(lpredef,'(a)') file(1:lnwkg)  ! assign directly
           elseif(topic(1:3).eq.'prs')then
             ipathapres=0
             write(lapres,'(a)') file(1:lnwkg)  ! assign directly
@@ -3933,6 +4000,9 @@ C The initial part of the weather path matches save the file name w/o path.
           elseif(topic(1:3).eq.'pdb')then
             ipathpcdb=1  ! local folder for plant database
             write(LPCDB,'(a)') file(1:lnwkg)   ! assign directly
+          elseif(topic(1:3).eq.'pre')then
+            ipathpredef=1  ! local folder for predefined obj database
+            write(lpredef,'(a)') file(1:lnwkg) ! assign directly
           elseif(topic(1:3).eq.'prs')then
             ipathapres=1  ! local folder for pressure database
             write(lapres,'(a)') file(1:lnwkg) ! assign directly
@@ -3968,6 +4038,9 @@ C The initial part of the weather path matches save the file name w/o path.
           elseif(topic(1:3).eq.'pdb')then
             ipathpcdb=2
             write(LPCDB,'(a)')  file(lndbp+2:lnwkg)  ! without path
+          elseif(topic(1:3).eq.'pre')then
+            ipathpredef=2
+            write(LPREDEF,'(a)')  file(lndbp+2:lnwkg)  ! without path
           elseif(topic(1:3).eq.'prs')then
             ipathapres=2
             write(lapres,'(a)') file(lndbp+2:lnwkg)  ! without path
@@ -4008,6 +4081,9 @@ C The initial part of the weather path matches save the file name w/o path.
           elseif(topic(1:3).eq.'pdb')then
             ipathpcdb=0
             write(LPCDB,'(a)')  file(1:lnwkg)  ! assign directly
+          elseif(topic(1:3).eq.'pre')then
+            ipathpredef=0
+            write(lpredef,'(a)') file(1:lnwkg)  ! assign directly
           elseif(topic(1:3).eq.'prs')then
             ipathapres=0
             write(lapres,'(a)') file(1:lnwkg)  ! assign directly
@@ -4047,6 +4123,9 @@ C        write(6,*) 'findwhichdbpath ipath is ',ipathoptdb
 C      elseif(topic(1:3).eq.'pdb')then
 C        write(6,*) LPCDB
 C        write(6,*) 'findwhichdbpath ipath is ',ipathpcdb
+C      elseif(topic(1:3).eq.'pre')then
+C        write(6,*) lpredef
+C        write(6,*) 'findwhichdbpath ipath is ',ipathpredef
 C      elseif(topic(1:3).eq.'prs')then
 C        write(6,*) lapres
 C        write(6,*) 'findwhichdbpath ipath is ',ipathapres

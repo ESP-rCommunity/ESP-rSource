@@ -1,7 +1,7 @@
 *help_text clm
 *subroutine MKBCLM
 *item MKBCLM confirm_marker_line 
-'If the ASCII file was exported from the climate'
+'If the ASCII file was exported from the weather'
 'module it will have a marker line at the start of'
 'each day. If the file does not have these markers'
 'then say no. '
@@ -15,14 +15,19 @@
 *item MKBCLM confirm_site_name
 'Site name (30 char) for descriptive purposes. '
 *enditem
-          CALL EASKS(CLMLOC,' ',' Climate site name ? ',
+          CALL EASKS(CLMLOC,' ',' Weather site name ? ',
 *item MKBCLM confirm_lat_log_diff
-'The climate latitude does not necessarily have to '
+'The weather file latitude does not necessarily have to '
 'match the site latitude.  However, the difference '
 'should not be great or simulation results may be '
 'open to question.'
+' '
+'The value for longitude is typically longitude difference'
+'from the local time meridian but some authors prefer this'
+'to be the actual monitoring station longitude. Make a'
+'note of which is applicable.'
 *enditem
-          CALL EASKR(CLAT,' ',' Climate latitude ? ',
+          CALL EASKR(CLAT,' ',' Weather latitude ? ',
 *subroutine COLTOBCLM
 *item COLTOBCLM clm_import_param
 'Weather data can be imported from column data files if'
@@ -63,14 +68,14 @@
 'for a given julian day.'
 *enditem
 *item COLTOBCLM confirm_lat_log_diff
-'The climate latitude does not necessarily have to '
+'The weather latitude does not necessarily have to '
 'match the site latitude.  However, the difference '
 'should not be great or simulation results may be '
 'open to question.'
 '  '
 'For solar radiation defined as the sum of direct and'
 'diffuse you are being asked for the ACTUAL latitude'
-'as well as the difference from the local time.'
+'as well as the difference from the local time meridian.'
 *enditem
 *item COLTOBCLM korea_met_conversion'
 'The default conversion model is based on a publication'
@@ -90,13 +95,13 @@
 'radiation value. The default method tends to give higher'
 'diffuse values. '
 ' '
-'If in doubt, create a climate file for each of the'
+'If in doubt, create a weather file for each of the'
 'methods and visually inspect the predictions.'
 ' '
 *enditem
 *subroutine MKOREANCLM
 *item MKOREANCLM confirm_lat_log_diff
-'The climate longitude does not necessarily have to '
+'The weather longitude does not necessarily have to '
 'match the site latitude.  However, the difference '
 'should not be great or simulation results may be '
 'open to question.'
@@ -125,30 +130,30 @@
 'radiation value. The default method tends to give higher'
 'diffuse values. '
 ' '
-'If in doubt, create a climate file for each of the'
+'If in doubt, create a weather file for each of the'
 'methods and visually inspect the predictions.'
 ' '
 *enditem
       call easkabc
 *subroutine CFILIN
 *item CFILIN clm_file_contents
-'A climate file holds hourly values for diffuse solar'
+'A weather file holds hourly values for diffuse solar'
 'intensity in W/m^2, dry bulb temp in tenths degrees C, '
 'direct normal or global horizontal solar intensity'
 'in W/m^2, wind speed in tenths m/s, wind direction deg'
 'from north (clockwise), and relative humidity in '
-'percent.  It also holds latitude, longitude difference'
-'from the nearest time zone and the year represented.'
+'percent.  It also holds position data and the year'
+'represented.'
 ' '
-'The normal location for climate files is:'
+'The normal location for ESP-r weather files is:'
 ' /usr/esru/esp-r/climate '
 ' '
 'and any of these files may be analysed with clm.'
 ' '
-'Climate files are either test reference years, actual'
-'climate data or synthetic data.'
+'Weather files are either test reference years, actual'
+'weather data or synthetic data.'
 *enditem
-              CALL EASKF(LCMDFL,' New climate file (esp-r binary)?',
+              CALL EASKF(LCMDFL,' New weather file (esp-r binary)?',
 *item HISCLM clm_numb_below_graph
 'If you want to see the numbers as well as the '
 'graph say yes. '
@@ -192,14 +197,14 @@
         call easki(IFREQ,' ',' Maximim height ? ',
 *item clm select_db_opt
 'The <select db> option displays a list of available '
-'climate sets.  See menu level help for more information.'
+'weather sets.  See menu level help for more information.'
 *enditem
-        CALL EASKABCD(' Climate database options:',' ',
+        CALL EASKABCD(' Weather database options:',' ',
 *item clm ok_to_clear_data
-'When reading in a new set of climate data you should'
+'When reading in a new set of weather data you should'
 'clear the current data first.'
 *enditem
-          CALL ASKOK(' As part of changing climate file do you wish',
+          CALL ASKOK(' As part of changing weather file do you wish',
 *item clm rad_change_password
 'Changing the radiation type requires a password '
 'This is available from ESRU upon request. '
@@ -219,7 +224,7 @@
 ' data (e.g. provide a maximum, minimum and a sinusodial'
 ' pattern is generated.'
 ' '
-'Transforms can change climate data by a fixed increment,'
+'Transforms can change weather data by a fixed increment,'
 ' make a fractional change or a polynomial based change'
 ' or adjust wind speeds from particular directions.'
 ' '
@@ -229,16 +234,16 @@
         CALL EASKATOG(' Creation of data via: ',' ',
 *item clm clm_export_options
 'One option is to export a text version of the esp-r'
-'climate file. The other is a tab separated file suitable'
+'weather file. The other is a tab separated file suitable'
 'for use in an SQL database.'
 *enditem
-        call easkabc(' Climate export options:',' ',
+        call easkabc(' Weather export options:',' ',
 *item clm clm_file_browse_options
 'This file will be an ASCII version of the current db.'
 'You can accept the name or browse for a new location '
 'and add in a name. '
 *enditem
-            CALL EASKF(LLASCI,' Climate file (esp-r ascii format)?',
+            CALL EASKF(LLASCI,' Weather file (esp-r ascii format)?',
 *item clm clm_export_inclusive
 'Usually you will want to export the whole period.'
 'However you can select a portion of a year to export'
@@ -247,8 +252,8 @@
         CALL ASKOK(' Export the data inclusive of',outs,OK,dok,3)
 *item clm clm_esp_or_epw
 'One option is to import and EPW format file (joint esp-r'
-'and Energy Plus climate file format) or a text version'
-'of the esp-r climate file. '
+'and Energy Plus weather file format) or a text version'
+'of the esp-r weather file. '
 ' '
 'Korean Met Office files are of two types XXXH.dat files'
 'hold hourly data, potentially for a number of years in '
@@ -261,13 +266,13 @@
 'of the columns so that the data is correctly converted.'
 ' '
 *enditem
-        CALL EASKABCD(' Climate import options:',' ',
+        CALL EASKABCD(' Weather import options:',' ',
 *item clm clm_epw_source
 'This text file is the EPW source to be read in.'
 'You can browse for the source location and then '
 'add in a name or type in the whole name. '
 *enditem
-              CALL EASKF(LLASCI,' Climate EPW file?',
+              CALL EASKF(LLASCI,' Weather EPW file?',
 *item clm clm_import_inclusive
 'Usually you will want to import the whole period.'
 'If you want to import fewer days then say no and '
@@ -279,10 +284,10 @@
 'You can browse for the source location and then '
 'add in a name or type in the whole name. '
 *enditem
-              CALL EASKF(LLASCI,' Climate ASCII file?',
+              CALL EASKF(LLASCI,' Weather ASCII file?',
 *item clm clm_also_update_site
 'When scanning an ASCII version of the ESP-r '
-'climate file you can also take any site data '
+'weather file you can also take any site data '
 'held in that file. '
 'Usually you want to update the site information.'
 *enditem
@@ -290,7 +295,7 @@
 *item clm clm_year_is_required
 'The year is required to find the day of the week '
 'for a given julian day. Korean Met off files can'
-'include several years but standard ESP-r climate'
+'include several years but standard ESP-r weather'
 'files are setup for a single year. If your data '
 'file starts on something other than 1 January '
 'then data not matching the year you request will'
@@ -300,9 +305,9 @@
 *item clm clm_site_name
 'Site name (30 char) for descriptive purposes. '
 *enditem
-          CALL EASKS(CLMLOC,' ','Climate site name ? ',
+          CALL EASKS(CLMLOC,' ','Weather site name ? ',
 *item clm clm_latitude_match
-'The climate latitude does not necessarily have to '
+'The weather latitude does not necessarily have to '
 'match the site latitude.  However, the difference '
 'should not be great or simulation results may be '
 'open to question.'
@@ -311,7 +316,7 @@
 'is the offset from the local time meridian. You will'
 'also be asked (later) about the actual longitude. '
 *enditem
-          CALL EASKR(CLAT,' ','Climate latitude ? ',
+          CALL EASKR(CLAT,' ','Weather latitude ? ',
 *item clm clm_korea_met_file_name
 'This ASCII Korean file is the source to be read in.'
 'You can browse for the source location and then'
@@ -342,7 +347,7 @@
 ' '
 'Additional note: '
 ' '
-'If you plan to import data from US DoE EPW climate files'
+'If you plan to import data from US DoE EPW weather files'
 'please read the relevant chapter in the ESP-r Cookbook.'
 ' '
 'If you plan to import data from a Korean MET file might'
@@ -353,7 +358,7 @@
 'number (typically zero) inserted. If the data item is'
 'for RH then a zero is not an appropriate number! '
 *enditem
-        CALL PHELPD('climate import',14,'climate_import',0,0,IER)
+        CALL PHELPD('weather import',14,'climate_import',0,0,IER)
 *item CLMTOT confirm_another_period
 'If you do not want to carry on just say no. '
 *enditem
@@ -411,10 +416,10 @@
         CALL EASKI(IDAY,' ',' d-o-y ? ',
 *item SELPER  period_user_defined
 'Clm periods can be user defined, months or typical'
-'periods or seasons associated with a climate db (and'
+'periods or seasons associated with a weather db (and'
 'specified in the /usr/esru/esp-r/climate/climatelist'
 'file.'
-'The year associated with a climate file can be used '
+'The year associated with a weather file can be used '
 'as the date within a problem configuration, but this '
 'is not the default. '
 *enditem
@@ -432,11 +437,11 @@
         CALL EASKS(HOLD,' ',' Start Day-of-year & time: ',
 *subroutine editemclimatelist
 *item editemclimatelist climate_list_facility
-'How to use the climate list facility: '
+'How to use the weather list facility: '
 ' '
-'Climate data resides in individual files and ESP includes'
+'Weather data resides in individual files and ESP includes'
 'a <climatelist> file which holds high level information'
-'about where climate these files are located as well as'
+'about where these files are located as well as'
 'summary information on seasons and typical periods.'
 ' '
 'This menu allows you to set the definition of seasons'
@@ -477,11 +482,11 @@
         CALL EASKS(t72,'Aide memorie for the selection list menu',' ',
 *item editemclimatelist climate_list_loc
 'This is the <installed> location of the climate file.'
-'(remember to copy new climate files to this folder)'
+'(remember to copy new weather files to this folder)'
 *enditem
-            CALL EASKF(LLASCI,' Climate file installed location?',
+            CALL EASKF(LLASCI,' Weather file installed location?',
 *item editemclimatelist climate_item_offline
-'Set to OFFLINE if climate files tend to be kept as'
+'Set to OFFLINE if weather files tend to be kept as'
 'compressed files or are held in a secure location. '
 *enditem
         call easkabc('Choices:',' ','online','offline','continue',IW,2)
@@ -512,12 +517,12 @@
 *item editemclimatelist climate_list_doc
 'The list option displays each of the lines of '
 'documentation. The initialise option creates a '
-'standard summary of the climate data. The Edit '
+'standard summary of the weather data. The Edit '
 'option is not yet enabled (save and use a text editor).'
 *enditem
         call easkabcd('Documentation options:',' ','List','Initialise',
 *item editemclimatelist climate_current_info
-'Information on the current climate file (seasons etc.)'
+'Information on the current weather file (seasons etc.)'
 'will be written to a small ASCII file which can be'
 'copied into /usr/esru/esp-r/climatelist file. '
 *enditem
@@ -536,7 +541,7 @@
 *enditem
         call easkabcd('Options:',' ','display data',
 *item PSYCHART psychrometric_useful
-'Sometimes the display of climate data on a psychrometric'
+'Sometimes the display of weather data on a psychrometric'
 'chart will reveal userful patterns. '
 *enditem
 *item PSYCHART psychrometric_min_max
@@ -551,7 +556,7 @@
         call askok('Redraw the chart to apply changes?',' ',ok,dok,1)
 *subroutine CLMSYN
 *item CLMSYN typical_week_overview
-'Typical weeks are found by scanning the climate data'
+'Typical weeks are found by scanning the weather data'
 'for a week in each season which has the least deviation'
 'in heating degree days (DD), cooling degree days, and'
 'solar radiation. '
@@ -621,8 +626,8 @@
           call askok(' continue listing?',' ',OK,dok,1)
 *subroutine CLPRED
 *item CLPRED curve_fitting_overview
-'This menu allows climate data to be changed. In order to '
-'make a change choose one of the climate parameters (direct'
+'This menu allows weather data to be changed. In order to '
+'make a change choose one of the weather parameters (direct'
 '/diffuse radiation, temperature etc.)'
  ' '
 'For curve fitting the time at which maximum'
@@ -759,13 +764,13 @@
 *enditem
           CALL ASKOK(' ','Update database?',OK,dok,3)
 *item RRITE one_day_at_a_time
-'Editing of climate data is done one day at a time.'
+'Editing of weather data is done one day at a time.'
 'If you want to continue editing a different day '
 'say yes. '
 *enditem
         CALL ASKOK(' ','Continue with another period?',OK,dok,3)
 *item RRITE edit_hourly_menu
-'This menu allows climatic data for each hour of a day to'
+'This menu allows weather data for each hour of a day to'
 'be edited. Edit by selecting an item or -Exit to escape.'
 *enditem
         CALL PHELPD('clm data edit',2,'-',0,0,IER)
@@ -784,16 +789,17 @@
 *item SITEDIT what_is_descr
 'This description (<=30 char) is used in reporting.'
 *enditem
-      CALL EASKS(T30,' ',' Climate site name ? ',
+      CALL EASKS(T30,' ',' Weather site name ? ',
 *item SITEDIT what_is_latitude
-'The climate latitude does not necessarily have to match'
+'The weather latitude does not necessarily have to match'
 'the site latitude, however, the difference should not be'
 'great or simulation results may be open to question.'
 *enditem
-      CALL EASKR(CLAT,' ',' Climate latitude ? ',
+      CALL EASKR(CLAT,' ',' Weather latitude ? ',
 *item SITEDIT what_is_long_diff
-'The climate longitude difference does not necessarily'
-'have to match the site, however, it should be'
-'close for best results.'
+'The weather longitude either the longitude difference from time'
+'meridian +east or its actual longitude does not necessarily have'
+'to match the model site, however, it should be close for best'
+'results. Make a note of which longitude you are using.'
 *enditem
 

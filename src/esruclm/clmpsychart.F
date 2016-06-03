@@ -103,16 +103,16 @@ C      write(6,*)'x x ',xmin,xmax,enthmax,enthminx,enthminy,enthmaxy
       ACLAT=ABS(CLAT)
       ACLONG=ABS(CLONG)
       IF(CLONG.LT.0.0.AND.CLAT.GE.0.0)then
-        WRITE(ETEXT,102)CLMLOC,ACLAT,ACLONG,IYEAR
+        WRITE(ETEXT,102)CLMLOC,ACLAT,CLONG,IYEAR
  102    FORMAT(' Weather analysis:',1X,A30,':',F6.2,'N',F6.2,'W :',I5)
       elseif(CLONG.GE.0.0.AND.CLAT.LT.0.0)then
-        WRITE(ETEXT,103)CLMLOC,ACLAT,ACLONG,IYEAR
+        WRITE(ETEXT,103)CLMLOC,ACLAT,CLONG,IYEAR
  103    FORMAT(' Weather analysis:',1X,A30,':',F6.2,'S',F6.2,'E :',I5)
       elseif(CLONG.LT.0.0.AND.CLAT.LT.0.0)then
-        WRITE(ETEXT,104)CLMLOC,ACLAT,ACLONG,IYEAR
+        WRITE(ETEXT,104)CLMLOC,ACLAT,CLONG,IYEAR
  104    FORMAT(' Weather analysis:',1X,A30,':',F6.2,'S',F6.2,'W :',I5)
       else
-        WRITE(ETEXT,101)CLMLOC,ACLAT,ACLONG,IYEAR
+        WRITE(ETEXT,101)CLMLOC,ACLAT,CLONG,IYEAR
  101    FORMAT(' Weather analysis:',1X,A30,':',F6.2,'N',F6.2,'E :',I5)
       endif
       GTEXT=ETEXT

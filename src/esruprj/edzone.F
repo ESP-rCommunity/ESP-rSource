@@ -465,6 +465,9 @@ C NEWZONE controls the creation of a new zone. IER=0 OK.
 #include "material.h"
       
       integer lnblnk  ! function definition
+      integer itrc    ! trace level
+      integer ic      ! index of zone to create
+      integer ier     ! non-zero return is error
 
       COMMON/FILEP/IFIL
       COMMON/OUTIN/IUOUT,IUIN
@@ -478,13 +481,23 @@ C NEWZONE controls the creation of a new zone. IER=0 OK.
       integer icascf
       common/cctl/icascf(mcom)
 
-      CHARACTER*72 LTMP,DFILE
+      CHARACTER LTMP*72
       CHARACTER OUTSTR*124,ctldoc*248,LCTLF*72
+      CHARACTER DFILE*72,CFILE*72,OFILE*72
       character sfile*72,snpfile*72,fs*1,outs*124
 
       LOGICAL OK,DOK,XST,OKC,unixok
       logical newgeo  ! to use for testing if new/old geometry file.
       logical altered ! to signal change in boundary conditions of added existing zone.
+
+C Predefined entity variables.
+      character name*12   ! the object name to pass to PREDEFEMBED
+      character prec*1    ! character to pre-pend to names
+      character hold*36   ! for dialog
+      character objmenu*32 !menu for selected object
+      character ZN*12,zd*64
+      real objbb(3)
+      character predef*144,temp*12
 
 C For help messages
       character helpinsub*24 ! subroutine name
@@ -505,9 +518,9 @@ C Set folder separator (fs) to \ or / as required.
 
  293  helptopic='zone_source_files'
       call gethelptext(helpinsub,helptopic,nbhelp)
-      CALL EASKABCD(' ','New zone options:','input dimensions',
+      CALL EASKATOG('New zone options: ',' :','input dimensions',
      &  'load existing (ESP-r)','load existing (cflow3 zip)',
-     &  'cancel',INZOPT,nbhelp)
+     &  'use pre-defined entity','cancel',' ',' ',INZOPT,nbhelp)
 
 C Input dimensions.
       if(INZOPT.eq.1)then
@@ -628,43 +641,31 @@ C the connections list, then remind user to double check topology.
             write(outs,'(3a)') 'Note: ',SNAME(NCOMP,icc),
      &        ' is a EXTERIOR connection which will be used.'
             call edisp(iuout,outs)
-            ICT(ICCC)=0
-            IC2(ICCC)=0
-            IE2(ICCC)=0
+            ICT(ICCC)=0; IC2(ICCC)=0; IE2(ICCC)=0
           elseif(SOTHER(icc,1)(1:7).eq.'SIMILAR')then
             write(outs,'(3a)') 'Note: ',SNAME(NCOMP,icc),
      &        ' is a SIMILAR connection which will be used.'
             call edisp(iuout,outs)
-            ICT(ICCC)=1
-            IC2(ICCC)=0
-            IE2(ICCC)=0
+            ICT(ICCC)=1; IC2(ICCC)=0; IE2(ICCC)=0
           elseif(SOTHER(icc,1)(1:9).eq.'ADIABATIC')then
-            ICT(ICCC)=5
-            IC2(ICCC)=0
-            IE2(ICCC)=0
+            ICT(ICCC)=5; IC2(ICCC)=0; IE2(ICCC)=0
           elseif(SOTHER(icc,1)(1:8).eq.'CONSTANT')then
             write(outs,'(3a)') 'Note: ',SNAME(NCOMP,icc),
      &    ' was a CONSTANT connection. Confirm its surface attributes.'
             call edisp(iuout,outs)
             SOTHER(icc,1)='UNKNOWN'
-            ICT(ICCC)=-1
-            IC2(ICCC)=0
-            IE2(ICCC)=0
+            ICT(ICCC)=-1; IC2(ICCC)=0; IE2(ICCC)=0
           elseif(SOTHER(icc,1)(1:6).eq.'GROUND')then
             write(outs,'(3a)') 'Note: ',SNAME(NCOMP,icc),
      &      ' was a GROUND connection. Confirm its surface attributes.'
             call edisp(iuout,outs)
             SOTHER(icc,1)='UNKNOWN'
-            ICT(ICCC)=-1
-            IC2(ICCC)=0
-            IE2(ICCC)=0
+            ICT(ICCC)=-1; IC2(ICCC)=0; IE2(ICCC)=0
           elseif(SOTHER(icc,1)(1:7).eq.'UNKNOWN')then
             write(outs,'(3a)') 'Note: ',SNAME(NCOMP,icc),
      &    ' has an undefined boundary. Confirm its surface attributes.'
             call edisp(iuout,outs)
-            ICT(ICCC)=-1
-            IC2(ICCC)=0
-            IE2(ICCC)=0
+            ICT(ICCC)=-1; IC2(ICCC)=0; IE2(ICCC)=0
           elseif(SOTHER(icc,1)(1:7).eq.'ANOTHER')then
 
 C Existing partitions in an imported zone are reset to UNKNOWN.
@@ -672,9 +673,7 @@ C Existing partitions in an imported zone are reset to UNKNOWN.
      &        ' was a partition. Confirm its surface attributes.'
             call edisp(iuout,outs)
             SOTHER(icc,1)='UNKNOWN'
-            ICT(ICCC)=-1
-            IC2(ICCC)=0
-            IE2(ICCC)=0
+            ICT(ICCC)=-1; IC2(ICCC)=0; IE2(ICCC)=0
             altered = .true.   ! will need to write out geometry
           else
 
@@ -909,7 +908,149 @@ C Scan zip file and update control and connections.
           IF(OK)GOTO 396
         ENDIF
 
-      elseif(INZOPT.EQ.4)then
+      elseif(INZOPT.eq.4)then
+
+C Predefined entities. We are looking for zone type entries such
+C as plant components or portions of buildings.
+C NOTE: If creating a new zone then we do not have to
+C invert any of the surfaces. If the entity bounding surfaces
+C are to be shared with another zone then they need to be
+C inverted. Currently, assume that the user will manually import.
+        call choosepredef(name,objmenu,objbb,ier)
+        if(ier.eq.2)then
+          goto 293    ! nothing selected
+        elseif(ier.eq.1)then
+          call usrmsg('Predefined objects not found or the file',
+     &                'was corrupt','W')
+          goto 293
+        endif
+
+        write(predef,'(a)') lpredef(1:96)
+
+C Code bits from SCRZONE.
+C If newer model cfg file ensure version 1.1 geometry file created. 
+        if(icfgv.lt.4)then
+          newgeo=.false.  ! assume older format geometry.
+        else
+          newgeo=.true.   ! set to newer format
+          gversion(ic)=1.1
+        endif
+
+C Set folder separator (fs) to \ or / as required.
+        call isunix(unixok)
+        if(unixok)then
+          fs = char(47)
+        else
+          fs = char(92)
+        endif
+
+C Establish name of the zone. Base this on the predefined entity.
+        write(ZN,'(a)') name
+ 42     helptopic='zone_name'
+        call gethelptext(helpinsub,helptopic,nbhelp)
+        CALL EASKS(ZN,'Zone description?','(<12 chars, no spaces)',
+     &    12,'New zone','zone name',IER,nbhelp)
+        IF(ZN.eq.' '.or.ier.ne.0)goto 42
+        call st2name(ZN,zname(IC))
+        lnzname(ic)=lnblnk(zname(IC))  ! update this string length.
+
+        write(zd,'(3a)') zname(IC)(1:lnzname(IC)),' ',objmenu
+ 43     CALL EASKS(zd,'What does it represent?','(<64 characters)',
+     &    64,'no description entered','zone descr',IER,nbhelp)
+        IF(zd.eq.' '.or.ier.ne.0)goto 43
+        zdesc(IC)=zd
+        lnzdesc(IC)=lnblnk(zd)  ! update the length of this string.
+
+C Initial guesses for related zone files.
+        if(zonepth(1:2).eq.'  '.or.zonepth(1:2).eq.'./')then
+          WRITE(DFILE,'(2a)') zname(IC)(1:lnzname(IC)),'.geo'
+          WRITE(CFILE,'(2a)') zname(IC)(1:lnzname(IC)),'.con'
+          WRITE(OFILE,'(2a)') zname(IC)(1:lnzname(IC)),'.opr'
+        else
+          WRITE(DFILE,'(4a)') zonepth(1:lnblnk(zonepth)),fs,
+     &      zname(IC)(1:lnzname(IC)),'.geo'
+          WRITE(CFILE,'(4a)') zonepth(1:lnblnk(zonepth)),fs,
+     &      zname(IC)(1:lnzname(IC)),'.con'
+          WRITE(OFILE,'(4a)') zonepth(1:lnblnk(zonepth)),fs,
+     &      zname(IC)(1:lnzname(IC)),'.opr'
+        endif
+        LGEOM(IC)=DFILE
+        LTHRM(IC)=CFILE
+        LPROJ(IC)=OFILE
+        NTV=0            ! clear geometry prior to import
+        NZTV(ic)=NTV
+        NSUR=0
+        NZSUR(IC)=NSUR
+        IUZBASEA(ic)=0
+        IBASES(IC,1)=0
+        iZBFLG(IC)=0
+        nbvis(ic)=0      ! what else needs to be cleared?
+
+C As a new zone establish what the next available connection is.
+        ICCC=NCON   ! connection number of the first object surface
+        ICCC=ICCC+1
+        IC1(ICCC)=IC
+        IE1(ICCC)=1
+        IZSTOCN(ic,1)=ICCC
+
+C Ask where to place it (get new origin) and then use GB1
+C to temporarily draw it.
+ 422    call edisp(iuout,'  ')
+        write(outs,'(3a)')'bounding box of ',objmenu,' is.'
+        call edisp(iuout,outs)
+        write(outs,'(3f7.3,a)') objbb(1),objbb(2),objbb(3),' XYZm'
+        call edisp(iuout,outs)
+        VALR=0.
+        CALL EASKR(VALR,' Object rotation (+ = anticlockwise)',
+     &    'around its lower left corner:',
+     &    -359.0,'W',359.0,'W',0.0,'rotation',IER,nbhelp)
+        hold = ' 0.000  0.000  0.000    '
+        CALL EASKS(HOLD,'Place object origin @ (X Y Z metres)',
+     &    'i.e. within the room: ',
+     &    36,' 0. 0. 0.','transforms XYZ',IER,nbhelp)
+        K=0
+        CALL EGETWR(HOLD,K,DX,-99.,99.,'W','X tr',IER)
+        CALL EGETWR(HOLD,K,DY,-99.,99.,'W','Y tr',IER)
+        CALL EGETWR(HOLD,K,DZ,-99.,99.,'W','Z tr',IER)
+        CALL CNVBLK(DX,DY,DZ,objbb(1),objbb(2),objbb(3),VALR)
+
+C Peview the bounding box of the object via DRWBB.
+        write(temp,'(A)')name
+        call drwbb(temp,ier)
+
+        CALL EASKABC('Options for predefined object: ',' ',
+     &    'apply transform and merge','revise transform','cancel',
+     &    IW,nbhelp)
+        if (IW.eq.1) then
+
+C Ask for single character to prepend to copied associated entities.
+C Then used predefembed to read in the predefined into the model.
+          CALL EASKABCD(' Character to pre-pend to copied entities:',
+     &      ' ',' a ',' b ',' c ',' d ',IBOPT,nbhelp)
+          if(ibopt.eq.1)prec='a'
+          if(ibopt.eq.2)prec='b'
+          if(ibopt.eq.3)prec='c'
+          if(ibopt.eq.4)prec='d'
+          call PREDEFEMBED(IFIL+2,predef,IC,DX,DY,DZ,VALR,name,
+     &      prec,IER)
+        elseif (IW.eq.2) then
+          goto 422   ! test another location
+        elseif (IW.eq.3) then
+          continue
+        endif
+
+C Signal that the wireframe image needs to be redrawn.
+        MODIFYVIEW=.TRUE.; MODLEN=.TRUE.; MODBND=.TRUE.
+
+C As surfaces added save the model cfd and cnn files.
+        CALL EMKCFG('-',IER)
+
+C Present message about what to do next.
+        helptopic='after_predef_warning'
+        call gethelptext(helpinsub,helptopic,nbhelp)
+        CALL PHELPD('predef popup',nbhelp,'-',0,0,IER)
+
+      elseif(INZOPT.EQ.5)then
         ier = -3  ! signal user cancel
         return
       endif

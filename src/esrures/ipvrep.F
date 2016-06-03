@@ -135,6 +135,7 @@ C Remember the initial periods.
       jiav=IAV
       pvok=.false.
       dmdsok=.false.
+      itru = icout
 
 C Make up a single quote for IPV
       sq = char(39)

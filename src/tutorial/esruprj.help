@@ -3366,7 +3366,7 @@ C         CALL EASKR(cm(ndx+6),' ',' Aux sensor "fraction ON"? ',
         CALL ASKOK(outs,' ',OK,DOK,2)
         CALL PHELPD('Model context',30,'-',0,0,IER)
         CALL EASKR(SLAT,' ','Site latitude?',
-        CALL EASKR(SLON,' ','Longitude difference?',
+        CALL EASKR(SLON,' ','Longitude difference from meridian?',
 *item EDSITE site_exposure_options
 'The site exposure defines the relative view factors between a'
 'vertical surface and the sky (S), ground (G) and surrounding'
@@ -3784,8 +3784,9 @@ C         CALL EASKR(cm(ndx+6),' ',' Aux sensor "fraction ON"? ',
       CALL EASKS(HOLD,' Temperatures July-December:',' ',72,' ',
 *subroutine EDDSHD
 *item EDDSHD reflect_site_change
-'Shading should be recalculated when site latitude or longitude'
-'changes. Each affected zone will be done in turn. Do all zones'
+'Shading should be recalculated when the model site latitude or'
+'longitude difference from the local time meridian changes. Each'
+'affected zone will be done in turn. Do all zones'
 'if you start the process.'
 *enditem
       CALL EASKABC(' Reflect site change in shading options:',' ',
@@ -6496,6 +6497,63 @@ C         CALL EASKR(cm(ndx+6),' ',' Aux sensor "fraction ON"? ',
         CALL EASKXORGTKF(LCOPY,'Plant templates db?',' ',
         CALL ASKOK('Is this file in the model ../dbs folder?',
         CALL EASKF(LCOPY,' ','Plant templates db?',
+*subroutine EDDBPREDEF
+*item EDDBPREDEF pre_db_edit_menu
+'The predefined objects database is an ASCII file which holds'
+'descriptions of furniture, fittings, zonal based environmental'
+'system components and facade elements which can be inserted into'
+'ESP-r models.'
+' '
+'Predefined objects for furniture can hold visual attributes'
+'(to be passed of Radiance) as well as back-to-back surfaces'
+'which represent the thermal mass. These are intended to be'
+'inserted into existing thermal zones after which they take a'
+'full part in the thermal and/or visual assessment.'
+' '
+'An environmental component, such as a thermostat, becomes'
+'a zonal representation including the mass of the circuit'
+'board, explicit sensor and casing. This zone-in-a-zone interacts'
+'with the occupied space zone.'
+' '
+'A predefined facade element would be inserted into a zone as'
+'a collection of surfaces, optionally with visual blocks to'
+'represent the depth of the framing.'
+' '
+'Currently predefined objects are created as ESP-r zones and'
+'then converted into a block of text to be manually inserted'
+'into the predefined.db1 file. Examples can be found in the'
+'models/validation/DSM/predef folder.'
+' '
+'In this menu you can list the contents of existing predefined'
+'objects, scan and convert existing ESP-r geometry files into'
+'the blocks of text to be inserted (further editing is required).' 
+' '
+'The following options can be selected:'
+' '
+'a) If the file exists than you can browse the database. '
+'   (Editing is not yet available you have manually edit)'
+' '
+'b) select from list: you confirm a common file name and it will'
+'   be associated with the model.'
+' '
+'c) select from files in model ../dbs folder : you confirm name and'
+'   it will be associated with the model.'
+' '
+'d) copy default database: a project copy of the default'
+'   database will be made and you will be offered a chance to'
+'   rename it.  The suggested name will be based on the model'
+'   root name.'
+' '
+'e) copy a file from common: a project copy of a common file'
+'   will be made and you will be offered a chance to rename'
+'   it (based on the model root name).'
+' '
+'f) Convert a ESP-r geometry file into an block of text which'
+'   you can further edit and insert into the predefined database.'
+' '
+'g) Preview the contents of a predefined object allows you to view'
+'   an object along with its primary attributes.'
+*enditem
 *subroutine EDDBPROFILE
 *item EDDBPROFILE events_db_manage
 '   Events Database '
@@ -6775,12 +6833,14 @@ C         CALL EASKR(cm(ndx+6),' ',' Aux sensor "fraction ON"? ',
 '   the current computer.'
 ' '
 'g) convert an EPW file (which has been check as per the'
-'   EPW_readme instructions) to an esp-r binary climate file.'
+'   EPW_readme instructions) to an esp-r binary weather file.'
 '  '
-'After conversion you are asked to confirm the climate latitude'
-'and longitude difference as well as the climate year. Typically'
-'you should be using a climate location which is close to the'
-'site of your building.'
+'After conversion you are asked to confirm the weather file latitude'
+'and longitude (this is often stated as the difference in degrees'
+'from the local time meridian but some weather file sources are in'
+'actual longitude) as well as the climate year. The weather file'
+'documentation should make the longitude value clear. Typically one'
+'would use a weather file which is close to the site of your building.'
 '  '
 'The year associated with a model primarily tells the simulator'
 'what day of the week is 1 January. '
@@ -9819,6 +9879,19 @@ For the purposes of ESP-r, the use of WIS is focused on the'
  396    CALL EASKS(LTMP,' ',OUTSTR,72,DFILE,'zip file',IER,3)
         CALL ASKOK('Zip file not found!','Try again?',OK,
         CALL ASKOK('Problem scanning CAD file!',
+*item NEWZONE after_predef_warning
+'After importing a predefined zone object its bounding surfaces'
+'will have been set to indicate not-defined-yet. Please use either'
+'the surface attribute facility to set the boundary conditions or'
+'request a topology check to set the boundary conditions.'
+' '
+'Next double check the composition of the surfaces in the new zone'
+'to ensure they are appropriate.'
+' '
+'Check the documentation for the predefined object to see if it'
+'suggests other post-processing tasks. There may be additional'
+'predefined objects that should be used for multi-zone entities.' 
+*enditem
 *subroutine DELZONE
 *item DELZONE zone_delete_warning
 '                  - W A R N I N G - '
@@ -10652,7 +10725,7 @@ For the purposes of ESP-r, the use of WIS is focused on the'
 '-4.1 for Glasgow (relative to the Greenwich Meridian).'
 *enditem
         CALL EASKR(SLAT,' ','Site latitude?',
-        CALL EASKR(SLON,' ','Longitude difference?',
+        CALL EASKR(SLON,' ','Longitude difference from meridian?',
 *item pregist cfg_model_year
 'The assessment year is required for event scheduling.(e.g.'
 'to determine which day of the week is 1 January. You can'
@@ -15830,7 +15903,7 @@ C          CALL EASKS(LTMP,' Pressure coefficients database?',
 ' shading - if selected will duplicate and then update'
 '   existing shading files e.g. a change in site.'
 ' '
-' climate data & latitude/longitude - finds dependencies'
+' weather data & latitude/longitude - finds dependencies'
 '   associated with such changes (ground temps, shading,'
 '   IPV) and updates the model accordingly.'
 ' '

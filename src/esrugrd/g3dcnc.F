@@ -792,9 +792,9 @@ C *********************************************************************
 
       COMMON/GR3D06/INDXSS(MSSZ),INDXSE(MSEZ),INDXEE(MEEZ),INDXEC(MECZ)
       COMMON/GR3D34/ISFCRN(MCZ,3),IVXCRN(MCZ)
-      COMMON/GR3D35/NDXC(MEZ),DXC(MEZ,MZE)
-      COMMON/GR3D36/NDYC(MEZ),DYC(MEZ,MZE)
-      COMMON/GR3D37/NDZC(MEZ),DZC(MEZ,MZE)
+      COMMON/GR3D35/NDXC(MEZ),DXCV(MEZ,MZE)
+      COMMON/GR3D36/NDYC(MEZ),DYCV(MEZ,MZE)
+      COMMON/GR3D37/NDZC(MEZ),DZCV(MEZ,MZE)
       COMMON/GR3D38/ITPCRN(MCZ,MZE,MZE,MZE)
       COMMON/GR3D66/NUMEC,IBDYEC(MECZ,2),IVRTEC(MECZ)
       COMMON/GR3D80/NNDS,NCNV,IR,ND1
@@ -822,7 +822,7 @@ C And if matarrayindex is zero then resetn dbcon dbden dbsht.
           DBSHT=matdbsht(matarrayindex)
         endif
 
-        VL=DZC(ICR,IDZ)*DYC(ICR,IY)*DXC(ICR,IX)
+        VL=DZCV(ICR,IDZ)*DYCV(ICR,IY)*DXCV(ICR,IX)
         VOLML=VOLML+VL
         DNHCL=DNHCL+DBDEN*DBSHT*VL
         CNDCL=CNDCL+CND*VL
@@ -831,15 +831,15 @@ C And if matarrayindex is zero then resetn dbcon dbden dbsht.
       CNDCL=CNDCL/VOLML
       Z2=0.
       DO 20 IDZ=1,NDZC(ICR)
-        Z2=Z2+DZC(ICR,IDZ)
+        Z2=Z2+DZCV(ICR,IDZ)
    20 CONTINUE
         Y2=0.
       DO 30 IY=1,NDYC(ICR)
-        Y2=Y2+DYC(ICR,IY)
+        Y2=Y2+DYCV(ICR,IY)
    30 CONTINUE
         X2=0.
       DO 40 IX=1,NDXC(ICR)
-        X2=X2+DXC(ICR,IX)
+        X2=X2+DXCV(ICR,IX)
    40 CONTINUE
 
 C Create the three massless nodes and their connections with outside.
@@ -937,9 +937,9 @@ C *********************************************************************
 
       COMMON/GR3D06/INDXSS(MSSZ),INDXSE(MSEZ),INDXEE(MEEZ),INDXEC(MECZ)
       COMMON/GR3D34/ISFCRN(MCZ,3),IVXCRN(MCZ)
-      COMMON/GR3D35/NDXC(MEZ),DXC(MEZ,MZE)
-      COMMON/GR3D36/NDYC(MEZ),DYC(MEZ,MZE)
-      COMMON/GR3D37/NDZC(MEZ),DZC(MEZ,MZE)
+      COMMON/GR3D35/NDXC(MEZ),DXCV(MEZ,MZE)
+      COMMON/GR3D36/NDYC(MEZ),DYCV(MEZ,MZE)
+      COMMON/GR3D37/NDZC(MEZ),DZCV(MEZ,MZE)
       COMMON/GR3D38/ITPCRN(MCZ,MZE,MZE,MZE)
       COMMON/GR3D66/NUMEC,IBDYEC(MECZ,2),IVRTEC(MECZ)
       COMMON/GR3D80/NNDS,NCNV,IR,ND1
@@ -957,19 +957,19 @@ C *********************************************************************
       Z2=0.
       DO 10 IL=1,NTZ
         Z1=Z2
-        Z2=Z2+DZC(ICR,IL)
+        Z2=Z2+DZCV(ICR,IL)
         DISZ=(Z1+Z2)/2.
         DELZ=Z2-Z1
         Y2=0.
       DO 10 IY=1,NTY
         Y1=Y2
-        Y2=Y2+DYC(ICR,IY)
+        Y2=Y2+DYCV(ICR,IY)
         DISY=(Y1+Y2)/2.
         DELY=Y2-Y1
         X2=0.
       DO 10 IX=1,NTX
         X1=X2
-        X2=X2+DXC(ICR,IX)
+        X2=X2+DXCV(ICR,IX)
         DISX=(X1+X2)/2.
         DELX=X2-X1
         IEL=ITPCRN(ICR,IX,IY,IL)
@@ -989,7 +989,7 @@ C Create the control volume and node.
         NCNV=NCNV+1
         NNDS=NNDS+1
         ND1=NNDS
-        VOLM=DXC(ICR,IX)*DYC(ICR,IY)*DZC(ICR,IL)
+        VOLM=DXCV(ICR,IX)*DYCV(ICR,IY)*DZCV(ICR,IL)
         DNHT=DEN*SHT
         WRITE(ICVS,REC=NCNV,ERR=1)NNDS,VOLM,DNHT,ISP1,ICR
         WRITE(INDC,REC=NNDS,ERR=2)GLBX,GLBY,GLBZ

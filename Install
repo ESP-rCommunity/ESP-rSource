@@ -462,6 +462,7 @@ if [ "$platform" = "auto-detect" ]; then
       [ "$architecture" != "MINGW32_NT-5.0" ] &&
       [ "$architecture" != "MINGW32_NT-5.2" ] &&
       [ "$architecture" != "MINGW32_NT-6.1" ] &&
+      [ "$architecture" != "MINGW64_NT-6.1" ] &&
       [ "$architecture" != "MSYS_NT-6.1" ] &&
       [ "$architecture" != "Darwin" ] &&
       [ "$architecture" != "SunOS" ]; then
@@ -575,7 +576,7 @@ if [ "$platform" = "auto-detect" ]; then
    case $architecture in
       Linux)                           platform="linux";;
       CYGWIN_NT-5.2  | CYGWIN_NT-5.1  | CYGWIN_NT-5.0  | CYGWIN_NT-6.0 | CYGWIN_NT-6.1 | CYGWIN_NT-6.1-WOW64 ) platform="cygwin";;
-      MINGW32_NT-6.1 | MINGW32_NT-5.2 | MINGW32_NT-5.1 | MINGW32_NT-5.0 | MSYS_NT-6.1 ) platform="mingw";;
+      MINGW64_NT-6.1 |MINGW32_NT-6.1 | MINGW32_NT-5.2 | MINGW32_NT-5.1 | MINGW32_NT-5.0 | MSYS_NT-6.1 ) platform="mingw";;
       Darwin)                          platform="mac";;
       SunOS)                           platform="sun";;
    esac
@@ -1139,18 +1140,18 @@ case $platform in
           i386)    fDefType="-DSUN";;
         esac;;
    linux) case $machine in
-          i386)    fDefType="-DLIN";;
-          i686)    fDefType="-DLIN";;
-          x86_64)  fDefType="-DLIN";;
-          armv6l)  fDefType="-DLIN";;
-          armv7l)  fDefType="-DLIN";;
+          i386)    fDefType="-DLIN -O1";;
+          i686)    fDefType="-DLIN -O1";;
+          x86_64)  fDefType="-DLIN -O1";;
+          armv6l)  fDefType="-DLIN -O1";;
+          armv7l)  fDefType="-DLIN -O1";;
         esac;;
-   cygwin)     fDefType="-DCYGW";;
+   cygwin)     fDefType="-DCYGW -O1";;
    mac) case $machine in
           i386)    fDefType="-DOSX -DOSI -DLIN -m32";;
-          x86_64)  fDefType="-DOSX -DLIN -m64";;
+          x86_64)  fDefType="-DOSX -DLIN -O1 -m64";;
         esac;;
-   mingw)      fDefType="-DMINGW";;
+   mingw)      fDefType="-DMINGW -O1";;
 esac
 
 # Append -DX11 flag as necessary
@@ -1734,6 +1735,7 @@ echo -n "${VersioningScheme})..."
  if [ "${VersioningScheme}" == "git" ]; then
    
       # Add code here.
+      versioned_repository="yes"
       echo " "
    
  fi 

@@ -33,6 +33,8 @@ C      MZSHDO
 C      MZGREF
 C      PPGREF
 C      MZSCTL
+C      MZOCTL - optical control function executive
+C      OCL01  - set optical controls
 
 C ******************** MZSOLR ********************
 C MZSOLR initiates the computation of the solar gains impinging
@@ -398,6 +400,7 @@ C zone fluid solar absorptions at the present and future time
 C rows respectively.
       COMMON/zfluid/znotair(mcom),zfldK,zfldD,zfldC,zfldA,
      &              zSWAp(mcom),zSWAf(mcom)
+      real zfldK,zfldD,zfldC,zfldA,zSWAp,zSWAf
       logical znotair
 
 C.....DECLARATIONS for H3Kreporting object
@@ -4485,3 +4488,90 @@ C End of all the bidirectional control options
       endif
       return
       END
+
+C ******************** MZOCTL
+
+C The main optical control function executive.
+
+      SUBROUTINE MZOCTL(icomp)
+#include "building.h"
+#include "control.h"
+
+      COMMON/OPTCTL/ICFO,IDTYPO,IPERO
+      common/simtim/ihrp,ihrf,idyp,idyf,idwp,idwf,nsinc,its
+      common/caleni/nbdaytype,nbcaldays(MDTY),icalender(365)
+      common/btime/btimep,btimef
+      INTEGER NBDAYTYPE,NBCALDAYS,ICALENDER,NIN
+      integer N,iday,IFUNC
+      logical inPeriod
+
+C Control functions active at present.
+      ICFO=ICOMP
+      ipero=0  ! clear value prior to test
+      
+C If number of optical control day types are 0 then
+C same control on all day types.
+      N=NOCDT(ICFO) ! number of day types
+      iday=idyp
+      if(ihrp.eq.24)iday=idyf
+      if(N.eq.1)then ! All daytypes
+        IDTYPO=1
+      elseif(N.eq.0)then ! Follow calendar days
+        IDTYPO=ICALENDER(IDAY)
+      endif
+
+      n=nocdp(icfo,idtypo)
+      inPeriod=.false.
+      do 30 i=n,1,-1
+        if(.not.inPeriod.and.btimef.ge.tocps(icfo,idtypo,i))then
+          ipero=i
+          inPeriod=.true.
+        endif
+   30 continue
+C Debug.
+C      if(ipero.gt.0.and.IDTYPO.gt.0)then
+C        write(6,*) 'MZOCTL ',IDTYPO,ipero,n,inPeriod,
+C     &    IOCLAW(ICFO,IDTYPO,IPERO)
+C       endif
+
+C If there is an optical control period then invoke the control logic.
+      if(ipero.gt.0.and.IDTYPO.gt.0)then
+        IFUNC=IABS(IOCLAW(ICFO,IDTYPO,ipero))
+        CtlLaw: select case (IFUNC) 
+        case (1) 
+          call OCL01(icomp)
+        end select CtlLaw
+      endif
+
+      return
+      end
+
+C ******************** OCL01
+C Set optical controls defined in (ahem?) constructions files on or off
+C This is done by setting the flag IBCMDT=1 or 0
+      SUBROUTINE OCL01(icomp)
+#include "building.h"
+#include "control.h"
+
+      COMMON/OPTCTL/ICFO,IDTYPO,IPERO
+      COMMON/TMCB1/IBCMT(MCOM,MTMC)
+      COMMON/PREC9/NCONST(MCOM),NELTS(MCOM,MS),NGAPS(MCOM,MS),
+     &             NPGAP(MCOM,MS,MGP)
+      COMMON/PRECTC/ITMCFL(MCOM,MS),TMCT(MCOM,MTMC,5),
+     &       TMCA(MCOM,MTMC,ME,5),TMCREF(MCOM,MTMC),TVTR(MCOM,MTMC)
+      integer NC,ISON
+      
+      ISON=nint(OMISCD(ICFO,IDTYPO,IPERO,2))
+      NC=NCONST(ICOMP)
+      Do 1 I=1,NC
+        ITMC=ITMCFL(ICOMP,I)
+        if(ITMC.gt.0)then
+          IBCMT(ICOMP,ITMC)=ISON
+C Debug.
+C          write(6,*) 'OCL01 icomp,i,itmc,ison,IDTYPO,IPERO'
+C          write(6,*) icomp,i,itmc,ison,IDTYPO,IPERO
+        endif
+ 1    continue
+    
+      return
+      end

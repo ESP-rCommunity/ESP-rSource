@@ -727,8 +727,9 @@ C Ask for site position.
      &    -89.9,'W',89.9,'W',55.9,'site latitude',IER,nbhelp)
         IF(IER.EQ.0)sitelat=SLAT
 
-        CALL EASKR(SLON,' ','Longitude difference?',
-     &    -15.0,'W',15.0,'W',-4.1,'longitude difference',IER,nbhelp)
+        CALL EASKR(SLON,
+     &   'Longitude difference from local time meridian (east +ve)?',
+     &   ':',-15.0,'W',15.0,'W',-4.1,'longitude difference',IER,nbhelp)
         IF(IER.EQ.0)sitelongdif=SLON
 
 C Ask for year, initialise and then print out the calendar if the
