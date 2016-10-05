@@ -201,16 +201,16 @@ C Check if pervasive sensors are present
 
 C Check if grid charging of storage heaters is scheduled
               if(DBTASK(itd1)(1:7).eq.'CTRLCAP')then
-		do 801 itd3=1,ncomp
-		  if(DBZN(itd1)(1:12).eq.zname(itd3)(1:12))then
-		    do 802 itd4=1,ndata
-		      iln=lnblnk(tag(itd4))
-		      if(tag(itd4)(1:iln).eq.dbtag(itd1)(1:iln))then
+                do 801 itd3=1,ncomp
+                  if(DBZN(itd1)(1:12).eq.zname(itd3)(1:12))then
+                    do 802 itd4=1,ndata
+                      iln=lnblnk(tag(itd4))
+                      if(tag(itd4)(1:iln).eq.dbtag(itd1)(1:iln))then
                         IStorageHeater(itd3)=ITD4
                       endif
- 802		    continue
-		  endif
- 801		continue	     
+ 802                continue
+                  endif
+ 801            continue     
               endif
 
 C Check if temporal item association is to a control loop. Loop through each
@@ -224,12 +224,21 @@ C << note that isetptt should be dimensioned MCF >>
                     if(DBTASK(ITD1)(1:6).eq.'SETPTT')then
 
 C Search instances in temporal file to find match(s).
-                      DO 81 itd4=1,NDATA
+                      DO itd4=1,NDATA
                         IF(TAG(itd4)(1:lnblnk(TAG(itd4))).EQ.
      &                    DBTAG(itd1)(1:lnblnk(DBTAG(itd1))))THEN
                           ISETPTT(itd3)=itd4
                         ENDIF
-  81                  CONTINUE
+                      ENDDO
+                    elseif(DBTASK(ITD1)(1:8).eq.'HTCLSETP')then
+
+C Search instances in temporal file to find match(s).
+                      DO itd4=1,NDATA
+                        IF(TAG(itd4)(1:lnblnk(TAG(itd4))).EQ.
+     &                    DBTAG(itd1)(1:lnblnk(DBTAG(itd1))))THEN
+                          IHTCLSETP(itd3)=itd4
+                        ENDIF
+                      ENDDO
                     endif
                   endif
   80            continue
@@ -241,6 +250,7 @@ C            write(6,*)'ISETPTT',ISETPTT
 C            write(6,*)'ICASUAL',ICASUAL
 C            write(6,*)'ICASUAL3',ICASUAL3
 C            write(6,*)'ICTLSTA',ICTLSTA
+C            write(6,*)'IHTCLSETP',IHTCLSETP
 
           endif
         endif
@@ -1079,7 +1089,7 @@ C espriou.h provides current file.
 
       CHARACTER*72 AFIL,tdaide
       CHARACTER act*1
-      CHARACTER outs*124
+      CHARACTER outs*144
       character outstr*248,LOUTSTR*1000,WORD*20,TMP*4,tail*8,msgl2*86
       integer ier
       real toler  ! what is half of the timestep

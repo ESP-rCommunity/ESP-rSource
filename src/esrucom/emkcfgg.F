@@ -50,6 +50,8 @@ C LPRFDB,IPRODB (for event profile database)
 C LFMAT,IFMAT,LFMUL,IFMUL (for materials and constructions database)
 C ICLIM,LCLIM (for climate file)
 #include "schedule.h"
+#include "plant.h"
+#include "power.h"
       INTEGER, PARAMETER :: MSTMC=20
       
       integer lnblnk  ! function definition
@@ -97,8 +99,7 @@ C Initial view.
 
 C Special materials file flag
       common/spmfxst/ispmxist,spflnam
-      common/entfile/entflnam,ientxist
-      INTEGER :: ispmxist,ientxist
+      INTEGER :: ispmxist
 
       COMMON/AFN/IAIRN,LAPROB,ICAAS(MCOM)
       INTEGER :: iairn,icaas
@@ -243,7 +244,7 @@ C Generic databases from esprdbfile.h.
       CHARACTER*72 LGDCVS,LGDCNC,LGDNDC,LGDNDD,LGDTAQ,LGRD1D,LNLTHP
       CHARACTER*72 L3DCVS,L3DCNC,L3DNDC,L3DTAQ,LMOIST,LGrdSt
       CHARACTER ctldoc*248,LCTLF*72,H*72
-      CHARACTER spflnam*72,entflnam*72
+      CHARACTER spflnam*72
       character GTGEOM*72,LCFD*72,DCNN*72
       CHARACTER DBTAG*12,DBTASK*12,DBZN*15,indxcmt*24,DBSN*15
       character*10 wkd1, wkd2

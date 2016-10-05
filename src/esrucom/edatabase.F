@@ -1043,10 +1043,12 @@ C based on contents of material.h. Should work for mlcver 0 and 1.
       CHARACTER SOPT*12,GDESCR*36
       integer lnmlcn,lnmlco,lnother
       CHARACTER layertp*9
+      real kgpm2(me),tkgpm2   ! weight per m2 of layer and total for constr
 
       real RSI  ! used in reporting of R value in SI units
       
 C Pick up general description of the composite.
+      tkgpm2=0.0
       lnmlcn=lnblnk(mlcname(ifoc))
       lnmlco=lnblnk(mlcoptical(ifoc))
       isymindex=matsymindex(ifoc)
@@ -1205,11 +1207,11 @@ C Reporting based on report level.
         CALL EDISP(ITRU,' ')
         write(OUTSTR,'(2a)')
      &' Layer|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu|',
-     &' R    |Description'
+     &' R    | Kg |Description'
         CALL EDISP(ITRU,OUTSTR)
         write(OUTSTR,'(2a)')
      &'      |(mm)  |tivity |       |heat  |emis|abs  |resis|',
-     &'m^2K/W'
+     &'m^2K/W| m^2|'
         CALL EDISP(ITRU,OUTSTR)
       ELSEIF(ITRC.EQ.1)THEN
         CALL EDISP(ITRU,' ')
@@ -1228,15 +1230,18 @@ C reset dbcon dbden dbsht andinclude the R values in the display.
         if(matopaq(matarrayindex)(1:1).eq.'g'.or.
      &     matopaq(matarrayindex)(1:1).eq.'h'.or.
      &     matarrayindex.eq.0)then
+C          RT=1.0   ! to prevent divide by zero later
           DBCON=0.0; DBDEN=0.0; DBSHT=0.0 
           E=0.99; A=0.99; DRV=1.0
-
+          kgpm2(il)=1.225*DTHK(IFOC,IL)
+          tkgpm2=tkgpm2+kgpm2(il)
           WRITE(PNAM(IL),'(A,3F5.2)')'air ',(DRAIR(IFOC,IL,IY),IY=1,3)
           RT=RT+DRAIR(IFOC,IL,1)
           RSI=DRAIR(IFOC,IL,1)
         elseif(matarrayindex.lt.0)then
 
 C Referenced item was not in the materials hash list. Write zeros.
+          RT=1.0   ! to prevent divide by zero later
           DBCON=0.0
           DBDEN=0.0
           DBSHT=0.0
@@ -1252,6 +1257,8 @@ C Referenced item was not in the materials hash list. Write zeros.
           E=matdbine(matarrayindex)
           A=matdbina(matarrayindex)
           DRV=matdbdrv(matarrayindex)
+          kgpm2(il)=DBDEN*DTHK(IFOC,IL)
+          tkgpm2=tkgpm2+kgpm2(il)
 
 C Make up PNAM as combination of matnam and matdoc.
           lnam=lnblnk(matname(matarrayindex))
@@ -1279,19 +1286,19 @@ C Reporting.
           lnlist = MIN0(LNBLNK(PNAM(IL)),82)    ! space left for doc
           if(LAYERS(IFOC).eq.1)then 
             WRITE(OUTSTR,24)IL,DTHK(IFOC,IL)*1000.0,
-     &              DBCON,DBDEN,DBSHT,E,A,DRV,RSI,PNAM(IL)(1:lnlist)
+     &        DBCON,DBDEN,DBSHT,E,A,DRV,RSI,kgpm2(il),PNAM(IL)(1:lnlist)
           elseif(LAYERS(IFOC).ge.2.and.IL.eq.1)then 
             WRITE(OUTSTR,25)' Ext ',DTHK(IFOC,IL)*1000.0,
-     &              DBCON,DBDEN,DBSHT,E,A,DRV,RSI,PNAM(IL)(1:lnlist)
+     &        DBCON,DBDEN,DBSHT,E,A,DRV,RSI,kgpm2(il),PNAM(IL)(1:lnlist)
           elseif(LAYERS(IFOC).ge.2.and.IL.eq.LAYERS(IFOC))then 
             WRITE(OUTSTR,25)' Int ',DTHK(IFOC,IL)*1000.0,
-     &              DBCON,DBDEN,DBSHT,E,A,DRV,RSI,PNAM(IL)(1:lnlist)
+     &        DBCON,DBDEN,DBSHT,E,A,DRV,RSI,kgpm2(il),PNAM(IL)(1:lnlist)
           else 
             WRITE(OUTSTR,24)IL,DTHK(IFOC,IL)*1000.0,
-     &              DBCON,DBDEN,DBSHT,E,A,DRV,RSI,PNAM(IL)(1:lnlist)
+     &        DBCON,DBDEN,DBSHT,E,A,DRV,RSI,kgpm2(il),PNAM(IL)(1:lnlist)
           endif
-  24      FORMAT(I5,F7.1,F10.3,F7.0,F7.0,F5.2,F5.2,F7.0,F6.2,1X,A)
-  25      FORMAT(A5,F7.1,F10.3,F7.0,F7.0,F5.2,F5.2,F7.0,F6.2,1X,A)
+  24      FORMAT(I5,F7.1,F10.3,F7.0,F7.0,F5.2,F5.2,F7.0,F6.2,F6.1,1X,A)
+  25      FORMAT(A5,F7.1,F10.3,F7.0,F7.0,F5.2,F5.2,F7.0,F6.2,F6.1,1X,A)
           CALL EDISP(ITRU,OUTSTR)
         ELSEIF(ITRC.EQ.1)THEN
 
@@ -1324,9 +1331,12 @@ C 0.10 inside upward flow and 0.17 inside downward flow.
         IF(ITRC.NE.0)call edisp(itru,OUTSTR)
 
 C Include admittance calculations (use TM33 Table 4.5 values for admittance calcs)
-C If in verbose mode, otherwise ignore.
+C If in verbose mode, otherwise ignore. Also report kg/m^2 for the construction.
 C << NOTE this code needs further debugging.
         if(ITRC.gt.1)then
+          write(OUTSTR,'(A,F7.2)') 
+     &      ' Weight per m^2 of this construction',tkgpm2
+          call edisp(itru,OUTSTR)
           Rsi=0.12
           Rso=0.06
           call ADMIT(ITRU,IFOC,Rsi,Rso)

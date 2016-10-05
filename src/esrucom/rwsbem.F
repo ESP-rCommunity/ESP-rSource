@@ -472,7 +472,8 @@ C 1) days which have (at least some) lighting
 C 2) hours of year with non-zero equipment
 C 3) summation of hourly equipment fraction
 c 4) days which have (at least some) equipment
-C 5) local manual switching flag, (if 1 then local manual switching does not apply to this activity)
+C 5) local manual switching flag, (if 1 then local manual switching does
+C    not apply to this activity)
       DO 130 ICBTP=1,NCBTP
         CALL STRIPC1K(IUF,LOUTSTR,0,ND,1,'Activity types',IER)
         lnbl=lnblnk(LOUTSTR)  ! remember how long the line is
@@ -1191,7 +1192,9 @@ C Check if there is a special case for which the stripped building has been
 C configured with the rules of the notional building. This is normally
 C just for DSM testing requirements. 
       call stripc(iuf,outstr,99,nd,1,'special flag',ier)
-      if(outstr(1:12).eq.'*dsm_testing')then !this is not flexible, so the flag needs to exist exactly here
+
+C This is not flexible, so the flag needs to exist exactly here.
+      if(outstr(1:12).eq.'*dsm_testing')then
         K=0
         CALL EGETW(OUTSTR,K,WORD,'W','skip flag',IER)
         CALL EGETWI(OUTSTR,K,iDsmTestingFlag,0,2,'-','DSM flag',IER)

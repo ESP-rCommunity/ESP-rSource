@@ -151,6 +151,8 @@ C      common/aim2def/iAIM2,LAIM2
 #include "building.h"
 #include "model.h"
 #include "site.h"
+#include "plant.h"
+#include "power.h"
 
 C geometry.h provides commons G0/G1/G2/prec2/precz/c20.
 #include "geometry.h"
@@ -164,6 +166,7 @@ C LFMAT,IFMAT,LFMUL,IFMUL (for materials and constructions database)
 C ICLIM,LCLIM (for climate file)
 C LSBEM (for SBEM database)
 C MCMPDBFL (Misc components)
+C LPREDEF (for predefined objects)
 C default file names for databases
 
       include "net_flow.h"
@@ -255,11 +258,12 @@ C IZSTOCN - for each zone:surface a pointer to connection index.
       COMMON/MFLOW1/NNOD,NCMP,NCNN
       INTEGER :: NNOD,NCMP,NCNN
       COMMON/MFLOW2/NDNAM(0:MNOD)
-      COMMON/NWKSTR/NWKNAM,NWKDSC,NWKFLNAM,NWKTYPSTR(MNWKTYP)
+      COMMON/NWKSTR/NWKNAM,NWKDSC,NWKTYPSTR(MNWKTYP)
+      CHARACTER NWKNAM*72,NWKDSC*72,NWKTYPSTR*12
 
 C Defaults for some of the obscure files.
       COMMON/DEFLT3/DFCFD,DECMPDBFL,DICONDBFL
-      character*72 DFCFD,DECMPDBFL,DICONDBFL
+      character DFCFD*72,DECMPDBFL*72,DICONDBFL*72
 
 C DBTAG (12 char) tag of temporal entity associated with model.
 C DBTASK (12 char) the type of temporal entity (which determines what
@@ -303,10 +307,9 @@ C Initial view.
       REAL :: angi,EYEMI,VIEWMI
       INTEGER :: initvt
 
-C Special materials & electrical network files.
+C Special materials file.
       common/spmfxst/ispmxist,spflnam
-      common/entfile/entflnam, ientxist
-      INTEGER :: ispmxist,ientxist
+      INTEGER :: ispmxist
 
 C Non-linear thermophysical properties.
       COMMON/VTHP18/LNLTHP
@@ -479,6 +482,15 @@ C Residential hydrogen cogen: control file
                                 !- controller inputs
 C H2-dep_controller: end
 
+C Renewable energy system (elec) control file
+C Input file information
+      common/reselecctl/ireselecctl,reselecflnam
+      integer ireselecctl       !- flag indicating that file required by renewable energy
+                                !- system controller is specified
+      character*72 reselecflnam !- name of file containing renewable energy system
+                                !- controller inputs
+C RES (elec): end
+
 C Flag for multi-year simulation definition
       logical bMY_sim_sps
 
@@ -495,7 +507,21 @@ C 'simulation toggles' menu.
 C iSlr_half_hr_flg value = 0 :hour-centered; =1 : half-hour centered.
       common/CWEC_SOL/iSlr_half_hr_flg
       integer iSlr_half_hr_flg,idty
-      
+
+C Radiance processor cores.
+      integer radcores
+      common/radcor/radcores
+
+C Zone fluid.
+C  zfldK - conductivity;
+C  zfldD - density;
+C  zfldC - specific heat capacity;
+C  zflsA - total shortwave absorptivity;
+C  zSWA - shortwave absorption (W).
+      COMMON/zfluid/znotair(mcom),zfldK,zfldD,zfldC,zfldA,
+     &              zSWAp(mcom),zSWAf(mcom)
+      real zfldK,zfldD,zfldC,zfldA,zSWAp,zSWAf
+      LOGICAL znotair
 
       INTEGER IRNCMD,IRNCMF
       INTEGER ICREPORT,IDOL,IDAYNUM,IMTHNUM,IDWKNUM,IDTYY
@@ -523,11 +549,11 @@ C Simulation parameters
       CHARACTER*72 LAPROB,LPNF
       character lworking*144
       CHARACTER*72 L3DCVS,L3DCNC,L3DNDC,L3DTAQ,LMOIST,LGrdSt
-      CHARACTER WORD*20,NODID*12,CXSTR*78
+      CHARACTER WORD*20,WORD2*20,NODID*12,CXSTR*78
       CHARACTER DBTAG*12,DBTASK*12,DBZN*15,DBSN*15
-      character WORD2*20,msgl2*48
+      character msgl2*48
       CHARACTER CTLDOC*248,LCTLF*72
-      CHARACTER spflnam*72,entflnam*72,lipvdatf*72
+      CHARACTER spflnam*72,lipvdatf*72
       character GTGEOM*72
       CHARACTER ectime*24,wkd1*10,wkd2*10,naco*40,type*4
       character*10 wkday(7)
@@ -541,8 +567,7 @@ C Simulation parameters
       character limgpth*24,ldocpth*24,lcfgroot*32,lpath*72
       character path*72,lupath*72
       character namez*12,namen*12
-      CHARACTER*72 NWKNAM,NWKDSC,NWKFLNAM
-      character NWKTYPSTR*12,bidirfile*72,bidirname*12
+      character bidirfile*72,bidirname*12
       CHARACTER CONTMNAM*12,CNTMDESC*124,cntmfil*72
       character calename*32,calentag*12,calendayname*32
       character LWndSupp*72
@@ -555,12 +580,13 @@ C Simulation parameters
       logical unixok  ! to check for database path file separators
       integer itru    ! unit for output
       integer iflag   ! for error traps
-      
+      integer loop    ! for looping     
       INTEGER :: id1,id2,id3,id4,icon,icomp,icc,i,ia,ibrowse,ierv
       INTEGER :: im1,im2,im3,im4,iier,irec,ipos,ios,inod,inisz,igrdp
       INTEGER :: irva,is,iset_start,k,kv,iwarn,j,iv,iva,iunit,iunit1,lc
       INTEGER :: itwpr,itrunc,iss,isva,istat,n,m,items,lastcc
       INTEGER :: lcfgl,lcfgr,louts,ncn,nd
+      real    :: vp1,vp2,vp3,vp4,vp5  ! for ies control points
 
 #ifdef OSI
       integer iincomp,iincon  ! to pass nb zones connections to c code
@@ -620,6 +646,7 @@ C Note: escdef must come after scan of .esprc file.
       write(MCMPDBFL,'(a)') DMCMPDBFL(1:lnblnk(DMCMPDBFL))
       write(lfmould,'(a)') dmdbnam(1:lnblnk(dmdbnam))
       write(LCFCDB,'(a)') DCFCDB(1:lnblnk(DCFCDB))
+      write(LPREDEF,'(a)') DPREDEF(1:lnblnk(DPREDEF))
 
 C Clear the model common blocks.
       call clrprb
@@ -684,7 +711,10 @@ C Wind-generated electricity
       iWndSupp = 0
       LWndSupp =' '
 
-C Clear zone related files. << patch for clearing ipausecas >>
+C Water properties for water filled zones (set std values).
+      zfldK=0.6; zfldD=998.2; zfldC=4190.0; zfldA=0.0
+
+C Clear zone related files.
       do 43 i=1,MCOM
         ipausecas(i)=0  ! unmark pause to re-scan zone operation file
         continue
@@ -837,6 +867,63 @@ C embedded in the configuration file.
           CALL EGETRM(OUTSTR,K,bsmpth,'W','path to BASESIMP',IER)
           IF(IER.NE.0)goto 1
           goto 34
+        elseif(WORD(1:8).eq.'*radcore')then
+          CALL EGETWI(OUTSTR,K,radcores,1,4,'F','radiance cores',IER)
+          IF(IER.NE.0)goto 1
+          goto 34
+        elseif(WORD(1:4).eq.'*ies')then
+
+C IES data to pass to radiance. Read until *endies. Currently 10 entities
+C are supported.
+          CALL EGETWI(OUTSTR,K,nbofies,1,10,'F','IES entries',IER)
+          IF(IER.NE.0)goto 1
+          loop=0
+  335     CALL STRIPC(IUC,OUTSTR,99,ND,1,'IES tag data',IER)
+          K=0
+          CALL EGETW(OUTSTR,K,WORD,'W','IES header tags',IFLAG)
+          if(WORD(1:8).eq.'*nameies')then
+            loop=loop+1    ! increment loop
+            CALL EGETW(OUTSTR,K,iesname(loop),'W','IES name',IFLAG)
+            CALL EGETRM(OUTSTR,K,iesmenu(loop),'W','IES menu',IER)
+          elseif(WORD(1:7).eq.'*iesraw')then
+            CALL EGETRM(OUTSTR,K,iesfile(loop),'W','IES file',IER)
+          elseif(WORD(1:8).eq.'*fixture')then
+            CALL EGETWR(OUTSTR,K,ieslen(loop),0.,0.,'-','IESlen',IER)
+            CALL EGETWR(OUTSTR,K,ieswid(loop),0.,0.,'-','IESwid',IER)
+            CALL EGETWR(OUTSTR,K,iesht(loop),0.,0.,'-','IESht',IER)
+            CALL EGETW(OUTSTR,K,iesalong(loop),'W','along axs',IFLAG)
+          elseif(WORD(1:7).eq.'*ctlies')then
+            CALL EGETWI(OUTSTR,K,iespercents(loop),1,5,'F',
+     &        'nb ies pc',IER)
+            vp1=0.0; vp2=0.0; vp3=0.0; vp4=0.0; vp5=0.0
+            if(iespercents(loop).eq.1)then
+              CALL EGETWR(OUTSTR,K,vp1,0.,1.,'-','IES step 1',IER)
+            elseif(iespercents(loop).eq.2)then
+              CALL EGETWR(OUTSTR,K,vp1,0.,1.,'-','IES step 1',IER)
+              CALL EGETWR(OUTSTR,K,vp2,0.,1.,'-','IES step 2',IER)
+            elseif(iespercents(loop).eq.3)then
+              CALL EGETWR(OUTSTR,K,vp1,0.,1.,'-','IES step 1',IER)
+              CALL EGETWR(OUTSTR,K,vp2,0.,1.,'-','IES step 2',IER)
+              CALL EGETWR(OUTSTR,K,vp3,0.,1.,'-','IES step 3',IER)
+            elseif(iespercents(loop).eq.4)then
+              CALL EGETWR(OUTSTR,K,vp1,0.,1.,'-','IES step 1',IER)
+              CALL EGETWR(OUTSTR,K,vp2,0.,1.,'-','IES step 2',IER)
+              CALL EGETWR(OUTSTR,K,vp3,0.,1.,'-','IES step 3',IER)
+              CALL EGETWR(OUTSTR,K,vp4,0.,1.,'-','IES step 4',IER)
+            elseif(iespercents(loop).eq.5)then
+              CALL EGETWR(OUTSTR,K,vp1,0.,1.,'-','IES step 1',IER)
+              CALL EGETWR(OUTSTR,K,vp2,0.,1.,'-','IES step 2',IER)
+              CALL EGETWR(OUTSTR,K,vp3,0.,1.,'-','IES step 3',IER)
+              CALL EGETWR(OUTSTR,K,vp4,0.,1.,'-','IES step 4',IER)
+              CALL EGETWR(OUTSTR,K,vp5,0.,1.,'-','IES step 5',IER)
+            endif
+            iessteps(loop,1)=vp1; iessteps(loop,2)=vp2
+            iessteps(loop,3)=vp3; iessteps(loop,4)=vp4
+            iessteps(loop,5)=vp5
+          elseif(WORD(1:7).eq.'*endies')then
+            goto 34   ! read another tag
+          endif
+          goto 335    ! read more ies data lines
         elseif(WORD(1:5).eq.'*indx')then
           CALL EGETWI(OUTSTR,K,INDCFG,0,3,'F','config index',IER)
           IF(IER.NE.0)goto 1
@@ -1073,6 +1160,21 @@ C        write(6,*) ' ersys ipathpcdb is ',ipathpcdb
       elseif(WORD(1:7).eq.'*stdpdb')then
         ipathpcdb=2  ! standard folder for plant template database
         CALL EGETRM(LOUTSTR,K,LPCDB,'W','plant template db',IER)
+      elseif(WORD(1:7).eq.'*predef')then
+        CALL EGETRM(LOUTSTR,K,lworking,'W','predefined obj db',IER)
+
+C Process the file name folloing *predef and depending on its path
+C set the LPREDEF common block string via call to findwhichdbpath.
+        call findwhichdbpath('pre',lworking,ier)
+
+C Debug.
+        write(6,*) lworking
+        write(6,*) lpredef
+        write(6,*) ' ersys ipathpredef is ',ipathpredef
+
+      elseif(WORD(1:10).eq.'*stdpredef')then
+        ipathpredef=2  ! standard folder for predefined objects database
+        CALL EGETRM(LOUTSTR,K,LPREDEF,'W','predefined db',IER)
       elseif(WORD(1:5).eq.'*sbem')then
 
 C Process the file name following *sbem and depending on its path
@@ -1441,9 +1543,6 @@ C There is a calendar of day types defined read its name.
 
 C For each day of the year read from the 365 indicies into the
 C icalender array.
-C << how about allowing 1 day type - that would be the case
-C << for a hosptal that was used 365 days a year.
-
           CALL EGETWI(OUTSTR,K,NBDAYTYPE,3,MDTY,'W','day types',IER)
           CALL EGETWIA(IUC,IRCC,365,0,10,'W','calendar day types',IER)
           DO 118 KV=1,365
@@ -1633,6 +1732,15 @@ C user might have setup a calendar that should not be overwritten.
           CALL EDISP(IUOUT,
      &      'Simulation year and calendar mismatch rectified')
         endif
+      elseif(WORD(1:15).eq.'*water_in_zones')then
+
+C Water filled zones. Get general parameters.
+        K=16
+        CALL EGETWR(LOUTSTR,K,zfldK,0.,0.,'-','wtr cond',IER)
+        CALL EGETWR(LOUTSTR,K,zfldD,0.,0.,'-','wtr dens',IER)
+        CALL EGETWR(LOUTSTR,K,zfldC,0.,0.,'-','wtr spec ht',IER)
+        CALL EGETWR(LOUTSTR,K,zfldA,0.,0.,'-','wtr sw abs',IER)
+
       elseif(WORD(1:5).eq.'*img ')then
 
 C An image file. If this is a version 4 file then there will be
@@ -1942,6 +2050,13 @@ C back out when when the cfg file is saved, but
 C we won't do anything else at present.
         CALL EGETRM(LOUTSTR,K,resh2flnam,'W','res h2 ctl',IER)
         iresh2ctl = 1
+
+      elseif(WORD(1:6).eq.'*resel')then
+
+C Renewable energy system (elec) controller control file
+C The RES (elec) system controller code is experimental. 
+        CALL EGETRM(LOUTSTR,K,reselecflnam,'W','res elec ctl',IER)
+        ireselecctl = 1
 
       elseif(WORD(1:4).eq.'*tdf')then
 
@@ -2485,7 +2600,7 @@ C Reporting.
 C Zone file names.
       icomp=0
    46 if(icfgv.eq.3.or.icfgv.eq.4)then
-        CALL STRIPC(IUC,OUTSTR,0,ND,1,'zone data',IER)
+        CALL STRIPC(IUC,OUTSTR,99,ND,1,'zone data',IER)
         IF(IER.NE.0)goto 1
         K=0
         CALL EGETW(OUTSTR,K,WORD,'W','tags',IFLAG)
@@ -2499,15 +2614,33 @@ C Zone file names.
           OK3DNDC=.FALSE.
           OK3DTAQ=.FALSE.
           icomp=icomp+1
-          K=0
-          CALL EGETWI(text,K,NCCODE(ICOMP),1,100,'W','zone index',IER)
+          K=5
+          CALL EGETWI(OUTSTR,K,NCCODE(ICOMP),1,100,'W','zone index',IER)
           IF(IER.NE.0) GOTO 1
+
+C If the line includes water or Water then set to true and also
+C set the fluid K D C A. This should reduce need to go into simulation
+C toggles to set water filled zones.
+          if(ND.gt.2)then
+            CALL EGETW(OUTSTR,K,WORD2,'W','air or water',IFLAG)
+            if(WORD2(1:5).eq.'water'.or.WORD2(1:5).eq.'Water')then
+C Debug.
+              write(6,*) 'zone ',NCCODE(ICOMP),' is water filled.'
+              znotair(icomp)=.TRUE.
+              zfldK=0.6; zfldD=998.2; zfldC=4190.0; zfldA=0.0
+              zSWAp(icomp)=0.0; zSWAf(icomp)=0.0
+            else
+              znotair(icomp)=.FALSE.  ! usual assumption of air filled
+            endif
+          else
+            znotair(icomp)=.FALSE.  ! usual assumption of air filled
+          endif
         elseif(WORD(1:4).eq.'*opr')then
           LPROJ(icomp)=text(1:72)
         elseif(WORD(1:9).eq.'*pausecas')then
 
-C << Patch for flag to pause assessment at each timestep to allow
-C << for a zone casual gain to be adapted. No impact if tag missing.
+C Flag to pause assessment at each timestep to allow for
+C a zone casual gain to be adapted. No impact if tag missing.
           ipausecas(icomp)=1
         elseif(WORD(1:4).eq.'*geo')then
           LGEOM(icomp)=text(1:72)
@@ -3168,7 +3301,6 @@ C then an older file so rewind the file and then call emfread.
 C Found a graphic network file, scan it (silently) and then convert it
 C into network flow common blocks.
           IAIRN = 2
-          NWKFLNAM=LAPROB
           CALL ERPFREE(IUF,ISTAT)
           call NETREAD(IUF,'S',IER)
           CALL NETTOFLW(ier)
@@ -3743,6 +3875,9 @@ C Local model dbs folder.
           elseif(topic(1:3).eq.'pdb')then
             ipathpcdb=1  ! local folder for plant database
             write(LPCDB,'(a)') file(1:lnwkg) ! assign directly
+          elseif(topic(1:3).eq.'pre')then
+            ipathpredef=1  ! local folder for predefined objects
+            write(lpredef,'(a)') file(1:lnwkg) ! assign directly
           elseif(topic(1:3).eq.'prs')then
             ipathapres=1  ! local folder for pressure distributions
             write(lapres,'(a)') file(1:lnwkg) ! assign directly
@@ -3780,6 +3915,9 @@ C The initial part of database path matches so save the file name w/o path.
           elseif(topic(1:3).eq.'pdb')then
             ipathpcdb=2
             write(LPCDB,'(a)')  file(lndbp+2:lnwkg)  ! without path
+          elseif(topic(1:3).eq.'pre')then
+            ipathpredef=2
+            write(lpredef,'(a)') file(lndbp+2:lnwkg)  ! without path
           elseif(topic(1:3).eq.'prs')then
             ipathapres=2
             write(lapres,'(a)') file(lndbp+2:lnwkg)  ! without path
@@ -3822,6 +3960,9 @@ C The initial part of the weather path matches save the file name w/o path.
           elseif(topic(1:3).eq.'pdb')then
             ipathpcdb=0
             write(LPCDB,'(a)')  file(1:lnwkg)  ! assign directly
+          elseif(topic(1:3).eq.'pre')then
+            ipathpredef=0
+            write(lpredef,'(a)') file(1:lnwkg)  ! assign directly
           elseif(topic(1:3).eq.'prs')then
             ipathapres=0
             write(lapres,'(a)') file(1:lnwkg)  ! assign directly
@@ -3859,6 +4000,9 @@ C The initial part of the weather path matches save the file name w/o path.
           elseif(topic(1:3).eq.'pdb')then
             ipathpcdb=1  ! local folder for plant database
             write(LPCDB,'(a)') file(1:lnwkg)   ! assign directly
+          elseif(topic(1:3).eq.'pre')then
+            ipathpredef=1  ! local folder for predefined obj database
+            write(lpredef,'(a)') file(1:lnwkg) ! assign directly
           elseif(topic(1:3).eq.'prs')then
             ipathapres=1  ! local folder for pressure database
             write(lapres,'(a)') file(1:lnwkg) ! assign directly
@@ -3894,6 +4038,9 @@ C The initial part of the weather path matches save the file name w/o path.
           elseif(topic(1:3).eq.'pdb')then
             ipathpcdb=2
             write(LPCDB,'(a)')  file(lndbp+2:lnwkg)  ! without path
+          elseif(topic(1:3).eq.'pre')then
+            ipathpredef=2
+            write(LPREDEF,'(a)')  file(lndbp+2:lnwkg)  ! without path
           elseif(topic(1:3).eq.'prs')then
             ipathapres=2
             write(lapres,'(a)') file(lndbp+2:lnwkg)  ! without path
@@ -3934,6 +4081,9 @@ C The initial part of the weather path matches save the file name w/o path.
           elseif(topic(1:3).eq.'pdb')then
             ipathpcdb=0
             write(LPCDB,'(a)')  file(1:lnwkg)  ! assign directly
+          elseif(topic(1:3).eq.'pre')then
+            ipathpredef=0
+            write(lpredef,'(a)') file(1:lnwkg)  ! assign directly
           elseif(topic(1:3).eq.'prs')then
             ipathapres=0
             write(lapres,'(a)') file(1:lnwkg)  ! assign directly
@@ -3973,6 +4123,9 @@ C        write(6,*) 'findwhichdbpath ipath is ',ipathoptdb
 C      elseif(topic(1:3).eq.'pdb')then
 C        write(6,*) LPCDB
 C        write(6,*) 'findwhichdbpath ipath is ',ipathpcdb
+C      elseif(topic(1:3).eq.'pre')then
+C        write(6,*) lpredef
+C        write(6,*) 'findwhichdbpath ipath is ',ipathpredef
 C      elseif(topic(1:3).eq.'prs')then
 C        write(6,*) lapres
 C        write(6,*) 'findwhichdbpath ipath is ',ipathapres

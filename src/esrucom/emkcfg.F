@@ -59,6 +59,8 @@ C ICLIM,LCLIM (for climate file)
 #include "schedule.h"
 #include "dhw_common.h"
 #include "qrun.h"
+#include "plant.h"
+#include "power.h"
 
       INTEGER, PARAMETER :: MSTMC=20
       
@@ -106,8 +108,7 @@ C Initial view.
 
 C Special materials file flag
       common/spmfxst/ispmxist,spflnam
-      common/entfile/entflnam,ientxist
-      INTEGER :: ispmxist,ientxist
+      INTEGER :: ispmxist
 
       COMMON/AFN/IAIRN,LAPROB,ICAAS(MCOM)
       INTEGER :: iairn,icaas
@@ -231,7 +232,15 @@ C SHOCCshzFile - path to SHOCC .shz file for each SHOCC'd zone
      &                SHOCCshzFile(mcom)
       logical bSHOCCed,bZoneSHOCCed
       character SHOCCshlFile*72,SHOCCshzFile*72
-      
+
+C Renewable energy system (elec) control file
+C Input file information
+      common/reselecctl/ireselecctl,reselecflnam
+      integer ireselecctl       !- flag indicating that file required by renewable energy
+                                !- system controller is specified
+      character*72 reselecflnam !- name of file containing renewable energy system
+                                !- controller inputs
+C RES (elec): end
 
 C Fuel cell.
       common/Fcell/iFClds,LFClds
@@ -278,6 +287,16 @@ C If 0 then the calculation includes diffuse shading.
       integer iexcludediff_flag
       common/excludediff/iexcludediff_flag
 
+C Radiance processor cores.
+      integer radcores
+      common/radcor/radcores
+
+C Zone fluid.
+      COMMON/zfluid/znotair(mcom),zfldK,zfldD,zfldC,zfldA,
+     &              zSWAp(mcom),zSWAf(mcom)
+      real zfldK,zfldD,zfldC,zfldA,zSWAp,zSWAf
+      LOGICAL znotair
+
       CHARACTER*72 LBSIMP,hvacfile,LFClds
 
       CHARACTER LAPROB*72
@@ -286,7 +305,7 @@ C If 0 then the calculation includes diffuse shading.
       CHARACTER*72 LGDCVS,LGDCNC,LGDNDC,LGDNDD,LGDTAQ,LGRD1D,LNLTHP
       CHARACTER*72 L3DCVS,L3DCNC,L3DNDC,L3DTAQ,LMOIST,LGrdSt
       CHARACTER ctldoc*248,LCTLF*72,H*72
-      CHARACTER spflnam*72,entflnam*72
+      CHARACTER spflnam*72
       character GTGEOM*72,LCFD*72,DCNN*72
       CHARACTER DBTAG*12,DBTASK*12,DBZN*15,indxcmt*24,DBSN*15
       character*10 wkd1, wkd2
@@ -325,6 +344,7 @@ C Control for writing out multi-climate sim presets
       integer ipos    ! position in flow node string buffer
       integer lnouts   ! location at end of flow node string buffer
       integer lnipv   ! location at end of the external IPV file
+      integer loop    ! for looping
       
       INTEGER :: ier,i,ia,iav,icc,icd,id1,id2,id3,id4,im1,im2,im3,im4
       INTEGER :: ij,img,ios,iss,iuf,iw,j,l,lcfgl,lcfgr,lct,lctn,loutlen
@@ -516,6 +536,27 @@ C Begin writing the file with version number in the header.
      &  '  # path to hvac files'
       WRITE(IFCFG,'(3a)',IOSTAT=IOS,ERR=3) '*bsmpth ',bsmpth,
      &  '  # path to BASESIMP files'
+      WRITE(IFCFG,'(A,i2,a)',IOSTAT=IOS,ERR=3) '*radcore ',radcores,
+     &  '  # number of cores available to Radiance'
+
+C If there are IES data files and entities associated with the model:
+      if(nbofies.gt.0)then
+        write(IFCFG,'(a,i2,a)',IOSTAT=IOS,ERR=3) '*ies ',nbofies,
+     &    '  # number of IES entities'
+        do loop=1,nbofies
+          write(IFCFG,'(4a)',IOSTAT=IOS,ERR=3) '*nameies ',
+     &      iesname(loop)(1:lnblnk(iesname(loop))),', ',iesmenu(loop)
+           write(IFCFG,'(3a)',IOSTAT=IOS,ERR=3) '*iesraw ',
+     &       iesfile(loop)(1:lnblnk(iesfile(loop))),'   # raw data'
+          write(IFCFG,'(a,3F7.3,3a)') '*fixture ',ieslen(loop),
+     &      ieswid(loop),iesht(loop),' ',iesalong(loop),
+     &      '  #  length width height'
+          write(IFCFG,'(a,i2,5f5.2)',IOSTAT=IOS,ERR=3) '*ctlies ',
+     &      iespercents(loop),(iessteps(loop,I),I=1,iespercents(loop))
+        enddo   ! of loop
+        write(IFCFG,'(a)',IOSTAT=IOS,ERR=3) '*endies '
+      endif
+
       WRITE(IFCFG,'(A,i4,a)',IOSTAT=IOS,ERR=3) '*indx ',INDCFG,
      &  indxcmt(1:lnblnk(indxcmt))
   30  FORMAT('# ESRU system configuration defined by file ',/,'# ',A)
@@ -651,7 +692,6 @@ C reflect whether the standard database folder is being used.
 
 C UK SBEM database has the option of two different syntax to
 C reflect whether the standard database folder is being used.
-C      IF(ISBEM.GE.1)THEN
         if(ipathsbem.eq.0.or.ipathsbem.eq.1)then
           WRITE(IFCFG,'(2a)',IOSTAT=IOS,ERR=2) '*sbem  ',
      &      LSBEM(1:lnblnk(LSBEM))
@@ -659,7 +699,16 @@ C      IF(ISBEM.GE.1)THEN
           WRITE(IFCFG,'(2a)',IOSTAT=IOS,ERR=2) '*stdsbem  ',
      &      LSBEM(1:lnblnk(LSBEM))
         endif
-C      ENDIF
+
+C Predefined objects database has the option of two different syntax to
+C reflect whether the standard database folder is being used.
+        if(ipathpredef.eq.0.or.ipathpredef.eq.1)then
+          WRITE(IFCFG,'(2a)',IOSTAT=IOS,ERR=2) '*predef  ',
+     &      LPREDEF(1:lnblnk(LPREDEF))
+        elseif(ipathpredef.eq.2)then
+          WRITE(IFCFG,'(2a)',IOSTAT=IOS,ERR=2) '*stdpredef  ',
+     &      LPREDEF(1:lnblnk(LPREDEF))
+        endif
 
 C HVAC
       IF (ihvacflag.EQ.1)then
@@ -724,15 +773,15 @@ C Diffuse shading flag.
      &    iexcludediff_flag,'  # diffuse shading is excluded'
       endif      
       
-C Flag for quick run method	  
+C Flag for quick run method  
       if(iQuick_run.eq.0)then
         WRITE(IFCFG,'(A,i2,A)',IOSTAT=IOS,ERR=2) '*quick_run  ',
      &    iQuick_run,'  # no'
       else
         WRITE(IFCFG,'(A,i2,A)',IOSTAT=IOS,ERR=2) '*quick_run  ',
      &    iQuick_run,'  # yes'
-      endif	  
-	  
+      endif  
+  
 C SHOCC: library file.
       IF ( bSHOCCed ) then
          WRITE(IFCFG,'(3A)',IOSTAT=IOS,ERR=2) '*shl  ',
@@ -765,6 +814,17 @@ C Write control file if known.
       else
         WRITE(IFCFG,'(2a)',IOSTAT=IOS,ERR=2) '*ctl  ',
      &    LCTLF(1:lnblnk(LCTLF))
+      endif
+
+C Write optional additional control files here to keep directly
+C control-functionality files close together
+C Residential hydrogen cogen control file
+cx ... could/should be added here, surely?
+
+C Renewable energy system (elec) controller control file
+      if(ireselecctl.gt.0.and.reselecflnam(1:2).ne.'  ')then
+        WRITE(IFCFG,'(2A)',IOSTAT=IOS,ERR=2) '*resel  ',
+     &    reselecflnam(1:lnblnk(reselecflnam))
       endif
 
 C Write model contents file if known.
@@ -936,6 +996,11 @@ C and used by various facilities.
 
       WRITE(IFCFG,'(a,I4,a)',IOSTAT=IOS,ERR=2) '*year  ',
      &  IYEAR,' # assessment year'
+
+C Write standard assumptions for water in zones.
+      WRITE(IFCFG,'(a,f4.1,3f7.1,a)',IOSTAT=IOS,ERR=2) 
+     &  '*water_in_zones',zfldK,zfldD,zfldC,zfldA,
+     &  ' # water cond density spec ht shortwave abs'
 
 C If SBEM compliance checking is active write name of NCM file if
 C it is something other than UNKNOWN.
@@ -1319,8 +1384,13 @@ C Fabric portion of description.
       WRITE(IFCFG,'(I7,A)',IOSTAT=IOS,ERR=2) NCOMP,'  # no of zones'
 
       DO 920 I = 1,NCOMP
-        WRITE(IFCFG,'(A,I3,2A)',IOSTAT=IOS,ERR=2)
-     &    '*zon ',NCCODE(I),'   # reference for ',zname(I)
+        if(znotair(I))then  ! if water filled
+          WRITE(IFCFG,'(A,I3,2A)',IOSTAT=IOS,ERR=2)
+     &      '*zon ',NCCODE(I),' Water  # reference for ',zname(I)
+        else
+          WRITE(IFCFG,'(A,I3,2A)',IOSTAT=IOS,ERR=2)
+     &      '*zon ',NCCODE(I),'   # reference for ',zname(I)
+        endif
         WRITE(IFCFG,'(3A)',IOSTAT=IOS,ERR=2)
      &    '*opr ',LPROJ(I)(1:LNBLNK(LPROJ(I))),'  # schedules'
         WRITE(IFCFG,'(3A)',IOSTAT=IOS,ERR=2)

@@ -2232,6 +2232,7 @@ C << overloading of icgt to be revised >>
 
 C Determine if any of the casual gains were mixed (i.e. different units
 C at different periods).
+C << ?? for slot 4 >>
         if(loadnonzero(1,1).eq.0.and.loadm2nonzero(1,1).eq.0)then
           loadmixed(ic,1,IDTY)=0
         elseif(loadnonzero(1,1).gt.0.and.loadm2nonzero(1,1).eq.0)then
@@ -2900,6 +2901,7 @@ C How many occupant/lights/small power? << revise for more gain types >>
       n1=loadcount(icomp,1,IDTY)
       n2=loadcount(icomp,2,IDTY)
       n3=loadcount(icomp,3,IDTY)
+      n4=loadcount(icomp,4,IDTY)
 
 C See if first period is 0hr or 1hr and last period is 24.
       if(n1.gt.0.and.(.NOT.load24(1,idaytype,1)))then
@@ -2920,6 +2922,12 @@ C See if first period is 0hr or 1hr and last period is 24.
         call edisp(iuout,outs)
         problem = .true.
       endif
+      if(n4.gt.0.and.(.NOT.load24(4,idaytype,1)))then
+        write(outs,*)'initial 4th slot period not zero in zone ',icomp,
+     &    ' daytype ',idaytype
+        call edisp(iuout,outs)
+        problem = .true.
+      endif
       if(n1.gt.0.and.(.NOT.load24(1,idaytype,2)))then
         write(outs,*) 'last occupant period not zero in zone ',icomp,
      &    ' daytype ',idaytype
@@ -2933,6 +2941,12 @@ C See if first period is 0hr or 1hr and last period is 24.
         problem = .true.
       endif
       if(n3.gt.0.and.(.NOT.load24(3,idaytype,2)))then
+        write(outs,*) 'last small pwr period not zero in zone ',icomp,
+     &    ' daytype ',idaytype
+        call edisp(iuout,outs)
+        problem = .true.
+      endif
+      if(n4.gt.0.and.(.NOT.load24(4,idaytype,2)))then
         write(outs,*) 'last small pwr period not zero in zone ',icomp,
      &    ' daytype ',idaytype
         call edisp(iuout,outs)

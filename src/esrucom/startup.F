@@ -272,8 +272,10 @@ C (disabled by default!)
             end if
           ! It is important to check for -actf before checking for -act.
           elseif(argument(1:5).eq.'-actf')then
-             if ((module.eq.CONST_PARSFACT).or.(module.eq.CONST_PARRES)
-     &           .or.(module.eq.CONST_PARSIM)) then
+             if ((module.eq.CONST_PARSFACT).or.
+     &           (module.eq.CONST_PARRES).or.
+     &           (module.eq.CONST_PARSIM).or.
+     &           (module.eq.CONST_PARSE2R)) then
               i=i+1
               if (UsePassedCommandLine) then 
                 call EGETW(PassedCommandLine,pos,actf,'-',
@@ -432,9 +434,10 @@ C data2 and data3.
               end if
             end if
           elseif(argument(1:5).eq.'-zone')then
-            if ((module.eq.CONST_PARSFZ).or.(module.eq.CONST_PARSISH)
-     &         .or.(module.eq.CONST_PARSE2R).or.
-     &         (module.eq.CONST_PARSPRJ))then
+            if ((module.eq.CONST_PARSFZ).or.
+     &          (module.eq.CONST_PARSISH).or.
+     &          (module.eq.CONST_PARSE2R).or.
+     &          (module.eq.CONST_PARSPRJ))then
               i=i+1
               if (UsePassedCommandLine) then 
                 call EGETW(PassedCommandLine,pos,zone,'-',
@@ -937,7 +940,7 @@ C parse2r allows terminal, size, config file, scene purpose and actions argument
 C  to be passed to e2r from the invocation line.  
 C***********************************************************************************************************************
       subroutine parse2r(termtype,iappw,iappx,iappy,inf,zone,aim,act,
-     &  browse)
+     &  actf,browse)
       
       IMPLICIT NONE
 C Declare  calling parameter types
@@ -945,13 +948,14 @@ C Declare  calling parameter types
       character(144), intent(inout)  :: inf
       character(16), intent(inout) :: zone,act
       character(12), intent(inout) :: aim
+      character(72), intent(inout) :: actf
       character(4), intent(inout) :: browse
 
 C Local variables for GetCommandLineArguments.
       integer :: module, iverb
       real ::  data1,data2,data3
       character(144) :: inf2
-      character(72) :: actf,ascif
+      character(72) :: ascif
       character(12) :: aut
       character(8) :: sps
 
@@ -1304,7 +1308,7 @@ C initial values because they will not be used.
         jfile=' '
         imgtyp=1
         fmttag(1)='GIF'
-        fmtexe(1)=' '
+        fmtexe(1)='display '
         gxwdlbl='no graphic dump'
       else
 
@@ -1331,11 +1335,9 @@ C temporary files in the users home folder.
 
 C Assume two basic image types and that the application window dump
 C will use xwud.
-        imgtyp=2
+        imgtyp=1
         fmttag(1)='GIF'
-        fmtexe(1)='xv'
-        fmttag(2)='XWD'
-        fmtexe(2)='xwud -in'
+        fmtexe(1)='display '
         gxwdlbl='Appl window dump'
       endif
 
@@ -1473,10 +1475,6 @@ C Caputre text buffer to a file, capextf is in wwlib.c
         CALL EGETW(OUTSTR,K,cadfmt,'W','cad fnt',IER)
         write(outs,'(a,a,2x,a,2x,a)')' Local CAD: ',cadlbl,cadexe,cadfmt
         if(itrc.gt.1)call edisp(iuout,outs)
-      elseif(WORD(1:13).eq.'*tutorial_app')then
-
-C Tutorial application depreciated.
-        continue
       elseif(WORD(1:8).eq.'*journal')then
 
 C Turn journaling on/off.
@@ -1487,6 +1485,8 @@ C Turn journaling on/off.
           journio=0
         endif
       elseif(WORD(1:14).eq.'*image_display')then
+
+C Add to the initial assumptions about display software.
         imgtyp=imgtyp+1
         CALL EGETP(OUTSTR,K,fmttag(imgtyp),'W','image fmt',IER)
         CALL EGETP(OUTSTR,K,fmtexe(imgtyp),'W','img exe',IER)
@@ -1669,6 +1669,8 @@ C << make a pass sorting out these default file names >>
         write(DSBEM,'(2a)') di(1:min(ln,51)),'/databases/SBEM.db1'
         write(DCFCDB,'(2a)') di(1:min(ln,51)),
      &    '/databases/cfclayers.db1.a'
+        write(DPREDEF,'(2a)') di(1:min(ln,51)),
+     &    '/databases/predefined.db1'
       else
 C        dinstpath = 'c:/esru/esp-r'
         write(dinstpath,'(a)') instpath(1:lnblnk(instpath))
@@ -1702,6 +1704,8 @@ C        dinstpath = 'c:/esru/esp-r'
         write(DSBEM,'(2a)') di(1:min(ln,51)),'/databases/SBEM.db1'
         write(DCFCDB,'(2a)') di(1:min(ln,51)),
      &    '/databases/cfclayers.db1.a'
+        write(DPREDEF,'(2a)') di(1:min(ln,51)),
+     &    '/databases/predefined.db1'
       endif
 
 C << ?? Should there be default values for constructions? >>
@@ -1949,11 +1953,11 @@ C parpsfh: Help message for several of the command line parsers.
         call edisp(iuout,'       [-file <configuration file>]')
         call edisp(iuout,'       [-zone <focus zone|index>]')
         call edisp(iuout,'       [-purpose <scene purpose>]')
-        call edisp(iuout,'       [-b {no|yes}]')
-        call edisp(iuout,'  where -b (browse options) are used to')
-        call edisp(iuout,'    indicate that the user has requested')
-        call edisp(iuout,'    a visualization for a model they are')
-        call edisp(iuout,'    browsing.')
+        call edisp(iuout,'  where the scene purpose is ...')
+        call edisp(iuout,'       [-act {Create|Calculate}]')
+        call edisp(iuout,'  where Create generates radiance files and')
+        call edisp(iuout,'        Calculate uses them.')
+        call edisp(iuout,'       [-actf <file generated by bps>]')
       elseif(appn(1:3).eq.'grd')then
         call edisp(iuout,'The 2-D and 3D gridding module.')
         call edisp(iuout,'  Use: [-mode {text|graphic}]')
@@ -1990,6 +1994,9 @@ C parpsfh: Help message for several of the command line parsers.
         call edisp(iuout,'  Use: [-mode {text|graphic}]')
         call edisp(iuout,'       [-file <configuration file>]')
         call edisp(iuout,'       [-zone <name|index>]')
+      elseif(appn(1:3).eq.'net')then
+        call edisp(iuout,'The graphic network layout tool. ')
+        call edisp(iuout,'  Use: [-mode {text|graphic}]')
       elseif(appn(1:3).eq.'pdb')then
         call edisp(iuout,'The plant components database manager. ')
         call edisp(iuout,'  Use: [-mode {text|graphic}]')

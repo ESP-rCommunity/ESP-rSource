@@ -34,7 +34,8 @@ C        the routine.
 
       SUBROUTINE MCDBSCAN(TYPE,MODE,SSTR,VAR,SPMISC,NIT,IER)
 
-#include "building.h" 
+#include "building.h"
+#include "plant.h"
 #include "power.h" 
 #include "esprdbfile.h" 
       
@@ -194,6 +195,9 @@ C act as an input and output parameter.
         NIT=0
   20    CALL STRIPC(IMCFIL,OUTSTR,99,ND,0,'cat ',IER)
         IF(OUTSTR(1:6).EQ.DIVR2) THEN
+
+C If tag is *SPECM or *POWOC *CONCO read past two more lines to get
+C the cagegory number into variable ival and compare with icat.
           CALL STRIPC(IMCFIL,OUTSTR,99,ND,0,'desc ',IER)
           CALL STRIPC(IMCFIL,OUTSTR,99,ND,0,'desc ',IER)
           K=0
