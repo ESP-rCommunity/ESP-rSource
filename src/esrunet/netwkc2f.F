@@ -33,7 +33,7 @@ C             when grid snappping is on.
 
 C *************************** NWKSLCTC *************************
 C NWKSLCTC is called from the c-side to check if an object has been selected
-C IT is toggle of status for icon or connection.
+C IT is toggle of status for icon (1) or connection (2).
 C IS is the index of the icon.
 C ISA is the index of the connection waypoint.
 C ISELECT is a flag passed to the routine which determines whether a 
@@ -44,35 +44,27 @@ C as selected.
 
 #include "gnetwk.h"
 C Icon commons
-      COMMON/NWKICN/NNICN,ICONTP(MICN),XYZICON(MICN,3),NICONATR(MICN),
-     & ATRICN(MICN,MIATRB,3),ATRTAG(MICN,MIATRB,5),ATRMENU(MICN,MIATRB),
-     & NCONP(MICN),CONCP(MICN,MCNP,2),ICNCT(MICN,MCNP),
-     & VCICON(MICN,MICNV,3),IVEICN(MICN,MICNE,5),NIVC(MICN),
-     & NIVE(MICN),NIVD(MICN),IVDOT(MICN,MICND,4),NIVA(MICN),
-     & IVARC(MICN,MICND,7),NIVL(MICN),IVLBL(MICN,MICND,3),NIVT(MICN)
-   
-C Connection commons
-      COMMON/NWKCON/NICNN,ICNS(MNCNN),ICNE(MNCNN),ICNNT(MNCNN),
-     & ICNSP(MNCNN),ICNEP(MNCNN),CNWNP(MNCNN,MCIP,3),
-     & NCONWP(MNCNN),idatrdom(MNCNN),ddtagatr(MNCNN,MIATRB,5),
-     & ddatrib(MNCNN,MIATRB,3),ddmenuatr(MNCNN,MIATRB)
-
 C Selected entity (component and connection) common
       COMMON/NWKSEL/ISEL(MICN),CSEL(MNCNN)
       COMMON/NWKVEW/SCALF,VIEWCEN(3),VIEWLIM(6),IVIEW
-      character ATRTAG*12,ATRMENU*32,ATRICN*12
-      character ddtagatr*12,ddmenuatr*32,ddatrib*12
       
       LOGICAL ISEL,CSEL,CLOSEX,CLOSEY
 
+#ifdef OSI
+      integer iix,iiy
+#else
+      integer*8 iix,iiy
+#endif
+
 C Check if the pixels IX and IY passed from C match are close
-C to a component or connection (+/-) 0.4 on the grid scale
+C to a component or connection (+/-) 0.4m on the grid scale
 C element.
-      CALL PIXEL2U(IX,IY,GX,GY)
+      iix=ix; iiy=iy
+      CALL PIXEL2U(IIX,IIY,GX,GY)
 
-      CGX=GX
-      CGY=GY
+      CGX=GX; CGY=GY
 
+C Reset all values prior to hunt.
       CLOSEX=.FALSE.
       CLOSEY=.FALSE.
       IS=0
@@ -80,21 +72,21 @@ C element.
       IT=0
       IACTIVE=0
 
-C Hunt through the components
+C Hunt through the components.
       DO 10 I=1,NNICN
         IF(IVIEW.EQ.1)THEN
-          CALL ECLOSE(CGX,XYZICON(I,1),0.6,CLOSEX)
-          CALL ECLOSE(CGY,XYZICON(I,2),0.6,CLOSEY)
+          CALL ECLOSE(CGX,XYZICON(I,1),0.4,CLOSEX)
+          CALL ECLOSE(CGY,XYZICON(I,2),0.4,CLOSEY)
         ELSEIF(IVIEW.EQ.2)THEN
-          CALL ECLOSE(CGX,XYZICON(I,1),0.6,CLOSEX)
-          CALL ECLOSE(CGY,XYZICON(I,3),0.6,CLOSEY)
+          CALL ECLOSE(CGX,XYZICON(I,1),0.4,CLOSEX)
+          CALL ECLOSE(CGY,XYZICON(I,3),0.4,CLOSEY)
         ELSE
-          CALL ECLOSE(CGX,XYZICON(I,2),0.6,CLOSEX)
-          CALL ECLOSE(CGY,XYZICON(I,3),0.6,CLOSEY)
+          CALL ECLOSE(CGX,XYZICON(I,2),0.4,CLOSEX)
+          CALL ECLOSE(CGY,XYZICON(I,3),0.4,CLOSEY)
         ENDIF
         IF(CLOSEX.AND.CLOSEY)THEN
 
-C If select flag is on then allow selection or delection of the component
+C If select flag is on then allow selection or de-selection of the component.
           IF(ISELECT.GT.0)THEN
             IF(ISEL(I))THEN
               ISEL(I)=.FALSE.
@@ -108,7 +100,7 @@ C If select flag is on then allow selection or delection of the component
               IT=1
             ENDIF
 
-C Otherwise just return the number of the selected component
+C Otherwise just return the number of the selected component.
           ELSE
             IF(ISEL(I))IACTIVE=1
             IS=I
@@ -119,13 +111,13 @@ C Otherwise just return the number of the selected component
   10  CONTINUE
 
 
-C Reset the search parameters
+C Reset the search parameters.
       CLOSEX=.FALSE.
       CLOSEY=.FALSE.
 
       DO 20 I=1,NICNN
 
-C Loop through each connection waypoint.
+C Loop through each connection waypoint looking for one within 0.2m.
         DO 23 J=1,NCONWP(I)
           IF(IVIEW.EQ.1)THEN
             CALL ECLOSE(CGX,CNWNP(I,J,1),0.20,CLOSEX)
@@ -153,7 +145,7 @@ C If the selection flag is on then allow the connection to be selected/deselecte
                 IT=2
               ENDIF
             ELSE
-              IF(CSEL(I))IACTIVE=1
+              IF(CSEL(I)) IACTIVE=1
               IS=I
               ISA=J
               IT=2              
@@ -162,7 +154,7 @@ C If the selection flag is on then allow the connection to be selected/deselecte
    23   CONTINUE
    20 CONTINUE
 
-C Re draw the network
+C Re-draw the network.
       CALL NETWDRW
 
       RETURN
@@ -175,27 +167,19 @@ C intermediate point positions.
 
 #include "gnetwk.h"
 C Icon commons
-      COMMON/NWKICN/NNICN,ICONTP(MICN),XYZICON(MICN,3),NICONATR(MICN),
-     & ATRICN(MICN,MIATRB,3),ATRTAG(MICN,MIATRB,5),ATRMENU(MICN,MIATRB),
-     & NCONP(MICN),CONCP(MICN,MCNP,2),ICNCT(MICN,MCNP),
-     & VCICON(MICN,MICNV,3),IVEICN(MICN,MICNE,5),NIVC(MICN),
-     & NIVE(MICN),NIVD(MICN),IVDOT(MICN,MICND,4),NIVA(MICN),
-     & IVARC(MICN,MICND,7),NIVL(MICN),IVLBL(MICN,MICND,3),NIVT(MICN)
-
       COMMON/NWKVEW/SCALF,VIEWCEN(3),VIEWLIM(6),IVIEW
 
-C Connection commons
-      COMMON/NWKCON/NICNN,ICNS(MNCNN),ICNE(MNCNN),ICNNT(MNCNN),
-     & ICNSP(MNCNN),ICNEP(MNCNN),CNWNP(MNCNN,MCIP,3),
-     & NCONWP(MNCNN),idatrdom(MNCNN),ddtagatr(MNCNN,MIATRB,5),
-     & ddatrib(MNCNN,MIATRB,3),ddmenuatr(MNCNN,MIATRB)
-      character ATRTAG*12,ATRMENU*32,ATRICN*12
-      character ddtagatr*12,ddmenuatr*32,ddatrib*12
+#ifdef OSI
+      integer iix,iiy
+#else
+      integer*8 iix,iiy
+#endif
 
-      CALL PIXEL2U(IX,IY,X,Y)
+      iix=ix; iiy=iy
+      CALL PIXEL2U(IIX,IIY,X,Y)
       CALL NETWSNAP(X,Y,XS,YS)
 
-C Store old icon position
+C Store old icon position.
       OLDPOSX=XYZICON(IS,1)
       OLDPOSY=XYZICON(IS,2)
       OLDPOSZ=XYZICON(IS,3)
@@ -204,7 +188,8 @@ C Store old icon position
       DELTAZ=0.0
       NVTX=NIVC(IS)
       NICP=NCONP(IS)
-C Move the  icon
+
+C Move the  icon.
       IF(IT.EQ.1)THEN
         IF(IVIEW.EQ.1)THEN
           XYZICON(IS,1)=XS
@@ -214,7 +199,7 @@ C Move the  icon
           DELTAY=XYZICON(IS,2)-OLDPOSY
           DELTAZ=XYZICON(IS,3)-OLDPOSZ
 
-C Update the icon position
+C Update the icon position.
           DO 10 I=1,NVTX 
             VCICON(IS,I,1)=VCICON(IS,I,1)+DELTAX
             VCICON(IS,I,2)=VCICON(IS,I,2)+DELTAY
@@ -234,7 +219,7 @@ C Update the icon position
           DELTAY=XYZICON(IS,2)-OLDPOSY
           DELTAZ=XYZICON(IS,3)-OLDPOSZ
 
-C Update the icon position
+C Update the icon position.
           DO 12 I=1,NVTX
             VCICON(IS,I,1)=VCICON(IS,I,1)+DELTAX
             VCICON(IS,I,2)=VCICON(IS,I,2)+DELTAY
@@ -249,7 +234,7 @@ C Update the icon position
           XYZICON(IS,2)=XS
           XYZICON(IS,3)=YS
 
-C Update the icon position
+C Update the icon position.
           DO 14 I=1,NVTX
             VCICON(IS,I,1)=VCICON(IS,I,1)+DELTAX
             VCICON(IS,I,2)=VCICON(IS,I,2)+DELTAY
@@ -295,19 +280,24 @@ C Grid commons
 
       LOGICAL GON,SON
 
+C Note: the integers were defined as long-int in the C code
+C so might need #ifdef OSI for this to work correctly.
+
+C Debug write(6,*) IZOOM,IGRIDU,IGRIDS,ISNP,IPAN,DX,DY
+
 C Switch on/off the grid spacing.
       IF(IGRIDS.EQ.-1)THEN
-          GON=.FALSE.
+        GON=.FALSE.
       ELSEIF(IGRIDS.EQ.1)THEN
-          GON=.TRUE.
+        GON=.TRUE.
 
 C Switch ON/OFF the grid snapping.
       ELSEIF(ISNP.EQ.-1)THEN
-          SON=.FALSE.
+        SON=.FALSE.
       ELSEIF(ISNP.EQ.1)THEN
-          SON=.TRUE.
+        SON=.TRUE.
 
-C Adjust the grid size
+C Adjust the grid size positive IGRIDU increases.
       ELSEIF(IGRIDU.EQ.1)THEN
         IF(GRSPC(1).LT.GRMAX(1).AND.GRSPC(1).GE.1.)THEN
           GRSPC(1)=GRSPC(1)+1.0
@@ -331,35 +321,39 @@ C Adjust the grid size
           GRSPC(2)=GRSPC(2)
         ENDIF
 
-C Adjust the zoom status
+C Adjust the zoom status. Ensure it is not beyond limits.
       ELSEIF(IZOOM.EQ.1)THEN
         IF(SCALF.LT.VIEWMZ)THEN
-          SCALF=SCALF+0.25
+          SCALF=SCALF+0.2  ! increase the zoom by 0.2
         ELSE
           SCALF=VIEWMZ
         ENDIF
       ELSEIF(IZOOM.EQ.-1)THEN
         IF(SCALF.GT.VIEWMN)THEN
-          SCALF=SCALF-0.25
+          SCALF=SCALF-0.2  ! decrease the zoom by 0.2
         ELSE
           SCALF=VIEWMN
         ENDIF
 
-C Pan the display (called by scrollbar routine)
+C If the C scrollbar calling code had set pan to a positive number then 
+C pan the display. ipan = 1 when user clicked at the extents of the
+C scrollbar and ipan = 2 if they were dragging the bar along. DX is
+C positive if user clicked to the right, negative if clicked to the
+C left.
       ELSEIF(IPAN.GT.0)THEN
-        SDX=DX*(MGRXE)
         IF(IPAN.EQ.1)THEN
-          SDY=-DY*(MGRYE)
+          SDX=DX*(MGRXE)
+          SDY=-DY*(MGRYE)  ! ? negate for the Y
         ELSE
-          SDY=DY*(VIEWLIM(4)-VIEWLIM(3))
           SDX=DX*(VIEWLIM(2)-VIEWLIM(1))
+          SDY=DY*(VIEWLIM(4)-VIEWLIM(3))
         ENDIF
-        IF(DX.GT.0.)THEN
+        IF(DX.GT.0.0)THEN
           IF(VIEWLIM(2)+(SDX).LE.GRMAX(1))THEN
-            VIEWCEN(1)=VIEWCEN(1)+(SDX)
+            VIEWCEN(1)=VIEWCEN(1)+(SDX)  ! increment right
           ENDIF
         ELSEIF(DX.LT.0.0)THEN
-         IF(VIEWLIM(1)+(SDX).GE.0.)THEN
+         IF(VIEWLIM(1)+(SDX).GE.-5.0)THEN
             VIEWCEN(1)=VIEWCEN(1)+(SDX)
           ENDIF
         ELSEIF(DY.GT.0.0)THEN
@@ -367,7 +361,7 @@ C Pan the display (called by scrollbar routine)
             VIEWCEN(2)=VIEWCEN(2)+(SDY)
           ENDIF
         ELSEIF(DY.LT.0.0)THEN
-          IF(VIEWLIM(3)+(SDY).GE.0.)THEN
+          IF(VIEWLIM(3)+(SDY).GE.-5.0)THEN
             VIEWCEN(2)=VIEWCEN(2)+(SDY)
           ENDIF
         ENDIF
@@ -389,82 +383,72 @@ C Called from the C-side
       
       integer lnblnk  ! function definition
 
+C Parameters
+      integer ix,iy,ixr,iyr,ib
+
       COMMON/OUTIN/IUOUT,IUIN
 
       COMMON/NWKTYP/INWKTYP,vergnf   
       
 C Icon commons
-
-      COMMON/NWKICN/NNICN,ICONTP(MICN),XYZICON(MICN,3),NICONATR(MICN),
-     & ATRICN(MICN,MIATRB,3),ATRTAG(MICN,MIATRB,5),ATRMENU(MICN,MIATRB),
-     & NCONP(MICN),CONCP(MICN,MCNP,2),ICNCT(MICN,MCNP),
-     & VCICON(MICN,MICNV,3),IVEICN(MICN,MICNE,5),NIVC(MICN),
-     & NIVE(MICN),NIVD(MICN),IVDOT(MICN,MICND,4),NIVA(MICN),
-     & IVARC(MICN,MICND,7),NIVL(MICN),IVLBL(MICN,MICND,3),NIVT(MICN)
-
       COMMON/NWKVEW/SCALF,VIEWCEN(3),VIEWLIM(6),IVIEW
 
       COMMON/NWKSEL/ISEL(MICN),CSEL(MNCNN)
-      COMMON/NWKICS/NWICNM(MICN),NWICNHIS(MICN),NWICNLBL(MICN,MICND),
-     & NWICNTXT(MICN,60)
 
 C icontoflow() is a pointer from icon to flow node (positive) or flow
 C component (negative).
 C icnisnode(MNCNN) toggle where .true. means icon index is
 C associated with a flow node.
-      common/NWKFLW/icontoflow(MNCNN),icnisnode(MNCNN)
+      common/NWKFLW/icontoflow(MNCNN),icnisnode(MNCNN),
+     &  inodetoicon(MNCNN),icomptoicon(MNCNN)
 
-C Connection commons
-      COMMON/NWKCON/NICNN,ICNS(MNCNN),ICNE(MNCNN),ICNNT(MNCNN),
-     & ICNSP(MNCNN),ICNEP(MNCNN),CNWNP(MNCNN,MCIP,3),
-     & NCONWP(MNCNN),idatrdom(MNCNN),ddtagatr(MNCNN,MIATRB,5),
-     & ddatrib(MNCNN,MIATRB,3),ddmenuatr(MNCNN,MIATRB)
-
-      COMMON/TMPGCA/ICSTRT,ICSTRTP,CIP(MCIP,2),ICEND,IENDP,ICPC
+C This common block holds information gathered between (frequent) calls
+C from the C code.
+      COMMON/TMPGCA/ICSTRT,ICSTRTP,CIP(MCIP,2),ICEND,ICENDP,ICPC
 
 C Signal that there is a new connection which might have attributes
 C to edit.
       common/newconn/ihavenewcnn
 
-C Data returned from initial scan of icon db.
-      dimension idomain(MNWKTYP),nbcat(MNWKTYP),
-     &  cattag(MNWKTYP,MICNCAT),catmenu(MNWKTYP,MICNCAT),
-     &  nbicons(MNWKTYP,MICNCAT),icontag(MNWKTYP,MICNCAT,MICN),
-     &  iconmenu(MNWKTYP,MICNCAT,MICN)
+C Data (templates) returned from initial scan of icon db.
       dimension iatrdom(MNWKTYP),dtagatr(MNWKTYP,MIATRB,5),
      &  datrib(MNWKTYP,MIATRB,3),dmenuatr(MNWKTYP,MIATRB)
       dimension igatrdom(MNWKTYP),dgtagatr(MNWKTYP,MIATRB,5),
      &  dgatrib(MNWKTYP,MIATRB,3),dgmenuatr(MNWKTYP,MIATRB)
 
-      LOGICAL CLOSEX,CLOSEY,ISEL,CSEL,icnisnode,ok
-      CHARACTER ATRTAG*12,ATRMENU*32,ATRICN*12
-      CHARACTER NWICNM*12,NWICNHIS*40,NWICNLBL*4,ct*12
-      character NWICNTXT*72,outs*124,outsd*124,VNPSTR*12
-      character ddtagatr*12,ddmenuatr*32,ddatrib*12
-      character cattag*12,catmenu*32,icontag*12,iconmenu*40
+      LOGICAL CLOSEX,CLOSEY,CLOSEAX,CLOSEAY,ISEL,CSEL,icnisnode
+      CHARACTER ct*12
+      character outs*124,outsd*124,VNPSTR*12
       character dtagatr*12,dmenuatr*32,datrib*12
       character dgtagatr*12,dgmenuatr*32,dgatrib*12
+      integer ICSTRT,ICEND,INCOMP
 
 #ifdef OSI
-      integer iicol
+      integer iicol,iisx,iisy,iix,iiy,iimx,iimy,iiex,iiey
 #else
-      integer*8 iicol
+      integer*8 iicol,iisx,iisy,iix,iiy,iimx,iimy,iiex,iiey
 #endif
 
-      CALL PIXEL2U(IX,IY,X,Y)
+      iix=ix; iiy=iy
+      CALL PIXEL2U(IIX,IIY,X,Y)
 
-C Hunt through the components
-      INCOMP=0
+C Hunt through the components. Look for a radius of XSIZIC
+C (0.75m) of the centre of each icon. Note, as the mouse is
+C moved this subroutine is called again and again. If the mouse
+C is not near a component then INCOMP is zero, if it passes
+C close to a component then it becomes non-zero. In cluttered
+C networks this can lead to the initial point getting lost.
+      INCOMP=0; CLOSEX=.FALSE.; CLOSEY=.FALSE.
       DO 10 I=1,NNICN
         IF(IVIEW.EQ.1)THEN
-          CALL ECLOSE(X,XYZICON(I,1),1.2*XSIZIC,CLOSEX)
-          CALL ECLOSE(Y,XYZICON(I,2),1.2*XSIZIC,CLOSEY)
+          CALL ECLOSE(X,XYZICON(I,1),XSIZIC,CLOSEX)
+          CALL ECLOSE(Y,XYZICON(I,2),XSIZIC,CLOSEY)
         ELSEIF(IVIEW.EQ.2)THEN
-          CALL ECLOSE(X,XYZICON(I,1),1.2*XSIZIC,CLOSEX)
-          CALL ECLOSE(Y,XYZICON(I,3),1.2*XSIZIC,CLOSEY)
+          CALL ECLOSE(X,XYZICON(I,1),XSIZIC,CLOSEX)
+          CALL ECLOSE(Y,XYZICON(I,3),XSIZIC,CLOSEY)
         ELSE
-          CALL ECLOSE(X,XYZICON(I,2),1.2*XSIZIC,CLOSEX)
-          CALL ECLOSE(Y,XYZICON(I,3),1.2*XSIZIC,CLOSEY)
+          CALL ECLOSE(X,XYZICON(I,2),XSIZIC,CLOSEX)
+          CALL ECLOSE(Y,XYZICON(I,3),XSIZIC,CLOSEY)
         ENDIF
 
         IF(CLOSEX.AND.CLOSEY)THEN
@@ -472,74 +456,88 @@ C Hunt through the components
         ENDIF
   10  CONTINUE
 
+C Debug write(6,*)'INCOMP IB ',INCOMP,IB,ICSTRT,ICSTRTP,ICEND,ICENDP,ICPC
+
       IF(INCOMP.GT.0.AND.IB.EQ.1)THEN
 
-C If inside a component and button == 1 then set the start point.
-        ICSTRT=INCOMP
-        DMIN=1.0E+20
+C If inside a component and within 0.25m of an attachment point
+C and button == 1 then set the start point and attachment point.
+        ICSTRT=INCOMP  ! remember the start component
+        CLOSEAX=.FALSE.; CLOSEAY=.FALSE.; ICSTRTP=0
         DO 13 J=1,NCONP(ICSTRT)
-          DISTX=ABS(CONCP(ICSTRT,J,1)-X)
-          DISTY=ABS(CONCP(ICSTRT,J,2)-Y)
-          IF(((DISTX**2.+DISTY**2.)**0.5).LT.DMIN)THEN
-            DMIN=(DISTX**2.+DISTY**2.)**0.5
-            ICSTRTP=J
+          CALL ECLOSE(X,CONCP(ICSTRT,J,1),0.25,CLOSEAX)
+          CALL ECLOSE(Y,CONCP(ICSTRT,J,2),0.25,CLOSEAY)
+          IF(CLOSEAX.AND.CLOSEAY)THEN
+            ICSTRTP=J  ! remember the start attachment point
           ENDIF
   13    CONTINUE
-        ICPC=0
+        if(ICSTRTP.eq.0) ICSTRTP=1  ! if did not find set to initial attachment
+        ICPC=0   ! reset counter for way-points
 
         CALL U2PIXEL(CONCP(ICSTRT,ICSTRTP,1),
-     &               CONCP(ICSTRT,ICSTRTP,2),ISX,ISY)
-        IXR=ISX
-        IYR=ISY
+     &               CONCP(ICSTRT,ICSTRTP,2),iisx,iisy)
+        IXR=int(iisx)
+        IYR=int(iisy)
 
 C Re set the connection start point to unselected
        ELSEIF(INCOMP.EQ.0.AND.IB.EQ.2)THEN
 
-C If !inside a component and button == 2 set an intermediate
-C point
+C If !inside a component and button == 2 set an way-point.
+C There can be up to MCIP way-points.
         IF(ICPC.LT.MCIP)THEN
           ICPC=ICPC+1
           CALL NETWSNAP(X,Y,XS,YS)
           CIP(ICPC,1)=XS
           CIP(ICPC,2)=YS
-          CALL U2PIXEL(CIP(ICPC,1),CIP(ICPC,2),IMX,IMY)
-          IXR=IMX
-          IYR=IMY
+C Debug   write(6,*) 'waypoint ',icpc,XS,YS
+          CALL U2PIXEL(CIP(ICPC,1),CIP(ICPC,2),iimx,iimy)
+          IXR=int(iimx)
+          IYR=int(iimy)
         ENDIF
       ELSEIF(INCOMP.GT.0.AND.IB.EQ.3)THEN
 
 C If inside a component and button == 3 then end connection, update
-C connection data and clear the temporary array
+C connection data and clear the temporary array.
         iicol=0
         call winscl('-',iicol)
-        ICEND=INCOMP
-        DMIN=1E+20
+        ICEND=INCOMP  ! remember the end component
+        CLOSEAX=.FALSE.; CLOSEAY=.FALSE.
         DO 15 J=1,NCONP(ICEND)
-          DISTX=ABS(CONCP(ICEND,J,1)-X)
-          DISTY=ABS(CONCP(ICEND,J,2)-Y)
-          IF(((DISTX**2+DISTY**2)**0.5).LT.DMIN)THEN
-            DMIN=(DISTX**2+DISTY**2)**0.5
-            ICENDP=J
+          CALL ECLOSE(X,CONCP(ICEND,J,1),0.25,CLOSEAX)
+          CALL ECLOSE(Y,CONCP(ICEND,J,2),0.25,CLOSEAY)
+          IF(CLOSEAX.AND.CLOSEAY)THEN
+            ICENDP=J  ! remember the end connection point
           ENDIF
   15    CONTINUE
+        if(ICENDP.eq.0) ICENDP=1  ! if did not find set to initial attachment
 
 C Return snapped points to the calling routine.
         CALL U2PIXEL(CONCP(ICEND,ICENDP,1),
-     &               CONCP(ICEND,ICENDP,2),IEX,IEY)
-        IXR=IEX
-        IYR=IEY
+     &               CONCP(ICEND,ICENDP,2),IIEX,IIEY)
+        IXR=int(IIEX)
+        IYR=int(IIEY)
 
-C << primitive parts ICPP testing code logic needs checking >>
-C << logic should be loacted in a separate subroutine or be >>
-C << placed in an external programme >>
-C        IF((ICPP(ICSTRT,ICSTRTP,1)(6:6).NE.
-C     &      ICPP(ICEND,ICENDP,1)(6:6)).OR.
-C     &     (ICPP(ICSTRT,ICSTRTP,1)(6:6).EQ.'0').OR.
-C     &     (ICPP(ICEND,ICENDP,1)(6:6).EQ.'0'))THEN
-C          continue
-C        else
+C Test if both start and end components have been identified.
+C If not reset data and return.
+        if(icstrt.eq.0.or.icend.eq.0)then
+          write(outs,'(a,2i3,a)') 'Both ends ',icstrt,icend,
+     &      ' not defined so giving up'
+          call edisp(iuout,outs)
+          IXR=int(IX)
+          IYR=int(IY)
+          ICSTRT=0
+          ICSTRTP=0
+          DO 44 I=1,MCIP
+            CIP(I,1)=0
+            CIP(I,2)=0
+  44      CONTINUE
+          ICEND=0; ICENDP=0; ICPC=0
+          return
+        endif
 
 C Upon succesful completion of a connection, set the connection data.
+        iicol=0
+        call winscl('-',iicol)  ! reset color again
         NICNN=NICNN+1
         ICNS(NICNN)=ICSTRT
         ICNE(NICNN)=ICEND
@@ -585,27 +583,26 @@ C See comments in network.F in NETCDATR regarding height differences.
 C Assign default attributes for this connection based on the current
 C domain. Rescan the iconsdb to pick up each domain's connection
 C attributes.
-          call scanicondb(nbdomain,verdomain,idomain,nbcat,cattag,
-     &      catmenu,nbicons,icontag,iconmenu,iatrdom,dtagatr,
+C          call scanicondb(nbdomain,verdomain,idomain,nbcat,cattag,
+C     &      catmenu,nbicons,icontag,iconmenu,iatrdom,dtagatr,
+C     &      datrib,dmenuatr,igatrdom,dgtagatr,dgatrib,dgmenuatr,IER)
+          call scanicondb(nbdomain,verdomain,iatrdom,dtagatr,
      &      datrib,dmenuatr,igatrdom,dgtagatr,dgatrib,dgmenuatr,IER)
 
 C Loop through and find the relevant domain id to which to attribute the
 C connections data.
 
-C Debug. 
-C          write(6,*) 'Added a connection ...'
+C Debug.   write(6,*) 'Added a connection ...'
 C          write(6,*) 'number of domains in db ',nbdomain
 
           do 42 id=1,nbdomain
 
-C Debug.
-C            write(6,*) 'network domain type ',inwktyp
-C            write(6,*) 'domain ids ',idomain(id)
+C Debug.    write(6,*) 'network domain type ',inwktyp
+C           write(6,*) 'domain ids ',idomain(id)
 
             if(idomain(id).eq.inwktyp)then
 
-C Debug.
-C              write(6,*)'number of data attributes ',iatrdom(id)
+C Debug       write(6,*)'number of data attributes ',iatrdom(id)
 
               idatrdom(NICNN)=iatrdom(id)
               if(iatrdom(id).gt.0)then
@@ -628,6 +625,7 @@ C If dtagatr(id,ii,1) is location then datrib(id,ii,1) is delta
                   ddmenuatr(NICNN,ii)=dmenuatr(id,ii)
 
 C Debug.
+C                  write(6,*) 'nicnn id ii ',nicnn,id,ii
 C                  write(6,*) 'data tag ',dtagatr(id,ii,1)
 C                  write(6,*) 'data atr ',datrib(id,ii,1)
 C                  write(6,*) 'data tag ',dtagatr(id,ii,2)
@@ -642,18 +640,28 @@ C                  write(6,*) 'menu atr ',dmenuatr(id,ii)
               endif
             endif
   42      continue
-	else
-	  write(outs,'(a,i2,a,i2,a)') 'Attachement types for icons',
-     &      ICSTRT,' & ',ICEND,' do not match! Setting to zero.'
-          iicol=0
-          call winscl('-',iicol)
-          call usrmsg(outs,'Using type zero.','W')
-	  ICNNT(NICNN)=0
-	endif
-        ICNSP(NICNN)=ICSTRTP
+        else
+
+C Seems the selected points were not clearly identified. Warn user
+          write(outs,'(a,i2,a,i2,a)') 'Attachement types for icons',
+     &      ICSTRT,' & ',ICEND,' do not match!'
+          call usrmsg(outs,
+     &      'Marking as type zero. Probably best to delete it.','W')
+          ICNNT(NICNN)=0
+        endif
+
+        ICNSP(NICNN)=ICSTRTP  ! remember index of attachment points
         ICNEP(NICNN)=ICENDP
-        NCONWP(NICNN)=ICPC
+        NCONWP(NICNN)=ICPC    ! remember how many way points
         IF(NCONWP(NICNN).LT.1) THEN
+
+C If there are no way points then create one half way between the
+C two icons.
+C << improve this: via call to crowxyz()
+C << if distance is < ?? then create one way point ?? point on line method?
+C << if distance is > ?? then create two way points ? ratio method?
+C << revise interface to allow way point X to be reported/edited
+C << important to have the Z along the line as well.
           NCONWP(NICNN)=1
           IF(IVIEW.EQ.1)THEN 
             CIP(1,1)=0.5*(XYZICON(ICSTRT,1)+XYZICON(ICEND,1))
@@ -690,11 +698,11 @@ C Clear the temporary array of connection variables.
         ICSTRT=0
         ICSTRTP=0
         DO 30 I=1,MCIP
-          CIP(I,1)=0
-          CIP(I,2)=0
+          CIP(I,1)=0.0
+          CIP(I,2)=0.0
   30    CONTINUE
         ICEND=0
-        IENDP=0
+        ICENDP=0
         ICPC=0
 
 C Note a new connection has been created so interface can ask if
@@ -709,8 +717,8 @@ C     &     NCONWP(NICNN),ihavenewcnn
 
 C Clear the temporary array of connection variables if a complete connection
 C has not been made.
-        IXR=IX
-        IYR=IY
+        IXR=int(IX)
+        IYR=int(IY)
         ICSTRT=0
         ICSTRTP=0
         DO 40 I=1,MCIP
@@ -725,6 +733,236 @@ C has not been made.
       RETURN
       END
 
+C ****************************** MCONAD **********************************
+C MCONAD lets the user define a network connection via menu.
+
+      SUBROUTINE MCONAD(is,ie)
+
+#include "gnetwk.h"
+      
+      integer lnblnk  ! function definition
+
+      COMMON/OUTIN/IUOUT,IUIN
+
+      COMMON/NWKTYP/INWKTYP,vergnf   
+      
+C Icon commons
+      COMMON/NWKVEW/SCALF,VIEWCEN(3),VIEWLIM(6),IVIEW
+
+      COMMON/NWKSEL/ISEL(MICN),CSEL(MNCNN)
+
+C icontoflow() is a pointer from icon to flow node (positive) or flow
+C component (negative).
+C icnisnode(MNCNN) toggle where .true. means icon index is
+C associated with a flow node.
+C inodetoicon() points from flow node to icon
+      common/NWKFLW/icontoflow(MNCNN),icnisnode(MNCNN),
+     &  inodetoicon(MNCNN),icomptoicon(MNCNN)
+
+C This common block holds information gathered between (frequent) calls
+C from the C code.
+      COMMON/TMPGCA/ICSTRT,ICSTRTP,CIP(MCIP,2),ICEND,ICENDP,ICPC
+
+C Signal that there is a new connection which might have attributes
+C to edit.
+      common/newconn/ihavenewcnn
+
+C Data returned from initial scan of icon db.
+      dimension iatrdom(MNWKTYP),dtagatr(MNWKTYP,MIATRB,5),
+     &  datrib(MNWKTYP,MIATRB,3),dmenuatr(MNWKTYP,MIATRB)
+      dimension igatrdom(MNWKTYP),dgtagatr(MNWKTYP,MIATRB,5),
+     &  dgatrib(MNWKTYP,MIATRB,3),dgmenuatr(MNWKTYP,MIATRB)
+
+      LOGICAL ISEL,CSEL,icnisnode
+      CHARACTER ct*12
+      character outs*124,outsd*124,VNPSTR*12
+      character dtagatr*12,dmenuatr*32,datrib*12
+      character dgtagatr*12,dgmenuatr*32,dgatrib*12
+      integer ICSTRT,ICEND,INCOMP
+
+#ifdef OSI
+      integer iicol
+#else
+      integer*8 iicol
+#endif
+
+C Have to re-think. A single mass flow connection is actually
+C two connections in enet. Do node to component and then do
+C component to 2nd node creating two enet connections.
+      ICSTRT=is; ICEND=ie
+      ICSTRTP=1  ! set to initial attachment
+      ICPC=0     ! reset counter for way-points
+      ICENDP=1   ! end  attachment
+
+C Set the connection data for the 1st half.
+      iicol=0
+      call winscl('-',iicol)  ! reset color again
+      NICNN=NICNN+1
+      ICNS(NICNN)=ICSTRT
+      ICNE(NICNN)=ICEND
+
+C See if the type of attachments match, if so set ICNNT and if not
+C give a warning to the user (reset to standard colours before giving
+C the warning). Tell the user which components have been associated
+C with this connection.
+      if(ICNCT(ICSTRT,ICSTRTP).eq.ICNCT(ICEND,ICENDP))then
+         ICNNT(NICNN)=ICNCT(ICSTRT,ICSTRTP)
+        if(icnnt(nicnn).eq.0) ct='none'
+        if(icnnt(nicnn).eq.1) ct='air'
+        if(icnnt(nicnn).eq.2) ct='water'
+        if(icnnt(nicnn).eq.3) ct='steam'
+        if(icnnt(nicnn).eq.4) ct='refrigerant'
+        if(icnnt(nicnn).eq.5) ct='fuel'
+        if(icnnt(nicnn).eq.6) ct='comb_product'
+        if(icnnt(nicnn).eq.7) ct='signal'
+        lns=lnblnk(NWICNM(ICSTRT))
+        lne=lnblnk(NWICNM(ICEND))
+        lhs=lnblnk(NWICNHIS(ICSTRT))
+        lhe=lnblnk(NWICNHIS(ICEND))
+        write(outs,'(10a)') 'Between ',NWICNM(ICSTRT)(1:lns),
+     &    ' (',NWICNHIS(ICSTRT)(1:lhs),') & ',
+     &    NWICNM(ICEND)(1:lne),
+     &    ' (',NWICNHIS(ICEND)(1:lhe),') via ',ct
+        call sdelim(outs,outsd,'S',IW)
+        call edisp(iuout,outsd)
+
+C See comments in network.F in NETCDATR regarding height differences.
+        if(icnisnode(ICSTRT))then
+          delta=XYZICON(ICEND,3)-XYZICON(ICSTRT,3)
+        else
+          delta=XYZICON(ICSTRT,3)-XYZICON(ICEND,3)
+        endif
+        write(outs,'(3a,f6.3,3a,f6.3,a,f6.3)') 'Height of ',
+     &    NWICNM(ICSTRT)(1:lns),' is',XYZICON(ICSTRT,3),
+     &    ' & ',NWICNM(ICNE(nicnn))(1:lne),' is ',
+     &    XYZICON(ICEND,3),' & delta is ',delta
+        call sdelim(outs,outsd,'S',IW)
+        call edisp(iuout,outsd)
+
+C Assign default attributes for this connection based on the current
+C domain. Rescan the iconsdb to pick up each domain's connection
+C attributes.
+        call scanicondb(nbdomain,verdomain,iatrdom,dtagatr,
+     &    datrib,dmenuatr,igatrdom,dgtagatr,dgatrib,dgmenuatr,IER)
+
+C Loop through and find the relevant domain id to which to attribute the
+C connections data.
+
+C Debug. 
+C        write(6,*) 'Added a connection ...'
+C        write(6,*) 'number of domains in db ',nbdomain
+
+        do 42 id=1,nbdomain
+
+C Debug.
+C          write(6,*) 'network domain type ',inwktyp
+C          write(6,*) 'domain ids ',idomain(id)
+
+          if(idomain(id).eq.inwktyp)then
+
+C Debug.
+C            write(6,*)'number of data attributes ',iatrdom(id)
+
+            idatrdom(NICNN)=iatrdom(id)
+            if(iatrdom(id).gt.0)then
+              do 43 ii=1,iatrdom(id)
+                ddtagatr(NICNN,ii,1)=dtagatr(id,ii,1)
+                ddtagatr(NICNN,ii,2)=dtagatr(id,ii,2)
+                ddtagatr(NICNN,ii,3)=dtagatr(id,ii,3)
+                ddtagatr(NICNN,ii,4)=dtagatr(id,ii,4)
+                ddtagatr(NICNN,ii,5)=dtagatr(id,ii,5)
+
+C If dtagatr(id,ii,1) is location then datrib(id,ii,1) is delta
+                if(dtagatr(id,ii,1)(1:8).eq.'location')then
+                  call relstr(delta,vnpstr,ilena,iflag)
+                  write(ddatrib(nicnn,ii,1),'(a)') vnpstr
+                else
+                  ddatrib(NICNN,ii,1)=datrib(id,ii,1)
+                endif
+                ddatrib(NICNN,ii,2)=datrib(id,ii,2)
+                ddatrib(NICNN,ii,3)=datrib(id,ii,3)
+                ddmenuatr(NICNN,ii)=dmenuatr(id,ii)
+
+C Debug.
+C                write(6,*) 'nicnn id ii ',nicnn,id,ii
+C                write(6,*) 'data tag ',dtagatr(id,ii,1)
+C                write(6,*) 'data atr ',datrib(id,ii,1)
+C                write(6,*) 'ddata atr ',ddatrib(nicnn,ii,1)
+C                write(6,*) 'data tag ',dtagatr(id,ii,2)
+C                write(6,*) 'data atr ',datrib(id,ii,2)
+C                write(6,*) 'data tag ',dtagatr(id,ii,3)
+C                write(6,*) 'data tag ',dtagatr(id,ii,4)
+C                write(6,*) 'data tag ',dtagatr(id,ii,5)
+C                write(6,*) 'data atr ',datrib(id,ii,3)
+C                write(6,*) 'menu atr ',dmenuatr(id,ii)
+  43          continue
+            endif
+          endif
+  42    continue
+      endif
+
+      ICNSP(NICNN)=ICSTRTP  ! remember index of attachment points
+      ICNEP(NICNN)=ICENDP
+      NCONWP(NICNN)=ICPC    ! remember how many way points
+      IF(NCONWP(NICNN).LT.1) THEN
+
+C If there are no way points then create one half way between the
+C two icons.
+        NCONWP(NICNN)=1
+        IF(IVIEW.EQ.1)THEN 
+          CIP(1,1)=0.5*(XYZICON(ICSTRT,1)+XYZICON(ICEND,1))
+          CIP(1,2)=0.5*(XYZICON(ICSTRT,2)+XYZICON(ICEND,2))
+        ELSEIF(IVIEW.EQ.2)THEN  
+          CIP(1,1)=0.5*(XYZICON(ICSTRT,1)+XYZICON(ICEND,1))
+          CIP(1,2)=0.5*(XYZICON(ICSTRT,3)+XYZICON(ICEND,3))
+        ELSE   
+          CIP(1,1)=0.5*(XYZICON(ICSTRT,2)+XYZICON(ICEND,2))
+          CIP(1,2)=0.5*(XYZICON(ICSTRT,3)+XYZICON(ICEND,3)) 
+        ENDIF
+      ENDIF  
+      DO 20 K=1,NCONWP(NICNN) 
+        IF(IVIEW.EQ.1)THEN
+          CNWNP(NICNN,K,1)= CIP(K,1)
+          CNWNP(NICNN,K,2)= CIP(K,2)
+          CNWNP(NICNN,K,3)= VIEWCEN(3)
+        ELSEIF(IVIEW.EQ.2)THEN
+          CNWNP(NICNN,K,1)= CIP(K,1)
+          CNWNP(NICNN,K,2)= VIEWCEN(2)
+          CNWNP(NICNN,K,3)= CIP(K,2)
+        ELSE
+          CNWNP(NICNN,K,1)= VIEWCEN(1)
+          CNWNP(NICNN,K,2)= CIP(K,1)
+          CNWNP(NICNN,K,3)= CIP(K,2)
+        ENDIF
+ 20   CONTINUE
+
+C Re set the start and end components to unselected.
+      ISEL(ICSTRT)=.FALSE.
+      ISEL(ICEND)=.FALSE.
+
+C Clear the temporary array of connection variables.
+      ICSTRT=0
+      ICSTRTP=0
+      DO 30 I=1,MCIP
+        CIP(I,1)=0.0
+        CIP(I,2)=0.0
+  30  CONTINUE
+      ICEND=0
+      ICENDP=0
+      ICPC=0
+
+C Note a new connection has been created so interface can ask if
+C the user wishes to edit attributes.
+      ihavenewcnn=nicnn
+
+C Debug.
+      write(6,*) 'info ',nicnn,ICNSP(NICNN),ICNEP(NICNN),
+     &   NCONWP(NICNN),ihavenewcnn
+
+      RETURN
+      END
+
+
 C ******************* GNWKQUERY *********************
 C GNWKQUERY is called by the c-side to get the current network viewing parameters
 C
@@ -733,9 +971,9 @@ C PV - vertical view extents
 C TV - vertical view limits
 C CV - current vert. view centre
 C
-C PV - horizontal view extents
-C TV - horizontal view limits
-C CV - current horiz. view centre
+C PH - horizontal view extents
+C TH - horizontal view limits
+C CH - current horiz. view centre
 
       SUBROUTINE GNWKQUERY(IQ,PV,TV,CV,PH,TH,CH)
 
@@ -744,7 +982,9 @@ C CV - current horiz. view centre
 
       IQ=-1
       IF(IVIEW.EQ.1)THEN
-C Standard X-Y view
+
+C Standard X-Y view. Assume maximum limits MGRXL MGRYL of the
+C network domain so scroll bar use.
         TH=FLOAT(MGRXL)
         PH=(VIEWLIM(2)-VIEWLIM(1))/TH
         CH=VIEWCEN(1)/TH
@@ -773,6 +1013,9 @@ C X-Z view
         CV=VIEWCEN(3)/TV
         IQ=1
       ENDIF
+
+C Debug.
+C      write(6,*) 'gnwkquery ',IQ,PV,TV,CV,PH,TH,CH
 
       RETURN
       END

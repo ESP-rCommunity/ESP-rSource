@@ -154,13 +154,6 @@ C
 #include "gnetwk.h"
 
 C Icon commons
-      COMMON/NWKICN/NNICN,ICONTP(MICN),XYZICON(MICN,3),NICONATR(MICN),
-     & ATRICN(MICN,MIATRB,3),ATRTAG(MICN,MIATRB,5),ATRMENU(MICN,MIATRB),
-     & NCONP(MICN),CONCP(MICN,MCNP,2),ICNCT(MICN,MCNP),
-     & VCICON(MICN,MICNV,3),IVEICN(MICN,MICNE,5),NIVC(MICN),
-     & NIVE(MICN),NIVD(MICN),IVDOT(MICN,MICND,4),NIVA(MICN),
-     & IVARC(MICN,MICND,7),NIVL(MICN),IVLBL(MICN,MICND,3),NIVT(MICN)
-
 C Selected entity (component and connection) common
       COMMON/NWKSEL/ISEL(MICN),CSEL(MNCNN)
 
@@ -168,7 +161,6 @@ C Selected entity (component and connection) common
 
       DIMENSION TXYZ(MICN,MICNV,3),T2XYZ(MICN,MICNV,3)
       DIMENSION MXFM(9),TCONCP(MICN,MCNP,2)
-      character ATRTAG*12,ATRMENU*32,ATRICN*12
 
       REAL MXFM
 
@@ -375,31 +367,22 @@ C assumed that each string is the same length.
 
 C ************ dupicname ************
 C Check for duplicate icon names (against the name of icon
-C index icn).
+C index icn). The logic looks for [ in the name in case there
+C were prior name[1] in the list.
+C << logic could be improved. >>
       subroutine dupicname(icn)
 #include "gnetwk.h"
       
       integer lnblnk  ! function definition
 
-C Icon commons
-      COMMON/NWKICN/NNICN,ICONTP(MICN),XYZICON(MICN,3),NICONATR(MICN),
-     & ATRICN(MICN,MIATRB,3),ATRTAG(MICN,MIATRB,5),ATRMENU(MICN,MIATRB),
-     & NCONP(MICN),CONCP(MICN,MCNP,2),ICNCT(MICN,MCNP),
-     & VCICON(MICN,MICNV,3),IVEICN(MICN,MICNE,5),NIVC(MICN),
-     & NIVE(MICN),NIVD(MICN),IVDOT(MICN,MICND,4),NIVA(MICN),
-     & IVARC(MICN,MICND,7),NIVL(MICN),IVLBL(MICN,MICND,3),NIVT(MICN)
-      COMMON/NWKICS/NWICNM(MICN),NWICNHIS(MICN),NWICNLBL(MICN,MICND),
-     & NWICNTXT(MICN,60)
+C Icon commons are in gnetwk.h
       CHARACTER OUTS*124
-      CHARACTER NWICNM*12,NWICNHIS*40,NWICNLBL*4
-      character NWICNTXT*72
-      character ATRTAG*12,ATRMENU*32,ATRICN*12
 
       NAMATCH=0
       DO 538 I=1,NNICN
         OUTS=' '
         IRLEN=LNBLNK(NWICNM(ICN)) 
-        WRITE(*,*)'IRLEN ',IRLEN  
+C Debug        WRITE(*,*)'IRLEN ',IRLEN  
         IROOT=IRLEN
         DO 727 IR=1,IRLEN
           IF(NWICNM(ICN)(IR:IR).EQ.'[') IROOT=IR-1
@@ -438,29 +421,17 @@ C Copy data from icon iorigin to icon inew.
       subroutine copyicon(iorigin,inew,ier)
 # include "gnetwk.h"
 
-C Icon commons       
-      COMMON/NWKICN/NNICN,ICONTP(MICN),XYZICON(MICN,3),NICONATR(MICN),
-     & ATRICN(MICN,MIATRB,3),ATRTAG(MICN,MIATRB,5),ATRMENU(MICN,MIATRB),
-     & NCONP(MICN),CONCP(MICN,MCNP,2),ICNCT(MICN,MCNP),
-     & VCICON(MICN,MICNV,3),IVEICN(MICN,MICNE,5),NIVC(MICN),
-     & NIVE(MICN),NIVD(MICN),IVDOT(MICN,MICND,4),NIVA(MICN),
-     & IVARC(MICN,MICND,7),NIVL(MICN),IVLBL(MICN,MICND,3),NIVT(MICN)
-
-      COMMON/NWKICS/NWICNM(MICN),NWICNHIS(MICN),NWICNLBL(MICN,MICND),
-     & NWICNTXT(MICN,60) 
-
+C Icon commons are in gnetwk.h
 C Selected entity (component and connection) common
       COMMON/NWKSEL/ISEL(MICN),CSEL(MNCNN)
 
-      character ATRTAG*12,ATRMENU*32,ATRICN*12
-      CHARACTER NWICNM*12,NWICNHIS*40,NWICNLBL*4
-      character NWICNTXT*72
       LOGICAL ISEL,CSEL
 
 C Copy data within commons NWKICN and NWKICS.
       ICONTP(inew)=ICONTP(iorigin)
       NWICNM(inew)=NWICNM(iorigin)
       NWICNHIS(inew)=NWICNHIS(iorigin)
+      NWICNME(inew)=NWICNME(iorigin)
       NICONATR(inew)=NICONATR(iorigin)
       if(NICONATR(inew).ge.1)then
         do 36 J=1,NICONATR(inew)
@@ -542,30 +513,10 @@ C << IC currently not used >>
       subroutine compacticon(IC,ier)
 # include "gnetwk.h"
 
-C Icon commons       
-      COMMON/NWKICN/NNICN,ICONTP(MICN),XYZICON(MICN,3),NICONATR(MICN),
-     & ATRICN(MICN,MIATRB,3),ATRTAG(MICN,MIATRB,5),ATRMENU(MICN,MIATRB),
-     & NCONP(MICN),CONCP(MICN,MCNP,2),ICNCT(MICN,MCNP),
-     & VCICON(MICN,MICNV,3),IVEICN(MICN,MICNE,5),NIVC(MICN),
-     & NIVE(MICN),NIVD(MICN),IVDOT(MICN,MICND,4),NIVA(MICN),
-     & IVARC(MICN,MICND,7),NIVL(MICN),IVLBL(MICN,MICND,3),NIVT(MICN)
-
-      COMMON/NWKICS/NWICNM(MICN),NWICNHIS(MICN),NWICNLBL(MICN,MICND),
-     & NWICNTXT(MICN,60) 
-
-C Connection commons
-      COMMON/NWKCON/NICNN,ICNS(MNCNN),ICNE(MNCNN),ICNNT(MNCNN),
-     & ICNSP(MNCNN),ICNEP(MNCNN),CNWNP(MNCNN,MCIP,3),
-     & NCONWP(MNCNN),idatrdom(MNCNN),ddtagatr(MNCNN,MIATRB,5),
-     & ddatrib(MNCNN,MIATRB,3),ddmenuatr(MNCNN,MIATRB)
-
+C Icon commons are in gnetwk.h
 C Selected entity (component and connection) common
       COMMON/NWKSEL/ISEL(MICN),CSEL(MNCNN)
 
-      character ATRTAG*12,ATRMENU*32,ATRICN*12
-      character ddtagatr*12,ddmenuatr*32,ddatrib*12
-      CHARACTER NWICNM*12,NWICNHIS*40,NWICNLBL*4
-      character NWICNTXT*72
       LOGICAL ISEL,CSEL
 
       NWICN=0
@@ -592,6 +543,7 @@ C selected icon is passed).
           XYZICON(NWICN,3)=XYZICON(I,3) 
           NWICNM(NWICN)=NWICNM(I)
           NWICNHIS(NWICN)=NWICNHIS(I)
+          NWICNME(NWICN)=NWICNME(I)
           NICONATR(NWICN)=NICONATR(I)
           if(NICONATR(NWICN).ge.1)then
             do 26 J=1,NICONATR(NWICN)
@@ -677,7 +629,7 @@ C              CPP(3,III)=ICPP(IH,IL,3)
 C  30        CONTINUE
 C  35      CONTINUE
         ELSE           
-          NWCNN=0
+          NWCNN=0  ! at selected icon set NWCNN zero
 
 C Delete any associated connections. If the start and end
 C icon associated with J loop connection does not match

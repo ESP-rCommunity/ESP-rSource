@@ -18,9 +18,21 @@ C License along with ESP-r. If not, write to the Free
 C Software Foundation, Inc., 59 Temple Place, Suite 330,
 C Boston, MA 02111-1307 USA.
 
+C Included subroutines:
+C  scanicondb - scans an icon database and returns data structures
+C  getanicon  - gets information about an icon in an icon database
+C  geticonatr - gets attributes of an icon in an icon database
+C  whichzonecolour - is given a colour string within the list offered
+C  geticonindex - variant of getanicon passed domain,category,icontag
+C    and returns the indicies so that the template data structures can
+C    be used.
+
+C << Rather than local variables passed as parameters, should these be
+C << into common blocks?
+
 C ******** scanicondb
-C This routine scans an icon database and returns:
-C   nbdomain: the number of domains and verdomain the version
+C This routine scans an icon database and fills/returns:
+C The common block variables:
 C   idomain(MNWKTYP): a list of domain types indices
 C   nbcat(MNWKTYP): number of categories in each domain,
 C   cattag(MNWKTYP,MICNCAT): tag for each category (12 char),
@@ -29,7 +41,9 @@ C   nbicons(MNWKTYP,MICNCAT): number of items in each category.
 C   icontag(MNWKTYP,MICNCAT): tag for each icon (12 char),
 C   iconmenu(MNWKTY,MICNCAT): menu entry for each icon (32 char)
 
-C Domain connection attributes.
+C Parameters passed.
+C Domain connection attributes (templates start with a single [d]).
+C   nbdomain: the number of domains and verdomain the version
 C   iatrdom(MNWKTYP): number of domain (connection) attributes
 C   dtagatr(MNWKTYP,MIATRB,5): array of tags (12 char) where the first is the
 C     group (thermal/flow/control/output/location/environment/electrical)
@@ -57,10 +71,11 @@ C     datrib(?,?,2) is minimum, atrib(?,?,3) is maximum, for text data
 C     datrib(?,?,1) is the string and datrib(?,?,2) & datrib(?,?,3) blank.
 C   dgmenuatr(MNWKTYP,MIATRB): array of menu entries (32 char)
 C
-      subroutine scanicondb(nbdomain,verdomain,idomain,nbcat,cattag,
-     &  catmenu,nbicons,icontag,iconmenu,iatrdom,dtagatr,
+      subroutine scanicondb(nbdomain,verdomain,iatrdom,dtagatr,
      &  datrib,dmenuatr,igatrdom,dgtagatr,dgatrib,dgmenuatr,IER)
 #include "gnetwk.h" 
+#include "espriou.h"
+C espriou.h provides currentfile.
       
       integer lnblnk  ! function definition
 
@@ -69,10 +84,6 @@ C
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/DEFLT3/DFCFD,DECMPDBFL,DICONDBFL
 
-      dimension idomain(MNWKTYP),nbcat(MNWKTYP),
-     &  cattag(MNWKTYP,MICNCAT),catmenu(MNWKTYP,MICNCAT),
-     &  nbicons(MNWKTYP,MICNCAT),icontag(MNWKTYP,MICNCAT,MICN),
-     &  iconmenu(MNWKTYP,MICNCAT,MICN)
       dimension iatrdom(MNWKTYP),dtagatr(MNWKTYP,MIATRB,5),
      &  datrib(MNWKTYP,MIATRB,3),dmenuatr(MNWKTYP,MIATRB)
       dimension igatrdom(MNWKTYP),dgtagatr(MNWKTYP,MIATRB,5),
@@ -80,8 +91,6 @@ C
 
       CHARACTER OUTSTR*124,outs*124,WORD*24,WORD1*24,WORD2*24,PHRASE*48
       CHARACTER ICONDBFL*72,ltmp*72,DFILE*72
-      character cattag*12,catmenu*32
-      character icontag*12,iconmenu*40
       character dtagatr*12,dmenuatr*32,datrib*12
       character dgtagatr*12,dgmenuatr*32,dgatrib*12
       character*72 DFCFD,DECMPDBFL,DICONDBFL
@@ -136,6 +145,9 @@ C base list.
         ENDIF
       ENDIF
 
+C Remember the current icon file in case of errors.
+      write(currentfile,'(a)') ICONDBFL(1:lnblnk(ICONDBFL))
+
 C Clear the parameter list. nbd is local counter of current domain.
       nbdomain=0
       verdomain=0.0
@@ -145,22 +157,14 @@ C Clear the parameter list. nbd is local counter of current domain.
         iatrdom(i)=0
         igatrdom(i)=0
         do 6 m=1,MIATRB
-          dtagatr(i,m,1)=' '
-          dtagatr(i,m,2)=' '
-          dtagatr(i,m,3)=' '
-          dtagatr(i,m,4)=' '
-          dtagatr(i,m,5)=' '
-          datrib(i,m,1)=' '
-          datrib(i,m,2)=' '
-          datrib(i,m,3)=' '
+          dtagatr(i,m,1)=' '; dtagatr(i,m,2)=' '; dtagatr(i,m,3)=' '
+          dtagatr(i,m,4)=' '; dtagatr(i,m,5)=' '
+          datrib(i,m,1)=' '; datrib(i,m,2)=' '; datrib(i,m,3)=' '
           dmenuatr(i,m)=' '
-          dgtagatr(i,m,1)=' '
-          dgtagatr(i,m,2)=' '
-          dgtagatr(i,m,3)=' '
-          dgtagatr(i,m,4)=' '
+          dgtagatr(i,m,1)=' '; dgtagatr(i,m,2)=' '
+          dgtagatr(i,m,3)=' '; dgtagatr(i,m,4)=' '
           dgtagatr(i,m,5)=' '
-          dgatrib(i,m,1)=' '
-          dgatrib(i,m,2)=' '
+          dgatrib(i,m,1)=' '; dgatrib(i,m,2)=' '
           dgatrib(i,m,3)=' '
           dgmenuatr(i,m)=' '
   6     continue
@@ -198,10 +202,12 @@ C Check that the opened file is an icons database and which version.
       endif 
    
 C Read in the header, look for the domain and see if if it is known.
+C If there is a blank line in the icon file do process it.
   20  CALL STRIPC(ICONFIL,OUTSTR,99,ND,0,'icon header',IER)
+      if(ND.eq.0) goto 20  ! do not bother with blank lines
       IF(IER.NE.0) CONT=.FALSE. 
       K=0
-      CALL EGETW(OUTSTR,K,WORD,'W','icon domain tag',IER)
+      CALL EGETW(OUTSTR,K,WORD,'W','scanicondb icon domain tag',IER)
       IF(IER.NE.0) CONT=.FALSE.
       if(WORD(1:7).eq.'*Domain'.or.WORD(1:7).eq.'*domain')then
         CALL EGETW(OUTSTR,K,WORD,'W','the domain',IER)
@@ -431,8 +437,8 @@ C Probably reached the end of the file.
 
 C ******** getanicon
 C This routine gets information about an icon in an icon database.
-C It is passed the domain type (domain) and the category type (category)
-C and the item type (icon) and returns:
+C It is passed the domain type (indxdomain) and the category type (category)
+C and the item type tag (iconttag) and returns:
 C   number of vertices (nbvert),
 C   array of vertices vert(MICNV,2) where 1st is X and 2nd is Y
 C   number of edges (nbedge), array of edges (idege(MICNE,4) 1st is
@@ -452,10 +458,11 @@ C     iatt(?,2) is attachment (connection) type 0=none, 1=air, 2=water,
 C     3=steam, 4=refrigerant, 5=fuel, 6=combustion product,
 C     7=signal (0-10v)
 C   number of lines of text (nbtext) array of text strings (72 char)
+C   the menu associated with the icon (icmenu 36 char)
  
-      subroutine getanicon(idomain,category,icontag,
+      subroutine getanicon(indxdomain,category,iconttag,
      &   nbvert,vert,nbedge,iedge,nbdot,idot,nblabel,ilabel,labeltx,
-     &   nbarc,iarc,nbatt,iatt,nbtext,text,IER)
+     &   nbarc,iarc,nbatt,iatt,nbtext,text,icmenu,IER)
 #include "gnetwk.h" 
       
       integer lnblnk  ! function definition
@@ -470,7 +477,7 @@ C   number of lines of text (nbtext) array of text strings (72 char)
 
       CHARACTER OUTSTR*124,outs*124,WORD*24,PHRASE*48
       CHARACTER ICONDBFL*72
-      character category*12,icontag*12,labeltx*4,text*72
+      character category*12,iconttag*12,labeltx*4,text*72,icmenu*36
       character colourstr*12,ctype*1
 
       LOGICAL CONT
@@ -500,13 +507,8 @@ C parsed with scanicondb so only minimal checking is needed.
       ENDIF
 
 C Clear the returned parameter list.
-      nbtext=0
-      nbvert=0
-      nbedge=0
-      nbdot=0
-      nbarc=0
-      nbatt=0
-      nblabel=0
+      nbtext=0; nbvert=0; nbedge=0
+      nbdot=0; nbarc=0; nbatt=0; nblabel=0
       do 4 j=1,60
         text(j)='  '
   4   continue
@@ -555,20 +557,21 @@ C Check that the opened file is an icons database.
    
 C Read in the header, look for the domain and see if it matches.
   20  CALL STRIPC(ICONFIL,OUTSTR,99,ND,0,'icon header',IER)
+      if(ND.eq.0) goto 20  ! do not bother with blank lines
       IF(IER.NE.0) CONT=.FALSE. 
       K=0
-      CALL EGETW(OUTSTR,K,WORD,'W','icon domain tag',IER)
+      CALL EGETW(OUTSTR,K,WORD,'W','getanicon icon domain tag',IER)
       IF(IER.NE.0) CONT=.FALSE.
       if(WORD(1:7).eq.'*Domain'.or.WORD(1:7).eq.'*domain')then
         CALL EGETW(OUTSTR,K,WORD,'W','the domain',IER)
         IF(IER.NE.0) CONT=.FALSE.
-        if(WORD(1:5).eq.'PLNDB'.and.idomain.eq.1)then
+        if(WORD(1:5).eq.'PLNDB'.and.indxdomain.eq.1)then
           continue
-        elseif(WORD(1:5).eq.'FLODB'.and.idomain.eq.2)then
+        elseif(WORD(1:5).eq.'FLODB'.and.indxdomain.eq.2)then
           continue
-        elseif(WORD(1:5).eq.'CTLDB'.and.idomain.eq.4)then
+        elseif(WORD(1:5).eq.'CTLDB'.and.indxdomain.eq.4)then
           continue
-        elseif(WORD(1:4).eq.'PPDB'.and.idomain.eq.6)then
+        elseif(WORD(1:4).eq.'PPDB'.and.indxdomain.eq.6)then
           continue
         else
           if(CONT)goto 20
@@ -613,10 +616,18 @@ C Read in the icons, see if it matches.
       K=0
       CALL EGETW(OUTSTR,K,WORD,'W','icon tag',IER)
       IF(IER.NE.0) CONT=.FALSE.
-      if(WORD(1:5).eq.'*Item'.or.WORD(1:5).eq.'*item')then
+      if(WORD(1:9).eq.'*End_icon')then
+        IER=0
+        CALL ERPFREE(ICONFIL,ISTAT)
+        RETURN
+      elseif(WORD(1:5).eq.'*Item'.or.WORD(1:5).eq.'*item')then
         CALL EGETW(OUTSTR,K,WORD,'W','item tag',IER)
         IF(IER.NE.0) CONT=.FALSE.
-        if(WORD(1:lnblnk(WORD)).eq.icontag(1:lnblnk(icontag)))then
+        if(WORD(1:lnblnk(WORD)).eq.iconttag(1:lnblnk(iconttag)))then
+
+C Also get the menu string for this icon.
+          CALL EGETRM(OUTSTR,K,PHRASE,'W','icon menu',IER)
+          write(icmenu,'(a)') PHRASE(1:36)
           goto 23
         else
           goto 22
@@ -783,9 +794,9 @@ C Probably reached the end of the file.
 
 
 C ******** geticonatr
-C This routine gets attributes of an icon in an icon.
-C It is passed the domain type (domain) and the category type (category)
-C and the item type (icon) and returns:
+C This routine gets attributes of an icon in an icon database.
+C It is passed the domain type (indxdomain) and the category type (category)
+C and the item type (iconttag) and returns:
 C  total number of attributes (natrib),
 C  array of tags (12 char) (tagatr) where the first is the
 C   group (thermal/flow/control/output/location/environment/electrical)
@@ -797,11 +808,12 @@ C  array of strings holding attribute data (atrib(MIATRB,3)) depending
 C   on which data type: for integers and real ,atrib(?,1) is a value
 C   atrib(?,2) is minimum, atrib(?,3) is maximum, for text data 
 C   atrib(?,1) is the string attribute and atrib(?,2) & atrib(?,3) blank.
-C  array of menu entries (32 char) menuatr(MIATRB)
+C  array of menu entries (32 char) menuatr(MIATRB), the phrase describing
+C  the icon in the db (40 char).
 
  
-      subroutine geticonatr(idomain,category,icontag,natrib,tagatr,
-     &  atrib,menuatr,IER)
+      subroutine geticonatr(indxdomain,category,iconttag,natrib,tagatr,
+     &  atrib,menuatr,iconphrase,IER)
 #include "gnetwk.h" 
       
       integer lnblnk  ! function definition
@@ -810,12 +822,13 @@ C  array of menu entries (32 char) menuatr(MIATRB)
       COMMON/FILEP/IFIL
       COMMON/OUTIN/IUOUT,IUIN
 
+      character tagatr*12,menuatr*32,atrib*12
       dimension tagatr(MIATRB,5),atrib(MIATRB,3),menuatr(MIATRB)
 
       CHARACTER OUTSTR*124,outs*124,WORD*24,WORD1*24,WORD2*24,PHRASE*48
       CHARACTER ICONDBFL*72
-      character category*12,icontag*12
-      character tagatr*12,menuatr*32,atrib*12
+      character category*12,iconttag*12
+      character iconphrase*40
 
       LOGICAL CONT
 
@@ -842,16 +855,12 @@ C parsed with scanicondb so only minimal checking is needed.
 
 C Clear the returned parameter list.
       natrib=0
+      iconphrase=' '
       do 3 i=1,MIATRB
-        tagatr(i,1)=' '
-        tagatr(i,2)=' '
-        tagatr(i,3)=' '
-        tagatr(i,4)=' '
-        tagatr(i,5)=' '
-        atrib(i,1)=' '
-        atrib(i,2)=' '
-        atrib(i,3)=' '
-	menuatr(i)=' '
+        tagatr(i,1)=' '; tagatr(i,2)=' '; tagatr(i,3)=' '
+        tagatr(i,4)=' '; tagatr(i,5)=' '
+        atrib(i,1)=' '; atrib(i,2)=' '; atrib(i,3)=' ' 
+        menuatr(i)=' '
   3   continue
 
 C Check that the opened file is an icons database.
@@ -870,23 +879,24 @@ C Check that the opened file is an icons database.
    
 C Read in the header, look for the domain and see if it matches.
   20  CALL STRIPC(ICONFIL,OUTSTR,99,ND,0,'icon header',IER)
+      if(ND.eq.0) goto 20   ! do not bother with blank lines
       IF(IER.NE.0) CONT=.FALSE. 
       K=0
-      CALL EGETW(OUTSTR,K,WORD,'W','icon domain tag',IER)
+      CALL EGETW(OUTSTR,K,WORD,'W','geticonatr icon domain tag',IER)
       IF(IER.NE.0) CONT=.FALSE.
       if(WORD(1:7).eq.'*Domain'.or.WORD(1:7).eq.'*domain')then
         CALL EGETW(OUTSTR,K,WORD,'W','the domain',IER)
         IF(IER.NE.0) CONT=.FALSE.
-        if(WORD(1:5).eq.'PLNDB'.and.idomain.eq.1)then
+        if(WORD(1:5).eq.'PLNDB'.and.indxdomain.eq.1)then
           continue
-        elseif(WORD(1:5).eq.'FLODB'.and.idomain.eq.2)then
+        elseif(WORD(1:5).eq.'FLODB'.and.indxdomain.eq.2)then
           continue
-        elseif(WORD(1:5).eq.'CTLDB'.and.idomain.eq.4)then
+        elseif(WORD(1:5).eq.'CTLDB'.and.indxdomain.eq.4)then
           continue
-        elseif(WORD(1:4).eq.'PPDB'.and.idomain.eq.6)then
+        elseif(WORD(1:4).eq.'PPDB'.and.indxdomain.eq.6)then
           continue
         else
-          if(CONT)goto 20
+          if(CONT) goto 20  ! try again
         endif 
         if(.NOT.CONT)then
           IER=0
@@ -894,7 +904,7 @@ C Read in the header, look for the domain and see if it matches.
           RETURN
         endif
       else
-        goto 20
+        goto 20  ! try again
       endif
 
 C Read in the categories, see which matches.
@@ -909,9 +919,9 @@ C Read in the categories, see which matches.
 
 C If correct category process icons otherwise loop again
         if(WORD(1:lnblnk(WORD)).eq.category(1:lnblnk(category)))then
-          goto 22
+          goto 22  ! reached the required category
         else
-          goto 21
+          goto 21  ! try another
         endif
         if(.NOT.CONT)then
           IER=0
@@ -919,22 +929,33 @@ C If correct category process icons otherwise loop again
           RETURN
         endif
       else
-        goto 21
+        goto 21   ! try another
       endif
 
-C Read in the icons, see if it matches.
+C Read in the icons, see if it matches. If we reach the end
+C of the file free the file. ?? should ier be set non-zero ??
   22  CALL STRIPC(ICONFIL,OUTSTR,99,ND,0,'icons',IER)
       IF(IER.NE.0) CONT=.FALSE. 
       K=0
-      CALL EGETW(OUTSTR,K,WORD,'W','icon tag',IER)
+      CALL EGETW(OUTSTR,K,WORD,'W','first icon tag',IER)
       IF(IER.NE.0) CONT=.FALSE.
-      if(WORD(1:5).eq.'*Item'.or.WORD(1:5).eq.'*item')then
+      if(WORD(1:9).eq.'*End_icon')then
+        IER=0
+        CALL ERPFREE(ICONFIL,ISTAT)
+        RETURN
+      elseif(WORD(1:5).eq.'*Item'.or.WORD(1:5).eq.'*item')then
         CALL EGETW(OUTSTR,K,WORD,'W','item tag',IER)
         IF(IER.NE.0) CONT=.FALSE.
-        if(WORD(1:lnblnk(WORD)).eq.icontag(1:lnblnk(icontag)))then
-          goto 23
+        if(WORD(1:lnblnk(WORD)).eq.iconttag(1:lnblnk(iconttag)))then
+
+C The first item with a matching tag is used. We do not yet
+C check that the menu item also matches.
+          CALL EGETRM(OUTSTR,K,PHRASE,'W','icon menu',IER)
+          IF(IER.NE.0) CONT=.FALSE.
+          write(iconphrase,'(a)') PHRASE(1:40)
+          goto 23  ! found a matching tag 
         else
-          goto 22
+          goto 22  ! try another
         endif
         if(.NOT.CONT)then
           IER=0
@@ -942,7 +963,7 @@ C Read in the icons, see if it matches.
           RETURN
         endif
       else
-        goto 22
+        goto 22  ! try another
       endif
 
 C Read icon data.
@@ -1030,7 +1051,7 @@ C Based on the data type parse the remaining items on the line.
           CALL EGETW(OUTSTR,K,WORD,'W','static:user',IER)
           write(tagatr(natrib,5),'(a)') WORD(1:12)
           CALL EGETRM(OUTSTR,K,PHRASE,'W','atrib menu',IER)
-	  write(menuatr(natrib),'(a)') PHRASE(1:32)
+          write(menuatr(natrib),'(a)') PHRASE(1:32)
           IF(IER.NE.0) CONT=.FALSE.
           if(CONT)goto 42
         endif
@@ -1266,4 +1287,162 @@ C Or if black return 6 and white return 7 with type = 'i'.
       endif
       return
       end
+
+
+C ******** geticonindex
+C This routine gets index attributes of an icon in an icon database.
+C It is passed the domain type (indxdomain) and the category type (category)
+C and the item type (icon) and returns: idbcat, idbitem for use in
+C subsequent access to arrays.
+
+ 
+      subroutine geticonindex(indxdomain,category,iconttag,idbcat,
+     &  idbitem,IER)
+#include "gnetwk.h" 
+      
+      integer lnblnk  ! function definition
+
+      COMMON/ICONDBNAM/ICONDBFL
+      COMMON/FILEP/IFIL
+      COMMON/OUTIN/IUOUT,IUIN
+
+      CHARACTER OUTSTR*124,outs*124,WORD*24,PHRASE*48
+      CHARACTER ICONDBFL*72
+      character category*12,iconttag*12
+      LOGICAL CONT
+
+      IER=0
+      CONT=.TRUE.
+      ICONFIL=IFIL+1
+      idbcat=0; idbitem=0  ! reset
+      
+C Open the icon components database file, assume it has been previously
+C parsed with scanicondb so only minimal checking is needed.
+      IF(ICONDBFL(1:3).EQ.'UNK'.or.ICONDBFL(1:2).EQ.'  ') THEN
+        CALL EDISP(IUOUT,'ERROR - could not find the icon database.')
+        IER=1
+        CALL ERPFREE(ICONFIL,ISTAT)
+        RETURN
+      ENDIF
+
+      CALL EFOPSEQ(ICONFIL,ICONDBFL,1,IER)
+      IF(IER.NE.0) THEN
+        CALL EDISP(IUOUT,'ERROR - could not find the icon database.')
+        IER=1
+        CALL ERPFREE(ICONFIL,ISTAT)
+        RETURN
+      ENDIF
+
+C Check that the opened file is an icons database.
+      CALL STRIPC(ICONFIL,OUTSTR,99,ND,0,'check file',IER)
+      IF(IER.NE.0) CONT=.FALSE. 
+      IF(OUTSTR(1:6).EQ.'*Icons')THEN
+        continue
+      else
+        WRITE(OUTS,'(3A)') 'File: ',ICONDBFL(1:LNBLNK(ICONDBFL)), 
+     &    ' is not an icons file.'
+        CALL USRMSG(OUTS,' ','W') 
+        ier=1
+        CALL ERPFREE(ICONFIL,ISTAT)
+        return
+      endif 
+   
+C Read in the header, look for the domain and see if it matches.
+  20  CALL STRIPC(ICONFIL,OUTSTR,99,ND,0,'icon header',IER)
+      if(ND.eq.0) goto 20   ! do not bother with blank lines
+      IF(IER.NE.0) CONT=.FALSE. 
+      K=0
+      CALL EGETW(OUTSTR,K,WORD,'W','geticonatr icon domain tag',IER)
+      IF(IER.NE.0) CONT=.FALSE.
+      if(WORD(1:7).eq.'*Domain'.or.WORD(1:7).eq.'*domain')then
+        CALL EGETW(OUTSTR,K,WORD,'W','the domain',IER)
+        IF(IER.NE.0) CONT=.FALSE.
+        if(WORD(1:5).eq.'PLNDB'.and.indxdomain.eq.1)then
+          continue
+        elseif(WORD(1:5).eq.'FLODB'.and.indxdomain.eq.2)then
+          continue
+        elseif(WORD(1:5).eq.'CTLDB'.and.indxdomain.eq.4)then
+          continue
+        elseif(WORD(1:4).eq.'PPDB'.and.indxdomain.eq.6)then
+          continue
+        else
+          if(CONT) goto 20  ! try again
+        endif 
+        if(.NOT.CONT)then
+          IER=0
+          CALL ERPFREE(ICONFIL,ISTAT)
+          RETURN
+        endif
+      else
+        goto 20  ! try again
+      endif
+
+C Read in the categories, see which matches.
+  21  CALL STRIPC(ICONFIL,OUTSTR,99,ND,0,'categories',IER)
+      IF(IER.NE.0) CONT=.FALSE. 
+      K=0
+      CALL EGETW(OUTSTR,K,WORD,'W','category tag',IER)
+      IF(IER.NE.0) CONT=.FALSE.
+      if(WORD(1:9).eq.'*Category'.or.WORD(1:9).eq.'*category')then
+        CALL EGETW(OUTSTR,K,WORD,'W','category tag',IER)
+        IF(IER.NE.0) CONT=.FALSE.
+        idbcat=idbcat+1  ! increment
+
+C If correct category process icons otherwise loop again
+        if(WORD(1:lnblnk(WORD)).eq.category(1:lnblnk(category)))then
+          goto 22  ! reached the required category
+        else
+          goto 21  ! try another
+        endif
+        if(.NOT.CONT)then
+          IER=0
+          CALL ERPFREE(ICONFIL,ISTAT)
+          RETURN
+        endif
+      else
+        goto 21   ! try another
+      endif
+
+C Read in the icons, see if it matches.
+  22  CALL STRIPC(ICONFIL,OUTSTR,99,ND,0,'icons',IER)
+      IF(IER.NE.0) CONT=.FALSE. 
+      K=0
+      CALL EGETW(OUTSTR,K,WORD,'W','first icon tag',IER)
+      IF(IER.NE.0) CONT=.FALSE.
+      if(WORD(1:9).eq.'*End_icon')then
+        IER=0
+        CALL ERPFREE(ICONFIL,ISTAT)
+        RETURN
+      elseif(WORD(1:5).eq.'*Item'.or.WORD(1:5).eq.'*item')then
+        CALL EGETW(OUTSTR,K,WORD,'W','item tag',IER)
+        IF(IER.NE.0) CONT=.FALSE.
+        idbitem=idbitem+1   ! increment
+        if(WORD(1:lnblnk(WORD)).eq.iconttag(1:lnblnk(iconttag)))then
+
+C The first item with a matching tag is used. We do not yet
+C check that the menu item also matches.
+          CALL EGETRM(OUTSTR,K,PHRASE,'W','icon menu',IER)
+          IF(IER.NE.0) CONT=.FALSE.
+          goto 23  ! found a matching tag 
+        else
+          goto 22  ! try another
+        endif
+        if(.NOT.CONT)then
+          IER=0
+          CALL ERPFREE(ICONFIL,ISTAT)
+          RETURN
+        endif
+      else
+        goto 22  ! try another
+      endif
+
+C Read icon data.
+  23  write(6,*)indxdomain,category,iconttag,idbcat,idbitem 
+
+C Probably reached the end of the file.
+      IER=0
+      CALL ERPFREE(ICONFIL,ISTAT)
+      RETURN
+      end
+
 
