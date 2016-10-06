@@ -27,11 +27,14 @@ C    mode = 2  : Writes mass flow network description to a file.
 
       subroutine genmfn(mode)
 
+#include "building.h"
 #include "net_flow.h"
 #include "plant.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FFN/IFLWN,ICFFS(MPCON)
+      character LAPROB*72
+      COMMON/AFN/IAIRN,LAPROB,ICAAS(MCOM)
       COMMON/MFLOW1/NNOD,NCMP,NCNN
       COMMON/MFLOW2/NDNAM(0:MNOD)
       COMMON/MFLOW3/NDFLD(MNOD),NDTYP(MNOD),HNOD(MNOD),SUPNOD(MNOD,MNDS)
@@ -57,16 +60,18 @@ C    mode = 2  : Writes mass flow network description to a file.
       common/mfcpar/itypmf(mpcon), isdcmf(mpcon), icnnmf(mpcon),
      &              supcmf(mpcon,17), ltpcmf(mpcon), isdimf(mpcon)
 
+C To signal to MFWRIT that globals are available from graphic network.
+C Currently set true if graphic network file, false otherwise.
+      logical haveglobal
+      COMMON/MFLOW11/haveglobal
+
       dimension rcvnod(mpcon), sndnod(mpcon), indxcn(mpcom)
       character  rcvstr*12, sndstr*12, str*12
       character  rcvnod*12, sndnod*12, ltpcmf*60
       CHARACTER LTPCMP*60,CMNAM*12,NDNAM*12
 
-C Initialise mass flow netwrk variables
-      nnod=0
-      ncmp=0
-      ncnn=0
-      wred=1.0
+C Initialise mass flow netwrk variables.
+      nnod=0; ncmp=0; ncnn=0; wred=1.0
       do 1 in=1, mnod
         ndnam(in)=' '
     1 continue
@@ -243,6 +248,11 @@ C If control index not set then only initial parameters are required.
 
 C << Note need a check so network flow file data is not written
 C << to a graphic network flow file.
+        if(IAIRN.eq.1)then
+          haveglobal=.FALSE.
+        elseif(IAIRN.eq.2)then
+          haveglobal=.TRUE.
+        endif
         call mfwrit(mfunit)
       endif
       return
