@@ -197,7 +197,7 @@ void getfilelist_(folder,act,flist,nwflist,nflist,lenfolder,lenact,lenflist)
 
 /* local working string arrays */
   char *locflist = flist;
-  int locnflist = *nflist;
+  int locnflist = (int)*nflist;
   static char file_list[400][73];	/* character arrays to hold folder or file names. */
   char name2[80];	/* buffer for folder name */
   char act2[8];	/* buffer for act */
@@ -390,7 +390,7 @@ void getfileslist_(folder,act,nflist,lenfolder,lenact)
   int foundone;		/* set to one if a file matches criteria. */
 
 /* local working string arrays and for use in  addfolderlist_() call */
-  int locnflist = *nflist;
+  int locnflist = (int)*nflist;
   char name2[80];  /* buffer for folder name */
   char act2[8];	   /* buffer for act */
   char type[2];    /* fixed char array D or L type for folder or file */
@@ -634,7 +634,8 @@ void curproject_(fcfgroot,fpath,fupath,fimgpth,fdocpth,ibrowse,
 
 /* curviews_() - pass in info on the current views from fortran */
 void curviews_(EVX,EVY,EVZ,VX,VY,VZ,EAN,JITZNM,JITSNM,JITVNO,JITOBS,
-     JITSNR,JITGRD,JITORG,DIS,JITBND,JITDSP,JITHLS,JITHLZ,JITPPSW)
+     JITVIS,JITVOBJ,JITSNR,JITGRD,JITORG,DIS,JITBND,JITDSP,JITHLS,
+     JITHLZ,JITPPSW)
   float *EVX,*EVY,*EVZ;  // eye point X Y Z
   float *VX,*VY,*VZ;     // viewed point X Y Z
   float *EAN,*DIS;       // angle of view and distance
@@ -642,12 +643,14 @@ void curviews_(EVX,EVY,EVZ,VX,VY,VZ,EAN,JITZNM,JITSNM,JITVNO,JITOBS,
   long int *JITSNM;  // surface name toggle: display = 0, hidden = 1
   long int *JITVNO;  // vertex toggle: display = 0, hidden = 1
   long int *JITOBS;  // obstruction toggle: 
+  long int *JITVIS;  // visual entity toggle: 
+  long int *JITVOBJ;  // visual object toggle: 
   long int *JITSNR;  // surf normal toggle: display = 0, hidden = 1
   long int *JITGRD;  // grid toggle: display = 0, hidden = 1
   long int *JITORG;  // origin toggle: display = 0, hidden = 1
   long int *JITBND;  // bounds toggle: static = 0, optimum = 1, zone focus = 2
-  long int *JITDSP;  // labels toggle: all surf + obs = 0, all surf = 1, partn = 2,
-                     // similar = 4, surfs + obs+ ground = 5, ground only = 6
+  long int *JITDSP;  // labels toggle: all surf + obs + vis = 0, all surf = 1, partn = 2,
+                     // similar = 4, surfs + obs+ ground = 5, ground only = 6 surf+obs = 7, surf+vis = 8
   long int *JITHLS;  // highlight toggle: normal 0, constr 1, trans/opaq 2, part atrib 3
   long int *JITHLZ;  // 2nd hilight attribute
   long int *JITPPSW; // current view - perspective/plan/south/west
@@ -660,6 +663,8 @@ void curviews_(EVX,EVY,EVZ,VX,VY,VZ,EAN,JITZNM,JITSNM,JITVNO,JITOBS,
   cray2_.ITORG = *JITORG;
   cray2_.ITSNR = *JITSNR;
   cray2_.ITOBS = *JITOBS;
+  cray2_.ITVIS = *JITVIS;
+  cray2_.ITVOBJ = *JITVOBJ;
   cray2_.ITHLS = *JITHLS;
   cray2_.ITHLZ = *JITHLZ;
   cray2_.ITGRD = *JITGRD;

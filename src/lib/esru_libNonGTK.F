@@ -3669,7 +3669,11 @@ C Control paging of pop-up help.
           MPM = 1
         ELSE
           IPFLG=1
-          PAGE=(FLOAT(IST+MIFULL-1)/FLOAT(MIFULL))
+          if(MIFULL.eq.0)then
+            PAGE=1.0
+          else
+            PAGE=(FLOAT(IST+MIFULL-1)/FLOAT(MIFULL))
+          endif
           IF(PAGE.LT.1.0)PAGE=1.0
           IPM=INT(PAGE)
           PAGE=(FLOAT(ILEN)/FLOAT(MIFULL))
@@ -3772,8 +3776,10 @@ C then it represents the zone which is currently being edited.
       integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
 
-C ITDSP labels toggle: all surf + obs = 0, all surf = 1, ext = 2,
-C       partn = 3, similar = 4, surfs + obs+ ground = 5, ground only = 6
+C The RAY2 common block variables from prj3dv.h are:
+C ITDSP toggle: all surf+obs+vis = 0, all surf = 1, ext = 2,
+C partn = 3, similar = 4, surfs+obs+ground = 5, ground only = 6
+C surf+obs = 7, surf+vis = 8
 C ITBND bounds toggle: static = 0, optimum = 1, zone focus = 2
 C ITEPT is not yet used.
 C ITZNM zone name toggle: display = 0, hidden = 1
@@ -3786,16 +3792,11 @@ C ITHLZ additional qualifier for ITHLS.
 C ITGRD grid toggle: display = 0, hidden = 1
 C ITVNO vertex toggle: display = 0, hidden = 1
 C ITPPSW current view - perspective/plan/south/west
-      COMMON/RAY2/ITDSP,ITBND,ITEPT,ITZNM,ITSNM,ITVNO,ITORG,ITSNR,
-     &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS,ITPPSW
-      COMMON/RAY3/MODIFY,MODLEN,MODBND
-      COMMON/RAY5/ZCOG(MCOM,3),XMN,YMN,ZMN,XMX,YMX,ZMX
       COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,CFCDBOK
 
       LOGICAL CFGOK,MLDBOK,MATDBOK,CTLOK,CFCDBOK
-      logical MODIFY,MODLEN,MODBND
       LOGICAL OPTKOK,CLOSE,OK,dok,found,concat,redraw
-      DIMENSION ITEMS(23),IVALS(MCOM),FALT(7),IVAL(7)
+      DIMENSION ITEMS(23),IVALS(MCOM),FALT(9),IVAL(9)
       CHARACTER ITEMS*32,H*72,LFIL*72,outs*124
       CHARACTER FALT*37
       CHARACTER path*72
@@ -3839,7 +3840,7 @@ C Menu loop.
       ITEMS(5)   =' _____________________________  '
 
       IF(ITDSP.EQ.0)THEN
-        ITEMS(6) ='e display >> surfaces & obstruct'
+        ITEMS(6) ='e display >> surfaces & obs& vis'
       ELSEIF(ITDSP.EQ.1)THEN
         ITEMS(6) ='e display >> all surfaces       '
       ELSEIF(ITDSP.EQ.2)THEN
@@ -3849,9 +3850,13 @@ C Menu loop.
       ELSEIF(ITDSP.EQ.4)THEN
         ITEMS(6) ='e display >> const/boundary surf'
       ELSEIF(ITDSP.EQ.5)THEN
-        ITEMS(6) ='e display >> surfs+obstr+ground'
+        ITEMS(6) ='e display >> surfs+obstr+ground '
       ELSEIF(ITDSP.EQ.6)THEN
-        ITEMS(6) ='e display >> ground only'
+        ITEMS(6) ='e display >> ground only        '
+      ELSEIF(ITDSP.EQ.7)THEN
+        ITEMS(6) ='e display >> surfs+obstructions '
+      ELSEIF(ITDSP.EQ.8)THEN
+        ITEMS(6) ='e display >> surfs+visible enty '
       ENDIF
 
 C Hilight surface based on OPQ/TRAN or construction.
@@ -3933,14 +3938,14 @@ C Hilight surface based on OPQ/TRAN or construction.
       MVERT=23
 
 C If image info altered (view point) then update display.
-      IF(MODIFY)THEN
+      IF(MODIFYVIEW)THEN
         if(ITPPSW.eq.0)then
           CALL INLNST(1)
           CALL ADJVIEW(IER)
           IF(ier.NE.0)RETURN
           MODLEN=.FALSE.
           MODBND=.FALSE.
-          MODIFY=.FALSE.
+          MODIFYVIEW=.FALSE.
         elseif(ITPPSW.eq.1)then
           if(redraw)call PLELEV('P')
         elseif(ITPPSW.eq.2)then
@@ -4004,7 +4009,7 @@ C width of the control menu.
         CALL EGETWR(HOLD,K,EYEM(3),0.,999.,'W','eye Z cord',IER)
         if(ier.ne.0)goto 43
         MODLEN=.TRUE.
-        MODIFY=.TRUE.
+        MODIFYVIEW=.TRUE.
       ELSEIF(IVERT.EQ.2)THEN
 
 C Present viewpoint coords for editing then parse data from HOLD.
@@ -4020,14 +4025,14 @@ C Present viewpoint coords for editing then parse data from HOLD.
         CALL EGETWR(HOLD,K,VIEWM(3),0.,999.,'W','view Z cord',IER)
         if(ier.ne.0)goto 42
         MODLEN=.TRUE.
-        MODIFY=.TRUE.
+        MODIFYVIEW=.TRUE.
       ELSEIF(IVERT.EQ.3)THEN
         H(1)='The angle of view is between 1 and 89 degrees.'
         CALL EASKR(ANG,' ','Angle of view?',
      &             1.0,'W',89.0,'W',40.,'angle ofview',IER,1)
         HANG=ANG/2.0
         MODLEN=.TRUE.
-        MODIFY=.TRUE.
+        MODIFYVIEW=.TRUE.
       ELSEIF(IVERT.EQ.4)THEN
         H(1)='In plan view you can change the viewing parameters;'
         H(2)='the elevations are primarily for checking.'
@@ -4036,7 +4041,7 @@ C Present viewpoint coords for editing then parse data from HOLD.
      &    'plan','south elevation','west elevation',IW,2)
         if(IW-1.ne.ITPPSW)then
           redraw =.true.
-          MODIFY=.TRUE.
+          MODIFYVIEW=.TRUE.
         endif
         ITPPSW=IW-1
       ELSEIF(IVERT.EQ.6)THEN
@@ -4047,16 +4052,18 @@ C Allow this selection by text string.
           H(1)='The image may be filtered so that specific aspects'
           H(2)='of the model can be studied. Current filters are'
           H(3)='listed.'
-          FALT(1)='all surfaces and shading obstructions'
+          FALT(1)='all surfaces & shading obstr & visual'
           FALT(2)='all surfaces (no obstructions)       '
           FALT(3)='exterior surfaces only               '
           FALT(4)='partitions & interior surfaces only  '
           FALT(5)='surf. connected to ground or constant'
           FALT(6)='all surfaces, obstructions & ground  '
           FALT(7)='ground topology only                 '
+          FALT(8)='all surfaces & shading obstructions  '
+          FALT(9)='all surfaces & visual entities       '
           IV=1
           CALL EPICKS(IV,IVAL,' ','Image filter:',
-     &      37,7,FALT,' image filters',IER,1)
+     &      37,9,FALT,' image filters',IER,1)
           IF(IV.GT.0)THEN
             ITDSP=IVAL(1)-1
           ELSE
@@ -4067,7 +4074,7 @@ C Allow this selection by text string.
         ENDIF
         MODLEN=.TRUE.
         MODBND=.TRUE.
-        MODIFY=.TRUE.
+        MODIFYVIEW=.TRUE.
       ELSEIF(IVERT.EQ.7)THEN
 
 C Hilight control.
@@ -4078,37 +4085,37 @@ C Hilight control.
      &    'opaque:transp.','partial attrib.','cancel ?',' ',' ',IW,2)
         ITHLS=IW-1
         if(ITHLS.eq.0)then
-          MODIFY=.true.
+          MODIFYVIEW=.true.
         elseif(ITHLS.eq.1)then
           CALL EPKMLC(ISEL,'Select a construction to hilight.',' ',IER)
           ITHLZ=ISEL
-          MODIFY=.TRUE.
+          MODIFYVIEW=.TRUE.
         elseif(ITHLS.eq.2)then
           CALL EASKABC(' ','Opacity options:','hilight opaque',
      &    'hilight transparent','cancel ?',IW,2)
           ITHLZ=IW
-          MODIFY=.TRUE.
+          MODIFYVIEW=.TRUE.
         elseif(ITHLS.eq.3)then
-          MODIFY=.TRUE.
+          MODIFYVIEW=.TRUE.
         endif
       ELSEIF(IVERT.EQ.8)THEN
 
 C So what does ITBND=3 (focus on zone) actually mean?
         ITBND=ITBND+1
         IF(ITBND.GT.1)ITBND=0
-        MODIFY=.TRUE.
+        MODIFYVIEW=.TRUE.
       ELSEIF(IVERT.EQ.10)THEN
         ITZNM=ITZNM+1
         IF(ITZNM.GT.1)ITZNM=0
-        MODIFY=.TRUE.
+        MODIFYVIEW=.TRUE.
       ELSEIF(IVERT.EQ.11)THEN
         ITSNM=ITSNM+1
         IF(ITSNM.GT.1)ITSNM=0
-        MODIFY=.TRUE.
+        MODIFYVIEW=.TRUE.
       ELSEIF(IVERT.EQ.12)THEN
         ITVNO=ITVNO+1
         IF(ITVNO.GT.1)ITVNO=0
-        MODIFY=.TRUE.
+        MODIFYVIEW=.TRUE.
       ELSEIF(IVERT.EQ.13)THEN
 
 C Site origin, see if w/in bounds to flag bounds and lens...
@@ -4119,14 +4126,14 @@ C Site origin, see if w/in bounds to flag bounds and lens...
         IF(0.0.GT.ZMX.OR.0.0.LT.ZMN) MODBND=.TRUE.
         if(MODBND)then
           MODLEN=.TRUE.
-          MODIFY=.TRUE.
+          MODIFYVIEW=.TRUE.
         endif
       ELSEIF(IVERT.EQ.14)THEN
         ITGRD=ITGRD+1
         IF(ITGRD.GT.1)ITGRD=0
         MODBND=.TRUE.
         MODLEN=.TRUE.
-        MODIFY=.TRUE.
+        MODIFYVIEW=.TRUE.
       ELSEIF(IVERT.EQ.15)THEN
         H(1)='The distance between site grid dotted lines can be'
         H(2)='altered for clarity. This is especially useful in'
@@ -4134,11 +4141,11 @@ C Site origin, see if w/in bounds to flag bounds and lens...
         H(4)='will be used.'
         CALL EASKR(GRDIS,' ','Grid distance?',
      &             0.0,'F',10.0,'W',0.,'grid distanc e',IER,4)
-        MODIFY=.TRUE.
+        MODIFYVIEW=.TRUE.
       ELSEIF(IVERT.EQ.16)THEN
         ITSNR=ITSNR+1
         IF(ITSNR.GT.1)ITSNR=0
-        MODIFY=.TRUE.
+        MODIFYVIEW=.TRUE.
       ELSEIF(IVERT.EQ.18)THEN
 
 C Select zones to include, if one zone is the principal focus then
@@ -4167,7 +4174,7 @@ C make sure it is included in the list.
           endif
           MODBND=.TRUE.
           MODLEN=.TRUE.
-          MODIFY=.TRUE.
+          MODIFYVIEW=.TRUE.
         ELSE
           CALL USRMSG('Model not yet defined!',
      &    'Please select option `a` of model definition menu.','W')
@@ -4178,7 +4185,7 @@ C make sure it is included in the list.
 C Refresh the image.
         MODLEN=.TRUE.
         MODBND=.TRUE.
-        MODIFY=.TRUE.
+        MODIFYVIEW=.TRUE.
         do 444,ix=1,ncomp
           iZBFLG(ix)=0
   444   continue
@@ -4186,7 +4193,7 @@ C Refresh the image.
         IF(ier.NE.0)RETURN
         MODLEN=.FALSE.
         MODBND=.FALSE.
-        MODIFY=.FALSE.
+        MODIFYVIEW=.FALSE.
       ELSEIF(IVERT.EQ.20)THEN
 
 C Construct a perspective image file. The trace level defines whether

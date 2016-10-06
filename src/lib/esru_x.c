@@ -2051,7 +2051,7 @@ void drawswl(xa,ya,xb,yb)
 /* *************** ESRU symbol drawing routine. *************** */
 /*
  esymbol is passed a pixel coord, a symbol index, and a size.
- currently there are 32 symbols.
+ currently there are 33 symbols.
 */
 void esymbol_(x,y,sym,size)
   long int *x, *y, *sym, *size;
@@ -2252,6 +2252,11 @@ void esymbol_(x,y,sym,size)
     case 32 : 		/* dot 2 pix wide, 2 pix high */
       drawswl(ix-1,iy-1,ix+1,iy-1);
       drawswl(ix-1,iy,ix+1,iy); break;
+    case 33 : 		/* dot 4 pix wide, 4 pix high */
+      drawswl(ix-2,iy-2,ix+2,iy-2);
+      drawswl(ix-2,iy-1,ix+2,iy-1);
+      drawswl(ix-2,iy,ix+2,iy);
+      drawswl(ix-2,iy+1,ix+2,iy+1); break;
     default : 		/* big dot 2 pix wide, 3 pix high */
       drawswl(ix-1,iy-1,ix+1,iy-1);
       drawswl(ix-1,iy,ix+1,iy);
@@ -3410,7 +3415,7 @@ void updhelp_(items,nitmsptr,iw,len_items)
   long int  *iw;            /* actual max char width in items    */
   int  len_items;           /* length of help string from f77    */
 {
-  int	i;
+  int	i,j,k;
   int	nitms = *nitmsptr;
   char 	*item_local = items;	/* working copy of intput string */
 
@@ -3418,10 +3423,15 @@ void updhelp_(items,nitmsptr,iw,len_items)
   help_lines = nitms;	/* remember number of help lines */
   if(help_lines == 0)return;	/* don't bother if no help */
 
-  for(i = 0; i < nitms; i++) {		/* for each line...  */
-    item_local[len_items-1] = '\0';	/* write terminator  */
-    strcpy(help_list[i],item_local);	/* copy to static array */
-    strcpy ( &item_local[0], &item_local[len_items]);	/* shift start point */
+/* use similar logic to updmenu */
+  k = 0;
+  for(i = 0; i < nitms; i++) {	/* for each line...  */
+    for(j = 0; j < 72; j++) {	/* for each character...  */
+      help_list[i][j] = item_local[k];
+      k = k +1;   /* increment for next char in items (a fortran string array does not have
+                     nulls between strings in array, it just looks like one long string) */
+    }
+    help_list[i][71] = '\0';	/* write terminator  */
   }
   return;
 }
@@ -7228,6 +7238,7 @@ int aux_menu(event)  XEvent *event; {
   int vert,no_valid_event;
   long int saved_font;
   char avail_cfg;	/* current char of config button to pass to fortran. */
+  int len_avail = 1;    /* length of character passed back */
   long int eyex,eyey;  /* centre for image symbols and symbol index and size */
   long int sym,sz;      /* symbol and symbol size      */
   int but_rlse = 0;
@@ -7347,12 +7358,6 @@ line button 1 = start button2 = intermediate point button3 = end */
 
 /* draw the new line setting GXxor, re-drawn lines, will produce a copy of
 the screen below linux uses GxorReversed or GXinvert with X11R6*/
-#ifdef SUN
-                XSetFunction(theDisp,theGC,GXxor);  /* Solaris */
-#endif
-#ifdef SGI
-                XSetFunction(theDisp,theGC,GXinvert); /*  X11R6 */
-#endif
 #ifdef CYGW
                 XSetFunction(theDisp,theGC,GXinvert); /*  X11R6 */
 #endif
@@ -7418,12 +7423,6 @@ point*/
                   case MotionNotify:
                     x=event->xmotion.x;
                     y=event->xmotion.y;
-#ifdef SUN
-                    XSetFunction(theDisp,theGC,GXxor);  /* Solaris */
-#endif
-#ifdef SGI
-                    XSetFunction(theDisp,theGC,GXinvert); /*  X11R6 */
-#endif
 #ifdef CYGW
                     XSetFunction(theDisp,theGC,GXinvert); /*  X11R6 */
 #endif
@@ -7467,7 +7466,7 @@ point*/
             }
           }
 
-          if(butid==2){
+          if(butid==2){   /* middle button on icon for flip rotate */
             iugx = x; iugy=y;
             is = 0;
             nwkslctc_(&iugx,&iugy,&stype,&is,&isa,&nselect2,&active);
@@ -7544,7 +7543,7 @@ point*/
           }
 /* button click inside graphics area 3rd mouse button */
 
-        } /* -> end of network graphics 'ere */
+        } /* -> end of network graphics here */
 /* debug  fprintf(stderr," inside graphic display at: xpos %d ypos %d \n",x,y); */
       }
       if (xboxinside(updown_text,x,y)) {
@@ -7754,7 +7753,7 @@ point*/
         xbox(cfgz,fg,ginvert, BMCLEAR | BMNOT |BMEDGES);      /* invert box */
         XDrawString(theDisp,win,theGC,cfgz.b_left+4,cfgz.b_bottom-2,"registration ",13);
         avail_cfg = 'r';
-        cfgpk_(&avail_cfg);	/* pass back registration to fortran  */
+        cfgpk_(&avail_cfg,len_avail);	/* pass back registration to fortran  */
         xbox(cfgz,fg,white, BMCLEAR |BMEDGES);      /* invert box */
         XDrawString(theDisp,win,theGC,cfgz.b_left+4,cfgz.b_bottom-2,"registration ",13);
         if (saved_font != disp_fnt) winfnt_(&saved_font);  /* restore std font */
@@ -7766,7 +7765,7 @@ point*/
         xbox(cfgz,fg,ginvert, BMCLEAR | BMNOT |BMEDGES);      /* invert box */
         XDrawString(theDisp,win,theGC,cfgz.b_left+4,cfgz.b_bottom-2,"zones        ",13);
         avail_cfg = 'z';
-        cfgpk_(&avail_cfg);	/* pass back zones to fortran */
+        cfgpk_(&avail_cfg,len_avail);	/* pass back zones to fortran */
         xbox(cfgz,fg,white, BMCLEAR |BMEDGES);      /* invert box */
         XDrawString(theDisp,win,theGC,cfgz.b_left+4,cfgz.b_bottom-2,"zones        ",13);
         if (iiocfgz >= 1) {	/* zones images */
@@ -7784,7 +7783,7 @@ point*/
         XDrawString(theDisp,win,theGC,cfgn.b_left+4,cfgn.b_bottom-2,"networks     ",13);
         if (saved_font != disp_fnt) winfnt_(&saved_font);  /* restore std font */
         avail_cfg = 'n';
-        cfgpk_(&avail_cfg);	/* pass back plant to fortran */
+        cfgpk_(&avail_cfg,len_avail);	/* pass back plant to fortran */
         saved_font = current_font;
         if (saved_font != disp_fnt) winfnt_(&disp_fnt);
         xbox(cfgn,fg,white, BMCLEAR |BMEDGES);      /* invert box */
@@ -7804,7 +7803,7 @@ point*/
         XDrawString(theDisp,win,theGC,cfgc.b_left+4,cfgc.b_bottom-2,"controls     ",13);
         if (saved_font != disp_fnt) winfnt_(&saved_font);  /* restore std font */
         avail_cfg = 'c';
-        cfgpk_(&avail_cfg);	/* pass back plant to fortran */
+        cfgpk_(&avail_cfg,len_avail);	/* pass back plant to fortran */
         saved_font = current_font;
         if (saved_font != disp_fnt) winfnt_(&disp_fnt);
         xbox(cfgc,fg,white, BMCLEAR |BMEDGES);      /* invert box */
@@ -7824,7 +7823,7 @@ point*/
         XDrawString(theDisp,win,theGC,cfgdfn.b_left+4,cfgdfn.b_bottom-2,"domain flow  ",13);
         if (saved_font != disp_fnt) winfnt_(&saved_font);  /* restore std font */
         avail_cfg = 'd';
-        cfgpk_(&avail_cfg);	/* pass back cfd to fortran */
+        cfgpk_(&avail_cfg,len_avail);	/* pass back cfd to fortran */
         saved_font = current_font;
         if (saved_font != disp_fnt) winfnt_(&disp_fnt);
         xbox(cfgdfn,fg,white, BMCLEAR |BMEDGES);      /* invert box */

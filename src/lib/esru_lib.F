@@ -40,7 +40,7 @@ C  iCountWords: Counts the number of space/tab/comma-separated
 C           words in a string.
 
 C  isadll:  Checks if module is being used as a dll (silent running).
-C  isunix:  Checks if machine type is Unix or NT.
+C  isunix:  Checks if machine type is Unix or NT/W7.
 C  usrhome: Returns user's home directory.
 C  usrname: Returns user's login name.
 C  usrdir:  Returns user's current directory.
@@ -186,8 +186,6 @@ C ANOTZERO: Function returns non zero value with the same sign (sngl precision).
 C  ASKTIM:  Enquire month and day and time (real for view).
 C  SOLAIR:  Returns solair temperature.
 C  LISTAS:  General read & display of an ascii file.
-C  SHOWMEH: Extracts additional help text matching the key OTHER from
-C           an external file
 C  SDELIM:  Replaces blanks in a string A with alternative delimiter.
 C  EDDISP:  As edisp with text separated with current delimiter.
 C EDISP248 Displays a 248 char block of text (text or graphic).
@@ -2590,8 +2588,8 @@ C Local
       logical CLOSE
       
       PI = 4.0 * ATAN(1.0)  ! pattern used in AZALT
-      SAZI1=0.      ! set initial values
-      SALT1=0.
+      SAZI1=0.0      ! set initial values
+      SALT1=0.0
       ISUNUP=1
       R=PI/180.0    ! compute radians
       DAY=FLOAT(ID) ! cast julian day to local
@@ -2608,7 +2606,7 @@ c Compute declination.
       SDEC=SIN(DEC*R)
       CDEC=COS(DEC*R)
 
-c Compute solar altitude.
+c Compute solar altitude. If SALT < 0.1 degree assume sun not yet up.
       TIME=HOUR+(EQT+SLON/15.0)
       TIMCOE=15.0*(12.0-TIME)
       CDTIME=COS(TIMCOE*R)
@@ -2617,7 +2615,7 @@ c Compute solar altitude.
       SSLAT=SIN(SLAT*R)
       CSLAT=COS(SLAT*R)
       SALT=ASIN(SSLAT*SDEC+CSLAT*CDEC*CDTIME)/R
-      IF(SALT.LT.0.0)goto 1
+      IF(SALT.LT.0.1)goto 1
 
 C Solar aziumth.
       AZMUTH=(CDEC*SABST)/ECOSD(SALT)
@@ -6640,12 +6638,22 @@ C ************* runit
 C runit: Execute a command string, in text (runs in a new xterm) or graphics
 C mode.  Assumes that command string terminates in a '&' if the
 C user wishes to run in background mode. For minGW xterm is not used.
+
+C WARNING - possible OS dependency:
+C runit invokes the command. system() is a C function which
+C works well on MSYS and Linux while execute_command_line is
+C a gfortran facility which works on MSYS2. If runit is not 
+C working then try switching bweteen these options.
       subroutine runit(cmd,tg)
       common/OUTIN/IUOUT,IUIN
       character*(*) cmd,tg
-      character tmp*248,tmode*4
+      character tmp*360,tmode*4,message*248
+      character dq*1
       integer system
       logical unixok
+      integer i
+
+      dq = char(34)  ! double quote
 
 C Find if Unix or NT.
       call isunix(unixok)
@@ -6656,28 +6664,51 @@ C Find if Unix or NT.
         if(tmode(1:4).eq.'text')then
           LN=max(1,lnblnk(cmd))
           write(tmp,'(a,a)') 'xterm -e ',cmd(1:LN)
-          i = system(tmp)
+C          i = system(tmp)
+         call execute_command_line (tmp, exitstat=i)
         else
-          i = system(cmd)
+C          i = system(cmd)
+          call execute_command_line (cmd, exitstat=i)
         endif
         if(i.gt.0.and.i.le.126)then
           call edisp(iuout,'task terminated with an error condition')
+          LN=max(1,lnblnk(cmd))
+          write(tmp,'(a,i3,2a)') 'status ',i,' ',cmd(1:LN)
+          call edisp248(iuout,tmp,90)
         elseif(i.eq.127)then
           call edisp(iuout,'task requested was unknown.')
+          LN=max(1,lnblnk(cmd))
+          write(tmp,'(a,i3,2a)') 'status ',i,' ',cmd(1:LN)
+          call edisp248(iuout,tmp,90)
         endif
         return
       else
         LN=lnblnk(cmd)
         if (cmd(LN:LN).eq."&") then
-          write (tmp,'(2a)') 'start ',cmd(1:LN-1)
+          write (tmp,'(4a)') dq,'start ',cmd(1:LN-1),dq
           write (cmd,'(a)') tmp(1:lnblnk(tmp))
+          call edisp248(iuout,cmd,90)
+        else
+          write (tmp,'(3a)') dq,cmd(1:LN),dq
+          write (cmd,'(a)') tmp(1:lnblnk(tmp))
+          call edisp248(iuout,cmd,90)
         endif
-        i = system(cmd)
+
+C        i = system(cmd)
+        call execute_command_line (cmd, exitstat=i)
         if(i.gt.0.and.i.le.126)then
           call edisp(iuout,'task terminated with an error condition')
+          LN=lnblnk(cmd)
+          write(tmp,'(a,i3,2a)') 'status ',i,' ',cmd(1:LN)
+          call edisp248(iuout,tmp,90)
         elseif(i.eq.127)then
           call edisp(iuout,'task requested was unknown.')
+          LN=lnblnk(cmd)
+          write(tmp,'(a,i3,2a)') 'status ',i,' ',cmd(1:LN)
+          call edisp248(iuout,tmp,90)
         endif
+
+C An even older method of asking OS to do some work.
 C        call cissue(cmd,ifail)
         return
       endif
@@ -6999,7 +7030,8 @@ C ********************** ANOTZERO **********************
 C ANOTZERO returns a non zero value with the same sign.
       REAL FUNCTION ANOTZERO(A)
 
-      SMALL=1E-19
+C      SMALL=1E-19
+      SMALL=1E-12
 
       if (abs(A).lt.(SMALL)) then
 
@@ -7136,92 +7168,6 @@ C End of file encountered, close the file and return to menu.
       CALL ERPFREE(IUNIT,ISTAT)
       return
       end
-
-C ************************ SHOWMEH
-C SHOWMEH extracts additional help text matching the key OTHER from
-C an external file (LTUT) and returns it in exh along with the
-C number of lines (nhi) and their maximum width (ihw).
-      SUBROUTINE SHOWMEH(IFTUT,LTUT,OTHER,nhi,ihw,exh,IER)
-
-      common/OUTIN/IUOUT,IUIN
-      dimension exh(60)
-      CHARACTER*(*) OTHER
-      CHARACTER exh*72,ltut*72,TOPIK*17,outstr*124
-      logical XST
-      integer ltf  ! position of last character in the string.
-
-C Regenerate the topic string to match.
-      TOPIK=' '
-      WRITE(TOPIK,'(A5,A)')'*tut_',OTHER(1:12)
-      if(iftut.NE.0)CALL ERPFREE(iftut,ISTAT)
-      XST=.FALSE.
-      ltf=max(1,LNBLNK(ltut))
-      INQUIRE (FILE=ltut(1:ltf),EXIST=XST)
-      if(XST)then
-        open(iftut,FILE=ltut(1:lnblnk(ltut)),ACCESS='SEQUENTIAL',
-     &    STATUS='OLD',IOSTAT=IOS)
-        if(IOS.ne.0)goto 82
-      endif
-
-C Loop until the topic found or end of file encountered.
-C If the first character is a # then read the next line from the file.
-      IIER=0
-    8 READ(iftut,10,IOSTAT=ios,ERR=2,END=102)OUTSTR
-   10 FORMAT(A124)
-      IF(OUTSTR(1:1).EQ.'#')THEN
-        GOTO 8
-      ELSE
-
-C Look for particular topic and read/display until next "*tut_".
-        IF(OUTSTR(1:17).EQ.TOPIK)THEN
-          nhi = 0
-          IHW=0
-   85     READ(iftut,10,IOSTAT=IOS,ERR=2,END=102)OUTSTR
-          IF(OUTSTR(1:1).EQ.'#')then
-            GOTO 85
-          elseif(OUTSTR(1:5).eq.'*tut_')THEN
-            GOTO 82
-          else
-            nhi = nhi +1
-            if(nhi.lt.60)then
-              WRITE(exh(nhi),'(A)',iostat=ios,err=1)OUTSTR(1:72)
-              IX=max(1,LNBLNK(exh(nhi)))
-              IF(IX.GT.IHW)IHW=IX
-              GOTO 85
-            else
-              goto 82
-            endif
-          endif
-        ELSE
-          GOTO 8
-        ENDIF
-      endif
-   82 call edisp(iuout,' ')
-      CALL ERPFREE(IFTUT,ISTAT)
-      return
-
-   1  if(IOS.eq.2)then
-        call edisp(iuout,
-     &  'showmeh: permission error writing additional help messages.')
-      else
-        call edisp(iuout,
-     &    'showmeh: error writing additional help messages.')
-      endif
-      return
-   2  if(IOS.eq.2)then
-        call edisp(iuout,
-     &  'showmeh: permission error writing show me more message')
-      else
-        call edisp(iuout,
-     &    'showmeh: error writing show me more message')
-      endif
-      return
-
-  102 IER=0
-      call edisp(iuout,' End of supplemental information file. ')
-      CALL ERPFREE(IFTUT,ISTAT)
-      return
-      END
 
 C ********************* SDELIM
 C SDELIM replaces blanks in a string A with alternative delimiter and
@@ -7552,16 +7498,17 @@ C clrtextbuf clears the text buffer common blocks.
 C ********* UPDVIEW
 C UPDVIEW is called from C code in esru_x.c or esp-r.c with values to 
 C update commonblocks GFONT, VIEWPX and SPAD. Set REFRESH=true.
-C Set MODIFY=true to force any wire-frame images to be redrawn.
+C Set MODIFYVIEW=true to force any wire-frame images to be redrawn.
       subroutine updview(ifsc,itfsc,imfsc,ilc,irc,itc,ibc,iwc,ihc,lttyc)
+#include "building.h"
+#include "prj3dv.h"
+
       integer ifs,itfs,imfs
       COMMON/GFONT/IFS,ITFS,IMFS
       integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/FRESH/refrsh
-      COMMON/RAY3/MODIFY,MODLEN,MODBND
-      LOGICAL MODIFY,MODLEN,MODBND
       logical refrsh
 
       IFS=ifsc
@@ -7576,7 +7523,7 @@ C Set MODIFY=true to force any wire-frame images to be redrawn.
       LIMTTY=lttyc
       LIMIT=1
       refrsh=.TRUE.
-      MODIFY=.TRUE.
+      MODIFYVIEW=.TRUE.
 
       return
       end
