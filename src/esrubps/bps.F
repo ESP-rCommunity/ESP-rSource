@@ -177,6 +177,7 @@ C a subroutine rather than as an application.
       use TCC, ONLY:COSIM
 #include "building.h"
 #include "model.h"
+#include "geometry.h"
 #include "plant.h"
 #include "uncertainty.h"
 #include "net_flow.h"
@@ -258,18 +259,18 @@ C Path to model and command line file (if any).
       common/user/browse
 
 C CFD output channels.
-      COMMON/ICFCHN/ICFMON,ICFTMP,ICFLIB
+      COMMON/ICFCHN/ICFMON(MNZ),ICFTMP,ICFLIB
       common/CFDres/photon,flwvis
 
 C CFD results library.
       common/CFDSV/IRECPC,ICFDSV,IEQSV(5+MCTM)
-
 C CFD visualisation.
       common/flvpar/Lflpar(MCOM)
       COMMON/ACT/ACTCNN(MCNN)
-
 C CFD small openings.
       common/SSOinit/areaSSO
+C CFD coupling toggles
+      common/CFDTOGS/ACCON,CFD2BLD,CFD2MFS
 
 C Project journal on/off, unit number, cmd, file name.
       common/journopt/journio,iuj,journcmd,jfile
@@ -310,7 +311,10 @@ C Name of current application
 C Flag for enabling h3k customizations 
 
       common/H3KCustom/bEnableH3kExtensions
-      logical bEnableH3kExtensions      
+      logical bEnableH3kExtensions 
+     
+      real UNMETHRS  ! for each zone counter for unmet hours.
+      COMMON/UNMET/UNMETHRS(MCOM)
       
       character cAppName*12
       integer iverb     ! verbosity passed on command line
@@ -347,6 +351,7 @@ C Flags for multi-year simulation menus
       integer iglib   ! if 1 then X11, if 2 then GTK, if 3 then text only.
       integer ier
       integer NITMS,INO  ! max items and current menu item
+      integer ACCON,CFD2BLD,CFD2MFS
 
 #ifdef OSI
       integer iigl,iigr,iigt,iigb,iigw,iigwh
@@ -415,6 +420,7 @@ C have not been read in.
       MSTRFILE='libmstr'
       do 5 I=1,MCOM
         Lflpar(I)='UNKNOWN'
+        UNMETHRS(I)=0  ! reset counter of unmet hours
  5    continue
 
 C CFD results output. `photon' indicates whether PHOTON phi files will
@@ -432,6 +438,11 @@ C CFD results library: IRECPC=current record; ICFDSV=results version
 
 C Flag indicating that CFD `small opening' areas have not yet been calculated.
       areaSSO = .FALSE.
+
+C Default CFD coupling toggles.
+      ACCON=1   ! Adaptive Conflation Controller active
+      CFD2BLD=1 ! 1-way CFD-building conflation
+      CFD2MFS=2 ! 2-way CFD-mass flow network conflation
 
 C Illuminance values held in database.
       NDBENT=0
@@ -524,7 +535,8 @@ C at begining for details. These must not be changed elsewhere.
       ITF3=IFIL+16
       IMSTR=IFIL+17
       ICFLIB=IFIL+18
-      ICFMON=IFIL+19
+C ICFMON assignment moved to MZUTIL, in case there are multiple CFD 
+C domains   
       ICFTMP=IFIL+20
       nochan=ifil+23
       ISTemp=IFIL+60
@@ -612,7 +624,7 @@ C Open the text display box equal to LIMTTY if MMOD = 8.
         if(iglib.eq.1)then
 
 C Setup and pass in parameters to win3d.
-          iiw1=16; iiw2=16; iiw3=4; iiw4=3; iimenu=menuchw
+          iiw1=15; iiw2=15; iiw3=5; iiw4=3; iimenu=menuchw
           iigl=igl; iigr=igr; iigt=igt; iigb=igb; iigw=igw; iigwh=igwh
           CALL win3d(iimenu,iiw1,iiw2,iiw3,iiw4,
      &      iigl,iigr,iigt,iigb,iigw,iigwh)
@@ -623,7 +635,7 @@ C Setup and pass in parameters to win3d.
           iicapture=1
           call updcapt(iicapture)
         elseif(iglib.eq.2)then
-          iiw1=16; iiw2=16; iiw3=5; iiw4=4; iimenu=menuchw
+          iiw1=15; iiw2=15; iiw3=5; iiw4=4; iimenu=menuchw
           iigl=igl; iigr=igr; iigt=igt; iigb=igb; iigw=igw; iigwh=igwh
           CALL win3d(iimenu,iiw1,iiw2,iiw3,iiw4,
      &      iigl,iigr,iigt,iigb,iigw,iigwh)
@@ -1204,6 +1216,12 @@ C Help via the askabout facility in esru_ask.F The zero requests display
 C Clean up and exit.
 C Delete any temporal scratch file if temporal data associated with
 C the model.
+
+C Debug write out unmet hours.
+        write(6,'(a)') 'Unmet hours for each zone at end of simulation.'
+        do I=1,NCOMP
+          write(6,'(a,i2,1x,a,f8.1)') 'Zone ',I,zname(I),UNMETHRS(I)
+        enddo
         if(ITDFLG.ne.0)then
           CALL ERPFREE(IUTDF,ISTAT)
           lnts=lnblnk(LTDF)
@@ -1315,12 +1333,12 @@ C Passed paramters.
 
 C Depending on computer type set integer size of passed parameters.
 #ifdef OSI
-      integer JITZNM,JITSNM,JITVNO,JITOBS,JITSNR,JITGRD,JITORG
-      integer JITBND,JITDSP,JITHLS,JITHLZ,JITPPSW
+      integer JITZNM,JITSNM,JITVNO,JITOBS,JITVIS,JITVOBJ,JITSNR,JITGRD
+      integer JITORG,JITBND,JITDSP,JITHLS,JITHLZ,JITPPSW
 #else
-      integer*8 JITZNM,JITSNM,JITVNO,JITOBS,JITSNR,JITGRD,JITORG
-      integer*8 JITBND,JITDSP,JITHLS,JITHLZ,JITPPSW
-#endif
+      integer*8 JITZNM,JITSNM,JITVNO,JITOBS,JITVIS,JITVOBJ,JITSNR
+      integer*8 JITGRD,JITORG,JITBND,JITDSP,JITHLS,JITHLZ,JITPPSW
+#endif     
       return
       end
 

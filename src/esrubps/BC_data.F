@@ -75,7 +75,8 @@ C----------------------------------------------------------------------
 #include "building.h"
 #include "bc_data.h"
 #include "MultiYear_simulations.h"
-#include "plant.h" !needed for offsite utilities definitions
+C plant.h" needed for offsite utilities definitions
+#include "plant.h"
 #include "power.h"
 #include "OffsiteUtilitiesPublic.h"
 #include "OffsiteUtilitiesPrivate.h"

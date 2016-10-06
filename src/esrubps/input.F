@@ -187,6 +187,7 @@ C default file names for databases
 
 #include "material.h"
 #include "plant.h"
+#include "power.h"
 #include "net_flow.h"
 #include "dhw_common.h"
 #include "MultiYear_simulations.h"
@@ -235,9 +236,7 @@ C to read from the temporal file if already known.
       integer iknowrec,itdflastrec,itdfprevrec
       common/tdfhash/iknowrec(87600,4),itdflastrec,itdfprevrec
 
-C Common for electrical file 
-      COMMON/ENTFILE/ENTFLNAM,IENTXIST
-      INTEGER :: ispmxist,ientxist
+      INTEGER :: ispmxist
 
 C Defaults.
       character*96 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF
@@ -289,7 +288,7 @@ C For reading in of bi-directional data.
       CHARACTER OUTSTR*124,MODE*4
       CHARACTER outs*124,louts*248,spsname*8,L144*144
       CHARACTER outs248*248,LCMDFL*144
-      character*72 laprob,path,ENTFLNAM
+      character*72 laprob,path
       character dllsubr*12,dllmesg*124,bidirfile*72,bidirname*12
 
 C HVAC AIM-2
@@ -1523,6 +1522,7 @@ C MZUTIL reads additional zone descriptions if active.
 #include "model.h"
 #include "cfd.h"
 #include "CFC_common.h"
+#include "espriou.h"
 C espriou.h provides currentfile.
 
       common/trc/itrc
@@ -1536,7 +1536,9 @@ C espriou.h provides currentfile.
       common/ndcfd/NCFDND,ICFDND(MNZ),NCONF
       common/bsmtdef/iBSIMP(MCOM),LBSIMP(MCOM)
       COMMON/cfcall/icfcal(MNZ)
-      COMMON/ACCrec/IACC
+      COMMON/ACCrec/IACC(MNZ)
+      COMMON/ICFCHN/ICFMON(MNZ),ICFTMP,ICFLIB
+      common/param2/TITLE(MNZ),CFTRFL(MNZ),LPHI(MNZ)
 
 C Active domain common.
       common/ACTDOM/CFDOK
@@ -1548,10 +1550,17 @@ C Residential hydrogen cogen: control file
                                 !- cogen controller is specified
       character*72 resh2flnam   !- name of file containing residential hydrogen cogen
                                 !- controller inputs
-
-      CHARACTER OUTSTR*124
+C Experimental renewable energy system (elec) controller
+C Input file information
+      common/reselecctl/ireselecctl,reselecflnam
+      integer ireselecctl       !- flag indicating that file required by renewable energy
+                                !- system controller is specified
+      character*72 reselecflnam !- name of file containing renewable energy system
+                                !- controller inputs
+                                
+      CHARACTER OUTSTR*124,outs*72
       CHARACTER*72 LCFD
-      CHARACTER*72 lfil
+      CHARACTER*72 lfil,CFTRFL,TITLE,LPHI
       CHARACTER*72 LBSIMP
 c      character dllsubr*12,dllmesg*124
 
@@ -1585,6 +1594,15 @@ C Residential hydrogen cogen : control file
       endif
 C H2-dep_controller: end
 
+C RES (elec) controller: start
+C Experimental renewable energy system (elec) controller. 
+C Use with caution
+      if ( (ireselecctl .eq. 1) .and. (ICOMP.eq.1) ) then
+C        Read control file (once)
+         call RES_elec_ctl_Read
+      endif
+C RES (elec) controller: end
+
 C If zone TMC file read it in.
       IF(ITW(ICOMP).EQ.1)then
         CALL ERTWIN(itrc,itu,iunit,LTWIN(ICOMP),icomp,ier)
@@ -1615,14 +1633,6 @@ C CFD domanin.
       IF(ABS(IFCFD(ICOMP)).GT.0)THEN
         ICP=ICOMP
 
-C If adaptive conflation control is active, then open a file to record
-C the actions of the controller.
-        if (ABS(IFCFD(ICOMP)).eq.4.or.ABS(IFCFD(ICOMP)).eq.5) then
-          lfil='ACC-actions.rec'
-          IACC = IFIL + 29
-          call efopseq(IACC,lfil,4,ier)
-        endif
-
 C Set the flags that indicate whether there is thermal conflation
 C and whether there is air-flow conflation.  These flags affect how
 C the .dfd file is read in.  Five conflation mechanisms
@@ -1646,6 +1656,8 @@ C Read CFD configuration file and set length scales basd on ESP-r standard
 C geometry model.
         if(ICFDND(ICFD).EQ.ICOMP) then
           IFL=IFIL+1
+C set currentfile
+          write(currentfile,'(a)')LCFD(ICOMP)(1:LNBLNK(LCFD(ICOMP)))
           CALL EFOPSEQ(IFL,LCFD(ICOMP),1,IER)
           CALL STRIPC(IFL,OUTSTR,0,ND,1,'dfd line 1',IER)
           if(OUTSTR(1:15).eq.'DFS DESCRIPTION')then
@@ -1656,6 +1668,34 @@ C geometry model.
           endif
           CALL CFDLENS
           CFDOK=.true.
+
+C Open CFD monitoring file
+          ICFMON(ICFD) = IFIL + 19 + (ICFD-1)*100
+C Debug
+C          write(6,*) 'MZUTIL (ICFD,CFTRFL,ICFMON)',ICFD,
+C     &      CFTRFL(ICFD),ICFMON(ICFD)
+          call efopseq(ICFMON(ICFD),CFTRFL(ICFD),3,ier)
+          if(ier.ne.0)then
+            write(outs,'(a,i2,a)') 
+     &        'Error opening CFD monitoring file for domain ',ICFD,'.'
+            call edisp(iuout,outs)
+          endif            
+
+C If adaptive conflation control is active, then open a file to record
+C the actions of the controller.
+          if (ABS(IFCFD(ICOMP)).eq.4.or.ABS(IFCFD(ICOMP)).eq.5) then
+            write(lfil,'(a12,i2.2,a4)')'ACC-actions_',icfd,
+     &        '.rec'
+            IACC(ICFD) = IFIL + 29 + (ICFD-1)*100
+C Debug
+C            write(6,*) 'MZUTIL (ICFD,lfil,IACC)',ICFD,lfil,iacc(ICFD)
+            call efopseq(IACC(ICFD),lfil,4,ier)
+            if(ier.ne.0)then
+              write(outs,'(a,i2,a)') 
+     &          'Error opening ACC-actions file for domain ',ICFD,'.'
+              call edisp(iuout,outs)
+            endif  
+          endif
 
 C Initialize counter to indicate that CFD has not yet been invoked. This
 C will be incremented each time CFD is called for this zone.
@@ -1713,6 +1753,8 @@ C ********************** USESPS
 C USESPS uses configuration presimuilation data.
       SUBROUTINE USESPS(name,IER)
 #include "building.h"
+#include "plant.h"
+#include "power.h"
 #include "MultiYear_simulations.h"
       
       integer lnblnk  ! function definition
@@ -1736,7 +1778,6 @@ C Once per hour storage of results, averaged over that hour.
 C lafres  - fluid flow network results file
       COMMON/RESLIB/RFILE,PFILE,MSTRFILE,LAFRES
       COMMON/ENETRES/ERESLIB
-      COMMON/ENTFILE/ENTFLNAM,IENTXIST
       common/dllerr/dllsubr,dllmesg
 
       COMMON/SPFL/spfileok,perok,tstepok,saveok,autook,exitok,startupok
@@ -1746,7 +1787,7 @@ C lafres  - fluid flow network results file
       logical dll,match
 
       character RFILE*72,PFILE*72,MSTRFILE*72,LAFRES*72
-      character*72 ENTFLNAM,ERESLIB
+      character*72 ERESLIB
       character outs*124, outs2*124
       character sblres*72,sflres*72,splres*72,smstres*72,sipvres*72
       character selres*72,spfdescr*8,name*8
