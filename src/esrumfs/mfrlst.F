@@ -418,7 +418,7 @@ C Script directed input.
         helptopic='connect_selection_text'
         call gethelptext(helpinsub,helptopic,nbhelp)
   97    CALL EASKI(IV,' ',' Index of connection ? ',
-     &       1,'F',NCNN,'F',1,'script conn',IER,nbhelp)
+     &    1,'F',NCNN,'F',1,'script conn',IER,nbhelp)
         if(IER.NE.0)goto 97
         IS=IV
         RETURN
@@ -434,8 +434,10 @@ C If there are enough items allow paging control via EKPAGE.
 C Edit the selected connection.
         CALL KEYIND(MVERT,IVERT,IFOC,IO)
         SELECT=.TRUE.
-        IC=IFOC       
-          RETURN
+        IC=IFOC
+        INODPS=NODPS(IFOC)
+        INODNE=NODNE(IFOC)     
+        RETURN
       ELSE
         IVERT=-1
         goto 92

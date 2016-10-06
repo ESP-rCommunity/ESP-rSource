@@ -489,7 +489,7 @@ C         if((ifan(icfp,2).eq.ITPCON(ICNN)).and.(NDSCNN(ICNN,1).gt.0))
 C Establish sensed variable magnitude and actuated node location.
             CALL CFFVAR(SIGNAL,icnn)
             IF(SIGNAL.GE.SETPNT)THEN
-              CTLPOS(icnn)=1.0
+              CTLPOS(icnn)=ONFRAC
             ELSE
               CTLPOS(icnn)=0.0
             ENDIF

@@ -401,12 +401,14 @@ C Assign flows; leaving flow is plotted +ve.
       call viewtext(etext,iside,isize,ifont)
 
 C Draw a pairs of labels and line types at top of the graph.
-      WRITE(temp,'(A,A12,A,A1)')'Node ',NDNAM(NDONUM),' leaving',nterm
+      WRITE(temp,'(4A)')'Node ',NDNAM(NDONUM),' leaving',nterm
       CALL wstxpt(igl+60,igt-20,temp)
-      call eswline(igl+20,igt-25,igl+50,igt-25)
-      WRITE(temp,'(A,A12,A,A1)')'Node ',NDNAM(NDONUM),' entering',nterm
+      iix=igl+20; iiy=igt-25; iix1=igl+50; iiy1=igt-25
+      call eswline(iix,iiy,iix1,iiy1)
+      WRITE(temp,'(4A)')'Node ',NDNAM(NDONUM),' entering',nterm
       CALL wstxpt(igl+60,igt-40,temp)
-      call edwline(igl+20,igt-45,igl+50,igt-45)
+      iix=igl+20; iiy=igt-45; iix1=igl+50; iiy1=igt-45
+      call edwline(iix,iiy,iix1,iiy1)
 
 C Scale and draw axes.
       XMIN=0.

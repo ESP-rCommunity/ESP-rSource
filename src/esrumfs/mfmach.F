@@ -25,6 +25,7 @@ C     MFSOLV
 C     MFNPDV
 C     MF010C
 C     MF011C  Air inlet device self-adjustable, (polinomial)
+C     MF012C  Window vent type opening (power law, derived from type 10)
 C     MF015C
 C     MF017C
 C     MF020C
@@ -109,6 +110,7 @@ C     RESRMX - maximum relative residual (relative to SAFLW for NDWREL)
       COMMON/ACT/ACTCNN(MCNN)
       COMMON/MFLOW1/NNOD,NCMP,NCNN
       COMMON/MFLOW3/NDFLD(MNOD),NDTYP(MNOD),HNOD(MNOD),SUPNOD(MNOD,MNDS)
+      COMMON/MFLOW5/RHON(MNOD)
       COMMON/MFLOW9/ITPCMP(MCMP),ISDCMP(MCMP),ISDCNN(MCMP),
      &              SUPCMP(MCMP,MCMS)
       COMMON/MFLW10/NODPS(MCNN),HGTPS(MCNN),NODNE(MCNN),HGTNE(MCNN),
@@ -122,6 +124,13 @@ C     RESRMX - maximum relative residual (relative to SAFLW for NDWREL)
       COMMON/CONTM0/NCONTM,NOCNTM,CONTMNAM(MCONTM)
       COMMON/mfctl/ctlpos(MCNN)
       common/btime/btimep,btimef
+      COMMON/zfluid/znotair(mcom),zfldK,zfldD,zfldC,zfldA,
+     &              zSWAp(mcom),zSWAf(mcom)
+      real zfldK,zfldD,zfldC,zfldA,zSWAp,zSWAf
+      LOGICAL znotair
+
+      COMMON/AFN/IAIRN,LAPROB,ICAAS(MCOM)
+      COMMON/C1/NCOMP,NCON
 
       PARAMETER       (SMALL=1.0E-15)
       PARAMETER       (RLARG=1.0E+15)
@@ -131,10 +140,12 @@ C     RESRMX - maximum relative residual (relative to SAFLW for NDWREL)
       DOUBLE PRECISION DFDDP,DP,FLW1old(MCNN),FLW2old(MCNN)
       DOUBLE PRECISION FLWA,HPJMTX(MNOD,MNOD),HPRC(MNOD)
       DOUBLE PRECISION PJMTX(MNOD,MNOD),PRC(MNOD),RELAX(MNOD),RHS(MNOD)
-      DOUBLE PRECISION RESR,RESAMX,RESRMX
-      character outs*124,outw*254
+      DOUBLE PRECISION RESR,RESAMX,RESRMX,RESID_temp
+      character outs*124,outw*248
       CHARACTER NDNAM*12,CONTMNAM*12
       LOGICAL ACTCNN,close
+      character LAPROB*72
+      integer ncomp,ncon
 
       IOK=1
       NDWABS=1
@@ -229,6 +240,8 @@ C and partial derivative dFlow/d(dPressure)
             CALL MF010C(ICNN,DP,DFDDP)
           ELSE IF(ITCN.EQ. 11) THEN
             CALL MF011C(ICNN,DP,DFDDP)
+          ELSE IF(ITCN.EQ. 12) THEN
+            CALL MF012C(ICNN,DP,DFDDP)
           ELSE IF(ITCN.EQ. 15) THEN
             CALL MF015C(ICNN,DP,DFDDP)
           ELSE IF(ITCN.EQ. 17) THEN
@@ -327,10 +340,22 @@ C Make sure that: SMALL < | RESID / SAFLW | < RLARG
           RESR=RESID(INOD)/SAFLW(INOD)
         END IF
 
+C << TEMPORARY >>
+C Instantiate and correct absolute residual for non-air fluids.
+        DO ICOMP=1,NCOMP
+          IF(ICAAS(ICOMP).eq.INOD)THEN
+            IF (znotair(ICOMP)) THEN
+              RESID_temp=RESID(INOD)*1.177/zfldD
+            ELSE
+              RESID_temp=RESID(INOD)
+            ENDIF
+          ENDIF
+        ENDDO
+
 C Update worst node values if this is the worst node up to now
-        IF(DABS(RESID(INOD)).GT.DABS(RESAMX)) THEN
+        IF(DABS(RESID_temp).GT.DABS(RESAMX)) THEN
           NDWABS=INOD
-          RESAMX=RESID(INOD)
+          RESAMX=RESID_temp
         END IF
         IF(DABS(RESR).GT.DABS(RESRMX)) THEN
           NDWREL=INOD
@@ -369,7 +394,7 @@ C Write trace output if applicable
 
 C If RESRMX or RESID(NDWABS) within tolerance, stop iteration
       IF(DABS(RESRMX).LE.FERREL.OR.
-     &   DABS(RESID(NDWABS)).LE.FERMFL) GOTO 100
+     &   DABS(RESAMX).LE.FERMFL)GOTO 100
 
 C If maximum number of iterations reached, IOK=0 and stop iteration
       IF(ITER.GE.MAXITF) THEN
@@ -383,13 +408,14 @@ C Start with generating more trace output if applicable
         call edisp(IMFTU,' PJMTX matrix')
         DO 60 I=1,NNOD
           WRITE(outw,*) (PJMTX(I,J),J=1,NNOD)
-          call edisp(IMFTU,outw)
+          call edisp248(IMFTU,outw,100)
           DO 60 J=1,NNOD
             HPJMTX(I,J)=PJMTX(I,J)
    60   CONTINUE
         call edisp(IMFTU,' RESID vector')
         WRITE(outw,*) (RESID(I),I=1,NNOD)
-        call edisp(IMFTU,outw)
+        call edisp248(IMFTU,outw,100)
+        
       END IF
 
 C Set right hand side of matrix equation {PJMTX} {PRC} = {RESID}
@@ -445,7 +471,7 @@ C If trace output then dump solution vector
       IF(MFTRAC.GE.3) THEN
          call edisp(IMFTU,'  PRC solution vector')
          WRITE(outw,*) (PRC(I),I=1,NNOD)
-         call edisp(IMFTU,outw)
+         call edisp248(IMFTU,outw,100)
 
 C Dump {RHS} recalculated from {HPJMTX}*{PRC}
          WRITE(IMFTU,*) ' RHS vector recalculated from PJMTX * PRC'
@@ -455,7 +481,7 @@ C Dump {RHS} recalculated from {HPJMTX}*{PRC}
          RHS(I)=RHS(I)+HPJMTX(I,J)*PRC(J)
    65    CONTINUE
          WRITE(outw,*) (RHS(I),I=1,NNOD)
-         call edisp(IMFTU,outw)
+         call edisp248(IMFTU,outw,100)
       END IF
 
 C Revise pressure correction vector by Steffensen's method to
@@ -512,7 +538,6 @@ C Output message. If solution failed over-ride MFTRAC.
            call edisp(IMFTU,outs)
         endif
       ELSE
-        WRITE(outs,1100) IRD,IRM,FLWTIM,ITER,'failed    '
         WRITE(outs,1100) IRD,IRM,FLWTIM,ITER,'failed    '
         call edisp(IMFTU,outs)
         call edisp(IMFTU,' ')
@@ -749,6 +774,102 @@ C If DELP > 0 , flow is +ve; ie +ve side to -ve side.
 C If component is closed the derivative is set equal to zero.
       if((dabs(delp).gt.DBLE(small)).and.((dabs(flw1(icnn))+
      &    dabs(flw2(icnn))).lt.DBLE(small))) deriv=0.0
+
+      RETURN
+      END
+
+C ************* MF012C
+C Fluid mass flow calculation routine for flow component type:
+C Power law volume flow resistance (m = rho.a.dP^b) with max flow
+C rate or cut-off pressure difference. This component allows the
+C representation of various window-frame integrated vents, e.g.
+C Trocal AirTronic, AT15-100.
+C
+C            SUPCMP(ICMP,1) - fluid type (1=air, 2=water)
+C     FCOF = SUPCMP(ICMP,2) - flow coefficient a (m^3/s/Pa^b)
+C     FEXP = SUPCMP(ICMP,3) - flow exponent b (-)
+C     FMAX = SUPCMP(ICMP,4) - max flow rate (m^3/s)/dp_switch
+C     ISWT = SUPCMP(ICMP,5) - switch, 0 max flow rate,
+C                                     1 dp > dp_switch=>close device
+C
+C Author: A. Geissler
+C Creation Date: 24 Sept. 2014
+C Changed by: A. Geissler
+C Change Date: 30 Sept. 2014
+C
+      SUBROUTINE MF012C(ICNN,DELP,DERIV)
+cc      implicit none
+#include "net_flow.h"
+
+      COMMON/mfctl/ctlpos(MCNN)
+      COMMON/MFLOW5/RHON(MNOD)
+      COMMON/MFLOW9/ITPCMP(MCMP),ISDCMP(MCMP),ISDCNN(MCMP),
+     &              SUPCMP(MCMP,MCMS)
+      COMMON/MFLW10/NODPS(MCNN),HGTPS(MCNN),NODNE(MCNN),HGTNE(MCNN),
+     &              ITPCON(MCNN),NDSCNN(MCNN,MCNS)
+      COMMON/MFLRES/FLW1(MCNN),FLW2(MCNN),PRES(MNOD),
+     &              RESID(MNOD),SAFLW(MNOD)
+
+      DOUBLE PRECISION FLW1,FLW2,PRES,RESID,SAFLW
+      DOUBLE PRECISION DELP,DERIV
+
+      integer IDPS,IDNE,ICMP,ISWT
+
+      real FCOF,FEXP,FMAX
+
+      PARAMETER       (SMALL=1.0E-15)
+
+      IDPS=NODPS(ICNN)
+      IDNE=NODNE(ICNN)
+      ICMP=ITPCON(ICNN)
+
+      FCOF=SUPCMP(ICMP,2)
+      FEXP=SUPCMP(ICMP,3)
+      FMAX=SUPCMP(ICMP,4)
+      ISWT=int(SUPCMP(ICMP,5))
+
+C If DELP > 0 , flow is +ve; ie +ve side to -ve side.
+      IF(DELP.GE.0) THEN
+        FLW1(ICNN)=RHON(IDPS)*FCOF*(DELP**FEXP)*ctlpos(icnn)
+        if (ISWT.eq.0) then
+C         If FLW1 > FMAX then hold constant at FMAX
+          if (FLW1(ICNN).gt.FMAX) then
+              FLW1(ICNN)=RHON(IDPS)*FMAX
+          endif
+
+        ELSE ! ISWT.eq.1
+C         If DELP > FMAX then close component
+          IF (DELP.gt.FMAX) THEN
+              FLW1(ICNN)=0.
+          ENDIF
+        endif
+      ELSE
+        FLW1(ICNN)=-RHON(IDNE)*FCOF*(DABS(DELP)**FEXP)*ctlpos(icnn)
+        if (ISWT.eq.0) then
+C         If FLW1 > FMAX then hold constant at FMAX
+          if (dabs(FLW1(ICNN)).gt.FMAX) then
+              FLW1(ICNN)=-RHON(IDNE)*FMAX
+          endif
+
+        ELSE ! ISWT.eq.1
+C         If DELP > FMAX then close component
+          IF (DABS(DELP).gt.FMAX) THEN
+            FLW1(ICNN)=0.
+          ENDIF
+        endif
+      END IF
+
+      FLW2(ICNN)=0.
+
+      IF(DABS(DELP).GT.DBLE(SMALL)) THEN
+         DERIV=FEXP*FLW1(ICNN)/DELP
+      ELSE
+         CALL MFNPDV(ICNN,DELP,DERIV)
+      END IF
+
+C If component is closed the derivative is set equal to zero.
+      if((dabs(delp).gt.DBLE(small)).and.((dabs(flw1(icnn))+
+     & dabs(flw2(icnn))).lt.DBLE(small))) deriv=0.0
 
       RETURN
       END
