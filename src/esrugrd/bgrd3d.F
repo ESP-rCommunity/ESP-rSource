@@ -39,11 +39,9 @@ C *********************************************************************
       SUBROUTINE MENU3D(ITRC)
 #include "building.h"
 #include "geometry.h"
+#include "prj3dv.h"
 
       COMMON/FILEP/IFIL
-      COMMON/RAY2/ITDSP,ITBND,ITEPT,ITZNM,ITSNM,ITVNO,ITORG,ITSNR,
-     &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS,ITPPSW
-      COMMON/RAY3/MODIFY,MODLEN,MODBND
 
       COMMON/GR3D01/INDXS(MS),THKS(MS),DCOSS(MS,3,3)
       COMMON/GR3D21/NUMEDG,INDXE(MEZ),DCOSE(MEZ,3,3)
@@ -56,7 +54,7 @@ C *********************************************************************
       COMMON/GR3D100/BLDG3D,ZONE3D(MCOM)
       COMMON/GR3D108/L3DCVS(MCOM),L3DCNC(MCOM),L3DNDC(MCOM),L3DTAQ(MCOM)
 
-      LOGICAL ZONOK,MODIFY,MODBND,MODLEN,OK,DOK,BLDG3D,ZONE3D,XST
+      LOGICAL ZONOK,OK,DOK,BLDG3D,ZONE3D,XST
 
       CHARACTER ITEM(15)*26,SZN*15
       CHARACTER*72 L3DCVS,L3DCNC,L3DNDC,L3DTAQ
@@ -74,7 +72,7 @@ C For help messages
       IZ=0
       IUNIT=IFIL+1
       ZONOK=.FALSE.
-      MODIFY=.FALSE.
+      MODIFYVIEW=.FALSE.
 
 C General image option flags.
       ITDSP=1
@@ -118,7 +116,7 @@ C Help text for this menu.
       call gethelptext(helpinsub,helptopic,nbhelp)
 
 C Draw the appropriate graph.
-      IF(MODIFY)CALL GRAAPH(IDRW1,IDRW2)
+      IF(MODIFYVIEW)CALL GRAAPH(IDRW1,IDRW2)
       CALL USRMSG(' ',' ','-')
       CALL EMENU('   Multi-Gridding',ITEM,MITEM,INO)
       IF(.NOT.ZONOK.AND.((INO.GE.3.AND.INO.LE.6).OR.INO.EQ.13))THEN
@@ -130,7 +128,7 @@ C Trap un-accepted options.
       ELSEIF(INO.EQ.1)THEN
 
 C Select the zone.
-        IF(IDRW1.NE.1.OR.MODIFY)THEN
+        IF(IDRW1.NE.1.OR.MODIFYVIEW)THEN
           IDRW1=1
           IDRW2=0
           CALL GRAAPH(IDRW1,IDRW2)
@@ -298,10 +296,8 @@ C ***************************    DFNCMP    ****************************
 C DFNCMP displays the components definition menu.
 C *********************************************************************
       SUBROUTINE DFNCMP(IZ,SZN,IDRW1,IDRW2)
-
-      COMMON/RAY3/MODIFY,MODLEN,MODBND
-
-      LOGICAL     MODIFY,MODLEN,MODBND
+#include "building.h"
+#include "prj3dv.h"
 
       DIMENSION ITEM(8)
 
@@ -325,7 +321,7 @@ C For help messages
       ITEM(7)='? help                    '
       ITEM(8)='- Exit                    '
       MITEM=8
-      IF(IDRW1.NE.2.OR.MODIFY)THEN
+      IF(IDRW1.NE.2.OR.MODIFYVIEW)THEN
         IDRW1=2
         IDRW2=IZ
         CALL GRAAPH(IDRW1,IDRW2)
@@ -366,10 +362,8 @@ C **************************    DFNCNC     ****************************
 C DFNCNC displays the connections definition menu.
 C *********************************************************************
       SUBROUTINE DFNCNC(ICOMP,SZN,IDRW1,IDRW2)
-
-      COMMON/RAY3/MODIFY,MODLEN,MODBND
-
-      LOGICAL     MODIFY,MODLEN,MODBND
+#include "building.h"
+#include "prj3dv.h"
 
       CHARACTER ITEM(9)*26,SZN*15
 
@@ -391,7 +385,7 @@ C For help messages
       ITEM(8)='? help                    '
       ITEM(9)='- Exit                    '
       MITEM=9
-      IF(IDRW1.NE.2.OR.MODIFY)THEN
+      IF(IDRW1.NE.2.OR.MODIFYVIEW)THEN
         IDRW1=2
         IDRW2=ICOMP
         CALL GRAAPH(IDRW1,IDRW2)
@@ -1103,9 +1097,9 @@ C *********************************************************************
       COMMON/GR3D28/ITPEDG(MEZ,MZE,MZE,MZE)
       COMMON/GR3D31/NUMCRN,INDXC(MCZ),DCOSC(MCZ,3,3)
       COMMON/GR3D34/ISFCRN(MCZ,3),IVXCRN(MCZ)
-      COMMON/GR3D35/NDXC(MEZ),DXC(MEZ,MZE)
-      COMMON/GR3D36/NDYC(MEZ),DYC(MEZ,MZE)
-      COMMON/GR3D37/NDZC(MEZ),DZC(MEZ,MZE)
+      COMMON/GR3D35/NDXC(MEZ),DXCV(MEZ,MZE)
+      COMMON/GR3D36/NDYC(MEZ),DYCV(MEZ,MZE)
+      COMMON/GR3D37/NDZC(MEZ),DZCV(MEZ,MZE)
       COMMON/GR3D38/ITPCRN(MCZ,MZE,MZE,MZE)
       COMMON/GR3D51/NUMSS,IBDYSS(MSSZ,2),ILNBSS(MSSZ,2),IVRTSS(MSSZ,2)
       COMMON/GR3D56/NUMSE,IBDYSE(MSEZ,2),ILNBSE(MSEZ)
@@ -1248,17 +1242,17 @@ C For all the corners.
         CALL STRIPC(IUNIT,STRG,NE1,ND,1,' DX ',IER)
         K=0
         DO 85 IX=1,NE1
-          CALL EGETWR(STRG,K,DXC(I,IX),1.,2.,'-',' DX ',IER)
+          CALL EGETWR(STRG,K,DXCV(I,IX),1.,2.,'-',' DX ',IER)
    85   CONTINUE
         CALL STRIPC(IUNIT,STRG,NE2,ND,1,' DY ',IER)
         K=0
         DO 86 IY=1,NE2
-          CALL EGETWR(STRG,K,DYC(I,IY),1.,2.,'-',' DY ',IER)
+          CALL EGETWR(STRG,K,DYCV(I,IY),1.,2.,'-',' DY ',IER)
    86   CONTINUE
         CALL STRIPC(IUNIT,STRG,NE3,ND,1,' DZ ',IER)
         K=0
         DO 87 IL=1,NE3
-          CALL EGETWR(STRG,K,DZC(I,IL),1.,2.,'-',' DZ ',IER)
+          CALL EGETWR(STRG,K,DZCV(I,IL),1.,2.,'-',' DZ ',IER)
    87   CONTINUE
         DO 90 IL=1,NDZC(I)
           CALL STRIPC(IUNIT,STRG,1,ND,1,' IZ ',IER)
@@ -1444,9 +1438,9 @@ C *********************************************************************
       COMMON/GR3D28/ITPEDG(MEZ,MZE,MZE,MZE)
       COMMON/GR3D31/NUMCRN,INDXC(MCZ),DCOSC(MCZ,3,3)
       COMMON/GR3D34/ISFCRN(MCZ,3),IVXCRN(MCZ)
-      COMMON/GR3D35/NDXC(MEZ),DXC(MEZ,MZE)
-      COMMON/GR3D36/NDYC(MEZ),DYC(MEZ,MZE)
-      COMMON/GR3D37/NDZC(MEZ),DZC(MEZ,MZE)
+      COMMON/GR3D35/NDXC(MEZ),DXCV(MEZ,MZE)
+      COMMON/GR3D36/NDYC(MEZ),DYCV(MEZ,MZE)
+      COMMON/GR3D37/NDZC(MEZ),DZCV(MEZ,MZE)
       COMMON/GR3D38/ITPCRN(MCZ,MZE,MZE,MZE)
       COMMON/GR3D51/NUMSS,IBDYSS(MSSZ,2),ILNBSS(MSSZ,2),IVRTSS(MSSZ,2)
       COMMON/GR3D56/NUMSE,IBDYSE(MSEZ,2),ILNBSE(MSEZ)
@@ -1541,11 +1535,11 @@ C For help messages
         WRITE(IUNIT,'(3I6,20X,A)',IOSTAT=ISTAT,ERR=1000)NE1,
      &               NE2,NE3,'# total number of DX,DY & DZ.'
         WRITE(IUNIT,'(A12)')'# DX values.'
-        WRITE(IUNIT,'(10F9.3)')(DXC(ICR,J),J=1,NE1)
+        WRITE(IUNIT,'(10F9.3)')(DXCV(ICR,J),J=1,NE1)
         WRITE(IUNIT,'(A12)')'# DY values.'
-        WRITE(IUNIT,'(10F9.3)')(DYC(ICR,J),J=1,NE2)
+        WRITE(IUNIT,'(10F9.3)')(DYCV(ICR,J),J=1,NE2)
         WRITE(IUNIT,'(A12)')'# DZ values.'
-        WRITE(IUNIT,'(10F9.3)')(DZC(ICR,J),J=1,NE3)
+        WRITE(IUNIT,'(10F9.3)')(DZCV(ICR,J),J=1,NE3)
         DO 170 ILZ=1,NE3
           WRITE(IUNIT,'(A)',IOSTAT=ISTAT,ERR=1000)
      &   '# thermal property type for each volume.'

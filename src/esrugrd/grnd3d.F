@@ -39,17 +39,17 @@ C MENUGM displays the ground modelling menu.
 C *********************************************************************
       SUBROUTINE MENUGM(IDRW1)
 #include "building.h"
+#include "prj3dv.h"
       integer iCountWords
 
       COMMON/FILEP/IFIL
       COMMON/OUTIN/IUOUT,IUIN
-      COMMON/RAY3/MODIFY,MODLEN,MODBND
       COMMON/GRND05/NDXG,NDYG,NDZG,DXG(MGXYZ),DYG(MGXYZ),DZG(MGXYZ)
       COMMON/GRND06/ITPGND(MGXYZ,MGXYZ,MGXYZ)
       COMMON/GRND100/GRND3D
       COMMON/GRND108/LGDCVS,LGDCNC,LGDNDC,LGDTAQ,LGDNDD
 
-      LOGICAL MODIFY,MODBND,MODLEN,OK,DOK,GRND3D,SAVEOK,XST,chdb
+      LOGICAL OK,DOK,GRND3D,SAVEOK,XST,chdb
       DIMENSION LDRU(5)
 
       CHARACTER*72 LMTS,MSG,VALUES
@@ -65,7 +65,7 @@ C For help messages
 
       helpinsub='MENUGM'  ! set for subroutine
 
-      MODIFY=.FALSE.
+      MODIFYVIEW=.FALSE.
       SAVEOK=.FALSE.
       IUNIT=IFIL+1
       IL=1
@@ -98,7 +98,7 @@ C Help text for the menu.
       call gethelptext(helpinsub,helptopic,nbhelp)
  
 C Draw the appropriate graph.
-      IF(MODIFY)CALL GRAAPH(IDRW1,IDRW2)
+      IF(MODIFYVIEW)CALL GRAAPH(IDRW1,IDRW2)
       CALL USRMSG(' ',' ','-')
       CALL EMENU('   Ground Modelling',ITEM,MITEM,INO)
       IF(INO.EQ.1)THEN
@@ -374,14 +374,12 @@ C *********************************************************************
       SUBROUTINE GNDBND(IDRW1)
 #include "building.h"
 #include "epara.h"
+#include "prj3dv.h"
       integer iCountWords
 
       COMMON/OUTIN/IUOUT,IUIN
-      COMMON/RAY3/MODIFY,MODLEN,MODBND
       COMMON/GRND05/NDXG,NDYG,NDZG,DXG(MGXYZ),DYG(MGXYZ),DZG(MGXYZ)
       COMMON/GRND10/NBOUND,IBOUND(MBTYP,3),IBSRF(6,MGXYZ,MGXYZ)
-
-      LOGICAL MODIFY,MODBND,MODLEN
 
       DIMENSION LDRU(5),IVAL(MBTYP),IVALS(6)
 
@@ -396,7 +394,7 @@ C For help messages
 
       helpinsub='GNDBND'  ! set for subroutine
 
-      IF(MODIFY.OR.IDRW1.NE.10)THEN
+      IF(MODIFYVIEW.OR.IDRW1.NE.10)THEN
         IDRW1=10
         IDRW2=0
         CALL GRAAPH(IDRW1,IDRW2)
@@ -443,7 +441,7 @@ C If a long list include page facility text.
       VERT(M+7)  ='- Exit                          '
 
 C Draw the appropriate graph.
-      IF(MODIFY)CALL GRAAPH(IDRW1,IDRW2)
+      IF(MODIFYVIEW)CALL GRAAPH(IDRW1,IDRW2)
 
 C Help text for menu.
       helptopic='boundary_type_defs'

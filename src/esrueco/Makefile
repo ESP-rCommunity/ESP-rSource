@@ -18,14 +18,13 @@ PROG= eco$(EXE)
 
 MODULE_OBJECTS = h3kmodule.o startup.o aim2_module.o
 
-OBJECTS = eco.o arrow.o ascii_mat.o basesimp.o basesimp_inputs.o \
-	  bscoeff.o bscoeff_extended.o c2fdum.o common3dv.o cread3dv.o \
-	  CDBPlugins.o CDBCommon.o CDBExplore.o\
+OBJECTS = eco.o arrow.o ascii_mat.o c2fdum.o common3dv.o cread3dv.o \
+	  CDBPlugins.o CDBCommon.o CDBExplore.o \
 	  ctlexp.o ctread.o dossupport.o e3dviews.o ecocalc.o ecoesp.o \
 	  econstr.o edatabase.o edcondb.o egeometry.o emfnetw.o \
 	  enetmisc.o enetrewr.o eroper.o esru_misc.o esystem.o filelist.o \
 	  item.o mfcdat.o nwkrewr.o pltcfg.o readTrnsys.o readBCF.o \
-	  rwipv.o rwsbem.o  sort.o tdfile.o azalt.o qrun.o
+	  rwipv.o rwsbem.o sort.o tdfile.o
 
 MODULES = aim2.mod aim2_calcdata.mod aim2_h2k_dummy.mod aim2_inputdata.mod start_up.mod \
 	parse_command_line.mod h3kmodule.mod
@@ -42,18 +41,6 @@ arrow.F:
 ascii_mat.F:
 	rm -f ascii_mat.F
 	ln -s $(COMdir)/ascii_mat.F .
-basesimp.F:
-	rm -f basesimp.F
-	ln -s $(BLDdir)/basesimp.F .
-basesimp_inputs.F:
-	rm -f basesimp_inputs.F
-	ln -s $(PRJdir)/basesimp_inputs.F .
-bscoeff.F:
-	rm -f bscoeff.F
-	ln -s $(BLDdir)/bscoeff.F .
-bscoeff_extended.F:
-	rm -f bscoeff_extended.F
-	ln -s $(CETCdir)/bscoeff_extended.F .
 CDBPlugins.F:
 	rm -f CDBPlugins.F
 	ln -s $(CDBdir)/CDBPlugins.F .
@@ -150,12 +137,6 @@ startup.F:
 tdfile.F:
 	rm -f tdfile.F
 	ln -s $(COMdir)/tdfile.F .
-azalt.F:
-	rm -f azalt.F
-	ln -s $(COMdir)/azalt.F .
-qrun.F:
-	rm -f qrun.F
-	ln -s $(COMdir)/qrun.F .
 h3kmodule.f90:
 	rm -f h3kmodule.f90
 	ln -s $(CETCdir)/h3kmodule.f90 .
@@ -168,12 +149,11 @@ install:
 
 clean:
 	rm -f core $(PROG) $(PROG).exe $(MODULE_OBJECTS) $(OBJECTS) $(MODULES) \
-	aim2_module.F arrow.F ascii_mat.F basesimp.F basesimp_inputs.F bscoeff.F \
-	bscoeff_extended.F blcond.F c2fdum.F common3dv.F cread3dv.F \
+	aim2_module.F arrow.F ascii_mat.F blcond.F c2fdum.F common3dv.F cread3dv.F \
 	CDBPlugins.F CDBCommon.F CDBExplore.F \
 	ctlexp.F ctread.F dossupport.F e3dviews.F ecasctl.F econstr.F \
 	edcon.F edcondb.F edatabase.F egeometry.F egtgeom.F emkcfg.F \
 	enetrewr.F emfnetw.F enetmisc.F eroper.F esru_misc.F \
 	filelist.F esystem.F inside.F item.F mfcdat.F nwkrewr.F \
 	pltcfg.F readTrnsys.F rwipv.F rwsbem.F sort.F startup.F tdfile.F \
-    azalt.F qrun.F h3kmodule.f90
+	h3kmodule.f90

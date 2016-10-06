@@ -783,6 +783,7 @@ C Iskip : If = 0, then skip the list of surfaces menu
 #include "model.h"
 #include "geometry.h"
 #include "epara.h"
+#include "prj3dv.h"
 
       COMMON/FILEP/IFIL
       COMMON/OUTIN/IUOUT,IUIN
@@ -792,7 +793,6 @@ C Iskip : If = 0, then skip the list of surfaces menu
       COMMON/surfsel/isursel(MCON),NbSurSel(MCOM),ISelCon(MCON),
      &               ISelComp(MCON)
       COMMON/Displ/SelSurf(MCON)
-      COMMON/RAY3/MODIFY,MODLEN,MODBND
       real sna,pazi,pelv
       COMMON/SDATA/SNA(MS),PAZI(MS),PELV(MS)
 
@@ -800,7 +800,7 @@ C Iskip : If = 0, then skip the list of surfaces menu
 
       CHARACTER VERT*44,KEY*1,head*31,OutStr*124
 
-      LOGICAL MODIFY,MODLEN,MODBND,zbzero,context,SelSurf
+      LOGICAL zbzero,context,SelSurf
       logical changedit
       integer MVERT,IVERT ! max items and current menu item
 
@@ -820,7 +820,7 @@ C Read geometry file for chosen zone.
       ITMP=IFIL+1
       itru=6
       call georead(ITMP,LGEOM(ICOMP),ICOMP,0,iuout,IER)
-      MODIFY =.TRUE.
+      MODIFYVIEW =.TRUE.
       MODBND =.TRUE.
       If (Icomp .eq. 1) then
         DO 33 I=1,MCON      
@@ -834,7 +834,7 @@ C Multi-page list
       call edisp(iuout,'Please select surfaces to include in analysis.')
 
 C Recover zone data (read only, no display).
-      CALL ZINFO(SNA,ZOA,PAZI,PELV,ZVOL)
+      CALL ZINFO(SNA,ZOA,PAZI,PELV,ZVOL,'q')
       vol(icomp)=zvol
       CALL ECLOSE(ZBASEA(ICOMP),0.0,0.001,zbzero)
       OPQ=0.
@@ -1837,7 +1837,7 @@ C If approach is model based, read the current zone information
         IF (ICalType.EQ.1) THEN
           ICurZone=nznog(IZ)
           call georead(IFIL+1,LGEOM(ICurZone),ICurZone,0,iuout,IER)
-          call ZINFO(SNA,ZOA,PAZI,PELV,ZVOL)
+          call ZINFO(SNA,ZOA,PAZI,PELV,ZVOL,'q')
           vol(ICurZone)=zvol
           context=.false.
         ENDIF
@@ -2922,7 +2922,7 @@ C If approach is model based, read the current zone information
           IF (ICalType.EQ.1) THEN
             ICurZone=nznog(IZ)
             call georead(IFIL+1,LGEOM(ICurZone),ICurZone,0,iuout,IER)
-            call ZINFO(SNA,ZOA,PAZI,PELV,ZVOL)
+            call ZINFO(SNA,ZOA,PAZI,PELV,ZVOL,'q')
             vol(ICurZone)=zvol
             context=.false.
           ENDIF

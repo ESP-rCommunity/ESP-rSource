@@ -67,10 +67,10 @@ C *********************************************************************
       SUBROUTINE GRDSRF(IZ,IDRW1,IDRW2)
 #include "building.h"
 #include "geometry.h"
+#include "prj3dv.h"
       integer iCountWords
 
       COMMON/OUTIN/IUOUT,IUIN
-      COMMON/RAY3/MODIFY,MODLEN,MODBND
 
       COMMON/PREC8/SLAT,SLON
 
@@ -81,7 +81,7 @@ C *********************************************************************
       COMMON/GR3D03/NLINB(MS),NLIND(MS),NLINA(MS)
       COMMON/GR3D10/XMINS(MS),XMAXS(MS),ZMINS(MS),ZMAXS(MS)
 
-      LOGICAL SRFOK,MODIFY,MODBND,MODLEN
+      LOGICAL SRFOK
 
       DIMENSION ITEM(12),IVALS(MS)
       CHARACTER SSRF*12,ITEMS(MS)*17,CORDNT*24
@@ -128,7 +128,7 @@ C Help text for this menu.
 
 C If user has defined problem and perhaps resized the display then
 C redraw the problem image.
-      IF(MODIFY)CALL GRAAPH(IDRW1,IDRW2)
+      IF(MODIFYVIEW)CALL GRAAPH(IDRW1,IDRW2)
       CALL USRMSG(' ',' ','-')
       CALL EMENU('     Surface Gridding',ITEM,MITEM,INO)
 
@@ -139,7 +139,7 @@ C redraw the problem image.
       ELSEIF(INO.EQ.5)THEN
 
 C Select the surface.
-        IF(IDRW1.NE.2.OR.IDRW2.NE.IZ.OR.MODIFY)THEN
+        IF(IDRW1.NE.2.OR.IDRW2.NE.IZ.OR.MODIFYVIEW)THEN
           IDRW1=2
           IDRW2=IZ
           CALL GRAAPH(IDRW1,IDRW2)
@@ -223,7 +223,7 @@ C  Add vertical gridding line.
 
 C Clear last gridding line 
         IF(INDXS(IS).EQ.3)THEN
-          IF(NLINA(IS).GT.NLIND(IS).OR.MODIFY)THEN
+          IF(NLINA(IS).GT.NLIND(IS).OR.MODIFYVIEW)THEN
             CALL DELINE(IS)
 
 C Draw the elevation view for the selected surface.
@@ -935,10 +935,10 @@ C *********************************************************************
       SUBROUTINE GRDEDG(IZ,IDRW1,IDRW2)
 #include "building.h"
 #include "geometry.h"
+#include "prj3dv.h"
       integer iCountWords
 
       COMMON/OUTIN/IUOUT,IUIN
-      COMMON/RAY3/MODIFY,MODLEN,MODBND
       COMMON/PREC8/SLAT,SLON
       integer IZSTOCN
       COMMON/C24/IZSTOCN(MCOM,MS)
@@ -947,7 +947,7 @@ C *********************************************************************
       COMMON/GR3D24/ISFEDG(MEZ,2),IVXEDG(MEZ,2)
       COMMON/GR3D27/NDZE(MEZ),DZE(MEZ,MZE)
 
-      LOGICAL EDGOK,MODIFY,MODLEN,MODBND
+      LOGICAL EDGOK
 
       DIMENSION ITEM(17),IVALS(MEZ)
       CHARACTER*72 LINDSC,DISCR
@@ -1001,7 +1001,7 @@ C Help text for this menu.
       call gethelptext(helpinsub,helptopic,nbhelp)
 
 C Draw the appropriate graph.
-      IF(MODIFY)CALL GRAAPH(IDRW1,IDRW2)
+      IF(MODIFYVIEW)CALL GRAAPH(IDRW1,IDRW2)
       CALL USRMSG(' ',' ','-')
       CALL EMENU('       Edge Gridding',ITEM,MITEM,INO)
       IF(.NOT.EDGOK.AND.INO.GE.7.AND.INO.LE.9)THEN
@@ -1011,7 +1011,7 @@ C trap un-acceptable selections.
       ELSEIF(INO.EQ.6)THEN
 
 C Define the zone.
-        IF(IDRW1.NE.2.OR.IDRW2.NE.IZ.OR.MODIFY)THEN
+        IF(IDRW1.NE.2.OR.IDRW2.NE.IZ.OR.MODIFYVIEW)THEN
           IDRW1=2
           IDRW2=IZ
           CALL GRAAPH(IDRW1,IDRW2)
@@ -1036,7 +1036,7 @@ C Show the edge selection menu.
         IF(IEG.GT.0.AND.IEG.LE.NUMEDG)THEN
 
 C Draw the selected edge.
-          IF(IDRW1.NE.4.OR.IDRW2.NE.IEG.OR.MODIFY)THEN
+          IF(IDRW1.NE.4.OR.IDRW2.NE.IEG.OR.MODIFYVIEW)THEN
             IDRW1=4
             IDRW2=IEG
             CALL GRAAPH(IDRW1,IDRW2)
@@ -1339,11 +1339,11 @@ C *********************************************************************
       SUBROUTINE CONEDG(IZ,IEG)
 #include "building.h"
 #include "geometry.h"
+#include "prj3dv.h"
       integer iCountWords
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
-      COMMON/RAY3/MODIFY,MODLEN,MODBND
       integer IZSTOCN
       COMMON/C24/IZSTOCN(MCOM,MS)
       COMMON/PREC8/SLAT,SLON
@@ -1354,7 +1354,7 @@ C *********************************************************************
       COMMON/GR3D27/NDZE(MEZ),DZE(MEZ,MZE)
       COMMON/GR3D28/ITPEDG(MEZ,MZE,MZE,MZE)
 
-      LOGICAL OK,DOK,MODIFY,MODLEN,MODBND,chdb
+      LOGICAL OK,DOK,chdb
 
       DIMENSION ITEM(14),IUDLR(5)
 
@@ -1405,7 +1405,7 @@ C Help for this menu.
       call gethelptext(helpinsub,helptopic,nbhelp)
 
 C Draw the appropriate graph.
-      IF(MODIFY)CALL GRAAPH(IDRW1,IDRW2)
+      IF(MODIFYVIEW)CALL GRAAPH(IDRW1,IDRW2)
       CALL USRMSG(' ',' ','-')
       CALL EMENU('    Edge  Construction',ITEM,MITEM,INO)
 
@@ -1945,9 +1945,9 @@ C *********************************************************************
       SUBROUTINE GRDCRN(IZ,IDRW1,IDRW2)
 #include "building.h"
 #include "geometry.h"
+#include "prj3dv.h"
       integer iCountWords
 
-      COMMON/RAY3/MODIFY,MODLEN,MODBND
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/OUTIN/IUOUT,IUIN
       integer IZSTOCN
@@ -1956,9 +1956,9 @@ C *********************************************************************
 
       COMMON/GR3D31/NUMCRN,INDXC(MCZ),DCOSC(MCZ,3,3)
       COMMON/GR3D34/ISFCRN(MCZ,3),IVXCRN(MCZ)
-      COMMON/GR3D37/NDZC(MEZ),DZC(MEZ,MZE)
+      COMMON/GR3D37/NDZC(MEZ),DZCV(MEZ,MZE)
 
-      LOGICAL CRNOK,MODIFY,MODLEN,MODBND
+      LOGICAL CRNOK
 
       DIMENSION IVALS(MCZ)
       CHARACTER*72 DISCR
@@ -2015,7 +2015,7 @@ C Help text for this menu.
       call gethelptext(helpinsub,helptopic,nbhelp)
 
 C Draw the appropriate graph.
-      IF(MODIFY)CALL GRAAPH(IDRW1,IDRW2)
+      IF(MODIFYVIEW)CALL GRAAPH(IDRW1,IDRW2)
       CALL USRMSG(' ',' ','-')
       CALL EMENU('     Corner  Gridding',ITEM,MITEM,INO)
 
@@ -2025,7 +2025,7 @@ C Trap the un-acceptable selections.
       ELSEIF(INO.EQ.7)THEN
 
 C Define the corner.
-        IF(IDRW1.NE.2.OR.IDRW2.NE.IZ.OR.MODIFY)THEN
+        IF(IDRW1.NE.2.OR.IDRW2.NE.IZ.OR.MODIFYVIEW)THEN
           IDRW1=2
           IDRW2=IZ
           CALL GRAAPH(IDRW1,IDRW2)
@@ -2050,7 +2050,7 @@ C Show the surface selection menu.
         IF(ICR.GT.0.AND.ICR.LE.NUMCRN)THEN
 
 C Draw the selected corner.
-          IF(IDRW1.NE.5.OR.IDRW2.NE.ICR.OR.MODIFY)THEN
+          IF(IDRW1.NE.5.OR.IDRW2.NE.ICR.OR.MODIFYVIEW)THEN
             IDRW1=5
             IDRW2=ICR
             CALL GRAAPH(IDRW1,IDRW2)
@@ -2074,12 +2074,12 @@ C Define edge gridding in the local z-direction.
         THK3=0.
         NDZ=NDZC(ICR)
         DO 100 IDZ=1,NDZ
-          THK3=THK3+DZC(ICR,IDZ)
+          THK3=THK3+DZCV(ICR,IDZ)
   100   CONTINUE
         WRITE(outs,'(A,F12.5,A)')' The actual length which is (',
      &    THK3,') meters.'
         call edisp(iuout,outs)
-        WRITE(DISCR,'(1X,10F7.3)')(DZC(ICR,J),J=1,NDZ)
+        WRITE(DISCR,'(1X,10F7.3)')(DZCV(ICR,J),J=1,NDZ)
         CALL EASKS(DISCR,'Define the Z - gridding intervals (m).',
      &    ' ',72,' ',' gridding intervals ',IER,nbehlp)
         CALL USRMSG(' ',' ','-')
@@ -2094,7 +2094,7 @@ C Define edge gridding in the local z-direction.
           CALL EGETWR(DISCR,K,DZX,0.,THK3,'F',
      &               'gridding intervals',IER)
           IF(IER.NE.0)GOTO 10
-          DZC(ICR,I)=DZX
+          DZCV(ICR,I)=DZX
           TDZ=TDZ+DZX
           IF((TDZ-THK3).GT.1.E-4)THEN
             CALL USRMSG('the summation of entered intervals',
@@ -2204,9 +2204,9 @@ C *********************************************************************
 
       COMMON/GR3D31/NUMCRN,INDXC(MCZ),DCOSC(MCZ,3,3)
       COMMON/GR3D34/ISFCRN(MCZ,3),IVXCRN(MCZ)
-      COMMON/GR3D35/NDXC(MEZ),DXC(MEZ,MZE)
-      COMMON/GR3D36/NDYC(MEZ),DYC(MEZ,MZE)
-      COMMON/GR3D37/NDZC(MEZ),DZC(MEZ,MZE)
+      COMMON/GR3D35/NDXC(MEZ),DXCV(MEZ,MZE)
+      COMMON/GR3D36/NDYC(MEZ),DYCV(MEZ,MZE)
+      COMMON/GR3D37/NDZC(MEZ),DZCV(MEZ,MZE)
 
       DIMENSION XCRN(8),YCRN(8),ZCRN(8)
       DIMENSION XS(8),YS(8),ZS(8)
@@ -2231,7 +2231,7 @@ C *********************************************************************
 C Determine the thickness of the first surface.
       THK1=0.0
       DO 70 I=1,NDXC(ICR)
-        THK1=THK1+DXC(ICR,I)
+        THK1=THK1+DXCV(ICR,I)
    70 CONTINUE
       XCRN(4)=XCRN(1)+DCOSC(ICR,1,1)*THK1
       YCRN(4)=YCRN(1)+DCOSC(ICR,1,2)*THK1
@@ -2240,7 +2240,7 @@ C Determine the thickness of the first surface.
 C Determine the thickness of the second surface.
       THK2=0.0
       DO 100 I=1,NDYC(ICR)
-        THK2=THK2+DYC(ICR,I)
+        THK2=THK2+DYCV(ICR,I)
   100 CONTINUE
       XCRN(2)=XCRN(1)+DCOSC(ICR,2,1)*THK2
       YCRN(2)=YCRN(1)+DCOSC(ICR,2,2)*THK2
@@ -2252,7 +2252,7 @@ C Determine the thickness of the second surface.
 C Determine the thickness of the third surface.
       THK3=0.0
       DO 130 I=1,NDZC(ICR)
-        THK3=THK3+DZC(ICR,I)
+        THK3=THK3+DZCV(ICR,I)
   130 CONTINUE
       DO 140 I=1,4
         XCRN(I+4)=XCRN(I)+DCOSC(ICR,3,1)*THK3
@@ -2318,9 +2318,9 @@ C Draw the corner.
 C Draw the gridding lines.
       DO 180 IDZ=1,NDZC(ICR)-1
         I=5
-        XCRN(I)=XCRN(I-4)+DZC(ICR,IDZ)*DCOSC(ICR,3,1)
-        YCRN(I)=YCRN(I-4)+DZC(ICR,IDZ)*DCOSC(ICR,3,2)
-        ZCRN(I)=ZCRN(I-4)+DZC(ICR,IDZ)*DCOSC(ICR,3,3)
+        XCRN(I)=XCRN(I-4)+DZCV(ICR,IDZ)*DCOSC(ICR,3,1)
+        YCRN(I)=YCRN(I-4)+DZCV(ICR,IDZ)*DCOSC(ICR,3,2)
+        ZCRN(I)=ZCRN(I-4)+DZCV(ICR,IDZ)*DCOSC(ICR,3,3)
         CALL ORTTRN(XCRN(I),YCRN(I),ZCRN(I),TEMAT,AX,AY,AZ,IERR)
         CALL ORTTRN(AX,AY,AZ,ETSMAT,XS(I),YS(I),ZS(I),IERR)
         iupdown=0
@@ -2330,9 +2330,9 @@ C Draw the gridding lines.
         YCRN(I-4)=YCRN(I)
         ZCRN(I-4)=ZCRN(I)
         DO 190 I=6,8
-          XCRN(I)=XCRN(I-4)+DZC(ICR,IDZ)*DCOSC(ICR,3,1)
-          YCRN(I)=YCRN(I-4)+DZC(ICR,IDZ)*DCOSC(ICR,3,2)
-          ZCRN(I)=ZCRN(I-4)+DZC(ICR,IDZ)*DCOSC(ICR,3,3)
+          XCRN(I)=XCRN(I-4)+DZCV(ICR,IDZ)*DCOSC(ICR,3,1)
+          YCRN(I)=YCRN(I-4)+DZCV(ICR,IDZ)*DCOSC(ICR,3,2)
+          ZCRN(I)=ZCRN(I-4)+DZCV(ICR,IDZ)*DCOSC(ICR,3,3)
           CALL ORTTRN(XCRN(I),YCRN(I),ZCRN(I),TEMAT,AX,AY,AZ,IERR)
           CALL ORTTRN(AX,AY,AZ,ETSMAT,XS(I),YS(I),ZS(I),IERR)
           iupdown=-204
@@ -2357,22 +2357,22 @@ C *********************************************************************
       SUBROUTINE CONCRN(IZ,ICR)
 #include "building.h"
 #include "geometry.h"
+#include "prj3dv.h"
       integer iCountWords
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
-      COMMON/RAY3/MODIFY,MODLEN,MODBND
       integer IZSTOCN
       COMMON/C24/IZSTOCN(MCOM,MS)
       COMMON/PREC8/SLAT,SLON
 
       COMMON/GR3D34/ISFCRN(MCZ,3),IVXCRN(MCZ)
-      COMMON/GR3D35/NDXC(MEZ),DXC(MEZ,MZE)
-      COMMON/GR3D36/NDYC(MEZ),DYC(MEZ,MZE)
-      COMMON/GR3D37/NDZC(MEZ),DZC(MEZ,MZE)
+      COMMON/GR3D35/NDXC(MEZ),DXCV(MEZ,MZE)
+      COMMON/GR3D36/NDYC(MEZ),DYCV(MEZ,MZE)
+      COMMON/GR3D37/NDZC(MEZ),DZCV(MEZ,MZE)
       COMMON/GR3D38/ITPCRN(MCZ,MZE,MZE,MZE)
 
-      LOGICAL OK,DOK,MODIFY,MODLEN,MODBND,chdb
+      LOGICAL OK,DOK,chdb
 
       DIMENSION ITEM(15),IUDLR(5)
 
@@ -2426,7 +2426,7 @@ C Help text for this menu.  << to here >>
       call gethelptext(helpinsub,helptopic,nbhelp)
 
 C Draw the appropriate graph.
-      IF(MODIFY)CALL GRAAPH(IDRW1,IDRW2)
+      IF(MODIFYVIEW)CALL GRAAPH(IDRW1,IDRW2)
       CALL USRMSG(' ',' ','-')
       CALL EMENU('    Corner  Construction',ITEM,MITEM,INO)
       IF(INO.EQ.7)THEN
@@ -2440,13 +2440,13 @@ C Show the next mesh level.
 C Define X - gridding.
         THK1=0.
         DO 20 I=1,NDXC(ICR)
-          THK1=THK1+DXC(ICR,I)
+          THK1=THK1+DXCV(ICR,I)
    20   CONTINUE
         WRITE(outs,'(A,F12.5,A)')' The actual length which is (',
      &                           THK1,') meters.'
         call edisp(iuout,outs)
         NDX=NDXC(ICR)
-        WRITE(DISCR,'(1X,10F9.3)')(DXC(ICR,J),J=1,NDX)
+        WRITE(DISCR,'(1X,10F9.3)')(DXCV(ICR,J),J=1,NDX)
         CALL EASKS(DISCR,'Define the X - gridding intervals (m).',
      &    ' ',72,' ',' gridding intervals ',IER,nbhelp)
         CALL USRMSG(' ',' ','-')
@@ -2461,7 +2461,7 @@ C Define X - gridding.
           CALL EGETWR(DISCR,K,DXX,0.,THK1,'F',
      &               'gridding intervals',IER)
           IF(IER.NE.0)GOTO 10
-          DXC(ICR,I)=DXX
+          DXCV(ICR,I)=DXX
           TDX=TDX+DXX
           IF((TDX-THK1).GT.1.E-4)THEN
             CALL USRMSG('the summation of entered intervals',
@@ -2485,13 +2485,13 @@ C Define X - gridding.
 C Define Y - gridding.
         THK2=0.
         DO 40 I=1,NDYC(ICR)
-          THK2=THK2+DYC(ICR,I)
+          THK2=THK2+DYCV(ICR,I)
    40   CONTINUE
         WRITE(outs,'(A,F12.5,A)')' The actual length which is (',
      &    THK2,') meters.'
         call edisp(iuout,outs)
         NDY=NDYC(ICR)
-        WRITE(DISCR,'(1X,10F9.3)')(DYC(ICR,J),J=1,NDY)
+        WRITE(DISCR,'(1X,10F9.3)')(DYCV(ICR,J),J=1,NDY)
         CALL EASKS(DISCR,'Define the X - gridding intervals (m).',
      &    ' ',72,' ',' gridding intervals ',IER,nbhelp)
         CALL USRMSG(' ',' ','-')
@@ -2507,7 +2507,7 @@ C Define Y - gridding.
           CALL EGETWR(DISCR,K,DYX,0.,THK2,'F',
      &               'gridding intervals',IER)
           IF(IER.NE.0)GOTO 10
-          DYC(ICR,I)=DYX
+          DYCV(ICR,I)=DYX
           TDY=TDY+DYX
           IF((TDY-THK2).GT.1.E-4)THEN
             CALL USRMSG('the summation of entered intervals',
@@ -2636,8 +2636,8 @@ C *********************************************************************
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
 
       COMMON/GR3D34/ISFCRN(MCZ,3),IVXCRN(MCZ)
-      COMMON/GR3D35/NDXC(MEZ),DXC(MEZ,MZE)
-      COMMON/GR3D36/NDYC(MEZ),DYC(MEZ,MZE)
+      COMMON/GR3D35/NDXC(MEZ),DXCV(MEZ,MZE)
+      COMMON/GR3D36/NDYC(MEZ),DYCV(MEZ,MZE)
       COMMON/GR3D38/ITPCRN(MCZ,MZE,MZE,MZE)
 
       CHARACTER LABELN*3,LABELS*16
@@ -2756,9 +2756,9 @@ C *********************************************************************
       COMMON/GR3D26/NDYE(MEZ),DYE(MEZ,MZE)
       COMMON/GR3D31/NUMCRN,INDXC(MCZ),DCOSC(MCZ,3,3)
       COMMON/GR3D34/ISFCRN(MCZ,3),IVXCRN(MCZ)
-      COMMON/GR3D35/NDXC(MEZ),DXC(MEZ,MZE)
-      COMMON/GR3D36/NDYC(MEZ),DYC(MEZ,MZE)
-      COMMON/GR3D37/NDZC(MEZ),DZC(MEZ,MZE)
+      COMMON/GR3D35/NDXC(MEZ),DXCV(MEZ,MZE)
+      COMMON/GR3D36/NDYC(MEZ),DYCV(MEZ,MZE)
+      COMMON/GR3D37/NDZC(MEZ),DZCV(MEZ,MZE)
 
       LOGICAL OK1,OK2,OK3
 
@@ -2781,38 +2781,38 @@ C First edge.
         IF(ISFEDG(IEG1,1).EQ.IS1)THEN
           OK1=.TRUE.
           DO 110 IX=1,NDXE(IEG1)
-            DXC(ICR,IX)=DXE(IEG1,IX)
+            DXCV(ICR,IX)=DXE(IEG1,IX)
   110     CONTINUE
           NDXC(ICR)=NDXE(IEG1)
         ELSEIF(ISFEDG(IEG1,1).EQ.IS2)THEN
           OK2=.TRUE.
           DO 120 IY=1,NDXE(IEG1)
-            DYC(ICR,IY)=DXE(IEG1,IY)
+            DYCV(ICR,IY)=DXE(IEG1,IY)
   120     CONTINUE
           NDYC(ICR)=NDXE(IEG1)
         ELSEIF(ISFEDG(IEG1,1).EQ.IS3)THEN
           OK3=.TRUE.
           DO 130 IL=1,NDXE(IEG1)
-            DZC(ICR,IL)=DXE(IEG1,IL)
+            DZCV(ICR,IL)=DXE(IEG1,IL)
   130     CONTINUE
           NDZC(ICR)=NDXE(IEG1)
         ENDIF
         IF(ISFEDG(IEG1,2).EQ.IS1)THEN
           OK1=.TRUE.
           DO 140 IX=1,NDYE(IEG1)
-            DXC(ICR,IX)=DYE(IEG1,IX)
+            DXCV(ICR,IX)=DYE(IEG1,IX)
   140     CONTINUE
           NDXC(ICR)=NDYE(IEG1)
         ELSEIF(ISFEDG(IEG1,2).EQ.IS2)THEN
           OK2=.TRUE.
           DO 150 IY=1,NDYE(IEG1)
-            DYC(ICR,IY)=DYE(IEG1,IY)
+            DYCV(ICR,IY)=DYE(IEG1,IY)
   150     CONTINUE
           NDYC(ICR)=NDYE(IEG1)
         ELSEIF(ISFEDG(IEG1,2).EQ.IS3)THEN
           OK3=.TRUE.
           DO 160 IL=1,NDYE(IEG1)
-            DZC(ICR,IL)=DYE(IEG1,IL)
+            DZCV(ICR,IL)=DYE(IEG1,IL)
   160     CONTINUE
           NDZC(ICR)=NDYE(IEG1)
         ENDIF
@@ -2822,38 +2822,38 @@ C Second edge.
         IF(.NOT.OK1.AND.ISFEDG(IEG2,1).EQ.IS1)THEN
           OK1=.TRUE.
           DO 210 IX=1,NDXE(IEG2)
-            DXC(ICR,IX)=DXE(IEG2,IX)
+            DXCV(ICR,IX)=DXE(IEG2,IX)
   210     CONTINUE
           NDXC(ICR)=NDXE(IEG2)
         ELSEIF(.NOT.OK2.AND.ISFEDG(IEG2,1).EQ.IS2)THEN
           OK2=.TRUE.
           DO 220 IY=1,NDXE(IEG2)
-            DYC(ICR,IY)=DXE(IEG2,IY)
+            DYCV(ICR,IY)=DXE(IEG2,IY)
   220     CONTINUE
           NDYC(ICR)=NDXE(IEG2)
         ELSEIF(.NOT.OK3.AND.ISFEDG(IEG2,1).EQ.IS3)THEN
           OK3=.TRUE.
           DO 230 IL=1,NDXE(IEG2)
-            DZC(ICR,IL)=DXE(IEG2,IL)
+            DZCV(ICR,IL)=DXE(IEG2,IL)
   230     CONTINUE
           NDZC(ICR)=NDXE(IEG2)
         ENDIF
         IF(.NOT.OK1.AND.ISFEDG(IEG2,2).EQ.IS1)THEN
           OK1=.TRUE.
           DO 240 IX=1,NDYE(IEG2)
-            DXC(ICR,IX)=DYE(IEG2,IX)
+            DXCV(ICR,IX)=DYE(IEG2,IX)
   240     CONTINUE
           NDXC(ICR)=NDYE(IEG2)
         ELSEIF(.NOT.OK2.AND.ISFEDG(IEG2,2).EQ.IS2)THEN
           OK2=.TRUE.
           DO 250 IY=1,NDYE(IEG2)
-            DYC(ICR,IY)=DYE(IEG2,IY)
+            DYCV(ICR,IY)=DYE(IEG2,IY)
   250     CONTINUE
           NDYC(ICR)=NDYE(IEG2)
         ELSEIF(.NOT.OK3.AND.ISFEDG(IEG2,2).EQ.IS3)THEN
           OK3=.TRUE.
           DO 260 IL=1,NDYE(IEG2)
-            DZC(ICR,IL)=DYE(IEG2,IL)
+            DZCV(ICR,IL)=DYE(IEG2,IL)
   260     CONTINUE
           NDZC(ICR)=NDYE(IEG2)
         ENDIF
@@ -2861,15 +2861,15 @@ C Second edge.
      &  STOP "error (303): corner default gridding."
         THKX=0.
         DO 310 IX=1,NDXC(ICR)
-          THKX=THKX+DXC(ICR,IX)
+          THKX=THKX+DXCV(ICR,IX)
   310   CONTINUE
         THKY=0.
         DO 320 IY=1,NDYC(ICR)
-          THKY=THKY+DYC(ICR,IY)
+          THKY=THKY+DYCV(ICR,IY)
   320   CONTINUE
         THKZ=0.
         DO 330 IL=1,NDZC(ICR)
-          THKZ=THKZ+DZC(ICR,IL)
+          THKZ=THKZ+DZCV(ICR,IL)
   330   CONTINUE
   100 CONTINUE
       RETURN

@@ -57,9 +57,6 @@ C LFMAT,IFMAT,LFMUL,IFMUL (for materials and constructions database)
       common/appw/iappw,iappx,iappy
       common/appcols/mdispl,nifgrey,ncset,ngset,nzonec
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
-      COMMON/RAY2/ITDSP,ITBND,ITEPT,ITZNM,ITSNM,ITVNO,ITORG,ITSNR,
-     &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS,ITPPSW
-      COMMON/RAY3/MODIFY,MODLEN,MODBND
       
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
@@ -74,16 +71,16 @@ C Path to problem
 C Significant figure reporting limit (NSIGFIG).
       common/SFIG/NSIGFIG
 
-      COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
-      
+      COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,CFCDBOK
+      LOGICAL        CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,CFCDBOK
+     
 C Name of current application
       common/APPNAME/cAppName
       
       character cAppName*12      
       
-      LOGICAL        CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
-
-      LOGICAL MODIFY,MODBND,MODLEN,XST,GRDOK
+ 
+      LOGICAL XST,GRDOK
 
       DIMENSION ITEM(11)
       CHARACTER LFILE*72
@@ -152,7 +149,7 @@ C Assume that the configuration and geometry files have not been read in.
       MLDBOK=.FALSE.
       MATDBOK=.FALSE.
       CTLOK=.FALSE.
-      MODIFY=.FALSE.
+      MODIFYVIEW=.FALSE.
 
 C Initial coords for eyepoint, viewing point, angle of view.
       EYEM(1)=-100.
@@ -326,7 +323,7 @@ C Set flag so that bounds are checked.
                 iZBFLG(ICOMP)=0
    30         CONTINUE
               CFGOK=.TRUE.
-              MODIFY=.TRUE.
+              MODIFYVIEW=.TRUE.
               MODLEN=.TRUE.
               MODBND=.TRUE.
             ENDIF
@@ -360,7 +357,7 @@ C Set flag so that bounds are checked.
 
 C If user has defined problem and perhaps resized the display then
 C redraw the problem image.
-      IF(CFGOK.AND.(MODIFY.OR.IDRW1.NE.1))THEN
+      IF(CFGOK.AND.(MODIFYVIEW.OR.IDRW1.NE.1))THEN
         ITZNM=0
         ITVNO=1
         IDRW1=1
@@ -434,7 +431,7 @@ C Initialize the 1D gridding variables.
           CALL INTGRD(GRDOK,ITRC)
           IF(GRDOK)THEN
             CFGOK=.TRUE.
-            MODIFY=.TRUE.
+            MODIFYVIEW=.TRUE.
             MODLEN=.TRUE.
             MODBND=.TRUE.
 
@@ -455,7 +452,7 @@ C Display 1D gridding menu.
 
 C Display Multi-gridding menu.
         CALL MENU3D(ITRC)
-        MODIFY=.TRUE.
+        MODIFYVIEW=.TRUE.
       ELSEIF(INO.EQ.5)THEN
 
 C Display the ground modelling menu.
@@ -521,7 +518,8 @@ C *********************************************************************
       
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
-      COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
+      COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,CFCDBOK
+      LOGICAL        CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,CFCDBOK
       COMMON/GR1D01/NNDS,NNDZ(MCOM),NNDC(MCOM,MS),NNDL(MCOM,MS,ME)
       COMMON/GR1D02/IADP,IVAR,FMIN,FREF,FMAX,NSTP
       COMMON/GR1D03/BCNV,ILUMP(MCOM,MS)
@@ -529,7 +527,6 @@ C *********************************************************************
       COMMON/GRND06/ITPGND(MGXYZ,MGXYZ,MGXYZ)
       COMMON/GRND07/VERTX(6,4)
 
-      LOGICAL CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
       logical closemat1,closemat2
       LOGICAL GRDOK
       CHARACTER VERTX*2
@@ -624,5 +621,15 @@ C Dummy subroutine needed to compile (called from library code).
 
       return
       end
+
+      subroutine Find_season_parameters()
+      return
+      end
+
+      SUBROUTINE BASESIMP_INPUTS(ICOMP,IER)
+      integer icomp,ier
+      return
+      end
+
 
 
