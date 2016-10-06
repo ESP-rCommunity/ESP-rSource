@@ -1,6 +1,0 @@
- 1     # Total number of thermal functions
-  1          # thermal function No.
- 13  1  3    # actuator location
-  1          # Total thermal equations
-# No T  MIN(Temp.)MAX      A          B        b       C        c       D        d        E        e
-  1  1    0.00   50.00     0.0654  0.001580   1.00  0.000000   0.00  0.000000   0.00  0.000000   0.00
