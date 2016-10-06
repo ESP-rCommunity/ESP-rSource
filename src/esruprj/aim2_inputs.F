@@ -1506,7 +1506,7 @@ C Check to see if standard directories exist, by checking to see if there is a z
       ipaths = lnblnk(zonepth)
 C Other folders exist so create an aim2 folder if it doesn't
       IF (ipaths.GT.3) THEN
-	aimpth='../aim2'
+        aimpth='../aim2'
         WRITE(OutString,'(3A)')'mkdir -p ',path(1:lnblnk(path)),aimpth
 C Create aim2 directory (-p in mkdir supresses any error messages resulting from existing directories)
         CALL system(OutString)

@@ -3383,7 +3383,8 @@ C If there are enough items allow paging control via EKPAGE.
       ELSEIF(INO.EQ.NITMS-5)THEN
 
 C Calculate g-value of transparent constructions
-C First check if mlc is transparent
+C First check if mlc is transparent. It does not yet count
+C CFC and CFC2 as transparent for g-value calcs.
         helptopic='construction_db_g-value'
         call gethelptext(helpinsub,helptopic,nbhelp)
         CALL PHELPD('G-value for tran construction',nbhelp,'-',0,0,IER)
@@ -3396,10 +3397,11 @@ C First check if mlc is transparent
         THCON=CLAMDA(IWH)
         IF(mlctype(IWH)(1:4).EQ.'OPAQ'.OR.
      &     mlctype(IWH)(1:4).EQ.'UNKN'.OR.
-     &     mlctype(IWH)(1:4).EQ.'CFC ')THEN
+     &     mlctype(IWH)(1:4).EQ.'CFC '.OR.
+     &     mlctype(IWH)(1:4).EQ.'CFC2')THEN
           CALL EDISP(IUOUT,' ')
           CALL EDISP(IUOUT,
-     &    ' G-value only defined for transparent constructions')
+     &    ' G-value only defined for [tmc] transparent constructions')
           CALL EDISP(IUOUT,' ')
         ELSE
 

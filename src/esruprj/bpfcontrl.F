@@ -940,8 +940,8 @@ C of validity in the selections.
           goto 92
         elseif(ISW.eq.1)then
 
-C Do not edit sensor information if Nicol control algorithm
-          IF(IFSN(II,2).EQ.7)THEN
+C Do not edit sensor information if Nicol control algorithm.
+          IF(IFSN(II,1).eq.-3.AND.IFSN(II,2).EQ.7)THEN
             CALL USRMSG(
      &      'Sensor not required for behavioural control model',
      &      ' ','W')

@@ -261,7 +261,7 @@ C Produce help text for the menu.
         CALL PHELPD('Model context',nbhelp,'-',0,0,IER)
 
       ELSEIF(INO.EQ.1)THEN
-
+        slat=sitelat  ! sitelat is in common C4 in site.h
         CALL EASKR(SLAT,' ','Site latitude?',
      &       -89.9,'W',89.9,'W',55.9,'site latitude',IER,nbhelp)
         IF(IER.EQ.0)sitelat=SLAT
@@ -269,9 +269,10 @@ C Produce help text for the menu.
         modish=.true.
 
       ELSEIF(INO.EQ.2)THEN
-
-        CALL EASKR(SLON,' ','Longitude difference?',
-     &       -15.0,'W',15.0,'W',-4.1,'longitude difference',IER,nbhelp)
+        slon=sitelongdif  ! sitelongdif is in common C4 in site.h
+        CALL EASKR(SLON,
+     &    'Longitude difference from time meridian (east +ve)?',
+     &    ':',-15.0,'W',15.0,'W',-4.1,'longitude difference',IER,nbhelp)
         IF(IER.EQ.0)sitelongdif=SLON
         MODSIT=.true.
         modish=.true.
@@ -2065,10 +2066,12 @@ C Ask for node name if flow network is present
           elseif(TTYPE(it)(1:8).eq.'CTRLCAP')then
 
 C Ask which zone is linked to charging schedule
+            IC=-1
+ 356        izdef=0
             call askzone(ic,izdef,
      &      ' Related zone for grid charging schedule?',
      &      'Related zone','-','Charging schedule for which zone?',ier)
-            IF(IC.EQ.0.OR.IC.EQ.-1)GOTO 354
+            IF(IC.EQ.0.OR.IC.EQ.-1)GOTO 356
             write(DBZN(ITE),'(a)') zname(IC)(1:12)
             DBSN(ITE)='ALL' 
           else
@@ -2392,7 +2395,7 @@ C 10 11 12 13 14 15 16    14 15 16 17 18 19 20
 C 17 18 19 20 21 22 23    21 22 23 24 25 26 27    
 C 24 25 26 27 28 29 30    28 29                   
 C 31                    
-      DIMENSION VERT(35),citem(17),IDVALS(10),clist(365)
+      DIMENSION VERT(35),citem(21),IDVALS(10),clist(365)
       dimension ixdvals(365)
       integer IDVALS,ixdvals
 

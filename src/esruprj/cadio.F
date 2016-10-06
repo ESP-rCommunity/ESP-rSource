@@ -31,6 +31,7 @@ C exportcad: controls model export facilities.
 
 #include "building.h"
 #include "model.h"
+#include "prj3dv.h"
       
       integer lnblnk  ! function definition
 
@@ -41,19 +42,21 @@ C exportcad: controls model export facilities.
 
       common/rpath/path
       common/appw/iappw,iappx,iappy
+      integer iappw,iappx,iappy
       common/user/browse
 
       common/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,CFCDBOK
       COMMON/exporttg/xfile,tg,delim
       COMMON/exporttgi/ixopen,ixloc,ixunit
-      COMMON/RAY3/MODIFY,MODLEN,MODBND
 
       logical OK,DOK,CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,concat,CFCDBOK
-      logical MODIFY,MODLEN,MODBND,unixok,browse
+      logical unixok,browse
+      integer iappwpc ! application height as % of nominal size
 
-      DIMENSION ITEMS1(10)
+      DIMENSION ITEMS1(11)
 
-      character LFIL*72,path*72
+      character LFIL*72,path*72,ltmp*72
+      character dradcf*72   ! default name
       character ITEMS1*34,doit*248,outs*124,outs248*248
       character tmode*12
       character xfile*144,tg*1,delim*1,ffile*72,dvfil*72
@@ -61,8 +64,9 @@ C exportcad: controls model export facilities.
       character longtfile*144,longtfiledos*144,L144*144,lltmp*144
       character brw*8   ! to signal model is being browsed
       character fs*1
-      logical oke
+      logical oke,modcfg
       integer NITMS,INO1 ! max items and current menu item
+      integer lnradcf,lnltmp  ! lengths of file names
 
 C Passed parameters for cfgtogg
 #ifdef OSI
@@ -118,24 +122,31 @@ C Set folder separator (fs) to \ or / as required.
       ITEMS1(6) ='f to EnergyPlus            '
       ITEMS1(7) ='g to VRML #2.0             '
       ITEMS1(8) ='h to ESP-r meta file       '
-      ITEMS1(9)='? help                     '
-      ITEMS1(10)='- exit this menu           '
+      ITEMS1(9) ='i to VEF file              '
+      ITEMS1(10)='? help                     '
+      ITEMS1(11)='- exit this menu           '
 
 C Help text for this menu.
       helptopic='cad_export_choices'
       call gethelptext(helpinsub,helptopic,nbhelp)
-      NITMS=10
+      NITMS=11
       CALL EMENU('Export Model',ITEMS1,NITMS,INO1)
 
 C Prepare filter command lines with path.
 
-      if(INO1.EQ.1.or.INO1.EQ.2.or.INO1.eq.9.or.INO1.eq.10)then
+      if(INO1.EQ.1.or.INO1.EQ.2.or.INO1.EQ.3.or.INO1.EQ.5.or.
+     &   INO1.eq.6.or.INO1.eq.7.or.INO1.eq.8.or.INO1.eq.9.or.
+     &   INO1.eq.10.or.INO1.eq.11)then
         continue
       else
 
 C Note: this sets up initial part of LFIL but some later
 C code tends to overwrite this and thus the user choice
 C is lost. 
+C Debug  write(6,*) 'the pwd command was ',
+C     &    pwdinitial(1:lnblnk(pwdinitial))
+C        write(6,*) ' pwdtocfg is ',pwdtocfg(1:lnblnk(pwdtocfg))
+
         iw=0
         if(path(1:2).ne.'./'.and.path(1:2).ne.'  ')then
           call edisp(iuout,'  ')
@@ -154,24 +165,23 @@ C is lost.
 
  11   IF(INO1.EQ.1)THEN
 
-C Construct a 'VIEWER' format file.  First get file name taking
-C into account whether the user is working in the model folder
-C or remotely.
-        call tstamp('>','PRJ: export to viewer')
-        iw=0
-        if(path(1:2).ne.'./'.and.path(1:2).ne.'  ')then
-          write(outs,'(A,A)') 'The current path is: ',path
-          call edisp(iuout,outs)
-          CALL EASKAB('The model is in a remote folder.',
-     &    'Place exported file in:','current path','local folder',
-     &    IW,nbhelp)
-        endif
-        if(iw.eq.1)then
-          write(L144,'(4a)') path(1:lnblnk(path)),fs,
-     &      LCFGF(1:lnblnk(LCFGF)),'.vew'
+C Construct a 'VIEWER' format file.  First compose file name taking
+C into account pwdinitial and pwdtocfg.
+C Debug  write(6,*) 'the pwd command was ',
+C     &    pwdinitial(1:lnblnk(pwdinitial))
+C        write(6,*) ' pwdtocfg is ',pwdtocfg(1:lnblnk(pwdtocfg))
+        if(pwdtocfg(1:1).eq.'!')then
+          write(L144,'(4a)')path(1:lnblnk(path)),fs,
+     &      cfgroot(1:lnblnk(cfgroot)),'.vew'
         else
-          write(L144,'(3a)') './',LCFGF(1:lnblnk(LCFGF)),'.vew'
+          write(L144,'(6a)') pwdinitial(1:lnpwdi),fs,
+     &      pwdtocfg(1:lnblnk(pwdtocfg)),fs,
+     &      cfgroot(1:lnblnk(cfgroot)),'.vew'
         endif
+C Debug write(6,*) 'b l144 is ',L144(1:lnblnk(L144))
+
+        call tstamp('>','PRJ: export to viewer')
+
         dvfil='std.vew'  ! default file name
         doit = ' '
 
@@ -192,6 +202,8 @@ C If user request jump back and re-display the menu.
         if(ier.ne.0.or.lltmp(1:2).eq.'  ')then
           goto 11
         endif
+
+C Ensure full explicit path for unix or non-unix.
         if(unixok)then
           call addpath(LCFGF,longtfile,concat)  ! for the model cfg file
         else
@@ -220,25 +232,25 @@ C and change any / to \.
         write(outs248,'(3a)')'The file ',lltmp(1:lnblnk(lltmp)),
      &    ' has been created.'
         call edisp248(iuout,outs248,90)
+        goto 33  ! display the menu again
 
       ELSEIF(INO1.EQ.2)THEN
 
 C DXF creation. Process similar to ecnv filter for VIEWER.
-        call tstamp('>','PRJ: export to DXF')
-        iw=0
-        if(path(1:2).ne.'./'.and.path(1:2).ne.'  ')then
-          write(outs,'(A,A)') 'The current path is: ',path
-          call edisp(iuout,outs)
-          CALL EASKAB('The model is in a remote folder.',
-     &    'Place exported file in:','current path','local folder',
-     &    IW,nbhelp)
-        endif
-        if(iw.eq.1)then
-          write(L144,'(4a)') path(1:lnblnk(path)),fs,
-     &      LCFGF(1:lnblnk(LCFGF)),'.DXF'
+        write(6,*) 'the pwd command was ',
+     &    pwdinitial(1:lnblnk(pwdinitial))
+        write(6,*) ' pwdtocfg is ',pwdtocfg(1:lnblnk(pwdtocfg))
+        if(pwdtocfg(1:1).eq.'!')then
+          write(L144,'(4a)')path(1:lnblnk(path)),fs,
+     &      cfgroot(1:lnblnk(cfgroot)),'.DXF'
         else
-          write(L144,'(3a)') './',LCFGF(1:lnblnk(LCFGF)),'.DXF'
+          write(L144,'(6a)') pwdinitial(1:lnpwdi),fs,
+     &      pwdtocfg(1:lnblnk(pwdtocfg)),fs,
+     &      cfgroot(1:lnblnk(cfgroot)),'.DXF'
         endif
+C Debug write(6,*) 'd l144 is ',L144(1:lnblnk(L144))
+
+        call tstamp('>','PRJ: export to DXF')
         dvfil='std.DXF'  ! default file name
         doit = ' '
 
@@ -287,20 +299,89 @@ C and change any / to \.
         write(outs248,'(3a)')'The file ',lltmp(1:lnblnk(lltmp)),
      &    ' has been created.'
         call edisp248(iuout,outs248,90)
+        goto 33
 
       ELSEIF(INO1.EQ.3)THEN
+
+C Check if model path for radiance has been set, otherwise create a
+C ../rad folder. If there is no Radiance Scene file name make it based
+C on the model root name. Take into account where prj was started.
+        modcfg=.false.
+        if(pwdtocfg(1:1).eq.'!')then
+          if(radpth(1:3).eq.'./ '.or.radpth(1:3).eq.'.\\ ')then
+            CALL PHELPD('visu-rad-warning',7,'-',0,0,IER)
+            write(radpth,'(3a)')'..',fs,'rad'
+            write(doit,'(4a)') 'mkdir ',
+     &        cfgroot(1:lnblnk(cfgroot)),fs,'rad'
+            call usrmsg('Creating folder for radiance model:',doit,'P')
+            call runit(doit,'-')
+
+C And update radpath. The L144 is for future use of EASKXORGTKF
+            write(radpth,'(3a)') '..',fs,'rad'
+            modcfg=.true.
+          endif
+
+          if(lradcf(1:7).eq.'UNKNOWN')then
+            write(lradcf,'(2a)') cfgroot(1:lnblnk(cfgroot)),'.rcf'
+C            write(L144,'(8a)')path(1:lnblnk(path)),fs,'..',fs,'rad',
+C     &        fs,cfgroot(1:lnblnk(cfgroot)),'.rcf'
+            modcfg=.true.
+          endif
+        else
+
+C Prj has not been invoked from within the model cfg folder.
+          if(radpth(1:3).eq.'./ '.or.radpth(1:3).eq.'.\\ ')then
+            CALL PHELPD('visu-rad-warning',7,'-',0,0,IER)
+            write(radpth,'(3a)')'..',fs,'rad'
+            write(doit,'(8a)') 'mkdir ',pwdinitial(1:lnpwdi),fs,
+     &        pwdtocfg(1:lnblnk(pwdtocfg)),fs,'..',fs,'rad'
+            call usrmsg('Creating folder for radiance model:',doit,'P')
+            call runit(doit,'-')
+
+C And update radpath. The L144 is for future use of EASKXORGTKF
+            write(radpth,'(3a)') '..',fs,'rad'
+            modcfg=.true.
+          endif
+
+          if(lradcf(1:7).eq.'UNKNOWN')then
+            write(lradcf,'(2a)') cfgroot(1:lnblnk(cfgroot)),'.rcf'
+C            write(L144,'(10a)') pwdinitial(1:lnpwdi),fs,
+C     &        pwdtocfg(1:lnblnk(pwdtocfg)),fs,'..',fs,'rad',fs,
+C     &        cfgroot(1:lnblnk(cfgroot)),'.rcf'
+            modcfg=.true.
+          endif
+        endif
+
+C Check rcf name and contents of file on return from e2r.
+ 319    ltmp=lradcf
+        dradcf='scene.rcf'
+        CALL EASKS(ltmp,' Radiance scene file for this model?',
+     &    '  ',72,dradcf,'Radiance scene file name',IER,nbhelp)
+        if(ltmp.eq.' ')goto 319 
+
+C rcf name OK and differs from prior name, update cfg file and start e2r.
+        lnradcf=lnblnk(lradcf)
+        lnltmp=lnblnk(ltmp)
+        if(ltmp(1:lnltmp).eq.lradcf(1:lnradcf))then
+          continue
+        else
+          modcfg=.true.
+          lradcf = ltmp
+        endif
 
 C RADIANCE creation. Starts e2r with current configuration file.
         dok=.true.
         CALL ASKOK(' ','Run RADIANCE conversion tool?',OK,dok,nbhelp)
         if(OK)then
 
-C If browsing pass this information to e2r.
-          if(browse)then
-            brw = ' -b yes'
-          else
-            brw = ' -b no '
+C Save cfg file including ../rad folder and lradcf file name and start e2r.
+          if(modcfg)then
+            call tstamp('>','PRJ: save configuration (with rcf file)')
+            CALL EMKCFG('-',IER)
           endif
+
+C Set browsing to no.
+          brw = ' -b no '
           call tstamp('>','PRJ: export to RADIANCE')
           doit = ' '
           call terminalmode(childterminal,tmode)
@@ -312,9 +393,14 @@ C If browsing pass this information to e2r.
             longtfile=' '
             longtfile=longtfiledos
           endif
-          if(iappw.gt.0.and.iappw.le.200)then
+          if(iappw.eq.630)then
+            iappwpc=100
+          else
+            iappwpc=nint(100.0*(real(iappw)/630.0))  ! reconstitute %
+          endif
+          if(iappwpc.gt.0.and.iappwpc.le.200)then
             write(doit,'(a,3i4,4a)') 'e2r -s ',
-     &        iappw,iappx+35,iappy+40,' -file ',
+     &        iappwpc,iappx+35,iappy+40,' -file ',
      &        longtfile(1:lnblnk(longtfile)),brw,' &'
           else
             write(doit,'(4a)') 'e2r -s 0 0 0 -file ',
@@ -348,7 +434,7 @@ C If user canceled the wireframe export loop back.
             goto 33
           endif
           call usrmsg('sending wireframe... ',' ','-')
-          MODIFY=.TRUE.
+          MODIFYVIEW=.TRUE.
           CALL ADJVIEW(IER)
           call cfgtogg(icfg_type,icfgz,icfgn,icfgc,icfgdfn,
      &                 iicfgz,iicfgn,iicfgc,iicfgdfn)
@@ -363,7 +449,7 @@ C If user canceled the wireframe export loop back.
 C Toggle the wirefram export file closed.
           call usrmsg('sending wireframe...done.',' ','-')
           call ctlexp(xfile,ixopen,ixloc,ixunit,'G','Wire frame',IER)
-          MODIFY=.TRUE.
+          MODIFYVIEW=.TRUE.
 
 C Check if conversion to xfig wanted.
           dok=.true.
@@ -386,12 +472,36 @@ C << has been created
       ELSEIF(INO1.EQ.5)THEN
 
 C Export to THINGS (MicroGDS THF) file. Treat obstructions as clusters.
+        if(pwdtocfg(1:1).eq.'!')then
+          write(L144,'(4a)')path(1:lnblnk(path)),fs,
+     &      cfgroot(1:lnblnk(cfgroot)),'.THF'
+        else
+          write(L144,'(6a)') pwdinitial(1:lnpwdi),fs,
+     &      pwdtocfg(1:lnblnk(pwdtocfg)),fs,
+     &      cfgroot(1:lnblnk(cfgroot)),'.THF'
+        endif
+
+        call tstamp('>','PRJ: export to DXF')
+        dvfil='std.THF'  ! default file name
+        doit = ' '
+
+C L144 is the suggested name and lltmp is the file name returned
+C by the user selection.
+        lltmp='  '
+        call edisp(iuout,'  ')  ! echo a blank line
+        CALL EASKXORGTKF(L144,'MicroGDS THINGS file name?',' ',
+     &    dvfil,lltmp,'THF file',IER,nbhelp)
+
+C If user request jump back and re-display the menu.
+        if(ier.eq.-3)then
+          return  ! cancel detected, return.
+        endif
+        if(ier.ne.0.or.lltmp(1:2).eq.'  ')then
+          goto 11
+        endif
         call tstamp('>','PRJ: export to THINGS')
         doit = ' '
-        write(LFIL,'(2a)') cfgroot(1:lnblnk(cfgroot)),'.THF'
-        CALL EASKS(LFIL,' ','MicroGDS THINGS file name?'
-     &                ,72,' ','THF file',IER,nbhelp)
-C        call edisp(iuout,'Performing model conversion.')
+        call edisp(iuout,'Performing model conversion.')
 
 C Why is the addpath not used?
         if(unixok)then
@@ -405,28 +515,52 @@ C Why is the addpath not used?
         if(itrc.le.1)then
           write(doit,'(4a)') 'ecnv -obs -if esp -in ',
      &       longtfile(1:lnblnk(longtfile)),
-     &      ' -of thf -out ',LFIL(:lnblnk(LFIL))
+     &      ' -of thf -out ',lltmp(:lnblnk(lltmp))
         elseif(itrc.gt.1)then
           write(doit,'(4a)') 'ecnv -v -obs -if esp -in ',
      &       longtfile(1:lnblnk(longtfile)),
-     &      ' -of thf -out ',LFIL(1:lnblnk(LFIL))
+     &      ' -of thf -out ',lltmp(1:lnblnk(lltmp))
         endif
         call usrmsg('Starting THF conversion via',doit,'-')
         tmode = 'text'
         call runit(doit,tmode)
-        write(outs,'(3a)')' The file ',LFIL(1:lnblnk(LFIL)),
+        write(outs248,'(3a)')'The file ',lltmp(1:lnblnk(lltmp)),
      &    ' has been created.'
-        call edisp(iuout,outs)
+        call edisp248(iuout,outs248,90)
+        goto 33
 
       ELSEIF(INO1.EQ.6)THEN
 
 C Export to EnergyPlus IDF file (work in progress)
-        call tstamp('>','PRJ: export to energyplus')
-        doit = ' '
-        write(LFIL,'(2a)') cfgroot(1:lnblnk(cfgroot)),'.idf'
-        CALL EASKS(LFIL,' ','EnergyPlus input file name?',
-     &        72,' ','EnergyPlus export file',IER,nbhelp)
+        if(pwdtocfg(1:1).eq.'!')then
+          write(L144,'(4a)')path(1:lnblnk(path)),fs,
+     &      cfgroot(1:lnblnk(cfgroot)),'.idf'
+        else
+          write(L144,'(6a)') pwdinitial(1:lnpwdi),fs,
+     &      pwdtocfg(1:lnblnk(pwdtocfg)),fs,
+     &      cfgroot(1:lnblnk(cfgroot)),'.idf'
+        endif
 
+        call tstamp('>','PRJ: export to energyplus')
+        dvfil='std.idf'  ! default file name
+        doit = ' '
+
+C L144 is the suggested name and lltmp is the file name returned
+C by the user selection.
+        lltmp='  '
+        call edisp(iuout,'  ')  ! echo a blank line
+        CALL EASKXORGTKF(L144,'EnergyPlus input file name?',' ',
+     &    dvfil,lltmp,'E+ idf file',IER,nbhelp)
+
+C If user request jump back and re-display the menu.
+        if(ier.eq.-3)then
+          return  ! cancel detected, return.
+        endif
+        if(ier.ne.0.or.lltmp(1:2).eq.'  ')then
+          goto 11
+        endif
+
+C Gather information about IDF file version.
         ever=3.0
         evert=ever
         CALL EASKR(evert,'EnergyPlus IDF file version?',
@@ -439,21 +573,48 @@ C Export to EnergyPlus IDF file (work in progress)
           itrcc=2
           ioout=2
           ever=evert
-          open(ioout,file=lfil,status='UNKNOWN',err=901)
+          open(ioout,file=lltmp,status='UNKNOWN',err=901)
           call e2eplus(itrcc,ioout,ever,ier)
           close(ioout)
-          call edisp(iuout,' Completed model conversion.')
+          write(outs248,'(3a)')'The file ',lltmp(1:lnblnk(lltmp)),
+     &      ' has been created.'
+          call edisp248(iuout,outs248,90)
         endif
+        goto 33
 
       ELSEIF(INO1.EQ.7)THEN
 
 C Export to VRML (2.0) file.
+        if(pwdtocfg(1:1).eq.'!')then
+          write(L144,'(4a)')path(1:lnblnk(path)),fs,
+     &      cfgroot(1:lnblnk(cfgroot)),'.vrml'
+        else
+          write(L144,'(6a)') pwdinitial(1:lnpwdi),fs,
+     &      pwdtocfg(1:lnblnk(pwdtocfg)),fs,
+     &      cfgroot(1:lnblnk(cfgroot)),'.vrml'
+        endif
+
         call tstamp('>','PRJ: export to VRML')
+        dvfil='std.vrml'  ! default file name
         doit = ' '
-        write(LFIL,'(2a)') cfgroot(1:lnblnk(cfgroot)),'.vrml'
-        CALL EASKS(LFIL,' ','VRML file name?',
-     &             72,' ','vrml file',IER,nbhelp)
-C        call edisp(iuout,' Performing model conversion.')
+
+C The X11 version will be returning only the name of the
+C file, while the GTK version will be returning the
+C name with the full path. L144 is the suggested name and
+C lltmp is the file name returned by the user selection.
+        lltmp='  '
+        call edisp(iuout,'  ')  ! echo a blank line
+        CALL EASKXORGTKF(L144,'VRML file name?',' ',
+     &    dvfil,lltmp,'vrml file',IER,nbhelp)
+
+C If user request jump back and re-display the menu.
+        if(ier.eq.-3)then
+          return  ! cancel detected, return.
+        endif
+        if(ier.ne.0.or.lltmp(1:2).eq.'  ')then
+          goto 11
+        endif
+
         if(unixok)then
           call addpath(LCFGF,longtfile,concat)
         else
@@ -468,48 +629,123 @@ C and change any / to \.
         if(itrc.le.1)then
           write(doit,'(4a)') 'ecnv -if esp -in ',
      &      longtfile(1:lnblnk(longtfile)),
-     &      ' -of vrml -out ',LFIL(1:lnblnk(LFIL))
+     &      ' -of vrml -out ',lltmp(1:lnblnk(lltmp))
         elseif(itrc.gt.1)then
           write(doit,'(4a)') 'ecnv -v -if esp -in ',
      &      longtfile(1:lnblnk(longtfile)),
-     &      ' -of vrml -out ',LFIL(1:lnblnk(LFIL))
+     &      ' -of vrml -out ',lltmp(1:lnblnk(lltmp))
         endif
 C        call usrmsg('Starting VRML conversion via',doit,'-')
         tmode = 'text'
         call runit(doit,tmode)
-C        write(outs,'(3a)')' The file ',LFIL(1:lnblnk(LFIL)),
-C     &    ' has been created.'
-C        call edisp(iuout,outs)
-C        call edisp(iuout,'Use a VRML viewer to explore it.')
+        write(outs248,'(3a)')'The file ',lltmp(1:lnblnk(lltmp)),
+     &    ' has been created.'
+        call edisp248(iuout,outs248,90)
+        call edisp(iuout,'Use a VRML viewer to explore it.')
+        goto 33  ! display the menu again
 
       ELSEIF(INO1.EQ.8)THEN
 
 C Export to ESP-r meta file.
-        call tstamp('>','PRJ: export to ESP-r meta')
-        doit = ' '
-        write(LFIL,'(2a)') cfgroot(1:lnblnk(cfgroot)),'.mesp'
-        CALL EASKS(LFIL,' ','ESP-r meta file name?',
-     &             72,' ','ESP-r meta file',IER,nbhelp)
-        if(unixok)then
-          call addpath(LFIL,longtfile,concat)
+        if(pwdtocfg(1:1).eq.'!')then
+          write(L144,'(4a)')path(1:lnblnk(path)),fs,
+     &      cfgroot(1:lnblnk(cfgroot)),'.mesp'
         else
-
-C If running on a non-unix machine see if there are spaces in the name
-C and change any / to \.
-          call addpath(LFIL,longtfile,concat)
-          call cmdfiledos(longtfile,longtfiledos,ier)
-          longtfile=' '
-          longtfile=longtfiledos
+          write(L144,'(6a)') pwdinitial(1:lnpwdi),fs,
+     &      pwdtocfg(1:lnblnk(pwdtocfg)),fs,
+     &      cfgroot(1:lnblnk(cfgroot)),'.mesp'
         endif
+
+        call tstamp('>','PRJ: export to ESP-r meta')
+        dvfil='std.mesp'  ! default file name
+        doit = ' '
+
+C L144 is the suggested name and lltmp is the file name returned
+C by the user selection.
+        lltmp='  '
+        call edisp(iuout,'  ')  ! echo a blank line
+        CALL EASKXORGTKF(L144,'ESP-r meta file name?',' ',
+     &    dvfil,lltmp,'ESP-r Meta file',IER,nbhelp)
+
+C If user request jump back and re-display the menu.
+        if(ier.eq.-3)then
+          return  ! cancel detected, return.
+        endif
+        if(ier.ne.0.or.lltmp(1:2).eq.'  ')then
+          goto 11
+        endif
+
         ioout=2
-        call METAWRITE(ioout,longtfile,'-',IER)
+        call METAWRITE(ioout,lltmp,'-',IER)
+        write(outs248,'(3a)')'The file ',lltmp(1:lnblnk(lltmp)),
+     &    ' has been created.'
+        call edisp248(iuout,outs248,90)
+        goto 33
 
       ELSEIF(INO1.EQ.9)THEN
+
+C Export to acrobat VEF file.
+        if(pwdtocfg(1:1).eq.'!')then
+          write(L144,'(4a)')path(1:lnblnk(path)),fs,
+     &      cfgroot(1:lnblnk(cfgroot)),'.vef'
+        else
+          write(L144,'(6a)') pwdinitial(1:lnpwdi),fs,
+     &      pwdtocfg(1:lnblnk(pwdtocfg)),fs,
+     &      cfgroot(1:lnblnk(cfgroot)),'.vef'
+        endif
+
+        call tstamp('>','PRJ: export to VEF')
+        dvfil='std.vef'  ! default file name
+        doit = ' '
+
+C L144 is the suggested name and lltmp is the file name returned
+C by the user selection.
+        lltmp='  '
+        call edisp(iuout,'  ')  ! echo a blank line
+        CALL EASKXORGTKF(L144,'acrobat VEF file name?',' ',
+     &    dvfil,lltmp,'acrobat vef file',IER,nbhelp)
+
+C If user request jump back and re-display the menu.
+        if(ier.eq.-3)then
+          return  ! cancel detected, return.
+        endif
+        if(ier.ne.0.or.lltmp(1:2).eq.'  ')then
+          goto 11
+        endif
+
+        ioout=2
+        CALL EASKABC('Specify GEN bodies or separate polygons with',
+     &    'glazing clear:','GEN bodies','with transparent windows',
+     &    'cancel',IRT,nbhelp)
+        if(IRT.eq.3)then
+          continue
+        else
+          CALL EASKABC('Colour options:',' ','All zones grey',
+     &                            'Coloured zones','cancel',IRT2,nbhelp)
+          if (IRT2.eq.3) then
+            continue
+          else
+            IRT2=IRT2-1
+            CALL EFOPSEQ(ioout,lltmp,3,IER)
+            if(IRT.eq.1)then
+              call e2vef(itrc,ioout,'g',IRT2)  ! see end of this file
+            elseif(IRT.eq.2)then
+              call e2vef(itrc,ioout,'p',IRT2)
+            endif
+            CALL ERPFREE(ioout,ios)
+            write(outs248,'(3a)')'The file ',lltmp(1:lnblnk(lltmp)),
+     &      ' has been created.'
+            call edisp248(iuout,outs248,90)
+          endif
+        endif
+        goto 33
+
+      ELSEIF(INO1.EQ.10)THEN
       
 C Pop up the help text.
        CALL PHELPD('export menu',nbhelp,'-',0,0,IER)
 
-      ELSEIF(INO1.EQ.10)THEN
+      ELSEIF(INO1.EQ.11)THEN
         RETURN
       else
         goto 33
@@ -1241,9 +1477,9 @@ C in rootp and upath to '\'.
                     lnblankrp=iprevblnk(rootp,lnrp)
 
 C Debug the model source.
-                    write(outs,'(a,2i3,2a)') 'rootp = ',lnrp,lnblankrp,
-     &                ' ',rootp(1:lnrp)
-                    call edisp(iuout,outs)
+C                    write(outs,'(a,2i3,2a)') 'rootp = ',lnrp,lnblankrp,
+C     &                ' ',rootp(1:lnrp)
+C                    call edisp(iuout,outs)
 
                     call backslashit(rootp,rootpdos)
                     if(itrc.gt.0)then
@@ -1471,7 +1707,9 @@ C LPRFDB,IPRODB (for event profile database)
 C LFMAT,IFMAT,LFMUL,IFMUL (for materials and constructions database)
 C ICLIM,LCLIM (for climate file)
 #include "schedule.h"
-      
+#include "plant.h"
+#include "power.h"
+
       integer lnblnk  ! function definition
 
       common/OUTIN/IUOUT,IUIN
@@ -1512,8 +1750,7 @@ C ICLIM,LCLIM (for climate file)
       LOGICAL :: MSTROK,MSTRZN
       common/MOIST02/LMOIST(MCOM)
       common/spmfxst/ispmxist,spflnam
-      common/entfile/entflnam, ientxist
-      INTEGER :: ispmxist,ientxist
+      INTEGER :: ispmxist
       COMMON/UA1/LUALF,LCNG(MNCNG),LLOC(MNIL)
       character imgfmt*4  ! GIF XBMP TIF JPG
       character imgfoc*4  ! FZON FNET FCTL FDFS
@@ -1546,7 +1783,7 @@ C The string buffer doit and option used for tar command.
       character fs*1
       character LTMPFL*72
       character LF*72,LFL*144
-      CHARACTER spflnam*72,entflnam*72
+      CHARACTER spflnam*72
       CHARACTER*72 L3DCVS,L3DCNC,L3DNDC,L3DTAQ
       character LLASCI*144
       character hvacfile*72,LBSIMP*72
@@ -1921,7 +2158,7 @@ C Write images if any.
  42     continue
       endif
 
-C Write non-specific demads.
+C Write non-specific demands.
       if(bdmds(1:4).eq.'UNKN'.or.bdmds(1:2).eq.'  ')then
         continue
       else
@@ -1944,6 +2181,7 @@ C Write non-specific demads.
         endif
       endif
 
+C Write Radiance scene file.
       if(lradcf(1:4).eq.'UNKN'.or.lradcf(1:2).eq.'  ')then
         continue
       else
@@ -2209,3 +2447,169 @@ C Unix/Linux/Cygwin versions of tar.
       endif
       return
       end
+
+C e2vef takes an esp-r problem definition and creates a vef
+C vertex-edge-face file in file unit ioout (assumed to already be opened).
+      subroutine e2vef(itrc,ioout,act,icol)
+#include "building.h"
+#include "model.h"
+#include "geometry.h"
+
+C Parameter
+      character act*1  ! g for GEN p for PLA
+      COMMON/OUTIN/IUOUT,IUIN
+      COMMON/FILEP/IFIL
+
+      COMMON/C1/NCOMP,NCON
+      COMMON/GB1/XB(12),YB(12),ZB(12),JVNB(6,4)
+      integer IZSTOCN
+      COMMON/C24/IZSTOCN(MCOM,MS)
+
+      dimension ndum(MS)
+
+      character outs*124,zsn*28
+
+C Setup standard assumptions.
+      IFIL=11
+
+C Assume geometry or obstructions on IFIL+8 
+      ITA1 = IFIL+8
+
+C If VEF output required.
+      INPIC=NCOMP
+      do 4 mz=1,inpic
+        newfoc=mz
+
+C Read in the zone geometry.
+        WRITE(outs,'(a,a)')' Scanning : ',LGEOM(newfoc)
+        CALL edisp(iuout,outs)
+
+C Depending on version of geometry file scan it.
+        if(gversion(mz).lt.1.1) then
+          CALL EGOMIN(ITA1,LGEOM(newfoc),newfoc,1,ITRC,IUOUT,IER)
+          if(iobs(mz).eq.0)then
+            continue   ! no obstructions
+          elseif(iobs(mz).eq.1)then
+            CALL ERPFREE(ITA1,ISTAT)
+            CALL EGOMST(ITA1,newfoc,ZOBS(newfoc),0,ITRC,ITRU,IER)
+          endif
+        elseif(gversion(mz).ge.1.1) then
+          call georead(ITA1,LGEOM(newfoc),newfoc,1,iuout,ier)
+          if(iobs(mz).eq.0)then
+            continue   ! no obstructions
+          elseif(iobs(mz).eq.1)then
+            CALL ERPFREE(ITA1,ISTAT)
+            CALL EGOMST(ITA1,newfoc,ZOBS(newfoc),0,ITRC,ITRU,IER)
+          elseif(iobs(mz).eq.2)then
+            continue   ! obs within geo file
+          endif
+        endif
+
+C Write colour directive to VEF file.
+C << Currently hard-coded for 1 colour per zone.
+C << Currently limited to default 15 colours in Akrobat.
+        if (icol.eq.1) then
+          WRITE(ioout,'(a)')' COL'
+C Calculate colour reference. Repeat colours every 15 zones.
+          icolref=newfoc-15*(((newfoc+14)/15)-1)
+          WRITE(ioout,'(i2.1)')icolref
+        endif
+
+C Write surface information to the VEF file. (Rotation set to 0 deg).
+C If act is g then use GEN bodies.
+        if(act.eq.'g'.or.act.eq.'G')then
+          WRITE(ioout,'(a,a12)')'GEN ',zname(newfoc)
+          WRITE(ioout,'(2I4,a)')NTV,NSUR,' 0'
+          DO J=1,NTV
+            WRITE(ioout,'(3F10.5)')X(J),Y(J),Z(J)
+          ENDDO
+
+          DO J=1,NSUR
+            WRITE(ioout,'(2X,I3,1X,24I3)')NVER(J),(JVN(J,K),K=1,NVER(J))
+            ndum(J)=0
+          ENDDO
+
+          write(ioout,5611)(ndum(I),I=1,NSUR)
+          write(ioout,5611)(ndum(I),I=1,NSUR)
+5611      FORMAT(1X,32(I2))
+          write(ioout,'(a)')' 3 0 0 0 '
+        elseif(act.eq.'p'.or.act.eq.'P')then
+
+C Write each surface as a PLA type. Proceed with VIS 0 or 2 depending
+C on if it is transparent. Also mark each with an identity zone:name.
+C Note: does not know quite how to treat CFC and CFC2 so just treats
+C as opaque.
+          do J=1,NSUR
+            icn=IZSTOCN(newfoc,j)  ! get connection
+            lsn=lnblnk(sname(newfoc,j))
+            write(zsn,'(3a)') zname(newfoc)(1:lnzname(newfoc)),
+     &        ':',sname(newfoc,j)(1:lsn)
+            if (SSOTF(icn)(1:4).ne.'OPAQ'.and.
+     &          SSOTF(icn)(1:4).ne.'CFC '.and.
+     &          SSOTF(icn)(1:4).ne.'CFC2') then
+              write(ioout,'(a)')' VIS '
+              write(ioout,'(a)')' 0 '
+            else
+              write(ioout,'(a)')' VIS '
+              write(ioout,'(a)')' 2 '
+            endif
+            WRITE(ioout,'(2a)')'PLA ',zsn(1:lnblnk(zsn))
+            WRITE(ioout,'(I4)') NVER(J)
+            DO I=1,NVER(J)
+              WRITE(ioout,'(3F11.5)')
+     &          X(JVN(J,I)),Y(JVN(J,I)),Z(JVN(J,I))
+            enddo
+          enddo
+        endif
+
+C If there are obstructions convert them to general polygons
+C and write them out.
+        if(iobs(mz).eq.0)then
+          continue
+        elseif(iobs(mz).eq.1.or.iobs(mz).eq.2)then
+
+          DO 301 IB=1,nbobs(mz)
+            if(BLOCKTYP(mz,IB)(1:4).eq.'obs ')then
+              CALL CNVBLK(XOB(mz,IB),YOB(mz,IB),ZOB(mz,IB),
+     &          DXOB(mz,IB),DYOB(mz,IB),DZOB(mz,IB),
+     &          BANGOB(mz,IB,1))
+            elseif(BLOCKTYP(mz,IB)(1:4).eq.'obs3')then
+              CALL CNVBLK3A(XOB(mz,IB),YOB(mz,IB),ZOB(mz,IB),
+     &          DXOB(mz,IB),DYOB(mz,IB),DZOB(mz,IB),
+     &          BANGOB(mz,IB,1),BANGOB(mz,IB,2),BANGOB(mz,IB,3))
+            elseif(BLOCKTYP(mz,IB)(1:4).eq.'obsp')then
+              call CNVBLKP(mz,IB) ! convert obsp type.
+            endif
+C << and then what... look in e2rform.F near line 1120
+C << there are 8 vertices and 6 surfaces
+            lnz=lnblnk(zname(mz))
+            WRITE(ioout,'(4a)') 'GEN OBS:',zname(mz)(1:lnz),':',
+     &        BLOCKNAME(mz,IB)(1:LNBLOCKNAME(mz,IB))
+            WRITE(ioout,'(a)')' 8  6  0'
+            DO 41 J=1,8
+              if (BLOCKTYP(mz,ib).eq.'obs ') then
+                WRITE(ioout,'(3F10.5)')XB(J),YB(J),ZB(J)
+              elseif (BLOCKTYP(mz,ib).eq.'obs3') then
+                WRITE(ioout,'(3F10.5)')XB(J),YB(J),ZB(J)
+              elseif (BLOCKTYP(mz,ib).eq.'obsp') then
+                WRITE(ioout,'(3F10.5)')XBP(mz,IB,J),YBP(mz,IB,J),
+     &            ZBP(mz,IB,J)
+              endif
+   41       continue
+            DO 51 J=1,6
+              WRITE(ioout,'(a,4I3)') ' 4 ',(JVNB(J,K),K=1,4)
+              ndum(J)=0
+   51       continue
+
+            write(ioout,5611)(ndum(I),I=1,6)
+            write(ioout,5611)(ndum(I),I=1,6)
+            write(ioout,'(a)')' 3 0 0 0 '
+
+  301     CONTINUE
+        endif
+
+   4  continue
+
+      return
+      END
+

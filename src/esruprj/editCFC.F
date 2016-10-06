@@ -88,7 +88,7 @@ C ********************************************************************
 
       legacy_CFC_xst = .false.
       CFC2_xst = .false.
-	  
+  
       IER=0
       IFU=IFIL+2
 
@@ -376,15 +376,15 @@ C if not, go back and prompt user for file name, or cancel
 C import GSLedit data and store in cfc commons 
           call importGSLedit(IFU,GSLfiles(icomp,icfctp),
      &            icomp,icfctp,is,IER)
-	 
+ 
           if(IER.gt.0)goto 98
-		  
+  
           write(outs,'(a,a,a)')'Import from GSLedit file: ',
      &    GSLfiles(icomp,icfctp)(1:lnblnk(GSLfiles(icomp,icfctp))),
      &    ' OK'
           CALL EDISP(IUOUT,' ')
           CALL EDISP(IUOUT,outs)
-		  
+  
         else
           h(1)=' Generate *.GSL file using GSLedit and copy file'
           h(2)=' to desired location within the Model folders.'
@@ -678,23 +678,23 @@ C commons.
         WRITE(IFU,'(A)',IOSTAT=ISTAT,ERR=98)outs(1:lnblnk(outs))
 
         do 130 ie=1,im_ncfc_el(icomp,it)
-		
+
             if(im_cfcltp(icomp,it,ie).eq.iInsectScreen)then
             
             write(outs,'(7F8.3,a)')rim_SolRf(icomp,it,ie),
      &      rim_SolRb(icomp,it,ie),rim_SolT(icomp,it,ie),
-     &		rim_SolTf_tot(icomp,it,ie), rim_SolTb_tot(icomp,it,ie),
-     &		rim_SolTf_bd(icomp,it,ie), rim_SolTb_bd(icomp,it,ie),
+     &      rim_SolTf_tot(icomp,it,ie), rim_SolTb_tot(icomp,it,ie),
+     &      rim_SolTf_bd(icomp,it,ie), rim_SolTb_bd(icomp,it,ie),
      &      '   # insect screen '
             WRITE(IFU,'(A)',IOSTAT=ISTAT,ERR=98)
      &      outs(1:lnblnk(outs))
-	 
+ 
             elseif(im_cfcltp(icomp,it,ie).eq.iRollerBlind)then
             
             write(outs,'(7F8.3,a)')rim_SolRf(icomp,it,ie),
      &      rim_SolRb(icomp,it,ie),rim_SolT(icomp,it,ie),
-     &		rim_SolTf_tot(icomp,it,ie), rim_SolTb_tot(icomp,it,ie),
-     &		rim_SolTf_bd(icomp,it,ie), rim_SolTb_bd(icomp,it,ie),
+     &      rim_SolTf_tot(icomp,it,ie), rim_SolTb_tot(icomp,it,ie),
+     &      rim_SolTf_bd(icomp,it,ie), rim_SolTb_bd(icomp,it,ie),
      &      '   # roller blind '
             WRITE(IFU,'(A)',IOSTAT=ISTAT,ERR=98)
      &      outs(1:lnblnk(outs))
@@ -703,8 +703,8 @@ C commons.
             
             write(outs,'(7F8.3,a)')rim_SolRf(icomp,it,ie),
      &      rim_SolRb(icomp,it,ie),rim_SolT(icomp,it,ie),
-     &		rim_SolTf_tot(icomp,it,ie), rim_SolTb_tot(icomp,it,ie),
-     &		rim_SolTf_bd(icomp,it,ie), rim_SolTb_bd(icomp,it,ie),
+     &      rim_SolTf_tot(icomp,it,ie), rim_SolTb_tot(icomp,it,ie),
+     &      rim_SolTf_bd(icomp,it,ie), rim_SolTb_bd(icomp,it,ie),
      &      '   # pleated drape '
             WRITE(IFU,'(A)',IOSTAT=ISTAT,ERR=98)
      &      outs(1:lnblnk(outs))
@@ -743,7 +743,7 @@ C commons.
 
         else
         
-			GOTO 98
+          GOTO 98
         
         endif
 
@@ -755,52 +755,52 @@ C commons.
         WRITE(IFU,'(A)',IOSTAT=ISTAT,ERR=98)outs(1:lnblnk(outs))
 
         do 140 ie=1,im_ncfc_el(icomp,it)
-		
-	        if(im_cfcltp(icomp,it,ie).eq.iInsectScreen)then
-                write(outs,'(3F8.3,a)')rim_VisRf(icomp,it,ie),
-     &            rim_VisRb(icomp,it,ie),rim_VisT(icomp,it,ie),
-     &            '   # insect screen '
-                WRITE(IFU,'(A)',IOSTAT=ISTAT,ERR=98)
-     &                        outs(1:lnblnk(outs))		
-	 
-	        elseif(im_cfcltp(icomp,it,ie).eq.iRollerBlind)then
-                write(outs,'(3F8.3,a)')rim_VisRf(icomp,it,ie),
-     &            rim_VisRb(icomp,it,ie),rim_VisT(icomp,it,ie),
-     &            '   # roller blind '
-                WRITE(IFU,'(A)',IOSTAT=ISTAT,ERR=98)
-     &                        outs(1:lnblnk(outs))		
-		
-	        elseif(im_cfcltp(icomp,it,ie).eq.iPleatedDrape)then
-                write(outs,'(3F8.3,a)')rim_VisRf(icomp,it,ie),
-     &            rim_VisRb(icomp,it,ie),rim_VisT(icomp,it,ie),
-     &            '   # pleated drape '
-                WRITE(IFU,'(A)',IOSTAT=ISTAT,ERR=98)
+
+          if(im_cfcltp(icomp,it,ie).eq.iInsectScreen)then
+            write(outs,'(3F8.3,a)')rim_VisRf(icomp,it,ie),
+     &        rim_VisRb(icomp,it,ie),rim_VisT(icomp,it,ie),
+     &        '   # insect screen '
+              WRITE(IFU,'(A)',IOSTAT=ISTAT,ERR=98)
      &                        outs(1:lnblnk(outs))
+ 
+          elseif(im_cfcltp(icomp,it,ie).eq.iRollerBlind)then
+             write(outs,'(3F8.3,a)')rim_VisRf(icomp,it,ie),
+     &         rim_VisRb(icomp,it,ie),rim_VisT(icomp,it,ie),
+     &         '   # roller blind '
+             WRITE(IFU,'(A)',IOSTAT=ISTAT,ERR=98)
+     &                       outs(1:lnblnk(outs))
+
+          elseif(im_cfcltp(icomp,it,ie).eq.iPleatedDrape)then
+             write(outs,'(3F8.3,a)')rim_VisRf(icomp,it,ie),
+     &         rim_VisRb(icomp,it,ie),rim_VisT(icomp,it,ie),
+     &         '   # pleated drape '
+             WRITE(IFU,'(A)',IOSTAT=ISTAT,ERR=98)
+     &                       outs(1:lnblnk(outs))
      
-            elseif(im_cfcltp(icomp,it,ie).eq.iVenBlind)then
-                write(outs,'(3F8.3,a)')rim_VisRf(icomp,it,ie),
-     &            rim_VisRb(icomp,it,ie),rim_VisT(icomp,it,ie),
-     &            '   # slat-type blind '
-                WRITE(IFU,'(A)',IOSTAT=ISTAT,ERR=98)
+          elseif(im_cfcltp(icomp,it,ie).eq.iVenBlind)then
+             write(outs,'(3F8.3,a)')rim_VisRf(icomp,it,ie),
+     &         rim_VisRb(icomp,it,ie),rim_VisT(icomp,it,ie),
+     &         '   # slat-type blind '
+             WRITE(IFU,'(A)',IOSTAT=ISTAT,ERR=98)
      &                        outs(1:lnblnk(outs))
 
-            elseif(im_cfcltp(icomp,it,ie).eq.iGlazing)then
-                write(outs,'(3F8.3,a)')rim_VisRf(icomp,it,ie),
-     &            rim_VisRb(icomp,it,ie),rim_VisT(icomp,it,ie),
-     &            '   # glazing '
-                WRITE(IFU,'(A)',IOSTAT=ISTAT,ERR=98)
-     &                        outs(1:lnblnk(outs))
+          elseif(im_cfcltp(icomp,it,ie).eq.iGlazing)then
+             write(outs,'(3F8.3,a)')rim_VisRf(icomp,it,ie),
+     &         rim_VisRb(icomp,it,ie),rim_VisT(icomp,it,ie),
+     &         '   # glazing '
+             WRITE(IFU,'(A)',IOSTAT=ISTAT,ERR=98)
+     &                       outs(1:lnblnk(outs))
 
-            elseif(im_cfcltp(icomp,it,ie).eq.iGasGap)then
-                write(outs,'(3F8.3,a)')rim_VisRf(icomp,it,ie),
-     &            rim_VisRb(icomp,it,ie),rim_VisT(icomp,it,ie),
-     &            '   # gas gap '
-                WRITE(IFU,'(A)',IOSTAT=ISTAT,ERR=98)
-     &                        outs(1:lnblnk(outs))
+          elseif(im_cfcltp(icomp,it,ie).eq.iGasGap)then
+             write(outs,'(3F8.3,a)')rim_VisRf(icomp,it,ie),
+     &         rim_VisRb(icomp,it,ie),rim_VisT(icomp,it,ie),
+     &         '   # gas gap '
+             WRITE(IFU,'(A)',IOSTAT=ISTAT,ERR=98)
+     &                       outs(1:lnblnk(outs))
 
-            else
-                GOTO 98
-            endif
+          else
+             GOTO 98
+          endif
 
  140    continue
 
@@ -810,22 +810,22 @@ C commons.
         WRITE(IFU,'(A)',IOSTAT=ISTAT,ERR=98)outs(1:lnblnk(outs))
 
         do 150 ie=1,im_ncfc_el(icomp,it)
-		
+
               if(im_cfcltp(icomp,it,ie).eq.iInsectScreen)then
-				
+
                 write(outs,'(3F8.3,a)')rim_lwEf(icomp,it,ie),
      &            rim_lwEb(icomp,it,ie),rim_lwT(icomp,it,ie),
      &            '   # insect screen '
                 WRITE(IFU,'(A)',IOSTAT=ISTAT,ERR=98)
-     &                        outs(1:lnblnk(outs))	
-	 
+     &                        outs(1:lnblnk(outs))
+ 
               elseif(im_cfcltp(icomp,it,ie).eq.iRollerBlind)then
                 write(outs,'(3F8.3,a)')rim_lwEf(icomp,it,ie),
      &            rim_lwEb(icomp,it,ie),rim_lwT(icomp,it,ie),
      &            '   # roller drapes '
                 WRITE(IFU,'(A)',IOSTAT=ISTAT,ERR=98)
-     &                        outs(1:lnblnk(outs))		
-		
+     &                        outs(1:lnblnk(outs))
+
               elseif(im_cfcltp(icomp,it,ie).eq.iPleatedDrape)then
                 write(outs,'(3F8.3,a)')rim_lwEf(icomp,it,ie),
      &            rim_lwEb(icomp,it,ie),rim_lwT(icomp,it,ie),
@@ -865,31 +865,31 @@ C commons.
 
 C write out layer type index
       DO 240 it=1,im_ncfc(icomp)
-	  
+  
             vb_xst=.false.  ! slat-type blind
             drp_xst=.false. ! pleated drape
             rld_xst=.false. ! roller blind 
             bug_xst=.false. ! insect screen
 
-C determine which shading device is being used, set shading_device_xst = .true.		
+C determine which shading device is being used, set shading_device_xst = .true.
         do 250 ij=1,im_ncfc_el(icomp,it)
      
            ival(ij)=im_cfcltp(icomp,it,ij)
           
-	     if(ival(ij).eq.iVenBlind) then 
+           if(ival(ij).eq.iVenBlind) then 
             vb_xst=.true.    
-	     
+     
            elseif(ival(ij).eq.iPleatedDrape) then 
             drp_xst=.true.
-	     
+     
            elseif(ival(ij).eq.iRollerBlind) then 
             rld_xst=.true.
-		 
+ 
            elseif(ival(ij).eq.iInsectScreen) then
             bug_xst=.true.
-		 
+ 
            endif
-	     
+     
  250    continue
       
         write(outs,'(a,i2)')
@@ -956,33 +956,33 @@ C WRITE OUT SLAT-TYPE BLIND PROPERTIES HERE
         
            if(im_cfcltp(icomp,it,ij).eq.2) then
            
-               write(outs,'(a,i2)')
-     &      	'# slat-type blind attributes for cfc type: ',it
+             write(outs,'(a,i2)')
+     &        '# slat-type blind attributes for cfc type: ',it
      
-               WRITE(IFU,'(A)',IOSTAT=ISTAT,ERR=98)outs(1:lnblnk(outs))
+             WRITE(IFU,'(A)',IOSTAT=ISTAT,ERR=98)outs(1:lnblnk(outs))
 
-               write(outs,'(a,a,a)')
-     &      	'# slat: width(mm); spacing(mm); angle(deg);',
-     &     	 	' orientation(HORZ/VERT); crown (mm);',
-     &    	  	' w/r ratio; slat thickness (mm)'
-               WRITE(IFU,'(A)',IOSTAT=ISTAT,ERR=98)outs(1:lnblnk(outs))
+             write(outs,'(a,a,a)')
+     &        '# slat: width(mm); spacing(mm); angle(deg);',
+     &        ' orientation(HORZ/VERT); crown (mm);',
+     &        ' w/r ratio; slat thickness (mm)'
+             WRITE(IFU,'(A)',IOSTAT=ISTAT,ERR=98)outs(1:lnblnk(outs))
 
-               write(outs,'(3F8.3,a,a,a,3F8.3)')rim_vb_w(icomp,it),
+             write(outs,'(3F8.3,a,a,a,3F8.3)')rim_vb_w(icomp,it),
      &         rim_vb_s(icomp,it),rim_vb_phi(icomp,it),
      &         '  ',cim_VorH(icomp,it),' ',rim_vb_crown(icomp,it),
      &         rim_vb_wr(icomp,it),rim_vb_t(icomp,it)
      
-               WRITE(IFU,'(A)',IOSTAT=ISTAT,ERR=98)outs(1:lnblnk(outs))
+             WRITE(IFU,'(A)',IOSTAT=ISTAT,ERR=98)outs(1:lnblnk(outs))
                
            endif
            
-  270	  continue
+  270   continue
   
       endif
-		
+
 C Pleated drape properties
       if(drp_xst)then
-	  
+  
         do 280 ij=1,im_ncfc_el(icomp,it)
            if(im_cfcltp(icomp,it,ij).eq.3) then
            
@@ -992,7 +992,7 @@ C Pleated drape properties
                WRITE(IFU,'(A)',IOSTAT=ISTAT,ERR=98)outs(1:lnblnk(outs))
 
                write(outs,'(a,a,a)')
-     &	     '# pleated drape: width(mm); spacing(mm);'
+     &           '# pleated drape: width(mm); spacing(mm);'
                WRITE(IFU,'(A)',IOSTAT=ISTAT,ERR=98)outs(1:lnblnk(outs))
 
                write(outs,'(3F8.3,3F8.3)')rim_drp_w(icomp,it),
@@ -1000,42 +1000,42 @@ C Pleated drape properties
      
                WRITE(IFU,'(A)',IOSTAT=ISTAT,ERR=98)outs(1:lnblnk(outs))
                
-	     endif
-		 
+           endif
+ 
   280   continue
-	  
+  
       endif
 
 C Insect screen properties
       if(bug_xst)then
-	  
+  
         do 290 ij=1,im_ncfc_el(icomp,it)
         
-            if(im_cfcltp(icomp,it,ij).eq.5) then
+          if(im_cfcltp(icomp,it,ij).eq.5) then
             
-              write(outs,'(a,i2)')
-     &           '# insect screen attributes for cfc type: ',it
+            write(outs,'(a,i2)')
+     &        '# insect screen attributes for cfc type: ',it
      
-              WRITE(IFU,'(A)',IOSTAT=ISTAT,ERR=98)outs(1:lnblnk(outs))
+            WRITE(IFU,'(A)',IOSTAT=ISTAT,ERR=98)outs(1:lnblnk(outs))
 
-              write(outs,'(a,a,a)')
-     &	     '# insect screen: width(mm); spacing(mm); Wire Emissivity'
+            write(outs,'(a,a,a)')
+     &        '# insect screen: width(mm); spacing(mm); Wire Emissivity'
      
-              WRITE(IFU,'(A)',IOSTAT=ISTAT,ERR=98)outs(1:lnblnk(outs))
+            WRITE(IFU,'(A)',IOSTAT=ISTAT,ERR=98)outs(1:lnblnk(outs))
 
-              write(outs,'(3F8.3,3F8.3,3F8.3)')rim_bug_d(icomp,it),
-     &           rim_bug_s(icomp,it), rim_bug_Emis(icomp,it)
+            write(outs,'(3F8.3,3F8.3,3F8.3)')rim_bug_d(icomp,it),
+     &         rim_bug_s(icomp,it), rim_bug_Emis(icomp,it)
      
-              WRITE(IFU,'(A)',IOSTAT=ISTAT,ERR=98)outs(1:lnblnk(outs))
+            WRITE(IFU,'(A)',IOSTAT=ISTAT,ERR=98)outs(1:lnblnk(outs))
               
-            endif
-		 
+          endif
+ 
   290   continue
-	  
+  
       endif
 
 C TODO: check is additional attributes are needed for roller blinds
-	
+
  240  CONTINUE
 
       CALL ERPFREE(IFU,ISTAT)
@@ -1175,7 +1175,7 @@ C each layer assign a '0' in array icfltype for a gas gap.
       idrp_count = 0
       irld_count = 0
       ibug_count = 0
-	  
+  
         do 10 j=1,nelts,2
       
             CALL EGETW(OUTSTR,K,ltype,'F','layer type',IER)
@@ -1187,7 +1187,7 @@ C each layer assign a '0' in array icfltype for a gas gap.
               call edisp(iuout,' GSLedit import error: ')
               call edisp(iuout,
      &          ' allowed layer types: GLZ, VBD, DRP, RLD, BUG')
-			
+
               IER=1
               goto 1111
         
@@ -1196,33 +1196,33 @@ C each layer assign a '0' in array icfltype for a gas gap.
                   im_cfcltp(icomp,icfctp,j) = iVenBlind
                   ivb_count = ivb_count+1
                   vb_xst = .true.
-	    
+    
             elseif(ltype.eq.'DRP') then
-	    
+    
                   im_cfcltp(icomp,icfctp,j) = iPleatedDrape
                   idrp_count = idrp_count + 1
                   drp_xst = .true.
         
             elseif(ltype.eq.'RLD') then
-		
+
                   im_cfcltp(icomp,icfctp,j) = iRollerBlind
                   irld_count = irld_count + 1
                   rld_xst = .true.
 
             elseif(ltype.eq.'BUG') then
-		
+
                   im_cfcltp(icomp,icfctp,j) = iInsectScreen
                   ibug_count = irld_count + 1
                   bug_xst = .true.
-			
+
             elseif(ltype.eq.'GLZ') then
         
                   im_cfcltp(icomp,icfctp,j)=iGlazing
         
             end if
-	 
+ 
         if(j.lt.nelts) im_cfcltp(icomp,icfctp,j+1) = iGasGap
-		
+
    10 continue
    
 C      if((ivb_count+idrp_count).gt.1)then
@@ -1266,20 +1266,20 @@ C angle for venetian blinds, or calculate fullness ratio for draperies.
      &               89.999,'F',0.0,'slat angle',IER,7)
           rim_vb_phi(icomp,icfctp)=rphi
       endif
-	
+
       if(drp_xst) then !ask for drape descriptors from user
-	    
+    
         rdrp_w=0.0
         rdrp_s=0.0
-	    
+    
           CALL EASKR(rdrp_w,'Specify drape width (mm): ',' ',0.0000,'F',
      & 500.00,'F',0.0,'drape width',IER,7)
           rim_drp_w(icomp,icfctp)=rdrp_w   
-	        
+        
           CALL EASKR(rdrp_s, 'Specify pleat spacing (mm): ',' ',0.0000,
-     &	'F',500.00,'F',0.0,'drape spacing',IER,7)     
+     &      'F',500.00,'F',0.0,'drape spacing',IER,7)     
           rim_drp_s(icomp,icfctp)=rdrp_s
-	    
+    
 !          rim_drp_Fr(icomp,icfctp) = 1 + rim_drp_w(icomp,icfctp)/
 !     &    rim_drp_s(icomp,icfctp)
       endif
@@ -1288,15 +1288,15 @@ C Read Solar optical, visual and longwave optical properties for
 C each layer. If venetian/slat-type blind, also read w/r ratio (Width/radius
 C curvature ratio), slat thickness and slat apparent thickness. 
       nelts=ne(isur)
-	  
+  
       do 20 i=1,nelts,2
       
-     	 CALL LSTRIPC(IUF,LOUTSTR,99,litems,1,
+        CALL LSTRIPC(IUF,LOUTSTR,99,litems,1,
      &        'optical properties in GSLedit file',IER)
-	 
+ 
          IF(IER.NE.0)GOTO 1001
      
-     	 K=23
+         K=23
 
          if(im_cfcltp(icomp,icfctp,i).eq.iGlazing)then
             CALL EGETWR(LOUTSTR,K,rprop,.0,1.0,'F',
@@ -1328,7 +1328,7 @@ C curvature ratio), slat thickness and slat apparent thickness.
             rim_lwEb(icomp,icfctp,i)=rprop
 
          elseif(im_cfcltp(icomp,icfctp,i).eq.iVenBlind)then
-		 
+ 
             CALL EGETWR(LOUTSTR,K,rprop,.0,1.0,'F',
      &            'solar slat transmission',IER)
             rim_SolT(icomp,icfctp,i)=rprop
@@ -1380,28 +1380,28 @@ C read pleated drape optical properties from .GSL file
             rim_SolT(icomp,icfctp,i)=rprop
             CALL EGETWR(LOUTSTR,K,rprop,.0,1.0,'F',
      &            'solar drape transmission (BT) - front',IER)
-            rim_SolTf_tot(icomp,icfctp,i)=rprop		
+            rim_SolTf_tot(icomp,icfctp,i)=rprop
             rim_SolTf_bd(icomp,icfctp,i)=rim_SolTf_tot(icomp,icfctp,i)
-     &		-rim_SolT(icomp,icfctp,i)
+     &        -rim_SolT(icomp,icfctp,i)
             CALL EGETWR(LOUTSTR,K,rprop,.0,1.0,'F',
      &            'solar drape transmission (BT) - back',IER)
-            rim_SolTb_tot(icomp,icfctp,i)=rprop		
+            rim_SolTb_tot(icomp,icfctp,i)=rprop
             rim_SolTb_bd(icomp,icfctp,i)=rim_SolTb_tot(icomp,icfctp,i)
-     &		-rim_SolT(icomp,icfctp,i)     
+     &        -rim_SolT(icomp,icfctp,i)     
             CALL EGETWR(LOUTSTR,K,rprop,.0,1.0,'F',
      &            'solar drape reflectance (BD) - front',IER)
             rim_SolRf(icomp,icfctp,i)=rprop
             CALL EGETWR(LOUTSTR,K,rprop,.0,1.0,'F',
      &            'solar drape reflectance (BD) - back',IER)
             rim_SolRb(icomp,icfctp,i)=rprop
-		
+
 C currently no visible properties for draperies, assume similar to
 C total solar properties
 
             rim_VisT(icomp,icfctp,i) = rim_SolT(icomp,icfctp,i)
             rim_VisRf(icomp,icfctp,i)= rim_SolRf(icomp,icfctp,i)
             rim_VisRb(icomp,icfctp,i)= rim_SolRb(icomp,icfctp,i)
- 		
+ 
 C...........Longwave layer inputs are typical values for 0 openness.
 C...........Effective lw properties are then calculated in cfc_thermal_processing()
 C...........taking into account the openness (beam-beam tran at 0 incidence angle).
@@ -1410,7 +1410,7 @@ C...........Typical apparent LW emittance of drape fabric at 0 openness.
             rim_lwT(icomp,icfctp,i)=.05
 C...........Typical apparent LW transmittance of drape fabric at 0 openness. 
             rim_lwEf(icomp,icfctp,i)= .87
-            rim_lwEb(icomp,icfctp,i)= .87	
+            rim_lwEb(icomp,icfctp,i)= .87
          
          elseif(im_cfcltp(icomp,icfctp,i).eq.iRollerBlind)then
 
@@ -1421,28 +1421,28 @@ C read roller drape optical properties from .GSL file
             rim_SolT(icomp,icfctp,i)=rprop
             CALL EGETWR(LOUTSTR,K,rprop,.0,1.0,'F',
      &            'solar drape transmission (BT) - front',IER)
-            rim_SolTf_tot(icomp,icfctp,i)=rprop		
+            rim_SolTf_tot(icomp,icfctp,i)=rprop
             rim_SolTf_bd(icomp,icfctp,i)=rim_SolTf_tot(icomp,icfctp,i)
-     &		-rim_SolT(icomp,icfctp,i)
+     &        -rim_SolT(icomp,icfctp,i)
             CALL EGETWR(LOUTSTR,K,rprop,.0,1.0,'F',
      &            'solar drape transmission (BT) - back',IER)
-            rim_SolTb_tot(icomp,icfctp,i)=rprop		
+            rim_SolTb_tot(icomp,icfctp,i)=rprop
             rim_SolTb_bd(icomp,icfctp,i)=rim_SolTb_tot(icomp,icfctp,i)
-     &		-rim_SolT(icomp,icfctp,i)     
+     &        -rim_SolT(icomp,icfctp,i)     
             CALL EGETWR(LOUTSTR,K,rprop,.0,1.0,'F',
      &            'solar drape reflectance (BD) - front',IER)
             rim_SolRf(icomp,icfctp,i)=rprop
             CALL EGETWR(LOUTSTR,K,rprop,.0,1.0,'F',
      &            'solar drape reflectance (BD) - back',IER)
             rim_SolRb(icomp,icfctp,i)=rprop
-		
+
 C currently no visible properties for draperies, assume similar to
 C total solar properties
 
             rim_VisT(icomp,icfctp,i) = rim_SolT(icomp,icfctp,i)
             rim_VisRf(icomp,icfctp,i)= rim_SolRf(icomp,icfctp,i)
             rim_VisRb(icomp,icfctp,i)= rim_SolRb(icomp,icfctp,i)
-C 		
+C 
 C...........Longwave layer inputs are typical values for 0 openness.
 C...........Effective lw properties are then calculated in cfc_thermal_processing()
 C...........taking into account the openness (beam-beam tran at 0 incidence angle).
@@ -1451,23 +1451,23 @@ C...........Typical apparent LW emittance of roller blind at 0 openness.
             rim_lwT(icomp,icfctp,i)=.05
 C...........Typical apparent LW transmittance of roller blind at 0 openness. 
             rim_lwEf(icomp,icfctp,i)= .91
-            rim_lwEb(icomp,icfctp,i)= .91	
+            rim_lwEb(icomp,icfctp,i)= .91
 
          elseif(im_cfcltp(icomp,icfctp,i).eq.iInsectScreen)then
-		 
+ 
             CALL EGETWR(LOUTSTR,K,rprop,.0,1.0,'F',
      &            'solar drape transmission (BB)',IER)
             rim_SolT(icomp,icfctp,i)=rprop
             CALL EGETWR(LOUTSTR,K,rprop,.0,1.0,'F',
      &            'solar drape transmission (BT) - front',IER)
-            rim_SolTf_tot(icomp,icfctp,i)=rprop		
+            rim_SolTf_tot(icomp,icfctp,i)=rprop
             rim_SolTf_bd(icomp,icfctp,i)=rim_SolTf_tot(icomp,icfctp,i)
-     &		-rim_SolT(icomp,icfctp,i)
+     &        -rim_SolT(icomp,icfctp,i)
             CALL EGETWR(LOUTSTR,K,rprop,.0,1.0,'F',
      &            'solar drape transmission (BT) - back',IER)
-            rim_SolTb_tot(icomp,icfctp,i)=rprop		
+            rim_SolTb_tot(icomp,icfctp,i)=rprop
             rim_SolTb_bd(icomp,icfctp,i)=rim_SolTb_tot(icomp,icfctp,i)
-     &		-rim_SolT(icomp,icfctp,i)     
+     &        -rim_SolT(icomp,icfctp,i)     
             CALL EGETWR(LOUTSTR,K,rprop,.0,1.0,'F',
      &            'solar drape reflectance (BD) - front',IER)
             rim_SolRf(icomp,icfctp,i)=rprop
@@ -1486,8 +1486,8 @@ C...........Typical apparent LW transmittance of roller blind at 0 openness.
             CALL EGETWR(LOUTSTR,K,rprop,.0,1.0,'F',
      &            'wire emissivity',IER)
             rim_bug_Emis(icomp,icfctp)=rprop
-			
-		
+
+
 C currently no visible properties for draperies, assume similar to
 C total solar properties
 
@@ -1511,17 +1511,17 @@ C...........Typical apparent LW transmittance of insect screen at 0 openness.
             else
               ! assume metallic insect screen
               rim_lwT(icomp,icfctp,i) = .19               
-            endif	
-		
+            endif
+
          else
-		 
+ 
             goto 1001
          
          end if
 
 C assign optical properties for air gap
         if(i.lt.nelts)then
-		
+
          rim_SolT(icomp,icfctp,i+1) =     0.0001
          rim_SolRf(icomp,icfctp,i+1)=     0.0001
          rim_SolRb(icomp,icfctp,i+1)=     0.0001
@@ -1531,7 +1531,7 @@ C assign optical properties for air gap
          rim_lwT(icomp,icfctp,i+1)  =     0.0001
          rim_lwEf(icomp,icfctp,i+1) =     0.0001
          rim_lwEb(icomp,icfctp,i+1) =     0.0001
-		 
+ 
         endif
 
  20   continue
@@ -1768,7 +1768,7 @@ C.......and insect screens.
           SolTf_bd(ICOMP,i,j)=0.0
           SolTb_bd(ICOMP,i,j)=0.0
         else if(ND.eq.7)then
-	      CALL EGETWR(OUTSTR,K,VAL,0.,1.0,'W','total front tran.',
+          CALL EGETWR(OUTSTR,K,VAL,0.,1.0,'W','total front tran.',
      &              IER)
           SolTf_tot(ICOMP,i,j)=VAL
           CALL EGETWR(OUTSTR,K,VAL,0.,1.0,'W','total back tran.',
@@ -1777,7 +1777,7 @@ C.......and insect screens.
           CALL EGETWR(OUTSTR,K,VAL,0.,1.0,'W','bd front tran.',
      &              IER)
           SolTf_bd(ICOMP,i,j)=VAL
-	      CALL EGETWR(OUTSTR,K,VAL,0.,1.0,'W','bd back tran.',
+          CALL EGETWR(OUTSTR,K,VAL,0.,1.0,'W','bd back tran.',
      &              IER)
           SolTb_bd(ICOMP,i,j)=VAL
         endif
@@ -1867,13 +1867,13 @@ C icfcltp - 0=gas gap, 1=opaque/glass, 2=slat-type blind, 3=drapery, 4=roller dr
 C 5 = insect screen
       do 80 i=1,ncfc(icomp)
 
-      nshade_layers=0
-	  
+        nshade_layers=0
+  
         vb_xst = .false.
         drp_xst = .false.
         rld_xst = .false.
         bug_xst = .false.
-	  
+  
         IRVA=ncfc_el(icomp,i)
       
         CALL EGETWIA(IUA,IVA,IRVA,0,5,'W','cfc layer type index',IER)
@@ -1881,61 +1881,61 @@ C 5 = insect screen
 C check that the highest value of icfcltp <= 5 (either slat-type
 C blind, insect screen, drape blind, roller blind or glazing) 
 
-      do 90 j=1,ncfc_el(icomp,i)
+        do 90 j=1,ncfc_el(icomp,i)
              if(IVA(j).GE.2 .AND. IVA(j).LE.5)then
-				
-                        nshade_layers=nshade_layers+1
-		    
-                        if(IVA(j).eq.iVenBlind)then
 
-                              vb_xst = .true.
-				
-                        elseif(IVA(j).eq.iPleatedDrape)then
-				
-                              drp_xst = .true.
-				
-                        elseif(IVA(j).eq.iRollerBlind)then
-				
-                              rld_xst = .true.
+                 nshade_layers=nshade_layers+1
+    
+                 if(IVA(j).eq.iVenBlind)then
 
-                        elseif(IVA(j).eq.iInsectScreen)then
-				
-                              bug_xst = .true.
-					
-                        endif
-		    
+                     vb_xst = .true.
+
+                 elseif(IVA(j).eq.iPleatedDrape)then
+
+                     drp_xst = .true.
+
+                 elseif(IVA(j).eq.iRollerBlind)then
+
+                     rld_xst = .true.
+
+                 elseif(IVA(j).eq.iInsectScreen)then
+
+                     bug_xst = .true.
+
+                 endif
+    
              elseif(IVA(j).gt.5)then
                
-                        call edisp(itru,' ')
-                        call edisp(itru,
-     &         	' CFC layer type index cannot exceed 5.')
-                        GOTO 1002
+                 call edisp(itru,' ')
+                 call edisp(itru,
+     &             ' CFC layer type index cannot exceed 5.')
+                 GOTO 1002
              
-                  end if
+              end if
              
-                   icfcltp(icomp,i,j)=IVA(j)
-			 
+              icfcltp(icomp,i,j)=IVA(j)
+ 
    90 continue
 
       if(nshade_layers.gt.1)then
-	  
-            do 110 j=1,ncfc_el(icomp,i)-2
-			
-                  if(IVA(j).gt.1.AND.IVA(j+2).gt.1)then
-			
-				call edisp(itru,' ')
-				call edisp(itru,
-     &      	' Detected two adjacent blind layers.')
-				GOTO 1002
-			
-                  end if
+  
+      do 110 j=1,ncfc_el(icomp,i)-2
 
-  110 	continue 	
+         if(IVA(j).gt.1.AND.IVA(j+2).gt.1)then
+
+           call edisp(itru,' ')
+           call edisp(itru,
+     &       ' Detected two adjacent blind layers.')
+           GOTO 1002
+
+         end if
+
+  110 continue 
 
       elseif(nshade_layers.eq.0)then
       
             vb_xst = .false.
-            drp_xst = .false.	
+            drp_xst = .false.
             rld_xst = .false.
             bug_xst = .false.
       
@@ -1953,16 +1953,16 @@ C Reporting
         CALL EDISP(ITRU,' Layer      type index')
         
         DO 91, j=1,ncfc_el(icomp,i)
-			
+
             WRITE(OUTS,'(1X,i5,2X,i4)')i,icfcltp(icomp,i,j)
             CALL EDISP(ITRU,OUTS)
-			
+
    91   CONTINUE
       
         ENDIF
 
       if(ncfc_el(icomp,i).eq.1)goto 81
-	
+
 C Read gas gap properties
       do 100 ie=2,ncfc_el(icomp,i),2
 
@@ -2004,7 +2004,7 @@ C Read gas gap properties
 
 C Reporting
       IF(ITRC.GT.0)THEN
-	  
+  
         CALL EDISP(ITRU,' ')
         WRITE(OUTS,'(A,I2,A,I2,A)')
      &   ' For CFC type ',I,' ,layer ',ie,' , gas mix. properties:'
@@ -2044,7 +2044,7 @@ C    vb_wr     = slat w/r ratio
 C    vb_t      = thickness [mm]
 C    vb_VorH   = slat orientation ("HORZ" OR "VERT")
   81  if(vb_xst)then
-	
+
       CALL STRIPC(IUA,OUTSTR,99,ND,1,'slat-type blind attributes',IER)
       IF(IER.NE.0)GOTO 1001
       K=0
@@ -2074,8 +2074,8 @@ C    vb_VorH   = slat orientation ("HORZ" OR "VERT")
       
       CALL EGETWR(OUTSTR,K,VAL,0.0,300.,'W',
      &      'slat thickness (mm)',IER)
-      vb_t(icomp,i)=VAL	
-	
+      vb_t(icomp,i)=VAL
+
 C Reporting
       IF(ITRC.GT.0)THEN
       
@@ -2111,11 +2111,11 @@ C    drp_s      = drape spacing [mm]
       CALL EGETWR(OUTSTR,K,VAL,1.0,300.,'W','pleat width(mm)',
      &              IER)
       drp_w(ICOMP,i)=VAL
-	  
+  
       CALL EGETWR(OUTSTR,K,VAL,1.0,300.,'W','pleat spacing(mm)',
      &              IER)
       drp_s(ICOMP,i)=VAL
-	  
+  
       IF(ITRC.GT.0)THEN
       
             CALL EDISP(ITRU,' Drape attributes:')
@@ -2134,7 +2134,7 @@ C If insect screen exists then read drape attributes:
 C Read insect screen descriptors (for type 5 cfc layer):
 C    bug_d      = wire diameter [mm]
 C    bug_s      = wire pitch [mm]
-C    bug_Emis	= wire emissivity
+C    bug_Emis   = wire emissivity
 
       if(bug_xst)then
   
@@ -2147,7 +2147,7 @@ C    bug_Emis	= wire emissivity
       CALL EGETWR(OUTSTR,K,VAL,1.0,300.,'W','wire diameter(mm)',
      &              IER)
       bug_d(ICOMP,i)=VAL
-	  
+  
       CALL EGETWR(OUTSTR,K,VAL,1.0,300.,'W','wire pitch(mm)',
      &              IER)
       bug_s(ICOMP,i)=VAL
@@ -2155,7 +2155,7 @@ C    bug_Emis	= wire emissivity
       CALL EGETWR(OUTSTR,K,VAL,0.0,1.0,'W','wire emissivity',
      &              IER)
       bug_Emis(ICOMP,i)=VAL
-	  
+  
       IF(ITRC.GT.0)THEN 
 
             CALL EDISP(ITRU,' Insect screen attributes:')
@@ -2168,8 +2168,8 @@ C    bug_Emis	= wire emissivity
 
       ENDIF
 
-      end if	  
-	  
+      end if  
+  
    80 continue
 
 c Free file.

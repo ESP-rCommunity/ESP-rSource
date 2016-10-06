@@ -27,6 +27,7 @@ C  OPT2ED:  Takes the current GOPT common and copies it into GOPTED.
 C  ED2OPT:  Takes the current GOPTED common and copies it back into GOPT.
 C  CLROPT:  Clears common block GOPTED and sets it up for a new set.
 C  IMPOPT:  Imports an optical set from LBL WINDOW 4.1, 5.1, 5.2 or v6
+C  SETUPIES: Define/manage IES data files for passing to Radiance.
   
 C ************* EDOPT 
 C EDOPT Allow user to select and edit an optical type.
@@ -1788,6 +1789,7 @@ C optic properties. These are usually the result of measurements.
 #include "building.h"
 #include "epara.h"
 #include "esprdbfile.h"
+#include "prj3dv.h"
 C MSTMC is number of different bidirectional datasets, limited
 C to 20 for the present.
       
@@ -1796,8 +1798,6 @@ C      integer lnblnk  ! function definition
       PARAMETER (MSTMC=20)
 C      PARAMETER (MSGAL=40,MANH=37,MANV=37)
       common/OUTIN/IUOUT,IUIN
-      COMMON/RAY3/MODIFY,MODLEN,MODBND
-      COMMON/RAY6/LINSTY(MCON)
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
       
       integer ncomp,ncon
@@ -1814,7 +1814,7 @@ C   Limited to 0 or 1 at present.
       DIMENSION VERT(35)
       character VERT*58,CXITM*48,key*1,lfil*72
       character bidirfile*72,DFILE*72,bidirname*12
-      logical MODIFY,MODLEN,MODBND !,ok,dok
+C      logical ok,dok
 C      character outs*124
       integer MVERT,IVERT ! max items and current menu item
 
@@ -1835,7 +1835,7 @@ C IVERT is the menu position, MVERT the current number of menu lines.
 
 C Force redraw of zones, highlighting surfaces with bi-directional
 C attributes.
-      MODIFY=.TRUE.
+      MODIFYVIEW=.TRUE.
       nzg=NCOMP
       if(nzg.gt.0)then
         DO 44 I=1,nzg
@@ -2005,3 +2005,386 @@ C          if(OK)NSTMCFL(ifocc)=0
       ivert=-4
       goto 3
       end
+      
+C  SETUPIES: Define/manage IES data files for passing to Radiance.
+C edbioptics controls the specification of bi-directional
+C optic properties. These are usually the result of measurements.
+      subroutine setupies()
+#include "building.h"
+#include "model.h"
+#include "epara.h"
+#include "e2r_common.h"
+
+C espriou.h provides current file.
+#include "espriou.h"
+      
+      integer lnblnk  ! function definition
+
+      COMMON/OUTIN/IUOUT,IUIN
+      common/FILEP/IFIL
+      
+      logical unixok
+      character outs*124,fs*1
+      character lltmp*144,loutstr*248
+      character t12*12,t32*32,t2*2,hold*32,doitl*256
+      character WORD*48
+      character subpath*72,action*3
+      real V1,V2,V3
+      integer loop,loop2,iiessteps(5)
+      real RVC(13)
+      logical isfeet
+
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='SETUPIES'  ! set for subroutine
+
+C Locate the IES files via the installed path.
+      call isunix(unixok)
+      if(unixok)then
+        fs = char(47)
+      else
+        fs = char(92)
+      endif
+
+C Assume the radiance files in the models rad folder and work
+C there.
+      if(unixok)then
+
+C If unix assume user owns the model and will use the ../rad folder.
+C If not found the folder should be created by prj prior to
+C invoking e2r.
+        if(pwdtocfg(1:1).eq.'!')then
+          write(runpath,'(2a)') radpth(1:lnblnk(radpth)),fs
+          lnrp=lnblnk(runpath)  ! remember this
+        else
+          write(runpath,'(3a)') pwdtocfg(2:lnblnk(pwdtocfg)),
+     &      radpth(1:lnblnk(radpth)),fs
+          lnrp=lnblnk(runpath)  ! remember this
+          write(6,*) 'lnrp ',lnrp,pwdtocfg
+          write(6,*) 'runpath ',runpath
+        endif
+      else
+
+C Variant for non-unix
+        if(pwdtocfg(1:1).eq.'!')then
+          write(runpath,'(2a)') radpth(1:lnblnk(radpth)),fs
+          lnrp=lnblnk(runpath)  ! remember this
+        else
+          write(runpath,'(3a)') pwdtocfg(1:lnblnk(pwdtocfg)),
+     &      radpth(1:lnblnk(radpth)),fs
+          lnrp=lnblnk(runpath)  ! remember this
+        endif
+      endif
+      write(outs,'(2a)') 'The place where rad will be invoked is ',
+     &   runpath(1:lnrp)
+      call edisp(iuout,outs)
+
+C Remind user what is currently known.
+  42  if(nbofies.eq.0)then
+        call edisp(iuout,'There is no IES data in the model yet.')
+      else
+        call edisp(iuout,'Current IES entities:')
+        do loop=1,nbofies
+          write(outs,'(2a)') 'root name  ',iesname(loop)
+          call edisp(iuout,outs)
+          write(outs,'(2a)') 'menu entry ',iesmenu(loop)
+          call edisp(iuout,outs)
+          write(outs,'(2a)') 'data in ',iesfile(loop)
+          call edisp(iuout,outs)
+          write(outs,'(a,3F7.3,2a)') 'fixture L W H ',ieslen(loop),
+     &      ieswid(loop),iesht(loop), ' long ',iesalong(loop)
+          call edisp(iuout,outs)
+          do loop2=1,iespercents(loop)
+            write(outs,'(a,F6.3)') 'control at ',iessteps(loop,loop2)
+            call edisp(iuout,outs)
+          enddo ! of loop2
+        enddo   ! of loop
+      endif
+
+C Create a menu showing what is already available.
+C << to be done... >>
+
+C Instruct users to place IES files in model rad folder
+      CALL EASKAB('If you have not already done so place the IES',
+     &  'data file in the model rad folder. Say ok when done.',
+     &  'proceed','abort',IW,0)
+      if(IW.eq.2) return
+
+C Show list of files in rad folder.
+      call usemodelradfile('ies',lltmp,istat)
+      t12='lamp'
+      t32='1.2m 2 tube flourescent'
+
+C echo the contents of lltmp.
+      IRCFG=IFIL+1
+      CALL LISTAS(IRCFG,lltmp,IER)
+      
+C Check if file actually is an IES file it should start with
+C one of the following: IESNA:LM-63-2002 IESNA:LM-63-1995
+      CALL EFOPSEQ(IRCFG,lltmp,1,IER)
+      write(currentfile,'(a)') lltmp(1:lnblnk(lltmp))
+      call lstripc(IRCFG,loutstr,99,ND,1,'IES line 1',IER)
+      if(loutstr(1:11).eq.'IESNA:LM-63')then
+ 43     call lstripc(IRCFG,loutstr,99,ND,1,'IES LUMCAT',IER)
+        if(loutstr(1:8).eq.'[LUMCAT]')then
+          k=9
+          CALL EGETW(loutstr,K,WORD,'W','[LUMCAT]',IFLAG)
+          write(t12,'(a)') WORD(1:12)
+          goto 43
+        elseif(loutstr(1:6).eq.'[LAMP]')then
+          k=7
+          CALL EGETW(loutstr,K,WORD,'W','[LAMP]',IFLAG)
+          write(t32,'(a)') WORD(1:32)
+          goto 43
+        elseif(loutstr(1:9).eq.'[LAMPCAT]')then
+          k=10
+          CALL EGETW(loutstr,K,WORD,'W','[LAMPCAT]',IFLAG)
+          write(t32,'(a)') WORD(1:32)
+          goto 43
+        elseif(loutstr(1:9).eq.'TILT=NONE')then
+          numtoget=13
+          CALL EGETWRA(IRCFG,RVC,numtoget,0.0,0.0,'-',
+     &      'the 13 numbers',IER)
+          write(6,*) 'RVC ',RVC
+          CALL ERPFREE(IRCFG,ISTAT)
+          continue
+        elseif(loutstr(1:12).eq.'TILT=INCLUDE')then
+          call lstripc(IRCFG,loutstr,99,ND,1,'tilt ln 1',IER)
+          call lstripc(IRCFG,loutstr,99,ND,1,'tilt ln 2',IER)
+          call lstripc(IRCFG,loutstr,99,ND,1,'tilt ln 3',IER)
+          call lstripc(IRCFG,loutstr,99,ND,1,'tilt ln 4',IER)
+          numtoget=13  ! need to skip past 4 lines
+          CALL EGETWRA(IRCFG,RVC,numtoget,0.0,0.0,'-',
+     &     'the 13 numbers',IER)
+          write(6,*) 'RVC ',RVC
+          CALL ERPFREE(IRCFG,ISTAT)
+          continue
+        else
+          goto 43
+        endif
+      else
+        call usrmsg('File does not seem to be an IES file',
+     &    'so subsequent steps may not work.','W')
+      endif
+      write(outs,'(2a)') 'LUMCAT: ',t12
+      call edisp(iuout,outs)
+      write(outs,'(2a)') 'LAMP:   ',t32
+      call edisp(iuout,outs)
+      call eclose(RVC(7),1.0,0.01,isfeet)
+      if(isfeet)then
+        V2=RVC(8)*0.3048
+        V1=RVC(9)*0.3048
+        V3=RVC(10)*0.3048
+      else
+        V2=RVC(8); V1=RVC(9); V3=RVC(10)
+      endif
+      write(outs,'(a,f7.3)') 'Number of lamps:',RVC(1)
+      call edisp(iuout,outs)
+      write(outs,'(a,3f7.3)') 'Length width height(m):',V1,V2,V3
+      call edisp(iuout,outs)
+      write(outs,'(a,f7.3)') 'Watts:',RVC(13)
+      call edisp(iuout,outs)
+
+C Ask what short root name to give to the IES entry intial value
+C based on info in IES file.
+      CALL EASKS(t12,'Root name <12 char for this IES type:',
+     &  ' ',12,'lamp','ies root name',IER,nbhelp)
+
+C Ask for a menu entry associated with the IES entry.
+      CALL EASKS(t32,'Menu entry <32 char for this IES type:',
+     &  ' ',32,'t8 lamp fixture','ies menu',IER,nbhelp)
+
+C Ask for which site axis X Y is along the length of fixture.
+      t2='X '
+      CALL EASKS(t2,'Which site axis X or Y is along the longest',
+     &  'dimension of the fixture?',2,'X','ies axis',IER,nbhelp)
+
+C Ask about dimensions of the IES entry
+      write(hold,'(3F7.3)') V1,V2,V3
+      CALL EASKS(HOLD,'Length Width Height (m) of the fixture:',
+     &  '(check in the IES file):',32,' 1.0 0.1 0.1 ','IES L W H',
+     &  IER,nbhelp)
+      K=0
+      CALL EGETWR(HOLD,K,V1,0.0,0.0,'-','ies len',IER)
+      CALL EGETWR(HOLD,K,V2,0.0,0.0,'-','ies wid',IER)
+      CALL EGETWR(HOLD,K,V3,0.0,0.0,'-','ies ht',IER)
+     
+C Gow many output steps to create and for each give a percentage
+C (suggest 100 75 50 25 1)
+      IWS=2
+      call EASKATOG('Control options:',' ',
+     &  'always ON','ON-OFF','Stepped 100:50:20:1',
+     &  'Stepped 100:75:50:25:1','cancel',' ',' ',IWS,nbhelp)
+
+C Update the common blocks:
+      nbofies=nbofies+1
+      write(iesname(nbofies),'(a)') t12
+      write(iesmenu(nbofies),'(a)') t32
+      write(iesalong(nbofies),'(a)') t2(1:1)
+      write(iesfile(nbofies),'(a)') lltmp(1:lnblnk(lltmp))
+      ieslen(nbofies)=V1; ieswid(nbofies)=V2; iesht(nbofies)=V3
+      if(IWS.eq.1)then
+        iespercents(nbofies)=1
+        iessteps(nbofies,1)=1.0; iessteps(nbofies,2)=0.01
+        iiessteps(1)=100; iiessteps(2)=001
+      elseif(IWS.eq.2)then
+        iespercents(nbofies)=2
+        iessteps(nbofies,1)=1.0; iessteps(nbofies,2)=0.01
+        iiessteps(1)=100; iiessteps(2)=001
+      elseif(IWS.eq.3)then
+        iespercents(nbofies)=4
+        iessteps(nbofies,1)=1.0; iessteps(nbofies,2)=0.50
+        iessteps(nbofies,3)=0.20; iessteps(nbofies,4)=0.01
+        iiessteps(1)=100; iiessteps(2)=50
+        iiessteps(3)=20; iiessteps(4)=01
+      elseif(IWS.eq.4)then
+        iespercents(nbofies)=5
+        iessteps(nbofies,1)=1.0; iessteps(nbofies,2)=0.75
+        iessteps(nbofies,3)=0.50; iessteps(nbofies,4)=0.25
+        iessteps(nbofies,4)=0.01
+        iiessteps(1)=100; iiessteps(2)=75
+        iiessteps(3)=50; iiessteps(4)=25; iiessteps(5)=01
+      endif
+
+C For each of these follow the following:
+C   cd ../rad; ies2rad -m 1.0 -o short_name_100 file.ies
+C   cd ../rad; ies2rad -m 0.75 -o short_name_075 file.ies
+
+C Run ies2rad for each option:
+      do loop=1,iespercents(nbofies)
+        write(doitl,'(3a,F6.3,2a,i3.3,2a)') 'cd ',runpath(1:lnrp),
+     &    '; ies2rad -m ',iessteps(nbofies,loop),' -o ',
+     &    iesname(nbofies)(1:lnblnk(iesname(nbofies))),
+     &    iiessteps(loop),' ',
+     &    iesfile(nbofies)(1:lnblnk(iesfile(nbofies)))
+        write(6,*) doitl
+        call runit(doitl,'-')
+       enddo  ! of loop
+       CALL EMKCFG('-',IER)  ! update model file
+
+C Re-display files in rad folder.
+       call edisp(iuout,'Here is what is in the ../rad folder now.')
+        subpath='../rad'
+        action='fil'
+        call getfileslist(subpath,action,nlistf)
+        call printfileslist(outs,'p')
+        call edisp(iuout,outs)
+C       call usemodelradfile('ies',lltmp,istat)
+       
+       CALL EASKAB('Do another IES entity?',
+     &  ' ','proceed','finish',IW,0)
+       if(IW.eq.1) goto 42
+       
+       return
+       end
+
+
+C ******** usemodelradfile
+C usemodelradfile is a general facility to browse files in the
+C model ../rad folder. All files in the ../rad folder will 
+C be added to a menu list for selection. Selected file becomes
+C the current common file type and is returned via lltmp.
+      subroutine usemodelradfile(topic,lltmp,istat)
+#include "building.h"
+#include "model.h"
+
+      common/OUTIN/IUOUT,IUIN
+      
+      integer lnblnk  ! function definition
+      
+C Passed parameters:
+      character topic*3   ! which type of file e.g. rif = radiance rif
+                          ! mat = radiance materials  sky = sky file
+                          ! ies = IES raw file
+                          ! rad = radiance rad file rcf = esp-r file
+      character lltmp*144 ! the returned file name
+      integer istat       ! return status index for calling code
+      integer nfile       ! nb of files in rad folder
+
+C Local variables:
+      character sourcemsg*48     ! dialog for source dialog
+      character sfile*72,snpfile*72,fname*96
+      character fs*1
+
+      CHARACTER outs248*248
+      
+C Local strings for user selections dependent on graphic library.
+      integer lnrad   ! for length of standard radiance path
+      integer iier
+      logical unixok  ! to check for database path file separators
+
+C Clear string buffers.
+      lltmp='  '
+
+C Set folder separator (fs) to \ or / as required.
+      call isunix(unixok)
+      if(unixok)then
+        fs = char(47)
+      else
+        fs = char(92)
+      endif
+
+C Remember current file for the current topic, set message to
+C users and the guess for file name.
+      lnrad=lnblnk(radpth)
+      if(topic(1:3).eq.'rif')then
+        sourcemsg='radance rif file (in ../rad).'   ! dialog
+      elseif(topic(1:3).eq.'mat')then
+        sourcemsg='radiance materials file (in ../rad).'
+      elseif(topic(1:3).eq.'sky')then
+        sourcemsg='radiance sky file (in ../rad).'
+      elseif(topic(1:3).eq.'ies')then
+        sourcemsg='IES data file (in ../rad).'
+      elseif(topic(1:3).eq.'rad')then
+        sourcemsg='radiance rad file (in ../rad).'
+      elseif(topic(1:3).eq.'rcf')then
+        sourcemsg='ESP-r rcf file (in ../rad).'
+      endif
+
+C Remind user the current common data file.
+      write(outs248,'(2a)') ' Please identify a ',
+     &  sourcemsg(1:lnblnk(sourcemsg))
+      call edisp248(iuout,outs248,90)
+
+C Use the standard ESP-r folder browse facility.
+      sfile=' '
+      snpfile=' '
+      call edisp(iuout,' ')
+      call browsefilelist('?','rad','fil',sfile,snpfile,nfile,iier)
+      if(nfile.gt.0)then
+        sfile=' '
+        snpfile=' '
+        call browsefilelist('b','rad','fil',sfile,snpfile,nfile,iier)
+        if(snpfile(1:2).ne.'  ')then
+          write(fname,'(3a)')radpth(1:lnrad),fs,
+     &      snpfile(1:lnblnk(snpfile))
+
+C Debug.
+          if(unixok) write(6,*) fname
+          write(lltmp,'(a)') fname(1:lnblnk(fname))
+
+        else
+
+C User did not select a file. Take them back to the question.
+          call usrmsg('You did not select any existing file.',
+     &      'Canceling the action.','W')
+          istat=1
+          return  ! cancel detected, restore name and redisplay menu.
+        endif
+      else
+        call usrmsg('You did not select any existing file.',
+     &    'Canceling the action.','W')
+        istat=1
+        return  ! cancel detected, restore name and redisplay menu.
+      endif
+
+C By definition of the filebrowse facility the selected file
+C will exist.
+      istat=0   ! after return use the new file
+      return
+      
+      end
+      

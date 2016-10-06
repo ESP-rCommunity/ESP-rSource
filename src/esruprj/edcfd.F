@@ -23,6 +23,7 @@ C CFDCOMP - controls the editing of CFD input files.
 C CFDGGRD - define domain gridding.
 C CFDSVAR - controls the editing of CFD solution variables.
 C CFDEDAT - controls the editing of CFD equations.
+C CFDEDATC- controls the editing of contaminant relaxation factors.
 C CFDBVAR - controls the editing of CFD boundary variables.
 C EDAIRO  - controls the editing of CFD air flow opening boundary variables.
 C MFCONF  - defines conflation of CFD and mfs 
@@ -56,31 +57,42 @@ C IER=0 indicates no error.
 #include "model.h"
 #include "geometry.h"
 #include "cfd.h"
+#include "espriou.h"
 C #include "esprdbfile.h"
+#include "prj3dv.h"
       
       integer lnblnk  ! function definition
 
+      COMMON/SPAD/MMOD,LIMIT,LIMTTY
       common/OUTIN/IUOUT,IUIN
       common/gzonpik/izgfoc,nzg,nznog(mcom)
-      common/RAY2/ITDSP,ITBND,ITEPT,ITZNM,ITSNM,ITVNO,ITORG,ITSNR,
-     &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS,ITPPSW
-      common/RAY3/MODIFY,MODLEN,MODBND
       COMMON/DEFLT3/DFCFD,DECMPDBFL,DICONDBFL
       common/cfdfil/LCFD(MCOM),IFCFD(MCOM)
       COMMON/ICFNOD/ICFD,ICP
       common/param2/TITLE(MNZ),CFTRFL(MNZ),LPHI(MNZ)
       common/GRIDEFN/origin,xgrid,ygrid,zgrid,zegrid,ortho
+      common/ndcfd/ncfdnd,icfdnd(MNZ),NCONF
+      COMMON/CFDVIS/ISHSB,ISHAO,IFACES,ISHBLK
+      integer ncfdnd,icfdnd,NCONF
 
       logical origin,xgrid,ygrid,zgrid,zegrid,ortho
-      logical OK,dok,MODIFY,MODLEN,MODBND,XST,CFDsave
+      logical OK,dok,XST,CFDsave
 
-      character OUTSTR*124,WORD*124
-      CHARACTER ITEM(11)*34
+      character OUTSTR*124,WORD*124,ETEXT*82,ZNGEO*3
+      CHARACTER ITEM(12)*34
       character ltmp*72,dtmp*72,LCFD*72
       CHARACTER*72 TITLE,CFTRFL,LPHI
       character*72 DFCFD,DECMPDBFL,DICONDBFL
+      integer found
       integer IWO  ! for radio button
       integer NITMS,INO ! max items and current menu item
+
+#ifdef OSI
+      integer iside,isize,ifont
+
+#else
+      integer*8 iside,isize,ifont
+#endif
 
 C For help messages
       character helpinsub*24 ! subroutine name
@@ -89,12 +101,25 @@ C For help messages
 
       helpinsub='CFDCOMP'  ! set for subroutine
 
-C Note: to make this more general, we need to have prj set the value of ICFD.
 C ICFD=1 for the first CFD domain in the building, 2 for the second CFD domain, etc.
-C For now, this is constrained to a single CFD domain in the building.
-C ICFD is set to one independantly in VERMAN in prj.F, any updates here should 
+C ICFD is set independantly in VERMAN in prj.F, any updates here should 
 C be corresponded there as well
-      ICFD = 1
+      found=0
+      do 234 iconf=1,nconf
+        if ( icfdnd(iconf).eq.izone )then
+          ICFD=iconf
+          found=1
+        endif
+  234 continue
+      if(found.eq.0)then
+
+C No existing domain for this zone, clear domain indepenent commons,
+C set ICFD, and initialise simulation parameters.
+C Do not increment NCONF yet, as user might not include the domain.
+        CALL RESETCFD(IER)
+        ICFD=nconf+1
+        CALL CFDDEFLT
+      endif
       ICP = izone
       TITLE(ICFD) = '...'
 
@@ -112,6 +137,7 @@ C= Assume orthogonal domain.
       ortho=.true.
 
 C Draw the zone and display the vertex numbers.
+C << changed to use CFD visualisation subroutines instead >>
       call tstamp('>','PRJ: edit CFD domain') 
       nzg=1
       nznog(1)=izone
@@ -119,13 +145,14 @@ C Draw the zone and display the vertex numbers.
       CALL ESCZONE(izone)
       CALL BNDOBJ(0,IER)
       CALL ERCZONE(izone)
-      MODIFY=.TRUE.
-      MODLEN=.TRUE.
-      MODBND=.TRUE.
       itvno=0
       itsnm=0
-      CALL INLNST(1)
-      CALL ADJVIEW(IER)
+
+C Default values for visualisation.
+      ISHSB=1
+      ISHAO=1
+      IFACES=-1
+      ISHBLK=1
 
 C Setup help text for main menu.
       helptopic='cfd_opening_menu'
@@ -152,12 +179,14 @@ C flag.  Then read in the data based on the conflation type.
       CALL ERPFREE(IUF,ISTAT)
       call FINDFIL(LCFD(izone),XST)
       if(XST)then
+C set currentfile
+        write(currentfile,'(a)')LCFD(izone)(1:LNBLNK(LCFD(izone)))
         CALL EFOPSEQ(IUF,LCFD(izone),1,IER)
         IF(IER.NE.0)goto 1
         CALL STRIPC(IUF,OUTSTR,0,ND,1,'dfd line 1',IER)
         if(OUTSTR(1:7).eq.'*DFS V2')then
           CALL ERPFREE(IUF,ISTAT)
-          call DFDREAD(IZONE,2,iuout,IER)
+          call DFDREAD(IZONE,0,iuout,IER)
           if (IER.ne.0) return
         elseif(OUTSTR(1:15).eq.'DFS DESCRIPTION')then
           CALL STRIPC(IUF,OUTSTR,0,ND,1,'dfd line 2',IER)
@@ -204,15 +233,61 @@ C Present menu of options for editing CFD input file.
       ITEM(1) ='a Title: '
       write (ITEM(2),'(a,a)') '  ',TITLE(ICFD)(1:30)
       ITEM(3) ='  -------------------------- '
-      ITEM(4) ='a BSim-CFD conflation '
+      if (IFCFD(izone).eq.0) then
+        ITEM(4) ='a CFD coupling >> Off '
+      else
+        ITEM(4) ='a CFD coupling >> On  '
+      endif
       ITEM(5) ='b Geometry and gridding '
       ITEM(6) ='c Solution variables '
       ITEM(7) ='d Boundary conditions '
       ITEM(8) ='  -------------------------- '
-      ITEM(9) ='> Save CFD input file '
-      ITEM(10)='? Help'
-      ITEM(11)='- exit this menu'
-      NITMS=11
+      ITEM(9) ='f Report domain details '
+      ITEM(10) ='> Save CFD input file '
+      ITEM(11)='? Help'
+      ITEM(12)='- exit this menu'
+      NITMS=12
+
+      IF(MMOD.EQ.8)THEN
+
+C Recalculate gridding in case this has changed
+        CALL INICNT
+        CALL GRID(ier)
+        call NEW2OLD
+
+C Display domain
+        CALL ESCZONE(izone)
+        CALL BNDOBJ(0,IER)
+        CALL ERCZONE(izone)
+        if (IFACES.lt.0) then
+          write(zngeo,'(a)')'zn '
+        else
+          write(zngeo,'(a)')'---'
+        endif
+        if(abs(IFACES).eq.1)then
+          call VGRID3D(zngeo,'xyz',izone)
+        elseif(abs(IFACES).eq.2)then
+          call VGRID3D(zngeo,'xzg',izone)
+        elseif(abs(IFACES).eq.3)then
+          call VGRID3D(zngeo,'yzg',izone)
+        elseif(abs(IFACES).eq.4)then
+          call VGRID3D(zngeo,'xyg',izone)
+        endif
+        if (ISHSB.eq.1) then
+          call VSB3D(0,izone)
+        endif
+        if (ISHAO.eq.1) then
+          call VAO3D(0,izone)        
+        endif
+        if (ISHBLK.eq.1) then
+          call VSBL3D(0,izone)  ! for testing of blockages
+        endif
+      
+        WRITE(ETEXT,'(2A)')'Domain: ',
+     &    TITLE(izone)(1:lnblnk(TITLE(izone)))
+        iside=1; isize=1; ifont=1
+        call viewtext(ETEXT,iside,isize,ifont)
+      ENDIF
 
 C Help text for this menu.
   12  helptopic='cfd_opening_menu'
@@ -236,13 +311,18 @@ C Wrong pick.
 C Conflation options.
         helptopic='cfd_conflation_options'
         call gethelptext(helpinsub,helptopic,nbhelp)
-        IWO=0
-        call EASKATOG('Conflation options:',' ','CFD only',
-     &    'thermal only','adaptive thermal','air-flow',
-     &    'cancel','  ','  ',IWO,nbhelp)
-        if(IWO.le.2)IFCFD(izone)=IWO-1
-        if(IWO.eq.3)IFCFD(izone)=4
-        if(IWO.eq.4)IFCFD(izone)=5
+        dok=.true.
+        call ASKOK(
+     &      'Do you want to couple CFD with other simulation domains?',
+     &                                               ' ',OK,dok,nbhelp)
+        if(OK)then
+          IFCFD(izone)=4
+          helptopic='cfd_conflation_active'
+          call gethelptext(helpinsub,helptopic,nbhelp)
+          call PHELPD('CFD coupling activated',nbhelp,'-',0,0,IER)
+        else 
+          IFCFD(izone)=0
+        endif
       ELSEIF(INO.EQ.5)THEN 
 
 C Geometry and Gridding
@@ -256,7 +336,12 @@ C User to specify equations to solve and initial variables.
 
 C Boundary conditions.
         call CFDBVAR(IZONE,IER)
-      ELSEIF(INO.EQ.9)THEN 
+      ELSEIF(INO.EQ.9)THEN
+
+C Report model details. Do this by re-reading input file with trace output.
+        CALL ERPFREE(IUF,ISTAT)
+        call DFDREAD(IZONE,2,iuout,IER)
+      ELSEIF(INO.EQ.10)THEN 
 
 C Save Data to dfs input file.
         call DFDSV(IUF,IZONE,IER)
@@ -305,9 +390,6 @@ C IER=0 indicates no error.
       integer menuchw,igl,igr,igt,igb,igw,igwh
       common/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
       common/gzonpik/izgfoc,nzg,nznog(mcom)
-      common/RAY2/ITDSP,ITBND,ITEPT,ITZNM,ITSNM,ITVNO,ITORG,ITSNR,
-     &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS,ITPPSW
-      common/RAY3/MODIFY,MODLEN,MODBND
 
 C NREG(1,*) is X, NREG(2,*) is Y, NREG(3,*) is west, NREG(4,*) is east
 C (the east (4,*) is for curvilinear gridding).
@@ -325,17 +407,21 @@ C (the east (4,*) is for curvilinear gridding).
      &             CALLC(MNZ),KEMDL(MNZ),BUOY(MNZ),BOUSSI(MNZ),
      &             ZEROT(MNZ),ZandKE(MNZ),MITzero(MNZ)
 
+      COMMON/CFDVIS/ISHSB,ISHAO,IFACES,ISHBLK
+      common/param2/TITLE(MNZ),CFTRFL(MNZ),LPHI(MNZ)
+
 C Arrays for sorting domains from (see code for comments).
       dimension XS(MTV),XSS(MTV),XSI(MTV),YS(MTV),YSS(MTV),YSI(MTV)
       dimension ZS(MTV),ZSI(MTV),ZSS(MTV)
 
       LOGICAL CALLU,CALLV,CALLW,CALLT,CALLC,KEMDL,BUOY,BOUSSI
-      logical MODIFY,MODLEN,MODBND,close,griderr
+      logical close,griderr
       logical origin,xgrid,ygrid,zgrid,zegrid,ortho
       LOGICAL ZEROT,ZandKE,MITzero,vclose
 
       character ITEM(14)*36
-      character outs*124
+      character outs*124,outs248*248,ETEXT*82,zngeo*3
+      CHARACTER*72 TITLE,CFTRFL,LPHI
 
       integer iglib   ! if 1 then X11, if 2 then GTK, if 3 then text only.
       integer iorgt,ixendt,iyendt,izendt,izendet  ! for local editing
@@ -344,9 +430,11 @@ C Arrays for sorting domains from (see code for comments).
 #ifdef OSI
       integer iigl,iigr,iigt,iigb,iigw,iigwh
       integer iiw1,iiw2,iiw3,iiw4,iimenu
+      integer iside,isize,ifont
 #else
       integer*8 iigl,iigr,iigt,iigb,iigw,iigwh
       integer*8 iiw1,iiw2,iiw3,iiw4,iimenu
+      integer*8 iside,isize,ifont
 #endif
 
 C For help messages
@@ -357,23 +445,84 @@ C For help messages
       helpinsub='CFDGGRD'  ! set for subroutine
 
 C Assume axes defined and set initial values for general resolution
-C of the X Y Z axis.
+C of the X Y Z axis and visualisation options.
 C << Todo: set these based on a higher level concept of
 C << low/medium/high resolution and/or the size of the zone.
+C -- Visualisation variables already defined in calling routine
       origin=.TRUE.
-      icellx=20
-      icelly=20
-      icellz=20
+      ieorg=0
+      icellx=20; icelly=20; icellz=20
       itrc=0   ! silent feedback initially
+c      ISHSB=1
+c      ISHAO=1
+c      ISHBLK=1
+c      IFACES=1
 
 C Help text for this menu.
       helptopic='cfd_gridding_setup'
       call gethelptext(helpinsub,helptopic,nbhelp)
 
+C Ensure that G1 common blocks are correctly assigned.
+      call georead(IFIL+1,LGEOM(izone),izone,1,IUOUT,IER)
+
 C Check if we have vertex at ends of axis data.
       if (iorg.eq.0) then
+
+
         call usrmsg('You will have to define the CFD axis relationship',
      &              'to the zone geometry via vertex numbers.','W')
+
+C Display zone geometry with vertex numbers to aid in selection
+C Restore standard graphics window variables.
+        if(MMOD.EQ.8)then
+          iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
+          if(iglib.eq.1)then
+            CALL feedbox(menuchw,2,igfw,igfh)
+            CALL opengdisp(menuchw,LIMTTY,2,igdw,igdh)
+          endif
+
+C Setup and pass in parameters to win3d.
+          iiw1=4; iiw2=1; iiw3=1; iiw4=3; iimenu=menuchw
+          iigl=igl; iigr=igr; iigt=igt; iigb=igb; iigw=igw; iigwh=igwh
+          CALL win3d(iimenu,iiw1,iiw2,iiw3,iiw4,
+     &      iigl,iigr,iigt,iigb,iigw,iigwh)
+          igl=int(iigl); igr=int(iigr); igt=int(iigt); igb=int(iigb)
+          igw=int(iigw); igwh=int(iigwh)
+          call startbuffer()
+
+C Redraw zone and vertex points. Note, if user has returned
+C from 3D grid visualisation then G1 common blocks will need
+C to be refreshed.
+          nzg=1
+          nznog(1)=izone
+          izgfoc=izone
+          CALL ESCZONE(izone)
+          CALL BNDOBJ(0,IER)
+          CALL ERCZONE(izone)
+          MODIFYVIEW=.TRUE.; MODLEN=.TRUE.; MODBND=.TRUE.
+          itvno=0
+          itznm=1
+          itsnm=1
+          CALL INLNST(1)
+          CALL ADJVIEW(IER)
+        endif
+
+        write(outs,*) 'Coordinates in the zone...'
+        call edisp(iuout,outs)
+        write(outs,*) '         1      2      3      4      5      6'
+        call edisp(iuout,outs)
+        indisp=MIN0(32,NZTV(izone))
+        write(outs248,'(a,32F7.3)') 'x axis',(X(j),j=1,indisp)
+        call edisp248(iuout,outs248,100)
+        write(outs248,'(a,32F7.3)') 'y axis',(Y(j),j=1,indisp)
+        call edisp248(iuout,outs248,100)
+        write(outs248,'(a,32F7.3)') 'z axis',(Y(j),j=1,indisp)
+        call edisp248(iuout,outs248,100)
+
+C Ask user for zone vertex indices of the origin of cfd domain
+C followed by vertex at end of X axis, vertex at end of Y axis
+C and the vertex for the upper Z axis point (usually above the
+C Y axis end point).
         iorgt=iorg
         CALL EASKI(iorgt,' Specify vertex at origin of CFD domain. ',
      &    ' Which `v`? ',1,'F',NTV,'F',1,'orig vertex',IERI,nbhelp)
@@ -407,12 +556,13 @@ C Check if we have vertex at ends of axis data.
 
 C No cancels so instanciate variables.
         iorg=iorgt
-        ixend=ixendt
-        iyend=iyendt
-        izend=izendt
+        ixend=ixendt; iyend=iyendt; izend=izendt
       endif
 
 C Make sure axes are orthogonal, as dfs only supports Cartesian coordinates.
+C First ensure that G1 common blocks are correctly assigned.
+      call georead(IFIL+1,LGEOM(izone),izone,1,IUOUT,IER)
+
 C Check X and Y.
       call ang3vtx(X(ixend),Y(ixend),Z(ixend),X(iorg),Y(iorg),
      &                       Z(iorg),X(iyend),Y(iyend),Z(iyend),ang3)
@@ -519,6 +669,44 @@ C Create menu text.
       ITEM(14+NCP)   ='- exit                        '
       NITMS=14+NCP
 
+      IF(MMOD.EQ.8)THEN
+
+C Recalculate gridding in case this has changed.
+        CALL INICNT
+        CALL GRID(ier)
+        call NEW2OLD
+
+C Display domain
+        if (IFACES.lt.0) then
+          write(zngeo,'(a)')'zn '
+        else
+          write(zngeo,'(a)')'---'
+        endif
+        if(abs(IFACES).eq.1)then
+          call VGRID3D(zngeo,'xyz',izone)
+        elseif(abs(IFACES).eq.2)then
+          call VGRID3D(zngeo,'xzg',izone)
+        elseif(abs(IFACES).eq.3)then
+          call VGRID3D(zngeo,'yzg',izone)
+        elseif(abs(IFACES).eq.4)then
+          call VGRID3D(zngeo,'xyg',izone)
+        endif
+        if (ISHSB.eq.1) then
+          call VSB3D(0,izone)
+        endif
+        if (ISHAO.eq.1) then
+          call VAO3D(0,izone)        
+        endif
+        if (ISHBLK.eq.1) then
+          call VSBL3D(0,izone)  ! for testing of blockages
+        endif
+      
+        WRITE(ETEXT,'(2A)')'Domain: ',
+     &    TITLE(izone)(1:lnblnk(TITLE(izone)))
+        iside=1; isize=1; ifont=1
+        call viewtext(ETEXT,iside,isize,ifont)
+      ENDIF
+
 C Help text for this menu.
       helptopic='cfd_gridding_setup'
       call gethelptext(helpinsub,helptopic,nbhelp)
@@ -527,7 +715,53 @@ C Display menu.
       CALL EMENU('Geometry and gridding',ITEM,NITMS,INO)
  9    if(INO.EQ.1)then
 
+C Display zone geometry with vertex numbers to aid in selection
+C Restore standard graphics window variables.
+        if(MMOD.EQ.8)then
+          iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
+          if(iglib.eq.1)then
+            CALL feedbox(menuchw,2,igfw,igfh)
+            CALL opengdisp(menuchw,LIMTTY,2,igdw,igdh)
+          endif
+
+C Setup and pass in parameters to win3d.
+          iiw1=4; iiw2=1; iiw3=1; iiw4=3; iimenu=menuchw
+          iigl=igl; iigr=igr; iigt=igt; iigb=igb; iigw=igw; iigwh=igwh
+          CALL win3d(iimenu,iiw1,iiw2,iiw3,iiw4,
+     &      iigl,iigr,iigt,iigb,iigw,iigwh)
+          igl=int(iigl); igr=int(iigr); igt=int(iigt); igb=int(iigb)
+          igw=int(iigw); igwh=int(iigwh)
+          call startbuffer()
+
+C Redraw zone and vertex points. Note, if user has returned
+C from 3D grid visualisation then G1 common blocks will need
+C to be refreshed.
+          nzg=1
+          nznog(1)=izone
+          izgfoc=izone
+          call georead(IFIL+1,LGEOM(izone),izone,1,IUOUT,IER)
+          CALL ESCZONE(izone)
+          CALL BNDOBJ(0,IER)
+          CALL ERCZONE(izone)
+          MODIFYVIEW=.TRUE.; MODLEN=.TRUE.; MODBND=.TRUE.
+          itvno=0
+          itsnm=0
+          CALL INLNST(1)
+          CALL ADJVIEW(IER)
+        endif
+
 C Specify origin and axes of CFD domain.
+        write(outs,*) 'Coordinates in the zone...'
+        call edisp(iuout,outs)
+        write(outs,*) '         1      2      3      4      5      6'
+        call edisp(iuout,outs)
+        indisp=MIN0(32,NZTV(izone))
+        write(outs248,'(a,32F7.3)') 'x axis',(X(j),j=1,indisp)
+        call edisp248(iuout,outs248,100)
+        write(outs248,'(a,32F7.3)') 'y axis',(Y(j),j=1,indisp)
+        call edisp248(iuout,outs248,100)
+        write(outs248,'(a,32F7.3)') 'z axis',(Y(j),j=1,indisp)
+        call edisp248(iuout,outs248,100)
         iorgt=iorg
         CALL EASKI(iorgt,' Specify vertex at origin of CFD domain. ',
      &    ' Which `v`? ',1,'F',NTV,'F',1,'orig vertex',IERI,nbhelp)
@@ -562,9 +796,7 @@ C Specify origin and axes of CFD domain.
 
 C No cancels so instanciate variables.
         iorg=iorgt
-        ixend=ixendt
-        iyend=iyendt
-        izend=izendt
+        ixend=ixendt; iyend=iyendt; izend=izendt
 
 C Make sure axes are orthogonal, as dfs only supports Cartesian coordinates.
 C Check X and Y.
@@ -601,6 +833,7 @@ C Determine length of each axis.
 
 C Set flag to indicate that origin has been defined.
         origin=.true.
+
       elseif(INO.EQ.5)then
 
 C Setup regions via scan of geometry.
@@ -610,16 +843,30 @@ C initial position. Use XSS,YSS,ZSS for the compacted sorted list (with
 C duplicates removed).
 
 C Take into account if the zone is offset from the site origin.
-C Use the zone bounds (ZXMN ZYMN ZZMN)
+C Use the zone bounds (ZXMN ZYMN ZZMN). Double check the max on each
+C of the axis.
+C Rescan G1 common blocks are correctly assigned.
+        call georead(IFIL+1,LGEOM(izone),izone,1,IUOUT,IER)
+        xxmax=ZXMN(izone); yymax=ZYMN(izone); zzmax=ZZMN(izone)
         do 42 il=1,NZTV(izone)
           XS(il)=X(il); YS(il)=Y(il); ZS(il)=Z(il)
+          if(X(il).gt.xxmax) xxmax=X(il)
+          if(Y(il).gt.yymax) yymax=Y(il)
+          if(Z(il).gt.zzmax) zzmax=Z(il)
           XSS(il)=ZXMN(izone); YSS(il)=ZYMN(izone); ZSS(il)=ZZMN(izone)
           XSI(il)=il; YSI(il)=il; ZSI(il)=il
   42    continue
 
 C Sort each axis in ascending order.
+C Debug.
+C        write(6,*) 'maximums found ',xxmax,yymax,zzmax
+C        write(6,*) 'max geom file ',ZXMX(izone),ZYMX(izone),ZZMX(izone)
+C        write(6,*) 'array x',(X(j),j=1,NZTV(izone))
+C        write(6,*) 'array xs',(XS(j),j=1,NZTV(izone))
         KFLAG = 2
         call SORTR(XS,XSI,NZTV(izone),KFLAG)
+C        write(6,*) 'sorted array xs',(XS(j),j=1,NZTV(izone))
+C        write(6,*) 'array xsi ',(xsi(j),j=1,NZTV(izone))
         call SORTR(YS,YSI,NZTV(izone),KFLAG)
         call SORTR(ZS,ZSI,NZTV(izone),KFLAG)
 
@@ -638,8 +885,9 @@ C a cell can be at max resolution.
 
 C Debug.
         if(itrc.gt.0)then
-          write(outs,'(a,3f9.3)') 'Smallest cells tollerance: ',
-     &      tolx,toly,tolz
+          write(outs,'(a,i3,F6.3,i3,F6.3,i3,F6.3)') 
+     &     'Max cells & smallest cell dimension in each axis: ',
+     &      NTCELX,tolx,NTCELY,toly,NTCELZ,tolz
           call edisp(iuout,outs)
         endif
         do 43 il=2,NZTV(izone)
@@ -680,20 +928,37 @@ C anything other than zero.
           endif
   43    continue
 
-C Debug.
-        if(itrc.gt.1)then
-          write(6,*) 'x axis ',ilx,(XSS(j),j=1,ilx)
-          write(6,*) 'y axis ',ily,(YSS(j),j=1,ily)
-          write(6,*) 'z axis ',ilz,(ZSS(j),j=1,ilz)
+C Notify user of the number of regions in each axis and the width of each.
+        if(itrc.gt.0)then
+          call edisp(iuout,'  ')
+          call edisp(iuout,'  regions   points at region extents...')
+          write(outs,'(a,i2,10F7.3)') 'x axis ',ilx-1,(XSS(j),j=1,ilx)
+          call edisp(iuout,outs)
+          write(outs,'(a,10F7.3)')    '  reg-width ',
+     &      ((XSS(j+1)-XSS(j)),j=1,ilx-1)
+          call edisp(iuout,outs)
+          write(outs,'(a,i2,10F7.3)') 'y axis ',ily-1,(YSS(j),j=1,ily)
+          call edisp(iuout,outs)
+          write(outs,'(a,10F7.3)')    '  reg-width ',
+     &      ((YSS(j+1)-YSS(j)),j=1,ily-1)
+          call edisp(iuout,outs)
+          write(outs,'(a,i2,10F7.3)') 'z axis ',ilz-1,(ZSS(j),j=1,ilz)
+          call edisp(iuout,outs)
+          write(outs,'(a,10F7.3)')    '  reg-width ',
+     &      ((ZSS(j+1)-ZSS(j)),j=1,ilz-1)
+          call edisp(iuout,outs)
         endif
 
+C Record number of regions in each axis (one less than scan above).
         if(NREG(1,ICFD).eq.0)NREG(1,ICFD)=ilx-1
         if(NREG(2,ICFD).eq.0)NREG(2,ICFD)=ily-1
         if(NREG(3,ICFD).eq.0)NREG(3,ICFD)=ilz-1
 
+C Initial request for total cells in X axis.
+C << could do better by asking region by region >>
         write(outs,'(a,i3,a,f6.2,a)') 
      &    'How many total cells along X axis (max is ',NTCELX,
-     &    'over ',xdis,'m) would you like to have?'
+     &    ' over ',xdis,'m) would you like to have?'
         CALL EASKI(icellx,outs,' ',1,'F',NTCELX,'F',10,
      &    'requested total X cells',IERI,nbhelp)
         if(ieri.eq.-3) then
@@ -711,16 +976,28 @@ C Debug.
             Xplaw(ij,ICFD) = 1.0
             ntcx = ntcx + NCELX(ij,ICFD)
   44      continue
+        else
+          xd = XSS(2)-XSS(1)  ! in case of one region
+          XREG(1,ICFD) = xd
+          NCELX(1,ICFD) = int(xd/tolx)
+          if(NCELX(1,ICFD).eq.0)NCELX(1,ICFD) = 1
+          Xplaw(1,ICFD) = 1.0
+          ntcx = ntcx + NCELX(1,ICFD)
         endif
 
 C Debug.
         if(itrc.gt.1)then
-          write(6,*) xd,tolx,int(xd/tolx)
-          write(6,*) 'ncellx ',NCELX
+          write(outs,*) 'xd tolx ',xd,tolx,int(xd/tolx)
+          call edisp(iuout,outs)
+          write(outs,*) 'ncell in x ',ntcx,(NCELX(j,icfd),j=1,ilx-1)
+          call edisp(iuout,outs)
         endif
+
+C Initial request for total cells in Y axis.
+C << alternative asking region by region >>
         write(outs,'(a,i3,a,f6.2,a)') 
      &    'How many total cells along Y axis (max is ',NTCELY,
-     &    'over ',ydis,'m) would you like to have?'
+     &    ' over ',ydis,'m) would you like to have?'
         CALL EASKI(icelly,outs,' ',1,'F',NTCELY,'F',10,
      &    'requested total Y cells',IERI,nbhelp)
         if(ieri.eq.-3) then
@@ -738,17 +1015,28 @@ C Debug.
             Yplaw(ij,ICFD) = 1.0
             ntcy = ntcy + NCELY(ij,ICFD)
   45      continue
+        else
+          yd = YSS(2)-YSS(1)  ! in case of one region
+          YREG(1,ICFD) = yd
+          NCELY(1,ICFD) = int(yd/toly)
+          if(NCELY(1,ICFD).eq.0)NCELY(1,ICFD) = 1
+          Yplaw(1,ICFD) = 1.0
+          ntcy = ntcy + NCELY(1,ICFD)
         endif
 
 C Debug.
         if(itrc.gt.1)then
-          write(6,*) yd,toly,int(yd/toly)
-          write(6,*) 'ncelly ',NCELY
+          write(outs,*) 'yd toly ',yd,toly,int(yd/toly)
+          call edisp(iuout,outs)
+          write(outs,*) 'ncell in y ',(NCELY(j,icfd),j=1,ily-1)
+          call edisp(iuout,outs)
         endif
 
+C Initial request for total cells in Z axis.
+C << alternative asking region by region ? >>
         write(outs,'(a,i3,a,f6.2,a)') 
      &    'How many total cells along Z axis (max is ',NTCELZ,
-     &    'over ',zdis,'m) would you like to have?'
+     &    ' over ',zdis,'m) would you like to have?'
         CALL EASKI(icellz,outs,' ',1,'F',NTCELZ,'F',10,
      &    'requested total Z cells',IERI,nbhelp)
         if(ieri.eq.-3) then
@@ -766,13 +1054,34 @@ C Debug.
             Zplaw(ij,ICFD) = 1.0
             ntcz = ntcz + NCELZ(ij,ICFD)
   46      continue
+        else
+          zd = ZSS(2)-ZSS(1)  ! in case of one region
+          ZREG(1,ICFD) = zd
+          NCELZ(1,ICFD) = int(zd/tolz)
+          if(NCELZ(1,ICFD).eq.0)NCELZ(1,ICFD) = 1
+          Zplaw(1,ICFD) = 1.0
+          ntcz = ntcz + NCELZ(1,ICFD)
         endif
 
 C Debug.
         if(itrc.gt.1)then
-          write(6,*) 'Z distance ',zd,' tollerance ',tolz,int(zd/tolz)
-          write(6,*) 'ncellz ',NCELZ
-        endif 
+          write(outs,*)'Z distance ',zd,' tollerance ',tolz,int(zd/tolz)
+          call edisp(iuout,outs)
+          write(outs,*) 'ncell in z ',(NCELZ(j,icfd),j=1,ilz-1)
+          call edisp(iuout,outs)
+        endif
+
+C Set flags to indicate that CFD origin and gridding have been defined.
+        origin=.true.
+        xgrid=.true.
+        ygrid=.true.
+        zgrid=.true.
+
+C Advise the user what to do next.
+        helptopic='cfd_gridding_auto'
+        call gethelptext(helpinsub,helptopic,nbhelp)
+        call PHELPD('CFD what to do next',nbhelp,'-',0,0,IER)
+
       elseif(INO.EQ.7)then
 
 C Grid X-axis.
@@ -864,41 +1173,8 @@ C Visualize gridding.
         if(origin.and.xgrid.and.ygrid.and.zgrid)then
           call cgd(izone,ierr)
 
-C Restore standard graphics window variables.
-          if(MMOD.EQ.8)then
-            iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
-            if(iglib.eq.1)then
-              CALL feedbox(menuchw,2,igfw,igfh)
-              CALL opengdisp(menuchw,LIMTTY,2,igdw,igdh)
-            endif
-
-C Setup and pass in parameters to win3d.
-            iiw1=4; iiw2=1; iiw3=1; iiw4=3; iimenu=menuchw
-            iigl=igl; iigr=igr; iigt=igt; iigb=igb; iigw=igw; iigwh=igwh
-            CALL win3d(iimenu,iiw1,iiw2,iiw3,iiw4,
-     &        iigl,iigr,iigt,iigb,iigw,iigwh)
-            igl=int(iigl); igr=int(iigr); igt=int(iigt); igb=int(iigb)
-            igw=int(iigw); igwh=int(iigwh)
-            call startbuffer()
-
-C Redraw zone and vertex points. Note, if user has returned
-C from 3D grid visualisation then G1 common blocks will need
-C to be refreshed.
-            nzg=1
-            nznog(1)=izone
-            izgfoc=izone
-            call georead(IFIL+1,LGEOM(nznog(1)),nznog(1),1,IUOUT,IER)
-            CALL ESCZONE(izone)
-            CALL BNDOBJ(0,IER)
-            CALL ERCZONE(izone)
-            MODIFY=.TRUE.
-            MODLEN=.TRUE.
-            MODBND=.TRUE.
-            itvno=0
-            itsnm=0
-            CALL INLNST(1)
-            CALL ADJVIEW(IER)
-          endif
+C << Functionality changed so that grid visualisation chosen in previous
+C    menu is persistent to this and the root CFD menu. >>
         else
           CALL USRMSG(' Define origin of CFD domain ',
      &         ' and grid axes first ','W')
@@ -962,12 +1238,12 @@ C Equations solved.
      &             CALLC(MNZ),KEMDL(MNZ),BUOY(MNZ),BOUSSI(MNZ),
      &             ZEROT(MNZ),ZandKE(MNZ),MITzero(MNZ)
       common/EQTION3/CALLMA(MNZ),CALPOL(MCTM,MNZ),POLNAM(MCTM,MNZ),NCTM,
-     &      JHUMINDX
+     &      JHUMINDX,URFC(MCTM)
 
 C Solution methods.
       common/METHDS/ITURB(MNZ),IBUOY(MNZ)
 
-      character ITEM(12+MCTM)*40, POLNAM*12
+      character ITEM(11+MCTM)*40, POLNAM*12
       LOGICAL CALLU,CALLV,CALLW,CALLT,CALLC,KEMDL,BUOY,BOUSSI
       LOGICAL ZEROT,ZandKE,MITzero
       LOGICAL CALPOL,CALLMA,OK,dok
@@ -1050,14 +1326,13 @@ C Now create menu.
         WRITE(ITEM(5+NCTM),'(2A)')CHAR(100+NCTM),
      &       ' Mean age of air >> solved'
       endif
-      ITEM(6+NCTM)= ' ------------------------------- '
-      ITEM(7+NCTM)= '* Reset to defaults'
-      ITEM(8+NCTM)= ' ------------------------------- '
-      ITEM(9+NCTM)='# Edit equation setup'
-      ITEM(10+NCTM)= ' ------------------------------- '
-      ITEM(11+NCTM)='? Help'
-      ITEM(12+NCTM)='- exit this menu'
-      NITMS=12+NCTM
+      ITEM(6+NCTM)= ' ------------------------------------- '
+      ITEM(7+NCTM)= '# Edit solution parameters'
+      ITEM(8+NCTM)= '* Reset to defaults'
+      ITEM(9+NCTM)= ' ------------------------------------- '
+      ITEM(10+NCTM)='? Help'
+      ITEM(11+NCTM)='- exit this menu'
+      NITMS=11+NCTM
 
 C Help text for this menu.
       helptopic='cfd_equations_to_solve'
@@ -1069,7 +1344,7 @@ C Display menu.
 C Check for pick of empty box.
       if(INO.EQ.2)then
 
-C (De)activate temperature solution.
+C Toggle temperature solution.
         if (.NOT.CALLT(ICFD)) then
           CALLT(ICFD)=.TRUE.
         else
@@ -1082,7 +1357,7 @@ C Toggle through turbulence methods.
         if (ITURB(ICFD).gt.4) ITURB(ICFD)=0
       elseif(INO.EQ.4)then
 
-C Buoyancy.
+C Toggle buoyancy.
         IBUOY(ICFD)=IBUOY(ICFD)+1
         if (IBUOY(ICFD).gt.2) IBUOY(ICFD)=0
       elseif(INO.GT.4.AND.INO.LE.(4+NCTM))then
@@ -1101,18 +1376,17 @@ C Mean age of air.
         else
           CALLMA(ICFD)=.true.
         endif
-      elseif(INO.EQ.7+NCTM)then
+      elseif(INO.EQ.8+NCTM)then
 
 C Reset defaults.
         dok=.false.
         call askok('Resetting solution parameters to default values.',
      &             'Are you sure? (see help)',OK,dok,nbhelp)
         if (OK) call CFDDEFLT
-      elseif(INO.EQ.9+NCTM)then
+      elseif(INO.eq.7+NCTM)then
 
-C Edit equation data.
-        call CFDEDAT
-        
+C Edit solution parameters.
+        call CFDEDAT        
       elseif(INO.eq.(NITMS-1)) then
 
 C Help.
@@ -1142,7 +1416,7 @@ C Equations solved.
      &             CALLC(MNZ),KEMDL(MNZ),BUOY(MNZ),BOUSSI(MNZ),
      &             ZEROT(MNZ),ZandKE(MNZ),MITzero(MNZ)
       common/EQTION3/CALLMA(MNZ),CALPOL(MCTM,MNZ),POLNAM(MCTM,MNZ),NCTM,
-     &      JHUMINDX
+     &      JHUMINDX,URFC(MCTM)
 
 C Solution methods.
       common/METHDS/ITURB(MNZ),IBUOY(MNZ)
@@ -1153,17 +1427,21 @@ C Initial values.
 
 C Under-relaxation factors.
       COMMON/LINRFC/URFCU(MNZ),URFCV(MNZ),URFCW(MNZ),URFCP(MNZ),
-     &              URFCT(MNZ),URFCK(MNZ),URFCE(MNZ),URFCVS(MNZ)
+     &              URFCT(MNZ),URFCK(MNZ),URFCE(MNZ),URFCVS(MNZ),
+     &              URFCC(MNZ,MCTM)
+      COMMON/LINRFC2/URFCU2(MNZ),URFCV2(MNZ),URFCW2(MNZ),URFCP2(MNZ),
+     &              URFCT2(MNZ),URFCK2(MNZ),URFCE2(MNZ),URFCVS2(MNZ),
+     &              URFCC2(MNZ,MCTM)
 
 C Convergence criteria.
       common/param1/MAXITR(MNZ),IMONT(MNZ),JMONT(MNZ),KMONT(MNZ),
      &             IPPHI(MNZ),SRMAX(MNZ)
 
 C Additional data needed for some models.
-      COMMON/ZTURB/rMOOT,nZtoKE
-      COMMON/BUOYAN/BUOYA,BOUSSA,TBAR
+      COMMON/ZTURB/rMOOT(MNZ),nZtoKE(MNZ)
+      COMMON/BUOYAN/BUOYA,BOUSSA,TBAR(MNZ)
  
-      character ITEM(32)*40,ltmp*16,dtmp*16, POLNAM*12
+      character ITEM(33)*40,ltmp*16,dtmp*16, POLNAM*12
 
       LOGICAL CALLU,CALLV,CALLW,CALLT,CALLC,KEMDL,BUOY,BOUSSI
       LOGICAL ZEROT,ZandKE,MITzero
@@ -1201,7 +1479,7 @@ C has been activated then display associated state variables and allow
 C definition of initial values and relaxation factors.
 C First clear menu.
  5    INO=-4
-      do 10 I=1,32
+      do 10 I=1,31
         ITEM(I)='  '
  10   continue
 
@@ -1209,132 +1487,162 @@ C Clear display area.
       call usrmsg('  ','  ','-')
 
 C Now create menu.
-      ITEM(1)= '  Velocity:'
-      if (CALLU(ICFD)) write(ITEM(2),'(a,f6.3,a,f5.2)') 
-     &         'b  X: Init V',UINIT(ICFD),'; relax fact',URFCU(ICFD)
-      if (CALLV(ICFD)) write(ITEM(3),'(a,f6.3,a,f5.2)') 
-     &         'c  Y: Init V',VINIT(ICFD),'; relax fact',URFCV(ICFD)
-      if (CALLW(ICFD)) write(ITEM(4),'(a,f6.3,a,f5.2)') 
-     &         'd  Z: Init V',WINIT(ICFD),'; relax fact',URFCW(ICFD)
-      ITEM(5)= ' ------------------------------- '
-      if (.NOT.CALLT(ICFD)) then
-        ITEM(6)= 'e Temperature >> not solved'
+      ITEM(1)= ' ----- Velocity in X direction ----- '
+      if (CALLU(ICFD)) then
+        write(ITEM(2),'(a,f6.3)')'a Initial value: ',UINIT(ICFD)
+        write(ITEM(3),'(a,f5.2)')'b Relaxation factor 1: ',URFCU(ICFD)
+        write(ITEM(4),'(a,f5.2)')'c Relaxation factor 2: ',URFCU2(ICFD)
       else
-        ITEM(6)= 'e Temperature >> solved:'
-        write(ITEM(7),'(a,f6.2,a,f5.2)') 'f  Init T',TINIT(ICFD),
-     &                             '; relax fact',URFCT(ICFD)
+        ITEM(2)='  N/A (not solved)'
+        ITEM(3)='  N/A (not solved)'
+        ITEM(4)='  N/A (not solved)'
       endif
-      ITEM(8)= ' ------------------------------- '
+      ITEM(5)= ' ----- Velocity in Y direction ----- '
+      if (CALLV(ICFD)) then
+        write(ITEM(6),'(a,f6.3)')'d Initial value: ',VINIT(ICFD)
+        write(ITEM(7),'(a,f5.2)')'e Relaxation factor 1: ',URFCV(ICFD)
+        write(ITEM(8),'(a,f5.2)')'f Relaxation factor 2: ',URFCV2(ICFD)
+      else
+        ITEM(6)='  N/A (not solved)'
+        ITEM(7)='  N/A (not solved)'
+        ITEM(8)='  N/A (not solved)'
+      endif
+      ITEM(9)= ' ----- Velocity in Z direction ----- '
+      if (CALLW(ICFD)) then
+        write(ITEM(10),'(a,f6.3)')'g Initial value: ',WINIT(ICFD)
+        write(ITEM(11),'(a,f5.2)')'h Relaxation factor 1: ',URFCW(ICFD)
+        write(ITEM(12),'(a,f5.2)')'i Relaxation factor 2: ',URFCW2(ICFD)
+      else
+        ITEM(10)='  N/A (not solved)'
+        ITEM(11)='  N/A (not solved)'
+        ITEM(12)='  N/A (not solved)'
+      endif
+      ITEM(13)=' ----------- Temperature ----------- '
+      if (CALLT(ICFD)) then
+        ITEM(14)='j Temperature >> solved'
+      else
+        ITEM(14)='j Temperature >> not solved'
+      endif
+      write(ITEM(15),'(a,f6.3)')'k Initial value: ',TINIT(ICFD)
+      write(ITEM(16),'(a,f5.2)')'l Relaxation factor 1: ',URFCT(ICFD)
+      write(ITEM(17),'(a,f5.2)')'m Relaxation factor 2: ',URFCT2(ICFD)
+      ITEM(18)=' ----------- Turbulence ------------ '
       if (ITURB(ICFD).eq.0) then
-        ITEM(9)= 'g Turbulence >> none (laminar)'
+        ITEM(19)= 'n Turbulence >> none (laminar)'
       elseif (ITURB(ICFD).eq.1) then
-        ITEM(9)= 'g Turbulence >> k-e turbulence'
-        write(ITEM(10),'(a,f6.4,a,f5.2)') 'h Init k',TEINIT(ICFD),
-     &                             '; relax fact',URFCK(ICFD)
-        write(ITEM(11),'(a,f6.4,a,f5.2)') 'i Init e',EDINIT(ICFD),
-     &                             '; relax fact',URFCE(ICFD)
+        ITEM(19)= 'n Turbulence >> k-e turbulence'
+        write(ITEM(20),'(a,E8.2E2,a,E8.2E2)')'o Initial; k: ',
+     &                                 TEINIT(ICFD),' e: ',EDINIT(ICFD)
+        write(ITEM(21),'(a,f5.2,a,f5.2)')'p Relax. factor 1; k:',
+     &                                   URFCK(ICFD),' e: ',URFCE(ICFD)
+        write(ITEM(22),'(a,f5.2,a,f5.2)')'q Relax. factor 2; k:',
+     &                                 URFCK2(ICFD),' e: ',URFCE2(ICFD)
       elseif (ITURB(ICFD).eq.2) then
-        ITEM(9)= 'g Turbulence >> fixed eddy viscosity'
-        write (ITEM(10),'(a,f6.2)') 'h  eddy viscosity: ',rMOOT
+        ITEM(19)= 'n Turbulence >> fixed eddy viscosity'
+        write (ITEM(20),'(a,f6.2)') 'o Eddy viscosity: ',rMOOT(ICFD)
       elseif (ITURB(ICFD).eq.3) then
-        ITEM(9)= 'g Turbulence >> MIT zero-equation'
+        ITEM(19)= 'n Turbulence >> MIT zero-equation'
       elseif (ITURB(ICFD).eq.4) then
-        ITEM(9)= 'g Turbulence >> fixed visc -> k-e'
-        write(ITEM(10),'(a,f6.2,a,i5)') 'h  eddy visc',rMOOT,
-     &                                  '; numb iters',nZtoKE
+        ITEM(19)= 'n Turbulence >> fixed visc -> k-e'
+        write(ITEM(20),'(a,f6.2)')'o Eddy viscosity: ',rMOOT(ICFD)
+        write(ITEM(21),'(a,i5)')'p Transition on iteration: ',
+     &                                                     nZtoKE(ICFD)
+        write(ITEM(22),'(a)')'q Toggle to k-e to set parameters'
       endif
-      ITEM(12)= ' ------------------------------- '
+      ITEM(23)=' ------------- Buoyancy ------------ '
       if (IBUOY(ICFD).eq.0) then
-        ITEM(13)= 'i Buoyancy >> not solved'
+        ITEM(24)= 'r Buoyancy >> not solved'
       elseif (IBUOY(ICFD).eq.1) then
-        ITEM(13)= 'i Buoyancy >> ideal gas'
+        ITEM(24)= 'r Buoyancy >> ideal gas'
       elseif (IBUOY(ICFD).eq.2) then
-        ITEM(13)= 'i Buoyancy >> Boussinesq approx'
-        write(ITEM(14),'(a,f6.2)') 'j  ref temperature ',TBAR 
+        ITEM(24)= 'r Buoyancy >> Boussinesq approx.'
+        write(ITEM(25),'(a,f6.2)')'s Reference temperature: ',
+     &                                                       TBAR(ICFD)
       endif
-      ITEM(15)= ' ------------------------------- '
-      IWRTDEF=0
-      DO 121 ICTM=1,NCTM
-        IF(CALPOL(ICTM,ICFD))THEN
-          WRITE(ITEM(15+ICTM),'(A,1X,A,1X,A,1X)')CHAR(106+ICTM),
-     &         POLNAM(ICTM,ICFD),'>> solved'
-          IWRTDEF=1
-        ELSE
-          WRITE(ITEM(15+ICTM),'(A,1X,A,1X,A,1X)')CHAR(106+ICTM),
-     &         POLNAM(ICTM,ICFD),'>> not solved'
-        ENDIF
- 121  CONTINUE
-      IF(IWRTDEF.EQ.1)THEN
-        ITEM(16+NCTM)= ' Defaults set for init and relax values'
-      ELSE
-        ITEM(16+NCTM)= ' '
-      ENDIF
-      ITEM(17+NCTM)= ' ------------------------------- '
-      if (.NOT.CALLMA(ICFD)) then
-        ITEM(18+NCTM)= 'w Mean age of air >> not solved'
-      else
-        ITEM(18+NCTM)= 'w Mean age of air >> solved'
-        ITEM(19+NCTM)= ' Defaults set for init and relax values'
-      endif
-      ITEM(20+NCTM)=' ------------------------------- '
-      ITEM(21+NCTM)=' Convergence criteria:'
-      write (ITEM(22+NCTM),'(a,i5)')  'x Maximum iterations: ',
-     &      MAXITR(ICFD)
-      write (ITEM(23+NCTM),'(a,f7.5)')'y Max sum of residuals: ',
-     &      SRMAX(ICFD)
-      ITEM(24+NCTM)=' ------------------------------- '
-      write (ITEM(25+NCTM),'(a,3i4)') 'z Monitoring cell (i,j,k):',
+      ITEM(26)=' ------- Convergence criteria ------ '
+      write(ITEM(27),'(a,i5)')  't Maximum iterations: ',MAXITR(ICFD)
+      write(ITEM(28),'(a,f7.5)')'u Max sum of residuals: ',SRMAX(ICFD)
+      write(ITEM(29),'(a,3i4)') 'v Monitoring cell (i,j,k): ',
      &                        IMONT(ICFD)-1,JMONT(ICFD)-1,KMONT(ICFD)-1
-      ITEM(26+NCTM)= ' ------------------------------- '
-      ITEM(27+NCTM)='? Help'
-      ITEM(28+NCTM)='- exit this menu'
-      NITMS=28+NCTM
+      ITEM(30)=' ----------------------------------- '
+      write(ITEM(31),'(a)')'+ Contaminants'
+      ITEM(32)='? Help'
+      ITEM(33)='- Exit this menu'
+
+      NITMS=33
 
 C Help text for this menu.
       helptopic='cfd_equations_to_edit'
       call gethelptext(helpinsub,helptopic,nbhelp)
 
 C Display menu.
-      CALL EMENU('Solutions required and data',ITEM,NITMS,INO)
+      CALL EMENU('Solution parameters',ITEM,NITMS,INO)
 
 C Check for pick of empty box.
       if(INO.EQ.2)then
 
-C Ask for initial value and relaxation factor in X dir.
-        write (ltmp,'(f8.4,f6.2)') UINIT(ICFD),URFCU(ICFD)
-        write (dtmp,'(a)') '  0.001  0.50 '
-        call EASKS(ltmp,'Initial value and relaxation factor',
-     &    'for X velocity? ',16,dtmp,'U def and relx',IER,nbhelp)
-        K=0
-        call EGETWR(ltmp,K,VAL,-99.0,99.0,'F','Uvel',IER)
+C Ask for initial value of velocity in X direction.
+        VAL=UINIT(ICFD)
+        CALL EASKR(VAL,'Initial value for X velocity?','(m/s)',-1.0,
+     &             'W',1.0,'W',0.001,'U init',IER,nbhelp)
         if (IER.eq.0) UINIT(ICFD)=VAL
-        call EGETWR(ltmp,K,VAL,0.0,1.5,'F','Urlxf',IER)
-        if (IER.eq.0) URFCU(ICFD)=VAL
       elseif(INO.EQ.3)then
 
-C Ask for initial value and relaxation factor in Y dir.
-        write (ltmp,'(f8.4,f6.2)') VINIT(ICFD),URFCW(ICFD)
-        write (dtmp,'(a)') '  0.001  0.50 '
-        call EASKS(ltmp,'Initial value and relaxation factor',
-     &    'for Y velocity? ',16,dtmp,'U def and relx',IER,nbhelp)
-        K=0
-        call EGETWR(ltmp,K,VAL,-99.0,99.0,'F','Vvel',IER)
-        if (IER.eq.0) VINIT(ICFD)=VAL
-        call EGETWR(ltmp,K,VAL,0.0,1.5,'F','Vrlxf',IER)
-        if (IER.eq.0) URFCV(ICFD)=VAL
+C Ask for relaxation factor 1 for velocity in X direction.
+        VAL=URFCU(ICFD)
+        CALL EASKR(VAL,'Relaxation factor 1 (see help) for',
+     &   'X velocity?',0.0,'F',1.5,'W',0.5,'U relax 1',IER,nbhelp)
+        if (IER.eq.0) URFCU(ICFD)=VAL
       elseif(INO.EQ.4)then
 
-C Ask for initial value and relaxation factor in Z dir.
-        write (ltmp,'(f8.4,f6.2)') WINIT(ICFD),URFCW(ICFD)
-        write (dtmp,'(a)') '  0.001  0.50 '
-        call EASKS(ltmp,'Initial value and relaxation factor',
-     &    'for W velocity? ',16,dtmp,'W def and relx',IER,nbhelp)
-        K=0
-        call EGETWR(ltmp,K,VAL,-99.0,99.0,'F','Wvel',IER)
-        if (IER.eq.0) WINIT(ICFD)=VAL
-        call EGETWR(ltmp,K,VAL,0.0,1.5,'F','Wrlxf',IER)
-        if (IER.eq.0) URFCW(ICFD)=VAL
+C Ask for relaxation factor 2 for velocity in X direction.
+        VAL=URFCU2(ICFD)
+        CALL EASKR(VAL,'Relaxation factor 2 (see help) for',
+     &   'X velocity?',0.0,'F',1.5,'W',0.05,'U relax 2',IER,nbhelp)
+        if (IER.eq.0) URFCU2(ICFD)=VAL
       elseif(INO.EQ.6)then
+
+C Ask for initial value of velocity in Y direction.
+        VAL=VINIT(ICFD)
+        CALL EASKR(VAL,'Initial value for Y velocity?','(m/s)',-1.0,
+     &             'W',1.0,'W',0.001,'V init',IER,nbhelp)
+        if (IER.eq.0) VINIT(ICFD)=VAL
+      elseif(INO.EQ.7)then
+
+C Ask for relaxation factor 1 for velocity in Y direction.
+        VAL=URFCV(ICFD)
+        CALL EASKR(VAL,'Relaxation factor 1 (see help) for',
+     &   'Y velocity?',0.0,'F',1.5,'W',0.5,'V relax 1',IER,nbhelp)
+        if (IER.eq.0) URFCV(ICFD)=VAL
+      elseif(INO.EQ.8)then
+
+C Ask for relaxation factor 2 for velocity in Y direction.
+        VAL=URFCV2(ICFD)
+        CALL EASKR(VAL,'Relaxation factor 2 (see help) for',
+     &   'Y velocity?',0.0,'F',1.5,'W',0.05,'V relax 2',IER,nbhelp)
+        if (IER.eq.0) URFCV2(ICFD)=VAL
+      elseif(INO.eq.10)then
+
+C Ask for initial value of velocity in Z direction.
+        VAL=WINIT(ICFD)
+        CALL EASKR(VAL,'Initial value for Z velocity?','(m/s)',-1.0,
+     &            'W',1.0,'W',0.001,'W init',IER,nbhelp)
+        if (IER.eq.0) WINIT(ICFD)=VAL
+      elseif(INO.EQ.11)then
+
+C Ask for relaxation factor 1 for velocity in Z direction.
+        VAL=URFCW(ICFD)
+        CALL EASKR(VAL,'Relaxation factor 1 (see help) for',
+     &   'Z velocity?',0.0,'F',1.5,'W',0.5,'W relax 1',IER,nbhelp)
+        if (IER.eq.0) URFCW(ICFD)=VAL
+      elseif(INO.EQ.12)then
+
+C Ask for relaxation factor 2 for velocity in Z direction.
+        VAL=URFCW2(ICFD)
+        CALL EASKR(VAL,'Relaxation factor 2 (see help) for',
+     &   'Z velocity?',0.0,'F',1.5,'W',0.05,'W relax 2',IER,nbhelp)
+        if (IER.eq.0) URFCW2(ICFD)=VAL
+      elseif(INO.eq.14)then      
 
 C (De)activate temperature solution.
         if (.NOT.CALLT(ICFD)) then
@@ -1342,136 +1650,137 @@ C (De)activate temperature solution.
         else
           CALLT(ICFD)=.FALSE.
         endif
-      elseif(INO.EQ.7)then
+      elseif(INO.eq.15)then
 
-C Ask for initial value and relaxation factor for temperatures.
-        write (ltmp,'(2f6.2)') TINIT(ICFD),URFCT(ICFD)
-        write (dtmp,'(a)') '  20.00  0.90 '
-        call EASKS(ltmp,'Initial value and relaxation factor',
-     &    'for temperature? ',16,dtmp,'W def and relx',IER,nbhelp)
-        K=0
-        call EGETWR(ltmp,K,VAL,-50.0,99.0,'F','Wvel',IER)
+C Ask for initial value of temperature.
+        VAL=TINIT(ICFD)
+        CALL EASKR(VAL,'Initial value for temperature?','(degrees C)',
+     &                         10.,'W',30.,'W',20.,'T init',IER,nbhelp)
         if (IER.eq.0) TINIT(ICFD)=VAL
-        call EGETWR(ltmp,K,VAL,0.0,1.5,'F','Wrlxf',IER)
+      elseif(INO.EQ.16)then
+
+C Ask for relaxation factor 1 for temperature.
+        VAL=URFCT(ICFD)
+        CALL EASKR(VAL,'Relaxation factor 1 (see help) for',
+     &   'temperature?',0.0,'F',1.5,'W',1.0,'T relax 1',IER,nbhelp)
         if (IER.eq.0) URFCT(ICFD)=VAL
-      elseif(INO.EQ.9)then
+      elseif(INO.EQ.17)then
+
+C Ask for relaxation factor 2 for temperature.
+        VAL=URFCT2(ICFD)
+        CALL EASKR(VAL,'Relaxation factor 2 (see help) for',
+     &   'temperature?',0.0,'F',1.5,'W',0.25,'T relax 2',IER,nbhelp)
+        if (IER.eq.0) URFCT2(ICFD)=VAL
+      elseif(INO.eq.19)then   
 
 C Toggle through turbulence methods.
         ITURB(ICFD)=ITURB(ICFD)+1
         if (ITURB(ICFD).gt.4) ITURB(ICFD)=0
-      elseif(INO.EQ.10)then
+      elseif(INO.EQ.20)then
 
 C Edit turbulence data according to current method.
         if (ITURB(ICFD).eq.1) then
 
-C Ask for initial value and relaxation factor for k.
-          write (ltmp,'(f8.4,f6.2)') TEINIT(ICFD),URFCK(ICFD)
-          write (dtmp,'(a)') ' 0.005  0.7'
-          call EASKS(ltmp,'Initial value and relaxation factor',
-     &      'for turbulent energy? ',16,dtmp,'k def and relx',
-     &      IER,nbhelp)
-          K=0
-          call EGETWR(ltmp,K,VAL,0.0,10.0,'F','k init',IER)
+C Ask for initial values for k and epsilon.
+          VAL=TEINIT(ICFD)
+          CALL EASKE(VAL,'Initial value for turbulent energy?',' ',
+     &                      0.0,'W',0.1,'W',0.005,'TE init',IER,nbhelp)
           if (IER.eq.0) TEINIT(ICFD)=VAL
-          call EGETWR(ltmp,K,VAL,0.0,1.5,'F','k rlxf',IER)
-          if (IER.eq.0) URFCK(ICFD)=VAL
-        elseif (ITURB(ICFD).eq.2) then
+          VAL=EDINIT(ICFD)
+          CALL EASKE(VAL,'Initial value for energy dissipation?',' ',
+     &                      0.0,'W',0.1,'W',0.005,'ED init',IER,nbhelp)
+          if (IER.eq.0) EDINIT(ICFD)=VAL
+        elseif ((ITURB(ICFD).eq.2).or.(ITURB(ICFD).eq.4)) then
 
 C Ask for fixed eddy viscosity.
-          write (ltmp,'(f6.2)') rMOOT
-          write (dtmp,'(a)') '  90.00'
-          call EASKS(ltmp,'Fixed value for eddy viscosity?',
-     &               ' ',16,dtmp,'eddy viscosity',IER,nbhelp)
-          K=0
-          call EGETWR(ltmp,K,VAL,0.0,500.0,'F','eddy viscos',IER)
-          if (IER.eq.0) rMOOT=VAL
-        elseif(ITURB(ICFD).eq.4) then
-
-C Ask for fixed eddy viscosity and number of iterations to apply this for.
-          write (ltmp,'(f6.2,i6)') rMOOT,nZtoKE
-          write (dtmp,'(a)') '  90.00  10 '
-          call EASKS(ltmp,'Fixed value for eddy viscosity and number ',
-     &      'of iterations to apply for?',16,dtmp,'eddy viscosity',
-     &      IER,nbhelp)
-          K=0
-          call EGETWR(ltmp,K,VAL,0.0,500.0,'F','eddy viscos',IER)
-          if (IER.eq.0) rMOOT=VAL
-          call EGETWI(ltmp,K,IVAL,0,500,'F','no of iters',IER)
-          if (IER.eq.0) nZtoKE=IVAL
+          VAL=rMOOT(ICFD)
+          CALL EASKR(VAL,'Fixed value for eddy viscosity?',' ',0.0,'F',
+     &               500.0,'F',90.0,'eddy viscos',IER,nbhelp)
+          if (IER.eq.0) rMOOT(ICFD)=VAL
         endif
-      elseif(INO.EQ.11)then
+      elseif(INO.EQ.21)then
+
+C Edit turbulence data according to current method.
         if (ITURB(ICFD).eq.1) then
 
-C Ask for initial value and relaxation factor for epsilon.
-          write (ltmp,'(f8.4,f6.2)') EDINIT(ICFD),URFCE(ICFD)
-          write (dtmp,'(a)') ' 0.005  0.7'
-          call EASKS(ltmp,'Initial value and relaxation factor',
-     &      'for energy dissipation? ',16,dtmp,'e def and relx',
-     &      IER,nbhelp)
-          K=0
-          call EGETWR(ltmp,K,VAL,0.0,10.0,'F','e init',IER)
-          if (IER.eq.0) EDINIT(ICFD)=VAL
-          call EGETWR(ltmp,K,VAL,0.0,1.5,'F','e rlxf',IER)
+C Ask for relaxation factor 1 for k and epsilon.
+          VAL=URFCK(ICFD)
+          CALL EASKR(VAL,'Relaxation factor 1 (see help) for',
+     & 'turbulent energy?',0.0,'F',1.5,'W',1.0,'TE relax 1',IER,nbhelp)
+          if (IER.eq.0) URFCK(ICFD)=VAL
+          VAL=URFCE(ICFD)
+          CALL EASKR(VAL,'Relaxation factor 1 (see help) for',
+     &      'energy dissipation?',0.0,'F',1.5,'W',1.0,'ED relax 1',IER,
+     &                                                          nbhelp)
           if (IER.eq.0) URFCE(ICFD)=VAL
-        endif
-      elseif(INO.EQ.13)then
+        elseif (ITURB(ICFD).eq.4) then
 
-C Buoyancy.
+C Ask for iteration to transition from fixed eddy viscosity to k-e.
+          IVAL=nZtoKE(ICFD)
+          CALL EASKI(IVAL,'Iteration number to transition to',
+     &      'k-e model?',1,'F',1000,'W',10,'fev->ke iter',IER,nbhelp)
+          if (IER.eq.0) nZtoKE(ICFD)=IVAL
+        endif
+      elseif(INO.EQ.22)then
+
+C Edit turbulence data according to current method.
+        if (ITURB(ICFD).eq.1) then
+
+C Ask for relaxation factor 2 for k and epsilon.
+          VAL=URFCK2(ICFD)
+          CALL EASKR(VAL,'Relaxation factor 2 (see help) for',
+     &       'turbulent energy?',0.0,'F',1.5,'W',0.05,'TE relax 2',IER,
+     &                                                          nbhelp)
+          if (IER.eq.0) URFCK2(ICFD)=VAL
+          VAL=URFCE2(ICFD)
+          CALL EASKR(VAL,'Relaxation factor 2 (see help) for',
+     &     'energy dissipation?',0.0,'F',1.5,'W',0.05,'ED relax 2',IER,
+     &                                                          nbhelp)
+          if (IER.eq.0) URFCE2(ICFD)=VAL
+        elseif (ITURB(ICFD).eq.4) then
+
+C Toggle to k-e.
+          ITURB(ICFD)=1
+        endif
+      elseif(INO.EQ.24)then
+
+C Toggle buoyancy.
         IBUOY(ICFD)=IBUOY(ICFD)+1
         if (IBUOY(ICFD).gt.2) IBUOY(ICFD)=0
-      elseif(INO.EQ.14)then
+      elseif(INO.EQ.25)then
+        if (IBUOY(ICFD).eq.2) then
 
 C Ask for reference temperature.
-        write (ltmp,'(f6.2)') TBAR
-        write (dtmp,'(a)') ' 20.00'
-        call EASKS(ltmp,'Reference temperature? ','  ',16,
-     &             dtmp,'ref temperature',IER,nbhelp)
-        K=0
-        call EGETWR(ltmp,K,VAL,-50.0,99.0,'F','ref temper',IER)
-        if (IER.eq.0) TBAR=VAL
-      elseif(INO.GT.15.AND.INO.LE.(15+NCTM))then
-
-C Contaminants
-        IF(CALPOL(INO-15,ICFD))THEN
-          CALPOL(INO-15,ICFD)=.FALSE.
-        ELSE
-          CALPOL(INO-15,ICFD)=.TRUE.
-        ENDIF
-      elseif(INO.EQ.18+NCTM)then
-
-C Mean age of air.
-        if (CALLMA(ICFD)) then
-          CALLMA(ICFD)=.false.
-        else
-          CALLMA(ICFD)=.true.
+          VAL=TBAR(ICFD)
+          CALL EASKR(VAL,'Reference temperature?','(degrees C)?',10.,
+     &                               'W',30.,'W',20.,'Tbar',IER,nbhelp)
+          if (IER.eq.0) TBAR(ICFD)=VAL
         endif
-      elseif (INO.eq.22+NCTM) then
+      elseif(INO.EQ.27)then
 
-C Convergence criteria.
+C Ask for maximum number of iterations.
         helptopic='cfd_convergence_crit'
         call gethelptext(helpinsub,helptopic,nbhelp)
-        ival=MAXITR(ICFD)
-        CALL EASKI(ival,' ',' Maximum iterations to perform?',
-     &    0,'F',10000,'F',500,'iterations',IERI,nbhelp)
-        if(ieri.eq.-3)then
-          continue
-        else
-          MAXITR(ICFD)=ival
-        endif
-      elseif (INO.eq.23+NCTM) then
+        IVAL=MAXITR(ICFD)
+        CALL EASKI(IVAL,'Maximum number of iterations to perform?',' ',
+     &             1,'F',10000,'W',3750,'CFD iters',IER,nbhelp)
+        if (IER.eq.0) MAXITR(ICFD)=IVAL
+      elseif (INO.eq.28) then
+
+C Ask for maximum residual.
         helptopic='cfd_convergence_crit'
         call gethelptext(helpinsub,helptopic,nbhelp)
         VAL=SRMAX(ICFD)
-        CALL EASKR(VAL,' ',' Maximum equation residual?',
-     &    0.,'F',1.,'F',0.02,'iterations',IER,nbhelp)
-        SRMAX(ICFD)=VAL
-      elseif (INO.eq.25+NCTM) then
+        CALL EASKR(VAL,' ','Maximum equation residual?',0.,'F',1.,'F',
+     &                                     0.02,'max resid',IER,nbhelp)
+        if (IER.eq.0) SRMAX(ICFD)=VAL
+      elseif (INO.eq.29) then
 
 C Monitoring cell.
         write (ltmp,'(3i4)') IMONT(ICFD)-1,JMONT(ICFD)-1,KMONT(ICFD)-1
         write (dtmp,'(a)') ' 1  1  1'
         call EASKS(ltmp,'Monitoring cell (i,j,k)? ','  ',16,
-     &             dtmp,'monit cell',IER,nbhelp)
+     &                                    dtmp,'monit cell',IER,nbhelp)
         K=0
         call EGETWI(ltmp,K,IVAL,0,NTCELX,'W','I mon cell',IER)
         if (IER.eq.0) IMONT(ICFD)=IVAL+1
@@ -1479,18 +1788,161 @@ C Monitoring cell.
         if (IER.eq.0) JMONT(ICFD)=IVAL+1
         call EGETWI(ltmp,K,IVAL,0,NTCELZ,'W','K mon cell',IER)
         if (IER.eq.0) KMONT(ICFD)=IVAL+1
+      elseif (INO.eq.NITMS-2) then
+
+C Check that contaminants have been defined.
+        if (NCTM.gt.0) then
+
+C Go to contaminant equation setup menu.
+          CALL CFDEDATC
+        else
+
+C Display popup.
+          helptopic='cfd_no_contam_defined'
+          call gethelptext(helpinsub,helptopic,nbhelp)
+          CALL PHELPD('No contaminants defined',nbhelp,'-',0,0,IER)
+        endif        
       elseif(INO.eq.(NITMS-1)) then
 
 C Help.
         helptopic='cfd_equations_to_edit'
         call gethelptext(helpinsub,helptopic,nbhelp)
-        CALL PHELPD('solution variables',nbhelp,'-',0,0,IER)
+        CALL PHELPD('Solution parameters',nbhelp,'-',0,0,IER)
       elseif(INO.eq.NITMS) then
         return
       endif
       goto 5
 
       end
+
+C ************************* CFDEDATC **************************
+C CFDEDATC is a continuation of CFDEDAT, controlling editing
+C of CFD contaminant equations.
+
+      SUBROUTINE CFDEDATC
+C #include "building.h"
+#include "cfd.h"
+
+C      common/OUTIN/IUOUT,IUIN
+      COMMON/ICFNOD/ICFD,ICP
+
+C Equations solved.
+      common/EQTION3/CALLMA(MNZ),CALPOL(MCTM,MNZ),POLNAM(MCTM,MNZ),NCTM,
+     &      JHUMINDX,URFC(MCTM)
+
+C Under-relaxation factors.
+      COMMON/LINRFC/URFCU(MNZ),URFCV(MNZ),URFCW(MNZ),URFCP(MNZ),
+     &              URFCT(MNZ),URFCK(MNZ),URFCE(MNZ),URFCVS(MNZ),
+     &              URFCC(MNZ,MCTM)
+      COMMON/LINRFC2/URFCU2(MNZ),URFCV2(MNZ),URFCW2(MNZ),URFCP2(MNZ),
+     &              URFCT2(MNZ),URFCK2(MNZ),URFCE2(MNZ),URFCVS2(MNZ),
+     &              URFCC2(MNZ,MCTM)
+
+      character ITEM(3+3*NCTM)*40,POLNAM*12,tstr*13,tstr1*30,tstr2*30
+
+      LOGICAL CALPOL,CALLMA
+      integer NITMS,INO ! max items and current menu item
+
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='CFDEDATC'  ! set for subroutine
+
+      NITMS=3+3*NCTM
+C Debug
+C      write(6,*)'NITMS: ',NITMS
+
+C First clear menu.
+ 5    INO=-4
+      do I=1,NITMS
+        ITEM(I)='  '
+      enddo
+
+C Now create menu.
+      do ICTM=1,NCTM
+        IND=(ICTM-1)*3+1
+C Debug
+C        write(6,*)'IND: ',IND
+        IF(CALPOL(ICTM,ICFD))THEN
+          WRITE(ITEM(IND),'(A,1X,A,1X,A,1X)')CHAR(96+IND),
+     &       POLNAM(ICTM,ICFD)(1:lnblnk(POLNAM(ICTM,ICFD))),'>> solved'
+        ELSE
+          WRITE(ITEM(IND),'(A,1X,A,1X,A,1X)')CHAR(96+IND),
+     &   POLNAM(ICTM,ICFD)(1:lnblnk(POLNAM(ICTM,ICFD))),'>> not solved'
+        ENDIF
+        IND=(ICTM-1)*3+2
+C Debug
+C        write(6,*)'IND: ',IND
+        write(ITEM(IND),'(a,1x,a,f5.2)')CHAR(96+IND),
+     &                         'Relaxation factor 1: ',URFCC(ICFD,ICTM)
+        IND=(ICTM-1)*3+3
+C Debug
+C        write(6,*)'IND: ',IND
+        write(ITEM(IND),'(a,1x,a,f5.2)')CHAR(96+IND),
+     &                        'Relaxation factor 2: ',URFCC2(ICFD,ICTM)
+      enddo
+      ITEM(NITMS-2)=' ------------------------------ '
+      ITEM(NITMS-1)='? Help'
+      ITEM(NITMS)=  '- Exit this menu'
+
+C Help text for this menu.
+      helptopic='cfd_contam_equ_to_edit'
+      call gethelptext(helpinsub,helptopic,nbhelp)
+
+C Display menu.
+      CALL EMENU('Contaminant relaxation factors',ITEM,NITMS,INO)
+
+C Process INO to get ICTM and option 1, 2 or 3.
+      ICTM=(INO+2)/3
+      IND=INO-(ICTM-1)*3
+C Debug
+C      write(6,*)'ICTM: ',ICTM
+C      write(6,*)'IND: ',IND
+C Create temporary strings.
+      write(tstr,'(2a)')POLNAM(ICTM,ICFD)(1:lnblnk(POLNAM(ICTM,ICFD))),
+     &                                                              '?'
+      write(tstr1,'(a,i1,a)')'contam ',ICTM,' relax 1'
+      write(tstr2,'(a,i1,a)')'contam ',ICTM,' relax 2'
+      
+C First check for Help or Exit.
+      IF(INO.eq.(NITMS-1))THEN
+
+C Help text for this menu.
+        helptopic='cfd_contam_equ_to_edit'
+        call gethelptext(helpinsub,helptopic,nbhelp)
+        CALL PHELPD('Solution parameters (contam.)',nbhelp,'-',0,0,IER)
+      ELSEIF(INO.eq.NITMS)THEN
+
+C Exit.
+        return
+      ELSEIF(IND.eq.1)THEN
+
+C Toggle contaminant equation.
+        if (CALPOL(ICTM,ICFD)) then
+          CALPOL(ICTM,ICFD)=.false.
+        else
+          CALPOL(ICTM,ICFD)=.true.
+        endif
+      ELSEIF(IND.eq.2)THEN
+
+C Ask for relaxation factor 1.
+        VAL=URFCC(ICFD,ICTM)
+        CALL EASKR(VAL,'Relaxation factor 1 (see help) for',
+     &                       tstr,0.0,'F',1.5,'W',1.0,tstr1,IER,nbhelp)
+        if (IER.eq.0) URFCC(ICFD,ICTM)=VAL
+      ELSEIF(IND.eq.3)THEN
+
+C Ask for relaxation factor 2.
+        VAL=URFCC2(ICFD,ICTM)
+        CALL EASKR(VAL,'Relaxation factor 2 (see help) for',
+     &                      tstr,0.0,'F',1.5,'W',0.25,tstr2,IER,nbhelp)
+        if (IER.eq.0) URFCC2(ICFD,ICTM)=VAL
+      ENDIF
+
+      goto 5
+      END      
 
 C ************************** CFDBVAR **************************
 C CFDBVAR controls the editing of CFD boundary variables.
@@ -1499,19 +1951,17 @@ C IER=0 indicates no error.
 
       SUBROUTINE CFDBVAR(IZONE,IER)
 #include "building.h"
-#include "model.h"
+C #include "model.h"
 C #include "geometry.h"
 #include "cfd.h"
+#include "epara.h"
+#include "prj3dv.h"
 
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
-      COMMON/FILEP/IFIL
-      integer menuchw,igl,igr,igt,igb,igw,igwh
-      common/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
-      common/gzonpik/izgfoc,nzg,nznog(mcom)
-
-      common/RAY2/ITDSP,ITBND,ITEPT,ITZNM,ITSNM,ITVNO,ITORG,ITSNR,
-     &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS,ITPPSW
-      common/RAY3/MODIFY,MODLEN,MODBND
+C      COMMON/FILEP/IFIL
+C      integer menuchw,igl,igr,igt,igb,igw,igwh
+C      common/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
+C      common/gzonpik/izgfoc,nzg,nznog(mcom)
 
       COMMON/ICFNOD/ICFD,ICP
       common/cfdconf/ICFBLD(MNZ),ICFMFS(MNZ)
@@ -1524,6 +1974,24 @@ C #include "geometry.h"
      &          VOLArea(MNVLS,MNZ),VOLPres(MNVLS,MNZ),
      &          VOLPol(MCTM,MNVLS,MNZ)
       common/GRIDEFN/origin,xgrid,ygrid,zgrid,zegrid,ortho
+      COMMON/CFDVIS/ISHSB,ISHAO,IFACES,ISHBLK
+      common/param2/TITLE(MNZ),CFTRFL(MNZ),LPHI(MNZ)
+      COMMON/NDMAP/NOPEN(MNZ),MFNODE(MCFND,MNZ),IOPENi(MCFND,MNZ),
+     &             IOPENf(MCFND,MNZ),JOPENi(MCFND,MNZ),
+     &             JOPENf(MCFND,MNZ),KOPENi(MCFND,MNZ),
+     &             KOPENf(MCFND,MNZ),FIXM(MCFND,MNZ),
+     &             FIXT(MCFND,MNZ),FIXC(MCFND,MNZ),
+     &             FIXK(MCFND,MNZ),FIXE(MCFND,MNZ),
+     &             IWOPEN(MCFND,MNZ),ICFDCN(MCFND,MNZ),
+     &             ICNACT(MCFND,MNZ),IVOLN(MCFND,MNZ)
+      COMMON/Sbdary/NSB(MNZ),ISBi(MNSBZ,MNZ),ISBf(MNSBZ,MNZ),
+     &              JSBi(MNSBZ,MNZ),JSBf(MNSBZ,MNZ),
+     &              KSBi(MNSBZ,MNZ),KSBf(MNSBZ,MNZ),
+     &              ISUFLC(MNSBZ,MNZ),IWSB(MNSBZ,MNZ),SSB(MNSBZ,MNZ),
+     &              SSBHC(MNSBZ,MNZ),IVOLNSB(MNSBZ,MNZ),
+     &              ITCtype(MNSBZ,MNZ),icTREF(MNSBZ,MNZ)
+      common/blksso/NBLK(MNZ),INBLK(MNVLS,MNZ),NSSO(MNZ),
+     &          INSSO(MNVLS,MNZ)
 
       dimension IDEL(MNVLS)
 
@@ -1531,19 +1999,18 @@ C #include "geometry.h"
       character KEY*1,t24*24
       character VOLNAME*12,VCsurf*12,t12*12,d12*12
       character NAMES(MNVLS)*12
+      character zngeo*3,etext*82
+      CHARACTER*72 TITLE,CFTRFL,LPHI
       logical origin,xgrid,ygrid,zgrid,zegrid,ortho
-      logical MODIFY,MODLEN,MODBND
 
-      integer iglib   ! if 1 then X11, if 2 then GTK, if 3 then text only.
+C      integer iglib   ! if 1 then X11, if 2 then GTK, if 3 then text only.
       integer INB     ! for radio button
-      integer NITMS,INO ! max items and current menu item
+      integer NITMS,INO,IAIN,IIND ! max items and current menu item
 
 #ifdef OSI
-      integer iigl,iigr,iigt,iigb,iigw,iigwh
-      integer iiw1,iiw2,iiw3,iiw4,iimenu
+      integer iside,isize,ifont
 #else
-      integer*8 iigl,iigr,iigt,iigb,iigw,iigwh
-      integer*8 iiw1,iiw2,iiw3,iiw4,iimenu
+      integer*8 iside,isize,ifont
 #endif
 
 C For help messages
@@ -1556,71 +2023,116 @@ C For help messages
 C << Note: for more complex domains grow this menu needs
 C << to be one that can support multiple pages.
 
-C Reset the display bounds for grid display over the zone
-C and if in graphic mode go ahead and display.
-      IF(MMOD.EQ.8)THEN
+C << Changed to allow paging, example taken from vertex selection menu >>
+C << EDVERT in edgeo.F                                                 >>
 
-C Set up grid information in case it was not already done
-C and clear graphic display.
-        CALL INICNT
-        CALL GRID(ier)
-        call startbuffer()
+C C Initialise zone vertex menu size variables based on window size. 
+C INO is the menu position, NITMS the current number of menu lines.
+      MHEAD=0
+      MCTL=5
+      ILEN=NVOL(ICFD)
+      IPACT=CREATE
+      CALL EKPAGE(IPACT)
 
-C Setup and pass in parameters to win3d.
-        iiw1=6; iiw2=6; iiw3=2; iiw4=4; iimenu=menuchw
-        iigl=igl; iigr=igr; iigt=igt; iigb=igb; iigw=igw; iigwh=igwh
-        CALL win3d(iimenu,iiw1,iiw2,iiw3,iiw4,
-     &    iigl,iigr,iigt,iigb,iigw,iigwh)
-        igl=int(iigl); igr=int(iigr); igt=int(iigt); igb=int(iigb)
-        igw=int(iigw); igwh=int(iigwh)
-        call VGRID3D('zn ','xyz',izone)
-      ENDIF
+C Initial menu entry setup.
+ 5    IER=0
+      ILEN=NVOL(ICFD)
 
 C Create menu text.
- 5    M=0
-      do 10 I=1,NVOL(ICFD)
-        M=M+1
-        call EMKEY(M,KEY,IER)
-        t24='  '
-        if (IVTYPE(I,ICFD).eq.1) then
-          t24='Solid  | Temp'
-        elseif (IVTYPE(I,ICFD).eq.2) then
-          t24='Solid  | Heat'
-        elseif (IVTYPE(I,ICFD).eq.3) then
-          t24='Solid  | Symmetrical'
-        elseif (IVTYPE(I,ICFD).eq.4) then
-          t24='Solid  | Conflated'
-        elseif (IVTYPE(I,ICFD).eq.5) then
-          t24='Solid  | Conflated'
-        elseif (IVTYPE(I,ICFD).eq.6) then
-          t24='Solid  | Conflated'
-        elseif (IVTYPE(I,ICFD).eq.10) then
-          t24='Opening| Pressure'
-          IF (ICFMFS(ICFD).EQ.1)T24='Opening| Mass flow nwk'
-        elseif (IVTYPE(I,ICFD).eq.11) then
-          t24='Opening| Velocity'
-          IF (ICFMFS(ICFD).EQ.1)T24='Opening| Mass flow nwk'
-        elseif (IVTYPE(I,ICFD).eq.12) then
-          t24='Opening| Zero gradient'
-          IF (ICFMFS(ICFD).EQ.1)T24='Opening| Mass flow nwk'
-        elseif (IVTYPE(I,ICFD).eq.13) then
-          t24='Opening| Mass flow nwk'
-          IF (ICFMFS(ICFD).EQ.1)T24='Opening| Mass flow nwk'
-        elseif (IVTYPE(I,ICFD).eq.20) then
-          t24='Source | Contaminant'
-        elseif (IVTYPE(I,ICFD).eq.30) then
-          t24='Blockage'
-        else
-          t24='UNKNOWN'
+      M=MHEAD
+      do 10 I=1,ILEN
+        IF(I.GE.IST.AND.(I.LE.(IST+MIFULL)))THEN
+          M=M+1
+          call EMKEY(I,KEY,IER)
+          t24='  '
+          if (IVTYPE(I,ICFD).eq.1) then
+            t24='Solid  | Temp'
+          elseif (IVTYPE(I,ICFD).eq.2) then
+            t24='Solid  | Heat'
+          elseif (IVTYPE(I,ICFD).eq.3) then
+            t24='Solid  | Symmetrical'
+          elseif (IVTYPE(I,ICFD).eq.4) then
+            t24='Solid  | Conflated'
+          elseif (IVTYPE(I,ICFD).eq.5) then
+            t24='Solid  | Conflated'
+          elseif (IVTYPE(I,ICFD).eq.6) then
+            t24='Solid  | Conflated'
+          elseif (IVTYPE(I,ICFD).eq.10) then
+            t24='Opening| Pressure'
+            IF (ICFMFS(ICFD).EQ.1)T24='Opening| Mass flow nwk'
+          elseif (IVTYPE(I,ICFD).eq.11) then
+            t24='Opening| Velocity'
+            IF (ICFMFS(ICFD).EQ.1)T24='Opening| Mass flow nwk'
+          elseif (IVTYPE(I,ICFD).eq.12) then
+            t24='Opening| Zero gradient'
+            IF (ICFMFS(ICFD).EQ.1)T24='Opening| Mass flow nwk'
+          elseif (IVTYPE(I,ICFD).eq.13) then
+            t24='Opening| Mass flow nwk'
+            IF (ICFMFS(ICFD).EQ.1)T24='Opening| Mass flow nwk'
+          elseif (IVTYPE(I,ICFD).eq.20) then
+            t24='Source | Contaminant'
+          elseif (IVTYPE(I,ICFD).eq.30) then
+            t24='Blockage'
+          else
+            t24='UNKNOWN'
+          endif
+          write (ITEM(M),'(a,1x,3a)') KEY,VOLNAME(I,ICFD),':',t24
         endif
-        write (ITEM(M),'(a,1x,3a)') KEY,VOLNAME(I,ICFD),':',t24
  10   continue
-      ITEM(M+1)=' --------------------'
+
+C Number of actual items displayed.
+      NITMS=M+MCTL
+
+C If a long list include page facility text.      
+      IF(IPFLG.EQ.0)THEN  
+        ITEM(M+1)=' --------------------'
+      ELSE
+        WRITE(ITEM(M+1),'(a,i2,a,i2,a)')'0 Page: ',IPM,' of ',MPM,
+     &                                                      ' --------'
+      ENDIF
       ITEM(M+2)='+ Add/ delete a boundary definition'
       ITEM(M+3)='! View current gridding'
       ITEM(M+4)='? Help'
       ITEM(M+5)='- exit'
-      NITMS=M+5
+
+      IF(MMOD.EQ.8)THEN
+
+C Recalculate gridding in case this has changed.
+        CALL INICNT
+        CALL GRID(ier)
+        call NEW2OLD
+
+C Display domain.
+        if (IFACES.lt.0) then
+          write(zngeo,'(a)')'zn '
+        else
+          write(zngeo,'(a)')'---'
+        endif
+        if(abs(IFACES).eq.1)then
+          call VGRID3D(zngeo,'xyz',izone)
+        elseif(abs(IFACES).eq.2)then
+          call VGRID3D(zngeo,'xzg',izone)
+        elseif(abs(IFACES).eq.3)then
+          call VGRID3D(zngeo,'yzg',izone)
+        elseif(abs(IFACES).eq.4)then
+          call VGRID3D(zngeo,'xyg',izone)
+        endif
+        if (ISHSB.eq.1) then
+          call VSB3D(0,izone)
+        endif
+        if (ISHAO.eq.1) then
+          call VAO3D(0,izone)        
+        endif
+        if (ISHBLK.eq.1) then
+          call VSBL3D(0,izone)  ! for testing of blockages
+        endif    
+        WRITE(ETEXT,'(2A)')'Domain: ',
+     &    TITLE(izone)(1:lnblnk(TITLE(izone)))
+        iside=1
+        isize=1
+        ifont=1
+        call viewtext(ETEXT,iside,isize,ifont)
+      ENDIF
 
 C Help text for this menu.
       helptopic='cfd_boundary_variables'
@@ -1646,42 +2158,6 @@ C Help.
 C View the current gridding.
         if (origin.and.xgrid.AND.ygrid.AND.zgrid) then
           call cgd(izone,ierr)
-
-C Restore standard graphics window variables.
-          if(MMOD.EQ.8)then
-            iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
-            if(iglib.eq.1)then
-              CALL feedbox(menuchw,2,igfw,igfh)
-              CALL opengdisp(menuchw,LIMTTY,2,igdw,igdh)
-            endif
-
-C Setup and pass in parameters to win3d.
-            iiw1=4; iiw2=1; iiw3=1; iiw4=3; iimenu=menuchw
-            iigl=igl; iigr=igr; iigt=igt; iigb=igb; iigw=igw;iigwh=igwh
-            CALL win3d(iimenu,iiw1,iiw2,iiw3,iiw4,
-     &        iigl,iigr,iigt,iigb,iigw,iigwh)
-            igl=int(iigl); igr=int(iigr); igt=int(iigt); igb=int(iigb)
-            igw=int(iigw); igwh=int(iigwh)
-            call startbuffer()
-
-C Redraw zone and vertex points. Note, if user has returned
-C from 3D grid visualisation then G1 common blocks will need
-C to be refreshed.
-            nzg=1
-            nznog(1)=izone
-            izgfoc=izone
-            call georead(IFIL+1,LGEOM(nznog(1)),nznog(1),1,IUOUT,IER)
-            CALL ESCZONE(izone)
-            CALL BNDOBJ(0,IER)
-            CALL ERCZONE(izone)
-            MODIFY=.TRUE.
-            MODLEN=.TRUE.
-            MODBND=.TRUE.
-            itvno=0
-            itsnm=0
-            CALL INLNST(1)
-            CALL ADJVIEW(IER)
-          endif
         else
           CALL USRMSG(' Define origin of CFD domain ',
      &         ' and grid axes first ','W')
@@ -1701,6 +2177,7 @@ C Add a new/ delete a boundary definition.
 C Set up some defaults and call relavent editing routine.
           if (INB.eq.1) then
             NVOL(ICFD)=NVOL(ICFD)+1
+            NOPEN(ICFD)=NOPEN(ICFD)+1 ! increment nb of openings
             IVTYPE(NVOL(ICFD),ICFD)=11
             IVOLF(NVOL(ICFD),ICFD)=0
             do 20 I=1,2
@@ -1720,8 +2197,13 @@ C            call st2file(t12,VOLNAME(NVOL(ICFD),ICFD))
             VCsurf(NVOL(ICFD),ICFD)='  '
             VOLTemp(NVOL(ICFD),ICFD)=20.
             call EDAIRO(NVOL(ICFD),IER)
+            call NEW2OLD
+            
           elseif (INB.eq.2) then
+
+C A solid boundary has been added.
             NVOL(ICFD)=NVOL(ICFD)+1
+            NSB(ICFD)=NSB(ICFD)+1  ! increment number of solids
             IVTYPE(NVOL(ICFD),ICFD)=1
             IVOLF(NVOL(ICFD),ICFD)=0
             do 21 I=1,2
@@ -1740,7 +2222,11 @@ C            call st2file(t12,VOLNAME(NVOL(ICFD),ICFD))
 C            call st2file(t12,VOLNAME(NVOL(ICFD),ICFD))
             VCsurf(NVOL(ICFD),ICFD)='  '
             call EDSLDB(IZONE,NVOL(ICFD),IER)
+            call NEW2OLD
+            
           elseif (INB.eq.3) then
+
+C A contaminate source has been added. << what variable to update? >>
             NVOL(ICFD)=NVOL(ICFD)+1
             IVTYPE(NVOL(ICFD),ICFD)=20
             IVOLF(NVOL(ICFD),ICFD)=9
@@ -1760,8 +2246,13 @@ C            call st2file(t12,VOLNAME(NVOL(ICFD),ICFD))
 C            call st2file(t12,VOLNAME(NVOL(ICFD),ICFD))
             VCsurf(NVOL(ICFD),ICFD)='  '
             call EDSRC(NVOL(ICFD),IER)
+            call NEW2OLD
+            
           elseif (INB.eq.4) then
+
+C A blockage has been added.
             NVOL(ICFD)=NVOL(ICFD)+1
+            NBLK(ICFD)=NBLK(ICFD)+1  ! increment nb of blockages
             IVTYPE(NVOL(ICFD),ICFD)=30
             IVOLF(NVOL(ICFD),ICFD)=8
             do 23 I=1,2
@@ -1780,6 +2271,7 @@ C            call st2file(t12,VOLNAME(NVOL(ICFD),ICFD))
 C            call st2file(t12,VOLNAME(NVOL(ICFD),ICFD))
             VCsurf(NVOL(ICFD),ICFD)='  '
             call EDBLK(NVOL(ICFD),IER)
+            call NEW2OLD
           endif
         elseif (IAD.eq.2) then
 
@@ -1842,18 +2334,87 @@ C Move all definitions greater than selected volume up one slot.
           NVOL(ICFD)=NVOL(ICFD)-1
           endif
         endif
+
+      elseif (INO.eq.(NITMS-4)) then
+ 
+C If there are enough items allow paging control via EKPAGE.
+        IF(IPFLG.EQ.1)THEN
+          IPACT=EDIT
+          CALL EKPAGE(IPACT)
+        ENDIF
           
       elseif (INO.le.NVOL(ICFD).and.INO.ge.1) then
 
+C Edit volume identified by KEYIND.
+        CALL KEYIND(NITMS,INO,IAIN,IO)
+
 C Existing volume, edit according to type.
-        if (IVTYPE(INO,ICFD).ge.1.AND.IVTYPE(INO,ICFD).le.6) then
-          call EDSLDB(IZONE,INO,IER)
-        elseif (IVTYPE(INO,ICFD).ge.10.AND.IVTYPE(INO,ICFD).le.13) then
-          call EDAIRO(INO,IER)
-        elseif (IVTYPE(INO,ICFD).eq.20) then
-          call EDSRC(INO,IER)
-        elseif (IVTYPE(INO,ICFD).eq.30) then
-          call EDBLK(INO,IER)
+        if (IVTYPE(IAIN,ICFD).ge.1.AND.IVTYPE(IAIN,ICFD).le.6) then
+
+          IF(MMOD.EQ.8)THEN
+C Display domain, but override values in CFDVIS; always
+C display solid and air flow boundary conditions, highlighting
+C the chosen one, and never display zone geometry.
+            write(zngeo,'(a)')'---'
+            if(abs(IFACES).eq.1)then
+              call VGRID3D(zngeo,'xyz',izone)
+            elseif(abs(IFACES).eq.2)then
+              call VGRID3D(zngeo,'xzg',izone)
+            elseif(abs(IFACES).eq.3)then
+              call VGRID3D(zngeo,'yzg',izone)
+            elseif(abs(IFACES).eq.4)then
+              call VGRID3D(zngeo,'xyg',izone)
+            endif
+C Find index in new commons of boundary specified by index IAIN in old commons
+            do 195 I=1,NSB(ICFD)
+              if (IAIN.eq.IVOLNSB(I,ICFD)) then
+                call VSB3D(I,izone)
+              endif
+  195       continue
+            call VAO3D(0,izone)
+            WRITE(ETEXT,'(2A)')'Domain: ',
+     &        TITLE(izone)(1:lnblnk(TITLE(izone)))
+            iside=1
+            isize=1
+            ifont=1
+            call viewtext(ETEXT,iside,isize,ifont)
+          ENDIF
+          call EDSLDB(IZONE,IAIN,IER)
+        elseif (IVTYPE(IAIN,ICFD).ge.10.AND.IVTYPE(IAIN,ICFD).le.13)
+     &                                                             then
+          IF(MMOD.EQ.8)THEN
+C Display domain, but override values in CFDVIS; always
+C display solid and air flow boundary conditions, highlighting
+C the chosen one, and never display zone geometry
+            write(zngeo,'(a)')'---'
+            if(abs(IFACES).eq.1)then
+              call VGRID3D(zngeo,'xyz',izone)
+            elseif(abs(IFACES).eq.2)then
+              call VGRID3D(zngeo,'xzg',izone)
+            elseif(abs(IFACES).eq.3)then
+              call VGRID3D(zngeo,'yzg',izone)
+            elseif(abs(IFACES).eq.4)then
+              call VGRID3D(zngeo,'xyg',izone)
+            endif
+            call VSB3D(0,izone)
+C Find index in new commons of opening specified by index IAIN in old commons
+            do 638 I=1,NOPEN(ICFD)
+              if (IAIN.eq.IVOLN(I,ICFD)) then
+                call VAO3D(I,izone)
+              endif
+  638       continue   
+            WRITE(ETEXT,'(2A)')'Domain: ',
+     &        TITLE(izone)(1:lnblnk(TITLE(izone)))
+            iside=1
+            isize=1
+            ifont=1
+            call viewtext(ETEXT,iside,isize,ifont)
+          ENDIF
+          call EDAIRO(IAIN,IER)
+        elseif (IVTYPE(IAIN,ICFD).eq.20) then
+          call EDSRC(IAIN,IER)
+        elseif (IVTYPE(IAIN,ICFD).eq.30) then
+          call EDBLK(IAIN,IER)
         endif
       endif
       goto 5
@@ -1907,8 +2468,11 @@ C Check if new opening.
      &    Ji.lt.0.or.Jf.lt.0.or.
      &    Ki.lt.0.or.Kf.lt.0) then 
         t20='Air opening'
+        if(IVOLF(IAO,ICFD).ne.0)IFACE=IVOLF(IAO,ICFD)
         call PIKCELS(t20,VOLNAME(IAO,ICFD),Ii,If,Ji,Jf,Ki,Kf,
-     &                                           IVOLF(IAO,ICFD),IER)
+     &    IFACE,IER)
+        IVOLF(IAO,ICFD)=IFACE
+C        write(6,*) 'face a',IAO,ICFD,IFACE
         IVCELLS(IAO,ICFD,1)=Ii+1
         IVCELLS(IAO,ICFD,2)=If+1
         JVCELLS(IAO,ICFD,1)=Ji+1
@@ -2032,8 +2596,11 @@ C Reset location to whole of volume for non face choices.
         endif
       elseif (INO.eq.5) then
         t20='Air opening'
+        if(IVOLF(IAO,ICFD).ne.0)IFACE=IVOLF(IAO,ICFD)
         call PIKCELS(t20,VOLNAME(IAO,ICFD),Ii,If,Ji,Jf,Ki,Kf,
-     &    IVOLF(IAO,ICFD),IER)
+     &    IFACE,IER)
+        IVOLF(IAO,ICFD)=IFACE
+C        write(6,*) 'face b',IAO,ICFD,IFACE
         IVCELLS(IAO,ICFD,1)=Ii+1
         IVCELLS(IAO,ICFD,2)=If+1
         JVCELLS(IAO,ICFD,1)=Ji+1
@@ -2149,9 +2716,12 @@ C IER=0 indicates no error.
 
       SUBROUTINE EDSLDB(IZONE,ISB,IER)
 #include "building.h"
+C #include "model.h"
 #include "geometry.h"
 #include "cfd.h"
+C #include "prj3dv.h"
 
+      COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/ICFNOD/ICFD,ICP
 
       common/METHDS/ITURB(MNZ),IBUOY(MNZ)
@@ -2163,11 +2733,14 @@ C IER=0 indicates no error.
      &          VOLCO2(MNVLS,MNZ),VOLVel(MNVLS,MNZ),VOLDir(MNVLS,MNZ,2),
      &          VOLArea(MNVLS,MNZ),VOLPres(MNVLS,MNZ),
      &          VOLPol(MCTM,MNVLS,MNZ)
+      COMMON/CFDVIS/ISHSB,ISHAO,IFACES,ISHBLK
+      common/param2/TITLE(MNZ),CFTRFL(MNZ),LPHI(MNZ)
 
       character ITMSS(12)*40
       character face*6,ltmp*16,t12*12,d12*12
       character VOLNAME*12, VCsurf*12
-      CHARACTER t20*20
+      CHARACTER t20*20,ETEXT*82,zngeo*3
+      character TITLE*72,CFTRFL*72,LPHI*72
       integer IWO  ! for radio button
       integer NITMS,INO ! max items and current menu item
 
@@ -2175,6 +2748,12 @@ C For help messages
       character helpinsub*24 ! subroutine name
       character helptopic*24 ! string (unique) for topic
       integer nbhelp     ! number of help lines found
+
+#ifdef OSI
+      integer iside,isize,ifont
+#else
+      integer*8 iside,isize,ifont
+#endif
 
       helpinsub='EDSLDB'  ! set for subroutine
 
@@ -2191,8 +2770,11 @@ C Check if new solid boundary.
      &    Ji.lt.0.or.Jf.lt.0.or.
      &    Ki.lt.0.or.Kf.lt.0) then 
         t20='Solid boundary'
+        if(IVOLF(ISB,ICFD).ne.0)IFACE=IVOLF(ISB,ICFD)
         call PIKCELS(t20,VOLNAME(ISB,ICFD),Ii,If,Ji,Jf,Ki,Kf,
-     &                                           IVOLF(ISB,ICFD),IER)
+     &    IFACE,IER)
+        IVOLF(ISB,ICFD)=IFACE
+C        write(6,*) 'face c',ISB,ICFD,IFACE
         IVCELLS(ISB,ICFD,1)=Ii+1
         IVCELLS(ISB,ICFD,2)=If+1
         JVCELLS(ISB,ICFD,1)=Ji+1
@@ -2301,6 +2883,45 @@ C Help text for this menu.
       helptopic='cfd_solid_boundary_edit'
       call gethelptext(helpinsub,helptopic,nbhelp)
 
+C If in graphic model show the current grid.
+      IF(MMOD.EQ.8)THEN
+
+C Recalculate gridding in case this has changed.
+        CALL INICNT
+        CALL GRID(ier)
+        call NEW2OLD
+
+C Display domain
+        if (IFACES.lt.0) then
+          write(zngeo,'(a)')'zn '
+        else
+          write(zngeo,'(a)')'---'
+        endif
+        if(abs(IFACES).eq.1)then
+          call VGRID3D(zngeo,'xyz',izone)
+        elseif(abs(IFACES).eq.2)then
+          call VGRID3D(zngeo,'xzg',izone)
+        elseif(abs(IFACES).eq.3)then
+          call VGRID3D(zngeo,'yzg',izone)
+        elseif(abs(IFACES).eq.4)then
+          call VGRID3D(zngeo,'xyg',izone)
+        endif
+        if (ISHSB.eq.1) then
+          call VSB3D(0,izone)
+        endif
+        if (ISHAO.eq.1) then
+          call VAO3D(0,izone)        
+        endif
+        if (ISHBLK.eq.1) then
+          call VSBL3D(0,izone)  ! for testing of blockages
+        endif
+      
+        WRITE(ETEXT,'(2A)')'Domain: ',
+     &    TITLE(izone)(1:lnblnk(TITLE(izone)))
+        iside=1; isize=1; ifont=1
+        call viewtext(ETEXT,iside,isize,ifont)
+      ENDIF
+
 C Display menu.
       INO=-1
       CALL EMENU('Solid boundary edit',ITMSS,NITMS,INO)
@@ -2338,8 +2959,11 @@ C Try to remember non conflated option if building surface chosen.
         endif
       elseif (INO.eq.5) then
         t20='Solid boundary'
+        if(IVOLF(ISB,ICFD).ne.0)IFACE=IVOLF(ISB,ICFD)
         call PIKCELS(t20,VOLNAME(ISB,ICFD),Ii,If,Ji,Jf,Ki,Kf,
-     &                                          IVOLF(ISB,ICFD),IER)
+     &    IFACE,IER)
+        IVOLF(ISB,ICFD)=IFACE
+C        write(6,*) 'face d',ISB,ICFD,IFACE
         IVCELLS(ISB,ICFD,1)=Ii+1
         IVCELLS(ISB,ICFD,2)=If+1
         JVCELLS(ISB,ICFD,1)=Ji+1
@@ -2400,7 +3024,7 @@ C IER=0 indicates no error.
      &          VOLPol(MCTM,MNVLS,MNZ)
       common/KEYCASGN/IDcasgn(MNVLS,MNZ),Fcasgn(MNVLS,MNZ)
       common/EQTION3/CALLMA(MNZ),CALPOL(MCTM,MNZ),POLNAM(MCTM,MNZ),NCTM,
-     &      JHUMINDX
+     &      JHUMINDX,URFC(MCTM)
       COMMON/SCHMTT/SCHMT(MCTM),GFM(MCTM),VCRIT(MCTM),TBOIL(MCTM),
      &       TCRIT(MCTM),ISCHMT(MCTM)
       COMMON/CTDFAF/ICTDFAF,SRCE(MNVLS,MCTM,MNZ),ICCSRC
@@ -2411,6 +3035,8 @@ C IER=0 indicates no error.
       COMMON/MFLW10/NODPS(MCNN),HGTPS(MCNN),NODNE(MCNN),HGTNE(MCNN),
      &              ITPCON(MCNN),NDSCNN(MCNN,MCNS)
       COMMON/CFDMFS1/ICFDNOD(MNZ),ICFDCNN(MNVLS,MNZ)
+      common/pophelp/h(60)   ! needed for dynamic popup
+      character H*72
 
       character ITMSS(14+MCTM)*60,ITUM(MCTM+1)*50,WORD*50
       character ltmp*26,t12*12,d12*12,t20*20,FACE*7,HOLD*32,WORD1*12
@@ -2451,8 +3077,11 @@ C Check if new source.
      &    Ji.lt.0.or.Jf.lt.0.or.
      &    Ki.lt.0.or.Kf.lt.0) then 
         t20='Source definition'
+        if(IVOLF(ISB,ICFD).ne.0)IFACE=IVOLF(ISB,ICFD)
         call PIKCELS(t20,VOLNAME(ISB,ICFD),Ii,If,Ji,Jf,Ki,Kf,
-     &                                           IVOLF(ISB,ICFD),IER)
+     &    IFACE,IER)
+        IVOLF(ISB,ICFD)=IFACE
+C        write(6,*) 'face e',ISB,ICFD,IFACE
         IVCELLS(ISB,ICFD,1)=Ii+1
         IVCELLS(ISB,ICFD,2)=If+1
         JVCELLS(ISB,ICFD,1)=Ji+1
@@ -2564,6 +3193,11 @@ C Set coupling with contaminants network on/off
         IF(IHOWL.EQ.1)THEN
           ICTDFAF=0
         ELSEIF(IHOWL.EQ.2)THEN
+
+C Contaminants currently only work for CFD domain 1.
+C If the user tries to input contaminants in any other domain,
+C inform them and do not allow it.
+          IF(ICFD.NE.1)GOTO 756
 
 C Take contaminant definitions from contaminant flow network
           DOK=.TRUE.
@@ -2763,8 +3397,11 @@ C Define CFD grid cells for source type boundary condition
         helptopic='cfd_source_boundary_edit'
         call gethelptext(helpinsub,helptopic,nbhelp)
         t20='Source definition'
+        if(IVOLF(ISB,ICFD).ne.0)IFACE=IVOLF(ISB,ICFD)
         call PIKCELS(t20,VOLNAME(ISB,ICFD),Ii,If,Ji,Jf,Ki,Kf,
-     &                                          IVOLF(ISB,ICFD),IER)
+     &    IFACE,IER)
+        IVOLF(ISB,ICFD)=IFACE
+C        write(6,*) 'face f',ISB,ICFD,IFACE
         IVCELLS(ISB,ICFD,1)=Ii+1
         IVCELLS(ISB,ICFD,2)=If+1
         JVCELLS(ISB,ICFD,1)=Ji+1
@@ -2802,6 +3439,12 @@ C operations file here with some regard for standalone running of dfs
         CALL EASKABC('Add/Delete contaminant source',' ','add',
      &      'delete','cancel',IOWL,nbhelp)
         IF(IOWL.EQ.1)THEN
+
+C Contaminants currently only work for CFD domain 1.
+C If the user tries to input contaminants in any other domain,
+C inform them and do not allow it.
+          IF(ICFD.NE.1)GOTO 756
+
           IF(ICTDFAF.EQ.1)THEN
             helptopic='cfd_contam_delete_warn'
             call gethelptext(helpinsub,helptopic,nbhelp)
@@ -3029,6 +3672,13 @@ C Return.
         goto 7
       endif
         goto 5
+
+C Prevent user from entering contaminants.
+  756 write(H(1),'(a)')'Currently contaminants only work correctly in'
+      write(H(2),'(a)')'CFD domain 1. This limitation will probably be'
+      write(H(3),'(a)')'addressed in a future release of ESP-r.'
+      CALL PHELPD('Contaminants',3,'-',0,0,IER)
+      goto 144
       end
 
 
@@ -3049,8 +3699,13 @@ C IER=0 indicates no error.
      &          VOLCO2(MNVLS,MNZ),VOLVel(MNVLS,MNZ),VOLDir(MNVLS,MNZ,2),
      &          VOLArea(MNVLS,MNZ),VOLPres(MNVLS,MNZ),
      &          VOLPol(MCTM,MNVLS,MNZ)
-
-      character ITMSS(10)*50,FACE*6
+      COMMON/GEOM/XP(ntcelx),YP(ntcely),ZP(ntcelz),
+     1            DXEP(ntcelx),DXPW(ntcelx),DYNP(ntcely),DYPS(ntcely),
+     2            DZHP(ntcelz),DZPL(ntcelz),
+     3            SEW(ntcelx),SNS(ntcely),SHL(ntcelz),
+     4            XU(ntcelx),YV(ntcely),ZW(ntcelz)
+ 
+      character ITMSS(14)*50,FACE*6
       character ltmp*16,t12*12,d12*12,t20*20
       character VOLNAME*12, VCsurf*12
 
@@ -3079,8 +3734,11 @@ C Check if new blockage.
      &    Ji.lt.0.or.Jf.lt.0.or.
      &    Ki.lt.0.or.Kf.lt.0) then 
         t20='Blockage'
+        if(IVOLF(ISB,ICFD).ne.0)IFACE=IVOLF(ISB,ICFD)
         call PIKCELS(t20,VOLNAME(ISB,ICFD),Ii,If,Ji,Jf,Ki,Kf,
-     &                                           IVOLF(ISB,ICFD),IER)
+     &    IFACE,IER)
+        IVOLF(ISB,ICFD)=IFACE
+C        write(6,*) 'face g',ISB,ICFD,IFACE
         IVCELLS(ISB,ICFD,1)=Ii+1
         IVCELLS(ISB,ICFD,2)=If+1
         JVCELLS(ISB,ICFD,1)=Ji+1
@@ -3119,17 +3777,34 @@ C Set boundary type string.
       endif
 
 C Create a menu showing definitions for different conflation schemes.
+      xd=XU(If+2)-XU(Ii+1)  ! need to add 1 to indicies
+      yd=YV(Jf+2)-YV(Ji+1)
+      zd=ZW(Kf+2)-ZW(Ki+1)
+
+C Debug echo the coordinates of the blockage.
+C      write(6,*) 'cords X are:',XU(Ii+1),XU(If+2),xd
+C      write(6,*) 'cords Y are:',YV(Ji+1),YV(Jf+2),yd
+C      write(6,*) 'cords Z are:',ZW(Ki+1),ZW(Kf+2),zd
+
       write (ITMSS(1),'(a,a)')   'a Name: ',VOLNAME(ISB,ICFD)
       write (ITMSS(2),'(3a)')   '  Type: ',ltmp
       write (ITMSS(3),'(a)')     ' -----------------------------'
       write (ITMSS(4),'(a,a)')   '         Is  If  Js  Jf  Ks  Kf '
       write (ITMSS(5),'(a,6(i4))') 'c Cells:',Ii,If,Ji,Jf,Ki,Kf
       write (ITMSS(6),'(a)')     ' -----------------------------'
-      write(ITMSS(7),'(a,f6.2)')'e Heat flux (W/m^2):',VOLHeat(ISB,ICFD)
-      ITMSS(8) =' -----------------------------'
-      ITMSS(9)='? Help'
-      ITMSS(10)='- exit'
-      NITMS=10
+      write (ITMSS(7),'(a,f6.3,a,f6.3,a,f5.3)') '  Z cords: ',XU(Ii+1),
+     &                  ' to ',XU(If+2),' delta ',xd
+      write (ITMSS(8),'(a,f6.3,a,f6.3,a,f5.3)') '  Y cords: ',YV(Ji+1),
+     &                  ' to ',YV(Jf+2),' delta ',yd
+      write (ITMSS(9),'(a,f6.3,a,f6.3,a,f5.3)') '  Z cords: ',ZW(Ki+1),
+     &                  ' to ',ZW(Kf+2),' delta ',zd
+      write(ITMSS(10),'(a)')     ' -----------------------------'
+      write(ITMSS(11),'(a,f6.2)')'e Heat flux (W/m^2):',
+     &                  VOLHeat(ISB,ICFD)
+      ITMSS(12) =' -----------------------------'
+      ITMSS(13)='? Help'
+      ITMSS(14)='- exit'
+      NITMS=14
 
 C Help text for this menu.
       helptopic='cfd_blockage_menu'
@@ -3151,8 +3826,11 @@ C Get boundary name.
         endif
       elseif (INO.eq.5) then
  79     t20='Blockage'
+        if(IVOLF(ISB,ICFD).ne.0)IFACE=IVOLF(ISB,ICFD)
         call PIKCELS(t20,VOLNAME(ISB,ICFD),Ii,If,Ji,Jf,Ki,Kf,
-     &                                          IVOLF(ISB,ICFD),IER)
+     &    IFACE,IER)
+        IVOLF(ISB,ICFD)=IFACE
+C        write(6,*) 'face h',ISB,ICFD,IFACE
         IVCELLS(ISB,ICFD,1)=Ii+1
         IVCELLS(ISB,ICFD,2)=If+1
         JVCELLS(ISB,ICFD,1)=Ji+1
@@ -3178,7 +3856,7 @@ C Check for illegal volume (vol must be 2 cells thick in all directions).
           ERROR=.true.
         endif
         if (ERROR) goto 79
-      elseif (INO.eq.7) then
+      elseif (INO.eq.11) then
         VAL=VOLHeat(ISB,ICFD)
         call EASKR(VAL,'Heat flux (W/m^2) on blockage surfaces?',
      &    ' ',-1000.,'W',1000.,'W',10.,'heat flux',IER,nbhelp)
@@ -3222,37 +3900,37 @@ C Return if not k-e or MIT.
         IER=1
         return
       endif
-      ITMSS(1)= ' Direction  Wall  fns  HTCs  Qsurf           Tref'
+      ITMSS(1)=   'Direction|Wall function|HTCs / Qsurf     |Tref'
       if (ITURB(ICFD).eq.1) then
-        ITMSS(2)= 'a One-way log-law n/a  CFD   n/a'
+        ITMSS(2)= 'a One-way|log-law n/a  |CFD              |n/a'
         IHSID(2)=1
-        ITMSS(3)= 'b One-way Yuan    n/a  CFD   n/a'
+        ITMSS(3)= 'b One-way|Yuan    n/a  |CFD              |n/a'
         IHSID(3)=3
-        ITMSS(4)= 'c One-way Yuan    n/a  A*HC*(Tsurf-Tref) BSim '
+        ITMSS(4)= 'c One-way|Yuan    n/a  |A*HC*(Tsurf-Tref)|BSim '
         IHSID(4)=4
-        ITMSS(5)= 'd One-way Yuan    n/a A*HC*(Tsurf-Tref) CFD average'
+        ITMSS(5)= 'd One-way|Yuan    n/a  |A*HC*(Tsurf-Tref)|CFD ave.'
         IHSID(5)=5
-        ITMSS(6)= 'e One-way log-law n/a A*HC*(Tsurf-Tref) BSim'
+        ITMSS(6)= 'e One-way|log-law n/a  |A*HC*(Tsurf-Tref)|BSim'
         IHSID(6)=6
-        ITMSS(7)= 'f One-way log-law n/a A*HC*(Tsurf-Tref) CFD average'
+        ITMSS(7)= 'f One-way|log-law n/a  |A*HC*(Tsurf-Tref)|CFD ave.'
         IHSID(7)=7
-        ITMSS(8)= 'g One-way log-law local A*HC*(Tsurf-Tref) CFD local'
+        ITMSS(8)= 'g One-way|log-law local|A*HC*(Tsurf-Tref)|CFD local'
         IHSID(8)=8
-        ITMSS(9)= 'h Two-way log-law n/a  CFD    n/a'
+        ITMSS(9)= 'h Two-way|log-law n/a  |CFD              |n/a'
         IHSID(9)=9
-        ITMSS(10)='i Two-way Yuan    n/a  CFD    n/a'
+        ITMSS(10)='i Two-way|Yuan    n/a  |CFD              |n/a'
         IHSID(10)=11
-        ITMSS(11)='j Two-way Yuan   local A*HC*(Tsurf-Tref) CFD local'
+        ITMSS(11)='j Two-way|Yuan    local|A*HC*(Tsurf-Tref)|CFD local'
         IHSID(11)=12
-        ITMSS(12)='k Two-way log-law n/a  CFD    n/a'
+        ITMSS(12)='k Two-way|log-law n/a  |CFD              |n/a'
         IHSID(12)=13
-        ITMSS(12)='l Two-way log-law local A*HC*(Tsurf-Tp)      local'
+        ITMSS(12)='l Two-way|log-law local|A*HC*(Tsurf-Tp)  |local'
         IHSID(12)=14
         NITMS=12
       else
-        ITMSS(2)= 'a One-way   n/a   n/a  CFD  n/a'
+        ITMSS(2)= 'a One-way|n/a n/a      |CFD              |n/a'
         IHSID(2)=2
-        ITMSS(3)= 'b Two-way   n/a   n/a  CFD  n/a'
+        ITMSS(3)= 'b Two-way|n/a n/a      |CFD              |n/a'
         IHSID(3)=10
         NITMS=3
       endif
@@ -3392,43 +4070,37 @@ C Setup Ii and If and dflt and t30 for each of the faces.
       if (IFACE.eq.1) then
 
 C West face.
-        Ii=1
-        If=1
+        Ii=1; If=1
         write(dflt,'(6i4)') Ii,If,IONE,NTCY,IONE,NTCZ
         t30='(current face: west)'
       elseif (IFACE.eq.2) then
 
 C East face.
-        Ii=NTCX
-        If=NTCX
+        Ii=NTCX; If=NTCX
         write(dflt,'(6i4)') Ii,If,IONE,NTCY,IONE,NTCZ
         t30='(current face: east)'
       elseif (IFACE.eq.3) then
 
 C South face.
-        Ji=1
-        Jf=1
+        Ji=1; Jf=1
         write(dflt,'(6i4)') IONE,NTCX,Ji,Jf,IONE,NTCZ
         t30='(current face: south)'
       elseif (IFACE.eq.4) then
 
 C North face.
-        Ji=NTCY
-        Jf=NTCY
+        Ji=NTCY; Jf=NTCY
         write(dflt,'(6i4)') IONE,NTCX,Ji,Jf,IONE,NTCZ
         t30='(current face: north)'
       elseif (IFACE.eq.5) then
 
 C Low face.
-        Ki=1
-        Kf=1
+        Ki=1; Kf=1
         write(dflt,'(6i4)') IONE,NTCX,IONE,NTCY,Ki,Kf
         t30='(current face: low)'
       elseif (IFACE.eq.6) then
 
 C High face.
-        Ki=NTCZ
-        Kf=NTCZ
+        Ki=NTCZ; Kf=NTCZ
         write(dflt,'(6i4)') IONE,NTCX,IONE,NTCY,Ki,Kf
         t30='(current face: high)'
       else
@@ -3605,23 +4277,19 @@ C gridding generation.
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
-      COMMON/RAY2/ITDSP,ITBND,ITEPT,ITZNM,ITSNM,ITVNO,ITORG,ITSNR,
-     &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS,ITPPSW
-      COMMON/RAY3/MODIFY,MODLEN,MODBND
 
 C Curvilinear boundary vertex numbers.
       common/CLVTXNO/ivxhigh(MV),ivxlow(MV),ihigh,ilow
 
-      LOGICAL MODIFY,MODLEN,MODBND
       logical clkok,found
 
       DIMENSION COG1(3),COG2(3),COG3(3),JJVN(MV)
 
       CHARACTER act*1,HOLD*72,outs*124
 #ifdef OSI
-      integer iix,iiy,ixd,iyd
+      integer iix,iiy,iixx,iiyy,ixd,iyd,iik
 #else
-      integer*8 iix,iiy,ixd,iyd
+      integer*8 iix,iiy,iixx,iiyy,ixd,iyd,iik
 #endif
 
 C For help messages
@@ -3638,7 +4306,7 @@ C Tell the user the rules of selection.
       CALL PHELPD('gen start popup',nbhelp,'-',0,0,IER)
 
 C Redraw the zone with vertices.
-      MODIFY=.TRUE.
+      MODIFYVIEW=.TRUE.
       MODBND=.TRUE.
       CALL INLNST(1)
       ITVNO=0
@@ -3664,8 +4332,8 @@ C the individual vertex numbers from the list.
           ijvn=0
           call edisp(iuout,
      &        'Select points via cursor...type `e` to finish.')
-  46      CALL trackview(ii,ixx,iyy)
-          if(ii.eq.69.or.ii.eq.101)goto 47
+  46      CALL trackview(iik,iixx,iiyy)
+          if(iik.eq.69.or.iik.eq.101)goto 47
           found=.false.
           do 45 i=1,NTV
             COG1(1)=X(I)
@@ -3674,15 +4342,15 @@ C the individual vertex numbers from the list.
             CALL VECTRN(COG1,TEMAT,COG2,IER)
             CALL VECTRN(COG2,ETSMAT,COG3,IER)
             call u2pixel(COG3(1),COG3(2),iix,iiy)
-            ixd=iix-ixx
-            iyd=iiy-iyy
+            ixd=iix-iixx
+            iyd=iiy-iiyy
             if(abs(ixd).lt.5.and.abs(iyd).lt.5)then
               if(found)then
                 call edisp(iuout,'Close points...try again.')
                 goto 46
               endif
-              WRITE(outs,'(a,i5,a,i5,a,i3)')' The point @ x=',ixx,
-     &          ' & y=',iyy,' matches vertex ',i
+              WRITE(outs,'(a,i5,a,i5,a,i3)')' The point @ x=',iixx,
+     &          ' & y=',iiyy,' matches vertex ',i
               call edisp(iuout,outs)
               found=.true.
 
@@ -3726,8 +4394,8 @@ C Ask for and display the bottom defining vertices (west to east).
           ijvn=0
           call edisp(iuout,
      &        'Select points via cursor...type `e` to finish.')
-  56      CALL trackview(ii,ixx,iyy)
-          if(ii.eq.69.or.ii.eq.101)goto 57
+  56      CALL trackview(iik,iixx,iiyy)
+          if(iik.eq.69.or.iik.eq.101)goto 57
           found=.false.
           do 55 i=1,NTV
             COG1(1)=X(I)
@@ -3736,15 +4404,15 @@ C Ask for and display the bottom defining vertices (west to east).
             CALL VECTRN(COG1,TEMAT,COG2,IER)
             CALL VECTRN(COG2,ETSMAT,COG3,IER)
             call u2pixel(COG3(1),COG3(2),iix,iiy)
-            ixd=iix-ixx
-            iyd=iiy-iyy
+            ixd=iix-iixx
+            iyd=iiy-iiyy
             if(abs(ixd).lt.5.and.abs(iyd).lt.5)then
               if(found)then
                 call edisp(iuout,'Close points...try again.')
                 goto 56
               endif
-              WRITE(outs,'(a,i5,a,i5,a,i3)')' The point @ x=',ixx,
-     &          ' & y=',iyy,' matches vertex ',i
+              WRITE(outs,'(a,i5,a,i5,a,i3)')' The point @ x=',iixx,
+     &          ' & y=',iiyy,' matches vertex ',i
               call edisp(iuout,outs)
               found=.true.
               ijvn=ijvn+1

@@ -45,6 +45,7 @@ C geometry.h provides commons G0/G2/c20/precz.
 #include "epara.h"
 #include "sbem.h"
 #include "CFC_common.h"
+#include "prj3dv.h"
 
       integer lnblnk  ! function definition
 
@@ -60,14 +61,11 @@ C geometry.h provides commons G0/G2/c20/precz.
       common/PRECT4/TOPTIC(MCOM,MTMC)
       COMMON/TMCB1/IBCMT(MCOM,MTMC)
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
-      COMMON/RAY2/ITDSP,ITBND,ITEPT,ITZNM,ITSNM,ITVNO,ITORG,ITSNR,
-     &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS,ITPPSW
-      COMMON/RAY3/MODIFY,MODLEN,MODBND
       common/user/browse
       COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,CFCDBOK
 
       LOGICAL OK,DOK,CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,CFCDBOK
-      LOGICAL MODIFY,MODLEN,MODBND,browse,savereturn
+      LOGICAL browse,savereturn
 
       DIMENSION VERT(35),libcmt(MTMC)
 
@@ -190,7 +188,7 @@ C On entry display the current zone. Reset all surface lines to std.
       nzg=1
       nznog(1)=ICOMP
       izgfoc=ICOMP
-      MODIFY=.TRUE.
+      MODIFYVIEW=.TRUE.
       MODLEN=.TRUE.
       MODBND=.TRUE.
       again=.false.
@@ -378,7 +376,7 @@ C of the *.cfc file is assembled in subroutine 'makeCFCfile'.
           icfc(icomp)=1
           lcfcin(icomp)=CFCFILE
           ltmp=lcfcin(icomp)
-          CALL EASKS(ltmp,'CFC file name?',
+          CALL EASKS(ltmp,'Complex fenistration (CFC) file name?',
      &      ' ',72,CFCFILE,'CFC file name',IER,nbehlp)
           if(ltmp(1:2).ne.'  '.and.ltmp(1:4).ne.'UNKN')then
             lcfcin(icomp)=ltmp
@@ -614,7 +612,7 @@ C If any of the surfaces are transparent save this info.
       DO 61 IS=1,NZSUR(icomp)
         icn1=izstocn(icomp,is)
         IF(SSOTF(icn1)(1:4).NE.'OPAQ'.AND.
-     &            SSOTF(icn1)(1:3).NE.'CFC')TFOUND=.TRUE.
+     &     SSOTF(icn1)(1:3).NE.'CFC')TFOUND=.TRUE.
         IF(ITMCFL(ICOMP,IS).GT.0)TFOUND=.TRUE.
   61  CONTINUE
       IF(TFOUND)THEN

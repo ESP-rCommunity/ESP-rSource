@@ -23,12 +23,19 @@ C standard data files:
 C  EDDB  : Controls specification/ browsing of standard data files.
 C  opendb: Standard opening of thermophysical and optical data.
 C EDDBMATERIAL Changes the materials referemces in cfg file.
-C EDDBMLCON Changes the constructions references in the cfg file.
+C EDDBCFC: Changes the CFC layers db
 C EDDBPCDB Changes the plant components current cfg file references.
+C EDDBPREDEF: Changes the predefined objects database.
 C EDDBPROFILE Changes the events profile in cfg file.
+C EDDBMLCON Changes the constructions references in the cfg file.
 C EDDBOPT Changes the common optics in cfg file.
+C EDDBPRES: Changes the wind pressure coef file.
 C EDDBCLM: Changes the weather file in cfg file.
 C EDDBMSC Changes the active components in cfg file.
+C EDDBMOULD: Changes the micotoxin db file.
+C copycommonfile: manages copy of files from common databases folder.
+C usemodeldbsfile: manages copy of files in model dbs folder.
+C usecommondbsfile: points to common databases folder.
 
 C ********** EDDB 
 C Controls specification/ browsing of standard data files.
@@ -70,7 +77,7 @@ C default file names for standard files
       integer NITMS,INO ! max items and current menu item
 
       character path*72
-      character*72 ITEMS(18)
+      character*72 ITEMS(19)
       character lworking*144  ! for processing file names
       
 C Strings for dos version of source and destination of db file.
@@ -272,21 +279,32 @@ C yet defined.
         WRITE(ITEMS(15),'(2A)')'k CFC layers            : <std>',
      &    LCFCDB(1:38)
       endif
+      if(ipathpredef.eq.0)then
+        WRITE(ITEMS(16),'(2A)')'l predefined objects    : ',
+     &    LPREDEF(1:43)
+      elseif(ipathpredef.eq.1)then
+        lndbpth=lnblnk(dbspth)+2
+        WRITE(ITEMS(16),'(2A)')'l predefined objects    : <mod>',
+     &    LPREDEF(lndbpth:38)
+      elseif(ipathpredef.eq.2)then
+        WRITE(ITEMS(16),'(2A)')'l predefined objects    : <std>',
+     &    LPREDEF(1:38)
+      endif
 
-      ITEMS(16)='  _______________________________ '
-      ITEMS(17)='? help                            '
-      ITEMS(18)='- exit this menu                  '
+      ITEMS(17)='  _______________________________ '
+      ITEMS(18)='? help                            '
+      ITEMS(19)='- exit this menu                  '
 
 C Try to compact the width of the menu.
       IW=0
-      do 141 ij=1,18
+      do 141 ij=1,19
         if(lnblnk(ITEMS(ij)).gt.IW)IW=lnblnk(ITEMS(ij))
  141  continue
 
 C Help text for this menu.
       helptopic='database_mgt_overview'
       call gethelptext(helpinsub,helptopic,nbhelp)
-      NITMS=18
+      NITMS=19
       if(MMOD.EQ.8)then
         impx=0
         impy=0
@@ -296,7 +314,7 @@ C Help text for this menu.
       else
         CALL EMENU('Standard data maintenance',ITEMS,NITMS,INO)
       endif
-      IF(INO.EQ.18)THEN
+      IF(INO.EQ.19)THEN
         if(browse)return   ! no change since browsing
 
         if(cfgroot(1:2).ne.'  '.and.cfgroot(1:4).ne.'UNKN')then
@@ -315,6 +333,7 @@ C No model yet so reset to the default names and exit.
           write(MCMPDBFL,'(a)') DMCMPDBFL(1:lnblnk(DMCMPDBFL))
           write(lfmould,'(a)') dmdbnam(1:lnblnk(dmdbnam))
           write(LCFCDB,'(a)') DCFCDB(1:lnblnk(DCFCDB))
+          write(LPREDEF,'(a)') DPREDEF(1:lnblnk(DPREDEF))
           return
         endif
 
@@ -483,7 +502,25 @@ C if db name or contents have changed.
           endif
         endif
 
-      ELSEIF(INO.EQ.17)THEN
+      ELSEIF(INO.EQ.16)THEN
+
+C Manage predefined obj db and if a model loaded then warn user 
+C if db name or contents have changed.
+        call eddbpredef(moddb,modcon)
+        if(cfgroot(1:2).ne.'  '.and.cfgroot(1:4).ne.'UNKN')then
+          if(moddb)then
+            call usrmsg(
+     &      'The file name might have changed. Suggest',
+     &      'using the `save model` option to record this.','W')
+          endif
+          if(modcon)then
+            call usrmsg(
+     &      'The file details might have changed. In a moment',
+     &      'you will be offered the option to update zone files.','W')
+          endif
+        endif
+
+      ELSEIF(INO.EQ.18)THEN
 
 C Menu help text.
         helptopic='database_mgt_overview'
@@ -1964,6 +2001,7 @@ C     if blank then no file name change implied.
 
       common/OUTIN/IUOUT,IUIN
       common/appw/iappw,iappx,iappy
+      integer iappw,iappx,iappy
       integer childterminal  ! picks up mmod from starting of prj
       common/childt/childterminal
       common/rpath/path
@@ -1978,6 +2016,7 @@ C      CHARACTER outs248*248
       LOGICAL CLKOK,OK,COPYDEF,MODDB,XST,DOK,concat
       character dinstpath*60,path*72,tmode*8
       character dirpath*72
+      integer iappwpc ! application %
 
 C Local strings for user selections dependent on graphic library.
       CHARACTER ZPDESC*25
@@ -2411,9 +2450,14 @@ C Get logical name of child process terminal type and create a string to drive p
         call tstamp('>','PRJ: start pdb')
         doit = ' '
         call terminalmode(childterminal,tmode)
-        if(iappw.gt.0.and.iappw.le.200)then
+        if(iappw.eq.630)then
+          iappwpc=100
+        else
+          iappwpc=nint(100.0*(real(iappw)/630.0))  ! reconstitute %
+        endif
+        if(iappwpc.gt.0.and.iappwpc.le.200)then
           write(doit,'(3a,3i4,3a)') 'pdb -mode ',tmode,
-     &      ' -s ',iappw,iappx+10,iappy+40,' -file ',
+     &      ' -s ',iappwpc,iappx+10,iappy+40,' -file ',
      &      longtfile(1:lnblnk(longtfile)),' &'
         else
           write(doit,'(5a)') 'pdb -mode ',tmode,
@@ -2429,6 +2473,366 @@ C Get logical name of child process terminal type and create a string to drive p
       endif
 
       return
+      end
+
+
+C ********** EDDBPREDEF
+C Eddbpredef manages predefined object db current cfg file references.
+C moddb is from version manager
+C modcon signals change in objects.
+
+      SUBROUTINE EDDBPREDEF(moddb,modcon)
+#include "building.h"
+#include "model.h"
+#include "esprdbfile.h"
+#include "material.h"
+      
+      integer lnblnk  ! function definition
+
+      common/FILEP/IFIL
+      common/OUTIN/IUOUT,IUIN
+
+C Default ESP-r distribution path.
+      common/deflt4/dinstpath
+
+      logical moddb,modcon,copydef,chgdb
+      character fs*1
+      character LLTMP*144
+      character lprev*144
+      character longtfile*144
+      character dirpath*72
+
+      CHARACTER outs248*248
+      LOGICAL XST,concat
+      character dinstpath*60
+
+      character sfile*72,snpfile*72
+
+C Predefined entity variables.
+      character name*12   ! the object names to pass
+      character objmenu*32
+      real objbb(3)
+
+C Local strings for user selections dependent on graphic library.
+      integer lndbp   ! for length of standard path
+      integer ier
+      logical unixok  ! to check for path file separators
+      logical allowbrowse ! to be done
+      logical requestpreview
+
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='EDDBPREDEF'  ! set for subroutine
+
+C Clear string buffers.
+      lltmp=' '
+      requestpreview=.false.
+
+C Set folder separator (fs) to \ or / as required.
+      call isunix(unixok)
+      if(unixok)then
+        fs = char(47)
+      else
+        fs = char(92)
+      endif
+
+C Setup string buffer with distribution database folder name.
+      write(dirpath,'(4a)') dinstpath(1:lnblnk(dinstpath)),
+     &  fs,'databases',fs
+      ldirpath=lnblnk(dirpath)
+
+C Remember the initial file name in case user choice fails.
+C Take into account the current value of ipathmat.
+      lndbp=lnblnk(standarddbpath)
+      if(ipathpredef.eq.0.or.ipathpredef.eq.1)then
+        write(lprev,'(a)') LPREDEF(1:lnblnk(LPREDEF))
+      elseif(ipathpredef.eq.2)then
+        write(lprev,'(3a)') standarddbpath(1:lndbp),fs,
+     &    LPREDEF(1:lnblnk(LPREDEF))
+      endif
+
+C Debug.
+      write(outs248,*) 'Current predef ',lprev(1:lnblnk(lprev))
+      call edisp248(iuout,outs248,100)
+
+C Setup lltmp to hold the full path to the file for use in dialog.
+  60  continue
+      if(ipathpredef.eq.0.or.ipathpredef.eq.1)then
+        lltmp=LPREDEF  ! use as is
+      elseif(ipathpredef.eq.2)then
+        write(lltmp,'(3a)') standarddbpath(1:lndbp),fs,
+     &    LPREDEF(1:lnblnk(LPREDEF))  ! prepend db folder path
+      endif
+
+      helptopic='pre_db_edit_menu'
+      call gethelptext(helpinsub,helptopic,nbhelp)
+
+C If local or absolute path call addpath otherwise if a standard
+C file then set longtfile equal to LLTMP.
+      if(ipathpredef.eq.0.or.ipathpredef.eq.1)then
+        call addpath(lltmp,longtfile,concat)
+      elseif(ipathpredef.eq.2)then
+        longtfile=lltmp
+      endif
+      ltf=max(1,lnblnk(longtfile))
+      INQUIRE (FILE=longtfile(1:ltf),EXIST=xst)
+
+C Make up options depending on where the file is.
+      IF(.NOT.XST)THEN
+
+C If db does not exist locally offer limited choices.
+        idno=2
+        isw=0
+        call MENUATOL('  ','Predefined objects',
+     &    ' ','b select file from list',
+     &    'c select from model ../dbs',
+     &    'd copy default file to model',
+     &    'e copy file from common to model',
+     &    'f scan geo file -> object','g preview object',
+     &    ' ',' ',' ',' ',' ',isw,idno,nbhelp)
+        if(isw.eq.4)copydef=.true.
+        if(isw.eq.5)copydef=.false.
+      elseif(longtfile(1:ldirpath).eq.dirpath(1:ldirpath))then
+
+C If standard file then offer the following choices (incl /):
+        idno=1
+        isw=0
+        call MENUATOL('  ','Predefined objects <std>',
+     &    'a browse/edit','b select file from list',
+     &    'c select from model ../dbs',
+     &    'd copy default file to model',
+     &    'e copy file from common to model',
+     &    'f scan geo file -> object','g preview object ',
+     &    ' ',' ',' ',' ',' ',isw,idno,nbhelp)
+        copydef=.false.
+      elseif(longtfile(1:ldirpath-1).eq.dirpath(1:ldirpath-1))then
+
+C If standard file then offer the following choices (without /):
+        idno=1
+        isw=0
+        call MENUATOL('  ','Predefined objects <std>',
+     &    'a browse/edit','b select file from list',
+     &    'c select from model ../dbs',
+     &    'd copy default file to model',
+     &    'e copy file from common to model',
+     &    'f scan geo file -> object','g preview object',
+     &    ' ',' ',' ',' ',' ',isw,idno,nbhelp)
+        copydef=.false.
+      else
+
+C If db exists locally toggle whether the user is asked to copy the
+C default file or the current database.
+        idno=1
+        isw=0
+        call MENUATOL('  ','Predefined objects <mod>',
+     &    'a browse/edit','b select file from list',
+     &    'c select from model ../dbs',
+     &    'd copy default file to model',
+     &    'e copy file from common to model',
+     &    'f scan geo file -> object','g preview object',
+     &    ' ',' ',' ',' ',' ',isw,idno,nbhelp)
+        if(isw.eq.4)copydef=.true.
+        if(isw.eq.5)copydef=.false.
+      endif
+
+C Act on the user's choice. If no choice return to calling menu.
+      if(isw.eq.0)then
+        return
+      elseif(isw.eq.1)then
+
+C If file exists read it and enter editing facility after
+C check to see if it is local or standard or absolute path.
+        if(XST)then
+          call findwhichdbpath('pre',lltmp,ier)
+          goto 44
+        else
+          call edisp(iuout,
+     &    'No file to browse/edit. Please use another option.')
+          LPREDEF=lprev
+          goto 60
+        endif
+
+      elseif(isw.eq.2)then
+
+C Allow user to select from the distribution databases folder for an
+C predefined obj file. If moddb was set to true then proceed to edit
+C the objects.
+        numhelp=nbhelp
+        lltmp='  '
+        call usecommondbsfile('pre',numhelp,lltmp,istat,moddb)
+        if(istat.eq.0.and.moddb)then
+          goto 44
+        else
+          goto 60
+        endif
+
+      elseif(isw.eq.6)then
+
+C Scan existing geometry file that represents the form and composition
+C of the object (assumed to be in model zones folder).
+        sfile=' '
+        snpfile=' '
+        call browsefilelist('?','zon','geo',sfile,snpfile,nfile,iier)
+        if(nfile.gt.0)then
+          sfile=' '
+          snpfile=' '
+          call browsefilelist('b','zon','geo',sfile,snpfile,nfile,
+     &      iier)
+          if(snpfile(1:2).ne.'  ')then
+            write(lltmp,'(3a)')zonepth(1:lnblnk(zonepth)),fs,
+     &      snpfile(1:lnblnk(snpfile))
+            IUNIT=IFIL+1
+            CALL ERPFREE(IUNIT,ISTAT)
+
+C Variant of geometry read that fills object commons. Lets
+C assume that only new geometry files are scanned.
+            call GEO2OBJ(IUNIT,lltmp,ITRU,IER)
+
+C Ask to see details or write details.
+            call easkabc('Choices:',' ','list & view contents',
+     &        'write to ASCII file','continue',ibopt,nbhelp)
+            if(ibopt.eq.1)then
+              call edisp(iuout,'Work in progress...')
+              lltmp=' '
+              CALL OBJQA(iunit,lltmp,'QA',IER) 
+              CALL PADJVIEW(IER)
+
+            elseif(ibopt.eq.2)then
+              write(lltmp,'(3a)')dbspth(1:lnblnk(dbspth)),fs,
+     &          'exported_object.txt'
+              CALL ERPFREE(IUNIT,ISTAT)
+              CALL OBJQA(iunit,lltmp,'EX',IER) 
+              CALL ERPFREE(IUNIT,ISTAT)
+
+            endif
+          endif
+        endif
+
+      elseif(isw.eq.7)then
+
+C If file exists read it and enter editing facility after
+C check to see if it is local or standard or absolute path.
+        if(XST)then
+          call findwhichdbpath('pre',lltmp,ier)
+          requestpreview=.true.
+          goto 44
+        else
+          call edisp(iuout,
+     &    'No file to browse/edit. Please use another option.')
+          LPREDEF=lprev
+          goto 60
+        endif
+
+      elseif(isw.eq.4)then
+
+C Copy standard file to model folder. Suggest a local
+C file name based on the project root name. Update common to
+C reflect it is local.
+        allowbrowse=.false.
+        numhelp=nbhelp
+        lltmp='  '
+        call copycommonfile('pre',copydef,allowbrowse,
+     &  numhelp,lltmp,istat,moddb)
+     
+        if(istat.eq.1)then
+          LPREDEF=lprev
+          goto 60  ! cancel detected, restore name and redisplay menu.
+        elseif(istat.eq.0)then
+          goto 44
+        endif
+
+      elseif(isw.eq.3)then
+
+C Allow user to select from the model ../dbs folder for a
+C predefined obj file. If moddb was set to true then proceed to edit
+C objects << to be done >>.
+        numhelp=nbhelp
+        lltmp='  '
+        call usemodeldbsfile('pre',numhelp,lltmp,istat,moddb)
+        if(istat.eq.0.and.moddb)then
+          goto 44
+        else
+          goto 60
+        endif
+
+      elseif(isw.eq.5)then
+
+C Create a menu list of files in the distribution databases folder
+C If user requests, copy one of those files to the model folder.
+        copydef=.false.
+        allowbrowse=.true.
+        numhelp=nbhelp
+        lltmp='  '
+        call copycommonfile('pre',copydef,allowbrowse,
+     &    numhelp,lltmp,istat,moddb)
+     
+        if(istat.eq.1)then
+          LPREDEF=lprev
+          goto 60  ! cancel detected, restore name and redisplay menu.
+        elseif(istat.eq.0)then
+          goto 44
+        endif
+
+      endif
+
+C Test the selected or copied file. If a problem loop back
+C otherwise edit its contents.
+   44 continue
+
+      write(outs248,'(2a)') 'Accessing predefined db: ',
+     &  LPREDEF(1:lnblnk(LPREDEF))
+      call edisp248(iuout,outs248,100)
+
+      if(ipathpredef.eq.0.or.ipathpredef.eq.1)then
+        lltmp=LPREDEF  ! use as is
+      elseif(ipathpredef.eq.2)then
+        write(lltmp,'(3a)') standarddbpath(1:lndbp),fs,
+     &    LPREDEF(1:lnblnk(LPREDEF))  ! prepend db folder path
+      endif
+
+      ier=0
+
+C Predefined entities. Select which to focus on.
+      call choosepredef(name,objmenu,objbb,ier)
+      if(ier.eq.2)then
+        goto 60    ! nothing selected
+      elseif(ier.eq.1)then
+        call usrmsg('Predefined objects not found or the file',
+     &              'was corrupt','W')
+        goto 60
+      endif
+
+      moddb=.true.
+      modcon=.true.
+      chgdb=.false.
+      if(requestpreview)then
+
+C Read into commons the selected predefined entity.
+        call RPREDEFCOM(IFIL+2,lltmp,name,IER)
+        call edisp(iuout,'QA in progress...')
+        lltmp=' '
+        CALL OBJQA(iunit,lltmp,'QA',IER) 
+        CALL PADJVIEW(IER)
+      endif
+
+C Offer editing ?? of predefined entities.
+C Ask user about its *incat,category, *includes,topics
+C << TODO >>
+
+      if(chgdb)then
+
+      endif
+      modcon=chgdb
+
+      goto 60
+
+C Error messages.
+C   13 CALL USRMSG(' Write error to predefined db ',LLTMPFL,'W')
+C      IER=1
+C      return
       end
 
 C ********** EDDBPROFILE
@@ -3898,6 +4302,7 @@ C espriou.h provides currentfile.
       COMMON/C1/NCOMP,NCON
 
       common/appw/iappw,iappx,iappy
+      integer iappw,iappx,iappy
       COMMON/PERC/ID1,IM1,IT1,ID2,IM2,IT2,IDS,IDF,INEW
       common/rpath/path
       COMMON/CLMDT1/CLMLOC
@@ -3911,7 +4316,7 @@ C Calendar.
 
       CHARACTER DFILE*72,LLASCI*144,ltmp*96,lguess*144
       character longtfile*144,longtafile*144
-      character message*48,longtmp*144
+      character message*48,message2*72,longtmp*144
       CHARACTER DOIT*248,ldoit*300
       CHARACTER fs*1,TMODE*8,CLMLOC*30,LCOPY*144
       CHARACTER OUTS*124,APP*6,ext*4,llclmdb*144
@@ -3926,6 +4331,7 @@ C Calendar.
       integer icreport  ! to signal that calendar has been updated.
       integer IDOL,IDAYNUM,IMTHNUM,IDWKNUM,IDTYY  ! for correcting calendar
       logical closelat,closelong,clkok,usercreatednew
+      integer iappwpc ! application %
 
 C For help messages
       character helpinsub*24 ! subroutine name
@@ -4044,9 +4450,14 @@ C << update to deal with dos paths >>
         elseif(ipathclim.eq.2)then
           longtfile=llclmdb
         endif
-        if(iappw.gt.0.and.iappw.le.200)then
+        if(iappw.eq.630)then
+          iappwpc=100
+        else
+          iappwpc=nint(100.0*(real(iappw)/630.0))  ! reconstitute %
+        endif
+        if(iappwpc.gt.0.and.iappwpc.le.200)then
           write(doit,'(3a,3i4,2a)') 'clm -mode ',tmode,
-     &        ' -s ',iappw,iappx+10,iappy+10,' -file ',
+     &        ' -s ',iappwpc,iappx+10,iappy+10,' -file ',
      &        longtfile(1:lnblnk(longtfile))
         else
           write(doit,'(4a)') 'clm -mode ',tmode,' -file ',
@@ -4514,28 +4925,40 @@ C otherwise create with 0 length.
         goto 552  ! jump back to redisplay menu
       endif
 
-C Check if weather site and model site differ.
-      call eclose(clat,sitelat,0.01,closelat)
-      call eclose(clong,sitelongdif,0.01,closelong)
+C Check if weather site and model site differ greatly.
+      call eclose(clat,sitelat,2.0,closelat)
+      call eclose(clong,sitelongdif,2.0,closelong)
       if(closelat.and.closelong)then
         continue
       else
-        write(outs,'(A,F6.2,A,F6.2,a,i4,a,2F6.2,a)')
-     &    'The climate lat is ',clat,
-     &    ' & long diff is ',clong,' & Year & DN flag ',ICYEAR,
-     &    '. The model uses ',sitelat,sitelongdif,'.'
-        dok=.false.
-        CALL ASKOK(outs,
-     &    'Update your model with climate data?',OK,DOK,3)
-        if(OK)then
-          sitelat=CLAT
-          sitelongdif=CLONG
-          WRITE(OUTS,'(A,F6.2,A,F6.2,A)')'A latitude of ',sitelat,
-     &     ' and longitude diff of ',sitelongdif,
-     &     ' is associated with the model.'
-          CALL EDISP(IUOUT,OUTS)
-          CALL EDISP(IUOUT,' ')
-        endif
+        call edisp(iuout,
+     &    'Noticed more than 2 degrees of difference from the current')
+        call edisp(iuout,
+     &    'model site and the location information in weather file.')
+        write(outs,'(A,F6.2,A)')
+     &    'The weather file latitude is ',clat,' & its longitude or '
+        call edisp(iuout,outs)
+        write(outs,'(A,F6.2,A)')
+     &    'its longitude difference from time meridian is',clong,
+     &    ' degrees (which ever is applicable).'
+        call edisp(iuout,outs)
+        write(outs,'(a,F6.2,a,F6.2,a)') ' The model uses latitude ',
+     &    sitelat,' and longitude difference from time meridian',
+     &    sitelongdif,'degrees.'
+        call edisp(iuout,outs)
+C        dok=.false.
+C        CALL ASKOK(outs,message2,OK,DOK,3)
+C        if(OK)then
+C          sitelat=CLAT
+C          slat=sitelat  ! sitelat is in common C4 in site.h slat is common C8
+C          sitelongdif=CLONG
+C          slon=sitelongdif  ! sitelongdif is in common C4 in site.h slon is common C8
+C          WRITE(OUTS,'(A,F6.2,A,F6.2,A)')'A latitude of ',sitelat,
+C     &     ' and longitude diff from time meridian of ',sitelongdif,
+C     &     ' is now associated with the model.'
+C          CALL EDISP(IUOUT,OUTS)
+C          CALL EDISP(IUOUT,' ')
+C        endif
       ENDIF
 
 C Update year.  This is similar logic as is used in esystem.F ~line 1569
@@ -4634,9 +5057,14 @@ C Debug.
         elseif(ipathclim.eq.2)then
           longtfile=llclmdb
         endif
-        if(iappw.gt.0.and.iappw.le.200)then
+        if(iappw.eq.630)then
+          iappwpc=100
+        else
+          iappwpc=nint(100.0*(real(iappw)/630.0))  ! reconstitute %
+        endif
+        if(iappwpc.gt.0.and.iappwpc.le.200)then
           write(doit,'(3a,3i4,2a)') 'clm -mode ',tmode,
-     &      ' -s ',iappw,iappx+10,iappy+10,' -file ',
+     &      ' -s ',iappwpc,iappx+10,iappy+10,' -file ',
      &      longtfile(1:lnblnk(longtfile))
         else
           write(doit,'(4a)') 'clm -mode ',tmode,' -file ',
@@ -5017,6 +5445,7 @@ C is via a text editor.
       common/FILEP/IFIL
       common/OUTIN/IUOUT,IUIN
       common/appw/iappw,iappx,iappy
+      integer iappw,iappx,iappy
       integer childterminal  ! picks up mmod from starting of prj
       common/childt/childterminal
 
@@ -5034,6 +5463,7 @@ C      character path*72
       LOGICAL OK,COPYDEF,MODDB,XST,DOK,concat
       character dinstpath*60,dirpath*72
       character tmode*8
+      integer iappwpc ! application %
 
 C Local strings for user selections dependent on graphic library.
       integer lndbp   ! for length of standard path
@@ -5229,9 +5659,14 @@ C reflect it is local.
 C Start the mould utility.
         doit = ' '
         call terminalmode(childterminal,tmode)
-        if(iappw.gt.0.and.iappw.le.200)then
+        if(iappw.eq.630)then
+          iappwpc=100
+        else
+          iappwpc=nint(100.0*(real(iappw)/630.0))  ! reconstitute %
+        endif
+        if(iappwpc.gt.0.and.iappwpc.le.200)then
           write(doit,'(3a,3i4,3a)') 'mld -mode ',tmode,
-     &      ' -s ',iappw,iappx+10,iappy+40,' -file ',
+     &      ' -s ',iappwpc,iappx+10,iappy+40,' -file ',
      &      longtfile(1:lnblnk(longtfile)),' &'
         else
           write(doit,'(5a)') 'mld -mode ',tmode,
@@ -5355,7 +5790,7 @@ C Passed parameters:
                           ! mlc = constructions  opt = optics
                           ! pdb = plant components  prs = pressure coef
                           ! msc = active components  mld = mould isopleths
-                          ! pro = event profiles  clm = weather
+                          ! pro = event profiles  clm = weather pre = predefined
       logical copydef     ! copy the default file or current file
       logical allowbrowse ! whether browse of common folder allowed
       integer numhelp     ! number of help lines from calling code
@@ -5506,6 +5941,17 @@ C        sourcemsg='CFC layers properties file (in common).'   ! dialog
      &      LCFCDB(1:lnblnk(LCFCDB))
         endif
 
+      elseif(topic(1:3).eq.'pre')then
+        defaultfile=DPREDEF     ! default standard file
+C        sourcemsg='Predefined file (in common).'   ! dialog
+        ending='.predef.a'  ! file ending
+        if(ipathpredef.eq.0.or.ipathpredef.eq.1)then
+          write(lguess,'(a)') LPREDEF(1:lnblnk(LPREDEF)) ! suggested name
+        elseif(ipathpredef.eq.2)then
+          write(lguess,'(3a)') standarddbpath(1:lndbp),fs,
+     &      LPREDEF(1:lnblnk(LPREDEF))
+        endif
+
       endif
 
 C Create a general fall-back file name.
@@ -5587,6 +6033,8 @@ C        endif
           ipathclim=1   ! signal that it is a local file.
         elseif(topic(1:3).eq.'cfc')then
           ipathcfc=1  ! signal that it is a local file.
+        elseif(topic(1:3).eq.'pre')then
+          ipathpredef=1  ! signal that it is a local file.
         else
 
         endif
@@ -5706,6 +6154,9 @@ C If it exists then update the common block name.
           elseif(topic(1:3).eq.'cfc')then
             write(LCFCDB,'(3a)') dbspth(1:lnblnk(dbspth)),fs,
      &        fname(1:lnblnk(fname))
+          elseif(topic(1:3).eq.'pre')then
+            write(LPREDEF,'(3a)') dbspth(1:lnblnk(dbspth)),fs,
+     &        fname(1:lnblnk(fname))
           else
 
           endif
@@ -5740,6 +6191,8 @@ C Signal that file is a local to model.
           ipathclim=1
         elseif(topic(1:3).eq.'cfc')then
           ipathcfc=1
+        elseif(topic(1:3).eq.'pre')then
+          ipathpredef=1
         else
 
         endif
@@ -5771,7 +6224,7 @@ C Passed parameters:
                           ! mlc = constructions  opt = optics
                           ! pdb = plant components  prs = pressure coef
                           ! msc = active components  mld = mould isopleths
-                          ! pro = event profiles  clm = weather
+                          ! pro = event profiles  clm = weather pre = predefined
       integer numhelp     ! number of help lines from calling code
       character lltmp*144 ! the returned file name
       integer istat       ! return status index for calling code
@@ -5887,6 +6340,14 @@ C users and the guess for file name.
           write(lguess,'(3a)') standarddbpath(1:lndbp),fs,
      &      LCFCDB(1:lnblnk(LCFCDB))
         endif
+      elseif(topic(1:3).eq.'pre')then
+        sourcemsg='Predefined objects file (in ../dbs).'
+        if(ipathpredef.eq.0.or.ipathpredef.eq.1)then
+          lguess=LPREDEF
+        elseif(ipathpredef.eq.2)then
+          write(lguess,'(3a)') standarddbpath(1:lndbp),fs,
+     &      LPREDEF(1:lnblnk(LPREDEF))
+        endif
       endif
 
 C Remind user the current common data file.
@@ -5960,6 +6421,9 @@ C User did not select a file. Take them back to the question.
       elseif(topic(1:3).eq.'cfc')then
         ipathcfc=1  ! signal that it is a local file.
         write(LCFCDB,'(a)') fname(1:lnblnk(fname))
+      elseif(topic(1:3).eq.'pre')then
+        ipathpredef=1  ! signal that it is a local file.
+        write(LPREDEF,'(a)') fname(1:lnblnk(fname))
       else
 
       endif
@@ -5991,7 +6455,7 @@ C Passed parameters:
                           ! mlc = constructions  opt = optics
                           ! pdb = plant components  prs = pressure coef
                           ! msc = active components  mld = mould isopleths
-                          ! pro = event profiles  clm = weather
+                          ! pro = event profiles  clm = weather  pre = predefined obj
       integer numhelp     ! number of help lines from calling code
       character lltmp*144 ! the returned file name
       integer istat       ! return status index for calling code
@@ -6069,6 +6533,14 @@ C users and the guess for file name.
           write(lguess,'(3a)') standarddbpath(1:lndbp),fs,
      &      lapres(1:lnblnk(lapres))
         endif
+      elseif(topic(1:3).eq.'pre')then
+        sourcemsg='predefined objects file (in common).'
+        if(ipathpredef.eq.0.or.ipathpredef.eq.1)then
+          lguess=LPREDEF
+        elseif(ipathpredef.eq.2)then
+          write(lguess,'(3a)') standarddbpath(1:lndbp),fs,
+     &      lpredef(1:lnblnk(lpredef))
+        endif
       elseif(topic(1:3).eq.'msc')then
         sourcemsg='active components file (in common).'
         if(ipathmsc.eq.0.or.ipathmsc.eq.1)then
@@ -6108,6 +6580,14 @@ C users and the guess for file name.
         elseif(ipathcfc.eq.2)then
           write(lguess,'(3a)') standarddbpath(1:lndbp),fs,
      &      LCFCDB(1:lnblnk(LCFCDB))
+        endif
+      elseif(topic(1:3).eq.'pre')then
+        sourcemsg='Predefined file (in common).'   ! dialog
+        if(ipathpredef.eq.0.or.ipathpredef.eq.1)then
+          write(lguess,'(a)') LPREDEF(1:lnblnk(LPREDEF)) ! suggested name
+        elseif(ipathpredef.eq.2)then
+          write(lguess,'(3a)') standarddbpath(1:lndbp),fs,
+     &      LPREDEF(1:lnblnk(LPREDEF))
         endif
       endif
 
@@ -6184,6 +6664,9 @@ C User did not select a file. Take them back to the question.
       elseif(topic(1:3).eq.'cfc')then
         ipathcfc=2  ! signal that it will be a common file.
         write(LCFCDB,'(a)') snpfile(1:lnblnk(snpfile))
+      elseif(topic(1:3).eq.'pre')then
+        ipathpredef=2  ! signal that it will be a common file.
+        write(LPREDEF,'(a)') snpfile(1:lnblnk(snpfile))
       else
 
       endif

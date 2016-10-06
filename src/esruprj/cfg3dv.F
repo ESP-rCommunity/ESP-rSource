@@ -41,8 +41,7 @@ C Passed parameter.
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
-      COMMON/RAY3/MODIFY,MODLEN,MODBND
-      LOGICAL MODIFY,MODLEN,MODBND
+
 #ifdef OSI
       integer numberofzones ! to pass to updwire rather than ncomp
 #else
@@ -59,7 +58,7 @@ C Tell wireframe control the current number of selected zones.
       call updwire(numberofzones)  ! pass local integer
 
 C If altered then do a bound check on the current zone and update display.
-      IF(MODIFY)THEN
+      IF(MODIFYVIEW)THEN
         if(izgfoc.NE.0)CALL ESCZONE(izgfoc)
         IF(MODBND)CALL BNDOBJ(0,IER)
 
@@ -82,9 +81,9 @@ C If viewpoint or bounds different then initialise viewing paramters.
 C Draw the selected bodies.
         CALL CDRAWESP(IER)
 
-C Recover information begin edited and reset modify flag.
+C Recover information begin edited and reset modifyview flag.
         if(izgfoc.NE.0)CALL ERCZONE(izgfoc)
-        MODIFY=.FALSE.
+        MODIFYVIEW=.FALSE.
         MODLEN=.FALSE.
         MODBND=.FALSE.
       ENDIF
@@ -117,10 +116,6 @@ C      COMMON/OUTIN/IUOUT,IUIN
 
       integer IZSTOCN
       COMMON/C24/IZSTOCN(MCOM,MS)
-      COMMON/RAY2/ITDSP,ITBND,ITEPT,ITZNM,ITSNM,ITVNO,ITORG,ITSNR,
-     &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS,ITPPSW
-      COMMON/RAY5/ZCOG(MCOM,3),XMN,YMN,ZMN,XMX,YMX,ZMX
-      COMMON/RAY6/LINSTY(MCON)
       common/appcols/mdispl,nifgrey,ncset,ngset,nzonec
 
 C VCOORD : X,Y & Z coordinates in model (via geometry.h).
@@ -233,7 +228,11 @@ C and then go on to the normal objects. After this point ISTOK is .FALSE.
 C If obstructions are to be drawn read the obstruction file, transform
 C the obstruction description into a gen body and plot them out
 C before going on to the surfaces in the zone itself.
-      IF(ITDSP.EQ.0.or.ITDSP.eq.5)CALL DRAWOBS(nznog(IZ),ier)
+      IF(ITDSP.EQ.0.or.ITDSP.eq.5.or.ITDSP.eq.7)then
+         CALL DRAWOBS(nznog(IZ),ier)
+      ENDIF
+
+C << todo visual entities >>
 
 C If zone names are to be displayed place near the centre of zone.
 C For clarity use larger font and then restore font to normal size.
@@ -247,10 +246,17 @@ C Note: temp character t13 is 1 char wider than zname().
         CALL VECTRN(COG1,TEMAT,COG2,IER)
         CALL VECTRN(COG2,ETSMAT,COG3,IER)
         call u2pixel(COG3(1),COG3(2),iix,iiy)
-        write(t13,'(A)')zname(nznog(IZ))
+
+C Note call to textpixwidth corrupts t13 so need to
+C re-create t13 after textpixwidth call.
+        t13=' '
+        write(t13,'(A)')zname(nznog(IZ))(1:lnzname(nznog(IZ)))
+        IF(IFS.GT.0)CALL winfnt(NAMEFT+1)
         call textpixwidth(t13,ipixw)
+        write(t13,'(A)')zname(nznog(IZ))(1:lnzname(nznog(IZ)))
         iixc = iix - (ipixw/2)
         CALL wstxpt(iixc,iiy,t13)
+        IF(IFS.GT.0)CALL winfnt(IFS)
         call forceflush()
       ENDIF
       IF(ier.NE.0)RETURN

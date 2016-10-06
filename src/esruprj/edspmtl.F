@@ -338,6 +338,7 @@ C Data items.
 #include "building.h"
 #include "model.h"
 #include "geometry.h"
+#include "plant.h"
 #include "power.h"
 #include "epara.h"
 #include "esprdbfile.h"
@@ -345,6 +346,7 @@ C esprdbfile.h supplies the following:
 C LAPRES,IAPRES (for window pressure databases)
 C LFMAT,IFMAT,LFMUL,IFMUL (for materials and constructions database)
 #include "material.h"
+#include "prj3dv.h"
       
       integer lnblnk  ! function definition
 
@@ -358,17 +360,12 @@ C LFMAT,IFMAT,LFMUL,IFMUL (for materials and constructions database)
 
 C << rewrite logic using G6 common block >>
 
-      COMMON/RAY2/ITDSP,ITBND,ITEPT,ITZNM,ITSNM,ITVNO,ITORG,ITSNR,
-     &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS,ITPPSW
-      COMMON/RAY3/MODIFY,MODLEN,MODBND
       common/MFLDOC/DEPRE(MPRD) 
-      COMMON/RAY6/LINSTY(MCON)
       COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,CFCDBOK
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
 
 C Special materials file flag
       common/spmfxst/ispmxist,spflnam
-      common/entfile/entflnam, ientxist
 
       integer matarrayindex ! the indes within matdatarray
       logical closemat1,closemat2
@@ -385,9 +382,8 @@ C sstr in spdesc.
 
       logical ok,dok, SPREPT
       LOGICAL CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,CFCDBOK
-      LOGICAL MODIFY,MODLEN,MODBND
       integer header,footer
-      character outs*124,spmlabel*16,item*32,spitem*32,entflnam*72
+      character outs*124,spmlabel*16,item*32,spitem*32
       CHARACTER NAM*72,PNAM*20,spdefnam*16,labl*16
       CHARACTER DADESC*72,spitem2*32
       CHARACTER spflnam*72,spdesc*72
@@ -634,14 +630,14 @@ c      ISO=ispmloc(IVAL,2)
 
 C << rewrite logic to use G7 common rather than call zinfo >>
 
-      CALL ZINFO(SNA,ZOA,PAZI,PELV,ZVOL)
+      CALL ZINFO(SNA,ZOA,PAZI,PELV,ZVOL,'q')
 
 C General image option flags.
       ITDSP=1; ITBND=1; ITEPT=0; ITZNM=0
       ITSNM=0; ITVNO=1; ITORG=1; ITSNR=1
       ITGRD=1; GRDIS=0.0; ITPPSW=0
 
-      MODIFY=.TRUE.
+      MODIFYVIEW=.TRUE.
       MODBND=.TRUE.
       CALL INLNST(1)
       ITVNO=0
@@ -649,7 +645,7 @@ C General image option flags.
       nznog(1)=IZ
       izgfoc=IZ
       CALL ADJVIEW(IER)
-      MODIFY=.TRUE.
+      MODIFYVIEW=.TRUE.
       MODBND=.TRUE.
 
       ISO=1
@@ -663,7 +659,8 @@ C General image option flags.
      &    'component. ',IER)
       ENDIF
       CALL EPMENRC
-      if(SOTF(ISO)(1:4).eq.'OPAQ'.or.SOTF(ISO)(1:4).eq.'CFC ')then
+      if(SOTF(ISO)(1:4).eq.'OPAQ'.or.SOTF(ISO)(1:4).eq.'CFC '.or.
+     &   SOTF(ISO)(1:4).eq.'CFC2')then
         ISPMF=1
       else
         ISPMF=0
@@ -676,7 +673,7 @@ c      IVAL=IFOC
       call georead(IFIL+1,LGEOM(IZ),IZ,1,iuout,IER)
       CALL SURADJ(IZ,ISO,IE,TMP,IZC,ISC,IC,DESCRC)
 
-      MODIFY=.TRUE.
+      MODIFYVIEW=.TRUE.
       MODBND=.TRUE.
       CALL INLNST(1)
       LINSTY(IC)=2
@@ -685,9 +682,10 @@ c      IVAL=IFOC
       nznog(1)=IZ
       izgfoc=IZ
       CALL ADJVIEW(IER)
-      MODIFY=.TRUE.
+      MODIFYVIEW=.TRUE.
       MODBND=.TRUE.
-      if(SOTF(ISO)(1:4).eq.'OPAQ'.or.SOTF(ISO)(1:4).eq.'CFC ')then
+      if(SOTF(ISO)(1:4).eq.'OPAQ'.or.SOTF(ISO)(1:4).eq.'CFC '.or.
+     &   SOTF(ISO)(1:4).eq.'CFC2')then
         ISPMF=1
       else
         ISPMF=0
@@ -820,15 +818,14 @@ C For ducted wind turbine - select the position of the DWT outlet
         call usrmsg(' ',' ','-')
         if(IZ.eq.0) return
         call georead(IFIL+1,LGEOM(IZ),IZ,1,iuout,IER)
-        CALL ZINFO(SNA,ZOA,PAZI,PELV,ZVOL)
+        CALL ZINFO(SNA,ZOA,PAZI,PELV,ZVOL,'q')
 
 C General image option flags.
         ITDSP=1; ITBND=1; ITEPT=0; ITZNM=0; ITSNM=0
         ITVNO=1; ITORG=1; ITSNR=1; ITGRD=1
-        GRDIS=0.0
-        ITPPSW=0
+        GRDIS=0.0; ITPPSW=0
 
-        MODIFY=.TRUE.
+        MODIFYVIEW=.TRUE.
         MODBND=.TRUE.
         CALL INLNST(1)
         ITVNO=0
@@ -836,7 +833,7 @@ C General image option flags.
         nznog(1)=IZ
         izgfoc=IZ
         CALL ADJVIEW(IER)
-        MODIFY=.TRUE.
+        MODIFYVIEW=.TRUE.
         MODBND=.TRUE.
 
         SPMDAT(ISPMN,1)=float(IZ)
@@ -850,7 +847,7 @@ C Recover the related zone.
         call georead(IFIL+1,LGEOM(IZ),IZ,1,iuout,IER)
         CALL SURADJ(IZ,ISO,IE,TMP,IZC,ISC,IC,DESCRC)
 
-        MODIFY=.TRUE.
+        MODIFYVIEW=.TRUE.
         MODBND=.TRUE.
         CALL INLNST(1)
         LINSTY(IC)=2
@@ -859,7 +856,7 @@ C Recover the related zone.
         nznog(1)=IZ
         izgfoc=IZ
         CALL ADJVIEW(IER)
-        MODIFY=.TRUE.
+        MODIFYVIEW=.TRUE.
         MODBND=.TRUE.
        
         SPMDAT(ISPMN,2)=ISO

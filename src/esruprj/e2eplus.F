@@ -107,9 +107,16 @@ C soltrn is singular layer solar transmittance (normal)
 C solrefl is singular layer solar reflectance (normal)
 C vistrn is singular layer visible trans (normal)
 C visrefl is singular layer visible reflectance (normal)
+C deniprndx density of each material
+C areaiprndx total area of each material (use half for partitions)
+C kgiprndx total mass of each material used
+C << logic ?? for multiple layers of the same thing ?? >>
+      real thkiprndx,riair,soltrn,solrefl,vistrn,visrefl
+      real deniprndx,areaiprndx,kgiprndx
       dimension iprndx(100),thkiprndx(100),optndx(100),iglassndx(100)
       dimension riair(100),soltrn(100),solrefl(100),vistrn(100)
-      dimension visrefl(100),nameiprndx(100)
+      dimension visrefl(100),nameiprndx(100),deniprndx(100)
+      dimension areaiprndx(100),kgiprndx(100),sphtiprndx(100)
 
 C Each construction needs to remember, for each layer the index
 C of the material that was created or found for it.
@@ -121,6 +128,7 @@ C surface can be resolved into a quad).
       DIMENSION COORD(MV,3)
       real ver  ! file version passed to subroutine
       real rfr   ! local var for radiant fraction
+      real kg,mlckg    ! for mass calculations
       integer iver     ! file version as integer
       integer ier
       integer ich,iedg ! loop variable
@@ -222,6 +230,10 @@ C and constructions used in the model.
         solrefl(ii)=0.0
         vistrn(ii)=0.0
         visrefl(ii)=0.0
+        deniprndx(ii)=0.0   ! density of material
+        areaiprndx(ii)=0.0  ! area of material
+        sphtiprndx(ii)=0.0  ! specific heat of material
+        kgiprndx(ii)=0.0    ! weight of material
         nameiprndx(ii)=' '
         optndx(ii)=' '
         iconmatpointer(ii,1)=0
@@ -390,7 +402,7 @@ C Newer idf files use TARP as default rather than Detailed.
 
       WRITE(ioout,'(a)',iostat=ios,err=2) ' '
       WRITE(ioout,'(2a)',iostat=ios,err=2) 
-     &  'SurfaceConvectionAlgorithm:Outside',com
+     &  '  SurfaceConvectionAlgorithm:Outside',com
       if(iver.le.30)then
         WRITE(ioout,'(4a)',iostat=ios,err=2) indent,'Detailed',sim,
      &    '   !- Algorithm (default)'
@@ -424,7 +436,7 @@ C set to 28 days, otherwise set zero=default.
 C Run control - set all fields to no so only run period is assessed.
       WRITE(ioout,'(a)',iostat=ios,err=2) ' '
       if(haveish)then
-        WRITE(ioout,'(2a)',iostat=ios,err=2) 'RUN CONTROL',com
+        WRITE(ioout,'(2a)',iostat=ios,err=2) '  SimulationControl',com
       else
         WRITE(ioout,'(2a)',iostat=ios,err=2) '  SimulationControl',com
       endif
@@ -539,6 +551,7 @@ C profile is being used. EnergyPlus can only take one so if
 C there is more than one referenced warn the user. There is
 C no equivalent to NRCan BASESIMP but there is a ground temperature
 C calculation module in EnergyPlus.
+C << if none then perhaps use what is printed out in the QA report
       WRITE(ioout,'(a)',iostat=ios,err=2) ' '
       WRITE(ioout,'(2a)',iostat=ios,err=2) 
      &  '  Site:GroundTemperature:BuildingSurface',com
@@ -664,6 +677,8 @@ C If not already known add it to the list.
               iij=iij+1
               iprndx(iij)=IPRMAT(INO,IL)
               thkiprndx(iij)=DTHK(ino,IL)
+              deniprndx(iij)=matdbden(iprndx(iij))
+              sphtiprndx(iij)=matdbsht(iprndx(iij))
               if(opt(1:6).eq.'OPAQUE')then
                 iglassndx(iij)=0
                 optndx(iij)=OPT
@@ -704,6 +719,8 @@ C First material (which will never be air).
             iij=iij+1
             iprndx(iij)=IPRMAT(INO,IL)
             thkiprndx(iij)=DTHK(ino,IL)
+            deniprndx(iij)=matdbden(iprndx(iij))
+            sphtiprndx(iij)=matdbsht(iprndx(iij))
             if(opt(1:6).eq.'OPAQUE')then
               iglassndx(iij)=0
               optndx(iij)=OPT
@@ -921,6 +938,8 @@ C Now for each construction.
      &  '!- ======= CONSTRUCTION ======'
 
       do 36 ino = 1,NMLC
+        cxm=0.0
+        mlckg=0.0
         mlc_name=mlcname(ino)(1:12)
         call mlcrefs(mlc_name,areamlc,tareamlc,foundmlc)
         if(.NOT.foundmlc) goto 36
@@ -936,7 +955,20 @@ C Now for each construction.
           else
             layname=nameiprndx(iconmatpointer(ino,IL))
           endif 
-          layl=lnblnk(layname)   
+          layl=lnblnk(layname)
+
+C Increment the area of material, show intermediate calcs.
+C Note used in EnergyPlus but useful for QA.
+C Assume area of the layer is same as total area of the MLC
+C within the model.
+          areaiprndx(ilamat)=areaiprndx(ilamat)+tareamlc
+          kg=tareamlc*DTHK(ino,il)*deniprndx(ilamat)
+          mlckg=mlckg+kg   ! add up kg for the mlc
+          cxm=cxm+(kg*sphtiprndx(ilamat))
+          kgiprndx(ilamat)=kgiprndx(ilamat)+kg
+          write(6,*) 'material ',layname,ilamat,tareamlc,
+     &      DTHK(ino,il),deniprndx(ilamat),kg,kgiprndx(ilamat),
+     &      areaiprndx(ilamat),sphtiprndx(ilamat),kg*sphtiprndx(ilamat)
           if(il.eq.1)then
             if(il.eq.LAYERS(INO))then
               WRITE(ioout,'(4a)',iostat=ios,err=4) indent,
@@ -953,7 +985,27 @@ C Now for each construction.
      &        layname(1:layl),com,'   !- Layer ',IL
           endif
   37    continue
+
+C For each MLC report J/degC capacitance.
+        WRITE(ioout,'(3a,F7.3,a,F7.3,a,F9.3,a)',iostat=ios,err=4) 
+     &    '!- ',mlc_name(1:lnblnk(mlc_name)),com,tareamlc,com,mlckg,
+     &    com,cxm/1000.0,' !- m2 kg kJ/degC'    
+        WRITE(6,'(3a,F7.3,a,F7.3,a,F9.3,a)',iostat=ios,err=4) 
+     &    '!- ',mlc_name(1:lnblnk(mlc_name)),com,tareamlc,com,
+     &    mlckg,com,cxm/1000.0,' !- m2 kg kJ/degC'    
   36  continue
+  
+C Summary of materials found.
+      WRITE(ioout,'(a)',iostat=ios,err=4) 
+     &  '!- ======= Material summary ======'
+      do ij = 1,nmat
+        write(6,*)'!- ',nameiprndx(ij),ij,areaiprndx(ij),
+     &   kgiprndx(ij),' name index area kg'
+        write(ioout,*)'!- ',nameiprndx(ij),ij,areaiprndx(ij),
+     &   kgiprndx(ij),' name index area kg'
+      enddo
+      WRITE(ioout,'(a)',iostat=ios,err=4) 
+     &  '!- ============='
 
 C Typical schedule types.
       WRITE(ioout,'(a)',iostat=ios,err=7) ' '
@@ -1588,6 +1640,8 @@ C Further logic required if there is more than one radiant/convective split.
      &    '  !- Surface Name/Angle Factor List Name'
         WRITE(ioout,'(3a)',iostat=ios,err=5) indent,com,
      &    '  !- Work Efficiency Schedule Name (0.0-1.0,real)'
+
+C << in 8.2 new tag ClothingInsulationSchedule needs to be added >>
         WRITE(ioout,'(3a)',iostat=ios,err=5) indent,com,
      &    '  !- Clothing Insulation Schedule Name (real)'
         WRITE(ioout,'(3a)',iostat=ios,err=5) indent,com,
@@ -1748,6 +1802,9 @@ C If there are no children remember all coordinates.
 
 C There one or more grand children of this surface. Warn
 C the user.
+C << logic might assume that child surfaces are glazing when in
+C << fact they might be frames with glazing inside. Check the
+C << surface use attribute if the child is type FRAME.
             if(ichild(icc,1).gt.0.and.igchild(icc,1).gt.0)then
               write(outs,*) 'Surface ',SSNAME(icc),
      &          ' has a child named ',SSNAME(ichild(icc,1)),
@@ -1846,8 +1903,11 @@ C Generate this entity.
 
 C If a surface is transparent, it must have a non-blank parent
 C and it must be a true child surface, if not ask the user.
+C Does not really know what to do with CFC and CFC2 so treats
+C as opaque.
           if(SSOTF(icc)(1:4).NE.'OPAQ'.and.
-     &       SSOTF(icc)(1:4).NE.'CFC ')then
+     &       SSOTF(icc)(1:4).NE.'CFC '.and.
+     &       SSOTF(icc)(1:4).NE.'CFC2')then
             if(truechild(icc))then
               continue    ! surface is a true child so process
             else
@@ -1906,6 +1966,8 @@ C If ESP-r thinks there is no parent confirm with user.
 
 C The initial tag is dependant on whether the surface is
 C opaque or transparent and whether it is adiabetic or similar.
+C At this point does not quite know what to do with CFC and CFC2
+C so treats with opaque.
           treatasmass=.false.  ! initial assumption
           iccsimilar=0         ! connection in case of similar
 
@@ -1913,7 +1975,8 @@ C  << this logic to be updated >>
           WRITE(ioout,'(a)') ' '
 
           if(SSOTF(icc)(1:4).NE.'OPAQ'.AND.
-     &      SSOTF(icc)(1:4).NE.'CFC ')then
+     &       SSOTF(icc)(1:4).NE.'CFC '.AND.
+     &       SSOTF(icc)(1:4).NE.'CFC2')then
 
 C A transparent surface.
             WRITE(ioout,'(2a)',iostat=ios,err=6) 
@@ -2012,13 +2075,15 @@ C and site exposure. An index of 8 signals user defined values.
             endif
           endif      
 
-C Generate a unique name (zone + surface).
+C Generate a unique name (zone + surface). At this point still treats
+C CFC and CFC2 as opaque surfaces.
           call zsid(mz,is,ZSDES,ZSDESC,ZSDESS)
           WRITE(ioout,'(4a)',iostat=ios,err=6) indent,
      &      ZSDES(1:lnblnk(ZSDES)),com,'   !- Name'
 
           if(SSOTF(icc)(1:4).NE.'OPAQ'.AND.
-     &      SSOTF(icc)(1:4).NE.'CFC ')then
+     &       SSOTF(icc)(1:4).NE.'CFC '.AND.
+     &       SSOTF(icc)(1:4).NE.'CFC2')then
 
 C We have a transparent surface.
             WRITE(ioout,'(4a)',iostat=ios,err=6) indent,'Window',com,
@@ -2043,8 +2108,19 @@ C the name of the ESP-r parent surface.
             endif
             WRITE(ioout,'(4a)',iostat=ios,err=6) indent,
      &        ZSDES(1:lnblnk(ZSDES)),com,'   !- Building Surface Name'
-            WRITE(ioout,'(3a)',iostat=ios,err=6) indent,com,
-     &        '   !- Outside Boundary Condition Object'
+
+C Internal glazing also needs to say what is the surface on the other side.
+            if(ic2(icc).eq.0.or.ie2(icc).eq.0)then  ! if unknown zone & surface
+              WRITE(ioout,'(3a)',iostat=ios,err=6) indent,com,
+     &          '   !- Outside Boundary Condition Object'
+            else  ! if known zone & surface
+              call zsid(ic2(icc),ie2(icc),ZSDES,ZSDESC,ZSDESS)
+              WRITE(ioout,'(4a)',iostat=ios,err=6) indent,
+     &          ZSDES(1:lnblnk(ZSDES)),com,
+     &          '   !- Outside Boundary Condition Object'
+            endif
+C            WRITE(ioout,'(3a)',iostat=ios,err=6) indent,com,
+C     &        '   !- Outside Boundary Condition Object'
 
 C Also include viewfactor to ground value depending on orientation.
             WRITE(ioout,'(a)',iostat=ios,err=6) 
@@ -2333,11 +2409,13 @@ C depending on whether 'obs' or 'obs3'.
               CALL CNVBLKP(mz,IB) ! convert obsp type.
             endif
 
+C To avoid possible duplicate names pre-pend the zone name to block.
             do 302 ibs=1,6   ! for each of the 6 surfaces of block
               WRITE(ioout,'(a)',iostat=ios,err=6) ' '
               WRITE(ioout,'(2a)',iostat=ios,err=6) 
-     &          'Surface:Shading:Detached:Building',com
-              WRITE(ioout,'(2a,i1,2a)',iostat=ios,err=6) indent,
+     &          'Shading:Building:Detailed',com
+              WRITE(ioout,'(4a,i1,2a)',iostat=ios,err=6) indent,
+     &          zname(mz)(1:lnzname(mz)),':',
      &          BLOCKNAME(mz,ib)(1:LNBLOCKNAME(mz,ib)),ibs,com,
      &          '   !- User Supplied Surface Name'
               WRITE(ioout,'(5a)',iostat=ios,err=6) indent,com,
@@ -2392,10 +2470,12 @@ C From version 4.0 onwards different syntax.
       endif
 
 C Include directive for EnergyPlus to dump out additional diagnotics
-C for geometry. 
+C for geometry and do not mirror detached shading objects (OBS). 
       WRITE(ioout,'(a)',iostat=ios,err=2) ' '
       WRITE(ioout,'(5a)',iostat=ios,err=2) '  Output:Diagnostics',
      &  com,'DisplayExtraWarnings',sim,'   !- Extra diagnostics'
+      WRITE(ioout,'(5a)',iostat=ios,err=2) '  Output:Diagnostics',
+     &  com,'DoNotMirrorDetachedShading',sim,'   !- Not needed for OBS'
 
 C Include minimal meters: ambient db and zone air temperatures.
       WRITE(ioout,'(a)',iostat=ios,err=2) ' '
