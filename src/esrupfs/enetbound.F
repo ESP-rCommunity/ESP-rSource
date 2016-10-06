@@ -115,8 +115,8 @@ C************************************** ENETASGN *******************************
 
 C Includes
 #include "building.h"
-#include "power.h"
 #include "plant.h"
+#include "power.h"
 
 C Trace
       COMMON/OUTIN/IUOUT,IUIN
@@ -124,73 +124,10 @@ C Trace
       COMMON/TRACE/ITCF,ITRACE(MTRACE),IZNTRC(MCOM),ITU
       COMMON/SIMTIM/IHRP,IHRF,IDYP,IDYF,IDWP,IDWF,NSINC,ITS
 
-C Commons for connected components
-C Zone lighting and power commons.
-      COMMON/ENETZONE/PEZON(MCOM,MGTY),QEZON(MCOM,MGTY)
-
-C Plant
-      COMMON/ENETPCOMP/PPCMP(MPCOM),QPCMP(MPCOM),
-     &VCMP(MPCOM)
-
-C Special materials
-      COMMON/ENETSPM/PSPM(MSPMNOD),QSPM(MSPMNOD),
-     &VSPM(MSPMNOD)
-
-C Power only components
-      COMMON/ENETPOWC/PPOWOC(MPOWCOM),QPOWOC(MPOWCOM),
-     &VPOWC(MPOWCOM)
-
 C Relevant network commons
 
-C The electrical nodes
-      COMMON/ENOD/NENOD,ENODNO(MENOD),ENODPHTYP(MENOD),
-     &ENODPH(MENOD),ENODTYP(MENOD),ENODBASEV(MENOD),
-     &ENODBASEP
-
-C The sum of nodal boundary condition power flows (SI boundary conditions)
-      COMMON/ENODBC/PENOD(MENOD),QENOD(MENOD)
-
-C The load, generated and transmitted nodal power flows (SI)
-      COMMON/ENODLGT/PENODL(MENOD),QENODL(MENOD),
-     &PENODG(MENOD),QENODG(MENOD),PENODT(MENOD),QENODT(MENOD)
-
-C The connected hybrid components
-      COMMON/HYBE/NHYBCOM,HYBCOMNO(MHYCOM),HYCOMTYP(MHYCOM),
-     &HYCOMPHTYP(MHYCOM),HYCONEN(MHYCOM,MPHAS),HYLOC(MHYCOM,MPHAS),
-     &NHYBDAT(MHYCOM),HYBDAT(MHYCOM,MHYDAT)
-
-C The connected power only components
-      COMMON/POWC/NPOWCOM,POWCOMNO(MPOWCOM),POWCOMID(MPOWCOM),
-     &POWCOMPHTYP(MPOWCOM),POWCONEN(MPOWCOM,MPHAS),
-     &NPOWCDAT(MPOWCOM),NPOWCDATS(MPOWCOM),POWCDAT(MPOWCOM,MPWDAT)
-
-C Plant component node connections
-C Used for plant components connected to a DC and an AC node.
-C iplt_conn_nodes holds the number of nodes the plant component is connected to
-C   (1 or 2). If connected to two nodes it is assumed one is AC and the other DC
-C   variable set to zero for hybrid components that are not plant components.
-      common/pltnds/iplt_conn_nodes(MHYCOM),iplt_dcnode_id(MHYCOM),
-     &              iplt_acnode_id(MHYCOM)
-      integer  iplt_conn_nodes
-      integer  iplt_dcnode_id        !- node index of the DC node the plant component connects to
-      integer  iplt_acnode_id        !- node index of the AC node the plant component connects to
-
-C For plant components connected to a DC and AC node
-       COMMON/enetpcomp2/pdcpower(mpcom),pacpower(mpcom)
-       real    pdcpower      !- dc power load/generation of plant component
-       real    pacpower      !- ac power load/generation of plant component
-
-
-C Type casting (all varaiables and arrays cast explicitly)
-      INTEGER NENOD,ENODNO,ENODPHTYP,ENODPH,ENODTYP,NHYBCOM,HYBCOMNO,
-     &HYCOMTYP,HYCOMPHTYP,HYCONEN,HYLOC,NHYBDAT,NPOWCOM,POWCOMNO,
-     &POWCOMID,POWCOMPHTYP,POWCONEN,NPOWCDAT,NPOWCDATS
-     
 C Type casting
-      REAL PENOD,QENOD,PENODL,QENODL,PENODG,QENODG,PENODT,QENODT,
-     &PEZON,QEZON,PPCMP,QPCMP,PSPM,QSPM,PPOWOC,QPOWOC,ENODBASEV,
-     &ENODBASEP,HYBDAT,POWCDAT,DIVIS
-      COMPLEX VCMP,VSPM,VPOWC
+      REAL DIVIS
       
       CHARACTER*124 OUTS
 
@@ -442,6 +379,7 @@ C ******************************* ENETB2PU *************************************
 
 C Includes
 #include "building.h"
+#include "plant.h"
 #include "power.h"
 
 
@@ -449,37 +387,6 @@ C Trace
       COMMON/TC/ITC,ICNT
       COMMON/TRACE/ITCF,ITRACE(MTRACE),IZNTRC(MCOM),ITU
       COMMON/SIMTIM/IHRP,IHRF,IDYP,IDYF,IDWP,IDWF,NSINC,ITS
-
-C Relevant network commons
-
-C The electrical nodes
-      COMMON/ENOD/NENOD,ENODNO(MENOD),ENODPHTYP(MENOD),
-     &ENODPH(MENOD),ENODTYP(MENOD),ENODBASEV(MENOD),
-     &ENODBASEP
-
-C The nodal boundary conditions
-      COMMON/ENODBC/PENOD(MENOD),QENOD(MENOD)
-
-C The load, generated and transmitted nodal power flows (SI)
-      COMMON/ENODLGT/PENODL(MENOD),QENODL(MENOD),
-     &PENODG(MENOD),QENODG(MENOD),PENODT(MENOD),QENODT(MENOD)
-
-C The load, generated and transmitted nodal power flows (per-unit)
-      COMMON/ENODLGTPU/PENODLPU(MENOD),QENODLPU(MENOD),
-     &PENODGPU(MENOD),QENODGPU(MENOD),PENODTPU(MENOD),QENODTPU(MENOD)
-
-C The per-unit nodal boundary conditions
-      COMMON/ENODBCPU/PENODPU(MENOD),QENODPU(MENOD)
-
-C Derived System and Nodal Values
-      COMMON/ENETSMC/LNPWRBAS,ENODZBAS(MENOD),ENODIBAS(MENOD)
-
-C Type casting (all varaiables and arrays cast explicitly)
-      INTEGER NENOD,ENODNO,ENODPHTYP,ENODPH,ENODTYP
-     
-      REAL ENODBASEV,ENODBASEP,ENODZBAS,PENOD,QENOD,PENODL,
-     &QENODL,PENODG,QENODG,PENODT,QENODT,PENODLPU,QENODLPU,PENODGPU,
-     &QENODGPU,PENODTPU,QENODTPU,ENODIBAS,LNPWRBAS
       
 C Loop through each node in the network and convert the calculated boundary
 C power flows to per-unit. 
