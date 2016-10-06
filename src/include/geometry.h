@@ -32,10 +32,13 @@ C Surface attributes for the current zone.
       character SVFC*4     ! see SSVFC below
       character SMLCN*32   ! see SSMLCN below
       character SOTHER*24  ! see SSOTHER below
-      character SUSE*8     ! see SSUSE below
+      character SUSE*12    ! see SSUSE below
       character SPARENT*12 ! see SSPARENT below
       COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS,3),
      &          SUSE(MS,2),SPARENT(MS)
+
+      integer lnsname,lnsotf ! length of sname and sotf strings
+      common/G5LN/lnsname(MCOM,MS),lnsotf(MS)
 
 C Surface polygon information for the current zone.
       real X,Y,Z   ! coordinate in space (m)
@@ -43,7 +46,8 @@ C Surface polygon information for the current zone.
       integer JVN  ! list of edges (vertex indices anticlockwise
                    ! looking from outside) for each surface
       integer NVER ! number of edges that make up each surface
-      integer NTV  ! total number of vertices in the zone 
+      integer NTV  ! total number of vertices in the zone which
+                   ! should be the same as NZTV
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
 
 C NZSUR (integer) is the number of surfaces in each zone.
@@ -200,6 +204,61 @@ C LNBLOCKNAME,LNBLOCKMAT - length of strings.
       integer LNBLOCKNAME,LNBLOCKMAT
       common/GS8LN/LNBLOCKNAME(MCOM,MB),LNBLOCKMAT(MCOM,MB)
 
+C Visual entities to pass to Radiance and for model decoration.
+      integer nbvis     ! number of visual entitie in a zone
+      real XOV,YOV,ZOV  ! coordinates of each visual origin.
+      real DXOV,DYOV,DZOV  ! width depth and height of each visual block
+      real BANGOV       ! three rotation angles of a visual block
+      real OPOV         ! opacity of visual 0.0 is transparent 1.0 is opaque
+      common/GSVB/nbvis(MCOM),XOV(MCOM,MB),YOV(MCOM,MB),ZOV(MCOM,MB),
+     &  DXOV(MCOM,MB),DYOV(MCOM,MB),DZOV(MCOM,MB),BANGOV(MCOM,MB,3),
+     &  OPOV(MCOM,MB)
+
+C Eight coordinates for general polygon visual 'visp'. If an
+C of type 'visp' then the XOV,YOV,ZOV and DXOV, DYOV, DZOV
+C and BANGOV values will all be zero. It has six sides and eight 
+C vertices and each face has 4 edges.
+C The edge ordering is the same as in the GS9 common block.
+      real XVP,YVP,ZVP   ! 8 XYZ coordinates with standard edge linkages.
+      common/GSVP/XVP(MCOM,MB,8),YVP(MCOM,MB,8),ZVP(MCOM,MB,8)
+
+C VISNAME (12 char) name of visual block.
+C VISMAT (32 char) visual block construction (for Radiance).
+C VISTYP (4 char) type of block:
+C   'vis ' - standard block (origin, three dimensions, one rotation)
+C   'vis3' - general block (origin, three dimensions, three rotations)
+C   'visp' - general polygon (six sides formed from 8 vertices)
+C LNVISNAME,LNVISMAT - length of strings.
+      character VISNAME*12,VISMAT*12,VISTYP*4
+      common/GSVN/VISNAME(MCOM,MB),VISMAT(MCOM,MB),VISTYP(MCOM,MB)
+      integer LNVISNAME,LNVISMAT
+      common/GSVLN/LNVISNAME(MCOM,MB),LNVISMAT(MCOM,MB)
+
+C Group visual items to create a visual objects (up to 20) from
+C up to 14 visual primitives.
+C VOBJNAME (12 char) name of visual object
+C VOBJDESC (32 char) description of visual object
+C VOBJLIST (12 char) associated (up to 14) visual blocks
+C LNVOBJNAME,LNVOBJDESC,LNVOBJLIST - length of strings.
+C NBVOBJ - number of visual objects in each zone
+C NBVOJBLIST - number of primitives in ojbect
+      character VOBJNAME*12,VOBJDESC*32,VOBJLIST*12
+      common/GSVOBJN/VOBJNAME(MCOM,20),VOBJDESC(MCOM,20),
+     &  VOBJLIST(MCOM,20,14)
+      integer NBVOBJ,LNVOBJNAME,LNVOBJDESC,LNVOBJLIST,NBVOBJLIST
+      common/GSVOBJI/NBVOBJ(MCOM),LNVOBJNAME(MCOM,20),
+     &  LNVOBJDESC(MCOM,20),LNVOBJLIST(MCOM,20,14),NBVOBJLIST(MCOM,20)
+
+C MRT sensors for the model.
+      integer ncub  ! for each zone number of mrt sensors
+      integer ivfok
+      real XOC,YOC,ZOC,DXC,DYC,DZC,CANG
+      character CUBN*6
+      common/MRTC/NCUB(MCOM),XOC(MCUB),YOC(MCUB),
+     &  ZOC(MCUB),DXC(MCUB),DYC(MCUB),
+     &  DZC(MCUB),CANG(MCUB),IVFOK(MCUB),CUBN(MCUB)
+
+
 C The following section hold arrays associated with each zone connection
 C in the model. These data structures are typically used when the model
 C composition is fixed (surfaces are not being added or subtracted) and
@@ -226,7 +285,7 @@ C SSOTHER(i,1) = GROUND means that SSOTHER(i,2) and SSOTHER(i,3) are as IC2 & IE
 C SSOTHER(i,1) = ANOTHER then SSOTHER(2) is zone index and SSOTHER(i,3) is
 C                the surface index in that zone (e.g. as IC2 and IE2).
 
-      character SSUSE*8     ! two attributes of the usage of the surface:
+      character SSUSE*12     ! two attributes of the usage of the surface
 
 C DOOR,CLOSED  DOOR,UNDERCUT  DOOR,OPEN  DOOR,BIDIR
 C FRAME,CLOSED FRAME,CRACK    FRAME,OPEN
@@ -234,6 +293,7 @@ C WINDOW,CLOSED WINDOW,CRACK  WINDOW,OPEN  WINDOW,SASH  WINDOW,BIDIR
 C GRILL,SOURCE  GRILL,EXTRACT
 C FICT,CLOSED  FICT,CRACK  FICT,OPEN  FICT,BIDIREC
 C BLIND,FIXED  BLIND,MOVE (??explicit blinds)
+C FIXTURE,IES  FIXTURE,-
 C otherwise  -,- )
 C see geometry.F for a full explanation). Not found in older geometry files
       character SSPARENT*12 ! the name of the parent surface or '-'

@@ -15,7 +15,7 @@ C Maximum number of nodes, components, connections.
 C Maximum number of node supplementary data items
       PARAMETER (MNDS=2)
 C Number of valid fluid flow component types
-      PARAMETER (MCMV=24)
+      PARAMETER (MCMV=25)
 C Maximum number of component supplementary data items
       PARAMETER (MCMS=17)
 C Maximum number of connection level component supplementary items

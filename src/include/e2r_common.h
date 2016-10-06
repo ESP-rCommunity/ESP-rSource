@@ -23,16 +23,18 @@ C Radiance model descriptive files:
 
       character matfil*72   ! opaque materials definitions
       character rmmfil*72   ! miscel materials descriptions
-      common/rad1m/matfil,rmmfil
+      character iesfil*72   ! to hold xforms of IES.rad data
+      common/rad1m/matfil,rmmfil,iesfil
 
 C File unit numbers for radiance model files
-      integer irofil,irzfil,imatfil,iglzfil
-      common/radif/irofil,irzfil,imatfil,iglzfil
+      integer irofil,irzfil,imatfil,iglzfil,iiesfil
+      common/radif/irofil,irzfil,imatfil,iglzfil,iiesfil
 
 C Logical states for model task completion. Set to fales if the
 C task is not complete.
-      logical skydone,outdone,indone,misdone,vewdone,glzdone
-      common/raddn/skydone,outdone,indone,misdone,vewdone,glzdone
+      logical skydone,outdone,indone,misdone,vewdone,glzdone,iesdone
+      common/raddn/skydone,outdone,indone,misdone,vewdone,glzdone,
+     &             iesdone
 
 C Directives for images and image processing
       integer ipicx  ! resolution or image width [X pixels] default is 512
@@ -53,11 +55,11 @@ C Directives for images and image processing
       integer mono   ! zero is mono display one is few colours two is full
       integer intext ! zero is outside view one is inside a room
       integer ifocz  ! -1 is outside view or if positive in a room
-      common/rad2/mono,intext,ifocz
-
+      integer iadobe ! one is rough two is medium three is fine surface mottle
+      common/rad2/mono,intext,ifocz,iadobe
 
 C Radiance views
-      character vewcmds*124 ! first token of view commands is short name for
+      character vewcmds*146 ! first token of view commands is short name for
                             ! the view followed by -vp and -vd data
       character rvewsh*10   ! array of short view names for selection lists
       integer indxvew       ! number of views (up to 20)
@@ -66,26 +68,28 @@ C Radiance views
 
       real rvpx,rvpy,rvpz ! radiance eyepoint X Y Z (m)
       real vdx,vdy,vdz    ! radiance view vector X Y Z (-)
+      real vux,vuy,vuz    ! radiance vu vectors X Y Z (-)
       real angh,angv      ! horizontal and vertical angle of view (deg)
       real azimuth,elevtn ! view direc azimuth & elevation to match  vdx vdy vdz
-      common/radv/rvpx,rvpy,rvpz,vdx,vdy,vdz,angh,angv,azimuth,elevtn
+      real cutfor,cutaft  ! cut distances
+      common/radv/rvpx,rvpy,rvpz,vdx,vdy,vdz,vux,vuy,vuz,angh,angv,
+     &            azimuth,elevtn,cutfor,cutaft
 
 C Radiance scenes
       integer indxscn  ! number of scene descriptors zero is the initial state, two
                        ! indicates that sky and glazing files have been defined. Incremented
                        ! as contents of rif file are scanned 
-      character rscedes*72  ! scene descriptor -  sky then glazing the the rest
+      character rscedes*72  ! scene descriptor -  sky then glazing the the rest up to 10 files
       character rzoncmd*60  ! used with the ZONE= radiance command
       character rupaxis*1   ! up axis: single character Z (the default)
       common/e2rs/indxscn,rscedes(10),rzoncmd,rupaxis
 
-      character SCENE*28    ! scene name (unsure how this differes from SCENERT)
       character RIFNAME*72  ! radiance RIF file name (array of file names)
       character SCENERT*28  ! scene root name (used to create other named entities)
       character SCENEDESC*72  ! user documentation of the scene
       character SCENEPURP*12  ! scene purpose UNKNOWN|External|Internal|Day_fact|Coupling
-      common/raddata/SCENE(MCOM+1),RIFNAME(MCOM+1),SCENERT(MCOM+1),
-     &               SCENEDESC(MCOM+1),SCENEPURP(MCOM+1)
+      common/raddata/RIFNAME(MCOM+1),SCENERT(MCOM+1),SCENEDESC(MCOM+1),
+     &               SCENEPURP(MCOM+1)
 
       integer NBSRIF      ! for each scene -1 if not defined, 1 if alternative rif defined
       character LBSRIF*72 ! alternate rif file name
@@ -109,8 +113,7 @@ C Command line directives
       common/cmddata/zone,aim,cmdact
 
       character runpath*72  ! path for working radiance model 
-      character pathtype*24 ! is either radincfg or radinrad
-      common/expath/runpath,pathtype
+      common/expath/runpath
 
       integer lnrp  ! length of runpath
       common/expathl/lnrp

@@ -5,7 +5,7 @@
  * any changes to the source made known to ESRU.
  * Used by esru_nox.c and esru_uitl.c
  */
-
+	
 /* #if defined(c_plusplus)||defined(__GNUG__)||defined(__GNUC__) */
 /* # define PARMS  full function declaration prototypes accepted */
 /* #endif */
@@ -22,36 +22,36 @@ typedef unsigned char byte;
  * structure that holds the corners of a box
  */
 typedef struct _box{
-	int	b_left;
-	int	b_top;
-	int	b_right;
-	int	b_bottom;
+  int b_left;
+  int b_top;
+  int b_right;
+  int b_bottom;
 }box;
 /*
  * define box arguments that can be or-ed together
  */
-#define BMCLEARALL	01	/* clear box, including edges */
-#define BMCLEAR		02	/* clear inside of box, not including edges */
-#define BMNOTALL	04	/* not all of box */
-#define BMNOT		010	/* not inside of box */
-#define BMEDGES		020	/* draw edges of box, using dd->d_line */
+#define BMCLEARALL 01 /* clear box, including edges */
+#define BMCLEAR    02 /* clear inside of box, not including edges */
+#define BMNOTALL   04 /* not all of box */
+#define BMNOT      010 /* not inside of box */
+#define BMEDGES    020 /* draw edges of box, using dd->d_line */
 /* 
  * define wwcut arguments
  */
-#define IPON		1
-#define IPOFF		2
-#define	NFONTS 		6
-#define	MENU_LIST_LEN	40
-#define PROFMA_LEN	40
-#define STARTX		100
-#define STARTY		100
-#define	TEKX		1024
-#define	TEKY		780
-#define	BORDER	2
-#define	FONT	"fixed"
+#define IPON   1
+#define IPOFF  2
+#define NFONTS 6
+#define MENU_LIST_LEN 40
+#define PROFMA_LEN    40
+#define STARTX       100
+#define STARTY       100
+#define TEKX         1024
+#define TEKY         780
+#define BORDER 2
+#define FONT "fixed"
 #define CDIST(x,y,z)  ((x)*(x) + (y)*(y) + (z)*(z))
-#define HEIGHT(b)	(b.b_bottom-b.b_top+1)
-#define WIDTH(b)	(b.b_right-b.b_left+1)
+#define HEIGHT(b) (b.b_bottom-b.b_top+1)
+#define WIDTH(b) (b.b_right-b.b_left+1)
 
 /* values of haveStdCmap */
 #define STD_NONE     0        /* no stdcmap currently defined */
@@ -73,8 +73,8 @@ typedef struct _box{
  * External Typing
  */
 
-/* void	box_to_pix((Pixmap *),(box) frombox,(Pixmap *),int tw,int th); */
-/* void	pix_to_box(Pixmap* from,int fw,int fh,box tobox,Pixmap* to); */
+/* void box_to_pix((Pixmap *),(box) frombox,(Pixmap *),int tw,int th); */
+/* void pix_to_box(Pixmap* from,int fw,int fh,box tobox,Pixmap* to); */
 void	winlod_(char* name,long int* itime,long int* lix,long int* liy,int len);
 void	winlodpart_(char* name,long int* lreqx,long int* lreqy,long int* lreqwidth,
 	long int* lreqheight,long int* lix,long int* liy,long int* boxulx,
@@ -114,7 +114,8 @@ void	getfileslist_(char* folder,char* act,long int* nflist,int lenfolder,int len
 void	curproject_(char* fcfgroot,char* fpath,char* fupath,char* fimgpth,char* fdocpth,long int* ibrowse,
         long int* iincomp,long int* iincon,int len_root,int len_fpath,int len_fupath,int len_fimgpth,int len_fdocpth);
 void    curviews_(float* EVX,float* EVY,float* EVZ,float* VX,float* VY,float* VZ,float* EAN,long int* JITZNM,long int* JITSNM,
-        long int* JITVNO,long int* JITOBS,long int* JITSNR,long int* JITGRD,long int* JITORG,float* DIS,long int* JITBND,
-        long int* JITDSP,long int* JITHLS,long int* JITHLZ,long int* JITPPSW);
+        long int* JITVNO,long int* JITOBS,long int* JITVIS,long int* JITVOBJ,long int* JITSNR,long int* JITGRD,
+        long int* JITORG,float* DIS,long int* JITBND, long int* JITDSP,long int* JITHLS,long int* JITHLZ,
+        long int* JITPPSW);
 void    pushgzonpik_(long int* jizgfoc,long int* jnzg);
 void    pushnznog_(long int* jnznog,long int* jnznogv);

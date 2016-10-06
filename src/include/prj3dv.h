@@ -32,6 +32,43 @@ C View coordinates
       real WIDE      ! does not seem to be used
       COMMON/IMAGE/IMT,EYEM(3),VIEWM(3),HITH,YON,ANG,HANG,WIDE
 
+      integer ITDSP  ! labels: all surf+obs+vis = 0, all surf = 1, ext = 2,
+                     ! partn = 3, similar = 4, surfs+obs+ground = 5, ground only = 6
+                     ! surf+obs = 7, surf+vis = 8
+      integer ITBND  ! zone bounds toggle: static = 0, optimum = 1,
+                     ! zone focus = 2
+      integer ITEPT  ! is not yet used.
+      integer ITZNM  ! zone name: display = 0, hidden = 1
+      integer ITSNM  ! surface name: display = 0, hidden = 1
+      integer ITORG  ! site origin: display = 0, hidden = 1
+      integer ITSNR  ! surf normal: display = 0, hidden = 1
+      integer ITOBS  ! obstruction: display = 0, hidden = 1
+      integer ITVIS  ! visual entities: highlight if non-zero
+      integer ITVOBJ ! visual compound objects: highlight if non-zero
+      integer ITHLS  ! highlight: normal 0, constr 1, trans/opaq 2, part atrib 3
+      integer ITHLZ  ! additional qualifier for ITHLS.
+      integer ITGRD  ! grid: display = 0, hidden = 1
+      integer ITVNO  ! vertex: display = 0, hidden = 1
+      integer ITPPSW ! current view - perspective/plan/south/west
+      real GRDIS     ! grid distance
+      COMMON/RAY2/ITDSP,ITBND,ITEPT,ITZNM,ITSNM,ITVNO,ITORG,ITSNR,
+     &            ITOBS,ITVIS,ITVOBJ,ITHLS,ITHLZ,ITGRD,GRDIS,ITPPSW
+
+C Keep track of when wireframe view needs to be updated or adjusted.
+      logical MODIFYVIEW ! modify the view
+      logical MODLEN ! modify the viewing lens
+      logical MODBND ! modify the view boundary
+      COMMON/RAY3/MODIFYVIEW,MODLEN,MODBND
+
+C Zone bounds.
+      real ZCOG   ! zone centre of gravity
+      real XMN,YMN,ZMN  ! minimum in each axis
+      real XMX,YMX,ZMX  ! maximum in each axis
+      COMMON/RAY5/ZCOG(MCOM,3),XMN,YMN,ZMN,XMX,YMX,ZMX
+
+      integer LINSTY    ! line type for each surface in the model
+      COMMON/RAY6/LINSTY(MCON)
+
 C Zone bounds (minimum and maximum for each axis.
       real ZXMN,ZYMN,ZZMN ! the zone minimum bounds (m)  for X Y Z axis.
       real ZXMX,ZYMX,ZZMX ! the zone maximum bounds (m)  for X Y Z axis.

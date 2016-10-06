@@ -38,7 +38,7 @@ C Construction.
       PARAMETER (ME=12)        !- Elements/construction. - Increased from 8 to 16 to support CFCs - (Bart Lomanowski)
       PARAMETER (MN=36)        !- Nodes/construction.    - Increased from 35 to 50 to support CFCs - (Bart Lomanowski)
       PARAMETER (MGP=8)       !- Air gaps/construction. - Increased from 3 to 8 to support CFCs - (Bart Lomanowski)
-      PARAMETER (MMLC=100)     !- Multilayered constructions in model.
+      PARAMETER (MMLC=120)     !- Multilayered constructions in model.
       PARAMETER (MHCV=MN+ME)   !- Control volumes per construction.
 
 C Glazing.
@@ -113,7 +113,7 @@ C Results analysis.
       PARAMETER (MNRS=2**MNFA)  !- Result sets (set to 100 for sensitivity analysis).
       PARAMETER (MIPVA=MSPS)    !- IPV assessments.
       PARAMETER (MIPVM=12)      !- IPV metrics.
-      PARAMETER (MZS=90)        !- Number of items to report in res.
+      PARAMETER (MZS=90)        !- Number of items to report in res (biggest of MCOM or MS).
       PARAMETER (MZRL=MCOM+12)  !- Fields in a zone results library record. It should
                                 !  be largest of (36 for file names or MCON for zones
                                 !  or MS + 12 or MGP * 5). See reslib.F for logic.

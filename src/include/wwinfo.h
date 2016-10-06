@@ -50,7 +50,7 @@
 #endif /* WWFORX */
 
 #if defined(c_plusplus)||defined(__GNUG__)||defined(__GNUC__)
-# define WWFULLFUNCTION	/* full function declaration prototypes accepted */
+# define WWFULLFUNCTION /* full function declaration prototypes accepted */
 #endif
 
 #ifndef TRUE
@@ -66,41 +66,41 @@
  * structure that holds the corners of a box
  */
 typedef struct _box{
-	int	b_left;
-	int	b_top;
-	int	b_right;
-	int	b_bottom;
+  int b_left;
+  int b_top;
+  int b_right;
+  int b_bottom;
 }box;
 /*
  * info about a bitmap. sadly cannot forward reference the window typdef
  */
 typedef struct _bitmap{
-	box		bm_box;		/* initially box enclosing whole bitmap */
-	int		bm_colours;	/* max num colours in bitmap (eg 2!) */
-	struct _window	*bm_window;	/* point to window it is for, or null */
-	int		*bm_junk;	/* more irrelevant info */
+  box  bm_box;   /* initially box enclosing whole bitmap */
+  int  bm_colours;  /* max num colours in bitmap (eg 2!) */
+  struct _window  *bm_window;  /* point to window it is for, or null */
+  int  *bm_junk; /* more irrelevant info */
 }bitmap;
 /*
  * a cursor with hot spot and offset from usual cursor image
  */
 typedef struct _cursor{
-	bitmap	*c_bm;
-	bitmap	*c_mask;
-	int	c_rop;
-	int	c_xhot,c_yhot;
-	int	c_xoffset,c_yoffset;
+  bitmap  *c_bm;
+  bitmap  *c_mask;
+  int  c_rop;
+  int  c_xhot,c_yhot;
+  int  c_xoffset,c_yoffset;
 }cursor;
 /*
  * info about a window
  */
 typedef struct _window{
-	bitmap	*w_bm;		/* the bitmap that is the window */
-	int	w_xrel,w_yrel;	/* relative posn of window to parent */
-	box	w_fnbox;	/* posn of fnbox if to be used */
-	int	w_flags;
-	bitmap	*w_icon;	/* -> the icon or null */
-	cursor	*w_cursor;	/* -> the cursor or null */
-	int	*w_junk;	/* more irrelevant info */
+  bitmap  *w_bm;  /* the bitmap that is the window */
+  int w_xrel,w_yrel;  /* relative posn of window to parent */
+  box  w_fnbox;  /* posn of fnbox if to be used */
+  int  w_flags;
+  bitmap  *w_icon;  /* -> the icon or null */
+  cursor  *w_cursor;  /* -> the cursor or null */
+  int  *w_junk;  /* more irrelevant info */
 }window;
 /*
  * define w_flags bit settings
@@ -121,11 +121,11 @@ typedef struct _window{
 /*
  * define bmcopy arguments that can be or-ed together.
  */
-#define BMGET		0100	/* get the returned bitmap (implies BMTO) */
-#define BMFREE		0200	/* free the given bitmap (implies BMFROM) */
-#define BMTO		01000	/* copy to the given bitmap */
-#define BMFROM		02000	/* copy from the given bitmap */
-/* and  BMWIN		04000	   use ddwin->w_bm instead of ddbm */
+#define BMGET  0100  /* get the returned bitmap (implies BMTO) */
+#define BMFREE 0200  /* free the given bitmap (implies BMFROM) */
+#define BMTO   01000  /* copy to the given bitmap */
+#define BMFROM 02000  /* copy from the given bitmap */
+/* and  BMWIN  04000   use ddwin->w_bm instead of ddbm */
 /*
  * define boxop arguments can be one of these
  */

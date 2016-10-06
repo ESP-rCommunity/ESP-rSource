@@ -263,4 +263,4 @@ C.....Extra billing charges
       data iUseNameLen(iExtraBillingCharges) /21/
 
       data cUseDesc(iExtraBillingCharges) /'extra_billing_charges'/
-      data iUseDescLen(iExtraBillingCharges) /21/
+      data iUseDescLen(iExtraBillingCharges) /21/ 

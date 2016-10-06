@@ -45,10 +45,10 @@ C Array of integers indicating whether common files are defined via
 C an absolute path (zero), local path (one), standard path (2)
       common/whichdbpath/ipathapres,ipathoptdb,ipathpcdb,ipathprodb,
      &                   ipathmat,ipathmul,ipathclim,ipathsbem,
-     &                   ipathmsc,ipathmould,ipathcfc
+     &                   ipathmsc,ipathmould,ipathcfc,ipathpredef
       integer ipathapres,ipathoptdb,ipathpcdb,ipathprodb,
      &                   ipathmat,ipathmul,ipathclim,ipathsbem,
-     &                   ipathmsc,ipathmould,ipathcfc
+     &                   ipathmsc,ipathmould,ipathcfc,ipathpredef
 
 C Array of integers representing file unit numbers of databases
       integer iapres  ! file unit of wind pressure coefficients
@@ -111,16 +111,20 @@ C DOPTDB - default optics (144 char), DPRFDB - default events (144 char)
 C DPCDB - default plant components (144 char), DSBEM - default UK SBEM (144 char)
 C DMCMPDBFL - default active components (144 char),
 C dmdbnam - default mould ispleths
-C DCFCDB - default CFClayers (144 char)
+C DCFCDB - default CFClayers (144 char), DPREDEF - default predefined objects
       COMMON/DEFLT1/DCLIM,DAPRES,DFCON,DFMUL,DOPTDB,DPRFDB,DPCDB,DSBEM,
-     &  DMCMPDBFL,dmdbnam, DCFCDB
+     &  DMCMPDBFL,dmdbnam,DCFCDB,DPREDEF
       character DFMUL*144
       character DOPTDB*144,DPRFDB*144,DAPRES*144,DPCDB*144
       character DSBEM*144,DCLIM*144,DFCON*144,DMCMPDBFL*144
-      character dmdbnam*144, DCFCDB*144
+      character dmdbnam*144,DCFCDB*144,DPREDEF*144
 
 C LSBEM - (144 char) SBEM building type and systems db file name
       COMMON/SBEM00/LSBEM
       character LSBEM*144
+
+C LPREDEF - (144 char) predefined objects db file name.
+      COMMON/CPREDEF/LPREDEF
+      character LPREDEF*144
 
 C end of esp-r_dbfile.h

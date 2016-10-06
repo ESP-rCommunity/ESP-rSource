@@ -10,10 +10,10 @@
 /* #endif */
 
 #ifndef TRUE
-#define TRUE		1
-#define FALSE		0
+#define TRUE  1
+#define FALSE 0
 #endif /* TRUE */
-# define NULLPTR(x)	((x *)0)	/* null (coerced) */
+# define NULLPTR(x) ((x *)0) /* null (coerced) */
 
 typedef unsigned char byte;
 
@@ -21,10 +21,10 @@ typedef unsigned char byte;
  * structure that holds the corners of a box
  */
 typedef struct _box{
-	int	b_left;
-	int	b_top;
-	int	b_right;
-	int	b_bottom;
+  int b_left;
+  int b_top;
+  int b_right;
+  int b_bottom;
 }box;
 /*
  * define box arguments that can be or-ed together
