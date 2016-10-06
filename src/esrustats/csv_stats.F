@@ -2086,10 +2086,6 @@ C Caputre text buffer to a file, capextf is in wwlib.c
         CALL EGETW(OUTSTR,K,cadfmt,'W','cad fnt',IER)
         write(outs,'(a,a,2x,a,2x,a)')' Local CAD: ',cadlbl,cadexe,cadfmt
         if(itrc.gt.1)call edisp(iuout,outs)
-      elseif(WORD(1:13).eq.'*tutorial_app')then
-
-C Tutorial application depreciated.
-        continue
       elseif(WORD(1:8).eq.'*journal')then
 
 C Turn journaling on/off.
