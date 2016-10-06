@@ -54,6 +54,7 @@ C creates a grey-scale VRML 2.0 world.
       common/grndpl/NGT,NGTV,XGT(MGTV),YGT(MGTV),ZGT(MGTV),JGVN(MGRT,8),
      &  NGVER(MGRT),IVEDGE(MGRT)
       COMMON/GT5/GSNAME(MGRT),GMLCN(MGRT)
+      CHARACTER GMLCN*32,GSNAME*6
 
       integer matarrayindex ! the indes within matdatarray
       logical closemat1,closemat2
@@ -61,7 +62,6 @@ C creates a grey-scale VRML 2.0 world.
       CHARACTER*72 GTGEOM
       character GDESCR*36
       character OPT*12  ! to pass optical properties
-      CHARACTER GMLCN*12,GSNAME*6
       character ZSN*28,q*1
       DIMENSION SNA(MS),PAZI(MS),PELV(MS),ZSN(MS)
       character outs*124,outsd*124,hc*1
@@ -180,7 +180,7 @@ C Read in the zone geometry.
         WRITE(outs,'(a,a)')' Scanning : ',LGEOM(newfoc)
         CALL edisp(iuout,outs)
         call georead(ITA1,LGEOM(newfoc),newfoc,1,IUOUT,IER)
-        CALL ZINFO(SNA,ZOA,PAZI,PELV,ZVOL)
+        CALL ZINFO(SNA,ZOA,PAZI,PELV,ZVOL,'q')
         vol(newfoc)=zvol
         zonetotsurfacearea(newfoc)=zoa
         WRITE(ioout,'(a)')' '
