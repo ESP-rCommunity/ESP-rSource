@@ -18,6 +18,8 @@ rm -f $HOME/bin/e2r; ln -s $1/e2r $HOME/bin/e2r
 echo e2r " is now pointing to "$1/e2r
 rm -f $HOME/bin/ecnv; ln -s $1/ecnv $HOME/bin/ecnv
 echo ecnv " is now pointing to "$1/ecnv
+rm -f $HOME/bin/enet; ln -s $1/enet $HOME/bin/enet
+echo enet " is now pointing to "$1/enet
 rm -f $HOME/bin/eco; ln -s $1/eco $HOME/bin/eco
 echo eco " is now pointing to "$1/eco
 rm -f $HOME/bin/espvwf; ln -s $1/espvwf $HOME/bin/espvwf

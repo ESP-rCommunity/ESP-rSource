@@ -31,7 +31,7 @@ TXMLAdapter::TXMLAdapter(string filePath)
         }else{
             m_document = xmlParseFile(filePath.c_str());
             if(!xmlFree)
-            	xmlMemGet(&xmlFree,&xmlMalloc,&xmlRealloc,NULL);
+                xmlMemGet(&xmlFree,&xmlMalloc,&xmlRealloc,NULL);
 
             // Is file valid?
             if (m_document == NULL ){
@@ -82,18 +82,18 @@ TXMLNode TXMLAdapter::AddNode(TXMLNode parent, const char *name, const char *val
                 * of root_node node.
                 */
 
-	  //If this node has no content of its own..ensure a NULL is passed.
-	  if (strlen(value) == 0)
-	    {
-	      newNode = xmlNewChild(parent, NULL, BAD_CAST name,
-				    NULL);
-	    }
-	  else
-	    {
-	      newNode = xmlNewChild(parent, NULL, BAD_CAST name,
-				    BAD_CAST value);
+      //If this node has no content of its own..ensure a NULL is passed.
+      if (strlen(value) == 0)
+        {
+          newNode = xmlNewChild(parent, NULL, BAD_CAST name,
+                    NULL);
+        }
+      else
+        {
+          newNode = xmlNewChild(parent, NULL, BAD_CAST name,
+                    BAD_CAST value);
 
-	    }
+        }
         }
 
         return newNode;
@@ -199,15 +199,15 @@ std::string TXMLAdapter::GetFirstAttributeValue(const char* nodeName, const char
    while (cur != NULL) {
       //if found the node
         if ((!xmlStrcmp(cur->name, (const xmlChar *)nodeName))) {
-   	    attrib = xmlGetProp(cur, (const xmlChar *)attributeName);
-		    if((const char*)attrib != NULL)
-		    {
+        attrib = xmlGetProp(cur, (const xmlChar *)attributeName);
+            if((const char*)attrib != NULL)
+            {
             result = (const char *)attrib;
-		    }
+            }
 
-		    xmlFree(attrib);
-		    break;
-	    }
+            xmlFree(attrib);
+            break;
+        }
         cur = cur->next;
    }
 
@@ -280,7 +280,7 @@ void TXMLAdapter::WriteTransformedXML(const char* sXMLFile,
         //set oringinal xml input file to doc.
         doc = xmlParseFile(sXMLFile);
         if(!xmlFree)
-        	xmlMemGet(&xmlFree,&xmlMalloc,&xmlRealloc,NULL);
+            xmlMemGet(&xmlFree,&xmlMalloc,&xmlRealloc,NULL);
 
         // Open transform destination file
         outfile = fopen(sheet->second.c_str(),"w");

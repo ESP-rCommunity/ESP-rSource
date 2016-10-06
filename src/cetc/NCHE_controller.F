@@ -122,6 +122,7 @@ C-------------------------------------------------------------------------------
 
 #include "plant.h"
 #include "building.h"
+#include "power.h"
 #include "DG_controller_include.h"
 #include "CETC_definitions.h"
                                 
@@ -136,7 +137,6 @@ C-------------------------------------------------------------------------------
       common/pctstp/ntstpp
       common/c12ps/npcdat(mpcom,9),ipofs1(mcoefg),ipofs2(mcoefg,mpvar) 
       common/pdbdt/adata(mpcom,madata),bdata(mpcom,mbdata)
-      common/entfile/entflnam, ientxist
       common/ptime/ptimep,ptimef
       common/btime/btimep,btimef
       common/pltcon/bpltcon,lastTStp
@@ -166,9 +166,6 @@ C.....Plant component indexes
       integer npcdat, ipofs1, ipofs2
 C.....Plant component parameters
       real adata, bdata
-C.....Electrical network
-      character*72 entflnam
-      integer ientxist
 C.....Plant future and present state variables
       real csvf, csvp
 C.....Timestep diration
@@ -1129,6 +1126,7 @@ C bHW_tank          ! Flag indicating if cold water tank exists.
 
 #include "plant.h"
 #include "building.h"
+#include "power.h"
 #include "DG_controller_include.h"
 #include "trnsys.h"
 #include "control.h"
@@ -1142,7 +1140,6 @@ C-------------------------------------------------------------------------------
       common/pclsol/icfp,idtypp,iperp
       common/c12ps/npcdat(mpcom,9),ipofs1(mcoefg),ipofs2(mcoefg,mpvar) 
       common/pdbdt/adata(mpcom,madata),bdata(mpcom,mbdata)
-      common/entfile/entflnam, ientxist
 C Common for TRNSYS general information
       COMMON/TRNSYSGEN/NTRNCMP,ITRNTYPE(MTRNCOM)
       INTEGER NTRNCMP,ITRNTYPE
@@ -1166,9 +1163,6 @@ C.....Plant component indexes
       integer npcdat, ipofs1, ipofs2
 C.....Plant component parameters
       real adata, bdata
-C.....Electrical network
-      character*72 entflnam  
-      integer ientxist
 C----------------------------------------------------------------------------------
 C     Local variables
 C----------------------------------------------------------------------------------

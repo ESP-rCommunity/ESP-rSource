@@ -2051,16 +2051,10 @@ zzz
   cp -r ${SRCdir}/manual/* ${ESPdir}/manual
   echo " Done."
 
-  echo -n "   - Installing tutorial files..."
-  rm -rf ${ESPdir}/tutorial
-  mkdir ${ESPdir}/tutorial
-  cp -r ${SRCdir}/tutorial/*.tut ${ESPdir}/tutorial
-  echo " Done."
-  
   
 fi
 
-##### End Install training, manual & tutorial files.
+##### End Install training manual files.
 
 ##### Install databases
 
