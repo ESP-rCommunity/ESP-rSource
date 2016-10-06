@@ -284,7 +284,8 @@ C Determine the weather data location.
 
       helptopic='what_is_long_diff'
       call gethelptext(helpinsub,helptopic,nbhelp)
-      CALL EASKR(CLONG,' ','Weather site longitude difference:',
+      CALL EASKR(CLONG,'Weather site either longitude or longitude',
+     &  'difference from local time meridian +east:',
      &  -14.9,'W',14.9,'W',0.0,'weather long diff',IER,nbhelp)
       IREC=368
       WRITE(IFIL,REC=IREC,IOSTAT=ISTAT,ERR=1000)CLAT,CLONG

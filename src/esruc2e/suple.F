@@ -106,7 +106,7 @@ c when VeEXP= .22
         RETURN
         END
 
-	 SUBROUTINE CPDENL (ZH,PAD,COPAD,*,KEY)
+        SUBROUTINE CPDENL (ZH,PAD,COPAD,*,KEY)
 c************************************************************************
 c Purpose: this routine calculates the Correction Factor for the
 c          Reference CP(zh), in relation to the Plan Area Density 
@@ -137,24 +137,24 @@ c                    .07 > ZH > .93  (if PAD =/= 0)
 c example:
 c CALL CPDENL (.6, 7.5, .69072, 999, 0)
 c***********************************************************************
-	COMMON /ERROR/ERF
+        COMMON /ERROR/ERF
         common /silmode/ issilent
         logical issilent
         INTEGER KEY
-	INTEGER erf
+        INTEGER erf
 
-	parameter (Nmax=6,Lmax=6)
-	REAL ZH,PAD,polD(Nmax,Lmax),A(6)
-	INTEGER K
+        parameter (Nmax=6,Lmax=6)
+        REAL ZH,PAD,polD(Nmax,Lmax),A(6)
+        INTEGER K
 
-	REAL COPAD
+        REAL COPAD
 
 c reference values of ZH
-	DATA A/.07, .2, .4, .6, .8, .93/
+        DATA A/.07, .2, .4, .6, .8, .93/
 
 c coefficients for a 5th order polinomial equation yelding
 c COPAD as fitting function of PAD
-	data polD/ 9.118209e-08,5.934754e-08,5.052791e-08,5.595805e-08,
+        data polD/ 9.118209e-08,5.934754e-08,5.052791e-08,5.595805e-08,
      & 5.553558e-08,6.211419e-08,-1.050363e-05,-6.708652e-06,
      & -5.537346e-06, -6.121612e-06, -5.931215e-06, -6.759794e-06,
      & +3.932533e-04, +2.340744e-04, +1.722449e-04, +1.8897e-04, 
@@ -164,52 +164,52 @@ c COPAD as fitting function of PAD
      & +1.047295, +1.043295, +1.034663, +1.032759, +1.037969,+1.033975/
         
 c error return
-	IF (PAD.LT.0..OR.PAD.GT.50.) THEN
+        IF (PAD.LT.0..OR.PAD.GT.50.) THEN
            if (.not.issilent) then
               WRITE (ERF,*)  'PAD out of range (0-50)'
            end if
            KEY=1
-	   RETURN 1
-	ENDIF
+           RETURN 1
+        ENDIF
 
-	if (PAD.eq.0) go to 100
+        if (PAD.eq.0) go to 100
 
 c check the position of ZH in relation to the reference
 c values (A) and calculate the pointer number to search the 
 c proper coefficients (polB) for the polinomial equation 
-	K=0
-	N=0
-	DO 10 I=1,6
-	   IF (ZH.NE.A(I)) GO TO 10
-	   K=I
-10	CONTINUE
-	
-	if (K.NE.0) N=K
-	
-	IF (N.NE.0) GO TO 200
+        K=0
+        N=0
+        DO 10 I=1,6
+          IF (ZH.NE.A(I)) GO TO 10
+          K=I
+10      CONTINUE
+
+        if (K.NE.0) N=K
+
+        IF (N.NE.0) GO TO 200
 
 c when ZH is different from a reference value
-	CALL SEARCH (A,ZH,6,K1)	
+        CALL SEARCH (A,ZH,6,K1)
         N=K1
 
-	CALL CORPAN (PAD,polD,Nmax,Lmax,N,CORP1)
-	CALL CORPAN (PAD,polD,Nmax,Lmax,N+1,CORP2)
-	CALL LININT (ZH,A(N),A(N+1),CORP1,CORP2,COPAD)
-	GO TO 999
+        CALL CORPAN (PAD,polD,Nmax,Lmax,N,CORP1)
+        CALL CORPAN (PAD,polD,Nmax,Lmax,N+1,CORP2)
+        CALL LININT (ZH,A(N),A(N+1),CORP1,CORP2,COPAD)
+        GO TO 999
 
 c when ZH is equal to a reference value
-200    	CALL CORPAN (PAD,polD,Nmax,Lmax,N,COPAD)
-	GO TO 999
+200     CALL CORPAN (PAD,polD,Nmax,Lmax,N,COPAD)
+        GO TO 999
 
 c when PAD = 0
-100	COPAD = 1.0	
+100     COPAD = 1.0
 
-999	CONTINUE
+999     CONTINUE
         RETURN
-	END
+        END
 
 
-	SUBROUTINE CPRELL (ZH,PAD,RbH,COREL,*,KEY)
+        SUBROUTINE CPRELL (ZH,PAD,RbH,COREL,*,KEY)
 c************************************************************************
 c Purpose: this routine calculates the Correction Factor for the
 c          reference CP(zh), in relation to the Relative Height of the
@@ -244,27 +244,27 @@ c                    .07 > ZH  > .93  (if RbH =/= 1)
 c example:
 c CALL CPRELL (.6, 7.5, 2., 1.18508, 999, 0)
 c***********************************************************************
-	COMMON /ERROR/ERF
-	INTEGER erf
-	INTEGER KEY
+        COMMON /ERROR/ERF
+        INTEGER erf
+        INTEGER KEY
 
-	parameter (Nmax=24,Lmax=3) 
-	REAL ZH,PAD,RbH,polR(Nmax,Lmax)
+        parameter (Nmax=24,Lmax=3) 
+        REAL ZH,PAD,RbH,polR(Nmax,Lmax)
 
-	REAL A1(6),A2(4),CORP1,CORP2,COREL1,COREL2
-	INTEGER K,K1,L,L1,N
+        REAL A1(6),A2(4),CORP1,CORP2,COREL1,COREL2
+        INTEGER K,K1,L,L1,N
 
-	REAL COREL
+        REAL COREL
 
 c reference values for ZH
-	DATA A1/.07,.2,.4,.6,.8,.93/
+        DATA A1/.07,.2,.4,.6,.8,.93/
 
 c reference values for PAD
-	DATA A2/0.,5.,6.25,12.5/
+        DATA A2/0.,5.,6.25,12.5/
 
 c coefficients for 1st and 2nd order polinomial equations
 c yelding COREL as fitting function of RbH
-	data polR/0., 0., 0., 0., 0., 0., 0.123639, 0.080103,-0.043739,
+       data polR/0., 0., 0., 0., 0., 0., 0.123639, 0.080103,-0.043739,
      & 0.054539, 0.100427, 0.175853, -0.069086, 0.029377, 0.066082, 
      & 0.145046, -0.036376, 0.011009,-1.58012e-03,0.09395,2.138076e-03, 
      & 0.03126,0.102993,0.202243,0.547959,0.625743,0.859533, 1.710552,
@@ -277,70 +277,70 @@ c yelding COREL as fitting function of RbH
      & +0.258777, +0.435343, -0.084281, -0.111437, +0.38064, +0.418668, 
      & -0.122071, -0.353569/
 
-	IF (RbH.EQ.1.) GO TO 100
+        IF (RbH.EQ.1.) GO TO 100
 
 c check the position of ZH and PAD in relation to the reference
 c values (A1,A2) and calculate the pointer number to search the 
 c proper coefficients for the polinomial equation (polR)  
-	K=0
-	L=0
-	N=0
-	DO 10 I=1,6
-	   IF (ZH.NE.A1(I)) GO TO 10
-	   K=I
+        K=0
+        L=0
+        N=0
+        DO 10 I=1,6
+          IF (ZH.NE.A1(I)) GO TO 10
+          K=I
 10      CONTINUE
 
-	DO 20 J=1,4
-	   IF (PAD.NE.A2(J)) GO TO 20
-	   L=J
+        DO 20 J=1,4
+          IF (PAD.NE.A2(J)) GO TO 20
+          L=J
 20      CONTINUE
 
-	IF (K.NE.0.AND.L.NE.0) N=(K-1)*4+L
-	IF (N.NE.0) GO TO 200
-	IF (K.NE.0) GO TO 300
-	IF (L.NE.0) GO TO 400
+        IF (K.NE.0.AND.L.NE.0) N=(K-1)*4+L
+        IF (N.NE.0) GO TO 200
+        IF (K.NE.0) GO TO 300
+        IF (L.NE.0) GO TO 400
 
 c when ZH and PAD are both different from  reference values
-	CALL SEARCH (A1,ZH,6,K1)
-	CALL SEARCH (A2,PAD,4,L1)
+        CALL SEARCH (A1,ZH,6,K1)
+        CALL SEARCH (A2,PAD,4,L1)
 
-	N=(K1-1)*4+L1
+        N=(K1-1)*4+L1
 
-	CALL CORPAN (RbH,polR,Nmax,Lmax,N,CORP1)
-	CALL CORPAN (RbH,polR,Nmax,Lmax,N+1,CORP2)
-	CALL LININT (PAD,A2(L1),A2(L1+1),CORP1,CORP2,COREL1)
+        CALL CORPAN (RbH,polR,Nmax,Lmax,N,CORP1)
+        CALL CORPAN (RbH,polR,Nmax,Lmax,N+1,CORP2)
+        CALL LININT (PAD,A2(L1),A2(L1+1),CORP1,CORP2,COREL1)
 
-	N=K1*4+L1
+        N=K1*4+L1
 
-	CALL CORPAN (RbH,polR,Nmax,Lmax,N,CORP1)
-	CALL CORPAN (RbH,polR,Nmax,Lmax,N+1,CORP2)
-	CALL LININT (PAD,A2(L1),A2(L1+1),CORP1,CORP2,COREL2)
-	CALL LININT (ZH,A1(K1),A1(K1+1),COREL1,COREL2,COREL)
-	GO TO 999
+        CALL CORPAN (RbH,polR,Nmax,Lmax,N,CORP1)
+        CALL CORPAN (RbH,polR,Nmax,Lmax,N+1,CORP2)
+        CALL LININT (PAD,A2(L1),A2(L1+1),CORP1,CORP2,COREL2)
+        CALL LININT (ZH,A1(K1),A1(K1+1),COREL1,COREL2,COREL)
+        GO TO 999
 
 c when only ZH is different from reference value
 400     CALL SEARCH (A1,ZH,6,K1)
 
-	N=(K1-1)*4+L
+        N=(K1-1)*4+L
 
-	CALL CORPAN (RbH,polR,Nmax,Lmax,N,CORP1)
-	CALL CORPAN (RbH,polR,Nmax,Lmax,N+4,CORP2)
-	CALL LININT (ZH,A1(K1),A1(K1+1),CORP1,CORP2,COREL)
-	GO TO 999
+        CALL CORPAN (RbH,polR,Nmax,Lmax,N,CORP1)
+        CALL CORPAN (RbH,polR,Nmax,Lmax,N+4,CORP2)
+        CALL LININT (ZH,A1(K1),A1(K1+1),CORP1,CORP2,COREL)
+        GO TO 999
 
 c when only PAD is different from reference value 
 300     CALL SEARCH (A2,PAD,4,L1)       
 
-	N=(K-1)*4+L1
+        N=(K-1)*4+L1
 
-	CALL CORPAN (RbH,polR,Nmax,Lmax,N,CORP1)
-	CALL CORPAN (RbH,polR,Nmax,Lmax,N+1,CORP2)
-	CALL LININT (PAD,A2(L1),A2(L1+1),CORP1,CORP2,COREL)
-	GO TO 999
+        CALL CORPAN (RbH,polR,Nmax,Lmax,N,CORP1)
+        CALL CORPAN (RbH,polR,Nmax,Lmax,N+1,CORP2)
+        CALL LININT (PAD,A2(L1),A2(L1+1),CORP1,CORP2,COREL)
+        GO TO 999
 
 c when ZH and PAD are equal to reference values
 200     CALL CORPAN (RbH,polR,Nmax,Lmax,N,COREL)
-	GO TO 999
+        GO TO 999
 
 c when RbH = 1
 100     COREL = 1.0       
@@ -348,11 +348,11 @@ c when RbH = 1
 999     CONTINUE
 
         key=key
-	RETURN
-	END
+        RETURN
+        END
 
 
-	SUBROUTINE CPFARL (ZH,FAR,PAD,COFAR,*,KEY)
+        SUBROUTINE CPFARL (ZH,FAR,PAD,COFAR,*,KEY)
 c************************************************************************
 c Purpose: this routine calculates the Correction Factor for the
 c          reference CP(zh), as function of the Frontal Aspect Ratio of 
@@ -384,30 +384,30 @@ c                    .07 > ZH  > .93  (if FAR =/= 1)
 c example:
 c CALL CPFARL (.6, 2., 7.5, .72007, 999, 0)
 c***********************************************************************
-	COMMON /ERROR/ERF
+        COMMON /ERROR/ERF
         Common /unit/DOU,KBD,CRT,DIN
         common /silmode/ issilent
         logical issilent
         INTEGER KBD,CRT,DIN,DOU,ERF
-	INTEGER KEY
+        INTEGER KEY
  
-	parameter (Nmax=30,Lmax=2)
-	REAL ZH,PAD,FAR,polF(Nmax,Lmax),radF(30,3)
+        parameter (Nmax=30,Lmax=2)
+        REAL ZH,PAD,FAR,polF(Nmax,Lmax),radF(30,3)
 
-	REAL A1(6),A2(5),CORP1,CORP2,COFAR1,COFAR2
-	INTEGER K,K1,L,L1,N
+        REAL A1(6),A2(5),CORP1,CORP2,COFAR1,COFAR2
+        INTEGER K,K1,L,L1,N
 
-	REAL COFAR
+        REAL COFAR
 
 c reference values for ZH
-	DATA A1/.07,.2,.4,.6,.8,.93/
+        DATA A1/.07,.2,.4,.6,.8,.93/
 
 c reference values for PAD
-	DATA A2/0.,5.,7.5,10.,12.5/
+        DATA A2/0.,5.,7.5,10.,12.5/
 
 c coefficients for a linear equation yelding
 c COFAR as fitting function of FAR if FAR < 1
-	data polF/0.77, 0.694, 0.624, 0.6, 0.666, 0.55, 1.31, 1.096, 
+        data polF/0.77, 0.694, 0.624, 0.6, 0.666, 0.55, 1.31, 1.096, 
      & 1.048, 1.096, 1.142, 1.042, 1.32, 1.17, 1.142, 1.17, 1.292,1.25, 
      & 1.302, 1.166, 1.12, 1.25, 1.428, 1.428, 1.366, 1.174, 1.166, 
      & 1.244, 1.4, 1.412,+0.23, +0.306, +0.376, +0.4, +0.334, +0.45, 
@@ -418,7 +418,7 @@ c COFAR as fitting function of FAR if FAR < 1
 c coefficients for a square root equation, such as 
 c (a*x + b/x + c)**.5, yelding COFAR as fitting function
 c of FAR if FAR > 1
-	data radF/0.391319,0.208852,0.176644,0.222872,0.352525,0.409298,
+       data radF/0.391319,0.208852,0.176644,0.222872,0.352525,0.409298,
      & 0.313066,0.262845,0.198393,0.202255,0.266436,0.378433,0.355636,
      & 0.256393,0.195066,0.179345,0.248347,0.286457,0.162696,0.14259,
      & 0.072493,0.062272,0.116832,0.111723,0.187639,0.113114,0.090391,
@@ -433,152 +433,152 @@ c of FAR if FAR > 1
      & -0.131138,-0.445541,-0.190495,-0.830662,-0.518821,-0.281639,
      & -0.086177,-0.561468,-0.337801/
 
-	IF (FAR.NE.1..AND.PAD.GT.12.5) THEN
+        IF (FAR.NE.1..AND.PAD.GT.12.5) THEN
            if (.not.issilent) then
               WRITE (ERF,*)  'PAD out of range (0-12.5)'
            end if
            KEY=1
-	   RETURN 1      
-	ENDIF
+           RETURN 1      
+        ENDIF
 
-	IF (FAR.EQ.1.0) GO TO 100
+        IF (FAR.EQ.1.0) GO TO 100
 
 c check the position of ZH and PAD in relation to the reference
 c values (A1,A2) and calculate the pointer number to search the 
 c proper coefficients (polF,radF) for the fitting equations 
-	K=0
-	L=0
-	N=0
-	DO 10 I=1,6
-	   IF (ZH.NE.A1(I)) GO TO 10
-	   K=I
+        K=0
+        L=0
+        N=0
+        DO 10 I=1,6
+          IF (ZH.NE.A1(I)) GO TO 10
+          K=I
 10      CONTINUE
 
-	DO 20 J=1,5
-	   IF (PAD.NE.A2(J)) GO TO 20
-	   L=J
+        DO 20 J=1,5
+          IF (PAD.NE.A2(J)) GO TO 20
+          L=J
 20      CONTINUE
-	IF (K.NE.0.AND.L.NE.0) N=(L-1)*6+K
-	IF (N.NE.0) GO TO 200
-	IF (K.NE.0) GO TO 400
-	IF (L.NE.0) GO TO 300
+        IF (K.NE.0.AND.L.NE.0) N=(L-1)*6+K
+        IF (N.NE.0) GO TO 200
+        IF (K.NE.0) GO TO 400
+        IF (L.NE.0) GO TO 300
 
 c when ZH and PAD are both different from  reference values
-	CALL SEARCH (A1,ZH,6,K1)
-	CALL SEARCH (A2,PAD,5,L1)
+        CALL SEARCH (A1,ZH,6,K1)
+        CALL SEARCH (A2,PAD,5,L1)
 
-	N=(L1-1)*6+K1
+        N=(L1-1)*6+K1
 
-	if (FAR.lt.1.0) then
-	CALL CORPAN (FAR,polF,Nmax,Lmax,N,CORP1)
-	CALL CORPAN (FAR,polF,Nmax,Lmax,N+1,CORP2)
-	else
-	CALL CORRAD (FAR,radF,Nmax,N,CORP1)
-	CALL CORRAD (FAR,radF,Nmax,N+1,CORP2)
-	  if (corp1.eq.100..or.corp2.eq.100.)then
+        if (FAR.lt.1.0) then
+          CALL CORPAN (FAR,polF,Nmax,Lmax,N,CORP1)
+          CALL CORPAN (FAR,polF,Nmax,Lmax,N+1,CORP2)
+        else
+          CALL CORRAD (FAR,radF,Nmax,N,CORP1)
+          CALL CORRAD (FAR,radF,Nmax,N+1,CORP2)
+          if (corp1.eq.100..or.corp2.eq.100.)then
              write(DOU,*) 'FAR out of range (leeward facade)'
-	     cofar=10000.
-	     key=2
-	     GO to 999
-	  endif
+             cofar=10000.
+             key=2
+             GO to 999
+          endif
 
-	endif
-	
-	CALL LININT (ZH,A1(K1),A1(K1+1),CORP1,CORP2,COFAR1)
+        endif
 
-	N=L1*6+K1
+        CALL LININT (ZH,A1(K1),A1(K1+1),CORP1,CORP2,COFAR1)
 
-	if (FAR.lt.1.0) then
-	CALL CORPAN (FAR,polF,Nmax,Lmax,N,CORP1)
-	CALL CORPAN (FAR,polF,Nmax,Lmax,N+1,CORP2)
-	else
-	CALL CORRAD (FAR,radF,Nmax,N,CORP1)
-	CALL CORRAD (FAR,radF,Nmax,N+1,CORP2)
-	  if (corp1.eq.100..or.corp2.eq.100.)then
+        N=L1*6+K1
+
+        if (FAR.lt.1.0) then
+          CALL CORPAN (FAR,polF,Nmax,Lmax,N,CORP1)
+          CALL CORPAN (FAR,polF,Nmax,Lmax,N+1,CORP2)
+        else
+          CALL CORRAD (FAR,radF,Nmax,N,CORP1)
+          CALL CORRAD (FAR,radF,Nmax,N+1,CORP2)
+          if (corp1.eq.100..or.corp2.eq.100.)then
              write(DOU,*) 'FAR out of range (leeward facade)'
-	     cofar=10000.
-	     key=2
-	     GO to 999
-	  endif
-	 endif
+             cofar=10000.
+             key=2
+             GO to 999
+          endif
+        endif
 
-	CALL LININT (ZH,A1(K1),A1(K1+1),CORP1,CORP2,COFAR2)
-	CALL LININT (PAD,A2(L1),A2(L1+1),COFAR1,COFAR2,COFAR)
-	GO TO 999
+        CALL LININT (ZH,A1(K1),A1(K1+1),CORP1,CORP2,COFAR2)
+        CALL LININT (PAD,A2(L1),A2(L1+1),COFAR1,COFAR2,COFAR)
+        GO TO 999
 
 c when only PAD is different from reference value
 400     CALL SEARCH (A2,PAD,5,L1)
 
-	N=(L1-1)*6+K
+        N=(L1-1)*6+K
 
-	if (FAR.lt.1.0) then
-	CALL CORPAN (FAR,polF,Nmax,Lmax,N,CORP1)
-	CALL CORPAN (FAR,polF,Nmax,Lmax,N+6,CORP2)
-	else
-	CALL CORRAD (FAR,radF,Nmax,N,CORP1)
-	CALL CORRAD (FAR,radF,Nmax,N+6,CORP2)
-	  if (corp1.eq.100..or.corp2.eq.100.)then
+        if (FAR.lt.1.0) then
+          CALL CORPAN (FAR,polF,Nmax,Lmax,N,CORP1)
+          CALL CORPAN (FAR,polF,Nmax,Lmax,N+6,CORP2)
+        else
+          CALL CORRAD (FAR,radF,Nmax,N,CORP1)
+          CALL CORRAD (FAR,radF,Nmax,N+6,CORP2)
+          if (corp1.eq.100..or.corp2.eq.100.)then
              write(DOU,*) 'FAR out of range (leeward facade)'
-	     cofar=10000.
-	     key=2
-	     GO to 999
-	  endif
-	 endif
+             cofar=10000.
+             key=2
+             GO to 999
+          endif
+        endif
 
-	CALL LININT (PAD,A2(L1),A2(L1+1),CORP1,CORP2,COFAR)
-	GO TO 999
+        CALL LININT (PAD,A2(L1),A2(L1+1),CORP1,CORP2,COFAR)
+        GO TO 999
 
 
 c when only ZH is different from reference value 
 300     CALL SEARCH (A1,ZH,6,K1)        
 
-	N=(L-1)*6+K1
+        N=(L-1)*6+K1
 
-	if (FAR.lt.1.0) then
-	CALL CORPAN (FAR,polF,Nmax,Lmax,N,CORP1)
-	CALL CORPAN (FAR,polF,Nmax,Lmax,N+1,CORP2)
-	else
-	CALL CORRAD (FAR,radF,Nmax,N,CORP1)
-	CALL CORRAD (FAR,radF,Nmax,N+1,CORP2)
-	 if (corp1.eq.100..or.corp2.eq.100.)then
+        if (FAR.lt.1.0) then
+          CALL CORPAN (FAR,polF,Nmax,Lmax,N,CORP1)
+          CALL CORPAN (FAR,polF,Nmax,Lmax,N+1,CORP2)
+        else
+          CALL CORRAD (FAR,radF,Nmax,N,CORP1)
+          CALL CORRAD (FAR,radF,Nmax,N+1,CORP2)
+          if (corp1.eq.100..or.corp2.eq.100.)then
              write(DOU,*) 'FAR out of range (leeward facade)'
-	     cofar=10000.
-	     key=2
-	     GO to 999
-	 endif
+             cofar=10000.
+             key=2
+             GO to 999
+          endif
 
-	endif
+        endif
 
-	CALL LININT (ZH,A1(K1),A1(K1+1),CORP1,CORP2,COFAR)
+        CALL LININT (ZH,A1(K1),A1(K1+1),CORP1,CORP2,COFAR)
 
-	GO TO 999
+        GO TO 999
 
 c when ZH and PAD are equal to reference values
 
 200     if (FAR.lt.1.0) then
-	CALL CORPAN (FAR,polF,Nmax,Lmax,N,COFAR)
-	else
-	CALL CORRAD (FAR,radF,Nmax,N,COFAR)
-	  if (cofar.eq.100.) then
+          CALL CORPAN (FAR,polF,Nmax,Lmax,N,COFAR)
+        else
+          CALL CORRAD (FAR,radF,Nmax,N,COFAR)
+          if (cofar.eq.100.) then
              write(DOU,*) 'FAR out of range (leeward facade)'
-	     cofar=10000.
-	     key=2
-	  endif
+             cofar=10000.
+             key=2
+          endif
 
-	endif
+        endif
 
-	GO TO 999
+        GO TO 999
 
 c when FAR= 1
 100     COFAR = 1.0       
 
 999     CONTINUE
 
-	RETURN
-	END
+        RETURN
+        END
 
 
-	SUBROUTINE CPSARL (ZH,SAR,PAD,COSAR,*,KEY)
+        SUBROUTINE CPSARL (ZH,SAR,PAD,COSAR,*,KEY)
 c************************************************************************
 c Purpose: this routine calculates the Correction Factor for the
 c          reference CP(zh), as function of the Side Aspect Ratio of 
@@ -615,25 +615,25 @@ c***********************************************************************
         common /silmode/ issilent
         logical issilent
         INTEGER KBD,CRT,DIN,DOU,ERF
-	INTEGER KEY
+        INTEGER KEY
  
-	parameter (Nmax=30,Lmax=2)
-	REAL ZH,PAD,SAR,polS(Nmax,Lmax),radS(30,3)
+        parameter (Nmax=30,Lmax=2)
+        REAL ZH,PAD,SAR,polS(Nmax,Lmax),radS(30,3)
 
-	REAL A1(6),A2(5),CORP1,CORP2,COSAR1,COSAR2
-	INTEGER K,K1,L,L1,N
+        REAL A1(6),A2(5),CORP1,CORP2,COSAR1,COSAR2
+        INTEGER K,K1,L,L1,N
 
-	REAL COSAR
+        REAL COSAR
 
 c reference values for ZH
-	DATA A1/.07,.2,.4,.6,.8,.93/
+        DATA A1/.07,.2,.4,.6,.8,.93/
 
 c reference values for PAD
-	DATA A2/0.,5.,7.5,10.,12.5/
+        DATA A2/0.,5.,7.5,10.,12.5/
 
 c coefficients for a linear equation yelding
 c COSAR as fitting function of SAR if SAR < 1
-	data polS/ -0.462, -0.444, -0.5, -0.6, -0.666, -0.986, 0.62, 
+       data polS/ -0.462, -0.444, -0.5, -0.6, -0.666, -0.986, 0.62, 
      & 0.484, 0.286, 0.322, 0.358, 0.124, 0.56, 0.416, 0.358, 0.378, 
      & 0.416, 6.245004e-17, 0.418, 0.374, 0.28, 0.334, 0.286, 0.058, 
      & 0.586, 0.392, 0.208, 0.088, 0.2, -0.118,
@@ -645,7 +645,7 @@ c COSAR as fitting function of SAR if SAR < 1
 c coefficients for a square root equation, such as 
 c (a*x + b/x + c)**.5, yelding COSAR 
 c as fitting function of SAR if SAR > 1
-	data radS/1.549121,1.293432,0.818276,0.622491,0.431822,1.15475, 
+       data radS/1.549121,1.293432,0.818276,0.622491,0.431822,1.15475, 
      & 1.234668,1.086419,1.110227,1.248462,1.158504,0.924129,1.6176, 
      & 1.405914, 1.39227, 1.446764, 1.541118, 1.395, 1.728091, 1.675056, 
      & 1.632, 1.623354, 2.133661, 2.099225, 2.249115, 2.121972, 1.99874, 
@@ -661,151 +661,151 @@ c as fitting function of SAR if SAR > 1
      & -6.900996, -6.769291, -7.488376, -6.948252, -6.576709, 
      & -7.641063, -7.081692, -7.225708/
 
-	IF (SAR.NE.1..AND.PAD.GT.12.5) THEN
+        IF (SAR.NE.1..AND.PAD.GT.12.5) THEN
            if (.not.issilent) then
               WRITE (ERF,*)  'PAD out of range (0-12.5)'
            end if
            KEY=1
-	   RETURN 1      
-	ENDIF
+           RETURN 1      
+        ENDIF
 
-	IF (SAR.EQ.1.0) GO TO 100
+        IF (SAR.EQ.1.0) GO TO 100
 
 c check the position of ZH and PAD in relation to the reference
 c values (A1,A2) and calculate the pointer number to search the 
 c proper coefficients     
-	K=0
-	L=0
-	N=0
-	DO 10 I=1,6
-	   IF (ZH.NE.A1(I)) GO TO 10
-	   K=I
+        K=0
+        L=0
+        N=0
+        DO 10 I=1,6
+          IF (ZH.NE.A1(I)) GO TO 10
+          K=I
 10      CONTINUE
 
-	DO 20 J=1,5
-	   IF (PAD.NE.A2(J)) GO TO 20
-	   L=J
+        DO 20 J=1,5
+          IF (PAD.NE.A2(J)) GO TO 20
+          L=J
 20      CONTINUE
 
-	IF (K.NE.0.AND.L.NE.0) N=(L-1)*6+K
-	IF (N.NE.0) GO TO 200
-	IF (K.NE.0) GO TO 400
-	IF (L.NE.0) GO TO 300
+        IF (K.NE.0.AND.L.NE.0) N=(L-1)*6+K
+        IF (N.NE.0) GO TO 200
+        IF (K.NE.0) GO TO 400
+        IF (L.NE.0) GO TO 300
 
 c when ZH and PAD are both different from  reference values
-	CALL SEARCH (A1,ZH,6,K1)
-	CALL SEARCH (A2,PAD,5,L1)
+        CALL SEARCH (A1,ZH,6,K1)
+        CALL SEARCH (A2,PAD,5,L1)
 
-	N=(L1-1)*6+K1
+        N=(L1-1)*6+K1
 
-	if (SAR.lt.1.0) then
-	CALL CORPAN (SAR,polS,Nmax,Lmax,N,CORP1)
-	CALL CORPAN (SAR,polS,Nmax,Lmax,N+1,CORP2)
-	else
-	CALL CORRAD (SAR,radS,Nmax,N,CORP1)
-	CALL CORRAD (SAR,radS,Nmax,N+1,CORP2)
-	 if (corp1.eq.100..or.corp2.eq.100.)then
+        if (SAR.lt.1.0) then
+          CALL CORPAN (SAR,polS,Nmax,Lmax,N,CORP1)
+          CALL CORPAN (SAR,polS,Nmax,Lmax,N+1,CORP2)
+        else
+          CALL CORRAD (SAR,radS,Nmax,N,CORP1)
+          CALL CORRAD (SAR,radS,Nmax,N+1,CORP2)
+          if (corp1.eq.100..or.corp2.eq.100.)then
              write(DOU,*) 'SAR out of range (leeward facade)'
-	     cosar=10000.
-	     key=2
-	     GO to 999
-	 endif
-	endif
-	
-	CALL LININT (ZH,A1(K1),A1(K1+1),CORP1,CORP2,COSAR1)
+             cosar=10000.
+             key=2
+             GO to 999
+          endif
+        endif
 
-	N=L1*6+K1
+        CALL LININT (ZH,A1(K1),A1(K1+1),CORP1,CORP2,COSAR1)
 
-	if (SAR.lt.1.0) then
-	CALL CORPAN (SAR,polS,Nmax,Lmax,N,CORP1)
-	CALL CORPAN (SAR,polS,Nmax,Lmax,N+1,CORP2)
-	else
-	CALL CORRAD (SAR,radS,Nmax,N,CORP1)
-	CALL CORRAD (SAR,radS,Nmax,N+1,CORP2)
-	 if (corp1.eq.100..or.corp2.eq.100.)then
+        N=L1*6+K1
+
+        if (SAR.lt.1.0) then
+          CALL CORPAN (SAR,polS,Nmax,Lmax,N,CORP1)
+          CALL CORPAN (SAR,polS,Nmax,Lmax,N+1,CORP2)
+        else
+          CALL CORRAD (SAR,radS,Nmax,N,CORP1)
+          CALL CORRAD (SAR,radS,Nmax,N+1,CORP2)
+          if (corp1.eq.100..or.corp2.eq.100.)then
              write(DOU,*) 'SAR out of range (leeward facade)'
-	     cosar=10000.
-	     key=2
-	     GO to 999
-	 endif
+             cosar=10000.
+             key=2
+             GO to 999
+          endif
 
-	endif
+        endif
 
-	CALL LININT (ZH,A1(K1),A1(K1+1),CORP1,CORP2,COSAR2)
-	CALL LININT (PAD,A2(L1),A2(L1+1),COSAR1,COSAR2,COSAR)
-	GO TO 999
+        CALL LININT (ZH,A1(K1),A1(K1+1),CORP1,CORP2,COSAR2)
+        CALL LININT (PAD,A2(L1),A2(L1+1),COSAR1,COSAR2,COSAR)
+        GO TO 999
 
 c when only PAD is different from reference value
 400     CALL SEARCH (A2,PAD,5,L1)
 
-	N=(L1-1)*6+K
+        N=(L1-1)*6+K
 
-	if (SAR.lt.1.0) then
-	CALL CORPAN (SAR,polS,Nmax,Lmax,N,CORP1)
-	CALL CORPAN (SAR,polS,Nmax,Lmax,N+6,CORP2)
-	else
-	CALL CORRAD (SAR,radS,Nmax,N,CORP1)
-	CALL CORRAD (SAR,radS,Nmax,N+6,CORP2)
-	 if (corp1.eq.100..or.corp2.eq.100.)then
+        if (SAR.lt.1.0) then
+          CALL CORPAN (SAR,polS,Nmax,Lmax,N,CORP1)
+          CALL CORPAN (SAR,polS,Nmax,Lmax,N+6,CORP2)
+        else
+          CALL CORRAD (SAR,radS,Nmax,N,CORP1)
+          CALL CORRAD (SAR,radS,Nmax,N+6,CORP2)
+          if (corp1.eq.100..or.corp2.eq.100.)then
              write(DOU,*) 'SAR out of range (leeward facade)'
-	     cosar=10000.
-	     key=2
-	     GO to 999
-	 endif
-	endif
+             cosar=10000.
+             key=2
+             GO to 999
+          endif
+        endif
 
-	CALL LININT (PAD,A2(L1),A2(L1+1),CORP1,CORP2,COSAR)
-	GO TO 999
+        CALL LININT (PAD,A2(L1),A2(L1+1),CORP1,CORP2,COSAR)
+        GO TO 999
 
 
 c when only ZH is different from reference value 
 300     CALL SEARCH (A1,ZH,6,K1)        
 
-	N=(L-1)*6+K1
+        N=(L-1)*6+K1
 
-	if (SAR.lt.1.0) then
-	CALL CORPAN (SAR,polS,Nmax,Lmax,N,CORP1)
-	CALL CORPAN (SAR,polS,Nmax,Lmax,N+1,CORP2)
-	else
-	CALL CORRAD (SAR,radS,Nmax,N,CORP1)
-	CALL CORRAD (SAR,radS,Nmax,N+1,CORP2)
-	 if (corp1.eq.100..or.corp2.eq.100.)then
+        if (SAR.lt.1.0) then
+          CALL CORPAN (SAR,polS,Nmax,Lmax,N,CORP1)
+          CALL CORPAN (SAR,polS,Nmax,Lmax,N+1,CORP2)
+        else
+          CALL CORRAD (SAR,radS,Nmax,N,CORP1)
+          CALL CORRAD (SAR,radS,Nmax,N+1,CORP2)
+          if (corp1.eq.100..or.corp2.eq.100.)then
              write(DOU,*) 'SAR out of range (leeward facade)'
-	     cosar=10000.
-	     key=2
-	     GO to 999
-	 endif
-	endif
+             cosar=10000.
+             key=2
+             GO to 999
+          endif
+        endif
 
-	CALL LININT (ZH,A1(K1),A1(K1+1),CORP1,CORP2,COSAR)
+        CALL LININT (ZH,A1(K1),A1(K1+1),CORP1,CORP2,COSAR)
 
-	GO TO 999
+        GO TO 999
 
 c when ZH and PAD are equal to reference values
 
 200     if (SAR.lt.1.0) then
-	CALL CORPAN (SAR,polS,Nmax,Lmax,N,COSAR)
-	else
-	CALL CORRAD (SAR,radS,Nmax,N,COSAR)
-	 if (COSAR.eq.100.)then
-	     cosar=10000.
-	     key=2
-             write(DOU,*) 'SAR out of range (leeward facade)'
-	 endif
-	endif
+          CALL CORPAN (SAR,polS,Nmax,Lmax,N,COSAR)
+        else
+          CALL CORRAD (SAR,radS,Nmax,N,COSAR)
+          if (COSAR.eq.100.)then
+            cosar=10000.
+            key=2
+            write(DOU,*) 'SAR out of range (leeward facade)'
+          endif
+        endif
 
-	GO TO 999
+        GO TO 999
 
 c when SAR= 1
 100     COSAR = 1.0       
 
 999     CONTINUE
 
-	RETURN
-	END
+        RETURN
+        END
 
 
-	SUBROUTINE CPHORL (ZH,AnbW,XL,COHOR)
+        SUBROUTINE CPHORL (ZH,AnbW,XL,COHOR)
 c************************************************************************
 c Purpose: this routine calculates the Correction Factor for the
 c          reference CP(zh), in relation to the Wind Direction and the
@@ -832,15 +832,15 @@ c
 c example:
 c CALL CPHORL (.6, 135., .5, .618534)
 c***********************************************************************
-	parameter (Nmax=15,Lmax=5)
-	REAL ZH,AnbW,polH(Nmax,Lmax),XL,A(5)
+        parameter (Nmax=15,Lmax=5)
+        REAL ZH,AnbW,polH(Nmax,Lmax),XL,A(5)
 
-	INTEGER K,N,L,L1
+        INTEGER K,N,L,L1
 
-	REAL COHOR
+        REAL COHOR
 
 c reference values for AnbW
-	data A/90., 110., 130., 160., 180./
+        data A/90., 110., 130., 160., 180./
 
 c coefficients for the 3rd and 4th order polinomial equations
 c yelding COHOR as fitting function of XL
@@ -857,41 +857,41 @@ c yelding COHOR as fitting function of XL
      & 2.204853, 1.631755, 1.506259, 1.093671, 1.102028, 2.493133, 
      & 1.973497, 1.844014, 1.232881, 1.244049/
 
-	IF (AnbW.LT.0) XL=1.0-XL
+        IF (AnbW.LT.0) XL=1.0-XL
 
 c calculate the list number of the polinomial coefficients (polH)
 c in relation to ZH
-	K=INT((ZH-.6)*5+2)
-	IF (K.LT.1.)  K=1
+        K=INT((ZH-.6)*5+2)
+        IF (K.LT.1.)  K=1
 
 c check the position of AnbW in relation to the reference
 c values (A) and calculate the pointer number to search the 
 c proper coefficients (polH) for the polinomial equation 
-	L=0
-	N=0
-	DO 10 I=1,5
-	   IF (ABS(AnbW).NE.A(I)) GO TO 10
-	   L=I
-10	CONTINUE
-	
-	if (L.NE.0) N=(K-1)*5+L
-	
-	IF (N.NE.0) GO TO 100
+        L=0
+        N=0
+        DO 10 I=1,5
+          IF (ABS(AnbW).NE.A(I)) GO TO 10
+          L=I
+10      CONTINUE
+ 
+        if (L.NE.0) N=(K-1)*5+L
+
+        IF (N.NE.0) GO TO 100
 
 c when AnbW is different from a reference value
         CALL SEARCH (A,ABS(AnbW),5,L1)
         N=(K-1)*5+L1
 
-	CALL CORPAN (XL,polH,Nmax,Lmax,N,CORP1)
-	CALL CORPAN (XL,polH,Nmax,Lmax,N+1,CORP2)
+        CALL CORPAN (XL,polH,Nmax,Lmax,N,CORP1)
+        CALL CORPAN (XL,polH,Nmax,Lmax,N+1,CORP2)
         CALL LININT (ABS(AnbW),A(L),A(L+1),CORP1,CORP2,COHOR)
-	GO TO 999
+        GO TO 999
 
 c when AnbW is equal to a reference value
-100    	CALL CORPAN (XL,polH,Nmax,Lmax,N,COHOR)
-	GO TO 999
+100     CALL CORPAN (XL,polH,Nmax,Lmax,N,COHOR)
+        GO TO 999
 
-999	CONTINUE
+999     CONTINUE
 
-	return
-	end
+        return
+        end

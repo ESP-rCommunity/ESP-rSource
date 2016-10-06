@@ -174,18 +174,20 @@ C ZoneDisp - displays zone based information and allows....
 C geometry.h provides commons G0/G1/G2/G4/prec2/precz/prec17.
 #include "geometry.h"
 
+C viewing common blocks
+#include "prj3dv.h"
+
       COMMON/FILEP/IFIL
       COMMON/OUTIN/IUOUT,IUIN
       common/gzonpik/izgfoc,nzg,nznog(mcom)
 
       integer IZSTOCN
       COMMON/C24/IZSTOCN(MCOM,MS)
-      COMMON/RAY3/MODIFY,MODLEN,MODBND
       COMMON/SDATA/SNA(MS),GSA(MS),GWA(MS),PAZI(MS),PELV(MS)
 
       CHARACTER outs*124
 
-      LOGICAL MODIFY,MODLEN,MODBND,zbzero
+      LOGICAL zbzero
       logical context
 
 C Initialisation
@@ -194,7 +196,7 @@ C Initialisation
 C Read geometry file for chosen zone.
       ITMP=IFIL+1
       call georead(ITMP,LGEOM(ICOMP),ICOMP,0,iuout,IER)
-      MODIFY=.TRUE.
+      MODIFYVIEW=.TRUE.  ! signal view and view bounds to be updated
       MODBND=.TRUE.
       nzg=1
       nznog(1)=ICOMP
@@ -202,7 +204,7 @@ C Read geometry file for chosen zone.
       CALL ADJVIEW(IER)
 
 C Recover zone data (read only, no display).
-      CALL ZINFO(SNA,ZOA,PAZI,PELV,ZVOL)
+      CALL ZINFO(SNA,ZOA,PAZI,PELV,ZVOL,'q')
       Vol(icomp)= ZVOL
       CALL ECLOSE(ZBASEA(ICOMP),0.0,0.001,zbzero)
       OPQ=0.
@@ -286,13 +288,14 @@ C Read database if not already done.
       NComPik=0
 
 C Otherwise select the constructions from a list of names.
+C << Copy mlcname array into a local array for use with epicks >>
       call edisp(iuout,' Composite(s) selection... ')
       call edisp(iuout,'  ')
  7    helptopic='aco_constr_to_include'
       call gethelptext(helpinsub,helptopic,nbhelp)
       INPIC=NMLC
       CALL EPICKS(INPIC,IVALZ,' ','Which constructions to include:',
-     &  20,NMLC,Desc,' Composite(s) list',IDerr,nbhelp)
+     &  20,NMLC,mlcname,' Composite(s) list',IDerr,nbhelp)
 
 C Check for errors (if => exit sub).
       if (IDerr.ne.0) RETURN
@@ -563,7 +566,7 @@ C for each surface in the zone according to the frequency band
                  call edisp(Ichanel,outs)
               endif
               call georead(ITMP,LGEOM(nZnog(J)),nZnog(J),0,iuout,IER)
-              CALL ZINFO(SNA,ZOA,PAZI,PELV,ZVOL)
+              CALL ZINFO(SNA,ZOA,PAZI,PELV,ZVOL,'q')
             DO 400 I = 1,NSUR
               icon=IZSTOCN(nZnog(J),I)
               In = MLCIndex(SSMLCN(icon))
@@ -746,7 +749,7 @@ C Display equivalent surface for MATERIAL
                 call edisp(Ichanel,'-----')
               endif
               call georead(ITMP,LGEOM(nZnog(k)),nZnog(k),0,iuout,IER)
-              CALL ZINFO(SNA,ZOA,PAZI,PELV,ZVOL)
+              CALL ZINFO(SNA,ZOA,PAZI,PELV,ZVOL,'q')
               call SurfEquiCalc(nznog(k), M, IAirAb)
             DO 200 I = 1,NSUR
               icon=IZSTOCN(nZnog(k),I)
@@ -996,7 +999,7 @@ C Display equivalent surface for Air absorption
 C Should any way compute the equivalent area
             DO 691 k =1,NZG 
               call georead(ITMP,LGEOM(nZnog(k)),nZnog(k),0,iuout,IER)
-              CALL ZINFO(SNA,ZOA,PAZI,PELV,ZVOL)
+              CALL ZINFO(SNA,ZOA,PAZI,PELV,ZVOL,'q')
               call SurfEquiCalc(nznog(k), M, IAirAb)
  691        CONTINUE
           ENDIF
