@@ -189,6 +189,7 @@ C point projections in new coordinate system in trnsf3.
       subroutine trnsf2(ihr)
 
       common/tracech/icout
+      common/tc/itc,icnt
       common/trnsf/a(5),b(3),c(5),xor,yor,zor
       common/sangl1/sazi1,salt1
       common/sangl2/sazi2,salt2
@@ -196,13 +197,17 @@ C point projections in new coordinate system in trnsf3.
       character outs*124
       logical tok
 
-C If trace requested enable writing.
+C If writing fort.33 file and verbose then include this.
       tok=.false.
-      if(icout.eq.33)tok=.true.
+      if(icout.eq.33.and.itc.eq.2)tok=.true.
 
       pi=4.0*atan(1.0)
       r=pi/180.0
-      tsr=sin(salt1*r)/cos(salt1*r)
+      if(salt1.gt.0.1)then
+        tsr=sin(salt1*r)/cos(salt1*r)
+      else
+        tsr=1.0 ! << ? >>
+      endif
 
 C Establish a line from the site origin to a point 'far'
 C away at the appropriate solar angles (sazi1 and salt1).
@@ -332,15 +337,15 @@ C Trace output.
          write(outs,9995)dx,dy,dz
  9995    format('DX= ',f10.1,'; DY= ',f10.1,'; DZ= ',f10.1)
          call edisp(icout,outs)
-         write(outs,9994)dist,angl
- 9994    format('DIST= ',F10.1,'; ANGL= ',F10.1)
+         write(outs,9994)dist,angl,tsr
+ 9994    format('DIST= ',F10.1,'; ANGL= ',F10.2,'TSR= ',f9.3)
          call edisp(icout,outs)
          call edisp(icout,' ')
          write(outs,9993)sazi1,sazi2
- 9993    format('Solar azimuth of ',f8.1,' transforms to ',f6.1)
+ 9993    format('Solar azimuth of ',f8.2,' transforms to ',f7.2)
          call edisp(icout,outs)
          write(outs,9992)salt1,salt2
- 9992    format('Solar altitude of  ',f6.1,' transforms to ',f6.1)
+ 9992    format('Solar altitude of  ',f7.2,' transforms to ',f7.2)
          call edisp(icout,outs)
       endif
       return
@@ -504,6 +509,7 @@ C Parameter
       integer ibn ! index of block
 
       common/tracech/icout
+      common/tc/itc,icnt
       common/obs/xc(8),yc(8),zc(8)
       integer iobstrtrace  ! set to non-zero if already written
       common/obstrc/iobstrtrace(mcom,mb)
@@ -512,10 +518,10 @@ C Parameter
       character outs*124
       logical tok
 
-C If the trace unit is 33 and this obstruction has not already
-C been reported on set tok to true.
+C If the trace unit is 33 and verbose and this obstruction has not
+C already been reported on set tok to true.
       tok=.false.
-      if(icout.eq.33)then
+      if(icout.eq.33.and.itc.eq.2)then
         if(iobstrtrace(iz,ibn).eq.0) tok=.true.
       endif
       

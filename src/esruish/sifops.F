@@ -57,10 +57,14 @@ C with the db at simulation time.
       character ltrns*72
       integer multic,mons,monf
       common/mtfile/ltrns,multic,mons,monf
+      
+      integer mon,isc,iyd   ! so insynp nows what month to report
+      common/contr/mon,isc(ms),iyd
 
       character sn*12
       character*12 sourcename(MS)   ! name of insolation source
-      character*3 month(12)
+      dimension month(12),iavdec(12)
+      character month*3
       character outs*124,louts*248,hold*74,expfil*72
       character outl*248,outld*248,outstr*124,loutstr*248
       character message*64
@@ -70,17 +74,21 @@ C with the db at simulation time.
       integer ipick         ! for radio button
 
       logical ok,dok
+      logical allsurf ! if true then do not ask user confirmation
+      logical verbose ! if to file another decimal place.
 
 C For help messages
       character helpinsub*24 ! subroutine name
       character helptopic*24 ! string (unique) for topic
       integer nbhelp     ! number of help lines found
 
+      data iavdec/17,15,16,15,15,11,17,16,16,16,15,11/
       DATA month/'Jan','Feb','Mar','Apr','May','Jun','Jul',
      &           'Aug','Sep','Oct','Nov','Dec'/
 
 C Display contents of the zone shading & insolation db.
       helpinsub='sifops'  ! set for subroutine
+      verbose=.false.
       ifilsi=ifil+3
       irec=1
       read(ifilsi,rec=irec,iostat=istat,err=1000)(ishd(i),i=1,12),
@@ -143,9 +151,9 @@ C to know which months are included in the ASCII file. Identify a month.
           nsurs=nzsur(icomp)      ! needed for the header
           msurs=misur
           call findtmc(icomp,'s',nboftmc) ! establish insolation sources and copy to ntmc
-          do 44 ij=1,nsurs
+          do ij=1,nsurs
             ntmc(ij)=itmc(ij)
- 44       continue
+          enddo
           goto 77                 ! jump to the point where the task is invoked
         elseif(iw.eq.2)then
           write(outs,'(9x,a)') '- Empty (returning to menu)'
@@ -184,38 +192,69 @@ C Present options menu and generate help text for these dialogs.
       call easkatog(' ','Options:','list','edit','export','import',
      &              'cancel',' ',' ',ipick,nbhelp)
 
-C *** Listing requested.
+C *** Listing requested. If to file then write higher resolution.
   77  continue
       if(ipick.eq.1)then
          itu=iuout
-         if(ixopen.eq.1)itu=ixunit
+         if(ixopen.eq.1)then
+           itu=ixunit
+           verbose=.true.
+         endif
          write(outs,'(3a)')'External surface shading for `',
      &                      month(mnth),'`.'
          call edisp(itu,' ')
          call edisp(itu,outs)
-         write(outs,'(2a)')' Surface ___  Shading factors ',
-     &         '___________________________________________________'
+         if(verbose)then
+           write(outs,'(2a)')' Surface _______  Shading factors ',
+     &       '_______________________________________________________'
+         else
+           write(outs,'(2a)')' Surface ___  Shading factors ',
+     &       '___________________________________________________'
+         endif
          call edisp(itu,outs)
          do 20 i=1,nzsur(icomp)
             icn=izstocn(icomp,i)
             sn=ssname(icn)
-            write(outs,2)i,sn(1:7),(pso(i,j),j=1,12)
-    2       format(I2,' (',a,')  Direct,  01-12 hrs ',12(f4.1))
+            if(verbose)then
+              write(outs,2)i,sn(1:11),(pso(i,j),j=1,12)
+    2         format(I2,' (',a,')  Direct,  01-12 hrs ',12(f5.2))
+            else
+              write(outs,222)i,sn(1:7),(pso(i,j),j=1,12)
+  222         format(I2,' (',a,')  Direct,  01-12 hrs ',12(f4.1))
+            endif
             call edisp(itu,outs)
-            write(outs,3)(pso(i,j),j=13,24)
-    3       format(14x,'         13-24 hrs ',12(f4.1))
+            if(verbose)then
+              write(outs,3)(pso(i,j),j=13,24)
+    3         format(18x,'         13-24 hrs ',12(f5.2))
+            else
+              write(outs,33)(pso(i,j),j=13,24)
+   33         format(14x,'         13-24 hrs ',12(f4.1))
+            endif
             call edisp(itu,outs)
-            write(outs,4)(psof(i,j),j=1,12)
-    4       format(14x,'Diffuse, 01-12 hrs ',12(f4.1))
+            if(verbose)then
+              write(outs,4)(psof(i,j),j=1,12)
+    4         format(18x,'Diffuse, 01-12 hrs ',12(f5.2))
+            else
+              write(outs,44)(psof(i,j),j=1,12)
+   44         format(14x,'Diffuse, 01-12 hrs ',12(f4.1))
+            endif
             call edisp(itu,outs)
-            write(outs,5)(psof(i,j),j=13,24)
-    5       format(14x,'         13-24 hrs ',12(f4.1))
+            if(verbose)then
+              write(outs,5)(psof(i,j),j=13,24)
+    5         format(18x,'         13-24 hrs ',12(f5.2))
+            else
+              write(outs,55)(psof(i,j),j=13,24)
+   55         format(14x,'         13-24 hrs ',12(f4.1))
+            endif
             call edisp(itu,outs)
    20    continue
 
 C Insolation factors. Call insynp in silent mode.
          if(nwins.eq.0.or.ishd(mnth).eq.1)goto 6
-         call insynp(icomp,'s')
+	 mon=mnth  ! ensure that insynp has the current month & DOY
+         call eday(iavdec(mon),mon,iyd)
+         allsurf=.false.  ! let the silent mode take precidence
+         call insynp(icomp,'s',allsurf)
 
 C *** Edit requested.
       elseif(ipick.eq.2)then
@@ -1196,9 +1235,9 @@ C between positions 11 and 13 of the line.
       nsurs=nzsur(icomp)      ! needed for the header
       msurs=misur
       call findtmc(icomp,'s',nboftmc) ! establish insolation sources and copy to ntmc
-      do 44 ij=1,nsurs
+      do ij=1,nsurs
         ntmc(ij)=itmc(ij)
- 44   continue
+      enddo
 
 C Based on the file name being passed to this subroutine.
       call efopseq(iuj,exportfile,1,ier)
