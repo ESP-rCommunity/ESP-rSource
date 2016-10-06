@@ -439,7 +439,7 @@ C.....Call to function to get tank height from stratified tank model
 
 C.....Identify number of stratified tank in common stratified_tank.h
       iStrat_tank_number(N_NCHE) = 0
-	found = .false.
+      found = .false.
       DO I=1,N_STANK
         IF (iStrat_tank_CompIndex(N_NCHE) == IPCOMP_STANK(I)) THEN
           iStrat_tank_number(N_NCHE) = I
@@ -447,12 +447,12 @@ C.....Identify number of stratified tank in common stratified_tank.h
         ENDIF
       ENDDO
 
-	if (.not. found) THEN
+      if (.not. found) THEN
         WRITE(ITU,*) 'Stratified tank information not found'
         WRITE(ITU,*) 'for component ', iStrat_tank_CompIndex(N_NCHE)
         WRITE(ITU,*) 'Aborting simulation'
         STOP
-	endif
+      endif
 
       RETURN
 
@@ -606,7 +606,7 @@ C.....Plant node values
      &             PCNTMF(MPCOM),
      &             PCTP(MPCON),PCRP(MPCON),PUAP(MPNODE),PCQP(MPNODE),
      &             PCNTMP(MPCOM)
-	REAL PCNTMP, PCTP, PCRP, PUAP, PCQP, PCNTMF, PCTF, PCRF, 
+      REAL PCNTMP, PCTP, PCRP, PUAP, PCQP, PCNTMF, PCTF, PCRF, 
      &  PUAF, PCQF
 
 C-----------------------------------------------------------------------------------
@@ -695,7 +695,7 @@ C....... Connection indices
 
       LOGICAL bNoFlowHot, bNoFlowCold   ! Flags for no-flow condition
       INTEGER I                 ! Counter  
-	LOGICAL found             ! 
+      LOGICAL found             ! 
 
 C-----------------------------------------------------------------------------------
 C Start trace if trace output requested.
@@ -713,19 +713,19 @@ C     of these NCHEs we are dealing with, by looking which one of them has
 C     the requested ICOMP
 C-----------------------------------------------------------------------------------
       iNCHE_number = 0
-	found = .false.
+        found = .false.
       DO I=1,N_NCHE
         IF (IPCOMP_NCHE(I) == iComp_index) THEN
           iNCHE_number = I
           found = .true.
         ENDIF
       ENDDO
-	if (.not. found) THEN
+      if (.not. found) THEN
         WRITE(ITU,*) 'Natural convection heat exchanger information '
         WRITE(ITU,*) 'not found for component ', iComp_index
         WRITE(ITU,*) 'Aborting simulation'
         STOP
-	endif
+      endif
 
 C-----------------------------------------------------------------------------------
 C     Determine component location in plant network topology, and
@@ -844,7 +844,7 @@ C.......future time-row
 
 C.....Specifc heat of fluid inside hot side of HX at the future timestep
 C.......future time-row
-	fHX_cold_fluid_cp_F = SHtFld ( 3, fHX_cold_temp_in_F )
+       fHX_cold_fluid_cp_F = SHtFld ( 3, fHX_cold_temp_in_F )
 
 
 C-----------------------------------------------------------------------------------
@@ -932,14 +932,14 @@ C...........  (equation 15 in Thevenard, 2008)
      &                      fHX_mod_cap_ratio**2
 C...........Modidified effectiveness has to be less than modified capacitance
 C...........ratio (see equ. 17 in Thevenard, 2008)
-	       fHX_mod_eff = min(fHX_mod_eff, fHX_mod_cap_ratio)
+             fHX_mod_eff = min(fHX_mod_eff, fHX_mod_cap_ratio)
 
 C............The heat transfer rate through the
 C............heat exchanger is determined from the
 C............modified performance indices and the
 C............inlet fluid temperatures 
 C..............(equation 13 in Thevenard, 2008)
-	      fHX_Q_F = fHX_mod_eff
+             fHX_Q_F = fHX_mod_eff
      &              * (fHX_hot_temp_in_F - fHX_cold_temp_in_F) 
      &              * fHX_hot_heat_cap_F
 
@@ -1153,15 +1153,15 @@ C Passed Variables
       REAL fHX_cold_temp_in  ! HX cold side inlet temperature (oC)
       REAL fHX_cold_temp_out ! HX cold side outlet temperature (oC) 
       REAL fHX_hot_temp_in   ! HX hot side inlet temperature (oC)
-	REAL fNCHE_flow        ! resulting flow
+      REAL fNCHE_flow        ! resulting flow
 
 C Local Variables
       REAL fTank_temp_mean   ! mean stratified storage tank temperature
       REAL fRHO_tank_mean    ! density of fluid at mean storage tank temperature
       REAL fRHO_HX_cold_in   ! density of water at HX cold side inlet
       REAL fRHO_HX_cold_out  ! density of water at HX cold side outlet
-	REAL fRHO_HX_cold_avg  ! average density of cold water in HX
-	REAL fRHO_HX_hot_in    ! density of water at HX cold side outlet in no-flow situation
+      REAL fRHO_HX_cold_avg  ! average density of cold water in HX
+      REAL fRHO_HX_hot_in    ! density of water at HX cold side outlet in no-flow situation
       REAL fNCHE_DP          ! pressure drop due to shear around the natural
                              ! convection loop
 
@@ -1247,7 +1247,7 @@ C-------------------------------------------------------------------------------
      &      ( fRHO_HX_hot_in * 
      &        (fTank_height(iNCHE_number) - fHX_height(iNCHE_number)/2))
      &    )
-	 endif
+      endif
 
       if (fNCHE_DP .LT. 0.0 ) fNCHE_DP = 0.0
 

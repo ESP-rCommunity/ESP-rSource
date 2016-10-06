@@ -2778,7 +2778,7 @@ C Trace output
          WRITE(ITU,*) ' 1 node (ISV=20) WCH heat rejection device'
          NITMS=3
          WRITE(ITU,*) ' ADATA ',(ADATA(IPCOMP,J),J=1,NITMS)
-	 NITMS=1
+         NITMS=1
          WRITE(ITU,*) ' BDATA ',(BDATA(IPCOMP,J),J=1,NITMS)
          NITMS=1
          WRITE(ITU,*) ' CDATA ',(CDATA(IPCOMP,J),J=1,NITMS)
@@ -2852,7 +2852,7 @@ C Trace output
          WRITE(ITU,*) ' 1 node (ISV=20) WCH multi-leg junction'
          NITMS=3
          WRITE(ITU,*) ' ADATA ',(ADATA(IPCOMP,J),J=1,NITMS)
-	 NITMS=1
+         NITMS=1
          WRITE(ITU,*) ' BDATA ',(BDATA(IPCOMP,J),J=1,NITMS)
          IF(ITU.EQ.IUOUT) THEN
             IX1=(IPCOMP/5)*5
@@ -3622,7 +3622,7 @@ C Trace output
          WRITE(ITU,*) ' 1 node (ISV=20) WCH heat rejection device'
          NITMS=3
          WRITE(ITU,*) ' ADATA ',(ADATA(IPCOMP,J),J=1,NITMS)
-	 NITMS=33
+         NITMS=33
          WRITE(ITU,*) ' BDATA ',(BDATA(IPCOMP,J),J=1,NITMS)
          NITMS=1
          WRITE(ITU,*) ' CDATA ',(CDATA(IPCOMP,J),J=1,NITMS)
