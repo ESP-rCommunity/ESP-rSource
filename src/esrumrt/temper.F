@@ -1,7 +1,7 @@
 C ESP-r is free software.  You can redistribute it and/or
 C modify it under the terms of the GNU General Public
 C License as published by the Free Software Foundation 
-C (version 2 orlater).
+C (version 2 or later).
 
 C ESP-r is distributed in the hope that it will be useful
 C but WITHOUT ANY WARRANTY; without even the implied
@@ -28,16 +28,13 @@ C               Positive value means that the 'hot'side is
 C               towards sensor face with the largest X,Y or Z
 C               Z coordinate.
 
-      subroutine temperature(icube)
+      subroutine temperature(iz,icube)
 
 #include "building.h"
+C Common block MRTC via geometry.h
+#include "geometry.h"
       COMMON/OUTIN/IUOUT,IUIN
       COMMON /FORMF/ FF(MSM,MSM), FFS
-      integer ncub,ivfok
-      real XOC,YOC,ZOC,DXC,DYC,DZC,CANG
-      character CUBN*6
-      COMMON/MRTC/NCUB,XOC(MCUB),YOC(MCUB),ZOC(MCUB),DXC(MCUB),
-     &            DYC(MCUB),DZC(MCUB),CANG(MCUB),IVFOK(MCUB),CUBN(MCUB)
       common /cube3/surarea(6)
       common/tmrt2/temp(MS),tempmrt
       common /cube5/fstgrp,fstsur,lstsur,strtgr
@@ -114,7 +111,7 @@ c  Cubefaces 4,1,6 have the larger x,y or z coordinates.
       vectemp(3,icube)=t(6)-t(5)
 
       call edisp(iuout,' ')
-      WRITE(outs,'(A,I2)') ' Number of MRT sensors: ',NCUB
+      WRITE(outs,'(A,I2)') ' Number of MRT sensors: ',NCUB(iz)
       call edisp(iuout,outs)
       call edisp(iuout,
      &  ' ___________________________________________')

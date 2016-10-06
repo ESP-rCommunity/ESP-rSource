@@ -35,11 +35,6 @@ C ITRU = unit number for user output, IER=0 OK, IER=1 problem.
      &           NVERM(MSM),NTVM
       COMMON/MRT2/GEOLOAD,MRTLOAD
 
-      integer ncub,ivfok
-      real XOC,YOC,ZOC,DXC,DYC,DZC,CANG
-      character CUBN*6
-      COMMON/MRTC/NCUB,XOC(MCUB),YOC(MCUB),ZOC(MCUB),DXC(MCUB),
-     &            DYC(MCUB),DZC(MCUB),CANG(MCUB),IVFOK(MCUB),CUBN(MCUB)
       COMMON /TOTAL/ nsurmf, NGRID, NTRPOL
       COMMON/MRTF/FFL(MCUB,6,MSM),VEWF(MS,MS)
       COMMON /FORMF/ FF(MSM,MSM), FFS
@@ -85,7 +80,7 @@ C Loop through the items until the page to be displayed. M is the
 C current menu line index. Build up text strings for the menu. 
       WRITE(VERT(1),'(A,A)') '  VWF : ',LVIEW(icomp)(1:21)
       WRITE(VERT(2),'(A,A)') '  geom: ',LGEOM(ICOMP)(1:21)
-      WRITE(VERT(3),'(A,I2)')'  number of MRT sensors: ',NCUB
+      WRITE(VERT(3),'(A,I2)')'  number of MRT sensors: ',NCUB(ICOMP)
       VERT(4)   ='  __________________________ '
       VERT(5)   ='b list/edit surface temps.   '
       VERT(6)   ='c list sensor details        '
@@ -114,7 +109,7 @@ C Browse/Edit surface temperatures.
 
 C Browse MRT sensors. 
         call edisp(iuout,' ')
-        WRITE(outs,'(A,I2)') ' Number of MRT sensors: ',NCUB
+        WRITE(outs,'(A,I2)') ' Number of MRT sensors: ',NCUB(ICOMP)
         call edisp(iuout,outs)
         call edisp(iuout,
      &  ' ________________________________________________________')
@@ -122,7 +117,7 @@ C Browse MRT sensors.
      &  ' Sensor|     origin (m)     |     size (m)      |rotation')
         call edisp(iuout,
      &  ' name  |Xcord |Ycord |Zcord |length|width|height|degree')
-        DO 10 L=1,NCUB
+        DO 10 L=1,NCUB(ICOMP)
           WRITE(outs,303)CUBN(L),XOC(L),YOC(L),ZOC(L),
      &                   DXC(L),DYC(L),DZC(L),CANG(L)
   303     FORMAT(1X,A6,3F7.2,1x,3F6.3,F6.1)
@@ -152,7 +147,7 @@ C Use previous viewfactors to perform MRT calc.
         endif
 
 C (re)Calculate relative surfaces for rectangular body.
-        do 990 icube=1,NCUB
+        do 990 icube=1,NCUB(ICOMP)
           if(IVFOK(icube).ne.1)then
             write(outs,'(3A)')' Sensor ',CUBN(icube),
      &        ' has no previous viewfactors so skipping... '
@@ -184,7 +179,7 @@ C recover from FFL.
 
 C Prior to call to temperature reset lstsur = nsur
           lstsur = nsur
-          call temperature(icube)
+          call temperature(ICOMP,icube)
           radtemp(icube)=tempmrt
 990     continue
         tmrt=.true.
@@ -343,11 +338,6 @@ C *********** CALMRT
       COMMON /VISIB/ IVIS(MSM,MSM), IARECT(MSM,MSM)
       COMMON /TOTAL/ nsurmf, NGRID, NTRPOL
 
-      integer ncub,ivfok
-      real XOC,YOC,ZOC,DXC,DYC,DZC,CANG
-      character CUBN*6
-      COMMON/MRTC/NCUB,XOC(MCUB),YOC(MCUB),ZOC(MCUB),DXC(MCUB),
-     &            DYC(MCUB),DZC(MCUB),CANG(MCUB),IVFOK(MCUB),CUBN(MCUB)
       COMMON/MRTF/FFL(MCUB,6,MSM),VEWF(MS,MS)
       common /cube3/surarea(6)
       common/tmrt2/temp(ms),tempmrt
@@ -369,7 +359,7 @@ C     Bnpatch = Default value for patchdiv. with BODY
       INTEGER     Cgfact,  Cnpatch,    Bgfact,  Bnpatch
       PARAMETER  (Cgfact=1,Cnpatch=100,Bgfact=2,Bnpatch=50)
 
-      do 290 icube=1,NCUB
+      do 290 icube=1,NCUB(ICOMP)
 
 C Add a cube to the current geometry file description in common.
         call adcube(ITRC,ITRU,ICOMP,icube,IER)
@@ -504,7 +494,7 @@ C If summation is not close to unity then report.
 
 C save MRT viewfactors....
 
-        call temperature(icube)
+        call temperature(ICOMP,icube)
         radtemp(icube)=tempmrt
         IVFOK(icube)=1
 
@@ -539,6 +529,7 @@ C number of the cube for reporting purposes.
         SUBROUTINE  adcube(ITRC,ITRU,ICOMP,icube,IER)
 
 #include "building.h"
+#include "geometry.h"
 
       COMMON/G1M/XM(MTV),YM(MTV),ZM(MTV),NSURM,JVNM(MSM,MV),
      &           NVERM(MSM),NTVM
@@ -546,12 +537,6 @@ C number of the cube for reporting purposes.
      &               STMAT(4,4,MSM), SRMAT(4,4,MSM)
       COMMON /SURPNT/ ISPNT(6,MSM), GAREA(MSM), EMISI(MS)
       COMMON /TOTAL/ nsurmf, NGRID, NTRPOL
-
-      integer ncub,ivfok
-      real XOC,YOC,ZOC,DXC,DYC,DZC,CANG
-      character CUBN*6
-      COMMON/MRTC/NCUB,XOC(MCUB),YOC(MCUB),ZOC(MCUB),DXC(MCUB),
-     &            DYC(MCUB),DZC(MCUB),CANG(MCUB),IVFOK(MCUB),CUBN(MCUB)
 
       DIMENSION  IAPNT(100), APOL(1000)
       DIMENSION  CG(3),EQN(4)

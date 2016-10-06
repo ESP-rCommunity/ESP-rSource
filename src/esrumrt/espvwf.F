@@ -53,19 +53,11 @@ C IEEE callback (Solaris)
       COMMON/FIL/IOFIL,IFPOL
       COMMON/FATRIB/ATR
 
-      integer ncub,ivfok
-      real XOC,YOC,ZOC,DXC,DYC,DZC,CANG
-      character CUBN*6
-      COMMON/MRTC/NCUB,XOC(MCUB),YOC(MCUB),ZOC(MCUB),DXC(MCUB),
-     &            DYC(MCUB),DZC(MCUB),CANG(MCUB),IVFOK(MCUB),CUBN(MCUB)
       COMMON/MRT2/GEOLOAD,MRTLOAD
       integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
       common/appcols/mdispl,nifgrey,ncset,ngset,nzonec
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
-      COMMON/RAY2/ITDSP,ITBND,ITEPT,ITZNM,ITSNM,ITVNO,ITORG,ITSNR,
-     &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS,ITPPSW
-      COMMON/RAY3/MODIFY,MODLEN,MODBND
 
       COMMON/MRTF/FFL(MCUB,6,MSM),VEWF(MS,MS)
       COMMON /CELLS/ NCELL(MSM), NCPT(MSM), IGFACT
@@ -80,6 +72,11 @@ C Path to model.
       common/user/browse
       common/rpath/path
       common/rcmd/LCMDFL
+      character runpath*72  ! path for working files
+      common/expath/runpath
+
+      integer lnrp  ! length of runpath
+      common/expathl/lnrp
 
 C Indicator of possible focus zone.
       common/rzone/inzone
@@ -111,7 +108,7 @@ C Name of current application
 
       DIMENSION ITEM(19)
       LOGICAL GEOLOAD,MRTLOAD,tmrt,temperr,ATR,context
-      LOGICAL MODIFY,MODLEN,MODBND,XST,unixok,there
+      LOGICAL XST,unixok,there
       character outs*124,outs248*248,MODE*4
       CHARACTER OUTSTR*124,ITEM*29
       CHARACTER DFILE*72,inf*144,LCMDFL*144
@@ -122,6 +119,7 @@ C Name of current application
 
       character cVnum*16      ! returned from ESPrVersionNum
       character pagestitle*42 ! for banner title via epages call
+      character ppath*72,filen*72
 
       integer iglib   ! if 1 then X11, if 2 then GTK, if 3 then text only.
 #ifdef OSI
@@ -349,6 +347,20 @@ C     &    mdispl,nifgrey,ncset,ngset,nzonec
       ENDIF
       CALL ESPrVersion("summary",cAppName,IUOUT)
 
+C Remember where vwf was started (pwdinitial). If within model
+C cfg folder then set pwdtocfg to !
+      pwdinitial='  '  ! clear common
+      pwdtocfg='  '    ! and from pwd into cfg folder
+      call usrdir(pwdinitial)
+      lnpwdi=lnblnk(pwdinitial)
+      write(6,*) 'vwf the pwd command is ',pwdinitial(1:lnpwdi)
+C      write(6,*) lnpwdi,lnpwdi-2,' ',pwdinitial(lnpwdi-2:lnpwdi)
+      if(pwdinitial(lnpwdi-2:lnpwdi).eq.'cfg')then
+        pwdtocfg='!'             ! signal no need to append this
+        lnpwdc=lnblnk(pwdtocfg)  ! remember its length
+        write(6,*) 'vwf working in model cfg folder'
+      endif
+
 C Find the user's home folder then get user's custom settings.
       call usrhome(upath)
       if(unixok)then
@@ -365,7 +377,7 @@ C All subsequent tstamp messages will be appended to root journal.
         uname=' '
         call usrname(uname)
         cjfile=' '
-        write(cjfile,'(a,a1,a,a,a)')upath(1:lnblnk(upath)),fs,'.',
+        write(cjfile,'(5a)')upath(1:lnblnk(upath)),fs,'.',
      &    uname(1:lnblnk(uname)),'cur_j'
         there=.false.
         INQUIRE(FILE=cjfile,EXIST=there)
@@ -430,7 +442,7 @@ c Initial assumptions on griddivision and patch division.
       nsurmf = 0
       NGRID = 0
       NTRPOL = 0
-      NCUB = 0
+      NCUBF = 0   ! ?? when is geometry scanned ??
       MRTLOAD=.FALSE.
       GEOLOAD=.FALSE.
 
@@ -440,20 +452,41 @@ C successful then scan all the zones via ZDATA.
       if(LCMDFL(1:2).ne.'  '.and.LCMDFL(1:4).ne.'UNKN')then
         INQUIRE (FILE=LCMDFL,EXIST=XST)
         if(XST)then
+
+C See if there is a pwdtocfg which can be recovered from within
+C the command line file.
+          call fdpwdtocfg(LCMDFL,ppath,filen)
+          write(6,*) 'pwdtocfg ',pwdtocfg(1:lnblnk(pwdtocfg))
+C          write(6,*) 'pp ',ppath(1:lnblnk(ppath))
+C          write(6,*) 'fi ',filen(1:lnblnk(filen))
+
           call fdroot(LCMDFL,path,LCFGF)
           call edisp(iuout,' ')
           call edisp(iuout,' Scanning the model description')
           MODE='ALL '
           CALL ERSYS(LCFGF,IFCFG,IAIRP,MODE,0,IER)
           if(IER.eq.0)then
+
+C Where is zones folder in relation to where vwf was started?
+            if(pwdtocfg(1:1).eq.'!')then
+              write(runpath,'(2a)') zonepth(1:lnblnk(zonepth)),fs
+              lnrp=lnblnk(runpath)  ! remember this
+            else
+              write(runpath,'(3a)') pwdtocfg(2:lnblnk(pwdtocfg)),
+     &          zonepth(1:lnblnk(zonepth)),fs
+              lnrp=lnblnk(runpath)  ! remember this
+C              write(6,*) 'lnrp ',lnrp,pwdtocfg
+              write(6,*) 'runpath ',runpath
+            endif
+
             CFGOK=.TRUE.
             numberofzones=ncomp
             IF(MMOD.EQ.8)call updwire(numberofzones)
             CALL ZDATA (ITRC,IER,int(numberofzones),ISFSUM)
 
 C Open scratch file now that path is known. Extend the name of the
-C vwf file. If this file exists
-C then remove it before opening a new scratch file.
+C vwf file. If this file exists then remove it before opening a
+C new scratch file.
             if(browse)then
               call usrmsg('You do not own the current model and so are',
      &                    'not allowed to calculate viewfactors.','W')
@@ -461,7 +494,7 @@ C then remove it before opening a new scratch file.
             else
               if(unixok)then
                 fs = char(47)
-                write(LTMPFL,'(4a)') path(1:lnblnk(path)),fs,
+                write(LTMPFL,'(3a)') runpath(1:lnrp),
      &            cfgroot(1:lnblnk(cfgroot)),'.mrt'
                 INQUIRE (FILE=LTMPFL(1:lnblnk(LTMPFL)),EXIST=XST)
                 if(XST)then
@@ -479,7 +512,9 @@ C then remove it before opening a new scratch file.
                 call edisp(iuout,LTMPFL)
               else
                 fs = char(92)
-                write(LTMPFL,'(4a)') path(1:lnblnk(path)),fs,
+C                write(LTMPFL,'(4a)') path(1:lnblnk(path)),fs,
+C     &            cfgroot(1:lnblnk(cfgroot)),'.mrt'
+                write(LTMPFL,'(4a)') runpath(1:lnrp),fs,
      &            cfgroot(1:lnblnk(cfgroot)),'.mrt'
                 INQUIRE (FILE=LTMPFL(1:lnblnk(LTMPFL)),EXIST=XST)
                 if(XST)then
@@ -576,6 +611,13 @@ C name with the full path.
         IF(L144(1:2).EQ.'  '.or.L144(1:4).eq.'UNKN')GOTO 289
         call st2file(L144,LCMDFL)
 
+C See if there is a pwdtocfg which can be recovered from within
+C the command line file.
+        call fdpwdtocfg(LCMDFL,ppath,filen)
+        write(6,*) 'pwdtocfg ',pwdtocfg(1:lnblnk(pwdtocfg))
+C        write(6,*) 'pp ',ppath(1:lnblnk(ppath))
+C        write(6,*) 'fi ',filen(1:lnblnk(filen))
+
 C Find the path and local file name.
         call fdroot(LCMDFL,path,LCFGF)
         call edisp(iuout,' ')
@@ -583,6 +625,19 @@ C Find the path and local file name.
         MODE='ALL '
         CALL ERSYS(LCFGF,IFCFG,IAIRP,MODE,0,IER)
         if(IER.eq.0)then
+
+C Where is zones folder in relation to where vwf was started?
+          if(pwdtocfg(1:1).eq.'!')then
+            write(runpath,'(2a)') zonepth(1:lnblnk(zonepth)),fs
+            lnrp=lnblnk(runpath)  ! remember this
+          else
+            write(runpath,'(3a)') pwdtocfg(2:lnblnk(pwdtocfg)),
+     &        zonepth(1:lnblnk(zonepth)),fs
+            lnrp=lnblnk(runpath)  ! remember this
+C            write(6,*) 'lnrp ',lnrp,pwdtocfg
+            write(6,*) 'runpath ',runpath
+          endif
+
           CFGOK=.TRUE.
           numberofzones=ncomp
           IF(MMOD.EQ.8) call updwire(numberofzones)
@@ -593,7 +648,9 @@ C Find the path and local file name.
 C Open scratch file now that path is known.
           if(unixok)then
             fs = char(47)
-            write(LTMPFL,'(4a)') path(1:lnblnk(path)),fs,
+C            write(LTMPFL,'(4a)') path(1:lnblnk(path)),fs,
+C     &        cfgroot(1:lnblnk(cfgroot)),'.mrt'
+            write(LTMPFL,'(3a)') runpath(1:lnrp),
      &        cfgroot(1:lnblnk(cfgroot)),'.mrt'
             INQUIRE (FILE=LTMPFL(1:lnblnk(LTMPFL)),EXIST=XST)
             if(XST)then
@@ -611,7 +668,9 @@ C Open scratch file now that path is known.
             call edisp(iuout,LTMPFL)
           else
             fs = char(92)
-            write(LTMPFL,'(4a)') path(1:lnblnk(upath)),fs,
+C            write(LTMPFL,'(4a)') path(1:lnblnk(upath)),fs,
+C     &        cfgroot(1:lnblnk(cfgroot)),'.mrt'
+            write(LTMPFL,'(4a)') runpath(1:lnrp),fs,
      &        cfgroot(1:lnblnk(cfgroot)),'.mrt'
             INQUIRE (FILE=LTMPFL(1:lnblnk(LTMPFL)),EXIST=XST)
             if(XST)then
@@ -711,7 +770,7 @@ C of rectangular body.
           CALL USRMSG(' ',' Please select a zone!','W')
           GOTO 10
         endif
-        if(NCUB.eq.0)then
+        if(NCUB(ICOMP).eq.0)then
           call usrmsg(' No MRT sensors defined in this viewfactor ',
      &      ' file... Please select another zone.','W')
           goto 10
@@ -819,7 +878,10 @@ C Clear VEWF array in preparation for editing.
                 VEWF(I,J)=0.
   232         CONTINUE
   231       CONTINUE
-            NCUB=0
+
+C If geometry file included mrt sensors use them when creating
+C this new file.
+C            NCUB(ICOMP)=0
             CALL EMKMRT(LVIEW(icomp),LGEOM(ICOMP),NZSUR(ICOMP),
      &        IUF,ICOMP,'v',IER)
           elseif(irt.eq.3)then
@@ -838,9 +900,14 @@ C lstsur as if a calculation had just been performed.
         GEOLOAD=.TRUE.
         CALL FILEIN(ITRC,IUOUT,IER)
       else
+
+C There was not vwf file so create one filled with zeros.
         LVIEW(icomp)=VFILE
         IVF(ICOMP)=1
-        NCUB=0
+
+C If mrt sensors known from geometry file include them when creating
+C this new file.
+C        NCUB(ICOMP)=0
 
         CALL edisp(iuout,' ')
         CALL edisp(iuout,' Creating file full of zeros.....')
@@ -862,13 +929,13 @@ C Determine geometry bounds and force it to be drawn.
       CALL ESCZONE(ICOMP)
       CALL BNDOBJ(1,IER)
       CALL ERCZONE(ICOMP)
-      MODIFY=.TRUE.
+      MODIFYVIEW=.TRUE.
       MODLEN=.TRUE.
       izgfoc=ICOMP
       CALL ADJVIEW(IER)
-      if(ncub.gt.0)then
+      if(ncub(ICOMP).gt.0)then
         CALL ESCZONE(ICOMP)
-        CALL DRWSEN(ier)
+        CALL DRWSEN(ICOMP,ier)
         CALL ERCZONE(ICOMP)
       endif
       goto 10
@@ -974,6 +1041,14 @@ C the polygon.
           else
             ff(i,j)=ff(i,j)/den
           endif
+
+C If an individual ff is > 1.0 reset it because it is impossible
+C and causes havoc when attempting to re-read the vwf file.
+          if(ff(i,j).gt.1.00)then
+            write(outs,*) 'resetting ff(ij)',ff(i,j),' to 0.999'
+            call edisp(iuout,outs)
+            ff(i,j)=0.999
+          endif
           rowsum(i)=rowsum(i)+ff(i,j)
 
 C If within zone portion of ff array save to zone viewfactor array.
@@ -1075,9 +1150,18 @@ C Grid Error
 C ***** Dummy display of images.
       subroutine imgdisp(iforce,focus,ier)
       character focus*4
-
       return
       end
+
+      subroutine Find_season_parameters()
+      return
+      end
+
+      SUBROUTINE BASESIMP_INPUTS(ICOMP,IER)
+      integer icomp,ier
+      return
+      end
+
 
 C In support of floating point exceptions.
 #ifdef SUN
