@@ -250,12 +250,15 @@ C Setup and pass in parameters to win3d.
         call edisp(iuout,ETEXT)
       endif
 
-C Determine if the surface is transparent or opaque.
+C Determine if the surface is transparent or opaque. At this point
+C CFC and CFC2 are still mostly treated as opaque.
       IF(SSOTF(ICN)(1:4).EQ.'OPAQ'.OR.
      &   SSOTF(ICN)(1:4).EQ.'UNKN')THEN
          TSTR='opaque'
       ELSEIF(SSOTF(ICN)(1:4).EQ.'CFC ')THEN
          TSTR='CFC'
+      ELSEIF(SSOTF(ICN)(1:4).EQ.'CFC2')THEN
+         TSTR='CFC2'
       ELSE
          TSTR='trnsp.'
       ENDIF

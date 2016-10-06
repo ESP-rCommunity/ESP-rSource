@@ -33,6 +33,7 @@ C IMFGETNO(*,5): Line type
 C IMFGETNO(*,6): Symbol index
 C IMFGETNO(*,7): Associated axis (1=temperature, 2=pressure, 3=mass flow rate
 C                4=misc, 5=concentration g/kg)
+C IMFGETNO(*,8): 0 = standard units 1 alternative units e.g. l/s rather than m^3/s
 
 C IMFLIST - connection list:
 C   IMFLIST(LISTID,1) = number of connections listed
@@ -59,7 +60,7 @@ C MOFLOWSU clears commons/ sets default values.
       SUBROUTINE MOFLOWSU
 #include "net_flow.h"
 
-      COMMON/MFPICK/NMFGET,IMFGETNO(MFRS,7)
+      COMMON/MFPICK/NMFGET,IMFGETNO(MFRS,8)
 
       character SMFLABEL*32,GMFLABEL*20,GLMFLABEL*32
       COMMON/MFLABEL/SMFLABEL(MFRS),GMFLABEL(MFRS),GLMFLABEL(MFRS)
@@ -95,6 +96,7 @@ C Reset to no choices and current result set.
         IMFGETNO(I,5)=0
         IMFGETNO(I,6)=0
         IMFGETNO(I,7)=0
+        IMFGETNO(I,8)=0
         SMFLABEL(I)='  '
         LNSMFLABEL(I)=0
         GMFLABEL(I)='  '
@@ -134,7 +136,7 @@ C columns listed above.
 
       common/recov01/pifltog,lpifl
 
-      COMMON/MFPICK/NMFGET,IMFGETNO(MFRS,7)
+      COMMON/MFPICK/NMFGET,IMFGETNO(MFRS,8)
       COMMON/MFPK2/NMFLST,IMFLIST(MFCNLST,MFCNEL+1)
       character SMFLABEL*32,GMFLABEL*20,GLMFLABEL*32
       COMMON/MFLABEL/SMFLABEL(MFRS),GMFLABEL(MFRS),GLMFLABEL(MFRS)
@@ -148,7 +150,7 @@ C Optional title for graph and up to 10 other labels and their positions.
       common/grextras/graftitle,grlbl(10),ngrlbl,lblpx(10),lblpy(10)
 
 C Comfort parameters and hash table.
-      common/cmftpar/WVEL,ACTL,CLO,iocut,iocuset,ioucpz(MCOM,72)
+      common/cmftpar/WVEL,ACTL,CLO,iocut,iocuset
 
 C iocpzone is the zone to get occupancy pattern from for use by
 C air flow reporting.
@@ -160,11 +162,14 @@ C air flow reporting.
       common/exporttg/xfile,tg,delim
       COMMON/EXPORTI/ixopen,ixunit,ixpunit
 
+      common/recver/izver,ipver,iever
+      common/timfltr/iwkdst,iwkdfn,isatst,isatfn,isunst,isunfn
+
       DIMENSION IVALS(MCOM),zn(MCOM)
       CHARACTER ITEM(35)*23, MTITLE*22, values*20
       character xfile*144,tg*1,delim*1
       character SUFFIX*6
-      CHARACTER outs*124,pifltog*4,lpifl*72
+      CHARACTER outs*124,pifltog*4,lpifl*72,hold*24
       CHARACTER NDNAM*12,PROMPT1*72,PROMPT2*72,CONTMNAM*12
       character graftitle*64,grlbl*24,t64*64,t24*24
       character ll1*12,ll2*12,ll3*12
@@ -180,9 +185,9 @@ C air flow reporting.
 
       logical CLIST,NLIST,CNLST,CRLST,OKL,dok,CTLST
 #ifdef OSI
-      integer iid1,iid2
+      integer iid1,iid2,iixx,iiyy,iik
 #else
-      integer*8 iid1,iid2
+      integer*8 iid1,iid2,iixx,iiyy,iik
 #endif
 
 C For help messages
@@ -291,8 +296,10 @@ C Setup menu items.
 C If a time series plot clear selections otherwise show state of occupancy filter.
         ITEM(23)='/ clear all selections'
       else
-        if(iocupf.eq.0)then
+        if(iocut.eq.0)then
           ITEM(23)='+ filter >> none      '
+        elseif(iocut.eq.-1)then
+          ITEM(23)='+ filter >> time based'
         else
           ITEM(23)='+ filter >> occup only'
         endif
@@ -382,6 +389,7 @@ C each have a different line colour.
         IMFGETNO(NMFGET,5)=-302
         IMFGETNO(NMFGET,6)=1
         IMFGETNO(NMFGET,7)=1
+        IMFGETNO(NMFGET,8)=0
         GMFLABEL(NMFGET)='Ambient db Tmp'; LNGMFLABEL(NMFGET)=14
         GLMFLABEL(NMFGET)='Ambient dry bulb Temp'
         LNGLMFLABEL(NMFGET)=21
@@ -408,6 +416,7 @@ C Wind speed: IMFGET = 10
         IMFGETNO(NMFGET,5)=-203
         IMFGETNO(NMFGET,6)=6
         IMFGETNO(NMFGET,7)=4
+        IMFGETNO(NMFGET,8)=0
         GMFLABEL(NMFGET)='Wind speed'; LNGMFLABEL(NMFGET)=10
         GLMFLABEL(NMFGET)='Wind speed'; LNGLMFLABEL(NMFGET)=10
         if(IROC.eq.0)then
@@ -433,6 +442,7 @@ C Wind direction: IMFGET = 11
         IMFGETNO(NMFGET,5)=-203
         IMFGETNO(NMFGET,6)=4
         IMFGETNO(NMFGET,7)=4
+        IMFGETNO(NMFGET,8)=0
         GMFLABEL(NMFGET)='Wind dir'; LNGMFLABEL(NMFGET)=8
         GLMFLABEL(NMFGET)='Wind direction'; LNGLMFLABEL(NMFGET)=14
         if(IROC.eq.0)then
@@ -458,6 +468,7 @@ C Ambient RH: IMFGET = 12
         IMFGETNO(NMFGET,5)=-202
         IMFGETNO(NMFGET,6)=7
         IMFGETNO(NMFGET,7)=4
+        IMFGETNO(NMFGET,8)=0
         GMFLABEL(NMFGET)='Ambient RH'; LNGMFLABEL(NMFGET)=10
         GLMFLABEL(NMFGET)='Ambient relative humidity'
         LNGLMFLABEL(NMFGET)=25
@@ -483,6 +494,7 @@ C Presure at node. IMFGET = 1
         IMFGETNO(NMFGET,5)=-102
         IMFGETNO(NMFGET,6)=1
         IMFGETNO(NMFGET,7)=2
+        IMFGETNO(NMFGET,8)=0
         SUFFIX=' Pres'
         if(IROC.eq.0)then
           SMFLABEL(NMFGET)='Node pressure (Pa)'
@@ -504,6 +516,7 @@ C Connection pressure difference IMFGET = 7
         IMFGETNO(NMFGET,5)=-102
         IMFGETNO(NMFGET,6)=2
         IMFGETNO(NMFGET,7)=2
+        IMFGETNO(NMFGET,8)=0
         SUFFIX=' Del P'
         if(IROC.eq.0)then
           SMFLABEL(NMFGET)='Conn delta P (Pa)'
@@ -525,6 +538,7 @@ C Stack pressure: IMFGET = 8
         IMFGETNO(NMFGET,5)=-102
         IMFGETNO(NMFGET,6)=3
         IMFGETNO(NMFGET,7)=2
+        IMFGETNO(NMFGET,8)=0
         SUFFIX=' Stk P'
         if(IROC.eq.0)then
           SMFLABEL(NMFGET)='Conn stack P (Pa)'
@@ -546,6 +560,7 @@ C Temperature at node: IMFGET = 2
         IMFGETNO(NMFGET,5)=1
         IMFGETNO(NMFGET,6)=6
         IMFGETNO(NMFGET,7)=1
+        IMFGETNO(NMFGET,8)=0
         SUFFIX=' db T'
         if(IROC.eq.0)then
           SMFLABEL(NMFGET)='Node temperature (degC)'
@@ -567,6 +582,7 @@ C Mass flow rate: IMFGET = 3.
         IMFGETNO(NMFGET,5)=1
         IMFGETNO(NMFGET,6)=1
         IMFGETNO(NMFGET,7)=3
+        IMFGETNO(NMFGET,8)=0
         SUFFIX=' kg/s'
         if(IROC.eq.0)then
           SMFLABEL(NMFGET)='Conn flow rate (kg/s)'
@@ -589,13 +605,32 @@ C Volume flow rate: IMFGET = 4.
         IMFGETNO(NMFGET,5)=1
         IMFGETNO(NMFGET,6)=2
         IMFGETNO(NMFGET,7)=3
-        SUFFIX=' m^3/s'
-        if(IROC.eq.0)then
-          SMFLABEL(NMFGET)='Conn flow rate (m^3/s)'
-          LNSMFLABEL(NMFGET)=22
-        elseif(IROC.eq.1)then
-          SMFLABEL(NMFGET)='Conn flow rate cng (m^3/s/hr)'
-          LNSMFLABEL(NMFGET)=29
+        IMFGETNO(NMFGET,8)=0
+
+C Ask m^3/s or l/s.
+        ifunits=0
+        CALL EASKAB('Volume flow expresed as:',' ','m^3/s',
+     &      'litres/s',ifunits,nbhelp)
+        if(ifunits.eq.0)then
+          IMFGETNO(NMFGET,8)=0
+          SUFFIX=' m^3/s'
+          if(IROC.eq.0)then
+            SMFLABEL(NMFGET)='Conn flow rate (m^3/s)'
+            LNSMFLABEL(NMFGET)=22
+          elseif(IROC.eq.1)then
+            SMFLABEL(NMFGET)='Conn flow rate cng (m^3/s/hr)'
+            LNSMFLABEL(NMFGET)=29
+          endif
+        else
+          IMFGETNO(NMFGET,8)=1
+          SUFFIX=' l/s'
+          if(IROC.eq.0)then
+            SMFLABEL(NMFGET)='Conn flow rate (l/s)'
+            LNSMFLABEL(NMFGET)=20
+          elseif(IROC.eq.1)then
+            SMFLABEL(NMFGET)='Conn flow rate cng (l/s/hr)'
+            LNSMFLABEL(NMFGET)=27
+          endif
         endif
         CNLST=.true.
         CLIST=.true.
@@ -611,6 +646,7 @@ C Air change rate: IMFGET = 5.
         IMFGETNO(NMFGET,5)=1
         IMFGETNO(NMFGET,6)=3
         IMFGETNO(NMFGET,7)=4
+        IMFGETNO(NMFGET,8)=0
         SUFFIX=' ac/h'
         if(IROC.eq.0)then
           SMFLABEL(NMFGET)='Conn air change rate (-)'
@@ -634,6 +670,7 @@ C Velocity: IMFGET = 6.
         IMFGETNO(NMFGET,5)=1
         IMFGETNO(NMFGET,6)=6
         IMFGETNO(NMFGET,7)=4
+        IMFGETNO(NMFGET,8)=0
         SUFFIX=' m/s'
         if(IROC.eq.0)then
           SMFLABEL(NMFGET)='Conn fluid velocity (m/s)'
@@ -655,6 +692,7 @@ C Contaminant concentration at node: IMFGET = 14
         IMFGETNO(NMFGET,5)=1
         IMFGETNO(NMFGET,6)=6
         IMFGETNO(NMFGET,7)=5
+        IMFGETNO(NMFGET,8)=0
         SUFFIX=' g/kg'
         if(IROC.eq.0)then
           SMFLABEL(NMFGET)='Node contaminant conc (g/kg)'
@@ -679,6 +717,7 @@ C        IMFGETNO(NMFGET,1)=13
 C        IMFGETNO(NMFGET,5)=-3
 C        IMFGETNO(NMFGET,6)=7
 C        IMFGETNO(NMFGET,7)=4
+C        IMFGETNO(NMFGET,8)=0
 C        SUFFIX=' ener'
 C        if(IROC.eq.0)then
 C          SMFLABEL(NMFGET)='Conn energy (Whr)'
@@ -754,33 +793,61 @@ C << revise for additional casual gain types >>
             call edisp(iuout,' ')
             helptopic='res_casual_gain_type'
             call gethelptext(helpinsub,helptopic,nbhelp)
-            IOT=1
+ 937        IOT=1
             CALL EASKATOG('Which casual gain represents occupancy:',
      &         '  ','Always occupied',ll1,ll2,ll3,'time',' ',' ',IOT,
      &         nbhelp)
             if (IOT.gt.1.and.IOT.lt.5) then
               call usrmsg('  ','  ','-')
-              iocupf=1
-              iocut=IOT-1
-              call scnocup(iier)
+              if (izver.lt.4) then
+                write(outs,'(2a)')'Occupancy filtering not ',
+     &        'available for legacy results libraries before version 4.'
+                call usrmsg(outs,
+     &   'Please regenerate results library or use time filtering.','W')
+                goto 937
+              else
+                iocupf=1      
+                iocut=IOT-1
+              endif
             elseif(IOT.eq.5)then
               iocupf=1
               iocut=-1
-              call scnocup(iier)
+              write(HOLD,'(a)') '  0  24  '
+              CALL EASKS(HOLD,' ',' Weekday occupancy period: ',
+     &         24,' 0  24 ','wkd occup period',IER,nbhelp)
+              K=0
+              CALL EGETWI(HOLD,K,iwkdst,0,24,'W','iwkdst',IER)
+              CALL EGETWI(HOLD,K,iwkdfn,iwkdst,24,'W','iwkdst',IER)
+
+              write(HOLD,'(a)') '  0  24  '
+              CALL EASKS(HOLD,' ',
+     &         ' First weekend day occupancy period: ',24,' 0  24 ',
+     &         'sat occup period',IER,nbhelp)
+              K=0
+              CALL EGETWI(HOLD,K,isatst,0,24,'W','isatst',IER)
+              CALL EGETWI(HOLD,K,isatfn,isatst,24,'W','isatst',IER)
+
+              write(HOLD,'(a)') '  0  24  '
+              CALL EASKS(HOLD,' ',
+     &         ' Second weekend day occupancy period: ',24,' 0  24 ',
+     &         'sun occup period',IER,nbhelp)
+              K=0
+              CALL EGETWI(HOLD,K,isunst,0,24,'W','isunst',IER)
+              CALL EGETWI(HOLD,K,isunfn,isunst,24,'W','isunst',IER)
             elseif(IOT.eq.1)then
               iocpzone=0
               iocupf=0
               iocut=0
-              call scnocup(iier)
             endif
           else
             iocupf=0
+            iocut=0
             iocpzone=0
           endif
 
 C For flow, need to ask the user which zone is to be used to get
 C the occupany pattern from.
-          if(iocupf.eq.1)then
+          if(iocut.gt.0)then
             call edisp(iuout,
      &    'Occupancy filtering is based on casual gains in a zone.')
             call edisp(iuout,
@@ -798,7 +865,6 @@ C the occupany pattern from.
             if(INPIC.eq.0)then
               iocupf=0
               iocut=0
-              call scnocup(iier)
               iocpzone=0
             else
               iocpzone=IVALS(1)
@@ -976,15 +1042,11 @@ C If there are no labels or some label start at first, if more than 9 exit.
           endif
 
 C Find out point where text should be drawn.
-          CALL trackview(ii,ix,iy)
-          lblpx(igrl)=ix
-          lblpy(igrl)=iy
+          CALL trackview(iik,iixx,iiyy)
+          lblpx(igrl)=int(iixx)
+          lblpy(igrl)=int(iiyy)
+          iid1=int(iixx); iid2=int(iiyy);
           t24=grlbl(igrl)
-#ifdef OSI
-          iid1=int(lblpx(igrl)); iid2=int(lblpy(igrl));
-#else
-          iid1=lblpx(igrl); iid2=lblpy(igrl);
-#endif
           call wstxpt(iid1,iid2,t24)
           dok=.true.
           CALL ASKOK('Include another user supplied label?',' ',
@@ -1013,7 +1075,7 @@ C List out data to text feedback or to file or to graphics.
 
 C Debug.
 C        do 999 I=1,NMFGET
-C          write(6,*) (IMFGETNO(I,K),K=1,7)
+C          write(6,*) (IMFGETNO(I,K),K=1,8)
 C          write(6,*) SMFLABEL(I)
 C          write(6,*) GMFLABEL(I)
 C          write(6,*) GLMFLABEL(I)
@@ -1099,6 +1161,7 @@ c imfgetno array.
                 IMFGETNO(NMFGET,5)=IMFGETNO(NMFGET-1,5)
                 IMFGETNO(NMFGET,6)=IMFGETNO(NMFGET-1,6)
                 IMFGETNO(NMFGET,7)=IMFGETNO(NMFGET-1,7)
+                IMFGETNO(NMFGET,8)=IMFGETNO(NMFGET-1,8)
               endif
               write (GMFLABEL(NMFGET),'(2a)')
      &          NDNAM(INPK(I))(1:lnname),SUFFIX
@@ -1139,6 +1202,7 @@ C appropriate labels.
                     IMFGETNO(NMFGET,5)=IMFGETNO(NMFGET-1,5)
                     IMFGETNO(NMFGET,6)=IMFGETNO(NMFGET-1,6)
                     IMFGETNO(NMFGET,7)=IMFGETNO(NMFGET-1,7)
+                    IMFGETNO(NMFGET,8)=IMFGETNO(NMFGET-1,8)
                   ENDIF
 
 C GMFLABEL is 20 char so truncate the text.
@@ -1175,6 +1239,7 @@ C GMFLABEL is 20 char so truncate the text.
                   IMFGETNO(NMFGET,5)=IMFGETNO(NMFGET-1,5)
                   IMFGETNO(NMFGET,6)=IMFGETNO(NMFGET-1,6)
                   IMFGETNO(NMFGET,7)=IMFGETNO(NMFGET-1,7)
+                  IMFGETNO(NMFGET,8)=IMFGETNO(NMFGET-1,8)
 
 C GMFLABEL is 20 char so truncate the text.
                   lcname=MIN0(LNNAMEC,7)
@@ -1417,6 +1482,7 @@ C otherwise add the extra entry.
                       IMFGETNO(NMFGET,5)=IMFGETNO(NMFGET-1,5)
                       IMFGETNO(NMFGET,6)=IMFGETNO(NMFGET-1,6)
                       IMFGETNO(NMFGET,7)=IMFGETNO(NMFGET-1,7)
+                      IMFGETNO(NMFGET,8)=IMFGETNO(NMFGET-1,8)
                       llns=lnblnk(NDNAM(NODPS(ICPK(I))))
                       llne=lnblnk(NDNAM(NODNE(ICPK(I))))
                       if(lnblnk(SUFFIX).le.4)then
@@ -1508,6 +1574,7 @@ C In the case of flow velocity check for appropriate component and report area.
                   IMFGETNO(NMFGET,5)=IMFGETNO(NMFGET-1,5)
                   IMFGETNO(NMFGET,6)=IMFGETNO(NMFGET-1,6)
                   IMFGETNO(NMFGET,7)=IMFGETNO(NMFGET-1,7)
+                  IMFGETNO(NMFGET,8)=IMFGETNO(NMFGET-1,8)
                   llns=lnblnk(NDNAM(NODPS(ICPK(I))))
                   llne=lnblnk(NDNAM(NODNE(ICPK(I))))
                   if(lnblnk(SUFFIX).le.4)then
@@ -1561,6 +1628,7 @@ C otherwise add the extra entry.
                       IMFGETNO(NMFGET,5)=IMFGETNO(NMFGET-1,5)
                       IMFGETNO(NMFGET,6)=IMFGETNO(NMFGET-1,6)
                       IMFGETNO(NMFGET,7)=IMFGETNO(NMFGET-1,7)
+                      IMFGETNO(NMFGET,8)=IMFGETNO(NMFGET-1,8)
 
 C Depending on the length of the strings involved make up
 C an appropraite label. llns and llne are the string lengths
@@ -1642,6 +1710,7 @@ C the previous IMFGETNO for use with additional connections.
                   IMFGETNO(NMFGET,5)=IMFGETNO(NMFGET-1,5)
                   IMFGETNO(NMFGET,6)=IMFGETNO(NMFGET-1,6)
                   IMFGETNO(NMFGET,7)=IMFGETNO(NMFGET-1,7)
+                  IMFGETNO(NMFGET,8)=IMFGETNO(NMFGET-1,8)
                   lln=lnblnk(NDNAM(INPKT(I)))
                   if(lnblnk(SUFFIX).le.5)then
                     lnname=MIN0(lnblnk(NDNAM(INPKT(I))),12)
@@ -1703,6 +1772,7 @@ C the previous IMFGETNO for use with additional connections.
                   IMFGETNO(NMFGET,5)=IMFGETNO(NMFGET-1,5)
                   IMFGETNO(NMFGET,6)=IMFGETNO(NMFGET-1,6)
                   IMFGETNO(NMFGET,7)=IMFGETNO(NMFGET-1,7)
+                  IMFGETNO(NMFGET,8)=IMFGETNO(NMFGET-1,8)
                   lln=lnblnk(NDNAM(INPKT(I)))
                   if(lnblnk(SUFFIX).le.5)then
                     lnname=MIN0(lnblnk(NDNAM(INPKT(I))),11)
@@ -1723,6 +1793,7 @@ C the previous IMFGETNO for use with additional connections.
                   IMFGETNO(NMFGET,5)=IMFGETNO(NMFGET-1,5)
                   IMFGETNO(NMFGET,6)=IMFGETNO(NMFGET-1,6)
                   IMFGETNO(NMFGET,7)=IMFGETNO(NMFGET-1,7)
+                  IMFGETNO(NMFGET,8)=IMFGETNO(NMFGET-1,8)
                   write(GMFLABEL(NMFGET),'(3a)')'amb<-',
      &              NDNAM(INPKT(I))(1:lnname),SUFFIX(1:lsf)
                   LNGMFLABEL(NMFGET)=lnblnk(GMFLABEL(NMFGET))
@@ -1785,6 +1856,7 @@ C the previous IMFGETNO for use with additional connections.
                   IMFGETNO(NMFGET,5)=IMFGETNO(NMFGET-1,5)
                   IMFGETNO(NMFGET,6)=IMFGETNO(NMFGET-1,6)
                   IMFGETNO(NMFGET,7)=IMFGETNO(NMFGET-1,7)
+                  IMFGETNO(NMFGET,8)=IMFGETNO(NMFGET-1,8)
                   lln=lnblnk(NDNAM(INPKT(I)))
                   lln2=lnblnk(NDNAM(INPKT2(I)))
                   if(lnblnk(SUFFIX).le.5)then
@@ -1810,6 +1882,7 @@ C the previous IMFGETNO for use with additional connections.
                   IMFGETNO(NMFGET,5)=IMFGETNO(NMFGET-1,5)
                   IMFGETNO(NMFGET,6)=IMFGETNO(NMFGET-1,6)
                   IMFGETNO(NMFGET,7)=IMFGETNO(NMFGET-1,7)
+                  IMFGETNO(NMFGET,8)=IMFGETNO(NMFGET-1,8)
                   write(GMFLABEL(NMFGET),'(4a)')
      &              NDNAM(INPKT2(I))(1:lnname2),'->',
      &              NDNAM(INPKT(1))(1:lnname),SUFFIX(1:lsf)
@@ -1835,7 +1908,7 @@ C There has been a problem, so decrement NMFGET.
 
 C Debug.
 C        do 9999 I=1,NMFGET
-C          write(6,*) (IMFGETNO(I,K),K=1,7)
+C          write(6,*) (IMFGETNO(I,K),K=1,8)
 C          write(6,*) SMFLABEL(I)
 C          write(6,*) GMFLABEL(I)
 C          write(6,*) GLMFLABEL(I)
@@ -1851,7 +1924,7 @@ C GOMFGETSU: Sets up arrays for mass flow data recovery.
       SUBROUTINE GOMFGETSU
 #include "net_flow.h"
 
-      COMMON/MFPICK/NMFGET,IMFGETNO(MFRS,7)
+      COMMON/MFPICK/NMFGET,IMFGETNO(MFRS,8)
       COMMON/MFPK2/NMFLST,IMFLIST(MFCNLST,MFCNEL+1)
       COMMON/MFGET/FLOWVALS(MFRS),MFRECVR(MCNN+2+MCONTM)
       COMMON/CONTM0/NCONTM,NOCNTM,CONTMNAM(MCONTM)
@@ -1925,7 +1998,7 @@ C to arrays IMFGETNO and MFRECVR.
      &              ITPCON(MCNN),NDSCNN(MCNN,MCNS)
       COMMON/CONTM0/NCONTM,NOCNTM,CONTMNAM(MCONTM)
 
-      COMMON/MFPICK/NMFGET,IMFGETNO(MFRS,7)
+      COMMON/MFPICK/NMFGET,IMFGETNO(MFRS,8)
       COMMON/MFGET/FLOWVALS(MFRS),MFRECVR(MCNN+2+MCONTM)
       COMMON/MFREC/FRDAT(MCNN+2+MCONTM,NMRL)
 
@@ -2006,36 +2079,63 @@ C Return inter-node flow for two nodes
 
         elseif (IMFGETNO(I,1).eq.4) then
 
-C Connection net volume flow rate (m^3/s).
+C Connection net volume flow rate (m^3/s) or (l/s) depending on
+C the value of IMFGETNO(I,8).
           if (IMFGETNO(I,2).gt.0) then
 
 C Single connection. Depending on IMFGETNO(I,4) return +ive, -ive or net flow.
             call MASS2VOL(IMFGETNO(I,2),VFLOW1,VFLOW2)
             if (IMFGETNO(I,4).gt.0) then
-              FLOWVALS(I)=VFLOW1
+              if(IMFGETNO(I,8).eq.0)then
+                FLOWVALS(I)=VFLOW1
+              elseif(IMFGETNO(I,8).eq.1)then
+                FLOWVALS(I)=VFLOW1*1000.0
+              endif
             elseif (IMFGETNO(I,4).lt.0) then
-              FLOWVALS(I)=VFLOW2
+              if(IMFGETNO(I,8).eq.0)then
+                FLOWVALS(I)=VFLOW2
+              elseif(IMFGETNO(I,8).eq.1)then
+                FLOWVALS(I)=VFLOW2*1000.0
+              endif
             else
-              FLOWVALS(I)=VFLOW1+VFLOW2
+              if(IMFGETNO(I,8).eq.0)then
+                FLOWVALS(I)=VFLOW1+VFLOW2
+              elseif(IMFGETNO(I,8).eq.1)then
+                FLOWVALS(I)=(VFLOW1+VFLOW2)*1000.0
+              endif
             endif
           elseif(IMFGETNO(I,2).eq.0)then
 
 C All connections, return total flow into node.
             call MFSUMCON(I,2,VFLOW1,VFLOW2)
-            FLOWVALS(I)=VFLOW1
+            if(IMFGETNO(I,8).eq.0)then
+              FLOWVALS(I)=VFLOW1
+            elseif(IMFGETNO(I,8).eq.1)then
+              FLOWVALS(I)=VFLOW1*1000.0
+            endif
           elseif(IMFGETNO(I,2).eq.-1) then
 
 C Return flow to and from ambient for this node
             call MFSUMCON(I,2,VFLOW1,VFLOW2)
-            FLOWVALS(I)=VFLOW1
-            FLOWVALS(I+1)=VFLOW2
+            if(IMFGETNO(I,8).eq.0)then
+              FLOWVALS(I)=VFLOW1
+              FLOWVALS(I+1)=VFLOW2
+            elseif(IMFGETNO(I,8).eq.1)then
+              FLOWVALS(I)=VFLOW1*1000.0
+              FLOWVALS(I+1)=VFLOW2*1000.0
+            endif
             NEXT=1
           elseif(IMFGETNO(I,2).eq.-2) then
 
 C Return inter-node flow for two nodes
             call MFSUMCON(I,2,VFLOW1,VFLOW2)
-            FLOWVALS(I)=VFLOW1
-            FLOWVALS(I+1)=VFLOW2
+            if(IMFGETNO(I,8).eq.0)then
+              FLOWVALS(I)=VFLOW1
+              FLOWVALS(I+1)=VFLOW2
+            elseif(IMFGETNO(I,8).eq.1)then
+              FLOWVALS(I)=VFLOW1*1000.0
+              FLOWVALS(I+1)=VFLOW2*1000.0
+            endif
             NEXT=1
           endif
 
@@ -2237,7 +2337,7 @@ C IUNIT: 1=kg/s; 2=m^3/s; 3=ac/h
       COMMON/CONTM0/NCONTM,NOCNTM,CONTMNAM(MCONTM)
 
       COMMON/MFREC/FRDAT(MCNN+2+MCONTM,NMRL)
-      COMMON/MFPICK/NMFGET,IMFGETNO(MFRS,7)
+      COMMON/MFPICK/NMFGET,IMFGETNO(MFRS,8)
       COMMON/MFPK2/NMFLST,IMFLIST(MFCNLST,MFCNEL+1)
 
       logical LNPS,LNNE
@@ -2543,7 +2643,7 @@ C EDMFGOGET allows removal of output requests for flow networks.
 
       COMMON/SIMPIK/ISIM,ISTADD,ID1,IM1,ID2,IM2,ISDS,ISDF,NTS,ISAVE
 
-      COMMON/MFPICK/NMFGET,IMFGETNO(MFRS,7)
+      COMMON/MFPICK/NMFGET,IMFGETNO(MFRS,8)
 
 C smflabel char*32 is the topic of a flow item
 C gmflabel char*20 is short label for graphs/tables for flow item
@@ -2644,6 +2744,7 @@ C Remove inactive elements.
                 IMFGETNO(K,5)=IMFGETNO(K+1,5)
                 IMFGETNO(K,6)=IMFGETNO(K+1,6)
                 IMFGETNO(K,7)=IMFGETNO(K+1,7)
+                IMFGETNO(K,8)=IMFGETNO(K+1,8)
                 SMFLABEL(K)=SMFLABEL(K+1)
                 LNSMFLABEL(K)=LNSMFLABEL(K+1)
                 GMFLABEL(K)=GMFLABEL(K+1)
@@ -2659,6 +2760,7 @@ C Remove inactive elements.
                 IMFGETNO(K,5)=ISIM
                 IMFGETNO(K,6)=1
                 IMFGETNO(K,7)=0
+                IMFGETNO(K,8)=0
                 SMFLABEL(K)='  '
                 LNSMFLABEL(K)=0
                 GMFLABEL(K)='  '

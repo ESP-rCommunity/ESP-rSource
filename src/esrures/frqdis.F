@@ -58,7 +58,8 @@ C index is the goget index.
       COMMON/GET1/VAL1(MZS,MTS),VAL2(MZS,MTS),VAL3(MZRL,MTS)
 
       COMMON/FREQS/NBINS,XBIN1,XBINN,DXBIN,IFREQ,IHITS,IMISS,INBIN(MF)
-      COMMON/FREQS1/ICBIN(MF),ITOTAL
+      integer ICBIN,IRCBIN
+      COMMON/FREQS1/ICBIN(MF),IRCBIN(MF),ITOTAL
       common/exporttg/xfile,tg,delim
       COMMON/EXPORTI/ixopen,ixunit,ixpunit
 
@@ -77,6 +78,9 @@ C Selection menu for graphs and/or tables.
       logical zlist,ok,dok
       logical HAVEIT
       integer NITMS,IG ! max items and current menu item
+      integer order    ! for cumulative which order for graph
+      integer hits     ! for graph distribution hits (0) or hours (1)
+      real FNTS        ! real number of timesteps per hour
 
 C For help messages
       character helpinsub*24   ! subroutine name
@@ -142,7 +146,7 @@ C          write(6,*) 'get MMACAL ',DMAX,DMIN,DAVE,DTOT,TXMAX,TXMIN
         XMAX=MAX(XMAX,DMAX)
         XMIN=MIN(XMIN,DMIN)
  40   continue
-      write(outs,'(a,a,a,f11.2,a,f11.2)')'The ',
+      write(outs,'(3a,f11.2,a,f11.2)')'The ',
      &  SLABEL(NGET)(1:LNSLABEL(NGET)),' data range is',
      &  XMIN,' to',XMAX
       call edisp(iuout,outs)
@@ -427,6 +431,7 @@ C Empty bins of hits.
       DO 510 I=1,NBINS
          INBIN(I) = 0
          ICBIN(I) = 0
+         IRCBIN(I)= 0
   510 CONTINUE
       IHITS = 0
       IMISS = 0
@@ -468,7 +473,7 @@ C If there is occupancy filter and occupancy then include in check.
 C Assume fully occupied.
             ih=int(ATIME+1.)
             ioc=1
-            if(iocupf.eq.1) call getocup(IZONE,IDAY,ih,ioc,iier)
+            if(iocupf.eq.1) call getocup(IZONE,IDAY,J,ioc,iier)
             if(ioc.ne.0) then
               IB = INT(((VAL2(IX,J) - XBIN1) / DXBIN) + 1.)
               if(IB.LE.0)then
@@ -497,11 +502,17 @@ C Save largest number of hits in a bin (IFREQ).
 
 C Calculate cumulative frequency.
       ITOTAL=0
-      DO 710 I=1,NBINS
+      DO I=1,NBINS
         IF(I.EQ.1)ICBIN(I)=INBIN(I)
         IF(I.GT.1)ICBIN(I)=ICBIN(I-1)+INBIN(I)
         ITOTAL=ITOTAL+INBIN(I)
-  710 CONTINUE
+      ENDDO
+
+C Calculate reverse cumulative frequency (loop downwards).
+      DO I=NBINS,1,-1
+        IF(I.EQ.NBINS)IRCBIN(I)=INBIN(I)
+        IF(I.LT.NBINS)IRCBIN(I)=IRCBIN(I+1)+INBIN(I)
+      ENDDO
 
 C We now have the data in bins therefore ask how it should be displayed.
    75 if(act(1:1).eq.'m'.or.act(1:1).eq.'d')then
@@ -548,8 +559,27 @@ C after image and advise user.
           TLABEL='  '
           write (TLABEL,'(a,a13,f5.1)')
      &       SLABEL(NGET)(1:LNSLABEL(NGET)),', Bin width =',DXBIN
-          if(IG.eq.1.or.IG.eq.4)CALL MODDRW(1,TLABEL)
-          if(IG.eq.2.or.IG.eq.5)CALL MODDRW(2,TLABEL)
+          if(IG.eq.1.or.IG.eq.4)then
+            order=0
+            call easkab(' ','Scale options:','distribution (hits)',
+     &        'distribution (hours)',ii,nbhelp)
+            if(ii.eq.1) hits=0
+            if(ii.eq.2) hits=1
+            CALL MODDRW(1,TLABEL,order,hits)
+          endif
+          if(IG.eq.2.or.IG.eq.5)then
+
+C Ask if reverse order.
+            call easkab(' ','Graph options:','standard order',
+     &        'reversed',ii,nbhelp)
+            if(ii.eq.1) order=0
+            if(ii.eq.2) order=1
+            call easkab(' ','Scale options:','distribution (hits)',
+     &        'distribution (hours)',ii,nbhelp)
+            if(ii.eq.1) hits=0
+            if(ii.eq.2) hits=1
+            CALL MODDRW(2,TLABEL,order,hits)
+          endif
         else
           call edisp(iuout,' Sorry, not in graphic mode...')
         endif
@@ -583,10 +613,12 @@ C If frequency bin requested from IPV then do not print headings.
           call edisp(itru,' ')
           CALL MODHED('t',zlist,iocupf,ialstused)
           call edisp(itru,SLABEL(NGET))
-          call edisp(itru,
-     &' Bin   data range       Distri-  freq.   cumulative  cumulative')
-          call edisp(itru,
-     &'                        bution    (%)   distribution  freq (%)')
+          write(outs,'(2a)') ' Bin   Data range       Distribution ',
+     &      'frequency Cumulative frequency  Reverse Cumulative'
+          call edisp(itru,outs)
+          write(outs,'(2a)') '                        timesteps hours',
+     &      '    %  timesteps hours   %  timesteps hours    %'
+          call edisp(itru,outs)
         endif
 
 C Provide initial range and then loop through each. Set XBINSJ as
@@ -594,6 +626,7 @@ C equal to the intial value for use in java IPV report.
         XBINS=XBIN1
         XBINSJ=XBINS
         XBIN=XBIN1+DXBIN
+	FNTS=FLOAT(NTS)  ! remember NTS as real
         DO 101 I=1,NBINS
           if(act(1:1).eq.'d')then
             write(trange,'(F9.1,a,F9.1)') XBINS,'-',XBIN
@@ -627,6 +660,7 @@ C For IPV remember the last biggest bin.
           XBINS=XBIN
           XBIN=XBIN+DXBIN
           CFREQ=(FLOAT(ICBIN(I))/FLOAT(ITOTAL))*100.0
+          CRFREQ=(FLOAT(IRCBIN(I))/FLOAT(ITOTAL))*100.0
           FREQ=(FLOAT(INBIN(I))/FLOAT(ITOTAL))*100.0
           if(I.eq.1)then
 
@@ -635,9 +669,12 @@ C if IPV and java and something else put iunder on separate line.
             if(act(1:1).eq.'m')then
               if(ipvform.eq.3)then
                 if(index.eq.13)then
-                  WRITE(outs,'(a,i5,2x,f6.2,i9,f12.2)') 
-     &              tranged(1:lnblnk(tranged)),INBIN(I),FREQ,
-     &              ICBIN(I),CFREQ
+                  WRITE(outs,
+     &              '(a,i6,f8.1,f6.1,i8,f8.1,f6.1,i8,f8.1,f6.1)')
+     &              tranged(1:lnblnk(tranged)),
+     &              INBIN(I),FLOAT(INBIN(I))/FNTS,FREQ,
+     &              ICBIN(I),FLOAT(ICBIN(I))/FNTS,CFREQ,
+     &              IRCBIN(I),FLOAT(IRCBIN(I))/FNTS,CRFREQ
                 else
 
 C Make up string for `<XX` for java IPV report, make sure there are
@@ -658,32 +695,44 @@ C no spaces via call to sdelim.
                     endif
                   endif
                   call SDELIM(trangf,trangefd,'N',IW)
-                  WRITE(outs,'(a,i6,a)') 
-     &              trangefd(1:lnblnk(trangefd)),iunder,' 0.0 0.0 0.0'
+                  WRITE(outs,'(a,15x,i6,a)') 
+     &              trangefd(1:lnblnk(trangefd)),iunder,
+     &       '    0.0    0.0       0     0.0   0.0       0    0.0   0.0'
                   call eddisp(itru,outs)
-                  WRITE(outs,'(a,i5,2x,f6.2,i9,f12.2)') 
-     &              tranged(1:lnblnk(tranged)),INBIN(I),FREQ,
-     &              ICBIN(I),CFREQ
+                  WRITE(outs,
+     &              '(a,i6,f8.1,f6.1,i8,f8.1,f6.1,i8,f8.1,f6.1)')
+     &              tranged(1:lnblnk(tranged)),
+     &              INBIN(I),FLOAT(INBIN(I))/FNTS,FREQ,
+     &              ICBIN(I),FLOAT(ICBIN(I))/FNTS,CFREQ,
+     &              IRCBIN(I),FLOAT(IRCBIN(I))/FNTS,CRFREQ
                 endif
               else
 
 C If non-java IPV include the `below` line before the first actual bin. 
                 write(trangf,'(a,F9.1)') '<',XBINSJ
                 call SDELIM(trangf,trangefd,'N',IW)
-                WRITE(outs,'(i3,2x,a,i6,a)') I-1,
-     &            trangefd(1:lnblnk(trangefd)),iunder,' 0.0 0.0 0.0'
+                WRITE(outs,'(i3,2x,a,15x,i6,a)') I-1,
+     &            trangefd(1:lnblnk(trangefd)),iunder,
+     &       '    0.0    0.0       0    0.0    0.0       0    0.0   0.0'
                 call eddisp(itru,outs)
-                WRITE(outs,'(i3,2x,a,i5,2x,f6.2,i9,f12.2)') I,
-     &            tranged,INBIN(I),FREQ,ICBIN(I),CFREQ
+                WRITE(outs,
+     &            '(i3,2x,a,i6,f8.1,f6.1,i8,f8.1,f6.1,i8,f8.1,f6.1)')I,
+     &            tranged,INBIN(I),FLOAT(INBIN(I))/FNTS,FREQ,
+     &            ICBIN(I),FLOAT(ICBIN(I))/FNTS,CFREQ,
+     &            IRCBIN(I),FLOAT(IRCBIN(I))/FNTS,CRFREQ
               endif
-            else
+            else  ! act is 
               write(trangf,'(a,F9.1)') '<',XBINSJ
               call SDELIM(trangf,trangefd,'N',IW)
-              WRITE(outs,'(i3,2x,a,i6,a)') I-1,
-     &          trangefd(1:lnblnk(trangefd)),iunder,' 0.0 0.0 0.0'
+              WRITE(outs,'(i3,2x,a,15x,i6,a)') I-1,
+     &          trangefd(1:lnblnk(trangefd)),iunder,
+     &       '    0.0    0.0       0    0.0    0.0       0    0.0   0.0'
               call eddisp(itru,outs)
-              WRITE(outs,'(i3,2x,a,i5,2x,f6.2,i9,f12.2)') I,
-     &          tranged,INBIN(I),FREQ,ICBIN(I),CFREQ
+              WRITE(outs,
+     &          '(i3,2x,a,i6,f8.1,f6.1,i8,f8.1,f6.1,i8,f8.1,f6.1)')I,
+     &          tranged,INBIN(I),FLOAT(INBIN(I))/FNTS,FREQ,
+     &          ICBIN(I),FLOAT(ICBIN(I))/FNTS,CFREQ,
+     &          IRCBIN(I),FLOAT(IRCBIN(I))/FNTS,CRFREQ
             endif
           elseif(I.eq.NBINS)then
 
@@ -692,16 +741,22 @@ C if IPV and java and something else put iover on separate line.
             if(act(1:1).eq.'m')then
               if(ipvform.eq.3)then
                 if(index.eq.13)then
-                  WRITE(outs,'(a,i5,2x,f6.2,i9,f12.2)') 
-     &              tranged(1:lnblnk(tranged)),INBIN(I),FREQ,
-     &              ICBIN(I),CFREQ
+                  WRITE(outs,
+     &              '(a,i6,f8.1,f6.1,i8,f8.1,f6.1,i8,f8.1,f6.1)')
+     &              tranged(1:lnblnk(tranged)),
+     &              INBIN(I),FLOAT(INBIN(I))/FNTS,FREQ,
+     &              ICBIN(I),FLOAT(ICBIN(I))/FNTS,CFREQ,
+     &              IRCBIN(I),FLOAT(IRCBIN(I))/FNTS,CRFREQ
                 else
 
 C Make up string for `>XX` for java IPV report, make sure there are
 C no spaces via call to sdelim.
-                  WRITE(outs,'(a,i5,2x,f6.2,i9,f12.2)') 
-     &              tranged(1:lnblnk(tranged)),INBIN(I),FREQ,
-     &              ICBIN(I),CFREQ
+                  WRITE(outs,
+     &              '(a,i6,f8.1,f6.1,i8,f8.1,f6.1,i8,f8.1,f6.1)')
+     &              tranged(1:lnblnk(tranged)),
+     &              INBIN(I),FLOAT(INBIN(I))/FNTS,FREQ,
+     &              ICBIN(I),FLOAT(ICBIN(I))/FNTS,CFREQ,
+     &              IRCBIN(I),FLOAT(IRCBIN(I))/FNTS,CRFREQ
                   call eddisp(itru,outs)
                   if(index.eq.1.or.index.eq.6.or.index.eq.11.or.
      &               index.eq.12.or.index.eq.15.or.index.eq.38.or.
@@ -719,43 +774,62 @@ C no spaces via call to sdelim.
                     endif
                   endif
                   call SDELIM(trangf,trangefd,'N',IW)
-                  WRITE(outs,'(a,i6,a)') 
-     &              trangefd(1:lnblnk(trangefd)),iover,' 0.0 0.0 0.0'
+                  WRITE(outs,'(a,16x,i6,a)') 
+     &              trangefd(1:lnblnk(trangefd)),iover,
+     &       '    0.0    0.0       0    0.0    0.0       0    0.0   0.0'
                 endif
               else
 
 C If non-java IPV include the `above` line after the last actual bin. 
-                WRITE(outs,'(i3,2x,a,i5,2x,f6.2,i9,f12.2)') I,
-     &            tranged,INBIN(I),FREQ,ICBIN(I),CFREQ
+                WRITE(outs,
+     &           '(i3,2x,a,i6,f8.1,f6.1,i8,f8.1,f6.1,i8,f8.1,f6.1)')I,
+     &           tranged,INBIN(I),FLOAT(INBIN(I))/FNTS,FREQ,
+     &           ICBIN(I),FLOAT(ICBIN(I))/FNTS,CFREQ,
+     &           IRCBIN(I),FLOAT(IRCBIN(I))/FNTS,CRFREQ
                 call eddisp(itru,outs)
                 write(trangf,'(a,F9.1)') '>',XBINJ
                 call SDELIM(trangf,trangefd,'N',IW)
-                WRITE(outs,'(i3,2x,a,i6,a)') I+1,
-     &            trangefd(1:lnblnk(trangefd)),iover,' 0.0 0.0 0.0'
+                WRITE(outs,'(i3,2x,a,16x,i6,a)') I+1,
+     &            trangefd(1:lnblnk(trangefd)),iover,
+     &       '    0.0    0.0       0    0.0    0.0       0    0.0   0.0'
               endif
             else
-              WRITE(outs,'(i3,2x,a,i5,2x,f6.2,i9,f12.2)') I,
-     &          tranged,INBIN(I),FREQ,ICBIN(I),CFREQ
+              WRITE(outs,
+     &          '(i3,2x,a,i6,f8.1,f6.1,i8,f8.1,f6.1,i8,f8.1,f6.1)')I,
+     &          tranged,INBIN(I),FLOAT(INBIN(I))/FNTS,FREQ,
+     &          ICBIN(I),FLOAT(ICBIN(I))/FNTS,CFREQ,
+     &          IRCBIN(I),FLOAT(IRCBIN(I))/FNTS,CRFREQ
               call eddisp(itru,outs)
               write(trangf,'(a,F9.1)') '>',XBINJ
               call SDELIM(trangf,trangefd,'N',IW)
-              WRITE(outs,'(i3,2x,a,i6,a)') I+1,
-     &          trangefd(1:lnblnk(trangefd)),iover,' 0.0 0.0 0.0'
+              WRITE(outs,'(i3,2x,a,16x,i6,a)') I+1,
+     &          trangefd(1:lnblnk(trangefd)),iover,
+     &       '    0.0    0.0       0    0.0    0.0       0    0.0   0.0'
 C             WRITE(outs,'(i3,2x,a,i5,2x,f6.2,i9,f12.2,a,i6,a)') I,
 C     &         tranged,INBIN(I),FREQ,ICBIN(I),CFREQ,'  ',iover,' above'
             endif
           else
             if(act(1:1).eq.'m')then
               if(ipvform.eq.3)then
-                WRITE(outs,'(a,i5,2x,f6.2,i9,f12.2)') 
-     &           tranged(1:lnblnk(tranged)),INBIN(I),FREQ,ICBIN(I),CFREQ
+                WRITE(outs,
+     &            '(a,i6,f8.1,f6.1,i8,f8.1,f6.1,i8,f8.1,f6.1)')
+     &            tranged(1:lnblnk(tranged)),
+     &            INBIN(I),FLOAT(INBIN(I))/FNTS,FREQ,
+     &            ICBIN(I),FLOAT(ICBIN(I))/FNTS,CFREQ,
+     &            IRCBIN(I),FLOAT(IRCBIN(I))/FNTS,CRFREQ
               else
-                WRITE(outs,'(i3,2x,a,i5,2x,f6.2,i9,f12.2)')I,tranged,
-     &            INBIN(I),FREQ,ICBIN(I),CFREQ
+                WRITE(outs,
+     &            '(i3,2x,a,i6,f8.1,f6.1,i8,f8.1,f6.1,i8,f8.1,f6.1)')I,
+     &            tranged,INBIN(I),FLOAT(INBIN(I))/FNTS,FREQ,
+     &            ICBIN(I),FLOAT(ICBIN(I))/FNTS,CFREQ,
+     &            IRCBIN(I),FLOAT(IRCBIN(I))/FNTS,CRFREQ
               endif
             else
-              WRITE(outs,'(i3,2x,a,i5,2x,f6.2,i9,f12.2)')I,tranged,
-     &          INBIN(I),FREQ,ICBIN(I),CFREQ
+              WRITE(outs,
+     &          '(i3,2x,a,i6,f8.1,f6.1,i8,f8.1,f6.1,i8,f8.1,f6.1)')I,
+     &          tranged,INBIN(I),FLOAT(INBIN(I))/FNTS,FREQ,
+     &          ICBIN(I),FLOAT(ICBIN(I))/FNTS,CFREQ,
+     &          IRCBIN(I),FLOAT(IRCBIN(I))/FNTS,CRFREQ
             endif
           endif
           call eddisp(itru,outs)
@@ -948,15 +1022,25 @@ C if names of zones can be shown.
 
 C ******************** MODDRW ********************
 C MODDRW draws a histogram of the frequency distribution.
-
-      SUBROUTINE MODDRW(IG,alabel)
+C If order=0 then cumulative in standard order order=1 
+C cumulative in reverse order. Hits=0 distribution in
+C number of hits =1 in hours.
+      SUBROUTINE MODDRW(IG,alabel,order,hits)
 #include "building.h"
 
+C Parameters
+      integer IG
+      character alabel*60
+      integer order  ! 0 standard 1 reversed
+      integer hits   ! 0 distrib via hits 1 distrib via hours
+
+      COMMON/SIMPIK/ISIM,ISTADD,ID1,IM1,ID2,IM2,ISDS,ISDF,NTS,ISAVE
       COMMON/FREQS/NBINS,XBIN1,XBINN,DXBIN,IFREQ,IHITS,IMISS,INBIN(MF)
-      COMMON/FREQS1/ICBIN(MF),ITOTAL
+      integer ICBIN,IRCBIN
+      COMMON/FREQS1/ICBIN(MF),IRCBIN(MF),ITOTAL
       integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
-      character alabel*60
+
 #ifdef OSI
       integer igwid,igheight  ! for use with axiscale
       integer iigl,iigr,iigt,iigb,iigw,iigwh
@@ -965,8 +1049,16 @@ C MODDRW draws a histogram of the frequency distribution.
       integer*8 iigl,iigr,iigt,iigb,iigw,iigwh
 #endif
 
-      YMAX = IFREQ
-      IF(IG.EQ.2)YMAX=ITOTAL
+C Set vertical scale.
+      if(hits.eq.0)then
+        YMAX = IFREQ
+        IF(IG.EQ.2)YMAX=ITOTAL
+        PMAX=(YMAX/FLOAT(ITOTAL))*100.0
+      else
+        YMAX = FLOAT(IFREQ)/FLOAT(NTS)
+        IF(IG.EQ.2)YMAX=FLOAT(ITOTAL)/FLOAT(NTS)
+        PMAX=(YMAX/(FLOAT(ITOTAL)/FLOAT(NTS)))*100.0
+      endif
       YMIN = 0.0
       XMAX = XBINN
       XMIN = XBIN1
@@ -984,8 +1076,13 @@ C Stuff into static variables for later access.
       call linescale(iigl,Xadd,xsc,iigb,Yadd,ysc)
 
 C Left axis.
-      call vrtaxis(YMIN,YMAX,iigl,iigb,iigt,Yadd,ysc,0,0,
+      if(hits.eq.0)then
+        call vrtaxis(YMIN,YMAX,iigl,iigb,iigt,Yadd,ysc,0,0,
      &  'Distribution')
+      else
+        call vrtaxis(YMIN,YMAX,iigl,iigb,iigt,Yadd,ysc,0,0,
+     &  'Hours')
+      endif
 
 C Horizontal axis, label depending on data type.
 C If moderate data range use mode 1, otherwise try 0.
@@ -998,7 +1095,7 @@ C If moderate data range use mode 1, otherwise try 0.
       endif
 
 C Right axis.
-      PMAX=(YMAX/FLOAT(ITOTAL))*100.0
+C      PMAX=(YMAX/FLOAT(ITOTAL))*100.0
       PMIN=0.0
       igwid=igw
       igheight=igwh
@@ -1010,14 +1107,41 @@ C Plot histogram, draw grey box if YBIN > 0.
       XBIN = XMIN
       igr=13
       DO 200 I = 1, NBINS
-         YBIN=FLOAT(INBIN(I))
-         if(IG.EQ.2)then
-           YBIN=FLOAT(ICBIN(I))
-           if(ICBIN(I).gt.0)call egrbox(XBIN,YMIN,DXBIN,YBIN,igr)
-         else
-           if(INBIN(I).gt.0)call egrbox(XBIN,YMIN,DXBIN,YBIN,igr)
-         endif
-         XBIN = XBIN + DXBIN
+        if(order.eq.0)then
+          if(IG.EQ.2)then
+            if(hits.eq.0)then
+              YBIN=FLOAT(ICBIN(I))
+            else
+              YBIN=FLOAT(ICBIN(I))/FLOAT(NTS)
+            endif
+            if(ICBIN(I).gt.0)call egrbox(XBIN,YMIN,DXBIN,YBIN,igr)
+          else
+            if(hits.eq.0)then
+              YBIN=FLOAT(INBIN(I))
+            else
+              YBIN=FLOAT(INBIN(I))/FLOAT(NTS)
+            endif
+            if(INBIN(I).gt.0)call egrbox(XBIN,YMIN,DXBIN,YBIN,igr)
+          endif
+          XBIN = XBIN + DXBIN
+        else
+          if(IG.EQ.2)then
+            if(hits.eq.0)then
+              YBIN=FLOAT(IRCBIN(I))
+            else
+              YBIN=FLOAT(IRCBIN(I))/FLOAT(NTS)
+            endif
+            if(IRCBIN(I).gt.0)call egrbox(XBIN,YMIN,DXBIN,YBIN,igr)
+          else
+            if(hits.eq.0)then
+              YBIN=FLOAT(INBIN(I))
+            else
+              YBIN=FLOAT(INBIN(I))/FLOAT(NTS)
+            endif
+            if(INBIN(I).gt.0)call egrbox(XBIN,YMIN,DXBIN,YBIN,igr)
+          endif
+          XBIN = XBIN + DXBIN
+        endif
   200 CONTINUE
       call forceflush()
 

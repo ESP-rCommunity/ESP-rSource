@@ -34,13 +34,14 @@ C analysis of electrical network output.
 C ************************************************************************************
       SUBROUTINE ENETRES
 
+#include "building.h"
+#include "plant.h"
 #include "power.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/FILEP/IFIL
       COMMON/ELRFIL/ELRFLNAM
-      character ELRFLNAM*144
 
       COMMON/TRC/ITRC
 
@@ -56,7 +57,7 @@ C Electrical network results library details.
       INTEGER IELFIL,IELIBHL,IELIBW,IELSTREC,NETS,NTSREC,NHREC,
      &NPREC,IFOCUS
 
-      CHARACTER LTMP*144,DFILE*144,ITEM*25,MMODE*1,
+      CHARACTER LTMP*144,ELRFLNAM*144,DFILE*144,ITEM*25,MMODE*1,
      &EFILEABS*144
       LOGICAL OK,dok,XST
       integer NITMS,INO ! max items and current menu item
@@ -233,49 +234,20 @@ C that in the electrical network common block. The routine returns an
 C error if this data is found to be inconsistent. 
       SUBROUTINE ENETRCHK(IER)
 
+#include "building.h"
+#include "plant.h"
 #include "power.h"
       
       integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
 
-C Common for electrical file 
-      COMMON/ENTFILE/ENTFLNAM,IENTXIST
-
-C The electrical nodes
-      COMMON/ENOD/NENOD,ENODNO(MENOD),ENODPHTYP(MENOD),
-     &ENODPH(MENOD),ENODTYP(MENOD),ENODBASEV(MENOD),
-     &ENODBASEP
-
-C The connected hybrid components
-      COMMON/HYBE/NHYBCOM,HYBCOMNO(MHYCOM),HYCOMTYP(MHYCOM),
-     &HYCOMPHTYP(MHYCOM),HYCONEN(MHYCOM,MPHAS),HYLOC(MHYCOM,MPHAS),
-     &NHYBDAT(MHYCOM),HYBDAT(MHYCOM,MHYDAT)
-
-C The connected power only components
-      COMMON/POWC/NPOWCOM,POWCOMNO(MPOWCOM),POWCOMID(MPOWCOM),
-     &POWCOMPHTYP(MPOWCOM),POWCONEN(MPOWCOM,MPHAS),
-     &NPOWCDAT(MPOWCOM),NPOWCDATS(MPOWCOM),POWCDAT(MPOWCOM,MPWDAT)
-
-C The electrical network topology
-      COMMON/ECONN/NECON,ECONO(MECON),CONPHTYP(MECON),
-     &CONPH(MECON,MPHAS),CCNO(MECON),SENOD(MECON,MPHAS),
-     &EENOD(MECON,MPHAS)
-
 C Electrical network results library details.
       COMMON/ENELIBRC/IELFIL,IELIBHL,IELIBW,IELSTREC,NETS,NTSREC,NHREC,
      &NPREC
 
-C Type casting (all varaiables and arrays cast explicitly)
-      INTEGER NENOD,ENODNO,ENODPHTYP,ENODPH,ENODTYP,NHYBCOM,HYBCOMNO,
-     &HYCOMTYP,HYCOMPHTYP,HYCONEN,HYLOC,NHYBDAT,NPOWCOM,POWCOMNO,
-     &POWCOMID,POWCOMPHTYP,POWCONEN,NPOWCDAT,NPOWCDATS,NECON,
-     &ECONO,CONPH,CONPHTYP,CCNO,SENOD,EENOD,IENTXIST
-     
-      REAL ENODBASEV,ENODBASEP,HYBDAT,POWCDAT
-
 C Characters
-      CHARACTER*72 ENTFLNAM,LFIL
+      CHARACTER*72 LFIL
       CHARACTER*124 OUTS
 
 C Read the electrical network header (held in the 1st record of the 
@@ -432,6 +404,8 @@ C **********************************************************************
 
       SUBROUTINE ERSMENU(IFOC,MODE)
 
+#include "building.h"
+#include "plant.h"
 #include "power.h"
 
       COMMON/OUTIN/IUOUT,IUIN
@@ -444,28 +418,7 @@ C Export parameters.
 
 C Data filters
       COMMON/ENFILT/EFILT(MERAWD)
-            
-C The electrical nodes
-      COMMON/ENOD/NENOD,ENODNO(MENOD),ENODPHTYP(MENOD),
-     &ENODPH(MENOD),ENODTYP(MENOD),ENODBASEV(MENOD),
-     &ENODBASEP
-
-C The connected hybrid components
-      COMMON/HYBE/NHYBCOM,HYBCOMNO(MHYCOM),HYCOMTYP(MHYCOM),
-     &HYCOMPHTYP(MHYCOM),HYCONEN(MHYCOM,MPHAS),HYLOC(MHYCOM,MPHAS),
-     &NHYBDAT(MHYCOM),HYBDAT(MHYCOM,MHYDAT)
-
-C The connected power only components
-      COMMON/POWC/NPOWCOM,POWCOMNO(MPOWCOM),POWCOMID(MPOWCOM),
-     &POWCOMPHTYP(MPOWCOM),POWCONEN(MPOWCOM,MPHAS),
-     &NPOWCDAT(MPOWCOM),NPOWCDATS(MPOWCOM),POWCDAT(MPOWCOM,MPWDAT)
-
-
-C The electrical network topology
-      COMMON/ECONN/NECON,ECONO(MECON),CONPHTYP(MECON),
-     &CONPH(MECON,MPHAS),CCNO(MECON),SENOD(MECON,MPHAS),
-     &EENOD(MECON,MPHAS)
-     
+                 
 C Array of picked items
       COMMON/ENETGETN/IEGET,IEGETNO(MENOD,9)
       COMMON/ENETGETS/IELLAB(MENOD,MERPOS),IESLAB(MENOD,MERPOS),
@@ -476,16 +429,11 @@ C Array of picked items
       DIMENSION ITEM(40)
   
 C Type casting (all varaiables and arrays cast explicitly)
-      INTEGER NENOD,ENODNO,ENODPHTYP,ENODPH,ENODTYP,NHYBCOM,HYBCOMNO,
-     &HYCOMTYP,HYCOMPHTYP,HYCONEN,HYLOC,NHYBDAT,NPOWCOM,POWCOMNO,
-     &POWCOMID,POWCOMPHTYP,POWCONEN,NPOWCDAT,NPOWCDATS,NECON,
-     &ECONO,CONPH,CONPHTYP,CCNO,SENOD,EENOD,IEGET,IEGETNO,IUOUT,
+      INTEGER IEGET,IEGETNO,IUOUT,
      &IUIN,YAXSET,ADDLIN,horaxisdiv,EFILT
 
       DIMENSION IND(MENOD),ICN(MECON),IHY(MHYCOM),IPW(MPOWCOM)
      
-      REAL ENODBASEV,ENODBASEP,HYBDAT,POWCDAT
-
       CHARACTER MODE*1
 
       CHARACTER ITEM*25,IELLAB*64,IESLAB*16,IEULAB*4,DELIM*1,
@@ -1664,32 +1612,20 @@ C IPOS - points to the entry (column number) in a specific record
 C ***********************************************************************
       SUBROUTINE ENETHASH(ITS,IENTY,IENO,IENOID,IREC,NPOS,IPOS)
 
+#include "building.h"
+#include "plant.h"
 #include "power.h"
 
 C Electrical network results library details.
       COMMON/ENELIBRC/IELFIL,IELIBHL,IELIBW,IELSTREC,NETS,NTSREC,NHREC,
      &NPREC
 
-C The electrical nodes
-      COMMON/ENOD/NENOD,ENODNO(MENOD),ENODPHTYP(MENOD),
-     &ENODPH(MENOD),ENODTYP(MENOD),ENODBASEV(MENOD),
-     &ENODBASEP
-
-C The electrical network topology
-      COMMON/ECONN/NECON,ECONO(MECON),CONPHTYP(MECON),
-     &CONPH(MECON,MPHAS),CCNO(MECON),SENOD(MECON,MPHAS),
-     &EENOD(MECON,MPHAS)
-
-
 C Dimension array of data element pointers returned by the routine
       DIMENSION IPOS(MERPOS) 
 
       INTEGER IELFIL,IELIBHL,IELIBW,IELSTREC,NETS,
-     &NTSREC,NHREC,NPREC,NENOD,ENODNO,ENODPHTYP,ENODPH,
-     &ENODTYP,NECON,ECONO,CONPH,CONPHTYP,CCNO,SENOD,EENOD
+     &NTSREC,NHREC,NPREC
      
-      REAL ENODBASEV,ENODBASEP
-
 C Initialise the data pointer array arrays
       NPOS=0
       DO 10 I=1,MERPOS
@@ -1943,6 +1879,8 @@ C ******************************************************************************
 
       SUBROUTINE ENETGET(IT,MODE)
 
+#include "building.h"
+#include "plant.h"
 #include "power.h"
 
 C Electrical network results library details.

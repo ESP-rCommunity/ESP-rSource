@@ -20,7 +20,6 @@ C Boston, MA 02111-1307 USA.
 
 C This file castype.f contains the following routines:
 
-C CASTYP: determines controlled convective casual gains at one timestep.
 C ZCASC:  returns one day's timestep values of all convective casual gains via VAL3.
 C ZCASR:  returns one day's timestep values of all (surface) rad casual gains via VAL3.
 C CASRT:  returns one day's timstep values of all zone rad casual gains 
@@ -30,15 +29,17 @@ C ******************** ZCASC ********************
 
 C ZCASC reconstructs one day's values of each of 
 C the uncontrolled and controlled convective casual gains for a zone.
-C To save space VAL3(15,I) to VAL3(21,I) are used for temporary storage.
+C To save space VAL3(15,I) to VAL3(22,I) are used for temporary storage.
 C Casual gain data is read directly from the data fields.
 C The parameter IDAY is 
-C VAL3(15,?) holds uncontrolled convective casual type 1.
-C VAL3(16,?) holds uncontrolled convective casual type 2.
-C VAL3(17,?) holds uncontrolled convective casual type 3.
-C VAL3(18,?) holds controlled convective casual type 1.
-C VAL3(19,?) holds controlled convective casual type 2.
-C VAL3(20,?) holds controlled convective casual type 3.
+C VAL3(15,?) holds uncontrolled casual slot 1.
+C VAL3(16,?) holds uncontrolled casual slot 2.
+C VAL3(17,?) holds uncontrolled casual slot 3.
+C VAL3(18,?) holds controlled casual slot 4.
+C VAL3(19,?) holds controlled casual type 1.
+C VAL3(20,?) holds controlled casual type 2.
+C VAL3(21,?) holds controlled casual type 3.
+C VAL3(22,?) holds controlled casual type 4.
 
       SUBROUTINE ZCASC(IZONE,IDAY)
 #include "building.h"
@@ -75,8 +76,8 @@ C For izver >= 4 the read the casual gain data directly.
         if(found)then
           DO 141, I=1,IEND
             call getallcas(IDAY,IZONE,ISET,I,QCASR,QCASC,QCASL,FRAC,
-     &      perocupc,perlightc,perequipc,otherc,perocupr,perlightr,
-     &      perequipr,otherr,perocupl,perlightl,perequipl,otherl,
+     &      perocupc,perlightc,perequipc,perotherc,perocupr,perlightr,
+     &      perequipr,perotherr,perocupl,perlightl,perequipl,perotherl,
      &      theonectld)
 
 C For gains from casual there is no option for control and theonectld
@@ -84,9 +85,11 @@ C should be zero.
             VAL3(15,I)=perocupc
             VAL3(16,I)=perlightc
             VAL3(17,I)=perequipc
-            VAL3(18,I)=0.0
+            VAL3(18,I)=perotherc
             VAL3(19,I)=0.0
             VAL3(20,I)=0.0
+            VAL3(21,I)=0.0
+            VAL3(22,I)=0.0
   141     continue
           return
         else
@@ -94,8 +97,8 @@ C should be zero.
 C Assume that the original description was from a zone operation file.
           DO 142, I=1,IEND
             call getallcas(IDAY,IZONE,ISET,I,QCASR,QCASC,QCASL,FRAC,
-     &      perocupc,perlightc,perequipc,otherc,perocupr,perlightr,
-     &      perequipr,otherr,perocupl,perlightl,perequipl,otherl,
+     &      perocupc,perlightc,perequipc,perotherc,perocupr,perlightr,
+     &      perequipr,perotherr,perocupl,perlightl,perequipl,perotherl,
      &      theonectld)
 
 C Depending on whether there is a controlled casual gain fill the
@@ -106,30 +109,47 @@ C been applied.
               VAL3(15,I)=perocupc
               VAL3(16,I)=perlightc
               VAL3(17,I)=perequipc
-              VAL3(18,I)=0.0
+              VAL3(18,I)=perotherc
               VAL3(19,I)=0.0
               VAL3(20,I)=0.0
+              VAL3(21,I)=0.0
+              VAL3(22,I)=0.0
             elseif(theonectld.eq.1)then
               VAL3(15,I)=0.0
               VAL3(16,I)=perlightc
               VAL3(17,I)=perequipc
-              VAL3(18,I)=perocupc
-              VAL3(19,I)=0.0
+              VAL3(18,I)=perotherc
+              VAL3(19,I)=perocupc
               VAL3(20,I)=0.0
+              VAL3(21,I)=0.0
+              VAL3(22,I)=0.0
             elseif(theonectld.eq.2)then
               VAL3(15,I)=perocupc
               VAL3(16,I)=0.0
               VAL3(17,I)=perequipc
-              VAL3(18,I)=0.0
-              VAL3(19,I)=perlightc
-              VAL3(20,I)=0.0
+              VAL3(18,I)=perotherc
+              VAL3(19,I)=0.0
+              VAL3(20,I)=perlightc
+              VAL3(21,I)=0.0
+              VAL3(22,I)=0.0
             elseif(theonectld.eq.3)then
               VAL3(15,I)=perocupc
               VAL3(16,I)=perlightc
               VAL3(17,I)=0.0
+              VAL3(18,I)=perotherc
+              VAL3(19,I)=0.0
+              VAL3(20,I)=0.0
+              VAL3(21,I)=perequipc
+              VAL3(22,I)=0.0
+             elseif(theonectld.eq.4)then
+              VAL3(15,I)=perocupc
+              VAL3(16,I)=perlightc
+              VAL3(17,I)=perequipc
               VAL3(18,I)=0.0
               VAL3(19,I)=0.0
-              VAL3(20,I)=perequipc
+              VAL3(20,I)=0.0
+              VAL3(21,I)=0.0
+              VAL3(22,I)=perotherc
             endif
   142     continue
           return
@@ -143,18 +163,19 @@ C ******************** ZCASR ********************
 C ZCASR reconstructs one day's values of each of the 
 C uncontrolled and controlled radiant casual gains for a 
 C surface in a zone.
-C To save space VAL3(15,I) to VAL3(21,I) are used for 
-C temporary storage. The method used shifts information from the
-C operations file into the equivalent of bps timestep averaging.
+C To save space VAL3(15,I) to VAL3(22,I) are used for 
+C temporary storage. 
 C To account for area and emissivity weighting compute `emarea`
 C based on data previously read in from the construction file.
 
-C VAL3(15,?) holds uncontrolled radiant casual type 1.
-C VAL3(16,?) holds uncontrolled radiant casual type 2.
-C VAL3(17,?) holds uncontrolled radiant casual type 3.
-C VAL3(18,?) holds controlled radiant casual type 1.
-C VAL3(19,?) holds controlled radiant casual type 2.
-C VAL3(20,?) holds controlled radiant casual type 3.
+C VAL3(15,?) holds uncontrolled casual slot 1.
+C VAL3(16,?) holds uncontrolled casual slot 2.
+C VAL3(17,?) holds uncontrolled casual slot 3.
+C VAL3(18,?) holds uncontrolled casual slot 4.
+C VAL3(19,?) holds controlled casual type 1.
+C VAL3(20,?) holds controlled casual type 2.
+C VAL3(21,?) holds controlled casual type 3.
+C VAL3(22,?) holds controlled casual type 4.
 
       SUBROUTINE ZCASR(IZONE,ISFN,IDAY)
 #include "building.h"
@@ -176,7 +197,7 @@ C      character outs*124
       real perocupc,perocupr,perocupl ! average occupant to write out
       real perlightc,perlightr,perlightl ! average lighting to write out
       real perequipc,perequipr,perequipl ! average equipment to write out
-      real otherc,otherr,otherl ! average other (future expansion) to write out
+      real perotherc,perotherr,perotherl ! average other (future expansion) to write out
       integer theonectld  ! if non-zero the casual gain type that is controlled.
 
       IEND=24*NTS
@@ -201,15 +222,17 @@ C value by SCALE. Similar pattern of code used elsewhere for izver >=4.
         if(found)then
           DO 141, I=1,IEND
             call getallcas(IDAY,IZONE,ISET,I,QCASR,QCASC,QCASL,FRAC,
-     &       perocupc,perlightc,perequipc,otherc,perocupr,perlightr,
-     &       perequipr,otherr,perocupl,perlightl,perequipl,otherl,
+     &       perocupc,perlightc,perequipc,perotherc,perocupr,perlightr,
+     &       perequipr,perotherr,perocupl,perlightl,perequipl,perotherl,
      &       theonectld)
             VAL3(15,I)=perocupr*SCALE
             VAL3(16,I)=perlightr*SCALE
             VAL3(17,I)=perequipr*SCALE
-            VAL3(18,I)=0.0
+            VAL3(18,I)=perotherr*SCALE
             VAL3(19,I)=0.0
             VAL3(20,I)=0.0
+            VAL3(21,I)=0.0
+            VAL3(22,I)=0.0
   141     continue
           return   ! got it so return to calling routine
         else
@@ -217,42 +240,59 @@ C value by SCALE. Similar pattern of code used elsewhere for izver >=4.
 C Assume that the original description was from a zone operation file.
           DO 142, I=1,IEND
             call getallcas(IDAY,IZONE,ISET,I,QCASR,QCASC,QCASL,FRAC,
-     &      perocupc,perlightc,perequipc,otherc,perocupr,perlightr,
-     &      perequipr,otherr,perocupl,perlightl,perequipl,otherl,
+     &      perocupc,perlightc,perequipc,perotherc,perocupr,perlightr,
+     &      perequipr,perotherr,perocupl,perlightl,perequipl,perotherl,
      &      theonectld)
 
 C Depending on whether there is a controlled casual gain fill the
-C 18/19/20 slots with what was recovered from getallcas because
+C 15-19 slots with what was recovered from getallcas because
 C the explicit data already takes into account that control has
 C been applied.
             if(theonectld.eq.0)then
               VAL3(15,I)=perocupr*SCALE
               VAL3(16,I)=perlightr*SCALE
               VAL3(17,I)=perequipr*SCALE
-              VAL3(18,I)=0.0
+              VAL3(18,I)=perotherr*SCALE
               VAL3(19,I)=0.0
               VAL3(20,I)=0.0
+              VAL3(21,I)=0.0
+              VAL3(22,I)=0.0
             elseif(theonectld.eq.1)then
               VAL3(15,I)=0.0
               VAL3(16,I)=perlightr*SCALE
               VAL3(17,I)=perequipr*SCALE
-              VAL3(18,I)=perocupr*SCALE
-              VAL3(19,I)=0.0
+              VAL3(18,I)=perotherr*SCALE
+              VAL3(19,I)=perocupr*SCALE
               VAL3(20,I)=0.0
+              VAL3(21,I)=0.0
+              VAL3(22,I)=0.0
             elseif(theonectld.eq.2)then
               VAL3(15,I)=perocupr*SCALE
               VAL3(16,I)=0.0
               VAL3(17,I)=perequipr*SCALE
-              VAL3(18,I)=0.0
-              VAL3(19,I)=perlightr*SCALE
-              VAL3(20,I)=0.0
+              VAL3(18,I)=perotherr*SCALE
+              VAL3(19,I)=0.0
+              VAL3(20,I)=perlightr*SCALE
+              VAL3(21,I)=0.0
+              VAL3(22,I)=0.0
             elseif(theonectld.eq.3)then
               VAL3(15,I)=perocupr*SCALE
               VAL3(16,I)=perlightr*SCALE
               VAL3(17,I)=0.0
+              VAL3(18,I)=perotherr*SCALE
+              VAL3(19,I)=0.0
+              VAL3(20,I)=0.0
+              VAL3(21,I)=perequipr*SCALE
+              VAL3(22,I)=0.0
+            elseif(theonectld.eq.4)then
+              VAL3(15,I)=perocupr*SCALE
+              VAL3(16,I)=perlightr*SCALE
+              VAL3(17,I)=perequipr*SCALE
               VAL3(18,I)=0.0
               VAL3(19,I)=0.0
-              VAL3(20,I)=perequipr*SCALE
+              VAL3(20,I)=0.0
+              VAL3(21,I)=0.0
+              VAL3(22,I)=perotherr*SCALE
             endif
   142     continue
           return   ! got it so return to calling routine
@@ -266,16 +306,17 @@ C ******************** CASRT ********************
 
 C CASRT reconstructs one day's values of each type of 
 C uncontrolled and controlled radiant casual gains for a zone.
-C To save space VAL3(15,I) to VAL3(21,I) are used for 
-C temporary storage. The method used shifts information from the
-C operations file into the equivalent of bps timestep averaging.
+C To save space VAL3(15,I) to VAL3(22,I) are used for 
+C temporary storage.
 
-C VAL3(15,?) holds uncontrolled casual type 1.
-C VAL3(16,?) holds uncontrolled casual type 2.
-C VAL3(17,?) holds uncontrolled casual type 3.
-C VAL3(18,?) holds controlled casual type 1.
-C VAL3(19,?) holds controlled casual type 2.
-C VAL3(20,?) holds controlled casual type 3.
+C VAL3(15,?) holds uncontrolled casual slot 1.
+C VAL3(16,?) holds uncontrolled casual slot 2.
+C VAL3(17,?) holds uncontrolled casual slot 3.
+C VAL3(18,?) holds controlled casual slot 4.
+C VAL3(19,?) holds controlled casual type 1.
+C VAL3(20,?) holds controlled casual type 2.
+C VAL3(21,?) holds controlled casual type 3.
+C VAL3(22,?) holds controlled casual type 4.
 
       SUBROUTINE CASRT(IZONE,IDAY)
 #include "building.h"
@@ -294,7 +335,7 @@ C      character outs*124
       real perocupc,perocupr,perocupl ! average occupant to write out
       real perlightc,perlightr,perlightl ! average lighting to write out
       real perequipc,perequipr,perequipl ! average equipment to write out
-      real otherc,otherr,otherl ! average other (future expansion) to write out
+      real perotherc,perotherr,perotherl ! average other (future expansion) to write out
       integer theonectld  ! if non-zero the casual gain type that is controlled.
 
       IEND=24*NTS
@@ -311,8 +352,8 @@ C If izver >= 4 the read the data directly.
         if(found)then
           DO 141, I=1,IEND
             call getallcas(IDAY,IZ,ISET,JTS,QCASR,QCASC,QCASL,FRAC,
-     &       perocupc,perlightc,perequipc,otherc,perocupr,perlightr,
-     &       perequipr,otherr,perocupl,perlightl,perequipl,otherl,
+     &       perocupc,perlightc,perequipc,perotherc,perocupr,perlightr,
+     &       perequipr,perotherr,perocupl,perlightl,perequipl,perotherl,
      &       theonectld)
 
 C For gains from casual there is no option for control and theonectld
@@ -320,9 +361,11 @@ C should be zero.
             VAL3(15,I)=perocupr
             VAL3(16,I)=perlightr
             VAL3(17,I)=perequipr
-            VAL3(18,I)=0.0
+            VAL3(18,I)=perotherr
             VAL3(19,I)=0.0
             VAL3(20,I)=0.0
+            VAL3(21,I)=0.0
+            VAL3(22,I)=0.0
   141     continue
           return  ! recovered what we need so return
         else
@@ -330,42 +373,59 @@ C should be zero.
 C Assume that the original description was from a zone operation file.
           DO 142, I=1,IEND
             call getallcas(IDAY,IZ,ISET,JTS,QCASR,QCASC,QCASL,FRAC,
-     &       perocupc,perlightc,perequipc,otherc,perocupr,perlightr,
-     &       perequipr,otherr,perocupl,perlightl,perequipl,otherl,
+     &       perocupc,perlightc,perequipc,perotherc,perocupr,perlightr,
+     &       perequipr,perotherr,perocupl,perlightl,perequipl,perotherl,
      &       theonectld)
 
 C Depending on whether there is a controlled casual gain fill the
-C 18/19/20 slots with what was recovered from getallcas because
+C 19/20/21/22 slots with what was recovered from getallcas because
 C the explicit data already takes into account that control has
 C been applied.
             if(theonectld.eq.0)then
               VAL3(15,I)=perocupr
               VAL3(16,I)=perlightr
               VAL3(17,I)=perequipr
-              VAL3(18,I)=0.0
+              VAL3(18,I)=perotherr
               VAL3(19,I)=0.0
               VAL3(20,I)=0.0
+              VAL3(21,I)=0.0
+              VAL3(22,I)=0.0
             elseif(theonectld.eq.1)then
               VAL3(15,I)=0.0
               VAL3(16,I)=perlightr
               VAL3(17,I)=perequipr
-              VAL3(18,I)=perocupr
-              VAL3(19,I)=0.0
+              VAL3(18,I)=perotherr
+              VAL3(19,I)=perocupr
               VAL3(20,I)=0.0
+              VAL3(21,I)=0.0
+              VAL3(22,I)=0.0
             elseif(theonectld.eq.2)then
               VAL3(15,I)=perocupr
               VAL3(16,I)=0.0
               VAL3(17,I)=perequipr
-              VAL3(18,I)=0.0
-              VAL3(19,I)=perlightr
-              VAL3(20,I)=0.0
+              VAL3(18,I)=perotherr
+              VAL3(19,I)=0.0
+              VAL3(20,I)=perlightr
+              VAL3(21,I)=0.0
+              VAL3(22,I)=0.0
             elseif(theonectld.eq.3)then
               VAL3(15,I)=perocupr
               VAL3(16,I)=perlightr
               VAL3(17,I)=0.0
+              VAL3(18,I)=perotherr
+              VAL3(19,I)=0.0
+              VAL3(20,I)=0.0
+              VAL3(21,I)=perequipr
+              VAL3(22,I)=0.0
+            elseif(theonectld.eq.4)then
+              VAL3(15,I)=perocupr
+              VAL3(16,I)=perlightr
+              VAL3(17,I)=perequipr
               VAL3(18,I)=0.0
               VAL3(19,I)=0.0
-              VAL3(20,I)=perequipr
+              VAL3(20,I)=0.0
+              VAL3(21,I)=0.0
+              VAL3(22,I)=perotherr
             endif
   142     continue
           return  ! recovered what we need so return
@@ -374,123 +434,24 @@ C been applied.
 
       END
 
-
-C ******************** CASTYP ********************
-
-C CASTYP is a generic routine to work out the
-C uncontrolled casual gain types 1, 2 & 3 at each time step.
-C Given the information in common block, PC3 and P3TYPE returns:
-C UCCT1 uncontrolled casual convective type 1,
-C UCCT2 uncontrolled casual convective type 2,
-C UCCT3 uncontrolled casual convective type 3,
-C UCCRT1 uncontrolled casual radiant type 1,
-C UCCRT2 uncontrolled casual radiant type 2,
-C UCCRT3 uncontrolled casual radiant type 3,
-C ICC, controlled casual type
-C IF izver >=4 then use direct reads via getallcas and test
-C the values of theonectld. If theonectld non-zero set that
-C casual gain to zero (because the controlled has been dealt
-C with separately.
-      SUBROUTINE CASTYP(IZ,IDAY,ITSTEP,UCCT1,UCCT2,UCCT3,
-     &                  UCCRT1,UCCRT2,UCCRT3,ICC)
-#include "building.h"
-C #include "model.h"
-C #include "geometry.h"
-C #include "schedule.h"
-
-      common/recver/izver,ipver,iever
-      COMMON/SIMPIK/ISIM,ISTADD,ID1,IM1,ID2,IM2,ISDS,ISDF,NTS,ISAVE
-      COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
-
-      real QCASR,QCASC,QCASL  ! total radiant/convective/latent
-      real FRAC ! controlled fraction.
-      real perocupc,perocupr,perocupl ! average occupant to write out
-      real perlightc,perlightr,perlightl ! average lighting to write out
-      real perequipc,perequipr,perequipl ! average equipment to write out
-      real otherc,otherr,otherl ! average other (future expansion) to write out
-      integer theonectld  ! if non-zero the casual gain type that is controlled.
-
-C Assume that IYEAR is available via RESDEF.
-C Determine whether IDAY is a weekday, Saturday or Sunday.
-C Determine the month and day of month via EDAYR.
-      CALL EDAYR(IDAY,IDAYN,IMTHN)
-      CALL EWEEKD(IDAYN,IMTHN,IYEAR,IDWK)
-
-      ICC=0
-      UCCT1=0.
-      UCCRT1=0.
-      UCCT2=0.
-      UCCRT2=0.
-      UCCT3=0.
-      UCCRT3=0.
-
-C Set chosen result set.
-      ISET=ISIM
-
-C If izver >= 4 the read the data directly.
-      if(izver.ge.4)then
-
-C Assume that the original description was from a zone operation file.
-        call getallcas(IDAY,IZ,ISET,ITSTEP,QCASR,QCASC,QCASL,FRAC,
-     &    perocupc,perlightc,perequipc,otherc,perocupr,perlightr,
-     &    perequipr,otherr,perocupl,perlightl,perequipl,otherl,
-     &    theonectld)
-
-C Depending on whether there is a controlled casual gain fill the
-C 18/19/20 slots with what was recovered from getallcas because
-C the explicit data already takes into account that control has
-C been applied.
-        if(theonectld.eq.0)then
-          UCCT1=perocupc
-          UCCT2=perlightc
-          UCCT3=perequipc
-          UCCRT1=perocupr
-          UCCRT2=perlightr
-          UCCRT3=perequipr
-        elseif(theonectld.eq.1)then
-          UCCT1=0.0
-          UCCT2=perlightc
-          UCCT3=perequipc
-          UCCRT1=0.0
-          UCCRT2=perlightr
-          UCCRT3=perequipr
-        elseif(theonectld.eq.2)then
-          UCCT1=perocupc
-          UCCT2=0.0
-          UCCT3=perequipc
-          UCCRT1=perocupr
-          UCCRT2=0.0
-          UCCRT3=perequipr
-        elseif(theonectld.eq.3)then
-          UCCT1=perocupc
-          UCCT2=perlightc
-          UCCT3=0.0
-          UCCRT1=perocupr
-          UCCRT2=perlightr
-          UCCRT3=0.0
-        endif
-        return   ! got what we wanted so return
-      endif
-
-      END
-
-
 C ******************** ZCASCF ********************
 C ZCASCF reconstructs one day's unaveraged values of each of 
 C the uncontrolled and controlled convective casual gains for a zone.
-C To save space VAL3(15,I) to VAL3(21,I) are used for temporary storage.
+C To save space VAL3(15,I) to VAL3(22,I) are used for temporary storage.
 C The method does not shift/average data from the operations file.
 C The parameter IDAY is the day of the week (1-7).
 C The parameter IJDAY is the julian day of the year (for the case
 C of checking occupancy on a specific day). If IJDAY is zero then
 C do not bother.
 
-C VAL3(15,?) holds uncontrolled casual type 1.
-C VAL3(16,?) holds uncontrolled casual type 2.
-C VAL3(17,?) holds uncontrolled casual type 3.
-C VAL3(18,?) holds controlled casual type 1.
-C VAL3(19,?) holds controlled casual type 2.
-C VAL3(20,?) holds controlled casual type 3.
+C VAL3(15,?) holds uncontrolled casual slot 1.
+C VAL3(16,?) holds uncontrolled casual slot 2.
+C VAL3(17,?) holds uncontrolled casual slot 3.
+C VAL3(18,?) holds uncontrolled casual slot 4.
+C VAL3(19,?) holds controlled casual type 1.
+C VAL3(20,?) holds controlled casual type 2.
+C VAL3(21,?) holds controlled casual type 3.
+C VAL3(22,?) holds controlled casual type 4.
 
       SUBROUTINE ZCASCF(IZONE,IDAY,IJDAY)
 #include "building.h"
@@ -510,7 +471,7 @@ C      character outs*124
       real perocupc,perocupr,perocupl ! average occupant to write out
       real perlightc,perlightr,perlightl ! average lighting to write out
       real perequipc,perequipr,perequipl ! average equipment to write out
-      real otherc,otherr,otherl ! average other (future expansion) to write out
+      real perotherc,perotherr,perotherl ! average other (future expansion) to write out
       integer theonectld  ! if non-zero the casual gain type that is controlled.
 
 C Set chosen result set.
@@ -528,8 +489,8 @@ C If izver >= 4 the read the casual gain data directly.
         if(found)then
           DO 141, I=1,IEND
             call getallcas(IDAY,IZONE,ISET,I,QCASR,QCASC,QCASL,FRAC,
-     &      perocupc,perlightc,perequipc,otherc,perocupr,perlightr,
-     &      perequipr,otherr,perocupl,perlightl,perequipl,otherl,
+     &      perocupc,perlightc,perequipc,perotherc,perocupr,perlightr,
+     &      perequipr,perotherr,perocupl,perlightl,perequipl,perotherl,
      &      theonectld)
 
 C For gains from casual there is no option for control and theonectld
@@ -537,9 +498,11 @@ C should be zero.
             VAL3(15,I)=perocupc
             VAL3(16,I)=perlightc
             VAL3(17,I)=perequipc
-            VAL3(18,I)=0.0
+            VAL3(18,I)=perotherc
             VAL3(19,I)=0.0
             VAL3(20,I)=0.0
+            VAL3(21,I)=0.0
+            VAL3(22,I)=0.0
   141     continue
           return   ! got what we wanted so return
         else
@@ -547,8 +510,8 @@ C should be zero.
 C Assume that the original description was from a zone operation file.
           DO 142, I=1,IEND
             call getallcas(IDAY,IZONE,ISET,I,QCASR,QCASC,QCASL,FRAC,
-     &      perocupc,perlightc,perequipc,otherc,perocupr,perlightr,
-     &      perequipr,otherr,perocupl,perlightl,perequipl,otherl,
+     &      perocupc,perlightc,perequipc,perotherc,perocupr,perlightr,
+     &      perequipr,perotherr,perocupl,perlightl,perequipl,perotherl,
      &      theonectld)
 
 C Depending on whether there is a controlled casual gain fill the
@@ -559,30 +522,47 @@ C been applied.
               VAL3(15,I)=perocupc
               VAL3(16,I)=perlightc
               VAL3(17,I)=perequipc
-              VAL3(18,I)=0.0
+              VAL3(18,I)=perotherc
               VAL3(19,I)=0.0
               VAL3(20,I)=0.0
+              VAL3(21,I)=0.0
+              VAL3(22,I)=0.0
             elseif(theonectld.eq.1)then
               VAL3(15,I)=0.0
               VAL3(16,I)=perlightc
               VAL3(17,I)=perequipc
-              VAL3(18,I)=perocupc
-              VAL3(19,I)=0.0
+              VAL3(18,I)=perotherc
+              VAL3(19,I)=perocupc
               VAL3(20,I)=0.0
+              VAL3(21,I)=0.0
+              VAL3(22,I)=0.0
             elseif(theonectld.eq.2)then
               VAL3(15,I)=perocupc
               VAL3(16,I)=0.0
               VAL3(17,I)=perequipc
-              VAL3(18,I)=0.0
-              VAL3(19,I)=perlightc
-              VAL3(20,I)=0.0
-            elseif(theonectld.eq.3)then
+              VAL3(18,I)=perotherc
+              VAL3(19,I)=0.0
+              VAL3(20,I)=perlightc
+              VAL3(21,I)=0.0
+              VAL3(22,I)=0.0
+             elseif(theonectld.eq.3)then
               VAL3(15,I)=perocupc
               VAL3(16,I)=perlightc
               VAL3(17,I)=0.0
+              VAL3(18,I)=perotherc
+              VAL3(19,I)=0.0
+              VAL3(20,I)=0.0
+              VAL3(21,I)=perequipc
+              VAL3(22,I)=0.0
+             elseif(theonectld.eq.4)then
+              VAL3(15,I)=perocupc
+              VAL3(16,I)=perlightc
+              VAL3(17,I)=perequipc
               VAL3(18,I)=0.0
               VAL3(19,I)=0.0
-              VAL3(20,I)=perequipc
+              VAL3(20,I)=0.0
+              VAL3(21,I)=0.0
+              VAL3(22,I)=perotherc
             endif
   142     continue
           return   ! got what we wanted so return

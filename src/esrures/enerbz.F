@@ -58,8 +58,8 @@ C CALLS: MOZSUM   CALLED BY: MOSTAT
       character outs*124,xfile*144,tg*1,delim*1
 
       character DESCRD*5,DDX*7,DDX1*10,DHX*5,sp*1,outsd*124
-      CHARACTER*31 LABELS(17)
-      CHARACTER*15 TITLE1(17)
+      CHARACTER*31 LABELS(18)
+      CHARACTER*15 TITLE1(18)
 
 C Read in the geometry file to refresh surface attributes.
       iunit=ifil+1
@@ -67,8 +67,6 @@ C Read in the geometry file to refresh surface attributes.
       idwins=0
 
 C Generate the labels for the interface and report.
-
-C << revise for additional casual gain types >>
       LABELS(1) =' Infiltration air load         '
       LABELS(2) =' Ventilation air load          '
       LABELS(3) =' N/A                           '
@@ -77,15 +75,20 @@ C << revise for additional casual gain types >>
       write(LABELS(6),'(2a)') ' Casual ',lodlabel(izone,1)
       write(LABELS(7),'(2a)') ' Casual ',lodlabel(izone,2)
       write(LABELS(8),'(2a)') ' Casual ',lodlabel(izone,3)
-      LABELS(9) =' Controlled casual gain        '
-      LABELS(10)=' Thermal bridge (linear)       '
-      LABELS(11)=' Heat storage @ air point      '
-      LABELS(12)=' Convection @ opaque surf: ext '
-      LABELS(13)=' Convection @ opaque surf: ptn '
-      LABELS(14)=' Convection @ transp surf: ext '
-      LABELS(15)=' Convection @ transp surf: ptn '
-      LABELS(16)=' Convection portion of plant   '
-      LABELS(17)=' Totals                        '
+      if(lodslot(izone,4).ne.0)then
+        write(LABELS(9),'(2a)') ' Casual ',lodlabel(izone,4)
+      else
+        write(LABELS(9),'(a)')  ' Casual --'
+      endif
+      LABELS(10) =' Controlled casual gain        '
+      LABELS(11)=' Thermal bridge (linear)       '
+      LABELS(12)=' Heat storage @ air point      '
+      LABELS(13)=' Convection @ opaque surf: ext '
+      LABELS(14)=' Convection @ opaque surf: ptn '
+      LABELS(15)=' Convection @ transp surf: ext '
+      LABELS(16)=' Convection @ transp surf: ptn '
+      LABELS(17)=' Convection portion of plant   '
+      LABELS(18)=' Totals                        '
       TITLE1(1)='|Infiltr '
       TITLE1(2)='|Ventilat'
       TITLE1(3)='|W cnd ex'
@@ -94,15 +97,20 @@ C << revise for additional casual gain types >>
       write(TITLE1(6),'(a,a)')'|UC',lodlabel(izone,1)
       write(TITLE1(7),'(a,a)')'|UC',lodlabel(izone,2)
       write(TITLE1(8),'(a,a)')'|UC',lodlabel(izone,3)
-      TITLE1(9)='|Ctl cas '
-      TITLE1(10)='|Th brdg'
-      TITLE1(11)='|Storage'
-      TITLE1(12)='|O MLC ex'
-      TITLE1(13)='|O MLC in'
-      TITLE1(14)='|T MLC ex'
-      TITLE1(15)='|T MLC in'
-      TITLE1(16)='|Plant   '
-      TITLE1(17)='|........'
+      if(lodslot(izone,4).ne.0)then
+        write(TITLE1(9),'(a,a)')'|UC',lodlabel(izone,4)
+      else
+        write(TITLE1(9),'(a)')'|UC--'
+      endif
+      TITLE1(10)='|Ctl cas '
+      TITLE1(11)='|Th brdg'
+      TITLE1(12)='|Storage'
+      TITLE1(13)='|O MLC ex'
+      TITLE1(14)='|O MLC in'
+      TITLE1(15)='|T MLC ex'
+      TITLE1(16)='|T MLC in'
+      TITLE1(17)='|Plant   '
+      TITLE1(18)='|........'
       
       if(delim.eq.'T')then
         sp=CHAR(9)
@@ -171,8 +179,8 @@ C Determine the plant type for this zone.
 C Perform ZONE sums and averages.
       CALL MOZSUM(IZONE,IANZSE)
 
-C Print out the results.
-      DO 150 I=1,16
+C Print out the results for each path.
+      DO 150 I=1,17
         IF(I.LT.16)goto 82
 
 C Decode the current environmental control actuation point into
@@ -198,12 +206,11 @@ C the convective portion.
           VAL2(I,K)=VAL2(I,K)*FLOAT(IBAN(ICF,3))*0.01
   818   CONTINUE
 
-C No windows, don't bother with rows 3,4,5. If no casual gain control
-C don`t bother with row 9.
+C No windows, don't bother with rows 3,4,5.
    82   if(i.eq.3.or.i.eq.4.or.i.eq.5)then
           continue
-        elseif(ICGC(izone).eq.0.and.(i.eq.9))then
-          continue
+C        elseif(ICGC(izone).eq.0.and.(i.eq.9))then
+C          continue
         else
           IF(IANZSE.EQ.1)THEN
             if(delim.eq.'-')then
@@ -231,37 +238,37 @@ C don`t bother with row 9.
         ENDIF
   150 CONTINUE
 
-C Totals: use VAL2(I,8) where I=1 to 6 depending on IANZSE.
+C Totals: use VAL2(I,19) where I=1 to 6 depending on IANZSE.
       DO 160 I=1,7
-        VAL2(I,8)=0.
+        VAL2(I,19)=0.0
   160 CONTINUE
       J=6
       IF(IANZSE.EQ.2)J=2
       DO 170 I=1,J
-        DO 180 K=1,16
-          VAL2(I,8)=VAL2(I,8)+VAL2(K,I)
+        DO 180 K=1,17
+          VAL2(I,19)=VAL2(I,19)+VAL2(K,I)
   180   CONTINUE
   170 CONTINUE
 
       IF(IANZSE.EQ.1)then
         if(delim.eq.'-')then
-          write(outs,'(A,6F11.1)')LABELS(17),(VAL2(I,8),I=1,6)
+          write(outs,'(A,6F11.1)')LABELS(18),(VAL2(I,19),I=1,6)
           call edisp(itru,outs)
         else
-          write(outs,'(6F11.1)')(VAL2(I,8),I=1,6)
+          write(outs,'(6F11.1)')(VAL2(I,19),I=1,6)
           call SDELIM(outs,outsd,delim,IW)
-          write(outs,'(3a)')LABELS(17)(1:lnblnk(LABELS(17))),sp,
+          write(outs,'(3a)')LABELS(18)(1:lnblnk(LABELS(18))),sp,
      &      outsd(1:lnblnk(outsd))
           call edisp(itru,outs)
         endif
       elseif(IANZSE.EQ.2)then
         if(delim.eq.'-')then
-          write(outs,'(A,2F12.3)')LABELS(17),(VAL2(I,8),I=1,2)
+          write(outs,'(A,2F12.3)')LABELS(18),(VAL2(I,19),I=1,2)
           call edisp(itru,outs)
         else
-          write(outs,'(2F12.3)')(VAL2(I,8),I=1,2)
+          write(outs,'(2F12.3)')(VAL2(I,19),I=1,2)
           call SDELIM(outs,outsd,delim,IW)
-          write(outs,'(3a)')LABELS(17)(1:lnblnk(LABELS(17))),sp,
+          write(outs,'(3a)')LABELS(18)(1:lnblnk(LABELS(18))),sp,
      &      outsd(1:lnblnk(outsd))
           call edisp(itru,outs)
         endif
@@ -293,9 +300,9 @@ C CALLS: MOEGET    CALLED BY: MOZCAS
       TCMULT=NOUT/(NTS*1000.)
 
 C Initialise summation locations: VAL2(I,J) is used to store summations
-C where I=1 to 16 (one for each flowpath) and J=1 to 6 (representing
+C where I=1 to 17 (one for each flowpath) and J=1 to 6 (representing
 C columns) depending on selected summation mode.
-      DO 20 I=1,16
+      DO 20 I=1,17
         DO 201 J=1,7
           VAL2(I,J)=0.
   201   CONTINUE
@@ -313,33 +320,33 @@ C complete day (held in VAL1) and step at defined output time interval.
           JT=J
 
 C Compute average of VAL1() based on IAV.
-          CALL VALIAV(16,JT,XVAL1)
+          CALL VALIAV(17,JT,XVAL1)
 
 C Sum depending on user-defined output mode.
 
 C Breakdown by plant status: summations held in VAL2(I,J) where
 C J=1 to 6 corresponds to gains and losses for heating,cooling,off.
           IF(IANZSE.EQ.1)THEN
-            IF(XVAL1(16).LT.0.)THEN
-              DO 110 K=1,15
+            IF(XVAL1(17).LT.0.)THEN
+              DO 110 K=1,16
                 IF(XVAL1(K).LE.0.)THEN
                   VAL2(K,4)=VAL2(K,4)+XVAL1(K)*TCMULT
                 ELSE
                   VAL2(K,3)=VAL2(K,3)+XVAL1(K)*TCMULT
                 ENDIF
   110         CONTINUE
-              VAL2(16,4)=VAL2(16,4)+XVAL1(16)*TCMULT
-            ELSEIF(XVAL1(16).GT.0.)THEN
-              DO 120 K=1,15
+              VAL2(17,4)=VAL2(17,4)+XVAL1(17)*TCMULT
+            ELSEIF(XVAL1(17).GT.0.)THEN
+              DO 120 K=1,16
                 IF(XVAL1(K).LE.0.)THEN
                   VAL2(K,2)=VAL2(K,2)+XVAL1(K)*TCMULT
                 ELSE
                   VAL2(K,1)=VAL2(K,1)+XVAL1(K)*TCMULT
                 ENDIF
   120         CONTINUE
-              VAL2(16,1)=VAL2(16,1)+XVAL1(16)*TCMULT
+              VAL2(17,1)=VAL2(17,1)+XVAL1(17)*TCMULT
             ELSE
-              DO 100 K=1,15
+              DO 100 K=1,16
                 IF(XVAL1(K).LE.0.)THEN
                   VAL2(K,6)=VAL2(K,6)+XVAL1(K)*TCMULT
                 ELSE
@@ -350,10 +357,10 @@ C J=1 to 6 corresponds to gains and losses for heating,cooling,off.
           ENDIF
 
 C Breakdown in terms of net gain and loss: summations
-C held in VAL2(I,J) where I=1 to 16 is as above and
+C held in VAL2(I,J) where I=1 to 17 is as above and
 C J=1 to 2 relates to GAINS and LOSSES respectively.
           IF(IANZSE.EQ.2)THEN
-            DO 130 K=1,16
+            DO 130 K=1,17
               IF(XVAL1(K).LE.0.)THEN
                 VAL2(K,2)=VAL2(K,2)+XVAL1(K)*TCMULT
               ELSE
@@ -401,7 +408,7 @@ C Get single days results for default windows etc. into GVAL.
       NN=NZSUR(IZONE)
 
 C Clear storage common.
-      DO 20 I=1,16
+      DO 20 I=1,17
        DO 201 J=1,IEND
         VAL1(I,J)=0.
   201  CONTINUE
@@ -419,25 +426,25 @@ C VAL1(3,N) slot un-used.
 C VAL1(4,N) slot un-used.
 C VAL1(5,N) slot un-used.
 
-C Convection portion of plant into VAL1(16,N).
+C Convection portion of plant into VAL1(17,N).
       CALL GZQM(IDAY,IZONE,ISET)
-      CALL XTVAL1(GVAL,ISTART,IEND,16)
+      CALL XTVAL1(GVAL,ISTART,IEND,17)
 
 C Surface convection. If version 2 of library then can recover directly
 C from records.
       if(izver.ge.2)then
 
-C Put exterior opaque into slot 12, inside opaque into slot 13.
+C Put exterior opaque into slot 13, inside opaque into slot 14.
         CALL GOUTOPQ(IDAY,IZONE,ISET)
-        CALL XTVAL1(GVAL,ISTART,IEND,12)
-        CALL GOPQIN(IDAY,IZONE,ISET)
         CALL XTVAL1(GVAL,ISTART,IEND,13)
-
-C Put exterior transparent into slot 14 and inside trn into slot 15.
-        CALL GOUTTRN(IDAY,IZONE,ISET)
+        CALL GOPQIN(IDAY,IZONE,ISET)
         CALL XTVAL1(GVAL,ISTART,IEND,14)
-        CALL GTRNIN(IDAY,IZONE,ISET)
+
+C Put exterior transparent into slot 15 and inside trn into slot 16.
+        CALL GOUTTRN(IDAY,IZONE,ISET)
         CALL XTVAL1(GVAL,ISTART,IEND,15)
+        CALL GTRNIN(IDAY,IZONE,ISET)
+        CALL XTVAL1(GVAL,ISTART,IEND,16)
       else
 
 C Opaque external convection contribution, loop through each surface,
@@ -452,16 +459,16 @@ C use the exact values from the results library.
             IF(IE.GE.1)THEN
               IF(SSOTF(ICN)(1:4).EQ.'OPAQ'.OR.
      &           SSOTF(ICN)(1:4).EQ.'UNKN')THEN
-                VAL1(13,ISTP)=VAL1(13,ISTP)+CQ(ISTP)*(-1.0)
+                VAL1(14,ISTP)=VAL1(14,ISTP)+CQ(ISTP)*(-1.0)
               ELSE
-                VAL1(15,ISTP)=VAL1(15,ISTP)+CQ(ISTP)*(-1.0)
+                VAL1(16,ISTP)=VAL1(16,ISTP)+CQ(ISTP)*(-1.0)
               ENDIF
             ELSEIF(IE.EQ.0)THEN
               IF(SSOTF(ICN)(1:4).EQ.'OPAQ'.OR.
      &           SSOTF(ICN)(1:4).EQ.'UNKN')THEN
-                VAL1(12,ISTP)=VAL1(12,ISTP)+CQ(ISTP)*(-1.0)
+                VAL1(13,ISTP)=VAL1(13,ISTP)+CQ(ISTP)*(-1.0)
               ELSE
-                VAL1(14,ISTP)=VAL1(14,ISTP)+CQ(ISTP)*(-1.0)
+                VAL1(15,ISTP)=VAL1(15,ISTP)+CQ(ISTP)*(-1.0)
               ENDIF
             ENDIF
    61     CONTINUE
@@ -472,22 +479,23 @@ C Get casual gains.
 C For each time step move the timestep values from VAL3() into the
 C required VAL1() slots for this report. There is only one type of
 C casual gain controled at any point in time so dump those into
-C the slot VAL1(9 ,I).
+C the slot VAL1(10,I).
       CALL ZCASC(IZONE,IDAY)
       DO 50, I=1,IEND
         VAL1(6 ,I)=VAL3(15,I)
         VAL1(7 ,I)=VAL3(16,I)
         VAL1(8 ,I)=VAL3(17,I)
-        VAL1(9 ,I)=VAL3(18,I)+VAL3(19,I)+VAL3(20,I)
+        VAL1(9 ,I)=VAL3(18,I)
+        VAL1(10,I)=VAL3(19,I)+VAL3(20,I)+VAL3(21,I)+VAL3(22,I)
    50 CONTINUE
 
-C Get thermal bridge portion into VAL1(10,I)
+C Get thermal bridge portion into VAL1(11,I)
       CALL GTBR(IDAY,IZONE,ISET)
-      CALL XTVAL1(GVAL,ISTART,IEND,10)
-
-C Get storage at air point into VAL1(11,I)
-      CALL GAIRSTOR(IDAY,IZONE,ISET)
       CALL XTVAL1(GVAL,ISTART,IEND,11)
+
+C Get storage at air point into VAL1(12,I)
+      CALL GAIRSTOR(IDAY,IZONE,ISET)
+      CALL XTVAL1(GVAL,ISTART,IEND,12)
 
       RETURN
       END

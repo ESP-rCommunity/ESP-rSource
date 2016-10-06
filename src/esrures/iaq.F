@@ -103,7 +103,7 @@ C Instanciate the help strings for this menu.
         call edisp(iuout,' ')
         doit = ' '
         call terminalmode(childterminal,tmode)
-        write(doit,'(a,a,a,a,a)') 'mld -mode ',tmode,' &'
+        write(doit,'(3a)') 'mld -mode ',tmode,' &'
         call runit(doit,tmode)
       elseif(INO.EQ.7)then
         call edisp(iuout,' ')

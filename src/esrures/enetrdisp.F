@@ -36,6 +36,8 @@ C
 C
       SUBROUTINE ENETGRPH(MODE)
 
+#include "building.h"
+#include "plant.h"
 #include "power.h"
       
       integer lnblnk  ! function definition
@@ -536,6 +538,8 @@ C Combine the data decriptor and units to form the complete label.
 C ************************************************************************************
       SUBROUTINE ENETTBL(MODE)
 
+#include "building.h"
+#include "plant.h"
 #include "power.h"
       
       integer lnblnk  ! function definition
@@ -546,7 +550,6 @@ C Array of recovered data
       COMMON/ENFILT/EFILT(MERAWD)
       COMMON/ERECOVH/HDR1,HDR2
       COMMON/ELRFIL/ELRFLNAM
-      character ELRFLNAM*144
 
 C Export files and unit numbers.
       COMMON/EXPORTI/IXOPEN,IXUNIT,IXPUNIT
@@ -571,7 +574,7 @@ C Electrical network results library details.
   
       CHARACTER MODE*1,EVLABU*4,EVLABS*16,OUTPUTS*216,SOUTP*18,OUTS*124,
      &DELIM*1,XFILE*144,HDR1*216,HDR2*216,DESCR*7,DESCR1*10,PDESCR*60,
-     &SDESCR*44,SSTR*3,TG*1
+     &SDESCR*44,ELRFLNAM*144,SSTR*3,TG*1
 
 C Initialise the output string 
       OUTPUTS=' '
@@ -853,6 +856,8 @@ C MOGEHED outputs the appropriate header information for the electrical
 C network corresponding to graphical result display.
 
       SUBROUTINE MOGEHED
+#include "building.h"
+#include "plant.h"
 #include "power.h"
       
       integer lnblnk  ! function definition
@@ -860,7 +865,6 @@ C network corresponding to graphical result display.
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/ELRFIL/ELRFLNAM
-      character ELRFLNAM*144
       integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
 
@@ -876,11 +880,10 @@ C Array of recovered data
       REAL EVAL1,EVAL2
       INTEGER NVAL1,NVAL2,EVAXIS,EVMARK,EVLINE,EFILT
       CHARACTER ETEXT*124,LOUT*92,SLOUT*22
-      CHARACTER PDESCR*60,SDESCR*44
+      CHARACTER PDESCR*60,SDESCR*44,ELRFLNAM*144
       CHARACTER EVLABS*16,EVLABU*4,EXLAB*5
 
       integer iglib   ! if 1 then X11, if 2 then GTK, if 3 then text only.
-      integer lnerl
 #ifdef OSI
       integer iside,isize,ifont     ! passed to viewtext
       integer iigl,iigr,iigt,iigb,iigw,iigwh
@@ -981,6 +984,8 @@ C  ***********************************************************************
 
       SUBROUTINE ENRFILT
 
+#include "building.h"
+#include "plant.h"
 #include "power.h"
 #include "epara.h"
       
