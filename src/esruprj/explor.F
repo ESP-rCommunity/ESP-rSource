@@ -89,19 +89,21 @@ C Explicit use of pophelp required because of dynamic generation.
       CHARACTER PROMP*32,MSG*32,head*52
       CHARACTER GAIDE*36,GHELP*72,GDHDRT*72,GMH*32
       CHARACTER GMF*32,MGMA*32,TTAG*12,TTAIDE*36
-      CHARACTER IPD*64,CSTR*54,DESCR*7,DESCR1*10,TPROMP*42
+      CHARACTER IPD*64,CSTR*54,DESCR*7,DESCR1*10,TPROMP*62
       CHARACTER*5 DESCRH,DESCRD
       CHARACTER outs*124,LINE*72,OLINE*72,msgl2*48
       logical changed,clkok,textalt,edited,XST
+      logical goback,gonext   ! for changing position in list
       character*35 ITEMS(9)      
       CHARACTER DFILE*96,tfile*96
       CHARACTER LOUTSTR*1000
       integer IPDL,INODA,nitms,INO  ! max items and current menu item
+      integer iclkok,lntdfdes
 
 #ifdef OSI
-      integer imw  ! for use with vwmenu
+      integer impx,impy,imw  ! for use with vwmenu
 #else
-      integer*8 imw  ! for use with vwmenu
+      integer*8 impx,impy,imw  ! for use with vwmenu
 #endif
 
 C For help messages
@@ -553,25 +555,26 @@ C Read the timestep data for the period selected.
         CALL KEYIND(IPDL,INODA,IWHICH,INOUT)
         ITS=IWHICH
         ITREC=ITS+49
-        CALL ERTABU(ITRC,ITREC,IER)
+  42    CALL ERTABU(ITRC,ITREC,IER)
         IEFLDS=NTBITS(IFOC)+NTSTAT(IFOC)
         ISFLDS=IEFLDS-NTBITS(IFOC)+1
         LINE=' '
         CDAY=AINT(FLOAT(ITS)/FLOAT(NTSPH*24))
         ITIME=ITS-(INT(CDAY)*NTSPH*24)
         RDOTY=REAL(itdbdoy)+CDAY+(REAL(ITIME)/(REAL(NTSPH)*24.))
+        CALL STDATE(itdyear,INT(RDOTY),DESCR,DESCR1)
         CALL ESTIME(NTSPH,1,ITIME,DESCRH,DESCRD,TIMER)
+        lntdfdes=lnblnk(TDFDES(IFOC,ISFLDS))
         IF(IFTIME.EQ.0)THEN
-          WRITE(outs,'(A,A5)')  ' Current time: ',DESCRH
-          WRITE(TPROMP,'(A,A,A5)') TDFDES(IFOC,ISFLDS),' @ ',DESCRH
+          WRITE(TPROMP,'(5A)') TDFDES(IFOC,ISFLDS)(1:lntdfdes),' @ ',
+     &      DESCRH,' on ',DESCR1
         ELSEIF(IFTIME.EQ.1)THEN
-          WRITE(outs,'(A,A5)')  ' Current time: ',DESCRD
-          WRITE(TPROMP,'(A,A,A5)') TDFDES(IFOC,ISFLDS),' @ ',DESCRD
+          WRITE(TPROMP,'(5A)') TDFDES(IFOC,ISFLDS)(1:lntdfdes),' @ ',
+     &      DESCRD,' on ',DESCR1
         ELSEIF(IFTIME.EQ.2)THEN
-          WRITE(outs,'(A,F10.6)')' Current time: ',RDOTY
-          WRITE(TPROMP,'(A,A,F10.6)') TDFDES(IFOC,ISFLDS),' @ ',RDOTY
+          WRITE(TPROMP,'(2A,F10.6,2A)')TDFDES(IFOC,ISFLDS)(1:lntdfdes),
+     &      ' @ ',RDOTY,' on ',DESCR1
         ENDIF
-        call edisp(iuout,outs)
         call edisp(iuout,TPROMP)
         NB=NTBITS(IFOC)
         K=1
@@ -624,8 +627,15 @@ C Use explicit help from the temporal data.
         ENDIF
         OLINE=LINE
  129    if(.NOT.textalt)then
-          CALL EASKS(LINE,GDHDRT(3)(1:68),' ',
-     &      72,' 0 0 0','tabul edit',IER,NHELP)
+          goback=.false.; gonext=.false.
+          CALL EASKS2CMD(LINE,TPROMP,' ',
+     &      'prev','next',iclkok,72,OLINE,'tabul edit',
+     &      ISER,nbhelp)
+          if(iclkok.eq.1)then
+            goback=.true.
+          elseif(iclkok.eq.2)then
+            gonext=.true.
+          endif
           edited = .true.
         else
           CALL EASKSCMD(LINE,GDHDRT(3)(1:68),' ',
@@ -688,6 +698,24 @@ C index INT(TABU(ITCOL(IFOC,J))) rather than the text itself.
         IF(IER.EQ.1) CALL USRMSG(' ',msgl2,'-')
         changed = .true.
         edited = .true.
+        if(goback)then
+          ITS=ITS-1
+          ITREC=ITS+49
+          CALL TMPLOT(ITRC,IFOC,IER)
+          changed = .false.
+          CALL EWTDF(IER)
+          edited=.false.
+          goto 42
+        endif
+        if(gonext)then
+          ITS=ITS+1
+          ITREC=ITS+49
+          CALL TMPLOT(ITRC,IFOC,IER)
+          changed = .false.
+          CALL EWTDF(IER)
+          edited=.false.
+          goto 42
+        endif
       ELSEIF(INODA.EQ.1)THEN
         helptopic='temporal_unique_id'
         call gethelptext(helpinsub,helptopic,nbhelp)

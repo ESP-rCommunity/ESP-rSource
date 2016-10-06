@@ -26,6 +26,17 @@ C  Edimage: controls specification of an image associated with the
 C           model.
 C  EDBUILD: edits building information for system configuration file.
 
+C << TODO - working with radiance requires a rad folder. If not found
+C << a folder should be created by prj prior to invoking e2r. And it
+C << could be a check when saving older models to upgrade them.
+C << here is some logic...
+C          if(radpth(1:3).eq.'./ '.or.radpth(1:3).eq.'.\\ ')then
+C            pathtype='radincfg'
+C          elseif(radpth(1:7).eq.'../rad '.or.
+C     &           radpth(1:7).eq.'..\\rad ')then
+C            pathtype='radinrad'
+C          endif
+
 C ********** pregist
 C Register a new project. Parameter act = 'i ' then initial pass,
 C if 'e ' then provide editing menu, if 'sn' use passed parameters
@@ -178,10 +189,8 @@ C Current default version is v4.
       if(act(1:2).eq.'sn'.or.act(1:2).eq.'sw')then
         continue  ! META file will already have set sitelat etc.
       else
-        sitelat=55.9
-        SLAT=55.9
-        sitelongdif=-4.1
-        SLON=-4.1
+        sitelat=55.9; SLAT=55.9; 
+        sitelongdif=-4.1; SLON=-4.1
         siteexposureindex=1
         groundrefl=0.2
       endif
@@ -718,8 +727,9 @@ C Ask for site position.
      &    -89.9,'W',89.9,'W',55.9,'site latitude',IER,nbhelp)
         IF(IER.EQ.0)sitelat=SLAT
 
-        CALL EASKR(SLON,' ','Longitude difference?',
-     &    -15.0,'W',15.0,'W',-4.1,'longitude difference',IER,nbhelp)
+        CALL EASKR(SLON,
+     &   'Longitude difference from local time meridian (east +ve)?',
+     &   ':',-15.0,'W',15.0,'W',-4.1,'longitude difference',IER,nbhelp)
         IF(IER.EQ.0)sitelongdif=SLON
 
 C Ask for year, initialise and then print out the calendar if the
@@ -1530,7 +1540,7 @@ C << to be done >>
       if(lcfcin(IZ)(1:7).eq.'UNKNOWN')then
        WRITE(ITEMS(20),'(A)') 's  CFC constr: '
       else
-       WRITE(ITEMS(20),'(2A)') 's  CFC constr: ',lcfcin(IZ)(1:IWD)
+       WRITE(ITEMS(20),'(2A)')'s  CFC constr: ',lcfcin(IZ)(1:IWD)
       endif
       ITEMS(21)='  _____________________________    '
       ITEMS(22)='* check existence of zone files    '
@@ -2495,3 +2505,4 @@ C There is no zone cfc file so offer restricted choice.
       GOTO 3
 
       END
+
