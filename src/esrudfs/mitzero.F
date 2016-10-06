@@ -62,9 +62,24 @@ C `P' point located mid-distance between the `U', `V', and `W' points, so
 C velocity components at `P' point calculated by averaging velocities at
 C neighbouring points. Then get magnitude of velocity at `P' using three
 C components.
-      UatP = 0.5*Uf(i,j,k) + 0.5*Uf(i+1,j,k)
-      VatP = 0.5*Vf(i,j,k) + 0.5*Vf(i,j+1,k)
-      WatP = 0.5*Wf(i,j,k) + 0.5*Wf(i,j,k+1)
+C <<< How should grid point 32 (in any dimension) be handled? >>>
+C <<< This is out of range for referencing the arrays.        >>>
+C <<< Temporary approach just take value at cell.             >>>
+      if(i.eq.ntcelx)then
+        UatP = Uf(i,j,k)
+      else
+        UatP = 0.5*Uf(i,j,k) + 0.5*Uf(i+1,j,k)
+      endif
+      if(j.eq.ntcely)then
+        VatP = VF(i,j,k)
+      else
+        VatP = 0.5*Vf(i,j,k) + 0.5*Vf(i,j+1,k)
+      endif
+      if(k.eq.ntcelz)then
+        WatP = Wf(i,j,k)
+      else
+        WatP = 0.5*Wf(i,j,k) + 0.5*Wf(i,j,k+1)
+      endif
       Vmean = SQRT(UatP**2 + VatP**2 + WatP**2)
 
 

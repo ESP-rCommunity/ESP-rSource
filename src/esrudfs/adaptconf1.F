@@ -46,12 +46,13 @@ C ADAPCONF - Main controlling routine for `adaptive conflation controller'.
 
       SUBROUTINE ADAPCONF
 #include "building.h"
+#include "cfd.h"
       COMMON/FVALA/TFA(MCOM),QFA(MCOM)
       common/CFDlen/rlengW,rlengE,rlengS,rlengN,rlengL,rlengH
       common/CFDdt/DTW,DTE,DTS,DTN,DTL,DTH
       common/CFDvel/VWmax,VEmax,VSmax,VNmax,VLmax,VHmax
       COMMON/ICFNOD/ICFD,ICP
-      COMMON/ACCrec/IACC
+      COMMON/ACCrec/IACC(MNZ)
       COMMON/cfdfil/LCFD(MCOM),IFCFD(MCOM)
       COMMON/BTIME/BTIMEP,BTIMEF
       COMMON/SIMTIM/IHRP,IHRF,IDYP,IDYF,IDWP,IDWF,NSINC,ITS
@@ -72,12 +73,12 @@ C   2) conditional two-way adaptive conflation control
 
 C Record ACC actions (begin).
       IF( abs(IFCFD(ICP)).eq.4 .or. abs(IFCFD(ICP)).eq.5)THEN
-        write(IACC,*)
-        write(IACC,*) '***************************************'
-        write(IACC,*) 'Adaptive conflation controller invoked.'
-        write(IACC,*) 'on day ',IDYP,' at time ',BTIMEF
-        write(IACC,*) '***************************************'
-        write(IACC,*)
+        write(IACC(icfd),*)
+        write(IACC(icfd),*) '***************************************'
+        write(IACC(icfd),*) 'Adaptive conflation controller invoked.'
+        write(IACC(icfd),*) 'on day ',IDYP,' at time ',BTIMEF
+        write(IACC(icfd),*) '***************************************'
+        write(IACC(icfd),*)
       ENDIF
 C Record ACC actions (end).
 
@@ -146,7 +147,8 @@ C factors to suit buoyancy decision.
       CALL setBUOY(ICP,ForNmax)
 
 C Set convergence criteria for final CFD run.
-      CALL setCONV
+C << This call commented out to avoid overriding user settings >>
+C      CALL setCONV
 
 C Choose an appropriate boundary condition for each physical surface.
 C Surface numbers: 1 for west; 2 for east; 3 for south; 4 for north;
@@ -197,7 +199,7 @@ C           Supporting routine for CFD `adaptive conflation controller'.
      &              JSBi(MNSBZ,MNZ),JSBf(MNSBZ,MNZ),
      &              KSBi(MNSBZ,MNZ),KSBf(MNSBZ,MNZ),
      &              ISUFLC(MNSBZ,MNZ),IWSB(MNSBZ,MNZ),SSB(MNSBZ,MNZ),
-     &              SSBHC(MNSBZ,MNZ),
+     &              SSBHC(MNSBZ,MNZ),IVOLNSB(MNSBZ,MNZ),
      &              ITCtype(MNSBZ,MNZ),icTREF(MNSBZ,MNZ)
       common/CFDlen/rlengW,rlengE,rlengS,rlengN,rlengL,rlengH
 
@@ -335,7 +337,7 @@ C          the MIT 0-eqn model with coarse convergence parameters.
       common/EQTION/CALLU(MNZ),CALLV(MNZ),CALLW(MNZ),CALLT(MNZ),
      &             CALLC(MNZ),KEMDL(MNZ),BUOY(MNZ),BOUSSI(MNZ),
      &             ZEROT(MNZ),ZandKE(MNZ),MITzero(MNZ)
-      COMMON/BUOYAN/BUOYA,BOUSSA,TBAR
+      COMMON/BUOYAN/BUOYA,BOUSSA,TBAR(MNZ)
       common/param1/MAXITR(MNZ),IMONT(MNZ),JMONT(MNZ),KMONT(MNZ),
      1             IPPHI(MNZ),SRMAX(MNZ)
       COMMON/RENORM/LRENORM
@@ -343,15 +345,16 @@ C          the MIT 0-eqn model with coarse convergence parameters.
      &              JSBi(MNSBZ,MNZ),JSBf(MNSBZ,MNZ),
      &              KSBi(MNSBZ,MNZ),KSBf(MNSBZ,MNZ),
      &              ISUFLC(MNSBZ,MNZ),IWSB(MNSBZ,MNZ),SSB(MNSBZ,MNZ),
-     &              SSBHC(MNSBZ,MNZ),
+     &              SSBHC(MNSBZ,MNZ),IVOLNSB(MNSBZ,MNZ),
      &              ITCtype(MNSBZ,MNZ),icTREF(MNSBZ,MNZ)
-      COMMON/LINRFC/URFCU(MNZ),URFCV(MNZ),URFCW(MNZ),URFCP(MNZ),
-     &              URFCT(MNZ),URFCK(MNZ),URFCE(MNZ),URFCVS(MNZ)
+      COMMON/LINRFC2/URFCU2(MNZ),URFCV2(MNZ),URFCW2(MNZ),URFCP2(MNZ),
+     &              URFCT2(MNZ),URFCK2(MNZ),URFCE2(MNZ),URFCVS2(MNZ),
+     &              URFCC2(MNZ,MCTM)
       COMMON/ICFNOD/ICFD,ICP
       COMMON/FVALA/TFA(MCOM),QFA(MCOM)
       common/fvisgo/gophrun
 
-      COMMON/ACCrec/IACC
+      COMMON/ACCrec/IACC(MNZ)
       COMMON/cfdfil/LCFD(MCOM),IFCFD(MCOM)
 
       LOGICAL CALLU,CALLV,CALLW,CALLT,CALLC,KEMDL,BUOY,BOUSSI
@@ -383,7 +386,7 @@ C the previous time-step.
       CALLT(ICFD) = .TRUE.
       BUOY(ICFD) = .TRUE.
       BOUSSI(ICFD) = .TRUE.
-      TBAR = TFA(ICOMP)
+      TBAR(ICFD) = TFA(ICOMP)
 
 C Set the handshaking flags and boundary condition flags to use the
 C Chen and Xu zero-equation turbulence model. Employ one-way surface conflation.
@@ -400,13 +403,18 @@ C Set convergence criteria for a coarse convergence. This is adequate to get
 C an indication of the flow field. If the convergence criteria in the DFS
 C file for this domain is greater than 0.02 then use it and if iterations
 C less than 1000 set to 1000.
+C << Changed to 2000 as ACC will no longer increase max iterations. >>
+
+C First back up user set values in local variables.
+      MAXITR_LBU=MAXITR(ICFD)
+      SRMAX_LBU=SRMAX(ICFD)
 
 C Debug.
 C      write(6,*) 'In GOPHER SRMAX and MAXITR were ',SRMAX(ICFD),
 C     &  MAXITR(ICFD)
 
-      if(MAXITR(ICFD).lt.1000)then
-        MAXITR(ICFD) = 1000
+      if(MAXITR(ICFD).lt.2000)then
+        MAXITR(ICFD) = 2000
       endif
       if(SRMAX(ICFD).lt.0.02)then
         SRMAX(ICFD) = 0.02
@@ -419,19 +427,27 @@ C     &  MAXITR(ICFD)
       LRENORM = .FALSE.
 
 C Set the relaxation factors at safe levels to ensure a converged solution.
-C <<Use user specified values if lower. Cannot edit vars in common though>>
-      URFCU(ICFD) = 0.1
-      URFCV(ICFD) = 0.1
-      URFCW(ICFD) = 0.1
-      URFCP(ICFD) = 0.1
-      URFCT(ICFD) = 0.5
-      URFCVS(ICFD) = 0.5
+C Back up user set values in local variables.
+      URFCU_LBU=URFCU2(ICFD)
+      URFCV_LBU=URFCV2(ICFD)
+      URFCW_LBU=URFCW2(ICFD)
+      URFCP_LBU=URFCP2(ICFD)
+      URFCT_LBU=URFCT2(ICFD)
+      URFCVS_LBU=URFCVS2(ICFD)
+      
+      URFCU2(ICFD) = 0.1
+      URFCV2(ICFD) = 0.1
+      URFCW2(ICFD) = 0.1
+      URFCP2(ICFD) = 0.1
+      URFCT2(ICFD) = 0.5
+      URFCVS2(ICFD) = 0.5
 
 C Record ACC actions (begin).
       IF( abs(IFCFD(ICP)).eq.4 .or. abs(IFCFD(ICP)).eq.5)THEN
-        write(IACC,*) 'Initiating preliminary CFD sim to assess flow.'
+        write(IACC(icfd),*)
+     &    'Initiating preliminary CFD sim to assess flow.'
       ENDIF
-      call edisp(IUOUT,'Initiating prelimanary CFD to assess flow.')
+      call edisp(IUOUT,'Initiating preliminary CFD to assess flow.')
 
 C Record ACC actions (end).
 C Now do the gopher CFD simulation. 
@@ -440,6 +456,18 @@ C Now do the gopher CFD simulation.
       gophrun = .false.
 
 C Gopher run complete.
+
+C Restore user set values.
+      MAXITR(ICFD)=MAXITR_LBU
+      SRMAX(ICFD)=SRMAX_LBU
+
+      URFCU2(ICFD)=URFCU_LBU
+      URFCV2(ICFD)=URFCV_LBU
+      URFCW2(ICFD)=URFCW_LBU
+      URFCP2(ICFD)=URFCP_LBU
+      URFCT2(ICFD)=URFCT_LBU
+      URFCVS2(ICFD)=URFCVS_LBU
+      
       RETURN
       END
 
@@ -460,7 +488,7 @@ C           handshaking' algorithm.
      &              JSBi(MNSBZ,MNZ),JSBf(MNSBZ,MNZ),
      &              KSBi(MNSBZ,MNZ),KSBf(MNSBZ,MNZ),
      &              ISUFLC(MNSBZ,MNZ),IWSB(MNSBZ,MNZ),SSB(MNSBZ,MNZ),
-     &              SSBHC(MNSBZ,MNZ),
+     &              SSBHC(MNSBZ,MNZ),IVOLNSB(MNSBZ,MNZ),
      &              ITCtype(MNSBZ,MNZ),icTREF(MNSBZ,MNZ)
       common/CFDdt/DTW,DTE,DTS,DTN,DTL,DTH
 
@@ -672,7 +700,7 @@ C          Supporting routine for CFD `adaptive conflation controller'.
      &              JSBi(MNSBZ,MNZ),JSBf(MNSBZ,MNZ),
      &              KSBi(MNSBZ,MNZ),KSBf(MNSBZ,MNZ),
      &              ISUFLC(MNSBZ,MNZ),IWSB(MNSBZ,MNZ),SSB(MNSBZ,MNZ),
-     &              SSBHC(MNSBZ,MNZ),
+     &              SSBHC(MNSBZ,MNZ),IVOLNSB(MNSBZ,MNZ),
      &              ITCtype(MNSBZ,MNZ),icTREF(MNSBZ,MNZ)
       common/CFDvel/VWmax,VEmax,VSmax,VNmax,VLmax,VHmax
 
@@ -840,10 +868,15 @@ C           CFD `adaptive conflation controller'.
       common/EQTION/CALLU(MNZ),CALLV(MNZ),CALLW(MNZ),CALLT(MNZ),
      &             CALLC(MNZ),KEMDL(MNZ),BUOY(MNZ),BOUSSI(MNZ),
      &             ZEROT(MNZ),ZandKE(MNZ),MITzero(MNZ)
-      COMMON/BUOYAN/BUOYA,BOUSSA,TBAR
+      COMMON/BUOYAN/BUOYA,BOUSSA,TBAR(MNZ)
       COMMON/LINRFC/URFCU(MNZ),URFCV(MNZ),URFCW(MNZ),URFCP(MNZ),
-     &              URFCT(MNZ),URFCK(MNZ),URFCE(MNZ),URFCVS(MNZ)
+     &              URFCT(MNZ),URFCK(MNZ),URFCE(MNZ),URFCVS(MNZ),
+     &              URFCC(MNZ,MCTM)
+      COMMON/LINRFC2/URFCU2(MNZ),URFCV2(MNZ),URFCW2(MNZ),URFCP2(MNZ),
+     &              URFCT2(MNZ),URFCK2(MNZ),URFCE2(MNZ),URFCVS2(MNZ),
+     &              URFCC2(MNZ,MCTM)
       COMMON/ICFNOD/ICFD,ICP
+      COMMON/ACCrec/IACC(MNZ)
 
       LOGICAL CALLU,CALLV,CALLW,CALLT,CALLC,KEMDL,BUOY,BOUSSI
       LOGICAL ZEROT,ZandKE,MITzero
@@ -860,29 +893,25 @@ C factors to encourage convergence. Set reference temperature for buoyancy
 C term to previous time-step's air-point temperature.
         BUOY(ICFD) = .TRUE.
         BOUSSI(ICFD) = .TRUE.
-        TBAR = TFA(ICOMP)
-        URFCU(ICFD) = 0.05
-        URFCV(ICFD) = 0.05
-        URFCW(ICFD) = 0.05
-        URFCP(ICFD) = 0.05
-        URFCT(ICFD) = 0.25
-        URFCK(ICFD) = 0.05
-        URFCE(ICFD) = 0.05
-        URFCVS(ICFD) = 0.25
+        TBAR(ICFD) = TFA(ICOMP)
+        URFCU(ICFD) = URFCU2(ICFD)
+        URFCV(ICFD) = URFCV2(ICFD)
+        URFCW(ICFD) = URFCW2(ICFD)
+        URFCP(ICFD) = URFCP2(ICFD)
+        URFCT(ICFD) = URFCT2(ICFD)
+        URFCK(ICFD) = URFCK2(ICFD)
+        URFCE(ICFD) = URFCE2(ICFD)
+        URFCVS(ICFD) = URFCVS2(ICFD)
+        write(IACC(ICFD),'(2a)')'Buoyancy enabled for adapted ',
+     &                                                     'simulation'
       ELSE
 
-C Buoyancy is not significant. Therefore turn buoyancy off and set more
-C aggressive relaxation factors.
+C Buoyancy is not significant. Therefore turn buoyancy off and use nominal
+C relaxation factors.
         BUOY(ICFD) = .FALSE.
         BOUSSI(ICFD) = .FALSE.
-        URFCU(ICFD) = 0.5
-        URFCV(ICFD) = 0.5
-        URFCW(ICFD) = 0.5
-        URFCP(ICFD) = 0.7
-        URFCT(ICFD) = 1.0
-        URFCK(ICFD) = 1.0
-        URFCE(ICFD) = 1.0
-        URFCVS(ICFD) = 1.0
+        write(IACC(ICFD),'(2a)')'Buoyancy disabled for adapted ',
+     &                                                     'simulation'
 
       ENDIF
 
@@ -956,6 +985,8 @@ C            fields based on preliminary CFD run.
      1            Wf(ntcelx,ntcely,ntcelz),
      2            P(ntcelx,ntcely,ntcelz),PP(ntcelx,ntcely,ntcelz),
      3            TEf(ntcelx,ntcely,ntcelz),EDf(ntcelx,ntcely,ntcelz)
+      COMMON/INITIA/UINIT(MNZ),VINIT(MNZ),WINIT(MNZ),PINIT(MNZ),
+     &              TINIT(MNZ),TEINIT(MNZ),EDINIT(MNZ)
 
       LOGICAL CALLU,CALLV,CALLW,CALLT,CALLC,KEMDL,BUOY,BOUSSI
       LOGICAL ZEROT,ZandKE,MITzero
@@ -972,9 +1003,9 @@ C model are switched off
 C Velocity and temperature solution from preliminary CFD run using Chen & Xu model
 C will be used to initialize variables for final k-e run. However, k and epsilon
 C not solved with Chen and Xu model, so initialize them now.
-C Set epsilon to an arbitrary value, then calculate k from k-epsilon's standard
+C Set epsilon to initial value, then calculate k from k-epsilon's standard
 C eddy viscosity relation.
-      epsilon = 0.001
+      epsilon = EDINIT(ICFD)
       DO 200 I=1,NI
         DO 201 J=1,NJ
           DO 202 K=1,NK
@@ -1004,16 +1035,16 @@ C           CFD simulation. Used for one-way adaptive conflation control.
      &              JSBi(MNSBZ,MNZ),JSBf(MNSBZ,MNZ),
      &              KSBi(MNSBZ,MNZ),KSBf(MNSBZ,MNZ),
      &              ISUFLC(MNSBZ,MNZ),IWSB(MNSBZ,MNZ),SSB(MNSBZ,MNZ),
-     &              SSBHC(MNSBZ,MNZ),
+     &              SSBHC(MNSBZ,MNZ),IVOLNSB(MNSBZ,MNZ),
      &              ITCtype(MNSBZ,MNZ),icTREF(MNSBZ,MNZ)
-      COMMON/ACCrec/IACC
+      COMMON/ACCrec/IACC(MNZ)
       COMMON/cfdfil/LCFD(MCOM),IFCFD(MCOM)
 
       CHARACTER*72 LCFD
 
 C Record ACC actions (begin).
-      write(IACC,*)
-      write(IACC,*) 'One-way ACC algorithm invoked.'
+      write(IACC(icfd),*)
+      write(IACC(icfd),*) 'One-way ACC algorithm invoked.'
       
 C Record ACC actions (end).
 C Examine each CFD surface in turn.
@@ -1046,7 +1077,7 @@ C (with Tair from thermal domain) on horizontal surfaces.
             endif
 C Record ACC actions (begin).
             IF( abs(IFCFD(ICP)).eq.4 .or. abs(IFCFD(ICP)).eq.5)THEN
-              write(IACC,*) '  CFD surf ',L,' on physical surf ',
+              write(IACC(icfd),*) '  CFD surf ',L,' on physical surf ',
      &                isetsurf,' : FORorNAT = ',FORorNAT,' ==>  buoyant'
             ENDIF
 C Record ACC actions (end).
@@ -1060,7 +1091,7 @@ C with cooperative Neumann boundary condition.
             icTREF(L,ICFD) = 2
 C Record ACC actions (begin).
             IF( abs(IFCFD(ICP)).eq.4 .or. abs(IFCFD(ICP)).eq.5)THEN
-              write(IACC,*) '  CFD surf ',L,' on physical surf ',
+              write(IACC(icfd),*) '  CFD surf ',L,' on physical surf ',
      &                    isetsurf,' : FORorNAT = ',FORorNAT,
      &                    ' ==>  forced'
             ENDIF
@@ -1074,7 +1105,7 @@ C with the cooperative Robin boundary condition.
             IWSB(L,ICFD) = location + 40
 C Record ACC actions (begin).
             IF( abs(IFCFD(ICP)).eq.4 .or. abs(IFCFD(ICP)).eq.5)THEN
-              write(IACC,*) '  CFD surf ',L,' on physical surf ',
+              write(IACC(icfd),*) '  CFD surf ',L,' on physical surf ',
      &             isetsurf,' : FORorNAT = ',FORorNAT,' ==>  mixed flow'
             ENDIF
 C Record ACC actions (end).
@@ -1106,17 +1137,17 @@ C           control.
      &              JSBi(MNSBZ,MNZ),JSBf(MNSBZ,MNZ),
      &              KSBi(MNSBZ,MNZ),KSBf(MNSBZ,MNZ),
      &              ISUFLC(MNSBZ,MNZ),IWSB(MNSBZ,MNZ),SSB(MNSBZ,MNZ),
-     &              SSBHC(MNSBZ,MNZ),
+     &              SSBHC(MNSBZ,MNZ),IVOLNSB(MNSBZ,MNZ),
      &              ITCtype(MNSBZ,MNZ),icTREF(MNSBZ,MNZ)
       common/howTB/turbin(6)
-      COMMON/ACCrec/IACC
+      COMMON/ACCrec/IACC(MNZ)
       COMMON/cfdfil/LCFD(MCOM),IFCFD(MCOM)
 
       CHARACTER*72 LCFD
 
 C Record ACC actions (begin).
-      write(IACC,*)
-      write(IACC,*) 'Conditional two-way ACC algorithm invoked.'
+      write(IACC(icfd),*)
+      write(IACC(icfd),*) 'Conditional two-way ACC algorithm invoked.'
 C Record ACC actions (end).
 C Examine each CFD surface in turn.
       DO 10 L=1,NSB(ICFD)
@@ -1148,8 +1179,8 @@ C (air temp from thermal domain) at horizontal surfaces.
             endif
 C Record ACC actions (begin).
             IF( abs(IFCFD(ICP)).eq.4 .or. abs(IFCFD(ICP)).eq.5)THEN
-              write(IACC,*) 'CFD surf ',L,' on physical surf ',isetsurf,
-     &                    ' : FORorNAT = ',FORorNAT,' ==>  buoyant'
+              write(IACC(icfd),*) 'CFD surf ',L,' on physical surf ',
+     &          isetsurf,' : FORorNAT = ',FORorNAT,' ==>  buoyant'
             ENDIF
 C Record ACC actions (end).
 
@@ -1174,8 +1205,8 @@ C Neumann boundary condition.
             endif
 C Record ACC actions (begin).
             IF( abs(IFCFD(ICP)).eq.4 .or. abs(IFCFD(ICP)).eq.5)THEN
-              write(IACC,*) 'CFD surf ',L,' on physical surf ',isetsurf,
-     &                    ' : FORorNAT = ',FORorNAT,' ==>  forced'
+              write(IACC(icfd),*) 'CFD surf ',L,' on physical surf ',
+     &          isetsurf,' : FORorNAT = ',FORorNAT,' ==>  forced'
             ENDIF
 C Record ACC actions (end).
 
@@ -1187,8 +1218,8 @@ C with the cooperative Robin boundary condition.
             IWSB(L,ICFD) = location + 40
 C Record ACC actions (begin).
             IF( abs(IFCFD(ICP)).eq.4 .or. abs(IFCFD(ICP)).eq.5)THEN
-              write(IACC,*) 'CFD surf ',L,' on physical surf ',isetsurf,
-     &                    ' : FORorNAT = ',FORorNAT,' ==>  mixed flow'
+              write(IACC(icfd),*) 'CFD surf ',L,' on physical surf ',
+     &          isetsurf,' : FORorNAT = ',FORorNAT,' ==>  mixed flow'
             ENDIF
 C Record ACC actions (end).
 
@@ -1215,7 +1246,7 @@ C           Supporting routine for CFD `adaptive conflation controller'.
      &              JSBi(MNSBZ,MNZ),JSBf(MNSBZ,MNZ),
      &              KSBi(MNSBZ,MNZ),KSBf(MNSBZ,MNZ),
      &              ISUFLC(MNSBZ,MNZ),IWSB(MNSBZ,MNZ),SSB(MNSBZ,MNZ),
-     &              SSBHC(MNSBZ,MNZ),
+     &              SSBHC(MNSBZ,MNZ),IVOLNSB(MNSBZ,MNZ),
      &              ITCtype(MNSBZ,MNZ),icTREF(MNSBZ,MNZ)
       COMMON/GEOM/XP(ntcelx),YP(ntcely),ZP(ntcelz),
      1            DXEP(ntcelx),DXPW(ntcelx),DYNP(ntcely),DYPS(ntcely),
@@ -1362,7 +1393,7 @@ C          Supporting routine for CFD `adaptive conflation controller'.
      &              JSBi(MNSBZ,MNZ),JSBf(MNSBZ,MNZ),
      &              KSBi(MNSBZ,MNZ),KSBf(MNSBZ,MNZ),
      &              ISUFLC(MNSBZ,MNZ),IWSB(MNSBZ,MNZ),SSB(MNSBZ,MNZ),
-     &              SSBHC(MNSBZ,MNZ),
+     &              SSBHC(MNSBZ,MNZ),IVOLNSB(MNSBZ,MNZ),
      &              ITCtype(MNSBZ,MNZ),icTREF(MNSBZ,MNZ)
       COMMON/GEOM/XP(ntcelx),YP(ntcely),ZP(ntcelz),
      1            DXEP(ntcelx),DXPW(ntcelx),DYNP(ntcely),DYPS(ntcely),
@@ -1515,6 +1546,7 @@ C            control. Supporting routine for CFD `adaptive conflation controller
       COMMON/PREC1I/APRAT(MCOM,MS),HEIGHT(MCOM,MS)
       COMMON/CONCOE/HCIP(MCOM,MS),HCIF(MCOM,MS),HCOP(MCOM,MS),
      &              HCOF(MCOM,MS)
+      COMMON/calcdCFD/mICORcfd(MCOM),mHCcfd(MCOM)
 
 C This routine is used to reset the HCIF array, the array that holds the
 C current convection coefficients. This is used only when there is conditional
@@ -1524,6 +1556,14 @@ C controller. The HCIF array may be holding CFD-calculated HC values from the
 C previous time-step. Therefore, this routine replaces these will empirical
 C values calculated with the adaptive convection algorithm's choice of ICOR
 C from the previous time-step.
+
+C On first invocation of this routine for each building zone, ICORI and ICORE 
+C will not have been calculated yet, as CFD is invoked before MZCONV. In this
+C case, these must be calculated first.
+      IF (mICORcfd(ICP).EQ.0) THEN
+        CALL INTERR(ICP)
+        mICORcfd(ICP) = 1
+      ENDIF
 
 C Iterate through each multi-layer construction.
       NC=NCONST(ICP)
@@ -1562,8 +1602,9 @@ C            mechanism.
      &             KOPENf(MCFND,MNZ),FIXM(MCFND,MNZ),
      &             FIXT(MCFND,MNZ),FIXC(MCFND,MNZ),
      &             FIXK(MCFND,MNZ),FIXE(MCFND,MNZ),
-     &             IWOPEN(MCFND,MNZ),ICFDCN(MCFND,MNZ),ICNACT(MCFND,MNZ)
-      COMMON/ACCrec/IACC
+     &             IWOPEN(MCFND,MNZ),ICFDCN(MCFND,MNZ),
+     &             ICNACT(MCFND,MNZ),IVOLN(MCFND,MNZ)
+      COMMON/ACCrec/IACC(MNZ)
       COMMON/cfdfil/LCFD(MCOM),IFCFD(MCOM)
 
       CHARACTER*72 LCFD
@@ -1583,9 +1624,9 @@ C idealized HVAC model.
       FIXT(Iopen,ICFD) = SAT(ICOMP)
 
 C Record ACC actions (begin).
-      write(IACC,*)
-      write(IACC,*) '  Resetting BCs at CFD air flow openings:'
-      write(IACC,*) '    --> FIXM = ',FIXM(Iopen,ICFD),
+      write(IACC(icfd),*)
+      write(IACC(icfd),*) '  Resetting BCs at CFD air flow openings:'
+      write(IACC(icfd),*) '    --> FIXM = ',FIXM(Iopen,ICFD),
      &              '    --> FIXT = ',FIXT(Iopen,ICFD)
 C Record ACC actions (end).
 
@@ -1603,7 +1644,7 @@ C          to be generalized in the future.
 #include "building.h"
 #include "cfd.h"
       COMMON/ICFNOD/ICFD,ICP
-      COMMON/ACCrec/IACC
+      COMMON/ACCrec/IACC(MNZ)
       COMMON/cfdfil/LCFD(MCOM),IFCFD(MCOM)
       COMMON/HSrc/NHS(2,MNZ),IHSi(MNHS,2,MNZ),IHSf(MNHS,2,MNZ),
      &            JHSi(MNHS,2,MNZ),JHSf(MNHS,2,MNZ),KHSi(MNHS,2,MNZ),
@@ -1623,9 +1664,9 @@ C radiant/convective flux (eg radiator) in this case.
       SHS(Ihs,2,ICFD) = (QPLTP(ICOMP)+QPLTF(ICOMP))*.5
 
 C Record ACC actions (begin).
-      write(IACC,*)
-      write(IACC,*) '  Resetting heat source at radiator:'
-      write(IACC,*) '    --> SHS = ',SHS(Ihs,2,ICFD)
+      write(IACC(icfd),*)
+      write(IACC(icfd),*) '  Resetting heat source at radiator:'
+      write(IACC(icfd),*) '    --> SHS = ',SHS(Ihs,2,ICFD)
 C Record ACC actions (end).
 
 C Return to calling routine.

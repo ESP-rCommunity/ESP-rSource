@@ -284,13 +284,13 @@ C Label curves.
 
 C Display time-step index and iteration index.
       IPS=IPS+2
-      write(title,'(a,i4)')'ITST=',ITM
+      write(title,'(a,i5)')'ITST=',ITM
       iside=IPS
       isize=0
       ifont=0
       call viewtext(title,iside,isize,ifont)
       IPS=IPS+1
-      write(title,'(a,i4)')'ITER=',NITER
+      write(title,'(a,i5)')'ITER=',NITER
       iside=IPS
       isize=0
       ifont=0

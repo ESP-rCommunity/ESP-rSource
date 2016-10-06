@@ -33,7 +33,7 @@ C CFAREA - Calculates the area of ESP-r surfaces covered by CFD solid boundaries
      &              JSBi(MNSBZ,MNZ),JSBf(MNSBZ,MNZ),
      &              KSBi(MNSBZ,MNZ),KSBf(MNSBZ,MNZ),
      &              ISUFLC(MNSBZ,MNZ),IWSB(MNSBZ,MNZ),SSB(MNSBZ,MNZ),
-     &              SSBHC(MNSBZ,MNZ),
+     &              SSBHC(MNSBZ,MNZ),IVOLNSB(MNSBZ,MNZ),
      &              ITCtype(MNSBZ,MNZ),icTREF(MNSBZ,MNZ)
       COMMON/GEOM/XP(ntcelx),YP(ntcely),ZP(ntcelz),
      1            DXEP(ntcelx),DXPW(ntcelx),DYNP(ntcely),DYPS(ntcely),
@@ -93,13 +93,13 @@ C CFCONV - Calculate convection coefficients based on the CFD predictions.
 #include "building.h"
 
 
-      COMMON/ICFCHN/ICFMON,ICFTMP,ICFLIB
+      COMMON/ICFCHN/ICFMON(MNZ),ICFTMP,ICFLIB
       COMMON/CFDARE/ATCFD(MNSBZ)
       COMMON/Sbdary/NSB(MNZ),ISBi(MNSBZ,MNZ),ISBf(MNSBZ,MNZ),
      &              JSBi(MNSBZ,MNZ),JSBf(MNSBZ,MNZ),
      &              KSBi(MNSBZ,MNZ),KSBf(MNSBZ,MNZ),
      &              ISUFLC(MNSBZ,MNZ),IWSB(MNSBZ,MNZ),SSB(MNSBZ,MNZ),
-     &              SSBHC(MNSBZ,MNZ),
+     &              SSBHC(MNSBZ,MNZ),IVOLNSB(MNSBZ,MNZ),
      &              ITCtype(MNSBZ,MNZ),icTREF(MNSBZ,MNZ)
       COMMON/CFDCON/CONVF(MNZ,MNSBZ)
       COMMON/ICFNOD/ICFD,ICP
@@ -123,7 +123,7 @@ C CFCONV - Calculate convection coefficients based on the CFD predictions.
       CHARACTER*72 LCFD
       CHARACTER*2 oneway(MNSBZ)
 
-      ifl=ICFMON
+      ifl=ICFMON(ICFD)
 
 C This subroutine calculates the convection coefficient for each surface
 C based on the CFD-predicted temperature and flow fields. TAIR is the referernce

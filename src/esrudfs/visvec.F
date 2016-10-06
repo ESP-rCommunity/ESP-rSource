@@ -24,12 +24,20 @@ C  MAKS2D - draws a 2 d silce of flow vectors on screen.
 C  MAKS3D - draws flow vectors on screen in 3D.  
 
 C C ********************* MAKS2D *********************
-C MAKS2D - draw 2d slices on screen.
-      SUBROUTINE MAKS2D(ISUR,ilayer,name)
+C MAKS2D - draw 2d slices on screen.  IFRAME is the timestep
+C offset from the beginning of the display period.
+      SUBROUTINE MAKS2D(ISUR,ilayer,name,IFRAME)
 #include "cfd.h"
 
       integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
+      common/appcols/mdispl,nifgrey,ncset,ngset,nzonec
+      COMMON/TEMPf/Tf(ntcelx,ntcely,ntcelz),GAMH(ntcelx,ntcely,ntcelz),
+     1             RESORT,NSWPT,URFT,FSDTT,PRANDL,PFUN
+      COMMON/SIMPIK/ISIM,ISTADD,ID1,IM1,ID2,IM2,ISDS,ISDF,NTS,ISAVE
+      COMMON/cfdsmper/ICDYS,ICDYF,CFTS,CFTF
+      COMMON/cfdotper/ICDYOS,ICDYOF,CFTOS,CFTOF
+      common/flvcol/ISOPT(6),IBGOPT(6),SCmin,SCmax
 
       COMMON/GEOM/XP(ntcelx),YP(ntcely),ZP(ntcelz),
      1            DXEP(ntcelx),DXPW(ntcelx),DYNP(ntcely),DYPS(ntcely),
@@ -41,9 +49,10 @@ C MAKS2D - draw 2d slices on screen.
       COMMON/VISSET/imgqua,NOX,NOZ,tscal,hLscal,hWscal,vLscal
       COMMON/arpoly/XS(7),ZS(7),bXmin,bXmax,bZmin,bZmax
 
-      character souts*48,name*12,scale*10,title*30
+      character souts*48,name*12,scale*32,title*30
 #ifdef OSI
       integer iside,isize,ifont     ! passed to viewtext
+      integer iicol
       integer iupdown,isym,ibx,iby,ixsl,iysl    ! passed to etplot
       integer iid1,iid2,iid3,iid4
       integer iigt,ileft,iright      ! passed to eswline
@@ -51,6 +60,7 @@ C MAKS2D - draw 2d slices on screen.
       integer iiw1,iiw2,iiw3,iiw4,iimenu
 #else
       integer*8 iside,isize,ifont     ! passed to viewtext
+      integer*8 iicol
       integer*8 iupdown,isym,ibx,iby,ixsl,iysl    ! passed to etplot
       integer*8 iid1,iid2,iid3,iid4
       integer*8 iigt,ileft,iright      ! passed to eswline
@@ -58,17 +68,33 @@ C MAKS2D - draw 2d slices on screen.
       integer*8 iiw1,iiw2,iiw3,iiw4,iimenu
 #endif
       integer iiright   !passed to wstxpt
+      logical colok,cscaleok
+      real tempmin,tempmax,trange,colmult,NOW,FRACH
+      CHARACTER MTHNAM(12)*4,PDESCR*96
+
+      DATA MTHNAM/' Jan',' Feb',' Mar',' Apr',' May',' Jun',' Jul',
+     &            ' Aug',' Sep',' Oct',' Nov',' Dec'/
 
 C Set default values.
-      XZ=0.
-      YZ=0.
-      ZZ=0.
+      XZ=0.0; YZ=0.0; ZZ=0.0
 
+C Check if can draw in colour and with a range of colours.
+      colok=.false.
+      if(nzonec.ge.24)colok=.true.
+      cscaleok=.false.
+      if(ncset.gt.24)cscaleok=.true.
+      
+C << set a range of temps for testing logic similar to clmpsychart.F
+C      write(6,*) 'within MAKS2D SCmin,SCmax',SCmin,SCmax
+      tempmin=SCmin; tempmax=SCmax; trange=tempmax-tempmin
+C      write(6,*) 'within MAKS2D ',tempmin,tempmax,trange
+      colmult=(real(ncset)/trange)
+      
 C Clear viewing area, set and store scaling factors.
       CALL startbuffer()
 
 C Setup and pass in parameters to win3d.
-      iiw1=6; iiw2=6; iiw3=3; iiw4=4; iimenu=menuchw
+      iiw1=6; iiw2=6; iiw3=6; iiw4=4; iimenu=menuchw
       iigl=igl; iigr=igr; iigt=igt; iigb=igb; iigw=igw; iigwh=igwh
       CALL win3d(iimenu,iiw1,iiw2,iiw3,iiw4,
      &  iigl,iigr,iigt,iigb,iigw,iigwh)
@@ -104,15 +130,27 @@ C it covers.
 C Make each flow vector into a polygon.
           if(ISUR.eq.2 .or. ISUR.eq.4) then
             CALL POLY(ilayer,L1,L2)
-C            temp=Tf(ilayer,L1,L2)
+            temp=Tf(ilayer,L1,L2)
           endif
           if(ISUR.eq.1 .or. ISUR.eq.3) then
             CALL POLY(L1,ilayer,L2)
-C            temp=Tf(L1,ilayer,L2)
+            temp=Tf(L1,ilayer,L2)
           endif
           if(ISUR.eq.5 .or. ISUR.eq.6) then
             CALL POLY(L1,L2,ilayer)
-C            temp=Tf(L1,L2,ilayer)
+            temp=Tf(L1,L2,ilayer)
+          endif
+
+C Set current colour.
+          icolindex=nint((tempmax-temp)*colmult)
+          if(icolindex.le.0) icolindex = 1
+          if(icolindex.gt.ncset) icolindex = ncset
+          if(cscaleok)then
+            iicol=icolindex
+            call winscl('c',iicol)
+          else
+            iicol=0
+            call winscl('-',iicol)
           endif
 
 C Draw vector.
@@ -125,14 +163,29 @@ C Draw vector.
  30       continue
           call etplot(XS(1),ZS(1),iupdown,isym)
  20     continue
+        iicol=0  ! set back to black
+        call winscl('-',iicol)
  10   continue
 
 C Write a title for the plot.
-      write (souts,'(a,a)') ' Velocity vector plot for view ',name
+      CALL EDAYR(ICDYOS,IDs,IMs)
+      CALL EDAYR(ICDYOF,IDf,IMf)
+      FRACH=1.0/float(NTS)  ! what part of hour
+      NOW=CFTOS+((IFRAME-1)*FRACH)
+      if(NOW.gt.24.1) NOW=0.0
+      write(PDESCR,'(3a,i3,2a,f5.2,a,i3,2a,f5.2,a,f5.2)')
+     & 'Velocity vector plot for ',name(1:lnblnk(name)),' During',
+     & IDs,MTHNAM(IMs),', hr ',CFTOS,' to',IDf,MTHNAM(IMf),', hr ',
+     & CFTOF,' @',NOW
       iside=1
       isize=0
       ifont=1
-      call viewtext(souts,iside,isize,ifont)
+      call viewtext(PDESCR,iside,isize,ifont)
+C      write (souts,'(a,a)') ' Velocity vector plot for view ',name
+C      iside=2
+C      isize=0
+C      ifont=1
+C      call viewtext(souts,iside,isize,ifont)
 
 C Draw a scale. First find distance between two points (iby and iysl)
 C this represents 'sll' meters per second (initially 0.1).  If the 
@@ -161,21 +214,57 @@ C Draw scale line. e.g. |--------| = 0.1m/s
       call eswline(iid1,iid2,iid3,iid4)
       iid1=ileft; iid2=igt-10; iid3=iright; iid4=igt-10;
       call eswline(iid1,iid2,iid3,iid4)
-      write (scale,'(a,f5.3,a)') '= ',sll,'m/s'
+      write (scale,'(a,f5.3,a,F5.1,a,F5.1)') 
+     &  '= ',sll,'m/s T',tempmin,'-T',tempmax
       iid1=iright+5; iid2=igt-5;
       call wstxpt(iid1,iid2,scale)
-      call forceflush()
 
+C Draw 10 steps along colour range.
+      iid2=igt-10           ! mid of |----|
+      iright=igl+isll+165   ! to right of text
+      ra=trange/10.0
+      temp=tempmin
+      do loop=1,11
+        if(loop.eq.1)then
+          icolindex=nint((tempmax-temp)*colmult)
+        else
+          temp=temp+ra
+          icolindex=nint((tempmax-temp)*colmult)
+        endif
+        if(icolindex.le.0) icolindex = 1
+        if(icolindex.gt.ncset) icolindex = ncset
+C        write(6,*) 'temp ',temp,icolindex
+        if(cscaleok)then
+          iicol=icolindex
+          call winscl('c',iicol)
+        else
+          iicol=0
+          call winscl('-',iicol)
+        endif
+        iright=iright+10
+        call ecirc(iright,iid2,4,0)
+        call forceflush()
+      enddo
+      
       return
       end
 
 C ********************* MAKS3D *********************
 C MAKS3D - draw flows in 3d on screen using scaling factors of 
 C first view.
-      SUBROUTINE MAKS3D
+      SUBROUTINE MAKS3D(IFRAME)
 #include "cfd.h"
 
+      integer menuchw,igl,igr,igt,igb,igw,igwh
+      COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
+      common/appcols/mdispl,nifgrey,ncset,ngset,nzonec
       COMMON/VISSET/imgqua,NOX,NOZ,tscal,hLscal,hWscal,vLscal
+      COMMON/TEMPf/Tf(ntcelx,ntcely,ntcelz),GAMH(ntcelx,ntcely,ntcelz),
+     1             RESORT,NSWPT,URFT,FSDTT,PRANDL,PFUN
+      COMMON/SIMPIK/ISIM,ISTADD,ID1,IM1,ID2,IM2,ISDS,ISDF,NTS,ISAVE
+      COMMON/cfdsmper/ICDYS,ICDYF,CFTS,CFTF
+      COMMON/cfdotper/ICDYOS,ICDYOF,CFTOS,CFTOF
+      common/flvcol/ISOPT(6),IBGOPT(6),SCmin,SCmax
       COMMON/ALL/NI,NJ,NK,NIM1,NJM1,NKM1,NIM2,NJM2,NKM2
       common/vecXYZ/vecXbeg(ntcelx,ntcely,ntcelz),
      1              vecXend(ntcelx,ntcely,ntcelz),
@@ -185,6 +274,42 @@ C first view.
      5              vecZend(ntcelx,ntcely,ntcelz)
 
       dimension Vstart(3),Vend(3),IC(6,2)
+#ifdef OSI
+      integer iside,isize,ifont     ! passed to viewtext
+      integer iicol
+      integer iupdown,isym,ibx,iby,ixsl,iysl    ! passed to etplot
+      integer iid1,iid2,iid3,iid4
+      integer iigt,ileft,iright      ! passed to eswline
+      integer iigl,iigr,iigb,iigw,iigwh
+      integer iiw1,iiw2,iiw3,iiw4,iimenu
+#else
+      integer*8 iside,isize,ifont     ! passed to viewtext
+      integer*8 iicol
+      integer*8 iupdown,isym,ibx,iby,ixsl,iysl    ! passed to etplot
+      integer*8 iid1,iid2,iid3,iid4
+      integer*8 iigt,ileft,iright      ! passed to eswline
+      integer*8 iigl,iigr,iigb,iigw,iigwh
+      integer*8 iiw1,iiw2,iiw3,iiw4,iimenu
+#endif
+      integer iiright   !passed to wstxpt
+      logical colok,cscaleok
+      real tempmin,tempmax,trange,colmult,NOW,FRACH
+      character souts*48
+      CHARACTER MTHNAM(12)*4,PDESCR*70
+
+      DATA MTHNAM/' Jan',' Feb',' Mar',' Apr',' May',' Jun',' Jul',
+     &            ' Aug',' Sep',' Oct',' Nov',' Dec'/
+      
+C Check if can draw in colour and with a range of colours.
+      colok=.false.
+      if(nzonec.ge.24)colok=.true.
+      cscaleok=.false.
+      if(ncset.gt.24)cscaleok=.true.
+      
+C Set a range of temps and colours similar to clmpsychart.F
+C      write(6,*) 'within MAKS3D SCmin,SCmax',SCmin,SCmax
+      tempmin=SCmin; tempmax=SCmax; trange=tempmax-tempmin
+      colmult=(real(ncset)/trange)
 
 C Need to reset scale factors - do this by redrawing the domain.
       iz=0
@@ -192,8 +317,8 @@ C Need to reset scale factors - do this by redrawing the domain.
 
 C << res cannot draw boundaries just now but calls useful in prj >>
 C << TODO add boundary information to cfd results library to get round this >>
-C      call VSB3D(0)
-C      call VAO3D(0)
+C      call VSB3D(0,iz)
+C      call VAO3D(0,iz)
 
 C Loop through all vectors.
       do 10 I=2,NIM1
@@ -205,6 +330,7 @@ C Loop through all vectors.
             Vend(2)  =vecYend(i,j,k)
             Vstart(3)=vecZbeg(i,j,k)
             Vend(3)  =vecZend(i,j,k)
+            temp=Tf(i,j,k) ! current cell temperature
 
 C Scale vector length.
             do 104 IV=1,3
@@ -214,11 +340,75 @@ C Scale vector length.
               Vend(IV)  =(SUM+DIF)/2.
  104        continue
             hsf=hWscal/10.
+
+C Setup colour for current cell arrow.
+            icolindex=nint((tempmax-temp)*colmult)
+            if(icolindex.le.0) icolindex = 1
+            if(icolindex.gt.ncset) icolindex = ncset
+            if(cscaleok)then
+              iicol=icolindex
+              call winscl('c',iicol)
+            else
+              iicol=0
+              call winscl('-',iicol)
+            endif
+
+C Draw the arrow.
             call arrow(Vstart,Vend,0.5,hsf,IC,'r',2)
  102      continue
  101    continue
+        iicol=0  ! set back to black
+        call winscl('-',iicol)
  10   continue
       call forceflush()
+
+C Draw 10 steps along colour range.
+C Write a title for the plot.
+C Figure out the current time!
+      CALL EDAYR(ICDYOS,IDs,IMs)
+      CALL EDAYR(ICDYOF,IDf,IMf)
+      FRACH=1.0/float(NTS)  ! what part of hour
+      NOW=CFTOS+((IFRAME-1)*FRACH)
+      if(NOW.gt.24.1) NOW=0.0
+C      write(6,*) 'IFRAME,FRACH,CFTOS,NOW',IFRAME,FRACH,CFTOS,NOW
+      write(PDESCR,'(a,i3,2a,f5.2,a,i3,2a,f5.2,a,f5.2,a,f5.2)')
+     &  ' During',IDs,MTHNAM(IMs),', hr ',CFTOS,' to',IDf,MTHNAM(IMf),
+     &  ', hr ',CFTOF,' @',NOW
+      iside=1 ! 1st line
+      isize=0
+      ifont=1
+      call viewtext(PDESCR,iside,isize,ifont)
+      write (souts,'(a,F5.1,a,F5.1)') ' Velocity vectors T ',
+     &  tempmin,'-T',tempmax
+      iside=2 ! 2nd line
+      isize=0
+      ifont=1
+      call viewtext(souts,iside,isize,ifont)
+      iid2=igt-15      ! near middle height of text 
+      iright=igl+165   ! to right of text
+      ra=trange/10.0
+      temp=tempmin
+      do loop=1,11
+        if(loop.eq.1)then
+          icolindex=nint((tempmax-temp)*colmult)
+        else
+          temp=temp+ra
+          icolindex=nint((tempmax-temp)*colmult)
+        endif
+        if(icolindex.le.0) icolindex = 1
+        if(icolindex.gt.ncset) icolindex = ncset
+C        write(6,*) 'temp ',temp,icolindex
+        if(cscaleok)then
+          iicol=icolindex
+          call winscl('c',iicol)
+        else
+          iicol=0
+          call winscl('-',iicol)
+        endif
+        iright=iright+10
+        call ecirc(iright,iid2,4,0)
+        call forceflush()
+      enddo
 
       return
       end

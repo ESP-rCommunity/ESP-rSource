@@ -14,13 +14,13 @@ PROG = dfs$(EXE)
 
 MODULE_OBJECTS = startup.o h3kmodule.o aim2_module.o 
 
-OBJECTS = dfs.o arrow.o ascii_mat.o basesimp.o basesimp_inputs.o \
-     bndarybl.o bndaryl.o bndaryt.o bscoeff.o bscoeff_extended.o c2fdum.o cfcalc.o cfdat.o \
-	  cfconv.o cfdrw.o cfdumb.o cfdumm.o cfgrid.o cfmatl.o cfmgerc.o cftext.o \
-	  cfutil.o cgd.o chkconvg.o common3dv.o conc.o  dossupport.o e3dviews.o edatabase.o \
-	  egeometry.o eroper.o esru_misc.o filelist.o \
-	  lisolv.o locmage.o mitzero.o plot.o psychro.o \
-	  read3dv.o sort.o visgrd.o visual.o visvec.o wvapour.o 
+OBJECTS = dfs.o arrow.o ascii_mat.o bndarybl.o bndaryl.o bndaryt.o \
+	c2fdum.o cfcalc.o cfdat.o cfconv.o cfdrw.o cfdumb.o cfdumm.o \
+	cfgrid.o cfmatl.o cfmgerc.o cftext.o cfutil.o cgd.o \
+	chkconvg.o common3dv.o conc.o  dossupport.o e3dviews.o edatabase.o \
+	egeometry.o eroper.o esru_misc.o filelist.o \
+	lisolv.o locmage.o mitzero.o plot.o psychro.o \
+	read3dv.o sort.o visgrd.o visual.o visvec.o wvapour.o 
 
 MODULES = aim2.mod aim2_calcdata.mod aim2_h2k_dummy.mod aim2_inputdata.mod start_up.mod \
      parse_command_line.mod h3kmodule.mod
@@ -37,18 +37,6 @@ arrow.F:
 ascii_mat.F:
 	rm -f ascii_mat.F
 	ln -s $(COMdir)/ascii_mat.F .
-basesimp.F:
-	rm -f basesimp.F
-	ln -s $(BLDdir)/basesimp.F .
-basesimp_inputs.F:
-	rm -f basesimp_inputs.F
-	ln -s $(PRJdir)/basesimp_inputs.F .
-bscoeff.F:
-	rm -f bscoeff.F
-	ln -s $(BLDdir)/bscoeff.F .
-bscoeff_extended.F:
-	rm -f bscoeff_extended.F
-	ln -s $(CETCdir)/bscoeff_extended.F .
 c2fdum.F:
 	rm -f c2fdum.F
 	ln -s $(COMdir)/c2fdum.F .
@@ -107,8 +95,7 @@ install:
 
 clean:
 	rm -f core $(PROG) $(PROG).exe $(MODULE_OBJECTS) $(OBJECTS) $(MODULES) \
-	aim2_module.F arrow.F ascii_mat.F \
-	basesimp.F basesimp_inputs.F bscoeff.F bscoeff_extended.F c2fdum.F \
+	aim2_module.F arrow.F ascii_mat.F c2fdum.F \
 	cfdrw.F cfgrid.F common3dv.F dossupport.F e3dviews.F edatabase.F egeometry.F \
 	eroper.F esru_misc.F filelist.F psychro.F read3dv.F sort.F startup.F \
 	h3kmodule.f90

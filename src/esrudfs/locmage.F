@@ -47,7 +47,7 @@ C for all other variables is achieved.
       common/outin/IUOUT,IUIN
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
 
-      COMMON/ICFCHN/ICFMON,ICFTMP,ICFLIB
+      COMMON/ICFCHN/ICFMON(MNZ),ICFTMP,ICFLIB
 
       COMMON/BNDCND/FLWIN,XMONIN
       COMMON/VARf/Uf(ntcelx,ntcely,ntcelz),Vf(ntcelx,ntcely,ntcelz),
@@ -129,7 +129,7 @@ C It is usefull to have a stronger criterion for LMA:
 
 C Write column headings (if not in graphics mode.)
       if (MMOD.NE.8) write (IUOUT,410) 
-      write (ICFMON,410) 
+      write (ICFMON(ICFD),410) 
  410  FORMAT(/,' DFS - Monitoring of residuals & variables (LMA)',/,/,
      &'   ITER',2X,'1-aver/aver',2X,'resid/LMA_mon',/)
 
@@ -364,7 +364,7 @@ C Plot values on screen.
       if (mod(NITER,NPLT).eq.0) then
 
 C Write residuals and monitoring values in a ASCII format file.
-        WRITE(ICFMON,312)NITER,1.-AVELMA,RESORL,AVELMA,
+        WRITE(ICFMON(ICFD),312)NITER,1.-AVELMA,RESORL,AVELMA,
      &                  AGEf(IMONT(ICFD),JMONT(ICFD),KMONT(ICFD))
  312    FORMAT(I7,2X,2E11.3,/,9X,2E11.3)
 
@@ -421,7 +421,8 @@ C cases - at solid walls the BC's are always of the zero-gradient type.
      &             KOPENf(MCFND,MNZ),FIXM(MCFND,MNZ),
      &             FIXT(MCFND,MNZ),FIXC(MCFND,MNZ),
      &             FIXK(MCFND,MNZ),FIXE(MCFND,MNZ),
-     &             IWOPEN(MCFND,MNZ),ICFDCN(MCFND,MNZ),ICNACT(MCFND,MNZ)
+     &             IWOPEN(MCFND,MNZ),ICFDCN(MCFND,MNZ),
+     &             ICNACT(MCFND,MNZ),IVOLN(MCFND,MNZ)
       COMMON/HSrc/NHS(2,MNZ),IHSi(MNHS,2,MNZ),IHSf(MNHS,2,MNZ),
      &            JHSi(MNHS,2,MNZ),JHSf(MNHS,2,MNZ),KHSi(MNHS,2,MNZ),
      &            KHSf(MNHS,2,MNZ),HSID(MNHS,2,MNZ),SHS(MNHS,2,MNZ),
@@ -430,7 +431,7 @@ C cases - at solid walls the BC's are always of the zero-gradient type.
      &              JSBi(MNSBZ,MNZ),JSBf(MNSBZ,MNZ),
      &              KSBi(MNSBZ,MNZ),KSBf(MNSBZ,MNZ),
      &              ISUFLC(MNSBZ,MNZ),IWSB(MNSBZ,MNZ),SSB(MNSBZ,MNZ),
-     &              SSBHC(MNSBZ,MNZ),
+     &              SSBHC(MNSBZ,MNZ),IVOLNSB(MNSBZ,MNZ),
      &              ITCtype(MNSBZ,MNZ),icTREF(MNSBZ,MNZ)
       COMMON/CFDCON/CONVF(MNZ,MNSBZ)
       COMMON/ICFNOD/ICFD,ICP

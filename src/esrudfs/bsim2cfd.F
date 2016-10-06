@@ -39,10 +39,10 @@ C            when there is thermal conflation.
      &              JSBi(MNSBZ,MNZ),JSBf(MNSBZ,MNZ),
      &              KSBi(MNSBZ,MNZ),KSBf(MNSBZ,MNZ),
      &              ISUFLC(MNSBZ,MNZ),IWSB(MNSBZ,MNZ),SSB(MNSBZ,MNZ),
-     &              SSBHC(MNSBZ,MNZ),
+     &              SSBHC(MNSBZ,MNZ),IVOLNSB(MNSBZ,MNZ),
      &              ITCtype(MNSBZ,MNZ),icTREF(MNSBZ,MNZ)
       COMMON/ICFNOD/ICFD,ICP
-      COMMON/ACCrec/IACC
+      COMMON/ACCrec/IACC(MNZ)
       COMMON/cfdfil/LCFD(MCOM),IFCFD(MCOM)
 
       CHARACTER*72 LCFD
@@ -104,8 +104,8 @@ C Treat each CFD solid boundary in turn, mapping BSim thermal conditions to the
 C CFD boundary according to the BC `type'.
 C Record ACC actions (begin).
         IF( abs(IFCFD(ICP)).eq.4 .or. abs(IFCFD(ICP)).eq.5)THEN
-          write(IACC,*)
-          write(IACC,*) 'Handshaking from thermal zone (',ICP,
+          write(IACC(icfd),*)
+          write(IACC(icfd),*) 'Handshaking from thermal zone (',ICP,
      &                  ') to CFD domain (',ICFD,').'
         ENDIF
 C Record ACC actions (end).
@@ -113,12 +113,14 @@ C Record ACC actions (end).
         IS=ISUFLC(L,ICFD)
 C Record ACC actions (begin).
         IF( abs(IFCFD(ICP)).eq.4 .or. abs(IFCFD(ICP)).eq.5)THEN
-          write(IACC,*) '  At CFD surf ',L,' ITCtype = ',ITCtype(L,ICFD)
-          write(IACC,*) '    and IWSB = ',IWSB(L,ICFD)
-          write(IACC,*) '    Tsurf = ',0.5*(TFS(ICP,IS)+TPS(ICP,IS))
-          write(IACC,*) '    Tf Tp = ',TFS(ICP,IS),TPS(ICP,IS)
-          write(IACC,*) '    IS = ',IS
-          write(IACC,*) '    HC = ',HCIF(ICP,IS)
+          write(IACC(icfd),*) 
+     &      '  At CFD surf ',L,' ITCtype = ',ITCtype(L,ICFD)
+          write(IACC(icfd),*) '    and IWSB = ',IWSB(L,ICFD)
+          write(IACC(icfd),*) 
+     &      '    Tsurf = ',0.5*(TFS(ICP,IS)+TPS(ICP,IS))
+          write(IACC(icfd),*) '    Tf Tp = ',TFS(ICP,IS),TPS(ICP,IS)
+          write(IACC(icfd),*) '    IS = ',IS
+          write(IACC(icfd),*) '    HC = ',HCIF(ICP,IS)
         ENDIF
 C Record ACC actions (end).
         if(ITCtype(L,ICFD).eq.1)then
@@ -194,7 +196,7 @@ C TREFBC - Calculate the reference temperature for the surface convection.
      &              JSBi(MNSBZ,MNZ),JSBf(MNSBZ,MNZ),
      &              KSBi(MNSBZ,MNZ),KSBf(MNSBZ,MNZ),
      &              ISUFLC(MNSBZ,MNZ),IWSB(MNSBZ,MNZ),SSB(MNSBZ,MNZ),
-     &              SSBHC(MNSBZ,MNZ),
+     &              SSBHC(MNSBZ,MNZ),IVOLNSB(MNSBZ,MNZ),
      &              ITCtype(MNSBZ,MNZ),icTREF(MNSBZ,MNZ)
 
 C This subroutine calculates the reference temperature (TREF) to use in the
@@ -215,7 +217,7 @@ C       since ESP-r's convection model assumes the room air to be well mixed.
       IF( icTREF(L,ICFD).eq.1 ) THEN
 
 C Return `future' air-point temperature for zone.
-        TREF = TFA(ICFD)
+        TREF = TFA(ICP)
       ELSEIF (icTREF(L,ICFD).eq.2) THEN
 
 C Average temperature over CFD domain.

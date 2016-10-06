@@ -1005,7 +1005,7 @@ C database for it.
      &      catmenu(ic)(1:20),'):'
           IX=1
           CALL EPMENSV
-	  CALL EPICKS(IX,IVALC,' ',outs,
+          CALL EPICKS(IX,IVALC,' ',outs,
      &      32,nbcat(idbh),catlist,'category list',IER,nbhelp)
           CALL EPMENRC
           call usrmsg('Copy item within database...',bl2,'P')
@@ -1058,7 +1058,7 @@ C            write(6,*)nbitem(idbh),ic,iit,' g ',ittag(iit)
      &      catmenu(ic)(1:20),'):'
           IX=1
           CALL EPMENSV
-	  CALL EPICKS(IX,IVALC,' ',outs,
+          CALL EPICKS(IX,IVALC,' ',outs,
      &      32,nbc,catlist,'destination category',IER,nbhelp)
           CALL EPMENRC
           call usrmsg('Move item within database...',bl2,'P')

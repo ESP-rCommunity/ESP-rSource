@@ -25,13 +25,15 @@ C MAKS2D - dummy - just returns.
 C MAKS3D - dummy - just returns.
 
 C ********************* MAKS2D dummy *********************
-      SUBROUTINE MAKS2D(ISUR,ilayer,name)
+      SUBROUTINE MAKS2D(ISUR,ilayer,name,IFRAME)
       character name*12
+      integer isur,ilayer,iframe
       return
       end
 
 C ********************* MAKS3D dummy *********************
 C first view.
-      SUBROUTINE MAKS3D
+      SUBROUTINE MAKS3D(IFRAME)
+      integer iframe
       return
       end

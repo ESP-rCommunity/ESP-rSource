@@ -93,7 +93,7 @@ C
      1             RESORT,NSWPT,URFT,FSDTT,PRANDL,PFUN
 
       common/EQTION3/CALLMA(MNZ),CALPOL(MCTM,MNZ),POLNAM(MCTM,MNZ),NCTM,
-     &      JHUMINDX
+     &      JHUMINDX,URFC(MCTM)
       COMMON/CFDPOL/POLCONCp(MCTM,ntcelx,ntcely,ntcelz),
      1              POLCONCf(MCTM,ntcelx,ntcely,ntcelz)
       common/KEYVOLN/VOLNAME(MNVLS,MNZ),VCsurf(MNVLS,MNZ)
@@ -417,9 +417,9 @@ C If inside the blockage set resor to zero.
             RESORC=RESORC+ABS(RESOR)
             RENORMC=RENORMC+ABS(RENORM)
 
-C Under-relaxation. Using always values from temperature equation 
-            AP(I,J,K)=AP(I,J,K)/URFT 
-            SU(I,J,K)=SU(I,J,K)+(1.0-URFT)*AP(I,J,K)*
+C Under-relaxation. 
+            AP(I,J,K)=AP(I,J,K)/URFC(ICTM) 
+            SU(I,J,K)=SU(I,J,K)+(1.0-URFC(ICTM))*AP(I,J,K)*
      &                POLCONCf(ICTM,I,J,K)
  3002     CONTINUE
  3001   CONTINUE
@@ -505,12 +505,13 @@ C always of the zero-gradient type.
      &             KOPENf(MCFND,MNZ),FIXM(MCFND,MNZ),
      &             FIXT(MCFND,MNZ),FIXC(MCFND,MNZ),
      &             FIXK(MCFND,MNZ),FIXE(MCFND,MNZ),
-     &             IWOPEN(MCFND,MNZ),ICFDCN(MCFND,MNZ),ICNACT(MCFND,MNZ)
+     &             IWOPEN(MCFND,MNZ),ICFDCN(MCFND,MNZ),
+     &             ICNACT(MCFND,MNZ),IVOLN(MCFND,MNZ)
       COMMON/Sbdary/NSB(MNZ),ISBi(MNSBZ,MNZ),ISBf(MNSBZ,MNZ),
      &              JSBi(MNSBZ,MNZ),JSBf(MNSBZ,MNZ),
      &              KSBi(MNSBZ,MNZ),KSBf(MNSBZ,MNZ),
      &              ISUFLC(MNSBZ,MNZ),IWSB(MNSBZ,MNZ),SSB(MNSBZ,MNZ),
-     &              SSBHC(MNSBZ,MNZ),
+     &              SSBHC(MNSBZ,MNZ),IVOLNSB(MNSBZ,MNZ),
      &              ITCtype(MNSBZ,MNZ),icTREF(MNSBZ,MNZ)
       COMMON/ICFNOD/ICFD,ICP
       COMMON/VARf/Uf(ntcelx,ntcely,ntcelz),Vf(ntcelx,ntcely,ntcelz),
@@ -538,7 +539,7 @@ C always of the zero-gradient type.
       COMMON/INCALC/INCALU,INCALV,INCALW,INCALK,INCALD,INCALT,
      1              IZEROT,IZanKE,IMITZ
       common/EQTION3/CALLMA(MNZ),CALPOL(MCTM,MNZ),POLNAM(MCTM,MNZ),NCTM,
-     &      JHUMINDX
+     &      JHUMINDX,URFC(MCTM)
       COMMON/CFDPOL/POLCONCp(MCTM,ntcelx,ntcely,ntcelz),
      1              POLCONCf(MCTM,ntcelx,ntcely,ntcelz)
 
@@ -1145,10 +1146,7 @@ C following procedure given in PhD Thesis by Aizaz Samuel
       DOUBLE PRECISION FLW1,FLW2,PRES,RESID,SAFLW
 
 C First get temperature in CFD domain
-C There is no CFD domain no. to thermal zone mapping (similar to ICAAS
-C that maps mfs nodes to thermal zones) currently. Take 1st thermal zone
-C as first CFD domain, second thermal zone as second CFD domain and so on
-      TEMP_K=0.5*(TFA(ICFD)+TPA(ICFD))+273.
+      TEMP_K=0.5*(TFA(ICP)+TPA(ICP))+273.
 
 C Now get pressure in CFD domain first 
       PRESS_BAR=1.01325+REAL(PRES(ICFDNOD(ICFD)))/100000.0

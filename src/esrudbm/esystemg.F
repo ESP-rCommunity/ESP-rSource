@@ -139,6 +139,7 @@ C LPRFDB,IPRODB (for event profile database)
 C LFMAT,IFMAT,LFMUL,IFMUL (for materials and constructions database)
 C ICLIM,LCLIM (for climate file)
 C LSBEM (for SBEM database)
+C LPREDEF (for predefined objects)
 C default file names for databases
 
 #include "net_flow.h"
@@ -156,6 +157,8 @@ C espriou.h provides currentfile and defdbfl.
 #include "roam.h"
 #include "ipvdata.h"
 #include "schedule.h"
+#include "plant.h"
+#include "power.h"
       INTEGER, PARAMETER :: MSTMC=20
       
       integer lnblnk  ! function definition
@@ -207,7 +210,8 @@ C IZSTOCN - for each zone:surface a pointer to connection index.
       COMMON/MFLOW1/NNOD,NCMP,NCNN
       INTEGER :: NNOD,NCMP,NCNN
       COMMON/MFLOW2/NDNAM(0:MNOD)
-      COMMON/NWKSTR/NWKNAM,NWKDSC,NWKFLNAM,NWKTYPSTR(MNWKTYP)
+      COMMON/NWKSTR/NWKNAM,NWKDSC,NWKTYPSTR(MNWKTYP)
+      CHARACTER NWKNAM*72,NWKDSC*72,NWKTYPSTR*12
 
 C Temporal definition commons.
 C DBTAG (12 char) tag of temporal entity associated with model.
@@ -251,8 +255,7 @@ C Initial view.
 
 C Special materials & electrical network files.
       common/spmfxst/ispmxist,spflnam
-      common/entfile/entflnam, ientxist
-      INTEGER :: ispmxist,ientxist
+      INTEGER :: ispmxist
 
 C Non-linear thermophysical properties.
       COMMON/VTHP18/LNLTHP
@@ -459,7 +462,7 @@ C iSlr_half_hr_flg value = 0 :hour-centered; =1 : half-hour centered.
       CHARACTER DBTAG*12,DBTASK*12,DBZN*15,phrase*64,DBSN*15
       character WORD2*20,msgl2*48
       CHARACTER CTLDOC*248,LCTLF*72,LOCUTIL*72
-      CHARACTER spflnam*72,entflnam*72,lipvdatf*72
+      CHARACTER spflnam*72,lipvdatf*72
       character GTGEOM*72,GTNAME*15
       CHARACTER ectime*24,wkd1*10,wkd2*10,naco*40,type*4
       character*10 wkday(7)
@@ -474,8 +477,7 @@ C iSlr_half_hr_flg value = 0 :hour-centered; =1 : half-hour centered.
       character limgpth*24,ldocpth*24,lcfgroot*32,lpath*72
       character path*72,lupath*72
       character namez*12,namen*12
-      CHARACTER*72 NWKNAM,NWKDSC,NWKFLNAM
-      character NWKTYPSTR*12,bidirfile*72,bidirname*12
+      character bidirfile*72,bidirname*12
       CHARACTER CONTMNAM*12,CNTMDESC*124,cntmfil*72
       character calename*32,calentag*12,calendayname*32
       character LWndSupp*72
@@ -2248,7 +2250,6 @@ C then an older file so rewind the file and then call emfread.
 C Found a graphic network file, scan it (silently) and then convert it
 C into network flow common blocks.
           IAIRN = 2
-          NWKFLNAM=LAPROB
           CALL ERPFREE(IUF,ISTAT)
           call NETREAD(IUF,'S',IER)
           CALL NETTOFLW(ier)
@@ -2783,6 +2784,9 @@ C Set OS and check that standarddbpath has been set.
           elseif(topic(1:3).eq.'sbm')then
             ipathsbem=1  ! local folder for UK SBEM database
             write(lsbem,'(a)') file(1:lnwkg) ! assign directly
+          elseif(topic(1:3).eq.'pre')then
+            ipathpredef=1  ! local folder for predefined objects
+            write(lpredef,'(a)') file(1:lnwkg) ! assign directly
           endif
         elseif(file(1:lndbp).eq.standarddbpath(1:lndbp))then
 
@@ -2799,6 +2803,9 @@ C The initial part of the path matches so only save the file name w/o path.
           elseif(topic(1:3).eq.'sbm')then
             ipathsbem=2
             write(lsbem,'(a)') file(lndbp+2:lnwkg) ! without path
+          elseif(topic(1:3).eq.'pre')then
+            ipathpredef=2
+            write(lpredef,'(a)') file(lndbp+2:lnwkg) ! without path
           endif
         else
           if(topic(1:3).eq.'opt')then
@@ -2813,6 +2820,9 @@ C The initial part of the path matches so only save the file name w/o path.
           elseif(topic(1:3).eq.'sbm')then
             ipathsbem=0  ! local folder for UK SBEM database
             write(lsbem,'(a)') file(1:lnwkg) ! assign directly
+          elseif(topic(1:3).eq.'pre')then
+            ipathpredef=0  ! local folder for predefined obj database
+            write(lpredef,'(a)') file(1:lnwkg) ! assign directly
           endif
         endif
       else
@@ -2829,6 +2839,9 @@ C The initial part of the path matches so only save the file name w/o path.
           elseif(topic(1:3).eq.'sbm')then
             ipathsbem=1  ! local folder for UK SBEM database
             write(lsbem,'(a)') file(1:lnwkg) ! assign directly
+          elseif(topic(1:3).eq.'pre')then
+            ipathpredef=1  ! local folder for predefined obj database
+            write(lpredef,'(a)') file(1:lnwkg) ! assign directly
           endif
         elseif(file(1:lndbp).eq.standarddbpath(1:lndbp))then
           if(topic(1:3).eq.'opt')then
@@ -2843,6 +2856,9 @@ C The initial part of the path matches so only save the file name w/o path.
           elseif(topic(1:3).eq.'sbm')then
             ipathsbem=2
             write(lsbem,'(a)') file(lndbp+2:lnwkg) ! without path
+          elseif(topic(1:3).eq.'pre')then
+            ipathpredef=2
+            write(lpredef,'(a)') file(lndbp+2:lnwkg) ! without path
           endif
         else
           if(topic(1:3).eq.'opt')then
@@ -2857,7 +2873,10 @@ C The initial part of the path matches so only save the file name w/o path.
           elseif(topic(1:3).eq.'sbm')then
             ipathsbem=0
             write(lsbem,'(a)') file(1:lnwkg) ! assign directly
-          endif
+          elseif(topic(1:3).eq.'pre')then
+            ipathpredef=0
+            write(lpredef,'(a)') file(1:lnwkg) ! assign directly
+         endif
         endif
       endif
 
@@ -2875,6 +2894,9 @@ C        write(6,*) 'findwhichdbpath ipath is ',ipathapres
       elseif(topic(1:3).eq.'sbm')then
 C        write(6,*) lsbem
 C        write(6,*) 'findwhichdbpath ipath is ',ipathsbem
+      elseif(topic(1:3).eq.'pre')then
+C        write(6,*) lpredef
+C        write(6,*) 'findwhichdbpath ipath is ',ipathpredef
       endif
 
       return

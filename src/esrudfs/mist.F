@@ -50,6 +50,9 @@ C GENMIST converts water content to mist visualisation input file.
      &    DISTPart(MNVLS,MNZ),DENPart(MNVLS,MNZ),ITYPart(MNVLS,MNZ)
 
       character outs*124
+      real VAL
+
+      VAL=0.0
 
       write (33,*) "# Radiance fog description."
 c      IF(SIZPart(1,1).GT.0.0)THEN
