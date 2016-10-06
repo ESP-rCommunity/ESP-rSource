@@ -62,6 +62,9 @@ C espriou.h provides currentfile.
 #include "schedule.h"
 C derived.h are derived areas and U values for zones and the model
 #include "derived.h"
+#include "plant.h"
+#include "power.h"
+#include "prj3dv.h"
       
       integer lnblnk  ! function definition
 
@@ -92,7 +95,6 @@ C LPNF (72 char) plant network file name.
       INTEGER :: IZSTOCN
       COMMON/C24/IZSTOCN(MCOM,MS)
 
-      common/RAY3/MODIFY,MODLEN,MODBND
       COMMON/exporttg/xfile,tg,delim
       COMMON/exporttgi/ixopen,ixloc,ixunit
       INTEGER :: ixopen,ixloc,ixunit
@@ -117,6 +119,20 @@ C LPNF (72 char) plant network file name.
       INTEGER :: iairn,icaas
       COMMON/MFLOW2/NDNAM(0:MNOD)
 
+C ISPMXIST is the existance flag for special materials
+      common/spmfxst/ispmxist,spflnam
+      common/spmatl/nspmnod,ispmloc(mspmnod,3),ispmtyp(mspmnod,2),
+     &              nnodat(mspmnod),spmdat(mspmnod,mspmdat)
+      common/spmatlbl/spmlabel(mspmnod)
+
+      integer :: ispmxist,nspmnod,ispmloc,ispmtyp,nnodat
+      character :: spflnam*72,spmlabel*16
+      real :: spmdat
+
+      dimension itypenum(mspmnod),numoftyp(mspmnod)
+      integer :: itypenum,countspmtyp,numoftyp
+
+      integer :: istoreIUOUT,ispm,iTMCidx
 
 C Variables for weekdays, and weekends.
 C Assume: Mon=1, Tue=2, Wed=3, Thu=4, Fri=5, Sat=6, Sun=7
@@ -141,7 +157,7 @@ C Assume: Mon=1, Tue=2, Wed=3, Thu=4, Fri=5, Sat=6, Sun=7
 
       COMMON/TDFFLG0/DBTAG(MIT),DBTASK(MIT),DBZN(MIT),DBSN(MIT)
 
-      logical found,XST,apply,MODIFY,MODLEN,MODBND,duplicate
+      logical found,XST,apply,duplicate
       logical bndrysxc,context,bound
 
 C External text editor.
@@ -165,6 +181,11 @@ C matching executables. For normal image viewing take the first option.
 C iSlr_half_hr_flg value = 0 :hour-centered; =1 : half-hour centered.
       common/CWEC_SOL/iSlr_half_hr_flg
       integer iSlr_half_hr_flg
+
+C CFD common blocks.
+      CHARACTER LCFD*72
+      integer IFCFD
+      common/cfdfil/LCFD(MCOM),IFCFD(MCOM)
 
 C Thermal bridges.
       integer nbrdg, ibrdg
@@ -231,6 +252,7 @@ C Initial assumption is verbose for each topic that is included
 C in the current model. A -1 means not applicable
       integer siteinfo,databaseinfo,contextinfo,controlinfo,netinfo
       integer plantinfo,geominfo,schedinfo,zoneextrainfo,fileinfo
+      integer spminfo,enetinfo
       integer destination
 
       integer iercl  ! error state returned for scanning climate list.
@@ -311,7 +333,12 @@ C Check if Unix-based or DOS based.
         controlinfo=2  ! if control used set to verbose
       else
         controlinfo=-1
-      endif 
+      endif
+      if(ispmxist.gt.0)then
+        spminfo=2      ! if a special materials file is included, set to verbose
+      else
+        spminfo=-1
+      endif
       if(IAIRN.ge.1)then
         netinfo=2      ! if a network included set to verbose
       else
@@ -321,6 +348,11 @@ C Check if Unix-based or DOS based.
         plantinfo=2   ! if plant included in model set to verbose
       else
         plantinfo=-1
+      endif
+      if(IENTXIST.gt.0)then
+        enetinfo=2      ! if an electrical network is included, set to verbose
+      else
+        enetinfo=-1
       endif
       if(ncomp.gt.0)then
         geominfo=2
@@ -902,7 +934,7 @@ C 'any horizontal','any orien.','cancel'.
               elseif(ins4.eq.2)then
                 if(SSMLCN(icc)(1:4).ne.'UNKN')apply=.false.
               elseif(ins4.eq.3)then
-                if(SSMLCN(icc)(1:4).eq.'UNKN')apply=.false.
+                if(SSMLCN(icc)(1:4).eq.'UNKN')apply=.false. 
                 if(SSMLCN(icc)(1:12).ne.mlcname(ISEL)(1:12))then
                   apply=.false.
                 endif
@@ -931,7 +963,7 @@ C If writing to file call ctlexp to close it and switch back to text feedback.
           call ctlexp(xfile,ixopen,ixloc,ixunit,'T','geom text',IER)
           destination=0
         endif
-        MODIFY=.TRUE.
+        MODIFYVIEW=.TRUE.
         MODBND=.TRUE.
       elseif(ino.eq.19)then
         fileinfo=fileinfo+1
@@ -1076,11 +1108,11 @@ C Generate the QA report.
       call dstamp(dstmp)
       call edisp(itu,'Synopsis')
       call edisp(itu,' ')
-      write(outs248,'(9A)') 'Synopsis of the model ',
+      write(outs248,'(8A)') 'Synopsis of the model ',
      &  modeltitle(1:lnblnk(modeltitle)),' defined in ',
      &  LCFGF(1:lnblnk(LCFGF)),' generated on ',
-     &  dstmp,'. Notes associated with the model',
-     &  ' are in ',lmodellog(1:lnblnk(lmodellog))
+     &  dstmp,'. Associated notes are in ',
+     &  lmodellog(1:lnblnk(lmodellog))
       call edisp248(itu,outs248,80)
       call edisp(itu,' ')
 
@@ -1089,8 +1121,8 @@ C Site information.
         write(outs248,'(a,f7.2,a,f6.2,2a,i4,5a)') 
      &    'The model is located at latitude ',sitelat,
      &    ' with a longitude difference of ',sitelongdif,
-     &    ' from the local time meridian. The year used in',
-     &    ' simulations is ',IYEAR,' and weekends occur on ', 
+     &    ' from the local time meridian (east +ve). The year used',
+     &    ' in simulations is ',IYEAR,' and weekends occur on ', 
      &     wkd1(1:lnblnk(wkd1)),' and ',wkd2(1:lnblnk(wkd2)),'.'
         call edisp248(itu,outs248,80)
         if(siteexposureindex.eq.1)then
@@ -1574,6 +1606,16 @@ C Databases associated with the model. First print the file names.
           call edisp248(itu,outs248,100)   
         endif
 
+        if(ipathpredef.eq.0.or.ipathpredef.eq.1)then
+          WRITE(outs248,'(2a)')' predefined objects     : ',
+     &      LPREDEF(1:lnblnk(LPREDEF))
+          call edisp248(itu,outs248,100)   
+        elseif(ipathpredef.eq.2)then
+          WRITE(outs248,'(2a)')' standard predefined obj: ',
+     &      LPREDEF(1:lnblnk(LPREDEF))
+          call edisp248(itu,outs248,100)   
+        endif
+
         if(ipathmould.eq.0.or.ipathmould.eq.1)then
           WRITE(outs248,'(2A)')' mould isopleths        : ',
      &      lfmould(1:lnblnk(lfmould))
@@ -1584,6 +1626,72 @@ C Databases associated with the model. First print the file names.
           call edisp248(itu,outs248,100)
         endif
       endif
+
+C===============================================================
+C Special materials associated with the model, if any
+      if (spminfo.gt.0) then
+        WRITE(outs,240)
+        call edisp(itu,outs) ! write separation line
+        WRITE(outs248,'(2A)')' Special materials file : ',
+     &                             spflnam(1:lnblnk(spflnam))
+        call edisp(itu,' ') ! empty line
+        call edisp248(itu,outs248,100)
+C       Initialize special material common data
+        call SPMINIT
+C       Write out some info on special materials
+        call edisp(itu,
+     &        '  Details of special materials in the model:')
+        call edisp(itu,
+     &        '  Type  | Number of entries ')
+
+        countspmtyp=1
+        numoftyp(countspmtyp)=0
+        do i=1,nspmnod
+          itypenum(countspmtyp)=ispmtyp(i,1)
+          if (itypenum(countspmtyp) .eq. ispmtyp(i,1)) then
+            numoftyp(countspmtyp) = numoftyp(countspmtyp) + 1
+          else
+            countspmtyp = countspmtyp + 1
+          endif
+        enddo ! loop through spm nodes
+        do i=1,countspmtyp
+          write(outs248,'(a,I4,a,I4)')'  ',itypenum(i),
+     &                                 '  |      ',numoftyp(i)
+          call edisp248(itu,outs248,100)
+        enddo ! output "statistics"
+
+        call edisp(itu,' ') ! empty line
+
+C Report detailed
+        if (spminfo.gt.1) then ! verbose mode
+          do 33 ispm=1,nspmnod
+            if (ispm.eq.1) then ! write header only once
+              WRITE(OUTS,'(3A)')
+     &        ' No. Label            Zone         Surface     ',
+     &        ' Construction Node',
+     &        ' Type  Num Data    '
+              CALL EDISP(itu,OUTS)
+            endif
+
+C << could be enhanced with type-specific output of some data, e.g. nominal
+C    power for PV and total latent heat capacity for PCM ... >>
+
+C Obtain transparent surface index (>0) related to PV module location.
+            iTMCidx=ITMCFL(ispmloc(ispm,1),ispmloc(ispm,2))
+
+            WRITE(OUTS,1111)ispm,spmlabel(ispm),zname(ispmloc(ispm,1)),
+     &        sname(ispmloc(ispm,1),ispmloc(ispm,2)),
+     &        SSMLCN(izstocn(ivals(ispmloc(ispm,1)),ispmloc(ispm,2))),
+     &        ispmloc(ispm,3),
+     &        (merge('Trn','Opq',iTMCidx.gt.0)),nnodat(ispm)
+ 1111       FORMAT(1X,I3,1X,A16,1X,A12,1X,A12,1X,A12,1X,I3,3X,A3,3X,I3)
+            CALL EDISP(itu,OUTS)
+
+  33      continue ! loop through all spm entries
+
+          call edisp(itu,' ') ! empty line
+        endif ! verbose mode
+      endif ! Special materials file
 
 C Control in the model
       if(controlinfo.gt.0)then
@@ -1713,13 +1821,31 @@ C If there is a plant network, scan it and report.
             call edisp(itu,'The model includes a plant network.')
             call pltcfg(ifpnf,iunit1,itu,1)
 C copy number of nodes in each plant component from node_count to
-C nnodes: This is necessary because the nnodes common blocak (pcdat)
+C nnodes: This is necessary because the nnodes common block (pcdat)
 C is defined differently in bps, and the pltcfg.F file cannot be
 C built as part of bps if it includes the prj pcdat common.
             call CopyPltNodeCounts()
           endif
         endif
       endif
+
+C If there is an electrical network, scan it and report.
+      if (enetinfo.gt.0) then
+        call edisp(itu,' ')
+        WRITE(outs,240)
+        call edisp(itu,outs) ! write separation line
+        WRITE(outs248,'(2A)')' Electrical network file: ',
+     &      ENTFLNAM(1:lnblnk(ENTFLNAM))
+        call edisp(itu,' ') ! blank line
+        call edisp248(itu,outs248,100)
+cx        call edisp(itu,' ') ! blank line
+
+        istoreIUOUT=IUOUT
+        IUOUT=itu
+        CALL ENETREAD('Q')
+        IUOUT=istoreIUOUT
+
+      endif ! Electrical network info
 
 C Jump if no zones.
       if(inpic.eq.0) goto 57
@@ -1746,9 +1872,12 @@ C Jump if no zones.
           DO 41 I=1,NZSUR(ivals(iz))
             icc=izstocn(ivals(iz),i)
             if(SSOTHER(icc,1)(1:4).eq.'UNKN')attribok(IVALS(IZ))=.false.
+
+C At this point CFC and CFC2 are not counted as transparent.
             if(SSMLCN(icc)(1:4).eq.'UNKN')attribok(IVALS(IZ))=.false.
             if(SSOTF(icc)(1:4).NE.'OPAQ'.AND.
-     &            SSOTF(icc)(1:4).NE.'CFC ')then
+     &         SSOTF(icc)(1:4).NE.'CFC '.AND.
+     &         SSOTF(icc)(1:4).NE.'CFC2')then
               TRN=TRN+SSNA(icc)
             else
               OPQ=OPQ+SSNA(icc)
@@ -2005,14 +2134,14 @@ C Setup phrases for the menu and for editing length and psi values.
               endif
               do 89 itbmenu=1,8
                 if(nbrdg(izz).gt.0)then
-                  do 90 itb=1,nbrdg(izz)
+                  do itb=1,nbrdg(izz)
                     if(itbmenu.eq.ibrdg(izz,itb))then
                       WRITE(TBRIDGE,'(a,2F10.4)') 
      &                  phrasemenu(itbmenu),
      &                  psi(izz,itb),lngth(izz,itb)
                       call edisp(itu,TBRIDGE)
                     endif
-  90              continue
+                  enddo  ! of itb
                 endif
   89          continue
               if(nbrdg(izz).gt.0)then   
@@ -2021,14 +2150,14 @@ C Setup phrases for the menu and for editing length and psi values.
               endif
               do 189 itbmenu=9,16
                 if(nbrdg(izz).gt.0)then   
-                  do 190 itb=1,nbrdg(izz)
+                  do itb=1,nbrdg(izz)
                     if(itbmenu.eq.ibrdg(izz,itb))then
                       WRITE(TBRIDGE,'(a,2F10.4)') 
      &                  phrasemenu(itbmenu),
      &                  psi(izz,itb),lngth(izz,itb)
                       call edisp(itu,TBRIDGE)
                     endif
- 190              continue
+                  enddo  ! of itb
                 endif
  189          continue
               if(losspercent(izz).gt.0.0) then
@@ -2047,19 +2176,19 @@ C See if an even or odd number of items in list.
           if(im.eq.1) odd=.true.
           call edisp(itu,' Vertices ( index X Y Z) in the zone...')
           if(NZTV(izz).lt.20)then
-            DO 960 I = 1,NZTV(izz)
+            DO I = 1,NZTV(izz)
               WRITE(outs,'(a,i3,3F12.5,a,i3)')'*vertex ',I,
      &          X(I),Y(I),Z(I)
               call edisp(itu,outs)
-960         CONTINUE
+            enddo  ! of I
           else
             MNULEN=(NZTV(izz)/2)
-            DO 193 K=1,MNULEN
+            DO K=1,MNULEN
               WRITE(outs,'(a,i3,3f11.5,a,i3,3f11.5)') 'vertex ',k,
      &        X(k),Y(k),Z(k),'   vertex ',K+MNULEN,
      &        X(K+MNULEN),Y(K+MNULEN),Z(K+MNULEN)
               call edisp(itu,outs)
-  193       CONTINUE
+            enddo  ! of K
 
 C Put odd vertex in right column.
             if(odd)then
@@ -2070,17 +2199,18 @@ C Put odd vertex in right column.
           endif
 
           call edisp(itu,
-     &    ' Number of vertices followed by list of associated vert')
-          DO 970 I = 1,NZSUR(izz)
+     &' Number of vertices followed by list, name & perimeter length')
+          DO I = 1,NZSUR(izz)
             icc=izstocn(izz,i)        ! find connection
             lsna=lnblnk(SSNAME(icc))  ! get length of surf name
             write(louts,'(a,42I4)') '*edges ',NVER(I),
      &        (JVN(I,J),J=1,NVER(I))
             call SDELIM(louts,loutsd,'C',IW)  ! make comma separated
-            write(outs248,'(3a)') 
-     &        loutsd(1:lnblnk(loutsd)),'   ',SSNAME(icc)(1:lsna)
+            write(outs248,'(3a,f8.3,a)') 
+     &        loutsd(1:lnblnk(loutsd)),'   ',SSNAME(icc)(1:lsna),
+     &        SSPERIM(icc),'m perimeter'
             call edisp248(itu,outs248,100)
- 970      CONTINUE
+          enddo  ! of I
 
 C If thermal bridges are associated with a surface then report this.
 C Loop each surface in zone, and for each surface each edged and if
@@ -2089,24 +2219,24 @@ C ibridgeshr(connection,edge) is non-zero add to howmanytbedges array.
             do 971 I = 1,NZSUR(izz)
               icc=izstocn(izz,i)        ! find connection
               lsna=lnblnk(SSNAME(icc))  ! get length of surf name
-              do 973,j=1,16
+              do j=1,16
                 howmanytbedges(j)=0
-  973         continue
+              enddo  ! of j
               haveedgebrdge=.false.
-              do 972 j=1,NVER(I)
+              do j=1,NVER(I)
                 if(ibridgeshr(icc,j).ne.0)then
                   howmanytbedges(ibridgeshr(icc,j))=
      &              howmanytbedges(ibridgeshr(icc,j))+1
                   haveedgebrdge=.true.
                 endif
- 972          continue
+              enddo  ! of j
 
 C If at least one thermal bridge for surface report it. Keep writing
 C into outs248 for each non-zero bridges.
               if(haveedgebrdge)then
                 write(outs248,'(2a)') SSNAME(icc)(1:lsna),' bridges: '
                 lk=lnblnk(outs248)+2
-                do 974 k=1,16
+                do k=1,16
                   if(howmanytbedges(k).gt.0)then
                     lnk=lnblnk(phraselen(k))
                     lnkn=lk+lnk+1
@@ -2114,7 +2244,7 @@ C into outs248 for each non-zero bridges.
      &                phraselen(k)(1:lnk),','
                     lk=lnkn+1
                   endif
- 974            continue
+                enddo  ! of k
                 call edisp248(itu,outs248,100)
               endif
  971        continue
@@ -2171,7 +2301,7 @@ C Remind user of standard optics as well as the alternatives.
                 write(outs,'(a,5f6.3)') ' Standard optic solar trans:',
      &            (TMCT(IVALS(IZ),I,M),M=1,5)
                 call edisp(itu,outs)
-                DO 2021 KK=1,NBCTMC(IVALS(IZ),I)
+                DO KK=1,NBCTMC(IVALS(IZ),I)
                   if(NBCTT(IVALS(IZ),KK,I).eq.0)then
                     msg=' sensing total radiation'
                   elseif(NBCTT(IVALS(IZ),KK,I).eq.1)then
@@ -2191,7 +2321,7 @@ C Remind user of standard optics as well as the alternatives.
      &              ' setpoint @ ',BACTPT(IVALS(IZ),KK,I),' alt solar',
      &              (TMCT2(IVALS(IZ),I,M,KK),M=1,5)
                   CALL EDISP(itu,OUTS)
- 2021           continue
+                enddo  ! of kk
               endif
  2020       continue
             call edisp(itu,' ')
@@ -2213,25 +2343,46 @@ C then rescan that zone file with verbose setting.
           if(IOBS(ivz).gt.0.and.nbobs(ivz).gt.0)then
             call edisp(itu,
      &   'Block X- Y- Z- coords DX- DY- DZ- values Orient Opacity')
-            DO 9995 I=1,nbobs(ivz)
+            DO I=1,nbobs(ivz)
               llbm=LNBLOCKMAT(ivz,I)
               llbn=LNBLOCKNAME(ivz,I)
               if(BLOCKTYP(ivz,I)(1:4).eq.'obs '.or.
      &           BLOCKTYP(ivz,I)(1:4).eq.'obs3')then
-                WRITE(OUTS,9994)I,XOB(ivz,I),YOB(ivz,I),ZOB(ivz,I),
+                WRITE(OUTS,'(I3,8F8.1,F5.2,4a)') I,
+     &            XOB(ivz,I),YOB(ivz,I),ZOB(ivz,I),
      &            DXOB(ivz,I),DYOB(ivz,I),DZOB(ivz,I),
-     &            BANGOB(ivz,I,1),BANGOB(ivz,I,2),OPOB(ivz,I),
-     &            BLOCKNAME(ivz,I)(1:llbn),BLOCKMAT(ivz,I)(1:llbm)
- 9994           FORMAT(I3,8F8.1,F5.2,' ',a,' ',a)
+     &            BANGOB(ivz,I,1),BANGOB(ivz,I,2),OPOB(ivz,I),' ',
+     &            BLOCKNAME(ivz,I)(1:llbn),' ',BLOCKMAT(ivz,I)(1:llbm)
                 call edisp(itu,OUTS)
               else
                 WRITE(OUTS,'(i3,a,44x,3a)')I,' user defined coords ',
      &            BLOCKNAME(ivz,I)(1:llbn),' ',BLOCKMAT(ivz,I)(1:llbm)
                 call edisp(itu,OUTS)
               endif
- 9995       CONTINUE
+            enddo  ! of i
             CALL EDISP(itu,' ')
           endif
+
+          if(nbvis(ivz).gt.0)then
+            call edisp(itu,'visual type name    composition')
+            do i=1,nbvis(ivz)
+              llbm=LNVISMAT(ivz,i)
+              llbn=LNVISNAME(ivz,i)
+              if(VISTYP(ivz,i)(1:4).eq.'vis ')then
+                WRITE(outs,'(4A)')' vis 1rot  ',
+     &            VISNAME(ivz,i)(1:llbn),' ',VISMAT(ivz,i)(1:llbm)
+              elseif(VISTYP(ivz,i)(1:4).eq.'vis3')then
+                WRITE(outs,'(4A)')' vis 3rot  ',
+     &            VISNAME(ivz,i)(1:llbn),' ',VISMAT(ivz,i)(1:llbm)
+              elseif(VISTYP(ivz,i)(1:4).eq.'visp')then
+                WRITE(outs,'(4A)')' vis poly  ',
+     &            VISNAME(ivz,i)(1:llbn),' ',VISMAT(ivz,i)(1:llbm)
+              endif
+              call edisp(itu,outs)
+            enddo  ! of iv
+            CALL EDISP(itu,' ')
+          endif
+
           if(ISI(ivz).EQ.1)then
             call FINDFIL(LSHAD(ivz),XST)
             if(XST)then
@@ -2242,6 +2393,7 @@ C then rescan that zone file with verbose setting.
      &          ' Shading patterns have not yet been calculated.')
             endif
           endif
+
           if(IHC(ivz).EQ.1)then
             if(zoneextrainfo.eq.1)then
               call edisp(itu,
@@ -2254,6 +2406,15 @@ C then rescan that zone file with verbose setting.
               endif
             endif
           endif
+
+C Note cfd descriptions, rescan the zone file with verbose setting.
+          if(LCFD(ivz)(1:7).eq.'UNKNOWN')then
+            continue
+          else
+            call edisp(itu,'  ')
+            iitrc=2
+            call DFDREAD(ivz,iitrc,itu,ier)
+          endif 
         endif
 
 C Check for mismatch in surface attributes and boundary conditions.
@@ -2326,7 +2487,7 @@ C as an earlier one.
             ilcot=0
             duplicate=.false.
             if(IZ.gt.1)then
-              do 99 IZO=1,IZ
+              do IZO=1,IZ
                 lcot=LPROJ(IVALS(IZO))
                 if(lco(1:lnblnk(lco)).eq.lcot(1:lnblnk(lcot)))then
                   if(IZO.ne.IZ)then
@@ -2335,7 +2496,7 @@ C as an earlier one.
                     goto 101
                   endif
                 endif
-  99          continue
+              enddo  ! of izo
             endif
  101        if(duplicate.and.ilcot.ne.0)then
               write(outs,'(2a)') ' Uses same operations as zone ',
@@ -2377,9 +2538,9 @@ C Report code complience information for the project. Do this only
 C if the zones are fully attributed.
       if(zoneextrainfo.ge.1)then
         allattribok=.true.
-        do 699 ijk=1,INPIC
+        do ijk=1,INPIC
           if(.NOT.attribok(IVALS(IJK))) allattribok=.false.
- 699    continue
+        enddo  ! of ijk
         if(.NOT.allattribok)then
           call edisp(itu,'  ')
           call edisp(itu,'Project AU reporting not included because')
@@ -2511,7 +2672,7 @@ C set to 'verbose all' then include all of them.
         call edisp(itu,' Multi-layer constructions used:')
 C Debug.
 C        write(6,*) 'nmlc is ',nmlc,databaseinfo
-        do 342 imlc=1,nmlc
+        do imlc=1,nmlc
           found=.false.
           mlc_name=mlcname(imlc)(1:12)
           call mlcrefs(mlc_name,areamlc,tareamlc,found)
@@ -2532,7 +2693,12 @@ C        write(6,*) 'nmlc is ',nmlc,databaseinfo
               call edisp(itu,outs)
             endif
           endif
-  342   continue
+        enddo  ! of imlc
+
+C << materials used portion of the report: for each find the: >>
+C << total area in model, then use the thickness and density to >>
+C << report on kg of each >>
+
       endif
 
 C If writing to file call ctldumpt to close it and switch back to text feedback.
@@ -2750,9 +2916,13 @@ C see if there are shading and obstruction files.
                   nsurfinso(iz)=0
                   DO 678 I=1,NZSUR(iz)
                     ioc=IZSTOCN(iz,i)
+
+C At this point CFC and CFC2 surfaces are not included as
+C insolation sources (?).
                     if(SSOTHER(ioc,1)(1:5).eq.'EXTER'.and.
      &                 SSOTF(ioc)(1:4).ne.'OPAQ'.and.
-     &                 SSOTF(ioc)(1:4).ne.'CFC ')then
+     &                 SSOTF(ioc)(1:4).ne.'CFC '.and.
+     &                 SSOTF(ioc)(1:4).ne.'CFC2')then
                       nsurfinso(iz)=nsurfinso(iz)+1
                       isurfinso(iz,nsurfinso(iz))=I
                     endif
@@ -2765,9 +2935,13 @@ C see if there are shading and obstruction files.
                   nsurfinso(iz)=0
                   DO 679 I=1,NZSUR(iz)
                     ioc=IZSTOCN(iz,i)
+
+C At this point CFC and CFC2 surfaces are not included as
+C insolation sources (?).
                     if(SSOTHER(ioc,1)(1:5).eq.'EXTER'.and.
      &                 SSOTF(ioc)(1:4).ne.'OPAQ'.and.
-     &                 SSOTF(ioc)(1:4).ne.'CFC ')then
+     &                 SSOTF(ioc)(1:4).ne.'CFC '.and.
+     &                 SSOTF(ioc)(1:4).ne.'CFC2')then
                       nsurfinso(iz)=nsurfinso(iz)+1
                       isurfinso(iz,nsurfinso(iz))=I
                     endif
@@ -2814,9 +2988,13 @@ C Otherwise assume all applicable for shading and insolation.
                 nsurfinso(iz)=0
                 DO 778 I=1,NZSUR(iz)
                   ioc=IZSTOCN(iz,i)
+
+C At this point CFC and CFC2 surfaces are not included as
+C insolation sources (?).
                   if(SSOTHER(ioc,1)(1:5).eq.'EXTER'.and.
      &               SSOTF(ioc)(1:4).ne.'OPAQ'.and.
-     &               SSOTF(ioc)(1:4).ne.'CFC ')then
+     &               SSOTF(ioc)(1:4).ne.'CFC '.and.
+     &               SSOTF(ioc)(1:4).ne.'CFC2')then
                     nsurfinso(iz)=nsurfinso(iz)+1
                     isurfinso(iz,nsurfinso(iz))=I
                   endif
@@ -2828,9 +3006,13 @@ C Otherwise assume all applicable for shading and insolation.
                 nsurfinso(iz)=0
                 DO 779 I=1,NZSUR(iz)
                   ioc=IZSTOCN(iz,i)
+
+C At this point CFC and CFC2 surfaces are not included as
+C insolation sources (?).
                   if(SSOTHER(ioc,1)(1:5).eq.'EXTER'.and.
      &               SSOTF(ioc)(1:4).ne.'OPAQ'.and.
-     &               SSOTF(ioc)(1:4).ne.'CFC ')then
+     &               SSOTF(ioc)(1:4).ne.'CFC '.and.
+     &               SSOTF(ioc)(1:4).ne.'CFC2')then
                     nsurfinso(iz)=nsurfinso(iz)+1
                     isurfinso(iz,nsurfinso(iz))=I
                   endif
@@ -3279,7 +3461,8 @@ C For floors facing outside assume downward hc coef.
                   xuavwall = xuavwall + (SSNA(icc) * UVD)
                 endif
               elseif(SSOTF(icc)(1:4).ne.'OPAQ'.and.
-     &               SSOTF(icc)(1:4).ne.'CFC ')then
+     &               SSOTF(ioc)(1:4).ne.'CFC '.and.
+     &               SSOTF(icc)(1:4).ne.'CFC2')then
                 if(SSVFC(icc)(1:4).eq.'CEIL'.or.
      &             SSVFC(icc)(1:4).eq.'SLOP')then
 

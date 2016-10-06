@@ -286,6 +286,7 @@ C default data (and set ip3ver to 2 in case user does nothing else).
         CALL EROPER(ITRC,ITRU,IUO,ICOMP,IER)
 
 C Do cursory check to see if the file is sorted.
+C << if newer ip3ver then do not bother with this >>
         sorted=.true.
         problem=.false.
         DO 401 IDTY=1,NBDAYTYPE
@@ -546,7 +547,6 @@ C The from scratch should intially be version 2.1
           helptopic='operations_synopsys'
           call gethelptext(helpinsub,helptopic,nbhelp)
           CALL PHELPD('operation setup',nbhelp,'-',0,0,IER)
-C          call initcasday(ier)
           islot=0  ! first time use of initcasday21
           call initcasday21(icomp,islot,ier)
 
@@ -698,17 +698,21 @@ C Help text for this menu.
 C If not currently sorted then warn the user. Sometimes this happens
 C even if modopr has not been set.
           if(.NOT.sorted)then
-            DOK=.true.
-            CALL ASKOK(
-     &        'Before exiting do you wish to sort possible changes',
-     &        'to the casual gain periods?',OK,DOK,nbhelp)
-            if(ok)then
+            if(ip3ver(icomp).eq.21)then
+	      continue  ! avoid attempting to source v21 file.
+	    else
+              DOK=.true.
+              CALL ASKOK(
+     &          'Before exiting do you wish to sort possible changes',
+     &          'to the casual gain periods?',OK,DOK,nbhelp)
+              if(ok)then
 
 C Sort the gains and then update the file and mark MODOPR.
-              call PROCESSOLDCAS(ICOMP,0,iuout)
-              IUO=IFIL+1
-              CALL EMKOPER(IUO,LPROJ(ICOMP),ICOMP,IER)
-              MODOPR=.false.
+                call PROCESSOLDCAS(ICOMP,0,iuout)
+                IUO=IFIL+1
+                CALL EMKOPER(IUO,LPROJ(ICOMP),ICOMP,IER)
+                MODOPR=.false.
+              endif
             endif
           endif
         endif
@@ -3054,7 +3058,6 @@ C Electrical data flag and elctrical data.
       REAL PF,PWR,BVOLT
 
 C How many of each gain type is there each zone/gaintype/daytype.
-C << this common should be re-sized 7 -> MGTY >>
       common/loadcnt/loadcount(mcom,MGTY,MDTY),
      &  loadm2count(mcom,MGTY,MDTY),loadmixed(mcom,MGTY,MDTY)
       logical browse,ok,silent,dok,XST
@@ -3220,7 +3223,11 @@ C If a long list include page facility text.
       VERT(M+2)  ='@ edit casual gain labels:types'
       VERT(M+3)  ='+ add/delete/copy/import gains '
       VERT(M+4)  ='* scale existing gains         '
-      VERT(M+5)  ='# check/remove overlaps        '
+      if(ip3ver(icomp).ge.21)then
+        VERT(M+5)='# Not applicable               '
+      else
+        VERT(M+5)='# check/remove overlaps        '
+      endif
       VERT(M+6)  ='! list current information     '
       VERT(M+7)  ='? help                         '
       VERT(M+8)  ='- exit this menu               '
@@ -3608,7 +3615,7 @@ C a slot has not been used yet.
         if (islot.eq.5)then
 
 C Assign the next available slot.
-C          if(lodslot(icomp,4).eq.0) islot=4
+          if(lodslot(icomp,4).eq.0) islot=4
           if(lodslot(icomp,3).eq.0) islot=3
           if(lodslot(icomp,2).eq.0) islot=2
           if(lodslot(icomp,1).eq.0) islot=1
@@ -3616,9 +3623,6 @@ C          if(lodslot(icomp,4).eq.0) islot=4
           ip3ver(icomp)=21  ! upgrade file to remember types
           modopr=.true.
           goto 5
-        elseif (islot.eq.4)then
-          call edisp(iuout,'Sorry 4th slot not yet available.')
-          continue   ! not yet available
         else
           write(outs,'(a,i1,2a)') 'Label for gains in slot ',islot,
      &      ' & type ',caskeytype(icomp,islot)
@@ -4025,8 +4029,8 @@ C Can be specified as: W, W/obj, W/m^2, m^2/obj
 C Common portion of help message for detailed dialogs.
       if (IGU.eq.1) then
 
-C User requests gain as W - require gain only. If existing is in W/m2 then multiply
-C up to get W and revise icgtx to be positive and set icgux.
+C User requests gain as W - require gain only. If existing is in W/m2 then
+C multiply up to get W and revise icgtx to be positive and set icgux.
  20     if (icguX.eq.1) then
           call edisp(iuout,'Converting from W/m2 to Watts')
           write (HOLD,'(2f8.1,a)') CMGSX*zb,CMGLX*zb,'  '
@@ -4794,7 +4798,6 @@ C << separate documentation string for air flows and casual gains.
           if(oprdescc(1:2).ne.'  ')oprdesc(idest)=oprdescc
         endif
 
-C << revise to loop >>
         if(isource.eq.0)then
           do il=1,7
             lodlabel(idest,il)=lodlabelc(il)
@@ -4827,9 +4830,13 @@ C If the user has asked for verbosity list out the result.
 
 C Because there is a small chance that the source file lacked fully
 C sorted casual gains (e.g. was an older file) force a sorting.
-      call edisp(iuout,'Sorting imported casual gains...')
-      call PROCESSOLDCAS(idest,0,iuout)
-      call edisp(iuout,'Sorting imported casual gains...completed.')
+      if(ip3ver(icomp).ge.21)then
+        continue
+      else
+        call edisp(iuout,'Sorting imported casual gains...')
+        call PROCESSOLDCAS(idest,0,iuout)
+        call edisp(iuout,'Sorting imported casual gains...completed.')
+      endif
 
 C Save the destination operation file.
       if(act(1:1).eq.'-')then
@@ -4992,8 +4999,8 @@ C Clear and setup plot area.
       CALL startbuffer()
 
 C Setup and pass in parameters to win3d. Offset 11 char on left,
-C 13 char on right, 8 lines on top and 3 below the graphs.
-      iiw1=11; iiw2=13; iiw3=8; iiw4=3; iimenu=menuchw
+C 13 char on right, 9 lines on top and 3 below the graphs.
+      iiw1=11; iiw2=13; iiw3=9; iiw4=3; iimenu=menuchw
       iigl=igl; iigr=igr; iigt=igt; iigb=igb; iigw=igw; iigwh=igwh
       CALL win3d(iimenu,iiw1,iiw2,iiw3,iiw4,
      &  iigl,iigr,iigt,iigb,iigw,iigwh)
@@ -5097,11 +5104,15 @@ C << can this be generalized >>
  65     continue
  60   continue
 
-C Plot curves.
+C Plot curves. If the 4th slot filled do that as well.
       do 70 IHR=1,24
         XST=real(IHR-1)
         XFN=real(IHR)
-        do 75 I=1,3
+        if(lodslot(icomp,1).ne.0) loop=1
+        if(lodslot(icomp,2).ne.0) loop=2
+        if(lodslot(icomp,3).ne.0) loop=3
+        if(lodslot(icomp,4).ne.0) loop=4
+        do 75 I=1,loop
           if(COLOK)then
             iicol=i
             call winscl('z',iicol)
@@ -5178,7 +5189,11 @@ C Plot curves.
       do 170 IHR=1,24
         XST=real(IHR-1)
         XFN=real(IHR)
-        do 175 I=1,3
+        if(lodslot(icomp,1).ne.0) loop=1
+        if(lodslot(icomp,2).ne.0) loop=2
+        if(lodslot(icomp,3).ne.0) loop=3
+        if(lodslot(icomp,4).ne.0) loop=4
+        do 175 I=1,loop
           if (COLOK)then
             iicol=i
             call winscl('z',iicol)
@@ -5255,7 +5270,11 @@ C Plot curves.
       do 270 IHR=1,24
         XST=real(IHR-1)
         XFN=real(IHR)
-        do 275 I=1,3
+        if(lodslot(icomp,1).ne.0) loop=1
+        if(lodslot(icomp,2).ne.0) loop=2
+        if(lodslot(icomp,3).ne.0) loop=3
+        if(lodslot(icomp,4).ne.0) loop=4
+        do 275 I=1,loop
           if (COLOK)then
             iicol=i
             call winscl('z',iicol)
@@ -5294,31 +5313,35 @@ C Title and labels.
       iside=1
       isize=1
       ifont=1
-      call viewtext(outs,iside,isize,ifont)
-      iid1=igl+20; iid2=iigt-65;
+      call viewtext(outs,iside,isize,ifont) ! 65 becomes 78 69 becomes 82
+      iid1=igl+20; iid2=iigt-78;
       call wstxpt(iid1,iid2,' Total sensible')
-      iid1=igr-100; iid2=iigt-65;
+      iid1=igr-100; iid2=iigt-78;
       call wstxpt(iid1,iid2,'Total latent')
-      iid1=igl+120; iid2=iigt-69;
+      iid1=igl+120; iid2=iigt-82;
       call pixel2u(iid1,iid2,gx,gy)
       iupdown=0
       isym=0
       CALL etplot(gx,gy,iupdown,isym)
-      iid1=igl+180; iid2=iigt-69;
+      iid1=igl+180; iid2=iigt-82;
       call pixel2u(iid1,iid2,gx,gy)
       iupdown=1
       CALL etplot(gx,gy,iupdown,isym)
-      iid1=igr-120; iid2=iigt-69;
+      iid1=igr-120; iid2=iigt-82;
       call pixel2u(iid1,iid2,gx,gy)
       iupdown=0
       CALL etplot(gx,gy,iupdown,isym)
-      iid1=igr-180; iid2=iigt-69;
+      iid1=igr-180; iid2=iigt-82;
       call pixel2u(iid1,iid2,gx,gy)
       iupdown=-4
       CALL etplot(gx,gy,iupdown,isym)
 
-C For each of the currently used slots draw legend. << change 3 >>
-      do 300 I=1,3
+C For each of the currently used slots draw legend.
+      if(lodslot(icomp,1).ne.0) loop=1
+      if(lodslot(icomp,2).ne.0) loop=2
+      if(lodslot(icomp,3).ne.0) loop=3
+      if(lodslot(icomp,4).ne.0) loop=4
+      do 300 I=1,loop
         if(lodslot(icomp,i).gt.0)then
           lnlb=lnblnk(lodlabel(ICOMP,I))
           write(outs,'(2a)') lodlabel(ICOMP,I)(1:lnlb),' sensible'
@@ -5438,7 +5461,8 @@ C ******* initcasday
 C initcasday does initial setup of all casual day types.
 
 C << Has built in assumptions about the number of casual gains and their
-C << order and the units. Consider making more flexible. 
+C << order and the units. Consider making more flexible.
+C << ?? 4th slot >>
       subroutine initcasday(ier)
 
 #include "building.h"
@@ -5725,9 +5749,9 @@ C res can deal with 4 filled slots.
       if(.NOT.firsttime)then
         return   ! task completed
       else
-        if(islot.ge.3)then
+        if(islot.ge.4)then
           call usrmsg(
-     &       'Three slots have been defined. This is the current',
+     &       'Four slots have been defined. This is the current',
      &       'limit. You next task is to define magnitudes.','W')
           return
         else

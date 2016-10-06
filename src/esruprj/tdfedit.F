@@ -548,10 +548,12 @@ C            write(6,*) 'compacting from ',nuwpr,' to ',itnwpr
      &      96,LEXP,'ascii export',IER,nbhelp)
           call ewtdfa(itrc,afil,IUEXP,0,ier)
         elseif(ire.eq.4)then
+          isteps=((itdedoy-itdbdoy)+1)*(NTSPH*24)
           write(outs,'(a,i4,a)')'Currently there are ',NTSPH,' ts/h. '
           call edisp(iuout,outs)
-          write(outs,'(a,i4,a,i4)')'and data is available from day ',
-     &      itdbdoy,' to ',itdedoy
+          write(outs,'(a,i4,a,i4,a,i5,a)')
+     &      'and data is available from day ',
+     &      itdbdoy,' to ',itdedoy,' e.g. ',isteps,' timesteps.'
           call edisp(iuout,outs)
           TIMEJD=real(itdbdoy)
           CALL EASKR(TIMEJD,' Time (as julian day) to start recovery?',
@@ -559,7 +561,7 @@ C            write(6,*) 'compacting from ',nuwpr,' to ',itnwpr
      &     'time=decimal day',IER,nbhelp)
           incr=1
           CALL EASKI(incr,' Number of steps to recover ',' ? ',
-     &      1,'F',100,'F',1,'steps to recover',IER,nbhelp)
+     &      1,'F',10000,'F',1,'steps to recover',IER,nbhelp)
           CALL EASKS(afil,' Ascii export file name? ',' ',
      &      96,LEXP,'ascii export',IER,nbhelp)
           msgl2='  '
@@ -904,11 +906,18 @@ C Take into account NTSPH when dealing with tollerance below.
             write(outs,*)'cday itime rdoty',cday,itime,rdoty
             call edisp(iuout,outs)
           endif
+
+C If RDOTY is greater than TIMEJD then set close TRUE, otherwise
+C check if RDOTY and TIMEJD are close.
           if(.NOT.found)then
-            if(NTSPH.le.6)then
-              call eclose(RDOTY,TIMEJD,0.0006,close)
+            if(RDOTY.gt.TIMEJD)then
+              close=.true.
             else
-              call eclose(RDOTY,TIMEJD,0.00034,close)
+              if(NTSPH.le.6)then
+                call eclose(RDOTY,TIMEJD,0.0006,close)
+              else
+                call eclose(RDOTY,TIMEJD,0.00034,close)
+              endif
             endif
             if(CLOSE)then
               ITREC=IP+49
