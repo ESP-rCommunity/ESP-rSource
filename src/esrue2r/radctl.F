@@ -42,28 +42,18 @@ C If VAL is < 0 then return current setting otherwise set par=VAL.
 
 C Set all values to -1 (i.e. unset).
 C Direct values.
-      xdp=-1.
-      xds=-1.
-      xdj=-1.
-      xdt=-1.
-      xdc=-1.
-      xdr=-1.
+      xdp=-1.0; xds=-1.0; xdj=-1.0
+      xdt=-1.0; xdc=-1.0; xdr=-1.0
 
 C Specular values.
-      xsj=-1.
-      xst=-1.
+      xsj=-1.0; xst=-1.0
 
 C Ambient values.
-      xab=-1.
-      xaa=-1.
-      xad=-1.
-      xas=-1.
-      xar=-1.
-      xav=-1.
+      xab=-1.0; xaa=-1.0; xad=-1.0
+      xas=-1.0; xar=-1.0; xav=-1.0
 
 C Reflections.
-      xlr=-1.
-      xlw=-1.
+      xlr=-1.0; xlw=-1.0
 
 C Mist. - not active yet
 C      xms=-1.
@@ -246,72 +236,74 @@ C Write out new string.
         IPOS=IPOSE+1
         if (xdp.ge.0.0) then
           IPOSE=IPOS+9
-          write (crenrp(IPOS:IPOSE),'(1x,a3,1x,i4)') '-dp',int(xdp)
+          write (crenrp(IPOS:IPOSE),'(a,1x,i4)') ' -dp',int(xdp)
           IPOS=IPOSE+1
         endif
         if (xds.ge.0.0) then
           IPOSE=IPOS+9
-          write (crenrp(IPOS:IPOSE),'(1x,a3,1x,f4.2)') '-ds',xds
+          write (crenrp(IPOS:IPOSE),'(a,1x,f4.2)') ' -ds',xds
           IPOS=IPOSE+1
         endif
         if (xdj.ge.0.0) then
           IPOSE=IPOS+9
-          write (crenrp(IPOS:IPOSE),'(1x,a3,1x,f4.2)') '-dj',xdj
+          write (crenrp(IPOS:IPOSE),'(a,1x,f4.2)') ' -dj',xdj
           IPOS=IPOSE+1
         endif
         if (xdt.ge.0.0) then
           IPOSE=IPOS+9
-          write (crenrp(IPOS:IPOSE),'(1x,a3,1x,f4.2)') '-dt',xdt
+          write (crenrp(IPOS:IPOSE),'(a,1x,f4.2)') ' -dt',xdt
           IPOS=IPOSE+1
         endif
         if (xdc.ge.0.0) then
           IPOSE=IPOS+9
-          write (crenrp(IPOS:IPOSE),'(1x,a3,1x,f4.2)') '-dc',xdc
+          write (crenrp(IPOS:IPOSE),'(a,1x,f4.2)') ' -dc',xdc
           IPOS=IPOSE+1
         endif
         if (xdr.ge.0.0) then
           IPOSE=IPOS+7
-          write (crenrp(IPOS:IPOSE),'(1x,a3,1x,i2)') '-dc',int(xdr)
+          write (crenrp(IPOS:IPOSE),'(a,1x,i2)') ' -dc',int(xdr)
           IPOS=IPOSE+1
         endif
-        if (xsj.ge.0.0) then
-          IPOSE=IPOS+9
-          write (crenrp(IPOS:IPOSE),'(1x,a3,1x,f4.2)') '-sj',xsj
-          IPOS=IPOSE+1
-        endif
+
+C rtrace no longer includes -sj as an option.
+C        if (xsj.ge.0.0) then
+C          IPOSE=IPOS+9
+C          write (crenrp(IPOS:IPOSE),'(a,1x,f4.2)') ' -sj',xsj
+C          IPOS=IPOSE+1
+C        endif
         if (xst.ge.0.0) then
           IPOSE=IPOS+9
-          write (crenrp(IPOS:IPOSE),'(1x,a3,1x,f4.2)') '-st',xst
+          write (crenrp(IPOS:IPOSE),'(a,1x,f4.2)') ' -st',xst
           IPOS=IPOSE+1
         endif
         if (xab.ge.0.0) then
           IPOSE=IPOS+7
-          write (crenrp(IPOS:IPOSE),'(1x,a3,1x,i2)') '-ab',int(xab)
+          write (crenrp(IPOS:IPOSE),'(a,1x,i2)') ' -ab',int(xab)
           IPOS=IPOSE+1
         endif
         if (xaa.ge.0.0) then
           IPOSE=IPOS+9
-          write (crenrp(IPOS:IPOSE),'(1x,a3,1x,f4.2)') '-aa',xaa
+          write (crenrp(IPOS:IPOSE),'(a,1x,f4.2)') ' -aa',xaa
           IPOS=IPOSE+1
         endif
         if (xad.ge.0.0) then
           IPOSE=IPOS+9
-          write (crenrp(IPOS:IPOSE),'(1x,a3,1x,i4)') '-ad',int(xad)
+          write (crenrp(IPOS:IPOSE),'(a,1x,i4)') ' -ad',int(xad)
           IPOS=IPOSE+1
         endif
         if (xas.ge.0.0) then
           IPOSE=IPOS+9
-          write (crenrp(IPOS:IPOSE),'(1x,a3,1x,i4)') '-as',int(xas)
+          write (crenrp(IPOS:IPOSE),'(a,1x,i4)') ' -as',int(xas)
           IPOS=IPOSE+1
         endif
         if (xar.ge.0.0) then
           IPOSE=IPOS+9
-          write (crenrp(IPOS:IPOSE),'(1x,a3,1x,i4)') '-ar',int(xar)
+          write (crenrp(IPOS:IPOSE),'(a,1x,i4)') ' -ar',int(xar)
           IPOS=IPOSE+1
         endif
         if (xav.ge.0.0) then
-          IPOSE=IPOS+19
-         write(crenrp(IPOS:IPOSE),'(1x,a3,3(1x,f4.1))')'-av',xav,xav,xav
+          IPOSE=IPOS+28
+         write(crenrp(IPOS:IPOSE),'(a,3f8.4)')' -av',xav,xav,xav
           IPOS=IPOSE+1
         endif
         if (xlr.ge.0.0) then
@@ -321,7 +313,7 @@ C Write out new string.
         endif
         if (xlw.ge.0.0) then
           IPOSE=IPOS+10
-          write (crenrp(IPOS:IPOSE),'(1x,a3,1x,f5.3)') '-lw',int(xlw)
+          write (crenrp(IPOS:IPOSE),'(a,1x,f5.3)') ' -lw',int(xlw)
           IPOS=IPOSE+1
         endif
       endif

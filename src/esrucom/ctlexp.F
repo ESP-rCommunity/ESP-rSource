@@ -261,12 +261,12 @@ C Each call is a toggle.
       ixopen=ixopen+1
       if(ixopen.GT.1)ixopen=0
       if(ixopen.eq.0)then
-        write(outs,'(a,a)') 'closing export file: ',xfile
-        call usrmsg(outs,' ','-')
+        write(outs248,'(a,a)') 'closing: ',xfile(1:lnblnk(xfile))
+        call edisp248(iuout,outs248,100)
         if(tg.eq.'X')then
           CALL ERPFREE(ixunit,ISTAT)
           CALL ERPFREE(ixpunit,ISTAT)
-          write(outs248,'(2a)') 'closing export parameter file: ',
+          write(outs248,'(2a)') 'closing parameter file: ',
      &      ixpfile
           call edisp248(iuout,outs248,100)
           call usrmsg(outs,'reporting >> to display ','-')

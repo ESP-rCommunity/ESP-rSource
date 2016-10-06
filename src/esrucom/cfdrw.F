@@ -24,9 +24,13 @@ C DFDREAD:   Reads the CFD configuration file (version 2,2.1 and 2.2)
 C NEW2OLD:   Copies new data structure to old.
 C CFMFSU:    Set up CFD to mass flow connections/ components.
 C MFLISTemp: List common block contents for debugging only.
-C CFDDEFLT: Sets default values for all data items.
+C CFDDEFLT: Sets default values for all solution equation data items.
 C SCHCHK:   Checks the turbulent schmidt number of all containments.
 C BCEKCK:   Checks the boundary conditions of all boundary cells  
+C RESETCFD: Clear all CFD commons that are independant of domain and
+C           zone.
+C CFDLIST:  Lists available CFD domain files and their zone 
+C           associations.
 
 C ************* DFDSV 
 C DFDSV saves the room air movement description file (version 2).
@@ -53,8 +57,12 @@ C Passed parameters.
       COMMON/INITIA/UINIT(MNZ),VINIT(MNZ),WINIT(MNZ),PINIT(MNZ),
      &              TINIT(MNZ),TEINIT(MNZ),EDINIT(MNZ)
       COMMON/LINRFC/URFCU(MNZ),URFCV(MNZ),URFCW(MNZ),URFCP(MNZ),
-     &              URFCT(MNZ),URFCK(MNZ),URFCE(MNZ),URFCVS(MNZ)
+     &              URFCT(MNZ),URFCK(MNZ),URFCE(MNZ),URFCVS(MNZ),
+     &              URFCC(MNZ,MCTM)
       COMMON/LINRFC1/URFCD(MNZ)
+      COMMON/LINRFC2/URFCU2(MNZ),URFCV2(MNZ),URFCW2(MNZ),URFCP2(MNZ),
+     &              URFCT2(MNZ),URFCK2(MNZ),URFCE2(MNZ),URFCVS2(MNZ),
+     &              URFCC2(MNZ,MCTM)
       
       common/cfdfil/LCFD(MCOM),IFCFD(MCOM)
       COMMON/ICFNOD/ICFD,ICP
@@ -65,23 +73,23 @@ C CALLU (logical) U equation to be solved.
 C CALLV (logical) V equation to be solved.
 C CALLW (logical) W equation to be solved.
 C CALLT (logical) Temperature equation to be solved.
-C CALLC (logical) C (??) equation to be solved.
-C KEMDL (logical) (??) equation to be solved.
+C CALLC (logical) Depreciated variable, replaced by CALPOL.
+C KEMDL (logical) k-epsilon turbulence equations to be solved.
 C BUOY (logical) buoyancy equation to be solved.
 C BOUSSI (logical) use Boussinesq approx.
 C ZEROT (logical) use Zero-equation fixed-eddy-viscosity turbulence.
-C ZandKE (logical) (??)
+C ZandKE (logical) use fixed eddy viscosity then k-epsilon.
 C MITzero (logical) use the MIT zero-equation model
 
       common/EQTION3/CALLMA(MNZ),CALPOL(MCTM,MNZ),POLNAM(MCTM,MNZ),NCTM,
-     &      JHUMINDX
+     &      JHUMINDX,URFC(MCTM)
 C CALPOL Calculate contaminant concentration
 C CALLMA (logical) calculate local mean age of air.
 C NCTM total number of contaminants in a model
 C JHUMINDX contaminant number representing water (humidity)
 
-      COMMON/ZTURB/rMOOT,nZtoKE
-      COMMON/BUOYAN/BUOYA,BOUSSA,TBAR
+      COMMON/ZTURB/rMOOT(MNZ),nZtoKE(MNZ)
+      COMMON/BUOYAN/BUOYA,BOUSSA,TBAR(MNZ)
 
 C Solution methods.
       common/METHDS/ITURB(MNZ),IBUOY(MNZ)
@@ -396,13 +404,13 @@ C Solution methods
       elseif (ITURB(ICFD).eq.1) then
         write(IUF,'(a)',IOSTAT=ios,ERR=3) 'Turbulence 1 # k-e model'
       elseif (ITURB(ICFD).eq.2) then
-        write(IUF,'(a,f6.2,a)',IOSTAT=ios,ERR=3) 'Turbulence 2 ',rMOOT,
-     &                                        ' # fixed eddy viscosity'
+        write(IUF,'(a,f6.2,a)',IOSTAT=ios,ERR=3) 'Turbulence 2 ',
+     &                            rMOOT(ICFD),' # fixed eddy viscosity'
       elseif (ITURB(ICFD).eq.3) then
         write(IUF,'(a)',IOSTAT=ios,ERR=3) 'Turbulence 3 # MIT'
       elseif (ITURB(ICFD).eq.4) then
         write(IUF,'(a,f6.2,i5,a)',IOSTAT=ios,ERR=3) 'Turbulence 4 ',
-     &                    rMOOT,nZtoKE,' # fixed eddy viscosity -> k-e'
+     &        rMOOT(ICFD),nZtoKE(ICFD),' # fixed eddy viscosity -> k-e'
       endif
       if (IBUOY(ICFD).eq.0) then
         write(IUF,'(a)',IOSTAT=ios,ERR=3) 'Buoyancy 0 # ignored'
@@ -411,7 +419,7 @@ C Solution methods
      &                URFCD(ICFD),' # full calc, density lin relax fac'
       elseif (IBUOY(ICFD).eq.2) then
         write(IUF,'(a,f6.2,a)',IOSTAT=ios,ERR=3) 'Buoyancy 2 ',
-     &                                   Tbar,' # Boussinesq approx.'
+     &                               Tbar(ICFD),' # Boussinesq approx.'
       endif
 
 
@@ -419,49 +427,51 @@ C Equations to be solved, initial values and relaxation factors.
       write(IUF,'(a)',IOSTAT=ios,ERR=3)'# Equations to be solved:'
       write(IUF,'(a)',IOSTAT=ios,ERR=3)'*solution_equations'
       write(IUF,'(a)',IOSTAT=ios,ERR=3)
-     &  '#  Type  Initial value  Relaxation type and factor'
+     &  '#  Type  Initial value  Relaxation type and factors'
 
 C Pressure
-      write(IUF,'(a,f8.3,a,f6.3)',IOSTAT=ios,ERR=3) 
-     &  'Pressure ',PINIT(ICFD),' Linear ',URFCP(ICFD)
+      write(IUF,'(a,f8.3,a,f6.3,1X,f6.3)',IOSTAT=ios,ERR=3) 
+     &  'Pressure ',PINIT(ICFD),' Linear ',URFCP(ICFD),URFCP2(ICFD)
 
 C Velocity.
       if(CALLU(ICFD))then
-        write(IUF,'(a,G10.3,a,f6.3)',IOSTAT=ios,ERR=3) 
-     &    'Vel U ',UINIT(ICFD),' Linear ',URFCU(ICFD)
+        write(IUF,'(a,G10.3,a,f6.3,1X,f6.3)',IOSTAT=ios,ERR=3) 
+     &    'Vel U ',UINIT(ICFD),' Linear ',URFCU(ICFD),URFCU2(ICFD)
       endif
       if(CALLV(ICFD))then
-        write(IUF,'(a,G10.3,a,f6.3)',IOSTAT=ios,ERR=3) 
-     &    'Vel V ',VINIT(ICFD),' Linear ',URFCV(ICFD)
+        write(IUF,'(a,G10.3,a,f6.3,1X,f6.3)',IOSTAT=ios,ERR=3) 
+     &    'Vel V ',VINIT(ICFD),' Linear ',URFCV(ICFD),URFCV2(ICFD)
       endif
       if(CALLW(ICFD))then
-        write(IUF,'(a,G10.3,a,f6.3)',IOSTAT=ios,ERR=3) 
-     &    'Vel W ',WINIT(ICFD),' Linear ',URFCW(ICFD)
+        write(IUF,'(a,G10.3,a,f6.3,1X,f6.3)',IOSTAT=ios,ERR=3) 
+     &    'Vel W ',WINIT(ICFD),' Linear ',URFCW(ICFD),URFCW2(ICFD)
       endif
 
 C Temperature.
       if(CALLT(ICFD))then
-        write(IUF,'(a,f8.3,a,f6.3)',IOSTAT=ios,ERR=3) 
-     &    'Temp ',TINIT(ICFD),' Linear ',URFCT(ICFD)
+        write(IUF,'(a,f8.3,a,f6.3,1X,f6.3)',IOSTAT=ios,ERR=3) 
+     &    'Temp ',TINIT(ICFD),' Linear ',URFCT(ICFD),URFCT2(ICFD)
       endif
 
 C Turbulence.
-      write(IUF,'(2(a,G10.3))',IOSTAT=ios,ERR=3) 
-     &    'Ted ',TEINIT(ICFD),' Linear ',URFCK(ICFD)
-      write(IUF,'(2(a,G10.3))',IOSTAT=ios,ERR=3) 
-     &    'Epd ',EDINIT(ICFD),' Linear ',URFCE(ICFD)
+      write(IUF,'(2(a,G10.3),1X,G10.3)',IOSTAT=ios,ERR=3) 
+     &    'Ted ',TEINIT(ICFD),' Linear ',URFCK(ICFD),URFCK2(ICFD)
+      write(IUF,'(2(a,G10.3),1X,G10.3)',IOSTAT=ios,ERR=3) 
+     &    'Epd ',EDINIT(ICFD),' Linear ',URFCE(ICFD),URFCE2(ICFD)
 
 C Concentration.
       DO 123 ICTM=1,NCTM
         IF(CALPOL(ICTM,ICFD))THEN
-          write(IUF,'(2(a,1X,G10.3,1X))',IOSTAT=ios,ERR=3) 
-     &    POLNAM(ICTM,ICFD),TEINIT(ICFD),' Linear ',URFCK(ICFD)
+          write(IUF,'(2a,G10.3,1X,G10.3)',IOSTAT=ios,ERR=3) 
+     &                  POLNAM(ICTM,ICFD)(1:LNBLNK(POLNAM(ICTM,ICFD))),
+     &              '  n/a Linear  ',URFCC(ICFD,ICTM),URFCC2(ICFD,ICTM)
         ENDIF
  123  CONTINUE
 
 C Local mean age.
       if(CALLMA(ICFD))then
-        write(IUF,'(a)',IOSTAT=ios,ERR=3) 'Lmage  0.05  Linear 0.6'
+        write(IUF,'(a)',IOSTAT=ios,ERR=3)
+     &       'Lmage  n/a Linear  n/a # currently 0.9 is always assumed'
       endif
      
 C Convergance criteria.
@@ -478,7 +488,6 @@ C Convergance criteria.
       endif
       write(IUF,'(a)',IOSTAT=ios,ERR=3) 
      &  '*svf  1  # frequency of results writing'
-
 
 C Close file.
       CALL ERPFREE(IUF,ISTAT)
@@ -520,6 +529,8 @@ C     there is an error while scanning file.
 #include "net_flow.h"
 #include "building.h"
 #include "geometry.h"
+#include "espriou.h"
+C espriou.h provides currentfile.
       
       integer lnblnk  ! function definition
 
@@ -553,14 +564,18 @@ C      (used in the case of curvilinear Z)
       COMMON/FDTRFC/FLSDTU(MNZ),FLSDTV(MNZ),FLSDTW(MNZ),FLSDTP(MNZ),
      &              FLSDTT(MNZ),FLSDTK(MNZ),FLSDTE(MNZ)
       COMMON/LINRFC/URFCU(MNZ),URFCV(MNZ),URFCW(MNZ),URFCP(MNZ),
-     &              URFCT(MNZ),URFCK(MNZ),URFCE(MNZ),URFCVS(MNZ)
+     &              URFCT(MNZ),URFCK(MNZ),URFCE(MNZ),URFCVS(MNZ),
+     &              URFCC(MNZ,MCTM)
+      COMMON/LINRFC2/URFCU2(MNZ),URFCV2(MNZ),URFCW2(MNZ),URFCP2(MNZ),
+     &              URFCT2(MNZ),URFCK2(MNZ),URFCE2(MNZ),URFCVS2(MNZ),
+     &              URFCC2(MNZ,MCTM)
       COMMON/INITIA/UINIT(MNZ),VINIT(MNZ),WINIT(MNZ),PINIT(MNZ),
      &              TINIT(MNZ),TEINIT(MNZ),EDINIT(MNZ)
       common/EQTION/CALLU(MNZ),CALLV(MNZ),CALLW(MNZ),CALLT(MNZ),
      &             CALLC(MNZ),KEMDL(MNZ),BUOY(MNZ),BOUSSI(MNZ),
      &             ZEROT(MNZ),ZandKE(MNZ),MITzero(MNZ)
       common/EQTION3/CALLMA(MNZ),CALPOL(MCTM,MNZ),POLNAM(MCTM,MNZ),NCTM,
-     &      JHUMINDX
+     &      JHUMINDX,URFC(MCTM)
       common/param1/MAXITR(MNZ),IMONT(MNZ),JMONT(MNZ),KMONT(MNZ),
      1             IPPHI(MNZ),SRMAX(MNZ)
       common/param2/TITLE(MNZ),CFTRFL(MNZ),LPHI(MNZ)
@@ -578,8 +593,8 @@ C   ICFMFS(ICFD)=mass flow conflation mechanism (0=none, 1=active)
       COMMON/LINRFC1/URFCD(MNZ)
       COMMON/NSSWP/NSSWPU(MNZ),NSSWPV(MNZ),NSSWPW(MNZ),NSSWPP(MNZ),
      &             NSSWPT(MNZ),NSSWPK(MNZ),NSSWPE(MNZ)
-      COMMON/BUOYAN/BUOYA,BOUSSA,TBAR
-      COMMON/ZTURB/rMOOT,nZtoKE
+      COMMON/BUOYAN/BUOYA,BOUSSA,TBAR(MNZ)
+      COMMON/ZTURB/rMOOT(MNZ),nZtoKE(MNZ)
       common/grdmax/NTCX,NTCY,NTCZ
 
 C Domain geometry.
@@ -609,13 +624,17 @@ C Common block for calculation of turbulent Schmidt number for contaminants
      &       TCRIT(MCTM),ISCHMT(MCTM)
       COMMON/CTDFAF/ICTDFAF,SRCE(MNVLS,MCTM,MNZ),ICCSRC
 
+      common/APPNAME/cAppName
+      character cAppName*12
+
       logical origin,xgrid,ygrid,zgrid,zegrid,ortho
       LOGICAL INITFL,CALLU,CALLV,CALLW,CALLT,CALLC,KEMDL,BUOY,BOUSSI
       LOGICAL ZEROT,ZandKE,MITzero
       LOGICAL CALLMA,CALPOL
       Character OUTSTR*124,WORD*124,POLNAM*12,SRCE*12
       CHARACTER TITLE*72,CFTRFL*72,LPHI*72,LCFD*72
-      CHARACTER outs*124,TYPE*6,phrase*64
+      CHARACTER TYPE*6,phrase*64
+      CHARACTER outs*124,outs_pre*124
       character VOLNAME*12, VCsurf*12
 C      character LCND*12, LXND*12, LCNN*12
       LOGICAL BUOYA,BOUSSA
@@ -635,6 +654,7 @@ C Set the CFD zone flag (ICP) to current thermal zone id.
       ICP=izone
       IER=0
       IFL=IFIL+1
+      write(currentfile,'(a)') LCFD(ICP)(1:lnblnk(LCFD(ICP)))
       CALL EFOPSEQ(IFL,LCFD(ICP),1,IER)
 
 C Check whether the file is a CFD-input file version 2 or 2.1 and get 
@@ -690,6 +710,42 @@ C Text feedback.
         iln=max(1,lnblnk(TITLE(ICFD)))
         write(outs,'(a,a)')'Description is: ',TITLE(ICFD)(1:iln)
         call edisp(itu,outs)
+        write(outs,'(a,i1)')'Building-CFD conflation type ',IFCFD(ICP)
+        outs_pre=outs
+        if(IFCFD(ICP).eq.0)then
+          write(outs,'(2a)')outs_pre(1:LNBLNK(outs_pre)),
+     &                                     ': CFD only (no conflation)'
+          call edisp(itu,outs)
+          if(cAppName.ne.'dfs')then
+            write(outs,'(2a)')'  WARNING: A domain with this ',
+     &       'conflation type will not run alongside a building model.'
+            call edisp(itu,outs)
+            write(outs,'(2a)')'           Please use the domain flow ',
+     &                   'solver module (DFS) to simulate this domain.'
+            call edisp(itu,outs)
+          endif
+        elseif(IFCFD(ICP).eq.1)then
+          write(outs,'(2a)')outs_pre(1:LNBLNK(outs_pre)),
+     &                                           ': thermal conflation'
+          call edisp(itu,outs)
+        elseif(IFCFD(ICP).eq.2)then
+          write(outs,'(2a)')outs_pre(1:LNBLNK(outs_pre)),
+     &                                ': integrated thermal conflation'
+          call edisp(itu,outs)
+        elseif(IFCFD(ICP).eq.3)then
+          write(outs,'(2a)')outs_pre(1:LNBLNK(outs_pre)),
+     &                                          ': air flow conflation'
+          call edisp(itu,outs)
+        elseif(IFCFD(ICP).eq.4)then
+          write(outs,'(2a)')outs_pre(1:LNBLNK(outs_pre)),
+     &                                  ': one-way adaptive conflation'
+          call edisp(itu,outs)
+        elseif(IFCFD(ICP).eq.5)then
+          write(outs,'(2a)')outs_pre(1:LNBLNK(outs_pre)),
+     &                      ': conditional two-way adaptive conflation'
+          call edisp(itu,outs)
+        endif
+        call edisp(itu,' ')  
       endif
 
 C Possibly more descriptive text here... << >>
@@ -823,8 +879,8 @@ C For each region read: no of cells, section length and power law coef.
             XLEN=XLEN+XREG(IGR,ICFD)
             if (itrc.gt.0) then
               write(outs,'(a,i4,a,i4,a,f6.2,a,f6.3)') 'X Region',IGR,
-     &          ' cells:',NCELX(IGR,ICFD),' size:',XREG(IGR,ICFD),
-     &           ' power law coef:',Xplaw(IGR,ICFD)
+     &        ', cells:',ABS(NCELX(IGR,ICFD)),', size:',XREG(IGR,ICFD),
+     &                              ', power law coef:',Xplaw(IGR,ICFD)
               call edisp(itu,outs)
             endif
  20       continue
@@ -860,8 +916,8 @@ C For each region read: no of cells, section length and power law coef.
             YLEN=YLEN+YREG(IGR,ICFD)
             if (itrc.gt.0) then
               write(outs,'(a,i4,a,i4,a,F6.2,a,F6.3)') 'Y Region',IGR,
-     &          ' cells:',NCELY(IGR,ICFD),' size:',YREG(IGR,ICFD),
-     &           ' power law coef:',Yplaw(IGR,ICFD)
+     &                       ', cells:',ABS(NCELY(IGR,ICFD)),', size:',
+     &               YREG(IGR,ICFD),', power law coef:',Yplaw(IGR,ICFD)
               call edisp(itu,outs)
             endif
  30       continue
@@ -896,8 +952,8 @@ C For each region read: no of cells, section length and power law coef.
             ZLEN=ZLEN+ZREG(IGR,ICFD)
             if (itrc.gt.0) then
               write(outs,'(a,i3,a,i4,a,F6.2,a,F6.3)') 'Z Region',IGR,
-     &          ' cells:',NCELZ(IGR,ICFD),' size:',ZREG(IGR,ICFD),
-     &           ' power law coef:',Zplaw(IGR,ICFD)
+     &                     ', cells:',ABS(NCELZ(IGR,ICFD)),', size:',
+     &             ZREG(IGR,ICFD),', power law coef:',Zplaw(IGR,ICFD)
               call edisp(itu,outs)
             endif
  40       continue
@@ -957,6 +1013,9 @@ C Check that total number of cells in both Z dirs are the same.
           endif
         endif
  10   continue
+      if(itrc.gt.0)then
+        call edisp(itu,' ')
+      endif
 
 C Check for error flag.
       if (IER.ne.0) then
@@ -1029,6 +1088,7 @@ C Read in volume name, type and geometry.
             TYPE='UNKN  '
             IVOLF(IV,ICFD)=0
             IER=1
+            call edisp(itu,OUTSTR)
             call usrmsg('Did not recognise volume type:',WORD,'W')
           endif
           CALL EGETWI(OUTSTR,K,IVALS,0,NTCX,'F','I start cell',IER)
@@ -1044,15 +1104,34 @@ C Read in volume name, type and geometry.
           CALL EGETWI(OUTSTR,K,KVALF,KVALS,NTCZ,'F','K end cell',IER)
           if (IER.eq.0) KVCELLS(IV,ICFD,2)=KVALF+1
           if (itrc.gt.0) then
-            write (outs,'(5a,6i4)') 'Volume ',VOLNAME(IV,ICFD),
-     &                        ' is of type ',TYPE,', cells:',
-     &                        IVALS,IVALF,JVALS,JVALF,KVALS,KVALF
+            write(outs,'(2a)') 'Volume ',VOLNAME(IV,ICFD)
+            outs_pre=outs
+            if ((TYPE.ne.'Whole ').and.(TYPE.ne.'Block ').and.
+     &                                         (TYPE.ne.'Source')) then
+              write(outs,'(4a)')outs_pre(1:LNBLNK(outs_pre)),
+     &                       ' is on the ',TYPE(1:LNBLNK(TYPE)),' face'
+            else
+              write(outs,'(3a)')outs_pre(1:LNBLNK(outs_pre)),
+     &                              ' is of type ',TYPE(1:LNBLNK(TYPE))
+            endif
+            outs_pre=outs
+            write(outs,'(2a,6i4)')outs_pre(1:LNBLNK(outs_pre)),
+     &                   ', cells:',IVALS,IVALF,JVALS,JVALF,KVALS,KVALF
             call edisp(itu,outs)
           endif
  60     continue
+        if (itrc.gt.0) then
+          write(outs,'(2a)')'NOTE: Face orientations (North, South, ',
+     &            'East and West) are in terms of the CFD domain only.'
+          call edisp(itu,outs)
+          write(outs,'(a)')
+     &       '      This does not necessarily match building geometry.'
+          call edisp(itu,outs)
+          call edisp(itu,' ')
+        endif
       endif
 
-C Check if all boundary cells have been defined as boundary conditions
+C Check if all boundary cells have been defined as boundary conditions.
       CALL BCEKCK(ITRC)
 
 C Now read solid boundary conditions.
@@ -1083,27 +1162,85 @@ C Read data and match to volume with same name.
                 IVTYPE(IV,ICFD)=3
               else
                 IER=1
+                call edisp(itu,OUTSTR)
                 call usrmsg('Did not recognise BC type:',WORD,'W')
               endif
               if (ND.gt.3) then
 
 C Read conflated data.
-                CALL EGETW(OUTSTR,K,WORD,'W','vert bar',IER)
-                CALL EGETW(OUTSTR,K,WORD,'W','conf',IER)
-
 C Following line commented because vertical bar is considered a comment 
 C from circa rev1700
-C                CALL EGETWI(OUTSTR,K,IVALS,1,99,'-','conf type',IER)
+C                CALL EGETW(OUTSTR,K,WORD,'W','vert bar',IER)
+                CALL EGETW(OUTSTR,K,WORD,'W','conf',IER)
+                CALL EGETWI(OUTSTR,K,IVALS,1,99,'-','conf type',IER)
                 IVConfl(IV,ICFD)=IVALS
                 CALL EGETW(OUTSTR,K,WORD,'W','surface',IER)
                 VCsurf(IV,ICFD)=WORD(1:12)
                 IVTYPE(IV,ICFD)=IVTYPE(IV,ICFD)+3
+              endif
+              if (itrc.gt.0) then
+                write(outs,'(3a)')'Solid boundary condition ',
+     &       VOLNAME(IV,ICFD)(1:LNBLNK(VOLNAME(IV,ICFD))),' is of type'
+                if ((IVTYPE(IV,ICFD)-3).gt.0) then
+C Is conflated.
+                  IVTYPEtemp=-(IVTYPE(IV,ICFD)-3)
+                else
+C Is not conflated.
+                  IVTYPEtemp=IVTYPE(IV,ICFD)
+                endif
+                outs_pre=outs
+                if (abs(IVTYPEtemp).eq.1) then
+                  write(outs,'(2a)')outs_pre(1:LNBLNK(outs_pre)),
+     &                                                         ' Temp,'
+                  outs_pre=outs
+                  if (IVTYPEtemp.gt.0) then
+                    write(outs,'(2a,f7.2,a)')
+     &                                   outs_pre(1:LNBLNK(outs_pre)),
+     &      ' with constant temperature ',VOLTemp(IV,ICFD),' degrees C'
+                  else
+                    write(outs,'(3a)')outs_pre(1:LNBLNK(outs_pre)),
+     &           ' with temperature associated with building surface ',
+     &                       VCsurf(IV,ICFD)(1:LNBLNK(VCsurf(IV,ICFD)))
+                  endif
+                  call edisp(itu,outs)
+                elseif (abs(IVTYPEtemp).eq.2) then
+                  write(outs,'(2a)')outs_pre(1:LNBLNK(outs_pre)),
+     &                                                         ' Heat,'
+                  outs_pre=outs
+                  if (IVTYPEtemp.gt.0) then
+                    write(outs,'(2a,f7.2,a)')
+     &                                    outs_pre(1:LNBLNK(outs_pre)),
+     &                ' with constant heat flux ',VOLTemp(IV,ICFD),' W'
+                    call edisp(itu,outs)
+                  else
+                    write(outs,'(3a)')outs_pre(1:LNBLNK(outs_pre)),
+     &                            ' associated with building surface ',
+     &                       VCsurf(IV,ICFD)(1:LNBLNK(VCsurf(IV,ICFD)))
+                    call edisp(itu,outs)
+                  endif
+                elseif (abs(IVTYPEtemp).eq.3) then
+                  write(outs,'(2a)')outs_pre(1:LNBLNK(outs_pre)),
+     &                                                   ' Symmetrical'
+                  outs_pre=outs
+                  if (IVTYPEtemp.gt.0) then
+                    call edisp(itu,outs)
+                  else
+                    write(outs,'(3a)')outs_pre(1:LNBLNK(outs_pre)),
+     &                           ', associated with building surface ',
+     &                       VCsurf(IV,ICFD)(1:LNBLNK(VCsurf(IV,ICFD)))
+                    call edisp(itu,outs)
+                  endif
+                endif
               endif
             endif
  80       continue
 
 C Loop back again for next solid BC.
           goto 88
+        else
+          if(itrc.gt.0)then
+            call edisp(itu,' ')
+          endif
         endif
       endif
 
@@ -1148,8 +1285,23 @@ C Mass flow connection data for version 2.1 and 2.2
                   IMFACT=1
                   ICFDNOD(ICFD)=INODE
                   ICFDCNN(IV,ICFD)=ICNNE
-                  CALL CFMFSU(IV,ITRC,INODE,ICNNE,VOLNAME(IV,ICFD))
+                  if (cAppName.ne.'dfs') then
+                    CALL CFMFSU(IV,ITRC,INODE,ICNNE,VOLNAME(IV,ICFD))
+                  endif
                 ENDIF
+                if (itrc.gt.0) then
+                  write(outs,'(3a,i2)')'Opening ',
+     &                    VOLNAME(IV,ICFD)(1:LNBLNK(VOLNAME(IV,ICFD))),
+     & ' is of type Pressure, conflated to mass flow connection ',ICNNE
+                  call edisp(itu,outs)
+                endif
+              else
+                if (itrc.gt.0) then
+                  write(outs,'(3a,f6.2)')'Opening ',
+     &                    VOLNAME(IV,ICFD)(1:LNBLNK(VOLNAME(IV,ICFD))),
+     &               ' is of type Pressure, pressure ',VOLPres(IV,ICFD) 
+                  call edisp(itu,outs)
+                endif
               endif
             elseif (WORD(1:8).eq.'Velocity') then
 
@@ -1206,8 +1358,31 @@ C Mass flow connection data for version 2.1 and 2.2
                   IMFACT=1
                   ICFDNOD(ICFD)=INODE
                   ICFDCNN(IV,ICFD)=ICNNE
-                  CALL CFMFSU(IV,ITRC,INODE,ICNNE,VOLNAME(IV,ICFD))
+                  if (cAppName.ne.'dfs') then
+                    CALL CFMFSU(IV,ITRC,INODE,ICNNE,VOLNAME(IV,ICFD))
+                  endif
                 ENDIF
+                if (itrc.gt.0) then
+                  write(outs,'(3a,i2)')'Opening ',
+     &                    VOLNAME(IV,ICFD)(1:LNBLNK(VOLNAME(IV,ICFD))),
+     & ' is of type Velocity, conflated to mass flow connection ',ICNNE
+                  call edisp(itu,outs)
+                endif
+              else
+                if (itrc.gt.0) then
+                  write(outs,'(3a,f8.4,a,f6.2,a,f6.2)')'Opening ',
+     &                    VOLNAME(IV,ICFD)(1:LNBLNK(VOLNAME(IV,ICFD))),
+     &               ' is of type Velocity, velocity ',VOLVel(IV,ICFD), 
+     &                               ', temperature ',VOLTemp(IV,ICFD),
+     &                                     ', humdity ',VOLHum(IV,ICFD)
+                  call edisp(itu,outs)
+                  if (VOLArea(IV,ICFD).gt.0.0) then
+                    write(outs,'(a,f8.4)')
+     &             '  This is a small supply opening (SSO) with area ',
+     &                                                 VOLArea(IV,ICFD)
+                    call edisp(itu,outs)
+                  endif
+                endif
               endif
             elseif (WORD(1:4).eq.'Zero') then
 
@@ -1242,8 +1417,24 @@ C Mass flow connection data for version 2.1 and 2.2
                   IMFACT=1
                   ICFDNOD(ICFD)=INODE
                   ICFDCNN(IV,ICFD)=ICNNE
-                  CALL CFMFSU(IV,ITRC,INODE,ICNNE,VOLNAME(IV,ICFD))
+                  if (cAppName.ne.'dfs') then
+                    CALL CFMFSU(IV,ITRC,INODE,ICNNE,VOLNAME(IV,ICFD))
+                  endif
                 ENDIF
+                if (itrc.gt.0) then
+                  write(outs,'(3a,i2)')'Opening ',
+     &                    VOLNAME(IV,ICFD)(1:LNBLNK(VOLNAME(IV,ICFD))),
+     & ' is of type Zero-gradient, conflated to mass flow connection ',
+     &                                                            ICNNE
+                  call edisp(itu,outs)
+                endif
+              else
+                if(itrc.gt.0)then
+                  write(outs,'(3a)')'Opening ',
+     &                    VOLNAME(IV,ICFD)(1:LNBLNK(VOLNAME(IV,ICFD))),
+     &                                      ' is of type Zero-gradient'
+                  call edisp(itu,outs)
+                endif
               endif
             elseif (WORD(1:4).eq.'Mass') then
 
@@ -1286,13 +1477,31 @@ C Following code not really necessary.
                   IMFACT=1
                   ICFDNOD(ICFD)=INODE
                   ICFDCNN(IV,ICFD)=ICNNE
-                  CALL CFMFSU(IV,ITRC,INODE,ICNNE,VOLNAME(IV,ICFD))
+                  if (cAppName.ne.'dfs') then
+                    CALL CFMFSU(IV,ITRC,INODE,ICNNE,VOLNAME(IV,ICFD))
+                  endif
                 ENDIF
+                if (itrc.gt.0) then
+                  write(outs,'(3a,i2)')'Opening ',
+     &                    VOLNAME(IV,ICFD)(1:LNBLNK(VOLNAME(IV,ICFD))),
+     & ' is of type Mass, conflated to mass flow connection ',ICNNE
+                  call edisp(itu,outs)
+                endif
+              else
+                if (itrc.gt.0) then
+                  write(outs,'(3a,f8.4,a,f6.2,a,f6.2)')'Opening ',
+     &                    VOLNAME(IV,ICFD)(1:LNBLNK(VOLNAME(IV,ICFD))),
+     &                   ' is of type Mass, velocity ',VOLVel(IV,ICFD), 
+     &                               ', temperature ',VOLTemp(IV,ICFD),
+     &                                     ', humdity ',VOLHum(IV,ICFD)
+                  call edisp(itu,outs)
+                endif
               endif
 
             else
               IER=1
-              call usrmsg('Did not recognise BC type:',WORD,'W')
+              call edisp(itu,OUTSTR)
+              call usrmsg('Did not recognise BC type: ',WORD,'W')
             endif
           endif
  90     continue
@@ -1300,6 +1509,9 @@ C Following code not really necessary.
 C Loop back again for next air flow BC.
         goto 98
       ELSE
+        if(itrc.gt.0)then
+          call edisp(itu,' ')
+        endif
 
 C Read number of contaminants defined and which one is water (humidity)
         CALL EGETWI(OUTSTR,K,NCTM,0,MCTM,'w','# of contaminants',IER)
@@ -1333,8 +1545,8 @@ C Read data to calculate turbulent Schmidt number
       endif
 
 C List conflated mfs (if one is active) before describing *blockages
-      IF(ICFMFS(ICFD).GT.0)THEN
-        CALL EDISP(ITU,' ')
+      IF((ICFMFS(ICFD).GT.0).and.(cAppName.ne.'dfs').and.
+     &                                                 (itrc.gt.0))THEN
         CALL EDISP(ITU,' Following conflated flow network will be used')
         CALL EDISP(ITU,' ')
         CALL MFLISTEMP
@@ -1356,6 +1568,25 @@ C Read line containing contaminant name information
  705      CONTINUE
         ENDIF
         CALL SCHCHK
+        if (itrc.gt.0) then
+          do 711 ICTM=1,NCTM    
+            write(outs,'(3a)')'Contaminant ',
+     &                  POLNAM(ICTM,ICFD)(1:LNBLNK(POLNAM(ICTM,ICFD))),
+     &                                 ' has turbulent Schmidt number'
+            outs_pre=outs
+            if (ISCHMT(ICTM).eq.1) then
+              write(outs,'(2a)')outs_pre(1:LNBLNK(outs_pre)),
+     &                                  ' calculated at each time step'
+            else
+              write(outs,'(a,1X,f8.4)')outs_pre(1:LNBLNK(outs_pre)),
+     &                                                      SCHMT(ICTM)
+            endif
+            call edisp(itu,outs)
+  711     continue
+        endif
+        if(itrc.gt.0)then
+          call edisp(itu,' ')
+        endif
       ELSE
         GOTO 706
       ENDIF
@@ -1404,11 +1635,52 @@ C           write(6,*)'fcasgn',fcasgn(15,1),fcasgn(16,1)
                 ENDIF
               ENDIF
  109        CONTINUE
+            if (itrc.gt.0) then
+              write(outs,'(3a)')'Source ',
+     &                    VOLNAME(IV,ICFD)(1:LNBLNK(VOLNAME(IV,ICFD))),
+     &                                                ' has heat flux '
+              outs_pre=outs
+              if (IDcasgn(IV,ICFD).eq.0) then
+                write(outs,'(2a,f7.3,a)')outs_pre(1:LNBLNK(outs_pre)),
+     &                                        ' ',VOLHeat(IV,ICFD),' W'
+              else
+                write(outs,'(2a,i3,a,f6.3)')
+     &    outs_pre(1:LNBLNK(outs_pre)),' associated with casual gain ',
+     &                   IDcasgn(IV,ICFD),', fraction ',Fcasgn(IV,ICFD)
+              endif
+              call edisp(itu,outs)
+              if (NCTM.ne.0) then
+                write(outs,'(a)')'  This source generates'
+                outs_pre=outs
+                do 234 ICTM=1,NCTM
+                  if (len(outs(1:LNBLNK(outs))).gt.23) then
+                    write(outs,'(2a)')outs_pre(1:LNBLNK(outs_pre)),','
+                    outs_pre=outs
+                  endif
+                  if (VOLPOL(ICTM,IV,ICFD).ne.0.0) then
+                    write(outs,'(2a,f13.10,2a)')
+     &           outs_pre(1:LNBLNK(outs_pre)),' ',VOLPOL(ICTM,IV,ICFD),
+     &                                         ' kg/s of contaminant ',
+     &                   POLNAM(ICTM,ICFD)(1:LNBLNK(POLNAM(ICTM,ICFD)))
+                    outs_pre=outs
+                    if (SRCE(IV,ICTM,ICFD).ne.' ') then
+                      write(outs,'(3a)')outs_pre(1:LNBLNK(outs_pre)),
+     &       ' associated with contaminant network ',SRCE(IV,ICTM,ICFD)
+                    endif
+                  endif
+  234           continue
+                call edisp(itu,outs)
+              endif
+            endif
           endif
  111    continue
 
 C Loop back again for next source BC.
         goto 108
+      else
+        if(itrc.gt.0)then
+          call edisp(itu,' ')
+        endif
       endif
 
 C Read line until reach *solutions line.
@@ -1429,11 +1701,21 @@ C Assume data in order.
             CALL EGETW(OUTSTR,K,WORD,'W','source heat flux',IER)
             CALL EGETWR(OUTSTR,K,VALS,-10.,99.,'-','src heat',IER)
             VOLHeat(IV,ICFD)=VALS
+            if (itrc.gt.0) then
+              write(outs,'(3a,f7.3,a)')'Blockage ',
+     &                    VOLNAME(IV,ICFD)(1:LNBLNK(VOLNAME(IV,ICFD))),
+     &                          ' has heat flux ',VOLHeat(IV,ICFD),' W'
+              call edisp(itu,outs)
+            endif
           endif
  112    continue
 
 C Loop back again for next blockage.
         goto 116
+      else
+        if(itrc.gt.0)then
+          call edisp(itu,' ')
+        endif
       endif
 
 C Read in `equations to be solved' this includes methods.
@@ -1453,7 +1735,7 @@ C Read in `equations to be solved' this includes methods.
  39   CONTINUE
       CALLMA(ICFD)=.FALSE.
 
-C Relaxation factors.
+C Fictitious time steps.
       FLSDTU(ICFD)=1.0E+20
       FLSDTV(ICFD)=1.0E+20
       FLSDTW(ICFD)=1.0E+20
@@ -1461,15 +1743,6 @@ C Relaxation factors.
       FLSDTT(ICFD)=1.0E+20
       FLSDTK(ICFD)=1.0E+20
       FLSDTE(ICFD)=1.0E+20
-      URFCU(ICFD)=0.5
-      URFCV(ICFD)=0.5
-      URFCW(ICFD)=0.5
-      URFCP(ICFD)=1.0
-      URFCT(ICFD)=1.0
-      URFCD(ICFD)=1.0
-      URFCK(ICFD)=0.7
-      URFCE(ICFD)=0.7
-      URFCVS(ICFD)=1.0
 
 C Number of sweeps for each variable (default).
       NSSWPU(ICFD)=3
@@ -1479,15 +1752,6 @@ C Number of sweeps for each variable (default).
       NSSWPK(ICFD)=3
       NSSWPE(ICFD)=3
       NSSWPT(ICFD)=3
-
-C Initial Values.
-      TINIT(ICFD)=20.0 
-      UINIT(ICFD)=0.001
-      VINIT(ICFD)=0.001
-      WINIT(ICFD)=0.001
-      PINIT(ICFD)=0.0
-      TEINIT(ICFD)=0.005
-      EDINIT(ICFD)=0.005
 
 C Solution methods.
  118  CALL STRIPC(IFL,OUTSTR,0,ND,1,'solution methods',IER)
@@ -1501,12 +1765,34 @@ C Solution methods.
 C Read extra data for specific turb models.
           if (ITURB(ICFD).eq.2) then
             CALL EGETWR(OUTSTR,K,VALS,0.,500.,'W','rMOOT',IER)
-            rMOOT=VALS
+            rMOOT(ICFD)=VALS
           elseif (ITURB(ICFD).eq.4) then
             CALL EGETWR(OUTSTR,K,VALS,0.,500.,'W','rMOOT',IER)
-            rMOOT=VALS
+            rMOOT(ICFD)=VALS
             CALL EGETWI(OUTSTR,K,IVAL,1,1000,'W','niter',IER)
-            nZtoKE=IVAL
+            nZtoKE(ICFD)=IVAL
+          endif
+
+          if (itrc.gt.0) then
+            if (ITURB(ICFD).eq.1) then
+              write(outs,'(a)')'k-epsilon turbulence model active'
+              call edisp(itu,outs)
+            elseif (ITURB(ICFD).eq.2) then
+              write(outs,'(a,f8.4)')
+     & 'Fixed eddy viscosity turbulence model active, eddy viscosity ',
+     &                                                      rMOOT(ICFD)
+              call edisp(itu,outs)
+            elseif (ITURB(ICFD).eq.3) then
+              write(outs,'(a)')
+     &                      'MIT zero-equation turbulence model active'
+              call edisp(itu,outs)
+            elseif (ITURB(ICFD).eq.4) then
+              write(outs,'(2a,f8.4,a,i4)')
+     &    'Fixed eddy viscosity -> k-epsilon turbulence model active,',
+     &     ' eddy viscosity ',rMOOT(ICFD),', transition on iteration ',
+     &                                                     nZtoKE(ICFD)
+              call edisp(itu,outs)
+            endif
           endif
         elseif (WORD(1:8).eq.'Buoyancy') then
           CALL EGETWI(OUTSTR,K,IVAL,0,2,'F','buoy method',IER)
@@ -1525,7 +1811,20 @@ C Read extra data for specific buoy models.
             endif
           elseif (IBUOY(ICFD).eq.2) then
             CALL EGETWR(OUTSTR,K,VALS,-10.,99.,'-','Tbar',IER)
-            Tbar=VALS
+            Tbar(ICFD)=VALS
+          endif
+          if (itrc.gt.0) then
+            if (IBUOY(ICFD).eq.1) then
+              write(outs,'(2a,f4.2)')
+     &         'Solving buoyancy by full ideal gas law calculations, ',
+     &                                 'relaxation factor ',URFCD(ICFD)
+              call edisp(itu,outs)
+            elseif (IBUOY(ICFD).eq.2) then
+              write(outs,'(2a,f6.2)')
+     &              'Solving buoyancy by Boussinesque approximation, ',
+     &                              'reference temperature ',Tbar(ICFD)
+              call edisp(itu,outs)
+            endif
           endif
         else
           call usrmsg('Did not recognise solution method:',WORD,'W')
@@ -1545,7 +1844,7 @@ C Solution equations.
 C If equations set to true above are not found then the defaults will 
 C be used.  The next time the file is written, however, the full list 
 C of equations will be included in the file.
- 128  CALL STRIPC(IFL,OUTSTR,0,ND,1,'solution equations',IER)
+ 128  CALL STRIPC(IFL,OUTSTR,99,ND,1,'solution equations',IER)
       K=0
       CALL EGETW(OUTSTR,K,WORD,'W','solution eqns tag',IER)
       if (WORD(1:10).ne.'*iteration') then 
@@ -1559,8 +1858,19 @@ C Pressure equation.
             CALL EGETWR(OUTSTR,K,VAL,0.,1.,'W','Pr Lrx',IER)
             URFCP(ICFD)=VAL
           endif
+          if (ND.eq.5) then
+            CALL EGETWR(OUTSTR,K,VAL,0.,1.,'W','Pr Lrx 2',IER)
+            URFCP2(ICFD)=VAL
+          endif
           if (itrc.gt.0) then
-            write(outs,'(a,f8.4)') 'Solving P, init val ',PINIT(ICFD)
+            write(outs,'(a,a,f8.4,a,f4.2)') 'Solving pressure (P),',
+     &                                   ' initial value ',PINIT(ICFD),
+     &                               ', relaxation factor ',URFCP(ICFD)
+            if (ND.eq.5) then
+              outs_pre=outs
+              write(outs,'(2a,f4.2)')outs_pre(1:LNBLNK(outs_pre)),
+     &                            ', relaxation factor 2 ',URFCP2(ICFD)
+            endif
             call edisp(itu,outs)
           endif
         elseif (WORD(1:3).eq.'Vel') then
@@ -1576,8 +1886,19 @@ C Velocity U equation.
               CALL EGETWR(OUTSTR,K,VAL,0.,1.,'W','Vu Lrx',IER)
               URFCU(ICFD)=VAL
             endif
+            if (ND.eq.6) then
+              CALL EGETWR(OUTSTR,K,VAL,0.,1.,'W','Vu Lrx 2',IER)
+              URFCU2(ICFD)=VAL
+            endif
             if (itrc.gt.0) then
-              write(outs,'(a,f8.4)') 'Solving Vu, init val ',UINIT(ICFD)
+              write(outs,'(a,a,f8.4,a,f4.2)') 'Solving velocity in X ',
+     &                    'direction (Vu), initial value ',UINIT(ICFD),
+     &                               ', relaxation factor ',URFCU(ICFD)
+              if (ND.eq.6) then
+                outs_pre=outs
+                write(outs,'(2a,f4.2)')outs_pre(1:LNBLNK(outs_pre)),
+     &                            ', relaxation factor 2 ',URFCU2(ICFD)
+              endif
               call edisp(itu,outs)
             endif
 
@@ -1591,8 +1912,19 @@ C Velocity V equation.
               CALL EGETWR(OUTSTR,K,VAL,0.,1.,'W','Vv Lrx',IER)
               URFCV(ICFD)=VAL
             endif
+            if (ND.eq.6) then
+              CALL EGETWR(OUTSTR,K,VAL,0.,1.,'W','Vv Lrx 2',IER)
+              URFCV2(ICFD)=VAL
+            endif
             if (itrc.gt.0) then
-              write(outs,'(a,f8.4)') 'Solving Vv, init val ',VINIT(ICFD)
+              write(outs,'(a,a,f8.4,a,f4.2)') 'Solving velocity in Y ',
+     &                    'direction (Vv), initial value ',VINIT(ICFD),
+     &                               ', relaxation factor ',URFCV(ICFD)
+              if (ND.eq.6) then
+                outs_pre=outs
+                write(outs,'(2a,f4.2)')outs_pre(1:LNBLNK(outs_pre)),
+     &                            ', relaxation factor 2 ',URFCV2(ICFD)
+              endif
               call edisp(itu,outs)
             endif
 
@@ -1606,8 +1938,19 @@ C Velocity W equation.
               CALL EGETWR(OUTSTR,K,VAL,0.,1.,'W','Vw Lrx',IER)
               URFCW(ICFD)=VAL
             endif
+            if (ND.eq.6) then
+              CALL EGETWR(OUTSTR,K,VAL,0.,1.,'W','Vw Lrx 2',IER)
+              URFCW2(ICFD)=VAL
+            endif
             if (itrc.gt.0) then
-              write(outs,'(a,f8.4)') 'Solving Vw, init val ',WINIT(ICFD)
+              write(outs,'(a,a,f8.4,a,f4.2)') 'Solving velocity in Z ',
+     &                    'direction (Vw), initial value ',WINIT(ICFD),
+     &                               ', relaxation factor ',URFCW(ICFD)
+              if (ND.eq.6) then
+                outs_pre=outs
+                write(outs,'(2a,f4.2)')outs_pre(1:LNBLNK(outs_pre)),
+     &                            ', relaxation factor 2 ',URFCW2(ICFD)
+              endif
               call edisp(itu,outs)
             endif
           else
@@ -1624,8 +1967,19 @@ C Temperature.
             CALL EGETWR(OUTSTR,K,VAL,0.,1.,'W','Tmp Lrx',IER)
             URFCT(ICFD)=VAL
           endif
+          if (ND.eq.5) then
+            CALL EGETWR(OUTSTR,K,VAL,0.,1.,'W','Tmp Lrx 2',IER)
+            URFCT2(ICFD)=VAL
+          endif
           if (itrc.gt.0) then
-            write(outs,'(a,f8.4)') 'Solving T, init val ',TINIT(ICFD)
+            write(outs,'(a,a,f8.4,a,f4.2)') 'Solving temperature (T),',
+     &                                   ' initial value ',TINIT(ICFD),
+     &                               ', relaxation factor ',URFCT(ICFD)
+            if (ND.eq.5) then
+              outs_pre=outs
+              write(outs,'(2a,f4.2)')outs_pre(1:LNBLNK(outs_pre)),
+     &                            ', relaxation factor 2 ',URFCT2(ICFD)
+            endif
             call edisp(itu,outs)
           endif
         elseif (WORD(1:3).eq.'Ted') then
@@ -1638,8 +1992,19 @@ C Turbulence intensity.
             CALL EGETWR(OUTSTR,K,VAL,0.,1.,'W','Te Lrx',IER)
             URFCK(ICFD)=VAL
           endif
+          if (ND.eq.5) then
+            CALL EGETWR(OUTSTR,K,VAL,0.,1.,'W','Te Lrx 2',IER)
+            URFCK2(ICFD)=VAL
+          endif
           if (itrc.gt.0) then
-            write(outs,'(a,f8.4)') 'Solving k, init val ',TEINIT(ICFD)
+            write(outs,'(a,a,f8.4,a,f4.2)') 'Solving turbulence ',
+     &                       'energy (k), initial value ',TEINIT(ICFD),
+     &                               ', relaxation factor ',URFCK(ICFD)
+            if (ND.eq.5) then
+              outs_pre=outs
+              write(outs,'(2a,f4.2)')outs_pre(1:LNBLNK(outs_pre)),
+     &                            ', relaxation factor 2 ',URFCK2(ICFD)
+            endif
             call edisp(itu,outs)
           endif
         elseif (WORD(1:3).eq.'Epd') then
@@ -1652,27 +2017,77 @@ C Turbulence dissipation.
             CALL EGETWR(OUTSTR,K,VAL,0.,1.,'W','Ed Lrx',IER)
             URFCE(ICFD)=VAL
           endif
+          if (ND.eq.5) then
+            CALL EGETWR(OUTSTR,K,VAL,0.,1.,'W','Ed Lrx 2',IER)
+            URFCE2(ICFD)=VAL
+          endif
           if (itrc.gt.0) then
-            write(outs,'(a,f8.4)') 'Solving e, init val ',EDINIT(ICFD)
+            write(outs,'(a,a,f8.4,a,f4.2)') 'Solving turbulence ',
+     &      'energy dissipation rate (e), initial value ',EDINIT(ICFD),
+     &                               ', relaxation factor ',URFCE(ICFD)
+            if (ND.eq.5) then
+              outs_pre=outs
+              write(outs,'(2a,f4.2)')outs_pre(1:LNBLNK(outs_pre)),
+     &                            ', relaxation factor 2 ',URFCE2(ICFD)
+            endif
             call edisp(itu,outs)
           endif
 
-C Contaminant information
+C Contaminant information.
         elseif (WORD(1:LNBLNK(WORD)).eq.
      &    POLNAM(1,ICFD)(1:LNBLNK(POLNAM(1,ICFD))))then
           CALPOL(1,ICFD)=.TRUE.
+C Contamination initial value currently not used.
+          CALL EGETW(OUTSTR,K,WORD,'-','Contam init',IER)
+          CALL EGETW(OUTSTR,K,WORD,'W','relax type',IER)
+          if (WORD(1:6).eq.'Linear') then
+            CALL EGETWR(OUTSTR,K,VAL,0.,1.,'W','Contam Lrx',IER)
+            URFCC(ICFD,1)=VAL
+          endif
+          if (ND.eq.5) then
+            CALL EGETWR(OUTSTR,K,VAL,0.,1.,'W','Contam Lrx 2',IER)
+            URFCC2(ICFD,1)=VAL
+          endif
           if (itrc.gt.0) then
-            write(outs,'(3a)')'Solving ',POLNAM(1,ICFD),' concentration'
+            write(outs,'(4a,f4.2)')'Solving ',
+     &     POLNAM(1,ICFD)(1:LNBLNK(POLNAM(1,ICFD))),' concentration, ',
+     &       'initial value not used, relaxation factor ',URFCC(ICFD,1)
+            if (ND.eq.5) then
+              outs_pre=outs
+              write(outs,'(2a,f4.2)')outs_pre(1:LNBLNK(outs_pre)),
+     &                          ', relaxation factor 2 ',URFCC2(ICFD,1)
+            endif
             call edisp(itu,outs)
           endif
           DO 41 ICTM=2,NCTM
+            CALL STRIPC(IFL,OUTSTR,99,ND,1,
+     &                                   'contaminant information',IER)
+            K=0
             CALPOL(ICTM,ICFD)=.TRUE.
+            CALL EGETW(OUTSTR,K,WORD,'-','Contam name',IER)
+C Contamination initial value currently not used.
+            CALL EGETW(OUTSTR,K,WORD,'-','Contam init',IER)
+            CALL EGETW(OUTSTR,K,WORD,'W','relax type',IER)
+            if (WORD(1:6).eq.'Linear') then
+              CALL EGETWR(OUTSTR,K,VAL,0.,1.,'W','Contam Lrx',IER)
+              URFCC(ICFD,ICTM)=VAL
+            endif
+            if (ND.eq.5) then
+              CALL EGETWR(OUTSTR,K,VAL,0.,1.,'W','Contam Lrx 2',IER)
+              URFCC2(ICFD,ICTM)=VAL
+            endif
             if (itrc.gt.0) then
-              write(outs,'(3a)')'Solving ',POLNAM(ICTM,ICFD),
-     &        ' concentration'
+              write(outs,'(4a,f4.2)')'Solving ',
+     &                  POLNAM(ICTM,ICFD)(1:LNBLNK(POLNAM(ICTM,ICFD))),
+     &                                              ' concentration, ',
+     &    'initial value not used, relaxation factor ',URFCC(ICFD,ICTM)
+              if (ND.eq.5) then
+                outs_pre=outs
+                write(outs,'(2a,f4.2)')outs_pre(1:LNBLNK(outs_pre)),
+     &                       ', relaxation factor 2 ',URFCC2(ICFD,ICTM)
+              endif
               call edisp(itu,outs)
             endif
-            CALL STRIPC(IFL,OUTSTR,0,ND,1,'contaminant information',IER)
  41       CONTINUE
         elseif (WORD(1:5).eq.'Lmage') then
 
@@ -1686,7 +2101,8 @@ C            CALL EGETWR(OUTSTR,K,VAL,0.,1.,'W','Lma Lrx',IER)
 C            URFCE(ICFD)=VAL
 C          endif
           if (itrc.gt.0) then
-            write(outs,'(a)') 'Solving local mean age of air'
+            write(outs,'(2a)') 'Solving local mean age of air, ',
+     &'initial value not used, relaxation factor not used (always 0.9)'
             call edisp(itu,outs)
           endif
         ELSEIF(WORD(1:4).EQ.'Conc'.OR.WORD(1:3).EQ.'Hum')THEN
@@ -1716,12 +2132,23 @@ C Read iteration control data.
         JMONT(ICFD)=IVAL+1
         CALL EGETWI(OUTSTR,K,IVAL,1,1000,'W','Kmon',IER)
         KMONT(ICFD)=IVAL+1
+        CALL EGETW(OUTSTR,K,WORD,'W','CFD monitoring file',IER)
+        write(CFTRFL(ICFD),'(2a,i2.2)')WORD(1:lnblnk(WORD)),'_',icfd
       else
         IMONT(ICFD)=INT(NTCX/2)+1
         JMONT(ICFD)=INT(NTCY/2)+1
         KMONT(ICFD)=INT(NTCZ/2)+1
+        write(CFTRFL(ICFD),'(a8,i2.2)')'CFD_mon_',icfd
       endif
-
+      if (itrc.gt.0) then
+        write(outs,'(a,E10.3,a,i5,a)')
+     &            'Convergence criterion is maximum sum of residuals ',
+     &               SRMAX(ICFD),' within ',MAXITR(ICFD),' iterations.' 
+        call edisp(itu,outs)
+        write(outs,'(a,i2,a,i2,a,i2)')'Monitoring cell is ',
+     &                      IMONT(ICFD),' ',JMONT(ICFD),' ',KMONT(ICFD)
+        call edisp(itu,outs)
+      endif
       CALL STRIPC(IFL,OUTSTR,0,ND,1,'initilisation',IER)
       K=0
       if (WORD(1:6).eq.'*reint') then
@@ -1733,10 +2160,20 @@ C Read iteration control data.
         endif
       endif
 
-C Assume printing of results at every timestep.
-      IPPHI(ICFD)=1
+C Read frequency of result writing.
+      CALL STRIPC(IFL,OUTSTR,0,ND,1,'svf',IER)
+      K=0
+      CALL EGETW(OUTSTR,K,WORD,'W','*svf',IER)
+      if (WORD(1:4).eq.'*svf') then
+        CALL EGETWI(OUTSTR,K,IVAL,1,1000,'W','results freq.',IER)
+        IPPHI(ICFD)=IVAL
+      else
+C Unrecognised line, set error flag.
+        IER=1
+      endif
+C << Removed hardcoding of results writing frequency >>
+C      IPPHI(ICFD)=1
       LPHI(ICFD)='CFD_new_phi'
-      CFTRFL(ICFD)='CFD_mon'
 
 C Print message about version number 
       IF(VER.GT.2.05.AND.VER.LT.2.15)THEN
@@ -1780,12 +2217,13 @@ C      (used in the case of curvilinear Z)
      &             KOPENf(MCFND,MNZ),FIXM(MCFND,MNZ),
      &             FIXT(MCFND,MNZ),FIXC(MCFND,MNZ),
      &             FIXK(MCFND,MNZ),FIXE(MCFND,MNZ),
-     &             IWOPEN(MCFND,MNZ),ICFDCN(MCFND,MNZ),ICNACT(MCFND,MNZ)
+     &             IWOPEN(MCFND,MNZ),ICFDCN(MCFND,MNZ),
+     &             ICNACT(MCFND,MNZ),IVOLN(MCFND,MNZ)
       COMMON/Sbdary/NSB(MNZ),ISBi(MNSBZ,MNZ),ISBf(MNSBZ,MNZ),
      &              JSBi(MNSBZ,MNZ),JSBf(MNSBZ,MNZ),
      &              KSBi(MNSBZ,MNZ),KSBf(MNSBZ,MNZ),
      &              ISUFLC(MNSBZ,MNZ),IWSB(MNSBZ,MNZ),SSB(MNSBZ,MNZ),
-     &              SSBHC(MNSBZ,MNZ),
+     &              SSBHC(MNSBZ,MNZ),IVOLNSB(MNSBZ,MNZ),
      &              ITCtype(MNSBZ,MNZ),icTREF(MNSBZ,MNZ)
       common/EQTION/CALLU(MNZ),CALLV(MNZ),CALLW(MNZ),CALLT(MNZ),
      &             CALLC(MNZ),KEMDL(MNZ),BUOY(MNZ),BOUSSI(MNZ),
@@ -1840,6 +2278,7 @@ C Solid boundaries.
         if (IVTYPE(IKV,ICFD).eq.1) then
 C        ltmp='Temperature'
           ISB=ISB+1
+          IVOLNSB(ISB,ICFD)=IKV
           IWSB(ISB,ICFD)=IVOLF(IKV,ICFD)
           ISBi(ISB,ICFD)=IVCELLS(IKV,ICFD,1)
           ISBf(ISB,ICFD)=IVCELLS(IKV,ICFD,2)
@@ -1853,6 +2292,7 @@ C        ltmp='Temperature'
         elseif (IVTYPE(IKV,ICFD).eq.2) then
 C        ltmp='Heat flux'
           ISB=ISB+1
+          IVOLNSB(ISB,ICFD)=IKV
           IWSB(ISB,ICFD)=-IVOLF(IKV,ICFD)
           ISBi(ISB,ICFD)=IVCELLS(IKV,ICFD,1)
           ISBf(ISB,ICFD)=IVCELLS(IKV,ICFD,2)
@@ -1866,6 +2306,7 @@ C        ltmp='Heat flux'
         elseif (IVTYPE(IKV,ICFD).eq.3) then
 C        ltmp='Symmetrical'
           ISB=ISB+1
+          IVOLNSB(ISB,ICFD)=IKV
           IWSB(ISB,ICFD)=IVOLF(IKV,ICFD)+10
           ISBi(ISB,ICFD)=IVCELLS(IKV,ICFD,1)
           ISBf(ISB,ICFD)=IVCELLS(IKV,ICFD,2)
@@ -1879,6 +2320,7 @@ C        ltmp='Symmetrical'
      &          IVTYPE(IKV,ICFD).eq.6) then
 C        ltmp='Conflated  '
           ISB=ISB+1
+          IVOLNSB(ISB,ICFD)=IKV
           IWSB(ISB,ICFD)=IVOLF(IKV,ICFD)
           ITCtype(ISB,ICFD)=IVConfl(IKV,ICFD)
 
@@ -1928,6 +2370,7 @@ C Air flow openings.
         elseif (IVTYPE(IKV,ICFD).eq.10) then
 C        ltmp='Pressure'
           IOP=IOP+1
+          IVOLN(IOP,ICFD)=IKV
           IWOPEN(IOP,ICFD)=0
           IOPENi(IOP,ICFD)=IVCELLS(IKV,ICFD,1)
           IOPENf(IOP,ICFD)=IVCELLS(IKV,ICFD,2)
@@ -1941,6 +2384,7 @@ C        ltmp='Pressure'
         elseif (IVTYPE(IKV,ICFD).eq.11) then
 C        ltmp='Velocity'
           IOP=IOP+1
+          IVOLN(IOP,ICFD)=IKV
           IWOPEN(IOP,ICFD)=IVOLF(IKV,ICFD)
           IOPENi(IOP,ICFD)=IVCELLS(IKV,ICFD,1)
           IOPENf(IOP,ICFD)=IVCELLS(IKV,ICFD,2)
@@ -1954,6 +2398,7 @@ C        ltmp='Velocity'
         elseif (IVTYPE(IKV,ICFD).eq.12) then
 C        ltmp='Zero gradient'
           IOP=IOP+1
+          IVOLN(IOP,ICFD)=IKV
           IWOPEN(IOP,ICFD)=-IVOLF(IKV,ICFD)
           IOPENi(IOP,ICFD)=IVCELLS(IKV,ICFD,1)
           IOPENf(IOP,ICFD)=IVCELLS(IKV,ICFD,2)
@@ -1965,6 +2410,7 @@ C        ltmp='Zero gradient'
         elseif (IVTYPE(IKV,ICFD).eq.13) then
 C        ltmp='Mass flow'
           IOP=IOP+1
+          IVOLN(IOP,ICFD)=IKV
           IWOPEN(IOP,ICFD)=99
           IOPENi(IOP,ICFD)=IVCELLS(IKV,ICFD,1)
           IOPENf(IOP,ICFD)=IVCELLS(IKV,ICFD,2)
@@ -2037,21 +2483,31 @@ C Passed parameters.
       COMMON/MFCFD/NCNRMV,ICNRMV(MCFND,MNZ),NCNON,ICNON(2*MCFND,MNZ)
       COMMON/MFLOW1/NNOD,NCMP,NCNN
       COMMON/MFLOW2/NDNAM(0:MNOD)
-      COMMON/MFLOW3/NDFLD(MNOD),NDTYP(MNOD),HNOD(MNOD),SUPNOD(MNOD,MNDS)
+      COMMON/MFLOW3/NDFLD(MNOD),NDTYP(MNOD),HNOD(MNOD),
+     &       SUPNOD(MNOD,MNDS)
       COMMON/MFLOW4/ITND(MNOD),TNOD(MNOD)
       COMMON/MFLOW8/CMNAM(MCMP),LTPCMP(MCMP)
       COMMON/MFLW10/NODPS(MCNN),HGTPS(MCNN),NODNE(MCNN),HGTNE(MCNN),
      &              ITPCON(MCNN),NDSCNN(MCNN,MCNS)
       COMMON/ACT/ACTCNN(MCNN)
-      COMMON/CFDMFS2/MFNEWN(MNVLS,MNZ),NFNDN,NCFDOPNO(MNVLS,MNZ)
+      COMMON/CFDMFS2/MFNEWN(MNVLS,MNZ),NFNDN,NCFDOPNO(MNVLS,MNZ),
+     &               NFNPDN(MNZ)
+      COMMON/MFLRES/FLW1(MCNN),FLW2(MCNN),PRES(MNOD),
+     &              RESID(MNOD),SAFLW(MNOD)
 
       character*12 LCFND,LEXND,LCOMPNT,CMNAM,NDNAM
-      character LTPCMP*60,outs*124,CHECKER1*12,OPNO*10
+      character LTPCMP*60,outs*124,CHECKER1*12,OPNO*10,ICFDSTR*10
       LOGICAL OK,ACTCNN
+      double precision FLW1,FLW2,PRES,RESID,SAFLW
 
-C Get CFD opening number as integer
+C Debug
+c      WRITE(6,*)'CFMFSU IV,IND,ICN,OPENNAM',IV,IND,ICN,OPENNAM
+
+C Get CFD opening number and CFD domain number as integer
       IER=0
       CALL INTSTR(IV,OPNO,ILN,IER)
+      IF(IER.NE.0)RETURN
+      CALL INTSTR(ICFD,ICFDSTR,ICFDLN,IER)
       IF(IER.NE.0)RETURN
 
 C Check if this subroutine was called previously for the same opening
@@ -2059,7 +2515,8 @@ C If yes then this subroutine should not run again (because it will make
 C more nodes and connections each time it is run)
       OK=.FALSE.
       DO 1 I=1,NNOD
-        write(CHECKER1,'(2a)')OPNO(1:ILN),OPENNAM(1:(12-ILN))
+        write(CHECKER1,'(3a)')ICFDSTR(1:ICFDLN),OPNO(1:ILN),
+     &    OPENNAM(1:(12-ILN-ICFDLN))
         IF(NDNAM(I).EQ.CHECKER1)OK=.TRUE.
  1    CONTINUE
       IF(OK)GOTO 2
@@ -2099,18 +2556,26 @@ C ICNRMV = list of connections to remove when CFD active.
 C A new node must be created to represent the control volumes of the 
 C opening
       NNOD=NNOD+1
-      NDNAM(NNOD)=OPNO(1:ILN)//OPENNAM(1:(12-ILN))
+      NDNAM(NNOD)=ICFDSTR(1:ICFDLN)//OPNO(1:ILN)
+     &  //OPENNAM(1:(12-ILN-ICFDLN))
       NDFLD(NNOD)=1
       NDTYP(NNOD)=1
       HNOD(NNOD)=HNOD(IND)
       ITND(NNOD)=IND
       TNOD(NNOD)=TNOD(IND)
+      PRES(NNOD)=0.
 
 C Hold information about this new node in common also hold the CFD
 C opening type boundary condition that this node is representative of
       NFNDN=NFNDN+1
-      MFNEWN(NFNDN,ICFD)=NNOD
-      NCFDOPNO(NFNDN,ICFD)=IV
+      NFNPDN(ICFD)=NFNPDN(ICFD)+1
+      MFNEWN(NFNPDN(ICFD),ICFD)=NNOD
+      NCFDOPNO(NFNPDN(ICFD),ICFD)=IV
+
+C Debug
+c      write(6,*)'CFMFSU: NFNDN,NFNPDN(ICFD),MFNEWN(NFNPDN(ICFD),ICFD)',
+c     & ',NCFDOPNO(NFNPDN(ICFD),ICFD)',NFNDN,NFNPDN(ICFD),
+c     & MFNEWN(NFNPDN(ICFD),ICFD),NCFDOPNO(NFNPDN(ICFD),ICFD)
 
 C Following code is commented out because nodes representative of
 C openings will not have a volume SUPNOD(*,1)
@@ -2139,17 +2604,14 @@ C ICNON = list of connections to activate for CFD connections.
       NCNON=NCNON+1
       ICNON(NCNON,ICFD)=NCNN
 
-C Activate all connections.
-      DO 40 ICNN=1,MCNN
-        ACTCNN(ICNN)=.TRUE.
-  40  CONTINUE
-  
-C Activate dry mfs (ie the original mfs without cfd adjustments)
-      DO 203 IC=1,NCONF
-        DO 202 N=1,NCNON
-          ACTCNN(ICNON(N,IC))=.FALSE.
- 202    CONTINUE
- 203  CONTINUE
+C Deactivate CFD connection created.
+C      DO 203 IC=1,NCONF
+C        ACTCNN(ICNON(N,IC))=.FALSE.
+        ACTCNN(ICNON(NCNON,ICFD))=.FALSE.
+C 203  CONTINUE
+
+C Debug
+C      write(6,*)'CFMFSU(ACTCNN)',(ACTCNN(I),I=1,NCNN)
 
  2     return
        end
@@ -2219,7 +2681,7 @@ C10301 FORMAT(1X,A6,I5,I5,1X,G12.5,1X,3X,A6,3X,1X,G12.5,1X,G12.5)
 C Component data.
       IF(NCMP.EQ.0) GOTO 999
       CALL EDISP(IUOUT,' ')
-      CALL EDISP(IUOUT,' Comp   Type C+ L+ Description')
+      CALL EDISP(IUOUT,' Component   Type C+ L+ Description')
 
       DO 50 ICMP=1,NCMP
         call edisp(iuout,' ')
@@ -2303,17 +2765,18 @@ C Provide a heading string for each different component type.
 C Connections data
       IF(NCNN.EQ.0) GOTO 999
       CALL EDISP(IUOUT,' ')
-      WRITE(outs,1060)
- 1060 FORMAT(' +Node   dHght   -Node   dHght   Comp     Snod1  Snod2')
+      CALL EDISP(IUOUT,' Connections')
+      WRITE(outs,'(2a)')' Index   +Node   dHght   -Node   dHght   ',
+     &                                        'Component  Snod1  Snod2'
       CALL EDISP(IUOUT,outs)
 
       DO 70 ICNN=1,NCNN
         WRITE(outs,1070)
-     &      NDNAM(NODPS(ICNN)),HGTPS(ICNN),
+     &      ICNN,NDNAM(NODPS(ICNN)),HGTPS(ICNN),
      &      NDNAM(NODNE(ICNN)),HGTNE(ICNN),
      &      CMNAM(ITPCON(ICNN)),
      &      NDNAM(NDSCNN(ICNN,1)),NDNAM(NDSCNN(ICNN,2))
- 1070   FORMAT(1X,A12,F7.3,3X,A12,F7.3,3X,A12,3X,A12,1X,A12)
+ 1070   FORMAT(1X,I3,3X,A12,F7.3,3X,A12,F7.3,3X,A12,3X,A12,1X,A12)
         CALL EDISP(IUOUT,outs)
    70 CONTINUE
 
@@ -2336,7 +2799,11 @@ C CFDDEFLT - Sets default values for all data items.
       COMMON/FDTRFC/FLSDTU(MNZ),FLSDTV(MNZ),FLSDTW(MNZ),FLSDTP(MNZ),
      &              FLSDTT(MNZ),FLSDTK(MNZ),FLSDTE(MNZ)
       COMMON/LINRFC/URFCU(MNZ),URFCV(MNZ),URFCW(MNZ),URFCP(MNZ),
-     &              URFCT(MNZ),URFCK(MNZ),URFCE(MNZ),URFCVS(MNZ)
+     &              URFCT(MNZ),URFCK(MNZ),URFCE(MNZ),URFCVS(MNZ),
+     &              URFCC(MNZ,MCTM)
+      COMMON/LINRFC2/URFCU2(MNZ),URFCV2(MNZ),URFCW2(MNZ),URFCP2(MNZ),
+     &              URFCT2(MNZ),URFCK2(MNZ),URFCE2(MNZ),URFCVS2(MNZ),
+     &              URFCC2(MNZ,MCTM)
       COMMON/LINRFC1/URFCD(MNZ)
       COMMON/INITIA/UINIT(MNZ),VINIT(MNZ),WINIT(MNZ),PINIT(MNZ),
      &              TINIT(MNZ),TEINIT(MNZ),EDINIT(MNZ)
@@ -2345,7 +2812,7 @@ C CFDDEFLT - Sets default values for all data items.
      &             CALLC(MNZ),KEMDL(MNZ),BUOY(MNZ),BOUSSI(MNZ),
      &             ZEROT(MNZ),ZandKE(MNZ),MITzero(MNZ)
       common/EQTION3/CALLMA(MNZ),CALPOL(MCTM,MNZ),POLNAM(MCTM,MNZ),NCTM,
-     &      JHUMINDX
+     &      JHUMINDX,URFC(MCTM)
       COMMON/NSSWP/NSSWPU(MNZ),NSSWPV(MNZ),NSSWPW(MNZ),NSSWPP(MNZ),
      &             NSSWPT(MNZ),NSSWPK(MNZ),NSSWPE(MNZ)
       common/METHDS/ITURB(MNZ),IBUOY(MNZ)
@@ -2354,14 +2821,16 @@ C CFDDEFLT - Sets default values for all data items.
       common/grdmax/NTCX,NTCY,NTCZ
       common/param1/MAXITR(MNZ),IMONT(MNZ),JMONT(MNZ),KMONT(MNZ),
      &             IPPHI(MNZ),SRMAX(MNZ)
-      COMMON/ZTURB/rMOOT,nZtoKE
+      COMMON/ZTURB/rMOOT(MNZ),nZtoKE(MNZ)
 
 C Common identifying preliminary CFD simulation when running 
 C addaptive conflation.
       common/fvisgo/gophrun
+
+      COMMON/GGDH/GENB1(ntcelx,ntcely,ntcelz),GGDH
       
       LOGICAL INITFL,CALLU,CALLV,CALLW,CALLT,CALLC,KEMDL,BUOY,BOUSSI
-      LOGICAL ZEROT,ZandKE,MITzero
+      LOGICAL ZEROT,ZandKE,MITzero,GGDH
       LOGICAL CALLMA,gophrun,CALPOL
       CHARACTER*12 POLNAM
 
@@ -2380,6 +2849,7 @@ C Equations to be solved, this includes methods.
       ITURB(ICFD)=3
       IBUOY(ICFD)=0
       INITFL(ICFD)=.FALSE.
+      GGDH=.FALSE.
 
 C Relaxation factors.
       FLSDTU(ICFD)=GREAT
@@ -2389,15 +2859,27 @@ C Relaxation factors.
       FLSDTT(ICFD)=GREAT
       FLSDTK(ICFD)=GREAT
       FLSDTE(ICFD)=GREAT
-      URFCU(ICFD)=0.5
-      URFCV(ICFD)=0.5
-      URFCW(ICFD)=0.5
-      URFCP(ICFD)=1.0
-      URFCT(ICFD)=0.9
-      URFCD(ICFD)=1.0
-      URFCK(ICFD)=0.7
-      URFCE(ICFD)=0.7
-      URFCVS(ICFD)=1.0
+      URFCU(ICFD) = 0.5
+      URFCV(ICFD) = 0.5
+      URFCW(ICFD) = 0.5
+      URFCP(ICFD) = 0.7
+      URFCT(ICFD) = 1.0
+      URFCK(ICFD) = 1.0
+      URFCE(ICFD) = 1.0
+      URFCVS(ICFD) = 1.0
+      URFCD(ICFD) = 1.0
+      do ICON=1,MCTM
+        URFCC(ICFD,ICON) = 1.0
+        URFCC2(ICFD,ICON) = 0.25
+      enddo
+      URFCU2(ICFD) = 0.05
+      URFCV2(ICFD) = 0.05
+      URFCW2(ICFD) = 0.05
+      URFCP2(ICFD) = 0.05
+      URFCT2(ICFD) = 0.25
+      URFCK2(ICFD) = 0.05
+      URFCE2(ICFD) = 0.05
+      URFCVS2(ICFD) = 0.25
 
 C Number of sweeps for each variable (default).
       NSSWPU(ICFD)=3
@@ -2416,7 +2898,7 @@ C Initial Values.
       PINIT(ICFD)=0.
       TEINIT(ICFD)=0.005
       EDINIT(ICFD)=0.005
-      rMOOT=90.0
+      rMOOT(ICFD)=90.0
 
 C Monitoring cell.
       IMONT(ICFD)=1+NTCX/2
@@ -2441,7 +2923,7 @@ C contaminant is zero it is set to the default value unity
       COMMON/SCHMTT/SCHMT(MCTM),GFM(MCTM),VCRIT(MCTM),TBOIL(MCTM),
      &       TCRIT(MCTM),ISCHMT(MCTM)
       common/EQTION3/CALLMA(MNZ),CALPOL(MCTM,MNZ),POLNAM(MCTM,MNZ),NCTM,
-     &      JHUMINDX
+     &      JHUMINDX,URFC(MCTM)
       LOGICAL ISCLOSE,CALLMA,CALPOL
       CHARACTER POLNAM*12
 
@@ -2605,9 +3087,9 @@ C Warn user if cell number starts/stops wrongly
         ENDIF
  1    CONTINUE
 
-C Debug if itrc is greather than one and NON DOS.
+C Debug if itrc is greater than two and NON DOS.
       call isunix(unixok)
-      IF(ITRC.GT.1.and.unixok)THEN
+      IF(ITRC.GT.2.and.unixok)THEN
         do iz=1,ntcz
           write(6,*)'ixzst ',(ixzst(ix,iz),ix=1,ntcx)
         enddo
@@ -2696,4 +3178,97 @@ C High and Low facing boundary conditions
  511  CONTINUE
       RETURN
       END
-      
+
+C ************************ RESETCFD ************************
+C RESETCFD sets all CFD common blocks that are independant 
+C of domain and zone to initial values.
+      SUBROUTINE RESETCFD(IER)
+#include "cfd.h"
+
+C Passed parameters.
+      integer ier
+
+      common/EQTION3/CALLMA(MNZ),CALPOL(MCTM,MNZ),POLNAM(MCTM,MNZ),NCTM,
+     &      JHUMINDX,URFC(MCTM)
+      LOGICAL CALPOL,CALLMA
+      CHARACTER POLNAM*12
+      COMMON/ICFNOD/ICFD,ICP
+      COMMON/MFS/IMFACT
+      COMMON/BUOYAN/BUOYA,BOUSSA,TBAR(MNZ)
+      COMMON/ZTURB/rMOOT(MNZ),nZtoKE(MNZ)
+      common/grdmax/NTCX,NTCY,NTCZ
+      common/GRDVRTS/iorg,ixend,iyend,izend,izende
+      common/GRIDEFN/origin,xgrid,ygrid,zgrid,zegrid,ortho
+      COMMON/SCHMTT/SCHMT(MCTM),GFM(MCTM),VCRIT(MCTM),TBOIL(MCTM),
+     &       TCRIT(MCTM),ISCHMT(MCTM)
+      COMMON/CTDFAF/ICTDFAF,SRCE(MNVLS,MCTM,MNZ),ICCSRC
+      character SRCE*12
+      logical origin,xgrid,ygrid,zgrid,zegrid,ortho
+      LOGICAL BUOYA,BOUSSA
+
+      JHUMINDX=0
+      ICFD=0
+      ICP=0
+      IMFACT=0
+      BUOYA=.false.
+      BOUSSA=.false.
+      NTCX=0
+      NTCY=0
+      NTCZ=0
+      iorg=0
+      ixend=0
+      iyend=0
+      izend=0
+      izende=0
+      origin=.false.
+      xgrid=.false.
+      ygrid=.false.
+      zgrid=.false.
+      zegrid=.false.
+      ortho=.false.
+      ICTDFAF=0
+      ICCSRC=0
+
+      RETURN
+      END
+
+C ************************ CFDLIST ************************
+C CFDLIST writes to ITU a formatted list of all available CFD domain 
+C files, along with the zone to which they are associated.
+      SUBROUTINE CFDLIST(ITU,IER)
+
+#include "building.h"      
+#include "geometry.h"
+#include "cfd.h"
+
+      common/ndcfd/ncfdnd,icfdnd(MNZ),NCONF
+      COMMON/cfdfil/LCFD(MCOM),IFCFD(MCOM)
+
+      character LCFD*72,outs*124,zntmp*12,dntmp*72,cpld*14
+      integer ITU,IER,zref,znln,dnln,cpldln
+
+      write(outs,'(a)')'Available CFD domain files:'
+      call edisp(ITU,outs)
+      do i=1,NCONF
+        zref=icfdnd(i)
+        zntmp=zname(zref)
+        znln=lnzname(zref)
+        dntmp=LCFD(i)
+        dnln=LNBLNK(dntmp)
+        if (IFCFD(zref).eq.0) then
+          cpld=' (not coupled)'
+          cpldln=14
+        else
+          cpld=' (coupled)'
+          cpldln=10
+        endif
+        write(outs,'(a,i2.2,4a,1X,a)')' Zone ',zref,' ("',
+     &                zntmp(1:znln),'"): ',dntmp(1:dnln),cpld(1:cpldln)
+
+        call edisp(itu,outs)
+      enddo
+
+      RETURN
+      END
+
+

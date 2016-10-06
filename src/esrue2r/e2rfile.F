@@ -33,10 +33,12 @@ C espriou.h provides current file.
 
       COMMON/OUTIN/IUOUT,IUIN
 
-      character OUTSTR*124,WORD*20,rviewf*72,outs*124
+      character OUTSTR*148,WORD*20,rviewf*72,outs*148
       character tfile*72
+      logical usevtl,usevtv
 
       IER=0
+      usevtl=.false.; usevtv=.false.
 
 C Attempt to read in rview file, note it is assumed to be one line.
       write (tfile,'(2a)') runpath(1:lnrp),rviewf(1:lnblnk(rviewf))
@@ -48,7 +50,7 @@ C Attempt to read in rview file, note it is assumed to be one line.
       endif
       write(currentfile,'(a)') tfile(1:lnblnk(tfile))
 
-      CALL STRIPC(ITA2,OUTSTR,99,ND,1,'view line',IER)
+      CALL LSTRIPC(ITA2,OUTSTR,99,ND,1,'view line',IER)
       IF(IER.eq.2)ier=0
       K=0
       CALL EGETW(OUTSTR,K,WORD,'W','rview',IFLAG)
@@ -57,7 +59,7 @@ C Attempt to read in rview file, note it is assumed to be one line.
 C Older external view files start with rview and newer files start
 C with rvu.
       if(word(1:5).eq.'rview'.or.
-     &   word(1:3).eq.'rvu')then
+     &   word(1:3).eq.'rvu'.or.word(1:4).eq.'VIEW')then
   42    CALL EGETW(OUTSTR,K,WORD,'-','command',IFLAG)
         IF(IFLAG.ne.0)goto 43
         if(word(1:3).eq.'-vp')then
@@ -69,11 +71,12 @@ C with rvu.
           CALL EGETWR(OUTSTR,K,vdx,0.,0.,'-','X view vec',IER)
           CALL EGETWR(OUTSTR,K,vdy,0.,0.,'-','Y view vec',IER)
           CALL EGETWR(OUTSTR,K,vdz,0.,0.,'-','Z view vec',IER)
+          if(vdz.lt.(-2.0)) vdz= -1.0
           IF(IER.ne.0)goto 43
         elseif(word(1:3).eq.'-vu')then
-          CALL EGETWR(OUTSTR,K,vu,0.,0.,'-','skip vu',IER)
-          CALL EGETWR(OUTSTR,K,vu,0.,0.,'-','skip vu',IER)
-          CALL EGETWR(OUTSTR,K,vu,0.,0.,'-','skip vu',IER)
+          CALL EGETWR(OUTSTR,K,vux,0.,0.,'-','vu x',IER)
+          CALL EGETWR(OUTSTR,K,vuy,0.,0.,'-','vu y',IER)
+          CALL EGETWR(OUTSTR,K,vuz,0.,0.,'-','vu z',IER)
           IF(IFLAG.ne.0)goto 43
         elseif(word(1:3).eq.'-vh')then
           CALL EGETWR(OUTSTR,K,angh,0.,0.,'-','horiz ang',IER)
@@ -85,10 +88,18 @@ C with rvu.
           CALL EGETWR(OUTSTR,K,vs,0.,0.,'-','skip vl',IER)
           IF(IER.ne.0)goto 43
         elseif(word(1:4).eq.'-vtv')then
-          goto 42
+          usevtv=.true.
+        elseif(word(1:3).eq.'-vo')then
+          CALL EGETWR(OUTSTR,K,cutfor,0.,0.,'-','cut front',IER)
+          IF(IER.ne.0)goto 43
+        elseif(word(1:3).eq.'-va')then
+          CALL EGETWR(OUTSTR,K,cutaft,0.,0.,'-','cut aft',IER)
+          IF(IER.ne.0)goto 43
         elseif(word(1:3).eq.'-vl')then
           CALL EGETWR(OUTSTR,K,vl,0.,0.,'-','skip vl',IER)
           IF(IER.ne.0)goto 43
+        elseif(word(1:4).eq.'-vtl')then
+          usevtl=.true.
         else
           goto 43
         endif
@@ -100,9 +111,17 @@ C with rvu.
       ier=0
 
       call edisp(iuout,' ')
-      write(outs,'(a,3F8.2,a,3F7.3,a,F6.1,a,F6.1,a)') 
-     &   'rview -vtv -vp ',rvpx,rvpy,rvpz,' -vd ',vdx,vdy,vdz,
-     &   ' -vu 0 0 1 -vh ',angh,' -vv ',angv,' -vs 0 -vl 0 '
+      if(usevtv)then
+        write(outs,'(a,3F8.2,a,3F7.3,a,3F6.3,4(a,F5.1))') 
+     &    'rview -vtv -vp ',rvpx,rvpy,rvpz,' -vd',vdx,vdy,vdz,
+     &    ' -vu ',vux,vuy,vuz,' -vh ',angh,' -vv ',angv,
+     &    ' -vs 0 -vl 0 -vo ',cutfor,' -va ',cutaft
+      else
+        write(outs,'(a,3F8.2,a,3F7.3,a,3F6.3,4(a,F5.1))') 
+     &    'rview -vtl -vp ',rvpx,rvpy,rvpz,' -vd',vdx,vdy,vdz,
+     &    ' -vu ',vux,vuy,vuz,' -vh ',angh,' -vv ',angv,
+     &    ' -vs 0 -vl 0 -vo ',cutfor,' -va ',cutaft
+      endif
       call edisp(iuout,outs)
 
       return
@@ -145,7 +164,9 @@ C Read the first line and get past '# '.
       K=0
       CALL EGETW(CMDL,K,WORD,'W','gensky',IFLAG)
       IF(IFLAG.ne.0)goto 43
-      if(word(1:6).ne.'gensky')then
+      if(word(1:6).eq.'gensky'.or.word(1:9).eq.'gendaylit')then
+        continue
+      else
         call edisp(iuout,' Not a radiance sky file...')
         ier=1
         return
@@ -206,8 +227,15 @@ C Read the second line to get solar altitude and azimuth.
 
 C New version of radiance has extra line in sky file therfore sun
 C location may be on next line.
-        if (OUTSTR(3:7).eq.'Local') then
+        lno=lnblnk(OUTSTR)
+        if(lno.lt.2)then
+          continue  ! near blank lines not of interest
+        elseif (OUTSTR(3:7).eq.'Local') then
           call edisp(iuout,OUTSTR)
+        elseif (OUTSTR(1:5).eq.'solar') then
+          continue  ! not of interest
+        elseif (OUTSTR(1:4).eq.'void') then
+          continue  ! not of interest
         elseif (OUTSTR(3:7).eq.'Solar') then
           write(CMDL,'(a)') outstr(30:lnblnk(outstr))
           K=0
@@ -302,20 +330,17 @@ C IERR=1 if a scene file is missing.
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
 
-      character tvewsh*10,tvewcmds*124
-      character OUTS*124,OUTSTR*124,WORD*20,tfile*72
+      character tvewsh*10,tvewcmds*146
+      character OUTS*124,OUTSTR*248,WORD*20,tfile*72
       character tsc*72,tword*10,file*72,RVB*1
 
       IERR=0
 
 C Reset render and octree special options.
-      crenrp='   '
-      coconv='   '
+      crenrp='   '; coconv='   '
 
 C Reset once we know if outside or inside.
-      indxscn=0
-      indxvew=0
-      surexpos= -1.00
+      indxscn=0; indxvew=0; surexpos= -1.00
       do 40 i=1,10
         rscedes(i)=' '
   40  continue
@@ -366,7 +391,7 @@ C Close and then re-open the file.
       call FPOPEN(ITA2,ISTAT,1,1,tfile)
 
 C Now loop looking for key words and data.
- 42   CALL STRIPC(ITA2,OUTSTR,99,ND,0,'rif line',IFLAG)
+ 42   CALL LSTRIPC(ITA2,OUTSTR,99,ND,0,'rif line',IFLAG)
       IF(IFLAG.ne.0)goto 900
       K=0
       CALL EGETW(OUTSTR,K,WORD,'-','key word',IFLAG)
@@ -411,29 +436,35 @@ C Run time files.
       elseif(word(1:6).eq.'scene='.or.word(1:6).eq.'illum=')then
 
 C Scene files.
-C << Still require to parse files in the rscedes based hopefully on
-C << the ending characters of the file.
-        indxscn=indxscn+1
-        CALL EGETRM(OUTSTR,K,rscedes(indxscn),'-','scene(s)',IER)
-        tsc = rscedes(indxscn)
-        if (tsc(1:2).eq.'  ') then
-          if (RVB.ne.'s') then
-            if (indxscn.eq.1) then
-              call edisp(iuout,'Sky file undefined! ')
-            elseif (indxscn.eq.2) then
-              call edisp(iuout,'Glazing file undefined! ')
-            endif
-          endif
+C Still require to parse files in the rscedes based hopefully on
+C the ending characters of the file.
+        if(tsc(1:4).eq.'UNKN')then
+          continue  ! not all possible scene types may be filled
         else
-          call figscen(ITA3,tsc,ier)
-          if (ier.gt.1) IERR=1
+          indxscn=indxscn+1
+          CALL EGETRM(OUTSTR,K,rscedes(indxscn),'-','scene(s)',IER)
+          tsc = rscedes(indxscn)
+          if (tsc(1:2).eq.'  ') then
+            if (RVB.ne.'s') then
+              if (indxscn.eq.1) then
+                call edisp(iuout,'Sky file undefined! ')
+              elseif (indxscn.eq.2) then
+                call edisp(iuout,'Glazing file undefined! ')
+              endif
+            endif
+          else
+            call figscen(ITA3,tsc,ier)
+            if (ier.gt.1) IERR=1
+          endif
         endif
       elseif(word(1:5).eq.'view=')then
         CALL EGETW(OUTSTR,K,tvewsh,'-','shrt vew',IFLAG)
         CALL EGETRM(OUTSTR,K,tvewcmds,'W','view cmds',IER)
         indxvew=indxvew+1
-        rvewsh(indxvew)=tvewsh
-        vewcmds(indxvew)=tvewcmds
+        write(rvewsh(indxvew),'(a)') tvewsh(1:lnblnk(tvewsh))
+        write(vewcmds(indxvew),'(a)')tvewcmds(1:lnblnk(tvewcmds))
+C        write(6,*) 'reading rif file'
+C        write(6,*) vewcmds(indxvew)
 
 C Echo and save render settings.
       elseif(word(1:7).eq.'render=')then
@@ -555,6 +586,9 @@ C Materials file.
         write(ITA2,'(a,a)')'scene= ',matfil(1:lnblnk(matfil))
       endif
 
+C Added shell command for modish.pl
+      call system("./fix.sh")
+       
 C Outside description file.
       write (tfile,'(2a)') runpath(1:lnrp),rofil(1:lnblnk(rofil))
       INQUIRE(FILE=tfile,EXIST=XST)
@@ -589,6 +623,15 @@ C Misc scene description file.
         indxscn = indxscn + 1
         write(rscedes(indxscn),'(a)') rmfil(1:lnblnk(rmfil))
         write(ITA2,'(a,a)')'scene= ',rmfil(1:lnblnk(rmfil))
+      endif
+
+C IES xform file.
+      write (tfile,'(2a)') runpath(1:lnrp),iesfil(1:lnblnk(iesfil))
+      INQUIRE(FILE=tfile,EXIST=XST)
+      if (XST) then
+        indxscn = indxscn + 1
+        write(rscedes(indxscn),'(a)') iesfil(1:lnblnk(iesfil))
+        write(ITA2,'(a,a)')'scene= ',iesfil(1:lnblnk(iesfil))
       endif
 
 C Remainder of rif file.
@@ -696,12 +739,21 @@ C Attempt to read in file, note it is assumed to be one line.
         elseif(OUTSTR(1:11).eq. '# sky patch')then
           write(rskyfil,'(a)') cmdname(1:lnblnk(cmdname))
           skydone=.true.
+        elseif(OUTSTR(1:25).eq.'# Radiance IES transforms')then
+          write(iesfil,'(a)') cmdname(1:lnblnk(cmdname))
+          iesdone=.true.
+        elseif(OUTSTR(1:8).eq.'# xform ')then
+
+C If it starts with xform then likely some extra entities
+C or sensors provided by the user.
+          write(rmmfil,'(a)') cmdname(1:lnblnk(cmdname))
+          misdone=.true.
         else
 
 C << needs to be fixed to hold additional (say 10) scene files >>
           call edisp(iuout,'The initial line of the file is: ')
           call edisp(iuout,OUTSTR)
-          call edisp(iuout,'this has not be recognised and will be')
+          call edisp(iuout,'this has not been recognised and will be')
           call edisp(iuout,'REMOVED from the rif file.')
         endif
       else

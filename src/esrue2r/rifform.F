@@ -28,11 +28,19 @@ C ******* Setup of image quality and calculation options.
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
+      integer itc,icout  ! trace verbosity and output channel
+      common/trace/itc,icout
+
+C Radiance processor cores.
+      integer radcores
+      common/radcor/radcores
 
       CHARACTER doit*124,VALT*32
       character item*30,HOLD*24
-      character fil*80
+      character fil*80,fs*1
       character ltmp*72,ltmp60*60
+      logical unixok
+      integer lnrif   ! length of rif file
 
       integer NITEMS,INO  ! max items and current menu item
 
@@ -46,6 +54,14 @@ C For help messages
       integer nbhelp     ! number of help lines found
 
       helpinsub='RIFFORM'  ! set for subroutine
+      
+C Set folder separator (fs) to \ or / as required.
+      call isunix(unixok)
+      if(unixok)then
+        fs = char(47)
+      else
+        fs = char(92)
+      endif
 
       ITA2 = IFIL+7
       ITA3 = IFIL+10
@@ -111,6 +127,13 @@ c Explains octree menu.
      &    72,matfil,'outside mat file name',IER,nbhelp)
         if(ltmp.ne.' ')matfil = ltmp
 
+C Additional material file.
+        ltmp = rmmfil
+        CALL EASKS(ltmp,'Additional materials file name ?',
+     &    '(If not used give NONE)? ',
+     &    72,rmmfil,'additional mat file name',IER,nbhelp)
+        if(ltmp(1:2).ne.'  '.or.ltmp(1:4).eq.'NONE')rmmfil = ltmp
+
         ltmp = rofil
         CALL EASKS(ltmp,'Outside opaque compositon file name ?',' ',
      &    72,rofil,'outside file name',IER,nbhep)
@@ -121,11 +144,13 @@ c Explains octree menu.
      &    72,rzfil,'zone opaq def file name',IER,nbhelp)
         if(ltmp.ne.' ')rzfil = ltmp
 
+C Additional rif file for furniture or fixtures).
         ltmp = rmfil
         CALL EASKS(ltmp,
-     &    'Miscel items (furniture etc.) (If not used give NONE) ',
-     &    ' ? ',72,rmfil,'misc file',IER,nbhelp)
-        if(ltmp.ne.' ')rmfil = ltmp
+     &    'Miscel items (furniture, fixtures etc.) ',
+     &    '(If not used give NONE)?',72,rmfil,'misc file',IER,nbhelp)
+        if(ltmp(1:2).ne.'  '.or.ltmp(1:4).eq.'NONE')rmfil = ltmp
+
       elseif(INO.EQ.8)then
 
 C Image quality: >> Low|Medium|High  [Low]
@@ -258,9 +283,18 @@ C        call LISTAS(ITA2,RIFNAME(ISCENE),IER)
         CALL EASKABCD(' Options: ',' ','Browse current `rif` file',
      &    'Manually edit file','Re-read file','ignore ?',IW,nbhelp)
         if(IW.eq.1)then
-          call vifile(ITA2,RIFNAME(ISCENE),'b',ier)
+
+C Prepend local path.
+          lnrif=lnblnk(RIFNAME(ISCENE))
+          write(ltmp,'(2a)') runpath(1:lnrp),RIFNAME(ISCENE)(1:lnrif)
+          call vifile(ITA2,ltmp,'b',ier)
+C          call vifile(ITA2,RIFNAME(ISCENE),'b',ier)
         elseif(IW.eq.2)then
-          call vifile(ITA2,RIFNAME(ISCENE),'e',ier)
+
+C Prepend local path.
+          lnrif=lnblnk(RIFNAME(ISCENE))
+          write(ltmp,'(2a)') runpath(1:lnrp),RIFNAME(ISCENE)(1:lnrif)
+          call vifile(ITA2,ltmp,'e',ier)
           dok=.true.
           CALL ASKOK(' ',' Re-read after editing?',OK,dok,nbhelp)
           if(OK)call RRIF(ita2,ita3,RIFNAME(ISCENE),'s',ier)
@@ -290,17 +324,35 @@ C Set file name including path and open.
         write(fil,'(2a)') runpath(1:lnblnk(runpath)),
      &    RIFNAME(ISCENE)(1:lnblnk(RIFNAME(ISCENE)))
         if(ipckvew.ne.0)then
-          write(doit,'(4a)') 'rad -n -e -v ',
-     &      rvewsh(ipckvew)(1:lnblnk(rvewsh(ipckvew))),
-     &      ' ',fil(1:lnblnk(fil))
+          if(radcores.eq.1)then
+            write(doit,'(6a)') 'cd ',runpath(1:lnrp),
+     &        '; rad -n -e -v ',
+     &        rvewsh(ipckvew)(1:lnblnk(rvewsh(ipckvew))),
+     &        ' ',fil(1:lnblnk(fil))
+          else
+            write(doit,'(3a,i2,4a)') 'cd ',runpath(1:lnrp),
+     &        '; rad -e -N',radcores,' -v ',
+     &        rvewsh(ipckvew)(1:lnblnk(rvewsh(ipckvew))),
+     &        ' ',fil(1:lnblnk(fil))
+          endif
         else
           call edisp(iuout,' No view selected using default.')
-          write(doit,'(2a)') 'rad -n -e -v xyZv ',fil(1:lnblnk(fil))
+          if(radcores.eq.1)then
+            write(doit,'(4a)') 'cd ',runpath(1:lnrp),
+     &        '; rad -n -e -v xyZv ',fil(1:lnblnk(fil))
+          else
+            write(doit,'(3a,i2,2a)') 'cd ',runpath(1:lnrp),
+     &        '; rad -e -N',radcores,' -v xyZv ',
+     &        fil(1:lnblnk(fil))
+          endif
         endif
 
-C Debug.
-C        write(6,*) doit
-
+C Debug/trace.
+        if(itc.eq.0)then
+          continue
+        else     
+          write(icout,*) doit(1:lnblnk(doit))
+        endif
         call edisp(iuout,'Check text window for the trial results.')
         call runit(doit,'-')
       else
@@ -321,8 +373,6 @@ C If use = 'f' then force files to account for change in root/dir name.
 #include "e2r_common.h"
       
       integer lnblnk  ! function definition
-
-      COMMON/RAY5/ZCOG(MCOM,3),XMN,YMN,ZMN,XMX,YMX,ZMX
 
       character pre*28
 
@@ -347,6 +397,7 @@ C of the descriptive files.
       indone=.false.
       misdone=.false.
       vewdone=.false.
+      iesdone=.false.
       rambfil='NONE'
       optnfil='NONE'
       itrack= 1
@@ -359,39 +410,48 @@ C If we don't yet know a zone assume outside.
 
 C For both initial and update use, do the following.
       if(optnfil(1:7).eq.'UNKNOWN'.or.use.eq.'f')then
-        write(optnfil,'(a,a4)')pre(1:lnblnk(pre)),'.opt'
+        write(optnfil,'(2a)')pre(1:lnblnk(pre)),'.opt'
       endif
       if(octfil(1:7).eq.'UNKNOWN'.or.use.eq.'f')then
-        write(octfil,'(a,a4)')pre(1:lnblnk(pre)),'.oct'
+        write(octfil,'(2a)')pre(1:lnblnk(pre)),'.oct'
       endif
       if(picfil(1:7).eq.'UNKNOWN'.or.use.eq.'f')then
         write(picfil,'(a)')pre(1:lnblnk(pre))
       endif
       if(rskyfil(1:7).eq.'UNKNOWN'.or.use.eq.'f')then
-        write(rskyfil,'(a,a4)') pre(1:lnblnk(pre)),'.sky'
+        write(rskyfil,'(2a)') pre(1:lnblnk(pre)),'.sky'
       endif
 
 C If no inside file has been defined, setup typical names.
       if(rzfil(1:7).eq.'UNKNOWN'.or.use.eq.'f')then
-        write(rzfil,'(a,a7)') pre(1:lnblnk(pre)),'-in.rad'
+        write(rzfil,'(2a)') pre(1:lnblnk(pre)),'-in.rad'
       endif
       if(rofil(1:7).eq.'UNKNOWN'.or.use.eq.'f')then
-        write(rofil,'(a,a8)') pre(1:lnblnk(pre)),'-out.rad'
+        write(rofil,'(2a)') pre(1:lnblnk(pre)),'-out.rad'
       endif
       if(matfil(1:7).eq.'UNKNOWN'.or.use.eq.'f')then
-        write(matfil,'(a,a4)') pre(1:lnblnk(pre)),'.mat'
+        write(matfil,'(2a)') pre(1:lnblnk(pre)),'.mat'
       endif
+
+C Additional rif file (furniture or fixtures).
       if(rmfil(1:7).eq.'UNKNOWN'.or.use.eq.'f')then
-        write(rmfil,'(a,a,a,a9)') pre(1:lnblnk(pre)),'-misc.rad'
+        write(rmfil,'(2a)') pre(1:lnblnk(pre)),'-misc.rad'
       endif
+
+C IES xforms file.
+      if(rmfil(1:7).eq.'UNKNOWN'.or.use.eq.'f')then
+        write(iesfil,'(2a)') pre(1:lnblnk(pre)),'-xform.rad'
+      endif
+
+C Additional material file.
       if(rmmfil(1:7).eq.'UNKNOWN'.or.use.eq.'f')then
-        write(rmmfil,'(a,a9)') pre(1:lnblnk(pre)),'-misc.mat'
+        write(rmmfil,'(2a)') pre(1:lnblnk(pre)),'-misc.mat'
       endif
       if(glzfil(1:7).eq.'UNKNOWN'.or.use.eq.'f')then
-        write(glzfil,'(a,a8)') pre(1:lnblnk(pre)),'-glz.rad'
+        write(glzfil,'(2a)') pre(1:lnblnk(pre)),'-glz.rad'
       endif
       if(aglzfil(1:7).eq.'UNKNOWN'.or.use.eq.'f')then
-        write(aglzfil,'(a,a10)') pre(1:lnblnk(pre)),'-glz_a.rad'
+        write(aglzfil,'(2a)') pre(1:lnblnk(pre)),'-glz_a.rad'
       endif
 
 C Reset to no views.
@@ -400,7 +460,7 @@ C Reset to no views.
 
 C Initial assumptions.
       if (use.eq.'i') then 
-        imgqua = 'Low'
+        imgqua = 'Medium'
         detlvl = 'Medium'
         llvar  = 'High'
         indrcb = 0
@@ -422,9 +482,7 @@ C Pick up the centre of the focus zone.
       elseif(intext.eq.0)then
 
 C Assume an esp-r like upper Southwest corner.
-        rvpx= -50.
-        rvpy= -50.
-        rvpz=  50.
+        rvpx= -50.0; rvpy= -50.0; rvpz=  50.0
 
 C Outside view. Scale bounding box to match extremes of the ground disk.
         write(rzoncmd,'(a,6f8.2)') ' Exterior ',cx-DD,cx+DD,cy-DD,

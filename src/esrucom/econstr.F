@@ -82,7 +82,7 @@ C Error subroutine and error details for dll mode.
       integer lsn  ! length of currentfile
 
 C Thermal property checking values follow.
-      DATA CONCH/250./,DENCH/8000./,SHTCH/3000./,THKCH/0.5/
+      DATA CONCH/250./,DENCH/8900./,SHTCH/3000./,THKCH/0.5/
 
       IER=0
 

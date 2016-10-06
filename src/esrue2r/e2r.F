@@ -1,7 +1,7 @@
 C This file is part of the ESP-r system.
 C Copyright Energy Systems Research Unit, University of
 C Strathclyde, Glasgow Scotland, 2001.
-
+    
 C ESP-r is free software.  You can redistribute it and/or
 C modify it under the terms of the GNU General Public
 C License as published by the Free Software Foundation 
@@ -42,6 +42,8 @@ C LFMAT,IFMAT,LFMUL,IFMUL (for materials and constructions database)
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
+      integer itc,icout  ! trace verbosity and output channel
+      common/trace/itc,icout
       integer ifs,itfs,imfs
       COMMON/GFONT/IFS,ITFS,IMFS
       COMMON/FILEP/IFIL
@@ -51,19 +53,11 @@ C LFMAT,IFMAT,LFMUL,IFMUL (for materials and constructions database)
       common/appw/iappw,iappx,iappy
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
 
-      COMMON/RAY2/ITDSP,ITBND,ITEPT,ITZNM,ITSNM,ITVNO,ITORG,ITSNR,
-     &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS,ITPPSW
-
-      LOGICAL MODIFY,MODLEN,MODBND
-      COMMON/RAY3/MODIFY,MODLEN,MODBND
-
-      COMMON/RAY5/ZCOG(MCOM,3),XMN,YMN,ZMN,XMX,YMX,ZMX
-
 C Defaults.
       character*96 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF
       COMMON/DEFLT2/DFCFG,DFCTL,DEFRLB,DAFRES,DAPROB,DPNF
 
-C Path to model.
+C Path to model cfg file.
       common/rpath/path
 
       common/user/browse
@@ -74,6 +68,8 @@ C Path to model.
       COMMON/C1/NCOMP,NCON
 
 C Radiance based commons are explained in e2r_common.h.
+      character simfile*72
+      COMMON/fromsim/simfile
 
 C Project journal on/off, unit number, cmd, file name.
       common/journopt/journio,iuj,journcmd,jfile
@@ -82,6 +78,10 @@ C Project journal on/off, unit number, cmd, file name.
       
 C Significant figure reporting limit (NSIGFIG).
       common/SFIG/NSIGFIG
+
+C Radiance processor cores.
+      integer radcores
+      common/radcor/radcores
       
 C Name of current application
       common/APPNAME/cAppName
@@ -89,14 +89,16 @@ C Name of current application
       character cAppName*12      
 
       CHARACTER outs*124,ITEM*30
-      CHARACTER inf*144,LCMDFL*144,L144*144
-      character tfile*72
+      CHARACTER inf*144,actf*72
+      character LCMDFL*144,L144*144
+      character tfile*96
       character path*72
       character journcmd*20,jfile*72,uname*24,fs*1,cjfile*72
       character OUTSTR*124
-      character ltmp72*72,dtmp72*72,ltmp*72,dtmp96*96
+      character ltmp96*96,dtmp72*72,ltmp*72,dtmp96*96
       character pf*72,gf*72,df*72,VALT*28
       character brw*4   ! to signal whether browsing model
+      character smode*1 ! simscene mode 'i' interactive '-' silent
 
       character cVnum*16      ! returned from ESPrVersionNum
       character pagestitle*42 ! for banner title via epages call
@@ -104,12 +106,13 @@ C Name of current application
       DIMENSION ITEM(24)
       DIMENSION IVALV(20),VALT(20),IPVALV(20)  ! for selecting view from list
 
-      LOGICAL KEEP,CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,CFCDBOK
+      LOGICAL CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,CFCDBOK
       LOGICAL XST,unixok,there
       LOGICAL ok,dok
       logical browse  ! is true if parameter passed as yes
 
       integer iglib   ! if 1 then X11, if 2 then GTK, if 3 then text only.
+
 #ifdef OSI
       integer numberofzones ! to pass to updwire rather than ncomp
       integer iigl,iigr,iigt,iigb,iigw,iigwh
@@ -136,6 +139,9 @@ C Initialize global common data.
       IUOUT = 6
       IFIL = 10
       NSIGFIG=3
+      radcores=1   ! assume one processor core
+      itc=0        ! set silent
+      icout=iuout  ! to text feedback
       matver=0.0   ! initial assumption of binary materials database
 
 C Assume configuration file is from IFIL+8, any leakage description
@@ -143,13 +149,15 @@ C is fom IFIL+9 and ASCII viewing and geometry file reading on IFILE+1.
 C The current outside description file is irofil = IFIL+3.
 C The current room description file is IRRFIL = IFIL+4.
 C Glazing (contains defaults and illums) iglzfil = IFIL+16.
-C Materials file imatfil = IFIL+11.
+C Materials file imatfil = IFIL+11, any xforms of IES data
+C are in iiesfil.
 C Scene configuration file IRCFG = IFIL+17.
       irofil = IFIL+3
       irzfil = IFIL+4
       imatfil = IFIL+11
       iglzfil = IFIL+16
       IRCFG = IFIL+17
+      iiesfil = IFIL+18
 
 C Primitives on IFIL+13, mlc on IFIL+14, optics on IFIL+15,
 C check for root journal file on iuj.
@@ -164,7 +172,8 @@ C Temporary ascii files ITA1 = IFIL+6, ITA2 = IFIL+7, ITA3 = IFIL+10.
       IFCFG=IFIL+8
       ITA3 = IFIL+10
 
-      call parse2r(MODL,iappw,iappx,iappy,inf,zone,aim,cmdact,brw)
+C << consider a verbosity parameter >>
+      call parse2r(MODL,iappw,iappx,iappy,inf,zone,aim,cmdact,actf,brw)
 
 C Set folder separator (fs) to \ or / as required.
       call isunix(unixok)
@@ -187,7 +196,6 @@ C Make case insensitive.
       IMFS=1
       ISCENE=1
       do 9 I=1,MCOM+1
-        SCENE(I)='UNDEFINED'
         RIFNAME(I)='UNKNOWN'
         SCENERT(I)='UNKNOWN'
         SCENEDESC(I)='UNKNOWN'
@@ -198,15 +206,9 @@ C Make case insensitive.
  9    continue
 
 C Set defaults.
-      KEEP=.false.
-      CFGOK=.false.
-      MLDBOK=.false.
-      MATDBOK=.false.
-      CTLOK=.false.
-      OPTKOK=.false.
-      MODIFY=.false.
-      MODLEN=.false.
-      MODBND=.false.
+      CFGOK=.false.; MLDBOK=.false.; MATDBOK=.false.
+      CTLOK=.false.; OPTKOK=.false.
+      MODIFYVIEW=.false.; MODLEN=.false.; MODBND=.false.
       XST=.false.
       LRADCF='UNKNOWN'
       LCFGF='UNKNOWN'
@@ -218,13 +220,12 @@ C Set defaults.
       rmmfil='UNKNOWN'
       glzfil='UNKNOWN'
       aglzfil='UNKNOWN'
+      iesfil='UNKNOWN'   ! need to decide if it is to be included
       iglzty=1
       indone=.false.
       rskyfil='UNKNOWN'
-      skydone=.false.
-      misdone=.false.
-      vewdone=.false.
-      glzdone=.false.
+      skydone=.false.; misdone=.false.; vewdone=.false.
+      glzdone=.false.; iesdone=.false.
       octfil='UNKNOWN'
       picfil='UNKNOWN'
       radpth='../rad'
@@ -236,11 +237,12 @@ C Assume no focous zone.
 
 C Default values for rif file variables.
       intext = 0
+      iadobe = 2  ! medium adobe texture
       imgqua = 'Low'
       detlvl = 'Medium'
       llvar  = 'High'
       indrcb = 0
-      ipicx  = 258
+      ipicx  = 500
       penumb = 'False'
       crenrp='  '
       coconv='  '
@@ -256,55 +258,39 @@ C Assume monochrome monitor.
 
 C Assume sunny, spring day, mid-morning angle of
 C views and looking east.
-      isky=3
-      irdoy=92
-      rtime=10.
-      iryear=1998
-      angh=60.
-      angv=60.
+      isky=3; irdoy=92; rtime=10.0; iryear=2007
+      angh=60.0; angv=60.
 
-      rvpx=-10.
-      rvpy=-10.
-      rvpz=10.
-      vdx=1.
-      vdy=0.
-      vdz=0.
-      azimuth=90.
-      elevtn=0.
+C << and we could set this based on the initial view
+C << type? Find that dialog and insert better options.
+      rvpx=-100.0; rvpy=-100.0; rvpz=100.0 ! to match typical def view
+      vdx=0.647; vdy=0.581; vdz= -0.493    ! to match typical def view
+      vux=0.0; vuy=0.0; vuz=1.0
+      azimuth=45.0; elevtn=-20.0
+      cutfor=0.0; cutaft=0.0
 
 C Initial coords for eyepoint, viewing point, angle of view.
-      EYEM(1)=-100.
-      EYEM(2)=-100.
-      EYEM(3)=100.
-      VIEWM(1)=10.
-      VIEWM(2)=10.
-      VIEWM(3)=10.
-      ANG=40.
+      EYEM(1)=-100.0; EYEM(2)=-100.0; EYEM(3)=100.0
+      VIEWM(1)=10.0; VIEWM(2)=10.0; VIEWM(3)=10.0
+      ANG=40.0
 
 C General image option flags.
-      ITDSP=0
-      ITBND=1
-      ITEPT=0
-      ITZNM=0
-      ITSNM=1
-      ITVNO=1
-      ITORG=1
-      ITSNR=1
-      ITGRD=1
-      GRDIS=0.0
-      ITPPSW=0
+      ITDSP=0; ITBND=1; ITEPT=0
+      ITZNM=0; ITSNM=1; ITVNO=1
+      ITORG=1; ITSNR=1; ITGRD=1
+      GRDIS=0.0; ITPPSW=0
 
 C Initialise output device, assume minimal trace.
       MMOD=MODL
       if(iappw.eq.0.and.iappx.eq.0.and.iappy.eq.0)then
-        iappw=520
+        iappw=600
         iappx=60
         iappy=10
       else
         if(iappx.le.0)iappx=60
         if(iappy.le.0)iappy=10
         if(iappw.le.200)then
-          iappwi=int(520*iappw*0.01)
+          iappwi=int(600*iappw*0.01)
           iappw=iappwi
         elseif(iappw.gt.200)then
           continue
@@ -317,12 +303,12 @@ C Set pixels high to iappw and pixels wide to factor in monitor size.
 
       if(iappw.gt.0.and.iappw.lt.100)then
         menuchw = MAX0(int(32*iappw*0.01),12)
-        LIMTTY=5
-        LIMIT =5
+        LIMTTY=7
+        LIMIT =7
       else
         menuchw = 32
-        LIMTTY=5
-        LIMIT =5
+        LIMTTY=7
+        LIMIT =7
       endif
       IF(MMOD.EQ.8)THEN
 
@@ -364,17 +350,28 @@ C Setup and pass in parameters to win3d.
         endif
         call setzscale()
         call setgscale()
-        mdispl=0
-        nifgrey=0
-        ncset=0
-        ngset=0
-        nzonec=0
+        mdispl=0; nifgrey=0; ncset=0; ngset=0; nzonec=0
         call foundcolour(mdispl,nifgrey,ncset,ngset,nzonec)
         call startbuffer()
       ENDIF
 
 C Echo version number.
       CALL ESPrVersion("summary",cAppName,IUOUT)
+
+C Remember where e2r was started (pwdinitial). If within model
+C cfg folder then set pwdtocfg to !
+      pwdinitial='  '  ! clear common
+      pwdtocfg='  '    ! and from pwd into cfg folder
+      call usrdir(pwdinitial)
+      lnpwdi=lnblnk(pwdinitial)
+C Debug.
+C      write(6,*) 'e2r the pwd command is ',pwdinitial(1:lnpwdi)
+C      write(6,*) lnpwdi,lnpwdi-2,' ',pwdinitial(lnpwdi-2:lnpwdi)
+      if(pwdinitial(lnpwdi-2:lnpwdi).eq.'cfg')then
+        pwdtocfg='!'             ! signal no need to append this
+        lnpwdc=lnblnk(pwdtocfg)  ! remember its length
+C        write(6,*) 'e2r working in model cfg folder'
+      endif
 
 C Find the user's home folder then get users custom settings.
       call usrhome(upath)
@@ -392,7 +389,7 @@ C All subsequent tstamp messages will be appended to root journal.
         uname=' '
         call usrname(uname)
         cjfile=' '
-        write(cjfile,'(a,a1,a,a,a)')upath(1:lnblnk(upath)),fs,'.',
+        write(cjfile,'(5a)')upath(1:lnblnk(upath)),fs,'.',
      &    uname(1:lnblnk(uname)),'cur_j'
         there=.false.
         INQUIRE(FILE=cjfile,EXIST=there)
@@ -423,16 +420,8 @@ C Take `c' command line file name, convert to fortran string LCMDFL.
         LCMDFL='  '
       endif
 
-C Check if the command line included a browse directive.
-      if(brw(1:2).eq.'no')then
-        browse= .false.
-      elseif(brw(1:3).eq.'yes')then
-        browse= .true.
-      endif
-
-C debug.
-      write(outs,'(2a)') 'Passed browse parameter of ',brw
-      call edisp(iuout,outs)
+C e2r is called with browse no.
+      browse= .false.
 
 C If an input file has been specified then load and display it
 C and then present the main menu.
@@ -459,21 +448,21 @@ C name with the full path.
         iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
         if(iglib.eq.1.or.iglib.eq.3)then
           if(llt.lt.96)then
-            CALL EASKF(L144,' Model configuration file?',' ',96,dtmp96,
-     &        'config file name',IER,nbhelp)
+            CALL EASKF(L144,'Model configuration file.','Confirm:',96,
+     &        dtmp96,'model config file name',IER,nbhelp)
           elseif(llt.ge.96.and.llt.lt.124)then
-            CALL EASKF(L144,' Model configuration file?',' ',124,
-     &        dtmp96,'config file name',IER,nbhelp)
+            CALL EASKF(L144,'Model configuration file.','Confirm:',124,
+     &        dtmp96,'model config file name',IER,nbhelp)
           elseif(llt.ge.124.and.llt.le.144)then
-            CALL EASKF(L144,' Model configuration file?',' ',144,
-     &        dtmp96,'config file name',IER,nbhelp)
+            CALL EASKF(L144,'Model configuration file.','Confirm:',144,
+     &        dtmp96,'model config file name',IER,nbhelp)
           endif
         elseif(iglib.eq.2)then
-          CALL EASKF(L144,' Model configuration file?',' ',144,dtmp96,
-     &      'config file name',IER,nbhelp)
+          CALL EASKF(L144,'Model configuration file.','Confirm:',144,
+     &      dtmp96,'model config file name',IER,nbhelp)
         else
-          CALL EASKF(L144,' Model configuration file?',' ',96,dtmp96,
-     &      'config file name',IER,nbhelp)
+          CALL EASKF(L144,'Model configuration file.','Confirm:',96,
+     &      dtmp96,'model config file name',IER,nbhelp)
         endif
 
         IF(L144(1:2).EQ.'  '.or.L144(1:4).eq.'UNKN')GOTO 1289
@@ -506,17 +495,21 @@ C line as 'Coupling' or 'Day_coef' or 'Day_fact'.
       endif
 
 C Read RADIANCE configuration if it exists. If we are returning to a
-C model that was previously worked on then the scene file would be
-C in the cfg folder. If we are not browsing then that file should be
-C copied into the ../rad folder.
+C model that was previously worked on then the scene file (rcf) might be
+C in the cfg folder or the ../rad folder.
       XST=.FALSE.
-      write(tfile,'(a,a)')path(1:lnblnk(path)),LRADCF(1:lnblnk(LRADCF))
+      if(pwdtocfg(1:1).eq.'!')then
+        write(tfile,'(3a)')path(1:lnblnk(path)),fs,
+     &    LRADCF(1:lnblnk(LRADCF))
+      else
+        write(tfile,'(4a)') pwdinitial(1:lnpwdi),fs,
+     &    pwdtocfg(1:lnblnk(pwdtocfg)),LRADCF(1:lnblnk(LRADCF))
+      endif
       INQUIRE (FILE=tfile,EXIST=XST)
       if(XST)then
 
 C Debug.
-C        write(6,*) tfile
-
+C        write(6,*) 'in path ',tfile(1:lnblnk(tfile))
         continue
       else
         write(tfile,'(a,a)')runpath(1:lnrp),LRADCF(1:lnblnk(LRADCF))
@@ -524,8 +517,7 @@ C        write(6,*) tfile
         if(XST)then
 
 C Debug.
-C          write(6,*) tfile
-
+C          write(6,*) 'in runpath ',tfile(1:lnblnk(tfile))
           continue
         else
 
@@ -535,23 +527,25 @@ C Ask user about the scene file. Begin by checking for command line information.
             if (cmdact(1:4).ne.'NONE') call autorad
           else
 
-C Create a default scene file name using the cfgroot.
-            write (LRADCF,'(a,a)') cfgroot(1:lnblnk(cfgroot)),'.rcf'
+C Create a default scene file name using the cfgroot if UNKNOWN.
+            if(lradcf(1:7).eq.'UNKNOWN')then
+              write (LRADCF,'(a,a)') cfgroot(1:lnblnk(cfgroot)),'.rcf'
+            endif
 
 C File does not exist, ask for another/ new file.
  2289       helptopic='scene_config_file_name'
             call gethelptext(helpinsub,helptopic,nbhelp)
-            ltmp72=LRADCF
-            dtmp72='scene.rcf'
-            CALL EASKS(ltmp72,
+            write(ltmp96,'(a)') LRADCF(1:lnblnk(LRADCF))
+            dtmp96='scene.rcf'
+            CALL EASKS(ltmp96,
      &        'Scene configuration file? (suggested name)',
-     &        ' ',72,dtmp72,'scene file name',IER,nbhelp)
-            IF(ltmp72(1:2).EQ.'  '.or.ltmp72(1:4).eq.'UNKN')GOTO 2289
-            LRADCF=ltmp72
+     &        ' ',96,dtmp96,'scene file name',IER,nbhelp)
+            IF(ltmp96(1:2).EQ.'  '.or.ltmp96(1:4).eq.'UNKN')GOTO 2289
+            write(LRADCF,'(a)') ltmp96(1:lnblnk(ltmp96))
             XST=.FALSE.
             INQUIRE (FILE=LRADCF,EXIST=XST)
             if(XST)then
-              continue
+              write(tfile,'(a)')LRADCF(1:lnblnk(LRADCF))
             else
               call ADDSCENE(IRCFG)
             endif
@@ -560,12 +554,25 @@ C File does not exist, ask for another/ new file.
       endif
 
 C Scan the scene file.
-      call RADCFGIN
+      call RADCFGIN(tfile)
 
 C Check for command line information.
       if (zone(1:4).ne.'NONE'.and.aim(1:4).ne.'NONE') then
+
+C We have a specific zone and purpose in mind. Checkrif will
+C scan an existing rif file and see if a matching scene exists
+C and if not sets up the relevant parameters and descriptive
+C files.
         call checkrif('o')
+        write(6,*) 'after checkrif o cmdact aim',cmdact,aim
+
+C Note for 'Coupling' autorad is used to invoke the assessment.
         if (cmdact(1:4).ne.'NONE') call autorad
+        if (aim(1:8).eq.'Coupling'.and.cmdact(1:6).eq.'Create')then
+          call edisp(iuout,'Initial setup of model for use by the')
+          call edisp(iuout,'ESP-r simulator is complete and you')
+          call edisp(iuout,'can now exit.')
+        endif
       else
         if (NSCENE.gt.1) then
           call edisp(iuout,
@@ -581,15 +588,17 @@ C Check for command line information.
         endif
       endif
 
+C Users can manage list of scenes from option c.
 10    INO = -4
       write(ITEM(1),'(2A)')   'a model: ',LCFGF(1:21)
+C << should this be runpath? >>
       write(ITEM(2),'(2A)')   '   path: ',path(1:21)
       ITEM(3)=                '  ____________________________'
-      write(ITEM(4),'(2A)')   'b scenes  : ',LRADCF(1:18)
-      write(ITEM(5),'(2A)')   'c name    : ',SCENE(ISCENE)(1:18)
+      write(ITEM(4),'(2A)')   'b scenes in:',LRADCF(1:18)
+      write(ITEM(5),'(2A)')   'c current : ',SCENERT(ISCENE)(1:18)
       write(ITEM(6),'(2A)')   '   RIF    : ',RIFNAME(ISCENE)(1:18)
-      write(ITEM(7),'(2A)')   '   root   : ',SCENERT(ISCENE)(1:18)
-      write(ITEM(8),'(2A)')   '   purpose: ',SCENEPURP(ISCENE)
+      write(ITEM(7),'(2A)')   '   purpose: ',SCENEPURP(ISCENE)
+      write(ITEM(8),'(A)')    '                              '
       ITEM(9)=                '   ___________________________'
       ITEM(10)=               'd  sky type, location & time  '
       ITEM(11)=               'e  zone & outside composition '
@@ -631,13 +640,24 @@ C Check for command line information.
       endif
       ITEM(18)=               '>  save scene information     '
       ITEM(19)=               '   __________________________ '
-      ITEM(20)=               '? help                        '
-      ITEM(21)=               '- quit                        '
-      NITEMS = 21
+
+C If user toggles trace a 2nd time then we are in detailed mode
+      if(itc.eq.0)then
+        item(20)=             't trace >> none               '
+      elseif(itc.eq.1)then
+        item(20)=             't trace >> to text feedback   '
+      elseif(itc.eq.2)then
+        item(20)=             't trace >> to console         '
+      elseif(itc.eq.3)then
+        item(20)=             't trace >> to fort.33         '
+      endif
+      ITEM(21)=               '? help                        '
+      ITEM(22)=               '- quit                        '
+      NITEMS = 22
 
 C If user has defined model and perhaps resized the display then
 C redraw the model image.
-      if(CFGOK.AND.MODIFY)then
+      if(CFGOK.AND.MODIFYVIEW)then
         MODBND=.TRUE.
         MODLEN=.TRUE.
         nzg=NCOMP
@@ -666,58 +686,36 @@ C Present the main menu.
 
       IF(INO.EQ.NITEMS)THEN
 
-C Copy files back to radpth if necessary. If running native windows
-C then there is no need to copy all files back.
-C        lnrp=lnblnk(runpath)
-        call isunix(unixok)
-        if(unixok)then
-          if(browse)then
-            dok=.false.
-            helptopic='e2r_temporary_folder'
-            call gethelptext(helpinsub,helptopic,nbhelp)
-            CALL ASKOK('Do you wish to keep the Radiance scene files?',
-     &        '(see help)',KEEP,dok,nbhelp)
-          else
-  
-C User owns the model. Only copy the lradcf file back to the cfg
-C folder (the other files can stay where they are).
-            write (outs,'(5a)')'cp -f ',runpath(1:lnrp),
-     &               LRADCF(1:lnblnk(LRADCF)),' ',path(1:lnblnk(path))
-            call runit(outs,'-')
-            call edisp(iuout,outs)
-            KEEP=.false.
-          endif
-        else
-  
-C User owns the model. Only copy the lradcf file back to the cfg
-C folder (the other files can stay where they are).
-          write (outs,'(5a)')'cp -f ',runpath(1:lnrp),
-     &               LRADCF(1:lnblnk(LRADCF)),' ',path(1:lnblnk(path))
-          call runit(outs,'-')
-          call edisp(iuout,outs)
-          KEEP=.false.
-        endif
-C        lnrp=lnblnk(runpath)
-        if (KEEP) then
-
-C Move the radiance configuration file and the other files in the
-C temporary folder and then remove the temporary folder.
-          write (outs,'(5a)')'mv -f ',runpath(1:lnrp),
-     &               LRADCF(1:lnblnk(LRADCF)),' ',path(1:lnblnk(path))
-          call runit(outs,'-')
-          write (outs,'(5a)')'mv -f ',runpath(1:lnrp),'* ',
-     &                                     path(1:lnblnk(path)),radpth
-          call runit(outs,'-')
-          write (outs,'(a,a)') 'rm -fr ',runpath(1:lnrp)
-          call runit(outs,'-')
-        endif
+C Assume that the rcf file (LRADCF is in model cfg folder. Just
+C exit after which prj will attempt to re-scan rcf file for
+C changes.
         call tstamp('>','Finish visual analysis')
         CALL EPAGEND
         STOP
       elseif(INO.EQ.NITEMS-1)then
 
-C Help via the askabout facility in esru_ask.F The zero requests display
+C Help via the askabout facility in esru_ask.F The zero requests display.
+C Follow this with additional paragraphs.
         call askabout('e2r ',0)
+        helptopic='e2r_additional_overview'
+        call gethelptext(helpinsub,helptopic,nbhelp)
+        CALL PHELPD('e2r overview',nbhelp,'-',0,0,IER)
+      elseif(INO.EQ.NITEMS-2)then
+
+C Set trace level. If 3 then reset icout to file, if 2 then
+C to the console.
+         itc=itc+1
+         if(itc.gt.3)then
+           itc=0
+           icout=iuout
+         elseif(itc.eq.1)then
+           icout=iuout
+         elseif(itc.eq.2)then
+           icout=6
+         elseif(itc.eq.3)then
+           icout=33
+         endif
+      
       elseif(INO.EQ.1)then
 
 C ESP-r configuration file.
@@ -758,14 +756,14 @@ C Define possibly different scene configuration file, process if existing
 C or create a new one with reasonable defaults.
  319    helptopic='scene_config_file_name'
         call gethelptext(helpinsub,helptopic,nbhelp)
-        ltmp72=LRADCF
-        dtmp72='scene.rcf'
-        CALL EASKS(ltmp72,'Scene configuration file (suggested name)?',
-     &    '  ',72,dtmp72,'scene file name',IER,nbhelp)
-        if(ltmp72.eq.'  ')goto 319 
-        LRADCF=ltmp72
+        ltmp96=LRADCF
+        dtmp96='scene.rcf'
+        CALL EASKS(ltmp96,'ESP-r scene configuration file?',
+     &    '(confirm name) ',96,dtmp96,'scene file name',IER,nbhelp)
+        if(ltmp96.eq.'  ')goto 319 
+        write(LRADCF,'(a)') ltmp96(1:72)  ! to prevent truncation
         call tstamp('>','E2R: change scene configuration')
-        call RADCFGIN
+        call RADCFGIN(ltmp96)
 
 C Select scene from all available, or edit scene list.
       elseif(INO.EQ.5)then
@@ -800,7 +798,7 @@ C Other descriptions.
         helptopic='furniture_file_name'
         call gethelptext(helpinsub,helptopic,nbhelp)
         ltmp=rmfil
-        CALL EASKS(ltmp,' Miscel (furniture & fittings file ?',
+        CALL EASKS(ltmp,' Miscel (furniture & fittings file)?',
      &    '  ',72,rmfil,'misc fixt file name',IER,nbhelp)
         INQUIRE (FILE=ltmp,EXIST=XST)
         if(XST)rmfil = ltmp
@@ -884,7 +882,7 @@ C Recover previous view.
           ANG=tang
           HANG=thang
           ITBND=itbndt
-          MODIFY=.TRUE.
+          MODIFYVIEW=.TRUE.
           MODLEN=.TRUE.
         endif
 
@@ -921,6 +919,7 @@ C to remove it before proceeding.
 C Pull up a list of views and ask user for which one.
         if (SCENEPURP(ISCENE)(1:8).eq.'External'.or.
      &      SCENEPURP(ISCENE)(1:8).eq.'Internal'.or.
+     &      SCENEPURP(ISCENE)(1:9).eq.'Night_ext'.or.
      &      SCENEPURP(ISCENE)(1:5).eq.'Glare') then
           if (indxvew.gt.0) then
             IX=1
@@ -936,10 +935,18 @@ C Pull up a list of views and ask user for which one.
         endif
 
         if (SCENEPURP(ISCENE)(1:8).eq.'External'.or.
+     &      SCENEPURP(ISCENE)(1:9).eq.'Night_ext'.or.
      &      SCENEPURP(ISCENE)(1:8).eq.'Internal') then
 
-C Generate image if external or internal.
-          call genimage(1)
+C Generate image if external or internal or night.
+          IWDF=1
+          CALL EASKAB(' ',' Image(s):','standard color',
+     &      'falsecolor with lux contours',IWDF,nbhelp)
+          if(IWDF.eq.1)then
+            call genimage(1)
+          else
+            call genimage(3)  ! do falsecolor
+          endif
         elseif (SCENEPURP(ISCENE)(1:5).eq.'Glare') then
 
 C Extra calculations for glare.
@@ -949,6 +956,15 @@ C Extra calculations for glare.
 
 C Daylight factors - calculate and display.
           call getdf
+  
+        elseif (SCENEPURP(ISCENE)(1:8).eq.'Day_coef') then
+
+C Daylight coefficients.
+          cmdact='Calculate'
+          smode='i'
+          call simscene(smode)
+C << testing >>
+      
         elseif (SCENEPURP(ISCENE)(1:8).eq.'Day_lux'.or.
      &          SCENEPURP(ISCENE)(1:5).eq.'Illum') then
 
@@ -970,7 +986,6 @@ C Based on purpose view DF or illuminance or daylight coef or image.
 C Check for daylight factor or illuminance results. Note: the results
 C could have been shifted to a *.df- file so check that as well.
           ITA1 = IFIL+6
-C          lnrp=lnblnk(runpath)
           write(df,'(2a)')SCENERT(NSCENE)(1:lnblnk(SCENERT(NSCENE))),
      &       '.df'
           write(ltmp,'(2a)')runpath(1:lnrp),df(1:lnblnk(df))
@@ -1161,10 +1176,6 @@ C Path to model.
       COMMON/C1/NCOMP,NCON
       COMMON/GTFIL/GTGEOM
 
-      LOGICAL MODIFY,MODLEN,MODBND
-      COMMON/RAY3/MODIFY,MODLEN,MODBND
-
-      COMMON/RAY5/ZCOG(MCOM,3),XMN,YMN,ZMN,XMX,YMX,ZMX
       common/initv/initvt,EYEMI(3),VIEWMI(3),ANGI
 
       COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,CFCDBOK
@@ -1172,6 +1183,7 @@ C Path to model.
       character path*72,GTGEOM*72
       CHARACTER LCMDFL*144
       character outs*124,fs*1,tldir*72,MODE*4
+      character ppath*72,filen*72
 
       LOGICAL unixok
       LOGICAL CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,CFCDBOK
@@ -1190,6 +1202,14 @@ C Set folder separator (fs) to \ or / as required.
         fs = char(92)
       endif
 
+C See if there is a pwdtocfg which can be recovered from within
+C the command line file.
+C << filen is the same as LCFGF so do we need fdroot call? >>
+      call fdpwdtocfg(LCMDFL,ppath,filen)
+C      write(6,*) 'pwdtocfg ',pwdtocfg(1:lnblnk(pwdtocfg))
+C      write(6,*) 'pp ',ppath(1:lnblnk(ppath))
+C      write(6,*) 'fi ',filen(1:lnblnk(filen))
+
 C Configuration file and path are held in common/rcmd/LCMDFL
       call fdroot(LCMDFL,path,LCFGF)
       IAIRP = IFIL+9
@@ -1203,9 +1223,7 @@ C Configuration file and path are held in common/rcmd/LCMDFL
         ITRC=0
         ISFSUM=0
         CALL ZDATA (ITRC,IER,NZONES,ISFSUM)
-        MODIFY=.TRUE.
-        MODBND=.TRUE.
-        MODLEN=.TRUE.
+        MODIFYVIEW=.TRUE.; MODBND=.TRUE.; MODLEN=.TRUE.
 
 C If there is a ground topology read it.
         if(GTGEOM(1:2).eq.'  '.or.GTGEOM(1:4).eq.'UNKN')then
@@ -1229,12 +1247,8 @@ C (Re)Set all surfaces to std line width.
         CALL INLNST(1)
         izgfoc=0
         if(initvt.eq.1)then
-          EYEM(1)=EYEMI(1)
-          EYEM(2)=EYEMI(2)
-          EYEM(3)=EYEMI(3)
-          VIEWM(1)=VIEWMI(1)
-          VIEWM(2)=VIEWMI(2)
-          VIEWM(3)=VIEWMI(3)
+          EYEM(1)=EYEMI(1); EYEM(2)=EYEMI(2); EYEM(3)=EYEMI(3)
+          VIEWM(1)=VIEWMI(1); VIEWM(2)=VIEWMI(2); VIEWM(3)=VIEWMI(3)
           ANG=ANGI
         endif
         CALL ADJVIEW(IER)
@@ -1246,54 +1260,35 @@ C diameter and centre.
         grcx=XMN+((XMX-XMN)/2.)
         grcy=YMN+((YMX-YMN)/2.)
 
-C Decide where the radiance model will be held while calculations
-C are underway. There are several options:
-C a) Use the traditional Unix/Linux approach and copy the files
-C    to a temporary folder, work there and then copy it back.
-C    This is necessary if the user is browsing (e.g. does not
-C    own the model).
-C b) Keep the radiance files in the models rad folder and work
-C    there. If native windows then this option should be used.
-C    If the user owns the model then they could also work in
-C    the model rad folder.
-C c) The model uses a single folder and there is no separate
-C    rad folder to work with.
+C Assume the radiance files in the models rad folder and work
+C there.
         call isunix(unixok)
         if(unixok)then
 
-C If unix and browsing get PID for use in /tmp directory structure.
-          if(browse)then
-            call esppid(ipid)
-            write (tldir,'((5a,i7,a))') upath(1:lnblnk(upath)),fs,
-     &                                '.',fs,'.rad',ipid,fs
-            call st2file(tldir,runpath)
-            lnrp=lnblnk(runpath)  ! remember this
-            write (outs,'(a,a)') 'mkdir ',runpath(1:lnrp)
-            call runit(outs,'-')
-            pathtype='radinhome'
-            call edisp(iuout,' Currently using runpath in user home')
-          else
-  
-C If user owns the model then use the ../rad or ./cfg folder so no
-C need to create a folder.
-            if(radpth(1:3).eq.'./ '.or.radpth(1:3).eq.'.\\ ')then
-              pathtype='radincfg'
-            elseif(radpth(1:7).eq.'../rad '.or.
-     &             radpth(1:7).eq.'..\\rad ')then
-              pathtype='radinrad'
-            endif
+C If unix assume user owns the model and will use the ../rad folder.
+C If not found the folder should be created by prj prior to
+C invoking e2r.
+          if(pwdtocfg(1:1).eq.'!')then
             write(runpath,'(2a)') radpth(1:lnblnk(radpth)),fs
             lnrp=lnblnk(runpath)  ! remember this
+          else
+            write(runpath,'(3a)') pwdtocfg(2:lnblnk(pwdtocfg)),
+     &        radpth(1:lnblnk(radpth)),fs
+            lnrp=lnblnk(runpath)  ! remember this
+C            write(6,*) 'lnrp ',lnrp,pwdtocfg
+C            write(6,*) 'runpath ',runpath
           endif
         else
-          if(radpth(1:3).eq.'./ '.or.radpth(1:3).eq.'.\\ ')then
-            pathtype='radincfg'
-          elseif(radpth(1:7).eq.'../rad '.or.
-     &           radpth(1:7).eq.'..\\rad ')then
-            pathtype='radinrad'
+
+C << variant for non-unix >>
+          if(pwdtocfg(1:1).eq.'!')then
+            write(runpath,'(2a)') radpth(1:lnblnk(radpth)),fs
+            lnrp=lnblnk(runpath)  ! remember this
+          else
+            write(runpath,'(3a)') pwdtocfg(1:lnblnk(pwdtocfg)),
+     &        radpth(1:lnblnk(radpth)),fs
+            lnrp=lnblnk(runpath)  ! remember this
           endif
-          write(runpath,'(2a)') radpth(1:lnblnk(radpth)),fs
-          lnrp=lnblnk(runpath)  ! remember this
         endif
         write(outs,'(2a)') 'The place where rad will be invoked is ',
      &     runpath(1:lnrp)
@@ -1335,8 +1330,8 @@ C lfile contains path as well as file name.
       elseif(opt.eq.'e'.or.opt.eq.'E')then
         tmode='graph'
         if(teditor(1:2).eq.'vi')tmode='text'
-        write(doit,'(a,2x,a,a)') teditor(1:lnblnk(teditor)),
-     &                           lfile(1:lnblnk(lfile)),' &'
+        write(doit,'(a,2x,a)') teditor(1:lnblnk(teditor)),
+     &                           lfile(1:lnblnk(lfile))
         call runit(doit,tmode)
       endif
       return
@@ -1390,14 +1385,120 @@ C Check if tmc control found.
         endif
  10   continue
 
-
       return
       end
+
+C*******************************************************************
+C SUR3DLEHI Determines the overall length and height of a
+C surface (bounding box) and passes the vaules back as WID and HIGH.
+C Uses a temporary transform into 2D to get this data.
+
+      SUBROUTINE SUR3DLEHI(izone,IS,WID,HIGH,BB)
+#include "building.h"
+#include "geometry.h"
+
+C Parameters
+      integer izone  ! the focus zone
+      integer is     ! the focus surface
+      real wid,high  ! pass back width and height of bounding box
+      real BB(2,3)   ! bounding box in site coordinates
+
+      integer izstocn
+      common/c24/izstocn(mcom,ms)
+
+      DIMENSION  XX(MV),YY(MV),ZZ(MV)
+      DIMENSION  VP(3),EP(3),EQN(4)
+      DIMENSION  TMAT(4,4),RMAT(4,4)
+
+      real XYMAX,ZMAX
+      real XMIN,YMIN,XMAX,YMAX     ! 2D bounds
+      real XMN,XMX,YMN,YMX,ZMN,ZMX ! 3D bounds
+      integer n,j,ip1
+
+C Set initial bounding box where BB(1,*) is lower left and
+C BB(2,*) is upper right.
+      XMN=100.0; XMX=-100.0; YMN=100.0; YMX=-100.0
+      ZMN=100.0; ZMX=-100.0
+
+C Get the current connection and number of surfaces in zone.
+      icc=izstocn(izone,is)
+
+C Transform surface into into site coordinates in the
+C surface of the plane. Make up XX,YY,ZZ to pass across to the
+C transform routine.
+      N = NZNVER(icc)
+      DO J = 1,N
+        ip1=NZJVN(icc,J)
+        XX(J) = VCOORD(izone,ip1,1)
+        XMN=AMIN1(XMN,XX(J))
+        XMX=AMAX1(XMX,XX(J))
+        YY(J) = VCOORD(izone,ip1,2)
+        YMN=AMIN1(YMN,YY(J))
+        YMX=AMAX1(YMX,YY(J))
+        ZZ(J) = VCOORD(izone,ip1,3)
+        ZMN=AMIN1(ZMN,ZZ(J))
+        ZMX=AMAX1(ZMX,ZZ(J))
+      ENDDO  ! of J
+
+C Assign BB at the lower left and upper right extents.
+      BB(1,1)=XMN; BB(1,2)=YMN; BB(1,3)=ZMN
+      BB(2,1)=XMX; BB(2,2)=YMX; BB(2,3)=ZMX
+
+C Find transformation matrices that normalise face.
+      call PLEQN(XX,YY,ZZ,N,VP,EQN,IERR)
+      IF (IERR .LT. 0) return
+      DO J = 1,3
+        EP(J) = VP(J) + EQN(J)
+      ENDDO  ! of J
+      CALL  EYEMAT(EP,VP,1.0,TMAT,RMAT)
+
+C Transform all points in surface and find lower left corner
+C and the upper right corner.
+      XMIN=100.0; YMIN=100.0; ZMIN=100.0
+      XMAX=0.0; YMAX=0.0; ZMAX=0.0; WID=0.0; HIGH=0.0
+      DO I=1,N
+        CALL ORTTRN(XX(I),YY(I),ZZ(I),TMAT,X1,Y1,ZZZ,IERR)
+        IF(X1.LT.XMIN)XMIN=X1
+        IF(Y1.LT.YMIN)YMIN=Y1
+        IF(ZZZ.LT.ZMIN)ZMIN=ZZZ
+        IF(X1.GT.XMAX)XMAX=X1
+        IF(Y1.GT.YMAX)YMAX=Y1
+        IF(ZZZ.GT.ZMAX)ZMAX=ZZZ
+      ENDDO  ! of I
+
+C Determine the height difference between the vertices. If the height
+C difference is greater than the previous values then define as new
+C maximum.
+      ZVAL = ABS(YMAX - YMIN)
+      If (ZVAL.gt.ZMAX) HIGH = ZVAL
+
+C Determine the distance between the vertices on the x plane. If the
+C distance is greater than the previous values then define as new
+C maximum.
+      XYVAL= ABS(XMAX - XMIN)
+      if (XYVAL.gt.WID) WID = XYVAL
+
+C Debug.
+C      write(6,*) 'x mm and y mm and z mm',XMIN,XMAX,YMIN,YMAX,
+C     &  ZMIN,ZMAX,ZVAL,XYVAL
+C      write(6,*) 'h w',HIGH,WID
+
+      return
+      END
+
 
 C ************* imgdisp *************
 C Dummy routine (needed for call back from c).
       subroutine imgdisp(iforce,focus,ier)
       character focus*4
-     
+      return
+      end
+
+      subroutine Find_season_parameters()
+      return
+      end
+
+      SUBROUTINE BASESIMP_INPUTS(ICOMP,IER)
+      integer icomp,ier
       return
       end

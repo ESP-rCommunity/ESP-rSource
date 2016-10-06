@@ -26,10 +26,13 @@ C  CHGELEV: Called from C code with an increment or decrement of elevation.
 C  CHGEYE:  Called from C code with current contents of the ray2_ and
 C           image_ c structures.
 C  DRAWOBS: Checks for obstructions, loads, converts and draws them.
+C  DRAWVIS: draws any visual entities within zone as slightly grey lines.
+
 C  DRWSEN:  Loads, converts and draws MRT sensors (rec bodies).
 C  EGRNDR:  Draws ground topology.
 C  DSGRID:  Draws a dotted site grid with current scaling factors.
 C  EMKVIEW: Constructs a 'viewer' format file.
+C  wiresymbol: draws a user defined symbol in wireframe
 
 C ************* ADJVIEW 
 C ADJVIEW takes the current status of view and boundary mods
@@ -51,23 +54,18 @@ C Passed parameters.
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
 
-      COMMON/RAY3/MODIFY,MODLEN,MODBND
-      COMMON/RAY2/ITDSP,ITBND,ITEPT,ITZNM,ITSNM,ITVNO,ITORG,ITSNR,
-     &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS,ITPPSW
-      LOGICAL MODIFY,MODLEN,MODBND
-
       character ETEXT*82
 #ifdef OSI
       integer iside,isize,ifont     ! passed to viewtext
       integer numberofzones
-      integer JITZNM,JITSNM,JITVNO,JITOBS,JITSNR,JITGRD,JITORG
-      integer JITBND,JITDSP,JITHLS,JITHLZ,JITPPSW
+      integer JITZNM,JITSNM,JITVNO,JITOBS,JITVIS,JITVOBJ,JITSNR,JITGRD
+      integer JITORG,JITBND,JITDSP,JITHLS,JITHLZ,JITPPSW
       integer jizgfoc,jnzg,jnznog,jnznogv
 #else
       integer*8 iside,isize,ifont     ! passed to viewtext
       integer*8 numberofzones
-      integer*8 JITZNM,JITSNM,JITVNO,JITOBS,JITSNR,JITGRD,JITORG
-      integer*8 JITBND,JITDSP,JITHLS,JITHLZ,JITPPSW
+      integer*8 JITZNM,JITSNM,JITVNO,JITOBS,JITVIS,JITVOBJ,JITSNR
+      integer*8 JITGRD,JITORG,JITBND,JITDSP,JITHLS,JITHLZ,JITPPSW
       integer*8 jizgfoc,jnzg,jnznog,jnznogv
 #endif
       real EVX,EVY,EVZ,VX,VY,VZ,EAN,GDIS
@@ -93,12 +91,14 @@ C << need to test about whether cast is needed >>
       VX=VIEWM(1); VY=VIEWM(2); VZ=VIEWM(3)
       EAN=ANG; GDIS=GRDIS
       JITZNM=ITZNM; JITSNM=ITSNM; JITVNO=ITVNO
-      JITOBS=ITOBS; JITSNR=ITSNR; JITGRD=ITGRD
+      JITOBS=ITOBS; JITVIS=ITVIS; JITVOBJ=ITVOBJ
+      JITSNR=ITSNR; JITGRD=ITGRD
       JITORG=ITORG; JITBND=ITBND; JITDSP=ITDSP
       JITHLS=ITHLS; JITHLZ=ITHLZ; JITPPSW=ITPPSW
+
       call curviews(EVX,EVY,EVZ,VX,VY,VZ,EAN,JITZNM,JITSNM,JITVNO,
-     &  JITOBS,JITSNR,JITGRD,JITORG,GDIS,JITBND,JITDSP,JITHLS,JITHLZ,
-     &  JITPPSW)
+     &  JITOBS,JITVIS,JITVOBJ,JITSNR,JITGRD,JITORG,GDIS,JITBND,
+     &  JITDSP,JITHLS,JITHLZ,JITPPSW)
 
 C Tell woreframe how many zones to include in the image.
       jizgfoc=izgfoc; jnzg=nzg
@@ -111,7 +111,7 @@ C Tell woreframe how many zones to include in the image.
       endif
 
 C If altered then do a bound check on the current zone and update display.
-      IF(MODIFY)THEN
+      IF(MODIFYVIEW)THEN
         if(izgfoc.NE.0)CALL ESCZONE(izgfoc)
         IF(MODBND)CALL BNDOBJ(0,IER)
 
@@ -141,9 +141,9 @@ C Remind user of which model even when looking at one zone.
 C Draw the selected bodies.
         CALL DRAWESP(IER)
 
-C Recover information begin edited and reset modify flag.
+C Recover information begin edited and reset modifyview flag.
         if(izgfoc.NE.0)CALL ERCZONE(izgfoc)
-        MODIFY=.FALSE.
+        MODIFYVIEW=.FALSE.
         MODLEN=.FALSE.
         MODBND=.FALSE.
       ENDIF
@@ -161,8 +161,6 @@ C decrement to the viewing azimuth (icazi). If not needed then provide a dummy.
 C Passed paremter.
       integer icazi
       
-      COMMON/RAY3/MODIFY,MODLEN,MODBND
-      logical MODIFY,MODLEN,MODBND
       PI = 4.0 * ATAN(1.0)
       tdis= crow(eyem,viewm)
       call ln2az(VIEWM(1),VIEWM(2),VIEWM(3),eyem(1),eyem(2),eyem(3),
@@ -184,7 +182,7 @@ C Passed paremter.
       EYEM(1)=X+VIEWM(1)
       EYEM(2)=Y+VIEWM(2)
       EYEM(3)=Z+VIEWM(3)
-      MODIFY=.TRUE.
+      MODIFYVIEW=.TRUE.
       MODLEN=.TRUE.
       CALL ADJVIEW(IER)
 
@@ -201,9 +199,6 @@ C decrement to the viewing elevation (icelev). If not needed then provide a dumm
 C Passed paramter.
       integer icelev
       
-      COMMON/RAY3/MODIFY,MODLEN,MODBND
-      logical MODIFY,MODLEN,MODBND
-
       PI = 4.0 * ATAN(1.0)
       tdis= crow(eyem,viewm)
       call ln2az(VIEWM(1),VIEWM(2),VIEWM(3),eyem(1),eyem(2),eyem(3),
@@ -225,7 +220,7 @@ C Passed paramter.
       EYEM(1)=X+VIEWM(1)
       EYEM(2)=Y+VIEWM(2)
       EYEM(3)=Z+VIEWM(3)
-      MODIFY=.TRUE.
+      MODIFYVIEW=.TRUE.
       MODLEN=.TRUE.
       CALL ADJVIEW(IER)
 
@@ -236,8 +231,8 @@ C ********* chgeye
 C CHGEYE is called from C code in esru_x.c with current contents of the ray2_ and
 C image_ c structures.  Integers are specially treated based on ifdef.
       subroutine chgeye(EVX,EVY,EVZ,VX,VY,VZ,EAN,JITZNM,JITSNM,JITVNO,
-     &   JITOBS,JITSNR,JITGRD,JITORG,GDIS,JITBND,JITDSP,JITHLS,JITHLZ,
-     &   JITPPSW)
+     &   JITOBS,JITVIS,JITVOBJ,JITSNR,JITGRD,JITORG,GDIS,JITBND,JITDSP,
+     &   JITHLS,JITHLZ,JITPPSW)
 #include "building.h"
 #include "prj3dv.h"
 
@@ -246,18 +241,13 @@ C Passed paramters.
 
 C Depending on computer type set integer size of passed parameters.
 #ifdef OSI
-      integer JITZNM,JITSNM,JITVNO,JITOBS,JITSNR,JITGRD,JITORG
-      integer JITBND,JITDSP,JITHLS,JITHLZ,JITPPSW
+      integer JITZNM,JITSNM,JITVNO,JITOBS,JITVIS,JITVOBJ,JITSNR,JITGRD
+      integer JITORG,JITBND,JITDSP,JITHLS,JITHLZ,JITPPSW
 #else
-      integer*8 JITZNM,JITSNM,JITVNO,JITOBS,JITSNR,JITGRD,JITORG
-      integer*8 JITBND,JITDSP,JITHLS,JITHLZ,JITPPSW
+      integer*8 JITZNM,JITSNM,JITVNO,JITOBS,JITVIS,JITVOBJ,JITSNR
+      integer*8 JITGRD,JITORG,JITBND,JITDSP,JITHLS,JITHLZ,JITPPSW
 #endif     
       
-      COMMON/RAY2/ITDSP,ITBND,ITEPT,ITZNM,ITSNM,ITVNO,ITORG,ITSNR,
-     &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS,ITPPSW
-      COMMON/RAY3/MODIFY,MODLEN,MODBND
-      logical MODIFY,MODLEN,MODBND
-
 C Debug
 C      write(6,*) 'chgeye passed vals ',EVX,EVY,EVZ,VX,VY,VZ,EAN,
 C     &  JITZNM,JITSNM,JITVNO,JITOBS,'snr',JITSNR,JITGRD,JITORG,GDIS,
@@ -279,12 +269,13 @@ C To avoid implicit casts also check machine type.
 #ifdef OSI
       ITDSP=JITDSP; ITBND=JITBND; ITPPSW=JITPPSW
       ITZNM=JITZNM; ITSNM=JITSNM; ITVNO=JITVNO
-      ITORG=JITORG; ITSNR=JITSNR; ITOBS=JITOBS
-      ITHLS=JITHLS; ITHLZ=JITHLZ; ITGRD=JITGRD
+      ITORG=JITORG; ITSNR=JITSNR; ITOBS=JITOBS; ITVIS=JITVIS;
+      ITVOBJ=JITVOBJ; ITHLS=JITHLS; ITHLZ=JITHLZ; ITGRD=JITGRD
 #else
       ITDSP=int(JITDSP); ITBND=int(JITBND); ITPPSW=int(JITPPSW)
       ITZNM=int(JITZNM); ITSNM=int(JITSNM); ITVNO=int(JITVNO)
-      ITORG=int(JITORG); ITSNR=int(JITSNR); ITOBS=int(JITOBS)
+      ITORG=int(JITORG); ITVIS=int(JITVIS); ITVOBJ=int(JITVOBJ)
+      ITSNR=int(JITSNR); ITOBS=int(JITOBS)
       ITHLS=int(JITHLS); ITHLZ=int(JITHLZ); ITGRD=int(JITGRD)
 #endif     
 
@@ -296,7 +287,7 @@ C     &  VIEWM(1),VIEWM(2),VIEWM(3),ANG,HANG
 C      write(6,*) 'ray2 aft ',ITDSP,ITBND,ITEPT,ITZNM,ITSNM,
 C     &  ITVNO,ITORG,'snr',ITSNR,ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS,ITPPSW
 
-      MODIFY=.TRUE.
+      MODIFYVIEW=.TRUE.
       MODLEN=.TRUE.
 
 C Use same logic as in EVSET.
@@ -313,13 +304,13 @@ C list management for this.
      &                'this will be added in a later version.','P')
 C          CALL EPKMLC(ISEL,'Select a construction to hilight.',' ',IER)
 C          ITHLZ=ISEL
-C          MODIFY=.TRUE.
+C          MODIFYVIEW=.TRUE.
         endif
         CALL INLNST(1)
         CALL ADJVIEW(IER)
         MODLEN=.FALSE.
         MODBND=.FALSE.
-        MODIFY=.FALSE.
+        MODIFYVIEW=.FALSE.
       elseif(ITPPSW.eq.1)then
         call PLELEV('P')
       elseif(ITPPSW.eq.2)then
@@ -347,10 +338,6 @@ C Passed paramter.
       COMMON/PREC8/SLAT,SLON
       integer ifs,itfs,imfs
       COMMON/GFONT/IFS,ITFS,IMFS
-      COMMON/RAY2/ITDSP,ITBND,ITEPT,ITZNM,ITSNM,ITVNO,ITORG,ITSNR,
-     &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS,ITPPSW
-      logical MODIFY,MODLEN,MODBND
-      COMMON/RAY3/MODIFY,MODLEN,MODBND
 
 C Local variables
       character outs*124,ETEXT*60,DESCRH*5,DESCRD*5
@@ -377,7 +364,8 @@ C position. Confirm the lat, long, request day and time,
 C compute positon and update the view.
       doanim=.false.
       write(outs,'(A,F6.2,A,F6.2)')
-     &  ' Current latitude = ',SLAT,', longitude difference = ',SLON
+     &  ' Current latitude = ',SLAT,
+     &  ', longitude difference from time meridian=',SLON
       call edisp(iuout,' ')
       call edisp(iuout,outs)
       if(isunhour.eq.0)then
@@ -397,7 +385,7 @@ C Ask for initial date and time and present view.
           EYEM(2)=Y1
           EYEM(3)=Z1
           ITSNM=1
-          MODIFY=.TRUE.
+          MODIFYVIEW=.TRUE.
           MODLEN=.TRUE.
           CALL ADJVIEW(IER)
 
@@ -446,7 +434,7 @@ C User asked for next hour, increment and display unless below horizon.
           EYEM(2)=Y1
           EYEM(3)=Z1
           ITSNM=1
-          MODIFY=.TRUE.
+          MODIFYVIEW=.TRUE.
           MODLEN=.TRUE.
           CALL ADJVIEW(IER)
 
@@ -483,7 +471,7 @@ C User asked for animation.
           EYEM(2)=Y1
           EYEM(3)=Z1
           ITSNM=1
-          MODIFY=.TRUE.
+          MODIFYVIEW=.TRUE.
           MODLEN=.TRUE.
           CALL ADJVIEW(IER)
 
@@ -573,12 +561,12 @@ C one and C starts from zero.
 C ******************** SVDSOPT ********************
 C SVDSOPT - save graphics display options into common block RAY2SV.
       subroutine SVDSOPT
+#include "building.h"
+#include "prj3dv.h"
 
-      COMMON/RAY2/ITDSP,ITBND,ITEPT,ITZNM,ITSNM,ITVNO,ITORG,ITSNR,
-     &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS,ITPPSW
       COMMON/RAY2SV/ITDSPsv,ITBNDsv,ITEPTsv,ITZNMsv,ITSNMsv,ITVNOsv,
-     &      ITORGsv,ITSNRsv,ITOBSsv,ITHLSsv,ITHLZsv,ITGRDsv,GRDISsv,
-     &      ITPPSWsv
+     &      ITORGsv,ITSNRsv,ITOBSsv,ITVISsv,ITVOBJsv,ITHLSsv,ITHLZsv,
+     &      ITGRDsv,GRDISsv,ITPPSWsv
 
       ITDSPsv=ITDSP
       ITBNDsv=ITBND
@@ -589,6 +577,8 @@ C SVDSOPT - save graphics display options into common block RAY2SV.
       ITORGsv=ITORG
       ITSNRsv=ITSNR
       ITOBSsv=ITOBS
+      ITVISsv=ITVIS
+      ITVOBJsv=ITVOBJ
       ITHLSsv=ITHLS
       ITHLZsv=ITHLZ
       ITGRDsv=ITGRD
@@ -601,12 +591,12 @@ C SVDSOPT - save graphics display options into common block RAY2SV.
 C ******************** RCDSOPT ********************
 C RCDSOPT - recover graphics display options from common block RAY2SV.
       subroutine RCDSOPT
+#include "building.h"
+#include "prj3dv.h"
 
-      COMMON/RAY2/ITDSP,ITBND,ITEPT,ITZNM,ITSNM,ITVNO,ITORG,ITSNR,
-     &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS,ITPPSW
       COMMON/RAY2SV/ITDSPsv,ITBNDsv,ITEPTsv,ITZNMsv,ITSNMsv,ITVNOsv,
-     &      ITORGsv,ITSNRsv,ITOBSsv,ITHLSsv,ITHLZsv,ITGRDsv,GRDISsv,
-     &      ITPPSWsv
+     &      ITORGsv,ITSNRsv,ITOBSsv,ITVISsv,ITVOBJsv,ITHLSsv,ITHLZsv,
+     &      ITGRDsv,GRDISsv,ITPPSWsv
 
       ITDSP=ITDSPsv
       ITBND=ITBNDsv
@@ -617,6 +607,8 @@ C RCDSOPT - recover graphics display options from common block RAY2SV.
       ITORG=ITORGsv
       ITSNR=ITSNRsv
       ITOBS=ITOBSsv
+      ITVIS=ITVISsv
+      ITVOBJ=ITVOBJsv
       ITHLS=ITHLSsv
       ITHLZ=ITHLZsv
       ITGRD=ITGRDsv
@@ -648,8 +640,6 @@ C Passed parameters.
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
 
       COMMON/GB1/XB(12),YB(12),ZB(12),JVNB(6,4)
-      COMMON/RAY2/ITDSP,ITBND,ITEPT,ITZNM,ITSNM,ITVNO,ITORG,ITSNR,
-     &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS,ITPPSW
 
 C Local arrays.
       real AX,AY,AZ,BX,BY,BZ,SBBOX,COG1,COG2,COG3
@@ -816,25 +806,261 @@ C Complete the polygon.
       RETURN
       END
 
+C **************DRAWVIS
+C DRAWVIS draws any visual entities within zone (IFOC) as slightly grey lines.
+C It converts visual entities from V1.1 Geometry file into common block BG1 
+C and then converts into viewing coords, clips the image and draws it.
+C If ITVIS (from prj3dv.h) is non-zero that entity is highlighted.
+C If ITVIS is zero but ITVOBJ is non-zero then we need to highlight
+C each of the entities associated with the compound object.
+C IER is returned as non-zero if there is a problem.
+      SUBROUTINE DRAWVIS(IFOC,ier)
+#include "building.h"
+#include "model.h"
+
+C geometry.h provides commons G0, G2, GS5, GS6.
+#include "geometry.h"
+#include "prj3dv.h"
+
+C Passed parameters.
+      integer ifoc,ier
+      
+      COMMON/OUTIN/IUOUT,IUIN
+      COMMON/FILEP/IFIL
+      COMMON/SPAD/MMOD,LIMIT,LIMTTY
+
+      COMMON/GB1/XB(12),YB(12),ZB(12),JVNB(6,4)
+      common/appcols/mdispl,nifgrey,ncset,ngset,nzonec
+
+C Local arrays.
+      real AX,AY,AZ,BX,BY,BZ,SBBOX,COG1,COG2,COG3
+      integer IANXT,IBNXT
+      DIMENSION  AX(MV),AY(MV),AZ(MV),IANXT(MV)
+      DIMENSION  BX(MV),BY(MV),BZ(MV),IBNXT(MV)
+      DIMENSION  SBBOX(3,2),COG1(3),COG2(3),COG3(3)
+      integer ihighlight(MB)
+
+      CHARACTER btemp*12
+
+      logical newgeo  ! to use for testing if new/old geometry file.
+      logical greyok
+
+#ifdef OSI
+      integer iix,iiy,iixlast,iiylast,iicol
+#else
+      integer*8 iix,iiy,iixlast,iiylast,iicol
+#endif     
+
+C If not in graphic mode return.
+      if(MMOD.lt.8)return
+
+C      write(6,*) 'drawvis ',ifoc,nbvis(ifoc),itvis,NBVOBJ(ifoc),itvobj
+
+C Clear local list of possibly associated visual entities for compound.
+      do loop=1,MB
+        ihighlight(loop)=0
+      enddo
+
+C If newer geometry file it may include visual entities. If the value
+C of nbvis(ifoc) is non-zero draw.
+      newgeo=.false.  ! assume older format geometry.
+      call eclose(gversion(ifoc),1.1,0.01,newgeo)
+
+C << if geometry file was previously read then we will already
+C << have these common blocks instanciated and no need to read
+C << them again...
+
+C If no visaul entities for this zone don't bother reading file.
+      IUF=IFIL+1
+      if(newgeo)then
+        call georead(IUF,LGEOM(ifoc),ifoc,1,iuout,ier)
+        IF(IER.NE.0)RETURN
+      endif
+      if(nbvis(ifoc).eq.0.and.NBVOBJ(ifoc).eq.0) RETURN
+
+C If there are any compound objects and ITVOBJ is non-zero.
+      if(NBVOBJ(ifoc).gt.0.and.ITVOBJ.gt.0)then
+        DO I=1,NBVOBJ(ifoc)
+          if(I.eq.ITVOBJ)then  ! matching focus compound
+C Debug      WRITE(6,'(I3,4a)') I,' ',
+C     &        VOBJNAME(ifoc,I)(1:LNVOBJNAME(ifoc,I)),'  ',
+C     &        VOBJDESC(ifoc,I)(1:LNVOBJDESC(ifoc,I))
+            do J=1,NBVOBJLIST(ifoc,I)
+              do K=1,nbvis(ifoc)
+                if(VOBJLIST(ifoc,I,J)(1:12).eq.
+     &             VISNAME(ifoc,K)(1:12))then
+                  nbhighlight=nbhighlight+1
+                  ihighlight(k)=1  ! mark it to highlight
+                endif
+              enddo  ! of K
+            enddo  ! of J
+          endif
+        ENDDO    ! of I
+      endif
+
+C Draw all of the visual entities and highlight if ITVIS has
+C been set.
+      DO 301 IB=1,nbvis(ifoc)
+        if(VISTYP(ifoc,IB)(1:4).eq.'vis ')then
+          CALL CNVBLK(XOV(ifoc,IB),YOV(ifoc,IB),ZOV(ifoc,IB),
+     &      DXOV(ifoc,IB),DYOV(ifoc,IB),DZOV(ifoc,IB),
+     &      BANGOV(ifoc,IB,1))
+        elseif(VISTYP(ifoc,IB)(1:4).eq.'vis3')then
+          CALL CNVBLK3A(XOV(ifoc,IB),YOV(ifoc,IB),ZOV(ifoc,IB),
+     &      DXOV(ifoc,IB),DYOV(ifoc,IB),DZOV(ifoc,IB),
+     &      BANGOV(ifoc,IB,1),BANGOV(ifoc,IB,2),BANGOV(ifoc,IB,3))
+        elseif(VISTYP(ifoc,IB)(1:4).eq.'visp')then
+          call CNVVISP(ifoc,IB) ! convert visp type.
+        endif
+
+C If libraries and monitor support greyscale then reset forground
+C to 50% grey when drawing visual entities.
+        greyok=.false.
+        if(nifgrey.gt.4)then
+          iicol=nifgrey-3
+          call winscl('i',iicol)
+          greyok=.true.
+        endif
+
+C If visual names are to be displayed place near first vertex.
+C Transform the location into eyepoint and then screen coords.
+        IF(ITSNM.EQ.0)THEN
+          COG1(1)=XB(1)
+          COG1(2)=YB(1)
+          COG1(3)=ZB(1)
+          CALL VECTRN(COG1,TEMAT,COG2,IER)
+          CALL VECTRN(COG2,ETSMAT,COG3,IER)
+          call u2pixel(COG3(1),COG3(2),iix,iiy)
+          btemp='        '
+          write(btemp,'(a)') VISNAME(IFOC,IB)
+          CALL wstxpt(iix,iiy,btemp)
+        ENDIF
+
+C If editing an visual entity, highlight it. ITVIS would have been
+C set to the index of the visual entity before this subroutine was
+C called
+        if(ITVIS.eq.IB.or.ihighlight(ib).eq.1)then
+          IPEN= -305
+        else
+          IPEN= 1
+        endif
+
+C Continue on with surfaces in the block.
+C Copy polygon for visual surface I into structure AX AY AZ
+C where IANXT = Index of 'next' point. Clear IANXT & IBNXT arrays.
+        do 1101 J = 1,MV
+          IANXT(J) = 0
+          IBNXT(J) = 0
+ 1101   continue
+
+C There are 4 initial vertices per block side and 6 sides.
+        NAP=4
+        DO 1000 I=1,6
+          DO 1100 J = 1,NAP
+            K = JVNB(I,J)
+            AX(J) = XB(K)
+            AY(J) = YB(K)
+            AZ(J) = ZB(K)
+            IANXT(J) = J + 1
+ 1100     CONTINUE
+          IANXT(4) = 1
+
+C Transform block polygon to EYE co-ordinates where
+C TEMAT = Model to Eye Matrix
+          CALL MATPOLS(NAP,AX,AY,AZ,IANXT,TEMAT,SBBOX,
+     &                 NBP,BX,BY,BZ,IBNXT,IERR)
+
+C Generate clipping flags and clip geometry in eye coords.
+C If ISTAT =  0 : totally inside frustrum
+C If ISTAT =  1 : totally outside frustrum
+C If ISTAT = -1 : straddles frustrum
+          call CLIPSUR(NBP,BX,BY,BZ,ISTAT)
+          IF (ISTAT .EQ. 1) THEN
+            GOTO  1000
+          ELSEIF (ISTAT .EQ. -1) THEN
+            IBPNT=1
+            CALL CUTSUR(NB1,NBP,IBPNT,BX,BY,BZ,IBNXT,ISTAT)
+          ENDIF
+            
+C If there are no edges to draw then jump.
+          if(NB1.eq.0)goto 1000
+
+C Multiply each vertex by ETSMAT (Eye to Screen Matrix) to transform
+C to screen coords. First move to the beginning point (as passed from CUTSUR).
+          IP = IABS(IBPNT)
+          CALL ORTTRN(BX(IP),BY(IP),BZ(IP),ETSMAT,AAX,AAY,AAZ,IERR)
+          call u2pixel(AAX,AAY,iix,iiy)
+          iixlast=iix   ! cast for edline call
+          iiylast=iiy
+
+C If IP1 is ever negative then jump to a later point.
+          IP1 = IBNXT(IP)
+          if(IP1.lt.1)IP1 = IBNXT(IP+1)
+          if(IP1.lt.1)IP1 = IBNXT(IP+2)
+
+ 351      CONTINUE
+          CALL ORTTRN(BX(IP1),BY(IP1),BZ(IP1),ETSMAT,AAX,AAY,AAZ,IERR)
+          call u2pixel(AAX,AAY,iix,iiy)
+
+          if(IPEN.eq.1)then
+            call eswline(iixlast,iiylast,iix,iiy)
+          elseif(IPEN.eq.-305)then
+            call edwline(iixlast,iiylast,iix,iiy)
+          else
+            call eswline(iixlast,iiylast,iix,iiy)
+          endif
+          call forceflush()
+
+C Repeat until next point is the first, remember position and skip
+C past -1 values of IBNXT, save IP1 as IPT for testing.
+          IPT = IP1
+          IP1 = IBNXT(IP1)
+          if(IP1.lt.1)IP1 = IBNXT(IPT+1)
+          if(IP1.lt.1)IP1 = IBNXT(IPT+2)
+          iixlast=iix   ! cast for edline call
+          iiylast=iiy
+          IF(IP1 .NE. IP) GOTO 351
+
+C Complete the polygon.
+          CALL ORTTRN(BX(IP),BY(IP),BZ(IP),ETSMAT,AAX,AAY,AAZ,IERR)
+          call u2pixel(AAX,AAY,iix,iiy)
+
+          if(IPEN.eq.1)then
+            call eswline(iixlast,iiylast,iix,iiy)
+          elseif(IPEN.eq.-305)then
+            call edwline(iixlast,iiylast,iix,iiy)
+          else
+            call eswline(iixlast,iiylast,iix,iiy)
+          endif
+          call forceflush()
+ 1000   CONTINUE
+  301 CONTINUE
+
+C Reset color before returning.
+      if(greyok)then
+        iicol=0
+        call winscl('-',iicol)
+      endif
+      call forceflush()
+
+      RETURN
+      END
+
 C **************** DRWSEN
 C DRWSEN loads the geometric description within an MRT sensor file
 C into common block BG1 and then converts into viewing coords,
 C clips the image and draws it.
 C IER is returned as non-zero if there is a problem.
-      SUBROUTINE DRWSEN(ier)
+      SUBROUTINE DRWSEN(iz,ier)
 #include "building.h"
 #include "prj3dv.h"
+#include "geometry.h"
 
 C Passed parameter.
       integer ier
       
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/GB1/XB(12),YB(12),ZB(12),JVNB(6,4)
-      integer ncub,ivfok
-      real XOC,YOC,ZOC,DXC,DYC,DZC,CANG
-      character CUBN*6
-      COMMON/MRTC/NCUB,XOC(MCUB),YOC(MCUB),ZOC(MCUB),DXC(MCUB),
-     &            DYC(MCUB),DZC(MCUB),CANG(MCUB),IVFOK(MCUB),CUBN(MCUB)
 
 C Local arrays.
       real AX,AY,AZ,BX,BY,BZ,SBBOX,COG1,COG2,COG3
@@ -853,8 +1079,8 @@ C Local arrays.
 C If not in graphic mode return.
       if(MMOD.lt.8)return
 
-      if(NCUB.eq.0)return
-      DO 301 IB=1,NCUB
+      if(NCUB(iz).eq.0)return
+      DO 301 IB=1,NCUB(iz)
         CALL CNVBLK(XOC(IB),YOC(IB),ZOC(IB),DXC(IB),DYC(IB),DZC(IB),
      &    CANG(IB))
 
@@ -949,6 +1175,130 @@ C Complete the polygon.
       RETURN
       END
 
+
+C **************** DRWBB
+C DRWBB previews a bounding box as described by current contents of
+C common block GB1. Also shows labels passed. Similar to code in the
+C subroutine DRWSEN.
+C IER is returned as non-zero if there is a problem.
+      SUBROUTINE DRWBB(bbname,ier)
+#include "building.h"
+#include "prj3dv.h"
+
+C Passed parameter.
+      character bbname*12  ! preview name
+      integer ier
+      
+      COMMON/SPAD/MMOD,LIMIT,LIMTTY
+      COMMON/GB1/XB(12),YB(12),ZB(12),JVNB(6,4)
+
+C Local arrays.
+      real AX,AY,AZ,BX,BY,BZ,SBBOX,COG1,COG2,COG3
+      integer IANXT,IBNXT
+      DIMENSION  AX(MV),AY(MV),AZ(MV),IANXT(MV)
+      DIMENSION  BX(MV),BY(MV),BZ(MV),IBNXT(MV)
+      DIMENSION  SBBOX(3,2),COG1(3),COG2(3),COG3(3)
+#ifdef OSI
+      integer iix,iiy,iixlast,iiylast,iid2
+#else
+      integer*8 iix,iiy,iixlast,iiylast,iid2
+#endif     
+
+      CHARACTER temp*13
+
+C If not in graphic mode return.
+      if(MMOD.lt.8)return
+
+C Place sensor names near first vertex.
+C Transform the location into eyepoint and then screen coords.
+      COG1(1)=XB(1)
+      COG1(2)=YB(1)
+      COG1(3)=ZB(1)
+      CALL VECTRN(COG1,TEMAT,COG2,IER)
+      CALL VECTRN(COG2,ETSMAT,COG3,IER)
+      call u2pixel(COG3(1),COG3(2),iix,iiy)
+      write(temp,'(A)')bbname
+      iid2=iiy+8
+      CALL wstxpt(iix,iid2,temp)
+
+C Continue on with surfaces in the sensor.
+C Copy polygon for sensor surface I into structure AX AY AZ
+C where IANXT = Index of 'next' point. Clear IANXT & IBNXT arrays.
+      do 1101 J = 1,MV
+        IANXT(J) = 0
+        IBNXT(J) = 0
+ 1101 continue
+
+C There are 4 initial vertices per block side and 6 sides.
+      NAP=4
+      DO 1000 I=1,6
+        DO 1100 J = 1,NAP
+          K = JVNB(I,J)
+          AX(J) = XB(K)
+          AY(J) = YB(K)
+          AZ(J) = ZB(K)
+          IANXT(J) = J + 1
+ 1100   CONTINUE
+        IANXT(4) = 1
+
+C Transform block polygon to EYE co-ordinates.
+        CALL MATPOLS(NAP,AX,AY,AZ,IANXT,TEMAT,SBBOX,
+     &               NBP,BX,BY,BZ,IBNXT,IERR)
+
+C Generate clipping flags and clip geometry in eye coords.
+C If ISTAT =  0 : totally inside frustrum
+C If ISTAT =  1 : totally outside frustrum
+C If ISTAT = -1 : straddles frustrum
+        call CLIPSUR(NBP,BX,BY,BZ,ISTAT)
+        IF (ISTAT .EQ. 1) THEN
+          GOTO  1000
+        ELSEIF (ISTAT .EQ. -1) THEN
+          IBPNT=1
+          CALL CUTSUR(NB1,NBP,IBPNT,BX,BY,BZ,IBNXT,ISTAT)
+        ENDIF
+
+C If there are no edges to draw then jump.
+        if(NB1.eq.0)goto 1000
+
+C Multiply each vertex by ETSMAT (Eye to Screen Matrix).
+C First move to the beginning (as passed back from CUTSUR).
+        IP = IABS(IBPNT)
+        CALL ORTTRN(BX(IP),BY(IP),BZ(IP),ETSMAT,AAX,AAY,AAZ,IERR)
+        call u2pixel(AAX,AAY,iix,iiy)
+        iixlast=iix   ! cast for edline call
+        iiylast=iiy
+
+C If IP1 is ever negative then jump to a later point.
+        IP1 = IBNXT(IP)
+        if(IP1.lt.1)IP1 = IBNXT(IP+1)
+        if(IP1.lt.1)IP1 = IBNXT(IP+2)
+
+ 351    CONTINUE
+        CALL ORTTRN(BX(IP1),BY(IP1),BZ(IP1),ETSMAT,AAX,AAY,AAZ,IERR)
+        call u2pixel(AAX,AAY,iix,iiy)
+        call eswline(iixlast,iiylast,iix,iiy)
+        call forceflush()
+
+C Repeat until next point is the first, remember position and skip
+C past any -1 values of IBNXT, save IP1 as IPT for testing.
+        IPT = IP1
+        IP1 = IBNXT(IP1)
+        if(IP1.lt.1)IP1 = IBNXT(IPT+1)
+        if(IP1.lt.1)IP1 = IBNXT(IPT+2)
+        iixlast=iix   ! cast for edline call
+        iiylast=iiy
+        IF(IP1 .NE. IP) GOTO 351
+
+C Complete the polygon.
+        CALL ORTTRN(BX(IP),BY(IP),BZ(IP),ETSMAT,AAX,AAY,AAZ,IERR)
+        call u2pixel(AAX,AAY,iix,iiy)
+        call eswline(iixlast,iiylast,iix,iiy)
+        call forceflush()
+ 1000 CONTINUE
+
+      RETURN
+      END
+
 C ****** Routine to draw ground topology.
 C EGRNDR  Draws ground topology held in GT5 and grndpl commons.
 C IER is returned as non-zero if there has been a problem.
@@ -965,8 +1315,6 @@ C Passed parameter.
       common/grndpl/NGT,NGTV,XGT(MGTV),YGT(MGTV),ZGT(MGTV),JGVN(MGRT,8),
      &  NGVER(MGRT),IVEDGE(MGRT)
       COMMON/GT5/GSNAME(MGRT),GMLCN(MGRT)
-      COMMON/RAY2/ITDSP,ITBND,ITEPT,ITZNM,ITSNM,ITVNO,ITORG,ITSNR,
-     &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS,ITPPSW
       COMMON/RAY6G/LINSTYG(MGRT)
 
 C Local arrays.
@@ -1118,7 +1466,6 @@ C Passed parameters.
       integer LD,IER
       
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
-      COMMON/RAY5/ZCOG(MCOM,3),XMN,YMN,ZMN,XMX,YMX,ZMX
       common/appcols/mdispl,nifgrey,ncset,ngset,nzonec
 
 C Explicit local variables
@@ -1457,4 +1804,53 @@ C Free the viewer file.
       CALL ERPFREE(IUO,ISTAT)
 
       RETURN
-      END
+      END ! of EMKVIEW 
+
+C ******* wiresymbol ******
+C Wiresymbol is passed a 3D coordinate and draws a symbol at that
+C location in a wireframe view with choice of colour.
+      subroutine wiresymbol(xcord,ycord,zcord,icolour,isymbol)
+#include "building.h"
+#include "geometry.h"
+#include "prj3dv.h"
+
+C Parameters
+      real xcord,ycord,zcord  ! location
+      integer icolour ! colour index in the winscl zone scale
+      integer isymbol ! symbol index to pass to esymbol
+                      ! 8 is 2x3 block 32 is 2x2 block
+
+      common/appcols/mdispl,nifgrey,ncset,ngset,nzonec
+
+      real COG1,COG2,COG3
+      dimension COG1(3),COG2(3),COG3(3)
+      logical greyok
+
+#ifdef OSI
+      integer isym,iix,iiy,iicol    ! passed to c code
+#else
+      integer*8 isym,iix,iiy,iicol  ! passed to c code
+#endif
+
+      greyok=.false.      ! see if colour available
+      if(nifgrey.gt.4)then
+        greyok=.true.
+      endif
+
+      COG1(1)=xcord   ! setup for translation into viewing coords
+      COG1(2)=ycord
+      COG1(3)=zcord
+      CALL VECTRN(COG1,TEMAT,COG2,IER)
+      CALL VECTRN(COG2,ETSMAT,COG3,IER)
+
+      call u2pixel(COG3(1),COG3(2),iix,iiy)  ! convert to screen coords
+      iicol=icolour                    ! set user color
+      if(greyok)call winscl('z',iicol)
+      call esymbol(iix,iiy,isymbol,1)  ! draw the symbol
+      iicol=0                          ! return to black
+      if(greyok)call winscl('-',iicol)
+      call forceflush()                ! ensure it is drawn
+      return
+      end
+
+
