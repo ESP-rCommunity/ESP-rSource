@@ -306,13 +306,13 @@ C may have a different value defined for the above variables
 
       character outs*124
 
-!	This is the conversion used to go from AC/h (from *.opr file) to W/K (effective conductivity)
+!     This is the conversion used to go from AC/h (from *.opr file) to W/K (effective conductivity)
       A=0.33*VOL(ICOMP)
-!	A = (1006 J/kgK * 1.177 kg/m^3 / 3600 s/h) * (m^3/AC)
-!	First term on RHS in brackets is 0.33 Wh/Km^3
-!	Second term on RHS in brackets is Zone_Volume m^3/AC
-!	This results A = 0.33 * Vol with units of (Wh per Kelvin Air-Change)
-!	The file reads in AC/h and when it is multiplied by A results in W/K
+!     A = (1006 J/kgK * 1.177 kg/m^3 / 3600 s/h) * (m^3/AC)
+!     First term on RHS in brackets is 0.33 Wh/Km^3
+!     Second term on RHS in brackets is Zone_Volume m^3/AC
+!     This results A = 0.33 * Vol with units of (Wh per Kelvin Air-Change)
+!     The file reads in AC/h and when it is multiplied by A results in W/K
 
 C << what about temporal zone infil and vent? should this require a return? >>
       NDTY=NBDAYTYPE
@@ -397,7 +397,7 @@ C CGCTL - gain control fraction (zone, present/future, gain type)
 
       SUBROUTINE MZCASG(ICOMP)
 #include "building.h"
-
+#include "plant.h"
 C geometry.h provides commons G0/G1/G2/G4/prec2/prec17/precz.
 #include "geometry.h"
 #include "schedule.h"
@@ -579,6 +579,8 @@ C in specifications, and if found (i) warn user & (ii) set to zero.
 C Debug
 C        write(6,*) '560 precal ',ICGT(iday,I),ICGUnit(iday,I)
         if(ICGUnit(iday,I).eq.0)then
+          write(outs,*) 'found W ',iday,i,ityp,caskeytype(icomp,ityp)
+          if (itrc.gt.1) call edisp(iuout,outs)
           NCGPER(ICOMP,IDAY,ITYP)=NCGPER(ICOMP,IDAY,ITYP)+1
           IPER=NCGPER(ICOMP,IDAY,ITYP)
           TCGS(ICOMP,IDAY,ITYP,IPER)=ICGS(IDAY,I)
@@ -700,7 +702,11 @@ C Trace output ?
         call edisp(itu,' ')
 
 C << hard coded assumption of day types and gain types. >>
-        do 900 ID=1,3
+        if(lodslot(icomp,1).ne.0) loop=1
+        if(lodslot(icomp,2).ne.0) loop=2
+        if(lodslot(icomp,3).ne.0) loop=3
+        if(lodslot(icomp,4).ne.0) loop=4
+        do 900 ID=1,4
           call edisp(itu,' --------------')
           call edisp(itu,'Gain  Start    Rad     Conv  Latent')
           call edisp(itu,'slot  time     gain    gain  gain')

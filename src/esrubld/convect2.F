@@ -97,7 +97,7 @@ C Commons added for ISO 15099 algorithm
       CHARACTER LAPROB*72
 
       character outs*124
-      logical dotrace
+      logical dotrace,close
 
       real veloc
 
@@ -130,6 +130,8 @@ C be superceeded by user specifications.
 
 C######   VERTICAL SURFACES   ##################################################
 C Alamdari and Hammond.
+        call eclose(HEIGHT,0.0,0.01,close)
+        if(close) HEIGHT = 1.0  ! reset hight if close to zero
         HC=((1.50*((DT/HEIGHT)**0.25))**6.0
      &     +(1.23*((DT)**(1.0/3.0)))**6.0)**(1.0/6.0)
         if(dotrace)then
@@ -254,6 +256,8 @@ C Mixed convection model using Fisher `thesis' correlation
 C for radial ceiling diffusers and Alamdari & Hammond's correlation.
 C Combination of HC depends on whether buoyant and mechanical forces
 C assist (iassist=1) or oppose (iassist=-1).
+        call eclose(HEIGHT,0.0,0.01,close)
+        if(close) HEIGHT = 1.0  ! reset hight if close to zero
         ACH = Vdot(ICOMP)*3600./VOL(ICOMP)
         HCFish = -0.199 + 0.190*ACH**0.8
         HCforc = HCFish*ADJREF(ICOMP,ISUR)
@@ -467,6 +471,8 @@ C where one face is profiled such as metal forming under a slab).
 C Such a facility should be made generic so that the multiplier could 
 C be passed as a parameter and also consider whether other correlations
 C might take a multiplier parameter.
+        call eclose(HEIGHT,0.0,0.01,close)
+        if(close) HEIGHT = 1.0  ! reset hight if close to zero
         HC=((1.50*((DT/HEIGHT)**0.25))**6.0
      &     +(1.23*((DT)**(1.0/3.0)))**6.0)**(1.0/6.0)
         HC=HC*2.6  ! test multiplier
@@ -481,6 +487,8 @@ C Alamdari and Hammond TEST VERSION that returns 3X standard hc value
 C to explore situations where the one face of the surface area is larger
 C that the other face (e.g. in facade mullion extrusions and
 C where one face is profiled such as metal forming under a slab).
+        call eclose(HEIGHT,0.0,0.01,close)
+        if(close) HEIGHT = 1.0  ! reset hight if close to zero
         HC=((1.50*((DT/HEIGHT)**0.25))**6.0
      &     +(1.23*((DT)**(1.0/3.0)))**6.0)**(1.0/6.0)
         HC=HC*3.0  ! test multiplier
@@ -495,6 +503,8 @@ C Alamdari and Hammond TEST VERSION that returns 4.69X standard hc value
 C to explore situations where the one face of the surface area is larger
 C that the other face (e.g. in facade mullion extrusions and
 C where one face is profiled such as metal forming under a slab).
+        call eclose(HEIGHT,0.0,0.01,close)
+        if(close) HEIGHT = 1.0  ! reset hight if close to zero
         HC=((1.50*((DT/HEIGHT)**0.25))**6.0
      &     +(1.23*((DT)**(1.0/3.0)))**6.0)**(1.0/6.0)
         HC=HC*4.69  ! test multiplier
@@ -509,6 +519,8 @@ C Alamdari and Hammond TEST VERSION that returns 1.76X standard hc value
 C to explore situations where the one face of the surface area is larger
 C that the other face (e.g. in facade mullion extrusions and
 C where one face is profiled such as metal forming under a slab).
+        call eclose(HEIGHT,0.0,0.01,close)
+        if(close) HEIGHT = 1.0  ! reset hight if close to zero
         HC=((1.50*((DT/HEIGHT)**0.25))**6.0
      &     +(1.23*((DT)**(1.0/3.0)))**6.0)**(1.0/6.0)
         HC=HC*1.76  ! test multiplier

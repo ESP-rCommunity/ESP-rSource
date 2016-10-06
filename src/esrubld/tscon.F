@@ -707,7 +707,7 @@ C TSCON6 checks if `rewind` operation is required for type 6 TSC.
       common/simtim/ihrp,ihrf,idyp,idyf,idwp,idwf,nsinc,its
 
       COMMON/TS6/idysv,ihrsv,irwcou,tsclaw,rewnd,nsncv1,nsncv2,pasone
-      COMMON/OPTCTL/IRWIND,IRWLAS,IRWCNT,IRWCSV,IRWCHP,IRWCHN,IRWCHG,
+      COMMON/OPTRCTL/IRWIND,IRWLAS,IRWCNT,IRWCSV,IRWCHP,IRWCHN,IRWCHG,
      &LGCTIN,INITCT,STFUT,STPRES,STPAS1,STPAS2,IRWFNL,TCTLSV
 
       logical rewnd,irew,tsclaw,pasone
@@ -1168,6 +1168,8 @@ C generation plant component.  Further, it presumes that the
 C DG component is controlled with subroutine DG_controller.
 
       SUBROUTINE TSCON7(plant_elec_converged)
+#include "building.h"
+#include "plant.h"
 #include "power.h"
 #include "CETC_definitions.h" 
 C------------------------------------------------------------------------------
@@ -1178,25 +1180,19 @@ C-----Electrical load that DG unit responds to (W)
       common/TSCON7dat/plt_elec_load,plt_elec_gen,plt_elec_balance
       real plt_elec_load, plt_elec_gen, plt_elec_balance
 
-C-----Solution variables from electric power flow domain.
-      COMMON/ENETDER/PENETIMP,QENETIMP,PENETLOD,QENETLOD,PENETGEN,
-     &QENETGEN,PENETRN,QENETRN,ENETIPF,ENETGPF,ENETLPF,ENETLOS,
-     &PENETPHL(MPHAS),QENETPHL(MPHAS),PENETPHG(MPHAS),
-     &QENETPHG(MPHAS),PENETPHI(MPHAS),QENETPHI(MPHAS)
-
-C------------------------------------------------------------------------------
-C Type declarations for variables passed within common blocks.
-C------------------------------------------------------------------------------
-      REAL PENETIMP,QENETIMP,PENETLOD,QENETLOD,PENETGEN,QENETGEN,
-     &PENETRN,QENETRN,ENETIPF,ENETGPF,ENETLPF,ENETLOS,PENETPHL,QENETPHL,
-     &PENETPHG,QENETPHG,PENETPHI,QENETPHI
-
 C H2-dep_controller: start
 C Flag for convergence of the hydrogen/electric controller's plant
 C control signals.
       common / resh2_ctl_status / bResH2_ctl_unconverged
       logical bResH2_ctl_unconverged
 C H2-dep_controller: end 
+
+C RES (elec) dep_controller: start
+C Flag for convergence of the renewable energy system (elec) electric controller's plant
+C control signals.
+      common / reselec_ctl_status / bRESElec_ctl_unconverged
+      logical bRESElec_ctl_unconverged  !-logical flag indicating additional iterations req'd
+C RES (elec) dep_controller: end
 
 C------------------------------------------------------------------------------
 C Type declarations for local variables.
@@ -1218,7 +1214,7 @@ C load. This load was an estimate only: the actual electrical load is
 C calculated by the electrical solution domain, which is invoked following
 C convergence of the plant domain.  Compare the estimated load from the plant
 C domain to that calculated by the electrical domain.  If they differ by more
-C than 1 W then force another iteration through the plant and electrical
+C than 2 W then force another iteration through the plant and electrical
 C domains.
 C------------------------------------------------------------------------------
 
@@ -1255,7 +1251,8 @@ C Interation control for Hydrogen systems (experimental)
       IF( .not. CLOSEa .OR.
      &    .not. CLOSEb .OR.
      &    .not. CLOSEc .OR.
-     &    bResH2_ctl_unconverged )THEN
+     &    bResH2_ctl_unconverged .OR.
+     &    bRESElec_ctl_unconverged )THEN
 C H2-dep_controller:end
 
 C      IF( .not. CLOSEa .OR.

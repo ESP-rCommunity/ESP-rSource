@@ -53,12 +53,14 @@ C QLAT   - latent load for present (1) and future (2) time step.
 #include "net_flow.h"
 #include "tdf2.h"
 #include "sbem.h"
+#include "plant.h"
 #include "power.h"
 #include "dhw_parameters.h"
 #include "dhw_common.h"
 #include "OffsiteUtilitiesPublic.h"
 #include "h3k_report_data.h"
 
+      common/filep/ifil
       common/tc/itc,icnt
       common/trc/itrc
       common/trace/itcf,itrace(mtrace),izntrc(mcom),itu
@@ -71,7 +73,6 @@ C QLAT   - latent load for present (1) and future (2) time step.
 
 C Zone lighting and power commons.
       COMMON/ELECFLG/IELF(MCOM)
-      COMMON/ENETZONE/PEZON(MCOM,MGTY),QEZON(MCOM,MGTY)
 
 C Zone casual gain control data.
       COMMON/CGCIN2N/NCGTC(MCOM,MDTY),NLITZ(MCOM),IDFST(MCOM,MLCOM),
@@ -79,7 +80,8 @@ C Zone casual gain control data.
      & UX(MCOM,MLCOM,MDF),UY(MCOM,MLCOM,MDF),UH(MCOM,MLCOM,MDF),
      & SETPT(MCOM,MLCOM),SYSPER(MCOM,MLCOM),SOFFLL(MCOM,MLCOM),
      & IOFFDT(MCOM,MLCOM),SMLOUT(MCOM,MLCOM),SMEOUT(MCOM,MLCOM)
-      COMMON/CGCIN3/ICGCS(MCOM),ICGCF(MCOM),
+
+      COMMON/CGCIN3/ICGCS(MCOM,MDTY),ICGCF(MCOM,MDTY),
      & ICGCFL(MCOM,MLCOM),SPELEC(MCOM,MLCOM),SLOPEM(MCOM,MLCOM)
 
 C Switch off delay time memory common block
@@ -103,19 +105,21 @@ C and is used for code related to UK NCM method
       COMMON/COE34L/QLAT(MCOM)
       COMMON/GRSD130/QCASRS(MCOM)
 
-      COMMON/BCLCHP/StoreCap,znElecCasGain(MCOM)
+      COMMON/BCLCHP/StoreCap,znElecCasGain(MCOM),kounter
       real StoreCap,znElecCasGain
+      integer kounter
 
-C Common for occupant/lighting/equipment sensible convective, sensible
+C Common for occupant/lighting/equipment/other sensible convective, sensible
 C radiant and latent W for future and present in each zone.
-C << adapt to include other casual gain >>
       real ctlperocupc,ctlperocupr,ctlperocupl ! occupant after control applied
       real ctlperlightc,ctlperlightr,ctlperlightl ! lighting after control applied
-      real ctlequipc,ctlequipr,ctlequipl ! equipment after control applied
+      real ctlperequipc,ctlperequipr,ctlperequipl ! equipment after control applied
+      real ctlperotherc,ctlperotherr,ctlperotherl ! other after control applied
       common/applyctl/ctlperocupc(MCOM,2),ctlperocupr(MCOM,2),
      &  ctlperocupl(MCOM,2),ctlperlightc(MCOM,2),ctlperlightr(MCOM,2),
-     &  ctlperlightl(MCOM,2),ctlequipc(MCOM,2),ctlequipr(MCOM,2),
-     &  ctlequipl(MCOM,2) 
+     &  ctlperlightl(MCOM,2),ctlperequipc(MCOM,2),ctlperequipr(MCOM,2),
+     &  ctlperequipl(MCOM,2),ctlperotherc(MCOM,2),ctlperotherr(MCOM,2),
+     &  ctlperotherl(MCOM,2) 
 
 C Common for HOT3000 electrical-network -> casual-gain coupling
 C Symopsys: E_to_G_coupling: boolian indicating coupling exists
@@ -221,7 +225,6 @@ C It excludes start-up timesteps
       CHARACTER outs*124, DSTR*10
       character*10 wkd1, wkd2
       logical traceok,closea
-      REAL PEZON,QEZON
       
 C Declation of heat gain from h3k models.
 c      REAL H3K_HeatGainsFromModels(ICOMP)
@@ -368,13 +371,22 @@ C Determine future timerow casual gain multiplier CGCTL(2,ICGCTL(ICOMP)).
 C Set switch-off delay time memory to "zero" before start of the
 C new day control period:
           IT=int(btimef)
-          if (IT.EQ.ICGCS(ICOMP)) then
+          if (IT.EQ.ICGCS(ICOMP,IDAY)) then
             do 20 N=1,NLITZ(ICOMP)
               IDTM(ICOMP,N)=0
 20          continue
           endif
+
           IPOINT=0
-          if (IT.GT.ICGCS(ICOMP).AND.IT.LE.ICGCF(ICOMP)) IPOINT=1
+
+C Noticed if control period start is 8h00 nothing happens until 9h00
+C This does not work well for shorter timesteps.
+C          if (IT.GT.ICGCS(ICOMP,IDAY).AND.
+C     &         IT.LE.ICGCF(ICOMP,IDAY)) IPOINT=1
+
+C Check time as in 933 below so for multiple timesteps per hour.
+          if (btimef.GT.float(ICGCS(ICOMP,IDAY)).AND.
+     &        btimef.LE.float(ICGCF(ICOMP,IDAY))) IPOINT=1
           if (IPOINT.NE.0) then
             call INTLUM(ICOMP,FRAC)  ! get the fraction of control
             CGCTL(ICOMP,2,ICGCTL(ICOMP))=FRAC
@@ -400,17 +412,20 @@ C Equipment is an arbitrary choice for this aggregate data.
         QCASC(2)=VAL(ISD)
         ctlperocupc(icomp,2)=0.0
         ctlperlightc(icomp,2)=0.0
-        ctlequipc(icomp,2)=VAL(ISD)
+        ctlperequipc(icomp,2)=VAL(ISD)
+        ctlperotherc(icomp,2)=0.0
 
         QCASR(2)=VAL(ISD+1)
         ctlperocupr(icomp,2)=0.0
         ctlperlightr(icomp,2)=0.0
-        ctlequipr(icomp,2)=VAL(ISD+1)
+        ctlperequipr(icomp,2)=VAL(ISD+1)
+        ctlperotherr(icomp,2)=0.0
 
         QLATN(2)=VAL(ISD+2)
         ctlperocupl(icomp,2)=0.0
         ctlperlightl(icomp,2)=0.0
-        ctlequipl(icomp,2)=VAL(ISD+2)
+        ctlperequipl(icomp,2)=VAL(ISD+2)
+        ctlperotherl(icomp,2)=0.0
         if(traceok)then
           write(outs,*)'casual gains from temporal db=',
      &          VAL(ISD),VAL(ISD+1),VAL(ISD+2)
@@ -427,17 +442,20 @@ C << any need for ICGUnit?  Probably always is W. >>
         QCASC(2)=VAL(ISD)+VAL(ISD+3)+VAL(ISD+6)
         ctlperocupc(icomp,2)=VAL(ISD)
         ctlperlightc(icomp,2)=VAL(ISD+3)
-        ctlequipc(icomp,2)=VAL(ISD+6)
+        ctlperequipc(icomp,2)=VAL(ISD+6)
+        ctlperotherc(icomp,2)=0.0
 
         QCASR(2)=VAL(ISD+1)+VAL(ISD+4)+VAL(ISD+7)
         ctlperocupr(icomp,2)=VAL(ISD+1)
         ctlperlightr(icomp,2)=VAL(ISD+4)
-        ctlequipr(icomp,2)=VAL(ISD+7)
+        ctlperequipr(icomp,2)=VAL(ISD+7)
+        ctlperotherr(icomp,2)=0.0
 
         QLATN(2)=VAL(ISD+2)+VAL(ISD+5)+VAL(ISD+8)
         ctlperocupl(icomp,2)=VAL(ISD+2)
         ctlperlightl(icomp,2)=VAL(ISD+5)
-        ctlequipl(icomp,2)=VAL(ISD+8)
+        ctlperequipl(icomp,2)=VAL(ISD+8)
+        ctlperotherl(icomp,2)=0.0
         if(traceok)then
           write(outs,*)'separate casual gains from temporal db=',
      &        VAL(ISD),VAL(ISD+1),VAL(ISD+2),VAL(ISD+3),VAL(ISD+4),
@@ -697,17 +715,19 @@ C       QTOTGAIN=QTOTOCCUP+QTOTEQUIP+QTOTLIGHT
 
 C Instantiate the future value of each casual gain so that
 C it can be used within MZLS3.
+C << ?? for 4th other slot >>
         ctlperocupc(icomp,2)=QOCCCASC
         ctlperlightc(icomp,2)=QLIGHTCASC
-        ctlequipc(icomp,2)=QEQUIPCASC
+        ctlperequipc(icomp,2)=QEQUIPCASC
+        ctlperotherc(icomp,2)=0.0
         ctlperocupr(icomp,2)=QOCCCASR
         ctlperlightr(icomp,2)=QLIGHTCASR
-        ctlequipr(icomp,2)=QEQUIPCASR
+        ctlperequipr(icomp,2)=QEQUIPCASR
+        ctlperotherr(icomp,2)=0.0
         ctlperocupl(icomp,2)=QOCCLATN
         ctlperlightl(icomp,2)=QLIGHTLATN
-        ctlequipl(icomp,2)=QEQUIPLATN
-
-C << place to adapt for other casual gain >>
+        ctlperequipl(icomp,2)=QEQUIPLATN
+        ctlperotherl(icomp,2)=0.0
 
 C Using LGHT_ncm_Energy(icomp) for the results of the UK's NCM method
 C This will be in Wh units. It will also need to be divided with NTSTEP
@@ -782,7 +802,7 @@ C ventilation values in the zone).
               iitrc=1
               CALL EROPER(IITRC,ITU,IUNIT,icomp,IER)
               CALL MZCASG(icomp)
-              write(6,*) 'called eroper & mzcasg for ',icomp,btimef
+C              write(6,*) 'called eroper & mzcasg for ',icomp,btimef
             endif
           endif
         endif
@@ -910,9 +930,7 @@ C For each casual gain type set gain for current period.
 C First initialize SHOCC commons to -1, i.e. assume no SHOCC-calulated loads
 C the following 'fetchloads' subroutine will override '-1' if SHOCC
 C does indeed calculate loads.
-          shcon=-1.
-          shrad=-1.
-          shlat=-1.
+          shcon=-1.0; shrad=-1.0; shlat=-1.
                     
           call fetchloads(icomp,lodlabel(icomp,ign),
      &      len(lodlabel(icomp,ign)),shcon,shrad,shlat)
@@ -952,11 +970,11 @@ C so if SHOCC load, then cgctl equals shcon/CGCSENC ratio.
 
 C Debug...
             if(traceok)then
-C              write(itu,*) 'match ',DSTR,BTIMEF,IPER,IGN,IDAY,ICOMP
-C              write(itu,*) 'Time    Zone   Period   GainSen'
-C              write(itu,*) BTIMEF,ICOMP,IPER,CGSENC(ICOMP,IDAY,IGN,IPER)
-C              write(itu,*) QCASC,QCASR,QLATN,' ctl:',CGCTL(ICOMP,1,1),
-C     &          CGCTL(ICOMP,2,1),CGCTL(ICOMP,1,2),CGCTL(ICOMP,2,2)  
+              write(itu,*) 'match ',DSTR,BTIMEF,IPER,IGN,IDAY,ICOMP
+              write(itu,*) 'Time    Zone   Period   GainSen'
+              write(itu,*) BTIMEF,ICOMP,IPER,CGSENC(ICOMP,IDAY,IGN,IPER)
+              write(itu,*) QCASC,QCASR,QLATN,' ctl:',CGCTL(ICOMP,1,1),
+     &          CGCTL(ICOMP,2,1),CGCTL(ICOMP,1,2),CGCTL(ICOMP,2,2)  
             endif
 
 C Set future electrical loads.
@@ -1269,14 +1287,14 @@ C Zone casual gain control data.
      & UX(MCOM,MLCOM,MDF),UY(MCOM,MLCOM,MDF),UH(MCOM,MLCOM,MDF),
      & SETPT(MCOM,MLCOM),SYSPER(MCOM,MLCOM),SOFFLL(MCOM,MLCOM),
      & IOFFDT(MCOM,MLCOM),SMLOUT(MCOM,MLCOM),SMEOUT(MCOM,MLCOM)
-      COMMON/CGCIN3/ICGCS(MCOM),ICGCF(MCOM),
+      COMMON/CGCIN3/ICGCS(MCOM,MDTY),ICGCF(MCOM,MDTY),
      & ICGCFL(MCOM,MLCOM),SPELEC(MCOM,MLCOM),SLOPEM(MCOM,MLCOM)
 
 C Daylight coefficient common block data definition:
       COMMON/DCOEF/NDCFP,NDCFS(MDCFP),DCOEF(MDCFP,MDCFS,MDCFV),
      & IDCFID(MCOM,MLCOM,MDF)
 
-C Daylight factor data (see dayfac.f).
+C Daylight factor data (see dayfac.F).
       COMMON/DAYF/NDF(MCOM,MLCOM),DFDAT(MCOM,MLCOM,MGT,MDF),
      & AZIJL(MCOM,MGT),SUMDF(MCOM,MLCOM,MDF),NUDWIN(MCOM)
 
@@ -1314,6 +1332,7 @@ C Illuminance database.
       character outs*124,doit*124,outstr*124
 
       character*72 LTMPFL,LTMPFLA,OUTCMD
+      character e2redit*8
 
       logical nog,close,closea,closeb,closec,closed,closee,closef
       logical closeg,closeh,closei,instart,neglum,XST
@@ -1323,6 +1342,7 @@ C Definition of sun altitude for daylight coefficient method:
       data alt/6.,18.,30.,42.,54.,66.,78.,90./
 
       iunit=ifil+1
+      e2redit='NONE'
 
 C Trace output ?
       IFT=1
@@ -1583,9 +1603,6 @@ C in pre-calculation period (via call to bInStartup):
         if (bInStartup())then
           instart=.true.
         endif
-C        IF((ISSNY.EQ.1.AND.IDYP.EQ.365.AND.IHRP.EQ.24.AND.ISDS.EQ.1)
-C     &    .OR.(ISSNY.EQ.0.AND.(IDYP.GE.ISDS.OR.
-C     &        (IDYP.EQ.ISDS-1.AND.IHRP.EQ.24))))instart=.false.
         if(closea.OR.(SALT.LT.0.).OR.(IDYP.LT.ISDS).OR.instart)then
           suma=0.
           DO 21 I=1,NDF(ICOMP,N)
@@ -1628,6 +1645,7 @@ C Check if sensor values already in illuminance database and set accuracies.
             QDRACC=5.
 
             write (66,*) ' ***  Solar data for this timestep *** '
+            CALL DAYCLK(IDYP,BTIMEF,66)
             write (66,'(4f9.1,i3)') SALT,RSAZI,QDIR,QDIF,IBLIND
 
 C Calculate differences.  Blind state MUST match.
@@ -1755,8 +1773,19 @@ C Calculate regression coefficients GRADQR and GRADQF.
 
 C Call e2r to calculate illuminances.
 C ** Set this as the default treatment **
+
+C << for coupling with casual gain control should write out control
+C << state information into the transfer file.
             ILLDBM=0
             if (ILLDBM.eq.0) then
+
+C If there are IES entities in the model tell e2r to invoke editing
+C of the IES transforms file.
+              if(nbofies.gt.0)then
+                e2redit='YES'
+              else
+                e2redit='NO'
+              endif
 
 C Create transfer file (format: .PID.tmp) LTMPFL is the file name (passed
 C to e2r) and  LTMPFLA is the absolute path/ file name.
@@ -1772,19 +1801,23 @@ C to e2r) and  LTMPFLA is the absolute path/ file name.
                 call EFDELET(IUNIT,ISTAT)
               endif
               call FPOPEN(IUNIT,ISTAT,1,2,LTMPFLA)
-              write (OUTCMD,'(4f9.1,i3)') SALT,RSAZI,QDIR,QDIF,IBLIND
+              write (OUTCMD,'(4f9.1,i3,2a)') SALT,RSAZI,QDIR,QDIF,
+     &          IBLIND,' ',e2redit
               write (IUNIT,'(a)') OUTCMD
               call ERPFREE(IUNIT,ISTAT)
               write(doit,'(3a,i3,3a)')'e2r -file ',
      &          LCFGF(:lnblnk(LCFGF)),' -purpose Coupling -zone ',
-     &          ICOMP,' -act ',LTMPFL(:lnblnk(LTMPFL)),' -mode text'
+     &          ICOMP,' -act Calculate -actf ',LTMPFL(:lnblnk(LTMPFL)),
+     &          ' -mode text'
 
 C Debug.
-C              write(6,'(3a,i3,3a)')'e2r -file ',
-C     &          LCFGF(:lnblnk(LCFGF)),' -purpose Coupling -zone ',
-C     &          ICOMP,' -act ',LTMPFL(:lnblnk(LTMPFL)),' -mode text'
-
-              call edisp(icout,'Lighting simulation has now commenced.')
+              write(6,'(3a,i3,3a)')'e2r -file ',
+     &          LCFGF(:lnblnk(LCFGF)),' -purpose Coupling -zone ',
+     &          ICOMP,' -act Calculate -actf ',LTMPFL(:lnblnk(LTMPFL)),
+     &          ' -mode text'
+              write(outs,'(a,f8.3,a,i3,a)') 'Lighting simulation @ ',
+     &          BTIMEF,' for zone',ICOMP,' commenced.'
+              call edisp(icout,outs)
               call runit(doit,'-')
 
 C Create new entry in illuminance database.
@@ -2167,6 +2200,20 @@ C Case of On/Off with chosen lighting systems and sensors.
   807     FORMAT(' Light zone ',I1,' ON/OFF Daylight coef, ZFRAC=',F5.2)
           call edisp(itu,outs)
         endif
+
+C If in coupling mode then write to the text feedback the controlled fraction
+C so the next timestep the user can edit the IES xforms file to match. 
+        IF(IDFST(ICOMP,N).EQ.4)then
+          write(outs,'(a,F9.2)') 
+     &      'COUPLING ADJUSTMENT next timestep after:',btimef
+          call edisp(iuout,outs)
+          call edisp(6,outs)
+          WRITE(outs,'(a,i2,a,i1,a,F5.2)') 'In zone ',icomp,
+     &      ' & light zone ',N,'edit xform for fixture faction to ',
+     &      ZFRAC(N)
+          call edisp(iuout,outs)
+          call edisp(6,outs)
+        ENDIF
 
 C Update corresponding SHOCC lighting (if existing).
         call updatelighting(icomp,n,zelum(n),btimep,btimef)
@@ -2713,11 +2760,11 @@ C and uses ICALENDER if required. If matching gain(s) set ACTIVE=1.0.
       ENDIF
       IGC=NCGTC(IZONE,IDTY)
       IF(NCAS(IDTY).GE.1)THEN
-        DO 30 ICNN=1,NCAS(IDTY)
-          IF(ICGT(IDTY,ICNN).EQ.IGC)THEN
-            IF(IH.GT.ICGS(IDTY,ICNN).AND.IH.LE.ICGF(IDTY,ICNN))ACTIVE=1.
-          ENDIF
-   30   CONTINUE
+     	DO 30 ICNN=1,NCAS(IDTY)
+     	  IF(ICGT(IDTY,ICNN).EQ.IGC)THEN
+     	    IF(IH.GT.ICGS(IDTY,ICNN).AND.IH.LE.ICGF(IDTY,ICNN))ACTIVE=1.
+     	  ENDIF
+   30	CONTINUE
       ENDIF
       RETURN
       END

@@ -239,9 +239,10 @@ C Open the text display box equal to LIMTTY if MODEL = 8.
         iyofst=20
       ENDIF
 
-c Find minimum and maximum values for x-axis.
+C Find minimum and maximum values for x-axis. Add one day
+C to ensure last 24 hours is plotted.
       xmin=0.
-      nhours=(isf-iss+1)*24
+      nhours=((isf-iss)+1)*24
       xmax=float(nhours)
 
 c Display header information.

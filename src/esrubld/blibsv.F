@@ -651,6 +651,8 @@ C#include "cfd.h"
 #include "control.h"
 #include "net_flow.h"
 #include "tdf2.h"
+#include "plant.h"
+#include "power.h"
 
       COMMON/TC/ITC,ICNT
 
@@ -732,7 +734,6 @@ C BEMS interaction time for results dump.
 
       COMMON/GR1D01/NNDS,NNDZ(MCOM),NNDC(MCOM,MS),NNDL(MCOM,MS,ME)
 
-      COMMON/ENETZONE/PEZON(MCOM,MGTY),QEZON(MCOM,MGTY)
       COMMON/ENETZONP/ZONPPP(MCOM),ZONQPP(MCOM)
       COMMON/ENETZONF/ZONPP(MCOM),ZONQP(MCOM)
       COMMON/ZONSPMF/ZSPMF1(MCOM),ZSPMF2(MCOM)
@@ -797,17 +798,17 @@ C This declaration is required to support the bugfix noted below
       logical bInStartup        ! <- function for determining if simulation
                                 !    is in startup
 
-      REAL PEZON,QEZON
-
 C Common for occupant/lighting/equipment sensible convective, sensible
 C radiant and latent W for future and present in each zone.
       real ctlperocupc,ctlperocupr,ctlperocupl ! occupant after control applied
       real ctlperlightc,ctlperlightr,ctlperlightl ! lighting after control applied
       real ctlperequipc,ctlperequipr,ctlperequipl ! equipment after control applied
+      real ctlperotherc,ctlperotherr,ctlperotherl ! other slot after control applied
       common/applyctl/ctlperocupc(MCOM,2),ctlperocupr(MCOM,2),
      &  ctlperocupl(MCOM,2),ctlperlightc(MCOM,2),ctlperlightr(MCOM,2),
      &  ctlperlightl(MCOM,2),ctlperequipc(MCOM,2),ctlperequipr(MCOM,2),
-     &  ctlperequipl(MCOM,2) 
+     &  ctlperequipl(MCOM,2),ctlperotherc(MCOM,2),ctlperotherr(MCOM,2),
+     &  ctlperotherl(MCOM,2) 
       common/caleni/nbdaytype,nbcaldays(MDTY),icalender(365)
       INTEGER NBDAYTYPE,NBCALDAYS,ICALENDER
 
@@ -818,10 +819,11 @@ C Local variables for casual gains.
       real perocupc,perocupr,perocupl  ! convective/radiant/latent for occupants
       real perlightc,perlightr,perlightl  ! convective/radiant/latent for lights
       real perequipc,perequipr,perequipl  ! convective/radiant/latent for small power
+      real perotherc,perotherr,perotherl  ! convective/radiant/latent for small power
       real avgctlperocupc,avgctlperocupr,avgctlperocupl ! average occupant to write out
       real avgctlperlightc,avgctlperlightr,avgctlperlightl ! average lighting to write out
       real avgctlperequipc,avgctlperequipr,avgctlperequipl ! average equipment to write out
-      real avgctlotherc,avgctlotherr,avgctlotherl ! average other to write out
+      real avgctlperotherc,avgctlperotherr,avgctlperotherl ! average other to write out
       integer theonectld  ! if non-zero the casual gain type that is controlled.
       PARAMETER       (SMALL=1.0E-15)
 
@@ -891,6 +893,10 @@ C weekday saturday or sunday.
 
 C If non-traditional calendar day types are defined choose from ICALENDAR 
 C day types when setting iweekdayweekend.
+
+C << is this why between midnight and 1h00 the older day is
+C << still used??
+
       IF(NBDAYTYPE.gt.3)THEN !
         IDAY=IDYP
         IF(IHRF.EQ.1)IDAY=IDYP+1
@@ -913,6 +919,9 @@ C ctlperocupc() previously filled in casual.F
         perequipc=ctlperequipc(icomp,2)
         perequipr=ctlperequipr(icomp,2)
         perequipl=ctlperequipl(icomp,2)
+        perotherc=ctlperotherc(icomp,2)
+        perotherr=ctlperotherr(icomp,2)
+        perotherl=ctlperotherl(icomp,2)
       elseif(ICASUAL3(icomp).ne.0)then
 
 C If ICASUAL3() set then 3 separate casual gains are set via
@@ -926,6 +935,9 @@ C data previously filled in casual.F
         perequipc=ctlperequipc(icomp,2)
         perequipr=ctlperequipr(icomp,2)
         perequipl=ctlperequipl(icomp,2)
+        perotherc=ctlperotherc(icomp,2)
+        perotherr=ctlperotherr(icomp,2)
+        perotherl=ctlperotherl(icomp,2)
       elseif(IACTIV(icomp).ne.0)then
         perocupc=ctlperocupc(icomp,2)
         perocupr=ctlperocupr(icomp,2)
@@ -936,17 +948,20 @@ C data previously filled in casual.F
         perequipc=ctlperequipc(icomp,2)
         perequipr=ctlperequipr(icomp,2)
         perequipl=ctlperequipl(icomp,2)
+        perotherc=ctlperotherc(icomp,2)
+        perotherr=ctlperotherr(icomp,2)
+        perotherl=ctlperotherl(icomp,2)
       else
 
 C Data in operations file.
 C Calculate the current period id for occupants.
         iperocup=NCGPER(ICOMP,iweekdayweekend,1)
-        do 301 I=1,NCGPER(ICOMP,iweekdayweekend,1)
+        do I=1,NCGPER(ICOMP,iweekdayweekend,1)
           if(BTIMEF.le.TCGS(ICOMP,iweekdayweekend,1,I+1).and.
      &       BTIMEF.gt.TCGS(ICOMP,iweekdayweekend,1,I)) then
             iperocup=I
           endif
- 301    continue
+        enddo
         if(iperocup.gt.0)then
           perocupc=CGSENC(icomp,iweekdayweekend,1,iperocup)
           perocupr=CGSENR(icomp,iweekdayweekend,1,iperocup)
@@ -969,12 +984,12 @@ C based on the CGSENC/R/L value from precomp and the there is
 C casual gain control for type 2 then setup ctlperlightc/l/r/l
 C for after the FRAC has been applied.
         iperlight=NCGPER(ICOMP,iweekdayweekend,2)
-        do 302 I=1,NCGPER(ICOMP,iweekdayweekend,2)
+        do I=1,NCGPER(ICOMP,iweekdayweekend,2)
           if(BTIMEF.le.TCGS(ICOMP,iweekdayweekend,2,I+1).and.
      &       BTIMEF.gt.TCGS(ICOMP,iweekdayweekend,2,I)) then
             iperlight=I
           endif
- 302    continue
+        enddo
         if(iperlight.gt.0)then
           perlightc=CGSENC(icomp,iweekdayweekend,2,iperlight)
           perlightr=CGSENR(icomp,iweekdayweekend,2,iperlight)
@@ -1000,12 +1015,12 @@ C for after the FRAC has been applied.
 C Calculate the current period id for equipment. Use similar logic
 C to the lighting code block above.
         iperequip=NCGPER(ICOMP,iweekdayweekend,3)
-        do 303 I=1,NCGPER(ICOMP,iweekdayweekend,3)
+        do I=1,NCGPER(ICOMP,iweekdayweekend,3)
           if(BTIMEF.le.TCGS(ICOMP,iweekdayweekend,3,I+1).and.
      &       BTIMEF.gt.TCGS(ICOMP,iweekdayweekend,3,I)) then
             iperequip=I
           endif
- 303    continue
+        enddo
         if(iperequip.gt.0)then
           perequipc=CGSENC(icomp,iweekdayweekend,3,iperequip)
           perequipr=CGSENR(icomp,iweekdayweekend,3,iperequip)
@@ -1028,7 +1043,38 @@ C to the lighting code block above.
           ctlperequipl(icomp,2)=perequipl
         endif
 
-C << place to add in logic for other casual gain >>
+C Calculate the current period id for other slot. Use similar logic
+C to the equipment code block above.
+        iperother=NCGPER(ICOMP,iweekdayweekend,4)
+        do I=1,NCGPER(ICOMP,iweekdayweekend,4)
+          if(BTIMEF.le.TCGS(ICOMP,iweekdayweekend,4,I+1).and.
+     &       BTIMEF.gt.TCGS(ICOMP,iweekdayweekend,4,I)) then
+            iperother=I
+          endif
+        enddo
+        if(iperother.gt.0)then
+          perotherc=CGSENC(icomp,iweekdayweekend,4,iperother)
+          perotherr=CGSENR(icomp,iweekdayweekend,4,iperother)
+          perotherl=CGLAT(icomp,iweekdayweekend,4,iperother)
+          if(ICGCTL(ICOMP).eq.3)then
+            ctlperotherc(icomp,2)=perotherc*CGCTL(ICOMP,2,4)
+            ctlperotherr(icomp,2)=perotherr*CGCTL(ICOMP,2,4)
+            ctlperotherl(icomp,2)=perotherl*CGCTL(ICOMP,2,4)
+          else
+            ctlperotherc(icomp,2)=perotherc
+            ctlperotherr(icomp,2)=perotherr
+            ctlperotherl(icomp,2)=perotherl
+          endif
+        else
+          perotherc=0.0
+          perotherr=0.0
+          perotherl=0.0
+          ctlperotherc(icomp,2)=perotherc
+          ctlperotherr(icomp,2)=perotherr
+          ctlperotherl(icomp,2)=perotherl
+        endif
+
+C << place to add in logic for a fifth casual gain slot >>
 
       endif
 
@@ -1044,8 +1090,9 @@ C will be unknown so follow the pattern established in casual.F
         ctlperequipc(icomp,1)=ctlperequipc(icomp,2)
         ctlperequipr(icomp,1)=ctlperequipr(icomp,2)
         ctlperequipl(icomp,1)=ctlperequipl(icomp,2)
-
-C << place to add in logic for other casual gain >>
+        ctlperotherc(icomp,1)=ctlperotherc(icomp,2)
+        ctlperotherr(icomp,1)=ctlperotherr(icomp,2)
+        ctlperotherl(icomp,1)=ctlperotherl(icomp,2)
 
       endif
 
@@ -1109,7 +1156,7 @@ C      Implementation: Start day = Jan 1st
 C
 C  ^
 C  |  Period at end of simulation   ----+
-C  |  for which no data is available     \   
+C  |  for which no data is available     \
 C  |                                      \
 C  |                                    |<-+->|
 C  |                                    
@@ -1526,9 +1573,9 @@ C Comput averages for each of the separate casual gains (after ctl applied).
           avgctlperequipc=ctlperequipc(icomp,2)
           avgctlperequipr=ctlperequipr(icomp,2)
           avgctlperequipl=ctlperequipl(icomp,2)
-          avgctlotherc=0.0
-          avgctlotherr=0.0
-          avgctlotherl=0.0
+          avgctlperotherc=ctlperotherc(icomp,2)
+          avgctlperotherr=ctlperotherr(icomp,2)
+          avgctlperotherl=ctlperotherl(icomp,2)
         else
           avgctlperocupc=(ctlperocupc(icomp,1)+
      &                    ctlperocupc(icomp,2))/2.0
@@ -1548,18 +1595,23 @@ C Comput averages for each of the separate casual gains (after ctl applied).
      &                     ctlperequipr(icomp,2))/2.0
           avgctlperequipl=(ctlperequipl(icomp,1)+
      &                     ctlperequipl(icomp,2))/2.0
-          avgctlotherc=0.0
-          avgctlotherr=0.0
-          avgctlotherl=0.0
+          avgctlperotherc=(ctlperotherc(icomp,1)+
+     &                     ctlperotherc(icomp,2))/2.0
+          avgctlperotherr=(ctlperotherr(icomp,1)+
+     &                     ctlperotherr(icomp,2))/2.0
+          avgctlperotherl=(ctlperotherl(icomp,1)+
+     &                     ctlperotherl(icomp,2))/2.0
         endif
 
 C Debug
-C        write(6,'(A,i2,9F9.2)') 
+C        write(6,'(A,i2,12F8.1)') 
 C     &   ' Casual pres ocup/light/equip convec ctl applied',
 C     &   icomp,ctlperocupc(icomp,1),ctlperocupc(icomp,2),
 C     &   ctlperlightc(icomp,1),ctlperlightc(icomp,2),
 C     &   ctlperequipc(icomp,1),ctlperequipc(icomp,2),
-C     &   avgctlperocupc,avgctlperlightc,avgctlperequipc
+C     &   ctlperotherc(icomp,1),ctlperotherc(icomp,2),
+C     &   avgctlperocupc,avgctlperlightc,avgctlperequipc,
+C     &   avgctlperotherc
 
 C Save future to current for these casual gains. Note: the
 C future value is still needed for the trace so delay zeroing
@@ -1573,14 +1625,14 @@ C the future value until after the trace logic (i.e. after 700).
         ctlperequipc(icomp,1)=ctlperequipc(icomp,2)
         ctlperequipr(icomp,1)=ctlperequipr(icomp,2)
         ctlperequipl(icomp,1)=ctlperequipl(icomp,2)
+        ctlperotherc(icomp,1)=ctlperotherc(icomp,2)
+        ctlperotherr(icomp,1)=ctlperotherr(icomp,2)
+        ctlperotherl(icomp,1)=ctlperotherl(icomp,2)
 
-C << place to add in logic for other casual gain >>
-
-
-C Get the ratio between the W for occup/lighting and small power
+C Get the ratio between the W for all the casual gains
 C to use when writing out surface energy balance data.
         avgradtot=avgctlperequipr+avgctlperlightr+avgctlperocupr+
-     &            avgctlotherr
+     &            avgctlperotherr
         if(avgradtot.lt.0.001)then
           fracrlight=1.0
           fracrocup=1.0
@@ -1590,7 +1642,7 @@ C to use when writing out surface energy balance data.
           fracrlight=avgctlperlightr/avgradtot
           fracrocup=avgctlperocupr/avgradtot
           fracrequip=avgctlperequipr/avgradtot
-          fracroth=avgctlotherr/avgradtot
+          fracroth=avgctlperotherr/avgradtot
         endif 
 
 C Loop through all of the surfaces and get the convective flux at
@@ -1646,13 +1698,13 @@ C Now write to results library if ISAVE = 2, 3, 4.
           WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)TMA,QM,
      &        (TMS(I),I=1,NSUR),QV1,QV2,TMCON,outopq,outtrn,
      &        avgctlperocupc,avgctlperlightc,avgctlperequipc,
-     &        avgctlotherc,qair
+     &        avgctlperotherc,qair
           IREC=IREC+1
 
           WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)QW1,QW2,EZONPP,
      &        EZONQP,QSA,(QSI(I),I=1,NSUR),opqin,trnin,
      &        avgctlperocupr,avgctlperlightr,avgctlperequipr,
-     &        avgctlotherr,qbridge
+     &        avgctlperotherr,qbridge
           IREC=IREC+1
 
 C Special materials/components output (TEMPORARILY) written to this slot. Due 
@@ -1664,7 +1716,7 @@ C is written as well.
           WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)(QSE(I),I=1,NSUR),
      &      QCASR,QCASC,ZRH,ZLL,FRAC,SPM1,SPM2,
      &      avgctlperocupl,avgctlperlightl,avgctlperequipl,
-     &      avgctlotherl,theonectld
+     &      avgctlperotherl,theonectld
           IREC=IREC+1
 
 
@@ -1706,7 +1758,7 @@ C stop. This will later be replaced by a dedicated call to res.
 C Debug.
 C            WRITE(*,'(A,I2)') 'Dumpimg BEMS data ..... Zone ',ICOMP
             WRITE(60,*) '#Zone  Day  Time   Temperature '
-	    
+    
             CALL ECLOSE(BTIMEF,1.000,0.001,CLOSE)
             IF(CLOSE)THEN
               WRITE(60,'(I6,1X,F8.4,1X,F8.4,1X,F8.4)') 
@@ -1759,16 +1811,16 @@ C Save back the current written out values of separate casual gains.
           sctlperequipc(ICOMP)=sctlperequipc(ICOMP)+avgctlperequipc
           sctlperequipr(ICOMP)=sctlperequipr(ICOMP)+avgctlperequipr
           sctlperequipl(ICOMP)=sctlperequipl(ICOMP)+avgctlperequipl
-          sctlperothc(ICOMP)=sctlperothc(ICOMP)+avgctlotherc
-          sctlperothr(ICOMP)=sctlperothr(ICOMP)+avgctlotherr
-          sctlperothl(ICOMP)=sctlperothl(ICOMP)+avgctlotherl
+          sctlperothc(ICOMP)=sctlperothc(ICOMP)+avgctlperotherc
+          sctlperothr(ICOMP)=sctlperothr(ICOMP)+avgctlperotherr
+          sctlperothl(ICOMP)=sctlperothl(ICOMP)+avgctlperotherl
 
 C Debug
 C          write(6,'(A,2i2,8F9.2)') 
-C     &    ' Casual acum ocup/light/equip convec',icomp,irdnow,
-C     &    sctlperocupc(icomp),sctlperlightc(icomp),ctlperequipc(icomp),
-C     &    sctlperothc(icomp),avgctlperocupc,avgctlperlightc,
-C     &    avgctlperequipc,avgctlotherc
+C     &    ' Casual acum ocup/light/equip/other convec',icomp,irdnow,
+C     &    sctlperocupc(icomp),sctlperlightc(icomp),
+C     &    sctlperequipc(icomp),sctlperothc(icomp),avgctlperocupc,
+C     &    avgctlperlightc,avgctlperequipc,avgctlperotherc
 
           if(irdnow.eq.1) then
 
@@ -1777,7 +1829,7 @@ C            write(6,'(A,2i2,4F9.2)')
 C     &        ' Casual written ocup/light/equip/other convec',
 C     &        icomp,irdnow,sctlperocupc(icomp)/irdc,
 C     &        sctlperlightc(icomp)/irdc,
-C     &        ctlperequipc(icomp)/irdc,
+C     &        sctlperequipc(icomp)/irdc,
 C     &        sctlperothc(icomp)/irdc
 
             irdc=irdcb(ICOMP)
@@ -2052,70 +2104,75 @@ C Solar distribution info.
               endif
               call edisp(itu,outs)
 
-C << place to add in logic for other casual gain >>
-
-              write(outs,'(A,F9.2,A,3F9.2,3i3)') 
+              write(outs,'(A,F9.2,A,4F9.2,4i3)') 
      &          ' Total casual convec',QCASC,
-     &          ' future ocup/light/equip ',
-     &          perocupc,perlightc,perequipc,iperocup,
-     &          iperlight,iperequip
+     &          ' future ocup/light/equip/other ',
+     &          perocupc,perlightc,perequipc,perotherc,iperocup,
+     &          iperlight,iperequip,iperother
               call edisp(itu,outs)
               if(ICGCTL(ICOMP).gt.0)then
-                write(outs,'(A,3F9.2)') 
-     &          ' Casual future  ocup/light/equip convec ctl applied',
+                write(outs,'(A,4F9.2)') 
+     &          ' Casual future  ocup/light/equ/oth convec ctl applied',
      &          ctlperocupc(icomp,2),ctlperlightc(icomp,2),
-     &          ctlperequipc(icomp,2)
+     &          ctlperequipc(icomp,2),ctlperotherc(icomp,2)
                 call edisp(itu,outs)
-                write(outs,'(A,3F9.2)') 
+                write(outs,'(A,4F9.2)') 
      &          ' Casual average ocup/light/equip convec ctl applied',
-     &          avgctlperocupc,avgctlperlightc,avgctlperequipc
+     &          avgctlperocupc,avgctlperlightc,avgctlperequipc,
+     &          avgctlperotherc
                 call edisp(itu,outs)
               else
-                write(outs,'(A,3F9.2)') 
-     &          ' Casual average ocup/light/equip convec ',
-     &          avgctlperocupc,avgctlperlightc,avgctlperequipc
+                write(outs,'(A,4F9.2)') 
+     &          ' Casual average ocup/light/equip/oth convec ',
+     &          avgctlperocupc,avgctlperlightc,avgctlperequipc,
+     &          avgctlperotherc
                 call edisp(itu,outs)
               endif
 
-              write(outs,'(A,F9.2,A,3F9.2)') ' Total casual radiant',
-     &          QCASR,' future ocup/light/equip ',perocupr,perlightr,
-     &          perequipr
+              write(outs,'(A,F9.2,A,4F9.2)') ' Total casual radiant',
+     &          QCASR,' future ocup/lt/equip/oth ',perocupr,perlightr,
+     &          perequipr,perotherr
               call edisp(itu,outs)
               if(ICGCTL(ICOMP).gt.0)then
-                write(outs,'(A,3F9.2)') 
+                write(outs,'(A,4F9.2)') 
      &          ' Casual future  ocup/light/equip radiant ctl applied',
      &          ctlperocupr(icomp,2),ctlperlightr(icomp,2),
-     &          ctlperequipr(icomp,2)
+     &          ctlperequipr(icomp,2),ctlperotherr(icomp,2)
                 call edisp(itu,outs)
-                write(outs,'(A,3F9.2)') 
-     &          ' Casual average ocup/light/equip radiant ctl applied',
-     &          avgctlperocupr,avgctlperlightr,avgctlperequipr
+                write(outs,'(A,4F9.2)') 
+     &          ' Casual average ocup/lt/equ/oth radiant ctl applied',
+     &          avgctlperocupr,avgctlperlightr,avgctlperequipr,
+     &          avgctlperotherr
                 call edisp(itu,outs)
               else
-                write(outs,'(A,3F9.2)') 
-     &          ' Casual average ocup/light/equip radiant ',
-     &          avgctlperocupr,avgctlperlightr,avgctlperequipr
+                write(outs,'(A,8F9.2)') 
+     &          ' Casual average ocup/light/equip/oth radiant ',
+     &          avgctlperocupr,avgctlperlightr,avgctlperequipr,
+     &          avgctlperotherr,avqcri*fracrocup,avqcri*fracrlight,
+     &          avqcri*fracrequip,avqcri*fracroth
                 call edisp(itu,outs)
               endif
 
-              write(outs,'(A,3F9.2)')
-     &          ' Casual future ocup/light/equip latent',
-     &          perocupl,perlightl,perequipl
+              write(outs,'(A,4F9.2)')
+     &          ' Casual future ocup/light/equip/oth latent',
+     &          perocupl,perlightl,perequipl,perotherl
               call edisp(itu,outs)
               if(ICGCTL(ICOMP).gt.0)then
-                write(outs,'(A,3F9.2)') 
-     &          ' Casual future  ocup/light/equip latent ctl applied',
+                write(outs,'(A,4F9.2)') 
+     &          ' Casual future ocup/light/equ/oth latent ctl applied',
      &          ctlperocupl(icomp,2),ctlperlightl(icomp,2),
-     &          ctlperequipl(icomp,2)
+     &          ctlperequipl(icomp,2),ctlperotherl(icomp,2)
                 call edisp(itu,outs)
-                write(outs,'(A,3F9.2)') 
-     &          ' Casual average ocup/light/equip latent ctl applied',
-     &          avgctlperocupl,avgctlperlightl,avgctlperequipl
+                write(outs,'(A,4F9.2)') 
+     &          ' Casual average ocup/light/equ/oth latent ctl applied',
+     &          avgctlperocupl,avgctlperlightl,avgctlperequipl,
+     &          avgctlperotherl
                 call edisp(itu,outs)
               else
-                write(outs,'(A,3F9.2)') 
-     &          ' Casual average ocup/light/equip latent ',
-     &          avgctlperocupl,avgctlperlightl,avgctlperequipl
+                write(outs,'(A,4F9.2)') 
+     &          ' Casual average ocup/light/equip/oth latent ',
+     &          avgctlperocupl,avgctlperlightl,avgctlperequipl,
+     &          avgctlperotherl
                 call edisp(itu,outs)
               endif
               call edisp(itu,'  ')
@@ -2201,9 +2258,9 @@ C Compute error term.
      &           avqconvi
             write(outs,'(A,F10.3,A)')' conductive   ',avqcondi,' W'
             call edisp(itu,outs)
-            write(outs,'(A,F10.3,A,3F10.3)')' casual lw    ',avqcri,
-     &        ' W & ocup/light/equipW ',avqcri*fracrocup,
-     &        avqcri*fracrlight,avqcri*fracrequip
+            write(outs,'(A,F10.3,A,4F10.3)')' casual lw    ',avqcri,
+     &        ' W & ocup/light/equip/otherW ',avqcri*fracrocup,
+     &        avqcri*fracrlight,avqcri*fracrequip,avqcri*fracroth
             call edisp(itu,outs)
             write(outs,'(A,F10.3,A)')' radiant plant',avqpltri,' W'
             call edisp(itu,outs)
@@ -2271,6 +2328,9 @@ C the future values are reset to zero at this point.
           ctlperequipc(icomp,2)=0.0
           ctlperequipr(icomp,2)=0.0
           ctlperequipl(icomp,2)=0.0
+          ctlperotherc(icomp,2)=0.0
+          ctlperotherr(icomp,2)=0.0
+          ctlperotherl(icomp,2)=0.0
 
 C << place to adapt for other casual gain >>
 
@@ -2543,6 +2603,8 @@ C STANDARD ESP-R CALCULATION APPLIES
 
 C -- Radiant casual gains are area AND emissivity weighted.
 C << does this need to be adapted for other gain? >>
+C << qcri is slightly different than what is written for radiant totals
+C << so a bit more work is needed.
         zoar = zonetotsurfacearea(ICOMP) ! assign local value
         qcri(ICOMP,ISFN,1)=qcri(ICOMP,ISFN,2)
         qcri(ICOMP,ISFN,2)=QCASRT(ICOMP)*0.5*zoar*sna(ICOMP,ISFN)*
@@ -2582,20 +2644,20 @@ C -- Energy stored.
         
 C --------- OTHER FACE -----------
 C Calculate only if facing exterior type boundary condition.
-        IF(IE(icomp,ISFN).EQ.0)THEN	! check that it is facing exterior (note that facing attic does not count)
-          DELXE=THRMLI(ICOMP,ISFN,1,4)/FLOAT(NNDL(ICOMP,ISFN,1))	! exterior surface layer thickness / exterior layer nodes (typically 2)
+        IF(IE(icomp,ISFN).EQ.0)THEN ! check that it is facing exterior (note that facing attic does not count)
+          DELXE=THRMLI(ICOMP,ISFN,1,4)/FLOAT(NNDL(ICOMP,ISFN,1))  ! exterior surface layer thickness / exterior layer nodes (typically 2)
           
 C -- Conduction.
-          if(IVTHPZ(icomp))then	! ? is this to set the variable on the first hour?
-	! present timestep
+          if(IVTHPZ(icomp))then ! ? is this to set the variable on the first hour?
+        ! present timestep
             qconde(ICOMP,ISFN,1)=THCONp(ISFN,1)*sna(ICOMP,ISFN)*
      &                       (tpc(icomp,ISFN,2)-tpc(ICOMP,ISFN,1))/DELXE
-	! future timestep
+        ! future timestep
             qconde(ICOMP,ISFN,2)=THCONf(ISFN,1)*sna(ICOMP,ISFN)*
      &                       (tfc(ICOMP,ISFN,2)-tfc(ICOMP,ISFN,1))/DELXE
           else
             ! present timestep
-            qconde(ICOMP,ISFN,1)=qconde(ICOMP,ISFN,2)	! present equals previous future
+            qconde(ICOMP,ISFN,1)=qconde(ICOMP,ISFN,2) ! present equals previous future
             ! future timestep
             ! qconde = k * A / l * (node temps 2 - 1
             qconde(ICOMP,ISFN,2)=THRMLI(ICOMP,ISFN,1,1)*sna(ICOMP,ISFN)*
@@ -2662,7 +2724,7 @@ C -- Shortwave radiation. Test if TMC.
 
 C -- Energy stored.
           qstore(ICOMP,ISFN,1)=qstore(ICOMP,ISFN,2)
-	! qstore = density * spec heat * A * thickness / 2 * temp of node * num of time steps per hr / 3600 s/h
+          ! qstore = density * spec heat * A * thickness / 2 * temp of node * num of time steps per hr / 3600 s/h
           qstore(ICOMP,ISFN,2)=THRMLI(ICOMP,ISFN,1,2)*
      &                         THRMLI(ICOMP,ISFN,1,3)*sna(ICOMP,ISFN)*
      &                   (DELXE/2.)*tfc(ICOMP,ISFN,1)*real(ntstep)/3600.
