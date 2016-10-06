@@ -1469,7 +1469,8 @@ C Occupancy filter info.
 C Simulator parameters.
       COMMON/SPFL/spfileok,perok,tstepok,saveok,autook,exitok,startupok
       COMMON/FREQS/NBINS,XBIN1,XBINN,DXBIN,IFREQ,IHITS,IMISS,INBIN(MF)
-      COMMON/FREQS1/ICBIN(MF),ITOTAL
+      integer ICBIN,IRCBIN
+      COMMON/FREQS1/ICBIN(MF),IRCBIN(MF),ITOTAL
       common/ntype/isv(mpcom,mnodec)
       common/pcdat/ CSV1M(mnodec),CSV2M(mnodec),CSV3M(mnodec),
      &              NNODE(mpcom),nrecpc(mpcom)
@@ -2787,8 +2788,8 @@ C Setup and pass in parameters to win3d.
      &          GPLABEL(1)(1:lnblnk(GPLABEL(1))),
      &          ' (...), Bin width =',DXBIN
             endif
-            if(IG.eq.1.or.IG.eq.4)CALL MODDRW(1,TLABEL)
-            if(IG.eq.2.or.IG.eq.5)CALL MODDRW(2,TLABEL)
+            if(IG.eq.1.or.IG.eq.4)CALL MODDRW(1,TLABEL,0,0)
+            if(IG.eq.2.or.IG.eq.5)CALL MODDRW(2,TLABEL,0,0)
           else
             call edisp(iuout,' Sorry, not in graphic mode...')
           endif

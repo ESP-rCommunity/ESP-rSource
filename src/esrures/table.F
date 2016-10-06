@@ -647,7 +647,7 @@ C If there is occupancy filter and occupancy then include in check.
 C Assume fully occupied.
               ih=int(ATIME+1.)
               ioc=1
-              if(iocupf.eq.1) call getocup(IZONE,IDAY,ih,ioc,ier)
+              if(iocupf.eq.1) call getocup(IZONE,IDAY,J,ioc,ier)
               if(ioc.ne.0) then
                 write (outs248(K:KE),'(f11.2)') VAL2(IG,J)
               elseif (IGETNO(IG,1).ge.50.AND.IGETNO(IG,1).le.59) then
@@ -676,7 +676,7 @@ C If there is occupancy filter and occupancy then include in check.
 C Assume fully occupied.
                 ih=int(ATIME+1.)
                 ioc=1
-                if(iocupf.eq.1) call getocup(IZONE,IDAY,ih,ioc,ier)
+                if(iocupf.eq.1) call getocup(IZONE,IDAY,J,ioc,ier)
                 if(ioc.ne.0) then
                   write (outs800(K:KE),'(f11.2)') VAL2(IG,J)
                 elseif (IGETNO(IG,1).ge.50.AND.IGETNO(IG,1).le.59) then
@@ -789,7 +789,7 @@ C      COMMON/SPAD/MMOD,LIMIT,LIMTTY
       CHARACTER RSNAME*40
       character rfile*72,PFILE*72,MSTRFILE*72,LAFRES*72
 
-      DIMENSION VAL(14),TVAL(14,12)
+      DIMENSION VAL(15),TVAL(15,12)
       DIMENSION NDYMTH(12), CQ(MTS), CQOUT(MTS)
       DIMENSION CASDAY(MTS,4)  ! to hold casual type data
       integer looplimit
@@ -883,44 +883,44 @@ C Monthly statistics of energy gains and losses.
         if(dmdsok)then
           write(outsl,'(3a)')
      &    ' Zone      Period| Surface convection at face of |  Casual',
-     &    ' Gains (R+C)   |Air movement   | Environmental |Solar',
-     &    ' radiation |dispersed'
+     &    ' Gains (Radiant+Conv)  |Air movement   | Environmental ',
+     &    '|Solar radiation |dispersed'
           call edisp(itru,outsl)
           write(outsl,'(3a)')
      &    '           in    |   transparent |    opaque     |Occu-  |',
-     &    'Lights |Small  |Infil- |Venti- |   controls    |absorbd|',
-     &    'entering| demands'
+     &    'Lights |Small  |Other  |Infil- |Venti- |   controls    ',
+     &    '|absorbd|entering| demands'
           call edisp(itru,outsl)
           write(outsl,'(3a)')
      &    '           month |outside|other  |outside|other  |pant   |',
-     &    '       |Power  |tration|lation |Heating|Cooling|within |',
-     &    'the     |for model'
+     &    '       |Power  |       |tration|lation |Heating|Cooling',
+     &    '|within |the     |for model'
           call edisp(itru,outsl)
           write(outsl,'(3a)')
      &    '                 |facing |facing |facing |facing |       |',
-     &    '       |       |       |       |       |       |zone   |',
-     &    'zone    |'
+     &    '       |       |       |       |       |       |       ',
+     &    '|zone   |zone    |'
           call edisp(itru,outsl)
         else
           write(outsl,'(3a)')
-     &    ' Zone      Period| Surface convection at face of |  Casual',
-     &    ' Gains (R+C)   |Air movement   | Environmental |Solar',
-     &    ' radiation |'
+     &    ' Zone      Period| Surface convection at face of | Casual',
+     &    ' Gains (Radiant+Conv)   |Air movement   | Environmental ',
+     &    '|Solar radiation |'
           call edisp(itru,outsl)
           write(outsl,'(3a)')
-     &    '           in    |   transparent |    opaque     |Occu-  |',
-     &    'Lights |Small  |Infil- |Venti- |   controls    |absorbd|',
-     &    'entering|'
+     &    '           in    |   transparent |    opaque     |Occu-  ',
+     &    '|Lights |Small  |Other  |Infil- |Venti- |   controls    ',
+     &    '|absorbd|entering|'
           call edisp(itru,outsl)
           write(outsl,'(3a)')
-     &    '           month |outside|other  |outside|other  |pant   |',
-     &    '       |Power  |tration|lation |Heating|Cooling|within |',
-     &    'the     |'
+     &    '           month |outside|other  |outside|other  |pant   ',
+     &    '|       |Power  |       |tration|lation |Heating|Cooling',
+     &    '|within |the     |'
           call edisp(itru,outsl)
           write(outsl,'(3a)')
-     &    '                 |facing |facing |facing |facing |       |',
-     &    '       |       |       |       |       |       |zone   |',
-     &    'zone    |'
+     &    '                 |facing |facing |facing |facing |       ',
+     &    '|       |       |       |       |       |       |       ',
+     &    '|zone   |zone    |'
           call edisp(itru,outsl)
         endif
       endif
@@ -938,7 +938,7 @@ C fraction of model base area for the zone.
       call edisp(itru,outs)
 
 C Loop for 13 topics and then each month.
-      DO 620 IJK=1,14
+      DO 620 IJK=1,15
         DO 610 IMNTH=1,12
           TVAL(IJK,IMNTH)=0.0
   610   CONTINUE
@@ -947,7 +947,7 @@ C Loop for 13 topics and then each month.
 C Per zone statistics.
       DO 660 KGET=1,NGET
         izn=IGETNO(KGET,2)
-        DO 621 IJK=1,14
+        DO 621 IJK=1,15
           VAL(IJK)=0.0
   621   CONTINUE
 
@@ -1024,13 +1024,13 @@ C << extend code to check for TDF and NCM data structures >>
 
             DO J2=ISTART,IEND
               call getallcas(JD,IZN,ISET,J2,QCASR,QCASC,QCASL,FRAC,
-     &          perocupc,perlightc,perequipc,otherc,perocupr,
-     &          perlightr,perequipr,otherr,perocupl,perlightl,
-     &          perequipl,otherl,theonectld)
+     &          perocupc,perlightc,perequipc,perotherc,perocupr,
+     &          perlightr,perequipr,perotherr,perocupl,perlightl,
+     &          perequipl,perotherl,theonectld)
               CASDAY(J2,1)=perocupc+perocupr ! Total occupant gain (W)
               CASDAY(J2,2)=perlightc+perlightr ! Total lighting gain (W)
               CASDAY(J2,3)=perequipc+perequipr ! Total small power gain (W)
-              CASDAY(J2,4)=otherc+otherr ! Total other gain (W)
+              CASDAY(J2,4)=perotherc+perotherr ! Total other gain (W)
             ENDDO
 
 C Pass across the occupant gains into gval and then filter and sum.
@@ -1057,38 +1057,46 @@ C Pass across the small power gains into gval and then filter and sum.
             CALL SUM1V(CQ,ISTART,IEND,SGT,SLT,IGT,IEQ,ILT)
             VAL(7)=VAL(7)+SGT+SLT
 
+C Pass across the other slot gains into gval and then filter and sum.
+            DO J2=ISTART,IEND
+              GVAL(J2)=CASDAY(J2,4)
+            ENDDO
+            CALL FLTIAV(JD,GVAL,CQ,NEL)
+            CALL SUM1V(CQ,ISTART,IEND,SGT,SLT,IGT,IEQ,ILT)
+            VAL(8)=VAL(8)+SGT+SLT
+
 C Infiltration.
             CALL GQV1(JD,IZN,ISET)
             CALL FLTIAV(JD,GVAL,CQ,NEL)
             CALL SUM1V(CQ,ISTART,IEND,SGT,SLT,IGT,IEQ,ILT)
-            VAL(8)=VAL(8)+SGT+SLT
+            VAL(9)=VAL(9)+SGT+SLT
 
 C Ventilation.
             CALL GQV2(JD,IZN,ISET)
             CALL FLTIAV(JD,GVAL,CQ,NEL)
             CALL SUM1V(CQ,ISTART,IEND,SGT,SLT,IGT,IEQ,ILT)
-            VAL(9)=VAL(9)+SGT+SLT
+            VAL(10)=VAL(10)+SGT+SLT
 
 C Convection portion of plant.
             CALL GZQM(JD,IZN,ISET)
             CALL FLTIAV(JD,GVAL,CQ,NEL)
             CALL SUM1V(CQ,ISTART,IEND,SGT,SLT,IGT,IEQ,ILT)
-            VAL(10)=VAL(10)+SGT
-            VAL(11)=VAL(11)+SLT
+            VAL(11)=VAL(11)+SGT
+            VAL(12)=VAL(12)+SLT
 
 C Solar absorbed in the zone.
             call GSOLABS(JD,IZN,ISET)
             CALL FLTIAV(JD,GVAL,CQ,NEL)
             CALL SUM1V(CQ,ISTART,IEND,SGT,SLT,IGT,IEQ,ILT)
-            VAL(12)=VAL(12)+SGT
+            VAL(13)=VAL(13)+SGT
 
 C Solar entering zone from outside.
             call GSOLX(JD,IZN,ISET)
             CALL FLTIAV(JD,GVAL,CQ,NEL)
             CALL SUM1V(CQ,ISTART,IEND,SGT,SLT,IGT,IEQ,ILT)
-            VAL(13)=VAL(13)+SGT
+            VAL(14)=VAL(14)+SGT
 
-C If dispersed demands (via VAL3 arrays) sum them to VAL(14).
+C If dispersed demands (via VAL3 arrays) sum them to VAL(15).
 C As dispersed demands are for whole model in the reporting
 C for each zone factor it by the base area of that zone.
             if(dmdsok)then
@@ -1099,9 +1107,9 @@ C for each zone factor it by the base area of that zone.
               ENDDO
               CALL FLTIAV(JD,GVAL,CQ,NEL)
               CALL SUM1V(CQ,ISTART,IEND,SGT,SLT,IGT,IEQ,ILT)
-              VAL(14)=VAL(14)+(SGT*zonem2frac(izn))
+              VAL(15)=VAL(15)+(SGT*zonem2frac(izn))
             else
-              VAL(14)=0.0
+              VAL(15)=0.0
             endif
 
           endif
@@ -1110,33 +1118,33 @@ C Check if month finished.
           IF(JD.LT.NDYMTH(IMNTH).AND.JD.NE.IODF)goto 650
 
 C Dump this month's statistics.
-          DO IJK=1,14
+          DO IJK=1,15
             VAL(IJK)=VAL(IJK)/1000.
           ENDDO
 
           if(dmdsok)then
-            looplimit=14
+            looplimit=15
           else
-            looplimit=13
+            looplimit=14
           endif
           IF(IMNTH.EQ.IOM1)THEN
             if(IR.eq.1)then
               WRITE(outsl,701)zname(IZN)(1:12),NMTHNM(IMNTH),
      &                      (VAL(IJ),IJ=1,looplimit)
-  701         FORMAT(1X,A12,1X,A3,1X,14F8.1)
+  701         FORMAT(1X,A12,1X,A3,1X,15F8.1)
             elseif(IR.eq.2)then
               WRITE(outsl,703)zname(IZN)(1:12),NMTHNM(IMNTH),
      &                      (VAL(IJ),IJ=1,looplimit)
-  703         FORMAT(1X,A12,1X,A3,1X,14F8.0)
+  703         FORMAT(1X,A12,1X,A3,1X,15F8.0)
             endif
             call eddisp(itru,outsl)
           ELSE
             if(IR.eq.1)then
               WRITE(outsl,702)NMTHNM(IMNTH),(VAL(IJ),IJ=1,looplimit)
-  702         FORMAT(14x,A3,1X,14F8.1)
+  702         FORMAT(14x,A3,1X,15F8.1)
             elseif(IR.eq.2)then
               WRITE(outsl,704)NMTHNM(IMNTH),(VAL(IJ),IJ=1,looplimit)
-  704         FORMAT(14x,A3,1X,14F8.0)
+  704         FORMAT(14x,A3,1X,15F8.0)
             endif
             call eddisp(itru,outsl)
           ENDIF
@@ -1151,22 +1159,22 @@ C Dump this month's statistics.
 
 C Dump 'all-zone' statistics if more than one zone.
       if(dmdsok)then
-        looplimit=14
+        looplimit=15
       else
-        looplimit=13
+        looplimit=14
       endif
       DO 680 IMNTH=IOM1,IOM2
         if (NZ.GT.1) then
           IF(IMNTH.EQ.IOM1)THEN
             write(outsl,705)NMTHNM(IMNTH),
      &        (TVAL(IJK,IMNTH),IJK=1,looplimit)
-  705       format(' All zones    ',A3,1X,14(F8.0))
+  705       format(' All zones    ',A3,1X,15(F8.0))
             call edisp(itru,' ')
             call eddisp(itru,outsl)
           ELSE
             write(outsl,706)NMTHNM(IMNTH),
      &        (TVAL(IJK,IMNTH),IJK=1,looplimit)
-  706       format(14X,A3,1X,14(F8.0))
+  706       format(14X,A3,1X,15(F8.0))
             call eddisp(itru,outsl)
           ENDIF
         endif
@@ -1182,19 +1190,19 @@ C Dump the annual totals if run was for more than one month.
 C Find if any of the annual totals is large enough to require 10 digits
 C otherwise write with 8 or 9 digits.
       if(dmdsok)then
-        looplimit=14
+        looplimit=15
       else
-        looplimit=13
+        looplimit=14
       endif
       if (IOM2.GT.IOM1) then
         if(biggest.gt.999999.0)then
-          write(outsl,'(A,14(F10.0))') ' Annual   ',
+          write(outsl,'(A,15(F10.0))') ' Annual   ',
      &      (VAL(IJK),IJK=1,looplimit)
         elseif(biggest.gt.99999.0.and.biggest.lt.999999.0)then
-          write(outsl,'(A,14(F9.0))')' Annual      ',
+          write(outsl,'(A,15(F9.0))')' Annual      ',
      &      (VAL(IJK),IJK=1,looplimit)
         else
-          write(outsl,'(A,14(F8.0))')' Annual           ',
+          write(outsl,'(A,15(F8.0))')' Annual           ',
      &      (VAL(IJK),IJK=1,looplimit)
         endif
         call edisp(itru,' ')
@@ -1213,9 +1221,8 @@ C otherwise write with 8 or 9 digits.
 
 C ******************** CZMRT ********************
 C CZMRT is a mid level routine to return one days temperatures
-C of zone mean radiant temperature.  Use VAL3(15,I) to VAL3(20,I)
-C for temporary storage. Returns value via XDUM1 in common block
-C GET2.
+C of zone mean radiant temperature. Returns value via XDUM1 
+C in common block GET2.
 C CALLS: GZTMS.
 
       SUBROUTINE CZMRT(IDAY,IZONE,ISET)
@@ -1250,9 +1257,7 @@ C CALLS: GZTMS.
 C ******************** CZRESL ********************
 
 C CZRESL is a mid level routine to return one day's values for
-C zone resultant temperature.  To save memory, use a portion of
-C VAL3(15,I) to VAL3(20,I) for temporary storage. Returns value
-C via XDUM1 in common GET2.
+C zone resultant temperature.  Returns value via XDUM1 in common GET2.
 C CALLS:  GZTMS.
 
       SUBROUTINE CZRESL(IDAY,IZONE,ISET)

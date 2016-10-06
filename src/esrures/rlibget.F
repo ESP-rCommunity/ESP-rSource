@@ -151,7 +151,7 @@ C GCASR is a low level routine to read zone casual radiant flux values
 C from the results library for a given day and zone.
 C Given IDAY, IZONE returns QCASR (within common GVAL) if save level 2 - 4.
 C CALLS: GFIXED
-
+C NOTE: icjump nzsur+1
       SUBROUTINE GCASR(IDAY,IZONE,ISET)
 #include "building.h"
 #include "geometry.h"
@@ -175,7 +175,7 @@ C GCASC is a low level routine to read zone casual convective flux values
 C from the results library for a given day and zone, ISAVE 2 - 4 only.
 C Given IDAY, IZONE returns values in the array QCASC (in common GVAL).
 C CALLS: GFIXED
-
+C NOTE: icjump nzsur+2
       SUBROUTINE GCASC(IDAY,IZONE,ISET)
 #include "building.h"
 #include "geometry.h"
@@ -198,7 +198,7 @@ C GZRH is a low level routine to read zone relative humidity values
 C from the results library for a given day and zone, ISAVE 2 - 4 only.
 C Given IDAY, IZONE returns values in common GVAL.
 C CALLS: GFIXED
-
+C NOTE: icjump nzsur+3
       SUBROUTINE GZRH(IDAY,IZONE,ISET)
 #include "building.h"
 #include "geometry.h"
@@ -221,7 +221,7 @@ C GZDP is a low level routine to read zone dew point values.
 C from the results library for a given day and zone, ISAVE 2 - 4 only.
 C Given IDAY, IZONE returns values in common GVAL.
 C CALLS: GFIXED
-
+C NOTE: icjump nzsur+3
       SUBROUTINE GZDP(IDAY,IZONE,ISET)
 #include "building.h"
 #include "geometry.h"
@@ -266,7 +266,7 @@ C GZLLH read zone humidification load from the results
 C library for a given day and zone, ISAVE 2 - 4 only.
 C Given IDAY, IZONE returns values in (in common GVAL).
 C CALLS: GFIXED
-
+C NOTE: icjump nzsur+4
       SUBROUTINE GZLLH(IDAY,IZONE,ISET)
 #include "building.h"
 #include "geometry.h"
@@ -297,7 +297,7 @@ C GZLLC reads zone dehumidification load from the results
 C library for a given day and zone, ISAVE 2 - 4 only.
 C Given IDAY, IZONE returns values in (in common GVAL).
 C CALLS: GFIXED
-
+C NOTE: icjump nzsur+4
       SUBROUTINE GZLLC(IDAY,IZONE,ISET)
 #include "building.h"
 #include "geometry.h"
@@ -328,7 +328,7 @@ C ******************** GZLL ********************
 C GZLL reads the zone latent load, ISAVE 2 - 4 only.
 C Given IDAY, IZONE returns values in (in common GVAL).
 C CALLS: GFIXED
-
+C NOTE: icjump nzsur+4
       SUBROUTINE GZLL(IDAY,IZONE,ISET)
 #include "building.h"
 #include "geometry.h"
@@ -353,7 +353,7 @@ C ******************** GZSPM1 ********************
 C GZSPM1 reads the special materials output, ISAVE 2 - 4 only.
 C Given IDAY, IZONE returns values in (in common GVAL).
 C CALLS: GFIXED
-
+C NOTE: icjump nzsur+6
       SUBROUTINE GZSPM1(IDAY,IZONE,ISET)
 #include "building.h"
 #include "geometry.h"
@@ -378,7 +378,7 @@ C ******************** GZSPM2 ********************
 C GZSPM2 reads the special materials output, ISAVE 2 - 4 only.
 C Given IDAY, IZONE returns values in (in common GVAL).
 C CALLS: GFIXED
-
+C NOTE: icjump nzsur+7
       SUBROUTINE GZSPM2(IDAY,IZONE,ISET)
 #include "building.h"
 #include "geometry.h"
@@ -549,7 +549,7 @@ C GTMCON is a low level routine to read control point temperature
 C from the results library for a given day and zone for ISAVE=1 - 4.
 C Given IDAY, IZONE returns values for each timestep in common GVAL.
 C CALLS: MOREC1 MOREC2
-
+C NOTE: icjump nzsur+5
       SUBROUTINE GTMCON(IDAY,IZONE,ISET)
 #include "building.h"
 #include "geometry.h"
@@ -574,7 +574,7 @@ C ******************** GOUTOPQ ********************
 C GOUTOPQ is a low level routine to read outside opaque convection
 C from the results library for a given day and zone for ISAVE=2 - 4.
 C Given IDAY, IZONE returns values for each timestep in common GVAL.
-
+C NOTE: icjump nzsur+6
       SUBROUTINE GOUTOPQ(IDAY,IZONE,ISET)
 #include "building.h"
 #include "geometry.h"
@@ -598,6 +598,7 @@ C ******************** GOUTTRN ********************
 C GOUTTRN is a low level routine to read outside trn convection
 C from the results library for a given day and zone for ISAVE=2 - 4.
 C Given IDAY, IZONE returns values for each timestep in common GVAL.
+C NOTE: icjump nzsur+7
 
       SUBROUTINE GOUTTRN(IDAY,IZONE,ISET)
 #include "building.h"
@@ -622,7 +623,7 @@ C ******************** GOPQIN ********************
 C GOPQIN is a low level routine to read inside opaque convection
 C from the results library for a given day and zone for ISAVE=2 - 4.
 C Given IDAY, IZONE returns values for each timestep in common GVAL.
-
+C NOTE: icjump nzsur+6
       SUBROUTINE GOPQIN(IDAY,IZONE,ISET)
 #include "building.h"
 #include "geometry.h"
@@ -646,7 +647,7 @@ C ******************** GTRNIN ********************
 C GTRNIN is a low level routine to read inside trn convection
 C from the results library for a given day and zone for ISAVE=2 - 4.
 C Given IDAY, IZONE returns values for each timestep in common GVAL.
-
+C NOTE: icjump nzsur+7
       SUBROUTINE GTRNIN(IDAY,IZONE,ISET)
 #include "building.h"
 #include "geometry.h"
@@ -695,6 +696,7 @@ C GQV1 is a low level routine to read zone infiltration
 C from the results library for a given day and zone, ISAVE 2 - 4 only.
 C Given IDAY, IZONE, ISFN  returns values at each timestep in common GVAL.
 C CALLS: GFIXED
+C NOTE: icjump nzsur+3
 
       SUBROUTINE GQV1(IDAY,IZONE,ISET)
 #include "building.h"
@@ -719,6 +721,7 @@ C GQV2 is a low level routine to read interzone ventilation
 C from the results library for a given day and zone, ISAVE 2 - 4 only.
 C Given IDAY, IZONE, ISFN  returns values at each timestep in common GVAL.
 C CALLS: GFIXED
+C NOTE: icjump nzsur+4
 
       SUBROUTINE GQV2(IDAY,IZONE,ISET)
 #include "building.h"
@@ -1161,7 +1164,7 @@ C GTBR reads flux associated with thermal bridges in a zone
 C from results library for a given day and zone.
 C Given IDAY, IZONE returns value at each time step in common GVAL.
 C CALLS: GFIXED
-
+C NOTE: icjump nzsur+12
       SUBROUTINE GTBR(IDAY,IZONE,ISET)
 #include "building.h"
 #include "geometry.h"
@@ -1191,7 +1194,7 @@ C GAIRSTOR reads heat stored in the zone air node (due to temp fluxuations)
 C from results library for a given day and zone.
 C Given IDAY, IZONE returns value at each time step in common GVAL.
 C CALLS: GFIXED
-
+C NOTE: icjump nzsur+12
       SUBROUTINE GAIRSTOR(IDAY,IZONE,ISET)
 #include "building.h"
 #include "geometry.h"
@@ -1469,7 +1472,8 @@ C Get only if save is level 4, then compute start record address.
         endif
 
 C Debug.
-C        write(6,*) 'GSURFB data at ',IDAY,IZONE,ISFN,ITS,TSout,qswrdi,
+C        write(6,'(a,4i3,17f8.2)') 'GSURFB data at ',
+C     &    IDAY,IZONE,ISFN,ITS,TSout,qswrdi,
 C     &    qlwrdi,qconvi,qcondi,qstori,qstore,qconde,qconve,
 C     &    qlwrde,qlwrbd,qlwrsk,qswrde,avqcrioc,avqcrili,
 C     &    avqcrisp,avqcrioth
@@ -1626,14 +1630,15 @@ C QCASR the total radiant of all gains
 C QCASC the total convective of all gains
 C QCASL the total latent of all gains
 C FRAC the fraction controlled (0.0-1.0)
-C perocupc,perlightc,perequipc,otherc: sensible con for occup lights equip other.
-C perocupr,perlightr,perequipr,otherr: sensible rad for occup lights equip other.
-C perocupl,perlightl,perequipl,otherl: latent for occup lights equip other.
+C perocupc,perlightc,perequipc,perotherc: sensible con for occup lights equip other.
+C perocupr,perlightr,perequipr,perotherr: sensible rad for occup lights equip other.
+C perocupl,perlightl,perequipl,perotherl: latent for occup lights equip other.
 C theonectld (integer index) if non-zero the index of the gain to control.
 
       SUBROUTINE getallcas(IDAY,IZ,ISET,ITS,QCASR,QCASC,QCASL,FRAC,
-     & perocupc,perlightc,perequipc,otherc,perocupr,perlightr,
-     & perequipr,otherr,perocupl,perlightl,perequipl,otherl,theonectld)
+     & perocupc,perlightc,perequipc,perotherc,perocupr,perlightr,
+     & perequipr,perotherr,perocupl,perlightl,perequipl,perotherl,
+     & theonectld)
 #include "building.h"
 #include "geometry.h"
       COMMON/FILEP/IFIL
@@ -1647,7 +1652,7 @@ C theonectld (integer index) if non-zero the index of the gain to control.
       real perocupc,perocupr,perocupl ! average occupant to write out
       real perlightc,perlightr,perlightl ! average lighting to write out
       real perequipc,perequipr,perequipl ! average equipment to write out
-      real otherc,otherr,otherl ! average other (future expansion) to write out
+      real perotherc,perotherr,perotherl ! average other to write out
       integer theonectld  ! if non-zero the casual gain type that is controlled.
       real X1,X2,X3,X4,X5
       DIMENSION XD(MS+7) ! for scanning past unneeded data
@@ -1668,26 +1673,27 @@ C Get ZTMS only if save is level 2 - 4.
         NN=NZSUR(IZ)
         NA=NZSUR(IZ)+7
         READ(IUNIT,REC=IREC,IOSTAT=IOS,ERR=1000) (XD(I),I=1,NA),
-     &    perocupc,perlightc,perequipc,otherc     
+     &    perocupc,perlightc,perequipc,perotherc     
         IREC=IREC+1
         READ(IUNIT,REC=IREC,IOSTAT=IOS,ERR=1000) (XD(I),I=1,NA),
-     &    perocupr,perlightr,perequipr,otherr
+     &    perocupr,perlightr,perequipr,perotherr
         IREC=IREC+1
         READ(IUNIT,REC=IREC,IOSTAT=IOS,ERR=1000) (XD(I),I=1,NN),
      &    QCASR,QCASC,X1,X2,FRAC,X3,X4,perocupl,perlightl,
-     &    perequipl,otherl,theonectld
+     &    perequipl,perotherl,theonectld
 
 C Make up QCASL from the separate latent gains.
-        QCASL=perocupl+perlightl+perequipl
+        QCASL=perocupl+perlightl+perequipl+perotherl
 
 C Dummy use of the temporary variables.
         X5=X1+X2+X3+X4+XD(1)
 
 C Debug.
-C        write(6,*) 'getallcas: ',IDAY,IZ,ISET,ITS,QCASR,QCASC,QCASL,
-C     &    FRAC,perocupc,perlightc,perequipc,otherc,
-C     &    perocupr,perlightr,perequipr,otherr,
-C     &    perocupl,perlightl,perequipl,otherl,theonectld
+C        write(6,'(a,4i3,16F6.1,i3)') 'getallcas: ',IDAY,IZ,ISET,ITS,
+C     &    QCASR,QCASC,QCASL,
+C     &    FRAC,perocupc,perlightc,perequipc,perotherc,
+C     &    perocupr,perlightr,perequipr,perotherr,
+C     &    perocupl,perlightl,perequipl,perotherl,theonectld
 
       ELSE
          call edisp(iuout,
@@ -1728,7 +1734,7 @@ C ISET is the results set number to be scanned.
 
       character outs*124
 
-      DIMENSION XD(MZS)
+      DIMENSION XD(MZS+12)
 
       IUNIT=IFIL
 
@@ -1811,10 +1817,6 @@ C Pre calculated data (not filtered).
 C Pre calculated data (filtered).
       common/MMAFDAT/IFILT,RDFMAX(MCOM,3,MZRL),RDFMIN(MCOM,3,MZRL),
      &    RDFAVE(MCOM,3,MZRL),RDTFMAX(MCOM,3,MZRL),RDTFMIN(MCOM,3,MZRL)
-
-C Signal that pre-scan has been used.
-      logical didprescan
-      common/MMAPRE/didprescan
 
       dimension DATA(3,MZRL),XD(MZRL)
       character outs*124
@@ -1918,7 +1920,7 @@ C Average filtered and non filtered data and compare to
 C current max/min values.
             ih=int(ATIME+1.)
             ioc=1
-            call getocup(IZONE,IDAY,ih,ioc,ier)
+            call getocup(IZONE,IDAY,ITS,ioc,ier)
             do 600 K=1,3
               do 610 KI=1,NZI
                 if (NOUT.gt.1) DATA(K,KI)=DATA(K,KI)/float(NOUT)

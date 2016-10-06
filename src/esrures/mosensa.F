@@ -267,7 +267,7 @@ C If there is occupancy filter and occupancy then include in check.
 C Assume fully occupied.
             ih=int(ATIME+1.)
             ioc=1
-            if(iocupf.eq.1) call getocup(IZONE,IDAY,ih,ioc,ier)
+            if(iocupf.eq.1) call getocup(IZONE,IDAY,J,ioc,ier)
             if(ioc.ne.0) then
               if (display) then
                 XTOTSD=XTOTSD+((XAVE-VAL2(IX,J))**2)
@@ -597,7 +597,7 @@ C If there is occupancy filter and occupancy then include in check.
 C Assume fully occupied.
           ih=int(ATIME+1.)
           ioc=1
-          if(iocupf.eq.1) call getocup(IZONE,IDAY,ih,ioc,ier)
+          if(iocupf.eq.1) call getocup(IZONE,IDAY,J,ioc,ier)
           if(ioc.ne.0) then
             if (ISCAN.eq.1) then
               if (IMET.eq.1) then
@@ -715,7 +715,7 @@ C If there is occupancy filter and occupancy then include in check.
 C Assume fully occupied.
           ih=int(ATIME+1.)
           ioc=1
-          if(iocupf.eq.1) call getocup(IZONE,IDAY,ih,ioc,ier)
+          if(iocupf.eq.1) call getocup(IZONE,IDAY,J,ioc,ier)
           if(ioc.ne.0) then
             if (IMET.eq.1) then 
               VHI=VAL(3,J)+sqrt(VAL(1,J))
@@ -757,7 +757,7 @@ C Assume fully occupied.
           IHRD=(IDAY-IODS)*24
           HR=(float(J)/float(NDTS))*24.0+float(IHRD)
           ioc=1
-          if(iocupf.eq.1) call getocup(IZONE,IDAY,ih,ioc,ier)
+          if(iocupf.eq.1) call getocup(IZONE,IDAY,J,ioc,ier)
           if(ioc.ne.0) then
             if (IMET.eq.1) then 
               VHI=VAL(3,J)+sqrt(VAL(1,J))
@@ -1020,7 +1020,7 @@ C If there is occupancy filter and occupancy then include in check.
 C Assume fully occupied.
             ih=int(ATIME+1.)
             ioc=1
-            if(iocupf.eq.1) call getocup(IZONE,IDAY,ih,ioc,ier)
+            if(iocupf.eq.1) call getocup(IZONE,IDAY,J,ioc,ier)
             if(ioc.ne.0) then
               if (IMET.eq.1.or.IMET.eq.3) then
                 YTOT(IX)=YTOT(IX)+(VAL2(IX,J)-VAL2(1,J))

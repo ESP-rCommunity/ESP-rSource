@@ -373,6 +373,12 @@ C Make up title of plot with the menu text selected.
       WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)ITITLX,ITITLY,ITITLZ
       IREC=IREC+1
       NXPNTS=24*NTS
+      if(NXPNTS.gt.100)then
+        call edisp(iuout,
+     &    'More than 100 data for X axis (timestep less than 15min)')
+        INO=-1
+        goto 3
+      endif
       NZPNTS=IODF-IODS+1
       WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)NXPNTS,NZPNTS
       IREC=IREC+1
@@ -1249,6 +1255,7 @@ C ******************** PLOT3E ********************
    80 INCI = -INCI
       IF (II .NE. 0)  II = NPNTS + 1
 
+C Need to test limits for the XDATA and YDATA array.
       DO 530 K = 1,NPNTS
         II=II + INCI
         GOTO  (90,100),INDX

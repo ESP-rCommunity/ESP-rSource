@@ -1164,12 +1164,10 @@ C Returns zone and sensor number via IZNSEL and ISFSEL respectively.
 
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
-      common/MRTC/NCUB,XOC(MCUB),YOC(MCUB),ZOC(MCUB),DXC(MCUB),
-     &            DYC(MCUB),DZC(MCUB),CANG(MCUB),IVFOK(MCUB),CUBN(MCUB)
 
       DIMENSION IV(60),IZLST(MCON),ISLST(MCON),ILZNO(MCON),ILSNO(MCON)
 
-      character ST(60)*22,outs*124,LMRT*72,CUBN*6
+      character ST(60)*22,outs*124,LMRT*72
 
 C For help messages
       character helpinsub*24   ! subroutine name
@@ -1182,15 +1180,15 @@ C For help messages
 
 C Create list of MRT sensors: loop through zones and read any view 
 C factor files remembering sensor names only.
-C Remember the total number os sensors.
+C Remember the total number of sensors.
       NTSEN=0
       do 10 I=1,NCOMP
         IF(IVF(I).EQ.1)THEN
           IUF=IFIL+1
           LMRT=LVIEW(I)
           call ERMRT(0,IUOUT,IUF,LMRT,I,IER)
-          if (NCUB.gt.0) then
-            do 20 J=1,NCUB
+          if (NCUB(I).gt.0) then
+            do 20 J=1,NCUB(I)
               NTSEN=NTSEN+1
               write (ST(NTSEN),'(a,a,a)') zname(I),':',CUBN(J)
               ILZNO(NTSEN)=I

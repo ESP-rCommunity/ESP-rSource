@@ -34,6 +34,7 @@ C time-dependent variables to be plotted for one or more zones.
 
       SUBROUTINE VWLIN
 #include "building.h"
+#include "prj3dv.h"
       
       integer lnblnk  ! function definition
 
@@ -45,10 +46,8 @@ C time-dependent variables to be plotted for one or more zones.
       COMMON/VGRAF2/NPICK,IVV,IVH,IVCON(MCOM),IVELT(MCOM),
      &              IVPOS(MCOM),IVNOD(MCOM),VPSAT(MCOM)
       COMMON/VGRAF3/CONVER
-      COMMON/RAY3/MODIFY,MODLEN,MODBND
       common/exporttg/xfile,tg,delim
       COMMON/EXPORTI/ixopen,ixunit,ixpunit
-      LOGICAL MODIFY,MODLEN,MODBND
 
       CHARACTER*24 ITEM(42)
       character VITEM*24,HITEM*24,xfile*144,tg*1,delim*1
@@ -61,7 +60,7 @@ C For help messages
 
       helpinsub='VWLIN'  ! set for subroutine
 
-      MODIFY=.FALSE.
+      MODIFYVIEW=.FALSE.
       VITEM=' '
       HITEM=' '
 
@@ -126,11 +125,11 @@ C Menu display.
 
 C In case the user has resized the display redraw
 C the image before presenting the command menu.
-    5 if(MODIFY)then
+    5 if(MODIFYVIEW)then
         CALL VGHED(VITEM,HITEM)
         CALL VGDRW(VITEM,HITEM)
         INO=-2
-        MODIFY=.FALSE.
+        MODIFYVIEW=.FALSE.
       endif
 
 C Instanciate help string arrays for this menu.

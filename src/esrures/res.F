@@ -107,7 +107,7 @@ C Path to model and command line file (if any).
       common/appcols/mdispl,nifgrey,ncset,ngset,nzonec
 
 C Comfort parameters and hash table.
-      common/cmftpar/WVEL,ACTL,CLO,iocut,iocuset,ioucpz(MCOM,72)
+      common/cmftpar/WVEL,ACTL,CLO,iocut,iocuset
 
 C Project journal on/off, unit number, cmd, file name.
       common/journopt/journio,iuj,journcmd,jfile
@@ -985,19 +985,19 @@ C Dummy routines from common3dv.F
       end
 
       subroutine chgeye(EVX,EVY,EVZ,VX,VY,VZ,EAN,JITZNM,JITSNM,JITVNO,
-     &   JITOBS,JITSNR,JITGRD,JITORG,DIS,JITBND,JITDSP,JITHLS,JITHLZ,
-     &   JITPPSW)
+     &   JITOBS,JITVIS,JITVOBJ,JITSNR,JITGRD,JITORG,GDIS,JITBND,JITDSP,
+     &   JITHLS,JITHLZ,JITPPSW)
 
 C Passed paramters.
       real EVX,EVY,EVZ,VX,VY,VZ,EAN,DIS
 
 C Depending on computer type set integer size of passed parameters.
 #ifdef OSI
-      integer JITZNM,JITSNM,JITVNO,JITOBS,JITSNR,JITGRD,JITORG
-      integer JITBND,JITDSP,JITHLS,JITHLZ,JITPPSW
+      integer JITZNM,JITSNM,JITVNO,JITOBS,JITVIS,JITVOBJ,JITSNR,JITGRD
+      integer JITORG,JITBND,JITDSP,JITHLS,JITHLZ,JITPPSW
 #else
-      integer*8 JITZNM,JITSNM,JITVNO,JITOBS,JITSNR,JITGRD,JITORG
-      integer*8 JITBND,JITDSP,JITHLS,JITHLZ,JITPPSW
+      integer*8 JITZNM,JITSNM,JITVNO,JITOBS,JITVIS,JITVOBJ,JITSNR
+      integer*8 JITGRD,JITORG,JITBND,JITDSP,JITHLS,JITHLZ,JITPPSW
 #endif     
       return
       end
@@ -1030,6 +1030,16 @@ C Depending on computer type set integer size of passed parameters.
       CHARACTER direc*1
       return
       end
+
+      subroutine Find_season_parameters()
+      return
+      end
+
+      SUBROUTINE BASESIMP_INPUTS(ICOMP,IER)
+      integer icomp,ier
+      return
+      end
+
 
 C In support of floating point exceptions. Comment out for NON SOLAIRS.
 #ifdef SUN
