@@ -2232,7 +2232,7 @@ echo " Installing standard databases. This may take some time."
 
    cd ${DATdir}/databases
    echo -n "   - Copying ASCII databases..."
-   cp components.db1 ccht_mlc.db multicon.db1 multicon.db2 multicon.db3 multicon.db4 north_american.constrdb optics.db1 optics.db2 optics.db3 ccht-optics.db1 mould.db1 pressc.db1 mscomp.db1 mscomp.db2 *.desc ${DESTdir}/esp-r/databases
+   cp components.db1 ccht_mlc.db multicon.db1 multicon.db2 multicon.db3 multicon.db4 multicon.db5 north_american.constrdb optics.db1 optics.db2 optics.db3 ccht-optics.db1 mould.db1 pressc.db1 mscomp.db1 mscomp.db2 *.desc ${DESTdir}/esp-r/databases
    echo " Done."
 
 fi
