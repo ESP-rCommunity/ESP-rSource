@@ -980,4 +980,12 @@ C Dummy subroutine needed to compile (called from library code).
       integer icomp,ier
       return
       end
+      
+      SUBROUTINE EDMLDB2(chgdb,ACTION,isel,IER)
+      logical chgdb
+      character*1 ACTION
+      integer isel,ier
+      ier=0
+      return
+      end
 

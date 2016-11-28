@@ -218,9 +218,9 @@ C Parse the GDESC string into string tokens.
         othacou='none'
         inacou='none'
         cnstimp='none'
-        write(itmenu(iit),'(a,20x)') mlcname(im)(1:lnblnk(mlcname(im)))
+        write(itmenu(iit),'(a)') mlcname(im)(1:lnmlcname(im))
         write(itdoc,'(3a)') 'construction ',
-     &    mlcname(im)(1:lnblnk(mlcname(im))),' is...'
+     &    mlcname(im)(1:lnmlcname(im)),' is...'
         call dstamp(dstmp)
         write(itdate(iit),'(a)') dstmp
 
@@ -1210,8 +1210,8 @@ C Look for index for MLCN in the current constructions file.
       WRITE(MLCN,'(A)')DES
       if(MLCN(1:4).eq.'UNKN') return
       do ii=1,nmlc
-        lndesc=lnblnk(mlcname(ii))
-        if(MLCN(1:lnmlcn).eq.mlcname(ii)(1:lndesc)) then
+        lnl=lnblnk(MLCN)
+        if(MLCN(1:lnl).eq.mlcname(ii)(1:lnmlcname(ii))) then
           imlcindex=ii   ! remember MLC index     
         endif
       end do
