@@ -367,6 +367,14 @@ C Passed paramters.
       ier=0
       return
       end
+      
+      SUBROUTINE EDMLDB2(chgdb,ACTION,isel,IER)
+      logical chgdb
+      character*1 ACTION
+      integer isel,ier
+      ier=0
+      return
+      end
 
       SUBROUTINE INLNST(ITYP)
       return
@@ -397,12 +405,11 @@ C Local variable.
 
 C Look for index for MLCN in the current constructions file.
       imlcindex=0  ! assume no matching MLC          
-      lnmlcn=lnblnk(DES)
       WRITE(MLCN,'(A)')DES
+      lnmlcn=lnblnk(MLCN)
       if(MLCN(1:4).eq.'UNKN') return
       do ii=1,nmlc
-        lndesc=lnblnk(mlcname(ii))
-        if(MLCN(1:lnmlcn).eq.mlcname(ii)(1:lndesc)) then
+        if(MLCN(1:lnmlcn).eq.mlcname(ii)(1:lnmlcname(ii))) then
           imlcindex=ii   ! remember MLC index     
         endif
       end do

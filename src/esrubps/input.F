@@ -768,7 +768,18 @@ C Use file unit IAPROB to read db.
       else
         write(currentfile,'(a)') lfmul(1:lnblnk(lfmul))
         CALL ERMLDB(0,iuout,IER)
-        if(IER.NE.0)then
+        IF(IER.eq.4)THEN
+          CALL ERMLDB2(0,iuout,IER)
+          if(IER.eq.0)then
+            MLDBOK=.TRUE.
+          else
+
+C Note: the databases are not actually referenced by bps. This is a non-
+C       critical error --- warn user and clear error flag
+            call usrmsg(outs,' ','W')
+            ier = 0 
+          endif
+        ELSEIF(IER.EQ.1.or.IER.eq.2.or.IER.eq.3)THEN
           outs='Problem during reading of construction database.'
           if(dll)then
             dllsubr='mzinpt'

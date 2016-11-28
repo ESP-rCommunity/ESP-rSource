@@ -4160,9 +4160,9 @@ C        write(6,*) 'desc', mlcname(ictl_constrdbindex_number)
 C        write(6,*) 'ssmlcn', SSMLCN(izstocn(icomp,ISURFNumber))
 
               write(ctl_constrdb_name,'(a)')
-     &             mlcname(ictl_constrdbindex_number)(1:12)
+     &             mlcname(ictl_constrdbindex_number)
               write(name_constr_ofStudy,'(a)')
-     &             SSMLCN(izstocn(icomp,ISURFNumber))(1:12)
+     &             SSMLCN(izstocn(icomp,ISURFNumber))
 
 C controls start here
 C<<< Consider changing ioan(1,1) in the future to ioan(iol,1)>>>>
