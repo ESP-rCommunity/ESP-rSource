@@ -227,11 +227,11 @@ C SDDEF002 - Composite constructions distribution definition.
       COMMON/UA31/MATNAM(MNCNG,2)
 
       integer matarrayindex ! the indes within matdatarray
-      logical closemat1,closemat2
+      logical closemat1,closemat2,modmlc
 
       CHARACTER NAM*72
       CHARACTER LELM(MMLC*ME)*36
-      CHARACTER MATNAM*12
+      CHARACTER MATNAM*32
 
       DIMENSION IVALE(MMLC*ME)
 
@@ -257,7 +257,12 @@ C Establish if material data arrays have been filled. If not return.
       endif
 
 C Composite constructions.
-      call EPKMLC(ISEL,'Which construction?','  ',IERR)
+      if(mlcver.eq.0)then
+        call EPKMLC(ISEL,'Which construction?','  ',IERR)
+      else
+        call edisp(iuout,'Which construction?')
+        CALL EDMLDB2(modmlc,'-',ISEL,IER)
+      endif
       
       helptopic='uncert_MLC'
       call gethelptext(helpinsub,helptopic,nbhelp)
@@ -267,7 +272,7 @@ C Check for errors - add to the total error counter if error has occured.
         IER=101
         return
       endif
-      write (MATNAM(ICDEF,1),'(a)') mlcname(ISEL)(1:12)
+      write (MATNAM(ICDEF,1),'(a)') mlcname(ISEL)
       call EASKAB('Which composite construction parameter? ','  ',
      &  'A materials thickness','Whole composite',IRT,nbhelp)
       if (IRT.eq.1) then

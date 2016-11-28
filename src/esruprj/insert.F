@@ -1233,7 +1233,7 @@ C VALOX,VALOY,VALOZ is the XYZ of the origin of the surface.
 C AANG is the azimuth in degrees.
 C DDX, DDZ length and width of rectangle.
 C sn (12 char) surface name
-C constr (12 char) the name of the construction for then new surface(s).
+C constr (32 char) the name of the construction for then new surface(s).
 C opt (12 char) the name of the optical set for the new surface(s).
 C IER is zero then no issue during creation, IER is -1 then user asked
 C   for new position, IER is -3 user aborted action.
@@ -1252,7 +1252,7 @@ C   for new position, IER is -3 user aborted action.
 
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
 
-      character constr*12,act*2,mode*1,OPT*12
+      character constr*32,act*2,mode*1,OPT*12
       character outs*124,SN*12
 
       DIMENSION  XXW(4),YYW(4),ZZW(4)  ! for the initial surface
@@ -1452,7 +1452,7 @@ C Remember the reverse order of vertices for matching surface.
       SOTHER(NSUR,3)='0'
       SPARENT(NSUR)='-'
 
-      WRITE(SMLCN(NSUR),'(A12)')constr(1:12)
+      WRITE(SMLCN(NSUR),'(A)')constr
       write(SOTF(NSUR),'(a)') OPT(1:12)
 
 C If version 1.1 of geometry specify the use of the surface.
@@ -1514,7 +1514,7 @@ C If SN is less than 12 characters add an _
         write(SOTHER(NSUR,3),'(i2.2)')INT(NSUR-1)
         SPARENT(NSUR)='-'
 
-        WRITE(SMLCN(NSUR),'(A12)')constr(1:12)
+        WRITE(SMLCN(NSUR),'(A)')constr
         write(SOTF(NSUR),'(a)') OPT(1:12)
 
 C If version 1.1 of geometry specify the use of the surface.
@@ -2180,7 +2180,7 @@ C Tollerance for surface matching.
       integer IACC ! number of matching corners outside dist tolerance
       common/matching/ANGCC,CACC,DACC,COGCC,SNACC,IACC
 
-      LOGICAL OK,dok,matchver
+      LOGICAL OK,dok,matchver,modmlc
       logical newgeo  ! to use for testing if new/old geometry file.
 
       DIMENSION  XX(MV),YY(MV),ZZ(MV)
@@ -2610,11 +2610,17 @@ C If in silent mode assign construction otherwise select.
         WRITE(SOTF(NSUR),'(A)')  rsotf(1:12)  ! only 1st 12 char
       else
         CALL EPMENSV
-        CALL EPKMLC(ISEL,'Select one of the constructions for the',
+        if(mlcver.eq.0)then
+          CALL EPKMLC(ISEL,'Select one of the constructions for the',
      &    'inserted surface. ',IER)
+        else
+          call edisp(iuout,
+     &      'Select a construction for inserted surface')
+          CALL EDMLDB2(modmlc,'-',ISEL,IER)
+        endif
         CALL EPMENRC
         IF(ISEL.GT.0)then
-          WRITE(SMLCN(NSUR),'(A12)') mlcname(ISEL)(1:12)
+          WRITE(SMLCN(NSUR),'(A)') mlcname(ISEL)
           IF(mlctype(ISEL)(1:4).NE.'OPAQ')SOTF(NSUR)='TRAN'
           IF(mlctype(ISEL)(1:4).EQ.'OPAQ')SOTF(NSUR)='OPAQUE'
           IF(mlctype(ISEL)(1:4).EQ.'CFC ')SOTF(NSUR)='CFC '

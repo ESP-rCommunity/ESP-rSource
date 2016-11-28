@@ -54,7 +54,7 @@ C ****** GTOPOL
       dimension ivals(MGRT)
       CHARACTER GMLCN*32,GSNAME*6,GTNAME*15,GTGEOM*72
       CHARACTER outs*124,ltmp*72,t15*15,ETEXT*82
-      logical XST,grmod,ok,dok
+      logical XST,grmod,ok,dok,modmlc
       integer nitms,INO ! max items and current menu item
 
 #ifdef OSI
@@ -240,10 +240,15 @@ C Now edit the composition.
           write(outs,'(3a)') 'Select construction for ',
      &    GSNAME(IS),' from the list (or exit to leave unknown).'
           CALL EPMENSV
-          CALL EPKMLC(ISEL,outs,'(or exit to leave unknown)',IERR)
+          if(mlcver.eq.0)then
+            CALL EPKMLC(ISEL,outs,'(or exit to leave unknown)',IERR)
+          else
+            call edisp(iuout,'(or exit to leave unknown)')
+            CALL EDMLDB2(modmlc,'-',ISEL,IER)
+          endif
           CALL EPMENRC
           IF(ISEL.GT.0.and.ierr.eq.0)then
-            WRITE(GMLCN(IS),'(A)') mlcname(ISEL)(1:12)
+            WRITE(GMLCN(IS),'(A)') mlcname(ISEL)
           else
             if(GMLCN(IS)(1:1).eq.' ')GMLCN(IS)='UNKNOWN'
           endif
@@ -253,7 +258,12 @@ C Now edit the composition.
           write(outs,'(2a)') 'Select construction attribute ',
      &      ' from the list (or exit to leave unknown).'
           CALL EPMENSV
-          CALL EPKMLC(ISEL,outs,'(or exit to leave unknown)',IERR)
+          if(mlcver.eq.0)then
+            CALL EPKMLC(ISEL,outs,'(or exit to leave unknown)',IERR)
+          else
+            call edisp(iuout,'(or exit to leave unknown)')
+            CALL EDMLDB2(modmlc,'-',ISEL,IER)
+          endif
           CALL EPMENRC
           IF(ISEL.GT.0.and.ierr.eq.0)then
             DO 10 L=1,NGT
@@ -264,7 +274,7 @@ C Now edit the composition.
      &        'Surface  composition',IER,nbhelp)
             do 11 i=1,inpick
               iss = ivals(i)
-              WRITE(GMLCN(ISS),'(A)') mlcname(ISEL)(1:12)
+              WRITE(GMLCN(ISS),'(A)') mlcname(ISEL)
   11        continue
             MODIFYVIEW=.TRUE.
             grmod=.true.
@@ -2402,6 +2412,7 @@ C IER=1 problem.
       CHARACTER GMLCN*32,GSNAME*6,GTNAME*15,GTGEOM*72
       integer IRT   ! for radio button
       integer MVERT,IVERT ! max items and current menu item
+      logical modmlc  ! to select MLC
 
 #ifdef OSI
       integer iupdown,isym,iix,iiy    ! passed to etplot
@@ -2925,11 +2936,17 @@ C following code is similar to that in addsur in edzone.f.
           endif
 
           CALL EPMENSV
-          CALL EPKMLC(ISEL,'Select one of the constructions for the',
+          if(mlcver.eq.0)then
+            CALL EPKMLC(ISEL,'Select one of the constructions for the',
      &      'inserted surface. ',IER)
+          else
+            call edisp(iuout,
+     &      'Select a construction for the inserted surface.')
+            CALL EDMLDB2(modmlc,'-',ISEL,IER)
+          endif
           CALL EPMENRC
           IF(ISEL.GT.0)then
-            WRITE(GMLCN(NGT),'(A)') mlcname(ISEL)(1:12)
+            WRITE(GMLCN(NGT),'(A)') mlcname(ISEL)
           endif
         endif
         if(LASTS.ne.NGT)then

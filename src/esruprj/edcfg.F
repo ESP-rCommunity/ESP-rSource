@@ -1682,8 +1682,10 @@ C Find the index of the MLC which matches each surface.
             DO 9994 I=1,NZSUR(icomp)
               icn1=izstocn(icomp,i)
               ssmlcindex(icn1)=0  ! assume no matching MLC          
+              lnssmlc=lnblnk(SSMLCN(icn1))
               do 5 ii=1,nmlc
-                if(SSMLCN(icn1)(1:12).eq.mlcname(ii)(1:12)) then
+                if(SSMLCN(icn1)(1:lnssmlc).eq.
+     &             mlcname(ii)(1:lnmlcname(ii))) then
                   ssmlcindex(icn1)=ii   ! remember MLC index     
                 endif
   5           continue
@@ -2769,7 +2771,10 @@ C database gets its name corrupted requiring a re-scan).
         call FINDFIL(lworking,XST)
         if(XST)then
           CALL ERMLDB(0,IUOUT,IER)
-        else
+          IF(IER.eq.4)THEN
+            CALL ERMLDB2(0,iuout,IER)
+          endif
+         else
 
 C Could not find Constructions db at this time, report to user.
           write(outs248,'(3a)') 'Constructions db ',
@@ -4098,8 +4103,10 @@ C Find the index of the MLC which matches each surface.
             icn1=izstocn(icomp,i)
             if(icn1.ge.1)then
               ssmlcindex(icn1)=0  ! assume no matching MLC          
+              lnssmlc=lnblnk(SSMLCN(icn1))
               do 5 ii=1,nmlc
-                if(SSMLCN(icn1)(1:12).eq.mlcname(ii)(1:12)) then
+                if(SSMLCN(icn1)(1:lnssmlc).eq.
+     &             mlcname(ii)(1:lnmlcname(ii)))then
                   ssmlcindex(icn1)=ii   ! remember MLC index     
                 endif
   5           continue

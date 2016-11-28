@@ -1260,8 +1260,8 @@ C Because many names may start similarly, check against actual widths.
           if(NMLC.gt.0)then                
             lstrs=lnblnk(anysurmat(NS))  ! surface attribute length
             DO 20 IC=1,NMLC
-              lstrd=lnblnk(mlcname(ic))
-              if(mlcname(ic)(1:lstrd).EQ.anysurmat(NS)(1:lstrs))ICF=IC
+              if(mlcname(ic)(1:lnmlcname(ic)).EQ.
+     &           anysurmat(NS)(1:lstrs))ICF=IC
   20        CONTINUE
           endif
 
@@ -1306,7 +1306,7 @@ C with the construction (TRAN is an ok mis-match).
                   else
                     write(outs,*) 'Optics ',WORD(1:lnow),
      &                ' in geo file does not match optics of the MLC ',
-     &                  mlcname(ICF)(1:12),' ',OPT(1:lno)
+     &                  mlcname(ICF)(1:lnmlcname(ICF)),' ',OPT(1:lno)
                     call edisp(iuout,outs)
                   endif
                 endif

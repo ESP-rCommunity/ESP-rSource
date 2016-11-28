@@ -471,7 +471,7 @@ C hasname (string array) the surface name for each surface (so fillsur does not 
       character act*2
       character subpath*84,sfile*144
       character icact*8,iwatt*8,afact*8,iflow*8,vflow*8
-      character sn*12,constr*12,opt*12,outs*124
+      character sn*12,constr*32,opt*12,outs*124
       LOGICAL browse,OKC,XST,unixok
       logical willneedtmc  !  if a tmc file will be required.
       logical closev       !  mass is close to vertical
@@ -679,7 +679,9 @@ C Also set ssmlcindex for this surface.
         imatch=0
         ssmlcindex(iccc)=0  ! assume no matching MLC          
         do 5 ii=1,nmlc
-          if(SMLCN(icc)(1:12).eq.mlcname(ii)(1:12)) then
+          lnssmlc=lnblnk(SMLCN(icc))
+          if(SMLCN(icc)(1:lnssmlc).eq.
+     &       mlcname(ii)(1:lnmlcname(ii)))then
             imatch=ii
             ssmlcindex(iccc)=ii   ! remember MLC index     
           endif
@@ -860,7 +862,9 @@ C and then see if it is opaque or transparent and copy out the relevant
 C section of the construction attributes.
             imatch=0
             do 56 ii=1,nmlc
-              if(rsmlcn(1:12).eq.mlcname(ii)(1:12)) then
+              lnssmlc=lnblnk(rsmlcn)
+              if(rsmlcn(1:lnssmlc).eq.
+     &           mlcname(ii)(1:lnmlcname(ii)))then
                 imatch=ii
               endif
  56         continue
@@ -947,8 +951,10 @@ C Loop thru all of the constructions to find the matching construction
 C and then see if it is opaque or transparent and copy out the relevant
 C section of the construction attributes.
             imatch=0
+            lnssmlc=lnblnk(rsmlcn)
             do 55 ii=1,nmlc
-              if(rsmlcn(1:12).eq.mlcname(ii)(1:12)) then
+              if(rsmlcn(1:lnssmlc).eq.
+     &           mlcname(ii)(1:lnmlcname(ii)))then
                 imatch=ii
               endif
  55         continue

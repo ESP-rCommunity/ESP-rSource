@@ -98,6 +98,7 @@ C end indices for each zone.
       logical trimmed,completed,unique,CLOSEX,CLOSEY,addinganother
       logical clx0,cly0,clx1,cly1,clxm1,clym1
       logical unixok
+      logical modmlc  ! for selecting MLC
 
 C Signal first entry to subroutine with justentered as true, once
 C an object has been saved the set justentered to false.
@@ -2642,11 +2643,16 @@ C          S12='blk_'
           CALL EASKR(blkopaq,' ',
      &     'Opacity of the obstruction 0=tran 1=opaque?',
      &      0.000,'W',1.0,'W',1.0,'opacity of obs base',IER,nbhelp)
-          CALL EPKMLC(ISEL,
+          if(mlcver.eq.0)then
+            CALL EPKMLC(ISEL,
      &      'Select an OPAQUE construction from the list to',
      &      'associate with the block for visualisation purposes.',IER)
+          else
+            call edisp(iuout,'Select an OPAQUE construction for block')
+            CALL EDMLDB2(modmlc,'-',ISEL,IER)
+          endif
           IF(ISEL.GT.0)then
-            WRITE(BLOCKMAT(IC,nbo),'(A)') mlcname(ISEL)(1:12)
+            WRITE(BLOCKMAT(IC,nbo),'(A)') mlcname(ISEL)
             LNBLOCKMAT(IC,nbo)=lnblnk(BLOCKMAT(IC,nbo))
           else
             WRITE(BLOCKMAT(IC,nbo),'(A)') 'UNKNOWN'

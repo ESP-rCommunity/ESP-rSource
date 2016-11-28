@@ -699,8 +699,8 @@ C If not currently sorted then warn the user. Sometimes this happens
 C even if modopr has not been set.
           if(.NOT.sorted)then
             if(ip3ver(icomp).eq.21)then
-	      continue  ! avoid attempting to source v21 file.
-	    else
+              continue  ! avoid attempting to source v21 file.
+            else
               DOK=.true.
               CALL ASKOK(
      &          'Before exiting do you wish to sort possible changes',
@@ -4830,7 +4830,7 @@ C If the user has asked for verbosity list out the result.
 
 C Because there is a small chance that the source file lacked fully
 C sorted casual gains (e.g. was an older file) force a sorting.
-      if(ip3ver(icomp).ge.21)then
+      if(ip3ver(isource).ge.21)then
         continue
       else
         call edisp(iuout,'Sorting imported casual gains...')

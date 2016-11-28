@@ -92,7 +92,7 @@ C Simulation parameter presets.
       CHARACTER NAM*72,outs*124
       character CLMLOC*30
       character ctldoc*248,LCTLF*72
-      character ZSDES*28,ZSDESC*20,ZSDESS*16,mlc_name*12
+      character ZSDES*28,ZSDESC*20,ZSDESS*16,mlc_name*32
       character dstmp*24
       CHARACTER LAPROB*72
 
@@ -614,8 +614,8 @@ C Scan for materials.
       DO 20 INO=1,NMLC
 
 C Loop through each construction in the database, check if it
-C is used in the model and if so proceed to check.
-        mlc_name=mlcname(ino)(1:12)
+C is used in the model and if so proceed to check. Currently ...
+        mlc_name=mlcname(ino)
         call mlcrefs(mlc_name,areamlc,tareamlc,foundmlc)
         if(.NOT.foundmlc) goto 20
 
@@ -677,8 +677,13 @@ C If not already known add it to the list.
               iij=iij+1
               iprndx(iij)=IPRMAT(INO,IL)
               thkiprndx(iij)=DTHK(ino,IL)
-              deniprndx(iij)=matdbden(iprndx(iij))
-              sphtiprndx(iij)=matdbsht(iprndx(iij))
+              if(iprndx(iij).ne.0)then
+                deniprndx(iij)=matdbden(iprndx(iij))
+                sphtiprndx(iij)=matdbsht(iprndx(iij))
+              else
+                deniprndx(iij)=0.0
+                sphtiprndx(iij)=0.0
+              endif
               if(opt(1:6).eq.'OPAQUE')then
                 iglassndx(iij)=0
                 optndx(iij)=OPT
@@ -719,8 +724,13 @@ C First material (which will never be air).
             iij=iij+1
             iprndx(iij)=IPRMAT(INO,IL)
             thkiprndx(iij)=DTHK(ino,IL)
-            deniprndx(iij)=matdbden(iprndx(iij))
-            sphtiprndx(iij)=matdbsht(iprndx(iij))
+            if(iprndx(iij).ne.0)then
+              deniprndx(iij)=matdbden(iprndx(iij))
+              sphtiprndx(iij)=matdbsht(iprndx(iij))
+            else
+              deniprndx(iij)=0.0
+              sphtiprndx(iij)=0.0
+            endif
             if(opt(1:6).eq.'OPAQUE')then
               iglassndx(iij)=0
               optndx(iij)=OPT
@@ -877,7 +887,7 @@ C and assign iconmatpointer for each layer.
 
 C Loop through each construction in the database, check if it
 C is used in the model and if so proceed to check.
-        mlc_name=mlcname(ino)(1:12)
+        mlc_name=mlcname(ino)
         call mlcrefs(mlc_name,areamlc,tareamlc,foundmlc)
         if(.NOT.foundmlc) goto 200
 
@@ -940,7 +950,7 @@ C Now for each construction.
       do 36 ino = 1,NMLC
         cxm=0.0
         mlckg=0.0
-        mlc_name=mlcname(ino)(1:12)
+        mlc_name=mlcname(ino)
         call mlcrefs(mlc_name,areamlc,tareamlc,foundmlc)
         if(.NOT.foundmlc) goto 36
 

@@ -5692,6 +5692,8 @@ C flow connections.It is assumed that the user will make one selection only.
 #include "plant.h"
 #include "epara.h"
 #include "control.h"
+#include "esprdbfile.h"
+#include "material.h"
 #include "CFC_common.h"
       COMMON/OUTIN/IUOUT,IUIN
       
@@ -5716,6 +5718,7 @@ C flow connections.It is assumed that the user will make one selection only.
       integer ian1T,ian2T,ian3T,ilayt  ! local variable for editing.
       logical vb_xst ! local variable to check if slat type blind exists in CFC
       logical shd_xst ! local variable to check if shading alyer exists in CFC
+      logical modmlc  ! to select MLC
       integer MVERT,IVERT ! max items and current menu item
 
 C For help messages
@@ -6000,7 +6003,12 @@ C and the third can be 0
      &        'datasets of the first control loop are used.'
         call edisp(iuout,outs)
         CALL EPMENSV
-        call epkmlc(iwhich,'Construction to control?',' ',ierr)
+        if(mlcver.eq.0)then
+          call epkmlc(iwhich,'Construction to control?',' ',ierr)
+        else
+          call edisp(iuout,'Construction to control?')
+          CALL EDMLDB2(modmlc,'-',iwhich,IER)
+        endif
         CALL EPMENRC
         if(iwhich.ne.0)then
           ian1=-5

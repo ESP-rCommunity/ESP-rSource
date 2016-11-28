@@ -260,8 +260,8 @@ C go through CFC constructions and ask user to assign type for each one,
           H(5)=' http://uwspace.uwaterloo.ca'
           H(6)=' /bitstream/10012/4164/1/Lomanowski_Bartosz.pdf'
 
-          write(outs,'(A,A,A,A)')'Surface: ',SSNAME(icn1),
-     &          'Constr: ',SSMLCN(icn1)
+          write(outs,'(4A)')'Surface: ',SSNAME(icn1),
+     &      'Constr: ',SSMLCN(icn1)
           CALL EASKI(itype,'CFC type for: ',outs,1,'F',
      &    ncfctypes,'F',ncfccount,'CFC type',IER,1)
           if(IER.EQ.-3)GOTO 99
@@ -1712,8 +1712,9 @@ C Reporting.
         CALL EDISP(ITRU,' Name         Description  TRAN/CFC Reference')
         DO 31, ISR=1,NS
           icn=izstocn(icomp,isr)
-          WRITE(OUTS,'(1X,A12,2X,A12,2X,A4,I5)')SSNAME(icn),
-     &      SSMLCN(icn)(1:12),SSOTF(icn)(1:4),icfcfl(icomp,isr)
+          lnsmlcn=lnblnk(SSMLCN(ICN))
+          WRITE(OUTS,'(1X,A,2X,A,2X,A,I5)')SSNAME(icn),
+     &      SSMLCN(icn)(1:lnsmlcn),SSOTF(icn)(1:4),icfcfl(icomp,isr)
           CALL EDISP(ITRU,OUTS)
    31   CONTINUE
       ENDIF

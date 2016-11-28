@@ -930,8 +930,13 @@ C If the common block MLC has not yet been filled then read in the
 C composite construction database.
       IF(.NOT.MLDBOK)THEN
         CALL ERMLDB(ITRC,ITRU,IER)
-        IF(IER.NE.0)THEN
-          CALL USRMSG(' ',' Unable to display information','-')
+        IF(IER.eq.4)THEN
+          CALL ERMLDB2(0,iuout,IER)
+          if(IER.eq.0)then
+            MLDBOK=.TRUE.
+          endif
+        ELSEIF(IER.EQ.1.or.IER.eq.2.or.IER.eq.3)THEN
+          CALL USRMSG(' ',' Unable to display selections ','W')
           IER=IER+1
           RETURN
         ELSE

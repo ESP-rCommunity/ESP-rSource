@@ -225,7 +225,7 @@ C Remember if each zone is fully attributed.
       character aok*17,CTLDOC*248,LCTLF*72
       character xfile*144,tg*1,delim*1,head*21
       character outs*124,outs248*248
-      character dstmp*24,mlc_name*12
+      character dstmp*24,mlc_name*32
       CHARACTER LAPROB*72,LPNF*72
       CHARACTER NDNAM*12,TOPTIC*12,msg*28,doit*248
       character t16a*16,t16b*16,t16c*16
@@ -288,10 +288,11 @@ C in the current model. A -1 means not applicable
       integer NITMS   ! max items
       integer im,k,mnulen   ! multi column lines
       integer lr      ! length of model root string
-      integer iglib  ! for detecting GTK or X11
-      integer iitrc  ! for passing verbosity
-      integer imlc   ! loop for MLC reporting
-      logical odd   ! for display of vertex info
+      integer iglib   ! for detecting GTK or X11
+      integer iitrc   ! for passing verbosity
+      integer imlc    ! loop for MLC reporting
+      logical odd     ! for display of vertex info
+      integer lnsmlcn,lnl ! char lengths
       
       INTEGER :: i,icc,icoth,ie,ieripv,irec,iprb,inv
       INTEGER :: ins4,ino,imerr,ilcot,ijk,ij,ii,igrdp
@@ -407,6 +408,9 @@ C database gets its name corrupted requiring a re-scan).
         call FINDFIL(lworking,XST)
         if(XST)then
           CALL ERMLDB(0,IUOUT,IER)
+          IF(IER.eq.4)THEN
+            CALL ERMLDB2(0,iuout,IER)
+          endif
         else
 
 C Could not find Constructions db at this time, report to user.
@@ -826,8 +830,8 @@ C Generate report sorted by surface attributes.
         elseif(ins4.eq.2)then
           call edisp(itu,' Filtering for UNKNOWN surface composition.')
         elseif(ins4.eq.3)then
-          write(outs,'(3a)') ' Filtering for ',mlcname(ISEL)(1:12),
-     &      ' composition.'
+          write(outs,'(3a)') ' Filtering for ',
+     &      mlcname(ISEL)(1:lnmlcname(ISEL)),' composition.'
           call edisp(itu,outs)
         endif
         if(ins1.eq.1)then
@@ -934,8 +938,10 @@ C 'any horizontal','any orien.','cancel'.
               elseif(ins4.eq.2)then
                 if(SSMLCN(icc)(1:4).ne.'UNKN')apply=.false.
               elseif(ins4.eq.3)then
-                if(SSMLCN(icc)(1:4).eq.'UNKN')apply=.false. 
-                if(SSMLCN(icc)(1:12).ne.mlcname(ISEL)(1:12))then
+                if(SSMLCN(icc)(1:4).eq.'UNKN')apply=.false.
+                lnsmlcn=lnblnk(SSMLCN(icc))
+                if(SSMLCN(icc)(1:lnsmlcn).ne.
+     &             mlcname(ISEL)(1:lnmlcname(ISEL)))then
                   apply=.false.
                 endif
               endif
@@ -945,8 +951,8 @@ C 'any horizontal','any orien.','cancel'.
                 lsn10=MIN0(lnblnk(sn),10)
                 lzn10=MIN0(lnblnk(zn),10)
                 write(head,'(3a)') zn(1:lzn10),':',sn(1:lsn10)
-                WRITE(outs,'(a,1X,F7.2,F6.1,F6.1,1X,A4,
-     &            1X,A4,1X,A12,1X,A13)') head,SSNA(icc),SSPAZI(icc),
+                WRITE(outs,'(a,1X,F7.2,F6.1,F6.1,1X,A,
+     &            1X,A,1X,A,1X,A)') head,SSNA(icc),SSPAZI(icc),
      &            SSPELV(icc),SSOTF(icc),SSVFC(icc),SSMLCN(icc),
      &            SSOTHER(icc,1)
                 call edisp(itu,outs)
@@ -1684,7 +1690,7 @@ C Obtain transparent surface index (>0) related to PV module location.
      &        SSMLCN(izstocn(ivals(ispmloc(ispm,1)),ispmloc(ispm,2))),
      &        ispmloc(ispm,3),
      &        (merge('Trn','Opq',iTMCidx.gt.0)),nnodat(ispm)
- 1111       FORMAT(1X,I3,1X,A16,1X,A12,1X,A12,1X,A12,1X,I3,3X,A3,3X,I3)
+ 1111       FORMAT(1X,I3,1X,A,1X,A,1X,A,1X,A,1X,I3,3X,A,3X,I3)
             CALL EDISP(itu,OUTS)
 
   33      continue ! loop through all spm entries
@@ -2457,13 +2463,15 @@ C While looping check that constructions of partitions are matching.
 
 C If the current construction is nonsymmetric then it should not be
 C used for a partition (and db does not have a linked MLC - inform the user.
+              lnsmlcn=lnblnk(SSMLCN(icc))
               write(outs,'(5a)') 'Surface ',SN(1:lnblnk(SN)),
      &          ' has a nonsymmetric construction ',
-     &          SSMLCN(icc)(1:lnblnk(SSMLCN(icc))),'.'
+     &          SSMLCN(icc)(1:lnsmlcn),'.'
               call edisp(itu,outs)
+              lnsmlcn=lnblnk(SSMLCN(icoth))
               write(outs,'(5a)') 'It faces ',
      &          SSNAME(icoth),' which is composed of ',
-     &          SSMLCN(icoth)(1:12),' (which may not match).'
+     &          SSMLCN(icoth)(1:lnsmlcn),' (which may not match).'
               call edisp(itu,outs)
             else
               continue
@@ -2674,7 +2682,7 @@ C Debug.
 C        write(6,*) 'nmlc is ',nmlc,databaseinfo
         do imlc=1,nmlc
           found=.false.
-          mlc_name=mlcname(imlc)(1:12)
+          write(mlc_name,'(a)') mlcname(imlc)(1:lnmlcname(imlc))
           call mlcrefs(mlc_name,areamlc,tareamlc,found)
           if(found)then
             if(databaseinfo.eq.2)then
@@ -3404,7 +3412,9 @@ C Check the U value for each surface.
 C << possible place to use ssmlcindex >>
 
             do 511 ii=1,nmlc
-              if(SSMLCN(icc)(1:12).eq.mlcname(ii)(1:12)) then
+              lnssmlc=lnblnk(SSMLCN(icc))
+              if(SSMLCN(icc)(1:lnssmlc).eq.
+     &           mlcname(ii)(1:lnmlcname(ii)))then
 
 C Recover the ISO 6946 U values for horizontal, upwards and downwards
 C flow as well as internal partition (horizontal 0.13 both sides).
@@ -3414,7 +3424,7 @@ C the U and UA reporting below.
                 call etmldbu(0,itu,ii,UVH,UVU,UVD,UVI,UVG)
 
 C Debug.
-C                write(6,*) mlcname(ii)(1:12),'ii UVH UVU UVD UVI UVG',
+C                write(6,*) mlcname(ii)(1:lnmlcname(ii)),'ii UVH UVU UVD UVI UVG',
 C     &            ii,UVH,UVU,UVD,UVI,UVG
 
               else
@@ -3461,7 +3471,7 @@ C For floors facing outside assume downward hc coef.
                   xuavwall = xuavwall + (SSNA(icc) * UVD)
                 endif
               elseif(SSOTF(icc)(1:4).ne.'OPAQ'.and.
-     &               SSOTF(ioc)(1:4).ne.'CFC '.and.
+     &               SSOTF(icc)(1:4).ne.'CFC '.and.
      &               SSOTF(icc)(1:4).ne.'CFC2')then
                 if(SSVFC(icc)(1:4).eq.'CEIL'.or.
      &             SSVFC(icc)(1:4).eq.'SLOP')then

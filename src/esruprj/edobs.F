@@ -69,6 +69,7 @@ C LPRFDB,IPRODB (for event profile database)
       logical anothercopy  ! logical true if user has copied a block
       integer llbm,llbn  ! for length of block material and name
       logical havesaved  ! to signal zone file written
+      logical modmlc     ! for selecting MLC
       integer IW  ! for radio button
       integer MVERT,IVERT ! max items and current menu item
       real angr   ! rotation angle
@@ -353,10 +354,18 @@ C Offset is thickness + 5mm, block other dimension is 10mm.
 C Material to associate with the reveal.
 C << extend string mat at some point to 32 char >>
           CALL EPMENSV
-          CALL EPKMLC(ISEL,
+          if(mlcver.eq.0)then
+            CALL EPKMLC(ISEL,
      &      'Select an OPAQUE construction from the list to',
      &      'associate with the reveal for visualisation purposes.',IER)
+          else
+            call edisp(iuout,
+     &      'Select an OPAQUE construction to associate with the block')
+            CALL EDMLDB2(modmlc,'-',ISEL,IER)
+          endif
           CALL EPMENRC
+
+C << TODO mat and EREVEAL need to be updated to 32 char >>
           IF(ISEL.GT.0)then
             WRITE(mat,'(A12)') mlcname(ISEL)(1:12)
           else
@@ -1075,6 +1084,7 @@ C Parameters
       logical newgeo  ! to use for testing if new/old geometry file.
       logical close   ! to see if non-zero block elevation.
       logical havesaved  ! to signal zone file written
+      logical modmlc  ! to pick MLC
       integer llbm    ! length for material
       real top        ! for the highest point of the block
       integer NITMS,IVERT ! max items and current menu item
@@ -1416,12 +1426,18 @@ C If newer geometry file offer a 2nd axis of rotation.
 
 C Note: this logic only picks up the first 12 char of construction.
           CALL EPMENSV
-          CALL EPKMLC(ISEL,
+          if(mlcver.eq.0)then
+            CALL EPKMLC(ISEL,
      &      'Select an OPAQUE construction from the list to',
      &      'associate with the block for visualisation purposes.',IER)
+          else
+            call edisp(iuout,
+     &      'Select an OPAQUE construction to associate with the block')
+            CALL EDMLDB2(modmlc,'-',ISEL,IER)
+          endif
           CALL EPMENRC
           IF(ISEL.GT.0)then
-            WRITE(BLOCKMAT(icomp,IB),'(A)') mlcname(ISEL)(1:12)
+            WRITE(BLOCKMAT(icomp,IB),'(A)') mlcname(ISEL)
             LNBLOCKMAT(icomp,IB)=lnblnk(BLOCKMAT(icomp,IB))
             MODIFYVIEW=.TRUE.
           else
@@ -1630,12 +1646,18 @@ C Interface options if a general polygon obstruction.
 
 C Note: this logic only picks up the first 12 char of construction.
           CALL EPMENSV
-          CALL EPKMLC(ISEL,
+          if(mlcver.eq.0)then
+            CALL EPKMLC(ISEL,
      &      'Select an OPAQUE construction from the list to',
      &      'associate with the block for visualisation purposes.',IER)
+          else
+            call edisp(iuout,
+     &      'Select an OPAQUE construction to associate with the block')
+            CALL EDMLDB2(modmlc,'-',ISEL,IER)
+          endif
           CALL EPMENRC
           IF(ISEL.GT.0)then
-            WRITE(BLOCKMAT(icomp,IB),'(A)') mlcname(ISEL)(1:12)
+            WRITE(BLOCKMAT(icomp,IB),'(A)') mlcname(ISEL)
             LNBLOCKMAT(icomp,IB)=lnblnk(BLOCKMAT(icomp,IB))
             MODIFYVIEW=.TRUE.
           else
@@ -2837,6 +2859,7 @@ C Parameters
       logical newgeo  ! to use for testing if new/old geometry file.
       logical close   ! to see if non-zero elevation.
       logical havesaved  ! to signal zone file written
+      logical modmlc  ! to select MLC
       integer llbm    ! length for material
       real top        ! for the highest point of the visual entity
       integer NITMS,IVERT ! max items and current menu item
@@ -3148,12 +3171,18 @@ C via epkvert.
 
 C Note: this logic only picks up the first 12 char of construction.
           CALL EPMENSV
-          CALL EPKMLC(ISEL,
+          if(mlcver.eq.0)then
+            CALL EPKMLC(ISEL,
      &      'Select an OPAQUE construction from the list to',
      &      'associate with the entity and pass to Radiance.',IER)
+          else
+            call edisp(iuout,
+     &      'Select an OPAQUE construction to associate with the block')
+            CALL EDMLDB2(modmlc,'-',ISEL,IER)
+          endif
           CALL EPMENRC
           IF(ISEL.GT.0)then
-            WRITE(VISMAT(icomp,IB),'(A)') mlcname(ISEL)(1:12)
+            WRITE(VISMAT(icomp,IB),'(A)') mlcname(ISEL)
             LNVISMAT(icomp,IB)=lnblnk(VISMAT(icomp,IB))
             MODIFYVIEW=.TRUE.
           else
@@ -3352,12 +3381,18 @@ C Interface options if a general polygon visual.
 
 C Note: this logic only picks up the first 12 char of construction.
           CALL EPMENSV
-          CALL EPKMLC(ISEL,
+          if(mlcver.eq.0)then
+            CALL EPKMLC(ISEL,
      &      'Select an OPAQUE construction from the list to',
      &      'associate with the entity for visualisation purposes.',IER)
+          else
+            call edisp(iuout,
+     &      'Select an OPAQUE construction to associate with the block')
+            CALL EDMLDB2(modmlc,'-',ISEL,IER)
+          endif
           CALL EPMENRC
           IF(ISEL.GT.0)then
-            WRITE(VISMAT(icomp,IB),'(A)') mlcname(ISEL)(1:12)
+            WRITE(VISMAT(icomp,IB),'(A)') mlcname(ISEL)
             LNVISMAT(icomp,IB)=lnblnk(VISMAT(icomp,IB))
             MODIFYVIEW=.TRUE.
           else

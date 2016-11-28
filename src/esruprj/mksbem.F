@@ -4999,8 +4999,10 @@ C        write(6,*) icomp,NZSUR(icomp),nmlc
         DO 9994 I=1,NZSUR(icomp)
           icn1=izstocn(icomp,i)
           ssmlcindex(icn1)=0  ! assume no matching MLC          
+          lnssmlc=lnblnk(SSMLCN(icn1))
           do 5 ii=1,nmlc
-            if(SSMLCN(icn1)(1:12).eq.mlcname(ii)(1:12)) then
+            if(SSMLCN(icn1)(1:lnssmlc).eq.
+     &         mlcname(ii)(1:lnmlcname(ii)))then
               ssmlcindex(icn1)=ii   ! remember MLC index     
             endif
   5       continue
@@ -6595,8 +6597,10 @@ C      write(6,*) icomp,NZSUR(icomp),nmlc
       DO 9994 I=1,NZSUR(icomp)
         icn1=izstocn(icomp,i)
         ssmlcindex(icn1)=0  ! assume no matching MLC          
+        lnssmlc=lnblnk(SSMLCN(icn1))
         do 5 ii=1,nmlc
-          if(SSMLCN(icn1)(1:12).eq.mlcname(ii)(1:12)) then
+          if(SSMLCN(icn1)(1:lnssmlc).eq.
+     &       mlcname(ii)(1:lnmlcname(ii)))then
             ssmlcindex(icn1)=ii   ! remember MLC index     
           endif
   5     continue
@@ -10260,8 +10264,10 @@ c      EXP_COND=0.   ! External envelope conductance W/K
           if(TMPSTR(1:8).eq.'EXTERIOR'.OR.TMPSTR(1:6).EQ.'GROUND')then
 
 C Recover the ISO 6946 U values as in prjqa.F.
+           lnssmlc=lnblnk(SSMLCN(icc))
             do 7511 ii=1,nmlc
-              if(SSMLCN(icc)(1:12).eq.mlcname(ii)(1:12))then
+              if(SSMLCN(icc)(1:lnssmlc).eq.
+     &           mlcname(ii)(1:lnmlcname(ii)))then
                 call etmldbu(0,itu,ii,UVH,UVU,UVD,UVI,UVG)
               endif
  7511       continue

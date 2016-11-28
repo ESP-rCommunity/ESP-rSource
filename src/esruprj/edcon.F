@@ -430,9 +430,14 @@ C current menu line index. Build up text strings for the menu.
             optic=' - '
           endif
           icn1=izstocn(icomp,L)
-          WRITE(VERT(M),14)KEY,SSNAME(icn1),SSOTF(icn1)(1:4),
-     &      SSMLCN(icn1)(1:12),OPTIC
-   14     FORMAT(A1,1X,A12,1X,A4,1X,A12,1X,A12)
+          lnsmlcn=lnblnk(SSMLCN(icn1))
+          if(lnsmlcn.gt.16) lnsmlcn=16
+          lnsn=lnblnk(SSNAME(icn1))
+          lnop=lnblnk(OPTIC)
+          WRITE(VERT(M),14)KEY,SSNAME(icn1)(1:lnsn),
+     &      SSOTF(icn1)(1:4),
+     &      SSMLCN(icn1)(1:lnsmlcn),OPTIC(1:lnop)
+   14     FORMAT(A,2X,A,2X,A,2X,A,1X,A)
         ENDIF
    10 CONTINUE
 
@@ -441,18 +446,18 @@ C Number of actual items displayed.
 
 C If a long list include page facility text.
       IF(IPFLG.EQ.0)THEN
-        VERT(M+1)='  _____________________________   '
+        VERT(M+1)='  ________________________________   '
       ELSE
         WRITE(VERT(M+1),15)IPM,MPM
    15   FORMAT   ('0 Page ---- Part: ',I2,' of ',I2,' -----')
       ENDIF
-      VERT(1)    ='  Surface      Type  Composition  Optics'
-      VERT(M+2)  ='1 list construction details             '
-      VERT(M+3)  ='2 transparent layer properties          '
-      VERT(M+4)  ='3 linear thermal conductivity           '
-      VERT(M+5)  ='> save construction data                '
-      VERT(M+6)  ='? help                                  '
-      VERT(M+7)  ='- exit this menu                        '
+      VERT(1)    ='  Surface      Type  Composition   Optics'
+      VERT(M+2)  ='1 list construction details              '
+      VERT(M+3)  ='2 transparent layer properties           '
+      VERT(M+4)  ='3 linear thermal conductivity            '
+      VERT(M+5)  ='> save construction data                 '
+      VERT(M+6)  ='? help                                   '
+      VERT(M+7)  ='- exit this menu                         '
 
 C If editing the constructions and user has asked whether to save or
 C has resized the display, redraw.
@@ -747,7 +752,7 @@ C Optical and geometric properties.
 C Material properties.
       integer matarrayindex ! the indes within matdatarray
 
-      LOGICAL closemat1,closemat2
+      LOGICAL closemat1,closemat2,modmlc
 
 C CFClayers db properties
       integer cfcarrayindex
@@ -803,7 +808,7 @@ C Setup text for menu.
       else
         WRITE(ISD(2),'(A,A)') 'a optical set name: ',SSOTF(icn1)(1:12)
       endif
-      write(ISD(3),'(A,A)') 'b construction    : ',SSMLCN(icn1)(1:12)
+      write(ISD(3),'(A,A)') 'b construction    : ',SSMLCN(icn1)(1:16)
       if(ITMCFL(ICOMP,ISUR).GT.0)then
         optic=TOPTIC(ICOMP,ITMCFL(ICOMP,ISUR))
         write(ISD(4),'(2A)')'  optical property: ',optic
@@ -970,14 +975,19 @@ C Additional option to choose CFC type.
 
 C Select composite and then put the info into common, updating
 C the OPAQUE/TRANSPARENT flag as well.
-        CALL EPKMLC(IC,'Select one of these constructions ',
-     &    'or -Exit. ',IER)
+        if(mlcver.eq.0)then
+          CALL EPKMLC(IC,'Select one of these constructions ',
+     &      'or -Exit. ',IER)
+        else
+          call edisp(iuout,'Select one of these constructions')
+          CALL EDMLDB2(modmlc,'-',IC,IER)
+        endif
         IF(IER.EQ.1)THEN
           CALL USRMSG(' ',' A problem was encountered..','W')
           RETURN
         ENDIF
         IF(IC.GT.0)THEN
-          WRITE(SSMLCN(icn1),'(A)') mlcname(IC)(1:12)
+          WRITE(SSMLCN(icn1),'(A)') mlcname(IC)
           ssmlcindex(icn1)=IC   ! update array
           if(mlctype(IC)(1:4).EQ.'TRAN')then
             SSOTF(icn1)='TRAN'
@@ -1188,7 +1198,7 @@ C Material properties.
       integer matarrayindex ! the indes within matdatarray
 
       LOGICAL CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,CFCDBOK
-      logical closemat1,closemat2
+      logical closemat1,closemat2,modmlc
 
 C CFClayer db properties
       integer cfcarrayindex
@@ -1212,7 +1222,12 @@ C If the common block MLC has not yet been filled, read in the
 C composite construction database.
       IF(.NOT.MLDBOK)THEN
         CALL ERMLDB(0,iuout,IER)
-        IF(IER.NE.0)THEN
+        IF(IER.eq.4)THEN
+          CALL ERMLDB2(0,iuout,IER)
+          if(IER.eq.0)then
+            MLDBOK=.TRUE.
+          endif
+        ELSEIF(IER.EQ.1.or.IER.eq.2.or.IER.eq.3)THEN
           CALL USRMSG(' Error in reading composite construction.',
      &    ' Unable to create zone construction file!','W')
           RETURN
@@ -1260,9 +1275,14 @@ C << The logic for dealing with TRAN/OPAQ needs to be updated! >>
         IF(SSMLCN(ioc)(1:4).EQ.'UNKN')THEN
   245     WRITE(outs,'(3A)')' Composition of ',SSNAME(ioc),
      &                         ' is unknown.'
-          CALL EPKMLC(ISEL,outs,'Please select one...',IER)
+          if(mlcver.eq.0)then
+            CALL EPKMLC(ISEL,outs,'Please select one...',IER)
+          else
+            call edisp(iuout,'Please select one...')
+            CALL EDMLDB2(modmlc,'-',ISEL,IER)
+          endif
           IF(ISEL.GT.0)THEN
-            WRITE(SSMLCN(ioc),'(A)') mlcname(ISEL)(1:12)
+            WRITE(SSMLCN(ioc),'(A)') mlcname(ISEL)
             ssmlcindex(ioc)=ISEL  ! update other surf index
             if(mlctype(ISEL)(1:4).EQ.'TRAN')then
               SSOTF(ioc)='TRAN'
@@ -1292,9 +1312,11 @@ C Remember this change by saving the file.
 C Reset number of layers, if at end of loop it is still 0 then
 C the material was not found and must be asked for.
         NE(IS)=0
+        lnsmlcn=lnblnk(SSMLCN(ioc))
         if(ssmlcindex(ioc).eq.0)then
-          write(outs,'(5A)') ' The construction ',SSMLCN(ioc),
-     &         ' of ',SSNAME(ioc),' was not found in the mlc db...'
+          write(outs,'(5A)') ' The construction ',
+     &      SSMLCN(ioc)(1:lnsmlcn),' of ',SSNAME(ioc),
+     &      ' was not found in the mlc db...'
           call usrmsg(outs,'resetting attribute to UNKNOWN.','W')
           SSMLCN(ioc)='UNKNOWN'
           goto 244
@@ -1613,6 +1635,7 @@ C through each of the existing surfaces and finds unique optical types.
       COMMON/TMCB3/NBCTT(MCOM,MBP,MTMC),BACTPT(MCOM,MBP,MTMC)
       LOGICAL found,OK,dok
       logical canceled   ! toggle set if user interupts an edit session.
+      logical modmlc     ! for selecting MLC
       integer IRT        ! for radio button
 
       CHARACTER OPT*12,lastopt*12,TOPTIC*12,GDESCR*36
@@ -1648,10 +1671,18 @@ C Use ssmlcindex to get matching MLC index
         IF(ICF.EQ.-1)THEN
           WRITE(outs,'(A,A12)')
      &    ' select a transparent one for: ',SSNAME(icn1)
-          CALL EPKMLC(ISEL,'From the available composites please',
-     &      outs,IER)
+          if(mlcver.eq.0)then
+            CALL EPKMLC(ISEL,'From the available composites please',
+     &        outs,IER)
+          else
+            WRITE(outs,'(2A)')
+     &      'From available composites select a transparent one for: ',
+     &      SSNAME(icn1)
+            call edisp(iuout,outs)
+            CALL EDMLDB2(modmlc,'-',ISEL,IER)
+          endif
           IF(ISEL.GT.0)THEN
-            WRITE(SSMLCN(icn1),'(A12)') mlcname(ISEL)(1:12)
+            WRITE(SSMLCN(icn1),'(A)') mlcname(ISEL)
             ssmlcindex(icn1)=ISEL   ! update array
             ICF=ISEL
           ELSE
@@ -1664,16 +1695,22 @@ C an associated set of optical properties. If no equivalent set of
 C optical properties then the user will have to supply this manually.
         helptopic='constr_attribute_checks'
         call gethelptext(helpinsub,helptopic,nbhelp)
-        WRITE(outs,'(A12,A)') mlcname(ICF)(1:12),' is not transparent!'
+        WRITE(outs,'(2A)') mlcname(ICF)(1:lnmlcname(ICF)),
+     &    ' is not transparent!'
         IF(mlctype(ICF)(1:4).EQ.'OPAQ')THEN
           CALL EASKAB(outs,' do you want to:','switch to opaque',
      &    'select a transparent material',IWB,nbhelp)
           if(IWB.eq.1)then
 
 C Switch back to opaque construction.
-            CALL EPKMLC(ISEL,'Which OPAQUE construction?',' ',IER)
+            if(mlcver.eq.0)then
+              CALL EPKMLC(ISEL,'Which OPAQUE construction?',' ',IER)
+            else
+            call edisp(iuout,'Which OPAQUE construction?')
+              CALL EDMLDB2(modmlc,'-',ISEL,IER)
+            endif
             if(ISEL.GT.0)then
-              WRITE(SSMLCN(icn1),'(A12)') mlcname(ISEL)(1:12)
+              WRITE(SSMLCN(icn1),'(A)') mlcname(ISEL)
               ssmlcindex(icn1)=ISEL   ! update array
               ICF=ISEL
               ITMCFL(ICOMP,IS)=0
@@ -1684,10 +1721,15 @@ C Switch back to opaque construction.
               return
             endif
           elseif(IWB.eq.2)then
-            CALL EPKMLC(ISEL,'Which TRANSPARENT construction?',
-     &        ' ',IER)
+            if(mlcver.eq.0)then
+              CALL EPKMLC(ISEL,'Which TRANSPARENT construction?',
+     &          ' ',IER)
+            else
+              call edisp(iuout,'Which TRANSPARENT construction?')
+              CALL EDMLDB2(modmlc,'-',ISEL,IER)
+            endif
             if(ISEL.GT.0)then
-              WRITE(SSMLCN(icn1),'(A12)') mlcname(ISEL)(1:12)
+              WRITE(SSMLCN(icn1),'(A)') mlcname(ISEL)
               ssmlcindex(icn1)=ISEL   ! update array
               ICF=ISEL
             else
@@ -1700,7 +1742,7 @@ C Check to see if this new construction has a known set of opticals.
         WRITE(OPT,'(A)') mlcoptical(ICF)(1:12)
         IF(OPT(1:2).EQ.'  '.OR.OPT(1:7).EQ.'UNKNOWN'.OR.
      &     OPT(1:6).EQ.'OPAQUE')THEN
-          WRITE(outs,'(1X,A12,A)')SSMLCN(icn1),
+          WRITE(outs,'(1X,A,A)')SSMLCN(icn1),
      &      ' has unknown optical properties!'
           CALL EASKABC(outs,' Do you want to: ',
      &      'supply optical properties','select another composite',
@@ -1776,8 +1818,9 @@ C Display of current information...
       CALL EDISP(ITRU,' Name         Description  TRANS   Reference')
       DO 31, ISR=1,NZSUR(icomp)
         icn1=izstocn(icomp,isr)
-        WRITE(outs,'(1X,A12,2X,A12,2X,A6,I4)')SSNAME(icn1),
-     &    SSMLCN(icn1)(1:12),SSOTF(icn1)(1:6),ITMCFL(ICOMP,ISR)
+        lnsmlcn=lnblnk(SSMLCN(icn1))
+        WRITE(outs,'(1X,A,2X,A,2X,A,I4)')SSNAME(icn1),
+     &    SSMLCN(icn1)(1:lnsmlcn),SSOTF(icn1)(1:6),ITMCFL(ICOMP,ISR)
         CALL EDISP(ITRU,outs)
    31 CONTINUE
       DO 202 I=1,NTMC
@@ -2250,12 +2293,12 @@ c time constant.
       write(outs,'(A,G12.4)')' Maximum thermal diffusivity is',TDM
       call edisp(iuout,outs)
       write(outs,'(3A,i3,A,i3)')' Associated MLC is ',
-     &  mlcname(istd)(1:12),' (',istd,') Layer',IE
+     &  mlcname(istd)(1:lnmlcname(istd)),' (',istd,') Layer',IE
       call edisp(iuout,outs)
       write(outs,'(A,G12.4,A)')' Maximum time constant is',TCM,' secs.'
       call edisp(iuout,outs)
       write(outs,'(A,A)')' Associated MLC construction is',
-     &  mlcname(ISTC)(1:12)
+     &  mlcname(ISTC)(1:lnmlcname(ISTC))
       call edisp(iuout,outs)
       write(outs,'(A,I3,A)')' Simulation start-up is',ITCNST,' days.'
       call edisp(iuout,outs)
