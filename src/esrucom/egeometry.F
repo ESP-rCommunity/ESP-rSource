@@ -148,7 +148,7 @@ C Error subroutine and error details for dll mode.
       real XO1,YO1,ZO1,DX1,DY1,DZ1 ! to prevent name clash with geometry.h
       integer lsn   ! length of currentfile
       integer iflag ! for read errors
-
+      integer iCountWords ! to test legacy items on surface line
 
       
 C Variables used in parsing of space-separated geo files      
@@ -228,10 +228,8 @@ C We can deal with this format.
         IF(ND.EQ.1)THEN
           CALL EGETW(loutstr,K,WORD,'W','CTYPE',IFLAG)
           write(CTYPE(icomp),'(a)') WORD(1:lnblnk(WORD))
-          zname(ICOMP)=' '
-          lnzname(ICOMP)=0
-          zdesc(ICOMP)=' '
-          lnzdesc(ICOMP)=0
+          zname(ICOMP)=' '; lnzname(ICOMP)=0
+          zdesc(ICOMP)=' '; lnzdesc(ICOMP)=0
         ELSEIF(ND.EQ.2)THEN
           CALL EGETW(loutstr,K,WORD,'W','CTYPE',IFLAG)
           write(CTYPE(icomp),'(a)') WORD(1:lnblnk(WORD))
@@ -239,8 +237,7 @@ C We can deal with this format.
           ZN=WORD(1:12)
           call st2name(ZN,zname(ICOMP))
           lnzname(ICOMP)=lnblnk(zname(ICOMP))  ! update string length
-          zdesc(ICOMP)=' '
-          lnzdesc(ICOMP)=0
+          zdesc(ICOMP)=' '; lnzdesc(ICOMP)=0
         ELSEIF(ND.gt.2)THEN
           CALL EGETW(loutstr,K,WORD,'W','CTYPE',IFLAG)
           write(CTYPE(icomp),'(a)') WORD(1:lnblnk(WORD))
@@ -558,6 +555,7 @@ C Check and see if izstocn returns non-zeros and set havec24.
           havec24=.false.
         endif
         call lstripc(IUNIT,loutstr,0,ND,0,'surface attributes',IER)
+        ni = iCountWords(loutstr)
         IF(IER.EQ.2)THEN
 
 C End of file sensed, however this is not an error at this point.
@@ -572,6 +570,25 @@ C are active (check bH3KExtentionsActive()).
 
         SurfFormat1: if ( .not. bH3KExtentionsActive() ) then 
 
+C If there are 6 tokens on the line then there are no added spaces
+C in any of the names and we can just use the space separation.
+          if(ni.eq.6)then
+            K=0
+            CALL EGETWI(loutstr,K,ISN,1,NSUR,'F','surface no',IER)
+            IF(IER.NE.0)GOTO 44        
+            CALL EGETW(LOUTSTR,K,WORD,'W','surface name',IER)
+            write(SNAME(ICOMP,ISN),'(a)') WORD(1:lnblnk(WORD))
+            lnsname(ICOMP,ISN)=lnblnk(SNAME(ICOMP,ISN)) ! update string length
+            CALL EGETW(LOUTSTR,K,WORD,'W','surface optics',IER)
+            write(tmpsot,'(a)') WORD(1:lnblnk(WORD))        
+            CALL EGETW(LOUTSTR,K,WORD,'W','surface vfc',IER)
+            write(tmpvfc,'(a)') WORD(1:lnblnk(WORD))        
+            CALL EGETW(LOUTSTR,K,WORD,'W','surface construction',IER)
+            write(SMLCN(ISN),'(a)') WORD(1:lnblnk(WORD))
+            CALL EGETW(LOUTSTR,K,WORD,'W','surface construction',IER)
+            write(tother,'(a)') WORD(1:lnblnk(WORD))
+  
+          else
 C Assume that line is in fixed-format, and that attributes are defined 
 C according to this convention:         
 C Read in the various attributes as in the following line.  With this
@@ -579,26 +596,26 @@ C method both construction and surface names can have blanks.
 C        1         2         3         4         5         6         7
 C23456789012345678901234567890123456789012345678901234567890123456789012
 C 1, Surf-1        OPAQ  VERT  UNKN         EXTERIOR       
-          K=0
-          CALL EGETWI(loutstr,K,ISN,1,NSUR,'F','surface no',IER)
-          IF(IER.NE.0)GOTO 44        
+            K=0
+            CALL EGETWI(loutstr,K,ISN,1,NSUR,'F','surface no',IER)
+            IF(IER.NE.0)GOTO 44        
         
 C Recover Surface name and set surface name length
-          SNAME(ICOMP,ISN)=loutstr(6:17)
-          lnsname(ICOMP,ISN)=lnblnk(SNAME(ICOMP,ISN)) ! update string length
+            SNAME(ICOMP,ISN)=loutstr(6:17)
+            lnsname(ICOMP,ISN)=lnblnk(SNAME(ICOMP,ISN)) ! update string length
 
 C Recover specified optics
-          write(tmpsot,'(a)') loutstr(20:23)        
+            write(tmpsot,'(a)') loutstr(20:23)        
         
 C Interpret positional portion of the string.
-          tmpvfc=loutstr(26:29)        
+            tmpvfc=loutstr(26:29)        
    
 C Interpret the construction name.
-          write(SMLCN(ISN),'(a)') loutstr(32:43)   
+            write(SMLCN(ISN),'(a)') loutstr(32:43)   
         
 C Recover "to-other' parameter:         
-          write(tother,'(a)') loutstr(45:59)
-        
+            write(tother,'(a)') loutstr(45:59)
+          endif
         else 
 C Space-separated format (Used by HOT3000)   
 C Read surface attibutes. iEGetArrW returns the contents of a line 
@@ -686,8 +703,7 @@ C Check if there is a matching MLC name for given construction and which one it 
         if(NMLC.gt.0)then                
           lstr=lnblnk(SMLCN(ISN))
           DO 20 IC=1,NMLC
-            lnmlc=lnblnk(mlcname(ic))
-            if(mlcname(ic)(1:lnmlc).EQ.SMLCN(ISN)(1:lstr))ICF=IC
+           if(mlcname(ic)(1:lnmlcname(ic)).EQ.SMLCN(ISN)(1:lstr))ICF=IC
   20      CONTINUE
         endif
         
@@ -695,7 +711,6 @@ C Check if there is a matching MLC name for given construction and which one it 
           write(SSMLCN(icn),'(a)') SMLCN(ISN)
           if(ICF.gt.0)then
             ssthick(icn)=THKMLC(icf)
-
           endif
         endif
 
@@ -1230,9 +1245,11 @@ C to write out.
           endif
         ENDIF
         msg='surface data line'
+        lnsmlcn=lnblnk(SSMLCN(icc))  ! set to at least 12 char
+        if(lnsmlcn.lt.12)lnsmlcn=12
         WRITE(IFILG,75,IOSTAT=ios,ERR=13)I,SSNAME(icc),
-     &        SSOTF(icc)(1:4),SSVFC(icc),SSMLCN(icc)(1:12),SO
-   75   FORMAT(I3,', ',A12,2X,A4,2X,A4,2X,A12,1X,A15)
+     &    SSOTF(icc)(1:4),SSVFC(icc),SSMLCN(icc)(1:lnsmlcn),SO
+   75   FORMAT(I3,', ',A,2X,A,2X,A,2X,A,1X,A)
   102 CONTINUE
 
 C Surfaces associated with base.
@@ -1799,8 +1816,8 @@ C Because many names may start similarly, check against actual widths.
             if(NMLC.gt.0)then                
               lstrs=lnblnk(SMLCN(NS))  ! surface attribute length
               DO 20 IC=1,NMLC
-                lstrd=lnblnk(mlcname(ic))
-                if(mlcname(ic)(1:lstrd).EQ.SMLCN(NS)(1:lstrs))ICF=IC
+                if(mlcname(ic)(1:lnmlcname(ic)).EQ.
+     &             SMLCN(NS)(1:lstrs))ICF=IC
   20          CONTINUE
             endif
 
@@ -1850,7 +1867,7 @@ C with the construction (TRAN is an ok mis-match).
                     else
                       write(outs,*) 'Optics ',WORD(1:lnow),
      &                ' in geo file does not match optics of the MLC ',
-     &                  mlcname(ICF)(1:12),' ',OPT(1:lno)
+     &                  mlcname(ICF)(1:lnmlcname(ICF)),' ',OPT(1:lno)
                       call edisp(iuout,outs)
                       optcorrected=.true.
                     endif
@@ -2751,6 +2768,7 @@ C Obstruction blocks common GS5/GS6 is found in geometry.h.
 
       CHARACTER GENFIL*72
       character outs*144,outsd*144,outs72*72,OTHSTR*30
+      character left*42,leftd*42,right*42,rightd*42
       character louts*248,loutsd*248,outs2*144
       character tab*1    ! separator
       character dstmp*24
@@ -2880,18 +2898,29 @@ C to write out.
           luse2=lnblnk(SSUSE(icc,2))
 
 C Traps for possible blank strings if data structure corrupted.
+C SSMLCN might have spaces so write in several chunks and pack.
           if(SSVFC(icc)(1:4).eq.'    ') SSVFC(icc)='UNKN'
           if(SSOTF(icc)(1:4).eq.'    ') SSOTF(icc)='UNKN'
           if(SSPARENT(icc)(1:2).eq.'  ') SSPARENT(icc)='-'
-          WRITE(outs,'(20a)',IOSTAT=ios,ERR=13) '*surf ',
+C          WRITE(outs,'(20a)',IOSTAT=ios,ERR=13) '*surf ',
+C     &      SSNAME(icc)(1:lsna),' ',SSVFC(icc),' ',
+C     &      SSPARENT(icc)(1:lspa),' ',SSUSE(icc,1)(1:luse1),' ',
+C     &      SSUSE(icc,2)(1:luse2),' ',SSMLCN(icc)(1:lsml),' ',
+C     &      SSOTF(icc)(1:lsot),' ',SSOTHER(icc,1)(1:lso),' ',
+C     &      SSOTHER(icc,2)(1:lso2),' ',SSOTHER(icc,3)(1:lso3)
+C          call SDELIM(outs,outsd,'C',IW)
+          WRITE(left,'(10a)',IOSTAT=ios,ERR=13) '*surf ',
      &      SSNAME(icc)(1:lsna),' ',SSVFC(icc),' ',
      &      SSPARENT(icc)(1:lspa),' ',SSUSE(icc,1)(1:luse1),' ',
-     &      SSUSE(icc,2)(1:luse2),' ',SSMLCN(icc)(1:lsml),' ',
+     &      SSUSE(icc,2)(1:luse2)
+          call SDELIM(left,leftd,'C',IW)  ! pack tokens before SSMLCN
+          WRITE(right,'(7a)',IOSTAT=ios,ERR=13) 
      &      SSOTF(icc)(1:lsot),' ',SSOTHER(icc,1)(1:lso),' ',
      &      SSOTHER(icc,2)(1:lso2),' ',SSOTHER(icc,3)(1:lso3)
-          call SDELIM(outs,outsd,'C',IW)
-          write(ifilg,'(2a,i3,2a)',IOSTAT=IOS,ERR=13) 
-     &      outsd(1:lnblnk(outsd)),'  # ',I,' ',OTHSTR(1:loth)
+          call SDELIM(right,rightd,'C',IW) ! pack tokens after SSMLCN
+          write(ifilg,'(6a,i3,2a)',IOSTAT=IOS,ERR=13) 
+     &      leftd(1:lnblnk(leftd)),',',SSMLCN(icc)(1:lsml),',',
+     &      rightd(1:lnblnk(rightd)),'  # ',I,' ',OTHSTR(1:loth)
         else
 
 C There was an array fault so write out a placeholder surface. As
@@ -4140,16 +4169,18 @@ C Write header based on current version number.
           ic=izstocn(icomp,i)
 
           call SIGFIG(SSNA(ic),NSIGFIG,RNO,SIGSTR,LSTR)
+          lnsmlcn=lnblnk(SSMLCN(ic))
+          if(lnsmlcn.lt.12) lnsmlcn=12  ! at least 12 char for MLC
           if(newgeo)then
  895        FORMAT(I3,2X,A,F5.0,F5.0,1X,A,1X,A,1X,A,1X,A,1X,A,1X,A,2X,A)
             WRITE(OUTSTR,895)I,SIGSTR(1:7),SSPAZI(ic),SSPELV(ic),
      &        SSNAME(ic),SSOTF(ic)(1:8),SSVFC(ic)(1:4),
-     &        SSUSE(ic,1)(1:8),SSUSE(ic,2)(1:8),SSMLCN(ic)(1:12),
+     &        SSUSE(ic,1)(1:8),SSUSE(ic,2)(1:8),SSMLCN(ic)(1:lnsmlcn),
      &        SSOTHER(ic,1)(1:15)
           else
- 894        FORMAT(I3,2X,A7,F5.0,F5.0,1X,A12,1X,A6,1X,A4,1X,A12,2X,A13)
+ 894        FORMAT(I3,2X,A,F5.0,F5.0,1X,A,1X,A,1X,A,1X,A,2X,A)
             WRITE(OUTSTR,894)I,SIGSTR(1:7),SSPAZI(ic),SSPELV(ic),
-     &        SSNAME(ic),SSOTF(ic)(1:6),SSVFC(ic),SSMLCN(ic)(1:12),
+     &        SSNAME(ic),SSOTF(ic)(1:6),SSVFC(ic),SSMLCN(ic)(1:lnsmlcn),
      &        SSOTHER(ic,1)(1:13)
           endif
           call edisp(ITRU,OUTSTR)
@@ -4157,17 +4188,20 @@ C Write header based on current version number.
       else
         DO 793 I=1,NZSUR(icomp)
           ic=izstocn(icomp,i)
+          lnsmlcn=lnblnk(SSMLCN(ic))
           call OTHERINFO(icomp,i,OTHSTR)
           call SIGFIG(SSNA(ic),NSIGFIG,RNO,SIGSTR,LSTR)
           if(newgeo)then
             WRITE(OUTSTR,795)I,SIGSTR(1:7),SSPAZI(ic),SSPELV(ic),
      &      SSNAME(ic),SSOTF(ic)(1:8),SSVFC(ic)(1:4),
-     &      SSUSE(ic,1)(1:8),SSUSE(ic,2)(1:8),SSMLCN(ic)(1:12),OTHSTR
- 795      FORMAT(I3,2X,A7,F5.0,F5.0,1X,A,1X,A,1X,A,1X,A,1X,A,1X,A,1X,A)
+     &      SSUSE(ic,1)(1:8),SSUSE(ic,2)(1:8),SSMLCN(ic)(1:lnsmlcn),
+     &      OTHSTR
+ 795      FORMAT(I3,2X,A,F5.0,F5.0,1X,A,1X,A,1X,A,1X,A,1X,A,1X,A,1X,A)
           else
             WRITE(OUTSTR,794)I,SIGSTR(1:7),SSPAZI(ic),SSPELV(ic),
-     &      SSNAME(ic),SSOTF(ic)(1:6),SSVFC(ic),SSMLCN(ic)(1:12),OTHSTR
- 794        FORMAT(I3,2X,A7,F5.0,F5.0,1X,A12,1X,A6,1X,A4,1X,A12,1X,A)
+     &      SSNAME(ic),SSOTF(ic)(1:6),SSVFC(ic),SSMLCN(ic)(1:lnsmlcn),
+     &      OTHSTR
+ 794        FORMAT(I3,2X,A,F5.0,F5.0,1X,A,1X,A,1X,A,1X,A,1X,A)
           endif
           call edisp(ITRU,OUTSTR)
  793    CONTINUE

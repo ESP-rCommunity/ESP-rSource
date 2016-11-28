@@ -2909,20 +2909,20 @@ C current menu line index. Build up text strings for the menu.
           CALL EMKEY(L,KEY,IER)
           if(MOD.EQ.'T'.OR.MOD.EQ.'t')then
             if(LTHRM(L)(1:7).eq.'UNKNOWN')then
-              WRITE(VERT(M),'(a1,1x,a12,a)')KEY,zname(L),' (undefined)'
+              WRITE(VERT(M),'(a1,1x,a,a)')KEY,zname(L),' (undefined)'
             else
               call FINDFIL(LTHRM(L),XST)
               if(XST)then
-                WRITE(VERT(M),'(a1,1x,a12,a)')KEY,zname(L),' (defined)'
+                WRITE(VERT(M),'(a1,1x,a,a)')KEY,zname(L),' (defined)'
               else
-                WRITE(VERT(M),'(a1,1x,a12,a)')KEY,zname(L),
+                WRITE(VERT(M),'(a1,1x,a,a)')KEY,zname(L),
      &            ' (not found)'
               endif
             endif
           else
             WRITE(VERT(M),14)KEY,zname(L)
           endif
-   14     FORMAT(A1,1X,A12)
+   14     FORMAT(A1,1X,A)
         ENDIF
    10 CONTINUE
 
@@ -3174,16 +3174,16 @@ C Build up text strings for the menu.
           M=M+1
           CALL EMKEY(L,KEY,IER)
           if(mod.eq.'-')then
-            WRITE(VERT(M),'(a1,1x,a12)')KEY,zname(L)
+            WRITE(VERT(M),'(a1,1x,a)')KEY,zname(L)
           elseif(mod.eq.'c')then
             if(LTHRM(L)(1:7).eq.'UNKNOWN')then
-              WRITE(VERT(M),'(a1,1x,a12,a)')KEY,zname(L),' (undefined)'
+              WRITE(VERT(M),'(a1,1x,a,a)')KEY,zname(L),' (undefined)'
             else
               call FINDFIL(LTHRM(L),XST)
               if(XST)then
-                WRITE(VERT(M),'(a1,1x,a12,a)')KEY,zname(L),' (defined)'
+                WRITE(VERT(M),'(a1,1x,a,a)')KEY,zname(L),' (defined)'
               else
-                WRITE(VERT(M),'(a1,1x,a12,a)')KEY,zname(L),
+                WRITE(VERT(M),'(a1,1x,a,a)')KEY,zname(L),
      &            ' (not found)'
               endif
             endif
@@ -3192,7 +3192,7 @@ C Build up text strings for the menu.
 C Check for operations files. For each one that exists, scan to see
 C if it has been sorted and notify user.
             if(LPROJ(L)(1:7).eq.'UNKNOWN')then
-              WRITE(VERT(M),'(a1,1x,a12,a)')KEY,zname(L),' (undefined)'
+              WRITE(VERT(M),'(a1,1x,a,a)')KEY,zname(L),' (undefined)'
             else
               call FINDFIL(LPROJ(L),XST)
               if(XST)then
@@ -3200,19 +3200,19 @@ C if it has been sorted and notify user.
                 CALL ERPFREE(IUO,ISTAT)
                 CALL EROPER(0,iuout,IUO,L,IER)
                 if(ip3ver(L).eq.0)then
-                  WRITE(VERT(M),'(a1,1x,a12,a)')KEY,zname(L),' (older)'
+                  WRITE(VERT(M),'(a1,1x,a,a)')KEY,zname(L),' (older)'
                   write(outs,'(3a)') 'Operations for ',zname(L),
      &              'needs update (periods unsorted).'
                   call edisp(iuout,outs)
                 elseif(ip3ver(L).eq.1)then
-                  WRITE(VERT(M),'(a1,1x,a12,a)')KEY,zname(L),
+                  WRITE(VERT(M),'(a1,1x,a,a)')KEY,zname(L),
      &              ' (defined)'
                 elseif(ip3ver(L).ge.2)then
-                  WRITE(VERT(M),'(a1,1x,a12,a)')KEY,zname(L),
+                  WRITE(VERT(M),'(a1,1x,a,a)')KEY,zname(L),
      &              ' (defined)'
                 endif
               else
-                WRITE(VERT(M),'(a1,1x,a12,a)')KEY,zname(L),
+                WRITE(VERT(M),'(a1,1x,a,a)')KEY,zname(L),
      &            ' (not found)'
               endif
             endif
@@ -3220,13 +3220,13 @@ C if it has been sorted and notify user.
 
 C Check for existing shading files.
             if(LSHAD(L)(1:7).eq.'UNKNOWN')then
-              WRITE(VERT(M),'(a1,1x,a12,a)')KEY,zname(L),' (undefined)'
+              WRITE(VERT(M),'(a1,1x,a,a)')KEY,zname(L),' (undefined)'
             else
               call FINDFIL(LSHAD(L),XST)
               if(XST)then
-                WRITE(VERT(M),'(a1,1x,a12,a)')KEY,zname(L),' (defined)'
+                WRITE(VERT(M),'(a1,1x,a,a)')KEY,zname(L),' (defined)'
               else
-                WRITE(VERT(M),'(a1,1x,a12,a)')KEY,zname(L),
+                WRITE(VERT(M),'(a1,1x,a,a)')KEY,zname(L),
      &            ' (not found)'
               endif
             endif
@@ -3234,13 +3234,13 @@ C Check for existing shading files.
 
 C Check for existing viewfactor files.
             if(LVIEW(L)(1:7).eq.'UNKNOWN')then
-              WRITE(VERT(M),'(a1,1x,a12,a)')KEY,zname(L),' (undefined)'
+              WRITE(VERT(M),'(a1,1x,a,a)')KEY,zname(L),' (undefined)'
             else
               call FINDFIL(LVIEW(L),XST)
               if(XST)then
-                WRITE(VERT(M),'(a1,1x,a12,a)')KEY,zname(L),' (defined)'
+                WRITE(VERT(M),'(a1,1x,a,a)')KEY,zname(L),' (defined)'
               else
-                WRITE(VERT(M),'(a1,1x,a12,a)')KEY,zname(L),
+                WRITE(VERT(M),'(a1,1x,a,a)')KEY,zname(L),
      &            ' (not found)'
               endif
             endif
@@ -3248,13 +3248,13 @@ C Check for existing viewfactor files.
 
 C Check for casual gain control files.
             if(LCGCIN(L)(1:7).eq.'UNKNOWN')then
-              WRITE(VERT(M),'(a1,1x,a12,a)')KEY,zname(L),' (undefined)'
+              WRITE(VERT(M),'(a1,1x,a,a)')KEY,zname(L),' (undefined)'
             else
               call FINDFIL(LCGCIN(L),XST)
               if(XST)then
-                WRITE(VERT(M),'(a1,1x,a12,a)')KEY,zname(L),' (defined)'
+                WRITE(VERT(M),'(a1,1x,a,a)')KEY,zname(L),' (defined)'
               else
-                WRITE(VERT(M),'(a1,1x,a12,a)')KEY,zname(L),
+                WRITE(VERT(M),'(a1,1x,a,a)')KEY,zname(L),
      &            ' (not found)'
               endif
             endif
@@ -3262,13 +3262,13 @@ C Check for casual gain control files.
 
 C Check for CFD domain files.
             if(LCFD(L)(1:7).eq.'UNKNOWN')then
-              WRITE(VERT(M),'(a1,1x,a12,a)')KEY,zname(L),' (undefined)'
+              WRITE(VERT(M),'(a1,1x,a,a)')KEY,zname(L),' (undefined)'
             else
               call FINDFIL(LCFD(L),XST)
               if(XST)then
-                WRITE(VERT(M),'(a1,1x,a12,a)')KEY,zname(L),' (defined)'
+                WRITE(VERT(M),'(a1,1x,a,a)')KEY,zname(L),' (defined)'
               else
-                WRITE(VERT(M),'(a1,1x,a12,a)')KEY,zname(L),
+                WRITE(VERT(M),'(a1,1x,a,a)')KEY,zname(L),
      &            ' (not found)'
               endif
             endif
@@ -3276,13 +3276,13 @@ C Check for CFD domain files.
 
 C Check for heat transfer regime files.
             if(LHCCO(L)(1:7).eq.'UNKNOWN')then
-              WRITE(VERT(M),'(a1,1x,a12,a)')KEY,zname(L),' (undefined)'
+              WRITE(VERT(M),'(a1,1x,a,a)')KEY,zname(L),' (undefined)'
             else
               call FINDFIL(LHCCO(L),XST)
               if(XST)then
-                WRITE(VERT(M),'(a1,1x,a12,a)')KEY,zname(L),' (defined)'
+                WRITE(VERT(M),'(a1,1x,a,a)')KEY,zname(L),' (defined)'
               else
-                WRITE(VERT(M),'(a1,1x,a12,a)')KEY,zname(L),
+                WRITE(VERT(M),'(a1,1x,a,a)')KEY,zname(L),
      &            ' (not found)'
               endif
             endif
@@ -3450,16 +3450,16 @@ C Build up text strings for the menu.
           M=M+1
           CALL EMKEY(L,KEY,IER)
           if(mod.eq.'-')then
-            WRITE(VERT(M),'(a1,1x,a12)')KEY,zname(L)
+            WRITE(VERT(M),'(a1,1x,a)')KEY,zname(L)
           elseif(mod.eq.'c')then
             if(LTHRM(L)(1:7).eq.'UNKNOWN')then
-              WRITE(VERT(M),'(a1,1x,a12,a)')KEY,zname(L),' (undefined)'
+              WRITE(VERT(M),'(a1,1x,a,a)')KEY,zname(L),' (undefined)'
             else
               call FINDFIL(LTHRM(L),XST)
               if(XST)then
-                WRITE(VERT(M),'(a1,1x,a12,a)')KEY,zname(L),' (defined)'
+                WRITE(VERT(M),'(a1,1x,a,a)')KEY,zname(L),' (defined)'
               else
-                WRITE(VERT(M),'(a1,1x,a12,a)')KEY,zname(L),
+                WRITE(VERT(M),'(a1,1x,a,a)')KEY,zname(L),
      &            ' (not found)'
               endif
             endif
@@ -3468,7 +3468,7 @@ C Build up text strings for the menu.
 C Check for operations files. For each one that exists, scan to see
 C if it has been sorted and notify user.
             if(LPROJ(L)(1:7).eq.'UNKNOWN')then
-              WRITE(VERT(M),'(a1,1x,a12,a)')KEY,zname(L),' (undefined)'
+              WRITE(VERT(M),'(a1,1x,a,a)')KEY,zname(L),' (undefined)'
             else
               call FINDFIL(LPROJ(L),XST)
               if(XST)then
@@ -3476,22 +3476,22 @@ C if it has been sorted and notify user.
                 CALL ERPFREE(IUO,ISTAT)
                 CALL EROPER(0,iuout,IUO,L,IER)
                 if(ip3ver(L).eq.0)then
-                  WRITE(VERT(M),'(a1,1x,a12,a)')KEY,zname(L),' (older)'
+                  WRITE(VERT(M),'(a1,1x,a,a)')KEY,zname(L),' (older)'
                   write(outs,'(3a)') 'Operations for ',zname(L),
      &              'needs update (periods unsorted).'
                   call edisp(iuout,outs)
                 elseif(ip3ver(L).eq.1)then
-                  WRITE(VERT(M),'(a1,1x,a12,a)')KEY,zname(L),
+                  WRITE(VERT(M),'(a1,1x,a,a)')KEY,zname(L),
      &              ' (defined v1)'
                 elseif(ip3ver(L).eq.2)then
-                  WRITE(VERT(M),'(a1,1x,a12,a)')KEY,zname(L),
+                  WRITE(VERT(M),'(a1,1x,a,a)')KEY,zname(L),
      &              ' (defined v2)'
                 elseif(ip3ver(L).gt.2)then
-                  WRITE(VERT(M),'(a1,1x,a12,a)')KEY,zname(L),
+                  WRITE(VERT(M),'(a1,1x,a,a)')KEY,zname(L),
      &              ' (definedv2+)'
                 endif
               else
-                WRITE(VERT(M),'(a1,1x,a12,a)')KEY,zname(L),
+                WRITE(VERT(M),'(a1,1x,a,a)')KEY,zname(L),
      &            ' (not found)'
               endif
             endif
@@ -3499,13 +3499,13 @@ C if it has been sorted and notify user.
 
 C Check for existing shading files.
             if(LSHAD(L)(1:7).eq.'UNKNOWN')then
-              WRITE(VERT(M),'(a1,1x,a12,a)')KEY,zname(L),' (undefined)'
+              WRITE(VERT(M),'(a1,1x,a,a)')KEY,zname(L),' (undefined)'
             else
               call FINDFIL(LSHAD(L),XST)
               if(XST)then
-                WRITE(VERT(M),'(a1,1x,a12,a)')KEY,zname(L),' (defined)'
+                WRITE(VERT(M),'(a1,1x,a,a)')KEY,zname(L),' (defined)'
               else
-                WRITE(VERT(M),'(a1,1x,a12,a)')KEY,zname(L),
+                WRITE(VERT(M),'(a1,1x,a,a)')KEY,zname(L),
      &            ' (not found)'
               endif
             endif
@@ -3513,13 +3513,13 @@ C Check for existing shading files.
 
 C Check for existing obstruction block files.
             if(ZOBS(L)(1:7).eq.'UNKNOWN')then
-              WRITE(VERT(M),'(a1,1x,a12,a)')KEY,zname(L),' (undefined)'
+              WRITE(VERT(M),'(a1,1x,a,a)')KEY,zname(L),' (undefined)'
             else
               call FINDFIL(ZOBS(L),XST)
               if(XST)then
-                WRITE(VERT(M),'(a1,1x,a12,a)')KEY,zname(L),' (defined)'
+                WRITE(VERT(M),'(a1,1x,a,a)')KEY,zname(L),' (defined)'
               else
-                WRITE(VERT(M),'(a1,1x,a12,a)')KEY,zname(L),
+                WRITE(VERT(M),'(a1,1x,a,a)')KEY,zname(L),
      &            ' (not found)'
               endif
             endif
@@ -3527,13 +3527,13 @@ C Check for existing obstruction block files.
 
 C Check for existing viewfactor files.
             if(LVIEW(L)(1:7).eq.'UNKNOWN')then
-              WRITE(VERT(M),'(a1,1x,a12,a)')KEY,zname(L),' (undefined)'
+              WRITE(VERT(M),'(a1,1x,a,a)')KEY,zname(L),' (undefined)'
             else
               call FINDFIL(LVIEW(L),XST)
               if(XST)then
-                WRITE(VERT(M),'(a1,1x,a12,a)')KEY,zname(L),' (defined)'
+                WRITE(VERT(M),'(a1,1x,a,a)')KEY,zname(L),' (defined)'
               else
-                WRITE(VERT(M),'(a1,1x,a12,a)')KEY,zname(L),
+                WRITE(VERT(M),'(a1,1x,a,a)')KEY,zname(L),
      &            ' (not found)'
               endif
             endif
@@ -3541,13 +3541,13 @@ C Check for existing viewfactor files.
 
 C Check for casual gain control files.
             if(LCGCIN(L)(1:7).eq.'UNKNOWN')then
-              WRITE(VERT(M),'(a1,1x,a12,a)')KEY,zname(L),' (undefined)'
+              WRITE(VERT(M),'(a1,1x,a,a)')KEY,zname(L),' (undefined)'
             else
               call FINDFIL(LCGCIN(L),XST)
               if(XST)then
-                WRITE(VERT(M),'(a1,1x,a12,a)')KEY,zname(L),' (defined)'
+                WRITE(VERT(M),'(a1,1x,a,a)')KEY,zname(L),' (defined)'
               else
-                WRITE(VERT(M),'(a1,1x,a12,a)')KEY,zname(L),
+                WRITE(VERT(M),'(a1,1x,a,a)')KEY,zname(L),
      &            ' (not found)'
               endif
             endif
@@ -3555,13 +3555,13 @@ C Check for casual gain control files.
 
 C Check for CFD domain files.
             if(LCFD(L)(1:7).eq.'UNKNOWN')then
-              WRITE(VERT(M),'(a1,1x,a12,a)')KEY,zname(L),' (undefined)'
+              WRITE(VERT(M),'(a1,1x,a,a)')KEY,zname(L),' (undefined)'
             else
               call FINDFIL(LCFD(L),XST)
               if(XST)then
-                WRITE(VERT(M),'(a1,1x,a12,a)')KEY,zname(L),' (defined)'
+                WRITE(VERT(M),'(a1,1x,a,a)')KEY,zname(L),' (defined)'
               else
-                WRITE(VERT(M),'(a1,1x,a12,a)')KEY,zname(L),
+                WRITE(VERT(M),'(a1,1x,a,a)')KEY,zname(L),
      &            ' (not found)'
               endif
             endif
@@ -3569,13 +3569,13 @@ C Check for CFD domain files.
 
 C Check for heat transfer regime files.
             if(LHCCO(L)(1:7).eq.'UNKNOWN')then
-              WRITE(VERT(M),'(a1,1x,a12,a)')KEY,zname(L),' (undefined)'
+              WRITE(VERT(M),'(a1,1x,a,a)')KEY,zname(L),' (undefined)'
             else
               call FINDFIL(LHCCO(L),XST)
               if(XST)then
-                WRITE(VERT(M),'(a1,1x,a12,a)')KEY,zname(L),' (defined)'
+                WRITE(VERT(M),'(a1,1x,a,a)')KEY,zname(L),' (defined)'
               else
-                WRITE(VERT(M),'(a1,1x,a12,a)')KEY,zname(L),
+                WRITE(VERT(M),'(a1,1x,a,a)')KEY,zname(L),
      &            ' (not found)'
               endif
             endif
@@ -3733,7 +3733,7 @@ C show attributes in list.
       DIMENSION VERT(35),VERTS(35)
 
       CHARACTER*(*) PROMPT1,PROMPT2
-      CHARACTER H*72,VERT*28,VERTS*40,KEY*1,MOD*1,title*29
+      CHARACTER H*72,VERT*28,VERTS*42,KEY*1,MOD*1,title*29
       LOGICAL SELECT
       integer loopstart,loopend,i,icc   ! for looping
       logical usesbasesimp
@@ -3757,12 +3757,12 @@ C IVERT is the menu position, MVERT the current number of menu lines.
         write(title,'(2a)')'  Surfaces in ',
      &    zname(IZONE)(1:lnzname(IZONE))
         MHEAD=1
-        VERTS(1)='  Name         Composition  Facing'
+        VERTS(1)='  Name         Composition   Facing'
       elseif(MOD.eq.'A')then
         write(title,'(2a)')'  Surfaces in ',
      &    zname(IZONE)(1:lnzname(IZONE))
         MHEAD=1
-        VERTS(1)='  Name         Composition  Facing'
+        VERTS(1)='  Name         Composition   Facing'
       endif
       MCTL=4
       ILEN=NZSUR(IZONE)
@@ -3781,16 +3781,25 @@ C current menu line index. Build up text strings for the menu.
           M=M+1
           CALL EMKEY(L,KEY,IER)
           icc=IZSTOCN(izone,L)
+          lnsmlcn=lnblnk(SSMLCN(icc))
           if(MOD.eq.'-')then
-            WRITE(VERT(M),14)KEY,SSNAME(icc),SSMLCN(icc)(1:12)
+            WRITE(VERT(M),14)KEY,SSNAME(icc),SSMLCN(icc)(1:lnsmlcn)
    14       FORMAT(A1,1X,A,1X,A)
           else
 
 C << consider writing out different info depending on what SSOTHER is >>
             if(icc.gt.0)then
-              WRITE(VERTS(M),13)KEY,SSNAME(icc),SSMLCN(icc)(1:12),
-     &          SSOTHER(icc,1)(1:12)
-   13         FORMAT(A1,1X,A,1X,A,1X,A12)
+              lnn=lnblnk(SSNAME(icc))
+              lnsmlcn=lnblnk(SSMLCN(icc))
+              lnoth=lnblnk(SSOTHER(icc,1))
+              if((lnn+lnsmlcn+lnoth).lt.37)then
+                WRITE(VERTS(M),13)KEY,SSNAME(icc)(1:lnn),
+     &            SSMLCN(icc)(1:lnsmlcn),SSOTHER(icc,1)(1:lnoth)
+              else
+                WRITE(VERTS(M),13)KEY,SSNAME(icc)(1:lnn),
+     &            SSMLCN(icc)(1:16),SSOTHER(icc,1)(1:lnoth)
+              endif
+   13         FORMAT(A,2X,A,2X,A,2X,A)
             else
               WRITE(VERTS(M),'(2a)')KEY,' unresolved surface...'
             endif
@@ -3939,7 +3948,7 @@ C Write menu displaying a list of layer names
       header=3
       footer=3
       write(item(1),'(a,a)') 'a surface name: ',SSNAME(icc)
-      write(item(2),'(a,a)') 'c constr name: ',mlcname(imatch)(1:12)
+      write(item(2),'(a,a)') 'c constr name: ',mlcname(imatch)(1:16)
       item(3)='  ----------------------------'
       do 10 j=1,LAYERS(imatch)
 
@@ -3958,7 +3967,7 @@ C Pick up the material name of each layer. Uses zero matarrayindex to signal gap
           call usrmsg('Materials are incomplete or not yet scanned.',
      &      'Please check your model materials file.','W')
         endif
-        write(item(header+j),'(a,i2,1x,a12)')' Layer: ',j,PNAM(j)
+        write(item(header+j),'(a,i2,1x,a)')' Layer: ',j,PNAM(j)
         ndisp=header+j
   10  continue
       item(ndisp+footer-2)='  ----------------------------'
@@ -4232,7 +4241,7 @@ C Similar to code ZLIST in esrures/utils.F.
   42  continue
       if(length.lt.236)then
         WRITE(outs,5,iostat=ios,err=1)(zname(list(I)),I=1,inlist)
-    5   FORMAT(' Zones: ',20(a12,' '))
+    5   FORMAT(' Zones: ',20(a,' '))
         call sdelim(outs,outsd,'S',IW)
         zdescr=outsd
         return

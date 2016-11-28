@@ -108,6 +108,7 @@ C to the selected file to have it relative to the cfg folder.
       character subpathd*84  ! to use for native windows
       character odir*84      ! the directory executable was started from
       logical unixok
+      integer lnodir, lnpath
 
 C Set folder separator (fs) to \ or / as required.
       ier=0
@@ -123,13 +124,15 @@ C Save back any file name passed into the subroutine.
 
 C Make up the path (usually relative to the cfg folder of the
 C model. odir is the current working directory (which is where the
-C project manager was started from).
-      subpath=' '
+C project manager was started from). On OSX odir is the full path
+C to the current working directory.
+      subpath=' '; odir=' '
       call usrdir(odir)
+      lnodir=lnblnk(odir); lnpath=lnblnk(path)
 
 C Debug.
-C      write(6,*) 'odir is ',odir(1:lnblnk(odir))
-C      write(6,*) 'path is ',path(1:lnblnk(path))
+C      write(6,*) 'odir is ',odir(1:lnblnk(odir)),' ',lnodir
+C      write(6,*) 'path is ',path(1:lnblnk(path)),' ',lnpath
 C      write(6,*) 'imgpth is ',imgpth(1:lnblnk(imgpth))
 
       if(where(1:3).eq.'cfg')then
@@ -137,6 +140,9 @@ C      write(6,*) 'imgpth is ',imgpth(1:lnblnk(imgpth))
      &    path(1:lnblnk(path))
         write(relative,'(a)',iostat=ios,err=2) path(1:lnblnk(path))
       elseif(where(1:3).eq.'dbs')then
+
+C If the initial parts of odir and path are the same then only need
+C to use one of them.
         write(subpath,'(5a)',iostat=ios,err=1) odir(1:lnblnk(odir)),fs,
      &    path(1:lnblnk(path)),dbspth(1:lnblnk(dbspth)),fs
         write(relative,'(2a)',iostat=ios,err=2) path(1:lnblnk(path)),
@@ -232,6 +238,11 @@ C needs to be backslashed to properly work in Native Windows.
 
 #ifdef MINGW
 C In DOS no need to prepend odir (just use the relative path defined above).
+      write(subpath,'(a)',iostat=ios,err=2)
+     &  relative(1:lnblnk(relative))
+#endif
+#ifdef OSX
+C In OSX no need to prepend odir (just use the relative path defined above).
       write(subpath,'(a)',iostat=ios,err=2)
      &  relative(1:lnblnk(relative))
 #endif

@@ -2289,7 +2289,7 @@ C      COMMON/OUTIN/IUOUT,IUIN
       CHARACTER SSTR*96,SSTRB*48
       CHARACTER WHICH*1,ZN*12
       CHARACTER LTPCMP*60,CMNAM*12,NDNAM*12,pcname*15,SN*12
-      character disp_constr*12
+      character disp_constr*32
 
       dimension icsn(5)   ! for passing sensor location to decodesensor
       integer icsn
@@ -2565,9 +2565,9 @@ C <<<Confirm this with bpfcontrl.F>>>>>>>>>>>>>>>>
 C<<<<Probably IOAN does not need a 3rd item. >>>>
           if(IOAN(II,2).gt.0)then
             icons=IOAN(II,2)
-            write(disp_constr,'(a)') mlcname(icons)(1:12)
+            write(disp_constr,'(a)') mlcname(icons)
             WRITE(SSTR,'(3a)')  'actuating the optical properties at ',
-     &        'construction ', disp_constr
+     &        'construction ', disp_constr(1:lnblnk(disp_constr))
           else
             WRITE(SSTR,'(2a)')  'Optics actuator has not been assigned',
      &        ' to a construction.' 

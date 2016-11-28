@@ -48,7 +48,7 @@ C espriou.h provides currentfile.
       COMMON/UA32/IMISCD(MNCNG,2)
       COMMON/UA4/NIACT,IACTD(MNACT,2)
       
-      character LUALF*72,LCNG*15,LLOC*15,MATNAM*12
+      character LUALF*72,LCNG*15,LLOC*15,MATNAM*32
       CHARACTER OUTSTR*124, WORD*20,outs*124
 
 
@@ -357,7 +357,7 @@ C WRITUAL reads the data fron an existing UA library.
       COMMON/UA31/MATNAM(MNCNG,2)
       COMMON/UA4/NIACT,IACTD(MNACT,2)
 
-      character LUALF*72,LCNG*15,LLOC*15,outs*124,MATNAM*12
+      character LUALF*72,LCNG*15,LLOC*15,outs*124,MATNAM*32
 
       IER=0
 
@@ -508,7 +508,7 @@ C 0=all; 1=distributions; 2=locations; 3=uncertainties.
       integer matarrayindex ! the indes within matdatarray
 
       character LUALF*72,LCNG*15,LLOC*15,outs*124
-      character NAM*72,MATNAM*12,ITEM(6)*20
+      character NAM*72,MATNAM*32,ITEM(6)*20
 
       IER=0
 
