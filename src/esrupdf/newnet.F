@@ -2157,7 +2157,7 @@ C Write menu displaying a list of layer names
       footer=3
       write(item(1),'(a,a)') 'a surface name: ',SNAME(iz,is)
       write(item(2),'(a,i2)')'b number of layers: ',LAYERS(imatch)
-      write(item(3),'(a,a)') 'c MLC name: ',mlcname(imatch)(1:12)
+      write(item(3),'(a,a)') 'c MLC name: ',mlcname(imatch)(1:16)
       item(4)='  ----------------------------'
       do 10 j=1,LAYERS(imatch)
 
