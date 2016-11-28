@@ -3802,6 +3802,7 @@ C ITPPSW current view - perspective/plan/south/west
       CHARACTER path*72
       character doit*248,tmode*8,longtfile*144, hold*24,act*1
       CHARACTER head*19
+      logical modmlc  ! for selecting MLC
 
       integer IW  ! for radio buttons
       integer MVERT,IVERT  ! max items and current menu item
@@ -3865,7 +3866,7 @@ C Hilight surface based on OPQ/TRAN or construction.
       ELSEIF(ITHLS.EQ.1)THEN
         if(ITHLZ.gt.0)then
           WRITE(ITEMS(7),'(2A)')'f highlight >> ',
-     &      mlcname(ITHLZ)(1:12)
+     &      mlcname(ITHLZ)(1:16)
         else
           ITEMS(7) ='f highlight >> composition      '
         endif
@@ -4087,7 +4088,13 @@ C Hilight control.
         if(ITHLS.eq.0)then
           MODIFYVIEW=.true.
         elseif(ITHLS.eq.1)then
-          CALL EPKMLC(ISEL,'Select a construction to hilight.',' ',IER)
+          if(mlcver.eq.0)then
+            CALL EPKMLC(ISEL,'Select a construction to hilight.',
+     &        ' ',IER)
+          else
+            call edisp(iuout,'Select a construction to hilight.')
+            CALL EDMLDB2(modmlc,'-',ISEL,IER)
+          endif
           ITHLZ=ISEL
           MODIFYVIEW=.TRUE.
         elseif(ITHLS.eq.2)then

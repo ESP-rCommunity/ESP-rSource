@@ -4573,6 +4573,14 @@ C EMKVIEW constructs a 'viewer' format file. This is a dummy subroutine.
       logical CFGOK
       return
       end
+      
+      SUBROUTINE EDMLDB2(chgdb,ACTION,isel,IER)
+      logical chgdb
+      character*1 ACTION
+      integer isel,ier
+      ier=0
+      return
+      end
 
       SUBROUTINE INLNST(ITYP)
       integer ityp

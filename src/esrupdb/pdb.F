@@ -718,6 +718,14 @@ C Depending on computer type set integer size of passed parameters.
       ier=0
       return
       end
+      
+      SUBROUTINE EDMLDB2(chgdb,ACTION,isel,IER)
+      logical chgdb
+      character*1 ACTION
+      integer isel,ier
+      ier=0
+      return
+      end
 
       SUBROUTINE INLNST(ITYP)
       return

@@ -175,8 +175,10 @@ C layer of each surface in the zone. IPRZ is used elsewhere.
           IPRZ(ISUR,IL)=IPRMAT(IC,IL)
    23   CONTINUE
         if(ICKNE.eq.0)then
-          write(outs,'(5A)') ' The construction ',SSMLCN(ICN)(1:12),
-     &       ' of ',SSNAME(ICN),' was not found in the mlc db...'
+          lml=lnblnk(SSMLCN(ICN))
+          write(outs,'(5A)') ' The construction ',
+     &      SSMLCN(ICN)(1:lml),' of ',SSNAME(ICN),
+     &      ' was not found in the mlc db...'
           call edisp(iuout,outs)
           call edisp(iuout,' ')
           IER=1

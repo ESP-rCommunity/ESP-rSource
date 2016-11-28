@@ -188,28 +188,37 @@ C      common/MLCTXT/LAYDESC(MMLC,ME),DESC(MMLC)
 
 C Constructions header common blocks:
       integer mlcver      ! version of the database 0 and 1 with verbose names
+      integer mlcdocs     ! how many lines of db documentation
       integer mlccats     ! number of categories
       integer mlcdbitems  ! number of items (overall) in database (replaces NMLC)
       integer mlccatitems ! number of items in each category
-      common/mlcheader/mlcver,mlccats,mlcdbitems,mlccatitems(MGCL)
+      common/mlcheader/mlcver,mlcdocs,mlccats,mlcdbitems,
+     &  mlccatitems(MGCL)
 
 C Constructions categories
       character mlcdbdate*24 ! date stamp for the constructions file
-      character mlcdbdoc*248 ! documentation for the constructions file
+      character mlcdbdoc*96 ! documentation lines for the constructions file
       character mlccatname*32 ! identity/name of category
+      character mlccatmenu*32 ! menu for category
       character mlccatdoc*248  ! documentation for the category
-      common/mlcheadertxt/mlcdbdate,mlcdbdoc,mlccatname(MGCL),
-     &  mlccatdoc(MGCL)
+      common/mlcheadertxt/mlcdbdate,mlcdbdoc(15),mlccatname(MGCL),
+     &  mlccatmenu(MGCL),mlccatdoc(MGCL)
 
 C Data structures for verbose names and documentation associated with MLC
-      character mlcname*32     ! name of MLC
+      character mlcname*32     ! name of MLC legacy items only use first 12 char
+      character mlcmenu*32     ! MLC menu entry
       character mlcdoc*248     ! documentation
+      character mlcincat*32    ! name of associated category
       character mlctype*4      ! type (OPAQ | TRAN | CFC)
       character mlcoptical*32  ! associated optical properties name
       character mlcsymetric*32 ! associated name of reversed MLC or key words
                                ! SYMMETRIC or NONSYMMERTIC
-      common/mlcnamearray/mlcname(MMLC),mlcdoc(MMLC),mlctype(MMLC),
-     &  mlcoptical(MMLC),mlcsymetric(MMLC)
+      common/mlcnamearray/mlcname(MMLC),mlcmenu(MMLC),mlcdoc(MMLC),
+     &  mlcincat(MMLC),mlctype(MMLC),mlcoptical(MMLC),mlcsymetric(MMLC)
+
+      integer lnmlcname,lnmlcmenu,lnmlccatname,lnmlccatmenu  ! string lengths
+      common/mlcnameln/lnmlcname(MMLC),lnmlcmenu(MMLC),
+     &  lnmlccatname(MGCL)
 
       integer mlccatindex  ! is pointer to index of the MLC category
       integer matsymindex  ! pointer to index of reversed MLC

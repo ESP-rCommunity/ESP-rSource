@@ -1161,6 +1161,14 @@ C ***** Dummy display of images.
       integer icomp,ier
       return
       end
+      
+      SUBROUTINE EDMLDB2(chgdb,ACTION,isel,IER)
+      logical chgdb
+      character*1 ACTION
+      integer isel,ier
+      ier=0
+      return
+      end
 
 
 C In support of floating point exceptions.
