@@ -4799,13 +4799,24 @@ C and then resetn MODDB and chgdb if mod is true.
             if(jump.eq.0)then
               continue
             elseif(jump.eq.-1)then
-C << legacy just decrement, V1 need to find prior in category >>
-              ifoc=ifoc-1
-              goto 99
+C V1 find prior in category
+              if(INO.GT.MHEAD)then
+                IFOC=iwhicharray(INO-1)
+C               ifoc=ifoc-1
+                goto 99
+              else
+                continue
+              endif
             elseif(jump.eq.1)then
-C << legacy just increment, V1 need to find next in category >>
-              ifoc=ifoc+1
-              goto 99
+
+C V1 find next in category
+              if(INO.LT.(NITMS-MCTL+1))then
+                IFOC=iwhicharray(INO+1)
+C               ifoc=ifoc+1
+                goto 99
+              else
+                continue
+              endif
             endif
           elseif(ACTION.eq.'-')then
             call edisp(iuout,' ')

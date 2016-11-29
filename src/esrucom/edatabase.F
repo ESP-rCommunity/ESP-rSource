@@ -1411,10 +1411,6 @@ C check first the lenght of strings, if the stringsa re not equal the
 C material is different
           if(lnblnk(matname(imt)).eq.lnam) then        
              if(PNAM(1:lnam).eq.matname(imt)(1:lnam))then
-
-C Debug.
-C            write(6,*) imt,' name x: match ',PNAM(1:lnam),' ',
-C     &        matname(imt)(1:lnblnk(matname(imt)))
                matarrayindex=imt
                return
              endif
@@ -1424,10 +1420,6 @@ C     &        matname(imt)(1:lnblnk(matname(imt)))
 C If we got to this point also check for a matching matdoc string.
         do 45 imt=1,matdbitems
           if(PNAM(1:lnam).eq.matdoc(imt)(1:lnam))then
-
-C Debug.
-C            write(6,*) imt,' doc x: match ',PNAM(1:lnam),' ',
-C     &        matdoc(imt)(1:lnam)
             matarrayindex=imt
             return
           endif
@@ -1437,10 +1429,6 @@ C     &        matdoc(imt)(1:lnam)
 C There might have been a ' : ' but a text mismatch for matname so check matdoc.
       do 46 imt=1,matdbitems
         if(PNAM(1:lnam).eq.matdoc(imt)(1:lnam))then
-
-C Debug.
-C          write(6,*) imt,' doc match ',PNAM(1:lnam),' ',
-C     &      matdoc(imt)(1:lnam)
           matarrayindex=imt
           return
         endif
