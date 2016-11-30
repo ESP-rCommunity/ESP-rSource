@@ -34,7 +34,7 @@ typedef struct _box{
 #define BMNOTALL	04	/* not all of box */
 #define BMNOT		010	/* not inside of box */
 #define BMEDGES		020	/* draw edges of box, using dd->d_line */
-/* 
+/*
  * define wwcut arguments
  */
 #define IPON		1
@@ -174,6 +174,7 @@ void	egdispclr_();
 void	trackview_(long int* ichar,long int* irx,long int* iry);
 void	eline_(long int* x,long int* y,long int* operation);
 void	u2pixel_(float* ux,float* uy,long int* ix,long int* iy);
+void  etplotwwc_(float* ux,float* uy,long int* updown,long int* sym);
 void 	etplot_(float* ux,float* uy,long int* updown,long int* sym);
 void	edline_(long int* x1,long int* y1,long int* x2,long int* y2,long int* ipdis);
 void	drawdwl(int xa,int ya,int xb,int yb);

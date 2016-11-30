@@ -987,14 +987,14 @@ C record structures can be accommodated.
           IF(ITDFTR(I,J).EQ.1)THEN
             WRITE(FSTR,62)IA,IC,TMAR(I,IA),TMIN(I,IA),
      &                    TMAX(I,IA),TDFDES(I,J)
-   62       FORMAT('REAL',2I3,3F11.3,2X,A32)
+   62       FORMAT('REAL',I3,1X,I3,3F11.3,2X,A32)
           ELSEIF(ITDFTR(I,J).EQ.2)THEN
             WRITE(FSTR,63)IA,IC,TMAT(I,IA),TDFDES(I,J)
-   63       FORMAT('TEXT',2I3,2X,A16,2X,A32)
+   63       FORMAT('TEXT',I3,1X,I3,2X,A16,2X,A32)
           ELSEIF(ITDFTR(I,J).EQ.3)THEN
             WRITE(FSTR,64)IA,IC,ITMAR(I,IA),ITMIN(I,IA),
      &                    ITMAX(I,IA),TDFDES(I,J)
-   64       FORMAT('INTG',2I3,3I10,2X,A32)
+   64       FORMAT('INTG',I3,1X,I3,3I10,2X,A32)
           ENDIF
           WRITE(iafil,'(a)',IOSTAT=ios,ERR=103)FSTR
   60    CONTINUE

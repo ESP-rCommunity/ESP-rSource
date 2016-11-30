@@ -40,18 +40,18 @@
 #include <gtk/gtk.h>
 #include <gdk/gdk.h>
 #include "esp-r.h"
-#include <commons.h>    
+#include <commons.h>
 
 extern FILE *wwc;
 extern int  wwc_ok;   /* assume this set in esru_util.c */
 extern int  wwc_macro;   /* assume this set in esru_util.c */
 
-/* f_height and f_width which already declared globaly in esp-r.c are used here. */ 
+/* f_height and f_width which already declared globaly in esp-r.c are used here. */
 extern gint f_height;
 extern gint f_width;
 
 
- 
+
 /* ********* wstxpt_() write a string beginning at pixel x and y. ******* */
 /* Note the calling code assumes that the pixel is at the lower left
  * corner of the block of text. An internal adjustment is required
@@ -63,12 +63,12 @@ long int *x, *y;       /* x y is the position of the string */
 int  len;        /* len is length passed from fortran */
 {
  char buffer[248];
- const char* get_text; 
+ const char* get_text;
  gint ix = (gint) *x;
  gint iy = (gint) *y;
  PangoFontDescription *pfd;	/* to hold test font */
- PangoContext *context;	/* for use in finding font properties */ 
- PangoLayout *layout;	/* pango layout for the text in the buffer */ 
+ PangoContext *context;	/* for use in finding font properties */
+ PangoLayout *layout;	/* pango layout for the text in the buffer */
 
 /* create font description to use for resetting the graphic font.
  * Use pango_font_get_metrics to get font width and height. */
@@ -131,18 +131,18 @@ int  len;        /* len is length passed from fortran */
 }
 
  context = gtk_widget_get_pango_context (graphic);
- 
+
  pango_font_description_free(pfd);
 
  layout = pango_layout_new (context);	/* clear and set layout */
  buffer[0] = '\0';
  g_snprintf (buffer, sizeof (buffer), "%s", buff); /* copy buff into buffer */
- 
+
  pango_layout_set_text (layout, buffer, len);	/* add len char of text */
 
  get_text = pango_layout_get_text (layout);
  /* fprintf(stderr, "\nget_text displays: %s\n", buffer);   debug */
- 
+
  /* draw it on the pixmap taking acount to shift text up by f_height. */
  gdk_draw_layout (gr_image, gc,ix,iy-f_height,layout);
  g_object_unref (layout);	/* clear the layout */
@@ -228,23 +228,23 @@ int  len;        /* len is length passed from fortran */
 
  } else if (butn_fnt == 4 ) {
   pfd = pango_font_description_from_string("Courier,Medium 8");
-   f_height = font_calculations_array[courier_small].f_height;   
-   f_width  = font_calculations_array[courier_small].f_width;   
+   f_height = font_calculations_array[courier_small].f_height;
+   f_width  = font_calculations_array[courier_small].f_width;
 /*   g_print("wstxpt graphic font courier medium 8\n");  debug */
  } else if (butn_fnt == 5 ) {
   pfd = pango_font_description_from_string("Courier,Medium 10");
-  f_height = font_calculations_array[courier_medium].f_height;   
-  f_width  = font_calculations_array[courier_medium].f_width;    
+  f_height = font_calculations_array[courier_medium].f_height;
+  f_width  = font_calculations_array[courier_medium].f_width;
 /*   g_print("wstxpt graphic font courier medium 10\n");  debug */
  } else if (butn_fnt == 6 ) {
    pfd = pango_font_description_from_string("Courier,Medium 12");
-   f_height = font_calculations_array[courier_large].f_height;   
-   f_width  = font_calculations_array[courier_large].f_width;    
-/*   g_print("wstxpt graphic font courier medium 12\n");  debug */ 
+   f_height = font_calculations_array[courier_large].f_height;
+   f_width  = font_calculations_array[courier_large].f_width;
+/*   g_print("wstxpt graphic font courier medium 12\n");  debug */
  } else if (butn_fnt == 7 ) {
    pfd = pango_font_description_from_string("Courier,Medium 14");
-   f_height = font_calculations_array[courier_largest].f_height;   
-   f_width  = font_calculations_array[courier_largest].f_width;    
+   f_height = font_calculations_array[courier_largest].f_height;
+   f_width  = font_calculations_array[courier_largest].f_width;
 /*   g_print("wstxpt graphic font courier medium 14\n");  debug */
  }
 
@@ -327,7 +327,7 @@ int  len;        /* len is length passed from fortran */
  gint vfw;
  char buffer[248];
  gint width;	/* to hold initial smaller guess of width */
-	
+
 /* find number of characters in buff, load metrics for current font and
    the find the pixel width. */
  ilen = 0;
@@ -402,7 +402,7 @@ int  len;        /* len is length passed from fortran */
  }
  gtk_widget_modify_font(graphic, pfd);  /* << ?? >> */
  context = gtk_widget_get_pango_context (graphic);
- 
+
  pango_font_description_free(pfd);
 
  width = f_width * ilen; /* conservative width */
@@ -418,7 +418,7 @@ int  len;        /* len is length passed from fortran */
 
  return;
 }
- 
+
 /* ************** viewtext_() display text in graphics box *************** */
 /*
  Given a string 'msg' and the 'line' where the string should be written
@@ -523,14 +523,14 @@ void viewtext_(msg,linep,side,size,len)
   }
   gtk_widget_modify_font(graphic, pfd);  /* << ?? >> */
   context = gtk_widget_get_pango_context (graphic);
- 
+
   pango_font_description_free(pfd);
 
   width = f_width * t_len; /* conservative width */
   layout = pango_layout_new (context);  /* clear and set layout */
   buffer[0] = '\0';
   g_snprintf (buffer, sizeof (buffer), "%s", msg); /* copy msg into buffer */
-  
+
   pango_layout_set_text (layout, buffer, t_len);  /* add t_len char of text */
   pango_layout_get_extents (layout, NULL, &logical_rect);  /* find box the text fits within */
   fitpix = MAX (width, PANGO_PIXELS (logical_rect.width));
@@ -567,7 +567,7 @@ void findviewtext_(charposp,linep,size,irx,iry)
   PangoFontMetrics *metrics;
   gint mid;
   long int fsize, charpos;
- 
+
   gint b_top, b_bottom, b_left, b_right; /* pixels at top/bottom/left/right */
   gint width;	/* conservative width of msg */
 
@@ -637,7 +637,7 @@ void findviewtext_(charposp,linep,size,irx,iry)
    pfd = pango_font_description_from_string("Courier,Medium 14");
    f_height = font_calculations_array[courier_largest].f_height;
    f_width  = font_calculations_array[courier_largest].f_width;
-/*    g_print("wstxpt graphic font medium 14\n");  debug */  
+/*    g_print("wstxpt graphic font medium 14\n");  debug */
 }
   gtk_widget_modify_font(graphic, pfd);  /* << ?? >> */
   context = gtk_widget_get_pango_context (graphic);
@@ -1584,7 +1584,7 @@ void axiscale_(long int* gw,long int* gh,float* xmn,float* xmx,float* ymn,
    axgw=(float)*gw; axgh=(float)*gh;
    axxmn=(float)*xmn; axxmx=(float)*xmx;
    axymn=(float)*ymn; axymx=(float)*ymx;
-   
+
 /* Derive factors for horizontal axis. */
     if (axxmn < 0.0 && axxmx >= 0.0) {
 	axxsc = axgw / (axxmx + (-1.0 * axxmn));
@@ -1710,6 +1710,28 @@ void pixel2u_(ux,uy,gx,gy)
 
   return;
 }
+
+/* *************** etplot_wwc_() general line plotting to wwc file. *************** */
+/*
+ As below, but ouputs lines to wwc file without drawing them.
+
+*/
+void etplotwwc_(ux,uy,updown,sym)
+  float *ux, *uy;
+  long int *updown, *sym;
+{
+  float x,y;
+  gint isymbol,iupd,x1,x2,y1,y2,width;
+  long int lx1,lx2,ly1,ly2,ipdis,isz,gs;
+
+/* If echo send parameters to wwc file */
+  if ( wwc_ok == 1) {
+    fprintf(wwc,"*etplot\n");
+    fprintf(wwc,"%f %f %ld %ld\n",*ux,*uy,*updown,*sym);
+   }
+
+   return;
+ }
 
 /* *************** etplot_() general line plotting. *************** */
 /*
@@ -2832,8 +2854,8 @@ void popupimage_(char *prom,char *docu,char *act,char *file,int lenprom,int lend
 /* now set the font size to be used for the image documentation. */
    if (disp_fnt == 0 ) {
      pfd = pango_font_description_from_string("Serif,Medium 8");
-     f_height = font_calculations_array[serif_small].f_height;   
-     f_width  = font_calculations_array[serif_small].f_width; 
+     f_height = font_calculations_array[serif_small].f_height;
+     f_width  = font_calculations_array[serif_small].f_width;
 /*    g_print("configure font medium 8\n"); debug */
    } else if (disp_fnt == 1 ) {
      pfd = pango_font_description_from_string("Serif,Medium 10");
@@ -2849,17 +2871,17 @@ void popupimage_(char *prom,char *docu,char *act,char *file,int lenprom,int lend
      pfd = pango_font_description_from_string("Serif,Medium 14");
      f_height = font_calculations_array[serif_largest].f_height;
      f_width  = font_calculations_array[serif_largest].f_width;
-/*    g_print("configure font medium 14\n"); debug */   
+/*    g_print("configure font medium 14\n"); debug */
    } else if (disp_fnt == 4 ) {
      pfd = pango_font_description_from_string("Courier,Medium 8");
      f_height = font_calculations_array[courier_small].f_height;
      f_width  = font_calculations_array[courier_small].f_width;
-/*    g_print("configure courier medium 8\n"); debug */     
+/*    g_print("configure courier medium 8\n"); debug */
    } else if (disp_fnt == 5 ) {
      pfd = pango_font_description_from_string("Courier,Medium 10");
      f_height = font_calculations_array[courier_medium].f_height;
      f_width  = font_calculations_array[courier_medium].f_width;
-/*    g_proint("configure courier medium 10\n");  debug */     
+/*    g_proint("configure courier medium 10\n");  debug */
    } else if (disp_fnt == 6 ) {
      pfd = pango_font_description_from_string("Courier,Medium 12");
      f_height = font_calculations_array[courier_large].f_height;
@@ -2899,8 +2921,3 @@ void popupimage_(char *prom,char *docu,char *act,char *file,int lenprom,int lend
    return;
 
 }
-
-
-
-
-

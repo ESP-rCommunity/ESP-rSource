@@ -2123,11 +2123,13 @@ C echo the contents of lltmp.
       CALL LISTAS(IRCFG,lltmp,IER)
       
 C Check if file actually is an IES file it should start with
-C one of the following: IESNA:LM-63-2002 IESNA:LM-63-1995
+C one of the following: IESNA:LM-63-2002 IESNA:LM-63-1995 or
+C with IESNA:LM-79-2008.sudo
       CALL EFOPSEQ(IRCFG,lltmp,1,IER)
       write(currentfile,'(a)') lltmp(1:lnblnk(lltmp))
       call lstripc(IRCFG,loutstr,99,ND,1,'IES line 1',IER)
-      if(loutstr(1:11).eq.'IESNA:LM-63')then
+      if(loutstr(1:11).eq.'IESNA:LM-63'.or.
+     &   loutstr(1:11).eq.'IESNA:LM-79')then
  43     call lstripc(IRCFG,loutstr,99,ND,1,'IES LUMCAT',IER)
         if(loutstr(1:8).eq.'[LUMCAT]')then
           k=9

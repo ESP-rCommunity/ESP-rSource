@@ -140,7 +140,7 @@ void  capexgf_(char* cmd,int len_cmd);
 void  capextf_(char* cmd,int len_cmd);
 void  capexall_(char* cmd,int len_cmd);
 void  userfonts_(long int* ifs,long int* itfs,long int* imfs);
-int ixavail(); 
+int ixavail();
 
 /* Shared functions in esp_draw.c */
 void  wstxpt_(long int* x,long int* y,char* buff,int len);
@@ -168,6 +168,7 @@ void  linescale_(long int* loff,float* ladd,float* lscale,long int* boff,float* 
         float* bscale);
 void  u2pixel_(float* ux,float* uy,long int* ix,long int* iy);
 void  pixel2u_(long int* ux,long int* uy,float* gx,float* gy);
+void  etplotwwc_(float* ux,float* uy,long int* updown,long int* sym);
 void  etplot_(float* ux,float* uy,long int* updown,long int* sym);
 void  erectan_(float* x,float* y,float* dx,float* dy,float* dt);
 void  egrbox_(float* x,float* y,float* dx,float* dy,long int* gp);
@@ -189,13 +190,13 @@ void  popupimage_(char *prom,char *docu,char *act,char *file,int lenprom,int len
 /* Shared functions in esp_menu.c */
 void  espmenuinit_ (char *title, int len);
 void  updmenu_(char* items,char* itypes,long int* nitmsptr,long int* iw,int len_items);
-void  espmenuitems_ (char *item,long int *ino, int len); 
-void  espmenu_ (int *ino); 
-void  espabcbox_ (char *msg1, char *aopt, char *bopt, char *copt, 
+void  espmenuitems_ (char *item,long int *ino, int len);
+void  espmenu_ (int *ino);
+void  espabcbox_ (char *msg1, char *aopt, char *bopt, char *copt,
           char *dopt, char *eopt, char *fopt, char *gopt,long int *ipick,
           int msg1_len, int aopt_len, int bopt_len, int copt_len,
           int dopt_len, int eopt_len, int fopt_len,int gopt_len);
-void  espdozenbox_ (char *msg1, char *aopt, char *bopt, char *copt, 
+void  espdozenbox_ (char *msg1, char *aopt, char *bopt, char *copt,
           char *dopt, char *eopt, char *fopt, char *gopt,
           char *hopt, char *iopt, char *jopt, char *kopt,
           char *lopt, long int *ipick,
@@ -207,7 +208,7 @@ void  espdozenbox_ (char *msg1, char *aopt, char *bopt, char *copt,
 /* Shared functions esp_text.c */
 void  inserttext_ ( char *message , int len);
 void  msgbox_(char* msg1,char* msg2,int len1,int len2);
-void  continuebox_ (char *msg1, char *cnt, int len1, int lencnt); 
+void  continuebox_ (char *msg1, char *cnt, int len1, int lencnt);
 void  clrhelp_();
 void  updhelp_(char* message,int len);
 void  egphelpscroll_(long int* impx,long int* impy,long int* ipflg,

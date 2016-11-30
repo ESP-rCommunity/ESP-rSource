@@ -3065,7 +3065,7 @@ C How many of each gain type is there each zone/gaintype/daytype.
       integer ICGTS,IW  ! casual slot for radio buttons
       integer MVERT,IVERT ! max items and current menu item
 
-      CHARACTER vert(35)*36,outs*124,KEY*1,sfile*72,snpfile*72
+      CHARACTER vert(35)*36,outs*144,KEY*1,sfile*72,snpfile*72
       character typstr*14,caskeyt*16
       character title*28,louts*248
       character*12 ll1,ll2,ll3,ll4

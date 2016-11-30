@@ -371,7 +371,7 @@ static int ter = -1;            /* terminal type passed on initial call (set ini
                             system execution calls.  */
 static int child_ter = -1;      /* child process terminal type  */
 
-static char *envmenu[] = { 
+static char *envmenu[] = {
                     "menu     : tiny       ",
                     "         : small      ",
                     "         : medium     ",
@@ -1508,10 +1508,10 @@ void winfnt_(n)
  long int *n;
 {
  long int font_index;
- 
+
  char *test = "_A_V_";
  int vfw,lt;
- 
+
  font_index = *n;  /* cast to local variable */
  if(font_index>=10) font_index=1;  /* in case of 64 bit huge number */
 
@@ -1780,7 +1780,7 @@ this enables the size of the scroll bar to be set*/
 
 /* **************  Open a 3D viewing box *************** */
 /*
- Passed the character width of the main control menu (menu_char), 
+ Passed the character width of the main control menu (menu_char),
  the width of the left (cl), right (cr) inside margins in terms of
  number of characters with the butn_fnt font and the top (ct)and bottom
  (cb)inside margins in terms of lines of characters.
@@ -4266,7 +4266,7 @@ void askcncldialog_(sstr,cncl,id,iq,f_len,a_len)
         if(start_height != (unsigned int)wa.height || start_width != (unsigned int)wa.width) {
 
 	/* Window resized so force update of the positions of the various boxes
-           including the position of askbx.  
+           including the position of askbx.
            << todo put similar logic in other dialogs >> */
         /* debug  fprintf(stderr,"askcncldialog detected configure event\n"); */
           refreshenv_();
@@ -5204,7 +5204,7 @@ void egdisp_(msg,line,len)
   */
   // strncpy(msg2,msg,len);
   // msg2[len+1] = '\0';
-  
+
 /* add message to the queue */
   if(edisp_index < EDISP_LIST_LEN-1) {
     edisp_index++;
@@ -5421,6 +5421,28 @@ void pixel2u_(ux,uy,gx,gy)
 
   return;
 }
+
+/* *************** General line plotting to wwc file. *************** */
+/*
+ As below, but outputs lines to wwc file without drawing them.
+
+*/
+ void etplotwwc_(ux,uy,updown,sym)
+   float *ux, *uy;
+   long int *updown, *sym;
+ {
+   float x,y;
+   int isymbol,iupd,x1,x2,y1,y2;
+   long int lx1,lx2,ly1,ly2,ipdis,isz,gs;
+
+ /* If echo send parameters to wwc file */
+   if ( wwc_ok == 1) {
+     fprintf(wwc,"*etplot\n");
+     fprintf(wwc,"%f %f %ld %ld\n",*ux,*uy,*updown,*sym);
+    }
+
+    return;
+  }
 
 /* *************** General line plotting. *************** */
 /*
@@ -6203,7 +6225,7 @@ void axiscale_(long int* gw,long int* gh,float* xmn,float* xmx,float* ymn,
    axgw=(float)*gw; axgh=(float)*gh;
    axxmn=(float)*xmn; axxmx=(float)*xmx;
    axymn=(float)*ymn; axymx=(float)*ymx;
-   
+
 /* Derive factors for horizontal axis. */
     if (axxmn < 0.0 && axxmx >= 0.0) {
 	axxsc = axgw / (axxmx + (-1.0 * axxmn));

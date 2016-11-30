@@ -5,10 +5,10 @@ C tdf2.h Parameters for TDF program, May 2010 version.
 C Allowed number of tabular entries in the TDF file. For large
 C models there may be one item per zone so this should reflect
 C the number of zones in building.h
-      PARAMETER (MIT=82)
+      PARAMETER (MIT=120)
 
 C Allowed columns of tabular data in TAB file.
-      PARAMETER (MTABC=80)
+      PARAMETER (MTABC=120)
 
 C Maximum number of help lines associated with a generic item.
       PARAMETER (MHEL=5)

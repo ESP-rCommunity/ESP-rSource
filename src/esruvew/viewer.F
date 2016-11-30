@@ -18,12 +18,12 @@ C VIEWER MAIN PROGRAM
 C Path to problem and command line file (if any).
       common/rpath/path
       common/rcmd/LCMDFL
-      
+
 C Name of current application
       common/APPNAME/cAppName
-      
-      character cAppName*12      
-      
+
+      character cAppName*12
+
       logical     unixok
 
       character outs*124,inf*144,path*72,LCMDFL*144,fs*1
@@ -156,6 +156,11 @@ C Setup and pass in parameters to win3d.
         nzonec=0
         call foundcolour(mdispl,nifgrey,ncset,ngset,nzonec)
         call startbuffer()
+      ELSE
+        
+C Set reasonable defaults to allow viewer to export xfig views in text mode.
+        igw=463; igwh=358
+        igl=23; igb=378
       ENDIF
 
       CALL ESPrVersion("summary",cAppName,IUOUT)
@@ -256,7 +261,7 @@ C Depending on computer type set integer size of passed parameters.
 #else
       integer*8 JITZNM,JITSNM,JITVNO,JITOBS,JITVIS,JITVOBJ,JITSNR
       integer*8 JITGRD,JITORG,JITBND,JITDSP,JITHLS,JITHLZ,JITPPSW
-#endif     
+#endif
       return
       end
 

@@ -359,13 +359,17 @@ C      write(6,*) opta
       iy=0
       return
       end
- 
+
       subroutine pixel2u(ux,uy,gx,gy)
       gx=0.0
       gy=0.0
       return
       end
- 
+
+      subroutine etplotwwc(ux,uy,iupdown,isym)
+      return
+      end
+
       subroutine etplot(ux,uy,iupdown,isym)
       return
       end
@@ -609,7 +613,7 @@ C      end
       subroutine findviewtext(icx,line,isize,ix,iy)
       integer icx,line,isize,ix,iy
       return
-      end 
+      end
 
 C      subroutine getfilelist(subpath,action,listf,nwlistf,nlistf)
 C      character*(*) subpath, action, listf
@@ -626,7 +630,7 @@ C Return string indicating xlibs
       return
       end
 
-      
+
 C A zero says there is neither X11 or GTK available.
       integer function iXavail()
       iXavail = 0
@@ -638,9 +642,9 @@ C A three says that this is the text only version.
       igraphiclib = 3
       return
       end
-      
-      
-      
+
+
+
 C      function lnblnk(string)
 C      character*(*) string
 C      character a*1,sl*1
