@@ -1,0 +1,31 @@
+Project notes for Central Ventilation System (CVS) Module Test Suite
+Description: Exemplars of the CVS types (None, HRV, Fans with no heat recovery, and ERV)
+In folder: /tester/test_suite/Ventilation
+By: P. Pinel
+Date: Sat Aug 23 22:41:11 2014
+Client: NRCan
+_____________________________
+Notes: The base ESP-r model is based on basic_AIM_TIGHT.cfg located in
+/tester/test_suite/alberta_infil_model/cfg/. The only modification is the
+addition of .vnt files
+_____________________________
+
+This is a tester file for the Central Ventilation System (CVS) models in ESP-r. This model 
+contains 4 system types: None, HRV, Fans with no heat recovery, and ERV. The CVS input files 
+(.vnt files) may be found in the folder Ventilation/mvnt/. Configuration files for each system 
+type is included in this test suite:
+
+	- CVS_None.cfg: This model uses system type 1, None. The .vnt file is read into ESP-r,
+	                however no ventilation is modelled for the zone.
+	- CVS_Fan.cfg : This model uses system type 3, Fans with no heat recovery. The .vnt 
+	                specifies a 50 L/s mechanical ventilation into the building zones receiving
+					AIM-2 modelled infiltration, which is specified in the AIM-2 input file 
+					Ventilation/aim2/Tight.aim. The fan is set to operate between 5 and 30 degC
+	- CVS_HRV.cfg : This model uses system type 2, HRV. The .vnt specifies an HRV unit supplying
+	                mechanical ventilation into the building zones receiving AIM-2 modelled 
+					infiltration. The supply and exhaust ducts for the HRV unit are also specified 
+					in the .vnt file. See Ventilation/mvnt/HRV.vnt for details.
+	- CVS_ERV.cfg : This model uses system type 4, ERV. The .vnt specifies an ERV unit supplying
+	                mechanical ventilation into the building zones receiving AIM-2 modelled 
+					infiltration. The supply and exhaust ducts for the ERV unit are also specified 
+					in the .vnt file. See Ventilation/mvnt/ERV.vnt for details.

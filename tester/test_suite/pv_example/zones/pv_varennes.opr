@@ -1,8 +1,6 @@
-*Operations 1.0
-*date Thu Apr  5 13:17:27 2007  # latest file modification 
 # operations of zone-A defined in: 
 # ../zones/pv_varennes.opr
-no casual gains and 400 ach of infiltration
+nil_operations
 # control(no control of air flow  ), low mid & high setpoints 
    0     0.000     0.000     0.000
      1   # no Weekday flow periods
