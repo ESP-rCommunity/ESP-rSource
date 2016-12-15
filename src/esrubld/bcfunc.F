@@ -897,13 +897,13 @@ C values.
             if (bInStartup())then
               continue
             else
-	      UNMETHRS(IICOMP)=UNMETHRS(IICOMP)+hrfrac
+              UNMETHRS(IICOMP)=UNMETHRS(IICOMP)+hrfrac
             endif
             write(outs,'(a,f8.2,a,i3)')' heating capacity insufficient',
      &        UNMETHRS(IICOMP),' hours in zone',IICOMP
-	  elseif ( QFUT.le.QH.and.TFUT.ge.TL)then  ! if within capacity and setpoint
+          elseif ( QFUT.le.QH.and.TFUT.ge.TL)then  ! if within capacity and setpoint
             write(outs,'(a)')' heating capacity & SP ok '
-	  elseif ( QFUT.le.QH.and.TFUT.lt.TL)then  ! if within capacity and setpoint
+          elseif ( QFUT.le.QH.and.TFUT.lt.TL)then  ! if within capacity and setpoint
             write(outs,'(a)')' heating capacity OK & SP NOT quite ok '
           endif
           call edisp(itu,outs)
@@ -919,9 +919,9 @@ C values.
             endif
             write(outs,'(a,f8.2,a,i3)')' cooling capacity insufficient',
      &        UNMETHRS(IICOMP),' hours in zone ',IICOMP
-	  elseif ( QFUT.le.QC.and.TFUT.le.TU)then  ! if within capacity and setpoint
+          elseif ( QFUT.le.QC.and.TFUT.le.TU)then  ! if within capacity and setpoint
             write(outs,'(a)')' cooling capacity & SP ok '
-	  elseif ( QFUT.le.QC.and.TFUT.gt.TU)then  ! if within capacity and setpoint
+          elseif ( QFUT.le.QC.and.TFUT.gt.TU)then  ! if within capacity and setpoint
             write(outs,'(a)')' cooling capacity & SP NOT quite ok '
           endif
           call edisp(itu,outs)
@@ -946,7 +946,7 @@ C Debug.
               write(6,'(a,f8.2,a,i3)')' heating capacity insufficient ',
      &          UNMETHRS(IICOMP),' hours in zone ',IICOMP
             endif
-	  elseif ( QFUT.le.QH.and.TFUT.ge.TL)then  ! if within capacity and setpoint
+          elseif ( QFUT.le.QH.and.TFUT.ge.TL)then  ! if within capacity and setpoint
             continue
           endif
         else
@@ -961,7 +961,7 @@ C Debug.
               write(6,'(a,f8.2,a,i3)')' cooling capacity insufficient ',
      &          UNMETHRS(IICOMP),' hours in zone ',IICOMP
             endif
-	  elseif ( QFUT.le.QC.and.TFUT.le.TU)then  ! if within capacity and setpoint
+          elseif ( QFUT.le.QC.and.TFUT.le.TU)then  ! if within capacity and setpoint
             continue
           endif
         endif
@@ -1662,7 +1662,7 @@ C Read charging information and set up heat injection to space
         CSP=1000.1
       endif
 
-C Check if control is required and return if setpoints are met.  	  
+C Check if control is required and return if setpoints are met.    
 C << however if standby losses are enabled then alternative logic
 C << is required to inject the standby losses.    
       IF(TCTL.LE.CSP.AND.TCTL.GE.HSP)RETURN
@@ -1850,9 +1850,9 @@ C used in BCL00.
             write(outs,'(a,f8.2,a,i3)')
      &        ' heating capacity insufficient ',
      &      UNMETHRS(IICOMP),' hours in zone',IICOMP
-	  elseif ( QFUT.le.QHM.and.TFUT.ge.HSP)then  ! if within capacity and setpoint
+          elseif ( QFUT.le.QHM.and.TFUT.ge.HSP)then  ! if within capacity and setpoint
             write(outs,'(a)')' heating capacity & SP ok '
-	  elseif ( QFUT.le.QHM.and.TFUT.lt.HSP)then  ! if within capacity and setpoint
+          elseif ( QFUT.le.QHM.and.TFUT.lt.HSP)then  ! if within capacity and setpoint
             write(outs,'(a)')' heating capacity & SP NOT quite ok '
           endif
           call edisp(itu,outs)
@@ -1870,9 +1870,9 @@ C used in BCL00.
             write(outs,'(a,f8.2,a,i3)')
      &        ' cooling capacity insufficient ',
      &        UNMETHRS(IICOMP),' hours in zone',IICOMP
-	  elseif ( QFUT.le.QCM.and.TFUT.le.CSP)then  ! if within capacity and setpoint
+          elseif ( QFUT.le.QCM.and.TFUT.le.CSP)then  ! if within capacity and setpoint
             write(outs,'(a)')' cooling capacity & SP ok '
-	  elseif ( QFUT.le.QCM.and.TFUT.gt.CSP)then  ! if within capacity and setpoint
+          elseif ( QFUT.le.QCM.and.TFUT.gt.CSP)then  ! if within capacity and setpoint
             write(outs,'(a)')' cooling capacity & SP NOT quite ok '
           endif
           call edisp(itu,outs)
@@ -1892,9 +1892,9 @@ C Keep track if trace is not active.
               write(6,'(a,f8.2,a,i3)')' heating capacity insufficient ',
      &          UNMETHRS(IICOMP),' hours in zone ',IICOMP
             endif
-	  elseif ( QFUT.le.QHM.and.TFUT.ge.HSP)then  ! if within capacity and setpoint
+         elseif ( QFUT.le.QHM.and.TFUT.ge.HSP)then  ! if within capacity and setpoint
             continue
-	  elseif ( QFUT.le.QHM.and.TFUT.lt.HSP)then  ! if within capacity and setpoint
+         elseif ( QFUT.le.QHM.and.TFUT.lt.HSP)then  ! if within capacity and setpoint
             continue
           endif
         else
@@ -1909,9 +1909,9 @@ C Keep track if trace is not active.
               write(6,'(a,f8.2,a,i3)')' cooling capacity insufficient ',
      &          UNMETHRS(IICOMP),' hours in zone ',IICOMP
             endif
-	  elseif ( QFUT.le.QCM.and.TFUT.le.CSP)then  ! if within capacity and setpoint
+          elseif ( QFUT.le.QCM.and.TFUT.le.CSP)then  ! if within capacity and setpoint
             continue
-	  elseif ( QFUT.le.QCM.and.TFUT.gt.CSP)then  ! if within capacity and setpoint
+          elseif ( QFUT.le.QCM.and.TFUT.gt.CSP)then  ! if within capacity and setpoint
             continue
           endif
         endif      
@@ -6002,7 +6002,7 @@ C
 c        fCondFreeCool(IICOMP) = (fFreeCoolDelivered(IICOMP)
 c     &                         / ( TFA(IICOMP) - TF))
  
-		QFUT = -1.0 * fFreeCoolDelivered(IICOMP)
+         QFUT = -1.0 * fFreeCoolDelivered(IICOMP)
 
 C.......Determine temperatures in slave zone
         Tslv=(BB3-BB2*fFreeCoolDelivered(IICOMP)*(-1.0))/BB1        

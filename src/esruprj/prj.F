@@ -37,6 +37,7 @@ C ********** MAIN
 
 C geometry.h provides commons G0 and G2.
 #include "geometry.h"
+C UA1 in uncertainty.h
 #include "uncertainty.h"
 #include "esprdbfile.h"
 C esprdbfile.h supplies the following:
@@ -130,9 +131,6 @@ C IPV description via ipvdata.h.
       common/gzonpik/izgfoc,nzg,nznog(mcom)
       common/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,CFCDBOK
 
-C Uncertainty.
-      COMMON/UA1/LUALF,LCNG(MNCNG),LLOC(MNIL)
-
 C IDST tool commands
       common/idsta/CMDCFG,CMDCLM,CMDCLMN,CMDNOTE,CMDRES,CMDLBL(10),
      &             CMDLNAM(10)
@@ -161,7 +159,6 @@ C Tollerance for surface matching.
       logical itisanexemplar  ! passed to newprb to ensure browse mode.
 
       character dstmp*24,uname*24
-      character LUALF*72,LCNG*15,LLOC*15
       character LTMP*72
       character inf*144,inz*16,inzone*16,act*16,inact*16,LCMDFL*144
       character outs*124,outstr*124
@@ -1556,6 +1553,7 @@ C simula commissions technical assessments and analysis.
       subroutine simula(ier)
 #include "building.h"
 #include "model.h"
+#include "uncertainty.h"
 #include "plant.h"
 #include "power.h"
 #include "sbem.h"
@@ -1614,7 +1612,7 @@ C dd is character array for selecting simulation parameter sets.
       character descra*7,descrb*7,descrst*10,descrfn*10
 
       logical DOK,OK,MSTROK,MSTRZN,XST,modparms
-      logical browse,concat,hri,defok,unixok
+      logical browse,concat,hri,defok,unixok,LIBXST
       logical mlcok,bndryok,bndrysxc,confok,geofok,oprfok,prob
       logical tmcok,shdok
       integer iappwpc ! application height as % of nominal size
@@ -1805,6 +1803,10 @@ C Toggle trace level.
       elseif(INO.EQ.MITEM-8)then
 
 C Invoke simulator for the case of a simulation parameter set.
+C If uncertanties included in model tell user to use silent mode.
+        INQUIRE (FILE=LUALF,EXIST=LIBXST)
+        if(LIBXST) call edisp(iuout,
+     &     'Use run silent for uncertainty assessments.')
         helptopic='prj_simulation_menu'
         call gethelptext(helpinsub,helptopic,nbhelp)
         if(nsset.gt.0)then
@@ -1889,6 +1891,8 @@ C Debug.
         else
 
 C Invoke simulator for the case without a simulation parameter set.
+          if(NIACT.gt.0) call edisp(iuout,
+     &      'Use run silent for uncertainty assessments.')
           call tstamp('>','PRJ: beginning simulation')
           doit = ' '
           call terminalmode(childterminal,tmode)
@@ -2128,22 +2132,13 @@ C There may be ipv data held in the configuration file.
 C Setup one parameter set or several sets to match IPV description.
         if(ID.eq.1.or.ID.eq.3)then
           if(INDCFG.eq.2)then
-            nsset=1
-            isset=1
-            isstup=0
-            isbnstep=1
-            ispnstep=10
-            issave=4
-            isavgh=0
+            nsset=1; isset=1; isstup=0
+            isbnstep=1; ispnstep=10; issave=4; isavgh=0
           else
             call scntcnst(TDM,istd,TCM,ISTC)
-            nsset=1
-            isset=1
+            nsset=1; isset=1
             if(isstup.eq.0)isstup=ITCNST
-            isbnstep=1
-            ispnstep=10
-            issave=4
-            isavgh=0
+            isbnstep=1; ispnstep=10; issave=4; isavgh=0
           endif
           if(ID.eq.1)then
             de='default'
@@ -2151,14 +2146,10 @@ C Setup one parameter set or several sets to match IPV description.
      &        IER,nbhelp)
             write(spfdescr(isset),'(a8)')de(1:8)
             lde=lnblnk(spfdescr(isset))
-            spfdescr(2)='-'
-            spfdescr(3)='-'
-            spfdescr(4)='-'
-            spfdescr(5)='-'
-            isstday(isset)=9
-            isstmon(isset)=1
-            isfnday(isset)=15
-            isfnmon(isset)=1
+            spfdescr(2)='-'; spfdescr(3)='-'
+            spfdescr(4)='-'; spfdescr(5)='-'
+            isstday(isset)=9; isstmon(isset)=1
+            isfnday(isset)=15; isfnmon(isset)=1
             cr=cfgroot
             lr=lnblnk(cfgroot)
             if(INDCFG.ne.2)then
@@ -2246,10 +2237,8 @@ C It is possible to add another set so ask user and set file names.
           isset=nsset
           write(spfdescr(isset),'(a8)')de(1:8)
           lde=lnblnk(spfdescr(isset))
-          isstday(isset)=9
-          isstmon(isset)=1
-          isfnday(isset)=15
-          isfnmon(isset)=1
+          isstday(isset)=9; isstmon(isset)=1
+          isfnday(isset)=15; isfnmon(isset)=1
           if(INDCFG.ne.2)then
             WRITE(sblres(isset),'(3a)')cr(1:lr),de(1:lde),'.res'
           else

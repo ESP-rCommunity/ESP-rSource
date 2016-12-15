@@ -41,6 +41,28 @@ C LFMAT,IFMAT,LFMUL,IFMUL (for materials and constructions database)
       character TYPEDES(5)*20,t32*32,d32*32
       logical closemat1,closemat2
       integer NCO,ICO ! max items and current menu item
+
+C << arrange defaults by the general topic
+C << update the DFLTMAT to work with multiple main and sub-topics
+C      call edisp(iuout,'  ')
+C      call edisp(iuout,' Uncertainty category selection. ')
+C      ITEM(1) =' Databases ...               '
+C      ITEM(2) ='a  Weather                   '
+C      ITEM(3) ='   Pressure (N/A)            '
+C      ITEM(4) ='c  Thermophysical properties '
+C      ITEM(5) ='d  Construction composites   '
+C      ITEM(6) ='   Optical properties (N/A)  '
+C      ITEM(7) ='   Temporal definitions (N/A)'
+C      ITEM(8) =' --------------------------- '
+C      ITEM(9) =' Zones composition ...       '
+C      ITEM(10)='g  Geometry (air volume)     '
+C      ITEM(11)='   Boundary conditions (N/A) '
+C      ITEM(12)='i  Zone operations                '
+C      ITEM(13)='j  Convection coefficients   '
+C      ITEM(14)='   Casual gain control (N/A) '
+C      ITEM(15)=' --------------------------- '
+C      ITEM(16)='? Help                       '
+C      ITEM(17)='- Exit                       '
       
 C Define material types.
       TYPEDES(1)='unknown'
@@ -78,6 +100,8 @@ C Fix values based on current materials database categories.
       MATTYPE(14)=4
       MATTYPE(15)=3
       MATTYPE(16)=1
+      MATTYPE(17)=1
+      MATTYPE(18)=1
 
 C Present list of material categories with toggles.
 C Add uncertainty percentages to foot of list.
@@ -125,16 +149,26 @@ C Gather the names of the various classes and present this list.
       NCO=M+12
 
 C Help text for this menu.
-      H(1)='The classifications shown in the display include up to'
-      H(2)='18 elements. To get a listing of the items included'
-      H(3)='select one of the classifications.'
+      H(1)='The classifications shown in the display are given a'
+      H(2)='general type e.g. unknown, impermeable etc. At the bottom'
+      H(3)='are the current default values of bounds for each type'
+      H(4)='and for conductivity, density, specific heat, IR emisivity,'
+      H(5)='solar absorptivity. '
+      H(6)=' '
+      H(7)='If you set new defaults for thermophysical properties you'
+      H(8)='can use them as you define new distributions (otherwise you'
+      H(9)='will have to nominate values for each one manually. '
+      H(10)=' '
+      H(11)='If you toggle a category e.g. Brick from inorganic porous '
+      H(12)='to unknown any bricks you select will get the bounds for '
+      H(13)='the unknown uncertainy bounds. '
 
       CALL EMENU('Material classes',CLSDES,NCO,ICO)
 
       IF(ICO.EQ.NCO)THEN
         RETURN
       ELSEIF(ICO.EQ.(NCO-1))THEN
-        CALL PHELPD('materials menu',3,'-',0,0,IER)
+        CALL PHELPD('materials menu',13,'-',0,0,IER)
       ELSEIF(ICO.le.(NCO-3).and.ICO.ge.(NCO-7))THEN
         ITYP=ICO-(M+4)
         write (t32,'(6f5.1)')(DFLTMAT(ITYP,IMT),IMT=1,6)
@@ -150,6 +184,8 @@ C Help text for this menu.
         call EGETWR(t32,K,DFLTMAT(ITYP,5),0.,100.,'F','absorb',IER)
         call EGETWR(t32,K,DFLTMAT(ITYP,6),0.,100.,'F','dif resist',IER)
       ELSEIF(ICO.GT.1.AND.ICO.LT.(NCO-4))THEN
+
+C Toggle the general type from unknown to imperm to non-hygro etc.
         MATTYPE(ICO-1)=MATTYPE(ICO-1)+1
         if (MATTYPE(ICO-1).gt.5) MATTYPE(ICO-1)=1
       endif

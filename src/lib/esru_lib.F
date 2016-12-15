@@ -1756,7 +1756,7 @@ C overwriting the string passed, deal with a copy.
       COMMON/OUTIN/IUOUT,IUIN
       CHARACTER*(*) A
       CHARACTER*32 WORDS(12)
-      CHARACTER B*124,C*1,fs*1,outs*124
+      CHARACTER B*248,C*1,fs*1,outs*248
       logical unixok
 
 C Determine the file separator and clear the WORDS to return.
@@ -1770,7 +1770,7 @@ C Determine the file separator and clear the WORDS to return.
         WORDS(i)='  '
   9   continue
 
-      lastcc = MIN0(LNBLNK(A),123)
+      lastcc = MIN0(LNBLNK(A),246)
       WRITE(B,'(A)',IOSTAT=ios,ERR=1) A(1:lastcc+1)
 
 C Loop through B and convert all fileseparators to blanks.
@@ -1808,19 +1808,23 @@ C assign WORDS.
       IF(C.EQ.' ')GOTO 102
       GOTO 20
    1  if(IOS.eq.2)then
-        write(outs,*) 'GETTOKENS: internal wreite permission error: ',A
-        call edisp(iuout,outs)
+        write(outs,*) 
+     &   'GETTOKENS: internal write permission error: ',A(1:lnblnk(A))
+        call edisp248(iuout,outs,100)
       else
-        write(outs,*) 'GETTOKENS: error in internal write: ',A
-        call edisp(iuout,outs)
+        write(outs,*) 
+     &    'GETTOKENS: error in internal write: ',A(1:lnblnk(A))
+        call edisp248(iuout,outs,100)
       endif
       return
    2  if(IOS.eq.2)then
-        write(outs,*) 'GETTOKENS: permission error in getting token: ',A
-        call edisp(iuout,outs)
+        write(outs,*) 
+     &  'GETTOKENS: permission error in getting token: ',A(1:lnblnk(A))
+        call edisp248(iuout,outs,100)
       else
-        write(outs,*) 'GETTOKENS: error in getting token: ',A
-        call edisp(iuout,outs)
+        write(outs,*) 
+     &  'GETTOKENS: error in getting token: ',A(1:lnblnk(A))
+        call edisp248(iuout,outs,100)
       endif
       return
 
@@ -6395,6 +6399,7 @@ C  = '>' append message to journal
 
       character*(*) msg
       character dstmp*24,act*1,outs*124,journcmd*20,jfile*72
+      character outs248*248  ! to handle longer messages
       logical there
 
       call dstamp(dstmp)
@@ -6409,7 +6414,7 @@ C  = '>' append message to journal
 
 C If there is a journal file append the current message to it and close.
         LN=max(1,lnblnk(msg))
-        write(outs,'(3A)')msg(1:LN),' @ ',dstmp
+        write(outs248,'(3A)')msg(1:LN),' @ ',dstmp
         ltf=max(1,LNBLNK(jfile))
         if(journio.eq.1.and.
      &    (jfile(1:2).ne.'  '.and.jfile(1:4).ne.'UNKN'))then
@@ -6419,8 +6424,8 @@ C If there is a journal file append the current message to it and close.
             close(iuj)
             open(iuj,file=jfile(1:ltf),position='APPEND',
      &        status='UNKNOWN',err=1)
-            LN=max(1,lnblnk(outs))
-            write(iuj,'(a)',iostat=ios,err=2)outs(1:LN)
+            LN=max(1,lnblnk(outs248))
+            write(iuj,'(a)',iostat=ios,err=2)outs248(1:LN)
             close(iuj)
           endif
         endif

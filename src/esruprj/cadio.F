@@ -1697,6 +1697,7 @@ C << to be done - then name file generated is never cleaned up >>
 
 #include "building.h"
 #include "model.h"
+C UA1 in uncertainty.h
 #include "uncertainty.h"
 #include "esprdbfile.h"
 C esprdbfile.h supplies the following:
@@ -1751,7 +1752,6 @@ C ICLIM,LCLIM (for climate file)
       common/MOIST02/LMOIST(MCOM)
       common/spmfxst/ispmxist,spflnam
       INTEGER :: ispmxist
-      COMMON/UA1/LUALF,LCNG(MNCNG),LLOC(MNIL)
       character imgfmt*4  ! GIF XBMP TIF JPG
       character imgfoc*4  ! FZON FNET FCTL FDFS
       character limgfil*72  ! file name (extend to 144 char)
@@ -1766,7 +1766,6 @@ C ICLIM,LCLIM (for climate file)
       common/bsmtdef/iBSIMP(MCOM),LBSIMP(MCOM)
       INTEGER :: ibsimp
 
-      character LUALF*72,LCNG*15,LLOC*15
       character LPNF*72,LMOIST*72
       character*72 LCFD
       character LCMDFL*144,LFIL*72

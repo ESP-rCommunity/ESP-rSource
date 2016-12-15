@@ -92,7 +92,6 @@ C Tolerance for iteration of hydrogen flow matrix
       INTEGER :: indcfg
 
 C Uncertainty.
-      COMMON/UA1/LUALF,LCNG(MNCNG),LLOC(MNIL)
       COMMON/UA5/IMET,ISIM,NRSIM
       INTEGER :: imet,isim,nrsim
 
@@ -107,7 +106,7 @@ C Simulator parameter.
       LOGICAL spfileok,perok,tstepok,saveok,autook,exitok,startupok
       logical PBYFIL,OK,dok
 
-      character LUALF*72,LCNG*15,LLOC*15,outs*124
+      character outs*124
       
       INTEGER :: i,ier,irep,isimn1,isimn2,istat,iualf,iunit
       INTEGER :: nstep

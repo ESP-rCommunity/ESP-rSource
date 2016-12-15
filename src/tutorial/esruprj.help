@@ -17270,7 +17270,8 @@ C          CALL EASKS(LTMP,' Pressure coefficients database?',
 '  '
 'You will then be asked to pick the required thermophysical'
 'property for this sensitivity study. You will also be asked'
-'to specify the bounds of the property to search within.'
+'to specify the bounds of the property to which the random.'
+'change will be applied.'
 '   '
 'Exit will return to the main menu without saving any data.'
 *enditem
@@ -17283,26 +17284,29 @@ C          CALL EASKS(LTMP,' Pressure coefficients database?',
 'a specific layer of a MLC. First select which material you want to'
 'alter.'
 *enditem
-      call EASKAB('Which composite construction parameter? ','  ',
-      CALL EPICKS(INPIC,IVALE,' ',' Which material : ',
+      call EASKAB('Which composite construction parameter?','  ',
+      CALL EPICKS(INPIC,IVALE,' ',' Which material:',
 *subroutine SDDEF003
 *item SDDEF003 uncert_climate
 'Pick the required climate parameter from the list. '
 '   '
 'Exit will return to the main menu without saving any data.'
 *enditem
-      CALL EPICKS(INPIC,IVALP,' ',' Which parameter : ',
+      CALL EPICKS(INPIC,IVALP,' ','Which parameter:',
 *subroutine SDDEF004
 *item SDDEF004 uncert_operations
 'You can nominate casual gains or scheduled air flows as uncertain.'
 ' '
-'If casual gains then you will be asked which casual gain. and'
-'then whether it is the radiant or convective portion of the gain.'
-'or the total magnitude of the gain.'
+'If casual gains then you will be asked which casual gain, and'
+'then whether it is the radiant or convective portion of the gain,'
+'or the total magnitude of the gain or the period start time.'
 '  '
 'If schedules air flows selected then you are asked if it is'
 'infiltration or which zone is a ventilation source or if it'
 'is the source temperature of the ventilation which is uncertain.'
+'  '
+'For either casual gains or scheduled air flows you need to link'
+'with a defined (zone) location.'
 *enditem
       call EASKAB('  ','Which scheduled parameter? ',
       call EASKABC('  ','Which casual gain? ',
@@ -17324,15 +17328,20 @@ C          CALL EASKS(LTMP,' Pressure coefficients database?',
 'take are defined via one of three processes:'
 '1) Percentage change: the upper and lower values will'
 '   be the base case value +/- the percentage change.'
-'   A value greater than zero is expected.'
+'   This will be multipled by the random seed for the run'
+'   to get the specific change to apply.'
+'   A % value greater than zero is expected.'
 '  '
 '2) Absolute change: the upper and lower values will be'
-'   the base case value +/- the absolute change.'
+'   the base case value +/- the absolute change. For example'
+'   to increment or decrement thickness by 10mm (0.01m).'
+'   This will be multipled by the random seed for the run'
+'   to get the specific change to apply.'
 '   A value greater than zerio is expected.'
 '  '
 '3) Explicitly: the upper and lower values will be '
-'   defined explicitly. Two values are expected and the'
-'   upper must be greater than the lower.'
+'   defined separately. Two values are expected and the'
+'   upper must be greater than the lower. '
 *enditem
         call EASKABC(' Define parameter bounds',' via:',
         call EASKR(PERC,' ',' Percentage change value? ',
@@ -17344,10 +17353,17 @@ C          CALL EASKS(LTMP,' Pressure coefficients database?',
 'take are defined via one of two processes:'
 '1) Percentage change: the upper and lower values will'
 '   be the base case value +/- the percentage change.'
-'   A value greater than zero is expected.'
+'   This will be multipled by the random seed for the run'
+'   to get the specific change to apply.'
+'   A % value greater than zero is expected.'
 '  '
 '2) Absolute change: the upper and lower values will be'
-'   the base case value +/- the absolute change.'
+'   the base case value +/- the absolute change * the current'
+'   random number seed (+-2.0). For example to increment or'
+'   decrement thickness by a nominal 10mm set a value of 0.01m'
+'   (be sure the value reflects the units of the attribute).'
+'   This will be multipled by the random seed for the run'
+'   to get the specific change to apply.'
 '   A value greater than zero is expected.'
 *enditem
         call EASKAB(' Define parameter bounds',' via:',
@@ -17371,22 +17387,41 @@ C          CALL EASKS(LTMP,' Pressure coefficients database?',
 *enditem
       call EASKS(LTEMP,' Uncertainty definitions file name ?',
 *item UNCERTA uncert_overview_a
+'ESP-r includes formal descriptions of uncertainty for the following'
+'topics: 1) thermophysical properties, 2) layer thickness, 3) weather'
+'4) zone operations, 5) convection coefficients, zone air volume.'
+'  '
 'Uncertainties are defined in a three stage process '
 'analogous to mass flow.'
 '  '
-'1. A distribution for a chosen parameter is defined.  '
-'   Minimum one distribution.'
+'1 One or more distributions are defined. For example, if thickness'
+'  of insulation is of interest we might create named distributions'
+'  [wall_thickness] & [roof thickness] and identify specific materials'
+'  to perturb (% or +- absolute increments).'
 '  '
-'2. A physical location in the model is defined; zone,  '
-'   surface etc. Minimum one location.'
+'2 One or more named physical locations in the model are defined e.g.'
+'  [facades] & [roof] each of which are linked to specific zones &'
+'  surfaces. Thermophysical properties & layer thickness & zone'
+'  operations need a zone location. Weather needs a temporal location.'
 '  '
-'3. Distributions and locations are linked to define an '
-'   uncertainty.  The validity of the uncertainty is '
-'   checked at simulation time. Minimum one uncertainty.'
+'3. Distributions and locations are linked to define one or more'
+'   uncertanties e.g. [wall_thickness] + [facades].  The validity'
+'   of the uncertainty is checked at simulation time.'
 '  '
-'A so-called uncertainty library is used and if prj detects'
-'that you are working in a remote folder you are asked to'
-'confirm where to place the library.'
+'When the assessment is run you are given a choice of: differential,'
+'factorial, Monti-Carlo assessments. For each run a random see will be'
+'generated (within the range +-2.0 and applied to the user defined'
+'bounds. The results file will include a base case pluse all of'
+'the separate variants (sets) required.' 
+'NOTE: bps must be run in silent mode to support sensitivity studies.'
+'  '
+'When res is run you are given the option to work with all of the  '
+'sets or specific result sets. Look for the [sensitivity] menu option. '
+'  '
+'The initial option [a create default bounds] allows you to define'
+'bounds for uncertainty for thermophysical properties in advance'
+'and reference these defaults rather than manually stipulating the'
+'bounds to apply.'
 *enditem
         CALL PHELPD('Uncertainty definitions file',12,'-',0,0,IER)
 *subroutine DISPOPT
@@ -17419,7 +17454,7 @@ C          CALL EASKS(LTMP,' Pressure coefficients database?',
 *subroutine LOCDEF
 *item LOCDEF uncert_location
 'The location of the uncertainty can be:'
-' - spatial and in all temporal locations.'
+' - spatial (zones or zones:surfaces) and in all temporal locations.'
 ' - temporal and in all spatial locations.'
 ' - both.  Only use this option if both domains have a restriction'
 ' '
@@ -17435,9 +17470,9 @@ C          CALL EASKS(LTMP,' Pressure coefficients database?',
 'If you are also selecting surfaces then you can select from the'
 'list of surfaces (suggest making a note of what you have selected.'
 '  '
-'For temporal selections you must define a period when uncertainty'
-'is applicable (start day of the year and hour of the day and finish'
-'day of the year and hour of the day). If you cancel then'
+'For temporal selections (i.e. weather) you must define a period when'
+'uncertainty is applicable (start day of the year and hour of the day'
+'and finish day of the year and hour of the day). If you cancel then'
 'the data is not changed.'
 *enditem
       CALL EASKABC(' ',
@@ -17453,6 +17488,9 @@ C          CALL EASKS(LTMP,' Pressure coefficients database?',
 'Pick the required uncertainty definition(s).'
 '  '
 'Next pick the required location definition.'
+'  '
+'With a good naming regime the pairs of uncertainty and location'
+'will provide a clear indication of intent.  '
 '  '
 'Exit returns to the main menu without saving any data. '
 *enditem

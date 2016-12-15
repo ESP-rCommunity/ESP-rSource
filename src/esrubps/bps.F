@@ -179,6 +179,7 @@ C a subroutine rather than as an application.
 #include "model.h"
 #include "geometry.h"
 #include "plant.h"
+C UA1 from uncertainty.h
 #include "uncertainty.h"
 #include "net_flow.h"
 #include "MultiYear_simulations.h"
@@ -286,9 +287,6 @@ C Simulator parameters.
 C BEMS interaction time for results dump.
       COMMON/BEMSTIM/bemstime,ibems,bresfil
 
-C Uncertainty.
-      COMMON/UA1/LUALF,LCNG(MNCNG),LLOC(MNIL)
-
 C Illuminance database.
       common/ILDB/NDBENT,DBILLA(200,5),DBILLS(200,MLCOM,MDF)
 
@@ -327,7 +325,6 @@ C Flag for enabling h3k customizations
 C      logical gopher  ! not references
       logical concat
 
-      character LUALF*72,LCNG*15,LLOC*15
       character*29 item(15)
       character OUTS*124,spsname*8
       character LCMDFL*144,inf*144,sps*8,aut*12,fs*1,actf*72

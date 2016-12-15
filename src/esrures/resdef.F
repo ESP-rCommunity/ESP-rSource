@@ -480,7 +480,7 @@ C Read result-set start address.
           TNAME=' '
           READ(IUNIT,REC=IREC,IOSTAT=ios,ERR=1000)NST1,NST2,TNAME
           if (izver.eq.0) TNAME=' Undefined '
-          write(RSNAME(I),'(a40)') TNAME(1:40)
+          write(RSNAME(I),'(a)') TNAME(1:40)
   
 C In the case of factorial uncertainty analysis decode result set name.
           if (IMET.eq.2) then
@@ -503,7 +503,7 @@ C Read simulation start and finish days and control name.
      &                                      ISAVE,IDAVER,itcnst,
      &                                      iSlr_half_hr_flg,TNAME
           call edisp(iuout,outs)
-  711     format(I3,1X,A12,I3,',',I2,I4,',',I2,I8,I7,I8,I5,2X,I5,2X,A40)
+  711     format(I3,1X,A,I3,',',I2,I4,',',I2,I8,I7,I8,I5,2X,I5,2X,A)
    99   CONTINUE
 
 C There is more than one result set therefore check to see if ISAVE is the 
@@ -521,7 +521,7 @@ C same for all sets.
      &              ISDS,ISDF,NTS,ISAVE,SCNAME,IDAVER,itcnst,
      &              iSlr_half_hr_flg
           if(I.eq.1) ISVO=ISAVE
-          if(ISAVE.ne.ISVO) NS=0
+          if(ISAVE.ne.ISVO) NS=0  ! if different reset NS to zero
    10   CONTINUE
         IREC=ITMP
         if(NS.ne.0) then
@@ -607,7 +607,7 @@ C no.| name     | day  | day  |steps/hr|option| Flag  |sim|
       write(outs,7)ISIM,SCNAME,ID1,IM1,ID2,IM2,NTS,
      &  ISAVE,IDAVER,itcnst,iSlr_half_hr_flg,TNAME
       call edisp(iuout,outs)
-    7 format(I3,1X,A12,I3,',',I2,I4,',',I2,I8,I7,I8,I5,2X,I5,2X,A40)
+    7 format(I3,1X,A,I3,',',I2,I4,',',I2,I8,I7,I8,I5,2X,I5,2X,A)
       IREC=IREC+1
       NCF=0
       IF(SCNAME(1:5).NE.'NONE ') THEN

@@ -382,6 +382,7 @@ c save set.
       SUBROUTINE MZLS2
 #include "building.h"
 #include "model.h"
+C UA1 from uncertainty.h
 #include "uncertainty.h"
       
       integer lnblnk  ! function definition
@@ -440,16 +441,12 @@ C for each casual gain type after controls have been applied.
      &            sctlperothr(MCOM),sctlperothl(MCOM)
 
 C Uncertainty.
-      COMMON/UA1/LUALF,LCNG(MNCNG),LLOC(MNIL)
-      COMMON/UA4/NIACT,IACTD(MNACT,2)
       COMMON/UA5/IMET,ISIM,NRSIM
       COMMON/UAFCT/IADIR(MNFA),NFA
 
 C Simulator parameters.
       COMMON/SPFL/spfileok,perok,tstepok,saveok,autook,exitok,startupok
       LOGICAL     spfileok,perok,tstepok,saveok,autook,exitok,startupok
-
-      character LUALF*72,LCNG*15,LLOC*15
 
 C scname is the first 12 characters of the overall control name.
       CHARACTER CTLDOC*248,LCTLF*72,RSNAME*40,outs*124,scname*12
@@ -605,7 +602,10 @@ C Generate automatically if an uncertainty analysis.
           elseif (IMET.eq.2) then
             write (RSNAME,'(a,10i3)') 'FC:',(IADIR(IX),IX=1,NFA)
           elseif (IMET.eq.3) then
-            write (RSNAME,'(a,i4)') 'MC run:',NSIM
+
+C A better name for each M-C run is generated and will overwrite
+C the following initial string.
+            write (RSNAME,'(a,i4)') 'M-C run:',NSIM
           endif
         endif
       endif
@@ -622,6 +622,7 @@ C Generate automatically if an uncertainty analysis.
       endif
       IREC=NSIM+2
       WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)NST,IRECPL,RSNAME
+      WRITE(6,*) 'at end of mzls2 ',NSIM,IREC,NST,IRECPL,RSNAME
     7 RETURN
 
  1000 write(outs,'(A,I5,A)')' MZLS2: error at record',IREC,'.'

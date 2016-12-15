@@ -73,6 +73,7 @@ C MMGFUN controls all UK NCM related tasks
 #include "lookup_data.h"
 #include "roam.h"
 #include "net_flow.h"
+C UA1 in uncertainty.h
 #include "uncertainty.h"
 #include "model.h"
 #include "site.h"
@@ -147,9 +148,6 @@ C MMGFUN controls all UK NCM related tasks
 
       INTEGER NCOMP,NCON
       COMMON/C1/NCOMP,NCON
-
-      COMMON/UA1/LUALF,LCNG(MNCNG),LLOC(MNIL)
-      CHARACTER LUALF*72,LCNG*15,LLOC*15
 
       COMMON/PCONV/ipconv,pcnvht,pcnvcl,pcnvlt,pcnvfn,pcnvsp,pcnvhw
       INTEGER IPCONV

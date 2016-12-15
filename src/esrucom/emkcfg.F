@@ -38,6 +38,7 @@ C common blocks into the file and unit specified in COMMON/C21.
 #include "geometry.h"
 #include "net_flow.h"
 #include "tdf2.h"
+C UA1 in uncertainty.h
 #include "uncertainty.h"
 #include "MultiYear_simulations.h"
 #include "bc_data.h"
@@ -189,9 +190,6 @@ C Numbers associated with one climatelist item.
       common/clmlnum/nbclmlhelp
       INTEGER :: nbclmlhelp
 
-C Uncertainty analysis common.
-      COMMON/UA1/LUALF,LCNG(MNCNG),LLOC(MNIL)
-
 C Anchor data in model.h.
 
 C Simulation parameter presets.
@@ -309,7 +307,7 @@ C Zone fluid.
       character GTGEOM*72,LCFD*72,DCNN*72
       CHARACTER DBTAG*12,DBTASK*12,DBZN*15,indxcmt*24,DBSN*15
       character*10 wkd1, wkd2
-      character LUALF*72,LCNG*15,LLOC*15,lipvdatf*72
+      character lipvdatf*72
       CHARACTER outs*124
       character sblres*72,sflres*72,splres*72,smstres*72,sipvres*72
       character selres*72,spfdescr*8,ltmp*72,louts*144

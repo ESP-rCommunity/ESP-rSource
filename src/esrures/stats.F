@@ -2051,7 +2051,7 @@ C Set all returned data to zero.
       tzlctime=0.
 
 C Call the menu of choices (this also sets some default options).
- 1    if(act(1:1).ne.'i') then
+      if(act(1:1).ne.'i') then
         MENUTYPE=10
         call GOMSETUP
         call GOMENU
@@ -2175,12 +2175,10 @@ C Calcalate the sums and statistics to display during relevant period.
           write(outs,'(a,2(f11.1,f9.1,f8.0),2(f11.1,f8.0))') 
      &    '   All        ',THE,THE/ZBASEA(IZ),tzhtime,TCE,
      &    TCE/ZBASEA(IZ),tzctime,TLHE,tzlhtime,TLCE,tzlctime
-   67     format(1X,'   All',8X,4(F11.1,F8.0))
         else
           write(outs,'(a,2(f11.1,f9.1,f8.0),2(f11.1,f8.1))')
      &    '   All         ',THE,THE/ZBASEA(IZ),tzhtime,TCE,
      &    TCE/ZBASEA(IZ),tzctime,TLHE,tzlhtime,TLCE,tzlctime
-   68     format(1X,'   All',9X,4(F11.1,F8.1))
         endif
         call edisp(itru,' ')
         call eddisp(itru,outs)

@@ -44,6 +44,7 @@ C output; IER=0 indicates no error.
 
 C geometry.h provides commons G0/G1/G2/G7/prec2/precz.
 #include "geometry.h"
+C UA1 in uncertainty.h
 #include "uncertainty.h"
 #include "net_flow.h"
 #include "control.h"
@@ -94,8 +95,6 @@ C Defaults.
       character DFCFD*72,DECMPDBFL*72,DICONDBFL*72
       COMMON/DEFLT3/DFCFD,DECMPDBFL,DICONDBFL
 
-C Uncertainty.
-      COMMON/UA1/LUALF,LCNG(MNCNG),LLOC(MNIL)
       common/spfldat/nsset,isset,isstup,isbnstep,ispnstep,issave,isavgh
       INTEGER :: nsset,isset,isstup,isbnstep,ispnstep,issave,isavgh
       common/spflres/sblres(MSPS),sflres(MSPS),splres(MSPS),
@@ -134,7 +133,6 @@ C Uncertainty.
       integer iappwpc ! application height as % of nominal size
 
       dimension ITEMS(30)
-      character LUALF*72,LCNG*15,LLOC*15
       character*72 LAPROB,DFILE,LPNF,tfile
       character longtfile*144,longtfiledos*144
       character ITEMS*34,ETEXT*82
@@ -1087,7 +1085,7 @@ C Call uncertainty definition controller.
      &    0,'-',0,'-',0,'password',IER,nbhelp)
         if (IPASS.eq.101) then
           call tstamp('>','PRJ: enter uncertainty control')
-          call UNCERTA(LUALF)
+          call UNCERTA()
         endif
       ELSEIF(INO.EQ.23)THEN
 

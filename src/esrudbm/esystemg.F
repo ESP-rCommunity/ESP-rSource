@@ -317,8 +317,7 @@ C Assume: Mon=1, Tue=2, Wed=3, Thu=4, Fri=5, Sat=6, Sun=7
       common/wkdtyp/idwe1,idwe2,wkd1,wkd2
       INTEGER :: idwe1,idwe2
 
-C Uncertainty analysis common.
-      COMMON/UA1/LUALF,LCNG(MNCNG),LLOC(MNIL)
+C Uncertainty analysis commons from uncertainty.h.
 
 C IPV description come from ipvdata.h.
       common/IPVF/lipvdatf
@@ -466,7 +465,6 @@ C iSlr_half_hr_flg value = 0 :hour-centered; =1 : half-hour centered.
       character GTGEOM*72,GTNAME*15
       CHARACTER ectime*24,wkd1*10,wkd2*10,naco*40,type*4
       character*10 wkday(7)
-      character LUALF*72,LCNG*15,LLOC*15
       CHARACTER NDNAM*12
       character sblres*72,sflres*72,splres*72,smstres*72,sipvres*72
       character selres*72,spfdescr*8

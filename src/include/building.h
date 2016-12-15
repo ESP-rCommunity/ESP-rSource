@@ -109,7 +109,8 @@ C Time-step control.
 C Results analysis.
       PARAMETER (MSPS=10)       !- Simulation parameter sets.
       PARAMETER (MNFA=4)        !- Factorial analyses.
-      PARAMETER (MNRS=2**MNFA)  !- Result sets (set to 100 for sensitivity analysis).
+C      PARAMETER (MNRS=2**MNFA)  !- Result sets (set to 100 for sensitivity analysis).
+      PARAMETER (MNRS=100)      !- Result sets (set to 100 for sensitivity analysis).
       PARAMETER (MIPVA=MSPS)    !- IPV assessments.
       PARAMETER (MIPVM=12)      !- IPV metrics.
       PARAMETER (MZS=90)        !- Number of items to report in res.

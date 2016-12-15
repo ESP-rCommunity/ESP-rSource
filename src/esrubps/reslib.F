@@ -49,6 +49,7 @@ C results library as well.
 #include "plant.h"
 #include "power.h"
 #include "net_flow.h"
+#include "uncertainty.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
@@ -82,6 +83,7 @@ C CFD unit nos.
 
 C Active domain common.
       common/ACTDOM/CFDOK
+      COMMON/UA5/IMET,ISIM,NRSIM
 
       COMMON/save/isave
 
@@ -285,7 +287,7 @@ C izver is the version flag for building results. Set at 4 since
 C Feb 2008. Earlier (depreciated) versions did not include explicit
 C casual gains and required re-scanning of zone operation files.
         izver=4
-        WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)NSIM,nzrl,izver
+        WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)NSIM,nzrl,izver,IMET
       endif
 
 C Write header block information to building results library.
@@ -456,7 +458,7 @@ c Determine if design data has been changed.
 c Delete all simulations by setting NSIM=0.
         IREC=1
         NSIM=0
-        WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)NSIM
+        WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)NSIM,nzrl,izver,IMET
       endif
 
 c Write header block information to plant library.
@@ -644,7 +646,7 @@ C Error handling
 C Error on read of zone library - reset and initialize.
    7  IREC=1
       NSIM=0
-      WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)NSIM,nzrl,izver
+      WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)NSIM,nzrl,izver,IMET
       goto 8
 
 C Error on read of plant library - reset and initialize.
@@ -788,6 +790,7 @@ c MZDEL DELETES THE LAST RESULT-SET SAVED IN THE SOLUTION FILE.
       COMMON/FILEP/IFIL
       common/reclen/nzrl,nprl,nerl
       common/recver/izver,ipver,iever
+      COMMON/UA5/IMET,ISIM,NRSIM
 
       character outs*124
 
@@ -804,7 +807,7 @@ C DE-INCREMENT BY 1.
       NSIM=NSIM-1
 
 C WRITE THIS TO building SOLUTION FILE.
-      WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)NSIM,nzrl,izver
+      WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)NSIM,nzrl,izver,IMET
       ISIMLB=NSIM
       goto 2
 
@@ -859,6 +862,7 @@ c IN THE OVERWRITING OF THESE RESULTS.
       COMMON/C6/INDCFG
       common/reclen/nzrl,nprl,nerl
       common/recver/izver,ipver,iever
+      COMMON/UA5/IMET,ISIM,NRSIM
 
       character outs*124
       integer nsim  ! number of simulations in libary
@@ -874,7 +878,7 @@ C INCREMENT BY 1.
       NSIM=NSIM+1
 
 C Update the zone library file.
-      WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)NSIM,nzrl,izver
+      WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)NSIM,nzrl,izver,IMET
       ISIMN1=NSIM  ! pass this back
 
 C For plant results or building + plant results update the first
