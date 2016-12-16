@@ -21,6 +21,7 @@ C Boston, MA 02111-1307 USA.
 C This file contains the following routines:
 C  UATCHK:   Checks if time based uncertainty active.
 C  UAT01:    Edits control information based on time.
+C  UAT01a:   Alters control data during simulation.
 C  UAT03:    Edits data: Climate parameters - stores changes
 C  UAT03a:   Edits data: Climate parameters - uses changes when a days data is read in.
 
@@ -145,67 +146,6 @@ C Define variables for current location (in time) and change.
       ITEM(6) ='Heating set point   '
       ITEM(7) ='Cooling set point   '
 
-      write (36,*) '   '
-      write (36,*) 'Entering subroutine UAT01a',IDAY,IHOUR
-
-C Write current data. Consider non-zero values of UACTL(?,1)
-C where the ? index is the change topic
-      if (nint(UACTL(1,1)).gt.0) then 
-        ICC=IACTD(nint(UACTL(1,3)),1)
-        ICL=IACTD(nint(UACTL(1,3)),2)
-        ICF=IDMAT(ICC,1)
-        ICD=IDMAT(ICC,2)
-        ICP=IMISCD(ICC,1)
-        write (36,*) 'ctl period',tbcps(ICF,ICD,ICP)
-      endif
-      if (nint(UACTL(2,1)).gt.0) then 
-        ICC=IACTD(nint(UACTL(2,3)),1)
-        ICL=IACTD(nint(UACTL(2,3)),2)
-        ICF=IDMAT(ICC,1)
-        ICD=IDMAT(ICC,2)
-        ICP=IMISCD(ICC,1)
-        write (36,*) 'heat max',bmiscd(ICF,ICD,ICP,2)
-      endif
-      if (nint(UACTL(3,1)).gt.0) then 
-        ICC=IACTD(nint(UACTL(3,3)),1)
-        ICL=IACTD(nint(UACTL(3,3)),2)
-        ICF=IDMAT(ICC,1)
-        ICD=IDMAT(ICC,2)
-        ICP=IMISCD(ICC,1)
-        write (36,*) 'heat min',bmiscd(ICF,ICD,ICP,3)
-      endif
-      if (nint(UACTL(4,1)).gt.0) then 
-        ICC=IACTD(nint(UACTL(4,3)),1)
-        ICL=IACTD(nint(UACTL(4,3)),2)
-        ICF=IDMAT(ICC,1)
-        ICD=IDMAT(ICC,2)
-        ICP=IMISCD(ICC,1)
-        write (36,*) 'cool max',bmiscd(ICF,ICD,ICP,4)
-      endif
-      if (nint(UACTL(5,1)).gt.0) then 
-        ICC=IACTD(nint(UACTL(5,3)),1)
-        ICL=IACTD(nint(UACTL(5,3)),2)
-        ICF=IDMAT(ICC,1)
-        ICD=IDMAT(ICC,2)
-        ICP=IMISCD(ICC,1)
-        write (36,*) 'cool min',bmiscd(ICF,ICD,ICP,5)
-      endif
-      if (nint(UACTL(6,1)).gt.0) then 
-        ICC=IACTD(nint(UACTL(6,3)),1)
-        ICL=IACTD(nint(UACTL(6,3)),2)
-        ICF=IDMAT(ICC,1)
-        ICD=IDMAT(ICC,2)
-        ICP=IMISCD(ICC,1)
-        write (36,*) 'heat SP',bmiscd(ICF,ICD,ICP,6)
-      endif
-      if (nint(UACTL(7,1)).gt.0) then 
-        ICC=IACTD(nint(UACTL(7,3)),1)
-        ICL=IACTD(nint(UACTL(7,3)),2)
-        ICF=IDMAT(ICC,1)
-        ICD=IDMAT(ICC,2)
-        ICP=IMISCD(ICC,1)
-        write (36,*) 'cool SP',bmiscd(ICF,ICD,ICP,7)
-      endif
       do 10 I=1,7
 
 C Check if control parameter is in valid time period.
@@ -220,6 +160,21 @@ C Check if control parameter is in valid time period.
 C If UACTL(?,4) not yet set then time to change value.
         if (IVALID.gt.nint(UACTL(I,4))) then
           UACTL(I,4)=float(IVALID)  ! set 4th slot
+          write (36,*) '   '
+          write (36,*) 'Entering subroutine UAT01a',IDAY,IHOUR
+          if (nint(UACTL(I,1)).gt.0) then   ! echo the before value
+            ICC=IACTD(nint(UACTL(I,3)),1)
+            ICL=IACTD(nint(UACTL(I,3)),2)
+            ICF=IDMAT(ICC,1)
+            ICD=IDMAT(ICC,2)
+            ICP=IMISCD(ICC,1)
+            if(I.eq.1)then
+              write (36,*)ITEM(I)(1:lnblnk(ITEM(I))),tbcps(ICF,ICD,ICP)
+            else
+              write (36,*)ITEM(I)(1:lnblnk(ITEM(I))),
+     &          bmiscd(ICF,ICD,ICP,I)
+            endif
+          endif
 
 C Uncertainty defined and in valid time period.
           if (nint(UACTL(I,1)).eq.1) then ! % change
@@ -237,10 +192,34 @@ C Uncertainty defined and in valid time period.
               bmiscd(ICF,ICD,ICP,I)=bmiscd(ICF,ICD,ICP,I)+ACNG
             endif
           endif
+          if (nint(UACTL(I,1)).gt.0) then   ! echo the updated value
+            if(I.eq.1)then
+              write (36,*)ITEM(I)(1:lnblnk(ITEM(I))),tbcps(ICF,ICD,ICP)
+            else
+              write (36,*)ITEM(I)(1:lnblnk(ITEM(I))),
+     &          bmiscd(ICF,ICD,ICP,I)
+            endif
+          endif
+
         elseif (IVALID.lt.nint(UACTL(I,4))) then
 
 C If IVALID has flipped back to zero then unset the prior change.
           UACTL(I,4)=float(IVALID)
+          write (36,*) '   '
+          write (36,*) 'Entering subroutine UAT01a',IDAY,IHOUR
+          if (nint(UACTL(I,1)).gt.0) then   ! echo the before value
+            ICC=IACTD(nint(UACTL(I,3)),1)
+            ICL=IACTD(nint(UACTL(I,3)),2)
+            ICF=IDMAT(ICC,1)
+            ICD=IDMAT(ICC,2)
+            ICP=IMISCD(ICC,1)
+            if(I.eq.1)then
+              write (36,*)ITEM(I)(1:lnblnk(ITEM(I))),tbcps(ICF,ICD,ICP)
+            else
+              write (36,*)ITEM(I)(1:lnblnk(ITEM(I))),
+     &          bmiscd(ICF,ICD,ICP,I)
+            endif
+          endif
 
 C Uncertainty defined and leaving valid time period.
           if (nint(UACTL(I,1)).eq.1) then 
@@ -258,66 +237,16 @@ C Uncertainty defined and leaving valid time period.
               bmiscd(ICF,ICD,ICP,I)=bmiscd(ICF,ICD,ICP,I)+ACNG
             endif
           endif
+          if (nint(UACTL(I,1)).gt.0) then   ! echo the updated value
+            if(I.eq.1)then
+              write (36,*)ITEM(I)(1:lnblnk(ITEM(I))),tbcps(ICF,ICD,ICP)
+            else
+              write (36,*)ITEM(I)(1:lnblnk(ITEM(I))),
+     &          bmiscd(ICF,ICD,ICP,I)
+            endif
+          endif
         endif
  10   continue
-
-C Write new data.
-      if (nint(UACTL(1,1)).gt.0) then 
-        ICC=IACTD(nint(UACTL(1,3)),1)
-        ICL=IACTD(nint(UACTL(1,3)),2)
-        ICF=IDMAT(ICC,1)
-        ICD=IDMAT(ICC,2)
-        ICP=IMISCD(ICC,1)
-        write (36,*) 'ctl period',tbcps(ICF,ICD,ICP)
-      endif
-      if (nint(UACTL(2,1)).gt.0) then 
-        ICC=IACTD(nint(UACTL(2,3)),1)
-        ICL=IACTD(nint(UACTL(2,3)),2)
-        ICF=IDMAT(ICC,1)
-        ICD=IDMAT(ICC,2)
-        ICP=IMISCD(ICC,1)
-        write (36,*) 'heat max',bmiscd(ICF,ICD,ICP,2)
-      endif
-      if (nint(UACTL(3,1)).gt.0) then 
-        ICC=IACTD(nint(UACTL(3,3)),1)
-        ICL=IACTD(nint(UACTL(3,3)),2)
-        ICF=IDMAT(ICC,1)
-        ICD=IDMAT(ICC,2)
-        ICP=IMISCD(ICC,1)
-        write (36,*) 'heat min',bmiscd(ICF,ICD,ICP,3)
-      endif
-      if (nint(UACTL(4,1)).gt.0) then 
-        ICC=IACTD(nint(UACTL(4,3)),1)
-        ICL=IACTD(nint(UACTL(4,3)),2)
-        ICF=IDMAT(ICC,1)
-        ICD=IDMAT(ICC,2)
-        ICP=IMISCD(ICC,1)
-        write (36,*) 'cool max',bmiscd(ICF,ICD,ICP,4)
-      endif
-      if (nint(UACTL(5,1)).gt.0) then 
-        ICC=IACTD(nint(UACTL(5,3)),1)
-        ICL=IACTD(nint(UACTL(5,3)),2)
-        ICF=IDMAT(ICC,1)
-        ICD=IDMAT(ICC,2)
-        ICP=IMISCD(ICC,1)
-        write (36,*) 'cool min',bmiscd(ICF,ICD,ICP,5)
-      endif
-      if (nint(UACTL(6,1)).gt.0) then 
-        ICC=IACTD(nint(UACTL(6,3)),1)
-        ICL=IACTD(nint(UACTL(6,3)),2)
-        ICF=IDMAT(ICC,1)
-        ICD=IDMAT(ICC,2)
-        ICP=IMISCD(ICC,1)
-        write (36,*) 'heat SP',bmiscd(ICF,ICD,ICP,6)
-      endif
-      if (nint(UACTL(7,1)).gt.0) then 
-        ICC=IACTD(nint(UACTL(7,3)),1)
-        ICL=IACTD(nint(UACTL(7,3)),2)
-        ICF=IDMAT(ICC,1)
-        ICD=IDMAT(ICC,2)
-        ICP=IMISCD(ICC,1)
-        write (36,*) 'cool SP',bmiscd(ICF,ICD,ICP,7)
-      endif
 
       RETURN
       END

@@ -228,7 +228,7 @@ C Depending on change type call editing routine.
       elseif (IDTYPU(IACTD(IACT,1)).eq.5) then 
         call UAE05(IZONE,IACT,DIR)  ! hc coefficients
       elseif (IDTYPU(IACTD(IACT,1)).eq.101) then 
-        call UAZ01(IZONE,IACT,DIR)  ! zone air volume
+        call UAZ01(IZONE,IACT,DIR)  ! zone air volume or SNA
       elseif (IDTYPU(IACTD(IACT,1)).eq.1001) then 
         call UAT01(IACT,DIR)  ! control data
       elseif (IDTYPU(IACTD(IACT,1)).eq.1002) then 
@@ -341,7 +341,7 @@ C Depending on change type call editing routine.
         elseif (IDTYPU(IACTD(IACT,1)).eq.5) then 
           call UAE05(IZONE,IACT,DIR)  ! hc coefficients
         elseif (IDTYPU(IACTD(IACT,1)).eq.101) then 
-          call UAZ01(IZONE,IACT,DIR)  ! zone air volume
+          call UAZ01(IZONE,IACT,DIR)  ! zone air volume or SNA
         elseif (IDTYPU(IACTD(IACT,1)).eq.1001) then 
           call UAT01(IACT,DIR)  ! control data
         elseif (IDTYPU(IACTD(IACT,1)).eq.1002) then 
@@ -466,7 +466,7 @@ C Depending on change type call editing routine.
         elseif (IDTYPU(IACTD(IACT,1)).eq.5) then 
           call UAE05(IZONE,IACT,DIR)  ! hc coefficients
         elseif (IDTYPU(IACTD(IACT,1)).eq.101) then 
-          call UAZ01(IZONE,IACT,DIR)  ! zone air volume
+          call UAZ01(IZONE,IACT,DIR)  ! zone air volume or SNA
         elseif (IDTYPU(IACTD(IACT,1)).eq.1001) then 
           call UAT01(IACT,DIR)  ! control data
         endif
@@ -1141,15 +1141,20 @@ C Not yet implemented - surface properties in memory.
 #include "geometry.h"
 C Common blocks UA2 UA3 UA4 within uncertainty.h
 #include "uncertainty.h"
+      common/pers/isd1,ism1,isd2,ism2,isds,isdf,ntstep
+      COMMON/PREC1/SNA(MCOM,MS)
+      COMMON/PREC9/NCONST(MCOM),NELTS(MCOM,MS),NGAPS(MCOM,MS),
+     &NPGAP(MCOM,MS,MGP)
+      common/prec12/ei(mcom,ms),ee(mcom,ms),ai(mcom,ms),ae(mcom,ms)
+      COMMON/PREC14/emarea(MCOM)
 
       COMMON/T1/NE(MS),NAIRG(MS),IPAIRG(MS,MGP),RAIRG(MS,MGP)
       COMMON/T4/EMISI(MS),EMISE(MS),ABSI(MS),ABSE(MS)
-
       COMMON/VTHP14/THRMLI(MCOM,MS,ME,7)
 
 
 C Data stored in UA03 has the following meaning in this routine:
-C IDMAT(?,1): 1=air
+C IDMAT(?,1): 1=air, 2=surface area
 C IDMAT(?,2): 1=volume, ...
 C IDMAT(?,3): Change type (%; +/-; explicit).
 C Define variables for current location and change.
@@ -1164,20 +1169,57 @@ C Loop through all zones listed in NZNOGU for the defined location ICL.
       do 10 II=1,NZGU(ICL)
         IZ=NZNOGU(ICL,II)
         if (IZ.eq.IZONE) then
-          write (36,*) 'Editing zone volume..'
-          ICF=IDMAT(ICC,3)
-          DAT1=DATU(ICC,1)
-          DAT2=DATU(ICC,2)
-          if (IDMAT(ICC,2).eq.1) then 
-            write (36,*) 'Zone: ',IZ,' Volume: ',VOL(IZ)
-            call UAEDIT(VOL(IZ),ICF,DAT1,DAT2,DIR,-1,-1.0,0.0)
+
+C Edit zone air volume.
+          if (IDMAT(ICC,1).eq.1) then
+            write (36,*) 'Editing zone volume..'
+            ICF=IDMAT(ICC,3)
+            DAT1=DATU(ICC,1)
+            DAT2=DATU(ICC,2)
+            if (IDMAT(ICC,2).eq.1) then 
+              write (36,*) 'Zone: ',IZ,' Volume: ',VOL(IZ)
+              call UAEDIT(VOL(IZ),ICF,DAT1,DAT2,DIR,-1,-1.0,0.0)
 
 C Check for out of range values.
-            if (VOL(IZ).lt.0.0) then
-              VOL(IZ)=1.0
-              write (36,*) ' Zone volume less than 0.0, setting to 1.0'
+              if (VOL(IZ).lt.0.01) then
+                VOL(IZ)=1.0
+                write (36,*) 'Zone volume less than 0.0, setting to 1.0'
+              endif
+              write (36,*)'to:                     ',VOL(IZ)
             endif
-            write (36,*)'to:                     ',VOL(IZ)
+          elseif (IDMAT(ICC,1).eq.2) then
+            write (36,*) 'Editing surface area...'
+            ICF=IDMAT(ICC,3)
+            DAT1=DATU(ICC,1)
+            DAT2=DATU(ICC,2)
+            do JJ=1,NSGU(ICL,II)
+              IS=NSNOG(ICL,II,JJ)
+              write (36,'(a,f9.4,2i3)') 'From Area: ',SNA(IZ,IS),IZ,IS
+              if (IDMAT(ICC,2).eq.1) then 
+                SNA(IZ,IS)=SNA(IZ,IS)*(((DATU(ICC,1)/100.)*DIR)+1.0)
+                if(SNA(IZ,IS).lt.0.01) SNA(IZ,IS)=0.01
+              elseif (IDMAT(ICC,3).eq.2) then
+                SNA(IZ,IS)=SNA(IZ,IS)+(DATU(ICC,1)*DIR)
+                if(SNA(IZ,IS).lt.0.01) SNA(IZ,IS)=0.01
+              endif
+              write (36,'(a,f9.4,2i3)') 'To Area: ',SNA(IZ,IS),IZ,IS
+            enddo
+            write (36,*) 'sna= ',(SNA(IZ,JS),JS=1,nconst(IZ))
+
+C Update emissivity area weighting to reflect change in SNA
+            emarea(IZ)=0.0
+            do kk=1,nconst(IZ)
+              emarea(IZ)=emarea(IZ)+sna(IZ,kk)*ei(IZ,kk)
+            enddo
+  
+C Re-establish building-side matrix equation.
+C            call mzcoe1(IZ)
+
+C Modify if computational time-step is less than one hour.
+C            IF(NTSTEP.GT.1)THEN
+C             TSTEP=1./FLOAT(NTSTEP)
+C             CALL MZCOE2(TSTEP)
+C            ENDIF
           endif
         endif
  10   continue

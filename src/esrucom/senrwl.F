@@ -193,10 +193,10 @@ C Read associated data.
         elseif (IDTYPU(II).eq.101) then
 
 C Zone level assumptions.
-          call STRIPC(IUALF,OUTSTR,2,ND,0,'Zone air.',IER)
+          call STRIPC(IUALF,OUTSTR,2,ND,0,'Zone air or SNA.',IER)
           if (IER.NE.0) return
           K=0
-          call EGETWI(OUTSTR,K,IDMAT(II,1),1,1,'W','Air.',IER)
+          call EGETWI(OUTSTR,K,IDMAT(II,1),1,2,'W','Air or SNA',IER)
           call EGETWI(OUTSTR,K,IDMAT(II,2),1,1,'W','Property.',IER)
           if (IDMAT(II,1).ne.0) then
 
@@ -207,9 +207,9 @@ C Read associated data.
             call EGETWI(OUTSTR,K,IDMAT(II,3),1,4,'W',
      &                                          'change type ref.',IER)
             call EGETWR(OUTSTR,K,DATU(II,1),0.,100.,'W',
-     &                                               'change mag.',IER)
+     &                                          'change mag.',IER)
             call EGETWR(OUTSTR,K,DATU(II,2),0.,100.,'W',
-     &                                               'change mag.',IER)
+     &                                          'change mag.',IER)
           endif
         elseif (IDTYPU(II).eq.1001) then
 

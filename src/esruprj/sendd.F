@@ -39,7 +39,9 @@ C Common blocks UA1 UA3 within uncertainty.h
 
       COMMON/OUTIN/IUOUT,IUIN
 
-      common/UADFLT/MATTYPE(30),DFLTMAT(5,6)
+      real DFLTRANGE     ! topic & attribute increments
+      integer IDFLTR     ! 1=% 2=abs
+      common/UADFLT/DFLTRANGE(6,6),IDFLTR(6,6)
 
       logical closemat1,closemat2
 
@@ -47,7 +49,7 @@ C Common blocks UA1 UA3 within uncertainty.h
       integer matarrayindex ! the indes within matdatarray
 
       CHARACTER NAM*72
-      CHARACTER t24*24
+      CHARACTER t24*24,message*48
       CHARACTER ITEM(8)*16, LELM(MMLC*ME)*36
 
       DIMENSION IVALP(6),IVALE(MMLC*ME),IELM(MMLC*ME)
@@ -156,16 +158,27 @@ C If no type has been selected then return to main SA menu.
       endif
 
 C Ask for value of uncertainty.
+      if(IDFLTR(1,IVALP(1)).eq.1)then
+        write(message,'(a,f5.2)') 
+     &    'The current default is % and ',DFLTRANGE(1,IVALP(1))
+        call edisp(iuout,message)
+      else
+        write(message,'(a,f5.2)') 
+     &    'The current default is +- ',DFLTRANGE(1,IVALP(1))
+        call edisp(iuout,message)
+      endif
       call EASKAB('Define parameter bounds:','  ',
      &  'from default definitions','by data entry',IANS,0)
       if (IANS.eq.1) then
         continue  ! work done in next block of code
       elseif (IANS.eq.2) then
-        IALLOW=3
+        IALLOW=2  ! use to select either % or abs.
 
-C These limits should be set in a more considered way.
+C Use the general topic defaults as initial values.
         XMPERC=10.0  ! default %
         XMABS=10.0
+        if(IDFLTR(1,IVALP(1)).eq.1)XMPERC=DFLTRANGE(1,IVALP(1))
+        if(IDFLTR(1,IVALP(1)).eq.2)XMABS=DFLTRANGE(1,IVALP(1))
         XLOW=0.0
         XHIGH=100.0
         call SDDBOUND(IALLOW,XMPERC,XMABS,XLOW,XHIGH,IER)
@@ -192,11 +205,10 @@ C Add property to common.
 C Add distribution data to common. If user selected the default
 C use that otherwise apply what was returned from SDDBOUND.
           if (IANS.eq.1) then
-            IDMAT(ICDEF,3)=1
 
-C Work out material category and property and hence uncertainty.
-            ICAT=MATTYPE((IELM(IVALE(I))/20)+1)
-            DATU(ICDEF,1)=DFLTMAT(ICAT,IVALP(J))
+C Recover the material property and hence uncertainty.
+            IDMAT(ICDEF,3)=IDFLTR(1,IVALP(J))
+            DATU(ICDEF,1)=DFLTRANGE(1,IVALP(J))
             write (t24,'(3a)')ITEM(IVALP(J))(1:6),':',
      &        LELM(IVALE(I))(1:16)
             call st2name(t24,LCNG(ICDEF))
@@ -211,7 +223,6 @@ C Work out material category and property and hence uncertainty.
           endif
  66     continue
  99   continue
-
 
       return
       end
@@ -228,6 +239,10 @@ C Common blocks UA3 within uncertainty.h
       COMMON/OUTIN/IUOUT,IUIN
 
       COMMON/UA31/MATNAM(MNCNG,2)
+
+      real DFLTRANGE     ! topic & attribute increments
+      integer IDFLTR     ! 1=% 2=abs
+      common/UADFLT/DFLTRANGE(6,6),IDFLTR(6,6)
 
       integer matarrayindex ! the indes within matdatarray
       logical closemat1,closemat2,modmlc
@@ -356,6 +371,10 @@ C Common blocks UA3 within uncertainty.h
 
       COMMON/OUTIN/IUOUT,IUIN
 
+      real DFLTRANGE     ! topic & attribute increments
+      integer IDFLTR     ! 1=% 2=abs
+      common/UADFLT/DFLTRANGE(6,6),IDFLTR(6,6)
+
       CHARACTER ITEM(6)*20
 
       DIMENSION IVALP(6)
@@ -422,6 +441,10 @@ C Common blocks UA3 within uncertainty.h
 #include "uncertainty.h"
 
       COMMON/OUTIN/IUOUT,IUIN
+
+      real DFLTRANGE     ! topic & attribute increments
+      integer IDFLTR     ! 1=% 2=abs
+      common/UADFLT/DFLTRANGE(6,6),IDFLTR(6,6)
 
       integer IRT  ! for radio button
 
@@ -517,10 +540,8 @@ C      endif
 
 C ****************** SDDEF101 ******************
 C SDDEF101 - Zone geometry distribution definition.
-C Currently only zone air volume supported.
-C << Consider how surface areas could be acommodated (and the
-C << bookkeepping needed). Idea select a pair of surfaces so
-C << that area taken away from one is given to the other.
+C Zone air volume supported IDMAT(ICDEF,1)=1
+C Surface area if IDMAT(ICDEF,1)=2
       subroutine SDDEF101(ICDEF,IER)
 #include "building.h"
 C Common blocks UA3 within uncertainty.h
@@ -528,6 +549,13 @@ C Common blocks UA3 within uncertainty.h
 
       COMMON/OUTIN/IUOUT,IUIN
 
+      real DFLTRANGE     ! topic & attribute increments
+      integer IDFLTR     ! 1=% 2=abs
+      common/UADFLT/DFLTRANGE(6,6),IDFLTR(6,6)
+
+      CHARACTER ITEM(2)*16
+      character message*48
+      
 C For help messages
       character helpinsub*24 ! subroutine name
       character helptopic*24 ! string (unique) for topic
@@ -537,20 +565,49 @@ C For help messages
        helptopic='uncert_air_volume'
       call gethelptext(helpinsub,helptopic,nbhelp)
       
-      IDMAT(ICDEF,1)=1
-      IDMAT(ICDEF,2)=1
+      ITEM(1) ='Zone air volume '
+      ITEM(2) ='Surface area    '
+      NITMS=2
 
       call edisp(iuout,'Zone geometry parameter distribution def.')
-      call EASKAB('Only zone air volume enabled ! ','  ',
-     &  'Continue and define distribution','Cancel',IRT,nbhelp)
-      if (IRT.eq.2) then
-        IER=101
-        return
+      call EASKAB('Options ','  ',
+     &  'Zone air volume','Surface area',IRT,nbhelp)
+      if (IRT.eq.1) then
+        IDMAT(ICDEF,1)=1
+        IDMAT(ICDEF,2)=1
+        if(IDFLTR(6,1).eq.1)then
+          write(message,'(a,f5.2)') 
+     &    'The current default is % and ',DFLTRANGE(6,1)
+          call edisp(iuout,message)
+        else
+          write(message,'(a,f5.2)') 
+     &    'The current default is +- ',DFLTRANGE(6,1)
+          call edisp(iuout,message)
+        endif
+      elseif (IRT.eq.2) then
+        IDMAT(ICDEF,1)=2
+        IDMAT(ICDEF,2)=1
+        if(IDFLTR(6,2).eq.1)then
+          write(message,'(a,f5.2)') 
+     &    'The current default is % and ',DFLTRANGE(6,2)
+          call edisp(iuout,message)
+        else
+          write(message,'(a,f5.2)') 
+     &    'The current default is +- ',DFLTRANGE(6,2)
+          call edisp(iuout,message)
+        endif
       endif
 
-      IALLOW=3
+      IALLOW=2
       XMPERC=10.0  ! default %
       XMABS=1.0    ! ? 1m^3
+      if (IRT.eq.1) then
+        if(IDFLTR(6,1).eq.1)XMPERC=DFLTRANGE(6,1)
+        if(IDFLTR(6,1).eq.2)XMABS=DFLTRANGE(6,1)
+      elseif (IRT.eq.2) then
+        if(IDFLTR(6,2).eq.1)XMPERC=DFLTRANGE(6,2)
+        if(IDFLTR(6,2).eq.2)XMABS=DFLTRANGE(6,2)
+      endif
       XLOW=0.0
       XHIGH=100.0
       call SDDBOUND(IALLOW,XMPERC,XMABS,XLOW,XHIGH,IER)
@@ -575,6 +632,10 @@ C Common blocks UA3 within uncertainty.h
 #include "uncertainty.h"
 
       COMMON/OUTIN/IUOUT,IUIN
+
+      real DFLTRANGE     ! topic & attribute increments
+      integer IDFLTR     ! 1=% 2=abs
+      common/UADFLT/DFLTRANGE(6,6),IDFLTR(6,6)
 
       integer ICDEF  ! current index
       COMMON/UA32/IMISCD(MNCNG,2)
@@ -650,6 +711,10 @@ C of IALLOW specifies whether % or abs or explicit.
       real XMPERC     ! default %
       real XMABS      ! default absolute
       real XLOW       ! returned % or absolute
+
+      real DFLTRANGE     ! topic & attribute increments
+      integer IDFLTR     ! 1=% 2=abs
+      common/UADFLT/DFLTRANGE(6,6),IDFLTR(6,6)
       
 C For help messages
       character helpinsub*24 ! subroutine name
@@ -670,11 +735,11 @@ C Now ask for the numerical data.
         PERC=0.0; ABS=0.0; EXPU=0.0; EXPL=0.0
         if (ICNG.eq.1) then
           call EASKR(PERC,' ','Percentage change value?',
-     &      0.,'F',XMPERC,'W',1.,'Percentage change',IER,nbhelp)
+     &      0.,'F',100.,'W',XMPERC,'Percentage change',IER,nbhelp)
           XLOW=PERC
         elseif (ICNG.eq.2) then
           call EASKR(ABS,' ','Absolute change value?',
-     &      0.,'F',XMABS,'W',1.,'Absolute change',IER,nbhelp)
+     &      0.,'F',XMABS*2,'W',XMABS,'Absolute change',IER,nbhelp)
           XLOW=ABS
         elseif (ICNG.eq.3) then
 
@@ -698,11 +763,11 @@ C << not clear what this does >>
         ABS=0.
         if (ICNG.eq.1) then
           call EASKR(PERC,' ','Percentage change value?',
-     &      0.,'F',XMPERC,'W',1.,'Percentage change',IER,nbhelp)
+     &      0.,'F',100.,'W',XMPERC,'Percentage change',IER,nbhelp)
           XLOW=PERC
         elseif (ICNG.eq.2) then
           call EASKR(ABS,' ','Absolute change value?',
-     &      0.,'F',XMABS,'W',1.,'Absolute change ',IER,nbhelp)
+     &      0.,'F',XMABS*2,'W',XMABS,'Absolute change ',IER,nbhelp)
           XLOW=ABS
         endif
       endif
