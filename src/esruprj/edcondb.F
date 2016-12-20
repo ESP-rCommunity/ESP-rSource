@@ -6392,7 +6392,7 @@ C Now update LAYDESC & PNAM.
      &           (DRAIR(IFOC,ILED-11,IY),IY=1,3)
             write(PNAM(ILED-11),'(A,3F5.2)')'gap ',
      &           (DRAIR(IFOC,ILED-11,IY),IY=1,3)
-	    
+    
           ELSEIF(matarrayindex.lt.0)THEN
 
 C This is a confused material (perhaps a duplicate). Assign zero

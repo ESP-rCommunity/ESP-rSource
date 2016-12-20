@@ -158,23 +158,21 @@ C Common blocks UA3 UA4 within uncertainty.h
 #include "uncertainty.h"
 
       COMMON/UA5/IMET,ISIM,NRSIM
-      COMMON/UATD/UACLIM(6,3),UACTL(7,4),UAMCSA(MNACT)
+      COMMON/UATD/UACLIM(6,4),UACTL(7,5),UAMCSA(MNACT)
       COMMON/UATD2/UAMISCTD(3)
-      common/reclen/nzrl,nprl,nerl
-      character RSNAME*40,outs*124,message*96,phrase*12
-      integer irec,iunit,lmessage
+      character message*96,phrase*12
 
 C Reset climate change variables to zero - ONLY if first zone.
       if (IZONE.eq.1) then
         do 10 I=1,6
           UACLIM(I,1)=0.0; UACLIM(I,2)=0.0
-          UACLIM(I,3)=0.0
+          UACLIM(I,3)=0.0; UACLIM(I,4)=0.0 
  10     continue
 
 C Reset control change variables to zero.
         do 15 I=1,7
           UACTL(I,1)=0.0; UACTL(I,2)=0.0
-          UACTL(I,3)=0.0; UACTL(I,4)=0.0
+          UACTL(I,3)=0.0; UACTL(I,4)=0.0; UACTL(I,5)=0.0
  15     continue
 
 C Reset misc vars to zero.
@@ -203,9 +201,10 @@ C Low change
       write (36,*) 'IDTYPU(IACTD(IACT,1))',IDTYPU(IACTD(IACT,1)),
      &  IACTD(IACT,1), IACT
       lncng=lnblnk(LCNG(IACTD(IACT,1)))
+      lnloc=lnblnk(LLOC(IACTD(IACT,2)))
       if(lncng.gt.21)lncng=21
       write(36,*) LCNG(IACTD(IACT,1))(1:lncng),':',
-     &            LLOC(IACTD(IACT,2))(1:15)
+     &            LLOC(IACTD(IACT,2))(1:lnloc)
 
 C Synopsis of changes.
       write(phrase,'(a,i2.2,F5.2)') 'U',IACT,DIR
@@ -271,24 +270,35 @@ C Common blocks UA3 UA4 within uncertainty.h
       COMMON/FILEP/IFIL
 
       COMMON/UA5/IMET,ISIM,NRSIM
-      COMMON/UATD/UACLIM(6,3),UACTL(7,4),UAMCSA(MNACT)
+      COMMON/UATD/UACLIM(6,4),UACTL(7,5),UAMCSA(MNACT)
       COMMON/UATD2/UAMISCTD(3)
+
+      character USETNAME*96   ! the synopsis for each MC-run
+      character uheader*1000  ! header including name of each uncertainty changed
+      character urunvals*1000 ! attribute changed-to value of each uncertainty change for the run.
+      COMMON/USETN/USETNAME(MNRS),uheader,urunvals
+
+      logical headerdone
+      common/uhead/headerdone
+      
       common/reclen/nzrl,nprl,nerl
-      character RSNAME*40,outs*124,message*96,phrase*12
-      integer irec,iunit,lmessage
+      character RSNAME*40,outs*124,message*96,phrase*12,uhphrase*42
+      integer irec,iunit
 
 C Reset climate change variables to zero - ONLY if first zone.
       if (IZONE.eq.1) then
         do 5 I=1,6
           UACLIM(I,1)=0.0; UACLIM(I,2)=0.0; UACLIM(I,3)=0.0
+          UACLIM(I,4)=0.0
  5      continue
 
 C Reset control change variables to zero.
 C UACTL (?,1)=change type (%,+/-); (?,2)=magnitude; (?,2)=associated action;
 C UACTL (?,4)=time status (0 not active, 1 active)
+C UACTL (?,5)=counter for the uncertainty action being dealt with
         do 15 I=1,7
           UACTL(I,1)=0.0; UACTL(I,2)=0.0
-          UACTL(I,3)=0.0; UACTL(I,4)=0.0
+          UACTL(I,3)=0.0; UACTL(I,4)=0.0; UACTL(I,5)=0.0 
  15     continue
 
 C Reset misc vars to zero.
@@ -305,22 +315,31 @@ C mean of 0.0
       endif
 
 C Change parameters by a random amount (defined above). Clear
-C strings for a synopsis of this run (up to a dozen actions).
+C strings for a synopsis of this run (up to a ~dozen actions).
       message='  '; lstm=1; lfnm=1
       phrase=' '; lphrase=1
+      uheader=' '   ! clear the header
+      uhphrase=' '; luhphrase=1
+      urunvals=' '  ! clear string buffer for attribute changes
+      headerdone=.false.  ! mark that no headers have been generated
       do 10 IACT=1,NIACT
 
 C DIR is the direction of the alteration: +ive =up or high, -ive = down or low.
         DIR=UAMCSA(IACT)
 
-C Debug...
+C Remember which uncertainty is being acted upon. This is the
+C combined name of the uncertainty:location. Append to the header buffer.
         write (36,*) 'Uncertainty definition ',IACT,' altered by ',DIR
         lncng=lnblnk(LCNG(IACTD(IACT,1)))
+        lnloc=lnblnk(LLOC(IACTD(IACT,2)))
         if(lncng.gt.21)lncng=21
-        write(36,*) LCNG(IACTD(IACT,1))(1:lncng),':',
-     &              LLOC(IACTD(IACT,2))(1:15)
+        uhphrase=' '
+        write(uhphrase,'(3a)')LCNG(IACTD(IACT,1))(1:lncng),':',
+     &    LLOC(IACTD(IACT,2))(1:lnloc)
+        luhphrase=lnblnk(uhphrase)
+        write(36,'(a)') uhphrase(1:luhphrase)
 
-C Synopsis of changes.
+C Synopsis of specific changes to identify the run.
         write(phrase,'(a,i2.2,F5.2)') 'U',IACT,DIR
         lphrase=lnblnk(phrase)
         lfnm=lstm+lphrase
@@ -367,7 +386,17 @@ C         write(6,*) 'WARNING UNDEFINED UNCERTAINTY'
 C          call UAT05(IACT,DIR)
         endif
  10   continue
-      write (36,*) 'synopsis ',message(1:lnblnk(message))
+      write(36,*) 'synopsis ',message(1:lnblnk(message))
+
+C After the NIACT loop the header should be filled so write it out.
+C Bother uheader and urnubals will be blank for the case of weather
+C data as information is written each day rather than once at the
+C start of the run.
+C TODO do not need to write the header for the subsequent result sets.
+C TODO think of how to do this....
+      write(37,*)'**',uheader(1:lnblnk(uheader))
+      write(37,*)'**',urunvals(1:lnblnk(urunvals))
+C      headerdone=.true.
 
 C See what the current position of IREC is and update RSNAME to the
 C synopsis of changes recorded above.
@@ -375,6 +404,10 @@ C synopsis of changes recorded above.
       IREC=1
       read (IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)NSIM,nzrl,izver,IMET
       WRITE(6,*) 'checking ',NSIM,nzrl,izver,IMET
+
+C Remember the synopsis for this run.
+C TODO consider only writing header for NSIM .le. 1 ??
+      write(USETNAME(NSIM),'(a)') message(1:lnblnk(message))
       if(NSIM.gt.1)then  ! leave base case RSNAME as is.
         IREC=NSIM+1  ! slightly different from MZLS2
         read(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)NST,IRECPL,RSNAME
@@ -400,22 +433,21 @@ C Common blocks UA3 UA4 within uncertainty.h
 #include "uncertainty.h"
 
       COMMON/UA5/IMET,ISIM,NRSIM
-      COMMON/UATD/UACLIM(6,3),UACTL(7,4),UAMCSA(MNACT)
+      COMMON/UATD/UACLIM(6,4),UACTL(7,5),UAMCSA(MNACT)
       COMMON/UAFCT/IADIR(MNFA),NFA
-      common/reclen/nzrl,nprl,nerl
-      character RSNAME*40,outs*124,message*96,phrase*12
-      integer irec,iunit,lmessage
+      character message*96,phrase*12
 
 C Reset climate change variables to zero - ONLY if first zone.
       if (IZONE.eq.1) then
         do 10 I=1,6
           UACLIM(I,1)=0.0; UACLIM(I,2)=0.0; UACLIM(I,3)=0.0
+          UACLIM(I,4)=0.0
  10     continue
 
 C Reset control change variables to zero.
         do 15 I=1,7
           UACTL(I,1)=0.0; UACTL(I,2)=0.0
-          UACTL(I,3)=0.0; UACTL(I,4)=0.0
+          UACTL(I,3)=0.0; UACTL(I,4)=0.0; UACTL(I,5)=0.0
  15     continue
       endif
 
@@ -441,9 +473,10 @@ C Loop through changes.
 C Debug...
         write (36,*) 'Uncertainty definition ',IACT,' altered by ',DIR
         lncng=lnblnk(LCNG(IACTD(IACT,1)))
+        lnloc=lnblnk(LLOC(IACTD(IACT,2)))
         if(lncng.gt.21)lncng=21
         write(36,*) LCNG(IACTD(IACT,1))(1:lncng),':',
-     &              LLOC(IACTD(IACT,2))(1:15)
+     &              LLOC(IACTD(IACT,2))(1:lnloc)
 
 C Synopsis of changes.
         write(phrase,'(a,i2.2,F5.2)') 'U',IACT,DIR
@@ -486,8 +519,6 @@ C IZONE, ISURF: focus zone and surface (the data files for this zone
 C               have just been rescaned). 
 C IZ, IS: current zone and surface being checked (these are listed in 
 C               the common/ua2/ arrays).
-
-C << TODO work with common PREC12 AI AE for surface properties >>
       SUBROUTINE UAE01(IZONE,IACT,DIR)
 #include "building.h"
 #include "geometry.h"
@@ -503,6 +534,16 @@ C      COMMON/T1/NE(MS),NAIRG(MS),IPAIRG(MS,MGP),RAIRG(MS,MGP)
 
 C      COMMON/PREC12/EI(MCOM,MS),EE(MCOM,MS),AI(MCOM,MS),AE(MCOM,MS)
 
+      character USETNAME*96   ! the synopsis for each MC-run
+      character uheader*1000  ! header including name of each uncertainty changed
+      character urunvals*1000 ! attribute changed-to value of each uncertainty change for the run.
+      COMMON/USETN/USETNAME(MNRS),uheader,urunvals
+
+      logical headerdone
+      common/uhead/headerdone
+
+      integer lstur, lfnur
+      character strval*12,uhphrase*42
       CHARACTER CSTR*25
 
       DIMENSION IEL(ME)
@@ -512,8 +553,20 @@ C IDMAT(?,1): Materials array index.
 C IDMAT(?,2): Thermophysical property (con; den; sp ht).
 C IDMAT(?,3): Change type (%; +/-; explicit).
 C Define variables for current location and change.
+      if(urunvals(1:2).eq.'  ')then
+        lstur=1; lfnur=1  ! reset counters for urunvals buffer
+      else
+        lstur=lnblnk(urunvals)+2; lfnur=lnblnk(urunvals)+2  ! to append to urunvals buffer
+      endif
       ICL=IACTD(IACT,2)
       ICC=IACTD(IACT,1)
+
+C If initial append to uheader.
+      if(uheader(1:2).eq.'  ')then
+        lstuh=1; lfnuh=1  ! reset counters for uheader buffer
+      else
+        lstuh=lnblnk(uheader)+2; lfnuh=lnblnk(uheader)+2  ! to append to uheader buffer
+      endif
 
       write (36,*) '   '
       write (36,*) 'Entering subroutine UAE01'
@@ -543,31 +596,61 @@ C Trace.
                write(36,'(3f9.3,4f5.2)')CON(IS,IE),DEN(IS,IE),
      &           SHT(IS,IE),EMISI(IS), EMISE(IS),ABSI(IS),ABSE(IS)
 
+C Make specific header string for each change (to match urunvals)
+               lncng=lnblnk(LCNG(ICC))
+               lnloc=lnblnk(LLOC(ICL))
+               if(lncng.gt.18)lncng=18
+               uhphrase=' '
+               write(uhphrase,'(4a,i2.2,a,i2.2)')LCNG(ICC)(1:lncng),':',
+     &           LLOC(ICL)(1:lnloc),':',IZ,':',IS
+               luhphrase=lnblnk(uhphrase)
+               write(36,'(a)') uhphrase
+      
+               lfnuh=lstuh+luhphrase
+               if(lfnuh.lt.1000)then
+                 write(uheader(lstuh:lfnuh),'(a)')uhphrase(1:luhphrase)
+                 lstuh=lfnuh+2
+               endif
+               strval=' '        ! clear string buffer for the value changed
+
 C Edit data.
                if (IDMAT(ICC,2).eq.1) then
                  call UAEDIT(CON(IS,IE),IDMAT(ICC,3),DATU(ICC,1),
      &                       DATU(ICC,2),DIR,-1,0.01,0.0)
+                 call relstr(CON(IS,IE),strval,lna,ier)
                elseif (IDMAT(ICC,2).eq.2) then
                  call UAEDIT(DEN(IS,IE),IDMAT(ICC,3),DATU(ICC,1),
      &                       DATU(ICC,2),DIR,0,0.01,9000.0)
+                 call relstr(DEN(IS,IE),strval,lna,ier)
                elseif (IDMAT(ICC,2).eq.3) then
                  call UAEDIT(SHT(IS,IE),IDMAT(ICC,3),DATU(ICC,1),
      &                       DATU(ICC,2),DIR,0,0.01,3000.0)
+                 call relstr(SHT(IS,IE),strval,lna,ier)
                elseif (IDMAT(ICC,2).eq.4) then
                  call UAEDIT(EMISE(IS),IDMAT(ICC,3),DATU(ICC,1),
      &                       DATU(ICC,2),DIR,0,0.001,0.999)
                  call UAEDIT(EMISI(IS),IDMAT(ICC,3),DATU(ICC,1),
      &                       DATU(ICC,2),DIR,0,0.001,0.999)
+                 call relstr(EMISE(IS),strval,lna,ier)
                elseif (IDMAT(ICC,2).eq.5) then
                  call UAEDIT(ABSE(IS),IDMAT(ICC,3),DATU(ICC,1),
      &                       DATU(ICC,2),DIR,0,0.001,0.999)
                  call UAEDIT(ABSE(IS),IDMAT(ICC,3),DATU(ICC,1),
      &                       DATU(ICC,2),DIR,0,0.001,0.999)
+                 call relstr(ABSE(IS),strval,lna,ier)
                endif
 
                write(36,*) 'to:'
                write(36,'(3f9.3,4f5.2)')CON(IS,IE),DEN(IS,IE),
      &               SHT(IS,IE),EMISI(IS), EMISE(IS),ABSI(IS),ABSE(IS)
+
+C Add to urunvals
+               lstrval=lnblnk(strval)
+               lfnur=lstur+lstrval
+               if(lfnur.lt.1000)then
+                 write(urunvals(lstur:lfnur),'(a)') strval(1:lstrval)
+                 lstur=lfnur+2
+               endif
 
 C Now copy the altered data into the zonal commons.
                if (IDMAT(ICC,2).eq.1) then
@@ -655,7 +738,12 @@ C Call routine to copy surface data into common PREC12.
          call MZMISC(IZONE)
        endif
  10   continue
-      
+
+C If this was the last uncertainty i.e. if IACT=NIACT header is done.
+      if(IACT.eq.NIACT)then
+        write(36,*) 'set header buffer done in UAE01'
+        headerdone=.true.
+      endif
       RETURN
       END
 
@@ -683,8 +771,19 @@ C Common blocks UA2 UA3 UA4 within uncertainty.h
 
       COMMON/UA31/MATNAM(MNCNG,2)
 
+      character USETNAME*96   ! the synopsis for each MC-run
+      character uheader*1000  ! header including name of each uncertainty changed
+      character urunvals*1000 ! attribute changed-to value of each uncertainty change for the run.
+      COMMON/USETN/USETNAME(MNRS),uheader,urunvals
+
+      logical headerdone
+      common/uhead/headerdone
+
 C      CHARACTER TITL*72,NAM*72,CSTR*25
       CHARACTER MATNAM*32,CSTR*25
+
+      integer lstur, lfnur
+      character strval*12,uhphrase*42
 
 C Data stored in UA02 has the following meaning in this routine:
 C IDMAT(?,1): The material in the chosen MLC, if this is 0 then 
@@ -692,8 +791,20 @@ C              a new MLC reference will be in MATNAM(?,2).
 C IDMAT(?,2): Unused.
 C IDMAT(?,3): Change type (%; +/-; explicit).
 C Define variables for current location and change.
+      if(urunvals(1:2).eq.'  ')then
+        lstur=1; lfnur=1  ! reset counters for urunvals buffer
+      else
+        lstur=lnblnk(urunvals)+2; lfnur=lnblnk(urunvals)+2  ! to append to urunvals buffer
+      endif
       ICL=IACTD(IACT,2)
       ICC=IACTD(IACT,1)
+
+C If initial append to uheader.
+      if(uheader(1:2).eq.'  ')then
+        lstuh=1; lfnuh=1  ! reset counters for uheader buffer
+      else
+        lstuh=lnblnk(uheader)+2; lfnuh=lnblnk(uheader)+2  ! to append to uheader buffer
+      endif
 
       write (36,'(a)') '   '
       write (36,'(a)') 'Entering subroutine UAE02'
@@ -719,6 +830,23 @@ C           write (36,*) 'iprmat(imlc,ie): ',IPRMAT(IMLC,IE),imlc,ie
 C           write (36,*) 'IDMAT(ICC,1): ',IDMAT(ICC,1),icc
            if (IPRMAT(IMLC,IE).eq.IDMAT(ICC,1)) then
 
+C Make specific header string for each change (to match urunvals)
+            lncng=lnblnk(LCNG(ICC))
+            lnloc=lnblnk(LLOC(ICL))
+            if(lncng.gt.18)lncng=18
+            uhphrase=' '
+            write(uhphrase,'(4a,i2.2,a,i2.2)')LCNG(ICC)(1:lncng),':',
+     &        LLOC(ICL)(1:lnloc),':',IZ,':',IS
+            luhphrase=lnblnk(uhphrase)
+            write(36,'(a)') uhphrase
+      
+            lfnuh=lstuh+luhphrase
+            if(lfnuh.lt.1000)then
+              write(uheader(lstuh:lfnuh),'(a)') uhphrase(1:luhphrase)
+              lstuh=lfnuh+2
+            endif
+            strval=' '        ! clear string buffer for the value changed
+
 C Either edit layer thickness or whole construction.
             if (IE.eq.0) then
               write (36,'(a)') 'MLC editing not enabled.'
@@ -733,12 +861,14 @@ C Percentage change. Ensure it does not go below 1mm.
                THRMLI(IZ,IS,IE,4)=THRMLI(IZ,IS,IE,4)*
      &                            (((DATU(ICC,1)/100.)*DIR)+1.0)
                if(THRMLI(IZ,IS,IE,4).lt.0.001)THRMLI(IZ,IS,IE,4)=0.001
+               call relstr(THRMLI(IZ,IS,IE,4),strval,lna,ier)
              elseif (IDMAT(ICC,3).eq.2) then
 
 C Absolute change. Ensure it does not go below 1mm. 
                THRMLI(IZ,IS,IE,4)=THRMLI(IZ,IS,IE,4)+
      &                            (DATU(ICC,1)*DIR)
                if(THRMLI(IZ,IS,IE,4).lt.0.001)THRMLI(IZ,IS,IE,4)=0.001
+               call relstr(THRMLI(IZ,IS,IE,4),strval,lna,ier)
              elseif (IDMAT(ICC,3).eq.3) then
 
 C Explicit change. Ensure it does not go below 1mm.
@@ -750,9 +880,18 @@ C Explicit change. Ensure it does not go below 1mm.
      &                             (DATU(ICC,2)-THRMLI(IZ,IS,IE,4))*DIR
                 if(THRMLI(IZ,IS,IE,4).lt.0.001)THRMLI(IZ,IS,IE,4)=0.001
               endif
+              call relstr(THRMLI(IZ,IS,IE,4),strval,lna,ier)
              endif
              write (36,'(a)') 'to:'
              write (36,'(a,f9.4)') 'THRMLI: ',THRMLI(IZ,IS,IE,4)
+
+C Add to urunvals
+             lstrval=lnblnk(strval)
+             lfnur=lstur+lstrval
+             if(lfnur.lt.1000)then
+               write(urunvals(lstur:lfnur),'(a)') strval(1:lstrval)
+               lstur=lfnur+2
+             endif
 
 C Now copy the altered data into the zonal commons.
              THK(IS,IE)=THRMLI(IZ,IS,IE,4)
@@ -834,6 +973,12 @@ C Explicit change. Ensure it does not go below 1mm.
        endif
  10   continue
 
+C If this was the last uncertainty i.e. if IACT=NIACT header is done.
+      if(IACT.eq.NIACT)then
+        write(36,*) 'set header buffer done in UAE02'
+        headerdone=.true.
+      endif
+
       RETURN
       END
 
@@ -854,6 +999,17 @@ C Common blocks UA2 UA3 UA4 within uncertainty.h
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
 
+      character USETNAME*96   ! the synopsis for each MC-run
+      character uheader*1000  ! header including name of each uncertainty changed
+      character urunvals*1000 ! attribute changed-to value of each uncertainty change for the run.
+      COMMON/USETN/USETNAME(MNRS),uheader,urunvals
+
+      logical headerdone
+      common/uhead/headerdone
+
+      integer lstur, lfnur
+      character strval*12,uhphrase*42
+
 C Data stored in UA04 has the following meaning in this routine:
 C IDMAT(?,1): Casual gain type(1/2/3)/ scheduled air flow(0)
 C IDMAT(?,2): Cas Gn: sensible(1)/ latent(2)/ radiant(3)/ convective(4)/
@@ -864,8 +1020,20 @@ C IDMAT(?,2): Sched Air flow: infiltration(1)/ ventilation(2)/
 C IDMAT(?,2):         N/A (3)/ vent source temp(4)
 C IDMAT(?,3): Change type (%; +/-; explicit).
 C Define variables for current location and change.
+      if(urunvals(1:2).eq.'  ')then
+        lstur=1; lfnur=1  ! reset counters for urunvals buffer
+      else
+        lstur=lnblnk(urunvals)+2; lfnur=lnblnk(urunvals)+2  ! to append to urunvals buffer
+      endif
       ICL=IACTD(IACT,2)
       ICC=IACTD(IACT,1)
+
+C If initial append to uheader.
+      if(uheader(1:2).eq.'  ')then
+        lstuh=1; lfnuh=1  ! reset counters for uheader buffer
+      else
+        lstuh=lnblnk(uheader)+2; lfnuh=lnblnk(uheader)+2  ! to append to uheader buffer
+      endif
 
 C Define max number of periods for common P2 (flow) and P3 (Cas gns).
       IMP2=NAC(1)
@@ -895,6 +1063,23 @@ C Currently changing all defined periods.
             DAT1=DATU(ICC,1)
             DAT2=DATU(ICC,2)
 
+C Make specific header string for each change (to match urunvals)
+            lncng=lnblnk(LCNG(ICC))
+            lnloc=lnblnk(LLOC(ICL))
+            if(lncng.gt.18)lncng=18
+            uhphrase=' '
+            write(uhphrase,'(4a,i2.2)')LCNG(ICC)(1:lncng),':',
+     &        LLOC(ICL)(1:lnloc),':',IZ
+            luhphrase=lnblnk(uhphrase)
+            write(36,'(a)') uhphrase
+      
+            lfnuh=lstuh+luhphrase
+            if(lfnuh.lt.1000)then
+              write(uheader(lstuh:lfnuh),'(a)') uhphrase(1:luhphrase)
+              lstuh=lfnuh+2
+            endif
+            strval=' '        ! clear string buffer for the value changed
+
 C Percentage change. 
 C What data type to change? (see comments at start of routine).
 C Chance all instances of this type - will probably add data 
@@ -907,6 +1092,7 @@ C to specify individual periods later.
                   call UAEDIT(ACI(IDTY,IX),ICF,DAT1,DAT2,DIR,-1,0.0,0.0)
                   write(36,*)'Period ',CALENTAG(IDTY),IX,' From:',T,
      &            ' to ',ACI(IDTY,IX)
+                call relstr(ACI(IDTY,IX),strval,lna,ier)
  4010           CONTINUE
  100          continue
             elseif (IDMAT(ICC,2).eq.2) then
@@ -917,6 +1103,7 @@ C to specify individual periods later.
                   call UAEDIT(ACV(IDTY,IX),ICF,DAT1,DAT2,DIR,-1,0.0,0.0)
                   write(36,*)'Period ',CALENTAG(IDTY),IX,' From:',T,
      &            ' to ',ACV(IDTY,IX)
+                call relstr(ACV(IDTY,IX),strval,lna,ier)
  4011           CONTINUE
  101          continue
             elseif (IDMAT(ICC,2).eq.3) then
@@ -929,9 +1116,19 @@ C to specify individual periods later.
                   call UAEDIT(TA(IDTY,IX),ICF,DAT1,DAT2,DIR,-1,0.0,0.0)
                   write(36,*)'Period ',CALENTAG(IDTY),IX,' From:',T,
      &            ' to ',TA(IDTY,IX)
+                call relstr(TA(IDTY,IX),strval,lna,ier)
  4012           CONTINUE
  104          continue
             endif
+
+C Add to urunvals
+            lstrval=lnblnk(strval)
+            lfnur=lstur+lstrval
+            if(lfnur.lt.1000)then
+              write(urunvals(lstur:lfnur),'(a)') strval(1:lstrval)
+              lstur=lfnur+2
+            endif
+    
           else
 
 C Edit casual gains.
@@ -942,6 +1139,23 @@ C Currently changing all defined periods.
             DAT1=DATU(ICC,1)
             DAT2=DATU(ICC,2)
             IT=IDMAT(ICC,1)
+
+C Make specific header string for each change (to match urunvals)
+            lncng=lnblnk(LCNG(ICC))
+            lnloc=lnblnk(LLOC(ICL))
+            if(lncng.gt.18)lncng=18
+            uhphrase=' '
+            write(uhphrase,'(4a,i2.2)')LCNG(ICC)(1:lncng),':',
+     &        LLOC(ICL)(1:lnloc),':',IZ
+            luhphrase=lnblnk(uhphrase)
+            write(36,'(a)') uhphrase
+      
+            lfnuh=lstuh+luhphrase
+            if(lfnuh.lt.1000)then
+              write(uheader(lstuh:lfnuh),'(a)') uhphrase(1:luhphrase)
+              lstuh=lfnuh+2
+            endif
+            strval=' '        ! clear string buffer for the value changed
 
 C What data type to change? (see comments at start of routine).
 C Chance all instances of this type - will probably add data 
@@ -962,6 +1176,7 @@ C
      &                -1,0.0,0.0)
                     write (36,*)'Period ',CALENTAG(IDTY),IX,
      &                ' From:',T1,' to ',CMGS(IDTY,IX)
+                    call relstr(CMGS(IDTY,IX),strval,lna,ier)
                   endif
                 enddo
               enddo
@@ -975,6 +1190,7 @@ C
      &                -1,0.0,0.0)
                     write (36,*)'Period ',CALENTAG(IDTY),IX,
      &                ' From:',T1,' to ',CMGL(IDTY,IX)
+                    call relstr(CMGL(IDTY,IX),strval,lna,ier)
                   endif
                 enddo
               enddo
@@ -989,6 +1205,7 @@ C
                     write (36,*)'Period ',CALENTAG(IDTY),IX,
      &                ' From:',T1,' to ',RADC(IDTY,IX)
                     CONC(IDTY,IX)=1.0-RADC(IDTY,IX)  ! adjust CONC
+                    call relstr(RADC(IDTY,IX),strval,lna,ier)
                   endif
                 enddo
               enddo
@@ -1003,6 +1220,7 @@ C
                     write (36,*)'Period ',CALENTAG(IDTY),IX,
      &                ' From:',T1,' to ',CONC(IDTY,IX)
                     RADC(IDTY,IX)=1.0-CONC(IDTY,IX)  ! adjust RADC
+                    call relstr(CONC(IDTY,IX),strval,lna,ier)
                   endif
                 enddo
               enddo
@@ -1021,6 +1239,7 @@ C
      &                ' Sensible from:',T1,' to ',CMGS(IDTY,IX)
                     write (36,*)'Period ',CALENTAG(IDTY),IX,
      &                ' Latent from:',T2,' to ',CMGL(IDTY,IX)
+                    call relstr(CMGS(IDTY,IX),strval,lna,ier)
                   endif
                 enddo
               enddo
@@ -1046,6 +1265,7 @@ C Shift the start time of subsequent periods.
                       endif
                       write (36,*)'Period ',CALENTAG(IDTY),IX,
      &                  ' From:',IT1,' to ',ICGS(IDTY,IX)
+                      call relstr(real(ICGS(IDTY,IX)),strval,lna,ier)
                     endif
                   endif
                 enddo
@@ -1066,21 +1286,37 @@ C Shift the start time of subsequent periods.
      &                ' Rad fraction from:',T1,' to ',RADC(IDTY,IX)
                     write (36,*)'Period ',CALENTAG(IDTY),IX,
      &                ' Conv fraction from:',T2,' to ',CONC(IDTY,IX)
+                    call relstr(RADC(IDTY,IX),strval,lna,ier)
                   endif
                 enddo
               enddo
             else
               write (36,*)'Editing request unknown.'
             endif
+
+C Add to urunvals
+            lstrval=lnblnk(strval)
+            lfnur=lstur+lstrval
+            if(lfnur.lt.1000)then
+              write(urunvals(lstur:lfnur),'(a)') strval(1:lstrval)
+              lstur=lfnur+2
+            endif
           endif
         endif
  10   continue
+
+C If this was the last uncertainty i.e. if IACT=NIACT header is done.
+      if(IACT.eq.NIACT)then
+        write(36,*) 'set header buffer done in UAE04'
+        headerdone=.true.
+      endif
 
       RETURN
       END
 
 C ******************** UAE05 ********************
 C UAE05 edits convection coefficients algorithm choice.
+C Note: inclusion in USETN commons not yet implemented.
 
       SUBROUTINE UAE05(IZONE,IACT,DIR)
 #include "building.h"
@@ -1093,11 +1329,25 @@ C Common blocks UA2 UA3 UA4 within uncertainty.h
 
       common/CORIND/ICORI(MCOM,MS),ICORE(MCOM,MS)
 
+      character USETNAME*96   ! the synopsis for each MC-run
+      character uheader*1000  ! header including name of each uncertainty changed
+      character urunvals*1000 ! attribute changed-to value of each uncertainty change for the run.
+      COMMON/USETN/USETNAME(MNRS),uheader,urunvals
+
+      integer lstur, lfnur
+      character strval*12,uhphrase*42
+
 C Data stored in UA04 has the following meaning in this routine:
 C IDMAT(?,1): =1 just now - associated data is convection corr to use
 C IDMAT(?,2): =1 just now - associated data is convection corr to use
 C IDMAT(?,3): 4 - alternative correlation id number
 C Define variables for current location and change.
+      if(urunvals(1:2).eq.'  ')then
+        lstur=1; lfnur=1  ! reset counters for urunvals buffer
+      else
+        lstur=lnblnk(urunvals)+2; lfnur=lnblnk(urunvals)+2  ! to append to urunvals buffer
+      endif
+      strval=' '        ! clear string buffer for the value changed
       ICL=IACTD(IACT,2)
       ICC=IACTD(IACT,1)
 
@@ -1133,8 +1383,7 @@ C Loop through all zones listed in NZNOGU for the defined location ICL.
       END
 
 C ******************** UAZ01 ********************
-C UAZ01 edits zone air volume in memory.
-C Not yet implemented - surface properties in memory.
+C UAZ01 edits zone air volume in memory or surface area.
 
       SUBROUTINE UAZ01(IZONE,IACT,DIR)
 #include "building.h"
@@ -1152,14 +1401,36 @@ C Common blocks UA2 UA3 UA4 within uncertainty.h
       COMMON/T4/EMISI(MS),EMISE(MS),ABSI(MS),ABSE(MS)
       COMMON/VTHP14/THRMLI(MCOM,MS,ME,7)
 
+      character USETNAME*96   ! the synopsis for each MC-run
+      character uheader*1000  ! header including name of each uncertainty changed
+      character urunvals*1000 ! attribute changed-to value of each uncertainty change for the run.
+      COMMON/USETN/USETNAME(MNRS),uheader,urunvals
+
+      logical headerdone
+      common/uhead/headerdone
+
+      integer lstur, lfnur
+      character strval*12,uhphrase*42
 
 C Data stored in UA03 has the following meaning in this routine:
 C IDMAT(?,1): 1=air, 2=surface area
 C IDMAT(?,2): 1=volume, ...
 C IDMAT(?,3): Change type (%; +/-; explicit).
 C Define variables for current location and change.
+      if(urunvals(1:2).eq.'  ')then
+        lstur=1; lfnur=1  ! reset counters for urunvals buffer
+      else
+        lstur=lnblnk(urunvals)+2; lfnur=lnblnk(urunvals)+2  ! to append to urunvals buffer
+      endif
       ICL=IACTD(IACT,2)
       ICC=IACTD(IACT,1)
+
+C If initial append to uheader.
+      if(uheader(1:2).eq.'  ')then
+        lstuh=1; lfnuh=1  ! reset counters for uheader buffer
+      else
+        lstuh=lnblnk(uheader)+2; lfnuh=lnblnk(uheader)+2  ! to append to uheader buffer
+      endif
 
       write (36,*) '   '
       write (36,*) 'Entering subroutine UAZ01'
@@ -1176,6 +1447,23 @@ C Edit zone air volume.
             ICF=IDMAT(ICC,3)
             DAT1=DATU(ICC,1)
             DAT2=DATU(ICC,2)
+
+C Make specific header string for each change (to match urunvals)
+            lncng=lnblnk(LCNG(ICC))
+            lnloc=lnblnk(LLOC(ICL))
+            if(lncng.gt.18)lncng=18
+            uhphrase=' '
+            write(uhphrase,'(4a,i2.2,a,i2.2)')LCNG(ICC)(1:lncng),':',
+     &        LLOC(ICL)(1:lnloc),':',IZ,':',IS
+            luhphrase=lnblnk(uhphrase)
+            write(36,'(a)') uhphrase
+      
+            lfnuh=lstuh+luhphrase
+            if(lfnuh.lt.1000)then
+              write(uheader(lstuh:lfnuh),'(a)') uhphrase(1:luhphrase)
+              lstuh=lfnuh+2
+            endif
+            strval=' '        ! clear string buffer for the value changed
             if (IDMAT(ICC,2).eq.1) then 
               write (36,*) 'Zone: ',IZ,' Volume: ',VOL(IZ)
               call UAEDIT(VOL(IZ),ICF,DAT1,DAT2,DIR,-1,-1.0,0.0)
@@ -1186,6 +1474,7 @@ C Check for out of range values.
                 write (36,*) 'Zone volume less than 0.0, setting to 1.0'
               endif
               write (36,*)'to:                     ',VOL(IZ)
+              call relstr(VOL(IZ),strval,lna,ier)
             endif
           elseif (IDMAT(ICC,1).eq.2) then
             write (36,*) 'Editing surface area...'
@@ -1194,6 +1483,23 @@ C Check for out of range values.
             DAT2=DATU(ICC,2)
             do JJ=1,NSGU(ICL,II)
               IS=NSNOG(ICL,II,JJ)
+
+C Make specific header string for each change (to match urunvals)
+              lncng=lnblnk(LCNG(ICC))
+              lnloc=lnblnk(LLOC(ICL))
+              if(lncng.gt.18)lncng=18
+              uhphrase=' '
+              write(uhphrase,'(4a,i2.2,a,i2.2)')LCNG(ICC)(1:lncng),':',
+     &          LLOC(ICL)(1:lnloc),':',IZ,':',IS
+              luhphrase=lnblnk(uhphrase)
+              write(36,'(a)') uhphrase
+      
+              lfnuh=lstuh+luhphrase
+              if(lfnuh.lt.1000)then
+                write(uheader(lstuh:lfnuh),'(a)') uhphrase(1:luhphrase)
+                lstuh=lfnuh+2
+              endif
+              strval=' '        ! clear string buffer for the value changed
               write (36,'(a,f9.4,2i3)') 'From Area: ',SNA(IZ,IS),IZ,IS
               if (IDMAT(ICC,2).eq.1) then 
                 SNA(IZ,IS)=SNA(IZ,IS)*(((DATU(ICC,1)/100.)*DIR)+1.0)
@@ -1203,6 +1509,7 @@ C Check for out of range values.
                 if(SNA(IZ,IS).lt.0.01) SNA(IZ,IS)=0.01
               endif
               write (36,'(a,f9.4,2i3)') 'To Area: ',SNA(IZ,IS),IZ,IS
+              call relstr(SNA(IZ,IS),strval,lna,ier)
             enddo
             write (36,*) 'sna= ',(SNA(IZ,JS),JS=1,nconst(IZ))
 
@@ -1211,18 +1518,23 @@ C Update emissivity area weighting to reflect change in SNA
             do kk=1,nconst(IZ)
               emarea(IZ)=emarea(IZ)+sna(IZ,kk)*ei(IZ,kk)
             enddo
-  
-C Re-establish building-side matrix equation.
-C            call mzcoe1(IZ)
 
-C Modify if computational time-step is less than one hour.
-C            IF(NTSTEP.GT.1)THEN
-C             TSTEP=1./FLOAT(NTSTEP)
-C             CALL MZCOE2(TSTEP)
-C            ENDIF
+C Add to urunvals
+            lstrval=lnblnk(strval)
+            lfnur=lstur+lstrval
+            if(lfnur.lt.1000)then
+              write(urunvals(lstur:lfnur),'(a)') strval(1:lstrval)
+              lstur=lfnur+2
+            endif
           endif
         endif
  10   continue
+
+C If this was the last uncertainty i.e. if IACT=NIACT header is done.
+      if(IACT.eq.NIACT)then
+        write(36,*) 'set header buffer done in UAZ01'
+        headerdone=.true.
+      endif
 
       RETURN
       END

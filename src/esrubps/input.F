@@ -1184,9 +1184,9 @@ C Now alter properties for uncertainty analysis.
           elseif (IMET.eq.2) then
             call FCTA(IZ)
           elseif (IMET.ge.3) then
-            write (36,*) 'before mcsa sna= ',(SNA(1,J),J=1,7)
+C            write (36,*) 'before mcsa sna= ',(SNA(1,J),J=1,7)
             call MCSA(IZ)
-            write (36,*) 'after mcsa sna= ',(SNA(1,J),J=1,7)
+C            write (36,*) 'after mcsa sna= ',(SNA(1,J),J=1,7)
           endif
         endif
 
@@ -1196,7 +1196,7 @@ C Now initiate computation of all time-independent zone properties.
         else
           CALL MZAREA(IZ)
         endif
-        write (36,*) 'after mzarea sna= ',(SNA(1,J),J=1,7)
+C        write (36,*) 'after mzarea sna= ',(SNA(1,J),J=1,7)
 
         CALL MZVOLM(IZ)
         CALL MZPAZI(IZ)

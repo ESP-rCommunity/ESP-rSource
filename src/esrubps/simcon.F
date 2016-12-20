@@ -204,7 +204,7 @@ C Re-scan the model description files silently.
         
 C MZNUMA is effectively a simulation clock.
         CALL MZNUMA
-        write (36,*) 'after mznuma sna= ',(SNA(1,J),J=1,7)
+C        write (36,*) 'after mznuma sna= ',(SNA(1,J),J=1,7)
 
 C Close ascii plant-side boundary data file if last simulation 
 C otherwise rewind for use in next simulation.
