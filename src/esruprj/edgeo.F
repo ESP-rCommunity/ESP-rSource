@@ -2935,7 +2935,7 @@ C IVA array of selections is returned.
       COMMON/C24/IZSTOCN(MCOM,MS)
 
       DIMENSION STMP(MS),IVA(MS),IVALS(MS)
-      character STMP*42,act*1,msg1*32,msg2*32
+      character STMP*46,act*1,msg1*32,msg2*32
 
 C For help messages
       character helpinsub*24 ! subroutine name
@@ -3030,7 +3030,8 @@ C which are not applicable. The do loop needs to use nzsur so that all
 C surfaces are presented even if only ilimit can be copied.
         DO 11 I=1,NZSUR(IZONE)
          ioc=IZSTOCN(izone,i)
-         lnl=lnblnk(SSMLCN(ioc)) 
+         lnl=lnblnk(SSMLCN(ioc))
+         if(lnl.gt.16) lnl=16  ! truncate MLC name in list
          if(act.eq.'s'.or.act.eq.'S')then
            if(SSOTHER(ioc,1)(1:5).eq.'EXTER')then
              write(STMP(I),'(5a)') SSNAME(ioc),'|',SSOTF(ioc)(1:6),' |',
@@ -5802,7 +5803,7 @@ C Vertex transforms (start).
      &   ino,idno,nbhelp)
 
 C Based on users selection or jump back point for 'do another one'.
- 243     if(ino.eq.0.or.ino.eq.11)then
+ 243    if(ino.eq.0.or.ino.eq.11)then
           continue
         elseif(ino.eq.1)then
 
@@ -6285,72 +6286,12 @@ C Use ratio calculation to make an aligned point vdislsp along the line.
             dok=.true.
             call askok('Is this aligned vertex ok?',' ',ok,dok,nbhelp)
             if(ok)then
+
+C Update the coordinates in common blocks and return.
               X(IWHICH3)=x3; Y(IWHICH3)=y3; Z(IWHICH3)=z3
               VCOORD(ICOMP,IWHICH3,1)=x3
               VCOORD(ICOMP,IWHICH3,2)=y3
               VCOORD(ICOMP,IWHICH3,3)=z3
-              iwhich3=NTV
-              do 346 ivj=1,NSUR
-                icc=izstocn(icomp,ivj)
-                ivjlimit=NVER(ivj)
-                do 347 ivjj=1,ivjlimit
-                  if(ivjj.eq.ivjlimit)then
-                    iwhich1=JVN(ivj,ivjj)
-                    iwhich2=JVN(ivj,1)
-                  else
-                    iwhich1=JVN(ivj,ivjj)
-                    iwhich2=JVN(ivj,ivjj+1)
-                  endif
-
-C Report length of line. Use method of Ward/Radiance in fvect.c
-                  call pointtoline(iwhich3,iwhich1,iwhich2,offset,
-     &              matchver)
-                  if(.NOT.matchver) goto 347
-                  if(offset.lt.CACC)then
-                    write(outs,'(a,i3,a,3f9.4,a,f6.4,a,i3,a,i3,2a)')
-     &                'New vertex ',iwhich3,' @',
-     &                X(NTV),Y(NTV),Z(NTV),' is close (',offset,
-     &                ') to edge ',IWHICH1,' &',IWHICH2,' of surface ',
-     &                SSNAME(icc)
-                    call edisp(itru,outs)
-
-C If current surface (ivj) can take another vertex expand the
-C list. Logic works by looping down (from one more than the current
-C number of vertices associated with this surface) shifting
-C JVN indices up one until at the current edge (ivjj) and then
-C inserting the new vertex index.
-                    if(NVER(ivj)+1.le.MV)then
-                      dok=.true.
-                      call askok(' ','Insert this vertex?',
-     &                            ok,dok,nbhelp)
-                    else
-                      ok=.false.
-                    endif
-                    if(ok)then
-                      NVER(ivj)=NVER(ivj)+1
-                      IXV=NVER(ivj)+1
-  248                 continue
-                      IXV=IXV-1
-                      JVN(ivj,IXV)=JVN(ivj,IXV-1)
-                      IF(IXV.GT.ivjj+1)GOTO 248
-                      JVN(ivj,ivjj+1)=iwhich3
-                      if(newgeo)then
-                        call geowrite(IFIL+2,LGEOM(ICOMP),ICOMP,iuout,
-     &                    3,IER)
-                      else
-                        call emkgeo(IFIL+2,LGEOM(ICOMP),ICOMP,3,IER)
-                      endif
-
-C Debug...
-C                     write(6,'(a,42i4)') 'now jvn is ',
-C     &                (JVN(ivj,ii),ii=1,NVER(ivj))
-
-C Surface (ivj) vertex list has been updated. Go on to next surface.
-                      goto 346 
-                    endif
-                  endif
-  347           continue
-  346         continue
             endif
           endif
 

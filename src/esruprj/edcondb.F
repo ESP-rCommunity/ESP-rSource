@@ -4821,12 +4821,8 @@ C               ifoc=ifoc+1
           elseif(ACTION.eq.'-')then
             call edisp(iuout,' ')
             call etmldb(2,iuout,IFOC,imerr)
-            dok=.true.
-            CALL ASKOK(outs,'Use it:',OK,dok,1)
-            if(OK)then
-              ISEL=IFOC ! set to selected array index
-              return    ! task complete return to calling subroutine
-            endif
+            ISEL=IFOC ! set to selected array index
+            return    ! task complete return to calling subroutine
           endif
         ENDIF
         GOTO 3  ! regenerate and display inner menu

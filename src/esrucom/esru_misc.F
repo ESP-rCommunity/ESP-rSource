@@ -3733,7 +3733,7 @@ C show attributes in list.
       DIMENSION VERT(35),VERTS(35)
 
       CHARACTER*(*) PROMPT1,PROMPT2
-      CHARACTER H*72,VERT*28,VERTS*42,KEY*1,MOD*1,title*29
+      CHARACTER H*72,VERT*32,VERTS*42,KEY*1,MOD*1,title*29
       LOGICAL SELECT
       integer loopstart,loopend,i,icc   ! for looping
       logical usesbasesimp
@@ -3782,6 +3782,7 @@ C current menu line index. Build up text strings for the menu.
           CALL EMKEY(L,KEY,IER)
           icc=IZSTOCN(izone,L)
           lnsmlcn=lnblnk(SSMLCN(icc))
+          if(lnsmlcn.gt.16) lnsmlcn=16
           if(MOD.eq.'-')then
             WRITE(VERT(M),14)KEY,SSNAME(icc),SSMLCN(icc)(1:lnsmlcn)
    14       FORMAT(A1,1X,A,1X,A)
