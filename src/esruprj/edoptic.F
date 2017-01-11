@@ -210,7 +210,7 @@ C Produce help text for both types of import.
         CALL PHELPD('optics db imp',nbhelp,'-',0,0,IER)
         IOW=1
         CALL EASKATOG('Optical actions: ',' ',
-     &    'Import Window5/6','Import WIS',
+     &    'Import Window5/6/7','Import WIS',
      &    'Add','Delete','Copy','Ignore',' ',IOW,nbhelp)
         if(IOW.eq.1)then
 
@@ -1167,13 +1167,16 @@ C Loop until start of "Optical Properties" section.
         endif
         goto 10
       elseif(outstr(1:9).eq.'Window 5.'.or.
-     &       outstr(1:9).eq.'Window v6')then
+     &       outstr(1:9).eq.'Window v6'.or.
+     &       outstr(1:9).eq.'WINDOW v7')then
 
 C A newer format file.
         if(outstr(1:9).eq.'Window 5.')then
           iwversion=5
         elseif(outstr(1:9).eq.'Window v6')then
           iwversion=6
+        elseif(outstr(1:9).eq.'WINDOW v7')then
+          iwversion=7
         endif
  13     CALL STRIPC(iwin4,outstr,0,ND,1,'data',IER)
         call edisp(iuout,outstr)
@@ -1188,7 +1191,7 @@ C A newer format file.
         endif
         goto 13
       else
-        call usrmsg('Does not appear to be a WINDOW 4/5/6 file...',
+        call usrmsg('Does not appear to be a WINDOW 4/5/6/7 file...',
      &    outstr,'W')
         ier=1
         return
@@ -1220,6 +1223,8 @@ C Estimate number of layers including air gaps.
         CALL EGETW(outstr,K,wdum,'W','skip :',IER)
         CALL EGETWR(outstr,K,VTRNED,0.0,0.999,'W','visib trn',IER)
       elseif(word(1:7).eq.'Outside')then
+
+C Read the tokens for the various layers.
         do 43 ij=1,nl
           CALL STRIPC(iwin4,outstr,99,ND,1,'layer dat',IEER)
           K=0
@@ -1231,7 +1236,7 @@ C Newer files do not have a # after air layers.
           if(iwversion.eq.4)then
             CALL EGETWR(outstr,K,wlthk(ij),0.0,99.0,'W','lay tk mm',
      &        IER)
-          elseif(iwversion.eq.5.or.iwversion.eq.6)then
+          elseif(iwversion.ge.5)then
             if(wlname(ij)(1:3).eq.'Air')then
               CALL EGETWR(outstr,K,wlthk(ij),0.0,99.0,'W','lay tk mm',
      &          IER)
