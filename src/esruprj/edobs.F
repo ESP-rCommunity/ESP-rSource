@@ -2929,6 +2929,7 @@ C Set menu header text.
         WRITE(VERT(6),'(A,A)')      'f name        : ',
      &    VISNAME(ICOMP,IB)
         llbm=LNVISMAT(ICOMP,IB)
+        if(llbm.gt.16) llbm=16   ! truncate longer MLC names
         WRITE(VERT(7),'(A,A)')      'g construction: ',
      &    VISMAT(ICOMP,IB)(1:llbm)
         WRITE(VERT(8),'(A,F6.2)')   'h opacity     : ',OPOV(ICOMP,IB)
@@ -2981,6 +2982,7 @@ C Set menu header text.
         WRITE(VERT(11),'(A,A)')     'i name        : ',
      &    VISNAME(ICOMP,IB)
         llbm=LNVISMAT(ICOMP,IB)
+        if(llbm.gt.16) llbm=16   ! truncate longer MLC names
         WRITE(VERT(12),'(A,A)')     'j construction: ',
      &    VISMAT(ICOMP,IB)(1:llbm)
         WRITE(VERT(13),'(A,F6.2)')  'k opacity     : ',OPOV(ICOMP,IB)

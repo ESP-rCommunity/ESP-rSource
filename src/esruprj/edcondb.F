@@ -3880,8 +3880,8 @@ C Call ctlexp a 2nd time to close the file.
 C Manage categories. Select and alter the category name or documentation
 C or add another category to the database << add not yet tested >>
         if(ACTION.eq.'M'.or.ACTION.eq.'m')then
-          CALL EASKABCD(' Options:',' ',
-     &      'edit category name','edit category documentation',
+          CALL EASKABCD(' Options:',' ','edit category menu',
+     &      'edit category documentation',
      &      'add another category','cancel',irpt,nbhelp)
           if(irpt.eq.1.or.irpt.eq.2)then
             CALL EPMENSV
@@ -3895,20 +3895,14 @@ C or add another category to the database << add not yet tested >>
           endif
           if(irpt.eq.1)then
 
-C Edit classification name and menu.
-            write(t32,'(a)')mlccatname(IC)(1:lnmlccatname(IC))
-            CALL EASKS(t32,' ',' Classification name (<32 char)?',
-     &        32,' ','class name',IER,nbhelp)
-            if(t32(1:2).ne.'  ')then
-              write(mlccatname(IC),'(a)') t32(1:lnblnk(t32))
-              lnmlccatname(IC)=lnblnk(mlccatname(IC))
-              write(t32,'(a)')mlccatname(IC)(1:lnmlccatname(IC))
-              CALL EASKS(t32,' ',' Classification menu (<32 char)?',
-     &          32,' ','class menu',IER,nbhelp)
-              write(mlccatmenu(IC),'(a)') t32(1:lnblnk(t32))
-              chgdb=.true.
-              MODDB=.TRUE.
-            endif
+C Edit classification menu.
+            write(t32,'(a)')mlccatmenu(IC)(1:lnmlcmenu(IC))
+            CALL EASKS(t32,' ',' Classification menu (<32 char)?',
+     &        32,' ','class menu',IER,nbhelp)
+            write(mlccatmenu(IC),'(a)') t32(1:lnblnk(t32))
+            lnmlcmenu(IC)=lnblnk(t32)
+            chgdb=.true.
+            MODDB=.TRUE.
           elseif(irpt.eq.2)then
 
 C Edit classification documentation.
@@ -4902,6 +4896,7 @@ C CFC layer properties
 
 C Note: size of MLED supports a dozen layers in a construction.
       DIMENSION MLED(32),PNAM(ME),MMLAY(ME+2),imlay(ME+2)
+      DIMENSION ICLSSEL(30)
       character*72 LTMP
       CHARACTER NAM*72,KEY*1,GDESCR*36
       CHARACTER SOPT*12,LAYD*124
@@ -5009,15 +5004,15 @@ C Present editing menu and echo the construction documentation.
    2  WRITE(MLED(1),'(A,1X,A)')'a Construction:',mlcname(ifoc)(1:26)
       call edisp248(iuout,mlcdoc(ifoc),100)
       if(mlcver.eq.1)then
-        WRITE(MLED(2),'(A,1X,A12)')'  Category:',
+        WRITE(MLED(2),'(A,1X,A12)')'b Category:',
      &    mlcincat(ifoc)(1:28)
       else
         MLED(2)='  Category: general'
       endif
       if(mlcver.eq.1)then
-        WRITE(MLED(3),'(A,1X,A)') 'b Menu:',
+        WRITE(MLED(3),'(A,1X,A)') 'c Menu:',
      &    mlcmenu(ifoc)(1:28)
-        WRITE(MLED(4),'(A,1X,2A)')'c Doc:',
+        WRITE(MLED(4),'(A,1X,2A)')'d Doc:',
      &    mlcdoc(ifoc)(1:28),'..'
       else
         WRITE(MLED(3),'(A,1X,A)') '  Menu:',
@@ -5027,15 +5022,15 @@ C Present editing menu and echo the construction documentation.
       endif
 
       IF(mlctype(ifoc)(1:4).EQ.'TRAN')THEN
-        MLED(5)='d General type: Transparent '
+        MLED(5)='e General type: Transparent '
       ELSEIF(mlctype(ifoc)(1:4).EQ.'CFC ')THEN
-        MLED(5)='d General type: Complex Fenestration'
+        MLED(5)='e General type: Complex Fenestration'
       ELSEIF(mlctype(ifoc)(1:4).EQ.'CFC2')THEN
-        MLED(5)='d General type: Complex Fenestration 2'
+        MLED(5)='e General type: Complex Fenestration 2'
       ELSE
-        MLED(5)='d General type: Opaque      '
+        MLED(5)='e General type: Opaque      '
       ENDIF
-      WRITE(MLED(6),'(A,1X,A12)')'e Optical properties:',
+      WRITE(MLED(6),'(A,1X,A12)')'f Optical properties:',
      &  mlcoptical(ifoc)(1:20)
       WT=0.0   ! figure out the total thickness
       DO 22, IL=1,LAYERS(IFOC)
@@ -5044,10 +5039,10 @@ C Present editing menu and echo the construction documentation.
       WRITE(MLED(7),'(A,I2,a,F6.1,a)') '  Number of layers:',
      &  LAYERS(IFOC),' (',WT*1000.0,'mm thick)'
       if(showother)then
-        WRITE(MLED(8),'(2a)')  'f Linked with: ',
+        WRITE(MLED(8),'(2a)')  'g Linked with: ',
      &    mlcsymetric(ifoc)(1:26)
       else
-        WRITE(MLED(8),'(2a)')  'e Layers are: ',
+        WRITE(MLED(8),'(2a)')  'g Layers are: ',
      &    mlcsymetric(ifoc)(1:26)
       endif
       MLED(9)='  _____________________________  '
@@ -5973,7 +5968,18 @@ C for the current item.
 
       ELSEIF(ILED.EQ.2)THEN
 
-C Category ??
+C Category allow the user to select a different category.
+        CALL EPMENSV
+        INPIC=1
+        CALL EPICKS(INPIC,ICLSSEL,' ','Move to which class?',
+     &    32,matcats,mlccatmenu,'Construction class',
+     &    IER,nbhelp)
+        CALL EPMENRC
+        IC=ICLSSEL(1)
+        if(IC.ge.1)then
+          mlcincat(ifoc)=mlccatname(IC)
+          moddb = .true.
+        endif
 
       ELSEIF(ILED.EQ.3)THEN
 
