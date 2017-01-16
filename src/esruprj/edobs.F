@@ -2295,9 +2295,7 @@ C Rotation choices.
               endif
 
               PI = 4.0 * ATAN(1.0)
-              A=-ANGR*PI/180.
-              CA=COS(A)
-              SA=SIN(A)
+              A=-ANGR*PI/180.0; CA=COS(A); SA=SIN(A)
               do ij=1,INPIC
                 IFOC=IVALB(ij)
                 XXX=XOV(ICOMP,IFOC)-X1; YYY=YOV(ICOMP,IFOC)-Y1

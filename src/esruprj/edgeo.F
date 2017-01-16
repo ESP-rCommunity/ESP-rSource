@@ -153,6 +153,7 @@ C Predefined entity variables.
 
       real objbb(3),DX,DY,DZ
       character predef*144,temp*12
+      real angr
       
 C For help messages
       character helpinsub*24 ! subroutine name
@@ -1534,6 +1535,28 @@ C Scan G1 for vertes in this zone and allow user to select one.
           endif
 
           iZBFLG(ICOMP)=0
+  
+          if(nbvis(icomp).gt.0)then
+
+C Visual object rotation.
+            ANGR=VAL
+            PI = 4.0 * ATAN(1.0)
+            A=-ANGR*PI/180.0; CA=COS(A); SA=SIN(A)
+            do ij=1,nbvis(icomp)
+              XXX=XOV(ICOMP,ij)-X1; YYY=YOV(ICOMP,ij)-Y1
+              XR=XXX*CA+YYY*SA; YR=YYY*CA-XXX*SA
+              XOV(ICOMP,ij)=XR+X1; YOV(ICOMP,ij)=YR+Y1
+              BANGOV(ICOMP,ij,1)=BANGOV(ICOMP,ij,1)+ANGR
+              do ibe=1,8
+                XXX=XVP(icomp,ij,ibe)-X1
+                YYY=YVP(icomp,ij,ibe)-Y1
+                XR=XXX*CA+YYY*SA; YR=YYY*CA-XXX*SA
+                XVP(icomp,ij,ibe)=XR+X1
+                YVP(icomp,ij,ibe)=YR+Y1
+              enddo  ! of ibe
+            enddo    ! of ij
+          endif
+
           call eclose(gversion(icomp),1.1,0.01,newgeo)
           if(igupgrade.eq.2.and.(.NOT.newgeo))then
             gversion(icomp) =1.1
@@ -1748,6 +1771,22 @@ C If user has not canceled then perform the transform.
             X(I)=X(I)+VALX; Y(I)=Y(I)+VALY; Z(I)=Z(I)+VALZ
           enddo
           iZBFLG(ICOMP)=0
+  
+          if(nbvis(icomp).gt.0)then
+
+C Visual object transforms.
+            do ij=1,nbvis(icomp)
+              XOV(icomp,ij)=XOV(icomp,ij)+VALX
+              YOV(icomp,ij)=YOV(icomp,ij)+VALY
+              ZOV(icomp,ij)=ZOV(icomp,ij)+VALZ
+              do ibe=1,8
+                XVP(icomp,ij,ibe)=XVP(icomp,ij,ibe)+VALX
+                YVP(icomp,ij,ibe)=YVP(icomp,ij,ibe)+VALY
+                ZVP(icomp,ij,ibe)=ZVP(icomp,ij,ibe)+VALZ
+              enddo  ! of ibe
+            enddo    ! of ij
+          endif
+
           call eclose(gversion(icomp),1.1,0.01,newgeo)
           if(igupgrade.eq.2.and.(.NOT.newgeo))then
             gversion(icomp) =1.1
@@ -1825,6 +1864,7 @@ C so now apply the transform to the obstructions (only).
               call geowrite(IFIL+2,LGEOM(ICOMP),ICOMP,iuout,3,IER)
             endif
           endif
+
         elseif(INOR.eq.11.or.INOR.eq.12.or.INOR.eq.13.or.INOR.eq.14)then
 
 C Mirror a zone (cardinal directions only). Ask for NS SN EW WE, then

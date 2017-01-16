@@ -637,7 +637,7 @@ C Common blocks UA1 UA2 within uncertainty.h
       integer idst,ihst,idft,ihft   ! for local editing.
       integer idf,ids,ihf,ihs
       integer icc,jjj    ! loops
-      logical found,foundmat,chdb
+      logical found,foundmat,chdb,modmlc
 
 C For help messages
       character helpinsub*24 ! subroutine name

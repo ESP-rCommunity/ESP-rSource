@@ -4632,6 +4632,21 @@ C Find out the version number so we know what to do with obstructions later.
             Z(I)=Z(I)+VALZ
    62     continue
           iZBFLG(IICOMP)=0
+  
+          if(nbvis(iicomp).gt.0)then
+
+C Visual object transforms.
+            do ij=1,nbvis(iicomp)
+              XOV(iicomp,ij)=XOV(iicomp,ij)+VALX
+              YOV(iicomp,ij)=YOV(iicomp,ij)+VALY
+              ZOV(iicomp,ij)=ZOV(iicomp,ij)+VALZ
+              do ibe=1,8
+                XVP(iicomp,ij,ibe)=XVP(iicomp,ij,ibe)+VALX
+                YVP(iicomp,ij,ibe)=YVP(iicomp,ij,ibe)+VALY
+                ZVP(iicomp,ij,ibe)=ZVP(iicomp,ij,ibe)+VALZ
+              enddo  ! of ibe
+            enddo    ! of ij
+          endif
 
 C Decide whether to upgrade the geometry file format.
           if(igupgrade.eq.2.and.(.NOT.newgeo))then
@@ -4729,6 +4744,7 @@ C apply the transform and write the file back out.
               endif
             endif
           endif
+
           write(outs,'(3a)') ' Transforming: ',zn(1:lnblnk(zn)),
      &      '...done'
           if(.NOT.silent)CALL USRMSG(' ',outs,'-')
@@ -4785,6 +4801,7 @@ C user can un-do this action.
       integer itrc,iuf,iicomp,ij,iz
       integer ibe   ! loop for faces of obstruction
       real A,pi,XR,YR,XXX,YYY,CA,SA
+      real angr   ! rotation angle
 
 C For help messages
       character helpinsub*24 ! subroutine name
@@ -4811,6 +4828,30 @@ C Find out version number so we know if upgrade required.
           call georead(IUF,LTMP,IICOMP,1,iuout,IER)
           CALL ESCROT(VAL,x1,y1)
           iZBFLG(IICOMP)=0
+  
+          if(nbvis(iicomp).gt.0)then
+
+C Visual object rotation.
+            ANGR=VAL
+            PI = 4.0 * ATAN(1.0)
+            A=-ANGR*PI/180.
+            CA=COS(A)
+            SA=SIN(A)
+            do ij=1,nbvis(iicomp)
+              XXX=XOV(IICOMP,ij)-X1; YYY=YOV(IICOMP,ij)-Y1
+              XR=XXX*CA+YYY*SA; YR=YYY*CA-XXX*SA
+              XOV(IICOMP,ij)=XR+X1; YOV(IICOMP,ij)=YR+Y1
+              BANGOV(IICOMP,ij,1)=BANGOV(IICOMP,ij,1)+ANGR
+              do ibe=1,8
+                XXX=XVP(iicomp,ij,ibe)-X1
+                YYY=YVP(iicomp,ij,ibe)-Y1
+                XR=XXX*CA+YYY*SA; YR=YYY*CA-XXX*SA
+                XVP(iicomp,ij,ibe)=XR+X1
+                YVP(iicomp,ij,ibe)=YR+Y1
+              enddo  ! of ibe
+            enddo    ! of ij
+          endif
+
 
 C Remember user directive for future un-do.
           rotateit(iicomp,1)=0.0
