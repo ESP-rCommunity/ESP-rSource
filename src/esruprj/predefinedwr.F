@@ -645,7 +645,7 @@ C Scan visp definition and instanciate model entity.
 C Prepend prec to name and update the compound object reference.
           write(VISNAME(icomp,nbv),'(2a)') prec,WORD(1:11)
           LNVISNAME(icomp,nbv)=lnblnk(VISNAME(icomp,nbv))
-          CALL EGETW(LOUTSTR,K,WORD,'W','vis mat name',IFLAG)
+          CALL EGETP(LOUTSTR,K,WORD,'W','vis mat name',IFLAG)
           write(VISMAT(icomp,nbv),'(a)') WORD(1:lnblnk(WORD))
           LNVISMAT(icomp,nbv)=lnblnk(VISMAT(icomp,nbv))
           VISTYP(icomp,nbv)='visp'
@@ -1522,7 +1522,7 @@ C A general polygon obstruction to be associated with the current zone.
             endif
             CALL EGETW(LOUTSTR,K,WORD,'W','obs blk name',IFLAG)
             write(OBJBLOCKNAME(objnbobs),'(a)') WORD(1:lnblnk(WORD))
-            CALL EGETW(LOUTSTR,K,WORD,'W','obs mat name',IFLAG)
+            CALL EGETP(LOUTSTR,K,WORD,'W','obs mat name',IFLAG)
             write(OBJBLOCKMAT(objnbobs),'(a)') WORD(1:lnblnk(WORD))
             OBJBLOCKTYP(objnbobs)='obsp'
 
@@ -2105,23 +2105,25 @@ C If predefined included shading obstructions print.
           write(ifilg,'(a)',IOSTAT=IOS,ERR=13) '# '
           do ib=1,objnbobs
             if(objblocktyp(ib)(1:4).eq.'obs3')then
-              WRITE(outs,'(2a,9F9.4,F6.2,1X,A,1X,A)',IOSTAT=ios,
+              WRITE(outs,'(2a,9F9.4,F6.2,1X,A)',IOSTAT=ios,
      &          ERR=13) 
      &          '*obs3',tab,OBJXOB(ib),OBJYOB(ib),OBJZOB(ib),
      &          OBJDXOB(ib),OBJDYOB(ib),OBJDZOB(ib),OBJBANGOB(ib,1),
      &          OBJBANGOB(ib,2),OBJBANGOB(ib,3),OBJOPOB(ib),
-     &          OBJBLOCKNAME(ib),OBJBLOCKMAT(ib)
+     &          OBJBLOCKNAME(ib)
               call SDELIM(outs,outsd,'C',IW)
-              write(ifilg,'(2a,i3)',IOSTAT=IOS,ERR=13) 
-     &          outsd(1:lnblnk(outsd)),'  # block ',ib
+              lnbm=lnblnk(OBJBLOCKMAT(ib))
+              write(ifilg,'(4a,i3)',IOSTAT=IOS,ERR=13) 
+     &          outsd(1:lnblnk(outsd)),' ',OBJBLOCKMAT(ib)(1:lnbm),
+     &          '  # block ',ib
             elseif(objblocktyp(ib)(1:4).eq.'obsp')then
-              WRITE(outs,'(2a,F6.2,1X,A,1X,A)',IOSTAT=ios,ERR=13) 
-     &          '*obsp',' 8 6 ',OBJOPOB(ib),OBJBLOCKNAME(ib),
-     &          OBJBLOCKMAT(ib)
+              WRITE(outs,'(2a,F6.2,1X,A)',IOSTAT=ios,ERR=13) 
+     &          '*obsp',' 8 6 ',OBJOPOB(ib),OBJBLOCKNAME(ib)
               call SDELIM(outs,outsd,'C',IW)
-              write(ifilg,'(2a,i3,a)',IOSTAT=IOS,ERR=13) 
-     &          outsd(1:lnblnk(outsd)),'  # block ',ib,
-     &          ' coords follow:'
+              lnbm=lnblnk(OBJBLOCKMAT(ib))
+              write(ifilg,'(4a,i3,a)',IOSTAT=IOS,ERR=13) 
+     &          outsd(1:lnblnk(outsd)),' ',OBJBLOCKMAT(ib)(1:lnbm),
+     &          '  # block ',ib,' coords follow:'
 
               WRITE(outs,'(12F9.4)',IOSTAT=ios,ERR=13) 
      &          OBJXBP(ib,1),OBJYBP(ib,1),OBJZBP(ib,1),
@@ -2142,15 +2144,16 @@ C If predefined included shading obstructions print.
      &          outsd(1:lnblnk(outsd)),'  # 5-8 '
 
             elseif(objblocktyp(ib)(1:4).eq.'obs ')then
-              WRITE(outs,'(2a,7F9.4,F6.2,1X,A,1X,A)',IOSTAT=ios,
+              WRITE(outs,'(2a,7F9.4,F6.2,1X,A)',IOSTAT=ios,
      &          ERR=13) 
      &          '*obs',tab,OBJXOB(ib),OBJYOB(ib),OBJZOB(ib),
      &          OBJDXOB(ib),OBJDYOB(ib),OBJDZOB(ib),
-     &          OBJBANGOB(ib,1),objopob(ib),OBJBLOCKNAME(ib),
-     &          OBJBLOCKMAT(ib)
+     &          OBJBANGOB(ib,1),objopob(ib),OBJBLOCKNAME(ib)
               call SDELIM(outs,outsd,'C',IW)
-              write(ifilg,'(2a,i3)',IOSTAT=IOS,ERR=13) 
-     &          outsd(1:lnblnk(outsd)),'  # block ',ib
+              lnbm=lnblnk(OBJBLOCKMAT(ib))
+              write(ifilg,'(4a,i3)',IOSTAT=IOS,ERR=13) 
+     &          outsd(1:lnblnk(outsd)),' ',OBJBLOCKMAT(ib)(1:lnbm),
+     &          '  # block ',ib
             endif
           enddo  !  ib
         endif
@@ -2160,24 +2163,26 @@ C Visual entities are in the next section.
           write(ifilg,'(a)',IOSTAT=IOS,ERR=13) '# '
           do ib=1,nbobjvis
             if(objvistyp(ib)(1:4).eq.'vis3')then
-              WRITE(outs,'(2a,9F10.4,F6.2,4A)',IOSTAT=ios,
+              WRITE(outs,'(2a,9F10.4,F6.2,2A)',IOSTAT=ios,
      &          ERR=13) 
      &          '*vis3',tab,OBJXOV(ib),OBJYOV(ib),OBJZOV(ib),
      &          OBJDXOV(ib),OBJDYOV(ib),OBJDZOV(ib),
      &          OBJBANGOV(ib,1),OBJBANGOV(ib,2),OBJBANGOV(ib,3),
-     &          objvisopaq(ib),' ',OBJVISNAME(ib),' ',objvismat(ib)
+     &          objvisopaq(ib),' ',OBJVISNAME(ib)
               write(6,*) outs(1:lnblnk(outs))
+              lnvm=lnblnk(objvismat(ib))
               call SDELIM(outs,outsd,'C',IW)
-              write(ifilg,'(2a,i3)',IOSTAT=IOS,ERR=13) 
-     &          outsd(1:lnblnk(outsd)),'  # visual block ',ib
+              write(ifilg,'(4a,i3)',IOSTAT=IOS,ERR=13) 
+     &          outsd(1:lnblnk(outsd)),' ',objvismat(ib)(1:lnvm),
+     &          '  # visual block ',ib
             elseif(objvistyp(ib)(1:4).eq.'visp')then
-              WRITE(outs,'(2a,F6.2,4A)',IOSTAT=ios,ERR=13) 
-     &          '*visp',' 8 6 ',objvisopaq(ib),' ',OBJVISNAME(ib),
-     &          ' ',objvismat(ib)
+              WRITE(outs,'(2a,F6.2,2A)',IOSTAT=ios,ERR=13) 
+     &          '*visp',' 8 6 ',objvisopaq(ib),' ',OBJVISNAME(ib)
+              lnvm=lnblnk(objvismat(ib))
               call SDELIM(outs,outsd,'C',IW)
-              write(ifilg,'(2a,i3,a)',IOSTAT=IOS,ERR=13) 
-     &          outsd(1:lnblnk(outsd)),'  # visual ',ib,
-     &          ' coords follow:'
+              write(ifilg,'(4a,i3,a)',IOSTAT=IOS,ERR=13) 
+     &          outsd(1:lnblnk(outsd)),' ',objvismat(ib)(1:lnvm),
+     &          '  # visual ',ib,' coords follow:'
 
               WRITE(outs,'(12F9.4)',IOSTAT=ios,ERR=13) 
      &          OBJXVP(ib,1),OBJYVP(ib,1),OBJZVP(ib,1),
@@ -2199,15 +2204,15 @@ C Visual entities are in the next section.
      &          outsd(1:lnblnk(outsd)),'  # 5-8 '
 
             elseif(objvistyp(ib)(1:4).eq.'vis ')then
-              WRITE(outs,'(2a,7F10.4,F6.2,5A)',IOSTAT=ios,ERR=13) 
+              WRITE(outs,'(2a,7F10.4,F6.2,2A)',IOSTAT=ios,ERR=13) 
      &          '*vis',tab,OBJXOV(ib),OBJYOV(ib),OBJZOV(ib),
      &          OBJDXOV(ib),OBJDYOV(ib),OBJDZOV(ib),
-     &          OBJBANGOV(ib,1),objvisopaq(ib),' ',OBJVISNAME(ib),
-     &          ' ',objvismat(ib),' '
+     &          OBJBANGOV(ib,1),objvisopaq(ib),' ',OBJVISNAME(ib)
               write(6,*) outs
               call SDELIM(outs,outsd,'C',IW)
-              write(ifilg,'(2a,i3)',IOSTAT=IOS,ERR=13) 
-     &          outsd(1:lnblnk(outsd)),'  # visual ',ib
+              write(ifilg,'(4a,i3)',IOSTAT=IOS,ERR=13) 
+     &          outsd(1:lnblnk(outsd)),' ',objvismat(ib)(1:lnvm),
+     &          '  # visual ',ib
             endif
           enddo   ! ib
         endif     ! visual entities

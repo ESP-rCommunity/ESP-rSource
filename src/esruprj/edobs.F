@@ -195,6 +195,7 @@ C as a list for copy and delete use.
       M=MHEAD
       DO 10 L=1,ILEN
         llbm=LNBLOCKMAT(ICOMP,L)
+        if(llbm.gt.14) llbm=14
         llbn=LNBLOCKNAME(ICOMP,L)
         WRITE(PICK(L),304)L,BLOCKNAME(ICOMP,L)(1:llbn),
      &    BLOCKMAT(ICOMP,L)(1:llbm)
@@ -1171,6 +1172,7 @@ C geometry files.
         WRITE(VERT(6),'(A,A)')      'f name        : ',
      &    BLOCKNAME(ICOMP,IB)
         llbm=LNBLOCKMAT(ICOMP,IB)
+        if(llbm.gt.16) llbm=16
         WRITE(VERT(7),'(A,A)')      'g construction: ',
      &    BLOCKMAT(ICOMP,IB)(1:llbm)
         WRITE(VERT(8),'(A,F6.2)')   'h opacity   : ',OPOB(ICOMP,IB)
@@ -1227,6 +1229,7 @@ C geometry files.
         WRITE(VERT(11),'(A,A)')     'i name        : ',
      &    BLOCKNAME(ICOMP,IB)
         llbm=LNBLOCKMAT(ICOMP,IB)
+        if(llbm.gt.16) llbm=16
         WRITE(VERT(12),'(A,A)')     'j construction: ',
      &    BLOCKMAT(ICOMP,IB)(1:llbm)
         WRITE(VERT(13),'(A,F6.2)')   'k opacity   : ',OPOB(ICOMP,IB)
@@ -2092,6 +2095,7 @@ C focus of entities or compound objects.
             ENDIF
           else
             llbm=LNVISMAT(ICOMP,L)
+            if(llbm.gt.14) llbm=14
             llbn=LNVISNAME(ICOMP,L)
             WRITE(PICKV(L),'(I3,2X,A,1x,A)')L,VISNAME(ICOMP,L)(1:llbn),
      &        VISMAT(ICOMP,L)(1:llbm)
@@ -2110,6 +2114,7 @@ C to compound objects.
         if(focusobj)then
           do iv=1,nbvis(icomp)
             llbm=LNVISMAT(ICOMP,iv)
+            if(llbm.gt.14) llbm=14
             llbn=LNVISNAME(ICOMP,iv)
             WRITE(PICKV(iv),'(I3,2X,A,1x,A)')iv,
      &        VISNAME(ICOMP,iv)(1:llbn),

@@ -2261,7 +2261,7 @@ C standard obstruction block when converted into a GB1 common block.
             CALL EGETW(LOUTSTR,K,WORD,'W','obs blk name',IFLAG)
             write(BLOCKNAME(icomp,nbo),'(a)') WORD(1:lnblnk(WORD))
             LNBLOCKNAME(icomp,nbo)=lnblnk(BLOCKNAME(icomp,nbo))
-            CALL EGETW(LOUTSTR,K,WORD,'W','obs mat name',IFLAG)
+            CALL EGETP(LOUTSTR,K,WORD,'W','obs mat name',IFLAG)
             write(BLOCKMAT(icomp,nbo),'(a)') WORD(1:lnblnk(WORD))
             LNBLOCKMAT(icomp,nbo)=lnblnk(BLOCKMAT(icomp,nbo))
             BLOCKTYP(icomp,nbo)='obsp'
@@ -2462,7 +2462,7 @@ C next 4 coordinates. The surface and edge ordering is as obsp.
             CALL EGETW(LOUTSTR,K,WORD,'W','vis blk name',IFLAG)
             write(VISNAME(icomp,nbv),'(a)') WORD(1:lnblnk(WORD))
             LNVISNAME(icomp,nbv)=lnblnk(VISNAME(icomp,nbv))
-            CALL EGETW(LOUTSTR,K,WORD,'W','vis mat name',IFLAG)
+            CALL EGETP(LOUTSTR,K,WORD,'W','vis mat name',IFLAG)
             write(VISMAT(icomp,nbv),'(a)') WORD(1:lnblnk(WORD))
             LNVISMAT(icomp,nbv)=lnblnk(VISMAT(icomp,nbv))
             VISTYP(icomp,nbv)='visp'
@@ -3088,23 +3088,25 @@ C geometry file also write the NOX and NOZ values.
      &  '*block_start',tab,NOX(icomp),NOZ(icomp),' # geometric blocks'
         do ib=1,nbobs(icomp)
           if(BLOCKTYP(icomp,ib)(1:4).eq.'obs3')then
-            WRITE(outs,'(2a,6F9.4,3F7.2,F6.2,1X,A,1X,A)',
+            WRITE(outs,'(2a,6F9.4,3F7.2,F6.2,1X,A)',
      &        IOSTAT=ios,ERR=13) 
      &        '*obs3',tab,XOB(icomp,ib),YOB(icomp,ib),ZOB(icomp,ib),
      &        DXOB(icomp,ib),DYOB(icomp,ib),DZOB(icomp,ib),
      &        BANGOB(icomp,ib,1),BANGOB(icomp,ib,2),BANGOB(icomp,ib,3),
-     &        OPOB(icomp,ib),BLOCKNAME(icomp,ib),BLOCKMAT(icomp,ib)
+     &        OPOB(icomp,ib),BLOCKNAME(icomp,ib)
             call SDELIM(outs,outsd,'C',IW)
-            write(ifilg,'(2a,i3)',IOSTAT=IOS,ERR=13) 
-     &        outsd(1:lnblnk(outsd)),'  # block ',ib
+            lnbm=lnblnk(BLOCKMAT(icomp,ib))
+            write(ifilg,'(4a,i3)',IOSTAT=IOS,ERR=13) 
+     &        outsd(1:lnblnk(outsd)),' ',BLOCKMAT(icomp,ib)(1:lnbm),
+     &        '  # block ',ib
           elseif(BLOCKTYP(icomp,ib)(1:4).eq.'obsp')then
-            WRITE(outs,'(2a,F7.2,1X,A,1X,A)',IOSTAT=ios,ERR=13) 
-     &        '*obsp',' 8 6 ',OPOB(icomp,ib),BLOCKNAME(icomp,ib),
-     &        BLOCKMAT(icomp,ib)
+            WRITE(outs,'(2a,F7.2,1X,A)',IOSTAT=ios,ERR=13) 
+     &        '*obsp',' 8 6 ',OPOB(icomp,ib),BLOCKNAME(icomp,ib)
             call SDELIM(outs,outsd,'C',IW)
-            write(ifilg,'(2a,i3,a)',IOSTAT=IOS,ERR=13) 
-     &        outsd(1:lnblnk(outsd)),'  # block ',ib,
-     &        ' coords follow:'
+            lnbm=lnblnk(BLOCKMAT(icomp,ib))
+            write(ifilg,'(4a,i3,a)',IOSTAT=IOS,ERR=13) 
+     &        outsd(1:lnblnk(outsd)),' ',BLOCKMAT(icomp,ib)(1:lnbm),
+     &        '  # block ',ib,' coords follow:'
 
             WRITE(outs,'(12F9.4)',IOSTAT=ios,ERR=13) 
      &        XBP(icomp,ib,1),YBP(icomp,ib,1),ZBP(icomp,ib,1),
@@ -3125,15 +3127,16 @@ C geometry file also write the NOX and NOZ values.
      &        outsd(1:lnblnk(outsd)),'  # 5-8 '
 
           elseif(BLOCKTYP(icomp,ib)(1:4).eq.'obs ')then
-            WRITE(outs,'(2a,6F9.4,F7.2,F6.2,1X,A,1X,A)',
+            WRITE(outs,'(2a,6F9.4,F7.2,F6.2,1X,A)',
      &        IOSTAT=ios,ERR=13) 
      &        '*obs',tab,XOB(icomp,ib),YOB(icomp,ib),ZOB(icomp,ib),
      &        DXOB(icomp,ib),DYOB(icomp,ib),DZOB(icomp,ib),
-     &        BANGOB(icomp,ib,1),OPOB(icomp,ib),BLOCKNAME(icomp,ib),
-     &        BLOCKMAT(icomp,ib)
+     &        BANGOB(icomp,ib,1),OPOB(icomp,ib),BLOCKNAME(icomp,ib)
             call SDELIM(outs,outsd,'C',IW)
-            write(ifilg,'(2a,i3)',IOSTAT=IOS,ERR=13) 
-     &        outsd(1:lnblnk(outsd)),'  # block ',ib
+            lnbm=lnblnk(BLOCKMAT(icomp,ib))
+            write(ifilg,'(4a,i3)',IOSTAT=IOS,ERR=13) 
+     &        outsd(1:lnblnk(outsd)),' ',BLOCKMAT(icomp,ib)(1:lnbm),
+     &        '  # block ',ib
           endif
         enddo  !  ib
 
@@ -3183,23 +3186,25 @@ C << be aware that spaces in materials names might be lost! >>
         write(ifilg,'(a)',IOSTAT=IOS,ERR=13) '*visual_start'
         do ib=1,nbvis(icomp)
           if(VISTYP(icomp,ib)(1:4).eq.'vis3')then
-            WRITE(outs,'(2a,6F10.4,3F7.2,F6.2,1X,A,1X,A)',
+            WRITE(outs,'(2a,6F10.4,3F7.2,F6.2,1X,A)',
      &        IOSTAT=ios,ERR=13) 
      &        '*vis3',tab,XOV(icomp,ib),YOV(icomp,ib),ZOV(icomp,ib),
      &        DXOV(icomp,ib),DYOV(icomp,ib),DZOV(icomp,ib),
      &        BANGOV(icomp,ib,1),BANGOV(icomp,ib,2),BANGOV(icomp,ib,3),
-     &        OPOV(icomp,ib),VISNAME(icomp,ib),VISMAT(icomp,ib)
+     &        OPOV(icomp,ib),VISNAME(icomp,ib)
             call SDELIM(outs,outsd,'C',IW)
-            write(ifilg,'(2a,i3)',IOSTAT=IOS,ERR=13) 
-     &        outsd(1:lnblnk(outsd)),'  # visual block ',ib
+            lnvm=lnblnk(VISMAT(icomp,ib))
+            write(ifilg,'(4a,i3)',IOSTAT=IOS,ERR=13) 
+     &        outsd(1:lnblnk(outsd)),' ',VISMAT(icomp,ib)(1:lnvm),
+     &        '  # visual block ',ib
           elseif(VISTYP(icomp,ib)(1:4).eq.'visp')then
-            WRITE(outs,'(2a,F7.2,1X,A,1X,A)',IOSTAT=ios,ERR=13) 
-     &        '*visp',' 8 6 ',OPOV(icomp,ib),VISNAME(icomp,ib),
-     &        VISMAT(icomp,ib)
+            WRITE(outs,'(2a,F7.2,1X,A)',IOSTAT=ios,ERR=13) 
+     &        '*visp',' 8 6 ',OPOV(icomp,ib),VISNAME(icomp,ib)
+            lnvm=lnblnk(VISMAT(icomp,ib))
             call SDELIM(outs,outsd,'C',IW)
-            write(ifilg,'(2a,i3,a)',IOSTAT=IOS,ERR=13) 
-     &        outsd(1:lnblnk(outsd)),'  # visual ',ib,
-     &        ' coords follow:'
+            write(ifilg,'(4a,i3,a)',IOSTAT=IOS,ERR=13) 
+     &        outsd(1:lnblnk(outsd)),' ',VISMAT(icomp,ib)(1:lnvm),
+     &        '  # visual ',ib,' coords follow:'
 
             WRITE(outs,'(12F9.4)',IOSTAT=ios,ERR=13) 
      &        XVP(icomp,ib,1),YVP(icomp,ib,1),ZVP(icomp,ib,1),
@@ -3220,15 +3225,16 @@ C << be aware that spaces in materials names might be lost! >>
      &        outsd(1:lnblnk(outsd)),'  # 5-8 '
 
           elseif(VISTYP(icomp,ib)(1:4).eq.'vis ')then
-            WRITE(outs,'(2a,6F10.4,F7.2,F6.2,1X,A,1X,A)',
+            WRITE(outs,'(2a,6F10.4,F7.2,F6.2,1X,A)',
      &        IOSTAT=ios,ERR=13) 
      &        '*vis',tab,XOV(icomp,ib),YOV(icomp,ib),ZOV(icomp,ib),
      &        DXOV(icomp,ib),DYOV(icomp,ib),DZOV(icomp,ib),
-     &        BANGOV(icomp,ib,1),OPOV(icomp,ib),VISNAME(icomp,ib),
-     &        VISMAT(icomp,ib)
+     &        BANGOV(icomp,ib,1),OPOV(icomp,ib),VISNAME(icomp,ib)
+            lnvm=lnblnk(VISMAT(icomp,ib))
             call SDELIM(outs,outsd,'C',IW)
-            write(ifilg,'(2a,i3)',IOSTAT=IOS,ERR=13) 
-     &        outsd(1:lnblnk(outsd)),'  # visual ',ib
+            write(ifilg,'(4a,i3)',IOSTAT=IOS,ERR=13) 
+     &        outsd(1:lnblnk(outsd)),' ',VISMAT(icomp,ib)(1:lnvm),
+     &        '  # visual ',ib
           endif
         enddo   ! ib
 

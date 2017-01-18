@@ -514,7 +514,7 @@ C << and probably also for obs3 ? >>
       DIMENSION XX(MV),YY(MV),ZZ(MV),XT(MV),YT(MV),ZT(MV),TRNS(3)
 
       character ZSN*28
-      character ZN*12,outs*124,material*12,QT*1
+      character ZN*12,outs*124,material*32,QT*1
       character GDESCR*36,DESCRC*25
       CHARACTER OPT*12  ! for optical name of the MLC
       CHARACTER ACT*1,doit*144
