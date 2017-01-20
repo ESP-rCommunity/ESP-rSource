@@ -321,8 +321,9 @@ C And update radpath. The L144 is for future use of EASKXORGTKF
             modcfg=.true.
           endif
 
-          if(lradcf(1:7).eq.'UNKNOWN')then
-            write(lradcf,'(2a)') cfgroot(1:lnblnk(cfgroot)),'.rcf'
+          if(lradcf(1:7).eq.'UNKNOWN')then  ! setup in form of ../rad/xx
+            write(lradcf,'(6a)') '..',fs,'rad',fs,
+     &        cfgroot(1:lnblnk(cfgroot)),'.rcf'
 C            write(L144,'(8a)')path(1:lnblnk(path)),fs,'..',fs,'rad',
 C     &        fs,cfgroot(1:lnblnk(cfgroot)),'.rcf'
             modcfg=.true.

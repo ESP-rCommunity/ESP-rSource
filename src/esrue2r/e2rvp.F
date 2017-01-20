@@ -290,6 +290,10 @@ C          write(6,*) 'lltmp ',lltmp(1:lnblnk(lltmp))
 C Read a radiance view point file and make sure that the
 C view point is within the bounds of the image.
           call RRVEW(ITA2,lltmp,IER)
+
+C At this point common block radv has been filled but
+C not yet written to vewcmds array.
+
           call UV2AZ(vdx,vdy,vdz,azimuth,elevtn)
           XMN=AMIN1(XMN,rvpx); YMN=AMIN1(YMN,rvpy)
           ZMN=AMIN1(ZMN,rvpz)
@@ -325,11 +329,14 @@ C Internal view.
 
         CALL EASKS(trvewsh,'Name for view?',' ',10,'vew1',
      &    'short view tag',IER,nbhelp)
-        call edisp(iuout,'Please check the view point...')
+        call edisp(iuout,
+     &    'Please check the view point...if ok save the view.')
 
       elseif(ipckvew.eq.indxvew+1)then
 
-C Ask for name of new viewpoint or vp file and set eye point at centre.
+C User request a new view. Take the current wireframe information
+C as a start. Ask for name of new viewpoint or vp file and set 
+C eye point at centre.
         addview = .true.
         if(intext.eq.0)then
           rvpx=XMN; rvpy=YMN; rvpz=ZMX
@@ -345,7 +352,8 @@ C of the azimuth and elevation.
      &    azimuth,elevtn)
         CALL EASKS(trvewsh,'Name for view?',' ',10,'vew1',
      &    'short view tag',IER,nbhelp)
-        call edisp(iuout,'Please define the new view point now.')
+        call edisp(iuout,
+     &    'Please adjust the new view point and save it.')
 
       elseif(ipckvew.eq.1)then
 

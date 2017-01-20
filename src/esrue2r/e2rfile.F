@@ -41,6 +41,7 @@ C espriou.h provides current file.
       usevtl=.false.; usevtv=.false.
 
 C Attempt to read in rview file, note it is assumed to be one line.
+C View values read into the radv common block.
       write (tfile,'(2a)') runpath(1:lnrp),rviewf(1:lnblnk(rviewf))
       CALL ERPFREE(ITA2,ISTAT)
       call FPOPEN(ITA2,ISTAT,1,0,tfile)

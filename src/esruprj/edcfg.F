@@ -4269,6 +4269,10 @@ C << it would be clearer if all model I/O happened there >>
 #include "model.h"
       
       integer lnblnk  ! function definition
+      integer ier
+
+C Parameters.
+      character act*1  !  V (for Viewer) or R (for Radiance)
 
       common/OUTIN/IUOUT,IUIN
       common/FILEP/IFIL
@@ -4282,7 +4286,7 @@ C << it would be clearer if all model I/O happened there >>
       logical concat,OK,DOK,browse,XST,deref,unixok,modcfg
       character dradcf*72,OUTSTR*124,outs*124,outs248*248
       character dvfil*72,ltmp*72
-      character doit*248,tmode*8,act*1
+      character doit*248,tmode*8
       character fs*1,tfile*72
       character longtfile*144,longtfiledos*144,L144*144,lltmp*144
       character brw*8   ! to signal model is being browsed
@@ -4411,8 +4415,9 @@ C And update radpath. The L144 is for future use of EASKXORGTKF
             modcfg=.true.
           endif
 
-          if(lradcf(1:7).eq.'UNKNOWN')then
-            write(lradcf,'(2a)') cfgroot(1:lnblnk(cfgroot)),'.rcf'
+          if(lradcf(1:7).eq.'UNKNOWN')then  ! setup in form of ../rad/xx
+            write(lradcf,'(6a)') '..',fs,'rad',fs,
+     &        cfgroot(1:lnblnk(cfgroot)),'.rcf'
 C            write(L144,'(8a)')path(1:lnblnk(path)),fs,'..',fs,'rad',
 C     &        fs,cfgroot(1:lnblnk(cfgroot)),'.rcf'
             modcfg=.true.
