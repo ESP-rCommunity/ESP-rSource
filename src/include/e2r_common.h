@@ -66,6 +66,7 @@ C Radiance views
       integer ipckvew       ! index of current view
       common/e2rv/vewcmds(20),rvewsh(20),indxvew,ipckvew
 
+C The current view data which is embedded in the vewcmds strings.
       real rvpx,rvpy,rvpz ! radiance eyepoint X Y Z (m)
       real vdx,vdy,vdz    ! radiance view vector X Y Z (-)
       real vux,vuy,vuz    ! radiance vu vectors X Y Z (-)

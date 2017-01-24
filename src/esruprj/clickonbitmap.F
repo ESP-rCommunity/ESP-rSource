@@ -821,10 +821,8 @@ C Cast data types for C code.
                 ixblr=int(iixblr); iyblr=int(iiyblr)
               else
                 trimmed=.false.
-                ixoffset=0
-                iyoffset=0
-                iwidth=ibmwidth
-                ihight=ibmhight
+                ixoffset=0; iyoffset=0
+                iwidth=ibmwidth; ihight=ibmhight
 
 C Cast data types for C code.
                 iixoffset=ixoffset; iiyoffset=iyoffset
@@ -964,7 +962,8 @@ C North.
           iid1=int(iixtn1); iid2=int(iiytn1)
           call esymbol(iid1,iid2,11,1)
           CALL trackview(iik,iixtn2,iiytn2)
-          iid1=int(iixtn2); iid2=int(iiytn2);
+          ixtn2=int(iixtn2); iytn2=int(iiytn2);
+          iid1=int(iixtn2); iid2=int(iiytn2)
           call esymbol(iid1,iid2,18,1)
           iid1=ixtn1; iid2=iytn1; iid3=ixtn2; iid4=iytn2;
           call edwline(iid1,iid2,iid3,iid4)
@@ -1089,23 +1088,17 @@ C Gridding options. Check if user wants a grid.
      &      'none','2.0m','1.0m','0.5m','0.25m','0.1m','other',
      &      IWMG,nbhelp)
           if(iwmg.eq.1)then
-            GRSPC(1)=0.0; GRSPC(2)=0.0; GRSPC(3)=0.0
-            xbmgrid=.false.
+            GRSPC(1)=0.0; GRSPC(2)=0.0; GRSPC(3)=0.0; xbmgrid=.false.
           elseif(iwmg.eq.2)then
-            GRSPC(1)=2.0; GRSPC(2)=2.0; GRSPC(3)=2.0
-            xbmgrid=.true.
+            GRSPC(1)=2.0; GRSPC(2)=2.0; GRSPC(3)=2.0; xbmgrid=.true.
           elseif(iwmg.eq.3)then
-            GRSPC(1)=1.0; GRSPC(2)=1.0; GRSPC(3)=1.0
-            xbmgrid=.true.
+            GRSPC(1)=1.0; GRSPC(2)=1.0; GRSPC(3)=1.0; xbmgrid=.true.
           elseif(iwmg.eq.4)then
-            GRSPC(1)=0.5; GRSPC(2)=0.5; GRSPC(3)=0.5
-            xbmgrid=.true.
+            GRSPC(1)=0.5; GRSPC(2)=0.5; GRSPC(3)=0.5; xbmgrid=.true.
           elseif(iwmg.eq.5)then
-            GRSPC(1)=0.25; GRSPC(2)=0.25; GRSPC(3)=0.25
-            xbmgrid=.true.
+            GRSPC(1)=0.25; GRSPC(2)=0.25; GRSPC(3)=0.25; xbmgrid=.true.
           elseif(iwmg.eq.6)then
-            GRSPC(1)=0.1; GRSPC(2)=0.1; GRSPC(3)=0.1
-            xbmgrid=.true.
+            GRSPC(1)=0.1; GRSPC(2)=0.1; GRSPC(3)=0.1; xbmgrid=.true.
           elseif(iwmg.eq.7)then
             ZDI=0.1
             CALL EASKR(ZDI,' ',
@@ -1465,14 +1458,11 @@ C refresh current bitmap and overlayed information.
 
 C If snap-to is true then find nearest user unit and cast back to pixels.
           if(inpmode.eq.1.or.inpmode.eq.2.or.inpmode.eq.6)then
-            tpx=float(ixx-ixo)/factor
-            tpy=float(iyo-iyy)/factor
+            tpx=float(ixx-ixo)/factor; tpy=float(iyo-iyy)/factor
           elseif(inpmode.eq.4)then
-            tpx=float(ixx-iixo)/factor
-            tpy=float(iyo-izz)/factor
+            tpx=float(ixx-iixo)/factor; tpy=float(iyo-izz)/factor
           elseif(inpmode.eq.5)then
-            tpx=float(iyy-iixo)/factor
-            tpy=float(iyo-izz)/factor
+            tpx=float(iyy-iixo)/factor; tpy=float(iyo-izz)/factor
           endif
 
 C If snap-to is true then find nearest user unit and cast back to pixels.
@@ -1502,14 +1492,11 @@ C If snap-to is true then find nearest user unit and cast back to pixels.
               tpy=tpy-REMY
             ENDIF
             if(inpmode.eq.1.or.inpmode.eq.2.or.inpmode.eq.6)then
-              ixx = int(tpx*factor) + ixo
-              iyy = iyo - int(tpy*factor)
+              ixx = int(tpx*factor) + ixo; iyy = iyo - int(tpy*factor)
             elseif(inpmode.eq.4)then
-              ixx = int(tpx*factor) + ixo
-              izz = iyo - int(tpy*factor)
+              ixx = int(tpx*factor) + ixo; izz = iyo - int(tpy*factor)
             elseif(inpmode.eq.5)then
-              iyy = int(tpx*factor) + ixo
-              izz = iyo - int(tpy*factor)
+              iyy = int(tpx*factor) + ixo; izz = iyo - int(tpy*factor)
             endif
           endif
 
@@ -1518,8 +1505,7 @@ C another pixel.
           if(INVERT.gt.1)then
             unique=.true.
             do 76,ij=1,INVERT
-              CLOSEX=.false.
-              CLOSEY=.false.
+              CLOSEX=.false.; CLOSEY=.false.
               if(inpmode.eq.1.or.inpmode.eq.2.or.inpmode.eq.6)then
                 CALL ECLOSE(px(ij),tpx,0.03,CLOSEX)
                 CALL ECLOSE(py(ij),tpy,0.03,CLOSEY)
@@ -1543,22 +1529,19 @@ C to green draw the symbol and index of vertex and do Z editing if requested.
           INVERT=INVERT+1
           if(inpmode.eq.1.or.inpmode.eq.2.or.inpmode.eq.6)then
             ipxx(INVERT)=ixx; ipyy(INVERT)=iyy
-            px(INVERT)=tpx;   py(INVERT)=tpy
-            iicol=3
+            px(INVERT)=tpx; py(INVERT)=tpy; iicol=3
             call winscl('z',iicol)
             iid1=ipxx(INVERT); iid2=ipyy(INVERT);
             call esymbol(iid1,iid2,24,1)
           elseif(inpmode.eq.4)then
             ipxx(INVERT)=ixx; ipzz(INVERT)=izz
-            px(INVERT)=tpx;   pz(INVERT)=tpy
-            iicol=3
+            px(INVERT)=tpx; pz(INVERT)=tpy; iicol=3
             call winscl('z',iicol)
             iid1=ipxx(INVERT); iid2=ipzz(INVERT);
             call esymbol(iid1,iid2,24,1)
           elseif(inpmode.eq.5)then
             ipyy(INVERT)=iyy; ipzz(INVERT)=izz
-            py(INVERT)=tpx;   pz(INVERT)=tpy
-            iicol=3
+            py(INVERT)=tpx; pz(INVERT)=tpy; iicol=3
             call winscl('z',iicol)
             iid1=ipyy(INVERT); iid2=ipzz(INVERT);
             call esymbol(iid1,iid2,24,1)
@@ -1571,8 +1554,7 @@ C to green draw the symbol and index of vertex and do Z editing if requested.
             call textatxy(ipxx(INVERT)+4,ipyy(INVERT)-1,temp3,'z',3)
             iicol=0
             call winscl('-',iicol)
-            X(INVERT)=px(INVERT)
-            Y(INVERT)=py(INVERT)
+            X(INVERT)=px(INVERT); Y(INVERT)=py(INVERT)
             if(inpmode.eq.1)then
               Z(INVERT)=Z1
             elseif(inpmode.eq.2)then
@@ -1602,8 +1584,7 @@ C to green draw the symbol and index of vertex and do Z editing if requested.
             call textatxy(ipxx(INVERT)+4,ipzz(INVERT)-1,temp3,'z',3)
             iicol=0
             call winscl('-',iicol)
-            X(INVERT)=px(INVERT)
-            Z(INVERT)=pz(INVERT)
+            X(INVERT)=px(INVERT); Z(INVERT)=pz(INVERT)
             Y(INVERT)=Y1
             if(INVERT.eq.1)then
               write(outs,'(a,i3,a,f8.3,a,f8.3)') 'Vertex ',INVERT,
@@ -1620,8 +1601,7 @@ C to green draw the symbol and index of vertex and do Z editing if requested.
             call textatxy(ipyy(INVERT)+4,ipzz(INVERT)-1,temp3,'z',3)
             iicol=0
             call winscl('-',iicol)
-            Y(INVERT)=py(INVERT)
-            Z(INVERT)=pz(INVERT)
+            Y(INVERT)=py(INVERT); Z(INVERT)=pz(INVERT)
             X(INVERT)=X1
             if(INVERT.eq.1)then
               write(outs,'(a,i3,a,f8.3,a,f8.3)') 'Vertex ',INVERT,
@@ -1640,8 +1620,7 @@ C Add to ground topology and confirm Z.
             call textatxy(ipxx(INVERT)+4,ipyy(INVERT)-1,temp3,'z',3)
             iicol=0
             call winscl('-',iicol)
-            XGT(INVERT)=px(INVERT)
-            YGT(INVERT)=py(INVERT)
+            XGT(INVERT)=px(INVERT); YGT(INVERT)=py(INVERT)
             if(INVERT.gt.1)then
               Z3=ZGT(INVERT-1)
             else
@@ -1717,9 +1696,7 @@ C instanciate the common blocks.
             if(inpmode.eq.6)then
 
 C Create single ground surface.
-              NGTV=INVERT
-              NGT=1
-              NGVER(1)=3
+              NGTV=INVERT; NGT=1; NGVER(1)=3
               JGVN(1,1)=1; JGVN(1,2)=2; JGVN(1,3)=3
               GSNAME(1)='first'
               GMLCN(1)='UNKN'
@@ -1727,9 +1704,7 @@ C Create single ground surface.
 
 C Create a single surface out of first 3 vertices so that a
 C zone geometry file can be created. 
-              NTV=INVERT
-              NSUR=1
-              NZSUR(ICOMP)=NSUR
+              NTV=INVERT; NSUR=1; NZSUR(ICOMP)=NSUR
               NVER(1)=3
               JVN(1,1)=1; JVN(1,2)=2; JVN(1,3)=3
               NZTV(icomp)=NTV
@@ -1980,11 +1955,10 @@ C Check if the new point is close to one of the historical points.
           endif
 
 C If snap-to is true then find nearest user unit and cast back to pixels.
-  318     tpxw=float(ixx-ixo)/factor
-          tpyw=float(iyo-iyy)/factor
+  318     continue
+          tpxw=float(ixx-ixo)/factor; tpyw=float(iyo-iyy)/factor
           if(xbmsnap)then
-            REMX=AMOD(tpxw,GRSPC(1))
-            REMY=AMOD(tpyw,GRSPC(2))
+            REMX=AMOD(tpxw,GRSPC(1)); REMY=AMOD(tpyw,GRSPC(2))
             IF(ABS(REMX).GT.GRSPC(1)/2.)THEN
               if(tpxw.gt.0.0)then
                 tpxw=tpxw+(GRSPC(1)-REMX)
@@ -2016,8 +1990,7 @@ C slect another pixel.
           if(NW.gt.1)then
             unique=.true.
             do 66,ij=1,NW
-              CLOSEX=.false.
-              CLOSEY=.false.
+              CLOSEX=.false.; CLOSEY=.false.
               CALL ECLOSE(pxw(ij),tpxw,0.03,CLOSEX)
               CALL ECLOSE(pyw(ij),tpyw,0.03,CLOSEY)
               if(CLOSEX.and.CLOSEY)unique=.false.
@@ -2031,9 +2004,7 @@ C slect another pixel.
 C Corner added draw it and index and a line from the previous to current.
           NW=NW+1
           ipxw(NW)=ixx; ipyw(NW)=iyy
-          pxw(NW)=tpxw; pyw(NW)=tpyw
-
-          iicol=3
+          pxw(NW)=tpxw; pyw(NW)=tpyw; iicol=3
           call winscl('z',iicol)
           iid1=ipxw(NW); iid2=ipyw(NW);
           call esymbol(iid1,iid2,24,1)
@@ -2060,8 +2031,7 @@ C Corner added draw it and index and a line from the previous to current.
      &        tdis,'m and @ aimuth ',az,' & elev ',el
           endif
           call edisp(iuout,outs)
-          XX(NW)=pxw(NW)
-          YY(NW)=pyw(NW)
+          XX(NW)=pxw(NW); YY(NW)=pyw(NW)
           goto 246
 
 C Selection terminated with `e`, ask user if they want to save the
@@ -2136,12 +2106,8 @@ C this if user supplied information exists.
 C Update the connection list.
             ICCC=NCON
             DO 432 ICC=1,NSUR
-              ICCC=ICCC+1
-              IC1(ICCC)=ICOMP
-              IE1(ICCC)=ICC
-              ICT(ICCC)=0
-              IC2(ICCC)=0
-              IE2(ICCC)=0
+              ICCC=ICCC+1; IC1(ICCC)=ICOMP; IE1(ICCC)=ICC
+              ICT(ICCC)=0; IC2(ICCC)=0; IE2(ICCC)=0
               SSNAME(iccc)=SNAME(icomp,icc)
               SSOTF(iccc)=SOTF(icc)
               SSMLCN(iccc)=SMLCN(icc)
@@ -2372,12 +2338,9 @@ C Pick up the next two points
           ixx3=int(iixx3); iyy3=int(iiyy3)
 
 C Convert three points.
-          tpx1=float(ixx1-ixo)/factor
-          tpy1=float(iyo-iyy1)/factor
-          tpx2=float(ixx2-ixo)/factor
-          tpy2=float(iyo-iyy2)/factor
-          tpx3=float(ixx3-ixo)/factor
-          tpy3=float(iyo-iyy3)/factor
+          tpx1=float(ixx1-ixo)/factor; tpy1=float(iyo-iyy1)/factor
+          tpx2=float(ixx2-ixo)/factor; tpy2=float(iyo-iyy2)/factor
+          tpx3=float(ixx3-ixo)/factor; tpy3=float(iyo-iyy3)/factor
 
 C If snap-to is true then find nearest user unit and cast back to pixels.
           if(xbmsnap)then
@@ -2394,8 +2357,7 @@ C If snap-to is true then find nearest user unit and cast back to pixels.
             ELSE
               tpx1=tpx1-REMX1
             ENDIF
-            REMX2=AMOD(tpx2,GRSPC(1))
-            REMY2=AMOD(tpy2,GRSPC(2))
+            REMX2=AMOD(tpx2,GRSPC(1)); REMY2=AMOD(tpy2,GRSPC(2))
             IF(ABS(REMX2).GT.GRSPC(1)/2.0)THEN
               if(tpx2.gt.0.0)then
                 tpx2=tpx2+(GRSPC(1)-REMX2)
@@ -2407,8 +2369,7 @@ C If snap-to is true then find nearest user unit and cast back to pixels.
             ELSE
               tpx2=tpx2-REMX2
             ENDIF
-            REMX3=AMOD(tpx3,GRSPC(1))
-            REMY3=AMOD(tpy3,GRSPC(2))
+            REMX3=AMOD(tpx3,GRSPC(1)); REMY3=AMOD(tpy3,GRSPC(2))
             IF(ABS(REMX3).GT.GRSPC(1)/2.0)THEN
               if(tpx3.gt.0.0)then
                 tpx3=tpx3+(GRSPC(1)-REMX3)
@@ -2465,8 +2426,7 @@ C If snap-to is true then find nearest user unit and cast back to pixels.
 C Remember the block origin.
           INVERT=INVERT+1
           ipxx(INVERT)=ixx1; ipyy(INVERT)=iyy1
-          px(INVERT)=tpx1;   py(INVERT)=tpy1
-          iicol=3
+          px(INVERT)=tpx1; py(INVERT)=tpy1; iicol=3
           call winscl('z',iicol)
           iid1=ipxx(INVERT); iid2=ipyy(INVERT);
           call esymbol(iid1,iid2,24,1)
@@ -2477,8 +2437,7 @@ C Remember the block origin.
 C Remember the point at the end of the front edge.
           INVERT=INVERT+1
           ipxx(INVERT)=ixx2; ipyy(INVERT)=iyy2
-          px(INVERT)=tpx2;   py(INVERT)=tpy2
-          iicol=3
+          px(INVERT)=tpx2; py(INVERT)=tpy2; iicol=3
           call winscl('z',iicol)
           iid1=ipxx(INVERT); iid2=ipyy(INVERT);
           call esymbol(iid1,iid2,24,1)
@@ -2525,8 +2484,7 @@ C Check if tollerably close to an axis.
 
           INVERT=INVERT+1
           ipxx(INVERT)=ixx3; ipyy(INVERT)=iyy3
-          px(INVERT)=tpx3;   py(INVERT)=tpy3
-          iicol=3
+          px(INVERT)=tpx3; py(INVERT)=tpy3; iicol=3
           call winscl('z',iicol)
           iid1=ipxx(INVERT); iid2=ipyy(INVERT);
           call esymbol(iid1,iid2,24,1)
@@ -2540,8 +2498,7 @@ C Check if tollerably close to an axis.
 C Try and complete the obstruction block by making a similar point
 C offset from the origin. Depending on the direction of the vector
 C between point 2 & 3 draw the two extra lines that complete the box.
-          ioffx=iabs(ixx3-ixx2)
-          ioffy=iabs(iyy3-iyy2)
+          ioffx=iabs(ixx3-ixx2); ioffy=iabs(iyy3-iyy2)
           if(ixx3.eq.ixx2)then
             ioffx=0
             if(iyy3.eq.iyy2)then
@@ -2660,8 +2617,7 @@ C          S12='blk_'
           endif
           XOB(IC,nbo)=tpx1; YOB(IC,nbo)=tpy1; ZOB(IC,nbo)=Z1
           DXOB(IC,nbo)=twid; DYOB(IC,nbo)=tdepth; DZOB(IC,nbo)=Z2
-          BANGOB(IC,nbo,1)=RO
-          BANGOB(IC,nbo,2)=0.0
+          BANGOB(IC,nbo,1)=RO; BANGOB(IC,nbo,2)=0.0
           BANGOB(IC,nbo,3)=0.0
           OPOB(IC,nbo)=blkopaq
           BLOCKTYP(IC,nbo)='obs '
@@ -3388,9 +3344,7 @@ C load a sub-section of the bitmap into the current display.
           return
         elseif(ixoffset.gt.0.and.ixoffset.le.50)then
           call startbuffer()
-          idfxoffset=ixoffset
-          idfyoffset=0
-          ixoffset=0
+          idfxoffset=ixoffset; idfyoffset=0; ixoffset=0
           iwidth=ibmwidth
           if(igw.lt.ibmwidth) iwidth=igw
           ihight=ibmhight
@@ -3405,9 +3359,7 @@ C Cast for calling of C code.
           call edisp(iuout,'Back to left edge of bitmap.')
         else
           call startbuffer()
-          idfxoffset=50
-          idfyoffset=0
-          ixoffset=ixoffset-50
+          idfxoffset=50; idfyoffset=0; ixoffset=ixoffset-50
           iwidth=ibmwidth
           if(igw.lt.ibmwidth) iwidth=igw
           ihight=ibmhight
@@ -3426,9 +3378,7 @@ C Cast for calling of C code.
      &   ipxw,ipyw,nipwhis,ipxwhis,ipywhis)
       elseif(IWM.eq.3)then
         call startbuffer()
-        idfxoffset=-50
-        idfyoffset=0
-        ixoffset=ixoffset+50
+        idfxoffset=-50; idfyoffset=0; ixoffset=ixoffset+50
         iwidth=ibmwidth-50
         if(igw.lt.iwidth) iwidth=igw
         ihight=ibmhight
@@ -3450,9 +3400,7 @@ C Cast for calling of C code.
           return
         elseif(iyoffset.gt.0.and.iyoffset.le.50)then
           call startbuffer()
-          idfyoffset=iyoffset
-          idfxoffset=0
-          iyoffset=0
+          idfyoffset=iyoffset; idfxoffset=0; iyoffset=0
           iwidth=ibmwidth
           if(igw.lt.ibmwidth) iwidth=igw
           ihight=ibmhight
@@ -3471,9 +3419,7 @@ C Cast for calling of C code.
      &     ipzz,ipxw,ipyw,nipwhis,ipxwhis,ipywhis)
         else
           call startbuffer()
-          idfyoffset=50
-          idfxoffset=0
-          iyoffset=iyoffset-50
+          idfyoffset=50; idfxoffset=0; iyoffset=iyoffset-50
           iwidth=ibmwidth
           if(igw.lt.ibmwidth) iwidth=igw
           ihight=ibmhight
@@ -3493,9 +3439,7 @@ C Cast for calling of C code.
         endif
       elseif(IWM.eq.5)then
         call startbuffer()
-        idfxoffset=0
-        idfyoffset=-50
-        iyoffset=iyoffset+50
+        idfxoffset=0; idfyoffset=-50; iyoffset=iyoffset+50
         iwidth=ibmwidth
         if(igw.lt.ibmwidth) iwidth=igw
         ihight=ibmhight-50
