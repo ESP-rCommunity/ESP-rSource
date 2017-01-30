@@ -1,9 +1,11 @@
+prefix = /opt/esru
 SRCdir = `pwd`/..
 COMdir = $(SRCdir)/esrucom
 MFSdir = $(SRCdir)/esrumfs
 LIBdir = $(SRCdir)/lib
 CETCdir = $(SRCdir)/cetc
 PROG = enet$(EXE)
+default: $(PROG)
 
 .SUFFIXES: .o .F .c
 .F.o:
@@ -59,13 +61,20 @@ startup.F:
 	rm -f startup.F
 	ln -s $(COMdir)/startup.F .
 
-strip:
-	@if [ -f $(PROG) ]; then strip $(PROG); fi
+strip: $(PROG)
+	strip $(PROG)
 
-install:
-	@if [ -f $(PROG) ]; then cp $(PROG) $(ESPBinDir); fi
+install: $(PROG)
+	install -D $(PROG) $(ESPBinDir)/$(PROG)
 
 clean:
 	rm -f core $(PROG) $(PROG).exe $(MODULE_OBJECTS) $(OBJECTS) $(MODULES) \
 	*.o arrow.F ascii_mat.F azalt.F dossupport.F edatabase.F emfnetw.F \
 	filelist.F nwkrewr.F mfcdat.F mfrlst.F sort.F startup.F
+
+distclean: clean
+
+uninstall:
+	-rm -f $(ESPBinDir)/$(PROG)
+	
+.PHONY: clean install default strip uninstall distclean

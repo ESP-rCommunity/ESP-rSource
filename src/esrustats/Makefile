@@ -1,8 +1,10 @@
+prefix = /opt/esru
 SRCdir = `pwd`/..
 LIBdir = $(SRCdir)/lib
 COMdir = $(SRCdir)/esrucom
 PRJdir = $(SRCdir)/esruprj
 PROG = stats$(EXE)
+default: $(PROG)
 
 .SUFFIXES: .o .F
 .F.o:
@@ -37,16 +39,20 @@ redir_console_output.o:
 	ln -s $(LIBdir)/redir_console_output.c 
 	$(MCC) $(LD_FLAGS) $(CFLAGS) $(GTKFLAGS) -c redir_console_output.c .
 
-	
+strip: $(PROG)
+	strip $(PROG)
 
-
-strip:
-	@if [ -f $(PROG) ]; then strip $(PROG); fi
-
-install:
-	@if [ -f $(PROG) ]; then cp $(PROG) $(ESPBinDir); fi
+install: $(PROG)
+	install -D $(PROG) $(ESPBinDir)/$(PROG)
 
 clean:
 	rm -f core $(PROG) $(PROG).exe $(OBJECTS) \
 	esru_ask.F esru_blk.F esru_fc.F esru_lib.F esru_libNonGTK.F redir_console_output.c rwsbem.F  
-        
+ 
+distclean: clean
+
+uninstall:
+	-rm -f $(ESPBinDir)/$(PROG)
+	
+.PHONY: clean install default strip uninstall distclean
+       

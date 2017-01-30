@@ -64,7 +64,7 @@ clm:
 	cd $(SRCdir)/esruclm; $(MAKE)
 e2r: 
 	cd $(SRCdir)/esrue2r; $(MAKE)
-ecnv:
+ecnv: 
 	cd $(SRCdir)/esrucnv; $(MAKE)
 eco: 
 	cd $(SRCdir)/esrueco; $(MAKE)

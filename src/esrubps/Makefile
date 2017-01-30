@@ -1,3 +1,4 @@
+prefix = /opt/esru
 SRCdir = `pwd`/..
 BLDdir = $(SRCdir)/esrubld
 COMdir = $(SRCdir)/esrucom
@@ -13,6 +14,7 @@ COSIMdir = $(SRCdir)/co-sim
 LIBdir = $(SRCdir)/lib
 PROG = bps$(EXE)
 DLL = bps".dll"
+default: $(PROG)
 
 .SUFFIXES: .o .F
 .F.o:
@@ -733,14 +735,13 @@ ESPrTrnsysData.F:
 	rm -f ESPrTrnsysData.F
 	ln -s $(COSIMdir)/ESPrTrnsysData.F .
 
+strip: $(PROG)
+	strip $(PROG)
+	strip $(DLL)
 
-strip:
-	@if [ -f $(PROG) ]; then strip $(PROG); fi
-	@if [ -f $(DLL) ]; then strip $(DLL); fi
-
-install:
-	@if [ -f $(PROG) ]; then cp $(PROG) $(ESPBinDir); fi
-	@if [ -f $(DLL) ]; then cp $(DLL) $(ESPBinDir); fi
+install: $(PROG)
+	install -D $(PROG) $(ESPBinDir)/$(PROG)
+	@if [ -f $(DLL) ]; then install -D $(DLL) $(ESPBinDir)/$(DLL); fi
 
 clean:
 	rm -f core $(PROG) $(PROG).exe $(DLL) $(PROG).dll $(PREBPS_OBJECTS) $(PREBPSDLL_OBJECTS) $(MODULE_OBJECTS) $(BPS_OBJECTS) $(MODULES) \
@@ -781,3 +782,10 @@ clean:
 	tank_intank_hx.F mains_temp_draw_profiles.F stratified_tank.F \
 	CFC_opt_props.F CFC_thermal_and_aux.F editCFC.F NCHE.F stratified_tank_1HX.F stratified_tank_2HX.F \
 	AirFlowModelRoutines.F Res_elec_Ctl.F h3kmodule.f90 qrun.F azalt.F
+
+distclean: clean
+
+uninstall:
+	-rm -f $(ESPBinDir)/$(PROG)
+	
+.PHONY: clean install default strip uninstall distclean

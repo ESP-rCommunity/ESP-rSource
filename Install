@@ -1540,6 +1540,7 @@ DESTdir=`echo "$DESTdir" | sed "s/\/$//"`
 
 ESPdir=${DESTdir}/esp-r
 ESPbin=${DESTdir}/esp-r/bin
+ESPBinDir=${DESTdir}/esp-r/bin
 corrupted_tree="no"
 if [ "$create_espr_dir" = "no" ]; then
 
@@ -1646,7 +1647,7 @@ fi
 if [ "${make_msg_file}" = "" ]; then
   echo " "
   echo " Intended shell command:"
-  echo " make MCTYPE=${MCTYPE} MCC=${CC} MCPL=${CPL} MFC=${FC} DESTdir=${DESTdir} ESPdir=${ESPdir} WWLINK=${WWLINK} EXE="${EXE}" XINSTALLDIR=${XINSTALLDIR} CFLAGS=${CFLAGS} FFLAGS=${FFLAGS} LD_FLAGS=${LD_FLAGS} ULIBS=${ULIBS} xml_status=${xml_status} $targets"
+  echo " make MCTYPE=${MCTYPE} MCC=${CC} MCPL=${CPL} MFC=${FC} DESTdir=${DESTdir} ESPdir=${ESPdir} ESPBinDir=${ESPBinDir} WWLINK=${WWLINK} EXE="${EXE}" XINSTALLDIR=${XINSTALLDIR} CFLAGS=${CFLAGS} FFLAGS=${FFLAGS} LD_FLAGS=${LD_FLAGS} ULIBS=${ULIBS} xml_status=${xml_status} $targets"
   echo " "
   echo " where the $xlibs libraries are in ${XINSTALLDIR}"
 fi
@@ -1748,6 +1749,7 @@ echo -n "${VersioningScheme})..."
  if [ "${VersioningScheme}" == "git" ]; then
    
       # Add code here.
+      versioned_repository="yes"
       echo " "
    
  fi 
@@ -2439,7 +2441,8 @@ echo -n " Installing executables... "
 if [ "$debugging" = "no" ]; then
   make ESPdir=${ESPdir} EXE=${EXE} COSIMDir=${COSIMdir} strip  >/dev/null 2>&1
 fi
-make ESPBinDir=${ESPbin} EXE=${EXE} COSIMDir=${COSIMdir} InstBins  >/dev/null 2>&1
+echo "Placing executables in ESPBinDir=${ESPBinDir}"
+make ESPBinDir=${ESPBinDir} EXE=${EXE} COSIMDir=${COSIMdir} InstBins   >/dev/null 2>&1
 if [ "$clean" = "yes" ]; then
   make EXE=${EXE} clean  >/dev/null 2>&1
 fi

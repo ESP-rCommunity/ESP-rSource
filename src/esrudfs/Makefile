@@ -1,3 +1,4 @@
+prefix = /opt/esru
 SRCdir = `pwd`/..
 BLDdir = $(SRCdir)/esrubld
 COMdir = $(SRCdir)/esrucom
@@ -5,6 +6,7 @@ PRJdir = $(SRCdir)/esruprj
 CETCdir = $(SRCdir)/cetc
 BLDdir = $(SRCdir)/esrubld
 PROG = dfs$(EXE)
+default: $(PROG)
 
 .SUFFIXES: .o .F
 .F.o:
@@ -87,11 +89,11 @@ h3kmodule.f90:
 	rm -f h3kmodule.f90
 	ln -s $(CETCdir)/h3kmodule.f90 .
 
-strip:
-	@if [ -f $(PROG) ]; then strip $(PROG); fi
+strip: $(PROG)
+	strip $(PROG)
 
-install:
-	@if [ -f $(PROG) ]; then cp $(PROG) $(ESPBinDir); fi
+install: $(PROG)
+	install -D $(PROG) $(ESPBinDir)/$(PROG)
 
 clean:
 	rm -f core $(PROG) $(PROG).exe $(MODULE_OBJECTS) $(OBJECTS) $(MODULES) \
@@ -99,3 +101,10 @@ clean:
 	cfdrw.F cfgrid.F common3dv.F dossupport.F e3dviews.F edatabase.F egeometry.F \
 	eroper.F esru_misc.F filelist.F psychro.F read3dv.F sort.F startup.F \
 	h3kmodule.f90
+
+distclean: clean
+
+uninstall:
+	-rm -f $(ESPBinDir)/$(PROG)
+	
+.PHONY: clean install default strip uninstall distclean

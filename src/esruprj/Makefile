@@ -1,3 +1,4 @@
+prefix = /opt/esru
 SRCdir = `pwd`/..
 BLDdir = $(SRCdir)/esrubld
 COMdir = $(SRCdir)/esrucom
@@ -10,6 +11,7 @@ PLTdir = $(SRCdir)/esruplt
 CETCdir = $(SRCdir)/cetc
 INCLdir = $(SRCdir)/include
 PROG = prj$(EXE)
+default: $(PROG)
 
 .SUFFIXES: .o .F
 .F.o:
@@ -268,11 +270,11 @@ qrun.F:
 	rm -f qrun.F
 	ln -s $(COMdir)/qrun.F
 
-strip:
-	@if [ -f $(PROG) ]; then strip $(PROG); fi
+strip: $(PROG)
+	strip $(PROG)
 
-install:
-	@if [ -f $(PROG) ]; then cp $(PROG) $(ESPBinDir); fi
+install: $(PROG)
+	install -D $(PROG) $(ESPBinDir)/$(PROG)
 
 clean:
 	rm -f core $(PROG) $(PROG).exe $(MODULE_OBJECTS) $(OBJECTS) $(MODULES) \
@@ -287,3 +289,10 @@ clean:
 	net2pdf.F newnet.F nwkrewr.F plelevvc.F pltcfg.F psychro.F rcdblist.F rwipv.F rwroam.F \
 	rwsbem.F senrwl.F sort.F spmisc.F stndrds.F startup.F tdfile.F  \
 	readTrnsys.F PltDummy.F qrun.F h3kmodule.f90
+
+distclean: clean
+
+uninstall:
+	-rm -f $(ESPBinDir)/$(PROG)
+	
+.PHONY: clean install default strip uninstall distclean

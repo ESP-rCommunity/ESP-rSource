@@ -1,5 +1,7 @@
+prefix = /opt/esru
 SRCdir= `pwd`/..
 PROG = c2e$(EXE)
+default: $(PROG)
 
 .SUFFIXES: .o .F
 .F.o:
@@ -10,11 +12,18 @@ OBJECTS = prcoef.o suple.o suprf.o supwi.o sup2.o wind.o
 $(PROG) : $(OBJECTS)
 	$(MFC) $(FFLAGS) -o $(PROG) $(OBJECTS)
 
-strip:
-	@if [ -f $(PROG) ]; then strip $(PROG); fi
+strip: $(PROG)
+	strip $(PROG)
 
-install:
-	@if [ -f $(PROG) ]; then cp $(PROG) $(ESPBinDir); fi
+install: $(PROG)
+	install -D $(PROG) $(ESPBinDir)/$(PROG)
 
 clean:
 	rm -f core $(PROG) $(PROG).exe $(OBJECTS)
+
+distclean: clean
+
+uninstall:
+	-rm -f $(ESPBinDir)/$(PROG)
+	
+.PHONY: clean install default strip uninstall distclean

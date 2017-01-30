@@ -1,4 +1,5 @@
 SHELL=/bin/sh
+prefix = /opt/esru
 SRCdir = `pwd`/..
 CETCdir = $(SRCdir)/cetc
 LIBGTK = libgtkesru.a
@@ -193,3 +194,5 @@ log.o:
 	rm -f log.cpp ;
 	ln -s $(CETCdir)/h3kreports/log.cpp .;
 	$(MCPL) $(LD_FLAGS) $(CFLAGS) -c log.cpp
+
+.PHONY: clean the_libGTK the_libX11 the_libnoX the_libVer the_libSQLite the_libNoSQLite
