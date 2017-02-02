@@ -57,9 +57,9 @@ C Predefined entity variables.
 
 C << use parameters when available >>
       dimension catname(6),cats(6)
-      dimension names(32),menus(32),itemcat(32)
+      dimension names(36),menus(36),itemcat(36)
       integer pointback(30) ! to point back to item in list
-      real bounding(32,3) ! width, depth, height
+      real bounding(36,3) ! width, depth, height
       character predef*144,fs*1
       integer loop
       logical unixok
@@ -208,8 +208,8 @@ C << use parameters when available >>
       character menus*32  ! list of menus for objects
       character itemcat*12 ! category for each object
       dimension catname(6),cats(6)
-      dimension names(32),menus(32),itemcat(32)
-      real bounding(32,3) ! width, depth, height for each    
+      dimension names(36),menus(36),itemcat(36)
+      real bounding(36,3) ! width, depth, height for each    
       integer IER         ! error return where zero is ok, 
                           ! ier=-1 file not found, ier=-2 no objects
 
@@ -245,7 +245,7 @@ C << use parameters when ready >>
         catname(loop)=' '
       enddo    
       numitems=0
-      do loop=1,32
+      do loop=1,36
         names(loop)='  '
         menus(loop)='  '
         itemcat(loop)='  '
@@ -2668,9 +2668,10 @@ C Collection of entities making up an object.
           CALL EGETW(LOUTSTR,K,WORD,'W','vis obj name',IFLAG)
 
           write(objvobjname(nbobjvisobj),'(a)') WORD(1:lnblnk(WORD))
-          CALL EGETP(LOUTSTR,K,WORD,'W','vis obj desc',IFLAG)
-          write(objvobjdesc(nbobjvisobj),'(a)') WORD(1:lnblnk(WORD))
-          CALL EGETWI(LOUTSTR,K,iv,1,12,'F','nb vis entities',IER)
+          CALL EGETP(LOUTSTR,K,phrase,'W','vis obj desc',IFLAG)
+          write(objvobjdesc(nbobjvisobj),'(a)') 
+     &      phrase(1:lnblnk(phrase))
+          CALL EGETWI(LOUTSTR,K,iv,1,14,'F','nb vis entities',IER)
           objnbvobjlist(nbobjvisobj)=iv
           do ibvo = 1,iv
             WORD='            ' 

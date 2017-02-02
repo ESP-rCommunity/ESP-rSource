@@ -5333,9 +5333,11 @@ C<< Division mod 360 may be a more generic way for angle checking
             SSPARENT(JCC)=SSNAME(ICC)
 
 C Having found a child add it to the list of children of
-C the parent surface.
-            nbchild(iCC)=nbchild(iCC)+1
-            ichild(iCC,nbchild(iCC))=jCC ! remember child connection
+C the parent surface (current limit of 4 children).
+            if(nbchild(iCC).lt.4)then
+              nbchild(iCC)=nbchild(iCC)+1
+              ichild(iCC,nbchild(iCC))=jCC ! remember child connection
+            endif
             iparent(JCC)=icc   ! remember childs parent connection
 
           endif
