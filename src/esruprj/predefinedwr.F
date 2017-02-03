@@ -57,9 +57,9 @@ C Predefined entity variables.
 
 C << use parameters when available >>
       dimension catname(6),cats(6)
-      dimension names(36),menus(36),itemcat(36)
+      dimension names(42),menus(42),itemcat(42)
       integer pointback(30) ! to point back to item in list
-      real bounding(36,3) ! width, depth, height
+      real bounding(42,3) ! width, depth, height
       character predef*144,fs*1
       integer loop
       logical unixok
@@ -208,8 +208,8 @@ C << use parameters when available >>
       character menus*32  ! list of menus for objects
       character itemcat*12 ! category for each object
       dimension catname(6),cats(6)
-      dimension names(36),menus(36),itemcat(36)
-      real bounding(36,3) ! width, depth, height for each    
+      dimension names(42),menus(42),itemcat(42)
+      real bounding(42,3) ! width, depth, height for each    
       integer IER         ! error return where zero is ok, 
                           ! ier=-1 file not found, ier=-2 no objects
 
@@ -245,7 +245,7 @@ C << use parameters when ready >>
         catname(loop)=' '
       enddo    
       numitems=0
-      do loop=1,36
+      do loop=1,42
         names(loop)='  '
         menus(loop)='  '
         itemcat(loop)='  '
@@ -816,8 +816,8 @@ C limit if geometry.h changes.
 
           write(VOBJNAME(icomp,nbvo),'(2a)') prec,WORD(1:11) ! adjust name
           LNVOBJNAME(icomp,nbvo)=lnblnk(VOBJNAME(icomp,nbvo))
-          CALL EGETP(LOUTSTR,K,WORD,'W','vis obj desc',IFLAG)
-          write(VOBJDESC(icomp,nbvo),'(a)') WORD(1:lnblnk(WORD))
+          CALL EGETP(LOUTSTR,K,phrase,'W','vis obj desc',IFLAG)
+          write(VOBJDESC(icomp,nbvo),'(a)') phrase(1:lnblnk(phrase))
           LNVOBJDESC(icomp,nbvo)=lnblnk(VOBJDESC(icomp,nbvo))
           CALL EGETWI(LOUTSTR,K,iv,1,MOMVB,'F','nb vis entities',
      &      IER)
@@ -1790,8 +1790,9 @@ C *vobject,rubish-bskt,square wood rubish bin,4,basket_bk,basket_fr,basket_lf,ba
             nbobjvisobj=nbobjvisobj+1
             CALL EGETW(LOUTSTR,K,WORD,'W','vis obj name',IFLAG)
             objvobjname(nbobjvisobj)=WORD(1:12)
-            CALL EGETP(LOUTSTR,K,WORD,'W','vis obj desc',IFLAG)
-            write(objvobjdesc(nbobjvisobj),'(a)') WORD(1:lnblnk(WORD))
+            CALL EGETP(LOUTSTR,K,phrase,'W','vis obj desc',IFLAG)
+            write(objvobjdesc(nbobjvisobj),'(a)') 
+     &        phrase(1:lnblnk(phrase))
             CALL EGETWI(LOUTSTR,K,ival,1,12,'F','nb vis entities',IER)
             objnbvobjlist(nbobjvisobj)=ival
             do ibvo = 1,ival 

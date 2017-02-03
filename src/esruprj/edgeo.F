@@ -571,9 +571,9 @@ C Read current zone back in and then update the configuration file.
       endif
       ITEMS(ITEMC+5)='  _____________________________'
       WRITE(ITEMS(ITEMC+6),'(A,i3,a)')
-     &                           'd vertex coordinates     (',NTV,')'
+     &                  'd vertex coordinates     (',NTV,')'  ! ? NZTV
       WRITE(ITEMS(ITEMC+7),'(A,i3,a)')
-     &                           'e surface list & edges   (',NSUR,')'
+     &                  'e surface list & edges   (',NSUR,')'
       ITEMS(ITEMC+8) ='f surface attributes           '
       ITEMS(ITEMC+9) ='  _____________________________'
       if(newgeo)then
@@ -2027,8 +2027,30 @@ C to temporarily draw it.
  423    CALL EASKR(VALR,' Object rotation (+ = anticlockwise)',
      &    'around its lower left corner:',
      &    -359.0,'W',359.0,'W',0.0,'rotation',IER,nbhelp)
-        write(hold,'(3f8.4)') objorg(1),objorg(2),objorg(3)
-        CALL EASKS(HOLD,'Place object origin @ (X Y Z metres)',
+     
+        call easkabc('Origin choices:',' ','edit object origin',
+     &    'use zone vertex','abort',ibopt,nbhelp)
+        if(ibopt.eq.1)then
+          write(hold,'(3f8.4)') objorg(1),objorg(2),objorg(3)
+        elseif(ibopt.eq.2)then
+
+C User current zone G1 common block to present list of points.
+          inpick=1
+          CALL EPMENSV
+          call EPKVERT(INPICK,IVLST,'Vertices for origin',
+     &      'Select a vertex to define the origin...',' ',nbhelp,ier)
+          CALL EPMENRC
+          if(inpick.eq.1)then
+            iwhich1=IVLST(1)
+            HOLD=' '
+            WRITE(hold,'(1x,3f8.4)')X(iwhich1),Y(iwhich1),Z(iwhich1)
+          else
+            goto 3
+          endif
+        elseif(ibopt.eq.3)then
+          goto 3
+        endif
+        CALL EASKS(HOLD,'Confirm object origin @ (X Y Z metres)',
      &    'i.e. within the room: ',
      &    36,' 0. 0. 0.','transforms XYZ',IER,nbhelp)
         K=0
@@ -6138,6 +6160,14 @@ C Ask if it should be added.
                   elseif(INVT.eq.3)then
                     goto 147
                   endif
+
+C Update the geometry file.
+                  if(newgeo)then
+                    call geowrite(IFIL+2,LGEOM(ICOMP),ICOMP,iuout,
+     &                3,IER)
+                  else
+                    call emkgeo(IFIL+2,LGEOM(ICOMP),ICOMP,3,IER)
+                  endif
                 endif
               endif
   147       continue
@@ -6187,7 +6217,7 @@ C list. Logic works by looping down (from one more than the current
 C number of vertices associated with this surface) shifting
 C JVN indices up one until at the current edge (jivjj) and then
 C inserting the new vertex index.
-                   if(NVER(jivj)+1.le.MV)then
+                    if(NVER(jivj)+1.le.MV)then
                       dok=.true.
                       call askok(' ',
      &                  'Insert this (close to edge) vertex?',
@@ -6834,8 +6864,12 @@ C coordinates in CX CY CZ arrays.
           CALL EPMENRC
           if(NVC.eq.0) goto 92
 
+          do ix=1,NVC
+
+C Merge point into existing lines and zone structure.
+C << test >> call CKADDVERTINSURF(ITRU,ICOMP,cx(ix),cy(ix),cz(ix),IER)
+
 C Replicate logic from ADDVERT below. Consider found if within CACC.
-          do 443 ix=1,NVC
             if(NZTV(icomp)+1.le.MTV)then
               found=.false.
               do 144 ixx = 1,NZTV(icomp)
@@ -6860,7 +6894,14 @@ C add a new vertex to the end of the zone list and update vcoord.
                 VCOORD(ICOMP,ntv,2)=CY(ix)
                 VCOORD(ICOMP,ntv,3)=CZ(ix)
 
-C For a unique vertex also test to see if it is close (+-CACC) to
+C Update the geometry file to remember the new vertex.
+                if(newgeo)then
+                  call geowrite(IFIL+2,LGEOM(ICOMP),ICOMP,iuout,3,IER)
+                else
+                  call emkgeo(IFIL+2,LGEOM(ICOMP),ICOMP,3,IER)
+                endif
+
+C For a unique vertex also test to see if it is close (+-0.003m) to
 C one of the existing lines. Also check the last edge in the surface.
                 iwhich3=NTV
                 do 2246 ivj=1,NSUR
@@ -6914,6 +6955,8 @@ C inserting the new vertex index.
                         JVN(ivj,IXV)=JVN(ivj,IXV-1)
                         IF(IXV.GT.ivjj+1)GOTO 1148
                         JVN(ivj,ivjj+1)=iwhich3
+
+C Update the geometry file to remember changes to edges.
                         if(newgeo)then
                           call geowrite(IFIL+2,LGEOM(ICOMP),ICOMP,
      &                      iuout,3,IER)
@@ -6933,7 +6976,7 @@ C Surface (ivj) vertex list has been updated. Go on to next surface.
  2246           continue  ! end of loop of surfs in zone
               endif
             endif
-  443     continue ! end of loop for copied verticies
+          enddo ! end of loop for copied verticies
           ILEN=NZTV(icomp)
           IPACT=CREATE
           CALL EKPAGE(IPACT)
