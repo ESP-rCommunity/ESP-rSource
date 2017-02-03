@@ -2013,7 +2013,6 @@ C Take into account path to the db.
           write(predef,'(3a)') standarddbpath(1:lndbp),fs,
      &      LPREDEF(1:lnblnk(LPREDEF))  ! prepend db folder path
         endif
-C        write(predef,'(a)') lpredef(1:96)
         DX=0.0; DY=0.0; DZ=0.0
 
 C Ask where to place it (get offsets and rotation) and then use GB1

@@ -390,7 +390,8 @@ C If there were no errors in reading header line then read another.
       END
        
 C ******************************** PREDEFEMBED
-C Read tag-data version of predefined objects file.
+C Read tag-data version of predefined objects file and merge
+C these data structures into the zone (ICOMP).
 C Currently entity is found in predefined.h 
       SUBROUTINE PREDEFEMBED(IFA,LASCI,ICOMP,DX,DY,DZ,DA,name,prec,IER)
       
@@ -645,8 +646,8 @@ C Scan visp definition and instanciate model entity.
 C Prepend prec to name and update the compound object reference.
           write(VISNAME(icomp,nbv),'(2a)') prec,WORD(1:11)
           LNVISNAME(icomp,nbv)=lnblnk(VISNAME(icomp,nbv))
-          CALL EGETP(LOUTSTR,K,WORD,'W','vis mat name',IFLAG)
-          write(VISMAT(icomp,nbv),'(a)') WORD(1:lnblnk(WORD))
+          CALL EGETP(LOUTSTR,K,phrase,'W','vis mat name',IFLAG)
+          write(VISMAT(icomp,nbv),'(a)') phrase(1:lnblnk(phrase))
           LNVISMAT(icomp,nbv)=lnblnk(VISMAT(icomp,nbv))
           VISTYP(icomp,nbv)='visp'
           IF(IER.NE.0) CONT=.FALSE.
@@ -749,8 +750,8 @@ C Prepend prec to the name.
           LNVISNAME(icomp,nbv)=lnblnk(VISNAME(icomp,nbv))
 
 C The name of the construction might contain spaces so use EGETP.
-          CALL EGETP(LOUTSTR,K,WORD,'W','vis mat name',IFLAG)
-          write(VISMAT(icomp,nbv),'(a)') WORD(1:lnblnk(WORD))
+          CALL EGETP(LOUTSTR,K,phrase,'W','vis mat name',IFLAG)
+          write(VISMAT(icomp,nbv),'(a)') phrase(1:lnblnk(phrase))
           LNVISMAT(icomp,nbv)=lnblnk(VISMAT(icomp,nbv))
           VISTYP(icomp,nbv)='vis3'
           IF(IER.NE.0) CONT=.FALSE.
@@ -790,8 +791,8 @@ C Prepend prec to the name.
           LNVISNAME(icomp,nbv)=lnblnk(VISNAME(icomp,nbv))
 
 C The name of the visual material might contain spaces so use EGETP.
-          CALL EGETP(LOUTSTR,K,WORD,'W','vis mat name',IFLAG)
-          write(VISMAT(icomp,nbv),'(a)') WORD(1:lnblnk(WORD))
+          CALL EGETP(LOUTSTR,K,phrase,'W','vis mat name',IFLAG)
+          write(VISMAT(icomp,nbv),'(a)') phrase(1:lnblnk(phrase))
           LNVISMAT(icomp,nbv)=lnblnk(VISMAT(icomp,nbv))
           VISTYP(icomp,nbv)='vis '
           IF(IER.NE.0) CONT=.FALSE.
@@ -1004,9 +1005,9 @@ C line 1044 of insert.F of the subroutine ADDSUR.
           SUSE(nsur,1)='FURNI'  ! predefined mass
           SUSE(nsur,2)='- '
 
-C Set each pair to be back-to-back. Logic for up to 6.
+C Set each pair to be back-to-back. Logic for up to 10 mass surfaces.
           SOTHER(NSUR,1)='ANOTHER'
-          if(ix.eq.1.or.ix.eq.3.or.ix.eq.5)then
+          if(ix.eq.1.or.ix.eq.3.or.ix.eq.5.or.ix.eq.7.or.ix.eq.9)then
             write(SOTHER(NSUR,2),'(i2.2)')INT(icomp)
             write(SOTHER(NSUR,3),'(i2.2)')INT(NSUR+1)
           else
@@ -1503,8 +1504,8 @@ C formats depending on whether the key is '*obs' or '*obs3'.
             OBJBLOCKNAME(objnbobs)=WORD(1:12)
 
 C The name of the construction might contain spaces so use EGETP.
-            CALL EGETP(LOUTSTR,K,WORD,'W','obs mat name',IFLAG)
-            write(OBJBLOCKMAT(objnbobs),'(a)') WORD(1:lnblnk(WORD))
+            CALL EGETP(LOUTSTR,K,phrase,'W','obs mat name',IFLAG)
+            write(OBJBLOCKMAT(objnbobs),'(a)') phrase(1:lnblnk(phrase))
             OBJBLOCKTYP(objnbobs)='obs3'
             goto 72
 
@@ -1522,8 +1523,8 @@ C A general polygon obstruction to be associated with the current zone.
             endif
             CALL EGETW(LOUTSTR,K,WORD,'W','obs blk name',IFLAG)
             write(OBJBLOCKNAME(objnbobs),'(a)') WORD(1:lnblnk(WORD))
-            CALL EGETP(LOUTSTR,K,WORD,'W','obs mat name',IFLAG)
-            write(OBJBLOCKMAT(objnbobs),'(a)') WORD(1:lnblnk(WORD))
+            CALL EGETP(LOUTSTR,K,phrase,'W','obs mat name',IFLAG)
+            write(OBJBLOCKMAT(objnbobs),'(a)') phrase(1:lnblnk(phrase))
             OBJBLOCKTYP(objnbobs)='obsp'
 
             CALL LSTRIPC(IUNIT,LOUTSTR,99,ND,1,'first 4 coord',IER)
@@ -1608,8 +1609,8 @@ C A general polygon obstruction to be associated with the current zone.
             OBJBLOCKNAME(objnbobs)=WORD(1:12)
 
 C The name of the construction might contain spaces so use EGETP.
-            CALL EGETP(LOUTSTR,K,WORD,'W','obs mat name',IFLAG)
-            write(OBJBLOCKMAT(objnbobs),'(a)') WORD(1:lnblnk(WORD))
+            CALL EGETP(LOUTSTR,K,phrase,'W','obs mat name',IFLAG)
+            write(OBJBLOCKMAT(objnbobs),'(a)') phrase(1:lnblnk(phrase))
             OBJBLOCKTYP(objnbobs)='obs '
             goto 72
           elseif(phrase(1:4).eq.'*mrt')then
@@ -1656,8 +1657,8 @@ C formats depending on whether the key is '*vis', '*vis3', 'visp'.
             objvisname(nbobjvis)=WORD(1:12)
 
 C The name of the construction might contain spaces so use EGETP.
-            CALL EGETP(LOUTSTR,K,WORD,'W','vis mat name',IFLAG)
-            write(objvismat(nbobjvis),'(a)') WORD(1:lnblnk(WORD))
+            CALL EGETP(LOUTSTR,K,phrase,'W','vis mat name',IFLAG)
+            write(objvismat(nbobjvis),'(a)') phrase(1:lnblnk(phrase))
             objvistyp(nbobjvis)='vis3'
 C Debug.
             write(6,*) 'vis3',nbobjvis,objvisname(nbobjvis),
@@ -1686,8 +1687,8 @@ C next 4 coordinates. The surface and edge ordering is as obsp.
             endif
             CALL EGETW(LOUTSTR,K,WORD,'W','vis blk name',IFLAG)
             objvisname(nbobjvis)=WORD(1:12)
-            CALL EGETP(LOUTSTR,K,WORD,'W','vis mat name',IFLAG)
-            write(objvismat(nbobjvis),'(a)') WORD(1:lnblnk(WORD))
+            CALL EGETP(LOUTSTR,K,phrase,'W','vis mat name',IFLAG)
+            write(objvismat(nbobjvis),'(a)') phrase(1:lnblnk(phrase))
             objvistyp(nbobjvis)='visp'
 
             CALL LSTRIPC(IUNIT,LOUTSTR,99,ND,1,'first 4 coord',IER)
@@ -1771,8 +1772,8 @@ C next 4 coordinates. The surface and edge ordering is as obsp.
             objvisname(nbobjvis)=WORD(1:12)
 
 C The name of the visual material might contain spaces so use EGETP.
-            CALL EGETP(LOUTSTR,K,WORD,'W','vis mat name',IFLAG)
-            write(objvismat(nbobjvis),'(a)') WORD(1:lnblnk(WORD))
+            CALL EGETP(LOUTSTR,K,phrase,'W','vis mat name',IFLAG)
+            write(objvismat(nbobjvis),'(a)') phrase(1:lnblnk(phrase))
             objvistyp(nbobjvis)='vis '
 C Debug.
             write(6,*) 'vis ',nbobjvis,objvisname(nbobjvis),

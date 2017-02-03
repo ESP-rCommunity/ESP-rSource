@@ -2835,7 +2835,7 @@ C directive that the user gave.
       if(rotationknown)then
         continue
       else
-        write(ifilg,'(a,f7.2,a,f8.3,a,f8.3,a,f8.3,a)',IOSTAT=IOS,
+        write(ifilg,'(a,f8.2,a,f8.3,a,f8.3,a,f8.3,a)',IOSTAT=IOS,
      &    ERR=13) '*previous_rotate ',
      &    rotateit(icomp,4),tab,rotateit(icomp,5),tab,
      &    rotateit(icomp,6),'  # prior rotation angle X Y'
@@ -3088,7 +3088,7 @@ C geometry file also write the NOX and NOZ values.
      &  '*block_start',tab,NOX(icomp),NOZ(icomp),' # geometric blocks'
         do ib=1,nbobs(icomp)
           if(BLOCKTYP(icomp,ib)(1:4).eq.'obs3')then
-            WRITE(outs,'(2a,6F9.4,3F7.2,F6.2,1X,A)',
+            WRITE(outs,'(2a,6F9.4,3F8.2,F6.2,1X,A)',
      &        IOSTAT=ios,ERR=13) 
      &        '*obs3',tab,XOB(icomp,ib),YOB(icomp,ib),ZOB(icomp,ib),
      &        DXOB(icomp,ib),DYOB(icomp,ib),DZOB(icomp,ib),
@@ -3127,7 +3127,7 @@ C geometry file also write the NOX and NOZ values.
      &        outsd(1:lnblnk(outsd)),'  # 5-8 '
 
           elseif(BLOCKTYP(icomp,ib)(1:4).eq.'obs ')then
-            WRITE(outs,'(2a,6F9.4,F7.2,F6.2,1X,A)',
+            WRITE(outs,'(2a,6F9.4,F8.2,F6.2,1X,A)',
      &        IOSTAT=ios,ERR=13) 
      &        '*obs',tab,XOB(icomp,ib),YOB(icomp,ib),ZOB(icomp,ib),
      &        DXOB(icomp,ib),DYOB(icomp,ib),DZOB(icomp,ib),
@@ -3163,7 +3163,7 @@ C If there were no obstructions then include a *block_start.
             write(ifilg,'(a)',IOSTAT=IOS,ERR=13) '# mrt blocks:'
           endif
           do ib=1,ncub(icomp)
-            WRITE(outs,'(2a,6F9.4,F7.2,1X,A)',IOSTAT=ios,ERR=13) 
+            WRITE(outs,'(2a,6F9.4,F8.2,1X,A)',IOSTAT=ios,ERR=13) 
      &        '*mrt',tab,XOC(ib),YOC(ib),ZOC(ib),
      &        DXC(ib),DYC(ib),DZC(ib),
      &        CANG(ib),CUBN(ib)
@@ -3186,7 +3186,7 @@ C << be aware that spaces in materials names might be lost! >>
         write(ifilg,'(a)',IOSTAT=IOS,ERR=13) '*visual_start'
         do ib=1,nbvis(icomp)
           if(VISTYP(icomp,ib)(1:4).eq.'vis3')then
-            WRITE(outs,'(2a,6F10.4,3F7.2,F6.2,1X,A)',
+            WRITE(outs,'(2a,6F10.4,3F8.2,F6.2,1X,A)',
      &        IOSTAT=ios,ERR=13) 
      &        '*vis3',tab,XOV(icomp,ib),YOV(icomp,ib),ZOV(icomp,ib),
      &        DXOV(icomp,ib),DYOV(icomp,ib),DZOV(icomp,ib),
@@ -3225,7 +3225,7 @@ C << be aware that spaces in materials names might be lost! >>
      &        outsd(1:lnblnk(outsd)),'  # 5-8 '
 
           elseif(VISTYP(icomp,ib)(1:4).eq.'vis ')then
-            WRITE(outs,'(2a,6F10.4,F7.2,F6.2,1X,A)',
+            WRITE(outs,'(2a,6F10.4,F8.2,F6.2,1X,A)',
      &        IOSTAT=ios,ERR=13) 
      &        '*vis',tab,XOV(icomp,ib),YOV(icomp,ib),ZOV(icomp,ib),
      &        DXOV(icomp,ib),DYOV(icomp,ib),DZOV(icomp,ib),
