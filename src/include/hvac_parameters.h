@@ -32,6 +32,7 @@ C Named constants for furnace Types
       integer iFurn_ElecForcedAir
       integer iFurn_Wood
       integer iFurn_Oil
+      integer iFurn_GasHP 
       
       parameter( iFurn_AdvWoodStove             = 1   )
       parameter( iFurn_CatConverter             = 2   )
@@ -47,6 +48,7 @@ C Named constants for furnace Types
       parameter( iFurn_ElecForcedAir            = 12  )
       parameter( iFurn_Wood                     = 13  )
       parameter( iFurn_Oil                      = 14  )
+      parameter( iFurn_GasHP                    = 15  )
 
 
 C Named constants for furnace fan operation

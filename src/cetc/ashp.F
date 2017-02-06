@@ -465,7 +465,9 @@ c Energy consumption in J of the air-source heat pump during the current time
 c step
        heat_pump_energy = ASHP_ENERGY(ss_heat_pump_cap,cop,plrhp,
      &                   plfhp2,time_step)
-
+       
+     
+     
        return
        end
 
@@ -630,7 +632,7 @@ c **********************************************************************
 c Variables passed in call
 
 
-      REAL tout, cop
+      REAL tout, cop, tReturn
 
       real temp_corr
       
@@ -655,7 +657,24 @@ c Equation 2 in Air-source heat pump by Haddad
            
         cop = ss_cop(isys) 
      &               * (a_cop + b_cop * tout + c_cop * tout**2 +
-     &                  d_cop * tout**3 + e_cop * tout**4)           
+     &                  d_cop * tout**3 + e_cop * tout**4)            
+           
+           
+      elseif ( iHeatPumpType(iSys) == iASHP_GasHP_a ) then 
+
+C This is a hard-coded Performance curve for a Cold-climate ASHP 
+C inferred from manufactuer's literature. It assumes the COP 
+C varies linerally between 3.19 (at 15oC) and 1.4 (at -25 oC). 
+C This configuration was used in the original NRCan ANZEH optimiation
+C work. 
+      
+        tReturn = 34.4  
+      
+        cop = 1.6322  - 0.005  * tReturn 
+     &                - 2.054E-05  * tReturn ** 2.0   
+     &                + 0.0057 * tout 
+     &                - 2.9773E-07 * tout ** 2.0 
+     &                + 1.1585E-06 * tout * tReturn
            
       elseif ( iHeatPumpType(iSys) == iASHP_CCASHP_CEF ) then 
 

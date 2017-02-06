@@ -2664,6 +2664,7 @@ C-----------------------------------------------------------------------
      &           cTokenVal(1:4) .ne. 'poor'                 .and.
      &           cTokenVal(1:11).ne. 'CCASHP-CCHT'          .and.
      &           cTokenVal(1:10).ne. 'CCASHP-CEF'           .and.
+     &           cTokenVal(1:10).ne. 'gas-hp-a'             .and.
      &           cTokenVal(1:19).ne. 'CCASHP-MANUFACTURER'  
      &         )
      &     ) THEN 
@@ -2708,6 +2709,11 @@ C.........Set error flag
           case('CCASHP-MANUFACTURER') 
             isys_type(iSystem)=iASHP_good
             iHeatPumpType(iSystem) = iASHP_CCASHP_MANUF
+          case('gas-hp-a') 
+            isys_type(iSystem)=iASHP_good
+            iHeatPumpType(iSystem) = iASHP_GasHP_a                       
+            
+            
           end select 
           call ASHP_COEFF(iSystem)
         end if

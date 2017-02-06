@@ -43,6 +43,7 @@ c Integer variables in heat pump input data
       INTEGER, PARAMETER :: iASHP_CCASHP_CEF    = 4 
       INTEGER, PARAMETER :: iASHP_CCASHP_CCHT   = 5 
       INTEGER, PARAMETER :: iASHP_CCASHP_MANUF  = 6 
+      INTEGER, PARAMETER :: iASHP_GasHP_a       = 7
       
    
 
