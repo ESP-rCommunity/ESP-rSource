@@ -1499,18 +1499,17 @@ c Depending on the type of unit, Henderson defines a correlation constant pr
         pr = 0.01
       elseif(isys_type.eq.3) then
         pr = 0.03
-      elseif(isys_type.eq.4) then
+      else
+!-------Use PR = 0 for gas HPs. 
         pr = 0.
       endif
 
-c The modified part-load factor (according to the Henderson Report)
-c Equation 8 in the reference listed
       ASHP_PLF_OFFCYC_CORR = plr_heat_pump /
      &        (plr_heat_pump / (plf_heat_pump + 0.00001) +
      &        (1.0 - plr_heat_pump / (plf_heat_pump + 0.00001)) * pr +
      &         0.00001)
+       
 
-      return
       end
 
 c *********************************************************************
@@ -1540,10 +1539,17 @@ c **********************************************************************
 c Variables passed in call
       REAL cap,cop,plr_heat_pump,plf_heat_pump,time_step
 
+      !print*, "ASHP_ENERGY"
+      !print*, " - CAP", CAP
+      !print*, " - COP", COP
+      !print*, " - plr", plr_heat_pump, plf_heat_pump
+      !print*, " - timestep:", time_step
+      
       ASHP_ENERGY = (cap / cop) *
      &              (plr_heat_pump / (plf_heat_pump + 0.00001)) *
      &               time_step
 
+     
       return
       end
 

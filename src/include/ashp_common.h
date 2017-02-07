@@ -44,8 +44,8 @@ c Integer variables in heat pump input data
       INTEGER, PARAMETER :: iASHP_CCASHP_CCHT   = 5 
       INTEGER, PARAMETER :: iASHP_CCASHP_MANUF  = 6 
       INTEGER, PARAMETER :: iASHP_GasHP_a       = 7
-      
-   
+      INTEGER, PARAMETER :: iASHP_GasHP_b       = 8      
+      INTEGER, PARAMETER :: iASHP_GasHP_c       = 9
 
 c Common for air-conditioner output
       common/output_acsystem/

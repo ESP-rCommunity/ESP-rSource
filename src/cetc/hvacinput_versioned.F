@@ -2664,7 +2664,9 @@ C-----------------------------------------------------------------------
      &           cTokenVal(1:4) .ne. 'poor'                 .and.
      &           cTokenVal(1:11).ne. 'CCASHP-CCHT'          .and.
      &           cTokenVal(1:10).ne. 'CCASHP-CEF'           .and.
-     &           cTokenVal(1:10).ne. 'gas-hp-a'             .and.
+     &           cTokenVal(1:8) .ne. 'gas-hp-a'             .and.
+     &           cTokenVal(1:8) .ne. 'gas-hp-b'             .and.
+     &           cTokenVal(1:8) .ne. 'gas-hp-c'             .and.
      &           cTokenVal(1:19).ne. 'CCASHP-MANUFACTURER'  
      &         )
      &     ) THEN 
@@ -2684,6 +2686,8 @@ C-----------------------------------------------------------------------
           call edisp248( iUout,'   - CCASHP-MANUFACTURER ', 80)
           call edisp248( iUout,'                  (Cold-climate ASHP '
      &                     // 'using data supplied by Manufacturer)',80)
+          call edisp248( iUout,
+     &                '   - gas-hp-a / gas-hp-b / gas-hp-c',80)     
      
 C.........Set error flag
           bParseError = .true.     
@@ -2710,8 +2714,14 @@ C.........Set error flag
             isys_type(iSystem)=iASHP_good
             iHeatPumpType(iSystem) = iASHP_CCASHP_MANUF
           case('gas-hp-a') 
-            isys_type(iSystem)=iASHP_good
+            isys_type(iSystem)=iASHP_GasHP_a
             iHeatPumpType(iSystem) = iASHP_GasHP_a                       
+          case('gas-hp-b') 
+            isys_type(iSystem)=iASHP_GasHP_b
+            iHeatPumpType(iSystem) = iASHP_GasHP_b
+          case('gas-hp-c') 
+            isys_type(iSystem)=iASHP_GasHP_c 
+            iHeatPumpType(iSystem) = iASHP_GasHP_c            
             
             
           end select 

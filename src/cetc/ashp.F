@@ -146,6 +146,8 @@ c If the system being modelled is a GSHP, then the capacity
 c is not affected by the outdoor temperature, but instead by the 
 c entering water temperature.
 
+      !print*, "ASHP HEATING: "
+
       if (ihvac_type(isys) .eq. 8) then
         GSHP_HP_mode = 1         ! set the HP mode of operation to heating.
         ss_heat_pump_cap = GSHP_CAP(ss_capacity(isys),EWT,GSHP_HP_mode)
@@ -174,7 +176,7 @@ c computer program
         ashp_temp_min = cutoff_temp(isys)
 
         
-        if(TP.lt.ashp_temp_min) then
+        if(TF.lt.ashp_temp_min) then
 c Estimate the plr of the backup heat source
           ss_heat_pump_cap = 0. 
           plrb = PLR(heating_load,ss_capacity(ibackup_sys_num(isys)),
@@ -183,7 +185,7 @@ c Estimate the plr of the backup heat source
         else 
 c Steady-state heat pump capacity accounting for the effect of the outdoor
 c temperature
-          ss_heat_pump_cap = ASHP_CAP(ss_capacity(isys),TP,
+          ss_heat_pump_cap = ASHP_CAP(ss_capacity(isys),TF,
      &                       flow_rate(isys),
      &                       flow_rate_r(isys),ifan_operation(isys),
      &                       cutoff_temp(isys))
@@ -203,7 +205,7 @@ c Initial estimate of the part-load ratio of the heat pump
 c Depending on the first estimate of the part-load ratio and the temperature
 c control option, different procedures are used to estimate the actual 
 c part-load ratio and factor for the heat pump and the backup heating system.
-
+      
 c If the first estimate of plrhp < 1 and the temperature control is balanced
 c point control, the heat pump satisfies the full load
       if((plrhp.lt.0.99).and.(itemp_control(isys).eq.1)) then
@@ -238,7 +240,7 @@ c total system heating capacity
 c For restricted control, outdoor temperature > cutoff point, and plrhp < 1,
 c the heat pump satisfies the full load
       elseif((plrhp.lt.0.99).and.(itemp_control(isys).eq.2).and.
-     &(TP.ge.cutoff_temp(isys))) then
+     &(TF.ge.cutoff_temp(isys))) then
 c Part-load factor of the heat pump
         plfhp = ASHP_PLF(isys,plrhp)
 c Part-load ratio of the backup heat source
@@ -254,7 +256,7 @@ c For restricted control, outdoor temperature < cutoff point, and plrhp < 1,
 c the full load is satisfied by the backup heat source in case it has enough
 c capacity
       elseif((plrhp.lt.0.99).and.(itemp_control(isys).eq.2).and.
-     &(TP.lt.cutoff_temp(isys))) then   
+     &(TF.lt.cutoff_temp(isys))) then   
         plrhp = 0.
 c Set the part-load ratio of the backup heat source
         plrb = PLR(heating_load,ss_capacity(ibackup_sys_num(isys)),
@@ -272,7 +274,7 @@ c If restricted cut-off, outdoor temperature > cutoff temperature, and
 c plrhp > 1, the heat pump can not satisfy the full load and the backup
 c heat source is employed
       elseif((plrhp.ge.0.99).and.(itemp_control(isys).eq.2).and.
-     &(TP.ge.cutoff_temp(isys))) then
+     &(TF.ge.cutoff_temp(isys))) then
 
 c If the backup heat source is a furnace/boiler, the heat pump and the furnace/
 c boiler operate alternatively to satisfy the load
@@ -337,7 +339,7 @@ c total system heating capacity
 c If restricted control, outdoor temperature < cutoff temperature, and
 c plrhp > 1
       elseif((plrhp.ge.0.99).and.(itemp_control(isys).eq.2).and.
-     &(TP.lt.cutoff_temp(isys))) then
+     &(TF.lt.cutoff_temp(isys))) then
         plrhp = 0.
 c Set the part-load ratio of the backup heat source
         plrb = PLR(heating_load,ss_capacity(ibackup_sys_num(isys)),
@@ -453,7 +455,7 @@ c entering water temperature.
          GCEP_HEAT_COP = cop
        else
 c Set COP of heat pump
-         cop = ASHP_COP(isys,TP)
+         cop = ASHP_COP(isys,TF)
        endif
 c GCEP (end) 
 
@@ -466,7 +468,7 @@ c step
        heat_pump_energy = ASHP_ENERGY(ss_heat_pump_cap,cop,plrhp,
      &                   plfhp2,time_step)
        
-     
+       
      
        return
        end
@@ -670,11 +672,13 @@ C work.
       
         tReturn = 34.4  
       
-        cop = 1.6322  - 0.005  * tReturn 
+        cop = 1.6322  - 0.005      * tReturn 
      &                - 2.054E-05  * tReturn ** 2.0   
-     &                + 0.0057 * tout 
-     &                - 2.9773E-07 * tout ** 2.0 
+     &                + 0.0057     * tout 
+     &                - 2.7973E-07 * tout ** 2.0 
      &                + 1.1585E-06 * tout * tReturn
+           
+        !print*, "TOUT: ", tout, " COP: ", cop
            
       elseif ( iHeatPumpType(iSys) == iASHP_CCASHP_CEF ) then 
 
@@ -874,7 +878,7 @@ c Equation 6 in Air-source heat pump Ref by Haddad
 c Part-load factor of the heat pump
 c Equation 7 in Air-source heat pump Ref by Haddad
       ASHP_PLF = plrhp / (heat_eir_fplr + 0.00001)
-
+     
       return
       end
 
