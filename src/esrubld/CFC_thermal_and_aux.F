@@ -2296,12 +2296,8 @@ C.....Switch for zone name output here
       if (ReportBoolConfig("use_zonenames")) then
         write (cZone_Chars,'(A)') zname(icomp)(1:lnzname(icomp))
       else
-C.......Pad zone index to 'XX'
-        if ( icomp .gt. 9 ) then
-           write (cZone_Chars,'(A,I2)') 'zone_',icomp
-        else
-           write (cZone_Chars,'(A,I1)') 'zone_0',icomp
-        endif
+C.......Pad zone index to 'XXX'
+        write (cZone_Chars,'(A,I3.3)') 'zone_',icomp
       endif ! use_zonenames
 
 C << the following would ideally require that surface name lengths
@@ -2313,14 +2309,8 @@ cx      if (ReportBoolConfig ("use_surfacenames")) then
 cx        write (cSurf_Chars,'(A)')
 cx     &          sname(iZone,isurf)(1:lnsname(icomp,isurf))
 cx      else
-C.......Pad surface index to 'XX'
-        if ( isurf .gt. 9 ) then
-cx          write (cSurf_Chars,'(I2)') iSurface
-          write (cSurf_Chars,'(A,I2)') 'surface_',isurf
-        else
-cx          write (cSurf_Chars,'(A,I1)') '0', iSurface
-          write (cSurf_Chars,'(A,I1)') 'surface_0',isurf
-        endif
+C.......Pad surface index to 'XXX'
+          write (cSurf_Chars,'(A,I3.3)') 'surface_',isurf
 cx      endif ! use_surfacenames
 
 c      call AddToReport(
@@ -3242,7 +3232,7 @@ C     -90 (deg.) < vb_phiNew < 90 (deg.)
           if(vb_phiNew(icomp,icfctp).lt.-89.9.or.vb_phiNew(icomp,icfctp)
      &      .gt.89.9)then
 C Send warning error message and overwrite angle to 89.9 deg.
-            write(outs,'(a,a,i2,a,i2,a)')
+            write(outs,'(a,a,i2,a,i3,a)')
      &        'WARNING: Calculated slat angle for CFC',
      &        ' type ',icfctp, 'in zone ',icomp, ' is out of range.'
             CALL EDISP(IUOUT,outs)
@@ -3281,11 +3271,7 @@ C.........Switch for zone name output here
             write (cZone_Chars,'(A)') zname(iZone)(1:lnzname(iZone))
           else
 C...........Pad zone index to 'XX'
-            if ( iZone .gt. 9 ) then
-              write (cZone_Chars,'(A,I2)') 'zone_',iZone
-            else
-              write (cZone_Chars,'(A,I1)') 'zone_0',iZone
-            endif
+            write (cZone_Chars,'(A,I3.3)') 'zone_',iZone
           endif ! use_zonenames
 
           DO 44 j = 1, ncfc(iZone)                  ! Examine each type of CFC in zone.

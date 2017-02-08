@@ -1265,7 +1265,7 @@ C Create input file for CPCALC, if error return.
  767  Format(F4.1,F5.1,2F6.1,F5.1,F5.2,I2,F5.1,A,A)
       DO 189 JCC=1,5
         IF (isut(JCC).eq.1) THEN
-          Write(IUM,'(I2,A)')JCC,'  # surface number'
+          Write(IUM,'(I3,A)')JCC,'  # surface number'
           Write(IUM,'(I2,A,A)')inum(JCC),'  # number of coordiates',
      &       ' for surface'
           DO 333 JCCC=1,nuco

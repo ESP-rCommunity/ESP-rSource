@@ -253,7 +253,7 @@ C Display header information. Calculate graphic boundaries.
       icn=izstocn(icomp,isur)
 
       write(etext,1)month(mon),ihour,isur,ssname(icn)
-    1 format('Direct shading: ',a3,', @ ',i2,':00, Surface ',i2,
+    1 format('Direct shading: ',a3,', @ ',i2,':00, Surface ',i3,
      &       ' (',a,').')
       iside=1
       isize=1

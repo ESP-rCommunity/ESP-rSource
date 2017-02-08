@@ -1009,10 +1009,10 @@ C Set each pair to be back-to-back. Logic for up to 10 mass surfaces.
           SOTHER(NSUR,1)='ANOTHER'
           if(ix.eq.1.or.ix.eq.3.or.ix.eq.5.or.ix.eq.7.or.ix.eq.9)then
             write(SOTHER(NSUR,2),'(i2.2)')INT(icomp)
-            write(SOTHER(NSUR,3),'(i2.2)')INT(NSUR+1)
+            write(SOTHER(NSUR,3),'(i3.3)')INT(NSUR+1)
           else
             write(SOTHER(NSUR,2),'(i2.2)')INT(icomp)
-            write(SOTHER(NSUR,3),'(i2.2)')INT(NSUR-1)
+            write(SOTHER(NSUR,3),'(i3.3)')INT(NSUR-1)
           endif
 
 C Update the connection list. Move all others up and then insert with

@@ -917,7 +917,7 @@ C If tother(JS,2) is a dash then update with IC2 IE2.
             if(TOTHER(JS,2)(1:1).eq.'-')then
               write(TOTHER(JS,1),'(a)') 'ANOTHER'
               write(tother(JS,2),'(i2.2)') IC2(ic)
-              write(tother(JS,3),'(i2.2)') IE2(ic)
+              write(tother(JS,3),'(i3.3)') IE2(ic)
               UPDGEO=.TRUE.
             endif
             goto 110
@@ -1024,7 +1024,7 @@ C surface attribute if it does not match and jump around.
               if(SO(1:7).ne.'SIMILAR')then
                 TOTHER(JS,1)='SIMILAR'
                 write(tother(JS,2),'(i2.2)') IC2(ic)
-                write(tother(JS,3),'(i2.2)') IE2(ic)
+                write(tother(JS,3),'(i3.3)') IE2(ic)
                 UPDGEO=.TRUE.
               endif
               goto 110
@@ -1044,7 +1044,7 @@ C surface attribute if it does not match and jump around.
               if(SO(1:8).ne.'CONSTANT')then
                 TOTHER(JS,1)='CONSTANT'
                 write(tother(JS,2),'(i2.2)') IC2(ic)
-                write(tother(JS,3),'(i2.2)') IE2(ic)
+                write(tother(JS,3),'(i3.3)') IE2(ic)
                 UPDGEO=.TRUE.
               endif
               goto 110
@@ -1064,7 +1064,7 @@ C surface attribute if it does not match and jump around.
               if(SO(1:6).ne.'GROUND')then
                 TOTHER(JS,1)='GROUND'
                 write(tother(JS,2),'(i2.2)') IC2(ic)
-                write(tother(JS,3),'(i2.2)') IE2(ic)
+                write(tother(JS,3),'(i3.3)') IE2(ic)
                 UPDGEO=.TRUE.
               endif
               goto 110
@@ -1084,7 +1084,7 @@ C surface attribute if it does not match and jump around.
               if(SO(1:9).ne.'ADIABATIC')then
                 TOTHER(JS,1)='ADIABATIC'
                 write(tother(JS,2),'(i2.2)') IC2(ic)
-                write(tother(JS,3),'(i2.2)') IE2(ic)
+                write(tother(JS,3),'(i3.3)') IE2(ic)
                 UPDGEO=.TRUE.
               endif
               goto 110
@@ -1104,7 +1104,7 @@ C surface attribute if it does not match and jump around.
               if(SO(1:8).ne.'BASESIMP')then
                 TOTHER(JS,1)='BASESIMP'
                 write(tother(JS,2),'(i2.2)') IC2(ic)
-                write(tother(JS,3),'(i2.2)') IE2(ic)
+                write(tother(JS,3),'(i3.3)') IE2(ic)
                 UPDGEO=.TRUE.
               endif
               goto 110
@@ -1124,7 +1124,7 @@ C surface attribute if it does not match and jump around.
               if(SO(1:9).ne.'IDENT_CEN')then
                 TOTHER(JS,1)='IDENT_CEN'
                 write(tother(JS,2),'(i2.2)') IC2(ic)
-                write(tother(JS,3),'(i2.2)') IE2(ic)
+                write(tother(JS,3),'(i3.3)') IE2(ic)
                 UPDGEO=.TRUE.
               endif
               goto 110
@@ -1142,7 +1142,7 @@ C set connection to exterior and proceed.
                 if(SO(1:8).ne.'EXTERIOR')then
                   TOTHER(JS,1)='EXTERIOR'
                   write(tother(JS,2),'(i2.2)') IC2(ic)
-                  write(tother(JS,3),'(i2.2)') IE2(ic)
+                  write(tother(JS,3),'(i3.3)') IE2(ic)
                   UPDGEO=.TRUE.
                 endif
                 call edisp(iuout,'no match found setting to EXTERIOR.')
@@ -1187,7 +1187,7 @@ C Setup contextural help for boundary conditions.
                   if(SO(1:8).ne.'EXTERIOR')then
                     TOTHER(JS,1)='EXTERIOR'
                     write(tother(JS,2),'(i2.2)') IC2(ic)
-                    write(tother(JS,3),'(i2.2)') IE2(ic)
+                    write(tother(JS,3),'(i3.3)') IE2(ic)
                     UPDGEO=.TRUE.
                   endif
                 elseif(IART.eq.2)then
@@ -1199,7 +1199,7 @@ C Setup contextural help for boundary conditions.
                   if(SO(1:7).ne.'SIMILAR')then
                     TOTHER(JS,1)='SIMILAR'
                     write(tother(JS,2),'(i2.2)') IC2(ic)
-                    write(tother(JS,3),'(i2.2)') IE2(ic)
+                    write(tother(JS,3),'(i3.3)') IE2(ic)
                     UPDGEO=.TRUE.
                   endif
                 elseif(IART.eq.3)then
@@ -1216,7 +1216,7 @@ C Setup contextural help for boundary conditions.
                   if(SO(1:8).ne.'CONSTANT')then
                     TOTHER(JS,1)='CONSTANT'
                     write(tother(JS,2),'(i2.2)') IC2(ic)
-                    write(tother(JS,3),'(i2.2)') IE2(ic)
+                    write(tother(JS,3),'(i3.3)') IE2(ic)
                     UPDGEO=.TRUE.
                   endif
                 elseif(IART.eq.4)then
@@ -1250,7 +1250,7 @@ C profile has not been defined.
                     if(SO(1:6).ne.'GROUND')then
                       TOTHER(JS,1)='GROUND'
                       write(tother(JS,2),'(i2.2)') IC2(ic)
-                      write(tother(JS,3),'(i2.2)') IE2(ic)
+                      write(tother(JS,3),'(i3.3)') IE2(ic)
                       UPDGEO=.TRUE.
                     endif
                   ELSE
@@ -1282,7 +1282,7 @@ C profile has not been defined.
                     if(SO(1:6).ne.'GROUND')then
                       TOTHER(JS,1)='GROUND'
                       write(tother(JS,2),'(i2.2)') IC2(ic)
-                      write(tother(JS,3),'(i2.2)') IE2(ic)
+                      write(tother(JS,3),'(i3.3)') IE2(ic)
                       UPDGEO=.TRUE.
                     endif
                   else
@@ -1301,7 +1301,7 @@ C Link to a 3D conduction model..
                   if(SO(1:6).ne.'GROUND')then
                     TOTHER(IE1(JS),1)='GROUND'
                     write(tother(JS,2),'(i2.2)') IC2(ic)
-                    write(tother(JS,3),'(i2.2)') IE2(ic)
+                    write(tother(JS,3),'(i3.3)') IE2(ic)
                     UPDGEO=.TRUE.
                   endif
                 elseif(IART.eq.7)then
@@ -1313,7 +1313,7 @@ C Link to a 3D conduction model..
                   if(SO(1:9).ne.'ADIABATIC')then
                     TOTHER(JS,1)='ADIABATIC'
                     write(tother(JS,2),'(i2.2)') IC2(ic)
-                    write(tother(JS,3),'(i2.2)') IE2(ic)
+                    write(tother(JS,3),'(i3.3)') IE2(ic)
                     UPDGEO=.TRUE.
                   endif
                 elseif(iart.eq.8)then 
@@ -1341,7 +1341,7 @@ C attribute to the surface under consideration.
                   if(SO(1:8).ne.'BASESIMP')then
                     TOTHER(IE1(JS),1)='BASESIMP'
                     write(tother(JS,2),'(i2.2)') IC2(ic)
-                    write(tother(JS,3),'(i2.2)') IE2(ic)
+                    write(tother(JS,3),'(i3.3)') IE2(ic)
                     UPDGEO=.TRUE.
                   endif
 C BASESIMP end.
@@ -1354,7 +1354,7 @@ C BASESIMP end.
                   if(SO(1:7).ne.'IDENT_CEN')then
                     TOTHER(JS,1)='IDENT_CEN'
                     write(tother(JS,2),'(i2.2)') IC2(ic)
-                    write(tother(JS,3),'(i2.2)') IE2(ic)
+                    write(tother(JS,3),'(i3.3)') IE2(ic)
                     UPDGEO=.TRUE.
                   endif
 
@@ -1368,7 +1368,7 @@ C CEN 13791 partition end.
                   if(SO(1:7).ne.'UNKNOWN')then
                     TOTHER(JS,1)='UNKNOWN'
                     write(tother(JS,2),'(i2.2)') IC2(ic)
-                    write(tother(JS,3),'(i2.2)') IE2(ic)
+                    write(tother(JS,3),'(i3.3)') IE2(ic)
                     UPDGEO=.TRUE.
                   endif
                 endif
@@ -1424,7 +1424,7 @@ C update the attributes.
             if(.NOT.selfcheck)then
               write(TOTHER(JS,1),'(a)') 'ANOTHER'
               write(tother(JS,2),'(i2.2)') IC2(ic)
-              write(tother(JS,3),'(i2.2)') IE2(ic)
+              write(tother(JS,3),'(i3.3)') IE2(ic)
               UPDGEO=.TRUE.
               ICN=IZSTOCN(II,JJ)
               SN=SSNAME(icn)
@@ -1440,7 +1440,7 @@ C make it a partition without bothering to ask the user.
               if(M8SKP)then
                 write(TOTHER(JS,1),'(a)') 'ANOTHER'
                 write(tother(JS,2),'(i2.2)') IC2(ic)
-                write(tother(JS,3),'(i2.2)') IE2(ic)
+                write(tother(JS,3),'(i3.3)') IE2(ic)
                 UPDGEO=.TRUE.
                 ICN=IZSTOCN(II,JJ)
                 SN=SSNAME(icn)
@@ -1455,7 +1455,7 @@ C make it a partition without bothering to ask the user.
                 if(IRTA.eq.1)then
                   write(TOTHER(JS,1),'(a)') 'ANOTHER'
                   write(tother(JS,2),'(i2.2)') IC2(ic)
-                  write(tother(JS,3),'(i2.2)') IE2(ic)
+                  write(tother(JS,3),'(i3.3)') IE2(ic)
                   UPDGEO=.TRUE.
                   ICN=IZSTOCN(II,JJ)
                   SN=SSNAME(icn)
@@ -1470,7 +1470,7 @@ C make it a partition without bothering to ask the user.
                   IC2(IC)=0
                   TOTHER(JS,1)='ADIABATIC'
                   write(tother(JS,2),'(i2.2)') IC2(ic)
-                  write(tother(JS,3),'(i2.2)') IE2(ic)
+                  write(tother(JS,3),'(i3.3)') IE2(ic)
                   UPDGEO=.TRUE.
                 elseif(IRTA.eq.3)then
                   IC1(IC)=IZ
@@ -1480,7 +1480,7 @@ C make it a partition without bothering to ask the user.
                   IC2(IC)=0
                   TOTHER(JS,1)='UNKNOWN'
                   write(tother(JS,2),'(i2.2)') IC2(ic)
-                  write(tother(JS,3),'(i2.2)') IE2(ic)
+                  write(tother(JS,3),'(i3.3)') IE2(ic)
                   UPDGEO=.TRUE.
                 elseif(IRTA.eq.4)then
                   IC1(IC)=IZ
@@ -1491,7 +1491,7 @@ C make it a partition without bothering to ask the user.
                   if(SO(1:8).ne.'EXTERIOR')then
                     TOTHER(JS,1)='EXTERIOR'
                     write(tother(JS,2),'(i2.2)') IC2(ic)
-                    write(tother(JS,3),'(i2.2)') IE2(ic)
+                    write(tother(JS,3),'(i3.3)') IE2(ic)
                     UPDGEO=.TRUE.
                   endif
                 endif
@@ -1603,7 +1603,7 @@ C the view on it and calculate the angle of view to that box.
 C Update surface attributes and then restore the view points.
                 write(TOTHER(JS,1),'(a)') 'ANOTHER'
                 write(tother(JS,2),'(i2.2)') IC2(ic)
-                write(tother(JS,3),'(i2.2)') IE2(ic)
+                write(tother(JS,3),'(i3.3)') IE2(ic)
                 UPDGEO=.TRUE.
                 if(MMOD.eq.8)call recoview
                 ITBND=1
@@ -1637,7 +1637,7 @@ C If reached this point then no surface selected.
               IC2(IC)=0
               TOTHER(JS,1)='UNKNOWN'
               write(tother(JS,2),'(i2.2)') IC2(ic)
-              write(tother(JS,3),'(i2.2)') IE2(ic)
+              write(tother(JS,3),'(i3.3)') IE2(ic)
               UPDGEO=.TRUE.
             elseif(irta.eq.3)then
               IC1(IC)=IZ
@@ -1647,7 +1647,7 @@ C If reached this point then no surface selected.
               IC2(IC)=0
               TOTHER(JS,1)='EXTERIOR'
               write(tother(JS,2),'(i2.2)') IC2(ic)
-              write(tother(JS,3),'(i2.2)') IE2(ic)
+              write(tother(JS,3),'(i3.3)') IE2(ic)
               UPDGEO=.TRUE.
             elseif(irta.eq.4)then
               IC1(IC)=IZ
@@ -1657,7 +1657,7 @@ C If reached this point then no surface selected.
               IC2(IC)=0
               TOTHER(JS,1)='SIMILAR'
               write(tother(JS,2),'(i2.2)') IC2(ic)
-              write(tother(JS,3),'(i2.2)') IE2(ic)
+              write(tother(JS,3),'(i3.3)') IE2(ic)
               UPDGEO=.TRUE.
             elseif(irta.eq.5)then
               IC1(IC)=IZ
@@ -1667,7 +1667,7 @@ C If reached this point then no surface selected.
               IC2(IC)=0
               TOTHER(JS,1)='ADIABATIC'
               write(tother(JS,2),'(i2.2)') IC2(ic)
-              write(tother(JS,3),'(i2.2)') IE2(ic)
+              write(tother(JS,3),'(i3.3)') IE2(ic)
               UPDGEO=.TRUE.
             elseif(irta.eq.6)then
               ICNT=0

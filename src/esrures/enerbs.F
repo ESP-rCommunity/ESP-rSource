@@ -96,8 +96,8 @@ C Get surface and zone name.
       if(SNAPSH)then
         call edisp(itru,' ')
         write(outs,44)SN(1:lnblnk(SN)),ISFN,ZN(1:lnblnk(ZN)),IZONE
-   44   FORMAT(' Causal load breakdown (Watts) for ',A,' (',I2,')',
-     &         ' in ',A,' (',I2,') ')
+   44   FORMAT(' Causal load breakdown (Watts) for ',A,' (',I3,')',
+     &         ' in ',A,' (',I3,') ')
         call edisp(itru,outs)
         WRITE(outs,43)TSTR,SNA(IZONE,ISFN),CSTR
         call edisp(itru,outs)
@@ -109,8 +109,8 @@ C Get surface and zone name.
       else
         call edisp(itru,' ')
         WRITE(outs,42)SN(1:lnblnk(SN)),ISFN,ZN(1:lnblnk(ZN)),IZONE
-   42   FORMAT(' Causal energy breakdown (Whrs) for ',A,' (',I2,')',
-     &         ' in ',A,' (',I2,') ')
+   42   FORMAT(' Causal energy breakdown (Whrs) for ',A,' (',I3,')',
+     &         ' in ',A,' (',I3,') ')
         CALL EDISP(itru,outs)
         WRITE(outs,43)TSTR,SNA(IZONE,ISFN),CSTR
    43   FORMAT(' Surface is ',A10,', area=',F6.2,'m^2 & connects to',
@@ -190,7 +190,7 @@ C Redirect output if required.
 
 C Print breakdown headings: plant status.
       CALL EDISP(itru,' ')
-      WRITE(outs,'(A,I2)')' Facing Zone ',IZONE
+      WRITE(outs,'(A,I3)')' Facing Zone ',IZONE
       CALL EDISP(itru,outs)
       WRITE(outs,'(17X,A)')
      & 'Heating period        Cooling period          OFF period'

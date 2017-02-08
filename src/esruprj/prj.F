@@ -891,14 +891,16 @@ C Scan for matching MLC for surfaces.
 C Find the index of the MLC which matches each surface.
             DO 9994 I=1,NZSUR(icomp)
               icn1=izstocn(icomp,i)
-              ssmlcindex(icn1)=0  ! assume no matching MLC          
-              lnssmlc=lnblnk(SSMLCN(icn1))
-              do 5 ii=1,nmlc
-                if(SSMLCN(icn1)(1:lnssmlc).eq.
-     &             mlcname(ii)(1:lnmlcname(ii)))then
-                  ssmlcindex(icn1)=ii   ! remember MLC index  
-                endif
-  5           continue
+              if(icn1.gt.0)then
+                ssmlcindex(icn1)=0  ! assume no matching MLC          
+                lnssmlc=lnblnk(SSMLCN(icn1))
+                do 5 ii=1,nmlc
+                  if(SSMLCN(icn1)(1:lnssmlc).eq.
+     &               mlcname(ii)(1:lnmlcname(ii)))then
+                    ssmlcindex(icn1)=ii   ! remember MLC index  
+                  endif
+  5             continue
+              endif
  9994       continue
  30       continue
 
@@ -3797,7 +3799,7 @@ C at maxrec=24 for older files. Remember maxrec for use in solar.F.
 
  1003   if(nbhelp.lt.59)then
           nbhelp=nbhelp+1
-          write(h(nbhelp),'(a,i2,a,i2,a,i2)') 'Model nsur=',NSUR,
+          write(h(nbhelp),'(a,i3,a,i3,a,i2)') 'Model nsur=',NSUR,
      &      ' db ns=',ns,' inext=',INEXT
           nbhelp=nbhelp+1
           write(h(nbhelp),'(A)') 

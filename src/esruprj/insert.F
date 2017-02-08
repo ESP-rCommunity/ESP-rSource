@@ -213,7 +213,7 @@ C Update IE2 and ssother third tag in the other zone.
               IE2(IXU)=IE2(IXU)-1
               write(ssother(ixu,1),'(a)') 'ANOTHER'
               write(ssother(ixu,2),'(i2.2)') IC2(ixu)
-              write(ssother(ixu,3),'(i2.2)') IE2(ixu)
+              write(ssother(ixu,3),'(i3.3)') IE2(ixu)
 
 C Logic to decide whether to upgrade other zone geometry format.
               if(igupgrade.eq.2.and.(.NOT.newgeo))then
@@ -1470,7 +1470,7 @@ C matched then set sother to point to the next surface that will be created.
       if(act(2:2).eq.'M'.or.act(2:2).eq.'m')then
         SOTHER(NSUR,1)='ANOTHER'
         write(SOTHER(NSUR,2),'(i2.2)')INT(icomp)
-        write(SOTHER(NSUR,3),'(i2.2)')INT(NSUR+1)
+        write(SOTHER(NSUR,3),'(i3.3)')INT(NSUR+1)
       endif
 
 C Add surface to the connection list (icont) assuming an unknown boundary. 
@@ -1511,7 +1511,7 @@ C If SN is less than 12 characters add an _
 
         SOTHER(NSUR,1)='ANOTHER'
         write(SOTHER(NSUR,2),'(i2.2)')INT(icomp)
-        write(SOTHER(NSUR,3),'(i2.2)')INT(NSUR-1)
+        write(SOTHER(NSUR,3),'(i3.3)')INT(NSUR-1)
         SPARENT(NSUR)='-'
 
         WRITE(SMLCN(NSUR),'(A)')constr
@@ -3293,7 +3293,7 @@ C then the values of ICT and IC2 and IE2 should be updated so that
 C the connections file is correct.
         if(SOTHER(NSUR,1)(1:7).eq.'ANOTHER')then
           read(SOTHER(NSUR,2),'(i2)') ival1
-          read(SOTHER(NSUR,3),'(i2)') ival2
+          read(SOTHER(NSUR,3),'(i3)') ival2
           ICT(ICON)=3
           IC2(ICON)=ival1
           IE2(ICON)=ival2
@@ -3301,19 +3301,19 @@ C the connections file is correct.
           ICT(ICON)=5
         elseif(SOTHER(NSUR,1)(1:8).eq.'CONSTANT')then
           read(SOTHER(NSUR,2),'(i2)') ival1
-          read(SOTHER(NSUR,3),'(i2)') ival2
+          read(SOTHER(NSUR,3),'(i3)') ival2
           ICT(ICON)=2
           IC2(ICON)=ival1
           IE2(ICON)=ival2
         elseif(SOTHER(NSUR,1)(1:6).eq.'GROUND')then
           read(SOTHER(NSUR,2),'(i2)') ival1
-          read(SOTHER(NSUR,3),'(i2)') ival2
+          read(SOTHER(NSUR,3),'(i3)') ival2
           ICT(ICON)=4
           IC2(ICON)=ival1
           IE2(ICON)=ival2
         elseif(SOTHER(NSUR,1)(1:7).eq.'SIMILAR')then
           read(SOTHER(NSUR,2),'(i2)') ival1
-          read(SOTHER(NSUR,3),'(i2)') ival2
+          read(SOTHER(NSUR,3),'(i3)') ival2
           ICT(ICON)=1
           IC2(ICON)=ival1
           IE2(ICON)=ival2

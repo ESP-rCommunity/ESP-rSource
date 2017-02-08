@@ -141,7 +141,7 @@ strip: $(PROG)
 	strip $(PROG)
 
 install: $(PROG)
-	install -D $(PROG) $(ESPBinDir)/$(PROG)
+	install -D $(PROG) $(ESPBinDir)/$(PROG2)
 
 clean:
 	rm -f core $(PROG) $(PROG).exe $(MODULE_OBJECTS) $(OBJECTS) $(MODULES) \

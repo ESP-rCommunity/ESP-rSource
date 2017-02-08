@@ -1412,13 +1412,13 @@ C Fatal error test.
 C Trace output.
       IF(atrace)then
         if (IBSN(ICF,1).GT.0.and.IBAN(ICF,1).eq.0) then
-          write(outs,'(a,i2)') 
+          write(outs,'(a,i3)') 
      &      'Entering subroutine BCL01 sensing in zone ',
      &      IBSN(ICF,1)
           call edisp(itu,' ')
           call edisp(itu,outs)
         elseif (IBSN(ICF,1).GT.0.and.IBAN(ICF,1).GT.0) then
-          write(outs,'(a,i2,a,i2)') 
+          write(outs,'(a,i3,a,i3)') 
      &      'Entering subroutine BCL01 sensing in zone ',
      &      IBSN(ICF,1),' and actuating in zone ',IBAN(ICF,1)
           call edisp(itu,' ')
@@ -2006,14 +2006,14 @@ C Trace output
       IF(ITC.GT.0.AND.NSINC.GE.ITC.AND.NSINC.LE.ITCF.AND.
      &   ITRACE(41).NE.0) then
         if (IBSN(ICF,1).GT.0.and.IBAN(ICF,1).eq.0) then
-          write(outs,'(a,i2)') 
+          write(outs,'(a,i3)') 
      &      'Entering subroutine BCL03 sensing in zone ',
      &      IBSN(ICF,1)
           call edisp(itu,' ')
           call edisp(itu,outs)
         elseif (IBSN(ICF,1).GT.0.and.IBAN(ICF,1).GT.0) then
           call edisp(itu,' ')
-          write(outs,'(a,i2,a,i2)') 
+          write(outs,'(a,i3,a,i3)') 
      &      'Entering subroutine BCL03 sensing in zone ',
      &      IBSN(ICF,1),' and actuating in zone ',IBAN(ICF,1)
           call edisp(itu,outs)
@@ -2159,13 +2159,13 @@ C Trace output
       IF(ITC.GT.0.AND.NSINC.GE.ITC.AND.NSINC.LE.ITCF.AND.
      &   ITRACE(41).NE.0) then
         if (IBSN(ICF,1).GT.0.and.IBAN(ICF,1).eq.0) then
-          write(outs,'(a,i2)') 
+          write(outs,'(a,i3)') 
      &      'Entering subroutine BCL04 sensing in zone ',
      &      IBSN(ICF,1)
           call edisp(itu,' ')
           call edisp(itu,outs)
         elseif (IBSN(ICF,1).GT.0.and.IBAN(ICF,1).GT.0) then
-          write(outs,'(a,i2,a,i2)') 
+          write(outs,'(a,i3,a,i3)') 
      &      'Entering subroutine BCL04 sensing in zone ',
      &      IBSN(ICF,1),' and actuating in zone ',IBAN(ICF,1)
           call edisp(itu,' ')
@@ -2270,13 +2270,13 @@ C Trace output
       IF(ITC.GT.0.AND.NSINC.GE.ITC.AND.NSINC.LE.ITCF.AND.
      &   ITRACE(41).NE.0) then
         if (IBSN(ICF,1).GT.0.and.IBAN(ICF,1).eq.0) then
-          write(outs,'(a,i2)') 
+          write(outs,'(a,i3)') 
      &      'Entering subroutine BCL05 sensing in zone ',
      &      IBSN(ICF,1)
           call edisp(itu,' ')
           call edisp(itu,outs)
         elseif (IBSN(ICF,1).GT.0.and.IBAN(ICF,1).GT.0) then
-          write(outs,'(a,i2,a,i2)') 
+          write(outs,'(a,i3,a,i3)') 
      &      'Entering subroutine BCL05 sensing in zone ',
      &      IBSN(ICF,1),' and actuating in zone ',IBAN(ICF,1)
           call edisp(itu,' ')
@@ -5878,13 +5878,13 @@ C Trace output
       IF(ITC.GT.0.AND.NSINC.GE.ITC.AND.NSINC.LE.ITCF.AND.
      &   ITRACE(41).NE.0)then
         if (IBSN(ICF,1).GT.0.and.IBAN(ICF,1).eq.0) then
-          write(outs,'(a,i2)') 
+          write(outs,'(a,i3)') 
      &      'Entering subroutine BCL21 with master zone ',
      &      IBSN(ICF,1)
           call edisp(itu,' ')
           call edisp(itu,outs)
         elseif (IBSN(ICF,1).GT.0.and.IBAN(ICF,1).GT.0) then
-          write(outs,'(a,i2,a,i2)') 
+          write(outs,'(a,i3,a,i3)') 
      &      'Entering subroutine BCL21 with master zone ',
      &      IBSN(ICF,1),' and slave zone ',IBAN(ICF,1)
           call edisp(itu,' ')
@@ -6507,13 +6507,13 @@ C Trace output
       IF(ITC.GT.0.AND.NSINC.GE.ITC.AND.NSINC.LE.ITCF.AND.
      &   ITRACE(41).NE.0) then
         if (IBSN(ICF,1).GT.0.and.IBAN(ICF,1).eq.0) then
-          write(outs,'(a,i2)') 
+          write(outs,'(a,i3)') 
      &      'Entering subroutine BCL24 sensing in zone ',
      &      IBSN(ICF,1)
           call edisp(itu,' ')
           call edisp(itu,outs)
         elseif (IBSN(ICF,1).GT.0.and.IBAN(ICF,1).GT.0) then
-          write(outs,'(a,i2,a,i2)') 
+          write(outs,'(a,i3,a,i3)') 
      &      'Entering subroutine BCL01 sensing in zone ',
      &      IBSN(ICF,1),' and actuating in zone ',IBAN(ICF,1)
           call edisp(itu,' ')
@@ -7002,13 +7002,13 @@ C Trace output
       IF(ITC.GT.0.AND.NSINC.GE.ITC.AND.NSINC.LE.ITCF.AND.
      &   ITRACE(41).NE.0) then
         if (IBSN(ICF,1).GT.0.and.IBAN(ICF,1).eq.0) then
-          write(outs,'(a,i2)') 
+          write(outs,'(a,i3)') 
      &      'Entering subroutine BCL26 sensing in zone ',
      &      IBSN(ICF,1)
           call edisp(itu,' ')
           call edisp(itu,outs)
         elseif (IBSN(ICF,1).GT.0.and.IBAN(ICF,1).GT.0) then
-          write(outs,'(a,i2,a,i2)') 
+          write(outs,'(a,i3,a,i3)') 
      &      'Entering subroutine BCL26 sensing in zone ',
      &      IBSN(ICF,1),' and actuating in zone ',IBAN(ICF,1)
           call edisp(itu,' ')

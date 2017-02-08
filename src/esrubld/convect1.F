@@ -366,7 +366,7 @@ C be superceeded by user specifications.
    32 dotrace=.false.
       IF(ITC.LE.0.OR.NSINC.LT.ITC)goto 9999
       IF(ITRACE(6).EQ.0.OR.NSINC.GT.ITCF)goto  9999
-      write(outs,'(A,I4,a,i2)')
+      write(outs,'(A,I4,a,i3)')
      &  ' Subroutine HTOVERCEN  Trace output',ICNT,
      &  ' for zone ',icomp
       call edisp(itu,outs)
@@ -382,7 +382,7 @@ C Check the direction of heat flow for the typical ceiling surface.
       iceil= nint(CENLOC(ICOMP,IP,2))
       DTC=TFS(ICOMP,iceil)-TFA(ICOMP)
       if(dotrace)then
-        write(outs,'(a,i2,a,F7.3,a,i2,a,F7.3)') 
+        write(outs,'(a,i3,a,F7.3,a,i3,a,F7.3)') 
      &    ' CEN base surface is ',ifloor,' with DTF',DTF,
      &    ' and top surface is ',iceil,' with DTC',DTC
         call edisp(itu,outs)

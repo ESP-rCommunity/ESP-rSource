@@ -112,12 +112,12 @@ C be superceeded by user specifications.
       IF(ITRACE(6).EQ.0.OR.NSINC.GT.ITCF)goto  9999
       IF(IZNTRC(ICOMP).NE.1)goto 9999 ! check if zone output is rq'd
       IF( IHC(ICOMP).EQ.1 ) THEN
-        write(outs,'(A,I4,a,i2,a,i2,a)')
+        write(outs,'(A,I4,a,i3,a,i3,a)')
      &    ' Subroutine HTBUOY  Trace output',ICNT,
      &    ' for zone ',icomp,' & surface ',isur,
      &    ' (data may be superceeded by the zone convective regime).'
       else
-        write(outs,'(A,I4,a,i2,a,i2)')
+        write(outs,'(A,I4,a,i3,a,i3)')
      &    ' Subroutine HTBUOY  Trace output',ICNT,
      &    ' for zone ',icomp,' & surface ',isur
       endif

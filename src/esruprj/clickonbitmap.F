@@ -362,7 +362,7 @@ C postprocessing.
         WRITE(ITEMS(11+m+n),'(A,1X,F8.4)') 'l  door head @:',Z3
         WRITE(ITEMS(12+m+n),'(A,1X,2F6.3)')'m  wind sill head @:',
      &    Z4,Z5
-        WRITE(ITEMS(13+m+n),'(A,1X,i2)')   'n  nb. of walls ',NW
+        WRITE(ITEMS(13+m+n),'(A,1X,i3)')   'n  nb. of walls ',NW
         if(trimmed)then
           ITEMS(14+m+n)='m  start (type `e` end `p` pan)'
         else
@@ -1800,6 +1800,7 @@ C of the floor plan extrusion block of code below.
               IF(zname(ICOMP)(1:2).EQ.'  ')THEN
                IF(ICOMP.LE.9)WRITE(zname(ICOMP),'(A5,I1)')'Zone-',ICOMP
                IF(ICOMP.GT.9)WRITE(zname(ICOMP),'(A5,I2)')'Zone-',ICOMP
+               IF(ICOMP.GT.99)WRITE(zname(ICOMP),'(A5,I3)')'Zone-',ICOMP
                lnzname(ICOMP)=lnblnk(zname(ICOMP))  ! update length of this string.
               ENDIF
               if(zdesc(ICOMP)(1:2).EQ.'  ')then
@@ -2354,6 +2355,7 @@ C Complete zone data before exiting.
             IF(zname(ICOMP)(1:2).EQ.'  ')THEN
               IF(ICOMP.LE.9)WRITE(zname(ICOMP),'(A5,I1)')'Zone-',ICOMP
               IF(ICOMP.GT.9)WRITE(zname(ICOMP),'(A5,I2)')'Zone-',ICOMP
+              IF(ICOMP.GT.99)WRITE(zname(ICOMP),'(A5,I3)')'Zone-',ICOMP
               lnzname(ICOMP)=lnblnk(zname(ICOMP))  ! update length of this string.
             ENDIF
             if(zdesc(ICOMP)(1:2).EQ.'  ')then

@@ -1243,7 +1243,7 @@ C CALLS: MOREC1 MOREC2
       IUNIT=IFIL
       if(iz.eq.0.or.iday.eq.0.or.iset.eq.0.or.its.eq.0)then
         call edisp(iuout,'Error: One of the GZTMS parameters is zero.')
-        write(outs,'(a,i3,a,i2,a,i2)') 'iday= ',iday,' zone= ',iz,
+        write(outs,'(a,i3,a,i3,a,i2)') 'iday= ',iday,' zone= ',iz,
      &    ' set= ',iset
         call edisp(iuout,outs)
         return
@@ -1661,7 +1661,7 @@ C theonectld (integer index) if non-zero the index of the gain to control.
       if(iz.eq.0.or.iday.eq.0.or.iset.eq.0.or.its.eq.0)then
         call edisp(iuout,
      &    'Error: One of the getallcas parameters is zero.')
-        write(outs,'(a,i3,a,i2,a,i2)') 'iday= ',iday,' zone= ',iz,
+        write(outs,'(a,i3,a,i3,a,i2)') 'iday= ',iday,' zone= ',iz,
      &    ' set= ',iset
         call edisp(iuout,outs)
         return

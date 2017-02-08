@@ -4727,12 +4727,8 @@ C.....Switch for zone name output here
       if (ReportBoolConfig("use_zonenames")) then
         write (cZone_Chars,'(A)') zname(iZone)(1:lnzname(iZone))
       else
-C.......Pad zone index to 'XX'
-        if ( iZone .gt. 9 ) then
-           write (cZone_Chars,'(A,I2)') 'zone_',iZone
-        else
-           write (cZone_Chars,'(A,I1)') 'zone_0',iZone
-        endif
+C.......Pad zone index to 'XXX'
+        write (cZone_Chars,'(A,I3.3)') 'zone_',iZone
       endif ! use_zonenames
 
 C << the following would ideally require that surface name lengths
@@ -4744,12 +4740,8 @@ cx      if (ReportBoolConfig ("use_surfacenames")) then
 cx        write (cSurf_Chars,'(A)')
 cx     &          sname(iZone,iSurface)(1:lnsname(icomp,isurf))
 cx      else
-C.......Pad surface index to 'XX'
-        if ( iSurf .gt. 9 ) then
-          write (cSurf_Chars,'(A,I2)') 'surface_',iSurf
-        else
-          write (cSurf_Chars,'(A,I1)') 'surface_0',iSurf
-        endif
+C.......Pad surface index to 'XXX'
+          write (cSurf_Chars,'(A,I3.3)') 'surface_',iSurf
 c      endif ! use_surfacenames
 
       if(inode.gt.9)then

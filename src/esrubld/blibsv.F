@@ -851,7 +851,7 @@ C If the bems flag is active then write out the current zone temperature to the 
 C output file (fort.60). Currently only write out the data for optimum start
 C stop. This will later be replaced by a dedicated call to res. 
       if(ibems.gt.0) then
-C        WRITE(*,'(A,I2)') 'Dumpimg BEMS data ..... Zone ',ICOMP
+C        WRITE(*,'(A,I3)') 'Dumpimg BEMS data ..... Zone ',ICOMP
         WRITE(59,*) '#Zone  Day  Time   Temperature Plant'
         CALL ECLOSE(BTIMEF,1.000,0.001,CLOSE)
         IF(CLOSE)THEN
@@ -1605,7 +1605,7 @@ C Comput averages for each of the separate casual gains (after ctl applied).
         endif
 
 C Debug
-C        write(6,'(A,i2,12F8.1)') 
+C        write(6,'(A,i3,12F8.1)') 
 C     &   ' Casual pres ocup/light/equip convec ctl applied',
 C     &   icomp,ctlperocupc(icomp,1),ctlperocupc(icomp,2),
 C     &   ctlperlightc(icomp,1),ctlperlightc(icomp,2),
@@ -1729,21 +1729,21 @@ C          write (sqls,'(9(g10.4,1x))') TMA,QM,QV1,QV2,TMCON,outopq,
 C     &             outtrn,QW1,QW2
 C          write (sqls,'(9(g10.4,1x))') 
 C          call sdelim(sqls,sqlsd,'C',IW)
-C          write (doit,'(6a,i2.2,3a,f7.3,3a)') 'echo ',QT,
+C          write (doit,'(6a,i3.3,3a,f7.3,3a)') 'echo ',QT,
 C     & 'replace INTO indoor_climate (ref, ic_code, datetime, ',
 C     & 'ic_item, value) VALUES ("',cfgroot(1:lnblnk(cfgroot)),'_',
 C     & ICOMP,'","ESP",',DT,',"DB",',TMA,')',QT,
 C     & '|mysql -u manager -pmanager -h130.159.102.16 merit'
 C          write(6,*) doit
 C          call runit(doit,'-')
-C          write (doit,'(6a,i2.2,3a,f7.3,3a)') 'echo ',QT,
+C          write (doit,'(6a,i3.3,3a,f7.3,3a)') 'echo ',QT,
 C     & 'replace INTO indoor_climate (ref, ic_code, datetime, ',
 C     & 'ic_item, value) VALUES ("',cfgroot(1:lnblnk(cfgroot)),'_',
 C     & ICOMP,'","ESP",',DT,',"RH",',ZRH,')',QT,
 C     & '|mysql -u manager -pmanager -h130.159.102.16 merit'
 C          write(6,*) doit
 C          call runit(doit,'-')
-C          write (doit,'(6a,i2.2,3a,2(f8.1,a),2a)') 'echo ',QT,
+C          write (doit,'(6a,i3.3,3a,2(f8.1,a),2a)') 'echo ',QT,
 C     & 'replace INTO energy (ref, meter_id, fuel_type, r_type,',
 C     & 'to_datetime, dial_1, tot) VALUES ("',cfgroot(1:lnblnk(cfgroot)),
 C     & '_',ICOMP,'","HF","HF","ESP",',DT,',',QM,',',QM,')',QT,
@@ -1757,7 +1757,7 @@ C stop. This will later be replaced by a dedicated call to res.
           if(ibems.gt.0) then
 
 C Debug.
-C            WRITE(*,'(A,I2)') 'Dumpimg BEMS data ..... Zone ',ICOMP
+C            WRITE(*,'(A,I3)') 'Dumpimg BEMS data ..... Zone ',ICOMP
             WRITE(60,*) '#Zone  Day  Time   Temperature '
     
             CALL ECLOSE(BTIMEF,1.000,0.001,CLOSE)
@@ -1817,7 +1817,7 @@ C Save back the current written out values of separate casual gains.
           sctlperothl(ICOMP)=sctlperothl(ICOMP)+avgctlperotherl
 
 C Debug
-C          write(6,'(A,2i2,8F9.2)') 
+C          write(6,'(A,2i3,8F9.2)') 
 C     &    ' Casual acum ocup/light/equip/other convec',icomp,irdnow,
 C     &    sctlperocupc(icomp),sctlperlightc(icomp),
 C     &    sctlperequipc(icomp),sctlperothc(icomp),avgctlperocupc,
@@ -1826,7 +1826,7 @@ C     &    avgctlperlightc,avgctlperequipc,avgctlperotherc
           if(irdnow.eq.1) then
 
 C Debug
-C            write(6,'(A,2i2,4F9.2)') 
+C            write(6,'(A,2i3,4F9.2)') 
 C     &        ' Casual written ocup/light/equip/other convec',
 C     &        icomp,irdnow,sctlperocupc(icomp)/irdc,
 C     &        sctlperlightc(icomp)/irdc,

@@ -131,7 +131,7 @@ C If snapshot IOH1 is timesteps rather than integer hours.
       if(SNAPSH)then
         call edisp(itru,' ')
         write(outs,42)IZONE,zname(IZONE)
-   42   FORMAT(' Causal load breakdown (kW) at air point for zone',I2,
+   42   FORMAT(' Causal load breakdown (kW) at air point for zone',I3,
      &         ': ',A12)
         call edisp(itru,outs)
         CALL STDATE(IYEAR,IODS,DDX,DDX1)
@@ -142,7 +142,7 @@ C If snapshot IOH1 is timesteps rather than integer hours.
         call edisp(itru,' ')
         write(outs,43)IZONE,zname(IZONE)
    43   FORMAT(' Causal energy breakdown (kWhrs) at air point for zone',
-     &         I2,': ',A12)
+     &         I3,': ',A12)
         call edisp(itru,outs)
       endif
       if(ISAVE.lt.4.and.izver.lt.2)then

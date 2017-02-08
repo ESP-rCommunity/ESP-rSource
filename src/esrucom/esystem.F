@@ -2868,7 +2868,10 @@ C Fill in a default zone name if blank or UNKNOWN.
         IF(zname(ICOMP)(1:2).EQ.'  '.OR.
      &     zname(ICOMP)(1:7).EQ.'UNKNOWN')THEN
           IF(ICOMP.LE.9)WRITE(zname(ICOMP),'(A5,I1)')'Zone-',ICOMP
-          IF(ICOMP.GT.9)WRITE(zname(ICOMP),'(A5,I2)')'Zone-',ICOMP
+          IF(ICOMP.GT.9.and.ICOMP.LE.99)then
+            WRITE(zname(ICOMP),'(A5,I2)')'Zone-',ICOMP
+          ENDIF
+          IF(ICOMP.GT.99)WRITE(zname(ICOMP),'(A5,I3)')'Zone-',ICOMP
           lnzname(ICOMP)=lnblnk(zname(ICOMP))  ! update the length of this string.
         ENDIF
         if(zdesc(ICOMP)(1:1).EQ.' ')then

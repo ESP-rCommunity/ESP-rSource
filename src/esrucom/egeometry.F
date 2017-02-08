@@ -260,6 +260,7 @@ C Fill in a default zone name and description if blank.
      &   zname(ICOMP)(1:7).EQ.'UNKNOWN')then
         IF(ICOMP.LE.9)WRITE(zname(ICOMP),'(A5,I1)')'Zone-',ICOMP
         IF(ICOMP.GT.9)WRITE(zname(ICOMP),'(A5,I2)')'Zone-',ICOMP
+        IF(ICOMP.GT.99)WRITE(zname(ICOMP),'(A5,I3)')'Zone-',ICOMP
         lnzname(ICOMP)=lnblnk(zname(ICOMP))  ! update string length
       endif
       if(zdesc(ICOMP)(1:1).EQ.' ')then
@@ -631,7 +632,7 @@ C spaces, as is done in the rest of the computing world.
 C Line should contain a number, name, and four keywords ( e.g. OPAQ, 
 C VERT, UNKN, EXTERIOR )        svn
           read_attribute: if ( iWordCount .ne. 6 ) then 
-            write (outs, '(A,I2,A)')
+            write (outs, '(A,I3,A)')
      &        'Could not intrepret attributes for surface', I, '.'
               call edisp(itru,outs)
               IER = 1
@@ -810,9 +811,9 @@ C the C24 and C3 data structures will have data that can be used.
           if(havec24)then
             write(ssother(icn,1),'(a)') 'SIMILAR'
             write(ssother(icn,2),'(i2.2)') IC2(icn)
-            write(ssother(icn,3),'(i2.2)') IE2(icn)
+            write(ssother(icn,3),'(i3.3)') IE2(icn)
             write(sother(isn,2),'(i2.2)') IC2(icn)
-            write(sother(isn,3),'(i2.2)') IE2(icn)
+            write(sother(isn,3),'(i3.3)') IE2(icn)
           endif
         elseif(tother(1:8).eq.'CONSTANT')then
 
@@ -825,9 +826,9 @@ C the C24 and C3 data structures will have data that can be used.
           if(havec24)then
             write(ssother(icn,1),'(a)') 'CONSTANT'
             write(ssother(icn,2),'(i2.2)') IC2(icn)
-            write(ssother(icn,3),'(i2.2)') IE2(icn)
+            write(ssother(icn,3),'(i3.3)') IE2(icn)
             write(sother(isn,2),'(i2.2)') IC2(icn)
-            write(sother(isn,3),'(i2.2)') IE2(icn)
+            write(sother(isn,3),'(i3.3)') IE2(icn)
           endif
         elseif(tother(1:8).eq.'BASESIMP')then
           write(sother(isn,1),'(a)') 'BASESIMP'
@@ -836,9 +837,9 @@ C the C24 and C3 data structures will have data that can be used.
           if(havec24)then
             write(ssother(icn,1),'(a)') 'BASESIMP'
             write(ssother(icn,2),'(i2.2)') IC2(icn)
-            write(ssother(icn,3),'(i2.2)') IE2(icn)
+            write(ssother(icn,3),'(i3.3)') IE2(icn)
             write(sother(isn,2),'(i2.2)') IC2(icn)
-            write(sother(isn,3),'(i2.2)') IE2(icn)
+            write(sother(isn,3),'(i3.3)') IE2(icn)
           endif
         elseif(tother(1:6).eq.'GROUND')then
           write(sother(isn,1),'(a)') 'GROUND'
@@ -847,9 +848,9 @@ C the C24 and C3 data structures will have data that can be used.
           if(havec24)then
             write(ssother(icn,1),'(a)') 'GROUND'
             write(ssother(icn,2),'(i2.2)') IC2(icn)
-            write(ssother(icn,3),'(i2.2)') IE2(icn)
+            write(ssother(icn,3),'(i3.3)') IE2(icn)
             write(sother(isn,2),'(i2.2)') IC2(icn)
-            write(sother(isn,3),'(i2.2)') IE2(icn)
+            write(sother(isn,3),'(i3.3)') IE2(icn)
           endif
         elseif(tother(1:7).eq.'ANOTHER')then
           write(sother(isn,1),'(a)') 'ANOTHER'
@@ -858,9 +859,9 @@ C the C24 and C3 data structures will have data that can be used.
           if(havec24)then
             write(ssother(icn,1),'(a)') 'ANOTHER'
             write(ssother(icn,2),'(i2.2)') IC2(icn)
-            write(ssother(icn,3),'(i2.2)') IE2(icn)
+            write(ssother(icn,3),'(i3.3)') IE2(icn)
             write(sother(isn,2),'(i2.2)') IC2(icn)
-            write(sother(isn,3),'(i2.2)') IE2(icn)
+            write(sother(isn,3),'(i3.3)') IE2(icn)
           endif
         elseif(tother(1:9).eq.'IDENT_CEN')then
           write(sother(isn,1),'(a)') 'IDENT_CEN'
@@ -880,9 +881,9 @@ C Assume partition so setup sother arrays with this in mind.
           if(havec24)then
             write(ssother(icn,1),'(a)') 'ANOTHER'
             write(ssother(icn,2),'(i2.2)') IC2(icn)
-            write(ssother(icn,3),'(i2.2)') IE2(icn)
+            write(ssother(icn,3),'(i3.3)') IE2(icn)
             write(sother(isn,2),'(i2.2)') IC2(icn)
-            write(sother(isn,3),'(i2.2)') IE2(icn)
+            write(sother(isn,3),'(i3.3)') IE2(icn)
           endif
         endif
 
@@ -1195,8 +1196,10 @@ C if for some reason there are blanks remaining.
         IF(SSNAME(icc)(1:2).EQ.'  ')THEN
           IF(I.LE.9)WRITE(SSNAME(icc),76)I
           IF(I.GT.9)WRITE(SSNAME(icc),77)I
+          IF(I.GT.99)WRITE(SSNAME(icc),78)I
    76     FORMAT('Surf-',I1)
    77     FORMAT('Surf-',I2)
+   78     FORMAT('Surf-',I3)
         ENDIF
 
 C This version of the geometry does not have a slot for the full
@@ -2862,7 +2865,7 @@ C Edge list. Write as a packed list comma separated.
         write(louts,'(a,42I4)',IOSTAT=ios,ERR=13) '*edges ',NVER(I),
      &     (JVN(I,J),J=1,NVER(I))
         call SDELIM(louts,loutsd,'C',IW)
-        write(ifilg,'(2a,i2)',IOSTAT=IOS,ERR=13) 
+        write(ifilg,'(2a,i3)',IOSTAT=IOS,ERR=13) 
      &    loutsd(1:lnblnk(loutsd)),'  # ',I
 970   CONTINUE
 
@@ -2930,7 +2933,7 @@ C Debug.
 C          write(6,'(a,2i2,a)',IOSTAT=ios,ERR=13) '*surf,fault',i,
 C     &      ',UNKN,-,-,-,UNKN,OPAQUE,EXTERIOR,0,0'
 
-          write(ifilg,'(a,2i2,a)',IOSTAT=ios,ERR=13) '*surf,fault',i,
+          write(ifilg,'(a,2i3,a)',IOSTAT=ios,ERR=13) '*surf,fault',i,
      &      ',UNKN,-,-,-,UNKN,OPAQUE,EXTERIOR,0,0'
         endif
   102 CONTINUE
@@ -5222,6 +5225,7 @@ C be duplicates.
 C Initialise various variables
       do 10 isur=1,NZSUR(ICOMP)
         icc=IZSTOCN(icomp,isur)
+        if(icc.lt.1) goto 10  ! jump if corrupt connection list
         ssparent(icc)='-'
         do 20 i=1,6
           idupv(isur,i)=0     ! clear duplicate vertex index
@@ -5355,6 +5359,7 @@ C other surface (grandparent)
  2001 CONTINUE
       DO 110 ISUR=1,NZSUR(ICOMP)
         icc=IZSTOCN(icomp,isur)
+        if(icc.lt.1) goto 110  ! jump past if corrupt connection list.
         DO 2002 IV=1,MV
           IDVN(IV)=0
  2002   CONTINUE
@@ -5364,6 +5369,7 @@ C other surface (grandparent)
           CHILDRIN=SSNAME(ICHILD(ICC,ICHLD))
           DO 112 JSUR=1,NZSUR(ICOMP)
             jcc=izstocn(icomp,jsur)
+            if(jcc.lt.1) goto 112  ! jump past if corrupt connection list
             PARENTIN=SSNAME(JCC)
             ISNL=LNBLNK(PARENTIN)
             ICHL=LNBLNK(CHILDRIN)
@@ -5420,6 +5426,7 @@ C not contained in the child. Use these to work out parent of parent
 C Now fill grand children commons
       DO 201 ISUR=1,NZSUR(ICOMP)     ! for every surface in zone
         icc=IZSTOCN(icomp,isur)      ! connection of the surface
+        if(icc.lt.1) goto 201
         DO 202 ICHL=1,NBCHILD(ICC)   ! for every child of that surface
           JCC=ICHILD(ICC,ICHL)       ! connection of the child
           DO 203 IGCD=1,NBCHILD(JCC) ! for every child of a child
@@ -5586,20 +5593,24 @@ C logic as in subroutine updatesvfc.
             SVFC(I)='VERT'
             IF(I.LE.9)WRITE(SNAME(ICOMP,I),'(A5,I1)') 'Wall-',I
             IF(I.GT.9)WRITE(SNAME(ICOMP,I),'(A5,I2)') 'Wall-',I
+            IF(I.GT.99)WRITE(SNAME(ICOMP,I),'(A5,I3)') 'Wall-',I
           elseif(PELV(I).GE.88.5.AND.PELV(I).LE.91.5)then
             SVFC(I)='CEIL'
             IF(I.LE.9)WRITE(SNAME(ICOMP,I),'(A4,I1)') 'Top-',I
             IF(I.GT.9)WRITE(SNAME(ICOMP,I),'(A4,I2)') 'Top-',I
+            IF(I.GT.99)WRITE(SNAME(ICOMP,I),'(A4,I3)') 'Top-',I
             izsceil(icomp)=I   ! identify as a ceiling
           elseif(PELV(I).GE.-91.5.AND.PELV(I).LE.-88.5)then
             SVFC(I)='FLOR'
             IF(I.LE.9)WRITE(SNAME(ICOMP,I),'(A5,I1)') 'Base-',I
             IF(I.GT.9)WRITE(SNAME(ICOMP,I),'(A5,I2)') 'Base-',I
+            IF(I.GT.99)WRITE(SNAME(ICOMP,I),'(A5,I3)') 'Base-',I
             izsfloor(icomp)=I  ! identify as a floor
           else
             SVFC(I)='SLOP'
             IF(I.LE.9)WRITE(SNAME(ICOMP,I),'(A5,I1)') 'Surf-',I
             IF(I.GT.9)WRITE(SNAME(ICOMP,I),'(A5,I2)') 'Surf-',I
+            IF(I.GT.99)WRITE(SNAME(ICOMP,I),'(A5,I3)') 'Surf-',I
           endif
           lnsname(ICOMP,I)=lnblnk(SNAME(ICOMP,I)) ! update string length
           SOTHER(I,1)='UNKNOWN'
@@ -5628,20 +5639,24 @@ C Set flags for wall/celing/floor
           SVFC(I)='VERT'
           IF(I.LE.9)WRITE(SNAME(ICOMP,I),'(A5,I1)') 'Wall-',I
           IF(I.GT.9)WRITE(SNAME(ICOMP,I),'(A5,I2)') 'Wall-',I
+          IF(I.GT.99)WRITE(SNAME(ICOMP,I),'(A5,I3)') 'Wall-',I
         elseif(PELV(I).GE.88.5.AND.PELV(I).LE.91.5)then
           SVFC(I)='CEIL'
           IF(I.LE.9)WRITE(SNAME(ICOMP,I),'(A4,I1)') 'Top-',I
           IF(I.GT.9)WRITE(SNAME(ICOMP,I),'(A4,I2)') 'Top-',I
+          IF(I.GT.99)WRITE(SNAME(ICOMP,I),'(A4,I3)') 'Top-',I
           izsceil(icomp)=I   ! identify as a ceiling
         elseif(PELV(I).GE.-91.5.AND.PELV(I).LE.-88.5)then
           SVFC(I)='FLOR'
           IF(I.LE.9)WRITE(SNAME(ICOMP,I),'(A5,I1)') 'Base-',I
           IF(I.GT.9)WRITE(SNAME(ICOMP,I),'(A5,I2)') 'Base-',I
+          IF(I.GT.99)WRITE(SNAME(ICOMP,I),'(A5,I3)') 'Base-',I
           izsfloor(icomp)=I  ! identify as a floor
         else
           SVFC(I)='SLOP'
           IF(I.LE.9)WRITE(SNAME(ICOMP,I),'(A5,I1)') 'Surf-',I
           IF(I.GT.9)WRITE(SNAME(ICOMP,I),'(A5,I2)') 'Surf-',I
+          IF(I.GT.99)WRITE(SNAME(ICOMP,I),'(A5,I3)') 'Surf-',I
         endif
         lnsname(ICOMP,I)=lnblnk(SNAME(ICOMP,I)) ! update string length
         SOTHER(I,1)='UNKNOWN'
@@ -5787,7 +5802,7 @@ C If there are less than 5 surfaces write our their names.
  9994     FORMAT(I5,3F10.4,'  ',5(A,' '))
         else
           WRITE(OUTSTR,9993)I,X(I),Y(I),Z(I),(ISASSO(IH),IH=1,IHIT)
- 9993     FORMAT(I5,3F10.4,'  ',10(I2,', '))
+ 9993     FORMAT(I5,3F10.4,'  ',10(I3,', '))
         endif
         call edisp(ITRU,OUTSTR)
  8790 CONTINUE
@@ -5910,19 +5925,25 @@ C If 'is' is passed as 0 then check all, otherwise exclude surface is.
       
       lstr=lnblnk(string)
       ok=.true.
-      do 42 i=1,NZSUR(icomp)-1   ! last surface corresponds to new surface for which a connection does not yet exist so don't count it
+      do 42 i=1,NZSUR(icomp)-1   ! last surface corresponds to new surface for
+                                 ! which a connection does not yet exist so don't count it
         icn=izstocn(icomp,i)
-        SN=SSNAME(icn)           ! assign local name for other surface
-        if(string(1:lstr).eq.SN(1:lnblnk(SN)))then
-          if(is.eq.0)then
-            ok=.false.
-            return
-          else
-            if(i.ne.is)then
+        if(icn.ge.1)then
+          SN=SSNAME(icn)           ! assign local name for other surface
+          if(string(1:lstr).eq.SN(1:lnblnk(SN)))then
+            if(is.eq.0)then
               ok=.false.
               return
+            else
+              if(i.ne.is)then
+                ok=.false.
+                return
+              endif
             endif
           endif
+        else
+          ok=.false.
+          return
         endif
   42  continue
       return

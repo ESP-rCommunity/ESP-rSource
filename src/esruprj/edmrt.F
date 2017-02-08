@@ -491,7 +491,7 @@ C List help text for the  menu.
 
 C List viewfactor contents.
         call edisp(itru,' ')
-        WRITE(outs,'(A,I2)')' Number of surfaces = ',NZS
+        WRITE(outs,'(A,I3)')' Number of surfaces = ',NZS
         call edisp(itru,outs)
         call edisp(itru,' ')
         call edisp(itru,' View Factors from Surface to Surface')

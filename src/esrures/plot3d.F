@@ -703,7 +703,7 @@ C Setup and pass in parameters to win3d.
 
       ETEXT=' '
       if(zlist)then
-        WRITE(ETEXT,'(A,I2,A,A,a,f9.2,a,f9.2)')' Zone (',NZNO(1),') ',
+        WRITE(ETEXT,'(A,I3,A,A,a,f9.2,a,f9.2)')' Zone (',NZNO(1),') ',
      &    zname(NZNO(1)),'    Data: ',  XXMIN,' to ',XXMAX
       else
         write(ETEXT,'(a,f9.2,a,f9.2)') ' The data range is ',

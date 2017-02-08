@@ -199,7 +199,7 @@ C Trace output ?
       CALL DAYCLK(IDYP,BTIMEF,ITU)
 
 C Output computed values.
-      write(outs,'(3A,I2,a)')' Zone ',zname(ICOMP),' (',ICOMP,
+      write(outs,'(3A,I3,a)')' Zone ',zname(ICOMP),' (',ICOMP,
      &  ') Inter-surface radiation coefficients'
       call edisp(itu,' ')
       call edisp(itu,outs)

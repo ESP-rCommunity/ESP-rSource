@@ -217,10 +217,10 @@ C *** Listing requested. If to file then write higher resolution.
             sn=ssname(icn)
             if(verbose)then
               write(outs,2)i,sn(1:11),(pso(i,j),j=1,12)
-    2         format(I2,' (',a,')  Direct,  01-12 hrs ',12(f5.2))
+    2         format(I3,' (',a,')  Direct,  01-12 hrs ',12(f5.2))
             else
               write(outs,222)i,sn(1:7),(pso(i,j),j=1,12)
-  222         format(I2,' (',a,')  Direct,  01-12 hrs ',12(f4.1))
+  222         format(I3,' (',a,')  Direct,  01-12 hrs ',12(f4.1))
             endif
             call edisp(itu,outs)
             if(verbose)then
@@ -412,7 +412,7 @@ C hold 62 indices before it hits an overflow state.
             write(iuj,'(a)',iostat=istat,err=1002)
      &                                     outld(1:lnblnk(outld))
             do 110 i=1,nwins
-               write(iuj,'(a,i2,3a)',iostat=istat,err=1002)
+               write(iuj,'(a,i3,3a)',iostat=istat,err=1002)
      &           'surfaces insolated by source ',i,' ',sourcename(i),
      &           ' # hourly columns, ranking via rows'
                do 120 j=1,misur
@@ -1089,7 +1089,7 @@ C << could switch to larger text buffer
          write(iuj,'(a)',iostat=istat,err=1002)
      &                                  outld(1:lnblnk(outld))
          do 110 i=1,nwins
-            write(iuj,'(a,i2,3a)',iostat=istat,err=1002)
+            write(iuj,'(a,i3,3a)',iostat=istat,err=1002)
      &        'surfaces insolated by source ',i,' ',sourcename(i),
      &        ' # hourly columns, ranking via rows'
             do 120 j=1,misur

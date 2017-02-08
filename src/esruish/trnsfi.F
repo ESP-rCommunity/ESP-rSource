@@ -123,7 +123,7 @@ C Transformed y value should be close to zero; warn if not.
          if(abs(yft(i)).gt.1.E-3)then
             call edisp(icout,' ')
             write(outs,9999)is
- 9999       format('TRNSF1I: Surface ',i2,
+ 9999       format('TRNSF1I: Surface ',i3,
      &                         ' is probably not coplanar!')
             call edisp(icout,outs)
             write(outs,9998)i,xs,ys,zs
@@ -169,7 +169,7 @@ C Trace output.
            xs=vcoord(izone,ip,1)
            ys=vcoord(izone,ip,2)
            zs=vcoord(izone,ip,3)
-           write(outs,'(i2,2x,3f8.3,2x,3f8.3)')
+           write(outs,'(i3,2x,3f8.3,2x,3f8.3)')
      &       i,xs,ys,zs,xft(i),yft(i),zft(i)
            call edisp(icout,outs)
  9995    continue

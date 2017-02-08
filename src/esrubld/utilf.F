@@ -643,7 +643,7 @@ C Trace output follows.
       CALL ASKOK(' ',' Convective regime trace output?',
      &  OK,dok,nbhelp)
       IF(.NOT.OK)goto 6
-      write(outs,'(A,I4,a,i2)')' Subroutine MZHCFV2  Trace output',
+      write(outs,'(A,I4,a,i3)')' Subroutine MZHCFV2  Trace output',
      &  ICNT,' for zone ',ICOMP
       call edisp(itu,outs)
       call edisp(itu,' ')
@@ -820,7 +820,7 @@ C quitting.
  1001 CALL edisp(iuout,' Read error in shading file.')
       goto 1000  ! write further error information
 
- 1003 write(outs,'(a,i2,a,i2,a,i2)') 'Model nsur =',NSUR,' db ns =',
+ 1003 write(outs,'(a,i3,a,i3,a,i3)') 'Model nsur =',NSUR,' db ns =',
      &  ns,' inext=',INEXT
       call edisp(iuout,' Mismatch between model and shading file.')
       call edisp(iuout,outs)

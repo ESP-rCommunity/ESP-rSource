@@ -91,7 +91,7 @@ C hours.
 
 C Write output header information.
         sn=ssname(icn)
-        write(outs,'(a,i2,3a)') 'Surface ',i,' (',sn(1:lnblnk(sn)),')'
+        write(outs,'(a,i3,3a)') 'Surface ',i,' (',sn(1:lnblnk(sn)),')'
         call edisp(itru,outs)
         write(outs,'(3a)') ' Hour   Direct   Diffuse   Solar   Solar'
         call edisp(itru,outs)
@@ -282,7 +282,7 @@ C hours.
         ishdh=0
 
 C Write output header information.
-        write(outs,'(a,i2,3a)') 'Surface ',i,' (',sn(1:lnblnk(sn)),')'
+        write(outs,'(a,i3,3a)') 'Surface ',i,' (',sn(1:lnblnk(sn)),')'
         call edisp(itru,outs)
         write(outs,'(3a)') ' Hour   Direct   Diffuse   Solar   Solar'
         call edisp(itru,outs)
@@ -416,7 +416,7 @@ C Display on a surface-by-surface basis.
 
 C ntmc is 0 or 1.
         kount=kount+ntmc(i)
-        write(outs,'(a,i2,3a)') 'Source surface is ',i,' (',
+        write(outs,'(a,i3,3a)') 'Source surface is ',i,' (',
      &                           sn(1:lnblnk(sn)),').'
         call edisp(itru,outs)
         call edisp(itru,

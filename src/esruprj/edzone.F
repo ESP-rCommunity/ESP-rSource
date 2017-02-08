@@ -362,6 +362,7 @@ C High level info for all cases except clickonbitmap.
       IF(zname(ICOMP)(1:2).EQ.'  ')THEN
         IF(ICOMP.LE.9)WRITE(zname(ICOMP),'(A5,I1)')'Zone-',ICOMP
         IF(ICOMP.GT.9)WRITE(zname(ICOMP),'(A5,I2)')'Zone-',ICOMP
+        IF(ICOMP.GT.99)WRITE(zname(ICOMP),'(A5,I3)')'Zone-',ICOMP
         lnzname(ICOMP)=lnblnk(zname(ICOMP))  ! update length for this string.
       ENDIF
       if(zdesc(ICOMP)(1:2).EQ.'  ')then
@@ -573,7 +574,7 @@ C User did not select a file. Take them back to the question.
 
 C Existing ESP-r geom file.
         DFILE=' '
-        WRITE(OUTSTR,'(a,i2,a)')' For zone ',IC,
+        WRITE(OUTSTR,'(a,i3,a)')' For zone ',IC,
      &   ' the geometry is defined in:'
         CALL EASKS(LTMP,OUTSTR,' ',72,DFILE,'geom file',IER,nbhelp)
         IF(LTMP(1:2).EQ.'  ')GOTO 293
@@ -782,7 +783,7 @@ C                write(6,*) ltmp
           else
             LTMP=LPROJ(IC)
           endif
-          WRITE(OUTSTR,'(a,i2,a)')' For zone ',IC,
+          WRITE(OUTSTR,'(a,i3,a)')' For zone ',IC,
      &      ' the operations are defined in:'
  295      CALL EASKS(LTMP,OUTSTR,' ',72,DFILE,'opr file',IER,nbhelp)
           IF(LTMP(1:2).EQ.'  ')GOTO 295
@@ -839,7 +840,7 @@ C                write(6,*) ltmp
           else
             LTMP=LTHRM(IC)
           endif
-          WRITE(OUTSTR,'(a,i2,a)')' For zone ',IC,
+          WRITE(OUTSTR,'(a,i3,a)')' For zone ',IC,
      &      ' the constructions are defined in:'
  297      CALL EASKS(LTMP,OUTSTR,' ',72,DFILE,'constr file',IER,nbhelp)
           IF(LTMP(1:2).EQ.'  ')GOTO 297
@@ -889,7 +890,7 @@ C Existing zip geom file.
         helptopic='zone_also_zip_source'
         call gethelptext(helpinsub,helptopic,nbhelp)
         DFILE=' '
-        WRITE(OUTSTR,'(a,i2,a)')'For zone ',IC,
+        WRITE(OUTSTR,'(a,i3,a)')'For zone ',IC,
      &    ' the geometry is to be scanned from:'
  396    CALL EASKS(LTMP,' ',OUTSTR,72,DFILE,'zip file',IER,nbhelp)
         IF(LTMP(1:2).EQ.'  ')GOTO 293

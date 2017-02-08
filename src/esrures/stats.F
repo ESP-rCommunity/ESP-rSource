@@ -1421,10 +1421,10 @@ C Now display the calculated data.
       call edisp(itru,outs)
       do 30 I=1,NGET
         if (NY(I).eq.0) then
-          write (outs,'(i2,1x,a12,a)') NZNO(I), zname(IGETNO(I,2)), 
+          write (outs,'(i3,1x,a12,a)') NZNO(I), zname(IGETNO(I,2)), 
      &                           'No data: probably due to filtering.'
         else
-          write (outs,'(i2,1x,a12,3(f8.1,f6.1))') NZNO(I),
+          write (outs,'(i3,1x,a12,3(f8.1,f6.1))') NZNO(I),
      &         zname(IGETNO(I,2)),YMAX(I),(YMAX(I)-CENMAX(I)),
      &         YMIN(I),(YMIN(I)-CENMIN(I)),YAVE(I),(YAVE(I)-CENAVE(I))
         endif
@@ -2382,7 +2382,7 @@ C Update labels to match the current zone.
         write(LABELS(11),'(a)')' Totals'
 
 C Output general header information.
-        write(outs,'(3a,i2,a)')
+        write(outs,'(3a,i3,a)')
      &    ' Casual gains distribution (kWhrs) for ',
      &    zname(IZONE)(1:lnzname(IZONE)),' (',IZONE,')'
         call edisp(itru,' ')
@@ -2397,7 +2397,7 @@ C Prepare to recover information from results library.
           IUNIT=IFIL+1
           CALL EROPER(0,iuout,iunit,izone,IER)  ! for older results library
           if(ip3ver(izone).eq.0)then
-            write(outs,'(a,i2,a)') 
+            write(outs,'(a,i3,a)') 
      &      'Operation file for zone ',izone,' periods being sorted!'
             call edisp(iuout,outs)
             call PROCESSOLDCAS(izone,0,iuout)

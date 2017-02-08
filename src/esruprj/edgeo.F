@@ -320,7 +320,8 @@ C Check if SVFC and SSVFC needs to be updated.
 C Loop through each surface and detect base information. 
       DO 41 I=1,NSUR
         ioc=IZSTOCN(icomp,i)
-
+        if(ioc.lt.1) goto 41  ! is model corrupt skip surf
+	
 C Debug
 C        write(6,*) 'ssmlcindex ',ioc,ssmlcindex(ioc)
         if(SOTHER(I,1)(1:4).eq.'UNKN')attribok=.false.
@@ -404,6 +405,11 @@ C construction on the other side. Logic is the same as in EDSURA.
       if(.NOT.browse)then
         DO 40 is=1,NSUR
           ioc=IZSTOCN(icomp,is)
+          if(ioc.lt.1)then
+            showother=.false.
+            icoth=0  ! not a partition
+            goto 40
+          endif
           if(ICT(ioc).eq.3)then
             showother=.true.
             icoth=IZSTOCN(IC2(ioc),IE2(ioc))
@@ -1255,18 +1261,18 @@ C Determine the match in the system topology and update it.
               ELSEIF(IOS.EQ.2)THEN
                 SOTHER(ISS,1)='SIMILAR'
                 write(SOTHER(ISS,2),'(i2.2)')INT(VALT)
-                write(SOTHER(ISS,3),'(i2.2)')INT(VALW)
+                write(SOTHER(ISS,3),'(i3.3)')INT(VALW)
                 SSOTHER(IC,1)='SIMILAR'
                 write(SSOTHER(IC,2),'(i2.2)')INT(VALT)
-                write(SSOTHER(IC,3),'(i2.2)')INT(VALW)
+                write(SSOTHER(IC,3),'(i3.3)')INT(VALW)
                 ICT(IC)=1; IC2(IC)=INT(VALT); IE2(IC)=INT(VALW)
               ELSEIF(IOS.EQ.3)THEN
                 SOTHER(ISS,1)='CONSTANT'
                 write(SOTHER(ISS,2),'(i2.2)')INT(VALT)
-                write(SOTHER(ISS,3),'(i2.2)')INT(VALW)
+                write(SOTHER(ISS,3),'(i3.3)')INT(VALW)
                 SSOTHER(IC,1)='CONSTANT'
                 write(SSOTHER(IC,2),'(i2.2)')INT(VALT)
-                write(SSOTHER(IC,3),'(i2.2)')INT(VALW)
+                write(SSOTHER(IC,3),'(i3.3)')INT(VALW)
                 ICT(IC)=2; IC2(IC)=INT(VALT); IE2(IC)=INT(VALW)
               ELSEIF(IOS.EQ.5)THEN
                 SOTHER(ISS,1)='GROUND'
@@ -1278,9 +1284,9 @@ C Determine the match in the system topology and update it.
                 ICT(IC)=4; IC2(IC)=iic2; IE2(IC)=0
               ELSEIF(IOS.EQ.6)THEN
                 SOTHER(ISS,1)='GROUND'; SOTHER(ISS,2)='0'
-                write(SOTHER(ISS,3),'(i2.2)')iie2
+                write(SOTHER(ISS,3),'(i3.3)')iie2
                 SSOTHER(IC,1)='GROUND'; SSOTHER(IC,2)='0'
-                write(SSOTHER(IC,3),'(i2.2)')iie2
+                write(SSOTHER(IC,3),'(i3.3)')iie2
                 ICT(IC)=4; IC2(IC)=0; IE2(IC)=iie2
               ELSEIF(IOS.EQ.7)THEN
                 SOTHER(ISS,1)='ADIABATIC'
@@ -1291,17 +1297,17 @@ C Determine the match in the system topology and update it.
               ELSEIF(IOS.EQ.8)THEN
                 SOTHER(ISS,1)='BASESIMP'
                 write(SOTHER(ISS,2),'(i2.2)')INT(VALT)
-                write(SOTHER(ISS,3),'(i2.2)')INT(VALW)
+                write(SOTHER(ISS,3),'(i3.3)')INT(VALW)
                 SSOTHER(IC,1)='BASESIMP'
                 write(SSOTHER(IC,2),'(i2.2)')INT(VALT)
-                write(SSOTHER(IC,3),'(i2.2)')INT(VALW)
+                write(SSOTHER(IC,3),'(i3.3)')INT(VALW)
               ELSEIF(IOS.EQ.9)THEN
                 SOTHER(ISS,1)='IDENT_CEN'
                 write(SOTHER(ISS,2),'(i2.2)')INT(VALT)
-                write(SOTHER(ISS,3),'(i2.2)')INT(VALW)
+                write(SOTHER(ISS,3),'(i3.3)')INT(VALW)
                 SSOTHER(IC,1)='IDENT_CEN'
                 write(SSOTHER(IC,2),'(i2.2)')INT(VALT)
-                write(SSOTHER(IC,3),'(i2.2)')INT(VALW)
+                write(SSOTHER(IC,3),'(i3.3)')INT(VALW)
                 ICT(IC)=7; IC2(IC)=INT(VALT); IE2(IC)=INT(VALW)
               ELSEIF(IOS.EQ.10)THEN
 
@@ -4006,9 +4012,9 @@ C Determine the match in the system topology and update it.
           CALL EASKR(VALW,' ','Radiation offset?',
      &           0.0,'W',99999.,'W',0.0,'offset rad',IER,nbhelp)
           write(SOTHER(IS,2),'(i2.2)')INT(VALT)
-          write(SOTHER(IS,3),'(i2.2)')INT(VALW)
+          write(SOTHER(IS,3),'(i3.3)')INT(VALW)
           write(SSOTHER(IC,2),'(i2.2)')INT(VALT)
-          write(SSOTHER(IC,3),'(i2.2)')INT(VALW)
+          write(SSOTHER(IC,3),'(i3.3)')INT(VALW)
           IC2(IC)=INT(VALT); IE2(IC)=INT(VALW)
           showother=.false.
           updoth=.false.
@@ -4024,9 +4030,9 @@ C Determine the match in the system topology and update it.
           IC2(IC)=INT(VALT)
           IE2(IC)=INT(VALW)
           write(SOTHER(IS,2),'(i2.2)')INT(VALT)
-          write(SOTHER(IS,3),'(i2.2)')INT(VALW)
+          write(SOTHER(IS,3),'(i3.3)')INT(VALW)
           write(SSOTHER(IC,2),'(i2.2)')INT(VALT)
-          write(SSOTHER(IC,3),'(i2.2)')INT(VALW)
+          write(SSOTHER(IC,3),'(i3.3)')INT(VALW)
           showother=.false.
           updoth=.false.
         ELSEIF(IVAL(1).EQ.4)THEN
@@ -4051,7 +4057,7 @@ C General image option flags.
 C Write ANOTHER followed by the indices of zone and surface.
             SSOTHER(ic,1)='ANOTHER'
             write(SSOTHER(ic,2),'(i2.2)') iz
-            write(SSOTHER(ic,3),'(i2.2)') iso
+            write(SSOTHER(ic,3),'(i3.3)') iso
             ICT(IC)=3; IC2(IC)=IZ; IE2(IC)=ISO
 
 C Sort out the other face attributes.
@@ -4062,7 +4068,7 @@ C Sort out the other face attributes.
 
             SSOTHER(ico,1)='ANOTHER'
             write(SSOTHER(ICO,2),'(i2.2)') IC2(ICO)
-            write(SSOTHER(ICO,3),'(i2.2)') IE2(ICO)
+            write(SSOTHER(ICO,3),'(i3.3)') IE2(ICO)
 
 C Also check the other side construction and see if it matches. If
 C current surface MLC index is known get isymindex for the other side
@@ -4117,7 +4123,7 @@ C be saved along with the changes in the initial surface.
             if(iissmlci.ne.0) ssmlcindex(ico)=iissmlci  ! update if known
             SSOTHER(ico,1)='ANOTHER'
             write(SSOTHER(ico,2),'(i2.2)') IC2(ico)
-            write(SSOTHER(ico,3),'(i2.2)') IE2(ico)
+            write(SSOTHER(ico,3),'(i3.3)') IE2(ico)
             showother=.true.  ! when re-display include info on matched
 
           else
@@ -4187,7 +4193,7 @@ C and display both zones.
 C Write ANOTHER followed by the indices of zone and surface.
               SSOTHER(ic,1)='ANOTHER'
               write(SSOTHER(ic,2),'(i2.2)') iz
-              write(SSOTHER(ic,3),'(i2.2)') iso
+              write(SSOTHER(ic,3),'(i3.3)') iso
               ICT(IC)=3; IC2(IC)=IZ; IE2(IC)=ISO
 
 C If applicable find other surface, return its connection number and
@@ -4203,7 +4209,7 @@ C point it to the current surface.
 
                 SSOTHER(ico,1)='ANOTHER'
                 write(SSOTHER(ICO,2),'(i2.2)') IC2(ICO)
-                write(SSOTHER(ICO,3),'(i2.2)') IE2(ICO)
+                write(SSOTHER(ICO,3),'(i3.3)') IE2(ICO)
 
 C Update information needed to display information on the other side
 C of this surface (i.e. if we went from unknown to a partition).
@@ -4339,9 +4345,9 @@ C the action make no changes and jump back to 13 (the menu creation code).
               if(ieri.eq.0)then
                 IC2(IC)=0; IE2(IC)=iie2
                 SOTHER(IS,1)='GROUND'; SOTHER(IS,2)='0'
-                write(SOTHER(IS,3),'(i2.2)')iie2
+                write(SOTHER(IS,3),'(i3.3)')iie2
                 SSOTHER(IC,1)='GROUND'; SSOTHER(IC,2)='0'
-                write(SSOTHER(IC,3),'(i2.2)')iie2
+                write(SSOTHER(IC,3),'(i3.3)')iie2
                 ICT(IC)=4
               elseif(ieri.eq.-3)then
                 goto 13
@@ -4395,10 +4401,10 @@ C action do not instanciate the data.
             IE2(IC)=Ifrac; IC2(IC)=IBS
             SOTHER(IS,1)='BASESIMP'
             write(SOTHER(IS,2),'(i2.2)')Ifrac
-            write(SOTHER(IS,3),'(i2.2)')IBS
+            write(SOTHER(IS,3),'(i3.3)')IBS
             SSOTHER(IC,1)='BASESIMP'
             write(SSOTHER(IC,2),'(i2.2)')Ifrac
-            write(SSOTHER(IC,3),'(i2.2)')IBS
+            write(SSOTHER(IC,3),'(i3.3)')IBS
             ICT(IC)=6
             showother=.false.
           elseif(ieri.eq.-3)then
@@ -4538,7 +4544,7 @@ C Check for cases where original surface elevation is floor or ceiling.
                 iz=ic1(iic3); iso=ie1(iic3) ! decode other zone and surf
                 SSOTHER(ic,1)='ANOTHER'
                 write(SSOTHER(ic,2),'(i2.2)') iz
-                write(SSOTHER(ic,3),'(i2.2)') iso
+                write(SSOTHER(ic,3),'(i3.3)') iso
                 ICT(IC)=3; IC2(IC)=IZ; IE2(IC)=ISO
                 updoth=.false.
               elseif(INVT.eq.2)then
@@ -4546,14 +4552,14 @@ C Check for cases where original surface elevation is floor or ceiling.
                 ico=iic3
                 SSOTHER(ic,1)='ANOTHER'
                 write(SSOTHER(ic,2),'(i2.2)') iz
-                write(SSOTHER(ic,3),'(i2.2)') iso
+                write(SSOTHER(ic,3),'(i3.3)') iso
                 ICT(IC)=3; IC2(IC)=IZ; IE2(IC)=ISO
                 IC1(ICO)=IZ; IE1(ICO)=ISO; ICT(ICO)=3
                 IC2(ICO)=IC1(IC); IE2(ICO)=IE1(IC)
 
                 SSOTHER(ico,1)='ANOTHER'
                 write(SSOTHER(ICO,2),'(i2.2)') IC2(ICO)
-                write(SSOTHER(ICO,3),'(i2.2)') IE2(ICO)
+                write(SSOTHER(ICO,3),'(i3.3)') IE2(ICO)
 
 C Update information needed to display information on the other side
 C of this surface (i.e. if we went from unknown to a partition).
@@ -4669,7 +4675,7 @@ C Assign new MLC name and connexion info to the icoth surface.
             if(iissmlci.ne.0) ssmlcindex(icoth)=iissmlci  ! update if known
             SSOTHER(icoth,1)='ANOTHER'
             write(SSOTHER(icoth,2),'(i2.2)') IC2(icoth)
-            write(SSOTHER(icoth,3),'(i2.2)') IE2(icoth)
+            write(SSOTHER(icoth,3),'(i3.3)') IE2(icoth)
 
             call eclose(gversion(IC2(IC)),1.1,0.01,newgeo)
             if(igupgrade.eq.2.and.(.NOT.newgeo))then
@@ -7062,7 +7068,7 @@ C If there are less than 6 surfaces write our their names.
           call edisp(itru,' ')
           call edisp(itru,'Surfaces which reference this vertex:')
           WRITE(outs,9993) (ISASSO(IH),IH=1,IHIT)
- 9993     FORMAT(10(I2,', '))
+ 9993     FORMAT(10(I3,', '))
           call edisp(itru,outs)
         endif
 
@@ -9041,7 +9047,7 @@ C Read the window dimension details and advise user (if IVA non-zero).
      &          'win width',IER)
               CALL EGETWR(OUTSTR,K,VALH(nbdef),0.,100.,'W',
      &          'win ht',IER)
-              write(outs,'(a,i2,a,f6.3,a,f6.3,a,f6.3,a,f6.3)') 
+              write(outs,'(a,i3,a,f6.3,a,f6.3,a,f6.3,a,f6.3)') 
      &          'Window for surface',ks,': X off ',VALX(nbdef),
      &          ' Z off ',VALZ(nbdef),' width ',VALW(nbdef),
      &          ' height ',VALH(nbdef) 
@@ -9075,7 +9081,7 @@ C Read default doors index (one per surface).
      &          'door width',IER)
               CALL EGETWR(OUTSTR,K,VALDH(nbdor),0.,100.,'W',
      &          'door ht',IER)
-              write(outs,'(a,i2,a,f6.3,a,f6.3,a,f6.3)') 
+              write(outs,'(a,i3,a,f6.3,a,f6.3,a,f6.3)') 
      &          'Door for surface',ks,': X off ',VALDX(nbdor),
      &          ' width ',VALDW(nbdor),
      &          ' height ',VALDH(nbdor) 
@@ -10127,34 +10133,42 @@ C been made.
 
       integer IZSTOCN  ! for each zone:surface a pointer to connection index.
       COMMON/C24/IZSTOCN(MCOM,MS)
+      integer IUOUT,IUIN
+      COMMON/OUTIN/IUOUT,IUIN
 
       logical MODGEO
+      character msg*42
 
 C Loop through each surface and detect whether orientation of
 C the surface has changed and needs to be recognised. 
       DO 41 I=1,NZSUR(icomp)
         ioc=IZSTOCN(icomp,i)
-        if(SSPELV(ioc).GE.-1.5.AND.SSPELV(ioc).LE.1.5)then
-          if(SVFC(I).NE.'VERT')then
-            MODGEO=.TRUE.
-            SVFC(I)='VERT'; SSVFC(ioc)='VERT'
-          endif
-        elseif(SSPELV(ioc).GE.88.5.AND.SSPELV(ioc).LE.91.5)then
-          if(SVFC(I).NE.'CEIL')then
-            SVFC(I)='CEIL'; SSVFC(ioc)='CEIL'
-            MODGEO=.TRUE.
-            izsceil(icomp)=I   ! identify as a ceiling
-          endif
-        elseif(SSPELV(ioc).GE.-91.5.AND.SSPELV(ioc).LE.-88.5)then
-          if(SVFC(I).NE.'FLOR')then
-            SVFC(I)='FLOR'; SSVFC(ioc)='FLOR'
-            MODGEO=.TRUE.
-            izsfloor(icomp)=I  ! identify as a floor
-          endif
-        else
-          if(SVFC(I).NE.'SLOP')then
-            SVFC(I)='SLOP'; SSVFC(ioc)='SLOP'
-            MODGEO=.TRUE.
+        if(ioc.le.1)then
+          write(msg,'(a,2i4)') 'No connection for zone surf',icomp,i
+          call edisp(iuout,msg)
+	else
+          if(SSPELV(ioc).GE.-1.5.AND.SSPELV(ioc).LE.1.5)then
+            if(SVFC(I).NE.'VERT')then
+              MODGEO=.TRUE.
+              SVFC(I)='VERT'; SSVFC(ioc)='VERT'
+            endif
+          elseif(SSPELV(ioc).GE.88.5.AND.SSPELV(ioc).LE.91.5)then
+            if(SVFC(I).NE.'CEIL')then
+              SVFC(I)='CEIL'; SSVFC(ioc)='CEIL'
+              MODGEO=.TRUE.
+              izsceil(icomp)=I   ! identify as a ceiling
+            endif
+          elseif(SSPELV(ioc).GE.-91.5.AND.SSPELV(ioc).LE.-88.5)then
+            if(SVFC(I).NE.'FLOR')then
+              SVFC(I)='FLOR'; SSVFC(ioc)='FLOR'
+              MODGEO=.TRUE.
+              izsfloor(icomp)=I  ! identify as a floor
+            endif
+          else
+            if(SVFC(I).NE.'SLOP')then
+              SVFC(I)='SLOP'; SSVFC(ioc)='SLOP'
+              MODGEO=.TRUE.
+            endif
           endif
         endif
    41 CONTINUE

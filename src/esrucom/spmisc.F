@@ -230,7 +230,7 @@ C Write out nodal information
         write(ispmfil,'(a,i3)') '# Node No:',isp
         write(ispmfil,'(a,a)') spmlabel(isp),' # label'
         write(ispmfil,'(a)')'# Zone Surf Node Type Opq/Trn'
-        write(ispmfil,'(2x,i2,2x,i2,2x,i2,2x,i2,2x,i2)')
+        write(ispmfil,'(2x,i2,1x,i3,2x,i2,2x,i2,2x,i2)')
      &  ispmloc(isp,1),ispmloc(isp,2),ispmloc(isp,3),
      &ispmtyp(isp,1),ispmtyp(isp,2)
  

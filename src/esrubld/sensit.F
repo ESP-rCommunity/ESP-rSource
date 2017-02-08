@@ -601,7 +601,7 @@ C Make specific header string for each change (to match urunvals)
                lnloc=lnblnk(LLOC(ICL))
                if(lncng.gt.18)lncng=18
                uhphrase=' '
-               write(uhphrase,'(4a,i2.2,a,i2.2)')LCNG(ICC)(1:lncng),':',
+               write(uhphrase,'(4a,i2.2,a,i3.3)')LCNG(ICC)(1:lncng),':',
      &           LLOC(ICL)(1:lnloc),':',IZ,':',IS
                luhphrase=lnblnk(uhphrase)
                write(36,'(a)') uhphrase
@@ -835,7 +835,7 @@ C Make specific header string for each change (to match urunvals)
             lnloc=lnblnk(LLOC(ICL))
             if(lncng.gt.18)lncng=18
             uhphrase=' '
-            write(uhphrase,'(4a,i2.2,a,i2.2)')LCNG(ICC)(1:lncng),':',
+            write(uhphrase,'(4a,i2.2,a,i3.3)')LCNG(ICC)(1:lncng),':',
      &        LLOC(ICL)(1:lnloc),':',IZ,':',IS
             luhphrase=lnblnk(uhphrase)
             write(36,'(a)') uhphrase
@@ -1453,7 +1453,7 @@ C Make specific header string for each change (to match urunvals)
             lnloc=lnblnk(LLOC(ICL))
             if(lncng.gt.18)lncng=18
             uhphrase=' '
-            write(uhphrase,'(4a,i2.2,a,i2.2)')LCNG(ICC)(1:lncng),':',
+            write(uhphrase,'(4a,i2.2,a,i3.3)')LCNG(ICC)(1:lncng),':',
      &        LLOC(ICL)(1:lnloc),':',IZ,':',IS
             luhphrase=lnblnk(uhphrase)
             write(36,'(a)') uhphrase
@@ -1489,7 +1489,7 @@ C Make specific header string for each change (to match urunvals)
               lnloc=lnblnk(LLOC(ICL))
               if(lncng.gt.18)lncng=18
               uhphrase=' '
-              write(uhphrase,'(4a,i2.2,a,i2.2)')LCNG(ICC)(1:lncng),':',
+              write(uhphrase,'(4a,i2.2,a,i3.3)')LCNG(ICC)(1:lncng),':',
      &          LLOC(ICL)(1:lnloc),':',IZ,':',IS
               luhphrase=lnblnk(uhphrase)
               write(36,'(a)') uhphrase

@@ -897,7 +897,7 @@ C Trace output.
         call edisp(icout,' ')
         call zsid(izone,itsur,ZSDES,ZSDESC,ZSDESS)
         lnzsn=lnblnk(zsdes)
-        write(outs,'(3a,i2,3a,i2,a,i1,a)')
+        write(outs,'(3a,i3,3a,i3,a,i1,a)')
      &    '*** DECOMP: Target surface ',zsdes(1:lnzsn),' (',itsur,
      &    ') obstruction ',
      &    blockname(izone,ibn)(1:lnblockname(izone,ibn)),' (',ibn,

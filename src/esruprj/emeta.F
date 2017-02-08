@@ -748,7 +748,7 @@ C Reset to represent UNKNOWN
           SOTHER(icc,1)='UNKNOWN'
         ENDIF
         write(SOTHER(icc,2),'(i2.2)') zboundarytype(icomp,icc,2)
-        write(SOTHER(icc,3),'(i2.2)') zboundarytype(icomp,icc,3)
+        write(SOTHER(icc,3),'(i3.3)') zboundarytype(icomp,icc,3)
 
 C Set connection based variables.
         SSNAME(iccc)=SNAME(icomp,icc)
@@ -920,7 +920,7 @@ C Reset to represent UNKNOWN
             ENDIF
             write(SOTHER(newsurf,2),'(i2.2)')
      &        zboundarytype(icomp,newsurf,2)
-            write(SOTHER(newsurf,3),'(i2.2)')
+            write(SOTHER(newsurf,3),'(i3.3)')
      &        zboundarytype(icomp,newsurf,3)
             SSOTHER(ibcs,1)=SOTHER(newsurf,1)
             SSOTHER(ibcs,2)=SOTHER(newsurf,2)

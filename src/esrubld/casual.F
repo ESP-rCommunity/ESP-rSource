@@ -1221,7 +1221,7 @@ C Display radiant contribution as Watts.
 C Output the electrical results for the zone
       if(ielf(icomp).gt.0) then
         call edisp(itu,' ')
-        write(outs,'(a,1x,i3,1x,i2)') ' Zone: ',icomp,ielf(icomp)
+        write(outs,'(a,1x,i3,1x,i3)') ' Zone: ',icomp,ielf(icomp)
         call edisp(itu,outs)
         write(outs,'(A,A)')' Electrical load summary for ',DSTR
         call edisp(itu,outs)
@@ -1937,7 +1937,7 @@ C Keep track of total windows in zone with nt. Exclude skylights.
               IF(close)THEN
                 IF((NVER(J).NE.4).and.(IDFST(ICOMP,N).ne.2))then
                   WRITE(ITU,843) zname(icomp),J
-  843             format('Zone ',A,'TMC surf ',I2,' not 4 vertices!')
+  843             format('Zone ',A,'TMC surf ',I3,' not 4 vertices!')
 
 C This would be a good place to calculate an alternative bounding box
 C for use in width/height calculations.
@@ -1968,7 +1968,7 @@ C and high WIDTH, HIGH:
                 ELSE
                   if(IDFST(ICOMP,N).ne.2)then
                     WRITE(ITU,842) zname(icomp),J
-  842             format('Zone ',A,'TMC',I2,' may not be rectangular!')
+  842             format('Zone ',A,'TMC',I3,' may not be rectangular!')
                   endif
                 ENDIF 
 
@@ -2093,7 +2093,7 @@ C glazing and get current visible transmission of glazing.
               ELSE
                 if(IDFST(ICOMP,N).ne.2)then
                   WRITE(ITU,844) zname(icomp),J
-  844         format('Zone ',A,'TMC',I2,'is not vertical-no dir illum!')
+  844         format('Zone ',A,'TMC',I3,'is not vertical-no dir illum!')
                 endif
                 suncon=0.
                 CALL DWINVT(ICOMP,J,V,RATIO)
@@ -2208,7 +2208,7 @@ C so the next timestep the user can edit the IES xforms file to match.
      &      'COUPLING ADJUSTMENT next timestep after:',btimef
           call edisp(iuout,outs)
           call edisp(6,outs)
-          WRITE(outs,'(a,i2,a,i1,a,F5.2)') 'In zone ',icomp,
+          WRITE(outs,'(a,i3,a,i1,a,F5.2)') 'In zone ',icomp,
      &      ' & light zone ',N,'edit xform for fixture faction to ',
      &      ZFRAC(N)
           call edisp(iuout,outs)

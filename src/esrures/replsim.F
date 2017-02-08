@@ -136,7 +136,7 @@ C if izver >=4 the zone operation file is not needed.
         else
           CALL EROPER(0,iuout,IUNIT,J,IER)  ! for older library versions
           if(ip3ver(J).eq.0)then
-            write(outs,'(a,i2,a)') 
+            write(outs,'(a,i3,a)') 
      &      'Operation file for zone ',J,' periods being sorted!'
             call edisp(iuout,outs)
             call PROCESSOLDCAS(J,0,iuout)
@@ -231,7 +231,7 @@ C Echo names of files for visual check.
       call edisp(iuout,outs)
 
       DO 10 I=1,NCOMP
-        write(outs,'(A,I2)') 'Files for ZONE ',I
+        write(outs,'(A,I3)') 'Files for ZONE ',I
         call edisp(iuout,outs)
         write(outs,86)LABELS(1),LPROJ(I)
         call edisp(iuout,outs)

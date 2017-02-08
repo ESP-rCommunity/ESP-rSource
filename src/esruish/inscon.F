@@ -583,7 +583,7 @@ C Refresh the view of the zone prior to display of the intersection points.
             CALL INLNST(1)
             nzg=1; nznog(1)=ICOMP; izgfoc=ICOMP
             CALL ADJVIEW(IER)
-            write(outs,'(3a,i2,a,i2,2a)') 'Direct insolation: ',
+            write(outs,'(3a,i2,a,i3,2a)') 'Direct insolation: ',
      &        month(mon),' @ ',j,':00, from surface ',isrc,' ',
      &        ssname(iccisrc)
             call usrmsg(' ',outs,'-')
@@ -917,7 +917,7 @@ C Increment irec to skip record holding pso & psof
 
  1000 write(outs,1001)irec,ihr,isur
  1001 format('INWSHD: Zone Transitional Shading file error, record',i6,
-     &       ', hour ',i3,' source ',i2)
+     &       ', hour ',i3,' source ',i3)
       call edisp(iuout,outs)
       return
       end
@@ -1216,7 +1216,7 @@ C if trace has been set.
       character outs*124,louts*244
       integer ilist ! to hold one row
       dimension ilist(mox)
-      write(icout,'(a,i2,a,i2,a)') 'IGINS: ',icomp,' hour ',ihr,
+      write(icout,'(a,i3,a,i2,a)') 'IGINS: ',icomp,' hour ',ihr,
      &  ' row  & column data....'
       do m=nox(icomp),1,-1
         do loop=1,noz(icomp)

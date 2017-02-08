@@ -3216,7 +3216,7 @@ C << then it could be automatically selected
           endif
           do 189 kk=1,nzsur(loop)
             if(ISURTMEAS(loop,kk).ne.0)then
-              write(outs,'(3a,i2)') 'measured surf T in ',
+              write(outs,'(3a,i3)') 'measured surf T in ',
      &          ZNAME(loop)(1:lnzname(loop)),' surf ',kk
               call edisp(iuout,outs)
             endif

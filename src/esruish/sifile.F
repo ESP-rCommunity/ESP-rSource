@@ -200,7 +200,7 @@ C Return after advising user.
  1003 call edisp(iuout,' ')
       call edisp(iuout,
      &   'Zone Shading & Insolation db mismatch with current model.')
-      write(outs,'(a,i2,a,i2,a,i2)') 'Model NSUR = ',nzsur(icomp),
+      write(outs,'(a,i3,a,i3,a,i3)') 'Model NSUR = ',nzsur(icomp),
      &   ' db NSUR = ',ns,' db last record = ',inext
       call edisp(iuout,outs)
       return
@@ -435,14 +435,14 @@ C for yes).
             if(ntmc(i).eq.0.or.(ishdt.eq.0.or.ishdt.eq.1))then
                if(multi.eq.1)new=1
                if(paction(1:13).ne.'update_silent')then
-                  write(outs,'(3a,i2)')
+                  write(outs,'(3a,i3)')
      &                          'Adding db entry for ',month(mon),
      &                          ', insolation source surface ',i
                   call edisp(iuout,outs)
                endif
             else
                if(paction(1:13).ne.'update_silent')then
-                  write(outs,'(3a,i2)')
+                  write(outs,'(3a,i3)')
      &                          'Replacing db entry for ',month(mon),
      &                          ', insolation source surface ',i
                   call edisp(iuout,outs)

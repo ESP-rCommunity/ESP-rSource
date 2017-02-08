@@ -90,7 +90,7 @@ C Skip the 1D zones.
         ier=0
         CALL EFOPRAN(ICNC,L3DCNC(ICOMP),7,1,IER)
         IF(PATH.EQ.'./'.OR.PATH.EQ.' ')THEN
-          WRITE(MSG,'(2A,I2,A)')'Do you want the associated 3D files ',
+          WRITE(MSG,'(2A,I3,A)')'Do you want the associated 3D files ',
      &                         'for zone (',ICOMP,') to be re-ordered?'
           dok=.true.
           helptopic='re-order_3d_files'
@@ -122,7 +122,7 @@ C Create the nodes distribution file.
 
 C End of file reached.
         IF(ISTAT.LT.0)THEN
-          WRITE(MSG,'(A,I2,A)')' Control volumes file for zone (',
+          WRITE(MSG,'(A,I3,A)')' Control volumes file for zone (',
      &                         ICOMP,') read successfully.'
           CALL EDISP(IUOUT,MSG)
           CALL ERPFREE(ICVS,ISTAT)
@@ -190,7 +190,7 @@ C Open the 3D temporary file.
 
 C End of file reached.
         IF(ISTAT.LT.0)THEN
-          WRITE(MSG,'(A,I2,A)')' Connections file for zone (',ICOMP,
+          WRITE(MSG,'(A,I3,A)')' Connections file for zone (',ICOMP,
      &                         ') read successfully.'
           CALL EDISP(IUOUT,MSG)
           DO 60 IS=1,NCONST(ICOMP)

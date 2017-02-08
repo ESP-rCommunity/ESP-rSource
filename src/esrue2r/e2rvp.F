@@ -951,9 +951,9 @@ C If an existing view then just update, if a new view then
 C extend the list and the view command. If viewed point is
 C near origin can use shorter format.
         if(rvpx.lt.99.0.and.rvpy.lt.99.0.and.rvpz.lt.99.0)then
-	  short=.true.
+          short=.true.
         else
-	  short=.false.
+          short=.false.
         endif
         call eclose(cutfor,0.0,0.1,okfore)
         call eclose(cutaft,0.0,0.1,okaft)

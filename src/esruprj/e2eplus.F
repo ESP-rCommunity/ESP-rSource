@@ -1922,7 +1922,7 @@ C as opaque.
               continue    ! surface is a true child so process
             else
               SSPARENT(icc)=' '
-              write(outs,'(3a,i2,a)') 'Skipping surface ',
+              write(outs,'(3a)') 'Skipping surface ',
      &          ZSDES(1:lnblnk(ZSDES)),
      &          ' is transparent and is NOT in a child location.'
               WRITE(ioout,'(a)') ' '
@@ -1935,7 +1935,7 @@ C If ESP-r thinks there is no parent confirm with user.
             if(SSPARENT(icc)(1:2).eq.'  '.or.
      &         SSPARENT(icc)(1:2).eq.'- ')then
               call zsid(mz,is,ZSDES,ZSDESC,ZSDESS)
-              write(outs,'(3a,i2,a)')'Surface ',ZSDES(1:lnblnk(ZSDES)),
+              write(outs,'(3a)')'Surface ',ZSDES(1:lnblnk(ZSDES)),
      &          ' is transparent without parent surface.'
               call edisp(iuout,outs)
               dok=.false.
@@ -1953,7 +1953,7 @@ C If ESP-r thinks there is no parent confirm with user.
                   SSPARENT(icc)=ssname(ibinval)
                 else
                   SSPARENT(icc)=' '
-                  write(outs,'(3a,i2,a)') 'Skipping surface ',
+                  write(outs,'(3a)') 'Skipping surface ',
      &              ZSDES(1:lnblnk(ZSDES)),
      &              ' which is transparent WITHOUT a parent.'
                   WRITE(ioout,'(a)') ' '
@@ -1963,7 +1963,7 @@ C If ESP-r thinks there is no parent confirm with user.
                 endif
               else
                 SSPARENT(icc)=' '
-                write(outs,'(3a,i2,a)') 'Skipping surface ',
+                write(outs,'(3a)') 'Skipping surface ',
      &            ZSDES(1:lnblnk(ZSDES)),
      &            ' which is transparent WITHOUT a parent.'
                 WRITE(ioout,'(a)') ' '

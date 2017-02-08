@@ -685,7 +685,7 @@ C     &      ICGUnit(IDTY,I)
           ! error message and stop.
             if ( .not. bBC_data_defined ) then
               ! Display error message and stop.
-              write(outs,'(a,I2, a)') 
+              write(outs,'(a,I3, a)') 
      &         ' Error: Operations file for zone ',
      &         icomp, ' expects BC data file which does not exist.'
               call edisp(iuout,outs)

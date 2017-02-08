@@ -565,8 +565,11 @@ C Loop first through any demand sets and then loop through any metrics.
             if(nzedg(ij).le.9)then
               write(outsn,'(2a,i1)')zedsdoc(ij)(1:lnblnk(zedsdoc(ij))),
      &          tab,nzedg(ij)
-            else
+            elseif(nzedg(ij).gt.9.and.nzedg(ij).lt.99)then
               write(outsn,'(2a,i2)')zedsdoc(ij)(1:lnblnk(zedsdoc(ij))),
+     &          tab,nzedg(ij)
+            else
+              write(outsn,'(2a,i3)')zedsdoc(ij)(1:lnblnk(zedsdoc(ij))),
      &          tab,nzedg(ij)
             endif
 
