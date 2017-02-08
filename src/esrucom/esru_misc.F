@@ -62,6 +62,7 @@ C discovercfg: Provides a list of model cfg files within a passed folder
 C              and allows user to select passing back full path & name.
 C FDPWDTOCFG: Figures out the path between where an application was started
 C             and the model cfg folder (pwdtocfg).
+C dintervalf: A fortran implementation of the c surboutine dinterval.
 
 
 C ************* CLRPRB
@@ -934,7 +935,7 @@ C Show control related images (assumes that control has already been scanned).
           nh=1
           if(ncf.gt.0)then
             nh=nh+1
-            write(h(nh),'(3a,i2,a)')' Zones - ',znctldoc(1:45),
+            write(h(nh),'(3a,i3,a)')' Zones - ',znctldoc(1:45),
      &      '(',ncf,' loops)'
           endif
           if(ncl.gt.0)then
@@ -1613,7 +1614,7 @@ C because it might influence use of view factors in bps.
           fr=fr+VEWF(i,j)
 461     CONTINUE
         WRITE(IUF,4060)i,fr
-4060    FORMAT(' sum over row ',i2,' is : ',F14.10)
+4060    FORMAT(' sum over row ',i3,' is : ',F14.10)
 462   CONTINUE
 
 C If there are any cubes the save this information as well.
@@ -3781,29 +3782,32 @@ C current menu line index. Build up text strings for the menu.
           M=M+1
           CALL EMKEY(L,KEY,IER)
           icc=IZSTOCN(izone,L)
-          lnsmlcn=lnblnk(SSMLCN(icc))
-          if(lnsmlcn.gt.16) lnsmlcn=16
-          if(MOD.eq.'-')then
-            WRITE(VERT(M),14)KEY,SSNAME(icc),SSMLCN(icc)(1:lnsmlcn)
-   14       FORMAT(A1,1X,A,1X,A)
+          if(icc.lt.1)then
+            continue
           else
-
-C << consider writing out different info depending on what SSOTHER is >>
-            if(icc.gt.0)then
-              lnn=lnblnk(SSNAME(icc))
-              lnsmlcn=lnblnk(SSMLCN(icc))
-              lnoth=lnblnk(SSOTHER(icc,1))
-              if((lnn+lnsmlcn+lnoth).lt.37)then
-                WRITE(VERTS(M),13)KEY,SSNAME(icc)(1:lnn),
-     &            SSMLCN(icc)(1:lnsmlcn),SSOTHER(icc,1)(1:lnoth)
-              else
-                WRITE(VERTS(M),13)KEY,SSNAME(icc)(1:lnn),
-     &            SSMLCN(icc)(1:16),SSOTHER(icc,1)(1:lnoth)
-              endif
-   13         FORMAT(A,2X,A,2X,A,2X,A)
-            else
-              WRITE(VERTS(M),'(2a)')KEY,' unresolved surface...'
+            lnsmlcn=lnblnk(SSMLCN(icc))
+            if(lnsmlcn.gt.16) lnsmlcn=16
+            if(MOD.eq.'-')then
+              WRITE(VERT(M),14)KEY,SSNAME(icc),SSMLCN(icc)(1:lnsmlcn)
+   14         FORMAT(A1,1X,A,1X,A)
             endif
+          endif
+   
+C << consider writing out different info depending on what SSOTHER is >>
+          if(icc.gt.0)then
+            lnn=lnblnk(SSNAME(icc))
+            lnsmlcn=lnblnk(SSMLCN(icc))
+            lnoth=lnblnk(SSOTHER(icc,1))
+            if((lnn+lnsmlcn+lnoth).lt.37)then
+              WRITE(VERTS(M),13)KEY,SSNAME(icc)(1:lnn),
+     &          SSMLCN(icc)(1:lnsmlcn),SSOTHER(icc,1)(1:lnoth)
+            else
+              WRITE(VERTS(M),13)KEY,SSNAME(icc)(1:lnn),
+     &          SSMLCN(icc)(1:16),SSOTHER(icc,1)(1:lnoth)
+            endif
+   13       FORMAT(A,2X,A,2X,A,2X,A)
+          else
+            WRITE(VERTS(M),'(2a)')KEY,' unresolved surface...'
           endif
         ENDIF
    10 CONTINUE
@@ -4248,7 +4252,7 @@ C Similar to code ZLIST in esrures/utils.F.
         return
       else
         if(inlist.eq.1)then
-         WRITE(ZDESCR,'(A,I2,2A)')' Zone (',list(1),') ',zname(list(1))
+         WRITE(ZDESCR,'(A,I3,2A)')' Zone (',list(1),') ',zname(list(1))
         elseif(inlist.gt.1)THEN
 
 C If full names will not fit in zdescr then write out indices only.
@@ -4550,3 +4554,59 @@ C *********************************************************************
       CALL AIM2_DEALLOCATE
       
       END SUBROUTINE DeallocateAllArrays
+
+
+C A fortran implementation of the c surboutine dinterval.
+      subroutine dintervalf(v1,v2,dv,ndec,mode)
+      real v1,v2,dv
+      integer ndec,mode
+C When 'mode'=1 the hour interval on the graphical time (x-axis) is
+C set as follow:
+C v=v2-v1 for v < 12 dv=1, v < 18 dv=2, v < 24 dv=3
+C             v < 48 dv=6, v < 96 dv=12 else dv=24.
+C Should be the same logic as in esru_x.c.
+      real v,dvv,x,w
+      integer ix
+      if(mode.eq.0)then
+        vv = v2 - v1
+        v = abs(vv)
+        x = log10(v)
+        ix = nint(x)
+        if (x.lt.0.0) ix=ix-2
+        dx = real(ix)
+
+        dz = 10.0**dx
+        vr =  v / dz
+        w = 10.0
+        if (vr.lt.5.0) w = 5.0
+        if (vr.lt.2.0) w = 2.0
+
+        dvv = w * 0.1 * dz
+        if (vv.lt.0.0) dvv = -dvv
+
+        nd = 1 - ix
+        if (w.eq.10.0)then
+          nd=nd-1
+        elseif (w.eq.5.0)then
+          nd = 1
+        elseif (w.eq.2.0)then
+          nd = 2
+        endif
+        if (nd.lt.0) nd = 0
+      else
+        v = v2 - v1
+        dvv = 168.0
+        if (v.lt.4320.0) dvv = 48.0
+        if (v.lt.1440.0) dvv = 24.0
+        if (v.lt.338.0) dvv = 12.0
+        if (v.lt.122.0) dvv = 8.0
+        if (v.lt.50.0) dvv = 4.0
+        if (v.lt.26.0) dvv = 3.0
+        if (v.lt.20.0) dvv = 2.0
+        if (v.lt.14.0) dvv = 1.0
+        nd = 0
+      endif
+      dv = dvv
+      ndec = nd
+      return
+      end

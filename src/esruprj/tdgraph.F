@@ -401,7 +401,7 @@ C    ......
       igheight=igwh
       call axiscale(igwid,igheight,XMIN,XMAX,YMIN,YMAX,xsc,ysc,sca,
      &   Xadd,Yadd)
-      CALL dinterval(XMIN,XMAX,ddy1,ny,1)
+      CALL dintervalf(XMIN,XMAX,ddy1,ny,1)
 
 C Try axis of hours.
       iind=1

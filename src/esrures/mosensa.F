@@ -892,7 +892,8 @@ C Calculate overall standard deviation and display depending on IFMT.
           iicol=0
           call winscl('-',iicol)  ! ensure axis drawn in black
         endif
-        call dinterval(TMIN,TMAX+1.,DT,NDEC,1)
+C        call dinterval(TMIN,TMAX+1.,DT,NDEC,1)
+        call dintervalf(TMIN,TMAX+1.,DT,NDEC,1)
         IY1=1
         igwid=igw
         igheight=igwh

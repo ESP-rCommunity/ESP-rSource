@@ -499,7 +499,8 @@ C draw vertical axis.
             iicol=0
             call winscl('-',iicol)  ! ensure axis drawn in black
           endif
-          call dinterval(TSTART-1.0,TFINSH,DT,NDEC,1)
+C          call dinterval(TSTART-1.0,TFINSH,DT,NDEC,1)
+          call dintervalf(TSTART-1.0,TFINSH,DT,NDEC,1)
           igwid=igw
           igheight=igwh
           iigx=int(igx(I))
@@ -1360,7 +1361,7 @@ C no horizontal plot,
          ipos=3
          isize=0
          IF(NZ.GT.1)THEN        
-           write(BLAB,'(A2,I2,A8)')'zn',IZONE,LABEL
+           write(BLAB,'(A2,I3.3,A8)')'zn',IZONE,LABEL
            call etlabel(BLAB,TFINSH,XVAL1(L),ipos,isize)
          ELSE
            call etlabel(LABEL,TFINSH,XVAL1(L),ipos,isize)

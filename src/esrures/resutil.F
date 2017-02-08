@@ -320,7 +320,8 @@ C              write(6,*) 'New    ',YMIN(I)
 
 C Set-up frequency of labels (DT), number of decimal places (NDEC) and 
 C draw vertical axis.
-          call dinterval(TSTART,TFINISH,DT,NDEC,1)
+C          call dinterval(TSTART,TFINISH,DT,NDEC,1)
+          call dintervalf(TSTART,TFINISH,DT,NDEC,1)
           igwid=igw
           igheight=igwh
           call axiscale(igwid,igheight,TSTART,TFINISH,YMIN(I),YMAX(I),

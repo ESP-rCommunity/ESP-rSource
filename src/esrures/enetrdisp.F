@@ -368,7 +368,7 @@ C Set-up frequency of labels (DT), number of decimal places (NDEC) and
 C draw vertical axis.
             GMIN=YMIN(I)
             GMAX=YMAX(I)
-            CALL DINTERVAL(XSTRT,XFIN,DT,NDEC,1)
+            CALL DINTERVALF(XSTRT,XFIN,DT,NDEC,1)
             igwid=igw
             igheight=igwh
             call axiscale(igwid,igheight,XSTRT,XFIN,GMIN,GMAX,

@@ -954,7 +954,7 @@ C Debug.
 C      write(6,*)'dcaxes igl igr igt igb igw igwh onleft onright ',
 C     &  igl,igr,igt,igb,igw,igwh,onleft,onright,' ',acthor
 
-      call dinterval(TMIN,TMAX,DT,NDEC,1)
+      call dintervalf(TMIN,TMAX,DT,NDEC,1)
       if(acthor.eq.'-')then
         call horaxis(TMIN,TMAX,iigl,iigr,iigb,Xadd,XSC,1,
      &    'Time (hours)')
@@ -1309,7 +1309,7 @@ C Stuff this into static memory.
      &              Xaddd,Yaddd)
       call linescale(iigl,Xaddd,XSC,iigb,Yaddd,YSC)
 
-      call dinterval(TMIN,TMAX,DX,NDEC,1)
+      call dintervalf(TMIN,TMAX,DX,NDEC,1)
       call horaxis(TMIN,TMAX,iigl,iigr,iigb,Xaddd,XSC,0,'Time (hrs)')
 
 

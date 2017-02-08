@@ -842,7 +842,7 @@ C Setup and pass in parameters to win3d.
       call vrtaxis(YMIN,YMAX,iigl,iigb,iigt,Yadd,ysc,0,0,'Percent')
 
 C Pick up the data increment for the horizontal axis.
-      call dinterval(0.,24.,DT,NDEC,1)
+      call dintervalf(0.,24.,DT,NDEC,1)
 
 C Print header
       WRITE(etext,16)IPRO,PDBDESC(IPRO)
