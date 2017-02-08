@@ -664,11 +664,13 @@ c Equation 2 in Air-source heat pump by Haddad
            
       elseif ( iHeatPumpType(iSys) == iASHP_GasHP_a ) then 
 
-C This is a hard-coded Performance curve for a Cold-climate ASHP 
-C inferred from manufactuer's literature. It assumes the COP 
-C varies linerally between 3.19 (at 15oC) and 1.4 (at -25 oC). 
-C This configuration was used in the original NRCan ANZEH optimiation
-C work. 
+C This is a hard-coded Performance curve for a gas-fired heat pump, 
+C based on correlations developed by ORNL and Stone Mountain Technolgies:
+C
+C   Goeghegan et al, 2016; "Regional climate zone modelling of a 
+C   commerical absorption heat pump water heater", 
+C   16th International Refrigeration and Air Conditioning 
+C   Conference at Purdue, July 11-14, 2016
       
         tReturn = 34.4  
       

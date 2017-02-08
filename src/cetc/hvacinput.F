@@ -1589,7 +1589,7 @@ c For a Typical unit
         chp(isys) =  -0.105267
         dhp(isys) =  0.0151403       
        
-c For a Good unit. Assume current crop of CCASHP units are 'good'.
+c For a gas HP unit .
       elseif ( isys_type(isys).eq.7 .or. 
      &        isys_type(isys).eq.8 .or. 
      &        isys_type(isys).eq.9               
