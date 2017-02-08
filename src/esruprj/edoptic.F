@@ -214,7 +214,7 @@ C Produce help text for both types of import.
      &    'Add','Delete','Copy','Ignore',' ',IOW,nbhelp)
         if(IOW.eq.1)then
 
-C Import (from Window 5.1, 5.2, v6.x ).
+C Import (from Window 5.1, 5.2, v6.x v7.x).
           call OPT2TMP(ier)
           iwin4=IPRODB
           call IMPOPT(iwin4,IER)
@@ -1399,6 +1399,8 @@ C << also scan for `Pane` `Gap` `Shading` in these lines.
         nl=5
       elseif(outstr(1:11).eq.' layer 6 is')then
         nl=6
+      elseif(outstr(1:11).eq.' layer 7 is')then
+        nl=7
       elseif(outstr(1:4).eq.'prop')then
         if(ND.eq.12)then
           call edisp(iuout,'Angles 0->90 @10deg + diffuse')
@@ -1585,15 +1587,33 @@ C actual data seems to start at column 38 (and after a :)
         continue  ! already used
       elseif(outstr(1:11).eq.' layer 6 is')then
         continue  ! already used
+      elseif(outstr(1:11).eq.' layer 7 is')then
+        continue  ! already used
       elseif(outstr(1:27).eq.' --- Detailed Thermal Solar')then
         continue  ! not yet used
       elseif(outstr(1:12).eq.'abs x      :')then
         continue  ! not yet used
       elseif(outstr(1:12).eq.'t_sol      :')then
         continue  ! not yet used
+      elseif(outstr(1:9).eq.'t_sol_o_d')then
+        continue  ! not yet used
+      elseif(outstr(1:9).eq.'t_sol_o_t')then
+        continue  ! not yet used
+      elseif(outstr(1:9).eq.'t_sol_i_d')then
+        continue  ! not yet used
+      elseif(outstr(1:9).eq.'t_sol_i_t')then
+        continue  ! not yet used
       elseif(outstr(1:12).eq.'r_sol_o    :')then
         continue  ! not yet used
+      elseif(outstr(1:9).eq.'r_sol_o_d')then
+        continue  ! not yet used
+      elseif(outstr(1:9).eq.'r_sol_o_t')then
+        continue  ! not yet used
       elseif(outstr(1:12).eq.'r_sol_i    :')then
+        continue  ! not yet used
+      elseif(outstr(1:9).eq.'r_sol_i_d')then
+        continue  ! not yet used
+      elseif(outstr(1:9).eq.'r_sol_i_t')then
         continue  ! not yet used
       elseif(outstr(1:12).eq.'t_vis      :')then
         continue  ! not yet used
