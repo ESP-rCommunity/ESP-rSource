@@ -34,6 +34,7 @@ C espriou.h provides current file.
       COMMON/OUTIN/IUOUT,IUIN
 
       character OUTSTR*148,WORD*20,rviewf*72,outs*148
+      character LOUTSTR*248
       character tfile*72
       logical usevtl,usevtv
 
@@ -51,53 +52,53 @@ C View values read into the radv common block.
       endif
       write(currentfile,'(a)') tfile(1:lnblnk(tfile))
 
-      CALL LSTRIPC(ITA2,OUTSTR,99,ND,1,'view line',IER)
+      CALL LSTRIPC(ITA2,LOUTSTR,99,ND,1,'view line',IER)
       IF(IER.eq.2)ier=0
       K=0
-      CALL EGETW(OUTSTR,K,WORD,'W','rview',IFLAG)
+      CALL EGETW(LOUTSTR,K,WORD,'W','rview',IFLAG)
       IF(IFLAG.ne.0)goto 43
 
 C Older external view files start with rview and newer files start
 C with rvu.
       if(word(1:5).eq.'rview'.or.
      &   word(1:3).eq.'rvu'.or.word(1:4).eq.'VIEW')then
-  42    CALL EGETW(OUTSTR,K,WORD,'-','command',IFLAG)
+  42    CALL EGETW(LOUTSTR,K,WORD,'-','command',IFLAG)
         IF(IFLAG.ne.0)goto 43
         if(word(1:3).eq.'-vp')then
-          CALL EGETWR(OUTSTR,K,rvpx,0.,0.,'-','X view pt',IER)
-          CALL EGETWR(OUTSTR,K,rvpy,0.,0.,'-','Y view pt',IER)
-          CALL EGETWR(OUTSTR,K,rvpz,0.,0.,'-','Z view pt',IER)
+          CALL EGETWR(LOUTSTR,K,rvpx,0.,0.,'-','X view pt',IER)
+          CALL EGETWR(LOUTSTR,K,rvpy,0.,0.,'-','Y view pt',IER)
+          CALL EGETWR(LOUTSTR,K,rvpz,0.,0.,'-','Z view pt',IER)
           IF(IER.ne.0)goto 43
         elseif(word(1:3).eq.'-vd')then
-          CALL EGETWR(OUTSTR,K,vdx,0.,0.,'-','X view vec',IER)
-          CALL EGETWR(OUTSTR,K,vdy,0.,0.,'-','Y view vec',IER)
-          CALL EGETWR(OUTSTR,K,vdz,0.,0.,'-','Z view vec',IER)
+          CALL EGETWR(LOUTSTR,K,vdx,0.,0.,'-','X view vec',IER)
+          CALL EGETWR(LOUTSTR,K,vdy,0.,0.,'-','Y view vec',IER)
+          CALL EGETWR(LOUTSTR,K,vdz,0.,0.,'-','Z view vec',IER)
           if(vdz.lt.(-2.0)) vdz= -1.0
           IF(IER.ne.0)goto 43
         elseif(word(1:3).eq.'-vu')then
-          CALL EGETWR(OUTSTR,K,vux,0.,0.,'-','vu x',IER)
-          CALL EGETWR(OUTSTR,K,vuy,0.,0.,'-','vu y',IER)
-          CALL EGETWR(OUTSTR,K,vuz,0.,0.,'-','vu z',IER)
+          CALL EGETWR(LOUTSTR,K,vux,0.,0.,'-','vu x',IER)
+          CALL EGETWR(LOUTSTR,K,vuy,0.,0.,'-','vu y',IER)
+          CALL EGETWR(LOUTSTR,K,vuz,0.,0.,'-','vu z',IER)
           IF(IFLAG.ne.0)goto 43
         elseif(word(1:3).eq.'-vh')then
-          CALL EGETWR(OUTSTR,K,angh,0.,0.,'-','horiz ang',IER)
+          CALL EGETWR(LOUTSTR,K,angh,0.,0.,'-','horiz ang',IER)
           IF(IER.ne.0)goto 43
         elseif(word(1:3).eq.'-vv')then
-          CALL EGETWR(OUTSTR,K,angv,0.,0.,'-','vert ang',IER)
+          CALL EGETWR(LOUTSTR,K,angv,0.,0.,'-','vert ang',IER)
           IF(IER.ne.0)goto 43
         elseif(word(1:3).eq.'-vs')then
-          CALL EGETWR(OUTSTR,K,vs,0.,0.,'-','skip vl',IER)
+          CALL EGETWR(LOUTSTR,K,vs,0.,0.,'-','skip vl',IER)
           IF(IER.ne.0)goto 43
         elseif(word(1:4).eq.'-vtv')then
           usevtv=.true.
         elseif(word(1:3).eq.'-vo')then
-          CALL EGETWR(OUTSTR,K,cutfor,0.,0.,'-','cut front',IER)
+          CALL EGETWR(LOUTSTR,K,cutfor,0.,0.,'-','cut front',IER)
           IF(IER.ne.0)goto 43
         elseif(word(1:3).eq.'-va')then
-          CALL EGETWR(OUTSTR,K,cutaft,0.,0.,'-','cut aft',IER)
+          CALL EGETWR(LOUTSTR,K,cutaft,0.,0.,'-','cut aft',IER)
           IF(IER.ne.0)goto 43
         elseif(word(1:3).eq.'-vl')then
-          CALL EGETWR(OUTSTR,K,vl,0.,0.,'-','skip vl',IER)
+          CALL EGETWR(LOUTSTR,K,vl,0.,0.,'-','skip vl',IER)
           IF(IER.ne.0)goto 43
         elseif(word(1:4).eq.'-vtl')then
           usevtl=.true.
