@@ -219,8 +219,15 @@ C Continue and run radiance simulation?
       dok=.true.
       helptopic='e2r_proceed_with_sim'
       call gethelptext(helpinsub,helptopic,nbhelp)
-      call ASKOK('Scene description is now complete.',
+      if (SCENEPURP(ISCENE)(1:5).eq.'Glare') then
+        CALL USRMSG(
+     &  'Glare scene description is now complete. You will need to',
+     &  'redefine the eye point directives before simulating.','W')
+        ok=.false.
+      else
+        call ASKOK('Scene description is now complete.',
      &           'Proceed with simulation?',OK,dok,nbhelp)
+      endif
       if (OK) then
         if (SCENEPURP(ISCENE)(1:8).eq.'External'.or.
      &      SCENEPURP(ISCENE)(1:8).eq.'Internal'.or.
@@ -231,8 +238,8 @@ C Generate default view information and then the image.
           call genimage(1)
         elseif (SCENEPURP(ISCENE)(1:5).eq.'Glare') then
 
-C Generate <<? default view information ?>> and then the image.
-          call defview
+C Generate the glare image assuming the user has set viewpoints.
+C          call defview
           call genimage(2)
           call getglr
           call dispimage(2)
@@ -1582,6 +1589,14 @@ C Debug/trace.
         write(icout,*) doit(1:lnblnk(doit))
       endif
       call runit(doit,'-')
+      
+C Now display glare sources on image.
+      write(doit,'(7a)') 'cd ',runpath(1:lnrp),
+     &  '; xglaresrc ',pf(1:lnblnk(pf)),' ',gf(1:lnblnk(gf)),' &'
+      call runit(doit,'-')
+      call usrmsg(
+     &  'The glare sources are shown via circles & intensity values.',
+     &  'Click when done. More glare info via view visu results','W')
 
       return
       end

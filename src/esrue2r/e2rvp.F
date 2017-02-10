@@ -665,8 +665,22 @@ C << implemented in GTK? >>
             CALL trackview(iik,iix,iiy)
 
 C Transform back from mouse position to actual coordinate.
-            ex=((FLOAT(iix-igl)/sca)-Xadd)
-            ey=((FLOAT(igb-iiy)/sca)-Yadd)
+C Note: the coordinate is an offset from the lower left corner
+C of the zone plan display and for zones which do not start at
+C the site origin we need to add in offsets.
+            if(ITPPSW.eq.0)then
+              ex=((FLOAT(iix-igl)/sca)-Xadd)+XMN
+              ey=((FLOAT(igb-iiy)/sca)-Yadd)+YMN
+            elseif(ITPPSW.eq.1)then
+              ex=((FLOAT(iix-igl)/sca)-Xadd)+XMN
+              ey=((FLOAT(igb-iiy)/sca)-Yadd)+ZMN
+            elseif(ITPPSW.eq.2)then
+              ex=((FLOAT(iix-igl)/sca)-Xadd)+YMN
+              ey=((FLOAT(igb-iiy)/sca)-Yadd)+ZMN
+            elseif(ITPPSW.eq.3)then
+              ex=((FLOAT(iix-igl)/sca)-Xadd)+XMN
+              ey=((FLOAT(igb-iiy)/sca)-Yadd)+YMN
+            endif
             iupdown=0; isym=6
             call etplot(ex,ey,iupdown,isym)
             call forceflush()

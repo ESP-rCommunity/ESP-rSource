@@ -418,7 +418,9 @@
 ' Internal image - assumes a viewpoint within one of the zones'
 '   in the model.'
 ' Glare - assumes a viewpoint within a zone and sets parameters'
-'   and uses Radiance facilities for glare.'
+'   and uses Radiance facilities for glare. Remember to set'
+'   viewing parameters consisitent with this task (wide angle'
+'   and horizontal).'
 ' Daylight factors - focused on a zone of the model and a grid'
 '   of points in the room and calculates daylight factors based'
 '   on a standard overcast sky.'
@@ -525,6 +527,12 @@
 'answering yes. If you say no you can start the simulation'
 'later. Note the simulation can take several minutes, if '
 'hours to complete. '
+'  '
+'If the scene purpose is a glare study the literature suggests that'
+'the view directives should be close to a wide-angle view - say 120'
+'to 170 degrees vertically and horizontally and that the elevation'
+'of the view is horizontal. There are several steps to the glare'
+'process so watch the process in the command window.'
 *enditem
       call ASKOK('Scene description is now complete.',
 *subroutine settime
