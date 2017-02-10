@@ -3,9 +3,10 @@ C parameter values.
 C 72 zone 62 surface version 12.08 updated
 C 82 zone 62 surface version 08.2011 updated
 C 82 zone 80 surface version 10.2011 updated
-C 82 zone 96 surface version 02.2016 updated
 C 3300 surfaces for MCON 3.2012 updated
 C 8 air gaps MGP and 16 layers ME 7.2012 updated
+C 82 zone 90 surface version 02.2017 updated - supports all exemplars
+C and thus is considered the default.
 
 C Type declarations.
       integer MCOM,MCON,MTV,MV,ME,MGP,MN,MP,MDY,MT,MA,MC,MBP,MTMS
@@ -23,7 +24,7 @@ C Type declarations.
 
 C Geometry.
       PARAMETER (MCOM=82)      !- Zones.
-      PARAMETER (MS=96)        !- Surfaces/zone (set MNSBZ in cfd.h to at least 2*MS).
+      PARAMETER (MS=90)        !- Surfaces/zone (set MNSBZ in cfd.h to at least 2*MS).
       PARAMETER (MCON=3300)    !- Surfaces in model.
       PARAMETER (MTV=300)      !- Vertices/zone.
       PARAMETER (MV=42)        !- Vertices/surface.
@@ -114,10 +115,10 @@ C      PARAMETER (MNRS=2**MNFA)  !- Result sets (set to 100 for sensitivity anal
       PARAMETER (MNRS=100)      !- Result sets (set to 100 for sensitivity analysis).
       PARAMETER (MIPVA=MSPS)    !- IPV assessments.
       PARAMETER (MIPVM=12)      !- IPV metrics.
-      PARAMETER (MZS=96)        !- Number of items to report in res (biggest of MCOM or MS).
+      PARAMETER (MZS=90)        !- Number of items to report in res (biggest of MCOM or MS).
       PARAMETER (MZRL=MS+12)    !- Fields in a zone results library record. It should
-                                !  be largest of (36 for file names or MCON for zones
-                                !  or MS + 12 or MGP * 5). See reslib.F for logic.
+                                !  be largest of (40 for file names or MCON+12 for zones
+                                !  or MS+12 or MGP * 5). See reslib.F for logic.
 C Mathematical model.
       PARAMETER (MEQ=MS+1)      !- Equations.
       PARAMETER (MTR=MS+4)      !- Equation terms.
