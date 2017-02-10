@@ -1786,6 +1786,7 @@ C Loop through B and see how many 'words'.
 
 C Start by skipping blanks before the word.
    10 K=K+1
+      IF(K.ge.248) GOTO 3
       C=B(K:K)
       IF(C.EQ.' ') GOTO 10
 
@@ -1827,6 +1828,12 @@ C assign WORDS.
         call edisp248(iuout,outs,100)
       endif
       return
+    3 write(outs,*) 
+     &  'GETTOKENS: ran past end of internal string buffer: ',
+     &   A(1:lnblnk(A))
+      call edisp248(iuout,outs,100)
+      return
+
 
       END
 
