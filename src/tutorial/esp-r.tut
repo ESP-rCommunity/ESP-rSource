@@ -467,7 +467,7 @@ A portion of a Materials db follows.
 *Materials 1.1
 *date,Thu Aug  8 10:16:03 2013
 # materials database defined in cellular.materialdb
-*doc,ESP-r Materials based on materials constr_db3.materialdb
+*doc,ESP-r Materials based on materials.db3.a
 18  # number of classifications
 #  
 # Materials have the following attributes:

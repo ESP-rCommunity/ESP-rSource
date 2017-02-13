@@ -6872,115 +6872,7 @@ C coordinates in CX CY CZ arrays.
           do ix=1,NVC
 
 C Merge point into existing lines and zone structure.
-C << test >> call CKADDVERTINSURF(ITRU,ICOMP,cx(ix),cy(ix),cz(ix),IER)
-
-C Replicate logic from ADDVERT below. Consider found if within CACC.
-            if(NZTV(icomp)+1.le.MTV)then
-              found=.false.
-              do 144 ixx = 1,NZTV(icomp)
-                CALL ECLOSE(CX(ix),X(ixx),CACC,closex)
-                CALL ECLOSE(CY(ix),Y(ixx),CACC,closey)
-                CALL ECLOSE(CZ(ix),Z(ixx),CACC,closez)
-                if(closex.and.closey.and.closez)then
-                  found=.true.
-                  goto 145
-                endif
-  144         continue
-
-C If an existing vertex is close then skip to next, otherwise
-C add a new vertex to the end of the zone list and update vcoord.
-  145         if(found)then
-                continue
-              else
-                NTV=NTV+1
-                NZTV(icomp)=NTV
-                X(NTV)=CX(ix); Y(NTV)=CY(ix); Z(NTV)=CZ(ix)
-                VCOORD(ICOMP,ntv,1)=CX(ix)
-                VCOORD(ICOMP,ntv,2)=CY(ix)
-                VCOORD(ICOMP,ntv,3)=CZ(ix)
-
-C Update the geometry file to remember the new vertex.
-                if(newgeo)then
-                  call geowrite(IFIL+2,LGEOM(ICOMP),ICOMP,iuout,3,IER)
-                else
-                  call emkgeo(IFIL+2,LGEOM(ICOMP),ICOMP,3,IER)
-                endif
-
-C For a unique vertex also test to see if it is close (+-0.003m) to
-C one of the existing lines. Also check the last edge in the surface.
-                iwhich3=NTV
-                do 2246 ivj=1,NSUR
-                  ivjlimit=NVER(ivj)
-                  do 2247 ivjj=1,ivjlimit
-                    if(ivjj.eq.ivjlimit)then
-                      iwhich1=JVN(ivj,ivjj)
-                      iwhich2=JVN(ivj,1)
-                    else
-                      iwhich1=JVN(ivj,ivjj)
-                      iwhich2=JVN(ivj,ivjj+1)
-                    endif
-
-C Report length of line. Use method of Ward/Radiance in fvect.c
-C Consider close if less than 3mm.
-                    call pointtoline(iwhich3,iwhich1,iwhich2,offset,
-     &                matchver)
-                    if(.NOT.matchver) goto 2247
-                    if(offset.lt.CACC)then
-                      write(outs,'(a,i3,a,3f9.4,a,f6.4,a,i3,a,i3,2a)')
-     &                  'New vertex ',iwhich3,' @',
-     &                  X(NTV),Y(NTV),Z(NTV),' is close (',offset,
-     &                  ') to edge ',IWHICH1,' &',IWHICH2,' of ',
-     &                  sname(icomp,ivj)
-                      call edisp(itru,outs)
-
-C If current surface (ivj) can take another vertex expand the
-C list. Logic works by looping down (from one more than the current
-C number of vertices associated with this surface) shifting
-C JVN indices up one until at the current edge (ivjj) and then
-C inserting the new vertex index.
-                      if(NVER(ivj)+1.le.MV)then
-                        if(offset.le.CACC)then
-                          ok=.true.
-                        else
-                          dok=.true.
-                          helptopic='vertex_near_edge'
-                          call gethelptext(helpinsub,helptopic,nbhelp)
-                          call askok(
-     &                  'Insert this vertex into the adjacent surface?',
-     &                  '(see help)',ok,dok,nbhelp)
-                        endif
-                      else
-                        ok=.false.
-                      endif
-                      if(ok)then
-                        NVER(ivj)=NVER(ivj)+1
-                        IXV=NVER(ivj)+1
- 1148                   continue
-                        IXV=IXV-1
-                        JVN(ivj,IXV)=JVN(ivj,IXV-1)
-                        IF(IXV.GT.ivjj+1)GOTO 1148
-                        JVN(ivj,ivjj+1)=iwhich3
-
-C Update the geometry file to remember changes to edges.
-                        if(newgeo)then
-                          call geowrite(IFIL+2,LGEOM(ICOMP),ICOMP,
-     &                      iuout,3,IER)
-                        else
-                          call emkgeo(IFIL+2,LGEOM(ICOMP),ICOMP,3,IER)
-                        endif
-
-C Debug.
-C                         write(6,'(a,42i4)') 'now jvn is ',
-C     &                     (JVN(ivj,ii),ii=1,NVER(ivj))
-
-C Surface (ivj) vertex list has been updated. Go on to next surface.
-                        goto 2246 
-                      endif
-                    endif
- 2247             continue
- 2246           continue  ! end of loop of surfs in zone
-              endif
-            endif
+            call CKADDVERTINSURF(ITRU,ICOMP,cx(ix),cy(ix),cz(ix),IER)
           enddo ! end of loop for copied verticies
           ILEN=NZTV(icomp)
           IPACT=CREATE
@@ -7174,6 +7066,15 @@ C Parameters
       integer IZSTOCN
       COMMON/C24/IZSTOCN(MCOM,MS)
 
+C Tollerance for surface matching.
+      real ANGCC  ! angle between surfaces tolerance
+      real CACC   ! tolerance between vertices
+      real DACC   ! tolerance along line
+      real COGCC  ! tolerance between surface COG
+      real SNACC  ! tolerance between surface areas
+      integer IACC ! number of matching corners outside dist tolerance
+      common/matching/ANGCC,CACC,DACC,COGCC,SNACC,IACC
+ 
       common/appcols/mdispl,nifgrey,ncset,ngset,nzonec
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
       DIMENSION  COG1(3),COG2(3),COG3(3)

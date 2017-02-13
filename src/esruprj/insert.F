@@ -1730,77 +1730,10 @@ C add a new vertex to the end of the zone list and update vcoord.
               continue
             else
               changedgeo = .true.
-              NZTV(icomp)=NZTV(icomp)+1
-              NTV=NZTV(icomp)
-              X(NTV)=X1(ix); Y(NTV)=Y1(ix); Z(NTV)=Z1(ix)
-              VCOORD(ICOMP,ntv,1)=X1(ix)
-              VCOORD(ICOMP,ntv,2)=Y1(ix)
-              VCOORD(ICOMP,ntv,3)=Z1(ix)
 
-C For a unique vertex also test to see if it is close (+-CACC) to
-C one of the existing lines. Also check the last edge in the surface.
-              iwhich3=NTV
-              do 246 ivj=1,NSUR
-                ivjlimit=NVER(ivj)
-                do 247 ivjj=1,ivjlimit
-                  if(ivjj.eq.ivjlimit)then
-                    iwhich1=JVN(ivj,ivjj)
-                    iwhich2=JVN(ivj,1)
-                  else
-                    iwhich1=JVN(ivj,ivjj)
-                    iwhich2=JVN(ivj,ivjj+1)
-                  endif
-
-C Report length of line. Use method of Ward/Radiance in fvect.c
-                  call pointtoline(iwhich3,iwhich1,iwhich2,offset,
-     &              matchver)
-                  if(.NOT.matchver) goto 247
-                  if(offset.lt.CACC)then
-                    write(outs,'(a,i3,a,3f8.3,a,f6.4,a,i3,a,i3,2a)')
-     &               'New vertex ',iwhich3,' @',
-     &                X(NTV),Y(NTV),Z(NTV),' is close (',offset,
-     &                ') to edge ',IWHICH1,' &',IWHICH2,' of ',
-     &                sname(icomp,ivj)
-                    call edisp(iuout,outs)
-
-C If current surface (ivj) can take another vertex expand the
-C list. Logic works by looping down (from one more than the current
-C number of vertices associated with this surface) shifting
-C JVN indices up one until at the current edge (ivjj) and then
-C inserting the new vertex index.
-                    if(NVER(ivj)+1.le.MV)then
-                      if(offset.le.CACC)then
-                        ok=.true.
-                      else
-                        dok=.true.
-                        helptopic='vertex_near_edge'
-                        call gethelptext(helpinsub,helptopic,nbhelp)
-                        call askok(
-     &                  'Insert this vertex into the adjacent surface?',
-     &                  '(see help)',ok,dok,nbhelp)
-                      endif
-                    else
-                      ok=.false.
-                    endif
-                    if(ok)then
-                      NVER(ivj)=NVER(ivj)+1
-                      IXV=NVER(ivj)+1
-  148                 continue
-                      IXV=IXV-1
-                      JVN(ivj,IXV)=JVN(ivj,IXV-1)
-                      IF(IXV.GT.ivjj+1)GOTO 148
-                      JVN(ivj,ivjj+1)=iwhich3
-
-C Debug.
-C                      write(6,'(a,42i4)') 'now jvn is ',
-C     &                  (JVN(ivj,ii),ii=1,NVER(ivj))
-
-C Surface (ivj) vertex list has been updated. Go on to next surface.
-                      goto 246 
-                    endif
-                  endif
-  247           continue
-  246         continue
+C Merge the copied point into the zone and existing edges.
+              QX=X1(ix); QY=Y1(ix); QZ=Z1(ix)
+              CALL MERGEVERTINSURF(ICOMP,QX,QY,QZ,IER)
             endif
           endif
   143   continue
@@ -1850,76 +1783,13 @@ C user otherwise continue.
 C If an existing vertex is close then skip to next, otherwise
 C add a new vertex to the end of the zone list and update vcoord.
   245     if(found)then
+            call edisp(iuout,'Duplicate of existing vertex. Ignoring.')
             continue
           else
-            NZTV(icomp)=NZTV(icomp)+1
-            NTV=NZTV(icomp)
-            changedgeo = .true.
-            X(NTV)=X1(1); Y(NTV)=Y1(1); Z(NTV)=Z1(1)
-            VCOORD(ICOMP,ntv,1)=X1(1)
-            VCOORD(ICOMP,ntv,2)=Y1(1)
-            VCOORD(ICOMP,ntv,3)=Z1(1)
 
-C For a unique vertex also test to see if it is close (+-CACC) to
-C one of the existing lines. Also check the last edge in the surface.
-            iwhich3=NTV
-            do 346 ivj=1,NSUR
-              ivjlimit=NVER(ivj)
-              do 347 ivjj=1,ivjlimit
-                if(ivjj.eq.ivjlimit)then
-                  iwhich1=JVN(ivj,ivjj)
-                  iwhich2=JVN(ivj,1)
-                else
-                  iwhich1=JVN(ivj,ivjj)
-                  iwhich2=JVN(ivj,ivjj+1)
-                endif
-
-C Report length of line. Use method of Ward/Radiance in fvect.c
-                call pointtoline(iwhich3,iwhich1,iwhich2,offset,
-     &            matchver)
-                if(.NOT.matchver) goto 347
-                if(offset.lt.CACC)then
-                  write(outs,'(a,i3,a,3f8.3,a,f6.4,a,i3,a,i3,2a)')
-     &             'Copied vertex ',iwhich3,' @',
-     &              X(NTV),Y(NTV),Z(NTV),' is close (',offset,
-     &              ') to edge ',IWHICH1,' &',IWHICH2,' of ',
-     &                sname(icomp,ivj)
-                  call edisp(iuout,outs)
-
-C If current surface (ivj) can take another vertex expand the
-C list. Logic works by looping down (from one more than the current
-C number of vertices associated with this surface) shifting
-C JVN indices up one until at the current edge (ivjj) and then
-C inserting the new vertex index.
-                  if(NVER(ivj)+1.le.MV)then
-                    if(offset.le.CACC)then
-                      ok=.true.
-                    else
-                      dok=.true.
-                      helptopic='vertex_near_edge'
-                      call gethelptext(helpinsub,helptopic,nbhelp)
-                      call askok(
-     &                'Insert this vertex into the adjacent surface?',
-     &                '(see help)',ok,dok,nbhelp)
-                    endif
-                  else
-                    ok=.false.
-                  endif
-                  if(ok)then
-                    NVER(ivj)=NVER(ivj)+1
-                    IXV=NVER(ivj)+1
-  248               continue
-                    IXV=IXV-1
-                    JVN(ivj,IXV)=JVN(ivj,IXV-1)
-                    IF(IXV.GT.ivjj+1)GOTO 248
-                    JVN(ivj,ivjj+1)=iwhich3
-
-C Surface (ivj) vertex list has been updated. Go on to next surface.
-                    goto 346 
-                  endif
-                endif
-  347         continue
-  346       continue
+C Merge the copied point into the zone and existing edges.
+            QX=X1(1); QY=Y1(1); QZ=Z1(1)
+            CALL MERGEVERTINSURF(ICOMP,QX,QY,QZ,IER)
           endif
         endif
         MODIFYVIEW=.TRUE.

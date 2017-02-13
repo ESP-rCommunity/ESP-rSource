@@ -1449,7 +1449,7 @@ C If user typed `e` then complete the process.
           if(iik.eq.69.or.iik.eq.101)then
             goto 147
           endif
-	  
+  
 C Toggle on/off the snap-to grid.
           if(iik.eq.83.or.iik.eq.115)then
             if(xbmgrid)then
@@ -1962,7 +1962,7 @@ C should be added.
 C If user did not add any window or door points then set lastwalllist
               if(.NOT.dodoor.and..NOT.dowindow)then
                 lastwalllist=NW  ! remember last extrusion corner
-              endif	      
+              endif      
               goto 247  ! process
             endif
           endif
@@ -3699,16 +3699,14 @@ C Cast for calling of C code.
 
 C ************* CKADDVERTINSURF
 C CKADDVERTINSURF confirm if a potential vertex (XQ,YQ,ZQ) is unique
-C (not really close to another) and if it is along the edge of
-C an existing surface update the zone topology to include it.
+C (not really close to another) add to zone and if it is along 
+C the edge of an existing surface update the zone topology to include it.
 C ITRU = unit number for user output, IER=0 OK, IER=1 problem.
       SUBROUTINE CKADDVERTINSURF(ITRU,ICOMP,XQ,YQ,ZQ,IER)
 #include "building.h"
 #include "model.h"
 #include "geometry.h"
 #include "prj3dv.h"
-      integer IZSTOCN
-      COMMON/C24/IZSTOCN(MCOM,MS)
       COMMON/FILEP/IFIL
       LOGICAL ok,dok,matchver
 
@@ -3749,6 +3747,21 @@ C Similar logic to ADDVERT. Consider found if within CACC.
             found=.true.
             goto 145
           endif
+          CALL ECLOSE(XQ,X(ixx),CACC*2,closex)
+          CALL ECLOSE(YQ,Y(ixx),CACC*2,closey)
+          CALL ECLOSE(ZQ,Z(ixx),CACC*2,closez)
+          dist=crowxyz(QX,QY,QZ,X(ixx),Y(ixx),Z(ixx))
+          if(closex.and.closey.and.closez)then
+            write(outs,'(a,3f8.3,a,f6.3,a,i3,a,3f8.3)')
+     &        'New vertex @',QX,QY,QZ,' is close (',
+     &        dist,') to existing vertex',ixx,' @',
+     &        X(ixx),Y(ixx),Z(ixx)
+            call edisp(iuout,outs)
+            dok=.true.
+            call askok('Copied point close to existing vertex.',
+     &        'Skip copying it?',found,dok,nbhelp)
+            goto 145
+          endif
         enddo  ! of ixx
 
 C If an existing vertex is close then skip to next, otherwise
@@ -3762,6 +3775,19 @@ C add a new vertex to the end of the zone list and update vcoord.
           VCOORD(ICOMP,ntv,1)=XQ
           VCOORD(ICOMP,ntv,2)=YQ
           VCOORD(ICOMP,ntv,3)=ZQ
+          XMN=AMIN1(XMN,X(NTV))
+          YMN=AMIN1(YMN,Y(NTV))
+          ZMN=AMIN1(ZMN,Z(NTV))
+          XMX=AMAX1(XMX,X(NTV))
+          YMX=AMAX1(YMX,Y(NTV))
+          ZMX=AMAX1(ZMX,Z(NTV))
+
+C Update the geometry file to remember the new vertex.
+          if(newgeo)then
+            call geowrite(IFIL+2,LGEOM(ICOMP),ICOMP,iuout,3,IER)
+          else
+            call emkgeo(IFIL+2,LGEOM(ICOMP),ICOMP,3,IER)
+          endif
 
 C For a unique vertex also test to see if it is close (+-CACC) to
 C one of the existing lines. Also check the last edge in the surface.
@@ -3837,4 +3863,138 @@ C Surface (ivj) vertex list has been updated. Go on to next surface.
         endif
       endif
       end
+
+
+C ************* MERGEVERTINSURF
+C MERGEVERTINSURF merge a vertex (QX,QY,QZ) into a zone and if it is along 
+C the edge of an existing surface update the zone topology to include it.
+C IER=0 OK, IER=1 problem.
+      SUBROUTINE MERGEVERTINSURF(ICOMP,QX,QY,QZ,IER)
+#include "building.h"
+#include "model.h"
+#include "geometry.h"
+#include "prj3dv.h"
+
+      integer icomp
+      real QX,QY,QZ
+      integer ier
+
+      COMMON/FILEP/IFIL
+      LOGICAL ok,dok,matchver
+
+C Tollerance for surface matching.
+      real ANGCC  ! angle between surfaces tolerance
+      real CACC   ! tolerance between vertices
+      real DACC   ! tolerance along line
+      real COGCC  ! tolerance between surface COG
+      real SNACC  ! tolerance between surface areas
+      integer IACC ! number of matching corners outside dist tolerance
+      common/matching/ANGCC,CACC,DACC,COGCC,SNACC,IACC
+
+      character outs*124
+      integer iwhich1,iwhich2,iwhich3  ! for user selections
+      logical found
+      logical newgeo  ! to use for testing if new/old geometry file.
+
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='MERGEVERTINSURF'  ! set for subroutine
+
+      iwhich3=0; iwhich1=0; iwhich2=0
+
+C Detect the version of the current file.
+      call eclose(gversion(icomp),1.1,0.01,newgeo)
+
+C Assumes that QX,QY,QZ already checked to see if they duplicate
+C anything in the zone. This code does the merge and save.
+      NTV=NTV+1
+      NZTV(icomp)=NTV
+      X(NTV)=QX; Y(NTV)=QY; Z(NTV)=QZ
+      VCOORD(ICOMP,ntv,1)=QX
+      VCOORD(ICOMP,ntv,2)=QY
+      VCOORD(ICOMP,ntv,3)=QZ
+      XMN=AMIN1(XMN,X(NTV))
+      YMN=AMIN1(YMN,Y(NTV))
+      ZMN=AMIN1(ZMN,Z(NTV))
+      XMX=AMAX1(XMX,X(NTV))
+      YMX=AMAX1(YMX,Y(NTV))
+      ZMX=AMAX1(ZMX,Z(NTV))
+
+C Update the geometry file to remember the new vertex.
+      if(newgeo)then
+        call geowrite(IFIL+2,LGEOM(ICOMP),ICOMP,iuout,3,IER)
+      else
+        call emkgeo(IFIL+2,LGEOM(ICOMP),ICOMP,3,IER)
+      endif
+
+C For a unique vertex also test to see if it is close (+-CACC) to
+C one of the existing lines. nsur-1 because the new surface does
+C not need to be checked. Also check the last edge in the surface.
+      iwhich3=NTV
+      do 246 ivj=1,NSUR-1
+        ivjlimit=NVER(ivj)
+        do 247 ivjj=1,ivjlimit
+          if(ivjj.eq.ivjlimit)then
+            iwhich1=JVN(ivj,ivjj)
+            iwhich2=JVN(ivj,1)
+          else
+            iwhich1=JVN(ivj,ivjj)
+            iwhich2=JVN(ivj,ivjj+1)
+          endif
+
+C Report length of line. Use method of Ward/Radiance in fvect.c
+          call pointtoline(iwhich3,iwhich1,iwhich2,offset,matchver)
+          if(.NOT.matchver) goto 247
+          if(offset.lt.CACC)then
+            write(outs,'(a,i3,a,3f8.3,a,f6.4,a,i3,a,i3,2a)')
+     &        'New vertex ',iwhich3,' @',
+     &        X(NTV),Y(NTV),Z(NTV),' is close (',offset,
+     &        ') to edge ',IWHICH1,' &',IWHICH2,' of surface ',
+     &        SNAME(ICOMP,ivj)
+            call edisp(iuout,outs)
+
+C If current surface (ivj) can take another vertex expand the
+C list. Logic works by looping down (from one more than the current
+C number of vertices associated with this surface) shifting
+C JVN indices up one until at the current edge (ivjj) and then
+C inserting the new vertex index.
+            if(NVER(ivj)+1.le.MV)then
+              if(offset.le.CACC)then
+                ok=.true.
+              else
+                dok=.true.
+                helptopic='vertex_close_edge'
+                call gethelptext(helpinsub,helptopic,nbhelp)
+                call askok(
+     &            'Insert this vertex into the adjacent surface?',
+     &            '(see help)',ok,dok,nbhelp)
+              endif
+            else
+              ok=.false.
+            endif
+            if(ok)then
+              NVER(ivj)=NVER(ivj)+1
+              IXV=NVER(ivj)+1
+  148         continue
+              IXV=IXV-1
+              JVN(ivj,IXV)=JVN(ivj,IXV-1)
+              IF(IXV.GT.ivjj+1)GOTO 148
+              JVN(ivj,ivjj+1)=iwhich3
+
+C Debug.
+C                write(6,'(a,42i4)') 'now jvn is ',
+C     &            (JVN(ivj,ii),ii=1,NVER(ivj))
+
+C Surface (ivj) vertex list has been updated. Go on to next surface.
+              goto 246 
+            endif
+          endif
+  247   continue
+  246 continue
+      return
+      end
+      
 
