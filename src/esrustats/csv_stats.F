@@ -2269,7 +2269,7 @@ C << make a pass sorting out these default file names >>
         write(DFMUL,'(2a)') di(1:min(ln,51)),'/databases/multicon.db3'
         write(DOPTDB,'(2a)') di(1:min(ln,51)),'/databases/optics.db2'
         write(DPRFDB,'(2a)') di(1:min(ln,51)),
-     &    '/databases/profiles.db1.a'
+     &    '/databases/profiles.db2.a'
         write(DPCDB,'(2a)') di(1:min(ln,51)),'/databases/plantc.db1'
         write(DECMPDBFL,'(2a)') di(1:min(ln,51)),'/databases/elcomp.db1'
         write(DMCMPDBFL,'(2a)') di(1:min(ln,51)),'/databases/mscomp.db1'
@@ -2300,7 +2300,7 @@ C        dinstpath = 'c:/esru/esp-r'
         write(DFMUL,'(2a)') di(1:min(ln,51)),'/databases/multicon.db3'
         write(DOPTDB,'(2a)') di(1:min(ln,51)),'/databases/optics.db2'
         write(DPRFDB,'(2a)') di(1:min(ln,51)),
-     &    '/databases/profiles.db1.a'
+     &    '/databases/profiles.db2.a'
         write(DPCDB,'(2a)') di(1:min(ln,51)),'/databases/plantc.db1'
         write(DECMPDBFL,'(2a)') di(1:min(ln,51)),'/databases/elcomp.db1'
         write(DMCMPDBFL,'(2a)') di(1:min(ln,51)),'/databases/mscomp.db1'
