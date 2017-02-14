@@ -573,7 +573,7 @@ Constructions db
 *tut_optical_db   optical properties
 The optical properties of multi-layer constructions are defined in
 an Optical Properties database. The standard version of this database
-(~esru/esp-r/databases/optics.db1) contains data derived from
+(~esru/esp-r/databases/optics.db2) contains data derived from
 either the LBL Window 4.1 utility program or WIS.
 
      The data include angular (0, 40, 55, 70, 80 degrees from
