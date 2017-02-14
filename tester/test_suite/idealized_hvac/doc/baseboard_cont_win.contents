@@ -1,4 +1,4 @@
-Synopsis
+	Synopsis
  
 Synopsis of the model basic 3 zone simulation of CCHT house baseboard_cont_win
 defined in baseboard_cont_winter.cfg generated on Wed Aug 22 11:13:11 2012.
@@ -36,7 +36,7 @@ Databases associated with the model:
  standard materials     : north_american.materialdb.a
  constructions          : ../../ascii_dbs/ccht_na_constr.db1
  standard plant comp    : plantc.db1
- standard event profiles: profiles.db1.a
+ standard event profiles: profiles.db2.a
  standard optical prop  : optics.db2
  standard UK NCM data   : SBEM.db1
  standard mould isopleth: mould.db1
