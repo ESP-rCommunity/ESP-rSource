@@ -458,6 +458,7 @@ if [ "$platform" = "auto-detect" ]; then
       [ "$architecture" != "CYGWIN_NT-6.0" ] &&
       [ "$architecture" != "CYGWIN_NT-6.1" ] &&
       [ "$architecture" != "CYGWIN_NT-6.1-WOW64" ] &&
+      [ "$architecture" != "CYGWIN_NT-10.0" ] &&
       [ "$architecture" != "MINGW32_NT-5.1" ] &&
       [ "$architecture" != "MINGW32_NT-5.2" ] &&
       [ "$architecture" != "MINGW32_NT-6.1" ] &&
@@ -575,7 +576,7 @@ if [ "$platform" = "auto-detect" ]; then
    # Note: $architecture has been error-trapped above.
    case $architecture in
       Linux)                           platform="linux";;
-      CYGWIN_NT-5.2  | CYGWIN_NT-5.1  | CYGWIN_NT-5.0  | CYGWIN_NT-6.0 | CYGWIN_NT-6.1 | CYGWIN_NT-6.1-WOW64 ) platform="cygwin";;
+      CYGWIN_NT-5.2  | CYGWIN_NT-5.1  | CYGWIN_NT-5.0  | CYGWIN_NT-6.0 | CYGWIN_NT-6.1 | CYGWIN_NT-6.1-WOW64 | CYGWIN_NT-10.0 ) platform="cygwin";;
       MINGW64_NT-10.0 | MINGW64_NT-6.1 | MINGW32_NT-6.1 | MINGW32_NT-5.2 | MINGW32_NT-5.1 | MSYS_NT-6.1 ) platform="mingw";;
       Darwin)                          platform="mac";;
       SunOS)                           platform="sun";;
