@@ -1,4 +1,9 @@
-SWTCH= -D
+architecture := $(shell uname -s)
+ifeq ($(architecture),Darwin)
+	SWTCH=
+else
+	SWTCH= -D
+endif
 SRCdir = `pwd`/..
 COMdir = $(SRCdir)/esrucom
 PROG = mld$(EXE)
@@ -31,8 +36,8 @@ startup.F:
 strip:
 	strip $(PROG)
 
-install: $(PROG)
-	install -D $(PROG) $(ESPBinDir)/$(PROG)
+install:
+	install $(SWTCH) $(PROG) $(ESPBinDir)/$(PROG)
 
 clean:
 	rm -f core $(PROG)  $(PROG).exe $(MODULE_OBJECTS) $(OBJECTS) $(MODULES) c2fdum.F psychro.F startup.F

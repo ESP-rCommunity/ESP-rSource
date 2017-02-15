@@ -1,4 +1,9 @@
-SWTCH= -D
+architecture := $(shell uname -s)
+ifeq ($(architecture),Darwin)
+	SWTCH=
+else
+	SWTCH= -D
+endif
 SRCdir= `pwd`/..
 PROG = c2e$(EXE)
 default: $(PROG)
