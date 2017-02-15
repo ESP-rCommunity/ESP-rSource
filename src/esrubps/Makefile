@@ -1,4 +1,4 @@
-prefix = /opt/esru
+SWTCH= -D
 SRCdir = `pwd`/..
 BLDdir = $(SRCdir)/esrubld
 COMdir = $(SRCdir)/esrucom
@@ -735,13 +735,13 @@ ESPrTrnsysData.F:
 	rm -f ESPrTrnsysData.F
 	ln -s $(COSIMdir)/ESPrTrnsysData.F .
 
-strip: $(PROG)
+strip:
 	strip $(PROG)
 	strip $(DLL)
 
-install: $(PROG)
-	install -D $(PROG) $(ESPBinDir)/$(PROG)
-	@if [ -f $(DLL) ]; then install -D $(DLL) $(ESPBinDir)/$(DLL); fi
+install:
+	install $(SWTCH) $(PROG) $(ESPBinDir)/$(PROG)
+	@if [ -f $(DLL) ]; then install $(SWTCH) $(DLL) $(ESPBinDir)/$(DLL); fi
 
 clean:
 	rm -f core $(PROG) $(PROG).exe $(DLL) $(PROG).dll $(PREBPS_OBJECTS) $(PREBPSDLL_OBJECTS) $(MODULE_OBJECTS) $(BPS_OBJECTS) $(MODULES) \

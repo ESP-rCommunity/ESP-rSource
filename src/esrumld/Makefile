@@ -1,4 +1,4 @@
-prefix = /opt/esru
+SWTCH= -D
 SRCdir = `pwd`/..
 COMdir = $(SRCdir)/esrucom
 PROG = mld$(EXE)
@@ -28,7 +28,7 @@ startup.F:
 	rm -f startup.F
 	ln -s $(COMdir)/startup.F .
 
-strip: $(PROG)
+strip:
 	strip $(PROG)
 
 install: $(PROG)

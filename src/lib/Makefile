@@ -1,5 +1,4 @@
 SHELL=/bin/sh
-prefix = /opt/esru
 SRCdir = `pwd`/..
 CETCdir = $(SRCdir)/cetc
 LIBGTK = libgtkesru.a

@@ -1,4 +1,4 @@
-prefix = /opt/esru
+SWTCH= -D
 SRCdir = `pwd`/..
 COMdir = $(SRCdir)/esrucom
 PROG = viewer$(EXE)
@@ -33,11 +33,11 @@ startup.F:
 	rm -f startup.F
 	ln -s $(COMdir)/startup.F .
 
-strip: $(PROG)
+strip:
 	strip $(PROG)
 
-install: $(PROG)
-	install -D $(PROG) $(ESPBinDir)/$(PROG)
+install:
+	install $(SWTCH) $(PROG) $(ESPBinDir)/$(PROG)
 
 clean:
 	rm -f core $(PROG) $(PROG).exe $(MODULE_OBJECTS) $(OBJECTS) $(MODULES) \

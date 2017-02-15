@@ -1,4 +1,4 @@
-prefix = /opt/esru
+SWTCH= -D
 SRCdir= `pwd`/..
 PROG = c2e$(EXE)
 default: $(PROG)
@@ -12,11 +12,11 @@ OBJECTS = prcoef.o suple.o suprf.o supwi.o sup2.o wind.o
 $(PROG) : $(OBJECTS)
 	$(MFC) $(FFLAGS) -o $(PROG) $(OBJECTS)
 
-strip: $(PROG)
+strip:
 	strip $(PROG)
 
-install: $(PROG)
-	install -D $(PROG) $(ESPBinDir)/$(PROG)
+install:
+	install $(SWTCH) $(PROG) $(ESPBinDir)/$(PROG)
 
 clean:
 	rm -f core $(PROG) $(PROG).exe $(OBJECTS)

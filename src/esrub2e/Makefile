@@ -1,4 +1,4 @@
-prefix = /opt/esru
+SWTCH= -D
 SRCdir = `pwd`/..
 BLDdir = $(SRCdir)/esrubld
 CDBdir = $(SRCdir)/esrucdb
@@ -108,11 +108,11 @@ tdfile.F:
 	rm -f tdfile.F
 	ln -s $(COMdir)/tdfile.F .
 
-strip: $(PROG)
+strip:
 	strip $(PROG)
 
-install: $(PROG)
-	install -D $(PROG) $(ESPBinDir)/$(PROG)
+install:
+	install $(SWTCH) $(PROG) $(ESPBinDir)/$(PROG)
 
 clean:
 	rm -f core $(PROG) $(PROG).exe $(MODULE_OBJECTS) $(OBJECTS) $(MODULES) \

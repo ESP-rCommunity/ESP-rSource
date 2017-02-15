@@ -1,4 +1,4 @@
-prefix = /opt/esru
+SWTCH= -D
 SRCdir = `pwd`/..
 BLDdir = $(SRCdir)/esrubld
 CDBdir = $(SRCdir)/esrucdb
@@ -137,11 +137,11 @@ h3kmodule.f90:
 	rm -f h3kmodule.f90
 	ln -s $(CETCdir)/h3kmodule.f90 .
 
-strip: $(PROG)
+strip:
 	strip $(PROG)
 
-install: $(PROG)
-	install -D $(PROG) $(ESPBinDir)/$(PROG2)
+install:
+	install $(SWTCH) $(PROG) $(ESPBinDir)/$(PROG2)
 
 clean:
 	rm -f core $(PROG) $(PROG).exe $(MODULE_OBJECTS) $(OBJECTS) $(MODULES) \
