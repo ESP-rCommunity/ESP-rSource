@@ -263,7 +263,7 @@ C Instanciate and clear commons, scan the supplied problem
 C to update commons for configuration.
           call clrprb
           call edisp(iuout,' Scanning the problem before updating...')
-          call escdef(iotmp2,IER)
+          call escdef(iotmp2,'s',IER)
           MODE='ALL '
           call ERSYS(LCFGF,ioout,iotmp2,MODE,itrc,IER)
           if(IER.eq.0)then

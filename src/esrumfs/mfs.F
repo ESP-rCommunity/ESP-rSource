@@ -353,7 +353,7 @@ C All subsequent tstamp messages will be appended to root journal.
 
 C Scan the defaults file for default pressure and weather.
 C Make temporary use of file unit IUA.
- 902  call escdef(IUA,IER)
+ 902  call escdef(IUA,'s',IER)
 
 C Use defaults for pressure coef and weather if they are available.
       if(ier.eq.0)then

@@ -205,7 +205,7 @@ C Make temporary use of file unit IAF=IFIL+1.
       call scesprc(esprc,IAF,0,IIER)
 
 C Scan the defaults file for default configuration.
-      call escdef(IAF,IER)
+      call escdef(IAF,'s',IER)
 
       INIT =0
 

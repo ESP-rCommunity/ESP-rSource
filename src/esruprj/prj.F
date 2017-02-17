@@ -558,7 +558,7 @@ C Write header of the journal file and then close.
 C Scan the defaults file for default system configuration file.
 C Make temporary use of file unit IFIL+5.  Note: escdef must come
 C after scan of .esprc file.
-      call escdef(IFIL+5,IER)
+      call escdef(IFIL+5,'-',IER)
 
 C Debug.
 C      write(6,*) 'def mould is ',dmdbnam(1:lnblnk(dmdbnam))

@@ -338,7 +338,7 @@ C All subsequent tstamp messages will be appended to root journal.
       endif
 
 C Scan the defaults file for default configuration.
-      call escdef(IAF,IER)
+      call escdef(IAF,'-',IER)
 
 C Assume weather file is on IFIL.
       ICLIM=IFIL

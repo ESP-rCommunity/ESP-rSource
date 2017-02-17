@@ -431,7 +431,7 @@ C All subsequent tstamp messages will be appended to root journal.
       endif
 
 C Scan the defaults file for default configuration.
- 902  call escdef(ixunit,IER)
+ 902  call escdef(ixunit,'s',IER)
 
 C Take command line file name as initial results file name.
       if(inf(1:2).ne.'  '.and.inf(1:4).ne.'UNKN')then

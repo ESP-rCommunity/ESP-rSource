@@ -692,8 +692,8 @@ C All subsequent tstamp messages will be appended to root journal.
 
 C Scan the defaults file for default configuration.
 C Make temporary use of file unit IFIL+1.  Note: escdef must come
-C after scan of .esprc file.
- 902  call escdef(IFIL+1,IER)
+C after scan of .esprc file. Do it silently.
+ 902  call escdef(IFIL+1,'s',IER)
 
 C Take command line file name as initial configuration file.
       if(inf(1:2).ne.'  '.and.inf(1:4).ne.'UNKN')then

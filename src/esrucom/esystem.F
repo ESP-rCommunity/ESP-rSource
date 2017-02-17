@@ -631,7 +631,7 @@ C Initialize flag for boundary condition data
 C Scan the defaults file and then set file common blocks.
 C Make temporary use of file unit IUF.
 C Note: escdef must come after scan of .esprc file.
-      call escdef(IUF,IER)
+      call escdef(IUF,'s',IER)
       write(LCLIM,'(a)') DCLIM(1:lnblnk(DCLIM))
       write(LAPRES,'(a)') DAPRES(1:lnblnk(DAPRES))
       write(LFMAT,'(a)') DFCON(1:lnblnk(DFCON))

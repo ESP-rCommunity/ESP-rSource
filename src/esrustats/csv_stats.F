@@ -139,8 +139,8 @@ C Debug.
 
 C Scan the defaults file for default system configuration file.
 C Make temporary use of file unit IFIL+5.  Note: escdef must come
-C after scan of .esprc file.
-      call escdef(IFIL+5,IER)
+C after scan of .esprc file. Do it silently.
+      call escdef(IFIL+5,'s',IER)
 
 
       INIT =0
@@ -2187,12 +2187,13 @@ C in a string instpath.
 
 C ESCDEF also scans default constructions to be offered
 C for code complience purposes or for use defined uses.
-      SUBROUTINE ESCDEF(IFDEF,IER)
+      SUBROUTINE ESCDEF(IFDEF,act,IER)
 #include "esprdbfile.h"
 C Use espriou.h for climatelist file name and defdbfl.
 #include "espriou.h"
 
       integer lnblnk  ! function definition
+      character act*1 ! s for silent - for normal
 
       COMMON/OUTIN/IUOUT,IUIN
 
@@ -2318,13 +2319,21 @@ C Check if running in dll mode, if so skip reading defaults file.
         return
       endif
 
+
 C Open the defaults file, return if not found.
       IER=0
       CALL EFOPSEQ(IFDEF,defdbfl,1,IER)
       IF(IER.LT.0)THEN
-        write(outs248,'(3a)') 'The file ',defdbfl(1:lnblnk(defdbfl)),
-     &   ' was not found (assuming standard databases).'
-        call edisp248(IUOUT,outs248,100)
+
+C Application asked for a silent.
+        if(act.eq.'s')then
+          IER=1
+          RETURN
+        else
+          write(outs248,'(3a)') 'The file ',defdbfl(1:lnblnk(defdbfl)),
+     &     ' was not found (assuming standard databases).'
+          call edisp248(IUOUT,outs248,100)
+        endif
         IER=1
         RETURN
       ENDIF

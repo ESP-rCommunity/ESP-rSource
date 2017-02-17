@@ -397,8 +397,8 @@ C All subsequent tstamp messages will be appended to root journal.
         call tstamp('>',outs)
       endif
 
-C Scan the defaults file for default configuration.
-      call escdef(IUF,IER)
+C Scan the defaults file silently for default configuration.
+      call escdef(IUF,'s',IER)
 
 C Take command line file name as configuration file.
       if(inf(1:2).ne.'  '.and.inf(1:4).ne.'UNKN')then

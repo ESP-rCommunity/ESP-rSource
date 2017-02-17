@@ -393,7 +393,7 @@ C Find the user's home folder then get user's custom settings.
 
 C Scan the defaults file for default configuration.
 C Make temporary use of file unit IFL.
-      call escdef(IFL,IER)
+      call escdef(IFL,'-',IER)
 
 C Take `c' command line file name, convert to fortran string LCFD
 C and place as initial configuration file.

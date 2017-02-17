@@ -448,7 +448,7 @@ C Find the user's home folder then get user's custom settings.
       if(.NOT.silent)then
         call scesprc(esprc,iuf,1,ier)
       else
-        call scesprc(esprc,iuf,-1,ier)
+        call scesprc(esprc,iuf,0,ier)
       endif
 
 C If there is a journal active, set up to add to itl. First get
@@ -479,8 +479,8 @@ C tstamp messages will be appended to the journal.
       endif
   902 continue
 
-C Scan the defaults file for default configuration.
-      call escdef(iuf,ier)
+C Scan the defaults file silently for default configuration.
+      call escdef(iuf,'s',ier)
 
 C Take command line file name as initial configuration file.
       if(inf(1:2).ne.'  '.and.inf(1:4).ne.'UNKN')then
