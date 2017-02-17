@@ -2096,6 +2096,12 @@ case "${MCTYPE}" in
          echo "*image_display,GIF,iexplore.exe" >> ${ESPdir}/esprc
          echo "*image_display,XWD,iexplore.exe" >> ${ESPdir}/esprc
     ;;
+  osx) # Use preview as image viewer
+         echo "*image_display,TIF,open" >> ${ESPdir}/esprc
+         echo "*image_display,XBMP,open" >> ${ESPdir}/esprc
+         echo "*image_display,GIF,open" >> ${ESPdir}/esprc
+         echo "*image_display,XWD,open" >> ${ESPdir}/esprc
+    ;;
   *)     # Use display as image editor (and what if it's not available?)
          echo "*image_display,TIF,display" >> ${ESPdir}/esprc
          echo "*image_display,XBMP,display" >> ${ESPdir}/esprc
