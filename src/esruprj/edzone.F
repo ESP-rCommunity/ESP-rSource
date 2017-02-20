@@ -1957,6 +1957,8 @@ C     = 'sra'  silent recalculation (of all files)
 C     = 'ir '  interactive recalculation (existing files)
 C     = 'ira'  interactive recalculation (of all files)
 C     = 'in '  interactive new
+C     = 'sab'  silent conversion ASCII to binary
+C     = 'sua'  silent useupdate_silent mode
       subroutine comissionish(iz,act,ier)
 #include "building.h"
 #include "model.h"
@@ -1976,8 +1978,9 @@ C     = 'in '  interactive new
 
       CHARACTER ZN*12,longtfile*144,longtfiledos*144
       character TMODE*8,outs*248,DOIT*248
+      character shdafile*72
       character act*3  ! the parameter passed
-      logical XST,concat,unixok
+      logical XST,XSTA,concat,unixok
 
 C Check if Unix-based or DOS based.
       call isunix(unixok)
@@ -1994,6 +1997,8 @@ C Check if Unix-based or DOS based.
 
 C Check if file exists and get local zone name for feedback.
       call FINDFIL(LSHAD(iz),XST)
+      write(shdafile,'(2a)') lshad(iz)(1:lnblnk(lshad(iz))),'a'
+      call FINDFIL(shdafile,XSTA)
       write(ZN,'(A)') zname(iz)
       LNZ=max(1,lnzname(iz))  ! find current lenght of at least on character
 
@@ -2123,7 +2128,42 @@ C Interactive shading calculation for a new shading database.
         write(outs,'(3a)') 'Shading for ',ZN(1:lnz),
      &    ' has been recalculated.'
         call edisp(iuout,outs)
-       
+
+      elseif(act(1:3).eq.'sab')then
+
+C Convert ASCII shading to binary but only if an ASCII file is
+C found.
+        if(XSTA)then
+          write(doit,'(6a)') 'ish -mode text -file ',
+     &      longtfile(1:lnblnk(longtfile)),' -zone ',
+     &      ZN(1:lnz),' -act asci2bin ',shdafile(1:lnblnk(shdafile))
+          call usrmsg('starting shading conversion via',doit,'-')
+
+C Since silent, tell runit to use the current command window
+C rather than starting up a new xterm.
+          call runit(doit,'-')
+          write(outs,'(3a)') 'Shading for ',ZN(1:lnz),
+     &      ' has been imported from ASCII.'
+          call edisp(iuout,outs)
+        endif
+
+      elseif(act(1:3).eq.'sua')then
+
+C Silent useupdate_silent mode to convert ASCII if available or
+C to recalculate whether or not there is an existing shading
+C file.
+        write(doit,'(5a)') 'ish -mode text -file ',
+     &    longtfile(1:lnblnk(longtfile)),' -zone ',
+     &    ZN(1:lnz),' -act useupdate_silent'
+        call usrmsg('starting shading analysis via',doit,'-')
+
+C Since silent, tell runit to use the current command window
+C rather than starting up a new xterm.
+        call runit(doit,'-')
+        write(outs,'(3a)') 'Shading for ',ZN(1:lnz),
+     &      ' has been converted or recalculated.'
+        call edisp(iuout,outs)
+
       endif
 
       return

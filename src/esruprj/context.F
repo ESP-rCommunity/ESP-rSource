@@ -3784,20 +3784,26 @@ C Setup which ground temperature profile to edit (ifoc).
       END
 
 C ********** EDDSHD **************
-C EDDSHD Sets up shading and insolation files
+C EDDSHD Sets up shading and insolation files. If called
+C with 'site' then force recalcultion of all existing 
+C shading files. If called with 'asci' invoke ish with 
+C the useupdate_silent parameter to convert existing ASCII
+C files if possible.
 
-      SUBROUTINE EDDSHD
+      SUBROUTINE EDDSHD(act)
 #include "building.h"
 #include "model.h"
 #include "geometry.h"
+
+      character act*4  ! site or asci
 
       common/OUTIN/IUOUT,IUIN
 
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
 
-      character outs*248
-      logical XST,OK,DOK,unixok
+      character outs*248,shdafile*72
+      logical XST,XSTA,OK,DOK,unixok
 
 C For help messages
       character helpinsub*24 ! subroutine name
@@ -3812,48 +3818,108 @@ C For help messages
 
 C Check if Unix-based or DOS based.
       call isunix(unixok)
-
-      do 42 iz=1,ncomp
-        if(ISI(iz).eq.1)then
-          call FINDFIL(LSHAD(iz),XST)
-          if(XST)then
-            write(outs,'(3a)') 'Shading for ',zname(iz)(1:lnzname(iz)),
-     &        ' is out of date.'
-            call edisp(iuout,outs)
+      if(act.eq.'SITE'.or.act.eq.'site'.or.act.eq.'Site')then
+        do iz=1,ncomp
+          if(ISI(iz).eq.1)then
+            call FINDFIL(LSHAD(iz),XST)
+            if(XST)then
+              write(outs,'(3a)') 'Shading for ',
+     &          zname(iz)(1:lnzname(iz)),' is out of date.'
+              call edisp(iuout,outs)
+            endif
           endif
-        endif
-  42  continue
-      helptopic='reflect_site_change'
-      call gethelptext(helpinsub,helptopic,nbhelp)
-      CALL EASKABC(' Reflect site change in shading options:',' ',
-     &  'recalculate (silent)','recalculate (interactive)','continue',
-     &  IRT,nbhelp)
-      if(IRT.eq.1.or.IRT.eq.2)then
-        if(IRT.eq.1)then
-        endif
-        do 43 iz=1,ncomp
-          if(ISI(iz).eq.0) goto 43
-          call FINDFIL(LSHAD(iz),XST)
+        enddo
+      elseif(act.eq.'ASCI'.or.act.eq.'asci')then
+        do iz=1,ncomp
+          if(ISI(iz).eq.1)then
+            write(shdafile,'(2a)') lshad(iz)(1:lnblnk(lshad(iz))),'a'
+            call FINDFIL(shdafile,XST)
+            if(XST)then
+              write(outs,'(3a)') 'Shading for ',
+     &          zname(iz)(1:lnzname(iz)),' can be imported from ASCII.'
+              call edisp(iuout,outs)
+            endif
+          endif
+        enddo
+      endif
+
+C Proceed to recalculate all shading/insolation to refelect
+C the site change.
+      if(act.eq.'SITE'.or.act.eq.'site'.or.act.eq.'Site')then
+        helptopic='reflect_site_change'
+        call gethelptext(helpinsub,helptopic,nbhelp)
+        CALL EASKABC(' Reflect site change in shading options:',' ',
+     &    'recalculate (silent)','recalculate (interactive)','continue',
+     &    IRT,nbhelp)
+        if(IRT.eq.1.or.IRT.eq.2)then
+          do 43 iz=1,ncomp
+            if(ISI(iz).eq.0) goto 43
+            call FINDFIL(LSHAD(iz),XST)
 
 C Get logical name of terminal type, expand model name
 C to include the path and create a string to drive ish.
 C If user asked for silent recalculation then do each
 C one in forground in an xterm with `-act update_silent`
 C as the command line.
-          if(IRT.eq.1)then
-            call comissionish(iz,'sra',ier)
-          else
-            DOK=.true.
-            write(outs,'(3a)') 'Proceed with shading for ',
-     &        zname(iz)(1:lnzname(iz)),' ?'
-            CALL ASKOK(outs,' ',OK,DOK,nbhelp)
-            if(OK)then
-              call comissionish(iz,'ira',ier)
+            if(IRT.eq.1)then
+              call comissionish(iz,'sra',ier)
+            else
+              DOK=.true.
+              write(outs,'(3a)') 'Proceed with shading for ',
+     &          zname(iz)(1:lnzname(iz)),' ?'
+              CALL ASKOK(outs,' ',OK,DOK,nbhelp)
+              if(OK)then
+                call comissionish(iz,'ira',ier)
+              endif
             endif
-          endif
-  43    continue
-        call edisp(iuout,
-     &       'Update of zones with shading files complete.')
+  43      continue
+          call edisp(iuout,
+     &      'Update of zones with shading files complete.')
+        endif
+      elseif(act.eq.'ASCI'.or.act.eq.'asci')then
+        helptopic='reflect_site_change'
+        call gethelptext(helpinsub,helptopic,nbhelp)
+        CALL EASKABCD(' Shading filling in missing data options:',' ',
+     &    'import from ASCII if available (silent)',
+     &    'recalculate missing (silent)',
+     &    'recalculate (interactive)','continue',IRT,nbhelp)
+        if(IRT.eq.1.or.IRT.eq.2.or.IRT.eq.3)then
+          do iz=1,ncomp
+            if(ISI(iz).gt.0)then
+              call FINDFIL(LSHAD(iz),XST)
+              write(shdafile,'(2a)') lshad(iz)(1:lnblnk(lshad(iz))),'a'
+              call FINDFIL(shdafile,XSTA)
+
+C If ASCII available ask for import otherwise do with
+C an `-act update_silent` as the command line.
+              if(IRT.eq.1)then
+                if(XSTA)then
+                  call comissionish(iz,'sab',ier)
+                else
+                  if(XST)then
+
+C << TODO actually read ISH file and see if syntax is correct >>
+                    continue  ! bin exists so can skip recalculation
+                  else
+                    call comissionish(iz,'sua',ier)
+                  endif
+                endif
+              elseif(IRT.eq.2)then
+                call comissionish(iz,'sra',ier)
+              elseif(IRT.eq.3)then
+                DOK=.true.
+                write(outs,'(3a)') 'Proceed with shading for ',
+     &            zname(iz)(1:lnzname(iz)),' ?'
+                CALL ASKOK(outs,' ',OK,DOK,nbhelp)
+                if(OK)then
+                  call comissionish(iz,'ira',ier)
+                endif
+              endif
+            endif
+          enddo
+          call edisp(iuout,
+     &      'Update of zones with shading files complete.')
+        endif
       endif
       return
       end

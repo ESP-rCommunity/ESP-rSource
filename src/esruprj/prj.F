@@ -3249,6 +3249,8 @@ C  shdok checks if shading files are readable.
 C Get logical name of terminal type, expand model name
 C to include the path and create a string to drive the modules.
       common/OUTIN/IUOUT,IUIN
+      integer childterminal  ! picks up mmod from starting of prj
+      common/childt/childterminal
       common/FILEP/IFIL
       
       integer ncomp,ncon
@@ -3263,12 +3265,16 @@ C to include the path and create a string to drive the modules.
      &       TMCA(MCOM,MTMC,ME,5),TMCREF(MCOM,MTMC),TVTR(MCOM,MTMC)
 
       character CXSTR*78
+      character shdafile*72
       CHARACTER*72 LS
       character ZSDES*28,ZSDESC*20,ZSDESS*16
+      CHARACTER ZN*12,longtfile*144,longtfiledos*144
+      character DOIT*248,outs*248
 
-      logical XST,asked,dok,problem
+      logical XST,XSTA,asked,dok,problem
       logical mlcok,bndryok,bndrysxc,confok,geofok,oprfok,prob,dup
       logical tmcok,shdok
+      logical concat,unixok
       integer icple,iscple  ! coupled zone and surface for tmc check.
       integer itmc1,itmc2   ! non-zero if surface a tmc
 
@@ -3285,6 +3291,9 @@ C For help messages
 
       IUO=IFIL+1
       if(nsset.gt.0)isset=1
+
+C Check if Unix-based or DOS based.
+      call isunix(unixok)
 
 C Do an initial check to see if the model is attributed and
 C constructions are known.
@@ -3727,6 +3736,9 @@ C Zone construction file exists so attempt to scan it.
         CALL PHELPD('constructions checks',nbhelp,'-',0,0,IER)
       endif
 
+C Check for existance of zone shading files and if missing but
+C there is an ASCII shading file convert it otherwise attempt
+C to calculate.
       helptopic='has_unknown_shading'
       call gethelptext(helpinsub,helptopic,nbhelp)
       shdok=.true.
@@ -3739,16 +3751,62 @@ C Zone construction file exists so attempt to scan it.
             if(nbhelp.lt.60)then
               nbhelp=nbhelp+1
               write(h(nbhelp),'(3a)') 'Zone ',zname(i)(1:lnzname(i)),
-     &        ' shading undefined.'
+     &        ' shading expected but undefined.'
             endif
           else
             XST=.false.
             call FINDFIL(LS,XST)
+            write(shdafile,'(2a)') ls(1:lnblnk(ls)),'a'
+            call FINDFIL(shdafile,XSTA)
+
+C Setup file name depending on the machine type.
+            if(unixok)then
+              call addpath(LCFGF,longtfile,concat)
+            else
+
+C If running on a non-unix machine see if there are spaces in the name
+C and change any / to \.
+              call addpath(LCFGF,longtfile,concat)
+              call cmdfiledos(longtfile,longtfiledos,ier)
+              longtfile=' '
+              longtfile=longtfiledos
+            endif
+            write(ZN,'(A)') zname(i)
+            doit = ' '
             if(.NOT.XST)then
-              if(nbhelp.lt.60)then
-                nbhelp=nbhelp+1
-                write(h(nbhelp),'(3a)') 'Zone ',zname(i)(1:lnzname(i)),
-     &        ' shading not found.'
+              if(XSTA)then
+                call edisp(iuout,'Importing missing shading...')
+                write(doit,'(6a)') 'ish -mode text -file ',
+     &            longtfile(1:lnblnk(longtfile)),' -zone ',
+     &            ZN(1:lnblnk(ZN)),' -act asci2bin ',
+     &            shdafile(1:lnblnk(shdafile))
+                call usrmsg('starting shading conversion via',doit,'-')
+                call runit(doit,'-')
+                write(outs,'(3a)') 'Shading for ',ZN(1:lnblnk(ZN)),
+     &            ' has been imported from ASCII.'
+                call edisp(iuout,outs)
+
+                if(nbhelp.lt.60)then
+                  nbhelp=nbhelp+1
+                  write(h(nbhelp),'(3a)') 'Shading for ',
+     &              ZN(1:lnblnk(ZN)),' has been imported from ASCII.'
+                endif
+              else
+                call edisp(iuout,'Regenerating missing shading...')
+                write(doit,'(5a)') 'ish -mode text -file ',
+     &            longtfile(1:lnblnk(longtfile)),' -zone ',
+     &            ZN(1:lnblnk(ZN)),' -act update_silent '
+                call usrmsg('starting shading calcs via',doit,'-')
+                call runit(doit,'-')
+                write(outs,'(3a)') 'Shading for ',ZN(1:lnblnk(ZN)),
+     &            ' has been calculated.'
+                call edisp(iuout,outs)
+                if(nbhelp.lt.60)then
+                  nbhelp=nbhelp+1
+                  write(ZN,'(A)') zname(i)
+                  write(h(nbhelp),'(3a)') 'Shading for ',
+     &              ZN(1:lnblnk(ZN)),' has been recalculated.'
+                endif
               endif
             else
 
@@ -5663,7 +5721,7 @@ C        CALL EDISP(IUOUT,OUTS)
       ENDIF
 
 C If shading needs updating do this now.
-      IF(ISHAD.EQ.1)CALL EDDSHD
+      IF(ISHAD.EQ.1)CALL EDDSHD('site')
 
 C If calculated viewfactors need run do this now.
       if(nbvalsv.gt.0)then

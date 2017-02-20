@@ -3134,9 +3134,9 @@ C `h` heat transfer (comvective) methods, `-` zone names only.
       CHARACTER*(*) prompt,title,errmsg
 
       DIMENSION VERT(35)
-      CHARACTER VERT*27,KEY*1
+      CHARACTER VERT*28,KEY*1
       character h*72,mod*1,outs*124
-      CHARACTER*72 LCFD
+      CHARACTER*72 LCFD,shdafile
       integer MVERT,IVERT  ! max items and current menu item
 
 C Initialise zone menu variables based on window size.
@@ -3219,7 +3219,8 @@ C if it has been sorted and notify user.
             endif
           elseif(mod.eq.'s')then
 
-C Check for existing shading files.
+C Check for existing shading files. Also check if an ASCII version
+C exists if no binary file exists.
             if(LSHAD(L)(1:7).eq.'UNKNOWN')then
               WRITE(VERT(M),'(a1,1x,a,a)')KEY,zname(L),' (undefined)'
             else
@@ -3227,8 +3228,15 @@ C Check for existing shading files.
               if(XST)then
                 WRITE(VERT(M),'(a1,1x,a,a)')KEY,zname(L),' (defined)'
               else
-                WRITE(VERT(M),'(a1,1x,a,a)')KEY,zname(L),
-     &            ' (not found)'
+                write(shdafile,'(2a)') lshad(L)(1:lnblnk(lshad(L))),'a'
+                call FINDFIL(shdafile,XST)
+                if(XST)then
+                  WRITE(VERT(M),'(a1,1x,a,a)')KEY,zname(L),
+     &              ' (ASCII only)'
+                else
+                  WRITE(VERT(M),'(a1,1x,a,a)')KEY,zname(L),
+     &              ' (not found)'
+                endif
               endif
             endif
           elseif(mod.eq.'v')then

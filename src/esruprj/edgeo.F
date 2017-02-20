@@ -321,7 +321,7 @@ C Loop through each surface and detect base information.
       DO 41 I=1,NSUR
         ioc=IZSTOCN(icomp,i)
         if(ioc.lt.1) goto 41  ! is model corrupt skip surf
-	
+
 C Debug
 C        write(6,*) 'ssmlcindex ',ioc,ssmlcindex(ioc)
         if(SOTHER(I,1)(1:4).eq.'UNKN')attribok=.false.
@@ -10047,7 +10047,7 @@ C the surface has changed and needs to be recognised.
         if(ioc.le.1)then
           write(msg,'(a,2i4)') 'No connection for zone surf',icomp,i
           call edisp(iuout,msg)
-	else
+        else
           if(SSPELV(ioc).GE.-1.5.AND.SSPELV(ioc).LE.1.5)then
             if(SVFC(I).NE.'VERT')then
               MODGEO=.TRUE.

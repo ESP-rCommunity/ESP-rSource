@@ -2946,12 +2946,15 @@ C << geometry files are used. This is not yet done.
 C Global tasks.
           helptopic='global_shading_tasks'
           call gethelptext(helpinsub,helptopic,nbhelp)
-          CALL EASKABCD(' ','Options for multiple zones:',
-     &      'recalculate shading','dereference shading files',
-     &      'add insolation','cancel',IW,nbhelp)
+          CALL EASKATOG('Options for multiple zones:',' ',
+     &      're-establish missing shading','recalculate shading',
+     &      'dereference shading files','add insolation','cancel',
+     &      ' ',' ',IW,nbhelp)
           if(IW.eq.1)then
-            call eddshd
+            call eddshd('asci')
           elseif(IW.eq.2)then
+            call eddshd('site')
+          elseif(IW.eq.3)then
             inpic=0
             call askmultizone(inpic,ivals,
      &        'Select zones do dereference insolation?',
@@ -2962,7 +2965,7 @@ C Global tasks.
                 ISI(ICOMP)=0
  153          continue
             endif
-          elseif(IW.eq.3)then
+          elseif(IW.eq.4)then
             inpic=0
             call askmultizone(inpic,ivals,
      &        'Select zones to add insolation?',
@@ -2997,8 +3000,8 @@ C << geometry file (if version 1.1).
  151          continue
             endif
             CALL EMKCFG('-',IER)
-            call eddshd
-          elseif(IW.eq.4)then
+            call eddshd('site')
+          elseif(IW.eq.5)then
             continue
           endif
           IC=-1
