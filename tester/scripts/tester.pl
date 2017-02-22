@@ -7,7 +7,6 @@
 #
 # tester.pl
 # Author: Alex Ferguson
-# Patched to recover res save level comparisons JWH Dec 2016
 #
 # Copyright: Natural Resources Canada 2005-2012
 #
