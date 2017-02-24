@@ -2709,49 +2709,76 @@ C backsubstitution of the known right hand side vector B (size N)
 
       DOUBLE PRECISION A(NP,NP),X(N),B(N)
       DOUBLE PRECISION AB,AC,AD
-
-C Forward reduce matrix A.
+      real    fSmall
+      
+      fSmall=1.0E-06
+      
+C Forward reduce matrix A. Ensure denominator non-zero.
       DO 10 I=2,N
-   10 A(1,I)=A(1,I)/A(1,1)
+        if(A(1,1).lt.fSmall)then
+          A(1,I)=A(1,I)/fSmall
+        else
+          A(1,I)=A(1,I)/A(1,1)
+        endif
+   10 CONTINUE
       DO 50 K=2,N
-      K1=K-1
-      DO 20 IK=K,N
-      DO 20 J=1,K1
-      AB=A(IK,J)
-      AC=A(J,K)
-      AD=AB*AC
-   20 A(IK,K)=A(IK,K)-AD
-      J1=K+1
-      DO 30 J=J1,N
-      DO 40 MJ=1,K1
-      AB=A(K,MJ)
-      AC=A(MJ,J)
-      AD=AB*AC
-   40 A(K,J)=A(K,J)-AD
-   30 A(K,J)=A(K,J)/A(K,K)
+        K1=K-1
+        DO 20 IK=K,N
+        DO 20 J=1,K1
+          AB=A(IK,J)
+          AC=A(J,K)
+          AD=AB*AC
+          A(IK,K)=A(IK,K)-AD
+   20   CONTINUE
+        J1=K+1
+        DO 30 J=J1,N
+          DO 40 MJ=1,K1
+            AB=A(K,MJ)
+            AC=A(MJ,J)
+            AD=AB*AC
+            A(K,J)=A(K,J)-AD
+   40     CONTINUE
+          if(A(K,K).lt.fSmall)then
+            A(K,J)=A(K,J)/fSmall
+          else
+            A(K,J)=A(K,J)/A(K,K)
+          endif
+   30   CONTINUE
    50 CONTINUE
 
 C Conduct backward substitution to establish solution vextor X.
-      B(1)=B(1)/A(1,1)
+      if(A(1,1).lt.fSmall)then
+        B(1)=B(1)/fSmall
+      else
+        B(1)=B(1)/A(1,1)
+      endif
       DO 70 I=2,N
-      K1=I-1
-      DO 60 J=1,K1
-      AB=B(J)
-      AC=A(I,J)
-      AD=AB*AC
-   60 B(I)=B(I)-AD
-   70 B(I)=B(I)/A(I,I)
+        K1=I-1
+        DO 60 J=1,K1
+          AB=B(J)
+          AC=A(I,J)
+          AD=AB*AC
+          B(I)=B(I)-AD
+   60   CONTINUE
+        if(A(I,I).lt.fSmall)then
+          B(I)=B(I)/fSmall
+        else
+          B(I)=B(I)/A(I,I)
+        endif
+   70 CONTINUE
       X(N)=B(N)
       N1=N-1
       DO 90 JJ=1,N1
-      I=N-JJ
-      IK=I+1
-      DO 80 J=IK,N
-      AB=A(I,J)
-      AC=B(J)
-      AD=AB*AC
-   80 B(I)=B(I)-AD
-   90 X(I)=B(I)
+        I=N-JJ
+        IK=I+1
+        DO 80 J=IK,N
+          AB=A(I,J)
+          AC=B(J)
+          AD=AB*AC
+          B(I)=B(I)-AD
+   80   CONTINUE
+        X(I)=B(I)
+   90 CONTINUE
 
       RETURN
       END
