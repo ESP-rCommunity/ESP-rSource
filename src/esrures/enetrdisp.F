@@ -605,7 +605,7 @@ C and EVLABU.
 C Firstly write the text header
         IF(IHFLAG.EQ.0)THEN
           CALL EDISP(ICOUT,'# Timestep miscellaneous information.')
-          WRITE(OUTS,'(A,A)')'# Electrical results lib: ',ELRFLNAM(1:20)
+          WRITE(OUTS,'(2A)')'# Electrical results lib: ',ELRFLNAM(1:30)
           CALL EDISP(ICOUT,OUTS)
           WRITE(OUTS,'(2A)')'# ',PDESCR
           CALL EDISP(ICOUT,OUTS)
@@ -787,9 +787,10 @@ C specified time flag XXXXX.YYYYYY or XXhYYmZZs
             IS=1
             IF(DELIM.EQ.'-')THEN
 
-C Format time for a three character delimiter
+C Format time for a three character delimiter. Note that the
+C IHOUR keeps incrementing beyond 24.
               IF(IHFLAG.EQ.0)THEN
-                WRITE(OUTPUTS(IS:IS+14),'(3X,I2,A1,I2,A1,I2,4X)')
+                WRITE(OUTPUTS(IS:IS+14),'(I5,A1,I2,A1,I2,4X)')
      &IHOUR,':',IMIN,':',ISEC
               WRITE(OUTPUTS(IS+15:IS+17),'(A)') SSTR(1:3)
               ELSE
@@ -800,7 +801,7 @@ C Format time for a three character delimiter
 
 C Format time for a single character spacing
               IF(IHFLAG.EQ.0)THEN
-                WRITE(OUTPUTS(IS:IS+16),'(5X,I2,A1,I2,A1,I2,5X)')
+                WRITE(OUTPUTS(IS:IS+16),'(2X,I5,A1,I2,A1,I2,5X)')
      &IHOUR,':',IMIN,':',ISEC
                 WRITE(OUTPUTS(IS+17:IS+17),'(A)') SSTR(1:1)  
               ELSE
@@ -879,7 +880,7 @@ C Array of recovered data
 
       REAL EVAL1,EVAL2
       INTEGER NVAL1,NVAL2,EVAXIS,EVMARK,EVLINE,EFILT
-      CHARACTER ETEXT*124,LOUT*92,SLOUT*22
+      CHARACTER ETEXT*124,LOUT*96,SLOUT*22
       CHARACTER PDESCR*60,SDESCR*44,ELRFLNAM*144
       CHARACTER EVLABS*16,EVLABU*4,EXLAB*5
 
