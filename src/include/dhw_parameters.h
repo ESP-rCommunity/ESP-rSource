@@ -70,6 +70,9 @@
       PARAMETER ( Solar_Collector_System = 20 )
       
 
+!TankType (Gas-HP)      
+      INTEGER Gas_HP_WH
+      PARAMETER ( Gas_HP_WH = 21 )
 
 ! Time Type Parameters.
       REAL fHOURSINDAY 

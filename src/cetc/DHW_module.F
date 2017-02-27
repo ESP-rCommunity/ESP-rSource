@@ -240,10 +240,10 @@ c of 60C. This is from B.Bradley'd H2KDHW.F line 254.
      &                          - fDHW_ColdMainTemp(iMonth)) )
      &                   + 0.25 * fLitresforNumOccupants )
 
-!     write (*,*) " DHW: ih2k ", iH2k , bLoadIsDefined, DrawVolL, 
-!    & fTempUsage, fTempHWT,
-!    & fNormalizedDailyWaterDraw, fDHW_ColdMainTemp(iMonth), 
-!    & REAL(iNTSTEP)
+      write (*,*) " DHW: ih2k ", iH2k , bLoadIsDefined, DrawVolL, 
+     & fTempUsage, fTempHWT,
+     & fNormalizedDailyWaterDraw, fDHW_ColdMainTemp(iMonth), 
+     & REAL(iNTSTEP)
      
       IF (iH2K.eq.1) then ! treat it like H2K
         fDHW_WaterDraw_byVolume
@@ -279,7 +279,7 @@ C Save supply and delivery temperatures (oC)
         fDHW_H3K_supply_temp = fDHW_ColdMainTemp(iMonth)
         fDHW_H3K_delivery_temp = fTempHWT
 
-C        write (*,*) " fDHW_WaterDrawbV :", fDHW_WaterDraw_byVolume
+C        write (*,*) " >>> fwd", fDHW_WaterDraw_byVolume 
 C        write (*,*) " fDHW_WaterDraw h2k :", fDHW_H3K_water_draw
 C        write (*,*) " fDHW 33k supp temp" , fDHW_H3K_supply_temp
 C        write (*,*) " fDHW 33k delv temp" , fDHW_H3K_delivery_temp
@@ -572,6 +572,11 @@ c----56--1---------2---------3---------4---------5---------6---------7---------8
 c Formula
       SELECT CASE (iTankType)
 
+      Case (Gas_HP_WH)
+        fEnergy = fDHW_EnergyInputWater()/fDOEEF
+        fHPRoomLoad = fDHW_EnergyInputWater() - fEnergy
+          
+      
       CASE (Elec_Tankless_Heatpump)
        fEnergy     = fDHW_EnergyInputWater()/fDOEEF
        fHPRoomLoad = fDHW_EnergyInputWater() - fEnergy
@@ -637,7 +642,8 @@ c Pipe Losses (very small..may eliminate in future)
 c Portion of Pilot energy that is transmitted to room.
 
       if ( iTankType ==  Elec_Heatpump .or. 
-     &     iTankType ==  Elec_Tankless_Heatpump ) then 
+     &     iTankType ==  Elec_Tankless_Heatpump .or.
+     &     iTankType ==  Gas_HP_WH ) then 
       
         fDHW_EnergyToZone =
      &    + fDHW_StandByTankLosses()
@@ -865,6 +871,11 @@ C      REAL   fAlpha
       CASE (Elec_Heatpump)
         fDHW_DOEEFTank = 1.-fDOEEF
 
+      CASE (Gas_HP_WH)
+        fDHW_DOEEFTank = 1.-fDOEEF        
+        
+        
+        
       CASE (Elec_Instantaneous)
        fDHW_DOEEFTank = 1.-fDOEEF
 
@@ -1404,7 +1415,9 @@ C         RETURN
 C       ENDIF
 
       fWaterDraw = fDHW_WaterDraw()
-
+      fDHW_H3K_water_draw = fWaterDraw  * real (iNTSTEP)
+     &                                       * ( 1.0 / 3600.0 ) ! (l/s)
+      
 c This function will calulate exactly how much load the current tank can support.
       CALL fDHW_DrawsForEachTank()
 
@@ -1689,7 +1702,7 @@ C Read  DHW Tank type.
         endif
 
         if(.not. error_flag) then
-          CALL EGETWI(OUTSTR,K,IVAL,1,20,'F',' DHW tanktype ',IER)
+          CALL EGETWI(OUTSTR,K,IVAL,1,21,'F',' DHW tanktype ',IER)
           if(IER.NE.0)then
             call edisp(IUOUT,' Cannot read DHW Tank type.')
             error_flag = .true.
@@ -2040,6 +2053,16 @@ C.....Report interesting parameters:
       Call AddToReport(rvPltDHWHTrnBld%Identifier,
      &  fDHW_H3K_heat_xfer_to_room)
 
+      
+    !  write (*,*)"   >2> fDHW_WaterDraw h2k :", fDHW_H3K_water_draw
+    !  write (*,*)"   >2> fDHW 33k supp temp" , fDHW_H3K_supply_temp
+    !  write (*,*)"   >2> fDHW 33k delv temp" , fDHW_H3K_delivery_temp
+    ! 
+    ! 
+    !  print*, ">>>", fDHW_H3K_water_draw, fDHW_H3K_delivery_temp,
+    ! &   fDHW_H3K_supply_temp
+     
+     
       Call AddToReport(rvPltDHWWtrHLd%Identifier,
      &  fDHW_H3K_water_draw * 4106.0
      &      * ( fDHW_H3K_delivery_temp - fDHW_H3K_supply_temp))
