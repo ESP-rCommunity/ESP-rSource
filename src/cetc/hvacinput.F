@@ -1594,15 +1594,15 @@ c For a gas HP unit .
      &        isys_type(isys).eq.8 .or. 
      &        isys_type(isys).eq.9               
      & ) then
-        ahp(isys) = 0.0    ! 0.00988125
-        bhp(isys) = 1.0    ! 1.08033
-        chp(isys) = 0.0    ! -0.105267
-        dhp(isys) = 0.0    ! 0.0151403
+        !ahp(isys) = 0.0    ! 0.00988125
+        !bhp(isys) = 1.0    ! 1.08033
+        !chp(isys) = 0.0    ! -0.105267
+        !dhp(isys) = 0.0    ! 0.0151403
 
-        !ahp(isys) =  0.00988125        
-        !bhp(isys) =  1.08033
-        !chp(isys) =  -0.105267
-        !dhp(isys) =  0.0151403       
+        ahp(isys) =  0.00988125        
+        bhp(isys) =  1.08033
+        chp(isys) =  -0.105267
+        dhp(isys) =  0.0151403       
        
       endif
 
