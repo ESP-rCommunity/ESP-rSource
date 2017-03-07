@@ -94,9 +94,11 @@ C Named constants for system functions
 
 C Named constants for heat pump heating control
       integer iTemp_BalancedPoint, iTemp_Restricted, iTemp_Unrestricted
+      integer iTemp_Restricted_Disp
       parameter ( iTemp_BalancedPoint = 1,
      &            iTemp_Restricted    = 2,
-     &            iTemp_Unrestricted  = 3 )
+     &            iTemp_Unrestricted  = 3, 
+     &            iTemp_Restricted_Disp = 4)
 
 
 C Named constants for heat pump cooling control

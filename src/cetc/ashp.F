@@ -178,7 +178,7 @@ c computer program
         
         if(TF.lt.ashp_temp_min) then
 c Estimate the plr of the backup heat source
-          ss_heat_pump_cap = 0. 
+          ss_heat_pump_cap = 0.
           plrb = PLR(heating_load,ss_capacity(ibackup_sys_num(isys)),
      &           fan_power(isys),ifan_operation(isys))
      
@@ -208,6 +208,8 @@ c part-load ratio and factor for the heat pump and the backup heating system.
       
 c If the first estimate of plrhp < 1 and the temperature control is balanced
 c point control, the heat pump satisfies the full load
+
+C------------------------------------------------------------------------------
       if((plrhp.lt.0.99).and.(itemp_control(isys).eq.1)) then
 c Part-load factor of the heat pump
         plfhp = ASHP_PLF(isys,plrhp)
@@ -220,9 +222,11 @@ c Call subroutine to set zone controller heating capacity based on
 c total system heating capacity
         call SET_CONT_FUNC_HEAT_CAP(isys,total_sys_heat_cap)
 
+C------------------------------------------------------------------------------		
 c If plrhp > 1 and the temperature control option is balanced point
 c control, the heat pump is off and the backup heat satisfies the full
 c load if it has enough capacity
+
       elseif((plrhp.ge.0.99).and.(itemp_control(isys).eq.1)) then
         plrhp = 0.
 c Set the part-load ratio of the backup heat source
@@ -237,10 +241,13 @@ c total system heating capacity
         call SET_CONT_FUNC_HEAT_CAP(isys,total_sys_heat_cap)
         return
 
+C------------------------------------------------------------------------------
 c For restricted control, outdoor temperature > cutoff point, and plrhp < 1,
 c the heat pump satisfies the full load
-      elseif((plrhp.lt.0.99).and.(itemp_control(isys).eq.2).and.
-     &(TF.ge.cutoff_temp(isys))) then
+      elseif((plrhp.lt.0.99).and.(itemp_control(isys).eq.2 .or. 
+     &                            itemp_control(isys).eq.4      )
+     &                      .and.(TF.ge.cutoff_temp(isys))) then
+	 
 c Part-load factor of the heat pump
         plfhp = ASHP_PLF(isys,plrhp)
 c Part-load ratio of the backup heat source
@@ -252,11 +259,13 @@ c Call subroutine to set zone controller heating capacity based on
 c total system heating capacity
         call SET_CONT_FUNC_HEAT_CAP(isys,total_sys_heat_cap)
 
+C------------------------------------------------------------------------------
 c For restricted control, outdoor temperature < cutoff point, and plrhp < 1,
 c the full load is satisfied by the backup heat source in case it has enough
 c capacity
-      elseif((plrhp.lt.0.99).and.(itemp_control(isys).eq.2).and.
-     &(TF.lt.cutoff_temp(isys))) then   
+      elseif((plrhp.lt.0.99).and.(itemp_control(isys).eq.2 .or. 
+     &                            itemp_control(isys).eq.4      )	 
+     &                      .and.(TF.lt.cutoff_temp(isys))) then   
         plrhp = 0.
 c Set the part-load ratio of the backup heat source
         plrb = PLR(heating_load,ss_capacity(ibackup_sys_num(isys)),
@@ -270,16 +279,40 @@ c total system heating capacity
         call SET_CONT_FUNC_HEAT_CAP(isys,total_sys_heat_cap)
         return
 
-c If restricted cut-off, outdoor temperature > cutoff temperature, and
+C------------------------------------------------------------------------------		
+C If restricted cut-off, outdoor temperature > cutoff temperature, and
 c plrhp > 1, the heat pump can not satisfy the full load and the backup
 c heat source is employed
-      elseif((plrhp.ge.0.99).and.(itemp_control(isys).eq.2).and.
-     &(TF.ge.cutoff_temp(isys))) then
+      elseif((plrhp.ge.0.99).and.( itemp_control(isys).eq.2 .or. 
+     &                             itemp_control(isys).eq.4)
+     &                      .and.( TF.ge.cutoff_temp(isys))) then
 
+	 
+C if backup is electric baseboard, or if the HP is displacement application 
+C (ie minisplit,) HP operates at full capacity and back-up meets remainder 
+C of load. 	  
+        if ( ibackup_heat(isys).eq. 3 .or. 
+     &       itemp_control(isys) .eq. 4 ) then 
+
+          plrhp = 1.
+          plfhp = 1.			
+
+          backup_heating_load = BACKUP_LOAD(heating_load,
+     &    ss_heat_pump_cap,fan_power(isys),ifan_operation(isys))                   
+          plrb = backup_heating_load / 
+     &                             ss_capacity(ibackup_sys_num(isys))
+		  
+c Set total heating capacity available. This will be used to set 
+c appropriate zone controller capacity for time step
+          total_sys_heat_cap = ss_heat_pump_cap + 
+     &                         ss_capacity(ibackup_sys_num(isys))
+c Call subroutine to set zone controller heating capacity based on
+c total system heating capacity
+          call SET_CONT_FUNC_HEAT_CAP(isys,total_sys_heat_cap)	 
+        else 
+	 
 c If the backup heat source is a furnace/boiler, the heat pump and the furnace/
 c boiler operate alternatively to satisfy the load
-        if((ibackup_heat(isys).eq.1).or.
-     &     (ibackup_heat(isys).eq.2)) then
 c Check whether the furnace system has enough capacity to meet the load
 c by itself. To do this, the furnace part-load ratio is needed
           plrb = PLR(heating_load,ss_capacity(ibackup_sys_num(isys)),
@@ -315,25 +348,6 @@ c total system heating capacity
             endif
           endif
 
-c If the backup heat is Hydronic/Baseboard/Plenum Heaters, the heat pump is
-c on all the time and the remaining heat is provided by the backup heat
-c source if it has enough capacity
-        elseif(ibackup_heat(isys).eq.3) then
-          plrhp = 1.
-          plfhp = 1.
-c Space heat load remaining to be satisfied by backup heat source. Need
-c to account for the contribution of the circulation fan
-          backup_heating_load = BACKUP_LOAD(heating_load,
-     &    ss_heat_pump_cap,fan_power(isys),ifan_operation(isys))                   
-          plrb = backup_heating_load / 
-     &                             ss_capacity(ibackup_sys_num(isys))
-c Set total heating capacity available. This will be used to set 
-c appropriate zone controller capacity for time step
-          total_sys_heat_cap = ss_heat_pump_cap + 
-     &                         ss_capacity(ibackup_sys_num(isys))
-c Call subroutine to set zone controller heating capacity based on
-c total system heating capacity
-          call SET_CONT_FUNC_HEAT_CAP(isys,total_sys_heat_cap)
         endif
 
 c If restricted control, outdoor temperature < cutoff temperature, and

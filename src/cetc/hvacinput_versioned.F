@@ -3004,6 +3004,7 @@ C-----------------------------------------------------------------------
       if ( bFound
      &    .and. iTemp_Control( iSystem ) /= iTemp_BalancedPoint
      &    .and. iTemp_Control( iSystem ) /= iTemp_Restricted
+     &    .and. iTemp_Control( iSystem ) /= iTemp_Restricted_Disp
      &    .and. iTemp_Control( iSystem ) /= iTemp_Unrestricted
      &    ) then
 
@@ -3025,6 +3026,11 @@ C-----------------------------------------------------------------------
         write (cMsg, '(A)')
      &    '   - 3  (Unrestricted)'
         call edisp248( iUout, cMsg, 80 )
+        
+        write (cMsg, '(A)')
+     &    '   - 4  (Restricted, displacement)'
+        call edisp248( iUout, cMsg, 80 )        
+        
 C.......Set error flag
         bParseError = .true.
       endif
@@ -3034,7 +3040,8 @@ C     Cut-off temperature
 C-----------------------------------------------------------------------
       if ( bFound .and.
      &     bRequiredHeating .and.
-     &     iTemp_Control(iSystem) == iTemp_Restricted
+     &     (iTemp_Control(iSystem) == iTemp_Restricted .or. 
+     &      iTemp_Control(iSystem) == iTemp_Restricted_Disp )
      &    ) then
         cutoff_temp(iSystem) = fHVAC_FindTokenWithLimits
      &     ( iSystem,
