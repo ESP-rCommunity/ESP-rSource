@@ -979,15 +979,22 @@ C...........
 C...........Co
             fPLR(iBackup) = fPLR_backup(i)
 
+          if ( bDebug) write (*,*) 
+     &    "              PLR main: ", fPLR(i)
+            
+          if ( bDebug) write (*,*) 
+     &    "             Load met by primary: ",fPLR(i)*ss_capacity(i) 
 
           if ( bDebug) write (*,*) 
-     &    "              remaining load: ", fBackupHeatingLoad(iBackup)
+     &    "              remaining load: ", 
+     &                   fBackupHeatingLoad( iBackup )
            endif SaveBackupLoad
           
         endif IfPrimary
 
       enddo HVAC_primary_sys_loop
       
+      !if ( fBackupHeatingLoad( iBackup ) > 1 ) stop
       
 C-----------------------------------------------------------------------
 C     Loop through systems a second time, and determine energy 
@@ -1340,7 +1347,7 @@ C...............Fan_energy is in joules, convert from watts.
         
         enddo FanCtlLoop
 
-        
+       
 C-----------------------------------------------------------------------
 C      Code for reporting/storing data in h3kreports!
 C-----------------------------------------------------------------------         

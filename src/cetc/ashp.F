@@ -146,7 +146,7 @@ c If the system being modelled is a GSHP, then the capacity
 c is not affected by the outdoor temperature, but instead by the 
 c entering water temperature.
 
-      !print*, "ASHP HEATING: "
+      !print*, " ----> ASHP HEATING: "
 
       if (ihvac_type(isys) .eq. 8) then
         GSHP_HP_mode = 1         ! set the HP mode of operation to heating.
@@ -196,12 +196,15 @@ c temperature
      
       endif
 
+      !print*, " ----> HP SS CAP:  ", ss_heat_pump_cap
+      
 C Save actual capacity of heat-pump system
       fH3KActualCapacity(iSYS) = ss_heat_pump_cap
 
 c Initial estimate of the part-load ratio of the heat pump
       plrhp = PLR(heating_load,ss_heat_pump_cap,fan_power(isys),
      &            ifan_operation(isys))
+      !print*, " ----> HP PLR (1):  ", plrhp 
 c Depending on the first estimate of the part-load ratio and the temperature
 c control option, different procedures are used to estimate the actual 
 c part-load ratio and factor for the heat pump and the backup heating system.
@@ -217,7 +220,8 @@ c Part-load ratio of the backup heat source
         plrb = 0.
 c Set total heating capacity available. This will be used to set 
 c appropriate zone controller capacity for time step
-        total_sys_heat_cap = ss_heat_pump_cap
+        total_sys_heat_cap = ss_heat_pump_cap 
+     &             + ss_capacity(ibackup_sys_num(isys))
 c Call subroutine to set zone controller heating capacity based on
 c total system heating capacity
         call SET_CONT_FUNC_HEAT_CAP(isys,total_sys_heat_cap)
@@ -254,7 +258,8 @@ c Part-load ratio of the backup heat source
         plrb = 0.     
 c Set total heating capacity available. This will be used to set 
 c appropriate zone controller capacity for time step
-        total_sys_heat_cap = ss_heat_pump_cap
+        total_sys_heat_cap = ss_heat_pump_cap 
+     &          + ss_capacity(ibackup_sys_num(isys))
 c Call subroutine to set zone controller heating capacity based on
 c total system heating capacity
         call SET_CONT_FUNC_HEAT_CAP(isys,total_sys_heat_cap)
@@ -295,20 +300,25 @@ C of load.
      &       itemp_control(isys) .eq. 4 ) then 
 
           plrhp = 1.
-          plfhp = 1.			
+   
+		  plfhp = ASHP_PLF(isys,plrhp)			
 
-          backup_heating_load = BACKUP_LOAD(heating_load,
-     &    ss_heat_pump_cap,fan_power(isys),ifan_operation(isys))                   
-          plrb = backup_heating_load / 
-     &                             ss_capacity(ibackup_sys_num(isys))
-		  
+C          backup_heating_load = BACKUP_LOAD(heating_load,
+C     &    ss_heat_pump_cap,fan_power(isys),ifan_operation(isys))                   
+          plrb = PLR(heating_load-ss_heat_pump_cap,
+     &               ss_capacity(ibackup_sys_num(isys)),
+     &               fan_power(isys),
+     &                ifan_operation(ibackup_sys_num(isys)))
+	 
+
 c Set total heating capacity available. This will be used to set 
 c appropriate zone controller capacity for time step
           total_sys_heat_cap = ss_heat_pump_cap + 
      &                         ss_capacity(ibackup_sys_num(isys))
 c Call subroutine to set zone controller heating capacity based on
 c total system heating capacity
-          call SET_CONT_FUNC_HEAT_CAP(isys,total_sys_heat_cap)	 
+          call SET_CONT_FUNC_HEAT_CAP(ibackup_sys_num(isys),
+     &           total_sys_heat_cap)	 
         else 
 	 
 c If the backup heat source is a furnace/boiler, the heat pump and the furnace/
@@ -482,6 +492,9 @@ c step
        heat_pump_energy = ASHP_ENERGY(ss_heat_pump_cap,cop,plrhp,
      &                   plfhp2,time_step)
        
+       
+      !print*, " ----> HP PLR  (e):  ", plrhp        
+      !print*, " ----> HP PL-b (e):  ", plrb
        
      
        return
@@ -1362,6 +1375,8 @@ c Local Variables
       INTEGER icounter
       LOGICAL close
       REAL small,zone_heat_cap
+
+      
 
       small = 1.e-6
 
