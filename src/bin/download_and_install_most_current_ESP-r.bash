@@ -19,7 +19,7 @@ if [ "$platform" = "auto-detect" ]; then
    # Note: $architecture has been error-trapped above.
    case $architecture in
       Linux)                           platform="linux";;
-      CYGWIN_NT-5.2  | CYGWIN_NT-5.1  | CYGWIN_NT-5.0  | CYGWIN_NT-6.0 | CYGWIN_NT-6.1 | CYGWIN_NT-6.1-WOW64 ) platform="cygwin";;
+      CYGWIN_NT-5.2  | CYGWIN_NT-5.1  | CYGWIN_NT-5.0  | CYGWIN_NT-6.0 | CYGWIN_NT-6.1 | CYGWIN_NT-6.1-WOW64 | CYGWIN_NT-10.0) platform="cygwin";;
       MINGW64_NT-10.0 |MINGW64_NT-6.1 |MINGW32_NT-6.1 | MINGW32_NT-5.2 | MINGW32_NT-5.1 | MSYS_NT-6.1 ) platform="mingw";;
       Darwin)                          platform="mac";;
    esac
@@ -101,7 +101,7 @@ echo "  ";
 echo "Step 1 Check for dependencies";
 
 # Check for dependencies
-for SWARE in git gcc g++ gfortran rsync
+for SWARE in git gcc g++ gfortran rsync make
 do
   SWARE_PRESENT=`which $SWARE`;
   if [ -z "$SWARE_PRESENT" ]; then # check if string is not empty
@@ -113,23 +113,35 @@ do
 done
 
 if [ "$platform" = "mac" ] ; then
-  if [ ! -a "/opt/local/bin/port" ]; then
+  if [ -d "/opt/local/bin" ]; then
     echo "  ";
-    echo "Looks like you are using MacPorts so you will need to use";
-    echo "the --compiler_version option and run the Install script manually.";
+    echo "Looks like you are using the MacPorts package manager so you will need to";
+    echo "use the --compiler_version option and run the Install script manually.";
     echo "looks like the available GNU compilers are:";
     ls -l /opt/local/bin/gcc-m*
     ls -l /opt/local/bin/g++-m*
     ls -l /opt/local/bin/gfortran-m*
-    echo "to find out more about Install command line options do ./Install -h";
+    echo "to find out more about Install command line options do a ./Install -h";
   else
-    echo "Did not find MacPorts (/opt/local) if you are using something else";
-    echo "proceed with caution or install MacPorts.";
+    if [ -d "/usr/local/Homebrew" ]; then
+      echo "  ";
+      echo "Looks like you are using the Homebrew package manager. If the compilers";
+      echo "were found then you will need to use the --compiler_version -6 option when";
+      echo "invoking the Install command line.";
+    else
+      echo "Did not find MacPorts or Homebrew. If you are using something else";
+      echo "proceed with caution.";
+    fi
   fi
   if [ ! -d "/Applications/Xcode.app" ]; then
-    echo "Did not find Xcode you will need to install this and its";
-    echo "command line tools first.";
-    exit;
+    SWARE_PRESENT=`which make`;
+    if [ -z "$SWARE_PRESENT" ]; then # check if string is not empty
+      echo "ERROR: Install command line tools for XCode before continuing ... aborting";
+      exit;
+    else
+      echo "  Using $SWARE present at $SWARE_PRESENT";
+      echo "  So assuming a development tool-chain is present.";
+    fi
   fi
 fi
 
@@ -211,20 +223,29 @@ cd ESP-rMaster
 echo "  ";
 echo "The default Install script parameters will be:";
 if [ "$platform" = "linux" ]  ||
-   [ "$platform" = "cygwin" ] ||
-   [ "$platform" = "mac" ] ; then
+   [ "$platform" = "cygwin" ] ; then
   echo "./Install_o2 -d /opt/esru --debug --X11 --gcc4 --silent --force";
+fi
+if [ "$platform" = "mac" ] ; then
+  if [ -d "/usr/local/Homebrew" ]; then
+    echo "Suggest invoking Install with --compiler_version -6 ";
+    echo "./Install_o2 -d /opt/esru --debug --X11 --gcc4 --silent --force --compiler_version -6";
+  else
+    echo "Suggest invoking Install with --compile_version -mp-5 ";
+    echo "./Install_o2 -d /opt/esru --debug --X11 --gcc4 --silent --force --compiler_version -mp-5";
+  fi
 fi
 if [ "$platform" = "mingw" ] ; then
   echo "./Install_o2 -d C:/ESRU --debug --GTK --gcc4";
 fi
 echo "and all databases and exemplars will be installed.";
-echo "To find out more about Install command line options do ./Install -h";
+echo "To find out more about Install command line options do a ./Install -h";
 if [ "$platform" = "mac" ] ; then
   echo "For OSX we suggest manual invocation of the Install script.";
 fi
 echo "  ";
-echo "Proceed with running the ESP-r Install script?";
+echo "Proceed with running the ESP-r Install script? A no allows you";
+echo "to invoke Install script manually.";
 YN=none;
 while [ "$YN" != "y" ] && [ "$YN" != "n" ] && [ "$YN" != "" ]
 do
@@ -241,18 +262,36 @@ if [ "$YN" = "n" ]; then
    echo "cd ESP-rMaster";
    echo "sudo ./Install -d /opt/esru --debug --gcc4";
    echo "and then manually remove the esru and esru/tmp folders.";
+   if [ "$platform" = "mingw" ] ; then
+     echo "After compiling you should also run the copy_dll_to_c_esru_esp-r_bin.bash";
+     echo "command in the ESPrMaster folder to place dependencies in the";
+     echo "C:/ESRU/esp-r/bin folder.";
+   fi
    exit;
 fi
 
 if [ "$platform" = "linux" ]  ||
-   [ "$platform" = "cygwin" ] ||
-   [ "$platform" = "mac" ] ; then
-  ./Install_o2 -d /opt/esru --debug --X11 --gcc4 --silent --force
+   [ "$platform" = "cygwin" ] ; then
+  ./Install_o1 -d /opt/esru --debug --X11 --gcc4 --silent --force
+fi
+if [ "$platform" = "mac" ] ; then
+  if [ -d "/usr/local/Homebrew" ]; then
+    ./Install_o1 -d /opt/esru --debug --X11 --gcc4 --silent --force --compiler_version -6
+  else
+    ./Install_o1 -d /opt/esru --debug --X11 --gcc4 --silent --force --compiler_version -mp-5
+  fi
 fi
 if [ "$platform" = "mingw" ] ; then
   echo "For MSYS2 say no to XML output, choose GTK, say yes to databases and models.";
   ./Install_o2 -d C:/ESRU --debug --GTK --gcc4
+  echo " ";
+  echo "After compiling you should also run the copy_dll_to_c_esru_esp-r_bin.bash";
+  echo "command in the ESPrMaster folder to place dependencies in the";
+  echo "C:/ESRU/esp-r/bin folder.";
+  echo "Do this BEFORE you clean up the folders!";
+  echo " ";
 fi
+echo "  ";
 echo "Step 4 Install ESP-r distribution... DONE";
 echo "  ";
 
@@ -272,11 +311,14 @@ do
     ln -s  /opt/esru/esp-r/bin/$executable /$HOME/bin/$executable
   fi
 done
-echo "Step 6 Cleaning object files from the compile ...";
+echo "  ";
+echo "Step 6 Cleaning object files from the compile in ESPrMaster ...";
+echo "  ";
 cd src
 make clean
 
-echo "Step 7 Cleaning downloaded repositories ...";
+echo "  ";
+echo "Step 7 Cleaning downloaded repositories (in esru/tmp) ...";
 echo "[say n if you want to do this yourself]";
 echo "Proceed with these tasks?";
 YN=none;
