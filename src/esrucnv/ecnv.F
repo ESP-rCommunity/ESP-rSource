@@ -303,7 +303,7 @@ C files and close the cfg file.
             stop 'ecnv aborted.'
           endif
         else
-          call escdef(iotmp2,IER)
+          call escdef(iotmp2,'s',IER)
           call clrprb
         endif
 
@@ -355,7 +355,7 @@ C have not been read in.
 
 C Scan the defaults file for default configuration.
 C Make temporary use of file unit iotmp2.
-        call escdef(iotmp2,IER)
+        call escdef(iotmp2,'s',IER)
         write(LTMP,'(a)') filname(1:lnblnk(filname))
 
 C Find the path and local file name.

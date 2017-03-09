@@ -1920,10 +1920,10 @@ C If existing db out of date the perform recalculation.
           call tstamp('>','PRJ: start shading recalculation')
           if(IRT.eq.1)then
             call comissionish(icomp,'sra',ier)
-            ishold=.false.
+            if(ier.eq.0)ishold=.false.
           else
             call comissionish(icomp,'ira',ier)
-            ishold=.false.
+            if(ier.eq.0)ishold=.false.
           endif
         endif
       endif
@@ -1976,14 +1976,20 @@ C     = 'sua'  silent useupdate_silent mode
       integer iappw,iappx,iappy
       integer iappwpc ! application %
 
+C Directives for shading and/or insolation.
+      common/ishdirec/iaplic(MCOM,2),nsurfcalc(MCOM),lstsfcalc(MCOM,MS),
+     &     nsurfinso(MCOM),isurfinso(MCOM,MS)
+
       CHARACTER ZN*12,longtfile*144,longtfiledos*144
       character TMODE*8,outs*248,DOIT*248
       character shdafile*72
       character act*3  ! the parameter passed
       logical XST,XSTA,concat,unixok
+      logical shdasked,ishasked
 
 C Check if Unix-based or DOS based.
       call isunix(unixok)
+      shdasked=.true.; ishasked=.true.
 
       if(iz.eq.0.or.iz.gt.ncomp)then
         ier=1
@@ -1992,6 +1998,41 @@ C Check if Unix-based or DOS based.
 
       if(ISI(iz).eq.0)then
         ier=2
+        return  ! do not do if ISI has not been setup yet
+      endif
+
+C Confirm that zone shading directives have been defined. Use
+C similar logic to that used in edgeo.F for the interface.
+      if(nsurfcalc(iz).gt.0)then
+        if(iaplic(iz,1).eq.0)then
+          shdasked=.true.
+        else
+          shdasked=.true.
+        endif
+      else
+        if(IOBS(iz).eq.0)then
+          shdasked=.false.
+        elseif(IOBS(iz).eq.2)then
+          shdasked=.false.
+        else
+          shdasked=.false.
+        endif
+      endif
+      if(nsurfinso(iz).gt.0)then
+        if(iaplic(iz,2).eq.0)then
+          ishasked=.true.
+        else
+          ishasked=.true.
+        endif
+      else
+        ishasked=.false.
+      endif
+      if((.NOT.shdasked).and.(.NOT.ishasked))then
+        ier=3
+        call edisp(iuout,
+     &  'No shading or insolation directives set for this zone.')
+        call edisp(iuout,
+     &  'Return to the zone geometry facility and set these.')
         return  ! do not do if ISI has not been setup yet
       endif
 
@@ -2043,6 +2084,7 @@ C rather than starting up a new xterm.
           write(outs,'(3a)') 'Shading for ',ZN(1:lnz),
      &        ' has been recalculated.'
           call edisp(iuout,outs)
+          ier=0
         else
           ier=3
           return  ! if shading file does exist
@@ -2063,6 +2105,7 @@ C rather than starting up a new xterm.
         write(outs,'(3a)') 'Shading for ',ZN(1:lnz),
      &      ' has been recalculated.'
         call edisp(iuout,outs)
+        ier=0
 
       elseif(act(1:3).eq.'ir ')then
 
@@ -2085,6 +2128,7 @@ C on to child with an offset from prj start position.
           write(outs,'(3a)') 'Shading for ',ZN(1:lnz),
      &      ' has been recalculated.'
           call edisp(iuout,outs)
+          ier=0
         else
           ier=3
           return  ! if shading file does exist
@@ -2109,6 +2153,7 @@ C pass this on to child with an offset from prj start position.
         write(outs,'(3a)') 'Shading for ',ZN(1:lnz),
      &    ' has been recalculated.'
         call edisp(iuout,outs)
+        ier=0
 
       elseif(act(1:3).eq.'in ')then
 
@@ -2128,6 +2173,7 @@ C Interactive shading calculation for a new shading database.
         write(outs,'(3a)') 'Shading for ',ZN(1:lnz),
      &    ' has been recalculated.'
         call edisp(iuout,outs)
+        ier=0
 
       elseif(act(1:3).eq.'sab')then
 
@@ -2146,6 +2192,7 @@ C rather than starting up a new xterm.
      &      ' has been imported from ASCII.'
           call edisp(iuout,outs)
         endif
+        ier=0
 
       elseif(act(1:3).eq.'sua')then
 
@@ -2163,6 +2210,7 @@ C rather than starting up a new xterm.
         write(outs,'(3a)') 'Shading for ',ZN(1:lnz),
      &      ' has been converted or recalculated.'
         call edisp(iuout,outs)
+        ier=0
 
       endif
 

@@ -238,6 +238,9 @@ C the current applications command window rather than
 C starting up a new xterm (i.e. use '-' rather than 'text')
                 if(IRT.eq.1)then
                   call comissionish(iz,'sr ',ier)
+                  if(ier.ne.0)then
+                    call edisp(iuout,'Possible error in calculations.')
+                  endif
                 else
                   DOK=.TRUE.
                   write(outs,'(3a)') 'Proceed with shading for ',
@@ -245,6 +248,10 @@ C starting up a new xterm (i.e. use '-' rather than 'text')
                   CALL ASKOK(outs,' ',OK,DOK,nbhelp)
                   if(OK)then
                     call comissionish(iz,'ir ',ier)
+                    if(ier.ne.0)then
+                      call edisp(iuout,
+     &                  'Possible error in calculations.')
+                    endif
                   endif
                 endif
               endif
@@ -3863,6 +3870,9 @@ C one in forground in an xterm with `-act update_silent`
 C as the command line.
             if(IRT.eq.1)then
               call comissionish(iz,'sra',ier)
+              if(ier.ne.0)then
+                call edisp(iuout,'Possible error in calculations.')
+              endif
             else
               DOK=.true.
               write(outs,'(3a)') 'Proceed with shading for ',
@@ -3870,6 +3880,9 @@ C as the command line.
               CALL ASKOK(outs,' ',OK,DOK,nbhelp)
               if(OK)then
                 call comissionish(iz,'ira',ier)
+                if(ier.ne.0)then
+                  call edisp(iuout,'Possible error in calculations.')
+                endif
               endif
             endif
   43      continue
@@ -3895,6 +3908,9 @@ C an `-act update_silent` as the command line.
               if(IRT.eq.1)then
                 if(XSTA)then
                   call comissionish(iz,'sab',ier)
+                  if(ier.ne.0)then
+                    call edisp(iuout,'Possible error in calculations.')
+                  endif
                 else
                   if(XST)then
 
@@ -3902,10 +3918,16 @@ C << TODO actually read ISH file and see if syntax is correct >>
                     continue  ! bin exists so can skip recalculation
                   else
                     call comissionish(iz,'sua',ier)
+                    if(ier.ne.0)then
+                      call edisp(iuout,'Possible error in calcs.')
+                    endif
                   endif
                 endif
               elseif(IRT.eq.2)then
                 call comissionish(iz,'sra',ier)
+                if(ier.ne.0)then
+                  call edisp(iuout,'Possible error in calculations.')
+                endif
               elseif(IRT.eq.3)then
                 DOK=.true.
                 write(outs,'(3a)') 'Proceed with shading for ',
@@ -3913,7 +3935,10 @@ C << TODO actually read ISH file and see if syntax is correct >>
                 CALL ASKOK(outs,' ',OK,DOK,nbhelp)
                 if(OK)then
                   call comissionish(iz,'ira',ier)
-                endif
+                  if(ier.ne.0)then
+                    call edisp(iuout,'Possible error in calculations.')
+                  endif
+                 endif
               endif
             endif
           enddo

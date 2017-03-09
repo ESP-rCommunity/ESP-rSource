@@ -726,9 +726,9 @@ C and set the default viewing angles to 1.2 factor.
         dvangv=eang*1.2
         dvangh=eang*1.2
         if(rvpx.lt.99.0.and.rvpy.lt.99.0.and.rvpz.lt.99.0)then
-	  short=.true.
+          short=.true.
         else
-	  short=.false.
+          short=.false.
         endif
         call eclose(cutfor,0.0,0.1,okfore)
         call eclose(cutaft,0.0,0.1,okaft)

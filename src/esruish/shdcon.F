@@ -89,16 +89,18 @@ C from the zone geometry file.
       if(icont.eq.0)then
          if(newgeo)then
             call edisp(iuout,
-     &        'No shaded surfaces in zone geometry file - skipping!')
+     &      'No shading directives in zone geometry file - skipping!')
             return
          else
             if(act.eq.'s')then
-               call edisp(iuout,'No surfaces, shading skipped!')
-               return
+              call edisp(iuout,
+     &        'No shading directives in zone geometry file-skippimg!')
+              return
             else
                dok=.true.
-               call askok('No surfaces selected!','Re-specify?',
-     &           ok,dok,nbhelp)
+               call askok(
+     &           'No shading directives in zone geometry file.',
+     &           'Re-specify?',ok,dok,nbhelp)
                if(ok)goto 35
                call edisp(iuout,'Shading computation abandoned!')
                return

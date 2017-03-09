@@ -261,7 +261,7 @@ C Make temporary use of file unit IAF=IFIL+1.
 
 C Scan the defaults file for default configuration. << tmp name >>
       defdbfl='./gdefaults'
-      call escgdef(IAF,IER)
+      call escgdef(IAF,'s',IER)
 
       LGENDB=' '
 

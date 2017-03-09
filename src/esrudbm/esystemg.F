@@ -527,7 +527,7 @@ C Note: escdef must come after scan of .esprc file.
 C Patch for dbm use. Scan for default generic databases and the
 C set gendbfn before reading model.
       defdbfl='./gdefaults'
-      call escgdef(IUF,IER)
+      call escgdef(IUF,'s',IER)
       do 143 i=1,MGDB
         gendbfn(i)=dgendbfn(i)
  143  continue

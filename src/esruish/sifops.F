@@ -251,7 +251,7 @@ C *** Listing requested. If to file then write higher resolution.
 
 C Insolation factors. Call insynp in silent mode.
          if(nwins.eq.0.or.ishd(mnth).eq.1)goto 6
-	 mon=mnth  ! ensure that insynp has the current month & DOY
+         mon=mnth  ! ensure that insynp has the current month & DOY
          call eday(iavdec(mon),mon,iyd)
          allsurf=.false.  ! let the silent mode take precidence
          call insynp(icomp,'s',allsurf)

@@ -1585,29 +1585,29 @@ C Should be the same logic as in esru_x.c.
       if(mode.eq.0)then
         vv = v2 - v1
         v = abs(vv)
-	x = log10(v)
-	ix = nint(x)
+        x = log10(v)
+        ix = nint(x)
         if (x.lt.0.0) ix=ix-2
         dx = real(ix)
 
-	dz = 10.0**dx
-	vr =  v / dz
-	w = 10.0
-	if (vr.lt.5.0) w = 5.0
-	if (vr.lt.2.0) w = 2.0
+        dz = 10.0**dx
+        vr =  v / dz
+        w = 10.0
+        if (vr.lt.5.0) w = 5.0
+        if (vr.lt.2.0) w = 2.0
 
-	dvv = w * 0.1 * dz
-	if (vv.lt.0.0) dvv = -dvv
+        dvv = w * 0.1 * dz
+        if (vv.lt.0.0) dvv = -dvv
 
-	nd = 1 - ix
-	if (w.eq.10.0)then
+        nd = 1 - ix
+        if (w.eq.10.0)then
           nd=nd-1
         elseif (w.eq.5.0)then
           nd = 1
         elseif (w.eq.2.0)then
           nd = 2
         endif
-       	if (nd.lt.0) nd = 0
+        if (nd.lt.0) nd = 0
       else
         v = v2 - v1
         dvv = 168.0

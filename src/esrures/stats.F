@@ -796,7 +796,7 @@ C If output to file alter the edisp unit number. Skip if in IPV mode.
       endif
 
 C Set all returned data to zero.
- 1    VMX=0.0; VMN=0.0; VAVE=0.0; VTOT=0.0
+ 42   VMX=0.0; VMN=0.0; VAVE=0.0; VTOT=0.0
       DIVMX=0.0; DIVMN=0.0; DISTMX=0.0; DISTMN=0.0
 
 C Call the menu of choices (this also sets some default options).
@@ -1232,7 +1232,7 @@ C Allow other/ re- display?
       if(act(1:1).eq.'p')then
         return
       else
-        goto 1
+        goto 42
       endif
 
       END

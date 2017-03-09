@@ -3080,6 +3080,9 @@ C Get logical name of terminal type, expand model name
 C to include the path and create a string to drive ish.
           call tstamp('>','PRJ: start shading')
           call comissionish(ic,'in ',ier)
+          if(ier.ne.0)then
+            call edisp(iuout,'Possible error in calculations.')
+          endif
         endif
 
 C Loop back and see if another zone is requested.

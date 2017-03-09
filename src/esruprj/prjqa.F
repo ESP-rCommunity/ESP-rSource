@@ -3296,8 +3296,14 @@ C one in forground in an xterm with `-act update_silent`
 C as the command line.
             if(IRT.eq.1)then
               call comissionish(iz,'sr ',ier)
+              if(ier.ne.0)then
+                call edisp(iuout,'Possible error in calculations.')
+              endif
             else
               call comissionish(iz,'ir ',ier)
+              if(ier.ne.0)then
+                call edisp(iuout,'Possible error in calculations.')
+              endif
             endif
           endif
   43    continue

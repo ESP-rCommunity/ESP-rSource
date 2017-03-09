@@ -1194,7 +1194,8 @@ C Common for new format component database
       character fs*1
       integer lndbp   ! for length of standard database path
       character lltmp*144  ! to re-create plant database file name with path
-
+      character domain_s*16,category_s*16
+      
 C For help messages
       character helpinsub*24   ! subroutine name
       character helptopic*24 ! string (unique) for topic
@@ -1286,7 +1287,8 @@ C Read additional output description and type
 c Read the additional plant output data data from the new format database.
       if(icdbf.eq.1)then
         argstr='parameters'
-        call CDBGetItemData(' ',' ',UCdbNam(IPC),argstr)
+        domain_s=' '; category_s=' '
+        call CDBGetItemData(domain_s,category_s,UCdbNam(IPC),argstr)
         argstr='detailed'
         CALL CDB2Plant(IPC,argstr)
         nnode=s_NNODE

@@ -518,7 +518,7 @@ C subroutine curvedraw
       common/mdbase/mdbnam
       common/FILEP/IFIL
 
-      character outs*124, mdbnam*72 ,mldnam*48
+      character outs*124, mdbnam*144 ,mldnam*48
 #ifdef OSI
       integer ipos,isize      ! for use with etlabel
       integer iupdown,isym    ! passed to etplot

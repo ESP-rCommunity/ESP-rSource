@@ -219,6 +219,7 @@ C It excludes start-up timesteps
       integer iOperTimestep,iMonthOperTimestep      
 
       REAL QCASLT  ! to hold the summation of pres + future latent
+      integer nbhelp
 
       DIMENSION QLATN(2),VAL(MBITS+2)
 
@@ -796,6 +797,7 @@ C ventilation values in the zone).
             write(outs,'(4a)') 'For ',zname(icomp),
      &        ' rescan operation file: ',LPROJ(icomp)(1:36)
             DOK=.false.
+            nbhelp=2
             CALL ASKOK(OUTS,'Confirm?',OK,DOK,nbhelp)
             if(ok)then
               iunit=ifil+1
