@@ -74,8 +74,9 @@ back into the community.
 Version-controlled source code
 ------------------------------
 The ESP-r source code is stored on a publicly-accessible repositories
-at <https://github.com/ESP-rCommunity. To work with ESP-r you have
-to checkout the four repositories and create a new folder structure 
+at <https://github.com/ESP-rCommunity. Although you can compile ESP-r
+with only the ESP-rSource.git to get full functionality you have
+to checkout all four repositories and create a new folder structure 
 to hold the combined distribution. Assuming the folder for downloads is
 ESPrgit and the combined distribution will be in ESPr_Master give
 the following commands:
