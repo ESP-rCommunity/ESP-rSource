@@ -4378,7 +4378,7 @@ C          write(6,*) ij,' ',listfc70s(ij)
 C Select from the list. If prj was started in model cfg folder
 C (pwdtocfg = !) write with pwdinitial, otherwise also include
 C the pwdtocfg part of the path.
-        write(6,*) 'pwdtocfg is ',pwdtocfg
+C        write(6,*) 'pwdtocfg is ',pwdtocfg
         CALL EPICKS(IX,ivlist,outs,' ',
      &    maxw,nboflistf,listfc70s,'Available files',IER,nbhelp)
         if(ix.eq.1)then

@@ -1450,8 +1450,14 @@ C The balance of the exemplar string after the cfg_root.
 C Offer user choice of home folder plus the exemplar root name. In GTK
 C there is a file browser returning folder name via lltmp. If lltmp
 C folder does not exist then need to create it.
-                    write(lguess,'(3a)') upath(1:lnblnk(upath)),fs,
-     &                cfg_root(1:lcfgr)
+C If prj was started in a Models folder prepend to path.
+                    if(pwdinitial(lnpwdi-5:lnpwdi).eq.'Models')then
+                      write(lguess,'(3a)') pwdinitial(1:lnpwdi),fs,
+     &                  cfg_root(1:lcfgr)
+                    else
+                      write(lguess,'(3a)') upath(1:lnblnk(upath)),fs,
+     &                  cfg_root(1:lcfgr)
+                    endif
                     write(dguess,'(3a)') upath(1:lnblnk(upath)),fs,
      &                cfg_root(1:lcfgr)
                     call edisp(iuout,'  ')  ! echo a blank line
@@ -1497,8 +1503,13 @@ C model folder so use fdroot to extract this from rootp.
 
 C Offer user choice of home folder plus the exemplar root name. In GTK
 C there is a file browser returning folder name via lltmp.
-                    write(lguess,'(3a)') upath(1:lnblnk(upath)),fs,
-     &                cfg_root(1:lcfgr)
+                    if(pwdinitial(lnpwdi-5:lnpwdi).eq.'Models')then
+                      write(lguess,'(3a)') pwdinitial(1:lnpwdi),fs,
+     &                  cfg_root(1:lcfgr)
+                    else
+                      write(lguess,'(3a)') upath(1:lnblnk(upath)),fs,
+     &                  cfg_root(1:lcfgr)
+                    endif
                     write(dguess,'(3a)') upath(1:lnblnk(upath)),fs,
      &                cfg_root(1:lcfgr)
                     call edisp(iuout,'  ')  ! echo a blank line
