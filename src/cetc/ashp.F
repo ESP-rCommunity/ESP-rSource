@@ -196,7 +196,7 @@ c temperature
      
       endif
 
-      !print*, " ----> HP SS CAP:  ", ss_heat_pump_cap
+      !print*, " ----> HP SS CAP:  ", ss_heat_pump_cap, TF
       
 C Save actual capacity of heat-pump system
       fH3KActualCapacity(iSYS) = ss_heat_pump_cap

@@ -358,7 +358,7 @@ C.....Storage varaibles used to rationalize H3Kreports reporting
 C.....variables for computing fan power with fan control loop.s       
       integer iPLRRows, iThisRow       
       integer iPLRResolution 
-      parameter (iPLRResolution = 10) 
+      parameter (iPLRResolution = 20) 
       real fFanSHCPower(iPLRResolution)       
       real fFanPowerSysIncremental(max_sys) 
       logical bFanCont
@@ -1237,8 +1237,8 @@ C...............Increment system counter. Not sure this is used.
               
 C...............Compute # of rows needed in fan power array 
 C...............for this units PLR.                    
-                iPLRRows =  nint ( fFanSysPLR_hi(i) 
-     &                               * float (iPLRResolution) )  
+                iPLRRows =  min( nint ( fFanSysPLR_hi(i) 
+     &                   * float (iPLRResolution) ),iPLRResolution)  
 
 C...............Loop through those rows, and add incremental fan 
 C...............power.  
@@ -1315,9 +1315,13 @@ C................Save incremental power.
             if ( bDebug ) write (*,*) 
      &           "    ->>>>>>> MAX POWER: ", fFanMaxPower_hi   
  
-            fFanEffectivePLR = 
-     &          (fFanPower) / fFanMaxPower_hi
+            if ( fFanMaxPower_hi < 1 ) then 
+              fFanEffectivePLR = 0.0 
+            else 
  
+              fFanEffectivePLR = 
+     &          (fFanPower) / fFanMaxPower_hi
+            endif 
      
      
 C...........Fan power is computed! Loop through the hvac systems 
