@@ -237,9 +237,9 @@ C and change any / to \.
       ELSEIF(INO1.EQ.2)THEN
 
 C DXF creation. Process similar to ecnv filter for VIEWER.
-        write(6,*) 'the pwd command was ',
-     &    pwdinitial(1:lnblnk(pwdinitial))
-        write(6,*) ' pwdtocfg is ',pwdtocfg(1:lnblnk(pwdtocfg))
+C        write(6,*) 'the pwd command was ',
+C     &    pwdinitial(1:lnblnk(pwdinitial))
+C        write(6,*) ' pwdtocfg is ',pwdtocfg(1:lnblnk(pwdtocfg))
         if(pwdtocfg(1:1).eq.'!')then
           write(L144,'(4a)')path(1:lnblnk(path)),fs,
      &      cfgroot(1:lnblnk(cfgroot)),'.DXF'
@@ -990,8 +990,10 @@ C      common/imagf/imgfmt(MIMG),imgfoc(MIMG),limgfil(MIMG),imgdoc(MIMG)
 
 C Strings for dos version of rootp and upath and a double quote.
       character rootpdos*84,upathdos*72,rootpath*72,modelroot*72
-      character dq*1,fs*1,thecfgis*72,cfgcfg*42
+      character dq*1,fs*1
       character lltmp*144,lguess*144,dguess*144
+      character thecfgis*72,cfgcfg*42 ! cfg file only & cfg/cfg_file
+      character cfgpath*144  ! full path to cfg folder for refocus
       logical XST,unixok
       integer NCOG,ICOG,NCO,ICO,icod ! max items and current menu item
       integer loop  ! for looping
@@ -1066,7 +1068,7 @@ C Clear group related help and length of menu.
       inl=0
       igrsel=0
       icod=0
-      cfgcfg='  '
+      cfgcfg='  '; thecfgis='  '; cfgpath='  '
 
  12   CALL STRIPC(iexfil,OUTSTR,0,ND,0,'group id',IER)
       if(ier.ne.0)goto 901
@@ -1359,17 +1361,23 @@ C of the string till a file separator of either DOS or Unix type is reached.
                 ipos=ipos-1
                 if(exemplar(ipos:ipos).eq.fs)then
                   write(thecfgis,'(a)') exemplar(ipos+1:ilexem)
-                  if(itrc.gt.0)then
+                  write(cfgpath,'(a)') exemplar(1:ipos)
+                  if(itrc.ge.1)then
                     call edisp(iuout,'  ')
                     call edisp(iuout,'The model configuration file is:')
                     call edisp(iuout,thecfgis)
+                    call edisp(iuout,'The model cfg folder is:')
+                    call edisp(iuout,cfgpath)
                   endif
                 elseif(exemplar(ipos:ipos).eq.'/')then
                   write(thecfgis,'(a)') exemplar(ipos+1:ilexem)
-                  if(itrc.gt.0)then
+                  write(cfgpath,'(a)') exemplar(1:ipos)
+                  if(itrc.ge.1)then
                     call edisp(iuout,'  ')
                     call edisp(iuout,'The model configuration file is:')
                     call edisp(iuout,thecfgis)
+                    call edisp(iuout,'The model cfg folder is:')
+                    call edisp(iuout,cfgpath)
                   endif
                 else
                   if(ipos.eq.1)then
@@ -1443,7 +1451,9 @@ C folder in the path of the exemplar.
 
 C The balance of the exemplar string after the cfg_root.
                   write(cfgcfg,'(a)') exemplar(ilex+lcfgr:lex)
-                  write(6,*) cfgcfg,' ',ilex+lcfgr,lex
+C                  write(6,*) cfgcfg,' ',ilex+lcfgr,lex
+                  write(thecfgis,'(a)') cfgcfg(6:lnblnk(cfgcfg))
+C                  write(6,*) 'the cfg is ',thecfgis(1:lnblnk(thecfgis))
                   call isunix(unixok)
                   if(unixok)then
 
@@ -1468,6 +1478,10 @@ C If prj was started in a Models folder prepend to path.
                     call runit(doit,'-')
                     call pausems(100)
 
+C Add /cfg to lltmp to get the configuration folder
+                    write(cfgpath,'(3a)')lltmp(1:lnblnk(lltmp)),fs,'cfg'
+C                    write(6,*) 'cfgpath=',cfgpath(1:lnblnk(cfgpath))
+
 C Make up the command to copy from the exemplar source folder to the
 C users defined destination. If we add cfgcfg to lltmp we should have
 C the folder where the model cfg file is located.
@@ -1477,7 +1491,8 @@ C the folder where the model cfg file is located.
 
 C Non-unix, if lnblankrp or lnblankup is one then there are no spaces in the 
 C string so double quotes are not required.  Change any '/'
-C in rootp and upath to '\'. 
+C in rootp and upath to '\'. If prj started in folder Models then insert
+C this into the suggested path. 
                     rootpdos=' '
                     upathdos=' '
                     lnrp=lnblnk(rootp)
@@ -1586,13 +1601,64 @@ C If Windows based then append cfg & cfg file string to the path to make
 C up the exemplar name (this assumes a standard layout of model).
                     write(exemplar,'(5a)')upathdos(1:lnblnk(upathdos)),
      &                fs,'cfg',fs,thecfgis(1:lnblnk(thecfgis))
+                    write(cfgpath,'(3a)')upathdos(1:lnblnk(upathdos)),
+     &                fs,'cfg'
                   endif
                   call edisp(iuout,'  ')
                   call edisp(iuout,'The model configuration file is:')
                   call edisp(iuout,exemplar)
+                  call edisp(iuout,'The model cfg folder is:')
+                  call edisp(iuout,cfgpath)
                   call tstamp('>','PRJ: owning exemplar')
                   call tstamp('>',exemplar)
                   useraction='ownit   '
+                endif
+
+C Test if we can start a new prj within the model cfg folder.
+                if(unixok)then
+                  h(1)='To provide full functionality prj should'
+                  h(2)='restart in the copied model cfg folder. When'
+                  h(3)='prj has restarted this instance of prj will'
+                  h(4)='quit after a few seconds.'
+                  CALL PHELPD('prj restart focused',4,'-',0,0,IER)
+                  call pausems(1000)
+                  call usrmsg('Invoking new prj focused on the model',
+     &              ' and this instance will close.','P')
+                  write(doit,'(5a)') 'cd ',cfgpath(1:lnblnk(cfgpath)),
+     &              '; prj -file ',thecfgis(1:lnblnk(thecfgis)),' &'
+                  call edisp248(iuout,doit,100)
+                  call runit(doit,'-')
+                  call pausems(1000)
+
+C Clear allocatable arrays
+                  CALL DeallocateAllArrays
+                  CALL EPAGEND
+                  STOP
+                else
+
+C For Non-unix issue separate doit commands.
+                  h(1)='To provide full functionality prj should'
+                  h(2)='restart in the copied model cfg folder. When'
+                  h(3)='prj has restarted this instance of prj will'
+                  h(4)='quit after a few seconds.'
+                  CALL PHELPD('prj restart focused',4,'-',0,0,IER)
+                  call usrmsg('Invoking new prj focused on the model',
+     &              ' and this instance will close.','P')
+                  write(doit,'(2a)') 'cd ',cfgpath(1:lnblnk(cfgpath))
+                  call edisp248(iuout,doit,100)
+                  call pausems(1000)
+                  call runit(doit,'-')
+                  write(doit,'(3a)') 
+     &              'prj -file ',thecfgis(1:lnblnk(thecfgis)),' &'
+                  call edisp248(iuout,doit,100)
+                  call pausems(1000)
+                  call runit(doit,'-')
+                  call pausems(1000)
+
+C Clear allocatable arrays
+                  CALL DeallocateAllArrays
+                  CALL EPAGEND
+                  STOP
                 endif
               elseif(IW.eq.2)then
 
