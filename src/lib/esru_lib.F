@@ -6695,15 +6695,27 @@ C          i = system(cmd)
         endif
         return
       else
+
+C Non-linux only uses tg if passed as 'bg'. It then
+C attempts to mimic starting a background task.
+        write (tmode,'(a)') tg(1:lnblnk(tg))
         LN=lnblnk(cmd)
         if (cmd(LN:LN).eq."&") then
           write (tmp,'(4a)') dq,'start ',cmd(1:LN-1),dq
           write (cmd,'(a)') tmp(1:lnblnk(tmp))
           call edisp248(iuout,cmd,90)
         else
-          write (tmp,'(3a)') dq,cmd(1:LN),dq
-          write (cmd,'(a)') tmp(1:lnblnk(tmp))
+          if(tmode.eq.'bg')then  ! background
+            write (tmp,'(7a)') dq,'start /B ',dq,dq,' ',
+     &        cmd(1:LN),dq
+            write (cmd,'(a)') tmp(1:lnblnk(tmp))
+          else
+            write (tmp,'(3a)') dq,cmd(1:LN),dq
+            write (cmd,'(a)') tmp(1:lnblnk(tmp))
+          endif
           call edisp248(iuout,cmd,90)
+          call edisp(iuout,' ')
+C          call forceflush()
         endif
 
 C        i = system(cmd)

@@ -1627,43 +1627,61 @@ C Test if we can start a new prj within the model cfg folder.
                   h(2)='restart in the copied model cfg folder. When'
                   h(3)='prj has restarted this instance of prj will'
                   h(4)='quit after a few seconds.'
-                  CALL PHELPD('prj restart focused',4,'-',0,0,IER)
-                  call pausems(1000)
-                  call usrmsg('Invoking new prj focused on the model',
+                  CALL EASKABC(
+     &            'To provide full functionality prj needs to restart',
+     &            'focused on the model cfg folder','yes restart',
+     &            'continue','abort prj',IRT,4)
+                  if(irt.eq.1)then
+                    call pausems(1000)
+                    call usrmsg('Invoking new prj focused on the model',
      &              ' and this instance will close.','P')
-                  write(doit,'(5a)') 'cd ',cfgpath(1:lnblnk(cfgpath)),
+                    write(doit,'(5a)') 'cd ',cfgpath(1:lnblnk(cfgpath)),
      &              '; prj -file ',thecfgis(1:lnblnk(thecfgis)),' &'
-                  call edisp248(iuout,doit,100)
-                  call runit(doit,'-')
-                  call pausems(1000)
+                    call edisp248(iuout,doit,100)
+                    call runit(doit,'-')
+                    call pausems(1000)
 
 C Clear allocatable arrays
-                  CALL DeallocateAllArrays
-                  CALL EPAGEND
-                  STOP
+                    CALL DeallocateAllArrays
+                    CALL EPAGEND
+                    STOP
+                  elseif(irt.eq.2)then
+                    continue
+                  elseif(irt.eq.3)then
+                    CALL DeallocateAllArrays
+                    CALL EPAGEND
+                    STOP
+                  endif
                 else
 
-C For Non-unix issue separate doit commands.
+C For Non-unix place a & between the commands and also set the
+C text string tmode='bg' to partially mimic background mode.
                   call edisp(iuout,'proposed command:')
-                  write(doit,'(5a)') 'cd ',cfgpath(1:lnblnk(cfgpath)),
-     &            ' & prj -file ',thecfgis(1:lnblnk(thecfgis)),' &'
+                  write(doit,'(4a)') 'cd ',cfgpath(1:lnblnk(cfgpath)),
+     &            ' & prj -file ',thecfgis(1:lnblnk(thecfgis))
                   call edisp248(iuout,doit,100)
                   call edisp(iuout,'  ')
                   call pausems(1000)
+                  h(1)='To provide full functionality prj should'
+                  h(2)='restart in the copied model cfg folder. When'
+                  h(3)='prj has restarted this instance of prj will'
+                  h(4)='persist until you close the DOS cmd window.'
                   CALL EASKABC(
-     &              'To provide full functionality we need to restart',
-     &              'prj:','yes restart','continue','abort prj',IRT,
-     &              nbhelp)
+     &            'To provide full functionality prj needs to restart',
+     &            'focused on the model cfg folder','yes restart',
+     &            'continue','abort prj',IRT,4)
                   if(irt.eq.1)then
 
 C Separate two dos cmds with & but do not include & at end to force background
-C mode. << need to find another approach.
+C mode via runit parameter. The initial prj tends not to close unless the
+C DOS cmd window is Xed.
                     doit='  '
                     write(doit,'(4a)') 'cd ',cfgpath(1:lnblnk(cfgpath)),
      &              ' & prj -file ',thecfgis(1:lnblnk(thecfgis))
                     call edisp248(iuout,doit,100)
                     call pausems(1000)
 C << see if we can implement a bg for tmode in esru_lib.F
+                    tmode='bg'
                     call runit(doit,tmode)
                     call pausems(1000)
 
