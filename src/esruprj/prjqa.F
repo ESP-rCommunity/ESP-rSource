@@ -228,7 +228,7 @@ C Remember if each zone is fully attributed.
       character dstmp*24,mlc_name*32
       CHARACTER LAPROB*72,LPNF*72
       CHARACTER NDNAM*12,TOPTIC*12,msg*28,doit*248
-      character t16a*16,t16b*16,t16c*16
+      character t16a*16,t16b*16,t16c*16,t16d*16
       character DBTAG*12,DBTASK*12,DBZN*15,DBSN*15
       character figlbl*20,figexe*48
       character grflbl*20,grfexe*48,foldlbl*20,foldexe*48
@@ -298,7 +298,7 @@ C in the current model. A -1 means not applicable
       INTEGER :: ins4,ino,imerr,ilcot,ijk,ij,ii,igrdp
       INTEGER :: ictlf,iuo,iunit1,iunit,iuf,iub,itu,itru,itrc,itbmenu
       INTEGER :: itb,istat,isc,is,ic,ins1,isel,iz,izo,izc,izz
-      INTEGER :: kk,j,l,lnb,lnc,lna,lsn10,lto,lzn10,m,igraphiclib
+      INTEGER :: kk,j,l,lnb,lnc,lna,lnd,lsn10,lto,lzn10,m,igraphiclib
       INTEGER :: iw
       INTEGER :: lsna,lk,lnk,lnkn  ! counters for string lengths
       REAL :: opq,totalarea,topq,tmp,tfla
@@ -1967,11 +1967,15 @@ C Write out UA information if extra information requested.
         if(zoneextrainfo.gt.1)then
 
 C Debug...
-C          write(itu,*) 'in zone ',izz,' area wall = ',areawall(IZZ)
+C          write(itu,*) 'in zone ',izz,' area opq to ambient = ',
+C     &                 areawall(IZZ)
 C          write(itu,*) 'area flat roof = ',areafltroof(IZZ)
 C          write(itu,*) 'area sloped roof = ',areaslproof(IZZ)
 C          write(itu,*) 'area skylights = ',areaskylt(IZZ)
-C          write(itu,*) 'area windows = ',areatran(IZZ)
+C          write(itu,*) 'area facade windows = ',areatran(IZZ)
+C          write(itu,*) 'area inside windows = ',areainttran(IZZ)
+C          write(itu,*) 'area inside opq wall floor ceil = ',
+C     &                  areaintopaq(IZZ)
 C          write(itu,*) 'floor area = ',ZBASEA(IZZ)
 C          write(itu,*) 'to ground = ',areaground(IZZ)
 C          write(itu,*) 'exposed = ',exposed(IZZ)
@@ -1990,6 +1994,7 @@ C          write(itu,*) 'TB heat loss = ',totheatloss(IZZ)
 C If there is external glazing or skylights then report.
             call rel16str(exposed(IZZ),t16a,lna,ier)
             call rel16str(vexposed(IZZ),t16b,lnb,ier)
+            call rel16str(areawall(IZZ),t16c,lnc,ier)
             if(vexposed(IZZ).gt.0.1)then
               write(outs,'(5a)')' There is ',
      &          t16a(1:lna),'m2 of exposed surface area, ',
@@ -2008,8 +2013,8 @@ C If there is external glazing or skylights then report.
             endif
             call rel16str(wallper(IZZ),t16a,lna,ier)
             call rel16str(uavwall(IZZ),t16b,lnb,ier)
-            write(outs,'(3a,F5.3,2a)')' Outside walls are ',
-     &        t16a(1:lna),' % of floor area & average U of ',
+            write(outs,'(5a,F5.3,2a)')' Facade opaque is ',t16c(1:lnc),
+     &        'm2 & ',t16a(1:lna),' % of floor area & average U of ',
      &        uavwall(IZZ)/areawall(IZZ),' & UA of ',t16b(1:lnb)
             if(attribok(IVALS(IZ)))call edisp(itu,outs)
           endif
@@ -2051,8 +2056,10 @@ C If there is external glazing or skylights then report.
             call rel16str(tranper(IZZ),t16a,lna,ier)
             call rel16str(vtranper,t16b,lnb,ier)
             call rel16str(uavgtran(IZZ),t16c,lnc,ier)
-            write(outs,'(5a,F5.3,2a)')
-     &        ' Glazing is ',t16a(1:lna),' % of floor & ',t16b(1:lnb),
+            call rel16str(areatran(IZZ),t16d,lnd,ier)
+            write(outs,'(7a,F5.3,2a)')
+     &        ' Facade glazing is ',t16d(1:lnd),'m2 & ',t16a(1:lna),
+     &        ' % of floor & ',t16b(1:lnb),
      &        ' % facade with average U of ',
      &        uavgtran(IZZ)/areatran(IZZ),' & UA of ',t16c(1:lnc)
             if(attribok(IVALS(IZ)))call edisp(itu,outs)
@@ -2068,6 +2075,14 @@ C If there is external glazing or skylights then report.
             write(outs,'(3a,F5.3,2a)')' Skylights are ',
      &        t16a(1:lna),' % of floor area & average U of ',
      &        uavgsky(IZZ)/areaskylt(IZZ),' & UA of ',t16b(1:lnb)
+            if(attribok(IVALS(IZ)))call edisp(itu,outs)
+          endif
+          if(areainttran(IZZ).gt.0.1.or.areaintopaq(IZZ).gt.0.1)then
+            call rel16str(areainttran(IZZ),t16a,lna,ier)
+            call rel16str(areaintopaq(IZZ),t16b,lnb,ier)
+            write(outs,'(5a)')' Opaque partitions:ceiling:floor ',
+     &        t16b(1:lnb),'m2 & trasparent partitions:ceiling:floor ',
+     &        t16a(1:lna),'m2.'
             if(attribok(IVALS(IZ)))call edisp(itu,outs)
           endif
           if(areaground(IZZ).gt.0.1)then
@@ -3340,7 +3355,7 @@ C Parameters passed in
 C bridgelen was calculated in subroutine suredgeadj
       real bridgelen ! Length of potential thermal bridges in each zone.
       common/gbridge/bridgelen(MCOM,10)
-
+      
       integer IUF   ! file unit
       character*72 LTMP
       character DESCRC*25
@@ -3391,6 +3406,8 @@ C floor area for each.
         uavgsky(IZZ) = 0.0
         uavground(IZZ) = 0.0
         areatran(IZZ) = 0.0
+        areainttran(IZZ) = 0.0
+        areaintopaq(IZZ) = 0.0
         areawall(IZZ) = 0.0
         areaslproof(IZZ) = 0.0
         areafltroof(IZZ) = 0.0
@@ -3507,6 +3524,16 @@ C Consider glazing on walls to be a part of facade.
               else
                 continue
               endif
+            elseif(IE.eq.3)then
+
+C Internal partitions floors ceilings.
+              if(SSOTF(icc)(1:4).eq.'OPAQ')then
+                areaintopaq(IZZ) = areaintopaq(IZZ)+SSNA(icc)
+              elseif(SSOTF(icc)(1:4).ne.'OPAQ'.and.
+     &               SSOTF(icc)(1:4).ne.'CFC '.and.
+     &               SSOTF(icc)(1:4).ne.'CFC2')then
+                areainttran(IZZ) = areainttran(IZZ)+SSNA(icc)
+              endif
             elseif(IE.eq.4)then
 
 C For surfaces connected to the ground.
@@ -3520,6 +3547,8 @@ C For surfaces connected to the ground.
             endif
           endif
  111    continue
+C        write(6,*) 'for zone ',IZZ,' opaque partns ',areaintopaq(IZZ)
+C        write(6,*) 'for zone ',IZZ,' transp partns ',areainttran(IZZ)
 
  98   continue
 
