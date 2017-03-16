@@ -1131,6 +1131,7 @@ C Site information.
      &    ' in simulations is ',IYEAR,' and weekends occur on ', 
      &     wkd1(1:lnblnk(wkd1)),' and ',wkd2(1:lnblnk(wkd2)),'.'
         call edisp248(itu,outs248,80)
+        call edisp(itu,' ')
         if(siteexposureindex.eq.1)then
           WRITE(outs,'(a)')'site exposure is typical city centre'
         elseif(siteexposureindex.eq.2)then
@@ -1150,9 +1151,60 @@ C Site information.
   53      FORMAT('site exposure is sky=',F4.2,' ground=',F4.2,
      &      ' other buildings=',F4.2)
         endif
-        write(outs248,'(3a,f4.2,a)') 'The ',outs(1:lnblnk(outs)),
-     &    ' and the ground reflectance is ',groundrefl,'.'
-        call edisp248(itu,outs248,80)
+
+C Cater for groundreflmodel here (groundreflmodel.eq.1, 2 or 3)
+        if (groundreflmodel.eq.1) then
+          write(outs248,'(3a,f4.2,a)') 'The ',outs(1:lnblnk(outs)),
+     &      ' and the ground reflectance is ',groundrefl,'.'
+          call edisp248(itu,outs248,80)
+        elseif (groundreflmodel.eq.2) then
+          write(outs248,'(3a)') 'The ',outs(1:lnblnk(outs)),
+     &      '. The ground reflectance is defined with monthly values:'
+          call edisp248(itu,outs248,80)
+C         Write monthly values ...
+          itrunc=1
+          ipos=1
+          do while (itrunc.ne.0)
+            call arlist(ipos,12,groundreflmonth,12,'S',outs248,
+     &                                                  loutln,itrunc)
+            call edisp248(itu,outs248,100)
+            ipos=itrunc+1
+          end do
+
+          call edisp(itu,' ')
+          write(outs248,'(a)')
+     &      'Snow coverage is defined as days per month with snow:'
+C         Write monthly values ...
+          itrunc=1
+          ipos=1
+          do while (itrunc.ne.0)
+            call ailist(ipos,12,dayswithsnow,12,'S',outs248,
+     &                                                  loutln,itrunc)
+            call edisp248(itu,outs248,100)
+            ipos=itrunc+1
+          end do
+
+        else ! groundreflmodel.eq.3
+          write(outs248,'(3a)') 'The ',outs(1:lnblnk(outs)),
+     &      '. The ground reflectance is defined with monthly values:'
+          call edisp248(itu,outs248,80)
+C         Write monthly values
+          itrunc=1
+          ipos=1
+          do while (itrunc.ne.0)
+            call arlist(ipos,12,groundreflmonth,12,'S',outs248,
+     &                                                  loutln,itrunc)
+            call edisp248(itu,outs248,110)
+            ipos=itrunc+1
+          end do
+
+          call edisp(itu,' ')
+          write(outs248,'(3a)')
+     &      'Hourly snow coverage is defined via the data file ',
+     &           SNFNAM(1:lnblnk(SNFNAM)),'.'
+          call edisp248(itu,outs248,80)
+
+        endif
         call edisp(itu,' ')
 
 C Print address for building and client. If there is a UK NCM
@@ -1755,6 +1807,7 @@ C that have been referenced and if very verbose (3) list all controls.
             call LSTCNTL(itu,0,0)
           endif
         endif
+
         if(NCL.gt.0)then
           call edisp(itu,' ')
           WRITE(outs,'(a,I2,a)')' Plant control includes ',
@@ -1767,6 +1820,7 @@ C that have been referenced and if very verbose (3) list all controls.
             enddo
           endif
         endif
+
         if(NCC.gt.0)then
           call edisp(itu,' ')
           WRITE(outs,'(a,I2,a)')' Flow control includes ',
@@ -1779,6 +1833,20 @@ C that have been referenced and if very verbose (3) list all controls.
  246        continue
           endif
         endif
+
+        if(nCFCctlloops.gt.0)then
+          call edisp(itu,' ')
+          WRITE(outs,'(a,I2,a)')' CFC control includes ',
+     &      nCFCctlloops,' functions.'
+          call edisp(itu,outs)
+          call edisp248(itu,CFCctldoc,80)
+          if(controlinfo.ge.2)then
+            do 247 ii=1,nCFCctlloops
+              call LSTCNTL(itu,6,ii)
+ 247        continue
+          endif
+        endif
+
         if(NGF.gt.0)then
           call edisp(itu,' ')
           WRITE(outs,'(a,I2,a)')' Global control includes ',
@@ -1881,9 +1949,7 @@ C Jump if no zones.
 
 C At this point CFC and CFC2 are not counted as transparent.
             if(SSMLCN(icc)(1:4).eq.'UNKN')attribok(IVALS(IZ))=.false.
-            if(SSOTF(icc)(1:4).NE.'OPAQ'.AND.
-     &         SSOTF(icc)(1:4).NE.'CFC '.AND.
-     &         SSOTF(icc)(1:4).NE.'CFC2')then
+            if(SSOTF(icc)(1:4).NE.'OPAQ') then
               TRN=TRN+SSNA(icc)
             else
               OPQ=OPQ+SSNA(icc)
@@ -3355,7 +3421,7 @@ C Parameters passed in
 C bridgelen was calculated in subroutine suredgeadj
       real bridgelen ! Length of potential thermal bridges in each zone.
       common/gbridge/bridgelen(MCOM,10)
-      
+
       integer IUF   ! file unit
       character*72 LTMP
       character DESCRC*25
@@ -3493,9 +3559,9 @@ C For floors facing outside assume downward hc coef.
                   xareawall = xareawall + SSNA(icc)
                   xuavwall = xuavwall + (SSNA(icc) * UVD)
                 endif
-              elseif(SSOTF(icc)(1:4).ne.'OPAQ'.and.
-     &               SSOTF(icc)(1:4).ne.'CFC '.and.
-     &               SSOTF(icc)(1:4).ne.'CFC2')then
+              elseif(SSOTF(icc)(1:4).ne.'OPAQ') then !.and.
+cx     &               SSOTF(icc)(1:4).ne.'CFC '.and.
+cx     &               SSOTF(icc)(1:4).ne.'CFC2')then
                 if(SSVFC(icc)(1:4).eq.'CEIL'.or.
      &             SSVFC(icc)(1:4).eq.'SLOP')then
 
@@ -3547,8 +3613,6 @@ C For surfaces connected to the ground.
             endif
           endif
  111    continue
-C        write(6,*) 'for zone ',IZZ,' opaque partns ',areaintopaq(IZZ)
-C        write(6,*) 'for zone ',IZZ,' transp partns ',areainttran(IZZ)
 
  98   continue
 
