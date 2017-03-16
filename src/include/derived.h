@@ -20,8 +20,10 @@ C Average U values.
      &  xuavwall,xuavground,xuavslproof,xuavfltroof,xuavgsky
 
 C Aggregate areas (m^2).
-      real areatran    ! m2 of windows (per zone)
-      real areawall    ! m2 of walls (per zone)
+      real areatran    ! m2 of windows facing outside (per zone)
+      real areainttran ! m2 inside transparente partition ceiling floor
+      real areaintopaq ! m2 inside opaque partitions ceiling floor
+      real areawall    ! m2 of opaque wall or floor surfaces to ambient
       real areaslproof ! m2 of sloped roofs (per zone)
       real areafltroof ! m2 of flat roofs (per zone)
       real areaskylt   ! m2 of skylights (per zone)
@@ -37,7 +39,8 @@ C Aggregate areas (m^2).
       real xareaslproof ! m2 project sloped roofs
       real xareafltroof ! m2 project flat roofs
       real xareaskylt  ! m2 project skylights
-      common/agrearea/areatran(MCOM),areawall(MCOM),areaslproof(MCOM),
+      common/agrearea/areatran(MCOM),areainttran(MCOM),
+     &  areaintopaq(MCOM),areawall(MCOM),areaslproof(MCOM),
      &  areafltroof(MCOM),areaskylt(MCOM),areaground(MCOM),
      &  exposed(MCOM),vexposed(MCOM),xfloor,xexposed,xvexposed,
      &  xtoground,xareatran,xareawall,xareaslproof,xareafltroof,

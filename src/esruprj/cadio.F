@@ -960,6 +960,8 @@ C Passed parameters.
 
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       common/OUTIN/IUOUT,IUIN
+      integer childterminal  ! picks up mmod from starting of prj
+      common/childt/childterminal
       
       integer ncomp,ncon
       common/C1/NCOMP,NCON
@@ -987,6 +989,7 @@ C      common/imagf/imgfmt(MIMG),imgfoc(MIMG),limgfil(MIMG),imgdoc(MIMG)
       character gh*72,cfgitem*144,exdescr*81,doc*72,head*42
       character cfg*144,cfg_path*84,cfg_root*72,doc_file*96
       character itemlog*144,ilog*144
+      character tmode*12
 
 C Strings for dos version of rootp and upath and a double quote.
       character rootpdos*84,upathdos*72,rootpath*72,modelroot*72
@@ -1025,6 +1028,7 @@ C Make up a double quote and file separator for xcopy.
         dq = char(34)
       endif
       iglib = igraphiclib()  ! find out if GTK.
+      call terminalmode(childterminal,tmode)
 
 C Open the exemplar file. This is also a jump back point in case
 C the user decides to cancel the selection.
@@ -1536,11 +1540,11 @@ C there is a file browser returning folder name via lltmp.
                     call backslashit(lltmp,upathdos)
 
 C Debug.
-C                    write(outs,'(a,2i3,2a)') 'upath = ',lnup,lnblankup,
-C     &                ' ',upath(1:lnup)
-C                    call edisp(iuout,outs)
-C                    write(outs,'(2a)') 'destination = ',upathdos(1:lnup)
-C                    call edisp(iuout,outs)
+                    write(outs,'(a,2i3,2a)') 'upath = ',lnup,lnblankup,
+     &                ' ',upath(1:lnup)
+                    call edisp(iuout,outs)
+                    write(outs,'(2a)') 'destination = ',upathdos(1:lnup)
+                    call edisp(iuout,outs)
 
 C If upathdos folder does not exist then need to create it.
                     if(lnblankup.gt.1)then
@@ -1582,10 +1586,11 @@ C There are no blanks in either source or destination strings.
                   endif  ! of non-unix
 
 C If trace is verbose echo the command.
-                  if(itrc.gt.0)then
+                  if(itrc.ge.0)then
                     call edisp(iuout,
      &                'Copying exemplar to destination folder via:')
                     call edisp248(iuout,doit,100)
+                    call pausems(5000)
                   endif
                   call runit(doit,'-')
                   if(unixok)then
@@ -1605,10 +1610,12 @@ C up the exemplar name (this assumes a standard layout of model).
      &                fs,'cfg'
                   endif
                   call edisp(iuout,'  ')
-                  call edisp(iuout,'The model configuration file is:')
+                  call edisp(iuout,'The full path is:')
                   call edisp(iuout,exemplar)
                   call edisp(iuout,'The model cfg folder is:')
                   call edisp(iuout,cfgpath)
+                  call edisp(iuout,'The cfg file is is:')
+                  call edisp(iuout,thecfgis)
                   call tstamp('>','PRJ: owning exemplar')
                   call tstamp('>',exemplar)
                   useraction='ownit   '
@@ -1637,28 +1644,40 @@ C Clear allocatable arrays
                 else
 
 C For Non-unix issue separate doit commands.
-                  h(1)='To provide full functionality prj should'
-                  h(2)='restart in the copied model cfg folder. When'
-                  h(3)='prj has restarted this instance of prj will'
-                  h(4)='quit after a few seconds.'
-                  CALL PHELPD('prj restart focused',4,'-',0,0,IER)
-                  call usrmsg('Invoking new prj focused on the model',
-     &              ' and this instance will close.','P')
-                  write(doit,'(2a)') 'cd ',cfgpath(1:lnblnk(cfgpath))
+                  call edisp(iuout,'proposed command:')
+                  write(doit,'(5a)') 'cd ',cfgpath(1:lnblnk(cfgpath)),
+     &            ' & prj -file ',thecfgis(1:lnblnk(thecfgis)),' &'
                   call edisp248(iuout,doit,100)
+                  call edisp(iuout,'  ')
                   call pausems(1000)
-                  call runit(doit,'-')
-                  write(doit,'(3a)') 
-     &              'prj -file ',thecfgis(1:lnblnk(thecfgis)),' &'
-                  call edisp248(iuout,doit,100)
-                  call pausems(1000)
-                  call runit(doit,'-')
-                  call pausems(1000)
+                  CALL EASKABC(
+     &              'To provide full functionality we need to restart',
+     &              'prj:','yes restart','continue','abort prj',IRT,
+     &              nbhelp)
+                  if(irt.eq.1)then
+
+C Separate two dos cmds with & but do not include & at end to force background
+C mode. << need to find another approach.
+                    doit='  '
+                    write(doit,'(4a)') 'cd ',cfgpath(1:lnblnk(cfgpath)),
+     &              ' & prj -file ',thecfgis(1:lnblnk(thecfgis))
+                    call edisp248(iuout,doit,100)
+                    call pausems(1000)
+C << see if we can implement a bg for tmode in esru_lib.F
+                    call runit(doit,tmode)
+                    call pausems(1000)
 
 C Clear allocatable arrays
-                  CALL DeallocateAllArrays
-                  CALL EPAGEND
-                  STOP
+                    CALL DeallocateAllArrays
+                    CALL EPAGEND
+                    STOP
+                  elseif(irt.eq.2)then
+                    continue
+                  elseif(irt.eq.3)then
+                    CALL DeallocateAllArrays
+                    CALL EPAGEND
+                    STOP
+                  endif
                 endif
               elseif(IW.eq.2)then
 
