@@ -379,7 +379,10 @@ C.....variables for computing fan power with fan control loop.s
         logical bDebug
         
         bDebug = .false. 
-
+        if ( bDebug) write (*,*) " =============== HVAC MODEL ======= "
+        if ( bDebug) write (*,*) " =============== HVAC MODEL ======= "
+        if ( bDebug) write (*,*) " =============== HVAC MODEL ======= "
+        
 C.....Zero variables used to roll up energy use from all systems.
       use_loop: do iSysEndUse = 1, iNumUses
         fH3KSumEnergyUseElec    ( iSysEndUse ) =  0.0
@@ -553,7 +556,7 @@ C     the zones being served by the HVAC system.
       
       HVAC_primary_sys_loop: do i=1, num_hvac_sys
       
-      
+
 C.......Characterize primary systems first. Back-up systems handled in 
 C.......A second loop below.       
         IfPrimary: if ( ipriority(i) .eq. 1 ) then  
@@ -562,7 +565,7 @@ c         associated with the HVAC system i. This load is passed on to the
 c         equipment simulation subroutine to determine the energy cosumption.
           heating_load = 0.
           cooling_load = 0.   
-
+          if ( bDebug) write (*,*) "> Examining PRI sys - ", i
 c     The load for the current time step associated with the hvac system considered is
 c     the sum of the loads for the zones served by the hvac system. The load for each
 c     of the zones is the average of the load at the present and future time steps, qpa
@@ -580,6 +583,8 @@ C...........PIN is within construction
                 req_load = qfa(isys_zone_num(i,j))
             endif
 
+            if ( bDebug) write (*,*) "  LOAD 4 ZONE ", j, "=",req_load
+            
             if(req_load.gt.0.) then
 
                zone_call_heat(i,j) = .true.
@@ -2340,6 +2345,7 @@ c     References:	HOT2000 Technical Manual, Version 6, Canadian Home Builders
 c     Association, August 1991
 
 c     Furnace Model for Implementation in H3K, H3K model documentation,
+c     Furnace Model for Implementation in H3K, H3K model documentation,
 c     Kamel Haddad, April 5th 2000
 
 c     INPUTS:
@@ -2363,21 +2369,24 @@ c     **********************************************************************
 
       REAL req_load,ss_cap,fan_power
       INTEGER ifan_operation
-
-c     When the circulation fan is in continuous mode
-      if(ifan_operation.eq.2) then
-c     This is Equation 3 in Furnace Ref by Haddad
-         PLR = req_load / ss_cap
-c     When the fan is in auto-mode
-      elseif(ifan_operation.eq.1) then
-c     This is Equation 4 in Furnace Ref by Haddad
-         PLR = req_load / (ss_cap + fan_power)
-c     When there is no circulation fan
-      elseif(ifan_operation.eq.0) then
-c     This is Equation 3 in Furnace Ref by Haddad
-         PLR = req_load / ss_cap
-      endif
-
+      
+      if (SS_CAP < 1 ) then 
+        PLR = 0 
+      else 
+c       When the circulation fan is in continuous mode
+        if(ifan_operation.eq.2) then
+c       This is Equation 3 in Furnace Ref by Haddad
+           PLR = req_load / ss_cap
+c       When the fan is in auto-mode
+        elseif(ifan_operation.eq.1) then
+c       This is Equation 4 in Furnace Ref by Haddad
+           PLR = req_load / (ss_cap + fan_power)
+c       When there is no circulation fan
+        elseif(ifan_operation.eq.0) then
+c       This is Equation 3 in Furnace Ref by Haddad
+           PLR = req_load / ss_cap
+        endif
+      endif 
       return
       end
 
