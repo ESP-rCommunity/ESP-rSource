@@ -501,9 +501,11 @@ C IS USED TO SET THE SCALE FOR DRAWING THE CHOSEN DISTRIBUTIONS.
 #ifdef OSI
       integer iupdown,isym,iicol    ! passed to etplot
       integer iigl,iigr,iigt,iigb,iigw,iigwh
+      integer iix,iiy
 #else
       integer*8 iupdown,isym,iicol   ! passed to etplot
       integer*8 iigl,iigr,iigt,iigb,iigw,iigwh
+      integer*8 iix,iiy
 #endif
 
 C The 6 dimensions are as follows:
@@ -613,11 +615,11 @@ C the top of the graph.
               iicol=1
               call winscl('z',iicol) ! symbol using line colour
             endif
-            call u2pixel(TIME,0.0,ix,iy)
+            call u2pixel(TIME,0.0,iix,iiy)
             if(ID.eq.is1wins+2)then
-              call wstxpt(ix,igt-10,'Winter')
+              call wstxpt(iix,igt-10,'Winter')
             endif
-            call esymbol(ix,igt-5,8,0)
+            call esymbol(iix,igt-5,8,0)
             if(IFS.ne.IMFS)call winfnt(IMFS)
             if(colok)then
               iicol=0
@@ -629,11 +631,11 @@ C the top of the graph.
               iicol=2
               call winscl('z',iicol) ! symbol using line colour
             endif
-            call u2pixel(TIME,0.0,ix,iy)
+            call u2pixel(TIME,0.0,iix,iiy)
             if(ID.eq.is1sprs+2)then
-              call wstxpt(ix,igt-10,'Spring')
+              call wstxpt(iix,igt-10,'Spring')
             endif
-            call esymbol(ix,igt-5,3,0)
+            call esymbol(iix,igt-5,3,0)
             if(IFS.ne.IMFS)call winfnt(IMFS)
             if(colok)then
               iicol=0
@@ -645,11 +647,11 @@ C the top of the graph.
               iicol=3
               call winscl('z',iicol) ! symbol using line colour
             endif
-            call u2pixel(TIME,0.0,ix,iy)
+            call u2pixel(TIME,0.0,iix,iiy)
             if(ID.eq.is1sums+2)then
-              call wstxpt(ix,igt-10,'Summer')
+              call wstxpt(iix,igt-10,'Summer')
             endif
-            call esymbol(ix,igt-5,32,0)
+            call esymbol(iix,igt-5,32,0)
             if(IFS.ne.IMFS)call winfnt(IMFS)
             if(colok)then
               iicol=0
@@ -661,11 +663,11 @@ C the top of the graph.
               iicol=4
               call winscl('z',iicol) ! symbol using line colour
             endif
-            call u2pixel(TIME,0.0,ix,iy)
+            call u2pixel(TIME,0.0,iix,iiy)
             if(ID.eq.is2sprs+2)then
-              call wstxpt(ix,igt-10,'Autumn')
+              call wstxpt(iix,igt-10,'Autumn')
             endif
-            call esymbol(ix,igt-5,3,0)
+            call esymbol(iix,igt-5,3,0)
             if(IFS.ne.IMFS)call winfnt(IMFS)
             if(colok)then
               iicol=0
@@ -677,11 +679,11 @@ C the top of the graph.
               iicol=6
               call winscl('z',iicol) ! symbol using line colour
             endif
-            call u2pixel(TIME,0.0,ix,iy)
+            call u2pixel(TIME,0.0,iix,iiy)
             if(ID.eq.is2wins+2)then
-              call wstxpt(ix,igt-10,'Winter')
+              call wstxpt(iix,igt-10,'Winter')
             endif
-            call esymbol(ix,igt-5,17,0)
+            call esymbol(iix,igt-5,17,0)
             if(IFS.ne.IMFS)call winfnt(IMFS)
             if(colok)then
               iicol=0
@@ -696,8 +698,8 @@ C Typical week in each season.
               iicol=1
               call winscl('z',iicol) ! symbol using line colour
             endif
-            call u2pixel(TIME,0.0,ix,iy)
-            call esymbol(ix,igt,8,0)
+            call u2pixel(TIME,0.0,iix,iiy)
+            call esymbol(iix,igt,8,0)
             if(IFS.ne.IMFS)call winfnt(IMFS)
             if(colok)then
               iicol=0
@@ -709,8 +711,8 @@ C Typical week in each season.
               iicol=2
               call winscl('z',iicol) ! symbol using line colour
             endif
-            call u2pixel(TIME,0.0,ix,iy)
-            call esymbol(ix,igt,8,0)
+            call u2pixel(TIME,0.0,iix,iiy)
+            call esymbol(iix,igt,8,0)
             if(IFS.ne.IMFS)call winfnt(IMFS)
             if(colok)then
               iicol=0
@@ -722,8 +724,8 @@ C Typical week in each season.
               iicol=3
               call winscl('z',iicol) ! symbol using line colour
             endif
-            call u2pixel(TIME,0.0,ix,iy)
-            call esymbol(ix,igt,8,0)
+            call u2pixel(TIME,0.0,iix,iiy)
+            call esymbol(iix,igt,8,0)
             if(IFS.ne.IMFS)call winfnt(IMFS)
             if(colok)then
               iicol=0
@@ -735,8 +737,8 @@ C Typical week in each season.
               iicol=4
               call winscl('z',iicol) ! symbol using line colour
             endif
-            call u2pixel(TIME,0.0,ix,iy)
-            call esymbol(ix,igt,8,0)
+            call u2pixel(TIME,0.0,iix,iiy)
+            call esymbol(iix,igt,8,0)
             if(IFS.ne.IMFS)call winfnt(IMFS)
             if(colok)then
               iicol=0
@@ -748,8 +750,8 @@ C Typical week in each season.
               iicol=6
               call winscl('z',iicol) ! symbol using line colour
             endif
-            call u2pixel(TIME,0.0,ix,iy)
-            call esymbol(ix,igt,8,0)
+            call u2pixel(TIME,0.0,iix,iiy)
+            call esymbol(iix,igt,8,0)
             if(IFS.ne.IMFS)call winfnt(IMFS)
             if(colok)then
               iicol=0

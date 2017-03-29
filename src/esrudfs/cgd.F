@@ -74,9 +74,7 @@ C For help messages
 C Set default values.
 C GRMODE = graphics mode.
       GRMODE=.false.
-      XZ=0.
-      YZ=0.
-      ZZ=0.
+      XZ=0.; YZ=0.; ZZ=0.
 
 C Set additional output units to stdout. Then redirect warning 
 C messages to stderr in case of rule script program control.
@@ -169,10 +167,7 @@ C << how about an option to place grid on one face only ?? >>
         elseif(iwo.eq.4)then
           call VGRID3D('zn ','xyg',ic)
         endif
-        ISHSB=0
-        ISHAO=0
-        ISHBLK=0
-        IFACES=-iwo
+        ISHSB=0; ISHAO=0; ISHBLK=0; IFACES=-iwo
       ELSEIF(INO.EQ.6.and.GRMODE)THEN
 
 C 3D gridding with zone geometry and solids.
@@ -188,10 +183,7 @@ C 3D gridding with zone geometry and solids.
           call VGRID3D('zn ','xyg',ic)
         endif
         call VSB3D(0,ic)
-        ISHSB=1
-        ISHAO=0
-        ISHBLK=0
-        IFACES=-iwo
+        ISHSB=1; ISHAO=0; ISHBLK=0; IFACES=-iwo
       ELSEIF(INO.EQ.7.and.GRMODE)THEN
 
 C 3D gridding with zone geometry and solids and openings.
@@ -209,10 +201,7 @@ C 3D gridding with zone geometry and solids and openings.
         call VSB3D(0,ic)
         call VAO3D(0,ic) 
         call VSBL3D(0,ic)  ! for testing of blockages
-        ISHSB=1
-        ISHAO=1
-        ISHBLK=1
-        IFACES=-iwo
+        ISHSB=1; ISHAO=1; ISHBLK=1; IFACES=-iwo
       ELSEIF(INO.EQ.8.and.GRMODE)THEN
 
 C 3D gridding without zone geometry.
@@ -227,10 +216,7 @@ C 3D gridding without zone geometry.
         elseif(iwo.eq.4)then
           call VGRID3D('---','xyg',ic)
         endif
-        ISHSB=0
-        ISHAO=0
-        ISHBLK=0
-        IFACES=iwo
+        ISHSB=0; ISHAO=0; ISHBLK=0; IFACES=iwo
       ELSEIF(INO.EQ.9.and.GRMODE)THEN
 
 C 3D gridding without zone geometry and with solids.
@@ -246,10 +232,7 @@ C 3D gridding without zone geometry and with solids.
           call VGRID3D('---','xyg',ic)
         endif
         call VSB3D(0,ic)
-        ISHSB=1
-        ISHAO=0
-        ISHBLK=0
-        IFACES=iwo
+        ISHSB=1; ISHAO=0; ISHBLK=0; IFACES=iwo
       ELSEIF(INO.EQ.10.and.GRMODE)THEN
 
 C 3D gridding without zone geometry and with solids and openings.
@@ -267,10 +250,7 @@ C 3D gridding without zone geometry and with solids and openings.
         call VSB3D(0,ic)
         call VAO3D(0,ic)
         call VSBL3D(0,ic)  ! for testing of blockages
-        ISHSB=1
-        ISHAO=1
-        ISHBLK=1
-        IFACES=iwo
+        ISHSB=1; ISHAO=1; ISHBLK=1; IFACES=iwo
       ELSEIF(INO.EQ.12)THEN
 
 C Text listings
@@ -598,7 +578,8 @@ C izone is the index of the zone to be drawin (if zero do not bother`).
       DIMENSION  BX(MPL),BY(MPL),BZ(MPL),IBNXT(MPL)
       DIMENSION  SBBOX(3,2)
 
-      logical greyok
+      logical greyok,odd
+      integer im
       character gact*3,zact*3,btemp*6
       real XPP,YPP,ZPP  ! points taking into account zone minimum
       real X0,Y0,Z0
@@ -643,16 +624,13 @@ C Setup and pass in parameters to win3d.
      &  iigl,iigr,iigt,iigb,iigw,iigwh)
       igl=int(iigl); igr=int(iigr); igt=int(iigt); igb=int(iigb)
       igw=int(iigw); igwh=int(iigwh)
-      igwid=igw
-      igheight=igwh
+      igwid=igw; igheight=igwh
 
 C Get bounds for image.
       if (nzg.gt.0) then
         call bndobj(0,IER)
       endif
-      HANG=ANG/2.0
-      HITH=1.0
-      YON=1300.0
+      HANG=ANG/2.0; HITH=1.0; YON=1300.0
       CALL LENS(IER)
 
 C Determine scaling ratios for the drawing and axis.
@@ -711,13 +689,33 @@ C Transform end point to screen coords.
               write(btemp,'(a,i2.2)') 'j',j-1
               CALL wstxpt(iixhs-20,iiyhs+10,btemp)
             elseif(I.eq.2.and.J.lt.NJ)then
+
+C If more than 20 cells only do every other one.
               btemp='   '  ! along lower Y
               write(btemp,'(a,i2.2)') 'j',j-1
-              CALL wstxpt(iixhs-20,iiyhs+10,btemp)
+              if(NJ.le.20)then
+                CALL wstxpt(iixhs-20,iiyhs+10,btemp)
+              else
+                im=MOD(j,2)
+                if(im.eq.1)then
+                  continue
+                else
+                  CALL wstxpt(iixhs-20,iiyhs+10,btemp)
+                endif
+              endif
             elseif(J.eq.2.and.I.lt.NI)then
               btemp='   '
               write(btemp,'(a,i2.2)') 'i',i-1
-              CALL wstxpt(iixxhs,iixyhs+10,btemp)
+              if(NI.le.20)then
+                CALL wstxpt(iixxhs,iixyhs+10,btemp)
+              else
+                im=MOD(i,2)
+                if(im.eq.1)then
+                  continue
+                else
+                  CALL wstxpt(iixxhs,iixyhs+10,btemp)
+                endif
+              endif
             endif
 
 C Draw dotted or solid line.
@@ -769,13 +767,31 @@ C Get half way point for west face cells.
             if(J.eq.NJ.and.K.lt.NK)then
               btemp='   '  ! along the left vertical
               write(btemp,'(a,i2.2)') 'k',k-1
-              CALL wstxpt(iixs-20,iiys-5,btemp)
+              if(NK.le.20)then
+                CALL wstxpt(iixs-20,iiys-5,btemp)
+              else
+                im=MOD(k,2)
+                if(im.eq.1)then
+                  continue
+                else
+                  CALL wstxpt(iixs-20,iiys-5,btemp)
+                endif
+              endif
             endif
             if(gact.eq.'yzg')then
               if(K.eq.2.and.J.lt.NJ)then
                 btemp='   '  ! along the left lower Y
                 write(btemp,'(a,i2.2)') 'j',j-1
-                CALL wstxpt(iixhs-20,iiyhs+10,btemp)
+                if(NJ.le.20)then
+                  CALL wstxpt(iixhs-20,iiyhs+10,btemp)
+                else
+                  im=MOD(j,2)
+                  if(im.eq.1)then
+                    continue
+                  else
+                    CALL wstxpt(iixhs-20,iiyhs+10,btemp)
+                  endif
+                endif
               endif
             endif
 
@@ -834,7 +850,16 @@ C Get half way point for south face cells.
               if(k.eq.2.and.I.lt.NI)then
                 btemp='   '   ! labels along lower X axis
                 write(btemp,'(a,i2.2)') 'i',i-1
-                CALL wstxpt(iixxhs,iixyhs+10,btemp)
+                if(NI.le.20)then
+                  CALL wstxpt(iixxhs,iixyhs+10,btemp)
+                else
+                  im=MOD(i,2)
+                  if(im.eq.1)then
+                    continue
+                  else
+                    CALL wstxpt(iixxhs,iixyhs+10,btemp)
+                  endif
+                endif
               endif
             endif
 
@@ -849,7 +874,16 @@ C Transform end point to screen coords.
               if(I.eq.2.and.K.lt.NK)then
                 btemp='   '   ! labels along left vertical
                 write(btemp,'(a,i2.2)') 'k',k-1
-                CALL wstxpt(iix-20,iiy-5,btemp)
+                if(NK.le.20)then
+                  CALL wstxpt(iix-20,iiy-5,btemp)
+                else
+                  im=MOD(j,2)
+                  if(im.eq.1)then
+                    continue
+                  else
+                    CALL wstxpt(iix-20,iiy-5,btemp)
+                  endif
+                endif
               endif
             endif
 

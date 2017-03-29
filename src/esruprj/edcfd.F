@@ -107,8 +107,7 @@ C be corresponded there as well
       found=0
       do 234 iconf=1,nconf
         if ( icfdnd(iconf).eq.izone )then
-          ICFD=iconf
-          found=1
+          ICFD=iconf; found=1
         endif
   234 continue
       if(found.eq.0)then
@@ -128,10 +127,7 @@ C Set the flag to indicate that the data has not been saved to the CFD input fil
 
 C Set flags to indiate the origin of CFD domain and gridding of axes
 C have not yet been defined.
-      origin=.false.
-      xgrid=.false.
-      ygrid=.false.
-      zgrid=.false.
+      origin=.false.; xgrid=.false.; ygrid=.false.; zgrid=.false.
 
 C= Assume orthogonal domain.
       ortho=.true.
@@ -139,20 +135,14 @@ C= Assume orthogonal domain.
 C Draw the zone and display the vertex numbers.
 C << changed to use CFD visualisation subroutines instead >>
       call tstamp('>','PRJ: edit CFD domain') 
-      nzg=1
-      nznog(1)=izone
-      izgfoc=izone
+      nzg=1; nznog(1)=izone; izgfoc=izone
       CALL ESCZONE(izone)
       CALL BNDOBJ(0,IER)
       CALL ERCZONE(izone)
-      itvno=0
-      itsnm=0
+      itvno=0; itsnm=0
 
 C Default values for visualisation.
-      ISHSB=1
-      ISHAO=1
-      IFACES=-1
-      ISHBLK=1
+      ISHSB=1; ISHAO=1; IFACES=-1; ISHBLK=1
 
 C Setup help text for main menu.
       helptopic='cfd_opening_menu'
@@ -200,8 +190,7 @@ C Set the conflation flag.
             CALL ERPFREE(IUF,ISTAT)
 
 C Set up for reading in CFD input file.
-            IBLD=0
-            IMFN=0
+            IBLD=0; IMFN=0
             if(IFCFD(izone).eq.1) IBLD=1
             if(IFCFD(izone).eq.2) IBLD=1
             if(IFCFD(izone).eq.3) IMFN=1
@@ -211,10 +200,7 @@ C << Force reporting. >>
             CALL CFDDTA(2,iuout,izone,IBLD,IMFN,IER)
 
 C Set flags to indicate that CFD origin and gridding has been defined.
-            origin=.true.
-            xgrid=.true.
-            ygrid=.true.
-            zgrid=.true.
+            origin=.true.; xgrid=.true.; ygrid=.true.; zgrid=.true.
           else
             call usrmsg('DFD confl. tag missing in:',LCFD(izone),'W')
             CALL ERPFREE(IUF,ISTAT)
@@ -450,8 +436,7 @@ C << Todo: set these based on a higher level concept of
 C << low/medium/high resolution and/or the size of the zone.
 C -- Visualisation variables already defined in calling routine
       origin=.TRUE.
-      ieorg=0
-      icellx=20; icelly=20; icellz=20
+      ieorg=0; icellx=20; icelly=20; icellz=20
       itrc=0   ! silent feedback initially
 c      ISHSB=1
 c      ISHAO=1
@@ -467,7 +452,6 @@ C Ensure that G1 common blocks are correctly assigned.
 
 C Check if we have vertex at ends of axis data.
       if (iorg.eq.0) then
-
 
         call usrmsg('You will have to define the CFD axis relationship',
      &              'to the zone geometry via vertex numbers.','W')
@@ -493,16 +477,12 @@ C Setup and pass in parameters to win3d.
 C Redraw zone and vertex points. Note, if user has returned
 C from 3D grid visualisation then G1 common blocks will need
 C to be refreshed.
-          nzg=1
-          nznog(1)=izone
-          izgfoc=izone
+          nzg=1; nznog(1)=izone; izgfoc=izone
           CALL ESCZONE(izone)
           CALL BNDOBJ(0,IER)
           CALL ERCZONE(izone)
           MODIFYVIEW=.TRUE.; MODLEN=.TRUE.; MODBND=.TRUE.
-          itvno=0
-          itznm=1
-          itsnm=1
+          itvno=0; itznm=1; itsnm=1
           CALL INLNST(1)
           CALL ADJVIEW(IER)
         endif
@@ -571,8 +551,7 @@ C Check X and Y.
         call usrmsg(
      &    'X & Y axes are not orthogonal. Please check and respecify.',
      &    '  ','W')
-        origin=.FALSE.
-        xgrid=.FALSE.
+        origin=.FALSE.; xgrid=.FALSE.
       endif
 
 C Check X and Z.
@@ -583,8 +562,7 @@ C Check X and Z.
         call usrmsg(
      &    'X & Z axes are not orthogonal. Please check and respecify.',
      &    '  ','W')
-        origin=.FALSE.
-        ygrid=.FALSE.
+        origin=.FALSE.; ygrid=.FALSE.
       endif
 
 C Check Y and Z.
@@ -595,8 +573,7 @@ C Check Y and Z.
         call usrmsg(
      &    'Y & Z axes are not orthogonal. Please check and respecify.',
      &    '  ','W')
-        origin=.FALSE.
-        zgrid=.FALSE.
+        origin=.FALSE.; zgrid=.FALSE.
       endif
 
 C Determine length of each axis.
@@ -736,16 +713,13 @@ C Setup and pass in parameters to win3d.
 C Redraw zone and vertex points. Note, if user has returned
 C from 3D grid visualisation then G1 common blocks will need
 C to be refreshed.
-          nzg=1
-          nznog(1)=izone
-          izgfoc=izone
+          nzg=1; nznog(1)=izone; izgfoc=izone
           call georead(IFIL+1,LGEOM(izone),izone,1,IUOUT,IER)
           CALL ESCZONE(izone)
           CALL BNDOBJ(0,IER)
           CALL ERCZONE(izone)
           MODIFYVIEW=.TRUE.; MODLEN=.TRUE.; MODBND=.TRUE.
-          itvno=0
-          itsnm=0
+          itvno=0; itsnm=0
           CALL INLNST(1)
           CALL ADJVIEW(IER)
         endif
@@ -1072,10 +1046,7 @@ C Debug.
         endif
 
 C Set flags to indicate that CFD origin and gridding have been defined.
-        origin=.true.
-        xgrid=.true.
-        ygrid=.true.
-        zgrid=.true.
+        origin=.true.; xgrid=.true.; ygrid=.true.; zgrid=.true.
 
 C Advise the user what to do next.
         helptopic='cfd_gridding_auto'
@@ -1087,8 +1058,7 @@ C Advise the user what to do next.
 C Grid X-axis.
         call GRIDDEF(1,NREG,NTCX,xdis,NCELX,XREG,Xplaw,ier)
         if (ier.ne.0) then
-          griderr=.TRUE.
-          xgrid=.FALSE.
+          griderr=.TRUE.; xgrid=.FALSE.
         else
           xgrid=.TRUE.
         endif
@@ -1097,8 +1067,7 @@ C Grid X-axis.
 C Grid Y-axis.
         call GRIDDEF(2,NREG,NTCY,ydis,NCELY,YREG,Yplaw,ier)
         if (ier.ne.0) then
-          griderr=.TRUE.
-          ygrid=.FALSE.
+          griderr=.TRUE.; ygrid=.FALSE.
         else
           ygrid=.TRUE.
         endif
@@ -1117,8 +1086,7 @@ C Ask whether Z is Orthogonal or curvilinear.
 C Grid Zwest-axis for both cases.
           call GRIDDEF(3,NREG,NTCZ,zdis,NCELZ,ZREG,Zplaw,ier)
           if (ier.ne.0) then
-            griderr=.TRUE.
-            zgrid=.FALSE.
+            griderr=.TRUE.; zgrid=.FALSE.
           else
             zgrid=.TRUE.
           endif
@@ -1159,8 +1127,7 @@ C top and bottom boundaries of the curvilinear x-section.
 C Grid Zeast-axis.
             call GRIDDEF(4,NREG,NTCZe,zedis,NCELZe,ZREGe,Zplawe,ier)
             if (ier.ne.0) then
-              griderr=.TRUE.
-              zegrid=.FALSE.
+              griderr=.TRUE.; zegrid=.FALSE.
             else
               zegrid=.TRUE.
             endif
@@ -2128,9 +2095,7 @@ C Display domain.
         endif    
         WRITE(ETEXT,'(2A)')'Domain: ',
      &    TITLE(izone)(1:lnblnk(TITLE(izone)))
-        iside=1
-        isize=1
-        ifont=1
+        iside=1; isize=1; ifont=1
         call viewtext(ETEXT,iside,isize,ifont)
       ENDIF
 
@@ -2310,25 +2275,17 @@ C Move all definitions greater than selected volume up one slot.
                 VOLPres(I,ICFD)=VOLPres(I+1,ICFD)
               else
                 IVOLF(I,ICFD)=0
-                IVCELLS(I,ICFD,1)=0
-                IVCELLS(I,ICFD,2)=0
-                JVCELLS(I,ICFD,1)=0
-                JVCELLS(I,ICFD,2)=0
-                KVCELLS(I,ICFD,1)=0
-                KVCELLS(I,ICFD,2)=0
-                VOLNAME(I,ICFD)=' '
-                VCsurf(I,ICFD)=' '
+                IVCELLS(I,ICFD,1)=0; IVCELLS(I,ICFD,2)=0
+                JVCELLS(I,ICFD,1)=0; JVCELLS(I,ICFD,2)=0
+                KVCELLS(I,ICFD,1)=0; KVCELLS(I,ICFD,2)=0
+                VOLNAME(I,ICFD)=' '; VCsurf(I,ICFD)=' '
                 IVTYPE(I,ICFD)=0
-                VOLTemp(I,ICFD)=0.
-                VOLHeat(I,ICFD)=0.
+                VOLTemp(I,ICFD)=0.; VOLHeat(I,ICFD)=0.
                 IVConfl(I,ICFD)=0
-                VOLHum(I,ICFD)=0.
-                VOLCO2(I,ICFD)=0.
+                VOLHum(I,ICFD)=0.; VOLCO2(I,ICFD)=0.
                 VOLVel(I,ICFD)=0.
-                VOLDir(I,ICFD,1)=0.
-                VOLDir(I,ICFD,2)=0.
-                VOLArea(I,ICFD)=0.
-                VOLPres(I,ICFD)=0.
+                VOLDir(I,ICFD,1)=0.; VOLDir(I,ICFD,2)=0.
+                VOLArea(I,ICFD)=0.; VOLPres(I,ICFD)=0.
               endif
  333        continue
           NVOL(ICFD)=NVOL(ICFD)-1
@@ -2374,9 +2331,7 @@ C Find index in new commons of boundary specified by index IAIN in old commons
             call VAO3D(0,izone)
             WRITE(ETEXT,'(2A)')'Domain: ',
      &        TITLE(izone)(1:lnblnk(TITLE(izone)))
-            iside=1
-            isize=1
-            ifont=1
+            iside=1; isize=1; ifont=1
             call viewtext(ETEXT,iside,isize,ifont)
           ENDIF
           call EDSLDB(IZONE,IAIN,IER)
@@ -2456,12 +2411,9 @@ C For help messages
       helpinsub='EDAIRO'  ! set for subroutine
 
 C Adjust each cell by -1 as dfs adds fictitious cells around the domain.
-      Ii=IVCELLS(IAO,ICFD,1)-1
-      If=IVCELLS(IAO,ICFD,2)-1
-      Ji=JVCELLS(IAO,ICFD,1)-1
-      Jf=JVCELLS(IAO,ICFD,2)-1
-      Ki=KVCELLS(IAO,ICFD,1)-1
-      Kf=KVCELLS(IAO,ICFD,2)-1
+      Ii=IVCELLS(IAO,ICFD,1)-1; If=IVCELLS(IAO,ICFD,2)-1
+      Ji=JVCELLS(IAO,ICFD,1)-1; Jf=JVCELLS(IAO,ICFD,2)-1
+      Ki=KVCELLS(IAO,ICFD,1)-1; Kf=KVCELLS(IAO,ICFD,2)-1
 
 C Check if new opening.
       if (Ii.lt.0.or.If.lt.0.or.
@@ -2473,12 +2425,9 @@ C Check if new opening.
      &    IFACE,IER)
         IVOLF(IAO,ICFD)=IFACE
 C        write(6,*) 'face a',IAO,ICFD,IFACE
-        IVCELLS(IAO,ICFD,1)=Ii+1
-        IVCELLS(IAO,ICFD,2)=If+1
-        JVCELLS(IAO,ICFD,1)=Ji+1
-        JVCELLS(IAO,ICFD,2)=Jf+1
-        KVCELLS(IAO,ICFD,1)=Ki+1
-        KVCELLS(IAO,ICFD,2)=Kf+1
+        IVCELLS(IAO,ICFD,1)=Ii+1; IVCELLS(IAO,ICFD,2)=If+1
+        JVCELLS(IAO,ICFD,1)=Ji+1; JVCELLS(IAO,ICFD,2)=Jf+1
+        KVCELLS(IAO,ICFD,1)=Ki+1; KVCELLS(IAO,ICFD,2)=Kf+1
       endif
 
 C Generate text for location index
@@ -2601,12 +2550,9 @@ C Reset location to whole of volume for non face choices.
      &    IFACE,IER)
         IVOLF(IAO,ICFD)=IFACE
 C        write(6,*) 'face b',IAO,ICFD,IFACE
-        IVCELLS(IAO,ICFD,1)=Ii+1
-        IVCELLS(IAO,ICFD,2)=If+1
-        JVCELLS(IAO,ICFD,1)=Ji+1
-        JVCELLS(IAO,ICFD,2)=Jf+1
-        KVCELLS(IAO,ICFD,1)=Ki+1
-        KVCELLS(IAO,ICFD,2)=Kf+1
+        IVCELLS(IAO,ICFD,1)=Ii+1; IVCELLS(IAO,ICFD,2)=If+1
+        JVCELLS(IAO,ICFD,1)=Ji+1; JVCELLS(IAO,ICFD,2)=Jf+1
+        KVCELLS(IAO,ICFD,1)=Ki+1; KVCELLS(IAO,ICFD,2)=Kf+1
       elseif (INO.eq.8) then
         if (IVTYPE(IAO,ICFD).eq.10) then
           VAL=VOLPres(IAO,ICFD)
@@ -2721,8 +2667,14 @@ C #include "model.h"
 #include "cfd.h"
 C #include "prj3dv.h"
 
+      COMMON/OUTIN/IUOUT,IUIN
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/ICFNOD/ICFD,ICP
+      COMMON/GEOM/XP(ntcelx),YP(ntcely),ZP(ntcelz),
+     1            DXEP(ntcelx),DXPW(ntcelx),DYNP(ntcely),DYPS(ntcely),
+     2            DZHP(ntcelz),DZPL(ntcelz),
+     3            SEW(ntcelx),SNS(ntcely),SHL(ntcelz),
+     4            XU(ntcelx),YV(ntcely),ZW(ntcelz)
 
       common/METHDS/ITURB(MNZ),IBUOY(MNZ)
       common/KEYVOLS/NVOL(MNZ),IVOLF(MNVLS,MNZ),IVCELLS(MNVLS,MNZ,2),
@@ -2736,8 +2688,8 @@ C #include "prj3dv.h"
       COMMON/CFDVIS/ISHSB,ISHAO,IFACES,ISHBLK
       common/param2/TITLE(MNZ),CFTRFL(MNZ),LPHI(MNZ)
 
-      character ITMSS(12)*40
-      character face*6,ltmp*16,t12*12,d12*12
+      character ITMSS(13)*40
+      character face*6,ltmp*16,t12*12,d12*12,outs*124
       character VOLNAME*12, VCsurf*12
       CHARACTER t20*20,ETEXT*82,zngeo*3
       character TITLE*72,CFTRFL*72,LPHI*72
@@ -2758,12 +2710,11 @@ C For help messages
       helpinsub='EDSLDB'  ! set for subroutine
 
 C Adjust each cell by -1 as dfs adds fictitious cells around the domain.
-      Ii=IVCELLS(ISB,ICFD,1)-1
-      If=IVCELLS(ISB,ICFD,2)-1
-      Ji=JVCELLS(ISB,ICFD,1)-1
-      Jf=JVCELLS(ISB,ICFD,2)-1
-      Ki=KVCELLS(ISB,ICFD,1)-1
-      Kf=KVCELLS(ISB,ICFD,2)-1
+      Ii=IVCELLS(ISB,ICFD,1)-1; If=IVCELLS(ISB,ICFD,2)-1
+      Ji=JVCELLS(ISB,ICFD,1)-1; Jf=JVCELLS(ISB,ICFD,2)-1
+      Ki=KVCELLS(ISB,ICFD,1)-1; Kf=KVCELLS(ISB,ICFD,2)-1
+      itrc=0   ! silent feedback initially
+      XZ=0.; YZ=0.; ZZ=0.
 
 C Check if new solid boundary.
       if (Ii.lt.0.or.If.lt.0.or.
@@ -2775,12 +2726,9 @@ C Check if new solid boundary.
      &    IFACE,IER)
         IVOLF(ISB,ICFD)=IFACE
 C        write(6,*) 'face c',ISB,ICFD,IFACE
-        IVCELLS(ISB,ICFD,1)=Ii+1
-        IVCELLS(ISB,ICFD,2)=If+1
-        JVCELLS(ISB,ICFD,1)=Ji+1
-        JVCELLS(ISB,ICFD,2)=Jf+1
-        KVCELLS(ISB,ICFD,1)=Ki+1
-        KVCELLS(ISB,ICFD,2)=Kf+1
+        IVCELLS(ISB,ICFD,1)=Ii+1; IVCELLS(ISB,ICFD,2)=If+1
+        JVCELLS(ISB,ICFD,1)=Ji+1; JVCELLS(ISB,ICFD,2)=Jf+1
+        KVCELLS(ISB,ICFD,1)=Ki+1; KVCELLS(ISB,ICFD,2)=Kf+1
       endif
 
 C Generate text for location index
@@ -2827,11 +2775,25 @@ C Create a menu showing definitions for different conflation schemes.
       write (ITMSS(3),'(a)')     ' -----------------------------'
       write (ITMSS(4),'(a,a)')   '         Is  If  Js  Jf  Ks  Kf '
       write (ITMSS(5),'(a,6(i3,1x))') 'c Cells:',Ii,If,Ji,Jf,Ki,Kf
+
+C If not silent echo some XYZ coordinates in space. Need to offset
+C indicies to get correct position.
+C      write(6,*) 'XU Ii Ii+1 If If+1 If+2 If+3 ',Ii,If,
+C     &  XU(Ii),XU(Ii+1),XU(If),XU(If+1),XU(If+2),XU(If+3)
+C      write(6,*) 'XP Ii Ii+1 If If+1 If+2 ',
+C     &  XP(Ii),XP(Ii+1),XP(If),XP(If+1),XP(If+2)
+C      write(6,*) 'DXEP Ii Ii+1 If If+1 If+2 If+3',Ii,If,
+C     &  DXEP(Ii),DXEP(Ii+1),DXEP(If),DXEP(If+1),DXEP(If+2)
+      call edisp(iuout,
+     &  'Cell X start & end     Y start & end     Z start & end')
+      write(outs,'(6f10.4)') XU(Ii+1),XU(If+2),YV(Ji+1),YV(Jf+2),
+     &  ZW(Ki+1),ZW(Kf+2)
+      call edisp(iuout,outs)
       write (ITMSS(6),'(a,a)')   '  Face: ',FACE
       write (ITMSS(7),'(a)')     ' -----------------------------'
       if (IVTYPE(ISB,ICFD).eq.1) then
         write(ITMSS(8),'(a,f6.2)')'e Temperature (degC): ',
-     &                                              VOLTemp(ISB,ICFD)
+     &    VOLTemp(ISB,ICFD)
         write(ITMSS(9),'(a)')     '  '
       elseif (IVTYPE(ISB,ICFD).eq.2) then
         write(ITMSS(8),'(a,f7.0)')'e Heat flux (W) ',VOLHeat(ISB,ICFD)
@@ -2875,9 +2837,17 @@ C Create a menu showing definitions for different conflation schemes.
 C        write(ITMSS(9),'(a,i4)')'f Handshaking: ',IVConfl(ISB,ICFD)
       endif
       ITMSS(10) =' -----------------------------'
-      ITMSS(11)='? Help'
-      ITMSS(12)='- exit'
-      NITMS=12
+      if(itrc.eq.0)then
+        ITMSS(11) ='> feedback silent             '
+      elseif(itrc.eq.1)then
+        ITMSS(11) ='> feedback brief              '
+      elseif(itrc.eq.2)then
+        ITMSS(11) ='> feedback verbose            '
+      endif
+      
+      ITMSS(12)='? Help'
+      ITMSS(13)='- exit'
+      NITMS=13
 
 C Help text for this menu.
       helptopic='cfd_solid_boundary_edit'
@@ -2964,12 +2934,9 @@ C Try to remember non conflated option if building surface chosen.
      &    IFACE,IER)
         IVOLF(ISB,ICFD)=IFACE
 C        write(6,*) 'face d',ISB,ICFD,IFACE
-        IVCELLS(ISB,ICFD,1)=Ii+1
-        IVCELLS(ISB,ICFD,2)=If+1
-        JVCELLS(ISB,ICFD,1)=Ji+1
-        JVCELLS(ISB,ICFD,2)=Jf+1
-        KVCELLS(ISB,ICFD,1)=Ki+1
-        KVCELLS(ISB,ICFD,2)=Kf+1
+        IVCELLS(ISB,ICFD,1)=Ii+1; IVCELLS(ISB,ICFD,2)=If+1
+        JVCELLS(ISB,ICFD,1)=Ji+1; JVCELLS(ISB,ICFD,2)=Jf+1
+        KVCELLS(ISB,ICFD,1)=Ki+1; KVCELLS(ISB,ICFD,2)=Kf+1
       elseif (INO.eq.8) then
         if (IVTYPE(ISB,ICFD).eq.1) then
           VAL=VOLTemp(ISB,ICFD)
@@ -3065,12 +3032,9 @@ C Initialise SRCE
       ENDIF
 
 C Adjust each cell by -1 as dfs adds fictitious cells around the domain.
-      Ii=IVCELLS(ISB,ICFD,1)-1
-      If=IVCELLS(ISB,ICFD,2)-1
-      Ji=JVCELLS(ISB,ICFD,1)-1
-      Jf=JVCELLS(ISB,ICFD,2)-1
-      Ki=KVCELLS(ISB,ICFD,1)-1
-      Kf=KVCELLS(ISB,ICFD,2)-1
+      Ii=IVCELLS(ISB,ICFD,1)-1; If=IVCELLS(ISB,ICFD,2)-1
+      Ji=JVCELLS(ISB,ICFD,1)-1; Jf=JVCELLS(ISB,ICFD,2)-1
+      Ki=KVCELLS(ISB,ICFD,1)-1; Kf=KVCELLS(ISB,ICFD,2)-1
 
 C Check if new source.
       if (Ii.lt.0.or.If.lt.0.or.
@@ -3082,12 +3046,9 @@ C Check if new source.
      &    IFACE,IER)
         IVOLF(ISB,ICFD)=IFACE
 C        write(6,*) 'face e',ISB,ICFD,IFACE
-        IVCELLS(ISB,ICFD,1)=Ii+1
-        IVCELLS(ISB,ICFD,2)=If+1
-        JVCELLS(ISB,ICFD,1)=Ji+1
-        JVCELLS(ISB,ICFD,2)=Jf+1
-        KVCELLS(ISB,ICFD,1)=Ki+1
-        KVCELLS(ISB,ICFD,2)=Kf+1
+        IVCELLS(ISB,ICFD,1)=Ii+1; IVCELLS(ISB,ICFD,2)=If+1
+        JVCELLS(ISB,ICFD,1)=Ji+1; JVCELLS(ISB,ICFD,2)=Jf+1
+        KVCELLS(ISB,ICFD,1)=Ki+1; KVCELLS(ISB,ICFD,2)=Kf+1
       endif
 
 C Generate text for location index
@@ -3320,9 +3281,7 @@ C Ask for information to calculate Schmidt number
               CALL EGETWR(HOLD,K,VL3,100.,500.,'W','T_boil',IER)
               CALL EGETWR(HOLD,K,VL4,100.,1000.,'W','T_crit',IER)
               GFM(ICTM)=VL1
-              VCRIT(ICTM)=VL2
-              TBOIL(ICTM)=VL3
-              TCRIT(ICTM)=VL4
+              VCRIT(ICTM)=VL2; TBOIL(ICTM)=VL3; TCRIT(ICTM)=VL4
             ELSEIF(ISCHM.EQ.2)THEN
               ISCHMT(ICTM)=0
               call EASKR(VAL,'What is Turbulent Schmidt Number for',
@@ -3330,8 +3289,7 @@ C Ask for information to calculate Schmidt number
      &          IER,nbhelp)
               SCHMT(ICTM)=VAL
             ELSEIF(ISCHM.EQ.3)THEN
-              ISCHMT(ICTM)=0
-              SCHMT(ICTM)=1.0
+              ISCHMT(ICTM)=0; SCHMT(ICTM)=1.0
               IF(JHUMINDX.EQ.ICTM)SCHMT(ICTM)=0.59
             ENDIF
  789      CONTINUE
@@ -3402,12 +3360,9 @@ C Define CFD grid cells for source type boundary condition
      &    IFACE,IER)
         IVOLF(ISB,ICFD)=IFACE
 C        write(6,*) 'face f',ISB,ICFD,IFACE
-        IVCELLS(ISB,ICFD,1)=Ii+1
-        IVCELLS(ISB,ICFD,2)=If+1
-        JVCELLS(ISB,ICFD,1)=Ji+1
-        JVCELLS(ISB,ICFD,2)=Jf+1
-        KVCELLS(ISB,ICFD,1)=Ki+1
-        KVCELLS(ISB,ICFD,2)=Kf+1
+        IVCELLS(ISB,ICFD,1)=Ii+1; IVCELLS(ISB,ICFD,2)=If+1
+        JVCELLS(ISB,ICFD,1)=Ji+1; JVCELLS(ISB,ICFD,2)=Jf+1
+        KVCELLS(ISB,ICFD,1)=Ki+1; KVCELLS(ISB,ICFD,2)=Kf+1
       elseif (INO.eq.7) then
         helptopic='cfd_source_boundary_edit'
         call gethelptext(helpinsub,helptopic,nbhelp)
@@ -3456,8 +3411,7 @@ C inform them and do not allow it.
             d12='Contaminant'
             call EASKS(SRCNAM,'Contaminant name? ','  ',12,d12,
      &      'cntmnt name',IER,nbhelp)
-            NCTM=NCTM+1
-            ICTM=NCTM
+            NCTM=NCTM+1; ICTM=NCTM
             POLNAM(NCTM,ICFD)=SRCNAM
             call EASKR(VAL,'What is source strength (kg/s) ',
      &      ' ',0.,'W',10.,'W',1.,'src strenght',IER,nbhelp)
@@ -3482,17 +3436,14 @@ C Ask for information to calculate Schmidt number
               CALL EGETWR(HOLD,K,VL3,100.,500.,'W','T_boil',IER)
               CALL EGETWR(HOLD,K,VL4,100.,1000.,'W','T_crit',IER)
               GFM(ICTM)=VL1
-              VCRIT(ICTM)=VL2
-              TBOIL(ICTM)=VL3
-              TCRIT(ICTM)=VL4
+              VCRIT(ICTM)=VL2; TBOIL(ICTM)=VL3; TCRIT(ICTM)=VL4
             ELSEIF(ISCHM.EQ.2)THEN
               ISCHMT(ICTM)=0
               call EASKR(VAL,'What is Turbulent Schmidt Number ',
      &           ' ',0.1,'W',2.5,'W',1.,'schmidt #',IER,nbhelp)
               SCHMT(ICTM)=VAL
             ELSEIF(ISCHM.EQ.3)THEN
-              ISCHMT(ICTM)=0
-              SCHMT(ICTM)=1.0
+              ISCHMT(ICTM)=0; SCHMT(ICTM)=1.0
               IF(JHUMINDX.EQ.ICTM)SCHMT(ICTM)=0.59
             ENDIF
           ENDIF
@@ -3589,17 +3540,14 @@ C Ask for information to calculate Schmidt number
           CALL EGETWR(HOLD,K,VL3,100.,500.,'W','T_boil',IER)
           CALL EGETWR(HOLD,K,VL4,100.,1000.,'W','T_crit',IER)
           GFM(ICTM)=VL1
-          VCRIT(ICTM)=VL2
-          TBOIL(ICTM)=VL3
-          TCRIT(ICTM)=VL4
+          VCRIT(ICTM)=VL2; TBOIL(ICTM)=VL3; TCRIT(ICTM)=VL4
         ELSEIF(ISCHM.EQ.2)THEN
           ISCHMT(ICTM)=0
           call EASKR(VAL,'What is Turbulent Schmidt Number ',
      &         ' ',0.5,'W',1.5,'W',1.,'schmidt #',IER,nbhelp)
           SCHMT(ICTM)=VAL
         ELSEIF(ISCHM.EQ.3)THEN
-          ISCHMT(ICTM)=0
-          SCHMT(ICTM)=1.0
+          ISCHMT(ICTM)=0; SCHMT(ICTM)=1.0
           IF(JHUMINDX.EQ.ICTM)SCHMT(ICTM)=0.59
         ENDIF
 
@@ -3722,12 +3670,9 @@ C For help messages
       call gethelptext(helpinsub,helptopic,nbhelp)
 
 C Adjust each cell by -1 as dfs adds fictitious cells around the domain.
-      Ii=IVCELLS(ISB,ICFD,1)-1
-      If=IVCELLS(ISB,ICFD,2)-1
-      Ji=JVCELLS(ISB,ICFD,1)-1
-      Jf=JVCELLS(ISB,ICFD,2)-1
-      Ki=KVCELLS(ISB,ICFD,1)-1
-      Kf=KVCELLS(ISB,ICFD,2)-1
+      Ii=IVCELLS(ISB,ICFD,1)-1; If=IVCELLS(ISB,ICFD,2)-1
+      Ji=JVCELLS(ISB,ICFD,1)-1; Jf=JVCELLS(ISB,ICFD,2)-1
+      Ki=KVCELLS(ISB,ICFD,1)-1; Kf=KVCELLS(ISB,ICFD,2)-1
 
 C Check if new blockage.
       if (Ii.lt.0.or.If.lt.0.or.
@@ -3739,12 +3684,9 @@ C Check if new blockage.
      &    IFACE,IER)
         IVOLF(ISB,ICFD)=IFACE
 C        write(6,*) 'face g',ISB,ICFD,IFACE
-        IVCELLS(ISB,ICFD,1)=Ii+1
-        IVCELLS(ISB,ICFD,2)=If+1
-        JVCELLS(ISB,ICFD,1)=Ji+1
-        JVCELLS(ISB,ICFD,2)=Jf+1
-        KVCELLS(ISB,ICFD,1)=Ki+1
-        KVCELLS(ISB,ICFD,2)=Kf+1
+        IVCELLS(ISB,ICFD,1)=Ii+1; IVCELLS(ISB,ICFD,2)=If+1
+        JVCELLS(ISB,ICFD,1)=Ji+1; JVCELLS(ISB,ICFD,2)=Jf+1
+        KVCELLS(ISB,ICFD,1)=Ki+1; KVCELLS(ISB,ICFD,2)=Kf+1
       endif
 
 
@@ -3782,9 +3724,9 @@ C Create a menu showing definitions for different conflation schemes.
       zd=ZW(Kf+2)-ZW(Ki+1)
 
 C Debug echo the coordinates of the blockage.
-C      write(6,*) 'cords X are:',XU(Ii+1),XU(If+2),xd
-C      write(6,*) 'cords Y are:',YV(Ji+1),YV(Jf+2),yd
-C      write(6,*) 'cords Z are:',ZW(Ki+1),ZW(Kf+2),zd
+      write(6,*) 'cords X are:',XU(Ii+1),XU(If+2),xd
+      write(6,*) 'cords Y are:',YV(Ji+1),YV(Jf+2),yd
+      write(6,*) 'cords Z are:',ZW(Ki+1),ZW(Kf+2),zd
 
       write (ITMSS(1),'(a,a)')   'a Name: ',VOLNAME(ISB,ICFD)
       write (ITMSS(2),'(3a)')   '  Type: ',ltmp
@@ -3831,12 +3773,9 @@ C Get boundary name.
      &    IFACE,IER)
         IVOLF(ISB,ICFD)=IFACE
 C        write(6,*) 'face h',ISB,ICFD,IFACE
-        IVCELLS(ISB,ICFD,1)=Ii+1
-        IVCELLS(ISB,ICFD,2)=If+1
-        JVCELLS(ISB,ICFD,1)=Ji+1
-        JVCELLS(ISB,ICFD,2)=Jf+1
-        KVCELLS(ISB,ICFD,1)=Ki+1
-        KVCELLS(ISB,ICFD,2)=Kf+1
+        IVCELLS(ISB,ICFD,1)=Ii+1; IVCELLS(ISB,ICFD,2)=If+1
+        JVCELLS(ISB,ICFD,1)=Ji+1; JVCELLS(ISB,ICFD,2)=Jf+1
+        KVCELLS(ISB,ICFD,1)=Ki+1; KVCELLS(ISB,ICFD,2)=Kf+1
 
 C Check for illegal volume (vol must be 2 cells thick in all directions).
         ERROR=.false.
@@ -3958,6 +3897,9 @@ C PIKCELS controls the editing of the cells defining a boundary region.
 
       COMMON/OUTIN/IUOUT,IUIN
       common/grdmax/NTCX,NTCY,NTCZ
+
+C XP YP ZP are the centre of the cells.
+C XU YV ZW are the start of the cells.
       COMMON/GEOM/XP(ntcelx),YP(ntcely),ZP(ntcelz),
      1            DXEP(ntcelx),DXPW(ntcelx),DYNP(ntcely),DYPS(ntcely),
      2            DZHP(ntcelz),DZPL(ntcelz),
@@ -4007,9 +3949,7 @@ C Ask for face first if necessary.
 
 C Remind the user of the cell coordinates for the particular
 C fact they they selected.
-      XZ=0.
-      YZ=0.
-      ZZ=0.
+      XZ=0.; YZ=0.; ZZ=0.
       if (IFACE.eq.1.or.IFACE.eq.2) then
 
 C List out the Y-Z coordinates for west face and east face.
@@ -4192,39 +4132,33 @@ C Try to guess which face.
         if (Ii.eq.1) then
 
 C West face.
-          IMTCH=IMTCH+1
-          IFACE=1
+          IMTCH=IMTCH+1; IFACE=1
         elseif (Ii.eq.NTCX) then
 
 C East face.
-          IMTCH=IMTCH+1
-          IFACE=2
+          IMTCH=IMTCH+1; IFACE=2
         endif
       endif
       if (Ji.eq.Jf) then
         if (Ji.eq.1) then
 
 C South face.
-          IMTCH=IMTCH+1
-          IFACE=3
+          IMTCH=IMTCH+1; IFACE=3
         elseif (Ji.eq.NTCY) then
 
 C North face.
-          IMTCH=IMTCH+1
-          IFACE=4
+          IMTCH=IMTCH+1; IFACE=4
         endif
       endif
       if (Ki.eq.Kf) then
         if (Ki.eq.1) then
 
 C Base face.
-          IMTCH=IMTCH+1
-          IFACE=5
+          IMTCH=IMTCH+1; IFACE=5
         elseif (Ki.eq.NTCZ) then
 
 C Top face.
-          IMTCH=IMTCH+1
-          IFACE=6
+          IMTCH=IMTCH+1; IFACE=6
         endif
       endif
       helptopic='cfd_face_selection'
@@ -4336,14 +4270,11 @@ C the individual vertex numbers from the list.
           if(iik.eq.69.or.iik.eq.101)goto 47
           found=.false.
           do 45 i=1,NTV
-            COG1(1)=X(I)
-            COG1(2)=Y(I)
-            COG1(3)=Z(I)
+            COG1(1)=X(I); COG1(2)=Y(I); COG1(3)=Z(I)
             CALL VECTRN(COG1,TEMAT,COG2,IER)
             CALL VECTRN(COG2,ETSMAT,COG3,IER)
             call u2pixel(COG3(1),COG3(2),iix,iiy)
-            ixd=iix-iixx
-            iyd=iiy-iiyy
+            ixd=iix-iixx; iyd=iiy-iiyy
             if(abs(ixd).lt.5.and.abs(iyd).lt.5)then
               if(found)then
                 call edisp(iuout,'Close points...try again.')
@@ -4355,8 +4286,7 @@ C the individual vertex numbers from the list.
               found=.true.
 
 C << Should Check that points are in the same plane and that X is increasing. >>
-              ijvn=ijvn+1
-              jjvn(ijvn)=i
+              ijvn=ijvn+1; jjvn(ijvn)=i
               goto 46
             endif
   45      continue
@@ -4398,14 +4328,11 @@ C Ask for and display the bottom defining vertices (west to east).
           if(iik.eq.69.or.iik.eq.101)goto 57
           found=.false.
           do 55 i=1,NTV
-            COG1(1)=X(I)
-            COG1(2)=Y(I)
-            COG1(3)=Z(I)
+            COG1(1)=X(I); COG1(2)=Y(I); COG1(3)=Z(I)
             CALL VECTRN(COG1,TEMAT,COG2,IER)
             CALL VECTRN(COG2,ETSMAT,COG3,IER)
             call u2pixel(COG3(1),COG3(2),iix,iiy)
-            ixd=iix-iixx
-            iyd=iiy-iiyy
+            ixd=iix-iixx; iyd=iiy-iiyy
             if(abs(ixd).lt.5.and.abs(iyd).lt.5)then
               if(found)then
                 call edisp(iuout,'Close points...try again.')
@@ -4415,8 +4342,7 @@ C Ask for and display the bottom defining vertices (west to east).
      &          ' & y=',iiyy,' matches vertex ',i
               call edisp(iuout,outs)
               found=.true.
-              ijvn=ijvn+1
-              jjvn(ijvn)=i
+              ijvn=ijvn+1; jjvn(ijvn)=i
               goto 56
             endif
   55      continue
@@ -4552,8 +4478,7 @@ C Check current defined distance and total no of cells.
 
 C Draw grid in 1D.
       if (GRMODE) then
-        xoff=0.
-        yoff=0.
+        xoff=0.; yoff=0.
         if (IAX.eq.1) then
           TITLE='X-axis gridding'
         elseif (IAX.eq.2) then
@@ -4860,23 +4785,19 @@ C (absolute value of INODE).
 C Set up array of menu strings.
       NITMS=0
       do 10 I=1,NCNN
-        IP=NODPS(I)
-        IN=NODNE(I)
-        IC=ITPCON(I)
+        IP=NODPS(I); IN=NODNE(I); IC=ITPCON(I)
         if (abs(INODE).gt.0) then
           if (abs(INODE).eq.IP.or.abs(INODE).eq.IN) then
 
 C A node has been specified -> only list its connections.
-            NITMS=NITMS+1
-            ICID(NITMS)=I
+            NITMS=NITMS+1; ICID(NITMS)=I
             write(VRT(NITMS),'(5a)')
      &        NDNAM(IP),'->',NDNAM(IN),' via ',CMNAM(IC)
           endif
         else
 
 C List all connections.
-          NITMS=NITMS+1
-          ICID(NITMS)=I
+          NITMS=NITMS+1; ICID(NITMS)=I
           write(VRT(NITMS),'(5a)')
      &      NDNAM(IP),'->',NDNAM(IN),' via ',CMNAM(IC)
         endif

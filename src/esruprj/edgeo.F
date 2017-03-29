@@ -10044,7 +10044,7 @@ C Loop through each surface and detect whether orientation of
 C the surface has changed and needs to be recognised. 
       DO 41 I=1,NZSUR(icomp)
         ioc=IZSTOCN(icomp,i)
-        if(ioc.le.1)then
+        if(ioc.lt.1)then
           write(msg,'(a,2i4)') 'No connection for zone surf',icomp,i
           call edisp(iuout,msg)
         else

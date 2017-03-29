@@ -6659,7 +6659,7 @@ C working then try switching bweteen these options.
       subroutine runit(cmd,tg)
       common/OUTIN/IUOUT,IUIN
       character*(*) cmd,tg
-      character tmp*360,tmode*4,message*248
+      character tmp*360,ltmp*360,tmode*8,message*248
       character dq*1
       integer system
       logical unixok
@@ -6702,34 +6702,34 @@ C attempts to mimic starting a background task.
         LN=lnblnk(cmd)
         if (cmd(LN:LN).eq."&") then
           write (tmp,'(4a)') dq,'start ',cmd(1:LN-1),dq
-          write (cmd,'(a)') tmp(1:lnblnk(tmp))
-          call edisp248(iuout,cmd,90)
+C          write (cmd,'(a)') tmp(1:lnblnk(tmp))
+          call edisp248(iuout,tmp,90)
         else
           if(tmode.eq.'bg')then  ! background
             write (tmp,'(7a)') dq,'start /B ',dq,dq,' ',
      &        cmd(1:LN),dq
-            write (cmd,'(a)') tmp(1:lnblnk(tmp))
+C            write (cmd,'(a)') tmp(1:lnblnk(tmp))
           else
             write (tmp,'(3a)') dq,cmd(1:LN),dq
-            write (cmd,'(a)') tmp(1:lnblnk(tmp))
+C            write (cmd,'(a)') tmp(1:lnblnk(tmp))
           endif
-          call edisp248(iuout,cmd,90)
+          call edisp248(iuout,tmp,90)
           call edisp(iuout,' ')
-C          call forceflush()
+          call forceflush()
         endif
 
 C        i = system(cmd)
-        call execute_command_line (cmd, exitstat=i)
+        call execute_command_line (tmp, exitstat=i)
         if(i.gt.0.and.i.le.126)then
           call edisp(iuout,'task terminated with an error condition')
           LN=lnblnk(cmd)
-          write(tmp,'(a,i3,2a)') 'status ',i,' ',cmd(1:LN)
-          call edisp248(iuout,tmp,90)
+          write(ltmp,'(a,i3,2a)') 'status ',i,' ',cmd(1:LN)
+          call edisp248(iuout,ltmp,90)
         elseif(i.eq.127)then
           call edisp(iuout,'task requested was unknown.')
           LN=lnblnk(cmd)
-          write(tmp,'(a,i3,2a)') 'status ',i,' ',cmd(1:LN)
-          call edisp248(iuout,tmp,90)
+          write(ltmp,'(a,i3,2a)') 'status ',i,' ',cmd(1:LN)
+          call edisp248(iuout,ltmp,90)
         endif
 
 C An even older method of asking OS to do some work.

@@ -3806,12 +3806,12 @@ C << consider writing out different info depending on what SSOTHER is >>
             lnn=lnblnk(SSNAME(icc))
             lnsmlcn=lnblnk(SSMLCN(icc))
             lnoth=lnblnk(SSOTHER(icc,1))
-            if((lnn+lnsmlcn+lnoth).lt.37)then
+            if((lnn+lnsmlcn+lnoth).lt.36)then
               WRITE(VERTS(M),13)KEY,SSNAME(icc)(1:lnn),
      &          SSMLCN(icc)(1:lnsmlcn),SSOTHER(icc,1)(1:lnoth)
             else
               WRITE(VERTS(M),13)KEY,SSNAME(icc)(1:lnn),
-     &          SSMLCN(icc)(1:16),SSOTHER(icc,1)(1:lnoth)
+     &          SSMLCN(icc)(1:15),SSOTHER(icc,1)(1:lnoth)
             endif
    13       FORMAT(A,2X,A,2X,A,2X,A)
           else
