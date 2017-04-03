@@ -254,7 +254,10 @@ C Trace output.
           GOTO 257
         ELSE
           IF(LKTR.GT.MITMFS)THEN
-            call edisp(iuout,'Could not get mfs-cfd convergence')
+            write(outs,'(A,I4,A)')
+     &        'Could not get mfs-cfd convergence after '
+     &        ,lktr,' runs'
+            call edisp(iuout,outs)
             CALL MFBNDR(0)
             GOTO 257
           ENDIF
