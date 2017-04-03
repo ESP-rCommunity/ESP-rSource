@@ -241,6 +241,7 @@ c of 60C. This is from B.Bradley'd H2KDHW.F line 254.
      &                   + 0.25 * fLitresforNumOccupants )
 
 c      write (*,*) " DHW: ih2k ", iH2k , bLoadIsDefined, DrawVolL, fTempUsage, fTempHWT, fNormalizedDailyWaterDraw, fDHW_ColdMainTemp(iMonth), REAL(iNTSTEP)
+
      
       IF (iH2K.eq.1) then ! treat it like H2K
         fDHW_WaterDraw_byVolume
