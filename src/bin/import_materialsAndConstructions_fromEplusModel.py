@@ -1,6 +1,6 @@
 #! /usr/bin/env python
 
-# import_materialsAndConstructions_fromEplusModel.py version 4.1a.
+# import_materialsAndConstructions_fromEplusModel.py version 4.2a.
 # Scans an EnergyPlus idf file, and imports materials and constructions into ESP-r ASCII databases.
 # Designed for use with EnergyPlus v8.5 models, other versions may not be supported.
 # Will import classes "Material", "Material:NoMass", "Material:InfraredTransparent", "Material:AirGap",
@@ -29,7 +29,6 @@
 #     imported faithfully.  Constructions will be skipped if a material is referenced that has not been imported,
 #     and the user will be warned of this.
 # This program does not create an optical properties database.
-# Assumes that construction classes are below material classes in the idf file.
 # Inverted construction associations are not held in idf files by default, so all constructions are marked as
 #   "NONSYMMETRIC" and it is trusted that the EnergyPlus model has them correctly assigned.
 # The script will give warnings if it detects air gap materials on outside layers of constructions, but it is
@@ -142,6 +141,9 @@ linecount=0 # one referenced.
 matcount=0 # zero referenced, but material 0 already exists (ESP-r placeholder air gap).
 concount=0 # one referenced.
 layercount=0 # one referenced.
+# For deferred constructions (i.e. if materials are defined after the construction).
+b_deferCon=False
+lls_defCons=[]
 # These lists are to easily retrieve the ...
 ls_matNames=['[air gap]',] # ... numeric material reference.
 ls_matThick=['[n/a]',]     # ... thickness.
@@ -184,6 +186,7 @@ for s_line in f_idfFile:
         else:
             print 'Warning: could not detect line end ("," or ";") in line "'+s_line_strpd+'". Skipping this line.'
             continue
+	s_val=s_val.replace(" ", "-")
 
         if linecount==1:
             ls_matNames.append(s_val)
@@ -236,6 +239,7 @@ for s_line in f_idfFile:
         else:
             print 'Warning: could not detect line end ("," or ";") in line "'+s_line_strpd+'". Skipping this line.'
             continue
+	s_val=s_val.replace(" ", "-")
 
         if linecount==1:
             ls_matNames.append(s_val)
@@ -281,6 +285,7 @@ for s_line in f_idfFile:
         else:
             print 'Warning: could not detect line end ("," or ";") in line "'+s_line_strpd+'". Skipping this line.'
             continue
+	s_val=s_val.replace(" ", "-")
 
         ls_matNames.append(s_val)
         ls_matDesc.append(s_val+' infrared transparent (effectively fictitious) material imported from Eplus model '+s_idfFileOnly+'.')
@@ -310,6 +315,7 @@ for s_line in f_idfFile:
         else:
             print 'Warning: could not detect line end ("," or ";") in line "'+s_line_strpd+'". Skipping this line.'
             continue
+	s_val=s_val.replace(" ", "-")
 
         if linecount==1:
             ls_gapNames.append(s_val)
@@ -340,6 +346,7 @@ for s_line in f_idfFile:
         else:
             print 'Warning: could not detect line end ("," or ";") in line "'+s_line_strpd+'". Skipping this line.'
             continue
+	s_val=s_val.replace(" ", "-")
 
         if linecount==1:
             ls_matNames.append(s_val)
@@ -381,6 +388,7 @@ for s_line in f_idfFile:
         else:
             print 'Warning: could not detect line end ("," or ";") in line "'+s_line_strpd+'". Skipping this line.'
             continue
+	s_val=s_val.replace(" ", "-")
 
         if linecount==1:
             ls_matNames.append(s_val)
@@ -435,6 +443,7 @@ for s_line in f_idfFile:
         else:
             print 'Warning: could not detect line end ("," or ";") in line "'+s_line_strpd+'". Skipping this line.'
             continue
+	s_val=s_val.replace(" ", "-")
 
         if linecount==1:
             ls_gapNames.append(s_val)
@@ -470,7 +479,8 @@ for s_line in f_idfFile:
             b_isEndLine=True
         else:
             print 'Warning: could not detect line end ("," or ";") in line "'+s_line_strpd+'". Skipping this line.'
-            continue
+            continue	
+	s_val=s_val.replace(" ", "-")
 
         if linecount==1:
 # Write header lines for the construction.
@@ -482,8 +492,9 @@ for s_line in f_idfFile:
         else:
             layercount=layercount+1
 
-# Test to see if the material name is in either the material or gap list; if it isnt, skip the construction.
-            #print s_val
+# Test to see if the material name is in either the material or gap list.
+# If it isnt, insert a placeholder into ls_text, and flag this construction to be deferred.
+            #print s_val,ls_matNames
             if s_val in ls_matNames:
                 i_ind=ls_matNames.index(s_val)
                 ls_text.append('*layer,{},{:>.4f},{} : {}'.format(i_ind,float(ls_matThick[i_ind]),s_val[:i_matTrunc],ls_matDesc[i_ind]))
@@ -506,22 +517,29 @@ for s_line in f_idfFile:
                     print 'Assuming default properties.'
                     ls_text.append('*layer,0,0.1000,gap  0.170 0.170 0.170')
             else:
-                print 'Warning: material name "'+s_val+'" in construction "'+s_nam+'" not recognised. Skipping this construction.'
-                found_con=False
-                b_isEndLine=False
-                linecount=0
-                layercount=0
-                concount=concount-1
+                b_deferCon=True
+                ls_text.append('FINDME:'+s_val)
 
-# If line ended with a semicolon, construction done. Write tag line, reset counts and logicals and write entry
-# to database.
+# If line ended with a semicolon, construction done; reset counts and logicals.
+# If the construction is deferred, store ls_text in lls_defCons.
+# If not, write tag line and entry to database.
+# Do not increment concount until the construction is written, in case there is
+# a problem with the material(s).
             if b_isEndLine:
                 ls_text.append('*end_item')
-                layercount=0
                 linecount=0
                 found_con=False
                 b_isEndLine=False
-                f_conDbs.write('\n'.join(ls_text)+'\n')
+                if b_deferCon:
+                    b_deferCon=False
+# Add layer count onto the end of the construction info; this is needed when
+# deferred constructions are handled.
+                    ls_text.append(layercount)
+                    lls_defCons.append(ls_text)
+                else:
+                    concount+=1
+                    f_conDbs.write('\n'.join(ls_text)+'\n')
+                layercount=0
 
 # Scan for materials or constructions.
     else:
@@ -548,7 +566,6 @@ for s_line in f_idfFile:
             found_airGap=True
         elif s_val=='Construction,':
             found_con=True
-            concount=concount+1
             ls_text=['# layers  description  type  optics name   symmetry tag',]
         elif s_val=='WindowMaterial:SimpleGlazingSystem,':
             found_SGS=True
@@ -564,6 +581,50 @@ for s_line in f_idfFile:
                 '0.000','[solar_trans]','[solar_reflect_out]','[solar_reflect_in]','[visible_trans]','[visible_reflect_out]','[visible_reflect_in]','0.000']]
         elif s_val=='WindowMaterial:Gas,':
             found_wgas=True
+
+# Run through deferred constructions and find the appropriate materials.
+#print lls_defCons
+for ls_defCon in lls_defCons:
+    i_numLayers=ls_defCon.pop()
+    layercount=0
+    for i_line in range(0,len(ls_defCon)):
+        s_text=ls_defCon[i_line]
+        if i_line==0:
+            s_conName=s_text.split(',')[1]
+# Count the layers so we can check that gaps aren't being placed into outside layers.
+        if s_text[:6]=='*layer':
+            layercount+=1
+        elif s_text[:7]=='FINDME:':
+# Found one! Find the material and put the data in.
+            layercount+=1
+            s_name=s_text[7:]
+            if s_name in ls_matNames:
+                i_ind=ls_matNames.index(s_name)
+                ls_defCon[i_line]='*layer,{},{:>.4f},{} : {}'.format(i_ind,float(ls_matThick[i_ind]),s_name[:i_matTrunc],ls_matDesc[i_ind])
+            elif s_name in ls_gapNames:
+# First, check if this is the first or last layer. Throw up a warning if it is; this material will screw up an ESP-r simulation.
+                if layercount==1 or layercount==i_numLayers:
+                    print 'Warning: construction "'+s_conName+'" has an air gap for an outside layer.'
+                    print 'This construction will break an ESP-r simulation and requires your attention!'
+
+# In EnergyPlus, gap materials in solid constructions appear to have no associated thickness. A default thickness of 0.1m is assumed.
+                i_ind=ls_gapNames.index(s_name)
+                if li_gapTypes[i_ind]==1:
+                    d_resist=float(ls_gapValues[i_ind])
+                    ls_defCon[i_line]='*layer,0,0.1000,gap  {:.3f} {:.3f} {:.3f}'.format(d_resist,d_resist,d_resist)
+                elif li_gapTypes[i_ind]==2:
+                    d_thick=float(ls_gapValues[i_ind])
+                    ls_defCon[i_line]='*layer,0,{:.4f},gap  0.170 0.170 0.170'.format(d_thick)
+                else:
+                    print 'Warning: something went wrong with layer '+str(layercount)+' of construction "'+s_conName+'" (air gap, Eplus material "'+s_name+'").'
+                    print 'Assuming default properties.'
+                    ls_text.append('*layer,0,0.1000,gap  0.170 0.170 0.170')
+            else:
+# Can't find the material; skip this construction.
+                print 'Warning: material "'+s_name[:i_matTrunc]+'" in construction "'+s_conName+'" not found. Skipping this construction.'
+
+# Construction should now be complete, write to database.
+    f_conDbs.write('\n'.join(ls_defCon)+'\n')        
 
 # Write the placeholder air material and end line to materials database.
 s_text=('# class index |nb items|description (32 char)\n'+

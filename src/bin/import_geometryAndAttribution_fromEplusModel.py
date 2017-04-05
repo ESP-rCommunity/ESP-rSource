@@ -97,7 +97,7 @@ for s_line in f_idfFile:
             continue
 
         if i_lineCount==1:
-            ls_zoneNames.append(s_val)
+            ls_zoneNames.append(s_val.replace(" ", "-"))
 # Zone name is all we need (assume all zones have the same origin), reset to look for next zone.
             i_lineCount=0
             b_foundZone=False
@@ -158,20 +158,20 @@ for s_line in f_idfFile:
 # Surfaces may be "deactivated" (0 vertices), so remember attributes until we get 
 # to the number of vertices (line 10) to make sure they need to be added to the lists.
         if i_lineCount==1:
-            s_surfName=s_val
+            s_surfName=s_val.replace(" ", "-")
         elif i_lineCount==2:
             s_surfType=s_val
         elif i_lineCount==3:
 # Construction name may be truncated
-            s_surfCon=s_val[:i_conTrunc]
+            s_surfCon=s_val[:i_conTrunc].replace(" ", "-")
         elif i_lineCount==4:
-            s_zoneName=s_val
-            i_zoneRef=ls_zoneNames.index(s_val) #inline comment
+            s_zoneName=s_val.replace(" ", "-")
+            i_zoneRef=ls_zoneNames.index(s_val.replace(" ", "-")) #inline comment
             li_zoneSurfs[i_zoneRef]+=1
         elif i_lineCount==5:
             s_surfBound=s_val
         elif i_lineCount==6:
-            s_surfOther=s_val
+            s_surfOther=s_val.replace(" ", "-")
         elif i_lineCount==10:
 # Number of vertices. If this is 0, the surface is "deactivated" and it shouldn't be referenced elsewhere, 
 # so skip it. If number of vertices is >0 then store data to lists and scan vertex coordinates.
@@ -261,11 +261,11 @@ for s_line in f_idfFile:
             s_surfName=s_val
         elif i_lineCount==3:
 # Construction name may be truncated.
-            s_surfCon=s_val[:i_conTrunc]
+            s_surfCon=s_val[:i_conTrunc].replace(" ", "-")
         elif i_lineCount==4:
-            s_surfParent=s_val
+            s_surfParent=s_val.replace(" ", "-")
         elif i_lineCount==5:
-            s_surfOther=s_val
+            s_surfOther=s_val.replace(" ", "-")
         elif i_lineCount==10:
 # Number of vertices. If this is 0, the surface is "deactivated" and it shouldn't be referenced elsewhere, 
 # so skip it. If number of vertices is >0 then store data to lists and scan vertex coordinates.
@@ -437,7 +437,7 @@ for s_zoneName,ls_surfNames,ls_surfTypes,ls_surfCons,lls_surfBounds,llls_surfVer
         lls_geoAtts.append(['*surf',s_surfName[-i_surfTrunc:],s_surfType,s_surfParent[-i_surfTrunc:],'-','-',s_surfCon,'OPAQUE']+ls_surfBound)
 
 # Debug: print lists to standard out.
-    #print 'Zone name: '+s_zoneName
+    print 'Zone name: '+s_zoneName
     #print lls_geoVerts
     #print lls_geoSurfs
     #print lls_geoAtts
