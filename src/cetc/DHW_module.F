@@ -929,8 +929,8 @@ c----56--1---------2---------3---------4---------5---------6---------7---------8
       CASE (Elec_Tankless_Heatpump)
       fDHW_StandbyTankLosses = 0.0
 
-      CASE (Elec_Heatpump)
-      fDHW_StandbyTankLosses = 0.0
+      !CASE (Elec_Heatpump)
+      !fDHW_StandbyTankLosses = 0.0
 
       CASE (Elec_Instantaneous)
       fDHW_StandbyTankLosses = 0.0
