@@ -103,8 +103,9 @@ C -1=floor area/person -2 Light W/m2 -3=small power W/m2
       integer ICGS,ICGF  ! start & finish hours for each casual day:period
       integer ICGUnit    ! unit for sensible day:period 0 is W, 1 is W/m2,
                          ! 2 is m2/p assumes 95W sensible & 45W latent),
-                         ! 3 is W/object (future feature), 4 is Met (metabolic
-                         ! rate as per CIBSE Guide A table 1.4 future feature)
+                         ! 3 is number of people as per CIBSE Guide A table 1.4
+                         ! and if caskeytype = dynamicpeople then use extra information
+                         ! in operations file.
       real CMGS,CMGL     ! sensible and latent magnitude for each casual 
                          ! day:period, units depend on value of ICGT
       real RADC,CONC     ! radiant and convective fraction (0.0 - 1.0) for
@@ -112,6 +113,18 @@ C -1=floor area/person -2 Light W/m2 -3=small power W/m2
       COMMON/P3N/NCAS(MDTY),ICGS(MDTY,MC),ICGF(MDTY,MC),
      &  ICGUnit(MDTY,MC),CMGS(MDTY,MC),CMGL(MDTY,MC),RADC(MDTY,MC),
      &  CONC(MDTY,MC)
+
+C Dynamic people (based on metabolic rate) includes:
+C total number of people, number of men/women/children, metabolic
+C rate and clo value. These are used instead of CMGS CMGL.
+      real tnbmen     ! number of men in zone
+      real tnbwomen   ! number of women in zone
+      real tnbchild   ! number of children in zone
+      real metabolic  ! average metabolic rate
+      real clov       ! average clo (clothing level)
+      real airvel     ! air velocity in zone it is not used now it may be used later
+      COMMON/P3OC/tnbmen(MDTY,MC),tnbwomen(MDTY,MC),tnbchild(MDTY,MC),
+     &           metabolic(MDTY,MC),clov(MDTY,MC),airvel(MDTY,MC)
 
 C NOTE: P2CTL should be extended to support controls for each day type.
       integer ITCTL    ! index of air flow control (see above)

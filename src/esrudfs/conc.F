@@ -134,6 +134,7 @@ C Common blocks for blockages and small supply openings
      &              RESID(MNOD),SAFLW(MNOD)
       COMMON/MFLW10/NODPS(MCNN),HGTPS(MCNN),NODNE(MCNN),HGTNE(MCNN),
      &              ITPCON(MCNN),NDSCNN(MCNN,MCNS)
+      common/ocflux/COflux,H2Oexp,H2Oswt
 
       DOUBLE PRECISION FLW1,FLW2,PRES,RESID,SAFLW
       INTEGER SPMTYP,SSLINK1,SSLINK2
@@ -253,6 +254,14 @@ C Should loop through conc sources here.
           do 70 I=IVCELLS(IV,ICFD,1),IVCELLS(IV,ICFD,2)
             do 71 J=JVCELLS(IV,ICFD,1),JVCELLS(IV,ICFD,2)
               do 72 K=KVCELLS(IV,ICFD,1),KVCELLS(IV,ICFD,2)
+               if (POLNAM(ICTM,ICFD) .eq. 'Sweat') then
+!                call DynamicOcc(1,1.5,1)
+                VOLPOL(ICTM,IV,ICFD)=H2Oswt+H2Oexp
+                SRCSTR(IV,ICFD)=VOLPOL(ICTM,IV,ICFD)
+!               if (ITRC.eq.1) then
+!                print *, SRCSTR(IV,ICFD)
+!               endif
+               endif
                 SU(I,J,K)=SRCSTR(IV,ICFD)
  72           continue
  71         continue

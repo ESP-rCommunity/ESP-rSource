@@ -5078,9 +5078,17 @@ C was confused then cfcarrayindex could be 0.
 
           M=M+1
           CALL EMKEY(M,KEY,IER)
-          WRITE(MLED(M),30)KEY,IL,cfcitmindex(ITMCFCDB(IFOC,IL)),
-     &      DTHK(IFOC,IL)*1000.0, PNAM(IL)(1:19)
-  30      FORMAT(A1,I4,I5,F7.1,2X,A)
+
+C Trap -1 value.
+          if(cfcarrayindex.le.0)then
+            WRITE(MLED(M),31)KEY,IL,' unknown ',
+     &        DTHK(IFOC,IL)*1000.0, PNAM(IL)(1:19)
+  31        FORMAT(A1,I4,a,F7.1,2X,A)
+          else
+            WRITE(MLED(M),30)KEY,IL,cfcitmindex(ITMCFCDB(IFOC,IL)),
+     &        DTHK(IFOC,IL)*1000.0, PNAM(IL)(1:19)
+  30        FORMAT(A1,I4,I5,F7.1,2X,A)
+          endif
 
         ELSE ! check_CFC2_or_MLC
           matarrayindex=IPRMAT(IFOC,IL)   ! which legacy index

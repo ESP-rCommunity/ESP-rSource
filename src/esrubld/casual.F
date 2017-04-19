@@ -189,7 +189,24 @@ C Variables used in trace.
 
 C Adaptive comfort commons
       COMMON/ADPCOM/PREVSTATWIN,PREVSTATFAN,PREVSTATLIGHT,TOTPWR(MCOM)
+C<< For dynamic people.
 
+      COMMON/CASGNSO/META(MCOM,MDTY,MGTY,MGPER),
+     &         NBMEN(MCOM,MDTY,MGTY,MGPER),NBWOM(MCOM,MDTY,MGTY,MGPER),
+     &         NBCHI(MCOM,MDTY,MGTY,MGPER),CONCC(MCOM,MDTY,MGTY,MGPER),
+     &         RADCC(MCOM,MDTY,MGTY,MGPER),CLOTH(MCOM,MDTY,MGTY,MGPER)
+      COMMON/PVALA/TPA(MCOM),QPA(MCOM)
+      common/occload/sklat(MCOM),skcon(MCOM),skrad(MCOM),ttcr(MCOM),
+     &     ttsk(MCOM)
+      common/ocflux/COflux,H2Oexp,H2Oswt
+      REAL TPA, QPA,TAIR,TMRT
+      REAL SGAIN,LGAIN,TOP,TOCN,CLOTHO
+      REAL META,NBMEN,NBWOM,NBCHI
+      REAL METAo,CGSECo,CGSERo,CGLATo,CGSENC,CGSENR,CGLAT
+ 
+C<< CGSECo CGSERo and CGLATo are the total convective radiative and latent load from
+C<< Dynamic occupant.CGSENC,CGSENR,CGLAT previously defined in common/CASGNS/.
+C<< META and METAO metabolic rate of occupant in met and watts respectively.
 C.........START: USED FOR ACTIVITY TDF DATA.....................
 C Using the TOTOCCUP as a shortcut for the total occupant gains
 C that are taken from the activities temporal data
@@ -318,7 +335,9 @@ C Zero zone power loads and update present control fractions.
         CGCTL(ICOMP,1,ITY)=CGCTL(ICOMP,2,ITY)
         CGCTL(ICOMP,2,ITY)=1.0
   9   CONTINUE
-
+C<< update value for dynamic people
+      SGAIN=0
+      LGAIN=0
 C Update present values.
       QCASC(1)=QCCS(ICOMP)
       QCASR(1)=QCRS(ICOMP)
@@ -945,6 +964,83 @@ C Calculate the current period id.
               IPER=I
             endif
  30       continue
+
+C<< This if statement to calculate the sensible and latent load from occupant in case of dynamic people
+C<< METAo metabolic rate is converted to watt after multiplying: 1 Met = 58 W/m2 and the mean surface area 
+C<< of the human body is approximately 1.8 m2 
+           iGainSlot=iabs(ICGT(IDAY,IGN))
+           if(iGainSlot.gt.0)then
+             if(caskeytype(ICOMP,iGainSlot)(1:13).eq.
+     &          'dynamicpeople'.and. 
+     &            lodatr1(ICOMP,IGN).GT.0) then
+                INDX=ICOMP*(-1)   ! negate the zone index for use in mzmixt.
+                CALL MZMIXT(INDX,TMRT,TMIX)
+                TAIR=TPA(ICOMP)
+                TOP=0.5*TMRT+0.5*TAIR 
+                METAo=META(ICOMP,IDAY,IGN,IPER)*58*1.8
+                CONCCO=CONCC(ICOMP,IDAY,IGN,IPER)
+                RADCCO=RADCC(ICOMP,IDAY,IGN,IPER)
+                CLOTHO=CLOTH(ICOMP,IDAY,IGN,IPER)
+               if(lodatr1(ICOMP,IGN).eq.1)then
+
+C<< polynomial equation to calculate both sensible and latent heat load from occupant
+C<< where Top and METAo are the operative zone temperature and metabolic rate of occupant.
+C<< This model was correlated from some published experimental data Ref.
+C<< The relationship between the body’s heat production and all its other heat gains and losses is:
+C<< M=E±R±C±S 
+C<< M=metabolic rate
+C<< E=rate of heat loss by evaporation, respiration, and elimination
+C<< R=radiation rate
+C<< C=conduction and convection rate
+C<< S=body heat storage rate
+C<< if E should be alwase positive in this case the polynomial given by the Energy plus below is inefficient for example when temp goes below 14C at Met =100 watt (ASHREA)
+                 SGAIN=198.42617-3.80901*TOP-0.05419*TOP**2-0.42472*
+     &             METAo+0.00171*METAo**2+0.01287*TOP*METAo-
+     &             0.00004*TOP*METAo**2+0.00002*METAo*TOP**2-
+     &             0.00000038516*METAo**2*TOP**2    
+                 LGAIN=227.89011-14.95202*TOP+0.24884*TOP**2-
+     &             2.56734 *METAo+0.00715*METAo**2+
+     &             0.132*TOP*METAo-0.00017*TOP*METAo**2-
+     &             0.00107*METAo*TOP**2
+C<< CGSECo CGSERo and CGLATo are the total convective radiative and latent load from
+C<< occupant taking into consideration number of people age/gender 
+
+               elseif(lodatr1(ICOMP,IGN).eq.2)then
+C<< model below are the polynomial of Energy Plus function of Temperature and metabolic rate.>>
+                 SGAIN=6.461927+0.946892*METAo+0.0000255737*METAo**2+
+     &             7.139322*TOP-0.0627909*TOP*METAo+
+     &             0.0000589172*TOP*METAo**2-
+     &             0.19855*TOP**2+0.000940018*TOP**2*METAo-
+     &             0.00000149532*TOP**2*METAo**2
+                 LGAIN=METAo-SGAIN 
+               elseif(lodatr1(ICOMP,IGN).eq.3)then
+               TOCN=NBMEN(ICOMP,IDAY,IGN,IPER)+
+     &         NBWOM(ICOMP,IDAY,IGN,IPER)+NBCHI(ICOMP,IDAY,IGN,IPER)
+                if(TOCN.GT.0.1)then
+C<< Calling the dynamic model two node model subroutine from a separate file dynamicoccup.F
+                call DynamicOcc(ICOMP,METAo,CLOTHO)  
+                SGAIN=skcon(ICOMP)
+                LGAIN=sklat(ICOMP)
+                endif
+
+               endif
+                 CGSECo=(SGAIN*NBMEN(ICOMP,IDAY,IGN,IPER)+
+     &              0.85*SGAIN*NBWOM(ICOMP,IDAY,IGN,IPER)+
+     &              0.75*SGAIN*NBCHI(ICOMP,IDAY,IGN,IPER))*
+     &              CONCCO
+                 CGSERo=(SGAIN*NBMEN(ICOMP,IDAY,IGN,IPER)+
+     &              0.85*SGAIN*NBWOM(ICOMP,IDAY,IGN,IPER)+
+     &              0.75*SGAIN*NBCHI(ICOMP,IDAY,IGN,IPER))*
+     &              RADCCO
+                 CGLATo=LGAIN*NBMEN(ICOMP,IDAY,IGN,IPER)+
+     &              0.85*LGAIN*NBWOM(ICOMP,IDAY,IGN,IPER)+
+     &              0.75*LGAIN*NBCHI(ICOMP,IDAY,IGN,IPER)
+
+                  CGSENC(ICOMP,IDAY,IGN,IPER)=CGSECo
+                  CGSENR(ICOMP,IDAY,IGN,IPER)=CGSERo
+                  CGLAT(ICOMP,IDAY,IGN,IPER)=CGLATo
+              endif
+           endif
 
 C Set future casual gain values if there is periods defined.
           if(IPER.gt.0)then

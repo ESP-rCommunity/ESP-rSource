@@ -91,7 +91,7 @@ C updated when the user exits).
       LOGICAL OK,DOK,XST,MODOPR,browse,unixok,needtoask,clkok
       integer iglib   ! if 1 then X11, if 2 then GTK, if 3 then text only.
       integer NIGU,IGU,NITEMS,INO ! max items and current menu item
-      integer islot   ! used when defining from scratch
+      integer islot, iatr1   ! used when defining from scratch
       
 C For help messages
       character helpinsub*24 ! subroutine name
@@ -274,7 +274,7 @@ C << do we need any of this >>
       lodlabel(icomp,3)='SmallPower'  
       lodlabel(icomp,4)='Otherstuff'  
       lodlabel(icomp,5)='Ann.El    '  
-      lodlabel(icomp,6)='N/A       ' 
+      lodlabel(icomp,6)='Metabolic ' 
       lodlabel(icomp,7)='N/A       '      
  
 C Read file for editing or listing. If there is no file then begin with
@@ -381,8 +381,8 @@ C << it might not be necessary to set lodslot??? >>
           lodlabel(icomp,5)='Ann.El    '  
           caskeytype(icomp,5)='net_utilities'  
           lodslot(icomp,5)=0; lodatr1(icomp,5)=0;  lodatr2(icomp,5)=0
-          lodlabel(icomp,6)='N/A       ' 
-          caskeytype(icomp,6)='-           '  
+          lodlabel(icomp,6)='Metabolic ' 
+          caskeytype(icomp,6)='dynamicpeople'  
           lodslot(icomp,6)=0; lodatr1(icomp,6)=0;  lodatr2(icomp,6)=0
           lodlabel(icomp,7)='N/A       '
           caskeytype(icomp,7)='-           '  
@@ -3190,7 +3190,23 @@ C account ICGUnit and IELF attributes.
             write (VERT(M),303)KEY,ICGS(IDTYP,L),ICGF(IDTYP,L),
      &        lodlabel(icomp,jicgt),' m2p',CMGS(IDTYP,L),CMGL(IDTYP,L)
           endif
-        elseif(ICGUnit(IDTYP,L).eq.1)then
+        elseif(ICGUnit(IDTYP,L).eq.3)then  ! for dynamicpeople
+          jicgt=iabs(ICGT(IDTYP,L))
+          if (IELF(ICOMP).EQ.1) then
+            if (PWR(IDTYP,L).gt.0.0001) then
+              write (VERT(M),303)KEY,ICGS(IDTYP,L),ICGF(IDTYP,L),
+     &        lodlabel(icomp,jicgt),' ocu',PWR(IDTYP,L),
+     &        PF(IDTYP,L)
+            else
+              write (VERT(M),313)KEY,ICGS(IDTYP,L),ICGF(IDTYP,L),
+     &        lodlabel(icomp,jicgt),' ocu no power'
+            endif
+          else
+            write (VERT(M),303)KEY,ICGS(IDTYP,L),ICGF(IDTYP,L),
+     &        lodlabel(icomp,jicgt),' ocu',tnbmen(IDTYP,L),
+     &        metabolic(IDTYP,L)
+          endif
+         elseif(ICGUnit(IDTYP,L).eq.1)then
           jicgt=iabs(ICGT(IDTYP,L))
           if (IELF(ICOMP).EQ.1) then
             if (PWR(IDTYP,L).gt.0.0001) then
@@ -3434,9 +3450,10 @@ C For all day types.
 
 C Ask about units prior to calling EDCASGN and reset icgts & icgus if required.
               igu=1; icgus=0
-              CALL EASKABCD('For new gains the typical units will be',
+              CALL EASKATOG('For new gains the typical units will be',
      &          'Confirm: ','Watts','Watts/m2','objects/m2->Watts',
-     &          'Square meters per object',IGU,nbhelp)
+     &          'Square meters per object','Dynamic People',
+     &          ' ',' ',IGU,nbhelp)
               if(IGU.eq.1)then
                 icgus=0
               elseif(IGU.eq.2)then
@@ -3447,6 +3464,8 @@ C Ask about units prior to calling EDCASGN and reset icgts & icgus if required.
               elseif(IGU.eq.4)then
                 icgus=2
                 ICGTS= (-1*ICGTS)  ! invert the selection slot index
+              elseif(IGU.eq.5)then
+                icgus=3  ! number of peple
               endif
               IDT=-1
               IPER=0
@@ -3470,9 +3489,10 @@ C If there are no loads using this slot make a default one for the whole
 C day and then a (suggested) 8-18 period within. Ask about units prior
 C to calling EDCASGN.
                 igu=1
-                CALL EASKABCD('For new gains the typical units will be',
-     &            'Confirm: ','Watts','Watts/m2','objects/m2->Watts',
-     &            'Square meters per object',IGU,nbhelp)
+                CALL EASKATOG('For new gains the typical units will be',
+     &          'Confirm: ','Watts','Watts/m2','objects/m2->Watts',
+     &          'Square meters per object','Dynamic People',
+     &          ' ',' ',IGU,nbhelp)
                 if(IGU.eq.1)then
                   icgus=0
                 elseif(IGU.eq.2)then
@@ -3483,6 +3503,8 @@ C to calling EDCASGN.
                 elseif(IGU.eq.4)then
                   icgus=2
                   ICGTS= (-1*ICGTS)  ! invert the selection slot index
+                elseif(IGU.eq.5)then
+                  icgus=3  ! number of peple
                 endif
                 silent=.true.
                 izs=0
@@ -3640,12 +3662,13 @@ C Type to go with this casual gain.
      &      'c lighting basic lighting W & W/m2',
      &      'd equipment basic small power W & W/m2',
      &      'e other    non-specific gains W & W/m2',
-     &      'f net_utilities as legacy icgtyp = 5',
-     &      'g ALOtherElectric H3K other appliances',
-     &      'h ALStoveNG H3K natural gas stoves',
-     &      'i ALStoveElectric H3K electrical stoves',
-     &      'j ALDryer H3K clothes dryers',
-     &      ' ',' ',isw,idno,nbhelp)
+     &      'f dynamicpeople nb people & metabolic',
+     &      'g net_utilities as legacy icgtyp = 5',
+     &      'h ALOtherElectric H3K other appliances',
+     &      'i ALStoveNG H3K natural gas stoves',
+     &      'j ALStoveElectric H3K electrical stoves',
+     &      'k ALDryer H3K clothes dryers',
+     &      ' ',isw,idno,nbhelp)
           if(isw.eq.1)then
             caskeytype(icomp,islot)='-           '
           elseif(isw.eq.2)then
@@ -3657,17 +3680,19 @@ C Type to go with this casual gain.
           elseif(isw.eq.5)then
             caskeytype(icomp,islot)='other       '  
           elseif(isw.eq.6)then
-            caskeytype(icomp,islot)='net_utilities'  
+            caskeytype(icomp,islot)='dynamicpeople'  
           elseif(isw.eq.7)then
-            caskeytype(icomp,islot)='ALOtherElectric'  
+            caskeytype(icomp,islot)='net_utilities'  
           elseif(isw.eq.8)then
-            caskeytype(icomp,islot)='ALStoveNG   '  
+            caskeytype(icomp,islot)='ALOtherElectric'  
           elseif(isw.eq.9)then
-            caskeytype(icomp,islot)='ALStoveElectric'  
+            caskeytype(icomp,islot)='ALStoveNG   '  
           elseif(isw.eq.10)then
+            caskeytype(icomp,islot)='ALStoveElectric'  
+          elseif(isw.eq.11)then
             caskeytype(icomp,islot)='ALDryer     '  
           endif
-          lodslot(icomp,islot)=islot; lodatr1(icomp,islot)=0;
+          lodslot(icomp,islot)=islot; lodatr1(icomp,islot)=iatr1;
           lodatr2(icomp,islot)=0
           ip3ver(icomp)=21  ! upgrade file to remember types
           modopr=.true.
@@ -3906,7 +3931,7 @@ C the local parameters are copied into common blocks via a call to CPYCASTI.
 
 C  ICOMP zone number
 C  ICGTX casual gain slot index (still overloaded )
-C  ICGUX units 0=W 1=W/m2 2=m2/person
+C  ICGUX units 0=W 1=W/m2 2=m2/person 3 numb of dynamic people
 C  caskeyt  gain type key word
 C  IDT day type (=-1 then all day types)
 C  IPER period (=0 then new)
@@ -3932,12 +3957,15 @@ C Electrical data flag and elctrical data.
 
       logical OK,DOK,CLOSE,silent
 
-      character OUTS*124,hold*24
-      character msg*44  ! for the dialog
+      character OUTS*124,hold*36
+      character msg*48  ! for the dialog
 
       integer ipft,IPHAST  ! for local editing.
       real pft,pwrt,bvoltt,xfla,zb   ! for local editing.
+      real airvelx,tnbmenx,tnbwomenx,tnbchildx,metabolicx,clox
+      real xairvel,xtnbmen,xtnbwomen,xtnbchild,xmetabolic,xclo
       integer IALL
+      real LGAIN
       
 C For help messages
       character helpinsub*24 ! subroutine name
@@ -3952,6 +3980,8 @@ C get data from common.
         CMGSX=0.
         CMGLX=0.
         if(caskeyt(1:6).eq.'people')then
+          RADCX=0.6; CONCX=0.4
+        elseif(caskeyt(1:13).eq.'dynamicpeople')then
           RADCX=0.6; CONCX=0.4
         elseif(caskeyt(1:8).eq.'lighting')then
           RADCX=0.3; CONCX=0.7
@@ -3979,7 +4009,8 @@ C get data from common.
 
 C << cpycasit also needs caskeyt >>
         call CPYCASIT(icomp,idt,iper,icgtX,icguX,icgsX,icgfX,cmgsX,
-     &    cmglX,radcX,concX,ipfX,iphasX,pfX,pwrX,bvoltX)
+     &    cmglX,radcX,concX,ipfX,iphasX,pfX,pwrX,bvoltX,
+     &    tnbmenx,tnbwomenx,tnbchildx,metabolicx,clox,airvelx)
       endif
 
       helptopic='operations_casual_data'
@@ -4021,16 +4052,19 @@ C Can be specified as: W, W/obj, W/m^2, m^2/obj
         msg='Gain to be specified (currently W/m2)'
       elseif(icguX.eq.2)then
         msg='Gain to be specified (currently m2/person)'
+      elseif(icguX.eq.3)then
+        msg='Gain to be specified (currently nb of person)'
       endif
-      CALL EASKABCD(msg,'Confirm: ','Watts',
-     &   'Watts per square meter','Watts per object->Watts',
-     &   'Square meters per object',IGU,nbhelp)
+      CALL EASKATOG(msg,'Confirm: ',
+     &  'Watts','Watts/m2','objects/m2->Watts',
+     &  'Square meters per object','Dynamic People',
+     &  ' ',' ',IGU,nbhelp)
 
 C Common portion of help message for detailed dialogs.
       if (IGU.eq.1) then
 
-C User requests gain as W - require gain only. If existing is in W/m2 then
-C multiply up to get W and revise icgtx to be positive and set icgux.
+C User requests gain as W - require gain only. If existing is in W/m2 then multiply
+C up to get W and revise icgtx to be positive and set icgux.
  20     if (icguX.eq.1) then
           call edisp(iuout,'Converting from W/m2 to Watts')
           write (HOLD,'(2f8.1,a)') CMGSX*zb,CMGLX*zb,'  '
@@ -4182,6 +4216,105 @@ C that each person is 95W sensible and 45W latent.
         else
           goto 50
         endif
+
+      elseif (IGU.eq.5) then
+
+C Describe dynamic people:
+C number of men number of women, number
+C of children, avg metabolic rate, avg clothing level.
+
+ 51     if(caskeyt(1:13).eq.'dynamicpeople')then
+          xtnbmen=tnbmenx
+          xtnbwomen=tnbwomenx
+          xtnbchild=tnbchildx
+          xmetabolic=metabolicx
+          xclo=clox
+          xairvel=airvelx
+        else
+          xtnbmen=1.0
+          xtnbwomen=1.0
+          xtnbchild=0.0
+          xmetabolic=1.2
+          xclo=1.0
+          xairvel=0.1
+        endif
+
+        write (HOLD,'(3f6.1)') xtnbmen,xtnbwomen,xtnbchild
+        call EASKS(HOLD,
+     &    'Total nb men nb women nb children:',
+     &    ' ',36,'0.   0. ','occupant info',IER,nbhelp)
+        K=0
+        call EGETWR(HOLD,K,xtnbmen,0.,50.0,'W','Number of men',IER)
+        call EGETWR(HOLD,K,xtnbwomen,0.,50.0,'W','Number of women',IER)
+        call EGETWR(HOLD,K,xtnbchild,0.,50.0,'W','Number of child',IER)
+        if(IER.eq.0)then
+          tnbmenx=xtnbmen
+          tnbwomenx=xtnbwomen
+          tnbchildx=xtnbchild
+          icguX=3    ! mark as number of person
+          CMGSX=0.0  ! not used
+          CMGLX=0.0  ! not used
+        elseif(ier.eq.-3)then
+          goto 10 
+        else 
+          goto 51
+        endif
+
+C Other questions to enable testing the equations. << TODO >>
+        call EASKR(xmetabolic,
+     &   'Average metabolic rate (with zero meaning none)?',
+     &   '  ',0.0,'W',10.0,'W',1.0,'metabolic rate',IERI,nbhelp)
+        metabolicx=xmetabolic
+        call EASKR(xclo,
+     &   'Average cloting (clo) value (with zero meaning none)?',
+     &   '  ',0.0,'W',3.0,'W',1.0,'clo value',IERI,nbhelp)
+        clox=xclo
+C<< air velocity it may be used to calculate convective heat transfer from occupant
+c        call EASKR(xairvel,
+c     &   'Air velocity(m/s) value (with zero meaning none)?',
+c     &   '  ',0.0,'W',3.0,'W',1.0,'clo value',IERI,nbhelp)
+c        airvelx=xairvel
+C Ask about testing.
+        CALL EASKABC('Test this','Options:','DBT 20 MRT 20 RH 50',
+     &     'user defined MRT RH','continue',ivopt,nbhelp)
+        if(ivopt.eq.1)then
+C Tmix = CONV*Tair + RAD*Tmrt
+          TMIX=CONCX*20.0+RADCX*22.0
+          TOP=TMIX 
+          if (metabolicx.GT.1.6)then  
+            SGAIN=(-0.0471*TOP**2-3.3346*TOP+155.86)      ! When metabolic rate> 1.6 met
+            LGAIN=(0.0729*TOP**2+1.7747*TOP+32.646)
+          else if (metabolicx.LT.1.2) then
+            SGAIN=(-0.0558*TOP**2-2.99*TOP+174.3)      ! When metabolic rate< 1.2 
+            LGAIN=(0.1544*TOP**2-4.6528*TOP+57.37)
+          else
+            SGAIN=(-0.0577*TOP**2-2.8642*TOP+172.16)  ! When metabolic rate> 1.2 and <1.6 met
+            LGAIN=(0.1231*TOP**2-1.8358*TOP+25.452)
+          end if
+          write(6,*) 'dynamic sensible is ',SGAIN,' latent is',LGAIN,
+     &      ' for dbt mrt TMIX 20. 22. ',TMIX
+        elseif(ivopt.eq.2)then
+          call EASKR(v1,'Test dry bulb temperature?',
+     &   '  ',0.0,'W',30.0,'W',1.0,'test drybulb',IERI,nbhelp)
+          call EASKR(v2,'Test MRT?',
+     &   '  ',0.0,'W',30.0,'W',1.0,'test mrt',IERI,nbhelp)
+          TMIX=CONCX*v1+RADCX*v2
+          TOP=TMIX 
+          if (metabolicx.GT.1.6)then  
+            SGAIN=(-0.0471*TOP**2-3.3346*TOP+155.86)      ! When metabolic rate> 1.6 met
+            LGAIN=(0.0729*TOP**2+1.7747*TOP+32.646)
+          else if (metabolicx.LT.1.2) then
+            SGAIN=(-0.0558*TOP**2-2.99*TOP+174.3)      ! When metabolic rate< 1.2 
+            LGAIN=(0.1544*TOP**2-4.6528*TOP+57.37)
+          else
+            SGAIN=(-0.0577*TOP**2-2.8642*TOP+172.16)  ! When metabolic rate> 1.2 and <1.6 met
+            LGAIN=(0.1231*TOP**2-1.8358*TOP+25.452)
+          end if
+          write(6,*) 'dynamic sensible is ',SGAIN,' latent is',LGAIN,
+     &      ' for dbt mrt TMIX',v1,v2,TMIX
+        elseif(ivopt.eq.3)then
+          continue
+        endif
       elseif (IGU.eq.-3) then
         goto 10  ! user hit the cancel button
       endif
@@ -4305,7 +4438,8 @@ C Now update common blocks. Loop backwards from INC to ILPER.
         do 300 IX=INC,ILPER,-1
           if (IX.eq.ILPER) then
             call CPYCASTI(icomp,idt,ix,icgtX,icguX,icgsX,icgfX,cmgsX,
-     &        cmglX,radcX,concX,ipfX,iphasX,pfX,pwrX,bvoltX)
+     &        cmglX,radcX,concX,ipfX,iphasX,pfX,pwrX,bvoltX,
+     &        tnbmenx,tnbwomenx,tnbchildx,metabolicx,clox,airvelx)
           else
             call CPYCASIJ(icomp,IDT,IX,IX-1)
           endif
@@ -4386,6 +4520,10 @@ C Generate menu text for each gain on the current day.
           jicgt=iabs(ICGT(IDT,L))   ! assumes occupant
           WRITE(VERT(M),303)ICGS(IDT,L),ICGF(IDT,L),
      &      lodlabel(icomp,jicgt),' m2p',CMGS(IDT,L),CMGL(IDT,L)
+        elseif(ICGUnit(IDT,L).eq.3)then
+          jicgt=iabs(ICGT(IDT,L))   ! assumes metabolic
+          WRITE(VERT(M),303)ICGS(IDT,L),ICGF(IDT,L),
+     &      lodlabel(icomp,jicgt),' ocu',CMGS(IDT,L),CMGL(IDT,L)
         else
           jicgt=iabs(ICGT(IDT,L))
           WRITE(VERT(M),303)ICGS(IDT,L),ICGF(IDT,L),
@@ -4435,6 +4573,12 @@ C Copy periods.
               CMGL(IDTT,(NCAS(IDTT)))=CMGL(IDT,IX)
               RADC(IDTT,(NCAS(IDTT)))=RADC(IDT,IX)
               CONC(IDTT,(NCAS(IDTT)))=CONC(IDT,IX)
+              tnbmen(IDTT,(NCAS(IDTT)))=tnbmen(IDT,IX)
+              tnbwomen(IDTT,(NCAS(IDTT)))=tnbwomen(IDT,IX)
+              tnbchild(IDTT,(NCAS(IDTT)))=tnbchild(IDT,IX)
+              metabolic(IDTT,(NCAS(IDTT)))=metabolic(IDT,IX)
+              clov(IDTT,(NCAS(IDTT)))=clov(IDT,IX)
+              airvel(IDTT,(NCAS(IDTT)))=airvel(IDT,IX)
               pf(IDTT,NCAS(IDTT))=PF(IDT,IX)
               ipf(IDTT,NCAS(IDTT))=IPF(IDT,IX)
               pwr(IDTT,NCAS(IDTT))=PWR(IDT,IX)
@@ -4515,9 +4659,12 @@ C Descriptive label for a zone load & casual gain types.
 C Scratch version of P3N
       INTEGER NCASC,ICGSC,ICGFC,ICGUnitC
       REAL CMGSC,CMGLC,RADCC,CONCC
+      REAL tnbmenC,tnbwomenC,tnbchildC,metabolicC,cloC,airvelC
       COMMON/P3NC/NCASC(MDTY),ICGSC(MDTY,MC),ICGFC(MDTY,MC),
      & ICGUnitC(MDTY,MC),CMGSC(MDTY,MC),CMGLC(MDTY,MC),
-     & RADCC(MDTY,MC),CONCC(MDTY,MC)
+     & RADCC(MDTY,MC),CONCC(MDTY,MC),
+     & tnbmenC(MDTY,MC),tnbwomenC(MDTY,MC),tnbchildC(MDTY,MC),
+     & metabolicC(MDTY,MC),cloC(MDTY,MC),airvelC(MDTY,MC)
       INTEGER ICGTC
       COMMON/P3TYPENC/ICGTC(MDTY,MC)
 
@@ -4571,9 +4718,9 @@ C << is it actually necessary to set these up now? >>
       caskeytype(idest,4)='other       '  
       lodlabel(idest,5)='Ann.El '  
       caskeytype(idest,5)='net_utilities'  
-      lodlabel(idest,6)='N/A    ' 
-      caskeytype(idest,6)='-           '  
-      lodlabel(idest,7)='N/A    '
+      lodlabel(idest,6)='Metabolic '  
+      caskeytype(idest,6)='dynamicpeople'  
+      lodlabel(idest,7)='N/A    ' 
       caskeytype(idest,7)='-           '  
   
       helptopic='oper_import_dialogs'
@@ -4857,6 +5004,11 @@ C Save the destination operation file.
 
 C ********************* PLTCASGN *********************
 C PLTCASGN - plot casual gain data.
+
+C << for the case of dynamicpeople plot right axis as
+C << number of people rather than W/m2 (to be done)
+C << perhaps also a slightly different header
+
 C  ICOMP zone number
 
       subroutine PLTCASGN(ICOMP,IDTYP)
@@ -4874,7 +5026,7 @@ C  ICOMP zone number
       common/calena/calename,calentag(MDTY),calendayname(MDTY)
       CHARACTER CALENAME*32,CALENTAG*12,CALENDAYNAME*32
       INTEGER IDTY,lnlb
-
+      Real METAOC,SGAIN,LGAIN
       dimension CGAINS(25,7),CGAINL(25,7),CGAINTS(25),CGAINTL(25)
 
       character outs*124
@@ -4934,6 +5086,22 @@ C persons per m^2. For case of CMGS zero assume no people.
             elseif (ICGUnit(IDAY,J).eq.1) then
               CGNS=CGNS+CMGS(IDAY,J)*ZBASEA(ICOMP)
               CGNL=CGNL+CMGL(IDAY,J)*ZBASEA(ICOMP)
+            elseif (ICGUnit(IDAY,J).eq.3) then
+              METAOC=metabolic(IDAY,J)*1.8*58
+              SGAIN=198.42617-3.80901*20-0.05419*20**2-0.42472*
+     &             METAOC+0.00171*METAOC**2+0.01287*20*METAOC-
+     &             0.00004*20*METAOC**2+0.00002*METAOC*20**2-
+     &             0.00000038516*METAOC**2*20**2    
+              LGAIN=227.89011-14.95202*20+0.24884*20**2-
+     &             2.56734 *METAOC+0.00715*METAOC**2+
+     &             0.132*20*METAOC-0.00017*20*METAOC**2-
+     &             0.00107*METAOC*20**2
+              CGNS=CGNS+SGAIN*tnbmen(IDAY,J)+
+     &              0.85*SGAIN*tnbwomen(IDAY,J)+
+     &              0.75*SGAIN*tnbchild(IDAY,J)
+              CGNL=CGNL+LGAIN*tnbmen(IDAY,J)+
+     &              0.85*LGAIN*tnbwomen(IDAY,J)+
+     &              0.75*LGAIN*tnbchild(IDAY,J)
             else
               CGNS=CGNS+CMGS(IDAY,J)
               CGNL=CGNL+CMGL(IDAY,J)
@@ -4960,6 +5128,22 @@ C Loop through the focus day.
             elseif (ICGUnit(JDAY,J).eq.1) then
               CGNS=CGNS+CMGS(JDAY,J)*ZBASEA(ICOMP)
               CGNL=CGNL+CMGL(JDAY,J)*ZBASEA(ICOMP)
+            elseif (ICGUnit(JDAY,J).eq.3) then
+              METAOC=metabolic(IDAY,J)*1.8*58
+              SGAIN=198.42617-3.80901*20-0.05419*20**2-0.42472*
+     &             METAOC+0.00171*METAOC**2+0.01287*20*METAOC-
+     &             0.00004*20*METAOC**2+0.00002*METAOC*20**2-
+     &             0.00000038516*METAOC**2*20**2    
+              LGAIN=227.89011-14.95202*20+0.24884*20**2-
+     &             2.56734 *METAOC+0.00715*METAOC**2+
+     &             0.132*20*METAOC-0.00017*20*METAOC**2-
+     &             0.00107*METAOC*20**2
+              CGNS=CGNS+SGAIN*tnbmen(JDAY,J)+
+     &              0.85*SGAIN*tnbwomen(JDAY,J)+
+     &              0.75*SGAIN*tnbchild(JDAY,J)
+              CGNL=CGNL+LGAIN*tnbmen(JDAY,J)+
+     &              0.85*LGAIN*tnbwomen(JDAY,J)+
+     &              0.75*LGAIN*tnbchild(JDAY,J)
             else
               CGNS=CGNS+CMGS(JDAY,J)
               CGNL=CGNL+CMGL(JDAY,J)
@@ -4986,6 +5170,22 @@ C Loop through the next day.
             elseif (ICGUnit(KDAY,J).eq.1) then
               CGNS=CGNS+CMGS(KDAY,J)*ZBASEA(ICOMP)
               CGNL=CGNL+CMGL(KDAY,J)*ZBASEA(ICOMP)
+            elseif (ICGUnit(KDAY,J).eq.3) then
+              METAOC=metabolic(IDAY,J)*1.8*58
+              SGAIN=198.42617-3.80901*20-0.05419*20**2-0.42472*
+     &             METAOC+0.00171*METAOC**2+0.01287*20*METAOC-
+     &             0.00004*20*METAOC**2+0.00002*METAOC*20**2-
+     &             0.00000038516*METAOC**2*20**2    
+              LGAIN=227.89011-14.95202*20+0.24884*20**2-
+     &             2.56734 *METAOC+0.00715*METAOC**2+
+     &             0.132*20*METAOC-0.00017*20*METAOC**2-
+     &             0.00107*METAOC*20**2
+              CGNS=CGNS+SGAIN*tnbmen(KDAY,J)+
+     &              0.85*SGAIN*tnbwomen(KDAY,J)+
+     &              0.75*SGAIN*tnbchild(KDAY,J)
+              CGNL=CGNL+LGAIN*tnbmen(KDAY,J)+
+     &              0.85*LGAIN*tnbwomen(KDAY,J)+
+     &              0.75*LGAIN*tnbchild(KDAY,J)
             else
               CGNS=CGNS+CMGS(KDAY,J)
               CGNL=CGNL+CMGL(KDAY,J)
@@ -5093,6 +5293,22 @@ C << can this be generalized >>
           elseif (ICGUnit(IDAY,IP).eq.1) then
             CGNS=CMGS(IDAY,IP)*ZBASEA(ICOMP)
             CGNL=CMGL(IDAY,IP)*ZBASEA(ICOMP)
+          elseif (ICGUnit(IDAY,IP).eq.3) then
+              METAOC=metabolic(IDAY,J)*1.8*58
+              SGAIN=198.42617-3.80901*20-0.05419*20**2-0.42472*
+     &             METAOC+0.00171*METAOC**2+0.01287*20*METAOC-
+     &             0.00004*20*METAOC**2+0.00002*METAOC*20**2-
+     &             0.00000038516*METAOC**2*20**2    
+              LGAIN=227.89011-14.95202*20+0.24884*20**2-
+     &             2.56734 *METAOC+0.00715*METAOC**2+
+     &             0.132*20*METAOC-0.00017*20*METAOC**2-
+     &             0.00107*METAOC*20**2
+              CGNS=SGAIN*tnbmen(IDAY,IP)+
+     &              0.85*SGAIN*tnbwomen(IDAY,IP)+
+     &              0.75*SGAIN*tnbchild(IDAY,IP)
+              CGNL=LGAIN*tnbmen(IDAY,IP)+
+     &              0.85*LGAIN*tnbwomen(IDAY,IP)+
+     &              0.75*LGAIN*tnbchild(IDAY,IP)
           else
             CGNS=CMGS(IDAY,IP)
             CGNL=CMGL(IDAY,IP)
@@ -5174,6 +5390,22 @@ C Second (focus) day type requested.
           elseif (ICGUnit(JDAY,IP).eq.1) then
             CGNS=CMGS(JDAY,IP)*ZBASEA(ICOMP)
             CGNL=CMGL(JDAY,IP)*ZBASEA(ICOMP)
+          elseif (ICGUnit(JDAY,IP).eq.3) then
+              METAOC=metabolic(JDAY,IP)*1.8*58
+              SGAIN=198.42617-3.80901*20-0.05419*20**2-0.42472*
+     &             METAOC+0.00171*METAOC**2+0.01287*20*METAOC-
+     &             0.00004*20*METAOC**2+0.00002*METAOC*20**2-
+     &             0.00000038516*METAOC**2*20**2    
+              LGAIN=227.89011-14.95202*20+0.24884*20**2-
+     &             2.56734 *METAOC+0.00715*METAOC**2+
+     &             0.132*20*METAOC-0.00017*20*METAOC**2-
+     &             0.00107*METAOC*20**2
+              CGNS=SGAIN*tnbmen(JDAY,IP)+
+     &              0.85*SGAIN*tnbwomen(JDAY,IP)+
+     &              0.75*SGAIN*tnbchild(JDAY,IP)
+              CGNL=LGAIN*tnbmen(JDAY,IP)+
+     &              0.85*LGAIN*tnbwomen(JDAY,IP)+
+     &              0.75*LGAIN*tnbchild(JDAY,IP)
           else
             CGNS=CMGS(JDAY,IP)
             CGNL=CMGL(JDAY,IP)
@@ -5255,6 +5487,22 @@ C Third (subsequent) day type requested.
           elseif (ICGUnit(KDAY,IP).eq.1) then
             CGNS=CMGS(KDAY,IP)*ZBASEA(ICOMP)
             CGNL=CMGL(KDAY,IP)*ZBASEA(ICOMP)
+          elseif (ICGUnit(KDAY,IP).eq.3) then
+              METAOC=metabolic(KDAY,IP)*1.8*58
+              SGAIN=198.42617-3.80901*20-0.05419*20**2-0.42472*
+     &             METAOC+0.00171*METAOC**2+0.01287*20*METAOC-
+     &             0.00004*20*METAOC**2+0.00002*METAOC*20**2-
+     &             0.00000038516*METAOC**2*20**2    
+              LGAIN=227.89011-14.95202*20+0.24884*20**2-
+     &             2.56734 *METAOC+0.00715*METAOC**2+
+     &             0.132*20*METAOC-0.00017*20*METAOC**2-
+     &             0.00107*METAOC*20**2
+              CGNS=SGAIN*tnbmen(KDAY,IP)+
+     &              0.85*SGAIN*tnbwomen(KDAY,IP)+
+     &              0.75*SGAIN*tnbchild(KDAY,IP)
+              CGNL=LGAIN*tnbmen(KDAY,IP)+
+     &              0.85*LGAIN*tnbwomen(KDAY,IP)+
+     &              0.75*LGAIN*tnbchild(KDAY,IP)
           else
             CGNS=CMGS(KDAY,IP)
             CGNL=CMGL(KDAY,IP)
@@ -5570,7 +5818,7 @@ C adds a new casual gain and periods to an existing regime.
       integer icomp   ! which zone
       integer islot   ! zero to performe initial setup otherwise add one
       integer ier     ! error state
-
+      integer iatr1,xiatr1
       common/caleni/nbdaytype,nbcaldays(MDTY),icalender(365)
       INTEGER NBDAYTYPE,NBCALDAYS,ICALENDER,IDTY
       common/calena/calename,calentag(MDTY),calendayname(MDTY)
@@ -5614,12 +5862,13 @@ C Explific type to go with this casual gain.
      &  'c lighting basic lighting W & W/m2',
      &  'd equipment basic small power W & W/m2',
      &  'e other    non-specific gains W & W/m2',
-     &  'f net_utilities as legacy icgtyp = 5',
-     &  'g ALOtherElectric H3K other appliances',
-     &  'h ALStoveNG H3K natural gas stoves',
-     &  'i ALStoveElectric H3K electrical stoves',
-     &  'j ALDryer H3K clothes dryers',
-     &  ' ',' ',isw,idno,nbhelp)
+     &  'f dynamicpeople nb people & metabolic',
+     &  'g net_utilities as legacy icgtyp = 5',
+     &  'h ALOtherElectric H3K other appliances',
+     &  'i ALStoveNG H3K natural gas stoves',
+     &  'j ALStoveElectric H3K electrical stoves',
+     &  'k ALDryer H3K clothes dryers',
+     &  ' ',isw,idno,nbhelp)
       if(isw.eq.1)then
         igu=1
         rf=0.5 ; cf=0.5 
@@ -5649,34 +5898,46 @@ C Explific type to go with this casual gain.
      &    'Confirm: ','Watts','Watts per square meter',
      &    'object/m2->Watts','not applicable',IGU,nbhelp)
       elseif(isw.eq.6)then
+        caskeytype(icomp,islot)='dynamicpeople'
+        rf=0.6; cf=0.4  ! CIBSE Guide A 6.3
+          xiatr1=iatr1
+        CALL EASKI(xiatr1,' ', 
+     &    'Number of model (1. Cibze  2. E+   3. 2nodes)?'
+     &     ,0,'W',100,'W',1,'number of equation'
+     &    ,IERI,nbhelp)
+          iatr1=xiatr1
+        CALL EASKABCD('For metabolic dynamicpeople gains the units',
+     &    'Confirm: ','not applicable','not applicable',
+     &    'not applicable','number of people',IGU,nbhelp)
+      elseif(isw.eq.7)then
         caskeytype(icomp,islot)='net_utilities'  
         rf=0.5 ; cf=0.5 
         CALL EASKABCD(
      &    'For network utilities the typical unit will be',
      &    'Confirm: ','Watts','Watts per square meter',
      &    'not applicable','not applicable',IGU,nbhelp)
-       elseif(isw.eq.7)then
+       elseif(isw.eq.8)then
         caskeytype(icomp,islot)='ALOtherElectric'  
         rf=0.4 ; cf=0.6 
         CALL EASKABCD(
      &    'For appliances other electric the typical unit will be',
      &    'Confirm: ','Watts','Watts per square meter',
      &    'not applicable','not applicable',IGU,nbhelp)
-      elseif(isw.eq.8)then
+      elseif(isw.eq.9)then
         caskeytype(icomp,islot)='ALStoveNG   '  
         rf=0.5 ; cf=0.5 
         CALL EASKABCD(
      &    'For appliance stove natural gas the typical unit will be',
      &    'Confirm: ','Watts','Watts per square meter',
      &    'not applicable','not applicable',IGU,nbhelp)
-      elseif(isw.eq.9)then
+      elseif(isw.eq.10)then
         caskeytype(icomp,islot)='ALStoveElectric'  
         rf=0.4 ; cf=0.6 
         CALL EASKABCD(
      &    'For appliance stove electric the typical unit will be',
      &    'Confirm: ','Watts','Watts per square meter',
      &    'not applicable','not applicable',IGU,nbhelp)
-      elseif(isw.eq.10)then
+      elseif(isw.eq.11)then
         caskeytype(icomp,islot)='ALDryer     '  
         rf=0.5 ; cf=0.5 
         CALL EASKABCD(
@@ -5684,7 +5945,7 @@ C Explific type to go with this casual gain.
      &    'Confirm: ','Watts','Watts per square meter',
      &    'not applicable','not applicable',IGU,nbhelp)
       endif
-      lodslot(icomp,islot)=islot; lodatr1(icomp,islot)=0;
+      lodslot(icomp,islot)=islot; lodatr1(icomp,islot)=iatr1;
       lodatr2(icomp,islot)=0
 
 C If adding to existing zone operation file ask user if they want to
@@ -5736,8 +5997,12 @@ C of the ICGT (for now) until ICGUnit is fully implemented.
             elseif(igu.eq.3)then
               ICGUnit(IDTY,ipcount) = 0        ! not yet implemented use W
             elseif(igu.eq.4)then
-              ICGT(IDTY,ipcount) = (-1*islot)  ! set negative current slot
-              ICGUnit(IDTY,ipcount) = 2        ! m2/person
+              if(isw.eq.6)then
+                ICGUnit(IDTY,ipcount) = 3        ! number of persons
+              else
+                ICGT(IDTY,ipcount) = (-1*islot)  ! set negative current slot
+                ICGUnit(IDTY,ipcount) = 2        ! m2/person
+              endif
             endif
   71      continue
         endif

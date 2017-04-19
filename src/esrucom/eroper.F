@@ -109,7 +109,8 @@ C                 Type 2 with bH3KExtentionsActive: BCD-Lights (Lights linked wi
 C                 Type 3 with bH3KExtentionsActive: BCD-OElec (Other Electrical linked with BCD file)
 C                 Type 4 with bH3KExtentionsActive: BCD-Occ (Occupants linked with BCD file)
 
-
+C lodlabel     - user supplied label for a gain
+C caskeytype   - key word for gain see below 
 
 C ICGS,ICGF    - start and finish hours of each of the above casual gain
 C                periods
@@ -158,6 +159,7 @@ C `people` basic occupant units are W and m2/person,
 C 'lighting' basic lighting units are W and W/m2,
 C `equipment` basic small power units are W and W/m2,
 C 'other' as '-' non-specific casual gains units are W and W/m2
+C `dynamicpeople` occupant with metabolic units are number of people and met rate, 
 C `net_utilities` same as legacy icgtyp = 5 (see ?? for documentation),
 C 'ALOtherElectric' used with H3K other appliances,
 C 'ALStoveNG' used with H3K stoves using natural gas,
@@ -165,7 +167,6 @@ C 'ALStoveElectric' used with H3K electrical stoves,
 C 'ALDryer' used with H3K clothes dryers
 
 C Future type examples
-C `pmv_people` people with clo and metabolic rate,
 C `transpiraton` vegitation or latent sources, `waterdraw` DHW draws,
 C `roomfan` future linked to flow component
       character caskeytypeper*16  ! for future use with ip3ver 30
@@ -610,18 +611,18 @@ C Casual gains for different day types.
           CALL STRIPC(IUO,OUTSTR,99,ND,1,'Period gain detail',IER)
           K=0
 
-C If there are 7, 9 or 12 items on the line then the first item will be
+C If dynamicpeople then read into a different common block.
+C If there are 7, 9 11, 12 or ? items on the line then the first item will be
 C an overloaded casual gain index. The units implied depend on the value
 C of ip3ver. For ip3ver <21 a positive ICGT implies the unit is Watts. 
 C If negative the unit is m2/p for occupants and W/m2 otherwise. 
 C Ip3ver 21+ will already have scanned *type lines. and the lodslot
 C value will be the same as iabs(ICGT).
-          if(ND.eq.7.or.ND.eq.9.or.ND.eq.12)then
+          if(ND.eq.7.or.ND.eq.9.or.ND.eq.11.or.ND.eq.12)then
             CALL EGETWI(OUTSTR,K,IREADER,-3,7,'W',
      &        'overloaded gain type',IER)
             ICGT(IDTY,I)=IREADER
-            iGain_type(ICOMP, IDTY,I) = IREADER ! used for HOT3000 base loads            
-            
+            iGain_type(ICOMP, IDTY,I) = IREADER ! used for HOT3000 base loads         
             ipslot=iabs(ireader)  ! get equivalent of lodslot
             if(ip3ver(icomp).lt.21)then
               if(ireader.gt.0)then
@@ -633,31 +634,17 @@ C value will be the same as iabs(ICGT).
               endif
             elseif(ip3ver(icomp).eq.21)then
               if(ireader.gt.0)then
-                ICGUnit(IDTY,I)=0
-              elseif(ireader.lt.0)then
-                if(caskeytype(icomp,ipslot)(1:6).eq.'people')then
-                  ICGUnit(IDTY,I)=2
+                if(caskeytype(icomp,ipslot)(1:13).eq.
+     &             'dynamicpeople')then
+                  ICGUnit(IDTY,I)=3  ! number of people
                 else
-                  ICGUnit(IDTY,I)=1
+                  ICGUnit(IDTY,I)=0
                 endif
-              endif
-            else
-C << still to be done for ip3ver >21 >>
-            endif
-            ipslot=iabs(ireader)  ! get equivalent of lodslot
-            if(ip3ver(icomp).lt.21)then
-              if(ireader.gt.0)then
-                ICGUnit(IDTY,I)=0
-              elseif(ireader.eq.-1)then
-                ICGUnit(IDTY,I)=2
-              else
-                ICGUnit(IDTY,I)=1
-              endif
-            elseif(ip3ver(icomp).eq.21)then
-              if(ireader.gt.0)then
-                ICGUnit(IDTY,I)=0
               elseif(ireader.lt.0)then
-                if(caskeytype(icomp,ipslot)(1:6).eq.'people')then
+                if(caskeytype(icomp,ipslot)(1:13).eq.
+     &             'dynamicpeople')then
+                  ICGUnit(IDTY,I)=3  ! number of people
+                elseif(caskeytype(icomp,ipslot)(1:6).eq.'people')then
                   ICGUnit(IDTY,I)=2
                 else
                   ICGUnit(IDTY,I)=1
@@ -723,45 +710,73 @@ C Debug.
 C          write(6,*) 'eroper 552 ',idty,i,ireader,ICGT(IDTY,I),
 C     &      ICGUnit(IDTY,I)
 
-            CALL EGETWI(OUTSTR,K,IREADER,0,24,'W','gain st',IER)
-            ICGS(IDTY,I)=IREADER
-            CALL EGETWI(OUTSTR,K,IREADER,0,24,'W','gain fn',IER)
-            ICGF(IDTY,I)=IREADER
-            CALL EGETWR(OUTSTR,K,READER,0.,0.,'-','gain sens',IER)
-            CMGS(IDTY,I)=READER
-            CALL EGETWR(OUTSTR,K,READER,0.,0.,'-','gain latent',IER)
-            CMGL(IDTY,I)=READER
-            CALL EGETWR(OUTSTR,K,READER,0.,1.,'W','gain rad fr',IER)
-            RADC(IDTY,I)=READER
-            CALL EGETWR(OUTSTR,K,READER,0.,1.,'W','gain conv fr',IER)
-            CONC(IDTY,I)=READER
-          end if
+C If dynamicpeople then read into a different common block
+            if(ICGUnit(IDTY,I).eq.3)then
+              CALL EGETWI(OUTSTR,K,IREADER,0,24,'W','gain st',IER)
+              ICGS(IDTY,I)=IREADER
+              CALL EGETWI(OUTSTR,K,IREADER,0,24,'W','gain fn',IER)
+              ICGF(IDTY,I)=IREADER
+              CMGS(IDTY,I)=0.0
+              CMGL(IDTY,I)=0.0
+              CALL EGETWR(OUTSTR,K,READER,0.,0.,'-','nb men',IER)
+              tnbmen(IDTY,I)=READER
+              CALL EGETWR(OUTSTR,K,READER,0.,0.,'-','nb women',IER)
+              tnbwomen(IDTY,I)=READER
+              CALL EGETWR(OUTSTR,K,READER,0.,0.,'-','nb children',IER)
+              tnbchild(IDTY,I)=READER
+              CALL EGETWR(OUTSTR,K,READER,0.,0.,'-','metabolic',IER)
+              metabolic(IDTY,I)=READER
+              CALL EGETWR(OUTSTR,K,READER,0.,0.,'-','clo value',IER)
+              clov(IDTY,I)=READER
+              CALL EGETWR(OUTSTR,K,READER,0.,0.,'-','nb ocup',IER)
+              airvel(IDTY,I)=READER
+              CALL EGETWR(OUTSTR,K,READER,0.,1.,'W','gain rad fr',IER)
+              RADC(IDTY,I)=READER
+              CALL EGETWR(OUTSTR,K,READER,0.,1.,'W','gain conv fr',IER)
+              CONC(IDTY,I)=READER
+            else
+              CALL EGETWI(OUTSTR,K,IREADER,0,24,'W','gain st',IER)
+              ICGS(IDTY,I)=IREADER
+              CALL EGETWI(OUTSTR,K,IREADER,0,24,'W','gain fn',IER)
+              ICGF(IDTY,I)=IREADER
+              CALL EGETWR(OUTSTR,K,READER,0.,0.,'-','gain sens',IER)
+              CMGS(IDTY,I)=READER
+              CALL EGETWR(OUTSTR,K,READER,0.,0.,'-','gain latent',IER)
+              CMGL(IDTY,I)=READER
+              CALL EGETWR(OUTSTR,K,READER,0.,1.,'W','gain rad fr',IER)
+              RADC(IDTY,I)=READER
+              CALL EGETWR(OUTSTR,K,READER,0.,1.,'W','gain conv fr',IER)
+              CONC(IDTY,I)=READER
+            end if
 
-          IF(ICGS(IDTY,I).GT.ICGF(IDTY,I))then
+C Do reality checks on data thus far.
+            IF(ICGS(IDTY,I).GT.ICGF(IDTY,I))then
 
 C Found a period out of order, warn user and carry on.
-            write(loutstr,'(6a)')
-     &      ' daytype ',calentag(idty),
-     &      ' gains start-end mismatch in...',
-     &      outstr(1:50),' of operation file ',
-     &      currentfile(1:lnblnk(currentfile))
-            call edisp248(iuout,loutstr,100)
-            IER=1
+              write(loutstr,'(6a)')
+     &          ' daytype ',calentag(idty),
+     &          ' gains start-end mismatch in...',
+     &          outstr(1:50),' of operation file ',
+     &          currentfile(1:lnblnk(currentfile))
+                call edisp248(iuout,loutstr,100)
+                IER=1
+            endif
+            X=RADC(IDTY,I)+CONC(IDTY,I)
+            IF(X.GT.1.1)then
+              write(loutstr,'(6a)')
+     &        ' day type ',calentag(idty),
+     &        ' rad & conv fractions > 1.0 in...',
+     &        outstr(1:50),' of operation file ',
+     &        currentfile(1:lnblnk(currentfile))
+              call edisp248(iuout,loutstr,100)
+              ier=1
+            endif
+            IF(X.LT..95.AND.ITRC.GT.1)call edisp(iuout,
+     &        ' Casual gain rad:con sum < 1.0')
           endif
-          X=RADC(IDTY,I)+CONC(IDTY,I)
-          IF(X.GT.1.1)then
-            write(loutstr,'(6a)')
-     &      ' day type ',calentag(idty),
-     &      ' rad & conv fractions > 1.0 in...',
-     &      outstr(1:50),' of operation file ',
-     &      currentfile(1:lnblnk(currentfile))
-            call edisp248(iuout,loutstr,100)
-            ier=1
-          endif
-          IF(X.LT..95.AND.ITRC.GT.1)call edisp(iuout,
-     &                            ' Casual gain rad:con sum < 1.0')
+          
 C Check if electrical data has also been saved.
-          if(ND.eq.12)then
+          if(ND.eq.12.or.ND.eq.15)then
             CALL EGETWR(OUTSTR,K,READER,0.,1.0,'W','wkd pf',IER)
             PF(IDTY,I)=READER
             CALL EGETWI(OUTSTR,K,IREADER,-1,1,'W','wkd lag lead',IER)
@@ -832,6 +847,8 @@ C and the two attributes are zero.
               caskeytype(icomp,ISLOT)='lighting     '
             elseif(lodlabel(ICOMP,ISLOT)(1:6).eq.'Equipt')then
               caskeytype(icomp,ISLOT)='equipment'
+            elseif(lodlabel(ICOMP,ISLOT)(1:5).eq.'Small')then
+              caskeytype(icomp,ISLOT)='equipment'
             else
               caskeytype(icomp,ISLOT)='-            '
             endif
@@ -869,13 +886,13 @@ C Error messages.
 
  1001 call usrmsg(' ',
      &  ' No casual gains labels found ...supplying defaults.','-')
-        lodlabel(icomp,1)='Occupt'
-        lodlabel(icomp,2)='Lights'
-        lodlabel(icomp,3)='Equipt' 
-        lodlabel(icomp,4)='Other ' 
-        lodlabel(icomp,5)='AnnEl ' 
-        lodlabel(icomp,6)='NA    ' 
-        lodlabel(icomp,7)='NA    ' 
+        lodlabel(icomp,1)='Occupants '
+        lodlabel(icomp,2)='Lights    '
+        lodlabel(icomp,3)='SmallPower' 
+        lodlabel(icomp,4)='Other     ' 
+        lodlabel(icomp,5)='Ann.El    ' 
+        lodlabel(icomp,6)='Metabolic ' 
+        lodlabel(icomp,7)='NA        ' 
       goto 1235
 
  1002 write(outs,'(3a)') 'EROPER: conversion error in...',
@@ -980,6 +997,7 @@ C FILE (variable width char) is the name of the file to scan.
       SUBROUTINE ERZSCHED(IUO,FILE,actflatfile,IER)
 #include "building.h"
 #include "espriou.h"
+#include "schedule.h"
 C espriou.h provides currentfile.
       
       integer lnblnk  ! function definition
@@ -1019,9 +1037,12 @@ C Scratch version of P2CTL
 C Scratch version of P3N
       INTEGER NCASC,ICGSC,ICGFC,ICGUnitC
       REAL CMGSC,CMGLC,RADCC,CONCC
+      REAL airvelC,tnbmenC,tnbwomenC,tnbchildC,metabolicC,cloC
       COMMON/P3NC/NCASC(MDTY),ICGSC(MDTY,MC),ICGFC(MDTY,MC),
      & ICGUnitC(MDTY,MC),CMGSC(MDTY,MC),CMGLC(MDTY,MC),
-     & RADCC(MDTY,MC),CONCC(MDTY,MC)
+     & RADCC(MDTY,MC),CONCC(MDTY,MC),
+     & tnbmenC(MDTY,MC),tnbwomenC(MDTY,MC),tnbchildC(MDTY,MC),
+     & metabolicC(MDTY,MC),cloC(MDTY,MC),airvelC(MDTY,MC)
 
 C Scratch version of P3TYPEN.
       INTEGER ICGTC
@@ -1346,7 +1367,8 @@ C items then there was at least one extra day type. Give warning.
           if(ND.eq.7.or.ND.eq.12)then
             CALL EGETWI(OUTSTR,K,IR,-3,5,'W','overloaded type',IER)
             ICGTC(IDTY,I)=IR
-            ipslot=iabs(ir)  ! get equivalent of lodslot
+            jicgt=iabs(ICGT(IDTY,I))
+C            ipslot=iabs(ir)  ! get equivalent of lodslot
             if(ip3verc.lt.21)then
               if(ir.gt.0)then
                 ICGUnitC(IDTY,I)=0
@@ -1357,10 +1379,18 @@ C items then there was at least one extra day type. Give warning.
               endif
             elseif(ip3verc.eq.21)then
               if(ir.gt.0)then
-                ICGUnitC(IDTY,I)=0
+                if(caskeytypec(jicgt)(1:13).eq.
+     &             'dynamicpeople')then
+                  ICGUnit(IDTY,I)=3  ! number of people
+                else
+                  ICGUnitC(IDTY,I)=0
+                endif
               elseif(ir.lt.0)then
-                if(caskeytypec(ipslot)(1:6).eq.'people')then
-                  ICGUnitC(IDTY,I)=2
+                if(caskeytypec(jicgt)(1:13).eq.
+     &             'dynamicpeople')then
+                  ICGUnit(IDTY,I)=3  ! number of people
+                elseif(caskeytypec(jicgt)(1:6).eq.'people')then
+                  ICGUnit(IDTY,I)=2
                 else
                   ICGUnitC(IDTY,I)=1
                 endif
@@ -1381,17 +1411,40 @@ C     &      ICGUnitC(IDTY,I)
           ICGSC(IDTY,I)=IR
           CALL EGETWI(OUTSTR,K,IR,0,24,'W',' gain fn',IER)
           ICGFC(IDTY,I)=IR
-          CALL EGETWR(OUTSTR,K,R,0.,0.,'-',' sens',IER)
-          CMGSC(IDTY,I)=R
-          CALL EGETWR(OUTSTR,K,R,0.,0.,'-',' latent',IER)
-          CMGLC(IDTY,I)=R
+          if(caskeytypec(jicgt)(1:13).eq.'dynamicpeople')then
+            CMGSC(IDTY,I)=0.0
+            CMGLC(IDTY,I)=0.0
+            CALL EGETWR(OUTSTR,K,R,0.,0.,'-',' tot men',IER)
+            tnbmen(IDTY,I)=R
+            CALL EGETWR(OUTSTR,K,R,0.,0.,'-',' tot women',IER)
+            tnbwomen(IDTY,I)=R
+            CALL EGETWR(OUTSTR,K,R,0.,0.,'-',' tot child',IER)
+            tnbchild(IDTY,I)=R
+            CALL EGETWR(OUTSTR,K,R,0.,0.,'-',' metabolic',IER)
+            metabolic(IDTY,I)=R
+            CALL EGETWR(OUTSTR,K,R,0.,0.,'-',' clo value',IER)
+            clov(IDTY,I)=R
+            CALL EGETWR(OUTSTR,K,R,0.,0.,'-',' air veloc',IER)
+            airvel(IDTY,I)=R
+          else
+            CALL EGETWR(OUTSTR,K,R,0.,0.,'-',' sens',IER)
+            CMGSC(IDTY,I)=R
+            CALL EGETWR(OUTSTR,K,R,0.,0.,'-',' latent',IER)
+            CMGLC(IDTY,I)=R
+            tnbmen(IDTY,I)=0.0  ! fill commons for non-dynamic cases
+            tnbwomen(IDTY,I)=0.0
+            tnbchild(IDTY,I)=0.0
+            metabolic(IDTY,I)=0.0
+            airvel(IDTY,I)=0.0
+            clov(IDTY,I)=0.0
+          endif
           CALL EGETWR(OUTSTR,K,R,0.,1.,'W',' rad fr',IER)
           RADCC(IDTY,I)=R
           CALL EGETWR(OUTSTR,K,R,0.,1.,'W',' conv fr',IER)
           CONCC(IDTY,I)=R
 
 C Check if electrical data has also been saved.
-          if(ND.eq.12)then
+          if(ND.eq.12.or.ND.eq.15)then
             CALL EGETWR(OUTSTR,K,R,0.,1.0,'W',' pf',IER)
             PFC(IDTY,I)=R
             CALL EGETWI(OUTSTR,K,IR,-1,1,'W',' lag lead',IER)
@@ -1425,6 +1478,10 @@ C Fill defaults prior to scanning the labels.
               caskeytypec(ISLOT)='lighting     '
             elseif(lodlabelc(ISLOT)(1:6).eq.'Equipt')then
               caskeytypec(ISLOT)='equipment'
+            elseif(lodlabelc(ISLOT)(1:5).eq.'Small')then
+              caskeytypec(ISLOT)='equipment'
+            elseif(lodlabelc(ISLOT)(1:9).eq.'Metabolic')then
+              caskeytypec(ISLOT)='dynamicpeople'
             else
               caskeytypec(ISLOT)='-            '
             endif
@@ -1475,8 +1532,8 @@ C Error messages.
       caskeytypec(4)='other       '  
       lodlabelc(5)='Ann.El    ' 
       caskeytypec(5)='net_utilities'  
-      lodlabelc(6)='NA        ' 
-      caskeytypec(6)='-           '  
+      lodlabelc(6)='Metabolic ' 
+      caskeytypec(6)='dynamicpeople'  
       lodlabelc(7)='NA        ' 
       caskeytypec(7)='-           '  
       goto 1235
@@ -1798,23 +1855,55 @@ C and if lodslot is non-zero then write a *type line.
      &  '   # number of casual gains in day type: ',calentag(idty)
         IF (NCAS(IDTY).GT.0)THEN
           IF(IELF(ICOMP).EQ.1) THEN
-            WRITE(IUO,'(a,a)',IOSTAT=IOS,ERR=1)
-     &      '# slot, period, sensible, latent, rad_frac, ',
-     &      'conv_frac, pf, +/-, power, volt, phase'  
-            DO 1159 I = 1,NCAS(IDTY)
-              WRITE(IUO,5470,IOSTAT=IOS,ERR=1)ICGT(IDTY,I),ICGS(IDTY,I),
-     &        ICGF(IDTY,I),CMGS(IDTY,I),CMGL(IDTY,I),RADC(IDTY,I),
-     &        CONC(IDTY,I),PF(IDTY,I),IPF(IDTY,I),PWR(IDTY,I),
-     &        BVOLT(IDTY,I),IPHAS(IDTY,I) 
-1159        CONTINUE
+            if(ip3ver(icomp).lt.21)then
+              WRITE(IUO,'(a,a)',IOSTAT=IOS,ERR=1)
+     &        '# slot, period, sensible, latent, rad_frac, ',
+     &        'conv_frac, pf, +/-, power, volt, phase'  
+              DO 1159 I = 1,NCAS(IDTY)
+                WRITE(IUO,5470,IOSTAT=IOS,ERR=1)ICGT(IDTY,I),
+     &          ICGS(IDTY,I),ICGF(IDTY,I),CMGS(IDTY,I),CMGL(IDTY,I),
+     &          RADC(IDTY,I),CONC(IDTY,I),PF(IDTY,I),IPF(IDTY,I),
+     &          PWR(IDTY,I),BVOLT(IDTY,I),IPHAS(IDTY,I) 
+1159          CONTINUE
+            else
+C << update to write out alternative lines for dynamic people >>
+            endif
           ELSE
-            WRITE(IUO,'(A)',IOSTAT=IOS,ERR=1)
-     &     '# slot, period, sensible, latent, rad_frac, conv_frac'
-            DO 1160 I = 1,NCAS(IDTY)
-              WRITE(IUO,5460,IOSTAT=IOS,ERR=1)ICGT(IDTY,I),ICGS(IDTY,I),
-     &        ICGF(IDTY,I),CMGS(IDTY,I),CMGL(IDTY,I),RADC(IDTY,I),
-     &        CONC(IDTY,I)
-1160        CONTINUE
+            if(ip3ver(icomp).lt.21)then
+              WRITE(IUO,'(A)',IOSTAT=IOS,ERR=1)
+     &         '# slot, period, sensible, latent, rad_frac, conv_frac'
+              DO I = 1,NCAS(IDTY)
+               WRITE(IUO,'(3(I4,a),2(F9.1,a),F7.3,a,F7.3)',
+     &           IOSTAT=IOS,ERR=1) ICGT(IDTY,I),',',ICGS(IDTY,I),',',
+     &           ICGF(IDTY,I),',',CMGS(IDTY,I),',',CMGL(IDTY,I),',',
+     &           RADC(IDTY,I),',',CONC(IDTY,I)
+              ENDDO  ! of I
+            else
+              WRITE(IUO,'(A)',IOSTAT=IOS,ERR=1)
+     &         '# slot, period, sensible, latent, rad_frac, conv_frac'
+              WRITE(IUO,'(2A)',IOSTAT=IOS,ERR=1)
+     &         '# slot, period, nb men, nb women, nb child,',
+     &         ' metabolic clo, air vel, rad_frac, conv_frac'
+
+C Key logic is to check caskeytype for each period for dynamicpeople.
+              DO I = 1,NCAS(IDTY)
+                jicgt=iabs(ICGT(IDTY,I))
+                if(caskeytype(icomp,jicgt)(1:13).eq.'dynamicpeople')then
+                  WRITE(IUO,'(3(I4,a),6(F6.2,a),F7.3,a,F7.3)',
+     &              IOSTAT=IOS,ERR=1) ICGT(IDTY,I),',',
+     &              ICGS(IDTY,I),',',ICGF(IDTY,I),
+     &              ',',tnbmen(IDTY,I),',',tnbwomen(IDTY,I),',',
+     &              tnbchild(IDTY,I),',',metabolic(IDTY,I),',',
+     &              clov(IDTY,I),',',airvel(IDTY,I),',',RADC(IDTY,I),
+     &              ',',CONC(IDTY,I)
+                else
+                  WRITE(IUO,'(3(I4,a),2(F9.1,a),F7.3,a,F7.3)',
+     &              IOSTAT=IOS,ERR=1) ICGT(IDTY,I),',',
+     &              ICGS(IDTY,I),',',ICGF(IDTY,I),',',CMGS(IDTY,I),
+     &              ',',CMGL(IDTY,I),',',RADC(IDTY,I),',',CONC(IDTY,I)
+                endif           
+              ENDDO  ! of I
+            endif
           ENDIF
         ENDIF
  600  CONTINUE
@@ -2074,48 +2163,77 @@ C Electrical data flag and elctrical data.
       DO 600 IDTY=1,NBDAYTYPE
         if(NCAS(IDTY).eq.0) goto 600
 
-C << overload of ICGT to be relaxed here >>
         IF(NCAS(IDTY).GT.0)THEN
           IF(IELF(ICOMP).EQ.1) THEN
             DO 1269 I=1,NCAS(IDTY)
               jicgt=iabs(ICGT(IDTY,I))
-              if(ICGT(IDTY,I).gt.0)then
+              if(caskeytype(icomp,jicgt)(1:13).eq.'dynamicpeople')then
                 write(llbl,'(4a)')lodlabel(ICOMP,jicgt)(1:10),
-     &            ' ',caskeytype(icomp,jicgt)(1:10),'W  '
-              elseif(ICGT(IDTY,I).eq.-1)then
-                write(llbl,'(4a)')lodlabel(ICOMP,jicgt)(1:10),
-     &            ' ',caskeytype(icomp,jicgt)(1:10),'m2p'
-              elseif(ICGT(IDTY,I).lt.-1)then
-                write(llbl,'(4a)')lodlabel(ICOMP,jicgt)(1:10),
-     &            ' ',caskeytype(icomp,jicgt)(1:10),'Wm2'
+     &            ' ',caskeytype(icomp,jicgt)(1:10),'ocu'
+              else
+                if(ICGT(IDTY,I).gt.0)then
+                  write(llbl,'(4a)')lodlabel(ICOMP,jicgt)(1:10),
+     &              ' ',caskeytype(icomp,jicgt)(1:10),'W  '
+                elseif(ICGT(IDTY,I).eq.-1)then
+                  write(llbl,'(4a)')lodlabel(ICOMP,jicgt)(1:10),
+     &              ' ',caskeytype(icomp,jicgt)(1:10),'m2p'
+                elseif(ICGT(IDTY,I).lt.-1)then
+                  write(llbl,'(4a)')lodlabel(ICOMP,jicgt)(1:10),
+     &              ' ',caskeytype(icomp,jicgt)(1:10),'Wm2'
+                endif
               endif
-              WRITE(outs,5361)calentag(idty)(1:10),I,llbl,ICGS(IDTY,I),
-     &        '-',ICGF(IDTY,I),CMGS(IDTY,I),CMGL(IDTY,I),RADC(IDTY,I),
-     &        CONC(IDTY,I),PF(IDTY,I),
-     &        IPF(IDTY,I),PWR(IDTY,I),BVOLT(IDTY,I),IPHAS(IDTY,I)
-5361          FORMAT(a,I3,1x,A,I3,a,I2,F9.1,F9.1,F8.2,F8.2,
-     &          1x,F7.2,I3,F7.1,F7.1,I3)
+              if(caskeytype(icomp,jicgt)(1:13).eq.'dynamicpeople')then
+                WRITE(outs,'(a,I3,1x,A,I3,a,I2,6F6.2,F8.2,F8.2,1x,
+     &            F7.2,I3,F7.1,F7.1,I3)')
+     &            calentag(idty)(1:10),I,llbl,
+     &            ICGS(IDTY,I),'-',ICGF(IDTY,I),
+     &            tnbmen(IDTY,I),tnbwomen(IDTY,I),tnbchild(IDTY,I),
+     &            metabolic(IDTY,I),clov(IDTY,I),airvel(IDTY,I),
+     &            RADC(IDTY,I),CONC(IDTY,I),PF(IDTY,I),
+     &            IPF(IDTY,I),PWR(IDTY,I),BVOLT(IDTY,I),IPHAS(IDTY,I)
+              else
+                WRITE(outs,5361)calentag(idty)(1:10),I,llbl,
+     &            ICGS(IDTY,I),'-',ICGF(IDTY,I),CMGS(IDTY,I),
+     &            CMGL(IDTY,I),RADC(IDTY,I),CONC(IDTY,I),PF(IDTY,I),
+     &            IPF(IDTY,I),PWR(IDTY,I),BVOLT(IDTY,I),IPHAS(IDTY,I)
+ 5361           FORMAT(a,I3,1x,A,I3,a,I2,F9.1,F9.1,F8.2,F8.2,
+     &            1x,F7.2,I3,F7.1,F7.1,I3)
+              endif
               call edisp(itru,outs)
-1269        CONTINUE
+ 1269       CONTINUE
           ELSE
 
-C << overload of ICGT to be relaxed here >>
             DO 1270 I=1,NCAS(IDTY)
               jicgt=iabs(ICGT(IDTY,I))
-              if(ICGT(IDTY,I).gt.0)then
+              if(caskeytype(icomp,jicgt)(1:13).eq.'dynamicpeople')then
                 write(llbl,'(4a)')lodlabel(ICOMP,jicgt)(1:10),
-     &            ' ',caskeytype(icomp,jicgt)(1:10),'W  '
-              elseif(ICGT(IDTY,I).eq.-1)then
-                write(llbl,'(4a)')lodlabel(ICOMP,jicgt)(1:10),
-     &            ' ',caskeytype(icomp,jicgt)(1:10),'m2p'
-              elseif(ICGT(IDTY,I).lt.-1)then
-                write(llbl,'(4a)')lodlabel(ICOMP,jicgt)(1:10),
-     &            ' ',caskeytype(icomp,jicgt)(1:10),'Wm2'
+     &            ' ',caskeytype(icomp,jicgt)(1:10),'ocu'
+              else
+                if(ICGT(IDTY,I).gt.0)then
+                  write(llbl,'(4a)')lodlabel(ICOMP,jicgt)(1:10),
+     &              ' ',caskeytype(icomp,jicgt)(1:10),'W  '
+                elseif(ICGT(IDTY,I).eq.-1)then
+                  write(llbl,'(4a)')lodlabel(ICOMP,jicgt)(1:10),
+     &              ' ',caskeytype(icomp,jicgt)(1:10),'m2p'
+                elseif(ICGT(IDTY,I).lt.-1)then
+                  write(llbl,'(4a)')lodlabel(ICOMP,jicgt)(1:10),
+     &              ' ',caskeytype(icomp,jicgt)(1:10),'Wm2'
+                endif
               endif
-              WRITE(outs,5362)calentag(idty)(1:10),I,llbl,ICGS(IDTY,I),
-     &        '-',ICGF(IDTY,I),CMGS(IDTY,I),CMGL(IDTY,I),RADC(IDTY,I),
-     &        CONC(IDTY,I)
-5362          FORMAT(a,I3,1x,A,I3,a,I2,F9.1,F9.1,F11.2,F11.2)
+              if(caskeytype(icomp,jicgt)(1:13).eq.'dynamicpeople')then
+                WRITE(outs,'(a,I3,1x,A,I3,a,I2,6F6.2,F11.2,F11.2)')
+     &            calentag(idty)(1:10),I,llbl,
+     &            ICGS(IDTY,I),'-',ICGF(IDTY,I),
+     &            tnbmen(IDTY,I),tnbwomen(IDTY,I),tnbchild(IDTY,I),
+     &            metabolic(IDTY,I),clov(IDTY,I),airvel(IDTY,I),
+     &            RADC(IDTY,I),CONC(IDTY,I)
+              else
+                WRITE(outs,'(a,I3,1x,A,I3,a,I2,F9.1,F9.1,F11.2,F11.2)')
+     &            calentag(idty)(1:10),I,llbl,
+     &            ICGS(IDTY,I),'-',ICGF(IDTY,I),CMGS(IDTY,I),
+     &            CMGL(IDTY,I),RADC(IDTY,I),CONC(IDTY,I)
+5362            FORMAT(a,I3,1x,A,I3,a,I2,F9.1,F9.1,F11.2,F11.2)
+              endif
               call edisp(itru,outs)
 1270        CONTINUE
           ENDIF
@@ -2281,7 +2399,6 @@ C     &  loadmixed(ic,4,1),loadmixed(ic,5,1)
 C ******************* CPYCASIJ ***********************
 C CPYCASIJ Copy one casual period jx to another ix for zone icomp and 
 C daytype idaytype. 
-
       SUBROUTINE CPYCASIJ(icomp,idaytype,ix,jx)
 #include "building.h"
 #include "schedule.h"
@@ -2310,6 +2427,12 @@ C Electrical data flag and elctrical data.
       CMGL(IDTY,ix)=CMGL(IDTY,jx)
       RADC(IDTY,ix)=RADC(IDTY,jx)
       CONC(IDTY,ix)=CONC(IDTY,jx)
+      tnbmen(IDTY,ix)=tnbmen(IDTY,jx)
+      tnbwomen(IDTY,ix)=tnbwomen(IDTY,jx)
+      tnbchild(IDTY,ix)=tnbchild(IDTY,jx)
+      metabolic(IDTY,ix)=metabolic(IDTY,jx)
+      clov(IDTY,ix)=clov(IDTY,jx)
+      airvel(IDTY,ix)=airvel(IDTY,jx)
       if(ielf(icomp).ne.0)then
         ipf(IDTY,ix)=ipf(IDTY,jx)
         iphas(IDTY,ix)=iphas(IDTY,jx)
@@ -2325,7 +2448,8 @@ C ******************* CPYCASIT ***********************
 C CPYCASIT Copy one casual period jx to backup variables for zone icomp 
 C and daytype idaytype. 
       SUBROUTINE CPYCASIT(icomp,idaytype,jx,icgtX,icguX,icgsX,icgfX,
-     &  cmgsX,cmglX,radcX,concX,ipfX,iphasX,pfX,pwrX,bvoltX)
+     &  cmgsX,cmglX,radcX,concX,ipfX,iphasX,pfX,pwrX,bvoltX,
+     &  tnbmenx,tnbwomenx,tnbchildx,metabolicx,clox,airvelx)
 #include "building.h"
 #include "schedule.h"
 
@@ -2337,6 +2461,7 @@ C Parameters
       real cmgsX,cmglX,radcX,concX ! temporary variables
       integer ipfX,iphasX          ! temporary variables
       real pfX,pwrX,bvoltX         ! temporary variables
+      real airvelx,tnbmenx,tnbwomenx,tnbchildx,metabolicx,clox
 
 C Electrical data flag and elctrical data.
       common/elecflg/ielf(mcom)
@@ -2354,6 +2479,12 @@ C Electrical data flag and elctrical data.
       CMGLX=CMGL(IDTY,jx)
       RADCX=RADC(IDTY,jx)
       CONCX=CONC(IDTY,jx)
+      tnbmenx=tnbmen(IDTY,jx)
+      tnbwomenx=tnbwomen(IDTY,jx)
+      tnbchildx=tnbchild(IDTY,jx)
+      metabolicx=metabolic(IDTY,jx)
+      clox=clov(IDTY,jx)
+      airvelx=airvel(IDTY,jx)
       if(ielf(icomp).ne.0)then
         ipfX=ipf(IDTY,jx)
         iphasX=iphas(IDTY,jx)
@@ -2372,9 +2503,10 @@ C Electrical data flag and elctrical data.
 
 C ******************* CPYCASTI ***********************
 C CPYCASTI - Copy from backup variables to casual period jx for zone icomp 
-C and daytype idaytype. 
+C and daytype idaytype.
       SUBROUTINE CPYCASTI(icomp,idaytype,jx,icgtX,icguX,icgsX,icgfX,
-     &  cmgsX,cmglX,radcX,concX,ipfX,iphasX,pfX,pwrX,bvoltX)
+     &  cmgsX,cmglX,radcX,concX,ipfX,iphasX,pfX,pwrX,bvoltX,
+     &  tnbmenx,tnbwomenx,tnbchildx,metabolicx,clox,airvelx)
 #include "building.h"
 #include "schedule.h"
 
@@ -2386,6 +2518,7 @@ C Parameters
       real cmgsX,cmglX,radcX,concX ! temporary variables
       integer ipfX,iphasX          ! temporary variables
       real pfX,pwrX,bvoltX         ! temporary variables
+      real airvelx,tnbmenx,tnbwomenx,tnbchildx,metabolicx,clox
 
 C Electrical data flag and elctrical data.
       common/elecflg/ielf(mcom)
@@ -2403,6 +2536,12 @@ C Electrical data flag and elctrical data.
       CMGL(IDTY,jx)=CMGLX
       RADC(IDTY,jx)=RADCX
       CONC(IDTY,jx)=CONCX
+      tnbmen(IDTY,jx)=tnbmenx
+      tnbwomen(IDTY,jx)=tnbwomenx
+      tnbchild(IDTY,jx)=tnbchildx
+      metabolic(IDTY,jx)=metabolicx
+      clov(IDTY,jx)=clox
+      airvel(IDTY,jx)=airvelx
       if(ielf(icomp).ne.0)then
         ipf(IDTY,jx)=ipfX
         iphas(IDTY,jx)=iphasX

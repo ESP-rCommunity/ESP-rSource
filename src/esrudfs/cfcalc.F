@@ -466,6 +466,9 @@ C Find the maximum source of residual.
 
 C Write/ plot residuals and monitoring values.
 C First check if output for this iteration.
+
+C << If in text or script mode report less frequently,
+C << especially if the domain is large.
       if (mod(NITER,NPLT).eq.0.or.NITER.le.1) then
 
 C Check time taken to run since last check.

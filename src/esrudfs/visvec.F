@@ -355,6 +355,7 @@ C Setup colour for current cell arrow.
 
 C Draw the arrow.
             call arrow(Vstart,Vend,0.5,hsf,IC,'r',2)
+            call forceflush()
  102      continue
  101    continue
         iicol=0  ! set back to black

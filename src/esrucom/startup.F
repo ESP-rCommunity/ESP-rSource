@@ -18,7 +18,6 @@ C License along with ESP-r. If not, write to the Free
 C Software Foundation, Inc., 59 Temple Place, Suite 330,
 C Boston, MA 02111-1307 USA.
 
-C ********************************************************************************
 C************************************************************************************
 C************************************************************************************
 C************************************************************************************
@@ -1938,7 +1937,6 @@ C parpsfh: Help message for several of the command line parsers.
         call edisp(iuout,'  (where how {interactive|silent} defines ')
         call edisp(iuout,'   whether the user interacts')
         call edisp(iuout,'  (where file is asci input or output file)')
-        call edisp(iuout,'   [-s < width, offset left & top>]')
         call edisp(iuout,' ')
         call edisp(iuout,'Example converting binary file to asci: ')
         call edisp(iuout,
@@ -2014,7 +2012,6 @@ C parpsfh: Help message for several of the command line parsers.
         call edisp(iuout,'   [-act <action> <file>]')
         call edisp(iuout,'  (where action {asci2bin|bin2asci})')
         call edisp(iuout,'  (where file is asci input or output file)')
-        call edisp(iuout,'   [-s < width, offset left & top>]')
       elseif(appn(1:3).eq.'pdf')then
         call edisp(iuout,'The plant network definitions. ')
         call edisp(iuout,'  Use: [-mode {text|graphic}]')
@@ -2029,11 +2026,11 @@ C parpsfh: Help message for several of the command line parsers.
         call edisp(iuout,
      &     '       [-file <configuration>|<silent command>]')
         call edisp(iuout,'       [-zone <name|index>]')
-        call edisp(iuout,'       [-act {silentread}] ')
+        call edisp(iuout,'       [-act {silentread|silentxmlread}] ')
         call edisp(iuout,' (where -act silentread assumes -file <name>')
         call edisp(iuout,'  is high-level model creation directives')
-        call edisp(iuout,'  file. Otherwise the -file <name> is')
-        call edisp(iuout,'  assumed to be a model configuration file)')
+        call edisp(iuout,'  file or gbXML file. Otherwise -file <name>')
+        call edisp(iuout,'  is assumed to be a model configuration)')
         call edisp(iuout,'       [-act transform < x y z values>] ')
         call edisp(iuout,' (where -act transform is followed by three')
         call edisp(iuout,'  values for the transform in X Y Z axis)')
@@ -2055,16 +2052,15 @@ C parpsfh: Help message for several of the command line parsers.
         call edisp(iuout,'                 ipv_annual|BEMS|recover})')
         call edisp(iuout,'  (where default is interactive mode and')
         call edisp(iuout,'   silent is automatic execution)')
-        call edisp(iuout,'   [-actf file providing bems commands or')
-        call edisp(iuout,'   recovery commands]')
-        call edisp(iuout,'   [-s < width, offset left & top>]')
+        call edisp(iuout,'   [-actf file providing bems or recovery')
+        call edisp(iuout,'   commands]')
         call edisp(iuout,' ')
       elseif(appn(1:3).eq.'vew')then
         call edisp(iuout,'The hidden line viewer. ')
         call edisp(iuout,'  Use: [-mode {text|graphic}]')
         call edisp(iuout,'       [-file <viewer_file>]')
       endif
-      call edisp(iuout,'       [-s < width, offset left & top>]')
+      call edisp(iuout,'  [-s < width, offset left & top>]')
       call edisp(iuout,' ')
       call edisp(iuout,'  where -mode options are:')
       call edisp(iuout,'    text    = text mode ')

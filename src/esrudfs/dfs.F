@@ -216,9 +216,7 @@ C File units.
 C Temporary cfd file unit.
       ICFTMP=IFIL+4
 
-      IFS=1
-      ITFS=1
-      IMFS=1
+      IFS=1; ITFS=1; IMFS=1
       path='./'
       call parpsf(MODL,iappw,iappx,iappy,inf)
       childterminal=MODL  ! remember so that child processes can run the same
@@ -247,29 +245,16 @@ C Flag indicating that CFD `small opening' areas have not yet been calculated.
       areaSSO = .FALSE.
 
 C Initialise coordinates for eye point, view point and angle of view.
-      EYEM(1)=-100.
-      EYEM(2)=-100.
-      EYEM(3)=100.
-      VIEWM(1)=10.
-      VIEWM(2)=10.
-      VIEWM(3)=10.
+      EYEM(1)=-100.; EYEM(2)=-100.; EYEM(3)=100.
+      VIEWM(1)=10.; VIEWM(2)=10.; VIEWM(3)=10.
       ANG=40.
 
 C General image option flags.
-      ITDSP=0
-      ITBND=1
-      ITEPT=0
-      ITZNM=0
-      ITSNM=1
-      ITVNO=1
-      ITORG=0
-      ITSNR=1
-      ITOBS=0
-      ITGRD=0
-      GRDIS=0.0
-      ITPPSW=0
-      IFS=1
-      ITFS=1
+      ITDSP=0; ITBND=1; ITEPT=0
+      ITZNM=0; ITSNM=1; ITVNO=1
+      ITORG=0; ITSNR=1; ITOBS=0
+      ITGRD=0; GRDIS=0.0
+      ITPPSW=0; IFS=1; ITFS=1
 
 C Initial choice for ascii export file.
       photon=.FALSE.
@@ -279,17 +264,6 @@ C Initial choice for ascii export file.
 
 C Default lisolv.
       ILISOL=3
-
-C If your compiler does not support floating-point arithmetic
-C according to ANSI/IEEE Std 754-1985 comment out the following code,
-C which initializes mode, status, and signal for IEEE arithmetic.
-C See also: f77_ieee_environment(3F) f77_floatingpoint(3F)
-C           Note that in case of Sun FORTRAN, IEEEE exceptions arise
-C           only if: Sun-3 f77 with -f68881 or -ffpa option
-C                or: Sun-4 f77.
-C      IEEER=IEEE_HANDLER('set','common',SIGFPE_ABORT)
-C      IF(IEEER.NE.0)call edisp(iuout,
-C     &  ' dfs: arithmetic exceptions are ignored !')
 
 C Determine terminal type and set write unit to stderr for rule scripts.
       MMOD=MODL
@@ -324,9 +298,7 @@ C Set pixels high to iappw and pixels wide to factor in monitor size.
       IF(MMOD.EQ.8)THEN
 
 C Set initial font sizes (IMFS is for graphs, IFS is for dialog & text feedback).
-        IMFS=1
-        IFS=1
-        ITFS=1
+        IMFS=1; IFS=1; ITFS=1
         call userfonts(IFS,ITFS,IMFS)
       ELSE
         LIMTTY=16
@@ -361,11 +333,7 @@ C Setup and pass in parameters to win3d.
         endif
         call setgscale()
         call setcscale()
-        mdispl=0
-        nifgrey=0
-        ncset=0
-        ngset=0
-        nzonec=0
+        mdispl=0; nifgrey=0; ncset=0; ngset=0; nzonec=0
         call foundcolour(mdispl,nifgrey,ncset,ngset,nzonec)
         call startbuffer()
       ENDIF
