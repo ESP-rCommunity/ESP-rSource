@@ -2667,6 +2667,7 @@ C-----------------------------------------------------------------------
      &           cTokenVal(1:8) .ne. 'gas-hp-a'             .and.
      &           cTokenVal(1:8) .ne. 'gas-hp-b'             .and.
      &           cTokenVal(1:8) .ne. 'gas-hp-c'             .and.
+     &           cTokenVal(1:8) .ne. 'gas-hp-d'             .and.
      &           cTokenVal(1:19).ne. 'CCASHP-MANUFACTURER'  
      &         )
      &     ) THEN 
@@ -2722,7 +2723,10 @@ C.........Set error flag
           case('gas-hp-c') 
             isys_type(iSystem)=iASHP_GasHP_c 
             iHeatPumpType(iSystem) = iASHP_GasHP_c            
-            
+          case('gas-hp-d') 
+            isys_type(iSystem)=iASHP_GasHP_c 
+            iHeatPumpType(iSystem) = iASHP_GasHP_d         
+                        
             
           end select 
           call ASHP_COEFF(iSystem)

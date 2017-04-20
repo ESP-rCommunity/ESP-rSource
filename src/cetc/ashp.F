@@ -175,20 +175,21 @@ c capacity. The minimum temperature is based on the default in the DOE-2
 c computer program
         ashp_temp_min = cutoff_temp(isys)
 
+        ss_heat_pump_cap = ASHP_CAP(ss_capacity(isys),TF,
+     &                       flow_rate(isys),
+     &                       flow_rate_r(isys),ifan_operation(isys),
+     &                       cutoff_temp(isys))        
+        
         
         if(TF.lt.ashp_temp_min) then
 c Estimate the plr of the backup heat source
-          ss_heat_pump_cap = 0.
+
           plrb = PLR(heating_load,ss_capacity(ibackup_sys_num(isys)),
      &           fan_power(isys),ifan_operation(isys))
      
         else 
 c Steady-state heat pump capacity accounting for the effect of the outdoor
 c temperature
-          ss_heat_pump_cap = ASHP_CAP(ss_capacity(isys),TF,
-     &                       flow_rate(isys),
-     &                       flow_rate_r(isys),ifan_operation(isys),
-     &                       cutoff_temp(isys))
 
 
         endif 
@@ -196,7 +197,7 @@ c temperature
      
       endif
 
-      !print*, " ----> HP SS CAP:  ", ss_heat_pump_cap, TF
+      !write (*,*) " ----> HP SS CAP:  ", ss_heat_pump_cap, TF
       
 C Save actual capacity of heat-pump system
       fH3KActualCapacity(iSYS) = ss_heat_pump_cap
@@ -689,6 +690,56 @@ c Equation 2 in Air-source heat pump by Haddad
      &                  d_cop * tout**3 + e_cop * tout**4)            
            
            
+      elseif ( iHeatPumpType(iSys) == iASHP_GasHP_a .or. 
+     &     iHeatPumpType(iSys) == iASHP_GasHP_b .or. 
+     &     iHeatPumpType(iSys) == iASHP_GasHP_c .or. 
+     &     iHeatPumpType(iSys) == iASHP_GasHP_d 
+     &) then 
+
+C This is a hard-coded Performance curve for a gas-fired heat pump, 
+C based on correlations developed by ORNL and Stone Mountain Technolgies:
+C
+C   Goeghegan et al, 2016; "Regional climate zone modelling of a 
+C   commerical absorption heat pump water heater", 
+C   16th International Refrigeration and Air Conditioning 
+C   Conference at Purdue, July 11-14, 2016
+      
+        if (iHeatPumpType(iSys) == iASHP_GasHP_a) tReturn = 34.4  
+        if (iHeatPumpType(iSys) == iASHP_GasHP_b) tReturn = 14.4  
+        if (iHeatPumpType(iSys) == iASHP_GasHP_c) tReturn = 23.3  
+        if (iHeatPumpType(iSys) == iASHP_GasHP_d) tReturn = 45.6  
+      
+      
+        cop = 1.6322  - 0.005      * tReturn 
+     &                - 2.054E-05  * tReturn ** 2.0   
+     &                + 0.0057     * tout 
+     &                - 2.7973E-07 * tout ** 2.0 
+     &                + 1.1585E-06 * tout * tReturn
+           
+        !print*, "TOUT: ", tout, " COP: ", cop
+        
+      elseif ( iHeatPumpType(iSys) == iASHP_GasHP_b ) then 
+
+C This is a hard-coded Performance curve for a gas-fired heat pump, 
+C based on correlations developed by ORNL and Stone Mountain Technolgies:
+C
+C   Goeghegan et al, 2016; "Regional climate zone modelling of a 
+C   commerical absorption heat pump water heater", 
+C   16th International Refrigeration and Air Conditioning 
+C   Conference at Purdue, July 11-14, 2016
+      
+        tReturn = 34.4  
+      
+        cop = 1.6322  - 0.005      * tReturn 
+     &                - 2.054E-05  * tReturn ** 2.0   
+     &                + 0.0057     * tout 
+     &                - 2.7973E-07 * tout ** 2.0 
+     &                + 1.1585E-06 * tout * tReturn
+           
+        !print*, "TOUT: ", tout, " COP: ", cop        
+        
+        
+        
       elseif ( iHeatPumpType(iSys) == iASHP_GasHP_a ) then 
 
 C This is a hard-coded Performance curve for a gas-fired heat pump, 
@@ -707,7 +758,7 @@ C   Conference at Purdue, July 11-14, 2016
      &                - 2.7973E-07 * tout ** 2.0 
      &                + 1.1585E-06 * tout * tReturn
            
-        !print*, "TOUT: ", tout, " COP: ", cop
+        !print*, "TOUT: ", tout, " COP: ", cop        
            
       elseif ( iHeatPumpType(iSys) == iASHP_CCASHP_CEF ) then 
 
