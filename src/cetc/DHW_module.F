@@ -240,7 +240,9 @@ c of 60C. This is from B.Bradley'd H2KDHW.F line 254.
      &                          - fDHW_ColdMainTemp(iMonth)) )
      &                   + 0.25 * fLitresforNumOccupants )
 
-c      write (*,*) " DHW: ih2k ", iH2k , bLoadIsDefined, DrawVolL, fTempUsage, fTempHWT, fNormalizedDailyWaterDraw, fDHW_ColdMainTemp(iMonth), REAL(iNTSTEP)
+      !write (*,*) " DHW: ih2k ", iH2k , bLoadIsDefined, DrawVolL, 
+      !& fTempUsage, fTempHWT, fNormalizedDailyWaterDraw, 
+      !& fDHW_ColdMainTemp(iMonth), REAL(iNTSTEP)
 
      
       IF (iH2K.eq.1) then ! treat it like H2K
@@ -565,33 +567,40 @@ c----56--1---------2---------3---------4---------5---------6---------7---------8
 #include "ground_temp_mains_common.h"
 
       REAL   fEnergy
-
+      Real    fCalcEnergyInputWater
 
 c Formula
+
+
+
+      fCalcEnergyInputWater = fDHW_EnergyInputWater()
+
       SELECT CASE (iTankType)
 
       Case (Gas_HP_WH)
-        fEnergy = fDHW_EnergyInputWater()/fDOEEF
-        fHPRoomLoad = fDHW_EnergyInputWater() - fEnergy
+        fEnergy = fCalcEnergyInputWater/fDOEEF
+        fHPRoomLoad = fCalcEnergyInputWater - fEnergy
           
       
       CASE (Elec_Tankless_Heatpump)
-       fEnergy     = fDHW_EnergyInputWater()/fDOEEF
-       fHPRoomLoad = fDHW_EnergyInputWater() - fEnergy
+       fEnergy     = fCalcEnergyInputWater/fDOEEF
+       fHPRoomLoad = fCalcEnergyInputWater - fEnergy
 
       CASE (Elec_Heatpump)
-       fEnergy = fDHW_EnergyInputWater()/fDOEEF
-       fHPRoomLoad = fDHW_EnergyInputWater() - fEnergy
+       fEnergy = fCalcEnergyInputWater/fDOEEF
+       fHPRoomLoad = fCalcEnergyInputWater - fEnergy
 
       CASE (Elec_Instantaneous)
-       fEnergy = fDHW_EnergyInputWater()
-     &            +fDHW_EnergyInputWater()
+       fEnergy = fCalcEnergyInputWater
+     &            +fCalcEnergyInputWater
      &            *(1-FDOEEF)/fDOEEF
       CASE DEFAULT
-       fEnergy = fDHW_EnergyInputWater()
+       fEnergy = fCalcEnergyInputWater
 
       END SELECT
+      
 
+            
 c Energy imparted to water during timestepl(Due to Draws, Standby (Parasitic) Losses)
 c Energy Lost to flue due to ineffieceiency of combustion process
 c Pilot energy use during timestep this factor of 0.4 is explain in Brian Bradley's fax
@@ -601,6 +610,26 @@ c report January 1995
      &                  + fDHW_FlueLosses()
      &                  + 0.4 *fDHW_PilotEnergy ()
 
+        
+      ! write (*,*) '>597> fDHW_EnergyInputWater() ', 
+      !&                   fCalcEnergyInputWater
+      !&                                       * real (iNTSTEP)
+      !&                                       * ( 1.0 / 3600.0 ) ! (W)
+      !
+      ! write (*,*) '>598> fEnergy                 ', fEnergy
+      !&                                       * real (iNTSTEP)
+      !&                                       * ( 1.0 / 3600.0 ) ! (W)
+      ! 
+      ! write (*,*) '>599> fHPRoomLoad             ', fHPRoomLoad    
+      !&                                       * real (iNTSTEP)
+      !&                                       * ( 1.0 / 3600.0 ) ! (W)
+      !
+      ! write (*,*) '>600> fDHW_FuelEnergyRequired ', 
+      !&                   fDHW_FuelEnergyRequired
+      !&                                       * real (iNTSTEP)
+      !&                                        * ( 1.0 / 3600.0 ) ! (W)
+     
+     
 C.....Save data for H3KReports output
       fDHW_H3K_energy_requirement = fDHW_FuelEnergyRequired
      &                                       * real (iNTSTEP)
@@ -884,6 +913,11 @@ C      REAL   fAlpha
         fDHW_DOEEFTank = 1.-fDOEEF
       END SELECT
       fEFTank = fDHW_DOEEFTank
+      
+      
+      !write (*,*) ">918> fEFTank : ", fEFTank
+      
+      
       END
 
 
@@ -978,13 +1012,33 @@ c----56--1---------2---------3---------4---------5---------6---------7---------8
 #include "ground_temp_mains_common.h"
 
 
+
+
+
 !Local Variables
       REAL   fSurfArea ! in meters
       REAL   fRadius   ! in meters
+      real   fSaveEF_calc , fSaveDoeEF
+      
+      
+      if ( iTankType .eq. Elec_Heatpump .or. 
+     &     iTankType .eq. Gas_HP_WH ) then 
+      
+           
+        fSaveEF_calc  = (1-0.82)
+        fSaveDoeEF  = 0.82
+          
+      else 
+        
+          fSaveEF_calc  = fDHW_DOEEFTank()
+          fSaveDoeEF  = fDOEEF
+          
+      endif 
+      
 c  Ua calcuation obtained from b.Bradley H2KDHW.F line 544
       fDHW_UA = 15.2543
-     &          * fDHW_DOEEFTank()
-     &          /fDOEEF
+     &          * fSaveEF_calc 
+     &          /fSaveDoeEF 
 
 cThis boolean operation will add blaket insulation to the tank UA if any.
       If ( fBlanketRSI .gt. 0.1 ) Then
@@ -1047,6 +1101,11 @@ c If not, it determines how much burner energy is required.
      &                              fWaterDrawGreaterThanTank)
 
         fEnergyRequired = fDHW_EnergyRequired
+        
+       !    write(*,*) ">1063>", "fEnergyRequired", fEnergyRequired
+       ! &                                       * real (iNTSTEP)
+       ! &                                       * ( 1.0 / 3600.0 ) ! (W)        
+        
       ENDIF
       END
 
@@ -1088,6 +1147,10 @@ C.....Energy transfer to water
       fDHW_H3K_energy_transfer_to_water = fEnergyinputWater
      &                                       * real (iNTSTEP)
      &                                       * ( 1.0 / 3600.0 ) ! (W)
+     
+       ! write(*,*) ">1108>", "fEnegyInputWater", fEnergyinputWater
+       !&                                       * real (iNTSTEP)
+       !&                                       * ( 1.0 / 3600.0 ) ! (W)      
 
       END
 
@@ -1146,6 +1209,12 @@ c Get final temp form energy and volume
         fDHW_FinalWaterTemp =
      &    fDHW_WaterTempfromEnergy(fTotalEnergyInTank,
      &                           fTankSize)
+     
+     
+         !write (*,*) ">1169> final water temp: ", fDHW_FinalWaterTemp
+         !write (*,*) ">1170> energyintank: ", fTotalEnergyInTank
+
+         
       END IF
       END
 
@@ -1412,25 +1481,34 @@ C       IF (bInStartUp) then
 C         RETURN
 C       ENDIF
 
+      !write (*,*) " -------------------- DHW calc start ------- "
+
       fWaterDraw = fDHW_WaterDraw()
       fDHW_H3K_water_draw = fWaterDraw  * real (iNTSTEP)
      &                                       * ( 1.0 / 3600.0 ) ! (l/s)
       
 c This function will calulate exactly how much load the current tank can support.
+      !write (*,*) " ------------ DHW calc: draws"
       CALL fDHW_DrawsForEachTank()
 
 c This determines the air temperature of the room in which the Hot water tank is located
+      !write (*,*) " ------------ DHW calc: update"
       CALL DHW_Update()
 
 c This routine calulates the energy use and sum the values for monthly analysis.
+      !write (*,*) " ------------ DHW calc: store monthly"
       CALL DHW_StoreMonthlyValues()
 
 c This will carry the standy tank losses and the tank teperatures to the next timestep.
+      !write (*,*) " ------------ DHW calc: carry"
       CALL DHW_CarryToNextStep()
 
 C Report data to h3kreports, site-utilities facility
+      !write (*,*) " ------------ DHW calc: report"
       call H3KReportDHWModule()
 
+      !write (*,*) " -------------------- DHW calc end   ------- "
+      
       RETURN
       END
 
@@ -1857,35 +1935,61 @@ c----56--1---------2---------3---------4---------5---------6---------7---------8
       CALL EDAYR(idyp,iDay,iMonth)
       if (idyp.ge.IODS.and.idyp.le.IODF) then
 
+      
+      !write (*,*) " ------------ DHW store: energy req'd"      
+      
         fSumTotalEnergy(iMonth) =
      &    fSumTotalEnergy(iMonth) + fDHW_FuelEnergyRequired()
 
+      !write (*,*) " ------------ DHW store: energy 2 zone "   
+     
         fSumTotalEnergyToSpace(iMonth) =
      &    fSumTotalEnergyToSpace(iMonth) + fDHW_EnergyToZone()
 
+      !write (*,*) " ------------ DHW store: pipe losses"  
+     
         fSumTotalPipeLosses(iMonth) =
      &    fSumTotalpipeLosses(iMonth) + fDHW_PipeLosses()
 
+     
+      !write (*,*) " ------------ DHW store: pipe gains"       
+     
         fSumTotalPipeGains(iMonth) =
      &    fSumTotalPipeGains(iMonth) + fDHW_PipeGains()
 
+     
+      !write (*,*) " ------------ DHW store:standby losses"       
+     
         fSumStandbyTankLosses(iMonth) =
      &    fSumStandbyTankLosses(iMonth) + fDHW_StandByTankLosses()
 
+      !write (*,*) " ------------ DHW store: energy input to water "       
+     
+     
         fSumEnergyInputWater(iMonth) =
      &    fSumEnergyInputWater(iMonth) + fDHW_EnergyInputWater()
 
+      !write (*,*) " ------------ DHW store: flue-losses"       
+     
         fSumFlueLosses(iMonth) =
      &    fSumFlueLosses(iMonth) + fDHW_FlueLosses()
 
+      !write (*,*) " ------------ DHW store: pilot to room"       
+     
         fSumPilotEnergyToRoom(iMonth) =
      &    fSumPilotEnergyToRoom(iMonth) + fDHW_PilotEnergyToRoom()
 
+      !write (*,*) " ------------ DHW store: cold main"       
+     
         fCold_Main_Temp(iMonth) =  fDHW_ColdMainTemp(iMonth)
 
+      !write (*,*) " ------------ DHW store: water draw"          
+        
         fSumWaterLoad(iMonth)=
      &    fSumWaterLoad(iMonth) + fWaterDraw
 
+      !write (*,*) " ------------ DHW store: pilot losses"       
+     
         fSumPilotEnergy(imonth) =
      &    fDHW_PilotEnergy() +  fSumPilotEnergy(imonth)
 
@@ -2052,14 +2156,12 @@ C.....Report interesting parameters:
      &  fDHW_H3K_heat_xfer_to_room)
 
       
-    !  write (*,*)"   >2> fDHW_WaterDraw h2k :", fDHW_H3K_water_draw
-    !  write (*,*)"   >2> fDHW 33k supp temp" , fDHW_H3K_supply_temp
-    !  write (*,*)"   >2> fDHW 33k delv temp" , fDHW_H3K_delivery_temp
-    ! 
-    ! 
-    !  print*, ">>>", fDHW_H3K_water_draw, fDHW_H3K_delivery_temp,
-    ! &   fDHW_H3K_supply_temp
+      !write (*,*)"   >2> fDHW_WaterDraw h2k :", fDHW_H3K_water_draw
+      !write (*,*)"   >2> fDHW 33k supp temp" , fDHW_H3K_supply_temp
+      !write (*,*)"   >2> fDHW 33k delv temp" , fDHW_H3K_delivery_temp
      
+     
+      
      
       Call AddToReport(rvPltDHWWtrHLd%Identifier,
      &  fDHW_H3K_water_draw * 4106.0
