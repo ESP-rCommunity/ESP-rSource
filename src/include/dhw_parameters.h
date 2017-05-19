@@ -73,6 +73,12 @@
 !TankType (Gas-HP)      
       INTEGER Gas_HP_WH
       PARAMETER ( Gas_HP_WH = 21 )
+      
+! Tanktype Elec-HP w/ outdoor evapourator       
+      INTEGER Elec_HP_Out
+      PARAMETER ( Elec_HP_Out = 22 )
+      
+      
 
 ! Time Type Parameters.
       REAL fHOURSINDAY 

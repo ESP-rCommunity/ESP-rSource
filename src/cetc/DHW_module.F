@@ -566,22 +566,26 @@ c----56--1---------2---------3---------4---------5---------6---------7---------8
 #include "dhw_common.h"
 #include "ground_temp_mains_common.h"
 
+c Common for the weather data
+      COMMON/CLIMI/QFP,QFF,TP,TF,QDP,QDF,VP,VF,DP,DF,HP,HF
+      REAL QFP,QFF,TP,TF,QDP,QDF,VP,VF,DP,DF,HP,HF
+
       REAL   fEnergy
-      Real    fCalcEnergyInputWater
+      Real   fCalcEnergyInputWater
+      real   fEstCOP, fRefRating, fRefRatingHTemp, fRefRatingLTemp, 
+     &       fRefTempHigh, fRefTempLow
 
 c Formula
 
 
-
       fCalcEnergyInputWater = fDHW_EnergyInputWater()
-
+      fHPRoomLoad = 0.
       SELECT CASE (iTankType)
 
       Case (Gas_HP_WH)
         fEnergy = fCalcEnergyInputWater/fDOEEF
         fHPRoomLoad = fCalcEnergyInputWater - fEnergy
           
-      
       CASE (Elec_Tankless_Heatpump)
        fEnergy     = fCalcEnergyInputWater/fDOEEF
        fHPRoomLoad = fCalcEnergyInputWater - fEnergy
@@ -590,10 +594,38 @@ c Formula
        fEnergy = fCalcEnergyInputWater/fDOEEF
        fHPRoomLoad = fCalcEnergyInputWater - fEnergy
 
+      CASE ( Elec_HP_Out ) 
+        
+        if ( TP .le.  -26.0 ) then 
+            fEstCOP = 1.0
+        else
+            fRefRating = 3.84
+            fRefRatingLTemp = 1.5
+            fRefRatingHTemp = 3.5
+            fRefTempLow     = -14
+            fRefTempHigh    = 14 
+            fEstCOP = fDOEEF * (  fRefRatingLTemp / fRefRating ) 
+     &        + ( fDOEEF / fRefRating )
+     &           * ( fRefRatingHTemp - fRefRatingLTemp ) 
+     &           * ( TP - fRefTempLow) / ( fRefTempHigh - fRefTempLow ) 
+     
+            if ( fEstCOP .gt. 4.0 ) fEstCOP = 4.0
+            if ( fEstCOP .lt. 1.0 ) fEstCOP = 1.0 
+            
+            
+      
+            fEnergy = fCalcEnergyInputWater / fEstCOP
+            
+            
+            !fHPRoomLoad = 0.
+      
+        endif 
+        
       CASE (Elec_Instantaneous)
        fEnergy = fCalcEnergyInputWater
      &            +fCalcEnergyInputWater
      &            *(1-FDOEEF)/fDOEEF
+     
       CASE DEFAULT
        fEnergy = fCalcEnergyInputWater
 
@@ -608,27 +640,33 @@ c report January 1995
       fDHW_FuelEnergyRequired =
      &                  fEnergy
      &                  + fDHW_FlueLosses()
-     &                  + 0.4 *fDHW_PilotEnergy ()
+     &                  + 0.4 *fDHW_PilotEnergy()
 
-        
-      ! write (*,*) '>597> fDHW_EnergyInputWater() ', 
-      !&                   fCalcEnergyInputWater
-      !&                                       * real (iNTSTEP)
-      !&                                       * ( 1.0 / 3600.0 ) ! (W)
-      !
-      ! write (*,*) '>598> fEnergy                 ', fEnergy
-      !&                                       * real (iNTSTEP)
-      !&                                       * ( 1.0 / 3600.0 ) ! (W)
-      ! 
-      ! write (*,*) '>599> fHPRoomLoad             ', fHPRoomLoad    
-      !&                                       * real (iNTSTEP)
-      !&                                       * ( 1.0 / 3600.0 ) ! (W)
-      !
-      ! write (*,*) '>600> fDHW_FuelEnergyRequired ', 
-      !&                   fDHW_FuelEnergyRequired
-      !&                                       * real (iNTSTEP)
-      !&                                        * ( 1.0 / 3600.0 ) ! (W)
-     
+C        
+C      write (*,*) '>597> fDHW_EnergyInputWater() ', 
+C     &                   fCalcEnergyInputWater
+C     &                                       * real (iNTSTEP)
+C     &                                       * ( 1.0 / 3600.0 ) ! (W)
+C     
+C      write (*,*) '>598> fEnergy                 ', fEnergy
+C     &                                       * real (iNTSTEP)
+C     &                                       * ( 1.0 / 3600.0 ) ! (W)
+C      
+C      write (*,*) '>599> fHPRoomLoad             ', fHPRoomLoad    
+C     &                                       * real (iNTSTEP)
+C     &                                       * ( 1.0 / 3600.0 ) ! (W)
+C     
+C      write (*,*) '>600> fDHW_FuelEnergyRequired ', 
+C     &                   fDHW_FuelEnergyRequired
+C     &                                       * real (iNTSTEP)
+C     &                                        * ( 1.0 / 3600.0 ) ! (W)
+C     
+C     
+C      write (*,*) '>599> fESTCop            ', fEstCOP
+C      write (*,*) '>599> fDoeFF             ', fDOEEF
+C            write (*,*) '>599> TP           ', TP
+          
+          
      
 C.....Save data for H3KReports output
       fDHW_H3K_energy_requirement = fDHW_FuelEnergyRequired
@@ -1020,9 +1058,10 @@ c----56--1---------2---------3---------4---------5---------6---------7---------8
       REAL   fRadius   ! in meters
       real   fSaveEF_calc , fSaveDoeEF
       
-      
+C Heat pump tanks - Use EF of standard electric storage tank to estimate UA      
       if ( iTankType .eq. Elec_Heatpump .or. 
-     &     iTankType .eq. Gas_HP_WH ) then 
+     &     iTankType .eq. Gas_HP_WH     .or. 
+     &     iTankType .eq. Elec_HP_Out ) then 
       
            
         fSaveEF_calc  = (1-0.82)
@@ -1778,7 +1817,7 @@ C Read  DHW Tank type.
         endif
 
         if(.not. error_flag) then
-          CALL EGETWI(OUTSTR,K,IVAL,1,21,'F',' DHW tanktype ',IER)
+          CALL EGETWI(OUTSTR,K,IVAL,1,22,'F',' DHW tanktype ',IER)
           if(IER.NE.0)then
             call edisp(IUOUT,' Cannot read DHW Tank type.')
             error_flag = .true.
