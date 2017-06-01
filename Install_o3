@@ -80,11 +80,12 @@ DESTdir=/usr/esru          # Target Directory
 COSIMdir=" "			   # Harmonizer install directory
 xml_support=prompt         # support for XML output
 SQLite_support="no"        # support for SQLite output
+FMI_support="no"           # support for FMI
 debugging="no"             # include debugging symbols
 EXE=""                     # executable file extension (i.e. .exe on cygwin and Windows)
 FFLAGS="-I../include "     # initial fortran compiler flags
 CFLAGS="-I../include "     # initial C compiler flags
-LD_FLAGS=" "               # inisial link-loader flags
+LD_FLAGS=" "               # initial link-loader flags
 platform="auto-detect"     # default platform
 install_dbs="yes"          # Install dbs files
 install_training="yes"     #         training files
@@ -181,6 +182,7 @@ if [ $# -ne 0 ]; then
         --silent)       mode="silent";             shift;;
         --xml)          xml_support=yes;           shift;;
         --SQLite)       SQLite_support="yes";      shift;;
+        --FMI)          FMI_support="yes";         shift;;
         --co-sim) shift; COSIMdir=$1; input="yes";  enable_cosim="yes";  shift;;
         --gcc4)         gnu_version="gcc4";        shift;;
         --intel)        use_intel="yes";           shift;;
@@ -352,6 +354,13 @@ if [ $help -eq 1 ]; then
   echo "        in an SQLite database. Requires the libsqlite3.so library."
   echo "        **EXPERIMENTAL**"
   echo " "
+  echo "    --FMI: Force prj and bps to try to compile with Functional Mockup"
+  echo "        Interface (FMI) functionality. This argument prevents checks"
+  echo "        for FMILibrary resources in standard locations; it is left to"
+  echo "        the user to ensure that headers/libraries are available on "
+  echo "        the compiler/linker paths. See FMI developers guide "
+  echo "        doc/manual/FMI/Developers.txt for more details."
+  echo " "
   echo "    --co-sim <PATH>: Compile Harmonizer.exe, Harmonizer.dll and bps.dll"
   echo "        for co-simulation with TRNSYS. Harmonizer.exe and Harmonizer.dll"
   echo "        will be installed in <PATH> directory, and bps.dll will be" 
@@ -441,6 +450,49 @@ if [ "$SQLite_support" = "yes" ]; then
           fi
           ;;
    esac
+fi
+
+# Check that FMI support is available.
+if [ "$FMI_support" = "prompt" ]; then
+  found=true
+# Check for library. 
+  if [ ! -f "/usr/lib/libfmilib_shared.so" ]; then
+    found=false
+# If runnning silently, warn user.
+    if [ "$mode" = "silent" ]; then
+      echo " "
+      echo " Warning: FMIL library libfmilib_shared.so could not be found"
+      echo " in /usr/lib"
+      echo " "
+      echo " FMI support disabled."
+    fi
+  fi
+# Check for headers.
+  if [ ! -d "/usr/include/FMI" ] && 
+     [ ! -d "/usr/include/FMI1" ] &&
+     [ ! -d "/usr/include/FMI2" ] &&
+     [ ! -d "/usr/include/JM" ] &&
+     [ ! -f "/usr/include/fmilib.h" ] &&
+     [ ! -f "/usr/include/fmilib_config.h" ]; then
+    found=false
+# If runnning silently, warn user.
+    if [ "$mode" = "silent" ]; then
+      echo " "
+      echo " Warning: FMIL header(s) could not be found"
+      echo " in /usr/include"
+      echo " "
+      echo " FMI support disabled."
+    fi
+  fi
+  if $found; then
+    FMI_libs_found="yes"
+  else
+    FMI_libs_found="no"
+  fi
+elif [ "$FMI_support" = "yes" ]; then
+# If FMI_support is yes, do not check for FMIL resources, assume they
+# are present somewhere on the linker/compiler paths.
+  FMI_libs_found="assume"
 fi
 
 #--------------------------------------------------------------------
@@ -741,6 +793,88 @@ else
   fi
 fi
 
+#----------------------------------------------------------------------
+# Prompt user for FMI support
+#----------------------------------------------------------------------
+
+if [ "$mode" = "interactive" ]; then
+
+  if [ "${FMI_libs_found}" = "no" ]; then
+
+    #FMI libraries not available.
+    echo " "
+    echo " FMILibrary resources could not be found"
+    echo " on this system. Please follow instructions in"
+    echo " manual/FMI/Users.txt to install FMILibrary."
+    echo " FMI will be disabled, but the rest of the ESP-r"
+    echo " installation will proceed normally. "
+    echo
+    FMI_support="no"
+  elif [ "${FMI_libs_found}" = "yes" ]; then
+
+    # Supported platforms/architectures:
+    if ! [ "$platform" = "linux" ] && 
+       ! [ "$machine" = "x86_64" ] &&
+       ! [ "$machine" = "i386" ] &&
+       ! [ "$machine" = "i686" ]; then
+      echo 
+      echo " *** WARNING *** "
+      echo
+      echo " FMI is presently not supported on "
+      echo " $platform $machine. You can enable"
+      echo " the functionality, but please be aware"
+      echo " that this may not work as expected."
+      echo " We recommend that only advanced users"
+      echo " proceed with FMI enabled."
+      echo 
+    fi
+
+    # Libraries were found. 
+    if [ "$FMI_support" = "prompt" ]; then
+    # Prompt user for inclusion.
+      B="none"
+      while [ "$B" != "y" ] && [ "$B" != "n" ] && [ "$B" != "Y" ] && [ "$B" != "N" ]
+      do
+        if [ "$B" != "none" ]; then
+          echo ""
+          echo "Please answer yes or no (y/n)."
+        fi
+        echo " "
+        echo " Install with FMI support (y/n) [n]? "
+        read B
+        if [ "$B" = "" ]; then
+          case "${FMI_support}" in
+            yes) B="y";;
+            *)   B="n";;
+          esac
+        fi
+      done
+      if [ "$B" = "y" ]; then
+        # Enable FMI
+        FMI_support="yes"
+        echo " FMI enabled"
+      else
+        # Disable FMI
+        FMI_support="no"
+        echo " FMI disabled"
+      fi
+      echo " "
+    fi
+  elif [ "${FMI_libs_found}" = "assume" ]; then
+    echo
+    echo " FMILibrary headers and library will be assumed"
+    echo " to be present somewhere on the compiler/linker"
+    echo " paths. No checks will be made for these resources"
+    echo " before attempting to compile with FMI support"
+    echo " enabled."
+    echo
+  fi
+else
+  # Silent mode: Disable FMI by default
+  if [ "$FMI_support" = "prompt" ]; then
+    FMI_support="no"
+  fi
+fi
 
 #----------------------------------------------------------------------
 # Prompt for graphics libraries
@@ -1333,6 +1467,22 @@ case $SQLite_support in
        targets="disableSQLite $targets";;
 esac
 
+# Append FMI library as required.
+case $FMI_support in
+  yes)
+    # Currently only tested with GNU compilers.
+    case $compiler in
+      sunF90)  ULIBS="$ULIBS -Wl,--no-as-needed -lCstd -lfmilib_shared";;
+      GNU)     ULIBS="$ULIBS -Wl,--no-as-needed -lstdc++ -lfmilib_shared ";;
+      intel)   ULIBS="$ULIBS -Wl,--no-as-needed -lstdc++ -lfmilib_shared ";;
+    esac;
+    FMIarg="enableFMI";;
+  no)
+    FMIarg="disableFMI";;
+esac
+
+    
+
 #-------------- LDFLAGS ------------------------
 # Directives for the link-loader (ld). The reduce-memory-overheads
 # speeds up linking greatly if machine memory is limited and has
@@ -1872,22 +2022,22 @@ esac
 #---------------------------------------------------------------------
 # Begin build
 #---------------------------------------------------------------------
-targets="${targets} end_of_exes"
+targets_shift="${targets} end_of_exes"
 # Build each executable, 1 by 1.
-while [ "${targets}" != "end_of_exes" ]
+while [ "${targets_shift}" != "end_of_exes" ]
 do
    # The following chunk of code is an ugly, but sh-compatable
    # string-based shift register.
 
    # strip any leading spaces
-   targets=`echo $targets | sed 's/^ *//g'`
+   targets_shift=`echo $targets_shift | sed 's/^ *//g'`
 
-   # Extract leading execuitable from targets
-   target=`echo $targets | sed 's/ .*$//g'`
+   # Extract leading execuitable from targets_shift
+   target=`echo $targets_shift | sed 's/ .*$//g'`
 
-   # Now remove exe from targets
+   # Now remove exe from targets_shift
 
-   targets=`echo $targets | sed 's/^[^ ]* //g'`
+   targets_shift=`echo $targets_shift | sed 's/^[^ ]* //g'`
 
    # Let user know what's going on
    echo -n "    - building ${target}... "
@@ -1932,15 +2082,15 @@ do
    if [ "${make_msg_file}" != "" ]; then
       echo " Make command:"             >>$make_msg_file
       echo " -------------"             >>$make_msg_file
-      echo "   make MCTYPE=${MCTYPE} MCC=${CC} MCPL=${CPL} MFC=${FC} DESTdir="${DESTdir}" ESPdir="${ESPdir}" WWLINK="${WWLINK}" EXE="${EXE}" XINSTALLDIR="${XINSTALLDIR}" CFLAGS="${CFLAGS}" FFLAGS="${FFLAGS}" LD_FLAGS="${LD_FLAGS}" ULIBS="${ULIBS}" xml_status="${xml_status}" SQLite_status="${SQLite_status}" -f Makefile  ${target} >>$make_msg_file 2>&1 " >> $make_msg_file
+      echo "   make MCTYPE=${MCTYPE} MCC=${CC} MCPL=${CPL} MFC=${FC} DESTdir="${DESTdir}" ESPdir="${ESPdir}" WWLINK="${WWLINK}" EXE="${EXE}" XINSTALLDIR="${XINSTALLDIR}" CFLAGS="${CFLAGS}" FFLAGS="${FFLAGS}" LD_FLAGS="${LD_FLAGS}" ULIBS="${ULIBS}" xml_status="${xml_status}" SQLite_status="${SQLite_status}" FMIarg="${FMIarg}" -f Makefile  ${target} >>$make_msg_file 2>&1 " >> $make_msg_file
       echo " "                          >>$make_msg_file
       echo " Make output:"              >>$make_msg_file
       echo " ------------"                    >>$make_msg_file
-      make MCTYPE=${MCTYPE} MCC=${CC} MCPL=${CPL} MFC=${FC} DESTdir="${DESTdir}" ESPdir="${ESPdir}" WWLINK="${WWLINK}" EXE="${EXE}" XINSTALLDIR="${XINSTALLDIR}" CFLAGS="${CFLAGS}" FFLAGS="${FFLAGS}" LD_FLAGS="${LD_FLAGS}" ULIBS="${ULIBS}" xml_status="${xml_status}" SQLite_status="${SQLite_status}" -f Makefile  ${target} >>$make_msg_file 2>&1
+      make MCTYPE=${MCTYPE} MCC=${CC} MCPL=${CPL} MFC=${FC} DESTdir="${DESTdir}" ESPdir="${ESPdir}" WWLINK="${WWLINK}" EXE="${EXE}" XINSTALLDIR="${XINSTALLDIR}" CFLAGS="${CFLAGS}" FFLAGS="${FFLAGS}" LD_FLAGS="${LD_FLAGS}" ULIBS="${ULIBS}" xml_status="${xml_status}" SQLite_status="${SQLite_status}" FMIarg="${FMIarg}" -f Makefile  ${target} >>$make_msg_file 2>&1
    else
       echo ""
 
-      make MCTYPE=${MCTYPE} MCC=${CC} MCPL=${CPL} MFC=${FC} DESTdir="${DESTdir}" ESPdir="${ESPdir}" WWLINK="${WWLINK}" EXE="${EXE}" XINSTALLDIR="${XINSTALLDIR}" CFLAGS="${CFLAGS}" FFLAGS="${FFLAGS}" LD_FLAGS="${LD_FLAGS}" ULIBS="${ULIBS}" xml_status="${xml_status}" SQLite_status="${SQLite_status}" -f Makefile  ${target}
+      make MCTYPE=${MCTYPE} MCC=${CC} MCPL=${CPL} MFC=${FC} DESTdir="${DESTdir}" ESPdir="${ESPdir}" WWLINK="${WWLINK}" EXE="${EXE}" XINSTALLDIR="${XINSTALLDIR}" CFLAGS="${CFLAGS}" FFLAGS="${FFLAGS}" LD_FLAGS="${LD_FLAGS}" ULIBS="${ULIBS}" xml_status="${xml_status}" SQLite_status="${SQLite_status}" FMIarg="${FMIarg}" -f Makefile  ${target}
    fi
    fi
    # was target built successfully?
@@ -2447,7 +2597,7 @@ if [ "$debugging" = "no" ]; then
   make ESPdir=${ESPdir} EXE=${EXE} COSIMDir=${COSIMdir} strip  >/dev/null 2>&1
 fi
 echo "Placing executables in ESPBinDir=${ESPBinDir}"
-make ESPBinDir=${ESPBinDir} EXE=${EXE} COSIMDir=${COSIMdir} InstBins   >/dev/null 2>&1
+make ESPBinDir=${ESPBinDir} EXE=${EXE} COSIMDir=${COSIMdir} InstBins ${targets}  >/dev/null 2>&1
 if [ "$clean" = "yes" ]; then
   make EXE=${EXE} clean  >/dev/null 2>&1
 fi
