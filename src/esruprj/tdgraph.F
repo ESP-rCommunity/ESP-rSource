@@ -407,10 +407,12 @@ C Try axis of hours.
       iind=1
       intsph=ntsph
       iigbdoy=igbdoy
-      CALL horaxishdw(XMIN,XMAX,iigl,iigr,iigb,Xadd,xsc,1,iind,intsph,
-     &  iigbdoy,LABEL2)
-C      CALL horaxis(XMIN,XMAX,iigl,iigr,iigb,Xadd,xsc,1,LABEL2)
-      CALL vrtaxis(YMIN,YMAX,iigl,iigb,iigt,Yadd,ysc,0,0,LABEL1)
+      call dintervalf(XMIN,XMAX,DY,NDEC,1)
+      CALL horaxishdwdd(XMIN,XMAX,iigl,iigr,iigb,Xadd,xsc,1,
+     &  DY,NDEC,iind,intsph,iigbdoy,LABEL2)
+      call dintervalf(YMIN,YMAX,DY,NDEC,0)
+      CALL vrtaxisdd(YMIN,YMAX,iigl,iigb,iigt,Yadd,ysc,0,
+     &  DY,NDEC,0,LABEL1)
 
       IEFLDS=NTBITS(IFOC)+NTSTAT(IFOC)
       ISFLDS=IEFLDS-NTBITS(IFOC)+1

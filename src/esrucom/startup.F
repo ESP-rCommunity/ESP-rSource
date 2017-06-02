@@ -95,13 +95,13 @@ C Declare  calling parameter types
       character(72), intent(out)   :: actf,ascif
       character(12), intent(out)   :: aut,aim
       character(4), intent(out)    :: browse
-      character(8), intent(out)    :: sps
+      character(30), intent(out)    :: sps
 
 C Variable declaration
       character(8)   :: ModuleName
       character(12)  :: cAppName
       character(72)  :: argument,sTimeout
-      character(48)  :: prog
+      character(72)  :: prog
       character(8)   :: mode
       character(24)  :: appn
       character(348) :: outs !If this is only 248 clm crashes on install if pathnames are long
@@ -710,7 +710,7 @@ C Declare  calling parameter types
       character(72) :: actf,ascif
       character(12) :: aut,aim
       character(4) :: browse
-      character(8) :: sps
+      character(30) :: sps
 
       module = CONST_PARPSFF
       call GetCommandLineArguments(module,termtype,iappw,iappx,
@@ -741,7 +741,7 @@ C Local variables for GetCommandLineArguments.
       character(72) :: ascif
       character(12) :: aim
       character(4) :: browse
-      character(8) :: sps
+      character(30) :: sps
 
       module = CONST_PARRES
       call GetCommandLineArguments(module,termtype,iappw,iappx,
@@ -772,7 +772,7 @@ C Local variables for GetCommandLineArguments.
       character(72) :: actf
       character(12) :: aim
       character(4) :: browse
-      character(8) :: sps
+      character(30) :: sps
 
       module = CONST_PARCLM
       call GetCommandLineArguments(module,termtype,iappw,iappx,
@@ -804,7 +804,7 @@ C Local variables for GetCommandLineArguments.
       character(72) :: actf
       character(12) :: aim, aut
       character(4) :: browse
-      character(8) :: sps
+      character(30) :: sps
 
       module = CONST_PARSISH
       call GetCommandLineArguments(module,termtype,iappw,iappx,
@@ -864,7 +864,7 @@ C Local variables for GetCommandLineArguments.
       character(72) :: actf,ascif
       character(12) :: aut,aim
       character(4) :: browse
-      character(8) :: sps
+      character(30) :: sps
 
       module = CONST_PARSFZ
       call GetCommandLineArguments(module,termtype,iappw,iappx,
@@ -893,7 +893,7 @@ C Local variables for GetCommandLineArguments.
       character(72) :: actf,ascif
       character(12) :: aut,aim
       character(4) :: browse
-      character(8) :: sps
+      character(30) :: sps
 
       module = CONST_PARTF
       call GetCommandLineArguments(module,termtype,iappw,iappx,
@@ -924,7 +924,7 @@ C Local variables for GetCommandLineArguments.
       character(72) :: actf,ascif
       character(12) :: aut,aim
       character(4) :: browse
-      character(8) :: sps
+      character(30) :: sps
 
       module = CONST_PARTFA
       call GetCommandLineArguments(module,termtype,iappw,iappx,
@@ -956,7 +956,7 @@ C Local variables for GetCommandLineArguments.
       character(144) :: inf2
       character(72) :: ascif
       character(12) :: aut
-      character(8) :: sps
+      character(30) :: sps
 
       module = CONST_PARSE2R
       call GetCommandLineArguments(module,termtype,iappw,iappx,
@@ -980,7 +980,7 @@ C Declare  calling parameter types
       character(72), intent(inout) :: actf
       character(12), intent(inout) :: aut
       character(4), intent(inout) :: browse
-      character(8), intent(inout) :: sps
+      character(30), intent(inout) :: sps
 
 C Local variables for GetCommandLineArguments.
       integer :: module
@@ -1021,7 +1021,7 @@ C Local variables for GetCommandLineArguments.
       character(72) :: ascif
       character(12) :: aut,aim
       character(4) :: browse
-      character(8) :: sps
+      character(30) :: sps
 
       module = CONST_PARSFACT
       call GetCommandLineArguments(module,termtype,iappw,iappx,
@@ -1051,7 +1051,7 @@ C parcnv parse command line paramters for ecnv.
       integer termtype
       integer i,iverb,itmprm,iobs,ichop
       real conv
-      character argument*72,prog*48,inf*144,outs*248,appn*24
+      character argument*72,prog*72,inf*144,outs*248,appn*24
       character iform*24,oform*24,ouf*144,ucfg*72,mode*8
 
       inf  = 'UNKNOWN'

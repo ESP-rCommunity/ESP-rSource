@@ -680,9 +680,12 @@ C Setup and pass in parameters to win3d.
 
 C Stuff into static variables for later access and draw axis.
         call linescale(iigl,Xadd,xsc,iigb,Yadd,ysc)
-        call vrtaxis(YMIN,YMAX,iigl,iigb,iigt,Yadd,ysc,0,0,'Value')
-        call horaxis(XMIN,XMAX,iigl,iigr,iigb,Xadd,xsc,0,
-     &    'Degrees from normal')
+        call dintervalf(YMIN,YMAX,DY,NDEC,0)
+        call vrtaxisdd(YMIN,YMAX,iigl,iigb,iigt,Yadd,ysc,0,
+     &    DY,NDEC,0,'Value')
+        call dintervalf(XMIN,XMAX,DY,NDEC,0)
+        call horaxisdd(XMIN,XMAX,iigl,iigr,iigb,Xadd,xsc,0,
+     &    DY,NDEC,'Degrees from normal')
 
         WRITE(ETEXT,'(4a)') 'Type: ',GTYPE(1:lnblnk(GTYPE)),
      &    ' descripion: ',GDESCR(1:34)

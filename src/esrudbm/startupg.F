@@ -944,7 +944,7 @@ C Application name
       character*48 prog
       integer iargc,m
       character argument*72,mode*8,inf*144,appn*24
-      character outs*248,sps*8,aut*12,actf*72,browse*4
+      character outs*248,sps*30,aut*12,actf*72,browse*4
       logical unixok
 
 C Determine if an X graphics library (GTK or X11) was linked

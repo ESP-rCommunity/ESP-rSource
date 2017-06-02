@@ -310,7 +310,7 @@ C Zone fluid.
       character lipvdatf*72
       CHARACTER outs*124
       character sblres*72,sflres*72,splres*72,smstres*72,sipvres*72
-      character selres*72,spfdescr*8,ltmp*72,louts*144
+      character selres*72,spfdescr*30,ltmp*72,louts*144
       character bidirfile*72,bidirname*12
       character calename*32,calentag*12,calendayname*32,loutc*96
       character LWndSupp*72
@@ -1219,11 +1219,11 @@ C Flag indicating start of multi-year climate record.
             WRITE(IFCFG,'(2I3,1I5,2I3,1I5,2x,2A)',IOSTAT=IOS,ERR=2)
      &        isstday(iss),isstmon(iss),iMY_period_start_years(iss),
      &        isfnday(iss),isfnmon(iss),iMY_period_end_years(iss),
-     &        spfdescr(iss),' # period & name'
+     &        spfdescr(iss)(1:lnblnk(spfdescr(iss))),' # period & name'
           else
             WRITE(IFCFG,'(4I4,2x,2A)',IOSTAT=IOS,ERR=2)isstday(iss),
-     &        isstmon(iss),isfnday(iss),isfnmon(iss),spfdescr(iss),
-     &        ' # period & name'
+     &        isstmon(iss),isfnday(iss),isfnmon(iss),spfdescr(iss)
+     &        (1:lnblnk(spfdescr(iss))),' # period & name'
           endif 
           if(INDCFG.ne.2)WRITE(IFCFG,'(2A)',IOSTAT=IOS,ERR=2)'*sblr ',
      &      sblres(iss)(1:lnblnk(sblres(iss)))

@@ -261,10 +261,14 @@ C Display header information. Calculate graphic boundaries.
       call viewtext(etext,iside,isize,ifont)
 
 C Draw horizontal axis and move to start point.
-      call horaxis(xmin,xmax,iigl,iigr,iigb,Xadd,sca,0,'Horizontal')
+      call dintervalf(xmin,xmax,DY,NDEC,0)
+      call horaxisdd(xmin,xmax,iigl,iigr,iigb,Xadd,sca,0,
+     &  DY,NDEC,'Horizontal')
 
 C Draw vertical axis.
-      call vrtaxis(zmin,zmax,iigl,iigb,iigt,Zadd,sca,0,0,'Vertical')
+      call dintervalf(zmin,zmax,DY,NDEC,0)
+      call vrtaxisdd(zmin,zmax,iigl,iigb,iigt,Zadd,sca,0,
+     &  DY,NDEC,0,'Vertical')
 
 C Draw target surface.
       iupdown=0
@@ -412,12 +416,16 @@ C Place scaling in static C variables for use by line drawing routines.
       call linescale(iigl,Xadd,xsc,iigb,Yadd,ysc)
 
 C Draw horizontal axis.
-      call horaxis(0.,360.,iigl,iigr,iigb,Xadd,xsc,0,
-     &  'Azimuth deg.')
+      call dintervalf(0.,360.,DY,NDEC,0)
+      call horaxisdd(0.,360.,iigl,iigr,iigb,Xadd,xsc,0,
+     &  DY,NDEC,'Azimuth deg.')
 
 C Draw vertical axes on left and right.
-      call vrtaxis(0.,90.,iigl,iigb,iigt,Yadd,ysc,0,0,'Altitude deg.')
-      call vrtaxis(0.,90.,iigr,iigb,iigt,Yadd,ysc,0,1,' ')
+      call dintervalf(0.,90.,DY,NDEC,0)
+      call vrtaxisdd(0.,90.,iigl,iigb,iigt,Yadd,ysc,0,
+     &  DY,NDEC,0,'Altitude deg.')
+      call vrtaxisdd(0.,90.,iigr,iigb,iigt,Yadd,ysc,0,
+     &  DY,NDEC,1,' ')
 
 C Output a heading for the view.
       call edayr(ijday,ido,imo)

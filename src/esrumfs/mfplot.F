@@ -418,8 +418,12 @@ C Scale and draw axes.
       igheight=igwh
       call axiscale(igwid,igheight,XMIN,XMAX,YMIN,YMAX,xsc,ysc,sca,
      &  Xadd,Yadd)
-      CALL horaxis(XMIN,XMAX,iigl,iigr,iigb,Xadd,xsc,1,LABEL2)
-      CALL vrtaxis(YMIN,YMAX,iigl,iigb,iigt,Yadd,ysc,0,0,LABEL1)
+      call dintervalf(XMIN,XMAX,DY,NDEC,1)
+      CALL horaxisdd(XMIN,XMAX,iigl,iigr,iigb,Xadd,xsc,1,
+     &  DY,NDEC,LABEL2)
+      call dintervalf(YMIN,YMAX,DY,NDEC,0)
+      CALL vrtaxisdd(YMIN,YMAX,iigl,iigb,iigt,Yadd,ysc,0,
+     &  DY,NDEC,0,LABEL1)
       call linescale(iigl,Xadd,xsc,iigb,Yadd,ysc)
 
 C Establish step size (in hour) in X-direction.

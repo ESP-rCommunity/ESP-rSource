@@ -48,6 +48,7 @@ C offset from the beginning of the display period.
 
       COMMON/VISSET/imgqua,NOX,NOZ,tscal,hLscal,hWscal,vLscal
       COMMON/arpoly/XS(7),ZS(7),bXmin,bXmax,bZmin,bZmax
+      integer icolindex
 
       character souts*48,name*12,scale*32,title*30
 #ifdef OSI

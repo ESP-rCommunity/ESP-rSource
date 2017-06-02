@@ -2528,12 +2528,12 @@ C IGET = 15  Casual gains.
           ITEMC(14)='equipment convective '
           ITEMC(15)='equipment radiant '
           ITEMC(16)='equipment latent '
-	  
+  
           ITEMC(17)='other (conv+rad) '
           ITEMC(18)='other convective '
           ITEMC(19)='other radiant '
           ITEMC(20)='other latent '
-	  
+  
           ITEMC(21)='controlled fraction '
           ITEMC(22)='controlled (conv+rad) '
           ITEMC(23)='controlled convective '

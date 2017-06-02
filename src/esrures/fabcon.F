@@ -761,10 +761,12 @@ C Compute scaling factors and draw the axis.
       call axiscale(igwid,igheight,XMIN,XMAX,PMIN,PMAX,xsc,ysc,sca,
      &              Xadd,Yadd)
       call linescale(iigl,Xadd,xsc,iigb,Yadd,ysc)
-      call horaxis(XMIN,XMAX,iigl,iigr,iigb,Xadd,xsc,0,
-     &  'Thickness (mm)')
-      call vrtaxis(PMIN,PMAX,iigl,iigb,iigt,Yadd,ysc,0,0,
-     &  'Pressure mbar')
+      call dintervalf(Xmin,Xmax,ddy1,ny,0)
+      call horaxisdd(XMIN,XMAX,iigl,iigr,iigb,Xadd,xsc,0,
+     &  ddy1,ny,'Thickness (mm)')
+      call dintervalf(PMIN,PMAX,ddy1,ny,0)
+      call vrtaxisdd(PMIN,PMAX,iigl,iigb,iigt,Yadd,ysc,0,
+     &  ddy1,ny,0,'Pressure mbar')
 
       RETURN
       END

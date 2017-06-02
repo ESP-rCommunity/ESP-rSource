@@ -3088,7 +3088,7 @@ C         CALL EASKR(cm(ndx+6),' ',' Aux sensor "fraction ON"? ',
 'variable sets the default location, in Windows $HOMEPATH environment'
 'variable sets the default location. Models are copied to this '
 'default or a folder you select. NOTE: no checks are made to'
-'confirm you have control of the nominated folder).
+'confirm you have control of the nominated folder).'
 '  '
 'GTK interface note: the file browser initially points to the home'
 'folder, if you click on a folder then what is [selected:] will be'
@@ -4881,7 +4881,9 @@ C         CALL EASKR(cm(ndx+6),' ',' Aux sensor "fraction ON"? ',
 'based or idealized) and air flow, electrical & contaminant networks.'
 '  '
 'The [controls] section gives access to the detail of the ideal'
-'zone controls as well as plant & flow controls and global controls.'
+'zone controls as well as plant, flow and global controls.'
+'Co-simulation links can also be specified using the Functional Mockup'
+'Interface (FMI) standard.'
 '  '
 'The [actions] section includes tasks that are applicable to models'
 'which are complete:'
@@ -16400,11 +16402,18 @@ C          CALL EASKS(LTMP,' Pressure coefficients database?',
 '   whole of each day as well as no infiltration or ventilation'
 '   for all day types.'
 ' '
+' cellular office creates a typical pattern for a single occupant'
+' cellular office with a bit of diversity for occupants lights and'
+' small power. Saturday has morning use. Sunday & holiday minimal.'
+' '
+' open plan office creates a typical pattern with a bit of'
+' diversity for occupants lights & small power. 9 m2/person'
+' lighting ~7W/m2 & small power 11.7W/m2. Saturday morning use.'
+' Sunday & holiday minimal.'
+' '
 'After initiating one of the above actions you can edit the data'
-'as required. '
-'  '
-'A zone operation file contains schedules of air flow and casual'
-'gains.  Air flows may have thermostatic or wind speed control.'
+'as required. The file also contains schedules of air flow'
+'schedules which may have thermostatic or wind speed control.'
 *enditem
           CALL EASKS(LTMP,' ','Zone operations file name?',
           call askzone(isource,izdef,
@@ -16883,6 +16892,9 @@ C          CALL EASKS(LTMP,' Pressure coefficients database?',
 'Casual gains have initial type labels which may not'
 'be appropriate for your project. You can adapt the '
 'labels if it clarifies your model. '
+'  '
+'Note the option for a so-called dynamic occupant. This requires'
+'additional attributes to be entered.
 '  '
 'If you want to use the standard labels select them from the list.'
 *enditem

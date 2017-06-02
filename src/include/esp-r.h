@@ -176,14 +176,14 @@ void  etriang_(float* x,float* y,float* dx,float* dy,float* dt);
 void  ecirc_(long int* x,long int* y,long int* rad,long int* operation);
 void  earc_(long int* x,long int* y,long int* rad,long int* ang1,
         long int* ang2,long int* operation);
-void  dinterval_(float* v1,float* v2,float* dv,long int* ndec,long int* mode);
 void  etlabel_(char* msg,float* x,float* y,long int* ipos,long int* size,int len);
-void  vrtaxis_(float *ymn,float *ymx,long int *offl,long int *offb,long int *offt,
-        float *yadd,float *sca,long int *mode,long int *side,char* msg,int mlen);
-void  horaxis_(float *xmn,float *xmx,long int *offl,long int *offr,long int *offb,
-        float *xadd,float *sca,long int *mode,char* msg,int mlen);
-void  horaxishdw_(float *xmn,float *xmx,long int *offl,long int *offr,long int *offb,
-        float *xadd,float *sca,long int *mode,long int *ind,long int *idiv,long int *isjday,char* msg,int mlen);
+void  vrtaxisdd_(float* ymn,float* ymx,long int* offl,long int* offb,long int* offt,
+	float* yadd,float* sca,long int* mode,float *ddx, long int *nx,long int* side,char* msg,int mlen);
+void  horaxisdd_(float *xmn,float *xmx,long int *offl,long int *offr,long int *offb,
+        float *xadd,float *sca,long int *mode,float *ddx, long int *nx, char* msg,int mlen);
+void  horaxishdwdd_(float *xmn,float *xmx,long int *offl,long int *offr,long int *offb,
+        float *xadd,float *sca,long int *mode,float *ddx, long int *nx,long int *ind,
+	long int *idiv,long int *isjday,char* msg,int mlen);
 void  labelstr(long int *n,float *val,long int *WticC,char* sstr);
 void  popupimage_(char *prom,char *docu,char *act,char *file,int lenprom,int lendocu,int lenact,int lenfile);
 

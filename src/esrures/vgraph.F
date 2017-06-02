@@ -938,10 +938,13 @@ C Copy axis labels into local variable and then display the
 C horizontal and vertical axis.
       HIT=' '
       HIT=HITEM
-      call horaxis(YMINH,YMAXH,iigl,iigr,iigb,Xadd,xsc,0,HIT)
+      call dintervalf(YMINH,YMAXH,ddy1,ny,0)
+      call horaxisdd(YMINH,YMAXH,iigl,iigr,iigb,Xadd,xsc,0,ddy1,ny,HIT)
       VIT=' '
       VIT=VITEM
-      call vrtaxis(YMINV,YMAXV,iigl,iigb,iigt,Yadd,ysc,0,0,VIT)
+      CALL dintervalf(YMINV,YMAXV,ddy1,ny,0)
+      call vrtaxisdd(YMINV,YMAXV,iigl,iigb,iigt,Yadd,ysc,0,
+     &  ddy1,ny,0,VIT)
 
       RETURN
 

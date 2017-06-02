@@ -355,4 +355,61 @@ C Depending on computer type set integer size of passed parameters.
       CHARACTER direc*1
       return
       end
+      
+C dintervalf: A fortran implementation of the c surboutine dinterval.
+C Copied from esrucom/esru_misc.F
+      subroutine dintervalf(v1,v2,dv,ndec,mode)
+      real v1,v2,dv
+      integer ndec,mode
+C When 'mode'=1 the hour interval on the graphical time (x-axis) is
+C set as follow:
+C v=v2-v1 for v < 12 dv=1, v < 18 dv=2, v < 24 dv=3
+C             v < 48 dv=6, v < 96 dv=12 else dv=24.
+C Should be the same logic as in esru_x.c.
+      real v,dvv,x,w
+      integer ix
+      if(mode.eq.0)then
+        vv = v2 - v1
+        v = abs(vv)
+        x = log10(v)
+        ix = nint(x)
+        if (x.lt.0.0) ix=ix-2
+        dx = real(ix)
+
+        dz = 10.0**dx
+        vr =  v / dz
+        w = 10.0
+        if (vr.lt.5.0) w = 5.0
+        if (vr.lt.2.0) w = 2.0
+
+        dvv = w * 0.1 * dz
+        if (vv.lt.0.0) dvv = -dvv
+
+        nd = 1 - ix
+        if (w.eq.10.0)then
+          nd=nd-1
+        elseif (w.eq.5.0)then
+          nd = 1
+        elseif (w.eq.2.0)then
+          nd = 2
+        endif
+        if (nd.lt.0) nd = 0
+      else
+        v = v2 - v1
+        dvv = 168.0
+        if (v.lt.4320.0) dvv = 48.0
+        if (v.lt.1440.0) dvv = 24.0
+        if (v.lt.338.0) dvv = 12.0
+        if (v.lt.122.0) dvv = 8.0
+        if (v.lt.50.0) dvv = 4.0
+        if (v.lt.26.0) dvv = 3.0
+        if (v.lt.20.0) dvv = 2.0
+        if (v.lt.14.0) dvv = 1.0
+        nd = 0
+      endif
+      dv = dvv
+      ndec = nd
+      return
+      end
+
 

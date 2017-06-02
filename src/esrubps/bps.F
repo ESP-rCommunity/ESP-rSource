@@ -326,8 +326,8 @@ C      logical gopher  ! not references
       logical concat
 
       character*29 item(15)
-      character OUTS*124,spsname*8
-      character LCMDFL*144,inf*144,sps*8,aut*12,fs*1,actf*72
+      character OUTS*124,spsname*30
+      character LCMDFL*144,inf*144,sps*30,aut*12,fs*1,actf*72
       character llclmdb*144
       character browsing*4
       CHARACTER*72 L3DNDD,L3DTLW,L3DLWV,LNLTHP,LGRD1D
@@ -765,7 +765,7 @@ C      write(*,*)'LCMDFL: ',LCMDFL
 C Check for a simulator parameters - if requested then use the
 C info in after reading the .cfg file.
           if(sps(1:2).ne.'  '.and.sps(1:4).ne.'UNKN')then
-            write(spsname,'(a8)')sps(1:8)
+            write(spsname,'(a30)')sps(1:30)
             if(aut(1:6).eq.'silent')then
 C Debug.
 C              write(*,*)'Silent-running mode.'
@@ -1410,7 +1410,7 @@ C  Set parameters for esp-r engine as if running
 C  in silent mode and text mode
 C      subroutine SetDllParms(termtype,iappw,iappx,iappy,inf,sps,aut,
 C     & actf)
-C      character inf*72,sps*8,aut*12,fs*1,actf*72
+C      character inf*72,sps*30,aut*12,fs*1,actf*72
 C      integer termtype,iappw,iappx,iappy
 
 C Place holder (actual code omitted from this version of bps).

@@ -626,7 +626,7 @@ C equal to the intial value for use in java IPV report.
         XBINS=XBIN1
         XBINSJ=XBINS
         XBIN=XBIN1+DXBIN
-	FNTS=FLOAT(NTS)  ! remember NTS as real
+        FNTS=FLOAT(NTS)  ! remember NTS as real
         DO 101 I=1,NBINS
           if(act(1:1).eq.'d')then
             write(trange,'(F9.1,a,F9.1)') XBINS,'-',XBIN
@@ -1077,21 +1077,29 @@ C Stuff into static variables for later access.
 
 C Left axis.
       if(hits.eq.0)then
-        call vrtaxis(YMIN,YMAX,iigl,iigb,iigt,Yadd,ysc,0,0,
-     &  'Distribution')
+        call dintervalf(Ymin,Ymax,ddy1,ny,0)
+        call vrtaxisdd(YMIN,YMAX,iigl,iigb,iigt,Yadd,ysc,0,
+     &    ddy1,ny,0,'Distribution')
       else
-        call vrtaxis(YMIN,YMAX,iigl,iigb,iigt,Yadd,ysc,0,0,
-     &  'Hours')
+        call dintervalf(Ymin,Ymax,ddy1,ny,0)
+        call vrtaxisdd(YMIN,YMAX,iigl,iigb,iigt,Yadd,ysc,0,
+     &    ddy1,ny,0,'Hours')
       endif
 
 C Horizontal axis, label depending on data type.
 C If moderate data range use mode 1, otherwise try 0.
       if((XMAX-XMIN).lt.5.0)then
-        call horaxis(XMIN,XMAX,iigl,iigr,iigb,Xadd,xsc,0,alabel)
+        call dintervalf(Xmin,Xmax,ddy1,ny,0)
+        call horaxisdd(XMIN,XMAX,iigl,iigr,iigb,Xadd,xsc,0,
+     &    ddy1,ny,alabel)
       elseif((XMAX-XMIN).ge.5.0.and.(XMAX-XMIN).lt.1000.)then
-        call horaxis(XMIN,XMAX,iigl,iigr,iigb,Xadd,xsc,1,alabel)
+        call dintervalf(Xmin,Xmax,ddy1,ny,1)
+        call horaxisdd(XMIN,XMAX,iigl,iigr,iigb,Xadd,xsc,1,
+     &    ddy1,ny,alabel)
       else
-        call horaxis(XMIN,XMAX,iigl,iigr,iigb,Xadd,xsc,0,alabel)
+        call dintervalf(Xmin,Xmax,ddy1,ny,0)
+        call horaxisdd(XMIN,XMAX,iigl,iigr,iigb,Xadd,xsc,0,
+     &    ddy1,ny,alabel)
       endif
 
 C Right axis.
@@ -1101,7 +1109,9 @@ C      PMAX=(YMAX/FLOAT(ITOTAL))*100.0
       igheight=igwh
       call axiscale(igwid,igheight,XMIN,XMAX,PMIN,PMAX,xsc,psc,sca,
      &              Xadd,Padd)
-      call vrtaxis(PMIN,PMAX,iigr,iigb,iigt,Padd,psc,0,1,'Percent')
+      call dintervalf(PMIN,PMAX,ddy1,ny,0)
+      call vrtaxisdd(PMIN,PMAX,iigr,iigb,iigt,Padd,psc,0,
+     &  ddy1,ny,1,'Percent')
 
 C Plot histogram, draw grey box if YBIN > 0.
       XBIN = XMIN

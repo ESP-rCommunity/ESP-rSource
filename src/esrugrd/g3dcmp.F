@@ -330,10 +330,14 @@ C Display header information.
       call viewtext('Elevation View',iside,isize,ifont)
 
 C Draw a scale horizontal axis, move to beginning point.
-      CALL horaxis(XMIN,XMAX,iigl,iigr,iigb,Xadd,sca,0,'X axis ->')
+      call dintervalf(XMIN,XMAX,DY,NDEC,0)
+      CALL horaxisdd(XMIN,XMAX,iigl,iigr,iigb,Xadd,sca,0,
+     &  DY,NDEC,'X axis ->')
 
 C Draw a scale vertical axis.
-      CALL vrtaxis(ZMIN,ZMAX,iigl,iigb,iigt,Zadd,sca,0,0,'^ Z axis')
+      call dintervalf(ZMIN,ZMAX,DY,NDEC,0)
+      CALL vrtaxisdd(ZMIN,ZMAX,iigl,iigb,iigt,Zadd,sca,0,
+     &  DY,NDEC,0,'^ Z axis')
       DO 20 IL=1,NLINB(IS)
         IV1=ILINE(IS,IL,1)
         IV2=ILINE(IS,IL,2)

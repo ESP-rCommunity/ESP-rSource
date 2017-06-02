@@ -1242,7 +1242,7 @@ C file for this topic.
       helptopic='exemplar_set_browse'
       call gethelptext(helpinsub,helptopic,nbhelp)
       if(nghelp.gt.0)then
-        do 33 ih=1,nghelp
+        do 33 ih=1,nbhelp
           lex=MIN0(lnblnk(gh(ih)),72)
           write(h(nbhelp+ih),'(a)')gh(ih)(1:lex)
  33     continue

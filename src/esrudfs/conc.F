@@ -97,7 +97,7 @@ C
       COMMON/CFDPOL/POLCONCp(MCTM,ntcelx,ntcely,ntcelz),
      1              POLCONCf(MCTM,ntcelx,ntcely,ntcelz)
       common/KEYVOLN/VOLNAME(MNVLS,MNZ),VCsurf(MNVLS,MNZ)
-
+      character VOLNAME*12,VCsurf*12
       COMMON/CONST/GREAT,small,GRAV
       COMMON/TIMSTP/DT
       COMMON/INTERP/SIFE(ntcelx),SIFW(ntcelx),SIFN(ntcely),SIFS(ntcely),
@@ -139,7 +139,7 @@ C Common blocks for blockages and small supply openings
       DOUBLE PRECISION FLW1,FLW2,PRES,RESID,SAFLW
       INTEGER SPMTYP,SSLINK1,SSLINK2
       LOGICAL OK,LINVOL,CALLMA,CALPOL
-      CHARACTER*12 POLNAM,SRCE,SSNAME,VOLNAME,VCsurf
+      CHARACTER*12 POLNAM,SRCE,SSNAME
       REAL POL3D(ntcelx,ntcely,ntcelz),SRCSTR(MNVLS,MNZ)
       logical unixok
 

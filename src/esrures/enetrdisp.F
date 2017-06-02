@@ -374,11 +374,13 @@ C draw vertical axis.
             call axiscale(igwid,igheight,XSTRT,XFIN,GMIN,GMAX,
      &                           TSC,YSC(I),SCA,XADD,YADD(I))
             IF (ILR(I).EQ.0) then
-              CALL VRTAXIS(GMIN,GMAX,IGX(I),iigb,iigt,YADD(I),
-     &                             YSC(I),0,ILR(I),NETXLAB(I))
+              CALL dintervalf(GMIN,GMAX,ddy1,ny,0)
+              CALL VRTAXISDD(GMIN,GMAX,IGX(I),iigb,iigt,YADD(I),
+     &          YSC(I),0,ddy1,ny,ILR(I),NETXLAB(I))
             ELSE
-              CALL VRTAXIS(GMIN,GMAX,IGX(I),iigb,iigt,YADD(I),
-     &                         YSC(I),0,ILR(I),'  ')
+              CALL dintervalf(GMIN,GMAX,ddy1,ny,0)
+              CALL VRTAXISDD(GMIN,GMAX,IGX(I),iigb,iigt,YADD(I),
+     &          YSC(I),0,ddy1,ny,ILR(I),'  ')
               iid1=IGX(I); iid2=igt-5;
               CALL WSTXPT(iid1,iid2,NETXLAB(I))
             ENDIF           
@@ -389,8 +391,9 @@ C Reset the scaling flag if required
   70    CONTINUE 
 
 C Draw horizontal (time) axis.
-        CALL HORAXIS(XSTRT,XFIN,iigl,iigr,iigb,XADD,TSC,1,
-     &    'Time Hrs')
+        CALL dintervalf(XSTRT,XFIN,ddy1,ny,1)
+        CALL HORAXISDD(XSTRT,XFIN,iigl,iigr,iigb,XADD,TSC,1,
+     &    ddy1,ny,'Time Hrs')
      
       ELSEIF(MODE.EQ.'U')THEN
 

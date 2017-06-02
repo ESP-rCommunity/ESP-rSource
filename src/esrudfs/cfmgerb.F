@@ -364,6 +364,7 @@ C To support writing ASCII file.
       common/CFDSV/IRECPC,ICFDSV,IEQSV(5+MCTM)
       common/EQTION3/CALLMA(MNZ),CALPOL(MCTM,MNZ),POLNAM(MCTM,MNZ),NCTM,
      &      JHUMINDX,URFC(MCTM)
+      LOGICAL CALPOL,CALLMA
       COMMON/ALL/NI,NJ,NK,NIM1,NJM1,NKM1,NIM2,NJM2,NKM2
       COMMON/VARf/Uf(ntcelx,ntcely,ntcelz),Vf(ntcelx,ntcely,ntcelz),
      1            Wf(ntcelx,ntcely,ntcelz),

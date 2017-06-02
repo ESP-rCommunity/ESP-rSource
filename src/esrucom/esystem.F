@@ -398,7 +398,7 @@ C Simulation parameter presets.
       INTEGER :: nsset,isset,isstup,isbnstep,ispnstep,issave,isavgh
       common/spflres/sblres(MSPS),sflres(MSPS),splres(MSPS),
      &  smstres(MSPS),selres(MSPS),sipvres
-      character :: selres*72,spfdescr*8
+      character :: selres*72,spfdescr*30
 
 C BASESIMP.
       common/bsmtdef/iBSIMP(MCOM),LBSIMP(MCOM)
@@ -584,6 +584,7 @@ C Simulation parameters
       INTEGER :: itwpr,itrunc,iss,isva,istat,n,m,items,lastcc
       INTEGER :: lcfgl,lcfgr,louts,ncn,nd
       real    :: vp1,vp2,vp3,vp4,vp5  ! for ies control points
+      integer itmp
 
 #ifdef OSI
       integer iincomp,iincon  ! to pass nb zones connections to c code

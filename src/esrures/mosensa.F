@@ -892,7 +892,6 @@ C Calculate overall standard deviation and display depending on IFMT.
           iicol=0
           call winscl('-',iicol)  ! ensure axis drawn in black
         endif
-C        call dinterval(TMIN,TMAX+1.,DT,NDEC,1)
         call dintervalf(TMIN,TMAX+1.,DT,NDEC,1)
         IY1=1
         igwid=igw
@@ -901,10 +900,12 @@ C        call dinterval(TMIN,TMAX+1.,DT,NDEC,1)
      &    YSC(1),sca,Xadd,Yadd(1))
 
 C Adapt this label to match what user requested.
-        call vrtaxis(YMIN(1),YMAX(1),iigl,iigb,iigt,Yadd(1),YSC(1),0,0,
-     &    GLABEL(1))
-        call horaxis(TMIN,TMAX+1.,iigl,iigr,iigb,Xadd,TSC,1,
-     &    'Time Hours')
+        call dintervalf(YMIN(1),YMAX(1),ddy1,ny,0)
+        call vrtaxisdd(YMIN(1),YMAX(1),iigl,iigb,iigt,Yadd(1),YSC(1),0,
+     &    ddy1,ny,0,GLABEL(1))
+        call dintervalf(TMIN,TMAX+1.,ddy1,ny,1)
+        call horaxisdd(TMIN,TMAX+1.,iigl,iigr,iigb,Xadd,TSC,1,
+     &    ddy1,ny,'Time Hours')
         call linescale(iigl,Xadd,TSC,iigb,Yadd(1),YSC(1))
         graphit=.true.
         goto 4

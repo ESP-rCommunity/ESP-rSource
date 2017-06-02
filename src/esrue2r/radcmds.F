@@ -1407,9 +1407,12 @@ C Setup and pass in parameters to win3d.
 
 C Stuff into static variables for later access and draw axis.
             call linescale(iigl,Xadd,xsc,iigb,Yadd,ysc)
-            call vrtaxis(YMIN,YMAX,iigl,iigb,iigt,Yadd,ysc,0,0,'UGR')
-            call horaxis(XMIN,XMAX,iigl,iigr,iigb,Xadd,xsc,0,
-     &        'Degrees from view center')
+            call dintervalf(YMIN,YMAX,DY,NDEC,0)
+            call vrtaxisdd(YMIN,YMAX,iigl,iigb,iigt,Yadd,ysc,0,
+     &        DY,NDEC,0,'UGR')
+            call dintervalf(Xmin,Xmax,DY,NDEC,0)
+            call horaxisdd(XMIN,XMAX,iigl,iigr,iigb,Xadd,xsc,0,
+     &        DY,NDEC,'Degrees from view center')
 
 C Draw values as a circle.
             call u2pixel(UGRANG(1),UGRV(1),iix1,iiy1)

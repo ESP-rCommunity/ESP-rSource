@@ -1127,9 +1127,12 @@ C Calculate plotting box locations.
         CALL linescale(iigl,xadd,xsc,iigb,yadd,ysc)
 
 C Scale and draw monitoring plot.
-        Call horaxis(plxmin,plxmax,iigl,iigr,iigb,xadd,XSC,0,
-     &    'Frequ.[Hz]')
-        call vrtaxis(YMIN,YMAX,iigl,iigb,iigt,Yadd,ysc,0,0,'RT  s')
+        call dintervalf(plxmin,plxmax,ddy1,ny,0)
+        Call horaxisdd(plxmin,plxmax,iigl,iigr,iigb,xadd,XSC,0,
+     &    ddy1,ny,'Frequ.[Hz]')
+        call dintervalf(YMIN,YMAX,DY,NDEC,0)
+        call vrtaxisdd(YMIN,YMAX,iigl,iigb,iigt,Yadd,ysc,0,
+     &    DY,NDEC,0,'RT  s')
 
 C Print title. IPS is used to keep track of number of title lines.
         IPS=1

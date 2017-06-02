@@ -5,7 +5,7 @@ C Strathclyde, Glasgow Scotland, 2001.
 C ESP-r is free software.  You can redistribute it and/or
 C modify it under the terms of the GNU General Public
 C License as published by the Free Software Foundation
-C (version 2 orlater).
+C (version 2 or later).
 
 C ESP-r is distributed in the hope that it will be useful
 C but WITHOUT ANY WARRANTY; without even the implied
@@ -302,26 +302,13 @@ C Write calendar information (just the default one for the moment)
       calentag(3)='sunday'
       calendayname(3)='Sundays (all year)'
       calentag(4)='holiday'
-      calendayname(4)='holiday'
-      nbcaldays(4)=0
-      calentag(5)='-'
-      calendayname(5)='-'
-      nbcaldays(5)=0
-      calentag(6)='-'
-      calendayname(6)='-'
-      nbcaldays(6)=0
-      calentag(7)='-'
-      calendayname(7)='-'
-      nbcaldays(7)=0
-      calendayname(8)='-'
-      calentag(8)='-'
-      nbcaldays(8)=0
-      calentag(9)='-'
-      calendayname(9)='-'
-      nbcaldays(9)=0
-      calentag(10)='-'
-      calendayname(10)='-'
-      nbcaldays(10)=0
+      calendayname(4)='holiday'; nbcaldays(4)=0
+      calentag(5)='-'; calendayname(5)='-'; nbcaldays(5)=0
+      calentag(6)='-'; calendayname(6)='-'; nbcaldays(6)=0
+      calentag(7)='-'; calendayname(7)='-'; nbcaldays(7)=0
+      calendayname(8)='-'; calentag(8)='-';nbcaldays(8)=0
+      calentag(9)='-'; calendayname(9)='-'; nbcaldays(9)=0
+      calentag(10)='-'; calendayname(10)='-'; nbcaldays(10)=0
      
       do 542 ijd=1,365
 
@@ -1330,112 +1317,73 @@ C Clear the sz array structures. The logic is to scan all of the
 C zone details and then process the zones after *end is detected
 C in the file.
       if(act(1:1).ne.'?')then
-        actions=' '
-        root=' '
-        mpath=' '
-        modeltitle=' '
-        modeldocblock=' '
-        weather=' '
+        actions=' '; root=' '; mpath=' '
+        modeltitle=' '; modeldocblock=' '; weather=' '
         hourlysnowfile=' '
         simact='------'   ! assume no simulation directives
 
         groundreflmodel=0
-        skyview=0.0
-        groundview=0.0
-        buildingview=0.0
-        havesite=.false.
-        havehourlysnowfile=.false.
-        havegroundtempsets=.false.
-        groundtempsets=0
+        skyview=0.0; groundview=0.0; buildingview=0.0
+        havesite=.false.; havehourlysnowfile=.false.
+        havegroundtempsets=.false.; groundtempsets=0
         havesimparameters=.false.
-        simstartup=0
-        simzonetimestep=0
-        simplanttimestep=0
-        simsavelevel=0
-        isilentncf=0
+        simstartup=0; simzonetimestep=0; simplanttimestep=0
+        simsavelevel=0; isilentncf=0
 
 C For each of the possible ESP-r zones, clear values.
         do 41 iz=1,MCOM
-          nztv(iz) = 0
-          zname(iz) = ' '
-          shape(iz) = ' '
-          nbwalls(iz) = 0
-          rotateit(iz,1) = 0.0
-          rotateit(iz,2) = 0.0
-          rotateit(iz,3) = 0.0
-          rotateit(iz,4) = 0.0
-          rotateit(iz,5) = 0.0
-          rotateit(iz,6) = 0.0
-          zorigin(iz,1) = 0.0
-          zorigin(iz,2) = 0.0
+          nztv(iz) = 0; nbwalls(iz) = 0
+          zname(iz) = ' '; shape(iz) = ' '
+          rotateit(iz,1) = 0.0; rotateit(iz,2) = 0.0
+          rotateit(iz,3) = 0.0; rotateit(iz,4) = 0.0
+          rotateit(iz,5) = 0.0; rotateit(iz,6) = 0.0
+          zorigin(iz,1) = 0.0; zorigin(iz,2) = 0.0
           zorigin(iz,3) = 0.0
-          zsize(iz,1) = 0.0
-          zsize(iz,2) = 0.0
-          zsize(iz,3) = 0.0
-          znbglz(iz) = 0
-          znbdoor(iz) = 0
-          znbmass(iz) = 0
+          zsize(iz,1) = 0.0; zsize(iz,2) = 0.0; zsize(iz,3) = 0.0
+          znbglz(iz) = 0; znbdoor(iz) = 0; znbmass(iz) = 0
           do 39 isu=1,MS
-            zboundarytype(iz,isu,1)=0
-            zboundarytype(iz,isu,2)=0
+            zboundarytype(iz,isu,1)=0; zboundarytype(iz,isu,2)=0
             zboundarytype(iz,isu,3)=0
             sname(iz,isu)=' '
-            zhasglaze(iz,isu)=0.0
-            zhasdoor(iz,isu)=0.0
+            zhasglaze(iz,isu)=0.0; zhasdoor(iz,isu)=0.0
             isznbedges(iz,isu)=0
             do 54 ivu=1,MV
               iszlist(iz,isu,ivu)=0
   54        continue
   39      continue
           do 59 imu=1,4
-            zdatamass(iz,imu,1)= 0.0
-            zdatamass(iz,imu,2)= 0.0
-            zdatamass(iz,imu,3)= 0.0
-            zdatamass(iz,imu,4)= 0.0
-            zdatamass(iz,imu,5)= 0.0
-            zdatamass(iz,imu,6)= 0.0
+            zdatamass(iz,imu,1)= 0.0; zdatamass(iz,imu,2)= 0.0
+            zdatamass(iz,imu,3)= 0.0; zdatamass(iz,imu,4)= 0.0
+            zdatamass(iz,imu,5)= 0.0; zdatamass(iz,imu,6)= 0.0
             zdatamass(iz,imu,7)= 0.0
-            ztextmass(iz,imu,1)= ' '
-            ztextmass(iz,imu,2)= ' '
+            ztextmass(iz,imu,1)= ' '; ztextmass(iz,imu,2)= ' '
             ztextmass(iz,imu,3)= ' '
   59      continue
   41    continue
 
 C For each of the META specific arrays, clear values.
         do 42 iz=1,MSZ
-          szuse(iz,1) = ' '
-          szuse(iz,2) = ' '
-          szuse(iz,3) = ' '
+          szuse(iz,1) = ' '; szuse(iz,2) = ' '; szuse(iz,3) = ' '
           usefile(iz) = ' '
           nbobs(iz) = 0
-          ht_Setpoint(iz)= 0.0
-          cl_Setpoint(iz)= 0.0
+          ht_Setpoint(iz)= 0.0; cl_Setpoint(iz)= 0.0
           i_ctl_link(iz)=0
           do 55 ibu=1,MB
-            XOB(iz,ibu) = 0.0
-            YOB(iz,ibu) = 0.0
-            ZOB(iz,ibu) = 0.0
-            DXOB(iz,ibu) = 0.0
-            DYOB(iz,ibu) = 0.0
-            DZOB(iz,ibu) = 0.0
-            BANGOB(iz,ibu,1) = 0.0
-            BANGOB(iz,ibu,2) = 0.0
+            XOB(iz,ibu) = 0.0; YOB(iz,ibu) = 0.0; ZOB(iz,ibu) = 0.0
+            DXOB(iz,ibu) = 0.0; DYOB(iz,ibu) = 0.0; DZOB(iz,ibu) = 0.0
+            BANGOB(iz,ibu,1) = 0.0; BANGOB(iz,ibu,2) = 0.0
             BANGOB(iz,ibu,3) = 0.0
             OPOB(iz,ibu) = 1.0
-            BLOCKNAME(iz,ibu) = ' '
-            LNBLOCKNAME(iz,ibu) = 0
-            BLOCKMAT(iz,ibu) = ' '
-            LNBLOCKMAT(iz,ibu) = 0
+            BLOCKNAME(iz,ibu) = ' '; LNBLOCKNAME(iz,ibu) = 0
+            BLOCKMAT(iz,ibu) = ' '; LNBLOCKMAT(iz,ibu) = 0
             BLOCKTYP(iz,ibu) = 'obs '
             do 56 ibe=1,8
-              XBP(iz,ibu,ibe)=0.0
-              YBP(iz,ibu,ibe)=0.0
+              XBP(iz,ibu,ibe)=0.0; YBP(iz,ibu,ibe)=0.0
               ZBP(iz,ibu,ibe)=0.0
   56        continue
   55      continue
           do 53 isu=1,MTV   ! clear the coordinates
-            szcoords(iz,isu,1)=0.0
-            szcoords(iz,isu,2)=0.0
+            szcoords(iz,isu,1)=0.0; szcoords(iz,isu,2)=0.0
             szcoords(iz,isu,3)=0.0
   53      continue
           do 52 isu=1,MS
@@ -2524,16 +2472,12 @@ C be included in the version 1.1 geometry file.
           if(i_ctl_link(isz).gt.0)then
             isilentncf=1+isilentncf
             ncf=isilentncf
-            IBSN(isilentncf,1)=0
-            IBSN(isilentncf,2)=0
-            IBSN(isilentncf,3)=0
-            IBSN(isilentncf,4)=0
-            IBAN(isilentncf,1)=0
-            IBAN(isilentncf,2)=0
+            IBSN(isilentncf,1)=0; IBSN(isilentncf,2)=0
+            IBSN(isilentncf,3)=0; IBSN(isilentncf,4)=0
+            IBAN(isilentncf,1)=0; IBAN(isilentncf,2)=0
             IBAN(isilentncf,3)=0
             NBCDT(isilentncf)=1
-            IBCDV(isilentncf,1,1)=1
-            IBCDV(isilentncf,1,2)=365
+            IBCDV(isilentncf,1,1)=1; IBCDV(isilentncf,1,2)=365
             NBCDP(isilentncf,1)=1
             IBCTYP(isilentncf,1,1)=0
             IBCLAW(isilentncf,1,1)=1

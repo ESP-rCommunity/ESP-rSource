@@ -287,7 +287,7 @@ C For reading in of bi-directional data.
       CHARACTER*72 LGDCVS,LGDCNC,LGDNDC,LGDNDD,LGDTAQ,LGrdSt
 
       CHARACTER OUTSTR*124,MODE*4
-      CHARACTER outs*124,louts*248,spsname*8,L144*144
+      CHARACTER outs*124,louts*248,spsname*30,L144*144
       CHARACTER outs248*248,LCMDFL*144
       character*72 laprob,path
       character dllsubr*12,dllmesg*124,bidirfile*72,bidirname*12
@@ -1809,7 +1809,7 @@ C lafres  - fluid flow network results file
       character*72 ERESLIB
       character outs*124, outs2*124
       character sblres*72,sflres*72,splres*72,smstres*72,sipvres*72
-      character selres*72,spfdescr*8,name*8
+      character selres*72,spfdescr*30,name*30
       character dllsubr*12,dllmesg*124
 
 C Check if running in dll mode.

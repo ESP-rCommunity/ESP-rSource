@@ -371,10 +371,12 @@ C memory for access by plotting code.
       call axiscale(igwid,igheight,XMIN,XMAX,TMIN,TMAX,xsc,ysc,sca,
      &              Xadd,Yadd)
       call linescale(iigl,Xadd,xsc,iigb,Yadd,ysc)
-      call horaxis(XMIN,XMAX,iigl,iigr,iigb,Xadd,xsc,0,
-     &  'Thickness (mm)')
-      call vrtaxis(TMIN,TMAX,iigl,iigb,iigt,Yadd,ysc,0,0,
-     &  'Temp. Deg.C')
+      call dintervalf(Xmin,Xmax,ddy1,ny,0)
+      call horaxisdd(XMIN,XMAX,iigl,iigr,iigb,Xadd,xsc,0,
+     &  ddy1,ny,'Thickness (mm)')
+      CALL dintervalf(TMIN,TMAX,ddy1,ny,0)
+      call vrtaxisdd(TMIN,TMAX,iigl,iigb,iigt,Yadd,ysc,0,
+     &  ddy1,ny,0,'Temp. Deg.C')
       RETURN
       END
 

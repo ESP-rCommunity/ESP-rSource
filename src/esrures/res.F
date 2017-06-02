@@ -164,7 +164,7 @@ C IEEE callback (Solaris)
       character inf*144,LCMDFL*144,outs248*248,xfile*144
       character outs*124,MODE*4,tg*1,delim*1
       character*72 LFCFG
-      character path*72,spsname*8,paction*16
+      character path*72,spsname*30,paction*16
       character fs*1,act*16,aut*12
       character journcmd*20,jfile*72,uname*24,cjfile*72,OUTSTR*124
       character bact*4,pifltog*4,lpifl*72

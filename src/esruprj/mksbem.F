@@ -99,7 +99,7 @@ C UA1 in uncertainty.h
       COMMON/SPFLDES/SPFDESCR(MSPS)
       INTEGER nsset,isset,isstup,isbnstep,ispnstep,issave,isavgh,ISSTDAY
       INTEGER ISSTMON,ISFNDAY,ISFNMON
-      CHARACTER SPFDESCR*8
+      CHARACTER SPFDESCR*30
 
       COMMON/CFDFIL/LCFD(MCOM),IFCFD(MCOM)
       INTEGER IFCFD

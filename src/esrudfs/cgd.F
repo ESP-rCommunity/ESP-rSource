@@ -388,7 +388,8 @@ C Cast values for linescale.
 C Store the scaling parameters used in drawing the axes.
       CALL linescale(iigl,Xadd,sca,iigb,Yadd,sca)
       iiw1=iigb+10
-      call horaxis(Xmin,Xmax,iigl,iigr,iiw1,Xadd,sca,0,xax)
+      call dintervalf(Xmin,Xmax,ddy1,ny,0)
+      call horaxisdd(Xmin,Xmax,iigl,iigr,iiw1,Xadd,sca,0,ddy1,ny,xax)
       iside=1
       isize=0
       ifont=1
@@ -501,17 +502,24 @@ C Setup and pass in parameters to win3d.
 C Store the scaling parameters used in drawing the axes.
       CALL linescale(iigl,Xadd,sca,iigb,Yadd,sca)
       iiw1=iigb+10
-      call horaxis(Xmin,Xmax,iigl,iigr,iigb,Xadd,sca,0,xax)
+      call dintervalf(Xmin,Xmax,ddy1,ny,0)
+      call horaxisdd(Xmin,Xmax,iigl,iigr,iigb,Xadd,sca,0,ddy1,ny,xax)
       if((Ymax-Ymin).lt.2.0)then
         iiw1=iigl-10
-        call vrtaxis(Ymin,Ymax,iiw1,iigb,iigt,Yadd,sca,0,0,yax)
+        call dintervalf(Ymin,Ymax,DY,NDEC,0)
+        call vrtaxisdd(Ymin,Ymax,iiw1,iigb,iigt,Yadd,sca,0,
+     &    DY,NDEC,0,yax)
         iiw1=iigr-15
-        call vrtaxis(Ymin,Ymax,iiw1,iigb,iigt,Yadd,sca,0,1,yax)
+        call vrtaxisdd(Ymin,Ymax,iiw1,iigb,iigt,Yadd,sca,0,
+     &    DY,NDEC,1,yax)
       else
         iiw1=iigl-10
-        call vrtaxis(Ymin,Ymax,iiw1,iigb,iigt,Yadd,sca,1,0,yax)
+        call dintervalf(Ymin,Ymax,DY,NDEC,1)
+        call vrtaxisdd(Ymin,Ymax,iiw1,iigb,iigt,Yadd,sca,1,
+     &    DY,NDEC,0,yax)
         iiw1=iigr-15
-        call vrtaxis(Ymin,Ymax,iiw1,iigb,iigt,Yadd,sca,1,1,yax)
+        call vrtaxisdd(Ymin,Ymax,iiw1,iigb,iigt,Yadd,sca,1,
+     &    DY,NDEC,1,yax)
       endif
       iside=1
       isize=0

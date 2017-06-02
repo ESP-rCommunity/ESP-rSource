@@ -1604,10 +1604,10 @@ C ispnstep (plant timesteps/hr), issave (results save level).
       character sblres*72,sflres*72,splres*72,smstres*72,sipvres*72
       character selres*72,spflnam*72,longtfile*144,longtfiledos*144
       CHARACTER*72 LAPROB,lipvdatf
-      character cr*32,spfdescr*8,ipvaction*3
+      character cr*32,spfdescr*30,ipvaction*3
 
 C dd is character array for selecting simulation parameter sets.
-      character dd(MSPS+3)*33,de*8,aut*12
+      character dd(MSPS+3)*55,de*30,aut*12
       character t72*72
 
       character brw*11,outs*124
@@ -1673,7 +1673,8 @@ C constructions are known.
       else
         write(ITEMS(1),'(a,i2,a,i2,a)')'a simulation presets (',isset,
      &    ' of',nsset,')'
-        write(ITEMS(2),'(a,a8)')      'b set name: ',spfdescr(isset)
+        write(ITEMS(2),'(a,a)')       'b set name: ',spfdescr(isset)
+     &                                   (1:lnblnk(spfdescr(isset)))
         write(ITEMS(3),'(a,i4)')      'c start-up days:',isstup
         if(isbnstep.le.1)then
           write(ITEMS(4),'(a,i2)')    'd zone timestep/h:',isbnstep
@@ -1879,11 +1880,12 @@ C          write(6,*) 'iappw,iappwpc',iappw,iappwpc
             write(doit,'(3a,3i4,7a)') 'bps -mode ',tmode,
      &        ' -s ',iappwpc,iappx+15,iappy+50,' -file ',
      &        longtfile(1:lnblnk(longtfile)),brw,' -p ',
-     &        spfdescr(isset),aut,' &'
+     &        spfdescr(isset)(1:lnblnk(spfdescr(isset))),aut,' &'
           else
             write(doit,'(9a)') 'bps -mode ',tmode,
      &        ' -s 0 0 0 -file ',longtfile(1:lnblnk(longtfile)),
-     &        brw,' -p ',spfdescr(isset),aut,' &'
+     &        brw,' -p ',spfdescr(isset)(1:lnblnk(spfdescr(isset))),aut,
+     &        ' &'
           endif
 
 C Debug.
@@ -2144,9 +2146,9 @@ C Setup one parameter set or several sets to match IPV description.
           endif
           if(ID.eq.1)then
             de='default'
-            CALL EASKS(de,'Name for set?',' ',8,'win','set name',
+            CALL EASKS(de,'Name for set?',' ',30,'win','set name',
      &        IER,nbhelp)
-            write(spfdescr(isset),'(a8)')de(1:8)
+            write(spfdescr(isset),'(a30)')de(1:30)
             lde=lnblnk(spfdescr(isset))
             spfdescr(2)='-'; spfdescr(3)='-'
             spfdescr(4)='-'; spfdescr(5)='-'
@@ -2203,7 +2205,8 @@ C Select an existing set, create a new one or cancel.
           CALL EDAY(isfnday(ii),isfnmon(ii),ijdfinish)
           call stdate(iyear,ijdfinish,descrb,descrfn)
           CALL EMKEY(ii,KEY,IER)
-          write(dd(ii),'(7a)') key,' ',spfdescr(ii),' ',descrst,'-',
+          write(dd(ii),'(7a)') key,' ',spfdescr(ii)
+     &      (1:lnblnk(spfdescr(ii))),' ',descrst,'-',
      &      descrfn
  60     continue
         if (nsset.lt.MSPS) then
@@ -2233,11 +2236,11 @@ C Select an existing set, create a new one or cancel.
 
 C It is possible to add another set so ask user and set file names.
           de='win'
-          CALL EASKS(de,' ','Name for set?',8,'win','set name',
+          CALL EASKS(de,' ','Name for set?',30,'win','set name',
      &      IER,nbhelp)
           nsset=nsset+1
           isset=nsset
-          write(spfdescr(isset),'(a8)')de(1:8)
+          write(spfdescr(isset),'(a30)')de(1:30)
           lde=lnblnk(spfdescr(isset))
           isstday(isset)=9; isstmon(isset)=1
           isfnday(isset)=15; isfnmon(isset)=1
@@ -2283,9 +2286,9 @@ C << IPV can co-exist with lots of parameter sets.
           call usrmsg('IPV set name is pre-defined,','.','W')
         else
           de=spfdescr(isset)
-          CALL EASKS(de,' ','Name for set?',8,spfdescr(isset),
+          CALL EASKS(de,' ','Name for set?',30,spfdescr(isset),
      &               'set name',IER,nbhelp)
-          write(spfdescr(isset),'(a8)')de(1:8)
+          write(spfdescr(isset),'(a30)')de(1:30)
           modparms=.true.
         endif
       elseif(MITEM.eq.25.and.INO.EQ.3)then

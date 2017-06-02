@@ -1889,8 +1889,10 @@ C Keep track if trace is not active.
               continue
             else
               UNMETHRS(IICOMP)=UNMETHRS(IICOMP)+hrfrac
-              write(6,'(a,f8.2,a,i3)')' heating capacity insufficient ',
-     &          UNMETHRS(IICOMP),' hours in zone ',IICOMP
+
+C Debug uncomment to see the evolution of unmet hours.
+C              write(6,'(a,f8.2,a,i3)')' heating capacity insufficient ',
+C     &          UNMETHRS(IICOMP),' hours in zone ',IICOMP
             endif
          elseif ( QFUT.le.QHM.and.TFUT.ge.HSP)then  ! if within capacity and setpoint
             continue

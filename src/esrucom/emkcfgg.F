@@ -248,7 +248,7 @@ C Generic databases from esprdbfile.h.
       character lipvdatf*72,act*1
       CHARACTER outs*124
       character sblres*72,sflres*72,splres*72,smstres*72,sipvres*72
-      character selres*72,spfdescr*8,ltmp*72,louts*144
+      character selres*72,spfdescr*30,ltmp*72,louts*144
       character bidirfile*72,bidirname*12
       character calename*32,calentag*12,calendayname*32,loutc*96
       CHARACTER CNTMFIL*72,CONTMNAM*12,CNTMDESC*124
@@ -719,8 +719,8 @@ C Simulation parameter presets.
      &     isbnstep,ispnstep,issave,isavgh
         do 333 iss=1,nsset
           WRITE(IFCFG,'(4I4,2x,A,A)',IOSTAT=IOS,ERR=2)isstday(iss),
-     &      isstmon(iss),isfnday(iss),isfnmon(iss),spfdescr(iss),
-     &      ' # period & name'
+     &      isstmon(iss),isfnday(iss),isfnmon(iss),
+     &      spfdescr(iss)(1:lnblnk(spfdescr(iss))),' # period & name'
           if(INDCFG.ne.2)WRITE(IFCFG,'(A,A)',IOSTAT=IOS,ERR=2)'*sblr ',
      &       sblres(iss)(1:lnblnk(sblres(iss)))
           if(IAIRN.ge.1)WRITE(IFCFG,'(A,A)',IOSTAT=IOS,ERR=2)'*sflr ',
