@@ -82,7 +82,7 @@ C updated when the user exits).
       logical gotviabrowse
 
       CHARACTER tcname*248
-      CHARACTER ITEM(14)*33,choices(11)*32,LTMP*72,GFILE*72
+      CHARACTER ITEM(14)*33,choices(13)*32,LTMP*72,GFILE*72
       character sfile*72,snpfile*72,fs*1,outs*124,louts*248
       character priorname*72
       integer lnprior,lnoprf
@@ -315,10 +315,12 @@ C the definition already defined in another zone.
         choices(6) ='f casual gains < from pattern'
         choices(7) ='g air & gains  < from pattern'
         choices(8) ='h nothing happens in the zone'
-        choices(9) =' ________________________'
-        choices(10)='! cancel                 '
-        choices(11)='? help                   '
-        NIGU=11
+        choices(9) ='i typical cellular office'
+        choices(10) ='j open plan office'
+        choices(11) =' ________________________'
+        choices(12)='! cancel                 '
+        choices(13)='? help                   '
+        NIGU=13
         IGU=-2
         if(mmod.eq.8)then
           CALL EMENU('Operations File Options',choices,NIGU,IGU)
@@ -328,39 +330,216 @@ C the definition already defined in another zone.
 
         if(igu.eq.0)then
           goto 19
-        elseif(igu.eq.8)then
+        elseif(igu.eq.8.or.igu.eq.9.or.igu.eq.10)then
 
-C Setup minimal description (single period for the initial 3 slots of
-C casual gain arrays to zeros with no infiltration and ventilation).
-C << expand for additional gain types >>
+C Setup either a nothing happens here or a cellular office.
           DO 399 IDTY=1,NBDAYTYPE
-            ctlstr(icomp,IDTY)='no control of air flow  '
-            NAC(IDTY)=1
-            IACS(IDTY,1)=0; IACF(IDTY,1)=24
-            ACI(IDTY,1)=0.0; ACV(IDTY,1)=0.0
-            IPT(IDTY,1)=0; TA(IDTY,1)=0.0
-            NCAS(IDTY)=3
-            ICGS(IDTY,1)=0; ICGF(IDTY,1)=24; ICGUnit(IDTY,1)=0
-            CMGS(IDTY,1)=0.0; CMGL(IDTY,1)=0.0
-            RADC(IDTY,1)=0.6; CONC(IDTY,1)=0.4  ! CIBSE Guide A 6.3
-            ICGT(IDTY,1)=1
-            ICGS(IDTY,2)=0; ICGF(IDTY,2)=24; ICGUnit(IDTY,2)=0
-            CMGS(IDTY,2)=0.0; CMGL(IDTY,2)=0.0
-            RADC(IDTY,2)=0.3; CONC(IDTY,2)=0.7  ! CIBSE Table A 6.5
-            ICGT(IDTY,2)=2 
-            ICGS(IDTY,3)=0; ICGF(IDTY,3)=24; ICGUnit(IDTY,3)=0
-            CMGS(IDTY,3)=0.0; CMGL(IDTY,3)=0.0
-            RADC(IDTY,3)=0.4; CONC(IDTY,3)=0.6
-            ICGT(IDTY,3)=3 
+            if(igu.eq.8)then
+              ctlstr(icomp,IDTY)='no control of air flow  '
+              NAC(IDTY)=1; IACS(IDTY,1)=0; IACF(IDTY,1)=24
+              ACI(IDTY,1)=0.0; ACV(IDTY,1)=0.0; IPT(IDTY,1)=0
+              TA(IDTY,1)=0.0
+
+C One period for each casual gain slot.
+              NCAS(IDTY)=3
+              ICGS(IDTY,1)=0; ICGF(IDTY,1)=24; ICGUnit(IDTY,1)=0
+              CMGS(IDTY,1)=0.0; CMGL(IDTY,1)=0.0
+              RADC(IDTY,1)=0.6; CONC(IDTY,1)=0.4  ! CIBSE Guide A 6.3
+              ICGT(IDTY,1)=1
+              ICGS(IDTY,2)=0; ICGF(IDTY,2)=24; ICGUnit(IDTY,2)=0
+              CMGS(IDTY,2)=0.0; CMGL(IDTY,2)=0.0
+              RADC(IDTY,2)=0.3; CONC(IDTY,2)=0.7  ! CIBSE Table A 6.5
+              ICGT(IDTY,2)=2 
+              ICGS(IDTY,3)=0; ICGF(IDTY,3)=24; ICGUnit(IDTY,3)=0
+              CMGS(IDTY,3)=0.0; CMGL(IDTY,3)=0.0
+              RADC(IDTY,3)=0.4; CONC(IDTY,3)=0.6
+              ICGT(IDTY,3)=3
+     
+            elseif(igu.eq.9.or.igu.eq.10)then
+
+C A cellular office with some diversity. Uses CIBSE Guide A 6.3
+C for radiant-convective splits. Saturday morning use. Sunday &
+C holidays essentially unoccupied.  For the open plan switch to
+C m2/person with 9 as 100% occupied.
+              ctlstr(icomp,IDTY)='no control of air flow  '
+              NAC(IDTY)=1; IACS(IDTY,1)=0; IACF(IDTY,1)=24
+              ACI(IDTY,1)=0.5; ACV(IDTY,1)=0.0; IPT(IDTY,1)=0
+              TA(IDTY,1)=0.0
+              if(IDTY.eq.1)then
+                NCAS(IDTY)=15
+                do loop=1,15  ! set common information
+                  if(loop.ge.1.and.loop.le.7)then
+                    if(igu.eq.9)then
+                      ICGUnit(IDTY,loop)=0; ICGT(IDTY,loop)=1  ! ocup Watts
+                      RADC(IDTY,loop)=0.6; CONC(IDTY,loop)=0.4
+                    elseif(igu.eq.10)then
+                      ICGUnit(IDTY,loop)=2; ICGT(IDTY,loop)= -1  ! m2/occup
+                      RADC(IDTY,loop)=0.6; CONC(IDTY,loop)=0.4
+                    endif
+                  elseif(loop.ge.8.and.loop.le.12)then
+                    ICGUnit(IDTY,loop)=1; ICGT(IDTY,loop)= -2  ! for lights
+                    RADC(IDTY,loop)=0.3; CONC(IDTY,loop)=0.7
+                  elseif(loop.ge.13.and.loop.le.15)then
+                    ICGUnit(IDTY,loop)=1; ICGT(IDTY,loop)= -3  ! for equip
+                    RADC(IDTY,loop)=0.4; CONC(IDTY,loop)=0.6
+                  endif
+                enddo
+                ICGS(IDTY,1)=0; ICGF(IDTY,1)=8  ! occupants bit of diversity
+                CMGS(IDTY,1)=0.0; CMGL(IDTY,1)=0.0
+                ICGS(IDTY,2)=8; ICGF(IDTY,2)=9
+                if(igu.eq.9) CMGS(IDTY,2)=30.0; CMGL(IDTY,2)=15.0
+                if(igu.eq.10) CMGS(IDTY,2)=30.0; CMGL(IDTY,2)=30.0
+                ICGS(IDTY,3)=9; ICGF(IDTY,3)=12
+                if(igu.eq.9) CMGS(IDTY,3)=100.0; CMGL(IDTY,3)=50.0
+                if(igu.eq.10) CMGS(IDTY,3)=9.0; CMGL(IDTY,3)=7.0
+                ICGS(IDTY,4)=12; ICGF(IDTY,4)=13
+                if(igu.eq.9) CMGS(IDTY,4)=60.0; CMGL(IDTY,4)=30.0
+                if(igu.eq.10) CMGS(IDTY,4)=15.0; CMGL(IDTY,4)=15.0
+                ICGS(IDTY,5)=13; ICGF(IDTY,5)=16
+                if(igu.eq.9) CMGS(IDTY,5)=100.0; CMGL(IDTY,5)=50.0
+                if(igu.eq.10) CMGS(IDTY,5)=9.0; CMGL(IDTY,5)=9.0
+                ICGS(IDTY,6)=16; ICGF(IDTY,6)=18
+                if(igu.eq.9) CMGS(IDTY,6)=80.0; CMGL(IDTY,6)=40.0
+                if(igu.eq.10) CMGS(IDTY,6)=11.25; CMGL(IDTY,6)=11.25
+                ICGS(IDTY,7)=18; ICGF(IDTY,7)=24
+                CMGS(IDTY,7)=0.0; CMGL(IDTY,7)=0.0
+              
+                ICGS(IDTY,8)=0; ICGF(IDTY,8)=8 ! lights W/m2
+                CMGS(IDTY,8)=0.0; CMGL(IDTY,8)=0.0
+                ICGS(IDTY,9)=8; ICGF(IDTY,9)=12
+                CMGS(IDTY,9)=7.0; CMGL(IDTY,8)=0.0
+                ICGS(IDTY,10)=12; ICGF(IDTY,10)=14
+                CMGS(IDTY,10)=5.0; CMGL(IDTY,10)=0.0
+                ICGS(IDTY,11)=14; ICGF(IDTY,11)=18
+                CMGS(IDTY,11)=7.0; CMGL(IDTY,11)=0.0
+                ICGS(IDTY,12)=18; ICGF(IDTY,12)=24
+                CMGS(IDTY,12)=1.0; CMGL(IDTY,12)=0.0
+
+                ICGS(IDTY,13)=0; ICGF(IDTY,13)=7  ! equipment W/m2
+                CMGS(IDTY,13)=2.0; CMGL(IDTY,13)=0.0
+                ICGS(IDTY,14)=7; ICGF(IDTY,14)=17  ! equipment W/m2
+                CMGS(IDTY,14)=11.7; CMGL(IDTY,14)=0.0
+                ICGS(IDTY,15)=17; ICGF(IDTY,15)=24  ! sbem equipment W/m2
+                CMGS(IDTY,15)=3.0; CMGL(IDTY,15)=0.0
+              elseif(IDTY.eq.2)then
+                NCAS(IDTY)=10  ! saturdays only mornings
+                do loop=1,10
+                  if(loop.ge.1.and.loop.le.4)then
+                    if(igu.eq.9)then
+                      ICGUnit(IDTY,loop)=0; ICGT(IDTY,loop)=1  ! ocup Watts
+                      RADC(IDTY,loop)=0.6; CONC(IDTY,loop)=0.4
+                    elseif(igu.eq.10)then
+                      ICGUnit(IDTY,loop)=2; ICGT(IDTY,loop)= -1  ! m2/occup
+                      RADC(IDTY,loop)=0.6; CONC(IDTY,loop)=0.4
+                    endif
+                  elseif(loop.ge.5.and.loop.le.7)then
+                    ICGUnit(IDTY,loop)=1; ICGT(IDTY,loop)= -2
+                    RADC(IDTY,loop)=0.3; CONC(IDTY,loop)=0.7
+                  elseif(loop.ge.8.and.loop.le.10)then
+                    ICGUnit(IDTY,loop)=1; ICGT(IDTY,loop)= -3
+                    RADC(IDTY,loop)=0.4; CONC(IDTY,loop)=0.6
+                  endif
+                enddo
+                ICGS(IDTY,1)=0; ICGF(IDTY,1)=8  ! occupants only in morning
+                CMGS(IDTY,1)=0.0; CMGL(IDTY,1)=0.0
+                ICGS(IDTY,2)=8; ICGF(IDTY,2)=9
+                if(igu.eq.9) CMGS(IDTY,2)=30.0; CMGL(IDTY,2)=15.0
+                if(igu.eq.10) CMGS(IDTY,2)=30.0; CMGL(IDTY,2)=30.0
+                ICGS(IDTY,3)=9; ICGF(IDTY,3)=12
+                if(igu.eq.9) CMGS(IDTY,3)=100.0; CMGL(IDTY,3)=50.0
+                if(igu.eq.10) CMGS(IDTY,3)=9.0; CMGL(IDTY,3)=9.0
+                ICGS(IDTY,4)=12; ICGF(IDTY,4)=24
+                CMGS(IDTY,4)=0.0; CMGL(IDTY,4)=0.0
+                ICGS(IDTY,5)=0; ICGF(IDTY,5)=8 ! lights W/m2
+                CMGS(IDTY,5)=0.0; CMGL(IDTY,5)=0.0
+                ICGS(IDTY,6)=8; ICGF(IDTY,6)=12
+                CMGS(IDTY,6)=7.0; CMGL(IDTY,6)=0.0
+                ICGS(IDTY,7)=12; ICGF(IDTY,7)=24
+                CMGS(IDTY,7)=5.0; CMGL(IDTY,7)=0.0
+                ICGS(IDTY,8)=0; ICGF(IDTY,8)=7  ! equipment W/m2
+                CMGS(IDTY,8)=2.0; CMGL(IDTY,8)=0.0
+                ICGS(IDTY,9)=7; ICGF(IDTY,9)=14
+                CMGS(IDTY,9)=11.7; CMGL(IDTY,9)=0.0
+                ICGS(IDTY,10)=14; ICGF(IDTY,10)=24
+                CMGS(IDTY,10)=2.0; CMGL(IDTY,10)=0.0
+              elseif(IDTY.eq.3)then
+                NCAS(IDTY)=3  ! sunday minimal
+                do loop=1,3
+                  if(loop.eq.1)then
+                    if(igu.eq.9)then
+                      ICGUnit(IDTY,loop)=0; ICGT(IDTY,loop)=1  ! ocup Watts
+                      RADC(IDTY,loop)=0.6; CONC(IDTY,loop)=0.4
+                    elseif(igu.eq.10)then
+                      ICGUnit(IDTY,loop)=2; ICGT(IDTY,loop)= -1  ! m2/occup
+                      RADC(IDTY,loop)=0.6; CONC(IDTY,loop)=0.4
+                    endif
+                  elseif(loop.eq.2)then
+                    ICGUnit(IDTY,loop)=1; ICGT(IDTY,loop)= -2
+                    RADC(IDTY,loop)=0.3; CONC(IDTY,loop)=0.7
+                  elseif(loop.eq.3)then
+                    ICGUnit(IDTY,loop)=1; ICGT(IDTY,loop)= -3
+                    RADC(IDTY,loop)=0.4; CONC(IDTY,loop)=0.6
+                  endif
+                enddo
+                ICGS(IDTY,1)=0; ICGF(IDTY,1)=24  ! occupants only in morning
+                CMGS(IDTY,1)=0.0; CMGL(IDTY,1)=0.0
+                ICGS(IDTY,2)=0; ICGF(IDTY,2)=24  ! emergency lights W/m2
+                CMGS(IDTY,2)=1.0; CMGL(IDTY,2)=0.0
+                ICGS(IDTY,3)=0; ICGF(IDTY,3)=24
+                CMGS(IDTY,3)=2.0; CMGL(IDTY,3)=0.0
+              else
+                NCAS(IDTY)=3  ! holiday & other minimal
+                do loop=1,3
+                  if(loop.eq.1)then
+                    if(igu.eq.9)then
+                      ICGUnit(IDTY,loop)=0; ICGT(IDTY,loop)=1  ! ocup Watts
+                      RADC(IDTY,loop)=0.6; CONC(IDTY,loop)=0.4
+                    elseif(igu.eq.10)then
+                      ICGUnit(IDTY,loop)=2; ICGT(IDTY,loop)= -1  ! m2/occup
+                      RADC(IDTY,loop)=0.6; CONC(IDTY,loop)=0.4
+                    endif
+                  elseif(loop.eq.2)then
+                    ICGUnit(IDTY,loop)=1; ICGT(IDTY,loop)= -2
+                    RADC(IDTY,loop)=0.3; CONC(IDTY,loop)=0.7
+                  elseif(loop.eq.3)then
+                    ICGUnit(IDTY,loop)=1; ICGT(IDTY,loop)= -3
+                    RADC(IDTY,loop)=0.4; CONC(IDTY,loop)=0.6
+                  endif
+                enddo
+                ICGS(IDTY,1)=0; ICGF(IDTY,1)=24  ! occupants only in morning
+                CMGS(IDTY,1)=0.0; CMGL(IDTY,1)=0.0
+                ICGS(IDTY,2)=0; ICGF(IDTY,2)=24  ! emergency lights W/m2
+                CMGS(IDTY,2)=1.0; CMGL(IDTY,2)=0.0
+                ICGS(IDTY,3)=0; ICGF(IDTY,3)=24
+                CMGS(IDTY,3)=2.0; CMGL(IDTY,3)=0.0
+              endif
+            endif
  399      CONTINUE
 
 C Instanciate initial documentation for air schedules and casual gains.
-          write(oprdesc(icomp),'(2a)')
-     &    'Nothing happens in this zone in terms of occupants lights',
-     &    ' and small power. Initial period of 0-24 hour for each.'
-          write(ventdesc(icomp),'(2a)')
-     &    'The zone has no infiltration or ventilation from other ',
-     &    'zones in the model and no control imposed on air movement.'
+          if(igu.eq.8)then
+            write(oprdesc(icomp),'(2a)')
+     &      'Nothing happens in this zone i.e. no occupants lights',
+     &      ' and small power. Initial period of 0-24 hour for each.'
+            write(ventdesc(icomp),'(2a)')
+     &      'It has no infiltration or ventilation from other ',
+     &      'zones and no control imposed on air movement.'
+          elseif(igu.eq.9)then
+            write(oprdesc(icomp),'(2a)')
+     &       'Cellular office some diversity single occupant lights',
+     &       '7W/m2 and small power 6W/m2. Reduced hours weekends.'
+            write(ventdesc(icomp),'(2a)')
+     &        'Assumes 0.5 ach infiltration. No ventilation from ',
+     &        'other zones and no control imposed on air movement.'
+          elseif(igu.eq.10)then
+            write(oprdesc(icomp),'(2a)')
+     &       'Open plan office some diversity for occupant lights',
+     &       '7W/m2 and small power 6W/m2. Reduced hours weekends.'
+            write(ventdesc(icomp),'(2a)')
+     &        'Assumes 0.5 ach infiltration. No ventilation from ',
+     &        'other zones and no control imposed on air movement.'
+          endif
+          
 
 C Set the default labels, slot, type labels for this zone. Only set
 C the lodslot to non-zero for the initial 3 casual gain slots.
@@ -407,14 +586,14 @@ C Write file and return.
      &        'in zone operations data or file name...done.','-')
           ENDIF
          return  
-        elseif(igu.eq.9)then
+        elseif(igu.eq.11)then
           goto 19
-        elseif(igu.eq.10)then
+        elseif(igu.eq.12)then
 
 C User said to cancel so return from the subroutine without
 C doing anything.
           return
-        elseif(igu.eq.11)then
+        elseif(igu.eq.13)then
 
 C Explain
           helptopic='operations_creation'
@@ -2846,18 +3025,21 @@ C Calculate plotting box locations.
 C Scale and draw right hand (m^3/s) axis first.
       CALL axiscale(ipltwd,igheight,plxmin,plxmax,YMIN,YMAXF,
      &                                         xsc,ysc,sca,xadd,yadd)
-      call vrtaxis(YMIN,YMAXF,iigr,iigb,iigt,yadd,ysc,0,1,
-     &  'Flow (m^3/s)')
+      call dintervalf(YMIN,YMAXF,DY,NDEC,0)
+      call vrtaxisdd(YMIN,YMAXF,iigr,iigb,iigt,yadd,ysc,0,
+     &  DY,NDEC,1,'Flow (m^3/s)')
 
 C Re-set scale for gain (W) axis.
       CALL axiscale(ipltwd,igheight,plxmin,plxmax,YMIN,YMAX,
      &                                         xsc,ysc,sca,xadd,yadd)
 
 C Scale and draw for first day type requested
-      CALL horaxis(plxmin,plxmax,iigl,iigr,iigb,xadd,xsc,0,
-     &  'Time (hrs)')
-      call vrtaxis(YMIN,YMAX,iigl,iigb,iigt,yadd,ysc,0,0,
-     &  'Flow (ac/hr)')
+      call dintervalf(plxmin,plxmax,DY,NDEC,0)
+      CALL horaxisdd(plxmin,plxmax,iigl,iigr,iigb,xadd,xsc,0,
+     &  DY,NDEC,'Time (hrs)')
+      call dintervalf(YMIN,YMAX,DY,NDEC,0)
+      call vrtaxisdd(YMIN,YMAX,iigl,iigb,iigt,yadd,ysc,0,
+     &  DY,NDEC,0,'Flow (ac/hr)')
       call linescale(iigl,xadd,xsc,iigb,yadd,ysc)
       iupdown=0
       isym=0
@@ -2867,7 +3049,9 @@ C Scale and draw for first day type requested
       CALL etplot(plxmin,YMAX,iupdown,isym)
 
 C Scale and draw second day type requested
-      CALL horaxis(plxmin,plxmax,iglsat,iigr,iigb,xadd,XSC,0,' ')
+      call dintervalf(plxmin,plxmax,DY,NDEC,0)
+      CALL horaxisdd(plxmin,plxmax,iglsat,iigr,iigb,xadd,XSC,0,
+     &  DY,NDEC,' ')
       call linescale(iglsat,xadd,xsc,iigb,yadd,ysc)
       iupdown=0
       isym=0
@@ -2878,7 +3062,9 @@ C Scale and draw second day type requested
       CALL etplot(plxmin,YMIM,iupdown,isym)
 
 C Scale and draw third day type requested
-      CALL horaxis(plxmin,plxmax,iglsun,iigr,iigb,xadd,XSC,0,' ')
+      call dintervalf(plxmin,plxmax,DY,NDEC,0)
+      CALL horaxisdd(plxmin,plxmax,iglsun,iigr,iigb,xadd,XSC,0,
+     &  DY,NDEC,' ')
       call linescale(iglsun,xadd,xsc,iigb,yadd,ysc)
       iupdown=0
       isym=0
@@ -5225,17 +5411,21 @@ C Calculate plotting box locations.
 C Scale and draw right hand (W/m^2) axis first.
       CALL axiscale(ipltwd,igheight,plxmin,plxmax,YMIN,YMAXF,
      &  xsc,ysc,sca,xadd,yadd)
-      call vrtaxis(YMIN,YMAXF,iigr,iigb,iigt,yadd,ysc,0,1,
-     &  'Gain (W/m^2)')
+      call dintervalf(YMIN,YMAXF,DY,NDEC,0)
+      call vrtaxisdd(YMIN,YMAXF,iigr,iigb,iigt,yadd,ysc,0,
+     &  DY,NDEC,1,'Gain (W/m^2)')
 
 C Re-set scale for gain (W) axis.
       CALL axiscale(ipltwd,igheight,plxmin,plxmax,YMIN,YMAX,
      &  xsc,ysc,sca,xadd,yadd)
 
 C Scale and draw first day type requested.
-      CALL horaxis(plxmin,plxmax,iigl,iigr,iigb,xadd,xsc,0,
-     &  'Time (hrs)')
-      call vrtaxis(YMIN,YMAX,iigl,iigb,iigt,yadd,ysc,0,0,'Gain (W)')
+      call dintervalf(plxmin,plxmax,DY,NDEC,0)
+      CALL horaxisdd(plxmin,plxmax,iigl,iigr,iigb,xadd,xsc,0,
+     &  DY,NDEC,'Time (hrs)')
+      call dintervalf(YMIN,YMAX,DY,NDEC,0)
+      call vrtaxisdd(YMIN,YMAX,iigl,iigb,iigt,yadd,ysc,0,
+     &  DY,NDEC,0,'Gain (W)')
       call linescale(iigl,xadd,xsc,iigb,yadd,ysc)
       iupdown=0
       isym=0
@@ -5245,7 +5435,9 @@ C Scale and draw first day type requested.
       CALL etplot(plxmin,YMAX,iupdown,isym)
 
 C Scale and draw second day type requested.
-      CALL horaxis(plxmin,plxmax,iglsat,iigr,iigb,xadd,XSC,0,' ')
+      call dintervalf(plxmin,plxmax,DY,NDEC,0)
+      CALL horaxisdd(plxmin,plxmax,iglsat,iigr,iigb,xadd,XSC,0,
+     &  DY,NDEC,' ')
       call linescale(iglsat,xadd,xsc,iigb,yadd,ysc)
       iupdown=0
       isym=0
@@ -5256,7 +5448,9 @@ C Scale and draw second day type requested.
       CALL etplot(plxmin,YMIM,iupdown,isym)
 
 C Scale and draw third day type requested.
-      CALL horaxis(plxmin,plxmax,iglsun,iigr,iigb,xadd,XSC,0,' ')
+      call dintervalf(plxmin,plxmax,DY,NDEC,0)
+      CALL horaxisdd(plxmin,plxmax,iglsun,iigr,iigb,xadd,XSC,0,
+     &  DY,NDEC,' ')
       call linescale(iglsun,xadd,xsc,iigb,yadd,ysc)
       iupdown=0
       isym=0
