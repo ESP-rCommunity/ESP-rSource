@@ -18,8 +18,8 @@ C License along with ESP-r. If not, write to the Free
 C Software Foundation, Inc., 59 Temple Place, Suite 330,
 C Boston, MA 02111-1307 USA.
 
-C emkcfg.F includes the following:
-C  EMKCFG  Creates a system configuration file.
+C emkcfgg.F includes the following:
+C  EMKCFGG  Creates a system configuration file.
 C  CONXINF Returns inter-connection descr in CXSTR (copy)
 C  ckcurmatch Scan and report current connection mis-matches.
 

@@ -130,6 +130,7 @@ C Search instances in temporal file to find match(s).
 C Associate with real & reactive power item with a zone.
                       if(DBTASK(ITD1)(1:7).eq.'ELECPWR')
      &                  IELECPWR(itd3)=itd4
+
                       if(DBTASK(ITD1)(1:6).eq.'ZIVENT')
      &                  IZIVENT(itd3)=itd4
                       if(DBTASK(ITD1)(1:6).eq.'RAIRVL')
@@ -237,6 +238,18 @@ C Search instances in temporal file to find match(s).
                         IF(TAG(itd4)(1:lnblnk(TAG(itd4))).EQ.
      &                    DBTAG(itd1)(1:lnblnk(DBTAG(itd1))))THEN
                           IHTCLSETP(itd3)=itd4
+                        ENDIF
+                      ENDDO
+
+                    elseif(DBTASK(ITD1)(1:6).eq.'CFCCTL')then
+
+cx *****************
+cx << add CFC control to temporal data file feature ...
+C Search instances in temporal file to find match(s).
+                      DO itd4=1,NDATA
+                        IF(TAG(itd4)(1:lnblnk(TAG(itd4))).EQ.
+     &                    DBTAG(itd1)(1:lnblnk(DBTAG(itd1))))THEN
+                          ICFCCTL(itd3)=itd4
                         ENDIF
                       ENDDO
                     endif
@@ -1095,11 +1108,14 @@ C espriou.h provides current file.
       real toler  ! what is half of the timestep
 
 C If not already opened free unit and check if file exists.
+cx << in the case of adding existing tdf and then choosing browse/edit
+cx << file seems to be open and call to EFOPSEQ() below gives error 5004
       IER=0
       CALL ERPFREE(iafil,ISTAT)
       CALL EFOPSEQ(iafil,AFIL,1,IER)
       IF(ier.ne.0)THEN
-        write(msgl2,'(2a)') ' error opening ',AFIL(1:lnblnk(AFIL))
+        write(msgl2,'(2a)') 'TDFAIMPT: Error opening ',
+     &                                        AFIL(1:lnblnk(AFIL))
         CALL USRMSG(' ',msgl2,'W')
         IER=1
         RETURN

@@ -355,6 +355,8 @@ C Vertical axis label depending on generic type.
         LABEL1='m/sec           '
       ELSEIF(FOCUS(1:7).EQ.'SETPTTT')THEN
         LABEL1='temperatue deg C'
+      ELSEIF(FOCUS(1:6).EQ.'CFCCTL')THEN
+        LABEL1='on/off state    '
       ELSEIF(FOCUS(1:8).EQ.'HTCLSETP')THEN
         LABEL1='temperatue deg C'
       ELSEIF(FOCUS(1:7).EQ.'SKYLUXT')THEN

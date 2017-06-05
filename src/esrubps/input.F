@@ -298,7 +298,8 @@ C HVAC AIM-2
       LOGICAL spfileok,perok,tstepok,saveok,autook,exitok,startupok
       LOGICAL OK,DOK,CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,XST,CFCDBOK
       LOGICAL GRND3D,MSTROK,MSTRZN
-      logical dll,closemat1,closemat2,unixok,concat,closecfc1
+      logical dll,closemat1,closemat2,unixok,concat
+      logical closecfc1,closecfc2
 
 C GSHP
 C Common holding flag indicating presence of gshp data input file:
@@ -736,7 +737,8 @@ C In silent running mode, notify user and terminate simulation.
 
           if(ier.eq.0)then
             call eclose(cfcver,1.1,0.001,closecfc1)
-            if(closecfc1) CFCDBOK=.TRUE.
+            call eclose(cfcver,1.2,0.001,closecfc2)
+            if(closecfc1.or.closecfc2) CFCDBOK=.TRUE.
           endif
         endif      
       ENDIF

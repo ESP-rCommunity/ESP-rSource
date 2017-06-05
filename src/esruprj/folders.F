@@ -1044,7 +1044,7 @@ C            write(6,*) 'iier is ',iier,nli
             snpfile=' '
             call browsefilelist('p','net','afn',sfile,snpfile,nli,iier)
             call browsefilelist('p','net','gnf',sfile,snpfile,nli,iier)
-            endif
+          endif
         else
           sfile=' '
           snpfile=' '
@@ -1190,7 +1190,7 @@ C << to be done >>
 
 C List out an ASCII file.
     6   CALL EASKS(LFIL,' ','ASCII file name?',
-     &            72,' ','ASCII file',IER,nbhelp)
+     &    72,' ','ASCII file',IER,nbhelp)
 
         IUNIT=IFIL+1
         CALL LISTAS(IUNIT,LFIL,IER)

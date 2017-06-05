@@ -1600,7 +1600,7 @@ C ispnstep (plant timesteps/hr), issave (results save level).
 
       dimension ITEMS(25)
 
-      character doit*248,tmode*8,ITEMS*34,key*1
+      character doit*248,tmode*8,ITEMS*42,key*1
       character sblres*72,sflres*72,splres*72,smstres*72,sipvres*72
       character selres*72,spflnam*72,longtfile*144,longtfiledos*144
       CHARACTER*72 LAPROB,lipvdatf

@@ -55,8 +55,8 @@ C Related to inport and export files.
 
 C Logical flags for file openings.
       COMMON/TDFOPEN/OPTDF
-      
-      LOGICAL      OPTDF,OK,dok
+
+      LOGICAL OPTDF,OK,dok
       logical FOUND,XST,unixok,silent
 
       DIMENSION ITEM(30),ikeybk(30),itemsel(MIT),itemval(MIT)
@@ -89,7 +89,7 @@ C For help messages
       integer nbhelp     ! number of help lines found
 
       helpinsub='tdfedit'  ! set for subroutine
-      
+
 C For debugging set itrc =2
       ITRC=1
 
@@ -110,8 +110,9 @@ C ASCII file to import data from: IUIMP=unit, LIMP=file name.
 C Import file unknown (ITIMP=0), ASCII column listing (ITIMP=1).
       afil='  '
       OPTDF=.FALSE.
-      IUIMP=IFIL+5 
-      LIMP ='tdf.import' 
+      IUIMP=IFIL+5
+C     LTDFA is used if not empty
+      LIMP ='tdf.import'
       ITIMP=1
 
 C ASCII export file: IUEXP=unit, LEXP=file name.

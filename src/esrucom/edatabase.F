@@ -60,7 +60,7 @@ C espriou.h provides currentfile.
       LOGICAL        CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,layermatch
       LOGICAL        CFCDBOK
 
-      logical closemat1,closemat2,close4, closecfc1
+      logical closemat1,closemat2,close4,closecfc1,closecfc2
       logical unixok
 
       CHARACTER OUTSTR*124,NAM*72,H*72,outs*124
@@ -87,6 +87,7 @@ C Keep track of how many times materials db read fails.
 
 C Flag for CFC layers db version
       closecfc1=.false.
+      closecfc2=.false.
 
 C Set folder separator (fs) to \ or / as required.
       call isunix(unixok)
@@ -142,7 +143,8 @@ C is true then the material arrays could be problematic.
 C Find version of CFClayers database, if not closecfc1
 C is true then the CFC layer arrays could be problematic.
       call eclose(cfcver,1.1,0.01,closecfc1)
-      if(closecfc1)then
+      call eclose(cfcver,1.2,0.01,closecfc2)
+      if(closecfc1.or.closecfc2)then
         continue
       else
         CALL USRMSG('CFC layers database data probably corrupt.',
@@ -291,6 +293,18 @@ C materials db.
 
 C Increment thickness of MLC.
             THKMLC(I)=THKMLC(I)+DTHK(I,IL)
+
+C Read logical value for "layer flipped?" if using v. 1.2 CFClayers.db
+C or higher (this is not entirely "clean", as actually the CFClayers.db
+C version has nothing to do with the mlc construction file version ...):
+            if (closecfc2) then
+              CALL EGETW(OUTSTR,K,RSTR,'W','CFC layer flipped?',IER)
+              if (RSTR(1:1).eq.'T') then
+                CFC_layer_flipped(I,IL)=.true.
+              else
+                CFC_layer_flipped(I,IL)=.false.
+              endif
+            endif
 
 C Current MLDB also includes the name of the layer from the
 C CFClayers db.
@@ -673,7 +687,7 @@ C espriou.h provides currentfile.
       LOGICAL        CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,layermatch
       LOGICAL        CFCDBOK
 
-      logical closemat1,closemat2,close4, closecfc1
+      logical closemat1,closemat2,close4,closecfc1,closecfc2
       logical unixok
 
       CHARACTER OUTSTR*124,NAM*72,H*72,outs*124
@@ -702,6 +716,7 @@ C Keep track of how many times materials db read fails.
       
 C Flag for CFC layers db version
       closecfc1=.false.
+      closecfc2=.false.
 
 C Set folder separator (fs) to \ or / as required.
       call isunix(unixok)
@@ -757,7 +772,8 @@ C is true then the material arrays could be problematic.
 C Find version of CFClayers database, if not closecfc1
 C is true then the CFC layer arrays could be problematic.
       call eclose(cfcver,1.1,0.01,closecfc1)
-      if(closecfc1)then
+      call eclose(cfcver,1.2,0.01,closecfc2)
+      if(closecfc1.or.closecfc2)then
         continue
       else
         CALL USRMSG('CFC layers database data probably corrupt.',
@@ -897,6 +913,18 @@ C materials db.
 
 C Increment thickness of MLC.
           THKMLC(mlcloop)=THKMLC(mlcloop)+DTHK(mlcloop,layloop)
+
+C Read logical value for "layer flipped?" if using v. 1.2 CFClayers.db
+C or higher (this is not entirely "clean", as actually the CFClayers.db
+C version has nothing to do with the mlc construction file version ...):
+            if (closecfc2) then
+              CALL EGETW(LOUTSTR,K,RSTR,'W','CFC layer flipped?',IER)
+              if (RSTR(1:1).eq.'T') then
+                CFC_layer_flipped(mlcloop,layloop)=.true.
+              else
+                CFC_layer_flipped(mlcloop,layloop)=.false.
+              endif
+            endif
 
 C Current MLDB also includes the name of the layer from the
 C CFClayers db.
@@ -1383,6 +1411,7 @@ C ileghope is -1 then return what was found as an index match not possible.
           do 43 imt=1,matdbitems
             if(testname(1:ltnam).eq.matname(imt)(1:ltnam))then
               if(matlegindex(imt).eq.ileghope)then
+cx                matarrayindex=ileghope  ! ?? (seems to work for CFC ...)
                 matarrayindex=imt
                 return
               else
@@ -1517,13 +1546,12 @@ C the cfcname matches.
           write(testname,'(a)') PNAM(1:ipos-1)
           ltnam=lnblnk(testname)
 C Find a matching cfcname, if the CFClayers db index associated with this item
-C matches ileghope then our search is complete.  If it does not match
-C ileghope then there could be duplicate names to check further. If
-C ileghope is -1 then return what was found as an index match not possible.
+C matches cfclikelyidx then our search is complete.  If it does not match
+C cfclikelyidx then there could be duplicate names to check further.
           do 43 imt=1,cfcdbitems
             if(testname(1:ltnam).eq.cfcname(imt)(1:ltnam))then
-              if(imt.eq.cfclikelyidx)then
-                cfcarrayindex=imt
+              if(cfcitmindex(imt).eq.cfclikelyidx)then
+                cfcarrayindex=cfclikelyidx
                 return
               else
                 continue   ! keep looking for a text and index match
@@ -1545,7 +1573,7 @@ C check first the lenght of strings, if the stringsa re not equal the
 C CFC layer is different
           if(lnblnk(cfcname(imt)).eq.lnam) then        
              if(PNAM(1:lnam).eq.cfcname(imt)(1:lnam))then
-               cfcarrayindex=imt
+               cfcarrayindex=cfcitmindex(imt)
                return
              endif
           endif
@@ -1554,7 +1582,7 @@ C CFC layer is different
 C If we got to this point also check for a matching cfcdoc string.
         do 45 imt=1,cfcdbitems
           if(PNAM(1:lnam).eq.cfcdoc(imt)(1:lnam))then
-            cfcarrayindex=imt
+            cfcarrayindex=cfcitmindex(imt)
             return
           endif
   45    continue
@@ -1563,7 +1591,7 @@ C If we got to this point also check for a matching cfcdoc string.
 C There might have been a ' : ' but a text mismatch for cfcname so check cfcdoc.
       do 46 imt=1,cfcdbitems
         if(PNAM(1:lnam).eq.cfcdoc(imt)(1:lnam))then
-          cfcarrayindex=imt
+          cfcarrayindex=cfcitmindex(imt)
           return
         endif
   46  continue
@@ -1596,7 +1624,7 @@ C based on contents of material.h. Should work for mlcver 0 and 1.
       integer cfcarrayindex ! CFClayers db index
       integer lnam    ! length of material name
       integer lfordoc ! length available for material documentation
-      logical closemat1,closemat2, closecfc1
+      logical closemat1,closemat2,closecfc1,closecfc2
       logical bCloseToZero
       integer lnlist
 
@@ -1667,7 +1695,8 @@ C Check version of materials database.
 
 C Check version of CFClayers database.
       call eclose(cfcver,1.1,0.01,closecfc1)
-      if(closecfc1)then
+      call eclose(cfcver,1.2,0.01,closecfc2)
+      if(closecfc1.or.closecfc2)then
         continue
       else
         CALL EDISP(ITRU,'CFClayers data may be incomplete.')
@@ -2142,12 +2171,12 @@ C Parameters
       integer lfordoc ! length available for material documentation
       integer izero   ! transitional trick for air gap
       logical closemat1,closemat2
-      logical closecfc1
+      logical closecfc1,closecfc2
       
       integer cfcarrayindex
 
       DIMENSION PNAM(ME)
-      CHARACTER NAM*72,PNAM*72
+      CHARACTER NAM*72,PNAM*72,flipped*1
       character lworking*144,fs*1
       integer lndbp   ! for length of standard database path
       logical unixok  ! to check for database path file separators
@@ -2186,7 +2215,8 @@ C Check version of material database.
 
 C Check version of material database.
       call eclose(cfcver,1.1,0.01,closecfc1)
-      if(closecfc1)then
+      call eclose(cfcver,1.2,0.01,closecfc2)
+      if(closecfc1.or.closecfc2)then
         continue
       else
         CALL USRMSG('CFC layers database data not yet filled.',
@@ -2208,7 +2238,7 @@ C The ASCII file will be overwritten if it exists.
 C Write out a file header.
       WRITE(IFMUL,30)LFMUL(1:lnblnk(LFMUL)),LFMAT(1:lnblnk(LFMAT)),
      &               LCFCDB(1:lnblnk(LCFCDB))
-  30  FORMAT('# composite construction db defined in ',A,/,
+  30  FORMAT('# Composite construction db defined in ',A,/,
      &       '# based on materials db ',A,/,
      &       '# and based on CFClayers db ',A)
 
@@ -2286,8 +2316,20 @@ C a gap layer.
           check_CFC2_or_MLC_2:
      &    IF(mlctype(I)(1:4).EQ.'CFC2') THEN
             cfcarrayindex=ITMCFCDB(I,IL)
-            WRITE(IFMUL,'(I5,F10.4,2X,A)')ITMCFCDB(I,IL),
-     &        DTHK(I,IL),PNAM(IL)(1:lnblnk(PNAM(IL)))
+C           Only write out flipped switch if using CFClayers.db v. 1.2
+C           or later ... (see comments above, line 298 ff.)
+            if (closecfc2) then
+              if (CFC_layer_flipped(I,IL)) then
+                flipped='T'
+              else
+                flipped='F'
+              endif
+              WRITE(IFMUL,'(I5,F10.4,2X,1A,2X,A)')ITMCFCDB(I,IL),
+     &                  DTHK(I,IL),flipped,PNAM(IL)(1:lnblnk(PNAM(IL)))
+            else ! Version 1.1
+              WRITE(IFMUL,'(I5,F10.4,2X,A)')ITMCFCDB(I,IL),
+     &                  DTHK(I,IL),PNAM(IL)(1:lnblnk(PNAM(IL)))
+            endif
           ELSE ! check_CFC2_or_MLC_2
             matarrayindex=IPRMAT(I,IL)
             if(matopaq(matarrayindex)(1:1).eq.'g'.or.
@@ -2335,14 +2377,14 @@ C Parameters
       integer lfordoc ! length available for material documentation
       integer izero   ! transitional trick for air gap
       logical closemat1,closemat2
-      logical closecfc1
+      logical closecfc1,closecfc2
       
       integer cfcarrayindex
       integer loop,loop2,lnda,lndb,lndc,lndd,lnde,lndf,lndg
 
       DIMENSION PNAM(ME)
       CHARACTER NAM*72,PNAM*72
-      character lworking*144,fs*1,tab*1
+      character lworking*144,fs*1,tab*1,flipped*1
       character outs*148,outsd*148
       integer lndbp   ! for length of standard database path
       logical unixok  ! to check for database path file separators
@@ -2382,7 +2424,8 @@ C Check version of material database.
 
 C Check version of CFC database.
       call eclose(cfcver,1.1,0.01,closecfc1)
-      if(closecfc1)then
+      call eclose(cfcver,1.2,0.01,closecfc2)
+      if (closecfc1.or.closecfc2) then
         continue
       else
         CALL USRMSG('CFC layers database data not yet filled.',
@@ -2449,8 +2492,26 @@ C Loop through layers. Write to string and then do comma separation
 C for the initial bit and add in documentation.
         do loop2=1,LAYERS(loop)
           lnda=lnblnk(LAYDESC(loop,loop2))
-          write(outs,'(2A,i5,a,f10.4)') '*layer',' ',
-     &      IPR(loop,loop2),' ',DTHK(loop,loop2)
+          IF(mlctype(loop)(1:4).EQ.'CFC2') THEN
+C           Output of CFC2 type constructions depending on version
+            if (closecfc2) then
+              if (CFC_layer_flipped(loop,loop2)) then
+                flipped='T'
+              else
+                flipped='F'
+              endif
+              write(outs,'(2A,i5,a,f10.4,a,a)') '*layer',' ',
+     &          ITMCFCDB(loop,loop2),' ',DTHK(loop,loop2),' ',
+     &          flipped
+            else
+              write(outs,'(2A,i5,a,f10.4)') '*layer',' ',
+     &          ITMCFCDB(loop,loop2),' ',DTHK(loop,loop2)
+            endif
+          ELSE
+C           All other cases (... behaviour unchanged)
+            write(outs,'(2A,i5,a,f10.4)') '*layer',' ',
+     &        IPR(loop,loop2),' ',DTHK(loop,loop2)
+          ENDIF
           call SDELIM(outs,outsd,'C',IW)
           write(IFMUL,'(3a)') outsd(1:lnblnk(outsd)),tab,
      &      LAYDESC(loop,loop2)(1:lnda)

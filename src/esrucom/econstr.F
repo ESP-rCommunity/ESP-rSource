@@ -502,7 +502,7 @@ C on common blocks. If isur=0 then all, otherwise for one surface.
       logical closemat1,closemat2
 
       integer cfcarrayindex ! the indes within cfcdataarray
-      logical closecfc1
+      logical closecfc1,closecfc2
 
       dimension RT(MS),OPT(MS),PNAM(MS,ME),iprtext(MS,ME),imatch(MS)
       CHARACTER OUTS*124,sn*12,SOPT*12,OPT*12,PNAM*72,NAM*72
@@ -523,7 +523,8 @@ C have been filled after the model cfg file was scanned.
 C Use CFC layer arrays if available. This also assumes that constructions will
 C have been filled after the model cfg file was scanned.
       call eclose(cfcver,1.1,0.01,closecfc1)
-      if(closecfc1)then
+      call eclose(cfcver,1.2,0.01,closecfc2)
+      if(closecfc1.or.closecfc2)then
         continue
       else
         call usrmsg('CONINF: The CFC layer arrays are incomplete so',

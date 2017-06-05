@@ -345,8 +345,8 @@ C Intenational Glazing Database ID (for type 0 (glazings) CFC layers)
       COMMON/impCFC_IGDB/cim_IGDB_ID(mcom,mcfc,me)
 
 C IGDB database ID
-      CHARACTER cim_IGDB_ID*8
-      
+      CHARACTER cim_IGDB_ID*6
+
 C---------------------------------------------------------------------------------
 C SIMULATION COMMONS
 C

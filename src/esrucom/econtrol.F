@@ -20,7 +20,8 @@ C Boston, MA 02111-1307 USA.
 
 C econtrol.f includes the following subroutines:
 C  EZCTLR:  Reads the configuration control strategy file.
-C  EZCTLI:  Zeroes all control data in common BCTL, CCTL, and FCTL.
+C  EZCTLI:  Zeroes all control data in common BCTL, CCTL, FCTL, OCTL,
+C           GCTL and CFCCTL.
 C  EVCNTRL: Decodes & returns string describing control file sensors,
 C           actuators, control types.
 C  EVCNTRLAW: Decodes & returns string describing control file laws.
@@ -28,6 +29,7 @@ C  LSTCNTLD: List one day type of a building/plant/flow/global/optical/
 C           complex fenestration control.
 C  Ezctlc:  Checks all building control functions, plant loops, and
 C           mass flow control functions for validity.
+C  decodesensor: ...
 C  tscdta:  Sets TSC6 variables in the case of TSC6 called from a
 C           control function (as opposed to set from menu).
 C  FZDATA:  reads fuzzy logic data from configuration control file.
@@ -149,6 +151,8 @@ C                         if iCFCsensor(?,2)=5 direct normal radiation is used.
 C           iCFCsensor(?,1)= -4; sensing incident solar radiation on a surface where
 C                         iCFCsensor(?,2) refers to the zone and iCFCsensor(?,3) refers
 C                         to an external facing surface.
+C           iCFCsensor(?,1)= -5; sensor not used, temporal data file contains
+C                                on/off state and slat angle values.
 
 C iban    - Defines the actuator node associated with any zone control
 C           function.
@@ -287,6 +291,8 @@ C                4: senses solar radiation, actuates slat angle
 C                5: senses wind speed, actuates shade ON/OFF
 C                6: senses wind directions, actuates shade ON/OFF
 C                7: no sensor, schedule only
+C                8: * undefined *
+C                9: no sensor, temporal data file ON/OFF & slat angle
 
 C ibclaw |- Defines the control law which relates the sensor to
 C ipclaw |  the actuator.  A number of control laws are active
@@ -294,6 +300,7 @@ C ifclaw |  and these are defined in routines BCTL, PCTL and FCTL.
 C ioclaw |
 C iCFCctllaw | - Complex fenestration control law: 1 - Basic control
 C                                                  2 - Schedule
+C                                                  ... and more ...
 
 C bmiscd |- Hold data required by the control laws. ?MISCD(?,?,?,1)
 C pmiscd |  defines the total number of such items to be read.
@@ -1859,7 +1866,7 @@ C Reporting: Get a string describing the current sensor based on common.
 
 C Range checking.
           if(iCFCactuator(ii,1).lt.0.or.
-     &     iCFCactuator(ii,1).gt.2)goto 1005
+     &     iCFCactuator(ii,1).gt.9)goto 1005
           if(iCFCactuator(ii,2).le.0.or.iCFCactuator(ii,3).lt.0.or.
      &     iCFCactuator(ii,2).gt.mcom.or.
      &     iCFCactuator(ii,3).gt.mcfc)goto 1005
@@ -2614,6 +2621,9 @@ C Actuator.
           ELSEIF(iCFCactuator(II,1).EQ.2)THEN
             WRITE(SSTR,'(5a)')'Shade ON/OFF and slat angle(schedule)',
      &       sn(1:lnblnk(sn)),' in ',zn(1:lnblnk(zn)),'.'     
+          ELSEIF(iCFCactuator(II,1).EQ.9)THEN
+            WRITE(SSTR,'(5a)')'Shade ON/OFF and slat angle via tdf  ',
+     &       sn(1:lnblnk(sn)),' in ',zn(1:lnblnk(zn)),'.'     
           ENDIF
         ENDIF
         
@@ -2635,6 +2645,8 @@ C Complex fenestration control type.
      &         SSTR= 'wnd-dir >slat angle'
         IF(iCFCctltype(II,JJ,KK).eq.7)
      &         SSTR= 'none > sched. '
+        IF(iCFCctltype(II,JJ,KK).eq.9)
+     &         SSTR= 'none > tdf.   '
       ELSEIF(WHICH.EQ.'L'.OR.WHICH.EQ.'l')THEN
 
 C Complex fenestration control law.
@@ -3791,7 +3803,9 @@ C Actuator is slat angle.
      &        '[deg] open slat angle ',cm(5)
           endif
           call SDELIM(lmsg,message,'S',IW)
+
         ELSEIF(iCFCctllaw(II,JJ,KK).EQ.2)then
+C Schedule
           SSTR='schedule        '
           msg1=' schedule:'
           cm(1)=CFCmiscdata(II,JJ,KK,1)
@@ -3801,6 +3815,19 @@ C Actuator is slat angle.
           write(lmsg,'(2a,i3,a,f9.1)') 
      &        msg1,' shade ON (1) or OFF (0) ',nint(cm(2)),
      &        '[deg] slat angle ',cm(3)
+          call SDELIM(lmsg,message,'S',IW)
+
+        ELSEIF(iCFCctllaw(II,JJ,KK).EQ.9)then
+C On/off state & slat angle from temporal data file.
+          SSTR='temporal data file   '
+          msg1=' temporal df:'
+          cm(1)=CFCmiscdata(II,JJ,KK,1)
+          cm(2)=CFCmiscdata(II,JJ,KK,2)
+          cm(3)=CFCmiscdata(II,JJ,KK,3)
+
+          write(lmsg,'(2a,i3,a,i3)')
+     &        msg1,' Shade ON/OFF (1/0) tdf item ',nint(cm(2)),
+     &        ' Slat angle tdf item ',nint(cm(3))
           call SDELIM(lmsg,message,'S',IW)
 
         ENDIF
@@ -3926,7 +3953,7 @@ C For zone, plant, flow and global controls list out the verbose
 C decoding of the control law attributes.  Note that edisp248 is
 C able to work with strings longer than 248 characters.
           if(icfoc.eq.0.or.icfoc.eq.1.or.icfoc.eq.2.or.icfoc.eq.3.or.
-     &    icfoc.eq.5)then
+     &      icfoc.eq.5.or.icfoc.eq.6)then
             call edisp248(itru,outs400,90)
           endif
         elseif(NITEMS.eq.0)then
@@ -4391,17 +4418,6 @@ C Ideal Sensor.
             SSTR='senses ext rel hum.'
             SSTRB='senses ext RH.'
           ENDIF
-C        ELSEIF(icsn(1).EQ.-5)THEN
-C          WRITE(SSTR,65)icsn(2)
-C  65      FORMAT('reads from temporal file item.',I2)
-C          WRITE(SSTRB,66)icsn(2)
-C  66      FORMAT('reads temporal item.',I2)
-C        ELSEIF(icsn(1).EQ.-6)THEN
-C          SSTR='sensed value from function generator.'
-C          SSTRB='sensed value from func gen.'
-C        ELSEIF(icsn(1).EQ.-99)THEN
-C          SSTR=' construction substitution.'
-C          SSTRB=' MLC substitution.'
         ELSEIF(icsn(1).EQ.-4)THEN
           write(zn,'(a)') zname(icsn(2))
           if(icsn(3).gt.0)then
@@ -4414,6 +4430,17 @@ C          SSTRB=' MLC substitution.'
      &    sn(1:lnblnk(sn)),' in ',zn(1:lnblnk(zn)),'.'
           WRITE(SSTRB,'(5a)')  'senses sol rad on ',sn(1:lnblnk(sn)),
      &        ' in ',zn(1:lnblnk(zn)),'.'
+        ELSEIF(icsn(1).EQ.-5)THEN
+          WRITE(SSTR,75)icsn(2)
+  75      FORMAT('reads from temporal file item.',I2)
+          WRITE(SSTRB,76)icsn(2)
+  76      FORMAT('reads temporal item.',I2)
+C        ELSEIF(icsn(1).EQ.-6)THEN
+C          SSTR='sensed value from function generator.'
+C          SSTRB='sensed value from func gen.'
+C        ELSEIF(icsn(1).EQ.-99)THEN
+C          SSTR=' construction substitution.'
+C          SSTRB=' MLC substitution.'
         ELSE
           SSTR='senses UNKNOWN condition.'
           SSTRB='senses UNKNOWN condition.'

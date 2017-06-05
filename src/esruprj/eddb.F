@@ -1478,7 +1478,7 @@ C Default ESP-r distribution path.
       logical CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,CFCDBOK
       logical moddb,modcon,copydef,chgdb
 C      logical clkok,closemat2,DOK,OK
-      logical closemat1
+      logical closecfc1,closecfc2
 
 C      character LTMP*92,LLTMPFL*144
       character fs*1
@@ -1909,8 +1909,9 @@ C Scan CFC layers file into commons.
       chgdb=.false.
 
       call tstamp('>','PRJ: enter CFC layers db')
-      call eclose(cfcver,1.1,0.001,closemat1)
-      if(closemat1)then
+      call eclose(cfcver,1.1,0.001,closecfc1)
+      call eclose(cfcver,1.2,0.001,closecfc2)
+      if(closecfc1.or.closecfc2)then
 
 C Offer display and editing of CFC layer common blocks. If chgdb is
 C returned as true then write out the ASCII file.  

@@ -410,7 +410,7 @@ C import GSLedit data and store in cfc commons
 
 C If CFC2 types found then use native CFClayers db
       ELSEIF((.not.legacy_CFC_xst).and.CFC2_xst)then
-C.......get CFC layer data from CFClayers db commons
+C.......Get CFC layer data from CFClayers db commons
 
 C.......Loop through all surfaces and pick out CFC types
 C.......For each CFC type, get construction details and 
@@ -434,30 +434,63 @@ C...........At this point we've already checked for presence of
 C...........alternating air gaps. 
 
 C...........Get shade and glazing layer properties
-            if(cfcarrayindex.gt.0)then
+            if (cfcarrayindex.gt.0) then
               im_cfcltp(icomp,icfctp,IL) = CFCshdtp(cfcarrayindex)
-              if(im_cfcltp(icomp,icfctp,IL).eq.iGlazing)then
-                rim_SolRf(icomp,icfctp,IL)=
-     &                  CFCsolreflout(cfcarrayindex)
-                rim_SolRb(icomp,icfctp,IL)=
-     &                  CFCsolreflin(cfcarrayindex)
+
+              if (im_cfcltp(icomp,icfctp,IL).eq.iGlazing) then
+
+                if (CFC_layer_flipped(imlc,IL)) then
+C                 Switch front / back properties
+                  rim_SolRf(icomp,icfctp,IL)=
+     &                    CFCsolreflin(cfcarrayindex)
+                  rim_SolRb(icomp,icfctp,IL)=
+     &                    CFCsolreflout(cfcarrayindex)
+                  rim_lwEf(icomp,icfctp,IL)=
+     &                  CFCemissin(cfcarrayindex)
+                  rim_lwEb(icomp,icfctp,IL)=
+     &                  CFCemissout(cfcarrayindex)
+
+                  rim_VisRf(icomp,icfctp,IL)=
+     &                  CFCvisreflin(cfcarrayindex)
+                  rim_VisRb(icomp,icfctp,IL)=
+     &                  CFCvisreflout(cfcarrayindex)
+
+                else
+C                 Copy values as is from IGDB db
+                  rim_SolRf(icomp,icfctp,IL)=
+     &                    CFCsolreflout(cfcarrayindex)
+                  rim_SolRb(icomp,icfctp,IL)=
+     &                    CFCsolreflin(cfcarrayindex)
+                  rim_lwEf(icomp,icfctp,IL)=
+     &                  CFCemissout(cfcarrayindex)
+                  rim_lwEb(icomp,icfctp,IL)=
+     &                  CFCemissin(cfcarrayindex)
+
+                  rim_VisRf(icomp,icfctp,IL)=
+     &                  CFCvisreflout(cfcarrayindex)
+                  rim_VisRb(icomp,icfctp,IL)=
+     &                  CFCvisreflin(cfcarrayindex)
+
+                endif
+C               Idependant of flip:
                 rim_SolT(icomp,icfctp,IL)=
-     &                  CFCsoltrandir(cfcarrayindex)
-                rim_SolTf_tot(icomp,icfctp,IL)= 
-     &                  CFCsoltrandir(cfcarrayindex)
-                rim_SolTb_tot(icomp,icfctp,IL)=       
-     &                  CFCsoltrandir(cfcarrayindex)
+     &                CFCsoltrandir(cfcarrayindex)
+                rim_SolTf_tot(icomp,icfctp,IL)=
+     &                CFCsoltrandir(cfcarrayindex)
+                rim_SolTb_tot(icomp,icfctp,IL)=
+     &                CFCsoltrandir(cfcarrayindex)
                 rim_SolTf_bd(icomp,icfctp,IL)=0.0
                 rim_SolTb_bd(icomp,icfctp,IL)=0.0
                 rim_lwT(icomp,icfctp,IL)=
-     &                  CFClwtran(cfcarrayindex)
-                rim_lwEf(icomp,icfctp,IL)=
-     &                  CFCemissout(cfcarrayindex)
-                rim_lwEb(icomp,icfctp,IL)=
-     &                  CFCemissin(cfcarrayindex)
+     &                CFClwtran(cfcarrayindex)
                 cim_IGDB_ID(icomp,icfctp,IL)=
-     &                  CFC_IGDB_ID(cfcarrayindex)               
-              elseif(im_cfcltp(icomp,icfctp,IL).eq.iVenBlind)then
+     &                CFC_IGDB_ID(cfcarrayindex)
+
+                rim_VisT(icomp,icfctp,IL)=
+     &                CFCvistrandir(cfcarrayindex)
+
+
+              elseif (im_cfcltp(icomp,icfctp,IL).eq.iVenBlind) then
 
                 rim_SolRf(icomp,icfctp,IL)=
      &                  CFCsolreflout(cfcarrayindex)
@@ -486,6 +519,11 @@ C...........Get shade and glazing layer properties
                 rim_vb_t(icomp,icfctp)=
      &                  CFCslatthk(cfcarrayindex)
 
+                rim_VisRf(icomp,icfctp,IL)=
+     &                  CFCvisreflout(cfcarrayindex)
+                rim_VisRb(icomp,icfctp,IL)=
+     &                  CFCvisreflin(cfcarrayindex)
+
               elseif(im_cfcltp(icomp,icfctp,IL).eq.iPleatedDrape)then
 
                 rim_SolRf(icomp,icfctp,IL)=
@@ -504,6 +542,13 @@ C...........Get shade and glazing layer properties
                 rim_SolTb_bd(icomp,icfctp,IL)=     
      &                   CFCsoltrantotin(cfcarrayindex) - 
      &                   CFCsoltrandir(cfcarrayindex)
+
+                rim_VisRf(icomp,icfctp,IL)=
+     &                  CFCvisreflout(cfcarrayindex)
+                rim_VisRb(icomp,icfctp,IL)=
+     &                  CFCvisreflin(cfcarrayindex)
+                rim_VisT(icomp,icfctp,IL)=
+     &                  CFCvistrandir(cfcarrayindex)
 
 C...............Longwave layer inputs are typical values for 0 openness.
 C...............Effective lw properties are then calculated in cfc_thermal_processing()
@@ -539,6 +584,13 @@ C...............Typical apparent LW transmittance of drape fabric at 0 openness.
      &                   CFCsoltrantotin(cfcarrayindex) - 
      &                   CFCsoltrandir(cfcarrayindex)
 
+                rim_VisRf(icomp,icfctp,IL)=
+     &                  CFCvisreflout(cfcarrayindex)
+                rim_VisRb(icomp,icfctp,IL)=
+     &                  CFCvisreflin(cfcarrayindex)
+                rim_VisT(icomp,icfctp,IL)=
+     &                  CFCvistrandir(cfcarrayindex)
+
 C...............Longwave layer inputs are typical values for 0 openness.
 C...............Effective lw properties are then calculated in cfc_thermal_processing()
 C...............taking into account the openness (beam-beam tran at 0 incidence angle).
@@ -569,7 +621,14 @@ C...............Typical apparent LW transmittance of roller blind at 0 openness.
      &                   CFCsoltrandir(cfcarrayindex)
                 rim_bug_Emis(icomp,icfctp)=
      &                  CFCwireemiss(cfcarrayindex)
-     
+
+                rim_VisRf(icomp,icfctp,IL)=
+     &                  CFCvisreflout(cfcarrayindex)
+                rim_VisRb(icomp,icfctp,IL)=
+     &                  CFCvisreflin(cfcarrayindex)
+                rim_VisT(icomp,icfctp,IL)=
+     &                  CFCvistrandir(cfcarrayindex)
+
 C...............Longwave layer inputs are typical values for 0 openness.
 C...............Effective lw properties are then calculated in cfc_thermal_processing()
 C...............taking into account the openness (beam-beam tran at 0 incidence angle).
@@ -751,7 +810,7 @@ C commons.
 
         write(outs,'(a,a)')
      &      '# For each layer: normal visible optical properties - ',
-     &      'R_fr, R_bk, Tran. CURRENTLY NOT USED'
+     &      'R_fr, R_bk, Tran. EXPERIMENTAL'
         WRITE(IFU,'(A)',IOSTAT=ISTAT,ERR=98)outs(1:lnblnk(outs))
 
         do 140 ie=1,im_ncfc_el(icomp,it)
@@ -781,22 +840,19 @@ C commons.
              write(outs,'(3F8.3,a)')rim_VisRf(icomp,it,ie),
      &         rim_VisRb(icomp,it,ie),rim_VisT(icomp,it,ie),
      &         '   # slat-type blind '
-             WRITE(IFU,'(A)',IOSTAT=ISTAT,ERR=98)
-     &                        outs(1:lnblnk(outs))
+             WRITE(IFU,'(A)',IOSTAT=ISTAT,ERR=98) outs(1:lnblnk(outs))
 
           elseif(im_cfcltp(icomp,it,ie).eq.iGlazing)then
              write(outs,'(3F8.3,a)')rim_VisRf(icomp,it,ie),
      &         rim_VisRb(icomp,it,ie),rim_VisT(icomp,it,ie),
      &         '   # glazing '
-             WRITE(IFU,'(A)',IOSTAT=ISTAT,ERR=98)
-     &                       outs(1:lnblnk(outs))
+             WRITE(IFU,'(A)',IOSTAT=ISTAT,ERR=98) outs(1:lnblnk(outs))
 
           elseif(im_cfcltp(icomp,it,ie).eq.iGasGap)then
              write(outs,'(3F8.3,a)')rim_VisRf(icomp,it,ie),
      &         rim_VisRb(icomp,it,ie),rim_VisT(icomp,it,ie),
      &         '   # gas gap '
-             WRITE(IFU,'(A)',IOSTAT=ISTAT,ERR=98)
-     &                       outs(1:lnblnk(outs))
+             WRITE(IFU,'(A)',IOSTAT=ISTAT,ERR=98) outs(1:lnblnk(outs))
 
           else
              GOTO 98
@@ -1436,7 +1492,7 @@ C read roller drape optical properties from .GSL file
      &            'solar drape reflectance (BD) - back',IER)
             rim_SolRb(icomp,icfctp,i)=rprop
 
-C currently no visible properties for draperies, assume similar to
+C currently no visible properties for roller blinds, assume similar to
 C total solar properties
 
             rim_VisT(icomp,icfctp,i) = rim_SolT(icomp,icfctp,i)
@@ -1488,7 +1544,7 @@ C...........Typical apparent LW transmittance of roller blind at 0 openness.
             rim_bug_Emis(icomp,icfctp)=rprop
 
 
-C currently no visible properties for draperies, assume similar to
+C currently no visible properties for insect screens, assume similar to
 C total solar properties
 
             rim_VisT(icomp,icfctp,i) = rim_SolT(icomp,icfctp,i)

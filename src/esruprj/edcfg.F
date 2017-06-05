@@ -224,7 +224,7 @@ C are active.
       if(ientxist.gt.0)nets=nets+1
       if(ihvacflag.gt.0)nets=nets+1
 
-      ictl=ncf+ncl+ncc+ngf+nof
+      ictl=ncf+ncl+ncc+ngf+nof+nCFCctlloops
       IER=0
       WRITE(ITEMS(1),'(A,A)') ' cfg file: ',LCFGF(1:22)
       IF(INDCFG.EQ.0)THEN 

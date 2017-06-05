@@ -194,6 +194,9 @@ C SURTM is not used by the simulator, res will graph/list it.
       GTYPES(27)='ELECPWR'
       GMENUS(27)='Real & reactive power: '
 
+      GTYPES(28)='CFCCTL'
+      GMENUS(28)='On/off and slat angle: '
+
 C If not looking for a specific item then return.
       IF(FOCUS(1:7).EQ.'ALLCLMT')THEN
 
@@ -428,6 +431,24 @@ C Control set point temperature (single) : one data item.
         GMF(1)='REAL,1,0.0,-101.0,101.0'
         MGMA(1)='Set point temperature (C) :     '
         FOUND=.TRUE.
+
+      ELSEIF(FOCUS(1:6).EQ.'CFCCTL')THEN
+
+C Control set point on/off and slat angle : two data items.
+        GAIDE   ='On/off state & slat angle (-, deg)'
+        GHELP(1)='Assign on/off state and slat angle in'
+        GHELP(2)='two columns (-, deg). TDF control (CFCctl??)'
+        GHELP(3)='uses this information for its setpoints.'        
+        GMH='3,2,0,0,2,0,-999.9'
+        GDHDRT(1)='   time  | On/off  |  Slat   '
+        GDHDRT(2)='   of day| state   |  angle  '
+        GDHDRT(3)='On/off state (-) & slat angle (deg):'
+        GMF(1)='INTG,1,0,0,1'
+        MGMA(1)='Slat angle (deg): '
+        GMF(2)='REAL,2,0.0,-90.0,90.0'
+        MGMA(2)='Slat angle (deg): '
+        FOUND=.TRUE.
+
       ELSEIF(FOCUS(1:8).EQ.'HTCLSETP')THEN
 
 C Control state: two data item.

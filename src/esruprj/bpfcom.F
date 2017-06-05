@@ -1650,7 +1650,7 @@ C Parameters
 
 C List linkages with zones if II = 0.
       if(II.eq.0)then
-        if(icfoc.eq.0.or.icfoc.eq.6)then
+        if(icfoc.eq.0) then !.or.icfoc.eq.6)then
           call edisp(itru,' ')
           call edisp(itru,' Zone to contol loop linkages:')
           DO 28 LC=1,NCOMP
@@ -1663,6 +1663,7 @@ C List linkages with zones if II = 0.
         elseif(icfoc.eq.3)then
         elseif(icfoc.eq.4)then
         elseif(icfoc.eq.5)then
+        elseif(icfoc.eq.6)then
         endif
         return
       endif
@@ -1716,8 +1717,8 @@ C        DO 30 ID=1,NBDAYTYPE
 C          call edisp(itru,calentag(id))
 C 30     CONTINUE
       else
-        write(outs,'(a,i2,a)') 'There have been ',nn,
-     &    ' periods of validity defined during the year.'
+        write(outs,'(a,i2,a)') ' > ',nn,
+     &    ' periods of validity during the year have been defined.'
         call edisp(itru,outs)
       endif
       if(nn.eq.0)nn=nbdaytype

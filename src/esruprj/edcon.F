@@ -756,7 +756,7 @@ C Material properties.
 
 C CFClayers db properties
       integer cfcarrayindex
-      logical closecfc1
+      logical closecfc1,closecfc2
 
       DIMENSION ISD(25)
       CHARACTER ISD*56
@@ -788,7 +788,8 @@ C with ier=1.
 C Establish if CFC layer data arrays have been filled. If not return
 C with ier=1.
       call eclose(cfcver,1.1,0.01,closecfc1)
-      if(closecfc1)then
+      call eclose(cfcver,1.2,0.01,closecfc2)
+      if(closecfc1.or.closecfc2)then
         continue
       else
         call usrmsg('The CFC layer arrays are incomplete so editing',
@@ -1202,7 +1203,7 @@ C Material properties.
 
 C CFClayer db properties
       integer cfcarrayindex
-      logical closecfc1
+      logical closecfc1,closecfc2
 
       CHARACTER outs*124
 
@@ -1252,7 +1253,8 @@ C with ier=1.
 C Establish if CFC layer data arrays have been filled. If not return
 C with ier=1.
       call eclose(cfcver,1.1,0.01,closecfc1)
-      if(closecfc1)then
+      call eclose(cfcver,1.2,0.01,closecfc2)
+      if(closecfc1.or.closecfc2)then
         continue
       else
         call usrmsg('The CFC layer arrays are incomplete so zone',
@@ -1310,7 +1312,7 @@ C Remember this change by saving the file.
         ENDIF
 
 C Reset number of layers, if at end of loop it is still 0 then
-C the material was not found and must be asked for.
+C the construction was not found and must be asked for.
         NE(IS)=0
         lnsmlcn=lnblnk(SSMLCN(ioc))
         if(ssmlcindex(ioc).eq.0)then
@@ -1346,11 +1348,12 @@ C...............information is, so set to arbitrary non-zero value.
               endif
             endif
 
-C CFC emissivity and absorptivity calclated elsewhere so set to 0.0
-            E=0.0
-            A=0.0
+C CFC emissivity and absorptivity calclated elsewhere, set to 0.001
+C to avoid warning messages
+            E=0.001
+            A=0.001
 
-          ELSE ! check_CFC2_or_MLC
+          ELSE ! we have a MLC
             matarrayindex=IPRMAT(IC,IL)   ! which materials array index
 
 C And if matarrayindex is zero then resetn dbcon dbden dbsht.
