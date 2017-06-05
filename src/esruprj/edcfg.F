@@ -55,10 +55,10 @@ C LAPRES,IAPRES (for window pressure databases)
 C LPRFDB,IPRODB (for event profile database)
 #include "plant.h"
 #include "power.h"
+#include "prj3dv.h"
 
 C espriou.h provides current file.
 #include "espriou.h"
-#include "prj3dv.h"
 
 C Function definition
       INTEGER :: lnblnk

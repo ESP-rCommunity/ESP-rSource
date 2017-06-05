@@ -683,7 +683,7 @@ C Declare  calling parameter types
       character(72) :: actf,ascif
       character(12) :: aut,aim
       character(4) :: browse
-      character(8) :: sps
+      character(30) :: sps
 
       module = CONST_PARPSF
       call GetCommandLineArguments(module,termtype,iappw,iappx,
@@ -835,7 +835,7 @@ C Local variables for GetCommandLineArguments.
       character(72) :: actf,ascif
       character(12) :: aim, aut
       character(4) :: browse
-      character(8) :: sps
+      character(30) :: sps
 
       module = CONST_PARSPRJ
       call GetCommandLineArguments(module,termtype,iappw,iappx,
