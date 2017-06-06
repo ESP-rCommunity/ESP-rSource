@@ -1,13 +1,13 @@
 #! /usr/bin/env python
 
-# import_geometryAndAttribution_fromEplusModel.py version 4.1a.
+# import_geometryAndAttribution_fromEplusModel.py version 4.2b.
 # Scans through idf file and imports zones, geometry and attribution into ESP-r geometry files
 # and connections file.
 # Designed for use with EnergyPlus v8.5 models, other versions may not be supported.
 # This script does not check whether entities conform to ESP-r limitations, such as maximum
 #   number of surfaces or vertices.
 # Will import classes "Zone", "BuildingSurface:Detailed" and "FenestrationSurface:Detailed".
-# Assumes relative coordinate system and all zones have the same origin.
+# Assumes relative coordinate system and all zones have the same orientation.
 # Assumes counterclockwise vertex direction (same as ESP-r).
 # Assumes "FenestrationSurface:Detailed" classes are after "BuildingSurface:Detailed" classses
 #   in idf file.
@@ -68,15 +68,16 @@ ls_zoneNames=[]
 i_zoneCount=0
 i_lineCount=0
 b_isEndLine=False
+llr_zoneOrigs=[]   # double list of zone origins (3 coordinates, by zone)
 lls_surfNames=[]   # double list of names (by zone and surface)
 lls_surfTypes=[]   # double list of types (by zone and surface)
 lls_surfCons=[]    # double list of constructions (by zone and surface)
-llls_surfBounds=[] # tripple list of boundary conditions
-lllls_surfVerts=[] # quad list of vertices (by ?? )
+llls_surfBounds=[] # triple list of boundary conditions (3 data items, by zone and surface)
+lllls_surfVerts=[] # quad list of vertices (3 coordinates, by zone, surface, and vertex )
 lls_surfParents=[] # double list of parents (by zone and surface)
 for s_line in f_idfFile:
     
-# Found zone class, get zone name and store in list.
+# Found zone class, get zone name and origin and store in lists.
     if b_foundZone:
         i_lineCount=i_lineCount+1
         s_line_strpd=s_line.strip()
@@ -97,8 +98,19 @@ for s_line in f_idfFile:
             continue
 
         if i_lineCount==1:
-            ls_zoneNames.append(s_val.replace(" ", "-"))
-# Zone name is all we need (assume all zones have the same origin), reset to look for next zone.
+# Zone name.
+            s_zoneName=s_val.replace(" ", "-")
+            ls_zoneNames.append(s_zoneName)
+            if len(s_zoneName)>i_zonTrunc:
+                print('Warning: Zone name "'+s_zoneName+'" will be truncated to '+str(i_zonTrunc)+' characters.\n'
+                      '         You are advised to check for duplicate zone names in the ESP-r model.')
+
+        elif i_lineCount==3 or i_lineCount==4 or i_lineCount==5:
+# Origin X, Y and Z coords. Assume these are on lines 3, 4 and 5.
+            llr_zoneOrigs[-1].append(float(s_val))
+
+        if i_lineCount==5:
+# Reset to look for next zone.
             i_lineCount=0
             b_foundZone=False
             b_isEndLine=False
@@ -114,6 +126,7 @@ for s_line in f_idfFile:
         if s_line.strip()=='Zone,':
             b_foundZone=True
             i_zoneCount=i_zoneCount+1
+            llr_zoneOrigs.append([])
             lls_surfNames.append([])
             lls_surfTypes.append([])
             lls_surfCons.append([])
@@ -166,7 +179,7 @@ for s_line in f_idfFile:
             s_surfCon=s_val[:i_conTrunc].replace(" ", "-")
         elif i_lineCount==4:
             s_zoneName=s_val.replace(" ", "-")
-            i_zoneRef=ls_zoneNames.index(s_val.replace(" ", "-")) #inline comment
+            i_zoneRef=ls_zoneNames.index(s_val.replace(" ", "-"))
             li_zoneSurfs[i_zoneRef]+=1
         elif i_lineCount==5:
             s_surfBound=s_val
@@ -181,6 +194,9 @@ for s_line in f_idfFile:
                 b_isEndLine=False
                 continue
             lls_surfNames[i_zoneRef].append(s_surfName)
+            if len(s_surfName)>i_surfTrunc:
+                print('Warning: Surface name "'+s_surfName+'" will be truncated to '+str(i_surfTrunc)+' characters.\n'
+                      '         You are advised to check for duplicate surface names in the ESP-r model.')
             if s_surfType.upper()=='WALL': lls_surfTypes[i_zoneRef].append('VERT')
             elif s_surfType.upper()=='FLOOR': lls_surfTypes[i_zoneRef].append('FLOR')
             elif s_surfType.upper()=='CEILING' or s_surfType.upper()=='ROOF': lls_surfTypes[i_zoneRef].append('CEIL')
@@ -197,7 +213,8 @@ for s_line in f_idfFile:
                 b_found=False
                 for ls_surfNames in lls_surfNames:
                     i1_otherZoneRef=i1_otherZoneRef+1
-                    if s_surfOther in ls_surfNames: 
+                    if s_surfOther in ls_surfNames:                         
+                        #print i_zoneRef, ['ANOTHER',str(i1_otherZoneRef),str(ls_surfNames.index(s_surfOther)+1)], s_surfOther, ls_surfNames
                         llls_surfBounds[i_zoneRef].append(['ANOTHER',str(i1_otherZoneRef),str(ls_surfNames.index(s_surfOther)+1)])
                         b_found=True
                         break
@@ -258,7 +275,7 @@ for s_line in f_idfFile:
 # to the number of vertices (line 10) to make sure they need to be added to the lists.
 
         if i_lineCount==1:
-            s_surfName=s_val
+            s_surfName=s_val.replace(" ", "-")
         elif i_lineCount==3:
 # Construction name may be truncated.
             s_surfCon=s_val[:i_conTrunc].replace(" ", "-")
@@ -290,6 +307,9 @@ for s_line in f_idfFile:
                 print 'Warning: could not find parent surface "'+s_surfParent+'" for child "'+s_surfName+'". This will be written as a normal surface.'
                 lls_surfParents[i_zoneRef].append('-')
             lls_surfNames[i_zoneRef].append(s_surfName)
+            if len(s_surfName)>i_surfTrunc:
+                print('Warning: Surface name "'+s_surfName+'" will be truncated to '+str(i_surfTrunc)+' characters.\n'
+                      '         You are advised to check for duplicate surface names in the ESP-r model.')
 # Inherit type from parent surface.
             if b_found: lls_surfTypes[i_zoneRef].append(lls_surfTypes[i_zoneRef][i_surfRef])
             else: lls_surfTypes[i_zoneRef].append('UNKN')
@@ -305,6 +325,7 @@ for s_line in f_idfFile:
                 for ls_surfNames in lls_surfNames:
                     i1_otherZoneRef=i1_otherZoneRef+1
                     if s_surfOther in ls_surfNames: 
+                        #print ['ANOTHER',str(i1_otherZoneRef),str(ls_surfNames.index(s_surfOther)+1)]
                         llls_surfBounds[i_zoneRef].append(['ANOTHER',str(i1_otherZoneRef),str(ls_surfNames.index(s_surfOther)+1)])
                         b_found=True
                         break
@@ -342,6 +363,8 @@ for s_line in f_idfFile:
             b_foundFen=True
             i_totSurfs+=1
 
+f_idfFile.close()
+
 # Find and resolve any boundary conditions that couldn't be resolved while reading.
 for i_1 in range(len(llls_surfBounds)):
     for i_2 in range(len(llls_surfBounds[i_1])):
@@ -352,25 +375,9 @@ for i_1 in range(len(llls_surfBounds)):
             for ls_surfNames in lls_surfNames:
                 i1_otherZoneRef+=1
                 if s_surfOther in ls_surfNames:
+                    #print i_1, i_2, i1_otherZoneRef, ls_surfNames.index(s_surfOther)+1
                     llls_surfBounds[i_1][i_2]=['ANOTHER',str(i1_otherZoneRef),str(ls_surfNames.index(s_surfOther)+1)]
                     break
-
-# Debug: write lists to standard out.
-i_zoneRef=-1
-for s_zoneName in ls_zoneNames:
-    i_zoneRef=i_zoneRef+1
-    print 'Zone name: '+s_zoneName
-    print lls_surfNames[i_zoneRef]
-    print lls_surfTypes[i_zoneRef]
-    print lls_surfCons[i_zoneRef]
-    print llls_surfBounds[i_zoneRef]
-    print lllls_surfVerts[i_zoneRef]
-    print lls_surfParents[i_zoneRef]
-    print 'zone surfaces ',li_zoneSurfs[i_zoneRef]
-    print 'total surfaces ',i_totSurfs
-    print ''
-
-f_idfFile.close()
 
 # Reorder lists into alphabetical order by zone name.
 # Do this by getting a sorted list of names, then using the sorted and unsorted
@@ -386,12 +393,30 @@ lls_surfCons=sortIt(lls_surfCons,li_mappings)
 llls_surfBounds=sortIt(llls_surfBounds,li_mappings)
 lllls_surfVerts=sortIt(lllls_surfVerts,li_mappings)
 lls_surfParents=sortIt(lls_surfParents,li_mappings)
+# Also need to run zone reference numbers in boundary condition list through the mappings.
+llls_surfBounds=[[[b[0],str(li_mappings.index(int(b[1])-1)+1),b[2]] if b[0]=='ANOTHER' else b for b in a] for a in llls_surfBounds]
+
+# Debug: write lists to standard out.
+#i_zoneRef=-1
+#for s_zoneName in ls_zoneNames:
+#    i_zoneRef=i_zoneRef+1
+#    print 'Zone name: '+s_zoneName
+#    print llr_zoneOrigs[i_zoneRef]
+#    print lls_surfNames[i_zoneRef]
+#    print lls_surfTypes[i_zoneRef]
+#    print lls_surfCons[i_zoneRef]
+#    print llls_surfBounds[i_zoneRef]
+#    print lllls_surfVerts[i_zoneRef]
+#    print lls_surfParents[i_zoneRef]
+#    print 'zone surfaces ',li_zoneSurfs[i_zoneRef]
+#    print ''
+#print 'total surfaces ',i_totSurfs
 
 # Translate data into format compatible with ESP-r and output geometry files.
 
 # Loop over zones.
-for s_zoneName,ls_surfNames,ls_surfTypes,ls_surfCons,lls_surfBounds,llls_surfVerts,ls_surfParents in zip(
-    ls_zoneNames,lls_surfNames,lls_surfTypes,lls_surfCons,llls_surfBounds,lllls_surfVerts,lls_surfParents):
+for s_zoneName,lr_zoneOrig,ls_surfNames,ls_surfTypes,ls_surfCons,lls_surfBounds,llls_surfVerts,ls_surfParents in zip(
+    ls_zoneNames,llr_zoneOrigs,lls_surfNames,lls_surfTypes,lls_surfCons,llls_surfBounds,lllls_surfVerts,lls_surfParents):
     
 # First, assemble lists of vertices (non-repeating) and surface associations.
     lls_geoVerts=[]
@@ -404,7 +429,10 @@ for s_zoneName,ls_surfNames,ls_surfTypes,ls_surfCons,lls_surfBounds,llls_surfVer
         lls_geoSurfs.append(['*edges','',])
         for ls_surfVerts in lls_surfVerts:
             #print ls_surfVerts
-            ls_geoVerts=['*vertex','{:.5f}'.format(float(ls_surfVerts[0])),'{:.5f}'.format(float(ls_surfVerts[1])),'{:.5f}'.format(float(ls_surfVerts[2]))]
+# Add zone origin onto vertex coordinates at this point.
+            ls_geoVerts=['*vertex','{:.5f}'.format(float(ls_surfVerts[0])+lr_zoneOrig[0]),
+                                   '{:.5f}'.format(float(ls_surfVerts[1])+lr_zoneOrig[1]),
+                                   '{:.5f}'.format(float(ls_surfVerts[2])+lr_zoneOrig[2])]
             if ls_geoVerts in lls_geoVerts:
                 lls_geoSurfs[-1].append(str(lls_geoVerts.index(ls_geoVerts)+1))
             else:

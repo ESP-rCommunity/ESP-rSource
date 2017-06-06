@@ -1,19 +1,34 @@
 #!/bin/csh
-echo "Script to be run after import_geometryAndAttribution_fromEplusModel.py"
-echo "and before associate_geometryAndDatabases_fromEplusModel.py. It"
-echo "creates ESP-r folder structure as well as boilerplate cfg file. It"
-echo "is passed the name of the IDF file and the root name of the ESP-r model."
-echo "first importing databases from the idf file $1"
+
+# Check number of command line argments.
+if ( $#argv != 2 ) then
+  echo "Two command line arguments required:"
+  echo "1 - idf file"
+  echo "2 - ESP-r model root name"
+  exit
+endif
+
+echo "Script to import an EnergyPlus model into an ESP-r model. "
+echo "It creates ESP-r folder structure as well as boilerplate cfg file. "
+echo "It is passed the name of the IDF file and the root name of the ESP-r model."
+echo 
+echo "Broadly, the method has 3 steps:"
+echo "1) Import materials and constructions into ESP-r databases"
+echo "2) Import zone geometry, boundary conditions and constructions into ESP-r "
+echo "   gemoetry and connections files"
+echo "3) Associate all data data files with an ESP-r configuration file"
 echo "  "
 echo "The method has been tested on a variety of EPP 8.5 models and the"
-echo " following caviats apply: "
-echo "a) only the initial 30 characters of material & construction names used"
+echo " following caveats apply: "
+echo "a) material & construction names are truncated to 30 characters "
 echo "b) zone & surface names are truncated to 12 characters "
-echo "c) only material, construction and geometry tokens are parsed."
-echo "d) glazing optics are not parsed - you have to set these."
-echo "e) an ESP-r folder structure is created. You will have to re-name"
-echo "   the mode cfg & cnn files, set location year etc."
-echo "f) zone offsets in IDF files are not yet implemented."
+echo "c) only material, construction, zone and surface objects are parsed"
+echo "d) data that is not parsed includes:"
+echo "   - glazing optics"
+echo "   - contextual data (location, simulation year, etc.)"
+echo "   - zone orientation offsets"
+echo "   For specific details on what each import script will and won't import,"
+echo "   see the comments at the beginning of the files."
 echo "  "
 set x="y"
 echo "Proceed (y/n) ?"
@@ -35,7 +50,7 @@ foreach j ( cfg dbs ctl doc images nets rad zones )
   mkdir $2/$j
 end
 foreach j ( `ls *.geo ` )
-  echo "$j"
+  #echo "$j"
   echo "moving $j"
   mv "$j" $2/zones/$j
 end
@@ -107,6 +122,7 @@ mv $2.cfg $2/cfg/$2.cfg
 echo "adding geometry files and databases into the model cfg file."
 cd $2/cfg/
 ../../associate_geometryAndDatabases_fromEplusModel.py $2.cfg
+rm $2.cfg
 cd ../..
 echo "done."
 

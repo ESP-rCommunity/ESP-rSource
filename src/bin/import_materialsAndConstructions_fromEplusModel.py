@@ -1,6 +1,6 @@
 #! /usr/bin/env python
 
-# import_materialsAndConstructions_fromEplusModel.py version 4.2a.
+# import_materialsAndConstructions_fromEplusModel.py version 4.2b.
 # Scans an EnergyPlus idf file, and imports materials and constructions into ESP-r ASCII databases.
 # Designed for use with EnergyPlus v8.5 models, other versions may not be supported.
 # Will import classes "Material", "Material:NoMass", "Material:InfraredTransparent", "Material:AirGap",
@@ -192,6 +192,9 @@ for s_line in f_idfFile:
             ls_matNames.append(s_val)
             ls_matDesc.append(s_val+' material imported from Eplus model '+s_idfFileOnly+'.')
 # Truncate name if greater than i_matTrunc characters.
+            if len(s_val)>i_matTrunc:
+                print('Warning: Material name "'+s_val+'" will be truncated to '+str(i_matTrunc)+' characters.\n'
+                      '         You are advised to check for duplicate names in the material database.')
             lls_text[0][1]=s_val[:i_matTrunc]
             lls_text[0][4]=ls_matDesc[-1]
         elif linecount==3:
@@ -245,6 +248,9 @@ for s_line in f_idfFile:
             ls_matNames.append(s_val)
             ls_matDesc.append(s_val+' "no mass" material imported from Eplus model '+s_idfFileOnly+'.')
             ls_matThick.append('0.1')
+            if len(s_val)>i_matTrunc:
+                print('Warning: Material name "'+s_val+'" will be truncated to '+str(i_matTrunc)+' characters.\n'
+                      '         You are advised to check for duplicate names in the material database.')
             lls_text[0][1]=s_val[:i_matTrunc]
             lls_text[0][4]=ls_matDesc[-1]
         elif linecount==3:
@@ -290,6 +296,9 @@ for s_line in f_idfFile:
         ls_matNames.append(s_val)
         ls_matDesc.append(s_val+' infrared transparent (effectively fictitious) material imported from Eplus model '+s_idfFileOnly+'.')
         ls_matThick.append('0.004')
+        if len(s_val)>i_matTrunc:
+            print('Warning: Material name "'+s_val+'" will be truncated to '+str(i_matTrunc)+' characters.\n'
+                  '         You are advised to check for duplicate names in the material database.')
         lls_text[0][1]=s_val[:i_matTrunc]
         lls_text[0][4]=ls_matDesc[-1]
         f_matDbs.write(','.join(lls_text[0])+'\n')
@@ -352,6 +361,9 @@ for s_line in f_idfFile:
             ls_matNames.append(s_val)
             ls_matThick.append('0.01')
 # Truncate name if greater than i_matTrunc characters.
+            if len(s_val)>i_matTrunc:
+                print('Warning: Material name "'+s_val+'" will be truncated to '+str(i_matTrunc)+' characters.\n'
+                      '         You are advised to check for duplicate names in the material database.')
             lls_text[0][1]=s_val[:i_matTrunc]
 # Don't write description until we have SHGC value.
         elif linecount==2:
@@ -394,6 +406,9 @@ for s_line in f_idfFile:
             ls_matNames.append(s_val)
             ls_matDesc.append(s_val+' glazing material imported from Eplus model '+s_idfFileOnly+'.')
 # Truncate name if greater than i_matTrunc characters.
+            if len(s_val)>i_matTrunc:
+                print('Warning: Material name "'+s_val+'" will be truncated to '+str(i_matTrunc)+' characters.\n'
+                      '         You are advised to check for duplicate names in the material database.')
             lls_text[0][1]=s_val[:i_matTrunc]
             lls_text[0][4]=ls_matDesc[-1]
         elif linecount==4:
@@ -484,6 +499,9 @@ for s_line in f_idfFile:
 
         if linecount==1:
 # Write header lines for the construction.
+            if len(s_val)>i_conTrunc:
+                print('Warning: Construction name "'+s_val+'" will be truncated to '+str(i_conTrunc)+' characters.\n'
+                      '         You are advised to check for duplicate names in the construction database.')
             s_nam=s_val[:i_conTrunc]
 	    ls_text=['*item,'+s_nam+','+s_nam+' # tag name menu entry',]
 	    ls_text.append('*itemdoc,'+s_nam+' is a ...')
