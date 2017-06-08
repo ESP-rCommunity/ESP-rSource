@@ -49,6 +49,8 @@ TargetFolder=$3
 printf "\r                                                                            "
 printf "\r   - Creating binary plant databases [${TargetName}]..."
 
+# Debug
+# echo "$PDB -mode text -file $TargetName -act asci2bin ${SourceName}"
 $PDB -mode text -file $TargetName -act asci2bin ${SourceName}
 mv $TargetName $TargetFolder
 

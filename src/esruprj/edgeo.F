@@ -606,7 +606,7 @@ C Interface to BASESIMP and visual entity definitions for this zone.
       endif
       ITEMS(ITEMC+18)='  _____________________________'
       ITEMS(ITEMC+19)='* list zone & surface details  '
-      ITEMS(ITEMC+20)='> save                         '
+      ITEMS(ITEMC+20)='! save                         '
       IF(ITRC.EQ.0)THEN
         ITEMS(ITEMC+21)='t reporting >> silent  '
       ELSEIF(ITRC.EQ.1)THEN
