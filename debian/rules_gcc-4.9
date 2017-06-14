@@ -1,0 +1,95 @@
+#!/usr/bin/make -f
+# ESP-r install makefile inspired by INSTALL source script.
+#uses bash scripts(in debian folder) and source makefiles
+#Compile X11 version without (SQLite and xml_status)
+#export DH_VERBOSE=1
+export LC_ALL=C
+export DESTdir=/opt/esru
+export ESPdir=$(DESTdir)/esp-r
+export SRCdir=$(CURDIR)
+export ESPBinDir=$(SRCdir)/debian/espr$(ESPdir)/bin
+export DEBdir=$(SRCdir)/debian/espr$(ESPdir)
+machine=`uname -m` 
+export xLibs=X11
+export unversioned=no
+export xml_support=no
+export SQLite_support=no
+#for make
+export MCTYPE=lin 
+export MCC=gcc-4.9
+export MCPL=g++-4.9 
+export MFC=gfortran-4.9
+export WWLINK=unshared 
+export EXE=
+export xml_status=
+export XINSTALLDIR=/usr
+export CFLAGS=-I../include -I../shocc -I/usr/local/include -I../cetc/h3kreports -I/usr/include -I/usr/include/libxml2 \
+-I/usr/local/include/libxml2 -I/usr/include/libxslt -I/local/include/libxslt -DLIN -O1 -DX11 -DXSL
+export FFLAGS=-I../include -I../shocc -I/usr/local/include -I../cetc/h3kreports -DLIN -O1 -DX11 -fno-automatic  -DGCC4
+export LD_FLAGS=
+ifeq ($(machine),x86_64)
+  export ULIBS=-L$(SRCdir)/src/lib  -lversion  -lxesru -L${XINSTALLDIR}/lib64 -lX11 -lXML -lstdc++ -lxslt -lxml2 -lSQLite
+else
+  export ULIBS=-L$(SRCdir)/src/lib  -lversion -lxesru -L${XINSTALLDIR}/lib -lX11 -lXML -lstdc++ -lxslt -lxml2 -lSQLite
+endif
+#for make install
+
+#export COSIMDir=
+#targets for make
+OPTIONS=disableSQLite enableXML  libX11
+PROGRAMS = aco b2e bps dbm dfs cdb c2e clm e2r ecnv eco enet grd ish mfs mld mrt pdb prj res stats vew 
+#path for installation package
+
+
+%:
+	dh $@ --parallel
+	
+override_dh_clean:
+	dh_testdir
+	cd src; $(MAKE) -f Makefile clean
+	dh_clean
+
+override_dh_strip:
+	cd src; $(MAKE) strip
+	
+	
+#build-arch: build
+#build-indep: build
+
+build: 
+	./debian/config.sh
+	cd src; $(MAKE) $(OPTIONS) $(PROGRAMS)
+
+install:
+	dh_testdir
+	dh_prep
+	dh_installdirs
+	cd src; $(MAKE) InstBins
+	./debian/install-espr.sh
+	./debian/install-doc.sh
+	./debian/install-database.sh
+	./debian/install-exemplars.sh
+	dh_installdocs
+	dh_install -X .svn
+
+
+
+binary-arch:binary
+binary-indep:binary
+binary: build install
+	dh_testdir -s
+	dh_testroot -s
+	dh_installchangelogs -s
+	dh_installmenu -s
+	#dh_installxfonts
+	dh_link -s
+	dh_strip -s
+	dh_compress -s --exclude=.pdf
+	dh_fixperms -s
+	dh_makeshlibs -s
+	dh_installdeb -s
+	dh_shlibdeps -s
+	dh_gencontrol -s
+	dh_md5sums -s
+	dh_builddeb -s
+

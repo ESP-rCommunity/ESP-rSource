@@ -1,0 +1,28 @@
+espr for Debian
+---------------
+
+Note about package building
+The original install script make configuration, build binaries, install program and update some files
+ Because the install path for packaging(./debian/espr/usr/esru/esp-r/...) and the final path in debian(/usr/esru/esp-r/...) are different, the path configuration in some files is not correct if we use this script . 
+
+ Look in rules files
+ It uses original makefile for clean, strip and install binaries
+ It uses bash scripts (in debian folder):
+ 	config.sh: 
+ 		-create 2 headers files necessary for compilation
+ 	install-espr.sh:
+ 		-Create config files for the application
+ 		-Create an configured application launcher
+ 	install-database.sh:
+	 	-Create binary plant components databases
+	 	-Create binary materials databases
+	 	-Create binary climate databases	 	
+ Note the configuration is non-interactive (made for x86 and amd64 architectures only), with X11 xml supports and without the sql
+It create 2 deb packages (see control file) : the main program espr and espr-database
+ -- dodo <s.dodo@orange.fr>  
+ Adding install-doc.sh
+ It uses groff command to convert section troff files in /manual/Manual/ into html files
+ Content chapters in troff sections are ignored and replaced by links (provided by groff)
+ It creates an html index files to link sections and appendices(pdf format) 
+ 
+ -- dodo <s.dodo@orange.fr>  Mon, 14 Jan 2013 00:09:00 +0100

@@ -1,0 +1,67 @@
+espr (12.6.1054-1) wheezy; urgency=low
+
+  * Updated to reflect 2017 distribution of ESP-r at 1054.
+  * Less chatter in interface.
+
+ -- Jon Hand <jon@esru.strath.ac.uk>  Tue, 14 Feb 2017 14:52:57 +0000
+ 
+espr (12.5.1048-1) wheezy; urgency=low
+
+  * Updated to reflect 2017 distribution of ESP-r
+  * Modifing source Build-Depends, compilers version 4.9 are used
+
+ -- Jon Hand <jon@esru.strath.ac.uk>  Tue, 14 Feb 2017 14:52:57 +0000
+
+espr (12.0.9264-1) wheezy; urgency=low
+
+  * In rules adding cdb target
+  * Modifing source Build-Depends, compilers version 4.4 are used
+    The ESP-r community considers the GCC 4.4 compiler as the reference compiler 
+  * install-espr default database for mcdb is now mscomp.db2 
+  * Adding new database components.db1 in esp-database.install
+  * Deleting tester suite folder in the source files 
+    it's only for devellopement use
+
+ -- Frederic Patacq <s.dodo@orange.fr>  Tue, 11 Jun 2013 20:06:57 +0200
+
+espr (12.0.9015-0ubuntu1~oneiric2) oneiric; urgency=low
+
+  * Adding *.xsl files (missing in previous version)
+  * Adding  Sample result set in espr-database.sh
+
+ -- dodo <s.dodo@orange.fr>  Mon, 21 Jan 2013 14:31:58 +0100
+
+espr (12.0.9015-0ubuntu1~oneiric1) oneiric; urgency=low
+
+  * Modifing name of package source to include revision number
+  * Adding xml support (to use tester suite)
+  * Deleting precedent modification (copy *.shda to *.shd before use ish conversion)
+    This is a wrong solution. To create *.shd files, espr binaries and databases must be install.
+    So this packaging creates only espr binaries and databases now. And, there is another to install 
+    validation tests and training examples which depend of this package
+
+ -- dodo <s.dodo@orange.fr>  Sun, 20 Jan 2013 21:47:14 +0100
+
+espr (12.0-0ubuntu1~oneiric7) oneiric; urgency=low
+
+  * Fixing a bug, creation of *.shd files crashes (copy *.shda to *.shd before use ish conversion)
+  * Change install directory /opt/esru... to /usr/esru... (tester suite can be used)   
+
+ -- dodo <s.dodo@orange.fr>  Thu, 17 Jan 2013 21:03:16 +0100
+
+espr (12.0-0ubuntu1~oneiric6) oneiric; urgency=low
+
+  * Adding packagesrc.sh for creation of source package
+  * Adding user guide html doc (convertion from troff files) see install-doc.sh
+
+ -- dodo <s.dodo@orange.fr>  Mon, 14 Jan 2013 00:09:00 +0100
+
+espr (12.0-0ubuntu1~oneiric5) oneiric; urgency=low
+
+  * Initial release 
+  * Separating of the initial package in 4 packages espr, espr-database, espr-training, and espr-validation	
+  * Fix bug for binary databases created with /bin/convert_database (the path (./debian/opt..)  was too long and the names of database were truncated)	
+  * Adding README.Debian for explanations on install	
+  * Adding dh command  dh_installdocs and dh_installchangelogs
+
+ -- dodo <s.dodo@orange.fr>  Mon, 07 Jan 2013 00:00:08 +0100

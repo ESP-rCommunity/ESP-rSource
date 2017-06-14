@@ -1,0 +1,15 @@
+opt/esru/esp-r/bin
+opt/esru/esp-r/climate
+opt/esru/esp-r/databases
+opt/esru/esp-r/electric_loads
+opt/esru/esp-r/lib
+opt/esru/esp-r/manual
+opt/esru/esp-r/scripts
+opt/esru/esp-r/xsl
+opt/esru/esp-r/training
+opt/esru/esp-r/validation
+usr/share/applications
+usr/share/pixmaps
+usr/share/doc/espr
+usr/share/doc/espr/Data_model
+usr/share/doc/espr/Manual

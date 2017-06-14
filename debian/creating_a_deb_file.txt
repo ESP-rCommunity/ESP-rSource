@@ -1,0 +1,24 @@
+
+To create a set if Debian .deb files run debuild in the
+folder above this. You may need to edit the control and
+changelog. Here are some of the steps needed to get to
+this point:
+
+Find the revision number from svn.
+do a mkdir espr_12.6.XXXX
+rsync --exclude .svn --exclude .git -av multicon5 espr_12.6.XXXX
+tar cf espr_12.6.XXXX.tar espr_12.6.XXXX
+gzip -9 espr_12.6.XXXX.tar
+mkdir to_build_12.6
+cp espr_12.6.XXXX.tar.gz to_build_12.6
+cd to_build_12.6
+tar xfz espr_12.6.XXXX.tar.gz
+ln -s espr_12.6.XXXX.tar.gz espr_12.6.XXXX.orig.tar.gz
+cd espr_12.6.XXXX
+mkdir debian
+ put the svn debian files into this folder
+
+debuild
+cd debian
+nedit changelog
+nedit control

@@ -1,0 +1,5 @@
+src/bitmaps/esplogosmall.png /usr/share/pixmaps/
+src/bitmaps/*.xbm /opt/esru/esp-r/lib
+debian/ESP-r.desktop /usr/share/applications/
+src/cetc/h3kreports/xsl/*.xsl /opt/esp-r/xsl
+src/tutorial/*.help /opt/esru/esp-r/lib

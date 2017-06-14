@@ -1,0 +1,13 @@
+
+[Desktop Entry]
+MimeType=text/pro;
+Name=esp-r
+Exec=/opt/esru/esp-r/bin/esp-r
+Icon=esplogosmall
+Categories=Education;Science;Engineering;
+Type=Application
+Terminal=false
+Comment=Buildings thermal simulation
+GenericName=ESP-r - Project Manager
+
+X-Desktop-File-Install-Version=0.20

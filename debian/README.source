@@ -1,0 +1,12 @@
+espr for Debian
+---------------
+
+<this file describes information about the source package, see Debian policy
+manual section 4.14. You WILL either need to modify or delete this file>
+
+To package the upstream source  src folder is renamed espr-version.revision then compressed with name esp_version.revision.orig.tar.gz ( be careful _ and not - )
+ -- dodo <s.dodo@orange.fr> 
+ Tester suite folder is not present in the source files (it's only for devellopement)
+ -- dodo <s.dodo@orange.fr>  Tue, 14 May 2013 23:27:33 +0200
+See packagesrc.sh, the script used to build the source package.
+

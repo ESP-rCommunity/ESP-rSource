@@ -1,0 +1,48 @@
+Source: espr
+Section: contrib/science
+Priority: optional
+Maintainer: Jon Hand <jon@esru.strath.ac.uk>
+Build-Depends: debhelper (>= 8.0.0), expect, gcc-5, g++-5, gfortran-5, gettext, libtool, libxml2-dev, netpbm, subversion, libx11-6-dbg, libx11-dev, libxslt1-dev, libxslt1-dbg, enscript, psutils, gsfonts-x11, libgtk2.0-dev, ghostscript, groff, troffcvt, tcsh
+Standards-Version: 3.9.3
+Homepage: http://www.esru.strath.ac.uk/Programs/ESP-r.htm
+Vcs-svn: https://espr.svn.cvsdude.com/esp-r/branches/development_branch
+
+Package: espr
+Architecture: armhf i386 amd64
+Depends: ${shlibs:Depends}, ${misc:Depends}, xfonts-100dpi
+Recommends:nedit, xfig, imagemagick, notify-osd, espr-database
+Suggests: espr-exemplars
+Description: A multi-domain building performance simulation program
+ ESP-r is an integrated energy modelling tool for the simulation 
+ of the thermal, visual and acoustic performance of buildings and 
+ the energy use and gaseous emissions associated with associated
+ environmental control systems. In undertaking its assessments, 
+ the system is equipped to model heat, air, moisture and electrical 
+ power flows at user determined resolution.
+ .
+ You also need to install the espr-database and espr-exemplars packages.
+ .
+ This version uses the traditional X11 interface and is sized for
+ models of moderate complexity.
+
+Package: espr-database
+Architecture: armhf i386 amd64
+Depends: ${misc:Depends}, espr
+Description: ESP-r databases and weather data
+ To use ESP-r you need the standard distribution of databases
+ and weather data.
+ .
+ Install this after you have installed the main espr package.
+
+Package: espr-exemplars
+Architecture: armhf i386 amd64
+Depends: ${misc:Depends}, espr, espr-database
+Description: A collection of exemplar models
+ ESP-r is distributed with ~300 example models which demonstrate
+ its syntax as well as providing examples of its use in various
+ project types. Install this after the main espr and databases
+ packages.
+ .
+ Note: for some models shading will need to be recalculated
+ prior to running assessments. You can do this easily in
+ the ESP-r Project Manager.
