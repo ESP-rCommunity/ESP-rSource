@@ -243,8 +243,7 @@ C Search instances in temporal file to find match(s).
 
                     elseif(DBTASK(ITD1)(1:6).eq.'CFCCTL')then
 
-cx *****************
-cx << add CFC control to temporal data file feature ...
+c CFC control to temporal data file feature ...
 C Search instances in temporal file to find match(s).
                       DO itd4=1,NDATA
                         IF(TAG(itd4)(1:lnblnk(TAG(itd4))).EQ.
@@ -324,6 +323,7 @@ C in the configuration file if called from simulator or res.
             IOBJDIR=0
             ISKYTMP=0
             IGLOVRT=0
+            IRAININD=0
 
 C Search instances in temporal file to find match(s).
             NDATA=NITDF
@@ -374,6 +374,8 @@ C in the tdf file.
                 IGLOVRT=ifoc
               elseif(TTYPE(ifoc)(1:6).EQ.'OBJROT')then
                 IOBJDIR=ifoc
+              elseif(TTYPE(ifoc)(1:7).EQ.'RAININD')then
+                IRAININD=ifoc
               endif
               WRITE(OUTS,'(A,I2,7A,I2,A)')
      &            ' Tdf item:',M,' :',DBTAG(M),

@@ -56,6 +56,7 @@ C HOT3000: Fuel cell.
 #include "qrun.h"
 #include "h3k_report_data.h"
 #include "hvac_parameters.h"
+#include "FMI.h"
 
       integer lnblnk  ! function definition
 
@@ -420,6 +421,18 @@ C iblnd(i,j) contains the index to the SHOCC zone blind array [1,~]
           endif
     5   continue
       endif
+
+C <FMI>
+      if (is_FMU) then
+C Initialise FMI and FMUs.
+        call FMI_INIT(IER)
+C Tell FMUs to being simulation.
+        call FMI_SIMSTART(IER)
+      else
+C Ensure all control commons are initialised to "off".
+        call FMI_CLEARCTL()
+      endif
+C </FMI>
 
 C Initialize HVAC variables
       call ZERO_HVAC_VAR
@@ -1318,6 +1331,16 @@ C Execute complex fenestration control to determine state of shading
 C layers for the current time step.
             call CFC_control()
 
+C <FMI>
+            if (is_FMU) then
+              if (.not.bInStartup()) then
+                call FMI_SIMSTEP(IER)
+              else
+                call FMI_CLEARCTL()
+              endif
+            endif
+C </FMI>
+
 C Consider each zone in turn.
             do 40 l=1,ncomp
               icomp=l
@@ -1928,6 +1951,12 @@ C GSHP system is defined.
 
 C Day loop now complete.
    10 continue
+
+C <FMI>
+      if (is_FMU) then
+        CALL FMI_DONE(IER)
+      endif
+C </FMI>
 
 C Close the file opened for dumping the structured mesh temperatures.
       IF(InSvST.EQ.1)close(ISTemp)

@@ -1153,6 +1153,7 @@ C                 external temperature (for use in MZLS3).
       include "hvac_parameters.h"
       include "blc25_open_windows.h"   
       include "hvac_common.h"
+      include "FMI.h"
  
       common/caleni/nbdaytype,nbcaldays(MDTY),icalender(365)
       INTEGER :: icalender,nbcaldays,nbdaytype
@@ -1284,6 +1285,9 @@ C Logical flags for indicating which air flow model is in use.
       
 C      Used to check if windows are open or not for AIM
       LOGICAL AreWindowsOpen
+
+C Temporary variable.
+      real rtmp
 
 c --- 28-08-2014: Patrice Pinel: Initialise mechanical ventilation variables to zero
 c --- This way, nothing will be changed if MECH_VENT_CONTROL is not called
@@ -1749,6 +1753,16 @@ C  this code infact be operating on CVVF?)
             endif OprDiffCooling
           
           endif OprInfCtl
+
+C <FMI> Multiply a fraction (specified by FMUCTLSUP) of infiltration by
+C the FMU control value, if control is required.
+          if (FMUDOCTL(ICOMP,3)) then
+            rtmp=(CVIF*FMUCTLSUP(ICOMP,3,1)*FMUCTL(ICOMP,3))+
+     &           (CVIF*(1-FMUCTLSUP(ICOMP,3,1)))
+            CVIF=rtmp
+          endif
+C </FMI>          
+
 C========================================================================          
         elseif ( bAFN ) then 
 C User has defined an air-flow network. Use conductance reported from there.        

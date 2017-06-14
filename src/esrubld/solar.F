@@ -181,6 +181,10 @@ C and future time rows. Units: W/m^2
       include "CFC_common.h"
       include "net_flow.h"
       include "tdf2.h"
+C <FMI>
+      include "FMI.h"
+C </FMI>
+
 C ADD NEW PARAMETER STATEMENT
 C MSTMC is number of different bidirectional datasets, limited
 C to 20 for the present.
@@ -911,6 +915,27 @@ C POO/POO2 contains shading factor on corresponding opaque surface.
                     NBPONT(ICOMP,I)=K
                   ENDIF
                 ENDIF
+
+C <FMI>
+C If blinds control is active, set IBOFOT to control value from FMU if
+C this is the associated zone. It is assumed that control is set up such
+C that IBOFOT=1 (use alternative properties) corresponds to active
+C blinds, and hence the FMU control value is synonymous with IBOFOT.
+C TODO - maybe try and handle non-binary blind states?
+                if (FMUDOCTL(ICOMP,6)) then
+                  call eclose(FMUCTL(ICOMP,6),0.0,0.001,bCloseToZero)
+                  if (bCloseToZero) then
+                    IBOFOT(ICOMP,I)=0
+                    ECRAT(ICOMP,I)=1.
+                    NBPONT(ICOMP,I)=0
+                  else
+                    IBOFOT(ICOMP,I)=1
+                    ECRAT(ICOMP,I)=0.
+                    NBPONT(ICOMP,I)=K
+                  endif
+                endif
+C </FMI>
+
               ENDIF
    5        CONTINUE
           endif

@@ -62,6 +62,7 @@ C ICLIM,LCLIM (for climate file)
 #include "qrun.h"
 #include "plant.h"
 #include "power.h"
+#include "FMI.h"
 
       INTEGER, PARAMETER :: MSTMC=20
       
@@ -1545,6 +1546,14 @@ C Plant network information - plant file and model name (if plant only).
      &      modeltitle(1:lnblnk(modeltitle))
         endif
       endif
+
+C <FMI>
+C If FMI is active, write the tag and spec file name.
+      if (is_FMU.and.FMISFL.ne.'UNKNOWN') then
+        write(IFCFG,'(a,a,a)',IOSTAT=IOS,ERR=2)
+     &    '*FMI ',FMISFL(1:lnblnk(FMISFL)),'  # FMI specification file'
+      endif
+C </FMI>
 
 C This is all there is to write so close the files.
  9028 CALL ERPFREE(IFCFG,IOS) ! free the cfg file unit

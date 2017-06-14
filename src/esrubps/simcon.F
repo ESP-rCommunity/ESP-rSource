@@ -51,6 +51,7 @@ C      USE H3KSTORE_FC_DATA,ONLY: iCurrent_FCT_OUTPUT_FILE
       include "SOFC.h"
       include "UserSimulationToggles.h"
       include "plant.h"
+      include "FMI.h"
 
       common/filep/ifil
       INTEGER :: ifil
@@ -135,7 +136,23 @@ C Set simulation control.
 C If simulator is in silent running mode, set flag to terminate run      
          if ( autook ) exitok = .true.
          return
-      endif 
+      endif
+
+C <FMI>
+C Read FMI spec file to set FMI commons.
+      if (is_FMU) then
+        IUNIT=IFIL+1
+        CALL ERPFREE(IUNIT,IER)
+        CALL EFOPSEQ(IUNIT,FMISFL,1,IER)
+        call FMI_RDSCFL(IUNIT,IER)
+        CALL ERPFREE(IUNIT,IER)
+        if (IER.eq.1) then
+C If simulator is in silent running mode, set flag to terminate run
+           if ( autook ) exitok = .true.
+           return
+        endif  
+      endif
+C </FMI>          
 
 C Calculate the BASESIMP heat loss factors.
       CALL BSFCCTL

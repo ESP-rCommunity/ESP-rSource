@@ -73,6 +73,7 @@ C The main building control function executive.
       SUBROUTINE MZBCTL(ier,icomp)
 #include "building.h"
 #include "control.h"
+#include "FMI.h"
 
       COMMON/OUTIN/IUOUT,IUIN
 
@@ -82,7 +83,7 @@ C The main building control function executive.
       character dllsubr*12,dllmesg*124,outs*124
       logical dll
 
-      logical bNested 
+      logical bNested,CLOSERH
 
 C Check if running in dll mode.
       call isadll(dll)
@@ -102,9 +103,17 @@ C (default to free-float)
 C For the special case of current zone, mixed node control only.
       IF(IBSN(ICF,1).EQ.-2.AND.IBSN(ICF,2).EQ.IICOMP
      &.AND.IBCLAW(ICF,IDTYP,IPER).NE.24) IFUNC=0
-     
-      CtlLaw: select case (IFUNC) 
-      case (0) 
+
+C <FMI>
+C Default to free float if control is not active according to FMU.
+      if (FMUDOCTL(iicomp,1)) then
+        CALL ECLOSE(FMUCTL(iicomp,1),0.0,0.001,CLOSERH)
+        if (CLOSERH) IFUNC=2
+      endif
+C </FMI>
+
+      CtlLaw: select case (IFUNC)
+      case (0)
         call BCL00
 
 C CL1 is basic control with potential for a different heating and
@@ -1251,8 +1260,11 @@ C as an option.
       include "blc25_open_windows.h"
       include "net_flow.h"
       include "tdf2.h"
-      logical bInStartup  ! <- function true if simulation is in startup
+C <FMI>
+      include "FMI.h"
+C </FMI>
 
+      logical bInStartup  ! <- function true if simulation is in startup
       integer IER ! Error flag
       
       integer IBehaviour 
@@ -1473,6 +1485,15 @@ C Set minimum cooling capacity.
       
       HSP=BMISCD(ICF,IDTYP,IPER,6)
       CSP=BMISCD(ICF,IDTYP,IPER,7)
+
+C <FMI>
+C If thermostat control is active, set heating and cooling setpoints to
+C the control value.
+      if (FMUDOCTL(iicomp,5)) then
+        HSP=FMUCTL(iicomp,5)
+        CSP=FMUCTL(iicomp,5)
+      endif
+C </FMI>
 
 C Save heating/cooling setpoints.
       fHeatSetpoint(iicomp) = HSP

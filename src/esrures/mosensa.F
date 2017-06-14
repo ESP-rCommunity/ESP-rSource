@@ -566,7 +566,7 @@ C first day of output.
       TFINSH=FLOAT(((IODF)*24+IOH2)-(IODS)*24)
 
 C Debug.
-      write(6,*) TSTART,TFINSH
+C      write(6,*) TSTART,TFINSH
 
 C Copy current sub-set of sets into IGETNO array.
       NGET=0

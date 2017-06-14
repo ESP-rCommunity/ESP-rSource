@@ -52,6 +52,7 @@ C ICLIM,LCLIM (for climate file)
 #include "schedule.h"
 #include "plant.h"
 #include "power.h"
+#include "FMI.h"
       INTEGER, PARAMETER :: MSTMC=20
       
       integer lnblnk  ! function definition
@@ -976,6 +977,14 @@ C Plant network information.
         WRITE(IFCFG,5007,IOSTAT=IOS,ERR=2)LPNF(:lnblnk(LPNF))
  5007   FORMAT(A,'       # plant network description')
       endif
+
+C <FMI>
+C If FMI is active, write the tag and spec file name.
+      if (is_FMU.and.FMISFL.ne.'UNKNOWN') then
+        write(IFCFG,'(a,a,a)',IOSTAT=IOS,ERR=2)
+     &    '*FMI ',FMISFL(1:lnblnk(FMISFL)),'  # FMI specification file'
+      endif
+C </FMI>
 
  9028 CALL  ERPFREE(IFCFG,IOS)
       RETURN

@@ -84,11 +84,20 @@ MODULES = aim2.mod aim2_calcdata.mod aim2_h2k_dummy.mod aim2_inputdata.mod aim2_
 	parse_command_line.mod start_up.mod win32interface.mod dll_functions.mod tcc.mod cosimdatatypes.mod \
 	h3kmodule.mod
 
-theEXE:  $(PREBPS_OBJECTS) $(MODULE_OBJECTS) $(BPS_OBJECTS)
-	$(MFC) $(LD_FLAGS) -o $(PROG) $(FFLAGS) $(PREBPS_OBJECTS) $(MODULE_OBJECTS) $(BPS_OBJECTS) $(ULIBS) $(F_to_C_flags)
+ifeq ($(FMIarg),enableFMI)
+	FMI_OBJECTS = FMIsim.o FMIcom.o FMIc.o
+else
+	FMI_OBJECTS = FMIsim_dummy.o FMIcom.o
+endif
+ALL_FMI_OBJECTS = FMIsim.o FMIsim_dummy.o FMIcom.o FMIc.o
 
-theDLL:  $(PREBPSDLL_OBJECTS) $(MODULE_OBJECTS) $(BPS_OBJECTS)
-	$(MFC) $(LD_FLAGS) -o $(DLL) $(FFLAGS) $(PREBPSDLL_OBJECTS) $(MODULE_OBJECTS) $(BPS_OBJECTS) $(ULIBS) $(F_to_C_flags)
+theEXE:  $(PREBPS_OBJECTS) $(MODULE_OBJECTS) $(FMI_OBJECTS) $(BPS_OBJECTS) 
+	$(MFC) $(LD_FLAGS) -o $(PROG) $(FFLAGS) $(PREBPS_OBJECTS) $(MODULE_OBJECTS) $(FMI_OBJECTS) $(BPS_OBJECTS)  $(ULIBS) $(F_to_C_flags)
+
+theDLL:  $(PREBPSDLL_OBJECTS) $(MODULE_OBJECTS) $(FMI_OBJECTS) $(BPS_OBJECTS)
+	$(MFC) $(LD_FLAGS) -o $(DLL) $(FFLAGS) $(PREBPSDLL_OBJECTS) $(MODULE_OBJECTS) $(FMI_OBJECTS) $(BPS_OBJECTS)  $(ULIBS) $(F_to_C_flags)
+
+
 
 
 adaptconf1.F:
@@ -742,6 +751,19 @@ harmonizer_dummy.F:
 ESPrTrnsysData.F:
 	rm -f ESPrTrnsysData.F
 	ln -s $(COSIMdir)/ESPrTrnsysData.F .
+FMIsim.F:
+	rm -f FMIsim.F
+	ln -s $(BLDdir)/FMIsim.F .
+FMIsim_dummy.F:
+	rm -f FMIsim_dummy.F
+	ln -s $(BLDdir)/FMIsim_dummy.F .
+FMIc.c:
+	rm -f FMIc.c
+	ln -s $(BLDdir)/FMIc.c .
+FMIcom.F:
+	rm -f FMIcom.F
+	ln -s $(COMdir)/FMIcom.F .
+
 
 strip:
 	strip $(PROG)
@@ -752,7 +774,7 @@ install:
 	@if [ -f $(DLL) ]; then install $(SWTCH) $(DLL) $(ESPBinDir)/$(DLL); fi
 
 clean:
-	rm -f core $(PROG) $(PROG).exe $(DLL) $(PROG).dll $(PREBPS_OBJECTS) $(PREBPSDLL_OBJECTS) $(MODULE_OBJECTS) $(BPS_OBJECTS) $(MODULES) \
+	rm -f core $(PROG) $(PROG).exe $(DLL) $(PROG).dll $(PREBPS_OBJECTS) $(PREBPSDLL_OBJECTS) $(MODULE_OBJECTS) $(BPS_OBJECTS) $(ALL_FMI_OBJECTS) $(MODULES) \
 	adaptconf1.F adaptconf2.F adjb.F adjp.F aim2_module.F aim2_timestep.F \
 	ascii_mat.F ashp.F ashp_cooling.F baseboard.F basesimp.F basesimp_inputs.F bcfunc.F bctlf.F \
 	blibsv.F bmatsu.F bndaryl.F bndarybl.F bndaryt.F bscoeff.F bscoeff_extended.F \
@@ -788,6 +810,7 @@ clean:
 	ADS_storage_tanks.F ADS_storage_unit.F ADS_controller.F solar_collectors.F \
 	ground_temp_mains.F readTrnsys.F trnsys_wrapper.F trnsys_lib.F \
 	tank_intank_hx.F mains_temp_draw_profiles.F stratified_tank.F \
+	FMIsim.F FMIc.c FMIsim_dummy.F FMIcom.F \
 	CFC_opt_props.F CFC_thermal_and_aux.F editCFC.F NCHE.F stratified_tank_1HX.F stratified_tank_2HX.F \
 	AirFlowModelRoutines.F Res_elec_Ctl.F h3kmodule.f90 qrun.F azalt.F
 

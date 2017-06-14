@@ -31,7 +31,8 @@ OBJECTS = e2r.o arrow.o ascii_mat.o c2fdum.o common3dv.o cread3dv.o \
 	  edatabase.o edcondb.o egeometry.o egtgeom.o emfnetw.o enetmisc.o \
 	  eroper.o esru_misc.o esystem.o filelist.o grid.o inside.o item.o mfcdat.o \
 	  msurf.o nwkrewr.o plelevvc.o pltcfg.o radcfg.o radcmds.o \
-	  radctl.o readTrnsys.o rifform.o rwipv.o rwsbem.o sort.o tdfile.o
+	  radctl.o readTrnsys.o rifform.o rwipv.o rwsbem.o sort.o tdfile.o \
+	  FMIcom.o
 
 MODULES = aim2.mod aim2_calcdata.mod aim2_h2k_dummy.mod aim2_inputdata.mod start_up.mod \
 	parse_command_line.mod h3kmodule.mod
@@ -153,6 +154,9 @@ tdfile.F:
 h3kmodule.f90:
 	rm -f h3kmodule.f90
 	ln -s $(CETCdir)/h3kmodule.f90 .
+FMIcom.F:
+	rm -f FMIcom.F
+	ln -s $(COMdir)/FMIcom.F .
 
 strip:
 	strip $(PROG)
@@ -167,7 +171,8 @@ clean:
 	dossupport.F ecasctl.F econstr.F edcondb.F edatabase.F egeometry.F egtgeom.F \
 	emfnetw.F enetmisc.F eroper.F esru_misc.F esystem.F filelist.F inside.F item.F mfcdat.F \
 	nwkrewr.F plelevvc.F pltcfg.F readTrnsys.F rwipv.F rwsbem.F  sort.F startup.F tdfile.F \
-        h3kmodule.f90
+        h3kmodule.f90 \
+	FMIcom.F
 
 distclean: clean
 

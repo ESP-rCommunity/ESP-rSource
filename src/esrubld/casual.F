@@ -22,6 +22,7 @@ C This file contains the following routines:
 
 C   MZCASI: Returns total convective and radiant casual gains.
 C   INTLUM: Timestep determination of controlled casual gains.
+C   CALCILUM: Calculate illuminance at daylight sensors.
 C   DWINVT: Returns the visible transmission of a TMC window.
 C   HUNTA:  See if current hour has scheduled casual gains to control.
 C   VRTILM: Calculate the illum (Ev) on a unobstructed vert surface.
@@ -59,6 +60,7 @@ C QLAT   - latent load for present (1) and future (2) time step.
 #include "dhw_common.h"
 #include "OffsiteUtilitiesPublic.h"
 #include "h3k_report_data.h"
+#include "FMI.h"
 
       common/filep/ifil
       common/tc/itc,icnt
@@ -1045,6 +1047,25 @@ C<< Calling the dynamic model two node model subroutine from a separate file dyn
 C Set future casual gain values if there is periods defined.
           if(IPER.gt.0)then
             if(shcon.lt.0.) then
+
+
+C <FMI>
+C If occupancy, lighting or equipment control is active, multiply CGCTL
+C by value from FMU.
+              if (IGN.eq.1.and.FMUDOCTL(ICOMP,7)) then
+                rtmp=FMUCTL(ICOMP,7)
+              elseif (IGN.eq.2.and.FMUDOCTL(ICOMP,2)) then
+                rtmp=FMUCTL(ICOMP,2)
+              elseif (IGN.eq.3.and.FMUDOCTL(ICOMP,4)) then
+                rtmp=FMUCTL(ICOMP,4)
+              else
+                rtmp=1.0
+              endif
+              CGCTL(ICOMP,2,IGN)=CGCTL(ICOMP,2,IGN)*rtmp
+c              write(287,*)'CGCTL(ICOMP,2,IGN),ICOMP,IGN',
+c     &          CGCTL(ICOMP,2,IGN),ICOMP,IGN
+C </FMI>
+
               QCASC(2)=QCASC(2)+CGSENC(ICOMP,IDAY,IGN,IPER)*
      &                 CGCTL(ICOMP,2,IGN)
               QCASR(2)=QCASR(2)+CGSENR(ICOMP,IDAY,IGN,IPER)*
@@ -1373,9 +1394,7 @@ C geometry.h provides commons G0/G1/G2/precz.
       COMMON/TC/ITC,ICNT
       COMMON/TRACE/ITCF,ITRACE(MTRACE),IZNTRC(MCOM),ITU
       COMMON/OUTIN/IUOUT,IUIN
-      COMMON/SHOUT/ICOUT
       COMMON/SIMTIM/IHRP,IHRF,IDYP,IDYF,IDWP,IDWF,NSINC,ITS
-      COMMON/PERS/ISD1,ISM1,ISD2,ISM2,ISDS,ISDF,NTSTEP
       COMMON/SUNPOS/SAZI,SALT,ISUNUP
 C      COMMON/CLIMI/QFP,QFF,TP,TF,QDP,QDF,VP,VF,DP,DF,HP,HF
 
@@ -1388,17 +1407,11 @@ C Zone casual gain control data.
       COMMON/CGCIN3/ICGCS(MCOM,MDTY),ICGCF(MCOM,MDTY),
      & ICGCFL(MCOM,MLCOM),SPELEC(MCOM,MLCOM),SLOPEM(MCOM,MLCOM)
 
-C Daylight coefficient common block data definition:
-      COMMON/DCOEF/NDCFP,NDCFS(MDCFP),DCOEF(MDCFP,MDCFS,MDCFV),
-     & IDCFID(MCOM,MLCOM,MDF)
-
 C Daylight factor data (see dayfac.F).
       COMMON/DAYF/NDF(MCOM,MLCOM),DFDAT(MCOM,MLCOM,MGT,MDF),
      & AZIJL(MCOM,MGT),SUMDF(MCOM,MLCOM,MDF),NUDWIN(MCOM)
 
       COMMON/ADJC2/DIRT(MCOM,MS),DIFT(MCOM,MS),AIRT(MCOM,MS)
-      COMMON/PREC3/PAZI(MCOM,MS),PELV(MCOM,MS)
-      COMMON/D7/T1,T2,P1,P2
 C TMC data
       COMMON/PRECTC/ITMCFL(MCOM,MS),TMCT(MCOM,MTMC,5),
      &       TMCA(MCOM,MTMC,ME,5),TMCREF(MCOM,MTMC),TVTR(MCOM,MTMC)
@@ -1415,32 +1428,18 @@ C Hunt's information.
 
 C Switch off delay time memory common block
       COMMON/SOFDT/IDTM(MCOM,MLCOM)
-      common/sus/issny
 
-C Illuminance database.
-      common/ILDB/NDBENT,DBILLA(200,5),DBILLS(200,MLCOM,MDF)
-
-      DIMENSION selum(MLCOM,MDF),alt(8),SENTMP(MLCOM,MDF)
-      DIMENSION QDFTMP(MLCOM,MDF),Yb(MLCOM,MDF)
-      DIMENSION Aa(MLCOM,MDF),Ab(MLCOM,MDF),Ac(MLCOM,MDF),Ya(MLCOM,MDF)
+      DIMENSION selum(MLCOM,MDF),alt(8)
       DIMENSION zelum(MLCOM)
       DIMENSION ZFRAC(MLCOM)
-      DIMENSION XPL(MV),YPL(MV),ZPL(MV)
-      CHARACTER*25 CSTR
-      character outs*124,doit*124,outstr*124
+      character outs*124
 
-      character*72 LTMPFL,LTMPFLA,OUTCMD
-      character e2redit*8
-
-      logical nog,close,closea,closeb,closec,closed,closee,closef
-      logical closeg,closeh,closei,instart,neglum,XST
-      logical bInStartup
+      logical close
 
 C Definition of sun altitude for daylight coefficient method:
       data alt/6.,18.,30.,42.,54.,66.,78.,90./
 
       iunit=ifil+1
-      e2redit='NONE'
 
 C Trace output ?
       IFT=1
@@ -1459,15 +1458,6 @@ C Trace output ?
      &        '|trnsm|contrib|contrib|lux   |point|ilum(Ev)'
         call edisp(itu,outs)
       ENDIF
-
-C If esp pre-processor or user defined df then read in geometry data.
-      nog=.false.
-      do  1 iu=1,NLITZ(icomp)
-        IF((IDFST(ICOMP,iu).EQ.1).or.(IDFST(ICOMP,iu).eq.2))nog=.true.
-  1   continue
-      if(nog)then
-        call georead(iunit,lgeom(icomp),icomp,0,itu,ier)
-      endif
 
 C Assume casual gains untouched and establish solar data for correct
 C time-row.  For conversion from radians to degrees.
@@ -1491,6 +1481,642 @@ C Loop through all lighting zones
       FRAC=0.
       DO 9 N=1,NLITZ(ICOMP)
         ZFRAC(N)=0.
+
+      CALL CALCILUM(icomp,N,selum,zelum,alt,skyeff,suneff,esun,esky,IFT)
+
+C Find lighting output fraction (FRAC) under current control.
+C ICGCFL=-1: casual gain ON
+C       = 0: casual gain OFF
+C       = 1: ON/OFF control.
+C       = 2: step down control.
+C       = 3: proportional control.
+C       = 4: Hunt probability function.
+
+C Special lighting control parameters, which are currently set
+C to default values (later they will be user specified) :
+C SOFFLL  Switching-off-light reference level fraction of lux set point
+C         (usual range 1.2 - 2.5 i.e. 120% - 250%)
+C SMEOUT  Constant control gear + min. lamp's dimming or
+C         steping wattage fraction of total lights casual load
+C SMLOUT  Minimum dimming light output fraction (usually 0.1 i.e. 10%)
+C SOFFRL  Switching-off-light reference level in Lux
+C IOFFDT  Switch-of-delay time (usual range 5 - 30 minutes), here number
+C         of the simulation time steps
+C DFRAC   Fraction of luminous output of the artificial lighting
+C ZFRAC   Fraction of electric power consumption of the artificial lighting
+
+C Definition of switching-off-light reference level in Lux:
+      SOFFRL=SOFFLL(ICOMP,N)*SETPT(ICOMP,N)
+
+C Generally one may choose to define the setpoints at the same
+C lux to follow Lynes' method or different setpoints can be used
+C for different tasks.  The grid option (1) uses individually
+C placed sensors so that one could average over the multiple
+C sensors or deal with individual sensor/systems.
+      IF(ICGCFL(ICOMP,N) .eq. -1)THEN
+        ZFRAC(N)=SYSPER(ICOMP,N)
+        IF(IFT.EQ.1)then
+          WRITE(outs,801)N,ZFRAC(N)
+  801     FORMAT(' Light zone ',I1,' always on!    ZFRAC=',F5.2)
+          call edisp(itu,outs)
+        endif
+        
+C Update corresponding SHOCC lighting (if existing) ...
+        call updatelighting(icomp,n,zelum(n),btimep,btimef)
+
+      ELSEIF(ICGCFL(ICOMP,N) .eq. 0)THEN
+        ZFRAC(N)=0.
+        IF(IFT.EQ.1)then
+          WRITE(outs,802)N,ZFRAC(N)
+  802     FORMAT(' Light zone ',I1,' always off!   ZFRAC=',F5.2)
+          call edisp(itu,outs)
+        endif
+        
+C Update corresponding SHOCC lighting (if existing).
+        call updatelighting(icomp,n,zelum(n),btimep,btimef)
+
+C Case of On/Off with chosen lighting systems and sensors.
+      ELSEIF(ICGCFL(ICOMP,N).EQ.1)THEN
+          ZFRAC(N)=0.0
+          zell=zelum(N)+SETPT(ICOMP,N)
+        IF(zell.GE.SOFFRL.AND.IDTM(ICOMP,N).GE.IOFFDT(ICOMP,N))THEN
+          ZFRAC(N)=0.0
+          IDTM(ICOMP,N)=IDTM(ICOMP,N)+1
+        ELSEIF(zell.GE.SOFFRL.AND.
+     &         IDTM(ICOMP,N).LT.IOFFDT(ICOMP,N))THEN
+          ZFRAC(N)=SYSPER(ICOMP,N)
+          IDTM(ICOMP,N)=IDTM(ICOMP,N)+1
+        ELSE
+          ZFRAC(N)=SYSPER(ICOMP,N)
+          IDTM(ICOMP,N)=0
+        ENDIF
+        IF(IFT.EQ.1)then
+          IF(IDFST(ICOMP,N).EQ.1)WRITE(outs,803)N,ZFRAC(N)
+          IF(IDFST(ICOMP,N).EQ.2)WRITE(outs,804)N,ZFRAC(N)
+          IF(IDFST(ICOMP,N).EQ.3)WRITE(outs,805)N,ZFRAC(N)
+          IF(IDFST(ICOMP,N).EQ.4)WRITE(outs,806)N,ZFRAC(N)
+          IF(IDFST(ICOMP,N).EQ.5)WRITE(outs,807)N,ZFRAC(N)
+  803     FORMAT(' Light zone ',I1,' ON/OFF ESP-r calc df, ZFRAC=',F5.2)
+  804     FORMAT(' Light zone ',I1,' ON/OFF User def df, ZFRAC=',F5.2)
+  805     FORMAT(' Light zone ',I1,' ON/OFF Ext sensor, ZFRAC=',F5.2)
+  806     FORMAT(' Light zone ',I1,' ON/OFF Coupling, ZFRAC=',F5.2)
+  807     FORMAT(' Light zone ',I1,' ON/OFF Daylight coef, ZFRAC=',F5.2)
+          call edisp(itu,outs)
+        endif
+
+C If in coupling mode then write to the text feedback the controlled fraction
+C so the next timestep the user can edit the IES xforms file to match. 
+        IF(IDFST(ICOMP,N).EQ.4)then
+          write(outs,'(a,F9.2)') 
+     &      'COUPLING ADJUSTMENT next timestep after:',btimef
+          call edisp(iuout,outs)
+          call edisp(6,outs)
+          WRITE(outs,'(a,i3,a,i1,a,F5.2)') 'In zone ',icomp,
+     &      ' & light zone ',N,'edit xform for fixture faction to ',
+     &      ZFRAC(N)
+          call edisp(iuout,outs)
+          call edisp(6,outs)
+        ENDIF
+
+C Update corresponding SHOCC lighting (if existing).
+        call updatelighting(icomp,n,zelum(n),btimep,btimef)
+
+C Case of Step Up/Down with chosen sensors/lighting systems:
+      ELSEIF(ICGCFL(ICOMP,N) .EQ. 2)THEN
+        ZFRAC(N)=0.
+        zell=zelum(N)+0.5*SETPT(ICOMP,N)
+        IF(zell.GE.SOFFRL.AND.IDTM(ICOMP,N).GE.IOFFDT(ICOMP,N)) THEN
+          ZFRAC(N)=0.0
+          IDTM(ICOMP,N)=IDTM(ICOMP,N)+1
+        ELSEIF(zell.GE.SOFFRL.AND.IDTM(ICOMP,N).LT.IOFFDT(ICOMP,N)) THEN
+          ZFRAC(N)=SMEOUT(ICOMP,N)*SYSPER(ICOMP,N)
+          IDTM(ICOMP,N)=IDTM(ICOMP,N)+1
+        ELSEIF(zell.LT.SOFFRL.AND.zell.GE.SETPT(ICOMP,N))THEN
+          ZFRAC(N)=SMEOUT(ICOMP,N)*SYSPER(ICOMP,N)
+          IDTM(ICOMP,N)=0
+        ELSEIF(zell.LT.SETPT(ICOMP,N))THEN
+          ZFRAC(N)=SYSPER(ICOMP,N)
+          IDTM(ICOMP,N)=0
+        ENDIF
+        IF(IFT.EQ.1)then
+          IF(IDFST(ICOMP,N).EQ.1)WRITE(outs,808)N,ZFRAC(N)
+          IF(IDFST(ICOMP,N).EQ.2)WRITE(outs,809)N,ZFRAC(N)
+          IF(IDFST(ICOMP,N).EQ.3)WRITE(outs,810)N,ZFRAC(N)
+          IF(IDFST(ICOMP,N).EQ.4)WRITE(outs,811)N,ZFRAC(N)
+          IF(IDFST(ICOMP,N).EQ.5)WRITE(outs,812)N,ZFRAC(N)        
+  808   FORMAT(' Light zone ',I1,' STEP u/d ESP-r calc df, ZFRAC=',F5.2)
+  809   FORMAT(' Light zone ',I1,' STEP u/d User def df, ZFRAC=',F5.2)
+  810   FORMAT(' Light zone ',I1,' STEP u/d Ext sensor, ZFRAC=',F5.2)
+  811   FORMAT(' Light zone ',I1,' STEP u/d Coupling, ZFRAC=',F5.2)
+  812   FORMAT(' Light zone ',I1,' STEP u/d Daylight coef, ZFRAC=',F5.2)
+          call edisp(itu,outs)
+        endif
+
+C Update corresponding SHOCC lighting (if existing).
+        call updatelighting(icomp,n,zelum(n),btimep,btimef)
+
+C Case of proproportional dimming control with chosen sensors/lighting
+C systems:
+      ELSEIF(ICGCFL(ICOMP,N).EQ.3)THEN
+          ZFRAC(N)=0.0
+          DFRAC = 0.0
+          zell=zelum(N)+SMLOUT(ICOMP,N)*SETPT(ICOMP,N)
+        IF(zell.GE.SOFFRL.AND.IDTM(ICOMP,N).GE.IOFFDT(ICOMP,N))THEN
+          ZFRAC(N)=0.0
+          DFRAC = 0.0
+          IDTM(ICOMP,N)=IDTM(ICOMP,N)+1
+        ELSEIF(zell.GE.SOFFRL.AND.IDTM(ICOMP,N).LT.IOFFDT(ICOMP,N))THEN
+          ZFRAC(N)=SMEOUT(ICOMP,N)*SYSPER(ICOMP,N)
+          DFRAC = SMLOUT(ICOMP,N)
+          IDTM(ICOMP,N)=IDTM(ICOMP,N)+1
+        ELSEIF(zell.LT.SOFFRL.AND.zell.GE.SETPT(ICOMP,N))THEN
+          ZFRAC(N)=SMEOUT(ICOMP,N)*SYSPER(ICOMP,N)
+          DFRAC = SMLOUT(ICOMP,N)
+          IDTM(ICOMP,N)=0
+        ELSEIF(zell.LT.SETPT(ICOMP,N).AND.zell.GE.
+     &        (1.-SMLOUT(ICOMP,N))*SETPT(ICOMP,N))THEN
+          ZFRAC(N)=SMEOUT(ICOMP,N)*SYSPER(ICOMP,N)
+          DFRAC = SMLOUT(ICOMP,N)
+          IDTM(ICOMP,N)=0
+        ELSE
+         XXX=((1.-SMEOUT(ICOMP,N))*SMLOUT(ICOMP,N))/(1.-SMLOUT(ICOMP,N))
+         YYY=SMEOUT(ICOMP,N)-XXX
+         ZFRAC(N)=(((1.-SMEOUT(ICOMP,N))/(1.-SMLOUT(ICOMP,N)))*
+     &   ((SETPT(ICOMP,N)-zelum(N))/SETPT(ICOMP,N))+YYY)*SYSPER(ICOMP,N)
+         DFRAC = (SETPT(ICOMP,N)-zelum(N))/SETPT(ICOMP,N)
+         IDTM(ICOMP,N)=0
+        ENDIF
+        IF(IFT.EQ.1)then
+          IF(IDFST(ICOMP,N).EQ.1)WRITE(outs,813)N,ZFRAC(N),DFRAC
+          IF(IDFST(ICOMP,N).EQ.2)WRITE(outs,814)N,ZFRAC(N),DFRAC
+          IF(IDFST(ICOMP,N).EQ.3)WRITE(outs,815)N,ZFRAC(N),DFRAC
+          IF(IDFST(ICOMP,N).EQ.4)WRITE(outs,816)N,ZFRAC(N),DFRAC
+          IF(IDFST(ICOMP,N).EQ.5)WRITE(outs,817)N,ZFRAC(N),DFRAC  
+  813     FORMAT(' Light zone ',I1,' Prop ESP-r calc df, ZFRAC=',F5.2,
+     &    ' DFRAC=',F5.2)
+  814     FORMAT(' Light zone ',I1,' Prop User def df, ZFRAC=',F5.2,
+     &    ' DFRAC=',F5.2)
+  815     FORMAT(' Light zone ',I1,' Prop Ext sensor, ZFRAC=',F5.2,
+     &    ' DFRAC=',F5.2)
+  816     FORMAT(' Light zone ',I1,' Prop Coupling, ZFRAC=',F5.2,
+     &    ' DFRAC=',F5.2)
+  817     FORMAT(' Light zone ',I1,' Prop Daylight coef, ZFRAC=',F5.2,
+     &    ' DFRAC=',F5.2)
+          call edisp(itu,outs)
+        ENDIF
+
+C Update corresponding SHOCC lighting (if existing).
+        call updatelighting(icomp,n,zelum(n),btimep,btimef)
+
+C Case of explicit proproportional dimming control with integral
+C reset control algorithm:
+C
+C New sensor and control algorithm settings or definition:
+C SPELEC  sensor signal (lux) under artificial lighting
+C         - night time calibration;
+C zelum   sensor signal (lux) under daylight (time dependend).
+C For detailed explanation of control algorithms see: Rubinstein, F.,
+C Ward, G., Verderberg, R., Improving the Performance of Photo-
+C Electrically Controled Lighting Systems. Journal of the IES Winter 1989.
+
+      ELSEIF(ICGCFL(ICOMP,N).EQ.31)THEN
+C Redefine SOFFRL for explicit control:
+          SOFFRL=SOFFLL(ICOMP,N)*SPELEC(ICOMP,N)
+
+          ZZZ1 = (1.-SMLOUT(ICOMP,N))*SOFFRL
+          YYY1 = (1.-SMLOUT(ICOMP,N))*SPELEC(ICOMP,N)
+
+          ZFRAC(N)=0.0
+          DFRAC = 0.0
+          zell=zelum(N)
+        IF(zell.GE.ZZZ1.AND.IDTM(ICOMP,N).GE.IOFFDT(ICOMP,N))THEN
+          ZFRAC(N)=0.0
+          DFRAC = 0.0
+          IDTM(ICOMP,N)=IDTM(ICOMP,N)+1
+        ELSEIF(zell.GE.ZZZ1.AND.IDTM(ICOMP,N).LT.IOFFDT(ICOMP,N))THEN
+          ZFRAC(N)=SMEOUT(ICOMP,N)*SYSPER(ICOMP,N)
+          DFRAC = SMLOUT(ICOMP,N)
+          IDTM(ICOMP,N)=IDTM(ICOMP,N)+1
+        ELSEIF(zell.LT.ZZZ1.AND.zell.GT.YYY1)THEN
+          ZFRAC(N)=SMEOUT(ICOMP,N)*SYSPER(ICOMP,N)
+          DFRAC = SMLOUT(ICOMP,N)
+          IDTM(ICOMP,N)=0
+        ELSE
+          DFRAC=(1.- zelum(N)/SPELEC(ICOMP,N))
+          if(DFRAC.lt.SMLOUT(ICOMP,N))DFRAC = SMLOUT(ICOMP,N)
+         XXX=((1.-SMEOUT(ICOMP,N))*SMLOUT(ICOMP,N))/(1.-SMLOUT(ICOMP,N))
+         YYY=SMEOUT(ICOMP,N)-XXX
+         ZFRAC(N)=(((1.-SMEOUT(ICOMP,N))/(1.-SMLOUT(ICOMP,N)))*DFRAC
+     &   + YYY)*SYSPER(ICOMP,N)
+          IDTM(ICOMP,N)=0
+        ENDIF
+        IF(IFT.EQ.1)then
+          IF(IDFST(ICOMP,N).EQ.1)WRITE(outs,913)N,ZFRAC(N),DFRAC
+          IF(IDFST(ICOMP,N).EQ.2)WRITE(outs,914)N,ZFRAC(N),DFRAC
+          IF(IDFST(ICOMP,N).EQ.3)WRITE(outs,915)N,ZFRAC(N),DFRAC
+          IF(IDFST(ICOMP,N).EQ.4)WRITE(outs,916)N,ZFRAC(N),DFRAC
+          IF(IDFST(ICOMP,N).EQ.5)WRITE(outs,917)N,ZFRAC(N),DFRAC  
+  913     FORMAT(' Light zone ',I1,' Prop ESP-r calc df, ZFRAC=',F5.2,
+     &    ' DFRAC=',F5.2)
+  914     FORMAT(' Light zone ',I1,' Prop User def df, ZFRAC=',F5.2,
+     &    ' DFRAC=',F5.2)
+  915     FORMAT(' Light zone ',I1,' Prop Ext sensor, ZFRAC=',F5.2,
+     &    ' DFRAC=',F5.2)
+  916     FORMAT(' Light zone ',I1,' Prop Coupling, ZFRAC=',F5.2,
+     &    ' DFRAC=',F5.2)
+  917     FORMAT(' Light zone ',I1,' Prop Daylight coef, ZFRAC=',F5.2,
+     &    ' DFRAC=',F5.2)
+          call edisp(itu,outs)
+        ENDIF
+
+C Update corresponding SHOCC lighting (if existing).
+        call updatelighting(icomp,n,zelum(n),btimep,btimef)
+
+C Case of explicit proproportional dimming control with closed-loop
+C algorithm:
+C
+C New sensor and control algorithm settings or definition:
+C SPELEC  sensor signal (lux) under artificial lighting
+C         - night time calibration;
+C zelum   sensor signal (lux) under daylight (time dependend);
+C SLOPEM  linear control response slope (-).
+
+      ELSEIF(ICGCFL(ICOMP,N).EQ.32)THEN
+C Redefine SOFFRL for explicit control:
+          SOFFRL=SOFFLL(ICOMP,N)*SPELEC(ICOMP,N)
+
+          ZZ1 = SMLOUT(ICOMP,N)*(1. - SLOPEM(ICOMP,N)*SOFFRL)
+          ZZ2 = (ZZ1 - 1.)/SLOPEM(ICOMP,N) + SOFFRL
+
+          YY1 = SMLOUT(ICOMP,N)*(1. - SLOPEM(ICOMP,N)*SPELEC(ICOMP,N))
+          YY2 = (ZZ1 - 1.)/SLOPEM(ICOMP,N) + SPELEC(ICOMP,N)
+
+          ZFRAC(N)=0.0
+          DFRAC = 0.0
+          zell=zelum(N)
+        IF(zell.GT.ZZ2.AND.IDTM(ICOMP,N).GE.IOFFDT(ICOMP,N))THEN
+          ZFRAC(N)=0.0
+          DFRAC = 0.0
+          IDTM(ICOMP,N)=IDTM(ICOMP,N)+1
+        ELSEIF(zell.GT.ZZ2.AND.IDTM(ICOMP,N).LT.IOFFDT(ICOMP,N))THEN
+          ZFRAC(N)=SMEOUT(ICOMP,N)*SYSPER(ICOMP,N)
+          DFRAC = SMLOUT(ICOMP,N)
+          IDTM(ICOMP,N)=IDTM(ICOMP,N)+1
+        ELSEIF(zell.LT.ZZ2.AND.zell.GT.YY2)THEN
+          ZFRAC(N)=SMEOUT(ICOMP,N)*SYSPER(ICOMP,N)
+          DFRAC = SMLOUT(ICOMP,N)
+          IDTM(ICOMP,N)=0
+        ELSE
+          XX1 =  1.+ SLOPEM(ICOMP,N)*(zelum(N)-SPELEC(ICOMP,N))
+          XX2 =  1. - SLOPEM(ICOMP,N)*SPELEC(ICOMP,N)
+          DFRAC =  XX1/XX2
+          if(DFRAC.lt.SMLOUT(ICOMP,N))DFRAC=SMLOUT(ICOMP,N)
+         XXX=((1.-SMEOUT(ICOMP,N))*SMLOUT(ICOMP,N))/(1.-SMLOUT(ICOMP,N))
+         YYY=SMEOUT(ICOMP,N)-XXX
+         ZFRAC(N)=(((1.-SMEOUT(ICOMP,N))/(1.-SMLOUT(ICOMP,N)))*DFRAC
+     &   + YYY)*SYSPER(ICOMP,N)
+          IDTM(ICOMP,N)=0
+        ENDIF
+        IF(IFT.EQ.1)then
+          IF(IDFST(ICOMP,N).EQ.1)WRITE(outs,713)N,ZFRAC(N),DFRAC
+          IF(IDFST(ICOMP,N).EQ.2)WRITE(outs,714)N,ZFRAC(N),DFRAC
+          IF(IDFST(ICOMP,N).EQ.3)WRITE(outs,715)N,ZFRAC(N),DFRAC
+          IF(IDFST(ICOMP,N).EQ.4)WRITE(outs,708)N,ZFRAC(N),DFRAC
+          IF(IDFST(ICOMP,N).EQ.5)WRITE(outs,709)N,ZFRAC(N),DFRAC  
+  713     FORMAT(' Light zone ',I1,' Prop ESP-r calc df, ZFRAC=',F5.2,
+     &    ' DFRAC=',F5.2)
+  714     FORMAT(' Light zone ',I1,' Prop User def df, ZFRAC=',F5.2,
+     &    ' DFRAC=',F5.2)
+  715     FORMAT(' Light zone ',I1,' Prop Ext sensor, ZFRAC=',F5.2,
+     &    ' DFRAC=',F5.2)
+  708     FORMAT(' Light zone ',I1,' Prop Coupling, ZFRAC=',F5.2,
+     &    ' DFRAC=',F5.2)
+  709     FORMAT(' Light zone ',I1,' Prop Daylight coef, ZFRAC=',F5.2,
+     &    ' DFRAC=',F5.2)
+          call edisp(itu,outs)
+        ENDIF
+
+C Update corresponding SHOCC lighting (if existing).
+        call updatelighting(icomp,n,zelum(n),btimep,btimef)
+
+      ELSEIF(ICGCFL(ICOMP,N).EQ.4)THEN
+C Hunt's manual switching.
+C Assume that the on/off periods set in the operation file for the
+C matching casual gain represent occupancy times. If there are two
+C periods ie. 8h00 to 12h00 and 14h00 to 18h00 then the probability
+C will be first calculated at 8h00 and then recalculated at 14h00.
+C FIRSTL() is the elum when the probability was last calculated.
+
+C With multiple sensors use the ratio of the daylight factor
+C for the brightest and dimmest sensors to judge uniformity.
+C If the ratio is outside the range of 0.33<r<3.0 then occupants
+C will tend to judge the spatial character of the lighting as
+C contrasty and will keep the lights on. If one sensor assume
+C ok, as not enough info.
+        iuni=0
+
+        IMAXX=1
+        IMINN=1
+        SMAXX=0.0
+        SMINN=1000.0
+        DO 886 I=1,NDF(ICOMP,N)
+          IF(SUMDF(ICOMP,N,I).GT.SMAXX)THEN
+            SMAXX=SUMDF(ICOMP,N,I)
+            IMAXX=I
+          ENDIF
+          IF(SUMDF(ICOMP,N,I).LE.SMINN)THEN
+            SMINN=SUMDF(ICOMP,N,I)
+            IMINN=I
+          ENDIF
+  886   CONTINUE
+        ratdf=1.0
+        IF(SUMDF(ICOMP,N,IMINN).GT.1E-10)THEN
+          ratdf=SUMDF(ICOMP,N,IMAXX)/SUMDF(ICOMP,N,IMINN)
+        ENDIF
+        IF((ratdf.LE.0.33).OR.(ratdf.GT.3.))iuni=1
+        elum1=selum(N,IMINN)
+
+
+C Read in the current zone operation file so that common/P3N will
+C be correct for access by HUNTA. HUNTA returns ACTIVE=1. if there
+C is a matching casual gain to control at the current timestep.
+        IUNITA=IFIL+22
+        CALL EROPER(IFT,ITU,IUNITA,ICOMP,IER)
+        CALL HUNTA(ICOMP,IHRF,ACTIVE)
+
+C If first hour of the day then calculate a new random number for
+C the current zone.
+C Following code works on a Sun workstation:
+        IF(IHRF.EQ.1)THEN
+          seed=(idyp*24+ihrp)+icomp
+C For NT.
+C          call set_seed@(seed)
+C          randn(icomp)=real(random())
+C For Unix and Absoft.
+          RANDN(ICOMP)=RAND(INT(seed))
+        ENDIF
+
+C Following code works on a Hitech workstation or VAX:
+C        IF(IHRF.EQ.1)THEN
+C          Iseed=(idyp*24+ihrp)+icomp
+C          RANDN(ICOMP)=RAN(Iseed)
+C          WRITE(IUOUT,887)Iseed,RANDN(ICOMP)
+C  887     FORMAT(' iseed=',I12,' RANDN=',F5.3)
+C        ENDIF
+
+C If ACTIVE = 0. reset the probability, FRAC and FIRSTL to 0. to
+C force later calculation of probability.
+        call eclose(ACTIVE,0.00,0.01,close)
+        IF(close)THEN
+          prob=0.
+          ZFRAC(N)=0.
+          FIRSTL(ICOMP)=0.
+
+C Generate description for use in the trace.
+          IF(IFT.EQ.1)then
+            WRITE(outs,901)N,ZFRAC(N)
+  901      FORMAT(' Light zone ',I1,' Hunt: no occup! ZFRAC=(',F5.2,')')
+            call edisp(itu,outs)
+          endif
+        ELSE
+
+C Check limits, if elum1 low lighting must be turned on
+C (reset Firstl), if high lighting must be turned off (do
+C not reset FIRSTL).
+          IF(elum1.LT.16.0)THEN
+            ZFRAC(N)=SYSPER(ICOMP,N)
+            prob=1.
+            FIRSTL(ICOMP)=elum1
+            IF(IFT.EQ.1)then
+               WRITE(outs,902)N,ZFRAC(N),elum1
+  902          FORMAT(' Light zone ',I1,' Hunt: ZFRAC=',F4.2,
+     &             ' elum low(',F6.0,'): force lighting on')
+               call edisp(itu,outs)
+            endif
+          ELSEIF(elum1.GT.1510.0)THEN
+            ZFRAC(N)=0.0
+            prob=0.0
+            IF(IFT.EQ.1)then
+                WRITE(outs,903)N,ZFRAC(N),elum1
+  903          FORMAT(' Light zone ',I1,' Hunt: ZFRAC=',F4.2,
+     &         ' elum high(',F6.0,'): force lighting off')
+               call edisp(itu,outs)
+            endif
+          ELSEIF(iuni.EQ.1)THEN
+            ZFRAC(N)=SYSPER(ICOMP,N)
+            prob=1.0
+            IF(IFT.EQ.1)then
+               WRITE(outs,908)N,ZFRAC(N),elum1
+  908          FORMAT(' Light zone ',I1,' Hunt: Z FRAC=',F4.2,
+     &         ' elum(',F6.0,'): uniformity fails, lighting on')
+               call edisp(itu,outs)
+            endif
+          ELSE
+
+C If FIRSTL <> 0. then prob previously calculated. If elum > FIRSTL
+C keep switched on, if less then test again.
+            call eclose(FIRSTL(ICOMP),0.00,0.001,close)
+            IF(FIRSTL(ICOMP).GT.0.)THEN
+              IF(elum1.GT.FIRSTL(ICOMP))THEN
+                ZFRAC(N)=SYSPER(ICOMP,N)
+                prob=1.
+                IF(IFT.EQ.1)then
+                  WRITE(outs,904)N,ZFRAC(N),elum1,FIRSTL(ICOMP)
+  904             FORMAT(' Light zone ',I1,' Hunt: ZFRAC=',F4.2,
+     &            ' elum(',F6.0,')>inital(',F6.0,
+     &            '): keep lighting switched on')
+                  call edisp(itu,outs)
+                endif
+              ELSEIF(elum1.LE.FIRSTL(ICOMP))THEN
+
+C Test again using previous random seed.
+                Xel=log10(elum1)
+                prob=-0.0175+(1.0361/(1.+exp(4.0835*(Xel-1.8223))))
+                if(prob.lt.0.)prob=0.
+                if(prob.gt.1.)prob=1.
+                IF(prob.gt.RANDN(ICOMP))THEN
+                  ZFRAC(N)=SYSPER(ICOMP,N)
+                ELSE
+                  ZFRAC(N)=0.
+                ENDIF
+                IF(IFT.EQ.1)then
+                  WRITE(outs,905)N,ZFRAC(N),elum1,FIRSTL(ICOMP),prob,
+     &                          RANDN(ICOMP)
+  905             FORMAT(' Light zone ',I1,' Hunt: ZFRAC=',F4.2,
+     &            ' elum(',F6.0,')<inital(',F6.0,
+     &            ') test again: prob(',F4.2,') r(',F4.2,')')
+                  call edisp(itu,outs)
+                endif
+              ENDIF
+            ELSEIF(close)THEN
+
+C Occupants arriving, calculate probability and save FIRSTL.
+              Xel=log10(elum1)
+              prob=-0.0175+(1.0361/(1.+exp(4.0835*(Xel-1.8223))))
+              if(prob.lt.0.)prob=0.
+              if(prob.gt.1.)prob=1.
+              IF(prob.gt.RANDN(ICOMP))THEN
+                ZFRAC(N)=SYSPER(ICOMP,N)
+                FIRSTL(ICOMP)=elum1
+              ELSE
+                ZFRAC(N)=0.
+              ENDIF
+                IF(IFT.EQ.1)then
+                  WRITE(outs,906)N,ZFRAC(N),elum1,prob,RANDN(ICOMP)
+  906             FORMAT(' Light zone ',I1,' Hunt: ZFRAC=',F4.2,
+     &            ' Occup arrival first ','elum(',F6.0,
+     &            ') prob(',F4.2,') r(',F4.2,')')
+                  call edisp(itu,outs)
+                endif
+            ENDIF
+          ENDIF
+        ENDIF
+
+C Update corresponding SHOCC lighting (if existing).
+        call updatelighting(icomp,n,zelum(n),btimep,btimef)
+
+      ENDIF
+      FRAC=FRAC+ZFRAC(N)
+    9 CONTINUE
+
+C Remove transfer file.
+      call EFDELET(IUNIT,ISTAT)
+
+C Trace output for FRAC:
+      IF(IFT.EQ.1)then
+        write(outs,910)FRAC
+  910   format('Fraction of lighting "ON" FRAC=',F4.2)
+        call edisp(itu,outs)
+      endif
+
+C Trace output ?
+      IF(ITC.LE.0.OR.NSINC.LT.ITC)goto 999
+      IF(ITRACE(12).EQ.0.OR.NSINC.GT.ITCF.OR.
+     &   IZNTRC(ICOMP).NE.1)goto 999
+
+C Trace solar incident on interior transparent surfaces if DIFT
+C is non-zero.
+      NC=NCONST(ICOMP)
+      DO 52 I=1,NC
+        IF(ITMCFL(ICOMP,I).GT.0.and.DIFT(ICOMP,I).gt.0.0)THEN        
+          write(outs,'(a,i3,a,f5.1)') 'equiv source illum on surface ',
+     &      I,'=',DIFT(ICOMP,I)
+          call edisp(itu,outs)
+          write(outs,911)I,ICOMP,IBOFOT(ICOMP,I)
+ 911      format('the TMC surface ',I3,' on zone',I3,' has IBOFOT=',I1)  
+          call edisp(itu,outs)
+          write(outs,'(A,I3,A,F5.2,A)')'The VT of surface',I,' is ',
+     &      V,'**'
+          call edisp(itu,outs)
+        ENDIF 
+ 52   CONTINUE  
+
+C Description for irradiation/illumination data:
+      write(outs,99971)QDIR,QDIF
+99971 format(' Ext: Dir.nor.rad. W/m^2(',F7.1,') Dif.hor.rad.(',
+     &       F7.1,')')
+      call edisp(itu,outs)
+      write(outs,99972)QDIR*suneff,esky
+99972 format('    : sun light lux(',F7.1,') sky light lux(',F7.1,')')
+      call edisp(itu,outs)
+      write(outs,99973)suneff,skyeff
+99973 format('    : sun/dir efficacy (',F7.2,') sky/dif efficacy (',
+     &       F7.2,')')
+      call edisp(itu,outs)
+      write(outs,99974)SAZI,SALT
+99974 format('    : solar azi deg(',F6.1,') solar alt deg(',F6.1,')')
+      call edisp(itu,outs)
+      write(outs,99975)RATIO,nelem
+99975 format('    : TMC blind/shuter(',F4.2,') Sun patch no.(',I3,')')
+      call edisp(itu,outs)
+
+  999 return
+      end
+
+C ******************* CALCILUM ***************************
+
+C Returns the average illuminance of lighting zone N for casual
+C gain control.
+
+      SUBROUTINE CALCILUM(icomp,N,selum,zelum,alt,skyeff,suneff,esun,
+     &                    esky,IFT)
+
+#include "building.h"
+#include "model.h"
+
+C geometry.h provides commons G0/G1/G2/precz.
+#include "geometry.h"
+
+      common/filep/ifil
+      COMMON/OUTIN/IUOUT,IUIN
+      COMMON/SHOUT/ICOUT
+      COMMON/SIMTIM/IHRP,IHRF,IDYP,IDYF,IDWP,IDWF,NSINC,ITS
+      COMMON/PERS/ISD1,ISM1,ISD2,ISM2,ISDS,ISDF,NTSTEP
+      COMMON/SUNPOS/SAZI,SALT,ISUNUP
+      COMMON/TRACE/ITCF,ITRACE(MTRACE),IZNTRC(MCOM),ITU
+
+C Zone casual gain control data.
+      COMMON/CGCIN2N/NCGTC(MCOM,MDTY),NLITZ(MCOM),IDFST(MCOM,MLCOM),
+     & CGX(MCOM,MLCOM,MDF),CGY(MCOM,MLCOM,MDF),CGH(MCOM,MLCOM,MDF),
+     & UX(MCOM,MLCOM,MDF),UY(MCOM,MLCOM,MDF),UH(MCOM,MLCOM,MDF),
+     & SETPT(MCOM,MLCOM),SYSPER(MCOM,MLCOM),SOFFLL(MCOM,MLCOM),
+     & IOFFDT(MCOM,MLCOM),SMLOUT(MCOM,MLCOM),SMEOUT(MCOM,MLCOM)
+      COMMON/CGCIN3/ICGCS(MCOM,MDTY),ICGCF(MCOM,MDTY),
+     & ICGCFL(MCOM,MLCOM),SPELEC(MCOM,MLCOM),SLOPEM(MCOM,MLCOM)
+
+C Daylight coefficient common block data definition:
+      COMMON/DCOEF/NDCFP,NDCFS(MDCFP),DCOEF(MDCFP,MDCFS,MDCFV),
+     & IDCFID(MCOM,MLCOM,MDF)
+
+C Daylight factor data (see dayfac.f).
+      COMMON/DAYF/NDF(MCOM,MLCOM),DFDAT(MCOM,MLCOM,MGT,MDF),
+     & AZIJL(MCOM,MGT),SUMDF(MCOM,MLCOM,MDF),NUDWIN(MCOM)
+
+      COMMON/ADJC2/DIRT(MCOM,MS),DIFT(MCOM,MS),AIRT(MCOM,MS)
+      COMMON/PREC3/PAZI(MCOM,MS),PELV(MCOM,MS)
+      COMMON/D7/T1,T2,P1,P2
+
+C TMC data
+      COMMON/PRECTC/ITMCFL(MCOM,MS),TMCT(MCOM,MTMC,5),
+     &       TMCA(MCOM,MTMC,ME,5),TMCREF(MCOM,MTMC),TVTR(MCOM,MTMC)
+
+C TMC blind control flag
+      COMMON/TMCB4/IBOFOT(MCOM,MS),NBPONT(MCOM,MS),ECRAT(MCOM,MS)
+
+C Construction information
+      COMMON/PREC9/NCONST(MCOM),NELTS(MCOM,MS),NGAPS(MCOM,MS),
+     &             NPGAP(MCOM,MS,MGP)
+
+      common/sus/issny
+
+C Illuminance database.
+      common/ILDB/NDBENT,DBILLA(200,5),DBILLS(200,MLCOM,MDF)
+
+      DIMENSION selum(MLCOM,MDF),alt(8),SENTMP(MLCOM,MDF)
+      DIMENSION QDFTMP(MLCOM,MDF),Yb(MLCOM,MDF)
+      DIMENSION Aa(MLCOM,MDF),Ab(MLCOM,MDF),Ac(MLCOM,MDF),Ya(MLCOM,MDF)
+      DIMENSION zelum(MLCOM)
+      DIMENSION XPL(MV),YPL(MV),ZPL(MV)
+
+      CHARACTER*25 CSTR
+      character outs*124,doit*124,outstr*124
+      character*72 LTMPFL,LTMPFLA,OUTCMD
+      character e2redit*8
+
+      logical close,closea,closeb,closec,closed,closee,closef,closeg
+      logical closeh,closei,instart,neglum,XST,bInStartup,nog
+
+      iunit=ifil+1
+      e2redit='NONE'
+
+C If esp pre-processor or user defined df then read in geometry data.
+      nog=.false.
+      do  1 iu=1,NLITZ(icomp)
+        IF((IDFST(ICOMP,iu).EQ.1).or.(IDFST(ICOMP,iu).eq.2))nog=.true.
+  1   continue
+      if(nog)then
+        call georead(iunit,lgeom(icomp),icomp,0,itu,ier)
+      endif
 
       IF(IDFST(ICOMP,N).EQ.3)THEN
 
@@ -2219,554 +2845,8 @@ C Average illumination at lighting zone:
         zelum(N)=suma/float(NDF(ICOMP,N)) 
       ENDIF
 
-C Find lighting output fraction (FRAC) under current control.
-C ICGCFL=-1: casual gain ON
-C       = 0: casual gain OFF
-C       = 1: ON/OFF control.
-C       = 2: step down control.
-C       = 3: proportional control.
-C       = 4: Hunt probability function.
-
-C Special lighting control parameters, which are currently set
-C to default values (later they will be user specified) :
-C SOFFLL  Switching-off-light reference level fraction of lux set point
-C         (usual range 1.2 - 2.5 i.e. 120% - 250%)
-C SMEOUT  Constant control gear + min. lamp's dimming or
-C         steping wattage fraction of total lights casual load
-C SMLOUT  Minimum dimming light output fraction (usually 0.1 i.e. 10%)
-C SOFFRL  Switching-off-light reference level in Lux
-C IOFFDT  Switch-of-delay time (usual range 5 - 30 minutes), here number
-C         of the simulation time steps
-C DFRAC   Fraction of luminous output of the artificial lighting
-C ZFRAC   Fraction of electric power consumption of the artificial lighting
-
-C Definition of switching-off-light reference level in Lux:
-      SOFFRL=SOFFLL(ICOMP,N)*SETPT(ICOMP,N)
-
-C Generally one may choose to define the setpoints at the same
-C lux to follow Lynes' method or different setpoints can be used
-C for different tasks.  The grid option (1) uses individually
-C placed sensors so that one could average over the multiple
-C sensors or deal with individual sensor/systems.
-      IF(ICGCFL(ICOMP,N) .eq. -1)THEN
-        ZFRAC(N)=SYSPER(ICOMP,N)
-        IF(IFT.EQ.1)then
-          WRITE(outs,801)N,ZFRAC(N)
-  801     FORMAT(' Light zone ',I1,' always on!    ZFRAC=',F5.2)
-          call edisp(itu,outs)
-        endif
-        
-C Update corresponding SHOCC lighting (if existing) ...
-        call updatelighting(icomp,n,zelum(n),btimep,btimef)
-
-      ELSEIF(ICGCFL(ICOMP,N) .eq. 0)THEN
-        ZFRAC(N)=0.
-        IF(IFT.EQ.1)then
-          WRITE(outs,802)N,ZFRAC(N)
-  802     FORMAT(' Light zone ',I1,' always off!   ZFRAC=',F5.2)
-          call edisp(itu,outs)
-        endif
-        
-C Update corresponding SHOCC lighting (if existing).
-        call updatelighting(icomp,n,zelum(n),btimep,btimef)
-
-C Case of On/Off with chosen lighting systems and sensors.
-      ELSEIF(ICGCFL(ICOMP,N).EQ.1)THEN
-          ZFRAC(N)=0.0
-          zell=zelum(N)+SETPT(ICOMP,N)
-        IF(zell.GE.SOFFRL.AND.IDTM(ICOMP,N).GE.IOFFDT(ICOMP,N))THEN
-          ZFRAC(N)=0.0
-          IDTM(ICOMP,N)=IDTM(ICOMP,N)+1
-        ELSEIF(zell.GE.SOFFRL.AND.
-     &         IDTM(ICOMP,N).LT.IOFFDT(ICOMP,N))THEN
-          ZFRAC(N)=SYSPER(ICOMP,N)
-          IDTM(ICOMP,N)=IDTM(ICOMP,N)+1
-        ELSE
-          ZFRAC(N)=SYSPER(ICOMP,N)
-          IDTM(ICOMP,N)=0
-        ENDIF
-        IF(IFT.EQ.1)then
-          IF(IDFST(ICOMP,N).EQ.1)WRITE(outs,803)N,ZFRAC(N)
-          IF(IDFST(ICOMP,N).EQ.2)WRITE(outs,804)N,ZFRAC(N)
-          IF(IDFST(ICOMP,N).EQ.3)WRITE(outs,805)N,ZFRAC(N)
-          IF(IDFST(ICOMP,N).EQ.4)WRITE(outs,806)N,ZFRAC(N)
-          IF(IDFST(ICOMP,N).EQ.5)WRITE(outs,807)N,ZFRAC(N)
-  803     FORMAT(' Light zone ',I1,' ON/OFF ESP-r calc df, ZFRAC=',F5.2)
-  804     FORMAT(' Light zone ',I1,' ON/OFF User def df, ZFRAC=',F5.2)
-  805     FORMAT(' Light zone ',I1,' ON/OFF Ext sensor, ZFRAC=',F5.2)
-  806     FORMAT(' Light zone ',I1,' ON/OFF Coupling, ZFRAC=',F5.2)
-  807     FORMAT(' Light zone ',I1,' ON/OFF Daylight coef, ZFRAC=',F5.2)
-          call edisp(itu,outs)
-        endif
-
-C If in coupling mode then write to the text feedback the controlled fraction
-C so the next timestep the user can edit the IES xforms file to match. 
-        IF(IDFST(ICOMP,N).EQ.4)then
-          write(outs,'(a,F9.2)') 
-     &      'COUPLING ADJUSTMENT next timestep after:',btimef
-          call edisp(iuout,outs)
-          call edisp(6,outs)
-          WRITE(outs,'(a,i3,a,i1,a,F5.2)') 'In zone ',icomp,
-     &      ' & light zone ',N,'edit xform for fixture faction to ',
-     &      ZFRAC(N)
-          call edisp(iuout,outs)
-          call edisp(6,outs)
-        ENDIF
-
-C Update corresponding SHOCC lighting (if existing).
-        call updatelighting(icomp,n,zelum(n),btimep,btimef)
-
-C Case of Step Up/Down with chosen sensors/lighting systems:
-      ELSEIF(ICGCFL(ICOMP,N) .EQ. 2)THEN
-        ZFRAC(N)=0.
-        zell=zelum(N)+0.5*SETPT(ICOMP,N)
-        IF(zell.GE.SOFFRL.AND.IDTM(ICOMP,N).GE.IOFFDT(ICOMP,N)) THEN
-          ZFRAC(N)=0.0
-          IDTM(ICOMP,N)=IDTM(ICOMP,N)+1
-        ELSEIF(zell.GE.SOFFRL.AND.IDTM(ICOMP,N).LT.IOFFDT(ICOMP,N)) THEN
-          ZFRAC(N)=SMEOUT(ICOMP,N)*SYSPER(ICOMP,N)
-          IDTM(ICOMP,N)=IDTM(ICOMP,N)+1
-        ELSEIF(zell.LT.SOFFRL.AND.zell.GE.SETPT(ICOMP,N))THEN
-          ZFRAC(N)=SMEOUT(ICOMP,N)*SYSPER(ICOMP,N)
-          IDTM(ICOMP,N)=0
-        ELSEIF(zell.LT.SETPT(ICOMP,N))THEN
-          ZFRAC(N)=SYSPER(ICOMP,N)
-          IDTM(ICOMP,N)=0
-        ENDIF
-        IF(IFT.EQ.1)then
-          IF(IDFST(ICOMP,N).EQ.1)WRITE(outs,808)N,ZFRAC(N)
-          IF(IDFST(ICOMP,N).EQ.2)WRITE(outs,809)N,ZFRAC(N)
-          IF(IDFST(ICOMP,N).EQ.3)WRITE(outs,810)N,ZFRAC(N)
-          IF(IDFST(ICOMP,N).EQ.4)WRITE(outs,811)N,ZFRAC(N)
-          IF(IDFST(ICOMP,N).EQ.5)WRITE(outs,812)N,ZFRAC(N)        
-  808   FORMAT(' Light zone ',I1,' STEP u/d ESP-r calc df, ZFRAC=',F5.2)
-  809   FORMAT(' Light zone ',I1,' STEP u/d User def df, ZFRAC=',F5.2)
-  810   FORMAT(' Light zone ',I1,' STEP u/d Ext sensor, ZFRAC=',F5.2)
-  811   FORMAT(' Light zone ',I1,' STEP u/d Coupling, ZFRAC=',F5.2)
-  812   FORMAT(' Light zone ',I1,' STEP u/d Daylight coef, ZFRAC=',F5.2)
-          call edisp(itu,outs)
-        endif
-
-C Update corresponding SHOCC lighting (if existing).
-        call updatelighting(icomp,n,zelum(n),btimep,btimef)
-
-C Case of proproportional dimming control with chosen sensors/lighting
-C systems:
-      ELSEIF(ICGCFL(ICOMP,N).EQ.3)THEN
-          ZFRAC(N)=0.0
-          DFRAC = 0.0
-          zell=zelum(N)+SMLOUT(ICOMP,N)*SETPT(ICOMP,N)
-        IF(zell.GE.SOFFRL.AND.IDTM(ICOMP,N).GE.IOFFDT(ICOMP,N))THEN
-          ZFRAC(N)=0.0
-          DFRAC = 0.0
-          IDTM(ICOMP,N)=IDTM(ICOMP,N)+1
-        ELSEIF(zell.GE.SOFFRL.AND.IDTM(ICOMP,N).LT.IOFFDT(ICOMP,N))THEN
-          ZFRAC(N)=SMEOUT(ICOMP,N)*SYSPER(ICOMP,N)
-          DFRAC = SMLOUT(ICOMP,N)
-          IDTM(ICOMP,N)=IDTM(ICOMP,N)+1
-        ELSEIF(zell.LT.SOFFRL.AND.zell.GE.SETPT(ICOMP,N))THEN
-          ZFRAC(N)=SMEOUT(ICOMP,N)*SYSPER(ICOMP,N)
-          DFRAC = SMLOUT(ICOMP,N)
-          IDTM(ICOMP,N)=0
-        ELSEIF(zell.LT.SETPT(ICOMP,N).AND.zell.GE.
-     &        (1.-SMLOUT(ICOMP,N))*SETPT(ICOMP,N))THEN
-          ZFRAC(N)=SMEOUT(ICOMP,N)*SYSPER(ICOMP,N)
-          DFRAC = SMLOUT(ICOMP,N)
-          IDTM(ICOMP,N)=0
-        ELSE
-         XXX=((1.-SMEOUT(ICOMP,N))*SMLOUT(ICOMP,N))/(1.-SMLOUT(ICOMP,N))
-         YYY=SMEOUT(ICOMP,N)-XXX
-         ZFRAC(N)=(((1.-SMEOUT(ICOMP,N))/(1.-SMLOUT(ICOMP,N)))*
-     &   ((SETPT(ICOMP,N)-zelum(N))/SETPT(ICOMP,N))+YYY)*SYSPER(ICOMP,N)
-         DFRAC = (SETPT(ICOMP,N)-zelum(N))/SETPT(ICOMP,N)
-         IDTM(ICOMP,N)=0
-        ENDIF
-        IF(IFT.EQ.1)then
-          IF(IDFST(ICOMP,N).EQ.1)WRITE(outs,813)N,ZFRAC(N),DFRAC
-          IF(IDFST(ICOMP,N).EQ.2)WRITE(outs,814)N,ZFRAC(N),DFRAC
-          IF(IDFST(ICOMP,N).EQ.3)WRITE(outs,815)N,ZFRAC(N),DFRAC
-          IF(IDFST(ICOMP,N).EQ.4)WRITE(outs,816)N,ZFRAC(N),DFRAC
-          IF(IDFST(ICOMP,N).EQ.5)WRITE(outs,817)N,ZFRAC(N),DFRAC  
-  813     FORMAT(' Light zone ',I1,' Prop ESP-r calc df, ZFRAC=',F5.2,
-     &    ' DFRAC=',F5.2)
-  814     FORMAT(' Light zone ',I1,' Prop User def df, ZFRAC=',F5.2,
-     &    ' DFRAC=',F5.2)
-  815     FORMAT(' Light zone ',I1,' Prop Ext sensor, ZFRAC=',F5.2,
-     &    ' DFRAC=',F5.2)
-  816     FORMAT(' Light zone ',I1,' Prop Coupling, ZFRAC=',F5.2,
-     &    ' DFRAC=',F5.2)
-  817     FORMAT(' Light zone ',I1,' Prop Daylight coef, ZFRAC=',F5.2,
-     &    ' DFRAC=',F5.2)
-          call edisp(itu,outs)
-        ENDIF
-
-C Update corresponding SHOCC lighting (if existing).
-        call updatelighting(icomp,n,zelum(n),btimep,btimef)
-
-C Case of explicit proproportional dimming control with integral
-C reset control algorithm:
-C
-C New sensor and control algorithm settings or definition:
-C SPELEC  sensor signal (lux) under artificial lighting
-C         - night time calibration;
-C zelum   sensor signal (lux) under daylight (time dependend).
-C For detailed explanation of control algorithms see: Rubinstein, F.,
-C Ward, G., Verderberg, R., Improving the Performance of Photo-
-C Electrically Controled Lighting Systems. Journal of the IES Winter 1989.
-
-      ELSEIF(ICGCFL(ICOMP,N).EQ.31)THEN
-C Redefine SOFFRL for explicit control:
-          SOFFRL=SOFFLL(ICOMP,N)*SPELEC(ICOMP,N)
-
-          ZZZ1 = (1.-SMLOUT(ICOMP,N))*SOFFRL
-          YYY1 = (1.-SMLOUT(ICOMP,N))*SPELEC(ICOMP,N)
-
-          ZFRAC(N)=0.0
-          DFRAC = 0.0
-          zell=zelum(N)
-        IF(zell.GE.ZZZ1.AND.IDTM(ICOMP,N).GE.IOFFDT(ICOMP,N))THEN
-          ZFRAC(N)=0.0
-          DFRAC = 0.0
-          IDTM(ICOMP,N)=IDTM(ICOMP,N)+1
-        ELSEIF(zell.GE.ZZZ1.AND.IDTM(ICOMP,N).LT.IOFFDT(ICOMP,N))THEN
-          ZFRAC(N)=SMEOUT(ICOMP,N)*SYSPER(ICOMP,N)
-          DFRAC = SMLOUT(ICOMP,N)
-          IDTM(ICOMP,N)=IDTM(ICOMP,N)+1
-        ELSEIF(zell.LT.ZZZ1.AND.zell.GT.YYY1)THEN
-          ZFRAC(N)=SMEOUT(ICOMP,N)*SYSPER(ICOMP,N)
-          DFRAC = SMLOUT(ICOMP,N)
-          IDTM(ICOMP,N)=0
-        ELSE
-          DFRAC=(1.- zelum(N)/SPELEC(ICOMP,N))
-          if(DFRAC.lt.SMLOUT(ICOMP,N))DFRAC = SMLOUT(ICOMP,N)
-         XXX=((1.-SMEOUT(ICOMP,N))*SMLOUT(ICOMP,N))/(1.-SMLOUT(ICOMP,N))
-         YYY=SMEOUT(ICOMP,N)-XXX
-         ZFRAC(N)=(((1.-SMEOUT(ICOMP,N))/(1.-SMLOUT(ICOMP,N)))*DFRAC
-     &   + YYY)*SYSPER(ICOMP,N)
-          IDTM(ICOMP,N)=0
-        ENDIF
-        IF(IFT.EQ.1)then
-          IF(IDFST(ICOMP,N).EQ.1)WRITE(outs,913)N,ZFRAC(N),DFRAC
-          IF(IDFST(ICOMP,N).EQ.2)WRITE(outs,914)N,ZFRAC(N),DFRAC
-          IF(IDFST(ICOMP,N).EQ.3)WRITE(outs,915)N,ZFRAC(N),DFRAC
-          IF(IDFST(ICOMP,N).EQ.4)WRITE(outs,916)N,ZFRAC(N),DFRAC
-          IF(IDFST(ICOMP,N).EQ.5)WRITE(outs,917)N,ZFRAC(N),DFRAC  
-  913     FORMAT(' Light zone ',I1,' Prop ESP-r calc df, ZFRAC=',F5.2,
-     &    ' DFRAC=',F5.2)
-  914     FORMAT(' Light zone ',I1,' Prop User def df, ZFRAC=',F5.2,
-     &    ' DFRAC=',F5.2)
-  915     FORMAT(' Light zone ',I1,' Prop Ext sensor, ZFRAC=',F5.2,
-     &    ' DFRAC=',F5.2)
-  916     FORMAT(' Light zone ',I1,' Prop Coupling, ZFRAC=',F5.2,
-     &    ' DFRAC=',F5.2)
-  917     FORMAT(' Light zone ',I1,' Prop Daylight coef, ZFRAC=',F5.2,
-     &    ' DFRAC=',F5.2)
-          call edisp(itu,outs)
-        ENDIF
-
-C Update corresponding SHOCC lighting (if existing).
-        call updatelighting(icomp,n,zelum(n),btimep,btimef)
-
-C Case of explicit proproportional dimming control with closed-loop
-C algorithm:
-C
-C New sensor and control algorithm settings or definition:
-C SPELEC  sensor signal (lux) under artificial lighting
-C         - night time calibration;
-C zelum   sensor signal (lux) under daylight (time dependend);
-C SLOPEM  linear control response slope (-).
-
-      ELSEIF(ICGCFL(ICOMP,N).EQ.32)THEN
-C Redefine SOFFRL for explicit control:
-          SOFFRL=SOFFLL(ICOMP,N)*SPELEC(ICOMP,N)
-
-          ZZ1 = SMLOUT(ICOMP,N)*(1. - SLOPEM(ICOMP,N)*SOFFRL)
-          ZZ2 = (ZZ1 - 1.)/SLOPEM(ICOMP,N) + SOFFRL
-
-          YY1 = SMLOUT(ICOMP,N)*(1. - SLOPEM(ICOMP,N)*SPELEC(ICOMP,N))
-          YY2 = (ZZ1 - 1.)/SLOPEM(ICOMP,N) + SPELEC(ICOMP,N)
-
-          ZFRAC(N)=0.0
-          DFRAC = 0.0
-          zell=zelum(N)
-        IF(zell.GT.ZZ2.AND.IDTM(ICOMP,N).GE.IOFFDT(ICOMP,N))THEN
-          ZFRAC(N)=0.0
-          DFRAC = 0.0
-          IDTM(ICOMP,N)=IDTM(ICOMP,N)+1
-        ELSEIF(zell.GT.ZZ2.AND.IDTM(ICOMP,N).LT.IOFFDT(ICOMP,N))THEN
-          ZFRAC(N)=SMEOUT(ICOMP,N)*SYSPER(ICOMP,N)
-          DFRAC = SMLOUT(ICOMP,N)
-          IDTM(ICOMP,N)=IDTM(ICOMP,N)+1
-        ELSEIF(zell.LT.ZZ2.AND.zell.GT.YY2)THEN
-          ZFRAC(N)=SMEOUT(ICOMP,N)*SYSPER(ICOMP,N)
-          DFRAC = SMLOUT(ICOMP,N)
-          IDTM(ICOMP,N)=0
-        ELSE
-          XX1 =  1.+ SLOPEM(ICOMP,N)*(zelum(N)-SPELEC(ICOMP,N))
-          XX2 =  1. - SLOPEM(ICOMP,N)*SPELEC(ICOMP,N)
-          DFRAC =  XX1/XX2
-          if(DFRAC.lt.SMLOUT(ICOMP,N))DFRAC=SMLOUT(ICOMP,N)
-         XXX=((1.-SMEOUT(ICOMP,N))*SMLOUT(ICOMP,N))/(1.-SMLOUT(ICOMP,N))
-         YYY=SMEOUT(ICOMP,N)-XXX
-         ZFRAC(N)=(((1.-SMEOUT(ICOMP,N))/(1.-SMLOUT(ICOMP,N)))*DFRAC
-     &   + YYY)*SYSPER(ICOMP,N)
-          IDTM(ICOMP,N)=0
-        ENDIF
-        IF(IFT.EQ.1)then
-          IF(IDFST(ICOMP,N).EQ.1)WRITE(outs,713)N,ZFRAC(N),DFRAC
-          IF(IDFST(ICOMP,N).EQ.2)WRITE(outs,714)N,ZFRAC(N),DFRAC
-          IF(IDFST(ICOMP,N).EQ.3)WRITE(outs,715)N,ZFRAC(N),DFRAC
-          IF(IDFST(ICOMP,N).EQ.4)WRITE(outs,708)N,ZFRAC(N),DFRAC
-          IF(IDFST(ICOMP,N).EQ.5)WRITE(outs,709)N,ZFRAC(N),DFRAC  
-  713     FORMAT(' Light zone ',I1,' Prop ESP-r calc df, ZFRAC=',F5.2,
-     &    ' DFRAC=',F5.2)
-  714     FORMAT(' Light zone ',I1,' Prop User def df, ZFRAC=',F5.2,
-     &    ' DFRAC=',F5.2)
-  715     FORMAT(' Light zone ',I1,' Prop Ext sensor, ZFRAC=',F5.2,
-     &    ' DFRAC=',F5.2)
-  708     FORMAT(' Light zone ',I1,' Prop Coupling, ZFRAC=',F5.2,
-     &    ' DFRAC=',F5.2)
-  709     FORMAT(' Light zone ',I1,' Prop Daylight coef, ZFRAC=',F5.2,
-     &    ' DFRAC=',F5.2)
-          call edisp(itu,outs)
-        ENDIF
-
-C Update corresponding SHOCC lighting (if existing).
-        call updatelighting(icomp,n,zelum(n),btimep,btimef)
-
-      ELSEIF(ICGCFL(ICOMP,N).EQ.4)THEN
-C Hunt's manual switching.
-C Assume that the on/off periods set in the operation file for the
-C matching casual gain represent occupancy times. If there are two
-C periods ie. 8h00 to 12h00 and 14h00 to 18h00 then the probability
-C will be first calculated at 8h00 and then recalculated at 14h00.
-C FIRSTL() is the elum when the probability was last calculated.
-
-C With multiple sensors use the ratio of the daylight factor
-C for the brightest and dimmest sensors to judge uniformity.
-C If the ratio is outside the range of 0.33<r<3.0 then occupants
-C will tend to judge the spatial character of the lighting as
-C contrasty and will keep the lights on. If one sensor assume
-C ok, as not enough info.
-        iuni=0
-
-        IMAXX=1
-        IMINN=1
-        SMAXX=0.0
-        SMINN=1000.0
-        DO 886 I=1,NDF(ICOMP,N)
-          IF(SUMDF(ICOMP,N,I).GT.SMAXX)THEN
-            SMAXX=SUMDF(ICOMP,N,I)
-            IMAXX=I
-          ENDIF
-          IF(SUMDF(ICOMP,N,I).LE.SMINN)THEN
-            SMINN=SUMDF(ICOMP,N,I)
-            IMINN=I
-          ENDIF
-  886   CONTINUE
-        ratdf=1.0
-        IF(SUMDF(ICOMP,N,IMINN).GT.1E-10)THEN
-          ratdf=SUMDF(ICOMP,N,IMAXX)/SUMDF(ICOMP,N,IMINN)
-        ENDIF
-        IF((ratdf.LE.0.33).OR.(ratdf.GT.3.))iuni=1
-        elum1=selum(N,IMINN)
-
-
-C Read in the current zone operation file so that common/P3N will
-C be correct for access by HUNTA. HUNTA returns ACTIVE=1. if there
-C is a matching casual gain to control at the current timestep.
-        IUNITA=IFIL+22
-        CALL EROPER(IFT,ITU,IUNITA,ICOMP,IER)
-        CALL HUNTA(ICOMP,IHRF,ACTIVE)
-
-C If first hour of the day then calculate a new random number for
-C the current zone.
-C Following code works on a Sun workstation:
-        IF(IHRF.EQ.1)THEN
-          seed=(idyp*24+ihrp)+icomp
-C For NT.
-C          call set_seed@(seed)
-C          randn(icomp)=real(random())
-C For Unix and Absoft.
-          RANDN(ICOMP)=RAND(INT(seed))
-        ENDIF
-
-C Following code works on a Hitech workstation or VAX:
-C        IF(IHRF.EQ.1)THEN
-C          Iseed=(idyp*24+ihrp)+icomp
-C          RANDN(ICOMP)=RAN(Iseed)
-C          WRITE(IUOUT,887)Iseed,RANDN(ICOMP)
-C  887     FORMAT(' iseed=',I12,' RANDN=',F5.3)
-C        ENDIF
-
-C If ACTIVE = 0. reset the probability, FRAC and FIRSTL to 0. to
-C force later calculation of probability.
-        call eclose(ACTIVE,0.00,0.01,close)
-        IF(close)THEN
-          prob=0.
-          ZFRAC(N)=0.
-          FIRSTL(ICOMP)=0.
-
-C Generate description for use in the trace.
-          IF(IFT.EQ.1)then
-            WRITE(outs,901)N,ZFRAC(N)
-  901      FORMAT(' Light zone ',I1,' Hunt: no occup! ZFRAC=(',F5.2,')')
-            call edisp(itu,outs)
-          endif
-        ELSE
-
-C Check limits, if elum1 low lighting must be turned on
-C (reset Firstl), if high lighting must be turned off (do
-C not reset FIRSTL).
-          IF(elum1.LT.16.0)THEN
-            ZFRAC(N)=SYSPER(ICOMP,N)
-            prob=1.
-            FIRSTL(ICOMP)=elum1
-            IF(IFT.EQ.1)then
-               WRITE(outs,902)N,ZFRAC(N),elum1
-  902          FORMAT(' Light zone ',I1,' Hunt: ZFRAC=',F4.2,
-     &             ' elum low(',F6.0,'): force lighting on')
-               call edisp(itu,outs)
-            endif
-          ELSEIF(elum1.GT.1510.0)THEN
-            ZFRAC(N)=0.0
-            prob=0.0
-            IF(IFT.EQ.1)then
-                WRITE(outs,903)N,ZFRAC(N),elum1
-  903          FORMAT(' Light zone ',I1,' Hunt: ZFRAC=',F4.2,
-     &         ' elum high(',F6.0,'): force lighting off')
-               call edisp(itu,outs)
-            endif
-          ELSEIF(iuni.EQ.1)THEN
-            ZFRAC(N)=SYSPER(ICOMP,N)
-            prob=1.0
-            IF(IFT.EQ.1)then
-               WRITE(outs,908)N,ZFRAC(N),elum1
-  908          FORMAT(' Light zone ',I1,' Hunt: Z FRAC=',F4.2,
-     &         ' elum(',F6.0,'): uniformity fails, lighting on')
-               call edisp(itu,outs)
-            endif
-          ELSE
-
-C If FIRSTL <> 0. then prob previously calculated. If elum > FIRSTL
-C keep switched on, if less then test again.
-            call eclose(FIRSTL(ICOMP),0.00,0.001,close)
-            IF(FIRSTL(ICOMP).GT.0.)THEN
-              IF(elum1.GT.FIRSTL(ICOMP))THEN
-                ZFRAC(N)=SYSPER(ICOMP,N)
-                prob=1.
-                IF(IFT.EQ.1)then
-                  WRITE(outs,904)N,ZFRAC(N),elum1,FIRSTL(ICOMP)
-  904             FORMAT(' Light zone ',I1,' Hunt: ZFRAC=',F4.2,
-     &            ' elum(',F6.0,')>inital(',F6.0,
-     &            '): keep lighting switched on')
-                  call edisp(itu,outs)
-                endif
-              ELSEIF(elum1.LE.FIRSTL(ICOMP))THEN
-
-C Test again using previous random seed.
-                Xel=log10(elum1)
-                prob=-0.0175+(1.0361/(1.+exp(4.0835*(Xel-1.8223))))
-                if(prob.lt.0.)prob=0.
-                if(prob.gt.1.)prob=1.
-                IF(prob.gt.RANDN(ICOMP))THEN
-                  ZFRAC(N)=SYSPER(ICOMP,N)
-                ELSE
-                  ZFRAC(N)=0.
-                ENDIF
-                IF(IFT.EQ.1)then
-                  WRITE(outs,905)N,ZFRAC(N),elum1,FIRSTL(ICOMP),prob,
-     &                          RANDN(ICOMP)
-  905             FORMAT(' Light zone ',I1,' Hunt: ZFRAC=',F4.2,
-     &            ' elum(',F6.0,')<inital(',F6.0,
-     &            ') test again: prob(',F4.2,') r(',F4.2,')')
-                  call edisp(itu,outs)
-                endif
-              ENDIF
-            ELSEIF(close)THEN
-
-C Occupants arriving, calculate probability and save FIRSTL.
-              Xel=log10(elum1)
-              prob=-0.0175+(1.0361/(1.+exp(4.0835*(Xel-1.8223))))
-              if(prob.lt.0.)prob=0.
-              if(prob.gt.1.)prob=1.
-              IF(prob.gt.RANDN(ICOMP))THEN
-                ZFRAC(N)=SYSPER(ICOMP,N)
-                FIRSTL(ICOMP)=elum1
-              ELSE
-                ZFRAC(N)=0.
-              ENDIF
-                IF(IFT.EQ.1)then
-                  WRITE(outs,906)N,ZFRAC(N),elum1,prob,RANDN(ICOMP)
-  906             FORMAT(' Light zone ',I1,' Hunt: ZFRAC=',F4.2,
-     &            ' Occup arrival first ','elum(',F6.0,
-     &            ') prob(',F4.2,') r(',F4.2,')')
-                  call edisp(itu,outs)
-                endif
-            ENDIF
-          ENDIF
-        ENDIF
-
-C Update corresponding SHOCC lighting (if existing).
-        call updatelighting(icomp,n,zelum(n),btimep,btimef)
-
-      ENDIF
-      FRAC=FRAC+ZFRAC(N)
-    9 CONTINUE
-
-C Remove transfer file.
-      call EFDELET(IUNIT,ISTAT)
-
-C Trace output for FRAC:
-      IF(IFT.EQ.1)then
-        write(outs,910)FRAC
-  910   format('Fraction of lighting "ON" FRAC=',F4.2)
-        call edisp(itu,outs)
-      endif
-
-C Trace output ?
-      IF(ITC.LE.0.OR.NSINC.LT.ITC)goto 999
-      IF(ITRACE(12).EQ.0.OR.NSINC.GT.ITCF.OR.
-     &   IZNTRC(ICOMP).NE.1)goto 999
-
-C Trace solar incident on interior transparent surfaces if DIFT
-C is non-zero.
-      NC=NCONST(ICOMP)
-      DO 52 I=1,NC
-        IF(ITMCFL(ICOMP,I).GT.0.and.DIFT(ICOMP,I).gt.0.0)THEN        
-          write(outs,'(a,i3,a,f5.1)') 'equiv source illum on surface ',
-     &      I,'=',DIFT(ICOMP,I)
-          call edisp(itu,outs)
-          write(outs,911)I,ICOMP,IBOFOT(ICOMP,I)
- 911      format('the TMC surface ',I3,' on zone',I3,' has IBOFOT=',I1)  
-          call edisp(itu,outs)
-          write(outs,'(A,I3,A,F5.2,A)')'The VT of surface',I,' is ',
-     &      V,'**'
-          call edisp(itu,outs)
-        ENDIF 
- 52   CONTINUE  
-
-C Description for irradiation/illumination data:
-      write(outs,99971)QDIR,QDIF
-99971 format(' Ext: Dir.nor.rad. W/m^2(',F7.1,') Dif.hor.rad.(',
-     &       F7.1,')')
-      call edisp(itu,outs)
-      write(outs,99972)QDIR*suneff,esky
-99972 format('    : sun light lux(',F7.1,') sky light lux(',F7.1,')')
-      call edisp(itu,outs)
-      write(outs,99973)suneff,skyeff
-99973 format('    : sun/dir efficacy (',F7.2,') sky/dif efficacy (',
-     &       F7.2,')')
-      call edisp(itu,outs)
-      write(outs,99974)SAZI,SALT
-99974 format('    : solar azi deg(',F6.1,') solar alt deg(',F6.1,')')
-      call edisp(itu,outs)
-      write(outs,99975)RATIO,nelem
-99975 format('    : TMC blind/shuter(',F4.2,') Sun patch no.(',I3,')')
-      call edisp(itu,outs)
-
-  999 return
-      end
+      RETURN
+      END
 
 C ******************** DWINVT ****************************
 

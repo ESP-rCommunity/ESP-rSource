@@ -197,6 +197,10 @@ C SURTM is not used by the simulator, res will graph/list it.
       GTYPES(28)='CFCCTL'
       GMENUS(28)='On/off and slat angle: '
 
+C RAININD is currently only used to pass to external control via FMI.
+      GTYPES(29)='RAININD'
+      GMENUS(29)='Binary rain indicator: '
+
 C If not looking for a specific item then return.
       IF(FOCUS(1:7).EQ.'ALLCLMT')THEN
 
@@ -692,6 +696,20 @@ C Real & reactive power for electrical networks: two data items.
         MGMA(1)='Real power (W): '
         GMF(2)='REAL,2,0.0,0.0,900000.0'
         MGMA(2)='Reactive power (W): '
+        FOUND=.TRUE.
+
+      ELSEIF(FOCUS(1:7).EQ.'RAININD')THEN
+
+C Rain indicator, currently only used for FMI: one data item.
+        GAIDE   ='Binary rain indicator (0 or 1)'
+        GHELP(1)='This is currently not used in simulations, only to'
+        GHELP(2)='pass to external models via FMI.'
+        GMH='2,1,0,0,0,1,-999.0'
+        GDHDRT(1)='   time  | Rain     |'
+        GDHDRT(2)='   of day| indicator|'
+        GDHDRT(3)='Rain indicator (0 or 1):'
+        GMF(1)='INTG,1,0,0,1'
+        MGMA(1)='Indicator value (0 or 1): '
         FOUND=.TRUE.
 
       ELSEIF(FOCUS(1:4).EQ.'ALL ')THEN

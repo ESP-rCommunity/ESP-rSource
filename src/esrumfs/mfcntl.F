@@ -445,6 +445,7 @@ C << what comprises ON
 #include "net_flow.h"
 #include "building.h"
 #include "control.h"
+#include "FMI.h"
       COMMON/mfctl/ctlpos(MCNN)
       COMMON/FCLSOL/ICFP,IDTYPP,IPERP
       COMMON/MFLOW1/NNOD,NCMP,NCNN
@@ -497,6 +498,14 @@ C Establish sensed variable magnitude and actuated node location.
           endif
   1     continue
       endif
+
+C <FMI>
+C If window control is active, set control position to fraction from
+C FMU.
+      if (FMUDOCTL(ifsn(icfp,1),3)) then
+        CTLPOS(ifan(icfp,2))=FMUCTL(ifsn(icfp,1),3)
+      endif
+C </FMI>
 
       RETURN
       END

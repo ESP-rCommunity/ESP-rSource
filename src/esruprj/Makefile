@@ -36,7 +36,7 @@ OBJECTS = prj.o anlytc.o arrow.o ascii_mat.o basesimp.o \
 	  e3dviews.o ecasctl.o econstr.o econtrol.o edatabase.o edcasctl.o \
 	  edcfd.o edcfg.o edcon.o edcondb.o eddb.o edgeo.o edipv.o editCFC.o edmrt.o \
 	  edobs.o edonecon.o edoptic.o edpro.o edspmtl.o edtopol.o edzone.o egeometry.o \
-	  egrid.o egtgeom.o emeta.o emfnetw.o emkcfg.o enetmisc.o enetprj.o enetrewr.o \
+	  egbxml.o egrid.o egtgeom.o emeta.o emfnetw.o emkcfg.o enetmisc.o enetprj.o enetrewr.o \
 	  eroper.o esru_misc.o esystem.o exlgrad.o explor.o filelist.o folders.o \
 	  ground_temp_mains.o gtopol.o h3k_utils.o hcfmk.o hvacgui.o initalc.o insert.o item.o \
 	  maintn.o mcdbscn.o mfcdat.o mfelst.o mfnmsc.o mfprb1.o mfprb2.o mfrlst.o \
@@ -51,8 +51,16 @@ OBJECTS = prj.o anlytc.o arrow.o ascii_mat.o basesimp.o \
 MODULES = aim2.mod aim2_calcdata.mod aim2_h2k_dummy.mod aim2_inputdata.mod aim2_inputs.mod \
 	  aim2_inputs_inputdata.mod start_up.mod parse_command_line.mod h3kmodule.mod
 
-$(PROG): $(MODULE_OBJECTS) $(OBJECTS)
-	$(MFC) $(LD_FLAGS) -o $(PROG) $(FFLAGS) $(MODULE_OBJECTS) $(OBJECTS) $(ULIBS) $(BUILD_OPTIONS)
+ifeq ($(FMIarg),enableFMI)
+	FMI_OBJECTS = FMIcom.o FMIprj.o
+else
+	FMI_OBJECTS = FMIcom.o FMIprj_dummy.o
+endif
+ALL_FMI_OBJECTS = FMIcom.o FMIprj.o FMIprj_dummy.o
+
+
+$(PROG): $(MODULE_OBJECTS) $(FMI_OBJECTS) $(OBJECTS)
+	$(MFC) $(LD_FLAGS) -o $(PROG) $(FFLAGS) $(MODULE_OBJECTS) $(FMI_OBJECTS) $(OBJECTS) $(ULIBS) $(BUILD_OPTIONS)
 
 anlytc.F:
 	rm -f anlytc.F
@@ -273,7 +281,10 @@ h3kmodule.f90:
 	ln -s $(CETCdir)/h3kmodule.f90 .
 qrun.F:
 	rm -f qrun.F
-	ln -s $(COMdir)/qrun.F
+	ln -s $(COMdir)/qrun.F .
+FMIcom.F:
+	rm -f FMIcom.F
+	ln -s $(COMdir)/FMIcom.F .
 
 strip:
 	strip $(PROG)
@@ -282,7 +293,7 @@ install:
 	install $(SWTCH) $(PROG) $(ESPBinDir)/$(PROG)
 
 clean:
-	rm -f core $(PROG) $(PROG).exe $(MODULE_OBJECTS) $(OBJECTS) $(MODULES) \
+	rm -f core $(PROG) $(PROG).exe $(MODULE_OBJECTS) $(OBJECTS) $(ALL_FMI_OBJECTS) $(MODULES) \
 	anlytc.F aim2_module.F arrow.F ascii_mat.F basesimp.F bscoeff.F bscoeff_extended.F \
 	bsimsel.F c2fdum.F cfdat.F cfdrw.F cfgmsc.F \
 	cfgrid.F cgd.F common3dv.F commonclm.F ctlexp.F ctprob.F ctread.F DG_controller_menu.F \
@@ -293,7 +304,7 @@ clean:
 	hvacinput.F item.F mcdbscn.F mfcdat.F mfelst.F mfnmsc.F mfrlst.F MultiYear_climate.F mvalid.F \
 	net2pdf.F newnet.F nwkrewr.F plelevvc.F pltcfg.F psychro.F rcdblist.F rwipv.F rwroam.F \
 	rwsbem.F senrwl.F sort.F spmisc.F stndrds.F startup.F tdfile.F  \
-	readTrnsys.F PltDummy.F qrun.F h3kmodule.f90
+	readTrnsys.F PltDummy.F qrun.F h3kmodule.f90 FMIcom.F
 
 distclean: clean
 

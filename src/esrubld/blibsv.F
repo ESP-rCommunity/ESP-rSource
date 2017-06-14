@@ -967,9 +967,16 @@ C Calculate the current period id for occupants.
           perocupc=CGSENC(icomp,iweekdayweekend,1,iperocup)
           perocupr=CGSENR(icomp,iweekdayweekend,1,iperocup)
           perocupl=CGLAT(icomp,iweekdayweekend,1,iperocup)
-          ctlperocupc(icomp,2)=perocupc
-          ctlperocupr(icomp,2)=perocupr
-          ctlperocupl(icomp,2)=perocupl
+C <FMI>
+C          ctlperocupc(icomp,2)=perocupc
+C          ctlperocupr(icomp,2)=perocupr
+C          ctlperocupl(icomp,2)=perocupl
+C Multiply by control value (CGCTL) as this may be set by an FMU, and
+C is set to a default of 1. (in MZCASG) even if it is not set by an FMU.
+          ctlperocupc(icomp,2)=perocupc*CGCTL(ICOMP,2,1)
+          ctlperocupr(icomp,2)=perocupr*CGCTL(ICOMP,2,1)
+          ctlperocupl(icomp,2)=perocupl*CGCTL(ICOMP,2,1)
+C </FMI>
         else
           perocupc=0.0
           perocupr=0.0
@@ -995,15 +1002,20 @@ C for after the FRAC has been applied.
           perlightc=CGSENC(icomp,iweekdayweekend,2,iperlight)
           perlightr=CGSENR(icomp,iweekdayweekend,2,iperlight)
           perlightl=CGLAT(icomp,iweekdayweekend,2,iperlight)
-          if(ICGCTL(ICOMP).eq.2)then
+C <FMI>
+C Always multiply by control value (CGCTL) as this may be set by an FMU 
+C or casual gain control, and is set to a default of 1. (in MZCASG) even
+C if it is not set elsewhere.
+C          if(ICGCTL(ICOMP).eq.2)then
             ctlperlightc(icomp,2)=perlightc*CGCTL(ICOMP,2,2)
             ctlperlightr(icomp,2)=perlightr*CGCTL(ICOMP,2,2)
             ctlperlightl(icomp,2)=perlightl*CGCTL(ICOMP,2,2)
-          else
-            ctlperlightc(icomp,2)=perlightc
-            ctlperlightr(icomp,2)=perlightr
-            ctlperlightl(icomp,2)=perlightl
-          endif
+C          else
+C            ctlperlightc(icomp,2)=perlightc
+C            ctlperlightr(icomp,2)=perlightr
+C            ctlperlightl(icomp,2)=perlightl
+C          endif
+C </FMI>
         else
           perlightc=0.0
           perlightr=0.0
@@ -1026,15 +1038,20 @@ C to the lighting code block above.
           perequipc=CGSENC(icomp,iweekdayweekend,3,iperequip)
           perequipr=CGSENR(icomp,iweekdayweekend,3,iperequip)
           perequipl=CGLAT(icomp,iweekdayweekend,3,iperequip)
-          if(ICGCTL(ICOMP).eq.3)then
+C <FMI>
+C Always multiply by control value (CGCTL) as this may be set by an FMU 
+C or casual gain control, and is set to a default of 1. (in MZCASG) even
+C if it is not set elsewhere.
+C          if(ICGCTL(ICOMP).eq.3)then
             ctlperequipc(icomp,2)=perequipc*CGCTL(ICOMP,2,3)
             ctlperequipr(icomp,2)=perequipr*CGCTL(ICOMP,2,3)
             ctlperequipl(icomp,2)=perequipl*CGCTL(ICOMP,2,3)
-          else
-            ctlperequipc(icomp,2)=perequipc
-            ctlperequipr(icomp,2)=perequipr
-            ctlperequipl(icomp,2)=perequipl
-          endif
+C          else
+C            ctlperequipc(icomp,2)=perequipc
+C            ctlperequipr(icomp,2)=perequipr
+C            ctlperequipl(icomp,2)=perequipl
+C          endif
+C </FMI>
         else
           perequipc=0.0
           perequipr=0.0
@@ -1057,15 +1074,16 @@ C to the equipment code block above.
           perotherc=CGSENC(icomp,iweekdayweekend,4,iperother)
           perotherr=CGSENR(icomp,iweekdayweekend,4,iperother)
           perotherl=CGLAT(icomp,iweekdayweekend,4,iperother)
-          if(ICGCTL(ICOMP).eq.3)then
+C <FMI> following lines commented </FMI>
+c          if(ICGCTL(ICOMP).eq.4)then
             ctlperotherc(icomp,2)=perotherc*CGCTL(ICOMP,2,4)
             ctlperotherr(icomp,2)=perotherr*CGCTL(ICOMP,2,4)
             ctlperotherl(icomp,2)=perotherl*CGCTL(ICOMP,2,4)
-          else
-            ctlperotherc(icomp,2)=perotherc
-            ctlperotherr(icomp,2)=perotherr
-            ctlperotherl(icomp,2)=perotherl
-          endif
+c          else
+c            ctlperotherc(icomp,2)=perotherc
+c            ctlperotherr(icomp,2)=perotherr
+c            ctlperotherl(icomp,2)=perotherl
+c          endif
         else
           perotherc=0.0
           perotherr=0.0

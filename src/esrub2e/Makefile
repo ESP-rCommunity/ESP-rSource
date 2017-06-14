@@ -27,7 +27,8 @@ MODULE_OBJECTS = aim2_module.o startup.o
 OBJECTS = b2e.o CDBPlugins.o CDBCommon.o CDBExplore.o\
 	c2fdum.o clispline.o ctlwrt.o ctread.o daproc.o econtrol.o egeometry.o \
 	emfnetw.o emkcfg.o eroper.o esru_misc.o esystem.o filelist.o initalc.o item.o mfcdat.o \
-	nwkrewr.o pltcfg.o readTrnsys.o rwipv.o rwsbem.o simcomis.o sort.o tdfile.o
+	nwkrewr.o pltcfg.o readTrnsys.o rwipv.o rwsbem.o simcomis.o sort.o tdfile.o \
+	FMIcom.o
 
 MODULES = aim2.mod aim2_calcdata.mod aim2_h2k_dummy.mod aim2_inputdata.mod start_up.mod parse_command_line.mod
 
@@ -112,6 +113,9 @@ startup.F:
 tdfile.F:
 	rm -f tdfile.F
 	ln -s $(COMdir)/tdfile.F .
+FMIcom.F:
+	rm -f FMIcom.F
+	ln -s $(COMdir)/FMIcom.F .
 
 strip:
 	strip $(PROG)
@@ -124,7 +128,8 @@ clean:
 	aim2_module.F CDBPlugins.F CDBCommon.F CDBExplore.F \
 	c2fdum.F ctlwrt.F ctread.F econtrol.F egeometry.F emfnetw.F emkcfg.F esru_misc.F \
 	eroper.F esystem.F filelist.F initalc.F item.F mfcdat.F nwkrewr.F pltcfg.F sort.F startup.F tdfile.F \
-	readTrnsys.F rwipv.F rwsbem.F
+	readTrnsys.F rwipv.F rwsbem.F \
+	FMIcom.F
 
 distclean: clean
 

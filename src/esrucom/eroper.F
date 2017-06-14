@@ -543,6 +543,7 @@ C Flow reporting if requested.
 C Read high level attributes of the casual gains used in the zone
 C such as user label, keyword, index that the period lines can use
 C and two integer attributes to be used in post-processing.
+C << update for dynamic people >>
           islot=islot+1   ! increment the casual gain slot
           CALL EGETW(OUTSTR,K,lodlabel(ICOMP,ISLOT),'W',
      &      'user casual gain label',IER) 

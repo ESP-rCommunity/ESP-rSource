@@ -676,6 +676,34 @@ C Clear allocatable arrays
             endif
           endif
         endif
+      elseif(inact(1:13).eq.'silentxmlread')then
+
+C Check to see if the -file parameter is a high level silent input file
+C and if so do what it says.
+        if(LCMDFL(1:2).ne.'  '.and.LCMDFL(1:4).ne.'UNKN')then
+          INQUIRE (FILE=LCMDFL,EXIST=XST)
+          if(XST)then
+            call clrprb  ! clear the model common blocks prior to scan
+            write(longtfile,'(a)') LCMDFL(1:lnblnk(LCMDFL))
+            IUNIT=IFIL+1
+            call silentxmlread(iunit,longtfile,'-',theprimedirective,
+     &        ier)
+            call edisp(iuout,theprimedirective)
+            call edisp(iuout,modeltitle)
+            call edisp248(iuout,modeldocblock,80)
+            if(theprimedirective(1:3).eq.'new')then
+              call usrmsg('Processing of silent file complete.',
+     &          'Exiting from project manager','P')
+
+C Clear allocatable arrays
+              CALL DeallocateAllArrays
+              CALL EPAGEND
+              STOP
+            else
+              goto 3
+            endif
+          endif
+        endif
 
       elseif(inact(1:9).eq.'transform'.or.inact(1:6).eq.'rotate'.or.
      &       inact(1:2).eq.'QA'.or.
@@ -1760,7 +1788,7 @@ C Display the simulation period.
       ITEMS(M+5)   ='u NCM compliance checking        '
       ITEMS(M+6)   ='  ______________________________ '
       IF(ITRC.EQ.0)THEN
-        ITEMS(m+7) = 'v feedback >> silent              '
+        ITEMS(m+7) = 'v feedback >>               '
       ELSEIF(ITRC.EQ.1)THEN
         ITEMS(m+7) = 'v feedback >> summary             '
       ELSEIF(ITRC.EQ.2)THEN

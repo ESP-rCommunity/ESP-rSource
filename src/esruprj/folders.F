@@ -187,18 +187,22 @@ C Current default version is v4.
       icfgv=4   ! alter this to 4 when working correctly
       INDCFG=0
       if(act(1:2).eq.'sn'.or.act(1:2).eq.'sw')then
-        continue  ! META file will already have set sitelat etc.
+        continue  ! META or gbXML file will already have set sitelat etc.
       else
         sitelat=55.9; SLAT=55.9; 
         sitelongdif=-4.1; SLON=-4.1
         siteexposureindex=1
         groundrefl=0.2
       endif
-      NCOMP=0
-      noimg=0
-      LPNF='UNKNOWN'
-      lmodellog='UNKNOWN'
-      nbdaytype=0   ! reset to zero day types
+      if(act(1:2).eq.'sn'.or.act(1:2).eq.'sw')then
+        continue  ! META or gbXML file will already have set zones etc.
+      else
+        NCOMP=0
+        noimg=0
+        LPNF='UNKNOWN'
+        lmodellog='UNKNOWN'
+        nbdaytype=0   ! reset to zero day types
+      endif
       call st2file(LCFTMP,LCMDFL)  ! remove unprintable characters
 
 C Derive the model root name from this.
@@ -805,7 +809,7 @@ C Maintain model folders.
 #include "model.h"
 
 C geometry.h provides commons G0 and G2.
-C #include "geometry.h"
+#include "geometry.h"
 #include "espriou.h"
       
       integer lnblnk  ! function definition
@@ -824,17 +828,50 @@ C External text editor.
       logical OK,DOK,CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,CFCDBOK
       logical concat,unixok,changedit,browse
 
+C Global coordinates for whole model (zone & surface based). These are used
+C to accumulate information prior to the generation of the connection list.
+C      integer isznbedges ! nb of edges per surface in poly shaped zone
+C                         ! equivalent to nznver and nver
+C      integer iszlist    ! indices of coords making up edges of each surface
+C                         ! equivalent to NZJVN and jvn
+C      real szcoords      ! coordinates associated with each zone, equivalent
+C                         ! to X Y Z and VCOORD for shape=box ignore,
+C                         ! for shape=extrude the 1st value is X and 2nd is Y
+C                         ! For shape=poly the Z is also used.
+C      common/metageo/isznbedges(MCOM,MS),iszlist(MCOM,MS,MV),
+C     &               szcoords(MCOM,MTV,3)
+
+C Surface attributes (zone & surface based).
+      character iszlname*16  ! surface long name attribute
+      character iszname*12   ! surface short name attribute
+      character iszotf*32    ! see SSOTF below
+      character iszvfc*4     ! see SSVFC below
+      character iszmlcn*32   ! see SSMLCN below
+      character iszother*24  ! see SSOTHER below
+      character iszuse*12    ! see SSUSE below
+      character iszparent*12 ! see SSPARENT below
+      character isztype*16   ! gbxml surface type
+      COMMON/metasurf/iszlname(MCOM,MS),iszname(MCOM,MS),
+     &  iszotf(MCOM,MS),iszmlcn(MCOM,MS),iszvfc(MCOM,MS),
+     &  iszother(MCOM,MS,3),iszuse(MCOM,MS,2),iszparent(MCOM,MS),
+     &  isztype(MCOM,MS)
+
       character*72 path,LFIL,odir
       character doit*248,sfile*72,snpfile*72
       character longtfile*144,longtfiledos*144
       character tedlbl*20,teditor*20
       character tmode*8,t24*24,outs*124
-      character*33 ITEMS(24)
+      character loutstr*248
+      character*33 ITEMS(25)
       character fs*1
       character subpath*72,action*3
+      character theprimedirective*8
       integer lnod   ! length for odir
       integer nitems,INO ! max items and current menu item
 
+C Logicals for testing XML
+      logical found,closex,xst  ! equivalent of similar on other side
+      
 C For help messages
       character helpinsub*24 ! subroutine name
       character helptopic*24 ! string (unique) for topic
@@ -931,16 +968,17 @@ C Remind user of available cfg files.
       WRITE(ITEMS(20),'(A)') 'o edit ASCII file              '
       WRITE(ITEMS(21),'(A)') 'p list files in esp-r/databases'
       WRITE(ITEMS(22),'(A)') 'q list files in esp-r/climate  '
-      ITEMS(23)  =           '? help                         '
-      ITEMS(24)  =           '- exit this menu               '
-      nitems=24
+      WRITE(ITEMS(23),'(A)') 'r read XML test                '
+      ITEMS(24)  =           '? help                         '
+      ITEMS(25)  =           '- exit this menu               '
+      nitems=25
 
 C Help text for this menu.
       helptopic='cfg_path_overview'
       call gethelptext(helpinsub,helptopic,nbhelp)
 
       CALL EMENU('Folders and Files',ITEMS,nitems,INO)
-      IF(INO.EQ.nitems)THEN
+      if(INO.EQ.nitems)then
         if(browse)then
           continue
         else
@@ -958,6 +996,25 @@ C Help text for this menu.
         helptopic='cfg_path_overview'
         call gethelptext(helpinsub,helptopic,nbhelp)
         CALL PHELPD('folders and files',nbhelp,'-',0,0,IER)
+      elseif(ino.eq.nitems-2)then
+
+C Test read of XML files and tokens.
+	CALL EASKS(LFIL,' ','XML file name?',
+     &    72,' ','XML file',IER,nbhelp)
+        IUNIT=IFIL+1
+        INQUIRE (FILE=LFIL,EXIST=XST)
+        if(XST)then
+          call clrprb  ! clear the model common blocks prior to scan
+          write(longtfile,'(a)') LFIL(1:lnblnk(LFIL))
+          IUNIT=IFIL+1
+          call silentxmlread(iunit,longtfile,'-',theprimedirective,
+     &      ier)
+          call edisp(iuout,theprimedirective)
+          call edisp(iuout,modeltitle)
+          call edisp248(iuout,modeldocblock,80)
+          goto 42
+        endif
+	
       elseif(ino.eq.4)then
 
         if(.NOT.browse)then
